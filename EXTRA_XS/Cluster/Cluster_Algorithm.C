@@ -39,14 +39,13 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   double muf2(pb->ScaleSetter()->Scale(stp::fac));
   double mur2(pb->ScaleSetter()->Scale(stp::ren));
   for (size_t i(0);i<xs->NIn()+xs->NOut();++i) {
-    size_t id(1<<p_ampl->Legs().size());
     size_t idx(i<2?(swap?1-i:i):i);
     ColorID col(me->Colours()[idx][0],me->Colours()[idx][1]);
     if (i<2) col=col.Conj();
     Flavour flav(i<2?xs->Flavours()[i].Bar():
 		 xs->Flavours()[i]);
     Vec4D mom(i<2?-moms[i]:moms[i]);
-    p_ampl->CreateLeg(mom,flav,col,id);
+    p_ampl->CreateLeg(mom,flav,col,1<<idx);
     p_ampl->Legs().back()->SetStat(1);
     p_ampl->Legs().back()->SetNMax
       (xs->Info().m_fi.NMaxExternal());

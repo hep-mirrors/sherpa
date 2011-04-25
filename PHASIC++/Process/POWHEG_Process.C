@@ -505,6 +505,7 @@ double POWHEG_Process::SelectBProcess()
     if ((psum+=bproc->Last(mode))>=rsum) break;
   }
   p_ampl = dynamic_cast<Single_Process*>(bproc)->Cluster(256);
+  SortFlavours(p_ampl);
   if (!p_ampl) {
     msg_Error()<<METHOD<<"(): no cluster amplitude available. new event.\n";
     return 0.;
@@ -558,6 +559,8 @@ double POWHEG_Process::SelectBProcess()
     ampl->SetMuF2(next->MuF2());
     ampl->SetMuR2(next->MuR2());
     next->SetKin(kt2.m_kin);
+    if (!(ampl->Leg(0)->Id()&next->Leg(0)->Id()))
+      std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
     while (ampl->Next()) {
       ampl=ampl->Next();
       for (size_t i(0);i<ampl->Legs().size();++i) {

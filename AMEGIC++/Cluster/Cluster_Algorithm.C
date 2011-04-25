@@ -100,7 +100,6 @@ Leg **Cluster_Algorithm::CreateLegs(int &nampl,const int nlegs)
     for (int i(0);i<nlegs;++i) {
       Flavour fl(p_proc->Flavours()[i]);
       if (i<2 && p_proc->Integrator()->InSwaped()) {
-	legs[k][i].SetID(1<<(1-i));
 	fl=p_proc->Flavours()[1-i];
       }
       legs[k][i].SetMapFlavour(fl);

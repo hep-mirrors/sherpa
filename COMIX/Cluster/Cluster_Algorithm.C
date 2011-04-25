@@ -496,10 +496,10 @@ bool Cluster_Algorithm::Cluster
   double muf2(pb->ScaleSetter()->Scale(stp::fac));
   double mur2(pb->ScaleSetter()->Scale(stp::ren));
   for (size_t i(0);i<ccurs.size();++i) {
-    size_t idx(i<2?(m_swap?1-i:i):i);
-    size_t cid(m_id[ccurs[i]->CId()]=1<<idx);
+    size_t cid(m_id[ccurs[i]->CId()]=1<<p_ampl->Legs().size());
     Flavour flav(p_xs->ReMap(ccurs[i]->Flav()));
     if (ccurs[i]==fcur) flav=flav.Bar();
+    size_t idx(i<2?(m_swap?1-i:i):i);
     Vec4D mom(i<2?-xs->Process()->Integrator()->Momenta()[idx]:
 	      xs->Process()->Integrator()->Momenta()[idx]);
     p_ampl->CreateLeg(mom,flav,ColorID(),cid);
