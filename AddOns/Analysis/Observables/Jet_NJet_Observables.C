@@ -68,8 +68,8 @@ using namespace ATOOLS;
 			   unsigned int mode, unsigned int minn,unsigned int maxn, 
 			   const std::string & =std::string("FinalState"),
 			   const std::string & =std::string(""));
-    void Evaluate(const ATOOLS::Blob_List & blobs,double weight, int ncount);
-    void EvaluateNLOcontrib(double weight, int ncount);
+    void Evaluate(const ATOOLS::Blob_List & blobs,double weight, double ncount);
+    void EvaluateNLOcontrib(double weight, double ncount);
     double Calc(const Particle * p);
     virtual double Calc(const Vec4D &m1,const Vec4D &m2) =0;
   };
@@ -101,7 +101,7 @@ double Jet_NJet_Observables::Calc(const Particle * p)
   return 0.;
 }
 
-void Jet_NJet_Observables::Evaluate(const Blob_List & blobs,double weight, int ncount)
+void Jet_NJet_Observables::Evaluate(const Blob_List & blobs,double weight, double ncount)
 {
   Particle_List * pl=p_ana->GetParticleList(m_listname);
   if ((m_mode==1 && pl->size()>=m_minn) ||
@@ -133,7 +133,7 @@ void Jet_NJet_Observables::Evaluate(const Blob_List & blobs,double weight, int n
   }
 }
 
-void Jet_NJet_Observables::EvaluateNLOcontrib(double weight, int ncount)
+void Jet_NJet_Observables::EvaluateNLOcontrib(double weight, double ncount)
 {
   Particle_List * pl=p_ana->GetParticleList(m_listname);
   if ((m_mode==1 && pl->size()>=m_minn) ||
