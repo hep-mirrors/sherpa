@@ -249,14 +249,8 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const i
   m_lastxs = 0.;
     // So far only massless partons!!!!
 
-  // fill m_subevtlist, set all m_result and m_last to 0.
-  if (p_partner == this) {
-    m_lastdxs = operator()(moms,mode);
-    for (size_t i=0;i<m_subevtlist.size();++i) {
-      m_subevtlist[i]->m_result =
-      m_subevtlist[i]->m_last[0] = m_subevtlist[i]->m_last[1] = 0.;
-    }
-  }
+  // fill m_subevtlist
+  if (p_partner == this) m_lastdxs = operator()(moms,mode);
   else {
     if (m_lookup) m_lastdxs = p_partner->LastDXS()*m_sfactor;
     else m_lastdxs = p_partner->operator()(moms,mode)*m_sfactor;
@@ -299,7 +293,8 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   }
 
   m_subevtlist.push_back(&m_realevt);
-  m_realevt.m_me = 0.0;
+  m_realevt.m_me   = m_realevt.m_result =
+    m_realevt.m_last[0] = m_realevt.m_last[1] = 0.0;
 
   bool trg(false);
   trg=p_tree_process->Selector()->JetTrigger(_mom,&m_subevtlist);
