@@ -396,7 +396,7 @@ int PHASIC::ConstructIIDipole
   Vec4D n_perp(0.0,1.0,1.0,0.0);
   zrot.RotateBack(n_perp);
   n_perp*=1.0/n_perp.PSpat();
-  Vec4D l_perp(0.0,cross(Vec3D(iip.m_pi),Vec3D(n_perp)));
+  Vec4D l_perp(0.0,cross(Vec3D(pah),Vec3D(n_perp)));
   l_perp*=1.0/l_perp.PSpat();
   iip.m_pj=(1.0-zt)/pn*(gam*iip.m_pi-ma2*iip.m_pk)+
     (mj2+ktt*ktt)/(1.0-zt)/pn*(iip.m_pk-mb2/gam*iip.m_pi)+
