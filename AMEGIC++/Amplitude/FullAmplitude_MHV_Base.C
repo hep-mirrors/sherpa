@@ -1420,7 +1420,7 @@ AMEGIC::FullAmplitude_MHV_Base* AMEGIC::FullAmplitude_MHV_Handler(Model_Base *mo
   if (!valid) return fullamp; 
   if (fullamp) {
     newamp = true;
-    s_ampmap[ampID]=fullamp;
+    // s_ampmap[ampID]=fullamp;
     return fullamp;
   }
   else THROW(fatal_error,"Fullamplitude_MHV_Handler: Amplitude is not implemented");
