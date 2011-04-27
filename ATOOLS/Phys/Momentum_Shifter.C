@@ -109,7 +109,8 @@ bool Momentum_Shifter::CalculateSPerp()
 
 bool Momentum_Shifter::ConstructMomenta()
 {
-  double E1, E2, plong1, plong2, lambda2=Lambda2(m_sp[0],m_sp[1],m_sp[2]);
+  double E1=0.0, E2=0.0, plong1=0.0, plong2=0.0;
+  double lambda2=Lambda2(m_sp[0],m_sp[1],m_sp[2]);
   if (lambda2<0.) {
     msg_Tracking()<<"Momentum_Shifter::ConstructMomenta(..): "
 			  <<"\\Lambda^2("<<m_sp[0]<<","<<m_sp[1]<<","

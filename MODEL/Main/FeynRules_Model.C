@@ -135,7 +135,7 @@ void FeynRules_Model::ParticleInit() {
   s_kftable[kf_neutrino]->Clear();
   for (int i=1;i<7;i++) {
     Flavour addit((kf_code)i);
-    if (addit.Mass()==0.0 || !addit.IsMassive() && addit.IsOn()) {
+    if (addit.Mass()==0.0 || (!addit.IsMassive() && addit.IsOn())) {
       s_kftable[kf_jet]->Add(addit);
       s_kftable[kf_jet]->Add(addit.Bar());
       s_kftable[kf_quark]->Add(addit);
@@ -148,7 +148,7 @@ void FeynRules_Model::ParticleInit() {
   s_kftable[kf_jet]->SetResummed();
   for (int i=11;i<17;i+=2) {
     Flavour addit((kf_code)i);
-    if (addit.Mass()==0.0 || !addit.IsMassive() && addit.IsOn()) {
+    if (addit.Mass()==0.0 || (!addit.IsMassive() && addit.IsOn())) {
       s_kftable[kf_lepton]->Add(addit);
       s_kftable[kf_lepton]->Add(addit.Bar());
       s_kftable[kf_fermion]->Add(addit);

@@ -56,8 +56,6 @@ using namespace std;
 typedef void (*PDF_Init_Function)();
 typedef void (*PDF_Exit_Function)();
 
-#define PTP long unsigned int
-
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
   m_mode(0), m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
@@ -238,11 +236,11 @@ Initialization_Handler::~Initialization_Handler()
   if (m_pdflib[0]=="" && m_pdflib[1]=="") return; 
   void *exit(s_loader->GetLibraryFunction(m_pdflib[0],"ExitPDFLib"));
   if (exit==NULL) THROW(fatal_error,"Cannot unload PDF library.");
-  ((PDF_Exit_Function)(PTP)exit)();
+  ((PDF_Exit_Function)exit)();
   if (m_pdflib[1]!=m_pdflib[0]) {
     exit=s_loader->GetLibraryFunction(m_pdflib[1],"ExitPDFLib");
     if (exit==NULL) THROW(fatal_error,"Cannot unload PDF library.");
-    ((PDF_Exit_Function)(PTP)exit)();
+    ((PDF_Exit_Function)exit)();
   }
 }
 
@@ -530,7 +528,7 @@ bool Initialization_Handler::InitializeThePDFs()
     if (beam==0 || m_pdflib[1]!=m_pdflib[0]) {
       void *init(s_loader->GetLibraryFunction(m_pdflib[beam],"InitPDFLib"));
       if (init==NULL) THROW(fatal_error,"Cannot load PDF library.");
-      ((PDF_Init_Function)(PTP)init)();
+      ((PDF_Init_Function)init)();
     }
   }
   int helpi(0);

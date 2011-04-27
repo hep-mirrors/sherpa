@@ -13,8 +13,6 @@
 
 typedef void (*HZTool_Analysis)(int *flag);
 
-#define PTP long unsigned int
-
 class HZTool_Interface: public SHERPA::Analysis_Interface {
 public:
 
@@ -278,7 +276,7 @@ bool HZTool_Interface::Init()
 	    msg_Info()<<"not found."<<std::endl;
 	  }
 	  else {
-	    m_analyses.push_back((HZTool_Analysis)(PTP)func);
+	    m_analyses.push_back((HZTool_Analysis)func);
 	    m_tags.push_back(helpsvv[i][j]);
 	    msg_Info()<<"found."<<std::endl;
 	  }
