@@ -603,6 +603,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     for (CD_List::iterator vit(m_rejected.begin());
 	 vit!=m_rejected.end();++vit) {
       if (norejected.find(vit->first)!=norejected.end()) continue;
+      if (vit->second.m_pt2ij.m_op2<0.0 && (mode&512)) continue;
       double ktdiff(vit->second.m_pt2ij.m_kt2-kt2);
       if (ktdiff<0.0) {
 	if (-ktdiff<nmin) {
@@ -625,7 +626,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
 	continue;
       }
       else {
-	if (valid && p_up==NULL) return CalcJet(nl,moms,mode&~512,kt2);
+	if (valid && p_up==NULL) return CalcJet(nl,moms,mode,kt2);
 	delete this;
 	return NULL;
       }
