@@ -235,8 +235,9 @@ double METS_Scale_Setter::CalculateStrict
   p_caller->Integrator()->SetMomenta(momenta);
   p_caller->Generator()->SetClusterDefinitions
     (p_caller->Shower()->GetClusterDefinitions());
+  int amode(p_caller->Shower()->GetClusterDefinitions()->AMode()?512:0);
   Cluster_Amplitude *ampl
-    (p_caller->Generator()->ClusterConfiguration(p_caller,m_vproc));
+    (p_caller->Generator()->ClusterConfiguration(p_caller,m_vproc|amode));
   if (ampl==NULL) {
     msg_Debugging()<<METHOD<<"(): No CSS history for '"
 		   <<p_caller->Name()<<"'. Set \\hat{s}.\n";
