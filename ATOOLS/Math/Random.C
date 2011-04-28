@@ -240,7 +240,7 @@ void ATOOLS::Random::ReadInStatus(const char * filename)
   // Check if the first 20 bytes in file are a known identifier and
   // set the activeGenerator variable accordingly
   file.read(status.idTag, 16);
-  if (strcmp(status.idTag,"Rnd4_G_Marsaglia"))
+  if (strcmp(status.idTag,"Rnd4_GMarsaglia"))
     { activeGenerator = 2; } else { activeGenerator = 4; }
   file.close();
   
@@ -384,7 +384,7 @@ void ATOOLS::Random::SetSeed(int ij, int kl)
 {
    // mark Generator 4 as used one and set idTag for file output
    activeGenerator = 4;
-   strcpy(status.idTag, "Rnd4_G_Marsaglia");
+   strcpy(status.idTag, "Rnd4_GMarsaglia");
 
    // Init routine of the Random Generator Rnd4
    double s,t;
@@ -475,7 +475,7 @@ void ATOOLS::Random::ReadInStatus4(const char * filename)
 
     char temp[16];
     strncpy(temp,status.idTag,16);
-    if (strcmp(temp, "Rnd4_G_Marsaglia")) {
+    if (strcmp(temp, "Rnd4_GMarsaglia")) {
       // Data read in was not from a RndGen of the same type
       msg_Error()<<"WARNING in Random::ReadInStatus4: Data read from "
 		 <<filename<<" is not of the expected type."<<endl;
