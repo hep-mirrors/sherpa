@@ -39,6 +39,8 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
   reader.AddWordSeparator("\t");
   reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
   std::string qed = reader.GetValue<std::string>("ME_QED","On");
+  bool expliciteon = (reader.GetValue<std::string>("ME_QED","")=="On");
+  size_t nlomode  = reader.GetValue<size_t>("NLO_Mode",0);
   m_qed = (qed=="On")?true:false;
   // look whether there is any hadronisation following
   // if not, do not even put them on-shell -> switch everthing off
@@ -50,6 +52,8 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
     std::string on = reader1.GetValue<std::string>("FRAGMENTATION","");
     m_on = (on!="Off")?true:false;
   }
+  // if NLO_Mode 1, switch off completely, unless explicitely stated
+  if (nlomode==1 && !expliciteon) m_on = false;
 
   if (m_on && p_mehandlers->size()>1) {
     m_qed = false;
