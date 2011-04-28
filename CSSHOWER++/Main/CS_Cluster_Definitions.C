@@ -159,6 +159,7 @@ void CS_Cluster_Definitions::KernelWeight
   cs.p_sf=cdip;
   cs.m_mu2=Max(cs.m_kt2,p_shower->GetSudakov()->PT2Min());
   cs.m_mu2*=cdip->Coupling()->CplFac(cs.m_mu2);
+  if (!cdip->On()) cs.m_mu2=Max(cs.m_mu2,sqr(mo.Mass()));
   if (!(m_mode&1)) return;
   p_shower->SetMS(p_ms);
   cdip->SetFlavourSpec(fls);
@@ -176,7 +177,8 @@ void CS_Cluster_Definitions::KernelWeight
     else cs.m_wk=sqrt(std::numeric_limits<double>::min());
     cs.m_ws=1.0/cs.m_wk;
   }
-  msg_Debugging()<<"Kernel weight ["<<cs.m_mode<<"] ( x = "<<eta
+  msg_Debugging()<<"Kernel weight (A="<<AMode()
+		 <<") ["<<cs.m_mode<<"] ( x = "<<eta
 		 <<" ) {\n  "<<*i<<"\n  "<<*j<<"\n  "<<*k
 		 <<"\n} -> w = "<<cs.m_wk<<" ("<<cs.m_ws<<")\n";
 }
@@ -272,7 +274,8 @@ double CS_Cluster_Definitions::CoreScale
 	Cluster_Leg *lk(ampl->Leg(k));
 	if (k==i || k==j) continue;
 	for (size_t f(0);f<cf.size();++f) {
-	  if (!CheckColors(li,lj,lk,cf[f])) continue;
+	  Flavour mo(ProperFlav(cf[f]));
+	  if (mo!=cf[f] || !CheckColors(li,lj,lk,mo)) continue;
 	  const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFMap());
 	  if (i>1 && k<2) cmap=&p_shower->GetSudakov()->FIMap();
 	  else if (i<2 && k>1) cmap=&p_shower->GetSudakov()->IFMap();
@@ -282,26 +285,22 @@ double CS_Cluster_Definitions::CoreScale
 	  SF_EE_Map::const_iterator ees
 	    (eees->second.find(ProperFlav(lj->Flav())));
 	  if (ees==eees->second.end()) continue;
-	  SF_E_Map::const_iterator es(ees->second.find(ProperFlav(cf[f])));
+	  SF_E_Map::const_iterator es(ees->second.find(mo));
 	  if (es==ees->second.end()) continue;
 	  Splitting_Function_Base *cdip(es->second);
 	  if (!cdip->Coupling()->AllowSpec
 	      (k<2?lk->Flav().Bar():lk->Flav())) continue;
 	  double kt2=2.0*dabs(p[i]*p[j]);
-	  if (cf[f]==li->Flav()) {
+	  if (mo==li->Flav()) {
 	    double ef=dabs((p[j]*p[k])/(p[i]*p[k]));
-	    if (i>1 && cf[f]==lj->Flav()) kt2*=Min(ef,1.0/ef);
+	    if (i>1 && mo==lj->Flav()) kt2*=Min(ef,1.0/ef);
 	    else kt2*=ef;
 	  }
 	  else if (i>1 && cf[f]==lj->Flav()) {
 	    kt2*=dabs((p[i]*p[k])/(p[j]*p[k]));
 	  }
-	  if ((i<2)^(j<2)) {
-	    kt2+=sqr(ampl->Leg(2)->Flav().Mass());
-	    kt2+=sqr(ampl->Leg(3)->Flav().Mass());
-	  }
-	  double cf=cdip->Coupling()->CplFac(kt2);
-	  kt2cmin=Min(kt2cmin,kt2*cf);
+	  kt2*=cdip->Coupling()->CplFac(kt2);
+	  kt2cmin=Min(kt2cmin,kt2);
 	}
       }
     }

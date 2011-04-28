@@ -574,16 +574,16 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     m_rejected[m_cdata_winner->first]=m_cdata_winner->second;
     if (m_cdata_winner->second.m_pt2ij.m_op2<0.0) continue;
     invonly=false;
-    if (kt2>m_cdata_winner->second.m_pt2ij.m_kt2) {
+    if (kt2>m_cdata_winner->second.m_pt2ij.m_mu2) {
       msg_Debugging()<<"unordered configuration "<<sqrt(kt2)<<" vs. "
-		     <<sqrt(m_cdata_winner->second.m_pt2ij.m_kt2)<<"\n";
+		     <<sqrt(m_cdata_winner->second.m_pt2ij.m_mu2)<<"\n";
       continue;
     }
     if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
     Combine_Table *tab(CreateNext());
     if (tab!=NULL) {
       Combine_Table *next(NextTable(tab,mode,m_cdata_winner->
-				    second.m_pt2ij.m_kt2));
+				    second.m_pt2ij.m_mu2));
       if (next!=NULL) return next;
     }
     msg_Debugging()<<METHOD<<"(): Table "<<m_no<<": reject winner "
@@ -604,7 +604,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
 	 vit!=m_rejected.end();++vit) {
       if (norejected.find(vit->first)!=norejected.end()) continue;
       if (vit->second.m_pt2ij.m_op2<0.0 && (mode&512)) continue;
-      double ktdiff(vit->second.m_pt2ij.m_kt2-kt2);
+      double ktdiff(vit->second.m_pt2ij.m_mu2-kt2);
       if (ktdiff<0.0) {
 	if (-ktdiff<nmin) {
 	  nmin=-ktdiff;
@@ -642,7 +642,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     Combine_Table *tab(CreateNext());
     if (tab!=NULL) {
       Combine_Table *next(NextTable(tab,mode,zero?0.0:m_cdata_winner->
-				    second.m_pt2ij.m_kt2));
+				    second.m_pt2ij.m_mu2));
       if (next!=NULL) return next;
     }
     msg_Debugging()<<METHOD<<"(): Table "<<m_no<<": reject winner "
@@ -676,10 +676,10 @@ bool Combine_Table::SelectWinner(const size_t &mode)
 	sum+=1.0/pt2ij;
 	}
       }
-      else if (cit->second.m_pt2ij.m_kt2>0.0 &&
-	       cit->second.m_pt2ij.m_kt2<rkt2) {
+      else if (cit->second.m_pt2ij.m_mu2>0.0 &&
+	       cit->second.m_pt2ij.m_mu2<rkt2) {
 	rdata_winner=cit;
-	rkt2=cit->second.m_pt2ij.m_kt2;
+	rkt2=cit->second.m_pt2ij.m_mu2;
       }
     }
   }
@@ -715,7 +715,7 @@ Combine_Table *Combine_Table::CreateNext()
       alegs[k] = CombineLegs
 	(p_legs[m_cdata_winner->second.m_graphs[k]],
 	 m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,m_nl,
-	 m_cdata_winner->second.m_pt2ij.m_kt2,m_cdata_winner->second.m_pt2ij.m_kin);
+	 m_cdata_winner->second.m_pt2ij.m_mu2,m_cdata_winner->second.m_pt2ij.m_kin);
     }
     m_cdata_winner->second.p_down = 
       new Combine_Table(p_proc,p_ms,p_clus,amoms,this,p_decids);
