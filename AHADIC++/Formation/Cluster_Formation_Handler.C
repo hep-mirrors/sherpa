@@ -127,7 +127,7 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
       }
       else {
 	// cannot find a matching colour/particle
-	msg_Error()<<"ERROR in "<<METHOD<<":\n"
+	msg_Error()<<"Warning in "<<METHOD<<":\n"
 		   <<"   Cannot deal with this fragmentation blob: \n"
 		   <<(*blob)<<"\n"
 		   <<"   Will try new event.\n";
@@ -284,7 +284,7 @@ bool Cluster_Formation_Handler::ShiftList(Proto_Particle_List * pl)
     masses[k]  = hadpars.GetConstituents()->Mass(flav);
   }
   if (!hadpars.AdjustMomenta(number,&momenta.front(),&masses.front()))  {
-    msg_Error()<<"ERROR in "<<METHOD<<".  Could not adjust momenta for:\n";
+    msg_Error()<<"Warning in "<<METHOD<<".  Could not adjust momenta for:\n";
     for (pit=pl->begin();pit!=pl->end();++pit,++k) {
       msg_Error()<<"   "<<(*pit)->m_flav<<" "
 		 <<(*pit)->m_mom<<" ("<<(*pit)->m_mom.Abs2()<<") vs. "
