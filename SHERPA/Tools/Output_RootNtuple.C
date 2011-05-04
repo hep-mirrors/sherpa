@@ -55,6 +55,7 @@ Output_RootNtuple::Output_RootNtuple(std::string basename,std::string ext,int pr
 
   p_t3->Branch("nuwgt",&m_nuwgt,"nuwgt/I");
   p_t3->Branch("usr_wgts",p_uwgt,"usr_wgts[nuwgt]/D");
+  ATOOLS::exh->AddTerminatorObject(this);
 #else
   msg_Error()<<"Sherpa must be linked with root to enable ROOTNTUPLE output!"<<endl;
 #endif
@@ -62,11 +63,16 @@ Output_RootNtuple::Output_RootNtuple(std::string basename,std::string ext,int pr
 
 Output_RootNtuple::~Output_RootNtuple()
 {
+}
+
+void Output_RootNtuple::PrepareTerminate()
+{
   StoreEvt();
 #ifdef USING__ROOT
   p_t3->AutoSave();
   delete p_t3;
   delete p_f;
+  ATOOLS::exh->RemoveTerminatorObject(this);
 #endif
   cout<<"ROOTNTUPLE_OUTPUT stored: "<<m_s2/m_c2<<" +/- "<<sqrt((m_sq2/m_c2-sqr(m_s2/m_c2))/(m_c2-1.))<<" pb  (reweighted 1) \n"; 
   double c3(m_idcnt);

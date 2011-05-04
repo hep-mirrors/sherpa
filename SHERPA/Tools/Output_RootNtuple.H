@@ -2,6 +2,7 @@
 #define SHERPA_Tools_Output_RootNtuple_H
 
 #include "SHERPA/Tools/Output_Base.H"
+#include "ATOOLS/Org/Exception.H"
 #ifdef USING__ROOT
 #include "Riostream.h"
 #include "TTree.h"
@@ -23,7 +24,8 @@ namespace SHERPA {
     double uwgt[18]; 
   };
 
-  class Output_RootNtuple : public Output_Base {
+  class Output_RootNtuple : public Output_Base,
+    public ATOOLS::Terminator_Object {
 #ifdef USING__ROOT
     static const Int_t s_kMaxParticle = 100;
     UInt_t m_id;
@@ -56,6 +58,7 @@ namespace SHERPA {
     ~Output_RootNtuple();
     void ChangeFile(std::string nr);
     void Output(ATOOLS::Blob_List* blobs, double weight);
+    void PrepareTerminate();
   };
 
 }
