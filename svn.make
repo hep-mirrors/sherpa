@@ -38,3 +38,5 @@ SVN_Info.C: SVN_Info.C.in
 	fi;
 
 .PHONY: SVN_Info.C.in
+
+DISTCLEANFILES = SVN_Info.C
