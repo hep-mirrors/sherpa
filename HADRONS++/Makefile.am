@@ -31,20 +31,19 @@ uninstall-local:
 	fi;
 
 dist-hook:
-	cd $(srcdir); \
-	for i in Decaydata/*; do \
-	  if test -d $$i; then \
-	    mkdir -p $(distdir)/$$i; \
-	    for j in $$i/*.dat; do \
-	      cp $$j $(distdir)/$$i/; \
+	for i in $$(ls $(srcdir)/Decaydata); do \
+	  if test -d $(srcdir)/Decaydata/$$i; then \
+	    mkdir -p $(distdir)/Decaydata/$$i; \
+	    for j in $(srcdir)/Decaydata/$$i/*.dat; do \
+	      cp $$j $(distdir)/Decaydata/$$i/; \
 	    done; \
-	    if test -d $$i/PhaseSpaceFunctions; then \
-	      cp -rf $$i/PhaseSpaceFunctions $(distdir)/$$i/; \
+	    if test -d $(srcdir)/Decaydata/$$i/PhaseSpaceFunctions; then \
+	      cp -rf $(srcdir)/Decaydata/$$i/PhaseSpaceFunctions $(distdir)/Decaydata/$$i/; \
 	      if test "x@SVNINCLUDE@" == "x"; then \
-		rm -rf "$(distdir)/$$i/PhaseSpaceFunctions/.svn"; \
+		rm -rf "$(distdir)/Decaydata/$$i/PhaseSpaceFunctions/.svn"; \
 	      fi; \
 	    fi; \
+	  else \
+	    cp $(srcdir)/Decaydata/$$i $(distdir)/Decaydata/; \
 	  fi; \
-	done; \
-	cp Decaydata/*.dat $(distdir)/Decaydata/; \
-	cd -;
+	done;
