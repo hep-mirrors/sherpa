@@ -1,5 +1,5 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
-#include "AddOns/MCFM/MCFM_Wrapper.H"
+#include "MCFM_Wrapper.H"
 
 namespace MCFM {
   class MCFM_qqb_QQb: public PHASIC::Virtual_ME2_Base {
@@ -70,10 +70,10 @@ void MCFM_qqb_QQb::Calc(const Vec4D_Vector &p)
 
   for (int n(0);n<2;++n) GetMom(p_p,n,-p[n]);
   if (m_pID==157) {
-    for (int n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
+    for (size_t n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
   }
   else {
-    for (int n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
+    for (size_t n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
   }
 
   long int i(m_flavs[0]), j(m_flavs[1]);

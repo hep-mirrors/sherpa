@@ -1,6 +1,6 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
-#include "AddOns/MCFM/MCFM_Wrapper.H"
+#include "MCFM_Wrapper.H"
 
 namespace MCFM {
 
@@ -100,7 +100,7 @@ void MCFM_wbf::Calc(const Vec4D_Vector &p)
      ATOOLS::sqr(masses_.hmass*masses_.hwidth))/
     (ATOOLS::sqr(sh-m_mh2)+m_mh2*m_Gh2);
   for (int n(0);n<2;++n)        GetMom(p_p,n,-p[n]);
-  for (int n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
+  for (size_t n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
   long int i(m_flavs[0]), j(m_flavs[1]);
   if (i==21) { i=0; corrfactor *= 8./3.; }
   if (j==21) { j=0; corrfactor *= 8./3.; }
@@ -149,16 +149,16 @@ Virtual_ME2_Base *MCFM_wbf_Getter::operator()(const Process_Info &pi) const
     if (pi.m_fi.m_ps.size()==2 && 
 	!pi.m_fi.m_ps[1].m_fl[0].Strong())              return NULL;
 
-    if (ATOOLS::Flavour(kf_b).Yuk()>0. ||
+    if (MODEL::s_model->ScalarConstant("Yukawa_b")>0. ||
 	MODEL::s_model->Name()!=std::string("SM") ||
 	!Flavour(kf_h0).IsOn()) {
       msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
 		 <<"   Try to initialise process WBF->H in MCFM.\n"
 		 <<"   Inconsistent setting with Sherpa: \n"
-		 <<"Yuk(b) = "<<ATOOLS::Flavour(kf_b).Yuk()<<" (should be 0), "
-		 <<"model = "<<MODEL::s_model->Name()
-		 <<"(should be 'SM', and "
-		 <<"higgs on = "<<Flavour(kf_h0).IsOn()<<"(should be 1)."
+		 <<"YUKAWA_B = "<<MODEL::s_model->ScalarConstant("Yukawa_b")<<" (should be 0), "
+		 <<"MODEL = "<<MODEL::s_model->Name()
+		 <<"(should be 'SM'), and "
+		 <<"ACTIVE[25] = "<<Flavour(kf_h0).IsOn()<<"(should be 1)."
 		 <<std::endl<<"   Will exit the run.\n";
       exit(1);
       return NULL;

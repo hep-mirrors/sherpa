@@ -1,6 +1,6 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
-#include "AddOns/MCFM/MCFM_Wrapper.H"
+#include "MCFM_Wrapper.H"
 
 namespace MCFM {
 
@@ -91,7 +91,7 @@ void MCFM_qqb_v::Calc(const Vec4D_Vector &p)
     corrfactor *= pow((*p_as)(m_mur2)/qcdcouple_.as,m_njets);
   }
   for (int n(0);n<2;++n)        GetMom(p_p,n,-p[n]);
-  for (int n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
+  for (size_t n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
   long int i(m_flavs[0]), j(m_flavs[1]);
   if (i==21) { i=0; corrfactor *= 8./3.; }
   if (j==21) { j=0; corrfactor *= 8./3.; }
@@ -134,15 +134,15 @@ Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
 		   <<std::endl<<"   Will return 0 and hope for the best."<<std::endl;
 	return NULL;
       }
-      if ((fl[2]==fl[3].Bar() && ATOOLS::Flavour(kf_b).Yuk()>0. &&
+      if ((fl[2]==fl[3].Bar() && MODEL::s_model->ScalarConstant("Yukawa_b")>0. &&
 	   ATOOLS::Flavour(kf_b).IsMassive()==0) ||
 	  MODEL::s_model->Name()!=std::string("SM")) {
 	msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
 		   <<"   Try to initialise process qqb->llbar in MCFM.\n"
 		   <<"   Inconsistent setting with Sherpa: "<<std::endl
-		   <<"Yuk(b) = "<<ATOOLS::Flavour(kf_b).Yuk()
+		   <<"YUKAWA_B = "<<MODEL::s_model->ScalarConstant("Yukawa_b")
 		   <<" (should be 0 for llbar, to play it safe), and "
-		   <<"model = "<<MODEL::s_model->Name()<<"(should be 'SM')."
+		   <<"MODEL = "<<MODEL::s_model->Name()<<" (should be 'SM')."
 		   <<std::endl<<"   Will exit the run."<<std::endl;
 	exit(1);
 	return NULL;

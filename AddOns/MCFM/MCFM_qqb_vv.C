@@ -1,5 +1,5 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
-#include "AddOns/MCFM/MCFM_Wrapper.H"
+#include "MCFM_Wrapper.H"
 
 namespace MCFM {
   class MCFM_qqb_vv: public PHASIC::Virtual_ME2_Base {
@@ -101,7 +101,7 @@ void MCFM_qqb_vv::Calc(const Vec4D_Vector &p)
       GetMom(p_p,4,p[2]);
     }
     else {
-      for (int n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
+      for (size_t n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
     }
   }
   else if (m_pID==48 || m_pID ==12 || m_pID==17) {
@@ -110,7 +110,7 @@ void MCFM_qqb_vv::Calc(const Vec4D_Vector &p)
     GetMom(p_p,4,p[2]);
   }
   else {
-    for (int n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
+    for (size_t n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
   }
   //msg_Out()<<"s24 = "<<sqrt((p[2]+p[4]).Abs2())<<", "
   //	   <<"s35 = "<<sqrt((p[3]+p[5]).Abs2())<<", "
@@ -165,18 +165,18 @@ Virtual_ME2_Base *MCFM_qqb_vv_Getter::operator()(const Process_Info &pi) const
       if ((fl1.Kfcode()==23 || fl1.Kfcode()==24) &&
 	  (fl2.Kfcode()==23 || fl2.Kfcode()==24)) {
 	// check for right model and absence of b Yukawa couplings
-	if ((ATOOLS::Flavour(kf_b).Yuk()>0. && fl1==fl2.Bar()) ||
+	if ((MODEL::s_model->ScalarConstant("Yukawa_b")>0. && fl1==fl2.Bar()) ||
 	    MODEL::s_model->Name()!=std::string("SM") ||
 	    (Flavour(kf_t).IsOn() && fl1.Kfcode()==24 && fl2.Kfcode()==24)) {
 	  msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
 		     <<"   Try to initialise process qqb->VV in MCFM.\n"
 		     <<"   Inconsistent setting with Sherpa: \n"
-		     <<"Yuk(b) = "<<ATOOLS::Flavour(kf_b).Yuk()
+		     <<"YUKAWA_B = "<<MODEL::s_model->ScalarConstant("Yukawa_b")
 		     <<" (should be 0), "
-		     <<"model = "<<MODEL::s_model->Name()
+		     <<"MODEL = "<<MODEL::s_model->Name()
 		     <<"(should be 'SM', and "
-		     <<"top on = "<<Flavour(kf_t).IsOn()
-		     <<"(should be 1 for WW).\n"
+		     <<"ACTIVE[6] = "<<Flavour(kf_t).IsOn()
+		     <<"(should be 0 for WW).\n"
 		     <<"   Will exit the run."<<std::endl;
 	  exit(1);
 	  return NULL;
