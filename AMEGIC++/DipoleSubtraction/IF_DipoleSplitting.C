@@ -49,7 +49,7 @@ double IF_DipoleSplitting::GetF()
   if (m_uj<=m_amin) {
     return nan;
   }
-  double h=SPFac()/(2.*m_pi*m_pj)/m_xijk;  
+  double h=1.0/(2.*m_pi*m_pj)/m_xijk;  
   switch (m_ft) {
   case 1:
     h*=m_sff;
@@ -122,7 +122,7 @@ double IF_MassiveDipoleSplitting::GetF()
   if (m_uj<=m_amin) {
     return nan;
   }
-  double h=SPFac()/(2.*m_pi*m_pj)/m_xijk;  
+  double h=1.0/(2.*m_pi*m_pj)/m_xijk;  
   switch (m_ft) {
   case 1:
     h*=m_sff;

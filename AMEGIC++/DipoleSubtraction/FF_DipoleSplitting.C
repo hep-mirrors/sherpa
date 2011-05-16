@@ -65,7 +65,7 @@ double FF_DipoleSplitting::GetF()
       return nan;
    }
 
-  double h=SPFac()/(2.*m_pi*m_pj);  
+  double h=1.0/(2.*m_pi*m_pj);  
   switch (m_ft) {
   case 1:
     h*= m_sff;
@@ -167,7 +167,7 @@ double FF_MassiveDipoleSplitting::GetF()
       return nan;
    }
 
-  double h=SPFac()/((m_pi+m_pj).Abs2()-m_mij);  
+  double h=1.0/((m_pi+m_pj).Abs2()-m_mij);  
   switch (m_ft) {
   case 1:
     h*= m_sff;
