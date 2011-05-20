@@ -44,6 +44,8 @@ MCFM_qqb_vv::MCFM_qqb_vv(const int & pID,const bool & swapped,
   m_cplcorr(ATOOLS::sqr(4.*M_PI*m_aqed/ewcouple_.esq)),
   m_normcorr(4.*9./qcdcouple_.ason2pi)
 {
+  rpa.gen.AddCitation
+    (1,"The NLO matrix elements have been taken from MCFM \\cite{Campbell:1999ah}.");
   p_p = new double[4*MCFM_NMX];
   p_msqv = new double[sqr(2*MCFM_NF+1)];
   m_drmode=m_mode=1;

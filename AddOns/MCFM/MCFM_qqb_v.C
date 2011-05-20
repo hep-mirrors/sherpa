@@ -49,11 +49,20 @@ MCFM_qqb_v::MCFM_qqb_v(const int & pID,const Process_Info& pi,
   p_p = new double[4*MCFM_NMX];
   p_msqv = new double[sqr(2*MCFM_NF+1)];
   m_drmode=m_mode=1;
-  if (m_pID==11||m_pID==16||m_pID==41||m_pID==42) m_njets = 1;
-  if (m_pID==22||m_pID==27||m_pID==44||m_pID==46) m_njets = 2;
-  //msg_Out()<<"Initialise MCFM("<<m_pID<<") with njets = "<<m_njets<<",m "
-  //	   <<"norm = "<<(m_normcorr*qcdcouple_.ason2pi)<<" / "
-  //	   <<qcdcouple_.ason2pi<<"."<<std::endl;
+  if (m_pID==11||m_pID==16||m_pID==41||m_pID==42) {
+    m_njets = 1;
+    rpa.gen.AddCitation
+      (1,"The NLO matrix elements have been taken from MCFM.");
+  }
+  else if (m_pID==22||m_pID==27||m_pID==44||m_pID==46) {
+    m_njets = 2;
+    rpa.gen.AddCitation
+      (1,"The NLO matrix elements have been taken from MCFM \\cite{Campbell:2002tg}.");
+  }
+  else {
+    rpa.gen.AddCitation
+      (1,"The NLO matrix elements have been taken from MCFM.");
+  }
 }
 
 MCFM_qqb_v::~MCFM_qqb_v()

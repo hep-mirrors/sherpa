@@ -38,6 +38,8 @@ MCFM_qqb_QQb::MCFM_qqb_QQb(const int & pID,const bool & swapped,
   Virtual_ME2_Base(pi,flavs), m_pID(pID), m_swapped(swapped),
   m_normcpl(4.*9./qcdcouple_.ason2pi)
 {
+  rpa.gen.AddCitation
+    (1,"The NLO matrix elements have been taken from MCFM \\cite{}.");
   p_p = new double[4*MCFM_NMX];
   p_msqv = new double[sqr(2*MCFM_NF+1)];
   m_drmode=m_mode=1;

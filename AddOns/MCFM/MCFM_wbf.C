@@ -26,8 +26,8 @@ namespace MCFM {
 }// end of namespace MCFM
 
 extern "C" { 
-  void VV_hqq_v_(double *p,double *msqv); 
-  void VV_hWW_v_(double *p,double *msqv); 
+  void vv_hqq_v_(double *p,double *msqv); 
+  void vv_hww_v_(double *p,double *msqv); 
 }
 
 #include "MODEL/Main/Model_Base.H"
@@ -38,35 +38,29 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 MCFM_wbf::MCFM_wbf(const int & pID,const Process_Info& pi,
-		     const Flavour_Vector& flavs) :
+		   const Flavour_Vector& flavs) :
   Virtual_ME2_Base(pi,flavs), m_pID(pID),
   p_as((MODEL::Running_AlphaS *)
        MODEL::s_model->GetScalarFunction(std::string("alpha_S"))),
   m_mh2(ATOOLS::sqr(ATOOLS::Flavour(kf_h0).Mass())),
   m_Gh2(ATOOLS::sqr(ATOOLS::Flavour(kf_h0).Width())),
   m_cplcorr(ewcouple_.vevsq/
-	    ATOOLS::sqr(MODEL::s_model->ScalarConstant(std::string("vev")))*
-	    ATOOLS::sqr((*p_as)(m_mh2)/qcdcouple_.as)),
+	    ATOOLS::sqr(MODEL::s_model->ScalarConstant(std::string("vev")))),
   m_normcorr(4.*9./qcdcouple_.ason2pi)
 {
   switch (m_pID) {
-  case 112:
-  case 204:
+  case 212:
+  case 217:
     m_cplcorr *= 
-      ATOOLS::sqr(ATOOLS::Flavour(kf_tau).Yuk())/masses_.mbsq/3. *
-      4.*ATOOLS::sqr(masses_.wmass)/ewcouple_.gwsq/
+      ATOOLS::sqr(ATOOLS::Flavour(kf_tau).Yuk())/(3.*masses_.mbsq) *
+      2.*4.*ATOOLS::sqr(masses_.wmass)/ewcouple_.gwsq/
       ATOOLS::sqr(MODEL::s_model->ScalarConstant(std::string("vev")));
     break;
-  case 113:
-  case 114:
-  case 115:
-  case 208:
-  case 209:
+  case 213:
     m_cplcorr = 
       pow(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_QED"))/
 	  MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"))/
 	  ewcouple_.gwsq,3.);
-    m_cplcorr *= (pID==115)?1./3.:1.;
     break;
   }
 
@@ -84,6 +78,7 @@ MCFM_wbf::~MCFM_wbf()
 
 double MCFM_wbf::CallMCFM(const int & i,const int & j) {
   switch (m_pID) {
+  case 212: vv_hqq_v_(p_p,p_msqv); break;
   }
   return p_msqv[mr(i,j)];
 }
@@ -91,19 +86,22 @@ double MCFM_wbf::CallMCFM(const int & i,const int & j) {
 void MCFM_wbf::Calc(const Vec4D_Vector &p)
 {
   double corrfactor(m_cplcorr*m_normcorr);
-  if (m_pID>200) corrfactor *= (*p_as)(m_mur2)/qcdcouple_.as;
-  double sh((m_pID==112||m_pID==204)?
+  double sh((m_pID==212||m_pID==217)?
 	    (p[2]+p[3]).Abs2() :
 	    (p[2]+p[3]+p[4]+p[5]).Abs2());
   corrfactor *= 
     (ATOOLS::sqr(sh-ATOOLS::sqr(masses_.hmass))+
      ATOOLS::sqr(masses_.hmass*masses_.hwidth))/
     (ATOOLS::sqr(sh-m_mh2)+m_mh2*m_Gh2);
+  corrfactor *= sh/(sh-2.*masses_.mbsq);
+
   for (int n(0);n<2;++n)        GetMom(p_p,n,-p[n]);
   for (size_t n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
   long int i(m_flavs[0]), j(m_flavs[1]);
   if (i==21) { i=0; corrfactor *= 8./3.; }
   if (j==21) { j=0; corrfactor *= 8./3.; }
+
+  for (int k=0;k<6;k++) msg_Out()<<"  "<<m_flavs[k];msg_Out()<<".\n";
   scale_.musq=m_mur2;
   scale_.scale=sqrt(scale_.musq);
   
@@ -116,6 +114,11 @@ void MCFM_wbf::Calc(const Vec4D_Vector &p)
   m_res.Finite() = res;
   m_res.IR()     = (res1-res);
   m_res.IR2()    = (res2-res1);
+
+  msg_Out()<<METHOD
+	   <<"IR2 = "<<m_res.IR2()<<", "
+	   <<"IR1 = "<<m_res.IR()<<", "
+	   <<"Fin = "<<m_res.Finite()<<".\n";
 }
 
 double MCFM_wbf::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
