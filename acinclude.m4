@@ -471,7 +471,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(for BLACKHAT installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(BLACKHAT not enabled); blackhat=false ;;
-        yes)  if test -d "$BLACKHATDIR"; then
+        yes)  if test -x "$BLACKHATDIR/bin/blackhat-config"; then
                 CONDITIONAL_BLACKHATDIR="$BLACKHATDIR"
                 CONDITIONAL_BLACKHATINCS="-I$($CONDITIONAL_BLACKHATDIR/bin/blackhat-config --include)";
                 CONDITIONAL_BLACKHATLIBS="$($CONDITIONAL_BLACKHATDIR/bin/blackhat-config --libs)"
@@ -479,7 +479,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                 AC_MSG_ERROR(\$BLACKHATDIR is not a valid path.);
               fi;
               AC_MSG_RESULT([${CONDITIONAL_BLACKHATDIR}]); blackhat=true;;
-        *)    if test -d "${enableval}"; then
+        *)    if test -x "${enableval}/bin/blackhat-config"; then
                 CONDITIONAL_BLACKHATDIR="${enableval}"
                 CONDITIONAL_BLACKHATINCS="-I$($CONDITIONAL_BLACKHATDIR/bin/blackhat-config --include)";
                 CONDITIONAL_BLACKHATLIBS="$($CONDITIONAL_BLACKHATDIR/bin/blackhat-config --libs)"
