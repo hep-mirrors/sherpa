@@ -725,7 +725,6 @@ void VHAAG_ND::GeneratePoint(ATOOLS::Vec4D *p,Cut_Data *cuts,double *ran)
 
 void VHAAG_ND::CalculateS0(Cut_Data * cuts) 
 {
-  m_s0=20.;
   if (m_s0>0.) return;
   m_s0 = 0.;
   for (int i=0;i<cuts->ncut;i++) {
