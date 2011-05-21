@@ -491,6 +491,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   if (p_partner!=this) {
     if (m_lookup) m_lastxs = p_partner->LastXS()*m_sfactor*Norm()/p_partner->Norm();
     else m_lastxs = p_partner->operator()(mom,cms,mode)*m_sfactor*Norm()/p_partner->Norm();
+    m_subevt.m_result = m_subevt.m_last[0] = m_subevt.m_last[1] = 0.;
     m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
     m_subevt.m_muf2 = p_partner->GetSubevt()->m_muf2;
     m_subevt.m_mur2 = p_partner->GetSubevt()->m_mur2;
@@ -508,18 +509,19 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   p_int->SetMomenta(p_LO_labmom);
   p_LO_process->Integrator()->SetMomenta(p_LO_labmom);
 
-  double M2 =trg ? p_LO_process->operator()
-    (p_LO_labmom,p_LO_mom,p_dipole->GetFactors(),
-     p_dipole->GetDiPolarizations(),mode) : 0.0;
   double df = p_dipole->GetF();
   m_subevt.m_me = m_subevt.m_mewgt = m_subevt.m_result =
     m_subevt.m_last[0] = m_subevt.m_last[1] = 0.;
 
   if (!(df>0.)&& !(df<0.)) return m_lastxs=df;
 
+  double M2 =trg ? p_LO_process->operator()
+    (p_LO_labmom,p_LO_mom,p_dipole->GetFactors(),
+     p_dipole->GetDiPolarizations(),mode) : 0.0;
+
   if (!trg) return m_lastxs=m_subevt.m_me=m_subevt.m_mewgt=0.;
 
-  m_lastxs = M2 * df * KFactor() * Norm();
+  m_lastxs = M2 * df * p_dipole->SPFac() * KFactor() * Norm();
   m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
   m_subevt.m_muf2 = p_scale->Scale(stp::fac);
   m_subevt.m_mur2 = p_scale->Scale(stp::ren);

@@ -288,8 +288,9 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   for (size_t i=0;i<m_subtermlist.size();i++) if (m_subtermlist[i]->IsValid()){
     double test = (*m_subtermlist[i])(&mom.front(),cms,mode);
     if (IsBad(test)) res=false;
-    if (!IsZero(test) || m_pinfo.m_nlomode==2)
+    if (test!=0.0 || m_pinfo.m_nlomode==2) {
       m_subevtlist.push_back(m_subtermlist[i]->GetSubevt());
+    }
   }
 
   m_subevtlist.push_back(&m_realevt);

@@ -63,6 +63,7 @@ Output_RootNtuple::Output_RootNtuple(std::string basename,std::string ext,int pr
 
 Output_RootNtuple::~Output_RootNtuple()
 {
+  PrepareTerminate();
 }
 
 void Output_RootNtuple::PrepareTerminate()
