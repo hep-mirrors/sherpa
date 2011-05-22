@@ -626,7 +626,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
 	continue;
       }
       else {
-	if (valid && p_up==NULL) return CalcJet(nl,moms,mode,kt2);
+	// if (valid && p_up==NULL) return CalcJet(nl,moms,mode,kt2);
 	delete this;
 	return NULL;
       }

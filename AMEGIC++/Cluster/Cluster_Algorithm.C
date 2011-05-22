@@ -36,9 +36,16 @@ bool Cluster_Algorithm::Cluster
   int nlegs=p_proc->NIn()+p_proc->NOut();
   Leg **legs(CreateLegs(nampl,nlegs));
   CreateTables(legs,nampl,mode,kt2);
+  ++m_cnt;
   if (p_ct==NULL) {
-    msg_Error()<<METHOD<<"(): Failed to determine configuration."
-	       <<" Rejecting point."<<std::endl;
+    msg_Debugging()<<METHOD<<"(): No valid PS history.\n";
+    ++m_rej;
+    double frac(m_rej/(double)m_cnt);
+    if (frac>1.25*m_lfrac && m_cnt>1000) {
+      m_lfrac=frac;
+      msg_Error()<<METHOD<<"(): No valid PS history in >"
+		 <<(int(m_lfrac*1000)/10.0)<<"% of calls.\n";
+    }
     p_combi=NULL;
     return false;
   }

@@ -37,6 +37,8 @@ namespace AMEGIC {
 
     ATOOLS::DecayInfo_Vector m_decids;
 
+    double m_rej, m_cnt, m_lfrac;
+
     bool SetColors();
     void Convert();
 
