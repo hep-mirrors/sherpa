@@ -229,8 +229,9 @@ void Single_Real_Correction::ReMapFlavs(NLO_subevt *const sub)
     return;
   }
   Flavour_Vector *fls(new Flavour_Vector());
-  for (size_t i(0);i<sub->m_n;++i)
-    fls->push_back(p_tree_process->ReMap(sub->p_fl[i],ToString(sub->p_id[i])));
+  if (m_pinfo.m_nlomode==2)
+    for (size_t i(0);i<sub->m_n;++i)
+      fls->push_back(p_tree_process->ReMap(sub->p_fl[i],ToString(sub->p_id[i])));
   m_dfmap[(void*)sub->p_fl]=fls;
   std::string name(sub->m_pname);
   for (size_t pos(0), i(0);i<fls->size();++i) {
