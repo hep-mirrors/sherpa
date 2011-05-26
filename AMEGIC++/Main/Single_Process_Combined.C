@@ -1,0 +1,940 @@
+#include "AMEGIC++/Main/Single_Process_Combined.H"
+
+#include "MODEL/Main/Running_AlphaS.H"
+#include "PHASIC++/Main/Process_Integrator.H"
+#include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Selectors/Combined_Selector.H"
+#include "PHASIC++/Scales/KFactor_Setter_Base.H"
+#include "AMEGIC++/Phasespace/Phase_Space_Generator.H"
+#include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "PDF/Main/ISR_Handler.H"
+
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Data_Reader.H"
+
+using namespace AMEGIC;
+using namespace MODEL;
+using namespace PHASIC;
+using namespace PDF;
+using namespace BEAM;
+using namespace ATOOLS;
+using namespace std;
+
+/*-------------------------------------------------------------------------------
+
+  Constructors
+
+  ------------------------------------------------------------------------------- */
+
+AMEGIC::Single_Process_Combined::Single_Process_Combined():
+  m_gen_str(2), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_psgen(0), p_partner(this), p_me2(NULL)
+{ }
+
+AMEGIC::Single_Process_Combined::~Single_Process_Combined()
+{
+  if (p_hel)      {delete p_hel; p_hel=0;}
+  if (p_BS)       {delete p_BS;   p_BS=0;}
+  if (p_shand)    {delete p_shand;p_shand=0;}
+  if (p_ampl)     {delete p_ampl; p_ampl=0;}
+  if (p_psgen)    {delete p_psgen; p_psgen=0;}
+  if (p_me2) delete p_me2;
+}
+
+/*------------------------------------------------------------------------------
+  
+  Generic stuff for initialization of Single_Process_Combinedes
+      
+  ------------------------------------------------------------------------------*/
+
+void AMEGIC::Single_Process_Combined::PolarizationNorm() {
+  m_Norm = SymmetryFactors() * m_pol.Spin_Average(m_nin,&m_flavs.front());
+}
+
+
+void AMEGIC::Single_Process_Combined::WriteAlternativeName(string aname) 
+{
+  if (aname==m_name) return;
+  std::string altname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".alt";
+  if (FileExists(altname)) return;
+  std::ofstream to;
+  to.open(altname.c_str(),ios::out);
+  to<<aname<<" "<<m_sfactor<<endl;
+  for (map<string,ATOOLS::Flavour>::const_iterator fit=p_ampl->GetFlavourmap().begin();fit!=p_ampl->GetFlavourmap().end();fit++)
+    to<<fit->first<<" "<<(long int)fit->second<<endl;
+  to.close();
+}
+
+bool AMEGIC::Single_Process_Combined::CheckAlternatives(vector<Process_Base *>& links,string procname)
+{
+  std::string altname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+procname+".alt";
+  if (FileExists(altname)) {
+    double factor;
+    string name,dummy; 
+    ifstream from;
+    from.open(altname.c_str(),ios::in);
+    from>>name>>factor;
+    m_sfactor *= factor;
+    for (size_t j=0;j<links.size();j++) {
+      if (links[j]->Name()==name) {
+	p_mapproc = p_partner = (Single_Process_Combined*)links[j];
+	m_iresult = p_partner->Result()*m_sfactor;
+	m_oqcd=p_partner->OrderQCD();
+	m_oew=p_partner->OrderEW();
+	m_ntchanmin=p_partner->NTchanMin();
+	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
+
+	while (from) {
+	  string f1;
+	  long int f2;
+	  getline(from,dummy);
+	  if (dummy!="") {
+	    MyStrStream str;
+	    str<<dummy;
+	    str>>f1>>f2;
+	    AddtoFlavmap(f1,Flavour(abs(f2),f2<0));
+	  }
+	}
+	from.close();
+	InitFlavmap(p_partner);
+	return true;
+      }
+    }
+    from.close();
+    if (CheckAlternatives(links,name)) return true;
+  }
+  m_sfactor = 1.;
+  return false;
+}
+
+int AMEGIC::Single_Process_Combined::InitAmplitude(Model_Base * model,Topology* top,
+					  vector<Process_Base *> & links,
+					  vector<Process_Base *> & errs)
+{
+  Init();
+  model->GetCouplings(m_cpls);
+  if (!model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
+  m_newlib   = false;
+  m_libnumb  = 0;
+  m_pslibname = m_libname = ToString(m_nin)+"_"+ToString(m_nout);
+  if (m_gen_str>1) m_ptypename = "P"+m_libname;
+  else m_ptypename = "N"+m_libname;
+  PolarizationNorm();
+
+  p_me2 = Tree_ME2_Base::GetME2(m_pinfo);
+  if (!p_me2) return 0;
+  p_me2->SetCouplings(&m_cpls);
+
+  if (m_gen_str>1) {
+    ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
+  }
+  string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
+  ATOOLS::MakeDir(newpath);
+  if (!FileExists(newpath+"/makelibs")) {
+    CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+	     newpath+"/makelibs");
+  }
+
+  if (CheckAlternatives(links,Name())) return 1;
+
+  p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
+
+  bool directload = true;
+  int libchk=0; 
+  Data_Reader reader(" ",";","!","=");
+  if (reader.ReadFromFile(libchk,"ME_LIBCHECK")) {
+    if (libchk==1) {
+      msg_Info()<<"Enforce full library check. This may take some time"<<std::endl;
+      directload = false;
+    }
+  }  
+  if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
+  if (directload) {
+    string hstr=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_libname;
+    string hstr2=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+    p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b,hstr,hstr2);  
+  }
+  else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
+  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
+  int oew(m_oew), oqcd(m_oqcd), ntchanmin(m_ntchanmin);
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,oqcd,oew,ntchanmin,
+				   &m_cpls,p_BS,p_shand,m_print_graphs,!directload);
+  m_oew=oew;
+  m_oqcd=oqcd;
+  if (p_ampl->GetGraphNumber()==0) {
+    msg_Tracking()<<"AMEGIC::Single_Process_Combined::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
+    return 0;
+  }
+  map<string,Complex> cplmap;
+  for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
+    cplmap.clear();
+    if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor,cplmap)) {
+      if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
+	m_sfactor = sqr(m_sfactor);
+	msg_Tracking()<<"AMEGIC::Single_Process_Combined::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
+	  
+	if (!FoundMappingFile(m_libname,m_pslibname)) {
+	  string mlname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+links[j]->Name();
+	  string mnname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+Name();
+	  if (FileExists(mlname+string(".map"))) { 
+	    if (m_sfactor==1.) CopyFile(mlname+".map",mnname+".map");
+	    else {
+	      UpdateMappingFile(mlname,cplmap);
+	      CreateMappingFile((Single_Process_Combined*)links[j]);
+	    }
+	    CopyFile(mlname+".col",mnname+".col");
+	  }
+	}
+
+	p_mapproc = p_partner = (Single_Process_Combined*)links[j];
+	WriteAlternativeName(p_partner->Name());
+	m_iresult = p_partner->Result()*m_sfactor;
+
+	Minimize();
+	return 1;
+      }
+    } 
+  }
+  if (directload) {
+    p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
+				  m_ptypename+string("/")+m_libname);    
+    if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 0;
+    if (!TestLib()) return 0;
+    links.push_back(this);
+    msg_Info()<<".";
+    Minimize();
+    return 1;
+  }
+
+  p_ampl->CompleteAmplitudes(m_nin+m_nout,&m_flavs.front(),p_b,&m_pol,
+			     top,p_BS,m_ptypename+string("/")+m_name);
+  m_pol.Add_Extern_Polarisations(p_BS,&m_flavs.front(),p_hel);
+  p_BS->Initialize();
+
+  int result(Tests());
+  switch (result) {
+    case 2 : 
+    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
+      if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
+	if (CheckMapping(links[j])&&p_ampl->CheckEFMap()) {
+	  msg_Tracking()<<"AMEGIC::Single_Process_Combined::InitAmplitude : "<<std::endl
+			<<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
+			<<"   Map processes."<<std::endl;
+	  p_mapproc = p_partner = (Single_Process_Combined*)links[j];
+	  InitFlavmap(p_partner);
+	  break;
+	}
+      } 
+    }
+    if (p_partner==this) links.push_back(this);
+    Minimize();
+    WriteAlternativeName(p_partner->Name());
+    return 1;
+  case 1 :
+    for (size_t j=0;j<links.size();j++) {
+      if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
+	if (CheckMapping(links[j])&&p_ampl->CheckEFMap()) {
+	  msg_Tracking()<<"AMEGIC::Single_Process_Combined::InitAmplitude : "<<std::endl
+			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
+	  p_mapproc = p_partner   = (Single_Process_Combined*)links[j];
+	  m_pslibname = links[j]->PSLibName();
+	  WriteAlternativeName(p_partner->Name());
+	  break;
+	}
+      } 
+    }
+    if (Result()==0.) return -3;
+    if (p_partner==this) links.push_back(this);
+
+    if (CheckLibraries()) return 1;
+    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
+      if (links[j]->NewLibs()) {
+	if (CheckStrings((Single_Process_Combined*)links[j])) return 1;	
+      }      
+    }
+    if (p_partner!=this) links.push_back(this);
+
+    if (m_gen_str<2) return 1;
+    if (p_partner!=this) {
+      msg_Tracking()<<"AMEGIC::Single_Process_Combined::InitAmplitude : "<<std::endl
+		    <<"   Strings of process "<<m_name<<" and partner "
+		    <<p_partner->Name()<<" did not fit."<<std::endl
+		    <<"   Have to write new library."<<std::endl;
+    }
+    WriteLibrary();
+    if (p_partner==this && Result()>0.) SetUpIntegrator();
+    return 1;
+  case -3: return 0;
+  default :
+    msg_Error()<<"ERROR in AMEGIC::Single_Process_Combined::InitAmplitude : "<<std::endl
+	       <<"   Failed for "<<m_name<<"."<<endl;
+    errs.push_back(this);
+    return 0;
+  }
+
+  return 1;
+}
+
+
+
+int AMEGIC::Single_Process_Combined::Tests() 
+{
+  int number      = 1;
+  int gauge_test  = 1;
+  int string_test = 1;
+
+  /* ---------------------------------------------------
+     
+     The reference result for momenta moms
+
+     --------------------------------------------------- */
+
+  string testname = string("");
+  if (FoundMappingFile(testname,m_pslibname)) {
+    if (testname != string("")) {
+      gauge_test = string_test = 0;
+    }
+  }
+  else p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
+
+  p_ampl->SetStringOff();
+
+  double M2 = 0.;
+  double helvalue;
+  if (gauge_test) {
+    m_pol.Set_Gauge_Vectors(m_nin+m_nout,p_testmoms,Vec4D(sqrt(3.),1.,1.,-1.));
+    p_BS->Setk0(0);
+    p_BS->CalcEtaMu(p_testmoms);  
+    p_BS->InitGaugeTest(.9);
+
+    msg_Info()<<"AMEGIC::Single_Process_Combined::Tests for "<<m_name<<std::endl
+	      <<"   Prepare gauge test and init helicity amplitudes. This may take some time."
+	      <<std::endl;
+    for (size_t i=0;i<p_hel->MaxHel();i++) { 
+      if (p_hel->On(i)) {
+	helvalue = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i); 
+	M2      +=  helvalue;
+      } 
+    }
+    M2     *= sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS));
+    m_iresult  = M2;
+  }
+  p_ampl->ClearCalcList();
+  // To prepare for the string test.
+  p_ampl->SetStringOn();
+  (p_shand->Get_Generator())->Reset(1);
+  /* ---------------------------------------------------
+     
+  First test : gauge test
+  
+  --------------------------------------------------- */
+  p_BS->Setk0(1);
+  p_BS->CalcEtaMu(p_testmoms);
+  number++;
+
+  if (!gauge_test) p_ampl->SetStringOff();  //second test without string production 
+
+  double M2g = 0.;
+  double * M_doub = new double[p_hel->MaxHel()];
+
+  /* Calculate the squared amplitude of the polarisation states. If a certain external
+     polarisation combination is found not to contribute for the point in phase space
+     tested, it is assumed that is doesnt contribute at all and is switched off.      */
+  for (size_t i=0;i<p_hel->MaxHel();i++) { 
+    if (p_hel->On(i)) {
+      M_doub[i]  = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i);  
+      M2g       += M_doub[i];
+    }
+  }
+
+  //shorten helicities
+  int switchhit = 0;
+  for (size_t i=0;i<p_hel->MaxHel();i++) {
+    if (M_doub[i]==0.) {
+      p_hel->SwitchOff(i);
+      switchhit++;
+    }
+  }
+  msg_Tracking()<<"AMEGIC::Single_Process_Combined::Tests for "<<m_name<<std::endl
+		<<"   Switched off or mapped "<<switchhit<<" helicities."<<std::endl;
+
+  M2g    *= sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS));
+  m_iresult  = M2g;
+  p_ampl->ClearCalcList();  
+  p_ampl->FillCoupling(p_shand);
+  p_ampl->KillZList();  
+  p_BS->StartPrecalc();
+
+  if (gauge_test) {
+    if (!ATOOLS::IsEqual(M2,M2g)) {
+      msg_Out()<<"WARNING:  Gauge test not satisfied: "
+	       <<M2<<" vs. "<<M2g<<" : "<<dabs(M2/M2g-1.)*100.<<"%"<<endl
+	       <<"Gauge(1): "<<abs(M2)<<endl
+	       <<"Gauge(2): "<<abs(M2g)<<endl;
+    }
+    /*
+      else {
+      msg_Debugging()<<"Gauge(1): "<<abs(M2)<<endl
+      <<"Gauge(2): "<<abs(M2g)<<endl;
+      if (M2g!=0.)
+      msg_Debugging()<<"Gauge test: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
+      else
+      msg_Debugging()<<"Gauge test: "<<0.<<"%"<<endl;
+      }
+    */
+  }
+  else {
+    delete[] M_doub;
+    number++;
+    if (p_shand->SearchValues(m_gen_str,testname,p_BS)) {
+      p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
+      (p_shand->Get_Generator())->Reset();
+
+      // Get a cross section from the operator() method to compare with M2g later on.
+      p_hel->ForceNoTransformation();
+      M2 = operator()(p_testmoms);
+      p_hel->AllowTransformation();
+      gauge_test = string_test = 0;
+    }
+    else {
+      string searchfilename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+testname+string("/V.H");
+      if (FileExists(searchfilename)) {
+      	msg_Error()<<"ERROR in AMEGIC::Single_Process_Combined::Tests()"<<std::endl
+			   <<"   No compiled & linked library found for process "<<testname<<std::endl
+			   <<"   but files already written out !"<<std::endl
+			   <<om::bold<<"   Interrupt run and execute \"makelibs\" in '"
+			   <<rpa.gen.Variable("SHERPA_CPP_PATH")<<"'."
+			   <<om::reset<<std::endl;
+	CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+		 rpa.gen.Variable("SHERPA_CPP_PATH")+"/makelibs");
+	THROW(normal_exit,"Failed to load library.");
+      }
+      else {
+      	msg_Error()<<"ERROR in AMEGIC::Single_Process_Combined::Tests()"<<std::endl
+			   <<"   Mapping file exists, but no compiled & linked library found for process "
+			   <<testname<<std::endl
+			   <<"   and no files written out !"<<std::endl
+			   <<om::bold<<"   Interrupt run, execute \"makeclean\" in Run-directory and re-start."
+			   <<om::reset<<std::endl;
+	THROW(critical_error,"Failed to load library.");
+      }
+    }
+    if (!ATOOLS::IsEqual(M2,M2g)) {
+      if (abs(M2/M2g-1.)>rpa.gen.Accu()) {
+	msg_Out()<<"WARNING: Library cross check not satisfied: "
+		 <<M2<<" vs. "<<M2g<<"  difference:"<<abs(M2/M2g-1.)*100.<<"%"<<endl
+		 <<"   Mapping file(1) : "<<abs(M2)<<endl
+		 <<"   Original    (2) : "<<abs(M2g)<<endl
+		 <<"   Cross check (T) : "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
+	return 0;
+      }
+      else {
+	msg_Out()<<"WARNING: Library cross check not satisfied: "
+		 <<M2<<" vs. "<<M2g<<"  difference:"<<abs(M2/M2g-1.)*100.<<"%"<<endl
+		 <<"   assuming numerical reasons with small numbers, continuing "<<endl;
+      }
+    }
+    else {
+      if (M2g==0.) {
+	m_libname    = testname;
+	return -3;
+      }
+    }
+
+    m_libname    = testname;
+    return 2;
+  }
+
+  /* ---------------------------------------------------
+     
+     Second test : string test
+
+     --------------------------------------------------- */
+
+  if (string_test) {
+    //String-Test
+    if (!rpa.gen.SpinCorrelation()) {
+      for (size_t i=0;i<p_hel->MaxHel();i++) {
+	if (p_hel->On(i)) {
+	  for (size_t j=i+1;j<p_hel->MaxHel();j++) {
+	    if (p_hel->On(j)) {
+	      if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
+		p_hel->SwitchOff(j);
+		p_hel->SetPartner(i,j);
+		p_hel->IncMultiplicity(i);
+	      }
+	    }
+	  }
+	}
+      }
+    }
+    delete[] M_doub;
+    p_shand->Complete(p_hel);
+
+    if (p_shand->Is_String()) {
+      double  M2S = 0.;
+      p_shand->Calculate();
+      
+      for (size_t i=0;i<p_hel->MaxHel();i++) {
+	if (p_hel->On(i)) {
+	  M2S += p_ampl->Differential(i)*p_hel->PolarizationFactor(i)*p_hel->Multiplicity(i);
+	}
+      }
+      M2S *= sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS));
+      if (!ATOOLS::IsEqual(M2g,M2S)) {
+	msg_Out()<<"WARNING: String test not satisfied: "
+		 <<M2g<<" vs. "<<M2S<<"  difference:"<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
+	if (abs(M2g/M2S-1.)>rpa.gen.Accu()) {
+	  return 0;
+	}
+	msg_Out()<<"         assuming numerical reasons, continuing "<<endl;
+      }
+      return 1;
+    }
+    return 1;
+  }
+  delete[] M_doub;
+
+  return 0;
+}
+
+int AMEGIC::Single_Process_Combined::TestLib()
+{
+  double M2(0.);
+  double * M_doub = new double[p_hel->MaxHel()];
+  p_BS->CalcEtaMu(p_testmoms);
+  p_hel->InitializeSpinorTransformation(p_BS);
+  p_shand->Calculate();
+  
+  for (size_t i=0;i<p_hel->MaxHel();i++) {
+    M2 += M_doub[i] = p_ampl->Differential(i)*p_hel->Multiplicity(i)*p_hel->PolarizationFactor(i);
+  } 
+  for (size_t i=0;i<p_hel->MaxHel();i++) {
+    if (M_doub[i]==0.) {
+     p_hel->SwitchOff(i);
+    }
+  }
+  if (!rpa.gen.SpinCorrelation()) {
+    for (size_t i=0;i<p_hel->MaxHel();i++) {
+      if (p_hel->On(i)) {
+	for (size_t j=i+1;j<p_hel->MaxHel();j++) {
+	  if (p_hel->On(j)) {
+	    if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
+	      p_hel->SwitchOff(j);
+	      p_hel->SetPartner(i,j);
+	      p_hel->IncMultiplicity(i);
+	    }
+	  }
+	}
+      }
+    }
+  }
+  delete[] M_doub;
+  m_iresult = M2 * sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS));
+  if (m_iresult>0.) return 1;
+  return 0;
+}
+
+int AMEGIC::Single_Process_Combined::CheckLibraries() {
+  if (m_gen_str==0) return 1;
+  if (p_shand->IsLibrary()) return 1;
+
+  msg_Info()<<"AMEGIC::Single_Process_Combined::CheckLibraries : Looking for a suitable library. This may take some time."<<std::endl;
+  String_Handler * shand1;
+  shand1      = new String_Handler(p_shand->Get_Generator());
+  
+  m_libnumb  = 0;
+  string proc = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/V");
+  string testname;
+  double M2s, helvalue;
+
+  for (;;) {
+    testname  = CreateLibName()+string("_")+ToString(m_libnumb);
+    if (shand1->SearchValues(m_gen_str,testname,p_BS)) {
+      shand1->Calculate();
+      
+      M2s = 0.;
+      for (size_t i=0;i<p_hel->MaxHel();i++) {
+	helvalue = p_ampl->Differential(shand1,i) * p_hel->PolarizationFactor(i) *
+	  p_hel->Multiplicity(i);
+	M2s     += helvalue;
+	} 
+      M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS));
+      if (ATOOLS::IsEqual(M2s,Result())) {
+	m_libname = testname;
+	m_pslibname = testname;
+	if (shand1) { delete shand1; shand1 = 0; }
+	//Clean p_shand!!!!
+	CreateMappingFile(this);
+	Minimize();
+	return 1;
+      }
+    } 
+    else break;
+    ++m_libnumb;
+  }
+  if (shand1) { delete shand1; shand1 = 0; }
+  return 0;
+}
+
+int AMEGIC::Single_Process_Combined::CheckStrings(Single_Process_Combined* tproc)
+{
+  if (tproc->LibName().find(CreateLibName())!=0) return 0;
+
+  String_Handler * shand1;
+  shand1 = new String_Handler(p_shand->Get_Generator(),
+			      (tproc->GetStringHandler())->GetSKnots());
+  (shand1->Get_Generator())->ReplaceZXlist((tproc->GetStringHandler())->Get_Generator());
+  double M2s, helvalue;
+  shand1->Calculate();
+
+  M2s = 0.;
+  for (size_t i=0;i<p_hel->MaxHel();i++) {
+    helvalue = p_ampl->Differential(shand1,i) * p_hel->PolarizationFactor(i) *
+      p_hel->Multiplicity(i);
+    M2s     += helvalue;
+  }
+  M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS));
+  (shand1->Get_Generator())->ReStore();
+  delete shand1;
+
+  if (ATOOLS::IsEqual(M2s,Result())) {
+    m_libname = tproc->LibName();
+    m_pslibname = tproc->PSLibName();
+    CreateMappingFile(this);
+    Minimize();
+    return 1;
+  }
+  return 0;
+}
+  
+void AMEGIC::Single_Process_Combined::WriteLibrary() 
+{
+  if (m_gen_str<2) return;
+  string testname;
+  string newpath=rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/");
+  for (;;) {
+    testname    = CreateLibName()+string("_")+ToString(m_libnumb);
+    if (!(FileExists(newpath+m_ptypename+string("/")+testname+string("/V.H")))) break;
+    ++m_libnumb;
+  }
+  m_libname = testname;
+  if (p_partner==this) m_pslibname = m_libname;
+                  else m_pslibname = p_partner->PSLibName();
+  ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname); 
+  p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
+  CreateMappingFile(this);
+  p_BS->Output(newpath+m_ptypename+string("/")+m_libname);
+  p_ampl->StoreAmplitudeConfiguration(newpath+m_ptypename+string("/")+m_libname);
+  m_newlib=true;
+  msg_Info()<<"AMEGIC::Single_Process_Combined::WriteLibrary : "<<std::endl
+	    <<"   Library for "<<m_name<<" has been written, name is "<<m_libname<<std::endl;
+  sync();
+}
+
+std::string  AMEGIC::Single_Process_Combined::CreateLibName()
+{
+  string name=m_ptypename;
+  name+="_"+ToString(p_ampl->GetGraphNumber());
+  name+="_"+ToString(p_shand->NumberOfCouplings());
+  name+="_"+ToString(p_shand->NumberOfZfuncs());
+  name+="_"+ToString(p_hel->MaxHel());
+  name+="_"+ToString(p_BS->MomlistSize());
+  return name;
+}
+
+void AMEGIC::Single_Process_Combined::CreateMappingFile(Single_Process_Combined* partner) {
+  if (m_gen_str<2) return;
+  std::string outname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+  if (FileExists(outname)) {
+    string MEname,PSname;
+    FoundMappingFile(MEname,PSname);
+    if (MEname != m_libname || PSname != m_pslibname) {
+      msg_Error()<<"ERROR in AMEGIC::Single_Process_Combined::CreateMappingFile() :"<<std::endl
+		 <<"   Files do not coincide. Maybe changed input data ? Abort the run."<<std::endl;
+      abort();
+    }
+    return;
+  }
+
+  std::ofstream to;
+  to.open(outname.c_str(),ios::out);
+  to<<"ME: "<<m_libname<<endl
+    <<"PS: "<<m_pslibname<<endl;
+  p_shand->Get_Generator()->WriteCouplings(to);
+  partner->WriteMomFlavs(to);
+  to.close();
+}
+
+bool AMEGIC::Single_Process_Combined::FoundMappingFile(std::string & MEname, std::string & PSname) 
+{
+  std::string buf;
+  int pos;
+  std::string outname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+  if (FileExists(outname)) {
+    ifstream from;
+    from.open(outname.c_str());
+    getline(from,buf);
+    pos = buf.find(string("ME:"));
+    if (pos==-1) MEname = PSname = buf;
+    else {
+      MEname = buf.substr(pos+4);
+      getline(from,buf);
+      pos = buf.find(string("PS:"));
+      if (pos==-1) PSname = MEname;
+      else PSname = buf.substr(pos+4);
+      if (PSname==string("")) PSname = MEname;
+    }
+    return 1;
+  }
+  return 0;
+}
+
+void AMEGIC::Single_Process_Combined::UpdateMappingFile(std::string name, map<string,Complex> & cmap) 
+{
+  std::string buf;
+  int pos;
+  name+=".map";
+  ifstream from;
+  from.open(name.c_str());
+  getline(from,buf);
+  pos = buf.find(string("ME:"));
+  if (pos==-1) m_libname = m_pslibname = buf;
+  else {
+    m_libname = buf.substr(pos+4);
+    getline(from,buf);
+    pos = buf.find(string("PS:"));
+    if (pos==-1) m_pslibname = m_libname;
+    else m_pslibname = buf.substr(pos+4);
+    if (m_pslibname==string("")) m_pslibname = m_libname;
+  }
+  p_shand->Get_Generator()->ReadCouplings(from);
+  from.close();
+  p_shand->Get_Generator()->UpdateCouplings(cmap);
+}
+
+bool AMEGIC::Single_Process_Combined::PerformTests()
+{
+  return 1;
+}
+
+/*------------------------------------------------------------------------------
+  
+  Phase space initialization
+  
+  ------------------------------------------------------------------------------*/
+
+bool AMEGIC::Single_Process_Combined::FillIntegrator
+(PHASIC::Phase_Space_Handler *const psh)
+{
+  if (p_partner!=this) return true;
+  if (!SetUpIntegrator()) THROW(fatal_error,"No integrator");
+  return Process_Base::FillIntegrator(psh);
+}
+
+bool AMEGIC::Single_Process_Combined::SetUpIntegrator() 
+{  
+  if (m_nin==2) {
+    if ( (m_flavs[0].Mass() != p_int->ISR()->Flav(0).Mass()) ||
+	 (m_flavs[1].Mass() != p_int->ISR()->Flav(1).Mass()) ) p_int->ISR()->SetPartonMasses(m_flavs);
+    if (CreateChannelLibrary()) return 1;
+  }
+  if (m_nin==1) if (CreateChannelLibrary()) return 1;
+  return 0;
+}
+
+bool AMEGIC::Single_Process_Combined::CreateChannelLibrary()
+{
+  p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
+  bool newch  = 0;
+  if (m_nin>=1)  newch = p_psgen->Construct(p_channellibnames,m_ptypename,m_pslibname,&m_flavs.front(),this); 
+  if (newch>0) return 0;
+  return 1;
+}
+
+/*------------------------------------------------------------------------------
+  
+  Process management
+  
+  ------------------------------------------------------------------------------*/
+void AMEGIC::Single_Process_Combined::Minimize()
+{
+  if (p_partner==this) return;
+  if (p_hel)      {delete p_hel; p_hel=0;}
+  if (p_BS)       {delete p_BS;   p_BS=0;}
+  if (p_shand)    {delete p_shand;p_shand=0;}
+  if (p_ampl)     {delete p_ampl; p_ampl=0;}
+  if (p_psgen)    {delete p_psgen; p_psgen=0;}
+  if (p_me2)      {delete p_me2; p_me2=0;}
+
+  m_oqcd      = p_partner->OrderQCD();
+  m_oew       = p_partner->OrderEW();
+  m_ntchanmin = p_partner->NTchanMin();
+}
+
+double AMEGIC::Single_Process_Combined::Partonic(const Vec4D_Vector &_moms,const int mode) 
+{ 
+  if (mode==1 && !p_partner->ScaleSetter()->Scale2()) return m_lastxs;
+  if (!Selector()->Result()) return m_lastxs = 0.0;
+  if (!(IsMapped() && LookUp())) {
+    p_partner->ScaleSetter()->CalculateScale(_moms,mode);
+  }
+  Vec4D_Vector moms(_moms);
+  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+    Poincare cms(moms[0]+moms[1]);
+    for (size_t i(0);i<moms.size();++i) cms.Boost(moms[i]);
+  }
+  return DSigma(moms,m_lookup); 
+}
+
+double AMEGIC::Single_Process_Combined::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool lookup)
+{
+  m_lastxs = 0.;
+  if (m_nin==2) {
+    for (size_t i=0;i<m_nin+m_nout;i++) {
+      if (_moms[i][0]<m_flavs[i].Mass()) return 0.0;
+    }
+  }
+  if (m_nin==1) {
+    for (size_t i=m_nin;i<m_nin+m_nout;i++) {
+      if (_moms[i][0]<m_flavs[i].Mass()) return 0.0;
+    }
+  }
+  if (p_partner == this) {
+    m_lastxs = m_Norm * operator()((ATOOLS::Vec4D*)&_moms.front());
+  }
+  else {
+    if (lookup && p_partner->m_lookup)
+      m_lastxs = p_partner->LastXS()*m_sfactor;
+    else m_lastxs = m_Norm * p_partner->operator()((ATOOLS::Vec4D*)&_moms.front())*m_sfactor;
+  }
+  return m_lastxs;
+}
+
+double AMEGIC::Single_Process_Combined::operator()(const ATOOLS::Vec4D* mom)
+{
+  Vec4D_Vector moms(mom,&mom[m_nin+m_nout]);
+  return p_me2->Calc(moms);
+}
+
+// ATOOLS::Spin_Correlation_Tensor* AMEGIC::Single_Process_Combined::GetSpinCorrelations()
+// {
+//   Spin_Correlation_Tensor* SCT = p_ampl->GetSpinCorrelations(p_hel, m_nin);
+//   if (SCT != NULL) SCT->Set_k0(p_BS->Getk0_n());
+//   return SCT;
+// }
+
+void AMEGIC::Single_Process_Combined::FillAmplitudes(METOOLS::Amplitude_Tensor* atensor,double sfactor)
+{
+  if (p_partner==this) p_ampl->FillAmplitudes(atensor,p_hel,sfactor);
+  else p_partner->FillAmplitudes(atensor,sfactor*sqrt(m_sfactor));
+}
+
+int AMEGIC::Single_Process_Combined::NumberOfDiagrams() { 
+  if (p_partner==this) return p_ampl->GetGraphNumber(); 
+  return p_partner->NumberOfDiagrams();
+}
+
+Point * AMEGIC::Single_Process_Combined::Diagram(int i) { 
+  if (p_partner==this) return p_ampl->GetPointlist(i); 
+  return p_partner->Diagram(i);
+} 
+
+
+void AMEGIC::Single_Process_Combined::AddChannels(std::list<std::string>* tlist) 
+{
+  if (p_partner==this) {    
+    list<string>* clist = p_channellibnames;
+    for (list<string>::iterator it=clist->begin();it!=clist->end();++it) {
+      bool hit = 0;
+      for (list<string>::iterator jt=tlist->begin();jt!=tlist->end();++jt) {
+	if ((*it)==(*jt)) {
+	  hit = 1;
+	  break;
+	}
+      }
+      if (!hit) tlist->push_back((*it));
+    }
+  }
+}
+
+void AMEGIC::Single_Process_Combined::FillCombinations
+(Point *const p,size_t &id)
+{
+  if (p->middle) return;
+  if (p->left==NULL || p->right==NULL) {
+    id=1<<p->number;
+    return;
+  }
+  size_t ida(id), idb(id);
+  FillCombinations(p->left,ida);
+  FillCombinations(p->right,idb);
+  id=ida+idb;
+  size_t idc((1<<(m_nin+m_nout))-1-id);
+#ifdef DEBUG__Fill_Combinations
+  msg_Debugging()<<"  comb "<<ID(ida)
+		 <<" "<<ID(idb)<<" "<<ID(idc)<<"\n";
+#endif
+  m_ccombs.insert(std::pair<size_t,size_t>(ida,idb));
+  m_ccombs.insert(std::pair<size_t,size_t>(idb,ida));
+  m_ccombs.insert(std::pair<size_t,size_t>(idb,idc));
+  m_ccombs.insert(std::pair<size_t,size_t>(idc,idb));
+  m_ccombs.insert(std::pair<size_t,size_t>(idc,ida));
+  m_ccombs.insert(std::pair<size_t,size_t>(ida,idc));
+  if (idc!=1) {
+    bool in(false);
+    Flavour fl(ReMap(p->fl,p->GetPropID()));
+    Flavour_Vector cf(m_cflavs[id]);
+    for (size_t i(0);i<cf.size();++i)
+      if (cf[i]==fl) {
+	in=true;
+	break;
+      }
+    if (!in) {
+      m_cflavs[idc].push_back(fl.Bar());
+      m_cflavs[id].push_back(fl);
+#ifdef DEBUG__Fill_Combinations
+      msg_Debugging()<<"  flav "<<ID(idc)<<" / "
+		     <<ID(id)<<" -> "<<fl<<"\n";
+#endif
+    }
+  }
+}
+
+void AMEGIC::Single_Process_Combined::FillCombinations()
+{
+#ifdef DEBUG__Fill_Combinations
+  msg_Debugging()<<METHOD<<"(): '"<<m_name<<"' {\n";
+#endif
+  size_t nd(p_partner->NumberOfDiagrams());
+  for (size_t i(0);i<nd;++i) {
+    Point *p(p_partner->Diagram(i));
+    size_t id(1<<p->number);
+    FillCombinations(p,id);
+  }
+#ifdef DEBUG__Fill_Combinations
+  msg_Debugging()<<"  } -> "<<m_cflavs.size()
+		 <<" flavours, "<<m_ccombs.size()
+		 <<" combinations\n";
+  msg_Debugging()<<"}\n";
+#endif
+}
+
+bool AMEGIC::Single_Process_Combined::Combinable
+(const size_t &idi,const size_t &idj)
+{
+  if (m_ccombs.empty()) FillCombinations();
+  Combination_Set::const_iterator 
+    cit(m_ccombs.find(std::pair<size_t,size_t>(idi,idj)));
+  return cit!=m_ccombs.end();
+}
+
+const Flavour_Vector &AMEGIC::Single_Process_Combined::
+CombinedFlavour(const size_t &idij)
+{
+  if (m_cflavs.empty()) FillCombinations();
+  CFlavVector_Map::const_iterator fit(m_cflavs.find(idij));
+  if (fit==m_cflavs.end()) THROW(fatal_error,"Invalid request");
+  return fit->second;
+}
