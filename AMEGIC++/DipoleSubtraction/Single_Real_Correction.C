@@ -3,6 +3,7 @@
 #include "AMEGIC++/Main/Single_Process_MHV.H"
 #include "AMEGIC++/Main/Single_Process_External.H"
 #include "AMEGIC++/DipoleSubtraction/Single_DipoleTerm.H"
+#include "AMEGIC++/DipoleSubtraction/Single_OSTerm.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
@@ -13,6 +14,7 @@
 
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace AMEGIC;
 using namespace MODEL;
@@ -29,7 +31,7 @@ using namespace std;
   ------------------------------------------------------------------------------- */
 
 Single_Real_Correction::Single_Real_Correction() :   
-  p_partner(this), p_tree_process(NULL)
+  m_ossubon(0), p_partner(this), p_tree_process(NULL)
 {
   m_Norm = 1.;  
   static bool addcite(false);
@@ -37,6 +39,15 @@ Single_Real_Correction::Single_Real_Correction() :
     addcite=true;
   rpa.gen.AddCitation(1,"The automated generation of Catani-Seymour dipole\
  terms in Amegic is published under \\cite{Gleisberg:2007md}.");
+  }
+  int helpi;
+  Data_Reader reader(" ",";","!","=");
+  reader.AddComment("#");
+  reader.SetInputPath(rpa.GetPath());
+  reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
+  if (reader.ReadFromFile(helpi,"OS_SUB")) {
+    m_ossubon = helpi;
+    if (m_ossubon==1) msg_Tracking()<<"Set on shell subtraction on. "<<std::endl;
   }
 }
 
@@ -46,6 +57,7 @@ Single_Real_Correction::~Single_Real_Correction()
   p_selector=NULL;
   if (p_tree_process) delete p_tree_process;
   for (size_t i=0;i<m_subtermlist.size();i++) delete m_subtermlist[i];
+  for (size_t i=0;i<m_subostermlist.size();i++) delete m_subostermlist[i];
   for (std::map<void*,ATOOLS::Flavour_Vector*>::const_iterator it(m_dfmap.begin());
        it!=m_dfmap.end();++it) delete it->second;
 }
@@ -151,6 +163,30 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
       }
     }
   }
+  if (m_ossubon){
+    Process_Info sinfo(m_pinfo);
+    sinfo.m_fi.m_nloqcdtype=nlo_type::lo;
+    sinfo.m_fi.m_nloewtype=nlo_type::lo;
+    for (size_t i=0;i<m_flavs.size();i++) if (m_flavs[i].IsSusy()){
+      for (size_t j=0;j<partlist.size();j++) if (i!=partlist[j]) {
+        for (size_t swit=0;swit<5;swit++) {
+  	  Single_OSTerm *pdummy = new Single_OSTerm(sinfo,i,partlist[j],swit,p_int);
+	  if (pdummy->IsValid()) {
+            pdummy->SetTestMoms(p_testmoms);
+            int st=pdummy->InitAmplitude(model,top,links,errs);
+            if (pdummy->IsValid()) {
+              status=Min(st,status);
+              if (pdummy->NewLibs()) m_newlib = 1;
+              m_subostermlist.push_back(pdummy);
+              m_subostermlist.back()->SetNorm(p_tree_process->Norm());
+            }
+            else delete pdummy;
+	  }
+	  else delete pdummy;
+        }
+      }
+    }
+  }
 
   if (status>=0) links.push_back(this);
   if (status<0) errs.push_back(this);
@@ -218,6 +254,8 @@ void Single_Real_Correction::Minimize()
 //   p_tree_process->Minimize();
 //   for (size_t i=0;i<m_subtermlist.size();i++) 
 //     m_subtermlist[i]->Minimize();
+//   for (size_t i=0;i<m_subostermlist.size();i++) 
+//     m_subostermlist[i]->Minimize();
 }
 
 void Single_Real_Correction::ReMapFlavs(NLO_subevt *const sub)
@@ -294,6 +332,16 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
     }
   }
 
+  if (m_ossubon){
+    for (size_t i=0;i<m_subostermlist.size();i++) if (m_subostermlist[i]->IsValid()){
+      double test = (*m_subostermlist[i])(&mom.front(),cms,mode);
+      if (IsBad(test)) res=false;
+      if (test!=0.0 || m_pinfo.m_nlomode==2) {
+        m_subevtlist.push_back(m_subostermlist[i]->GetSubevt());
+      }
+    }
+  }
+
   m_subevtlist.push_back(&m_realevt);
   m_realevt.m_me   = m_realevt.m_result =
     m_realevt.m_last[0] = m_realevt.m_last[1] = 0.0;
@@ -334,6 +382,9 @@ void Single_Real_Correction::SetScale(const Scale_Setter_Arguments &args)
   p_tree_process->SetScale(args);
   for (size_t i(0);i<m_subtermlist.size();++i) {
     m_subtermlist[i]->SetScale(args);
+  }
+  for (size_t i(0);i<m_subostermlist.size();++i) {
+    m_subostermlist[i]->SetScale(args);
   }
 }
  
@@ -414,6 +465,9 @@ void Single_Real_Correction::SetSelector(const Selector_Key &key)
   for (size_t i=0;i<m_subtermlist.size();++i) {
     m_subtermlist[i]->SetSelector(key);
   }
+  for (size_t i=0;i<m_subostermlist.size();++i) {
+    m_subostermlist[i]->SetSelector(key);
+  }
   p_selector=p_tree_process->Selector();
 }
 
@@ -422,6 +476,9 @@ void Single_Real_Correction::SetGenerator(ME_Generator_Base *const gen)
   p_tree_process->SetGenerator(gen);
   for (size_t i=0;i<m_subtermlist.size();++i) {
     m_subtermlist[i]->GetLOProcess()->SetGenerator(gen);
+  }
+  for (size_t i=0;i<m_subostermlist.size();++i) {
+    m_subostermlist[i]->GetOSProcess()->SetGenerator(gen);
   }
 }
 
@@ -438,6 +495,8 @@ void Single_Real_Correction::SetFixedScale(const std::vector<double> &s)
   p_tree_process->SetFixedScale(s);
   for (size_t i=0;i<m_subtermlist.size();++i)
     m_subtermlist[i]->GetLOProcess()->SetFixedScale(s);
+  for (size_t i=0;i<m_subostermlist.size();++i)
+    m_subostermlist[i]->GetOSProcess()->SetFixedScale(s);
 }
 
 void Single_Real_Correction::SetSelectorOn(const bool on)
@@ -445,5 +504,7 @@ void Single_Real_Correction::SetSelectorOn(const bool on)
   p_tree_process->SetSelectorOn(on);
   for (size_t i=0;i<m_subtermlist.size();++i)
     m_subtermlist[i]->GetLOProcess()->SetSelectorOn(on);
+  for (size_t i=0;i<m_subostermlist.size();++i)
+    m_subostermlist[i]->GetOSProcess()->SetSelectorOn(on);
 }
 

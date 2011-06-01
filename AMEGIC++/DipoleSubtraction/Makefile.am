@@ -15,6 +15,7 @@ libDipoleSubtraction_la_SOURCES = \
 		       Single_LOProcess.C \
 		       Single_LOProcess_MHV.C \
                        Single_DipoleTerm.C \
+                       Single_OSTerm.C \
                        Single_Virtual_Correction.C \
 		       Single_Real_Correction.C 
 
@@ -29,5 +30,6 @@ localinc_HEADERS   = \
 		     Single_LOProcess.H \
 		     Single_LOProcess_MHV.H \
                      Single_DipoleTerm.H \
+                     Single_OSTerm.H \
                      Single_Virtual_Correction.H \
 		     Single_Real_Correction.H 

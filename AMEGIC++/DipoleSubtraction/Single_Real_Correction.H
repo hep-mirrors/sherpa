@@ -4,6 +4,7 @@
 #include "AMEGIC++/Main/Process_Base.H"
 
 #include "AMEGIC++/DipoleSubtraction/Single_DipoleTerm.H"
+#include "AMEGIC++/DipoleSubtraction/Single_OSTerm.H"
 
 #include "AMEGIC++/Amplitude/Amplitude_Handler.H"
 #include <vector>
@@ -17,12 +18,14 @@ namespace AMEGIC {
     double                  m_iresult;
     int                     m_libnumb;
     bool                    m_valid;
+    bool                    m_ossubon;
 
     Single_Real_Correction     * p_partner;
 
     Process_Base          * p_tree_process;
     ATOOLS::Vec4D_Vector    m_real_momenta;
     std::vector<Single_DipoleTerm*> m_subtermlist;
+    std::vector<Single_OSTerm*> m_subostermlist;
     ATOOLS::NLO_subevtlist          m_subevtlist;
     ATOOLS::NLO_subevt              m_realevt;
 
