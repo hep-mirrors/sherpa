@@ -172,18 +172,22 @@ Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
     if (pi.m_fi.m_ps.size()==2 && 
 	!pi.m_fi.m_ps[1].m_fl[0].Strong())              return NULL;
 
-    if (MODEL::s_model->ScalarConstant("Yukawa_b")>0. ||
-	MODEL::s_model->Name()!=std::string("SM+EHC") ||
-	!Flavour(kf_h0).IsOn()) {
-      msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
-		 <<"   Try to initialise process gg->H(+jet) in MCFM."<<std::endl
-		 <<"   Inconsistent setting with Sherpa: "<<std::endl
-		 <<"YUKAWA_B = "<<MODEL::s_model->ScalarConstant("Yukawa_b")<<" (should be 0), "
-		 <<"MODEL = "<<MODEL::s_model->Name()<<"(should be 'SM+EHC', and "
-		 <<"ACTIVE[25] = "<<Flavour(kf_h0).IsOn()<<" (should be 1)."
-		 <<std::endl<<"   Will exit the run."<<std::endl;
-      exit(1);
-      return NULL;
+    if (MODEL::s_model->ScalarConstant("Yukawa_b")>0.) {
+      if (MODEL::s_model->Name()==std::string("THDM"))  return NULL;
+      if (MODEL::s_model->Name()!=std::string("SM+EHC") ||
+	  !Flavour(kf_h0).IsOn()) {
+	msg_Error()<<"Warning in "<<METHOD<<":\n"
+		   <<"   Try to initialise process gg->H(+jet) in MCFM.\n"
+		   <<"   Inconsistent setting with Sherpa: "<<std::endl
+		   <<"YUKAWA_B = "<<MODEL::s_model->ScalarConstant("Yukawa_b")
+		   <<" (should be 0), "
+		   <<"MODEL = "<<MODEL::s_model->Name()
+		   <<"(should be 'SM+EHC', and "
+		   <<"ACTIVE[25] = "<<Flavour(kf_h0).IsOn()<<" (should be 1).\n"
+		   <<"   Will exit the run."<<std::endl;
+	exit(1);
+	return NULL;
+      }
     }
     // tau tau final state
     if ((fl.size()==4 || fl.size()==5) && 

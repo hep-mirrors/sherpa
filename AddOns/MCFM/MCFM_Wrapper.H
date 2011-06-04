@@ -77,6 +77,9 @@ extern "C" {
     double Vud,Vus,Vub,Vcd,Vcs,Vcb;
   } cabib_;
   extern struct {
+    double susycoup;
+  } susycoup_;
+  extern struct {
     int nlooprun;
   } nlooprun_;
   extern struct {
@@ -85,6 +88,9 @@ extern "C" {
   extern struct {
     double amz;
   } couple_;
+  extern struct {
+    double mb_msbar;
+  } mb_msbar_;
   extern struct {
     int nproc;
   } nproc_;

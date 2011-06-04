@@ -136,14 +136,18 @@ Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
     Flavour_Vector fl(pi.ExtractFlavours());
     if (fl[0].Strong() && fl[1].Strong() &&
 	fl[2].IsLepton() && fl[3].IsLepton()) {
-      if (MODEL::s_model->Name()==std::string("SM+EHC") &&
-	  pi.m_fi.m_ps.size()>0 && pi.m_fi.m_ps[0].m_fl[0]==ATOOLS::Flavour(kf_h0)) {
-	msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
-		   <<"   Try to initialise process with intermediate Higgs boson.\n"
-		   <<std::endl<<"   Will return 0 and hope for the best."<<std::endl;
+      if ((MODEL::s_model->Name()==std::string("THDM") ||
+	   MODEL::s_model->Name()==std::string("SM+EHC")) &&
+	  pi.m_fi.m_ps.size()>0 && 
+	  pi.m_fi.m_ps[0].m_fl[0]==ATOOLS::Flavour(kf_h0)) {
+	msg_Error()<<"Warning in "<<METHOD<<":\n"
+		   <<"   Try to initialise process with intermediate "
+		   <<"Higgs boson.\n"
+		   <<"   Will return 0 and hope for the best.\n";
 	return NULL;
       }
-      if ((fl[2]==fl[3].Bar() && MODEL::s_model->ScalarConstant("Yukawa_b")>0. &&
+      if ((fl[2]==fl[3].Bar() && 
+	   MODEL::s_model->ScalarConstant("Yukawa_b")>0. &&
 	   ATOOLS::Flavour(kf_b).IsMassive()==0) ||
 	  MODEL::s_model->Name()!=std::string("SM")) {
 	msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
