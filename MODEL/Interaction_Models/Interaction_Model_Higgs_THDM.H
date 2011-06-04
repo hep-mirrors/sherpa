@@ -10,7 +10,7 @@ namespace MODEL {
 
     ATOOLS::Kabbala K_CKM(short int i,short int j);  
     ATOOLS::Kabbala conj_K_CKM(short int i,short int j);
-    ATOOLS::Kabbala K_yuk(ATOOLS::Flavour fl);           
+    ATOOLS::Kabbala K_yuk(ATOOLS::Flavour fl,ATOOLS::Flavour H);           
     ATOOLS::Kabbala K_yuk_sign(ATOOLS::Flavour fl);          
     ATOOLS::Kabbala K_Z_H(short int i,short int j);    
     ATOOLS::Kabbala K_Z_R(short int i,short int j);    

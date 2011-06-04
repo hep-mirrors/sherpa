@@ -60,7 +60,7 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].in[1] = flav;
 	  vertex[vanz].in[2] = fl1; 
 	  
-	  kcpl0 = -M_I/v1*K_yuk(fl1)*K_Z_R(0,(i-25)/10);
+	  kcpl0 = -M_I/v1*K_yuk(fl1,flav)*K_Z_R(0,(i-25)/10);
 	  kcpl1 = kcpl0;
 
 	  vertex[vanz].cpl[0]  = kcpl0;
@@ -96,7 +96,7 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].in[1] = flav;
 	  vertex[vanz].in[2] = fl1; 
 	  
-	  kcpl0 = -M_I/v2*K_yuk(fl1)*K_Z_R(1,(i-25)/10);
+	  kcpl0 = -M_I/v2*K_yuk(fl1,flav)*K_Z_R(1,(i-25)/10);
 	  kcpl1 = kcpl0;
 	  
 	  vertex[vanz].cpl[0]  = kcpl0;
@@ -136,7 +136,7 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	vertex[vanz].in[2] = fl1; 
 
 
-	kcpl0 = -K_yuk(fl1)/v1*K_Z_H(0,0);
+	kcpl0 = -K_yuk(fl1,flA0)/v1*K_Z_H(0,0);
 	kcpl1 = -kcpl0;
 
 	vertex[vanz].cpl[0]  = kcpl0;
@@ -172,7 +172,7 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	vertex[vanz].in[1] = flA0;
 	vertex[vanz].in[2] = fl1; 
 
-	kcpl0 = -K_yuk(fl1)/v2*K_Z_H(1,0);
+	kcpl0 = -K_yuk(fl1,flA0)/v2*K_Z_H(1,0);
 	kcpl1 = -kcpl0;
 
 	vertex[vanz].cpl[0]  = kcpl0;
@@ -211,7 +211,7 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].in[1] = flHplus;
 	  vertex[vanz].in[2] = fl1;   
 	  
-	  kcpl1 = M_I/v1*root2*K_yuk(fl1)*K_Z_H(0,0);
+	  kcpl1 = M_I/v1*root2*K_yuk(fl1,flHplus)*K_Z_H(0,0);
 	  kcpl0 = K_zero;	 	  
 
 	  vertex[vanz].cpl[0]  = kcpl0;
@@ -250,8 +250,8 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	    vertex[vanz].in[1] = flHplus;
 	    vertex[vanz].in[2] = fl1;
 	   
-	    kcpl0 = M_I/v2*root2*K_yuk(fl2)*K_Z_H(1,0)*K_CKM(geni,genj);
-	    kcpl1 = M_I/v1*root2*K_yuk(fl1)*K_Z_H(0,0)*K_CKM(geni,genj);
+	    kcpl0 = M_I/v2*root2*K_yuk(fl2,flHplus)*K_Z_H(1,0)*K_CKM(geni,genj);
+	    kcpl1 = M_I/v1*root2*K_yuk(fl1,flHplus)*K_Z_H(0,0)*K_CKM(geni,genj);
 	    	   
 	    vertex[vanz].cpl[0]  = kcpl0;
 	    vertex[vanz].cpl[1]  = kcpl1;
@@ -1157,8 +1157,10 @@ Kabbala Interaction_Model_Higgs_THDM::conj_K_CKM(short int i,short int j)
 		 conj(ComplexMatrixElement(std::string("CKM"),i,j)));
 } 
  
-Kabbala Interaction_Model_Higgs_THDM::K_yuk(Flavour fl) {
-  return Kabbala(string("M_{"+fl.TexName()+"}"),fl.Yuk());
+Kabbala Interaction_Model_Higgs_THDM::K_yuk(Flavour fl,Flavour H) {
+  std::string flname = std::string("m")+std::string(fl.IDName());
+  double meff(p_model->ScalarFunction(flname,sqr(H.Mass())));
+  return Kabbala(string("M_{"+fl.TexName()+"}(m_"+H.IDName()+")"),meff);
 }
 
 Kabbala Interaction_Model_Higgs_THDM::K_yuk_sign(Flavour fl) {
