@@ -37,7 +37,7 @@ Hadrons::Hadrons( string path, string file, string constfile ) :
   p_decaymap->ReadInConstants();
   p_decaymap->ReadHadronAliases(path, "HadronAliases.dat");
   p_decaymap->SetHadronProperties();
-  p_decaymap->Read(path, file);
+  p_decaymap->Read(path, file, true);
   p_decaymap->Read(path, "AliasDecays.dat");
   p_decaymap->Initialise();
   p_decaymap->ReadFixedTables();

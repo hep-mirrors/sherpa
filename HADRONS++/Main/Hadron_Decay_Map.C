@@ -100,7 +100,7 @@ void Hadron_Decay_Map::ReadHadronAliases(const string& path, const string& file)
   }
 }
 
-void Hadron_Decay_Map::Read(const string& path, const string& file)
+void Hadron_Decay_Map::Read(const string& path, const string& file, bool verify)
 {
   Data_Reader reader = Data_Reader(" ",";","!","->");
   reader.AddWordSeparator("\t");
@@ -115,6 +115,11 @@ void Hadron_Decay_Map::Read(const string& path, const string& file)
     msg_Info()<<METHOD<<":"
               <<"   Initializing from "<<file<<", this may take some time."
               <<endl;
+  }
+  else {
+    if (verify) {
+      THROW(fatal_error, "Could not read from DECAYFILE="+file);
+    }
   }
   
   Flavour fl;
