@@ -133,6 +133,7 @@ Virtual_ME2_Base *MCFM_wbf_Getter::operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC("");
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
+  if (!ATOOLS::Flavour(kf_h0).IsOn())                   return NULL;
   if (pi.m_oew<3)                                       return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
