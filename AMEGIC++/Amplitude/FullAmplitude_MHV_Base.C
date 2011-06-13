@@ -110,8 +110,16 @@ void FullAmplitude_MHV_Base::CalculateAmps(int* hlist,MomentumList* BS)
 
 double FullAmplitude_MHV_Base::MSquare(int i,int j)   
 {  
-  if (i+j==0) return m_cpl*Result(m_colorstore);
-  return m_cpl*Result(m_colormap[i*100+j]);
+  
+  if (m_cpls->find("Alpha_QCD")!=m_cpls->end()) p_aqcd=(*m_cpls)["Alpha_QCD"];
+  if (m_cpls->find("Alpha_QED")!=m_cpls->end()) p_aqed=(*m_cpls)["Alpha_QED"];
+  
+  double cplfac(1.0);
+  if (p_aqcd && m_oqcd) cplfac *= pow(p_aqcd->Factor(),(double)m_oqcd);
+  if (p_aqed && m_oqed) cplfac *= pow(p_aqed->Factor(),(double)m_oqed);
+
+  if (i+j==0) return m_cpl*cplfac*Result(m_colorstore);
+  return m_cpl*cplfac*Result(m_colormap[i*100+j]);
 }
 
 
