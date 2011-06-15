@@ -1,6 +1,6 @@
 #include "LH_OLE_Communicator.H"
 
-#include "EXTRA_XS/NLO/Virtual_ME2_Base.H"
+#include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
@@ -8,25 +8,21 @@
 #include "ATOOLS/Org/Data_Reader.H"
 
 using namespace OLE;
-using namespace EXTRAXS;
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
 namespace OLE {
-  void OLP_Start(const char * filename) {}
+  void OLP_Start(const char * filename, int) {}
   void OLP_EvalSubProcess(int,double*,double,double,double*) {}
 
   class LH_OLE_Interface : public Virtual_ME2_Base {
-    double m_bf;
     size_t m_pn;
     bool m_active;
     int m_OLE_id;
     double* p_momenta;
     double p_result[4];
-    double m_as,m_aqed;
     static int s_oleinit;
-    double m_cpl;
     int m_nf;
   public:
     LH_OLE_Interface(const Process_Info& pi,const Flavour_Vector& flavs,bool active);
@@ -48,11 +44,7 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
 {
   m_active=active;
   if (!m_active) return;
-  m_needsborn = true;
-  m_cpl=MODEL::s_model->ScalarFunction
-    (std::string("alpha_S"),rpa.gen.CplScale());
-
-  m_cpl /= 2.*M_PI;
+  m_mode = 0;
   Flavour hfl(kf_quark);
   m_nf = hfl.Size()/2;
 
@@ -101,7 +93,6 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
     if(lhfile.CheckProcess(2,m_pn-2,flavs)==-1) {
       lhfile.AddProcess(2,m_pn-2,flavs);
     }
-    m_newlibs=1;
     return;
   }
 
@@ -123,13 +114,13 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
   }
 
   if (s_oleinit==0) {
-    OLE::OLP_Start(fname.c_str());
+    int check(0);
+    OLE::OLP_Start(fname.c_str(),check);
+    if (check != 1) THROW(fatal_error,"OLP initialisation failed");
     s_oleinit=1;
   }
   p_momenta = new double[m_pn*5];
   for (size_t i=0;i<m_pn;i++) p_momenta[4+i*5]=flavs[i].Mass();
-  m_as   = m_cpl*2.*M_PI;
-  m_aqed = MODEL::s_model->ScalarFunction(std::string("alpha_QED"),rpa.gen.CplScale());
 
   for (size_t i=0;i<3;i++) p_result[i]=0.;
   p_result[3]=1.;
@@ -138,7 +129,6 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
 void LH_OLE_Interface::Calc(const Vec4D_Vector& momenta) {
   if (!m_active) return;
   if (m_OLE_id<0) return;
-  m_bf  = m_born*m_cpl*CouplingFactor(1,0);
 
   for (size_t i=0;i<m_pn;i++) {
     p_momenta[0+i*5]=momenta[i][0];
@@ -147,13 +137,13 @@ void LH_OLE_Interface::Calc(const Vec4D_Vector& momenta) {
     p_momenta[3+i*5]=momenta[i][3];
   }
 
-  OLE::OLP_EvalSubProcess(m_OLE_id,p_momenta,sqrt(m_mur2),m_as*CouplingFactor(1,0),p_result);
+  OLE::OLP_EvalSubProcess(m_OLE_id,p_momenta,sqrt(m_mur2),1.,p_result);
   // finite
-  m_res.Finite()= p_result[2]/p_result[3]*m_bf;
+  m_res.Finite()= p_result[2]/p_result[3];
   // 1/epsIR
-  m_res.IR()=  p_result[1]/p_result[3]*m_bf;
+  m_res.IR()=  p_result[1]/p_result[3];
   // 1/epsIR2
-  m_res.IR2()= p_result[0]/p_result[3]*m_bf;
+  m_res.IR2()= p_result[0]/p_result[3];
 }
 
 bool LH_OLE_Interface::SetColours(const ATOOLS::Vec4D_Vector& momenta) {
