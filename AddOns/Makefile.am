@@ -1,4 +1,4 @@
-SUBDIRS       =	Analysis BlackHat MCFM Phox HZTool Rivet
+SUBDIRS       =	Analysis BlackHat MCFM HZTool Phox Rivet
 
 nobase_dist_pkgdata_DATA = ExampleModel/Interaction_Model_SM_Zprime.C \
 			ExampleModel/SM_Zprime.C \

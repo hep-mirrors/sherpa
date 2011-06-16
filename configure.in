@@ -143,6 +143,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  AddOns/BlackHat/Makefile \
 	  AddOns/MCFM/Makefile \
 	  AddOns/HZTool/Makefile \
+	  AddOns/Phox/Makefile \
 	  AddOns/Rivet/Makefile \
 	  AddOns/Makefile \
 	  Makefile )
