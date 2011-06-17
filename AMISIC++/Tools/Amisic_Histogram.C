@@ -90,6 +90,8 @@ bool Amisic_Histogram<ArgumentType>::Initialize(const Argument_Type xmin,
     m_data[hci::x_value][i]=(*p_xaxis)[(*p_xaxis)(m_xmin)+(int(i)-1)*delta];
     m_data[hci::maximum][i]=-std::numeric_limits<Argument_Type>::max();
   }
+  m_entries=0.0;
+  m_finished=false;
   return true;
 }
 
