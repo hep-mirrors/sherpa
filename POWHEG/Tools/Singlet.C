@@ -416,20 +416,16 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       double ttau(Q2-mai2-mb2), tau(Q2-ma2-mi2-mb2);
       double xiiab(xiab*(ttau+sqrt(ttau*ttau-4.*mai2*mb2))/
 		   (tau+sqrt(tau*tau-4.*ma2*mb2*xiab*xiab)));
-      double gam(papb+sqrt(papb*papb-ma2*mb2)), sb(Sign(ps[3]));
+      double gam(papb+sqrt(papb*papb-ma2*mb2));
       Vec4D pait(xiiab*(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))
 		 *(pl-ma2/gam*ps)+mai2/(xiiab*gam)*ps);
-      Poincare cmso(pait+ps), cmsn(pl+ps-pr);
-      cmsn.Boost(pait);
-      Poincare zrot(pait,-sb*Vec4D::ZVEC);
+      Poincare cmson(pait+ps,pl+ps-pr,1);
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit) {
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
 	  if ((*plit)==f || (*plit)==r || (*plit)==s) continue;
 	  Vec4D p((*plit)->Momentum());
-	  cmso.Boost(p);
-	  zrot.RotateBack(p);
-	  cmsn.BoostBack(p);
+	  cmson.Lambda(p);
 	  (*plit)->SetMomentum(p);
 	}
       }
@@ -518,19 +514,15 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       double ttau(Q2-mai2-mb2), tau(Q2-ma2-mi2-mb2);
       double xiiab(xiab*(ttau+sqrt(ttau*ttau-4.*mai2*mb2))/
 		   (tau+sqrt(tau*tau-4.*ma2*mb2*xiab*xiab)));
-      double gam(papb+sqrt(papb*papb-ma2*mb2)), sb(Sign(ps[3]));
+      double gam(papb+sqrt(papb*papb-ma2*mb2));
       Vec4D pait(xiiab*(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))
 		 *(pl-ma2/gam*ps)+mai2/(xiiab*gam)*ps);
-      Poincare cmso(pl+ps-pr), cmsn(pait+ps);
-      cmso.Boost(pait);
-      Poincare zrot(pait,-sb*Vec4D::ZVEC);
+      Poincare cmson(pl+ps-pr,pait+ps,1);
       for (All_Singlets::const_iterator asit(p_all->begin());
 	   asit!=p_all->end();++asit) {
 	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
 	  Vec4D p((*plit)->Momentum());
-	  cmso.Boost(p);
-	  zrot.Rotate(p);
-	  cmsn.BoostBack(p);
+	  cmson.Lambda(p);
  	  (*plit)->SetMomentum(p);
 	}
       }

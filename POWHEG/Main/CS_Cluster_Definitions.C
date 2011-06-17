@@ -560,18 +560,14 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
   if (pait[3]*pb[3]>0.0) return Vec4D_Vector();
   Vec4D pan = pait;
 
-  Poincare cmso(-pa-pb-pi), cmsn(-pait-pb);
-  cmso.Boost(pait);
-  Poincare zrot(pait,-Sign(pb[3])*Vec4D::ZVEC);
+  Poincare cmson(-pa-pb-pi,-pait-pb,1);
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
     if (m==(size_t)i) continue;
     if (m==(size_t)a) after[l]=pan;
     else if (m==(size_t)1-a) after[l]=pb;
     else {
       after[l]=ampl.Leg(m)->Mom();
-      cmso.Boost(after[l]);
-      zrot.Rotate(after[l]);
-      cmsn.BoostBack(after[l]);
+      cmson.Lambda(after[l]);
     }
     ++l;
   }
