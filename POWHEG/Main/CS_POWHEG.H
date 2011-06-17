@@ -49,6 +49,8 @@ namespace POWHEG {
     ~CS_POWHEG();
 
     //member functions
+    PDF::Rho_Map GetRho(ATOOLS::Cluster_Amplitude *const ampl);
+
     int GeneratePoint(ATOOLS::Cluster_Amplitude *const ampl);
 
     void AddRBPoint(ATOOLS::Cluster_Amplitude *const ampl);

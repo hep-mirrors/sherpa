@@ -435,11 +435,11 @@ int Single_DipoleTerm::InitAmplitude(Model_Base *model,Topology* top,
     }
   }
   links.push_back(this);
-  Complex C(p_LO_process->GetAmplitudeHandler()->CommonColorFactor());
-  if (C!=Complex(0.,0.)) {
-    if (C.real()<0) m_subevt.m_nco=1;
-    else m_subevt.m_nco=2;
-  }
+  // Complex C(p_LO_process->GetAmplitudeHandler()->CommonColorFactor());
+  // if (C!=Complex(0.,0.)) {
+  //   if (C.real()<0) m_subevt.m_nco=1;
+  //   else m_subevt.m_nco=2;
+  // }
 
   return 1;
 }

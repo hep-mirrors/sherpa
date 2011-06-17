@@ -249,6 +249,8 @@ namespace POWHEG {
     inline double RBMax() const { return m_rbmax; }
     inline double SymFac() const { return m_symf; }
 
+    inline void SetRB(const double &rbmax) { m_rbmax=rbmax; }
+
     friend std::ostream& operator<<(std::ostream &,const Splitting_Function_Base &);
   };
 }

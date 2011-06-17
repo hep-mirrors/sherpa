@@ -2,7 +2,7 @@
 #define PDF_Main_POWHEG_Base_H
 
 #include "ATOOLS/Org/Getter_Function.H"
-#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/NLO_Subevt.H"
 
 #include <string>
 
@@ -16,12 +16,30 @@ namespace ATOOLS {
 
 namespace MODEL { class Model_Base; }
 
+namespace PHASIC { class Process_Base; }
+
 namespace PDF {
 
   class ISR_Handler;
   class Shower_Base;
 
   typedef std::pair<double,double> ZH_Pair;
+
+  struct Dipole_Value {
+    PHASIC::Process_Base *p_proc;
+    double m_d, m_b, m_t, m_mu2;
+    bool m_trig;
+    inline Dipole_Value(PHASIC::Process_Base *const proc=NULL,
+			const double &d=0.0,const double &b=0.0,
+			const double &t=0.0,const double &mu2=0.0,
+			const bool trig=true):
+      p_proc(proc), m_d(d), m_b(b), m_t(t), m_mu2(mu2), m_trig(trig) {}
+  };// end of struct Dipole_Value
+
+  struct Rho_Map: public std::map<ATOOLS::DDip_ID,Dipole_Value> {
+    double m_t0;
+    inline Rho_Map(): m_t0(0.0) {}
+  };// end of struct Rho_Map
 
   class POWHEG_Base {
   protected:
@@ -37,6 +55,8 @@ namespace PDF {
     POWHEG_Base(const std::string &name);
 
     virtual ~POWHEG_Base();
+
+    virtual Rho_Map GetRho(ATOOLS::Cluster_Amplitude *const ampl) = 0;
 
     virtual int GeneratePoint(ATOOLS::Cluster_Amplitude *const ampl) = 0;
 

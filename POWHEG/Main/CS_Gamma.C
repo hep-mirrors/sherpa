@@ -34,7 +34,8 @@ CS_Gamma::CS_Gamma(CS_POWHEG *const css,Shower *const shower,
 {
 }
 
-Weight_Map CS_Gamma::CalculateWeight(Cluster_Amplitude *const ampl)
+Weight_Map CS_Gamma::CalculateWeight(Cluster_Amplitude *const ampl,
+				     const int mode,const bool userb)
 {
   Cluster_Amplitude *rampl(ampl->Copy());
 #ifdef DEBUG__Trial_Weight
@@ -57,7 +58,7 @@ Weight_Map CS_Gamma::CalculateWeight(Cluster_Amplitude *const ampl)
     return Weight_Map();
   }
   Weight_Map ws;
-  int stat(CalculateWeights(rampl,idmap,ws));
+  int stat(CalculateWeights(rampl,idmap,ws,mode,userb));
   rampl->Delete();
   if (stat==-1) ws.clear();
   return ws;
@@ -65,7 +66,7 @@ Weight_Map CS_Gamma::CalculateWeight(Cluster_Amplitude *const ampl)
 
 int CS_Gamma::CalculateWeights(Cluster_Amplitude *const ampl,
 			       const std::map<size_t,size_t> &idmap,
-			       Weight_Map &ws)
+			       Weight_Map &ws,const int mode,const bool userb)
 {
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *li(ampl->Leg(i));
@@ -117,7 +118,7 @@ int CS_Gamma::CalculateWeights(Cluster_Amplitude *const ampl,
 	    std::string pname(Process_Base::GenerateName(ampl));
 	    const DInfo_Set &dinfo((*nampl->DInfo<DInfo_Map>())[pname]);
 	    if (dinfo.find(DDip_ID(i,j,k))!=dinfo.end()) {
-	      int stat(SingleWeight(nampl,li,lj,lk,cs,idmap,ws));
+	      int stat(SingleWeight(nampl,li,lj,lk,cs,idmap,ws,mode,userb));
 	      if (stat==-1) return -1;
 	    }
 	  }
@@ -132,7 +133,8 @@ int CS_Gamma::CalculateWeights(Cluster_Amplitude *const ampl,
 int CS_Gamma::SingleWeight
 (Cluster_Amplitude *const ampl,Cluster_Leg *const li,
  Cluster_Leg *const lj,Cluster_Leg *const lk,const CS_Parameters &cs,
- const std::map<size_t,size_t> &idmap,Weight_Map &ws)
+ const std::map<size_t,size_t> &idmap,Weight_Map &ws,
+ const int mode,const bool userb)
 {
 #ifdef DEBUG__Trial_Weight
   DEBUG_FUNC(ID(li->Id())<<","<<ID(lj->Id())<<"<->"<<ID(lk->Id()));
@@ -152,16 +154,19 @@ int CS_Gamma::SingleWeight
   if (cs.m_mode==1) eta=p_cluster->GetX(li,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=p_cluster->GetX(lk,cdip)*(1.0-cs.m_y);
   else if (cs.m_mode==3) eta=p_cluster->GetX(li,cdip)*cs.m_z;
-  Weight_Value meps(Differential(ampl,0));
+  Weight_Value meps(Differential(ampl,mode));
   meps.p_sf=cdip;
   meps.m_me*=cdip->SymFac();
 #ifdef DEBUG__Trial_Weight
   double me=meps.m_me;
 #endif
+  double rbmax(cdip->RBMax());
+  if (userb) cdip->SetRB(&meps.p_proc->Integrator()->RBMap());
   meps.m_me*=(*cdip)(cs.m_z,cs.m_y,eta,cs.m_kt2,cs.m_q2,ampl)*
     cdip->MEPSWeight(cs.m_z,cs.m_y,eta,cs.m_kt2,cs.m_q2,ampl);
   meps.m_qij2=PDF::Qij2(li->Mom(),lj->Mom(),lk->Mom(),
 			li->Flav(),lj->Flav());
+  if (userb) cdip->SetRB(rbmax);
   if (meps.m_me==0.0) {
 #ifdef DEBUG__Trial_Weight
     msg_Debugging()<<"zero matrix element\n";
@@ -300,12 +305,42 @@ double CS_Gamma::TrialWeight(Cluster_Amplitude *const ampl)
   return rme/(wact.m_me*wact.p_sf->RBMax());
 }
 
+Rho_Map CS_Gamma::GetRho(Cluster_Amplitude *const ampl)
+{
+  DEBUG_FUNC("");
+  p_ms=ampl->MS();
+  p_shower->SetMS(p_ms);
+  Weight_Map ws(CalculateWeight(ampl,8));
+  if (ws.empty()) return Rho_Map();
+  Rho_Map rhos;
+  rhos.m_t0=p_shower->GetSudakov()->PT2Min();
+#ifdef DEBUG__Trial_Weight
+  msg_Debugging()<<"Accumulate weights {\n";
+#endif
+  for (Weight_Map::const_iterator
+	 wit(ws.begin());wit!=ws.end();++wit) {
+#ifdef DEBUG__Trial_Weight
+    msg_Debugging()<<"  "<<wit->first<<" -> "<<wit->second<<"\n";
+#endif
+    std::vector<int> ijs(ID(wit->first.m_ij));
+    rhos[DDip_ID(ijs.front(),ijs.back(),
+		 ID(wit->first.m_k).front())]=
+      Dipole_Value(wit->second.p_proc,wit->second.m_me,
+		   wit->second.m_b,wit->second.m_muf2,
+		   0.0,wit->second.m_trig);
+  }
+#ifdef DEBUG__Trial_Weight
+  msg_Debugging()<<"}\n";
+#endif
+  return rhos;
+}
+
 void CS_Gamma::AddRBPoint(Cluster_Amplitude *const ampl)
 {
   DEBUG_FUNC("");
   p_ms=ampl->MS();
   p_shower->SetMS(p_ms);
-  Weight_Map ws(CalculateWeight(ampl));
+  Weight_Map ws(CalculateWeight(ampl,0,false));
   if (ws.empty()) return;
   double wsum(0.0);
 #ifdef DEBUG__Trial_Weight
@@ -380,6 +415,10 @@ Weight_Value CS_Gamma::Differential
     THROW(fatal_error,"Process '"+pname+"' not found");
   Weight_Value meps(pit->second);
   meps.m_b=meps.m_me=pit->second->Differential(*ampl,(mode&~1024)|1|2|4);
+  if ((mode&8) && meps.m_me<0.0) {
+    meps.m_b=meps.m_me=-meps.m_me;
+    meps.m_trig=false;
+  }
   meps.m_me*=pit->second->SymFac();
   if (mode&1024) {
     Process_Map::const_iterator sit((*(*procs)[nlo_type::rsub]).find(pname));

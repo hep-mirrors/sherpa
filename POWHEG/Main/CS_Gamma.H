@@ -3,6 +3,7 @@
 
 #include "POWHEG/Showers/Shower.H"
 #include "POWHEG/Main/CS_Cluster_Definitions.H"
+#include "PDF/Main/POWHEG_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 
 namespace PHASIC {
@@ -27,10 +28,11 @@ namespace POWHEG {
     PHASIC::Process_Base *p_proc;
     Splitting_Function_Base *p_sf;
     double m_me, m_b, m_qij2, m_muf2, m_mur2;
+    bool m_trig;
     inline Weight_Value(PHASIC::Process_Base *const proc=NULL,
 			const double &muf2=0.0,const double &mur2=0.0):
       p_proc(proc), p_sf(NULL), m_me(0.0), m_b(0.0), m_qij2(0.0),
-      m_muf2(muf2), m_mur2(mur2) {}
+      m_muf2(muf2), m_mur2(mur2), m_trig(true) {}
   };// end of struct Weight_Value
 
   std::ostream &operator<<(std::ostream &str,const Weight_Value &w);
@@ -64,12 +66,14 @@ namespace POWHEG {
 		     ATOOLS::Cluster_Leg *const li,
 		     ATOOLS::Cluster_Leg *const lj,
 		     ATOOLS::Cluster_Leg *const lk,const CS_Parameters &cs,
-		     const std::map<size_t,size_t> &idmap,Weight_Map &ws);
+		     const std::map<size_t,size_t> &idmap,Weight_Map &ws,
+		     const int mode,const bool userb);
     int CalculateWeights(ATOOLS::Cluster_Amplitude *const rampl,
 			 const std::map<size_t,size_t> &idmap,
-			 Weight_Map &ws);
+			 Weight_Map &ws,const int mode,const bool userb);
 
-    Weight_Map CalculateWeight(ATOOLS::Cluster_Amplitude *const ampl);
+    Weight_Map CalculateWeight(ATOOLS::Cluster_Amplitude *const ampl,
+			       const int mode=0,const bool userb=true);
 
     Weight_Value Differential(ATOOLS::Cluster_Amplitude *const ampl,
 			      const int mode=2) const;
@@ -80,6 +84,8 @@ namespace POWHEG {
 
     CS_Gamma(CS_POWHEG *const css,Shower *const shower,
 	     CS_Cluster_Definitions *const clus);
+
+    PDF::Rho_Map GetRho(ATOOLS::Cluster_Amplitude *const ampl);
 
     bool Reject();
     void AddRBPoint(ATOOLS::Cluster_Amplitude *const ampl);

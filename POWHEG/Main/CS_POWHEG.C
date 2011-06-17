@@ -254,6 +254,11 @@ ZH_Pair CS_POWHEG::ZHSplit(const double &B,const double &Qij2,
   return ZH_Pair(Z,H);
 }
 
+Rho_Map CS_POWHEG::GetRho(Cluster_Amplitude *const ampl)
+{
+  return p_gamma->GetRho(ampl);
+}
+
 namespace PDF {
 
   DECLARE_GETTER(CSS_POWHEG_Getter,"CSS",POWHEG_Base,POWHEG_Key);
