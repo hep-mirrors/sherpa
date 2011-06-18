@@ -281,6 +281,7 @@ DEFINE_UNARY_TERM_FUNCTION(Logarithm10,"log10",TLog10)
 DEFINE_UNARY_TERM_FUNCTION(Exponential,"exp",TExp)
 DEFINE_UNARY_TERM_FUNCTION(Absolute_Value,"abs",TAbs)
 DEFINE_UNARY_TERM_FUNCTION(Prefix,"sgn",TSgn)
+DEFINE_UNARY_TERM_FUNCTION(ThetaFunc,"theta",TTheta)
 DEFINE_UNARY_TERM_FUNCTION(Square,"sqr",TSqr)
 DEFINE_UNARY_TERM_FUNCTION(Square_Root,"sqrt",TSqrt)
 DEFINE_UNARY_TERM_FUNCTION(Sine,"sin",TSin)
@@ -605,6 +606,7 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddOperator(new Unary_Minus());
   AddOperator(new Unary_Not());
   AddFunction(new Power());
+  AddFunction(new ThetaFunc());
   AddFunction(new Logarithm());
   AddFunction(new Logarithm10());
   AddFunction(new Exponential());

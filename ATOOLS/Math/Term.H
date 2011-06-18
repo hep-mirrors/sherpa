@@ -104,6 +104,7 @@ namespace ATOOLS {
   Term *TLog10(const Term &t);
   Term *TAbs(const Term &t);
   Term *TSgn(const Term &t);
+  Term *TTheta(const Term &t1);
   Term *TSqr(const Term &t);
   Term *TSqrt(const Term &t);
   Term *TSin(const Term &t);

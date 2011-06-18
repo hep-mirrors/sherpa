@@ -380,9 +380,9 @@ Eta<ValueType>::Eta(): Variable_Base<ValueType>("\\eta","Eta")
 }
   
 template <class ValueType>
-class Theta: public Variable_Base<ValueType> {
+class BTheta: public Variable_Base<ValueType> {
 public:
-  Theta();
+  BTheta();
   ValueType Value(const Vec3D *vectors,const int &n) const 
   { 
     Vec4D mom(0.0,vectors[0]);
@@ -397,7 +397,7 @@ public:
   }
 };// end of class Theta
 template <class ValueType>
-Theta<ValueType>::Theta(): Variable_Base<ValueType>("\\theta","Theta") 
+BTheta<ValueType>::BTheta(): Variable_Base<ValueType>("\\theta","Theta") 
 {
   this->m_selectorid="BeamAngle"; 
 }
@@ -560,9 +560,9 @@ DEFINE_VARIABLE_GETTER(Rapidity<double>,Rapidity_Getter,"y","y",1)
 template class Eta<double>;
 DEFINE_VARIABLE_GETTER(Eta<double>,Eta_Getter,"\\eta","\\eta",0)
 DEFINE_VARIABLE_GETTER(Eta<double>,Eta_Getter_2,"Eta","\\eta",1)
-template class Theta<double>;
-DEFINE_VARIABLE_GETTER(Theta<double>,Theta_Getter,"\\theta","\\theta",0)
-DEFINE_VARIABLE_GETTER(Theta<double>,Theta_Getter_2,"Theta","\\theta",1)
+template class BTheta<double>;
+DEFINE_VARIABLE_GETTER(BTheta<double>,BTheta_Getter,"\\theta","\\theta",0)
+DEFINE_VARIABLE_GETTER(BTheta<double>,BTheta_Getter_2,"Theta","\\theta",1)
 template class Phi<double>;
 DEFINE_VARIABLE_GETTER(Phi<double>,Phi_Getter,"\\phi","\\phi",0)
 DEFINE_VARIABLE_GETTER(Phi<double>,Phi_Getter_2,"Phi","\\phi",1)

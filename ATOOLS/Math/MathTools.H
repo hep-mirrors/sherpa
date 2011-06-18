@@ -48,6 +48,8 @@ namespace ATOOLS {
   inline int    Sign(const int& a)    { return a<0?-1:1;       }
   inline double Sign(const double& a) { return a<0.0?-1.0:1.0; }
 
+  inline double Theta(const double &a) { return a<0.0?0.0:1.0; }
+
   inline int    iabs(const int& a)    { return a<0?-a:a;   } 
   inline double dabs(const double& a) { return a<0.0?-a:a; } 
   inline double cabs(const Complex& a){ return real(a*conj(a)); }
