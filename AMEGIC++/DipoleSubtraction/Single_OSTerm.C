@@ -212,7 +212,7 @@ double Single_OSTerm::lambda(double x, double y, double z)
 void Single_OSTerm::SetLOMomenta(const Vec4D* moms,const ATOOLS::Poincare &cms)
 {
   PHASIC::Process_Info osinfo(p_os_process->Info());
-  int ip, jp, kp,decayfound(0);
+  int ip(-1), jp(-1), kp(-1),decayfound(0);
   for (size_t i=0; i<osinfo.m_fi.m_ps.size(); i++) if (osinfo.m_fi.m_ps[i].m_id == "osdecay") {
     if (osinfo.m_fi.m_ps[i].m_ps[0].m_fl==m_fli){
       ip = m_nin+i;
@@ -223,13 +223,13 @@ void Single_OSTerm::SetLOMomenta(const Vec4D* moms,const ATOOLS::Poincare &cms)
       ip = jp+1;
     }
     kp=m_pk;
-    if (i+m_nin<=m_pk && m_pk<m_pi) kp = kp++;
-    if (i+m_nin<=m_pk && m_pk<m_pi) kp = kp++;
+    if (i+m_nin<=m_pk && m_pk<m_pi) kp++;
+    if (i+m_nin<=m_pk && m_pk<m_pi) kp++;
     decayfound=1;
   }
   if (decayfound==0) THROW(fatal_error,"os decay not found")
 
-  size_t cnt=0;
+  int cnt=0;
   for (size_t i=0;i<m_nin+m_nout;i++) {
     for (;cnt==ip||cnt==jp||cnt==kp;) cnt++;
     if (i!=m_pi&&i!=m_pj&&i!=m_pk) {
@@ -248,7 +248,6 @@ void Single_OSTerm::SetLOMomenta(const Vec4D* moms,const ATOOLS::Poincare &cms)
                      (Q*moms[m_pk])/q2*Q) +(q2+mk2-mij2)/(2.*q2)*Q;
 
   Vec4D ptij = Q-ptk;
-  double mij = ptij*ptij;
 
   Vec4D pi = moms[m_pi];
   Vec4D pj = moms[m_pj];
