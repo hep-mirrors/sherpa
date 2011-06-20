@@ -1,10 +1,7 @@
 
 Phox_SOURCES  =	\
-		part_virt_gg.c \
 		Phox_Interface.C
 
-Phox_ADDS     =	\
-		Phox_Interface.H
 
 if Phox_SUPPORT
 pkglib_LTLIBRARIES    =	libSherpaPhox.la
