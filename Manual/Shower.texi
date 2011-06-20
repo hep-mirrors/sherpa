@@ -29,11 +29,19 @@ To list all available shower modules, the tag
 @code{SHOW_SHOWER_GENERATORS=1} can be specified on the
 command line. 
 
+@code{SHOWER_GENERATOR=None} switches parton showering off completely.
+However, even in the case of strict fixed order calculations, this might
+not be the desired behaviour as, for example, then neither the METS scale
+setter, cf. @ref{SCALES}, nor Sudakov rejection weights can be employed.
+To circumvent when using the CS Shower see @ref{CS Shower options}.
+
 @node CS Shower options
 @subsection CS Shower options
 @cindex CSS_KIN_SCHEME
 @cindex CSS_PT2MIN
 @cindex CSS_EW_MODE
+@cindex CSS_NOEM
+@cindex CSS_MAXEM
 
 Sherpa's default shower module is based on @mycite{Schumann2007mg}.
 A new ordering parameter for initial state splitters was introduced 
@@ -55,3 +63,11 @@ by using @option{CSS_EW_MODE=1}. Note, that if you have leptons in your
 matrix-element final state, they are by default treated by a soft
 photon resummation as explained in @ref{QED Corrections}. To avoid
 double counting, this has to be disabled as explained in that section.
+
+The CS Shower can be forced not to emit any partons setting
+@option{CSS_NOEM=1}. Sudakov rejection weights for merged samples
+are calculated nontheless. Setting @option{CSS_MAXEM=<N>}, on the
+other hand, forces the CS Shower to truncate its evolution at the
+Nth emission. This setting, however does not necessarily compute all
+Sudakov weights correctly. Both settings still enable the CS Shower
+to be used in the METS scale setter, cf. @ref{SCALES}.
