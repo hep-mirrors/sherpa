@@ -32,11 +32,12 @@ Interaction_Model_SM_EHC::Interaction_Model_SM_EHC(MODEL::Model_Base * _model,
   p_mosm      = new Interaction_Model_SM(p_model,_cplscheme,_yukscheme); 
   
   double scale = rpa.gen.CplScale();
-  double hmass2 = sqr(Flavour(kf_h0).Mass());
   
   Data_Reader read(" ",";","!","=");
+  double ehc_scale2 = read.GetValue<double>("EHC_SCALE2", sqr(Flavour(kf_h0).Mass()));
+  PRINT_VAR(ehc_scale2);
   // h photon photon coupling
-  double aqedpph=read.GetValue<double>("1/ALPHAQED_PPH",ScalarFunction(std::string("alpha_QED"),hmass2));
+  double aqedpph=read.GetValue<double>("1/ALPHAQED_PPH",ScalarFunction(std::string("alpha_QED"),ehc_scale2));
   ghpp  = Kabbala(std::string("ghpp"),ScalarConstant(std::string("h0_pp_fac"))*
                   aqedpph/
                   (2.*M_PI*ScalarConstant(std::string("vev"))));
@@ -44,7 +45,7 @@ Interaction_Model_SM_EHC::Interaction_Model_SM_EHC(MODEL::Model_Base * _model,
     msg_Info()<<METHOD<<"(): hpp coupling is "<<ghpp.Value()<<" ( 1/\\alpha_qed = "<<1./aqedpph<<" )\n";
   }
   // h g g coupling
-  double asggh=read.GetValue<double>("ALPHAS_GGH",ScalarFunction(std::string("alpha_S"),hmass2));
+  double asggh=read.GetValue<double>("ALPHAS_GGH",ScalarFunction(std::string("alpha_S"),ehc_scale2));
   ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(std::string("h0_gg_fac"))*
 		  asggh/
 		  (2.*M_PI*ScalarConstant(std::string("vev"))));
