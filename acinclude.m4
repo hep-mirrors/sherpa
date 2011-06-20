@@ -546,7 +546,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
               AC_MSG_RESULT([${CONDITIONAL_PhoxDIR}]); phox=true;;
         *)    if test -d "${enableval}"; then
                 CONDITIONAL_PhoxDIR="${enableval}"
-                CONDITIONAL_PhoxLIBS="$CONDITIONAL_PhoxDIR/lib/libPhox.a"
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);
               fi;
