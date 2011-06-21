@@ -52,8 +52,8 @@ it is possible to specify two different PDF libraries using @anchor{PDF_LIBRARY_
 The following options are distributed with Sherpa:
 @table @code
 @item LHAPDFSherpa
-Use PDF's from LHAPDF @mycite{Whalley2005nh}. This is the default (and only
-available then) if Sherpa has been compiled with support for LHAPDF, see
+Use PDF's from LHAPDF @mycite{Whalley2005nh}. The interface is only
+available if Sherpa has been compiled with support for LHAPDF, see
 @ref{Installation}.
 @item CTEQ6Sherpa
 Built-in library for some PDF sets from the CTEQ collaboration, cf.

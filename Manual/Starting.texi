@@ -390,7 +390,7 @@ Proton--antiproton collisions are considered at
 beam energies of 900 GeV; under the @code{(beam)} part of the @code{Run.dat}
 file, one therefore has @code{BEAM_1=2212}, @code{BEAM_2=-2212} and
 @code{BEAM_ENERGY_@{1,2@}=980.0}. The default PDF used by Sherpa is 
-CTEQ6L. Model parameters and couplings can be set in the
+CTEQ66. Model parameters and couplings can be set in the
 @code{Run.dat} section @code{(model)}, and the way couplings are treated
 can be defined under the @code{(me)} category. The QCD radiation matrix elements have to be
 regularized to obtain meaningful cross sections. This is achieved by
@@ -417,9 +417,19 @@ Sherpa are initialized, including the matrix element generator(s). The Sherpa ou
 @smallformat
 @verbatim
 Initialized the beams Monochromatic*Monochromatic
-PDF set 'cteq6l' loaded from 'libCTEQ6Sherpa'.
-PDF set 'cteq6l' loaded from 'libCTEQ6Sherpa'.
+CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(): Init member 400.
+PDF set 'cteq6.6m' loaded from 'libCTEQ6Sherpa' for beam 1 (P+).
+CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(): Init member 400.
+PDF set 'cteq6.6m' loaded from 'libCTEQ6Sherpa' for beam 2 (P+b).
 Initialized the ISR: (SF)*(SF)
+CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(): Init member 400.
+CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(): Init member 400.
+Initialize the Standard Model from  / Model.dat
+Running_AlphaS::Running_AlphaS() {
+  Setting \alpha_s according to PDF
+  perturbative order 1
+  \alpha_s(M_Z) = 0.118
+}
 Initialized the Beam_Remnant_Handler.
 Initialized the Shower_Handler.
 Initialized the Fragmentation_Handler.
@@ -436,12 +446,9 @@ Initialized the Fragmentation_Handler.
 |     http://comix.freacafe.de     |
 |   please cite  JHEP12(2008)039   |
 +----------------------------------+
-Matrix_Element_Handler::BuildProcesses(): Looking for processes ...................... done ( 25856 kB, 0.34 s ).
-Matrix_Element_Handler::InitializeProcesses(): Performing tests ...................... done ( 25856 kB, 0 s ).
+Matrix_Element_Handler::BuildProcesses(): Looking for processes . done ( 23252 kB, 0s ).
+Matrix_Element_Handler::InitializeProcesses(): Performing tests . done ( 23252 kB, 0s ).
 Initialized the Matrix_Element_Handler for the hard processes.
-Hadron_Decay_Map::Read:
-   Initializing hadron decay tables. This may take some time.
-Initialized the Hadron_Decay_Handler, Decay model = Hadrons
 Initialized the Soft_Photon_Handler.
 @end verbatim
 @end smallformat
@@ -451,8 +458,8 @@ Then Sherpa will start to integrate the cross sections. The output will look lik
 @verbatim
 Process_Group::CalculateTotalXSec(): Calculate xs for '2_2__j__j__e-__nu_eb' (Comix)
 Starting the calculation. Lean back and enjoy ... .
-1049.87 pb +- ( 41.8506 pb = 3.98626 % ) 5000 ( 5003 -> 99.9 % )
-full optimization:  ( 0 s elapsed / 13 s left / 13 s total )   
+1019.05 pb +- ( 52.4212 pb = 5.14411 % ) 5000 ( 5013 -> 99.7 % )
+full optimization:  ( 0s elapsed / 15s left )
 ...
 @end verbatim
 @end smallformat
@@ -471,11 +478,12 @@ When the integration is complete, the output will look like:
 @smallformat
 @verbatim
 ...
-985.27 pb +- ( 0.363629 pb = 0.0369065 % ) 300000 ( 300009 -> 99.9 % )
-integration time:  ( 11 s elapsed / 0 s left / 11 s total )   
-985.206 pb +- ( 0.356621 pb = 0.0361976 % ) 310000 ( 310010 -> 99.9 % )
-integration time:  ( 11 s elapsed / 0 s left / 11 s total )   
-2_2__j__j__e-__nu_eb : 985.206 pb +- ( 0.356621 pb = 0.0361976 % )  exp. eff: 6.13927 %
+1098.97 pb +- ( 0.373022 pb = 0.0339428 % ) 300000 ( 300020 -> 100 % )
+integration time:  ( 13s elapsed / 0s left )
+1098.86 pb +- ( 0.366442 pb = 0.0333475 % ) 310000 ( 310020 -> 100 % )
+integration time:  ( 13s elapsed / 0s left )
+2_2__j__j__e-__nu_eb : 1098.86 pb +- ( 0.366442 pb = 0.0333475 % )  exp. eff: 27.3833 %
+  reduce max for 2_2__j__j__e-__nu_eb to 0.518502 ( eps = 0.001 )
 @end verbatim
 @end smallformat
 with the final cross section result and its statistical error displayed.
@@ -492,13 +500,13 @@ output looks like:
 @smallformat
 @verbatim
 ...
-  Event 10000 ( 158 s elapsed / 0 s left ) -> ETA: Tue Jul 28 19:41  
+  Event 10000 ( 122 s total )
 In Event_Handler::Finish : Summarizing the run may take some time.
-+--------------------------------------------------+
-|                                                  |
-|  Total XS is 1956 pb +- ( 8.71129 pb = 0.44 % )  |
-|                                                  |
-+--------------------------------------------------+
++-----------------------------------------------------+
+|                                                     |
+|  Total XS is 1139.05 pb +- ( 11.1111 pb = 0.97 % )  |
+|                                                     |
++-----------------------------------------------------+
 @end verbatim
 @end smallformat
 
