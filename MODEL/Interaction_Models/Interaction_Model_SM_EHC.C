@@ -35,6 +35,7 @@ Interaction_Model_SM_EHC::Interaction_Model_SM_EHC(MODEL::Model_Base * _model,
   
   Data_Reader read(" ",";","!","=");
   double ehc_scale2 = read.GetValue<double>("EHC_SCALE2", sqr(Flavour(kf_h0).Mass()));
+  p_model->GetScalarConstants()->insert(std::make_pair(std::string("EHC_SCALE2"),ehc_scale2));
   // h photon photon coupling
   double aqedpph=read.GetValue<double>("1/ALPHAQED_PPH",ScalarFunction(std::string("alpha_QED"),ehc_scale2));
   ghpp  = Kabbala(std::string("ghpp"),ScalarConstant(std::string("h0_pp_fac"))*

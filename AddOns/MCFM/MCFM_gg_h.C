@@ -19,7 +19,7 @@ namespace MCFM {
     int                     m_pID;
     double                * p_p, *p_msqv;
     MODEL::Running_AlphaS * p_as;
-    double                  m_mh2,m_Gh2,m_cplcorr,m_normcorr;
+    double                  m_mh2,m_Gh2,m_ehcscale2,m_cplcorr,m_normcorr;
 
 
     double CallMCFM(const int & i,const int & j);
@@ -57,9 +57,10 @@ MCFM_gg_h::MCFM_gg_h(const int & pID,const Process_Info& pi,
        MODEL::s_model->GetScalarFunction(std::string("alpha_S"))),
   m_mh2(ATOOLS::sqr(ATOOLS::Flavour(kf_h0).Mass())),
   m_Gh2(ATOOLS::sqr(ATOOLS::Flavour(kf_h0).Width())),
+  m_ehcscale2(MODEL::s_model->ScalarConstant(std::string("EHC_SCALE2"))),
   m_cplcorr(ewcouple_.vevsq/
 	    ATOOLS::sqr(MODEL::s_model->ScalarConstant(std::string("vev")))*
-	    ATOOLS::sqr((*p_as)(m_mh2)/qcdcouple_.as)),
+            ATOOLS::sqr((*p_as)(m_ehcscale2)/qcdcouple_.as)),
   m_normcorr(4.*9./qcdcouple_.ason2pi)
 {
   rpa.gen.AddCitation
@@ -77,7 +78,7 @@ MCFM_gg_h::MCFM_gg_h(const int & pID,const Process_Info& pi,
   case 115:
   case 208:
   case 209:
-    m_cplcorr = 
+    m_cplcorr *=
       pow(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_QED"))/
 	  MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"))/
 	  ewcouple_.gwsq,3.);
