@@ -783,18 +783,21 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
     p1*=p_dsij[0][0];
     p2*=p_dsij[0][0];
   }
+  size_t precision(msg->Out().precision());
+  msg->SetPrecision(15);
   if (!ATOOLS::IsEqual(doublepole,p2) || !ATOOLS::IsEqual(singlepole,p1)) {
-    cout.precision(15);
-    for (size_t i=0;i<m_nin+m_nout;i++) cout<<i<<": "<<mom[i]<<endl;
-    cout<<"Process: "<<Name()<<endl;
-    cout.precision(6);
+    msg_Out()<<"Process: "<<Name()<<std::endl;
+    for (size_t i=0;i<m_nin+m_nout;i++) msg_Out()<<i<<": "<<mom[i]<<std::endl;
   }
   if (!ATOOLS::IsEqual(doublepole,p2)) {
-    cout<<"Double poles do not cancel: "<<doublepole<<" vs. "<<p2<<", rel. diff. "<<(doublepole-p2)/(doublepole+p2)<<endl;
+    msg_Out()<<"Double poles do not cancel: "<<doublepole<<" vs. "<<p2
+        <<", rel. diff. "<<(doublepole-p2)/(doublepole+p2)<<std::endl;
   }
   if (!ATOOLS::IsEqual(singlepole,p1)) {
-    cout<<"Single poles do not cancel: "<<singlepole<<" vs. "<<p1<<", rel. diff. "<<(singlepole-p1)/(singlepole+p1)<<endl;
+    msg_Out()<<"Single poles do not cancel: "<<singlepole<<" vs. "<<p1
+        <<", rel. diff. "<<(singlepole-p1)/(singlepole+p1)<<std::endl;
   }
+  msg->SetPrecision(precision);
 }
 
 double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,const int mode)
