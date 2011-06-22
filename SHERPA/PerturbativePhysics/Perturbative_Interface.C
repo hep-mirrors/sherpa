@@ -30,6 +30,7 @@ Perturbative_Interface::Perturbative_Interface
   read.SetInputFile(p_me->File());
   m_cmode=ToType<int>(rpa.gen.Variable("METS_CLUSTER_MODE"));
   m_bbarmode=read.GetValue<int>("METS_BBAR_MODE",1);
+  m_globalkfac=read.GetValue<double>("GLOBAL_KFAC",0.);
 }
 
 Perturbative_Interface::Perturbative_Interface
@@ -145,6 +146,10 @@ DefineInitialConditions(ATOOLS::Blob *blob)
 
 bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
 {
+  if (m_globalkfac) {
+    m_weight*=m_globalkfac;
+    return true;
+  }
   DEBUG_FUNC(ampl->Legs().size());
   Process_Vector procs(p_me->AllProcesses());
   while (ampl->Next()!=NULL) {

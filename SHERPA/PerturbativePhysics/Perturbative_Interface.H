@@ -27,7 +27,7 @@ namespace SHERPA {
 
     ATOOLS::Cluster_Amplitude *p_ampl;
 
-    double m_weight;
+    double m_weight, m_globalkfac;
     int    m_cmode, m_bbarmode;
 
     bool SetColours(ATOOLS::Cluster_Amplitude *ampl,ATOOLS::Blob *const bl);
