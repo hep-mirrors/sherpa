@@ -220,6 +220,10 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Proce
 	  rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|
 						 nlo_type::polecheck|nlo_type::born));
 	  procs.push_back(m_gens.InitializeProcess(rpi,true));
+	  if (procs.back()==NULL) {
+	    msg_Error()<<"No such process:\n"<<rpi<<std::endl;
+	    THROW(critical_error,"Failed to intialize process");
+	  }
 	}
       }
       else if (pi.m_fi.m_nloewtype==nlo_type::lo) {
@@ -227,11 +231,19 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Proce
 	  Process_Info rpi(pi);
 	  rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&nlo_type::born);
 	  procs.push_back(m_gens.InitializeProcess(rpi,true));
+	  if (procs.back()==NULL) {
+	    msg_Error()<<"No such process:\n"<<rpi<<std::endl;
+	    THROW(critical_error,"Failed to intialize process");
+	  }
 	}
 	if (pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop)) {
 	  Process_Info rpi(pi);
 	  rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|nlo_type::polecheck));
 	  procs.push_back(m_gens.InitializeProcess(rpi,true));
+	  if (procs.back()==NULL) {
+	    msg_Error()<<"No such process:\n"<<rpi<<std::endl;
+	    THROW(critical_error,"Failed to intialize process");
+	  }
 	}
       }
       if (pi.m_fi.NLOType()&nlo_type::real || pi.m_fi.NLOType()&nlo_type::rsub){
@@ -246,6 +258,10 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Proce
           rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
         }
         procs.push_back(m_gens.InitializeProcess(rpi,true));
+	if (procs.back()==NULL) {
+	  msg_Error()<<"No such process:\n"<<rpi<<std::endl;
+	  THROW(critical_error,"Failed to intialize process");
+	}
       }
       for (size_t i(0);i<procs.size();i++) m_procs.push_back(procs[i]);
     }
