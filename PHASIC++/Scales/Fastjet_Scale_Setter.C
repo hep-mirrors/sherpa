@@ -52,7 +52,7 @@ namespace PHASIC {
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
 
-    ATOOLS::Vec4D Momentum(const size_t &i) const;
+    const ATOOLS::Vec4D_Vector &Momenta() const;
 
   };// end of class Fastjet_Scale_Setter
 
@@ -151,10 +151,9 @@ Fastjet_Scale_Setter::~Fastjet_Scale_Setter()
   delete p_jdef;
 }
 
-Vec4D Fastjet_Scale_Setter::Momentum(const size_t &i) const
+const Vec4D_Vector &Fastjet_Scale_Setter::Momenta() const
 {
-  if (i>m_p.size()) THROW(fatal_error,"Momentum index too large");
-  return m_p[i];
+  return m_p;
 }
 
 double Fastjet_Scale_Setter::CalculateScale

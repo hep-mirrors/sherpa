@@ -84,17 +84,23 @@ void Scale_Setter_Base::ShowSyntax(const size_t i)
   msg_Out()<<"\n}"<<std::endl;
 }
 
-Vec4D Scale_Setter_Base::Momentum(const size_t &i) const
+const Vec4D_Vector &Scale_Setter_Base::Momenta() const
 {
-  if (i>p_proc->NIn()+p_proc->NOut())
-    THROW(fatal_error,"Momentum index too large");
-  return p_proc->Integrator()->Momenta()[i];
+  return p_proc->Integrator()->Momenta();
 }
 
 double Scale_Setter_Base::HT() const
 {
   double ht(0.0);
-  const Vec4D_Vector &p(p_proc->Integrator()->Momenta());
+  const Vec4D_Vector &p(Momenta());
   for (size_t i(p_proc->NIn());i<p.size();++i) ht+=p[i].PPerp();
   return ht;
+}
+
+Vec4D Scale_Setter_Base::PSum() const
+{
+  Vec4D sum(0.0,0.0,0.0,0.0);
+  const Vec4D_Vector &p(Momenta());
+  for (size_t i(p_proc->NIn());i<p.size();++i) sum+=p[i];
+  return sum;
 }

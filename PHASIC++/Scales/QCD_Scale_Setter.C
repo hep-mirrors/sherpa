@@ -38,7 +38,7 @@ namespace PHASIC {
     double CalculateScale(const std::vector<ATOOLS::Vec4D> &p,
 			  const int mode);
 
-    ATOOLS::Vec4D Momentum(const size_t &i) const;
+    const ATOOLS::Vec4D_Vector &Momenta() const;
 
     void SetScale(const std::string &mu2tag,Tag_Setter &mu2tagset,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
@@ -140,10 +140,9 @@ QCD_Scale_Setter::QCD_Scale_Setter(const Scale_Setter_Arguments &args):
   for (size_t i(0);i<p_proc->NIn();++i) m_f[i]=m_f[i].Bar();
 }
 
-Vec4D QCD_Scale_Setter::Momentum(const size_t &i) const
+const Vec4D_Vector &QCD_Scale_Setter::Momenta() const
 {
-  if (i>m_p.size()) THROW(fatal_error,"Momentum index too large");
-  return m_p[i];
+  return m_p;
 }
 
 double QCD_Scale_Setter::CalculateScale

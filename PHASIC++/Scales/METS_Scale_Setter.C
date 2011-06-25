@@ -115,7 +115,7 @@ namespace PHASIC {
     double CalculateScale(const ATOOLS::Vec4D_Vector &p,const int mode);
     double CalculateMyScale(const ATOOLS::Vec4D_Vector &p,const int mode);
 
-    ATOOLS::Vec4D Momentum(const size_t &i) const;
+    const ATOOLS::Vec4D_Vector &Momenta() const;
 
     void SetScale(const std::string &mu2tag,Tag_Setter &mu2tagset,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
@@ -221,10 +221,9 @@ METS_Scale_Setter::~METS_Scale_Setter()
   for (size_t i(0);i<m_ampls.size();++i) m_ampls[i]->Delete();
 }
 
-Vec4D METS_Scale_Setter::Momentum(const size_t &i) const
+const Vec4D_Vector &METS_Scale_Setter::Momenta() const
 {
-  if (i>m_p.size()) THROW(fatal_error,"Momentum index too large");
-  return m_p[i];
+  return m_p;
 }
 
 double METS_Scale_Setter::CalculateStrict

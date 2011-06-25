@@ -71,12 +71,14 @@ namespace PHASIC {
 
     void SetCouplings();
 
+    double HT() const;
+
+    ATOOLS::Vec4D PSum() const;
+
     virtual double CalculateScale(const std::vector<ATOOLS::Vec4D> &p,
 				  const int mode) = 0;
 
-    virtual ATOOLS::Vec4D Momentum(const size_t &i) const;
-
-    virtual double HT() const;
+    virtual const ATOOLS::Vec4D_Vector &Momenta() const;
 
     inline void SetFixedScale(const std::vector<double> &s) { m_escale=s; }
 
