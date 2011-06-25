@@ -107,12 +107,13 @@ by different couplings, see @ref{COUPLINGS}.
 
 @item FASTJET
 If @uref{http://www.fastjet.fr,,FastJet} is enabled, this tag can be 
-used to set a scale based on jet, rather than parton momenta. These jets 
-can be defined in all possible ways allowed by FastJet with the arguments 
-specified in the following way
+used to set a scale based on jet, rather than parton momenta. 
+@strong{Note that such a scale must be specified in the process block, see}
+@ref{Scales}. The jets can be defined in all possible ways allowed by 
+FastJet with the arguments given as follows
 
 @verbatim
-SCALES FASTJET[A=antikt,PT=10,ET=0,R=0.4,M=1]{...}
+Scales FASTJET[A=antikt,PT=10,ET=0,R=0.4,M=1]{...}
 @end verbatim
 
 Thereby, @kbd{A} defines the jet algorithm, @kbd{R} sets the cone size,
