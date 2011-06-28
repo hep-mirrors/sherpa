@@ -28,8 +28,8 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
   read.AddComment("#");
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
-  if (!read.ReadFromFile(m_vmode,"BRH_VMODE")) m_vmode=0;
   if (!read.ReadFromFile(m_on,"BEAM_REMNANTS")) m_on=1;
+  if (!read.ReadFromFile(m_vmode,"BRH_VMODE")) m_vmode=0;
   else msg_Info()<<METHOD<<"(): Set check mode "<<m_vmode<<"."<<std::endl;
   p_kperp = new Primordial_KPerp(path,file);
   for (size_t i=0;i<2;++i) {
