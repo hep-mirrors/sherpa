@@ -230,6 +230,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     gen.m_seed2 = seed2[0]; 
   }
   else gen.m_seed=1234;
+  if (gen.m_seed2<0) gen.SetVariable("RNG_SEED",ToString(gen.m_seed));
+  else gen.SetVariable("RNG_SEED",ToString(gen.m_seed)+" "+ToString(gen.m_seed2));
 
   gen.m_timeout = dr.GetValue<double>("TIMEOUT",std::numeric_limits<double>::max());
   if (gen.m_timeout<0.) gen.m_timeout=0.;

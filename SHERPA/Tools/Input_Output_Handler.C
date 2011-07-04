@@ -56,6 +56,9 @@ Input_Output_Handler::~Input_Output_Handler()
 }
 
 bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
+  std::string stag(rpa.gen.Variable("RNG_SEED"));
+  while (stag.find(' ')!=std::string::npos) stag.replace(stag.find(' '),1,"-");
+  dr->AddTag("RNG_SEED",stag);
   string sherpaoutput=dr->GetValue<string>("SHERPA_OUTPUT",string(""));
   string rootntupleoutput=dr->GetValue<string>("ROOTNTUPLE_OUTPUT",string(""));
   string hepevtoutput=dr->GetValue<string>("HEPEVT_OUTPUT",string(""));
