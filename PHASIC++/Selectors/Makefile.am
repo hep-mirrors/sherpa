@@ -18,7 +18,8 @@ libPhasicSelectors_la_SOURCES =	\
 				NLO_Selector.C \
 				MinSelector.C \
 				Selector_Bias.C \
-				Fastjet_Finder.C
+				Fastjet_Finder.C \
+				Fastjet_Selector.C
 
 localinc_HEADERS      =	\
 			Cut_Data.H \
