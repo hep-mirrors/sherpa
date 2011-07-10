@@ -568,7 +568,7 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl)
   msg_Debugging()<<*ampl<<"\n";
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
   double q2cut(jf->Ycut()*sqr(rpa.gen.Ecms()));
-  bool his(false), check(false);
+  bool his(false);
   size_t noem(0), nospec(0);
   for (size_t i(0);i<ampl->Decays().size();++i) {
     noem|=ampl->Decays()[i]->m_id;
@@ -599,7 +599,6 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl)
  	  msg_Debugging()<<"Q_{"<<ID(li->Id())<<ID(lj->Id())
 			 <<","<<ID(lk->Id())<<"} = "<<sqrt(q2ijk)<<"\n";
 	  if (q2ijk<q2cut) return false;
-	  check=true;
 	}
 	else {
 	  msg_Debugging()<<"No kernel for "<<fi<<" "<<fj
@@ -618,8 +617,8 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl)
 	  return false;
 	}
   }
-  if (check) msg_Debugging()<<"--- Jet veto ---\n";
-  return check;
+  msg_Debugging()<<"--- Jet veto ---\n";
+  return true;
 }
 
 namespace PDF {
