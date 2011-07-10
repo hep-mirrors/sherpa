@@ -438,6 +438,8 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
     p_next->push_back(*asit);
   }
   msg_Debugging()<<"\nSinglet lists:\n\n";
+  Cluster_Amplitude *campl(ampl);
+  while (campl->Next()) campl=campl->Next();
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
       for (Singlet::const_iterator 
@@ -449,6 +451,7 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
 	}
       }
       (*sit)->SetJF(ampl->JF<PHASIC::Jet_Finder>());
+      (*sit)->SetDecays(campl->Decays());
       (*sit)->SetAll(p_next);
       msg_Debugging()<<**sit;
     msg_Debugging()<<"\n";
@@ -565,17 +568,27 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl)
   msg_Debugging()<<*ampl<<"\n";
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
   double q2cut(jf->Ycut()*sqr(rpa.gen.Ecms()));
-  bool his(false);
+  bool his(false), check(false);
+  size_t noem(0), nospec(0);
+  for (size_t i(0);i<ampl->Decays().size();++i) {
+    noem|=ampl->Decays()[i]->m_id;
+    if (!ampl->Decays()[i]->m_fl.Strong())
+      nospec|=ampl->Decays()[i]->m_id;
+  }
+  msg_Debugging()<<"noem = "<<ID(noem)<<", nospec = "<<ID(nospec)<<"\n";
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *li(ampl->Leg(i));
+    if (li->Id()&noem) continue;
     Flavour fi(i<ampl->NIn()?li->Flav().Bar():li->Flav());
     if (i<ampl->NIn() && fi.Resummed()) his=true;
     for (size_t j(Max(i+1,ampl->NIn()));j<ampl->Legs().size();++j) {
       Cluster_Leg *lj(ampl->Leg(j));
+      if (lj->Id()&noem) continue;
       Flavour fj(j<ampl->NIn()?lj->Flav().Bar():lj->Flav());
       for (size_t k(0);k<ampl->Legs().size();++k) {
 	if (k==i || k==j) continue;
 	Cluster_Leg *lk(ampl->Leg(k));
+	if (lk->Id()&nospec) continue;
 	Flavour fk(k<ampl->NIn()?lk->Flav().Bar():lk->Flav());
 	cstp::code et((i<ampl->NIn()||j<ampl->NIn())?
 		      (k<ampl->NIn()?cstp::II:cstp::IF):
@@ -586,6 +599,7 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl)
  	  msg_Debugging()<<"Q_{"<<ID(li->Id())<<ID(lj->Id())
 			 <<","<<ID(lk->Id())<<"} = "<<sqrt(q2ijk)<<"\n";
 	  if (q2ijk<q2cut) return false;
+	  check=true;
 	}
 	else {
 	  msg_Debugging()<<"No kernel for "<<fi<<" "<<fj
@@ -604,8 +618,8 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl)
 	  return false;
 	}
   }
-  msg_Debugging()<<"--- Jet veto ---\n";
-  return true;
+  if (check) msg_Debugging()<<"--- Jet veto ---\n";
+  return check;
 }
 
 namespace PDF {

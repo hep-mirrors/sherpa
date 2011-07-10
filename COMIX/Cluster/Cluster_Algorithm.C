@@ -556,6 +556,7 @@ bool Cluster_Algorithm::Cluster
 {
   if (p_ampl->Legs().size()==3) {
     p_ampl=p_ampl->Prev();
+    p_ampl->Decays()=p_ampl->Next()->Decays();
     p_ampl->DeleteNext();
     return true;
   }

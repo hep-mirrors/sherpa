@@ -71,6 +71,7 @@ Singlet *Singlet::RefCopy(All_Singlets *const all,std::map<Parton*,Parton*> &pma
   p_ref->p_all=all;
   p_ref->p_ms=p_ms;
   p_ref->p_jf=p_jf;
+  p_ref->m_decs=m_decs;
   for (const_iterator it(begin());it!=end();++it) {
     Parton *c(new Parton(**it));
     p_ref->push_back(c);
@@ -98,17 +99,26 @@ bool Singlet::JetVeto(Sudakov *const sud) const
 {
   DEBUG_FUNC("");
   msg_Debugging()<<*(Singlet*)this<<"\n";
-  bool his(false);
+  bool his(false), check(false);
+  size_t noem(0), nospec(0);
+  for (size_t i(0);i<m_decs.size();++i) {
+    noem|=m_decs[i]->m_id;
+    if (!m_decs[i]->m_fl.Strong()) nospec|=m_decs[i]->m_id;
+  }
+  msg_Debugging()<<"noem = "<<ID(noem)<<", nospec = "<<ID(nospec)<<"\n";
   for (const_iterator iit(begin());iit!=end();++iit) {
+    if ((*iit)->Id()&noem) continue;
     bool ii((*iit)->GetType()==pst::IS);
     Flavour fi((*iit)->GetFlavour());
     if (ii && fi.Resummed()) his=true;
     for (const_iterator jit(iit);jit!=end();++jit) {
+      if ((*jit)->Id()&noem) continue;
       bool ji((*jit)->GetType()==pst::IS);
       Flavour fj((*jit)->GetFlavour());
       if (jit==iit || ji) continue;
       for (const_iterator kit(begin());kit!=end();++kit) {
 	if (kit==iit || kit==jit) continue;
+	if ((*kit)->Id()&nospec) continue;
 	bool ki((*kit)->GetType()==pst::IS);
 	cstp::code et((ii||ji)?(ki?cstp::II:cstp::IF):(ki?cstp::FI:cstp::FF));
 	if (sud->HasKernel(fi,fj,(*kit)->GetFlavour(),et)) {
@@ -119,6 +129,7 @@ bool Singlet::JetVeto(Sudakov *const sud) const
  	  msg_Debugging()<<"Q_{"<<ID((*iit)->Id())<<ID((*jit)->Id())
 			 <<","<<ID((*kit)->Id())<<"} = "<<sqrt(q2ijk)<<"\n";
 	  if (q2ijk<(*kit)->KtVeto()) return false;
+	  check=true;
 	}
 	else {
 	  msg_Debugging()<<"No kernel for "<<fi<<" "<<fj<<" <-> "
@@ -138,8 +149,8 @@ bool Singlet::JetVeto(Sudakov *const sud) const
 	}
     }
   }
-  msg_Debugging()<<"--- Jet veto ---\n";
-  return true;
+  if (check) msg_Debugging()<<"--- Jet veto ---\n";
+  return check;
 }
 
 void Singlet::SetColours(Singlet *const sing,Parton *const np,

@@ -61,6 +61,7 @@ bool Jet_Finder::Trigger(const Vec4D_Vector &p)
   if (!m_on) return true;
   msg_Debugging()<<METHOD<<"(): '"<<p_proc->Process()->Name()
 		 <<"' Q_cut = "<<sqrt(m_ycut*m_s)<<(m_on?" {":", off")<<"\n";
+  p_ampl->Decays()=p_proc->Process()->Info().m_fi.GetDecayInfos();
   bool res=p_proc->Process()->Shower()->JetVeto(p_ampl);
   msg_Debugging()<<"} -> "<<res<<"\n";
   return 1-m_sel_log->Hit(!res);

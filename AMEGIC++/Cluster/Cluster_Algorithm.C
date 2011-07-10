@@ -499,6 +499,7 @@ void Cluster_Algorithm::Convert()
       eampl->SetNLO(1);
     }
   }
+  p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
   SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,nmax);
   for (size_t i(0);i<2;++i)
     p_ampl->Leg(i)->SetCol(ColorID(m_colors[i][1],m_colors[i][0]));
