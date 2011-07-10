@@ -46,6 +46,7 @@ namespace SHERPA {
 	m_vsfile, m_vnloqcd, m_vnloew, m_vmegen, m_vloopgen;
       std::string m_gycut;
       int m_cutcore;
+      inline Processblock_Info(): m_cutcore(0) {}
     };// end of struct Processblock_Info
 
   private :
