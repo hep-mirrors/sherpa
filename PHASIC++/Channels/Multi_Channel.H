@@ -90,6 +90,8 @@ namespace PHASIC {
 
     inline void FixAlpha() { m_fixalpha=true; }
 
+    size_t NChannels() const;
+
     virtual size_t              Number()    { return channels.size(); }
     inline long unsigned int    N()         { return n_points; }    
     inline long unsigned int    ValidN()    { return n_contrib; }

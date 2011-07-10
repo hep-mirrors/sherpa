@@ -67,6 +67,8 @@ namespace PHASIC {
     virtual std::string      ChID();
     virtual size_t           Dimension() const;
 
+    virtual size_t NChannels() const; 
+
     virtual int N();
     virtual int ValidN();
     virtual int Nin();    

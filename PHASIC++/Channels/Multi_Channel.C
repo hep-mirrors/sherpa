@@ -42,6 +42,13 @@ Multi_Channel::~Multi_Channel()
 void Multi_Channel::Add(Single_Channel * Ch) { 
   channels.push_back(Ch);
   m_otype = m_otype|Ch->OType();
+}
+
+size_t Multi_Channel::NChannels() const
+{
+  size_t nch(0);
+  for (size_t i(0);i<channels.size();++i) nch+=channels[i]->NChannels();
+  return nch;
 } 
 
 Single_Channel * Multi_Channel::Channel(int i) { 

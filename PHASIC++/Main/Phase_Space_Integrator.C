@@ -51,18 +51,18 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
   
    if ((psh->BeamIntegrator())) {
      (psh->BeamIntegrator())->Reset();
-     numberofchannels = psh->BeamIntegrator()->Number();
-     msg_Tracking()<<"   Found "<<psh->BeamIntegrator()->Number()<<" Beam Integrators."<<endl;
+     numberofchannels = psh->BeamIntegrator()->NChannels();
+     msg_Tracking()<<"   Found "<<psh->BeamIntegrator()->NChannels()<<" Beam Integrators."<<endl;
    }
    if ((psh->ISRIntegrator())) {
      (psh->ISRIntegrator())->Reset();
-     numberofchannels += psh->ISRIntegrator()->Number();
-     msg_Tracking()<<"   Found "<<psh->ISRIntegrator()->Number()<<" ISR Integrators."<<endl;
+     numberofchannels += psh->ISRIntegrator()->NChannels();
+     msg_Tracking()<<"   Found "<<psh->ISRIntegrator()->NChannels()<<" ISR Integrators."<<endl;
    }
 
   (psh->FSRIntegrator())->Reset();
-  numberofchannels += psh->FSRIntegrator()->Number();
-  msg_Tracking()<<"   Found "<<psh->FSRIntegrator()->Number()<<" FSR integrators."<<endl;
+  numberofchannels += psh->FSRIntegrator()->NChannels();
+  msg_Tracking()<<"   Found "<<psh->FSRIntegrator()->NChannels()<<" FSR integrators."<<endl;
   iter = iter0 = Max((int)psh->Process()->ItMin(),Max(20*int(numberofchannels),5000));
   iter1      = Max(2*(int)psh->Process()->ItMin(),Max(100*int(numberofchannels),10000));
   if (iter1>50000) iter1=Max(iter0,50000);

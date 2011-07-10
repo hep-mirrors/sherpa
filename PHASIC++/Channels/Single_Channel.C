@@ -193,3 +193,8 @@ void Single_Channel::ISRInfo
 (std::vector<int> &ts,std::vector<double> &ms,std::vector<double> &ws) const
 {
 }
+
+size_t Single_Channel::NChannels() const
+{
+  return 1;
+}

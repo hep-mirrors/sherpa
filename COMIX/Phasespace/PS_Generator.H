@@ -98,6 +98,8 @@ namespace COMIX {
     void SetColors(const Int_Vector &rc,
 		   const Int_Vector &ac);
 
+    size_t NChannels() const;
+
     // inline functions
     inline const Current_Matrix &Graphs() const { return m_cur; }
 

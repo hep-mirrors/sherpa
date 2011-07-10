@@ -106,6 +106,14 @@ void PS_Generator::CleanUp()
   m_thmass=0.0;
 }
 
+size_t PS_Generator::NChannels() const
+{
+  size_t nch(0);
+  for (size_t i(0);i<m_cur.size();++i)
+    nch+=m_cur[i].size();
+  return nch;
+}    
+
 void PS_Generator::SetColors(const Int_Vector &rc,
 			     const Int_Vector &ac)
 {

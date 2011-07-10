@@ -179,6 +179,8 @@ namespace COMIX {
 
     std::string ChID();
 
+    size_t NChannels() const;
+
     void AddPoint(double value);
 
     void Optimize();

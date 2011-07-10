@@ -684,6 +684,12 @@ bool PS_Channel::GenerateChannels()
   return true;
 }
 
+size_t PS_Channel::NChannels() const
+{
+  return 2*p_xs->Process()->Get<Process_Base>()
+    ->PSGenerator()->NChannels();
+}
+
 void PS_Channel::GeneratePoint
 (ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts,double *rn) 
 {
