@@ -15,6 +15,7 @@ libPhasicSelectors_la_SOURCES =	\
 				NJet_Finder.C \
 				Cone_Finder.C \
 				Standard_Selector.C \
+				Decay_Selector.C \
 				NLO_Selector.C \
 				MinSelector.C \
 				Selector_Bias.C \
