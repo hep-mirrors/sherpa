@@ -16,6 +16,7 @@ libPhasicSelectors_la_SOURCES =	\
 				Cone_Finder.C \
 				Standard_Selector.C \
 				Decay_Selector.C \
+				Decay2_Selector.C \
 				NLO_Selector.C \
 				MinSelector.C \
 				Selector_Bias.C \
