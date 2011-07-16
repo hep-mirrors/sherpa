@@ -844,14 +844,14 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::loop) {
     if (p_loopme->Mode()==0) {
       lme = p_dsij[0][0]*p_flkern->Coupling()*p_loopme->ME_Finite();
-      m_cmur[0]+=(p_loopme->ME_E1()+double(m_nin+m_nout-4)*p_dipole->G2())*
+      m_cmur[0]+=(p_loopme->ME_E1()+(OrderQCD()-1)*p_dipole->G2())*
 	p_dsij[0][0]*p_flkern->Coupling();
       m_cmur[1]+=p_loopme->ME_E2()*p_dsij[0][0]*p_flkern->Coupling();
     }
     else if (p_loopme->Mode()==1) {
       lme = p_flkern->Coupling()*p_loopme->ME_Finite();
       m_cmur[0]+=p_flkern->Coupling()*
-	(p_loopme->ME_E1()+double(m_nin+m_nout-4)*p_dipole->G2());
+	(p_loopme->ME_E1()+(OrderQCD()-1)*p_dipole->G2());
       m_cmur[1]+=p_flkern->Coupling()*p_loopme->ME_E2();
     }
     else THROW(not_implemented,"Unknown mode");
