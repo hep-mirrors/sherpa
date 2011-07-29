@@ -530,6 +530,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
 
 void Single_DipoleTerm::SetSelector(const PHASIC::Selector_Key &key)
 {
+  if (p_LO_process==NULL) return;
   p_LO_process->SetSelector(key);
 }
 
@@ -545,6 +546,7 @@ Point * Single_DipoleTerm::Diagram(int i) {
 
 void Single_DipoleTerm::AddChannels(std::list<std::string>*psln)
 {
+  if (p_LO_process==NULL) return;
   p_LO_process->AddChannels(psln);
 }
 
@@ -562,7 +564,7 @@ std::string Single_DipoleTerm::GetSplitConfID()
 void Single_DipoleTerm::PrintProcessSummary(int it)
 {
   for(int i=0;i<it;i++) cout<<"  ";
-  cout<<m_pi<<"-"<<m_pj<<"-"<<m_pk<<" ("<<p_LO_process->Name()<<")";
+  cout<<m_pi<<"-"<<m_pj<<"-"<<m_pk<<" ("<<p_partner->p_LO_process->Name()<<")";
   if (p_partner!=this) {
     cout<<"; partner (*"<<m_sfactor<<"): ";
     p_partner->PrintProcessSummary(0);
@@ -573,6 +575,7 @@ void Single_DipoleTerm::PrintProcessSummary(int it)
 
 void Single_DipoleTerm::SetScale(const Scale_Setter_Arguments &args)
 {
+  if (p_LO_process==NULL) return;
   if (!p_LO_process->IsMapped()) p_LO_process->SetScale(args);
   p_scale=p_LO_process->Partner()->ScaleSetter();
 }

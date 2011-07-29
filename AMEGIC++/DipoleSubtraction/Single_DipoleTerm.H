@@ -69,7 +69,7 @@ namespace AMEGIC {
 
   public:
     void                AddChannels(std::list<std::string>*);
-    bool                NewLibs() {return p_LO_process->NewLibs();}
+    bool                NewLibs() {return p_LO_process?p_LO_process->NewLibs():false;}
     int                 InitAmplitude(MODEL::Model_Base *,Topology *,
 				      std::vector<Process_Base *> &,
 				      std::vector<Process_Base *> &);

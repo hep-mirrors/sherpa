@@ -266,19 +266,22 @@ void Single_Real_Correction::ReMapFlavs(NLO_subevt *const sub)
     sub->m_pname=m_dnmap[(void*)sub->p_fl];
     return;
   }
+  std::string name(sub->m_pname);
   Flavour_Vector *fls(new Flavour_Vector());
-  if (m_pinfo.m_nlomode==2)
+  if (m_pinfo.m_nlomode!=2) {
+    for (size_t i(0);i<sub->m_n;++i) fls->push_back(sub->p_fl[i]);
+  }
+  else {
     for (size_t i(0);i<sub->m_n;++i)
       fls->push_back(p_tree_process->ReMap(sub->p_fl[i],ToString(sub->p_id[i])));
-  else for (size_t i(0);i<sub->m_n;++i) fls->push_back(sub->p_fl[i]);
-  m_dfmap[(void*)sub->p_fl]=fls;
-  std::string name(sub->m_pname);
-  for (size_t pos(0), i(0);i<fls->size();++i) {
-    std::string ofln(ToString(sub->p_fl[i])), nfln(ToString((*fls)[i]));
-    pos=name.find(ofln,pos);
-    name.replace(pos,ofln.length(),nfln);
-    pos+=nfln.length();
+    for (size_t pos(0), i(0);i<fls->size();++i) {
+      std::string ofln(ToString(sub->p_fl[i])), nfln(ToString((*fls)[i]));
+      pos=name.find(ofln,pos);
+      name.replace(pos,ofln.length(),nfln);
+      pos+=nfln.length();
+    }
   }
+  m_dfmap[(void*)sub->p_fl]=fls;
   sub->p_fl=&fls->front();
   sub->m_pname=m_dnmap[(void*)sub->p_fl]=name;
 }
@@ -476,6 +479,7 @@ void Single_Real_Correction::SetGenerator(ME_Generator_Base *const gen)
 { 
   p_tree_process->SetGenerator(gen);
   for (size_t i=0;i<m_subtermlist.size();++i) {
+    if (m_subtermlist[i]->GetLOProcess())
     m_subtermlist[i]->GetLOProcess()->SetGenerator(gen);
   }
   for (size_t i=0;i<m_subostermlist.size();++i) {
@@ -487,6 +491,7 @@ void Single_Real_Correction::SetShower(PDF::Shower_Base *const ps)
 {
   p_tree_process->SetShower(ps);
   for (size_t i=0;i<m_subtermlist.size();++i) {
+    if (m_subtermlist[i]->GetLOProcess())
     m_subtermlist[i]->GetLOProcess()->SetShower(ps);
   }
 }
@@ -495,6 +500,7 @@ void Single_Real_Correction::SetFixedScale(const std::vector<double> &s)
 {
   p_tree_process->SetFixedScale(s);
   for (size_t i=0;i<m_subtermlist.size();++i)
+    if (m_subtermlist[i]->GetLOProcess())
     m_subtermlist[i]->GetLOProcess()->SetFixedScale(s);
   for (size_t i=0;i<m_subostermlist.size();++i)
     m_subostermlist[i]->GetOSProcess()->SetFixedScale(s);
@@ -504,6 +510,7 @@ void Single_Real_Correction::SetSelectorOn(const bool on)
 {
   p_tree_process->SetSelectorOn(on);
   for (size_t i=0;i<m_subtermlist.size();++i)
+    if (m_subtermlist[i]->GetLOProcess())
     m_subtermlist[i]->GetLOProcess()->SetSelectorOn(on);
   for (size_t i=0;i<m_subostermlist.size();++i)
     m_subostermlist[i]->GetOSProcess()->SetSelectorOn(on);
