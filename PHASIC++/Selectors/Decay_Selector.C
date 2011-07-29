@@ -38,6 +38,28 @@ namespace PHASIC {
 
   };
 
+  class DecayMass_Selector: public Selector_Base {
+  private:
+
+    std::vector<std::vector<int> > m_ids;
+
+    double m_min, m_max;
+
+  public:
+
+    DecayMass_Selector(const Selector_Key &key);
+
+    bool Trigger(const ATOOLS::Vec4D_Vector &p);
+    bool NoJetTrigger(const ATOOLS::Vec4D_Vector &p)
+    { return Trigger(p); }
+    bool JetTrigger(const ATOOLS::Vec4D_Vector &p,
+		    ATOOLS::NLO_subevtlist *const subs)
+    { return true; }
+
+    void BuildCuts(Cut_Data *);
+
+  };
+
 }
 
 #endif
@@ -133,6 +155,78 @@ void Decay_Selector_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 { 
   str<<"Decay kf min max"; 
+}
+
+}
+
+DecayMass_Selector::DecayMass_Selector(const Selector_Key &key):
+  Selector_Base("DecayMass_Selector")
+{
+  DEBUG_FUNC(key.m_key);
+  long int kf(ToType<long int>(key[0][0]));
+  Flavour fl(abs(kf),kf<0);
+  DecayInfo_Vector decs
+    (key.p_proc->Process()->Info().m_fi.GetDecayInfos());
+  for (size_t i(0);i<decs.size();++i)
+    if (decs[i]->m_fl==fl) {
+      m_ids.push_back(ID(decs[i]->m_id));
+      if (m_ids.size()>1 &&
+	  m_ids.front().size()!=m_ids.back().size())
+	THROW(fatal_error,"Varying multiplicity");
+      msg_Debugging()<<"adding "<<m_ids.back()<<"\n";
+    }
+  if (m_ids.empty()) THROW(fatal_error,"No such flavour");
+  m_min=ToType<double>(key[0][1]);
+  m_max=ToType<double>(key[0][2]);
+  msg_Debugging()<<"m_min = "<<m_min
+		 <<", m_max = "<<m_max<<"\n";
+  m_sel_log = new Selector_Log(m_name);
+}
+
+bool DecayMass_Selector::Trigger(const Vec4D_Vector &p)
+{
+  DEBUG_FUNC("");
+  Vec4D sum;
+  for (size_t j(0);j<m_ids.size();++j) {
+    for (size_t i(0);i<m_ids[j].size();++i) sum+=p[m_ids[j][i]];
+    double value(sum.Mass());
+    msg_Debugging()<<m_ids[j]<<" -> "<<value<<"\n";
+    if (value<m_min || value>m_max) return !m_sel_log->Hit(1);
+  }
+  return !m_sel_log->Hit(0);
+}
+
+void DecayMass_Selector::BuildCuts(Cut_Data *cuts)
+{
+  for (size_t j(0);j<m_ids.size();++j) {
+    if (m_ids[j].size()==2) {
+      cuts->scut[m_ids[j][0]][m_ids[j][1]]=
+	cuts->scut[m_ids[j][1]][m_ids[j][0]]=
+	Max(cuts->scut[m_ids[j][0]][m_ids[j][1]],sqr(m_min));
+    }
+    std::string id;
+    for (size_t i(0);i<m_ids[j].size();++i) id+=ToString(m_ids[j][i]);
+    double scut(cuts->Getscut(id));
+    cuts->Setscut(id,Max(scut,sqr(m_min)));
+  }
+}
+
+namespace PHASIC {
+
+DECLARE_ND_GETTER(DecayMass_Selector_Getter,"DecayMass",
+		  Selector_Base,Selector_Key,true);
+
+Selector_Base *DecayMass_Selector_Getter::operator()
+  (const Selector_Key &key) const
+{
+  DecayMass_Selector *msel(new DecayMass_Selector(key));
+  return msel;
+}
+
+void DecayMass_Selector_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{ 
+  str<<"DecayMass kf min max"; 
 }
 
 }
