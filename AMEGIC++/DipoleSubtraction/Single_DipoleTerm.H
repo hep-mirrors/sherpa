@@ -29,6 +29,7 @@ namespace AMEGIC {
     size_t                  m_pi,m_pj,m_pk;
     size_t                  m_LOpij,m_LOpk;
     ATOOLS::Flavour         m_fli,m_flj,m_flij,m_flk;
+    ATOOLS::Flavour_Vector  m_lofl;
     DipoleSplitting_Base*   p_dipole;
     ATOOLS::NLO_subevt      m_subevt;
     double                  m_lastscale;
