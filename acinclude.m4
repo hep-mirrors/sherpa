@@ -414,7 +414,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         AC_MSG_ERROR(Unable to use Rivet from specified path.);
       fi;
       rivetincludedir=$($CONDITIONAL_RIVETDIR/bin/rivet-config --includedir)
-      if grep -q -s setSumOfWeights $rivetincludedir/Rivet/AnalysisHandler.hh; then
+      if grep -q -s setIgnoreBeams $rivetincludedir/Rivet/AnalysisHandler.hh; then
         rivetsetsow=true;
       fi
     ],

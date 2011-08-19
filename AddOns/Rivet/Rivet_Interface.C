@@ -33,7 +33,7 @@ private:
   size_t m_nevt;
   double m_sum_of_weights;
   bool   m_finished;
-  bool   m_splitjetconts, m_splitcoreprocs, m_usehepmcshort;
+  bool   m_splitjetconts, m_splitcoreprocs, m_usehepmcshort, m_ignorebeams;
   
   RivetMap m_rivet;
   HepMC2_Interface m_hepmc2;
@@ -85,6 +85,7 @@ public:
       m_splitjetconts=reader.GetValue<int>("JETCONTS", 0);
       m_splitcoreprocs=reader.GetValue<int>("SPLITCOREPROCS", 0);
       m_usehepmcshort=reader.GetValue<int>("USE_HEPMC_SHORT", 0);
+      m_ignorebeams=reader.GetValue<int>("IGNOREBEAMS", 0);
       Log::setLevel("Rivet", reader.GetValue<int>("-l", 20));
       reader.SetUseGlobalTags(false);
       reader.VectorFromFile(m_analyses,"-a");
@@ -104,10 +105,10 @@ public:
       return it->second;
     }
     else {
-      std::string out=m_outpath;
-      if (proc!="") out+="."+proc;
-      if (jetcont!=0) out+=".j"+ToString(jetcont);
-      AnalysisHandler* rivet(new AnalysisHandler(out, "", AIDAML));
+      AnalysisHandler* rivet(new AnalysisHandler());
+#ifdef USING__RIVET__SETSOW
+      rivet->setIgnoreBeams(m_ignorebeams);
+#endif
       rivet->addAnalyses(m_analyses);
       m_rivet.insert(std::make_pair(key, rivet));
       return rivet;
@@ -254,8 +255,11 @@ public:
 #ifdef USING__RIVET__SETSOW
       it->second->setSumOfWeights(m_sum_of_weights);
 #endif
+      std::string out=m_outpath;
+      if (it->first.first!="") out+="."+it->first.first;
+      if (it->first.second!=0) out+=".j"+ToString(it->first.second);
       it->second->finalize();
-      it->second->commitData();
+      it->second->writeData(out+".aida");
     }
     m_finished=true;
     return true;
