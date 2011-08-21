@@ -23,7 +23,6 @@
 #include "ATOOLS/Math/ZAlign.H"
 #include "ATOOLS/Org/Exception.H"
 
-#define METS__reject_unordered
 // #define CHECK__stepwise
 
 namespace PHASIC {
@@ -75,6 +74,7 @@ namespace PHASIC {
 
     size_t m_cnt, m_rej, m_mode, m_rproc, m_vmode, m_vproc;
     double m_lfrac, m_aqed, m_wthres;
+    bool m_allow_unordered;
 
     ATOOLS::DecayInfo_Vector m_decids;
 
@@ -108,7 +108,7 @@ namespace PHASIC {
   public:
 
     METS_Scale_Setter(const Scale_Setter_Arguments &args,
-		      const int mode=1);
+		      const int mode=1, const bool allow_unordered=false);
 
     ~METS_Scale_Setter();
 
@@ -133,7 +133,7 @@ DECLARE_GETTER(Loose_METS_Scale_Setter_Getter,"LOOSE_METS",
 Scale_Setter_Base *Loose_METS_Scale_Setter_Getter::
 operator()(const Scale_Setter_Arguments &args) const
 {
-  return new METS_Scale_Setter(args,0);
+  return new METS_Scale_Setter(args,0,0);
 }
 
 void Loose_METS_Scale_Setter_Getter::
@@ -148,7 +148,7 @@ DECLARE_GETTER(METS_Scale_Setter_Getter,"METS",
 Scale_Setter_Base *METS_Scale_Setter_Getter::
 operator()(const Scale_Setter_Arguments &args) const
 {
-  return new METS_Scale_Setter(args,1);
+  return new METS_Scale_Setter(args,1,0);
 }
 
 void METS_Scale_Setter_Getter::
@@ -157,13 +157,28 @@ PrintInfo(std::ostream &str,const size_t width) const
   str<<"mets scale scheme";
 }
 
+DECLARE_GETTER(METS_Unordered_Scale_Setter_Getter,"METS_UNORDERED",
+	       Scale_Setter_Base,Scale_Setter_Arguments);
+
+Scale_Setter_Base *METS_Unordered_Scale_Setter_Getter::
+operator()(const Scale_Setter_Arguments &args) const
+{
+  return new METS_Scale_Setter(args,1,1);
+}
+
+void METS_Unordered_Scale_Setter_Getter::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"mets scale scheme without strict ordering";
+}
+
 DECLARE_GETTER(Strict_METS_Scale_Setter_Getter,"STRICT_METS",
 	       Scale_Setter_Base,Scale_Setter_Arguments);
 
 Scale_Setter_Base *Strict_METS_Scale_Setter_Getter::
 operator()(const Scale_Setter_Arguments &args) const
 {
-  return new METS_Scale_Setter(args,2);
+  return new METS_Scale_Setter(args,2,0);
 }
 
 void Strict_METS_Scale_Setter_Getter::
@@ -177,9 +192,10 @@ double METS_Scale_Setter::s_kt2max=
        sqrt(std::numeric_limits<double>::max());
 
 METS_Scale_Setter::METS_Scale_Setter
-(const Scale_Setter_Arguments &args,const int mode):
+(const Scale_Setter_Arguments &args,const int mode, bool allow_unordered):
   Scale_Setter_Base(args), m_tagset(this),
-  m_cnt(0), m_rej(0), m_mode(mode), m_lfrac(0.0)
+  m_cnt(0), m_rej(0), m_mode(mode), m_lfrac(0.0),
+  m_allow_unordered(allow_unordered)
 {
   m_p.resize(4);
   size_t pos(args.m_scale.find('{'));
@@ -460,9 +476,9 @@ double METS_Scale_Setter::CalculateMyScale
     if (ops[ampl->Legs().size()-4]>ckw.m_kt2) {
       msg_Debugging()<<"unordered configuration [ ord = "
 		     <<ords[ampl->Legs().size()-4]<<" ]\n";
-#ifdef METS__reject_unordered
-      if (ords[ampl->Legs().size()-4]) continue;
-#endif
+      if (!m_allow_unordered) {
+        if (ords[ampl->Legs().size()-4]) continue;
+      }
     }
     ampl->SetKT2(ckw.m_kt2);
     ampl->SetMu2(ckw.m_mu2>0.0?ckw.m_mu2:ckw.m_kt2);
@@ -509,13 +525,13 @@ double METS_Scale_Setter::CalculateMyScale
       if (ops[ampl->Legs().size()-4]>kt2core) {
 	msg_Debugging()<<"unordered configuration (core) [ ord = "
 		       <<ords[ampl->Legs().size()-4]<<" ]\n";
-#ifdef METS__reject_unordered
-	if (ords[ampl->Legs().size()-4]) {
-	  ampl=ampl->Prev();
-	  ampl->DeleteNext();
-	  continue;
-	}
-#endif
+        if (!m_allow_unordered) {
+          if (ords[ampl->Legs().size()-4]) {
+            ampl=ampl->Prev();
+            ampl->DeleteNext();
+            continue;
+          }
+        }
       }
     }
   }
