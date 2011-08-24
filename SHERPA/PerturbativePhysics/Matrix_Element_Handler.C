@@ -395,6 +395,18 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur[0]=="Decay") dectags.push_back(MakeString(cur,1));
 	if (cur[0]=="Onshell_Decay" ||
 	    cur[0]=="DecayOS") dectags.push_back("Z"+MakeString(cur,1));
+	if (cur[0]=="Order_EW") pi.m_oew=ToType<int>(cur[1]);
+	if (cur[0]=="Order_QCD") pi.m_oqcd=ToType<int>(cur[1]);
+	if (cur[0]=="Max_Order_EW") pi.m_maxoew=ToType<int>(cur[1]);
+	if (cur[0]=="Max_Order_QCD") pi.m_maxoqcd=ToType<int>(cur[1]);
+	if (cur[0]=="Presample_MC") pi.m_psmc=ToType<int>(cur[1]);
+	if (cur[0]=="Cut_Core") pbi.m_cutcore=ToType<int>(cur[1]);
+	if (cur[0]=="CKKW") {
+	  if (p_shower==NULL || p_shower->GetShower()==NULL)
+	    THROW(fatal_error,"Invalid shower generator");
+	  pi.m_ckkw=1;
+	  pbi.m_gycut=cur[1];
+	}
 	if (cur[0]=="Scales") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vscale,nf);
@@ -407,12 +419,6 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vkfac,nf);
 	}
-	if (cur[0]=="CKKW") {
-	  if (p_shower==NULL || p_shower->GetShower()==NULL)
-	    THROW(fatal_error,"Invalid shower generator");
-	  pi.m_ckkw=1;
-	  pbi.m_gycut=cur[1];
-	}
 	if (cur[0]=="Y_Cut") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vycut,nf);
@@ -421,17 +427,26 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vsfile,nf);
 	}
-	if (cur[0]=="Order_EW") pi.m_oew=ToType<int>(cur[1]);
-	if (cur[0]=="Order_QCD") pi.m_oqcd=ToType<int>(cur[1]);
-	if (cur[0]=="Max_Order_EW") pi.m_maxoew=ToType<int>(cur[1]);
-	if (cur[0]=="Max_Order_QCD") pi.m_maxoqcd=ToType<int>(cur[1]);
-	if (cur[0]=="Min_N_Quarks") pi.m_nminq=ToType<int>(cur[1]);
-	if (cur[0]=="Max_N_Quarks") pi.m_nmaxq=ToType<int>(cur[1]);
-	if (cur[0]=="Print_Graphs") pi.m_gpath=cur[1];
-	if (cur[0]=="Presample_MC") pi.m_psmc=ToType<int>(cur[1]);
-	if (cur[0]=="Enable_MHV") pi.m_amegicmhv=ToType<int>(cur[1]);
-	if (cur[0]=="Cut_Core") pbi.m_cutcore=ToType<int>(cur[1]);
-	if (cur[0]=="Min_N_TChannels") pi.m_ntchan=ToType<int>(cur[1]);
+	if (cur[0]=="Min_N_Quarks") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vnminq,nf);
+	}
+	if (cur[0]=="Max_N_Quarks") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vnmaxq,nf);
+	}
+	if (cur[0]=="Print_Graphs") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vgpath,nf);
+	}
+	if (cur[0]=="Enable_MHV") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vamegicmhv,nf);
+	}
+	if (cur[0]=="Min_N_TChannels") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vntchan,nf);
+	}
 	if (cur[0]=="Integration_Error") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vmaxerr,nf);
@@ -581,6 +596,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	for (size_t i(0);i<nfs;++i) finsum+=flavs[i+nis].Mass();
 	if (inisum>=rpa.gen.Ecms() || finsum>=rpa.gen.Ecms()) continue;
 	std::string pnid(CFS.MultiplicityTag()), ds;
+	int di;
 	Process_Info cpi(pi);
 	cpi.m_ii=IS;
 	cpi.m_fi=CFS;
@@ -591,6 +607,11 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	if (GetMPvalue(pbi.m_vcoupl,nfs,pnid,ds)) cpi.m_coupling=ds;
 	if (GetMPvalue(pbi.m_vkfac,nfs,pnid,ds)) cpi.m_kfactor=ds;
 	if (GetMPvalue(pbi.m_vsfile,nfs,pnid,ds)) cpi.m_selectorfile=ds;
+	if (GetMPvalue(pbi.m_vnmaxq,nfs,pnid,di)) cpi.m_nmaxq=di;
+	if (GetMPvalue(pbi.m_vnminq,nfs,pnid,di)) cpi.m_nminq=di;
+	if (GetMPvalue(pbi.m_vamegicmhv,nfs,pnid,di)) cpi.m_amegicmhv=di;
+	if (GetMPvalue(pbi.m_vntchan,nfs,pnid,di)) cpi.m_ntchan=di;
+	if (GetMPvalue(pbi.m_vgpath,nfs,pnid,ds)) cpi.m_gpath=ds;
 	if (GetMPvalue(pbi.m_vnloqcd,nfs,pnid,ds)) {
           cpi.m_fi.m_nloqcdtype=ToType<nlo_type::code>(ds);
           cpi.m_nlomode=m_nlomode;
@@ -719,6 +740,11 @@ size_t Matrix_Element_Handler::ExtractFlavours(Subprocess_Info &info,std::string
 
 namespace SHERPA {
 
+  template <> int Matrix_Element_Handler::ExtractMPvalue(const std::string& str)
+  {
+    return ToType<int>(str);
+  }
+
   template <> double Matrix_Element_Handler::ExtractMPvalue(const std::string& str)
   {
     Algebra_Interpreter inter;
@@ -797,6 +823,9 @@ namespace SHERPA {
     return false;
   }
 
+  template bool Matrix_Element_Handler::GetMPvalue
+  (std::map<std::string,std::pair<int,int> >& dv,
+   const int nfs,const std::string &pnid,int &rv);
   template bool Matrix_Element_Handler::GetMPvalue
   (std::map<std::string,std::pair<int,double> >& dv,
    const int nfs,const std::string &pnid,double &rv);

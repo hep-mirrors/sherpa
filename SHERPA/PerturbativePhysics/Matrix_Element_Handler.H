@@ -37,13 +37,16 @@ namespace SHERPA {
   class Matrix_Element_Handler {
   public:
 
+    typedef std::map<std::string,std::pair<int,int> >         MPIV_Map;
     typedef std::map<std::string,std::pair<int,double> >      MPDV_Map;
     typedef std::map<std::string,std::pair<int,std::string> > MPSV_Map;
 
     struct Processblock_Info {
       MPDV_Map m_vmaxerr, m_vmaxeps, m_vefac, m_vrbmaxeps;
       MPSV_Map m_veobs, m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac,
-	m_vsfile, m_vnloqcd, m_vnloew, m_vmegen, m_vloopgen;
+	m_vsfile, m_vnloqcd, m_vnloew, m_vmegen, m_vloopgen, m_vgpath;
+      MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv, m_vntchan;
+
       std::string m_gycut;
       int m_cutcore;
       inline Processblock_Info(): m_cutcore(0) {}
