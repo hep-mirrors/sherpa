@@ -572,7 +572,8 @@ bool Cluster_Algorithm::Cluster
     if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo,kt2))
       if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo)) {
   	if (ampl->Legs().size()==4) return true;
-	if (ampl->Mu2()<=ampl->Next()->Mu2()) return true;
+	if (ampl->Mu2()<=ampl->Next()->Mu2() ||
+	    (m_wmode&16)) return true;
 	msg_Debugging()<<"reject ordering: "<<sqrt(ampl->Mu2())
 		       <<" vs. "<<sqrt(ampl->Next()->Mu2())<<"\n";
       }

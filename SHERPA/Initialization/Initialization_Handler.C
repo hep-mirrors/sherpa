@@ -356,7 +356,7 @@ void Initialization_Handler::PrepareTerminate()
 bool Initialization_Handler::InitializeTheFramework(int nr)
 {
   bool okay = true;
-  SetScaleFactors();
+  SetGlobalVariables();
   okay = okay && InitializeTheModel();  
   
   if (m_mode>=9000) {
@@ -804,7 +804,7 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   return ok;
 }
 
-void Initialization_Handler::SetScaleFactors() 
+void Initialization_Handler::SetGlobalVariables() 
 {
   Data_Reader dr(" ",";","!","=");
   dr.AddComment("#");
@@ -819,6 +819,9 @@ void Initialization_Handler::SetScaleFactors()
   msg_Debugging()<<METHOD<<"(): Set scale factors {\n"
 		 <<"  fac scale: "<<rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR")<<"\n"
 		 <<"  ren scale: "<<rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
+  int cmode=dr.GetValue<int>("METS_CLUSTER_MODE",0);
+  rpa.gen.SetVariable("METS_CLUSTER_MODE",ToString(cmode));
+  if (cmode!=0) msg_Info()<<METHOD<<"(): Set cluster mode "<<cmode<<".\n";
 }
 
 bool Initialization_Handler::ExtractValArg

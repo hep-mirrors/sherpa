@@ -562,7 +562,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
 	  if (kt2>kt2min) {
 	    msg_Debugging()<<"unordered configuration (core) "
 			   <<sqrt(kt2)<<" vs. "<<sqrt(kt2min)<<"\n";
-	    continue;
+	    if (!(mode&16)) continue;
 	  }
 	  if (m_graph_winner>=0) return this;
 	}
@@ -577,7 +577,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     if (kt2>m_cdata_winner->second.m_pt2ij.m_mu2) {
       msg_Debugging()<<"unordered configuration "<<sqrt(kt2)<<" vs. "
 		     <<sqrt(m_cdata_winner->second.m_pt2ij.m_mu2)<<"\n";
-      continue;
+      if (!(mode&16)) continue;
     }
     if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
     Combine_Table *tab(CreateNext());
