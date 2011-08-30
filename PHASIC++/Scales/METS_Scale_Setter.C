@@ -229,7 +229,7 @@ const Vec4D_Vector &METS_Scale_Setter::Momenta() const
 double METS_Scale_Setter::CalculateStrict
 (const Vec4D_Vector &momenta,const int mode)
 {
-  if (p_caller->Shower()==NULL) THROW(fatal_error,"No shower");
+  if (p_caller->Shower()==NULL) THROW(fatal_error,"No shower generator");
   DEBUG_FUNC(p_caller->Name());
   p_caller->Integrator()->SetMomenta(momenta);
   p_caller->Generator()->SetClusterDefinitions
@@ -299,6 +299,7 @@ double METS_Scale_Setter::CalculateMyScale
     m_scale2=p_proc->Integrator()->ISR()->On() && m_f[0]!=m_f[1];
     return CalculateStrict(momenta,mode);
   }
+  if (p_caller->Shower()==NULL) THROW(fatal_error,"No shower generator");
   DEBUG_FUNC(p_proc->Name());
   for (int ic(p_ci==NULL?1:0);ic<2;++ic) {
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
