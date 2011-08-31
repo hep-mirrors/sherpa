@@ -245,6 +245,8 @@ ATOOLS::Cluster_Amplitude *MI_Handler::ClusterConfiguration()
   p_ampl->SetNIn(xs->NIn());
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
+  p_ampl->SetKT2(muf2);
+  p_ampl->SetMu2(mur2);
   p_ampl->SetOrderEW(xs->OrderEW());
   p_ampl->SetOrderQCD(xs->OrderQCD());
   p_ampl->SetMS(this);
