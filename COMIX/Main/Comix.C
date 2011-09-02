@@ -227,15 +227,17 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
   struct stat buffer;
   msg_Debugging()<<"checking for '"<<mapfile<<"' ... "<<std::flush;
   if (stat(mapfile.c_str(),&buffer)==-1) {
-    msg_Debugging()<<" no mapping info"<<std::endl;
+    msg_Debugging()<<"not found"<<std::endl;
   }
   else {
+    msg_Debugging()<<"found"<<std::endl;
     if (buffer.st_mtime>m_mets || m_map&2) {
       std::ifstream map(mapfile.c_str());
       if (map.good()) {
 	while (!map.eof()) {
 	  std::string src, dest;
 	  map>>src>>dest;
+	  if (map.eof()) break;
 	  pmap[src]=dest;
 	  msg_Debugging()<<" map '"<<src<<"' onto '"<<dest<<"'\n";
 	}
@@ -282,8 +284,13 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
   }
   if (add) Add(newxs);
   else m_rsprocs.push_back(newxs);
-  remove(mapfile.c_str());
   if (m_map&1) {
+    msg_Debugging()<<"checking for '"<<mapfile<<"' ... ";
+    if (FileExists(mapfile)) {
+      msg_Debugging()<<"found"<<std::endl;
+    }
+    else {
+    msg_Debugging()<<"not found"<<std::endl;
     std::ofstream map(mapfile.c_str());
     if (map.good()) {
       for (std::map<std::string,std::string>::const_iterator
@@ -292,6 +299,7 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
 		       <<"' onto '"<<mit->second<<"'\n";
 	map<<mit->first<<" "<<mit->second<<"\n";
       }
+    }
     }
   }
   newxs->SetGenerator(this);

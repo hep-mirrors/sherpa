@@ -46,7 +46,13 @@ bool COMIX::Single_Process::Initialize
     msg_Debugging()<<METHOD<<"(): Map '"<<m_name<<"' onto '"
 		   <<mapname<<"'"<<std::endl;
     if (mapname=="x") return false;
-    if (mapname!=m_name) return true;
+    if (mapname!=m_name) {
+      std::string mapfile(rpa.gen.Variable("SHERPA_CPP_PATH")
+			  +"/Process/Comix/"+m_name+".fmap");
+      if (FileExists(mapfile)) return true;
+      msg_Info()<<METHOD<<"(): Flavour map file '"
+		<<mapfile<<"' not found."<<std::endl;
+    }
   }
   msg_Debugging()<<"'"<<m_name<<"' not pre-mapped"<<std::endl;
   p_model->GetModel()->GetCouplings(m_cpls);
@@ -94,6 +100,7 @@ bool COMIX::Single_Process::MapProcess()
 	  while (!map.eof()) {
 	    long int src, dest;
 	    map>>src>>dest;
+	    if (map.eof()) break;
 	    Flavour ft((kf_code)(abs(src)),src<0);
 	    Flavour fb((kf_code)(abs(dest)),dest<0);
 	    m_fmap[ft]=fb;
@@ -116,14 +123,16 @@ bool COMIX::Single_Process::MapProcess()
 			  +"/Process/Comix");
       MakeDir(mapfile,true);
       mapfile+="/"+m_name+".fmap";
-      std::ofstream map(mapfile.c_str());
-      if (map.good()) {
-	for (Flavour_Map::const_iterator 
-	       fit(m_fmap.begin());fit!=m_fmap.end();++fit) {
-	  msg_Debugging()<<"  fmap '"<<fit->first
-			 <<"' onto '"<<fit->second<<"'\n";
-	  long int src(fit->first), dest(fit->second);
-	  map<<src<<" "<<dest<<"\n";
+      if (!FileExists(mapfile)) {
+	std::ofstream map(mapfile.c_str());
+	if (map.good()) {
+	  for (Flavour_Map::const_iterator 
+		 fit(m_fmap.begin());fit!=m_fmap.end();++fit) {
+	    msg_Debugging()<<"  fmap '"<<fit->first
+			   <<"' onto '"<<fit->second<<"'\n";
+	    long int src(fit->first), dest(fit->second);
+	    map<<src<<" "<<dest<<"\n";
+	  }
 	}
       }
       delete p_bg;
