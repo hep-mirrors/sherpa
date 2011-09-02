@@ -30,7 +30,7 @@ POWHEG_Multi_Channel::POWHEG_Multi_Channel
     psh->TestPoint(&p.front(),&sproc->Info());
     for (int i(0);i<nin+nout;++i)
       p_bampl->Leg(i)->SetMom(i<nin?-p[i]:p[i]);
-    sproc->Differential(*p_bampl);
+    sproc->Differential(*p_bampl,4);
   } while (!p_proc->InitSubtermInfo());
   p_bampl->Legs().back()->Delete();
   p_bampl->Legs().pop_back();
