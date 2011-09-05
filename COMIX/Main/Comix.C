@@ -314,10 +314,10 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     }
     }
   }
-  newxs->SetGenerator(this);
 #ifdef USING__MPI
   }
 #endif
+  newxs->SetGenerator(this);
   return newxs;
 }
 
