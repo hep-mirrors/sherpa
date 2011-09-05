@@ -403,7 +403,6 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur[0]=="Order_QCD") pi.m_oqcd=ToType<int>(cur[1]);
 	if (cur[0]=="Max_Order_EW") pi.m_maxoew=ToType<int>(cur[1]);
 	if (cur[0]=="Max_Order_QCD") pi.m_maxoqcd=ToType<int>(cur[1]);
-	if (cur[0]=="Presample_MC") pi.m_psmc=ToType<int>(cur[1]);
 	if (cur[0]=="Cut_Core") pbi.m_cutcore=ToType<int>(cur[1]);
 	if (cur[0]=="CKKW") {
 	  if (p_shower==NULL || p_shower->GetShower()==NULL)

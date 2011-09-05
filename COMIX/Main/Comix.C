@@ -266,7 +266,6 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
     newxs->Get<COMIX::Process_Base>()->SetModel(p_model);
     newxs->Get<COMIX::Process_Base>()->SetGPath(pi.m_gpath);
-    newxs->Get<COMIX::Process_Base>()->SetPSMC(pi.m_psmc);
     if (!newxs->Get<PHASIC::Process_Group>()->ConstructProcesses()) {
       msg_Debugging()<<METHOD<<"(): Construct failed for '"
 		     <<newxs->Name()<<"'\n";
@@ -281,7 +280,6 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
     newxs->Get<COMIX::Process_Base>()->SetModel(p_model);
     newxs->Get<COMIX::Process_Base>()->SetGPath(pi.m_gpath);
-    newxs->Get<COMIX::Process_Base>()->SetPSMC(pi.m_psmc);
     if (!newxs->Get<Single_Process>()->Initialize(&pmap,&m_umprocs.back())) {
       msg_Debugging()<<METHOD<<"(): Init failed for '"
 		     <<newxs->Name()<<"'\n";

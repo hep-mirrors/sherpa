@@ -309,11 +309,6 @@ bool COMIX::Single_Process::FillIntegrator(Phase_Space_Handler *const psh)
   return COMIX::Process_Base::FillIntegrator(psh);
 }
 
-void COMIX::Single_Process::UpdateIntegrator(Phase_Space_Handler *const psh)
-{
-  Process_Base::UpdateIntegrator(psh);
-}
-
 Flavour COMIX::Single_Process::ReMap(const Flavour &fl) const
 {
   if (p_map==NULL) return fl;

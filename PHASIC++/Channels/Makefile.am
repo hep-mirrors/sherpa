@@ -24,8 +24,6 @@ libPhasicChannels_la_SOURCES  =	\
 				ISR_Channels.C \
 				Beam_Channels.C \
 				FSR_Channels.C \
-				PreSample_Multi_Channel.C \
-				Sample_Multi_Channel.C \
 				POWHEG_Multi_Channel.C \
 				CS_Dipole.C \
                                 CS_Dipoles.C \
@@ -50,8 +48,6 @@ localinc_HEADERS      =	\
 			ISR_Channels.H \
 			Beam_Channels.H \
 			FSR_Channels.H \
-			PreSample_Multi_Channel.H \
-			Sample_Multi_Channel.H \
 			POWHEG_Multi_Channel.H \
 			CS_Dipole.H \
 			CS_Dipoles.H \

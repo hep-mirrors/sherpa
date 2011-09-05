@@ -39,7 +39,6 @@ bool COMIX::Process_Group::Initialize(PHASIC::Process_Base *const proc)
 {
   COMIX::Process_Base *cdxs(proc->Get<COMIX::Process_Base>());
   cdxs->SetModel(p_model);
-  cdxs->SetPSMC(m_psmc);
   cdxs->SetGPath(m_gpath);
   proc->Integrator()->SetHelicityScheme(p_int->HelicityScheme());
   if (!cdxs->Initialize(p_pmap,p_umprocs)) return false;
@@ -90,9 +89,4 @@ void COMIX::Process_Group::ConstructPSVertices(PS_Generator *ps)
 bool COMIX::Process_Group::FillIntegrator(Phase_Space_Handler *const psh)
 {
   return COMIX::Process_Base::FillIntegrator(psh);
-}
-
-void COMIX::Process_Group::UpdateIntegrator(Phase_Space_Handler *const psh)
-{
-  Process_Base::UpdateIntegrator(psh);
 }

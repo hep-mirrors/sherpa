@@ -32,8 +32,7 @@ namespace COMIX {
 
     Int_Matrix m_colours;
 
-    bool   m_psmc;
-    int    m_cls, m_hls, m_imode;
+    int    m_cls, m_hls;
 
     std::string m_gpath;
 
@@ -59,7 +58,6 @@ namespace COMIX {
     virtual void InitPSGenerator(const size_t &ismode) = 0;
 
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
-    void UpdateIntegrator(PHASIC::Phase_Space_Handler *const psh);
 
     virtual bool Tests() = 0;
     virtual void ConstructPSVertices(PS_Generator *ps) = 0;
@@ -70,8 +68,6 @@ namespace COMIX {
     inline Int_Matrix Colours() const { return m_colours; }
 
     inline SP(Model) GetModel() const { return p_model; }
-
-    inline void SetPSMC(const bool psmc) { m_psmc=psmc; }
 
     inline void SetGPath(const std::string &gpath) { m_gpath=gpath; }
 

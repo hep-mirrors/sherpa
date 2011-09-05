@@ -53,7 +53,6 @@ namespace COMIX {
     bool Tests();
 
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
-    void UpdateIntegrator(PHASIC::Phase_Space_Handler *const psh);
 
     bool Combinable(const size_t &idi,const size_t &idj);
 
