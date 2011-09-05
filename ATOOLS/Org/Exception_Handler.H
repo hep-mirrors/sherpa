@@ -23,7 +23,7 @@ namespace ATOOLS {
     unsigned int  m_signal, m_exitcode;
     Exception    *m_exception;
     
-    unsigned int m_nbus, m_nsegv;
+    unsigned int m_nbus, m_nsegv, m_mpi_timeout;
 
     std::string m_progname;
 
@@ -33,20 +33,21 @@ namespace ATOOLS {
     std::vector<Tester_Object*>     m_testerobjects;
     std::vector<Terminator_Object*> m_terminatorobjects;
 
+    std::vector<int> m_mpi;
+
     void SetExitCode();
 
     friend class Exception;
     
-    // constructor
-    Exception_Handler();
-
   public:
+
+    Exception_Handler();
 
     ~Exception_Handler();
 
     // member functions
-    void Init();
     void Reset();
+    void MPISync();
 
     bool ReadInStatus(const std::string &path);
     bool ApproveTerminate();
@@ -70,16 +71,19 @@ namespace ATOOLS {
     void RemoveTesterObject(Tester_Object *const object);
     void RemoveTerminatorObject(Terminator_Object *const object);
     
-    void SetActive(const bool active);    
-    void SetStackTrace(const bool trace); 
-    void SetProgramName(const std::string &name);
+    inline void SetActive(const bool active)            { m_active=active;    }
+    inline void SetStackTrace(const bool trace)         { m_stacktrace=trace; }
+    inline void SetProgramName(const std::string &name) { m_progname=name;    }
+    inline void SetMPITimeOut(const int t)              { m_mpi_timeout=t;    }
 
-    bool Active();
-    bool StackTrace();
+    inline bool Active()     { return m_active;     }
+    inline bool StackTrace() { return m_stacktrace; }
 
-    Exception    *LastException();
-    unsigned int  LastSignal();
-    std::string   ProgramName();
+    inline Exception    *LastException() { return m_exception; }
+    inline unsigned int  LastSignal()    { return m_signal;    }
+    inline std::string   ProgramName()   { return m_progname;  }
+
+    int MPIStat(int rank);
 
   };// end of class Exception_Handler
 

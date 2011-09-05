@@ -86,10 +86,10 @@ double CS_Cluster_Definitions::GetX
   const Vec4D &p(l->Mom());
   if (p.PPlus()<p.PMinus()) {
     if (sf) sf->Lorentz()->SetBeam(0);
-    return -p.PPlus()/rpa.gen.PBeam(0).PPlus();
+    return -p.PPlus()/rpa->gen.PBeam(0).PPlus();
   }
   if (sf) sf->Lorentz()->SetBeam(1);
-  return -p.PMinus()/rpa.gen.PBeam(1).PMinus();
+  return -p.PMinus()/rpa->gen.PBeam(1).PMinus();
 }
 
 Flavour CS_Cluster_Definitions::ProperFlav(const Flavour &fl) const
@@ -426,7 +426,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_FI
   Vec4D pan(-lt.PaNew());
   if (pan[0]>0.0 || IsZero(pan[0],1.0e-6) ||
       lt.Status()<0) return Vec4D_Vector();
-  if (-pan[0]>rpa.gen.PBeam(a)[0]) return Vec4D_Vector();
+  if (-pan[0]>rpa->gen.PBeam(a)[0]) return Vec4D_Vector();
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
     if (m==(size_t)j) continue;
     if (m==(size_t)a) after[l]=pan;
@@ -485,7 +485,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_IF
   Vec4D pan(-lt.PaNew());
   if (pan[0]>0.0 || IsZero(pan[0],1.0e-6) ||
       lt.Status()<0) return Vec4D_Vector();
-  if (-pan[0]>rpa.gen.PBeam(a)[0]) return Vec4D_Vector();
+  if (-pan[0]>rpa->gen.PBeam(a)[0]) return Vec4D_Vector();
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
     if (m==(size_t)i) continue;
     if (m==(size_t)a) after[l]=pan;
@@ -507,7 +507,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_IF
   Vec4D pan(-lt.PaNew());
   if (pan[0]>0.0 || IsZero(pan[0],1.0e-6) ||
       lt.Status()<0) return Vec4D_Vector();
-  if (-pan[0]>rpa.gen.PBeam(a)[0]) return Vec4D_Vector();
+  if (-pan[0]>rpa->gen.PBeam(a)[0]) return Vec4D_Vector();
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
     if (m==(size_t)i) continue;
     if (m==(size_t)a) after[l]=pan;

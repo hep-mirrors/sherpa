@@ -8,16 +8,18 @@ namespace PHASIC {
   class Phase_Space_Integrator {
   private:
 
-    double          result, max, error;
-    int             iter,iter0,iter1,nopt;
+    int             iter,iter0,iter1,nopt,optiter,wadjust;
     long unsigned int        maxopt;
     static long unsigned int nmax;
 
-    double starttime, lotime, totalopt, addtime;
+    double starttime, lotime, totalopt, addtime, lrtime;
     double value, maxerror, rstarttime, rlotime;
     long unsigned int n, ncontrib, endopt, nlo, fin_opt, nstep, ncstep;
+    long int mn, mnstep, mncstep;
 
     Phase_Space_Handler *psh;
+
+    void MPISync();
 
   public:
 
@@ -29,9 +31,6 @@ namespace PHASIC {
     double CalculateDecay(Phase_Space_Handler*,double); 
 
     //! Simple access methods.
-    inline double GetMax()            { return max;  };
-    inline void   SetMax(double _max) { max = _max;  };
-
     static long int MaxPoints();
     static void     SetMaxPoints(long int _nmax);
 

@@ -305,8 +305,8 @@ bool Flavour::IsC_Hadron() const
 
 double Flavour::GenerateLifeTime() const
 {
-  double proper_time = rpa.hBar() / Width();
-  return -proper_time*log(1.-ran.Get());
+  double proper_time = rpa->hBar() / Width();
+  return -proper_time*log(1.-ran->Get());
 }
 
 bool Flavour::IsStable() const

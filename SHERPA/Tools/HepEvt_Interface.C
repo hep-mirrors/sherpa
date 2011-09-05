@@ -217,11 +217,11 @@ bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
     if(inparts.size()==2) {
       SetFl1(inparts[0]->Flav().Kfcode());
       double E1 = inparts[0]->Momentum()[0];
-      double Ebeam1 = rpa.gen.PBeam(0)[0];
+      double Ebeam1 = rpa->gen.PBeam(0)[0];
       Setx1(E1/Ebeam1);
       SetFl2(inparts[1]->Flav().Kfcode());
       double E2 = inparts[1]->Momentum()[0];
-      double Ebeam2 = rpa.gen.PBeam(1)[0];
+      double Ebeam2 = rpa->gen.PBeam(1)[0];
       Setx2(E2/Ebeam2);
     }
     else THROW(fatal_error,"Not two signal particles.");

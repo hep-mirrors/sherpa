@@ -10,6 +10,9 @@
 
 #include "ATOOLS/Math/Random.H"
 #include <unistd.h>
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -22,11 +25,12 @@ Phase_Space_Integrator::Phase_Space_Integrator()
   Data_Reader read(" ",";","!","=");
   read.AddComment("#");
   read.AddWordSeparator("\t");
-  read.SetInputPath(rpa.GetPath());
-  read.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+  read.SetInputPath(rpa->GetPath());
+  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   if (!read.ReadFromFile(nmax,"PSI_NMAX")) 
     nmax=std::numeric_limits<long unsigned int>::max();
   else msg_Info()<<METHOD<<"(): Set n_{max} = "<<nmax<<".\n";
+  if (!read.ReadFromFile(wadjust,"PSI_ADJUST_POINTS")) wadjust=1;
   addtime=0.0;
 }
 
@@ -34,15 +38,90 @@ Phase_Space_Integrator::~Phase_Space_Integrator()
 {
 }
 
+void Phase_Space_Integrator::MPISync()
+{
+#ifdef USING__MPI
+  double nrtime=ATOOLS::rpa->gen.Timer().RealTime();
+  exh->MPISync();
+  psh->MPISync();
+  int size=MPI::COMM_WORLD.Get_size();
+  if (size>1) {
+    int rank=MPI::COMM_WORLD.Get_rank();
+    double values[4];
+    if (rank==0) {
+      double trtime=(nrtime-lrtime)/mn;
+      std::vector<double> times(size,nrtime-lrtime);
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	MPI::COMM_WORLD.Recv(&values,4,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+	mn+=values[0];
+	mnstep+=values[1];
+	mncstep+=values[2];
+	trtime+=times[tag]=values[3]/values[0];
+      }
+      int sum=0, max=0, min=std::numeric_limits<int>::max();
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	if (!wadjust) sum+=times[tag]=(int)iter/size;
+	else sum+=times[tag]=(int)Max(10.0,iter*times[tag]/trtime);
+	min=Min(min,(int)times[tag]);
+	max=Max(max,(int)times[tag]);
+      }
+      optiter=iter-sum;
+      min=Min(min,optiter);
+      max=Max(max,optiter);
+      if (wadjust) {
+	msg_Info()<<"MPI point range: "
+		  <<min<<" .. "<<max<<std::endl;
+	if (msg_LevelIsTracking() || wadjust>1) {
+	msg_Info()<<"New weights {\n  master: "<<optiter<<"\n";
+	for (int tag=1;tag<size;++tag)
+	  msg_Info()<<"  node "<<tag<<": "<<times[tag]<<"\n";
+	msg_Info()<<"}"<<std::endl;
+	}
+      }
+      values[0]=mn;
+      values[1]=mnstep;
+      values[2]=mncstep;
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	values[3]=times[tag];
+	MPI::COMM_WORLD.Send(&values,4,MPI::DOUBLE,tag,size+tag);
+      }
+    }
+    else {
+      values[0]=mn;
+      values[1]=mnstep;
+      values[2]=mncstep;
+      values[3]=nrtime-lrtime;
+      MPI::COMM_WORLD.Send(&values,4,MPI::DOUBLE,0,rank);
+      MPI::COMM_WORLD.Recv(&values,4,MPI::DOUBLE,0,size+rank);
+      mn=values[0];
+      mnstep=values[1];
+      mncstep=values[2];
+      optiter=values[3];
+    }
+  }
+  n+=mn;
+  nstep+=mnstep;
+  ncstep+=mncstep;
+  mn=mnstep=mncstep=0;
+  ncontrib=psh->FSRIntegrator()->ValidN();
+  nlo=0;
+#else
+  nlo=psh->FSRIntegrator()->ValidN();
+#endif
+  lrtime=ATOOLS::rpa->gen.Timer().RealTime();
+}
+
 double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxerror, int _fin_opt) 
 {
+  mn=mnstep=mncstep=0;
   maxerror=_maxerror;
   fin_opt=_fin_opt;
   psh=_psh;
   msg_Info()<<"Starting the calculation. Lean back and enjoy ... ."<<endl; 
   if (maxerror >= 1.) nmax = 1;
-
-  result = max = error = 0.;
 
   int numberofchannels = 1;
 
@@ -75,22 +154,34 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
   if (ncontrib/iter0>=5) iter=iter1;
 
   endopt = 1;
+#ifdef USING__MPI
+  nlo=0;
+#else
   nlo=psh->FSRIntegrator()->ValidN();
+#endif
   if (ncontrib>maxopt) endopt=2;
 
   addtime = 0.0;
 #ifdef USING__Threading
-  rlotime = rstarttime = ATOOLS::rpa.gen.Timer().RealTime();
+  rlotime = rstarttime = ATOOLS::rpa->gen.Timer().RealTime();
 #endif
-  lotime = starttime = ATOOLS::rpa.gen.Timer().UserTime();
+  lotime = starttime = ATOOLS::rpa->gen.Timer().UserTime();
   if (psh->Stats().size()>0)
     addtime=psh->Stats().back()[6];
   totalopt  = maxopt+8.*iter1;
 
   nstep = ncstep = 0;
+
+  lrtime = ATOOLS::rpa->gen.Timer().RealTime();
+  optiter=iter;
+#ifdef USING__MPI
+  int size = MPI::COMM_WORLD.Get_size();
+  optiter /= size;
+  if (MPI::COMM_WORLD.Get_rank()==0) optiter+=iter-(iter/size)*size;
+#endif
   
-  for (n=ATOOLS::Max(psh->Process()->Points(),(long int)0)+1;n<=nmax;n++) {
-    if (!rpa.gen.CheckTime()) {
+  for (n=psh->Process()->Points();n<=nmax;) {
+    if (!rpa->gen.CheckTime()) {
       msg_Error()<<ATOOLS::om::bold
 			 <<"\nPhase_Space_Integrator::Calculate(): "
 			 <<ATOOLS::om::reset<<ATOOLS::om::red
@@ -104,8 +195,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
     
   }
   
-  result = (psh->Process())->TotalResult() * rpa.Picobarn();
-  return result;
+  return psh->Process()->TotalResult() * rpa->Picobarn();
   
 }
 
@@ -116,14 +206,25 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     return false;
   }
       
+#ifdef USING__MPI
+  ++mn;
+  mnstep++;
+  if (value!=0.) mncstep++;
+#else
+  ++n;
   nstep++;
   if (value!=0.) ncstep++;
+#endif
   
     psh->AddPoint(value);
 
+#ifdef USING__MPI
+    ncontrib = psh->FSRIntegrator()->ValidMN();
+#else
     ncontrib = psh->FSRIntegrator()->ValidN();
-    if ( ncontrib!=nlo && ncontrib>0 && ((ncontrib%iter)==0 || ncontrib==maxopt)) {
-      nlo=ncontrib;
+#endif
+    if ( ncontrib!=nlo && ncontrib>0 && ((ncontrib%optiter)==0 || ncontrib==maxopt)) {
+      MPISync();
       bool optimized=false;
       bool fotime = false;
       msg_Tracking()<<" n="<<ncontrib<<"  iter="<<iter<<"  maxopt="<<maxopt<<endl;
@@ -133,9 +234,9 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	  (psh->Process())->OptimizeResult();
 	  if ((psh->Process())->SPoints()==0) {
 #ifdef USING__Threading
-	    rlotime = ATOOLS::rpa.gen.Timer().RealTime();
+	    rlotime = ATOOLS::rpa->gen.Timer().RealTime();
 #endif
-	    lotime = ATOOLS::rpa.gen.Timer().UserTime();
+	    lotime = ATOOLS::rpa->gen.Timer().UserTime();
 	  }
 	}
 	fotime = true;
@@ -149,27 +250,29 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       else {
 	(psh->Process())->ResetMax(0);
       }
-      if ((ncontrib==maxopt) && (endopt<2)) {
+      if ((ncontrib>=maxopt) && (endopt<2)) {
 	psh->EndOptimize();
+	int oiter=iter;
 	if (psh->UpdateIntegrators()) iter=iter0;
 	else iter*=2;
+	optiter*=iter/oiter;
 	maxopt += 4*iter;
 	endopt++;
 	(psh->Process())->ResetMax(1);
 	(psh->Process())->InitWeightHistogram();
 #ifdef USING__Threading
-	rlotime = ATOOLS::rpa.gen.Timer().RealTime();
+	rlotime = ATOOLS::rpa->gen.Timer().RealTime();
 #endif
-	lotime = ATOOLS::rpa.gen.Timer().UserTime();
+	lotime = ATOOLS::rpa->gen.Timer().UserTime();
 	return false;
       }
 
 #ifdef USING__Threading
-      double rtime = ATOOLS::rpa.gen.Timer().RealTime();
+      double rtime = ATOOLS::rpa->gen.Timer().RealTime();
       double rtimeest=0.;
       rtimeest = totalopt/double(ncontrib)*(rtime-rstarttime);
 #endif
-      double time = ATOOLS::rpa.gen.Timer().UserTime();
+      double time = ATOOLS::rpa->gen.Timer().UserTime();
       double timeest=0.;
       timeest = totalopt/double(ncontrib)*(time-starttime);
       if (!fotime) {
@@ -190,11 +293,11 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 #endif
 	}
       }
-      error=dabs(psh->Process()->TotalVar()/psh->Process()->TotalResult());
+      double error=dabs(psh->Process()->TotalVar()/psh->Process()->TotalResult());
       msg_Info()<<om::blue
-		<<(psh->Process())->TotalResult()*rpa.Picobarn()
+		<<(psh->Process())->TotalResult()*rpa->Picobarn()
 		<<" pb"<<om::reset<<" +- ( "<<om::red
-		<<(psh->Process())->TotalVar()*rpa.Picobarn()
+		<<(psh->Process())->TotalVar()*rpa->Picobarn()
 		<<" pb = "<<error*100<<" %"<<om::reset<<" ) "
 		<<ncontrib<<" ( "<<n<<" -> "<<(ncstep*1000/nstep)/10.0
 		<<" % )"<<endl;
@@ -217,8 +320,8 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 		<<" left )   "<<endl; 
 #endif
       std::vector<double> stats(6);
-      stats[0]=psh->Process()->TotalResult()*rpa.Picobarn();
-      stats[1]=psh->Process()->TotalVar()*rpa.Picobarn();
+      stats[0]=psh->Process()->TotalResult()*rpa->Picobarn();
+      stats[1]=psh->Process()->TotalVar()*rpa->Picobarn();
       stats[2]=error;
       stats[3]=ncontrib;
       stats[4]=ncontrib/(double)n;
@@ -237,9 +340,10 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,
                                               double maxerror) 
 { 
+  mn=mnstep=mncstep=0;
   msg_Info()<<"Starting the calculation for a decay. Lean back and enjoy ... ."<<endl; 
   
-  iter      = 20000;
+  optiter = iter = 20000;
   nopt      = 10; 
 
   maxopt    = iter*nopt;
@@ -278,7 +382,7 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,
       }
       if (n==maxopt) {
 	psh->EndOptimize();
-	iter = 50000;
+	optiter = iter = 50000;
       }
       //Nan Check
       if (!((psh->Process())->TotalResult()>0.) && !((psh->Process())->TotalResult()<0.)) {
@@ -297,7 +401,7 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,
       if (error<maxerror) break;
     }
   }
-  return (psh->Process())->TotalResult()*rpa.Picobarn();
+  return (psh->Process())->TotalResult()*rpa->Picobarn();
 }
 
 long int Phase_Space_Integrator::MaxPoints()                  

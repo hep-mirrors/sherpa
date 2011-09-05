@@ -43,7 +43,7 @@ Ahadic::~Ahadic()
 Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 {
   static std::string mname(METHOD);
-  rvalue.IncCall(mname);
+  Return_Value::IncCall(mname);
   if (msg->LevelIsDebugging()) {
     msg_Out()<<"##########################################################################"<<endl
 	     <<"###################################### IN ################################"<<endl;
@@ -57,7 +57,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   }
   Blob * blob(NULL);
   bool moveon(false);
-  double norm2(sqr(rpa.gen.Ecms()));
+  double norm2(sqr(rpa->gen.Ecms()));
   Return_Value::code result;
   for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();) {
     if ((*blit)->Has(blob_status::needs_hadronization) &&
@@ -97,7 +97,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 			<<"("<<blob<<"; "<<blob->NInP()<<" -> "<<blob->NOutP()<<") "
 			<<"did not work out properly in the "<<(i+1)<<"th attempt,"<<std::endl
 			<<"   retry it "<<m_maxtrials<<" times."<<std::endl;
-	  rvalue.IncRetryMethod(mname);
+	  Return_Value::IncRetryMethod(mname);
 	  CleanUp(blob);
 	  break;
 	case Return_Value::Nothing :

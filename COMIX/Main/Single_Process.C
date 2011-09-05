@@ -16,8 +16,12 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 
 #include <sys/stat.h>
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 // #define TIME_CDBG_ME
 
@@ -38,7 +42,7 @@ bool COMIX::Single_Process::Initialize
  std::vector<Single_Process*> *const procs)
 {
   m_p.resize(m_nin+m_nout);
-  if (!Process_Base::Initialize(pmap,procs)) return false;
+  if (!COMIX::Process_Base::Initialize(pmap,procs)) return false;
   if (p_bg!=NULL) delete p_bg;
   p_bg=NULL;
   if (pmap->find(m_name)!=pmap->end()) {
@@ -47,7 +51,7 @@ bool COMIX::Single_Process::Initialize
 		   <<mapname<<"'"<<std::endl;
     if (mapname=="x") return false;
     if (mapname!=m_name) {
-      std::string mapfile(rpa.gen.Variable("SHERPA_CPP_PATH")
+      std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 			  +"/Process/Comix/"+m_name+".fmap");
       if (FileExists(mapfile)) return true;
       msg_Info()<<METHOD<<"(): Flavour map file '"
@@ -88,7 +92,7 @@ bool COMIX::Single_Process::MapProcess()
 	m_oqcd=p_map->p_bg->MaxOrderQCD();
 	msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"
 		      <<mapname<<"'."<<std::endl;
-	std::string mapfile(rpa.gen.Variable("SHERPA_CPP_PATH")
+	std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 			    +"/Process/Comix");
 	MakeDir(mapfile,true);
 	mapfile+="/"+m_name+".fmap";
@@ -119,7 +123,10 @@ bool COMIX::Single_Process::MapProcess()
       mapname=p_map->Name();
       msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"
 		    <<mapname<<"'."<<std::endl;
-      std::string mapfile(rpa.gen.Variable("SHERPA_CPP_PATH")
+#ifdef USING__MPI
+      if (MPI::COMM_WORLD.Get_rank()==0) {
+#endif
+      std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 			  +"/Process/Comix");
       MakeDir(mapfile,true);
       mapfile+="/"+m_name+".fmap";
@@ -135,6 +142,9 @@ bool COMIX::Single_Process::MapProcess()
 	  }
 	}
       }
+#ifdef USING__MPI
+      }
+#endif
       delete p_bg;
       p_bg=NULL;
       (*p_pmap)[m_name]=mapname;
@@ -187,13 +197,13 @@ double COMIX::Single_Process::Partonic
     Single_Process *sp(p_map!=NULL?p_map:this);
     sp->p_scale->CalculateScale(p,mode);
 #ifdef TIME_CDBG_ME
-    double stime(rpa.gen.Timer().UserTime());
+    double stime(rpa->gen.Timer().UserTime());
 #endif
     m_lastxs=(p_map!=NULL?p_map->p_bg:p_bg)->
       Differential(m_p,&*p_int->ColorIntegrator(),
 		   &*p_int->HelicityIntegrator());
 #ifdef TIME_CDBG_ME
-    m_etime+=rpa.gen.Timer().UserTime()-stime;
+    m_etime+=rpa->gen.Timer().UserTime()-stime;
     ++m_en;
 #endif
     m_lastxs*=p_int->ColorIntegrator()->GlobalWeight();
@@ -296,7 +306,7 @@ Matrix_Element *COMIX::Single_Process::GetME() const
 
 bool COMIX::Single_Process::FillIntegrator(Phase_Space_Handler *const psh)
 {
-  return Process_Base::FillIntegrator(psh);
+  return COMIX::Process_Base::FillIntegrator(psh);
 }
 
 void COMIX::Single_Process::UpdateIntegrator(Phase_Space_Handler *const psh)

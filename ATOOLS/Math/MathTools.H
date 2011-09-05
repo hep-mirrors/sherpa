@@ -106,10 +106,10 @@ namespace ATOOLS {
   template<typename Scalar> inline Scalar Abs(const std::complex<Scalar>& x);
 
   template<> inline bool IsNan<double>(const double& x) { 
-    return std::isnan(x);
+    return std::isnan(x)||std::isnan(-x);
   }
   template<> inline bool IsBad<double>(const double& x) { 
-    return std::isnan(x)||std::isinf(x)||std::isinf(-x);
+    return IsNan(x)||std::isinf(x)||std::isinf(-x);
   }
   template<> inline bool IsZero<double>(const double& x) {
     return dabs(x)<Accu()?1:0;
@@ -119,10 +119,10 @@ namespace ATOOLS {
   }
 
   template<> inline bool IsNan<long double>(const long double& x) { 
-    return std::isnan(x);
+    return std::isnan(x)||std::isnan(-x);
   }
   template<> inline bool IsBad<long double>(const long double& x) { 
-    return std::isnan(x)||std::isinf(x)||std::isinf(-x);
+    return IsNan(x)||std::isinf(x)||std::isinf(-x);
   }
   template<> inline bool IsZero<long double>(const long double& x) {
     return dabs(x)<Accu()?1:0;
@@ -133,7 +133,8 @@ namespace ATOOLS {
 
 
   template<> inline bool IsNan<Complex>(const Complex& x) {
-    return (std::isnan(real(x)) || std::isnan(imag(x))); 
+    return (std::isnan(real(x)) || std::isnan(imag(x)) ||
+	    std::isnan(-real(x)) || std::isnan(-imag(x))); 
   }
   template<> inline bool IsBad<Complex>(const Complex& x) { 
     return IsNan(x)||std::isinf(real(x))||std::isinf(imag(x))
@@ -148,7 +149,8 @@ namespace ATOOLS {
 
   template<> inline bool IsNan<std::complex<long double> >
   (const std::complex<long double>& x) {
-    return (std::isnan(real(x)) || std::isnan(imag(x))); 
+    return (std::isnan(real(x)) || std::isnan(imag(x)) ||
+	    std::isnan(-real(x)) || std::isnan(-imag(x))); 
   }
   template<> inline bool IsBad<std::complex<long double> >
   (const std::complex<long double>& x) { 

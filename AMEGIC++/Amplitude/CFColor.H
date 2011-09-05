@@ -69,9 +69,9 @@ namespace AMEGIC {
     */
     inline const Complex& Mij(const int i,const int j) const {return (*CFC)[i][j];}
     inline const ATOOLS::CMatrix* GetCMatrix() const {return CFC;}
-    inline const int CFMap(int i) const {return map[i]; }
-    inline const int CFSign(int i) const {return (id[i]>=0) ? 1 : -1; }
-    inline const int MatrixSize() const {return ncount;}
+    inline int CFMap(int i) const {return map[i]; }
+    inline int CFSign(int i) const {return (id[i]>=0) ? 1 : -1; }
+    inline int MatrixSize() const {return ncount;}
   };
   
 }

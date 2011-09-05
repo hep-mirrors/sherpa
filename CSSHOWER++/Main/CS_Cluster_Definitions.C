@@ -64,7 +64,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
       }
       else {
 	Kin_Args fi(ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,1|(kin?4:0)));
-	Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
+	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
 	if (fi.m_pk.PPlus()>sum.PPlus() || fi.m_y>1.0 ||
 	    fi.m_pk.PMinus()>sum.PMinus() || fi.m_stat!=1) return cs;
 	double kt2=2.0*(pi*pj)*fi.m_z*(1.0-fi.m_z)
@@ -75,7 +75,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
   }
   else {
     if ((j->Id()&3)==0) {
-      Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
+      Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
       if ((k->Id()&3)==0) {
 	Kin_Args fi(ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-p_b->Mom(),1|(kin?4:0)));
 	if (fi.m_pi.PPlus()>sum.PPlus() || fi.m_z<0.0 ||
@@ -102,10 +102,10 @@ double CS_Cluster_Definitions::GetX
   const Vec4D &p(l->Mom());
   if (p.PPlus()<p.PMinus()) {
     if (sf) sf->Lorentz()->SetBeam(0);
-    return -p.PPlus()/rpa.gen.PBeam(0).PPlus();
+    return -p.PPlus()/rpa->gen.PBeam(0).PPlus();
   }
   if (sf) sf->Lorentz()->SetBeam(1);
-  return -p.PMinus()/rpa.gen.PBeam(1).PMinus();
+  return -p.PMinus()/rpa->gen.PBeam(1).PMinus();
 }
 
 Flavour CS_Cluster_Definitions::ProperFlav(const Flavour &fl) const
@@ -211,7 +211,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
     if (k>1) lt=ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,2|(kin?4:0));
     else lt=ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,2|(kin?4:0));
     if (k<=1) {
-      Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
+      Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
       if (lt.m_pk.PPlus()>sum.PPlus() ||
 	  lt.m_pk.PMinus()>sum.PMinus()) return Vec4D_Vector();
     }
@@ -219,7 +219,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
   else {
     if (k>1) lt=ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-pb,2|(kin?4:0));
     else lt=ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,2|(kin?4:0));
-    Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
+    Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
     if (lt.m_pi.PPlus()>sum.PPlus() ||
 	lt.m_pi.PMinus()>sum.PMinus()) return Vec4D_Vector();
   }
@@ -250,10 +250,10 @@ double CS_Cluster_Definitions::CoreScale
     if (ampl->Leg(i)->Flav().Strong() ||
 	ampl->Leg(i)->Flav().Resummed()) res+=1<<i;
   }
-  if ((-p[0][0]>rpa.gen.PBeam(0)[0] &&
-       !IsEqual(-p[0][0],rpa.gen.PBeam(0)[0],1.0e-6)) ||
-      (-p[1][0]>rpa.gen.PBeam(1)[0] &&
-       !IsEqual(-p[1][0],rpa.gen.PBeam(1)[0],1.0e-6)))
+  if ((-p[0][0]>rpa->gen.PBeam(0)[0] &&
+       !IsEqual(-p[0][0],rpa->gen.PBeam(0)[0],1.0e-6)) ||
+      (-p[1][0]>rpa->gen.PBeam(1)[0] &&
+       !IsEqual(-p[1][0],rpa->gen.PBeam(1)[0],1.0e-6)))
     msg_Error()<<METHOD<<"(): Parton energies exceed collider energy.\n"
 	       <<"  p_A = "<<-p[0]<<"\n  p_B = "<<-p[1]<<std::endl;
   if (!IsEqual(psum,Vec4D(),1.0e-3) &&

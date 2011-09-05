@@ -149,8 +149,8 @@ double Profile_Function_Base::GenerateImpactParameter() const
   double b=0.0;
   double maxintegral=MajorIntegral(m_bmin);
   do {
-    b=InverseMajorIntegral(ATOOLS::ran.Get()*maxintegral);
-  } while (Value(b)<=ATOOLS::ran.Get()*MajorValue(b));
+    b=InverseMajorIntegral(ATOOLS::ran->Get()*maxintegral);
+  } while (Value(b)<=ATOOLS::ran->Get()*MajorValue(b));
   return b;
 }
 

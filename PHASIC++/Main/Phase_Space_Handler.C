@@ -21,6 +21,9 @@
 #include "ATOOLS/Org/Data_Writer.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -40,13 +43,13 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,
   p_beamhandler(bh), p_isrhandler(ih), p_fsrchannels(NULL),
   p_isrchannels(NULL), p_beamchannels(NULL), p_massboost(NULL),
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_dmode(1), m_initialized(0), m_sintegrator(0),
-  m_maxtrials(1000000), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E)
+  m_maxtrials(1000000), m_E(ATOOLS::rpa->gen.Ecms()), m_s(m_E*m_E)
 {
   Data_Reader dr(" ",";","!","=");
   dr.AddComment("#");
   dr.AddWordSeparator("\t");
-  dr.SetInputPath(rpa.GetPath());
-  dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+  dr.SetInputPath(rpa->GetPath());
+  dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   m_error    = dr.GetValue<double>("ERROR",0.01);
   m_maxtrials = dr.GetValue<int>("MAX_TRIALS",1000000);
   m_fin_opt  = dr.GetValue<std::string>("FINISH_OPTIMIZATION","On")=="On"?1:0;
@@ -123,13 +126,13 @@ bool Phase_Space_Handler::InitIncoming()
 double Phase_Space_Handler::Integrate() 
 {
   if (p_process->Points()>0 && p_process->TotalError()<dabs(m_error*p_process->TotalXS())) 
-    return p_process->TotalXS()*rpa.Picobarn();
+    return p_process->TotalXS()*rpa->Picobarn();
   p_integrator = new Phase_Space_Integrator();
   if (!InitIncoming()) return 0;
   if (MODEL::s_model->Name()==std::string("ADD") && p_isrhandler->On()==0 && p_beamhandler->On()==0) {
-    if (rpa.gen.Ecms()>MODEL::s_model->ScalarConstant(std::string("M_cut"))) {
+    if (rpa->gen.Ecms()>MODEL::s_model->ScalarConstant(std::string("M_cut"))) {
       msg_Error()<<"Warning in Phase_Space_Handler::Integrate() :"<<std::endl
-		 <<"   Use of model ADD at a c.m. energy of "<<rpa.gen.Ecms()<<" GeV,"<<std::endl
+		 <<"   Use of model ADD at a c.m. energy of "<<rpa->gen.Ecms()<<" GeV,"<<std::endl
 		 <<"   but internal string/cut-off scale of model is "
 		 <<MODEL::s_model->ScalarConstant(std::string("M_cut"))<<" GeV."<<std::endl
 		 <<"   Return 0 pb as cross section for process "<<p_process->Process()->Name()<<std::endl;
@@ -218,7 +221,7 @@ bool Phase_Space_Handler::MakeIncoming(ATOOLS::Vec4D *const p)
     return 1;
   }
   if (m_nin == 2) {
-    if (m_isrspkey[3]==0.) m_isrspkey[3] = sqr(ATOOLS::rpa.gen.Ecms());
+    if (m_isrspkey[3]==0.) m_isrspkey[3] = sqr(ATOOLS::rpa->gen.Ecms());
     double Eprime = sqrt(m_isrspkey[3]);
     if ((m_E<m_m[0]+m_m[1])) return 0;
     double x = 1./2.+(m_m2[0]-m_m2[1])/(2.*m_isrspkey[3]);
@@ -448,7 +451,7 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   double xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
   ME_wgtinfo* wgtinfo=p_active->Process()->GetMEwgtinfo();
   double pnf=dabs(m_result_1)/(dabs(m_result_1)+dabs(m_result_2));
-  if (pnf<ATOOLS::ran.Get()) {
+  if (pnf<ATOOLS::ran->Get()) {
     cur->SwapInOrder();
     dxs=m_result_2/m_psweight;
     xf1=p_isrhandler->XF1(1);
@@ -542,7 +545,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
   }
   else {
     double m[2]={fl_i[0].Mass(),fl_i[1].Mass()};
-    double E=rpa.gen.Ecms();
+    double E=rpa->gen.Ecms();
     if (info->m_fi.m_ps.size()==1)
       E=info->m_fi.m_ps.front().m_fl.Mass();
     if (E<m[0]+m[1]) return;
@@ -581,7 +584,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
   }
   else {
     double m[2]={flavs[0].Mass(),flavs[1].Mass()};
-    double E=0.5*rpa.gen.Ecms();
+    double E=0.5*rpa->gen.Ecms();
     if (E<m[0]+m[1]) return;
     double x=1.0/2.0+(m[0]*m[0]-m[1]*m[1])/(2.0*E*E);
     p[0]=Vec4D(x*E,0.0,0.0,sqrt(sqr(x*E)-m[0]*m[0]));
@@ -629,6 +632,7 @@ void Phase_Space_Handler::SetEnhanceObservable(const std::string &enhanceobs)
 
     p_enhancehisto = new Histogram(1,enhancemin,enhancemax,100,"enhancehisto");
     p_enhancehisto->InsertRange(enhancemin, enhancemax, 1.0);
+    p_enhancehisto->MPISync();
     p_enhancehisto->Scale(1.0/p_enhancehisto->Integral());
     p_enhancehisto_current = new Histogram(p_enhancehisto->Type(),
                                            p_enhancehisto->Xmin(),
@@ -702,6 +706,14 @@ void Phase_Space_Handler::AssignId(Term *term)
 }
 
 
+void Phase_Space_Handler::MPISync()
+{
+  if (p_beamchannels) p_beamchannels->MPISync();
+  if (p_isrchannels) p_isrchannels->MPISync();
+  p_fsrchannels->MPISync();
+  p_process->MPISync();
+}
+
 void Phase_Space_Handler::Optimize()
 {
   if (p_beamchannels) p_beamchannels->Optimize(m_error);
@@ -709,6 +721,7 @@ void Phase_Space_Handler::Optimize()
   p_fsrchannels->Optimize(m_error);
   p_process->ResetMax(2);
   if (p_enhanceobs) {
+    p_enhancehisto_current->MPISync();
     p_enhancehisto_current->Scale(1.0/p_enhancehisto_current->Integral());
     p_enhancehisto->AddGeometric(p_enhancehisto_current);
     p_enhancehisto->Scale(1.0/p_enhancehisto->Integral());
@@ -725,11 +738,14 @@ void Phase_Space_Handler::EndOptimize()
 
 void Phase_Space_Handler::WriteOut(const std::string &pID) 
 {
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()) return;
+#endif
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+"/MC_Beam");
   if (p_isrchannels  != 0) p_isrchannels->WriteOut(pID+"/MC_ISR");
   if (p_fsrchannels  != 0) p_fsrchannels->WriteOut(pID+"/MC_FSR");
   std::string help     = (pID+"/Random").c_str();
-  ran.WriteOutStatus(help.c_str());
+  ran->WriteOutStatus(help.c_str());
   if (p_enhanceobs) p_enhancehisto->Output(pID+"/MC_Enhance.histo");
   Data_Writer writer;
   writer.SetOutputPath(pID+"/");
@@ -744,9 +760,9 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
   if (p_beamchannels!=NULL && !(exclude&1)) okay = okay && p_beamchannels->ReadIn(pID+"/MC_Beam");
   if (p_isrchannels!=NULL && !(exclude&2)) okay = okay && p_isrchannels->ReadIn(pID+"/MC_ISR");
   if (p_fsrchannels!=NULL && !(exclude&16)) okay = okay && p_fsrchannels->ReadIn(pID+"/MC_FSR");
-  if (rpa.gen.RandomSeed()==1234 && !(exclude&32)) {
+  if (rpa->gen.RandomSeed()==1234 && !(exclude&32)) {
     std::string filename     = (pID+"/Random").c_str();
-    ran.ReadInStatus(filename.c_str());
+    ran->ReadInStatus(filename.c_str());
   }
   if (p_enhanceobs) {
     delete p_enhancehisto;
@@ -790,9 +806,9 @@ bool Phase_Space_Handler::UpdateIntegrators()
   if (!m_sintegrator) return false;
   double error=Process()->TotalVar()/Process()->TotalResult();
   msg_Info()<<om::blue
-	    <<Process()->TotalResult()*rpa.Picobarn()
+	    <<Process()->TotalResult()*rpa->Picobarn()
 	    <<" pb"<<om::reset<<" +- ( "<<om::red
-	    <<Process()->TotalVar()*rpa.Picobarn()
+	    <<Process()->TotalVar()*rpa->Picobarn()
 	    <<" pb = "<<error*100<<" %"<<om::reset<<" ) "
 	    <<FSRIntegrator()->ValidN()<<" ( "
 	    <<(FSRIntegrator()->ValidN()*1000/FSRIntegrator()->N())/10.0<<" % ) "<<std::endl;

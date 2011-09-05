@@ -3,12 +3,16 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 #include <sys/stat.h>
 #include <iterator>
 
 namespace ATOOLS {
-  Message *msg(new Message());
+  Message *msg(NULL);
 }
 
 using namespace ATOOLS;
@@ -155,6 +159,7 @@ Message::Message() : m_buf(std::cout.rdbuf())
   m_file = 0;
   m_level = 0;
   m_modifiable = true;
+  m_mpimode = 0;
 }
 
 Message::~Message() 
@@ -207,6 +212,10 @@ void Message::SetPrecision(const int precision)
 
 std::ostream &Message::Out() const 
 { 
+#ifdef USING__MPI
+  if (!m_mpimode && 
+      MPI::COMM_WORLD.Get_rank()) return *p_no;
+#endif
   return *p_output; 
 }
 
@@ -224,12 +233,20 @@ std::ostream &Message::Events() const
 
 std::ostream &Message::Info() const      
 { 
+#ifdef USING__MPI
+  if (!m_mpimode && 
+      MPI::COMM_WORLD.Get_rank()) return *p_no;
+#endif
   if (m_level & 2) return *p_output; 
   return *p_no;  
 }
 
 std::ostream &Message::Tracking() const  
 { 
+#ifdef USING__MPI
+  if (!m_mpimode && 
+      MPI::COMM_WORLD.Get_rank()) return *p_no;
+#endif
   if (m_level & 4) return *p_output; 
   return *p_no;  
 }

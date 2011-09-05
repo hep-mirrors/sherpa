@@ -31,7 +31,7 @@ KT_Finder::KT_Finder(const std::string &_ycut,const int _type) :
   m_delta_r    = 1.;
   m_type       = _type;
   m_cuttag     = _ycut;
-  m_ene        = rpa.gen.Ecms()/2.;
+  m_ene        = rpa->gen.Ecms()/2.;
   m_sprime     = m_s = sqr(2.*m_ene); 
   m_smax       = m_s;
 
@@ -70,14 +70,14 @@ KT_Finder::KT_Finder(const int _n,Flavour * _fl,
   }
   else if (m_nin==2) {
     if((m_type>=3) || (m_type==1)) {
-      m_ene      = rpa.gen.Ecms()/2.;
+      m_ene      = rpa->gen.Ecms()/2.;
       m_sprime   = m_s = sqr(2.*m_ene); 
       p_frame[0] = Vec4D(m_ene,0.,0., sqrt(sqr(m_ene)-sqr(m_fl[0].Mass())));
       p_frame[1] = Vec4D(m_ene,0.,0.,-sqrt(sqr(m_ene)-sqr(m_fl[1].Mass())));
       if (m_type==3) m_cms_boost = Poincare(p_frame[0]+p_frame[1]);
     }    
     else if (m_type==2) {
-      m_ene      = rpa.gen.Ecms()/2.;
+      m_ene      = rpa->gen.Ecms()/2.;
       m_sprime   = m_s = sqr(2.*m_ene);
     }
   }
@@ -198,15 +198,15 @@ bool KT_Finder::ConstructJets(Particle_List * pl, double y_res,int number, bool 
     pl->erase(pl->begin());
   }
   else {
-    if (rpa.gen.Beam1().Strong()   || rpa.gen.Beam2().Strong() || 
-	rpa.gen.Beam1().IsHadron() || rpa.gen.Beam2().IsHadron()) 
+    if (rpa->gen.Beam1().Strong()   || rpa->gen.Beam2().Strong() || 
+	rpa->gen.Beam1().IsHadron() || rpa->gen.Beam2().IsHadron()) 
       m_type=4;
-    flavsin[0]=rpa.gen.Beam1();
-    flavsin[1]=rpa.gen.Beam1();
+    flavsin[0]=rpa->gen.Beam1();
+    flavsin[1]=rpa->gen.Beam1();
     
     if (m_type!=2) {
     momsin[0]=Vec4D::ZVEC;
-    momsin[0]*=(rpa.gen.Ecms()*0.5);
+    momsin[0]*=(rpa->gen.Ecms()*0.5);
     momsin[1]=Vec4D(momsin[0][0],-1.*Vec3D(momsin[0]));
     }
     // remove everything not to cluster and create momentum list
@@ -298,15 +298,15 @@ bool KT_Finder::ConstructJets(const Particle_List * parts,
     BoostInFrame(momsout);
   }
   else {
-    if (rpa.gen.Beam1().Strong() || rpa.gen.Beam2().Strong() || 
-	rpa.gen.Beam1().IsHadron() || rpa.gen.Beam2().IsHadron()) 
+    if (rpa->gen.Beam1().Strong() || rpa->gen.Beam2().Strong() || 
+	rpa->gen.Beam1().IsHadron() || rpa->gen.Beam2().IsHadron()) 
       m_type=4;
-    flavsin[0]=rpa.gen.Beam1();
-    flavsin[1]=rpa.gen.Beam1();
+    flavsin[0]=rpa->gen.Beam1();
+    flavsin[1]=rpa->gen.Beam1();
 
     if (m_type!=2) {
       momsin[0]=Vec4D::ZVEC;
-      momsin[0]*=(rpa.gen.Ecms()*0.5);
+      momsin[0]*=(rpa->gen.Ecms()*0.5);
       momsin[1]=Vec4D(momsin[0][0],-1.*Vec3D(momsin[0]));
     }
     for (size_t i=0;i<parts->size();i++) {
@@ -525,7 +525,7 @@ size_t KT_Finder::FillCombinations(const std::string &name,
     sum=sum|pos.back();
   }
   Algebra_Interpreter interpreter;
-  interpreter.AddTag("E_CMS",ToString(rpa.gen.Ecms()));
+  interpreter.AddTag("E_CMS",ToString(rpa->gen.Ecms()));
   m_cycut=ToType<double>(interpreter.Interprete(ccut));
   m_gcycut=ToType<double>(interpreter.Interprete(cgcut));
   for (size_t i(0);i<pos.size();++i) {
@@ -564,10 +564,10 @@ void KT_Finder::FillCombinations()
     std::string name(m_procname.substr(m_procname.find('_')+1));
     name=name.substr(name.find("__")+2);
     size_t i(0);
-    FillCombinations(name,m_cuttag,rpa.gen.Variable("Y_CUT"),i,m_nin+m_nout);
+    FillCombinations(name,m_cuttag,rpa->gen.Variable("Y_CUT"),i,m_nin+m_nout);
     if (msg_LevelIsDebugging()) {
       msg_Out()<<METHOD<<"(): Combinations for '"<<m_procname<<"' {\n";
-      double s(sqr(rpa.gen.Ecms()));
+      double s(sqr(rpa->gen.Ecms()));
       for (std::map<size_t,std::map<size_t,double> >::const_iterator
 	     iit(m_ycuts.begin());iit!=m_ycuts.end();++iit) {
 	size_t i(iit->first);

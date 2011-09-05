@@ -39,7 +39,7 @@ void Model_SM::Initialize(MODEL::Model_Base *const model,
       model->ScalarNumber("EW_SCHEME")!=0) {
     THROW(not_implemented, "Comix only implements EW_SCHEME=0 so far.");
   }
-  double ecms2(sqr(rpa.gen.Ecms()));
+  double ecms2(sqr(rpa->gen.Ecms()));
   Complex mw(ScalarConstant("MW")), gw(ScalarConstant("GammaW"));
   Complex mz(ScalarConstant("MZ")), gz(ScalarConstant("GammaZ"));
   m_consts["m_{W,PS}^2"]=mw*mw-M_I*gw*mw;

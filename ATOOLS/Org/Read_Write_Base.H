@@ -293,14 +293,14 @@ namespace ATOOLS {
     inline size_t Occurrence() const
     { return m_occurrence; }
 
-    inline const vtc::code VectorType() const
+    inline vtc::code VectorType() const
     { return m_vectortype; }
-    inline const mtc::code MatrixType() const
+    inline mtc::code MatrixType() const
     { return m_matrixtype; }
 
-    inline const bool AllowNans() const
+    inline bool AllowNans() const
     { return m_allownans; }
-    inline const bool AddCommandLine() const
+    inline bool AddCommandLine() const
     { return m_addcommandline; }
 
     inline bool IgnoreCase() const

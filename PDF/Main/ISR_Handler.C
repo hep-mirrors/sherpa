@@ -32,8 +32,8 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
     Data_Reader dr(" ",";","!","=");
     dr.AddComment("#");
     dr.AddWordSeparator("\t");
-    dr.SetInputPath(rpa.GetPath());
-    dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+    dr.SetInputPath(rpa->GetPath());
+    dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
     s_nozeropdf=dr.GetValue<int>("NO_ZERO_PDF",0);
   }
   m_mu2[0]=m_mu2[1]=0.0;
@@ -90,7 +90,7 @@ void ISR_Handler::Init(double *splimits)
 
   double s=(p_beam[0]->OutMomentum()+
 	    p_beam[1]->OutMomentum()).Abs2();
-  ATOOLS::rpa.gen.SetEcms(sqrt(s));
+  ATOOLS::rpa->gen.SetEcms(sqrt(s));
 
   m_type = p_isrbase[0]->Type()+std::string("*")+p_isrbase[1]->Type();
   m_splimits[0] = s*splimits[0];
@@ -102,7 +102,7 @@ void ISR_Handler::Init(double *splimits)
   m_ylimits[1] = 10.;
   m_exponent[0] = .5;
   m_exponent[1] = .98 * p_isrbase[0]->Exponent() * p_isrbase[1]->Exponent();
-  double E=ATOOLS::rpa.gen.Ecms();
+  double E=ATOOLS::rpa->gen.Ecms();
   double x=1./2.+(m_mass2[0]-m_mass2[1])/(2.*E*E);
   double E1=x*E;
   double E2=E-E1;
@@ -200,7 +200,7 @@ void ISR_Handler::SetMasses(const Flavour_Vector &fl)
 void ISR_Handler::SetPartonMasses(const Flavour_Vector &fl) 
 {
   SetMasses(fl);
-  double E=ATOOLS::rpa.gen.Ecms();
+  double E=ATOOLS::rpa->gen.Ecms();
   double x=1./2.+(m_mass2[0]-m_mass2[1])/(2.*E*E);
   double E1=x*E;
   double E2=E-E1;
@@ -349,9 +349,9 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
     m_xf1[mode]=x1*f1;
     m_xf2[mode]=x2*f2;
     MtxUnLock();
-    msg_Debugging()<<"PDF1: "<<rpa.gen.Beam1()<<" -> "<<fl1<<" at ("<<x1
+    msg_Debugging()<<"PDF1: "<<rpa->gen.Beam1()<<" -> "<<fl1<<" at ("<<x1
 		   <<","<<sqrt(Q12)<<") -> "<<om::bold<<f1<<om::reset<<"\n";
-    msg_Debugging()<<"PDF2: "<<rpa.gen.Beam2()<<" -> "<<fl2<<" at ("<<x2
+    msg_Debugging()<<"PDF2: "<<rpa->gen.Beam2()<<" -> "<<fl2<<" at ("<<x2
 		   <<","<<sqrt(Q22)<<") -> "<<om::bold<<f2<<om::reset<<"\n";
     double flux=0.25/sqrt(sqr(p1*p2)-p1.Abs2()*p2.Abs2());
     msg_Debugging()<<"Flux: "<<flux<<std::endl;

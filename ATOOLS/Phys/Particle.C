@@ -177,36 +177,36 @@ double Particle::ProperTime()
   double q2    = m_momentum.Abs2();
   double m2    = sqr(m_fl.Mass());
   double tau2  = 1.e96;
-  if (!( (q2-m2 < rpa.gen.Accu()) && 
-         (m_fl.Width() < rpa.gen.Accu()) )) { // off-shell or big width
-    if (m2>rpa.gen.Accu()) { 
+  if (!( (q2-m2 < rpa->gen.Accu()) && 
+         (m_fl.Width() < rpa->gen.Accu()) )) { // off-shell or big width
+    if (m2>rpa->gen.Accu()) { 
       tau2 = q2/(sqr(q2-m2)+sqr(q2*m_fl.Width())/m2);
     }
     else {
-      if (dabs(q2)>rpa.gen.Accu()) tau2 = 1/dabs(q2);
+      if (dabs(q2)>rpa->gen.Accu()) tau2 = 1/dabs(q2);
     }
   }
   else {
     if (m_fl.Strong()) tau2 = 1./sqr(0.2); 
     else if (!m_fl.IsStable()) tau2 = 1./sqr(m_fl.Width());
   }
-  return rpa.hBar() * sqrt(tau2);
+  return rpa->hBar() * sqrt(tau2);
 }
 
 double Particle::LifeTime() {
-  double t   = -ProperTime()*log(1.-ran.Get());  
+  double t   = -ProperTime()*log(1.-ran->Get());  
   if (t>1.e6) t = 1.e6;
-  double gamma = 1./rpa.gen.Accu();
-  if (m_fl.Mass()>rpa.gen.Accu()) gamma = E()/m_fl.Mass();
+  double gamma = 1./rpa->gen.Accu();
+  if (m_fl.Mass()>rpa->gen.Accu()) gamma = E()/m_fl.Mass();
   else {
     double q2    = dabs(m_momentum.Abs2());
-    if (q2>rpa.gen.Accu()) gamma = E()/sqrt(q2);
+    if (q2>rpa->gen.Accu()) gamma = E()/sqrt(q2);
   }
   return gamma * t;      
 }
 
 Vec3D Particle::Distance(double _lifetime) {
-  Vec3D v = Vec3D(m_momentum)/E()*rpa.c();
+  Vec3D v = Vec3D(m_momentum)/E()*rpa->c();
   if (_lifetime<0.) _lifetime = LifeTime();
   return v*_lifetime;
 }
@@ -307,7 +307,7 @@ void   Particle::SetFinalMass(const double _lower,const double _upper) {
     if (yup>0) yrange = yrange + M_PI;
     if (yup<0) yrange = yrange - M_PI;
   }     
-  m_finalmass = sqrt(mass2+mw*tan(ran.Get()*yrange + ymin));
+  m_finalmass = sqrt(mass2+mw*tan(ran->Get()*yrange + ymin));
 }
 
 

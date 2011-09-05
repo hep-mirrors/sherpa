@@ -28,7 +28,7 @@ namespace AMEGIC {
     virtual void SetNumber(int&) = 0;
     virtual Amplitude_Base* operator[](const int i) { return this; }
     virtual Amplitude_Base* GetAmplitude(const int) = 0;
-    virtual const int  GetNumber() { return 0; }
+    virtual int  GetNumber() { return 0; }
     virtual bool IsGroup() { return false; }
 
     virtual void SetStringOn();  

@@ -129,8 +129,8 @@ double Pmix(double* x, double* par)
 {
   // par[0] < 0  ==> anti-meson mixing probability
   double t = x[0];
-  double dm = Flavour(kf_B).DeltaM()/rpa.hBar()/1e12;
-  double dG = Flavour(kf_B).DeltaGamma()/rpa.hBar()/1e12;
+  double dm = Flavour(kf_B).DeltaM()/rpa->hBar()/1e12;
+  double dG = Flavour(kf_B).DeltaGamma()/rpa->hBar()/1e12;
   double qoverp2=Flavour(kf_B).QOverP2();
   if(par[0]<0.0) qoverp2 = 1.0/qoverp2;
   double pmix = qoverp2 * (cosh(dG*t/2.0)-cos(dm*t));
@@ -141,8 +141,8 @@ double Pmix(double* x, double* par)
 double af(double* x, double* par)
 {
   double t = x[0];
-  double dm = Flavour(kf_B).DeltaM()/rpa.hBar()/1e12;
-  double dG = Flavour(kf_B).DeltaGamma()/rpa.hBar()/1e12;
+  double dm = Flavour(kf_B).DeltaM()/rpa->hBar()/1e12;
+  double dG = Flavour(kf_B).DeltaGamma()/rpa->hBar()/1e12;
   double l2 = par[0];
   double Im_lambda = par[1];
   double Re_lambda = par[2];
@@ -212,8 +212,8 @@ void FinishAnalysis()
   candidate_asymmetry->GetXaxis()->SetLabelSize(0.06);
   candidate_asymmetry->Draw();
   candidate_asymmetry->Write();
-  string delta_m_ps = ToString(Flavour(kf_B).DeltaM()/rpa.hBar()/1e12);
-  string delta_G_ps = ToString(Flavour(kf_B).DeltaGamma()/rpa.hBar()/1e12);
+  string delta_m_ps = ToString(Flavour(kf_B).DeltaM()/rpa->hBar()/1e12);
+  string delta_G_ps = ToString(Flavour(kf_B).DeltaGamma()/rpa->hBar()/1e12);
   string C = ToString(signal_hdc->CPAsymmetryC());
   string S = ToString(signal_hdc->CPAsymmetryS());
   TF1* candidate_asymmetry_theory = new TF1("candidate_asymmetry_theory",

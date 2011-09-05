@@ -82,8 +82,8 @@ Single_OSTerm::Single_OSTerm(const Process_Info &pinfo,size_t pi,size_t pj,size_
   double helpd(5.);
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
-  reader.SetInputPath(rpa.GetPath());
-  reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
   if (reader.ReadFromFile(helpd,"OS_SUB_WINDOW")) {
     m_wwindow = helpd;
     msg_Tracking()<<"Set width window for os subtraction="<<m_wwindow<<"."<<std::endl;

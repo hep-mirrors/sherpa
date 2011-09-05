@@ -37,14 +37,14 @@ Single_Real_Correction::Single_Real_Correction() :
   static bool addcite(false);
   if (!addcite) {
     addcite=true;
-  rpa.gen.AddCitation(1,"The automated generation of Catani-Seymour dipole\
+  rpa->gen.AddCitation(1,"The automated generation of Catani-Seymour dipole\
  terms in Amegic is published under \\cite{Gleisberg:2007md}.");
   }
   int helpi;
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
-  reader.SetInputPath(rpa.GetPath());
-  reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
   if (reader.ReadFromFile(helpi,"OS_SUB")) {
     m_ossubon = helpi;
     if (m_ossubon==1) msg_Tracking()<<"Set on shell subtraction on. "<<std::endl;

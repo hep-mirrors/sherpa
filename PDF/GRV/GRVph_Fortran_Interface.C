@@ -55,7 +55,7 @@ double GRVph_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl)
   if (infl.Kfcode()==4)           value = m_c;
   if (infl.Kfcode()==5)           value = m_b;
   
-  value  *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),sqr(rpa.gen.Ecms()));
+  value  *= MODEL::s_model->ScalarFunction(std::string("alpha_QED"),sqr(rpa->gen.Ecms()));
   
   return m_rescale*value;
 }

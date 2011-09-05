@@ -28,7 +28,7 @@ Perturbative_Interface::Perturbative_Interface
   read.AddComment("#");
   read.SetInputPath(p_me->Path());
   read.SetInputFile(p_me->File());
-  m_cmode=ToType<int>(rpa.gen.Variable("METS_CLUSTER_MODE"));
+  m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
   m_bbarmode=read.GetValue<int>("METS_BBAR_MODE",1);
   m_globalkfac=read.GetValue<double>("GLOBAL_KFAC",0.);
 }
@@ -132,7 +132,7 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     }
     blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
     if (p_me->EventGenerationMode()==1) {
-      if (m_weight>=ran.Get()) m_weight=1.0;
+      if (m_weight>=ran->Get()) m_weight=1.0;
       else return Return_Value::New_Event;
     }
     Blob_Data_Base *winfo((*blob)["Weight"]);

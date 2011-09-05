@@ -79,12 +79,12 @@ namespace PDF {
     static void ClearAll();
 
     // inline functions
-    inline ATOOLS::Particle *const Begin(const qri::type type) const     
+    inline ATOOLS::Particle *Begin(const qri::type type) const     
     { return p_begin[type]; }
-    inline ATOOLS::Particle *const End(const qri::type type) const       
+    inline ATOOLS::Particle *End(const qri::type type) const       
     { return p_end[type]; }
 
-    inline Color_Dipole *const Next(const qri::type type) const       
+    inline Color_Dipole *Next(const qri::type type) const       
     { return p_next[type]; }
 
   };// end of class Color_Dipole

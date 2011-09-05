@@ -26,8 +26,8 @@ Extra_Emission_Generator::Extra_Emission_Generator():
   m_opt(5), m_weight(0.0)
 {
   Data_Reader read(" ",";","!","=");
-  read.SetInputPath(rpa.GetPath());
-  read.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+  read.SetInputPath(rpa->GetPath());
+  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   if (!read.ReadFromFile(m_omode,"EEG_OMODE")) m_omode=3;
   else msg_Info()<<METHOD<<"(): Set mode "<<m_omode<<".\n";
   if (!read.ReadFromFile(m_opt,"EEG_OSTEP")) m_opt=5;
@@ -92,7 +92,7 @@ GeneratePoint(const Vec4D_Vector &p,Cut_Data *const cuts)
 {
   DEBUG_FUNC("");
   double rns[4];
-  for (size_t i(0);i<4;++i) rns[i]=ran.Get();
+  for (size_t i(0);i<4;++i) rns[i]=ran->Get();
   msg_Debugging()<<"in EEG: ";
   msg_Debugging()<<"#1 = "<<rns[1]<<", #2 = "<<rns[2]
                  <<", phi = "<<rns[3]<<"\n";

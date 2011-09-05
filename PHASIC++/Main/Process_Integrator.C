@@ -11,6 +11,9 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -27,7 +30,8 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   m_threshold(0.), m_enhancefac(1.0), m_maxeps(0.0), m_rbmaxeps(0.0),
   m_n(0), m_itmin(0), m_max(0.), m_totalxs(0.), 
   m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), 
-  m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), m_vmean(0.), m_sn(0), 
+  m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), m_vmean(0.),
+  m_mssum(0.), m_mssumsqr(0.), m_msn(0.), m_msvn(0.), m_sn(0), 
   m_svn(0), m_son(1), m_swaped(false), m_writeout(false),
   p_whisto(NULL), p_colint(NULL), p_helint(NULL)
 {
@@ -252,10 +256,10 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
   for (size_t i(0);i<m_vsn.size();++i)
     from>>m_vsmax[i]>>m_vsum[i]>>m_vsn[i]>>m_vsvn[i];
   msg_Tracking()<<"Found result: xs for "<<name<<" : "
-		<<m_totalxs*rpa.Picobarn()<<" pb"
-		<<" +- ( "<<m_totalerr*rpa.Picobarn()<<" pb = "
+		<<m_totalxs*rpa->Picobarn()<<" pb"
+		<<" +- ( "<<m_totalerr*rpa->Picobarn()<<" pb = "
 		<<m_totalerr/m_totalxs*100.<<" % ) max: "
-		<<m_max*rpa.Picobarn()<<std::endl;
+		<<m_max*rpa->Picobarn()<<std::endl;
   bool res(true);
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
@@ -331,8 +335,8 @@ void Process_Integrator::SetTotal(const int mode)
     }
     else {
       msg_Info()<<om::bold<<p_proc->Name()<<om::reset<<" : "<<om::blue<<om::bold
-                <<m_totalxs*rpa.Picobarn()<<" pb"<<om::reset<<" +- ( "<<om::red
-                <<m_totalerr*rpa.Picobarn()<<" pb = "<<dabs(m_totalerr/m_totalxs)*100.
+                <<m_totalxs*rpa->Picobarn()<<" pb"<<om::reset<<" +- ( "<<om::red
+                <<m_totalerr*rpa->Picobarn()<<" pb = "<<dabs(m_totalerr/m_totalxs)*100.
                 <<" %"<<om::reset<<" ) "<<om::bold<<" exp. eff: "
                 <<om::red<<(100.*dabs(m_totalxs/m_max))<<" %"<<om::reset<<std::endl;
     }
@@ -444,12 +448,20 @@ void Process_Integrator::SetRBMaxEpsilon(const double &rbmaxeps)
 
 void Process_Integrator::AddPoint(const double value) 
 {
+#ifdef USING__MPI
+  m_msn++;
+  if (value!=0.0) ++m_msvn;
+  double differential=(value==0.0?0.0:value/p_pshandler->EnhanceFactor());
+  m_mssum    += differential;
+  m_mssumsqr += differential*differential;
+#else
   m_n++;
   m_sn++;
   if (value!=0.0) ++m_svn;
   double differential=(value==0.0?0.0:value/p_pshandler->EnhanceFactor());
   m_ssum    += differential;
   m_ssumsqr += differential*differential;
+#endif
   if (dabs(value)>m_max)  m_max  = dabs(value);
   if (dabs(value)>m_smax) m_smax = dabs(value);
   if (p_whisto) {
@@ -571,6 +583,65 @@ void Process_Integrator::SetPSHandler(const SP(Phase_Space_Handler) &pshandler)
       (*p_proc)[i]->Integrator()->SetPSHandler(pshandler);
 } 
 
+void Process_Integrator::MPISync()
+{
+  if (p_whisto) p_whisto->MPISync();
+#ifdef USING__MPI
+  int size=MPI::COMM_WORLD.Get_size();
+  if (size>1) {
+    int rank=MPI::COMM_WORLD.Get_rank();
+    double val[6];
+    if (rank==0) {
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	MPI::COMM_WORLD.Recv(&val,6,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+	m_msn+=val[0];
+	m_msvn+=val[1];
+	m_mssum+=val[2];
+	m_mssumsqr+=val[3];
+	m_max=ATOOLS::Max(m_max,val[4]);
+	m_smax=ATOOLS::Max(m_smax,val[5]);
+      }
+      val[0]=m_msn;
+      val[1]=m_msvn;
+      val[2]=m_mssum;
+      val[3]=m_mssumsqr;
+      val[4]=m_max;
+      val[5]=m_smax;
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	MPI::COMM_WORLD.Send(&val,6,MPI::DOUBLE,tag,size+tag);
+      }
+    }
+    else {
+      val[0]=m_msn;
+      val[1]=m_msvn;
+      val[2]=m_mssum;
+      val[3]=m_mssumsqr;
+      val[4]=m_max;
+      val[5]=m_smax;
+      MPI::COMM_WORLD.Send(&val,6,MPI::DOUBLE,0,rank);
+      MPI::COMM_WORLD.Recv(&val,6,MPI::DOUBLE,0,size+rank);
+      m_msn=val[0];
+      m_msvn=val[1];
+      m_mssum=val[2];
+      m_mssumsqr=val[3];
+      m_max=val[4];
+      m_smax=val[5];
+    }
+  }
+  m_n+=m_msn;
+  m_sn+=m_msn;
+  m_svn+=m_msvn;
+  m_ssum+=m_mssum;
+  m_ssumsqr+=m_mssumsqr;
+  m_msn=m_msvn=m_mssum=m_mssumsqr=0.0;
+  if (p_proc->IsGroup())
+    for (size_t i(0);i<p_proc->Size();++i)
+      (*p_proc)[i]->Integrator()->MPISync();
+#endif
+}
+
 void Process_Integrator::OptimizeResult()
 {
   OptimizeSubResult(Sigma2());
@@ -609,6 +680,9 @@ void Process_Integrator::RestoreInOrder()
 
 void Process_Integrator::StoreResults(const int mode)
 {
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()) return;
+#endif
   if (m_resultpath.length()==0) return;
   if (m_totalxs!=0.0 && mode==0) return;
   SetTotal(0); 
@@ -705,7 +779,7 @@ bool Process_Integrator::ReadInRB(const std::string &path)
 
 void Process_Integrator::PrepareTerminate()  
 {
-  if (rpa.gen.BatchMode()) return;
+  if (rpa->gen.BatchMode()) return;
   SetTotal();
   StoreResults();
 }

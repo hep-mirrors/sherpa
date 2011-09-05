@@ -58,13 +58,13 @@ InitKinematics(Tree **const trees,Tree *const tree,const int tree1,
 		 <<" ("<<(k1->t/t1-1.0)<<") "<<k1->prev<<", t_{"
 		 <<k2->kn_no<<"} = "<<k2->t<<" / "<<t2
 		 <<" ("<<(k2->t/t2-1.0)<<") "<<k2->prev<<"\n";
-  if (dabs(k1->t/t1-1.0)<rpa.gen.Accu() && k1->prev!=NULL) {
+  if (dabs(k1->t/t1-1.0)<rpa->gen.Accu() && k1->prev!=NULL) {
     msg_Debugging()<<"boost attached "<<k1->kn_no<<"\n";
     double sgnt(k1->t<0.0?-1.0:1.0), p1(sqrt(o1[0]*o1[0]-k1->t));
     Vec4D b1(sgnt*(E1*o1[0]-pz*p1),0.0,0.0,dir*sgnt*(E1*p1-pz*o1[0]));
     m_boost=Poincare(b1);
     m_boost.Boost(o1);
-    if (!IsEqual(o1,v1,sqrt(rpa.gen.Accu()))) {
+    if (!IsEqual(o1,v1,sqrt(rpa->gen.Accu()))) {
       msg_Error()<<METHOD<<"(..): Four momentum not conserved on tree 1.\n"
 		 <<"  p_miss  = "<<(v1-o1)<<"\n"
 		 <<"  p_old   = "<<o1<<" "<<o1.Abs2()<<" <- "<<k1->t<<"\n"
@@ -74,13 +74,13 @@ InitKinematics(Tree **const trees,Tree *const tree,const int tree1,
     }
     trees[tree1]->BoRo(m_boost);
   }
-  if (dabs(k2->t/t2-1.0)<rpa.gen.Accu() && k2->prev!=NULL) {
+  if (dabs(k2->t/t2-1.0)<rpa->gen.Accu() && k2->prev!=NULL) {
     msg_Debugging()<<"boost attached "<<k2->kn_no<<"\n";
     double sgnt(k2->t<0.0?-1.0:1.0), p2(sqrt(o2[0]*o2[0]-k2->t));
     Vec4D b2(sgnt*(E2*o2[0]-pz*p2),0.0,0.0,-dir*sgnt*(E2*p2-pz*o2[0]));
     m_boost=Poincare(b2);
     m_boost.Boost(o2);
-    if (!IsEqual(o2,v2,sqrt(rpa.gen.Accu()))) {
+    if (!IsEqual(o2,v2,sqrt(rpa->gen.Accu()))) {
       msg_Error()<<METHOD<<"(..): Four momentum not conserved on tree 2.\n"
 		 <<"  p_miss  = "<<(v2-o2)<<"\n"
 		 <<"  p_old   = "<<o2<<" "<<o2.Abs2()<<" <- "<<k2->t<<"\n"
@@ -218,7 +218,7 @@ void Spacelike_Kinematics::BoostPartial(const int mode,Knot *const si,
   msg_Indent();
   Vec4D p_si(si->part->Momentum());
   double E11(p_si[0]), t1(p_si.Abs2());
-  static double accu(sqrt(rpa.gen.Accu()));
+  static double accu(sqrt(rpa->gen.Accu()));
   if (dabs((t1-v_si.Abs2())/t1)>accu) {
     msg_Error()<<METHOD<<"(..): Mass deviation. t1 = "<<t1
 	       <<" t1-t1' = "<<t1-v_si.Abs2()<<std::endl;
@@ -255,7 +255,7 @@ void Spacelike_Kinematics::RoBoIni(Knot *const k,Poincare &rot,Poincare &boost)
     RoBoFin(k->prev->left,rot,boost);
     Vec4D pm(k->prev->part->Momentum());
     Vec4D pd(k->part->Momentum()+k->prev->left->part->Momentum());
-    static double accu(sqrt(rpa.gen.Accu()));
+    static double accu(sqrt(rpa->gen.Accu()));
     if (!IsEqual(pm,pd,accu)) {
       msg_Error()<<METHOD<<"(..): Four momentum not conserved.\n"
 		 <<"  p_miss  = "<<(pm-pd)<<"\n"
@@ -301,7 +301,7 @@ void Spacelike_Kinematics::BoostPartial(const int mode,
   else {
     if (si->t!=si->tout) {
       double tnew(v_si.Abs2());
-      static double accu(sqrt(rpa.gen.Accu()));
+      static double accu(sqrt(rpa->gen.Accu()));
       if (dabs(tnew/si->t-1.0)>accu)  
 	msg_Error()<<METHOD<<"(..): Relative mass deviation "
 		   <<(tnew/si->t-1.0)<<", "<<tnew<<" vs. "<<si->t
@@ -423,7 +423,7 @@ double Spacelike_Kinematics::CalculateMaxT(Knot *const active,
 		 <<" vs. "<<active->prev->left->tout
 		 <<" <- t1 = "<<t1<<", t2 = "<<t2<<", t3 = "<<t3
 		   <<", z = "<<active->z<<"\n";
-  if (dabs(t2)>rpa.gen.Accu()) return  (t1 + t3 + (np1*np3 - s1*s3)/(2.*t2));
+  if (dabs(t2)>rpa->gen.Accu()) return  (t1 + t3 + (np1*np3 - s1*s3)/(2.*t2));
   msg_Debugging()<<"knots "<<active->prev->kn_no<<"->"<<active->kn_no<<","
 		 <<active->prev->left->kn_no<<", maxt(1) = "
 		 <<maxt0<<" vs. "<<active->prev->left->tout

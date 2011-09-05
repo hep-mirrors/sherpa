@@ -27,7 +27,7 @@ FeynRules_Spectrum::FeynRules_Spectrum(Data_Reader * _dataread,
   m_paramdeffile = p_dataread->GetValue<string>("FR_PARAMDEF",string("param_definition.dat"));
   m_paramfile    = p_dataread->GetValue<string>("FR_PARAMCARD",string("param_card.dat"));
   string intfile = p_dataread->GetValue<string>("FR_INTERACTIONS",string("Interactions.dat"));
-  rpa.gen.SetVariable("INTERACTION_DATA_FILE",intfile);
+  rpa->gen.SetVariable("INTERACTION_DATA_FILE",intfile);
 }
 
 FeynRules_Spectrum::~FeynRules_Spectrum() 
@@ -37,7 +37,7 @@ FeynRules_Spectrum::~FeynRules_Spectrum()
 
 void FeynRules_Spectrum::PrepareTerminate()
 {
-  string path(rpa.gen.Variable("SHERPA_STATUS_PATH")+"/");
+  string path(rpa->gen.Variable("SHERPA_STATUS_PATH")+"/");
   if (path=="/") return;
   CopyFile(m_dir+"/"+m_identfile,path+m_identfile);
   CopyFile(m_dir+"/"+m_paramdeffile,path+m_paramdeffile);
@@ -190,7 +190,7 @@ void FeynRules_Spectrum::SetExternalParameters(PDF::ISR_Handler *const isr) {
   as->SetDefault(alphaS_default);
   p_model->GetScalarFunctions()->insert(make_pair(string("alpha_S"),as));
   //insert aS @ cpl scale
-  double as_cpl = p_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale());
+  double as_cpl = p_model->ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale());
   p_model->GetScalarConstants()->insert(make_pair(string("aS"),as_cpl));
   //QED coupling and EW parameters
   p_model->GetScalarConstants()->insert(make_pair(string("alpha_QED(0)"),1./137.03599976));

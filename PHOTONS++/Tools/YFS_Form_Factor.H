@@ -46,7 +46,7 @@ namespace PHOTONS {
 
       double G(double);
 
-      inline const double Get() const { return m_Y; }
+      inline double Get() const { return m_Y; }
 
       inline const ATOOLS::Vec4D &P1() const  { return m_p1; }
       inline const ATOOLS::Vec4D &P2() const  { return m_p2; }

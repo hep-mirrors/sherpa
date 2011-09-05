@@ -34,7 +34,7 @@ namespace AMISIC {
     inline int FSRMode() const                { return m_fsrmode; }
     inline void SetFSRMode(const int fsrmode) { m_fsrmode=fsrmode; }
 
-    inline PHASIC::Channel_Interface *const FSRInterface() const
+    inline PHASIC::Channel_Interface *FSRInterface() const
     { return p_fsrinterface; }
     inline void SetFSRInterface(PHASIC::Channel_Interface *const fsr)
     { p_fsrinterface=fsr; }

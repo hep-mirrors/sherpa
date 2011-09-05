@@ -144,11 +144,11 @@ namespace AMISIC {
     inline const std::string &HardModel() const { return m_hardmodel; }
     inline const std::string &SoftModel() const { return m_softmodel; }
 
-    inline MI_Base *const HardBase() const { return p_hardbase; }
-    inline MI_Base *const SoftBase() const { return p_softbase; }
+    inline MI_Base *HardBase() const { return p_hardbase; }
+    inline MI_Base *SoftBase() const { return p_softbase; }
 
-    inline PHASIC::Process_Base *const HardXS() { return p_hardbase->XS(); }
-    inline PHASIC::Process_Base *const SoftXS() { return p_softbase->XS(); }
+    inline PHASIC::Process_Base *HardXS() { return p_hardbase->XS(); }
+    inline PHASIC::Process_Base *SoftXS() { return p_softbase->XS(); }
 
   }; // end of class Amisic
   /*!

@@ -31,7 +31,7 @@ namespace MODEL {
     int CheckCoupling() const;
     // operators
     Single_Vertex&       operator= (const Single_Vertex&);
-    const bool           operator==(const Single_Vertex&);
+    bool                 operator==(const Single_Vertex&);
     friend std::ostream &operator<<(std::ostream&, const Single_Vertex&);
   };   
 

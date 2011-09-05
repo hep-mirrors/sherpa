@@ -21,29 +21,50 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include <cstring>
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-Sherpa::Sherpa() :
+Sherpa::Sherpa(int argc,char * argv[]) :
   p_inithandler(NULL), p_eventhandler(NULL), p_iohandler(NULL)
 {
+#ifdef USING__MPI
+  MPI::Init(argc,argv);
+#endif
+  ATOOLS::exh = new Exception_Handler();
+  ATOOLS::msg = new Message();
+  ATOOLS::ran = new Random(1234,4321);
+  ATOOLS::rpa = new Run_Parameter();
   ATOOLS::s_loader = new Library_Loader();
   m_errors = 0;
   m_trials = 100;
   m_debuginterval = 0;
   m_debugstep = 0;
   exh->AddTerminatorObject(this);
+  InitializeTheRun(argc,argv);
 }
 
 Sherpa::~Sherpa() 
 {
-  rpa.gen.WriteCitationInfo();
+  if (msg_LevelIsInfo()) Return_Value::PrintStatistics(msg->Out());
+  rpa->gen.WriteCitationInfo();
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = NULL; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = NULL; }
   exh->RemoveTerminatorObject(this);
   delete ATOOLS::s_loader;
+  delete ATOOLS::rpa;
+  delete ATOOLS::ran;
+  delete ATOOLS::msg;
+  delete ATOOLS::exh;
+#ifdef USING__MPI
+  int dummy=0;
+  MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
+  MPI::Finalize();
+#endif
 }
 
 bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
@@ -106,7 +127,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
     long int debugstep(0);
     if (read.ReadFromFile(debugstep,"DEBUG_STEP")) {
       m_debugstep=debugstep;
-      ran.ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
+      ran->ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
     }
     return res;
   }
@@ -157,19 +178,19 @@ bool Sherpa::InitializeTheEventHandler()
 
 bool Sherpa::GenerateOneEvent(bool reset) 
 {
-  ATOOLS::rpa.gen.SetNumberOfGeneratedEvents(ATOOLS::rpa.gen.NumberOfGeneratedEvents()+1);
+  ATOOLS::rpa->gen.SetNumberOfGeneratedEvents(ATOOLS::rpa->gen.NumberOfGeneratedEvents()+1);
   for (int i=0;i<m_trials;i++) {
-    if(m_debuginterval>0 && rpa.gen.NumberOfGeneratedEvents()%m_debuginterval==0){
-      std::string fname=ToString(rpa.gen.NumberOfGeneratedEvents())+".dat";
-      ran.WriteOutStatus(("random."+fname).c_str());
+    if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
+      std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
+      ran->WriteOutStatus(("random."+fname).c_str());
     }
     if (m_debugstep>0) {
-      ran.ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
+      ran->ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
     }
     if (reset) p_eventhandler->Reset();
     if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
-      if(m_debuginterval>0 && rpa.gen.NumberOfGeneratedEvents()%m_debuginterval==0){
-        std::string fname=ToString(rpa.gen.NumberOfGeneratedEvents())+".dat";
+      if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
+        std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
         std::ofstream eventout(("refevent."+fname).c_str());
         eventout<<*p_eventhandler->GetBlobs()<<std::endl;
         eventout.close();
@@ -236,11 +257,11 @@ void Sherpa::DrawLogo()
 	    <<"     SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION
 	    <<"                                              "<<std::endl
 	    <<"                                                                             "<<std::endl
-	    <<"     Authors:        Tanju Gleisberg, Stefan Hoeche, Frank Krauss,           "<<std::endl
+	    <<"     Authors:        Stefan Hoeche, Hendrik Hoeth, Frank Krauss,             "<<std::endl
 	    <<"                     Marek Schoenherr, Steffen Schumann, Frank Siegert,      "<<std::endl
             <<"                     Jan Winter."<<std::endl
-	    <<"     Former Authors: Timo Fischer, Ralf Kuhn, Thomas Laubrich,               "<<std::endl
-	    <<"                     Andreas Schaelicke                                      "<<std::endl
+	    <<"     Former Authors: Timo Fischer, Tanju Gleisberg, Ralf Kuhn,               "<<std::endl
+	    <<"                     Thomas Laubrich, Andreas Schaelicke                     "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"     This program uses a lot of genuine and original research work           "<<std::endl
 	    <<"     by other people. Users are encouraged to refer to                       "<<std::endl
@@ -257,7 +278,7 @@ void Sherpa::DrawLogo()
 	    <<"                                                                             "<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
 	    <<std::endl;
-  rpa.gen.PrintSVNVersion(msg->Info());
-  rpa.gen.AddCitation
+  rpa->gen.PrintSVNVersion(msg->Info());
+  rpa->gen.AddCitation
     (0,"The complete Sherpa package is published under \\cite{Gleisberg:2008ta}.");
 }

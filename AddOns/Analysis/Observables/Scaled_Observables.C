@@ -14,14 +14,14 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
     if (parameters[0].size()<4) return NULL;
     std::string list=parameters[0].size()>4?parameters[0][4]:finalstate_list;
     double ref=parameters[0].size()>5?ATOOLS::ToType<double>(parameters[0][5]):
-      ATOOLS::rpa.gen.Ecms();
+      ATOOLS::rpa->gen.Ecms();
     return new Class(HistogramType(parameters[0][3]),
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
 		     ATOOLS::ToType<int>(parameters[0][2]),list,ref);
   }
   else if (parameters.size()<4) return NULL;
-  double min=0.0, max=1.0, ref=ATOOLS::rpa.gen.Ecms();
+  double min=0.0, max=1.0, ref=ATOOLS::rpa->gen.Ecms();
   size_t bins=100;
   std::string list=finalstate_list, scale="Lin";
   for (size_t i=0;i<parameters.size();++i) {

@@ -15,8 +15,8 @@ using namespace std;
 void Output_LHEF::Header()
 {
  
-  std::string path(rpa.gen.Variable("SHERPA_DAT_PATH")+"/");
-  std::string file(rpa.gen.Variable("RUN_DATA_FILE"));
+  std::string path(rpa->gen.Variable("SHERPA_DAT_PATH")+"/");
+  std::string file(rpa->gen.Variable("RUN_DATA_FILE"));
   
   size_t sep = file.find("|");
   if (sep!=std::string::npos) {
@@ -52,14 +52,14 @@ void Output_LHEF::Header()
   
   m_outstream<<"<init>"<<std::endl;
   //run info to be dumped here
-  Flavour Beam1 = rpa.gen.Beam1();
-  Flavour Beam2 = rpa.gen.Beam2();
+  Flavour Beam1 = rpa->gen.Beam1();
+  Flavour Beam2 = rpa->gen.Beam2();
   int IDBMUP1 = Beam1.HepEvt();
   int IDBMUP2 = Beam2.HepEvt();
-  double EBMUP1 = rpa.gen.PBeam(0)[0];
-  double EBMUP2 = rpa.gen.PBeam(1)[0];
+  double EBMUP1 = rpa->gen.PBeam(0)[0];
+  double EBMUP2 = rpa->gen.PBeam(1)[0];
   
-  int IDWTUP(ToType<int>(rpa.gen.Variable("EVENT_GENERATION_MODE"))==0?1:3);
+  int IDWTUP(ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"))==0?1:3);
   int NPRUP = 1;
   int PDFGUP1 = 0;
   int PDFGUP2 = 0;

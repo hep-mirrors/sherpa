@@ -33,10 +33,10 @@ Beam_Spectra_Handler::Beam_Spectra_Handler(Data_Reader * dataread) :
     if (p_BeamBase[i]->On()) m_mode += i+1;
     if (p_BeamBase[i]->PolarisationOn()) m_polarisation += i+1;
   }
-  ATOOLS::rpa.gen.SetBeam1(p_BeamBase[0]->Beam());
-  ATOOLS::rpa.gen.SetBeam2(p_BeamBase[1]->Beam());
-  ATOOLS::rpa.gen.SetPBeam(0,p_BeamBase[0]->InMomentum());
-  ATOOLS::rpa.gen.SetPBeam(1,p_BeamBase[1]->InMomentum());
+  ATOOLS::rpa->gen.SetBeam1(p_BeamBase[0]->Beam());
+  ATOOLS::rpa->gen.SetBeam2(p_BeamBase[1]->Beam());
+  ATOOLS::rpa->gen.SetPBeam(0,p_BeamBase[0]->InMomentum());
+  ATOOLS::rpa->gen.SetPBeam(1,p_BeamBase[1]->InMomentum());
 }
 
 Beam_Spectra_Handler::~Beam_Spectra_Handler() { 
@@ -201,8 +201,8 @@ bool Beam_Spectra_Handler::InitKinematics(Data_Reader * dataread) {
   Vec4D  P      = p_BeamBase[0]->InMomentum()+p_BeamBase[1]->InMomentum();
   double s      = P.Abs2();
   double E      = sqrt(s);
-  rpa.gen.SetEcms(E);
-  Read_Write_Base::AddGlobalTag("E_CMS",ToString(rpa.gen.Ecms()));
+  rpa->gen.SetEcms(E);
+  Read_Write_Base::AddGlobalTag("E_CMS",ToString(rpa->gen.Ecms()));
 
   m_splimits[0] = s*dataread->GetValue<double>("BEAM_SMIN",1e-10);
   m_splimits[1] = s*ATOOLS::Min(dataread->GetValue<double>("BEAM_SMAX",1.0),Upper1()*Upper2());
@@ -521,7 +521,7 @@ void Beam_Spectra_Handler::SetLimits()
     m_spkey[i]=m_splimits[i];
     m_ykey[i]=m_ylimits[i];
   }
-  m_spkey[2]=ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
+  m_spkey[2]=ATOOLS::sqr(ATOOLS::rpa->gen.Ecms());
   m_xkey[0]=-std::numeric_limits<double>::max();
   m_xkey[2]=-std::numeric_limits<double>::max();
   m_xkey[1]=log(Upper1());

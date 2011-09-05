@@ -46,7 +46,7 @@ using namespace ATOOLS;
 PDF_MSTW::PDF_MSTW
 (const ATOOLS::Flavour &bunch,
  const std::string &bfile,int set):
-  m_path(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/MSTW08Grid"),
+  m_path(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/MSTW08Grid"),
   m_file(bfile), m_anti(1)
 {
   m_member=set;

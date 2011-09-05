@@ -27,7 +27,7 @@ COMIX::Process_Group::Process_Group(Model *const model):
 bool COMIX::Process_Group::Initialize(std::map<std::string,std::string> *const pmap,
 				      std::vector<Single_Process*> *const procs)
 {
-  return Process_Base::Initialize(pmap,procs);
+  return COMIX::Process_Base::Initialize(pmap,procs);
 }
 
 PHASIC::Process_Base *COMIX::Process_Group::GetProcess(const PHASIC::Process_Info &pi) const
@@ -89,7 +89,7 @@ void COMIX::Process_Group::ConstructPSVertices(PS_Generator *ps)
 
 bool COMIX::Process_Group::FillIntegrator(Phase_Space_Handler *const psh)
 {
-  return Process_Base::FillIntegrator(psh);
+  return COMIX::Process_Base::FillIntegrator(psh);
 }
 
 void COMIX::Process_Group::UpdateIntegrator(Phase_Space_Handler *const psh)

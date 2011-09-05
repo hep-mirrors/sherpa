@@ -41,8 +41,8 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   double helpd;
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
-  reader.SetInputPath(rpa.GetPath());
-  reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
   if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA")) {
     m_dalpha = helpd;
     msg_Tracking()<<"Set dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
@@ -80,7 +80,7 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   static bool addcite(false);
   if (!addcite) {
     addcite=true;
-  rpa.gen.AddCitation(1,"The automated generation of Catani-Seymour dipole\
+  rpa->gen.AddCitation(1,"The automated generation of Catani-Seymour dipole\
  terms in Amegic is published under \\cite{Gleisberg:2007md}.");
   }
 }
@@ -351,12 +351,12 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
   }
   double eta0(0.0), eta1(0.0);
   if (mode==0) {
-    eta0=p_int->Momenta()[0].PPlus()/rpa.gen.PBeam(0).PPlus();
-    eta1=p_int->Momenta()[1].PMinus()/rpa.gen.PBeam(1).PMinus();
+    eta0=p_int->Momenta()[0].PPlus()/rpa->gen.PBeam(0).PPlus();
+    eta1=p_int->Momenta()[1].PMinus()/rpa->gen.PBeam(1).PMinus();
   }
   else {
-    eta0=p_int->Momenta()[0].PPlus()/rpa.gen.PBeam(1).PMinus();
-    eta1=p_int->Momenta()[1].PMinus()/rpa.gen.PBeam(0).PPlus();
+    eta0=p_int->Momenta()[0].PPlus()/rpa->gen.PBeam(1).PMinus();
+    eta1=p_int->Momenta()[1].PMinus()/rpa->gen.PBeam(0).PPlus();
   }
   double kpterm = p_partner->Get_KPterms
     (p_int->ISR()->PDF(mode),p_int->ISR()->PDF(1-mode),eta0,eta1,m_flavs);
@@ -372,8 +372,8 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
 double Single_Virtual_Correction::DSigma2() 
 {
   if (m_lastxs==0.) return 0.;
-  double eta0(p_int->Momenta()[0].PPlus()/rpa.gen.PBeam(1).PMinus());
-  double eta1(p_int->Momenta()[1].PMinus()/rpa.gen.PBeam(0).PPlus());
+  double eta0(p_int->Momenta()[0].PPlus()/rpa->gen.PBeam(1).PMinus());
+  double eta1(p_int->Momenta()[1].PMinus()/rpa->gen.PBeam(0).PPlus());
   double kpterm = p_partner->Get_KPterms
     (p_int->ISR()->PDF(1),p_int->ISR()->PDF(0),eta0,eta1,m_flavs);
   if (p_partner != this) kpterm*=m_sfactor;
@@ -824,16 +824,16 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   double w=1.;
   if (m_flavs[0].Strong()) {
     eta0 = p_int->ISR()->X1();
-    m_x0 = eta0+ran.Get()*(1.-eta0);
+    m_x0 = eta0+ran->Get()*(1.-eta0);
     w *= (1.-eta0);
-//       m_x0 = eta0*std::exp(-ran.Get()*log(eta0));
+//       m_x0 = eta0*std::exp(-ran->Get()*log(eta0));
 //       w *= -m_x0*log(eta0);
   }
   if (m_flavs[1].Strong()) {
     eta1 = p_int->ISR()->X2();
-    m_x1 = eta1+ran.Get()*(1.-eta1);
+    m_x1 = eta1+ran->Get()*(1.-eta1);
     w *= (1.-eta1);
-//        m_x1 = eta1*std::exp(-ran.Get()*log(eta1));
+//        m_x1 = eta1*std::exp(-ran->Get()*log(eta1));
 //        w *= -m_x1*log(eta1);
   }
 

@@ -397,7 +397,7 @@ bool Tree::CheckMomentumConservation(Knot *const knot) const
   if (knot==NULL) return true;
   msg_Indent();
   bool success(true);
-  static double accu(sqrt(rpa.gen.Accu()));
+  static double accu(sqrt(rpa->gen.Accu()));
   if (knot->left!=NULL && !IsEqual(knot->part->Momentum(),Vec4D(),accu)) {
     msg_Debugging()<<"fmc check "<<knot->kn_no<<"\n"; 
     Vec4D p(knot->part->Momentum());

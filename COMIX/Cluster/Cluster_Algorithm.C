@@ -349,7 +349,7 @@ bool Cluster_Algorithm::ClusterStep
     }
   }
   if (!(m_wmode&1)) {
-    double disc(sum*ran.Get()), psum(0.0);
+    double disc(sum*ran->Get()), psum(0.0);
     for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
 	 cit!=cinfo.end();++cit)
       if (cit->second.m_kt2.m_op2>=0.0 &&
@@ -405,10 +405,10 @@ bool Cluster_Algorithm::ClusterStep
       msg_Debugging()<<"kinematics failed\n";
       return false;
     }
-    if ((-p[m_swap][0]>rpa.gen.PBeam(0)[0] &&
-	 !IsEqual(-p[m_swap][0],rpa.gen.PBeam(0)[0],1.0e-6)) ||
-	(-p[1-m_swap][0]>rpa.gen.PBeam(1)[0] &&
-	 !IsEqual(-p[1-m_swap][0]>rpa.gen.PBeam(1)[0],1.0e-6))) {
+    if ((-p[m_swap][0]>rpa->gen.PBeam(0)[0] &&
+	 !IsEqual(-p[m_swap][0],rpa->gen.PBeam(0)[0],1.0e-6)) ||
+	(-p[1-m_swap][0]>rpa->gen.PBeam(1)[0] &&
+	 !IsEqual(-p[1-m_swap][0]>rpa->gen.PBeam(1)[0],1.0e-6))) {
       msg_Debugging()<<"kinematics failed\n";
       return false;
     }

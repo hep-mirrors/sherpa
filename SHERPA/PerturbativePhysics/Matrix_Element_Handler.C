@@ -43,21 +43,23 @@ Matrix_Element_Handler::Matrix_Element_Handler
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
   if (!read.ReadFromFile(m_respath,"RESULT_DIRECTORY")) m_respath="./Results";
-  if (rpa.gen.Variable("PATH_PIECE")!="")
-    m_respath=rpa.gen.Variable("PATH_PIECE")+"/"+m_respath;
+  if (rpa->gen.Variable("PATH_PIECE")!="")
+    m_respath=rpa->gen.Variable("PATH_PIECE")+"/"+m_respath;
   std::string evtm;
   if (!read.ReadFromFile(evtm,"EVENT_GENERATION_MODE")) evtm="Unweighted";
   if (evtm=="Unweighted" || evtm=="U") m_eventmode=1;
   else if (evtm=="PartiallyUnweighted" || evtm=="P") m_eventmode=2;
   else m_eventmode=0;
   //need for LHE-output
-  rpa.gen.SetVariable("EVENT_GENERATION_MODE",ToString(m_eventmode));
+  rpa->gen.SetVariable("EVENT_GENERATION_MODE",ToString(m_eventmode));
   if (!read.ReadFromFile(m_ovwth,"OVERWEIGHT_WARNING_THRESHOLD")) m_ovwth=10.0;
   if (!read.ReadFromFile(m_seedmode,"EVENT_SEED_MODE")) m_seedmode=0;
   else msg_Info()<<METHOD<<"(): Set seed mode "<<m_seedmode<<"."<<std::endl;
+  if (!read.ReadFromFile(m_rsadd,"MEH_RSADD")) m_rsadd=1;
+  else msg_Info()<<METHOD<<"(): Set RS add mode "<<m_rsadd<<"."<<std::endl;
   std::string seedfile;
   if (!read.ReadFromFile(seedfile,"EVENT_SEED_FILE")) 
-    seedfile="ran.stat."+ToString(rpa.gen.RandomSeed());
+    seedfile="ran.stat."+ToString(rpa->gen.RandomSeed());
   else msg_Info()<<METHOD<<"(): Set seed file "<<seedfile<<"."<<std::endl;
 #ifdef USING__GZIP
   seedfile+=".gz";
@@ -125,14 +127,14 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
 void Matrix_Element_Handler::SetRandomSeed()
 {
   if (m_seedmode==1) {
-    m_ranidx=ran.ReadInStatus(*p_ranin,m_ranidx);
+    m_ranidx=ran->ReadInStatus(*p_ranin,m_ranidx);
     if (m_ranidx==std::string::npos) {
       msg_Error()<<METHOD<<"(): Status file read error. Abort."<<std::endl;
       abort();
     }
   }
   else if (m_seedmode==2) {
-    m_ranidx=ran.WriteOutStatus(*p_ranout,m_ranidx);
+    m_ranidx=ran->WriteOutStatus(*p_ranout,m_ranidx);
     if (m_ranidx==std::string::npos) {
       msg_Error()<<METHOD<<"(): Status file write error. Abort."<<std::endl;
       abort();
@@ -149,7 +151,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   for (size_t i(0);i<m_procs.size();++i)
     sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
   for (size_t n(1);true;++n) {
-    double disc(sum*ran.Get()), csum(0.0);
+    double disc(sum*ran->Get()), csum(0.0);
     Process_Base *proc(NULL);
     for (size_t i(0);i<m_procs.size();++i) {
       if ((csum+=m_procs[i]->Integrator()->
@@ -165,10 +167,10 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     if (info==NULL) continue;
     m_evtinfo=*info;
     delete info;
-    double wf(rpa.Picobarn()/sw/
+    double wf(rpa->Picobarn()/sw/
 	      p_proc->Integrator()->PSHandler()->EnhanceFactor());
     if (m_eventmode!=0) {
-      double max=p_proc->Integrator()->Max(), disc=max*ran.Get();
+      double max=p_proc->Integrator()->Max(), disc=max*ran->Get();
       if (m_evtinfo.m_weight<disc) continue;
       if (m_evtinfo.m_weight>max*(1.0+m_ovwth))
 	  msg_Info()<<METHOD<<"(): Point for '"<<p_proc->Name()
@@ -251,12 +253,14 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Proce
         // in the process info, but has to be added here
         Process_Info rpi(pi);
 	rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::real|nlo_type::rsub));
-        if (pi.m_fi.m_nloqcdtype==nlo_type::lo) {
-          rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon,"",""));
-        }
-        else if (pi.m_fi.m_nloewtype==nlo_type::lo) {
-          rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
-        }
+	if (m_rsadd) {
+	  if (pi.m_fi.m_nloqcdtype==nlo_type::lo) {
+	    rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon,"",""));
+	  }
+	  else if (pi.m_fi.m_nloewtype==nlo_type::lo) {
+	    rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
+	  }
+	}
         procs.push_back(m_gens.InitializeProcess(rpi,true));
 	if (procs.back()==NULL) {
 	  msg_Error()<<"No such process:\n"<<rpi<<std::endl;
@@ -281,15 +285,15 @@ bool Matrix_Element_Handler::InitializeProcesses
   p_beam=beam; p_isr=isr; p_model=model;
   if (!m_gens.InitializeGenerators(model,beam,isr)) return false;
 #ifdef USING__Threading
-  double rbtime(ATOOLS::rpa.gen.Timer().RealTime());
+  double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
 #endif
-  double btime(ATOOLS::rpa.gen.Timer().UserTime());
+  double btime(ATOOLS::rpa->gen.Timer().UserTime());
   BuildProcesses();
   if (msg_LevelIsTracking()) msg_Info()<<"Process initialization";
 #ifdef USING__Threading
-  double retime(ATOOLS::rpa.gen.Timer().RealTime());
+  double retime(ATOOLS::rpa->gen.Timer().RealTime());
 #endif
-  double etime(ATOOLS::rpa.gen.Timer().UserTime());
+  double etime(ATOOLS::rpa->gen.Timer().UserTime());
   Data_Reader psread;
   psread.SetAddCommandLine(false);
   psread.AddWordSeparator("\t");
@@ -315,9 +319,9 @@ bool Matrix_Element_Handler::InitializeProcesses
   btime=etime;
   bool res(m_gens.PerformTests());
 #ifdef USING__Threading
-  retime=ATOOLS::rpa.gen.Timer().RealTime();
+  retime=ATOOLS::rpa->gen.Timer().RealTime();
 #endif
-  etime=ATOOLS::rpa.gen.Timer().UserTime();
+  etime=ATOOLS::rpa->gen.Timer().UserTime();
   psread.RereadInFile();
   if (psread.VectorFromFile(musage,"VmSize:"))
     for (size_t i(1);i<musage.size();++i) musage.front()+=" "+musage[i];
@@ -594,7 +598,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	double inisum=0.0, finsum=0.0, dd(0.0);
 	for (size_t i(0);i<nis;++i) inisum+=flavs[i].Mass();
 	for (size_t i(0);i<nfs;++i) finsum+=flavs[i+nis].Mass();
-	if (inisum>=rpa.gen.Ecms() || finsum>=rpa.gen.Ecms()) continue;
+	if (inisum>=rpa->gen.Ecms() || finsum>=rpa->gen.Ecms()) continue;
 	std::string pnid(CFS.MultiplicityTag()), ds;
 	int di;
 	Process_Info cpi(pi);
@@ -653,7 +657,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
       }
     }
   }
-  if (pi.m_ckkw && rpa.gen.NumberOfEvents()==0)
+  if (pi.m_ckkw && rpa->gen.NumberOfEvents()==0)
     THROW(fatal_error,"Number of events cannot be zero in CKKW mode");
   for (size_t i(0);i<procs.size();++i) {
     Process_Info &cpi(procs[i]->Info());
@@ -748,7 +752,7 @@ namespace SHERPA {
   template <> double Matrix_Element_Handler::ExtractMPvalue(const std::string& str)
   {
     Algebra_Interpreter inter;
-    inter.AddTag("E_CMS",ToString(rpa.gen.Ecms()));
+    inter.AddTag("E_CMS",ToString(rpa->gen.Ecms()));
     return ToType<double>(inter.Interprete(str));
   }
 

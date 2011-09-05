@@ -62,11 +62,11 @@ namespace ATOOLS {
     const Intervall XRange() const {return Intervall(Xmin(),Xmax());}
     const Intervall YRange() const {return Intervall(m_ymin,m_ymax);}
 
-    const double Xmin() const {return m_data.front().x;}
-    const double Xmax() const {return m_data.back().x;}
+    double Xmin() const {return m_data.front().x;}
+    double Xmax() const {return m_data.back().x;}
 
-    const double Ymin() const {return m_ymin;}
-    const double Ymax() const {return m_ymax;}
+    double Ymin() const {return m_ymin;}
+    double Ymax() const {return m_ymax;}
 
     void   Clear() { 
       m_data.clear();

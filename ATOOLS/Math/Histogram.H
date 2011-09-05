@@ -12,19 +12,23 @@ namespace ATOOLS {
     double     m_lower, m_upper;
     double   * m_yvalues, * m_y2values;
     double   * m_psvalues, * m_ps2values;
+    double  ** m_mvalues;
     double   * m_tmp;
     double     m_fills,m_psfills;
+    double     m_mfills,m_mpsfills;
     double     m_binsize, m_logbase,m_mcb;
     int        m_depth;
     bool       m_active, m_finished, m_initialized;
     int        m_logarithmic,m_fuzzyexp;
     std::string m_name;
+    void MPIInit();
   public :
     Histogram(int type,double xmin, double xmax, int nbins,
 	      const std::string &name="");
     Histogram(const Histogram *);
     Histogram(const std::string &);
     ~Histogram();
+    void MPISync();
     void Reset();
     void Insert(double x);
     void Insert(int i, double weight, double n=1.0);

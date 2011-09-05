@@ -123,7 +123,7 @@ void Dipole_FF::AddRadiation() {
       }
       // if no photon generated, event always accepted
       else break;
-      if (ran.Get()*m_genmaxweight < m_genweight)   genreject = false;
+      if (ran->Get()*m_genmaxweight < m_genweight)   genreject = false;
       // accept new particle momenta if event accepted
       if (!genreject) {
       // if accepted rewrite momenta into Q-CMS, also transform the photon momenta

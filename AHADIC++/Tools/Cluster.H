@@ -220,7 +220,7 @@ namespace AHADIC {
 
     void               push_back(ATOOLS::Flavour);
     void               clear();
-    const size_t       size() const;
+    size_t             size() const;
     ATOOLS::Flavour    operator[](size_t pos);
 
 
@@ -281,7 +281,7 @@ namespace AHADIC {
   inline double           Cluster::Mass() const              { return sqrt(m_momentum.Abs2()); }
   inline void             Cluster::push_back(ATOOLS::Flavour flav) { m_decayproducts.push_back(flav); }
   inline void             Cluster::clear()                         { m_decayproducts.clear(); }
-  inline const size_t     Cluster::size() const                    { return m_decayproducts.size(); }
+  inline size_t           Cluster::size() const                    { return m_decayproducts.size(); }
   inline ATOOLS::Flavour  Cluster::operator[](size_t pos)          { return m_decayproducts[pos]; }
   inline double           Cluster::KT() const                      { return m_kt; }
   inline double           Cluster::Z() const                       { return m_z; }

@@ -168,13 +168,13 @@ void IsotropicSpectator::GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts
   double pspat;
   do {
     double gauss1, gauss2;
-    ran.Gaussian(gauss1,gauss2);
+    ran->Gaussian(gauss1,gauss2);
     pspat = lambda_qcd+lambda_qcd/m_decayer_mass*gauss1;
     if(pspat<1e-6) pspat = lambda_qcd+lambda_qcd/m_decayer_mass*gauss2;
   } while(pspat<1e-6);
-  double costheta = ran.Get()*2.0-1.0;
+  double costheta = ran->Get()*2.0-1.0;
   double sintheta = sin(acos(costheta));
-  double phi = ran.Get()*2.0*M_PI;
+  double phi = ran->Get()*2.0*M_PI;
   double px = pspat*sintheta*cos(phi);
   double py = pspat*sintheta*sin(phi);
   double pz = pspat*costheta;

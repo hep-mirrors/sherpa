@@ -222,7 +222,7 @@ std::vector<double> Dress_Blob_Base::GenerateNumberAndEnergies() {
 //   std::vector<double> R, k;
 //   R.push_back(0);
 //   for (unsigned int i=0; R.back()<m_nbar; i++) {
-//     R.push_back(R.back()-log(ran.Get()));
+//     R.push_back(R.back()-log(ran->Get()));
 //     k.push_back(m_omegaMax*pow(m_omegaMin/m_omegaMax,R.back()/m_nbar));
 //     msg_Info()<<R.back()<<"  "<<k.back()<<endl;
 //   }
@@ -235,7 +235,7 @@ std::vector<double> Dress_Blob_Base::GenerateNumberAndEnergies() {
   double prod = 1.;
   while(1) {
     m_n++;
-    prod = prod*ran.Get();
+    prod = prod*ran->Get();
     if (prod <= expnbar) break;
   }
 //-----------------------more accurate-------------------------------------
@@ -243,7 +243,7 @@ std::vector<double> Dress_Blob_Base::GenerateNumberAndEnergies() {
 //----------------------new dicing of energies-----------------------------
   std::vector<double> k;
   for (unsigned int i=0; i<m_n; i++) {
-    k.push_back(m_omegaMin*pow(m_omegaMax/m_omegaMin,ran.Get()));
+    k.push_back(m_omegaMin*pow(m_omegaMax/m_omegaMin,ran->Get()));
   }
 //-------------------------------------------------------------------------
   return k;

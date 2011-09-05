@@ -44,7 +44,7 @@ POWHEG_Process::POWHEG_Process
   static bool ref(false);
   if (!ref) {
     ref=true;
-    rpa.gen.AddCitation
+    rpa->gen.AddCitation
       (1,"The automation of POWHEG is published in \\cite{Hoeche:2010pf}.");
   }
 }
@@ -86,8 +86,8 @@ void POWHEG_Process::Init(const Process_Info &pi,
   p_rproc=InitProcess(spi,nlo_type::lo,true);
   p_sproc=InitProcess(spi,nlo_type::real|nlo_type::rsub,true);
   Data_Reader read(" ",";","!","=");
-  read.SetInputPath(rpa.GetPath());
-  read.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+  read.SetInputPath(rpa->GetPath());
+  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   if (!read.ReadFromFile(m_rmode,"PP_RMODE")) m_rmode=1;
   else msg_Info()<<METHOD<<"(): Set RB integration mode "<<m_rmode<<".\n";
   for (size_t i(0);i<m_pprocs.size();++i) {
@@ -470,7 +470,7 @@ double POWHEG_Process::SelectProcess()
   p_ampl=NULL;
   int mode(p_int->InSwaped());
   double xsc(1.0/(1.0+dabs(m_last[mode]-m_zhsum[mode])/dabs(m_zhsum[mode])));
-  if (xsc>ran.Get()) return SelectZHProcess();
+  if (xsc>ran->Get()) return SelectZHProcess();
   return SelectBProcess();
 }
 
@@ -481,7 +481,7 @@ double POWHEG_Process::SelectRProcess()
   p_selected=p_rproc;
   double rsum(0.0), psum(0.0);
   for (size_t i(0);i<p_rproc->Size();++i) rsum+=(*p_rproc)[i]->Last(mode);
-  rsum*=ran.Get();
+  rsum*=ran->Get();
   for (size_t i(0);i<p_rproc->Size();++i)
     if ((psum+=(*p_rproc)[i]->Last(mode))>=rsum) {
       p_rproc->SetSelected((*p_rproc)[i]);
@@ -500,7 +500,7 @@ double POWHEG_Process::SelectZHProcess()
   double zhsum(0.0), psum(0.0);
   for (size_t i(0);i<m_zh[mode].size();++i)
     zhsum+=dabs(m_zh[mode][i].m_res);
-  zhsum*=ran.Get();
+  zhsum*=ran->Get();
   for (size_t i(0);i<m_zh[mode].size();++i) {
     if ((psum+=dabs(m_zh[mode][i].m_res))>=zhsum) {
       Process_Base *rproc(m_zh[mode][i].p_r);
@@ -529,7 +529,7 @@ double POWHEG_Process::SelectBProcess()
   int mode(p_int->InSwaped());
   msg_Debugging()<<"B-like event ( B = "<<p_bproc->Last(mode)<<" )\n";
   if (p_bproc->Last(mode)==0.0) return SelectRProcess();
-  double rsum(p_bproc->Last(mode)*ran.Get()), psum(0.0);
+  double rsum(p_bproc->Last(mode)*ran->Get()), psum(0.0);
   Process_Base *bproc(NULL);
   for (size_t i(0);i<p_bproc->Size();++i) {
     bproc=(*p_bproc)[i];
@@ -670,7 +670,7 @@ bool POWHEG_Process::CalculateTotalXSec(const std::string &resultpath,
   if(m_pinfo.m_fi.NLOType()&nlo_type::loop)
     msg_Info()<<","<<m_pinfo.m_loopgenerator;
   msg_Info()<<")"<<std::endl;
-  double totalxs(psh->Integrate()/rpa.Picobarn());
+  double totalxs(psh->Integrate()/rpa->Picobarn());
   if (!IsEqual(totalxs,p_int->TotalResult())) {
     msg_Error()<<"Result of PS-Integrator and summation do not coincide!\n"
 	       <<"  '"<<m_name<<"': "<<totalxs

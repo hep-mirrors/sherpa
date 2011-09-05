@@ -63,7 +63,7 @@ MCFM_gg_h::MCFM_gg_h(const int & pID,const Process_Info& pi,
             ATOOLS::sqr((*p_as)(m_ehcscale2)/qcdcouple_.as)),
   m_normcorr(4.*9./qcdcouple_.ason2pi)
 {
-  rpa.gen.AddCitation
+  rpa->gen.AddCitation
     (1,"The NLO matrix elements have been taken from MCFM \\cite{}.");
   switch (m_pID) {
   case 112:

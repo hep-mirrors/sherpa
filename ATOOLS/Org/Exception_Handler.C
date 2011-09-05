@@ -25,6 +25,10 @@
 #define MAX_BACKTRACE_DEPTH 128
 #endif
 
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
+
 using namespace ATOOLS;
 
 ATOOLS::Exception_Handler *ATOOLS::exh(NULL);
@@ -32,21 +36,28 @@ ATOOLS::Exception_Handler *ATOOLS::exh(NULL);
 Exception_Handler::Exception_Handler():
   m_active(true), m_prepared(false), m_stacktrace(true), 
   m_print(true), m_noremove(false),
-  m_signal(0), m_exitcode(0), m_exception(0), m_nbus(0), m_nsegv(0),
-  m_progname("Sherpa") {}
+  m_signal(0), m_exitcode(0), m_exception(0),
+  m_nbus(0), m_nsegv(0), m_mpi_timeout(3600),
+  m_progname("Sherpa")
+{
+  std::set_terminate(ATOOLS::Terminate);
+  std::set_unexpected(ATOOLS::Terminate);
+  signal(SIGSEGV,ATOOLS::SignalHandler);
+  signal(SIGINT,ATOOLS::SignalHandler);
+  signal(SIGPIPE,ATOOLS::SignalHandler);
+  signal(SIGBUS,ATOOLS::SignalHandler);
+  signal(SIGFPE,ATOOLS::SignalHandler);
+  signal(SIGABRT,ATOOLS::SignalHandler);
+  signal(SIGTERM,ATOOLS::SignalHandler);
+  signal(SIGXCPU,ATOOLS::SignalHandler);
+  signal(SIGUSR1,ATOOLS::SignalHandler);
+#ifdef USING__MPI
+  m_mpi.resize(MPI::COMM_WORLD.Get_size(),1);
+#endif
+}
 
 Exception_Handler::~Exception_Handler()
 {
-  exh=NULL;
-}
-
-void Exception_Handler::Init()
-{
-  static bool init(false);
-  if (!init) {
-    exh = new Exception_Handler();
-    init=true;
-  }
 }
 
 bool Exception_Handler::ReadInStatus(const std::string &path)
@@ -110,20 +121,83 @@ void Exception_Handler::PrepareTerminate()
 
 void Exception_Handler::Exit(int exitcode)
 {
-  rpa.gen.WriteCitationInfo();
+  rpa->gen.WriteCitationInfo();
   if (m_print) msg_Error()<<om::bold<<"Exception_Handler::Exit: "
 			  <<om::reset<<om::blue<<"Exiting "
 			  <<m_progname<<" with code "
 			  <<om::reset<<om::bold<<"("
 			  <<om::red<<exitcode<<om::reset<<om::bold<<")"
 			  <<om::reset<<tm::curon<<std::endl;
+#ifdef USING__MPI
+  int size=MPI::COMM_WORLD.Get_size();
+  int rank=MPI::COMM_WORLD.Get_rank();
+  if (rank>0) {
+    msg_Error()<<METHOD<<"(): MPI rank "<<rank<<", pid "<<getpid()<<" on "
+	       <<rpa->gen.Variable("HOSTNAME")<<" is killed."<<std::endl;
+    if (m_mpi.size()>rank) {
+      int flag=-1;
+      MPI_Request req;
+      MPI_Irsend(&flag,1,MPI::INT,0,10*size+rank,MPI::COMM_WORLD,&req);
+      MPI::Finalize();
+    }
+  }
+  else {
+    msg_Error()<<METHOD<<"(): MPI master is killed. Abort."<<std::endl;
+  }
+#endif
   exit(exitcode);
+}
+
+void Exception_Handler::MPISync()
+{
+#ifdef USING__MPI
+  int size=MPI::COMM_WORLD.Get_size();
+  int rank=MPI::COMM_WORLD.Get_rank();
+  if (rank==0) {
+    for (int tag=1;tag<size;++tag) {
+      if (m_mpi[tag]==0) continue;
+      int flag, test;
+      unsigned int time=0;
+      for (;time<m_mpi_timeout;++time) {
+	MPI_Request req;
+	MPI_Irecv(&flag,1,MPI::INT,tag,10*size+tag,MPI::COMM_WORLD,&req);
+	MPI_Test(&req,&test,MPI_STATUS_IGNORE);
+	if (test) {
+	  m_mpi[tag]=flag<0?0:1;
+	  if (m_mpi[tag]==0)
+	    msg_Error()<<METHOD<<"(): MPI rank "<<tag
+		       <<" of "<<size<<" exited."<<std::endl;
+	  break;
+	}
+	MPI_Cancel(&req);
+	m_mpi[tag]=0;
+	sleep(1);
+      }
+      if (time==m_mpi_timeout) {
+      	msg_Error()<<METHOD<<"(): MPI rank "<<tag
+      		   <<" of "<<size<<" does not respond."<<std::endl;
+      }
+    }
+  }
+  else {
+    int flag=0;
+    MPI_Request req;
+    MPI_Isend(&flag,1,MPI::INT,0,10*size+rank,MPI::COMM_WORLD,&req);
+  }
+#endif
+}
+
+int Exception_Handler::MPIStat(int rank)
+{
+  if (rank<0 || rank>m_mpi.size())
+    THROW(fatal_error,"Index out of range");
+  return m_mpi[rank];
 }
 
 void Exception_Handler::Reset()
 {
-  exh->m_exception=NULL;
-  exh->m_signal=0;
+  m_exception=NULL;
+  m_signal=0;
 }
 
 void ATOOLS::Terminate() 
@@ -144,12 +218,12 @@ void Exception_Handler::Terminate()
     if (m_print) {
       if (m_stacktrace) GenerateStackTrace(msg->Error());
     }
-    rpa.gen.SetVariable
-      ("SHERPA_STATUS_PATH",rpa.gen.Variable("SHERPA_RUN_PATH")+
-       "/Status__"+rpa.gen.Timer().TimeString(3));
+    rpa->gen.SetVariable
+      ("SHERPA_STATUS_PATH",rpa->gen.Variable("SHERPA_RUN_PATH")+
+       "/Status__"+rpa->gen.Timer().TimeString(3));
     msg_Error()<<METHOD<<"(): Pre-crash status saved to '"
-	       <<rpa.gen.Variable("SHERPA_STATUS_PATH")<<"'."<<std::endl;
-    MakeDir(rpa.gen.Variable("SHERPA_STATUS_PATH"));
+	       <<rpa->gen.Variable("SHERPA_STATUS_PATH")<<"'."<<std::endl;
+    MakeDir(rpa->gen.Variable("SHERPA_STATUS_PATH"));
   }
   if (!ApproveTerminate()) {
     m_exception=NULL;
@@ -163,26 +237,22 @@ void Exception_Handler::Terminate()
 
 void Exception_Handler::AddTesterFunction(bool (*function)(void))
 { 
-  Init();
-  exh->m_testerfunctions.push_back(function); 
+  m_testerfunctions.push_back(function); 
 }
 
 void Exception_Handler::AddTerminatorFunction(void (*function)(void))
 { 
-  Init();
-  exh->m_terminatorfunctions.push_back(function); 
+  m_terminatorfunctions.push_back(function); 
 }
 
 void Exception_Handler::AddTesterObject(Tester_Object *const object)
 { 
-  Init();
-  exh->m_testerobjects.push_back(object); 
+  m_testerobjects.push_back(object); 
 }
 
 void Exception_Handler::AddTerminatorObject(Terminator_Object *const object)
 { 
-  Init();
-  exh->m_terminatorobjects.push_back(object); 
+  m_terminatorobjects.push_back(object); 
 }
 
 void Exception_Handler::RemoveTesterObject(Tester_Object *const testerobject)
@@ -240,7 +310,6 @@ void Exception_Handler::SetExitCode()
 
 void ATOOLS::SignalHandler(int signal) 
 {
-  exh->Init();
   exh->SignalHandler(signal);
   exh->Reset();
 }
@@ -293,6 +362,17 @@ void Exception_Handler::SignalHandler(int signal)
     msg_Error()<<"   Pipe closed. Will stop writing."<<om::reset<<std::endl;
     m_exitcode=0;
     Terminate();
+    break;
+  case SIGUSR1:
+#ifdef USING__MPI
+    if (MPI::COMM_WORLD.Get_rank()) {
+      m_exitcode=1;
+      Terminate();
+    }
+    else {
+      msg_Error()<<"   SIGUSR1 ignored by MPI master."<<om::reset<<std::endl;
+    }
+#endif
     break;
   default:
     msg_Error()<<"   Cannot handle signal."<<om::reset<<std::endl;
@@ -369,52 +449,3 @@ void Exception_Handler::GenerateStackTrace(std::ostream &ostr,
   if (endline) ostr<<std::endl;
 #endif
 }
-
-void Exception_Handler::SetActive(const bool active)    
-{ 
-  Init(); 
-  exh->m_active=active; 
-}
-
-void Exception_Handler::SetStackTrace(const bool trace) 
-{ 
-  Init(); 
-  exh->m_stacktrace=trace;  
-}
-
-void Exception_Handler::SetProgramName(const std::string &name)
-{ 
-  Init(); 
-  exh->m_progname=name; 
-}
-
-bool Exception_Handler::Active()     
-{ 
-  Init(); 
-  return exh->m_active;     
-}
-
-bool Exception_Handler::StackTrace() 
-{ 
-  Init(); 
-  return exh->m_stacktrace; 
-}
-
-Exception *Exception_Handler::LastException() 
-{ 
-  Init(); 
-  return exh->m_exception; 
-}
-
-unsigned int Exception_Handler::LastSignal()    
-{ 
-  Init(); 
-  return exh->m_signal;    
-}
-
-std::string Exception_Handler::ProgramName()    
-{ 
-  Init(); 
-  return exh->m_progname;    
-}
-

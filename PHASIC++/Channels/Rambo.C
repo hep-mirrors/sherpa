@@ -62,10 +62,10 @@ void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts)
   Vec3D B;
   
   for(i=nin;i<nin+nout;i++) {
-    C     = 2*ran.Get()-1;
+    C     = 2*ran->Get()-1;
     S     = sqrt(1-C*C);
-    F     = 2*M_PI*ran.Get();
-    Q     = -log( std::min( 1.0-1.e-10, std::max(1.e-10,ran.Get()*ran.Get()) ) );
+    F     = 2*M_PI*ran->Get();
+    Q     = -log( std::min( 1.0-1.e-10, std::max(1.e-10,ran->Get()*ran->Get()) ) );
     p[i]  = Vec4D(Q, Q*S*::sin(F), Q*S*cos(F), Q*C);
     R    += p[i]; 
   }

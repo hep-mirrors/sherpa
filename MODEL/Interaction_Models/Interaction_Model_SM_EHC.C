@@ -31,7 +31,7 @@ Interaction_Model_SM_EHC::Interaction_Model_SM_EHC(MODEL::Model_Base * _model,
   m_loops=true;
   p_mosm      = new Interaction_Model_SM(p_model,_cplscheme,_yukscheme); 
   
-  double scale = rpa.gen.CplScale();
+  double scale = rpa->gen.CplScale();
   
   Data_Reader read(" ",";","!","=");
   double ehc_scale2 = read.GetValue<double>("EHC_SCALE2", sqr(Flavour(kf_h0).Mass()));

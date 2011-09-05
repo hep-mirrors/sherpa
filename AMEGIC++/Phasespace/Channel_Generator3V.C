@@ -147,7 +147,7 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
   char name[22];
   sprintf(name,"C%i_%i",nout,n);
 
-  string filename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/")+
+  string filename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/")+
                     string(name)+string(".C");
 
 //   cout<<name<<endl<<endl;
@@ -193,6 +193,7 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
 	<<"    void   GenerateWeight(Vec4D *,Cut_Data *);"<<endl
 	<<"    void   GeneratePoint(Vec4D *,Cut_Data *,double *);"<<endl
 	<<"    void   AddPoint(double);"<<endl
+	<<"    void   MPISync()                 { p_vegas->MPISync(); }"<<endl
 	<<"    void   Optimize()                { p_vegas->Optimize(); } "<<endl
 	<<"    void   EndOptimize()             { p_vegas->EndOptimize(); } "<<endl
 	<<"    void   WriteOut(std::string pId) { p_vegas->WriteOut(pId); } "<<endl

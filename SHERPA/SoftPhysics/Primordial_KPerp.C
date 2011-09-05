@@ -28,12 +28,12 @@ Primordial_KPerp::Primordial_KPerp(std::string _m_path,std::string _m_file):
   // defaults from Z peak
   double defaultmean1(0.0), defaultmean2(0.0),
     defaultsigma1(0.0), defaultsigma2(0.0);
-  if (rpa.gen.Beam1().IsHadron() && rpa.gen.Beam2().IsHadron()) {
-  if (rpa.gen.Beam1().Kfcode()==kf_p_plus) {
+  if (rpa->gen.Beam1().IsHadron() && rpa->gen.Beam2().IsHadron()) {
+  if (rpa->gen.Beam1().Kfcode()==kf_p_plus) {
     defaultmean1=1.258;
     defaultsigma1=1.078;
   }
-  if (rpa.gen.Beam2().Kfcode()==kf_p_plus) {
+  if (rpa->gen.Beam2().Kfcode()==kf_p_plus) {
     defaultmean2=1.258;
     defaultsigma2=1.078;
   }
@@ -82,17 +82,17 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	for (int i=0;i<pairs;++i) {
 	  // generate gaussian numbers
 	  do {
-	    ran1=2.0*ran.Get()-1.0; ran2=2.0*ran.Get()-1.0;
+	    ran1=2.0*ran->Get()-1.0; ran2=2.0*ran->Get()-1.0;
 	    r12=ran1*ran1+ran2*ran2;
 	  } while (r12>1.0);
 	  r12=sqrt(-2.0*log(r12)/r12);
 	  // calculate k_\perp
-	  kperp[0]=m_kperpmean[0]+Sign(0.5-ran.Get())*m_kperpsigma[0]*ran1*r12;
-	  kperp[1]=m_kperpmean[1]+Sign(0.5-ran.Get())*m_kperpsigma[1]*ran2*r12;
+	  kperp[0]=m_kperpmean[0]+Sign(0.5-ran->Get())*m_kperpsigma[0]*ran1*r12;
+	  kperp[1]=m_kperpmean[1]+Sign(0.5-ran->Get())*m_kperpsigma[1]*ran2*r12;
 	  for (size_t j=0;j<2;++j) {
 	    // generate angle
 	    do {
-	      ran1=2.0*ran.Get()-1.0; ran2=2.0*ran.Get()-1.0;
+	      ran1=2.0*ran->Get()-1.0; ran2=2.0*ran->Get()-1.0;
 	      r12=ran1*ran1+ran2*ran2;
 	    } while (r12>1.0);
 	    if (i<blob[j]->NOutP()-1) { 

@@ -81,7 +81,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     p_dataread->SetInputPath(m_path);
     p_dataread->SetInputFile(m_file);
     m_analysisdat = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
-    rpa.Init(m_path,m_file,argc,argv);
+    rpa->Init(m_path,m_file,argc,argv);
     LoadLibraries();
     InitializeTheIO();
     return;
@@ -93,7 +93,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     p_dataread->SetInputPath(m_path);
     p_dataread->SetInputFile(m_file);
     m_analysisdat = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
-    rpa.Init(m_path,m_file,argc,argv);
+    rpa->Init(m_path,m_file,argc,argv);
     LoadLibraries();
     InitializeTheIO();
     return;
@@ -103,13 +103,13 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   ATOOLS::s_loader->SetCheck(p_dataread->GetValue<int>("CHECK_LIBLOCK",1));
 
-  rpa.Init(m_path,m_file,argc,argv);
+  rpa->Init(m_path,m_file,argc,argv);
   LoadLibraries();
   ShowParameterSyntax();
-  ran.InitExternal(m_path,m_file);
+  ran->InitExternal(m_path,m_file);
 
   m_spincorrelations = bool(p_dataread->GetValue<int>("SPIN_CORRELATIONS",0));
-  rpa.gen.SetSpinCorrelation(m_spincorrelations);
+  rpa->gen.SetSpinCorrelation(m_spincorrelations);
   exh->AddTerminatorObject(this);
 }
 
@@ -179,12 +179,12 @@ void Initialization_Handler::SetFileNames()
   cf.SetInputFile(fname+"|(analysis){|}(analysis)");
   if (cf.RereadInFile()) m_analysisdat=fname+"|(analysis){|}(analysis)";
 
-  rpa.gen.SetVariable("MODEL_DATA_FILE",m_modeldat);
-  rpa.gen.SetVariable("ME_DATA_FILE",m_medat);
-  rpa.gen.SetVariable("MODEL_DATA_FILE",m_modeldat);
-  rpa.gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
-  rpa.gen.SetVariable("INTEGRATION_DATA_FILE",integrationdat);
-  rpa.gen.SetVariable("FRAGMENTATION_DATA_FILE",m_fragmentationdat);
+  rpa->gen.SetVariable("MODEL_DATA_FILE",m_modeldat);
+  rpa->gen.SetVariable("ME_DATA_FILE",m_medat);
+  rpa->gen.SetVariable("MODEL_DATA_FILE",m_modeldat);
+  rpa->gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
+  rpa->gen.SetVariable("INTEGRATION_DATA_FILE",integrationdat);
+  rpa->gen.SetVariable("FRAGMENTATION_DATA_FILE",m_fragmentationdat);
 }
 
 
@@ -192,8 +192,8 @@ Initialization_Handler::~Initialization_Handler()
 {
   if (m_savestatus) {
     msg_Error()<<METHOD<<"(): Status saved to '"
-	       <<rpa.gen.Variable("SHERPA_STATUS_PATH")<<"'."<<std::endl;
-    MakeDir(rpa.gen.Variable("SHERPA_STATUS_PATH"),493);
+	       <<rpa->gen.Variable("SHERPA_STATUS_PATH")<<"'."<<std::endl;
+    MakeDir(rpa->gen.Variable("SHERPA_STATUS_PATH"),493);
     exh->PrepareTerminate();
   }
   if (p_evtreader)     { delete p_evtreader;     p_evtreader     = NULL; }
@@ -321,7 +321,7 @@ std::string StripSectionTags(const std::string &name)
 
 void Initialization_Handler::PrepareTerminate()
 {
-  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH")+"/");
+  std::string path(rpa->gen.Variable("SHERPA_STATUS_PATH")+"/");
   if (path=="/") return;
   CopyFile(m_path+StripSectionTags(m_file),path+StripSectionTags(m_file));
   CopyFile(m_path+StripSectionTags(m_modeldat),path+StripSectionTags(m_modeldat));
@@ -339,17 +339,17 @@ void Initialization_Handler::PrepareTerminate()
 	   path+StripSectionTags(m_selectordat));
   CopyFile(m_path+StripSectionTags(m_processesdat),
 	   path+StripSectionTags(m_processesdat));
-  CopyFile(m_path+StripSectionTags(rpa.gen.Variable("INTEGRATION_DATA_FILE")),
-	   path+StripSectionTags(rpa.gen.Variable("INTEGRATION_DATA_FILE")));
+  CopyFile(m_path+StripSectionTags(rpa->gen.Variable("INTEGRATION_DATA_FILE")),
+	   path+StripSectionTags(rpa->gen.Variable("INTEGRATION_DATA_FILE")));
   Data_Writer writer;
   writer.SetOutputFile(path+"cmd");
   writer.SetVectorType(vtc::vertical);
   writer.AddCommandLine("SHERPA_RUN_PATH = "+
-			rpa.gen.Variable("SHERPA_RUN_PATH"));
+			rpa->gen.Variable("SHERPA_RUN_PATH"));
   writer.AddCommandLine("SHERPA_CPP_PATH = "+
-			rpa.gen.Variable("SHERPA_CPP_PATH"));
+			rpa->gen.Variable("SHERPA_CPP_PATH"));
   writer.AddCommandLine("SHERPA_LIB_PATH = "+
-			rpa.gen.Variable("SHERPA_LIB_PATH"));
+			rpa->gen.Variable("SHERPA_LIB_PATH"));
   writer.VectorToFile(writer.CommandLine());
 }
 
@@ -379,7 +379,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay = okay && InitializeTheFragmentation();
   okay = okay && InitializeTheMatrixElements();
   //  only if events:
-  if (rpa.gen.NumberOfEvents()>0) {
+  if (rpa->gen.NumberOfEvents()>0) {
     okay = okay && InitializeTheHadronDecays();
     okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheSoftPhotons();
@@ -392,14 +392,14 @@ bool Initialization_Handler::CheckBeamISRConsistency()
 {
   if (p_model->Name()==std::string("ADD")) {
     double ms = p_model->ScalarConstant("M_s");
-    if (ms<rpa.gen.Ecms()) {
+    if (ms<rpa->gen.Ecms()) {
       msg_Error()<<"WARNING in Initialization_Handler::CheckBeamISRConsistency :"<<std::endl
 	       <<"   You might be using the ADD model beyond its valid range ! "<<endl;
     }
   }
 
   double smin=0;
-  double smax=sqr(rpa.gen.Ecms());
+  double smax=sqr(rpa->gen.Ecms());
   smin = Max(smin,p_beamspectra->SprimeMin());
   smax = Min(smax,p_beamspectra->SprimeMax());
   if (m_isrhandlers[isr::hard_process]->On()) {
@@ -457,7 +457,7 @@ bool Initialization_Handler::InitializeTheModel()
   beamer.SetInputFile(m_path+m_beamdat);
   double beam1 = beamer.GetValue<double>("BEAM_ENERGY_1",0.0);
   double beam2 = beamer.GetValue<double>("BEAM_ENERGY_2",0.0);
-  rpa.gen.SetCplScale(4.*beam1*beam2);
+  rpa->gen.SetCplScale(4.*beam1*beam2);
   Data_Reader read(" ",";","!","=");
   read.AddWordSeparator("\t");
   read.SetInputPath(m_path);
@@ -570,7 +570,7 @@ bool Initialization_Handler::InitializeThePDFs()
 	pdfbase->SetBounds();
 	isrbases[j] = new Structure_Function(pdfbase,m_bunch_particles[j]);
       }
-      ATOOLS::rpa.gen.SetBunch(m_bunch_particles[j],j);
+      ATOOLS::rpa->gen.SetBunch(m_bunch_particles[j],j);
     }
     m_bunch_splimits[0] = dataread.GetValue<double>("ISR_SMIN",1e-10);
     m_bunch_splimits[1] = dataread.GetValue<double>("ISR_SMAX",1.);
@@ -812,15 +812,15 @@ void Initialization_Handler::SetGlobalVariables()
   dr.SetInputPath(m_path);
   dr.SetInputFile(m_medat);
   double sf(dr.GetValue<double>("SCALE_FACTOR",1.));
-  rpa.gen.SetVariable("FACTORIZATION_SCALE_FACTOR",
+  rpa->gen.SetVariable("FACTORIZATION_SCALE_FACTOR",
 		      ToString(sf*dr.GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.0)));
-  rpa.gen.SetVariable("RENORMALIZATION_SCALE_FACTOR",
+  rpa->gen.SetVariable("RENORMALIZATION_SCALE_FACTOR",
 		      ToString(sf*dr.GetValue<double>("RENORMALIZATION_SCALE_FACTOR",1.0)));
   msg_Debugging()<<METHOD<<"(): Set scale factors {\n"
-		 <<"  fac scale: "<<rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR")<<"\n"
-		 <<"  ren scale: "<<rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
+		 <<"  fac scale: "<<rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR")<<"\n"
+		 <<"  ren scale: "<<rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
   int cmode=dr.GetValue<int>("METS_CLUSTER_MODE",0);
-  rpa.gen.SetVariable("METS_CLUSTER_MODE",ToString(cmode));
+  rpa->gen.SetVariable("METS_CLUSTER_MODE",ToString(cmode));
   if (cmode!=0) msg_Info()<<METHOD<<"(): Set cluster mode "<<cmode<<".\n";
 }
 
@@ -880,8 +880,8 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       }
       else if (key=="SAVE_STATUS") {
 	if (value[value.length()-1]!='/') value+=std::string("/");
-	rpa.gen.SetVariable
-	  ("SHERPA_STATUS_PATH",rpa.gen.Variable("SHERPA_RUN_PATH")+"/"+value);
+	rpa->gen.SetVariable
+	  ("SHERPA_STATUS_PATH",rpa->gen.Variable("SHERPA_RUN_PATH")+"/"+value);
 	m_savestatus=true;
         oit=helpsv.erase(oit);
       }
@@ -962,14 +962,14 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 
   if (datpath!="") m_path=datpath;
   std::vector<std::string> searchpaths;
-  searchpaths.push_back(rpa.gen.Variable("SHERPA_RUN_PATH")+"/"+m_path);
+  searchpaths.push_back(rpa->gen.Variable("SHERPA_RUN_PATH")+"/"+m_path);
   My_Out_File::SetSearchPaths(searchpaths);
-  searchpaths.push_back(rpa.gen.Variable("SHERPA_DAT_PATH")+"/"+m_path);
-  searchpaths.push_back(rpa.gen.Variable("SHERPA_DAT_PATH"));
-  searchpaths.push_back(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/"+m_path);
-  searchpaths.push_back(rpa.gen.Variable("SHERPA_SHARE_PATH"));
+  searchpaths.push_back(rpa->gen.Variable("SHERPA_DAT_PATH")+"/"+m_path);
+  searchpaths.push_back(rpa->gen.Variable("SHERPA_DAT_PATH"));
+  searchpaths.push_back(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/"+m_path);
+  searchpaths.push_back(rpa->gen.Variable("SHERPA_SHARE_PATH"));
   My_In_File::SetSearchPaths(searchpaths);
-  rpa.gen.SetVariable("PATH_PIECE",m_path);
+  rpa->gen.SetVariable("PATH_PIECE",m_path);
   m_path="";
 
   std::vector<std::string> helpsv2;
@@ -977,12 +977,12 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   Data_Reader dr(" ",";","!","=");
   dr.AddWordSeparator("\t");
   dr.AddComment("#");
-  dr.SetInputPath(rpa.gen.Variable("HOME")+"/.sherpa/");
+  dr.SetInputPath(rpa->gen.Variable("HOME")+"/.sherpa/");
   dr.SetInputFile("global.dat");
   std::vector<std::vector<std::string> > helpsvv;
   if (dr.MatrixFromFile(helpsvv,"")) {
     msg_Out()<<METHOD<<"(): Reading parameters from '"
-	     <<rpa.gen.Variable("HOME")<<"/.sherpa/global.dat'."<<std::endl;
+	     <<rpa->gen.Variable("HOME")<<"/.sherpa/global.dat'."<<std::endl;
     helpsv2.resize(helpsvv.size());
     for (size_t i(0);i<helpsvv.size();++i) {
       helpsv2[i]=helpsvv[i][0];
@@ -1023,7 +1023,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       Read_Write_Base::AddCommandLine(par+";");
     }
   }
-  rpa.gen.SetVariable("RUN_DATA_FILE",m_file);
+  rpa->gen.SetVariable("RUN_DATA_FILE",m_file);
 
   return m_mode;
 }

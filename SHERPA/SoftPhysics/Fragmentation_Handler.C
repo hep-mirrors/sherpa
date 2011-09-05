@@ -94,7 +94,7 @@ Fragmentation_Handler::~Fragmentation_Handler()
 
 void Fragmentation_Handler::PrepareTerminate() 
 {
-  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH"));
+  std::string path(rpa->gen.Variable("SHERPA_STATUS_PATH"));
   if (path=="") return;
   CopyFile(m_dir+"/"+m_sfile,path+"/"+m_sfile);
 }

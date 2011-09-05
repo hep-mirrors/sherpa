@@ -89,7 +89,7 @@ Single_LOProcess::~Single_LOProcess()
 void AMEGIC::Single_LOProcess::WriteAlternativeName(string aname) 
 {
   if (aname==m_name) return;
-  std::string altname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".alt";
+  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".alt";
   if (FileExists(altname)) return;
   std::ofstream to;
   to.open(altname.c_str(),ios::out);
@@ -99,7 +99,7 @@ void AMEGIC::Single_LOProcess::WriteAlternativeName(string aname)
 
 bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,string procname)
 {
-  std::string altname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+procname+".alt";
+  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+procname+".alt";
   if (FileExists(altname)) {
     double factor;
     string name; 
@@ -140,12 +140,12 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   for (size_t i=m_nin;i<m_nin+m_nout;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
 
   if (m_gen_str>1) {
-    ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
+    ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
   }
-  string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
+  string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
   if (!FileExists(newpath+"/makelibs")) {
-    CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+    CopyFile(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
   }
 
@@ -164,8 +164,8 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   }  
   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
   if (directload) {
-    string hstr=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_libname;
-    string hstr2=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+    string hstr=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_libname;
+    string hstr2=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
     p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b,hstr,hstr2);  
   }
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
@@ -189,8 +189,8 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 	msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
 	  
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
-	  string mlname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+links[j]->Name();
-	  string mnname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+Name();
+	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+links[j]->Name();
+	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+Name();
 	  if (FileExists(mlname+string(".map"))) { 
 	    if (m_sfactor==1.) CopyFile(mlname+".map",mnname+".map");
 	    else {
@@ -314,12 +314,12 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   model->GetCouplings(m_cpls);
   
   if (m_gen_str>1) {
-    ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
+    ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
   }
-  string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
+  string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
   if (!FileExists(newpath+"/makelibs")) {
-    CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+    CopyFile(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
   }
 
@@ -352,8 +352,8 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
     return 0;
   }
   if (directload) {
-    string hstr=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_libname;
-    string hstr2=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+    string hstr=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_libname;
+    string hstr2=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
     p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b,hstr,hstr2);
   }
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
@@ -615,17 +615,17 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
       gauge_test = string_test = 0;
     }
     else {
-      string searchfilename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+testname+string("/V.H");
+      string searchfilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+testname+string("/V.H");
       if (FileExists(searchfilename)) {
       	msg_Error()<<"ERROR in Single_LOProcess::Tests()"<<std::endl
 		   <<"   No compiled & linked library found for process "<<testname<<std::endl
 		   <<"   but files already written out !"<<std::endl
 		   <<om::bold<<"   Interrupt run and execute \"makelibs\" in '"
-		   <<rpa.gen.Variable("SHERPA_CPP_PATH")<<"'."
+		   <<rpa->gen.Variable("SHERPA_CPP_PATH")<<"'."
 		   <<om::reset<<std::endl;
 	int stat;
-	stat=system((string("cp ")+rpa.gen.Variable("SHERPA_SHARE_PATH")+
-		string("/makelibs ")+rpa.gen.Variable("SHERPA_CPP_PATH")).c_str());
+	stat=system((string("cp ")+rpa->gen.Variable("SHERPA_SHARE_PATH")+
+		string("/makelibs ")+rpa->gen.Variable("SHERPA_CPP_PATH")).c_str());
 	THROW(normal_exit,"Failed to load library.");
       }
       else {
@@ -639,7 +639,7 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
       }
     }
     if (!ATOOLS::IsEqual(M2,M2g)) {
-      if (abs(M2/M2g-1.)>rpa.gen.Accu()) {
+      if (abs(M2/M2g-1.)>rpa->gen.Accu()) {
 	msg_Out()<<"WARNING: Library cross check not satisfied: "
 		 <<M2<<" vs. "<<M2g<<"  difference:"<<abs(M2/M2g-1.)*100.<<"%"<<endl
 		 <<"   Mapping file(1) : "<<abs(M2)<<endl
@@ -742,7 +742,7 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
       if (!ATOOLS::IsEqual(M2g,M2S)) {
 	msg_Out()<<"WARNING: String test not satisfied: "
 		 <<M2g<<" vs. "<<M2S<<"  difference:"<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
-	if (abs(M2g/M2S-1.)>rpa.gen.Accu()) {
+	if (abs(M2g/M2S-1.)>rpa->gen.Accu()) {
 	  return 0;
 	}
 	msg_Out()<<"         assuming numerical reasons, continuing "<<endl;
@@ -776,7 +776,7 @@ int Single_LOProcess::TestLib(std::vector<double> * pfactors)
     }
   }
 
-  if (!rpa.gen.SpinCorrelation()) {
+  if (!rpa->gen.SpinCorrelation()) {
     if (m_emit==m_spect) {
       for (size_t i=0;i<p_hel->MaxHel();i++) {
 	if (p_hel->On(i)) {
@@ -837,7 +837,7 @@ int Single_LOProcess::CheckLibraries(std::vector<double> * pfactors) {
   shand1      = new String_Handler(p_shand->Get_Generator());
   
   m_libnumb  = 0;
-  string proc = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/V");
+  string proc = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/V");
   string testname;
   double M2s, helvalue;
 
@@ -913,7 +913,7 @@ void Single_LOProcess::WriteLibrary()
 {
   if (m_gen_str<2) return;
   string testname;
-  string newpath=rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/");
+  string newpath=rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/");
   for (;;) {
     testname    = CreateLibName()+string("_")+ToString(m_libnumb);
     if (!(FileExists(newpath+m_ptypename+string("/")+testname+string("/V.H")))) break;
@@ -946,7 +946,7 @@ std::string  Single_LOProcess::CreateLibName()
 
 void Single_LOProcess::CreateMappingFile(Single_LOProcess* partner) {
   if (m_gen_str<2) return;
-  std::string outname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+  std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
   if (FileExists(outname)) {
     string MEname,PSname;
     FoundMappingFile(MEname,PSname);
@@ -978,7 +978,7 @@ bool Single_LOProcess::FoundMappingFile(std::string & MEname, std::string & PSna
   
   std::string buf;
   int pos;
-  std::string outname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+  std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
   if (FileExists(outname)) {
     ifstream from;
     from.open(outname.c_str());
@@ -1000,7 +1000,7 @@ bool Single_LOProcess::FoundMappingFile(std::string & MEname, std::string & PSna
 
 bool Single_LOProcess::FoundLib(std::string& pID)
 {
-  std::string libname=ATOOLS::rpa.gen.Variable("SHERPA_LIB_PATH")+
+  std::string libname=ATOOLS::rpa->gen.Variable("SHERPA_LIB_PATH")+
     std::string("/libProc_P")+pID.substr(1)+std::string(LIB_SUFFIX);
   if (FileExists(libname)) return 1;
   return 0;

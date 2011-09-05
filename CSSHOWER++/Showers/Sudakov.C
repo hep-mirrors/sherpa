@@ -346,7 +346,7 @@ bool Sudakov::Generate(Parton * split)
     <<" with kt2 = "<<m_kperp2<<", y = "<<m_y<<", z = "<<m_z<<endl;
     }
   */
-  m_phi = 2.0*M_PI*ran.Get();
+  m_phi = 2.0*M_PI*ran->Get();
   return success;
 }
 
@@ -471,7 +471,7 @@ double Sudakov::OverIntegrated(const double zmin,const double zmax,
 void Sudakov::ProduceT()
 {
   double ne=2.*M_PI/m_lastint;
-  m_kperp2 *= exp(log(ran.Get())*Max(ne,1.0e-3));
+  m_kperp2 *= exp(log(ran->Get())*Max(ne,1.0e-3));
 }
 
 bool Sudakov::Veto(double Q2,double x) {
@@ -549,7 +549,7 @@ bool Sudakov::Splitting(double Q2,double x) {
   if (m_kperp2>p_split->KtPrev()) return false;
   double wt(RejectionWeight(m_z,m_y,x,m_kperp2,Q2));
   double efac=p_selected->EFac();
-  if (ran.Get()>wt) {
+  if (ran->Get()>wt) {
     if (efac!=1.0) {
       m_weight*=(1.0-wt/efac)/(1.0-wt);
       p_split->Weights().push_back

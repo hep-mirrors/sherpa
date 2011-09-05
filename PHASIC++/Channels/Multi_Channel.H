@@ -32,8 +32,9 @@ namespace PHASIC {
     ATOOLS::Flavour             * fl;
     std::string                   name;
     int                           m_id;
-    long unsigned int             n_points,n_contrib,m_p;
-    double                        m_weight,m_sum,m_sum2;
+    long unsigned int             n_points,n_contrib;
+    long unsigned int             mn_points,mn_contrib;
+    double                        m_weight;
     double                        rans[2];
     double                        s1xmin, * s1, * s2;
     std::vector<Single_Channel *> channels, m_best;
@@ -54,6 +55,7 @@ namespace PHASIC {
     virtual void     Reset();
     virtual void     ResetOpt();
     virtual void     Optimize(double);
+    virtual void     MPISync();
     void             ResetCnt();
 
     inline std::vector<Single_Channel*> &Channels() { return channels; }
@@ -95,11 +97,9 @@ namespace PHASIC {
     virtual size_t              Number()    { return channels.size(); }
     inline long unsigned int    N()         { return n_points; }    
     inline long unsigned int    ValidN()    { return n_contrib; }
+    inline long unsigned int    ValidMN()   { return mn_contrib; }
     inline int                  Nin()       { return nin; }
     inline int                  Nout()      { return nout; }
-    inline long unsigned int    NN()        { return m_p; }    
-    inline double               Sum2()      { return m_sum2; }
-    inline double               Sum()       { return m_sum; }
     inline ATOOLS::Flavour     *Flavs()     { return fl; }
     inline double               Weight()    { return m_weight; }
     inline std::string          Name()      { return name; }

@@ -12,16 +12,12 @@
 namespace ATOOLS {  
 
   class Run_Parameter {
-    std::string         m_path, m_file;
-    static bool s_initialized;
-    static size_t s_clevel;
-    static std::map<std::string,std::string> s_variables;
-    static std::vector<std::string> s_cites;
+    std::string m_path, m_file;
   public:
     Run_Parameter();
     ~Run_Parameter();
     void Init(std::string,std::string,int argc=0,char* argv[]=0);
-    static void AnalyseEnvironment();
+    void AnalyseEnvironment();
     
     class Gen {  // general parameters
       int                 m_analysis, m_cutscheme;
@@ -39,6 +35,9 @@ namespace ATOOLS {
       int m_batchmode;
       std::string m_username;
       bool m_spincorrelations;
+      std::map<std::string,std::string> m_variables;
+      std::vector<std::string> m_cites;
+      size_t m_clevel;
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
       inline long   NumberOfGeneratedEvents()             { return m_ngenevents; }
@@ -69,9 +68,9 @@ namespace ATOOLS {
       inline const std::string &UserName() { return m_username; }
       std::string Variable(const std::string &key,const std::string &def="");
       inline void SetVariable(const std::string &key,const std::string &value) 
-      { s_variables[key]=value; }
-      inline static const std::vector<std::string> &Citations() { return s_cites; }
-      static void AddCitation(const size_t &level,const std::string &cite);
+      { m_variables[key]=value; }
+      inline const std::vector<std::string> &Citations() { return m_cites; }
+      void AddCitation(const size_t &level,const std::string &cite);
       void WriteCitationInfo();
       void PrintSVNVersion(std::ostream &str,const int mode=0,
 			   const std::string &prefix="");
@@ -88,7 +87,7 @@ namespace ATOOLS {
     std::string SetPath(std::string path)   { return m_path = path;} 
   };
 
-  extern Run_Parameter rpa;
+  extern Run_Parameter *rpa;
 
   std::ostream &operator<<(std::ostream &str,const Run_Parameter &rp);
 

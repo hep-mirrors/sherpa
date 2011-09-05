@@ -55,7 +55,7 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
   string contractfn("OLE_contract.lh");
   string fname("");
   Data_Reader reader(" ",";","!","=");
-  reader.SetInputPath(rpa.GetPath());
+  reader.SetInputPath(rpa->GetPath());
   if (reader.ReadFromFile(fname,"LHOLE_ORDERFILE")) {
     orderfn=fname;
   }

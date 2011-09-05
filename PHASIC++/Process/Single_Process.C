@@ -179,7 +179,7 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
   double var(p_int->TotalVar());
   msg_Info()<<METHOD<<"(): Calculate xs for '"
             <<m_name<<"' ("<<(p_gen?p_gen->Name():"")<<")"<<std::endl;
-  double totalxs(psh->Integrate()/rpa.Picobarn());
+  double totalxs(psh->Integrate()/rpa->Picobarn());
   if (!IsEqual(totalxs,p_int->TotalResult())) {
     msg_Error()<<"Result of PS-Integrator and summation do not coincide!\n"
 	       <<"  '"<<m_name<<"': "<<totalxs

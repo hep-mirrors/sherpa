@@ -25,7 +25,7 @@ bool   PHOTONS::Photons::s_userunningparameters = false;
 Photons::Photons(Data_Reader* reader, bool ana) :
   m_name("Photons"), m_analyse(ana)
 {
-  rpa.gen.AddCitation
+  rpa->gen.AddCitation
     (1,"Photons is published under \\cite{Schonherr:2008av}.");
   s_mode          = reader->GetValue<int>("YFS_MODE",2);
   if (s_mode>2) s_mode=2;
@@ -43,7 +43,7 @@ Photons::Photons(Data_Reader* reader, bool ana) :
               <<"IR cut-off for soft photon radiation unkown ...\n"
               <<"setting it to 'Multipole_CMS' ...\n";
   }
-  s_accu          = sqrt(rpa.gen.Accu());
+  s_accu          = sqrt(rpa->gen.Accu());
   m_success       = true;
   m_photonsadded  = false;
   msg_Debugging()<<METHOD<<"(){\n"
@@ -64,7 +64,7 @@ Photons::Photons(bool ana) :
   s_useme         = true;
   s_ircutoff      = 1E-3;
   s_ircutoffframe = 0;
-  s_accu          = sqrt(rpa.gen.Accu());
+  s_accu          = sqrt(rpa->gen.Accu());
   s_userunningparameters = false;
   m_success       = true;
   m_photonsadded  = false;

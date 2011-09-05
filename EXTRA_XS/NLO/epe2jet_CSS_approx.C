@@ -51,7 +51,7 @@ XS_egeqq_CSS_approx::XS_egeqq_CSS_approx
   p_bornme1 = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico1));
   p_bornme2 = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico2));
   if (!p_bornme1 || !p_bornme2) THROW(fatal_error,"no born me found.");
-  m_alphasdef = (*MODEL::as)(rpa.gen.CplScale());
+  m_alphasdef = (*MODEL::as)(rpa->gen.CplScale());
   PRINT_INFO("initialised XS_egeqq_CSS_approx2");
 }
 
@@ -168,7 +168,7 @@ XS_eqegq_CSS_approx::XS_eqegq_CSS_approx
   pico.m_fi.m_nloqcdtype=nlo_type::born;
   p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
   if (!p_bornme) THROW(fatal_error,"no born me found.");
-  m_alphasdef = (*MODEL::as)(rpa.gen.CplScale());
+  m_alphasdef = (*MODEL::as)(rpa->gen.CplScale());
   PRINT_INFO("initialised XS_eqegq_CSS_approx2");
 }
 

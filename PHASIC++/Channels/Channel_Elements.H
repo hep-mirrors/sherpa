@@ -23,7 +23,6 @@ namespace PHASIC {
     double Isotropic2Weight(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double&,double&,double=-1.0,double=1.0);
     void Isotropic2Momenta(ATOOLS::Vec4D,double,double,
 			   ATOOLS::Vec4D&,ATOOLS::Vec4D&,double,double,double=-1.0,double=1.0);
-    void Isotropic2Grid(ATOOLS::Vec4D&,ATOOLS::Vec4D&,double&,double&,double=-1.0,double=1.0);
 
     double Anisotropic2Weight(double,double,double,
 			      const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
@@ -32,15 +31,10 @@ namespace PHASIC {
 
     double TChannelWeight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
 			  const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
-			  double,double,double,double,double,int);
-    double TChannelWeight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
-			  const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
 			  double,double,double,double,double,int,double&,double&);
     int TChannelMomenta(ATOOLS::Vec4D,ATOOLS::Vec4D,ATOOLS::Vec4D&,ATOOLS::Vec4D&,
 			double,double,double,double,double,double,double,int,double,double);
-    void TChannelGrid(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
-		      const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,  
-		      double,double,double,double,double&,double&);
+
     double BremsstrahlungWeight(double,double,double,
 				const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
     void BremsstrahlungMomenta(ATOOLS::Vec4D&,const double,const double,const double,

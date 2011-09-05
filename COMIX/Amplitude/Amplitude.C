@@ -848,7 +848,7 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms)
       msg_Error().precision(6);
       return true;
     }
-    if (!IsEqual(xs,rxs,rpa.gen.Accu())) {
+    if (!IsEqual(xs,rxs,rpa->gen.Accu())) {
       msg_Error().precision(12);
       msg_Error()<<"\n"<<METHOD<<"(): Gauge test failed {\n      "
 		  <<std::setw(18)<<std::right<<xs<<"\n   vs "

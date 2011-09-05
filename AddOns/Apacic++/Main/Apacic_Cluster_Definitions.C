@@ -36,8 +36,8 @@ CParam Apacic_Cluster_Definitions::KPerp2
   }
   else {
     Vec4D pa;
-    if (idi&3) pa=rpa.gen.PBeam(idi&1?0:1);
-    else pa=rpa.gen.PBeam(idj&1?0:1);
+    if (idi&3) pa=rpa->gen.PBeam(idi&1?0:1);
+    else pa=rpa->gen.PBeam(idj&1?0:1);
     double xi, xj;
     if (pa[3]>0.0) {
       xi=pi.PPlus()/pa.PPlus();
@@ -49,9 +49,9 @@ CParam Apacic_Cluster_Definitions::KPerp2
     }
     if ((xi>1.0 && !IsEqual(xi,1.0)) ||
 	(xj>1.0 && !IsEqual(xj,1.0))) 
-      return CParam(sqr(rpa.gen.Ecms()),sqr(rpa.gen.Ecms()));
+      return CParam(sqr(rpa->gen.Ecms()),sqr(rpa->gen.Ecms()));
     if ((xi<0.0 && !IsZero(xi)) || (xj<0.0 && !IsZero(xj)))
-      return CParam(sqr(rpa.gen.Ecms()),sqr(rpa.gen.Ecms()));
+      return CParam(sqr(rpa->gen.Ecms()),sqr(rpa->gen.Ecms()));
     if (idi&3) xi-=xj;
     else if (idj&3) xj-=xi;
     else THROW(fatal_error,"Invalid parton indices");

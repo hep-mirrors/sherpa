@@ -56,7 +56,7 @@ Input_Output_Handler::~Input_Output_Handler()
 }
 
 bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
-  std::string stag(rpa.gen.Variable("RNG_SEED"));
+  std::string stag(rpa->gen.Variable("RNG_SEED"));
   while (stag.find(' ')!=std::string::npos) stag.replace(stag.find(' '),1,"-");
   dr->AddTag("RNG_SEED",stag);
   string sherpaoutput=dr->GetValue<string>("SHERPA_OUTPUT",string(""));
@@ -67,7 +67,7 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
   string lheoutput=dr->GetValue<string>("LHEF_OUTPUT",string(""));
   string hepmc2short=dr->GetValue<string>("HEPMC2_SHORT_OUTPUT",string(""));
   string evtpath = dr->GetValue<string>
-    ("EVT_FILE_PATH",rpa.gen.Variable("SHERPA_RUN_PATH"));
+    ("EVT_FILE_PATH",rpa->gen.Variable("SHERPA_RUN_PATH"));
   int precision       = dr->GetValue<int>("OUTPUT_PRECISION",12);
   m_outmode = dr->GetValue<string>("EVENT_MODE",string("Sherpa"));
   m_filesize = dr->GetValue<int>("FILE_SIZE",std::numeric_limits<int>::max());
@@ -196,7 +196,7 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
 bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs)
 {
   double weight=blobs->Weight();
-  if (p_mehandler) weight/=p_mehandler->TotalXS()*rpa.Picobarn();
+  if (p_mehandler) weight/=p_mehandler->TotalXS()*rpa->Picobarn();
 
   double xs(1.0), xserr(0.0);
   if (p_eventhandler) {

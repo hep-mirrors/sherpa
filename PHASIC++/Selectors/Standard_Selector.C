@@ -193,11 +193,11 @@ Energy_Selector::Energy_Selector(int _nin,int _nout, Flavour * _fl):
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = 1;
   
-  double Emax = rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0];
+  double Emax = rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0];
   emin  = new double[m_n];
   emax  = new double[m_n];
   value  = new double[m_n];
@@ -259,7 +259,7 @@ void Energy_Selector::SetRange(std::vector<Flavour> crit,double _min,
   for (int i=m_nin;i<m_n;i++) {
     if (crit[0].Includes(m_fl[i])) {
       emin[i] = Max(_min,m_fl[i].SelMass()); 
-      emax[i] = Min(_max,(rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0]));
+      emax[i] = Min(_max,(rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0]));
       if (emin[i]>MaxEmin ) MaxEmin = emin[i];
       if (m_fl[i].Strong()) m_strong = 1;
     }
@@ -306,11 +306,11 @@ ET_Selector::ET_Selector(int _nin,int _nout, Flavour * _fl):
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = 1;
   
-  double Emax = rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0];
+  double Emax = rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0];
   etmin  = new double[m_n];
   etmax  = new double[m_n];
   value  = new double[m_n];
@@ -372,7 +372,7 @@ void ET_Selector::SetRange(std::vector<Flavour> crit,double _min,double _max)
   for (int i=m_nin;i<m_n;i++) {
     if (crit[0].Includes(m_fl[i])) {
       etmin[i] = _min; 
-      etmax[i] = Min(_max,(rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0]));
+      etmax[i] = Min(_max,(rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0]));
       if (etmin[i] > MaxEtmin) MaxEtmin = etmin[i];
       if (m_fl[i].Strong()) m_strong = 1;
     }
@@ -419,11 +419,11 @@ PT_Selector::PT_Selector(int _nin,int _nout, Flavour * _fl) :
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = 1;
   
-  double Emax = rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0];
+  double Emax = rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0];
   ptmin  = new double[m_n];
   ptmax  = new double[m_n];
   value = new double[m_n];
@@ -494,7 +494,7 @@ void PT_Selector::SetRange(std::vector<Flavour> crit,double _min,double _max)
   for (int i=m_nin;i<m_n;i++) {
     if (crit[0].Includes(m_fl[i])) {
       ptmin[i] = _min; 
-      ptmax[i] = Min(_max,(rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0]));
+      ptmax[i] = Min(_max,(rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0]));
       if (ptmin[i]>MaxPTmin) MaxPTmin = ptmin[i];
       if (m_fl[i].Strong()) m_strong = 1;
     }
@@ -542,11 +542,11 @@ Rapidity_Selector::Rapidity_Selector(int _nin,int _nout, Flavour * _fl) :
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = 1;
   
-  double Emax = rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0];
+  double Emax = rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0];
   double pl;
 
   ymin  = new double[m_n];
@@ -615,7 +615,7 @@ void Rapidity_Selector::SetRange(std::vector<Flavour> crit,double _min,
     return;
   }
   
-  double E = rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0];
+  double E = rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0];
   double pl,y;
   
   for (int i=m_nin;i<m_n;i++) {
@@ -670,7 +670,7 @@ PseudoRapidity_Selector::PseudoRapidity_Selector(int _nin,int _nout, Flavour * _
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = 1;
  
@@ -786,7 +786,7 @@ Angle_Selector::Angle_Selector(int _nin,int _nout, Flavour * _fl):
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = 1;
 
@@ -977,7 +977,7 @@ PT2_Selector::PT2_Selector(int _nin,int _nout, Flavour * _fl):
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = 1;
 
@@ -989,7 +989,7 @@ PT2_Selector::PT2_Selector(int _nin,int _nout, Flavour * _fl):
     for (int j=i+1;j<m_n;j++) {
       //for numerical reason min and max should be slightly larger than -/+1
       pt2min[i][j] = pt2min[j][i] = 0.; 
-      pt2max[i][j] = pt2max[j][i] = 2.*(rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0]);
+      pt2max[i][j] = pt2max[j][i] = 2.*(rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0]);
     }
   }
     
@@ -1102,7 +1102,7 @@ IMass_Selector::IMass_Selector(int _nin,int _nout, Flavour * _fl):
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   m_strong = 0;
   
   massmin = new double*[m_n];
@@ -1117,7 +1117,7 @@ IMass_Selector::IMass_Selector(int _nin,int _nout, Flavour * _fl):
   for (int i=m_nin;i<m_n;i++) {
     for (int j=i+1;j<m_n;j++) {
       massmin[i][j] = massmin[j][i] = 0.; 
-      massmax[i][j] = massmax[j][i] = 2.*(rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0]); 
+      massmax[i][j] = massmax[j][i] = 2.*(rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0]); 
     }
   }
   m_sel_log = new Selector_Log(m_name);
@@ -1233,7 +1233,7 @@ IQ2_Selector::IQ2_Selector(int _nin,int _nout, Flavour * _fl):
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   m_strong = 0;
   
   massmin = new double*[m_n];
@@ -1363,7 +1363,7 @@ Delta_Eta_Selector::Delta_Eta_Selector(int _nin,int _nout, Flavour * _fl) :
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   
   detamin = new double*[m_n];
   detamax = new double*[m_n];
@@ -1472,7 +1472,7 @@ Delta_Phi_Selector::Delta_Phi_Selector(int _nin,int _nout, Flavour * _fl):
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   
   dphimin = new double*[m_n];
   dphimax = new double*[m_n];
@@ -1581,7 +1581,7 @@ Delta_R_Selector::Delta_R_Selector(int _nin,int _nout, Flavour * _fl):
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   
   drmin = new double*[m_n];
   drmax = new double*[m_n];

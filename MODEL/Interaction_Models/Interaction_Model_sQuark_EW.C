@@ -13,7 +13,7 @@ Interaction_Model_sQuark_EW::Interaction_Model_sQuark_EW(MODEL::Model_Base * _mo
 							 std::string _cplscheme,std::string _yukscheme) :
   Interaction_Model_Base("",_model,_cplscheme,_yukscheme)
 { 
-  double scale = rpa.gen.CplScale();
+  double scale = rpa->gen.CplScale();
 
   g1       = Kabbala(string("g_1"),
 		     sqrt(4.*M_PI*ScalarFunction(string("alpha_QED"),scale)));

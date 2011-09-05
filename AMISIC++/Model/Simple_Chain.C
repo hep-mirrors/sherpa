@@ -36,7 +36,7 @@ Simple_Chain::Simple_Chain():
   m_xsextension("_xs.dat"), m_mcextension("MC"),
   p_processes(NULL), p_fsrinterface(NULL), p_model(NULL),
   p_beam(NULL), p_isr(NULL), p_profile(NULL), m_maxtrials(1000),
-  m_ecms(rpa.gen.Ecms()), m_external(false), m_regulate(false)
+  m_ecms(rpa->gen.Ecms()), m_external(false), m_regulate(false)
 {
   Init();
 }
@@ -50,7 +50,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   m_xsextension("_xs.dat"), m_mcextension("MC"),
   p_processes(NULL), p_fsrinterface(NULL), p_model(model), 
   p_beam(beam), p_isr(isr), p_profile(NULL), m_maxtrials(1000),
-  m_ecms(rpa.gen.Ecms()), m_external(true), m_regulate(false)
+  m_ecms(rpa->gen.Ecms()), m_external(true), m_regulate(false)
 {
   Init();
   p_remnants[0]=p_isr->GetRemnant(0);
@@ -117,13 +117,13 @@ bool Simple_Chain::GeneratePathName()
 {
   std::string outputpath, help[2];
   MyStrStream converter;
-  converter<<rpa.gen.Bunch(0);
+  converter<<rpa->gen.Bunch(0);
   converter>>help[0];
   converter.clear();
-  converter<<rpa.gen.Bunch(1);
+  converter<<rpa->gen.Bunch(1);
   converter>>help[1];
   outputpath=std::string("MIG_")+help[0]+help[1]+
-    std::string("_")+ToString(rpa.gen.Ecms());
+    std::string("_")+ToString(rpa->gen.Ecms());
   if (m_regulate) {
     outputpath+=std::string("_")+m_regulator[0];
     for (size_t i=0;i<m_regulation.size();++i) {
@@ -254,7 +254,7 @@ void Simple_Chain::CalculateSigmaND()
     s_kftable[111]=new Particle_Info(111,0.134976,7.8486e-09,0,0,0,1,0,"pi","pi");
   double eps=0.0808, eta=-0.4525, X=21.70, Y=56.08, b=2.3;
   if (p_isr->Flav(0).IsAnti()^p_isr->Flav(1).IsAnti()) Y=98.39;
-  double s=sqr(rpa.gen.Ecms());
+  double s=sqr(rpa->gen.Ecms());
   double mp=Flavour(kf_p_plus).Mass();
   double mpi=Flavour(kf_pi).Mass();
   double ap=0.25, s0=8.0, y0=log(s/(mp*mp));
@@ -291,7 +291,7 @@ void Simple_Chain::CalculateSigmaND()
 		<<"   \\sigma_{dd}  = "<<xsdd<<" mb\n"
 		<<"   \\sigma_{nd}  = "<<(xstot-xsel-2.0*xssd-xsdd)
 		<<" mb.\n}"<<std::endl;
-  SetNorm(m_sigma_nd_fac*(xstot-xsel-2.0*xssd-xsdd)*1.0e9/rpa.Picobarn());
+  SetNorm(m_sigma_nd_fac*(xstot-xsel-2.0*xssd-xsdd)*1.0e9/rpa->Picobarn());
 }
 
 int Simple_Chain::CalculateTotal()
@@ -340,16 +340,16 @@ int Simple_Chain::CalculateTotal()
 #endif
   m_sigmahard=(*p_total)(m_stop[4]);
   msg_Info()<<"Simple_Chain::CalculateTotal(): Result is {\n   "
-	    <<"\\sigma_{hard} = "<<(m_sigmahard*rpa.Picobarn()/1.e9)
+	    <<"\\sigma_{hard} = "<<(m_sigmahard*rpa->Picobarn()/1.e9)
 	    <<" mb\n   at "<<xaxis->Variable()->Name()<<"_{min} = "
 	    <<m_stop[4]<<" GeV\n}"<<std::endl;
   CalculateSigmaND();
   if (m_sigmahard<m_norm) {
     msg_Error()<<"Simple_Chain::CalculateTotal(): "<<om::red
 	       <<"\\sigma_{hard} = "
-	       <<(m_sigmahard*rpa.Picobarn()/1.e9)
+	       <<(m_sigmahard*rpa->Picobarn()/1.e9)
 	       <<" mb < \\sigma_{nd} = "
-	       <<(m_norm*rpa.Picobarn()/1.e9)
+	       <<(m_norm*rpa->Picobarn()/1.e9)
 	       <<" mb !"<<om::reset<<std::endl;
     return 0;
   }
@@ -360,8 +360,8 @@ int Simple_Chain::CalculateTotal()
 bool Simple_Chain::Initialize()
 {
   if (InputPath()=="" && InputFile()=="") return false;
-  if (!rpa.gen.Beam1().IsHadron() ||
-      !rpa.gen.Beam2().IsHadron()) return false;
+  if (!rpa->gen.Beam1().IsHadron() ||
+      !rpa->gen.Beam2().IsHadron()) return false;
   CleanUp();
   Data_Reader *reader = new Data_Reader(" ",";","!","=");
   reader->AddComment("#");
@@ -381,7 +381,7 @@ bool Simple_Chain::Initialize()
   SetStop(stop,0);
   SetStop(stop,4); 
   if (m_regulate) {
-    SetStop(rpa.gen.Accu()*stop,4);
+    SetStop(rpa->gen.Accu()*stop,4);
     // // Uncomment for cross-check vs. PYHTIA
     // SetStop(0.08*stop,0);
   }
@@ -508,12 +508,12 @@ bool Simple_Chain::CreateMomenta()
 	}
 	if (!take || sum.Mass()<mass) continue;
 	if (p_fsrinterface->Trigger()) {
-	  double rn=ran.Get();
+	  double rn=ran->Get();
 	  if (weight*m_maxreduction>=max*rn) {
 	    if (weight*m_maxreduction<max) break;
 	    double value=cur->BinExtra(m_last[0]);
 	    if (value>0.0) {
-	      if (value>=1.0 || (value<1.0 && value>ran.Get())) {
+	      if (value>=1.0 || (value<1.0 && value>ran->Get())) {
 		cur->SetBinExtra(m_last[0],Max(0.0,value-1.0));
 		m_spkey[3]=
 		  Max(cur->BinExtra(m_last[0],1),
@@ -619,7 +619,7 @@ bool Simple_Chain::GenerateProcess()
     msg_Error()<<METHOD<<"(): Warning. Zero cross section."<<std::endl;
     continue;
   }
-  double rannr=ran.Get();
+  double rannr=ran->Get();
   cur=0.0;
   m_selected="";
   for (Sort_Map::iterator sit=sorter.begin();
@@ -650,7 +650,7 @@ bool Simple_Chain::GenerateEnhanceFactor()
   do {
     b=p_profile->GenerateImpactParameter();
     m_enhance=(*p_profile)(b)/p_profile->OMean();
-  } while (exp(-m_enhance*last)<=ran.Get());
+  } while (exp(-m_enhance*last)<=ran->Get());
   msg_Tracking()<<"Simple_Chain::GenerateEnhanceFactor(): { profile '"
 		<<p_profile->Type()
 		<<"'\n   m_last[0]  = "<<m_last[0]<<"\n   p(k_t^2)   = "<<last
@@ -676,7 +676,7 @@ bool Simple_Chain::GenerateOrderingParameter()
   }
   msg_Debugging()<<METHOD<<"(): old p_T = "<<m_last[0]<<", ";
   m_last[0]=(*p_total)[(*p_total)
- 		       (m_last[0])-log(ran.Get())/m_enhance]; 
+ 		       (m_last[0])-log(ran->Get())/m_enhance]; 
   msg_Debugging()<<"new p_T = "<<m_last[0]<<"\n";
   s_cleaned=false;
   if (m_last[0]<=m_stop[0]) { 
@@ -716,7 +716,7 @@ bool Simple_Chain::ReadInStatus(const std::string &path)
 
 void Simple_Chain::PrepareTerminate() 
 {
-  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH"));
+  std::string path(rpa->gen.Variable("SHERPA_STATUS_PATH"));
   if (path=="") return;
   for (Amisic_Histogram_Map::const_iterator hit(m_differentials.begin());
        hit!=m_differentials.end();++hit) hit->second->RestoreData();
@@ -729,7 +729,7 @@ void Simple_Chain::PrepareTerminate()
 bool Simple_Chain::VetoProcess(ATOOLS::Blob *blob)
 {
   if (s_soft==NULL) return false;
-  bool veto=ran.Get()>s_xsnd/s_xstot;
+  bool veto=ran->Get()>s_xsnd/s_xstot;
   if (veto) {
     s_soft->SetStart(m_stop[0],0); 
     s_soft->SetStart((*p_differential)(m_stop[0]),2); 

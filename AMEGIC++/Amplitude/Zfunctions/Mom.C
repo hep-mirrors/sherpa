@@ -577,7 +577,7 @@ Fullamplitude_MHV_old::Fullamplitude_MHV_old(int np,int *pl):
     perm = new int[n_part];
     plist = new int[n_part];
     for (int y=0;y<np;y++) plist[y]=pl[y];
-    m_cpl=1;//pow(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),sqr(rpa.gen.Ecms())),(double)n_part-2.);
+    m_cpl=1;//pow(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),sqr(rpa->gen.Ecms())),(double)n_part-2.);
 } 
 
 

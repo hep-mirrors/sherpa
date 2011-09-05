@@ -75,14 +75,14 @@ namespace SHERPA {
         const int _filesize=1000*/);
     ~HepEvt_Interface();
     
-    int                  Nhep() const   { return m_nhep;   }
-    const double * const Phep() const   { return p_phep;   }
-    const double * const Vhep() const   { return p_vhep;   }
-    const int    * const Jmohep() const { return p_jmohep; }
-    const int    * const Jdahep() const { return p_jdahep; }
-    const int    * const Isthep() const { return p_isthep; }
-    const int    * const Idhep() const  { return p_idhep;  }
-    double               Weight()       { return m_weight; }
+    int            Nhep() const   { return m_nhep;   }
+    const double * Phep() const   { return p_phep;   }
+    const double * Vhep() const   { return p_vhep;   }
+    const int    * Jmohep() const { return p_jmohep; }
+    const int    * Jdahep() const { return p_jdahep; }
+    const int    * Isthep() const { return p_isthep; }
+    const int    * Idhep() const  { return p_idhep;  }
+    double         Weight()       { return m_weight; }
 
     void SetNhep(int      _nhep)   { m_nhep = _nhep; }
     void SetPhep(double * _phep)   { p_phep = _phep; }

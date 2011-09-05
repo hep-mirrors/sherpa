@@ -24,7 +24,7 @@ namespace ANALYSIS {
       std::vector<std::vector<std::string> >(ref) {}
 
     // member functions
-    inline Primitive_Analysis *const operator()() const 
+    inline Primitive_Analysis *operator()() const 
     { return p_analysis; }
     inline const Argument_Matrix &operator()
       (Primitive_Analysis *const analysis) 

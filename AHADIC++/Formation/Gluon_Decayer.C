@@ -217,7 +217,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
     }
     else { 
       dip1 = dip2 = dip; 
-      if (ran.Get()>0.5) dip2++;
+      if (ran->Get()>0.5) dip2++;
       else dip1--;
     }
   }

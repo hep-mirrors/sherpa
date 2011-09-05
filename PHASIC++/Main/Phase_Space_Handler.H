@@ -161,6 +161,7 @@ namespace PHASIC {
 			  const size_t &nin,const size_t &nout,
 			  const ATOOLS::Flavour_Vector &flavs);
 
+    void MPISync();
     void Optimize();
     void EndOptimize();
 

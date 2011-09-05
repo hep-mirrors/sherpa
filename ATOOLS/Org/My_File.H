@@ -24,7 +24,7 @@ namespace ATOOLS {
 
   };// end of struct fom
     
-  inline const fom::code operator|(const fom::code c1,const fom::code c2)
+  inline fom::code operator|(const fom::code c1,const fom::code c2)
   { return (fom::code)((int)c1|(int)c2); }
 
   std::ostream &operator<<(std::ostream &ostr,const fom::code &code);

@@ -229,7 +229,7 @@ void Sample_Multi_Channel::OTFPoint
     asum.push_back(wsum+=m_channels[rtype]->Alpha());
   }
   size_t l(0), r(asum.size()-1), i((l+r)/2);
-  double disc(ran.Get()*wsum), a(asum[i]);
+  double disc(ran->Get()*wsum), a(asum[i]);
   while (r-l>1) {
     if (disc<a) r=i;
     else l=i;
@@ -286,7 +286,7 @@ void Sample_Multi_Channel::PDPoint
   }
   for (size_t i(0);i<m_alpha.size();++i) m_alpha[i]/=wsum; 
   size_t l(0), r(asum.size()-1), i((l+r)/2);
-  double disc(ran.Get()*wsum), a(asum[i]);
+  double disc(ran->Get()*wsum), a(asum[i]);
   while (r-l>1) {
     if (disc<a) r=i;
     else l=i;

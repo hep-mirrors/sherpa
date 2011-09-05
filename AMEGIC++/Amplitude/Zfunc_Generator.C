@@ -83,7 +83,7 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion,bool cutvecto
   if (p->fl.IsTensor() && p->number>99) p->m = 1;
 
   // "new gauge test" cut all massless propagators
-  if (p->fl.IsVector() && p->number>99  && rpa.gen.CutScheme()==1) {
+  if (p->fl.IsVector() && p->number>99  && rpa->gen.CutScheme()==1) {
     if(ATOOLS::IsZero(p->fl.Mass())) {
       p->m=1;
     }	

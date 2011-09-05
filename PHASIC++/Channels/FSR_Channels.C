@@ -22,8 +22,8 @@ bool FSR_Channels::Initialize()
   Data_Reader dr(" ",";","!","=");
   dr.AddComment("#");
   dr.AddWordSeparator("\t");
-  dr.SetInputPath(rpa.GetPath());
-  dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+  dr.SetInputPath(rpa->GetPath());
+  dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   m_inttype=dr.GetValue<int>("INTEGRATOR",6);
   nin=p_psh->Process()->NIn();
   nout=p_psh->Process()->NOut();
@@ -121,13 +121,13 @@ void FSR_Channels::DropRedundantChannels()
   // Create Momenta
   int rannum   = 1 + 2 + 3*(m_nout-2);
   double * rans = new double[rannum];
-  for (short int i=0;i<rannum;i++) rans[i] = ran.Get();  
+  for (short int i=0;i<rannum;i++) rans[i] = ran->Get();  
   // Init markers for deletion and results to compare.
   double * res    = new double[number];
   for (short int i=0;i<number;i++) { marker[i] = 0;res[i] = 0.; }
   for (short int i=0;i<number;i++) {
-    perm_vec[i][0] = Vec4D(rpa.gen.Ecms()/2.,0.,0.,rpa.gen.Ecms()/2.);
-    perm_vec[i][1] = Vec4D(rpa.gen.Ecms()/2.,0.,0.,-rpa.gen.Ecms()/2.); 
+    perm_vec[i][0] = Vec4D(rpa->gen.Ecms()/2.,0.,0.,rpa->gen.Ecms()/2.);
+    perm_vec[i][1] = Vec4D(rpa->gen.Ecms()/2.,0.,0.,-rpa->gen.Ecms()/2.); 
     p_fsrchannels->GeneratePoint(i,perm_vec[i],p_process->Cuts(),rans);
     p_fsrchannels->GenerateWeight(i,perm_vec[i],p_process->Cuts());
     res[i] = p_fsrchannels->Weight();
@@ -160,8 +160,8 @@ void FSR_Channels::DropRedundantChannels()
     //shorten
     int hit    = 0;
     for (short int j=0;j<reson[i];j++) {
-    if (sqr(fl_res[j].Mass())>ycut*sqr(rpa.gen.Ecms()) &&
-    sqr(fl_res[j].Mass())<sqr(rpa.gen.Ecms())) 
+    if (sqr(fl_res[j].Mass())>ycut*sqr(rpa->gen.Ecms()) &&
+    sqr(fl_res[j].Mass())<sqr(rpa->gen.Ecms())) 
     hit++;
     }
     reson[i] = hit;

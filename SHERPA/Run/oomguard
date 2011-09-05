@@ -1,0 +1,47 @@
+#!/bin/bash
+
+export LANG=en_US
+
+print_help() {
+    echo "usage: oomguard [options] [command]" && echo && \
+    echo "options: -l <limit>  set limit (relative)" && \
+    echo "         -s <signal> set kill signal" && \
+    echo "         -i <time>   set check time interval [s]" && \
+    echo "         -h          display this help and exit" && echo
+}
+
+LIMIT=0.9
+SIGNAL=15
+INTERVAL=1
+while getopts l:s:i:h OPT
+do
+  case $OPT in
+  l) LIMIT=$OPTARG ;;
+  s) SIGNAL=$OPTARG ;;
+  i) INTERVAL=$OPTARG ;;
+  h) print_help && exit 0 ;;
+  \?) print_help && exit 1
+  esac
+done
+
+COMMAND="${@:$#:$#}"
+
+echo "oomguard: setting memory limit $LIMIT"
+echo "oomguard: check time interval $INTERVAL s"
+echo "oomguard: executing command '$COMMAND'"
+
+$COMMAND &
+PROC=$!
+
+echo "oomguard: process started as pid $PROC"
+trap "kill -s "$SIGNAL" "$PROC SIGHUP SIGINT SIGTERM
+
+free -os1 | awk '{ \
+  if ($1=="Mem:") { \
+    if ($4/$2>'$LIMIT') { \
+      system("kill -s '$SIGNAL' '$PROC'"); \
+      exit(1); \
+    } \
+    if (system("test -d /proc/'$PROC'")) exit(0); \
+  } \
+}'

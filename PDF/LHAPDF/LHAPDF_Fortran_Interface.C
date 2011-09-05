@@ -115,7 +115,7 @@ double LHAPDF_Fortran_Interface::AlphaSPDF(const double &scale2) {
 void LHAPDF_Fortran_Interface::SetPDFMember()
 {
   if (m_smember<0) {
-    double rn=ran.Get();
+    double rn=ran->Get();
     m_member=1+Min((int)(rn*abs(m_smember)),-m_smember-1);
 #ifdef LHAPDF__NATIVE__WRAPPER
     LHAPDF::initPDF(m_member);

@@ -15,8 +15,6 @@ Counter_Map ATOOLS::Return_Value::s_new_event_counter;
 Counter_Map ATOOLS::Return_Value::s_retry_event_counter;
 Counter_Map ATOOLS::Return_Value::s_call_counter;
 
-ATOOLS::Return_Value ATOOLS::rvalue;
-
 std::ostream &ATOOLS::operator<<(std::ostream &str,const Return_Value::code &rvc)
 {
   switch (rvc) {
@@ -34,21 +32,9 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const Return_Value::code &rvc
   return str;
 }
 
-Return_Value::~Return_Value()
-{
-  if (this==&rvalue) {
-    if (msg_LevelIsInfo()) PrintStatistics(msg->Out());
-  }
-}
-
-void Return_Value::Statistics() const
-{
-  PrintStatistics(msg_Out());
-}
-
 void Return_Value::PrintSingleStatistics(std::ostream &str,
 					 const std::string &type,
-					 const Counter_Map &map) const
+					 const Counter_Map &map)
 {
   if (!map.empty()){
     str<<"  "<<type<<" {"<<endl;
@@ -62,10 +48,10 @@ void Return_Value::PrintSingleStatistics(std::ostream &str,
   }
 }
 
-void Return_Value::PrintStatistics(std::ostream &str) const
+void Return_Value::PrintStatistics(std::ostream &str)
 {
   str<<METHOD<<"(): Statistics {"<<endl;
-  str<<"  Generated events: "<<rpa.gen.NumberOfGeneratedEvents()<<endl;
+  str<<"  Generated events: "<<rpa->gen.NumberOfGeneratedEvents()<<endl;
   PrintSingleStatistics(str,"Errors",s_error_counter);
   PrintSingleStatistics(str,"Warnings",s_warning_counter);
   PrintSingleStatistics(str,"New events",s_new_event_counter);
@@ -75,43 +61,43 @@ void Return_Value::PrintStatistics(std::ostream &str) const
   str<<"}"<<endl;
 }
 
-void Return_Value::IncWarning(std::string name) {
+void Return_Value::IncWarning(const std::string & name) {
   Counter_Map::iterator cit(s_warning_counter.find(name));
   if (cit!=s_warning_counter.end()) cit->second++;
   else s_warning_counter[name] = 1;
 }
 
-void Return_Value::IncError(std::string name) {
+void Return_Value::IncError(const std::string & name) {
   Counter_Map::iterator cit(s_error_counter.find(name));
   if (cit!=s_error_counter.end()) cit->second++;
   else s_error_counter[name] = 1;
 }
 
-void Return_Value::IncRetryMethod(std::string name){
+void Return_Value::IncRetryMethod(const std::string & name){
   Counter_Map::iterator cit(s_retry_method_counter.find(name));
   if (cit!=s_retry_method_counter.end()) cit->second++;
   else s_retry_method_counter[name] = 1;
 }
 
-void Return_Value::IncRetryPhase(std::string name) {
+void Return_Value::IncRetryPhase(const std::string & name) {
   Counter_Map::iterator cit(s_retry_phase_counter.find(name));
   if (cit!=s_retry_phase_counter.end()) cit->second++;
   else s_retry_phase_counter[name] = 1;
 }
 
-void Return_Value::IncNewEvent(std::string name) {
+void Return_Value::IncNewEvent(const std::string & name) {
   Counter_Map::iterator cit(s_new_event_counter.find(name));
   if (cit!=s_new_event_counter.end()) cit->second++;
   else s_new_event_counter[name] = 1;
 }
 
-void Return_Value::IncRetryEvent(std::string name) {
+void Return_Value::IncRetryEvent(const std::string & name) {
   Counter_Map::iterator cit(s_retry_event_counter.find(name));
   if (cit!=s_retry_event_counter.end()) cit->second++;
   else s_retry_event_counter[name] = 1;
 }
 
-void Return_Value::IncCall(std::string name) {
+void Return_Value::IncCall(const std::string & name) {
   if (s_call_counter.find(name)!=s_call_counter.end())
     s_call_counter.find(name)->second++;
   else s_call_counter[name] = 1;

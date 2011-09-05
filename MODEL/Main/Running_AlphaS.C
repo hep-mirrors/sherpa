@@ -37,8 +37,8 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
   m_as_MZ(as_MZ), m_m2_MZ(m2_MZ), m_fac(1.0),
   p_pdf(aspdf)
 {
-  if(m_fac==1.0 && rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR")!="") {
-    m_fac=ToType<double>(rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
+  if(m_fac==1.0 && rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")!="") {
+    m_fac=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   }
   if (m_fac!=1.0) msg_Debugging()<<METHOD<<"(): Setting scale factor "<<m_fac<<"\n";
   m_type  = std::string("Running Coupling");

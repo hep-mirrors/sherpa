@@ -35,7 +35,7 @@ String_Output::String_Output(const string &_path,int _maxgraph,int _maxhel, int 
     pID = help;
   }
 
-  path=rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path;
+  path=rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path;
 }
 
 void String_Output::Output(sknot*** sk,String_Tree* stree,
@@ -79,7 +79,7 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
   ofstream cfile;
   cfile.open((cfilename+string(".C")).c_str());
 
-  string Makefile = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID+string("/Makefile");
+  string Makefile = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID+string("/Makefile");
   slib.AddToMakefile(Makefile,pathID,string("V"));
 
   int lines   = 0;
@@ -221,7 +221,7 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
   ofstream zf,szf;
   zf.open((Zname+string(".C")).c_str());
 
-  string Makefile = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID+string("/Makefile");
+  string Makefile = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID+string("/Makefile");
   slib.AddToMakefile(Makefile,pathID,string("V_Z"));
 
   int lines = 0;
@@ -584,8 +584,8 @@ void String_Output::Add_To_Set_Values()
   ifstream from;
   ofstream to;
 
-  from.open((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/Set_Values.C")).c_str());
-  to.open((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/Set_Values.C.tmp")).c_str());
+  from.open((rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Set_Values.C")).c_str());
+  to.open((rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Set_Values.C.tmp")).c_str());
 
   int hit = 0;
 
@@ -612,8 +612,8 @@ void String_Output::Add_To_Set_Values()
   to.close();
 
   if (hit) 
-    slib.Copy(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/Set_Values.C.tmp"),rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/Set_Values.C"));
+    slib.Copy(rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Set_Values.C.tmp"),rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Set_Values.C"));
   else 
-    remove((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/Set_Values.C.tmp")).c_str());
+    remove((rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Set_Values.C.tmp")).c_str());
 }
 

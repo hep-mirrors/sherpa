@@ -263,7 +263,7 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter)
   double transformweight(TransformWeight(cluster,hadtrans,lighter,false));
   if (decayweight>0. || transformweight>0.) {
     double totweight((Max(0.,decayweight)+Max(0.,transformweight))*0.9999999);
-    if (transformweight<=0. || decayweight/totweight>ran.Get()) {
+    if (transformweight<=0. || decayweight/totweight>ran->Get()) {
       m_decays      += 1;
       cluster->push_back(haddec1);
       cluster->push_back(haddec2);
@@ -367,7 +367,7 @@ ClusterAnnihilation(Cluster * cluster,Flavour & had1,Flavour & had2) {
   Proto_Particle *pp2(new Proto_Particle(fl2,cluster->GetTrip()->m_mom/2.,'l'));
   Proto_Particle *pp3(new Proto_Particle(fl3,cluster->GetAnti()->m_mom/2.,'l'));
   Proto_Particle *pp4(new Proto_Particle(fl4,cluster->GetAnti()->m_mom/2.,'l'));
-  bool order(ran.Get()>0.5?true:false);
+  bool order(ran->Get()>0.5?true:false);
   Cluster cluster1((order?pp3:pp4),pp1), cluster2((!order?pp4:pp3),pp2);
   Flavour_Pair pair1, pair2;
   pair1.first = cluster1.GetTrip()->m_flav;
@@ -612,7 +612,7 @@ TransformWeight(Cluster * cluster,ATOOLS::Flavour & hadron,
     totweight += wt;
   }
 
-  double disc(totweight * 0.9999999999*ran.Get());
+  double disc(totweight * 0.9999999999*ran->Get());
   for (siter=start;siter!=stl->end();siter++) {
     if (siter->first!=hadron) {
       wt  = TransformKin(MC,siter->first,enforce);
@@ -759,7 +759,7 @@ DecayWeight(Cluster * cluster,Flavour & had1,Flavour & had2,
   }
 
   had1 = had2 = Flavour(kf_none); 
-  double disc(totweight * 0.9999999999*ran.Get());
+  double disc(totweight * 0.9999999999*ran->Get());
   for (Double_Transition_Siter decit=dtliter->second->begin();
        decit!=dtliter->second->end();decit++) {
     m1    = decit->first.first.HadMass();
@@ -807,14 +807,14 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
   double pt2max(ATOOLS::Min(pt2prev,p2max));
 
 
-  //double ctheta = 1.-2.*ATOOLS::ran.Get(), stheta=sqrt(1.-ctheta*ctheta);
+  //double ctheta = 1.-2.*ATOOLS::ran->Get(), stheta=sqrt(1.-ctheta*ctheta);
   //double pt     = sqrt(p2max)*stheta;
   //double pl1    = p2max*ctheta;
 
   double pt2     = p_as->SelectPT(pt2max,0.), pt = sqrt(pt2);
   int    sign    = cluster->GetTrip()->m_mom[3]<0?-1:1;
   double pl1     = sign*sqrt(sqr(E1)-sqr(pt)-m12);
-  double cosphi  = cos(2.*M_PI*ran.Get()), sinphi = sqrt(1.-cosphi*cosphi);
+  double cosphi  = cos(2.*M_PI*ran->Get()), sinphi = sqrt(1.-cosphi*cosphi);
   Vec4D  p1      = Vec4D(E1,pt*cosphi,pt*sinphi,pl1);
   Vec4D  p2      = cluster->Momentum()-p1;
 

@@ -117,12 +117,12 @@ void Event_Handler::Reset()
 
 bool Event_Handler::GenerateEvent(int mode) 
 {
-  DEBUG_FUNC(rpa.gen.NumberOfGeneratedEvents());
-  ATOOLS::ran.SaveStatus();
+  DEBUG_FUNC(rpa->gen.NumberOfGeneratedEvents());
+  ATOOLS::ran->SaveStatus();
 #ifdef USING__PYTHIA
   Lund_Interface::SaveStatus();
 #endif
-  if (!rpa.gen.CheckTime()) {
+  if (!rpa->gen.CheckTime()) {
     msg_Error()<<ATOOLS::om::bold
                      <<"\n\nEvent_Handler::GenerateEvent("<<mode<<"): "
                      <<ATOOLS::om::reset<<ATOOLS::om::red
@@ -161,7 +161,7 @@ bool Event_Handler::GenerateEvent(int mode)
 	    m_sblobs=m_blobs.Copy();
 	    hardps=false;
 	  }
-	  rvalue.IncCall((*pit)->Name());
+	  Return_Value::IncCall((*pit)->Name());
 	  pit=p_phases->begin();
           DEBUG_INFO("Success");
           DEBUG_VAR(m_blobs.FourMomentumConservation());
@@ -169,20 +169,20 @@ bool Event_Handler::GenerateEvent(int mode)
 	  break;
 	case Return_Value::Error :
           DEBUG_INFO("Error");
-	  rvalue.IncCall((*pit)->Name());
-	  rvalue.IncError((*pit)->Name());
+	  Return_Value::IncCall((*pit)->Name());
+	  Return_Value::IncError((*pit)->Name());
 	  return false;
 	case Return_Value::Retry_Phase : 
           DEBUG_INFO("Retry_Phase");
-	  rvalue.IncCall((*pit)->Name());
-	  rvalue.IncRetryPhase((*pit)->Name());
+	  Return_Value::IncCall((*pit)->Name());
+	  Return_Value::IncRetryPhase((*pit)->Name());
 	  pit=p_phases->begin();
 	  break;
 	case Return_Value::Retry_Event : 
           DEBUG_INFO("Retry_Event");
 	  if (++retry<s_retrymax) {
-	  rvalue.IncCall((*pit)->Name());
-	  rvalue.IncRetryEvent((*pit)->Name());
+	  Return_Value::IncCall((*pit)->Name());
+	  Return_Value::IncRetryEvent((*pit)->Name());
           m_blobs.Clear();
 	  m_blobs=m_sblobs.Copy();
 	  p_signal=m_blobs.FindFirst(btp::Signal_Process);
@@ -199,8 +199,8 @@ bool Event_Handler::GenerateEvent(int mode)
 	    Blob *sp(m_blobs.FindFirst(btp::Signal_Process));
             if (sp && (*sp)["Trials"]) m_addn+=(*sp)["Trials"]->Get<double>();
 	  }
-	  rvalue.IncCall((*pit)->Name());
-	  rvalue.IncNewEvent((*pit)->Name());
+	  Return_Value::IncCall((*pit)->Name());
+	  Return_Value::IncNewEvent((*pit)->Name());
 	  Reset();
           p_signal=new Blob();
           p_signal->SetType(btp::Signal_Process);
@@ -213,8 +213,8 @@ bool Event_Handler::GenerateEvent(int mode)
 	default:
 	  THROW(fatal_error,"Invalid return value");
 	}
-	if (weight==0.0 && rpa.gen.NumberOfGeneratedEvents()==
-	    rpa.gen.NumberOfEvents()) return true;
+	if (weight==0.0 && rpa->gen.NumberOfGeneratedEvents()==
+	    rpa->gen.NumberOfEvents()) return true;
       }
     } while (m_blobs.empty() || p_signal->NInP()==0);
     if (!m_blobs.FourMomentumConservation()) return false;
@@ -241,15 +241,15 @@ bool Event_Handler::GenerateEvent(int mode)
 	case Return_Value::Nothing :
 	  break;
 	case Return_Value::Success : 
-	  rvalue.IncCall((*pit)->Name());
+	  Return_Value::IncCall((*pit)->Name());
 	  msg_Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "
 			<<ATOOLS::om::reset
 			<<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
 			<<" yields "<<ATOOLS::om::bold<<true<<ATOOLS::om::reset<<std::endl;
 	  break;
 	case Return_Value::Error :
-	  rvalue.IncCall((*pit)->Name());
-	  rvalue.IncError((*pit)->Name());
+	  Return_Value::IncCall((*pit)->Name());
+	  Return_Value::IncError((*pit)->Name());
 	  return false;
 	default:
 	  msg_Error()<<"Error in "<<METHOD<<":"<<std::endl

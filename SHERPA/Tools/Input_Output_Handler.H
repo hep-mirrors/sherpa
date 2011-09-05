@@ -52,7 +52,7 @@ namespace SHERPA {
     void SetMEHandler(const Matrix_Element_Handler* meh) { p_mehandler=meh; }
 
 #ifdef USING__HEPMC2
-    inline HepMC2_Interface *const GetHepMC2Interface() const { 
+    inline HepMC2_Interface *GetHepMC2Interface() const { 
       return p_hepmc2; 
     }
 #endif

@@ -335,7 +335,7 @@ void Three_Particle_3EnergyCMS::Evaluate(const Vec4D & mom1,const Vec4D & mom2,c
   Vec4D p2 = boost*mom2;
   Vec4D p3 = boost*mom3;
   double E = p1[0];
-  p_histo->Insert(2.0*E/rpa.gen.Ecms(),weight,ncount);
+  p_histo->Insert(2.0*E/rpa->gen.Ecms(),weight,ncount);
 } 
 
 Primitive_Observable_Base * Three_Particle_3EnergyCMS::Copy() const

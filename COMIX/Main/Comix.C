@@ -5,6 +5,11 @@
 #include "COMIX/Main/Process_Group.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 namespace MODEL  { class Model_Base;   }
 namespace PDF    { class Remnant_Base; }
@@ -23,7 +28,7 @@ namespace COMIX {
     std::vector<PHASIC::Process_Base*>         m_rsprocs;
 
     std::string m_path, m_file;
-    int    m_map;
+    int    m_map, m_break;
     time_t m_mets;
 
     std::vector<Vertex_Getter*> m_vtcs;
@@ -137,7 +142,7 @@ void Comix::PrintLogo(std::ostream &s)
 #ifdef USING__Threading
   s<<"Comix was compiled for multithreading.\n";
 #endif
-  rpa.gen.AddCitation
+  rpa->gen.AddCitation
     (1,"Comix is published under \\cite{Gleisberg:2008fv}.");
 }
 
@@ -177,9 +182,10 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
   m_map=read.GetValue<int>("WRITE_MAPPING_FILE",3);
+  m_break=read.GetValue<int>("ONLY_MAPPING_FILE",0);
   if (m_map>0) {
     struct stat fst;
-    std::string fname(rpa.gen.Variable("MODEL_DATA_FILE"));
+    std::string fname(rpa->gen.Variable("MODEL_DATA_FILE"));
     if (fname.find('|')!=std::string::npos)
       fname=fname.substr(0,fname.find('|'));
     My_In_File infile(m_path,fname);
@@ -189,10 +195,10 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
     }
     else {
       msg_Tracking()<<METHOD<<"(): Failed to get timestamp of '"
-		    <<rpa.gen.Variable("MODEL_DATA_FILE")<<"'\n";
+		    <<rpa->gen.Variable("MODEL_DATA_FILE")<<"'\n";
       m_mets=0;
     }
-    fname=rpa.gen.Variable("RUN_DATA_FILE");
+    fname=rpa->gen.Variable("RUN_DATA_FILE");
     if (fname.find('|')!=std::string::npos)
       fname=fname.substr(0,fname.find('|'));
     infile=My_In_File(m_path,fname);
@@ -220,8 +226,11 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
   size_t nt(pi.m_ii.NTotalExternal()+pi.m_fi.NTotalExternal());
   std::string name(PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi));
   std::map<std::string,std::string> pmap;
-  std::string mapfile(rpa.gen.Variable("SHERPA_CPP_PATH")
+  std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 		      +"/Process/Comix");
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()==0)
+#endif
   MakeDir(mapfile,true);
   mapfile+="/"+name+".map";
   struct stat buffer;
@@ -284,6 +293,9 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
   }
   if (add) Add(newxs);
   else m_rsprocs.push_back(newxs);
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()==0) {
+#endif
   if (m_map&1) {
     msg_Debugging()<<"checking for '"<<mapfile<<"' ... ";
     if (FileExists(mapfile)) {
@@ -303,6 +315,9 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     }
   }
   newxs->SetGenerator(this);
+#ifdef USING__MPI
+  }
+#endif
   return newxs;
 }
 
@@ -311,6 +326,10 @@ bool Comix::PerformTests()
   if (!Tests()) return false;
   for (size_t i=0;i<m_rsprocs.size();++i)
     if (!m_rsprocs[i]->Get<COMIX::Process_Base>()->Tests()) return false;
+  if (m_break) {
+    msg_Out()<<std::endl;
+    THROW(normal_exit,"Mapping files created. Stop upon request.");
+  }
   return true;
 }
 

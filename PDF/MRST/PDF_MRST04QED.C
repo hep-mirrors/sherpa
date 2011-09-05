@@ -35,7 +35,7 @@ inline void MakeFortranString(char *output,std::string input,unsigned int length
 }
 
 PDF_MRST04QED::PDF_MRST04QED(const ATOOLS::Flavour bunch):
-  m_path(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/MRST04Grid"),
+  m_path(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/MRST04Grid"),
   m_anti(1),
   m_mode(1)
 {

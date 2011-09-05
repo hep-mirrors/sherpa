@@ -24,7 +24,7 @@ Final_State_Shower::Final_State_Shower(MODEL::Model_Base *const model,
   p_jv(NULL)
 { 
   p_sud->SetScaleFactor
-    (ToType<double>(rpa.gen.Variable("FS_CPL_SCALE_FACTOR","1.0")));
+    (ToType<double>(rpa->gen.Variable("FS_CPL_SCALE_FACTOR","1.0")));
   p_sud->SetEvolutionScheme
     (dataread->GetValue<int>("FS_EVOLUTION_SCHEME",0));  
   p_kin->SetZScheme(dataread->GetValue<int>("FS_Z_SCHEME",1));      
@@ -1133,8 +1133,8 @@ InitDaughters(Tree * tree,Knot * mo,ATOOLS::Flavour flb,ATOOLS::Flavour flc,
 
 bool Final_State_Shower::TestShower(Tree * tree) 
 {
-  double E2 = sqr(rpa.gen.Ecms());
-  for (int i=1;i<=rpa.gen.NumberOfEvents();i++) {
+  double E2 = sqr(rpa->gen.Ecms());
+  for (int i=1;i<=rpa->gen.NumberOfEvents();i++) {
     if (i%2500==0) {
       msg_Out()<<" "<<i<<" th event "<<std::endl;
     }
@@ -1272,7 +1272,7 @@ Vec4D  Final_State_Shower::GetMomentum(Knot * mo, int & number)
   if (mo->left) {
     Vec4D p(GetMomentum(mo->left,number)+GetMomentum(mo->right,number));
     Vec4D ptest(mo->left->part->Momentum()+mo->right->part->Momentum());
-    static double accu(sqrt(rpa.gen.Accu()));
+    static double accu(sqrt(rpa->gen.Accu()));
     if (!IsEqual(ptest,mo->part->Momentum(),accu)) {
       number-=10000;
       msg_Error()<<METHOD<<"(..):  Four momentum not conserved "

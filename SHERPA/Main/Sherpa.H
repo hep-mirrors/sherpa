@@ -21,12 +21,13 @@ namespace SHERPA {
 
     void PrepareTerminate();
 
+    bool InitializeTheRun(int argc,char * argv[]);
+
   public:
-    Sherpa();
+
+    Sherpa(int argc,char * argv[]);
     ~Sherpa();
 
-    //    bool     InitializeTheRun(std::string _path = std::string("./"));
-    bool     InitializeTheRun(int argc,char * argv[]);
     bool     InitializeTheEventHandler();
     bool     GenerateOneEvent(bool reset=true);
     bool     SummarizeRun();

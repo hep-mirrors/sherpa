@@ -19,7 +19,7 @@ void Colour_Reconnections::Singlet_CR(Cluster_List * clin)
   if (clin->size()<2) return;
   Cluster_Iterator cit1,cit2;
   int gen=1;
-  bool direction = (ran.Get()>0.5);
+  bool direction = (ran->Get()>0.5);
   if (direction) clin->reverse();
 
   cit1 = cit2 = clin->begin(); cit2++;
@@ -32,11 +32,11 @@ void Colour_Reconnections::Singlet_CR(Cluster_List * clin)
 
       (*cit1)->Update();
       (*cit2)->Update();
-      if (m_w14/(m_w23+m_w14)>ran.Get()) { cit2++; gen++; }
+      if (m_w14/(m_w23+m_w14)>ran->Get()) { cit2++; gen++; }
                                     else { cit1 = cit2; cit2++; gen=1; }
     } 
     else {
-      if (m_w12/(m_w12+m_w34)>ran.Get()) { cit2++; gen++; }
+      if (m_w12/(m_w12+m_w34)>ran->Get()) { cit2++; gen++; }
                                     else { cit1 = cit2; cit2++; gen=1; }
     }
   } while (cit2!=clin->end());
@@ -52,7 +52,7 @@ bool Colour_Reconnections::TestClusters(Cluster * cl1,Cluster * cl2,int gen)
   double kinweight = KinematicWeight(cl1->GetTrip()->m_mom,cl1->GetAnti()->m_mom,
 				     cl2->GetTrip()->m_mom,cl2->GetAnti()->m_mom);
   double colweight = ColourWeight(gen);
-  if (kinweight*colweight>ran.Get()) return true;
+  if (kinweight*colweight>ran->Get()) return true;
   return false;
 }
 

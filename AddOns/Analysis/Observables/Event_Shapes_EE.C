@@ -30,8 +30,8 @@ Event_Shapes_EE_Getter::operator()(const Argument_Matrix &parameters) const
     if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
     else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
     else if (cur[0]=="Qual" && cur.size()>1) {
-      if (ATOOLS::rpa.gen.Beam1().IsLepton() && 
-	  ATOOLS::rpa.gen.Beam2().IsLepton()) {
+      if (ATOOLS::rpa->gen.Beam1().IsLepton() && 
+	  ATOOLS::rpa->gen.Beam2().IsLepton()) {
 	qualifier = ATOOLS::Particle_Qualifier_Getter::GetObject(cur[1],cur[1]);
       }
     }

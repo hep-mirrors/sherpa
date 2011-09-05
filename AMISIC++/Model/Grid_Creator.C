@@ -137,7 +137,7 @@ bool Grid_Creator::ReadInGrid()
 	msg->SetLevel(formerlevel);
 	return false;
       }
-      double cur=hit->second->Norm()*rpa.Picobarn();
+      double cur=hit->second->Norm()*rpa->Picobarn();
       msg_Info()<<'.'<<std::flush;
       msg_Tracking()<<"  '"<<hit->first<<"' -> "<<cur<<" pb\n";
       sum+=cur;
@@ -194,12 +194,12 @@ bool Grid_Creator::CreateGrid(PHASIC::Process_Group *const processes)
 {
   msg_Info()<<"Grid_Creator::CreateGrid("<<processes<<"): "
 	    <<"Initializing grid for MI.\n";
-  double starttime=ATOOLS::rpa.gen.Timer().UserTime();
+  double starttime=ATOOLS::rpa->gen.Timer().UserTime();
   msg_Info()<<ATOOLS::tm::curoff;
   for (;m_events<m_maxevents;++m_events) {
     if (!UpdateHistogram(processes)) return false;
     if ((m_events%(m_maxevents/100))==0 && m_events>0) {
-      double diff=ATOOLS::rpa.gen.Timer().UserTime()-starttime;
+      double diff=ATOOLS::rpa->gen.Timer().UserTime()-starttime;
       msg_Info()<<"   "<<((100*m_events)/m_maxevents)<<" % ( "
 		<<int(diff)<<" s elapsed / "
 		<<int((m_maxevents-m_events)/(double)m_events*diff)

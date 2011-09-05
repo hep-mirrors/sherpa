@@ -60,7 +60,7 @@ bool FeynRules_Model::ModelInit(PDF::ISR_Handler *const isr)
 
   FillSpectrum(isr);
 
-  rpa.gen.AddCitation
+  rpa->gen.AddCitation
     (1,"The Sherpa interface to FeynRules is published under \\cite{Christensen:2009jx}.");
   return true;
 }

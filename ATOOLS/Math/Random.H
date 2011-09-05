@@ -94,7 +94,7 @@ namespace ATOOLS {
 
   };// end of class Random
 
-  extern Random ran;
+  extern Random *ran;
 
   // --------------------------------------------------
   //         Doxygen part

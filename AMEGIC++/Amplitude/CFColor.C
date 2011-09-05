@@ -34,7 +34,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
     CSC.Init();
     int ncol(CSC.Nc);
     if (ncol!=3) pID+="_NC"+ToString(ncol);
-    std::string name=ATOOLS::rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".col";
+    std::string name=ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".col";
     IO_Handler ioh;
     bool gc(ioh.SetFileNameRO(name)==0);
     if (gc&&force) {
@@ -480,7 +480,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 		}
 	      }
 	      cffactor = st.Evaluate(m);
-	      if (abs(cffactor)<rpa.gen.Accu()) cffactor = Complex(0.,0.);
+	      if (abs(cffactor)<rpa->gen.Accu()) cffactor = Complex(0.,0.);
 	      if (fstring_list.size()>0) {
 		f_table.insert(std::make_pair(fchain,cffactor));
 	      }
@@ -606,7 +606,7 @@ string CFColor::MapFChain(vector<string> fstring_list)
 
 void CFColor::Output(string & dirname) {
   std::string name;
-  name=ATOOLS::rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+dirname+".col";
+  name=ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+dirname+".col";
   IO_Handler ioh;
   ioh.SetFileName(name);
   ioh.Output("",mcount);          // no of ampls

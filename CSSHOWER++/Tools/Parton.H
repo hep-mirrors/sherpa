@@ -65,23 +65,23 @@ namespace CSSHOWER {
     inline int                     GetFlow(const int) const;
     inline int                     GetMEFlow(const int) const;
     inline int                     GetRFlow(const int) const;
-    inline int               const Beam()        const;
-    inline int               const Stat()        const;
-    inline int               const Kin()         const { return m_kin; }
-    inline size_t            const Id()          const;
-    inline double            const KtMax()       const;
-    inline double            const TMin()        const;
-    inline double            const KtPrev()      const;
-    inline double            const KtNext()      const;
-    inline double            const KtStart()     const;
-    inline double            const KtVeto()      const;
-    inline double            const KtTest()      const;
-    inline double            const ZTest()       const;
-    inline double            const YTest()       const;
-    inline double            const Weight()        const;
-    inline double            const Xbj()         const;
-    inline double            const Mass2()       const { return m_t; }
-    inline double            const Phi()         const;
+    inline int                     Beam()        const;
+    inline int                     Stat()        const;
+    inline int                     Kin()         const { return m_kin; }
+    inline size_t                  Id()          const;
+    inline double                  KtMax()       const;
+    inline double                  TMin()        const;
+    inline double                  KtPrev()      const;
+    inline double                  KtNext()      const;
+    inline double                  KtStart()     const;
+    inline double                  KtVeto()      const;
+    inline double                  KtTest()      const;
+    inline double                  ZTest()       const;
+    inline double                  YTest()       const;
+    inline double                  Weight()        const;
+    inline double                  Xbj()         const;
+    inline double                  Mass2()       const { return m_t; }
+    inline double                  Phi()         const;
     inline Parton *                GetLeft();
     inline Parton *                GetRight();
     inline Parton *                GetSpect();
@@ -179,21 +179,21 @@ namespace CSSHOWER {
     if (m_meflow.Code(index)>0) return m_meflow.Code(index); 
     return m_flow.Code(index);
   }
-  double            const Parton::KtStart()     const { return m_kt_start; }
-  double            const Parton::KtMax()       const { return m_kt_max; }
-  double            const Parton::TMin()        const { return m_t_min; }
-  double            const Parton::KtPrev()      const { return m_kt_prev; }
-  double            const Parton::KtNext()      const { return m_kt_next; }
-  double            const Parton::KtVeto()      const { return m_kt_veto; }
-  double            const Parton::KtTest()      const { return m_kt_test; }
-  double            const Parton::ZTest()       const { return m_z_test; }
-  double            const Parton::YTest()       const { return m_y_test; }
-  double            const Parton::Weight()      const { return m_weight; }
-  double            const Parton::Xbj()         const { return m_xBj; }
-  double            const Parton::Phi()         const { return m_phi; }
-  int               const Parton::Beam()        const { return m_beam; }
-  int               const Parton::Stat()        const { return m_stat; }
-  size_t            const Parton::Id()          const { return m_id; }
+  double                  Parton::KtStart()     const { return m_kt_start; }
+  double                  Parton::KtMax()       const { return m_kt_max; }
+  double                  Parton::TMin()        const { return m_t_min; }
+  double                  Parton::KtPrev()      const { return m_kt_prev; }
+  double                  Parton::KtNext()      const { return m_kt_next; }
+  double                  Parton::KtVeto()      const { return m_kt_veto; }
+  double                  Parton::KtTest()      const { return m_kt_test; }
+  double                  Parton::ZTest()       const { return m_z_test; }
+  double                  Parton::YTest()       const { return m_y_test; }
+  double                  Parton::Weight()      const { return m_weight; }
+  double                  Parton::Xbj()         const { return m_xBj; }
+  double                  Parton::Phi()         const { return m_phi; }
+  int                     Parton::Beam()        const { return m_beam; }
+  int                     Parton::Stat()        const { return m_stat; }
+  size_t                  Parton::Id()          const { return m_id; }
   Parton *                Parton::GetLeft()           { return p_left;  }
   Parton *                Parton::GetRight()          { return p_right; }
   Parton *                Parton::GetSpect()          { return p_spect; }

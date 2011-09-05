@@ -81,8 +81,8 @@ bool Pythia_HepEvt_Translator::ReconstructBeamsAndBunches()
     pos  = m_piter->first;
     part = m_piter->second.first;
     if (part->Status()==part_status::documentation) {
-      if ((pos==0 && part->Flav()==rpa.gen.Beam1()) ||
-	  (pos==1 && part->Flav()==rpa.gen.Beam2())) {
+      if ((pos==0 && part->Flav()==rpa->gen.Beam1()) ||
+	  (pos==1 && part->Flav()==rpa->gen.Beam2())) {
 	blob = new Blob();
 	blob->SetId();
 	blob->SetType(btp::Beam);

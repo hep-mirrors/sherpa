@@ -141,9 +141,9 @@ void PreSample_Multi_Channel::Optimize(double error)
       tp=m_subchannels[i]->OType();
       s=0.;s2=0.;n=0.;
     }
-    s+= m_subchannels[i]->Sum();
-    s2+=m_subchannels[i]->Sum2();
-    n+= m_subchannels[i]->NN();
+    // s+= m_subchannels[i]->Sum();
+    // s2+=m_subchannels[i]->Sum2();
+    // n+= m_subchannels[i]->NN();
   }
   double s1l=s2/n-sqr(s/n);
   smap[tp]=s1l;
@@ -179,7 +179,7 @@ void PreSample_Multi_Channel::Optimize(double error)
   msg_Tracking()<<"New weights for : "<<name<<endl
 		<<"----------------- "<<n_points<<" ----------------"<<endl;
   for (size_t i=0;i<m_subchannels.size();i++) {
-    msg_Tracking()<<i<<" channel "<<m_subchannels[i]->Name()<<", "<<m_subchannels[i]->NN()
+    msg_Tracking()<<i<<" channel "<<m_subchannels[i]->Name()//<<", "<<m_subchannels[i]->NN()
 		  <<", "<<m_subchannels[i]->N()<<", "<<m_subchannels[i]->ValidN()<<" : "
 		  <<m_alpha[i]<<"  ("<<sqrt(s1[i])/s1sum<<")"<<endl;
   }
@@ -233,11 +233,11 @@ void PreSample_Multi_Channel::GeneratePoint(ATOOLS::Vec4D *p,Cut_Data *cuts)
     return;
   }  
 
-  double generate = ran.Get();
+  double generate = ran->Get();
   double sum = 0;
   for (size_t i=0;;++i) {
     if (i==m_subchannels.size()) {
-      generate = ran.Get();
+      generate = ran->Get();
       i   = 0;
       sum = 0.;
     }

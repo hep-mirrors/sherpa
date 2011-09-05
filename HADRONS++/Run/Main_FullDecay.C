@@ -29,7 +29,7 @@ void InitialiseGenerator(int argc, char *argv[])
   }
   mother_flav.FromHepEvt(mother_kf);
   mother_flav.SetStable(false);
-  rpa.gen.SetEcms(mother_flav.HadMass());
+  rpa->gen.SetEcms(mother_flav.HadMass());
   msg_Info()<<"Welcome. I am decaying a "<<mother_flav<<endl;
 }
 

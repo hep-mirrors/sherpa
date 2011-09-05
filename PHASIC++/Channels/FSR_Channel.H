@@ -26,6 +26,11 @@ namespace PHASIC {
     void GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *,double * _ran);
     void GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *);
     void ISRInfo(int &,double &,double &);
+    void MPISync() { p_vegas->MPISync(); }
+    void Optimize() { p_vegas->Optimize(); }
+    void EndOptimize() { p_vegas->EndOptimize(); }
+    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
+    void ReadIn(std::string pId) { p_vegas->ReadIn(pId); }
     int  ChNumber()                 { return chnumber;      }
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }
     std::string ChID();
@@ -52,6 +57,11 @@ namespace PHASIC {
     void GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *,double * _ran);
     void GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *);
     void ISRInfo(int &,double &,double &);
+    void MPISync() { p_vegas->MPISync(); }
+    void Optimize() { p_vegas->Optimize(); }
+    void EndOptimize() { p_vegas->EndOptimize(); }
+    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
+    void ReadIn(std::string pId) { p_vegas->ReadIn(pId); }
     int  ChNumber()                 { return chnumber;      }
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }
     std::string ChID();
@@ -79,6 +89,11 @@ namespace PHASIC {
     void GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *,double * _ran);
     void GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *);
     void ISRInfo(int &,double &,double &);
+    void MPISync() { p_vegas->MPISync(); }
+    void Optimize() { p_vegas->Optimize(); }
+    void EndOptimize() { p_vegas->EndOptimize(); }
+    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
+    void ReadIn(std::string pId) { p_vegas->ReadIn(pId); }
     int  ChNumber()                 { return chnumber;      }
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }
     std::string ChID();
@@ -105,6 +120,11 @@ namespace PHASIC {
     void GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *,double * _ran);
     void GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *);
     void ISRInfo(int &,double &,double &);
+    void MPISync() { p_vegas->MPISync(); }
+    void Optimize() { p_vegas->Optimize(); }
+    void EndOptimize() { p_vegas->EndOptimize(); }
+    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
+    void ReadIn(std::string pId) { p_vegas->ReadIn(pId); }
     int  ChNumber()                 { return chnumber;      }
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }
     std::string ChID();
@@ -133,6 +153,11 @@ namespace PHASIC {
     void GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *,double * _ran);
     void GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *);
     void ISRInfo(int &,double &,double &);
+    void MPISync() { p_vegas->MPISync(); }
+    void Optimize() { p_vegas->Optimize(); }
+    void EndOptimize() { p_vegas->EndOptimize(); }
+    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
+    void ReadIn(std::string pId) { p_vegas->ReadIn(pId); }
     int  ChNumber()                 { return chnumber;      }
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }
     std::string ChID();

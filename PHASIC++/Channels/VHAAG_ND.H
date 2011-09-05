@@ -71,7 +71,8 @@ namespace PHASIC {
     void GenerateWeight(ATOOLS::Vec4D *,Cut_Data *);
     void GeneratePoint(ATOOLS::Vec4D *,Cut_Data *,double *);
     std::string Name() {return name;}
-    void   Optimize()                { }// p_vegas->Optimize(); }
+    void   MPISync();
+    void   Optimize();
     void   EndOptimize()             { p_vegas->EndOptimize(); }
     void   WriteOut(std::string pId) { if (m_ownvegas) p_vegas->WriteOut(pId); }
     void   ReadIn(std::string pId)   { if (m_ownvegas) p_vegas->ReadIn(pId); }

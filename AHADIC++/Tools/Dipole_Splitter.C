@@ -125,7 +125,7 @@ SplitDipole(Dipole * dip,const bool & first,const bool & vetodiquark) {
 }
 
 bool Dipole_Splitter::SelectOrder(Dipole *& dip1,Dipole *& dip2) {
-  if (ran.Get()<
+  if (ran->Get()<
       (dip1->Mass2()-dip1->Triplet()->m_mom.Abs2())/
       (dip1->Mass2()-dip1->Triplet()->m_mom.Abs2()+
        dip2->Mass2()-dip2->AntiTriplet()->m_mom.Abs2())) {
@@ -199,7 +199,7 @@ void Dipole_Splitter::AnalyseClusterSplitting(Cluster * cluster) {
 
 void Dipole_Splitter::AnalyseKinematics(const ATOOLS::Vec4D q1,const ATOOLS::Vec4D q2,
 					const ATOOLS::Vec4D q3,const bool glusplit) {
-  //double Ebeam = rpa.gen.Ecms()/2.;
+  //double Ebeam = rpa->gen.Ecms()/2.;
   Histogram * histo;
   double kt2(p_tools->PT2()), kt(sqrt(kt2)), z(p_tools->Z());
   if (glusplit) {

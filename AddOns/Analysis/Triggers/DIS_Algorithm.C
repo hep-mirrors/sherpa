@@ -196,7 +196,7 @@ double DIS_Algorithm::Ktmin(Vec4D * p, int * bf, int n)
   // recalc matrix
   while (n>0) {
     PROFILE_LOCAL(" main loop ");
-    if (dmin>m_r2min*sqr(rpa.gen.Ecms())) break;
+    if (dmin>m_r2min*sqr(rpa->gen.Ecms())) break;
     if (ii!=jj) {
       // combine precluster
 #ifdef DEBUG_JETRATES

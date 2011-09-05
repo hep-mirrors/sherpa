@@ -29,7 +29,7 @@ LesHouches_Interface::~LesHouches_Interface()
 
 void LesHouches_Interface::PrepareTerminate()
 {
-  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH")+"/");
+  std::string path(rpa->gen.Variable("SHERPA_STATUS_PATH")+"/");
   if (path=="/") return;
   CopyFile(m_dir+"/"+m_inputfile,path+m_inputfile);
 }

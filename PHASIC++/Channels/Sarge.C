@@ -49,9 +49,9 @@ void Sarge::GeneratePoint(Vec4D* p,Cut_Data * cuts)
   double xi_min = sqr(ET)/s0-((double)(nout)+1.)*((double)(nout)-2.)/2.;
 
   Vec4D* q  = &p[nin];
-  double costheta = 2.*ran.Get()-1.;
+  double costheta = 2.*ran->Get()-1.;
   double sintheta = sqrt(1.-costheta*costheta);
-  double phi      = 2.*M_PI*ran.Get();
+  double phi      = 2.*M_PI*ran->Get();
   q[0]      = ET/2.*Vec4D(1.,sintheta*::sin(phi),sintheta*cos(phi),costheta);
   q[nout-1] = ET/2.*Vec4D(1.,-sintheta*::sin(phi),-sintheta*cos(phi),-costheta);
   QcdAntenna(q,xi_min);
@@ -74,7 +74,7 @@ void Sarge::QcdAntenna(Vec4D* &p,double xi_min)
   Vec4D lab = p[0]+p[nout-1];
   double logm = log(xi_min); 
   for (short int j=0;j<nout-2;j++) {
-    phi = 2.*M_PI*ran.Get();
+    phi = 2.*M_PI*ran->Get();
     xi[0] = exp((x[2*j+1]-x[2*j])*logm);
     xi[1] = exp((x[2*j+2]-x[2*j])*logm);
     BasicAntenna(p[j],p[nout-1],p[j+1],xi,phi);
@@ -85,7 +85,7 @@ void Sarge::QcdAntenna(Vec4D* &p,double xi_min)
   Vec3D  B     = (-1.)*Vec3D(lab)/Elab;
   double G     = lab[0]/Elab;
   double A     = 1./(1.+G);
-  double scale = rpa.gen.Ecms()/Elab;
+  double scale = rpa->gen.Ecms()/Elab;
   double e,BQ;
   for (short int j=0;j<nout;j++) {
     e     = p[j][0];
@@ -122,7 +122,7 @@ void Sarge::PermP(int number,int* &perm)
      shuffles a number of integers contained in perm  */
   int j,k,dummy;
   for (j=number-1;j>1;j--) {
-    k = (int)(j*ran.Get())+1;
+    k = (int)(j*ran->Get())+1;
     dummy   = perm[j];
     perm[j] = perm[k];
     perm[k] = dummy;
@@ -138,30 +138,30 @@ void Sarge::Polytope(int m,double* &x)
   for (i=1;i<m+1;i++) perm[i] = i;
   PermP(m+1,perm);
   // number of negative values
-  k = (int)((m+1)*ran.Get());
+  k = (int)((m+1)*ran->Get());
   x[0] = 0.;
   if (k==0) {
-    for (i=1;i<m+1;i++) x[perm[i]] = ran.Get();
+    for (i=1;i<m+1;i++) x[perm[i]] = ran->Get();
     delete[] perm;
     return;
   }
   if (k==m) {
-    for (i=1;i<m+1;i++) x[perm[i]] = -ran.Get();
+    for (i=1;i<m+1;i++) x[perm[i]] = -ran->Get();
     delete[] perm;
     return;
   }
   double v1,v2,prod,y1;
   prod = 1.;
-  for (i=1;i<k+1;i++) prod *= ran.Get();
+  for (i=1;i<k+1;i++) prod *= ran->Get();
   v1 = -log(prod);
   prod = 1.;
-  for (i=1;i<m-k+2;i++) prod *= ran.Get();
+  for (i=1;i<m-k+2;i++) prod *= ran->Get();
   v2 = -log(prod);                           // -> b(k)
   y1 = v1/(v1+v2);
   x[perm[1]]   = -y1;
-  x[perm[m]] = (1-y1)*pow(ran.Get(),double(1./(m-k)));
-  for (i=2;i<k+1;i++) x[perm[i]] = x[perm[1]]*ran.Get();
-  for (i=k+1;i<m;i++) x[perm[i]] = x[perm[m]]*ran.Get();
+  x[perm[m]] = (1-y1)*pow(ran->Get(),double(1./(m-k)));
+  for (i=2;i<k+1;i++) x[perm[i]] = x[perm[1]]*ran->Get();
+  for (i=k+1;i<m;i++) x[perm[i]] = x[perm[m]]*ran->Get();
   delete[] perm;
 }
 

@@ -50,7 +50,7 @@ bool Color_Setter::SetRandomColors
 	sing=true;
 	break;
       }
-      size_t j(js[Min((size_t)(ran.Get()*js.size()),js.size()-1)]);
+      size_t j(js[Min((size_t)(ran->Get()*js.size()),js.size()-1)]);
       cs.insert(j);
       Cluster_Leg *cp(ampl->Leg(j));
       size_t nc(Flow::Counter());
@@ -153,7 +153,7 @@ bool Color_Setter::SetLargeNCColors
   }
   msg_Debugging()<<"sum = "<<psum.back()<<"\n";
   size_t l(0), r(psum.size()-1), c((l+r)/2);
-  double a(psum[c]), disc(ran.Get()*psum.back());
+  double a(psum[c]), disc(ran->Get()*psum.back());
   while (r-l>1) {
     if (disc<a) r=c;
     else l=c;

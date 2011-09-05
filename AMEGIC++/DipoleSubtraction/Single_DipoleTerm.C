@@ -119,8 +119,8 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   double helpd;
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
-  reader.SetInputPath(rpa.GetPath());
-  reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
   if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA")) {
     m_dalpha = helpd;
     msg_Tracking()<<"Set dipole cut alpha="<<m_dalpha<<"."<<std::endl;

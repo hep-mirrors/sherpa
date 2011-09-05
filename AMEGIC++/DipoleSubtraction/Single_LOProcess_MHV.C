@@ -76,12 +76,12 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
   for (size_t i=m_nin;i<m_nin+m_nout;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
 
   if (m_gen_str>1) {
-    ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
+    ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
   }
-  string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
+  string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
   if (!FileExists(newpath+"/makelibs")) {
-    CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+    CopyFile(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
   }
 
@@ -174,12 +174,12 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
   model->GetCouplings(m_cpls);
   
   if (m_gen_str>1) {
-    ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
+    ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
   }
-  string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
+  string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
   if (!FileExists(newpath+"/makelibs")) {
-    CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+    CopyFile(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
   }
   int cnt=0;

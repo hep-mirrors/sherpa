@@ -1,13 +1,18 @@
 #include "COMIX/Phasespace/PS_Vertex.H"
 
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 using namespace COMIX;
 using namespace ATOOLS;
 
 PS_Vertex::PS_Vertex(const Vertex_Key &key):
   Vertex_Base(key,0,0), m_alpha(1.0), m_oldalpha(1.0), m_weight(1.0),
-  m_np(0.0), m_sum(0.0), m_sum2(0.0), m_max(0.0) {}
+  m_np(0.0), m_sum(0.0), m_sum2(0.0), m_max(0.0),
+  m_mnp(0.0), m_msum(0.0), m_msum2(0.0) {}
 
 void PS_Vertex::Evaluate()
 {
@@ -113,19 +118,72 @@ void PS_Vertex::Evaluate()
   }
 }
 
+void PS_Vertex::MPISync()
+{
+#ifdef USING__MPI
+  int size=MPI::COMM_WORLD.Get_size();
+  if (size>1) {
+    int rank=MPI::COMM_WORLD.Get_rank();
+    double val[4];
+    if (rank==0) {
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	MPI::COMM_WORLD.Recv(&val,4,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+	m_mnp+=val[0];
+	m_msum+=val[1];
+	m_msum2+=val[2];
+	m_max=ATOOLS::Max(m_max,val[3]);
+      }
+      val[0]=m_mnp;
+      val[1]=m_msum;
+      val[2]=m_msum2;
+      val[3]=m_max;
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	MPI::COMM_WORLD.Send(&val,4,MPI::DOUBLE,tag,size+tag);
+      }
+    }
+    else {
+      val[0]=m_mnp;
+      val[1]=m_msum;
+      val[2]=m_msum2;
+      val[3]=m_max;
+      MPI::COMM_WORLD.Send(&val,4,MPI::DOUBLE,0,rank);
+      MPI::COMM_WORLD.Recv(&val,4,MPI::DOUBLE,0,size+rank);
+      m_mnp=val[0];
+      m_msum=val[1];
+      m_msum2=val[2];
+      m_max=val[3];
+    }
+  }
+  m_np+=m_mnp;
+  m_sum+=m_msum;
+  m_sum2+=m_msum2;
+  m_mnp=m_msum=m_msum2=0.0;
+#endif
+}
+
 void PS_Vertex::AddPoint(const double &weight)
 {
   double wgt(sqr(weight)*m_weight);
+  if (IsBad(wgt)) return;
+#ifdef USING__MPI
+  ++m_mnp;
+  m_msum+=wgt;
+  m_msum2+=sqr(wgt);
+#else
   ++m_np;
   m_sum+=wgt;
   m_sum2+=sqr(wgt);
+#endif
   m_max=ATOOLS::Max(m_max,dabs(wgt));
 }
 
 void PS_Vertex::Reset()
 {
-  m_np=0.0;
+  m_mnp=m_np=0.0;
   m_sum=m_sum2=m_max=0.0;
+  m_msum=m_msum2=0.0;
 }
 
 DECLARE_GETTER(PS_Vertex_Getter,"PSV",Vertex_Base,Vertex_Key);

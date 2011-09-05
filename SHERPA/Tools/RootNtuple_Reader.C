@@ -86,10 +86,10 @@ bool RootNtuple_Reader::FillBlobs(Blob_List * blobs)
     break;
   default: result=ReadInSubEvent(blobs);
   }
-  if (result==0) rpa.gen.SetNumberOfEvents(rpa.gen.NumberOfGeneratedEvents());
+  if (result==0) rpa->gen.SetNumberOfEvents(rpa->gen.NumberOfGeneratedEvents());
   
-  long nev=rpa.gen.NumberOfEvents();
-  if(nev==rpa.gen.NumberOfGeneratedEvents()) CloseFile();
+  long nev=rpa->gen.NumberOfEvents();
+  if(nev==rpa->gen.NumberOfGeneratedEvents()) CloseFile();
   return result;
 }
 

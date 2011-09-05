@@ -22,7 +22,7 @@ Generate_Dipole_Photon_Angle::Generate_Dipole_Photon_Angle(Vec4D p1, Vec4D p2) {
   else {
     msg_Error()<<METHOD<<"(): \\beta_1 = 0 / \\beta_2 = 0 !"<<std::endl;
     m_theta = 0.0;
-    m_phi   = 2.*M_PI*ran.Get();
+    m_phi   = 2.*M_PI*ran->Get();
   }
   GenerateNullVector();
   // transform to original frame
@@ -52,23 +52,23 @@ void Generate_Dipole_Photon_Angle::GenerateDipoleAngle() {
                 /(log((1.+m_b1)/(1.-m_b1))+log((1.+m_b2)/(1.-m_b2)));
   while (true) {
     m_c = 0.;
-    if (ran.Get() < P) {
-      double rnd = ran.Get();
+    if (ran->Get() < P) {
+      double rnd = ran->Get();
       double a   = 1./m_b1*log((1.+m_b1)/(1.-m_b1));
       m_c        = 1./m_b1*(1.-(1.+m_b1)*exp(-a*m_b1*rnd));
     }
     else {
-      double rnd = ran.Get();
+      double rnd = ran->Get();
       double a   = 1./m_b2*log((1.+m_b2)/(1.-m_b2));
       m_c        = 1./m_b2*((1.-m_b2)*exp(a*m_b2*rnd)-1.);
     }
     double weight = 1.-((1.-m_b1*m_b1)/((1.-m_b1*m_c)*(1.-m_b1*m_c))
                         +(1.-m_b2*m_b2)/((1.+m_b2*m_c)*(1.+m_b2*m_c)))
                        /(2.*(1.+m_b1*m_b2)/((1.-m_b1*m_c)*(1.+m_b2*m_c)));
-    if (ran.Get() < weight) break;
+    if (ran->Get() < weight) break;
   }
   m_theta = acos(m_c);
-  m_phi   = 2.*M_PI*ran.Get();
+  m_phi   = 2.*M_PI*ran->Get();
 }
 
 void Generate_Dipole_Photon_Angle::GenerateNullVector() {

@@ -64,7 +64,7 @@ MCFM_gb_hb::MCFM_gb_hb(const int & pID,const Process_Info& pi,
 {
   masses_.mb = Flavour(kf_b).HadMass();
   
-  rpa.gen.AddCitation
+  rpa->gen.AddCitation
     (1,"The NLO matrix elements have been taken from MCFM \\cite{Campbell:2002zm}.");
   switch (m_pID) {
   case 141:

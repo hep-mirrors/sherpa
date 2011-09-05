@@ -62,7 +62,7 @@ bool Mixing_Handler::PerformMixing(Particle* decayer, Blob_List* bloblist)
   Flavour flav = decayer->Flav();
   string tag = flav.IsAnti() ? flav.Bar().IDName() : flav.IDName();
   if(p_decaymap->StartModel()("Mixing_"+tag,0.0)!=0.0 && decayer->Info()!=char('M')) {
-    double t = DetermineMixingTime(decayer,true)/rpa.hBar();
+    double t = DetermineMixingTime(decayer,true)/rpa->hBar();
     if(t==0.0) return false;
     double factor = decayer->Flav().QOverP2();
     if(decayer->Flav().IsAnti()) factor = 1.0/factor;
@@ -71,7 +71,7 @@ bool Mixing_Handler::PerformMixing(Particle* decayer, Blob_List* bloblist)
     Complex i(0.0,1.0);
     double prob_not_mix = sqr(abs(exp(i*dm)*exp(dG)+exp(-i*dm)*exp(-dG)));
     double prob_mix = factor*sqr(abs(exp(i*dm)*exp(dG)-exp(-i*dm)*exp(-dG)));
-    if(prob_mix > ran.Get()*(prob_mix+prob_not_mix)) {
+    if(prob_mix > ran->Get()*(prob_mix+prob_not_mix)) {
       if(decayer->DecayBlob()) bloblist->Delete(decayer->DecayBlob());
       decayer->SetStatus(part_status::decayed);
       decayer->SetInfo('m');
@@ -102,8 +102,8 @@ bool Mixing_Handler::SetCPAsymmetries(Particle* decayer, Hadron_Decay_Table* tab
     bool anti_at_t0 = decayer->Flav().IsAnti();
     if(decayer->ProductionBlob()->Type()==btp::Hadron_Mixing) anti_at_t0 = !anti_at_t0;
     if(lifetime!=0.0) {
-      double cos_term = cos(flav.DeltaM()/rpa.hBar()*lifetime);
-      double sin_term = sin(flav.DeltaM()/rpa.hBar()*lifetime);
+      double cos_term = cos(flav.DeltaM()/rpa->hBar()*lifetime);
+      double sin_term = sin(flav.DeltaM()/rpa->hBar()*lifetime);
       double GX, GR, asymmetry, a;
       for(size_t i=0; i<table->size(); i++) {
         Hadron_Decay_Channel* hdc = table->at(i);
@@ -114,7 +114,7 @@ bool Mixing_Handler::SetCPAsymmetries(Particle* decayer, Hadron_Decay_Table* tab
         else {
           Complex lambda = hdc->CPAsymmetryLambda();
           double l2 = sqr(abs(lambda));
-          double dG = flav.DeltaGamma()/rpa.hBar();
+          double dG = flav.DeltaGamma()/rpa->hBar();
           asymmetry = (2.0*lambda.imag()/(1.0+l2)*sin_term - (1.0-l2)/(1.0+l2)*cos_term)/
               (cosh(dG*lifetime/2.0) - 2.0*lambda.real()/(1.0+l2)*sinh(dG*lifetime/2.0));
         }

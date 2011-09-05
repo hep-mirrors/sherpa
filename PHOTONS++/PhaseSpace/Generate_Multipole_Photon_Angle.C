@@ -30,7 +30,7 @@ void Generate_Multipole_Photon_Angle::GenerateMultipoleAngle() {
   // choose according to which eikonal factor angle should be generated
   // p_i and p_j
 
-  double rdm     = ran.Get();
+  double rdm     = ran->Get();
   double s       = 0.;
   unsigned int k = 0;
   for (unsigned int i=0; i<m_nbars.size(); i++) {

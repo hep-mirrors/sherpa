@@ -11,7 +11,9 @@ namespace COMIX {
   class PS_Vertex: public Vertex_Base {
   protected:
 
-    double m_alpha, m_oldalpha, m_weight, m_np, m_sum, m_sum2, m_max;
+    double m_alpha, m_oldalpha, m_weight;
+    double m_np, m_sum, m_sum2, m_max;
+    double m_mnp, m_msum, m_msum2;
 
   public:
 
@@ -23,6 +25,8 @@ namespace COMIX {
 
     void AddPoint(const double &weight);
     void Reset();
+
+    void MPISync();
 
     // inline functions
     inline double Alpha() const    { return m_alpha;    }

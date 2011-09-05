@@ -40,7 +40,7 @@ ME_Generators::ME_Generators(const std::string &path,
     }
   }
   for (size_t i(0);i<size();++i) {
-    rpa.gen.SetVariable(at(i)->Name(),ToString(at(i)));
+    rpa->gen.SetVariable(at(i)->Name(),ToString(at(i)));
   }
 }
 

@@ -9,6 +9,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Data_Writer.H"
 #include "ATOOLS/Org/SVN_Info.H"
 #include "ATOOLS/Org/binreloc.h"
@@ -20,6 +21,13 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <limits>
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
+
+namespace ATOOLS {
+  Run_Parameter *rpa(NULL);
+}
 
 double getpmem()
 {
@@ -74,12 +82,6 @@ SVN_Info::~SVN_Info()
   if (s_objects->empty()) delete s_objects;
 }
 
-bool ATOOLS::Run_Parameter::s_initialized=false;
-size_t ATOOLS::Run_Parameter::s_clevel=100;
-std::map<std::string,std::string> ATOOLS::Run_Parameter::s_variables;
-std::vector<std::string> ATOOLS::Run_Parameter::s_cites;
-Run_Parameter ATOOLS::rpa;
-
 Run_Parameter::Run_Parameter() 
 {
   AnalyseEnvironment();
@@ -94,6 +96,7 @@ Run_Parameter::Run_Parameter()
   gen.m_spincorrelations = 0;
   gen.m_pbeam[0] = Vec4D(0.,0.,0.,0.);
   gen.m_pbeam[1] = Vec4D(0.,0.,0.,0.);
+  gen.m_clevel=100;
 } 
 
 std::ostream &ATOOLS::operator<<(std::ostream &str,const Run_Parameter &rp)
@@ -103,22 +106,22 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const Run_Parameter &rp)
 
 void Run_Parameter::AnalyseEnvironment() 
 {
-  if (s_initialized) return;
 #ifdef __GNUC__
 #if __GNUC__ == 2 && __GNUC_MINOR__ == 96
 #error Sherpa was not designed for gcc 2.96
 #endif
 #endif
   char *var=NULL;
-  s_variables["PATH"]=std::string(((var=getenv("PATH"))==NULL?"":var));
-  s_variables["SHERPASYS"]=std::string(((var=getenv("SHERPASYS"))==NULL?"":var));
-  s_variables["SHERPA_CPP_PATH"]=std::string(((var=getenv("SHERPA_CPP_PATH"))==NULL?"":var));
-  s_variables["SHERPA_LIB_PATH"]=std::string(((var=getenv("SHERPA_LIB_PATH"))==NULL?"":var));
-  s_variables["SHERPA_DAT_PATH"]=std::string(((var=getenv("SHERPA_DAT_PATH"))==NULL?"":var));
-  s_variables["LD_LIBRARY_PATH"]=std::string(((var=getenv("LD_LIBRARY_PATH"))==NULL?"":var));
-  s_variables["SHERPA_RUN_PATH"]=getenv("PWD");
-  s_variables["HOME"]=std::string(((var=getenv("HOME"))==
-				   NULL?s_variables["SHERPA_RUN_PATH"]:var));
+  gen.m_variables["HOSTNAME"]=std::string(((var=getenv("HOSTNAME"))==NULL?"":var));
+  gen.m_variables["PATH"]=std::string(((var=getenv("PATH"))==NULL?"":var));
+  gen.m_variables["SHERPASYS"]=std::string(((var=getenv("SHERPASYS"))==NULL?"":var));
+  gen.m_variables["SHERPA_CPP_PATH"]=std::string(((var=getenv("SHERPA_CPP_PATH"))==NULL?"":var));
+  gen.m_variables["SHERPA_LIB_PATH"]=std::string(((var=getenv("SHERPA_LIB_PATH"))==NULL?"":var));
+  gen.m_variables["SHERPA_DAT_PATH"]=std::string(((var=getenv("SHERPA_DAT_PATH"))==NULL?"":var));
+  gen.m_variables["LD_LIBRARY_PATH"]=std::string(((var=getenv("LD_LIBRARY_PATH"))==NULL?"":var));
+  gen.m_variables["SHERPA_RUN_PATH"]=getenv("PWD");
+  gen.m_variables["HOME"]=std::string(((var=getenv("HOME"))==
+				       NULL?gen.m_variables["SHERPA_RUN_PATH"]:var));
 
   // The paths are determined with the following fallback route:
   // 1. Environment variable
@@ -136,24 +139,23 @@ void Run_Parameter::AnalyseEnvironment()
     librarypath=BR_prefix+"/lib/SHERPA-MC";
   }
   
-  s_variables["SHERPA_SHARE_PATH"]=
+  gen.m_variables["SHERPA_SHARE_PATH"]=
     (var=getenv("SHERPA_SHARE_PATH"))==NULL?sharepath:var;
 
   // set include path
-  s_variables["SHERPA_INC_PATH"]=
+  gen.m_variables["SHERPA_INC_PATH"]=
     (var=getenv("SHERPA_INCLUDE_PATH"))==NULL?includepath:var;
 
   // set library path 
-  s_variables["SHERPA_LIBRARY_PATH"]=
+  gen.m_variables["SHERPA_LIBRARY_PATH"]=
     (var=getenv("SHERPA_LIBRARY_PATH"))==NULL?librarypath:var;
 
-  s_initialized=true;
 }
 
 void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[])
 {
   m_path = path;
-  path=s_variables["PATH_PIECE"];
+  path=gen.m_variables["PATH_PIECE"];
   gen.m_timer.Start();
   struct passwd* user_info = getpwuid(getuid());
   if (!user_info) gen.m_username="<unknown user>";
@@ -167,12 +169,14 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   if (color=="Off") msg->SetModifiable(false);
   std::string outputlevel = dr.GetValue<std::string>("OUTPUT","2");
   msg->Init(outputlevel);
+  msg->SetMPIMode(dr.GetValue<int>("MPI_OUTPUT",0));
+  exh->SetMPITimeOut(dr.GetValue<int>("MPI_TIMEOUT",3600));
   if (msg->LevelIsInfo()) 
     msg_Out()<<"Welcome to "<<exh->ProgramName()<<", "<<gen.m_username
 	     <<". Initialization of framework underway."<<std::endl;
   // make path nice
   if (path.length()>0) {
-    if (path[0]!='/') path=s_variables["SHERPA_RUN_PATH"]+"/"+path;
+    if (path[0]!='/') path=gen.m_variables["SHERPA_RUN_PATH"]+"/"+path;
     while (path.length()>0 && 
 	   (path[path.length()-1]=='/' || path[path.length()-1]=='.')) 
       path=path.substr(0,path.length()-1);
@@ -180,35 +184,35 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 
   // set cpp path
   std::string cpppath=dr.GetValue<std::string>("SHERPA_CPP_PATH",std::string(""));
-  if (cpppath.length()>0 && cpppath[0]=='/') s_variables["SHERPA_CPP_PATH"]=cpppath;
-  else if (path!=s_variables["SHERPA_RUN_PATH"]) s_variables["SHERPA_CPP_PATH"]=path;
-  else if (s_variables["SHERPA_CPP_PATH"].length()==0) 
-    s_variables["SHERPA_CPP_PATH"]=s_variables["SHERPA_RUN_PATH"];
+  if (cpppath.length()>0 && cpppath[0]=='/') gen.m_variables["SHERPA_CPP_PATH"]=cpppath;
+  else if (path!=gen.m_variables["SHERPA_RUN_PATH"]) gen.m_variables["SHERPA_CPP_PATH"]=path;
+  else if (gen.m_variables["SHERPA_CPP_PATH"].length()==0) 
+    gen.m_variables["SHERPA_CPP_PATH"]=gen.m_variables["SHERPA_RUN_PATH"];
   // set lib path
   std::string libpath=dr.GetValue<std::string>("SHERPA_LIB_PATH",std::string(""));
-  if (libpath.length()>0 && libpath[0]=='/') s_variables["SHERPA_LIB_PATH"]=libpath;
-  else if (s_variables["SHERPA_LIB_PATH"].length()==0) 
-    s_variables["SHERPA_LIB_PATH"]=s_variables["SHERPA_CPP_PATH"]
+  if (libpath.length()>0 && libpath[0]=='/') gen.m_variables["SHERPA_LIB_PATH"]=libpath;
+  else if (gen.m_variables["SHERPA_LIB_PATH"].length()==0) 
+    gen.m_variables["SHERPA_LIB_PATH"]=gen.m_variables["SHERPA_CPP_PATH"]
       +std::string("/Process/lib");
-  if (s_variables["SHERPA_DAT_PATH"].length()==0) {
-    if (path.length()>0 && path[0]=='/') s_variables["SHERPA_DAT_PATH"]=path;
-    else s_variables["SHERPA_DAT_PATH"]=s_variables["SHERPA_RUN_PATH"]+"/"+path;
+  if (gen.m_variables["SHERPA_DAT_PATH"].length()==0) {
+    if (path.length()>0 && path[0]=='/') gen.m_variables["SHERPA_DAT_PATH"]=path;
+    else gen.m_variables["SHERPA_DAT_PATH"]=gen.m_variables["SHERPA_RUN_PATH"]+"/"+path;
   }
   msg_Tracking()<<METHOD<<"(): Paths are {\n"
-		<<"   SHERPA_INC_PATH = "<<s_variables["SHERPA_INC_PATH"]<<"\n"
-		<<"   SHERPA_SHARE_PATH = "<<s_variables["SHERPA_SHARE_PATH"]<<"\n"
-		<<"   SHERPA_CPP_PATH = "<<s_variables["SHERPA_CPP_PATH"]<<"\n"
-		<<"   SHERPA_LIB_PATH = "<<s_variables["SHERPA_LIB_PATH"]<<"\n"
-		<<"   SHERPA_DAT_PATH = "<<s_variables["SHERPA_DAT_PATH"]<<"\n"
+		<<"   SHERPA_INC_PATH = "<<gen.m_variables["SHERPA_INC_PATH"]<<"\n"
+		<<"   SHERPA_SHARE_PATH = "<<gen.m_variables["SHERPA_SHARE_PATH"]<<"\n"
+		<<"   SHERPA_CPP_PATH = "<<gen.m_variables["SHERPA_CPP_PATH"]<<"\n"
+		<<"   SHERPA_LIB_PATH = "<<gen.m_variables["SHERPA_LIB_PATH"]<<"\n"
+		<<"   SHERPA_DAT_PATH = "<<gen.m_variables["SHERPA_DAT_PATH"]<<"\n"
 		<<"}"<<std::endl;
 #ifndef __sgi
-  setenv("LD_LIBRARY_PATH",(s_variables["LD_LIBRARY_PATH"]+std::string(":")+
-			    s_variables["SHERPA_LIB_PATH"]).c_str(),1);
+  setenv("LD_LIBRARY_PATH",(gen.m_variables["LD_LIBRARY_PATH"]+std::string(":")+
+			    gen.m_variables["SHERPA_LIB_PATH"]).c_str(),1);
 #endif
-  MakeDir(s_variables["HOME"]+"/.sherpa/",true);
+  MakeDir(gen.m_variables["HOME"]+"/.sherpa/",true);
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
-  s_loader->AddPath(rpa.gen.Variable("SHERPA_RUN_PATH"));
+  s_loader->AddPath(rpa->gen.Variable("SHERPA_RUN_PATH"));
 
   // read only if defined (no error message if not defined)
   Data_Reader dreader(" ",";","!","=");
@@ -233,11 +237,19 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   if (gen.m_seed2<0) gen.SetVariable("RNG_SEED",ToString(gen.m_seed));
   else gen.SetVariable("RNG_SEED",ToString(gen.m_seed)+" "+ToString(gen.m_seed2));
 
+#ifdef USING__MPI
+  int rank=MPI::COMM_WORLD.Get_rank();
+  msg_Error()<<"Rank "<<rank<<", pid "<<getpid()<<" running on "
+	     <<gen.m_variables["HOSTNAME"]<<"."<<std::endl;
+  gen.m_seed*=rank+1;
+  if (gen.m_seed2>0) gen.m_seed2*=rank+1;
+#endif
+
   gen.m_timeout = dr.GetValue<double>("TIMEOUT",std::numeric_limits<double>::max());
   if (gen.m_timeout<0.) gen.m_timeout=0.;
-  rpa.gen.m_timer.Start();
+  rpa->gen.m_timer.Start();
   gen.m_batchmode = dr.GetValue<int>("BATCH_MODE",1);
-  s_clevel= dr.GetValue<int>("CITATION_DEPTH",1);
+  gen.m_clevel= dr.GetValue<int>("CITATION_DEPTH",1);
 #ifdef RLIMIT_AS
   rlimit lims;
   getrlimit(RLIMIT_AS,&lims);
@@ -283,8 +295,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_accu = dr.GetValue<double>
     ("Num._Accuracy",dr.GetValue<double>("NUM_ACCURACY",1.e-10));
   //gen.m_runtime            = dr.GetValue<std::string>("Runtime"); // Time
-  if (gen.m_seed2!=-1) { ran.SetSeed(gen.m_seed, gen.m_seed2); }
-                  else { ran.SetSeed(gen.m_seed); }
+  if (gen.m_seed2!=-1) { ran->SetSeed(gen.m_seed, gen.m_seed2); }
+                  else { ran->SetSeed(gen.m_seed); }
   msg_Debugging()<<METHOD<<"(): Set global tags {\n";
   const String_Map &gtags(Read_Write_Base::GlobalTags());
   for (String_Map::const_iterator tit(gtags.begin());tit!=gtags.end();++tit)
@@ -311,20 +323,23 @@ bool Run_Parameter::Gen::CheckTime(const double limit)
 void Run_Parameter::Gen::AddCitation(const size_t &level,
                                      const std::string &cite)
 {
-  if (level<=s_clevel) {
-    for (size_t i=0; i<s_cites.size(); ++i) if (s_cites[i]==cite) return;
-    s_cites.push_back(cite);
+  if (level<=m_clevel) {
+    for (size_t i=0; i<m_cites.size(); ++i) if (m_cites[i]==cite) return;
+    m_cites.push_back(cite);
   }
 }
 
 void Run_Parameter::Gen::WriteCitationInfo()
 {
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()) return;
+#endif
   if (Citations().empty()) return;
   std::string refname("Sherpa_References.tex");
-  std::ofstream f((rpa.gen.Variable("SHERPA_RUN_PATH")+"/"+refname).c_str());
+  std::ofstream f((rpa->gen.Variable("SHERPA_RUN_PATH")+"/"+refname).c_str());
   f<<"%% Citation summary file generated by Sherpa "
    <<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<std::endl;
-  f<<"%% PID "+ToString(getpid())+" on "+rpa.gen.Timer().TimeString(0)<<std::endl;
+  f<<"%% PID "+ToString(getpid())+" on "+rpa->gen.Timer().TimeString(0)<<std::endl;
   f<<"\n\\documentclass{article}\n\n\\begin{document}\n"<<std::endl;
   for (size_t i=0; i<Citations().size(); ++i) {
     f<<Citations()[i]<<std::endl;
@@ -358,7 +373,7 @@ void  Run_Parameter::Gen::SetBeam2(const Flavour b) {
 
 std::string Run_Parameter::Gen::Variable(const std::string &key,const std::string &def) 
 { 
-  return s_variables.find(key)!=s_variables.end()?s_variables[key]:def; 
+  return m_variables.find(key)!=m_variables.end()?m_variables[key]:def; 
 }
 
 void Run_Parameter::Gen::PrintSVNVersion(std::ostream &str,const int mode,

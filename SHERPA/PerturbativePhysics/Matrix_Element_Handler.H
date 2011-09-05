@@ -64,7 +64,7 @@ namespace SHERPA {
     MODEL::Model_Base          *p_model;
 
     std::string m_path, m_file, m_processfile, m_selectorfile, m_respath;
-    int         m_eventmode, m_seedmode, m_hasnlo;
+    int         m_eventmode, m_seedmode, m_hasnlo, m_rsadd;
 
     PHASIC::Weight_Info m_evtinfo;
 

@@ -19,7 +19,7 @@ Library_Loader *ATOOLS::s_loader(NULL);
 Library_Loader::Library_Loader(): m_wait(3600), m_check(true)
 {
   m_paths=EnvironmentVariable(LD_PATH_NAME);
-  m_paths.push_back(rpa.gen.Variable("SHERPA_LIBRARY_PATH"));
+  m_paths.push_back(rpa->gen.Variable("SHERPA_LIBRARY_PATH"));
 }
 
 bool Library_Loader::CreateLockFile(const std::string &lockname)
@@ -81,10 +81,10 @@ void *Library_Loader::LoadLibrary(const std::string &name)
     std::string lockname(m_paths[i]+"/lib"+name+
 			 std::string(LIB_SUFFIX)+".lock");
     if (!CreateLockFile(lockname)) return NULL;
-    if (!CreateLockFile(rpa.gen.Variable("HOME")+
+    if (!CreateLockFile(rpa->gen.Variable("HOME")+
  			"/.sherpa/.liblock")) return NULL;
     void *module(dlopen(libname.c_str(),RTLD_LAZY|RTLD_GLOBAL));
-    if (!RemoveLockFile(rpa.gen.Variable("HOME")+
+    if (!RemoveLockFile(rpa->gen.Variable("HOME")+
  			"/.sherpa/.liblock")) return NULL;
     if (!RemoveLockFile(lockname)) return NULL;
     if (module!=NULL) {

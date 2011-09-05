@@ -104,10 +104,10 @@ Term *Variable_KFactor_Setter::ReplaceTags(Term *term) const
     term->Set(p_proc->ScaleSetter()->Scale(stp::fac));
     return term;
   case 3:
-    term->Set(rpa.gen.Ecms());
+    term->Set(rpa->gen.Ecms());
     return term;
   case 4:
-    term->Set(sqr(rpa.gen.Ecms()));
+    term->Set(sqr(rpa->gen.Ecms()));
     return term;
   case 11:
     term->Set((double)p_proc->OrderQCD());

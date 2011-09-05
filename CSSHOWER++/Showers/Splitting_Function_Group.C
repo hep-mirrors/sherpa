@@ -34,7 +34,7 @@ void Splitting_Function_Group::Add(Splitting_Function_Base * split) {
 
 void Splitting_Function_Group::SelectOne()
 {
-  double disc(ran.Get()*m_lastint);
+  double disc(ran->Get()*m_lastint);
   size_t l(0), r(m_splittings.size()-1), c((l+r)/2);
   double a(m_partint[c]);
   while (r-l>1) {

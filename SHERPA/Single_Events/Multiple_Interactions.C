@@ -46,7 +46,7 @@ Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const
   if (m_vetoed) return Return_Value::Nothing;
   if (!p_bloblist->FourMomentumConservation()) {
     msg_Error()<<"Multiple_Interactions::CheckBlobList(..): "
-	       <<"Retry event "<<rpa.gen.NumberOfGeneratedEvents()<<std::endl;
+	       <<"Retry event "<<rpa->gen.NumberOfGeneratedEvents()<<std::endl;
     return Return_Value::Retry_Event;
   }
   for (Blob_List::const_iterator bit=bloblist->begin();

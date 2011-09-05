@@ -326,10 +326,10 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,const int 
     return false;
   }
   bool swap(p_legs[0][0].ID()&2);
-  if ((moms[swap][0]>rpa.gen.PBeam(0)[0] &&
-       !IsEqual(moms[swap][0],rpa.gen.PBeam(0)[0],1.0e-6)) ||
-      (moms[1-swap][0]>rpa.gen.PBeam(1)[0] &&
-       !IsEqual(moms[1-swap][0]>rpa.gen.PBeam(1)[0],1.0e-6))) {
+  if ((moms[swap][0]>rpa->gen.PBeam(0)[0] &&
+       !IsEqual(moms[swap][0],rpa->gen.PBeam(0)[0],1.0e-6)) ||
+      (moms[1-swap][0]>rpa->gen.PBeam(1)[0] &&
+       !IsEqual(moms[1-swap][0]>rpa->gen.PBeam(1)[0],1.0e-6))) {
     msg_Debugging()<<"kinematics failed\n";
     return false;
   }
@@ -356,10 +356,10 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,
     return false;
   }
   bool swap(p_legs[0][0].ID()&2);
-  if ((moms[swap][0]>rpa.gen.PBeam(0)[0] &&
-       !IsEqual(moms[swap][0],rpa.gen.PBeam(0)[0],1.0e-6)) ||
-      (moms[1-swap][0]>rpa.gen.PBeam(1)[0] &&
-       !IsEqual(moms[1-swap][0]>rpa.gen.PBeam(1)[0],1.0e-6))) {
+  if ((moms[swap][0]>rpa->gen.PBeam(0)[0] &&
+       !IsEqual(moms[swap][0],rpa->gen.PBeam(0)[0],1.0e-6)) ||
+      (moms[1-swap][0]>rpa->gen.PBeam(1)[0] &&
+       !IsEqual(moms[1-swap][0]>rpa->gen.PBeam(1)[0],1.0e-6))) {
     msg_Debugging()<<"kinematics failed\n";
     return false;
   }
@@ -684,7 +684,7 @@ bool Combine_Table::SelectWinner(const size_t &mode)
     }
   }
   if (!(mode&1)) {
-    double disc(sum*ran.Get()), psum(0.0);
+    double disc(sum*ran->Get()), psum(0.0);
     for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
       double pt2ij(cit->second.m_pt2ij.m_op2);
       if (cit->second.m_graphs.size()==0) continue;

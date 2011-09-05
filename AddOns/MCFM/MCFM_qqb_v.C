@@ -51,16 +51,16 @@ MCFM_qqb_v::MCFM_qqb_v(const int & pID,const Process_Info& pi,
   m_drmode=m_mode=1;
   if (m_pID==11||m_pID==16||m_pID==41||m_pID==42) {
     m_njets = 1;
-    rpa.gen.AddCitation
+    rpa->gen.AddCitation
       (1,"The NLO matrix elements have been taken from MCFM.");
   }
   else if (m_pID==22||m_pID==27||m_pID==44||m_pID==46) {
     m_njets = 2;
-    rpa.gen.AddCitation
+    rpa->gen.AddCitation
       (1,"The NLO matrix elements have been taken from MCFM \\cite{Campbell:2002tg}.");
   }
   else {
-    rpa.gen.AddCitation
+    rpa->gen.AddCitation
       (1,"The NLO matrix elements have been taken from MCFM.");
   }
 }

@@ -55,7 +55,7 @@ void AMEGIC::Single_Process::PolarizationNorm() {
 void AMEGIC::Single_Process::WriteAlternativeName(string aname) 
 {
   if (aname==m_name) return;
-  std::string altname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".alt";
+  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".alt";
   if (FileExists(altname)) return;
   std::ofstream to;
   to.open(altname.c_str(),ios::out);
@@ -67,7 +67,7 @@ void AMEGIC::Single_Process::WriteAlternativeName(string aname)
 
 bool AMEGIC::Single_Process::CheckAlternatives(vector<Process_Base *>& links,string procname)
 {
-  std::string altname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+procname+".alt";
+  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+procname+".alt";
   if (FileExists(altname)) {
     double factor;
     string name,dummy; 
@@ -122,12 +122,12 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
   PolarizationNorm();
 
   if (m_gen_str>1) {
-    ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
+    ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
   }
-  string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
+  string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
   if (!FileExists(newpath+"/makelibs")) {
-    CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+    CopyFile(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
   }
 
@@ -146,8 +146,8 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
   }  
   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
   if (directload) {
-    string hstr=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_libname;
-    string hstr2=rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+    string hstr=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_libname;
+    string hstr2=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
     p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b,hstr,hstr2);  
   }
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
@@ -170,8 +170,8 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
 	msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
 	  
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
-	  string mlname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+links[j]->Name();
-	  string mnname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+Name();
+	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+links[j]->Name();
+	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+Name();
 	  if (FileExists(mlname+string(".map"))) { 
 	    if (m_sfactor==1.) CopyFile(mlname+".map",mnname+".map");
 	    else {
@@ -393,16 +393,16 @@ int AMEGIC::Single_Process::Tests()
       gauge_test = string_test = 0;
     }
     else {
-      string searchfilename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+testname+string("/V.H");
+      string searchfilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+testname+string("/V.H");
       if (FileExists(searchfilename)) {
       	msg_Error()<<"ERROR in AMEGIC::Single_Process::Tests()"<<std::endl
 			   <<"   No compiled & linked library found for process "<<testname<<std::endl
 			   <<"   but files already written out !"<<std::endl
 			   <<om::bold<<"   Interrupt run and execute \"makelibs\" in '"
-			   <<rpa.gen.Variable("SHERPA_CPP_PATH")<<"'."
+			   <<rpa->gen.Variable("SHERPA_CPP_PATH")<<"'."
 			   <<om::reset<<std::endl;
-	CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
-		 rpa.gen.Variable("SHERPA_CPP_PATH")+"/makelibs");
+	CopyFile(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+		 rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs");
 	THROW(normal_exit,"Failed to load library.");
       }
       else {
@@ -416,7 +416,7 @@ int AMEGIC::Single_Process::Tests()
       }
     }
     if (!ATOOLS::IsEqual(M2,M2g)) {
-      if (abs(M2/M2g-1.)>rpa.gen.Accu()) {
+      if (abs(M2/M2g-1.)>rpa->gen.Accu()) {
 	msg_Out()<<"WARNING: Library cross check not satisfied: "
 		 <<M2<<" vs. "<<M2g<<"  difference:"<<abs(M2/M2g-1.)*100.<<"%"<<endl
 		 <<"   Mapping file(1) : "<<abs(M2)<<endl
@@ -449,7 +449,7 @@ int AMEGIC::Single_Process::Tests()
 
   if (string_test) {
     //String-Test
-    if (!rpa.gen.SpinCorrelation()) {
+    if (!rpa->gen.SpinCorrelation()) {
       for (size_t i=0;i<p_hel->MaxHel();i++) {
 	if (p_hel->On(i)) {
 	  for (size_t j=i+1;j<p_hel->MaxHel();j++) {
@@ -480,7 +480,7 @@ int AMEGIC::Single_Process::Tests()
       if (!ATOOLS::IsEqual(M2g,M2S)) {
 	msg_Out()<<"WARNING: String test not satisfied: "
 		 <<M2g<<" vs. "<<M2S<<"  difference:"<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
-	if (abs(M2g/M2S-1.)>rpa.gen.Accu()) {
+	if (abs(M2g/M2S-1.)>rpa->gen.Accu()) {
 	  return 0;
 	}
 	msg_Out()<<"         assuming numerical reasons, continuing "<<endl;
@@ -510,7 +510,7 @@ int AMEGIC::Single_Process::TestLib()
      p_hel->SwitchOff(i);
     }
   }
-  if (!rpa.gen.SpinCorrelation()) {
+  if (!rpa->gen.SpinCorrelation()) {
     for (size_t i=0;i<p_hel->MaxHel();i++) {
       if (p_hel->On(i)) {
 	for (size_t j=i+1;j<p_hel->MaxHel();j++) {
@@ -540,7 +540,7 @@ int AMEGIC::Single_Process::CheckLibraries() {
   shand1      = new String_Handler(p_shand->Get_Generator());
   
   m_libnumb  = 0;
-  string proc = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/V");
+  string proc = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/V");
   string testname;
   double M2s, helvalue;
 
@@ -608,7 +608,7 @@ void AMEGIC::Single_Process::WriteLibrary()
 {
   if (m_gen_str<2) return;
   string testname;
-  string newpath=rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/");
+  string newpath=rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/");
   for (;;) {
     testname    = CreateLibName()+string("_")+ToString(m_libnumb);
     if (!(FileExists(newpath+m_ptypename+string("/")+testname+string("/V.H")))) break;
@@ -641,7 +641,7 @@ std::string  AMEGIC::Single_Process::CreateLibName()
 
 void AMEGIC::Single_Process::CreateMappingFile(Single_Process* partner) {
   if (m_gen_str<2) return;
-  std::string outname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+  std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
   if (FileExists(outname)) {
     string MEname,PSname;
     FoundMappingFile(MEname,PSname);
@@ -666,7 +666,7 @@ bool AMEGIC::Single_Process::FoundMappingFile(std::string & MEname, std::string 
 {
   std::string buf;
   int pos;
-  std::string outname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+  std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
   if (FileExists(outname)) {
     ifstream from;
     from.open(outname.c_str());

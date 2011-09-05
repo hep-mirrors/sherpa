@@ -43,10 +43,10 @@ namespace SHERPA {
     
     const std::string &           FragmentationModel() const { return m_fragmentationmodel; }
 #ifdef USING__PYTHIA
-    inline Lund_Interface * const GetLundInterface()   const { return p_lund; }
+    inline Lund_Interface * GetLundInterface()   const { return p_lund; }
 #endif
 #ifdef USING__Ahadic
-    inline AHADIC::Ahadic * const GetAhadic()          const { return p_ahadic; }
+    inline AHADIC::Ahadic * GetAhadic()          const { return p_ahadic; }
 #endif
   };// end of class Fragmentation_Handler
 

@@ -25,20 +25,20 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler *const isr,
   m_allowed(100)
 {
   double cplscalefac(0.25*ToType<double>
-		     (rpa.gen.Variable("IS_CPL_SCALE_FACTOR","1.0")));
+		     (rpa->gen.Variable("IS_CPL_SCALE_FACTOR","1.0")));
   m_t0=dabs(dataread->GetValue<double>("IS_PT2MIN",1.0));
   double shadron(dataread->GetValue<double>("IS_MAX_SCALE",
-					    sqr(rpa.gen.Ecms())));
+					    sqr(rpa->gen.Ecms())));
   double emin(dataread->GetValue<double>("IS_MINIMAL_E",0.5));
   int cplscheme(dataread->GetValue<int>("IS_COUPLING_SCHEME",1));
   int pdfscheme(dataread->GetValue<int>("IS_PDF_SCALE_SCHEME",1));
   int orderingscheme(dataread->GetValue<int>("IS_ORDERING_SCHEME",0));
   for (short unsigned int i(0);i<2;++i) {
     if (isr->PDF(i)->Q2Min()>m_t0*
-	ToType<double>(rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR"))) {
+	ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"))) {
       msg_Error()<<METHOD<<"(..):\n   IS_PT2MIN("<<m_t0
 		 <<")*FACTORIZATION_SCALE_FACTOR("
-		 <<rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR")<<") "
+		 <<rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR")<<") "
 		 <<"smaller than minimum scale given by PDF ("
 		 <<isr->PDF(i)->Q2Min()<<").\n"
 		 <<"   Please change your settings in "
@@ -345,7 +345,7 @@ ChooseMother(int &ntree1,Knot *&k1, Knot *&k2,bool init)
 void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,
 					       Flavour * k_flavs)
 {
-  double pt2max(sqr(rpa.gen.Ecms()));
+  double pt2max(sqr(rpa->gen.Ecms()));
   double th(4.*k->z*k->z*k->t/(4.*k->z*k->z*k->t-(1.-k->z)*k->x*k->x*pt2max));
   if (!k->part->Flav().Strong() || 
       !k_flavs[0].Strong() || !k_flavs[1].Strong() ) th=k->thcrit;

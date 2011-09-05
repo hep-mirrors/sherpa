@@ -42,7 +42,7 @@ template <class Scalar>
 void Spinor<Scalar>::Construct(const Vec4<Scalar> &p)
 {
   Complex rpp(csqrt(PPlus(p))), rpm(csqrt(PMinus(p))), pt(PT(p));
-  double accu(sqrt(rpa.gen.Accu()));
+  double accu(sqrt(rpa->gen.Accu()));
   if (((rpp==Complex(0.0,0.0) || rpm==Complex(0.0,0.0)) &&
        pt!=Complex(0.0,0.0)) || dabs(std::abs(pt/(rpp*rpm))-1.0)>accu) {
     msg_Error()<<METHOD<<"(): Warning: \\sqrt{p^+p^-} = "<<std::abs(rpp*rpm)

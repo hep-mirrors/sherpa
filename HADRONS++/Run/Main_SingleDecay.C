@@ -42,7 +42,7 @@ void InitialiseGenerator(int argc, char *argv[])
   for(size_t i(0);i<table->size();++i)
     table->UpdateWidth(table->at(i), 1.0);
 
-  rpa.gen.SetEcms(mother_flav.HadMass());
+  rpa->gen.SetEcms(mother_flav.HadMass());
   msg_Info()<<"Welcome. I am decaying a "<<mother_flav<<endl;
 }
 

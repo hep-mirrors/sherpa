@@ -36,10 +36,10 @@ Weight_Info *Process_Group::OneEvent(const int wmode,const int mode)
 {
   p_selected=NULL;
   if (p_int->TotalXS()==0.0) {
-    p_selected=m_procs[int(ATOOLS::ran.Get()*m_procs.size())];
+    p_selected=m_procs[int(ATOOLS::ran->Get()*m_procs.size())];
     return p_selected->OneEvent(mode);
   }
-  double disc=p_int->SelectionWeight(wmode)*ATOOLS::ran.Get();
+  double disc=p_int->SelectionWeight(wmode)*ATOOLS::ran->Get();
   for (size_t i=0;i<m_procs.size();++i) {
     disc-=dabs(m_procs[i]->Integrator()->SelectionWeight(wmode));
     if (disc<=0.) {
@@ -48,7 +48,7 @@ Weight_Info *Process_Group::OneEvent(const int wmode,const int mode)
     }
   }
   msg_Error()<<METHOD<<"(): Cannot select any process. xs = "
-	     <<p_int->TotalXS()*rpa.Picobarn()<<" pb."<<std::endl;
+	     <<p_int->TotalXS()*rpa->Picobarn()<<" pb."<<std::endl;
   return NULL;
 }
 
@@ -334,7 +334,7 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
       THROW(fatal_error,"Cannot create thread "+ToString(i));
   }
 #endif
-  double totalxs(psh->Integrate()/rpa.Picobarn());
+  double totalxs(psh->Integrate()/rpa->Picobarn());
 #ifdef USING__Threading
   for (size_t i(0);i<m_cts.size();++i) {
     PG_TID *tid(m_cts[i]);

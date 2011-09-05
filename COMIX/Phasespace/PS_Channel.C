@@ -1000,6 +1000,16 @@ void PS_Channel::AddPoint(double value)
 #endif
 }
 
+void PS_Channel::MPISync()
+{
+  for (size_t n(2);n<m_n;++n)
+    for (size_t i(0);i<(*p_cur)[n].size();++i)
+      for (size_t j(0);j<(*p_cur)[n][i]->In().size();++j)
+	((PS_Vertex *)(*p_cur)[n][i]->In()[j])->MPISync();
+  for (Vegas_Map::const_iterator vit(m_vmap.begin());
+       vit!=m_vmap.end();++vit) vit->second->MPISync();
+}
+
 void PS_Channel::Optimize()  
 {
   ++m_nopt;

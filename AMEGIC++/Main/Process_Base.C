@@ -72,7 +72,7 @@ PHASIC::Single_Channel *LoadChannel(int nin,int nout,ATOOLS::Flavour* fl,
 			    std::string& pID,PHASIC::Phase_Space_Handler *psh)
 {
   size_t pos(pID.find("/"));
-  s_loader->AddPath(rpa.gen.Variable("SHERPA_LIB_PATH"));
+  s_loader->AddPath(rpa->gen.Variable("SHERPA_LIB_PATH"));
   Lib_Getter_Function gf = (Lib_Getter_Function)
     PT(s_loader->GetLibraryFunction("Proc_"+pID.substr(0,pos),
 				    "Getter_"+pID.substr(pos+1)));

@@ -110,15 +110,6 @@ ATOOLS::BuildTensor(const Lorentz_Ten2<Scal1>& t, const Lorentz_Ten2<Scal2>& s) 
   return Lorentz_Ten4<PROMOTE(Scal1,Scal2)>(x);
 }
 
-template<typename Scal1, typename Scal2>
-Lorentz_Ten4<PROMOTE(Scal1,Scal2)>
-ATOOLS::BuildTensor(const Lorentz_Ten2<Scal1>& t, int i, int j,
-                    const Lorentz_Ten2<Scal2>& s, int k, int l) {
-  msg_Error()<<METHOD<<" not implemented."<<std::endl;
-  abort();
-  return Lorentz_Ten4<PROMOTE(Scal1,Scal2)>();
-}
-
 template<typename Scal1, typename Scal2> 
 Lorentz_Ten4<PROMOTE(Scal1,Scal2)> 
 ATOOLS::BuildTensor(const Lorentz_Ten3<Scal1>& t, const Vec4<Scal2>& p) {

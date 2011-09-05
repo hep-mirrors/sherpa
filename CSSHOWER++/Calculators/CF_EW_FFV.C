@@ -73,7 +73,7 @@ bool CF_EW_FFZ::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   m_q[1]=2.0/stw*sqr(af*ffl.Mass()/Flavour(kf_Wplus).Mass());
   p_cpl=md->GetScalarFunction("alpha_QED");
   m_cplfac=1.0;
-  double cqed((*p_cpl)(rpa.gen.CplScale()));
+  double cqed((*p_cpl)(rpa->gen.CplScale()));
   m_cplmax.push_back(cqed*m_q[0]);
   m_cplmax.push_back(cqed*m_q[1]);
   return true;
@@ -113,7 +113,7 @@ bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   m_q[1]=1.0/stw*sqr(vf*f1.Mass()/Flavour(kf_Wplus).Mass());
   p_cpl=md->GetScalarFunction("alpha_QED");
   m_cplfac=1.0;
-  double cqed((*p_cpl)(rpa.gen.CplScale()));
+  double cqed((*p_cpl)(rpa->gen.CplScale()));
   m_cplmax.push_back(cqed*m_q[0]);
   m_cplmax.push_back(cqed*m_q[1]);
   return m_q[0]>0.0;

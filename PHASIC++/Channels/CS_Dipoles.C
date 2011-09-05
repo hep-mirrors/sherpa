@@ -20,8 +20,8 @@ FF_Dipole::FF_Dipole(NLO_subevt *const sub,
 {
   // read in y,z mode
   Data_Reader read(" ",";","!","=");
-  read.SetInputPath(rpa.GetPath());
-  read.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+  read.SetInputPath(rpa->GetPath());
+  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   double helpd;
   if (read.ReadFromFile(helpd,"EEG_FF_Y_EXPONENT")) m_yexp=helpd;
   if (read.ReadFromFile(helpd,"EEG_FF_Z_EXPONENT")) m_zexp=helpd;
@@ -139,8 +139,8 @@ FI_Dipole::FI_Dipole(ATOOLS::NLO_subevt *const sub,
 {
   // read in x,z mode
   Data_Reader read(" ",";","!","=");
-  read.SetInputPath(rpa.GetPath());
-  read.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+  read.SetInputPath(rpa->GetPath());
+  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   double helpd;
   if (read.ReadFromFile(helpd,"EEG_FI_X_EXPONENT")) m_xexp=helpd;
   if (read.ReadFromFile(helpd,"EEG_FI_Z_EXPONENT")) m_zexp=helpd;
@@ -155,8 +155,8 @@ ATOOLS::Vec4D_Vector FI_Dipole::GeneratePoint
   // massless x- and z-bounds so far
   double *rn(p_vegas->GeneratePoint(rns));
   msg_Debugging()<<"vegased :     ";
-  if (m_kt==0) m_xmin=p[m_kt].PPlus()/rpa.gen.PBeam(0).PPlus();
-  else m_xmin=p[m_kt].PMinus()/rpa.gen.PBeam(1).PMinus();
+  if (m_kt==0) m_xmin=p[m_kt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else m_xmin=p[m_kt].PMinus()/rpa->gen.PBeam(1).PMinus();
   msg_Debugging()<<"x = "<<rn[0]<<", z = "<<rn[1]
                  <<", phi = "<<rn[2]<<", xmin = "<<m_xmin<<"\n";
   m_rn[0]=Channel_Basics::PeakedDist(0.0,m_xexp,m_xmin,1.0,1,rn[0]);
@@ -181,8 +181,8 @@ double FI_Dipole::GenerateWeight
   Calculate(p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],
 	    m_rn[0],m_rn[1],m_rn[2],pp[m_ijt],pp[m_kt]);
   if (m_rn[2]<0.0) m_rn[2]+=2.0*M_PI;
-  if (m_kt==0) m_xmin=pp[m_kt].PPlus()/rpa.gen.PBeam(0).PPlus();
-  else m_xmin=pp[m_kt].PMinus()/rpa.gen.PBeam(1).PMinus();
+  if (m_kt==0) m_xmin=pp[m_kt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else m_xmin=pp[m_kt].PMinus()/rpa->gen.PBeam(1).PMinus();
   msg_Debugging()<<"again :       ";
   msg_Debugging()<<"x = "<<m_rn[0]<<", z = "<<m_rn[1]
                  <<", phi = "<<m_rn[2]<<"\n";
@@ -266,8 +266,8 @@ IF_Dipole::IF_Dipole(ATOOLS::NLO_subevt *const sub,
 {
   // read in x,u mode
   Data_Reader read(" ",";","!","=");
-  read.SetInputPath(rpa.GetPath());
-  read.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+  read.SetInputPath(rpa->GetPath());
+  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   double helpd;
   if (read.ReadFromFile(helpd,"EEG_IF_X_EXPONENT")) m_xexp=helpd;
   if (read.ReadFromFile(helpd,"EEG_IF_U_EXPONENT")) m_uexp=helpd;
@@ -281,8 +281,8 @@ ATOOLS::Vec4D_Vector IF_Dipole::GeneratePoint
   DEBUG_FUNC("");
   // massless x- and u-bounds so far
   double *rn(p_vegas->GeneratePoint(rns));
-  if (m_ijt==0) m_xmin=p[m_ijt].PPlus()/rpa.gen.PBeam(0).PPlus();
-  else m_xmin=p[m_ijt].PMinus()/rpa.gen.PBeam(1).PMinus();
+  if (m_ijt==0) m_xmin=p[m_ijt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else m_xmin=p[m_ijt].PMinus()/rpa->gen.PBeam(1).PMinus();
   msg_Debugging()<<"vegased :     ";
   msg_Debugging()<<"x = "<<rn[0]<<", u = "<<rn[1]
                  <<", phi = "<<rn[2]<<", xmin = "<<m_xmin<<"\n";
@@ -319,8 +319,8 @@ double IF_Dipole::GenerateWeight
 	      pp[m_ijt],pp[m_kt]);
   }
   if (m_rn[2]<0.0) m_rn[2]+=2.0*M_PI;
-  if (m_ijt==0) m_xmin=pp[m_ijt].PPlus()/rpa.gen.PBeam(0).PPlus();
-  else m_xmin=pp[m_ijt].PMinus()/rpa.gen.PBeam(1).PMinus();
+  if (m_ijt==0) m_xmin=pp[m_ijt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else m_xmin=pp[m_ijt].PMinus()/rpa->gen.PBeam(1).PMinus();
   msg_Debugging()<<"again :       ";
   msg_Debugging()<<"x = "<<m_rn[0]<<", u = "<<m_rn[1]
                  <<", phi = "<<m_rn[2]<<"\n";
@@ -404,8 +404,8 @@ II_Dipole::II_Dipole(ATOOLS::NLO_subevt *const sub,
 {
   // read in x,v mode
   Data_Reader read(" ",";","!","=");
-  read.SetInputPath(rpa.GetPath());
-  read.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+  read.SetInputPath(rpa->GetPath());
+  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   double helpd;
   if (read.ReadFromFile(helpd,"EEG_II_X_EXPONENT")) m_xexp=helpd;
   if (read.ReadFromFile(helpd,"EEG_II_V_EXPONENT")) m_vexp=helpd;
@@ -419,8 +419,8 @@ ATOOLS::Vec4D_Vector II_Dipole::GeneratePoint
   DEBUG_FUNC("");
   // massless x- and v-bounds so far
   double *rn(p_vegas->GeneratePoint(rns));
-  if (m_ijt==0) m_xmin=p[m_ijt].PPlus()/rpa.gen.PBeam(0).PPlus();
-  else m_xmin=p[m_ijt].PMinus()/rpa.gen.PBeam(1).PMinus();
+  if (m_ijt==0) m_xmin=p[m_ijt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else m_xmin=p[m_ijt].PMinus()/rpa->gen.PBeam(1).PMinus();
   msg_Debugging()<<"vegased :     ";
   msg_Debugging()<<"x = "<<rn[0]<<", v = "<<rn[1]
                  <<", phi = "<<rn[2]<<", xmin = "<<m_xmin<<"\n";
@@ -451,8 +451,8 @@ double II_Dipole::GenerateWeight
   Calculate(p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],p,
             m_rn[0],m_rn[1],m_rn[2],pp[m_ijt],pp[m_kt],pp);
   if (m_rn[2]<0.0) m_rn[2]+=2.0*M_PI;
-  if (m_ijt==0) m_xmin=pp[m_ijt].PPlus()/rpa.gen.PBeam(0).PPlus();
-  else m_xmin=pp[m_ijt].PMinus()/rpa.gen.PBeam(1).PMinus();
+  if (m_ijt==0) m_xmin=pp[m_ijt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else m_xmin=pp[m_ijt].PMinus()/rpa->gen.PBeam(1).PMinus();
   msg_Debugging()<<"again :       ";
   msg_Debugging()<<"x = "<<m_rn[0]<<", v = "<<m_rn[1]
                  <<", phi = "<<m_rn[2]<<"\n";

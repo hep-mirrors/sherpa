@@ -14,7 +14,7 @@ Interaction_Model_sLepton_EW::Interaction_Model_sLepton_EW(MODEL::Model_Base * _
   Interaction_Model_Base("",_model,_cplscheme,_yukscheme)
 { 
   g1       = Kabbala(string("g_1"),
-		     sqrt(4.*M_PI*ScalarFunction(string("alpha_QED"),rpa.gen.CplScale())));
+		     sqrt(4.*M_PI*ScalarFunction(string("alpha_QED"),rpa->gen.CplScale())));
   g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
 		     g1.Value()/sqrt(ScalarConstant(string("sin2_thetaW"))));
   sintW    = Kabbala(string("\\sin\\theta_W"),

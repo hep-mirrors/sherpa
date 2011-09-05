@@ -35,7 +35,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_bunch = _bunch;
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   int iset = 0;
-  std::string path = rpa.gen.Variable("SHERPA_SHARE_PATH")+"/";
+  std::string path = rpa->gen.Variable("SHERPA_SHARE_PATH")+"/";
   
   if (m_set==std::string("cteq6.6m")) {
     iset = 400;

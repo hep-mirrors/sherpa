@@ -73,7 +73,7 @@ void Cluster_Decay_Analysis::AnalyseThis(Blob * blob)
   for (int i=0;i<blob->NInP();i++) {
     part = blob->InParticle(i);
     kfc  = int(part->Flav());
-    x    = 2.*part->Momentum()[0]/rpa.gen.Ecms();
+    x    = 2.*part->Momentum()[0]/rpa->gen.Ecms();
     if (x>max_x) max_x = x;
     switch (kfc) {
     case 5:
@@ -89,81 +89,81 @@ void Cluster_Decay_Analysis::AnalyseThis(Blob * blob)
 
   for (int i=0;i<blob->NOutP();i++) {
     part = blob->OutParticle(i);
-    x    = 2.*part->Momentum()[0]/rpa.gen.Ecms();
+    x    = 2.*part->Momentum()[0]/rpa->gen.Ecms();
     if (x>max_x) max_x = x;
     kfc  = int(part->Flav());
     switch (kfc) {
     case 111:
       Npi0++;
-      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case 211:
       Npiplus++;
-      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case -211:
       Npiminus++;
-      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case 221:
       Neta++;
-      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case 311:
       NK0++;
-      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case -311:
       NK0b++;
-      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case 321:
       NKplus++;
-      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case -321:
       NKminus++;
-      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case 331:
       Netaprime++;
-      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Pseudoscalars")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case 113:
       Nrho0++;
-      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case 213:
       Nrhoplus++;
-      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case -213:
       Nrhominus++;
-      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case 223:
       Nomega++;
-      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case 313:
       NKstar0++;
-      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case -313:
       NKstar0b++;
-      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case 323:
       NKstarplus++;
-      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case -323:
       NKstarminus++;
-      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case 333:
       Nphi++;
-      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Vectors")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case 411:
     case 413:
@@ -171,23 +171,23 @@ void Cluster_Decay_Analysis::AnalyseThis(Blob * blob)
     case 423:
     case 431:
     case 433:
-      m_histograms[string("x_p_C-Hadrons")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_C-Hadrons")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       break;
     case 511:
     case 521:
       //case 531:
-      //      if (2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms()<0.89 &&
-      //	  2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms()>0.88) 
+      //      if (2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms()<0.89 &&
+      //	  2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms()>0.88) 
       //	cout<<(*blob)<<endl<<endl
       //	    <<"#################################################################################"<<endl<<endl;
-      m_histograms[string("x_p_B-Mesons")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_B-Mesons")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       m_histograms[string("x_E_B-Mesons")]->Insert(x);
       if (x>max_xB) max_xB = x;
       break;
     case 513:
     case 523:
     case 533:
-      m_histograms[string("x_p_Bstar-Mesons")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa.gen.Ecms());
+      m_histograms[string("x_p_Bstar-Mesons")]->Insert(2.*Vec3D(part->Momentum()).Abs()/rpa->gen.Ecms());
       m_histograms[string("x_E_Bstar-Mesons")]->Insert(x);
       break;
     case 3122:

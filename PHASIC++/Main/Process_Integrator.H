@@ -49,6 +49,7 @@ namespace PHASIC {
 
     double m_max, m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
     double m_ssum, m_ssumsqr, m_smax, m_ssigma2, m_wmin, m_vmean;
+    double m_mssum, m_mssumsqr, m_msn, m_msvn;
 
     std::vector<double> m_vsmax, m_vsum;
     std::vector<long unsigned int> m_vsn, m_vsvn;
@@ -130,6 +131,8 @@ namespace PHASIC {
 
     double SelectionWeight(const int mode) const;
 
+    void MPISync();
+
     // inline functions
     inline Process_Base *Process() const { return p_proc; }
 
@@ -169,9 +172,9 @@ namespace PHASIC {
     inline void SetISR(PDF::ISR_Handler *const isr)  
     { p_isrhandler=isr;  }
 
-    inline BEAM::Beam_Spectra_Handler *const Beam() const 
+    inline BEAM::Beam_Spectra_Handler *Beam() const 
     { return p_beamhandler; }
-    inline PDF::ISR_Handler           *const ISR() const  
+    inline PDF::ISR_Handler           *ISR() const  
     { return p_isrhandler;  }
 
     inline SP(Phase_Space_Handler) PSHandler() const

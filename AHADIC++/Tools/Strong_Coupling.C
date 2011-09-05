@@ -70,7 +70,7 @@ Strong_Coupling::Strong_Coupling(const asform::code form) :
   exit(1);
 }
 
-const double Strong_Coupling::operator()(double q2,bool reweight) const {
+double Strong_Coupling::operator()(double q2,bool reweight) const {
   double Q2(dabs(q2)), Q; 
 
   switch (m_form) {
@@ -87,23 +87,23 @@ const double Strong_Coupling::operator()(double q2,bool reweight) const {
   return 1./(m_beta0*log(Q2/m_Lambda2));
 }
 
-const double Strong_Coupling::
+double Strong_Coupling::
 SelectPT(const double & scale2max,const double & scale2min) {
   double pt2(0.), pt2max(Min(scale2max,m_pt2max)), ran1;
   double mini(m_pt02+scale2min),maxi(m_pt02+pt2max);
   bool   runit(true);
   while (runit) {
-    ran1 = ran.Get();
+    ran1 = ran->Get();
     switch (m_form) {
     case asform::IRregularised_IR0: 
       if (pt2max<=m_pt02) {
 	pt2 = scale2min+(pt2max-scale2min)*sqrt(ran1);
-	if ((*this)(pt2,false)/m_asmax* sqr(m_pt02/(m_pt02+pt2))>ran.Get()) 
+	if ((*this)(pt2,false)/m_asmax* sqr(m_pt02/(m_pt02+pt2))>ran->Get()) 
 	  runit = false;
       }
       else {
 	pt2 = -m_pt02+mini*pow(maxi/mini,ran1);
-	if ((*this)(pt2,false)/m_asmax * pt2/(m_pt02+pt2) > ran.Get()) 
+	if ((*this)(pt2,false)/m_asmax * pt2/(m_pt02+pt2) > ran->Get()) 
 	  runit = false;
       }
       break;
@@ -112,19 +112,19 @@ SelectPT(const double & scale2max,const double & scale2min) {
     case asform::constant: 
     default:
       pt2 = -m_pt02+mini*pow(maxi/mini,ran1);
-      if ((*this)(pt2)/m_asmax>ran.Get()) runit = false;
+      if ((*this)(pt2)/m_asmax>ran->Get()) runit = false;
       break;
     }
   }
   return m_lastpt2 = pt2;
 }
 
-const double Strong_Coupling::n(const double Q) const {
+double Strong_Coupling::n(const double Q) const {
   double crit= m_gamma/((1.+Q/m_Lambda)*log(m_m2/m_Lambda2)-m_gamma);
   return M_PI*(1.+1./(crit+pow(m_b*Q,m_c)));
 }
 
-const double Strong_Coupling::mg2(const double Q) const {
+double Strong_Coupling::mg2(const double Q) const {
   return m_m2/sqr(1.+pow(m_a*Q,m_d));
 }
 

@@ -57,7 +57,7 @@ Relativistic_Breit_Wigner::Relativistic_Breit_Wigner(double peak,double width)
 double Relativistic_Breit_Wigner::GetMass(double min, double max)
 {
   if( m_peak<1.e-6 || m_width/m_peak < 1.e-8) return m_peak;
-  double random = ran.Get();
+  double random = ran->Get();
   double peak2 = m_peak*m_peak;
   double mw    = m_peak*m_width;
   double s;

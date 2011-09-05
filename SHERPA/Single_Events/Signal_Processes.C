@@ -33,7 +33,7 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
   if (blob && blob->Has(blob_status::needs_signal))
     while (true) {
       if (m_overweight>0.0) {
-	if (m_overweight<ran.Get()) {
+	if (m_overweight<ran->Get()) {
 	  m_overweight=0.0;
 	  CleanUp();
 	  continue;
@@ -116,7 +116,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   NLO_subevtlist* nlos=proc->GetSubevtList();
   if (nlos) blob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(nlos));
   
-  if (rpa.gen.SpinCorrelation()) {
+  if (rpa->gen.SpinCorrelation()) {
     Particle_Vector inparticles = blob->GetInParticles();
     Particle_Vector outparticles = blob->GetOutParticles();
     Particle_Vector particles(inparticles.begin(),inparticles.end());

@@ -54,9 +54,9 @@ Generate_One_Photon::~Generate_One_Photon() {
 // private members
 void Generate_One_Photon::GeneratePhotonAngleMassless() {
 // Generation of theta for two massless particles
-  double num = ran.Get();
+  double num = ran->Get();
   m_theta = acos(sqrt(1.-(sqr(sin(m_delta))/((1.-num)*sqr(sin(m_delta))+num))));
-  if (ran.Get()>=0.5) m_theta = M_PI - m_theta;
+  if (ran->Get()>=0.5) m_theta = M_PI - m_theta;
 }
 
 void Generate_One_Photon::GeneratePhoton() {

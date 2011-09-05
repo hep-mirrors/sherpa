@@ -229,7 +229,7 @@ XS_q1q2_sQ1sQ2::XS_q1q2_sQ1sQ2(const Process_Info &pi,const Flavour_Vector &fl):
   m_a=fl[0].IsAnti();
   m_p=fl[1].IsAnti();
   m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_r = !SuperPartner(fl[2],fl[0]);
 }
@@ -301,7 +301,7 @@ XS_q1q2_sQ1LsQ2R::XS_q1q2_sQ1LsQ2R(const PHASIC::Process_Info &pi,const ATOOLS::
   m_a=fl[0].IsAnti();
   m_p=fl[1].IsAnti();
   m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_msq32=sqr(fl[2].Mass());
   m_msq42=sqr(fl[3].Mass());
@@ -381,7 +381,7 @@ XS_q1qbar2_sQ1sQbar2::XS_q1qbar2_sQ1sQbar2(const Process_Info &pi,const Flavour_
   m_a=fl[0].IsAnti();
   m_p=fl[1].IsAnti();
   m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_msq32=sqr(fl[2].Mass());
   m_msq42=sqr(fl[3].Mass());
@@ -437,7 +437,7 @@ XS_q1qbar1_sQ2sQbar2::XS_q1qbar1_sQ2sQbar2(const PHASIC::Process_Info &pi,const 
   m_a=fl[0].IsAnti();
   m_p=1-m_a;
   m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_msquark2=sqr(fl[2].Mass());
   m_r = !(fl[0].IsAnti() == fl[2].IsAnti());
 }
@@ -488,7 +488,7 @@ XS_q1q1_sQ1sQ1::XS_q1q1_sQ1sQ1(const Process_Info &pi,const Flavour_Vector &fl):
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_msquark2=sqr(fl[2].Mass());
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
 }
@@ -506,7 +506,7 @@ bool XS_q1q1_sQ1sQ1::SetColours(const ATOOLS::Vec4D_Vector &p)
   double fac(m_mgluino2*s);
   double Mt(fac/sqr(t-m_mgluino2)); 
   double Mu(fac/sqr(u-m_mgluino2)); 
-  if (Mt > (Mt+Mu) * ran.Get()) {
+  if (Mt > (Mt+Mu) * ran->Get()) {
     msg_Debugging()<<"xs: qq->sqsq, set scale u "<<u<<"\n";
     /*
       0----\   /----2
@@ -562,7 +562,7 @@ XS_q1q1_sQ1LsQ1R::XS_q1q1_sQ1LsQ1R(const Process_Info &pi,const Flavour_Vector &
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_msq32=sqr(fl[2].Mass());
   m_msq42=sqr(fl[3].Mass());
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
@@ -583,7 +583,7 @@ bool XS_q1q1_sQ1LsQ1R::SetColours(const ATOOLS::Vec4D_Vector &p)
   double fac(m_mgluino2*pT2);
   double Mt(fac/sqr(t-m_mgluino2)); 
   double Mu(fac/sqr(u-m_mgluino2)); 
-  if (Mt > (Mt+Mu) * ran.Get()) {
+  if (Mt > (Mt+Mu) * ran->Get()) {
     msg_Debugging()<<"xs: qq->sqsq, set scale u "<<u<<"\n";
     /*
       0----\   /----2
@@ -641,7 +641,7 @@ XS_q1qbar1_sQ1sQbar1::XS_q1qbar1_sQ1sQbar1(const Process_Info &pi,const Flavour_
   m_p=1-m_a;
   m_r=!SuperPartner(fl[2],fl[0]);
   m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_msquark2=sqr(fl[2].Mass());
 }
@@ -660,7 +660,7 @@ bool XS_q1qbar1_sQ1sQbar1::SetColours(const ATOOLS::Vec4D_Vector &p)
   double fac = (u*t-sqr(m_msquark2));
   double Mt(fac/sqr(t-m_mgluino2)); 
   double Ms(fac*2./sqr(s)); 
-  if (Ms >  (Mt+Ms) * ran.Get()) {
+  if (Ms >  (Mt+Ms) * ran->Get()) {
     msg_Debugging()<<"xs: qqb->sqsqb, set scale t "<<t<<"\n";
     /*
       0\         /2, if fl[0]==fl[2]
@@ -716,7 +716,7 @@ XS_q1qbar1_GluinoGluino::XS_q1qbar1_GluinoGluino(const Process_Info &pi,const Fl
   m_msqL2=sqr(Flavour((kf_code)(1000000+flav)).Mass());
   m_msqR2=sqr(Flavour((kf_code)(2000000+flav)).Mass());
   m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
 }
 
 double XS_q1qbar1_GluinoGluino::operator()(const ATOOLS::Vec4D_Vector &p)
@@ -749,7 +749,7 @@ bool XS_q1qbar1_GluinoGluino::SetColours(const ATOOLS::Vec4D_Vector &p)
     + sqr(deltaL)/sqr(u4-deltaL) + sqr(deltaR)/sqr(u4-deltaR);
   p_colours[0][m_a] = Flow::Counter();
   p_colours[1][m_p] = Flow::Counter();
-  if (Mt > (Mt+Mu) * ran.Get()) {
+  if (Mt > (Mt+Mu) * ran->Get()) {
     msg_Debugging()<<"xs: qqb->GluinoGluino, set scale s/t "<<s<<"/"<<t<<"\n";
     /*
       0------+====2
@@ -803,7 +803,7 @@ XS_gg_sQ1sQbar1::XS_gg_sQ1sQbar1(const Process_Info &pi,const Flavour_Vector &fl
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_r=fl[2].IsAnti();
   m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_msquark2=sqr(fl[2].Mass());
 }
 
@@ -827,7 +827,7 @@ bool XS_gg_sQ1sQbar1::SetColours(const ATOOLS::Vec4D_Vector &p)
   double Mu(fac*sqr(t3));
   p_colours[0][0] = Flow::Counter();
   p_colours[0][1] = Flow::Counter();
-  if (Mt*(1-m_r) +Mu*m_r > (Mt+Mu) * ran.Get()) {
+  if (Mt*(1-m_r) +Mu*m_r > (Mt+Mu) * ran->Get()) {
     msg_Debugging()<<"xs: gg->sqsqb, set scale t/s "<<t<<"/"<<s<<"\n";
     /*
       0====+------2
@@ -900,7 +900,7 @@ XS_q1g_sQ1Gluino::XS_q1g_sQ1Gluino(const Process_Info &pi,const Flavour_Vector &
   m_msquark2=sqr(fl[m_finq].Mass());
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
 }
 
 double XS_q1g_sQ1Gluino::operator()(const ATOOLS::Vec4D_Vector &p)
@@ -924,7 +924,7 @@ bool XS_q1g_sQ1Gluino::SetColours(const ATOOLS::Vec4D_Vector &p)
   double Mu(fac*sqr(s)/(s*t3*u4));
   p_colours[m_iniq][m_a] = Flow::Counter();
   p_colours[m_finq][m_a] = Flow::Counter();
-  if (Mu > (Ms+Mu) * ran.Get()) {
+  if (Mu > (Ms+Mu) * ran->Get()) {
     /*
       1====+----2, if fl[2].IsSquark() 
            |
@@ -975,7 +975,7 @@ XS_gg_GluinoGluino::XS_gg_GluinoGluino(const Process_Info &pi,const Flavour_Vect
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
 }
 
@@ -1004,7 +1004,7 @@ bool XS_gg_GluinoGluino::SetColours(const ATOOLS::Vec4D_Vector &p)
   double Mst(fac/(sqr(s)*sqr(t3)));
   double Msu(fac/(sqr(s)*sqr(u4)));
   double Mut(fac/(sqr(u4)*sqr(t3)));
-  double rr = ran.Get() * (Mst+Msu+Mut);
+  double rr = ran->Get() * (Mst+Msu+Mut);
   if (rr-Mst < 0.) {
     /*
       0====++====2

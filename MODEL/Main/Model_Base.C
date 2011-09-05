@@ -56,7 +56,7 @@ void Model_Base::GetCouplings(Coupling_Map &cpls) const
 	 cit(p_functions->begin());cit!=p_functions->end();++cit) {
     std::string tag(cit->second->Name());
     cpls[tag] = new Coupling_Data
-      (cit->second,tag,p_model->ScalarFunction(cit->first,rpa.gen.CplScale()));
+      (cit->second,tag,p_model->ScalarFunction(cit->first,rpa->gen.CplScale()));
     msg_Debugging()<<"  '"<<tag<<"' -> ("<<cpls[tag]<<")"<<*cpls[tag]<<"\n";
   }
 }
@@ -216,7 +216,7 @@ void Model_Base::InitializeInteractionModel()
   read.AddComment("#");
   read.AddWordSeparator("\t");
   read.SetInputPath(m_dir);
-  read.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
+  read.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
   std::string modeltype   = read.GetValue<std::string>("SIGNAL_MODEL",m_name);
   std::string cplscheme   = read.GetValue<std::string>("COUPLING_SCHEME","Running_alpha_S");
   std::string massscheme  = read.GetValue<std::string>("YUKAWA_MASSES","Running");

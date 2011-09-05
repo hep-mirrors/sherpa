@@ -97,7 +97,7 @@ Color_Dipole *QCD_Remnant_Base::FindRandom(const Color_Dipole *dipole,
 	!(*dit)->Connected(dipole,ANTI(type))) cand.push_back(*dit);
   }
   if (cand.empty()) return p_start;
-  double ran=ATOOLS::ran.Get()*cand.size();
+  double ran=ATOOLS::ran->Get()*cand.size();
   return cand[ATOOLS::Max((size_t)ran,cand.size()-1)];
 }
 
@@ -222,7 +222,7 @@ bool QCD_Remnant_Base::AdjustColors()
   }
   msg_Tracking()<<"QCD_Remnant_Base::AdjustColors(): "
 		<<"No solution in event ["
-		<<ATOOLS::rpa.gen.NumberOfGeneratedEvents()<<"]."
+		<<ATOOLS::rpa->gen.NumberOfGeneratedEvents()<<"]."
 		<<std::endl;
   return false;
 }

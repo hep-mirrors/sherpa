@@ -90,7 +90,7 @@ void QQ_QQQQ_Spectator::operator()(
 bool QQ_QQQQ_Spectator::SetColorFlow(std::vector<ATOOLS::Particle*> outparts,int n_q, int n_g)
 {
   int pos = m_anti ? 2 : 1;
-  if(ran.Get()<m_colourflip_ratio) { // colourflip
+  if(ran->Get()<m_colourflip_ratio) { // colourflip
     outparts[p_i[4]-1]->SetFlow(pos,-1);
     outparts[p_i[2]-1]->SetFlow(3-pos,outparts[p_i[4]-1]->GetFlow(pos));
     

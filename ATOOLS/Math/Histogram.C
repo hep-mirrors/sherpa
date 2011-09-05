@@ -3,7 +3,12 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include <stdio.h>
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 using namespace ATOOLS;
 
@@ -18,6 +23,18 @@ Type Get(const std::string & in)
     return value;
   }
   return (Type)0;
+}
+
+void Histogram::MPIInit()
+{
+#ifdef USING__MPI
+  m_mfills=m_mpsfills=0.0;
+  m_mvalues = new double*[m_depth];
+  for (int j(0);j<m_depth;++j) {
+    m_mvalues[j] = new double[m_nbin];
+    for (int i(0);i<m_nbin;++i) m_mvalues[j][i]=0.0;
+  }
+#endif
 }
 
 Histogram::Histogram(int _type,double _lower,double _upper,int _nbin,
@@ -92,6 +109,7 @@ Histogram::Histogram(int _type,double _lower,double _upper,int _nbin,
   for (int i=0;i<m_nbin;i++) {
     m_yvalues[i]=0.;
   }
+  MPIInit();
 }
 
 Histogram::Histogram(const Histogram * histo)
@@ -134,6 +152,7 @@ Histogram::Histogram(const Histogram * histo)
       m_tmp[i]=0.;
     }
   }
+  MPIInit();
 }
 
 
@@ -241,6 +260,7 @@ Histogram::Histogram(const std::string & pID)
     }    
   }
   ifile.close();
+  MPIInit();
 }
 
 
@@ -258,6 +278,10 @@ Histogram::~Histogram() {
   if (m_tmp!=0) { 
     delete [] m_tmp; m_tmp = 0; 
   }
+#ifdef USING__MPI
+  for (int j(0);j<m_depth;++j) delete [] m_mvalues[j];
+  delete [] m_mvalues;
+#endif
 }
 
 
@@ -378,6 +402,67 @@ void Histogram::Output(const std::string name)
   ofile.close();
 }
 
+void Histogram::MPISync()
+{
+#ifdef USING__MPI
+  int size=MPI::COMM_WORLD.Get_size();
+  if (size>1) {
+    int rank=MPI::COMM_WORLD.Get_rank();
+    int cn=m_depth*m_nbin+2;
+    double *values = new double[cn];
+    if (rank==0) {
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+	for (int j(0);j<m_depth;++j)
+	  for (int i(0);i<m_nbin;++i) m_mvalues[j][i]+=values[j*m_nbin+i];
+	m_mfills+=values[cn-2];
+	m_mpsfills+=values[cn-1];
+      }
+      for (int j(0);j<m_depth;++j)
+	for (int i(0);i<m_nbin;++i) values[j*m_nbin+i]=m_mvalues[j][i];
+      values[cn-2]=m_mfills;
+      values[cn-1]=m_mpsfills;
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,tag,size+tag);
+      }
+    }
+    else {
+      for (int j(0);j<m_depth;++j)
+	for (int i(0);i<m_nbin;++i) values[j*m_nbin+i]=m_mvalues[j][i];
+      values[cn-2]=m_mfills;
+      values[cn-1]=m_mpsfills;
+      MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,0,rank);
+      MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,0,size+rank);
+      for (int j(0);j<m_depth;++j)
+	for (int i(0);i<m_nbin;++i) m_mvalues[j][i]=values[j*m_nbin+i];
+      m_mfills=values[cn-2];
+      m_mpsfills=values[cn-1];
+    }
+    delete [] values;
+  }
+  for (int i(0);i<m_nbin;++i) {
+    m_yvalues[i]+=m_mvalues[0][i];
+    m_mvalues[0][i]=0.0;
+    if (m_depth>1) {
+      m_y2values[i]+=m_mvalues[1][i];
+      m_mvalues[1][i]=0.0;
+    }
+    if (m_depth>2) {
+      m_psvalues[i]+=m_mvalues[2][i];
+      m_mvalues[2][i]=0.0;
+    }
+    if (m_depth>3) {
+      m_ps2values[i]+=m_mvalues[3][i];
+      m_mvalues[3][i]=0.0;
+    }
+  }
+  m_fills+=m_mfills;
+  m_psfills+=m_mpsfills;
+  m_mfills=m_mpsfills=0.0;
+#endif
+}
 
 
 
@@ -385,6 +470,9 @@ void Histogram::Output(const std::string name)
 
 
 void Histogram::Insert(double coordinate) {
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()) THROW(not_implemented,"Not MPI ready");
+#endif
   if (!m_active) {
     msg_Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
@@ -406,6 +494,9 @@ void Histogram::Insert(double coordinate) {
 }
 
 void Histogram::Insert(int i,double value,double ncount) {
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()) THROW(not_implemented,"Not MPI ready");
+#endif
   if (!m_active) {
     msg_Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
@@ -441,6 +532,9 @@ void Histogram::Insert(int i,double value,double ncount) {
 }
 
 void Histogram::InsertMCB(double coordinate,double value,double ncount) {
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()) THROW(not_implemented,"Not MPI ready");
+#endif
   if (!m_tmp) {
     m_tmp   = new double[m_nbin];
     for (int i=0;i<m_nbin;i++) {
@@ -475,6 +569,9 @@ void Histogram::InsertMCB(double coordinate,double value,double ncount) {
 }
 
 void Histogram::InsertMCBIM(double coordinate,double value) {
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()) THROW(not_implemented,"Not MPI ready");
+#endif
   if (!m_tmp) {
     m_tmp   = new double[m_nbin];
     for (int i=0;i<m_nbin;i++) {
@@ -492,6 +589,9 @@ void Histogram::InsertMCBIM(double coordinate,double value) {
 
 void Histogram::FinishMCB()
 {
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()) THROW(not_implemented,"Not MPI ready");
+#endif
   m_fills+=m_mcb;
   m_psfills++;
 
@@ -515,6 +615,62 @@ void Histogram::Insert(double coordinate,double value,double ncount) {
 			  <<"histogram with binsize <= 0 !"<<std::endl;
     return;
   }
+#ifdef USING__MPI
+  m_mfills+=ncount;
+  if (value==0.) return;
+  m_mpsfills++;
+
+  if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
+
+  int bin = int((coordinate-m_lower)/m_binsize+1.);
+  if (bin<0) bin=0;
+  if (bin>=m_nbin) bin=m_nbin-1;
+  if (bin==0||bin==m_nbin-1) {
+    m_mvalues[0][bin] += value;
+    if (m_depth>1) {
+      if (value>m_mvalues[1][bin]) m_mvalues[1][bin] = value;
+      if (m_depth>2) m_mvalues[2][bin] += 1.;
+    }
+    return;
+  }
+
+  m_mvalues[0][bin] += value; 
+  if (m_depth>1) {
+    m_mvalues[1][bin] += sqr(value);
+    if (m_depth>2) m_mvalues[2][bin] += 1.;
+  }
+ 
+  if (m_fuzzyexp<0) return;
+
+  double x = (coordinate-m_lower)/m_binsize-double(bin)+0.5;
+  if (bin==1&&x<0.) return;
+  if (bin==m_nbin-2&&x>0.) return;
+  double ff=1.;
+  if (m_fuzzyexp==0) ff=0.5;
+  if (m_fuzzyexp>0) ff=0.5*pow(2.*dabs(x),m_fuzzyexp);
+  if (m_fuzzyexp==9) ff=0.5*sqrt(2.*dabs(x));
+
+  m_mvalues[0][bin] -= ff*value; 
+  if (m_depth>1) {
+    m_mvalues[1][bin] += sqr(ff*(value))-sqr(value);
+    if (m_depth>2) m_mvalues[2][bin] -= ff;
+  }
+
+  if (x>0.) {
+    m_mvalues[0][bin+1] += ff*value;
+    if (m_depth>1) {
+      m_mvalues[1][bin+1] += sqr(ff*value);
+      if (m_depth>2) m_mvalues[2][bin+1] += ff;
+    }
+  }
+  if (x<0.) {
+    m_mvalues[0][bin-1] += ff*value;
+    if (m_depth>1) {
+      m_mvalues[1][bin-1] += sqr(ff*value);
+      if (m_depth>2) m_mvalues[2][bin-1] += ff;
+    }
+  }
+#else
   m_fills+=ncount;
   if (value==0.) return;
   m_psfills++;
@@ -569,6 +725,7 @@ void Histogram::Insert(double coordinate,double value,double ncount) {
       if (m_depth>2) m_psvalues[bin-1] += ff;
     }
   }
+#endif
 }
 
 void Histogram::InsertRange(double start, double end, double value) {
@@ -587,6 +744,57 @@ void Histogram::InsertRange(double start, double end, double value) {
     else 
       end = -30;
   }
+#ifdef USING__MPI
+  m_mfills++;
+
+  // underrun
+  if (start<m_lower) { 
+    m_mvalues[0][0] += value;
+    if (m_depth>1) {
+      if (value>m_mvalues[1][0]) m_mvalues[1][0] = value;
+    }
+  }
+
+  // overflow
+  if (start>m_upper) { 
+    m_mvalues[0][m_nbin-1] += value; 
+    if (m_depth>1) {
+      if (value>m_mvalues[1][m_nbin-1]) m_mvalues[1][m_nbin-1] = value;
+    }
+  }
+
+  double low,up;
+  int hit=0;
+  low = m_lower; up = m_lower+m_binsize;
+  for (int i=1;i<m_nbin-1;i++) {
+    if ((start < up) && (end >= low) ) {
+      double fac=1;
+      if ((start<=low)&&(up<=end )) {
+	m_mvalues[0][i] += value;
+      } 
+      else if ((low<start)&&(up<=end)) {
+	fac = (start-low)/m_binsize;
+	m_mvalues[0][i] += value *fac;
+      }
+      else if ((start<=low)&&(end < up)) {
+	fac = (up-end)/m_binsize;
+	m_mvalues[0][i] += value *fac;
+      }
+      else if ((low<start)&&(end <up)) {
+	fac = (end-start)/m_binsize;
+	m_mvalues[0][i] += value *fac;
+      }
+    
+
+      hit=1;
+      if (m_depth>1) {
+	if (value>m_mvalues[1][i]) m_mvalues[1][i] = value;
+      }
+    }
+    low = up;
+    up += m_binsize;
+  }
+#else
   m_fills++;
 
   // underrun
@@ -636,6 +844,7 @@ void Histogram::InsertRange(double start, double end, double value) {
     low = up;
     up += m_binsize;
   }
+#endif
 }
 
 

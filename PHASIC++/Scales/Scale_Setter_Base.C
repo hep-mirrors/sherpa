@@ -65,10 +65,10 @@ void Scale_Setter_Base::SetCouplings()
     }
   }
   m_fac.resize(2,1.0);
-  if(rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR")!="")
-    m_fac[stp::ren]=ToType<double>(rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
-  if(rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR")!="")
-    m_fac[stp::fac]=ToType<double>(rpa.gen.Variable("FACTORIZATION_SCALE_FACTOR"));
+  if(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")!="")
+    m_fac[stp::ren]=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
+  if(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR")!="")
+    m_fac[stp::fac]=ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
 }
 
 Scale_Setter_Base::~Scale_Setter_Base()

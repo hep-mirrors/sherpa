@@ -33,8 +33,8 @@ VHAAG_res::VHAAG_res(int _nin,int _nout,int pn,VHAAG_res* ovl)
   if (!ovl) {
     Data_Reader dr(" ",";","!","=");
     dr.AddWordSeparator("\t");
-    dr.SetInputPath(rpa.GetPath());
-    dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+    dr.SetInputPath(rpa->GetPath());
+    dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
     m_rkf = dr.GetValue<int>("VHAAG_RES_KF",24);
     n_d1  = dr.GetValue<int>("VHAAG_RES_D1",2);
     n_d2  = dr.GetValue<int>("VHAAG_RES_D2",3);
@@ -308,7 +308,7 @@ void VHAAG_res::ConstructMomenta(double a1,double a2,
   double a  = (v1+v2*v)/(1-v*v);
   double b  = -(v2+v1*v)/(1-v*v);
   double eps= sqrt(ps-a*a-b*b-2.*a*b*v);
-  if (ran.Get()<0.5) eps=-eps;
+  if (ran->Get()<0.5) eps=-eps;
   Vec3D pv = a*e1+b*e2+eps*ee;
 
   p1 = Vec4D(sqrt(ps+s1),pv);

@@ -141,7 +141,7 @@ bool Hadron_Remnant::GenerateKinematics()
     for (std::map<Particle*,double>::iterator it=xmap.begin();
 	 it!=xmap.end(); ++it) {
       double x=1.1*it->first->Flav().Mass()/m_pbeam[0];
-      if (x==0.0) x=10.*rpa.gen.Accu();
+      if (x==0.0) x=10.*rpa->gen.Accu();
       xtot+=it->second=x;
     }
     for (std::map<Particle*,double>::iterator it=xmap.begin();
@@ -188,7 +188,7 @@ bool Hadron_Remnant::ValenceQuark(Particle *const quark)
   if (m_scale<p_pdfbase->Q2Min()) m_scale=1.001*p_pdfbase->Q2Min();
   p_pdfbase->Calculate(x,m_scale);
   double val=p_pdfbase->GetXPDF(quark->Flav());
-  return val>(p_pdfbase->GetXPDF(quark->Flav().Bar())+val)*ran.Get();
+  return val>(p_pdfbase->GetXPDF(quark->Flav().Bar())+val)*ran->Get();
 }
 
 ATOOLS::Flavour Hadron_Remnant::Opposite(ATOOLS::Flavour flav) const
@@ -201,7 +201,7 @@ ATOOLS::Flavour Hadron_Remnant::Opposite(ATOOLS::Flavour flav) const
   }
   Flavour anti=Flavour((kf_code)(abs(rem[0])*1000+abs(rem[1])*100+3));
   if (rem[0]!=rem[1]) {
-    if (ran.Get()<0.25) 
+    if (ran->Get()<0.25) 
       anti=Flavour((kf_code)(abs(rem[0])*1000+abs(rem[1])*100+1));
   }
   else {
@@ -238,7 +238,7 @@ bool Hadron_Remnant::DecomposeHadron()
       }
     }
   }
-  Flavour    flav = m_constit[(size_t)(ran.Get()*3.)];
+  Flavour    flav = m_constit[(size_t)(ran->Get()*3.)];
   Particle * part = new Particle(-1,flav); 
   part->SetStatus(part_status::active);
   part->SetFinalMass(flav.Mass());
@@ -272,7 +272,7 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
     xtrials=0;
     do { 
       ++xtrials;
-      x=m_xrem*ran.Get();
+      x=m_xrem*ran->Get();
       if (xtrials>=m_maxtrials) {
 	x=Min(cut,0.999999*p_pdfbase->RescaleFactor());
 	break;
@@ -286,7 +286,7 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
       m_xscheme=0; return 0.01;
     }
     if (pdftrials>=m_maxtrials) { m_xscheme=0; return 0.01; }
-    if (p_pdfbase->GetXPDF(flavour)/x>ran.Get()) return x;
+    if (p_pdfbase->GetXPDF(flavour)/x>ran->Get()) return x;
   } 
   return 0.0;
 }

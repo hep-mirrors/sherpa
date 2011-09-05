@@ -59,8 +59,8 @@ bool Shower::EvolveShower(Singlet * actual,const size_t &maxem,size_t &nem)
 
 double Shower::GetXBj(Parton *const p) const
 {
-  if (p->Beam()==0) return p->Momentum().PPlus()/rpa.gen.PBeam(0).PPlus();
-  return p->Momentum().PMinus()/rpa.gen.PBeam(1).PMinus();
+  if (p->Beam()==0) return p->Momentum().PPlus()/rpa->gen.PBeam(0).PPlus();
+  return p->Momentum().PMinus()/rpa->gen.PBeam(1).PMinus();
 }
 
 int Shower::SetXBj(Parton *const p) const
@@ -74,8 +74,8 @@ int Shower::SetXBj(Parton *const p) const
 int Shower::RemnantTest(Parton *const p)
 {
   if (p->Momentum()[0]<0.0 || p->Momentum().Nan()) return -1;
-  if (p->Momentum()[0]>rpa.gen.PBeam(p->Beam())[0] &&
-      !IsEqual(p->Momentum()[0],rpa.gen.PBeam(p->Beam())[0],1.0e-6)) return -1;
+  if (p->Momentum()[0]>rpa->gen.PBeam(p->Beam())[0] &&
+      !IsEqual(p->Momentum()[0],rpa->gen.PBeam(p->Beam())[0],1.0e-6)) return -1;
   if (!m_sudakov.CheckPDF(GetXBj(p),p->GetFlavour(),p->Beam())) return -1;
   return p_isr->GetRemnant(p->Beam())->
     TestExtract(p->GetFlavour(),p->Momentum())?1:-1;
@@ -436,7 +436,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  eid=aid;
 	}
 	if (pems.empty()) THROW(fatal_error,"Internal error");
-	Parton *rp(pems[Min(pems.size()-1,size_t(ran.Get()*pems.size()))]);
+	Parton *rp(pems[Min(pems.size()-1,size_t(ran->Get()*pems.size()))]);
 	size_t sid(split->GetSpect()->Id()&~eid);
 	if (sid) {
 	  for (Singlet::const_iterator
@@ -462,7 +462,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  }
 	}
 	if (psps.empty()) THROW(fatal_error,"Internal error");
-	rp->SetSpect(psps[Min(psps.size()-1,size_t(ran.Get()*psps.size()))]);
+	rp->SetSpect(psps[Min(psps.size()-1,size_t(ran->Get()*psps.size()))]);
 	rp->SetTest(split->KtTest(),split->ZTest(),
 		    split->YTest(),split->Phi());
 	Flavour fla(m_flavA), flb(m_flavB), flc(m_flavC);

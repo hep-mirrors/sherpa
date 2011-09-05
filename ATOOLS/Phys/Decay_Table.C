@@ -99,7 +99,7 @@ Decay_Channel * Decay_Table::Select()
 {
   Decay_Channel* selected(NULL);
   if (size()==1) selected=at(0);
-  double disc = m_width*ran.Get();
+  double disc = m_width*ran->Get();
   for (size_t i=0;i<size();++i) {
     disc -= at(i)->Width();
     if (disc<0) {

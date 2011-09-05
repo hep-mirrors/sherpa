@@ -21,7 +21,7 @@ void Order_Base::ShowOrders(const int mode)
 }
 
 template <class Class>
-Order_Base *const GetOrder(const std::string &parameter)
+Order_Base *GetOrder(const std::string &parameter)
 {									
   return new Class();
 }									

@@ -39,8 +39,8 @@ DipoleSplitting_Base::DipoleSplitting_Base()
   double helpd;
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
-  reader.SetInputPath(rpa.GetPath());
-  reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
 
   if (reader.ReadFromFile(helpd,"DIPOLE_AMIN")) {
     m_amin = helpd;

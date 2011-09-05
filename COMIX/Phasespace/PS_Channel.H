@@ -183,6 +183,7 @@ namespace COMIX {
 
     void AddPoint(double value);
 
+    void MPISync();
     void Optimize();
     void EndOptimize();
 

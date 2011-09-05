@@ -27,7 +27,7 @@ Interaction_Model_QCD::Interaction_Model_QCD(MODEL::Model_Base * _model,
 					     std::string _cplscheme,std::string _yukscheme) :
   Interaction_Model_Base("pure_QCD",_model,_cplscheme,_yukscheme)
 { 
-  g3  = Kabbala(string("g_3"),sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale())));
+  g3  = Kabbala(string("g_3"),sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale())));
   PL  = Kabbala(string("P_L"),1.);
   PR  = Kabbala(string("P_R"),1.);
   M_I = Kabbala(string("i"),Complex(0.,1.)); 

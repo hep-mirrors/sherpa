@@ -11,14 +11,17 @@ namespace PHASIC {
     std::string m_name;
     int m_nd;
     unsigned long m_nevt,m_nopt,m_snevt,m_cevt;
+    unsigned long m_mnevt, m_mcevt;
     double m_alpha;
     double m_nc;
     double **p_xi;
     double *p_x,*p_xin,*p_r,*p_cx,*p_bm;
     double **p_d,**p_di,*p_dt;
+    double **p_md,**p_mdi;
     double *p_chi,*p_bestchi,**p_bestxi;
     int *p_ia,*p_opt,*p_cb;
     int **p_hit, m_sint, m_scnt;
+    int **p_mhit;
     int m_dim,m_mode,m_on,m_autooptimize,m_omode,m_cmode;
     static int s_on, s_onext;
     void Rebin(double rc, double * xi);
@@ -32,6 +35,7 @@ namespace PHASIC {
     void AddPoint(double,double *);
     void AddBinPoint(double,int *);
 
+    void MPISync();
     void Reset();
     void Optimize();
     void EndOptimize();

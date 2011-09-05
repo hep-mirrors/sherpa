@@ -33,7 +33,7 @@ namespace MODEL {
                     sqrt(1.-ScalarConstant(string("sin2_thetaW"))));
     
     // coupling constants
-    double Ecms2 = sqr(rpa.gen.Ecms());
+    double Ecms2 = sqr(rpa->gen.Ecms());
     g1  = Kabbala(string("g_1"),
                   sqrt(4.*M_PI*ScalarFunction(string("alpha_QED"),Ecms2)));
     g2  = Kabbala(string("g_1/\\cos\\theta_W"), g1.Value()/costW.Value());

@@ -45,9 +45,9 @@ namespace MODEL {
     inline Single_Vertex* operator() (int n) {return &m_v4[n];}  
     inline const Single_Vertex* operator() (int n) const {return &m_v4[n];}
 
-    inline const int MaxNumber() const {return m_nvertex;}
+    inline int MaxNumber() const {return m_nvertex;}
 
-    inline const int MaxNumber4() const {return m_n4vertex;}
+    inline int MaxNumber4() const {return m_n4vertex;}
     
     inline tscmap* GetCouplings() { return &m_cplmap; }
 

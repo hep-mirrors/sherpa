@@ -96,8 +96,8 @@ namespace AMISIC {
     bool WriteOut(const std::string &filename,const std::string &m_datatag,
 		  const std::vector<std::string> &comments);
 
-    Amisic_Histogram *const GetIntegral(const bool reverse=false) const;
-    Amisic_Histogram *const GetDerivative() const;
+    Amisic_Histogram *GetIntegral(const bool reverse=false) const;
+    Amisic_Histogram *GetDerivative() const;
 
     const Argument_Type operator()(const Argument_Type x) const;
     const Argument_Type operator[](const Argument_Type x) const;
@@ -158,8 +158,8 @@ namespace AMISIC {
     void AddBinExtra(const Argument_Type &x,const Argument_Type &extra,
 		     const size_t dim=0);
 
-    Axis_Type *const XAxis() const;
-    Axis_Type *const YAxis() const;
+    Axis_Type *XAxis() const;
+    Axis_Type *YAxis() const;
 
     Argument_Type XMin() const;
     Argument_Type XMax() const;

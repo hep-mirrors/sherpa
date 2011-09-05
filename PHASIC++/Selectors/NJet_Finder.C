@@ -69,7 +69,7 @@ NJet_Finder::NJet_Finder(int nin, int nout,ATOOLS::Flavour * fl,
   m_delta_r(dr), m_etamax(etamax), m_exp(exp)
 {
   m_fl         = fl;
-  m_ene        = rpa.gen.Ecms()/2.;
+  m_ene        = rpa->gen.Ecms()/2.;
   m_sprime     = m_s = sqr(2.*m_ene); 
   m_smin       = Max(m_pt2min,m_et2min);
   m_smax       = m_s;

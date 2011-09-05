@@ -17,6 +17,7 @@ namespace PHASIC {
     long int n_points, n_contrib;
     double   weight, result, result2;
     double   res1, res2, res3;
+    double   mres1, mres2, mres3;
     double   alpha, alpha_save;
 
     int     nin, nout;
@@ -99,6 +100,24 @@ namespace PHASIC {
     virtual bool OptimizationFinished()  { return false; }
     virtual void WriteOut(std::string);
     virtual void ReadIn(std::string);
+
+    virtual void MPISync();
+
+    void CopyMPIValues();
+
+    inline void AddMPIVars(const double &r1,
+			   const double &r2,
+			   const double &r3)
+    { mres1+=r1; mres2+=r2; mres3+=r3; }
+    inline void SetMPIVars(const double &r1,
+			   const double &r2,
+			   const double &r3)
+    { mres1=r1; mres2=r2; mres3=r3; }
+
+    inline double MRes1() { return mres1; }
+    inline double MRes2() { return mres2; }
+    inline double MRes3() { return mres3; }
+
   };// end of class Single_Channel
 
   /*! 

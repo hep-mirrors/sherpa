@@ -39,8 +39,8 @@ PDF_Base * PDF_Electron::GetCopy() { return new PDF_Electron(m_bunch,m_order,m_i
 void PDF_Electron::CalculateSpec(double x,double Q2)
 {
   if (!m_init) {
-    m_alpha  = (*aqed)(sqr(rpa.gen.Ecms()));
-    double L = log(sqr(rpa.gen.Ecms()/m_bunch.Mass(true)));
+    m_alpha  = (*aqed)(sqr(rpa->gen.Ecms()));
+    double L = log(sqr(rpa->gen.Ecms()/m_bunch.Mass(true)));
     m_exponent = m_beta = (*aqed)(sqr(m_bunch.Mass(true)))/M_PI*(L-1.);
     m_init = true;
   }
@@ -82,7 +82,7 @@ void PDF_Electron::CalculateSpec(double x,double Q2)
     double Li = 0.;
     double del= 1.;
     double del2=1.;
-    for (i=1;del2>rpa.gen.Accu();++i) {  
+    for (i=1;del2>rpa->gen.Accu();++i) {  
       del *=x;
       del2 = del/double(i*i);
       Li  += del2;

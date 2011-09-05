@@ -53,7 +53,7 @@ XS_gqllq_CSS_approx::XS_gqllq_CSS_approx
   pico.m_fi.m_nloqcdtype=nlo_type::lo;
   p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
   if (!p_bornme) THROW(fatal_error,"no born me found.");
-  m_alphasdef = (*MODEL::as)(rpa.gen.CplScale());
+  m_alphasdef = (*MODEL::as)(rpa->gen.CplScale());
   PRINT_INFO("initialised XS_gqllq_CSS_approx2");
 }
 
@@ -176,7 +176,7 @@ XS_qqllg_CSS_approx::XS_qqllg_CSS_approx
   pico.m_fi.m_ps.erase(pico.m_fi.m_ps.end()-1);
   pico.m_fi.m_nloqcdtype=nlo_type::lo;
   p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
-  m_alphasdef = (*MODEL::as)(rpa.gen.CplScale());
+  m_alphasdef = (*MODEL::as)(rpa->gen.CplScale());
   PRINT_INFO("initialised XS_qqllg_CSS_approx2");
 }
 

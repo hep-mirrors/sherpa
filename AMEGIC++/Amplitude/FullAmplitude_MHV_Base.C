@@ -34,7 +34,7 @@ FullAmplitude_MHV_Base::FullAmplitude_MHV_Base(Model_Base *model,MODEL::Coupling
   }
   m_perm= new int[np]; 
   p_calc = new MHVCalculator(n_part,m_plist);
-  m_cpl=pow(4.*M_PI*p_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()),(double)np-2.);
+  m_cpl=pow(4.*M_PI*p_model->ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()),(double)np-2.);
   m_oqcd = (double)n_part-2;
   m_oqed = (double)0;
 } 
@@ -1181,8 +1181,8 @@ double FullAmplitude_MHV_Q4::ResultDPT()
 FullAmplitude_MHV_Q2L2::FullAmplitude_MHV_Q2L2(Model_Base *model,MODEL::Coupling_Map *const cpls,int np,int *pl): 
   FullAmplitude_MHV_Base(model,cpls,np,pl), m_qlist(0), m_llist(0)
 { 
-  m_cpl=pow(4.*M_PI*p_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()),(double)n_part-4.);
-  m_cpl*=4*pow(4.*M_PI*p_model->ScalarFunction(std::string("alpha_QED"),rpa.gen.CplScale()),(double)2.);
+  m_cpl=pow(4.*M_PI*p_model->ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()),(double)n_part-4.);
+  m_cpl*=4*pow(4.*M_PI*p_model->ScalarFunction(std::string("alpha_QED"),rpa->gen.CplScale()),(double)2.);
   p_norm=pow((double)2.,(int)n_part-4);
   p_permutation = new Permutation(n_part-4);
   maxn= p_permutation->MaxNumber();

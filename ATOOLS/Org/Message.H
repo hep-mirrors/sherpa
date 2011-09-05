@@ -124,7 +124,7 @@ namespace ATOOLS {
     std::set<std::string,String_Sort> m_contextdebugging;
     std::set<std::string,String_Sort> m_contextiodebugging;
 
-    int m_modifiable;
+    int m_modifiable, m_mpimode;
 
   public:
 
@@ -153,6 +153,7 @@ namespace ATOOLS {
     // inline functions
     inline void SetLevel(const int level)     { m_level = level;    }
     inline void SetModifiable(const bool mod) { m_modifiable = mod; }
+    inline void SetMPIMode(const int mode)    { m_mpimode = mode;   }
 
     inline int  Level() const      { return m_level;      }
     inline bool Modifiable() const { return m_modifiable; }

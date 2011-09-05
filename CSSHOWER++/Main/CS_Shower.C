@@ -19,7 +19,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
   Shower_Base("CSS"), p_isr(_isr), 
   p_shower(NULL), p_cluster(NULL), p_ampl(NULL)
 {
-  rpa.gen.AddCitation
+  rpa->gen.AddCitation
     (1,"The Catani-Seymour subtraction based shower is published under \\cite{Schumann:2007mg}.");
   int maxem=_dataread->GetValue<int>("CSS_MAXEM",-1);
   if (maxem<0) m_maxem=std::numeric_limits<size_t>::max();
@@ -31,7 +31,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
   if (m_kmode!=1) msg_Info()<<METHOD<<"(): Set kernel mode "<<m_kmode<<"\n";
   m_recocheck=_dataread->GetValue<int>("CSS_RECO_CHECK",0);
   if (m_recocheck!=0) msg_Info()<<METHOD<<"(): Set reco check mode "<<m_recocheck<<"\n";
-  m_cmode=ToType<int>(rpa.gen.Variable("METS_CLUSTER_MODE"));
+  m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
   int amode(_dataread->GetValue<int>("EXCLUSIVE_CLUSTER_MODE",0));
   if (amode!=0) msg_Info()<<METHOD<<"(): Set exclusive cluster mode "<<amode<<".\n";
   
@@ -465,7 +465,7 @@ Singlet *CS_Shower::TranslateAmplitude
  const KT2X_Map &kt2xmap)
 {
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
-  double ktveto2(jf?jf->Ycut()*sqr(rpa.gen.Ecms()):4.0*ampl->MuR2());
+  double ktveto2(jf?jf->Ycut()*sqr(rpa->gen.Ecms()):4.0*ampl->MuR2());
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
   singlet->SetNLO(ampl->NLO());
@@ -565,7 +565,7 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl)
   DEBUG_FUNC("");
   msg_Debugging()<<*ampl<<"\n";
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
-  double q2cut(jf->Ycut()*sqr(rpa.gen.Ecms()));
+  double q2cut(jf->Ycut()*sqr(rpa->gen.Ecms()));
   bool his(false);
   size_t noem(0), nospec(0);
   for (size_t i(0);i<ampl->Decays().size();++i) {

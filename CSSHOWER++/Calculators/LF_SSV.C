@@ -264,7 +264,7 @@ double LF_SSV_FF::OverEstimated(const double z,const double y)
 
 double LF_SSV_FF::Z()
 {
-  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran.Get());
+  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran->Get());
 }
 
 double LF_SSV_FI::operator()
@@ -309,7 +309,7 @@ double LF_SSV_FI::OverEstimated(const double z,const double y)
 
 double LF_SSV_FI::Z()
 {
-  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran.Get());
+  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran->Get());
 }
 
 double LF_SSV_IF::operator()
@@ -336,7 +336,7 @@ double LF_SSV_IF::OverEstimated(const double z,const double y)
 
 double LF_SSV_IF::Z()
 {
-  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran.Get());
+  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran->Get());
 }
 
 double LF_SSV_II::operator()
@@ -363,7 +363,7 @@ double LF_SSV_II::OverEstimated(const double z,const double y)
 
 double LF_SSV_II::Z()
 {
-  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran.Get());
+  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran->Get());
 }
 
 double LF_SVS_FF::operator()
@@ -413,7 +413,7 @@ double LF_SVS_FF::OverEstimated(const double z,const double y)
 
 double LF_SVS_FF::Z()
 {
-  return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran.Get());
+  return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran->Get());
 }
 
 double LF_SVS_FI::operator() (const double z,const double y,
@@ -455,7 +455,7 @@ double LF_SVS_FI::OverEstimated(const double z,const double y)
 
 double LF_SVS_FI::Z()
 {
-  return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran.Get());
+  return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran->Get());
 }
 
 double LF_SVS_IF::operator()
@@ -502,7 +502,7 @@ double LF_SVS_IF::OverEstimated(const double z,const double y)
 
 double LF_SVS_IF::Z()
 {
-  return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran.Get());
+  return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran->Get());
 }
 
 double LF_SVS_II::operator()
@@ -532,7 +532,7 @@ double LF_SVS_II::OverEstimated(const double z,const double y)
 
 double LF_SVS_II::Z()
 {
-  return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran.Get());
+  return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran->Get());
 }
 
 double LF_VSS_FF::operator()
@@ -579,7 +579,7 @@ double LF_VSS_FF::OverEstimated(const double z,const double y)
 }
 
 double LF_VSS_FF::Z() {
-  return m_zmin + (m_zmax-m_zmin)*ATOOLS::ran.Get();
+  return m_zmin + (m_zmax-m_zmin)*ATOOLS::ran->Get();
 }
 
 double LF_VSS_FI::operator()
@@ -625,7 +625,7 @@ double LF_VSS_FI::OverEstimated(const double z,const double y)
 
 double LF_VSS_FI::Z()
 {
-  return m_zmin + (m_zmax-m_zmin)*ATOOLS::ran.Get();
+  return m_zmin + (m_zmax-m_zmin)*ATOOLS::ran->Get();
 }
 
 double LF_VSS_IF::operator() 
@@ -655,7 +655,7 @@ double LF_VSS_IF::OverEstimated(const double z,const double y)
 
 double LF_VSS_IF::Z()
 {
-  return m_zmin + (m_zmax-m_zmin)*ATOOLS::ran.Get();
+  return m_zmin + (m_zmax-m_zmin)*ATOOLS::ran->Get();
 }
 
 double LF_VSS_II::operator()
@@ -685,7 +685,7 @@ double LF_VSS_II::OverEstimated(const double z,const double y)
 
 double LF_VSS_II::Z()
 {
-  return m_zmin + (m_zmax-m_zmin)*ATOOLS::ran.Get();
+  return m_zmin + (m_zmax-m_zmin)*ATOOLS::ran->Get();
 }
 
 DECLARE_GETTER(LF_SSV_Getter,"SSV",SF_Lorentz,SF_Key);

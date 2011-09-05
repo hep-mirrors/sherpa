@@ -17,7 +17,7 @@ Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) :
   p_rms(NULL)
 {
   m_ewmode=qed;
-  //int hadron = rpa.gen.Beam1().Strong()==1?0:1;
+  //int hadron = rpa->gen.Beam1().Strong()==1?0:1;
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
 
 }
@@ -323,7 +323,7 @@ bool Sudakov::Generate(Parton * split)
       break; 
     } 
   }
-  m_phi = 2.0*M_PI*ran.Get();
+  m_phi = 2.0*M_PI*ran->Get();
   return success;
 }
 
@@ -446,7 +446,7 @@ double Sudakov::OverIntegrated(const double zmin,const double zmax,
 void Sudakov::ProduceT()
 {
   double ne=2.*M_PI/m_lastint;
-  m_kperp2 *= exp(log(ran.Get())*Max(ne,1.0e-3));
+  m_kperp2 *= exp(log(ran->Get())*Max(ne,1.0e-3));
 }
 
 bool Sudakov::Veto(double Q2,double x) {
@@ -456,7 +456,7 @@ bool Sudakov::Veto(double Q2,double x) {
 
 bool Sudakov::Splitting(double Q2,double x) {
   double wt(RejectionWeight(m_z,m_y,x,m_kperp2,Q2));
-  if (ran.Get()>wt) {
+  if (ran->Get()>wt) {
     return false;  
   }
   else {

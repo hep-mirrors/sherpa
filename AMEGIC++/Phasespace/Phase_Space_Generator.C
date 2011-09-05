@@ -42,14 +42,14 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
     abort();
   }
 
-  string lmapname = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID+string("/fsrchannels");
-  string mapname  = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/fsrchannels.map");
+  string lmapname = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID+string("/fsrchannels");
+  string mapname  = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/fsrchannels.map");
 
   Data_Reader dr(" ",";","!","=");
   dr.AddComment("#");
   dr.AddWordSeparator("\t");
-  dr.SetInputPath(rpa.GetPath());
-  dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+  dr.SetInputPath(rpa->GetPath());
+  dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   int inttype  = dr.GetValue<int>("INTEGRATOR",6);
   if (nin==1&&nout==2) return 0;
   if (inttype<4 && !(inttype>1 && nout==2)) return 0;
@@ -60,7 +60,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 
   if (IsFile(lmapname)) return 1-GetLibList(liblist);
 
-  ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+path);
+  ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+path);
   int newchannels = 0;
   //int extrachannel = 0;
   ofstream lmf;
@@ -133,7 +133,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 	    do {
 	      if (nin==2) sprintf(procname,"C%i_%i",nout,cnt);
 	      else sprintf(procname,"CD%i_%i",nout,cnt);
-	      string help = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string(procname);
+	      string help = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string(procname);
 	      hit = IsFile(help);
 	      if (hit) cnt++;
 	    } while (hit);
@@ -145,7 +145,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 		fsrpath = fsrpath0 + string(hlp);
 		fsrp = path+string("/")+fsrpath;
 	      }
-	      ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+fsrp);
+	      ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+fsrp);
 	      String_Library slib(1);
 	      slib.InitMakefile(fsrp);
 	    }
@@ -154,7 +154,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 	    //cg->SetName(string(procname));
 	    rannumber    = cg->MakeChannel(k,cnt,fsrp,pID);
 	    if (rannumber>0) {
-	      string makefilename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string("/Makefile.am");
+	      string makefilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string("/Makefile.am");
 	      AddToMakefileAM(makefilename,fsrp,procname);
 	      cnt++;
 	      newchannels = 1;
@@ -195,7 +195,7 @@ void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,st
     file<<"lib_LTLIBRARIES = libProc_"<<subdirname<<".la"<<endl;
     file<<"libProc_"<<subdirname<<"_la_SOURCES = "<<'\\'<<endl;
     file<<"\t"<<fileID<<".C"<<endl;
-    file<<"CURRENT_SHERPASYS = "<<ATOOLS::rpa.gen.Variable("SHERPA_INC_PATH")<<endl;
+    file<<"CURRENT_SHERPASYS = "<<ATOOLS::rpa->gen.Variable("SHERPA_INC_PATH")<<endl;
     file<<"INCLUDES = -I$(CURRENT_SHERPASYS)"<<endl;
     file<<"DEFS     = "<<endl;
   }
@@ -290,8 +290,8 @@ void  Phase_Space_Generator::AddToMakefile(string makefilename,string pathID,str
 
 bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
 {
-  string chlname   = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID + string("/fsrchannels");
-  string chmapname = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path   + string("/fsrchannels.map");
+  string chlname   = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID + string("/fsrchannels");
+  string chmapname = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path   + string("/fsrchannels.map");
  
  ifstream chlist;
   chlist.open(chlname.c_str());
@@ -328,8 +328,8 @@ bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
 }
 /*bool Phase_Space_Generator::LoadChannels(ATOOLS::Flavour * fl,Multi_Channel * Ch,Process_Base * proc)
 {
-  string chlname   = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID + string("/fsrchannels");
-  string chmapname = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path   + string("/fsrchannels.map");
+  string chlname   = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID + string("/fsrchannels");
+  string chmapname = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path   + string("/fsrchannels.map");
  
  ifstream chlist;
   chlist.open(chlname.c_str());

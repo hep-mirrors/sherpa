@@ -25,6 +25,7 @@ namespace PHASIC {
     // member functions
     std::string ChID();
 
+    void MPISync();
     void Optimize();
     void EndOptimize();
     void WriteOut(std::string pId);

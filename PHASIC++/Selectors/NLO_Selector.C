@@ -113,7 +113,7 @@ PTNLO_Selector::PTNLO_Selector(int _nin,int _nout, Flavour * _fl):
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = -1;
   
@@ -180,7 +180,7 @@ void PTNLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   double MaxPTmin = 0.;
   flav.push_back(crit[0]);
   ptmin.push_back(_min);
-  ptmax.push_back(Min(_max,(rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0])));
+  ptmax.push_back(Min(_max,(rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0])));
   bool used=0;
   for (int i=m_nin;i<m_n;i++) {
     if (crit[0].Includes(m_fl[i])) {
@@ -239,7 +239,7 @@ RapidityNLO_Selector::RapidityNLO_Selector(int _nin,int _nout, Flavour * _fl):
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = -1;
   
@@ -363,7 +363,7 @@ PseudoRapidityNLO_Selector::PseudoRapidityNLO_Selector(int _nin,int _nout, Flavo
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = -1;
   
@@ -487,7 +487,7 @@ PT2NLO_Selector::PT2NLO_Selector(int _nin,int _nout, Flavour * _fl):
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
   m_strong = 0;
   if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = -1;
   
@@ -563,7 +563,7 @@ void PT2NLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   flav1.push_back(crit[0]);
   flav2.push_back(crit[1]);
   ptmin.push_back(_min);
-  ptmax.push_back(Min(_max,(rpa.gen.PBeam(0)[0]+rpa.gen.PBeam(1)[0])));
+  ptmax.push_back(Min(_max,(rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0])));
   bool used=0;
   for (int i=m_nin;i<m_n;i++) {
     for (int j=i+1;j<m_n;j++) {
@@ -727,7 +727,7 @@ void Isolation_Cut::BuildCuts(Cut_Data * cuts)
 double Isolation_Cut::Chi(double eg,double dr)
 {
   if (m_mode==0) return m_emax;
-  if (m_mode<0) return 0.;//rpa.gen.Ecms();
+  if (m_mode<0) return 0.;//rpa->gen.Ecms();
   return eg*m_emax*pow((1.-cos(dr))/(1.-cos(m_d0)),m_mode);
 }
 

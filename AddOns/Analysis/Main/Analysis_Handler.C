@@ -256,7 +256,7 @@ void Analysis_Handler::CleanUp()
 
 bool Analysis_Handler::ApproveTerminate()
 {
-  if (rpa.gen.BatchMode()) m_write=false;
+  if (rpa->gen.BatchMode()) m_write=false;
   return true;
 }
 

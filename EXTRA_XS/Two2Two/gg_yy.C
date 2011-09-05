@@ -27,14 +27,14 @@ namespace EXTRAXS {
   gg_yy::gg_yy(const Process_Info& pi, const Flavour_Vector& fl)
     : ME2_Base(pi, fl)
   {
-    rpa.gen.AddCitation
+    rpa->gen.AddCitation
       (1,"The box diagram implementation for $gg \\to \\gamma \\gamma$ is\
  documented in \\cite{Hoeche:2009xc} and references therein.");
     m_oew=2;
     m_oqcd=2;
     m_sintt=1;
-    double alphaqed2 = sqr(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms())));
-    double alphas2 = sqr(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_S",sqr(rpa.gen.Ecms())));
+    double alphaqed2 = sqr(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms())));
+    double alphas2 = sqr(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_S",sqr(rpa->gen.Ecms())));
 
     for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
 

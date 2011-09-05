@@ -50,7 +50,7 @@ XS_ee_ffbar::XS_ee_ffbar(const Process_Info& pi, const Flavour_Vector& fl)
   MZ2    = sqr(ATOOLS::Flavour(kf_Z).Mass());
   GZ2    = sqr(ATOOLS::Flavour(kf_Z).Width());
  
-  alpha  = MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms()));
+  alpha  = MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms()));
   sin2tw = MODEL::s_model->ScalarConstant(string("sin2_thetaW"));
   if (ATOOLS::Flavour(kf_Z).IsOn()) 
     kappa  = 1./(4.*sin2tw*(1.-sin2tw));
@@ -175,7 +175,7 @@ XS_Charged_Drell_Yan::XS_Charged_Drell_Yan(const Process_Info& pi, const Flavour
   MW2    = sqr(ATOOLS::Flavour(kf_Wplus).Mass());
   GW2    = sqr(ATOOLS::Flavour(kf_Wplus).Width());
 
-  alpha  = MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms()));
+  alpha  = MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms()));
   sin2tw = MODEL::s_model->ScalarConstant(string("sin2_thetaW"));
   kappa  = 1./(2.*sin2tw);
 

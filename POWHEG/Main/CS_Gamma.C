@@ -240,7 +240,7 @@ bool CS_Gamma::Reject()
   Cluster_Amplitude *rampl=p_css->GetRealEmissionAmplitude();
   double wgt(TrialWeight(rampl));
   rampl->Delete();
-  if (wgt>ran.Get()) {
+  if (wgt>ran->Get()) {
     msg_Debugging()<<"w = "<<wgt<<" -> accept\n";
     return false;
   }

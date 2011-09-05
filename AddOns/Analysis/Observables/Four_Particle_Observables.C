@@ -435,7 +435,7 @@ void Four_Particle_EnergyCMS::Evaluate(const Vec4D & mom1,const Vec4D & mom2,
   Vec4D p3 = boost*mom3;
   Vec4D p4 = boost*mom4;
   double E = p1[0];
-  p_histo->Insert(2.0*E/rpa.gen.Ecms(),weight,ncount);
+  p_histo->Insert(2.0*E/rpa->gen.Ecms(),weight,ncount);
 }
 
 Four_Particle_EnergyCMS::Four_Particle_EnergyCMS(const std::vector<Flavour> & flavs,

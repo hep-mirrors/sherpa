@@ -555,26 +555,13 @@ size_t Expression::Size()
   return terms;
 }
 
-#ifndef USING__Color_only
-static double oldtime(rpa.gen.Timer().UserTime());
-#else  
-static double oldtime(UserTime());
-#endif
-
 void Expression::PrintStatus(const bool endline,const bool print)
 {
-#ifndef USING__Color_only
-  double usertime(rpa.gen.Timer().UserTime());
-#else
-  double usertime(UserTime());
-#endif
   if (print) {
-    oldtime=usertime;
     Expression *root(this);
     while (--*root) root=(Expression*)--*root;
     msg_Out()<<"Terms evaluated: "<<root->Evaluated()<<"     \n"
-	     <<"Terms left     : "<<root->Size()<<"     \n"
-	     <<"Time  elapsed  : "<<usertime<<" s     ";
+	     <<"Terms left     : "<<root->Size()<<"     \n";
     if (endline) msg_Out()<<std::endl;
     else msg_Out()<<mm_up(2)<<bm_cr<<std::flush;
   }
@@ -602,9 +589,6 @@ public:
 
 bool Expression::Evaluate()
 {
-#ifndef USING__Color_only
-  if (--*this==NULL) rpa.gen.Timer().Start();
-#endif
   m_result=Complex(1.0,0.0);
   if (size()<1 || (*this)[0]==NULL) return false;
   Complex result2(0.0,0.0);
@@ -664,7 +648,6 @@ bool Expression::Evaluate()
   m_evaluated+=1;
   if (--*this==NULL) {
 #ifndef USING__Color_only
-    rpa.gen.Timer().Stop();
     if (msg_LevelIsTracking()) PrintStatus();
 #else
     PrintStatus();

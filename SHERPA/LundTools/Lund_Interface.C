@@ -48,7 +48,7 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   double win;
   string beam[2], frame("CMS");
   Flavour flav[2];
-  for (size_t i=0;i<2;++i) flav[i]=rpa.gen.Bunch(i);
+  for (size_t i=0;i<2;++i) flav[i]=rpa->gen.Bunch(i);
   if (flav[0]==Flavour(kf_e) && flav[1]==Flavour(kf_p_plus)) {
     beam[0]="e-";
     beam[1]="p+";
@@ -83,8 +83,8 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
     pypars.mstp[47]=1;
     pydat1.mstj[100]=5;
   }
-  win=rpa.gen.Ecms();
-  s_maxerrors=rpa.gen.NumberOfEvents();
+  win=rpa->gen.Ecms();
+  s_maxerrors=rpa->gen.NumberOfEvents();
   vector<vector<double> > help;
   Data_Reader *reader = new Data_Reader(" ",";","!","=");
   reader->AddComment("#");
@@ -366,8 +366,8 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
     msg_Tracking()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   PYDECY call results in error code : "<<pydat1.mstu[24-1]<<std::endl
 	       <<"   for decay of "<<fl<<" ("<<fl.HepEvt()<<" -> "<<idhep<<")"<<std::endl;
-    if (pydat1.mstu[23-1]<int(rpa.gen.NumberOfGeneratedEvents()/100) ||
-	rpa.gen.NumberOfGeneratedEvents()<200) {
+    if (pydat1.mstu[23-1]<int(rpa->gen.NumberOfGeneratedEvents()/100) ||
+	rpa->gen.NumberOfGeneratedEvents()<200) {
       msg_Tracking()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, try new event."<<std::endl;
       return Return_Value::Retry_Method;
     }
@@ -400,7 +400,7 @@ int Lund_Interface::PrepareFragmentationBlob(Blob * blob)
     Particle * part = blob->InParticle(i);
   if (part->GetFlow(1)!=0 && part->GetFlow(2)!=0) {
     Flavour            flav = Flavour(kf_d);
-    if (ran.Get()<0.5) flav = Flavour(kf_u);
+    if (ran->Get()<0.5) flav = Flavour(kf_u);
       Particle *help1(new Particle(-1,flav,0.5*part->Momentum()));
       Particle *help2(new Particle(-1,flav.Bar(),help1->Momentum()));
     help1->SetStatus(part_status::active);
@@ -471,8 +471,8 @@ Return_Value::code Lund_Interface::StringFragmentation(Blob *blob,Blob_List *blo
 	       <<" for "<<std::endl<<(*blob)<<"  "<<cms<<", "<<cms.Abs2()
 	       <<std::endl;
     pydat1.mstu[24-1]=0;
-    if(pydat1.mstu[23-1]<int(rpa.gen.NumberOfGeneratedEvents()/100) ||
-       rpa.gen.NumberOfGeneratedEvents()<200) {
+    if(pydat1.mstu[23-1]<int(rpa->gen.NumberOfGeneratedEvents()/100) ||
+       rpa->gen.NumberOfGeneratedEvents()<200) {
       msg_Tracking()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, retrying..."
 		 <<std::endl;
       return Return_Value::Retry_Phase;
@@ -667,7 +667,7 @@ void Lund_Interface::WriteOutStatus(const std::string &filename)
 
 void Lund_Interface::PrepareTerminate()
 {
-  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH"));
+  std::string path(rpa->gen.Variable("SHERPA_STATUS_PATH"));
   if (path=="") return;
   RestoreStatus();
   WriteOutStatus((path+"/Lund_random.dat").c_str());
@@ -683,7 +683,7 @@ void Lund_Interface::Error(const int error)
   else {
     msg_Tracking()<<"Lund_Interface::Error("<<error<<") "<<om::red
 	       <<"Pythia calls PYERRM("<<error<<") in event "
-	       <<rpa.gen.NumberOfGeneratedEvents()<<"."
+	       <<rpa->gen.NumberOfGeneratedEvents()<<"."
 	       <<om::reset<<endl;
 //     if (msg_LevelIsDebugging()) {
 //       msg_Tracking()<<*s_bloblist<<endl;

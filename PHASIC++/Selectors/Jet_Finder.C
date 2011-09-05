@@ -23,7 +23,7 @@ Jet_Finder::Jet_Finder
   m_nin=nin;
   m_nout=nout;
   m_n=m_nin+m_nout;
-  m_smax=m_s=sqr(rpa.gen.Ecms());
+  m_smax=m_s=sqr(rpa->gen.Ecms());
   if (ycut.find("|")!=std::string::npos) {
     m_dparam=ToType<double>(ycut.substr(ycut.find("|")+1));
     m_cuttag=ycut.substr(0, ycut.find("|"));
@@ -32,7 +32,7 @@ Jet_Finder::Jet_Finder
   static bool mets(false);
   if (!mets) {
     mets=true;
-    rpa.gen.AddCitation(1,"Matrix element merging with truncated showers is "+
+    rpa->gen.AddCitation(1,"Matrix element merging with truncated showers is "+
 			std::string("published under \\cite{Hoeche:2009rj}."));
   }
   p_ampl = Cluster_Amplitude::New();
@@ -118,7 +118,7 @@ namespace PHASIC{
     static bool menlots(false);
     if (!menlots && key.p_proc->Process()->Info().Has(nlo_type::real)) {
       menlots=true;
-      rpa.gen.AddCitation(1,"NLO matrix element merging with truncated showers is "+
+      rpa->gen.AddCitation(1,"NLO matrix element merging with truncated showers is "+
 			  std::string("published under \\cite{Hoeche:2010kg}."));
     }
     if (key.front().size()>1 && key[0][1]=="LO" && 

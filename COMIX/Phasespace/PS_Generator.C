@@ -43,7 +43,7 @@ PS_Generator::PS_Generator(Process_Base *const xs):
   else msg_Info()<<METHOD<<"(): Set extra channel mode "<<m_ecmode<<".\n";
   if (!read.ReadFromFile(m_chmass,"CDXS_PS_CHTH")) m_chmass=0.01;
   else msg_Info()<<METHOD<<"(): Set channel mass threshold "<<m_chmass<<".\n";
-  m_chmass*=rpa.gen.Ecms();
+  m_chmass*=rpa->gen.Ecms();
   p_xs->ConstructPSVertices(this);
   AddSTCC();
 #ifdef USING__Threading
@@ -207,7 +207,7 @@ bool PS_Generator::Evaluate()
 	  sums.push_back(sum);
 	  pss.push_back((*cur)[i]);
 	}
-      double disc(sum*ran.Get());
+      double disc(sum*ran->Get());
       for (size_t i(0);i<pss.size();++i)
 	if (disc<=sums[i]) {
 	  cur=pss[i];
@@ -548,7 +548,7 @@ void PS_Generator::SetPrefMasses(Cut_Data *const cuts)
       else mmin[cid]=Max(mmin[cid],mass);
       if (m_cur[n][j]->Cut() || (cid&3)==1 || (cid&3)==2) continue;
       if ((m_ecmode&1) && mass>m_chmass &&
-	  mass<rpa.gen.Ecms() && !IsEqual(mass,m_cur[n][j]->Mass()))
+	  mass<rpa->gen.Ecms() && !IsEqual(mass,m_cur[n][j]->Mass()))
 	AddExtraCurrent(m_cur[n][j],n,mass,0.0);
       if ((m_ecmode&2) && m_cur[n][j]->Mass()>m_chmass &&
 	  m_cur[n][j]->Width()>s_pwmin && IdCount(pid)>2)

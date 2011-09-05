@@ -127,17 +127,17 @@ Apacic::Apacic(ISR_Handler *const isr,MODEL::Model_Base *const model,
   p_jetveto(NULL), p_initrees(NULL), p_fintree(NULL), 
   m_showers(false), p_cluster(NULL), p_ampl(NULL)
 {
-  rpa.gen.AddCitation
+  rpa->gen.AddCitation
     (1,"Apacic is published under \\cite{Kuhn:2000dk,Krauss:2005re}.");
   Splitting_Function::SetKFactorScheme
-    (ToType<int>(rpa.gen.Variable("S_KFACTOR_SCHEME","0"))&1);        
+    (ToType<int>(rpa->gen.Variable("S_KFACTOR_SCHEME","0"))&1);        
   m_fcs=dataread->GetValue<double>("APACIC_FCMODE",0.0);
   m_wmode=dataread->GetValue<int>("APACIC_SWMODE",0);
   m_fsron=bool(dataread->GetValue<int>("FSR_SHOWER",1));
   m_isron = 0;
   if (isr && isr->On()>0) m_isron=1;
   m_isron=bool(dataread->GetValue<int>("ISR_SHOWER",m_isron));
-  if ((rpa.gen.Beam1().IsHadron() || rpa.gen.Beam2().IsHadron())
+  if ((rpa->gen.Beam1().IsHadron() || rpa->gen.Beam2().IsHadron())
       && (m_fsron^m_isron)) 
     THROW(fatal_error,"Shower must be enabled for hadronic initial state.");
   if (m_fsron) {
@@ -673,7 +673,7 @@ int Apacic::TrialEmission(const int mode)
 double Apacic::TrialWeight(ATOOLS::Cluster_Amplitude *const ampl)
 {
   double wgt(0.0);
-  // double as((*MODEL::as)(rpa.gen.CplScale()));
+  // double as((*MODEL::as)(rpa->gen.CplScale()));
   const Knot *mo(p_finshower->Sudakov()->LastEmission());
   const Knot *d1(mo->left), *d2(mo->right);
   if (mo->part->Flav()==d1->part->Flav()) std::swap<const Knot*>(d1,d2);

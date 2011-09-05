@@ -65,7 +65,7 @@ Single_Vertex& Single_Vertex::operator=(const Single_Vertex& v)
 
 
  
-const bool Single_Vertex::operator==(const Single_Vertex& probe) 
+bool Single_Vertex::operator==(const Single_Vertex& probe) 
 {
   switch (nleg) // different checks for 3-leg and 4-leg vertices
   {

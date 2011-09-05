@@ -52,7 +52,7 @@ namespace AMEGIC {
     void PrintGraph(); 
     void SetNumber(int& i);
     Amplitude_Base* GetAmplitude(const int n);
-    const int GetNumber() { return amplnumber; }
+    int GetNumber() { return amplnumber; }
     
     void    SetOrderQED(int);
     void    SetOrderQCD(int);

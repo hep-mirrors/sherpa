@@ -208,7 +208,7 @@ METS_Scale_Setter::METS_Scale_Setter
   for (size_t i(0);i<p_proc->NIn();++i) m_f[i]=m_f[i].Bar();
   m_rproc=p_proc->Info().Has(nlo_type::real);
   m_vproc=!p_proc->Parent()->Info().m_fi.NLOType()==nlo_type::lo;
-  m_cmode=ToType<int>(rpa.gen.Variable("METS_CLUSTER_MODE"));
+  m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
   Data_Reader read(" ",";","!","=");
   if (!read.ReadFromFile(m_vmode,"METS_SCALE_VMODE")) m_vmode=8|2|4;
   else msg_Info()<<METHOD<<"(): Set NLO scale mode "<<m_vmode<<".\n";
@@ -546,7 +546,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
     double as(1.0), oqcd(0.0), mum2(1.0);
     for (size_t idx(2);ampl->Next();++idx,ampl=ampl->Next()) {
       m_scale[idx]=Max(ampl->Mu2(),MODEL::as->CutQ2());
-      m_scale[idx]=Min(m_scale[idx],sqr(rpa.gen.Ecms()));
+      m_scale[idx]=Min(m_scale[idx],sqr(rpa->gen.Ecms()));
       mum2=Min(mum2,m_scale[idx]);
       if (m_rproc && ampl->Prev()==NULL) continue;
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
@@ -581,7 +581,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
     else {
       mur2=pow(mur2,1.0/oqcd);
       as=pow(as,1.0/oqcd);
-      mur2=MODEL::as->WDBSolve(as,mum2,rpa.gen.CplScale());
+      mur2=MODEL::as->WDBSolve(as,mum2,rpa->gen.CplScale());
       if (!IsEqual((*MODEL::as)(mur2),as))
 	msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl; 
     }
@@ -661,10 +661,10 @@ void METS_Scale_Setter::KT2
 	Kin_Args fip(ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,3));
 	double kt2=2.0*(pi*pj)*fip.m_z*(1.0-fip.m_z)
 	  -sqr(1.0-fip.m_z)*mi2-sqr(fip.m_z)*mj2;
-	Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
+	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
 	if (fip.m_pk.PPlus()>sum.PPlus() ||
 	    fip.m_pk.PMinus()>sum.PMinus() || fip.m_stat<0 ||
-	    fip.m_pk[0]>rpa.gen.PBeam(cs.m_k)[0]) kt2=-1.0;
+	    fip.m_pk[0]>rpa->gen.PBeam(cs.m_k)[0]) kt2=-1.0;
  	cs.SetParams(kt2,fip.m_z,fip.m_y,fip.m_pi,-fip.m_pk);
 	cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav(),lj->Flav(),lk->Flav().Bar(),2,cs.m_oqcd?1:2,kt2);
@@ -678,10 +678,10 @@ void METS_Scale_Setter::KT2
 	if (mk2>0.0 && !lk->Flav().Strong()) mk2=pk.Abs2();
 	Kin_Args ifp(ClusterIFDipole(mi2,mj2,mij2,mk2,0.0,-pi,pj,pk,pk,3|4));
 	double kt2=-2.0*(pi*pj)*(1.0-ifp.m_z)-mj2-sqr(1.0-ifp.m_z)*mi2;
-	Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
+	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
 	if (ifp.m_pi.PPlus()>sum.PPlus() ||
 	    ifp.m_pi.PMinus()>sum.PMinus() || ifp.m_stat<0 ||
-	    ifp.m_pi[0]>rpa.gen.PBeam(cs.m_i)[0]) kt2=-1.0;
+	    ifp.m_pi[0]>rpa->gen.PBeam(cs.m_i)[0]) kt2=-1.0;
  	cs.SetParams(kt2,ifp.m_z,ifp.m_y,-ifp.m_pi,ifp.m_pk);
 	cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav().Bar(),lj->Flav(),lk->Flav(),1,cs.m_oqcd?1:2,kt2);
@@ -689,10 +689,10 @@ void METS_Scale_Setter::KT2
       else {
 	Kin_Args iip(ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,3));
 	double kt2=-2.0*(pi*pj)*(1.0-iip.m_z)-mj2-sqr(1.0-iip.m_z)*mi2;
-	Vec4D sum(rpa.gen.PBeam(0)+rpa.gen.PBeam(1));
+	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
 	if (iip.m_pi.PPlus()>sum.PPlus() ||
 	    iip.m_pi.PMinus()>sum.PMinus() || iip.m_stat<0 ||
-	    iip.m_pi[0]>rpa.gen.PBeam(cs.m_i)[0]) kt2=-1.0;
+	    iip.m_pi[0]>rpa->gen.PBeam(cs.m_i)[0]) kt2=-1.0;
  	cs.SetParams(kt2,iip.m_z,iip.m_y,-iip.m_pi,-iip.m_pk,iip.m_lam);
 	cs.m_mu2*=p_proc->Shower()->CplFac
 	  (li->Flav().Bar(),lj->Flav(),lk->Flav().Bar(),3,cs.m_oqcd?1:2,kt2);

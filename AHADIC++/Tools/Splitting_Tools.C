@@ -113,7 +113,7 @@ void Splitting_Tools::SetSpectatorAndSplitter(Dipole * dip) {
       double l1(sqr(Max(dip->Triplet()->m_mass,1.e-4)));
       double l2(sqr(Max(dip->AntiTriplet()->m_mass,1.e-4)));
       double disc = l1/(l1+l2);
-      if (ran.Get()>disc) {
+      if (ran->Get()>disc) {
 	p_spect = dip->AntiTriplet(); 
 	p_split = dip->Triplet();
 	dip->SetSwitched(true);
@@ -221,7 +221,7 @@ bool Splitting_Tools::SelectFlavour(const bool & vetodiquark)
 		 <<"--> mass < "<<(sqrt((m_Q2-m_m1_2)/2.))<<"."<<std::endl;
       return false;
     }
-    sumwt *= ran.Get();
+    sumwt *= ran->Get();
     for (FDIter fdit=p_options->begin();fdit!=p_options->end();fdit++) {
       if (vetodiquark && fdit->first.IsDiQuark()) continue;
       if (fdit->second->popweight>0. && fdit->second->massmin<maxmass) {
@@ -283,7 +283,7 @@ ProduceKinematics(const bool & first,const bool & vetodiquark) {
   double OneMinExpo(0.),rand;
   int trials(0);
   while ((trials++)<1000) {
-    rand  = ATOOLS::ran.Get();
+    rand  = ATOOLS::ran->Get();
     if (m_leadsplit || IsZero(OneMinExpo)) 
       m_y = ymin * pow(ymax/ymin,rand);
     else 
@@ -293,7 +293,7 @@ ProduceKinematics(const bool & first,const bool & vetodiquark) {
     m_z   = p_kernels->SelectZ(zmin,zmax,1.,m_glusplit,m_leadsplit);
     m_kt2 = m_z*(1.-m_z)*m_s23-(1.-m_z)*m_m3_2-m_z*m_m2_2;
     if (m_kt2<0. || m_kt2>m_kt2max) continue;
-    if ((*p_as)(m_kt2,false)/p_as->MaxValue()<ATOOLS::ran.Get()) continue;
+    if ((*p_as)(m_kt2,false)/p_as->MaxValue()<ATOOLS::ran->Get()) continue;
     m_kt  = sqrt(m_kt2);
     if (ConstructKinematics()) {
       m_lastpt2 = m_kt2;
@@ -370,10 +370,10 @@ void Splitting_Tools::AftermathOfSplitting(Dipole * dip1) {
   if (p_split->m_flav.IsGluon()) {
     p_spect->m_mom    = m_mom1;
     if (p_spect->m_info=='L') {
-      swap = s12/(s12+s13)>0.5; // ran.Get());
+      swap = s12/(s12+s13)>0.5; // ran->Get());
     }
     else if (p_spect->m_flav==ATOOLS::Flavour(kf_gluon)) {
-      swap = s12/(s12+s13)<0.5; // ran.Get());
+      swap = s12/(s12+s13)<0.5; // ran->Get());
     }
     p_out1 = new Proto_Particle(m_flav.Bar(),swap?m_mom3:m_mom2,'l');
     p_out2 = new Proto_Particle(m_flav,swap?m_mom2:m_mom3,'l');
@@ -424,7 +424,7 @@ void Splitting_Tools::SetInfoTagsForOutgoings() const {
 void Splitting_Tools::AnalyseKinematics(const ATOOLS::Vec4D & q1,
 					const ATOOLS::Vec4D & q2,
 					const ATOOLS::Vec4D & q3) {
-  double Ebeam = rpa.gen.Ecms()/2.;
+  double Ebeam = rpa->gen.Ecms()/2.;
   if (p_split->m_flav.IsGluon()) {
     m_histograms.find(std::string("PT_Gluon_Splitting"))->second
       ->Insert(m_kt);

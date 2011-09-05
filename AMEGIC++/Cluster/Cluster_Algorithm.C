@@ -596,7 +596,7 @@ void Cluster_Algorithm::SetColours
       colj.m_i=coli.m_j=nc;
       colj.m_j=colij.m_j;
       coli.m_i=colij.m_i;
-      if (ran.Get()>0.5) std::swap<ColorID>(coli,colj);
+      if (ran->Get()>0.5) std::swap<ColorID>(coli,colj);
     }
     else if (li->Flav().StrongCharge()==8) {
       coli=colij;

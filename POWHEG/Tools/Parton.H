@@ -51,19 +51,19 @@ namespace POWHEG {
     inline int                     GetFlow(const int) const;
     inline int                     GetMEFlow(const int) const;
     inline int                     GetRFlow(const int) const;
-    inline int               const Beam()        const;
-    inline int               const Kin()         const { return m_kin; }
-    inline size_t            const Id()          const;
-    inline size_t            const Idx()         const { return m_idx; }
+    inline int                     Beam()        const;
+    inline int                     Kin()         const { return m_kin; }
+    inline size_t                  Id()          const;
+    inline size_t                  Idx()         const { return m_idx; }
     inline Splitting_Function_Base *SF()         const { return p_sf; }
-    inline double            const KtMax()       const;
-    inline double            const KtStart()     const;
-    inline double            const KtVeto()      const;
-    inline double            const KtTest()      const;
-    inline double            const ZTest()       const;
-    inline double            const YTest()       const;
-    inline double            const Xbj()         const;
-    inline double            const Phi()         const;
+    inline double                  KtMax()       const;
+    inline double                  KtStart()     const;
+    inline double                  KtVeto()      const;
+    inline double                  KtTest()      const;
+    inline double                  ZTest()       const;
+    inline double                  YTest()       const;
+    inline double                  Xbj()         const;
+    inline double                  Phi()         const;
     inline Parton *                GetSpect();
     inline Singlet*                GetSing();
     inline void SetFlavour(const ATOOLS::Flavour &);
@@ -145,16 +145,16 @@ namespace POWHEG {
     if (m_meflow.Code(index)>0) return m_meflow.Code(index); 
     return m_flow.Code(index);
   }
-  double            const Parton::KtStart()     const { return m_kt_start; }
-  double            const Parton::KtMax()       const { return m_kt_max; }
-  double            const Parton::KtVeto()      const { return m_kt_veto; }
-  double            const Parton::KtTest()      const { return m_kt_test; }
-  double            const Parton::ZTest()       const { return m_z_test; }
-  double            const Parton::YTest()       const { return m_y_test; }
-  double            const Parton::Xbj()         const { return m_xBj; }
-  double            const Parton::Phi()         const { return m_phi; }
-  int               const Parton::Beam()        const { return m_beam; }
-  size_t            const Parton::Id()          const { return m_id; }
+  double                  Parton::KtStart()     const { return m_kt_start; }
+  double                  Parton::KtMax()       const { return m_kt_max; }
+  double                  Parton::KtVeto()      const { return m_kt_veto; }
+  double                  Parton::KtTest()      const { return m_kt_test; }
+  double                  Parton::ZTest()       const { return m_z_test; }
+  double                  Parton::YTest()       const { return m_y_test; }
+  double                  Parton::Xbj()         const { return m_xBj; }
+  double                  Parton::Phi()         const { return m_phi; }
+  int                     Parton::Beam()        const { return m_beam; }
+  size_t                  Parton::Id()          const { return m_id; }
   Parton *                Parton::GetSpect()          { return p_spect; }
   Singlet*                Parton::GetSing()           { return p_sing; }
   void Parton::SetFlavour(const ATOOLS::Flavour & fl) { m_flav      = fl; }

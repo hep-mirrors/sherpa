@@ -72,12 +72,12 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Model_Base * model,Topology* top,
   else m_ptypename = "N"+m_libname;
   PolarizationNorm();
   if (m_gen_str>1) {
-    ATOOLS::MakeDir(rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
+    ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
   }
-  string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
+  string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
   if (!FileExists(newpath+"/makelibs")) {
-    CopyFile(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+    CopyFile(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
   }
 

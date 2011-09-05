@@ -58,7 +58,7 @@ bool MCFM_Interface::Initialize
 (const std::string &path,const std::string &file,MODEL::Model_Base *const model,
  BEAM::Beam_Spectra_Handler *const beam,PDF::ISR_Handler *const isrhandler)
 {
-  std::ifstream procfile((rpa.gen.Variable("SHERPA_CPP_PATH")+"/process.DAT").c_str());
+  std::ifstream procfile((rpa->gen.Variable("SHERPA_CPP_PATH")+"/process.DAT").c_str());
   if (!procfile.good())
     THROW(fatal_error,"MCFM's 'process.DAT' is missing. Consider copying it to this directory.");
   msg_Info()<<METHOD<<"(): {\n";

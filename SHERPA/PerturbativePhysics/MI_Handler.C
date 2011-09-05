@@ -43,12 +43,12 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
   mihandler=read.GetValue<std::string>("MI_HANDLER","None");
   path+=read.GetValue<std::string>("INPUT_PATH","");
   file=read.GetValue<std::string>("INPUT_FILE",file);
-  if (!ATOOLS::rpa.gen.Beam1().IsHadron() ||
-      !ATOOLS::rpa.gen.Beam2().IsHadron()) mihandler="None";
+  if (!ATOOLS::rpa->gen.Beam1().IsHadron() ||
+      !ATOOLS::rpa->gen.Beam2().IsHadron()) mihandler="None";
   if (mihandler==std::string("Amisic")) {
     p_amisic = new AMISIC::Amisic(model,beam,isr);
     p_amisic->SetInputPath(path);
-    p_amisic->SetOutputPath(ATOOLS::rpa.gen.Variable("SHERPA_RUN_PATH")+"/");
+    p_amisic->SetOutputPath(ATOOLS::rpa->gen.Variable("SHERPA_RUN_PATH")+"/");
     p_amisic->SetInputFile(file);
     if (!p_amisic->Initialize()) {
       msg_Error()<<METHOD<<"(): Cannot initialize MPI generator. "
@@ -58,7 +58,7 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
       return;
     }
     m_ycut=p_amisic->HardBase()->Stop(0);
-    m_ycut=ATOOLS::sqr(m_ycut/ATOOLS::rpa.gen.Ecms());
+    m_ycut=ATOOLS::sqr(m_ycut/ATOOLS::rpa->gen.Ecms());
     m_type=Amisic;
   }
 #endif

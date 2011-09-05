@@ -50,7 +50,7 @@ namespace SHERPA {
     void CleanUp();
     
     // inline functions
-    inline PDF::Remnant_Base *const BeamParticle(const size_t i) const 
+    inline PDF::Remnant_Base *BeamParticle(const size_t i) const 
     { return p_beampart[i]; }
 
   };// end of class Beam_Remnant_Handler

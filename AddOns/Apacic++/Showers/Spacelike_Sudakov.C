@@ -114,7 +114,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,
   m_t      = mo->t;
   m_x      = mo->x;
 
-  if (!((m_t-m_t0)<rpa.gen.Accu())) {
+  if (!((m_t-m_t0)<rpa->gen.Accu())) {
     if (mo->prev) {
       mo->t    = mo->tout;
       mo->stat = 0;
@@ -122,7 +122,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,
     }
   }
   
-  double xe(2.*m_emin*sqrt(sprime)/sqr(rpa.gen.Ecms()));  
+  double xe(2.*m_emin*sqrt(sprime)/sqr(rpa->gen.Ecms()));  
   m_zmin = m_x/(1.-xe);
   m_zmax = m_x/(m_x+xe);
   if (m_zmin>m_zmax) {

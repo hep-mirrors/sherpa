@@ -42,15 +42,15 @@ SelectZ(const double & zmin,const double & zmax,const double & expo,
   default:
     break;
   }
-  return zmin + ran.Get()*(zmax-zmin);
+  return zmin + ran->Get()*(zmax-zmin);
 }
 
 double Splitting_Functions::
 SelectZFromG2QQSplittingFunction(const double & zmin,const double & zmax) {  
   double z;
   do {
-    z = zmin+(zmax-zmin)*ran.Get();
-  } while (4.*z*(1.-z)<ran.Get());
+    z = zmin+(zmax-zmin)*ran->Get();
+  } while (4.*z*(1.-z)<ran->Get());
   return z;
 }
 
@@ -58,10 +58,10 @@ double Splitting_Functions::
 SelectZFromQ2QGSplittingFunction(const double & zmin,const double & zmax,
 				 const double & expo) {
   if (expo==1.) {
-    double z(1.-(1.-zmin)*pow((1.-zmax)/(1.-zmin),ran.Get()));
+    double z(1.-(1.-zmin)*pow((1.-zmax)/(1.-zmin),ran->Get()));
     return z;
   }
-  double rn = ran.Get();
+  double rn = ran->Get();
   return 1.-pow(rn*pow(1.-zmax,1.-expo)+
 		(1.-rn)*pow(1.-zmin,1.-expo),1./(1.-expo));
 }

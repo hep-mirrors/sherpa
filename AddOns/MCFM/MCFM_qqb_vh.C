@@ -43,7 +43,7 @@ MCFM_qqb_vh::MCFM_qqb_vh(const int & pID,const Process_Info& pi,
   m_normcorr(4.0*9.0/qcdcouple_.ason2pi/((m_pID==107)?3.:1.)),
   m_ewcorr(pow((4.*M_PI*m_aqed/m_sin2tw)/ewcouple_.gwsq,6.))
 {
-  rpa.gen.AddCitation
+  rpa->gen.AddCitation
     (1,"The NLO matrix elements have been taken from MCFM.");
   if (m_pID==92 || m_pID==97) {
     m_ewcorr *= sqr(Flavour(kf_Wplus).Yuk()/masses_.wmass);

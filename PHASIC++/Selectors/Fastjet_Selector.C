@@ -74,7 +74,7 @@ Fastjet_Selector::Fastjet_Selector
 
   m_fl         = fl;
   m_smin       = Max(sqr(m_ptmin),sqr(m_etmin));
-  m_smax       = sqr(rpa.gen.Ecms());
+  m_smax       = sqr(rpa->gen.Ecms());
 
   m_nin        = nin;
   m_nout       = nout;

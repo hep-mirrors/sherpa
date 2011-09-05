@@ -33,7 +33,7 @@ using namespace ATOOLS;
 #define EPS 1.2e-7
 #define RNMX (1.0-EPS)
 
-ATOOLS::Random ATOOLS::ran(1234, 4321);
+ATOOLS::Random *ATOOLS::ran(NULL);
 
 
 ATOOLS::Random::Random(long nid): 
@@ -328,7 +328,7 @@ void ATOOLS::Random::RestoreStatus()
 void ATOOLS::Random::PrepareTerminate()
 {
   if (p_external!=NULL) return;
-  std::string path(rpa.gen.Variable("SHERPA_STATUS_PATH"));
+  std::string path(rpa->gen.Variable("SHERPA_STATUS_PATH"));
   if (path=="") return;
   RestoreStatus();
   WriteOutStatus((path+"/random.dat").c_str());

@@ -25,13 +25,13 @@ void Particle_Qualifier_Base::Erase(Particle_List *const list)
     else ++pit;
 }
 
-template void copy_if<>(Particle_List::iterator, Particle_List::iterator, 
+template void ATOOLS::copy_if<>(Particle_List::iterator, Particle_List::iterator, 
 			std::back_insert_iterator<Particle_List>,
 			const Is_KF &);
-template void copy_if<>(Particle_List::iterator, Particle_List::iterator, 
+template void ATOOLS::copy_if<>(Particle_List::iterator, Particle_List::iterator, 
 			std::back_insert_iterator<Particle_List>,
 			const Is_Final_State &);
-template void copy_if<>(Particle_List::iterator, Particle_List::iterator, 
+template void ATOOLS::copy_if<>(Particle_List::iterator, Particle_List::iterator, 
 			std::back_insert_iterator<Particle_List>,
 			const Is_Charged &);
 

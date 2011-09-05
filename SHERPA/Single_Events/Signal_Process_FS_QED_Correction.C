@@ -37,7 +37,7 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
   reader.AddWordSeparator("\t");
-  reader.SetInputFile(rpa.gen.Variable("ME_DATA_FILE"));
+  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
   std::string qed = reader.GetValue<std::string>("ME_QED","On");
   bool expliciteon = (reader.GetValue<std::string>("ME_QED","")=="On");
   size_t nlomode  = reader.GetValue<size_t>("NLO_Mode",0);
@@ -48,7 +48,7 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
     Data_Reader reader1(" ",";","!","=");
     reader1.AddComment("#");
     reader1.AddWordSeparator("\t");
-    reader1.SetInputFile(rpa.gen.Variable("FRAGMENTATION_DATA_FILE"));
+    reader1.SetInputFile(rpa->gen.Variable("FRAGMENTATION_DATA_FILE"));
     std::string on = reader1.GetValue<std::string>("FRAGMENTATION","");
     m_on = (on!="Off")?true:false;
   }

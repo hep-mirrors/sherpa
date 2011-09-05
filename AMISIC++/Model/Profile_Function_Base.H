@@ -198,9 +198,9 @@ namespace AMISIC {
       \brief Returns the mean Overlap \f$\left<\tilde{O}\right>\f$.
     */
 
-    inline Differential_Overlap *const Differential() const 
+    inline Differential_Overlap *Differential() const 
     { return p_overlap; }
-    inline Interaction_Probability *const Probability() const  
+    inline Interaction_Probability *Probability() const  
     { return p_probability; }
 
     inline double operator()(const double b) const 

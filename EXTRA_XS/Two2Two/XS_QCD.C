@@ -51,7 +51,7 @@ XS_pp_q1qbar1::XS_pp_q1qbar1(const Process_Info& pi, const Flavour_Vector& fl):
   ME2_Base(pi,fl) 
 {
   m_r=fl[2].IsAnti();
-  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_QED"),rpa.gen.CplScale()));
+  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_QED"),rpa->gen.CplScale()));
   m_eq=m_flavs[2].Charge();
   m_m2=sqr(m_flavs[2].Mass());
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
@@ -125,7 +125,7 @@ XS_q1q2_q1q2::XS_q1q2_q1q2(const Process_Info& pi, const Flavour_Vector& fl):
   m_r=!(fl[0] == fl[2]);
   m_a=fl[0].IsAnti();
   m_p=fl[1].IsAnti();
-  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_m12=sqr(m_flavs[0].Mass());
   m_m22=sqr(m_flavs[1].Mass());
   m_oew=0; m_oqcd=2;
@@ -223,7 +223,7 @@ XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(const Process_Info& pi, const Flavour_Vec
   m_r=!(fl[0].IsAnti()==fl[2].IsAnti());
   m_a=fl[0].IsAnti();
   m_p=1-m_a;
-  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_m12=sqr(m_flavs[0].Mass());
   m_m32=sqr(m_flavs[2].Mass());
   m_oew=0; m_oqcd=2;
@@ -297,7 +297,7 @@ XS_q1q1_q1q1::XS_q1q1_q1q1(const Process_Info& pi, const Flavour_Vector& fl):
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
-  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_m12=sqr(m_flavs[0].Mass());
   m_oew=0; m_oqcd=2;
   m_cfls[PropID(0,2)].push_back(kf_gluon);
@@ -325,7 +325,7 @@ bool XS_q1q1_q1q1::SetColours(const Vec4D_Vector& mom)
   double u=(mom[0]-mom[3]).Abs2();
   double Mt(sqr(u-2.0*m_m12)+sqr(s-2.0*m_m12)+4.0*t*m_m12); 
   double Mu(sqr(t-2.0*m_m12)+sqr(s-2.0*m_m12)+4.0*u*m_m12); 
-  if (Mt > (Mt+Mu) * ran.Get()) {
+  if (Mt > (Mt+Mu) * ran->Get()) {
     msg_Debugging()<<"xs: qq->qq, set scale u "<<u<<"\n";
     /*
     
@@ -396,7 +396,7 @@ XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(const Process_Info& pi, const Flavour_Vec
   m_a=fl[0].IsAnti();
   m_p=1-m_a;
   m_r=fl[0]!=fl[2];
-  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_m12=sqr(m_flavs[0].Mass());
   m_oew=0; m_oqcd=2;
   m_cfls[PropID(0,1)].push_back(kf_gluon);
@@ -431,7 +431,7 @@ bool XS_q1qbar1_q1qbar1::SetColours(const Vec4D_Vector& mom)
   double u=(mom[0]-mom[3]).Abs2();
   double Mt(sqr(s-2.0*m_m12)+sqr(u-2.0*m_m12)+4.0*t*m_m12); 
   double Ms(sqr(t-2.0*m_m12)+sqr(u-2.0*m_m12)+4.0*s*m_m12); 
-  if (Ms >  (Mt+Ms) * ran.Get()) {
+  if (Ms >  (Mt+Ms) * ran->Get()) {
     msg_Debugging()<<"xs: qqb->qqb, set scale t "<<t<<"\n";
     /*
     
@@ -503,7 +503,7 @@ XS_q1qbar1_gg::XS_q1qbar1_gg(const Process_Info& pi, const Flavour_Vector& fl):
   m_a=fl[0].IsAnti();
   m_p=1-m_a;
   m_m12=sqr(m_flavs[0].Mass());
-  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_oew=0; m_oqcd=2;
   m_cfls[PropID(0,1)].push_back(kf_gluon);
   m_cfls[PropID(2,3)].push_back(kf_gluon);
@@ -537,7 +537,7 @@ bool XS_q1qbar1_gg::SetColours(const Vec4D_Vector& mom)
   double Mu(32.0/27.0*(up*tp-m_m12*(4.0*(m_m12+up)+m_m12*up/s))/(up*up));
   p_colours[0][m_a] = Flow::Counter();
   p_colours[1][m_p] = Flow::Counter();
-  if (Mt > (Mt+Mu) * ran.Get()) {
+  if (Mt > (Mt+Mu) * ran->Get()) {
     msg_Debugging()<<"xs: qqb->gg, set scale s/t "<<s<<"/"<<t<<"\n";
     /*
     
@@ -608,7 +608,7 @@ XS_gg_q1qbar1::XS_gg_q1qbar1(const Process_Info& pi, const Flavour_Vector& fl):
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_r=fl[2].IsAnti();
-  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_m32=sqr(m_flavs[2].Mass());
   m_oew=0; m_oqcd=2;
   m_cfls[PropID(0,1)].push_back(kf_gluon);
@@ -643,7 +643,7 @@ bool XS_gg_q1qbar1::SetColours(const Vec4D_Vector& mom)
   double Mu(1.0/6.0*(up*tp-m_m32*(4.0*(m_m32+up)+m_m32*up/s))/(up*up));
   p_colours[0][0] = Flow::Counter();
   p_colours[0][1] = Flow::Counter();
-  if (Mt*(1-m_r) +Mu*m_r > (Mt+Mu) * ran.Get()) {
+  if (Mt*(1-m_r) +Mu*m_r > (Mt+Mu) * ran->Get()) {
     msg_Debugging()<<"xs: gg->qqb, set scale t/s "<<t<<"/"<<s<<"\n";
     /*
     
@@ -732,7 +732,7 @@ XS_q1g_q1g::XS_q1g_q1g(const Process_Info& pi, const Flavour_Vector& fl):
   m_a=fl[m_iniq].IsAnti();
   m_p=1-m_a;
   m_mq2=sqr(m_flavs[m_iniq].Mass());
-  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_oew=0; m_oqcd=2;
   m_cfls[PropID(0,1)].push_back(fl[m_iniq].Bar());
   m_cfls[PropID(2,3)].push_back(fl[m_finq]);
@@ -767,7 +767,7 @@ bool XS_q1g_q1g::SetColours(const Vec4D_Vector& mom)
   double Mu(4.0/9.0*(up*sp-m_mq2*(4.0*(m_mq2+up)+m_mq2*up/t))/(up*up));
   p_colours[m_iniq][m_a] = Flow::Counter();
   p_colours[m_finq][m_a] = Flow::Counter();
-  if (Mu > (Ms+Mu) * ran.Get()) {
+  if (Mu > (Ms+Mu) * ran->Get()) {
     /*
     
       1====+----2, if fl[2].IsQuark() 
@@ -846,7 +846,7 @@ XS_gg_gg::XS_gg_gg(const Process_Info& pi, const Flavour_Vector& fl):
   ME2_Base(pi,fl) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa.gen.CplScale()));
+  m_g=sqrt(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
   m_oew=0; m_oqcd=2;
   m_cfls[PropID(0,1)].push_back(kf_gluon);
   m_cfls[PropID(0,2)].push_back(kf_gluon);
@@ -878,7 +878,7 @@ bool XS_gg_gg::SetColours(const Vec4D_Vector& mom)
   double Mu(1.0+t*t/(u*s)-s*t/(u*u)-t*u/(s*s));
   double Ms(1.0+s*s/(t*u)-s*t/(u*u)-u*s/(t*t));
   double Mt(1.0+u*u/(s*t)-u*s/(t*t)-t*u/(s*s));
-  double rr = ran.Get() * (Ms+Mt+Mu);
+  double rr = ran->Get() * (Ms+Mt+Mu);
   if (rr-Mt < 0.) {
     /*
     

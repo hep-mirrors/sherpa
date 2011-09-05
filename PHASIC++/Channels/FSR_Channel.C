@@ -24,7 +24,7 @@ S1Channel::S1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   rannum = 2;
   rans   = new double[rannum];
 
-  s      = smax  = pt2max = sqr(ATOOLS::rpa.gen.Ecms());
+  s      = smax  = pt2max = sqr(ATOOLS::rpa->gen.Ecms());
   pt2min = 0.;
   E      = 0.5 * sqrt(s);
   name   = "S-Channel";
@@ -80,7 +80,7 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   for (int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
   rannum = 3*nout-4;
   rans   = new double[rannum];
-  s      = smax  = pt2max = sqr(ATOOLS::rpa.gen.Ecms());
+  s      = smax  = pt2max = sqr(ATOOLS::rpa->gen.Ecms());
   pt2min = 0.0;
   E      = 0.5 * sqrt(s);
   name   = "T-Channel";
@@ -136,7 +136,7 @@ T2Channel::T2Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   for (int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
   rannum = 3*nout-4;
   rans   = new double[rannum];
-  s      = smax  = pt2max = sqr(ATOOLS::rpa.gen.Ecms());
+  s      = smax  = pt2max = sqr(ATOOLS::rpa->gen.Ecms());
   pt2min = 0.0;
   E      = 0.5 * sqrt(s);
   name   = "T2-Channel";
@@ -221,7 +221,7 @@ T3Channel::T3Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   for (int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
   rannum = 3*nout-4;
   rans   = new double[rannum];
-  s      = smax  = pt2max = sqr(ATOOLS::rpa.gen.Ecms());
+  s      = smax  = pt2max = sqr(ATOOLS::rpa->gen.Ecms());
   pt2min = 0.0;
   E      = 0.5 * sqrt(s);
   name   = "T3-Channel";
@@ -312,7 +312,7 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   rannum = 2;
   rans   = new double[rannum];
 
-  s      = smax  = pt2max = sqr(ATOOLS::rpa.gen.Ecms());
+  s      = smax  = pt2max = sqr(ATOOLS::rpa->gen.Ecms());
   pt2min = 0.;
   E      = 0.5 * sqrt(s);
   name   = "U-Channel";
@@ -372,7 +372,7 @@ Decay2Channel::Decay2Channel(int _nin,int _nout,const Flavour * fl,Flavour res)
   rannum = 2;
   rans   = new double[rannum];
 
-  s      = smax  = pt2max = sqr(ATOOLS::rpa.gen.Ecms());
+  s      = smax  = pt2max = sqr(ATOOLS::rpa->gen.Ecms());
   pt2min = 0.;
   E      = 0.5 * sqrt(s);
   name   = "Decay2-Channel";

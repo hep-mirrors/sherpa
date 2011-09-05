@@ -7,6 +7,10 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 
 using namespace ATOOLS;
@@ -21,8 +25,8 @@ Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
     Data_Reader dr(" ",";","!","=");
     dr.AddComment("#");
     dr.AddWordSeparator("\t");
-    dr.SetInputPath(rpa.GetPath());
-    dr.SetInputFile(rpa.gen.Variable("INTEGRATION_DATA_FILE"));
+    dr.SetInputPath(rpa->GetPath());
+    dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
     s_on = dr.GetValue<std::string>("VEGAS","On")=="On"?1:0;
   }
   m_on=s_on;
@@ -30,8 +34,10 @@ Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
   m_dim  = dim;
   m_nopt = 0;
   m_nevt = 0;
+  m_mnevt = 0;
   m_snevt = 0;
   m_cevt = 0;
+  m_mcevt = 0;
   m_name = name;
   m_mode=0;
   m_nd = ndx;
@@ -48,12 +54,22 @@ Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
     p_d  = new double*[m_dim];
     p_di  = new double*[m_dim];
     p_hit= new int*[m_dim]; 
+#ifdef USING__MPI
+    p_md  = new double*[m_dim];
+    p_mdi  = new double*[m_dim];
+    p_mhit= new int*[m_dim]; 
+#endif
     for(int i=0;i<m_dim;i++) {
       p_xi[i] = new double[m_nd];
       p_bestxi[i] = new double[m_nd];
       p_d[i]  = new double[m_nd];
       p_di[i]  = new double[m_nd];
       p_hit[i]= new int[m_nd]; 
+#ifdef USING__MPI
+      p_md[i]  = new double[m_nd];
+      p_mdi[i]  = new double[m_nd];
+      p_mhit[i]= new int[m_nd]; 
+#endif
     }
     p_dt  = new double[m_dim];
     p_chi = new double[m_dim];
@@ -70,6 +86,11 @@ Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
 	p_d[i][j]=0.;
 	p_di[i][j]=0.;
 	p_hit[i][j]=0;
+#ifdef USING__MPI
+	p_md[i][j]=0.;
+	p_mdi[i][j]=0.;
+	p_mhit[i][j]=0;
+#endif
       }
     }
     for (int i=0;i<m_nd;i++) p_r[i]=1.0;
@@ -95,12 +116,22 @@ Vegas::~Vegas()
     delete[] p_d[i];
     delete[] p_di[i];
     delete[] p_hit[i];
+#ifdef USING__MPI
+    delete[] p_md[i];
+    delete[] p_mdi[i];
+    delete[] p_mhit[i];
+#endif
   }
   delete[] p_xi;
   delete[] p_bestxi;
   delete[] p_d;
   delete[] p_di;
   delete[] p_hit;
+#ifdef USING__MPI
+  delete[] p_md;
+  delete[] p_mdi;
+  delete[] p_mhit;
+#endif
   delete[] p_dt;
   delete[] p_xin;
   delete[] p_chi;
@@ -115,6 +146,82 @@ void Vegas::InitBinInfo()
   p_bm  = new double[m_dim];
   p_cx  = new double[m_dim];
   p_cb  = new int[m_dim];
+}
+
+void Vegas::MPISync()
+{
+  if (!m_on) return;
+#ifdef USING__MPI
+  int size=MPI::COMM_WORLD.Get_size();
+  if (size>1) {
+    int rank=MPI::COMM_WORLD.Get_rank();
+    int cn=3*m_dim*m_nd+2;
+    double *values = new double[cn];
+    if (rank==0) {
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+	for (int i=0;i<m_dim;i++) {
+	  for (int j=0;j<m_nd;j++) {
+	    p_md[i][j]+=values[i*m_nd+j];
+	    p_mdi[i][j]+=values[(m_dim+i)*m_nd+j];
+	    p_mhit[i][j]+=values[(2*m_dim+i)*m_nd+j];
+	  }
+	}
+	m_mnevt+=values[cn-2];
+	m_mcevt+=values[cn-1];
+      }
+      for (int i=0;i<m_dim;i++) {
+	for (int j=0;j<m_nd;j++) {
+	  values[i*m_nd+j]=p_md[i][j];
+	  values[(m_dim+i)*m_nd+j]=p_mdi[i][j];
+	  values[(2*m_dim+i)*m_nd+j]=p_mhit[i][j];
+	}
+      }
+      values[cn-2]=m_mnevt;
+      values[cn-1]=m_mcevt;
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,tag,size+tag);
+      }
+    }
+    else {
+      for (int i=0;i<m_dim;i++) {
+	for (int j=0;j<m_nd;j++) {
+	  values[i*m_nd+j]=p_md[i][j];
+	  values[(m_dim+i)*m_nd+j]=p_mdi[i][j];
+	  values[(2*m_dim+i)*m_nd+j]=p_mhit[i][j];
+	}
+      }
+      values[cn-2]=m_mnevt;
+      values[cn-1]=m_mcevt;
+      MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,0,rank);
+      MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,0,size+rank);
+      for (int i=0;i<m_dim;i++) {
+	for (int j=0;j<m_nd;j++) {
+	  p_md[i][j]=values[i*m_nd+j];
+	  p_mdi[i][j]=values[(m_dim+i)*m_nd+j];
+	  p_mhit[i][j]=values[(2*m_dim+i)*m_nd+j];
+	}
+      }
+      m_mnevt=values[cn-2];
+      m_mcevt=values[cn-1];
+    }
+    delete [] values;
+  }
+  for (int i=0;i<m_dim;i++) {
+    for (int j=0;j<m_nd;j++) {
+      p_d[i][j]+=p_md[i][j];
+      p_di[i][j]+=p_mdi[i][j];
+      p_hit[i][j]+=p_mhit[i][j];
+      p_md[i][j]=p_mdi[i][j]=0.;
+      p_mhit[i][j]=0;
+    }
+  }
+  m_nevt+=m_mnevt;
+  m_cevt+=m_mcevt;
+  m_mnevt=m_mcevt=0;
+#endif
 }
 
 void Vegas::Rebin(double rc, double * xi)
@@ -252,6 +359,32 @@ void Vegas::AddPoint(double value,double *xy)
 
 void Vegas::AddPoint(double value)
 {
+#ifdef USING__MPI
+  ++m_mnevt;
+  if (value>0.) ++m_mcevt;
+  double v2 = value*value;
+  for (int i=0;i<m_dim;i++) {
+    p_md[i][p_ia[i]]+=v2;
+    p_mdi[i][p_ia[i]]+=v2*v2;
+    p_mhit[i][p_ia[i]]++;
+  }
+  m_mode=0;
+  if (MPI::COMM_WORLD.Get_size()>1) {
+    if (m_autooptimize>0)
+      THROW(fatal_error,"Autooptimize not possible in MPI mode");
+  }
+  else {
+    if (m_autooptimize>0&&m_nevt%m_autooptimize==0) {
+      int v=(m_nevt-m_snevt)/m_autooptimize;
+      if (m_cevt*10*v>(unsigned long)m_autooptimize) { 
+	if (m_nopt==0) { 
+	  if(m_cevt*2>(unsigned long)m_nd) Optimize();
+	}
+	else if(m_cevt>m_nd*m_nopt) Optimize();
+      }
+    }
+  }
+#else
   ++m_nevt;
   if (value>0.) ++m_cevt;
   double v2 = value*value;
@@ -270,6 +403,7 @@ void Vegas::AddPoint(double value)
       else if(m_cevt>m_nd*m_nopt) Optimize();
     }
   }
+#endif
 }
 
 void Vegas::AddBinPoint(double value,int *xy)
@@ -285,10 +419,17 @@ void Vegas::Reset()
     for (int j=0;j<m_nd;j++) {
       p_d[i][j]=p_di[i][j]=0.;
       p_hit[i][j]=0;
+#ifdef USING__MPI
+      p_md[i][j]=p_mdi[i][j]=0.;
+      p_mhit[i][j]=0;
+#endif
     }
   }
   m_snevt=m_nevt;
   m_cevt=0;
+#ifdef USING__MPI
+  m_mnevt=m_mcevt=0;
+#endif
 }
 
 void Vegas::Optimize()
@@ -388,6 +529,11 @@ void Vegas::Refine()
     delete [] p_d[i]; p_d[i] = new double[m_nd];
     delete [] p_di[i]; p_di[i] = new double[m_nd];
     delete [] p_hit[i]; p_hit[i] = new int[m_nd]; 
+#ifdef USING__MPI
+    delete [] p_md[i]; p_md[i] = new double[m_nd];
+    delete [] p_mdi[i]; p_mdi[i] = new double[m_nd];
+    delete [] p_mhit[i]; p_mhit[i] = new int[m_nd]; 
+#endif
     double lx=0.0;
     for (int j=0;j<m_nd;++j) {
       p_xi[i][j]=(j%2==0)?(lx+xi[j/2])/2.0:lx=xi[j/2];
@@ -520,6 +666,11 @@ void Vegas::ReadIn(const std::string & pid)
       delete [] p_d[i]; p_d[i] = new double[m_nd];
       delete [] p_di[i]; p_di[i] = new double[m_nd];
       delete [] p_hit[i]; p_hit[i] = new int[m_nd]; 
+#ifdef USING__MPI
+      delete [] p_md[i]; p_md[i] = new double[m_nd];
+      delete [] p_mdi[i]; p_mdi[i] = new double[m_nd];
+      delete [] p_mhit[i]; p_mhit[i] = new int[m_nd]; 
+#endif
     }
   }
   if (m_nopt==0||m_on==0) return;

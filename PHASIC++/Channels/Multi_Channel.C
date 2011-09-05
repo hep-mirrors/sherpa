@@ -5,6 +5,9 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Poincare.H"
 #include <algorithm>
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -23,12 +26,10 @@ Multi_Channel::Multi_Channel(string _name,int id) :
   }
   name     = _name;
   n_points = n_contrib = 0;
+  mn_points = mn_contrib = 0;
   m_lastdice = -1;
   m_optcnt = 0;
   m_pol = 250.;
-  m_sum2 = 0.;
-  m_sum  = 0.;
-  m_p    = 0;
   m_otype = 0;
 }
 
@@ -89,9 +90,7 @@ void Multi_Channel::Reset()
     s1xmin     = 1.e32;
     n_points   = 0;  
     n_contrib  = 0;
-    m_sum2     = 0.;
-    m_sum      = 0.;
-    m_p        = 0;
+    mn_points = mn_contrib = 0;
   }
   msg_Tracking()<<"Channels for "<<name<<endl
 		<<"----------------- "<<n_points<<" --------------------"<<endl;
@@ -106,16 +105,10 @@ void Multi_Channel::Reset()
 void Multi_Channel::ResetOpt() 
 {
   n_points = 0;
-  m_sum  = 0.;
-  m_sum2 = 0.;
-  m_p    = 0;
 }        
 
 void Multi_Channel::ResetCnt() 
 {
-  m_sum  = 0.;
-  m_sum2 = 0.;
-  m_p    = 0;
 }        
 
 class Order_Weight {
@@ -126,6 +119,68 @@ public:
   }
 };
 
+void Multi_Channel::MPISync()
+{
+#ifdef USING__MPI
+  int size=MPI::COMM_WORLD.Get_size();
+  if (size>1) {
+    int rank=MPI::COMM_WORLD.Get_rank();
+    int cn=3*channels.size()+2;
+    double *values = new double[cn];
+    if (rank==0) {
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+	for (size_t i=0;i<channels.size();++i) {
+	  channels[i]->AddMPIVars(values[i],
+				  values[channels.size()+i],
+				  values[2*channels.size()+i]);
+	}
+	mn_points+=values[cn-2];
+	mn_contrib+=values[cn-1];
+      }
+      for (size_t i=0;i<channels.size();++i) {
+	values[i]=channels[i]->MRes1();
+	values[channels.size()+i]=channels[i]->MRes2();
+	values[2*channels.size()+i]=channels[i]->MRes3();
+      }
+      values[cn-2]=mn_points;
+      values[cn-1]=mn_contrib;
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,tag,size+tag);
+      }
+    }
+    else {
+      for (size_t i=0;i<channels.size();++i) {
+	values[i]=channels[i]->MRes1();
+	values[channels.size()+i]=channels[i]->MRes2();
+	values[2*channels.size()+i]=channels[i]->MRes3();
+      }
+      values[cn-2]=mn_points;
+      values[cn-1]=mn_contrib;
+      MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,0,rank);
+      MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,0,size+rank);
+      for (size_t i=0;i<channels.size();++i) {
+	channels[i]->SetMPIVars(values[i],
+				values[channels.size()+i],
+				values[2*channels.size()+i]);
+      }
+      mn_points=values[cn-2];
+      mn_contrib=values[cn-1];
+    }
+    delete [] values;
+  }
+  for (size_t i=0;i<channels.size();++i) {
+    channels[i]->CopyMPIValues();
+    channels[i]->MPISync();
+  }
+  n_points+=mn_points;
+  n_contrib+=mn_contrib;
+  mn_points=mn_contrib=0.0;
+#endif
+}
+
 void Multi_Channel::Optimize(double error)
 {
   if (m_fixalpha) return;
@@ -134,9 +189,9 @@ void Multi_Channel::Optimize(double error)
   double aptot = 0.;
   size_t i;
   for (i=0;i<channels.size();i++) {
-    s1[i]  = channels[i]->Res1()/channels[i]->N();
+    s1[i]  = channels[i]->Res1()/n_points;
     s2[i]  = sqrt(channels[i]->Res2()-
-		  channels[i]->Res3()/(channels[i]->N()-1. ))/channels[i]->N();
+		  channels[i]->Res3()/(n_points-1. ))/n_points;
     aptot += channels[i]->Alpha()*sqrt(s1[i]);
   }
   
@@ -219,23 +274,34 @@ bool Multi_Channel::OptimizationFinished()
 void Multi_Channel::AddPoint(double value)
 {
   //if (!ATOOLS::IsZero(value)) n_contrib++;
+#ifdef USING__MPI
+  if (value!=0.) mn_contrib++;
+#else
   if (value!=0.) n_contrib++;
+#endif
   //   if (value!=0.) PRINT_INFO(Name()<<" "<<value<<" "<<n_contrib);
+#ifdef USING__MPI
+  mn_points++;
+#else
   n_points++;
-  m_p++;
-  m_sum+=value;
-  m_sum2+=sqr(value);
+#endif
   double var;
   for (size_t i=0;i<channels.size();i++) {
     if (value!=0.) {
       if (channels[i]->Weight()!=0) 
 	var = sqr(value)*m_weight/channels[i]->Weight();
       else var = 0.;
+#ifdef USING__MPI
+      channels[i]->AddMPIVars(var,sqr(var),
+			      sqr(channels[i]->MRes1())
+			      -channels[i]->MRes2()
+			      -channels[i]->MRes3());
+#else
       channels[i]->SetRes1(channels[i]->Res1() + var);
       channels[i]->SetRes2(channels[i]->Res2() + sqr(var));
       channels[i]->SetRes3(sqr(channels[i]->Res1())-channels[i]->Res2());
+#endif
     }
-    channels[i]->IncrementN();
   }
   if (m_lastdice>=0) Channel(m_lastdice)->AddPoint(value);
 }
@@ -282,11 +348,11 @@ void Multi_Channel::GeneratePoint(Vec4D *p,Cut_Data * cuts)
     m_lastdice = 0;
     return;
   }  
-  double rn  = ran.Get();
+  double rn  = ran->Get();
   double sum = 0;
   for (size_t i=0;;++i) {
     if (i==channels.size()) {
-      rn  = ran.Get();
+      rn  = ran->Get();
       i   = 0;
       sum = 0.;
     }
@@ -303,12 +369,12 @@ void Multi_Channel::GeneratePoint(Vec4D *p,Cut_Data * cuts)
 void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode) 
 {
   for(size_t i=0;i<channels.size();++i) channels[i]->SetWeight(0.);
-  double disc=ran.Get();
+  double disc=ran->Get();
   double sum=0.;
   for (size_t n=0;n<channels.size();++n) {
     sum+=channels[n]->Alpha();
     if (sum>disc) {
-      for (size_t i=0;i<2;++i) rans[i]=ran.Get();
+      for (size_t i=0;i<2;++i) rans[i]=ran->Get();
       channels[n]->GeneratePoint(spkey,ykey,rans,mode);
       m_lastdice = n;
       return;

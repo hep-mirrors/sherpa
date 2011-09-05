@@ -106,7 +106,7 @@ bool Color_Integrator::ConstructRepresentations
 
 size_t Color_Integrator::GenerateIndex()
 {
-  double rn(3.0*ran.Get());
+  double rn(3.0*ran->Get());
   for (double disc(1.0);disc<=3.0;++disc)
     if (disc>=rn) return (size_t)disc;
   return std::string::npos;
@@ -124,7 +124,7 @@ bool Color_Integrator::GenerateColours()
   size_t nr(0), ng(0), nb(0);
   for (size_t i(0);i<iids.size();++i) {
     // select partner
-    size_t j(Min(jids.size()-1,(size_t)(ran.Get()*jids.size())));
+    size_t j(Min(jids.size()-1,(size_t)(ran->Get()*jids.size())));
     // set colours
     size_t idx(GenerateIndex());
     m_ids[iids[i]]->SetI(idx);
@@ -194,13 +194,13 @@ void Color_Integrator::SetPoint(const Cluster_Amplitude *const ampl)
     if (jit!=cmap.end()) m_ids[i]->SetJ(jit->second);
     else jidx=i;
   }
-  int nc(Min(3,1+(int)(3.0*ran.Get())));
+  int nc(Min(3,1+(int)(3.0*ran->Get())));
   m_ids[iidx]->SetI(nc);
   m_ids[jidx]->SetJ(nc);
   Int_Vector jids;
   for (size_t i(0);i<m_ids.size();++i) 
     if (m_ids[i]->J()!=0) jids.push_back(i);
-  size_t j(Min(jids.size()-1,(size_t)(ran.Get()*jids.size())));
+  size_t j(Min(jids.size()-1,(size_t)(ran->Get()*jids.size())));
   int oc(m_ids[jids[j]]->J());
   m_ids[jids[j]]->SetJ(m_ids[jidx]->J());
   m_ids[jidx]->SetJ(oc);
@@ -288,7 +288,7 @@ int Color_Integrator::ConstructConfigurations
       /*
         // pick randomized any to start
         size_t cg(Max(sids.size()-1,
-	              (size_t)(sids.size()*ran.Get())));
+	              (size_t)(sids.size()*ran->Get())));
         tids.push_back(sids[cg]);
       */
       tids.push_back(sids.front());
@@ -598,7 +598,7 @@ bool Color_Integrator::LookUp()
     m_over-=1.0;
     return true;
   }
-  double rn(ran.Get());
+  double rn(ran->Get());
   if (rn>=m_over) {
     m_orders.clear();
     m_weights.clear();
@@ -625,7 +625,7 @@ int Color_Integrator::Generate()
       weight+=m_alpha[type];
     }
   }
-  double rn(ran.Get());
+  double rn(ran->Get());
   double cmax(m_alphamode>1?m_max:m_mean/m_weight*m_cmax);
   m_over=Max(0.0,weight/cmax-1.0);
   msg_Debugging()<<METHOD<<"(): amode = "<<m_alphamode<<", rn = "

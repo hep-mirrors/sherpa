@@ -50,11 +50,11 @@ namespace AMEGIC {
     inline double QMin() const { return p_qmin!=NULL?*p_qmin:-1.0; }
     inline ATOOLS::Flavour Flav() 
     { return m_anti==-1?m_mapfl.Bar():m_mapfl; }
-    inline const int OrderQCD() const { return m_nqcd; }
-    inline const int OrderQED() const { return m_nqed; }
-    inline const int NQCD() const { return m_pqcd; }
-    inline const int NQED() const { return m_pqed; }
-    inline const std::string Type() const { return m_type; }
+    inline int OrderQCD() const { return m_nqcd; }
+    inline int OrderQED() const { return m_nqed; }
+    inline int NQCD() const { return m_pqcd; }
+    inline int NQED() const { return m_pqed; }
+    inline const std::string &Type() const { return m_type; }
     inline void SetMapFlavour(const ATOOLS::Flavour &fl) { m_mapfl=fl; }
     inline ATOOLS::Flavour MapFlavour() const { return m_mapfl; }
   };// end of class Leg
@@ -167,20 +167,20 @@ namespace AMEGIC {
 
     int    AddCouplings(int &nqed,int &nqcd) const;
     // inline functions
-    inline const int                  Number()                             const { return m_no; }
-    inline const int                  NLegs()                              const { return m_nlegs; }
-    inline const int                  OrderStrong()                        const { return m_nstrong; }
-    inline const int                  NAmplitudes()                        const { return m_nampl; }
-    inline Combine_Table * const Up()                                 const { return p_up; }
-    inline Combine_Table * const Down()                               const { return m_combinations.empty()?NULL:m_cdata_winner->second.p_down; }
+    inline int                  Number()                             const { return m_no; }
+    inline int                  NLegs()                              const { return m_nlegs; }
+    inline int                  OrderStrong()                        const { return m_nstrong; }
+    inline int                  NAmplitudes()                        const { return m_nampl; }
+    inline Combine_Table * Up()                                 const { return p_up; }
+    inline Combine_Table * Down()                               const { return m_combinations.empty()?NULL:m_cdata_winner->second.p_down; }
     inline ATOOLS::Vec4D              Momentum(const int i)                const { return p_moms[i]; }
     inline ATOOLS::Flavour            Flav(const int i)                    const { return p_legs[m_graph_winner][i].Flav(); }
     inline const Leg                & GetLeg(const int ngraph,const int l) const { return p_legs[ngraph][l]; }
     inline Leg                & GetLeg(const int l)                  const { return p_legs[m_graph_winner][l]; }
-    inline ATOOLS::Vec4D      * const Momenta()                            const { return p_moms; }
-    inline Leg               ** const GetLegs()                            const { return p_legs; }
-    inline Leg               ** const GetHardLegs()                        const { return p_hard; }
-    inline int               ** const GetHardInfo()                        const { return p_hardc; }
+    inline ATOOLS::Vec4D      * Momenta()                            const { return p_moms; }
+    inline Leg               ** GetLegs()                            const { return p_legs; }
+    inline Leg               ** GetHardLegs()                        const { return p_hard; }
+    inline int               ** GetHardInfo()                        const { return p_hardc; }
     inline static void                ResetCounter()                             { s_all=0; }
     inline const ATOOLS::DecayInfo_Vector &Decays() const { return m_decids; }
 

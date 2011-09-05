@@ -26,8 +26,8 @@ Analysis_Phase::Analysis_Phase(Analysis_Vector *const analyses):
   double wit;
   if (read.ReadFromFile(wit,"ANALYSIS_WRITEOUT_INTERVAL")) {
     if (wit<1.0) {
-      if (wit*rpa.gen.NumberOfEvents()>1.0)
-        m_wit=(size_t)(wit*rpa.gen.NumberOfEvents());
+      if (wit*rpa->gen.NumberOfEvents()>1.0)
+        m_wit=(size_t)(wit*rpa->gen.NumberOfEvents());
     }
     else m_wit=(size_t)(wit);
     msg_Info()<<METHOD<<"(): Set writeout interval "<<m_wit<<" events.\n";
@@ -41,8 +41,8 @@ Return_Value::code Analysis_Phase::Treat(Blob_List *bloblist,double &weight)
       if (!m_inits[*it]) m_inits[*it]=(*it)->Init();
       (*it)->Run(bloblist);
     }
-  if (rpa.gen.NumberOfGeneratedEvents()%m_wit==0 &&
-      rpa.gen.NumberOfGeneratedEvents()<rpa.gen.NumberOfEvents()) 
+  if (rpa->gen.NumberOfGeneratedEvents()%m_wit==0 &&
+      rpa->gen.NumberOfGeneratedEvents()<rpa->gen.NumberOfEvents()) 
     for (Analysis_Vector::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it)
       (*it)->WriteOut();
   return Return_Value::Nothing;

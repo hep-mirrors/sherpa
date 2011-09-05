@@ -127,9 +127,9 @@ void Polarisation::Set_Gauge_Vectors(int N,Vec4D* p,Vec4D gauge)
 	Vec4D r1,r2;
         Vec4D pisave = p[i];
 	double mass = sqrt(p[i].Abs2());	
-	double C = 2.*ran.Get()-1.;
+	double C = 2.*ran->Get()-1.;
 	double S = sqrt(1.-C*C);
-	double F = 2.*M_PI*ran.Get();
+	double F = 2.*M_PI*ran->Get();
 	r1 = mass/2.*Vec4D(1.,S*::sin(F),S*::cos(F),C);
 	r2 = Vec4D(r1[0],(-1.)*Vec3D(r1));
 	Vec4D help;

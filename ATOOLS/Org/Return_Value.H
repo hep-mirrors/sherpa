@@ -17,19 +17,18 @@ namespace ATOOLS {
     static Counter_Map s_retry_event_counter;
     static Counter_Map s_new_event_counter;
     static Counter_Map s_call_counter;
-    void PrintSingleStatistics(std::ostream &str,const std::string &type,
-			       const Counter_Map &map) const;
+    static void PrintSingleStatistics
+    (std::ostream &str,const std::string &type,
+     const Counter_Map &map);
   public:
-    ~Return_Value();
-    void Statistics() const;
-    void PrintStatistics(std::ostream &str) const;
-    void IncWarning(std::string);
-    void IncError(std::string);
-    void IncRetryMethod(std::string);
-    void IncRetryPhase(std::string);
-    void IncRetryEvent(std::string);
-    void IncNewEvent(std::string);
-    void IncCall(std::string);
+    static void PrintStatistics(std::ostream &str);
+    static void IncWarning(const std::string &);
+    static void IncError(const std::string &);
+    static void IncRetryMethod(const std::string &);
+    static void IncRetryPhase(const std::string &);
+    static void IncRetryEvent(const std::string &);
+    static void IncNewEvent(const std::string &);
+    static void IncCall(const std::string &);
     enum code {
       Error        = -10,
       Failure      = -1,
@@ -46,6 +45,5 @@ namespace ATOOLS {
 
   std::ostream &operator<<(std::ostream &str,const Return_Value::code &rvc);
 
-  extern Return_Value rvalue;
 }
 #endif

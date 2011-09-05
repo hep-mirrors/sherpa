@@ -36,13 +36,13 @@ Phox::Phox(const Process_Info& pi,const Flavour_Vector& flavs):
   p_aqed((MODEL::Running_AlphaQED *)
 	 MODEL::s_model->GetScalarFunction(std::string("alpha_QED"))),
   m_aqed(MODEL::s_model->ScalarFunction(std::string("alpha_QED"),
-					rpa.gen.CplScale())),
+					rpa->gen.CplScale())),
   // average over incoming colours, not sure about spins and colour factor
   // of correction - maybe a factor 8 too much and 1/4 too little.
   m_normcorr(16.*M_PI*M_PI/3.*4.*(3.-1.)*(3.+1.)/3.),
   m_qcharge2(sqr(flavs[0].Charge()))
 {
-  rpa.gen.AddCitation
+  rpa->gen.AddCitation
     (1,"The NLO matrix elements have been taken from PHOX \\cite{}.");
 }
 

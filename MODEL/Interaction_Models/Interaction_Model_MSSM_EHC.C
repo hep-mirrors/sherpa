@@ -37,7 +37,7 @@ Interaction_Model_MSSM_EHC::Interaction_Model_MSSM_EHC(MODEL::Model_Base * _mode
   p_mosquark  = new Interaction_Model_sQuark_EW(p_model,_cplscheme,_yukscheme); 
   p_moslesqu  = new Interaction_Model_sLepton_sQuark(p_model,_cplscheme,_yukscheme); 
 
-  double scale = rpa.gen.CplScale();
+  double scale = rpa->gen.CplScale();
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),scale)));
   g2    = Kabbala(string("g_1/\\sin\\theta_W"), 

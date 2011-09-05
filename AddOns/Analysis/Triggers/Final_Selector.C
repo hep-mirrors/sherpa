@@ -31,10 +31,10 @@ Final_Selector_Getter::operator()(const Argument_Matrix &parameters) const
 {
   Final_Selector_Data data;
   int jetmode=0;
-  if (ATOOLS::rpa.gen.Beam1().Kfcode()==kf_e || 
-      ATOOLS::rpa.gen.Beam2().Kfcode()==kf_e) jetmode=3;
-  if (ATOOLS::rpa.gen.Beam1().Kfcode()==kf_e && 
-      ATOOLS::rpa.gen.Beam2().Kfcode()==kf_e) jetmode=1;
+  if (ATOOLS::rpa->gen.Beam1().Kfcode()==kf_e || 
+      ATOOLS::rpa->gen.Beam2().Kfcode()==kf_e) jetmode=3;
+  if (ATOOLS::rpa->gen.Beam1().Kfcode()==kf_e && 
+      ATOOLS::rpa->gen.Beam2().Kfcode()==kf_e) jetmode=1;
   std::string inlist="FinalState", outlist="Analysed";
   ATOOLS::Particle_Qualifier_Base *qualifier=NULL;
   for (size_t i=0;i<parameters.size();++i) {

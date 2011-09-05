@@ -38,7 +38,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
 
   if (echflag!=0) sprintf(name,"%s%c",name,'a'+extrachannelflag-1);
   
-  string filename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/")+
+  string filename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/")+
                     string(name)+string(".C");
   
   ifstream from;
@@ -82,6 +82,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
 	<<"    void   GenerateWeight(Vec4D *,Cut_Data *);"<<endl
 	<<"    void   GeneratePoint(Vec4D *,Cut_Data *,double *);"<<endl
 	<<"    void   AddPoint(double);"<<endl
+	<<"    void   MPISync()                 { p_vegas->MPISync(); }"<<endl
 	<<"    void   Optimize()                { p_vegas->Optimize(); } "<<endl
 	<<"    void   EndOptimize()             { p_vegas->EndOptimize(); } "<<endl
 	<<"    void   WriteOut(std::string pId) { p_vegas->WriteOut(pId); } "<<endl
@@ -529,7 +530,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 
 
       if (pout1.size()==1 && pin1.size()==1 && pout1[0].length()==1 && extrachannelflag==1) {
-	sf<<" = CE.LLPropMomenta(0.99,1.001*sqr(rpa.gen.Ecms()),s"<<Order(pout0sum)<<"_min,"
+	sf<<" = CE.LLPropMomenta(0.99,1.001*sqr(rpa->gen.Ecms()),s"<<Order(pout0sum)<<"_min,"
 	  <<"s"<<Order(pout0sum)<<"_max,ran["<<rannum<<"]);"<<endl;
 	extrachannelflag = 0;
       }
@@ -552,7 +553,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       //<<"  double s"<<Order(pout0sum)<<" = dabs(p"<<Order(pout0sum)<<".Abs2());"<<endl;    
 
       if (pout1.size()==1 && pin1.size()==1 && pout1[0].length()==1 && extrachannelflag==1) {
-	sf<<"  wt *= CE.LLPropWeight(0.99,1.001*sqr(rpa.gen.Ecms()),s"<<Order(pout0sum)<<"_min,"
+	sf<<"  wt *= CE.LLPropWeight(0.99,1.001*sqr(rpa->gen.Ecms()),s"<<Order(pout0sum)<<"_min,"
 	  <<"s"<<Order(pout0sum)<<"_max,s"<<Order(pout0sum)<<",rans["<<rannum<<"]);"<<endl;
       }
       else {

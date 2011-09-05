@@ -305,8 +305,8 @@ void Amplitude_Handler::StoreAmplitudeConfiguration(std::string path)
 
 void Amplitude_Handler::RestoreAmplitudes(std::string path)
 {
-  std::string name = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+path+"/Cluster.dat";
-  std::ifstream cplfile((rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+path+"/Couplings.dat").c_str());
+  std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+path+"/Cluster.dat";
+  std::ifstream cplfile((rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+path+"/Couplings.dat").c_str());
   IO_Handler ioh;
   ioh.SetFileNameRO(name);
   size_t cg = ioh.Input<int>("");
@@ -341,7 +341,7 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
 void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string lib,
 					      char emit,char spect,Flavour* fl)
 {
-  std::string name = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".map";
+  std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".map";
   ifstream from;
   from.open(name.c_str());
   shand->Get_Generator()->ReadCouplings(from);

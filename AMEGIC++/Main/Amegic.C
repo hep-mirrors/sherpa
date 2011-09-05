@@ -75,7 +75,7 @@ void Amegic::DrawLogo(std::ostream &ostr)
   ostr<<"+-----------------------------------------+\n";
   ostr<<"| please cite: JHEP 0202:044,2002         |\n";
   ostr<<"+-----------------------------------------+\n";
-  rpa.gen.AddCitation
+  rpa->gen.AddCitation
     (1,"Amegic is published under \\cite{Krauss:2001iv}.");
 }
 

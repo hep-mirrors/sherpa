@@ -5,7 +5,11 @@
 #include "ATOOLS/Math/Permutation.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include <stdio.h>
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -75,10 +79,14 @@ void VHAAG_ND::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG_ND* ov
   msg_Tracking()<<" n_p1="<<n_p1<<" type="<<m_type<<std::endl;
   int vs=m_type;
 
+  int size=1;
+#ifdef USING__MPI
+  size=MPI::COMM_WORLD.Get_size();
+#endif
   if (1) {
     if (p_sharedvegaslist[vs]==NULL) {
       p_sharedvegaslist[vs] = new Vegas(rannum,100,Name());
-      p_sharedvegaslist[vs]->SetAutoOptimize(Min(nout,5)*100);
+      if (size<2) p_sharedvegaslist[vs]->SetAutoOptimize(Min(nout,5)*100);
       if (1) {
 	if (m_type<2) {
 	  for (int i=0;i<=nout-3;i++) p_sharedvegaslist[vs]->ConstChannel(2+3*i);
@@ -97,7 +105,7 @@ void VHAAG_ND::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG_ND* ov
   else  {
     m_ownvegas = true;
     p_vegas = new Vegas(rannum,100,Name());
-    p_vegas->SetAutoOptimize(500);
+    if (size<2) p_vegas->SetAutoOptimize(500);
   } 
 
   m_s0=-1.;
@@ -117,6 +125,21 @@ VHAAG_ND::~VHAAG_ND()
     for (int i=0;i<nout;i++) if (p_sharedvegaslist[i]!=0) empty=0;
     if (empty) delete[] p_sharedvegaslist;
   }
+}
+
+void VHAAG_ND::MPISync()
+{
+#ifdef USING__MPI
+  if (m_ownvegas) p_vegas->MPISync();
+#endif
+}
+
+void VHAAG_ND::Optimize()
+{
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_size()<2) return;
+  if (m_ownvegas) p_vegas->Optimize();
+#endif
 }
 
 void VHAAG_ND::AddPoint(double Value)
@@ -348,7 +371,7 @@ void VHAAG_ND::ConstructMomenta(double a1,double a2,
   double a  = (v1+v2*v)/(1-v*v);
   double b  = -(v2+v1*v)/(1-v*v);
   double eps= sqrt(ps-a*a-b*b-2.*a*b*v);
-  if (ran.Get()<0.5) eps=-eps;
+  if (ran->Get()<0.5) eps=-eps;
   Vec3D pv = a*e1+b*e2+eps*ee;
 
   p1 = Vec4D(sqrt(ps+s1),pv);

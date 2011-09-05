@@ -122,7 +122,7 @@ double LF_VVV_FF::OverEstimated(const double z,const double y)
 double LF_VVV_FF::Z()
 {
   return 1./(1. + ((1.-m_zmin)/m_zmin) *
-	     pow(m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax),ATOOLS::ran.Get()));
+	     pow(m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax),ATOOLS::ran->Get()));
 }
 
 double LF_VVV_FI::operator()
@@ -149,7 +149,7 @@ double LF_VVV_FI::OverEstimated(const double z,const double y)
 double LF_VVV_FI::Z()
 {
   return 1./(1. + ((1.-m_zmin)/m_zmin) *
-	     pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), ATOOLS::ran.Get()));
+	     pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), ATOOLS::ran->Get()));
 }
 
 double LF_VVV_IF::operator() 
@@ -190,7 +190,7 @@ double LF_VVV_IF::OverEstimated(const double z,const double y)
 double LF_VVV_IF::Z()
 {
   return 1./(1. + ((1.-m_zmin)/m_zmin) *
-	     pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), ATOOLS::ran.Get()));
+	     pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), ATOOLS::ran->Get()));
 }
 
 double LF_VVV_II::operator()
@@ -217,7 +217,7 @@ double LF_VVV_II::OverEstimated(const double z,const double y)
 double LF_VVV_II::Z()
 {
   return 1./(1. + ((1.-m_zmin)/m_zmin) *
-	     pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), ATOOLS::ran.Get()));
+	     pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), ATOOLS::ran->Get()));
 }
 
 DECLARE_GETTER(LF_VVV_Getter,"Gauge3",SF_Lorentz,SF_Key);

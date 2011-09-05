@@ -13,7 +13,7 @@ c_mrst * PDF_MRST99::p_proton = NULL;
 
 PDF_MRST99::PDF_MRST99(const ATOOLS::Flavour _bunch,
 		       const int _set) :
-  m_set(_set), m_path(rpa.gen.Variable("SHERPA_SHARE_PATH")+"/MRST99Grid")
+  m_set(_set), m_path(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/MRST99Grid")
 {
   if ((m_set<1)||(m_set>12)) {
     msg_Error()<<"Error in PDF_MRST99::PDF_MRST99 : Wrong set : "<<m_set<<std::endl

@@ -93,7 +93,7 @@ double Decay_Channel::GenerateMass(const double& min,const double& max) const
       ++trials;
       if (w>wmax+Accu())
         msg_Error()<<METHOD<<" w="<<w<<" > wmax="<<wmax<<std::endl;
-    } while (w<ran.Get()*wmax && trials<1000);
+    } while (w<ran->Get()*wmax && trials<1000);
   }
   return mass;
 }

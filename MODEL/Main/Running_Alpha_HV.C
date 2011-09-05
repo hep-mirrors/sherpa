@@ -16,8 +16,8 @@ using namespace std;
 
 Running_Alpha_HV::Running_Alpha_HV(const double as_MZ,const double m2_MZ,const int order, const double fac, const std::string group, const double Nc) :   m_order(order), m_as_MZ(as_MZ), m_m2_MZ(m2_MZ), m_fac(fac), m_group(group), m_Nc(Nc)
 {
-  if(m_fac==1.0 && rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR")!="") {
-    m_fac=ToType<double>(rpa.gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
+  if(m_fac==1.0 && rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")!="") {
+    m_fac=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   }
   if (m_fac!=1.0) msg_Debugging()<<METHOD<<"(): Setting scale factor "<<m_fac<<"\n";
   m_type  = std::string("Running Coupling");

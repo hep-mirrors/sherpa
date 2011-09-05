@@ -51,7 +51,7 @@ RamboKK::RamboKK(int _nin,int _nout,const Flavour * fl)// : nin(_nin), nout(_nou
       else gam=sqrt(M_PI);
       for(int k=2-ed%2;k<ed;k+=2)gam*=0.5*k;
 
-      double mm=rpa.gen.Ecms();
+      double mm=rpa->gen.Ecms();
       prevET = mm;
       for(int j=nin;j<nin+nout;j++)
 	if(j!=i) mm -= sqrt(ms[j]);
@@ -79,7 +79,7 @@ void RamboKK::Set_KKmass()
   do{
     ms2=0;
     for (short int i=0;i<ed;i++) {
-      nv[i]=ran.Get()*maxn;
+      nv[i]=ran->Get()*maxn;
       ms2+=sqr(nv[i]);
     }
     ms2*=4*sqr(M_PI)/r2;
@@ -126,10 +126,10 @@ void RamboKK::GeneratePoint(Vec4D * p,Cut_Data * cuts)
   Vec3D B;
   
   for(i=nin;i<nin+nout;i++) {
-    C     = 2*ran.Get()-1;
+    C     = 2*ran->Get()-1;
     S     = sqrt(1-C*C);
-    F     = 2*M_PI*ran.Get();
-    Q     = -log(ran.Get()*ran.Get());
+    F     = 2*M_PI*ran->Get();
+    Q     = -log(ran->Get()*ran->Get());
     p[i]  = Vec4D(Q, Q*S*::sin(F), Q*S*cos(F), Q*C);
     R    += p[i]; 
   }

@@ -112,7 +112,7 @@ int AMEGIC::Process_Group::InitAmplitude(Model_Base * model,Topology * top)
   m_oew=m_oqcd=0;
   m_mfname = "P"+ToString(m_nin)+"_"+ToString(m_nout)+"/"+m_name+".map";
 
-  string name = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_mfname;
+  string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_mfname;
   string buffer;
   ifstream file;
   file.open(name.c_str()); 
@@ -131,7 +131,7 @@ int AMEGIC::Process_Group::InitAmplitude(Model_Base * model,Topology * top)
 void AMEGIC::Process_Group::WriteMappingFile()
 {
   if (m_mfname==string("")) return;
-  std::string name = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_mfname;
+  std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_mfname;
   fstream file;
   file.open(name.c_str(),ios::out|ios::app); 
 
@@ -182,7 +182,7 @@ PHASIC::Single_Channel *LoadChannels(int nin,int nout,ATOOLS::Flavour* fl,
 			    std::string& pID,PHASIC::Phase_Space_Handler *psh)
 {
   size_t pos(pID.find("/"));
-  s_loader->AddPath(rpa.gen.Variable("SHERPA_LIB_PATH"));
+  s_loader->AddPath(rpa->gen.Variable("SHERPA_LIB_PATH"));
   Lib_Getter_Function gf = (Lib_Getter_Function)
     PT(s_loader->GetLibraryFunction("Proc_"+pID.substr(0,pos),
 				    "Getter_"+pID.substr(pos+1)));

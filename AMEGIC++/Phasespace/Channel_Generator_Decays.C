@@ -37,7 +37,7 @@ int Channel_Generator_Decays::MakeChannel(int& echflag,int n,string& path,string
 
   if (echflag!=0) sprintf(name,"%s%c",name,'a'+extrachannelflag-1);
   
-  string filename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/")+
+  string filename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/")+
                     string(name)+string(".C");
   
   ifstream from;
@@ -80,6 +80,7 @@ int Channel_Generator_Decays::MakeChannel(int& echflag,int n,string& path,string
 	<<"    void   GenerateWeight(Vec4D *,Cut_Data *);"<<endl
 	<<"    void   GeneratePoint(Vec4D *,Cut_Data *,double *);"<<endl
 	<<"    void   AddPoint(double);"<<endl
+	<<"    void   MPISync()                 { p_vegas->MPISync(); }"<<endl
 	<<"    void   Optimize()                { p_vegas->Optimize(); } "<<endl
 	<<"    void   EndOptimize()             { p_vegas->EndOptimize(); } "<<endl
 	<<"    void   WriteOut(std::string pId) { p_vegas->WriteOut(pId); } "<<endl

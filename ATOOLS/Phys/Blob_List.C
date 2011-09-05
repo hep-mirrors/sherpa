@@ -201,7 +201,7 @@ bool Blob_List::FourMomentumConservation() const
 	       <<this<<") Invalid momenta."<<std::endl;
     return false;
   }
-  static double accu(sqrt(rpa.gen.Accu()));
+  static double accu(sqrt(rpa->gen.Accu()));
   bool test=IsEqual(inisum,finsum,accu);
   if (!test) {
     msg_Error()<<"Blob_List::FourMomentumConservation(): ("

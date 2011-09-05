@@ -186,17 +186,17 @@ Singlet *CS_POWHEG::TranslateAmplitude
     parton->SetRFlow();
     parton->SetKin(p_powheg->KinScheme());
     if (is) {
-      if (Vec3D(p.Momentum())*Vec3D(rpa.gen.PBeam(0))>0.) {
-	parton->SetXbj(p.Momentum()[0]/rpa.gen.PBeam(0)[0]);
+      if (Vec3D(p.Momentum())*Vec3D(rpa->gen.PBeam(0))>0.) {
+	parton->SetXbj(p.Momentum()[0]/rpa->gen.PBeam(0)[0]);
 	parton->SetBeam(0);
       }
       else { 
-	parton->SetXbj(p.Momentum()[0]/rpa.gen.PBeam(1)[0]);
+	parton->SetXbj(p.Momentum()[0]/rpa->gen.PBeam(1)[0]);
 	parton->SetBeam(1);
       }
     }
-    parton->SetStart(sqr(rpa.gen.Ecms()));
-    double ktveto2(jf?jf->Ycut()*sqr(rpa.gen.Ecms()):parton->KtStart());
+    parton->SetStart(sqr(rpa->gen.Ecms()));
+    double ktveto2(jf?jf->Ycut()*sqr(rpa->gen.Ecms()):parton->KtStart());
     double ktmax2(ampl->Legs().size()-ampl->NIn()==
 		  ampl->Leg(2)->NMax()?parton->KtStart():0.0);
     parton->SetKtMax(ktmax2);
@@ -250,7 +250,7 @@ ZH_Pair CS_POWHEG::ZHSplit(const double &B,const double &Qij2,
 {
   if (rbd->m_ktres<1.0) return ZH_Pair(1.0,0.0);
   double Z(Min(1.0,B/rbd->m_bmax));
-  double H(Min(1.0,Qij2/sqr(rpa.gen.Ecms()/rbd->m_ktres)));
+  double H(Min(1.0,Qij2/sqr(rpa->gen.Ecms()/rbd->m_ktres)));
   return ZH_Pair(Z,H);
 }
 

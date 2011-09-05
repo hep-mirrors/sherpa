@@ -92,8 +92,8 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
 	*sqrt(dabs(sqr(energymin[j])-sqr(fl[j].SelMass())))
 	*cosmax[i][j];*/
       scut[i][j] = scut[j][i] = scut_save[i][j] =
-	(i<nin)^(j<nin)?0.0:1.e-12*sqr(rpa.gen.Ecms());
-	//Max(sc,1.e-12*sqr(rpa.gen.Ecms()));
+	(i<nin)^(j<nin)?0.0:1.e-12*sqr(rpa->gen.Ecms());
+	//Max(sc,1.e-12*sqr(rpa->gen.Ecms()));
     }
   }  
 }

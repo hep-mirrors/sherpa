@@ -235,7 +235,7 @@ Parton *Splitting_Function_Base::SetSpec(Parton *const spec)
 Parton *Splitting_Function_Base::SelectSpec()
 {
   if (m_specs.empty()) return NULL;
-  double disc=ran.Get()*m_specs.size();
+  double disc=ran->Get()*m_specs.size();
   return SetSpec(m_specs[Min(m_specs.size()-1,(size_t)disc)]);
 }
 
@@ -313,7 +313,7 @@ void Splitting_Function_Base::ResetLastInt()
 
 double Splitting_Function_Base::Phi(double z) const
 {
-  return 2.*M_PI*ATOOLS::ran.Get();
+  return 2.*M_PI*ATOOLS::ran->Get();
 }
 
 const Flavour & Splitting_Function_Base::GetFlavourA() const

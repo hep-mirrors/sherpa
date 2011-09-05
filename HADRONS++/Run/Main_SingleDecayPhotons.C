@@ -50,7 +50,7 @@ void InitialiseGenerator(int argc, char *argv[])
   mother_flav.SetStable(false);
   if(ToType<int>(argv[1])<0) mother_flav=mother_flav.Bar();
 
-  rpa.gen.SetEcms(mother_flav.HadMass());
+  rpa->gen.SetEcms(mother_flav.HadMass());
   msg_Info()<<"Welcome. I am decaying a "<<mother_flav<<endl;
 
   Particle* mother_part = new Particle( 1,mother_flav,

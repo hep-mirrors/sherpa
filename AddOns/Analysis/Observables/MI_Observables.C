@@ -134,7 +134,7 @@ MI_Statistics::MI_Statistics(const size_t scales,const std::string & listname,
   m_type=type;
   m_listname=listname;
   m_scales.resize(scales);
-  double max=ATOOLS::rpa.gen.Ecms()/2.0;
+  double max=ATOOLS::rpa->gen.Ecms()/2.0;
   for (size_t i=0;i<scales;++i) 
     m_scales[i] = new ATOOLS::Histogram(10,max*1.0e-5,max,200);
 }

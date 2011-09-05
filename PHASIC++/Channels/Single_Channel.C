@@ -1,6 +1,10 @@
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -11,7 +15,9 @@ Single_Channel::Single_Channel() :
   n_points(0),n_contrib(0),weight(0.),result(0.),result2(0.),
   res1(0.),res2(0.),res3(0.),alpha(0.),alpha_save(0.),
   nin(0),nout(0),ms(NULL),rannum(0),rans(NULL) 
-{}
+{
+  mres1=mres2=mres3=0.0;
+}
 
 Single_Channel::Single_Channel(int _nin,int _nout,const Flavour * _fl) :
   name("no_name"),
@@ -27,6 +33,7 @@ Single_Channel::Single_Channel(int _nin,int _nout,const Flavour * _fl) :
   //   if (nin == 1) rannum = 2 + 3*(nout-2);
   //   if (nin == 2) rannum = 1 + 2 + 3*(nout-2);
   //   rans  = new double[rannum];
+  mres1=mres2=mres3=0.0;
 }
 
 Single_Channel::Single_Channel(Single_Channel * old) :
@@ -39,6 +46,7 @@ Single_Channel::Single_Channel(Single_Channel * old) :
   for (int i=0;i<nin+nout;i++) ms[i] = old->ms[i];
   alpha=0.0;
   result=result2=0.0;
+  mres1=mres2=mres3=0.0;
 }
 
 Single_Channel::~Single_Channel()
@@ -53,11 +61,13 @@ void Single_Channel::Reset(double value) {
   res1     = res2       = res3 = 0.;
   result   = result2    = 0.0;
   n_points = n_contrib  = 0;
+  mres1=mres2=mres3=0.0;
 }
 
 void Single_Channel::ResetOpt() {
   res1     = res2      = res3 = 0.;
   n_points = n_contrib = 0;
+  mres1=mres2=mres3=0.0;
 }
 
 void Single_Channel::AddPoint(double Value) {
@@ -71,7 +81,7 @@ void Single_Channel::AddPoint(double Value) {
 
 void Single_Channel::GeneratePoint(Vec4D* p,Cut_Data * cuts)
 {
-  for (int i=0;i<rannum;i++) rans[i] = ran.Get();
+  for (int i=0;i<rannum;i++) rans[i] = ran->Get();
   GeneratePoint(p,cuts,rans);
 }
 
@@ -197,4 +207,19 @@ void Single_Channel::ISRInfo
 size_t Single_Channel::NChannels() const
 {
   return 1;
+}
+
+void Single_Channel::CopyMPIValues()
+{
+  res1+=mres1;
+  res2+=mres2;
+  res3+=mres3;
+  mres1=mres2=mres3=0.0;
+}
+
+void Single_Channel::MPISync()
+{
+#ifdef USING__MPI
+  THROW(not_implemented,"Channel not MPI ready");
+#endif
 }

@@ -32,7 +32,7 @@ Interaction_Model_4GenLep::Interaction_Model_4GenLep(MODEL::Model_Base * _model,
   p_mosm    = new Interaction_Model_SM(p_model,_cplscheme,_yukscheme); 
 
   g1    = Kabbala(string("g_1"),
-		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),rpa.gen.CplScale())));
+		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),rpa->gen.CplScale())));
   g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
 		  g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
   sintW = Kabbala(std::string("\\sin\\theta_W"),

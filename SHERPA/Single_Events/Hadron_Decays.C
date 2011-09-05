@@ -76,7 +76,7 @@ Return_Value::code Hadron_Decays::Treat(ATOOLS::Blob_List * bloblist, double & w
       
       // random shuffle, against bias in spin correlations and mixing
       Particle_Vector daughters = blob->GetOutParticles();
-      random_shuffle(daughters.begin(), daughters.end(), ran);
+      random_shuffle(daughters.begin(), daughters.end(), *ran);
       
       // fragmentation blobs still contain on-shell particles, stretch them off-shell
       for (Particle_Vector::iterator it=daughters.begin(); it!=daughters.end(); ++it) {
@@ -135,7 +135,7 @@ bool Hadron_Decays::Treat(Blob * blob)
   inpart->SetStatus(part_status::decayed);
   // random shuffle, against bias in spin correlations and mixing
   Particle_Vector daughters = blob->GetOutParticles();
-  random_shuffle(daughters.begin(), daughters.end(), ran);
+  random_shuffle(daughters.begin(), daughters.end(), *ran);
   
   // create daughter decay blob stubs and then set daughter masses
   if(blob->Has(blob_status::needs_hadrondecays)) {
@@ -302,7 +302,7 @@ bool Hadron_Decays::RejectExclusiveChannelsFromFragmentation(Blob* fragmentation
       Blob* decayblob = showerblob->UpstreamBlob();
       if(decayblob && decayblob->Type()==btp::Hadron_Decay) {
         DEBUG_FUNC(fragmentationblob->Id());
-        rvalue.IncCall(mname);
+        Return_Value::IncCall(mname);
         FlavourSet decayresults;
         for(int i=0;i<fragmentationblob->NOutP();i++) {
           decayresults.insert(fragmentationblob->OutParticle(i)->Flav());
@@ -311,7 +311,7 @@ bool Hadron_Decays::RejectExclusiveChannelsFromFragmentation(Blob* fragmentation
             ChooseDecayHandler(decayblob->InParticle(0));
         if(hdhandler->IsExclusiveDecaychannel(decayblob,decayresults)) {
           DEBUG_INFO("found exclusive decay channel, retrying.");
-          rvalue.IncRetryPhase(mname);
+          Return_Value::IncRetryPhase(mname);
           p_bloblist->Delete(fragmentationblob);
           p_bloblist->Delete(showerblob);
           decayblob->SetStatus(blob_status::needs_hadrondecays);
@@ -363,18 +363,18 @@ void Hadron_Decays::SetPosition(ATOOLS::Blob* blob)
   }
   
   // boost lifetime into lab
-  double gamma = 1./rpa.gen.Accu();
-  if (inpart->Flav().HadMass()>rpa.gen.Accu()) {
+  double gamma = 1./rpa->gen.Accu();
+  if (inpart->Flav().HadMass()>rpa->gen.Accu()) {
     gamma = inpart->E()/inpart->Flav().HadMass();
   }
   else {
     double q2    = dabs(inpart->Momentum().Abs2());
-    if (q2>rpa.gen.Accu()) gamma = inpart->E()/sqrt(q2);
+    if (q2>rpa->gen.Accu()) gamma = inpart->E()/sqrt(q2);
   }
   double lifetime_boosted = gamma * inpart->Time();
   
   Vec3D      spatial = inpart->Distance( lifetime_boosted );
-  Vec4D     position = Vec4D( lifetime_boosted*rpa.c(), spatial );
+  Vec4D     position = Vec4D( lifetime_boosted*rpa->c(), spatial );
   blob->SetPosition( inpart->XProd() + position ); // in mm
 }
 

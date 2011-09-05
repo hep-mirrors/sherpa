@@ -67,7 +67,7 @@ XS_f1f1_f1f1::XS_f1f1_f1f1(const Process_Info& pi, const Flavour_Vector& fl):
   m_eq(fl[0].Charge()),
   m_y3f((2.*int(fl[0].IsUptype())-1)/2.),
   m_v(m_y3f-2.*m_eq*m_sin2tw), m_a(m_y3f),
-  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms()))),
+  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms()))),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw))
 {
   //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
@@ -123,7 +123,7 @@ bool XS_f1f1_f1f1::SetColours(const Vec4D_Vector& mom)
 
 bool XS_f1f1_f1f1::SetColours() 
 {
-  if (M_t > (M_t+M_u) * ran.Get()) {
+  if (M_t > (M_t+M_u) * ran->Get()) {
     p_colours[2][m_anti] = p_colours[0][m_anti] = Flow::Counter();
     p_colours[3][m_anti] = p_colours[1][m_anti] = Flow::Counter();
     return true;
@@ -198,7 +198,7 @@ XS_f1f1b_f1f1b::XS_f1f1b_f1f1b(const Process_Info& pi, const Flavour_Vector& fl)
   m_eq(fl[0].Charge()),
   m_y3f((2.*int(fl[0].IsUptype())-1)/2.),
   m_v(m_y3f-2.*m_eq*m_sin2tw), m_a(m_y3f),
-  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms()))),
+  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms()))),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw))
 {
   //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
@@ -259,7 +259,7 @@ bool XS_f1f1b_f1f1b::SetColours(const Vec4D_Vector& mom)
 
 bool XS_f1f1b_f1f1b::SetColours() 
 {
-  if (M_t > (M_t+M_s) * ran.Get()) {
+  if (M_t > (M_t+M_s) * ran->Get()) {
     if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) {
       p_colours[3][1-m_anti2] = p_colours[0][m_anti1] = Flow::Counter();
       p_colours[2][m_anti2]   = p_colours[1][1-m_anti1] = Flow::Counter();
@@ -358,7 +358,7 @@ XS_f1f1b_f2f2b::XS_f1f1b_f2f2b(const Process_Info& pi, const Flavour_Vector& fl)
   m_v1(m_y3f1-2.*m_eq1*m_sin2tw), m_a1(m_y3f1),
   m_v2(m_y3f2-2.*m_eq2*m_sin2tw), m_a2(m_y3f2),
   m_ckm(Complex(0.,0.)),
-  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms()))),
+  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms()))),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw)),
   m_pref_W((4.*M_PI*m_aqed)/(4.*m_sin2tw))
 {
@@ -428,7 +428,7 @@ bool XS_f1f1b_f2f2b::SetColours(const Vec4D_Vector& mom)
 
 bool XS_f1f1b_f2f2b::SetColours() 
 {
-  if (M_t > (M_t+M_s) * ran.Get()) {
+  if (M_t > (M_t+M_s) * ran->Get()) {
     if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) {
       p_colours[3][1-m_anti2] = p_colours[0][m_anti1] = Flow::Counter();
       p_colours[2][m_anti2]   = p_colours[1][1-m_anti1] = Flow::Counter();
@@ -530,7 +530,7 @@ XS_f1f2_f1f2::XS_f1f2_f1f2(const Process_Info& pi, const Flavour_Vector& fl) :
   m_v1(m_y3f1-2.*m_eq1*m_sin2tw), m_a1(m_y3f1),
   m_v2(m_y3f2-2.*m_eq2*m_sin2tw), m_a2(m_y3f2),
   m_ckm(Complex(0.,0.)),
-  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms()))),
+  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms()))),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw)),
   m_pref_W((4.*M_PI*m_aqed)/(4.*m_sin2tw))
 {
@@ -605,7 +605,7 @@ bool XS_f1f2_f1f2::SetColours(const Vec4D_Vector& mom)
 
 bool XS_f1f2_f1f2::SetColours() 
 {
-  if (M_t > (M_t+M_u) * ran.Get()) {
+  if (M_t > (M_t+M_u) * ran->Get()) {
     if (m_rev) {
       p_colours[3][m_anti] = p_colours[0][m_anti] = Flow::Counter();
       p_colours[2][m_anti] = p_colours[1][m_anti] = Flow::Counter();
@@ -712,7 +712,7 @@ XS_f1f2b_f1f2b::XS_f1f2b_f1f2b(const Process_Info& pi, const Flavour_Vector& fl)
   m_v1(m_y3f1-2.*m_eq1*m_sin2tw), m_a1(m_y3f1),
   m_v2(m_y3f2-2.*m_eq2*m_sin2tw), m_a2(m_y3f2),
   m_ckm(Complex(0.,0.)),
-  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms()))),
+  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms()))),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw)),
   m_pref_W((4.*M_PI*m_aqed)/(4.*m_sin2tw))
 {
@@ -784,7 +784,7 @@ bool XS_f1f2b_f1f2b::SetColours(const Vec4D_Vector& mom)
 
 bool XS_f1f2b_f1f2b::SetColours() 
 {
-  if (M_t > (M_t+M_s) * ran.Get()) {
+  if (M_t > (M_t+M_s) * ran->Get()) {
     if (m_rev) {
       p_colours[3][m_anti]   = p_colours[0][m_anti]   = Flow::Counter();
       p_colours[2][1-m_anti] = p_colours[1][1-m_anti] = Flow::Counter();
@@ -883,7 +883,7 @@ XS_f1f2_f3f4::XS_f1f2_f3f4(const Process_Info& pi, const Flavour_Vector& fl) :
   m_anti(int(fl[0].IsAnti())), m_rev(false),
   m_mw2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Mass())),
   m_ww2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Width())),
-  m_pref_W((4.*M_PI*MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms())))/
+  m_pref_W((4.*M_PI*MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms())))/
            (2.*MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")))),
   m_ckm1(Complex(0.,0.)), m_ckm2(Complex(0.,0.))
 {
@@ -1061,7 +1061,7 @@ XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const Process_Info& pi, const Flavour_Vector& fl)
   m_anti(int(fl[0].IsAnti())), m_rev(false), m_schannel(true),
   m_mw2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Mass())),
   m_ww2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Width())),
-  m_pref_W((4.*M_PI*MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa.gen.Ecms())))/
+  m_pref_W((4.*M_PI*MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms())))/
            (2.*MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")))),
   m_ckm1(Complex(0.,0.)), m_ckm2(Complex(0.,0.))
 {

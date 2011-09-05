@@ -60,8 +60,8 @@ bool Simple_String::Initialize()
   PROFILE_HERE;
   CleanUp();
   if (InputPath()=="" && InputFile()=="") return false;
-  if (!rpa.gen.Beam1().IsHadron() ||
-      !rpa.gen.Beam2().IsHadron()) return false;
+  if (!rpa->gen.Beam1().IsHadron() ||
+      !rpa->gen.Beam2().IsHadron()) return false;
   Data_Reader *reader = new Data_Reader(" ",";","!","=");
   reader->AddComment("#");
   reader->AddWordSeparator("\t");
@@ -80,7 +80,7 @@ bool Simple_String::Initialize()
     m_reggeons.push_back(new Reggeon_Trajectory
 			 (ToType<double>(helpsvv[i][1]),
 			  ToType<double>(helpsvv[i][2])));
-    m_reggeons.back()->SetS(sqr(rpa.gen.Ecms()));
+    m_reggeons.back()->SetS(sqr(rpa->gen.Ecms()));
     msg_Info()<<"   "<<std::setw(10)<<helpsvv[i][0]
 	      <<" "<<std::setw(8)<<helpsvv[i][1]
 	      <<" "<<std::setw(8)<<helpsvv[i][2]<<"\n";
@@ -101,7 +101,7 @@ bool Simple_String::CreateMomenta()
     return false;
   }
   m_reggeons[0]->Fit(m_start[0]*m_start[0],m_start[2]);
-  m_start[1]=sqrt(m_reggeons[0]->GetT(0.0,m_start[0]*m_start[0],ran.Get()));
+  m_start[1]=sqrt(m_reggeons[0]->GetT(0.0,m_start[0]*m_start[0],ran->Get()));
   const unsigned int flow=Flow::Counter();
   for (short unsigned int i=0;i<2;++i) {
     PDF::Hadron_Remnant *hadron=
@@ -113,7 +113,7 @@ bool Simple_String::CreateMomenta()
     }
     const std::vector<Flavour> &constit=
       hadron->GetConstituents(kf_none);
-    double pz=0.0, phi=ran.Get()*2.0*M_PI;
+    double pz=0.0, phi=ran->Get()*2.0*M_PI;
     for (size_t j=0;j<constit.size();++j) {
       if (constit[j].IsQuark() && constit[j].IsAnti()==i) {
 	Particle *particle = new Particle(0,constit[j]);

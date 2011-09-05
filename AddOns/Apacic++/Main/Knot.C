@@ -155,7 +155,7 @@ bool Knot::CheckMomentumConservation(const bool force) const
 {
   if (left==NULL || (stat==3 && !force)) return true;
   bool success(true);
-  static double accu(sqrt(rpa.gen.Accu()));
+  static double accu(sqrt(rpa->gen.Accu()));
   Vec4D p(part->Momentum());
   Vec4D p1(left->part->Momentum()), p2(right->part->Momentum());
   if (IsEqual(p,Vec4D(),accu) || IsEqual(p1,Vec4D(),accu) || 

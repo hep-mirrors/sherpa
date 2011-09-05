@@ -143,7 +143,7 @@ void Hadrons::ChooseDecayKinematics(
           weight = numerator/denominator;
           if(weight>(1.0+Accu())) {
             msg_Error()<<METHOD<<" Error: weight="<<weight<<" in "
-                <<rpa.gen.NumberOfGeneratedEvents()<<endl
+                <<rpa->gen.NumberOfGeneratedEvents()<<endl
                 <<(*blob)<<endl;
           }
           trials++;
@@ -152,7 +152,7 @@ void Hadrons::ChooseDecayKinematics(
                 <<"    possibly wrong amplitudes?"<<endl
                 <<(*blob)<<endl;
           }
-        } while( ran.Get() > weight );
+        } while( ran->Get() > weight );
 
         motheramps->Contract(contracting_part,amps,inpart);
         delete amps; amps=NULL;
@@ -221,7 +221,7 @@ void Hadrons::GenerateUncorrelatedKinematics(
                                           bool                         anti)
 {
   static std::string mname(METHOD);
-  rvalue.IncCall(mname);
+  Return_Value::IncCall(mname);
   if(moms.size()==2) {
     moms[1]=moms[0];
     return;
@@ -236,7 +236,7 @@ void Hadrons::GenerateUncorrelatedKinematics(
                  <<"This indicates a wrong maximum. "
                  <<"Will accept kinematics."
                  <<endl;
-      rvalue.IncRetryMethod(mname);
+      Return_Value::IncRetryMethod(mname);
       break;
     }
     value = hdc->Differential(&moms.front(),anti);
@@ -245,11 +245,11 @@ void Hadrons::GenerateUncorrelatedKinematics(
                     <<"  d\\Gamma(x)="<<value<<" > max(d\\Gamma)="<<max
                     <<std::endl;
       hdc->GetPS()->SetMaximum(value);
-      rvalue.IncRetryMethod(mname);
+      Return_Value::IncRetryMethod(mname);
       break;
     }
     trials++;
-  } while( ran.Get() > value/max );
+  } while( ran->Get() > value/max );
 }
 
 

@@ -17,7 +17,7 @@ Channel_Interface::Channel_Interface(int nin,int nout,ATOOLS::Flavour *flavour,A
   for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(flavour[i].Mass());
   rannum = 3;
   rans = new double[rannum];
-  s = smax = pt2max = ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
+  s = smax = pt2max = ATOOLS::sqr(ATOOLS::rpa->gen.Ecms());
   pt2min = 0.;
   E = 0.5*sqrt(s);
   name = "Channel Interface";

@@ -78,7 +78,7 @@ int Timelike_Kinematics::ShuffleZ(Knot * const mo,const bool update) const
   if (mo->left->shower==3) t01=t1=mo->left->tmo;
   if (mo->right->shower==3) t02=t2=mo->right->tmo;
   msg_Debugging()<<"t = "<<t<<", t_1 = "<<t1<<", t_2 = "<<t2<<"\n";
-  if (t1+t2+2.0*sqrt(t1*t2)-t>rpa.gen.Accu()) {
+  if (t1+t2+2.0*sqrt(t1*t2)-t>rpa->gen.Accu()) {
     msg_Debugging()<<METHOD<<"(..): Missing mass. m_a = "<<sqrt(t)
 		   <<", m_b "<<sqrt(t1)<<", m_c = "<<sqrt(t2)<<std::endl;
     return 0; 
@@ -93,7 +93,7 @@ int Timelike_Kinematics::ShuffleZ(Knot * const mo,const bool update) const
   }
   mo->left->E2=sqr(mo->z)*mo->E2;
   mo->right->E2=sqr(1.0-mo->z)*mo->E2;
-  static double accu(sqrt(rpa.gen.Accu())); 
+  static double accu(sqrt(rpa->gen.Accu())); 
   if (mo->z<accu || 1.0-mo->z<accu || 
       mo->left->E2<mo->left->tout || mo->right->E2<mo->right->tout) return 0;
   msg_Debugging()<<"z = "<<mo->z<<", 1-z = "<<1.0-mo->z
@@ -126,15 +126,15 @@ int Timelike_Kinematics::ShuffleMomenta
     //msg_Error()<<METHOD<<"(..): Inconsistent masses. t = "<<mo->t<<", p^2 = "<<t<<std::endl;
     mo->t=t;
   }
-  if (t1+t2+2.0*sqrt(t1*t2)-t>rpa.gen.Accu()) {
+  if (t1+t2+2.0*sqrt(t1*t2)-t>rpa->gen.Accu()) {
     msg_Debugging()<<"missing mass "<<sqrt(t1+t2+2.0*sqrt(t1*t2))
 		   <<" vs. "<<sqrt(t)<<"\n";
     return 0;
   }
   double r1(0.0), r2(0.0), z(mo->z);
   Vec4D p1(d1->part->Momentum()), p2(d2->part->Momentum());
-  if ((t1+p1.Abs2())/d1->E2>rpa.gen.Accu() || 
-      (t2+p2.Abs2())/d2->E2>rpa.gen.Accu()) {
+  if ((t1+p1.Abs2())/d1->E2>rpa->gen.Accu() || 
+      (t2+p2.Abs2())/d2->E2>rpa->gen.Accu()) {
     double t1n(p1.Abs2()), t2n(p2.Abs2());
     double A(((t2-t2n)-(t1-t1n))/(t+t1n-t2n));
     double B((t+t2n-t1n)/(t+t1n-t2n));
@@ -218,7 +218,7 @@ bool Timelike_Kinematics::CheckKinematics
   }
   double p1p2(sqrt((E12-t1)*(E22-t2)));
   // triangular three momementum relation     
-  if (mo->E2-t-(E12-t1+E22-t2+2.0*p1p2)>rpa.gen.Accu()) {
+  if (mo->E2-t-(E12-t1+E22-t2+2.0*p1p2)>rpa->gen.Accu()) {
     msg_Debugging()<<"three momentum\n";
     return false;
   }
@@ -236,7 +236,7 @@ bool Timelike_Kinematics::CheckKinematics
   if (!IsZero(mo->E2-t)) {
     costh1=(2.0*mo->z*mo->E2-t-t1+t2)/(2.0*sqrt((mo->E2-t)*(E12-t1)));
   }
-  if (dabs(costh1)>1.0+rpa.gen.Accu()) {
+  if (dabs(costh1)>1.0+rpa->gen.Accu()) {
     msg_Debugging()<<" |cos_1| = "<<costh1<<"\n";
     return false;
   }

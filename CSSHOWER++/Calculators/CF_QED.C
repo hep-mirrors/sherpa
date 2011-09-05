@@ -44,7 +44,7 @@ bool CF_QED::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 {
   p_cpl=md->GetScalarFunction("alpha_QED");
   m_cplfac=1.0;
-  m_cplmax.push_back((*p_cpl)(rpa.gen.CplScale())*m_q);
+  m_cplmax.push_back((*p_cpl)(rpa->gen.CplScale())*m_q);
   m_cplmax.push_back(0.0);
   return true;
 }

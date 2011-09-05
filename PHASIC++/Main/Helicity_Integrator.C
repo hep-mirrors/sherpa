@@ -129,7 +129,7 @@ bool Helicity_Integrator::GeneratePoint()
 {
   if (!m_on) return true;
   size_t l(0), r(m_asum.size()-1), i((l+r)/2);
-  double disc(ran.Get()), a(m_asum[i]);
+  double disc(ran->Get()), a(m_asum[i]);
   while (r-l>1) {
     if (disc<a) r=i;
     else l=i;

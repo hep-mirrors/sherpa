@@ -39,6 +39,11 @@ void ISR_Channel_Base::Optimize()
   p_vegas->Optimize();
 } 
 
+void ISR_Channel_Base::MPISync()
+{
+  p_vegas->MPISync();
+}
+
 void ISR_Channel_Base::EndOptimize()  
 {
   p_vegas->EndOptimize();

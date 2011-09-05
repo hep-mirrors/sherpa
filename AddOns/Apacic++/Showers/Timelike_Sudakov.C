@@ -17,7 +17,7 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics *const kin,
 				   MODEL::Model_Base *const model) :
   Splitting_Group(p_rms), p_tools(new Sudakov_Tools(model)), 
   p_kin(kin), p_rms(NULL),
-  m_pt2min(1.0), m_pt2max(sqr(rpa.gen.Ecms())), m_t0(4.0),
+  m_pt2min(1.0), m_pt2max(sqr(rpa->gen.Ecms())), m_t0(4.0),
   m_pt2min_qed(0.0025), m_t0_qed(0.01), m_rbmax(1.0), m_fcs(0.0) {}
 
 Timelike_Sudakov::~Timelike_Sudakov()
@@ -139,7 +139,7 @@ bool Timelike_Sudakov::DiceT(Knot *const mother, Knot *const granny)
   m_oldt=m_t=mother->t;                  
   m_E2=mother->E2;
   m_shower=mother->shower;
-  if (m_t-t0<rpa.gen.Accu()) return false;
+  if (m_t-t0<rpa->gen.Accu()) return false;
   double z0;
   while (m_t>t0) {
     z0=Max(0.5*(1.-sqrt(1.-t0/(m_t-mother->tout))),1.e-6);

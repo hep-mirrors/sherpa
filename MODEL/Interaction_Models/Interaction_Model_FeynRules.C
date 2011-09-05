@@ -30,7 +30,7 @@ Interaction_Model_FeynRules::Interaction_Model_FeynRules(MODEL::Model_Base * _mo
 							 std::string _cplscheme,std::string _yukscheme) :
   Interaction_Model_Base("FeynRules",_model,_cplscheme,_yukscheme)
 {
-  m_interactionfile = rpa.gen.Variable("INTERACTION_DATA_FILE");
+  m_interactionfile = rpa->gen.Variable("INTERACTION_DATA_FILE");
   
   //setup the data reader
   p_reader = new ATOOLS::Data_Reader(" ",";","#","=");

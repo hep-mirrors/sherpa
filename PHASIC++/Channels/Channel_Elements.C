@@ -75,17 +75,6 @@ void Channel_Elements::Isotropic2Momenta(Vec4D p,double s1,double s2,
   CheckMasses(s1,p1,s2,p2);
 }
 
-void Channel_Elements::Isotropic2Grid(Vec4D &p1,Vec4D &p2,
-				      double& ran1,double& ran2,double ctmin,double ctmax)
-{
-  Vec4D p1h,p=p1+p2;
-  Channel_Basics::Boost(1,p,p1h,p1);
-  ran1        = (p1h[3]/p1h.PSpat()-ctmin)/(ctmax-ctmin); 
-  ran2        = ::asin(p1h[1]/p1h.PPerp())/(2.*M_PI);
-  if(p1h[2]<0.) ran2=.5-ran2;
-  if (ran2<0.) ran2+=1.;
-}
-
 double Channel_Elements::Anisotropic2Weight(double ctexp,
 					    double ctmin,double ctmax,
 					    const Vec4D& p1,const Vec4D& p2)
@@ -470,49 +459,6 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
 					const Vec4D& p1out,const Vec4D& p2out,  
 					double t_mass,double ctexp,
 					double ctmax,double ctmin,
-					double aminct,int aminctflag)
-{
-  double t_mass2   = t_mass*t_mass;
-  Vec4D pin        = p1in+p2in;
-  double s         = pin.Abs2(); 
-  double sabs      = sqrt(dabs(s));
-  double s1in      = p1in.Abs2();
-  double s2in      = p2in.Abs2();
-  double s1out     = p1out.Abs2();
-  double s2out     = p2out.Abs2();
-  if (s1out<1.e-8) s1out=0.;
-  if (s2out<1.e-8) s2out=0.;
-  Vec4D p1inh,p1outh;
-  p1inh[0]         = (s+s1in-s2in)/2./sabs;
-  p1outh[0]        = (s+s1out-s2out)/2./sabs;
-  double p1inmass  = sabs*Channel_Basics::SqLam(s,s1in,s2in)/2.; 
-  double p1outmass = sabs*Channel_Basics::SqLam(s,s1out,s2out)/2.; 
-  double a = (t_mass2-s1in-s1out+2.*p1outh[0]*p1inh[0])/(2.*p1inmass*p1outmass);
-  if (a<=1.0) a = 1.0;
-  double ct = (p1inh[0]*p1outh[0]-p1in*p1out)/(p1inmass*p1outmass);
-  
-  if  ((ct < ctmin) || (ct > ctmax)) {
-    msg_Error()<<"TChannelWeight: bad momenta!!!! "<<ctmin<<" - "<<ctmax<<" ("<<ct<<")"<<endl;
-    msg_Error()<<"1: "<<p1in<<endl;
-    msg_Error()<<"2: "<<p2in<<endl;
-    msg_Error()<<"3: "<<p1out<<endl;
-    msg_Error()<<"4: "<<p2out<<endl;
-    return 0.;
-  } 
-  aminct = a-ct;
-  double wt = 2.*sabs/(-pow(aminct,ctexp)*
-			Channel_Basics::Hj1(ctexp,a-ctmin,a-ctmax)*p1outmass*M_PI);
-
-  if (!(wt>0) && !(wt<0)) 
-    msg_Error()<<"TChannelWeight produces a nan!"<<endl;
-
-  return wt;
-}
-
-double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
-					const Vec4D& p1out,const Vec4D& p2out,  
-					double t_mass,double ctexp,
-					double ctmax,double ctmin,
 					double aminct,int aminctflag,
 					double &ran1,double &ran2)
 {
@@ -535,7 +481,7 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
   double p1outmass = sabs*Channel_Basics::SqLam(s,s1out,s2out)/2.; 
   
   double a = (t_mass2-s1in-s1out+2.*p1outh[0]*p1inh[0])/(2.*p1inmass*p1outmass);
-  if (a<=1.0) a = 1.0;
+  if (a<=1.0+1.0e-6) a = 1.0+1.0e-6;
 
   Vec4D help=p1out;
   Channel_Basics::Boost(1,pin,p1outh,help);
@@ -573,8 +519,9 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
   double wt = 2.*sabs/(-pow(aminct,ctexp)*
 			Channel_Basics::Hj1(ctexp,a-ctmin,a-ctmax)*p1outmass*M_PI);
 
-  if (!(wt>0) && !(wt<0)) 
-    msg_Error()<<"TChannelWeight produces a nan!"<<endl;
+  if (IsBad(wt)) {
+    msg_Error()<<"TChannelWeight produces "<<wt<<"!"<<endl;
+  }
 
   return wt;
 }
@@ -599,7 +546,7 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
   double p1outmass = sabs*Channel_Basics::SqLam(s,s1out,s2out)/2.; 
   
   double a = (t_mass2-s1in-s1out+2.*p1outh[0]*p1inh[0])/(2.*p1inmass*p1outmass);
-  if (a<=1.0) a = 1.0;
+  if (a<=1.0+1.0e-6) a = 1.0+1.0e-6;
 //      cout<<"TChannelMomenta"<<endl;
 //      cout<<" a="<<a<<" "<<a-ctmin<<" "<<a-ctmax<<endl;
   if (dabs(a-ctmax)<1.e-14) a=ctmax;
@@ -635,66 +582,6 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
 
   CheckMasses(s1out,p1out,s2out,p2out);
   return 0;
-}
-
-void Channel_Elements::TChannelGrid(const Vec4D& p1in,const Vec4D& p2in,
-					const Vec4D& p1out,const Vec4D& p2out,  
-					double t_mass,double ctexp,
-					double ctmax,double ctmin,
-					double &ran1,double &ran2)
-{
-  // Note : ct's maximal range : between ctmin = -1 and ctmax = 1 
-  double t_mass2   = t_mass*t_mass;
-  Vec4D pin        = p1in+p2in;
-  double s         = pin.Abs2(); 
-  double sabs      = sqrt(dabs(s));
-  double s1in      = p1in.Abs2();
-  double s2in      = p2in.Abs2();
-  double s1out     = p1out.Abs2();
-  double s2out     = p2out.Abs2();
-  if (s1out<1.e-8) s1out=0.;
-  if (s2out<1.e-8) s2out=0.;
-  Vec4D p1inh,p1outh;
-  p1inh[0]         = (s+s1in-s2in)/2./sabs;
-  double p1inmass  = sabs*Channel_Basics::SqLam(s,s1in,s2in)/2.; 
-  p1inh            = Vec4D(p1inh[0],0.,0.,p1inmass);
-  p1outh[0]        = (s+s1out-s2out)/2./sabs;
-  double p1outmass = sabs*Channel_Basics::SqLam(s,s1out,s2out)/2.; 
-  
-  double a = (t_mass2-s1in-s1out+2.*p1outh[0]*p1inh[0])/(2.*p1inmass*p1outmass);
-
-  Vec4D help=p1out;
-  Channel_Basics::Boost(1,pin,p1outh,help);
-  help=p1in;
-  Channel_Basics::Boost(1,pin,p1inh,help);  
-//     if(!IsEqual(sqrt(s),pin[0])){
-//       cout<<"2 bp1out="<<p1out<<"->"<<p1outh<<endl;
-//       cout<<"2 bp1in= "<<p1in<<"->"<<p1inh<<endl;
-//     }
-  Poincare Rot(Vec4D(1.,0.,0.,1.),p1inh);
-  Rot.RotateBack(p1outh);
-//    cout<<" p1outh="<<p1outh<<endl;
-//    cout<<" sphi/ct="<<p1outh[2]/p1outh.PPerp()<<"/"<<p1outh[3]/p1outh.PSpat()<<endl;
-  
-  ctexp=1.-ctexp;
-  double pa1;
-  if (dabs(a-ctmax)<1.e-14) pa1 = 0.;
-  else pa1 = pow(a-ctmax,ctexp);
-  double ct=p1outh[3]/p1outh.PSpat();
-  if (ct<ctmin||ct>ctmax) {
-    ran1=ran2=-1.;
-    return;
-  }
-  ran1        = (pow(a-ct,ctexp)-pa1);
-  ran1/=(pow(a-ctmin,ctexp)-pa1); 
-  ran2        = ::asin(p1outh[2]/p1outh.PPerp())/(2.*M_PI);
-  if(p1outh[1]<0.) ran2=.5-ran2;
-  if (ran2<0.) ran2+=1.;
-//     if(!IsEqual(sqrt(s),pin[0])){
-//      cout<<"2 p1outh="<<p1outh<<endl;
-//      cout<<"2 sphi/ct/a="<<p1outh[2]/p1outh.PPerp()<<"/"<<p1outh[3]/p1outh.PSpat()<<"/"<<a<<endl;
-//      cout<<"2 rans "<<ran1<<" "<<ran2<<endl;    
-//     }
 }
 
 // treated from here

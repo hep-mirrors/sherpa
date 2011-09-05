@@ -264,7 +264,7 @@ const ArgumentType Amisic_Histogram<ArgumentType>::GenerateX() const
       (*p_integral)[i]=sum+=(*p_yaxis)[m_data[hci::y_value][i]]*width;
     }    
   }
-  double y=ATOOLS::ran.Get()*(*p_integral)[m_data[hci::x_value].size()-1];
+  double y=ATOOLS::ran->Get()*(*p_integral)[m_data[hci::x_value].size()-1];
   size_t l=0, r=m_data[hci::x_value].size()-1, i=(l+r)/2;
   double yi=(*p_integral)[i];
   while (r-l>1) {
@@ -316,7 +316,7 @@ ArgumentType Amisic_Histogram<ArgumentType>::Norm() const
   return integral;
 }
 
-template <class ArgumentType> Amisic_Histogram<ArgumentType> *const
+template <class ArgumentType> Amisic_Histogram<ArgumentType> *
 Amisic_Histogram<ArgumentType>::GetIntegral(const bool reverse) const
 {
   Amisic_Histogram<ArgumentType> *const integral = 
@@ -347,7 +347,7 @@ Amisic_Histogram<ArgumentType>::GetIntegral(const bool reverse) const
   return integral;
 }
 
-template <class ArgumentType> Amisic_Histogram<ArgumentType> *const
+template <class ArgumentType> Amisic_Histogram<ArgumentType> *
 Amisic_Histogram<ArgumentType>::GetDerivative() const
 {
   Amisic_Histogram<ArgumentType> *const derivative = 
@@ -760,13 +760,13 @@ AddBinExtra(const Argument_Type &x,const Argument_Type &extra,
   if (dim<m_extradim) m_data[hci::size+dim][FindX(x)]+=extra;
 }
 
-template <class ArgumentType> ATOOLS::Axis<ArgumentType> *const 
+template <class ArgumentType> ATOOLS::Axis<ArgumentType> *
 Amisic_Histogram<ArgumentType>::XAxis() const 
 { 
   return p_xaxis; 
 }
 
-template <class ArgumentType> ATOOLS::Axis<ArgumentType> *const 
+template <class ArgumentType> ATOOLS::Axis<ArgumentType> *
 Amisic_Histogram<ArgumentType>::YAxis() const 
 { 
   return p_yaxis; 
