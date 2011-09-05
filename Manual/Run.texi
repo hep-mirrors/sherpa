@@ -237,10 +237,13 @@ and
 @uref{http://www.mcs.anl.gov/research/projects/mpich2/,,MPICH2}
 . For detailed instructions on how to run a parallel program, please refer
 to the documentation of your local cluster resources or the many excellent 
-introductions on the internet. MPI parallelization is intended to speed up
+introductions on the internet. MPI parallelization is mainly intended to speed up
 the integration process, as event generation can be parallelized trivially 
 by starting multiple instances of Sherpa with different random seed, cf.
-@ref{RANDOM_SEED}.
+@ref{RANDOM_SEED}. However, both the internal analysis module and the Root
+NTuple writeout can be used with MPI. Note that these require substantial 
+data transfer. We only recommend to use them in MPI mode if your local cluster
+has sufficient ethernet bandwidth.
 
 When compiled with MPI support, Sherpa implements an automatic load balancing 
 to make optimal use of potentially different types of cluster nodes. 

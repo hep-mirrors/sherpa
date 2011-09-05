@@ -185,6 +185,7 @@ void Jet_Observable_Base::EvaluateNLOevt()
 
 void Jet_Observable_Base::EndEvaluation(double scale) {
   for (size_t i=0; i<m_histos.size();++i) {
+    m_histos[i]->MPISync();
     m_histos[i]->Finalize();
     if (scale!=1.) m_histos[i]->Scale(scale);
     m_histos[i]->Output();
@@ -359,6 +360,7 @@ void Two_Jet_Observable_Base::EvaluateNLOevt()
 
 void Two_Jet_Observable_Base::EndEvaluation(double scale) {
   for (size_t i=0; i<m_histos.size();++i) {
+    m_histos[i]->MPISync();
     m_histos[i]->Finalize();
     if (scale!=1.) m_histos[i]->Scale(scale);
     m_histos[i]->Output();
@@ -969,6 +971,7 @@ void Three_Jet_Observable_Base::Evaluate(const Blob_List & blobs,double value, d
 
 void Three_Jet_Observable_Base::EndEvaluation(double scale) {
   for (size_t i=0; i<m_histos.size();++i) {
+    m_histos[i]->MPISync();
     m_histos[i]->Finalize();
     if (scale!=1.) m_histos[i]->Scale(scale);
     m_histos[i]->Output();

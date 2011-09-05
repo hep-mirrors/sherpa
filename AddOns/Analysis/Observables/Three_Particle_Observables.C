@@ -361,15 +361,19 @@ Three_Particle_Observable_Base(flav1,flav2,flav3,type,xmin,xmax,nbins,listname,"
 }
 
 Three_Particle_Correlation::~Three_Particle_Correlation() {
+  p_histo10->MPISync();
   p_histo10->Finalize();
   p_histo10->Output((std::string("Anna/")+m_name+std::string("10")).c_str());
 
+  p_histo20->MPISync();
   p_histo20->Finalize();
   p_histo20->Output((std::string("Anna/")+m_name+std::string("20")).c_str());
 
+  p_histo50->MPISync();
   p_histo50->Finalize();
   p_histo50->Output((std::string("Anna/")+m_name+std::string("50")).c_str());
 
+  p_histo100->MPISync();
   p_histo100->Finalize();
   p_histo100->Output((std::string("Anna/")+m_name+std::string("100")).c_str());
 

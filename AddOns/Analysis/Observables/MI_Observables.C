@@ -180,9 +180,11 @@ operator+=(const Primitive_Observable_Base &obs)
 
 void MI_Statistics::EndEvaluation(double scale) 
 {
+  p_histo->MPISync();
   p_histo->Finalize();
   if (scale!=1.) p_histo->Scale(scale);
   for (size_t i=0;i<m_scales.size();++i) {
+    m_scales[i]->MPISync();
     m_scales[i]->Finalize();
     if (scale!=1.) m_scales[i]->Scale(scale);
   }

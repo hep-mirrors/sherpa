@@ -78,6 +78,8 @@ Normalized_Observable::operator+=(const Primitive_Observable_Base &obs)
 
 void Normalized_Observable::EndEvaluation(double scale)
 {
+  p_obs->MPISync();
+  p_norm->MPISync();
   double n=ATOOLS::Max(1.0,double(p_obs->Fills()));                 
   if (m_mode==0) p_obs->Scale(scale*m_nbins/(m_xmax-m_xmin)/n);
   else p_obs->Scale(scale/n);

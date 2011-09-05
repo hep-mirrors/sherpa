@@ -109,6 +109,7 @@ void Primitive_Observable_Base::Evaluate(const Blob_List & blobs, double value, 
 
 void Primitive_Observable_Base::EndEvaluation(double scale) {
   if (p_histo) {
+    p_histo->MPISync();
     p_histo->Finalize();
     if (scale!=1.) p_histo->Scale(scale);
     p_histo->Output();

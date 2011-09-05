@@ -359,9 +359,11 @@ void One_Variable_Selector::EndEvaluation(double scale)
 {
   for (size_t i(0);i<m_dists.size();++i) 
     if (m_dists[i]!=NULL) {
+      m_dists[i]->MPISync();
       m_dists[i]->Finalize();
       if (scale!=1.0) m_dists[i]->Scale(scale);
     }
+  p_flow->MPISync();
   p_flow->Finalize();
   if (scale!=1.0) p_flow->Scale(scale);
 }

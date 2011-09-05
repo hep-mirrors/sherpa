@@ -129,6 +129,7 @@ void PSM_Observable::Evaluate(const Blob_List & blobs,double value, double ncoun
 }
 
 void PSM_Observable::EndEvaluation(double scale) {
+    p_histo->MPISync();
     p_histo->Finalize();
 }
 
