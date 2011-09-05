@@ -239,8 +239,6 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 
 #ifdef USING__MPI
   int rank=MPI::COMM_WORLD.Get_rank();
-  msg_Error()<<"Rank "<<rank<<", pid "<<getpid()<<" running on "
-	     <<gen.m_variables["HOSTNAME"]<<"."<<std::endl;
   gen.m_seed*=rank+1;
   if (gen.m_seed2>0) gen.m_seed2*=rank+1;
 #endif

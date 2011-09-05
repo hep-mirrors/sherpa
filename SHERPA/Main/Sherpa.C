@@ -40,6 +40,12 @@ Sherpa::Sherpa(int argc,char * argv[]) :
   ATOOLS::ran = new Random(1234,4321);
   ATOOLS::rpa = new Run_Parameter();
   ATOOLS::s_loader = new Library_Loader();
+#ifdef USING__MPI
+  int rank=MPI::COMM_WORLD.Get_rank(), dummy=0;
+  msg_Error()<<"Rank "<<rank<<", pid "<<getpid()<<" running on "
+	     <<rpa->gen.Variable("HOSTNAME")<<"."<<std::endl;
+  MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
+#endif
   m_errors = 0;
   m_trials = 100;
   m_debuginterval = 0;
