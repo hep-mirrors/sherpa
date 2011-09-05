@@ -12,7 +12,6 @@ namespace PHASIC {
     int m_nd;
     unsigned long m_nevt,m_nopt,m_snevt,m_cevt;
     double m_alpha;
-    double m_sum,m_sum2;
     double m_nc;
     double **p_xi;
     double *p_x,*p_xin,*p_r,*p_cx,*p_bm;

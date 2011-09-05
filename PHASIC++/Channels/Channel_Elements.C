@@ -12,13 +12,13 @@ Channel_Elements PHASIC::CE;
 
 void Channel_Elements::CheckMasses(const double & s1,Vec4D & p1,const double & s2,Vec4D & p2) const
 {
-  if (dabs((s1-p1.Abs2())/p1[0])>1.e-8) {
+  if (dabs((s1-p1.Abs2())/p1[0])>1.e-6) {
     msg_Error()<<METHOD<<"(): Strong deviation in masses\n"
 	       <<"s1,p1: "<<s1<<";"<<p1<<" -> "<<p1.Abs2()<<" : "
 	       <<dabs(s1-p1.Abs2())<<", "
 	       <<"rel = "<<dabs((s1-p1.Abs2())/p1[0])<<"."<<endl;
   }
-  if (dabs((s2-p2.Abs2())/p2[0])>1.e-8) {
+  if (dabs((s2-p2.Abs2())/p2[0])>1.e-6) {
     msg_Error()<<METHOD<<"(): Strong deviation in masses\n"
 	       <<"s2,p2: "<<s2<<";"<<p2<<" -> "<<p2.Abs2()<<" : "
 	       <<dabs(s2-p2.Abs2())<<", "

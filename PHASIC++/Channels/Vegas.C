@@ -28,8 +28,6 @@ Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
   m_on=s_on;
   if (s_onext>-1) m_on=s_onext;
   m_dim  = dim;
-  m_sum  = 0.;
-  m_sum2 = 0.;
   m_nopt = 0;
   m_nevt = 0;
   m_snevt = 0;
@@ -256,9 +254,7 @@ void Vegas::AddPoint(double value)
 {
   ++m_nevt;
   if (value>0.) ++m_cevt;
-  m_sum += value;
   double v2 = value*value;
-  m_sum2+= v2;
   for (int i=0;i<m_dim;i++) {
     p_d[i][p_ia[i]]+=v2;
     p_di[i][p_ia[i]]+=v2*v2;
