@@ -8,8 +8,12 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 using namespace SHERPA;
+using namespace ATOOLS;
 
 #ifdef FC_DUMMY_MAIN
 extern "C" int FC_DUMMY_MAIN() { return 1; }
@@ -17,47 +21,47 @@ extern "C" int FC_DUMMY_MAIN() { return 1; }
 
 int main(int argc,char* argv[])
 {
+#ifdef USING__MPI
+  MPI::Init(argc,argv);
+#endif
+  Sherpa *Generator(new Sherpa());
   try {
-    Sherpa *Generator(new Sherpa(argc,argv));
-    int nevt=ATOOLS::rpa->gen.NumberOfEvents();
+    Generator->InitializeTheRun(argc,argv);
+    int nevt=rpa->gen.NumberOfEvents();
     if (nevt>0) {
-      msg_Events()<<"=========================================================================="<<std::endl
-		       <<"Sherpa will start event generation now : "
-		       <<nevt<<" events"<<std::endl
-		       <<"=========================================================================="<<std::endl;
       Generator->InitializeTheEventHandler();
-      ATOOLS::Data_Reader read(" ",";","!","=");
-      ATOOLS::msg->SetLevel(read.GetValue<int>("EVT_OUTPUT",ATOOLS::msg->Level()));
-      double starttime=ATOOLS::rpa->gen.Timer().RealTime();
-      for (int i=1;i<=ATOOLS::rpa->gen.NumberOfEvents();i++) {
-	if (i%100==0 && i<ATOOLS::rpa->gen.NumberOfEvents()) {
-	  double diff=ATOOLS::rpa->gen.Timer().RealTime()-starttime;
+      Data_Reader read(" ",";","!","=");
+      msg->SetLevel(read.GetValue<int>("EVT_OUTPUT",msg->Level()));
+      double starttime=rpa->gen.Timer().RealTime();
+      for (int i=1;i<=rpa->gen.NumberOfEvents();i++) {
+	if (i%100==0 && i<rpa->gen.NumberOfEvents()) {
+	  double diff=rpa->gen.Timer().RealTime()-starttime;
 	  msg_Info()<<"  Event "<<i<<" ( "
-		    <<ATOOLS::FormatTime(size_t(diff))<<" elapsed / "
-		    <<ATOOLS::FormatTime(size_t((nevt-i)/(double)i*diff))
-		    <<" left ) -> ETA: "<<ATOOLS::rpa->gen.Timer().
+		    <<FormatTime(size_t(diff))<<" elapsed / "
+		    <<FormatTime(size_t((nevt-i)/(double)i*diff))
+		    <<" left ) -> ETA: "<<rpa->gen.Timer().
 	    StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
-	  if (ATOOLS::rpa->gen.BatchMode()&2) { msg_Info()<<std::endl; }
-	  else { msg_Info()<<ATOOLS::bm::cr<<std::flush; }
+	  if (rpa->gen.BatchMode()&2) { msg_Info()<<std::endl; }
+	  else { msg_Info()<<bm::cr<<std::flush; }
 	}
-	if (Generator->GenerateOneEvent()) msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
+	if (Generator->GenerateOneEvent())
+	  msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
       }
-      msg_Info()<<"  Event "<<ATOOLS::rpa->gen.NumberOfEvents()<<" ( "
-		<<size_t(ATOOLS::rpa->gen.Timer().RealTime()-starttime)
+      msg_Info()<<"  Event "<<rpa->gen.NumberOfEvents()<<" ( "
+		<<size_t(rpa->gen.Timer().RealTime()-starttime)
 		<<" s total )                                         "<<std::endl;      
       Generator->SummarizeRun();
     }
-    msg_Events()<<"=========================================================================="<<std::endl
-		     <<"Sherpa finished its simulation run with "
-		     <<Generator->NumberOfErrors()<<" errors."<<std::endl
-		     <<"=========================================================================="<<std::endl;
-    delete Generator;
-    return 0;
   }
-  catch (ATOOLS::Exception exception) {
+  catch (Exception exception) {
     msg_Error()<<exception<<std::endl;
     std::terminate();
   }
+  delete Generator;
+#ifdef USING__MPI
+  MPI::Finalize();
+#endif
+  return 0;
 }
 
 

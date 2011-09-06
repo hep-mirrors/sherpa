@@ -29,12 +29,9 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-Sherpa::Sherpa(int argc,char * argv[]) :
+Sherpa::Sherpa() :
   p_inithandler(NULL), p_eventhandler(NULL), p_iohandler(NULL)
 {
-#ifdef USING__MPI
-  MPI::Init(argc,argv);
-#endif
   ATOOLS::exh = new Exception_Handler();
   ATOOLS::msg = new Message();
   ATOOLS::ran = new Random(1234,4321);
@@ -46,12 +43,10 @@ Sherpa::Sherpa(int argc,char * argv[]) :
 	     <<rpa->gen.Variable("HOSTNAME")<<"."<<std::endl;
   MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
 #endif
-  m_errors = 0;
   m_trials = 100;
   m_debuginterval = 0;
   m_debugstep = 0;
   exh->AddTerminatorObject(this);
-  InitializeTheRun(argc,argv);
 }
 
 Sherpa::~Sherpa() 
@@ -69,7 +64,6 @@ Sherpa::~Sherpa()
 #ifdef USING__MPI
   int dummy=0;
   MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
-  MPI::Finalize();
 #endif
 }
 
@@ -211,7 +205,6 @@ bool Sherpa::GenerateOneEvent(bool reset)
       p_iohandler->PrintEvent(p_eventhandler->GetBlobs());
       return 1;
     }
-    m_errors++;
   }
   return 0;
 }

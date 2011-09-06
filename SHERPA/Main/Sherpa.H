@@ -11,7 +11,7 @@ namespace SHERPA {
   class Sherpa: public ATOOLS::Terminator_Object {
   private:
     std::string   m_path;
-    long int      m_errors,m_trials, m_debugstep, m_debuginterval;
+    long int      m_trials, m_debugstep, m_debuginterval;
 
     Initialization_Handler * p_inithandler;
     Event_Handler          * p_eventhandler;
@@ -21,17 +21,16 @@ namespace SHERPA {
 
     void PrepareTerminate();
 
-    bool InitializeTheRun(int argc,char * argv[]);
-
   public:
 
-    Sherpa(int argc,char * argv[]);
+    Sherpa();
     ~Sherpa();
+
+    bool InitializeTheRun(int argc,char * argv[]);
 
     bool     InitializeTheEventHandler();
     bool     GenerateOneEvent(bool reset=true);
     bool     SummarizeRun();
-    long int NumberOfErrors() { return m_errors; } 
     inline void SetTrials(const long& trials) { m_trials = trials; }
     
     inline Initialization_Handler * GetInitHandler() const 
