@@ -379,6 +379,9 @@ void Histogram::Output() {
 
 void Histogram::Output(const std::string name) 
 {
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()) return;
+#endif
   if (!m_active) return;
   std::ofstream ofile;
   ofile.open(name.c_str());
