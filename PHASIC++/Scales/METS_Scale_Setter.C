@@ -72,7 +72,7 @@ namespace PHASIC {
 
     SP(Color_Integrator) p_ci;
 
-    size_t m_cnt, m_rej, m_mode, m_rproc, m_vmode, m_vproc, m_cmode;
+    size_t m_cnt, m_rej, m_mode, m_rproc, m_vmode, m_vproc, m_cmode, m_mufmode;
     double m_lfrac, m_aqed, m_wthres;
 
     ATOOLS::DecayInfo_Vector m_decids;
@@ -212,6 +212,8 @@ METS_Scale_Setter::METS_Scale_Setter
   Data_Reader read(" ",";","!","=");
   if (!read.ReadFromFile(m_vmode,"METS_SCALE_VMODE")) m_vmode=8|2|4;
   else msg_Info()<<METHOD<<"(): Set NLO scale mode "<<m_vmode<<".\n";
+  if (!read.ReadFromFile(m_mufmode,"METS_SCALE_MUFMODE")) m_mufmode=0;
+  else msg_Info()<<METHOD<<"(): Set METS \\mu_F mode "<<m_mufmode<<".\n";
   if (!read.ReadFromFile(m_wthres,"METS_WARNING_THRESHOLD")) m_wthres=0.1;
   if (m_vproc && (m_vmode&8)) m_mode=0;
 }
@@ -539,7 +541,7 @@ double METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl)
 
 double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 {
-  double mur2(muf2);
+  double mur2(muf2), mup2(muf2);
   if (ampl) {
     msg_Debugging()<<"Setting scales {\n";
     mur2=1.0;
@@ -548,6 +550,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
       m_scale[idx]=Max(ampl->Mu2(),MODEL::as->CutQ2());
       m_scale[idx]=Min(m_scale[idx],sqr(rpa->gen.Ecms()));
       mum2=Min(mum2,m_scale[idx]);
+      mup2=Max(mup2,ampl->KT2());
       if (m_rproc && ampl->Prev()==NULL) continue;
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
       if (coqcd>0.0) {
@@ -587,7 +590,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
     }
     msg_Debugging()<<"} -> as = "<<as<<" -> "<<sqrt(mur2)<<"\n";
   }
-  m_scale[stp::fac]=muf2;
+  m_scale[stp::fac]=(m_mufmode&1)?mup2:muf2;
   m_scale[stp::ren]=mur2;
   msg_Debugging()<<"Core / QCD scale = "<<sqrt(m_scale[stp::fac])
 		 <<" / "<<sqrt(m_scale[stp::ren])<<"\n";

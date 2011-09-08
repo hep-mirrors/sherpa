@@ -145,7 +145,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
   if (!FileExists(newpath+"/makelibs")) {
-    CopyFile(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
   }
 
@@ -192,16 +192,16 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+links[j]->Name();
 	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+Name();
 	  if (FileExists(mlname+string(".map"))) { 
-	    if (m_sfactor==1.) CopyFile(mlname+".map",mnname+".map");
+	    if (m_sfactor==1.) Copy(mlname+".map",mnname+".map");
 	    else {
 	      UpdateMappingFile(mlname,cplmap);
 	      CreateMappingFile((Single_LOProcess*)links[j]);
 	    }
-	    CopyFile(mlname+".col",mnname+".col");
+	    Copy(mlname+".col",mnname+".col");
 	    for (size_t i=0;i<m_nin+m_nout-1;i++) if (m_flavs[i].Strong()) {
 	      for (size_t j=i+1;j<m_nin+m_nout;j++) if (m_flavs[j].Strong()) {
 		string sij=string("_S")+ToString(i)+string("_")+ToString(j);
-		CopyFile(mlname+sij+".col",mnname+sij+".col");
+		Copy(mlname+sij+".col",mnname+sij+".col");
 	      }
 	    }
 	  }
@@ -319,7 +319,7 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
   if (!FileExists(newpath+"/makelibs")) {
-    CopyFile(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
   }
 

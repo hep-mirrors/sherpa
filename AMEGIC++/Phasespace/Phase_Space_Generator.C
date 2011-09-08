@@ -215,7 +215,7 @@ void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,st
     from.close();
     to.close();
 
-    MoveFile(makefilename+".tmp",makefilename);
+    Move(makefilename+".tmp",makefilename);
   }
 }
 

@@ -63,7 +63,7 @@ void String_Library::UpdateConfigure(std::string pathID)
     from.close();
     to.close();
 
-    MoveFile(name+".tmp",name);
+    Move(name+".tmp",name);
   }
   
   name=rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+base+mkam;
@@ -91,7 +91,7 @@ void String_Library::UpdateConfigure(std::string pathID)
     from.close();
     to.close();
 
-    MoveFile(name+".tmp",name);
+    Move(name+".tmp",name);
   }
 
 }
@@ -147,7 +147,7 @@ void String_Library::AddToMakefileAM(string makefilename,string pathID,string fi
     from.close();
     to.close();
 
-    MoveFile(makefilename+".tmp",makefilename);
+    Move(makefilename+".tmp",makefilename);
   }
 }
 
@@ -162,7 +162,7 @@ void String_Library::InitMakefile(string pathID)
 
   if (IsFile(newMakefile)) return;
 
-  CopyFile(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Dummy/Makefile",
+  Copy(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Dummy/Makefile",
 	   rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pathID+"/Makefile");
 
   string pID;

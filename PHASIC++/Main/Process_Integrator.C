@@ -11,6 +11,8 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
+#include <stdio.h>
+#include <errno.h>
 #ifdef USING__MPI
 #include "mpi.h"
 #endif
@@ -678,6 +680,14 @@ void Process_Integrator::RestoreInOrder()
       (*p_proc)[i]->Integrator()->RestoreInOrder();
 }
 
+void Process_Integrator::StoreBackupResults()
+{
+  if (!DirectoryExists(m_resultpath)) return;
+  if (!Copy(m_resultpath,m_resultpath+".bak",true))
+    msg_Error()<<METHOD<<"(): Copy error. "
+	       <<strerror(errno)<<"."<<std::endl;
+}
+
 void Process_Integrator::StoreResults(const int mode)
 {
 #ifdef USING__MPI
@@ -685,6 +695,7 @@ void Process_Integrator::StoreResults(const int mode)
 #endif
   if (m_resultpath.length()==0) return;
   if (m_totalxs!=0.0 && mode==0) return;
+  if (p_proc->Parent()==p_proc) StoreBackupResults();
   SetTotal(0); 
   std::string fname(p_proc->Name());
   if (s_omitnlosuffix) {

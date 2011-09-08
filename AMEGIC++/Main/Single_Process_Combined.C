@@ -132,7 +132,7 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Model_Base * model,Topology* 
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
   if (!FileExists(newpath+"/makelibs")) {
-    CopyFile(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
   }
 
@@ -178,12 +178,12 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Model_Base * model,Topology* 
 	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+links[j]->Name();
 	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+Name();
 	  if (FileExists(mlname+string(".map"))) { 
-	    if (m_sfactor==1.) CopyFile(mlname+".map",mnname+".map");
+	    if (m_sfactor==1.) Copy(mlname+".map",mnname+".map");
 	    else {
 	      UpdateMappingFile(mlname,cplmap);
 	      CreateMappingFile((Single_Process_Combined*)links[j]);
 	    }
-	    CopyFile(mlname+".col",mnname+".col");
+	    Copy(mlname+".col",mnname+".col");
 	  }
 	}
 
@@ -406,7 +406,7 @@ int AMEGIC::Single_Process_Combined::Tests()
 			   <<om::bold<<"   Interrupt run and execute \"makelibs\" in '"
 			   <<rpa->gen.Variable("SHERPA_CPP_PATH")<<"'."
 			   <<om::reset<<std::endl;
-	CopyFile(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+	Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 		 rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs");
 	THROW(normal_exit,"Failed to load library.");
       }

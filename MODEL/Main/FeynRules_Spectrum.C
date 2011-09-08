@@ -39,9 +39,9 @@ void FeynRules_Spectrum::PrepareTerminate()
 {
   string path(rpa->gen.Variable("SHERPA_STATUS_PATH")+"/");
   if (path=="/") return;
-  CopyFile(m_dir+"/"+m_identfile,path+m_identfile);
-  CopyFile(m_dir+"/"+m_paramdeffile,path+m_paramdeffile);
-  CopyFile(m_dir+"/"+m_paramfile,path+m_paramfile);
+  Copy(m_dir+"/"+m_identfile,path+m_identfile);
+  Copy(m_dir+"/"+m_paramdeffile,path+m_paramdeffile);
+  Copy(m_dir+"/"+m_paramfile,path+m_paramfile);
 }
 
 void FeynRules_Spectrum::Run(PDF::ISR_Handler *const isr) {

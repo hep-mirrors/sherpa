@@ -720,7 +720,6 @@ void Simple_Chain::PrepareTerminate()
   if (path=="") return;
   for (Amisic_Histogram_Map::const_iterator hit(m_differentials.begin());
        hit!=m_differentials.end();++hit) hit->second->RestoreData();
-  CopyFile(InputPath()+m_selectorfile,path+"/"+m_selectorfile);
   path+="/"+m_pathextra;
   MakeDir(path,true);
   p_gridcreator->WriteOutGrid(String_Vector(),path);

@@ -397,7 +397,7 @@ bool Hadron_Decay_Channel::WriteOut( vector<double> results, bool newfile ) {
     to.close();
   } // if (read DC file)
   else {                                // if DC file exists
-    MoveFile(m_path+m_filename, m_path+"."+m_filename+".old");
+    Move(m_path+m_filename, m_path+"."+m_filename+".old");
     ofstream to((m_path+m_filename).c_str(),ios::out);
 
     // copy Options, Phasespace, ME, ...

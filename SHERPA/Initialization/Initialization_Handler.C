@@ -323,23 +323,23 @@ void Initialization_Handler::PrepareTerminate()
 {
   std::string path(rpa->gen.Variable("SHERPA_STATUS_PATH")+"/");
   if (path=="/") return;
-  CopyFile(m_path+StripSectionTags(m_file),path+StripSectionTags(m_file));
-  CopyFile(m_path+StripSectionTags(m_modeldat),path+StripSectionTags(m_modeldat));
-  CopyFile(m_path+StripSectionTags(m_beamdat),path+StripSectionTags(m_beamdat));
-  CopyFile(m_path+StripSectionTags(m_isrdat[0]),path+StripSectionTags(m_isrdat[0]));
-  CopyFile(m_path+StripSectionTags(m_isrdat[1]),path+StripSectionTags(m_isrdat[1]));
-  CopyFile(m_path+StripSectionTags(m_medat),path+StripSectionTags(m_medat));
-  CopyFile(m_path+StripSectionTags(m_midat),path+StripSectionTags(m_midat));
-  CopyFile(m_path+StripSectionTags(m_showerdat),path+StripSectionTags(m_showerdat));
-  CopyFile(m_path+StripSectionTags(m_beamremnantdat),path+StripSectionTags(m_beamremnantdat));
-  CopyFile(m_path+StripSectionTags(m_fragmentationdat),path+StripSectionTags(m_fragmentationdat));
-  CopyFile(m_path+StripSectionTags(m_hadrondecaysdat),path+StripSectionTags(m_hadrondecaysdat));
-  CopyFile(m_path+StripSectionTags(m_analysisdat),path+StripSectionTags(m_analysisdat));
-  CopyFile(m_path+StripSectionTags(m_selectordat),
+  Copy(m_path+StripSectionTags(m_file),path+StripSectionTags(m_file));
+  Copy(m_path+StripSectionTags(m_modeldat),path+StripSectionTags(m_modeldat));
+  Copy(m_path+StripSectionTags(m_beamdat),path+StripSectionTags(m_beamdat));
+  Copy(m_path+StripSectionTags(m_isrdat[0]),path+StripSectionTags(m_isrdat[0]));
+  Copy(m_path+StripSectionTags(m_isrdat[1]),path+StripSectionTags(m_isrdat[1]));
+  Copy(m_path+StripSectionTags(m_medat),path+StripSectionTags(m_medat));
+  Copy(m_path+StripSectionTags(m_midat),path+StripSectionTags(m_midat));
+  Copy(m_path+StripSectionTags(m_showerdat),path+StripSectionTags(m_showerdat));
+  Copy(m_path+StripSectionTags(m_beamremnantdat),path+StripSectionTags(m_beamremnantdat));
+  Copy(m_path+StripSectionTags(m_fragmentationdat),path+StripSectionTags(m_fragmentationdat));
+  Copy(m_path+StripSectionTags(m_hadrondecaysdat),path+StripSectionTags(m_hadrondecaysdat));
+  Copy(m_path+StripSectionTags(m_analysisdat),path+StripSectionTags(m_analysisdat));
+  Copy(m_path+StripSectionTags(m_selectordat),
 	   path+StripSectionTags(m_selectordat));
-  CopyFile(m_path+StripSectionTags(m_processesdat),
+  Copy(m_path+StripSectionTags(m_processesdat),
 	   path+StripSectionTags(m_processesdat));
-  CopyFile(m_path+StripSectionTags(rpa->gen.Variable("INTEGRATION_DATA_FILE")),
+  Copy(m_path+StripSectionTags(rpa->gen.Variable("INTEGRATION_DATA_FILE")),
 	   path+StripSectionTags(rpa->gen.Variable("INTEGRATION_DATA_FILE")));
   Data_Writer writer;
   writer.SetOutputFile(path+"cmd");

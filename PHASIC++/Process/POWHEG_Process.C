@@ -683,6 +683,7 @@ bool POWHEG_Process::CalculateTotalXSec(const std::string &resultpath,
       return 1;
     }
     p_int->StoreResults();
+    p_int->StoreBackupResults();
     exh->RemoveTerminatorObject(p_int);
     return 1;
   }

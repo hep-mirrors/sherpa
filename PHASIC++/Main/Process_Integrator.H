@@ -121,6 +121,7 @@ namespace PHASIC {
 
     void ReadResults();
     void StoreResults(const int mode=0);
+    void StoreBackupResults();
     void PrepareTerminate();
 
     void SetEnhanceFactor(const double &efac);

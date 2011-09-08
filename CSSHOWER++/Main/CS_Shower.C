@@ -248,7 +248,6 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap)
   std::set<size_t> aset;
   Cluster_Amplitude *campl(ampl);
   while (campl->Next()) campl=campl->Next();
-  double kt2max(HardScale(campl));
   GetKT2Min(campl,(1<<ampl->Legs().size())-1,kt2xmap,aset);
   std::vector<size_t> cns;
   double ckt2min(std::numeric_limits<double>::max()), ckt2max(0.0);
@@ -269,7 +268,7 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap)
     if (aset.find(kit->first)==aset.end()) {
       if (smin) kit->second.first=ckt2min;
       else kit->second.first=0.0;
-      kit->second.second=kt2max;
+      kit->second.second=ckt2max;
     }
   msg_Debugging()<<"k_{T,min} / k_{T,max} = {\n";
   for (KT2X_Map::const_iterator
@@ -540,14 +539,8 @@ double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
   if (ampl->Next()) {
     Cluster_Amplitude *next(ampl->Next());
     if (next->OrderQCD()<ampl->OrderQCD()) return ampl->KT2();
-    for (size_t i(0);i<next->Legs().size();++i)
-      if (next->Leg(i)->K()) {
-	if (!next->Leg(i)->Flav().Resummed())
-	  return Max(dabs(next->Leg(i)->Mom().Abs2()),ampl->KT2());
-      }
-    return ampl->KT2();
   }
-  return ampl->KT2();
+  return ampl->MuF2();
 }
 
 double CS_Shower::CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,

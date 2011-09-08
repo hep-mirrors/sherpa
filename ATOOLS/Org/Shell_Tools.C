@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/My_File.H"
 
 #include <sys/stat.h>
+#include <string.h>
 #include <errno.h>
 #include <dirent.h>
 #include <cstdlib>
@@ -38,25 +39,17 @@ bool ATOOLS::MakeDir(std::string path,const bool create_tree,
 #ifdef DEBUG__Shell_Tools
     std::cout<<"   Making directory '"<<piece<<"'\n";
 #endif
+    if (DirectoryExists(piece)) continue;
     if (mkdir(piece.c_str(),mode)!=0) {
       if (errno==EEXIST) {
-	struct dirent **namelist;
-	int n(scandir(piece.c_str(),&namelist,NULL,NULL));
-	for (int i(0);i<n;++i) free(namelist[i]);
-	if (n>=0) {
-	  free(namelist);
-	  continue;
-	}
-	else {
 #ifdef DEBUG__Shell_Tools
-	  std::cout<<"   File exists but is not a directory.\n"
-		   <<"   Abort.\n}"<<std::endl;
+	std::cout<<"   File exists but is not a directory.\n"
+		 <<"   Abort.\n}"<<std::endl;
 #endif
-	  return false;
-	}
+	return false;
       }
 #ifdef DEBUG__Shell_Tools
-      std::cout<<"   Failed with error'"<<errno<<"'.\n"
+      std::cout<<"   Error. "<<strerror(errno)<<".\n"
 	       <<"   Abort.\n}"<<std::endl;
 #endif
       return false;
@@ -73,32 +66,49 @@ bool ATOOLS::ChMod(const std::string &file,const mode_t mode)
   if (!FileExists(file)) return false;
   if (chmod(file.c_str(),mode)!=0) {
 #ifdef DEBUG__Shell_Tools
-    std::cout<<METHOD<<"(): Error "<<errno<<" in setting mode "
-	     <<mode<<"on '"<<file<<"'."<<std::endl;
+    std::cout<<"   Error. "<<strerror(errno)
+	     <<" while setting mode "
+	     <<mode<<" on '"<<file<<"'."<<std::endl;
 #endif
     return false;
   }
   return true;
 }
 
-bool ATOOLS::CopyFile(const std::string &oldname,const std::string &newname)
+bool ATOOLS::Copy(const std::string &oldname,
+		  const std::string &newname,const bool rec)
 {
+  struct stat fst;
+  if (stat(oldname.c_str(),&fst)==-1) return false;
+  if ((fst.st_mode&S_IFMT)==S_IFDIR) {
+    if (!MakeDir(newname,fst.st_mode)) return false;
+    bool stat=true;
+    struct dirent **entries;
+    int n(scandir(oldname.c_str(),&entries,NULL,NULL));
+    for (int i(0);i<n;++i) {
+      if (strcmp(".",entries[i]->d_name)!=0 &&
+	  strcmp("..",entries[i]->d_name)!=0 && rec)
+	stat&=Copy(oldname+"/"+entries[i]->d_name,
+		   newname+"/"+entries[i]->d_name,rec);
+      free(entries[i]);
+    }
+    if (n>=0) free(entries);
+    return stat;
+  }
   if (!FileExists(oldname)) return false;
   My_In_File oldfile("",oldname);
   if (!oldfile.Open()) return false;
   My_Out_File newfile("",newname);
   if (!newfile.Open()) return false;
   (*newfile)<<oldfile->rdbuf();
-  struct stat fst;
-  stat(oldname.c_str(),&fst);
-  chmod(newname.c_str(),fst.st_mode);
-  return true;
+  return chmod(newname.c_str(),fst.st_mode)==0;
 }
 
-bool ATOOLS::MoveFile(const std::string &oldname,const std::string &newname)
+bool ATOOLS::Move(const std::string &oldname,
+		  const std::string &newname)
 {
-  if (!CopyFile(oldname,newname)) return false;
-  return !remove(oldname.c_str());
+  if (!Copy(oldname,newname,true)) return false;
+  return !Remove(oldname);
 }
 
 std::vector<std::string> 
@@ -133,6 +143,36 @@ bool ATOOLS::FileExists(const std::string &file)
   if (stat(file.c_str(),&fst)!=-1)
     return (fst.st_mode&S_IFMT)==S_IFREG;
   return false;
+}
+
+bool ATOOLS::DirectoryExists(const std::string &dir)
+{
+  struct stat fst;
+  if (stat(dir.c_str(),&fst)!=-1)
+    return (fst.st_mode&S_IFMT)==S_IFDIR;
+  return false;
+}
+
+bool ATOOLS::Remove(const std::string &file,
+		    const bool rec)
+{
+  struct stat fst;
+  if (stat(file.c_str(),&fst)==-1) return false;
+  if ((fst.st_mode&S_IFMT)==S_IFDIR) {
+    bool stat=true;
+    struct dirent **entries;
+    int n(scandir(file.c_str(),&entries,NULL,NULL));
+    for (int i(0);i<n;++i) {
+      if (strcmp(".",entries[i]->d_name)!=0 &&
+	  strcmp("..",entries[i]->d_name)!=0 && rec)
+	stat&=Remove(file+"/"+entries[i]->d_name,rec);
+      free(entries[i]);
+    }
+    if (n>=0) free(entries);
+    if (!stat) return false;
+    return rmdir(file.c_str())==0;
+  }
+  return unlink(file.c_str())==0;
 }
 
 std::string ATOOLS::Demangle(const std::string &name)

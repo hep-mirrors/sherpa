@@ -77,7 +77,7 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Model_Base * model,Topology* top,
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
   if (!FileExists(newpath+"/makelibs")) {
-    CopyFile(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
 	     newpath+"/makelibs");
   }
 
