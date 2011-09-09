@@ -89,7 +89,17 @@ double CF_EW_FFZ::Coupling(const double &scale,const int pol)
 bool CF_EW_FFZ::AllowSpec(const ATOOLS::Flavour &fl) 
 {
   if (m_cfl.IntCharge()==0) return fl.Charge();
-  return fl.IntCharge()*m_cfl.IntCharge()<0;
+
+  switch (m_type) {
+  case cstp::FF:
+  case cstp::II:
+    return fl.IntCharge()*m_cfl.IntCharge()<0;
+  case cstp::FI:
+  case cstp::IF:
+    return fl.IntCharge()*m_cfl.IntCharge()>0;
+  default:
+    return false;
+  }
 }
 
 bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
