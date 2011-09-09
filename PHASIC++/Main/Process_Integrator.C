@@ -12,6 +12,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
 #include <stdio.h>
+#include <string.h>
 #include <errno.h>
 #ifdef USING__MPI
 #include "mpi.h"
@@ -683,7 +684,10 @@ void Process_Integrator::RestoreInOrder()
 void Process_Integrator::StoreBackupResults()
 {
   if (!DirectoryExists(m_resultpath)) return;
-  if (!Copy(m_resultpath,m_resultpath+".bak",true))
+  std::string path(m_resultpath);
+  while (path.length() && path[path.length()-1]=='/')
+    path.erase(path.length()-1,1);
+  if (!Copy(m_resultpath,path+".bak",true))
     msg_Error()<<METHOD<<"(): Copy error. "
 	       <<strerror(errno)<<"."<<std::endl;
 }
