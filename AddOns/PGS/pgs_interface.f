@@ -1,0 +1,18 @@
+      SUBROUTINE PGSXXX(MODE)
+      IMPLICIT NONE
+      INTEGER MODE,NEVSHA,ISTREAM,LOK
+      CHARACTER*80 SHAFILE
+      COMMON /PGSPARS/NEVSHA,ISTREAM,SHAFILE
+      IF (MODE.EQ.1) THEN
+         WRITE(6,*) ' Now initializing StdHep'
+         WRITE(6,*) ' Opening event file ',SHAFILE
+         CALL STDXWINIT(SHAFILE,'Sherpa output',NEVSHA,ISTREAM,LOK)
+         CALL STDXWRT(100,ISTREAM,LOK)
+      ELSE IF (MODE.EQ.2) THEN
+         CALL STDXWRT(1,ISTREAM,LOK)
+      ELSE
+         WRITE(6,*) ' Closing event file ',SHAFILE
+         CALL STDXWRT(200,ISTREAM,LOK)
+      ENDIF
+      RETURN
+      END

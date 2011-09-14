@@ -12,9 +12,13 @@ endif
 else
 HZTOOLLIBS    =
 endif
+if PGS_SUPPORT
+PGSLIBS       =	-L../../AddOns/PGS -lPGSSherpa \
+		@CONDITIONAL_PGSLIBS@
+endif
 
 Sherpa@VERSIONING@_LDADD  =	-L@SHERPABUILDDIR@/Main -lSherpaMain \
-		$(HZTOOLLIBS) \
+		$(HZTOOLLIBS) $(PGSLIBS) \
 		@CONDITIONAL_HEPMC2LIBS@ @ATOOLSLIBS@
 
 Sherpa@VERSIONING@_LDFLAGS        =	@ldflags@
