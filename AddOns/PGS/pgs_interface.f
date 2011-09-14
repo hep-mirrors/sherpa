@@ -7,12 +7,13 @@
          WRITE(6,*) ' Now initializing StdHep'
          WRITE(6,*) ' Opening event file ',SHAFILE
          CALL STDXWINIT(SHAFILE,'Sherpa output',NEVSHA,ISTREAM,LOK)
-         CALL STDXWRT(100,ISTREAM,LOK)
+C         CALL STDXWRT(100,ISTREAM,LOK)
       ELSE IF (MODE.EQ.2) THEN
-         CALL STDXWRT(1,ISTREAM,LOK)
+         CALL STDXWRT(4,ISTREAM,LOK)
       ELSE
          WRITE(6,*) ' Closing event file ',SHAFILE
-         CALL STDXWRT(200,ISTREAM,LOK)
+C         CALL STDXWRT(200,ISTREAM,LOK)
+         CALL STDXEND(ISTREAM)
       ENDIF
       RETURN
       END

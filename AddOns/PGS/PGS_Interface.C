@@ -31,6 +31,13 @@ extern struct {
 #define hepevt hepevt_
 
 extern struct {
+  double eventweightlh, alphaqedlh, alphaqcdlh;
+  double scalelh[10], spinlh[nmxhep][3];
+  int icolorflowlh[nmxhep][2], idruplh;
+} hepev4_;
+#define hepev4 hepev4_
+
+extern struct {
   int nevsha, istream;
   char shafile[80];
 } pgspars_;
@@ -106,6 +113,8 @@ void PGS_Interface::ConvertParticle
   MD_Info &cmd(mdmap[cp]=MD_Info(n));
   hepevt.jmohep[n][0]=hepevt.jmohep[n][1]=0;
   hepevt.jdahep[n][0]=hepevt.jdahep[n][1]=0;
+  hepev4.icolorflowlh[n][0]=hepev4.icolorflowlh[n][1]=0;
+  hepev4.spinlh[n][0]=hepev4.spinlh[n][1]=hepev4.spinlh[n][2]=0;
   hepevt.idhep[n]=cp->Flav().HepEvt();
   for (short int j=1;j<4;++j) 
     hepevt.phep[n][j-1]=cp->Momentum()[j];
@@ -189,12 +198,15 @@ bool PGS_Interface::Init()
   reader.AddComment("#");
   reader.SetFileBegin("BEGIN_PGS");
   reader.SetFileEnd("END_PGS");
-  m_outfile=reader.GetValue<std::string>("FILE_NAME","test.lhe");
+  m_outfile=reader.GetValue<std::string>("FILE_NAME","sherpa_events.hep");
   pgspars.nevsha=rpa->gen.NumberOfEvents();
   MakeFortranString(pgspars.shafile,m_outfile,80);
   msg_Info()<<"\n"<<METHOD<<"(): {"<<std::endl;
   pgsxxx(1);
   msg_Info()<<"}"<<std::endl;
+  hepev4.alphaqedlh=hepev4.alphaqcdlh=0.0;
+  for (size_t i(0);i<10;++i) hepev4.scalelh[i]=0.0;
+  hepev4.idruplh=0;
   return true;
 }
 
@@ -207,9 +219,8 @@ bool PGS_Interface::Run(ATOOLS::Blob_List *const bl)
   if (xs==NULL) THROW(fatal_error,"No weight information");
   MotherDaughter_Map mdmap;
   Convert(bl,mdmap);
-// #ifdef USING__HERACMN
-//   heracmn.wtx=xs->Get<double>();
-// #endif
+  hepev4.eventweightlh=xs->Get<double>();
+  hepevt.nevhep=rpa->gen.NumberOfGeneratedEvents();
   pgsxxx(2);
   Check(bl,mdmap);
   return true;
