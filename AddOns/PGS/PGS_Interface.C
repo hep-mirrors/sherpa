@@ -43,9 +43,10 @@ extern struct {
 } pgspars_;
 #define pgspars pgspars_
 
-  void pgsxxx_(int *mode);
+  void pgsxxx_(int *mode,int *imode);
 
-  inline void pgsxxx(int mode) { pgsxxx_(&mode); }
+  inline void pgsxxx(int mode,int imode=1)
+  { pgsxxx_(&mode,&imode); }
 
 }
 
@@ -61,6 +62,8 @@ class PGS_Interface: public SHERPA::Analysis_Interface {
 private:
 
   std::string m_inpath, m_infile, m_outfile;
+
+  int m_imode;
 
   void ConvertParticle(ATOOLS::Particle *const cp,const int sc,
 		       const int mode,MotherDaughter_Map &mdmap);
@@ -96,7 +99,8 @@ void PGS_Interface::ShowSyntax(const int i)
   if (!msg_LevelIsInfo() || i==0) return;
   msg_Out()<<METHOD<<"(): {\n\n"
 	   <<"   BEGIN_PGS {\n\n"
-	   <<"     FILE_NAME <filename>\n";
+	   <<"     FILE_NAME <filename>\n"
+	   <<"     WRITE_MODE <mode>\n";
   msg_Out()<<"\n   } END_PGS\n\n"
 	   <<"}"<<std::endl;
 }
@@ -199,6 +203,7 @@ bool PGS_Interface::Init()
   reader.SetFileBegin("BEGIN_PGS");
   reader.SetFileEnd("END_PGS");
   m_outfile=reader.GetValue<std::string>("FILE_NAME","sherpa_events.hep");
+  m_imode=reader.GetValue<int>("WRITE_MODE",1);
   pgspars.nevsha=rpa->gen.NumberOfEvents();
   MakeFortranString(pgspars.shafile,m_outfile,80);
   msg_Info()<<"\n"<<METHOD<<"(): {"<<std::endl;
@@ -221,7 +226,7 @@ bool PGS_Interface::Run(ATOOLS::Blob_List *const bl)
   Convert(bl,mdmap);
   hepev4.eventweightlh=xs->Get<double>();
   hepevt.nevhep=rpa->gen.NumberOfGeneratedEvents();
-  pgsxxx(2);
+  pgsxxx(2,m_imode);
   Check(bl,mdmap);
   return true;
 }
