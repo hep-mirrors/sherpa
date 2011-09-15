@@ -5,8 +5,12 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include <iostream>
 #include <cstring>
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE ATOOLS::External_RNG
@@ -234,6 +238,9 @@ bool ATOOLS::Random::ReadInStatus(const std::string &path)
 
 void ATOOLS::Random::ReadInStatus(const char * filename)
 {
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_size()) return;
+#endif
   if (p_external!=NULL) return;
   // check what type of data is in target file
   ifstream file(filename);
@@ -268,6 +275,9 @@ void ATOOLS::Random::ReadInStatus(const char * filename)
 size_t ATOOLS::Random::ReadInStatus
 (std::istream &myinstream,const size_t &idx)
 {
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_size()) return std::string::npos;
+#endif
   size_t count;
   while (!myinstream.eof()) {
     myinstream>>count;
