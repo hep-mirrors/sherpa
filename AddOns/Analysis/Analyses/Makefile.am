@@ -2,7 +2,8 @@
 ANAANA_SOURCES        =	\
 			Analysis_Base.C \
 			BFKL_Analysis.C \
-			WPolarization_Analysis.C
+			WPolarization_Analysis.C \
+			ATLAS_CONF_2011_038.C
 
 ANAANA_ADDS           =	\
 			Analysis_Base.H
