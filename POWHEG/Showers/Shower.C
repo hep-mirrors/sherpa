@@ -81,14 +81,14 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
 	RemnantTest(split->GetSpect())==-1) rd=-1;
   }
   int sci[2]={split->GetFlow(1),split->GetFlow(2)};
-  Flavour sfi(split->GetFlavour());
+  m_flav=split->GetFlavour();
   split->SetFlavour(newpB->GetFlavour());
   split->SetFlow(1,newpB->GetFlow(1));
   split->SetFlow(2,newpB->GetFlow(2));
   if (rd==1) rd=p_gamma->Reject()?-1:1;
   if (rd==1 && split->KtTest()>split->KtMax())
     rd=!split->GetSing()->JetVeto(&m_sudakov);
-  split->SetFlavour(sfi);
+  split->SetFlavour(m_flav);
   split->SetFlow(1,sci[0]);
   split->SetFlow(2,sci[1]);
   return rd;
@@ -157,6 +157,7 @@ int Shower::MakeKinematics
   pi->SetId(split->Id());
   pi->SetKin(m_kscheme);
   pj->SetKin(m_kscheme);
+  pi->SetLT(split->LT());
   if (stype&1) pi->SetBeam(split->Beam());
   if (mode==0) SetSplitInfo(peo,pso,split,pi,pj,stype);
   split->GetSing()->push_back(pj);

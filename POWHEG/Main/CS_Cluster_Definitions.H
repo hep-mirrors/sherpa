@@ -59,24 +59,7 @@ namespace POWHEG {
 		      const ATOOLS::Cluster_Leg *j,
 		      const ATOOLS::Cluster_Leg *k,
 		      const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
-		      ATOOLS::Mass_Selector *const ms=NULL);
-
-    CS_Parameters KT2_FF(const ATOOLS::Cluster_Leg *i,
-			 const ATOOLS::Cluster_Leg *j,
-			 const ATOOLS::Cluster_Leg *k,
-			 const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none));
-    CS_Parameters KT2_FI(const ATOOLS::Cluster_Leg *i,
-			 const ATOOLS::Cluster_Leg *j,
-			 const ATOOLS::Cluster_Leg *a,
-			 const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none));
-    CS_Parameters KT2_IF(const ATOOLS::Cluster_Leg *a,
-			 const ATOOLS::Cluster_Leg *i,
-			 const ATOOLS::Cluster_Leg *k,
-			 const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none));
-    CS_Parameters KT2_II(const ATOOLS::Cluster_Leg *a,
-			 const ATOOLS::Cluster_Leg *i,
-			 const ATOOLS::Cluster_Leg *b,
-			 const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none));
+		      ATOOLS::Mass_Selector *const ms=NULL,const int ikin=1);
 
     // CS cluster kinematics
     ATOOLS::Vec4D_Vector Combine(const ATOOLS::Cluster_Amplitude &ampl,
@@ -85,25 +68,7 @@ namespace POWHEG {
 				 ATOOLS::Mass_Selector *const ms=NULL,
 				 const int kin=0);
     
-    ATOOLS::Vec4D_Vector Combine_FF(const ATOOLS::Cluster_Amplitude &ampl,
-				    int i,int j,int k,
-				    const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none));
-    ATOOLS::Vec4D_Vector Combine_FI(const ATOOLS::Cluster_Amplitude &ampl,
-				    int i,int j,int k,
-				    const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none));
-    ATOOLS::Vec4D_Vector Combine_IF(const ATOOLS::Cluster_Amplitude &ampl,
-				    int i,int j,int k,
-				    const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
-				    const int kin=0);
-    ATOOLS::Vec4D_Vector Combine_II(const ATOOLS::Cluster_Amplitude &ampl,
-				    int i,int j,int k,
-				    const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
-				    const int kin=0);
-    
     //inline methods
-    inline double Lambda(const double a, const double b, const double c) {
-      return a*a+b*b+c*c-2.*a*b-2.*a*c-2.*b*c;
-    }
     inline ATOOLS::Cluster_Leg *LegB() const { return p_b; }
 
     inline void SetAMode(const size_t mode) { m_amode=mode; }

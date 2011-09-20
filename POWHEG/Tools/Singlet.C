@@ -5,9 +5,11 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
 #include <list>
 
 using namespace POWHEG;
+using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
@@ -405,97 +407,12 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
 void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 			 const Flavour &mo,const int mode)
 {
-  if (p_all==NULL) return;
-  if (mode&2) {
-    if (mode&1) {
-      Vec4D pr(r->Momentum()), pl(l->Momentum()), ps(s->Momentum());
-      double papb(pl*ps), pipa(-pr*pl), pipb(-pr*ps);
-      double xiab((papb+pipa+pipb)/papb), mi2(p_ms->Mass2(r->GetFlavour()));
-      double mai2(p_ms->Mass2(mo)), ma2(p_ms->Mass2(l->GetFlavour()));
-      double mb2(p_ms->Mass2(s->GetFlavour())), Q2((pl+ps-pr).Abs2());
-      double ttau(Q2-mai2-mb2), tau(Q2-ma2-mi2-mb2);
-      double xiiab(xiab*(ttau+sqrt(ttau*ttau-4.*mai2*mb2))/
-		   (tau+sqrt(tau*tau-4.*ma2*mb2*xiab*xiab)));
-      double gam(papb+sqrt(papb*papb-ma2*mb2));
-      Vec4D pait(xiiab*(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))
-		 *(pl-ma2/gam*ps)+mai2/(xiiab*gam)*ps);
-      Poincare cmson(pait+ps,pl+ps-pr,1);
-      for (All_Singlets::const_iterator asit(p_all->begin());
-	   asit!=p_all->end();++asit) {
-	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	  if ((*plit)==f || (*plit)==r || (*plit)==s) continue;
-	  Vec4D p((*plit)->Momentum());
-	  cmson.Lambda(p);
-	  (*plit)->SetMomentum(p);
-	}
-      }
-    }
-    else {
-      Parton *b(NULL);
-      for (PLiter plit(s->GetSing()->begin());plit!=s->GetSing()->end();++plit)
-	if ((*plit)->GetType()==pst::IS && *plit!=s) {
-	  b=*plit;
-	  break;
-	}
-      if (b==NULL) THROW(fatal_error,"Corrupted singlet");
-      Vec4D pb(b->Momentum()), ps(s->Momentum());
-      double ma2(p_ms->Mass2(s->GetFlavour()));
-      double mb2(p_ms->Mass2(b->GetFlavour()));
-      if (ma2==0.0) return;
-      ZAlign lt(ps,pb,ma2,mb2);
-      for (All_Singlets::const_iterator asit(p_all->begin());
-	   asit!=p_all->end();++asit) {
-	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
-	}
-      }
-    }
-  }
-  else {
-    if (mode&1) {
-      if (f->Kin()==1) {
-      Parton *b(NULL);
-      for (PLiter plit(f->GetSing()->begin());plit!=f->GetSing()->end();++plit)
-	if ((*plit)->GetType()==pst::IS && *plit!=f) {
-	  b=*plit;
-	  break;
-	}
-      if (b==NULL) THROW(fatal_error,"Corrupted singlet");
-      Vec4D pb(-b->Momentum()), pl(-l->Momentum());
-      double ma2(p_ms->Mass2(l->GetFlavour())), maj2(p_ms->Mass2(mo));
-      double mb2(p_ms->Mass2(b->GetFlavour()));
-      if (ma2==0.0 && maj2==0.0) return;
-      ZAlign lt(-pl,-pb,ma2,mb2);
-      l->SetMomentum(-lt.PaNew());
-      for (All_Singlets::const_iterator asit(p_all->begin());
-	   asit!=p_all->end();++asit) {
-	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	  if (*plit==l) continue;
-	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
-	}
-      }
-      }
-      else {
-      Parton *b(NULL);
-      for (PLiter plit(f->GetSing()->begin());plit!=f->GetSing()->end();++plit)
-	if ((*plit)->GetType()==pst::IS && *plit!=f) {
-	  b=*plit;
-	  break;
-	}
-      if (b==NULL) THROW(fatal_error,"Corrupted singlet");
-      Vec4D pb(b->Momentum()), pl(l->Momentum());
-      double ma2(p_ms->Mass2(l->GetFlavour()));
-      double mb2(p_ms->Mass2(b->GetFlavour()));
-      ZAlign lt(pl,pb,ma2,mb2);
-      l->SetMomentum(lt.PaNew());
-      for (All_Singlets::const_iterator asit(p_all->begin());
-	   asit!=p_all->end();++asit) {
-	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
- 	  if (*plit==l) continue;
-	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
-	}
-      }
-      }
+  if (l->LT().empty()) return;
+  for (All_Singlets::const_iterator asit(p_all->begin());
+       asit!=p_all->end();++asit) {
+    for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
+      if (*plit==f || *plit==l || *plit==r || *plit==s) continue;
+      (*plit)->SetMomentum(l->LT()*(*plit)->Momentum());
     }
   }
 }
@@ -504,109 +421,34 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 			     const Flavour &mo,const int mode)
 {
   if (p_all==NULL) return;
+  Vec4D pa(l->Momentum()), pk(s->Momentum()), pi(r->Momentum());
+  double ma2(p_ms->Mass2(l->GetFlavour())), mk2(p_ms->Mass2(s->GetFlavour()));
+  double mi2(p_ms->Mass2(r->GetFlavour())), mai2(p_ms->Mass2(f->GetFlavour()));
+  Kin_Args lp;
   if (mode&2) {
     if (mode&1) {
-      Vec4D pr(r->Momentum()), pl(l->Momentum()), ps(s->Momentum());
-      double papb(pl*ps), pipa(-pr*pl), pipb(-pr*ps);
-      double xiab((papb+pipa+pipb)/papb), mi2(p_ms->Mass2(r->GetFlavour()));
-      double mai2(p_ms->Mass2(mo)), ma2(p_ms->Mass2(l->GetFlavour()));
-      double mb2(p_ms->Mass2(s->GetFlavour())), Q2((pl+ps-pr).Abs2());
-      double ttau(Q2-mai2-mb2), tau(Q2-ma2-mi2-mb2);
-      double xiiab(xiab*(ttau+sqrt(ttau*ttau-4.*mai2*mb2))/
-		   (tau+sqrt(tau*tau-4.*ma2*mb2*xiab*xiab)));
-      double gam(papb+sqrt(papb*papb-ma2*mb2));
-      Vec4D pait(xiiab*(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))
-		 *(pl-ma2/gam*ps)+mai2/(xiiab*gam)*ps);
-      Poincare cmson(pl+ps-pr,pait+ps,1);
-      for (All_Singlets::const_iterator asit(p_all->begin());
-	   asit!=p_all->end();++asit) {
-	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	  Vec4D p((*plit)->Momentum());
-	  cmson.Lambda(p);
- 	  (*plit)->SetMomentum(p);
-	}
-      }
-      r->SetMomentum(pr);
-    }
-    else {
-      Parton *b(NULL);
-      for (PLiter plit(s->GetSing()->begin());plit!=s->GetSing()->end();++plit)
-	if ((*plit)->GetType()==pst::IS && *plit!=s) {
-	  b=*plit;
-	  break;
-	}
-      if (b==NULL) THROW(fatal_error,"Corrupted singlet");
-      Vec4D pb(-b->Momentum()), pa(-s->Momentum());
-      Vec4D pi(l->Momentum()), pj(r->Momentum()), Q(pi+pj+pa);
-      double ma2(p_ms->Mass2(s->GetFlavour())), mij2(p_ms->Mass2(mo));
-      double mb2(p_ms->Mass2(b->GetFlavour()));
-      if (ma2==0.0) return;
-      double sij((pi+pj).Abs2()), Q2(Q.Abs2());
-      double lrat((sqr(Q2-mij2-ma2)-4.0*mij2*ma2)/
-		  (sqr(Q2-sij-ma2)-4.0*sij*ma2));
-      Vec4D pat(sqrt(lrat)*(pa-(Q*pa/Q2)*Q)+(Q2+ma2-mij2)/(2.*Q2)*Q);
-      ZAlign lt(-pat,-pb,ma2,mb2);
-      for (All_Singlets::const_iterator asit(p_all->begin());
-	   asit!=p_all->end();++asit) {
-	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
-	}
-      }
+      lp=ClusterIIDipole(ma2,mi2,mai2,mk2,pa,pi,pk,2|(((mode&4)?f:l)->Kin()?4:0));
     }
   }
   else {
     if (mode&1) {
-      if (f->Kin()==1) {
       Parton *b(NULL);
-      for (PLiter plit(f->GetSing()->begin());plit!=f->GetSing()->end();++plit)
-	if ((*plit)->GetType()==pst::IS && *plit!=f) {
-	  b=*plit;
+      for (PLiter pit(f->GetSing()->begin());pit!=f->GetSing()->end();++pit)
+	if ((*pit)->GetType()==pst::IS && *pit!=f) {
+	  b=*pit;
 	  break;
 	}
       if (b==NULL) THROW(fatal_error,"Corrupted singlet");
-      Vec4D pb(-b->Momentum()), pa(-l->Momentum());
-      Vec4D pj(r->Momentum()), pk(s->Momentum()), Q(pa+pj+pk);
-      double ma2(p_ms->Mass2(l->GetFlavour())), maj2(p_ms->Mass2(mo));
       double mb2(p_ms->Mass2(b->GetFlavour()));
-      double mk2(p_ms->Mass2(s->GetFlavour()));
-      if (ma2==0.0 && maj2==0.0) return;
-      double sjk((pj+pk).Abs2()), Q2(Q.Abs2());
-      double lrat((sqr(Q2-mk2-ma2)-4.0*mk2*ma2)/
-		  (sqr(Q2-sjk-ma2)-4.0*sjk*ma2));
-      Vec4D pat(sqrt(lrat)*(pa-(Q*pa/Q2)*Q)+(Q2+ma2-mk2)/(2.*Q2)*Q);
-      ZAlign lt(-pat,-pb,ma2,mb2);
-      for (All_Singlets::const_iterator asit(p_all->begin());
-	   asit!=p_all->end();++asit) {
-	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
-	}
-      }
-      }
-      else {
-      Parton *b(NULL);
-      for (PLiter plit(f->GetSing()->begin());plit!=f->GetSing()->end();++plit)
-	if ((*plit)->GetType()==pst::IS && *plit!=f) {
-	  b=*plit;
-	  break;
-	}
-      if (b==NULL) THROW(fatal_error,"Corrupted singlet");
-      Vec4D pb(-b->Momentum()), pa(-l->Momentum());
-      Vec4D pj(r->Momentum()), pk(s->Momentum()), Q(pa+pj+pk);
-      double mb2(p_ms->Mass2(b->GetFlavour())), maj2(p_ms->Mass2(mo));
-      double mk2(p_ms->Mass2(s->GetFlavour()));
-      double saj((pa+pj).Abs2()), Q2(Q.Abs2());
-      double lrat((sqr(Q2-maj2-mk2)-4.0*maj2*mk2)/
-		  (sqr(Q2-saj-mk2)-4.0*saj*mk2));
-      Vec4D pikt(sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+(Q2+mk2-maj2)/(2.*Q2)*Q);
-      Vec4D pat(Q-pikt); 
-      ZAlign lt(-pat,-pb,maj2,mb2);
-      for (All_Singlets::const_iterator asit(p_all->begin());
-	   asit!=p_all->end();++asit) {
-	for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-	  (*plit)->SetMomentum(lt.Align((*plit)->Momentum()));
-	}
-      }
-      }
+      lp=ClusterIFDipole(ma2,mi2,mai2,mk2,mb2,pa,pi,pk,
+			 b->Momentum(),2|(((mode&4)?f:l)->Kin()?4:0));
+    }
+  }
+  if (lp.m_lam.empty()) return;
+  for (All_Singlets::const_iterator asit(p_all->begin());
+       asit!=p_all->end();++asit) {
+    for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
+      (*plit)->SetMomentum(lp.m_lam*(*plit)->Momentum());
     }
   }
 }

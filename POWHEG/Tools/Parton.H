@@ -3,7 +3,7 @@
 
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Particle.H"
-#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Message.H"
 #include <list>
 
@@ -33,6 +33,7 @@ namespace POWHEG {
     Parton        * p_spect;
     Singlet       * p_sing;
     size_t          m_id, m_idx;
+    ATOOLS::Poincare_Sequence m_lt;
 
     std::vector<Parton*> m_specs;
     Splitting_Function_Base *p_sf;
@@ -43,6 +44,9 @@ namespace POWHEG {
     inline Parton(const ATOOLS::Particle *,pst::code=pst::none);
 
     inline std::vector<Parton*> &Specs() { return m_specs; }
+
+    inline void SetLT(const ATOOLS::Poincare_Sequence &lt) { m_lt=lt; }
+    inline const ATOOLS::Poincare_Sequence &LT() const { return m_lt; }
 
     inline ATOOLS::Flavour   const GetFlavour()  const;
     inline ATOOLS::Vec4D     const Momentum()    const;

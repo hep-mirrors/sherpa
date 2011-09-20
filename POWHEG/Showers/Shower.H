@@ -20,7 +20,7 @@ namespace POWHEG {
     Kinematics_FI      m_kinFI;
     Kinematics_IF      m_kinIF;
     Kinematics_II      m_kinII;
-    ATOOLS::Flavour    m_flavA, m_flavB, m_flavC;
+    ATOOLS::Flavour    m_flavA, m_flavB, m_flavC, m_flav;
     Singlet      *     p_actual;
     Sudakov            m_sudakov;
     PDF::ISR_Handler * p_isr;
@@ -74,6 +74,8 @@ namespace POWHEG {
     inline void SetGamma(CS_Gamma *const gamma) { p_gamma=gamma; }
 
     inline CS_Gamma *Gamma() const { return p_gamma; }
+
+    inline const ATOOLS::Flavour &ActiveFlav() const { return m_flav; }
 
   };
 }

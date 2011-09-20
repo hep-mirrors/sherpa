@@ -195,7 +195,7 @@ int Kinematics_II::MakeKinematics
   double mai2 = split->Mass2(), mb2 = spect->Mass2();
 
   double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),ma2,mi2,mb2);
-  Kin_Args ii(y,split->ZTest(),split->Phi());
+  Kin_Args ii(y,split->ZTest(),split->Phi(),split->Kin());
   if (ConstructIIDipole(ma2,mi2,mai2,mb2,p1,p2,ii)<0) return -1;
   if (mode==0 && -(ii.m_pi-ii.m_pj).Abs2()<split->TMin()) return -1;
 

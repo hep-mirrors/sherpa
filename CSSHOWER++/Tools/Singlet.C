@@ -864,7 +864,7 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   Kin_Args lp;
   if (mode&2) {
     if (mode&1) {
-      lp=ClusterIIDipole(ma2,mi2,mai2,mk2,pa,pi,pk,2|(l->Kin()?4:0));
+      lp=ClusterIIDipole(ma2,mi2,mai2,mk2,pa,pi,pk,2|(((mode&4)?f:l)->Kin()?4:0));
     }
   }
   else {

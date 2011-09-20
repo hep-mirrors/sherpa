@@ -340,10 +340,12 @@ Kin_Args PHASIC::ClusterIIDipole
   po=sqrt(po);
   Kin_Args res(vj,xjab,0.0,(mode&4)?1:0,1);
   if (mode&2) {
-    Vec4D pbh(pb);
-    res.m_lam.push_back(Poincare(pa-pj+pb));
-    res.m_lam.back().Boost(pbh);
-    res.m_lam.push_back(Poincare(pbh,pb));
+    if (res.m_mode==0) {
+      Vec4D pbh(pb);
+      res.m_lam.push_back(Poincare(pa-pj+pb));
+      res.m_lam.back().Boost(pbh);
+      res.m_lam.push_back(Poincare(pbh,pb));
+    }
   }
   res.m_pi=po/pn*(pa-2.0*ma2/(sab-ma2-mb2+pn)*pb)+
     2.0*maj2/(Q2-maj2-mb2+po)*pb;
@@ -357,8 +359,13 @@ Kin_Args PHASIC::ClusterIIDipole
     return Kin_Args();
   }
   if (mode&2) {
-    res.m_lam.push_back(Poincare(res.m_pi+res.m_pk));
-    res.m_lam.back().Invert();
+    if (res.m_mode==0) {
+      res.m_lam.push_back(Poincare(res.m_pi+res.m_pk));
+      res.m_lam.back().Invert();
+    }
+    else {
+      res.m_lam.push_back(Poincare(pa-pj+pb,res.m_pi+res.m_pk,1));
+    }
   }
   if (mode&1) res.m_phi=ComputePhi(pa,pb,pj,3);
   return res;
@@ -401,12 +408,17 @@ int PHASIC::ConstructIIDipole
   iip.m_pj=(1.0-zt)/pn*(gam*iip.m_pi-ma2*iip.m_pk)+
     (mj2+ktt*ktt)/(1.0-zt)/pn*(iip.m_pk-mb2/gam*iip.m_pi)+
     ktt*(sin(iip.m_phi)*l_perp+cos(iip.m_phi)*n_perp);
-  Vec4D pbh(pb);
-  iip.m_lam.push_back(iip.m_pi-iip.m_pj+pb);
-  iip.m_lam.back().Boost(pbh);
-  iip.m_lam.push_back(Poincare(pbh,pb));
-  iip.m_lam.push_back(Poincare(paj+pb));
-  iip.m_lam.back().Invert();
-  iip.m_lam.Invert();
+  if (iip.m_mode==0) {
+    Vec4D pbh(pb);
+    iip.m_lam.push_back(iip.m_pi-iip.m_pj+pb);
+    iip.m_lam.back().Boost(pbh);
+    iip.m_lam.push_back(Poincare(pbh,pb));
+    iip.m_lam.push_back(Poincare(paj+pb));
+    iip.m_lam.back().Invert();
+    iip.m_lam.Invert();
+  }
+  else {
+    iip.m_lam.push_back(Poincare(paj+pb,iip.m_pi-iip.m_pj+pb,1));
+  }
   return 1;
 }

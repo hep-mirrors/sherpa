@@ -1,12 +1,14 @@
 #include "POWHEG/Main/CS_Cluster_Definitions.H"
 
 #include "POWHEG/Showers/Shower.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
 #include "ATOOLS/Math/ZAlign.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_Limits.H"
 
 using namespace POWHEG;
+using namespace PHASIC;
 using namespace PDF;
 using namespace ATOOLS;
 
@@ -30,54 +32,69 @@ CS_Parameters CS_Cluster_Definitions::KT2
 (const ATOOLS::Cluster_Amplitude *ampl,
  const ATOOLS::Cluster_Leg *i,const ATOOLS::Cluster_Leg *j,
  const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo,
- ATOOLS::Mass_Selector *const ms)
+ ATOOLS::Mass_Selector *const ms,const int ikin)
 {
   p_ms=ms;
+  int kin(ikin<0?p_shower->KinScheme():ikin);
   if ((i->Id()&3)<(j->Id()&3)) std::swap<const Cluster_Leg*>(i,j);
   p_b=ampl->Leg(i==ampl->Leg(0)?1:0);
+  Vec4D pi(i->Mom()), pj(j->Mom()), pk(k->Mom());
+  double Q2=(pi+pj+pk).Abs2(), mb2=p_ms->Mass2(p_b->Flav());
+  double mi2=p_ms->Mass2(i->Flav()), mj2=p_ms->Mass2(j->Flav());
+  double mk2=p_ms->Mass2(k->Flav()), mij2=p_ms->Mass2(mo);
+  if (!(i->Id()&3) && mi2>10.0 && !i->Flav().Strong()) mi2=pi.Abs2();
+  if (!(j->Id()&3) && mj2>10.0 && !j->Flav().Strong()) mj2=pj.Abs2();
+  if (!(k->Id()&3) && mk2>10.0 && !k->Flav().Strong()) mk2=pk.Abs2();
+  if (!(i->Id()&3) && !(j->Id()&3) && mij2>10.0 && !mo.Strong()) {
+    mij2=(pi+pj).Abs2();
+    pk[0]=pk[0]<0.0?-pk.PSpat():pk.PSpat();
+    mk2=0.0;
+  }
+  CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),
+		   1.0,1.0,0.0,0.0,0.0,
+		   ((i->Id()&3)?1:0)|((k->Id()&3)?2:0),kin);
+  cs.m_wk=cs.m_ws=-1.0;
   if ((i->Id()&3)==0) {
     if ((j->Id()&3)==0) {
-      if ((k->Id()&3)==0) return KT2_FF(i,j,k,mo);
-      return KT2_FI(i,j,k,mo);
+      if ((k->Id()&3)==0) {
+	Kin_Args ff(ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,1|(kin?4:0)));
+	if (ff.m_stat!=1) return cs;
+	double kt2=2.0*(pi*pj)*ff.m_z*(1.0-ff.m_z)
+	  -sqr(1.0-ff.m_z)*mi2-sqr(ff.m_z)*mj2;
+	cs=CS_Parameters(kt2,ff.m_z,ff.m_y,ff.m_phi,1.0,Q2,0,kin);
+      }
+      else {
+	Kin_Args fi(ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,1|(kin?4:0)));
+	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
+	if (fi.m_pk.PPlus()>sum.PPlus() || fi.m_y>1.0 ||
+	    fi.m_pk.PMinus()>sum.PMinus() || fi.m_stat!=1) return cs;
+	double kt2=2.0*(pi*pj)*fi.m_z*(1.0-fi.m_z)
+	  -sqr(1.0-fi.m_z)*mi2-sqr(fi.m_z)*mj2;
+	cs=CS_Parameters(kt2,fi.m_z,fi.m_y,fi.m_phi,1.0-fi.m_y,Q2,2,kin);
+      }
     }
   }
   else {
     if ((j->Id()&3)==0) {
-      if ((k->Id()&3)==0) return KT2_IF(i,j,k,mo);
-      return KT2_II(i,j,k,mo);
+      Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
+      if ((k->Id()&3)==0) {
+	Kin_Args fi(ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-p_b->Mom(),1|(kin?4:0)));
+	if (fi.m_pi.PPlus()>sum.PPlus() || fi.m_z<0.0 ||
+	    fi.m_pi.PMinus()>sum.PMinus() || fi.m_stat!=1) return cs;
+	double kt2=-2.0*(pi*pj)*(1.0-fi.m_z)-mj2-sqr(1.0-fi.m_z)*mi2;
+	cs=CS_Parameters(kt2,fi.m_z,fi.m_y,fi.m_phi,fi.m_z,Q2,1,fi.m_mode);
+      }
+      else {
+	Kin_Args ii(ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,1|(kin?4:0)));
+	if (ii.m_pi.PPlus()>sum.PPlus() || ii.m_z<0.0 ||
+	    ii.m_pi.PMinus()>sum.PMinus() || ii.m_stat!=1) return cs;
+	double kt2=-2.0*(pi*pj)*(1.0-ii.m_z)-mj2-sqr(1.0-ii.m_z)*mi2;
+	cs=CS_Parameters(kt2,ii.m_z,ii.m_y,ii.m_phi,ii.m_z,Q2,3,kin);
+      }
     }
   }
-  THROW(fatal_error,"Unknown CS dipole configuration");  
-}
-
-double CS_Cluster_Definitions::Lambda
-(const double &s,const double &sb,const double &sc) const
-{
-  return sqr(s-sb-sc)-4.0*sb*sc;
-}
-
-double CS_Cluster_Definitions::Phi
-(Vec4D pijt,Vec4D pkt,Vec4D pi,const bool ii) const
-{
-  Vec4D ktt(0.0,cross(Vec3D(pijt),Vec3D(pkt)));
-  Poincare cms(pijt+pkt);
-  cms.Boost(pijt);
-  cms.Boost(pi);
-  Poincare zax(pijt,Vec4D::ZVEC);
-  if (!ii && ktt.PSpat2()>1.0e-6) {
-    zax.Rotate(ktt);
-  }
-  else {
-    msg_Debugging()<<"Set fixed n_perp\n";
-    if (IsZero(pijt[1],1.0e-6) &&
-	IsZero(pijt[2],1.0e-6)) pijt[1]=pijt[2]=0.0;
-    zax=Poincare(pijt,Vec4D::ZVEC);
-    ktt=Vec4D(0.0,1.0,1.0,0.0);
-  }
-  zax.Rotate(pi);
-  Poincare xax(ktt,Vec4D::XVEC);
-  xax.Rotate(pi);
-  return pi.Phi();
+  KernelWeight(i,j,k,mo,cs);
+  return cs;
 }
 
 double CS_Cluster_Definitions::GetX
@@ -169,406 +186,52 @@ void CS_Cluster_Definitions::KernelWeight
 		 <<"\n} -> w = "<<cs.m_wk<<" ("<<cs.m_ws<<")\n";
 }
 
-CS_Parameters CS_Cluster_Definitions::KT2_FF
-(const ATOOLS::Cluster_Leg *i,const ATOOLS::Cluster_Leg *j,
- const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo) 
-{
-  double pipj = i->Mom()*j->Mom();
-  double pipk = i->Mom()*k->Mom();
-  double pjpk = j->Mom()*k->Mom();
-  
-  double yijk = pipj/(pipj+pipk+pjpk);
-  double zi   = pipk/(pipk+pjpk);
-
-  Vec4D  Q   = i->Mom()+j->Mom()+k->Mom();
-  double Q2  = Q*Q;
-  
-  double mi2 = sqr(p_ms->Mass(i->Flav()));
-  double mj2 = sqr(p_ms->Mass(j->Flav()));
-  double mk2 = sqr(p_ms->Mass(k->Flav()));
-  double mij2 = sqr(p_ms->Mass(mo));
-  double pipj2 = (i->Mom()+j->Mom()).Abs2();
-  
-  double kt2 = (Q2-mi2-mj2-mk2)*yijk*zi*(1.-zi)-(1.-zi)*(1.-zi)*mi2 - zi*zi*mj2;
-
-  double lrat = Lambda(Q2,mij2,mk2)/Lambda(Q2,pipj2,mk2);
-  Vec4D pkt(sqrt(lrat)*(k->Mom()-(Q*k->Mom())/Q2*Q)+(Q2+mk2-mij2)/(2.0*Q2)*Q);
-
-  if (lrat<0.0 || pkt[0]<0.0) {
-    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,0.0,0);
-    cs.m_wk=cs.m_ws=-1.0;
-    return cs;
-  }
-
-  CS_Parameters cs(kt2,zi,yijk,Phi(Q-pkt,pkt,i->Mom()),1.0,Q2,0);
-  KernelWeight(i,j,k,mo,cs);
-  return cs;
-}
-
-CS_Parameters CS_Cluster_Definitions::KT2_FI
-(const ATOOLS::Cluster_Leg *i,const ATOOLS::Cluster_Leg *j,
- const ATOOLS::Cluster_Leg *a,const ATOOLS::Flavour &mo) 
-{
-  // assume pa is outgoing
-  double pipj = i->Mom()*j->Mom();
-  double pipa = i->Mom()*a->Mom();
-  double pjpa = j->Mom()*a->Mom();
-  
-  double mi2  = sqr(p_ms->Mass(i->Flav()));
-  double mj2  = sqr(p_ms->Mass(j->Flav()));
-  double mij2 = sqr(p_ms->Mass(mo));
-  double ma2  = sqr(p_ms->Mass(a->Flav()));
-  
-  double xija = (pipa+pjpa+pipj)/(pipa+pjpa);
-  double zi   = pipa/(pipa+pjpa);
-
-  double kt2 = -2.*(pipa+pjpa)*(1.-xija)*zi*(1.0-zi)-sqr(1.0-zi)*mi2-zi*zi*mj2;
-  if (kt2<0.0) {
-    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,0.0,2);
-    cs.m_wk=cs.m_ws=-1.0;
-    return cs;
-  }
-  
-  Vec4D Q(a->Mom()+i->Mom()+j->Mom());
-
-  double sij((i->Mom()+j->Mom()).Abs2()), Q2(Q.Abs2());
-  double lrat((sqr(Q2-mij2-ma2)-4.0*mij2*ma2)/
-	      (sqr(Q2-sij-ma2)-4.0*sij*ma2));
-  Vec4D pat(sqrt(lrat)*(a->Mom()-(Q*a->Mom()/Q2)*Q)+(Q2+ma2-mij2)/(2.*Q2)*Q);
-  if (lrat<0.0 || pat[0]>0.0) {
-    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,0.0,2);
-    cs.m_wk=cs.m_ws=-1.0;
-    return cs;
-  }
-
-  CS_Parameters cs(kt2,zi,1.0-xija,Phi(Q-pat,-pat,i->Mom()),xija,Q2,2);
-  KernelWeight(i,j,a,mo,cs);
-  return cs;
-}
-
-CS_Parameters CS_Cluster_Definitions::KT2_IF
-(const ATOOLS::Cluster_Leg *a,const ATOOLS::Cluster_Leg *i,
- const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo) 
-{
-  //assume pa is outgoing
-  double pipa = i->Mom()*a->Mom();
-  double pkpa = k->Mom()*a->Mom();
-  double pipk = i->Mom()*k->Mom();
-  
-  double xika = (pipa+pkpa+pipk)/(pipa+pkpa);
-  double ui   = pipa/(pipa+pkpa);
-  
-  double mi2  = sqr(p_ms->Mass(i->Flav()));
-  double mk2  = sqr(p_ms->Mass(k->Flav()));
-  double ma2  = sqr(p_ms->Mass(a->Flav()));
-  double mai2 = sqr(p_ms->Mass(mo));
-
-  double kt2  = -2.*(pipa+pkpa)*(1.-xika)*ui-mi2-sqr(1.0-xika)*ma2; 
-  if (kt2<0.0) {
-    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,0.0,1);
-    cs.m_wk=cs.m_ws=-1.0;
-    return cs;
-  }
-  
-  Vec4D Q(a->Mom()+i->Mom()+k->Mom()), pi(i->Mom());
-  double Q2=Q.Abs2();
-
-  if ((p_shower->KinScheme()==1 ||
-       IsZero(xika-ui,s_uxeps)) && ma2==mai2) {
-  double sik((i->Mom()+k->Mom()).Abs2()), Q2(Q.Abs2());
-  double lrat((sqr(Q2-mk2-ma2)-4.0*mk2*ma2)/
-	      (sqr(Q2-sik-ma2)-4.0*sik*ma2));
-  Vec4D pat(sqrt(lrat)*(a->Mom()-(Q*a->Mom()/Q2)*Q)+(Q2+ma2-mk2)/(2.*Q2)*Q);
-  if (lrat<0.0 || pat[0]>0.0) {
-    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,1,1);
-    cs.m_wk=cs.m_ws=-1.0;
-    return cs;
-  }
-  CS_Parameters cs(kt2,xika,ui,Phi(Q-pat,-pat,i->Mom()),xika,Q2,1,1);
-  KernelWeight(a,i,k,mo,cs);
-  return cs;
-  }
-  double lrat=Lambda(Q2,mai2,mk2)/Lambda(Q2,(a->Mom()+i->Mom()).Abs2(),mk2);
-  Vec4D pkt=sqrt(lrat)*(k->Mom()-(Q*k->Mom()/Q2)*Q)+(Q2+mk2-mai2)/(2.*Q2)*Q;
-  if (lrat<0.0 || pkt[0]<0.0) {
-    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,0.0,1);
-    cs.m_wk=cs.m_ws=-1.0;
-    return cs;
-  }
-  ZAlign lt(pkt-Q,-p_b->Mom(),mai2,p_ms->Mass2(p_b->Flav()));
-  lt.Align(pi);
-  lt.Align(pkt);
-  CS_Parameters cs(kt2,xika,ui,Phi(lt.PaNew(),pkt,pi),xika,Q2,1);
-  if (IsZero(xika-ui,s_uxeps) && ma2==mai2)
-    THROW(fatal_error,"Invalid parton configuration");
-  KernelWeight(a,i,k,mo,cs);
-  return cs;
-}
-
-CS_Parameters CS_Cluster_Definitions::KT2_II
-(const ATOOLS::Cluster_Leg *a,const ATOOLS::Cluster_Leg *i,
- const ATOOLS::Cluster_Leg *b,const ATOOLS::Flavour &mo) 
-{
-  //assume pa & pb are outgoing
-  double papb = a->Mom()*b->Mom();
-  double pipa = i->Mom()*a->Mom();
-  double pipb = i->Mom()*b->Mom();
-  
-  double xiab = (papb+pipa+pipb)/papb;
-  double vi   = -pipa/papb;
-
-  double mi2  = sqr(p_ms->Mass(i->Flav()));
-  double ma2  = sqr(p_ms->Mass(a->Flav()));
-  double mb2  = sqr(p_ms->Mass(b->Flav()));
-  double mai2 = sqr(p_ms->Mass(mo));
-
-  double kt2   = 2.*papb*vi*(1.-xiab)-mi2-sqr(1.-xiab)*ma2;
-
-  Vec4D Q(a->Mom()+i->Mom()+b->Mom());
-  double Q2=Q.Abs2();
-
-  double ttau  = Q2-mai2-mb2, tau = Q2-ma2-mi2-mb2;
-  double xiiab = xiab*(ttau+sqrt(ttau*ttau-4.*mai2*mb2))/
-    (tau+sqrt(tau*tau-4.*ma2*mb2*xiab*xiab));
-  double gam   = papb+sqrt(papb*papb-ma2*mb2);
-  Vec4D pait(xiiab*(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))
-	     *(-a->Mom()+ma2/gam*b->Mom())-mai2/(xiiab*gam)*b->Mom());
-  if (xiab<0.0) {
-    CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),1.0,1.0,0.0,0.0,3);
-    cs.m_wk=cs.m_ws=-1.0;
-    return cs;
-  }
-  CS_Parameters cs(kt2,xiab,vi,Phi(pait,-b->Mom(),i->Mom(),true),xiab,Q2,3,1);
-  KernelWeight(a,i,b,mo,cs);
-  return cs;
-}
-
 ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
 (const Cluster_Amplitude &ampl,int i,int j,int k,
- const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,
- const int kin)
+ const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,const int kin)
 {
   p_ms=ms;
   if (i>j) std::swap<int>(i,j);
-  if (i>1 && j>1 && k>1) return Combine_FF(ampl,i,j,k,mo);
-  if (i>1 && j>1 && k<2) return Combine_FI(ampl,i,j,k,mo);
-  if (i<2 && j>1 && k>1) return Combine_IF(ampl,i,j,k,mo,kin);
-  if (i<2 && j>1 && k<2) return Combine_II(ampl,i,j,k,mo,kin);
-  
-  std::cout<<" asked for combine of : "<<i<<" "<<j<<" "<<k<<std::endl;  
-  THROW(fatal_error,"Unknown CS dipole configuration"); 
-}
-
-ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_FF
-(const Cluster_Amplitude &ampl,int i,int j,int k,
- const ATOOLS::Flavour &mo)
-{
-  if (i>j) std::swap<int>(i,j);
   Vec4D_Vector after(ampl.Legs().size()-1);
- 
-  //old momenta
-  Vec4D pi = ampl.Leg(i)->Mom();
-  Vec4D pj = ampl.Leg(j)->Mom();
-  Vec4D pk = ampl.Leg(k)->Mom();
-  Vec4D Q  = pi+pj+pk;
-  
-  //masses etc.
-  double mij2 = sqr(p_ms->Mass(mo));
-  double mk2  = sqr(p_ms->Mass(ampl.Leg(k)->Flav()));
-  double Q2   = Q*Q;
-  
-  //new momenta
-  double lrat = Lambda(Q2,mij2,mk2)/Lambda(Q2,(pi+pj)*(pi+pj),mk2);
-  Vec4D pkt  = sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+ (Q2+mk2-mij2)/(2.*Q2)*Q;
-  if (lrat<0.0 || pkt[0]<0.0) return Vec4D_Vector();
-  Vec4D pijt = Q-pkt; 
-
-  //setting the new momenta
+  double mi2=p_ms->Mass2(ampl.Leg(i)->Flav());
+  double mj2=p_ms->Mass2(ampl.Leg(j)->Flav());
+  double mk2=p_ms->Mass2(ampl.Leg(k)->Flav()), mij2=p_ms->Mass2(mo);
+  double mb2=i<2?p_ms->Mass2(ampl.Leg(1-i)->Flav()):0.0;
+  Vec4D pi(ampl.Leg(i)->Mom()), pj(ampl.Leg(j)->Mom());
+  Vec4D pk(ampl.Leg(k)->Mom()), pb(i<2?ampl.Leg(1-i)->Mom():Vec4D());
+  if (i>1 && mi2>10.0 && !ampl.Leg(i)->Flav().Strong()) mi2=pi.Abs2();
+  if (j>1 && mj2>10.0 && !ampl.Leg(j)->Flav().Strong()) mj2=pj.Abs2();
+  if (k>1 && mk2>10.0 && !ampl.Leg(k)->Flav().Strong()) mk2=pk.Abs2();
+  bool sk(true);
+  if (i>1 && j>1 && mij2>10.0 && !mo.Strong()) {
+    mij2=(pi+pj).Abs2();
+    pk[0]=pk[0]<0.0?-pk.PSpat():pk.PSpat();
+    if (mk2) sk=false;
+    mk2=0.0;
+  }
+  Kin_Args lt;
+  if (i>1) {
+    if (k>1) lt=ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,2|(kin?4:0));
+    else lt=ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,2|(kin?4:0));
+    if (k<=1) {
+      Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
+      if (lt.m_pk.PPlus()>sum.PPlus() ||
+	  lt.m_pk.PMinus()>sum.PMinus()) return Vec4D_Vector();
+    }
+  }
+  else {
+    if (k>1) lt=ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-pb,2|(kin?4:0));
+    else lt=ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,2|(kin?4:0));
+    Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
+    if (lt.m_pi.PPlus()>sum.PPlus() ||
+	lt.m_pi.PMinus()>sum.PMinus()) return Vec4D_Vector();
+  }
+  if (lt.m_stat<0) return Vec4D_Vector();
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
     if (m==(size_t)j) continue;
-    after[l]=ampl.Leg(m)->Mom();
-    if (m==(size_t)i) after[l]=pijt;
-    if (m==(size_t)k) after[l]=pkt;
-    ++l;
-  }
-  return after;
-}
-
-ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_FI
-(const Cluster_Amplitude &ampl,int i,int j,int a,
- const ATOOLS::Flavour &mo)
-{
-  if (i>j) std::swap<int>(i,j);
-  Vec4D_Vector after(ampl.Legs().size()-1);
-  
-  //old momenta (assume pa is outgoing)
-  Vec4D pi = ampl.Leg(i)->Mom();
-  Vec4D pj = ampl.Leg(j)->Mom();
-  Vec4D pa = ampl.Leg(a)->Mom();
-  
-  //masses etc
-  double mij2 = p_ms->Mass2(mo);
-  double ma2  = p_ms->Mass2(ampl.Leg(a)->Flav());
-  double mb2  = p_ms->Mass2(ampl.Leg(1-a)->Flav());
-
-  Vec4D Q(pa+pi+pj);
-
-  double sij((pi+pj).Abs2()), Q2(Q.Abs2());
-  double lrat((sqr(Q2-mij2-ma2)-4.0*mij2*ma2)/
-	      (sqr(Q2-sij-ma2)-4.0*sij*ma2));
-  Vec4D pat(sqrt(lrat)*(pa-(Q*pa/Q2)*Q)+(Q2+ma2-mij2)/(2.*Q2)*Q);
-  if (lrat<0.0 || pat[0]>0.0) return Vec4D_Vector();
-  Vec4D pijt(Q-pat);
-
-  Vec4D pb=ampl.Leg(1-a)->Mom();
-  if (pat[3]*pb[3]>0.0) return Vec4D_Vector();
-  ZAlign lt(-pat,-pb,ma2,mb2);
-  Vec4D pan(-lt.PaNew());
-  if (pan[0]>0.0 || IsZero(pan[0],1.0e-6) ||
-      lt.Status()<0) return Vec4D_Vector();
-  if (-pan[0]>rpa->gen.PBeam(a)[0]) return Vec4D_Vector();
-  for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
-    if (m==(size_t)j) continue;
-    if (m==(size_t)a) after[l]=pan;
-    else if (m==(size_t)1-a) after[l]=pb;
-    else {
-      after[l]=ampl.Leg(m)->Mom();
-      if (m==(size_t)i) after[l]=pijt;
-      lt.Align(after[l]);
-    }
-    ++l;
-  }
-  return after;
-}
-
-ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_IF
-(const Cluster_Amplitude &ampl,int a,int i,int k,
- const ATOOLS::Flavour &mo,const int kin)
-{
-  Vec4D_Vector after(ampl.Legs().size()-1);
-  
-  //old momenta (assume pa is outgoing)
-  Vec4D pa = ampl.Leg(a)->Mom();
-  Vec4D pi = ampl.Leg(i)->Mom();
-  Vec4D pk = ampl.Leg(k)->Mom();
-  
-  double pipa = pi*pa;
-  double pkpa = pk*pa;
-  double pipk = pi*pk;
-  
-  double xika = (pipa+pkpa+pipk)/(pipa+pkpa);
-  double ui   = pipa/(pipa+pkpa);
-  
-  double mi2  = p_ms->Mass2(ampl.Leg(i)->Flav());
-  double mk2  = p_ms->Mass2(ampl.Leg(k)->Flav());
-  double ma2  = p_ms->Mass2(ampl.Leg(a)->Flav());
-  double mai2 = p_ms->Mass2(mo);
-  double mb2  = p_ms->Mass2(ampl.Leg(1-a)->Flav());
-
-  Vec4D Q(pa+pi+pk);
-  double Q2=Q.Abs2();
-
-  if (kin==1) {
-  double kt2  = -2.*(pipa+pkpa)*(1.-xika)*ui-mi2-sqr(1.0-xika)*ma2; 
-  if (kt2<0.0) return Vec4D_Vector();
-
-  double sik((pi+pk).Abs2()), Q2(Q.Abs2());
-  double lrat((sqr(Q2-mk2-ma2)-4.0*mk2*ma2)/
-	      (sqr(Q2-sik-ma2)-4.0*sik*ma2));
-  Vec4D pat(sqrt(lrat)*(pa-(Q*pa/Q2)*Q)+(Q2+ma2-mk2)/(2.*Q2)*Q);
-  if (lrat<0.0 || pat[0]>0.0) return Vec4D_Vector();
-  Vec4D pikt(Q-pat);
-
-  Vec4D pb=ampl.Leg(1-a)->Mom();
-  if (pat[3]*pb[3]>0.0) return Vec4D_Vector();
-  ZAlign lt(-pat,-pb,ma2,mb2);
-  Vec4D pan(-lt.PaNew());
-  if (pan[0]>0.0 || IsZero(pan[0],1.0e-6) ||
-      lt.Status()<0) return Vec4D_Vector();
-  if (-pan[0]>rpa->gen.PBeam(a)[0]) return Vec4D_Vector();
-  for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
-    if (m==(size_t)i) continue;
-    if (m==(size_t)a) after[l]=pan;
-    else if (m==(size_t)1-a) after[l]=pb;
-    else {
-      after[l]=ampl.Leg(m)->Mom();
-      if (m==(size_t)k) after[l]=pikt;
-      lt.Align(after[l]);
-    }
-    ++l;
-  }
-  return after;
-  }
-  double lrat=Lambda(Q2,mai2,mk2)/Lambda(Q2,(pa+pi)*(pa+pi),mk2);
-  Vec4D pikt=sqrt(lrat)*(pk-(Q*pk/Q2)*Q)+(Q2+mk2-mai2)/(2.*Q2)*Q;
-  if (lrat<0.0 || pikt[0]<0.0) return Vec4D_Vector();
-  Vec4D pb(ampl.Leg(1-a)->Mom());
-  ZAlign lt(pikt-Q,-pb,mai2,mb2);
-  Vec4D pan(-lt.PaNew());
-  if (pan[0]>0.0 || IsZero(pan[0],1.0e-6) ||
-      lt.Status()<0) return Vec4D_Vector();
-  if (-pan[0]>rpa->gen.PBeam(a)[0]) return Vec4D_Vector();
-  for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
-    if (m==(size_t)i) continue;
-    if (m==(size_t)a) after[l]=pan;
-    else if (m==(size_t)1-a) after[l]=pb;
-    else {
-      after[l]=ampl.Leg(m)->Mom();
-      if (m==(size_t)k) after[l]=pikt;
-      lt.Align(after[l]);
-    }
-    ++l;
-  }
-  return after;
-}
-
-ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine_II
-(const Cluster_Amplitude &ampl,int a,int i,int b,
- const ATOOLS::Flavour &mo,const int kin)
-{
-  Vec4D_Vector after(ampl.Legs().size()-1);
-  
-  //old momenta (assume pa & pb are outgoing)
-  Vec4D pa = ampl.Leg(a)->Mom();
-  Vec4D pi = ampl.Leg(i)->Mom();
-  Vec4D pb = ampl.Leg(b)->Mom();
-  
-  Vec4D Q(pa+pi+pb), pai(pa+pi);
-
-  double mb2  = sqr(p_ms->Mass(ampl.Leg(b)->Flav()));
-  double mai2 = sqr(p_ms->Mass(mo));
-
-  double papb = pa*pb, pipa = pi*pa, pipb = pi*pb;
-  double xiab = (papb+pipa+pipb)/papb;
-  if (xiab<0.0) return Vec4D_Vector();
-
-  double mi2  = sqr(p_ms->Mass(ampl.Leg(i)->Flav()));
-  double ma2  = sqr(p_ms->Mass(ampl.Leg(a)->Flav()));
-  double Q2   = (pa+pi+pb).Abs2();
-
-  double ttau  = Q2-mai2-mb2, tau = Q2-ma2-mi2-mb2;
-  double xiiab = xiab*(ttau+sqrt(ttau*ttau-4.0*mai2*mb2))
-    /(tau+sqrt(tau*tau-4.0*ma2*mb2*xiab*xiab));
-  if (ttau*ttau<4.0*mai2*mb2 || ttau<=0.0 ||
-      tau*tau<4.0*ma2*mb2*xiab*xiab || tau<=0.0) return Vec4D_Vector();
-  double gam   = papb+sqrt(papb*papb-ma2*mb2);
-  if (IsZero(xiiab,1.0e-6) || IsZero(gam,1.0e-6)) return Vec4D_Vector();
-
-  Vec4D pait = xiiab
-    *(1.0-mai2*mb2/sqr(gam*xiiab))/(1.0-ma2*mb2/sqr(gam))
-    *(pa-ma2/gam*pb)+mai2/(xiiab*gam)*pb;
-  if (pait[3]*pb[3]>0.0) return Vec4D_Vector();
-  Vec4D pan = pait;
-
-  Poincare cmson(-pa-pb-pi,-pait-pb,1);
-  for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
-    if (m==(size_t)i) continue;
-    if (m==(size_t)a) after[l]=pan;
-    else if (m==(size_t)1-a) after[l]=pb;
-    else {
-      after[l]=ampl.Leg(m)->Mom();
-      cmson.Lambda(after[l]);
-    }
+    if (m==(size_t)i) after[l]=i>1?lt.m_pi:-lt.m_pi;
+    else if (m==(size_t)k && sk) after[l]=k>1?lt.m_pk:-lt.m_pk;
+    else after[l]=lt.m_lam*ampl.Leg(m)->Mom();
     ++l;
   }
   return after;
