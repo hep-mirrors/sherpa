@@ -28,7 +28,7 @@ extern "C" {
   int pycomp_(int*);
   void pypdpr_(double*,double*,double*);
   void pypdpr_(double*,double*,double*);
-  void pyerrm_(int*);
+  void pyerrm_(int*,const char*);
 }
 
 void pyhepc(int mconv) { 
@@ -84,7 +84,7 @@ double pyalps_(double *q2) {
   return pyalp_(q2);
 }
 
-void pyerrm_(int *error) {
+void pyerrm_(int *error,const char*) {
   SHERPA::Lund_Interface::Error(*error);
 }
 
@@ -92,7 +92,6 @@ void ListLundParameters() {
   pyplst_(); 
 }
 
-const int nmaxjets  = 10000;
 const int nmaxpart  = 500;
 const int nmaxdecay = 8000;
 const int nmaxpup   = 100;
@@ -107,12 +106,6 @@ extern struct {
   double phep[nmxhep][5], vhep[nmxhep][4];
 } hepevt_;
 #define hepevt hepevt_
-
-extern struct {
-  int n, npad;
-  double k[5][nmaxjets], p[5][nmaxjets], v[5][nmaxjets];
-} pyjets_;
-#define pyjets pyjets_
 
 extern struct {
   int mstu[200];
