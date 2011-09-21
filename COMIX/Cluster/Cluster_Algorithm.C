@@ -324,6 +324,7 @@ bool Cluster_Algorithm::ClusterStep
   ClusterInfo_Map::const_iterator win(cinfo.end()), rwin(win);
   for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
        cit!=cinfo.end();++cit) {
+    if (cit->second.m_mofl.IsDummy()) continue;
     if (m_wmode&1) {
       if (cit->second.m_kt2.m_op2>=0.0 &&
 	  cit->second.m_kt2.m_op2<wmin) {
@@ -337,7 +338,6 @@ bool Cluster_Algorithm::ClusterStep
       }
     }
     else {
-      if (cit->second.m_mofl.IsDummy()) continue;
       if (cit->second.m_kt2.m_op2>=0.0) {
 	sum+=1.0/cit->second.m_kt2.m_op2;
       }
@@ -351,12 +351,14 @@ bool Cluster_Algorithm::ClusterStep
   if (!(m_wmode&1)) {
     double disc(sum*ran->Get()), psum(0.0);
     for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
-	 cit!=cinfo.end();++cit)
+	 cit!=cinfo.end();++cit) {
+      if (cit->second.m_mofl.IsDummy()) continue;
       if (cit->second.m_kt2.m_op2>=0.0 &&
 	  (psum+=1.0/cit->second.m_kt2.m_op2)>=disc) {
 	win=cit;
 	break;
       }
+    }
     if (sum>0.0 && win==cinfo.end()) THROW(fatal_error,"Internal error"); 
   }
   if (win==cinfo.end() && !(m_wmode&512)) win=rwin;
