@@ -49,7 +49,8 @@ namespace SHERPA {
 
   class Initialization_Handler: public ATOOLS::Terminator_Object {
   private :
-    std::string m_path,m_file,m_evtfile,m_pdflib[2];
+    std::string m_path,m_file,m_evtfile;
+    std::set<std::string> m_pdflibs;
     std::string m_modeldat, m_beamdat, m_isrdat[2], m_medat, m_midat, m_showerdat;
     std::string m_beamremnantdat, m_fragmentationdat, m_hadrondecaysdat, m_analysisdat;
     std::string m_softphotonsdat;

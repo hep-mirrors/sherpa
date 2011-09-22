@@ -13,10 +13,6 @@ namespace ATOOLS {
   class Particle;
 }
 
-namespace PDF {
-  class ISR_Handler;
-}
-
 namespace SHERPA {
   class HepEvt_Interface;
 
@@ -28,7 +24,6 @@ namespace SHERPA {
     size_t m_maxtrials;
 
     HepEvt_Interface *p_hepevt;
-    static PDF::ISR_Handler  *s_isrhandler;
 
     long int m_events, m_curfile, m_evtsperfile;
     bool     m_compress, m_writeout;
@@ -39,7 +34,7 @@ namespace SHERPA {
 
     static ATOOLS::Blob_List *s_bloblist;
 
-    static bool s_exportas, s_exportpdf;
+    static bool s_exportas;
 
     static int    * s_saved_mrpy;
     static double * s_saved_rrpy;
@@ -72,12 +67,8 @@ namespace SHERPA {
     ATOOLS::Return_Value::code OneEvent(ATOOLS::Blob_List *const,double &);
 
     bool IsAllowedDecay(kf_code);
-    // inline functions
-    inline static void SetISRHandler(PDF::ISR_Handler *const handler) { s_isrhandler=handler; }
-    inline static PDF::ISR_Handler *ISRHandler()                      { return s_isrhandler; }
 
     inline static bool ExportAS()  { return s_exportas;  }
-    inline static bool ExportPDF() { return s_exportpdf; }
 
     void SwitchOffDecays(kf_code kfc);
     void AdjustProperties(ATOOLS::Flavour flav);

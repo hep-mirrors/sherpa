@@ -1,7 +1,6 @@
 #include "SHERPA/LundTools/Lund_Interface.H"
 
 #include "SHERPA/LundTools/Lund_Wrapper.H"
-#include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Phys/Blob.H"
@@ -24,7 +23,6 @@ using namespace ATOOLS;
 using namespace std;
 
 bool Lund_Interface::s_exportas=false;
-bool Lund_Interface::s_exportpdf=false;
 
 size_t Lund_Interface::s_errors=0;
 size_t Lund_Interface::s_maxerrors=0;
@@ -33,7 +31,6 @@ int * Lund_Interface::s_saved_mrpy=new int[6];
 double * Lund_Interface::s_saved_rrpy=new double[100];
 
 ATOOLS::Blob_List *Lund_Interface::s_bloblist=NULL; 
-PDF::ISR_Handler *Lund_Interface::s_isrhandler=NULL; 
 
 Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   m_path(_m_path),m_file(_m_file), m_maxtrials(2),
@@ -174,7 +171,6 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   if (!sherpa) {
     int helpi;
     if (reader->ReadFromFile(helpi,"EXPORT_ALPHAS")) s_exportas=(bool)helpi;
-    if (reader->ReadFromFile(helpi,"EXPORT_PDF")) s_exportpdf=(bool)helpi;
     int orderas;
     double asmz, asdef, mz;  
     reader->SetInputFile("Model.dat");

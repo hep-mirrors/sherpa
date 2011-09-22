@@ -11,7 +11,6 @@
 #include "SHERPA/Tools/Event_Reader_Base.H"
 #include "SHERPA/Tools/Input_Output_Handler.H"
 #include "MODEL/Main/Model_Base.H"
-#include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/Structure_Function.H"
 #include "PDF/Main/Intact.H"
 #include "PDF/Main/PDF_Base.H"
@@ -233,13 +232,11 @@ Initialization_Handler::~Initialization_Handler()
   }
   PHASIC::Phase_Space_Handler::DeleteInfo();
   exh->RemoveTerminatorObject(this);
-  if (m_pdflib[0]=="" && m_pdflib[1]=="") return; 
-  void *exit(s_loader->GetLibraryFunction(m_pdflib[0],"ExitPDFLib"));
-  if (exit==NULL) THROW(fatal_error,"Cannot unload PDF library.");
-  ((PDF_Exit_Function)exit)();
-  if (m_pdflib[1]!=m_pdflib[0]) {
-    exit=s_loader->GetLibraryFunction(m_pdflib[1],"ExitPDFLib");
-    if (exit==NULL) THROW(fatal_error,"Cannot unload PDF library.");
+  for (set<string>::iterator pdflib=m_pdflibs.begin(); pdflib!=m_pdflibs.end();
+       ++pdflib) {
+    if (*pdflib=="None") continue;
+    void *exit(s_loader->GetLibraryFunction(*pdflib,"ExitPDFLib"));
+    if (exit==NULL) THROW(fatal_error,"Cannot unload PDF library "+*pdflib);
     ((PDF_Exit_Function)exit)();
   }
 }
@@ -492,45 +489,47 @@ bool Initialization_Handler::InitializeThePDFs()
   dataread.AddWordSeparator("\t");
   dataread.SetInputPath(m_path);
   dataread.SetInputFile(m_isrdat[0]);
+
+  // load PDF libraries
   std::string defset[2];
   for (int beam(0);beam<=1;++beam) {
-    std::string defaultlib("CTEQ6Sherpa");
-    if (p_beamspectra->GetBeam(beam)->Bunch().IsLepton())
-      defaultlib="PDFESherpa";
-    else if (p_beamspectra->GetBeam(beam)->Bunch().IsPhoton())
-      defaultlib="GRVSherpa";
-    m_pdflib[beam]=dataread.GetValue<std::string>("PDF_LIBRARY",defaultlib);
-    std::string speciallib, defpath;
-    if (dataread.ReadFromFile(speciallib,"PDF_LIBRARY_"+ToString(beam+1)))
-      m_pdflib[beam]=speciallib;
-    if (m_pdflib[beam]=="LHAPDFSherpa") {
+    std::string deflib("None");
+    if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_p_plus) {
+      deflib="CTEQ6Sherpa";
+      defset[beam]="cteq6.6m";
+    }
+    else if (p_beamspectra->GetBeam(beam)->Bunch().IsLepton()) {
+      deflib="PDFESherpa";
+      defset[beam]="PDFe";
+    }
+    else if (p_beamspectra->GetBeam(beam)->Bunch().IsPhoton()) {
+      deflib="GRVSherpa";
+      defset[beam]="GRV";
+    }
+    m_pdflibs.insert(dataread.GetValue<std::string>("PDF_LIBRARY",deflib));
+    std::string mpilib, beamlib;
+    if (dataread.ReadFromFile(mpilib,"PDF_LIBRARY_MPI"))
+      m_pdflibs.insert(mpilib);
+    if (dataread.ReadFromFile(beamlib,"PDF_LIBRARY_"+ToString(beam+1)))
+      m_pdflibs.insert(beamlib);
+  }
+  for (set<string>::iterator pdflib=m_pdflibs.begin(); pdflib!=m_pdflibs.end();
+       ++pdflib) {
+    if (*pdflib=="None") continue;
+    if (*pdflib=="LHAPDFSherpa") {
 #ifdef USING__LHAPDF
       s_loader->AddPath(std::string(LHAPDF_PATH)+"/lib");
       s_loader->LoadLibrary("LHAPDF");
 #else
       THROW(fatal_error, "Sherpa not compiled with LHAPDF support.");
 #endif
-      defset[beam]="cteq66.LHgrid";
-      defpath="PDFSets";
     }
-    else if (m_pdflib[beam]=="CTEQ6Sherpa") {
-      defset[beam]="cteq6.6m";
-      defpath="CTEQ66Grid";
-    }
-    else if (m_pdflib[beam]=="MSTW08Sherpa") {
-      defset[beam]="mstw2008nlo";
-      defpath="MSTW08Grid";
-    }
-    else if (m_pdflib[beam]=="PDFESherpa") {
-      defset[beam]="PDFe";
-      defpath="";
-    }
-    if (beam==0 || m_pdflib[1]!=m_pdflib[0]) {
-      void *init(s_loader->GetLibraryFunction(m_pdflib[beam],"InitPDFLib"));
-      if (init==NULL) THROW(fatal_error,"Cannot load PDF library.");
-      ((PDF_Init_Function)init)();
-    }
+    void *init(s_loader->GetLibraryFunction(*pdflib,"InitPDFLib"));
+    if (init==NULL) THROW(fatal_error,"Cannot load PDF library "+*pdflib);
+    ((PDF_Init_Function)init)();
   }
+
+  // PDF set listing output
   int helpi(0);
   if (!dataread.ReadFromFile(helpi,"SHOW_PDF_SETS")) helpi=0;
   if (helpi>0) {
@@ -538,6 +537,8 @@ bool Initialization_Handler::InitializeThePDFs()
     PDF::PDF_Base::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
+
+  // Initialisation of PDF sets
   for (size_t i=0;i<2;++i) {
     isr::id id=(isr::id)(i+1);
     if (m_isrhandlers.find(id)!=m_isrhandlers.end()) 
@@ -555,14 +556,19 @@ bool Initialization_Handler::InitializeThePDFs()
       std::string specialset;
       if (dataread.ReadFromFile(specialset,"PDF_SET_"+ToString(j+1)))
 	set=specialset;
+      if (id==isr::hard_subprocess) {
+        std::string mpiset;
+        if (dataread.ReadFromFile(mpiset,"PDF_SET_MPI")) {
+          set=mpiset;
+        }
+      }
       pdfbase = PDF_Base::PDF_Getter_Function::GetObject
 	(set,PDF_Arguments(m_bunch_particles[j],&dataread, j));
       if (m_bunch_particles[j].IsHadron() && pdfbase==NULL)
-	THROW(critical_error,"PDF '"+set+"' does not exist in 'lib"+m_pdflib[j]
-	      +"' for "+ToString(m_bunch_particles[j])+" bunch.");
+	THROW(critical_error,"PDF '"+set+"' does not exist in any of the loaded"
+              +" libraries for "+ToString(m_bunch_particles[j])+" bunch.");
       if (pdfbase && i==0) {
-	msg_Info()<<"PDF set '"<<set<<"' loaded from 'lib"
-		  <<m_pdflib[j]<<"' for beam "<<j+1<<" ("
+	msg_Info()<<"PDF set '"<<set<<"' loaded for beam "<<j+1<<" ("
 		  <<m_bunch_particles[j]<<")."<<std::endl;
       }
       if (pdfbase==NULL) isrbases[j] = new Intact(m_bunch_particles[j]);     
@@ -587,9 +593,6 @@ bool Initialization_Handler::InitializeThePDFs()
       abort();
     }
   }
-#ifdef USING__PYTHIA
-  Lund_Interface::SetISRHandler(m_isrhandlers[isr::hard_process]);
-#endif
   return 1;
 }
 
