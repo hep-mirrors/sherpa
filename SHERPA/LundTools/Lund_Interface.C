@@ -49,13 +49,15 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   string beam[2], frame("CMS");
   Flavour flav[2];
   for (size_t i=0;i<2;++i) flav[i]=rpa->gen.Bunch(i);
-  if (flav[0]==Flavour(kf_e) && flav[1]==Flavour(kf_p_plus)) {
-    beam[0]="e-";
-    beam[1]="p+";
+  if (flav[0].Kfcode()==kf_e && flav[1].Kfcode()==kf_p_plus) {
+    if (flav[0].IsAnti()) beam[0]="e+"; else beam[0]="e-";
+    if (flav[1].IsAnti()) beam[1]="p-"; else beam[1]="p+";
+    pysubs.msub[9]=1;    
   }
-  else if (flav[0]==Flavour(kf_p_plus) && flav[1]==Flavour(kf_e)) {
-    beam[0]="p+";
-    beam[1]="e-";
+  else if (flav[0].Kfcode()==kf_p_plus && flav[1].Kfcode()==kf_e) {
+    if (flav[0].IsAnti()) beam[0]="p-"; else beam[0]="p+";
+    if (flav[1].IsAnti()) beam[1]="e+"; else beam[1]="e-";
+    pysubs.msub[9]=1;    
   }
   else if (flav[0]==Flavour(kf_e) && flav[1]==Flavour(kf_photon)) {
     if (flav[0].IsAnti()) beam[0]="e+"; else beam[0]="e-";
@@ -298,6 +300,11 @@ Return_Value::code Lund_Interface::Hadronize(Blob_List *bloblist)
 	}
 	msg_Tracking()<<"Error in "<<METHOD<<"."<<endl
 		   <<"   Hadronization failed. Retry the event."<<endl;
+	if (rpa->gen.Beam1().IsLepton() ||
+	    rpa->gen.Beam2().IsLepton()) {
+	  msg_Tracking()<<METHOD<<"(): Non-hh collision. Request new event instead.\n";
+	  return Return_Value::New_Event;
+	}
 	return Return_Value::Retry_Event;
       }
       //Up to this point fragmentation blob remained unchanged.

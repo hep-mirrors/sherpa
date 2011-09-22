@@ -90,6 +90,11 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 			<<"did not work out,"<<std::endl
 			<<"   will trigger retrying the event."<<std::endl;
 	  CleanUp(blob);
+	  if (rpa->gen.Beam1().IsLepton() ||
+	      rpa->gen.Beam2().IsLepton()) {
+	    msg_Tracking()<<METHOD<<"(): Non-hh collision. Request new event instead.\n";
+	    return Return_Value::New_Event;
+	  }
 	  return result;
 	case Return_Value::Retry_Method :
 	  msg_Tracking()<<"Warning in "<<METHOD<<" : "<<std::endl
