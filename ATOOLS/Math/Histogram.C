@@ -473,15 +473,26 @@ void Histogram::MPISync()
 
 
 void Histogram::Insert(double coordinate) {
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) THROW(not_implemented,"Not MPI ready");
-#endif
   if (!m_active) {
     msg_Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
     return;
   }
 
+#ifdef USING__MPI
+  m_mfills++;
+
+  if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
+  if (coordinate<m_lower) { m_mvalues[0][0]       += double(1); return; }
+  if (coordinate>m_upper) { m_mvalues[0][m_nbin-1] += double(1); return; }
+  for (int i=1;i<m_nbin-1;i++) {
+    if ( (coordinate >= m_lower + (i-1)*m_binsize) &&
+	 (coordinate <  m_lower + i*m_binsize) ) {
+      m_mvalues[0][i] += double(1); 
+      return; 
+    }
+  }
+#else
   m_fills++;
 
   if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
@@ -494,17 +505,44 @@ void Histogram::Insert(double coordinate) {
       return; 
     }
   }
+#endif
 }
 
 void Histogram::Insert(int i,double value,double ncount) {
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) THROW(not_implemented,"Not MPI ready");
-#endif
   if (!m_active) {
     msg_Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
     return;
   }
+#ifdef USING__MPI
+  m_mfills+=ncount;
+  if (value==0.) return;
+  m_mpsfills++;
+
+  if (i<0) { 
+    m_mvalues[0][0] += value;
+    if (m_depth>1) {
+      if (value>m_mvalues[1][0]) m_mvalues[1][0] = value;
+      if (m_depth>2) m_mvalues[2][0] += 1.;
+    }
+    return; 
+  }
+
+  if (i>=m_nbin) { 
+    m_mvalues[0][m_nbin-1] += value; 
+    if (m_depth>1) {
+      if (value>m_mvalues[1][m_nbin-1]) m_mvalues[1][m_nbin-1] = value;
+      if (m_depth>2) m_mvalues[2][m_nbin-1] += 1.;
+    }
+    return; 
+  }
+
+  m_mvalues[0][i] += value;
+  if (m_depth>1) {
+    m_mvalues[1][i] += value*value;
+    if (m_depth>2) m_mvalues[2][i] += 1.;
+  }
+#else
   m_fills+=ncount;
   if (value==0.) return;
   m_psfills++;
@@ -532,12 +570,10 @@ void Histogram::Insert(int i,double value,double ncount) {
     m_y2values[i] += value*value;
     if (m_depth>2) m_psvalues[i] += 1.;
   }
+#endif
 }
 
 void Histogram::InsertMCB(double coordinate,double value,double ncount) {
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) THROW(not_implemented,"Not MPI ready");
-#endif
   if (!m_tmp) {
     m_tmp   = new double[m_nbin];
     for (int i=0;i<m_nbin;i++) {
@@ -572,9 +608,6 @@ void Histogram::InsertMCB(double coordinate,double value,double ncount) {
 }
 
 void Histogram::InsertMCBIM(double coordinate,double value) {
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) THROW(not_implemented,"Not MPI ready");
-#endif
   if (!m_tmp) {
     m_tmp   = new double[m_nbin];
     for (int i=0;i<m_nbin;i++) {
@@ -592,16 +625,26 @@ void Histogram::InsertMCBIM(double coordinate,double value) {
 
 void Histogram::FinishMCB()
 {
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) THROW(not_implemented,"Not MPI ready");
-#endif
-  m_fills+=m_mcb;
-  m_psfills++;
-
   if (!m_tmp) {
     m_tmp = new double[m_nbin];
     for (int i=0;i<m_nbin;++i) m_tmp[i]=0.0;
   }
+#ifdef USING__MPI
+  m_mfills+=m_mcb;
+  m_mpsfills++;
+
+  for (int i=0;i<m_nbin;i++) {
+    m_mvalues[0][i] += m_tmp[i];
+    if (m_depth>1) {
+      m_mvalues[1][i] += m_tmp[i]*m_tmp[i];
+      if (m_depth>2&&m_tmp[i]!=0.) m_mvalues[2][i] += 1.;
+    }
+    m_tmp[i] = 0.;
+  }
+#else
+  m_fills+=m_mcb;
+  m_psfills++;
+
   for (int i=0;i<m_nbin;i++) {
     m_yvalues[i] += m_tmp[i];
     if (m_depth>1) {
@@ -610,6 +653,7 @@ void Histogram::FinishMCB()
     }
     m_tmp[i] = 0.;
   }
+#endif
 }
 
 void Histogram::Insert(double coordinate,double value,double ncount) {
