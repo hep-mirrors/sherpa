@@ -216,8 +216,7 @@ bool Sudakov::Generate(Parton * split)
       int cc=(*pit)->GetFlavour().IntCharge();
       if ((*pit)->GetType()==pst::IS) cc=-cc;
       if (*pit!=split->GetLeft() && *pit!=split->GetRight() &&
-	  (*pit)->GetFlavour().IntCharge()!=0 &&
-	  (sc==0 || sc*cc<0)) 
+	  cc!=0 && (sc==0 || sc*cc<0)) 
 	slist.push_back(*pit);
     }
   }

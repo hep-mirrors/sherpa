@@ -444,15 +444,19 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	    if ((*sit)->Id()&sid) psps.push_back(*sit);
 	}
 	else {
+	  int sc=rp->GetFlavour().IntCharge();
+	  if (rp->GetType()==pst::IS) sc=-sc;
 	  if (rp->GetFlavour().Strong()) {
 	    if (rp->GetLeft()) psps.push_back(rp->GetLeft());
 	    if (rp->GetRight()) psps.push_back(rp->GetRight());
 	  }
-	  else if (rp->GetFlavour().IntCharge()) {
+	  else if (sc) {
 	    for (Singlet::const_iterator
-		   sit(ref->begin());sit!=ref->end();++sit)
-	      if (rp->GetFlavour().IntCharge()*
-		  (*sit)->GetFlavour().IntCharge()<0) psps.push_back(*sit);
+		   sit(ref->begin());sit!=ref->end();++sit) {
+	      int cc=(*sit)->GetFlavour().IntCharge();
+	      if ((*sit)->GetType()==pst::IS) cc=-cc;
+	      if (sc*cc<0) psps.push_back(*sit);
+	    }
 	  }
 	  else {
 	    for (Singlet::const_iterator
