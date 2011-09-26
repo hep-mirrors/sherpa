@@ -208,14 +208,18 @@ bool Sudakov::Generate(Parton * split)
   if (split->GetLeft()) slist.push_back(split->GetLeft());
   if (split->GetRight()) slist.push_back(split->GetRight());
   int sc=split->GetFlavour().IntCharge();
+  if (split->GetType()==pst::IS) sc=-sc;
   if (sc!=0 || split->GetFlavour().IsPhoton() ||
       split->GetFlavour().Kfcode()==kf_Z) {
     Singlet *sing(split->GetSing());
-    for (PLiter pit(sing->begin());pit!=sing->end();++pit)
+    for (PLiter pit(sing->begin());pit!=sing->end();++pit) {
+      int cc=(*pit)->GetFlavour().IntCharge();
+      if ((*pit)->GetType()==pst::IS) cc=-cc;
       if (*pit!=split->GetLeft() && *pit!=split->GetRight() &&
 	  (*pit)->GetFlavour().IntCharge()!=0 &&
-	  (sc==0 || sc*(*pit)->GetFlavour().IntCharge()<0)) 
+	  (sc==0 || sc*cc<0)) 
 	slist.push_back(*pit);
+    }
   }
   p_split=split;
   for (size_t i(0);i<slist.size();++i) {
