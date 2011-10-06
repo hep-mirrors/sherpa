@@ -162,6 +162,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
 
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Single_Channel.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"ATOOLS/Org/Run_Parameter.H"<<'"'<<endl;
+  chf<<"#include "<<'"'<<"ATOOLS/Org/MyStrStream.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Channel_Elements.H"<<'"'<<endl;  
   chf<<"#include "<<'"'<<"PHASIC++/Channels/Vegas.H"<<'"'<<endl<<endl;  
 
@@ -249,8 +250,8 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
 	<<"  rannum = "<<rannumber<<";"<<endl
 	<<"  rans  = new double[rannum];"<<endl;
   if (tcount>0) {
-    chf	<<"  m_amct  = 1.;"<<endl
-	<<"  m_alpha = .4;"<<endl
+    chf	<<"  m_amct  = 1.0+ToType<double>(rpa->gen.Variable(\"AMEGIC_CHANNEL_EPSILON\"));"<<endl
+	<<"  m_alpha = ToType<double>(rpa->gen.Variable(\"AMEGIC_CHANNEL_ALPHA\"));"<<endl
 	<<"  m_ctmax = 1.;"<<endl
 	<<"  m_ctmin = -1.;"<<endl;
   }

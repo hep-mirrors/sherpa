@@ -126,10 +126,10 @@ void Hadron_Decay_Map::Read(const string& path, const string& file, bool verify)
   bool createbooklet=false;
   for (size_t i=0;i<Decayers.size();++i) {
     vector<string> line = Decayers[i];
-    if( line[0] == string("CREATE_BOOKLET") ) {
+    if( line.size()>0 && line[0] == string("CREATE_BOOKLET") ) {
       createbooklet = true;
     }
-    else {
+    else if (line.size()==3) {
       int decayerkf = atoi((line[0]).c_str());
       Flavour decayerflav = Flavour( (kf_code) abs(decayerkf), decayerkf<0);
       Hadron_Decay_Table * dt = new Hadron_Decay_Table(decayerflav);
@@ -143,6 +143,10 @@ void Hadron_Decay_Map::Read(const string& path, const string& file, bool verify)
         it->second.push_back(dt);
         m_counters.insert(make_pair(decayerflav,0));
       }
+    }
+    else {
+      PRINT_INFO("Warning: Decay table in "<<path<<" / "<<file
+                 <<" contains incorrect line: "<<endl<<line);
     }
   }
   if(createbooklet) {

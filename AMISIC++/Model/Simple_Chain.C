@@ -204,9 +204,7 @@ bool Simple_Chain::CreateGrid()
   p_processes->SetScale(PHASIC::Scale_Setter_Arguments
 			(p_model,pi.m_scale,pi.m_coupling));
   p_processes->SetKFactor(PHASIC::KFactor_Setter_Arguments(pi.m_kfactor));
-  p_processes->Integrator()->SetPSHandler
-    (new PHASIC::Phase_Space_Handler
-     (p_processes->Integrator(),p_isr,p_beam,m_error));
+  p_processes->InitPSHandler(m_error,"","");
   for (size_t i(0);i<p_processes->Size();++i)
     m_processmap[(*p_processes)[i]->Name()]=(*p_processes)[i];
   p_gridcreator = new Grid_Creator(&m_differentials,p_processes);

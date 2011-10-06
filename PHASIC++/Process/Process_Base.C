@@ -537,3 +537,35 @@ void Process_Base::MultiplyLast(const double &w,const int mode)
 void Process_Base::SetRBMap(Cluster_Amplitude *ampl)
 {
 }
+
+void Process_Base::InitPSHandler
+(const double &maxerr,const std::string eobs,const std::string efunc)
+{
+  p_int->SetPSHandler(new Phase_Space_Handler(p_int,maxerr));
+  if (eobs!="") p_int->PSHandler()->SetEnhanceObservable(eobs);
+  if (efunc!="") p_int->PSHandler()->SetEnhanceFunction(efunc);
+} 
+
+double Process_Base::LastPlus()
+{
+  if (IsGroup()) {
+    double last=0.0;
+    for (size_t i(0);i<Size();++i)
+      last+=(*this)[i]->LastPlus();
+    return last;
+  }
+  double last(Last());
+  return last>0.0?last:0.0;
+}
+
+double Process_Base::LastMinus()
+{
+  if (IsGroup()) {
+    double last=0.0;
+    for (size_t i(0);i<Size();++i)
+      last+=(*this)[i]->LastMinus();
+    return last;
+  }
+  double last(Last());
+  return last<0.0?last:0.0;
+}

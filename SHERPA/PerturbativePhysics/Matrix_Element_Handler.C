@@ -171,12 +171,12 @@ bool Matrix_Element_Handler::GenerateOneEvent()
 	      p_proc->Integrator()->PSHandler()->EnhanceFactor());
     if (m_eventmode!=0) {
       double max=p_proc->Integrator()->Max(), disc=max*ran->Get();
-      if (m_evtinfo.m_weight<disc) continue;
-      if (m_evtinfo.m_weight>max*(1.0+m_ovwth))
+      if (dabs(m_evtinfo.m_weight)<disc) continue;
+      if (dabs(m_evtinfo.m_weight)>max*(1.0+m_ovwth))
 	  msg_Info()<<METHOD<<"(): Point for '"<<p_proc->Name()
 		    <<"' exceeds maximum by "
-		    <<m_evtinfo.m_weight/max-1.0<<"."<<std::endl;
-      m_weightfactor=m_evtinfo.m_weight/max;
+		    <<dabs(m_evtinfo.m_weight)/max-1.0<<"."<<std::endl;
+      m_weightfactor=dabs(m_evtinfo.m_weight)/max;
       wf/=Min(1.0,m_weightfactor);
     }
     m_evtinfo.m_weight*=wf;
@@ -642,16 +642,11 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  if (GetMPvalue(pbi.m_vrbmaxeps,nfs,pnid,dd))
 	    proc[i]->Integrator()->SetRBMaxEpsilon(dd);
 	  double maxerr(-1.0);
+	  std::string eobs, efunc;
 	  if (GetMPvalue(pbi.m_vmaxerr,nfs,pnid,dd)) maxerr=dd;
-	  proc[i]->Integrator()->SetPSHandler
-	    (new Phase_Space_Handler
-	     (proc[i]->Integrator(),p_isr,p_beam,maxerr));
-	  if (GetMPvalue(pbi.m_veobs,nfs,pnid,ds)) {
-            proc[i]->Integrator()->PSHandler()->SetEnhanceObservable(ds);
-          }
-	  if (GetMPvalue(pbi.m_vefunc,nfs,pnid,ds)) {
-            proc[i]->Integrator()->PSHandler()->SetEnhanceFunction(ds);
-          }
+	  if (GetMPvalue(pbi.m_veobs,nfs,pnid,ds)) eobs=ds;
+	  if (GetMPvalue(pbi.m_vefunc,nfs,pnid,ds)) efunc=ds;
+	  proc[i]->InitPSHandler(maxerr,eobs,efunc);
 	}
       }
     }

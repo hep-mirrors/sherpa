@@ -79,6 +79,9 @@ namespace PHASIC {
 
     bool SetSelected(Process_Base *const proc);
 
+    double LastPlus();
+    double LastMinus();
+
     virtual void SetScale(const Scale_Setter_Arguments &args) = 0;
     virtual void SetKFactor(const KFactor_Setter_Arguments &args) = 0;
 
@@ -128,6 +131,9 @@ namespace PHASIC {
     virtual void MultiplyLast(const double &w,const int mode);
 
     virtual void SetRBMap(ATOOLS::Cluster_Amplitude *ampl);
+    virtual void InitPSHandler(const double &maxerror,
+			       const std::string eobs,
+			       const std::string efunc);
 
     virtual void FillOnshellConditions();
 

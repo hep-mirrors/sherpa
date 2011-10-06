@@ -35,12 +35,11 @@ Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 
 namespace ATOOLS { template class SP(Phase_Space_Handler); }
 
-Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,
-					 ISR_Handler *ih,Beam_Spectra_Handler *bh, double error): 
+Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error): 
   m_name(proc->Process()->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
   p_enhancefunc(NULL),
   p_enhanceobs(NULL), p_enhancehisto(NULL), p_enhancehisto_current(NULL),
-  p_beamhandler(bh), p_isrhandler(ih), p_fsrchannels(NULL),
+  p_beamhandler(proc->Beam()), p_isrhandler(proc->ISR()), p_fsrchannels(NULL),
   p_isrchannels(NULL), p_beamchannels(NULL), p_massboost(NULL),
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_dmode(1), m_initialized(0), m_sintegrator(0),
   m_maxtrials(1000000), m_E(ATOOLS::rpa->gen.Ecms()), m_s(m_E*m_E)
@@ -446,7 +445,7 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   cur->RestoreInOrder();
   p_isrhandler->SetRunMode(1);
   double value=Differential(cur,(psm::code)mode);
-  if (value==0.0) return NULL;
+  if (value==0.0 || IsBad(value)) return NULL;
   cur->SetMomenta(p_lab);
   double xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
   ME_wgtinfo* wgtinfo=p_active->Process()->GetMEwgtinfo();

@@ -125,8 +125,7 @@ namespace PHASIC {
   public:
 
     //constructor
-    Phase_Space_Handler(Process_Integrator *,PDF::ISR_Handler *,
-			BEAM::Beam_Spectra_Handler *, double error=-1.);
+    Phase_Space_Handler(Process_Integrator *,double error=-1.);
 
     //destructor
     ~Phase_Space_Handler();
