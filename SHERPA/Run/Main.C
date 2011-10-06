@@ -8,6 +8,7 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "SHERPA/Single_Events/Event_Handler.H"
 #ifdef USING__MPI
 #include "mpi.h"
 #endif
@@ -41,6 +42,15 @@ int main(int argc,char* argv[])
 		    <<FormatTime(size_t((nevt-i)/(double)i*diff))
 		    <<" left ) -> ETA: "<<rpa->gen.Timer().
 	    StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
+          if (i%1000==0) {
+            double xs(Generator->GetEventHandler()->TotalXS()),
+                   err(Generator->GetEventHandler()->TotalErr());
+	    if (!(rpa->gen.BatchMode()&2)) msg_Info()<<"\n  ";
+            msg_Info()<<"XS = "<<xs<<" pb +- ( "<<err<<" pb = "
+                      <<((int(err/xs*10000))/100.0)<<" % )  ";
+	    if (!(rpa->gen.BatchMode()&2))
+	      msg_Info()<<mm(1,mm::up);
+          }
 	  if (rpa->gen.BatchMode()&2) { msg_Info()<<std::endl; }
 	  else { msg_Info()<<bm::cr<<std::flush; }
 	}

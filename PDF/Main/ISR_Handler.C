@@ -298,7 +298,7 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
 			   double Q12,double Q22,Flavour fl1,Flavour fl2)
 {
   if (m_mode==0) return 0.25/sqrt(sqr(p1*p2)-p1.Abs2()*p2.Abs2());
-  DEBUG_FUNC("mode = "<<mode);
+  msg_IODebugging()<<METHOD<<"(mode = "<<mode<<")\n";
   if (fl1.Size()>1 || fl2.Size()>1)
     THROW(fatal_error,"Do not try to calculate an ISR weight with containers.");
   double x1(0.),x2(0.);
@@ -311,10 +311,10 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
   }
   x1=Min(1.0,p1.PPlus()/p_beam[0]->OutMomentum().PPlus());
   x2=Min(1.0,p2.PMinus()/p_beam[1]->OutMomentum().PMinus());
-  msg_Debugging()<<p1<<" from "<<p_beam[0]->OutMomentum()<<" -> "
+  msg_IODebugging()<<"  "<<p1<<" from "<<p_beam[0]->OutMomentum()<<" -> "
 		 <<p1.PPlus()<<" / "<<p_beam[0]->
     OutMomentum().PPlus()<<" = "<<x1<<std::endl;
-  msg_Debugging()<<p2<<" from "<<p_beam[1]->OutMomentum()<<" -> "
+  msg_IODebugging()<<"  "<<p2<<" from "<<p_beam[1]->OutMomentum()<<" -> "
 		 <<p2.PMinus()<<" / "<<p_beam[1]->
     OutMomentum().PMinus()<<" = "<<x2<<std::endl;
   if (PDF(0) && (Q12<PDF(0)->Q2Min() || Q12>PDF(0)->Q2Max()))
@@ -349,12 +349,12 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
     m_xf1[mode]=x1*f1;
     m_xf2[mode]=x2*f2;
     MtxUnLock();
-    msg_Debugging()<<"PDF1: "<<rpa->gen.Beam1()<<" -> "<<fl1<<" at ("<<x1
+    msg_IODebugging()<<"  PDF1: "<<rpa->gen.Beam1()<<" -> "<<fl1<<" at ("<<x1
 		   <<","<<sqrt(Q12)<<") -> "<<om::bold<<f1<<om::reset<<"\n";
-    msg_Debugging()<<"PDF2: "<<rpa->gen.Beam2()<<" -> "<<fl2<<" at ("<<x2
+    msg_IODebugging()<<"  PDF2: "<<rpa->gen.Beam2()<<" -> "<<fl2<<" at ("<<x2
 		   <<","<<sqrt(Q22)<<") -> "<<om::bold<<f2<<om::reset<<"\n";
     double flux=0.25/sqrt(sqr(p1*p2)-p1.Abs2()*p2.Abs2());
-    msg_Debugging()<<"Flux: "<<flux<<std::endl;
+    msg_IODebugging()<<"  Flux: "<<flux<<", Weight: "<<f1*f2*flux<<std::endl;
     if (IsBad(f1*f2)) return 0.0;
     if (s_nozeropdf && f1*f2==0.0)
       return pow(std::numeric_limits<double>::min(),0.25);

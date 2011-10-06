@@ -627,9 +627,7 @@ bool Expression::Evaluate()
       }
       ++m_cindex;
     }
-#ifndef USING__Color_only
-    if (msg_LevelIsTracking()) PrintStatus(false,false);
-#else
+#ifdef USING__Color_only
     PrintStatus(false,false);
 #endif
   } while (treat==true);
@@ -647,9 +645,7 @@ bool Expression::Evaluate()
   m_result+=result2;
   m_evaluated+=1;
   if (--*this==NULL) {
-#ifndef USING__Color_only
-    if (msg_LevelIsTracking()) PrintStatus();
-#else
+#ifdef USING__Color_only
     PrintStatus();
 #endif
   }

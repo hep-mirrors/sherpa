@@ -19,6 +19,10 @@
 #include "HepMC/HepMCDefs.h"
 #endif
 
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
+
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace Rivet;
@@ -53,6 +57,13 @@ public:
   {
     if (m_outpath[m_outpath.size()-1]=='/')
       m_outpath=m_outpath.substr(0,m_outpath.size()-1);
+#ifdef USING__MPI
+    if (MPI::COMM_WORLD.Get_size()>1) {
+      size_t pos(m_outpath.find('.'));
+      if (pos==std::string::npos) pos=m_outpath.length();
+      m_outpath.insert(pos,"_"+rpa->gen.Variable("RNG_SEED"));
+    }
+#endif
   }
   
   

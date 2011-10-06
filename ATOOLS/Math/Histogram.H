@@ -30,6 +30,7 @@ namespace ATOOLS {
     ~Histogram();
     void MPISync();
     void Reset();
+    void CopyFrom(const Histogram *histo);
     void Insert(double x);
     void Insert(int i, double weight, double n=1.0);
     void Insert(double x, double weight, double n=1.0);

@@ -114,6 +114,16 @@ Histogram::Histogram(int _type,double _lower,double _upper,int _nbin,
 
 Histogram::Histogram(const Histogram * histo)
 : m_yvalues(0), m_y2values(0), m_psvalues(0), m_tmp(0) {
+  CopyFrom(histo);
+}
+
+void Histogram::CopyFrom(const Histogram *histo)
+{
+  if (m_yvalues) delete [] m_yvalues;
+  if (m_y2values) delete [] m_y2values;
+  if (m_psvalues) delete [] m_psvalues;
+  if (m_tmp) delete [] m_tmp;
+
   m_lower   = histo->m_lower;
   m_upper   = histo->m_upper;
   m_logbase = histo->m_logbase;

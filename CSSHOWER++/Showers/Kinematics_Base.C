@@ -29,9 +29,10 @@ void Kinematics_Base::SetFixVec(Parton *const p,Vec4D mom,
 }
 
 double Kinematics_FF::GetY(const double &Q2,const double &kt2,const double &z,
-			   const double &mi2,const double &mj2,const double &mk2) const
+			   const double &mi2,const double &mj2,const double &mk2,
+			   const bool force) const
 {
-  if (z<=0.0 || z>=1.0 || Q2<=mi2+mj2+mk2) return -1.0;
+  if (!force && (z<=0.0 || z>=1.0 || Q2<=mi2+mj2+mk2)) return -1.0;
   return (kt2/(z*(1.0-z))+(1.0-z)/z*mi2+z/(1.0-z)*mj2)/(Q2-mi2-mj2-mk2);
 }
 
@@ -55,7 +56,7 @@ int Kinematics_FF::MakeKinematics
     nospec=true;
   }
 
-  double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,mk2);
+  double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,mk2,1);
   Kin_Args ff(y,split->ZTest(),split->Phi());
   if (ConstructFFDipole(mi2,mj2,mij2,mk2,p1,p2,ff)<0) return -1;
   if (mode==0 && (ff.m_pi+ff.m_pj).Abs2()<split->TMin()) return -1;
@@ -67,7 +68,8 @@ int Kinematics_FF::MakeKinematics
     spect->SetMomentum(ff.m_pk);
   }
   else if (!IsEqual(ff.m_pk,p2,1.0e-3))
-    msg_Error()<<METHOD<<"(): Error in EW splitting.\n  Shifted p_k = "
+    msg_Error()<<METHOD<<"(): Error in EW splitting ( y = "<<y
+	       <<" ).\n  Shifted p_k = "
 	       <<p2<<" -> "<<ff.m_pk<<std::endl;
   if (pc==NULL) {
     pc = new Parton(flj,ff.m_pj,pst::FS);
@@ -82,9 +84,10 @@ int Kinematics_FF::MakeKinematics
 }
 
 double Kinematics_FI::GetY(const double &Q2,const double &kt2,const double &z,
-			   const double &mi2,const double &mj2,const double &ma2) const
+			   const double &mi2,const double &mj2,const double &ma2,
+			   const bool force) const
 {
-  if (z<=0.0 || z>=1.0 || Q2>=mi2+mj2+ma2) return -1.0;
+  if (!force && (z<=0.0 || z>=1.0 || Q2>=mi2+mj2+ma2)) return -1.0;
   return 1.0/(1.0-(kt2/(z*(1.0-z))+mi2*(1.0-z)/z+mj2*z/(1.0-z))/(Q2-ma2-mi2-mj2));
 }
 
@@ -107,7 +110,7 @@ int Kinematics_FI::MakeKinematics
     nospec=true;
   }
   
-  double y=1.0-GetY((p1-p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,ma2);
+  double y=1.0-GetY((p1-p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,ma2,1);
   Kin_Args fi(y,split->ZTest(),split->Phi());
   if (ConstructFIDipole(mi2,mj2,mij2,ma2,p1,p2,fi)<0) return -1;
   if (mode==0 && (fi.m_pi+fi.m_pj).Abs2()<split->TMin()) return -1;
@@ -116,7 +119,8 @@ int Kinematics_FI::MakeKinematics
   if (mi2) SetFixVec(split,fi.m_pi,fi,2);
   if (!nospec) spect->SetMomentum(fi.m_pk);
   else if (!IsEqual(fi.m_pk,p2,1.0e-3))
-    msg_Error()<<METHOD<<"(): Error in EW splitting.\n  Shifted p_k = "
+    msg_Error()<<METHOD<<"(): Error in EW splitting ( y = "<<y
+	       <<" ).\n  Shifted p_k = "
 	       <<p2<<" -> "<<fi.m_pk<<std::endl;
   if (pc==NULL) {
     pc = new Parton(flj,fi.m_pj,pst::FS);
@@ -131,9 +135,10 @@ int Kinematics_FI::MakeKinematics
 }
 
 double Kinematics_IF::GetY(const double &Q2,const double &kt2,const double &z,
-			   const double &ma2,const double &mi2,const double &mk2) const
+			   const double &ma2,const double &mi2,const double &mk2,
+			   const bool force) const
 {
-  if (z<=0.0 || z>=1.0 || Q2>=ma2+mi2+mk2) return -1.0;
+  if (!force && (z<=0.0 || z>=1.0 || Q2>=ma2+mi2+mk2)) return -1.0;
   return -z/(Q2-ma2-mi2-mk2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
 }
 
@@ -156,7 +161,7 @@ int Kinematics_IF::MakeKinematics
   double mk2 = spect->Mass2(), mai2 = split->Mass2(); 
   if (mk2 && !spect->GetFlavour().Strong()) mk2=p2.Abs2();
   
-  double y=GetY((p2-p1).Abs2(),split->KtTest(),split->ZTest(),ma2,mi2,mk2);
+  double y=GetY((p2-p1).Abs2(),split->KtTest(),split->ZTest(),ma2,mi2,mk2,1);
   Kin_Args ifp(y,split->ZTest(),split->Phi(),split->Kin());
   if (dabs(y-split->ZTest())<Kin_Args::s_uxeps) ifp.m_mode=1;
   if (ConstructIFDipole(ma2,mi2,mai2,mk2,mb2,p1,p2,b->Momentum(),ifp)<0) return -1;
@@ -179,9 +184,10 @@ int Kinematics_IF::MakeKinematics
 }
 
 double Kinematics_II::GetY(const double &Q2,const double &kt2,const double &z,
-			   const double &ma2,const double &mi2,const double &mb2) const
+			   const double &ma2,const double &mi2,const double &mb2,
+			   const bool force) const
 {
-  if (z<=0.0 || z>=1.0 || Q2<=ma2+mi2+mb2) return -1.0;
+  if (!force && (z<=0.0 || z>=1.0 || Q2<=ma2+mi2+mb2)) return -1.0;
   return z/(Q2-ma2-mb2-mi2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
 }
 
@@ -194,7 +200,7 @@ int Kinematics_II::MakeKinematics
   
   double mai2 = split->Mass2(), mb2 = spect->Mass2();
 
-  double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),ma2,mi2,mb2);
+  double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),ma2,mi2,mb2,1);
   Kin_Args ii(y,split->ZTest(),split->Phi(),split->Kin());
   if (ConstructIIDipole(ma2,mi2,mai2,mb2,p1,p2,ii)<0) return -1;
   if (mode==0 && -(ii.m_pi-ii.m_pj).Abs2()<split->TMin()) return -1;

@@ -482,6 +482,7 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
   
   double a = (t_mass2-s1in-s1out+2.*p1outh[0]*p1inh[0])/(2.*p1inmass*p1outmass);
   if (a<=1.0+1.0e-6) a = 1.0+1.0e-6;
+  if (a<aminct) a=aminct;
 
   Vec4D help=p1out;
   Channel_Basics::Boost(1,pin,p1outh,help);
@@ -547,6 +548,7 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
   
   double a = (t_mass2-s1in-s1out+2.*p1outh[0]*p1inh[0])/(2.*p1inmass*p1outmass);
   if (a<=1.0+1.0e-6) a = 1.0+1.0e-6;
+  if (a<aminct) a=aminct;
 //      cout<<"TChannelMomenta"<<endl;
 //      cout<<" a="<<a<<" "<<a-ctmin<<" "<<a-ctmax<<endl;
   if (dabs(a-ctmax)<1.e-14) a=ctmax;
