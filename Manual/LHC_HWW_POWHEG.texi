@@ -26,9 +26,7 @@ and spin-correlations are accounted for.
 mass of the leptonic final state.
 @item The automated dipole subtraction implemented in matrix element generator 
 Amegic @mycite{Gleisberg2007md} is used.
-@item MCFM is used for the virtual term. For 
-more information on how to interface @ref{External one-loop ME}s see the 
-linked section.
+@item An internal hardcoded one-loop matrix element is used for the virtual term. 
 @item Neither hadronisation nor underlying event corrections are taken into 
 account. Both can be switched on by setting the relevant @ref{Parameters} 
 accordingly.

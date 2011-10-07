@@ -21,9 +21,7 @@ simulation, using the POWHEG method.
 Z bosons. They, in turn, decay fully leptonically into all four final states.
 @item A @ref{Universal selector} is used to restrain the invariant masses of
 both lepton pairs around the Z mass.
-@item MCFM is used for the virtual term. For 
-more information on how to interface @ref{External one-loop ME}s see the 
-linked section. To use MCFM see @ref{MCFM interface}.
+@item An internal hardcoded one-loop matrix element is used for the virtual term. 
 @item Neither hadronisation nor underlying event corrections are taken into 
 account. Both can be switched on by setting the relevant @ref{Parameters} 
 accordingly.
