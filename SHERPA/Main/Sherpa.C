@@ -109,7 +109,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
     if (rank==0) {
       msg_Info()<<"  Rank "<<rank<<", pid "<<pid
 		<<" running on "<<host<<".\n";
-      std::vector<std::string> hosts(size);
+      std::vector<std::string> hosts(size,host);
       std::map<std::string,size_t> procs, cprocs;
       cprocs[host]=procs[host]=1;
       for (int tag=1;tag<size;++tag) {
@@ -125,14 +125,20 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 	}
       }
 #ifdef USING__Threading
+      pid=Min(ppn,(int)procs[hosts[0]]);
+      msg_Info()<<"  Rank 0 runs "<<pid<<" threads.\n";
+      Read_Write_Base::AddCommandLine("PG_THREADS = "+ToString(pid)+"; ");
+      --procs[hosts[0]];
       std::string sranks;
       for (int tag=1;tag<size;++tag) {
-	if (++cprocs[hosts[tag]]==1) pid=1;
+	if (++cprocs[hosts[tag]]==1) pid=Min(ppn,(int)procs[host]);
 	else {
 	  pid=0;
 	  sranks+=" "+ToString(tag);
 	  if (cprocs[hosts[tag]]==ppn) cprocs[hosts[tag]]=0;
 	}
+	--procs[hosts[tag]];
+	if (pid) msg_Info()<<"  Rank "<<tag<<" runs "<<pid<<" threads.\n";
 	MPI::COMM_WORLD.Send(&pid,1,MPI::INT,tag,size+tag);
       }
       if (sranks.length()) msg_Info()<<"  Suspending ranks"<<sranks<<".\n";
@@ -149,6 +155,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 	delete this;
 	exit(0);
       }
+      Read_Write_Base::AddCommandLine("PG_THREADS = "+ToString(pid)+"; ");
 #endif
     }
     exh->MPISync();
