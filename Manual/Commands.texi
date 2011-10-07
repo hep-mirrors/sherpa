@@ -56,6 +56,9 @@ Set output level for event generation @samp{<level>}, see @ref{OUTPUT}.
 @item -j <threads>
 Set number of threads @samp{<threads>}, see @ref{Multi-threading}.
 
+@item -g
+Do not create result directory, see @ref{RESULT_DIRECTORY}.
+
 @item -b
 Switch to non-batch mode, see @ref{BATCH_MODE}.
 

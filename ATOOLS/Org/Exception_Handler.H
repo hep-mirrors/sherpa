@@ -48,6 +48,7 @@ namespace ATOOLS {
     // member functions
     void Reset();
     void MPISync();
+    void MPISuspend(int mode=0);
 
     bool ReadInStatus(const std::string &path);
     bool ApproveTerminate();

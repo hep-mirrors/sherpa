@@ -362,7 +362,7 @@ bool Blob::MomentumConserved() {
   return true;
 }
 
-void Blob::Boost(Poincare boost) {
+void Blob::Boost(const Poincare& boost) {
   for (int i=0;i<NInP();i++)
     InParticle(i)->SetMomentum(boost*InParticle(i)->Momentum());
   for (int i=0;i<NOutP();i++)

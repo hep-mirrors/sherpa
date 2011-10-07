@@ -132,7 +132,7 @@ namespace ATOOLS {
     void     RemoveOwnedParticles(const bool = true);
     void     DeleteOwnedParticles();
 
-    void     Boost(Poincare boost);
+    void     Boost(const Poincare& boost);
     void     BoostInCMS();
     void     BoostInLab();
 

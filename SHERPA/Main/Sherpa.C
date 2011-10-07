@@ -37,12 +37,6 @@ Sherpa::Sherpa() :
   ATOOLS::ran = new Random(1234,4321);
   ATOOLS::rpa = new Run_Parameter();
   ATOOLS::s_loader = new Library_Loader();
-#ifdef USING__MPI
-  int rank=MPI::COMM_WORLD.Get_rank(), dummy=0;
-  msg_Error()<<"Rank "<<rank<<", pid "<<getpid()<<" running on "
-	     <<rpa->gen.Variable("HOSTNAME")<<"."<<std::endl;
-  MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
-#endif
   m_trials = 100;
   m_debuginterval = 0;
   m_debugstep = 0;
@@ -59,12 +53,9 @@ Sherpa::~Sherpa()
   delete ATOOLS::s_loader;
   delete ATOOLS::rpa;
   delete ATOOLS::ran;
+  exh->MPISync();
   delete ATOOLS::msg;
   delete ATOOLS::exh;
-#ifdef USING__MPI
-  int dummy=0;
-  MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
-#endif
 }
 
 bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
@@ -105,6 +96,65 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   }
 
   p_inithandler  = new Initialization_Handler(argc, argv);
+
+#ifdef USING__MPI
+  int size=MPI::COMM_WORLD.Get_size();
+  if (size>1) {
+    msg_Info()<<METHOD<<"(): Analyzing MPI environment {\n";
+    int ppn=p_inithandler->DataReader()->GetValue("MPI_COMBINE_PROCS",4);
+    int rank=MPI::COMM_WORLD.Get_rank(), pid(getpid());
+    char host[256];
+    strncpy(host,rpa->gen.Variable("HOSTNAME").c_str(),255);
+    if (rpa->gen.Variable("HOSTNAME").length()>255) host[255]='\0';
+    if (rank==0) {
+      msg_Info()<<"  Rank "<<rank<<", pid "<<pid
+		<<" running on "<<host<<".\n";
+      std::vector<std::string> hosts(size);
+      std::map<std::string,size_t> procs, cprocs;
+      cprocs[host]=procs[host]=1;
+      for (int tag=1;tag<size;++tag) {
+	MPI::COMM_WORLD.Recv(&pid,1,MPI::INT,MPI::ANY_SOURCE,tag);
+	MPI::COMM_WORLD.Recv(host,256,MPI::CHAR,MPI::ANY_SOURCE,tag);
+	msg_Info()<<"  Rank "<<tag<<", pid "<<pid
+		  <<" running on "<<host<<"."<<std::endl;
+	hosts[tag]=host;
+	if (procs.find(hosts[tag])!=procs.end()) ++procs[hosts[tag]];
+	else {
+	  procs[hosts[tag]]=1;
+	  cprocs[hosts[tag]]=0;
+	}
+      }
+#ifdef USING__Threading
+      std::string sranks;
+      for (int tag=1;tag<size;++tag) {
+	if (++cprocs[hosts[tag]]==1) pid=1;
+	else {
+	  pid=0;
+	  sranks+=" "+ToString(tag);
+	  if (cprocs[hosts[tag]]==ppn) cprocs[hosts[tag]]=0;
+	}
+	MPI::COMM_WORLD.Send(&pid,1,MPI::INT,tag,size+tag);
+      }
+      if (sranks.length()) msg_Info()<<"  Suspending ranks"<<sranks<<".\n";
+#endif
+      msg_Info()<<"}"<<std::endl;
+    }
+    else {
+      MPI::COMM_WORLD.Send(&pid,1,MPI::INT,0,rank);
+      MPI::COMM_WORLD.Send(host,256,MPI::CHAR,0,rank);
+#ifdef USING__Threading
+      MPI::COMM_WORLD.Recv(&pid,1,MPI::INT,0,size+rank);
+      if (pid==0) {
+	exh->MPISuspend();
+	delete this;
+	exit(0);
+      }
+#endif
+    }
+    exh->MPISync();
+  }
+#endif
+
   DrawLogo();
 
   if (p_inithandler->InitializeTheFramework()) {

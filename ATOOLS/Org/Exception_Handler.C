@@ -128,12 +128,20 @@ void Exception_Handler::Exit(int exitcode)
 			  <<om::reset<<om::bold<<"("
 			  <<om::red<<exitcode<<om::reset<<om::bold<<")"
 			  <<om::reset<<tm::curon<<std::endl;
+  MPISuspend(1);
+  exit(exitcode);
+}
+
+void Exception_Handler::MPISuspend(int mode)
+{
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   int rank=MPI::COMM_WORLD.Get_rank();
   if (rank>0) {
-    msg_Error()<<METHOD<<"(): MPI rank "<<rank<<", pid "<<getpid()<<" on "
-	       <<rpa->gen.Variable("HOSTNAME")<<" is killed."<<std::endl;
+    if (mode) {
+      msg_Error()<<METHOD<<"(): MPI rank "<<rank<<", pid "<<getpid()<<" on "
+		 <<rpa->gen.Variable("HOSTNAME")<<" is killed."<<std::endl;
+    }
     if (m_mpi.size()>rank) {
       int flag=-1;
       MPI_Request req;
@@ -142,10 +150,11 @@ void Exception_Handler::Exit(int exitcode)
     }
   }
   else {
-    msg_Error()<<METHOD<<"(): MPI master is killed. Abort."<<std::endl;
+    if (mode) {
+      msg_Error()<<METHOD<<"(): MPI master is killed. Abort."<<std::endl;
+    }
   }
 #endif
-  exit(exitcode);
 }
 
 void Exception_Handler::MPISync()

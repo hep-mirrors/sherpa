@@ -5,6 +5,7 @@
 #include "ATOOLS/Math/Permutation.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include <stdio.h>
 #ifdef USING__MPI
@@ -88,7 +89,12 @@ void VHAAG::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG* ovl)
   msg_Tracking()<<" n_p1="<<n_p1<<" type="<<m_type<<std::endl;
   int vs=m_type;
 
-  int size=1;
+  Data_Reader dr(" ",";","!","=");
+  dr.AddComment("#");
+  dr.AddWordSeparator("\t");
+  dr.SetInputPath(rpa->GetPath());
+  dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  int size=dr.GetValue<std::string>("VHAAG_AUTOOPT","On")=="On"?1:2;
 #ifdef USING__MPI
   size=MPI::COMM_WORLD.Get_size();
 #endif

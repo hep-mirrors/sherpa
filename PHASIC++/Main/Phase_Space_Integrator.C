@@ -44,7 +44,7 @@ void Phase_Space_Integrator::MPISync()
   double nrtime=ATOOLS::rpa->gen.Timer().RealTime();
   exh->MPISync();
   psh->MPISync();
-  int size=MPI::COMM_WORLD.Get_size();
+  int size=MPI::COMM_WORLD.Get_size(), nact=1;
   if (size>1) {
     int rank=MPI::COMM_WORLD.Get_rank();
     double values[4];
@@ -58,6 +58,7 @@ void Phase_Space_Integrator::MPISync()
 	mnstep+=values[1];
 	mncstep+=values[2];
 	trtime+=times[tag]=values[3]/values[0];
+	++nact;
       }
       int sum=0, max=0, min=std::numeric_limits<int>::max();
       for (int tag=1;tag<size;++tag) {
@@ -72,7 +73,7 @@ void Phase_Space_Integrator::MPISync()
       max=Max(max,optiter);
       if (wadjust) {
 	msg_Info()<<"MPI point range: "
-		  <<min<<" .. "<<max<<std::endl;
+		  <<min<<" .. "<<max<<" ("<<nact<<" nodes)"<<std::endl;
 	if (msg_LevelIsTracking() || wadjust>1) {
 	msg_Info()<<"New weights {\n  master: "<<optiter<<"\n";
 	for (int tag=1;tag<size;++tag)

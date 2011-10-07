@@ -179,7 +179,7 @@ Notation:
 
 The total cross section weight is given by
 
-@code{weight = me_wgt f_a(x_a)F_a(x_b).}
+@code{weight = me_wgt f_a(x_a)F_b(x_b).}
 
 @strong{Loop piece and integrated subtraction terms:}
 

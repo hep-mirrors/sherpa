@@ -16,8 +16,8 @@ namespace ATOOLS {
   public:
 
     Poincare();
-    Poincare(Vec4D v1,Vec4D v2,int mode=0);
-    Poincare(Vec4D v);
+    Poincare(const Vec4D &v1,const Vec4D &v2,const int mode=0);
+    Poincare(const Vec4D &v);
  
     void Boost(Vec4D& v) const;
     void BoostBack(Vec4D& v) const;
@@ -28,9 +28,9 @@ namespace ATOOLS {
     void Lambda(Vec4D& v) const;
     void LambdaBack(Vec4D& v) const;
 
-    bool CheckBoost();
-    bool CheckRotation();
-    bool CheckLambda();
+    bool CheckBoost() const;
+    bool CheckRotation() const;
+    bool CheckLambda() const;
 
     void Invert();  
 

@@ -11,7 +11,7 @@ Poincare::Poincare():
 {
 }
   
-Poincare::Poincare(Vec4D v1, Vec4D v2,int mode):
+Poincare::Poincare(const Vec4D& v1,const Vec4D& v2,const int mode):
   m_status(mode?3:2), m_beta(1.,0.,0.,0.), m_rsq(1.), m_usen(false)
 {
   if (m_status==3) {
@@ -69,7 +69,7 @@ Poincare::Poincare(Vec4D v1, Vec4D v2,int mode):
   }
 }
   
-Poincare::Poincare(Vec4D v): 
+Poincare::Poincare(const Vec4D& v): 
   m_status(1), m_beta(v), m_rsq(v.Mass()), m_usen(false)
 {
   if (IsZero(m_rsq) || IsEqual(m_rsq,-m_beta[0])) m_status=0;
@@ -122,13 +122,13 @@ void Poincare::LambdaBack(Vec4D& v) const
     +2.0*(v*m_n)/m_n.Abs2()*m_beta;
 }
 
-bool Poincare::CheckBoost() 
+bool Poincare::CheckBoost()  const
 {
   if (m_beta.Abs2()<=0.) return false;
   return true;
 }
 
-bool Poincare::CheckRotation() 
+bool Poincare::CheckRotation()  const
 {
   if (m_usen) {
     if ((!(m_ct>=0) && !(m_ct<0)) || (!(m_st>=0) && !(m_st<0)) ||
@@ -137,7 +137,7 @@ bool Poincare::CheckRotation()
   return true;
 }
 
-bool Poincare::CheckLambda() 
+bool Poincare::CheckLambda() const
 {
   if (!IsEqual(m_beta.Abs2(),m_n.Abs2())) return false;
   return true;

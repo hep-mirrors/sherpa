@@ -17,8 +17,8 @@ namespace SHERPA {
     double x1,x2,y1,y2;
     double fscale,rscale;
     double alphas;
-    size_t nparticle;
-    size_t id;
+    long int id;
+    int nparticle;
     int kf1,kf2;
     int nuwgt;
     double uwgt[18]; 
@@ -53,6 +53,7 @@ namespace SHERPA {
     std::vector<int> m_flavlist;    
     std::vector<ATOOLS::Vec4D> m_momlist;
     void StoreEvt();
+    void MPISync();
   public:
     Output_RootNtuple(std::string basename,std::string ext,int precision);
     ~Output_RootNtuple();

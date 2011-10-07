@@ -140,6 +140,8 @@ namespace SHERPA {
 
     int    Mode()           const { return m_mode; };
 
+    inline  ATOOLS::Data_Reader *DataReader() const { return p_dataread; }
+
   };
 
   /*!
