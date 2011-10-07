@@ -29,6 +29,7 @@ Sherpa_TEXINFOS = \
 	LHC_4thGen.texi \
 	LHC_ADD.texi \
 	LHC_AGC.texi \
+	LHC_EPA.texi \
         LHC_HPP_POWHEG.texi \
         LHC_HWW_POWHEG.texi \
         LHC_HZZ_POWHEG.texi \
@@ -42,6 +43,7 @@ Sherpa_TEXINFOS = \
 	MI.texi \
 	Model.texi \
 	MSSM.texi \
+	MyInterface.texi \
 	NewModel.texi \
 	NLOtips.texi \
 	OLE.texi \
