@@ -69,6 +69,13 @@ Partial_Amplitude_Base* Partial_Amplitude_Base::Select(Flavour* flavs, int n)
   out[0]=false;
   for(int i(1);i<n;++i) out[i]=true;
 
+  for (int i=0; i<n; ++i) {
+    if (flavs[i].IsVector() && IsZero(flavs[i].Mass())) {
+      SELECT_ISOTROPIC;
+      return me;
+    }
+  }
+
   if(flavs[0].IsScalar()) {
     if(n==3) {
       if(flavs[1].IsScalar() && flavs[2].IsScalar())
