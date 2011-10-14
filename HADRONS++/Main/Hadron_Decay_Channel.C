@@ -8,6 +8,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Math/Random.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -290,14 +291,10 @@ void Hadron_Decay_Channel::ProcessResult(vector<vector<string> > result_svv)
   }
   else if(result_svv[0].size()==3 && m_always_integrate) {
     vector<double> results = CalculateResults();
-    // check whether result is different from before (not within 3 sigma) and
-    // write out if it is
+    // check whether result is different from before and write out if it is
     double oldwidth=ToType<double>(result_svv[0][0]);
-    double olderror=ToType<double>(result_svv[0][1]);
     double oldmax=ToType<double>(result_svv[0][2]);
-    double newmax=results[2];
-    if(dabs(oldwidth-results[0])>3.0*olderror ||
-       dabs(oldmax-newmax)/(oldmax+newmax)>0.02)
+    if(oldwidth!=results[0] || oldmax!=results[2])
       WriteOut(results);
   }
   else if(result_svv[0].size()==3) {
@@ -453,7 +450,10 @@ void Hadron_Decay_Channel::CalculateAmplitudes(Vec4D* moms, Amplitude_Tensor* am
 
 vector<double> Hadron_Decay_Channel::CalculateResults()
 {
+  long int seed = ran->GetSeed();
+  ran->SetSeed(123456);
   vector<double> results = p_ps->CalculateNormalisedWidth();
+  ran->SetSeed(seed);
   return results;
 }
 
@@ -515,6 +515,7 @@ double Hadron_Decay_Channel::Differential()
   CalculateAmplitudes(p_momenta,p_amplitudes,false);
   double value=p_amplitudes->SumSquare();
   value /= (GetDecaying().IntSpin()+1);
+  value *= m_symmetry;
   return value*weight;
 }
 

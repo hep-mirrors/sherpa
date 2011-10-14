@@ -176,7 +176,7 @@ vector<double> HD_PS_Base::CalculateNormalisedWidth() {
   double   value, oldvalue=0., sum=0., sum2=0., result=1., disc;
   bool     simple=false;
 
-  while(opt<maxopt && result>0. && m_error/result>0.002 ) {
+  while(opt<maxopt && m_error/result>0.005) {
     for (n=1;n<iter+1;n++) {
       value = p_hdc->Differential();
       sum  += value;
