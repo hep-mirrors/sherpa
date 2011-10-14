@@ -80,21 +80,18 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
   p_ps = new HD_PS_Base(this);
   // check for identical particles
   Flavour refflav;
-  double symfactor (1);         
-  int l(0), lfac (1);              
-  for( int i=0; i<NOut(); ++i ) {
-    refflav = p_physicalflavours[i+1];
-    l = 0;
-    lfac = 1;
-    for( int j=0; j<NOut(); ++j ) {
-      if( p_physicalflavours[j+1]==refflav ) {
-        l++;
-        lfac *= l;
-      }
-    }
-    symfactor *= lfac;
+  double symfactor(1.0);
+  std::map<Flavour,size_t> fc;
+  for (int i=1; i<1+NOut(); ++i) {
+    std::map<Flavour,size_t>::iterator fit(fc.find(p_physicalflavours[i]));
+    if (fit==fc.end()) fit=fc.insert(make_pair(p_physicalflavours[i],0)).first;
+    ++fit->second;
   }
-  m_symmetry = 1./sqrt(symfactor);
+  for (std::map<Flavour,size_t>::const_iterator fit(fc.begin());
+       fit!=fc.end();++fit) {
+    symfactor*=Factorial(fit->second);
+  }
+  m_symmetry = 1./symfactor;
   m_cp_asymmetry_C=0.0; m_cp_asymmetry_S=0.0;
 
   m_startmd=startmd;
