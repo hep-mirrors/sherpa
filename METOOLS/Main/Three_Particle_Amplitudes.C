@@ -248,10 +248,9 @@ VVV::VVV(Flavour *fl,int *i,bool *out) :
 
 void VVV::operator()(const Vec4D * moms,const bool anti)
 {
-  Vec4D p1mp2(moms[p_i[1]]-moms[p_i[2]]);
-  Vec4D pV0(moms[p_i[0]]);
-  Vec4D pV1(moms[p_i[1]]);
-  Vec4D pV2(moms[p_i[2]]);
+  Vec4D pV0(p_i[0]==0?-moms[p_i[0]]:moms[p_i[0]]);
+  Vec4D pV1(p_i[1]==0?-moms[p_i[1]]:moms[p_i[1]]);
+  Vec4D pV2(p_i[2]==0?-moms[p_i[2]]:moms[p_i[2]]);
   Flavour flV0(p_flavs[p_i[0]]);
   Flavour flV1(p_flavs[p_i[1]]);
   Flavour flV2(p_flavs[p_i[2]]);
@@ -269,9 +268,9 @@ void VVV::operator()(const Vec4D * moms,const bool anti)
 	spins.push_back(make_pair(0,V0pol));
 	spins.push_back(make_pair(1,V1pol));
 	spins.push_back(make_pair(2,V2pol));
-        amp=(eps0[V0pol]*eps1[V1pol])*(p1mp2*eps2[V2pol])+
-          (eps2[V2pol]*eps0[V0pol])*(p1mp2*eps1[V1pol])+
-          (eps1[V1pol]*eps2[V2pol])*(p1mp2*eps0[V0pol]);
+        amp=(eps0[V0pol]*eps1[V1pol])*((pV0-pV1)*eps2[V2pol])+
+            (eps1[V1pol]*eps2[V2pol])*((pV1-pV2)*eps0[V0pol])+
+            (eps0[V0pol]*eps2[V2pol])*((pV2-pV0)*eps1[V1pol]);
 	Insert(amp,spins);
       }
     }

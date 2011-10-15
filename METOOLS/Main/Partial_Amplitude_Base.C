@@ -80,8 +80,22 @@ Partial_Amplitude_Base* Partial_Amplitude_Base::Select(Flavour* flavs, int n)
     if(n==3) {
       if(flavs[1].IsScalar() && flavs[2].IsScalar())
         me=new SSS(flavs, inds, out);
-      else if(flavs[1].IsFermion() && flavs[2].IsFermion())
-        me=new SFF(flavs, inds, out, Complex(1.0,0.0), Complex(1.0,0.0));
+      else if(flavs[1].IsFermion() && flavs[2].IsFermion()) {
+        inds[0]=0;
+        inds[1]=1;
+        inds[2]=2;
+        if((flavs[inds[1]].IsLepton() || flavs[inds[2]].IsLepton()) &&
+           (  flavs[inds[0]].Kfcode()==kf_pi_plus ||
+              flavs[inds[0]].Kfcode()==kf_K_plus ||
+              flavs[inds[0]].Kfcode()==kf_D_plus ||
+              flavs[inds[0]].Kfcode()==kf_D_s_plus ||
+              flavs[inds[0]].Kfcode()==kf_B_plus ||
+              flavs[inds[0]].Kfcode()==kf_B_c
+              ))
+          me=new SFF_FPI(flavs, inds, out);
+        else
+          me=new SFF(flavs, inds, out, Complex(1.0,0.0), Complex(1.0,0.0));
+      }
       else if(flavs[1].IsScalar() && flavs[2].IsVector())
         me=new SSV(flavs, inds, out);
       else if(flavs[2].IsScalar() && flavs[1].IsVector()) {
@@ -130,12 +144,14 @@ Partial_Amplitude_Base* Partial_Amplitude_Base::Select(Flavour* flavs, int n)
         inds[0]=2;
         inds[1]=1;
         inds[2]=0;
-        if(flavs[inds[0]].Kfcode()==kf_pi_plus ||
+        if((flavs[inds[1]].IsLepton() || flavs[inds[2]].IsLepton()) &&
+           (  flavs[inds[0]].Kfcode()==kf_pi_plus ||
            flavs[inds[0]].Kfcode()==kf_K_plus ||
            flavs[inds[0]].Kfcode()==kf_D_plus ||
            flavs[inds[0]].Kfcode()==kf_D_s_plus ||
            flavs[inds[0]].Kfcode()==kf_B_plus ||
-           flavs[inds[0]].Kfcode()==kf_B_c)
+              flavs[inds[0]].Kfcode()==kf_B_c
+              ))
           me=new SFF_FPI(flavs, inds, out);
         else
           me=new SFF(flavs, inds, out, Complex(1.0,0.0), Complex(1.0,0.0));
@@ -144,12 +160,14 @@ Partial_Amplitude_Base* Partial_Amplitude_Base::Select(Flavour* flavs, int n)
         inds[0]=1;
         inds[1]=2;
         inds[2]=0;
-        if(flavs[inds[0]].Kfcode()==kf_pi_plus ||
+        if((flavs[inds[1]].IsLepton() || flavs[inds[2]].IsLepton()) &&
+           (  flavs[inds[0]].Kfcode()==kf_pi_plus ||
            flavs[inds[0]].Kfcode()==kf_K_plus ||
            flavs[inds[0]].Kfcode()==kf_D_plus ||
            flavs[inds[0]].Kfcode()==kf_D_s_plus ||
            flavs[inds[0]].Kfcode()==kf_B_plus ||
-           flavs[inds[0]].Kfcode()==kf_B_c)
+              flavs[inds[0]].Kfcode()==kf_B_c
+              ))
           me=new SFF_FPI(flavs, inds, out);
         else
           me=new SFF(flavs, inds, out, Complex(1.0,0.0), Complex(1.0,0.0));
