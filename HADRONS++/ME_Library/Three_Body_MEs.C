@@ -160,7 +160,9 @@ void B_Bphoton_M1::operator()(
       spins[1] = make_pair(p_i[1],h1);
       for(int h2=0; h2<2; ++h2) {
         spins[2] = make_pair(p_i[2],h2);
-        amps->Insert(m_fac*F.G(1,h1,conj(eps[h2]),0,h0),spins);
+        // temporarily disabled due to Lorentz invariance violation
+        //amps->Insert(m_fac*F.G(1,h1,conj(eps[h2]),0,h0),spins);
+        amps->Insert(Complex(1.0,0.0),spins);
       }
     }
   }

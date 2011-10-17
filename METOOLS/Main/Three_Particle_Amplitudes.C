@@ -104,7 +104,7 @@ SFF_FPI::SFF_FPI(Flavour *fl,int *i,bool *out,const Complex c) :
 
 void SFF_FPI::operator()(const Vec4D * moms,const bool anti)
 {
-  Vec4D pS(moms[p_i[0]]);
+  Vec4D pS(p_i[0]==0?moms[p_i[0]]:-moms[p_i[0]]);
   Complex amp(0.,0.);
   p_xyz->Prepare(moms,anti);
   for (int hel1(0);hel1<2;hel1++) {
@@ -135,9 +135,9 @@ SSV::SSV(Flavour *fl,int *i,bool *out) :
 
 void SSV::operator()(const Vec4D * moms,const bool anti)
 {
-  Vec4D pS1(moms[p_i[0]]);
-  Vec4D pS2(moms[p_i[1]]);
-  Vec4D pV(moms[p_i[2]]);
+  Vec4D pS1(p_i[0]==0?moms[p_i[0]]:-moms[p_i[0]]);
+  Vec4D pS2(p_i[1]==0?moms[p_i[1]]:-moms[p_i[1]]);
+  Vec4D pV(p_i[2]==0?moms[p_i[2]]:-moms[p_i[2]]);
   Flavour flV(p_flavs[p_i[2]]);
   Polarization_Vector eps(pV,sqr(flV.HadMass()),flV.IsAnti()^anti,p_out[2]);
   int npol=IsZero(flV.HadMass())?2:3;
@@ -160,8 +160,8 @@ SVV::SVV(Flavour *fl,int *i,bool *out) :
 
 void SVV::operator()(const Vec4D * moms,const bool anti)
 {
-  Vec4D pV1(moms[p_i[1]]);
-  Vec4D pV2(moms[p_i[2]]);
+  Vec4D pV1(p_i[1]==0?moms[p_i[1]]:-moms[p_i[1]]);
+  Vec4D pV2(p_i[2]==0?moms[p_i[2]]:-moms[p_i[2]]);
   Flavour flV1(p_flavs[p_i[1]]);
   Flavour flV2(p_flavs[p_i[2]]);
   Polarization_Vector eps1(pV1,sqr(flV1.HadMass()),flV1.IsAnti()^anti,p_out[1]);
@@ -174,8 +174,8 @@ void SVV::operator()(const Vec4D * moms,const bool anti)
       spins.push_back(make_pair(0,0));
       spins.push_back(make_pair(1,V1pol));
       spins.push_back(make_pair(2,V2pol));
-      Insert((eps1[V1pol]*eps2[V2pol])*(moms[p_i[1]]*moms[p_i[2]])-
-	     (eps1[V1pol]*moms[p_i[2]])*(moms[p_i[1]]*eps2[V2pol]),spins);
+      Insert((eps1[V1pol]*eps2[V2pol])*(pV1*pV2)-
+	     (eps1[V1pol]*pV2)*(pV1*eps2[V2pol]),spins);
     }
   }
 }
@@ -212,7 +212,7 @@ VFF::VFF(Flavour *fl,int *i,bool *out,const Complex cL,const Complex cR) :
 
 void VFF::operator()(const Vec4D * moms,const bool anti)
 {
-  Vec4D pV(moms[p_i[0]]);
+  Vec4D pV(p_i[0]==0?moms[p_i[0]]:-moms[p_i[0]]);
   Flavour flV(p_flavs[p_i[0]]);
   Complex amp(0.,0.);
   p_xyz->Prepare(moms,anti);
@@ -248,9 +248,9 @@ VVV::VVV(Flavour *fl,int *i,bool *out) :
 
 void VVV::operator()(const Vec4D * moms,const bool anti)
 {
-  Vec4D pV0(p_i[0]==0?-moms[p_i[0]]:moms[p_i[0]]);
-  Vec4D pV1(p_i[1]==0?-moms[p_i[1]]:moms[p_i[1]]);
-  Vec4D pV2(p_i[2]==0?-moms[p_i[2]]:moms[p_i[2]]);
+  Vec4D pV0(p_i[0]==0?moms[p_i[0]]:-moms[p_i[0]]);
+  Vec4D pV1(p_i[1]==0?moms[p_i[1]]:-moms[p_i[1]]);
+  Vec4D pV2(p_i[2]==0?moms[p_i[2]]:-moms[p_i[2]]);
   Flavour flV0(p_flavs[p_i[0]]);
   Flavour flV1(p_flavs[p_i[1]]);
   Flavour flV2(p_flavs[p_i[2]]);
@@ -293,9 +293,9 @@ TSS::TSS(Flavour *fl,int *i,bool *out) :
 
 void TSS::operator()(const Vec4D * moms,const bool anti)
 {
-  Vec4D pS1(moms[p_i[1]]);
-  Vec4D pS2(moms[p_i[2]]);
-  Vec4D pT(moms[p_i[0]]);
+  Vec4D pS1(p_i[1]==0?moms[p_i[1]]:-moms[p_i[1]]);
+  Vec4D pS2(p_i[2]==0?moms[p_i[2]]:-moms[p_i[2]]);
+  Vec4D pT(p_i[0]==0?moms[p_i[0]]:-moms[p_i[0]]);
   Flavour flT(p_flavs[p_i[0]]);
   Polarization_Tensor eps(pT,sqr(flT.HadMass()),flT.IsAnti()^anti,p_out[0]);
   if(IsZero(flT.HadMass()))
@@ -326,11 +326,11 @@ TVS::TVS(Flavour *fl,int *i,bool *out) :
 
 void TVS::operator()(const Vec4D * moms,const bool anti)
 {
-  Vec4D pS(moms[p_i[2]]);
-  Vec4D pT(moms[p_i[0]]);
+  Vec4D pT(p_i[0]==0?moms[p_i[0]]:-moms[p_i[0]]);
+  Vec4D pV(p_i[1]==0?moms[p_i[1]]:-moms[p_i[1]]);
+  Vec4D pS(p_i[2]==0?moms[p_i[2]]:-moms[p_i[2]]);
   Flavour flT(p_flavs[p_i[0]]);
   Polarization_Tensor epsT(pT,sqr(flT.HadMass()),flT.IsAnti()^anti,p_out[0]);
-  Vec4D pV(moms[p_i[1]]);
   Flavour flV(p_flavs[p_i[1]]);
   Polarization_Vector epsV(pV,sqr(flV.HadMass()),flV.IsAnti()^anti,p_out[1]);
   int npolV=IsZero(flV.HadMass())?2:3;
@@ -369,14 +369,14 @@ TVV::TVV(Flavour *fl,int *i,bool *out) :
 
 void TVV::operator()(const Vec4D * moms,const bool anti)
 {
-  Vec4D pT(moms[p_i[0]]);
+  Vec4D pT(p_i[0]==0?moms[p_i[0]]:-moms[p_i[0]]);
+  Vec4D pV1(p_i[1]==0?moms[p_i[1]]:-moms[p_i[1]]);
+  Vec4D pV2(p_i[2]==0?moms[p_i[2]]:-moms[p_i[2]]);
   Flavour flT(p_flavs[p_i[0]]);
   Polarization_Tensor epsT(pT,sqr(flT.HadMass()),flT.IsAnti()^anti,p_out[0]);
-  Vec4D pV1(moms[p_i[1]]);
   Flavour flV1(p_flavs[p_i[1]]);
   Polarization_Vector epsV1(pV1,sqr(flV1.HadMass()),flV1.IsAnti()^anti,p_out[1]);
   int npolV1=IsZero(flV1.HadMass())?2:3;
-  Vec4D pV2(moms[p_i[2]]);
   Flavour flV2(p_flavs[p_i[2]]);
   Polarization_Vector epsV2(pV2,sqr(flV2.HadMass()),flV2.IsAnti()^anti,p_out[2]);
   int npolV2=IsZero(flV2.HadMass())?2:3;
