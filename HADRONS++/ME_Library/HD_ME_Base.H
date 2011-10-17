@@ -10,131 +10,111 @@
 #include "ATOOLS/Org/Getter_Function.H"
 
 #define DEFINE_ME_GETTER(CLASS,NAME,TAG)                              \
-DECLARE_GETTER(NAME,TAG,HD_ME_Base,Flavour_Info);                     \
-HD_ME_Base* NAME::operator()(const Flavour_Info &parameters) const    \
-{ return new CLASS(parameters.flavs, parameters.n, parameters.indices,TAG); }
+DECLARE_GETTER(NAME,TAG,HD_ME_Base,ME_Parameters);                     \
+HD_ME_Base* NAME::operator()(const ME_Parameters &parameters) const    \
+{ return new CLASS(parameters.flavs, parameters.indices,TAG); }
 
 namespace HADRONS {
 
-  class HD_ME_Base {
+  /** 
+   * Represents an amplitude for a decay process.
+   * To store its calculated values for each helicity combination, it inherits
+   * from METOOLS::Spin_Amplitudes.
+   * Each class derived from this has to implement the HD_ME_Base::Calculate
+   * method for the actual amplitude calculation.
+   */
+  class HD_ME_Base : public METOOLS::Spin_Amplitudes {
   protected:
+    /// Name of the amplitude, e.g. B_Bpi_pwave
     std::string       m_name;
-    int               m_n;
-    ATOOLS::Flavour * m_flavs;
+    /// Reference to flavours involved in the decay (in external order)
+    const ATOOLS::Flavour_Vector& m_flavs;
+    /// Array of masses of the external particles
     double          * p_masses,* p_masses2;
+    /// Path to the directory which contains the decay channel's file
     std::string       m_path;
-    bool              m_anti;
-    int             * p_i;  // "external" indices
+    /// Index mapping from external flavours/momenta to amplitude internal ones
+    std::vector<int>  p_i;
+    /// Pre-factor for amplitude
+    Complex           m_factor;
 
     virtual double lambdaNorm(const double,const double,const double);
   public:
-    HD_ME_Base(ATOOLS::Flavour* flavs, int n, int* decayindices, std::string name);
+    /** 
+     * Constructor which initialises all fields of the class.
+     * 
+     * @param flavs Flavours involved in the decay (in external order)
+     * @param decayindices Index mapping from external flavours/momenta to
+     * amplitude internal ones (cf. HD_ME_Base::p_i)
+     * @param name Name of the amplitude
+     */
+    HD_ME_Base(const ATOOLS::Flavour_Vector& flavs,
+               const std::vector<int>& decayindices,
+               const std::string& name);
     virtual ~HD_ME_Base();
+
+    /** 
+     * Pure virtual function, which requires the implementation of the
+     * amplitude calculation in all derived classes.
+     * When implementing such a calculation, one has to use HD_ME_Base::Insert
+     * to store the calculated values for all helicities combination.
+     * 
+     * @param momenta Momenta in external order
+     * @param anti Whether to consider the charge conjugated process
+     */
+    virtual void Calculate(const ATOOLS::Vec4D_Vector& momenta,bool anti)=0;
+
+    /** 
+     * Redefinition of the Spin_Amplitudes::Insert method, to take into
+     * account the pre-factor HD_ME_Base::m_factor.
+     * 
+     * @param value Amplitude value (w/o pre-factor)
+     * @param spins List of helicities for each particle in the decay,
+     * describing the helicity combination for this <var>value</var>
+     */
+    inline void Insert(Complex value, std::vector<std::pair<int,int> >& spins)
+    {
+      (*this)[GetNumber(spins)]=m_factor*value;
+    }
+
+    /** 
+     * This method sets the parameters for the decay amplitude.
+     * Every subclass of HD_ME_Base \b must have this method if it needs
+     * parameters that are written in the decay channel file.
+     * Basically, this method gets called after reading the corresponding DC
+     * file and it is its job to set the parameters in the ME class to the
+     * values written in the DC file.
+     * 
+     * @param _md Has to contain the values and names of all parameters
+     * relevant for the amplitude
+     */
+    virtual void   SetModelParameters( GeneralModel _md ) {};
+
+    /** 
+     * Tries to set the color flow for the particles given. This can be needed
+     * for partonic decay channels, where the color flow is not trivial.
+     * 
+     * @param outparts Particles to set color flow for
+     * @param n_q Number of gluons in outparts
+     * @param n_g Number of quarks in outparts
+     * @param anti Set the color flow for the charge conjugated decay.
+     * 
+     * @return true if setting the color flow succeeded, false if not.
+     */
+    virtual bool   SetColorFlow(std::vector<ATOOLS::Particle*> outparts,
+                                int n_q, int n_g, bool anti);
+
+    //@{
+    /// Getter/setter method.
     void SetPath( std::string s ) { m_path=s; }
     virtual std::string Name() { return m_name; }
-    void SetAnti(bool anti) { m_anti = anti; }
+    inline void SetFactor(const Complex& factor) { m_factor=factor; }
+    //@}
+  };
 
-    virtual void   operator()(const ATOOLS::Vec4D* p,
-                              METOOLS::Spin_Amplitudes* amps) = 0;
-    virtual void   AddVector(double,double) {}
-    virtual void   SetModelParameters( GeneralModel _md ) {};
-    virtual bool   SetColorFlow(std::vector<ATOOLS::Particle*> outparts,int n_q, int n_g);
-  }; // end of class HD_ME_Base
-
-  typedef ATOOLS::Getter_Function<HD_ME_Base,Flavour_Info> HD_ME_Getter_Function;
-
-  /*!
-  \file HD_ME_Base.H
-  \brief Declares the classes HADRONS::HD_ME_Base as well as the structure
-    HADRONS::GeneralModel.
-
-  This file can be found in the directory \c ME_Library.
-
-  */
-
-  /*!
-    \class GeneralModel
-    \brief A map with all relevant parameters for a certain decay amplitude
-
-    It is a map that both contains the name of the parameter (as it is written in the
-    DC file) and its value:
-    <TABLE>
-    <TR> <TD>1st column</TD><TD>2nd column</TD> </TR>
-    <TR> <TD>name</TD><TD>value</TD> </TR>
-    </TABLE>
-    */
-  /*!
-    \fn GeneralModel::operator()(const std::string &tag,const double &def) const 
-    \brief Returns the value of the parameter with the name <var>name</var>
-
-    Returns the value of the parameter with the name <var>tag</var>. If such a parameter
-    does not exist, it returns the default value given by <var>def</var>.
-    */
-    
-
-  /*!
-  \class HD_ME_Base
-  \brief Base class for ME classes
-     
-    \section spin The Implemention of Spin Correlations
-
-    At this stage, the implementation of the spin correlation algorithm will be explained a bit.
-    Each ME class (Tau_Lepton, Tau_Pseudo, ...) has to set up an METOOLS::Amplitude_Tensor.
-    This is a structure where an entry stands for a value of the ME (\e not squared) with
-    a certain helicity combination. That is, each helicity combination has its own entry in 
-    the Amplitude_Tensor. To make it easy to insert an amplitude for a specific helicity
-    combination, it provides a number of methods. Have a look at the documentation in
-    METOOLS::Amplitude_Tensor for them.
-  */
-
-  /*!
-  \fn HD_ME_Base::HD_ME_Base( int,ATOOLS::Flavour *)
-  \brief Constructor and initialisation of private attributes
-  */
-
-  /*!
-    \fn HD_ME_Base::operator()(const Vec4D* p, Amplitude_Tensor * amps, int k0_n )
-    \brief Main operator returning the Amplitude_Tensor of the decay amplitude
-
-    This operator is the most important one. Therefore, each ME class <b>has to have</b>
-    such an operator. It fills the given Amplitude_Tensor with one amplitude for each
-    possible spin combination.
-  */
-
-  /*!
-    \fn HD_ME_Base::SetModelParameters( GeneralModel _md )
-    \brief This method sets the parameters for the decay amplitude
-
-    Every subclass of HD_ME_Base (the ME class) \b must have this method if it needs
-    parameters that are written in the DC file.
-    Basically, this method gets called after reading the corresponding DC file and it is
-    its job to set the parameters in the ME class to the values written in the DC file.
-    This is done by passing the variable <var>_md</var> (see GeneralModel) 
-    which contains the values and names
-    of all relevant parameters.
-    */
-  /*!
-  \var HD_ME_Base::p_masses
-  Pointer of masses.
-  */
-  /*!
-  \var HD_ME_Base::p_masses2
-  Pointer of masses squared.
-  */
-  /*!
-  \var HD_ME_Base::p_flavs
-  Pointer on flavours.
-  */
-  /*!
-  \var HD_ME_Base::m_nout
-  Number of outgoing particles.
-  */
-  /*!
-  \var HD_ME_Base::m_metype
-  Type of ME.
-  */
-
-} // end of namespace
+  typedef ATOOLS::Getter_Function<HD_ME_Base,ME_Parameters>
+  HD_ME_Getter_Function;
+}
 
 
 #endif

@@ -24,9 +24,9 @@ void VA_F_F::SetModelParameters( struct GeneralModel _md )
 }
 
 
-void VA_F_F::Calc(const ATOOLS::Vec4D * moms)
+void VA_F_F::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
-  XYZFunc F(2, moms, m_flavs, Tools::k0, m_anti, p_i);
+  XYZFunc F(moms, m_flavs, m_anti, p_i);
   double factor = 1.0;
   if(p_ff) {
     double q2 = (moms[p_i[0]] - moms[p_i[1]]).Abs2();

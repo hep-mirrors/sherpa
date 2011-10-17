@@ -1,7 +1,5 @@
 #include "PHASIC++/Scales/Tag_Setter.H"
 
-#include "PHASIC++/Process/Process_Base.H"
-#include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
@@ -66,8 +64,6 @@ void Tag_Setter::SetTags(Algebra_Interpreter *const calc)
   calc->AddTag("P_SUM","(1.0,0.0,0.0,0.0)");
   for (size_t i=0;i<p_setter->Scales().size();++i) 
     calc->AddTag("MU_"+ToString(i)+"2","1.0");
-  Process_Integrator *ib(p_setter->Process()->Integrator());
-  ib->SetMomenta(Vec4D_Vector(ib->NIn()+ib->NOut()));
-  for (size_t i=0;i<ib->NIn()+ib->NOut();++i) 
-    calc->AddTag("p["+ToString(i)+"]",ToString(ib->Momenta()[i]));
+  for (size_t i=0;i<p_setter->NIn()+p_setter->NOut();++i) 
+    calc->AddTag("p["+ToString(i)+"]",ToString(Vec4D()));
 }

@@ -4,7 +4,6 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle.H"
 
-
 namespace SHERPA {
   class Event_Reader_Base {
   protected:

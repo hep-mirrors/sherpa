@@ -10,7 +10,7 @@ void VA_B_DPi::SetModelParameters( struct GeneralModel _md )
 }
 
 
-void VA_B_DPi::Calc(const ATOOLS::Vec4D * moms)
+void VA_B_DPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   Vec4D pB = moms[p_i[0]];
   Vec4D pD = moms[p_i[1]];

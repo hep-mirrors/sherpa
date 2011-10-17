@@ -82,7 +82,7 @@ Complex VA_0_PP::FormFactor( double s )
 }
 
 
-void VA_0_PP::Calc(const ATOOLS::Vec4D * moms)
+void VA_0_PP::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   double  q2 = (moms[p_i[1]] + moms[p_i[0]] ).Abs2();
   Complex FF = FormFactor(q2);

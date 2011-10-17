@@ -50,10 +50,6 @@ namespace AMEGIC {
     void SetNMax(ATOOLS::Cluster_Amplitude *const ampl,
 		 const size_t &id,const size_t &nmax) const;
 
-    void SetColours(ATOOLS::Cluster_Leg *const lij,
-		    ATOOLS::Cluster_Leg *const li,
-		    ATOOLS::Cluster_Leg *const lj);
-
     int SetDecayColours(const ATOOLS::Vec4D_Vector& p, ATOOLS::Flavour * fl,
 			int col1,int col2);
     int SetColours(const ATOOLS::Vec4D_Vector& p,ATOOLS::Flavour * fl);

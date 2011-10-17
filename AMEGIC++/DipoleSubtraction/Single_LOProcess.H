@@ -131,9 +131,7 @@ namespace AMEGIC {
     virtual double operator()(const ATOOLS::Vec4D_Vector &,const ATOOLS::Vec4D *,
 			      std::vector<double>*,std::vector<ATOOLS::Vec4D>*,const int);
     virtual void   Calc_AllXS(const ATOOLS::Vec4D_Vector &,
-			      const ATOOLS::Vec4D *,double**,const int);
-
-    void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
+			      const ATOOLS::Vec4D *,std::vector<std::vector<double> > &,const int);
   };
 }
 

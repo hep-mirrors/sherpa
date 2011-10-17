@@ -27,6 +27,7 @@ namespace WHITEHAT {
 
     void Calc(const ATOOLS::Vec4D_Vector& momenta);
     double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
+    double ScaleDependenceCoefficient(const int i);
 
     static void InitInterface(MODEL::Model_Base *model);
     static void DeleteInterface();

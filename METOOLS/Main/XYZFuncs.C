@@ -10,14 +10,40 @@
 #define SQRT_05 0.70710678118654757
 #endif
 
+#ifndef GAUGEK0
+#define GAUGEK0 10
+#endif
+
 using namespace METOOLS;
 using namespace ATOOLS;
 using namespace std;
 
 // constructor
-XYZFunc::XYZFunc( int n, const Vec4D *p, const Flavour *fl, 
-                  int k0_n, bool anti, const int *indices ) :
-  m_N(n), m_k0n(k0_n), m_anti(anti), p_i(indices)
+XYZFunc::XYZFunc(const Vec4D_Vector& p, const Flavour_Vector& fl, 
+                 bool anti, const vector<int>& indices) :
+  m_k0n(GAUGEK0), m_anti(anti)
+{
+  m_anti=anti;
+  if (indices.size()==0) {
+    p_i=NULL;
+    m_N=fl.size();
+  }
+  else {
+    p_i=&indices.front();
+    m_N = indices.size();
+  }
+  p_mom = new Vec4D[m_N];
+  p_flav = new Flavour[m_N];
+  for( int i=0; i<m_N; i++ ) {
+    p_mom[i] = p_i?p[p_i[i]]:p[i];
+    p_flav[i] = p_i?fl[p_i[i]]:fl[i];
+  }
+  CalcEtaMu();
+}
+
+XYZFunc::XYZFunc( int n, const Vec4D* p, const Flavour *fl,
+                  bool anti, const int *indices ) :
+  m_N(n), m_k0n(GAUGEK0), m_anti(anti), p_i(indices)
 {
   m_anti=anti;
   m_N = n;
@@ -27,14 +53,22 @@ XYZFunc::XYZFunc( int n, const Vec4D *p, const Flavour *fl,
     p_mom[i] = p_i?p[p_i[i]]:p[i];
     p_flav[i] = p_i?fl[p_i[i]]:fl[i];
   }
-  m_k0n = k0_n;
   CalcEtaMu();
 }
 
-XYZFunc::XYZFunc( const int n, const Flavour *fl, const int k0_n,
-                  const int *indices ) :
-  m_N(n), m_k0n(k0_n), p_i(indices)
+XYZFunc::XYZFunc(const Flavour_Vector& fl,
+                 const vector<int>& indices ) :
+  m_k0n(GAUGEK0)
 {
+  if (indices.size()==0) {
+    p_i=NULL;
+    m_N=fl.size();
+  }
+  else {
+    p_i=&indices.front();
+    m_N = indices.size();
+  }
+
   p_mom  = new Vec4D[m_N];
   p_flav = new Flavour[m_N];
   for( int i=0; i<m_N; i++ ) p_flav[i] = p_i?fl[p_i[i]]:fl[i];
@@ -46,7 +80,7 @@ XYZFunc::~XYZFunc()
   delete [] p_flav;
 }
 
-void XYZFunc::Prepare( const Vec4D *p, const bool anti )
+void XYZFunc::Prepare( const Vec4D_Vector& p, const bool anti )
 {
   m_anti = anti;
   for( int i=0; i<m_N; i++ ) p_mom[i] = p_i?p[p_i[i]]:p[i];
@@ -63,11 +97,20 @@ void XYZFunc::CalcEtaMu()
     pi = p_mom[i];
     Complex _m_eta (0.,0.);
     switch( m_k0n ) {
-      case 1  : _m_eta = csqrt( 2.*(pi[0]-(pi[2]+pi[3])*SQRT_05) );
-                break;
-      case 2  : _m_eta = csqrt( 2.*(pi[0]-(pi[1]+pi[2])*SQRT_05) );
-                break;
-      default : _m_eta = csqrt( 2.*(pi[0]-(pi[1]+pi[3])*SQRT_05) );
+    case 0 :
+      _m_eta = csqrt( 2.*(pi[0]-(pi[1]+pi[3])*SQRT_05) );
+      break;
+    case 1  :
+      _m_eta = csqrt( 2.*(pi[0]-(pi[2]+pi[3])*SQRT_05) );
+      break;
+    case 2  :
+      _m_eta = csqrt( 2.*(pi[0]-(pi[1]+pi[2])*SQRT_05) );
+      break;
+    case 10 :
+      _m_eta = csqrt( 2.*(pi[0]+pi[Spinor<double>::R3()]) );
+      break;
+    default :
+        THROW(not_implemented, "");
     }
     m_eta.push_back( _m_eta );
     Complex help( p_flav[i].HadMass(), 0. );
@@ -84,13 +127,22 @@ Complex XYZFunc::S( const int s, const int i, const int j )
 {
   Complex A = m_eta[j]/m_eta[i];
   Complex ret(0.,0.);
-  Vec4D pi, pj;
-  pi = p_mom[i];
-  pj = p_mom[j];
-  ret  = Complex( 1.*(double)s*pi[1], SQRT_05*(pi[2]-pi[3]) )*A;
-  ret -= Complex( 1.*(double)s*pj[1], SQRT_05*(pj[2]-pj[3]) )/A;
+  Vec4D pi(p_mom[i]);
+  Vec4D pj(p_mom[j]);
+  switch( m_k0n ) {
+  case 1 :
+    ret = Complex( 1.*(double)s*pi[1], SQRT_05*(pi[2]-pi[3]) )*A;
+    ret -= Complex( 1.*(double)s*pj[1], SQRT_05*(pj[2]-pj[3]) )/A;
+    break;
+  case 10:
+    ret = Complex( 1.*(double)s*pi[Spinor<double>::R1()], -pi[Spinor<double>::R2()] )*A;
+    ret -= Complex( 1.*(double)s*pj[Spinor<double>::R1()], -pj[Spinor<double>::R2()] )/A;
+    break;
+  default:
+    THROW(not_implemented, "k0n choice not fully implemented yet.");
+  }
   return ret;
-}  
+}
 
 Complex XYZFunc::S( const int s, const int i, const Vec4C p, Complex eta )
 {
@@ -99,8 +151,18 @@ Complex XYZFunc::S( const int s, const int i, const Vec4C p, Complex eta )
   Vec4D pi = p_mom[i];
   Vec4C pj = p;
   Complex ci(0.0,1.0);
-  ret  = (1.*(double)s*pi[1] + ci*SQRT_05*(pi[2]-pi[3]) )*A
-        -(1.*(double)s*pj[1] + ci*SQRT_05*(pj[2]-pj[3]) )/A;
+  switch( m_k0n ) {
+  case 1 :
+    ret  = (1.*(double)s*pi[1] + ci*SQRT_05*(pi[2]-pi[3]) )*A
+          -(1.*(double)s*pj[1] + ci*SQRT_05*(pj[2]-pj[3]) )/A;
+    break;
+  case 10:
+    ret  = (1.*(double)s*pi[Spinor<double>::R1()] - ci*pi[Spinor<double>::R2()] )*A
+          -(1.*(double)s*pj[Spinor<double>::R1()] - ci*pj[Spinor<double>::R2()] )/A;
+    break;
+  default:
+    THROW(not_implemented, "k0n choice not fully implemented yet.");
+  }
   return ret;
 }
 
@@ -111,8 +173,18 @@ Complex XYZFunc::S( const int s, const Vec4C p, Complex eta, const int j )
   Vec4C pi = p;
   Vec4D pj = p_mom[j];
   Complex ci(0.0,1.0);
-  ret  = (1.*(double)s*pi[1] + ci*SQRT_05*(pi[2]-pi[3]) )*A
-        -(1.*(double)s*pj[1] + ci*SQRT_05*(pj[2]-pj[3]) )/A;
+  switch( m_k0n ) {
+  case 1 :
+    ret  = (1.*(double)s*pi[1] + ci*SQRT_05*(pi[2]-pi[3]) )*A
+          -(1.*(double)s*pj[1] + ci*SQRT_05*(pj[2]-pj[3]) )/A;
+    break;
+  case 10:
+    ret  = (1.*(double)s*pi[Spinor<double>::R1()] - ci*pi[Spinor<double>::R2()] )*A
+          -(1.*(double)s*pj[Spinor<double>::R1()] - ci*pj[Spinor<double>::R2()] )/A;
+    break;
+  default:
+    THROW(not_implemented, "k0n choice not fully implemented yet.");
+  }
   return ret;
 }
 
@@ -216,11 +288,13 @@ Complex XYZFunc::X( const int t1, const Vec4C p2, const int t3,
   Complex x(0., 0.);
   Complex eta2 (0.,0.);
   switch( m_k0n ) {
-    case 1  : eta2 = sqrt( 2.*(p2[0]-(p2[2]+p2[3])*SQRT_05) );
-              break;
-    case 2  : eta2 = sqrt( 2.*(p2[0]-(p2[1]+p2[2])*SQRT_05) );
-              break;
-    default : eta2 = sqrt( 2.*(p2[0]-(p2[1]+p2[3])*SQRT_05) );
+  case 1  : eta2 = sqrt( 2.*(p2[0]-(p2[2]+p2[3])*SQRT_05) );
+    break;
+  case 2  : eta2 = sqrt( 2.*(p2[0]-(p2[1]+p2[2])*SQRT_05) );
+    break;
+  case 10 : eta2 = sqrt( 2.*(p2[0]+p2[Spinor<double>::R3()]) );
+    break;
+  default : eta2 = sqrt( 2.*(p2[0]-(p2[1]+p2[3])*SQRT_05) );
   }
   Complex mu2 = sqrt(p2*p2)/eta2;
   
@@ -253,17 +327,24 @@ Vec4C XYZFunc::L( const int t1, const int t3,
   Vec4C l( Complex(0.,0.), Complex(0.,0.), Complex(0.,0.), Complex(0.,0.) );
   ATOOLS::Vec4D k0, k1;
   switch( m_k0n ) {
-    case 0  : 
-      k0 = ATOOLS::Vec4D(1., SQRT_05, 0., SQRT_05);
-      k1 = ATOOLS::Vec4D(0., 0., 1., 0.);
-      break;
-    case 2  : 
-      k0 = ATOOLS::Vec4D(1., SQRT_05, SQRT_05, 0.);
-      k1 = ATOOLS::Vec4D(0., 0., 0., 1.);
-      break;
-    default : 
-      k0 = ATOOLS::Vec4D(1., 0., SQRT_05, SQRT_05);
-      k1 = ATOOLS::Vec4D(0., 1., 0., 0.);
+  case 0  :
+    k0 = ATOOLS::Vec4D(1., SQRT_05, 0., SQRT_05);
+    k1 = ATOOLS::Vec4D(0., 0., 1., 0.);
+    break;
+  case 1 :
+    k0 = ATOOLS::Vec4D(1., 0., SQRT_05, SQRT_05);
+    k1 = ATOOLS::Vec4D(0., 1., 0., 0.);
+    break;
+  case 2  :
+    k0 = ATOOLS::Vec4D(1., SQRT_05, SQRT_05, 0.);
+    k1 = ATOOLS::Vec4D(0., 0., 0., 1.);
+    break;
+  case 10:
+    k0 = Spinor<double>::GetK0();
+    k1 = Spinor<double>::GetK1();
+    break;
+  default :
+      THROW(not_implemented, "");
   }
   
   Complex A, B;
@@ -392,38 +473,38 @@ int XYZFunc::MToL(int m)
   case 0:\
     m   = -1;\
     CG  = 1.0;\
-    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].HadMass())[MToL(m)];\
+    eps = Polarization_Vector(p_mom[PTHREE])[MToL(m)];\
     if(!m_anti) eps=conj(eps);\
     result += CONTRACTION*CG*STRUCTURE;\
     break;\
   case 1:\
     m   = -1;\
     CG  = sqrt(1.0/3.0);\
-    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].HadMass())[MToL(m)];\
+    eps = Polarization_Vector(p_mom[PTHREE])[MToL(m)];\
     if(!m_anti) eps=conj(eps);\
     result += CONTRACTION*CG*STRUCTURE;\
     m   = 0;\
     CG  = sqrt(2.0/3.0);\
-    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].HadMass())[MToL(m)];\
+    eps = Polarization_Vector(p_mom[PTHREE])[MToL(m)];\
     if(!m_anti) eps=conj(eps);\
     result += CONTRACTION*CG*STRUCTURE;\
     break;\
   case 2:\
     m   = 0;\
     CG  = sqrt(2.0/3.0);\
-    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].HadMass())[MToL(m)];\
+    eps = Polarization_Vector(p_mom[PTHREE])[MToL(m)];\
     if(!m_anti) eps=conj(eps);\
     result += CONTRACTION*CG*STRUCTURE;\
     m   = 1;\
     CG  = sqrt(1.0/3.0);\
-    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].HadMass())[MToL(m)];\
+    eps = Polarization_Vector(p_mom[PTHREE])[MToL(m)];\
     if(!m_anti) eps=conj(eps);\
     result += CONTRACTION*CG*STRUCTURE;\
     break;\
   case 3:\
     m   = 1;\
     CG  = 1.0;\
-    eps = Polarization_Vector(p_mom[PTHREE],p_flav[PTHREE].HadMass())[MToL(m)];\
+    eps = Polarization_Vector(p_mom[PTHREE])[MToL(m)];\
     if(!m_anti) eps=conj(eps);\
     result += CONTRACTION*CG*STRUCTURE;\
     break;\
@@ -448,6 +529,7 @@ Vec4C XYZFunc::Y13(const int t1, const int l1,
                     Complex cR, Complex cL )
 {
   Vec4C result;
+
   CLEBSCH_GORDAN_SUM3(Y(t1,l1, t2,l2-m, cR, cL),t2,l2,eps)
   return result;
 }

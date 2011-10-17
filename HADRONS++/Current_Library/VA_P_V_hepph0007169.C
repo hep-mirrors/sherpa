@@ -11,13 +11,14 @@ class hepph0007169 : public FormFactor_Base {
   double Fit(double q2, double F0, double mfit2, double delta);
 
 public:
-  hepph0007169(struct GeneralModel model, double* masses, Flavour* flavs,
-               int* i);
+  hepph0007169(GeneralModel model, double* masses, const Flavour_Vector& flavs,
+               const std::vector<int>& i);
   void CalcFFs(ATOOLS::Vec4D p0, ATOOLS::Vec4D p1);
 };
 
-hepph0007169::hepph0007169(GeneralModel model, double* masses, Flavour* flavs,
-                           int* i) :
+  hepph0007169::hepph0007169(GeneralModel model, double* masses,
+                             const Flavour_Vector& flavs,
+                             const std::vector<int>& i) :
   FormFactor_Base(model, masses, flavs, i)
 {
   m_V_0=0.0; m_V_mfit2=1.0; m_V_delta=0.0;

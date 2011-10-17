@@ -1,9 +1,9 @@
-pkglib_LTLIBRARIES       =	libHelicitiesLoops.la
+pkglib_LTLIBRARIES       =	libMEToolsLoops.la
 
 SVNTAG = METOOLS/Loops
 include ../../svn.make
 
-libHelicitiesLoops_la_SOURCES       =	\
+libMEToolsLoops_la_SOURCES       =	\
                         SVN_Info.C \
 			Master_Tadpole.C \
                         Master_Bubble.C \

@@ -51,10 +51,16 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   else msg_Info()<<METHOD<<"(): Set Vegas opt start "<<m_vsopt<<".\n";
   if (!read.ReadFromFile(m_nvints,"CDXS_VINTS")) m_nvints=8;
   else msg_Info()<<METHOD<<"(): Set Vegas intervals "<<m_nvints<<".\n";
-  if (!read.ReadFromFile(m_texp,"CDXS_TEXP")) m_texp=0.9;
+  if (!read.ReadFromFile(m_texp,"CDXS_TEXP"))
+    m_texp=xs->Process()->Info().Has(nlo_type::rsub)?0.5:0.9;
   else msg_Info()<<METHOD<<"(): Set t-channel exp "<<m_texp<<".\n";
   if (!read.ReadFromFile(m_sexp,"CDXS_SEXP")) m_sexp=0.5;
   else msg_Info()<<METHOD<<"(): Set s-channel exp "<<m_sexp<<".\n";
+  if (!read.ReadFromFile(m_srbase,"CDXS_SRBASE")) m_srbase=1.05;
+  else msg_Info()<<METHOD<<"(): Set s-channel exp scale "<<m_srbase<<".\n";
+  if (!read.ReadFromFile(m_aexp,"CDXS_AEXP"))
+    m_aexp=xs->Process()->Info().Has(nlo_type::rsub)?0.5:0.9;
+  else msg_Info()<<METHOD<<"(): Set aniso s-channel exp "<<m_aexp<<".\n";
   if (!read.ReadFromFile(m_thexp,"CDXS_THEXP")) m_thexp=1.5;
   else msg_Info()<<METHOD<<"(): Set threshold exp "<<m_thexp<<".\n";
   if (!read.ReadFromFile(m_mfac,"CDXS_MFAC")) m_mfac=1.0;
@@ -185,7 +191,7 @@ Vegas *PS_Channel::GetVegas(const std::string &tag,int ni)
 }
 
 PHASIC::Vegas *PS_Channel::GetPVegas
-(const Current_Base *cur,const size_t &id)
+(const Current *cur,const size_t &id)
 {
   if (cur!=NULL) {
 #ifdef USING__Threading
@@ -214,19 +220,19 @@ PHASIC::Vegas *PS_Channel::GetPVegas
 }
 
 PHASIC::Vegas *PS_Channel::GetSVegas
-(const size_t &id,const Current_Base *cur)
+(const size_t &type,const Current *cur)
 {
 #ifdef USING__Threading
   pthread_mutex_lock(&m_vgs_mtx);
 #endif
   Vegas *vgs(NULL);
-  ICVegas_Map::const_iterator vit(m_sicmap.find(id));
+  ICVegas_Map::const_iterator vit(m_sicmap.find(type));
   if (vit!=m_sicmap.end()) {
     CVegas_Map::const_iterator it(vit->second.find(cur));
     if (it!=vit->second.end()) vgs=it->second;
   }
-  if (vgs==NULL) vgs=m_sicmap[id][cur]=
-    GetVegas("S_"+GetPSId(id)+"_"+cur->PSInfo());
+  if (vgs==NULL) vgs=m_sicmap[type][cur]=
+    GetVegas("S_"+ToString(type)+"_"+cur->PSInfo());
 #ifdef USING__Threading
   pthread_mutex_unlock(&m_vgs_mtx);
 #endif
@@ -234,7 +240,7 @@ PHASIC::Vegas *PS_Channel::GetSVegas
 }
 
 PHASIC::Vegas *PS_Channel::GetTVegas
-(const size_t &id,const Current_Base *cur)
+(const size_t &id,const Current *cur)
 {
 #ifdef USING__Threading
   pthread_mutex_lock(&m_vgs_mtx);
@@ -253,7 +259,7 @@ PHASIC::Vegas *PS_Channel::GetTVegas
   return vgs;
 }
 
-bool PS_Channel::Zero(Vertex_Base *const vtx) const
+bool PS_Channel::Zero(Vertex *const vtx) const
 {
   if (m_czmode&1) return vtx->Zero();
   return false;
@@ -265,7 +271,7 @@ double PS_Channel::SCut(const size_t &id)
   return p_cuts->Getscut(GetPSId(id));
 }
 
-double PS_Channel::PropMomenta(const Current_Base *cur,const size_t &id,
+double PS_Channel::PropMomenta(const Current *cur,const size_t &id,
 			       const double &smin,const double &smax,
 			       const double *rn)
 {
@@ -280,30 +286,32 @@ double PS_Channel::PropMomenta(const Current_Base *cur,const size_t &id,
     msg_Debugging()<<"    generate point "<<m_vgs.back()->Name()<<"\n";
 #endif
   }
+  double sexp(m_sexp/pow(m_srbase,IdCount(id)-2.0));
   if (cur!=NULL) {
     if (cur->Width()>s_pwmin)
       return CE.MassivePropMomenta(cur->Mass(),cur->Width(),1,smin,smax,*cr);
     if (cur->Mass()>s_pmmin) 
       return CE.ThresholdMomenta(m_thexp,m_mfac*cur->Mass(),smin,smax,*cr);
-    return CE.MasslessPropMomenta(m_sexp,smin,smax,*cr);
+    return CE.MasslessPropMomenta(sexp,smin,smax,*cr);
   }
-  return CE.MasslessPropMomenta(m_sexp,smin,smax,*cr);
+  return CE.MasslessPropMomenta(sexp,smin,smax,*cr);
 }
 
-double PS_Channel::PropWeight(const Current_Base *cur,const size_t &id,
+double PS_Channel::PropWeight(const Current *cur,const size_t &id,
 			      const double &smin,const double &smax,
 			      const double &s)
 {
   double wgt(1.0), rn;
+  double sexp(m_sexp/pow(m_srbase,IdCount(id)-2.0));
   if (cur!=NULL) {
     if (cur->OnShell()) return (cur->Mass()*cur->Width())/M_PI;
     if (cur->Width()>s_pwmin) 
       wgt=CE.MassivePropWeight(cur->Mass(),cur->Width(),1,smin,smax,s,rn);
     else if (cur->Mass()>s_pmmin) 
       wgt=CE.ThresholdWeight(m_thexp,m_mfac*cur->Mass(),smin,smax,s,rn);
-    else wgt=CE.MasslessPropWeight(m_sexp,smin,smax,s,rn);
+    else wgt=CE.MasslessPropWeight(sexp,smin,smax,s,rn);
   }
-  else wgt=CE.MasslessPropWeight(m_sexp,smin,smax,s,rn);
+  else wgt=CE.MasslessPropWeight(sexp,smin,smax,s,rn);
   if (m_vmode&3) {
     Vegas *cvgs(GetPVegas(cur,id));
 #ifdef USING__Threading
@@ -380,7 +388,7 @@ void PS_Channel::SingleTChannelBounds
 }
 
 void PS_Channel::TChannelMomenta
-(Current_Base *cur,const size_t &id,const size_t &aid,
+(Current *cur,const size_t &id,const size_t &aid,
  const Vec4D &pa,const Vec4D &pb,Vec4D &p1,Vec4D &p2,
  const double &s1,const double &s2,const double *rns)
 {
@@ -400,7 +408,7 @@ void PS_Channel::TChannelMomenta
 }
 
 double PS_Channel::TChannelWeight
-(Current_Base *cur,const size_t &id,const size_t &aid,
+(Current *cur,const size_t &id,const size_t &aid,
  const Vec4D &pa,const Vec4D &pb,Vec4D &p1,Vec4D &p2)
 {
   double ctmin(-1.0), ctmax(1.0), rns[2];
@@ -441,12 +449,12 @@ void PS_Channel::SChannelBounds
 }
 
 void PS_Channel::SChannelMomenta
-(Current_Base *cur,const size_t &id,const Vec4D &pa,Vec4D &p1,Vec4D &p2,
+(Current *cur,const int type,const Vec4D &pa,Vec4D &p1,Vec4D &p2,
  const double &s1,const double &s2,const double *rns)
 {
   const double *cr(rns);
   if (m_vmode&1) {
-    m_vgs.push_back(GetSVegas(id,cur));
+    m_vgs.push_back(GetSVegas(type,cur));
     cr=m_vgs.back()->GeneratePoint(rns);
     m_rns.push_back(cr[0]);
 #ifdef DEBUG__BG
@@ -454,18 +462,35 @@ void PS_Channel::SChannelMomenta
 #endif
   }
   double ctmin(-1.0), ctmax(1.0);
-  SChannelBounds(cur->CId(),id,ctmin,ctmax);  
-  CE.Isotropic2Momenta(pa,s1,s2,p1,p2,cr[0],rns[1],ctmin,ctmax);
+  SChannelBounds(cur->CId(),SId(cur->CId()),ctmin,ctmax);  
+  if (type==2) {
+    CE.Anisotropic2Momenta(pa,s2,s1,p2,p1,cr[0],rns[1],m_aexp,ctmin,ctmax);
+  }
+  else if (type==3) {
+    CE.Anisotropic2Momenta(pa,s1,s2,p1,p2,cr[0],rns[1],m_aexp,ctmin,ctmax);
+  }
+  else {
+    CE.Isotropic2Momenta(pa,s1,s2,p1,p2,cr[0],rns[1],ctmin,ctmax);
+  }
 }
 
 double PS_Channel::SChannelWeight
-(Current_Base *cur,const size_t &id,Vec4D &p1,Vec4D &p2)
+(Current *cur,const int type,Vec4D &p1,Vec4D &p2)
 {
   double ctmin(-1.0), ctmax(1.0), rns[2];
-  SChannelBounds(cur->CId(),id,ctmin,ctmax);
-  double wgt(CE.Isotropic2Weight(p1,p2,rns[0],rns[1],ctmin,ctmax));
+  SChannelBounds(cur->CId(),SId(cur->CId()),ctmin,ctmax);
+  double wgt(0.0);
+  if (type==2) {
+    wgt=CE.Anisotropic2Weight(p2,p1,rns[0],rns[1],m_aexp,ctmin,ctmax);
+  }
+  else if (type==3) {
+    wgt=CE.Anisotropic2Weight(p1,p2,rns[0],rns[1],m_aexp,ctmin,ctmax);
+  }
+  else {
+    wgt=CE.Isotropic2Weight(p1,p2,rns[0],rns[1],ctmin,ctmax);
+  }
   if (m_vmode&3) {
-    Vegas *cvgs(GetSVegas(id,cur));
+    Vegas *cvgs(GetSVegas(type,cur));
 #ifdef USING__Threading
     pthread_mutex_lock(&m_wvgs_mtx);
 #endif
@@ -483,8 +508,8 @@ double PS_Channel::SChannelWeight
 }
 
 bool PS_Channel::GeneratePoint
-(Current_Base *const ja,Current_Base *const jb,
- Current_Base *const jc,size_t &nr)
+(Current *const ja,Current *const jb,
+ Current *const jc,Vertex *const v,size_t &nr)
 {
   size_t aid(ja->CId()), bid(jb->CId()), cid(jc->CId());
   if (((cid&m_lid)==m_lid)^((cid&m_rid)==m_rid)) {
@@ -524,7 +549,8 @@ bool PS_Channel::GeneratePoint
       double smin(sr), smax(sqr(rts-sqrt(sl)));
       sr=PropMomenta(jb,rid,smin,smax,&rans[nr++]);
     }
-    SChannelMomenta(jc,lid,m_p[cid],m_p[aid],m_p[bid],sl,sr,&rans[nr]);
+    SChannelMomenta(jc,((PS_Vertex*)v)->Type(),
+		    m_p[cid],m_p[aid],m_p[bid],sl,sr,&rans[nr]);
     nr+=2;
     m_p[(1<<m_n)-1-aid]=m_p[aid];
     m_p[(1<<m_n)-1-bid]=m_p[bid];
@@ -547,16 +573,16 @@ bool PS_Channel::GeneratePoint
     size_t cid(v[i]->JC()->CId());
     size_t aid(v[i]->JA()->CId()), bid(v[i]->JB()->CId());
     if (aid==id || bid==id || cid==id || (1<<m_n)-1-cid==id) {
-      Current_Base *ja(v[i]->JA()), *jb(v[i]->JB()), *jc(v[i]->JC());
+      Current *ja(v[i]->JA()), *jb(v[i]->JB()), *jc(v[i]->JC());
       if (aid==id) { 
 	std::swap<size_t>(aid,cid);
-	std::swap<Current_Base*>(ja,jc);
+	std::swap<Current*>(ja,jc);
       }
       else if (bid==id) {
 	std::swap<size_t>(bid,cid);
-	std::swap<Current_Base*>(jb,jc);
+	std::swap<Current*>(jb,jc);
       }
-      if (!GeneratePoint(ja,jb,jc,nr)) return false;
+      if (!GeneratePoint(ja,jb,jc,v[i],nr)) return false;
       v[i]=NULL;
       if (CIdCount(SId(aid))>1) GeneratePoint(aid,nr,v);
       if (CIdCount(SId(bid))>1) GeneratePoint(bid,nr,v);
@@ -581,18 +607,18 @@ bool PS_Channel::GeneratePoint(Vertex_Vector v)
       size_t cid(v[i]->JC()->CId());
       size_t aid(v[i]->JA()->CId()), bid(v[i]->JB()->CId());
       if (aid==lid || bid==lid || cid==lid) {
-	Current_Base *ja(v[i]->JA()), *jb(v[i]->JB()), *jc(v[i]->JC());
+	Current *ja(v[i]->JA()), *jb(v[i]->JB()), *jc(v[i]->JC());
 	if (bid==lid) {
 	  std::swap<size_t>(aid,bid);
-	  std::swap<Current_Base*>(ja,jb);
+	  std::swap<Current*>(ja,jb);
 	}
 	else if (cid==lid) {
 	  std::swap<size_t>(aid,cid);
-	  std::swap<Current_Base*>(ja,jc);
+	  std::swap<Current*>(ja,jc);
 	}
 	if ((cid&(lid|rid))==(lid|rid) || (aid&rid && bid&rid)) {
 	  std::swap<size_t>(bid,cid);
-	  std::swap<Current_Base*>(jb,jc);
+	  std::swap<Current*>(jb,jc);
 	}
 	if (cid==rid) {
 	  v[i]=NULL;
@@ -600,7 +626,7 @@ bool PS_Channel::GeneratePoint(Vertex_Vector v)
 	  if (CIdCount(bid)>1) GeneratePoint(bid,nr,v);
 	  break;
 	}
-	if (!GeneratePoint(ja,jb,jc,nr)) return false;
+	if (!GeneratePoint(ja,jb,jc,v[i],nr)) return false;
 	v[i]=NULL;
 	if (CIdCount(bid)>1) GeneratePoint(bid,nr,v);
 	lid=cid;
@@ -615,13 +641,13 @@ bool PS_Channel::GeneratePoint(Vertex_Vector v)
 }
 
 bool PS_Channel::GenerateChannel
-(Current_Base *const cur,Vertex_Vector &v)
+(Current *const cur,Vertex_Vector &v)
 {
   if (cur->NIn()==0) return true;
 #ifdef DEBUG__BG
   msg_Indent();
   msg_Debugging()<<METHOD<<"("<<PSId(cur->CId())
-		 <<","<<cur->J<PS_Info>().size()
+		 <<","<<cur->J().front().size()
 		 <<"): n = "<<v.size()<<" {\n";
 #endif
   double sum(0.0);
@@ -632,7 +658,7 @@ bool PS_Channel::GenerateChannel
       vtcs.push_back(cur->In()[i]);
       psum.push_back(sum+=((PS_Vertex*)vtcs.back())->Alpha());
     }
-  Vertex_Base *vtx(NULL);
+  Vertex *vtx(NULL);
   for (size_t i(0);i<psum.size();++i)
     if (psum[i]>=rans[m_nr+v.size()]*sum) {
       vtx=vtcs[i];
@@ -720,8 +746,8 @@ void PS_Channel::GeneratePoint
 }
 
 double PS_Channel::GenerateWeight
-(Current_Base *const ja,Current_Base *const jb,
- Current_Base *const jc,size_t &nr)
+(Current *const ja,Current *const jb,
+ Current *const jc,Vertex *const v,size_t &nr)
 {
   double wgt(1.0);
   size_t aid(ja->CId()), bid(jb->CId()), cid(jc->CId());
@@ -764,7 +790,7 @@ double PS_Channel::GenerateWeight
       double smin(sr), smax(sqr(rts-sqrt(sl)));
       wgt*=PropWeight(jb,rid,smin,smax,sr=m_p[rid].Abs2());
     }
-    wgt*=SChannelWeight(jc,lid,m_p[lid],m_p[rid]);
+    wgt*=SChannelWeight(jc,((PS_Vertex*)v)->Type(),m_p[lid],m_p[rid]);
     nr+=2;
 #ifdef DEBUG__BG
     msg_Debugging()<<"    s "<<nr<<": ("<<PSId(cid)
@@ -782,30 +808,31 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
   double wgt(0.0), asum(0.0);
 #ifdef DEBUG__BG
   msg_Debugging()<<"  J_"<<PSId(cur->CId())<<" ("
-		 <<((Current_Base*)cur)->J<PS_Info>().size()
+		 <<((Current*)cur)->J().front().size()
 		 <<"/"<<cur->Zero()<<"): {\n";
 #endif
   for (size_t i(0);i<cur->In().size();++i) {
     PS_Vertex *v((PS_Vertex *)cur->In()[i]);
     if (!Zero(v) && v->Alpha()>0.0) {
       size_t nr(0);
-      Current_Base *ja(v->JA()), *jb(v->JB()), *jc(cur);
+      Current *ja(v->JA()), *jb(v->JB()), *jc(cur);
       size_t aid(ja->CId()), bid(jb->CId()), cid(jc->CId());
-      double cw(ja->J<PS_Info>().front()[0]*jb->J<PS_Info>().front()[0]);
+      double cw((*ja->J().front().Get<PS_Info>()->front())[0]*
+		(*jb->J().front().Get<PS_Info>()->front())[0]);
       if ((((aid&m_lid)==m_lid)^((aid&m_rid)==m_rid)) ||
 	  (((bid&m_lid)==m_lid)^((bid&m_rid)==m_rid))) {
 	if ((bid&m_lid)==m_lid) {
 	  std::swap<size_t>(aid,bid);
-	  std::swap<Current_Base*>(ja,jb);
+	  std::swap<Current*>(ja,jb);
 	}
 	else if ((cid&m_lid)!=m_lid) {
 	  std::swap<size_t>(aid,cid);
-	  std::swap<Current_Base*>(ja,jc);
+	  std::swap<Current*>(ja,jc);
 	}
 	if ((cid&(m_lid|m_rid))==(m_lid|m_rid) || 
 	    (aid&m_rid && bid&m_rid)) {
 	  std::swap<size_t>(bid,cid);
-	  std::swap<Current_Base*>(jb,jc);
+	  std::swap<Current*>(jb,jc);
 	}
 	if (cid==m_rid) {
 #ifdef DEBUG__BG
@@ -825,19 +852,21 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
       else {
 	if (aid&(m_lid+m_rid) && CIdCount(aid)<CIdCount(cid)) { 
 	  std::swap<size_t>(aid,cid);
-	  std::swap<Current_Base*>(ja,jc);
+	  std::swap<Current*>(ja,jc);
 	}
 	else if (bid&(m_lid+m_rid) && CIdCount(bid)<CIdCount(cid)) { 
 	  std::swap<size_t>(bid,cid);
-	  std::swap<Current_Base*>(jb,jc);
+	  std::swap<Current*>(jb,jc);
 	}
       }
-      v->SetWeight(GenerateWeight(ja,jb,jc,nr)*cw);
+      v->SetWeight(GenerateWeight(ja,jb,jc,v,nr)*cw);
       wgt+=v->Alpha()*v->Weight();
       asum+=v->Alpha();
 #ifdef DEBUG__BG
-      msg_Debugging()<<"    w = "<<1.0/v->JA()->J<PS_Info>().front()[0]
-		     <<" * "<<1.0/v->JB()->J<PS_Info>().front()[0]
+      msg_Debugging()<<"    w = "<<1.0/(*v->JA()->J().front().
+					Get<PS_Info>()->front())[0]
+		     <<" * "<<1.0/(*v->JB()->J().front().
+				   Get<PS_Info>()->front())[0]
 		     <<" * "<<cw/v->Weight()<<" = "<<1.0/v->Weight()
 		     <<", a = "<<v->Alpha()<<"\n";
 #endif
@@ -862,7 +891,7 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
 		 <<" * "<<asum<<" = "<<1.0/wgt<<"\n";
 #endif
   cur->ResetJ();
-  cur->AddJ(PS_Info(0,0,0,wgt));
+  cur->AddJ(PS_Info::New(PS_Info(0,0,wgt)));
   return true;
 }
 
@@ -925,7 +954,8 @@ bool PS_Channel::GenerateWeight()
       if (!GenerateWeight((PS_Current*)(*p_cur)[n][i])) return 0.0;
 #endif
   }
-  weight=1.0/(*p_cur)[m_n-1].back()->J<PS_Info>().front()[0]/
+  weight=1.0/(*(*p_cur)[m_n-1].back()->J().front().
+	      Get<PS_Info>()->front())[0]/
     pow(2.0*M_PI,3.0*nout-4.0);
 #ifdef DEBUG__BG
   msg_Debugging()<<"} -> "<<weight<<"\n";
@@ -944,8 +974,9 @@ void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts)
   }
   for (size_t n(2);n<p_cur->size();++n)
     for (size_t i(0);i<(*p_cur)[n].size();++i) {
-      Current_Base *cur((*p_cur)[n][i]);
-      if (cur->In().empty()) THROW(fatal_error,"Internal error");
+      Current *cur((*p_cur)[n][i]);
+      if (cur->In().empty() || cur->In().front()->JE())
+	THROW(fatal_error,"Internal error");
       m_p[(1<<m_n)-1-cur->CId()]=
 	-(m_p[cur->CId()]=m_p[cur->In().front()->JA()->CId()]
 	  +m_p[cur->In().front()->JB()->CId()]);

@@ -9,15 +9,14 @@ namespace HADRONS {
     double m_Vxx_decay, m_Vxx_production;
     double m_GF;
   public:
-    Baryon_Diquark_Quark(ATOOLS::Flavour* flavs, int n, int* decayindices,
-                         std::string name):
-      HD_ME_Base(flavs,n,decayindices,name) {};
-    void operator()(
-		      const ATOOLS::Vec4D  * p,
-		      METOOLS::Spin_Amplitudes     * amps
-		      );
+    Baryon_Diquark_Quark(const ATOOLS::Flavour_Vector& flavs,
+                         const std::vector<int>& decayindices,
+                         const std::string& name):
+      HD_ME_Base(flavs,decayindices,name) {};
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters( GeneralModel _md );
-    bool SetColorFlow(std::vector<ATOOLS::Particle*> outparts,int n_q,int n_g);
+    bool SetColorFlow(std::vector<ATOOLS::Particle*> outparts,int n_q,int n_g,
+                      bool m_anti);
   };
 
 } // end of namespace

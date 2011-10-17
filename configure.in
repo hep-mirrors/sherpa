@@ -61,6 +61,11 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  ATOOLS/Phys/Makefile \
 	  ATOOLS/Org/Makefile \
 	  ATOOLS/Makefile \
+          METOOLS/Explicit/Makefile \
+          METOOLS/Currents/Makefile \
+          METOOLS/Vertices/Makefile \
+          METOOLS/Colors/Makefile \
+          METOOLS/SpinCorrelations/Makefile \
           METOOLS/Main/Makefile \
           METOOLS/Loops/Makefile \
           METOOLS/Makefile \
@@ -87,12 +92,15 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  PHASIC++/Channels/Makefile \
 	  PHASIC++/Process/Makefile \
 	  PHASIC++/Scales/Makefile \
+	  PHASIC++/Decays/Makefile \
 	  PHASIC++/Selectors/Makefile \
 	  PHASIC++/Makefile \
 	  EXTRA_XS/Main/Makefile \
 	  EXTRA_XS/Two2Two/Makefile \
 	  EXTRA_XS/NLO/Makefile \
 	  EXTRA_XS/Cluster/Makefile \
+          EXTRA_XS/One2Two/Makefile \
+	  EXTRA_XS/One2Three/Makefile \
 	  EXTRA_XS/Makefile \
 	  AMEGIC++/Main/Makefile \
           AMEGIC++/Main/makelibs \
@@ -106,9 +114,6 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  COMIX/Amplitude/Makefile \
 	  COMIX/Phasespace/Makefile \
 	  COMIX/Main/Makefile \
-	  COMIX/Models/Makefile \
-	  COMIX/Currents/Makefile \
-	  COMIX/Vertices/Makefile \
 	  COMIX/Cluster/Makefile \
 	  COMIX/Makefile \
 	  CSSHOWER++/Tools/Makefile \

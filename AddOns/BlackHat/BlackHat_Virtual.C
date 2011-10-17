@@ -72,6 +72,11 @@ double BlackHat_Virtual::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom) {
    return 4.*M_PI;
 }
 
+double BlackHat_Virtual::ScaleDependenceCoefficient(const int i)
+{
+  return p_ampl->getScaleVariationCoefficient(i);
+}
+
 DECLARE_VIRTUALME2_GETTER(BlackHat_Virtual_Getter,"BlackHat_Virtual")
 Virtual_ME2_Base *BlackHat_Virtual_Getter::operator()(const Process_Info &pi) const
 {

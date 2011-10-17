@@ -13,7 +13,7 @@
 #include "AMEGIC++/Main/Helicity.H"
 #include "MODEL/Main/Coupling_Data.H"
 
-namespace METOOLS { class Amplitude_Tensor; }
+namespace METOOLS { class Spin_Amplitudes; }
 
 namespace AMEGIC {
 
@@ -36,6 +36,7 @@ namespace AMEGIC {
     std::vector<Amplitude_Base*> m_ramplist;
 
     std::map<std::string,ATOOLS::Flavour> m_flavourmap;
+    std::vector<size_t> m_hm;
 
     int  PropProject(Amplitude_Base*,int);
     int  CompareZfunc(Amplitude_Base*,Zfunc*,Amplitude_Base*,Zfunc*);
@@ -74,7 +75,9 @@ namespace AMEGIC {
     double Differential(int ihel)                    { return (Zvalue(ihel)).real();}
     double Differential(String_Handler * sh,int ihel)  { return (Zvalue(sh,ihel)).real(); }
     double Differential(int ihel,int i,int k)        { return (Zvalue(ihel,i,k)).real();}
-    void   FillAmplitudes(METOOLS::Amplitude_Tensor*,Helicity*,double);
+    void   FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
+                          std::vector<std::vector<Complex> >& cols,
+                          Helicity* hel, double sfactor);
     inline int GetGraphNumber() {return ngraph;}  
     inline int GetRealGraphNumber() {return namplitude;}  
     inline int GetTotalGraphNumber() {return ntotal;}

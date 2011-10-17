@@ -2,12 +2,10 @@
 
 #include "PHASIC++/Scales/Tag_Setter.H"
 #include "PHASIC++/Process/Process_Base.H"
-#include "PHASIC++/Main/Process_Integrator.H"
-#include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 
 namespace PHASIC {
@@ -25,8 +23,8 @@ namespace PHASIC {
 
     ~Variable_Scale_Setter();
 
-    double CalculateScale(const std::vector<ATOOLS::Vec4D> &p,
-			  const int mode);
+    double Calculate(const std::vector<ATOOLS::Vec4D> &p,
+		     const int mode);
 
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
@@ -85,16 +83,10 @@ Variable_Scale_Setter::~Variable_Scale_Setter()
   for (size_t i(0);i<m_calcs.size();++i) delete m_calcs[i];
 }
 
-double Variable_Scale_Setter::CalculateScale
+double Variable_Scale_Setter::Calculate
 (const std::vector<ATOOLS::Vec4D> &momenta,const int mode) 
 {
   if (mode==1) return m_scale[stp::fac];
-  if (m_escale.size()) {
-    m_scale[stp::fac]=m_escale[stp::fac];
-    m_scale[stp::ren]=m_escale[stp::ren];
-    p_cpls->Calculate();
-    return m_scale[stp::fac];    
-  }
   for (size_t i(0);i<m_calcs.size();++i)
     m_scale[i]=m_calcs[i]->Calculate()->Get<double>();
   if (m_calcs.size()==1) m_scale[1]=m_scale[0];
@@ -103,8 +95,7 @@ double Variable_Scale_Setter::CalculateScale
 		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n";
   for (size_t i(2);i<m_calcs.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
-  msg_Debugging()<<"} <- "<<p_proc->Name()<<"\n";
-  p_cpls->Calculate();
+  msg_Debugging()<<"} <- "<<(p_proc?p_proc->Name():"")<<"\n";
   return m_scale[stp::fac];
 }
 
@@ -113,7 +104,7 @@ void Variable_Scale_Setter::SetScale
 { 
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): scale '"<<mu2tag
-		 <<"' in '"<<p_proc->Name()<<"' {\n";
+		 <<"' in '"<<(p_proc?p_proc->Name():"")<<"' {\n";
   msg_Indent();
   m_tagset.SetTags(&mu2calc);
   mu2calc.Interprete(mu2tag);

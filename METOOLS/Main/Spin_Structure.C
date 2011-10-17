@@ -26,15 +26,15 @@ Spin_Amplitudes::Spin_Amplitudes(const Particle_Vector& particles) :
 {
 }
 
-Spin_Amplitudes::Spin_Amplitudes(const Flavour* flavs, size_t size,
+Spin_Amplitudes::Spin_Amplitudes(const Flavour_Vector& flavs,
                                  const Complex& value) :
-  Spin_Structure<Complex>(flavs,size,value)
+  Spin_Structure<Complex>(flavs,value)
 {
 }
 
 Spin_Amplitudes::Spin_Amplitudes(const Flavour_Vector& flavs,
-                                 const Complex& value) :
-  Spin_Structure<Complex>(flavs,value)
+                                 const vector<int>& indices) :
+  Spin_Structure<Complex>(flavs,indices)
 {
 }
 
@@ -46,8 +46,9 @@ double Spin_Amplitudes::SumSquare() const {
   return value;
 }
 
-void Spin_Amplitudes::Calculate(const ATOOLS::Vec4D* momenta, bool anti) {
-  THROW(fatal_error, "Virtual function called.");
+void Spin_Amplitudes::Calculate(const Vec4D_Vector& momenta, bool anti) {
+  msg_Error()<<METHOD<<": Virtual function called."<<endl;
+  abort();
 }
 
 

@@ -91,6 +91,7 @@ namespace ATOOLS {
 		     const ColorID &col=ColorID());
 
     Cluster_Amplitude *InitNext();
+    Cluster_Amplitude *InitPrev();
     void SetNext(Cluster_Amplitude *const next);
     void UnsetNext();
 
@@ -169,6 +170,10 @@ namespace ATOOLS {
 
     template <class Type> inline Type *JF() const 
     { return static_cast<Type*>(p_jf); }
+    
+    static void SetColours(Cluster_Leg *const lij,
+                           Cluster_Leg *const li,
+                           Cluster_Leg *const lj);
     template <class Type> inline Type *Procs() const 
     { return static_cast<Type*>(p_procs); }
     template <class Type> inline Type *IInfo() const 

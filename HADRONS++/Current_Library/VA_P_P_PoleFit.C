@@ -15,11 +15,13 @@ class PoleFit : public FormFactor_Base {
              double F0, double m0, double a0, double b0, double c0, double d0,
              double F1, double m1, double a1, double b1, double c1, double d1);
 public:
-  PoleFit(struct GeneralModel model, double* masses, Flavour* flavs, int* i);
+  PoleFit(GeneralModel model, double* masses, const Flavour_Vector& flavs,
+          std::vector<int>& indices);
   void CalcFFs(ATOOLS::Vec4D p0, ATOOLS::Vec4D p1);
 };
 
-PoleFit::PoleFit(GeneralModel model, double* masses, Flavour* flavs, int* i) :
+PoleFit::PoleFit(GeneralModel model,double* masses, const Flavour_Vector& flavs,
+                 std::vector<int>& i) :
   FormFactor_Base(model, masses, flavs, i)
 {
   m_fplus_F0=0.0; m_fplus_m0=0.0; m_fplus_a0=0.0; m_fplus_b0=0.0;

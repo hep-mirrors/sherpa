@@ -83,8 +83,8 @@ double FullAmplitude_MHV_Base::MSquare(int *hlist,MomentumList* BS)
     if (AmpStore(BS)) res=Result(m_colorstore);     
   }
   
-  if (m_cpls->find("Alpha_QCD")!=m_cpls->end()) p_aqcd=(*m_cpls)["Alpha_QCD"];
-  if (m_cpls->find("Alpha_QED")!=m_cpls->end()) p_aqed=(*m_cpls)["Alpha_QED"];
+  p_aqcd=m_cpls->Get("Alpha_QCD");
+  p_aqed=m_cpls->Get("Alpha_QED");
   
   double cplfac(1.0);
   if (p_aqcd && m_oqcd) {
@@ -111,8 +111,8 @@ void FullAmplitude_MHV_Base::CalculateAmps(int* hlist,MomentumList* BS)
 double FullAmplitude_MHV_Base::MSquare(int i,int j)   
 {  
   
-  if (m_cpls->find("Alpha_QCD")!=m_cpls->end()) p_aqcd=(*m_cpls)["Alpha_QCD"];
-  if (m_cpls->find("Alpha_QED")!=m_cpls->end()) p_aqed=(*m_cpls)["Alpha_QED"];
+  p_aqcd=m_cpls->Get("Alpha_QCD");
+  p_aqed=m_cpls->Get("Alpha_QED");
   
   double cplfac(1.0);
   if (p_aqcd && m_oqcd) cplfac *= pow(p_aqcd->Factor(),(double)m_oqcd);
@@ -401,6 +401,15 @@ bool FullAmplitude_MHV_PureG::AmpStore(MomentumList* BS)
     permamp=p_permutation->Get(y);
     for (int z=0;z<n_part-2;z++) m_perm[z]=permamp[z];
     Complex amp(p_calc->Differential(m_perm,m_hlist));
+#ifdef DEBUG__MHV
+    msg_Debugging()<<"A_G[";
+    for (int i(0);i<n_part;++i) msg_Debugging()<<m_perm[i];
+    msg_Debugging()<<"](";
+    for (int i(0);i<n_part;++i)
+      msg_Debugging()<<(i==0?"":",")<<m_hlist[i];
+    msg_Debugging()<<") = "<<Complex(0.0,1.0)*amp
+		   <<" -> "<<std::abs(amp)<<"\n";
+#endif
     m_ampstore[y]=amp;
   }
   return true;
@@ -416,6 +425,15 @@ bool FullAmplitude_MHV_PureG::AmpStoreDPT(MomentumList* BS)
     permamp=p_permutation->Get(y);
     for (int z=0;z<n_part-2;z++) m_perm[z]=permamp[z];
     Complex amp(p_calc->Differential(m_perm,m_hlist));
+#ifdef DEBUG__MHV
+    msg_Debugging()<<"A_G[";
+    for (int i(0);i<n_part;++i) msg_Debugging()<<m_perm[i];
+    msg_Debugging()<<"](";
+    for (int i(0);i<n_part;++i)
+      msg_Debugging()<<(i==0?"":",")<<m_hlist[i];
+    msg_Debugging()<<") = "<<Complex(0.0,1.0)*amp
+		   <<" -> "<<std::abs(amp)<<"\n";
+#endif
     m_ampstore[y]=amp;
   }
   m_hlist[m_emit-1]=1;
@@ -423,6 +441,15 @@ bool FullAmplitude_MHV_PureG::AmpStoreDPT(MomentumList* BS)
     permamp=p_permutation->Get(y);
     for (int z=0;z<n_part-2;z++) m_perm[z]=permamp[z];
     Complex amp(p_calc->Differential(m_perm,m_hlist));
+#ifdef DEBUG__MHV
+    msg_Debugging()<<"A_G[";
+    for (int i(0);i<n_part;++i) msg_Debugging()<<m_perm[i];
+    msg_Debugging()<<"](";
+    for (int i(0);i<n_part;++i)
+      msg_Debugging()<<(i==0?"":",")<<m_hlist[i];
+    msg_Debugging()<<") = "<<Complex(0.0,1.0)*amp
+		   <<" -> "<<std::abs(amp)<<"\n";
+#endif
     m_ampstore2[y]=amp;
   }
   m_hlist[m_emit-1]=90;
@@ -673,6 +700,15 @@ bool FullAmplitude_MHV_Q2::AmpStore(MomentumList* BS)
     permamp=p_permutation->Get(y);
     for (int z=0;z<n_part-2;z++) m_perm[z]=m_permgl[permamp[z]];
     Complex amp(p_calc->Differential(m_perm,m_hlist));
+#ifdef DEBUG__MHV
+    msg_Debugging()<<"A_Q2[";
+    for (int i(0);i<n_part;++i) msg_Debugging()<<m_perm[i];
+    msg_Debugging()<<"](";
+    for (int i(0);i<n_part;++i)
+      msg_Debugging()<<(i==0?"":",")<<m_hlist[i];
+    msg_Debugging()<<") = "<<Complex(0.0,1.0)*amp
+		   <<" -> "<<std::abs(amp)<<"\n";
+#endif
     m_ampstore[y]=amp;	
   }
   return true;
@@ -687,6 +723,15 @@ bool FullAmplitude_MHV_Q2::AmpStoreDPT(MomentumList* BS)
     permamp=p_permutation->Get(y);
     for (int z=0;z<n_part-2;z++) m_perm[z]=m_permgl[permamp[z]];
     Complex amp(p_calc->Differential(m_perm,m_hlist));
+#ifdef DEBUG__MHV
+    msg_Debugging()<<"A_Q2[";
+    for (int i(0);i<n_part;++i) msg_Debugging()<<m_perm[i];
+    msg_Debugging()<<"](";
+    for (int i(0);i<n_part;++i)
+      msg_Debugging()<<(i==0?"":",")<<m_hlist[i];
+    msg_Debugging()<<") = "<<Complex(0.0,1.0)*amp
+		   <<" -> "<<std::abs(amp)<<"\n";
+#endif
     m_ampstore[y]=amp;
   }
   m_hlist[m_emit-1]=1;
@@ -694,6 +739,15 @@ bool FullAmplitude_MHV_Q2::AmpStoreDPT(MomentumList* BS)
     permamp=p_permutation->Get(y);
     for (int z=0;z<n_part-2;z++) m_perm[z]=m_permgl[permamp[z]];
     Complex amp(p_calc->Differential(m_perm,m_hlist));
+#ifdef DEBUG__MHV
+    msg_Debugging()<<"A_Q2[";
+    for (int i(0);i<n_part;++i) msg_Debugging()<<m_perm[i];
+    msg_Debugging()<<"](";
+    for (int i(0);i<n_part;++i)
+      msg_Debugging()<<(i==0?"":",")<<m_hlist[i];
+    msg_Debugging()<<") = "<<Complex(0.0,1.0)*amp
+		   <<" -> "<<std::abs(amp)<<"\n";
+#endif
     m_ampstore2[y]=amp;
   }
   m_hlist[m_emit-1]=90;
@@ -1295,8 +1349,15 @@ bool FullAmplitude_MHV_Q2L2::AmpStore(MomentumList* BS)
   double y_lepton(2*m_flist[m_llist[2]]->IsoWeak());
   double q_quark(m_flist[m_qlist[2]]->Charge());
   double q_lepton(m_flist[m_llist[2]]->Charge());
-  double sintw(sqrt(p_model->ScalarConstant(std::string("sin2_thetaW"))));
-  double costw(sqrt(1-p_model->ScalarConstant(std::string("sin2_thetaW"))));
+  Complex sintw, costw;
+  
+  if(p_model->ScalarNumber(std::string("WidthScheme"))==0){
+    sintw = sqrt(p_model->ScalarConstant(std::string("sin2_thetaW")));
+    costw = sqrt(1-p_model->ScalarConstant(std::string("sin2_thetaW")));
+  }else{
+    sintw = sqrt(p_model->ScalarConstant(std::string("csin2_thetaW")));
+    costw = sqrt(1-p_model->ScalarConstant(std::string("csin2_thetaW")));
+  }
   
   Pfunc pf(3);
   pf.arg[1]=m_llist[1];	
@@ -1312,9 +1373,9 @@ bool FullAmplitude_MHV_Q2L2::AmpStore(MomentumList* BS)
     q_w=Complex((BS->Momentum(pn)).Abs2(),0.);	  
     q_w/= q_w-pow(Flavour(kf_Z).Mass(),2)+Complex(0.,1.)*Flavour(kf_Z).Width()*Flavour(kf_Z).Mass();
     
-    if (m_hlist[m_llist[2]]<0) q_w*=(y_lepton/(2*sintw*costw)-q_lepton*sintw/costw);
+    if (m_hlist[m_llist[2]]<0) q_w*=(y_lepton/(2.*sintw*costw)-q_lepton*sintw/costw);
     else q_w*=(-q_lepton*sintw/costw);
-    if (m_hlist[m_qlist[2]]<0) q_w*=(y_quark/(2*sintw*costw)-q_quark*sintw/costw);
+    if (m_hlist[m_qlist[2]]<0) q_w*=(y_quark/(2.*sintw*costw)-q_quark*sintw/costw);
     else q_w*=(-q_quark*sintw/costw);
     }
 
@@ -1323,7 +1384,7 @@ bool FullAmplitude_MHV_Q2L2::AmpStore(MomentumList* BS)
     Complex ckm=p_model->ComplexMatrixElement(std::string("CKM"),m_flist[m_qlist[2]]->QuarkFamily()-1,m_flist[m_qlist[1]]->QuarkFamily()-1);
     q_w=Complex((BS->Momentum(pn)).Abs2(),0.);
     q_w/= q_w-pow(Flavour(kf_Wplus).Mass(),2)+Complex(0.,1.)*Flavour(kf_Wplus).Width()*Flavour(kf_Wplus).Mass();
-    q_w*= ckm/(2*pow(sintw,2));
+    q_w*= ckm/(2.*pow(sintw,2));
   }
 
   Complex q_eff(q_em-q_w);

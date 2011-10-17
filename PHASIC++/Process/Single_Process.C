@@ -73,21 +73,22 @@ double Single_Process::BeamISRWeight
 void Single_Process::BeamISRWeight
 (NLO_subevtlist *const subs,const int mode) const
 {
-  double muf2(subs->back()->m_muf2);
+  double muf2(subs->back()->m_mu2[stp::fac]);
   if (m_nin==2 && p_int->ISR()) {
     size_t nscales(0);
     for (size_t i(0);i<subs->size();++i) {
       NLO_subevt *sub((*subs)[i]);
-      if (!IsEqual(sub->m_muf2,muf2) && sub->m_me!=0.0) {
+      if (!IsEqual(sub->m_mu2[stp::fac],muf2) && sub->m_me!=0.0) {
         sub->m_result+=sub->m_last[mode]=
-          sub->m_me*BeamISRWeight(sub->m_muf2,mode);
+          sub->m_me*BeamISRWeight(sub->m_mu2[stp::fac],mode);
 	++nscales;
       }
     }
     if (nscales<subs->size()) {
       double lumi(BeamISRWeight(muf2,mode));
       for (size_t i(0);i<subs->size();++i) {
-	if (IsEqual((*subs)[i]->m_muf2,muf2) && (*subs)[i]->m_me!=0.0) {
+	if (IsEqual((*subs)[i]->m_mu2[stp::fac],muf2) &&
+	    (*subs)[i]->m_me!=0.0) {
           (*subs)[i]->m_result+=(*subs)[i]->m_last[mode]=
             (*subs)[i]->m_me*lumi;
         }
@@ -97,7 +98,7 @@ void Single_Process::BeamISRWeight
   else {
     for (size_t i(0);i<subs->size();++i) {
       (*subs)[i]->m_result+=(*subs)[i]->m_last[mode]=
-        (*subs)[i]->m_me*BeamISRWeight((*subs)[i]->m_muf2,mode);
+        (*subs)[i]->m_me*BeamISRWeight((*subs)[i]->m_mu2[stp::fac],mode);
     }
   }
 }
@@ -185,7 +186,7 @@ bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
 	       <<"  '"<<m_name<<"': "<<totalxs
 	       <<" vs. "<<p_int->TotalResult()<<std::endl;
   }
-  if (p_int->TotalXS()>0.0) {
+  if (p_int->Points()) {
     p_int->SetTotal();
     if (var==p_int->TotalVar()) {
       exh->RemoveTerminatorObject(p_int);

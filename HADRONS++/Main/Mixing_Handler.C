@@ -10,9 +10,10 @@
 
 using namespace HADRONS;
 using namespace ATOOLS;
+using namespace PHASIC;
 using namespace std;
 
-Mixing_Handler::Mixing_Handler(Hadron_Decay_Map* decaymap) : p_decaymap(decaymap)
+Mixing_Handler::Mixing_Handler()
 {
 }
 
@@ -20,7 +21,8 @@ Mixing_Handler::~Mixing_Handler()
 {
 }
 
-double Mixing_Handler::DetermineMixingTime(Particle* decayer, bool checkforpartstatus)
+double Mixing_Handler::DetermineMixingTime(Particle* decayer,
+                                           bool checkforpartstatus) const
 {
   double time = decayer->Time();
 
@@ -56,12 +58,12 @@ double Mixing_Handler::DetermineMixingTime(Particle* decayer, bool checkforparts
 }
 
 
-bool Mixing_Handler::PerformMixing(Particle* decayer, Blob_List* bloblist)
+ATOOLS::Blob* Mixing_Handler::PerformMixing(Particle* decayer) const
 {
   // explicit mixing in event record
   Flavour flav = decayer->Flav();
   string tag = flav.IsAnti() ? flav.Bar().IDName() : flav.IDName();
-  if(p_decaymap->StartModel()("Mixing_"+tag,0.0)!=0.0 && decayer->Info()!=char('M')) {
+  if(m_model("Mixing_"+tag,0.0)!=0.0 && decayer->Info()!=char('M')) {
     double t = DetermineMixingTime(decayer,true)/rpa->hBar();
     if(t==0.0) return false;
     double factor = decayer->Flav().QOverP2();
@@ -72,41 +74,49 @@ bool Mixing_Handler::PerformMixing(Particle* decayer, Blob_List* bloblist)
     double prob_not_mix = sqr(abs(exp(i*dm)*exp(dG)+exp(-i*dm)*exp(-dG)));
     double prob_mix = factor*sqr(abs(exp(i*dm)*exp(dG)-exp(-i*dm)*exp(-dG)));
     if(prob_mix > ran->Get()*(prob_mix+prob_not_mix)) {
-      if(decayer->DecayBlob()) bloblist->Delete(decayer->DecayBlob());
+      if(decayer->DecayBlob()) {
+        decayer->DecayBlob()->RemoveOwnedParticles();
+        delete decayer->DecayBlob();
+      }
       decayer->SetStatus(part_status::decayed);
       decayer->SetInfo('m');
       Particle* mixed_part = new Particle(0, decayer->Flav().Bar(),
                                           decayer->Momentum(), 'M');
-      mixed_part->SetFinalMass();
+      mixed_part->SetFinalMass(decayer->FinalMass());
       mixed_part->SetStatus(part_status::active);
       mixed_part->SetTime(decayer->Time());
-      Blob* mixingblob = bloblist->AddBlob(btp::Hadron_Mixing);
+      Blob* mixingblob = new Blob();
+      mixingblob->SetType(btp::Hadron_Mixing);
+      mixingblob->SetId();
+      mixingblob->SetStatus(blob_status::inactive);
       mixingblob->SetTypeSpec("HADRONS");
       mixingblob->AddToInParticles(decayer);
       mixingblob->AddToOutParticles(mixed_part);
       mixingblob->SetPosition(decayer->ProductionBlob()->Position());
       mixingblob->SetStatus(blob_status::needs_hadrondecays);
-      return true;
+      return mixingblob;
     }
   }
-  return false;
+  return NULL;
 }
 
 
-bool Mixing_Handler::SetCPAsymmetries(Particle* decayer, Hadron_Decay_Table* table)
+Hadron_Decay_Channel* Mixing_Handler::Select(Particle* decayer,
+                                             const Hadron_Decay_Table& ot) const
 {
   Flavour flav = decayer->Flav();
   string tag = flav.IsAnti() ? flav.Bar().IDName() : flav.IDName();
-  if(p_decaymap->StartModel()("Interference_"+tag,0.0)!=0.0) {
+  if(m_model("Interference_"+tag,0.0)!=0.0) {
     double lifetime = DetermineMixingTime(decayer,false);
     bool anti_at_t0 = decayer->Flav().IsAnti();
     if(decayer->ProductionBlob()->Type()==btp::Hadron_Mixing) anti_at_t0 = !anti_at_t0;
     if(lifetime!=0.0) {
+      Hadron_Decay_Table table(ot);
       double cos_term = cos(flav.DeltaM()/rpa->hBar()*lifetime);
       double sin_term = sin(flav.DeltaM()/rpa->hBar()*lifetime);
       double GX, GR, asymmetry, a;
-      for(size_t i=0; i<table->size(); i++) {
-        Hadron_Decay_Channel* hdc = table->at(i);
+      for(size_t i=0; i<table.size(); i++) {
+        Hadron_Decay_Channel* hdc = table.at(i);
         if(hdc->CPAsymmetryS()==0.0 && hdc->CPAsymmetryC()==0.0) continue;
         if(flav.DeltaGamma()==0.0) {
           asymmetry = hdc->CPAsymmetryS()*sin_term - hdc->CPAsymmetryC()*cos_term;
@@ -119,29 +129,18 @@ bool Mixing_Handler::SetCPAsymmetries(Particle* decayer, Hadron_Decay_Table* tab
               (cosh(dG*lifetime/2.0) - 2.0*lambda.real()/(1.0+l2)*sinh(dG*lifetime/2.0));
         }
         GX = hdc->Width(); // partial width of this DC
-        GR = table->TotalWidth()-GX; // partial width of other DCs
+        GR = table.TotalWidth()-GX; // partial width of other DCs
         if(asymmetry>0.0)
           a = -1.0*GR/2.0/GX/asymmetry+sqrt(sqr(GR)/4.0/sqr(GX)/sqr(asymmetry)+(GR+GX)/GX);
         else if(asymmetry<0.0)
           a = -1.0*GR/2.0/GX/asymmetry-sqrt(sqr(GR)/4.0/sqr(GX)/sqr(asymmetry)+(GR+GX)/GX);
         else
           a = 0.0;
-        if(anti_at_t0) table->UpdateWidth(hdc, (1.0+a)*GX);
-        else           table->UpdateWidth(hdc, (1.0-a)*GX);
+        if(anti_at_t0) table.UpdateWidth(hdc, (1.0+a)*GX);
+        else           table.UpdateWidth(hdc, (1.0-a)*GX);
       }
-      return true;
+      return table.Select();
     }
   }
-  return false;
+  return ot.Select();
 }
-
-
-void Mixing_Handler::ResetCPAsymmetries(Hadron_Decay_Table* table)
-{
-  for(size_t i=0; i<table->size(); i++)
-  {
-    Hadron_Decay_Channel* hdc = table->at(i);
-    table->UpdateWidth(hdc, hdc->OriginalWidth());
-  }
-}
-

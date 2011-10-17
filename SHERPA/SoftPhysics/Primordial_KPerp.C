@@ -199,8 +199,10 @@ bool Primordial_KPerp::BoostConnected(ATOOLS::Blob *blob,unsigned int catcher)
   p_boosted->insert(blob);
   for (int i=0;i<blob->NOutP();++i) {
     Particle *cur=blob->OutParticle(i);
-    if (blob->Type()!=btp::Signal_Process && blob->Type()!=btp::Hard_Collision &&
+    if (blob->Type()!=btp::Signal_Process && blob->Type()!=btp::Hard_Decay &&
+	blob->Type()!=btp::Hard_Collision &&
 	(cur->DecayBlob()==NULL || cur->DecayBlob()->Type()!=btp::Signal_Process) &&
+	(cur->DecayBlob()==NULL || cur->DecayBlob()->Type()!=btp::Hard_Decay) &&
 	(cur->DecayBlob()==NULL || cur->DecayBlob()->Type()!=btp::Hard_Collision)) {
       Vec4D mom=cur->Momentum();
       m_oldcms.Boost(mom);
@@ -244,6 +246,7 @@ bool Primordial_KPerp::FindConnected(ATOOLS::Particle *particle,ATOOLS::Particle
 	Particle *next=decy->InParticle(i);
         if (next!=particle && 
 	    next->ProductionBlob()->Type()!=btp::Signal_Process &&
+	    next->ProductionBlob()->Type()!=btp::Hard_Decay &&
 	    next->ProductionBlob()->Type()!=btp::Hard_Collision) 
 	  if (FindConnected(next,connected,false,catcher)) return true;
       }

@@ -21,12 +21,33 @@ using namespace ATOOLS;
 COMIX::Process_Group::Process_Group(): 
   COMIX::Process_Base(this) {}
 
-COMIX::Process_Group::Process_Group(Model *const model):
+COMIX::Process_Group::Process_Group(MODEL::Model_Base *const model):
   COMIX::Process_Base(this,model) {}
 
 bool COMIX::Process_Group::Initialize(std::map<std::string,std::string> *const pmap,
 				      std::vector<Single_Process*> *const procs)
 {
+  std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
+		      +"/Process/Comix/"+m_name+".map");
+  msg_Debugging()<<"checking for '"<<mapfile<<"' ... "<<std::flush;
+  if (!FileExists(mapfile)) {
+    msg_Debugging()<<"not found"<<std::endl;
+  }
+  else {
+    msg_Debugging()<<"found"<<std::endl;
+    std::ifstream map(mapfile.c_str());
+    if (map.good()) {
+      while (!map.eof()) {
+	std::string src, dest;
+	map>>src>>dest;
+	if (src!="" && dest!="x")
+	  THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
+	if (map.eof()) break;
+	(*pmap)[src]=dest;
+	msg_Debugging()<<" map '"<<src<<"' onto '"<<dest<<"'\n";
+      }
+    }
+  }
   return COMIX::Process_Base::Initialize(pmap,procs);
 }
 
@@ -41,10 +62,10 @@ bool COMIX::Process_Group::Initialize(PHASIC::Process_Base *const proc)
   cdxs->SetModel(p_model);
   cdxs->SetGPath(m_gpath);
   proc->Integrator()->SetHelicityScheme(p_int->HelicityScheme());
+  proc->SetParent((PHASIC::Process_Base*)this);
   if (!cdxs->Initialize(p_pmap,p_umprocs)) return false;
   if (!cdxs->MapProcess())
     if (!msg_LevelIsTracking()) msg_Info()<<"."<<std::flush;
-  proc->SetParent((PHASIC::Process_Base*)this);
   return true;
 }
 

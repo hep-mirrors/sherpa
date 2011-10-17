@@ -20,7 +20,7 @@ Model_Base::Model_Base(std::string _dir,std::string _file,bool _elementary) :
   p_model(NULL), m_dir(_dir), m_file(_file), m_elementary(_elementary), 
   p_dataread(NULL), p_numbers(NULL), p_constants(NULL), p_complexconstants(NULL), 
   p_functions(NULL), p_matrices(NULL), p_spectrumgenerator(NULL), p_vertex(NULL), 
-  p_vertextable(NULL)
+  p_vertextable(NULL), m_vinfo(0)
 {
   p_dataread = new Data_Reader(" ",";","!","=");
   p_dataread->AddComment("#");
@@ -55,9 +55,10 @@ void Model_Base::GetCouplings(Coupling_Map &cpls) const
   for (ScalarFunctionsMap::const_iterator
 	 cit(p_functions->begin());cit!=p_functions->end();++cit) {
     std::string tag(cit->second->Name());
-    cpls[tag] = new Coupling_Data
-      (cit->second,tag,p_model->ScalarFunction(cit->first,rpa->gen.CplScale()));
-    msg_Debugging()<<"  '"<<tag<<"' -> ("<<cpls[tag]<<")"<<*cpls[tag]<<"\n";
+    cpls.insert(std::make_pair(tag,new Coupling_Data
+      (cit->second,tag,p_model->ScalarFunction(cit->first,rpa->gen.CplScale()))));
+    msg_Debugging()<<"  '"<<tag<<"' -> ("<<cpls.lower_bound(tag)->second<<")"
+		   <<*cpls.lower_bound(tag)->second<<"\n";
   }
 }
 
@@ -234,6 +235,7 @@ void Model_Base::InitializeInteractionModel()
       (*p_vertextable)[(*p_vertex)[i]->in[0]].push_back((*p_vertex)[i]);
     }
   }
+  InitMEInfo();
 }
 
 int Model_Base::ScalarNumber(const std::string _name) {
@@ -353,4 +355,43 @@ Complex Model_Base::ComplexMatrixElement(const std::string _name,const int _i,co
 bool Model_Base::CheckFlavours(int nin, int nout, Flavour* flavs)
 {
   return true;
+}
+
+void Model_Base::InitMEInfo()
+{
+  msg_Debugging()<<METHOD<<"(): {\n";
+  m_fls.clear();
+  bool hasndec(false);
+  std::set<Flavour> fls;
+  msg_Debugging()<<"\n  add vertices\n\n";
+  std::vector<Single_Vertex> &all(p_vertex->Vertices());
+  for (size_t i=0;i<all.size();++i) {
+    if (all[i].on) {
+      m_vmap.insert(VMap_Key(all[i].PID(),&all[i]));
+      m_vtable[all[i].in[0]].push_back(&all[i]);
+      if (all[i].nleg>3) {
+	if (all[i].dec<0) m_vinfo|=2;
+	else hasndec=true;
+      }
+      for (int j(0);j<all[i].nleg;++j) fls.insert(all[i].in[j]);
+      if (msg_LevelIsDebugging()) {
+	msg_Debugging()
+	  <<"  "<<all[i].PID()<<" ("<<all[i].oew
+	  <<","<<all[i].oqcd<<") "<<(all[i].dec>0?'{':(all[i].dec<0?'(':'['))
+	  <<all[i].Lorentz.front()->Type()<<","<<all[i].Color[0].PID();
+	for (size_t j(1);j<all[i].Lorentz.size();++j)
+	  msg_Out()<<"|"<<all[i].Lorentz[j]->Type()
+		   <<","<<all[i].Color[j].PID();
+	msg_Out()<<(all[i].dec>0?'}':(all[i].dec<0?')':']'))<<"\n";
+      }
+    }
+  }
+  if (hasndec) m_vinfo|=1;
+  msg_Debugging()<<"\n  add particles\n\n";
+  for (std::set<Flavour>::const_iterator 
+	 fit(fls.begin());fit!=fls.end();++fit) {
+      m_fls.push_back(*fit);
+      msg_Debugging()<<"  "<<*fit<<"\n";
+  }
+  msg_Debugging()<<"\n}\n";
 }

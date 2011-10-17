@@ -17,23 +17,33 @@ Interaction_Model_sQuark_EW::Interaction_Model_sQuark_EW(MODEL::Model_Base * _mo
 
   g1       = Kabbala(string("g_1"),
 		     sqrt(4.*M_PI*ScalarFunction(string("alpha_QED"),scale)));
-  g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
-		     g1.Value()/sqrt(ScalarConstant(string("sin2_thetaW"))));
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
+  }else{
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ComplexConstant(std::string("csin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ComplexConstant(std::string("cvev")));
+  }
   g3    = Kabbala(string("g_3"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),scale)));
-  sintW    = Kabbala(string("\\sin\\theta_W"),
-		     sqrt(ScalarConstant(string("sin2_thetaW"))));
-  costW    = Kabbala(string("\\cos\\theta_W"),
-		     sqrt(1.-ScalarConstant(string("sin2_thetaW"))));
   PL       = Kabbala(string("P_L"),1.);
   PR       = Kabbala(string("P_R"),1.);
   M_I      = Kabbala(string("i"),Complex(0.,1.));
-  vev      = Kabbala(string("v_{EW}"),ScalarConstant(string("vev")));
   v1       = Kabbala(string("v_1"),
-		     ScalarConstant(string("vev")) *
+		     vev.Value() *
 		     sqrt(1./(1.+sqr(ScalarConstant(string("tan(beta)"))))));
   v2       = Kabbala(string("v_2"),
-		     ScalarConstant(string("vev")) *
+		     vev.Value() *
 		     ScalarConstant(string("tan(beta)")) *
 		     sqrt(1./(1.+sqr(ScalarConstant(string("tan(beta)"))))));
   mu       = Kabbala(string("h"),ScalarConstant(string("mu")));
@@ -73,7 +83,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	    vertex[vanz].in[2] = flneu;
 	    
 	    Kabbala K_uI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_2}\\sqrt{2}"),
-				     flav1.Yuk()/v2.Value()*sqrt(2.));
+				     K_yuk(flav1).Value()/v2.Value()*sqrt(2.));
 	  
 	    kcpl0 = M_I*((g1*root2*num_2)/(costW*num_3)*K_Z_U((k-2)/2+3,i-1)*K_Z_N(0,j)+
 			 -(K_uI*K_Z_U(gen_sUp(flav2),i-1))*K_Z_N(3,j)); 
@@ -111,7 +121,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	    vertex[vanz].in[1] = flav2;
 	    vertex[vanz].in[2] = flneu;
 	    
-	    Kabbala K_dI = Kabbala(string("d^I"),-flav1.Yuk()*sqrt(2.)/v1.Value());
+	    Kabbala K_dI = Kabbala(string("d^I"),-K_yuk(flav1).Value()*sqrt(2.)/v1.Value());
 	    
 	    kcpl0 = M_I*((-(g1*root2)/
 			  (costW*num_3))*K_Z_D((k-1)/2+3,i-1)*K_Z_N(0,j)+
@@ -145,7 +155,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
   for (short int i=1;i<6;i+=2) {
     Flavour flav1 = Flavour((kf_code)(i));
     Kabbala K_dI = Kabbala(string("d^I"),
-			   -flav1.Yuk()/v1.Value()*sqrt(2.));
+			   -K_yuk(flav1).Value()/v1.Value()*sqrt(2.));
     for (short int j=0;j<2;j++) {
       if (j==0) c_ino=1000024;
       else      c_ino=1000037;
@@ -159,7 +169,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].in[1] = flav3;
 	  vertex[vanz].in[2] = flav2.Bar();
 	  
-	  Kabbala K_uI = Kabbala(string("u^I"),Flavour((kf_code)(2*gen_sUp(flav3)+2)).Yuk()*
+	  Kabbala K_uI = Kabbala(string("u^I"),K_yuk(Flavour((kf_code)(2*gen_sUp(flav3)+2))).Value()*
 				 sqrt(2.)/v2.Value());
 
 	  kcpl0 = -M_I*K_dI*K_Z_MI(1,j)*K_Z_U(gen_sUp(flav3),k-1)*
@@ -190,7 +200,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
   //u-quark - Chargino - sdown
   for (short int i=2;i<7;i+=2) {
     Flavour flav1 = Flavour((kf_code)(i));
-    Kabbala K_uJ = Kabbala(string("u^J"),flav1.Yuk()*sqrt(2.)/v2.Value());
+    Kabbala K_uJ = Kabbala(string("u^J"),K_yuk(flav1).Value()*sqrt(2.)/v2.Value());
     for (short int j=0;j<2;j++) {
       if (j==0) c_ino=1000024;
       else      c_ino=1000037;
@@ -205,7 +215,7 @@ void Interaction_Model_sQuark_EW::c_FFS(std::vector<Single_Vertex>& vertex,int& 
 	  vertex[vanz].in[2] = flav2;
 	  	  
 	  Kabbala K_dI = Kabbala(string("d^I"),
-				 -Flavour((kf_code)(2*gen_sDown(flav3)+1)).Yuk()*sqrt(2.)/
+				 -K_yuk(Flavour((kf_code)(2*gen_sDown(flav3)+1))).Value()*sqrt(2.)/
 				 v1.Value());
 	  
 	  kcpl0 = M_I*K_uJ*K_Z_D(gen_sDown(flav3),k-1)*K_Z_PL(1,j)*
@@ -468,7 +478,7 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
      	Flavour flav2 = Flavour((kf_code)(s_qu));
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  
-	  Kabbala K_uI = Kabbala(string("u^I"),Flavour((kf_code)(2*gen_sUp(flav1)+2)).Yuk()/
+	  Kabbala K_uI = Kabbala(string("u^I"),K_yuk(Flavour((kf_code)(2*gen_sUp(flav1)+2))).Value()/
 				 (v2).Value()*sqrt(2.));
 	  
 	  vertex[vanz].in[0] = flav1.Bar();
@@ -517,7 +527,7 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	if (flav1.IsOn() && flav2.IsOn()) {
 	  
 	  Kabbala K_dI = Kabbala(string("d^I"),
-				 -Flavour((kf_code)(2*gen_sDown(flav1)+1)).Yuk()/(v1).Value()*sqrt(2.));
+				 -K_yuk(Flavour((kf_code)(2*gen_sDown(flav1)+1))).Value()/(v1).Value()*sqrt(2.));
 	  
 	  vertex[vanz].in[0] = flav1;
 	  vertex[vanz].in[1] = flA0;
@@ -585,7 +595,7 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	  
 	  help = K_zero;
 	  
-	  Kabbala K_uI = Kabbala(string("u^I"),Flavour((kf_code)(2*gen_sUp(flav1)+2)).Yuk()/
+	  Kabbala K_uI = Kabbala(string("u^I"),K_yuk(Flavour((kf_code)(2*gen_sUp(flav1)+2))).Value()/
 				 (v2).Value()*sqrt(2.));
 	  
 	  Kabbala fac = Kabbala(string("\\frac{3-8sin^2\\theta_W}{4sin^2\\theta_W}"),
@@ -648,7 +658,7 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	  help = K_zero;
 	  
 	  Kabbala K_dI = Kabbala(string("d^I"),
-				 -Flavour((kf_code)(2*gen_sDown(flav1)+1)).Yuk()/(v1).Value()*sqrt(2.));
+				 -K_yuk(Flavour((kf_code)(2*gen_sDown(flav1)+1))).Value()/(v1).Value()*sqrt(2.));
 	  
 	  Kabbala fac = Kabbala(string("\\frac{3-4sin^2\\theta_W}{2sin^2\\theta_W}"),
 				(3.-4.*(sintW).Value()*(sintW).Value())/
@@ -711,12 +721,18 @@ void Interaction_Model_sQuark_EW::c_SSS(std::vector<Single_Vertex>& vertex,int& 
 	vertex[vanz].in[2] = flav2;
 	
 	Kabbala K_dI = Kabbala(string("d^I"),
-			       -Flavour((kf_code)(2*gen_sUp(flav1)+1)).Yuk()/(v1).Value()*sqrt(2.));
+			       -K_yuk(Flavour((kf_code)(2*gen_sUp(flav1)+1))).Value()/(v1).Value()*sqrt(2.));
 	
-	Kabbala K_uJ = Kabbala(string("u^I"),Flavour((kf_code)(2*gen_sDown(flav2)+2)).Yuk()/
+	Kabbala K_uJ = Kabbala(string("u^I"),K_yuk(Flavour((kf_code)(2*gen_sDown(flav2)+2))).Value()/
 			       (v2).Value()*sqrt(2.));
 	
-	Kabbala K_massW = Kabbala(string("M_W"),Flavour(kf_Wplus).Mass());
+	Kabbala K_massW;
+	if(ScalarNumber(std::string("WidthScheme"))==0){
+	  K_massW = Kabbala(string("M_W"),Flavour(kf_Wplus).Mass());
+	}else{
+	  K_massW = Kabbala(string("M_W"),sqrt(sqr(Flavour(kf_Wplus).Mass())-
+	                    Complex(0.,1.)*Flavour(kf_Wplus).Width()*Flavour(kf_Wplus).Mass()));
+	}
 	
 	kcpl0 = M_I*((-(g2*g2)/num_2*(v1*K_Z_H(0,0)+v2*K_Z_H(1,0))+
 		      v1*K_dI*K_dI*K_Z_H(0,0)+v2*K_uJ*K_uJ*K_Z_H(1,0))*invroot2*
@@ -1418,11 +1434,11 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
       Flavour flav2 = Flavour((kf_code)(s_qu));
       if (flav1.IsOn() && flav2.IsOn() && gen_sUp(flav1)==gen_sUp(flav2)) {
 	
-	Kabbala K_uI = Kabbala(string("u^I"),Flavour((kf_code)(2*gen_sUp(flav1)+2)).Yuk()/
+	Kabbala K_uI = Kabbala(string("u^I"),K_yuk(Flavour((kf_code)(2*gen_sUp(flav1)+2))).Value()/
 			       (v2).Value()*sqrt(2.));
 	
 	Kabbala K_dI = Kabbala(string("d^I"),
-			       -Flavour((kf_code)(2*gen_sUp(flav1)+1)).Yuk()/(v1).Value()*sqrt(2.));
+			       -K_yuk(Flavour((kf_code)(2*gen_sUp(flav1)+1))).Value()/(v1).Value()*sqrt(2.));
 	
 	//Hmin -> sup - sup - Hmin 
 	if (flHmin.IsOn()) {
@@ -1897,7 +1913,12 @@ Kabbala Interaction_Model_sQuark_EW::K_d_S(short int i,short int j)
 }
 
 Kabbala Interaction_Model_sQuark_EW::K_yuk(Flavour fl) {
-  return Kabbala(string("M_{"+fl.TexName()+"}"),fl.Yuk());
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    return Kabbala(string("M_{"+fl.TexName()+"}"),fl.Yuk());
+  }else{
+    return Kabbala(string("M_{"+fl.TexName()+"}"),sqrt(sqr(fl.Yuk())-
+                   Complex(0.,1.)*fl.Width()*fl.Yuk()));
+  }
 }
 
 Kabbala Interaction_Model_sQuark_EW::K_yuk_sign(Flavour fl) {
@@ -1993,7 +2014,7 @@ Kabbala Interaction_Model_sQuark_EW::K_u(short int i)
   sprintf(hi,"%i",i);
   
   return Kabbala(string("u^")+string(hi),
-		 Flavour((kf_code)(2*i+2)).Yuk()/v2.Value()*sqrt(2.));
+		K_yuk( Flavour((kf_code)(2*i+2))).Value()/v2.Value()*sqrt(2.));
 }
 
 Kabbala Interaction_Model_sQuark_EW::K_d(short int i)
@@ -2002,6 +2023,6 @@ Kabbala Interaction_Model_sQuark_EW::K_d(short int i)
   sprintf(hi,"%i",i);
   
   return Kabbala(string("d^")+string(hi),
-		 -Flavour((kf_code)(2*i+1)).Yuk()/v1.Value()*sqrt(2.));
+		 -K_yuk(Flavour((kf_code)(2*i+1))).Value()/v1.Value()*sqrt(2.));
 }
 	

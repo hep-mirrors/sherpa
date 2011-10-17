@@ -423,6 +423,7 @@ bool Process_Group::ConstructProcesses(Process_Info pi,const size_t &ci)
     if (m_procmap.find(name)!=m_procmap.end()) return false;
     Process_Base *proc(GetProcess(pi));
     if (!proc) return false;
+    proc->SetGenerator(Generator());
     proc->Init(pi,p_int->Beam(),p_int->ISR());
     if (!Initialize(proc)) {
       msg_Debugging()<<METHOD<<"(): Init failed for '"

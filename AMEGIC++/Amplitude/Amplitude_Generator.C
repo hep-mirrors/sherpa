@@ -118,6 +118,7 @@ void Amplitude_Generator::Print_P(Point* p)
 
 int Amplitude_Generator::MatchVertex(Single_Vertex* v,Flavour* flav,vector<Complex>& cpl)
 {
+  if (v->dec>0) return false;
   if (flav[0] == v->in[0]) {
     int hit = 1;
     if (flav[1] != Flavour(kf_none)) {if (flav[1] != v->in[1]) hit = 0;}

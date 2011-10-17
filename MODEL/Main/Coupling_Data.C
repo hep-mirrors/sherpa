@@ -1,9 +1,12 @@
 #include "MODEL/Main/Coupling_Data.H"
 
 #include "ATOOLS/Math/Function_Base.H"
+#include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace MODEL;
+using namespace ATOOLS;
 
 void Coupling_Data::Calculate()
 {
@@ -19,10 +22,12 @@ void Coupling_Map::Calculate() const
        cit!=end();++cit) cit->second->Calculate();
 }
 
-Coupling_Data *Coupling_Map::Get(const std::string &tag) const
+Coupling_Data *Coupling_Map::Get
+(const std::string &tag,const ATOOLS::NLO_subevt *sub) const
 {
-  const_iterator cit(find(tag));
-  if (cit!=end()) return cit->second;
+  for (const_iterator cit(lower_bound(tag)),
+	 eit(upper_bound(tag));cit!=eit;++cit)
+    if (cit->second->Sub()==sub) return cit->second;
   return NULL;
 }
 
@@ -30,8 +35,10 @@ namespace MODEL {
 
   std::ostream &operator<<(std::ostream &str,const Coupling_Data &cd)
   {
-    return str<<"'"<<cd.ID()<<"'{fac="
-	      <<cd.Factor()<<",cpl="<<cd.Default()<<"}";
+    str<<"'"<<cd.ID()<<"'";
+    if (cd.Sub()) str<<"[("<<cd.Sub()->m_i<<","<<cd.Sub()->m_j
+		     <<")("<<cd.Sub()->m_k<<")]";
+    return str<<"{fac="<<cd.Factor()<<",cpl="<<cd.Default()<<"}";
   }
 
 }

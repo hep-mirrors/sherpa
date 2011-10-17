@@ -224,10 +224,9 @@ bool PS_Generator::Evaluate()
 }
 
 bool PS_Generator::AddCurrent
-(Current_Base *const ref,const Flavour &fl,
+(Current *const ref,const Flavour &fl,
  const size_t &n,const int mode,
- const double &m,const double &w,
- Current_Base *const scc)
+ const double &m,const double &w,Current *const scc)
 {
   Current_Key ckey(fl,NULL);
   PS_Current *cur(new PS_Current(ckey));
@@ -258,6 +257,21 @@ bool PS_Generator::AddCurrent
   return found;
 }
 
+int PS_Generator::DecayType(const Current *jc,
+			    const Current *ja,const Current *jb) const
+{
+  if (jc->CId()==(1<<m_n)-1-3) return 0;
+  if ((jc->CId()&3)==1 || (jc->CId()&3)==2 ||
+      jc->Flav().Mass()!=0.0 ||
+      ja->Flav().Mass()!=0.0 || jb->Flav().Mass()!=0.0) return 0;
+  if (ja->Flav()==jc->Flav() &&
+      jb->Flav()==jc->Flav()) return 0;// temporary (->4)
+  if (ja->Flav()==jb->Flav().Bar()) return 0;// temporary (->1)
+  if (ja->Flav()==jc->Flav()) return 2;
+  if (jb->Flav()==jc->Flav()) return 3;
+  return 0;
+}
+
 class CB_PSSort {
 public:
 
@@ -279,6 +293,8 @@ bool PS_Generator::Construct(Amplitude *const ampl)
   m_pmsinit=0;
   Current_Matrix curs(ampl->Currents());
   msg_Debugging()<<METHOD<<"(): '"<<ampl<<"' {\n";
+  {
+    msg_Indent();
   if (m_n>0) {
     if (m_n!=curs.size()) 
       THROW(fatal_error,"Invalid number of external particles");
@@ -290,7 +306,8 @@ bool PS_Generator::Construct(Amplitude *const ampl)
   }
   for (size_t n(1);n<m_n;++n) {
     for (size_t j(0);j<curs[n].size();++j) {
-      if (curs[n][j]->Flav().IsDummy()) continue;
+      if (curs[n][j]->Sub() ||
+	  curs[n][j]->Flav().IsDummy()) continue;
       bool found(false);
       for (size_t i(0);i<m_cur[n].size();++i)
 	if (m_cur[n][i]->Id()==curs[n][j]->Id() &&
@@ -300,7 +317,7 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 	      m_cur[n][i]->OrderEW()==curs[n][j]->OrderEW() &&
 	      m_cur[n][i]->OrderQCD()==curs[n][j]->OrderQCD() &&
 	      m_cur[n][i]->NTChannel()==curs[n][j]->NTChannel()))) {
-	  Current_Base *ref(m_cbmap[m_cur[n][i]]);
+	  Current *ref(m_cbmap[m_cur[n][i]]);
 	  for (CB_MMap::const_iterator cit(m_cmap.lower_bound(ref));
 	       cit!=m_cmap.upper_bound(ref);++cit) {
 	    m_cmap.insert(CB_Pair(curs[n][j],cit->second));
@@ -315,17 +332,20 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 	  const Vertex_Vector &in(curs[n][j]->In());
 	  const Vertex_Vector &rin(cit->second->In());
 	  for (size_t i(0);i<in.size();++i) {
-	    Current_Base *ja(curs[n][j]->In()[i]->JA());
-	    Current_Base *jb(curs[n][j]->In()[i]->JB());
-	    if (ja->PSInfo()<jb->PSInfo()) std::swap<Current_Base*>(ja,jb);
+	    if (curs[n][j]->In()[i]->JE()) continue;
+	    Current *ja(curs[n][j]->In()[i]->JA());
+	    Current *jb(curs[n][j]->In()[i]->JB());
+	    if (ja->PSInfo()<jb->PSInfo()) std::swap<Current*>(ja,jb);
 	    for (CB_MMap::const_iterator ait(m_cmap.lower_bound(ja));
 		 ait!=m_cmap.upper_bound(ja);++ait)
 	      for (CB_MMap::const_iterator bit(m_cmap.lower_bound(jb));
 		   bit!=m_cmap.upper_bound(jb);++bit) {
-		Vertex_Key vkey(ait->second,bit->second,cit->second,NULL);
+		Vertex_Key vkey(ait->second,bit->second,NULL,cit->second,NULL);
+		int type(DecayType(curs[n][j],ja,jb));
 		bool vf(false);
 		for (size_t k(0);k<rin.size();++k) 
-		  if (vkey.p_a==rin[k]->JA() && vkey.p_b==rin[k]->JB()) {
+		  if (vkey.p_a==rin[k]->JA() && vkey.p_b==rin[k]->JB() &&
+		      type==((PS_Vertex*)rin[k])->Type()) {
 		    vf=true;
 		    break;
 		  }
@@ -335,11 +355,13 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 		vtx->SetJA(vkey.p_a);
 		vtx->SetJB(vkey.p_b);
 		vtx->SetJC(vkey.p_c);
+		vtx->SetType(type);
 	      }
 	  }
 	}
 	continue;
       }
+      curs[n][j]->Print();
       if (curs[n][j]->Flav().Width()<s_pwmin &&
 	  !curs[n][j]->Cut() && curs[n][j]->Flav().Mass()>0.0 &&
 	  curs[n][j]->Flav().Mass()<m_chmass && n>1 && n<m_n-1) 
@@ -348,28 +370,31 @@ bool PS_Generator::Construct(Amplitude *const ampl)
       std::set<Vertex_Key,CB_PSSort> v3;
       const Vertex_Vector &in(curs[n][j]->In());
       for (size_t i(0);i<in.size();++i) {
-	Current_Base *ja(curs[n][j]->In()[i]->JA());
-	Current_Base *jb(curs[n][j]->In()[i]->JB());
-	if (ja->PSInfo()<jb->PSInfo()) std::swap<Current_Base*>(ja,jb);
+	if (curs[n][j]->In()[i]->JE()) continue;
+	Current *ja(curs[n][j]->In()[i]->JA());
+	Current *jb(curs[n][j]->In()[i]->JB());
+	if (ja->PSInfo()<jb->PSInfo()) std::swap<Current*>(ja,jb);
 	for (CB_MMap::const_iterator ait(m_cmap.lower_bound(ja));
 	     ait!=m_cmap.upper_bound(ja);++ait)
 	  for (CB_MMap::const_iterator bit(m_cmap.lower_bound(jb));
 	       bit!=m_cmap.upper_bound(jb);++bit)
 	    for (CB_MMap::const_iterator cit(m_cmap.lower_bound(curs[n][j]));
 		 cit!=m_cmap.upper_bound(curs[n][j]);++cit) {
-	      Vertex_Key vkey(ait->second,bit->second,cit->second,NULL);
+	      Vertex_Key vkey(ait->second,bit->second,NULL,cit->second,NULL);
 	      if (v3.find(vkey)!=v3.end()) continue;
 	      v3.insert(vkey);
 	      PS_Vertex *vtx(new PS_Vertex(vkey));
 	      vtx->SetJA(vkey.p_a);
 	      vtx->SetJB(vkey.p_b);
 	      vtx->SetJC(vkey.p_c);
+	      vtx->SetType(DecayType(curs[n][j],ja,jb));
 	    }
       }
       for (CB_MMap::const_iterator cit(m_cmap.lower_bound(curs[n][j]));
 	   cit!=m_cmap.upper_bound(curs[n][j]);++cit)
 	cit->second->Print();
     }
+  }
   }
   msg_Debugging()<<"}\n";
   for (size_t j(m_n-2);j>1;--j)
@@ -380,6 +405,12 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 	msg_Debugging()<<"  delete current "<<**cit
 		       <<", "<<(*cit)->Dangling()<<"\n";
 #endif
+	for (Current_Vector::iterator ctit(m_ctt.begin());
+	     ctit!=m_ctt.end();++ctit)
+	  if (*ctit==*cit) {
+	    m_ctt.erase(ctit);
+	    break;
+	  }
 	delete *cit;
 	cit=--m_cur[j].erase(cit);
       }
@@ -479,8 +510,8 @@ void PS_Generator::AddSTCC()
 }
 
 void PS_Generator::AddExtraCurrent
-(Current_Base *const cur,const size_t &n,
- const double &m,const double &w,Current_Base *const scc)
+(Current *const cur,const size_t &n,
+ const double &m,const double &w,Current *const scc)
 {
   AddCurrent(cur,cur->Flav(),n,1,m,w);
 #ifdef DEBUG__BG
@@ -489,7 +520,7 @@ void PS_Generator::AddExtraCurrent
 #endif
   const Vertex_Vector &in(cur->In());
   for (size_t i(0);i<in.size();++i) {
-    Vertex_Key vkey(in[i]->JA(),in[i]->JB(),m_cur[n].back(),NULL);
+    Vertex_Key vkey(in[i]->JA(),in[i]->JB(),NULL,m_cur[n].back(),NULL);
     PS_Vertex *vtx(new PS_Vertex(vkey));
     vtx->SetJA(vkey.p_a);
     vtx->SetJB(vkey.p_b);
@@ -503,10 +534,10 @@ void PS_Generator::AddExtraCurrent
 #endif
   const Vertex_Vector &out(cur->Out());
   for (size_t i(0);i<out.size();++i) {
-    Current_Base *ja(out[i]->JA()), *jb(out[i]->JB());
+    Current *ja(out[i]->JA()), *jb(out[i]->JB());
     if (ja==cur) ja=m_cur[n].back();
     else jb=m_cur[n].back();
-    Vertex_Key vkey(ja,jb,out[i]->JC(),NULL);
+    Vertex_Key vkey(ja,jb,NULL,out[i]->JC(),NULL);
     PS_Vertex *vtx(new PS_Vertex(vkey));
     vtx->SetJA(vkey.p_a);
     vtx->SetJB(vkey.p_b);

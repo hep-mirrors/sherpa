@@ -163,12 +163,7 @@ bool CS_Shower::ExtractPartons(Blob_List *const blist) {
   for (int i=0;i<psblob->NOutP();++i) 
     psblob->OutParticle(i)->SetStatus(part_status::decayed);
   
-  for (size_t i(0);i<m_psp.size();++i)
-    psblob->AddToInParticles(m_psp[i]);
-  m_psp.clear();
-
   psblob->SetStatus(blob_status::needs_beams |
-		    blob_status::needs_harddecays |
 		    blob_status::needs_hadronization);
   
   for (All_Singlets::const_iterator 
@@ -187,9 +182,6 @@ void CS_Shower::CleanUp()
   }
   m_allsinglets.clear();
   p_refs->clear();
-  for (size_t i(0);i<m_psp.size();++i)
-    delete m_psp[i];
-  m_psp.clear();
 }
 
 PDF::Cluster_Definitions_Base * CS_Shower::GetClusterDefinitions() 
@@ -215,7 +207,7 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,const size_t &id,
 	    aset.find(kit->first)==aset.end()) {
 	  ckt2min=Min(ckt2min,kit->second.first);
 	  ckt2max=Max(ckt2max,kit->second.second);
-	  if (cl->Stat()==3) {
+	  if (cl->Stat()==3 || cl->Stat()==5) {
 	    bool ins(true);
 	    for (size_t j(0);j<cns.size();++j)
 	      if (cns[j]&kit->first) {
@@ -226,17 +218,17 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,const size_t &id,
 	  }
 	}
       bool smin(true);
-      if (cl->Stat()==3 && cns.size()<cl->DMax()) smin=false;
+      if ((cl->Stat()==3 || cl->Stat()==5) && cns.size()<cl->DMax()) smin=false;
       for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
 	if (kit->first!=cl->Id() && kit->first&cl->Id() &&
 	    aset.find(kit->first)==aset.end()) {
 	  if (smin) kit->second.first=ckt2min;
 	  else kit->second.first=0.0;
 	  kit->second.second=ckt2max;
-	  if (cl->Stat()==3) aset.insert(kit->first);
+	  if (cl->Stat()==3 || cl->Stat()==5) aset.insert(kit->first);
 	}
     }
-    if (cl->Stat()==3) {
+    if (cl->Stat()==3 || cl->Stat()==5) {
       kt2xmap[cl->Id()].first=std::numeric_limits<double>::max();
       kt2xmap[cl->Id()].second=0.0;
     }

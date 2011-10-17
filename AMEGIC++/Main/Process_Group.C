@@ -14,6 +14,7 @@
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
@@ -45,8 +46,9 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
 {
   int typechk(0);
   if (pi.m_fi.m_nloqcdtype&nlo_type::real) typechk++;
-  if (pi.m_fi.m_nloqcdtype&nlo_type::vsub||pi.m_fi.m_nloqcdtype&nlo_type::loop) typechk++;
-  if (pi.m_fi.m_nloqcdtype&nlo_type::born) typechk++;    
+  if (pi.m_fi.m_nloqcdtype&nlo_type::vsub||
+      pi.m_fi.m_nloqcdtype&nlo_type::loop||
+      pi.m_fi.m_nloqcdtype&nlo_type::born) typechk++;    
   if (typechk>1) THROW(fatal_error,"NLO_QCD_Parts 'RS', 'VI' and 'B' must be assigned separately!");
 
   nlo_type::code nloqcd=pi.m_fi.m_nloqcdtype;
@@ -78,7 +80,7 @@ bool AMEGIC::Process_Group::Initialize(PHASIC::Process_Base *const proc)
   if (!p_testmoms) {
     if (!p_pinfo) p_pinfo=Translate(m_pinfo);
     p_testmoms = new Vec4D[m_nin+m_nout];
-    Phase_Space_Handler::TestPoint(p_testmoms,&Info());
+    Phase_Space_Handler::TestPoint(p_testmoms,&Info(),Generator());
     Vec4D sum;
     Poincare lab(Vec4D(sqrt(10.0),0.0,0.0,1.0));
     msg_Debugging()<<"After boost:\n";

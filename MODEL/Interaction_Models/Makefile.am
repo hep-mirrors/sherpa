@@ -35,6 +35,7 @@ libModelInteractions_la_SOURCES = \
 		      		Interaction_Model_MSSM.C \
 		      		Interaction_Model_MSSM_EHC.C \
 		      		Interaction_Model_FeynRules.C \
+				Interaction_Model_SM_TauPi.C \
 		      		Interaction_Model_HiddenValley.C 
 
 

@@ -35,6 +35,8 @@ namespace AMEGIC {
     std::map<ATOOLS::Flavour,ATOOLS::Flavour> m_eflmap;
     std::map<std::string,ATOOLS::Flavour> m_fmap;
 
+    static int s_gauge;
+
   public:
 
     // constructor
@@ -62,7 +64,6 @@ namespace AMEGIC {
     virtual void SetPrintGraphs(bool print_graphs=true);
     virtual std::string LibName();
 
-    virtual void FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.) = 0;
     virtual int                             NumberOfDiagrams() = 0;
     virtual AMEGIC::Point                 * Diagram(int i) = 0;
     virtual bool IsFreeOfFourVertex(AMEGIC::Point * _p) { return 1; }
@@ -85,6 +86,7 @@ namespace AMEGIC {
     virtual double operator()(const ATOOLS::Vec4D *) { return 0.; }
     virtual void               PrintProcessSummary(int=0);
     ATOOLS::Flavour ReMap(const ATOOLS::Flavour&,const std::string&) const;
+    inline static void SetGauge(const int gauge) { s_gauge=gauge; }
   protected:
     double         SymmetryFactors();
     double         SBSymmetryFactor(ATOOLS::Flavour* flout,size_t nout);

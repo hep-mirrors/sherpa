@@ -15,6 +15,8 @@ using namespace AMEGIC;
 using namespace PHASIC;
 using namespace ATOOLS;
 
+int AMEGIC::Process_Base::s_gauge=10;
+
 AMEGIC::Process_Base::Process_Base(): 
   p_model(NULL),
   p_b(0),p_pl(0), 

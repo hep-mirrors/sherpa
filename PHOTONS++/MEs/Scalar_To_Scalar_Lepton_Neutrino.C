@@ -186,7 +186,7 @@ Complex Scalar_To_Scalar_Lepton_Neutrino::InfraredSubtractedME_0_0() {
     return m_M00results[m_spins[0]][m_spins[1]][m_spins[2]][m_spins[3]].second;
   m_moms = m_moms0;
   double t = (m_moms[0]-m_moms[1]).Abs2();
-  XYZFunc XYZ(4,m_moms,m_flavs,1,false);
+  XYZFunc XYZ(4,m_moms,m_flavs,false);
   m_M00results[m_spins[0]][m_spins[1]][m_spins[2]][m_spins[3]].first = true;
   if (m_ffmodel == true) {
     m_M00results[m_spins[0]][m_spins[1]][m_spins[2]][m_spins[3]].second
@@ -208,7 +208,7 @@ Complex Scalar_To_Scalar_Lepton_Neutrino::InfraredSubtractedME_0_1() {
   Flavour flavs[5]; Vec4D moms[5];
   for (unsigned int i(0);i<4;++i) { flavs[i]=m_flavs[i]; moms[i]=m_moms[i]; }
   flavs[4] = Flavour(kf_e).Bar(); moms[4]=m_moms[0];
-  XYZFunc XYZ(5,moms,flavs,1,false);
+  XYZFunc XYZ(5,moms,flavs,false);
   double t((m_moms[0]-m_moms[1]).Abs2());
   double mu2(t);
   Vec4D p(m_moms[0]),p1(m_moms[1]),p2(m_moms[2]),p3(m_moms[3]);
@@ -266,7 +266,7 @@ Complex Scalar_To_Scalar_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int
   m_flavs[5]   = m_flavs[2];                // set to corresponding particle/antiparticle
   m_flavs[6]   = m_flavs[2].Bar();
   Vec4D k      = m_moms[4];
-  XYZFunc XYZ(7,m_moms,m_flavs,1,false);
+  XYZFunc XYZ(7,m_moms,m_flavs,false);
   m_flavs[5] = m_flavs[6] = Flavour(kf_none);
   // Form-Factor-Model
   Complex r1(0.,0.), r2(0.,0.), r3(0.,0.), r4(0.,0.);

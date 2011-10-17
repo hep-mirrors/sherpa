@@ -14,7 +14,7 @@ namespace ATOOLS {
     bool MassThem(const int n0, std::vector<Vec4D>& moms, std::vector<double> masses,const double=-1.e-14);
     bool ZeroThem(const int, const int, Vec4D *,const double=-1.e-14);
     bool ZeroThem(const int n0, std::vector<Vec4D>& moms,const double=1.e-14);
-    bool StretchBlob( Blob* blob, std::vector<double> masses = std::vector<double>());
+    bool StretchBlob(Blob* blob);
     bool StretchMomenta( const Particle_Vector& outparts, std::vector<Vec4D>& moms);
     bool StretchMomenta( const Particle_Vector& outparts, std::vector<double>& masses);
   };
@@ -55,9 +55,9 @@ namespace ATOOLS {
     employed.
   */
   /*!
-    \fn bool Momenta_Stretcher::StretchBlob(Blob*, std::vector<double>)
-    \brief Puts the momenta of the outgoing particles on new mass shells either
-           given by a vector of doubles or (if not given) to their FinalMass()es
+    \fn bool Momenta_Stretcher::StretchBlob(Blob*)
+    \brief Puts the momenta of the outgoing particles on new mass shells
+           given by their FinalMass()es
 
     Uses ZeroThem and MassThem to accomplish the stretching, and also cares for
     boosting the momenta into CMS in the beginning and back afterwards.

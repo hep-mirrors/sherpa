@@ -10,7 +10,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Library_Loader.H"
 
-#include "HADRONS++/Main/Hadrons.H"
+#include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
 #include "HADRONS++/Main/Hadron_Decay_Map.H"
 #include "HADRONS++/Main/Hadron_Decay_Table.H"
 #include "HADRONS++/Main/Hadron_Decay_Channel.H"
@@ -88,6 +88,7 @@ void small_sherpa_init(int argc, char *argv[])
   hi.Init();
   Data_Reader overwrite;
   hi.OverWriteProperties(overwrite);
+  ATOOLS::OutputHadrons(std::cout);
 
   msg->SetModifiable(true);
 }

@@ -208,7 +208,7 @@ int AMEGIC::Single_Process_MHV::Tests()
   
   --------------------------------------------------- */
 #ifdef Basic_Sfuncs_In_MHV
-  p_BS->Setk0(1);
+  p_BS->Setk0(s_gauge);
   p_BS->CalcEtaMu(p_testmoms); 
 #else
   p_momlist->PutMomenta(p_testmoms);
@@ -331,8 +331,8 @@ double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &_moms,const int 
     p_partner->ScaleSetter()->CalculateScale(_moms,mode);
   }
   Vec4D_Vector moms(_moms);
-  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
-    Poincare cms(moms[0]+moms[1]);
+  if (!(m_nin==2 && p_int->ISR() && p_int->ISR()->On())) {
+    Poincare cms(Vec4D(10.0,0.0,0.0,1.0));
     for (size_t i(0);i<moms.size();++i) cms.Boost(moms[i]);
   }
   return DSigma(moms,m_lookup); 
@@ -382,10 +382,19 @@ double AMEGIC::Single_Process_MHV::operator()(const ATOOLS::Vec4D* mom)
 }
 
 
-void AMEGIC::Single_Process_MHV::FillAmplitudes(METOOLS::Amplitude_Tensor* atensor,double sfactor)
+void AMEGIC::Single_Process_MHV::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,
+                                                std::vector<std::vector<Complex> >& cols)
 {
-  if (p_partner==this) p_ampl->FillAmplitudes(atensor,p_hel,sfactor);
-  else p_partner->FillAmplitudes(atensor,sfactor*sqrt(m_sfactor));
+  if (p_partner==this) p_ampl->FillAmplitudes(amps, cols, p_hel, 1.0);
+  else p_partner->FillAmplitudes(amps, cols, sqrt(m_sfactor));
+}
+
+void AMEGIC::Single_Process_MHV::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,
+                                                std::vector<std::vector<Complex> >& cols,
+                                                double sfactor)
+{
+  if (p_partner==this) p_ampl->FillAmplitudes(amps, cols, p_hel, sfactor);
+  else p_partner->FillAmplitudes(amps, cols, sfactor*sqrt(m_sfactor));
 }
 
 int AMEGIC::Single_Process_MHV::NumberOfDiagrams() { 

@@ -262,29 +262,40 @@ bool Momenta_Stretcher::ZeroThem(const int n0,vector<Vec4D>& momenta,
   return false;
 }
 
-bool Momenta_Stretcher::StretchBlob(Blob* blob, vector<double> masses)
+bool Momenta_Stretcher::StretchBlob(Blob* blob)
 {
   if(blob->GetOutParticles().size()<2) return true;
-  blob->BoostInCMS();
-  bool use_finalmasses = masses.size()==0;
+  std::vector<double> masses;
   Particle_Vector outparts = blob->GetOutParticles();
-  if( !use_finalmasses && outparts.size()!=masses.size()) return false;
   vector<Vec4D> momenta;
-  //msg_Out()<<"Check the "<<outparts.size()<<" momenta of blob in "<<METHOD<<":"<<std::endl;
-  for(Particle_Vector::iterator pit=outparts.begin();pit!=outparts.end();pit++) {
-    if( use_finalmasses ) masses.push_back( (*pit)->FinalMass() );
-    momenta.push_back( (*pit)->Momentum() );
-//     msg_Out()<<"  "<<(*pit)->Flav()<<" "<<(*pit)->FinalMass()<<" "<<(*pit)->Momentum()<<std::endl;
+  Vec4D total(0.0,0.0,0.0,0.0);
+  for (size_t i=0;i <outparts.size();i++) {
+    if (outparts[i]->DecayBlob()&&outparts[i]->DecayBlob()->NOutP()>0) continue;
+    masses.push_back(outparts[i]->FinalMass());
+    momenta.push_back(outparts[i]->Momentum());
+    total+=outparts[i]->Momentum();
+// =======
+//   //msg_Out()<<"Check the "<<outparts.size()<<" momenta of blob in "<<METHOD<<":"<<std::endl;
+//   for(Particle_Vector::iterator pit=outparts.begin();pit!=outparts.end();pit++) {
+//     if( use_finalmasses ) masses.push_back( (*pit)->FinalMass() );
+//     momenta.push_back( (*pit)->Momentum() );
+// //     msg_Out()<<"  "<<(*pit)->Flav()<<" "<<(*pit)->FinalMass()<<" "<<(*pit)->Momentum()<<std::endl;
+// >>>>>>> .merge-right.r13247
   }
+  Poincare cms(total);
+  for (size_t i=0; i<momenta.size(); ++i) cms.Boost(momenta[i]);
   if(!ZeroThem(0,momenta)) return false;
   if(!MassThem(0,momenta,masses)) {
     msg_Error()<<"Error in "<<METHOD<<"(Blob *)."<<std::endl;
     return false;
   }
+  size_t j=0;
   for(size_t i=0;i<outparts.size();i++) {
-    outparts[i]->SetMomentum(momenta[i]);
+    if (outparts[i]->DecayBlob()&&outparts[i]->DecayBlob()->NOutP()>0) continue;
+    cms.BoostBack(momenta[j]);
+    outparts[i]->SetMomentum(momenta[j]);
+    ++j;
   }
-  blob->BoostInLab();
   return true;
 }
 

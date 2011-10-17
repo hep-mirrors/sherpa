@@ -220,8 +220,8 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
       m_evtlist[m_cnt2].nparticle=pl->size();
       m_evtlist[m_cnt2].id=m_idcnt;
       m_evtlist[m_cnt2].wgt0=(*nlos)[j]->m_mewgt;
-      m_evtlist[m_cnt2].fscale=sqrt((*nlos)[j]->m_muf2);
-      m_evtlist[m_cnt2].rscale=sqrt((*nlos)[j]->m_mur2);
+      m_evtlist[m_cnt2].fscale=sqrt((*nlos)[j]->m_mu2[stp::fac]);
+      m_evtlist[m_cnt2].rscale=sqrt((*nlos)[j]->m_mu2[stp::ren]);
       m_evtlist[m_cnt2].alphas=MODEL::s_model->ScalarFunction("alpha_S", m_evtlist[m_cnt2].rscale*m_evtlist[m_cnt2].rscale);
 
       if (wgtinfo) {

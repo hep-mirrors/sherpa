@@ -119,8 +119,6 @@ namespace AMEGIC {
     double         Partonic(const ATOOLS::Vec4D_Vector &,const int);
     double         operator()(const ATOOLS::Vec4D *,const ATOOLS::Poincare &cms,const int);
 
-    void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
-
     int            Type() { return 15; }
     bool PerformTests() { return true; }
     void PrintLOmom();

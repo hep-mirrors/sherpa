@@ -3,7 +3,6 @@
 #include "COMIX/Cluster/Color_Setter.H"
 #include "COMIX/Main/Single_Process.H"
 #include "COMIX/Amplitude/Amplitude.H"
-#include "COMIX/Amplitude/Matrix_Element.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -33,49 +32,18 @@ Cluster_Algorithm::~Cluster_Algorithm()
 {
 }
 
-template <class SType> ColorID
-Cluster_Algorithm::GetPColor(Current_Base *const j,
-				  Current_Base *const fcur) const
+ColorID Cluster_Algorithm::GetColor(Current *const j,
+				    Current *const fcur) const
 {
-  ColorID col;
-  if (j->Type()=='S') {
-    const std::vector<CScalar<SType> > &cs(j->Current_Base::J<CScalar<SType> >());
-    if (cs.empty()) return col;
-    const CScalar<SType> &jc(cs.front());
-    col=ColorID(jc(0),jc(1));
+  for (size_t i(0);i<j->J().size();++i) {
+    const CObject_Vector &cs(j->J()[i]);
+    if (!cs.empty()) {
+      ColorID col((*cs.front())(0),(*cs.front())(1));
+      if (j==fcur) col=col.Conj();
+      return col;
+    }
   }
-  else if (j->Type()=='F') {
-    const std::vector<CSpinor<SType> > &cs(j->Current_Base::J<CSpinor<SType> >());
-    if (cs.empty()) return col;
-    col=ColorID(0,0);
-    const CSpinor<SType> &jc(cs.front());
-    if (j->Flav().IsAnti()) col.m_j=jc();
-    else col.m_i=jc();
-  }
-  else if (j->Type()=='V') {
-    const std::vector<CVec4<SType> > &cs(j->Current_Base::J<CVec4<SType> >());
-    if (cs.empty()) return col;
-    const CVec4<SType> &jc(cs.front());
-    col=ColorID(jc(0),jc(1));
-  }
-  else if (j->Type()=='T') {
-    const std::vector<CAsT4<SType> > &cs(j->Current_Base::J<CAsT4<SType> >());
-    if (cs.empty()) return col;
-    const CAsT4<SType> &jc(cs.front());
-    col=ColorID(jc(0),jc(1));
-  }
-  else {
-    THROW(fatal_error,"Internal error");
-  }
-  if (j==fcur) col=col.Conj();
-  return col;
-}
-
-ColorID Cluster_Algorithm::GetColor(Current_Base *const j,
-					 Current_Base *const fcur) const
-{
-  if (p_bg->PMode()=='Q') return GetPColor<long double>(j,fcur);
-  return GetPColor<double>(j,fcur);
+  return ColorID();
 }
 
 bool Cluster_Algorithm::EWConnected
@@ -155,7 +123,7 @@ CParam Cluster_Algorithm::GetMeasure
 
 void Cluster_Algorithm::CalculateMeasures
 (const size_t &step,const Vertex_Set &nocl,
- const Current_Vector &ccurs,Current_Base *const fcur,
+ const Current_Vector &ccurs,Current *const fcur,
  ClusterInfo_Map &cinfo,Double_Map &kt2,const SizeT_Map &cid)
 {
   msg_Debugging()<<METHOD<<"(): {\n";
@@ -245,14 +213,14 @@ void Cluster_Algorithm::CalculateMeasures
 
 bool Cluster_Algorithm::CombineWinner
 (const Cluster_Info &ci,Current_Vector &ccurs,
- Current_Base *&fcur,ClusterInfo_Map &cinfo)
+ Current *&fcur,ClusterInfo_Map &cinfo)
 {
-  Vertex_Base *v(ci.p_v);
+  Vertex *v(ci.p_v);
   if (v->JC()!=fcur) {
-    Current_Base *ja(v->JA()), *jb(v->JB());
+    Current *ja(v->JA()), *jb(v->JB());
     m_id[v->JC()->CId()]=m_id[ja->CId()]+m_id[jb->CId()];
     if (v->JA()->Id().front()>v->JB()->Id().front()) 
-      std::swap<Current_Base*>(ja,jb);
+      std::swap<Current*>(ja,jb);
     int found(0);
     for (Current_Vector::iterator 
 	   cit(ccurs.begin());cit!=ccurs.end();++cit)
@@ -306,7 +274,7 @@ bool Cluster_Algorithm::CombineWinner
 
 bool Cluster_Algorithm::ClusterStep
 (const size_t &step,Vertex_Set &nocl,
- Current_Vector &ccurs,Current_Base *&fcur,
+ Current_Vector &ccurs,Current *&fcur,
  ClusterInfo_Map &cinfo,Double_Map &kt2)
 {
   msg_Debugging()<<METHOD<<"(): step = "<<step<<" {\n";
@@ -484,7 +452,7 @@ bool Cluster_Algorithm::Cluster
   msg_Indent();
   m_id.clear();
   Current_Vector ccurs(p_bg->Currents()[1]);
-  Current_Base *fcur(ccurs[0]=p_bg->Currents().back().front());
+  Current *fcur(ccurs[0]=p_bg->Currents().back().front());
   p_ampl = Cluster_Amplitude::New();
   p_ampl->SetMS(p_ms);
   p_ampl->SetJF(jf);
@@ -554,7 +522,7 @@ bool Cluster_Algorithm::Cluster
 
 bool Cluster_Algorithm::Cluster
 (const size_t &step,const Vertex_Set &onocl,const Current_Vector &ccurs,
- Current_Base *const fcur,const ClusterInfo_Map &cinfo)
+ Current *const fcur,const ClusterInfo_Map &cinfo)
 {
   if (p_ampl->Legs().size()==3) {
     p_ampl=p_ampl->Prev();
@@ -569,7 +537,7 @@ bool Cluster_Algorithm::Cluster
   do {
     oldsize=nocl.size();
     Current_Vector nccurs(ccurs);
-    Current_Base *nfcur(fcur);
+    Current *nfcur(fcur);
     ClusterInfo_Map ncinfo(cinfo);
     if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo,kt2))
       if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo)) {
@@ -613,7 +581,7 @@ bool Cluster_Algorithm::Cluster
     nonocl[nwin->first]=nwin->second;
     nocl.erase(nwin);
     Current_Vector nccurs(ccurs);
-    Current_Base *nfcur(fcur);
+    Current *nfcur(fcur);
     ClusterInfo_Map ncinfo(cinfo);
     if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo,kt2))
       if (p_ampl->Mu2()<sqrt(std::numeric_limits<double>::max()))

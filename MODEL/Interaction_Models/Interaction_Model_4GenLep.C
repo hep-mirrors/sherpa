@@ -33,17 +33,27 @@ Interaction_Model_4GenLep::Interaction_Model_4GenLep(MODEL::Model_Base * _model,
 
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),rpa->gen.CplScale())));
-  g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
-		  g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  sintW = Kabbala(std::string("\\sin\\theta_W"),
-		  sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  costW = Kabbala(std::string("\\cos\\theta_W"),
-		  sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+  		     g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+  		     sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+  		     sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
+  }else{
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ComplexConstant(std::string("csin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ComplexConstant(std::string("cvev")));
+  }
   PL    = Kabbala(string("P_L"),1.);
   PR    = Kabbala(string("P_R"),1.);
   M_I   = Kabbala(string("i"),Complex(0.,1.));
   root2 = Kabbala(string("\\sqrt{2}"),sqrt(2.));
-  vev   = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
 }
 
 void Interaction_Model_4GenLep::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
@@ -199,7 +209,12 @@ void Interaction_Model_4GenLep::c_FFS(std::vector<Single_Vertex>& vertex,int& va
     Flavour flav = Flavour((kf_code)(i));
     if (flav.IsOn() && flav.IsFermion() && (flav.Yuk() > 0.)) {
       
-      M_h = Kabbala(string("M_{")+flav.TexName()+string("}"),flav.Mass(true));
+      if(ScalarNumber(std::string("WidthScheme"))==0){
+        M_h = Kabbala(string("M_{")+flav.TexName()+string("}"),flav.Mass(true));
+      }else{
+        M_h = Kabbala(string("M_{")+flav.TexName()+string("}"),
+                      sqrt(sqr(flav.Mass(true))-Complex(0.,1.)*flav.Width()*flav.Mass(true)));
+      }
 
       kcpl0 = -M_I*M_h/vev;
       kcpl1 = kcpl0;

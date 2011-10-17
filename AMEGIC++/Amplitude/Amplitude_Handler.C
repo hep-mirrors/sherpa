@@ -124,8 +124,8 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
   ngraph = ntotal;
 
   if (ngraph!=0) {
-    if (cpls->find("Alpha_QCD")!=cpls->end()) p_aqcd=(*cpls)["Alpha_QCD"];
-    if (cpls->find("Alpha_QED")!=cpls->end()) p_aqed=(*cpls)["Alpha_QED"];
+    p_aqcd=cpls->Get("Alpha_QCD");
+    p_aqed=cpls->Get("Alpha_QED");
   }
   
   delete [] subgraphlist;
@@ -802,7 +802,6 @@ Complex Amplitude_Handler::Zvalue(int ihel)
 
 Complex Amplitude_Handler::Zvalue(int ihel,int ci,int cj)
 {// Called for actual calculation of the CS
-  
   int cid = 100*ci+cj;
   if (cj<ci) cid = 100*cj+ci;
   CFColor *col = CFCol_Matrix; 
@@ -906,14 +905,33 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
   return M;
 }
 
-void Amplitude_Handler::FillAmplitudes(METOOLS::Amplitude_Tensor *atensor,Helicity* hel,double sfactor)
+void Amplitude_Handler::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,
+                                       std::vector<std::vector<Complex> >& cols,
+                                       Helicity* hel, double sfactor)
 {
-  atensor->SetColorMatrix(CFCol_Matrix->GetCMatrix());
-  vector<Complex> amps; amps.resize(graphs.size());
+  cols.resize(graphs.size(),std::vector<Complex>(graphs.size()));
+  for (size_t i=0; i<graphs.size(); ++i) {
+    for (size_t j=0; j<graphs.size(); ++j) {
+      cols[i][j]=CFCol_Matrix->Mij(i,j);
+    }
+  }
   
-  for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel) {
-    for (size_t i=0;i<graphs.size();i++) amps[i]=graphs[i]->Zvalue(ihel)*sfactor;
-    atensor->Insert(amps,ihel);
+  ////////////////////////////////////////////////////// BEGIN HACK
+  if (m_hm.empty()) {
+    m_hm.resize(hel->MaxHel());
+    METOOLS::Spin_Structure<int> amp(hel->GetFlavs(),0);
+    for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel) {
+      std::vector<int> ch(amp(ihel));
+      for (size_t j(0);j<ch.size();++j) if (ch[j]<2) ch[j]=1-ch[j];
+      m_hm[ihel]=amp(ch);
+    }
+  }
+  ////////////////////////////////////////////////////// END HACK
+  for (size_t i=0;i<graphs.size();i++) {
+    amps.push_back(METOOLS::Spin_Amplitudes(hel->GetFlavs(),Complex(0.0,0.0)));
+    for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel) {
+      amps.back().Insert(graphs[i]->Zvalue(ihel)*sfactor, m_hm[ihel]);
+    }
   }
 }
 

@@ -34,7 +34,7 @@ namespace ATOOLS {
       double m_timeout;
       int m_batchmode;
       std::string m_username;
-      bool m_spincorrelations;
+      bool m_softsc, m_hardsc;
       std::map<std::string,std::string> m_variables;
       std::vector<std::string> m_cites;
       size_t m_clevel;
@@ -51,8 +51,10 @@ namespace ATOOLS {
       void   SetCplScale(double _cplscale);
       inline Vec4D PBeam(short unsigned int i)            { return m_pbeam[i]; }
       void   SetPBeam(short unsigned int i,Vec4D pbeam);
-      inline bool   SpinCorrelation()                     { return m_spincorrelations; }
-      inline void   SetSpinCorrelation(bool sc)           { m_spincorrelations   = sc;}
+      inline bool   SoftSC() { return m_softsc; }
+      inline void   SetSoftSC(bool sc) { m_softsc = sc;}
+      inline bool   HardSC() { return m_hardsc; }
+      inline void   SetHardSC(bool sc) { m_hardsc = sc;}
       inline const  Flavour Beam1()           { return m_beam1; }
       inline const  Flavour Beam2()           { return m_beam2; }
       void   SetBeam1(const Flavour b);

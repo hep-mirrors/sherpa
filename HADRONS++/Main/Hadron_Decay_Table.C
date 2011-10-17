@@ -1,5 +1,7 @@
 #include "HADRONS++/Main/Hadron_Decay_Table.H"
 #include "HADRONS++/Main/Hadron_Decay_Channel.H"
+#include "HADRONS++/Main/Mixing_Handler.H"
+#include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -7,10 +9,12 @@
 
 using namespace HADRONS;
 using namespace ATOOLS;
+using namespace PHASIC;
 using namespace std;
 
-Hadron_Decay_Table::Hadron_Decay_Table(Flavour decayer) :
-  Decay_Table(decayer)
+Hadron_Decay_Table::Hadron_Decay_Table(Flavour decayer, const Mass_Selector* ms,
+                                       Mixing_Handler* mh) :
+  Decay_Table(decayer, ms), p_mixinghandler(mh)
 {
 }
 
@@ -47,7 +51,7 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
       continue;
     if (ExtractFlavours(helpkfc,helpsvv[i][0])) {
       ExtractBRInfo( helpsvv[i][1], BR, dBR, origin );
-      hdc = new Hadron_Decay_Channel(Flav(),path);
+      hdc = new Hadron_Decay_Channel(Flav(),p_ms,path);
       int charge = Flav().IntCharge();
       double mass = Flav().HadMass();
       for (size_t j=0;j<helpkfc.size();++j) {
@@ -58,7 +62,6 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 	mass-=flav.HadMass();
       }
       hdc->SetWidth(BR*Flav().Width());
-      hdc->SetOriginalWidth(hdc->Width());
       hdc->SetDeltaWidth(dBR*Flav().Width());
       hdc->SetOrigin(origin);
       if(helpsvv[i].size()==3) hdc->SetFileName(helpsvv[i][2]);
@@ -114,7 +117,7 @@ void Hadron_Decay_Table::Write(std::ostream& ostr)
   for (size_t j=0; j<size();j++) {
     Hadron_Decay_Channel* hdc = at(j);
     double dBR=hdc->DeltaWidth()/Flav().Width();
-    FlavourSet decprods=hdc->GetDecayProducts();
+    FlavourMultiSet decprods=hdc->GetDecayProducts();
     FlSetConstIter flit=decprods.begin();
     ostr<<"{"<<int(*flit);
     for (++flit;flit!=decprods.end();++flit) ostr<<","<<int(*flit);
@@ -212,9 +215,57 @@ void Hadron_Decay_Table::ExtractBRInfo( string entry, double & br, double & dbr,
   if (dbr==-1.0) dbr = br;
 }
 
-void Hadron_Decay_Table::UpdateWidth(Hadron_Decay_Channel * hdc,const double &width)
+void Hadron_Decay_Table::LatexOutput(std::ostream& f)
 {
-  m_width -= hdc->Width();
-  hdc->SetWidth(width);
-  m_width += hdc->Width();
+  f<<"\\subsection{\\texorpdfstring{Decaying Particle: $"<<Flav().TexName()<<"$"
+   <<" ["<<Flav().Kfcode()<<"]}"
+   <<"{"<<"["<<Flav().Kfcode()<<"] "<<Flav()<<"}}"<<endl;
+  f<<"\\begin{tabular}{ll}"<<endl;
+  f<<" number of decay channels:    & "<<size()<<"\\\\ "<<endl;
+  f<<" total width:               & "<<TotalWidth()<<" GeV \\\\ "<<endl;
+  f<<" experimental width:        & "<<Flav().Width()<<" GeV \\\\ "<<endl;
+  f<<"\\end{tabular}"<<endl;
+  f<<"\\begin{longtable}[l]{lll}"<<endl;
+  f<<"\\multicolumn{3}{c}{\\bf Exclusive Decays}\\\\"<<endl;
+  f<<"\\hline"<<endl;
+  f<<"Decay Channel & Input BR [Origin]/Integrated BR [Matrix Element]\\\\"<<endl;
+  f<<"\\hline\n\\hline"<<endl;
+  for(size_t i=0; i<size(); ++i) {
+    if(at(i)->Width()!=0.0) at(i)->LatexOutput(f, TotalWidth());
+  }
+  // skip inclusives for now
+  f<<"\\hline"<<endl;
+  f<<"\\end{longtable}"<<endl;
 }
+
+Decay_Channel * Hadron_Decay_Table::Select(Blob* blob) const
+{
+  Blob_Data_Base* data = (*blob)["dc"];
+  if(data) {
+    if(blob->Has(blob_status::internal_flag)) {
+      bool partonic_finalstate(false);
+      Decay_Channel* dc;
+      do {
+        dc = Decay_Table::Select();
+        FlavourMultiSet flavs=dc->GetDecayProducts();
+        for (FlSetIter fl=flavs.begin(); fl!=flavs.end(); fl++) {
+          if(fl->Strong()) {
+            partonic_finalstate=true;
+            break;
+          }
+        }
+      } while (!partonic_finalstate);
+      DEBUG_INFO("retrying with "<<dc->Name());
+      blob->UnsetStatus(blob_status::internal_flag);
+      blob->AddData("dc",new Blob_Data<Decay_Channel*>(dc));
+      return dc;
+    }
+    else return data->Get<Decay_Channel*>();
+  }
+  
+  Decay_Channel* dec_channel=p_mixinghandler->Select(blob->InParticle(0),*this);
+
+  blob->AddData("dc",new Blob_Data<Decay_Channel*>(dec_channel));
+  return dec_channel;
+}
+

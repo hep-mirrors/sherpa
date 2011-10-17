@@ -5,26 +5,50 @@
 #include <set>
 #include <string>
 #include <vector>
-#include "ATOOLS/Phys/Flavour.H"
+#include "SHERPA/Single_Events/Decay_Handler_Base.H"
 
-namespace ATOOLS {
-  class Decay_Map;
-  class Decay_Table;
+namespace MODEL {
+  class Single_Vertex;
+  typedef std::vector<Single_Vertex *>  Vertex_List;
+}
+
+namespace PHASIC {
   class Decay_Channel;
-  class Particle;
-  class Blob;
 }
 
 namespace SHERPA {
+  
+  class Hard_Decay_Handler : public Decay_Handler_Base {
+    std::string              m_path, m_file, m_resultdir, m_offshell;
+    bool                     m_store_results, m_decay_tau;
+    std::map<ATOOLS::Flavour, std::map<std::string, std::vector<double> > > 
+                             m_read;
 
-  class Hard_Decay_Handler {
-  private :
-    ATOOLS::Decay_Map *      p_decaymap;
+    void InitializeDirectDecays(PHASIC::Decay_Table* dt);
+    void RefineDecaysThreshold(PHASIC::Decay_Table* dt);
+    void RefineDecaysByWidth(PHASIC::Decay_Table* dt);
+    std::vector<PHASIC::Decay_Channel*> ResolveDecay(PHASIC::Decay_Channel* dc);
+    bool ProperVertex(MODEL::Single_Vertex* sv);
+    
+    void AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
+                            ATOOLS::Blob* blob,
+                            size_t& imax,
+                            size_t idmother);
+    
+    void ReadDecayTable(ATOOLS::Flavour decayer);
+    void WriteDecayTables();
+    bool CalculateWidth(PHASIC::Decay_Channel* dc);
+
   public :
     Hard_Decay_Handler(std::string,std::string);
     ~Hard_Decay_Handler();
 
-    void InitializeDecayMap();
+    void CreateDecayBlob(ATOOLS::Particle* inpart);
+    void DefineInitialConditions(ATOOLS::Cluster_Amplitude* ampl,
+                                 ATOOLS::Blob* initial_blob);
+
+    inline double Mass(const ATOOLS::Flavour &fl) const { return fl.Mass(); }
+    bool Decays(const ATOOLS::Flavour& flav);
   };
 }
 

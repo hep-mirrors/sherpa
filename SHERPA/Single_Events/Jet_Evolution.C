@@ -9,7 +9,9 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,HDHandlersMap *_hdhandlers,
+Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,
+                             Hard_Decay_Handler * _dechandler,
+                             Decay_Handler_Base *_hdhandler,
 			     MI_Handler *_mihandler,Shower_Handler *_showerhandler) :
   p_showerhandler(_showerhandler)
 {
@@ -19,15 +21,12 @@ Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,HDHandlersMap *_hdhandle
   Perturbative_Interface * interface;
   MEHandlerIter            meIter;
   for (meIter=_mehandlers->begin();meIter!=_mehandlers->end();++meIter) {
-    interface = new Perturbative_Interface(meIter->second,p_showerhandler);
+    interface = new Perturbative_Interface(meIter->second, _dechandler,
+                                           p_showerhandler);
     if (interface!=NULL) m_interfaces.insert(make_pair(meIter->first,interface));
   }
-  HDHandlersIter            hditer;
-  for (hditer=_hdhandlers->begin();hditer!=_hdhandlers->end();++hditer) {
-    interface = new Perturbative_Interface(hditer->second,p_showerhandler);
-    if (interface!=NULL) m_interfaces.insert(make_pair("HadronDecays",interface));
-    break;
-  }
+  interface = new Perturbative_Interface(_hdhandler,p_showerhandler);
+  if (interface!=NULL) m_interfaces.insert(make_pair("HadronDecays",interface));
   if (_mihandler) {
     interface = new Perturbative_Interface(_mihandler,p_showerhandler);
     if (interface!=NULL) m_interfaces.insert(make_pair("MPIs",interface));
@@ -61,12 +60,11 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
       blob = (*bloblist)[i];
       //std::cout<<METHOD<<" for "<<int(blob->Type())
       //	       <<"; check for status "<<int(blob->Status())<<endl;
-      if (blob->Has(blob_status::needs_showers)) {
-	FillDecayBlobMap(blob,bloblist);
+      if (blob->Has(blob_status::needs_showers) &&
+          blob->Type()!=btp::Hard_Decay) {
 	switch (int(blob->Type())) {
 	  case (int(btp::Signal_Process)) : break;
 	  case (int(btp::Hard_Collision)) : tag = string("MPIs"); break;
-	  case (int(btp::Hard_Decay))     : tag = string("HardDecays"); break;
 	  case (int(btp::Hadron_Decay))   : tag = string("HadronDecays"); break;
 	  default:
 	    msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
@@ -185,6 +183,7 @@ void Jet_Evolution::AftermathOfNoShower(Blob * blob,Blob_List * bloblist)
     blob->InParticle(i)->SetStatus(part_status::decayed);
   }
   for (size_t i=0; i<blob->GetOutParticles().size();++i) {
+    if (blob->OutParticle(i)->DecayBlob()) continue;
     myblob->AddToInParticles(blob->OutParticle(i));
     myblob->AddToOutParticles(new Particle(*blob->OutParticle(i)));
     blob->OutParticle(i)->SetStatus(part_status::decayed);
@@ -242,77 +241,10 @@ void Jet_Evolution::AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist
       bloblist->push_back(myblob);
     }
   }
-  else {
-    if (blob->Type()!=btp::Hadron_Decay) SetDecayBlobPointers(blob,bloblist);
-  }
-}
-
-void Jet_Evolution::SetDecayBlobPointers(Blob * blob,Blob_List * bloblist) 
-{ 
-  if (m_decmap.empty()) return;
-  Blob     * dec;
-  Particle * partin, * partout;
-  Particle_Blob_Map::iterator pbiter;
-  for (int i=0;i<blob->NOutP();i++) {
-    partin = blob->OutParticle(i);
-    if (partin->Flav().IsStable()) continue;
-    pbiter = m_decmap.find(partin);
-    if (pbiter==m_decmap.end()) {
-      msg_Error()<<"ERROR in "<<METHOD<<":"<<endl
-		 <<"   Did not find particle in map of decay blobs."<<endl
-		 <<"   Particle : "<<partin<<endl
-		 <<"   Will abort the run."<<endl;
-      abort();
-    }
-    dec     = pbiter->second;
-    if (dec->Type()==btp::Hard_Decay) {
-      //cout<<"Check for "<<partin->Flav()<<" / "<<partin->FinalMass()<<endl;
-      partout = FollowUp(partin,dec);
-      partout->SetDecayBlob(dec);
-      dec->RemoveInParticle(partin);
-      dec->AddToInParticles(partout);
-      //cout<<"Match : "<<partin->Number()<<" -> "<<partout->Number()<<endl
-      //	       <<(*dec)<<endl;
-    }
-  }
-}
-
-Particle * Jet_Evolution::FollowUp(Particle * partin,Blob * dec) 
-{
-  Blob * current = partin->DecayBlob();
-  Particle * partout;
-  if (current==0 || current==dec) return partin;
-  //cout<<"Current : "<<current->Id()<<" <- "<<partin->Number()
-  //	   <<" / "<<partin->Flav()<<endl;
-  for (int i=0;i<current->NOutP();++i) {
-    partout = current->OutParticle(i);
-    if (partout->Flav()==partin->Flav() &&
-	partout->FinalMass()==partin->FinalMass()) return FollowUp(partout,dec);
-  }
-  msg_Error()<<"ERROR in JetEvolution::FollowUp:"<<endl
-	     <<"   Did not find a suitable particle to follow up decay initiator through blob list."<<endl
-	     <<"   Particle = "<<partin<<endl
-	     <<"   Will abort the run."<<endl;
-  abort();
-}
-
-void Jet_Evolution::FillDecayBlobMap(Blob * blob,Blob_List * bloblist) 
-{
-  if (blob->Type()==btp::Hadron_Decay) {
-    return;
-  }
-  //  cout<<"Which blob ? "<<endl<<(*blob)<<endl;
-  for (int i=0;i<blob->NOutP();++i) {
-    if (blob->OutParticle(i)->DecayBlob()) 
-      m_decmap.insert(make_pair(blob->OutParticle(i),
-				     blob->OutParticle(i)->DecayBlob()));
-  }
-  //  cout<<"length of map : "<<m_decmap.size()<<endl;
 }
 
 void Jet_Evolution::CleanUp() 
 { 
-  m_decmap.clear();
   p_showerhandler->CleanUp();
 }
 

@@ -38,36 +38,47 @@ Interaction_Model_SM_Phantom_U1(MODEL::Model_Base * _model,
 
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),rpa->gen.CplScale())));
-  g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
-		  g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  sintW = Kabbala(std::string("\\sin\\theta_W"),
-		  sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  costW = Kabbala(std::string("\\cos\\theta_W"),
-		  sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+  		     g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+  		     sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+  		     sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+    vev      = Kabbala(string("v_{Higgs_SM}"),ScalarConstant(std::string("vev")));
+    GF       = Kabbala(string("GF"),ScalarConstant(string("GF")));
+  }else{
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ComplexConstant(std::string("csin2_thetaW"))));
+    vev      = Kabbala(string("v_{Higgs_SM}"),ComplexConstant(std::string("cvev")));
+    GF       = Kabbala(string("GF"),ComplexConstant(string("cGF")));
+  }
   PL    = Kabbala(string("P_L"),1.);
   PR    = Kabbala(string("P_R"),1.);
   M_I   = Kabbala(string("i"),Complex(0.,1.));
   root2 = Kabbala(string("\\sqrt{2}"),sqrt(2.));
-  vev   = Kabbala(string("v_{EW}"),ScalarConstant(string("vev")));
-  GF    = Kabbala(string("GF"),ScalarConstant(string("GF")));
   tanb  = Kabbala(string("\\tan\\beta"),ScalarConstant(string("Tan(Beta)")));
 
   ghgg = Kabbala(std::string("I_S^{(h)}"),
 		 ComplexConstant(std::string("h0_gg_fac"))*
 		 ScalarFunction(std::string("alpha_S"),hmass2)/
-		 (2.*M_PI*ScalarConstant(std::string("vev"))));
+		 (2.*M_PI*vev.Value()));
   gHgg = Kabbala(std::string("I_S^{(H)}"),
 		 ComplexConstant(std::string("H0_gg_fac"))*
 		 ScalarFunction(std::string("alpha_S"),Hmass2)/
-		 (2.*M_PI*ScalarConstant(std::string("vev"))));
+		 (2.*M_PI*vev.Value()));
   ghpp = Kabbala(std::string("I_P^{(h)}"),
 		 ComplexConstant(std::string("h0_pp_fac"))*
 		 ScalarFunction(std::string("alpha_QED"),hmass2)/
-		 (2.*M_PI*ScalarConstant(std::string("vev"))));
+		 (2.*M_PI*vev.Value()));
   gHpp = Kabbala(std::string("I_P^{(H)}"),
 		 ComplexConstant(std::string("H0_pp_fac"))*
 		 ScalarFunction(std::string("alpha_QED"),Hmass2)/
-		 (2.*M_PI*ScalarConstant(std::string("vev"))));
+		 (2.*M_PI*vev.Value()));
 }
 
 void Interaction_Model_SM_Phantom_U1::c_FFV(vector<Single_Vertex>& vertex,int& vanz)
@@ -99,7 +110,8 @@ void Interaction_Model_SM_Phantom_U1::c_FFS(vector<Single_Vertex>& vertex,int& v
     Flavour flav = Flavour((kf_code)(i));
     if (flav.IsOn() && flav.IsFermion() && (flav.Yuk() > 0.)) {
       massf = Kabbala(string("M_{")+flav.TexName()+string("}(m_h^2)"),
-		      ScalarFunction(string("m")+flav.IDName(),sqr(flh0.Mass())));
+		      sqrt(sqr(ScalarFunction(string("m")+flav.IDName(),sqr(flh0.Mass())))-
+		      Complex(0.,1.)*flav.Width()*ScalarFunction(string("m")+flav.IDName(),sqr(flh0.Mass()))));
 
       kcpl0 = -M_I*massf*mixh/vev;
       kcpl1 = kcpl0;
@@ -164,7 +176,11 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[0] = flav.Bar();
     vertex[vanz].in[1] = flh0;
     vertex[vanz].in[2] = flav.Bar();
-    kcpl0 = M_I*g2*flav.Yuk()*mixh;
+    if(ScalarNumber(std::string("WidthScheme"))==0){
+      kcpl0 = M_I*g2*flav.Yuk()*mixh;
+    }else{
+      kcpl0 = M_I*g2*sqrt(sqr(flav.Yuk())-Complex(0.,1.)*flav.Width()*flav.Yuk())*mixh;
+    }
     kcpl1 = kcpl0;
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = vertex[vanz].cpl[0];
@@ -181,7 +197,11 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[0] = flav;
     vertex[vanz].in[1] = flH0;
     vertex[vanz].in[2] = flav;
-    kcpl0 = M_I*g2*flav.Yuk()*mixH;
+    if(ScalarNumber(std::string("WidthScheme"))==0){
+      kcpl0 = M_I*g2*flav.Yuk()*mixH;
+    }else{
+      kcpl0 = M_I*g2*sqrt(sqr(flav.Yuk())-Complex(0.,1.)*flav.Width()*flav.Yuk())*mixH;
+    }
     kcpl1 = kcpl0;
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = vertex[vanz].cpl[0];
@@ -202,7 +222,11 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[0] = flav;
     vertex[vanz].in[1] = flh0;
     vertex[vanz].in[2] = flav;
-    kcpl0 = M_I*g2*flav.Yuk()/costW;
+    if(ScalarNumber(std::string("WidthScheme"))==0){
+      kcpl0 = M_I*g2*flav.Yuk()/costW;
+    }else{
+      kcpl0 = M_I*g2*sqrt(sqr(flav.Yuk())-Complex(0.,1.)*flav.Width()*flav.Yuk())/costW;
+    }
     kcpl1 = kcpl0;
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl1;
@@ -219,7 +243,11 @@ void Interaction_Model_SM_Phantom_U1::c_VVS(vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[0] = flav;
     vertex[vanz].in[1] = flH0;
     vertex[vanz].in[2] = flav;
-    kcpl0 = M_I*g2*flav.Yuk()*mixH/costW;
+    if(ScalarNumber(std::string("WidthScheme"))==0){
+      kcpl0 = M_I*g2*flav.Yuk()*mixH/costW;
+    }else{
+      kcpl0 = M_I*g2*sqrt(sqr(flav.Yuk())-Complex(0.,1.)*flav.Width()*flav.Yuk())*mixH/costW;
+    }
     kcpl1 = kcpl0;
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl1;
@@ -373,8 +401,13 @@ void Interaction_Model_SM_Phantom_U1::c_SSS(vector<Single_Vertex>& vertex,int& v
   mix21_3 = Kabbala(string("O_{21}^3"),pow(ComplexMatrixElement("HiggsMix",1,0),3));
   mix12_3 = Kabbala(string("O_{12}^3"),pow(ComplexMatrixElement("HiggsMix",0,1),3));
   mix22_3 = Kabbala(string("O_{22}^3"),pow(ComplexMatrixElement("HiggsMix",1,1),3));
-  massh2  = Kabbala(string("m_h^2"),sqr(flh0.Mass()));
-  massH2  = Kabbala(string("m_H^2"),sqr(flH0.Mass()));
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    massh2  = Kabbala(string("m_h^2"),sqr(flh0.Mass()));
+    massH2  = Kabbala(string("m_H^2"),sqr(flH0.Mass()));
+  }else{
+    massh2  = Kabbala(string("m_h^2"),sqr(flh0.Mass())-Complex(0.,1.)*flh0.Mass()*flh0.Width());
+    massH2  = Kabbala(string("m_H^2"),sqr(flH0.Mass())-Complex(0.,1.)*flH0.Mass()*flH0.Width());
+  }
   num_2   = Kabbala(string("2"),2.);
   num_3   = Kabbala(string("3"),3.);
 
@@ -483,8 +516,13 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
   mix21   = Kabbala(string("O_{21}"),ComplexMatrixElement("HiggsMix",1,0));
   mix12   = Kabbala(string("O_{12}"),ComplexMatrixElement("HiggsMix",0,1));
   mix22   = Kabbala(string("O_{22}"),ComplexMatrixElement("HiggsMix",1,1));
-  massh2  = Kabbala(string("m_h^2"),sqr(flh0.Mass()));
-  massH2  = Kabbala(string("m_H^2"),sqr(flH0.Mass()));
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    massh2  = Kabbala(string("m_h^2"),sqr(flh0.Mass()));
+    massH2  = Kabbala(string("m_H^2"),sqr(flH0.Mass()));
+  }else{
+    massh2  = Kabbala(string("m_h^2"),sqr(flh0.Mass())-Complex(0.,1.)*flh0.Mass()*flh0.Width());
+    massH2  = Kabbala(string("m_H^2"),sqr(flH0.Mass())-Complex(0.,1.)*flH0.Mass()*flH0.Width());
+  }
   num_2   = Kabbala(string("2"),2.); 
   num_4   = Kabbala(string("4"),4.);
  
@@ -671,8 +709,13 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
   mix21_2 = Kabbala(string("O_{21}^2"),pow(ComplexMatrixElement("HiggsMix",1,0),2));
   mix12_2 = Kabbala(string("O_{12}^2"),pow(ComplexMatrixElement("HiggsMix",0,1),2));
   mix22_2 = Kabbala(string("O_{22}^2"),pow(ComplexMatrixElement("HiggsMix",1,1),2));
-  massh2  = Kabbala(string("m_h^2"),sqr(flh0.Mass()));
-  massH2  = Kabbala(string("m_H^2"),sqr(flH0.Mass()));
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    massh2  = Kabbala(string("m_h^2"),sqr(flh0.Mass()));
+    massH2  = Kabbala(string("m_H^2"),sqr(flH0.Mass()));
+  }else{
+    massh2  = Kabbala(string("m_h^2"),sqr(flh0.Mass())-Complex(0.,1.)*flh0.Mass()*flh0.Width());
+    massH2  = Kabbala(string("m_H^2"),sqr(flH0.Mass())-Complex(0.,1.)*flH0.Mass()*flH0.Width());
+  }
   num_2   = Kabbala(string("2"),2.); 
   num_3   = Kabbala(string("3"),3.);
   num_4   = Kabbala(string("4"),4.);

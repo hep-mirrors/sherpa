@@ -16,7 +16,7 @@ namespace MODEL {
     ATOOLS::Flavour   in[4];       // flavours at the legs 
     short int         on;          // flag if vertex is on
     std::string       Str;         // name of the vertex
-    int               t;
+    int               t, oew, oqcd, dec;
  
     std::vector<ATOOLS::Kabbala> cpl;      // coupling constants
     std::vector<Color_Function>   Color;       // color structure 
@@ -28,6 +28,8 @@ namespace MODEL {
     ~Single_Vertex(); 
     
     Complex Coupling(size_t i) const;
+    std::string PID() const;
+
     int CheckCoupling() const;
     // operators
     Single_Vertex&       operator= (const Single_Vertex&);

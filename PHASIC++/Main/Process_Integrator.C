@@ -144,6 +144,7 @@ double Process_Integrator::TotalVar()
 		  (m_ssumsqr/m_sn-sqr(m_ssum/m_sn)));
       s2+=sqr(Sigma2())/vij2*sqr(m_sn/m_ssum);
     }
+    if (s2<0.0) return 0.0;
     return sqr(TotalResult())*sqrt(s2)/TotalSigma2();
   }
   default: {
@@ -153,6 +154,7 @@ double Process_Integrator::TotalVar()
 		  (m_ssumsqr/m_sn-sqr(m_ssum/m_sn)));
       s2+=sqr(Sigma2())/vij2*sqr(m_ssum/m_sn);
     }
+    if (s2<0.0) return 0.0;
     return sqrt(s2)/TotalSigma2();
   }
   }

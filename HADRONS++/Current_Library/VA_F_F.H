@@ -21,8 +21,9 @@ namespace HADRONS {
     Complex m_cR, m_cL;
     FF_Base* p_ff;
   public:
-    VA_F_F(ATOOLS::Flavour* flavs, int n, int* indices, std::string name) :
-      Current_Base(flavs, n, indices, name) {
+    VA_F_F(const ATOOLS::Flavour_Vector& flavs,const std::vector<int>& indices,
+           const std::string& name) :
+      Current_Base(flavs, indices, name) {
       m_cL=Complex( 1.0, 0.0);
       m_cR=Complex( 0.0, 0.0);
     };
@@ -30,7 +31,7 @@ namespace HADRONS {
       if (p_ff!=NULL) delete p_ff;
     }
     void SetModelParameters( struct GeneralModel _md );
-    void Calc(const ATOOLS::Vec4D * moms);
+    void Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti);
   };
 }
 #endif

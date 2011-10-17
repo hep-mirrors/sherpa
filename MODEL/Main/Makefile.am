@@ -12,6 +12,7 @@ libModelMain_la_SOURCES = SVN_Info.C \
 			  Running_Alpha_HV.C Running_Fermion_Mass.C \
 			  Effective_Higgs_Coupling.C LesHouches_Interface.C \
 			  Spectrum_Generator_Base.C \
+                          SM_TauPi.C \
 			  FeynRules_Model.C FeynRules_Spectrum.C
 
 localinc_HEADERS =   Coupling_Data.H Model_Base.H \

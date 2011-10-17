@@ -106,6 +106,7 @@ class Helicity {
     size_t GetAmplitudeNumber(std::vector<int> *Helis);
     size_t Nflavs() { return m_flavours.size(); }
     ATOOLS::Flavour GetFlav(size_t i) { return m_flavours[i]; }
+    inline const ATOOLS::Flavour_Vector& GetFlavs() const { return m_flavours; }
     ~Helicity();
 
     int GetEPol(int hNumber) { if (m_spos<0) return 90; return GetPol(m_spos,hNumber); }

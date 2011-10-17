@@ -9,10 +9,11 @@
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
 
 namespace SHERPA {
+  
+  class Hard_Decay_Handler;
 
   class Jet_Evolution: public Event_Phase_Handler {
   private :
-    ATOOLS::Particle_Blob_Map m_decmap;
     Shower_Handler          * p_showerhandler;
     PertInterfaceMap          m_interfaces;
 
@@ -22,16 +23,14 @@ namespace SHERPA {
     void Reset();
     void Update(const ATOOLS::Blob *,const size_t);
     bool DefineInitialConditions(const ATOOLS::Blob *,const ATOOLS::Blob_List *); 
-    void FillDecayBlobMap(ATOOLS::Blob *,ATOOLS::Blob_List *);
-    void SetDecayBlobPointers(ATOOLS::Blob *,ATOOLS::Blob_List *);
     void AftermathOfNoShower(ATOOLS::Blob *,ATOOLS::Blob_List *);
     void AftermathOfSuccessfulShower(ATOOLS::Blob *,ATOOLS::Blob_List *,
 				     Perturbative_Interface *);    
-    ATOOLS::Particle * FollowUp(ATOOLS::Particle *,ATOOLS::Blob *);
   public :
 
     // constructor
-    Jet_Evolution(MEHandlersMap *,HDHandlersMap *,MI_Handler *,Shower_Handler *);
+    Jet_Evolution(MEHandlersMap *, Hard_Decay_Handler*,
+                  Decay_Handler_Base *,MI_Handler *,Shower_Handler *);
 
     // destructor
     ~Jet_Evolution();

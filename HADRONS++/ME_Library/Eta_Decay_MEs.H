@@ -11,9 +11,11 @@ namespace HADRONS {
     Complex D(const ATOOLS::Vec4D *);
     Complex E(const ATOOLS::Vec4D *);
   public:
-    Eta_PVV(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
-      HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *);
+    Eta_PVV(const ATOOLS::Flavour_Vector& flavs,
+            const std::vector<int>& decayindices,
+            const std::string& name):
+      HD_ME_Base(flavs,decayindices,name) {};
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -25,18 +27,22 @@ namespace HADRONS {
     Complex Formfactor(const double);
     Complex Omnes_Formfactor(const double,const double);
   public:
-    Eta_PPV(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
-      HD_ME_Base(flavs,n,indices,name), 
+    Eta_PPV(const ATOOLS::Flavour_Vector& flavs,
+            const std::vector<int>& decayindices,
+            const std::string& name):
+      HD_ME_Base(flavs,decayindices,name),
       m_npol(3), m_ff(0), m_VDM_mass(0.), m_VDM_width(0.), m_fP(0.) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
   class Eta_PPP : public HD_ME_Base {
   public:
-    Eta_PPP(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
-      HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *);
+    Eta_PPP(const ATOOLS::Flavour_Vector& flavs,
+            const std::vector<int>& decayindices,
+            const std::string& name):
+      HD_ME_Base(flavs,decayindices,name) {};
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 

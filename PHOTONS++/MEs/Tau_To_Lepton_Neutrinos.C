@@ -176,7 +176,7 @@ Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_0_0() {
   m_moms = m_moms0;
   Vec4D  q  = m_moms[0]-m_moms[3];          // W propagator
   double mW = Flavour(kf_Wplus).HadMass();
-  XYZFunc XYZ(4,m_moms,m_flavs,1,false);
+  XYZFunc XYZ(4,m_moms,m_flavs,false);
   // Fermi-Theory
   if (m_fermi == true)
     return m_i/(mW*mW)*
@@ -216,7 +216,7 @@ Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_1_05(unsigned int i) {
   Vec4D q2     = m_moms[0]-m_moms[3];
   Vec4D k      = m_moms[4];
   double mW    = Flavour(kf_Wplus).HadMass();   // W mass/propagator pole
-  XYZFunc XYZ(9,m_moms,m_flavs,1,false);
+  XYZFunc XYZ(9,m_moms,m_flavs,false);
   m_flavs[5] = m_flavs[6] = m_flavs[7] = m_flavs[8] = Flavour(kf_none);
   // Fermi-Theory
   if (m_fermi == true) {

@@ -13,12 +13,13 @@ class SumRules3 : public FormFactor_Base {
 
   double Fit(double q2, double f0, double a, double b, double c, double d);
 public:
-  SumRules3(struct GeneralModel model, double* masses, Flavour* flavs, int* i);
+  SumRules3(GeneralModel model, double* masses, const Flavour_Vector& flavs,
+            const std::vector<int>& i);
   void CalcFFs(ATOOLS::Vec4D p0, ATOOLS::Vec4D p1);
 };
 
-SumRules3::SumRules3(GeneralModel model, double* masses, Flavour* flavs,
-                     int* i) :
+SumRules3::SumRules3(GeneralModel model, double* masses,
+                     const Flavour_Vector& flavs, const std::vector<int>& i) :
   FormFactor_Base(model, masses, flavs, i)
 {
   m_fV_0=0.0; m_fV_a=0.0; m_fV_b=0.0; m_fV_c=0.0; m_fV_d=0.0;

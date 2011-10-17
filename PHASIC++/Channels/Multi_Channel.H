@@ -109,6 +109,9 @@ namespace PHASIC {
     void                        NoGenerate()    { m_lastdice=-1; }
     inline const std::vector<Single_Channel*> &Best() const { return m_best; }
 
+    inline void SetNin(int _nin)   { nin=_nin; }
+    inline void SetNout(int _nout) { nout=_nout; }
+
     int                         OType() const  { return m_otype; }
 
     virtual int                 HandicapFactor() { return 1; }

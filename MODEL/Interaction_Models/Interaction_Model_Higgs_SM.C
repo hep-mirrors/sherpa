@@ -15,17 +15,27 @@ Interaction_Model_Higgs_SM::Interaction_Model_Higgs_SM(MODEL::Model_Base * _mode
 { 
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),rpa->gen.CplScale())));
-  g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
-		  g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  sintW = Kabbala(std::string("\\sin\\theta_W"),
-		  sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  costW = Kabbala(std::string("\\cos\\theta_W"),
-		  sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+  		     g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+  		     sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+  		     sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+    vev      = Kabbala(string("v_{Higgs_SM}"),ScalarConstant(std::string("vev")));
+  }else{
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ComplexConstant(std::string("csin2_thetaW"))));
+    vev      = Kabbala(string("v_{Higgs_SM}"),ComplexConstant(std::string("cvev")));
+  }
   PL    = Kabbala(string("P_L"),1.);
   PR    = Kabbala(string("P_R"),1.);
   M_I   = Kabbala(string("i"),Complex(0.,1.));
   root2 = Kabbala(string("\\sqrt{2}"),sqrt(2.));
-  vev   = Kabbala(string("v_{Higgs_SM}"),ScalarConstant(std::string("vev")));
 }
 
 void Interaction_Model_Higgs_SM::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
@@ -39,11 +49,25 @@ void Interaction_Model_Higgs_SM::c_FFS(std::vector<Single_Vertex>& vertex,int& v
     Flavour flav = Flavour((kf_code)(i));
     if (flav.IsOn() && flav.IsFermion() && (flav.Yuk() > 0.)) {
       
-      M_h = Kabbala(string("M_{")+flav.TexName()+string("}(m_h^2)"),
-		    ScalarFunction(std::string("m")+std::string(flav.IDName()),sqr(flh.Mass(true))));
+      if(ScalarNumber(std::string("WidthScheme"))!=0){
+        M_h = Kabbala(string("M_{")+flav.TexName()+string("}(m_h^2)"),
+		      sqrt(sqr(ScalarFunction(std::string("m")+std::string(flav.IDName()),sqr(flh.Mass(true))))
+		      -Complex(0.0,1.0)*ScalarFunction(std::string("m")+std::string(flav.IDName()),
+		      sqr(flh.Mass(true)))*flav.Width()));
+      }else{
+        M_h = Kabbala(string("M_{")+flav.TexName()+string("}(m_h^2)"),
+		      ScalarFunction(std::string("m")+std::string(flav.IDName()),sqr(flh.Mass(true))));
+      }
 
-      kcpl0 = -M_I*M_h/vev;
-      kcpl1 = kcpl0;
+      if (ScalarNumber("HIGGS_PARITY")==1) {
+        kcpl0 = -M_I*M_h/vev;
+        kcpl1 = kcpl0;
+      }
+      else {
+        PRINT_INFO("Resetting to pseudoscalar Higgs.");
+        kcpl0 = M_h/vev;
+        kcpl1 = -kcpl0;
+      }
       
       if (!ATOOLS::IsZero(kcpl0.Value())) {
 	vertex[vanz].in[0] = flav;
@@ -88,7 +112,11 @@ void Interaction_Model_Higgs_SM::c_VVS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[1] = flh;
     vertex[vanz].in[2] = flWplus.Bar();
     
-    kcpl0 = M_I*g2*flWplus.Yuk();
+    if(ScalarNumber(std::string("WidthScheme"))==0){
+      kcpl0 = M_I*g2*flWplus.Yuk();
+    }else{
+      kcpl0 = M_I*g2*sqrt(sqr(flWplus.Yuk())-Complex(0.,1.)*flWplus.Yuk()*flWplus.Width());
+    }
     kcpl1 = kcpl0;
 
     vertex[vanz].cpl[0]  = kcpl0;
@@ -104,6 +132,49 @@ void Interaction_Model_Higgs_SM::c_VVS(std::vector<Single_Vertex>& vertex,int& v
 
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
+
+    // decomposed hhWW for comix
+    vertex[vanz].in[1] = Flavour(kf_h0_qsc).Bar();
+    vertex[vanz].in[2] = vertex[vanz].in[0] = flWplus;
+
+    vertex[vanz].cpl[0] = vertex[vanz].cpl[1] = M_I*g2*g2/num_2;
+    vertex[vanz].Str    = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));  
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
+
+    vertex[vanz].on      = 1;
+    vertex[vanz].dec     = 3;
+    vertex.push_back(Single_Vertex());vanz++;
+
+    vertex[vanz].in[1] = Flavour(kf_h0_qsc).Bar();
+    vertex[vanz].in[2] = vertex[vanz].in[0] = flWplus.Bar();
+
+    vertex[vanz].cpl[0] = vertex[vanz].cpl[1] = M_I*g2*g2/num_2;
+    vertex[vanz].Str    = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));  
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(2,0);     
+
+    vertex[vanz].on      = 1;
+    vertex[vanz].dec     = 3;
+    vertex.push_back(Single_Vertex());vanz++;
+
+    vertex[vanz].in[0] = Flavour(kf_h0_qsc);
+    vertex[vanz].in[2] = (vertex[vanz].in[1] = flWplus).Bar();
+
+    vertex[vanz].cpl[0] = vertex[vanz].cpl[1] = M_I*g2*g2/num_2;
+    vertex[vanz].Str    = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));  
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(2,1);     
+
+    vertex[vanz].on      = 1;
+    vertex[vanz].dec     = 3;
+    vertex.push_back(Single_Vertex());vanz++;
   }
 
   Flavour flav = Flavour(kf_Z);
@@ -112,8 +183,13 @@ void Interaction_Model_Higgs_SM::c_VVS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[0] = flav;
     vertex[vanz].in[1] = flh;
     vertex[vanz].in[2] = flav;
-    
-    kcpl0 = M_I*g2*flav.Yuk()/costW;
+      
+    if(ScalarNumber(std::string("WidthScheme"))==0){
+      kcpl0 = M_I*g2*flav.Yuk()/costW;
+    }else{
+      kcpl0 = M_I*g2*sqrt(sqr(flav.Yuk())-Complex(0.,1.)*
+              flav.Width()*flav.Yuk())/costW;
+    }
     kcpl1 = kcpl0;
 
     vertex[vanz].cpl[0]  = kcpl0;
@@ -128,6 +204,35 @@ void Interaction_Model_Higgs_SM::c_VVS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
 
     vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+
+    // decomposed hhZZ for comix
+    vertex[vanz].in[1] = Flavour(kf_h0_qsc).Bar();
+    vertex[vanz].in[0] = vertex[vanz].in[2] = flav;
+    
+    vertex[vanz].cpl[0] = vertex[vanz].cpl[1] = M_I*g2*g2/(costW*costW*num_2);
+    vertex[vanz].Str    = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));  
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
+
+    vertex[vanz].on      = 1;
+    vertex[vanz].dec     = 3;
+    vertex.push_back(Single_Vertex());vanz++;
+
+    vertex[vanz].in[0] = Flavour(kf_h0_qsc);
+    vertex[vanz].in[1] = vertex[vanz].in[2] = flav;
+    
+    vertex[vanz].cpl[0] = vertex[vanz].cpl[1] = M_I*g2*g2/(costW*costW*num_2);
+    vertex[vanz].Str    = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));  
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));     
+    vertex[vanz].Lorentz.back()->SetParticleArg(1,2);     
+
+    vertex[vanz].on      = 1;
+    vertex[vanz].dec     = 3;
     vertex.push_back(Single_Vertex());vanz++;
   }
 }
@@ -144,7 +249,13 @@ void Interaction_Model_Higgs_SM::c_SSS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[1] = flh;
     vertex[vanz].in[2] = flh;
 
-    yuk   = Kabbala(string("M_{")+flh.TexName()+string("}"),flh.Yuk());
+
+    if(ScalarNumber(std::string("WidthScheme"))==0){
+      yuk   = Kabbala(string("M_{")+flh.TexName()+string("}"),flh.Yuk());
+    }else{
+      yuk   = Kabbala(string("M_{")+flh.TexName()+string("}"),
+                      sqrt(sqr(flh.Yuk())-Complex(0.,1.)*flh.Yuk()*flh.Width()));
+    }
     kcpl0 = -M_I*yuk*yuk*(num_3/vev);
     kcpl1 = kcpl0;
     
@@ -159,6 +270,47 @@ void Interaction_Model_Higgs_SM::c_SSS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
+    vertex.push_back(Single_Vertex());vanz++;
+
+    // decomposed hhhh / hhVV for comix
+    vertex[vanz].in[1] = Flavour(kf_h0_qsc);
+    vertex[vanz].in[0] = vertex[vanz].in[2] = flh;
+
+    vertex[vanz].cpl[0]  = vertex[vanz].cpl[1]  = -M_I;
+    vertex[vanz].Str     = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));  
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));     
+
+    vertex[vanz].on      = 1;
+    vertex[vanz].dec     = 3;
+    vertex.push_back(Single_Vertex());vanz++;
+
+    vertex[vanz].in[0] = Flavour(kf_h0_qsc).Bar();
+    vertex[vanz].in[1] = vertex[vanz].in[2] = flh;
+
+    vertex[vanz].cpl[0]  = vertex[vanz].cpl[1]  = -M_I;
+    vertex[vanz].Str     = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));  
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));     
+
+    vertex[vanz].on      = 1;
+    vertex[vanz].dec     = 3;
+    vertex.push_back(Single_Vertex());vanz++;
+
+    // decomposed hhhh for comix
+    vertex[vanz].in[0] = Flavour(kf_h0_qsc);
+    vertex[vanz].in[1] = vertex[vanz].in[2] = flh;
+
+    vertex[vanz].cpl[0]  = vertex[vanz].cpl[1]  = -M_I*yuk*yuk/(vev*vev);
+    vertex[vanz].Str     = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
+    
+    vertex[vanz].Color.push_back(Color_Function(cf::None));  
+    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));     
+
+    vertex[vanz].on      = 1;
+    vertex[vanz].dec     = 3;
     vertex.push_back(Single_Vertex());vanz++;
   }
 }
@@ -177,7 +329,12 @@ void Interaction_Model_Higgs_SM::c_SSSS(std::vector<Single_Vertex>& vertex,int& 
 
     vertex[vanz].nleg  = 4;  
     
-    yuk   = Kabbala(string("M_{")+flh.TexName()+string("}"),flh.Yuk());
+    if(ScalarNumber(std::string("WidthScheme"))==0){
+      yuk   = Kabbala(string("M_{")+flh.TexName()+string("}"),flh.Yuk());
+    }else{
+      yuk   = Kabbala(string("M_{")+flh.TexName()+string("}"),
+                      sqrt(sqr(flh.Yuk())-Complex(0.,1.)*flh.Yuk()*flh.Width()));
+    }
     kcpl0 = -M_I*yuk*yuk*(num_3/(vev*vev));
     kcpl1 = kcpl0;
     
@@ -192,6 +349,8 @@ void Interaction_Model_Higgs_SM::c_SSSS(std::vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
+    vertex[vanz].dec     = -1;
     vertex.push_back(Single_Vertex());vanz++;
   }
 }
@@ -229,6 +388,8 @@ void Interaction_Model_Higgs_SM::c_SSVV(std::vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
+    vertex[vanz].dec     = -1;
     vertex.push_back(Single_Vertex());vanz++;
   }
 
@@ -256,6 +417,8 @@ void Interaction_Model_Higgs_SM::c_SSVV(std::vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
+    vertex[vanz].dec     = -1;
     vertex.push_back(Single_Vertex());vanz++;
   }
 }

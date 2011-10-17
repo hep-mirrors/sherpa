@@ -103,13 +103,15 @@ namespace HADRONS {
 //     Complex         m_X[5];             // value of an X function
      
   public:
-    VA_0_PiPiPiPi3Charged(ATOOLS::Flavour* flavs, int n, int* indices, std::string name) :
-      Current_Base(flavs, n, indices, name) {};
+    VA_0_PiPiPiPi3Charged(const ATOOLS::Flavour_Vector& flavs,
+                          const std::vector<int>& indices,
+                          const std::string& name) :
+      Current_Base(flavs, indices, name) {};
     ~VA_0_PiPiPiPi3Charged() {
       if (p_lorenz!=NULL) delete p_lorenz;
     }
     void SetModelParameters( struct GeneralModel _md );
-    void Calc(const ATOOLS::Vec4D * moms);
+    void Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti);
   };
 }
 #endif

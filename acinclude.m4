@@ -140,8 +140,13 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
 
   METOOLSDIR="\${top_srcdir}/METOOLS"
   METOOLSBUILDDIR="\${top_builddir}/METOOLS"
-  METOOLSLIBS="-L\${METOOLSBUILDDIR}/Main -lHelicitiesMain \
-                  -L\${METOOLSBUILDDIR}/Loops -lHelicitiesLoops"
+  METOOLSLIBS="-L\${METOOLSBUILDDIR}/Explicit -lMEToolsExplicit \
+                  -L\${METOOLSBUILDDIR}/Currents -lMEToolsCurrents \
+                  -L\${METOOLSBUILDDIR}/Vertices -lMEToolsVertices \
+                  -L\${METOOLSBUILDDIR}/Colors  -lMEToolsColors \
+                  -L\${METOOLSBUILDDIR}/SpinCorrelations -lMEToolsSpinCorrelations \
+                  -L\${METOOLSBUILDDIR}/Loops -lMEToolsLoops \
+                  -L\${METOOLSBUILDDIR}/Main -lMEToolsMain"
   AC_SUBST(METOOLSDIR)
   AC_SUBST(METOOLSBUILDDIR)
   AC_SUBST(METOOLSLIBS)
@@ -150,6 +155,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   EXTRAXSBUILDDIR="\${top_builddir}/EXTRA_XS"
   EXTRAXSLIBS="-L\${EXTRAXSBUILDDIR}/Main -lExtraXS \
                -L\${EXTRAXSBUILDDIR}/Two2Two -lExtraXS2_2 \
+               -L\${EXTRAXSBUILDDIR}/One2Two -lExtraXS1_2 \
+               -L\${EXTRAXSBUILDDIR}/One2Three -lExtraXS1_3 \
                -L\${EXTRAXSBUILDDIR}/Cluster -lExtraXSCluster \
                -L\${EXTRAXSBUILDDIR}/NLO -lExtraXSNLO"
   AC_SUBST(EXTRAXSDIR)
@@ -175,7 +182,7 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
 
   COMIXDIR="\${top_srcdir}/COMIX"
   COMIXBUILDDIR="\${top_builddir}/COMIX"
-  COMIXLIBS="-L\${COMIXBUILDDIR}/Amplitude -L\${COMIXBUILDDIR}/Phasespace -L\${COMIXBUILDDIR}/Main -L\${COMIXBUILDDIR}/Models -L\${COMIXBUILDDIR}/Currents -L\${COMIXBUILDDIR}/Vertices -L\${COMIXBUILDDIR}/Cluster -lComixAmplitude -lComixPhasespace -lComix -lComixModels -lComixCurrents -lComixVertices -lComixCluster"
+  COMIXLIBS="-L\${COMIXBUILDDIR}/Amplitude -L\${COMIXBUILDDIR}/Phasespace -L\${COMIXBUILDDIR}/Main -L\${COMIXBUILDDIR}/Cluster -lComixAmplitude -lComixPhasespace -lComix -lComixCluster"
   AC_SUBST(COMIXDIR)
   AC_SUBST(COMIXBUILDDIR)
   AC_SUBST(COMIXLIBS)
@@ -221,7 +228,8 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
 	-L\${PHASICBUILDDIR}/Process -L\${PHASICBUILDDIR}/Scales \
 	-L\${PHASICBUILDDIR}/Selectors \
 	-lPhasicChannels -lPhasicMain -lPhasicProcess -lPhasicScales \
-	-lPhasicSelectors"
+	-lPhasicSelectors \
+    -L\${PHASICBUILDDIR}/Decays -lPhasicDecays"
   AC_SUBST(PHASICDIR)
   AC_SUBST(PHASICBUILDDIR)
   AC_SUBST(PHASICLIBS)

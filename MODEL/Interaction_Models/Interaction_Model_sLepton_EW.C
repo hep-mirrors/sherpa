@@ -15,16 +15,27 @@ Interaction_Model_sLepton_EW::Interaction_Model_sLepton_EW(MODEL::Model_Base * _
 { 
   g1       = Kabbala(string("g_1"),
 		     sqrt(4.*M_PI*ScalarFunction(string("alpha_QED"),rpa->gen.CplScale())));
-  g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
-		     g1.Value()/sqrt(ScalarConstant(string("sin2_thetaW"))));
-  sintW    = Kabbala(string("\\sin\\theta_W"),
-		     sqrt(ScalarConstant(string("sin2_thetaW"))));
-  costW    = Kabbala(string("\\cos\\theta_W"),
-		     sqrt(1.-ScalarConstant(string("sin2_thetaW"))));
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
+  }else{
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ComplexConstant(std::string("csin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ComplexConstant(std::string("cvev")));
+  }
+
   PL       = Kabbala(string("P_L"),1.);
   PR       = Kabbala(string("P_R"),1.);
   M_I      = Kabbala(string("i"),Complex(0.,1.));
-  vev      = Kabbala(string("v_{EW}"),ScalarConstant(string("vev")));
   
   v1     = Kabbala(string("v_1"), vev.Value() *
 		   sqrt(1./(1.+sqr(ScalarConstant(std::string("tan(beta)"))))));
@@ -89,8 +100,8 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].in[1] = flHm;
 	  vertex[vanz].in[2] = flav2.Bar();
      
-	  Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav2.TexName()+string("}}{ v_1}\\sqrt{2}"),
-				 -Flavour((kf_code)(2*gen_sLep(flav2)+11)).Yuk()/v1.Value()*sqrt(2.));
+          Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav2.TexName()+string("}}{ v_1}\\sqrt{2}"),
+			-K_yuk(Flavour((kf_code)(2*gen_sLep(flav2)+11))).Value()/v1.Value()*sqrt(2.));
 
 	  kcpl0 = M_I*K_Z_Nu(gen_sLep(flav2),i)*
 	    (-root2*g2*g2/num_4*(v1*K_Z_H(0,0)+v2*K_Z_H(1,0))*
@@ -141,7 +152,7 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].in[2] = flav2;
 
 	  Kabbala K_lI = Kabbala(string("\\frac{(\\m M_{")+flav1.TexName()+string("})}{ v_1}\\sqrt{2}"),
-				 -Flavour((kf_code)(2*gen_sLep(flav1)+11)).Yuk()/(v1).Value()*sqrt(2.));
+				 -K_yuk(Flavour((kf_code)(2*gen_sLep(flav1)+11))).Value()/(v1).Value()*sqrt(2.));
      
 	  kcpl0 = -(K_l_S(gen_sLep(flav1),gen_sLep(flav2))*
 		   (K_Z_L(gen_sLep(flav1),j-1)*K_Z_L(gen_sLep(flav2)+3,i-1)-
@@ -193,7 +204,7 @@ void Interaction_Model_sLepton_EW::c_SSS(std::vector<Single_Vertex>& vertex,int&
 	  Kabbala help = K_zero;
 
 	  Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_1}*\\sqrt{2}"),
-				 -Flavour((kf_code)(2*gen_sLep(flav1)+11)).Yuk()/(v1).Value()*sqrt(2.));
+				 -K_yuk(Flavour((kf_code)(2*gen_sLep(flav1)+11))).Value()/(v1).Value()*sqrt(2.));
 	 
 	  Kabbala fac = Kabbala(string("\\frac{1-4sin^2\\theta_W}{2sin^2\\theta_W}"),
 				(1.-4.*(sintW).Value()*(sintW).Value())/
@@ -421,7 +432,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	    if(i==j) help = num_1;
 	    
 	    K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_1}*\\sqrt{2}"),
-			   -Flavour((kf_code)(2*gen_sLep(flav1)+11)).Yuk()/(v1).Value()*sqrt(2.));
+			   -K_yuk(Flavour((kf_code)(2*gen_sLep(flav1)+11))).Value()/(v1).Value()*sqrt(2.));
 	    
 	    
 	    kcpl0 = M_I*(g1*g1/(costW*costW*num_2)*K_A_H(0,0)*
@@ -458,7 +469,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	    if(i==j) help = num_1;
 	    
 	    K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_1}*\\sqrt{2}"),
-			   -Flavour((kf_code)(2*gen_sLep(flav1)+11)).Yuk()/(v1).Value()*sqrt(2.));
+			   -K_yuk(Flavour((kf_code)(2*gen_sLep(flav1)+11))).Value()/(v1).Value()*sqrt(2.));
 	    
 	    
 	    kcpl0 = M_I*(g1*g1/(costW*costW*num_2)*K_A_H(0,0)*
@@ -501,7 +512,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		if(i==j) help = num_1;
 		
 		K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_1}*\\sqrt{2}"),
-			       -Flavour((kf_code)(2*gen_sLep(flav1)+11)).Yuk()/(v1).Value()*sqrt(2.));
+			       -K_yuk(Flavour((kf_code)(2*gen_sLep(flav1)+11))).Value()/(v1).Value()*sqrt(2.));
 		
 		
 		kcpl0 = M_I*(g1*g1/(costW*costW*num_2)*K_A_R(k,l)*
@@ -609,7 +620,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 	  Flavour lepton = Flavour((kf_code)(11+i*2));
 	  
 	  Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+lepton.TexName()+string("}}{ v_1}\\sqrt{2}"),
-				 -lepton.Yuk()/v1.Value()*sqrt(2.));
+				 -K_yuk(lepton).Value()/v1.Value()*sqrt(2.));
 	  
 	  
 	  vertex[vanz].nleg  = 4;  
@@ -650,7 +661,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		  Flavour lepton = Flavour((kf_code)(11+gen_sLep(flslep)*2));
 		  
 		  Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+lepton.TexName()+string("}}{ v_1}\\sqrt{2}"),
-					 -lepton.Yuk()/v1.Value()*sqrt(2.));
+					 -K_yuk(lepton).Value()/v1.Value()*sqrt(2.));
 		  
 		  vertex[vanz].nleg  = 4;  
 		  
@@ -684,7 +695,7 @@ void Interaction_Model_sLepton_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int
 		Flavour lepton = Flavour((kf_code)(11+gen_sLep(flslep)*2));
 		
 		Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+lepton.TexName()+string("}}{ v_1}\\sqrt{2}"),
-				       -lepton.Yuk()/v1.Value()*sqrt(2.));
+				       -K_yuk(lepton).Value()/v1.Value()*sqrt(2.));
 		
 		vertex[vanz].nleg  = 4;  
 		
@@ -1200,13 +1211,13 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
   int n_ino,c_ino,s_lep;
   
   Kabbala K_l1 = Kabbala(string("l^1"),
-			 -Flavour((kf_code)(11)).Yuk()/v1.Value()*sqrt(2.));
+			 -K_yuk(Flavour((kf_code)(11))).Value()/v1.Value()*sqrt(2.));
 
   Kabbala K_l2 = Kabbala(string("l^2"),
-			 -Flavour((kf_code)(13)).Yuk()/v1.Value()*sqrt(2.));
+			 -K_yuk(Flavour((kf_code)(13))).Value()/v1.Value()*sqrt(2.));
   
   Kabbala K_l3 = Kabbala(string("l^3"),
-			 -Flavour((kf_code)(15)).Yuk()/v1.Value()*sqrt(2.));
+			 -K_yuk(Flavour((kf_code)(15))).Value()/v1.Value()*sqrt(2.));
   
   //neutrino - sneutrino - neutralino
   
@@ -1251,7 +1262,7 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
     Flavour flav1 = Flavour((kf_code)(i));
     
     Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_1}\\sqrt{2}"),
-			   -Flavour((kf_code)(i-1)).Yuk()/v1.Value()*sqrt(2.));
+			   -K_yuk(Flavour((kf_code)(i-1))).Value()/v1.Value()*sqrt(2.));
    
     for (short int j=0;j<2;j++) {
       if (j==0) c_ino=1000024;
@@ -1293,7 +1304,7 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
     Flavour flav1 = Flavour((kf_code)(i));
   
     Kabbala K_lI = Kabbala(string("\\frac{(\\m M_{")+flav1.TexName()+string(")}}{ v_1}\\sqrt{2}"),
-			   -flav1.Yuk()/v1.Value()*sqrt(2.));
+			   -K_yuk(flav1).Value()/v1.Value()*sqrt(2.));
        
     for (short int j=0;j<2;j++) {
       if (j==0) c_ino=1000024;
@@ -1347,7 +1358,7 @@ void Interaction_Model_sLepton_EW::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].in[2] = flav2;
 
 	  Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_1}\\sqrt{2}"),
-				     -flav1.Yuk()/v1.Value()*sqrt(2.));
+				     -K_yuk(flav1).Value()/v1.Value()*sqrt(2.));
 	  
 	  kcpl0 = M_I*(-g1/costW*root2*K_Z_L((i-11)/2+3,k-1)*K_Z_N_com_conj(0,j)
 		       + K_lI*K_Z_L((i-11)/2,k-1)*K_Z_N_com_conj(2,j));
@@ -1380,7 +1391,7 @@ Kabbala Interaction_Model_sLepton_EW::K_l(short int i)
   sprintf(hi,"%i",i);
   
   return Kabbala(string("l^")+string(hi),
-		 -Flavour((kf_code)(2*i+11)).Yuk()/v1.Value()*sqrt(2.));
+		 -K_yuk(Flavour((kf_code)(2*i+11))).Value()/v1.Value()*sqrt(2.));
 
 }
 
@@ -1443,7 +1454,12 @@ Kabbala Interaction_Model_sLepton_EW::K_l_S(short int i,short int j)
 }
 
 Kabbala Interaction_Model_sLepton_EW::K_yuk(Flavour fl) {
-  return Kabbala(string("M_{"+fl.TexName()+"}"),fl.Yuk());
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    return Kabbala(string("M_{"+fl.TexName()+"}"),fl.Yuk());
+  }else{
+    return Kabbala(string("M_{"+fl.TexName()+"}"),
+                   sqrt(sqr(fl.Yuk())-Complex(0.,1.)*fl.Width()*fl.Yuk()));
+  }
 }
 
 Kabbala Interaction_Model_sLepton_EW::K_yuk_sign(Flavour fl) {

@@ -10,25 +10,30 @@ using namespace METOOLS;
 using namespace ATOOLS;
 using namespace std;
 
-string METOOLS::GetName(Flavour* flavs, int n)
-{
-  string name=ToString(flavs[0])+" --> ";
-  for(int i=1; i<n; ++i)
-    name+=" "+ToString(flavs[i]);
-  return name;
+namespace METOOLS {
+  string GetName(const Flavour_Vector& flavs)
+  {
+    string name=ToString(flavs[0])+" --> ";
+    for(size_t i=1; i<flavs.size(); ++i)
+      name+=" "+ToString(flavs[i]);
+    return name;
+  } 
 }
 
-Partial_Amplitude_Base::Partial_Amplitude_Base(Flavour* flavs,size_t size,
-                                               int* i,bool* out) :
-  Spin_Structure<Complex>(flavs,size,i), 
-  p_flavs(flavs), p_i(i), p_out(out)
+Partial_Amplitude_Base::Partial_Amplitude_Base(const Flavour_Vector& flavs,
+                                               const vector<int>& i,
+                                               const vector<bool>& out) :
+  Spin_Amplitudes(flavs,i), 
+  p_flavs(flavs), p_out(out)
 {
+  p_i.resize(i.size());
+  for (size_t j=0; j<i.size(); ++j) p_i[j]=i[j];
+  p_out.resize(out.size());
+  for (size_t j=0; j<out.size(); ++j) p_out[j]=out[j];
 }
 
 Partial_Amplitude_Base::~Partial_Amplitude_Base()
 {
-  if(p_out) { delete [] p_out; }
-  if(p_i)   { delete [] p_i; }
 }
 
 void Partial_Amplitude_Base::AssertSpins(int spin, ...)
@@ -39,7 +44,7 @@ void Partial_Amplitude_Base::AssertSpins(int spin, ...)
   for (size_t i(0); i<m_spins.size(); ++i) {
     if(p_flavs[p_i[i]].IntSpin()!=sp)
       THROW(fatal_error, ToString(p_flavs[p_i[i]])+" does not have spin "+
-            ToString(sp)+" in "+GetName(p_flavs,m_spins.size())+".");
+            ToString(sp)+" in "+GetName(p_flavs)+".");
     sp=va_arg(ap,int);
   }
   va_end(ap);
@@ -51,24 +56,26 @@ void Partial_Amplitude_Base::AssertIn(int nin)
   for (size_t i(0);i<m_spins.size();i++) if (p_out[i]==false) isin++;
   if (isin!=nin) {
     THROW(fatal_error, "Expected "+ToString(nin)+" incomings, but got "
-          +ToString(isin)+" in "+GetName(p_flavs,m_spins.size())+".");
+          +ToString(isin)+" in "+GetName(p_flavs)+".");
   }
 }
 
 #define SELECT_ISOTROPIC \
-  msg_Debugging()<<METHOD<<": Generic hadron decay ME for "<<GetName(flavs,n) \
+  msg_Debugging()<<METHOD<<": Generic hadron decay ME for "<<GetName(flavs) \
   <<" not implemented. Using Isotropic."<<endl; \
-  me=new Isotropic(flavs, n, inds, out)
+  me=new Isotropic(flavs, inds, out)
 
-Partial_Amplitude_Base* Partial_Amplitude_Base::Select(Flavour* flavs, int n)
+Partial_Amplitude_Base*
+Partial_Amplitude_Base::Select(const Flavour_Vector& flavs)
 {
+  int n=flavs.size();
   Partial_Amplitude_Base* me(NULL);
-  int* inds = new int[n];
+  vector<int> inds(n);
   for (int i=0; i<n; ++i) inds[i]=i;
-  bool* out = new bool[n];
+  vector<bool> out(n);
   out[0]=false;
   for(int i(1);i<n;++i) out[i]=true;
-
+  
   for (int i=0; i<n; ++i) {
     if (flavs[i].IsVector() && IsZero(flavs[i].Mass())) {
       SELECT_ISOTROPIC;
@@ -146,10 +153,10 @@ Partial_Amplitude_Base* Partial_Amplitude_Base::Select(Flavour* flavs, int n)
         inds[2]=0;
         if((flavs[inds[1]].IsLepton() || flavs[inds[2]].IsLepton()) &&
            (  flavs[inds[0]].Kfcode()==kf_pi_plus ||
-           flavs[inds[0]].Kfcode()==kf_K_plus ||
-           flavs[inds[0]].Kfcode()==kf_D_plus ||
-           flavs[inds[0]].Kfcode()==kf_D_s_plus ||
-           flavs[inds[0]].Kfcode()==kf_B_plus ||
+              flavs[inds[0]].Kfcode()==kf_K_plus ||
+              flavs[inds[0]].Kfcode()==kf_D_plus ||
+              flavs[inds[0]].Kfcode()==kf_D_s_plus ||
+              flavs[inds[0]].Kfcode()==kf_B_plus ||
               flavs[inds[0]].Kfcode()==kf_B_c
               ))
           me=new SFF_FPI(flavs, inds, out);
@@ -162,10 +169,10 @@ Partial_Amplitude_Base* Partial_Amplitude_Base::Select(Flavour* flavs, int n)
         inds[2]=0;
         if((flavs[inds[1]].IsLepton() || flavs[inds[2]].IsLepton()) &&
            (  flavs[inds[0]].Kfcode()==kf_pi_plus ||
-           flavs[inds[0]].Kfcode()==kf_K_plus ||
-           flavs[inds[0]].Kfcode()==kf_D_plus ||
-           flavs[inds[0]].Kfcode()==kf_D_s_plus ||
-           flavs[inds[0]].Kfcode()==kf_B_plus ||
+              flavs[inds[0]].Kfcode()==kf_K_plus ||
+              flavs[inds[0]].Kfcode()==kf_D_plus ||
+              flavs[inds[0]].Kfcode()==kf_D_s_plus ||
+              flavs[inds[0]].Kfcode()==kf_B_plus ||
               flavs[inds[0]].Kfcode()==kf_B_c
               ))
           me=new SFF_FPI(flavs, inds, out);
@@ -276,13 +283,14 @@ Partial_Amplitude_Base* Partial_Amplitude_Base::Select(Flavour* flavs, int n)
 }
 
 
-Isotropic::Isotropic(Flavour *fl,int n,int* i,bool *out) :
-  Partial_Amplitude_Base(fl,n,i,out)
+Isotropic::Isotropic(const Flavour_Vector& fl,
+                     const vector<int>& i, const vector<bool>& out) :
+  Partial_Amplitude_Base(fl,i,out)
 {
   AssertIn(1);
 }
 
-void Isotropic::operator()(const Vec4D * moms,const bool anti)
+void Isotropic::Calculate(const ATOOLS::Vec4D_Vector& moms, bool anti)
 {
   CreateTrivial(Complex(1.0,0.0));
 }

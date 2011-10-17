@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Getter_Function.H"
 #include "MODEL/Main/Coupling_Data.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Math/Vector.H"
 
 namespace MODEL { class Model_Base; }
@@ -12,26 +13,12 @@ namespace PHASIC {
 
   class Process_Base;
 
-  struct stp {
-
-    enum id {
-      fac     =  0,
-      ren     =  1,
-      size    =  2
-    };
-
-  };// end of struct stp
-
-  std::ostream &operator<<(std::ostream &ostr,const stp::id &scl);
-
-  class Integrable_Base;
-  class Jet_Finder;
-
   struct Scale_Setter_Arguments {
     Process_Base *p_proc;
     MODEL::Model_Base *p_model;
     MODEL::Coupling_Map *p_cpls;
     std::string m_scale, m_coupling;
+    size_t m_nin, m_nout;
     Scale_Setter_Arguments(MODEL::Model_Base *const model,
 			   const std::string &scale="",
 			   const std::string &coupling=""):
@@ -52,15 +39,20 @@ namespace PHASIC {
     MODEL::Model_Base   *p_model;
     MODEL::Coupling_Map *p_cpls;
 
+    ATOOLS::Vec4D_Vector    m_p;
+    ATOOLS::NLO_subevtlist *p_subs;
+
     std::vector<double> m_scale, m_escale, m_fac;
 
     std::string m_coupling;
 
     bool m_scale2;
 
+    size_t m_nin, m_nout;
+
     ATOOLS::ClusterAmplitude_Vector m_ampls;
 
-    mutable Jet_Finder *p_jf;
+    virtual double Calculate(const ATOOLS::Vec4D_Vector &p,const int mode) = 0;
 
   public:
 
@@ -75,16 +67,13 @@ namespace PHASIC {
 
     ATOOLS::Vec4D PSum() const;
 
-    virtual double CalculateScale(const std::vector<ATOOLS::Vec4D> &p,
-				  const int mode) = 0;
-
-    virtual const ATOOLS::Vec4D_Vector &Momenta() const;
+    double CalculateScale(const ATOOLS::Vec4D_Vector &p,const int mode);
 
     inline void SetFixedScale(const std::vector<double> &s) { m_escale=s; }
 
     inline void SetCaller(Process_Base *const proc) { p_caller=proc; }
 
-    inline double Scale(const stp::id type,const int mode=0) const
+    inline double Scale(const ATOOLS::stp::id type,const int mode=0) const
     { return mode==0?m_scale[type]:m_fac[type]*m_scale[type]; }
 
     inline const std::vector<double> &Scales() const { return m_scale; }
@@ -98,6 +87,11 @@ namespace PHASIC {
     inline MODEL::Coupling_Map *Couplings() const { return p_cpls; }
 
     static void ShowSyntax(const size_t i);
+
+    inline const ATOOLS::Vec4D_Vector &Momenta() const { return m_p; }
+
+    inline size_t NIn() const  { return m_nin;  }
+    inline size_t NOut() const { return m_nout; }
 
   };// end of class Scale_Setter_Base
 

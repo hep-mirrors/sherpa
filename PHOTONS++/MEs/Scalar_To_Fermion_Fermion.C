@@ -156,7 +156,7 @@ Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_0_0() {
   if (m_M00results[m_spins[0]][m_spins[1]][m_spins[2]].first)
     return m_M00results[m_spins[0]][m_spins[1]][m_spins[2]].second;
   m_moms = m_moms0;
-  XYZFunc XYZ(3,m_moms,m_flavs,1,false);
+  XYZFunc XYZ(3,m_moms,m_flavs,false);
   m_M00results[m_spins[0]][m_spins[1]][m_spins[2]].second
     = XYZ.Y(1,m_spins[1],2,m_spins[2],m_cL,m_cR);
   m_M00results[m_spins[0]][m_spins[1]][m_spins[2]].first = true;
@@ -169,7 +169,7 @@ Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_0_1() {
   double s    = sqr(m_masses[0]);
   double mu2  = s;
   double p1p2 = m_moms[1]*m_moms[2];
-  XYZFunc XYZ(3,m_moms,m_flavs,1,false);
+  XYZFunc XYZ(3,m_moms,m_flavs,false);
   DivArrC term1(0.,0.,0.,0.,0.,0.), term2(0.,0.,0.,0.,0.,0.);
   term1 = (2.*p1p2+m2)*C_11(m2,m2,s,0.,m2,m2,mu2)
           +0.5*D*m2*C_21(m2,m2,s,0.,m2,m2,mu2)
@@ -199,7 +199,7 @@ Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_1_05(unsigned int i) {
   m_moms[6]    = m_moms[7] = pb;
   m_flavs[4]   = m_flavs[6] = m_flavs[1];   // set to corresponding particle/antiparticle
   m_flavs[5]   = m_flavs[7] = m_flavs[2];
-  XYZFunc XYZ(8,m_moms,m_flavs,1,false);
+  XYZFunc XYZ(8,m_moms,m_flavs,false);
   Complex r1 = Complex(0.,0.);
   Complex r2 = Complex(0.,0.);
   Complex r3 = Complex(0.,0.);

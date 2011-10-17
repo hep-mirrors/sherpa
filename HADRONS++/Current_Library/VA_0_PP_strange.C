@@ -27,7 +27,7 @@ void VA_0_PP_strange::SetModelParameters( struct GeneralModel _md )
 }
 
 
-void VA_0_PP_strange::Calc(const ATOOLS::Vec4D * moms)
+void VA_0_PP_strange::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   // 0 is pion, 1 kaon
   double  q2 = (moms[p_i[0]]+moms[p_i[1]]).Abs2();

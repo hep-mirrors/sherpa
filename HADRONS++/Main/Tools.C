@@ -9,7 +9,6 @@
 using namespace HADRONS;
 using namespace ATOOLS;
 
-const int Tools::k0 = 1;
 const double Tools::Vud = 0.97377;
 const double Tools::Vus = 0.2257;
 const double Tools::Vub = 4.31e-3;

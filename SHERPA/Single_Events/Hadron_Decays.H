@@ -2,61 +2,28 @@
 #define SHERPA_Single_Events_Hadron_Decays_H
 
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
-#include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
 #include "ATOOLS/Org/Return_Value.H"
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 
 namespace ATOOLS {
   class Blob;
   class Particle;
   class Blob_List;
-  class Amplitude_Tensor;
 }
 
-#ifdef DEBUG__Hadrons
-#ifdef USING__ROOT
-#include "TH1D.h"
-#include "TFile.h"
-#endif
-#endif
-
 namespace SHERPA {
-  class Soft_Photon_Handler;
+  class Decay_Handler_Base;
 
   class Hadron_Decays : public Event_Phase_Handler {
   private :
-#ifdef DEBUG__Hadrons
-#ifdef USING__ROOT
-    TFile* p_file;
-    std::map<kf_code,TH1D*> mass_hists;
-#endif
-#endif
-    HDHandlersMap     * p_dechandlers;
-    Soft_Photon_Handler * p_softphotons;
-    ATOOLS::Blob_List * p_bloblist;
-    
-    static int          m_mass_smearing;
-    
-    bool Treat(ATOOLS::Blob * blob);
-    bool CreateDecayBlob(ATOOLS::Particle* inpart);
-    bool SetMasses(ATOOLS::Blob*);
-    bool BoostAndStretch(ATOOLS::Blob* blob, const ATOOLS::Vec4D& labmom);
-    Hadron_Decay_Handler* ChooseDecayHandler(ATOOLS::Particle* part);
-    bool RejectExclusiveChannelsFromFragmentation(ATOOLS::Blob*);
-    bool PerformMixing(ATOOLS::Particle* inpart, ATOOLS::Blob_List* bloblist);
-    bool AttachExtraQED(ATOOLS::Blob* blob);
-    void SetPosition(ATOOLS::Blob* blob);
+    Decay_Handler_Base * p_dechandler;
     
   public :
-    Hadron_Decays(HDHandlersMap *, Soft_Photon_Handler *);
+    Hadron_Decays(Decay_Handler_Base *);
     ~Hadron_Decays();
     
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
     void                       CleanUp();
     void                       Finish(const std::string &);
-
-    static void SetMassSmearing(int mode) { m_mass_smearing=mode; }
-    static int MassSmearing()             { return m_mass_smearing; }
   };
 
   /*!
@@ -77,7 +44,7 @@ namespace SHERPA {
     stretches the momenta to the lab CMS and their final masses.
     */
   /*!
-    \var int Hadron_Decays::m_mass_smearing
+    \var double Hadron_Decays::m_mass_smearing
     \brief Switch to turn mass smearing on and off.
 
     Can be set by the "MASS_SMEARING = [0,1]" variable in Fragmentation.dat

@@ -5,129 +5,118 @@
 #include <vector>
 #include "ATOOLS/Phys/Flavour.H"
 #include "HADRONS++/Main/Tools.H"
-#include "ATOOLS/Phys/Decay_Map.H"
+#include "PHASIC++/Decays/Decay_Map.H"
 
 namespace HADRONS {
   class Hadron_Decay_Table;
+  class Mixing_Handler;
 
-  typedef std::pair<std::string,std::pair<double,double> >  BRPairString;
-  typedef std::pair<ATOOLS::FlavourSet,std::pair<double,double> >   BRPairFlavourSet;
-  typedef std::map<std::string,std::pair<double,double> >   BRMapString;
-  typedef std::pair<double,double> DoublePair;
-  typedef std::map<ATOOLS::Flavour,std::vector<Hadron_Decay_Table *> > FlDtVMap;
   typedef std::multimap<std::string, Hadron_Decay_Table*> SDtMMap;
   typedef std::multimap<std::string, Hadron_Decay_Table*>::iterator SDtMMapIt;
 
-  class Hadron_Decay_Map : public ATOOLS::Decay_Map {
+  /**
+   * Building on the general class Decay_Map this class implements the features
+   * specific for hadron decay maps, e.g. reading decay tables from files.
+   * Furthermore it manages the global constants defined in HadronConstants.dat.
+   */
+  class Hadron_Decay_Map : public PHASIC::Decay_Map {
   private:
-    std::map<ATOOLS::Flavour,int> m_counters;
+
+    /**
+     * A model that is filled from HadronConstants.dat and used as starting
+     * point for all decay channel specific models.
+     */
     GeneralModel m_startmd;
-    std::string m_decaypath, m_decayfile, m_constfile;
+
     std::multimap<std::string, Hadron_Decay_Table*> m_fixed_tables;
     std::vector<Hadron_Decay_Table*> m_fixed_next_tables;
 
-    std::vector<BRPairFlavourSet> GetInclusives(
-        Hadron_Decay_Table * dt,
-        BRMapString & brmap,
-        ATOOLS::FlavourSet flset=ATOOLS::FlavourSet(),
-        DoublePair br=DoublePair(1.,1.),
-        bool eoi=true );
-    void CreateBooklet();
+    Mixing_Handler      * p_mixinghandler;
 
   public: 
-    Hadron_Decay_Map(std::string path,
-	      std::string file,
-              std::string constfile );
+    /** 
+     * @param mass selector
+     */
+    Hadron_Decay_Map(const ATOOLS::Mass_Selector* ms);
     ~Hadron_Decay_Map();
+    /**
+     * Reads all decay tables and create their decay channels, but does not
+     * initialise (integrate) them.
+     */
     void Read(const std::string& path, const std::string& file, bool verify=false);
+    /**
+     * Reads fixed decay tables from FixedDecays.dat which can later be
+     * programmatically set to be used for the next decay of a certain decayer,
+     * typically some kind of signal decay
+     * (useful within frameworks like LHCb)
+     */
+    void ReadFixedTables(const std::string& path, const std::string& file);
+    /**
+     * Reads HadronConstants.dat & fills them into Hadron_Decay_Map::m_startmd.
+     * Also checks for hadron specific properties like mixing parameters in
+     * HadronConstants.dat and sets them to the flavour.
+     */
+    void ReadInConstants(const std::string& path, const std::string& file);
+    /**
+     * Reads a file with lines of the format "1234->111" and creates alias
+     * particles 1234 with the properties of 111, which can be used in
+     * decay tables and decay channels such that e.g. a signal decay chain
+     * can be specified.
+     */
     void ReadHadronAliases(const std::string& path, const std::string& file);
+    /**
+     * Initialises and integrates all decay channels built up.
+     */
     void Initialise();
-    void ReadFixedTables();
-    void ReadInConstants();
-    void SetHadronProperties();
-    GeneralModel& StartModel() { return m_startmd; }
-    Hadron_Decay_Table* FindDecay( const ATOOLS::Flavour & );
-    void ResetCounters();
+    /** 
+     * 
+     * @return The global hadron decay parameter model.
+     */
+    inline GeneralModel& StartModel() { return m_startmd; }
+    /**
+     * Creates a Latex booklet containing all decay tables and information
+     * about available matrix elements and currents.
+     * 
+     * @param f ostream the booklet is written to
+     */
+    void CreateBooklet(std::ostream& f);
+    /**
+     * Activate a previously read fixed decay table 
+     */
     void FixDecayTables(std::string table_id);
+    /**
+     * Deactivate the previously fixed decay table
+     */
     void ClearFixedDecayTables();
-  }; // end of class Hadron_Decay_Map
-  
-  /*!
-	\file Hadron_Decay_Map.H
-	\brief Declares the class HADRONS::Hadron_Decay_Map
 
-	This code can be found in the directory <tt>Main</tt>.
+    //@{
+    /// Getter/setter method.
+    inline const Mixing_Handler* MixingHandler() const {return p_mixinghandler;}
+    inline void SetMixingHandler(Mixing_Handler* mix) { p_mixinghandler = mix; }
+    //@}
+  };
+
+  /**
+     \mainpage
+     The HADRONS package is Sherpa's native hadron and tau decay handler.
+
+     \section decaydata Decaydata files
+
+     All decaytables and information about decay channels is saved in plain
+     text files located in SHERPA/Run/Decaydata.
+
+     Three different levels of dat-files are used:
+     - <b>HadronDecays.dat</b>: Stores a list of all available decay tables.
+     (represented by the Hadron_Decay_Map class).
+     - <b>Decay table files</b>: Each hadron has its own directory including
+     a file called Decays.dat which is represented by the
+     Hadron_Decay_Table class.
+     - <b>Decay channel files</b>: In the same directory you can find individual
+     files for each decay channel (represented by the Hadron_Decay_Channel
+     class).
   */
 
-  /*!
-	\class Hadron_Decay_Map
-	\brief Tool to read decay tables
-  */
-
-  /*!
-	\fn Hadron_Decay_Map::Hadron_Decay_Map( std::string path=std::string("./"), std::string file=std::string(""))
-	\brief Constructor using ATOOLS::Data_Reader class
-	
-    Initializes the Hadron_Decay_Map with the cut "|",
-    the column separator ";" and the comment indicator "!". Additionally, "#" and "//" are interpreted as comments.
-	Furthermore, this method reads decay channel file and stores its content in the private attribute 
-    Hadron_Decay_Map::m_helpsvv.
-    
-  */	
-  /*!
-	\fn Hadron_Decay_Map::FillDecayTable(ATOOLS::Decay_Table * dt=NULL)
-	\brief Creates decay table with branching ratios and decay widths
-
-	Uses data stored in the private attribute  to create a decay table, 
-	i.e. decay channel, branching ratio, decay width, etc. The method
-	returns the number of possible decay channels. Finally, the argument is a pointer on the complete decay table.
-  */	
-  /*!
-    \fn Hadron_Decay_Map::ExtractFlavours(std::vector<int> &,std::string)
-    \brief Converts an expression <a> {kf1,kf2,kf3,...} </a> into a vector with the kf-codes.
-    */
-  /*!
-    \fn Hadron_Decay_Map::FillInMatrixElementsAndPS( ATOOLS::Decay_Table *dt, Channel_Map *chmap, GeneralModel )
-    \brief Creates pointer on Hadron_Decay_Channel
-
-    This methods initialises a new hadron decay channel and puts a pointer on it. 
-    It calls the Hadron_Decay_Channel::Hadron_Decay_Channel constructor for
-    the initialisation of the decay channel and Hadron_Decay_Channel::InitialisePhaseSpace
-    for the actual reading of the decay table.
-    In case the decay table file needs to rewritten (that is the case when a DC file
-    was generated automatically so that its name has to be inserted) it also 
-    rewrites the decay table file with all known entries.
-    */
-
-  /*!
-    \var Hadron_Decay_Map::m_helpsvv
-    
-    A matrix of strings that contains a complete decay table with the following structure
-    <TABLE>
-    <TR> <TD>1st column</TD><TD>2nd column</TD><TD>3rd column</TD> </TR>
-    <TR> <TD>decay products</TD><TD>branching ratio</TD><TD>name of DC file</TD> </TR>
-    </TABLE>
-    If a name of the DC file is \b not given, HADRONS creates a new DC file with a generic name.
-    This DC file can be seen as template with the most basic entries (the intregrator is Rambo and 
-    no parameters are given).
-   */
-  /*!
-    \var Hadron_Decay_Map::m_path
-
-    Path to decay tables, e.g. \c TauDecays/, \c Rho0Decays/, etc.
-   */
-  /*!
-    \var Hadron_Decay_Map::m_file
-
-    Name of the file with the decay table, e.g. \c TauDecays.dat, \c Rho0Decays.dat, etc.
-    */
-
-
-
-	 
-	  
-  
-} // end of namespace HADRONS
+}
 
 
 #endif

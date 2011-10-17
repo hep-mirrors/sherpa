@@ -6,12 +6,13 @@ namespace VA_P_P_FFs {
 class BallZwicky : public FormFactor_Base {
   double m_fplus_0, m_fplus_r, m_fplus_m2, m_fplus_alpha;
 public:
-  BallZwicky(struct GeneralModel model, double* masses, Flavour* flavs, int* i);
+  BallZwicky(GeneralModel model, double* masses, const Flavour_Vector& flavs,
+             std::vector<int>& indices);
   void CalcFFs(ATOOLS::Vec4D p0, ATOOLS::Vec4D p1);
 };
 
-BallZwicky::BallZwicky(GeneralModel model, double* masses, Flavour* flavs,
-                       int* i) :
+BallZwicky::BallZwicky(GeneralModel model, double* masses,
+                       const Flavour_Vector& flavs, std::vector<int>& i) :
   FormFactor_Base(model, masses, flavs, i)
 {
   m_fplus_0=0.0; m_fplus_r=0.0; m_fplus_m2=0.0; m_fplus_alpha=0.0;

@@ -20,13 +20,14 @@ namespace MODEL {
     int m_nvertex, m_n4vertex;       // number of single vertices included
     std::vector<Single_Vertex> m_v;  // list of 3-vertices 
     std::vector<Single_Vertex> m_v4; // list of 4-vertices 
+    std::vector<Single_Vertex> m_a;
     tscmap      m_cplmap;   
     
     void        CheckEqual(ATOOLS::Flavour**,short int&);
     void        GenerateVertex();
     int         CheckExistence(Single_Vertex&);  
     int         FermionRule(Single_Vertex& probe);
-    int         SetVertex(Single_Vertex&,Single_Vertex&,int,int,int,int a=99);
+    int         SetVertex(Single_Vertex&,Single_Vertex&,int,int,int,int a=99,int mode=0);
 
     void        ColorExchange(Color_Function*,int,int,int,int);
     void        LorentzExchange(Lorentz_Function*,int,int,int,int);
@@ -54,6 +55,8 @@ namespace MODEL {
     void TexOutput();
 
     int  FindVertex(Single_Vertex*);
+
+    inline std::vector<Single_Vertex> &Vertices() { return m_a; }
   };
   
   std::ostream& operator<<(std::ostream&, const Vertex&);

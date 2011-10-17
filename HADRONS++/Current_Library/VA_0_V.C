@@ -33,7 +33,7 @@ void VA_0_V::SetModelParameters( struct GeneralModel _md )
   m_fV  = _md("fV", fV);
 }
 
-void VA_0_V::Calc(const ATOOLS::Vec4D * moms)
+void VA_0_V::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   // 0 is Vector
   double M = m_flavs[p_i[0]].HadMass();

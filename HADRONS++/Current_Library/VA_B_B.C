@@ -76,7 +76,7 @@ VA_B_B::~VA_B_B() {
   delete p_ff;
 }
 
-void VA_B_B::Calc(const ATOOLS::Vec4D * moms)
+void VA_B_B::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   p_ff->CalcFFs(moms[p_i[0]], moms[p_i[1]]);
   
@@ -87,7 +87,7 @@ void VA_B_B::Calc(const ATOOLS::Vec4D * moms)
   Complex cR3 = m_v*p_ff->V3()+m_a*p_ff->A3();
   Complex cL3 = m_unnatural ? -m_v*p_ff->V3()+m_a*p_ff->A3() : m_v*p_ff->V3()-m_a*p_ff->A3();
 
-  XYZFunc F(2, moms, m_flavs, Tools::k0, m_anti, p_i);
+  XYZFunc F(moms, m_flavs, m_anti, p_i);
   for(int h0=0; h0<2; h0++) {
     for(int h1=0; h1<2; h1++) {
       // 1 is "the barred spinor" in the current, 0 is the not-barred one

@@ -59,7 +59,8 @@ Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b)
   momcount = InitializeMomlist();
   _eta=_mu=0;
   _S0=_S1=0;
-  k0_n=0;m_precalc=0;
+  m_precalc=0;
+  Setk0(10);
   p_epol=NULL;
 }
 
@@ -68,7 +69,8 @@ Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b,string nam
 {
   _eta=_mu=0;
   _S0=_S1=0;
-  k0_n=1;m_precalc=1;
+  m_precalc=1;
+  Setk0(10);
   name+="/Sfunc.dat";
 
   IO_Handler ioh;
@@ -501,58 +503,63 @@ void Basic_Sfuncs::CalcMomlist()
       Momlist[j].mom = p[0]+p[1]; 
       if (ATOOLS::IsZero(Momlist[j].mom[3]/Momlist[j].mom[0])) Momlist[j].mom[3]=0.;
       break;
-    case mt::p_m :
+    case mt::p_m : {
       mom=Momlist[Momlist[j].arg[1]].mom;
       ps=sqrt(sqr(mom[1])+sqr(mom[2])+sqr(mom[3]));
-      pt=sqrt(sqr(mom[1])+sqr(mom[2]));
+      double mom1=C1(mom), mom2=C2(mom), mom3=C3(mom);
+      pt=sqrt(sqr(mom1)+sqr(mom2));
       if(!ATOOLS::IsZero(pt)){
-	Momlist[j].mom = SQRT_05*Vec4D(0.,mom[1]*mom[3]/ps/pt,
-					mom[2]*mom[3]/ps/pt,-pt/ps);
-	Momlist[j].mom_img = -SQRT_05*Vec4D(.0,-mom[2]/pt,mom[1]/pt,0.);
+	Momlist[j].mom = SQRT_05/ps*(mom3/pt*(mom1*K1()+mom2*K2())-pt*K3());
+	Momlist[j].mom_img = -SQRT_05/pt*(mom1*K2()-mom2*K1());
       }
       else {
-	Momlist[j].mom = SQRT_05*Vec4D(0.,1.,0.,0.);
-	if(mom[3]>0)Momlist[j].mom_img = -SQRT_05*Vec4D(0.,0.,1.,0.);
-	else Momlist[j].mom_img = -SQRT_05*Vec4D(0.,0.,-1.,0.);
+	Momlist[j].mom = SQRT_05*K1();
+	if(mom3>0)Momlist[j].mom_img = -SQRT_05*K2();
+	else Momlist[j].mom_img = SQRT_05*K2();
        }
       Momlist[j+1].mom = Momlist[j].mom;
       Momlist[j+1].mom_img = (-1.)*Momlist[j].mom_img;
       j++;
       break;
-    case mt::p_l0 :
+    }
+    case mt::p_l0 : {
       mom=Momlist[Momlist[j].arg[1]].mom;
       ps=sqrt(sqr(mom[1])+sqr(mom[2])+sqr(mom[3]));
-      pt=sqrt(sqr(mom[1])+sqr(mom[2]));
+      double mom1=C1(mom), mom2=C2(mom), mom3=C3(mom);
+      pt=sqrt(sqr(mom1)+sqr(mom2));
       if(!ATOOLS::IsZero(pt)){
-	vh1 = Vec4D(0.,mom[1]*mom[3]/ps/pt,mom[2]*mom[3]/ps/pt,-pt/ps);
-	vh2 = Vec4D(0.,-mom[2]/pt,mom[1]/pt,0.);
+	vh1 = 1.0/ps*(mom3/pt*(mom1*K1()+mom2*K2())-pt*K3());
+	vh2 = 1.0/pt*(mom1*K2()-mom2*K1());
       }
       else {
-	if(mom[3]>0) vh1 = Vec4D(0.,1.,0.,0.);
-	else vh1 = Vec4D(0.,-1.,0.,0.);
-	vh2 = Vec4D(0.,0.,1.,0.);
+	if(mom3>0) vh1 = K1();
+	else vh1 = -K1();
+	vh2 = K2();
        }
       Momlist[j].mom = ::cos(Momlist[j].angle)*vh1+::sin(Momlist[j].angle)*vh2;
       Momlist[j+1].mom = ::sin(Momlist[j].angle)*vh1-::cos(Momlist[j].angle)*vh2;
       j++;
       break;
-    case mt::p_lh :
+    }
+    case mt::p_lh : {
       mom=Momlist[Momlist[j].arg[1]].mom;
       ps=sqrt(sqr(mom[1])+sqr(mom[2])+sqr(mom[3]));
-      pt=sqrt(sqr(mom[1])+sqr(mom[2]));
+      double mom1=C1(mom), mom2=C2(mom), mom3=C3(mom);
+      pt=sqrt(sqr(mom1)+sqr(mom2));
       if(!ATOOLS::IsZero(pt)){
-	vh1 = Vec4D(0.,mom[1]*mom[3]/ps/pt,mom[2]*mom[3]/ps/pt,-pt/ps);
-	vh2 = Vec4D(0.,-mom[2]/pt,mom[1]/pt,0.);
-	if(mom[1]+mom[2]<0)vh2=-1.*vh2;
+	vh1 = 1.0/ps*(mom3/pt*(mom1*K1()+mom2*K2())-pt*K3());
+	vh2 = 1.0/pt*(mom1*K2()-mom2*K1());
+	if(mom1+mom2<0)vh2=-1.*vh2;
       }
       else {
-	vh1 = SQRT_05*Vec4D(0.,1.,-1.,0.);
-	vh2 = SQRT_05*Vec4D(0.,1.,1.,0.);
+	vh1 = SQRT_05*(K1()-K2());
+	vh2 = SQRT_05*(K1()+K2());
       }
       Momlist[j].mom = vh1;
       Momlist[j+1].mom = vh2;      
       j++;
       break;
+    }
     case mt::p_l :     
       mom=Momlist[Momlist[j].arg[1]].mom;
       ps=sqrt(sqr(mom[1])+sqr(mom[2])+sqr(mom[3]));
@@ -561,7 +568,7 @@ void Basic_Sfuncs::CalcMomlist()
 							       mom[0]*mom[2]/ps,
 							       mom[0]*mom[3]/ps);
       }
-      else Momlist[j].mom=Vec4D(0.,0.,0.,1.);
+      else Momlist[j].mom=K3();
       if (mom.Abs2()<0.) {
 	Momlist[j].mom_img = Momlist[j].mom;
 	Momlist[j].mom = Vec4D(0.,0.,0.,0.);
@@ -630,6 +637,12 @@ void Basic_Sfuncs::InitGaugeTest(double theta)
     if(ATOOLS::IsZero(Momlist[j].mass))if(Momlist[j].type==mt::p_m||Momlist[j].type==mt::p_p){
       m=&Momlist[j];
       switch(k0_n){
+      case 10:
+	if(!IsComplex(j))
+	  _eta[j] = csqrt(2.*(m->mom[0]+m->mom[R3()]));
+	else _eta[j] = sqrt(Complex(2.*(m->mom[0]+m->mom[R3()]),
+				    2.*(m->mom_img[0]+m->mom_img[R3()])));
+        break;
       case 1:
 	if(!IsComplex(j)) 
 	  _eta[j] = csqrt(2.*(m->mom[0]-(m->mom[2]+m->mom[3])*SQRT_05));
@@ -666,11 +679,16 @@ int Basic_Sfuncs::CalcEtaMu(Vec4D* _p)
   int etachk=1;
   double zchk;
 
-  if (m_precalc) k0_n = 1; 
   for(size_t i=0;i<Momlist.size();i++) {
     m=&Momlist[i];
 
     switch(k0_n){
+    case 10:
+      if(!IsComplex(i))
+ 	_eta[i] = csqrt(2. * (m->mom[0]+m->mom[R3()]));
+      else _eta[i] = sqrt(Complex(2.*(m->mom[0]+m->mom[R3()]),
+				  2.*(m->mom_img[0]+m->mom_img[R3()])));
+      break;
     case 1:
       if(!IsComplex(i)) 
 	_eta[i] = csqrt(2. * (m->mom[0] - (m->mom[2]+m->mom[3])*SQRT_05 ));
@@ -740,6 +758,22 @@ void Basic_Sfuncs::PrecalcS()
 	Momfunc* m1 = &Momlist[j];
 	Complex A= _eta[j]/_eta[i];
 
+      switch (k0_n) {
+      case 10:
+	_S0[i][j] = Complex(m->mom[R1()],-m->mom[R2()])*A;
+	_S1[i][j] = Complex(-m->mom[R1()],-m->mom[R2()])*A; 
+	if (IsComplex(i)){
+	  _S0[i][j] += Complex(m->mom_img[R2()],m->mom_img[R1()])*A;
+	  _S1[i][j] += Complex(m->mom_img[R2()],-m->mom_img[R1()])*A;
+	}      
+	_S0[i][j] -= Complex(m1->mom[R1()],-m1->mom[R2()])/A;
+	_S1[i][j] -= Complex(-m1->mom[R1()],-m1->mom[R2()])/A;
+	if (IsComplex(j)){
+	  _S0[i][j] -= Complex(m1->mom_img[R2()],m1->mom_img[R1()])/A;
+	  _S1[i][j] -= Complex(m1->mom_img[R2()],-m1->mom_img[R1()])/A;
+	}
+	break;
+      case 1:
 	_S0[i][j] = Complex(m->mom[1],(m->mom[2]-m->mom[3])*SQRT_05)*A; 
 	_S1[i][j] = Complex(-m->mom[1],(m->mom[2]-m->mom[3])*SQRT_05)*A;
 	if (IsComplex(i)){
@@ -752,8 +786,41 @@ void Basic_Sfuncs::PrecalcS()
 	  _S0[i][j] -= Complex(-(m1->mom_img[2]-m1->mom_img[3])*SQRT_05,m1->mom_img[1])/A;
 	  _S1[i][j] -= Complex(-(m1->mom_img[2]-m1->mom_img[3])*SQRT_05,-m1->mom_img[1])/A;
 	}
+	break;
+      case 2:
+	_S0[i][j] = Complex(m->mom[3],(m->mom[1]-m->mom[2])*SQRT_05)*A; 
+	_S1[i][j] = Complex(-m->mom[3],(m->mom[1]-m->mom[2])*SQRT_05)*A;
+	if (IsComplex(i)){
+	  _S0[i][j] += Complex(-(m->mom_img[1]-m->mom_img[2])*SQRT_05,m->mom_img[3])*A;
+	  _S1[i][j] += Complex(-(m->mom_img[1]-m->mom_img[2])*SQRT_05,-m->mom_img[3])*A;
+	}
+	_S0[i][j] -= Complex(m1->mom[3],(m1->mom[1]-m1->mom[2])*SQRT_05)/A;
+	_S1[i][j] -= Complex(-m1->mom[3],(m1->mom[1]-m1->mom[2])*SQRT_05)/A;
+	if (IsComplex(j)){
+	  _S0[i][j] -= Complex(-(m1->mom_img[1]-m1->mom_img[2])*SQRT_05,m1->mom_img[3])/A;
+	  _S1[i][j] -= Complex(-(m1->mom_img[1]-m1->mom_img[2])*SQRT_05,-m1->mom_img[3])/A;
+	}
+	break;
+      default:
+	_S0[i][j] = Complex(m->mom[2],(m->mom[3]-m->mom[1])*SQRT_05)*A; 
+	_S1[i][j] = Complex(-m->mom[2],(m->mom[3]-m->mom[1])*SQRT_05)*A;
+	if (IsComplex(i)){
+	  _S0[i][j] += Complex(-(m->mom_img[3]-m->mom_img[1])*SQRT_05,m->mom_img[2])*A;
+	  _S1[i][j] += Complex(-(m->mom_img[3]-m->mom_img[1])*SQRT_05,-m->mom_img[2])*A;
+	}
+	_S0[i][j] -= Complex(m1->mom[2],(m1->mom[3]-m1->mom[1])*SQRT_05)/A;
+	_S1[i][j] -= Complex(-m1->mom[2],(m1->mom[3]-m1->mom[1])*SQRT_05)/A;
+	if (IsComplex(j)){
+	  _S0[i][j] -= Complex(-(m1->mom_img[3]-m1->mom_img[1])*SQRT_05,m1->mom_img[2])/A;
+	  _S1[i][j] -= Complex(-(m1->mom_img[3]-m1->mom_img[1])*SQRT_05,-m1->mom_img[2])/A;
+	}
+      }
 	_S0[j][i] = - _S0[i][j];
 	_S1[j][i] = - _S1[i][j];	
+#ifdef DEBUG__BS
+	msg_Debugging()<<" - _S0["<<i<<"]["<<j<<"] = "<<-_S0[i][j]<<" (["<<i<<","<<j<<"])\n";
+	msg_Debugging()<<" - _S1["<<j<<"]["<<i<<"] = "<<-_S1[j][i]<<" (<"<<j<<","<<i<<">)\n";
+#endif
       } 
 }
 
@@ -766,6 +833,20 @@ void Basic_Sfuncs::CalcS(int i, int j)
     Complex A= _eta[j]/_eta[i];
 
     switch(k0_n){
+    case 10:
+      _S0[i][j] = Complex(m->mom[R1()],-m->mom[R2()])*A; 
+      _S1[i][j] = Complex(-m->mom[R1()],-m->mom[R2()])*A;
+      if (IsComplex(i)){
+	_S0[i][j] += Complex(m->mom_img[R2()],m->mom_img[R1()])*A;
+	_S1[i][j] += Complex(m->mom_img[R2()],-m->mom_img[R1()])*A;
+      }      
+      _S0[i][j] -= Complex(m1->mom[R1()],-m1->mom[R2()])/A;
+      _S1[i][j] -= Complex(-m1->mom[R1()],-m1->mom[R2()])/A;
+      if (IsComplex(j)){
+	_S0[i][j] -= Complex(m1->mom_img[R2()],m1->mom_img[R1()])/A;
+	_S1[i][j] -= Complex(m1->mom_img[R2()],-m1->mom_img[R1()])/A;
+      }
+      break;
     case 1:
       _S0[i][j] = Complex(m->mom[1],(m->mom[2]-m->mom[3])*SQRT_05)*A; 
       _S1[i][j] = Complex(-m->mom[1],(m->mom[2]-m->mom[3])*SQRT_05)*A;
@@ -827,6 +908,11 @@ Complex Basic_Sfuncs::CalcS(ATOOLS::Vec4D& m, ATOOLS::Vec4D& m1)
   Complex A,S;
 
   switch(k0_n){
+  case 10:
+    A = csqrt((m1[0]+m1[R3()])/(m[0]+m[R3()]));
+    S = Complex(m[R1()],-m[R2()])*A; 
+    S -= Complex(m1[R1()],-m1[R2()])/A;
+    break;
   case 1:
     A = csqrt((m1[0]-(m1[2]+m1[3])*SQRT_05)/(m[0]-(m[2]+m[3])*SQRT_05));
     S = Complex(m[1],(m[2]-m[3])*SQRT_05)*A; 
@@ -849,7 +935,7 @@ Complex Basic_Sfuncs::CalcS(ATOOLS::Vec4D& m, ATOOLS::Vec4D& m1)
 std::pair<Complex, Complex> Basic_Sfuncs::GetS(ATOOLS::Vec4D v, int j) 
 {
   // This calculation is directly taken from CalcS; only minor difference is that
-  // v is non-complex by definition so it´s complexity doesn´t have to be checked.
+  // v is non-complex by definition so its complexity doesn't have to be checked.
 
   std::pair<Complex, Complex> S;
   
@@ -863,6 +949,16 @@ std::pair<Complex, Complex> Basic_Sfuncs::GetS(ATOOLS::Vec4D v, int j)
     Complex A= _eta[j]/etav;
 
     switch(k0_n){
+    case 10:
+      S.first   = Complex(v[R1()],-v[R2()])*A; 
+      S.second  = Complex(-v[R1()],-v[R2()])*A;
+      S.first  -= Complex(m1->mom[R1()],-m1->mom[R2()])/A;
+      S.second -= Complex(-m1->mom[R1()],-m1->mom[R2()])/A;
+      if (IsComplex(j)){
+ 	S.first  -= Complex(m1->mom_img[R2()],m1->mom_img[R1()])/A;
+ 	S.second -= Complex(m1->mom_img[R2()],-m1->mom_img[R1()])/A;
+      }
+      break;
     case 1:
       S.first   = Complex(v[1],(v[2]-v[3])*SQRT_05)*A; 
       S.second  = Complex(-v[1],(v[2]-v[3])*SQRT_05)*A;
@@ -909,6 +1005,22 @@ void Basic_Sfuncs::Setk0(int i)
 
   //i=2: k0=Vec4D(1.,sqrt(.5),sqrt(.5),0.);
   //     k1=Vec4D(0.,0.,0.,1.);
+  m_k1=SQRT_05*(Vec4D(0.0,Vec3D(-Getk0()))+Getk1());
+  m_k2=Vec4D(0.0,cross(Vec3D(Getk1()),Vec3D(Getk0())));
+  m_k3=SQRT_05*(Vec4D(0.0,Vec3D(-Getk0()))-Getk1());
+  // if (k0_n<10) {
+    m_k1=Vec4D(0.0,1.0,0.0,0.0);
+    m_k2=Vec4D(0.0,0.0,1.0,0.0);
+    m_k3=Vec4D(0.0,0.0,0.0,1.0);
+  // }
+  DEBUG_FUNC(k0_n);
+  msg_Debugging()<<"k_0 = "<<Getk0()<<", k_1 = "<<Getk1()<<"\n";
+  msg_Debugging()<<"k_x       = "<<K1()<<" "<<K1().Abs2()<<"\n";
+  msg_Debugging()<<"k_y x k_z = "<<Vec4D(0.0,cross(Vec3D(K2()),Vec3D(K3())))<<"\n";
+  msg_Debugging()<<"k_y       = "<<K2()<<" "<<K2().Abs2()<<"\n";
+  msg_Debugging()<<"k_z x k_x = "<<Vec4D(0.0,cross(Vec3D(K3()),Vec3D(K1())))<<"\n";
+  msg_Debugging()<<"k_z       = "<<K3()<<" "<<K3().Abs2()<<"\n";
+  msg_Debugging()<<"k_x x k_y = "<<Vec4D(0.0,cross(Vec3D(K1()),Vec3D(K2())))<<"\n";
 }
 
 void Basic_Sfuncs::StartPrecalc()
@@ -951,10 +1063,18 @@ bool Basic_Sfuncs::IsMomSum(int x,int y,int z)
 
 ATOOLS::Vec4D Basic_Sfuncs::Getk0() {
   switch(k0_n) {
+  case 10: return Spinor<double>::GetK0();
      case 1: return ATOOLS::Vec4D(1., 0, SQRT_05, SQRT_05);
      case 2: return ATOOLS::Vec4D(1., SQRT_05, SQRT_05, 0);
      default: return ATOOLS::Vec4D(1., SQRT_05, 0, SQRT_05);
   }
 }
 
-int Basic_Sfuncs::Getk0_n() { return k0_n; }
+ATOOLS::Vec4D Basic_Sfuncs::Getk1() {
+  switch(k0_n) {
+  case 10: return Spinor<double>::GetK1();
+     case 1: return ATOOLS::Vec4D(0., 1., 0., 0.);
+     case 2: return ATOOLS::Vec4D(0., 0., 0., 1.);
+     default: return ATOOLS::Vec4D(0., 0., 1., 0.);
+  }
+}

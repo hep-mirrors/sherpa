@@ -1,6 +1,7 @@
 #ifndef METOOLS_Main_Spin_Structure_H
 #define METOOLS_Main_Spin_Structure_H
 
+#include "METOOLS/Main/Polarization_Index.H"
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Matrix.H"
@@ -14,37 +15,15 @@ namespace METOOLS
   bool SortByFirst(const std::pair<int,int> p1, const std::pair<int,int> p2);
 
   template<class Value>
-  class Spin_Structure : public std::vector<Value> {
+  class Spin_Structure : public std::vector<Value>, public Polarization_Index {
   protected:
-    std::vector<int>    m_spins;
-    
-    size_t GetNumber(const std::vector<int>& spins) const
-    {
-      if(spins.size()!=m_spins.size()) {
-	msg_Error()<<METHOD<<" Error: wrong size of spin std::vector."<<std::endl;
-        THROW(fatal_error, "Will abort because of previous error.");
-      }
-      int mult(1);
-      size_t num(0);
-      for(size_t i=0; i<spins.size(); i++) {
-	num += mult * spins[i];
-	mult *= m_spins[i];
-      }
-      if(num>this->size()) {
-	msg_Error()<<METHOD<<" Error: tried to access value out of bounce. "
-                   <<"num="<<num<<" > "<<this->size()<<std::endl;
-        THROW(fatal_error, "Will abort because of previous error.");
-      }
-      return num;
-    }
-    
     size_t GetNumber(std::vector<std::pair<int,int> >& spins) const
     {
       sort(spins.begin(),spins.end(),SortByFirst);
       
       if(spins.size()!=m_spins.size()) {
 	msg_Error()<<METHOD<<" Error: wrong size of spin std::vector."<<std::endl;
-        THROW(fatal_error, "Will abort because of previous error.");
+        abort();
       }
       int mult(1);
       size_t num(0);
@@ -55,72 +34,64 @@ namespace METOOLS
       if(num>this->size()) {
 	msg_Error()<<METHOD<<" Error: tried to access value out of bounce. "
 	  <<"num="<<num<<" > "<<this->size()<<std::endl;
-        THROW(fatal_error, "Will abort because of previous error.");
+        abort();
       }
       return num;
     }
 
   public:
-    Spin_Structure(const std::vector<int>& spins, const Value& value)
+    Spin_Structure() {}
+    Spin_Structure(const std::vector<int>& spins, const Value& value):
+      Polarization_Index(spins)
     {
-      m_spins = spins;
-      size_t n=1;
-      for(size_t i=0;i<m_spins.size();i++) n*=m_spins[i];
-      this->resize(n, value);
+      this->resize(m_n, value);
     }
     
-    Spin_Structure(const ATOOLS::Flavour* flavs, size_t size, const Value& value) :
-      m_spins(std::vector<int>(size)) 
+    Spin_Structure(const ATOOLS::Flavour_Vector& flavs, const Value& value)
     {
-      size_t n=1;
-      for(size_t i=0;i<size;i++) {
-        if(flavs[i].IsVector() && flavs[i].HadMass()==0) m_spins[i] = 2;
-        else m_spins[i] = flavs[i].IntSpin()+1;
-	n*=m_spins[i];
-      }
-      this->resize(n,value);
-    }
-    
-    Spin_Structure(const ATOOLS::Flavour_Vector& flavs, const Value& value) :
-      m_spins(std::vector<int>(flavs.size())) 
-    {
-      size_t n=1;
+      m_spins = std::vector<int>(flavs.size());
+      m_n=1;
       for(size_t i=0;i<flavs.size();i++) {
         if(flavs[i].IsVector() && flavs[i].HadMass()==0) m_spins[i] = 2;
         else m_spins[i] = flavs[i].IntSpin()+1;
-        n*=m_spins[i];
+	m_n*=m_spins[i];
       }
-      this->resize(n,value);
+      this->resize(m_n,value);
     }
     
-    Spin_Structure(const ATOOLS::Flavour* flavs, size_t size, int* indices)
+    Spin_Structure(const ATOOLS::Flavour_Vector& flavs,
+                   const std::vector<int>& indices)
     {
-      m_spins = std::vector<int>(size);
+      m_spins = std::vector<int>(indices.size());
 
-      size_t n=1;
-      for(size_t i=0;i<size;i++) {
+      m_n=1;
+      for(size_t i=0;i<indices.size();i++) {
         if(flavs[indices[i]].IsVector() && flavs[indices[i]].HadMass()==0)
           m_spins[i] = 2;
         else m_spins[i] = flavs[indices[i]].IntSpin()+1;
-	n*=m_spins[i];
+	m_n*=m_spins[i];
       }
-      this->resize(n);
+      this->resize(m_n);
     }
     
     Spin_Structure(const ATOOLS::Particle_Vector& particles)
     {
       m_spins = std::vector<int>(particles.size());
 
-      size_t n=1;
+      m_n=1;
       for(size_t i=0;i<particles.size();i++) {
         if(particles[i]->Flav().IsVector() && particles[i]->Flav().HadMass()==0) m_spins[i] = 2;
         else m_spins[i] = particles[i]->Flav().IntSpin()+1;
-	n*=m_spins[i];
+	m_n*=m_spins[i];
       }
-      this->resize(n);
+      this->resize(m_n);
     }
     
     ~Spin_Structure() {}
+
+    inline size_t GetNumber(const std::vector<int> &spins) const { return (*this)(spins); }
+
+    inline std::vector<int> GetSpinCombination(size_t number) const { return (*this)(number); }
 
     void    Insert(Value value, std::vector<std::pair<int,int> >& spins)
     {
@@ -135,16 +106,6 @@ namespace METOOLS
     void    Add(Value value, std::vector<std::pair<int,int> >& spins)
     {
       (*this)[GetNumber(spins)]=value;
-    }
-    
-    std::vector<int> GetSpinCombination(size_t number) const
-    {
-      std::vector<int> spins(m_spins.size());
-      for(size_t i=0;i<m_spins.size();i++) {
-	spins[i] = number%m_spins[i];
-	number = (number-spins[i])/m_spins[i];
-      }
-      return spins;
     }
     
     void    Insert(Value value, size_t index)
@@ -167,11 +128,6 @@ namespace METOOLS
       size_t n = this->size();
       this->clear();
       this->resize(n,value);
-    }
-
-    std::vector<int> Spins()
-    {
-      return m_spins;
     }
 
     Spin_Structure<Value>& operator+= (const Spin_Structure<Value>& addend)
@@ -200,12 +156,13 @@ namespace METOOLS
   class Spin_Amplitudes : public Spin_Structure<Complex> {
   public:
     Spin_Amplitudes(const std::vector<int>& spins, const Complex& value);
-    Spin_Amplitudes(const ATOOLS::Flavour* flavs, size_t size, const Complex& value);
     Spin_Amplitudes(const ATOOLS::Flavour_Vector& flavs, const Complex& value);
+    Spin_Amplitudes(const ATOOLS::Flavour_Vector& flavs,
+                    const std::vector<int>& indices);
     Spin_Amplitudes(const ATOOLS::Particle_Vector& particles);
     virtual ~Spin_Amplitudes();
     double  SumSquare() const;
-    virtual void Calculate(const ATOOLS::Vec4D* momenta, bool anti=false);
+    virtual void Calculate(const ATOOLS::Vec4D_Vector& momenta,bool anti=false);
   };
 
   class Amplitude_Tensor : public Spin_Structure<std::vector<Complex> > {
@@ -271,6 +228,13 @@ namespace METOOLS
       9 |      1 |        0 |        1 |        1 |
      10 |      0 |        0 |        2 |        1 |
      11 |      1 |        0 |        2 |        1 |
+
+     The polarisation index for each particle corresponds to:
+      - <var>lambda</var>
+        - \f$0 \to \epsilon^+\f$
+        - \f$1 \to \epsilon^-\f$
+        - \f$2 \to \epsilon^0\f$
+        .
   */
 
   /*!

@@ -1,1 +1,1 @@
-SUBDIRS = Main Loops
+SUBDIRS = Explicit Currents Vertices Colors Main SpinCorrelations Loops

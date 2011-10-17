@@ -16,7 +16,8 @@ namespace MODEL {
       G=4,  
       Unknown=99}; 
   };
-  
+
+  std::ostream &operator<<(std::ostream &str,const cf::code &c);
 
   class Color_Function {
   public:
@@ -119,8 +120,9 @@ namespace MODEL {
       return mo;
     }
 
-    std::string String();
-   
+    std::string String() const;
+    std::string PID() const;   
+    std::string FullString() const;
   };  
 
 /*! 

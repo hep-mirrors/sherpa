@@ -1,7 +1,7 @@
 #include "Main.H"
 
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Phys/Decay_Map.H"
+#include "PHASIC++/Decays/Decay_Map.H"
 #include "HADRONS++/Main/Hadron_Decay_Table.H"
 #include "HADRONS++/Main/Hadron_Decay_Channel.H"
 
@@ -13,7 +13,7 @@ static map<Hadron_Decay_Channel*, vector<TH1D*> > ThetaHists;
 static map<Hadron_Decay_Channel*, vector<TH1D*> > EnergyHists;
 #endif
 static Flavour mother_flav;
-static Hadrons* hadrons;
+static SHERPA::Hadron_Decay_Handler* hadrons;
 
 
 void InitialiseGenerator(int argc, char *argv[])
@@ -25,9 +25,7 @@ void InitialiseGenerator(int argc, char *argv[])
 
   small_sherpa_init(argc, argv);
 
-  hadrons = new Hadrons(/*"../../SHERPA-1.0/Run/Decaydata/",*/ "./Decaydata/",
-                        string("HadronDecays.dat"),
-                        string("HadronConstants.dat") ) ;
+  hadrons = new SHERPA::Hadron_Decay_Handler(".", "Fragmentation.dat");
 
   mother_flav = Flavour( (kf_code) abs(ToType<int>(argv[1])) );
   mother_flav.SetStable(false);
@@ -38,7 +36,7 @@ void InitialiseGenerator(int argc, char *argv[])
   
   // set all decay channel BR's equal, such that we generate the same amount of
   // each decay channel to be tested
-  Hadron_Decay_Table* table=hadrons->DecayMap()->FindDecay(mother_flav);
+  PHASIC::Decay_Table* table=hadrons->DecayMap()->FindDecay(mother_flav);
   for(size_t i(0);i<table->size();++i)
     table->UpdateWidth(table->at(i), 1.0);
 
@@ -158,8 +156,12 @@ Blob_List* GenerateEvent()
   blob->SetStatus(blob_status::needs_hadrondecays);
   blob->AddToInParticles(mother_part);
 
-  if(!hadrons->FillDecayBlob(blob, mother_part->Momentum())) {
-    THROW(normal_exit,"Hadrons::PerformDecay didn't succeed.");
+  try {
+    hadrons->FillOnshellDecay(blob, NULL);
+  } catch (Return_Value::code ret) {
+    msg_Error()<<METHOD<<" Something went wrong for event: "<<*blobs
+        <<endl;
+    return blobs;
   }
 
   hadrons->CleanUp();

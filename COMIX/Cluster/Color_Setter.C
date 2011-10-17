@@ -2,7 +2,7 @@
 
 #include "COMIX/Cluster/Cluster_Algorithm.H"
 #include "COMIX/Main/Single_Process.H"
-#include "COMIX/Amplitude/Matrix_Element.H"
+#include "COMIX/Amplitude/Amplitude.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
@@ -61,7 +61,7 @@ bool Color_Setter::SetRandomColors
       msg_Debugging()<<"  "<<*cp<<"\n";
     }
     if (!sing) {
-    double csum(p_xs->GetME()->Differential
+    double csum(p_xs->GetAmplitude()->Differential
 		(p_xs->Integrator()->Momenta(),ci,cj,true));
     msg_Debugging()<<"sc: csum = "<<csum<<"\n";
     if (csum!=0.0) {
@@ -128,7 +128,7 @@ bool Color_Setter::SetLargeNCColors
 	if (sc!=0) lc=sc;
       }
       if (!valid) continue;
-      double part(p_xs->GetME()->Differential
+      double part(p_xs->GetAmplitude()->Differential
 		  (p_xs->Integrator()->Momenta(),ci,cj,true));
       part*=sqr(colint->Weights().front());
       if (psum.size()) part+=psum.back();
@@ -185,7 +185,7 @@ bool Color_Setter::SetLargeNCColors
       }
       for (size_t i(0);i<ampl->Legs().size();++i)
 	ampl->Leg(i)->SetCol(ColorID(ci[i],cj[i]));
-      if (p_xs->GetME()->Differential
+      if (p_xs->GetAmplitude()->Differential
 	  (p_xs->Integrator()->Momenta(),ci,cj,true)==0.0)
 	THROW(fatal_error,"Internal error");
       CI_Map &cmap(ampl->ColorMap());

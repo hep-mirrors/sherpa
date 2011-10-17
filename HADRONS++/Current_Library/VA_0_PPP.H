@@ -116,13 +116,14 @@ namespace HADRONS {
     FF_Base * p_ff;
     
   public:
-    VA_0_PPP(ATOOLS::Flavour* flavs, int n, int* indices, std::string name);
+    VA_0_PPP(const ATOOLS::Flavour_Vector& flavs,
+             const std::vector<int>& indices, const std::string& name);
     ~VA_0_PPP() {
       if (p_ff!=NULL) delete p_ff;
     }
     Complex FormFactor( int j, double Q2, double s, double t ); 
     void SetModelParameters( struct GeneralModel _md );
-    void Calc(const ATOOLS::Vec4D * moms);
+    void Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti);
   };
 }
 #endif

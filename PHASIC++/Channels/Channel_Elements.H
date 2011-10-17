@@ -24,10 +24,11 @@ namespace PHASIC {
     void Isotropic2Momenta(ATOOLS::Vec4D,double,double,
 			   ATOOLS::Vec4D&,ATOOLS::Vec4D&,double,double,double=-1.0,double=1.0);
 
-    double Anisotropic2Weight(double,double,double,
-			      const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
-    void Anisotropic2Momenta(ATOOLS::Vec4D,double,double,double,double,double,
-			     ATOOLS::Vec4D&,ATOOLS::Vec4D&,double,double);
+    double Anisotropic2Weight(ATOOLS::Vec4D&,ATOOLS::Vec4D&,
+			      double&,double&,double,double=-1.0,double=1.0);
+    void Anisotropic2Momenta(ATOOLS::Vec4D,double,double,
+			     ATOOLS::Vec4D&,ATOOLS::Vec4D&,double,double,
+			     double,double=-1.0,double=1.0);
 
     double TChannelWeight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
 			  const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,

@@ -329,7 +329,7 @@ int AMEGIC::Single_Process_Combined::Tests()
   First test : gauge test
   
   --------------------------------------------------- */
-  p_BS->Setk0(1);
+  p_BS->Setk0(s_gauge);
   p_BS->CalcEtaMu(p_testmoms);
   number++;
 
@@ -454,7 +454,7 @@ int AMEGIC::Single_Process_Combined::Tests()
 
   if (string_test) {
     //String-Test
-    if (!rpa->gen.SpinCorrelation()) {
+    if (!(rpa->gen.SoftSC()||rpa->gen.HardSC())) {
       for (size_t i=0;i<p_hel->MaxHel();i++) {
 	if (p_hel->On(i)) {
 	  for (size_t j=i+1;j<p_hel->MaxHel();j++) {
@@ -515,7 +515,7 @@ int AMEGIC::Single_Process_Combined::TestLib()
      p_hel->SwitchOff(i);
     }
   }
-  if (!rpa->gen.SpinCorrelation()) {
+  if (!(rpa->gen.SoftSC()||rpa->gen.HardSC())) {
     for (size_t i=0;i<p_hel->MaxHel();i++) {
       if (p_hel->On(i)) {
 	for (size_t j=i+1;j<p_hel->MaxHel();j++) {
@@ -816,19 +816,6 @@ double AMEGIC::Single_Process_Combined::operator()(const ATOOLS::Vec4D* mom)
 {
   Vec4D_Vector moms(mom,&mom[m_nin+m_nout]);
   return p_me2->Calc(moms);
-}
-
-// ATOOLS::Spin_Correlation_Tensor* AMEGIC::Single_Process_Combined::GetSpinCorrelations()
-// {
-//   Spin_Correlation_Tensor* SCT = p_ampl->GetSpinCorrelations(p_hel, m_nin);
-//   if (SCT != NULL) SCT->Set_k0(p_BS->Getk0_n());
-//   return SCT;
-// }
-
-void AMEGIC::Single_Process_Combined::FillAmplitudes(METOOLS::Amplitude_Tensor* atensor,double sfactor)
-{
-  if (p_partner==this) p_ampl->FillAmplitudes(atensor,p_hel,sfactor);
-  else p_partner->FillAmplitudes(atensor,sfactor*sqrt(m_sfactor));
 }
 
 int AMEGIC::Single_Process_Combined::NumberOfDiagrams() { 

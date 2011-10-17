@@ -6,9 +6,10 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 
-Rambo::Rambo(int _nin,int _nout,const Flavour * fl,bool use_psmass)
+Rambo::Rambo(int _nin,int _nout,const Flavour * fl, const Mass_Selector* _ms) :
+  p_ms(_ms)
 {
-  nin=_nin; nout=_nout; m_use_psmass=use_psmass;
+  nin=_nin; nout=_nout;
   xm2 = new double[nin+nout+1];
   p2  = new double[nin+nout+1];  
   E   = new double[nin+nout+1];
@@ -17,7 +18,7 @@ Rambo::Rambo(int _nin,int _nout,const Flavour * fl,bool use_psmass)
   rannum=0;
   massflag = 0;
   for (short int i=0;i<nin+nout;i++) {
-    ms[i] = m_use_psmass ? sqr(fl[i].HadMass()) : sqr(fl[i].Mass());
+    ms[i]=sqr(p_ms->Mass(fl[i]));
     if (!ATOOLS::IsZero(ms[i])) massflag = 1;
   } 
 

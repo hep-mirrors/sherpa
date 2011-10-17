@@ -4,6 +4,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/POWHEG_Process.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "PDF/Main/ISR_Handler.H"
 
@@ -27,7 +28,7 @@ POWHEG_Multi_Channel::POWHEG_Multi_Channel
     p_bampl->CreateLeg(Vec4D(),Flavour(kf_jet));
   Vec4D_Vector p(nin+nout);
   do {
-    psh->TestPoint(&p.front(),&sproc->Info());
+    psh->TestPoint(&p.front(),&sproc->Info(), sproc->Generator());
     for (int i(0);i<nin+nout;++i)
       p_bampl->Leg(i)->SetMom(i<nin?-p[i]:p[i]);
     sproc->Differential(*p_bampl,4);

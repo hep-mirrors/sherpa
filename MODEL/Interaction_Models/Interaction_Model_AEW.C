@@ -15,17 +15,28 @@ Interaction_Model_AEW::Interaction_Model_AEW(MODEL::Model_Base * _model,
 { 
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),rpa->gen.CplScale())));
-  g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
-		  g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  sintW = Kabbala(std::string("\\sin\\theta_W"),
-		  sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  costW = Kabbala(std::string("\\cos\\theta_W"),
-		  sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+  		     g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+  		     sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+  		     sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+    vev      = Kabbala(string("v_{Higgs_SM}"),ScalarConstant(std::string("vev")));
+  }else{
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ComplexConstant(std::string("csin2_thetaW"))));
+    vev      = Kabbala(string("v_{Higgs_SM}"),ComplexConstant(std::string("cvev")));
+  }
+
   PL    = Kabbala(string("P_L"),1.);
   PR    = Kabbala(string("P_R"),1.);
   M_I   = Kabbala(string("i"),Complex(0.,1.));
   root2 = Kabbala(string("\\sqrt{2}"),sqrt(2.));
-  vev   = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
   a4    = Kabbala(string("\\alpha_4"),ScalarConstant(std::string("Alpha_4")));
   a5    = Kabbala(string("\\alpha_5"),ScalarConstant(std::string("Alpha_5")));
 
@@ -208,8 +219,14 @@ void Interaction_Model_AEW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
   Flavour flZ(kf_Z);
   Flavour flP(kf_photon);
   Kabbala kcpl,kcpl0,kcpl1,kcpl2,kcpl3,charge;
-  Kabbala Wyuk = Kabbala(string("M_{")+flWplus.TexName()+string("}"),flWplus.Yuk());
-  Kabbala Zyuk = Kabbala(string("M_{")+flZ.TexName()+string("}"),flZ.Yuk());
+  Kabbala Wyuk, Zyuk;
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    Wyuk = Kabbala(string("M_{")+flWplus.TexName()+string("}"),flWplus.Yuk());
+    Zyuk = Kabbala(string("M_{")+flZ.TexName()+string("}"),flZ.Yuk());
+  }else{
+    Wyuk = Kabbala(string("M_{")+flWplus.TexName()+string("}"),sqrt(sqr(flWplus.Yuk())-Complex(0.,1.)*flWplus.Width()*flWplus.Yuk()));
+    Zyuk = Kabbala(string("M_{")+flZ.TexName()+string("}"),sqrt(sqr(flZ.Yuk())-Complex(0.,1.)*flZ.Width()*flZ.Yuk()));
+  }
 
   charge = Kabbala(string("Q_{")+flWplus.TexName()+string("}"),flWplus.Charge());
 

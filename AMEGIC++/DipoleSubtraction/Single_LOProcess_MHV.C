@@ -334,7 +334,7 @@ int Single_LOProcess_MHV::Tests(std::vector<double> * pfactors) {
   
   --------------------------------------------------- */
 #ifdef Basic_Sfuncs_In_MHV
-  p_BS->Setk0(1);
+  p_BS->Setk0(s_gauge);
   p_BS->CalcEtaMu(p_testmoms); 
 #else
   p_momlist->PutMomenta(p_testmoms);
@@ -462,7 +462,7 @@ double Single_LOProcess_MHV::operator()(const ATOOLS::Vec4D_Vector &labmom,const
 
 
 void Single_LOProcess_MHV::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
-				      const ATOOLS::Vec4D *mom, double** dsij,const int mode) 
+				      const ATOOLS::Vec4D *mom,std::vector<std::vector<double> > &dsij,const int mode) 
 {
   p_int->SetMomenta(labmom);
   p_scale->CalculateScale(labmom,mode);

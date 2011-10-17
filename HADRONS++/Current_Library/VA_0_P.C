@@ -40,7 +40,7 @@ void VA_0_P::SetModelParameters( struct GeneralModel _md )
   m_fP  = _md("fP", fP);
 }
 
-void VA_0_P::Calc(const ATOOLS::Vec4D * moms)
+void VA_0_P::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   // 0 is Pseudoscalar
   double factor=m_fP*m_Vxx;

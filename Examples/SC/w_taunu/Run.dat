@@ -1,0 +1,48 @@
+(run){
+  OUTPUT = 2
+  SPINCORRTAG:=1
+  GENTAG:=Comix
+  ANALYSIS = 1
+  ANALYSIS_OUTPUT = AnalysisGENTAGSCSPINCORRTAG
+  SOFT_SPIN_CORRELATIONS = SPINCORRTAG
+  ME_SIGNAL_GENERATOR   = GENTAG
+}(run)
+(me){
+  SCALES          = VAR{sqr(80)}
+}(me)
+(shower){
+  SHOWER_GENERATOR=None
+}(shower)
+(fragmentation){
+  YFS_MODE = 0
+}(fragmentation)
+(model){
+  STABLE[15] = 0
+  MASSIVE[15] = 1
+  SIN2THETAW=0.23147
+}(model)
+(beam){
+  BEAM_1          = 11
+  BEAM_ENERGY_1   = 40.2
+  BEAM_2          = -12
+  BEAM_ENERGY_2   = 40.2
+}(beam)
+(processes){
+  Process : 11 -12 -> -24[a]
+  Decay : -24[a] -> 15 -16
+  End process
+}(processes)
+
+(analysis){
+  BEGIN_ANALYSIS {
+
+    // the analysis level
+    LEVEL  Hadron
+    JETCONTS 0
+
+    // observables
+   
+    3EnergyCMS -211 16 -16 0. 1.0 100 LinErr FinalState
+  } 
+  END_ANALYSIS
+}(analysis)

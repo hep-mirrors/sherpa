@@ -102,6 +102,7 @@ Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
   DEBUG_FUNC("n="<<n<<" ntotal="<<nt);
   if (nt>n) {
     Process_Group* newxs = new Process_Group();
+    newxs->SetGenerator(this);
     newxs->Init(pi,p_int->Beam(),p_int->ISR());
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
     if (!newxs->ConstructProcesses()) {
@@ -117,6 +118,7 @@ Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
   }
   else {
     Single_Process* newxs = new Single_Process();
+    newxs->SetGenerator(this);
     newxs->Init(pi,p_int->Beam(),p_int->ISR());
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
     if (!newxs->Initialize()) {

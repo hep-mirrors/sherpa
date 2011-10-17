@@ -21,6 +21,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Math/Scaling.H"
+#include "ATOOLS/Phys/Spinor.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Math/Variable.H"
 #include "ATOOLS/Org/Data_Writer.H"
@@ -34,14 +35,8 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
 
-#include "ATOOLS/Phys/Spin_Correlation_Tensor.H"
-
 #include "SHERPA/Tools/Event_Reader.H"
 #include "SHERPA/Tools/RootNtuple_Reader.H"
-
-#ifdef USING__Hadrons
-#include "HADRONS++/Main/Hadrons.H"
-#endif
 
 #include <sys/stat.h>
 
@@ -58,7 +53,7 @@ typedef void (*PDF_Exit_Function)();
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
   m_mode(0), m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
-  p_fragmentation(NULL), p_mihandler(NULL), p_softphotons(NULL),
+  p_fragmentation(NULL), p_hdhandler(NULL), p_mihandler(NULL), p_softphotons(NULL),
   p_iohandler(NULL), p_evtreader(NULL)
 {
   m_path=std::string("./");
@@ -85,18 +80,6 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
     InitializeTheIO();
     return;
   }  
-  if (m_mode==9990||m_mode==9991) {
-    p_evtreader   = new RootNtuple_Reader(m_path,m_evtfile,m_mode-9990);
-    p_dataread    = new Data_Reader(" ",";","!","=");
-    p_dataread->AddWordSeparator("\t");
-    p_dataread->SetInputPath(m_path);
-    p_dataread->SetInputFile(m_file);
-    m_analysisdat = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
-    rpa->Init(m_path,m_file,argc,argv);
-    LoadLibraries();
-    InitializeTheIO();
-    return;
-  }  
 
   SetFileNames();
 
@@ -107,8 +90,8 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   ShowParameterSyntax();
   ran->InitExternal(m_path,m_file);
 
-  m_spincorrelations = bool(p_dataread->GetValue<int>("SPIN_CORRELATIONS",0));
-  rpa->gen.SetSpinCorrelation(m_spincorrelations);
+  rpa->gen.SetSoftSC(p_dataread->GetValue<int>("SOFT_SPIN_CORRELATIONS",0));
+  rpa->gen.SetHardSC(p_dataread->GetValue<int>("HARD_SPIN_CORRELATIONS",0));
   exh->AddTerminatorObject(this);
 }
 
@@ -201,6 +184,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
   if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
+  if (p_hdhandler)     { delete p_hdhandler;     p_hdhandler     = NULL; }
   if (p_softphotons)   { delete p_softphotons;   p_softphotons   = NULL; } 
   if (p_mihandler)     { delete p_mihandler;     p_mihandler     = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
@@ -217,14 +201,6 @@ Initialization_Handler::~Initialization_Handler()
       delete m_mehandlers.begin()->second;
     }
     m_mehandlers.erase(m_mehandlers.begin());
-  }
-  std::set<Hadron_Decay_Handler*> deletedhd;
-  while (m_hdhandlers.size()>0) {
-    if (deletedhd.find(m_hdhandlers.begin()->second)==deletedhd.end()) {
-      deletedhd.insert(m_hdhandlers.begin()->second);
-      delete m_hdhandlers.begin()->second;
-    }
-    m_hdhandlers.erase(m_hdhandlers.begin());
   }
   while (m_isrhandlers.size()>0) {
     delete m_isrhandlers.begin()->second;
@@ -353,10 +329,12 @@ void Initialization_Handler::PrepareTerminate()
 bool Initialization_Handler::InitializeTheFramework(int nr)
 {
   bool okay = true;
+  Spinor<double>::SetDefaultGauge(1);
+  Spinor<long double>::SetDefaultGauge(1);
   SetGlobalVariables();
   okay = okay && InitializeTheModel();  
   
-  if (m_mode>=9000) {
+  if (m_mode>=9000 && !(m_mode==9990 || m_mode==9991)) {
     msg_Events()<<"SHERPA will read in the events."<<std::endl
 		<<"   The full framework is not needed."<<std::endl;
     InitializeTheAnalyses();
@@ -368,8 +346,18 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     THROW(critical_error,"Model cannot be initialized");
   p_model->InitializeInteractionModel();
   okay = okay && InitializeTheAnalyses();
-  PHASIC::Phase_Space_Handler::GetInfo();
   if (!CheckBeamISRConsistency()) return 0.;
+  if (m_mode==9990 || m_mode==9991) {
+    p_evtreader = new RootNtuple_Reader
+      (m_path,m_evtfile,m_mode-9990,p_model,
+       m_isrhandlers[isr::hard_process]);
+    msg_Events()<<"SHERPA will read in the events."<<std::endl
+		<<"   The full framework is not needed."<<std::endl;
+    InitializeTheIO();
+    InitializeTheAnalyses();
+    return true;
+  }
+  PHASIC::Phase_Space_Handler::GetInfo();
   okay = okay && InitializeTheBeamRemnants();
   okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheShowers();
@@ -377,9 +365,9 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay = okay && InitializeTheMatrixElements();
   //  only if events:
   if (rpa->gen.NumberOfEvents()>0) {
+    okay = okay && InitializeTheSoftPhotons();
     okay = okay && InitializeTheHadronDecays();
     okay = okay && InitializeTheUnderlyingEvents();
-    okay = okay && InitializeTheSoftPhotons();
     okay = okay && InitializeTheIO();
   }
   return okay;
@@ -598,9 +586,15 @@ bool Initialization_Handler::InitializeThePDFs()
 
 bool Initialization_Handler::InitializeTheHardDecays()
 {
+  Data_Reader dr(" ",";","!","=");
+  dr.AddWordSeparator("\t");
+  dr.SetInputPath(m_path);
+  dr.SetInputFile(m_medat);
+  std::string decays=dr.GetValue<string>("HARD_DECAYS",string("On"));
+  if (decays=="Off") return true;
+
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
   p_harddecays = new Hard_Decay_Handler(m_path,m_medat);
-  p_harddecays->InitializeDecayMap();
   return 1;
 }
 
@@ -608,12 +602,11 @@ bool Initialization_Handler::InitializeTheMatrixElements()
 {
   Matrix_Element_Handler * me = NULL;
   me = new Matrix_Element_Handler(m_path,m_medat,m_processesdat,m_selectordat);
+  me->SetShowerHandler(p_showerhandler);
+  me->InitializeProcesses(p_model,p_beamspectra,m_isrhandlers[isr::hard_process]);
   MEHandlersMap::iterator it=m_mehandlers.find("SignalMEs");
   if (it!=m_mehandlers.end()) delete it->second;
   m_mehandlers["SignalMEs"]=me; 
-  me->SetShowerHandler(p_showerhandler);
-  me->InitializeProcesses(p_model,p_beamspectra,m_isrhandlers[isr::hard_process]);
-//   me->SetSpinCorrelations(m_spincorrelations);
   msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes."
             <<endl;
   return 1;
@@ -681,78 +674,29 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   std::string frag=dr.GetValue<string>("FRAGMENTATION",string("Ahadic"));
   if (frag=="Off") return true;
 
-  if (m_hdhandlers.size()>0) {
-    for (HDHandlersIter hditer=m_hdhandlers.begin();hditer!=m_hdhandlers.end();hditer++) {
-      msg_Info()<<"Delete Hadron_Decay_Handler for "<<hditer->first<<endl;
-      if (hditer->second!=NULL) { delete hditer->second; hditer->second=NULL; }
-    }
-    m_hdhandlers.clear();
-  }
-
-  double max_propertime = dr.GetValue<double>("MAX_PROPER_LIFETIME",-1.0);
-  if( max_propertime > 0.0) {
-    for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
-	kfit!=s_kftable.end();++kfit) {
-      Flavour flav(kfit->first);
-      if (flav.IsOn() && flav.IsHadron() && !flav.IsStable() &&
-          0.197e-12>max_propertime*flav.Width() && flav.Kfcode()!=kf_K)
-      {
-        flav.SetStable(true);
-      }
-    }
-  }
-  Hadron_Decays::SetMassSmearing(dr.GetValue<int>("MASS_SMEARING",1));
-  
-  set<kf_code>* hadrons_cans=NULL;
-  Hadron_Decay_Handler * hdhandler = NULL;
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Hadrons"));
   msg_Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
   if (decmodel=="Off") return true;
-  if (decmodel==std::string("Hadrons")) {
-    string decaypath       = dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
-    string decayfile       = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
-    string decayconstfile  = dr.GetValue<string>("DECAYCONSTFILE",string("HadronConstants.dat"));
-    HADRONS::Hadrons* hadrons = new HADRONS::Hadrons(decaypath,decayfile,decayconstfile);
-    hadrons->SetSpinCorrelations(m_spincorrelations);
-    hdhandler              = new Hadron_Decay_Handler(hadrons);
-    hadrons_cans = hdhandler->GetCans();
-    m_hdhandlers["Hadrons"] = hdhandler;
+  else if (decmodel==std::string("Hadrons")) {
+    Hadron_Decay_Handler* hd=new Hadron_Decay_Handler(m_path,m_hadrondecaysdat);
+    hd->SetSoftPhotonHandler(p_softphotons);
+    p_hdhandler=hd;
   }
-  if ((decmodel==string("Lund")) ) {
+  else if ((decmodel==string("Lund")) ) {
 #ifdef USING__PYTHIA
-    Lund_Interface * lund(NULL);
-    if (p_fragmentation->GetLundInterface()==NULL) {
-      string lfile = dr.GetValue<std::string>("LUND_FILE",std::string("Lund.dat"));
-      lund         = new Lund_Interface(m_path,lfile,true);
-    }
-    else lund      = p_fragmentation->GetLundInterface();
-    if(hadrons_cans) {
-      for(set<kf_code>::iterator cankf=hadrons_cans->begin();cankf!=hadrons_cans->end();cankf++) {
-        lund->SwitchOffDecays((*cankf));
-      }
-    }
-    hdhandler      = new Hadron_Decay_Handler(lund);
-    m_hdhandlers["Lund"]   = hdhandler;
+    THROW(not_implemented, "Lund hadron decays not implemented.");
 #else
     THROW(fatal_error, string("Pythia not enabled during compilation. ")+
           "Use the configure option --enable-pythia to enable it.");
 #endif
   }
-  if (decmodel!=std::string("Hadrons") && decmodel!=string("Lund")) {
-    THROW(fatal_error,"Hadron decay model not implemented.");
+  else {
+    THROW(fatal_error,"Hadron decay model '"+decmodel+"' not implemented.");
   }
-  msg_Info()<<"Initialized the Hadron_Decay_Handler, Decay model = "<<decmodel<<endl;
+  msg_Info()<<"Initialized the Hadron_Decay_Handler, Decay model = "
+            <<decmodel<<endl;
   return true;
 }
-
-Hadron_Decay_Handler * Initialization_Handler::GetHadronDecayHandler(std::string _key) { 
-  HDHandlersIter pos = m_hdhandlers.find(_key);
-  if (pos!=m_hdhandlers.end()) return pos->second;
-  msg_Error()<<"Error in Initialization_Handler::GetHadronDecayHandler("<<_key<<") :"
-	     <<"   Key not found. Return Null pointer."<<endl;
-  return NULL;
-}
-
 
 bool Initialization_Handler::InitializeTheSoftPhotons()
 {
@@ -927,6 +871,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     else if (ExtractValArg(helpsv,oit,"-O","OUTPUT"));
     else if (ExtractValArg(helpsv,oit,"-o","EVT_OUTPUT"));
     else if (ExtractValArg(helpsv,oit,"-j","PG_THREADS"));
+    else if (ExtractValArg(helpsv,oit,"-g","GENERATE_RESULT_DIRECTORY","0"));
     else if (par=="--version" || par=="-v"){
       msg_Out()<<"Sherpa Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<endl;
       exit(0);
@@ -950,6 +895,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       msg_Out()<<"\t\t-O <level>        set general output level <level>"<<endl;
       msg_Out()<<"\t\t-o <level>        set output level for event generation"<<endl;
       msg_Out()<<"\t\t-j <threads>      set number of threads <threads>"<<endl;
+      msg_Out()<<"\t\t-g                do not create result directory"<<endl;
       msg_Out()<<"\t\t-b                run in non-batch mode"<<endl;
       msg_Out()<<"\t\t-v,--version      print the version number"<<endl;
       msg_Out()<<"\t\t-h,--help         print this help message\n"<<endl;

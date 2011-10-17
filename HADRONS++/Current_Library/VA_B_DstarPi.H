@@ -9,10 +9,11 @@ namespace HADRONS {
 
     double m_Vxx;
   public:
-    VA_B_DstarPi(ATOOLS::Flavour* flavs, int n, int* indices, std::string name) :
-      Current_Base(flavs, n, indices, name) {};
+    VA_B_DstarPi(const ATOOLS::Flavour_Vector& flavs,
+                 const std::vector<int>& indices, const std::string& name) :
+    Current_Base(flavs, indices, name) {};
     void SetModelParameters( struct GeneralModel _md );
-    void Calc(const ATOOLS::Vec4D * moms);
+    void Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti);
   };
 }
 

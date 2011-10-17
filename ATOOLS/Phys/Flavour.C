@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Math/Random.H"
 
 namespace ATOOLS 
@@ -150,7 +151,7 @@ void Flavour::FromCtq(const int code)
   else p_info=s_kftable[(kf_code)abs(code-6)];
 }
 
-int Flavour::HepEvt() 
+int Flavour::HepEvt() const
 {
   switch (Kfcode()) {
   case kf_a_0_1450:      return 10111;
@@ -309,6 +310,28 @@ double Flavour::GenerateLifeTime() const
   return -proper_time*log(1.-ran->Get());
 }
 
+double Flavour::RelBWMass(const Mass_Selector* ms,
+                          const double& min, const double& max) const
+{
+  double peak=ms->Mass(*this);
+  double width=Width();
+  if( peak<1.e-6 || width/peak < 1.e-8) return peak;
+  double random = ran->Get();
+  double peak2 = peak*peak;
+  double mw    = peak*width;
+  double s;
+  if (min==0.0 && max==std::numeric_limits<double>::max()) {
+    s = peak2+mw*tan(M_PI*(random-0.5));
+  }
+  else {
+    double smin = sqr(min); double smax = sqr(max);
+    double ymax=atan((smin-peak2)/mw);
+    double ymin=atan((smax-peak2)/mw);
+    s = peak2+mw*tan(ymin + random*(ymax-ymin));
+  }
+  return sqrt(s);
+}
+
 bool Flavour::IsStable() const
 {
   if (p_info->m_stable==0) return false;
@@ -384,12 +407,7 @@ void ATOOLS::OutputParticles(std::ostream &str) {
   
   for (;kfit!=s_kftable.end();++kfit) {
     Flavour flav(kfit->first);
-    kf_code fd(flav.Kfcode());
-    // suppress pseudoparticle output
-    while (fd/10) fd/=10;
-    if (((!flav.IsHadron() && fd!=9) ||
-	 (flav.Kfcode()>9900000 && flav.Kfcode()<9900099)) && 
-	flav.Size()==1 && flav.Kfcode()!=0) {
+    if (flav.Size()==1 && flav.Kfcode()!=0 && !flav.IsDummy()) {
       str<<std::setw(12)<<flav.IDName();
       str<<std::setw(10)<<flav.Kfcode();
       str<<std::setw(14)<<flav.Mass(true);

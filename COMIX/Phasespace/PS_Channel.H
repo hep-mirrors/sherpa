@@ -20,15 +20,15 @@ namespace COMIX {
   typedef std::vector<PHASIC::Vegas*>          Vegas_Vector;
   typedef std::map<std::string,PHASIC::Vegas*> Vegas_Map;
 
-  typedef std::map<const Current_Base*,PHASIC::Vegas*> CVegas_Map;
-  typedef std::map<size_t,PHASIC::Vegas*>              IVegas_Map;
-  typedef std::map<size_t,CVegas_Map>                  ICVegas_Map;
+  typedef std::map<const Current*,PHASIC::Vegas*> CVegas_Map;
+  typedef std::map<size_t,PHASIC::Vegas*>         IVegas_Map;
+  typedef std::map<size_t,CVegas_Map>             ICVegas_Map;
 
   typedef std::map<size_t,std::string> PSId_Map;
 
   typedef std::map<size_t,std::vector<int> > CId_Map;
 
-  typedef std::map<size_t,const Current_Base*> STCC_Map;
+  typedef std::map<size_t,const METOOLS::Current*> STCC_Map;
 
 #ifdef USING__Threading
   class PS_Channel;
@@ -65,13 +65,14 @@ namespace COMIX {
 
     PHASIC::Cut_Data *p_cuts;
 
-    Vec4D_Vector  m_p;
+    ATOOLS::Vec4D_Vector m_p;
 
     Double_Vector m_rns, m_wrns;
     Vegas_Vector  m_vgs, m_wvgs;
 
     size_t m_n, m_nr, m_num, m_lid, m_rid;
     double m_texp, m_sexp, m_thexp, m_mfac;
+    double m_aexp, m_srbase;
 
     int m_bmode, m_omode, m_tmode, m_vmode, m_zmode, m_czmode;
     int m_nvints, m_vsopt, m_nopt;
@@ -100,10 +101,10 @@ namespace COMIX {
 
     void FillMoms(const size_t &aid,Int_Vector &cur,size_t n);
 
-    double PropMomenta(const Current_Base *cur,const size_t &id,
+    double PropMomenta(const Current *cur,const size_t &id,
 		       const double &smin,const double &smax,
 		       const double *rn);
-    double PropWeight(const Current_Base *cur,const size_t &id,
+    double PropWeight(const Current *cur,const size_t &id,
 		      const double &smin,const double &smax,const double &s);
 
     void TChannelBounds(const size_t &aid,const size_t &lid,
@@ -114,28 +115,28 @@ namespace COMIX {
 			      double &ctmin,double &ctmax,
 			      const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
 			      const double &s1,const double &s2,const int mode);
-    void TChannelMomenta(Current_Base *cur,const size_t &id,const size_t &aid,
+    void TChannelMomenta(Current *cur,const size_t &id,const size_t &aid,
 			 const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
 			 ATOOLS::Vec4D &p1,ATOOLS::Vec4D &p2,
 			 const double &s1,const double &s2,
 			 const double *rns);
-    double TChannelWeight(Current_Base *cur,const size_t &id,const size_t &aid,
+    double TChannelWeight(Current *cur,const size_t &id,const size_t &aid,
 			  const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
 			  ATOOLS::Vec4D &p1,ATOOLS::Vec4D &p2);
 
     void SChannelBounds(const size_t &id,const size_t &lid,
 			double &ctmin,double &ctmax);
-    void SChannelMomenta(Current_Base *cur,const size_t &id,
+    void SChannelMomenta(Current *cur,const int type,
 			 const ATOOLS::Vec4D &pa,ATOOLS::Vec4D &p1,
 			 ATOOLS::Vec4D &p2,const double &s1,
 			 const double &s2,const double *rns);
-    double SChannelWeight(Current_Base *cur,const size_t &id,
+    double SChannelWeight(Current *cur,const int type,
 			  ATOOLS::Vec4D &p1,ATOOLS::Vec4D &p2);
 
-    bool GeneratePoint(Current_Base *const ja,Current_Base *const jb,
-		       Current_Base *const jc,size_t &nr);
-    double GenerateWeight(Current_Base *const ja,Current_Base *const jb,
-			  Current_Base *const jc,size_t &nr);
+    bool GeneratePoint(Current *const ja,Current *const jb,
+		       Current *const jc,Vertex *const v,size_t &nr);
+    double GenerateWeight(Current *const ja,Current *const jb,
+			  Current *const jc,Vertex *const v,size_t &nr);
     
     bool GenerateWeight(PS_Current *const cur);
     bool GenerateWeight();
@@ -144,18 +145,18 @@ namespace COMIX {
 		       Vertex_Vector &v);
     bool GeneratePoint(Vertex_Vector v);
 
-    bool GenerateChannel(Current_Base *const cur,
+    bool GenerateChannel(Current *const cur,
 			 Vertex_Vector &v);
     bool GenerateChannel(Vertex_Vector &v);
     bool GenerateChannels();
 
-    bool Zero(Vertex_Base *const vtx) const;
+    bool Zero(METOOLS::Vertex *const vtx) const;
 
     PHASIC::Vegas *GetVegas(const std::string &tag,int ni=-1);
 
-    PHASIC::Vegas *GetPVegas(const Current_Base *cur,const size_t &id);
-    PHASIC::Vegas *GetSVegas(const size_t &id,const Current_Base *cur);
-    PHASIC::Vegas *GetTVegas(const size_t &id,const Current_Base *cur);
+    PHASIC::Vegas *GetPVegas(const Current *cur,const size_t &id);
+    PHASIC::Vegas *GetSVegas(const size_t &id,const Current *cur);
+    PHASIC::Vegas *GetTVegas(const size_t &id,const Current *cur);
 
   public :
 

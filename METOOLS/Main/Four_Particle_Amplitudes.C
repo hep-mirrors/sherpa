@@ -10,14 +10,15 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-VSSS::VSSS(Flavour *fl,int* i,bool *out) :
-  Partial_Amplitude_Base(fl,4,i,out)
+VSSS::VSSS(const Flavour_Vector& fl,const vector<int>& i,
+           const vector<bool>& out) :
+  Partial_Amplitude_Base(fl,i,out)
 {
   AssertIn(1);
   AssertSpins(2,0,0,0);
 }
 
-void VSSS::operator()(const Vec4D * moms,const bool anti)
+void VSSS::Calculate(const ATOOLS::Vec4D_Vector& moms, bool anti)
 {
   Vec4D pS1(moms[p_i[1]]);
   Vec4D pS2(moms[p_i[2]]);

@@ -3,16 +3,12 @@
 #include "Tools.H"
 #include "Vector.H"
 #else
+#include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Math/Term.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
-#endif
-
-#ifdef USING__Threading
-#include <pthread.h>
 #endif
 
 namespace ATOOLS {
@@ -90,7 +86,7 @@ namespace ATOOLS {
     double m_this;
     friend class Term;
 
-    static TermDelete_Vector<DTerm> s_terms;
+    static AutoDelete_Vector<DTerm> s_terms;
 
     inline DTerm(const double &val=0.0): 
       Term('D'), m_this(val) {}
@@ -126,7 +122,7 @@ namespace ATOOLS {
     Complex m_this;
     friend class Term;
 
-    static TermDelete_Vector<CTerm> s_terms;
+    static AutoDelete_Vector<CTerm> s_terms;
 
     inline CTerm(const Complex &val=Complex(0.0,0.0)): 
       Term('C'), m_this(val) {}
@@ -162,7 +158,7 @@ namespace ATOOLS {
     Vec4D m_this;
     friend class Term;
 
-    static TermDelete_Vector<DV4Term> s_terms;
+    static AutoDelete_Vector<DV4Term> s_terms;
 
     inline DV4Term(const Vec4D &val): 
       Term('V'), m_this(val) {}
@@ -198,7 +194,7 @@ namespace ATOOLS {
     std::string m_this;
     friend class Term;
 
-    static TermDelete_Vector<STerm> s_terms;
+    static AutoDelete_Vector<STerm> s_terms;
 
     inline STerm(const std::string &val): 
       Term('S'), m_this(val) {}
@@ -228,10 +224,10 @@ namespace ATOOLS {
 
   };// end of class STerm
 
-  TermDelete_Vector<DTerm> DTerm::s_terms;
-  TermDelete_Vector<CTerm> CTerm::s_terms;
-  TermDelete_Vector<DV4Term> DV4Term::s_terms;
-  TermDelete_Vector<STerm> STerm::s_terms;
+  AutoDelete_Vector<DTerm> DTerm::s_terms;
+  AutoDelete_Vector<CTerm> CTerm::s_terms;
+  AutoDelete_Vector<DV4Term> DV4Term::s_terms;
+  AutoDelete_Vector<STerm> STerm::s_terms;
 
   template <> const double  &Term::Get() const
   { return static_cast<const DTerm *>(this)->m_this; }

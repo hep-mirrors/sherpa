@@ -9,16 +9,18 @@ namespace ATOOLS { class Cluster_Amplitude; }
 namespace SHERPA {
 
   class Matrix_Element_Handler;
+  class Hard_Decay_Handler;
+  class Decay_Handler_Base;
   class MI_Handler;
-  class Hadron_Decay_Handler;
   class Shower_Handler;
 
   class Perturbative_Interface {
   protected :
 
     Matrix_Element_Handler *p_me;
+    Hard_Decay_Handler     *p_dec;
     MI_Handler             *p_mi;
-    Hadron_Decay_Handler   *p_hd;
+    Decay_Handler_Base     *p_hd;
     Shower_Handler         *p_shower;        
 
     ATOOLS::Blob *p_hard;
@@ -37,10 +39,11 @@ namespace SHERPA {
 
     // constructors
     Perturbative_Interface(Matrix_Element_Handler *const meh,
+                           Hard_Decay_Handler *const hdh,
+			   Shower_Handler *const psh);
+    Perturbative_Interface(Decay_Handler_Base *const hdh,
 			   Shower_Handler *const psh);
     Perturbative_Interface(MI_Handler *const hdh,
-			   Shower_Handler *const psh);
-    Perturbative_Interface(Hadron_Decay_Handler *const hdh,
 			   Shower_Handler *const psh);
 
     // destructor

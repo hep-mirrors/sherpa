@@ -32,7 +32,6 @@ namespace PHASIC {
 
     double m_ptmin, m_etmin;
 
-    ATOOLS::Vec4D_Vector   m_p;
     ATOOLS::Flavour_Vector m_f;
 
     int m_mode;
@@ -46,8 +45,8 @@ namespace PHASIC {
 
     ~Fastjet_Scale_Setter();
 
-    double CalculateScale(const std::vector<ATOOLS::Vec4D> &p,
-			  const int mode);
+    double Calculate(const std::vector<ATOOLS::Vec4D> &p,
+		     const int mode);
 
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
@@ -156,16 +155,10 @@ const Vec4D_Vector &Fastjet_Scale_Setter::Momenta() const
   return m_p;
 }
 
-double Fastjet_Scale_Setter::CalculateScale
+double Fastjet_Scale_Setter::Calculate
 (const std::vector<ATOOLS::Vec4D> &momenta,const int mode) 
 {
   if (mode==1) return m_scale[stp::fac];
-  if (m_escale.size()) {
-    m_scale[stp::fac]=m_escale[stp::fac];
-    m_scale[stp::ren]=m_escale[stp::ren];
-    p_cpls->Calculate();
-    return m_scale[stp::fac];    
-  }
   m_p.resize(2);
   m_p[0]=-momenta[0];
   m_p[1]=-momenta[1];
@@ -197,7 +190,6 @@ double Fastjet_Scale_Setter::CalculateScale
   for (size_t i(2);i<m_scale.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
   msg_Debugging()<<"} <- "<<p_proc->Name()<<"\n";
-  p_cpls->Calculate();
   return m_scale[stp::fac];
 }
 

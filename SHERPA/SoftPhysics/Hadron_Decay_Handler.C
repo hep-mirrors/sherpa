@@ -1,283 +1,226 @@
 #include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle.H"
-#ifdef USING__PYTHIA
-#include "SHERPA/LundTools/Lund_Interface.H"
-#endif
-#include "ATOOLS/Phys/Mass_Handler.H"
-#include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "HADRONS++/Main/Hadrons.H"
 #include "HADRONS++/Main/Hadron_Decay_Map.H"
-#include "HADRONS++/Main/Hadron_Decay_Table.H"
 #include "HADRONS++/Main/Hadron_Decay_Channel.H"
 #include "HADRONS++/Main/Mixing_Handler.H"
-
+#include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
+#include "METOOLS/SpinCorrelations/Spin_Density.H"
+#include "METOOLS/SpinCorrelations/Decay_Matrix.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
+using namespace PHASIC;
 using namespace std;
 using namespace HADRONS;
+using namespace METOOLS;
 
-
-Hadron_Decay_Handler::Hadron_Decay_Handler(Hadrons * _hadrons) :
-  m_decmodel(string("Hadrons")), m_mode(1),
-  p_hadrons(_hadrons)
-#ifdef USING__PYTHIA
-  ,p_lund(NULL)
-#endif
-  ,p_ampl(NULL)
+Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
+  Decay_Handler_Base(), p_softphotons(NULL)
 {
-  p_cans = new set<kf_code>;
-  Decay_Map* decmap = p_hadrons->DecayMap();
-  for (Decay_Map::iterator decit=decmap->begin(); decit!=decmap->end(); decit++)
-    p_cans->insert(decit->first.Kfcode());
-}
+  Data_Reader dr(" ",";","!","=");
+  dr.AddWordSeparator("\t");
+  dr.SetInputPath(path);
+  dr.SetInputFile(fragfile);
 
-#ifdef USING__PYTHIA
-Hadron_Decay_Handler::Hadron_Decay_Handler(Lund_Interface * _lund) :
-  m_decmodel(string("Lund")), m_mode(0),
-  p_hadrons(NULL), 
-  p_lund(_lund), p_ampl(NULL)
-{ 
-  p_cans = new set<kf_code>;
-  Flavour flav(kf_tau);
-  if (flav.IsOn() && !flav.IsStable()) {
-    if (p_lund->IsAllowedDecay(flav.Kfcode())) p_cans->insert(flav.Kfcode());
-  }
-  for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
-      kfit!=s_kftable.end();++kfit) {
-    Flavour flav(kfit->first);
-    if (flav.IsOn() && flav.IsHadron() && !flav.IsStable()) {
-      if (p_lund->IsAllowedDecay(flav.Kfcode())) {
-        p_cans->insert(flav.Kfcode());
-        p_lund->AdjustProperties(flav);
+  double max_propertime = dr.GetValue<double>("MAX_PROPER_LIFETIME",-1.0);
+  if( max_propertime > 0.0) {
+    for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
+	kfit!=s_kftable.end();++kfit) {
+      Flavour flav(kfit->first);
+      if (flav.IsOn() && flav.IsHadron() && !flav.IsStable() &&
+          0.197e-12>max_propertime*flav.Width() && flav.Kfcode()!=kf_K)
+      {
+        flav.SetStable(true);
       }
     }
-    if( flav.Kfcode()==kf_K_L || flav.Kfcode()==kf_K_S || flav.Kfcode()==kf_K) {
-      // adjust for K0, KL and KS even if stable,
-      // otherwise 1->1 decay with different masses fails
-      p_lund->AdjustProperties(flav);
-    }
   }
-  p_lund->SwitchOffMassSmearing();
-}
-#endif
 
-Hadron_Decay_Handler::~Hadron_Decay_Handler() 
-{
-  delete p_cans;
-  if (p_hadrons) delete p_hadrons; p_hadrons=NULL;
-}
+  string decaypath=dr.GetValue<string>("DECAYPATH",string("Decaydata/"));
+  string decayfile=dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
+  string decayconstfile=dr.GetValue<string>("DECAYCONSTFILE",
+                                            string("HadronConstants.dat"));
+  string aliasfile=dr.GetValue<string>("HADRONALIASESFILE",
+                                       string("HadronAliases.dat"));
+  string aliasdecayfile=dr.GetValue<string>("ALIASDECAYFILE",
+                                            string("AliasDecays.dat"));
+  m_mass_smearing=dr.GetValue<int>("MASS_SMEARING",1);
+  m_spincorr=rpa->gen.SoftSC();
 
-bool Hadron_Decay_Handler::CanDealWith(kf_code kf) {
-  switch (m_mode) {
-  case 0:
-    if (p_cans->find(kf)!=p_cans->end()) return true;
-    return false;
-  case 1:
-    if (p_cans->find(kf)!=p_cans->end()) return true;
-    return false;
-  }
-  return false;
-}
-
-bool Hadron_Decay_Handler::CreateDecayBlob(Blob* blob)
-{
-  DEBUG_FUNC("blob->Id()="<<blob->Id());
-  // after this method has run, the blob is supposed to have 
-  // everything prepared that the GenerateMass method with its
-  // InParticle needs.
+  Hadron_Decay_Map * dmap = new Hadron_Decay_Map(this);
+  dmap->ReadInConstants(decaypath, decayconstfile);
+  dmap->ReadHadronAliases(decaypath, aliasfile);
+  dmap->Read(decaypath, decayfile, true);
+  dmap->Read(decaypath, aliasdecayfile);
+  dmap->Initialise();
+  dmap->ReadFixedTables(decaypath, "FixedDecays.dat");
+  p_decaymap=dmap;
   
-//   if(part->Time()==0.0) part->SetTime();
-//   SetPosition(blob);
-  
-//   PerformMixing(blob, bloblist);
-//   blob=bloblist->back();
-  
-  bool returncode;
-  switch (m_mode) {
-    case 1:
-      DEBUG_INFO("with Sherpa.");
-      blob->SetTypeSpec("Sherpa");
-      returncode = p_hadrons->CreateDecayBlob(blob);
-      break;
-#ifdef USING__PYTHIA
-    case 0:
-      DEBUG_INFO("with Pythia.");
-      blob->SetTypeSpec("Pythia_v6.214");
-      returncode = true;
-      break;
-#endif
-  }
-  return true;
+  p_mixinghandler = new Mixing_Handler();
+  p_mixinghandler->SetModel(dmap->StartModel());
+  dmap->SetMixingHandler(p_mixinghandler);
 }
 
-bool Hadron_Decay_Handler::FillDecayBlob(Blob *blob, const Vec4D& labmom)
+Hadron_Decay_Handler::~Hadron_Decay_Handler()
 {
-  DEBUG_FUNC("blob->Id()="<<blob->Id());
-  // after this method has run, the blob is supposed to be complete
-  // with kinematics in CMS, and with on-shell particles.
-  switch (m_mode) {
-    case 1:
-      DEBUG_INFO("with Sherpa.");
-      return p_hadrons->FillDecayBlob(blob, labmom);
-#ifdef USING__PYTHIA
-    case 0:
-      DEBUG_INFO("with Pythia.");
-      return p_lund->PerformDecay(blob);
-#endif
-  }
-  return false;
+  Hadron_Decay_Map* dmap=dynamic_cast<Hadron_Decay_Map*>(p_decaymap);
+  delete dmap; p_decaymap=NULL;
+  delete p_mixinghandler; p_mixinghandler=NULL;
 }
 
-bool Hadron_Decay_Handler::GenerateMass(ATOOLS::Particle* part, double min, double max) 
+void Hadron_Decay_Handler::SetSoftPhotonHandler(Soft_Photon_Handler* sph)
 {
-  DEBUG_FUNC(part->RefFlav()<<" "<<min<<" "<<max);
-  double mass = 0.0;
-  switch (m_mode) {
-#ifdef USING__PYTHIA
-  case 0:
-    mass = p_lund->GenerateMass(part->RefFlav().Kfcode(),min,max);
-    break;
-#endif
-  case 1:
-    Blob* decayblob=part->DecayBlob();
-    kf_code kfc = part->RefFlav().Kfcode();
-    if(kfc==kf_K || kfc==kf_K_S || kfc==kf_K_L || decayblob->Type()!=btp::Hadron_Decay) 
-      return true;
-    Blob_Data_Base* data = (*decayblob)["hdc"];
-    if(data) {
-      Hadron_Decay_Channel* hdc = data->Get<Hadron_Decay_Channel*>();
-      mass=hdc->GenerateMass(min, max);
-    }
-    else {
-      Mass_Handler masshandler(part->RefFlav());
-      mass = masshandler.GetMass(min, max);
-    }
-    break;
-  }
-  
-  DEBUG_VAR(mass);
-  if(mass>0.0) {
-    part->SetFinalMass(mass);
-    return true;
-  }
-  else return false;
+  p_softphotons=sph;
+  m_extraqed=true;
 }
 
-void Hadron_Decay_Handler::SetSignalProcessBlob(ATOOLS::Blob* spblob)
+void Hadron_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
+                                            METOOLS::Amplitude2_Tensor* amps,
+                                            const Particle_Vector& origparts)
 {
-  if(m_mode==1) p_hadrons->SetSignalProcessBlob(spblob);
+  if(RejectExclusiveChannelsFromFragmentation(blob)) return;
+  Decay_Handler_Base::TreatInitialBlob(blob, amps, origparts);
 }
 
-bool Hadron_Decay_Handler::PerformMixing(Particle* inpart, Blob_List* bloblist)
+Decay_Matrix* Hadron_Decay_Handler::FillDecayTree(Blob * blob, Spin_Density* s0)
 {
-  if(m_mode==1) return p_hadrons->MixingHandler()->PerformMixing(inpart, bloblist);
-  else          return false;
-}
-
-void Hadron_Decay_Handler::CleanUp()
-{
-  if(m_mode==1) p_hadrons->CleanUp();
-}
-
-bool Hadron_Decay_Handler::IsExclusiveDecaychannel(Blob* blob, FlavourSet decayproducts)
-{
-  if(m_mode==1) {
-    if(blob->TypeSpec()=="Sherpa") {
-      Hadron_Decay_Map* decaymap = p_hadrons->DecayMap();
-      Decay_Table* dt = decaymap->FindDecay(blob->InParticle(0)->Flav());
-      if(dt->GetDecayChannel(decayproducts)) return true;
-      else                                   return false;
-    }
+  Blob* mixingblob=p_mixinghandler->PerformMixing(blob->InParticle(0));
+  if (mixingblob) {
+    Blob_List::iterator bit;
+    for (bit=p_bloblist->begin();bit!=p_bloblist->end();++bit) 
+      if (*bit==blob) p_bloblist->erase(bit);
+    p_bloblist->push_back(mixingblob);
+    CreateDecayBlob(mixingblob->OutParticle(0));
+    return Decay_Handler_Base::FillDecayTree
+      (mixingblob->OutParticle(0)->DecayBlob(), s0);
   }
-  return false;
+  else return Decay_Handler_Base::FillDecayTree(blob, s0);
 }
 
-Cluster_Amplitude *Hadron_Decay_Handler::ClusterConfiguration(Blob *const bl)
+Amplitude2_Tensor*
+Hadron_Decay_Handler::FillOnshellDecay(Blob *blob, Spin_Density* sigma)
 {
-  msg_Debugging()<<METHOD<<"() {\n";
-  msg_Indent();
-  p_ampl = Cluster_Amplitude::New();
-  p_ampl->SetMS(this);
-  for (int i(0);i<bl->NInP();++i) {
-    Particle *p(bl->InParticle(i));
-    ColorID col(p->GetFlow(2),p->GetFlow(1));
-    p_ampl->CreateLeg(-p->Momentum(),p->Flav().Bar(),col,1<<i);
+  Amplitude2_Tensor* amps=Decay_Handler_Base::FillOnshellDecay(blob,sigma);
+  Decay_Channel* dc=(*blob)["dc"]->Get<Decay_Channel*>();
+  Hadron_Decay_Channel* hdc=dynamic_cast<Hadron_Decay_Channel*>(dc);
+  if(hdc && !hdc->SetColorFlow(blob)) {
+    msg_Error()<<METHOD<<" failed to set color flow, retrying event."<<endl
+               <<*blob<<endl;
+    throw Return_Value::Retry_Event;
   }
-  p_ampl->SetNIn(bl->NInP());
-  for (int i(0);i<bl->NOutP();++i) {
-    Particle *p(bl->OutParticle(i));
-    ColorID col(p->GetFlow(1),p->GetFlow(2));
-    p_ampl->CreateLeg(p->Momentum(),p->Flav(),col,1<<(i+p_ampl->NIn()));
+  return amps;
+}
+
+void Hadron_Decay_Handler::CreateDecayBlob(Particle* inpart)
+{
+  DEBUG_FUNC(inpart->RefFlav());
+  if(inpart->DecayBlob()) abort();
+  if(!Decays(inpart->Flav())) return;
+  if(inpart->Time()==0.0) inpart->SetTime();
+  Blob* blob = p_bloblist->AddBlob(btp::Hadron_Decay);
+  blob->AddToInParticles(inpart);
+  SetPosition(blob);
+  blob->SetTypeSpec("Sherpa");
+  Decay_Table* table=p_decaymap->FindDecay(blob->InParticle(0)->Flav());
+  if (table==NULL) {
+    msg_Error()<<METHOD<<" decay table not found, retrying event."<<endl
+               <<*blob<<endl;
+    throw Return_Value::Retry_Event;
   }
-  while (p_ampl->Legs().size()>p_ampl->NIn()+2) {
-    msg_Debugging()<<*p_ampl<<"\n";
-    Cluster_Amplitude *ampl(p_ampl);
-    p_ampl = p_ampl->InitNext();
-    p_ampl->SetMS(this);
-    for (size_t i(0);i<ampl->NIn();++i) {
-      Cluster_Leg *cl(ampl->Leg(i));
-      p_ampl->CreateLeg(cl->Mom(),cl->Flav(),cl->Col(),cl->Id());
-    }
-    p_ampl->SetNIn(ampl->NIn());
-    Cluster_Leg *lij(NULL);
-    for (size_t i(ampl->NIn());i<ampl->Legs().size()-1;++i) {
-      Cluster_Leg *li(ampl->Leg(i));
-      for (size_t j(i+1);j<ampl->Legs().size();++j) {
-	Cluster_Leg *lj(ampl->Leg(j));
-	ColorID nc;
-	if (li->Col().m_i==0 && li->Col().m_j==0) {
-	  nc=lj->Col();
-	}
-	else if (lj->Col().m_i==0 && lj->Col().m_j==0) {
-	  nc=li->Col();
-	}
-	else if (li->Col().m_i && li->Col().m_i==lj->Col().m_j) {
-	  nc.m_i=lj->Col().m_i;
-	  nc.m_j=li->Col().m_j;
-	}
-	else if (li->Col().m_j && li->Col().m_j==lj->Col().m_i) {
-	  nc.m_i=li->Col().m_i;
-	  nc.m_j=lj->Col().m_j;
-	}
-	if (nc.m_i>=0 && nc.m_j>=0) {
-	  Flavour fl(kf_photon);
-	  if (nc.m_i && nc.m_j) fl=Flavour(kf_gluon);
-	  else if (nc.m_i) fl=Flavour(kf_d);
-	  else if (nc.m_j) fl=Flavour(kf_d).Bar();
-	  p_ampl->CreateLeg(li->Mom()+lj->Mom(),fl,nc,li->Id()+lj->Id());
-	  lij=p_ampl->Legs().back();
-	  break;
-	}
+  blob->AddData("dc",new Blob_Data<Decay_Channel*>(table->Select()));
+
+  blob->AddData("p_onshell",new Blob_Data<Vec4D>(inpart->Momentum()));
+  DEBUG_VAR(inpart->Momentum());
+}
+
+bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
+{
+  static std::string mname(METHOD);
+  if(fblob->Type()==btp::Fragmentation) {
+    Blob* showerblob = fblob->UpstreamBlob();
+    if(showerblob && showerblob->Type()==btp::Shower) {
+      Blob* decayblob = showerblob->UpstreamBlob();
+      if(decayblob && decayblob->Type()==btp::Hadron_Decay) {
+        DEBUG_FUNC(decayblob->InParticle(0));
+        DEBUG_VAR(*fblob);
+        Return_Value::IncCall(mname);
+        FlavourMultiSet decayresults;
+        for(int i=0;i<fblob->NOutP();i++) {
+          decayresults.insert(fblob->OutParticle(i)->Flav());
+        }
+        Decay_Map::iterator dt=
+          p_decaymap->find(decayblob->InParticle(0)->Flav());
+        if(dt!=p_decaymap->end() &&
+           dt->second[0]->GetDecayChannel(decayresults)) {
+          Return_Value::IncRetryPhase(mname);
+          DEBUG_INFO("rejected. retrying decay.");
+          p_bloblist->Delete(fblob);
+          p_bloblist->Delete(showerblob);
+          decayblob->AddStatus(blob_status::internal_flag);
+          decayblob->DeleteOutParticles();
+          decayblob->InParticle(0)->SetStatus(part_status::active);
+          Spin_Density* sigma=
+            m_spincorr ? new Spin_Density(decayblob->InParticle(0)) : NULL;
+          Decay_Matrix* D=FillDecayTree(decayblob, sigma);
+          delete sigma;
+          delete D;
+          return true;
+        }
+        else {
+          Vec4D vertex_position=decayblob->Position();
+          showerblob->SetPosition(vertex_position);
+          fblob->SetPosition(vertex_position);
+        }
       }
-      if (lij) break;
     }
-    if (lij==NULL) THROW(fatal_error,"Internal eror");
-    for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
-      Cluster_Leg *cl(ampl->Leg(i));
-      if (cl->Id()&lij->Id()) continue;
-      p_ampl->CreateLeg(cl->Mom(),cl->Flav(),cl->Col(),cl->Id());
-    }    
   }
-  double mu2=p_ampl->Leg(0)->Mom().Abs2();
-  p_ampl->SetMuF2(mu2);
-  p_ampl->SetKT2(mu2);
-  msg_Debugging()<<*p_ampl<<"\n";
-  while (p_ampl->Prev()) {
-    p_ampl=p_ampl->Prev();
-    p_ampl->SetMuF2(mu2);
-    p_ampl->SetKT2(mu2);
-  }
-  msg_Debugging()<<"}\n";
-  return p_ampl;
+  return false;
 }
 
-double Hadron_Decay_Handler::Mass(const ATOOLS::Flavour &fl) const
+void Hadron_Decay_Handler::SetPosition(ATOOLS::Blob* blob)
 {
-  return fl.HadMass();
+  Particle* inpart = blob->InParticle(0);
+  if(inpart->Flav().Kfcode()==kf_K) {
+    blob->SetPosition(inpart->XProd());
+    return;
+  }
+  
+  // boost lifetime into lab
+  double gamma = 1./rpa->gen.Accu();
+  if (inpart->Flav().HadMass()>rpa->gen.Accu()) {
+    gamma = inpart->E()/inpart->Flav().HadMass();
+  }
+  else {
+    double q2    = dabs(inpart->Momentum().Abs2());
+    if (q2>rpa->gen.Accu()) gamma = inpart->E()/sqrt(q2);
+  }
+  double lifetime_boosted = gamma * inpart->Time();
+  
+  Vec3D      spatial = inpart->Distance( lifetime_boosted );
+  Vec4D     position = Vec4D( lifetime_boosted*rpa->c(), spatial );
+  blob->SetPosition( inpart->XProd() + position ); // in mm
+}
+
+void Hadron_Decay_Handler::AttachExtraQED(Blob* blob)
+{
+  SetPosition(blob);
+  // attach QED radiation to blobs before they are subsequently decayed
+  if (blob->Status()==blob_status::needs_showers) return;
+  DEBUG_FUNC(blob->GetOutParticles().size());
+  if (!p_softphotons) {
+    msg_Error()<<METHOD<<" soft photon handler not found, retrying event."<<endl
+               <<*blob<<endl;
+    throw Return_Value::Retry_Event;
+  }
+  blob->SetStatus(blob_status::needs_extraQED);
+  if (!p_softphotons->AddRadiation(blob)) {
+    msg_Error()<<METHOD<<" soft photon handler failed, retrying event."<<endl
+               <<*blob<<endl;
+    throw Return_Value::Retry_Event;
+  }
+  DEBUG_VAR(*blob);
+  blob->UnsetStatus(blob_status::needs_extraQED);
 }

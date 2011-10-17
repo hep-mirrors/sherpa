@@ -1,4 +1,5 @@
 #include "ATOOLS/Math/Kabbala.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace ATOOLS;
 
@@ -103,6 +104,28 @@ Kabbala& Kabbala::operator*=(const double& d) {
       
   shem += dstr;
   shem += std::string(")");
+  return *this;
+}
+
+Kabbala& Kabbala::operator*=(const Complex& c) {
+  rishbon *= c;
+  std::string save = shem;
+  shem  = std::string("(") + save + std::string(")*(");
+      
+  std::string cstr;
+  MyStrStream sstr;  
+  sstr<<c.real();
+  sstr>>cstr;
+
+  shem += cstr;
+  shem +=std::string("+i*");
+  
+  sstr<<c.imag();
+  sstr>>cstr;
+  
+  shem += cstr;
+  shem += std::string(")");
+  msg_Info()<<shem;
   return *this;
 }
 

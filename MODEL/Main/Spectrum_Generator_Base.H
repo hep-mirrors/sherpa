@@ -5,8 +5,6 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
-namespace ATOOLS { class Decay_Table; }
-
 namespace MODEL {
   class Spectrum_Generator_Base {
   protected:
@@ -16,7 +14,6 @@ namespace MODEL {
     std::vector<double>          m_masses;
     std::vector<double>          m_widths;
     std::vector<ATOOLS::Flavour> m_particles;
-    std::vector<ATOOLS::Decay_Table *> m_decays;
   public:
     Spectrum_Generator_Base(ATOOLS::Data_Reader *,Model_Base *);
     virtual ~Spectrum_Generator_Base();

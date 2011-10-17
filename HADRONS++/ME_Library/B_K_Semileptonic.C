@@ -39,9 +39,7 @@ void B_K_Semileptonic::SetModelParameters( GeneralModel _md )
 }
 
 
-void B_K_Semileptonic::operator()( 
-    const Vec4D             * _p,
-    METOOLS::Spin_Amplitudes * amps)
+void B_K_Semileptonic::Calculate(const Vec4D_Vector& _p, bool m_anti)
 {
   double s     = (_p[p_i[2]]+_p[p_i[3]]).Abs2();
   double shat  = s/sqr(p_masses[0]);
@@ -72,7 +70,7 @@ void B_K_Semileptonic::operator()(
   Complex Cprime =  m_C10 * fplus;
   Complex Dprime =  m_C10 * fminus;
   
-  XYZFunc F(m_n,_p,m_flavs,Tools::k0,m_anti,p_i);
+  XYZFunc F(_p,m_flavs,m_anti,p_i);
   for( int hlm=0; hlm<2; hlm++ ) {
     for( int hlp=0; hlp<2; hlp++ ) {
       Complex amplitude = Aprime*F.X(2,hlm, _p[p_i[0]]+_p[p_i[1]], 3,hlp, m_cR_T1, m_cL_T1)
@@ -84,7 +82,7 @@ void B_K_Semileptonic::operator()(
       spins.push_back(make_pair(p_i[1],0));    // K
       spins.push_back(make_pair(p_i[2],hlm));  // lepton-
       spins.push_back(make_pair(p_i[3],hlp));  // lepton+
-      amps->Add(amplitude*m_global*p_masses[0], spins);
+      Insert(amplitude*m_global*p_masses[0], spins);
     }
   }
 }

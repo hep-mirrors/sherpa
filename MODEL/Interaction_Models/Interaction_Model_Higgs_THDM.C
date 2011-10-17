@@ -15,18 +15,29 @@ Interaction_Model_Higgs_THDM::Interaction_Model_Higgs_THDM(MODEL::Model_Base * _
 { 
   g1     = Kabbala(string("g_1"),
 		   sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),rpa->gen.CplScale())));
-  g2     = Kabbala(string("g_1/\\sin\\theta_W"), 
-		   g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  sintW  = Kabbala(std::string("\\sin\\theta_W"),
-		   sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  costW  = Kabbala(std::string("\\cos\\theta_W"),
-		   sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
+  }else{
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ComplexConstant(std::string("csin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ComplexConstant(std::string("cvev")));
+  }
+
   PL     = Kabbala(string("P_L"),1.);
   PR     = Kabbala(string("P_R"),1.);
   M_I    = Kabbala(string("i"),Complex(0.,1.));
-  vev    = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
   v1     = Kabbala(string("v_1"),
-		   ScalarConstant(std::string("vev")) *
+		   vev.Value() *
 		   sqrt(1./(1.+sqr(ScalarConstant(std::string("tan(beta)"))))));
   v2     = Kabbala(string("v_2"),v1.Value()*ScalarConstant(std::string("tan(beta)")));
   root2  = Kabbala(string("\\sqrt{2}"),sqrt(2.));
@@ -1160,7 +1171,12 @@ Kabbala Interaction_Model_Higgs_THDM::conj_K_CKM(short int i,short int j)
 Kabbala Interaction_Model_Higgs_THDM::K_yuk(Flavour fl,Flavour H) {
   std::string flname = std::string("m")+std::string(fl.IDName());
   double meff(p_model->ScalarFunction(flname,sqr(H.Mass())));
-  return Kabbala(string("M_{"+fl.TexName()+"}(m_"+H.IDName()+")"),meff);
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    return Kabbala(string("M_{"+fl.TexName()+"}(m_"+H.IDName()+")"),meff);
+  }else{
+    return Kabbala(string("M_{"+fl.TexName()+"}(m_"+H.IDName()+")"),
+                   sqrt(sqr(meff)-Complex(0.,1.)*fl.Width()*meff));
+  }
 }
 
 Kabbala Interaction_Model_Higgs_THDM::K_yuk_sign(Flavour fl) {

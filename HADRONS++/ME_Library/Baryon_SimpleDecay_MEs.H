@@ -8,7 +8,7 @@ namespace HADRONS {
   public:
     D_Radiative_E1(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -16,7 +16,7 @@ namespace HADRONS {
   public:
     D_Radiative_M1(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -24,7 +24,7 @@ namespace HADRONS {
   public:
     R_Radiative_E1(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -32,7 +32,7 @@ namespace HADRONS {
   public:
     R_Radiative_M1(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -41,7 +41,7 @@ namespace HADRONS {
   public:
     D_DP(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -49,7 +49,7 @@ namespace HADRONS {
   public:
     D_DV(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -57,7 +57,7 @@ namespace HADRONS {
   public:
     D_RP(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -65,7 +65,7 @@ namespace HADRONS {
   public:
     D_RV(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -73,7 +73,7 @@ namespace HADRONS {
   public:
     R_DP(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -81,7 +81,7 @@ namespace HADRONS {
   public:
     R_DV(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -89,7 +89,7 @@ namespace HADRONS {
   public:
     R_RP(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 

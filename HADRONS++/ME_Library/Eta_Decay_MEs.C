@@ -42,7 +42,7 @@ void Eta_PPV::SetModelParameters(GeneralModel md)
   }
 }
  
-void Eta_PPV::operator()(const Vec4D * p,Spin_Amplitudes * amps)
+void Eta_PPV::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
   Complex ampl(0.,0.),pref(m_global*Formfactor((p[p_i[1]]+p[p_i[2]]).Abs2()));
   Polarization_Vector pol(p[p_i[3]], sqr(m_flavs[p_i[3]].HadMass()));
@@ -54,7 +54,7 @@ void Eta_PPV::operator()(const Vec4D * p,Spin_Amplitudes * amps)
     spins.push_back(std::pair<int,int>(p_i[1],0));
     spins.push_back(std::pair<int,int>(p_i[2],0));
     spins.push_back(std::pair<int,int>(p_i[3],hvector));
-    amps->Add(ampl,spins);
+    Insert(ampl,spins);
   }
 }
 
@@ -142,10 +142,10 @@ void Eta_PVV::SetModelParameters(GeneralModel md)
     m_global *= (1./f8_by_fpi*sin(theta)+sqrt(2.)/f0_by_fpi*cos(theta));
 }
  
-void Eta_PVV::operator()(const Vec4D * p,Spin_Amplitudes * amps)
+void Eta_PVV::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
   Complex ampl(0.,0.);
-  Complex FormD = D(p), FormE = E(p);
+  Complex FormD = D(&p.front()), FormE = E(&p.front());
 
   //std::cout<<" pref,D,E = "<<m_global<<" "<<FormD<<" "<<FormE<<std::endl;
   Polarization_Vector pol1(p[p_i[2]], sqr(m_flavs[p_i[2]].HadMass()));
@@ -166,7 +166,7 @@ void Eta_PVV::operator()(const Vec4D * p,Spin_Amplitudes * amps)
       spins.push_back(std::pair<int,int>(p_i[1],0));
       spins.push_back(std::pair<int,int>(p_i[2],hvector1));
       spins.push_back(std::pair<int,int>(p_i[3],hvector2));
-      amps->Add(ampl,spins);
+      Insert(ampl,spins);
     }
   }
 }
@@ -239,7 +239,7 @@ void Eta_PPP::SetModelParameters(GeneralModel md)
 {
 }
  
-void Eta_PPP::operator()(const Vec4D * p,Spin_Amplitudes * amps)
+void Eta_PPP::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
 }
 

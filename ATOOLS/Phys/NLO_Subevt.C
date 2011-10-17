@@ -66,9 +66,23 @@ bool Dip_ID::operator<(const Dip_ID &di) const
   return DDip_ID::operator<(di);
 }
 
+void NLO_subevt::CopyXSData(const NLO_subevt *sub)
+{
+  m_me=sub->m_me;
+  m_mewgt=sub->m_mewgt;
+  for (size_t i(0);i<m_mu2.size();++i) m_mu2[i]=sub->m_mu2[i];
+  m_flip=sub->m_flip;
+  m_result=m_last[1]=m_last[0]=0.0;
+}
+
 void NLO_subevtlist::Mult(const double &scal)
 {
   for (const_iterator it=begin();it!=end();it++) (*it)->Mult(scal);
+}
+
+void NLO_subevtlist::MultME(const double &scal)
+{
+  for (const_iterator it=begin();it!=end();it++) (*it)->MultME(scal);
 }
 
 void NLO_subevtlist::MultMEwgt(const double &scal)
@@ -106,10 +120,18 @@ NLO_subevtlist &NLO_subevtlist::operator*=(const double scal)
 
 namespace ATOOLS
 {
+  std::ostream &operator<<(std::ostream &ostr,const IDip_ID &idi)
+  {
+    return ostr<<"["<<idi.m_ijt<<"]<->["<<idi.m_kt<<"]";
+  }
+  std::ostream &operator<<(std::ostream &ostr,const DDip_ID &ddi)
+  {
+    return ostr<<"("<<ddi.m_i<<","<<ddi.m_j<<")<->("<<ddi.m_k<<")";
+  }
   std::ostream &operator<<(std::ostream &ostr,const Dip_ID &di)
   {
     return ostr<<"["<<di.m_ijt<<"]("<<di.m_i<<","<<di.m_j
-	       <<") <-> ["<<di.m_kt<<"]("<<di.m_k<<")";
+	       <<")<->["<<di.m_kt<<"]("<<di.m_k<<")";
   }
   std::ostream &operator<<(std::ostream &ostr,const NLO_subevt &sevt)
   {
@@ -117,8 +139,8 @@ namespace ATOOLS
                <<" {\n  result = "<<sevt.m_result
                <<" ( "<<sevt.m_last[0]<<" , "<<sevt.m_last[1]<<" ) "
                <<" ,  ME = "<<sevt.m_me
-	       <<"\n  \\mu_F = "<<sqrt(sevt.m_muf2)<<", \\mu_R = "
-	       <<sqrt(sevt.m_mur2)<<"\n}";
+	       <<"\n  \\mu_F = "<<sqrt(sevt.m_mu2[stp::fac])
+	       <<", \\mu_R = "<<sqrt(sevt.m_mu2[stp::ren])<<"\n}";
   }
 }
 

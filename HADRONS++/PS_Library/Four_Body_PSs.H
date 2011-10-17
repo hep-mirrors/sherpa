@@ -51,7 +51,8 @@ namespace HADRONS {
     int           m_spectator;
     double        m_decayer_mass, m_spectator_mass;
   public :
-    IsotropicSpectator(const ATOOLS::Flavour *, int spectator);
+    IsotropicSpectator(const ATOOLS::Flavour *, int spectator,
+                       const ATOOLS::Mass_Selector* ms);
     ~IsotropicSpectator() { delete m_rambo; }
     void GeneratePoint(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL,double * _ran=NULL);
     void GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * =NULL);

@@ -18,7 +18,7 @@ namespace COMIX {
 
     // constructors
     Process_Group(); 
-    Process_Group(Model *const model);
+    Process_Group(MODEL::Model_Base *const model);
 
     // member functions
     bool Initialize(std::map<std::string,std::string> *const pmap,

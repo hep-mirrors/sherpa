@@ -11,7 +11,6 @@
 #include <map>
 
 namespace ATOOLS { 
-  class Decay_Table; 
   class Data_Reader;
 } 
 
@@ -23,8 +22,12 @@ namespace MODEL {
   class Vertex;
   class Single_Vertex;
 
-  typedef  std::vector<Single_Vertex *>  Vertex_List;
-  typedef  std::map<ATOOLS::Flavour, Vertex_List> Vertex_Table;
+  typedef std::vector<Single_Vertex *> Vertex_List;
+  typedef std::map<ATOOLS::Flavour, Vertex_List> Vertex_Table;
+  typedef std::multimap<std::string,Single_Vertex*> Vertex_Map;
+  typedef std::pair<std::string,Single_Vertex*> VMap_Key;
+  typedef std::pair<Vertex_Map::const_iterator,
+		    Vertex_Map::const_iterator> VMIterator_Pair;
 
   typedef std::map<std::string,int>                     ScalarNumbersMap; 
   typedef std::map<std::string,double>                  ScalarConstantsMap; 
@@ -63,13 +66,18 @@ namespace MODEL {
 
     Spectrum_Generator_Base * p_spectrumgenerator;
     Vertex                  * p_vertex;
-    Vertex_Table            * p_vertextable;
+    Vertex_Table            * p_vertextable, m_vtable;
+    Vertex_Map                m_vmap;
+    ATOOLS::Flavour_Vector    m_fls;
+
+    int m_vinfo;
 
     void CustomContainerInit();
 
     virtual void ParticleInit() = 0;
     virtual void FillSpectrum(PDF::ISR_Handler *const isr) = 0;
     void ReadParticleData();
+    void InitMEInfo();
   public:
     Model_Base(std::string,std::string,bool);
     virtual ~Model_Base();
@@ -127,7 +135,17 @@ namespace MODEL {
     inline  Vertex       * GetVertex()            { return p_vertex; }
     inline  Vertex_Table * GetVertexTable() const { return p_vertextable; }
 
+    inline  const Vertex_Table *VertexTable() const { return &m_vtable; }
+
     virtual bool CheckFlavours(int nin, int nout, ATOOLS::Flavour* flavs);
+
+    inline ATOOLS::Flavour_Vector IncludedFlavours() const { return m_fls; }
+
+    inline VMIterator_Pair GetVertex(const std::string &key) const
+    { return VMIterator_Pair(m_vmap.lower_bound(key),m_vmap.upper_bound(key)); }
+
+    inline int VInfo() const { return m_vinfo; }
+
   };
 
   extern Model_Base *s_model;

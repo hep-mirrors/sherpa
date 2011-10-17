@@ -7,6 +7,7 @@ libHadronsMEs_la_SOURCES = \
 		SVN_Info.C \
 		HD_ME_Base.C \
 		Generic.C \
+		Current_ME.C \
 		Eta_Decay_MEs.C \
 		Four_Body_MEs.C \
 		Three_Body_MEs.C \
@@ -17,6 +18,7 @@ libHadronsMEs_la_SOURCES = \
 localinc_HEADERS   = \
 		HD_ME_Base.H \
 		Generic.H \
+		Current_ME.H \
 		PseudoScalar_Decay_MEs.H \
 		Eta_Decay_MEs.H \
 		Vector_Decay_MEs.H \

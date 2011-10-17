@@ -4,7 +4,7 @@
 
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Vector.H"
-#include "ATOOLS/Math/MyComplex.H"
+#include "ATOOLS/Phys/Spinor.H"
 #include "AMEGIC++/Main/Pol_Info.H"
 #include "AMEGIC++/Amplitude/Pfunc.H"
 #include <list>
@@ -82,7 +82,7 @@ namespace AMEGIC {
     int  momcount;
     ATOOLS::Flavour* fl;
     int  nmom,nvec;
-    ATOOLS::Vec4D* p;
+    ATOOLS::Vec4D* p, m_k1, m_k2, m_k3;
     std::vector<ATOOLS::Vec4D>* p_epol;
     int* b;
     Complex* _eta;
@@ -97,6 +97,15 @@ namespace AMEGIC {
     void CalcS(int i, int j);
     void PrecalcS();
     void UpdateMasses(std::string);
+    inline static int R1() { return ATOOLS::Spinor<double>::R1(); }
+    inline static int R2() { return ATOOLS::Spinor<double>::R2(); }
+    inline static int R3() { return ATOOLS::Spinor<double>::R3(); }
+    inline ATOOLS::Vec4D K1() const { return m_k1; }
+    inline ATOOLS::Vec4D K2() const { return m_k2; }
+    inline ATOOLS::Vec4D K3() const { return m_k3; }
+    inline double C1(const ATOOLS::Vec4D &p) const { return -m_k1*p; }
+    inline double C2(const ATOOLS::Vec4D &p) const { return -m_k2*p; }
+    inline double C3(const ATOOLS::Vec4D &p) const { return -m_k3*p; }
   public:
     Basic_Sfuncs(int,int, ATOOLS::Flavour*,int*);
     Basic_Sfuncs(int,int, ATOOLS::Flavour*,int*,std::string,std::string);
@@ -115,8 +124,8 @@ namespace AMEGIC {
     int    GetPolNumber(int,int,double,int check=0);
 
     void   Setk0(int);
-    int    Getk0_n();
     ATOOLS::Vec4D Getk0();
+    ATOOLS::Vec4D Getk1();
     void   Initialize();
     int    CalcEtaMu(ATOOLS::Vec4D*);//setS
     void   InitGaugeTest(double);//ResetS_GT

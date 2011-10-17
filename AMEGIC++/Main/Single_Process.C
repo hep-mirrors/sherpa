@@ -324,7 +324,7 @@ int AMEGIC::Single_Process::Tests()
   First test : gauge test
   
   --------------------------------------------------- */
-  p_BS->Setk0(1);
+  p_BS->Setk0(s_gauge);
   p_BS->CalcEtaMu(p_testmoms);
   number++;
 
@@ -449,7 +449,7 @@ int AMEGIC::Single_Process::Tests()
 
   if (string_test) {
     //String-Test
-    if (!rpa->gen.SpinCorrelation()) {
+    if (!(rpa->gen.SoftSC()||rpa->gen.HardSC())) {
       for (size_t i=0;i<p_hel->MaxHel();i++) {
 	if (p_hel->On(i)) {
 	  for (size_t j=i+1;j<p_hel->MaxHel();j++) {
@@ -510,7 +510,7 @@ int AMEGIC::Single_Process::TestLib()
      p_hel->SwitchOff(i);
     }
   }
-  if (!rpa->gen.SpinCorrelation()) {
+  if (!(rpa->gen.SoftSC()||rpa->gen.HardSC())) {
     for (size_t i=0;i<p_hel->MaxHel();i++) {
       if (p_hel->On(i)) {
 	for (size_t j=i+1;j<p_hel->MaxHel();j++) {
@@ -775,8 +775,8 @@ double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms,const int mode
     p_partner->ScaleSetter()->CalculateScale(_moms,mode);
   }
   Vec4D_Vector moms(_moms);
-  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
-    Poincare cms(moms[0]+moms[1]);
+  if (!(m_nin==2 && p_int->ISR() && p_int->ISR()->On())) {
+    Poincare cms(Vec4D(10.0,0.0,0.0,1.0));
     for (size_t i(0);i<moms.size();++i) cms.Boost(moms[i]);
   }
   return DSigma(moms,m_lookup); 
@@ -843,17 +843,19 @@ double AMEGIC::Single_Process::operator()(const ATOOLS::Vec4D* mom)
   return M2 * sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS)) * KFactor();
 }
 
-// ATOOLS::Spin_Correlation_Tensor* AMEGIC::Single_Process::GetSpinCorrelations()
-// {
-//   Spin_Correlation_Tensor* SCT = p_ampl->GetSpinCorrelations(p_hel, m_nin);
-//   if (SCT != NULL) SCT->Set_k0(p_BS->Getk0_n());
-//   return SCT;
-// }
-
-void AMEGIC::Single_Process::FillAmplitudes(METOOLS::Amplitude_Tensor* atensor,double sfactor)
+void AMEGIC::Single_Process::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,
+                                            std::vector<std::vector<Complex> >& cols)
 {
-  if (p_partner==this) p_ampl->FillAmplitudes(atensor,p_hel,sfactor);
-  else p_partner->FillAmplitudes(atensor,sfactor*sqrt(m_sfactor));
+  if (p_partner==this) p_ampl->FillAmplitudes(amps, cols, p_hel, 1.0);
+  else p_partner->FillAmplitudes(amps, cols, sqrt(m_sfactor));
+}
+
+void AMEGIC::Single_Process::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,
+                                            std::vector<std::vector<Complex> >& cols,
+                                            double sfactor)
+{
+  if (p_partner==this) p_ampl->FillAmplitudes(amps, cols, p_hel, sfactor);
+  else p_partner->FillAmplitudes(amps, cols, sfactor*sqrt(m_sfactor));
 }
 
 int AMEGIC::Single_Process::NumberOfDiagrams() { 

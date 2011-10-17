@@ -407,8 +407,8 @@ double Single_OSTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poincar
   double factor= mij2*wij2/(sqr(invm2-mij2) + mij2*wij2);
   m_lastxs = factor*M2;
   m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
-  m_subevt.m_muf2 = p_scale->Scale(stp::fac);
-  m_subevt.m_mur2 = p_scale->Scale(stp::ren);
+  m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);
+  m_subevt.m_mu2[stp::ren] = p_scale->Scale(stp::ren);
 
   return m_lastxs;
 }
@@ -431,12 +431,6 @@ Point * Single_OSTerm::Diagram(int i) {
 void Single_OSTerm::AddChannels(std::list<std::string>*psln)
 {
   p_os_process->AddChannels(psln);
-}
-
-void Single_OSTerm::FillAmplitudes(METOOLS::Amplitude_Tensor* atensor,double sfactor)
-{
-  if (p_partner==this) p_os_process->FillAmplitudes(atensor,sfactor);
-  else p_partner->FillAmplitudes(atensor,sfactor*sqrt(m_sfactor));
 }
 
 void Single_OSTerm::PrintProcessSummary(int it)

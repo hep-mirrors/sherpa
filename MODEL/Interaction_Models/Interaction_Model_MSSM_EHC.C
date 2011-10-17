@@ -40,18 +40,28 @@ Interaction_Model_MSSM_EHC::Interaction_Model_MSSM_EHC(MODEL::Model_Base * _mode
   double scale = rpa->gen.CplScale();
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),scale)));
-  g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
-		  g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
+  }else{
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ComplexConstant(std::string("csin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ComplexConstant(std::string("cvev")));
+  }
   g3  = Kabbala(string("g_3"),sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),scale)));
-  sintW = Kabbala(std::string("\\sin\\theta_W"),
-		  sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  costW = Kabbala(std::string("\\cos\\theta_W"),
-		  sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
   PL    = Kabbala(string("P_L"),1.);
   PR    = Kabbala(string("P_R"),1.);
   M_I   = Kabbala(string("i"),Complex(0.,1.));
   root2 = Kabbala(string("\\sqrt{2}"),sqrt(2.));
-  vev   = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
 }
 
 void Interaction_Model_MSSM_EHC::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
@@ -94,7 +104,7 @@ void Interaction_Model_MSSM_EHC::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
       vertex[vanz].in[3] = flh;
       
       ghgg  = Kabbala(string("g_{")+flh.TexName()+string("gg}"),ScalarConstant(flh.IDName()+string("_gg_fac"))*
-		      ScalarFunction(string("alpha_S"),sqr(flh.Mass()))/(2.*M_PI)/ScalarConstant(std::string("vev")));
+		      ScalarFunction(string("alpha_S"),sqr(flh.Mass()))/(2.*M_PI)/vev.Value());
       
       kcpl0 = g3*ghgg; 
       kcpl1 = kcpl0; 
@@ -160,7 +170,7 @@ void Interaction_Model_MSSM_EHC::c_VVVV(std::vector<Single_Vertex>& vertex,int& 
     vertex[vanz].in[3] = flA;
     
     ghgg  = Kabbala(string("g_{")+flA.TexName()+std::string("gg}"),ScalarConstant(string("A0_gg_fac"))*
-		    ScalarFunction(string("alpha_S"),sqr(flA.Mass()))/(2.*M_PI)/ScalarConstant(string("vev")));
+		    ScalarFunction(string("alpha_S"),sqr(flA.Mass()))/(2.*M_PI)/vev.Value());
     
     kcpl0 = -g3*ghgg; 
     kcpl1 = kcpl0; 
@@ -212,7 +222,7 @@ void Interaction_Model_MSSM_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& v
       vertex[vanz].in[2] = flg;
       
       ghgg  = Kabbala(string("g_{")+flh.TexName()+std::string("gg}"),ScalarConstant(flh.IDName()+string("_gg_fac"))*
-		      ScalarFunction(string("alpha_S"),sqr(flh.Mass()))/(2.*M_PI)/ScalarConstant(string("vev")));
+		      ScalarFunction(string("alpha_S"),sqr(flh.Mass()))/(2.*M_PI)/vev.Value());
       
       kcpl0 = M_I*ghgg;
       kcpl1 = kcpl0;
@@ -267,7 +277,7 @@ void Interaction_Model_MSSM_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[2] = flg;
     
     ghgg  = Kabbala(std::string("g_{")+flA.TexName()+std::string("gg}"),ScalarConstant(std::string("A0_gg_fac"))*
-		    ScalarFunction(std::string("alpha_S"),sqr(flA.Mass()))/(2.*M_PI)/ScalarConstant(std::string("vev")));
+		    ScalarFunction(std::string("alpha_S"),sqr(flA.Mass()))/(2.*M_PI)/vev.Value());
     
     kcpl0 = -M_I*ghgg;
     kcpl1 = kcpl0;

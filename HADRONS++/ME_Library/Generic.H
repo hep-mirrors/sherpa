@@ -12,11 +12,11 @@ namespace HADRONS {
   class Generic : public HD_ME_Base {
     METOOLS::Partial_Amplitude_Base * p_me;
   public:
-    Generic(ATOOLS::Flavour* flavs, int n, int* decayindices, std::string name);
+    Generic(const ATOOLS::Flavour_Vector& flavs,
+            const std::vector<int>& decayindices,
+            const std::string& name);
     ~Generic();
-    void operator()(
-                       const ATOOLS::Vec4D  * _p,
-                       METOOLS::Spin_Amplitudes * amps);
+    void Calculate(const ATOOLS::Vec4D_Vector& moms, bool anti=false);
   };
 }
 #endif

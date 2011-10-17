@@ -34,6 +34,7 @@ namespace ATOOLS {
     Kabbala& operator*=(const int& i);
     Kabbala& operator*=(const Kabbala& k);
     Kabbala& operator*=(const double& d);
+    Kabbala& operator*=(const Complex& c);
     Kabbala& operator/=(const Kabbala& k);
     
     Complex Value()  const {return rishbon;} 
@@ -100,6 +101,19 @@ namespace ATOOLS {
     return d2*k1;
   }
   
+    inline Kabbala operator* (const Complex c1, const Kabbala& k2) 
+  {
+    Kabbala k(k2); 
+    k *= c1;
+    return k;
+  }
+  
+  inline Kabbala operator* (const Kabbala& k1,const Complex c2) 
+  {
+    Kabbala k(k1); 
+    k *= c2;
+    return k;
+  }
   
   inline Kabbala operator/ (const Kabbala& k1, const Kabbala& k2) 
   {

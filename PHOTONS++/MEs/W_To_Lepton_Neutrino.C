@@ -127,7 +127,7 @@ double W_To_Lepton_Neutrino::Smod(unsigned int kk) {
 Complex W_To_Lepton_Neutrino::InfraredSubtractedME_0_0() {
   m_moms = m_moms0;
   Vec4C epsW = Polarization_Vector(m_moms[0])[m_spins[0]];
-  XYZFunc XYZ(3,m_moms,m_flavs,1,false);
+  XYZFunc XYZ(3,m_moms,m_flavs,false);
   return m_i*m_e/(m_sqrt2*m_sW)*XYZ.X(1,m_spins[1],epsW,2,m_spins[2],m_cL,m_cR);
 }
 
@@ -150,7 +150,7 @@ Complex W_To_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int i) {
   m_moms[4]    = m_moms[5] = q;             // enter those into m_moms
   m_flavs[4]   = m_flavs[1];                // set to corresponding particle/antiparticle
   m_flavs[5]   = m_flavs[1].Bar();
-  XYZFunc XYZ(6,m_moms,m_flavs,1,false);
+  XYZFunc XYZ(6,m_moms,m_flavs,false);
   m_flavs[4] = m_flavs[5] = Flavour(kf_none);
   Complex r1 = Complex(0.,0.);
   Complex r2 = Complex(0.,0.);

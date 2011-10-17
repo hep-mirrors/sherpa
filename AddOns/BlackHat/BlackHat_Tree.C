@@ -46,11 +46,11 @@ BlackHat_Tree::~BlackHat_Tree()
 void BlackHat_Tree::SetCouplings(MODEL::Coupling_Map *const cpls)
 {
   if (cpls->find("Alpha_QCD")!=cpls->end()) {
-    p_aqcd=(*cpls)["Alpha_QCD"];
+    p_aqcd=cpls->Get("Alpha_QCD");
     m_asfac=p_aqcd->Default()/s_model->ScalarFunction("alpha_S");
   }
   if (cpls->find("Alpha_QED")!=cpls->end()) {
-    p_aqed=(*cpls)["Alpha_QED"];
+    p_aqed=cpls->Get("Alpha_QED");
     m_afac=p_aqed->Default()/s_model->ScalarFunction("alpha_QED");
   }
 }

@@ -14,11 +14,9 @@ void B_Bpi_pwave::SetModelParameters( GeneralModel _md )
   m_cL = -m_cR;
 }
 
-void B_Bpi_pwave::operator()(
-                      const Vec4D             * p,
-                      METOOLS::Spin_Amplitudes * amps)
+void B_Bpi_pwave::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
-  XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
+  XYZFunc F(p,m_flavs,m_anti,p_i);
 
   vector<pair<int,int> > spins(3);
   spins[2] = make_pair(p_i[2],0);
@@ -27,7 +25,7 @@ void B_Bpi_pwave::operator()(
     for(int h1=0; h1<2; ++h1) {
       spins[1] = make_pair(p_i[1],h1);
       Complex amp=F.X(1,h1, p[p_i[2]], 0,h0, m_cR, m_cL);
-      amps->Insert(amp,spins);
+      Insert(amp,spins);
     }
   }
 }
@@ -47,11 +45,9 @@ void B3_Bpi_pwave::SetModelParameters( GeneralModel _md )
   m_cL = m_cR;
 }
 
-void B3_Bpi_pwave::operator()(
-                      const Vec4D             * p,
-                      METOOLS::Spin_Amplitudes * amps)
+void B3_Bpi_pwave::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
-  XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
+  XYZFunc F(p,m_flavs,m_anti,p_i);
 
   vector<pair<int,int> > spins(3);
   spins[2] = make_pair(p_i[2],0);
@@ -59,7 +55,7 @@ void B3_Bpi_pwave::operator()(
     spins[0] = make_pair(p_i[0],h0);
     for(int h1=0; h1<2; ++h1) {
       spins[1] = make_pair(p_i[1],h1);
-      amps->Insert(p[p_i[2]]*F.Y13(1,h1, 0,h0, m_cR, m_cL),spins);
+      Insert(p[p_i[2]]*F.Y13(1,h1, 0,h0, m_cR, m_cL),spins);
     }
   }
 }
@@ -79,11 +75,9 @@ void B_Bpi_swave::SetModelParameters( GeneralModel _md )
   m_cL = m_cR;
 }
 
-void B_Bpi_swave::operator()(
-                      const Vec4D             * p,
-                      METOOLS::Spin_Amplitudes * amps)
+void B_Bpi_swave::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
-  XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
+  XYZFunc F(p,m_flavs,m_anti,p_i);
 
   vector<pair<int,int> > spins(3);
   spins[2] = make_pair(p_i[2],0);
@@ -91,7 +85,7 @@ void B_Bpi_swave::operator()(
     spins[0] = make_pair(p_i[0],h0);
     for(int h1=0; h1<2; ++h1) {
       spins[1] = make_pair(p_i[1],h1);
-      amps->Insert(F.Y(1,h1, 0,h0, m_cR, m_cL),spins);
+      Insert(F.Y(1,h1, 0,h0, m_cR, m_cL),spins);
     }
   }
 }
@@ -111,11 +105,9 @@ void B3_Bpi_dwave::SetModelParameters( GeneralModel _md )
   m_cL = -m_cR;
 }
 
-void B3_Bpi_dwave::operator()(
-                      const Vec4D             * p,
-                      METOOLS::Spin_Amplitudes * amps)
+void B3_Bpi_dwave::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
-  XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
+  XYZFunc F(p,m_flavs,m_anti,p_i);
 
   Vec4D q=p[p_i[2]];
   vector<pair<int,int> > spins(3);
@@ -125,7 +117,7 @@ void B3_Bpi_dwave::operator()(
     for(int h1=0; h1<2; ++h1) {
       spins[1] = make_pair(p_i[1],h1);
       Complex amp=q*F.X13(1,h1,q,0,h0,m_cR,m_cL);
-      amps->Insert(-amp, spins);
+      Insert(-amp, spins);
     }
   }
 }
@@ -144,11 +136,9 @@ void B_Bphoton_M1::SetModelParameters( GeneralModel _md )
   m_fac = -_md("f",1.0);
 }
 
-void B_Bphoton_M1::operator()(
-                      const Vec4D             * p,
-                      METOOLS::Spin_Amplitudes * amps)
+void B_Bphoton_M1::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
-  XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
+  XYZFunc F(p,m_flavs,m_anti,p_i);
 
   Vec4D q=p[p_i[2]];
   vector<pair<int,int> > spins(3);
@@ -161,8 +151,8 @@ void B_Bphoton_M1::operator()(
       for(int h2=0; h2<2; ++h2) {
         spins[2] = make_pair(p_i[2],h2);
         // temporarily disabled due to Lorentz invariance violation
-        //amps->Insert(m_fac*F.G(1,h1,conj(eps[h2]),0,h0),spins);
-        amps->Insert(Complex(1.0,0.0),spins);
+        //Insert(m_fac*F.G(1,h1,conj(eps[h2]),0,h0),spins);
+        Insert(Complex(1.0,0.0),spins);
       }
     }
   }
@@ -183,11 +173,9 @@ void B3_Bphoton_M1::SetModelParameters( GeneralModel _md )
   m_cL = m_cR;
 }
 
-void B3_Bphoton_M1::operator()(
-                      const Vec4D             * p,
-                      METOOLS::Spin_Amplitudes * amps)
+void B3_Bphoton_M1::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
-  XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
+  XYZFunc F(p,m_flavs,m_anti,p_i);
 
   Vec4D q=p[p_i[2]];
   vector<pair<int,int> > spins(3);
@@ -200,7 +188,7 @@ void B3_Bphoton_M1::operator()(
       for(int h2=0; h2<2; ++h2) {
         spins[2] = make_pair(p_i[2],h2);
         Vec4C cr=cross(conj(eps[h2]),p[p_i[0]],q);
-        amps->Insert(cr*F.Y31(1,h1,0,h0,m_cR,m_cL),spins);
+        Insert(cr*F.Y31(1,h1,0,h0,m_cR,m_cL),spins);
       }
     }
   }
@@ -221,11 +209,9 @@ void B3_Bphoton_M1_2::SetModelParameters( GeneralModel _md )
   m_cL = -m_cR;
 }
 
-void B3_Bphoton_M1_2::operator()(
-                      const Vec4D             * p,
-                      METOOLS::Spin_Amplitudes * amps)
+void B3_Bphoton_M1_2::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
-  XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
+  XYZFunc F(p,m_flavs,m_anti,p_i);
 
   Vec4D q=p[p_i[2]];
   vector<pair<int,int> > spins(3);
@@ -239,7 +225,7 @@ void B3_Bphoton_M1_2::operator()(
         spins[2] = make_pair(p_i[2],h2);
         Complex amp=conj(eps[h2])*F.X31(1,h1,q,0,h0,m_cR,m_cL);
         amp-=q*F.X31(1,h1,conj(eps[h2]),0,h0,m_cR,m_cL);
-        amps->Insert(amp,spins);
+        Insert(amp,spins);
       }
     }
   }
@@ -260,11 +246,9 @@ void B_Bphoton_E1::SetModelParameters( GeneralModel _md )
   m_cL = -m_cR;
 }
 
-void B_Bphoton_E1::operator()(
-                      const Vec4D             * p,
-                      METOOLS::Spin_Amplitudes * amps)
+void B_Bphoton_E1::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
-  XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
+  XYZFunc F(p,m_flavs,m_anti,p_i);
 
   Vec4D q=p[p_i[2]];
   vector<pair<int,int> > spins(3);
@@ -282,7 +266,7 @@ void B_Bphoton_E1::operator()(
         spins[1] = make_pair(p_i[1],h1);
         Complex amp=p0q*F.X(1,h1,epsstar,0,h0,m_cR,m_cL)-
           p0eps*F.X(1,h1,q,0,h0,m_cR,m_cL);
-        amps->Insert(amp,spins);
+        Insert(amp,spins);
       }
     }
   }
@@ -303,11 +287,9 @@ void B3_Bphoton_E1::SetModelParameters( GeneralModel _md )
   m_cL = m_cR;
 }
 
-void B3_Bphoton_E1::operator()(
-                      const Vec4D             * p,
-                      METOOLS::Spin_Amplitudes * amps)
+void B3_Bphoton_E1::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
-  XYZFunc F(m_n,p,m_flavs,Tools::k0,m_anti,p_i);
+  XYZFunc F(p,m_flavs,m_anti,p_i);
 
   Vec4D p2=p[p_i[2]];
   vector<pair<int,int> > spins(3);
@@ -325,7 +307,7 @@ void B3_Bphoton_E1::operator()(
         spins[1] = make_pair(p_i[1],h1);
         Complex amp=p0p2*(epsstar*F.Y31(1,h1,0,h0,m_cR,m_cL))-
           p0eps*(p2*F.Y31(1,h1,0,h0,m_cR,m_cL));
-        amps->Insert(amp,spins);
+        Insert(amp,spins);
       }
     }
   }
@@ -345,17 +327,15 @@ void QQ_PGG::SetModelParameters( GeneralModel _md )
   m_min_mass2 = _md("min_mass2",1.0);
 }
 
-void QQ_PGG::operator()(
-                      const Vec4D             * p,
-                      METOOLS::Spin_Amplitudes * amps)
+void QQ_PGG::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
   Vec4D mom_gg=p[p_i[2]]+p[p_i[3]];
   double mass2=mom_gg.Abs2();
 
   if (mass2<m_min_mass2)
-    amps->CreateTrivial(Complex(0.0,0.0));
+    CreateTrivial(Complex(0.0,0.0));
   else
-    amps->CreateTrivial(Complex(1.0,0.0));
+    CreateTrivial(Complex(1.0,0.0));
 }
 
 DEFINE_ME_GETTER(QQ_PGG,QQ_PGG_Getter,"QQ_PGG")
@@ -385,17 +365,15 @@ void P_3P_Dalitz::SetModelParameters( GeneralModel _md )
   m_phasequadx = _md("phaselinx",0.);
 }
 
-void   P_3P_Dalitz::operator()( 
-    const ATOOLS::Vec4D  * _p, 
-    METOOLS::Spin_Amplitudes * amps)
+void   P_3P_Dalitz::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
-  Complex ampl = csqrt( (*this)(_p) );        // call uncorrelated
+  Complex ampl = csqrt( (*this)(&p.front()) );        // call uncorrelated
   vector<pair<int,int> > spins;
   spins.push_back(make_pair(0,0));
   spins.push_back(make_pair(1,0));
   spins.push_back(make_pair(2,0));
   spins.push_back(make_pair(3,0));
-  amps->Add(ampl,spins);
+  Insert(ampl,spins);
   
 }
 

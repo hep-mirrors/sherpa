@@ -1,7 +1,10 @@
 #include "MODEL/Interaction_Models/Color_Function.H"
 
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace MODEL;
+using namespace ATOOLS;
 
 Color_Function & Color_Function::operator=(const Color_Function & c)
 {
@@ -22,7 +25,21 @@ Color_Function & Color_Function::operator=(const Color_Function & c)
   return *this;
 }
 
-std::string Color_Function::String() {
+std::string Color_Function::PID() const
+{
+  std::string pid(ATOOLS::ToString(m_type));
+  if (p_next) pid+="*"+p_next->PID();
+  return pid;
+}
+
+std::string Color_Function::FullString() const
+{
+  std::string pid(String());
+  if (p_next) pid+="*"+p_next->FullString();
+  return pid;  
+}
+
+std::string Color_Function::String() const {
       
   if (m_type==cf::None) return std::string("1");
       
@@ -43,4 +60,18 @@ std::string Color_Function::String() {
 
 Color_Function::~Color_Function() {
   if (p_next) delete p_next;
+}
+
+std::ostream &MODEL::operator<<(std::ostream &str,const cf::code &c)
+{
+  switch (c) {
+  case cf::T: return str<<"T"; 
+  case cf::F: return str<<"F"; 
+  case cf::D: return str<<"D"; 
+  case cf::None: return str<<"None"; 
+  case cf::G: return str<<"G"; 
+  case cf::Unknown: return str<<"Unknown";
+  }
+  THROW(fatal_error,"Invalid code '"+ToString((int)c)+"'");
+  return str;
 }

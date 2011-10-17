@@ -102,9 +102,6 @@ bool Photons::AddRadiation(Blob * blob) {
 #endif
 
   }
-#ifdef PHOTONS_DEBUG
-    msg_Out()<<"************************************************************\n";
-#endif
   return m_photonsadded;
 }
 

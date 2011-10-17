@@ -10,11 +10,13 @@ class HQET2 : public FormFactor_Base {
   double m_hA1_1;
   double m_rho2;
 public:
-  HQET2(struct GeneralModel model, double* masses, Flavour* flavs, int* i);
+  HQET2(GeneralModel model, double* masses, const Flavour_Vector& flavs,
+        const std::vector<int>& i);
   void CalcFFs(ATOOLS::Vec4D p0, ATOOLS::Vec4D p1);
 };
 
-HQET2::HQET2(GeneralModel model, double* masses, Flavour* flavs, int* i) :
+HQET2::HQET2(GeneralModel model, double* masses, const Flavour_Vector& flavs,
+             const std::vector<int>& i) :
   FormFactor_Base(model, masses, flavs, i)
 {
   m_rho2  = model("HQET2_rho2",1.34);

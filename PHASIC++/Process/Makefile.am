@@ -14,6 +14,9 @@ libPhasicProcess_la_SOURCES   =	\
 				POWHEG_Process.C \
 				Virtual_ME2_Base.C \
 				Tree_ME2_Base.C \
+				Flavour_Kernels.C \
+				Massive_Kernels.C \
+				KP_Terms.C \
 				ME_Generators.C \
 				ME_Generator_Base.C
 
@@ -26,5 +29,8 @@ localinc_HEADERS      =	\
 			POWHEG_Process.H \
 			Virtual_ME2_Base.H \
 			Tree_ME2_Base.H \
+			Flavour_Kernels.H \
+			Massive_Kernels.H \
+			KP_Terms.H \
 			ME_Generators.H \
 			ME_Generator_Base.H

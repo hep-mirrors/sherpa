@@ -44,6 +44,8 @@ namespace PHASIC {
 
     inline int JetResult() const { return m_on?m_jres:1; }
 
+    inline void SetResult(const int res) { m_res=res; }
+
   };
 
 }

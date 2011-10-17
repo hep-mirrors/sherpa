@@ -25,7 +25,8 @@ std::string COMIX::ComixLogo()
   return "\033[31mC\033[32mo\033[34mm\033[0mi\033[33mx\033[0m";
 }
 
-COMIX::Process_Base::Process_Base(PHASIC::Process_Base *const proc,Model *const model):
+COMIX::Process_Base::Process_Base
+(PHASIC::Process_Base *const proc,MODEL::Model_Base *const model):
   p_proc(proc), p_model(model), p_psgen(NULL),
   m_cls(-1), m_hls(-1), p_pmap(NULL), p_umprocs(NULL) {}
 
@@ -34,23 +35,12 @@ COMIX::Process_Base::~Process_Base()
 }
 
 bool COMIX::Process_Base::Initialize(std::map<std::string,std::string> *const pmap,
-			   std::vector<Single_Process*> *const procs)
+				     std::vector<Single_Process*> *const procs)
 {
   p_pmap=pmap;
   p_umprocs=procs;
   p_proc->Integrator()->SetColorScheme(cls::sample);
   return true;
-}
-
-void COMIX::Process_Base::InitModel(MODEL::Model_Base *const model,
-			  const std::string &file)
-{
-  p_model = Model_Getter::GetObject(model->Name(),"");
-  if (p_model==NULL) {
-    msg_Info()<<METHOD<<"(): No model '"+model->Name()+"' in Comix."<<std::endl;
-    return;
-  }
-  p_model->Initialize(model,file);
 }
 
 bool COMIX::Process_Base::FillIntegrator(Phase_Space_Handler *const psh)

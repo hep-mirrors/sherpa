@@ -9,12 +9,26 @@
 #include <iostream>
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/Spinor.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/Matrix.H"
 
 namespace METOOLS
 {
+  typedef ATOOLS::Spinor<double> SpinorType;
+
   class Polarization_Vector : public std::vector<ATOOLS::Vec4C> {
+    SpinorType m_kp;
+    SpinorType m_km;
+    ATOOLS::Vec4D m_k;
+
+    void Init(ATOOLS::Vec4D p);
+    ATOOLS::Vec4C VT(const SpinorType &a,const SpinorType &b);
+    ATOOLS::Vec4C EM(const ATOOLS::Vec4D &p);
+    ATOOLS::Vec4C EP(const ATOOLS::Vec4D &p);
+    ATOOLS::Vec4C EMM(const ATOOLS::Vec4D &p);
+    ATOOLS::Vec4C EMP(const ATOOLS::Vec4D &p);
+    ATOOLS::Vec4C EML(const ATOOLS::Vec4D &p);
   public:
     Polarization_Vector(ATOOLS::Vec4D p, double M2, bool anti=false, bool out=false);
     Polarization_Vector(ATOOLS::Vec4D p, bool anti=false, bool out=false);

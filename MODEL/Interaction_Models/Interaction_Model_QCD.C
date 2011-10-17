@@ -7,6 +7,8 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
+// #define NODEC_FOURVS 1
+
 DECLARE_GETTER(Interaction_Model_QCD_Getter,"pure_QCD",
 	       Interaction_Model_Base,Interaction_Model_Arguments);
 
@@ -60,6 +62,8 @@ void Interaction_Model_QCD::c_FFV(std::vector<Single_Vertex>& vertex,int & vanz)
       vertex[vanz].Lorentz.back()->SetParticleArg(1);     
                   
       vertex[vanz].on            = 1;
+      vertex[vanz].oqcd          = 1;
+      vertex[vanz].oew           = 0;
       vertex.push_back(Single_Vertex());vanz++;
     } 
   }
@@ -87,8 +91,33 @@ void Interaction_Model_QCD::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
   vertex[vanz].Lorentz.back()->SetParticleArg(0,1,2);     
 
   vertex[vanz].on            = 1;
+  vertex[vanz].oqcd          = 1;
+  vertex[vanz].oew           = 0;
   vertex.push_back(Single_Vertex());vanz++;
 
+#ifndef NODEC_FOURVS
+  // decomposed 4-gluon vertex
+  kcpl0 = Kabbala(-g3);
+
+  vertex[vanz].in[1] = vertex[vanz].in[2] = Flavour(kf_gluon);
+  vertex[vanz].in[0] = Flavour(kf_gluon_qgc);
+
+  vertex[vanz].cpl[0] = vertex[vanz].cpl[1] = kcpl0;
+  vertex[vanz].Str    = (kcpl0*PR+kcpl0*PL).String();
+  
+  vertex[vanz].Color.push_back(Color_Function(cf::F));;     
+  vertex[vanz].Color.back().SetParticleArg(0,2,1);     
+  vertex[vanz].Color.back().SetStringArg('0','2','1');     
+
+  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("GaugeP4",LF_Key()));     
+  vertex[vanz].Lorentz.back()->SetParticleArg(0,1,2);     
+
+  vertex[vanz].on            = 1;
+  vertex[vanz].oqcd          = 1;
+  vertex[vanz].oew           = 0;
+  vertex[vanz].dec           = 1;
+  vertex.push_back(Single_Vertex());vanz++;
+#endif
   }
 }
 
@@ -128,6 +157,11 @@ void Interaction_Model_QCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
   vertex[vanz].Lorentz[2]->SetParticleArg(0,3,1,2);     
   
   vertex[vanz].on              = 1;
+  vertex[vanz].oqcd            = 2;
+  vertex[vanz].oew             = 0;
+#ifndef NODEC_FOURVS
+  vertex[vanz].dec             = -1;
+#endif
   vertex.push_back(Single_Vertex());vanz++;
   }  
 }

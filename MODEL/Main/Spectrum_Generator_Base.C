@@ -8,8 +8,6 @@ Spectrum_Generator_Base::Spectrum_Generator_Base(ATOOLS::Data_Reader * _dataread
 
 Spectrum_Generator_Base::~Spectrum_Generator_Base() 
 { 
-  if (!m_decays.empty()) 
-    m_decays.erase(m_decays.begin(),m_decays.end());
 }
 
 

@@ -3,16 +3,18 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
+#include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
+#include "METOOLS/SpinCorrelations/Decay_Matrix.H"
+#include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Random.H"
-#include "METOOLS/Main/Spin_Structure.H"
-#include "AMEGIC++/Main/Single_Process.H"
 
 using namespace SHERPA;
+using namespace METOOLS;
 using namespace ATOOLS;
 
 Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler) :
-  p_mehandler(mehandler), p_amps(NULL), m_overweight(0.0)
+  p_mehandler(mehandler), p_atensor(NULL), m_overweight(0.0)
 {
   m_name="Signal_Processes";
   m_type=eph::Perturbative;
@@ -24,7 +26,7 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler) :
 
 Signal_Processes::~Signal_Processes()
 {
-  if (p_amps) delete p_amps; p_amps=NULL;
+  if (p_atensor) delete p_atensor;
 }
 
 Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight)
@@ -58,6 +60,7 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
 
 bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
 {
+  DEBUG_FUNC(blob->Id());
   PHASIC::Process_Base *proc(p_mehandler->Process());
   blob->SetPosition(Vec4D(0.,0.,0.,0.));
   blob->SetTypeSpec(proc->Parent()->Name());
@@ -69,7 +72,9 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->ClearAllData();
   bool success(true);
   Particle *particle(NULL);
-  blob->SetStatus(blob_status::needs_showers | blob_status::needs_harddecays);
+  if (proc->Info().m_nlomode!=1)
+    blob->SetStatus(blob_status::needs_showers | blob_status::needs_harddecays);
+  else blob->SetStatus();
   for (unsigned int i=0;i<proc->NIn();i++) {
     particle = new Particle(0,proc->Flavours()[i],
 			    proc->Integrator()->Momenta()[i]);
@@ -92,6 +97,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     particle->SetInfo('H');
     blob->AddToOutParticles(particle);
   }
+  DEBUG_VAR(*blob);
   PHASIC::Weight_Info winfo(p_mehandler->WeightInfo());
   double weight(winfo.m_weight);
   if (p_mehandler->EventGenerationMode()==1) {
@@ -115,24 +121,40 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   }
   NLO_subevtlist* nlos=proc->GetSubevtList();
   if (nlos) blob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(nlos));
-  
-  if (rpa->gen.SpinCorrelation()) {
-    Particle_Vector inparticles = blob->GetInParticles();
-    Particle_Vector outparticles = blob->GetOutParticles();
-    Particle_Vector particles(inparticles.begin(),inparticles.end());
-    particles.insert(particles.end(),outparticles.begin(),outparticles.end());
-    if (p_amps) delete p_amps;
-    p_amps = new METOOLS::Amplitude_Tensor(particles);
-    
-    AMEGIC::Single_Process* aproc = dynamic_cast<AMEGIC::Single_Process*>(proc);
-    if (!aproc) {
-      THROW(fatal_error, "Spin correlations can only be enabled when using "+
-            std::string("Amegic as matrix element generator."));
-    }
-    aproc->FillAmplitudes(p_amps);
-    blob->AddData("amps",new Blob_Data<METOOLS::Amplitude_Tensor*>(p_amps));
-  }
 
+  if (rpa->gen.HardSC() || rpa->gen.SoftSC()) {
+    DEBUG_INFO("Filling amplitude tensor for spin correlations.");
+    std::vector<Spin_Amplitudes> amps;
+    std::vector<std::vector<Complex> > cols;
+    proc->FillAmplitudes(amps, cols);
+    DEBUG_VAR(amps[0]);
+    Particle_Vector outparts=blob->GetOutParticles();
+    Particle_Vector inparts=blob->GetInParticles();
+    std::deque<Particle*> parts;
+    parts.insert(parts.end(), inparts.begin(), inparts.end());
+    parts.insert(parts.end(), outparts.begin(), outparts.end());
+    if (p_atensor) delete p_atensor;
+    p_atensor=new Amplitude2_Tensor(parts, amps, cols);
+    DEBUG_VAR(*p_atensor);
+    for (size_t i=0; i<inparts.size(); ++i) {
+      Particle* part=inparts[i];
+      DEBUG_INFO("contracting incoming particle "<<part->Flav());
+      Spin_Density sigma(part);
+      p_atensor->Contract(&sigma);
+      DEBUG_VAR(*p_atensor);
+    }
+    for (size_t i=0; i<outparts.size(); ++i) {
+      Particle* part=outparts[i];
+      if (part->Flav().IsStable()) {
+        DEBUG_INFO("contracting stable particle "<<part->Flav());
+        Decay_Matrix dm(part);
+        p_atensor->Contract(&dm);
+        DEBUG_VAR(*p_atensor);
+      }
+    }
+    DEBUG_VAR(*p_atensor);
+    blob->AddData("ATensor",new Blob_Data<Amplitude2_Tensor*>(p_atensor));
+  }
   return success;
 }
 

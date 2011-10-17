@@ -459,7 +459,7 @@ Expression::Expression(const std::string &expression):
       expr=expr.substr(mpos+1);
     }
     if  (factor.length()==0) THROW(fatal_error,"Missing factor");
-    if (factor.find("f_[")==0 && factor[factor.length()-1]==']') {
+    if (factor.find("F[")==0 && factor[factor.length()-1]==']') {
       size_t c1pos(factor.find(','));
       if (c1pos==std::string::npos)
 	THROW(fatal_error,"Invalid number of indices for t.");
@@ -467,13 +467,13 @@ Expression::Expression(const std::string &expression):
       if (c2pos==std::string::npos || 
 	  factor.find(',',c2pos+1)!=std::string::npos)
 	THROW(fatal_error,"Invalid number of indices for t.");
-      size_t a(ToType<int>(factor.substr(3,c1pos-3)));
+      size_t a(ToType<int>(factor.substr(2,c1pos-2)));
       size_t b(ToType<int>(factor.substr(c1pos+1,c2pos-c1pos-1)));
       size_t c(ToType<int>(factor.substr(c2pos+1,factor.length()-c2pos-2)));
       back() = Adjoint::New(a,b,c);
       m_aindex=Max(m_aindex,Max(a,Max(b,c)));
     }
-    else if (factor.find("t_[")==0 && factor[factor.length()-1]==']') {
+    else if (factor.find("T[")==0 && factor[factor.length()-1]==']') {
       size_t c1pos(factor.find(','));
       if (c1pos==std::string::npos)
 	THROW(fatal_error,"Invalid number of indices for t.");
@@ -481,52 +481,19 @@ Expression::Expression(const std::string &expression):
       if (c2pos==std::string::npos || 
 	  factor.find(',',c2pos+1)!=std::string::npos)
 	THROW(fatal_error,"Invalid number of indices for t.");
-      size_t a(ToType<int>(factor.substr(3,c1pos-3)));
+      size_t a(ToType<int>(factor.substr(2,c1pos-2)));
       size_t i(ToType<int>(factor.substr(c1pos+1,c2pos-c1pos-1)));
       size_t j(ToType<int>(factor.substr(c2pos+1,factor.length()-c2pos-2)));
       back() = Fundamental::New(a,i,j);
       m_findex=Max(m_findex,Max(i,j));
       m_aindex=Max(m_aindex,a);
     }
-    else if (factor.find("tr_[")==0 && factor[factor.length()-1]==']') {
-      size_t c1pos(factor.find(','));
-      size_t c2pos;
-      size_t fpos(factor.find(']'));
-      size_t i=0, j=0;
-      if (c1pos==std::string::npos || c1pos>fpos)
-	THROW(fatal_error,"Invalid number of color indices for tr.");
-      size_t l;
-      for (l=1;(c1pos!=std::string::npos && c1pos<fpos);l++) {
-	c1pos=factor.find(',',c1pos+1);
-      }
-      size_t *a = new size_t[l+1];
-      a[0]=l;
-      c1pos=factor.find(',');
-      a[1]=ToType<int>(factor.substr(4,c1pos-4));
-      for(l=2;l<a[0];l++) {
-	c2pos=factor.find(',',c1pos+1);
-	a[l]=ToType<int>(factor.substr(c1pos+1,c2pos-c1pos-1));
-	c1pos=c2pos;
-      }
-      a[l]=ToType<int>(factor.substr(c1pos+1,fpos-c1pos-1));
-      if (factor.find("]_[")!=std::string::npos) {
-	fpos=factor.find(',',fpos+3);
-	if (fpos==std::string::npos || 
-	    factor.find(',',fpos+1)!=std::string::npos)
-	  THROW(fatal_error,"Invalid number of fundamental indices in tr.");
-	i = ToType<int>(factor.substr(factor.find("]_[")+3,fpos-3-factor.find("]_[")));
-	j = ToType<int>(factor.substr(fpos+1,factor.length()-fpos-2));
-      }
-      back() = Trace::New(a,i,j);
-      m_findex=Max(m_findex,Max(i,j));
-      for (l=1;l<a[0]+1;l++) m_aindex=Max(m_aindex,a[l]);
-    }
-    else if (factor.find("d_[")==0 && factor[factor.length()-1]==']') {
+    else if (factor.find("D[")==0 && factor[factor.length()-1]==']') {
       size_t cpos(factor.find(','));
       if (cpos==std::string::npos || 
 	  factor.find(',',cpos+1)!=std::string::npos)
 	THROW(fatal_error,"Invalid number of indices for \\delta.");
-      std::string i(factor.substr(3,cpos-3));
+      std::string i(factor.substr(2,cpos-2));
       std::string j(factor.substr(cpos+1,factor.length()-cpos-2));
       back() = Delta::New(ToType<int>(i),ToType<int>(j));
     }

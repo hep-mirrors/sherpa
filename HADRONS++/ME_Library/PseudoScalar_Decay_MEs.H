@@ -10,7 +10,7 @@ namespace HADRONS {
   public:
     P_PP(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name), m_global(Complex(0.,0.)) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -19,7 +19,7 @@ namespace HADRONS {
   public:
     P_LNu(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name), m_global(Complex(0.,0.)) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -29,7 +29,7 @@ namespace HADRONS {
   public:
     P_PV(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name), m_npol(3), m_global(Complex(0.,0.)) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -39,7 +39,7 @@ namespace HADRONS {
   public:
     P_VV(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name), m_npol1(3), m_npol2(3), m_global(Complex(0.,0.)) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -49,7 +49,7 @@ namespace HADRONS {
   public:
     S_VV(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name), m_npol1(3), m_npol2(3), m_global(Complex(0.,0.)) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -58,7 +58,7 @@ namespace HADRONS {
   public:
     P_PT(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name), m_global(Complex(0.,0.)) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -72,7 +72,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,n,indices,name), 
       m_ff(0), m_g(0.), m_h(0.), m_j(0.), m_k(0.), m_f(0.),
       m_global(Complex(0.,0.)) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -85,7 +85,7 @@ namespace HADRONS {
     P_VFF(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name), 
       m_npol(3), m_VDM(false), m_VDM_mass(0.), m_VDM_width(0.), m_global(Complex(0.,0.)) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -101,7 +101,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,n,indices,name), m_ff(0),m_fP(1.),m_Norm(1.),
       m_aplus0(0.),m_aplus1(0.),m_azero0(0.),m_azero1(0.),m_masssqr_diff(0.),
       m_global(Complex(0.,0.)) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -118,7 +118,7 @@ namespace HADRONS {
       HD_ME_Base(flavs,n,indices,name), m_ff(0),m_fP(1.),
       m_f1_0(1.),m_lambda1(0.),m_f2_0(1.),m_lambda2(0.),m_g_0(1.),m_kappa(0.),
       m_global(Complex(0.,0.)) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -128,7 +128,7 @@ namespace HADRONS {
   public:
     P_FFFF(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name), m_exchange(false), m_global(Complex(0.,0.)) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 

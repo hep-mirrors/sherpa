@@ -36,13 +36,17 @@ namespace METOOLS {
 		      const int hel_comb, const Complex cR, const Complex cL );
 
   public:
-    XYZFunc( int n, const ATOOLS::Vec4D *p, const ATOOLS::Flavour *fl,
-             int k0_n, bool anti=false, const int *indices=NULL );
-    XYZFunc( const int n, const ATOOLS::Flavour *fl, const int k0_n,
-             const int *indices=NULL );
+    XYZFunc( const ATOOLS::Vec4D_Vector& p,
+             const ATOOLS::Flavour_Vector& fl,
+             bool anti,
+             const std::vector<int>& indices=std::vector<int>());
+    XYZFunc( int n, const ATOOLS::Vec4D* p, const ATOOLS::Flavour *fl,
+             bool anti=false, const int *indices=NULL );
+    XYZFunc( const ATOOLS::Flavour_Vector& fl,
+             const std::vector<int>& indices=std::vector<int>() );
     ~XYZFunc();
 
-    void Prepare( const ATOOLS::Vec4D *p, const bool anti=false );
+    void Prepare( const ATOOLS::Vec4D_Vector& p, const bool anti=false );
 
     Complex Z(
 	      const int t1, const int l1,

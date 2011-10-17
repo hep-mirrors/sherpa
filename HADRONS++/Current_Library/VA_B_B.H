@@ -34,11 +34,12 @@ class VA_B_B : public Current_Base
   double m_v, m_a;
 
 public:
-  VA_B_B(ATOOLS::Flavour* flavs, int n, int* indices, std::string name) :
-    Current_Base(flavs, n, indices, name) {};
+  VA_B_B(const ATOOLS::Flavour_Vector& flavs,const std::vector<int>& indices,
+         const std::string& name) :
+    Current_Base(flavs, indices, name) {};
   ~VA_B_B();
   void SetModelParameters( struct GeneralModel _md );
-  void Calc(const ATOOLS::Vec4D * moms);
+  void Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti);
 };
 }
 

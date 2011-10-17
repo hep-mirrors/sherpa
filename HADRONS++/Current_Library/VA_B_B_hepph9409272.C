@@ -23,11 +23,11 @@ namespace HADRONS {
       m_A2_Lambda24, m_A3_Lambda24;
     
   public:
-    VA_B_B_hepph9409272(ATOOLS::Flavour* flavs, int n, int* indices,
-                        std::string name) :
-      Current_Base(flavs, n, indices, name) {};
+    VA_B_B_hepph9409272(const ATOOLS::Flavour_Vector& flavs,
+                        const std::vector<int>& indices,const string& name) :
+      Current_Base(flavs, indices, name) {};
     void SetModelParameters( struct GeneralModel _md );
-    void Calc(const ATOOLS::Vec4D * moms);
+    void Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti);
     double Fit(double q2, double f0, double Lambda12, double Lambda24);
   };
 }
@@ -136,7 +136,7 @@ void VA_B_B_hepph9409272::SetModelParameters( struct GeneralModel model )
   m_A3_Lambda24     = sqr(sqr(model("A3_Lambda2",1.0)));
 }
 
-void VA_B_B_hepph9409272::Calc(const ATOOLS::Vec4D * moms)
+void VA_B_B_hepph9409272::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   double q2=(moms[p_i[0]]-moms[p_i[1]]).Abs2();
 
@@ -156,7 +156,7 @@ void VA_B_B_hepph9409272::Calc(const ATOOLS::Vec4D * moms)
   Complex v3=m_v*(-V2-V3)/p_masses[0];
   Complex a3=m_a*(-A2-A3)/p_masses[0];
 
-  XYZFunc F(2, moms, m_flavs, Tools::k0, m_anti, p_i);
+  XYZFunc F(moms, m_flavs, m_anti, p_i);
   for(int h0=0; h0<2; h0++) {
     for(int h1=0; h1<2; h1++) {
       // 1 is "the barred spinor" in the current, 0 is the not-barred one

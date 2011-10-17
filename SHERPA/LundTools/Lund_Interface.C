@@ -15,7 +15,6 @@
 #include <cassert>
 #include "ATOOLS/Org/Message.H"
 #include "SHERPA/Tools/HepEvt_Interface.H"
-#include "ATOOLS/Phys/Mass_Handler.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
 using namespace SHERPA;
@@ -239,11 +238,10 @@ double Lund_Interface::GenerateMass(Flavour flav, double min, double max)
     else return peak;
   }
   else {
-    Mass_Handler masshandler(flav);
     double finalmin = min>(peak-w_cut)? min : peak-w_cut;
     double finalmax = max<(peak+w_cut)? max : peak+w_cut;
     if(finalmin>finalmax) return -1.0;
-    else return masshandler.GetMass(finalmin,finalmax);
+    else return flav.RelBWMass(this, finalmin, finalmax);
   }
 }
 

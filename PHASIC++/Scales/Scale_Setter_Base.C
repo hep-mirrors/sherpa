@@ -29,16 +29,24 @@ std::ostream &operator<<(std::ostream &ostr,const stp::id &scl)
 Scale_Setter_Base::Scale_Setter_Base
 (const Scale_Setter_Arguments &args,const bool scale2):
   p_proc(args.p_proc), p_caller(p_proc),
-  p_model(args.p_model), p_cpls(args.p_cpls),
+  p_model(args.p_model), p_cpls(args.p_cpls), p_subs(NULL),
   m_scale(stp::size), m_coupling(args.m_coupling),
-  m_scale2(scale2), p_jf(NULL)
+  m_scale2(scale2), m_nin(args.m_nin), m_nout(args.m_nout)
 {
+  for (size_t i(0);i<stp::size;++i) m_scale[i]=rpa->gen.CplScale();
+  if (p_proc) {
+    m_nin=p_proc->NIn();
+    m_nout=p_proc->NOut();
+  }
+  m_p.resize(m_nin+m_nout);
 }
 
 void Scale_Setter_Base::SetCouplings()
 {
+  if (p_proc==NULL) return;
   DEBUG_FUNC(p_proc->Name());
   if (p_cpls==NULL) THROW(fatal_error,"No coupling information");
+  p_subs=p_proc->GetSubevtList();
   Data_Reader read(" ",",","#",":");
   std::vector<std::vector<std::string> > helpsvv;
   read.SetAddCommandLine(false);
@@ -49,12 +57,20 @@ void Scale_Setter_Base::SetCouplings()
       if (helpsvv[i].size()==1 && helpsvv[i][0]=="None") break;
       THROW(fatal_error,"Invalid tag "+m_coupling+".");
     }
-    msg_Debugging()<<helpsvv[i][0]<<" -> "<<helpsvv[i][1]<<"\n";
-    Coupling_Map::iterator cit(p_cpls->find(helpsvv[i][0]));
-    if (cit!=p_cpls->end()) {
-      if (ToType<size_t>(helpsvv[i][1])>=m_scale.size())
+    Coupling_Map::iterator cit(p_cpls->lower_bound(helpsvv[i][0]));
+    Coupling_Map::iterator eit(p_cpls->upper_bound(helpsvv[i][0]));
+    if (cit!=eit) {
+      size_t idx(ToType<size_t>(helpsvv[i][1]));
+      if (idx>=m_scale.size())
 	THROW(fatal_error,"Index too large for "+helpsvv[i][0]+".");
-      cit->second->SetScale(&m_scale[ToType<int>(helpsvv[i][1])]);
+      for (;cit!=eit;++cit) {
+	msg_Debugging()<<*cit->second<<" -> "<<helpsvv[i][1]<<"\n";
+	if (cit->second->Sub()==NULL) cit->second->SetScale(&m_scale[idx]);
+	else {
+	  cit->second->Sub()->m_mu2.resize(m_scale.size());
+	  cit->second->SetScale(&cit->second->Sub()->m_mu2[idx]);
+	}
+      }
     }
     else {
       msg_Error()<<METHOD<<"("<<p_proc->Name()<<"): Valid tags are\n ";
@@ -84,23 +100,45 @@ void Scale_Setter_Base::ShowSyntax(const size_t i)
   msg_Out()<<"\n}"<<std::endl;
 }
 
-const Vec4D_Vector &Scale_Setter_Base::Momenta() const
-{
-  return p_proc->Integrator()->Momenta();
-}
-
 double Scale_Setter_Base::HT() const
 {
   double ht(0.0);
-  const Vec4D_Vector &p(Momenta());
-  for (size_t i(p_proc->NIn());i<p.size();++i) ht+=p[i].PPerp();
+  for (size_t i(m_nin);i<m_p.size();++i) ht+=m_p[i].PPerp();
   return ht;
 }
 
 Vec4D Scale_Setter_Base::PSum() const
 {
   Vec4D sum(0.0,0.0,0.0,0.0);
-  const Vec4D_Vector &p(Momenta());
-  for (size_t i(p_proc->NIn());i<p.size();++i) sum+=p[i];
+  for (size_t i(m_nin);i<m_p.size();++i) sum+=m_p[i];
   return sum;
+}
+
+double Scale_Setter_Base::CalculateScale
+(const ATOOLS::Vec4D_Vector &p,const int mode)
+{
+  DEBUG_FUNC((p_proc?p_proc->Name():""));
+  if (!m_escale.empty()) {
+    m_scale[stp::fac]=m_escale[stp::fac];
+    m_scale[stp::ren]=m_escale[stp::ren];
+    p_cpls->Calculate();
+    return m_scale[stp::fac];    
+  }
+  if (p_subs==NULL) {
+    m_p.resize(p.size());
+    for (size_t j(0);j<m_p.size();++j) m_p[j]=p[j];
+    Calculate(p,mode);
+  }
+  else {
+    for (size_t i(0);i<p_subs->size();++i) {
+      NLO_subevt *sub((*p_subs)[i]);
+      m_p.resize(sub->m_n);
+      for (size_t j(0);j<m_p.size();++j)
+	m_p[j]=j<p_proc->NIn()?-sub->p_mom[j]:sub->p_mom[j];
+      Calculate(Vec4D_Vector(m_p),mode);
+      for (size_t j(0);j<stp::size;++j) sub->m_mu2[j]=m_scale[j];
+    }
+  }
+  if (p_proc) p_cpls->Calculate();
+  return m_scale[stp::fac];
 }

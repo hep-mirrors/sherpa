@@ -25,11 +25,11 @@ namespace HADRONS {
     double m_Vub, m_Vtb;
 
     public:
-    B_KStar_Semileptonic(ATOOLS::Flavour* flavs, int n, int* decayindices, std::string name):
-      HD_ME_Base(flavs,n,decayindices,name) {};
-    void   operator()(
-	const ATOOLS::Vec4D  * _p,
-	METOOLS::Spin_Amplitudes     * amps);
+    B_KStar_Semileptonic(const ATOOLS::Flavour_Vector& flavs,
+                         const std::vector<int>& decayindices,
+                         const std::string& name):
+      HD_ME_Base(flavs,decayindices,name) {};
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void   SetModelParameters( GeneralModel _md );
     Complex C9sehgal(double sHat);
     Complex sehgalld(double sHat);

@@ -4,7 +4,7 @@
 #include "AMEGIC++/Main/Process_Base.H"
 
 #include "AMEGIC++/DipoleSubtraction/Single_LOProcess.H"
-#include <vector>
+#include "PHASIC++/Process/KP_Terms.H"
 
 namespace PDF { class PDF_Base; } 
 
@@ -18,11 +18,6 @@ namespace AMEGIC {
   class Flavour_KernelsA;
   class Massive_KernelsA;
 
-  struct xp_coeff {
-    double xp;
-    double kpc;
-  };
-
   class Single_Virtual_Correction : public Process_Base {
   protected:
     std::string             m_ptypename,m_pslibname;
@@ -30,22 +25,21 @@ namespace AMEGIC {
     double                  m_dalpha,m_dalpha_ff,m_dalpha_fi,m_dalpha_if,m_dalpha_ii;
     Phase_Space_Generator * p_psgen;
 
-    double               ** p_dsij;
-    double                  m_kpca[8];
-    double                  m_kpcb[8];
+    std::vector<std::vector<double> > p_dsij;
+
     double                  m_cmur[2];
     double                  m_x0,m_x1;
-    std::vector<xp_coeff>   m_xpa, m_xpb;
 
     Single_Virtual_Correction        * p_partner;
 
     Single_LOProcess      * p_LO_process;
     DipoleSplitting_Base  * p_dipole;
-    Flavour_KernelsA      * p_flkern;
-    Massive_KernelsA      * p_masskern;
+    PHASIC::Flavour_Kernels * p_flkern;
+    PHASIC::Massive_Kernels * p_masskern;
+    PHASIC::KP_Terms      * p_kpterms;
     PHASIC::Virtual_ME2_Base* p_loopme;  
 
-    bool m_massive, m_force_init;
+    bool m_force_init, m_sccmur;
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -117,7 +111,6 @@ namespace AMEGIC {
     double         DSigma2();
     double         operator()(const ATOOLS::Vec4D_Vector &,const int mode);
 
-    void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
     int            NumberOfDiagrams();
     Point        * Diagram(int i);
 

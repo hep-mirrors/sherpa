@@ -55,7 +55,7 @@ namespace AMEGIC {
     double  operator()(const ATOOLS::Vec4D_Vector &,const ATOOLS::Vec4D *,
 		       std::vector<double>*,std::vector<ATOOLS::Vec4D>*,const int);
     void    Calc_AllXS(const ATOOLS::Vec4D_Vector &,
-		       const ATOOLS::Vec4D *,double**,const int);
+		       const ATOOLS::Vec4D *,std::vector<std::vector<double> > &,const int);
   };
 }
 

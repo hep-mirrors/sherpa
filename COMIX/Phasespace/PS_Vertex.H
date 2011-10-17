@@ -1,19 +1,23 @@
 #ifndef COMIX_Phasespace_PS_Vertex_H
 #define COMIX_Phasespace_PS_Vertex_H
 
-#include "COMIX/Amplitude/Vertex_Base.H"
+#include "METOOLS/Explicit/Vertex.H"
 #include "COMIX/Phasespace/PS_Info.H"
+
+using namespace METOOLS;
 
 namespace COMIX {
 
-  typedef std::vector<PS_Info> PS_Info_Vector;
+  typedef std::vector<PS_Info*> PS_Info_Vector;
 
-  class PS_Vertex: public Vertex_Base {
+  class PS_Vertex: public Vertex {
   protected:
 
     double m_alpha, m_oldalpha, m_weight;
     double m_np, m_sum, m_sum2, m_max;
     double m_mnp, m_msum, m_msum2;
+
+    int m_type;
 
   public:
 
@@ -54,6 +58,10 @@ namespace COMIX {
     { return (m_sum2-m_sum*m_sum/m_np)/(m_np-1.0); }
     inline double Sigma() const  
     { return sqrt(Variance()/m_np); }
+
+    inline void SetType(const int &type) { m_type=type; }
+
+    inline int Type() const { return m_type; }
 
   };// end of class PS_Vertex
 

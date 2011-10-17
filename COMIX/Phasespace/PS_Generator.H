@@ -34,9 +34,9 @@ namespace COMIX {
   class PS_Generator {
   public:
 
-    typedef std::map<Current_Base*,Current_Base*>      CB_Map;
-    typedef std::multimap<Current_Base*,Current_Base*> CB_MMap;
-    typedef std::pair<Current_Base*,Current_Base*>     CB_Pair;
+    typedef std::map<Current*,Current*>      CB_Map;
+    typedef std::multimap<Current*,Current*> CB_MMap;
+    typedef std::pair<Current*,Current*>     CB_Pair;
 
     typedef std::map<size_t,Current_Vector> TCC_Map;
 
@@ -73,13 +73,16 @@ namespace COMIX {
     void CleanUp();
     void CalcJL();
 
-    bool AddCurrent(Current_Base *const ref,const ATOOLS::Flavour &fl,
+    bool AddCurrent(Current *const ref,const ATOOLS::Flavour &fl,
 		    const size_t &n,const int mode=0,
 		    const double &m=0.0,const double &w=0.0,
-		    Current_Base *const scc=NULL);
-    void AddExtraCurrent(Current_Base *const cur,const size_t &n,
+		    Current *const scc=NULL);
+    void AddExtraCurrent(Current *const cur,const size_t &n,
 			 const double &m,const double &w,
-			 Current_Base *const scc=NULL);
+			 Current *const scc=NULL);
+
+    int DecayType(const Current *jc,
+		  const Current *ja,const Current *jb) const;
 
   public:
     

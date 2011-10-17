@@ -77,6 +77,39 @@ Vertex::Vertex(Interaction_Model_Base * _model)
 
 Vertex::~Vertex() { }
 
+class Order_KF_C {
+public:
+  bool operator()(const Flavour &a,const Flavour &b)
+  { return a.Kfcode()<b.Kfcode(); }
+};// end of class Order_KF_C
+
+class Order_Anti_C {
+public:
+  bool operator()(const Flavour &a,const Flavour &b)
+  { return a.IsAnti()<b.IsAnti(); }
+};// end of class Order_Anti_C
+
+class Sort_Order_Out_Flavour {
+public:
+  bool operator()(const Single_Vertex &a,const Single_Vertex &b)
+  {
+    Flavour_Vector fla(&a.in[1],&a.in[a.nleg]), flb(&b.in[1],&b.in[b.nleg]);
+    std::sort(fla.begin(),fla.end(),Order_Anti_C());
+    std::stable_sort(fla.begin(),fla.end(),Order_KF_C());
+    std::sort(flb.begin(),flb.end(),Order_Anti_C());
+    std::stable_sort(flb.begin(),flb.end(),Order_KF_C());
+    for (Flavour_Vector::const_iterator ait(fla.begin()), bit(flb.begin());
+	 ait!=fla.end();++ait,++bit) {
+      if (ait->IsAnti()<bit->IsAnti()) return true;
+      if (ait->IsAnti()>bit->IsAnti()) return false;
+      if (ait->Kfcode()<bit->Kfcode()) return true;
+      if (ait->Kfcode()>bit->Kfcode()) return false;
+    }
+    return false;
+  }
+};// end of class Sort_Order_Out_Flavour
+
+typedef std::set<Single_Vertex,Sort_Order_Out_Flavour> OSV_Map;
 
 // General Methods
 void Vertex::GenerateVertex()
@@ -93,6 +126,24 @@ void Vertex::GenerateVertex()
       m_v4[i].on = m_v4[i].CheckCoupling();
       if (m_v4[i].on) { 
 	if(m_v4[i].nleg==4) {
+	  OSV_Map svs;
+	  int id[4]={1,2,3,4};
+	  for (size_t k(0);k<4;++k) {
+	    if (SetVertex(m_v4[i],dummy,id[0],id[1],id[2],id[3],1)
+		&& svs.find(dummy)==svs.end()) { 
+	      m_a.push_back(dummy); 
+	      svs.insert(dummy); 
+	    }
+	    if (SetVertex(m_v4[i],dummy,-id[0],-id[3],-id[2],-id[1],1)
+		&& svs.find(dummy)==svs.end()) { 
+	      m_a.push_back(dummy); 
+	      svs.insert(dummy); 
+	    }
+	    int l=-id[0];
+	    for (size_t j(0);j<3;++j) id[j]=id[j+1];
+	    id[0]=-id[0];
+	    id[3]=l;
+	  }
 	  for (short int k=1;k<5;k++) {
 	    for (short int l=1;l<5;l++) {
 	      if (l!=k) {
@@ -130,6 +181,24 @@ void Vertex::GenerateVertex()
       //required by Interaction_Model_ADD due to small couplings
       m_v[i].on = m_v[i].CheckCoupling();
       if (m_v[i].nleg==3) {  
+	OSV_Map svs;
+	int id[3]={1,2,3};
+	for (size_t k(0);k<3;++k) {
+	  if (SetVertex(m_v[i],dummy,id[0],id[1],id[2],0,1)
+	      && svs.find(dummy)==svs.end()) { 
+	    m_a.push_back(dummy); 
+	    svs.insert(dummy); 
+	  }
+	  if (SetVertex(m_v[i],dummy,-id[0],-id[2],-id[1],0,1)
+	      && svs.find(dummy)==svs.end()) { 
+	    m_a.push_back(dummy); 
+	    svs.insert(dummy); 
+	  }
+	  int l=-id[0];
+	  for (size_t j(0);j<2;++j) id[j]=id[j+1];
+	  id[0]=-id[0];
+	  id[2]=l;
+	}
 	for (short int k=1;k<4;k++) {
 	  for (short int l=1;l<4;l++) {
 	    if (l!=k) {
@@ -223,9 +292,15 @@ int Vertex::FermionRule(Single_Vertex& probe)
   return hit;
 }
 
-int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1, int i2, int i3)
+int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1, int i2, int i3,int mode)
 {
   probe = orig;
+
+  if ((orig.dec>0 && orig.dec&4) &&
+      !((i0==1 && i1==2 && i2==3) || 
+	(i0==-2 && i1==3 && i2==-1) ||
+	(i0==-3 && i1==-1 && i2==2))) return 0;
+  if ((orig.dec>0 && orig.dec&2) && !(i0==1 && i1==2 && i2==3)) return 0;
   
   if (i0<0) probe.in[0] = orig.in[-i0-1].Bar();
        else probe.in[0] = orig.in[i0-1];
@@ -237,12 +312,16 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
     if (i3<0) probe.in[3] = orig.in[-i3-1].Bar();
          else if (i3<99) probe.in[3] = orig.in[i3-1];
   }
-  
+  if (mode==1) {
+    if (find(m_a.begin(), m_a.end(), probe)!=m_a.end()) return 0;
+  } 
+  else {
   if (CheckExistence(probe)==0) return 0;
   if (probe.nleg==3) {
     if (FermionRule(probe)==0) return 0;}
-    
-  int hc  = 0;
+  }
+  int hc = 0;
+
   int cnt = 0;
   for(int i=0;i<orig.nleg;i++) {
     if(orig.in[i]!=orig.in[i].Bar()) cnt++;
@@ -326,6 +405,8 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
       probe.cpl[1] = help;
     }
   } 
+  if (probe.dec>0 && probe.in[2].IsDummy()) 
+    for (short int i=0;i<4;i++) probe.cpl[i] = -probe.cpl[i];
   //Color and Lorentz structure changes....
   int newIndex[4];
   

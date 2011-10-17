@@ -63,7 +63,7 @@ namespace SHERPA {
     ATOOLS::Data_Reader *p_dataread;
 
     int m_mode;
-    bool m_spincorrelations, m_savestatus;
+    bool m_savestatus;
 
     MODEL::Model_Base          * p_model;
     BEAM::Beam_Spectra_Handler * p_beamspectra;
@@ -73,7 +73,7 @@ namespace SHERPA {
     Shower_Handler             * p_showerhandler;
     Beam_Remnant_Handler       * p_beamremnants;
     Fragmentation_Handler      * p_fragmentation;
-    HDHandlersMap                m_hdhandlers;
+    Hadron_Decay_Handler         * p_hdhandler;
     MI_Handler                 * p_mihandler; 
     Soft_Photon_Handler        * p_softphotons;
     Input_Output_Handler       * p_iohandler;
@@ -120,7 +120,7 @@ namespace SHERPA {
     const std::string & EvtFile() const { return m_evtfile; }
 
     Matrix_Element_Handler       * GetMatrixElementHandler(std::string);
-    Hadron_Decay_Handler         * GetHadronDecayHandler(std::string);
+    Hadron_Decay_Handler         * GetHDHandler() { return p_hdhandler; }
     inline PDF::ISR_Handler      * GetISRHandler(const isr::id id) { return m_isrhandlers[id]; }
     MEHandlersMap                * GetMatrixElementHandlers()       { return &m_mehandlers;     }
     Analysis_Vector              * GetAnalyses()                    { return &m_analyses;       }
@@ -131,7 +131,6 @@ namespace SHERPA {
     Shower_Handler               * GetShowerHandler()         const { return p_showerhandler;   }
     Beam_Remnant_Handler         * GetBeamRemnantHandler()    const { return p_beamremnants;    }
     Fragmentation_Handler        * GetFragmentationHandler()  const { return p_fragmentation;   }
-    HDHandlersMap                * GetHadronDecayHandlers()         { return &m_hdhandlers;     }
     ATOOLS::Flavour              * GetBunches()                     { return m_bunch_particles; }
     MI_Handler                   * GetMIHandler()             const { return p_mihandler;       }
     Soft_Photon_Handler          * GetSoftPhotonHandler()     const { return p_softphotons;     }

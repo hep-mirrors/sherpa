@@ -9,24 +9,25 @@ using namespace std;
 
 #include "METOOLS/Main/Partial_Amplitude_Base.H"
 
-Generic::Generic(ATOOLS::Flavour* flavs, int n, int* decayindices, 
-                 std::string name):
-  HD_ME_Base(flavs,n,decayindices,name)
+Generic::Generic(const ATOOLS::Flavour_Vector& flavs,
+                 const std::vector<int>& decayindices,
+                 const std::string& name):
+  HD_ME_Base(flavs,decayindices,name)
 {
-  p_me=Partial_Amplitude_Base::Select(flavs,n);
+  p_me=Partial_Amplitude_Base::Select(flavs);
+  if(size()!=p_me->size())
+    THROW(fatal_error, "size()!=p_me->size()");
 }
 
 Generic::~Generic() {
   delete p_me;
 }
 
-void Generic::operator()(const ATOOLS::Vec4D* p, METOOLS::Spin_Amplitudes* amps)
+void Generic::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
-  (*p_me)(p, m_anti);
-  if(amps->size()!=p_me->size())
-    THROW(fatal_error, "amps->size()!=p_me->size()");
-  for(size_t i(0);i<amps->size();++i) {
-    (*amps)[i]=(*p_me)[i];
+  p_me->Calculate(p, m_anti);
+  for(size_t i(0);i<size();++i) {
+    (*this)[i]=m_factor*(*p_me)[i];
   }
 }
 

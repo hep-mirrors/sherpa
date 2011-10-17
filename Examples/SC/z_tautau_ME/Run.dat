@@ -1,0 +1,51 @@
+(run){
+  OUTPUT = 2
+  ANALYSIS = 1
+  ME_SIGNAL_GENERATOR = Comix
+  MODEL=SM+TauPi
+  FRAGMENTATION=Off
+}(run)
+(me){
+  SCALES          = VAR{sqr(90)}
+}(me)
+(shower){
+  SHOWER_GENERATOR=None
+}(shower)
+(fragmentation){
+  YFS_MODE = 0
+}(fragmentation)
+(model){
+  STABLE[15] = 0
+  MASSIVE[15] = 1
+  SIN2THETAW=0.23147
+}(model)
+(beam){
+  BEAM_1          = 11
+  BEAM_ENERGY_1   = 45.625
+  BEAM_2          = -11
+  BEAM_ENERGY_2   = 45.625
+}(beam)
+(processes){
+  Process : 11 -11 -> 23[a]
+  Decay : 23[a] -> 15[b] -15[c]
+  DecayOS : 15[b] -> -211 16
+  DecayOS : -15[c] -> 211 -16
+  End process
+}(processes)
+
+(analysis){
+  BEGIN_ANALYSIS {
+
+    // the analysis level
+    LEVEL  Hadron
+    JETCONTS 0
+
+    // observables
+
+    4EnergyCMS 211 -16 -211 16 0. 1.0 50 LinErr FinalState
+    4EnergyCMS -211 16 211 -16 0. 1.0 50 LinErr FinalState
+    Mass       211 -211 0. 100.0 50 LinErr FinalState
+  }
+  END_ANALYSIS
+}(analysis)
+

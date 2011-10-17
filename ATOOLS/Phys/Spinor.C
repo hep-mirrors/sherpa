@@ -1,6 +1,5 @@
 #include "ATOOLS/Phys/Spinor.H"
 
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 
 using namespace ATOOLS;
@@ -16,6 +15,8 @@ template <class Scalar>
 unsigned int Spinor<Scalar>::s_r2(2);
 template <class Scalar>
 unsigned int Spinor<Scalar>::s_r3(3);
+template <class Scalar>
+unsigned int Spinor<Scalar>::s_d(0);
 
 template <class Scalar> std::ostream &
 ATOOLS::operator<<(std::ostream &ostr,const Spinor<Scalar> &s)
@@ -30,30 +31,49 @@ void Spinor<Scalar>::SetGauge(const int gauge)
   case 0: s_r1=1; s_r2=2; s_r3=3; break;
   case 1: s_r1=2; s_r2=3; s_r3=1; break;
   case 2: s_r1=3; s_r2=1; s_r3=2; break;
-  case 3: s_r1=1; s_r2=3; s_r3=2; break;
-  case 4: s_r1=3; s_r2=2; s_r3=1; break;
-  case 5: s_r1=2; s_r2=1; s_r3=3; break;
   default:
     THROW(fatal_error,"Gauge choice not implemented");
   }
 }
 
+template <class Scalar> Vec4<Scalar> Spinor<Scalar>::GetK0()
+{
+  Vec4<Scalar> k0(1.0,0.0,0.0,0.0);
+  k0[R3()]=-1.0;
+  return k0;
+}
+
+template <class Scalar> Vec4<Scalar> Spinor<Scalar>::GetK1()
+{
+  Vec4<Scalar> k1(0.0,0.0,0.0,0.0);
+  k1[R1()]=1.0;
+  return k1;
+}
+
 template <class Scalar>
 void Spinor<Scalar>::Construct(const Vec4<Scalar> &p)
 {
-  Complex rpp(csqrt(PPlus(p))), rpm(csqrt(PMinus(p))), pt(PT(p));
-  double accu(sqrt(rpa->gen.Accu()));
-  if (((rpp==Complex(0.0,0.0) || rpm==Complex(0.0,0.0)) &&
-       pt!=Complex(0.0,0.0)) || dabs(std::abs(pt/(rpp*rpm))-1.0)>accu) {
-    msg_Error()<<METHOD<<"(): Warning: \\sqrt{p^+p^-} = "<<std::abs(rpp*rpm)
-	       <<" vs. |p_\\perp| = "<<std::abs(pt)<<", rel. diff. "
-	       <<(std::abs(pt/(rpp*rpm))-1.0)<<"."<<std::endl;
-  }
+  double pp(PPlus(p)), pm(PMinus(p));
+  Complex rpp(csqrt(pp)), rpm(csqrt(pm)), pt(PT(p));
+  static double accu(sqrt(Accu()));
   m_u1=rpp;
   m_u2=rpm;
-  if (pt!=Complex(0.0,0.0)) { 
+  if (!(IsZero(pt.real(),accu) && IsZero(pt.imag(),accu)) &&
+      !(IsZero(rpp.real(),accu) && IsZero(rpp.imag(),accu))) { 
     m_u2=Complex(pt.real(),m_r>0?pt.imag():-pt.imag())/rpp;
   }
+#ifndef USING__old_phase_convention
+  if (pp<0.0 || pm<0.0) {
+    if (m_r<0) {
+      m_u1=Complex(-m_u1.imag(),m_u1.real());
+      m_u2=Complex(-m_u2.imag(),m_u2.real());
+    }
+    else {
+      m_u1=-Complex(-m_u1.imag(),m_u1.real());
+      m_u2=-Complex(-m_u2.imag(),m_u2.real());
+    }
+  }
+#endif
 }
 
 template <class Scalar> 

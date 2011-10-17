@@ -33,15 +33,24 @@ Interaction_Model_HiddenValley::Interaction_Model_HiddenValley(MODEL::Model_Base
 
   g1       = Kabbala(string("g_1"),
 		     sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),rpa->gen.CplScale())));
-  g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
 		     g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+  }else{
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ComplexConstant(std::string("csin2_thetaW"))));
+  }
+
   gD3  = Kabbala(string("gD_3"),sqrt(4.*M_PI*ScalarFunction(std::string("alpha_HV"),rpa->gen.CplScale())));
   
-  sintW    = Kabbala(std::string("\\sin\\theta_W"),
-		     sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  costW    = Kabbala(std::string("\\cos\\theta_W"),
-		     sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
-
   PL       = Kabbala(string("P_L"),1.);
   PR       = Kabbala(string("P_R"),1.);
   M_I      = Kabbala(string("i"),Complex(0.,1.));

@@ -1,7 +1,6 @@
 #ifndef COMIX_Main_Comix_H
 #define COMIX_Main_Comix_H
 
-#include "COMIX/Amplitude/Vertex_Base.H"
 #include "COMIX/Main/Process_Group.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
@@ -28,14 +27,11 @@ namespace COMIX {
     std::vector<PHASIC::Process_Base*>         m_rsprocs;
 
     std::string m_path, m_file;
-    int    m_map, m_break;
+    int    m_break;
     time_t m_mets;
 
-    std::vector<Vertex_Getter*> m_vtcs;
-
     void PrintLogo(std::ostream &s);
-
-    void InitVertices(const SP(Model) &model);
+    void PrintVertices();
 
   public :
 
@@ -47,9 +43,9 @@ namespace COMIX {
 
     // member functions
     bool Initialize(const std::string &path,const std::string &file,
-		    MODEL::Model_Base *const model,
-		    BEAM::Beam_Spectra_Handler *const beamhandler,
-		    PDF::ISR_Handler *const isrhandler);
+                    MODEL::Model_Base *const model,
+                    BEAM::Beam_Spectra_Handler *const beamhandler,
+                    PDF::ISR_Handler *const isrhandler);
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi,
                                             bool add);
     bool PerformTests();
@@ -75,23 +71,15 @@ namespace COMIX {
 #include "PDF/Remnant/Remnant_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "COMIX/Cluster/Cluster_Algorithm.H"
-#include "COMIX/Amplitude/Vertex_Base.H"
+#include "METOOLS/Explicit/Vertex.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <unistd.h>
 
 using namespace COMIX;
 using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
-
-static const PHASIC::nlo_type::code wrongnlotype
-(PHASIC::nlo_type::loop|PHASIC::nlo_type::vsub|PHASIC::nlo_type::rsub);
 
 Comix::Comix(): 
   ME_Generator_Base("Comix"), p_cluster(NULL)
@@ -100,7 +88,6 @@ Comix::Comix():
 
 Comix::~Comix() 
 {
-  for (size_t i(0);i<m_vtcs.size();++i) delete m_vtcs[i];
   if (p_cluster) delete p_cluster;
 }
 
@@ -146,17 +133,15 @@ void Comix::PrintLogo(std::ostream &s)
     (1,"Comix is published under \\cite{Gleisberg:2008fv}.");
 }
 
-void Comix::InitVertices(const SP(Model) &model)
+void Comix::PrintVertices()
 {
-  Vertex_Filler_Key vfkey(&*model,&m_vtcs);
-  Filler_Getter::Getter_List flist(Filler_Getter::GetGetters());
-  for (Filler_Getter::Getter_List::const_iterator git(flist.begin());
-       git!=flist.end();++git) (*git)->GetObject(vfkey);
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n   Implemented currents:\n\n";
-    Current_Getter::PrintGetterInfo(msg_Out(),5);
-    msg_Out()<<"\n   Implemented vertices:\n\n";
-    Vertex_Getter::PrintGetterInfo(msg_Out(),30);
+    Current_Getter::PrintGetterInfo(msg_Out(),10);
+    msg_Out()<<"\n   Implemented lorentz calculators:\n\n";
+    LC_Getter::PrintGetterInfo(msg_Out(),10);
+    msg_Out()<<"\n   Implemented color calculators:\n\n";
+    CC_Getter::PrintGetterInfo(msg_Out(),10);
     msg_Out()<<"\n}\n";
   }
 }
@@ -168,11 +153,9 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
 {
   m_path=path;
   m_file=file;
-  InitModel(model,m_path+m_file);
-  if (p_model!=NULL) {
-    PrintLogo(msg->Info());
-    InitVertices(p_model);
-  }
+  p_model=model;
+  PrintLogo(msg->Info());
+  PrintVertices();
   p_int->SetBeam(beamhandler); 
   p_int->SetISR(isrhandler);
   // init mapping file
@@ -181,36 +164,12 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   read.AddWordSeparator("\t");
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
-  m_map=read.GetValue<int>("WRITE_MAPPING_FILE",3);
   m_break=read.GetValue<int>("ONLY_MAPPING_FILE",0);
-  if (m_map>0) {
-    struct stat fst;
-    std::string fname(rpa->gen.Variable("MODEL_DATA_FILE"));
-    if (fname.find('|')!=std::string::npos)
-      fname=fname.substr(0,fname.find('|'));
-    My_In_File infile(m_path,fname);
-    if (infile.Open()) {
-      stat((infile.Path()+infile.File()).c_str(),&fst);
-      m_mets=fst.st_mtime;
-    }
-    else {
-      msg_Tracking()<<METHOD<<"(): Failed to get timestamp of '"
-		    <<rpa->gen.Variable("MODEL_DATA_FILE")<<"'\n";
-      m_mets=0;
-    }
-    fname=rpa->gen.Variable("RUN_DATA_FILE");
-    if (fname.find('|')!=std::string::npos)
-      fname=fname.substr(0,fname.find('|'));
-    infile=My_In_File(m_path,fname);
-    if (infile.Open()) {
-      stat((infile.Path()+infile.File()).c_str(),&fst);
-      m_mets=ATOOLS::Max(fst.st_mtime,m_mets);
-    }
-    else {
-      msg_Tracking()<<METHOD<<"(): Failed to get timestamp of '"
-		    <<(m_path+fname)<<"'\n";
-    }
-  }
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()==0)
+#endif
+  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")
+	  +"/Process/Comix",true);
   return true;
 }
 
@@ -218,43 +177,14 @@ PHASIC::Process_Base *Comix::
 InitializeProcess(const PHASIC::Process_Info &pi, bool add)
 {
   if (p_model==NULL) return NULL;
-  if ((pi.m_fi.m_nloqcdtype&wrongnlotype) || 
-      (pi.m_fi.m_nloewtype&wrongnlotype)) return NULL;
   m_umprocs.push_back(std::vector<Single_Process*>());
   PHASIC::Process_Base *newxs(NULL);
   size_t nis(pi.m_ii.NExternal()), nfs(pi.m_fi.NExternal());
   size_t nt(pi.m_ii.NTotalExternal()+pi.m_fi.NTotalExternal());
-  std::string name(PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi));
   std::map<std::string,std::string> pmap;
-  std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
-		      +"/Process/Comix");
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0)
-#endif
-  MakeDir(mapfile,true);
-  mapfile+="/"+name+".map";
-  struct stat buffer;
-  msg_Debugging()<<"checking for '"<<mapfile<<"' ... "<<std::flush;
-  if (stat(mapfile.c_str(),&buffer)==-1) {
-    msg_Debugging()<<"not found"<<std::endl;
-  }
-  else {
-    msg_Debugging()<<"found"<<std::endl;
-    if (buffer.st_mtime>m_mets || m_map&2) {
-      std::ifstream map(mapfile.c_str());
-      if (map.good()) {
-	while (!map.eof()) {
-	  std::string src, dest;
-	  map>>src>>dest;
-	  if (map.eof()) break;
-	  pmap[src]=dest;
-	  msg_Debugging()<<" map '"<<src<<"' onto '"<<dest<<"'\n";
-	}
-      }
-    }
-  }
   if (nt>nis+nfs) {
     newxs = new Process_Group();
+    newxs->SetGenerator(this);
     newxs->Init(pi,p_int->Beam(),p_int->ISR());
     newxs->Get<COMIX::Process_Base>()->SetModel(p_model);
     if (!newxs->Get<Process_Group>()->Initialize(&pmap,&m_umprocs.back())) {
@@ -276,6 +206,7 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
   }
   else {
     newxs = new Single_Process();
+    newxs->SetGenerator(this);
     newxs->Init(pi,p_int->Beam(),p_int->ISR());
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
     newxs->Get<COMIX::Process_Base>()->SetModel(p_model);
@@ -291,31 +222,6 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
   }
   if (add) Add(newxs);
   else m_rsprocs.push_back(newxs);
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()==0) {
-#endif
-  if (m_map&1) {
-    msg_Debugging()<<"checking for '"<<mapfile<<"' ... ";
-    if (FileExists(mapfile)) {
-      msg_Debugging()<<"found"<<std::endl;
-    }
-    else {
-    msg_Debugging()<<"not found"<<std::endl;
-    std::ofstream map(mapfile.c_str());
-    if (map.good()) {
-      for (std::map<std::string,std::string>::const_iterator
-	     mit(pmap.begin());mit!=pmap.end();++mit) {
-	msg_Debugging()<<" map '"<<mit->first
-		       <<"' onto '"<<mit->second<<"'\n";
-	map<<mit->first<<" "<<mit->second<<"\n";
-      }
-    }
-    }
-  }
-#ifdef USING__MPI
-  }
-#endif
-  newxs->SetGenerator(this);
   return newxs;
 }
 

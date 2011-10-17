@@ -8,130 +8,110 @@ namespace HADRONS {
   class B_Bpi_pwave : public HD_ME_Base {
     Complex m_cL, m_cR;
   public:
-    B_Bpi_pwave(ATOOLS::Flavour* flavs, int n, int* decayindices,
-                std::string name):
-      HD_ME_Base(flavs,n,decayindices,name) {};
-    void operator()(
-                    const ATOOLS::Vec4D  * p,
-                    METOOLS::Spin_Amplitudes     * amps
-                    );
+    B_Bpi_pwave(const ATOOLS::Flavour_Vector& flavs,
+                const std::vector<int>& decayindices,
+                const std::string& name):
+      HD_ME_Base(flavs,decayindices,name) {};
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters( GeneralModel _md );
   };
 
   class B3_Bpi_pwave : public HD_ME_Base {
     Complex m_cL, m_cR;
   public:
-    B3_Bpi_pwave(ATOOLS::Flavour* flavs, int n, int* decayindices,
-                std::string name):
-      HD_ME_Base(flavs,n,decayindices,name) {};
-    void operator()(
-                    const ATOOLS::Vec4D  * p,
-                    METOOLS::Spin_Amplitudes     * amps
-                    );
+    B3_Bpi_pwave(const ATOOLS::Flavour_Vector& flavs,
+                 const std::vector<int>& decayindices,
+                 const std::string& name):
+      HD_ME_Base(flavs,decayindices,name) {};
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters( GeneralModel _md );
   };
 
   class B_Bpi_swave : public HD_ME_Base {
     Complex m_cL, m_cR;
   public:
-    B_Bpi_swave(ATOOLS::Flavour* flavs, int n, int* decayindices,
-                std::string name):
-      HD_ME_Base(flavs,n,decayindices,name) {};
-    void operator()(
-                    const ATOOLS::Vec4D  * p,
-                    METOOLS::Spin_Amplitudes     * amps
-                    );
+    B_Bpi_swave(const ATOOLS::Flavour_Vector& flavs,
+                const std::vector<int>& decayindices,
+                const std::string& name):
+      HD_ME_Base(flavs,decayindices,name) {};
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters( GeneralModel _md );
   };
 
   class B3_Bpi_dwave : public HD_ME_Base {
     Complex m_cL, m_cR;
   public:
-    B3_Bpi_dwave(ATOOLS::Flavour* flavs, int n, int* decayindices,
-                std::string name):
-      HD_ME_Base(flavs,n,decayindices,name) {};
-    void operator()(
-                    const ATOOLS::Vec4D  * p,
-                    METOOLS::Spin_Amplitudes     * amps
-                    );
+    B3_Bpi_dwave(const ATOOLS::Flavour_Vector& flavs,
+                 const std::vector<int>& decayindices,
+                 const std::string& name):
+      HD_ME_Base(flavs,decayindices,name) {};
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters( GeneralModel _md );
   };
 
   class B_Bphoton_M1 : public HD_ME_Base {
     double m_fac;
   public:
-    B_Bphoton_M1(ATOOLS::Flavour* flavs, int n, int* decayindices,
-                std::string name):
-      HD_ME_Base(flavs,n,decayindices,name) {};
-    void operator()(
-                    const ATOOLS::Vec4D  * p,
-                    METOOLS::Spin_Amplitudes     * amps
-                    );
+    B_Bphoton_M1(const ATOOLS::Flavour_Vector& flavs,
+                 const std::vector<int>& decayindices,
+                 const std::string& name):
+      HD_ME_Base(flavs,decayindices,name) {};
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters( GeneralModel _md );
   };
 
   class B3_Bphoton_M1 : public HD_ME_Base {
     Complex m_cL, m_cR;
   public:
-    B3_Bphoton_M1(ATOOLS::Flavour* flavs, int n, int* decayindices,
-                std::string name):
-      HD_ME_Base(flavs,n,decayindices,name) {};
-    void operator()(
-                    const ATOOLS::Vec4D  * p,
-                    METOOLS::Spin_Amplitudes     * amps
-                    );
+    B3_Bphoton_M1(const ATOOLS::Flavour_Vector& flavs,
+                  const std::vector<int>& decayindices,
+                  const std::string& name):
+      HD_ME_Base(flavs,decayindices,name) {};
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters( GeneralModel _md );
   };
 
   class B3_Bphoton_M1_2 : public HD_ME_Base {
     Complex m_cL, m_cR;
   public:
-    B3_Bphoton_M1_2(ATOOLS::Flavour* flavs, int n, int* decayindices,
-                std::string name):
-      HD_ME_Base(flavs,n,decayindices,name) {};
-    void operator()(
-                    const ATOOLS::Vec4D  * p,
-                    METOOLS::Spin_Amplitudes     * amps
-                    );
+    B3_Bphoton_M1_2(const ATOOLS::Flavour_Vector& flavs,
+                    const std::vector<int>& decayindices,
+                    const std::string& name):
+      HD_ME_Base(flavs,decayindices,name) {};
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters( GeneralModel _md );
   };
 
   class B_Bphoton_E1 : public HD_ME_Base {
     Complex m_cL, m_cR;
   public:
-    B_Bphoton_E1(ATOOLS::Flavour* flavs, int n, int* decayindices,
-                std::string name):
-      HD_ME_Base(flavs,n,decayindices,name) {};
-    void operator()(
-                    const ATOOLS::Vec4D  * p,
-                    METOOLS::Spin_Amplitudes     * amps
-                    );
+    B_Bphoton_E1(const ATOOLS::Flavour_Vector& flavs,
+                 const std::vector<int>& decayindices,
+                 const std::string& name):
+      HD_ME_Base(flavs,decayindices,name) {};
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters( GeneralModel _md );
   };
 
   class B3_Bphoton_E1 : public HD_ME_Base {
     Complex m_cL, m_cR;
   public:
-    B3_Bphoton_E1(ATOOLS::Flavour* flavs, int n, int* decayindices,
-                std::string name):
-      HD_ME_Base(flavs,n,decayindices,name) {};
-    void operator()(
-                    const ATOOLS::Vec4D  * p,
-                    METOOLS::Spin_Amplitudes     * amps
-                    );
+    B3_Bphoton_E1(const ATOOLS::Flavour_Vector& flavs,
+                  const std::vector<int>& decayindices,
+                  const std::string& name):
+      HD_ME_Base(flavs,decayindices,name) {};
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters( GeneralModel _md );
   };
 
   class QQ_PGG : public HD_ME_Base {
     double m_min_mass2;
   public:
-    QQ_PGG(ATOOLS::Flavour* flavs, int n, int* decayindices,
-           std::string name):
-      HD_ME_Base(flavs,n,decayindices,name) {};
-    void operator()(
-                    const ATOOLS::Vec4D  * p,
-                    METOOLS::Spin_Amplitudes     * amps
-                    );
+    QQ_PGG(const ATOOLS::Flavour_Vector& flavs,
+           const std::vector<int>& decayindices,
+           const std::string& name):
+      HD_ME_Base(flavs,decayindices,name) {};
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters( GeneralModel _md );
   };
 
@@ -187,12 +167,12 @@ namespace HADRONS {
       m_quady,m_quadx,m_quadyphase,m_quadxphase,
       m_phaseliny,m_phaselinx,m_phasequady,m_phasequadx;
   public:
-    P_3P_Dalitz(ATOOLS::Flavour* flavs, int n, int* decayindices, std::string name):
-      HD_ME_Base(flavs,n,decayindices,name) {};
+    P_3P_Dalitz(const ATOOLS::Flavour_Vector& flavs,
+                const std::vector<int>& decayindices,
+                const std::string& name):
+      HD_ME_Base(flavs,decayindices,name) {};
     double operator()(const ATOOLS::Vec4D *);
-    void   operator()( 
-        const ATOOLS::Vec4D     * _p,
-	METOOLS::Spin_Amplitudes * amps);
+    void Calculate(const ATOOLS::Vec4D_Vector& p, bool m_anti);
     void SetModelParameters( GeneralModel _md );
   };
 

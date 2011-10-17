@@ -1,7 +1,7 @@
 #ifndef COMIX_Main_Process_Base_H
 #define COMIX_Main_Process_Base_H
 
-#include "COMIX/Main/Model.H"
+#include "METOOLS/Explicit/Vertex.H"
 #include "ATOOLS/Org/Smart_Pointer.H"
 
 namespace BEAM { class Beam_Spectra_Handler; }
@@ -26,8 +26,8 @@ namespace COMIX {
   protected:
 
     PHASIC::Process_Base *p_proc;
-
-    SP(Model)   p_model;
+    MODEL::Model_Base    *p_model;
+    
     SP(PS_Generator) p_psgen;
 
     Int_Matrix m_colours;
@@ -39,13 +39,11 @@ namespace COMIX {
     std::map<std::string,std::string> *p_pmap;
     std::vector<Single_Process*>      *p_umprocs;
 
-    void InitModel(MODEL::Model_Base *const model,const std::string &file);
-
-   public:
+  public:
 
     // constructors
     Process_Base(PHASIC::Process_Base *const p_proc,
-	      Model *const model=NULL);
+		 MODEL::Model_Base *const model=NULL);
 
     // destructor
     virtual ~Process_Base();
@@ -67,13 +65,13 @@ namespace COMIX {
 
     inline Int_Matrix Colours() const { return m_colours; }
 
-    inline SP(Model) GetModel() const { return p_model; }
+    inline MODEL::Model_Base *GetModel() const { return p_model; }
 
     inline void SetGPath(const std::string &gpath) { m_gpath=gpath; }
 
     inline SP(PS_Generator) PSGenerator() const { return p_psgen; }
 
-    inline void SetModel(const SP(Model) &model) { p_model=model; }
+    inline void SetModel(MODEL::Model_Base *const model) { p_model=model; }
 
   };// end of class Process_Base
 

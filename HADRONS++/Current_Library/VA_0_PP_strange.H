@@ -64,13 +64,14 @@ namespace HADRONS {
     FF_Base * p_ff;
     
   public:
-    VA_0_PP_strange(ATOOLS::Flavour* flavs, int n, int* indices, std::string name) :
-      Current_Base(flavs, n, indices, name) {};
+    VA_0_PP_strange(const ATOOLS::Flavour_Vector& flavs,
+                    const std::vector<int>& indices, const std::string& name) :
+      Current_Base(flavs, indices, name) {};
     ~VA_0_PP_strange() {
       if (p_ff!=NULL) delete p_ff;
     }
     void SetModelParameters( struct GeneralModel _md );
-    void Calc(const ATOOLS::Vec4D * moms);
+    void Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti);
   };
 }
 #endif

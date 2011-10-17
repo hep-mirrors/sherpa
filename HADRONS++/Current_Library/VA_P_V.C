@@ -16,7 +16,8 @@ using namespace METOOLS;
 namespace HADRONS { namespace VA_P_V_FFs {
   class NoFF : public FormFactor_Base {
   public:
-    NoFF(struct GeneralModel model, double* masses, Flavour* flavs, int* i) : 
+    NoFF(GeneralModel model, double* masses, const Flavour_Vector& flavs,
+         const std::vector<int>& i) : 
       FormFactor_Base(model,masses, flavs, i) {}
     void CalcFFs( ATOOLS::Vec4D pB, ATOOLS::Vec4D pS ) {
       m_A0=m_A1=m_A2=m_A3=m_V=1.0;
@@ -107,7 +108,7 @@ void VA_P_V::SetModelParameters( struct GeneralModel model )
   }
 }
 
-void VA_P_V::Calc(const ATOOLS::Vec4D * moms)
+void VA_P_V::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   Vec4D p0 = moms[p_i[0]], p1 = moms[p_i[1]];
   double m0 = p_masses[0], m1 = p_masses[1];

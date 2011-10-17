@@ -14,11 +14,13 @@ class ISGW : public FormFactor_Base {
   bool m_excited;
   bool m_prime;
 public:
-  ISGW(struct GeneralModel model, double* masses, Flavour* flavs, int* i);
+  ISGW(GeneralModel model, double* masses, const Flavour_Vector& flavs,
+       const std::vector<int>& i);
   void CalcFFs(ATOOLS::Vec4D p0, ATOOLS::Vec4D p1);
 };
 
-  ISGW::ISGW(GeneralModel model, double* masses, Flavour* flavs, int* i) :
+  ISGW::ISGW(GeneralModel model, double* masses, const Flavour_Vector& flavs,
+             const std::vector<int>& i) :
   FormFactor_Base(model, masses, flavs,i), m_excited(false), m_prime(false)
 {
   switch(m_flavs[p_i[0]].Kfcode()) {

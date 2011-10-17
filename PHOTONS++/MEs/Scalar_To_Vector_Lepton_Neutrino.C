@@ -171,7 +171,7 @@ Complex Scalar_To_Vector_Lepton_Neutrino::InfraredSubtractedME_0_0() {
   double t = (m_moms[0]-m_moms[1]).Abs2();
   Vec4C auxvec = Contraction(AuxiliaryTensor(m_moms[0],m_moms[1],t),2,epsV);
 
-  XYZFunc XYZ(4,m_moms,m_flavs,1,false);
+  XYZFunc XYZ(4,m_moms,m_flavs,false);
 
   if (m_ffmodel == true) {
     return 0;
@@ -203,7 +203,7 @@ Complex Scalar_To_Vector_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int
   m_flavs[5]   = m_flavs[2];                // set to corresponding particle/antiparticle
   m_flavs[6]   = m_flavs[2].Bar();
   Vec4D k      = m_moms[4];
-  XYZFunc XYZ(7,m_moms,m_flavs,1,false);
+  XYZFunc XYZ(7,m_moms,m_flavs,false);
   m_flavs[5] = m_flavs[6] = Flavour(kf_none);
   // Form-Factor-Model
   Complex r1 = 0;

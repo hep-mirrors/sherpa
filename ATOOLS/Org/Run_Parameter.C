@@ -93,7 +93,8 @@ Run_Parameter::Run_Parameter()
   gen.m_ngenevents = 0;
   gen.m_batchmode = 1;
   gen.SetTimeOut(3600);
-  gen.m_spincorrelations = 0;
+  gen.m_softsc = 0;
+  gen.m_hardsc = 0;
   gen.m_pbeam[0] = Vec4D(0.,0.,0.,0.);
   gen.m_pbeam[1] = Vec4D(0.,0.,0.,0.);
   gen.m_clevel=100;

@@ -67,7 +67,6 @@ namespace PHASIC {
 
     Tag_Setter m_tagset;
 
-    ATOOLS::Vec4D_Vector   m_p;
     ATOOLS::Flavour_Vector m_f;
 
     SP(Color_Integrator) p_ci;
@@ -111,10 +110,8 @@ namespace PHASIC {
 
     ~METS_Scale_Setter();
 
-    double CalculateScale(const ATOOLS::Vec4D_Vector &p,const int mode);
+    double Calculate(const ATOOLS::Vec4D_Vector &p,const int mode);
     double CalculateMyScale(const ATOOLS::Vec4D_Vector &p,const int mode);
-
-    const ATOOLS::Vec4D_Vector &Momenta() const;
 
     void SetScale(const std::string &mu2tag,Tag_Setter &mu2tagset,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
@@ -180,7 +177,6 @@ METS_Scale_Setter::METS_Scale_Setter
   Scale_Setter_Base(args), m_tagset(this),
   m_cnt(0), m_rej(0), m_mode(mode), m_lfrac(0.0)
 {
-  m_p.resize(4);
   size_t pos(args.m_scale.find('{'));
   std::string mur2tag("MU_R2"), muf2tag("MU_F2");
   if (pos!=std::string::npos) {
@@ -223,11 +219,6 @@ METS_Scale_Setter::~METS_Scale_Setter()
   for (size_t i(0);i<m_ampls.size();++i) m_ampls[i]->Delete();
 }
 
-const Vec4D_Vector &METS_Scale_Setter::Momenta() const
-{
-  return m_p;
-}
-
 double METS_Scale_Setter::CalculateStrict
 (const Vec4D_Vector &momenta,const int mode)
 {
@@ -263,7 +254,7 @@ double METS_Scale_Setter::CalculateStrict
   return muf2;
 }
 
-double METS_Scale_Setter::CalculateScale
+double METS_Scale_Setter::Calculate
 (const Vec4D_Vector &momenta,const int mode) 
 {
   if (mode==0) return CalculateMyScale(momenta,mode);
@@ -272,7 +263,6 @@ double METS_Scale_Setter::CalculateScale
     p_caller->Integrator()->SwapInOrder();
     double muf2(CalculateMyScale(p_caller->Integrator()->Momenta(),1));
     p_caller->Integrator()->RestoreInOrder();
-    p_cpls->Calculate();
     return muf2;
   }
   return m_scale[stp::fac];
@@ -281,12 +271,6 @@ double METS_Scale_Setter::CalculateScale
 double METS_Scale_Setter::CalculateMyScale
 (const Vec4D_Vector &momenta,const int mode) 
 {
-  if (m_escale.size()) {
-    m_scale[stp::fac]=m_escale[stp::fac];
-    m_scale[stp::ren]=m_escale[stp::ren];
-    p_cpls->Calculate();
-    return m_scale[stp::fac];    
-  }
   ++m_cnt;
   m_p=momenta;
   p_ci=p_proc->Integrator()->ColorIntegrator();
@@ -600,7 +584,6 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
 		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n"
 		 <<"} <- "<<p_proc->Name()<<"\n";
-  p_cpls->Calculate();
   if (ampl) {
     ampl->SetMuF2(m_scale[stp::fac]);
     ampl->SetMuR2(m_scale[stp::ren]);

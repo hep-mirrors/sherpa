@@ -13,7 +13,7 @@ namespace PHASIC {
     const ATOOLS::Flavour_Vector m_flavs;
     METOOLS::DivArrD m_res;
     double m_mur2;
-    int m_mode, m_drmode;
+    int m_mode, m_drmode, m_colmode;
   public:
     Virtual_ME2_Base(const PHASIC::Process_Info& pi,
                   const ATOOLS::Flavour_Vector& flavs);
@@ -23,14 +23,17 @@ namespace PHASIC {
     inline const METOOLS::DivArrD& Result() { return m_res; }
 
     virtual double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
+    virtual double ScaleDependenceCoefficient(const int i);
+
     inline double ME_Finite() { return m_res.GetFinite(); }
     inline double ME_E1() { return m_res.GetIR(); }
     inline double ME_E2() { return m_res.GetIR2(); }
 
     inline void SetRenScale(const double& mur2) { m_mur2=mur2; }
 
-    inline int Mode() const   { return m_mode;   }
-    inline int DRMode() const { return m_drmode; }
+    inline int Mode() const    { return m_mode;    }
+    inline int DRMode() const  { return m_drmode;  }
+    inline int ColMode() const { return m_colmode; }
 
     static Virtual_ME2_Base* GetME2(const PHASIC::Process_Info& pi);
     static Virtual_ME2_Base* GetME2(const std::string& tag,

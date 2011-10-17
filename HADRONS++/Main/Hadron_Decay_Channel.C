@@ -1,39 +1,32 @@
 #include "HADRONS++/Main/Hadron_Decay_Channel.H"
 #include "HADRONS++/ME_Library/HD_ME_Base.H"
 #include "HADRONS++/ME_Library/Generic.H"
+#include "HADRONS++/ME_Library/Current_ME.H"
 #include "HADRONS++/Current_Library/Current_Base.H"
 #include "HADRONS++/PS_Library/HD_PS_Base.H"
-#include "ATOOLS/Phys/Decay_Table.H"
+#include "PHASIC++/Decays/Decay_Table.H"
+#include "PHASIC++/Decays/Color_Function_Decay.H"
+#include "PHASIC++/Channels/Multi_Channel.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Phys/Blob.H"
-#include "ATOOLS/Math/Random.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
 using namespace METOOLS;
 using namespace std;
 
-Hadron_Decay_Channel::Hadron_Decay_Channel( Flavour flin, string _path ) :
-  Decay_Channel(flin),
-  m_path(_path),
-  p_amplitudes(NULL)
+Hadron_Decay_Channel::Hadron_Decay_Channel(Flavour fl, const Mass_Selector* ms,
+                                           string _path) :
+  Decay_Channel(fl, ms),
+  m_path(_path), m_always_integrate(false),
+  m_cp_asymmetry_C(0.0), m_cp_asymmetry_S(0.0)
 {
 }
 
 Hadron_Decay_Channel::~Hadron_Decay_Channel()
 {
-  if (p_ps) { delete p_ps; p_ps=NULL; }
-  if(p_amplitudes) delete p_amplitudes; p_amplitudes=NULL;
-  if(p_momenta)    delete [] p_momenta; p_momenta=NULL;
-  if(p_flavours)   delete [] p_flavours; p_flavours=NULL;
-  if(p_physicalflavours) delete [] p_physicalflavours; p_physicalflavours=NULL;
-  for(size_t i=0;i<m_mes.size();i++)      delete m_mes[i].second;
-  for(size_t i=0;i<m_currents.size();i++) {
-    delete m_currents[i].second.first;
-    delete m_currents[i].second.second;
-  }
 }
 
 
@@ -52,48 +45,26 @@ void Hadron_Decay_Channel::SetFileName(std::string filename)
 
 void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
 {
-  p_flavours = new Flavour[GetN()];
-  p_momenta  = new Vec4D[GetN()];
-  p_flavours[0] = GetDecaying();
-  int i=0;
+  m_physicalflavours=m_flavours;
+  for (size_t i=0; i<m_flavours.size(); ++i) {
+    map<kf_code,kf_code>::const_iterator it = 
+        startmd.m_aliases.find(m_flavours[i].Kfcode());
+    if (it!=startmd.m_aliases.end())
+      m_physicalflavours[i] = Flavour(it->second, m_flavours[i].IsAnti());
+  }
+  
   double totalmass=0.0;
   for (FlSetConstIter flit=m_flouts.begin();flit!=m_flouts.end();++flit) {
-    p_flavours[i+1] = (*flit);
-    totalmass+=p_flavours[i+1].HadMass();
-    i++;
+    totalmass+=(*flit).HadMass();
   }
-  if(totalmass>p_flavours[0].HadMass()) {
+  if(totalmass>m_flin.HadMass()) {
     msg_Error()<<"Error in "<<METHOD<<" for "<<Name()<<endl;
     msg_Error()<<"  Total outgoing mass heavier than incoming particle. Will abort."<<endl;
     abort();
   }
-  p_physicalflavours=new Flavour[GetN()];
-  for (int i=0; i<GetN(); ++i) {
-    map<kf_code,kf_code>::const_iterator it =
-        startmd.m_aliases.find(p_flavours[i].Kfcode());
-    if (it!=startmd.m_aliases.end())
-      p_physicalflavours[i] = Flavour(it->second, p_flavours[i].IsAnti());
-    else
-      p_physicalflavours[i] = p_flavours[i];
-  }
-  p_amplitudes = new Spin_Amplitudes(p_physicalflavours,GetN(),Complex(0.0,0.0));
-  p_ps = new HD_PS_Base(this);
-  // check for identical particles
-  Flavour refflav;
-  double symfactor(1.0);
-  std::map<Flavour,size_t> fc;
-  for (int i=1; i<1+NOut(); ++i) {
-    std::map<Flavour,size_t>::iterator fit(fc.find(p_physicalflavours[i]));
-    if (fit==fc.end()) fit=fc.insert(make_pair(p_physicalflavours[i],0)).first;
-    ++fit->second;
-  }
-  for (std::map<Flavour,size_t>::const_iterator fit(fc.begin());
-       fit!=fc.end();++fit) {
-    symfactor*=Factorial(fit->second);
-  }
-  m_symmetry = 1./symfactor;
-  m_cp_asymmetry_C=0.0; m_cp_asymmetry_S=0.0;
-
+  SetChannels(new PHASIC::Multi_Channel(""));
+  Channels()->SetNin(1);
+  Channels()->SetNout(NOut());
   m_startmd=startmd;
 
   // check if dc file exists
@@ -151,17 +122,16 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     ProcessResult(result_svv);
   }
   else { // if DC file does not exist yet
-    int* decayindices = new int[NOut()+1];
-    for(int i=0;i<NOut()+1;i++) {
-      decayindices[i]=i;
-    }
-    m_mes.push_back(MEPair(1.0,new Generic(p_physicalflavours,NOut()+1,
-                                           decayindices,"Generic")));
-    delete [] decayindices;
-    p_ps->AddChannel( string("Isotropic"), 1., m_startmd );
-    vector<double> results = CalculateResults();
-    SetAlwaysIntegrate(false);
-    WriteOut(results, true);
+    int n=NOut()+1;
+    vector<int> decayindices(n);
+    for(int i=0;i<n;i++) decayindices[i]=i;
+    HD_ME_Base* me=new Generic(m_physicalflavours,decayindices,"Generic");
+    PHASIC::Color_Function_Decay* col=new PHASIC::Color_Function_Decay();
+    AddDiagram(me, col);
+    AddPSChannel( string("Isotropic"), 1., m_startmd);
+    msg_Info()<<"Calculating width for "<<Name()<<endl;
+    CalculateWidth();
+    WriteOut(true);
   }
 }
 
@@ -169,7 +139,7 @@ void Hadron_Decay_Channel::ProcessOptions(vector<vector<string> > helpsvv)
 {
   for (size_t i=0;i<helpsvv.size();i++) {
     if (helpsvv[i][0]==string("AlwaysIntegrate")) {
-      SetAlwaysIntegrate( atoi( helpsvv[i][2].c_str() ) );
+      m_always_integrate=atoi(helpsvv[i][2].c_str());
     }
     else if (helpsvv[i][0]==string("CPAsymmetryS")) {
       m_cp_asymmetry_S = ToType<double>(helpsvv[i][2]);
@@ -193,7 +163,7 @@ void Hadron_Decay_Channel::ProcessPhasespace(vector<vector<string> > ps_svv,
   int nr_of_channels=0;
   for (size_t i=0;i<ps_svv.size();i++) {
     double weight = ToType<double>(ps_svv[i][0]);
-    if( p_ps->AddChannel( ps_svv[i][1], weight, model_for_ps ) ) nr_of_channels++;
+    if(AddPSChannel( ps_svv[i][1], weight, model_for_ps ) ) nr_of_channels++;
     else {
       msg_Error()<<METHOD<<": Warning. "<<ps_svv[i][1]<<" in "<<m_path<<m_filename
         <<" is not a valid phase space channel. Will ignore it."<<endl;
@@ -202,7 +172,7 @@ void Hadron_Decay_Channel::ProcessPhasespace(vector<vector<string> > ps_svv,
   if(nr_of_channels == 0) {
     msg_Error()<<METHOD<<": Warning. No valid phase space channels found in "
       <<m_path<<m_filename<<". Using Isotropic."<<endl;
-    p_ps->AddChannel( string("Isotropic"), 1., m_startmd );
+    AddPSChannel( string("Isotropic"), 1., m_startmd );
   }
 }
 
@@ -223,11 +193,13 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
       reader.SetFileBegin("<"+me_svv[i][2]+">"); reader.SetFileEnd("</"+me_svv[i][2]+">");
       reader.RereadInFile();
       reader.MatrixFromFile(parameter_svv);
-      GeneralModel me_model = Parameters2Model(parameter_svv, &model_for_ps);
+      GeneralModel me_model=Parameters2Model(parameter_svv,model_for_ps);
       me->SetModelParameters( me_model );
       Complex factor = Complex(ToType<double>(ip.Interprete(me_svv[i][0])),
                                ToType<double>(ip.Interprete(me_svv[i][1])));
-      m_mes.push_back( MEPair(factor,me) );
+      me->SetFactor(factor);
+      PHASIC::Color_Function_Decay* col=new PHASIC::Color_Function_Decay();
+      AddDiagram(me, col);
       nr_of_mes++;
     }
     if(me_svv[i].size()==4) {
@@ -238,7 +210,7 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
       reader.SetFileBegin("<"+me_svv[i][2]+">"); reader.SetFileEnd("</"+me_svv[i][2]+">");
       reader.RereadInFile();
       reader.MatrixFromFile(parameter1_svv);
-      GeneralModel current1_model = Parameters2Model(parameter1_svv, &model_for_ps);
+      GeneralModel current1_model=Parameters2Model(parameter1_svv,model_for_ps);
       current1->SetModelParameters( current1_model );
 
       Current_Base* current2 = SelectCurrent(me_svv[i][3]);
@@ -247,14 +219,15 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
       reader.SetFileBegin("<"+me_svv[i][3]+">"); reader.SetFileEnd("</"+me_svv[i][3]+">");
       reader.RereadInFile();
       reader.MatrixFromFile(parameter2_svv);
-      GeneralModel current2_model = Parameters2Model(parameter2_svv, &model_for_ps);
+      GeneralModel current2_model=Parameters2Model(parameter2_svv,model_for_ps);
       current2->SetModelParameters( current2_model );
 
       msg_Tracking()<<"  "<<current1->Name()<<endl;
       msg_Tracking()<<"  "<<current2->Name()<<endl;
 
       // Sanity checks for current selection
-      if( int(GetN()) != current1->GetN() + current2->GetN() ) {
+      if(size_t(1+NOut()) != current1->DecayIndices().size()+
+         current2->DecayIndices().size()) {
         msg_Error()<<"Error in "<<METHOD<<": Current selection does not look sane "
                    <<"for "<<Name()<<". Check decaychannelfile."<<std::endl;
         abort();
@@ -263,49 +236,60 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
       Complex factor = Complex(ToType<double>(ip.Interprete(me_svv[i][0])),
                                ToType<double>(ip.Interprete(me_svv[i][1])));
 
-      m_currents.push_back( CurrentsPair( factor, make_pair(current1,current2) ) );
+      vector<int> indices (NOut()+1);
+      for(int i=0; i<NOut()+1; i++) indices[i] = i;
+
+      Current_ME* me=
+        new Current_ME(m_physicalflavours, indices, "Current_ME");
+      me->SetCurrent1(current1);
+      me->SetCurrent2(current2);
+      me->SetFactor(factor);
+      PHASIC::Color_Function_Decay* col=new PHASIC::Color_Function_Decay();
+      AddDiagram(me, col);
       nr_of_mes++;
     }
   }
   if(nr_of_mes == 0) {
-  msg_Error()<<METHOD<<": Warning. No valid matrix element found in "
-      <<m_path<<m_filename<<". Using Generic."<<endl;
-    int* decayindices = new int[NOut()+1];
-    for(int i=0;i<NOut()+1;i++) {
-      decayindices[i]=i;
-    }
-    m_mes.push_back(MEPair(1.0,new Generic(p_physicalflavours,NOut()+1,
-                                           decayindices,"Generic")));
-    delete [] decayindices;
+    msg_Error()<<METHOD<<": Warning. No valid matrix element found in "
+               <<m_path<<m_filename<<". Using Generic."<<endl;
+    int n=NOut()+1;
+    vector<int> decayindices(n);
+    for(int i=0;i<n;i++) decayindices[i]=i;
+    HD_ME_Base* me=new Generic(m_physicalflavours,decayindices,"Generic");
+    PHASIC::Color_Function_Decay* col=new PHASIC::Color_Function_Decay();
+    AddDiagram(me, col);
   }
 }
 
 void Hadron_Decay_Channel::ProcessResult(vector<vector<string> > result_svv)
 {
   if(result_svv.size()!=1) {
-    vector<double> results = CalculateResults();
-    WriteOut(results);
+    msg_Info()<<"Calculating width for "<<Name()<<endl;
+    CalculateWidth();
+    WriteOut();
   }
   else if(result_svv[0].size()==3 && m_always_integrate) {
-    vector<double> results = CalculateResults();
+    msg_Info()<<"Calculating width for "<<Name()<<endl;
+    CalculateWidth();
     // check whether result is different from before and write out if it is
     double oldwidth=ToType<double>(result_svv[0][0]);
     double oldmax=ToType<double>(result_svv[0][2]);
-    if(oldwidth!=results[0] || oldmax!=results[2])
-      WriteOut(results);
+    if(oldwidth!=m_iwidth || oldmax!=m_max)
+      WriteOut();
   }
   else if(result_svv[0].size()==3) {
-    p_ps->SetResult(ToType<double>(result_svv[0][0]));
-    p_ps->SetError(ToType<double>(result_svv[0][1]));
-    p_ps->SetMaximum(ToType<double>(result_svv[0][2]));
+    m_iwidth=ToType<double>(result_svv[0][0]);
+    m_ideltawidth=ToType<double>(result_svv[0][1]);
+    m_max=ToType<double>(result_svv[0][2]);
   }
   else
     THROW(fatal_error, "Result section of "+m_path+"/"+m_filename+" did not "+
           "contain three entries. Aborting.");
 }
 
-GeneralModel Hadron_Decay_Channel::Parameters2Model(vector<vector<string> > helpsvv,
-                                                    GeneralModel          * other_model )
+GeneralModel
+Hadron_Decay_Channel::Parameters2Model(vector<vector<string> > helpsvv,
+                                       GeneralModel& other_model)
 {
   GeneralModel model(m_startmd);
   Algebra_Interpreter ip;
@@ -314,44 +298,37 @@ GeneralModel Hadron_Decay_Channel::Parameters2Model(vector<vector<string> > help
       if( helpsvv[i].size() == 3 ) {        // <name> = <real value>
         double real = ToType<double> (ip.Interprete(helpsvv[i][2]) );
         model[helpsvv[i][0]] = real;
-        if(other_model) {
-          (*other_model)[helpsvv[i][0]] = real;
-        }
+        other_model[helpsvv[i][0]] = real;
       }
       if( helpsvv[i].size() == 4 ) {        // <name> = <complex value>
         double abs   = ToType<double>(ip.Interprete(helpsvv[i][2]) );
         double phase = ToType<double>( ip.Interprete(helpsvv[i][3]) );
         model[helpsvv[i][0]+string("_abs")] = abs;
         model[helpsvv[i][0]+string("_phase")] = phase;
-        if(other_model) {
-          (*other_model)[helpsvv[i][0]+string("_abs")] = abs;
-          (*other_model)[helpsvv[i][0]+string("_phase")] = phase;
-        }
+        other_model[helpsvv[i][0]+string("_abs")] = abs;
+        other_model[helpsvv[i][0]+string("_phase")] = phase;
       }
     }
     if ( helpsvv[i][2] == string("=")) {
       if( helpsvv[i].size() == 4 ) {        // <name> <index> = <real value>
         double real = ToType<double>( ip.Interprete(helpsvv[i][3]) );
         model[helpsvv[i][0]+string("_")+helpsvv[i][1]] = real;
-        if(other_model) (*other_model)[helpsvv[i][0]+string("_")+helpsvv[i][1]] = real;
+        other_model[helpsvv[i][0]+string("_")+helpsvv[i][1]] = real;
       }
       if( helpsvv[i].size() == 5 ) {        // <name> <index> = <complex value>
         double abs   = ToType<double> ( ip.Interprete(helpsvv[i][3]) );
         double phase = ToType<double> ( ip.Interprete(helpsvv[i][4]) );
-        model[helpsvv[i][0]+string("_")+helpsvv[i][1]+string("_abs")] = abs;
-        model[helpsvv[i][0]+string("_")+helpsvv[i][1]+string("_phase")] = phase;
-        if(other_model) {
-          (*other_model)[helpsvv[i][0]+string("_")+helpsvv[i][1]+string("_abs")] = abs;
-          (*other_model)[helpsvv[i][0]+string("_")+helpsvv[i][1]+string("_phase")] = phase;
-        }
+        model[helpsvv[i][0]+"_"+helpsvv[i][1]+"_abs"] = abs;
+        model[helpsvv[i][0]+"_"+helpsvv[i][1]+"_phase"] = phase;
+        other_model[helpsvv[i][0]+"_"+helpsvv[i][1]+"_abs"]=abs;
+        other_model[helpsvv[i][0]+"_"+helpsvv[i][1]+"_phase"]=phase;
       }
     }
   }
   return model;
 }
 
-bool Hadron_Decay_Channel::WriteOut( vector<double> results, bool newfile ) {
-
+void Hadron_Decay_Channel::WriteOut(bool newfile) {
   if ( newfile ) {                // if DC file doesn't exist yet
     ofstream to;
     to.open((m_path+m_filename).c_str(),ios::out);
@@ -385,7 +362,7 @@ bool Hadron_Decay_Channel::WriteOut( vector<double> results, bool newfile ) {
     // write out result
     to<<"<Result>"<<endl;
     int oldprec=to.precision(4);
-    to<<"  "<<results[0]<<" "<<results[1]<<" "<<results[2]<<";"<<endl;
+    to<<"  "<<m_iwidth<<" "<<m_ideltawidth<<" "<<m_max<<";"<<endl;
     to.precision(oldprec);
     to<<"</Result>"<<endl;
     to.close();
@@ -409,129 +386,75 @@ bool Hadron_Decay_Channel::WriteOut( vector<double> results, bool newfile ) {
     if(extra_line) to<<endl;
     to<<"<Result>"<<endl;
     int oldprec=to.precision(4);
-    to<<"  "<<results[0]<<" "<<results[1]<<" "<<results[2]<<";"<<endl;
+    to<<"  "<<m_iwidth<<" "<<m_ideltawidth<<" "<<m_max<<";"<<endl;
     to.precision(oldprec);
     to<<"</Result>"<<endl;
     to.close();
   }
-  return 1;
 }
 
-void Hadron_Decay_Channel::CalculateAmplitudes(Vec4D* moms, 
-                                               Spin_Amplitudes* amps, bool anti)
+bool Hadron_Decay_Channel::SetColorFlow(ATOOLS::Blob* blob)
 {
-  for(size_t i(0); i<amps->size(); ++i) (*amps)[i]=Complex(0.0,0.0);
-  for(vector<MEPair>::iterator mpit=m_mes.begin(); mpit!=m_mes.end();mpit++) {
-    mpit->second->SetAnti(anti);
-    (*mpit->second)(moms, amps);
-    for (size_t i(0);i<amps->size();++i)
-      (*amps)[i]=(*amps)[i]*mpit->first;
+  int n_q(0), n_g(0);
+  for(int i=0;i<blob->NOutP();i++) {
+    if(blob->OutParticle(i)->Flav().IsQuark())      n_q++;
+    else if(blob->OutParticle(i)->Flav().IsGluon()) n_g++;
   }
+  if(n_q>0 || n_g>0) {
+    blob->SetStatus(blob_status::needs_showers);
+    Particle_Vector outparts=blob->GetOutParticles();
 
-  for(vector<CurrentsPair>::iterator cpit=m_currents.begin(); 
-      cpit!=m_currents.end();cpit++) {
-    (*cpit).second.first->SetAnti(anti);
-    (*cpit).second.second->SetAnti(anti);
-    ContractCurrents((*cpit).second.first, (*cpit).second.second,
-                     moms, (*cpit).first, amps);
-  }
-}
-
-void Hadron_Decay_Channel::CalculateAmplitudes(Vec4D* moms, Amplitude_Tensor* amps, bool anti)
-{
-  Spin_Amplitudes* spinamps = new Spin_Amplitudes(amps->Particles());
-  CalculateAmplitudes(moms, spinamps, anti);
-  for(size_t i=0;i<amps->size();i++) amps->Insert(std::vector<Complex>(1,(*spinamps)[i]),i);
-  delete spinamps;
-}
-
-vector<double> Hadron_Decay_Channel::CalculateResults()
-{
-  long int seed = ran->GetSeed();
-  ran->SetSeed(123456);
-  vector<double> results = p_ps->CalculateNormalisedWidth();
-  ran->SetSeed(seed);
-  return results;
-}
-
-bool Hadron_Decay_Channel::SetColorFlow(Particle_Vector outparts,int n_q, int n_g)
-{
-  if(n_q==0 && n_g==0)  return true;
-  if(m_mes.size()>0) {
-    // try if the matrix element knows how to set the color flow
-    if(m_mes[0].second->SetColorFlow(outparts,n_q,n_g)) return true;
-  }
-  // otherwise try some common situations
-  int n=outparts.size();
-  if(n_q==2 && n_g==0 && n==2) {
-    if(outparts[0]->Flav().IsAnti()) {
+    if(m_diagrams.size()>0) {
+      // try if the matrix element knows how to set the color flow
+      HD_ME_Base* firstme=(HD_ME_Base*) m_diagrams[0].first;
+      bool anti=blob->InParticle(0)->Flav().IsAnti();
+      if(firstme->SetColorFlow(outparts,n_q,n_g,anti)) return true;
+    }
+    // otherwise try some common situations
+    int n=outparts.size();
+    if(n_q==2 && n_g==0 && n==2) {
+      if(outparts[0]->Flav().IsAnti()) {
+        outparts[0]->SetFlow(2,-1);
+        outparts[1]->SetFlow(1,outparts[0]->GetFlow(2));
+      }
+      else {
+        outparts[0]->SetFlow(1,-1);
+        outparts[1]->SetFlow(2,outparts[0]->GetFlow(1));
+      }
+      return true;
+    }
+    else if(n_q==0 && n_g==2) {
+      int inflow(-1), outflow(-1);
+      Particle_Vector::iterator pit;
+      for(pit=outparts.begin(); pit!=outparts.end(); pit++) {
+        if((*pit)->Flav().IsGluon()) {
+          (*pit)->SetFlow(2,inflow);
+          (*pit)->SetFlow(1,outflow);
+          inflow=(*pit)->GetFlow(1);
+          outflow=(*pit)->GetFlow(2);
+        }
+      }
+      return true;
+    }
+    else if(n_q==0 && n_g==n) {
       outparts[0]->SetFlow(2,-1);
-      outparts[1]->SetFlow(1,outparts[0]->GetFlow(2));
+      outparts[0]->SetFlow(1,-1);
+      for(int i=1;i<n-1;++i) {
+        unsigned int c=Flow::Counter();
+        outparts[i]->SetFlow(2,c-1);
+        outparts[i]->SetFlow(1,c);
+      }
+      outparts[n-1]->SetFlow(2,outparts[n-2]->GetFlow(1));
+      outparts[n-1]->SetFlow(1,outparts[0]->GetFlow(2));
+      return true;
     }
     else {
-      outparts[0]->SetFlow(1,-1);
-      outparts[1]->SetFlow(2,outparts[0]->GetFlow(1));
+      msg_Error()<<METHOD<<" wasn't able to set the color flow for"<<endl
+                 <<*blob<<endl;
+      return false;
     }
-    return true;
   }
-  else if(n_q==0 && n_g==2) {
-    int inflow(-1), outflow(-1);
-    Particle_Vector::iterator pit;
-    for(pit=outparts.begin(); pit!=outparts.end(); pit++) {
-      if((*pit)->Flav().IsGluon()) {
-        (*pit)->SetFlow(2,inflow);
-        (*pit)->SetFlow(1,outflow);
-        inflow=(*pit)->GetFlow(1);
-        outflow=(*pit)->GetFlow(2);
-      }
-    }
-    return true;
-  }
-  else if(n_q==0 && n_g==n) {
-    outparts[0]->SetFlow(2,-1);
-    outparts[0]->SetFlow(1,-1);
-    for(int i=1;i<n-1;++i) {
-      unsigned int c=Flow::Counter();
-      outparts[i]->SetFlow(2,c-1);
-      outparts[i]->SetFlow(1,c);
-    }
-    outparts[n-1]->SetFlow(2,outparts[n-2]->GetFlow(1));
-    outparts[n-1]->SetFlow(1,outparts[0]->GetFlow(2));
-    return true;
-  }
-  else return false;
-}
-
-// differential with random PS points; just for weight
-double Hadron_Decay_Channel::Differential()
-{
-  p_momenta[0] = Vec4D(p_physicalflavours[0].HadMass(),0.,0.,0.);        // decay from rest
-  p_ps->GeneratePoint(p_momenta,(PHASIC::Cut_Data*)(NULL));     // generate a PS point
-  p_ps->GenerateWeight(p_momenta,(PHASIC::Cut_Data*)(NULL));    // calculate its weight factor
-  double weight = p_ps->Weight();                               // get weight factor
-  CalculateAmplitudes(p_momenta,p_amplitudes,false);
-  double value=p_amplitudes->SumSquare();
-  value /= (GetDecaying().IntSpin()+1);
-  value *= m_symmetry;
-  return value*weight;
-}
-
-// differential with incoming momentum; for weight and momenta
-double Hadron_Decay_Channel::Differential(Vec4D * mom, bool anti)
-{
-#ifdef DEBUG__Hadrons
-  if( !IsZero(mom[0][1]) || !IsZero(mom[0][2]) || !IsZero(mom[0][3]) ) {
-    PRINT_INFO("Error: given momentum is not in CMS: "<<mom[0]);
-  }
-#endif
-  p_ps->GeneratePoint(mom,(PHASIC::Cut_Data*)(NULL));     // generate a PS point
-  p_ps->GenerateWeight(mom,(PHASIC::Cut_Data*)(NULL));    // calculate its weight factor
-  
-  double weight = p_ps->Weight();                               // weight factor
-  CalculateAmplitudes(mom,p_amplitudes,anti);
-  double value=p_amplitudes->SumSquare();
-  value /= (GetDecaying().IntSpin()+1);
-  return value*weight;
+  else return true;
 }
 
 
@@ -543,16 +466,16 @@ Current_Base* Hadron_Decay_Channel::SelectCurrent(string current_string)
   reader.SetString(current_string);
   reader.VectorFromString(resultstrings);
   
-  Flavour_Info fi;
-  fi.n=resultstrings.size()-1;
-  int* indices = new int[fi.n]; // will get deleted by Current_Base
-  for(int i=0; i<fi.n; i++) indices[i] = ToType<int>(resultstrings[i+1]);
-  fi.flavs=p_physicalflavours; fi.indices=indices;
+  int n=resultstrings.size()-1;
+  vector<int> indices(n);
+  for(int i=0; i<n; i++) indices[i] = ToType<int>(resultstrings[i+1]);
+  ME_Parameters fi(m_physicalflavours, indices);
 
-  Current_Base* current = Current_Getter_Function::GetObject(resultstrings[0],fi);
+  Current_Base* current=Current_Getter_Function::GetObject(resultstrings[0],fi);
   if(current==NULL) {
-  msg_Error()<<METHOD<<": Error. Current \""<<resultstrings[0]<<"\" specified in "
-      <<m_path<<m_filename<<" was not recognized as a valid current. Will abort."<<endl;
+    msg_Error()<<METHOD<<": Current '"<<resultstrings[0]<<"' specified in "
+               <<m_path<<m_filename<<" was not recognized as a valid current. "
+               <<"Will abort."<<endl;
     abort();
   }
   return current;
@@ -577,11 +500,10 @@ HD_ME_Base * Hadron_Decay_Channel::SelectME(string me_string)
     abort();
   }
 
-  Flavour_Info fi;
-  fi.n=NOut()+1;
-  int* indices = new int[fi.n]; // will get deleted by HD_ME_Base
-  for(int i=0; i<fi.n; i++) indices[i] = ToType<int>(resultstrings[i+1]);
-  fi.flavs=p_physicalflavours; fi.indices=indices;
+  int n=NOut()+1;
+  vector<int> indices(n);
+  for(int i=0; i<n; i++) indices[i] = ToType<int>(resultstrings[i+1]);
+  ME_Parameters fi(m_physicalflavours, indices);
 
   HD_ME_Base* me = HD_ME_Getter_Function::GetObject(resultstrings[0],fi);
   if(me==NULL) {
@@ -592,10 +514,60 @@ HD_ME_Base * Hadron_Decay_Channel::SelectME(string me_string)
   return me;
 }
 
+void Hadron_Decay_Channel::LatexOutput(std::ostream& f, double totalwidth)
+{
+  f<<"$"<<GetDecaying().TexName()<<"$ $\\to$ ";
+  for (FlSetConstIter fl=m_flouts.begin();fl!=m_flouts.end();++fl)
+    f<<"$"<<fl->TexName()<<"$ ";
+  f<<" & ";
+  char helpstr[100];
+  sprintf( helpstr, "%.4f", Width()/totalwidth*100. );
+  f<<helpstr;
+  if( DeltaWidth() > 0. ) {
+    sprintf( helpstr, "%.4f", DeltaWidth()/totalwidth*100. );
+    f<<" $\\pm$ "<<helpstr;
+  }
+  f<<" \\% ";
+  if(Origin()!="") {
+    f<<"[\\verb;"<<Origin()<<";]";
+  }
+  f<<"\\\\"<<endl;
+  if((m_diagrams.size()>0 &&
+      ((HD_ME_Base*) m_diagrams[0].first)->Name()!="Generic")) {
+    sprintf( helpstr, "%.4f", IWidth()/totalwidth*100. );
+    f<<" & "<<helpstr;
+    if( IDeltaWidth() > 0. ) {
+      sprintf( helpstr, "%.4f", IDeltaWidth()/totalwidth*100. );
+      f<<" $\\pm$ "<<helpstr;
+    }
+    f<<" \\% ";
+  }
+  for(size_t i=0;i<m_diagrams.size();i++) {
+    HD_ME_Base* me=(HD_ME_Base*) m_diagrams[i].first;
+    if(me->Name()=="Current_ME") {
+      Current_ME* cme=(Current_ME*) me;
+      f<<"\\verb;"<<cme->GetCurrent1()->Name()
+       <<";$\\otimes$\\verb;"<<cme->GetCurrent2()->Name()<<"; & \\\\"<<endl;
+    }
+    else if (me->Name()=="Generic") {
+      // do nothing
+    }
+    else {
+      f<<"\\verb;"<<me->Name()<<"; & \\\\"<<endl;
+    }
+  }
+}
 
-namespace ATOOLS {
-  template <> Blob_Data<HADRONS::Hadron_Decay_Channel*>::~Blob_Data() { }
-  template class Blob_Data<HADRONS::Hadron_Decay_Channel*>;
-  template HADRONS::Hadron_Decay_Channel* &Blob_Data_Base::Get<HADRONS::Hadron_Decay_Channel*>();
+bool Hadron_Decay_Channel::AddPSChannel(string name,double weight,
+                                        GeneralModel const & md)
+{
+  PHASIC::Single_Channel * sc=
+    HD_Channel_Selector::GetChannel(1, NOut(),&m_flavours.front(),name,md,p_ms);
+  if (sc!=NULL) {
+    sc->SetAlpha(weight);
+    Channels()->Add(sc);
+    return true;
+  }
+  else return false;
 }
 

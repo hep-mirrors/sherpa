@@ -12,14 +12,15 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-SSS::SSS(Flavour *fl,int* i,bool *out) :
-  Partial_Amplitude_Base(fl,3,i,out)
+SSS::SSS(const ATOOLS::Flavour_Vector& fl,
+         const std::vector<int>& i, const std::vector<bool>& out) :
+  Partial_Amplitude_Base(fl,i,out)
 {
   AssertIn(1);
   AssertSpins(0,0,0);
 }
 
-void SSS::operator()(const Vec4D * moms,const bool anti)
+void SSS::Calculate(const Vec4D_Vector& moms, const bool anti)
 {
   Insert(Complex(1.0,0.0),0);
 }
@@ -32,8 +33,10 @@ void SSS::operator()(const Vec4D * moms,const bool anti)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-SFF::SFF(Flavour *fl,int* i,bool *out,const Complex cL,const Complex cR) :
-  Partial_Amplitude_Base(fl,3,i,out), m_cL(cL), m_cR(cR), p_xyz(NULL) 
+SFF::SFF(const ATOOLS::Flavour_Vector& fl,
+         const std::vector<int>& i, const std::vector<bool>& out,
+         const Complex cL,const Complex cR) :
+  Partial_Amplitude_Base(fl,i,out), m_cL(cL), m_cR(cR), p_xyz(NULL) 
 {
   AssertIn(1);
   AssertSpins(0,1,1);
@@ -52,10 +55,10 @@ SFF::SFF(Flavour *fl,int* i,bool *out,const Complex cL,const Complex cR) :
                <<"outgoing particles/antiparticles: "<<p_flavs[p_i[0]]
                <<" + "<<p_flavs[p_i[1]]<<" + "<<p_flavs[p_i[2]]<<endl;
   }
-  p_xyz = new XYZFunc(3,fl,1,p_i);
+  p_xyz = new XYZFunc(fl,p_i);
 }
 
-void SFF::operator()(const Vec4D * moms,const bool anti)
+void SFF::Calculate(const Vec4D_Vector& moms, const bool anti)
 {
   Complex amp(0.,0.);
   p_xyz->Prepare(moms,anti);
@@ -79,8 +82,10 @@ void SFF::operator()(const Vec4D * moms,const bool anti)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-SFF_FPI::SFF_FPI(Flavour *fl,int *i,bool *out,const Complex c) :
-  Partial_Amplitude_Base(fl,3,i,out), m_c(c), p_xyz(NULL) 
+SFF_FPI::SFF_FPI(const ATOOLS::Flavour_Vector& fl,
+                 const std::vector<int>& i, const std::vector<bool>& out,
+                 const Complex c) :
+  Partial_Amplitude_Base(fl,i,out), m_c(c), p_xyz(NULL) 
 {
   AssertIn(1);
   AssertSpins(0,1,1);
@@ -99,10 +104,10 @@ SFF_FPI::SFF_FPI(Flavour *fl,int *i,bool *out,const Complex c) :
                <<"outgoing particles/antiparticles: "<<p_flavs[p_i[0]]
                <<" + "<<p_flavs[p_i[1]]<<" + "<<p_flavs[p_i[2]]<<endl;
   }
-  p_xyz = new XYZFunc(3,fl,1,p_i);
+  p_xyz = new XYZFunc(fl,p_i);
 }
 
-void SFF_FPI::operator()(const Vec4D * moms,const bool anti)
+void SFF_FPI::Calculate(const Vec4D_Vector& moms, const bool anti)
 {
   Vec4D pS(p_i[0]==0?moms[p_i[0]]:-moms[p_i[0]]);
   Complex amp(0.,0.);
@@ -126,14 +131,15 @@ void SFF_FPI::operator()(const Vec4D * moms,const bool anti)
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-SSV::SSV(Flavour *fl,int *i,bool *out) :
-  Partial_Amplitude_Base(fl,3,i,out)
+SSV::SSV(const ATOOLS::Flavour_Vector& fl,
+         const std::vector<int>& i, const std::vector<bool>& out) :
+  Partial_Amplitude_Base(fl,i,out)
 {
   AssertIn(1);
   AssertSpins(0,0,2);
 }
 
-void SSV::operator()(const Vec4D * moms,const bool anti)
+void SSV::Calculate(const Vec4D_Vector& moms, const bool anti)
 {
   Vec4D pS1(p_i[0]==0?moms[p_i[0]]:-moms[p_i[0]]);
   Vec4D pS2(p_i[1]==0?moms[p_i[1]]:-moms[p_i[1]]);
@@ -151,14 +157,15 @@ void SSV::operator()(const Vec4D * moms,const bool anti)
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-SVV::SVV(Flavour *fl,int *i,bool *out) :
-  Partial_Amplitude_Base(fl,3,i,out)
+SVV::SVV(const ATOOLS::Flavour_Vector& fl,
+         const std::vector<int>& i, const std::vector<bool>& out) :
+  Partial_Amplitude_Base(fl,i,out)
 {
   AssertIn(1);
   AssertSpins(0,2,2);
 }
 
-void SVV::operator()(const Vec4D * moms,const bool anti)
+void SVV::Calculate(const Vec4D_Vector& moms, const bool anti)
 {
   Vec4D pV1(p_i[1]==0?moms[p_i[1]]:-moms[p_i[1]]);
   Vec4D pV2(p_i[2]==0?moms[p_i[2]]:-moms[p_i[2]]);
@@ -187,8 +194,10 @@ void SVV::operator()(const Vec4D * moms,const bool anti)
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-VFF::VFF(Flavour *fl,int *i,bool *out,const Complex cL,const Complex cR) :
-  Partial_Amplitude_Base(fl,3,i,out), m_cL(cL), m_cR(cR), p_xyz(NULL)
+VFF::VFF(const ATOOLS::Flavour_Vector& fl,
+         const std::vector<int>& i, const std::vector<bool>& out,
+         const Complex cL,const Complex cR) :
+  Partial_Amplitude_Base(fl,i,out), m_cL(cL), m_cR(cR), p_xyz(NULL)
 {
   AssertIn(1);
   AssertSpins(2,1,1);
@@ -207,10 +216,10 @@ VFF::VFF(Flavour *fl,int *i,bool *out,const Complex cL,const Complex cR) :
                <<"outgoing particles/antiparticles: "<<p_flavs[p_i[0]]
                <<" + "<<p_flavs[p_i[1]]<<" + "<<p_flavs[p_i[2]]<<endl;
   }
-  p_xyz = new XYZFunc(3,fl,1,p_i);
+  p_xyz = new XYZFunc(fl,p_i);
 }
 
-void VFF::operator()(const Vec4D * moms,const bool anti)
+void VFF::Calculate(const Vec4D_Vector& moms, const bool anti)
 {
   Vec4D pV(p_i[0]==0?moms[p_i[0]]:-moms[p_i[0]]);
   Flavour flV(p_flavs[p_i[0]]);
@@ -239,14 +248,15 @@ void VFF::operator()(const Vec4D * moms,const bool anti)
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-VVV::VVV(Flavour *fl,int *i,bool *out) :
-  Partial_Amplitude_Base(fl,3,i,out)
+VVV::VVV(const ATOOLS::Flavour_Vector& fl,
+         const std::vector<int>& i, const std::vector<bool>& out) :
+  Partial_Amplitude_Base(fl,i,out)
 {
   AssertIn(1);
   AssertSpins(2,2,2);
 }
 
-void VVV::operator()(const Vec4D * moms,const bool anti)
+void VVV::Calculate(const Vec4D_Vector& moms, const bool anti)
 {
   Vec4D pV0(p_i[0]==0?moms[p_i[0]]:-moms[p_i[0]]);
   Vec4D pV1(p_i[1]==0?moms[p_i[1]]:-moms[p_i[1]]);
@@ -284,14 +294,15 @@ void VVV::operator()(const Vec4D * moms,const bool anti)
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-TSS::TSS(Flavour *fl,int *i,bool *out) :
-  Partial_Amplitude_Base(fl,3,i,out)
+TSS::TSS(const ATOOLS::Flavour_Vector& fl,
+         const std::vector<int>& i, const std::vector<bool>& out) :
+  Partial_Amplitude_Base(fl,i,out)
 {
   AssertIn(1);
   AssertSpins(4,0,0);
 }
 
-void TSS::operator()(const Vec4D * moms,const bool anti)
+void TSS::Calculate(const Vec4D_Vector& moms, bool anti)
 {
   Vec4D pS1(p_i[1]==0?moms[p_i[1]]:-moms[p_i[1]]);
   Vec4D pS2(p_i[2]==0?moms[p_i[2]]:-moms[p_i[2]]);
@@ -317,14 +328,15 @@ void TSS::operator()(const Vec4D * moms,const bool anti)
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-TVS::TVS(Flavour *fl,int *i,bool *out) :
-  Partial_Amplitude_Base(fl,3,i,out)
+TVS::TVS(const ATOOLS::Flavour_Vector& fl,
+         const std::vector<int>& i, const std::vector<bool>& out) :
+  Partial_Amplitude_Base(fl,i,out)
 {
   AssertIn(1);
   AssertSpins(4,2,0);
 }
 
-void TVS::operator()(const Vec4D * moms,const bool anti)
+void TVS::Calculate(const Vec4D_Vector& moms, bool anti)
 {
   Vec4D pT(p_i[0]==0?moms[p_i[0]]:-moms[p_i[0]]);
   Vec4D pV(p_i[1]==0?moms[p_i[1]]:-moms[p_i[1]]);
@@ -360,14 +372,15 @@ void TVS::operator()(const Vec4D * moms,const bool anti)
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-TVV::TVV(Flavour *fl,int *i,bool *out) :
-  Partial_Amplitude_Base(fl,3,i,out)
+TVV::TVV(const ATOOLS::Flavour_Vector& fl,
+         const std::vector<int>& i, const std::vector<bool>& out) :
+  Partial_Amplitude_Base(fl,i,out)
 {
   AssertIn(1);
   AssertSpins(4,2,2);
 }
 
-void TVV::operator()(const Vec4D * moms,const bool anti)
+void TVV::Calculate(const Vec4D_Vector& moms, bool anti)
 {
   Vec4D pT(p_i[0]==0?moms[p_i[0]]:-moms[p_i[0]]);
   Vec4D pV1(p_i[1]==0?moms[p_i[1]]:-moms[p_i[1]]);

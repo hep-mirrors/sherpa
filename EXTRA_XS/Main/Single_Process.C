@@ -21,7 +21,6 @@ using namespace EXTRAXS;
 using namespace ATOOLS;
 using PHASIC::nlo_type;
 using PHASIC::Process_Info;
-using PHASIC::stp;
 
 Single_Process::Single_Process() :
   p_born_me2(NULL), p_virtual_me2(NULL), m_nlotype(nlo_type::lo)
@@ -103,7 +102,7 @@ double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta,
     m_lastxs=(*p_born_me2)(momenta);
   }
   else if (p_virtual_me2) {
-    p_virtual_me2->SetRenScale(p_scale->Scale(PHASIC::stp::ren));
+    p_virtual_me2->SetRenScale(p_scale->Scale(stp::ren));
     p_virtual_me2->Calc(momenta);
     m_lastxs=p_virtual_me2->Result().GetFinite();
   }

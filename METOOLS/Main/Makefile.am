@@ -1,31 +1,23 @@
-pkglib_LTLIBRARIES       =	libHelicitiesMain.la
+pkglib_LTLIBRARIES       =	libMEToolsMain.la
 
 SVNTAG = METOOLS/Main
 include ../../svn.make
 
-libHelicitiesMain_la_SOURCES       =	\
+libMEToolsMain_la_SOURCES     =	\
 			SVN_Info.C \
-			C_Scalar.C \
-			C_Tensor.C \
-			C_Spinor.C \
-			C_Vector.C \
 			Polarization_Tools.C  \
 			XYZFuncs.C  \
+			Polarization_Index.C \
 			Spin_Structure.C \
 			Partial_Amplitude_Base.C \
-			Full_Amplitude_Base.C \
 			Three_Particle_Amplitudes.C \
 			Four_Particle_Amplitudes.C
 
 localinc_HEADERS      =	\
-			C_Scalar.H \
-			C_Tensor.H \
-			C_Spinor.H \
-			C_Vector.H \
 			Polarization_Tools.H  \
 			XYZFuncs.H \
+			Polarization_Index.H \
 			Spin_Structure.H \
 			Partial_Amplitude_Base.H \
-			Full_Amplitude_Base.H \
 			Three_Particle_Amplitudes.H \
 			Four_Particle_Amplitudes.H

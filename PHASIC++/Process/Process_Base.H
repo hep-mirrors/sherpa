@@ -23,6 +23,8 @@ namespace PDF {
   class Shower_Base;
 }
 
+namespace METOOLS { class Spin_Amplitudes; }
+
 namespace PHASIC {
 
   typedef std::map<int,int> FMMap;
@@ -175,6 +177,8 @@ namespace PHASIC {
 
     inline void SetLast(const double &last,const int mode)
     { m_last[mode]=last; }
+    virtual void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
+                                std::vector<std::vector<Complex> >& cols);
 
     inline double Last(const int mode) const { return m_last[mode]; }
     inline double Last() const { return m_last[0]+m_last[1]; }

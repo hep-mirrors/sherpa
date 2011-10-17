@@ -1,5 +1,12 @@
 #include "COMIX/Amplitude/Amplitude.H"
 
+#include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "PHASIC++/Main/Color_Integrator.H"
+#include "PHASIC++/Main/Helicity_Integrator.H"
+#include "PHASIC++/Process/Process_Base.H"
+#include "METOOLS/Explicit/Dipole_Kinematics.H"
+#include "METOOLS/Main/Spin_Structure.H"
+#include "ATOOLS/Phys/Spinor.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -7,6 +14,10 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 using namespace COMIX;
 using namespace ATOOLS;
@@ -14,16 +25,16 @@ using namespace ATOOLS;
 static const double invsqrttwo(1.0/sqrt(2.0));
 
 Amplitude::Amplitude():
-  p_model(NULL), p_aqcd(NULL), p_aqed(NULL),
-  m_n(0), m_nf(6), m_ngpl(3),
+  p_model(NULL), m_nin(0), m_nout(0), m_n(0), m_nf(6), m_ngpl(3),
   m_oew(99), m_oqcd(99), m_maxoew(99), m_maxoqcd(99), m_minntc(0),
-  m_pmode('D')
+  m_pmode('D'), p_dinfo(new Dipole_Info()), p_colint(NULL), p_helint(NULL),
+  m_trig(true), p_loop(NULL)
 {
   Data_Reader read(" ",";","!","=");
   std::string prec;
   if (!read.ReadFromFile(prec,"COMIX_PMODE")) prec="D";
   else msg_Tracking()<<METHOD<<"(): Set precision "<<prec<<".\n";
-  if (prec!="D" && prec!="Q") THROW(not_implemented,"Invalid precision mode");
+  if (prec!="D") THROW(not_implemented,"Invalid precision mode");
   m_pmode=prec[0];
   int helpi(0);
   if (!read.ReadFromFile(helpi,"COMIX_PG_MODE")) helpi=0;
@@ -31,10 +42,19 @@ Amplitude::Amplitude():
   m_pgmode=helpi;
   if (!read.ReadFromFile(helpi,"COMIX_VL_MODE")) helpi=0;
   else msg_Info()<<METHOD<<"(): Set vertex label mode "<<helpi<<".\n";
-  Vertex_Base::SetVLMode(helpi);
+  Vertex::SetVLMode(helpi);
   if (!read.ReadFromFile(helpi,"COMIX_N_GPL")) helpi=3;
   else msg_Info()<<METHOD<<"(): Set graphs per line "<<helpi<<".\n";
   m_ngpl=Max(1,Min(helpi,5));
+  double helpd;
+  if (!read.ReadFromFile(helpd,"DIPOLE_AMIN")) helpd=Max(rpa->gen.Accu(),1.0e-8);
+  else msg_Tracking()<<METHOD<<"(): Set dipole \\alpha_{cut} "<<helpd<<".\n";
+  p_dinfo->SetAMin(helpd);
+  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA")) helpd=1.0;
+  else msg_Tracking()<<METHOD<<"(): Set dipole \\alpha_{max} "<<helpd<<".\n";
+  p_dinfo->SetAMax(helpd);
+  p_dinfo->SetDRMode(0);
+  m_sccmur=read.GetValue("USR_WGT_MODE",1);
 #ifdef USING__Threading
   if (!read.ReadFromFile(helpi,"COMIX_ME_THREADS")) helpi=0;
   else msg_Tracking()<<METHOD<<"(): Set number of threads "<<helpi<<".\n";
@@ -76,6 +96,7 @@ Amplitude::~Amplitude()
     pthread_cond_destroy(&tid->m_s_cnd);
   }
 #endif
+  if (p_dinfo) delete p_dinfo;
   CleanUp();
 }
 
@@ -112,43 +133,222 @@ void Amplitude::CleanUp()
 {
   for (size_t i(0);i<m_cur.size();++i) 
     for (size_t j(0);j<m_cur[i].size();++j) delete m_cur[i][j]; 
+  for (size_t j(0);j<m_scur.size();++j) delete m_scur[j]; 
+  m_cur=Current_Matrix();
+  m_scur=Current_Vector();
   m_n=0;
   m_fl=Flavour_Vector();
   m_p=Vec4D_Vector();
   m_ch=Int_Vector();
   m_cl=Int_Matrix();
-  m_cur=Current_Matrix();
-  m_chirs=Int_Matrix();
-  m_ress=QComplex_Vector();
-  m_dirs=Int_Vector();
-  m_cchirs=LongUIntMap_Matrix();
+  m_cress=m_rress=m_ress=Spin_Structure<DComplex>();
+  m_cchirs=m_dirs=Int_Vector();
   m_combs.clear();
   m_flavs.clear();
+  for (size_t i(0);i<m_subs.size();++i) {
+    delete [] m_subs[i]->p_id;
+    delete [] m_subs[i]->p_fl;
+    delete m_subs[i];
+  }
+  m_subs.clear();
 }
 
-bool Amplitude::MatchIndices(const Int_Vector &ids,const size_t &n,
-				  const size_t &i,const size_t &j,
-				  const size_t &k)
+Current *Amplitude::CopyCurrent(Current *const c)
 {
-  for (size_t l(0);l<n;++l) {
-    bool found(false), twice(false);
-    for (size_t m(0);m<m_cur[i][j]->Id().size();++m) 
-      if (m_cur[i][j]->Id()[m]==ids[l]) {
-	if (found) twice=true;
+  Current_Key ckey(c->Flav(),p_model);
+  Current *cur(Current_Getter::GetObject
+	       (std::string(1,m_pmode)+ckey.Type(),ckey));
+  if (cur==NULL) return false;
+  cur->SetDirection(c->Direction());
+  cur->SetCut(c->Cut());
+  cur->SetOnShell(c->OnShell());
+  Int_Vector ids(c->Id()), isfs(ids.size()), pols(ids.size());
+  for (size_t i(0);i<ids.size();++i) {
+    isfs[i]=m_fl[ids[i]].IsFermion();
+    switch (m_fl[ids[i]].IntSpin()) {
+    case 0: pols[i]=1; break;
+    case 1: pols[i]=2; break;
+    case 2: pols[i]=m_fl[ids[i]].IsMassive()?3:2; break;
+    default:
+      THROW(not_implemented,"Cannot handle spin "+
+	    ToString(m_fl[i].Spin())+" particles");
+    }
+  }
+  cur->SetId(ids);
+  cur->SetFId(isfs);
+  cur->FindPermutations();
+  cur->InitPols(pols);
+  cur->SetOrderEW(c->OrderEW());
+  cur->SetOrderQCD(c->OrderQCD());
+  return cur;
+}
+
+bool Amplitude::AddRSDipoles()
+{
+#ifdef DEBUG__BG
+  msg_Debugging()<<METHOD<<"(): {\n";
+#endif
+  Current_Vector scur;
+  for (size_t j(0);j<m_n;++j) {
+    for (size_t i(0);i<m_cur[2].size();++i) {
+      if (m_cur[2][i]->CId()&m_cur[1][j]->CId()) continue;
+      int sc[2]={m_cur[2][i]->Flav().StrongCharge(),
+		 m_cur[1][j]->Flav().StrongCharge()};
+      // begin temporary
+      if (sc[0]==0 || sc[1]==0) continue;
+      // end temporary
+      if (m_cur[2][i]->In().size()!=1)
+	THROW(not_implemented,"Invalid current");
+      if (!AddRSDipole(m_cur[2][i],m_cur[1][j],scur)) return false;
+    }
+  }
+  m_cur[2].insert(m_cur[2].end(),scur.begin(),scur.end());
+#ifdef DEBUG__BG
+  msg_Debugging()<<"} -> "<<m_scur.size()<<" dipoles\n";
+#endif
+  return true;
+}
+
+bool Amplitude::AddRSDipole
+(Current *const c,Current *const s,Current_Vector &scur)
+{
+#ifdef DEBUG__BG
+  msg_Indent();
+#endif
+  size_t isid((1<<m_nin)-1);
+  if ((c->CId()&isid)==isid || c->Flav().IsDummy()) return true;
+  Vertex *cin(c->In().front());
+  for (size_t k(0);k<m_scur.size();++k)
+    if (m_scur[k]->CId()==s->CId() &&
+	m_scur[k]->Sub()->CId()==c->CId()) return true;
+  Current *jijt(CopyCurrent(c)), *jkt(CopyCurrent(s));
+  jijt->SetSub(jkt);
+  jijt->SetKey(m_scur.size());
+  scur.push_back(jijt);
+  jkt->SetSub(jijt);
+  jkt->SetKey(m_scur.size());
+  m_scur.push_back(jkt);
+  Vertex_Key svkey(cin->JA(),cin->JB(),NULL,jijt,p_model);
+  svkey.m_p=std::string(1,m_pmode);
+  svkey.p_dinfo=p_dinfo;
+  svkey.p_k=s;
+  svkey.p_kt=jkt;
+  MODEL::VMIterator_Pair vmp(p_model->GetVertex(svkey.ID()));
+  for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
+       vit!=vmp.second;++vit) {
+    svkey.p_mv=vit->second;
+    Vertex *v(new Vertex(svkey));
+    v->SetJA(svkey.p_a);
+    v->SetJB(svkey.p_b);
+    v->SetJC(svkey.p_c);
+  }
+#ifdef DEBUG__BG
+  jijt->Print();
+  jkt->Print();
+#endif
+  return true;
+}
+
+bool Amplitude::AddVIDipoles()
+{
+#ifdef DEBUG__BG
+  msg_Debugging()<<METHOD<<"(): {\n";
+#endif
+  Current_Vector scur;
+  for (size_t i(0);i<m_n;++i) {
+    for (size_t j(i+1);j<m_n;++j) {
+      int sc[2]={m_cur[1][i]->Flav().StrongCharge(),
+		 m_cur[1][j]->Flav().StrongCharge()};
+      // begin temporary
+      if (sc[0]==0 || sc[1]==0) continue;
+      // end temporary
+      if (!AddVIDipole(m_cur[1][i],m_cur[1][j],scur)) return false;
+    }
+  }
+  m_cur[1].insert(m_cur[1].end(),scur.begin(),scur.end());
+#ifdef DEBUG__BG
+  msg_Debugging()<<"} -> "<<m_scur.size()<<" dipoles\n";
+#endif
+  return true;
+}
+
+bool Amplitude::AddVIDipole
+(Current *const c,Current *const s,Current_Vector &scur)
+{
+#ifdef DEBUG__BG
+  msg_Indent();
+#endif
+  size_t isid((1<<m_nin)-1);
+  if ((c->CId()&isid)==isid || c->Flav().IsDummy()) return true;
+  Current *jijt(CopyCurrent(c)), *jkt(CopyCurrent(s));
+  jijt->SetSub(jkt);
+  jijt->SetKey(m_scur.size());
+  scur.push_back(jijt);
+  jkt->SetSub(jijt);
+  jkt->SetKey(m_scur.size());
+  m_scur.push_back(jkt);
+  Vertex_Key svkey(c,NULL,NULL,jijt,p_model);
+  svkey.m_p=std::string(1,m_pmode);
+  svkey.p_dinfo=p_dinfo;
+  svkey.p_k=s;
+  svkey.p_kt=jkt;
+  MODEL::VMIterator_Pair vmp(p_model->GetVertex(svkey.ID(1)));
+  for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
+       vit!=vmp.second;++vit) {
+    svkey.p_mv=vit->second;
+    Vertex *v(new Vertex(svkey));
+    v->SetJA(svkey.p_a);
+    v->SetJB(svkey.p_b);
+    v->SetJC(svkey.p_c);
+  }
+  if (svkey.p_mv==NULL) {
+    std::swap<Current*>(svkey.p_a,svkey.p_b);
+    vmp=p_model->GetVertex(svkey.ID(0));
+    for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
+	 vit!=vmp.second;++vit) {
+      svkey.p_mv=vit->second;
+      Vertex *v(new Vertex(svkey));
+      v->SetJA(svkey.p_a);
+      v->SetJB(svkey.p_b);
+      v->SetJC(svkey.p_c);
+    }
+  }
+#ifdef DEBUG__BG
+  jijt->Print();
+  jkt->Print();
+#endif
+  return true;
+}
+
+bool Amplitude::MatchIndices
+(const Int_Vector &ids,const Vertex_Key &vkey) const
+{
+  size_t n(ids.size());
+  for (size_t o(0);o<n;++o) {
+    bool found(false);
+    for (size_t p(0);p<vkey.p_a->Id().size();++p) 
+      if (vkey.p_a->Id()[p]==ids[o]) {
+	if (found) return false;
 	found=true;
       }
-    for (size_t m(0);m<m_cur[n-i][k]->Id().size();++m) 
-      if (m_cur[n-i][k]->Id()[m]==ids[l]) {
-	if (found) twice=true;
+    for (size_t p(0);p<vkey.p_b->Id().size();++p) 
+      if (vkey.p_b->Id()[p]==ids[o]) {
+	if (found) return false;
 	found=true;
       }
-    if (!found || twice) return false;
+    if (vkey.p_e)
+      for (size_t p(0);p<vkey.p_e->Id().size();++p) 
+	if (vkey.p_e->Id()[p]==ids[o]) {
+	  if (found) return false;
+	  found=true;
+	}
+    if (!found) return false;
   }
   return true;
 }
 
 int Amplitude::CheckDecay(const ATOOLS::Flavour &fl,
-			  const Int_Vector &ids) const
+			       const Int_Vector &ids) const
 {
   size_t cid(0);
   if (m_decid.empty()) return 0;
@@ -162,30 +362,144 @@ int Amplitude::CheckDecay(const ATOOLS::Flavour &fl,
     }
     if (did==cid) {
       if (fl==dfl) return i+1;
-//       msg_Debugging()<<"delete prop "<<fl<<" "<<ids<<" "<<cid
-//  		     <<", requested "<<m_decid[i].m_fl<<" "<<did<<"\n";
       return -1;
     }
     if (!((did&cid)==0 || (did&cid)==cid || (did&cid)==did)) {
-//       msg_Debugging()<<"delete prop "<<fl<<" "<<ids<<" "<<cid
-//  		     <<", requested "<<m_decid[i].m_fl<<" "<<did<<"\n";
       return -1;
     }
   }
   return 0;
 }
 
+Vertex *Amplitude::AddCurrent
+(const Current_Key &ckey,Vertex_Key &vkey,const size_t &n,
+ const int dec,size_t &oewmax,size_t &oqcdmax,
+ std::map<std::string,Current*> &curs)
+{
+  if (vkey.p_mv==NULL || !vkey.p_mv->on || 
+      vkey.p_mv->dec<0) return NULL;
+  vkey.m_p=std::string(1,m_pmode);
+  Vertex *v(new Vertex(vkey));
+  size_t oew(vkey.p_a->OrderEW()+
+	     vkey.p_b->OrderEW()+v->OrderEW());
+  size_t oqcd(vkey.p_a->OrderQCD()+
+	      vkey.p_b->OrderQCD()+v->OrderQCD());
+  size_t ntc(vkey.p_a->NTChannel()+vkey.p_b->NTChannel());
+  bool isa(false), isb(false);
+  if (n<m_n-1 && vkey.p_e==NULL) {
+    isa=(vkey.p_a->CId()&1)^(vkey.p_a->CId()&2);
+    isb=(vkey.p_b->CId()&1)^(vkey.p_b->CId()&2);
+    ntc+=isa^isb;
+  }
+  if (vkey.p_e) {
+    oew+=vkey.p_e->OrderEW();
+    oqcd+=vkey.p_e->OrderQCD();
+    ntc+=vkey.p_e->NTChannel();
+    if (n<m_n-1) {
+      bool ise((vkey.p_e->CId()&1)^(vkey.p_e->CId()&2));
+      ntc+=isa^isb^ise;
+    }
+  }
+  if (!v->Active() || oew>m_oew || oqcd>m_oqcd ||
+      oew>m_maxoew || oqcd>m_maxoqcd ||
+      (n==m_n-1 && ((m_oew<99 && oew!=m_oew) ||
+		    (m_oqcd<99 && oqcd!=m_oqcd) ||
+		    ntc<m_minntc))) {
+#ifdef DEBUG__BG
+    msg_Debugging()<<"delete vertex {"<<vkey.p_a->Flav()<<",("
+		   <<vkey.p_a->OrderEW()<<","<<vkey.p_a->OrderQCD()
+		   <<")}{"<<vkey.p_b->Flav()<<",("
+		   <<vkey.p_b->OrderEW()<<","<<vkey.p_b->OrderQCD()
+		   <<")}-"<<vkey.Type()<<"("<<v->OrderEW()<<","
+		   <<v->OrderQCD()<<")->{"<<vkey.p_c->Flav()<<"} => ("
+		   <<oew<<","<<oqcd<<") vs. max = ("<<m_oew<<","
+		   <<m_oqcd<<"), act = "<<v->Active()
+		   <<", n t-ch = "<<ntc<<" vs "<<m_minntc<<"\n";
+#endif
+    delete v;
+    return NULL;
+  }
+  Current *sub(NULL);
+  if (p_dinfo->Mode()) {
+    size_t cid(vkey.p_a->CId()|vkey.p_b->CId());
+    if (vkey.p_a->Sub()) {
+      if (vkey.p_a->Id().size()==1 &&
+	  p_dinfo->Mode()==1) return NULL;
+      sub=vkey.p_a->Sub();
+    }
+    if (vkey.p_b->Sub()) {
+      if ((vkey.p_b->Id().size()==1 &&
+	   p_dinfo->Mode()==1) || sub) return NULL;
+      sub=vkey.p_b->Sub();
+    }
+    if (vkey.p_e) {
+      cid|=vkey.p_e->CId();
+      if (vkey.p_e->Sub()) {
+	if ((vkey.p_e->Id().size()==1 &&
+	     p_dinfo->Mode()==1) || sub) return NULL;
+	sub=vkey.p_e->Sub();
+      }
+    }
+    if (sub && (sub->CId()&cid)) {
+#ifdef DEBUG__BG
+      msg_Debugging()<<"delete vertex {"<<sub->Id()
+		     <<","<<sub->Sub()->Id()
+		     <<"}<->"<<ID(cid)<<"\n";
+#endif
+      delete v;
+      return NULL;
+    }
+  }
+  std::string okey
+    ("("+(n<m_n-1?ToString(oew)+","
+	  +ToString(oqcd)+";"+ToString(ntc):"")
+     +(sub?",S"+ToString(sub->Sub()->Id())+
+       ToString(sub->Sub()->Sub()->Id()):"")+")");
+  if (oew!=vkey.p_c->OrderEW() || oqcd!=vkey.p_c->OrderQCD() ||
+      ntc!=vkey.p_c->NTChannel() || sub!=vkey.p_c->Sub()) {
+    std::map<std::string,Current*>::iterator 
+      cit(curs.find(okey));
+    if (cit!=curs.end()) vkey.p_c=cit->second;
+    else {
+      if (vkey.p_c->OrderEW()>0 || vkey.p_c->OrderQCD()>0 ||
+	  vkey.p_c->NTChannel()>0 || vkey.p_c->Sub()!=sub)
+	vkey.p_c=Current_Getter::GetObject
+	  (std::string(1,m_pmode)+ckey.Type(),ckey);
+      if (n<m_n-1) {
+	if (dec!=0) {
+	  vkey.p_c->SetCut(m_decid[dec-1]->m_nmax);
+	  vkey.p_c->SetOnShell(m_decid[dec-1]->m_osd);
+	}
+	vkey.p_c->SetOrderEW(oew);
+	vkey.p_c->SetOrderQCD(oqcd);
+	vkey.p_c->SetNTChannel(ntc);
+      }
+      else {
+	oewmax=Max(oewmax,oew); 
+	oqcdmax=Max(oqcdmax,oqcd);
+      }
+      vkey.p_c->SetSub(sub);
+      curs[okey]=vkey.p_c;
+    }
+  }
+  v->SetJA(vkey.p_a);
+  v->SetJB(vkey.p_b);
+  v->SetJE(vkey.p_e);
+  v->SetJC(vkey.p_c);
+  return v;
+}
+
 void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
-				const Flavour &fl,const int dir)
+			   const Flavour &fl,const int dir)
 {
   // add new currents
   size_t oewmax(0), oqcdmax(0);
   int dec(CheckDecay(fl,ids));
   if (dec<0) return;
-  std::map<std::string,Current_Base*> curs;
+  std::map<std::string,Current*> curs;
   Current_Key ckey(dir>0?fl.Bar():fl,p_model);
-  Current_Base *cur(Current_Getter::GetObject
-		    (std::string(1,m_pmode)+ckey.Type(),ckey));
+  Current *cur(Current_Getter::GetObject
+	       (std::string(1,m_pmode)+ckey.Type(),ckey));
   if (cur==NULL) return;
   cur->SetDirection(dir);
   if (dec!=0) {
@@ -197,95 +511,73 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
   for (size_t i(1);i<n;++i) {
     for (size_t j(0);j<m_cur[i].size();++j) {
       for (size_t k(0);k<m_cur[n-i].size();++k) {
-	if (!MatchIndices(ids,n,i,j,k)) continue;
-	Vertex_Key vkey(m_cur[i][j],m_cur[n-i][k],cur,p_model);
-	if (v3.find(vkey.SwapAB())!=v3.end()) continue;
-	Vertex_Base *v(Vertex_Getter::GetObject
-		       (std::string(1,m_pmode)+vkey.ID(),vkey));
-	if (v!=NULL) {
-	  size_t oew(vkey.p_a->OrderEW()+
-		     vkey.p_b->OrderEW()+v->OrderEW());
-	  size_t oqcd(vkey.p_a->OrderQCD()+
-		      vkey.p_b->OrderQCD()+v->OrderQCD());
-	  size_t ntc(vkey.p_a->NTChannel()+vkey.p_b->NTChannel());
-	  if (n<m_n-1) {
-	    bool isa((vkey.p_a->CId()&1)^(vkey.p_a->CId()&2));
-	    bool isb((vkey.p_b->CId()&1)^(vkey.p_b->CId()&2));
-	    ntc+=isa^isb;
-	  }
-	  if (!v->Active() || oew>m_oew || oqcd>m_oqcd ||
-	      oew>m_maxoew || oqcd>m_maxoqcd ||
-	      (n==m_n-1 && ((m_oew<99 && oew!=m_oew) ||
-			    (m_oqcd<99 && oqcd!=m_oqcd) ||
-			    ntc<m_minntc))) {
-#ifdef DEBUG__BG
-	    msg_Debugging()<<"delete vertex {"<<vkey.p_a->Flav()<<",("
-			   <<vkey.p_a->OrderEW()<<","<<vkey.p_a->OrderQCD()
-			   <<")}{"<<vkey.p_b->Flav()<<",("
-			   <<vkey.p_b->OrderEW()<<","<<vkey.p_b->OrderQCD()
-			   <<")}-"<<v->Tag()<<"("<<v->OrderEW()<<","
-			   <<v->OrderQCD()<<")->{"<<cur->Flav()<<"} => ("
-			   <<oew<<","<<oqcd<<") vs. ("<<m_oew<<","
-			   <<m_oqcd<<") / max = ("<<m_maxoew<<","
-			   <<m_maxoqcd<<"), act = "<<v->Active()
-			   <<", n t-ch = "<<ntc<<" vs "<<m_minntc<<"\n";
-#endif
-	    delete v;
-	    continue;
-	  }
-	  std::string okey("("+ToString(oew)+","+ToString(oqcd)+")"
-			   +"["+ToString(ntc)+"]");
-	  if (oew!=cur->OrderEW() || oqcd!=cur->OrderQCD() ||
-	      ntc!=cur->NTChannel()) {
-	    std::map<std::string,Current_Base*>::iterator 
-	      cit(curs.find(okey));
-	    if (cit!=curs.end()) cur=cit->second;
-	    else {
-	      if (cur->OrderEW()>0 || cur->OrderQCD()>0 ||
-		  cur->NTChannel()>0)
-		cur=Current_Getter::GetObject
-		  (std::string(1,m_pmode)+ckey.Type(),ckey);
-	      if (n<m_n-1) {
-		if (dec!=0) {
-                  cur->SetCut(m_decid[dec-1]->m_nmax);
-                  cur->SetOnShell(m_decid[dec-1]->m_osd);
-		}
-		cur->SetOrderEW(oew);
-		cur->SetOrderQCD(oqcd);
-		cur->SetNTChannel(ntc);
-		curs[okey]=cur;
-	      }
-	      else {
-		oewmax=Max(oewmax,oew); 
-		oqcdmax=Max(oqcdmax,oqcd);
-	      }
-	    }
-	  }
-	  v->SetJA(vkey.p_a);
-	  v->SetJB(vkey.p_b);
-	  v->SetJC(cur);
-	  v3.insert(Vertex_Key(vkey.p_a,vkey.p_b,cur,p_model));
+	Vertex_Key vkey(m_cur[i][j],m_cur[n-i][k],NULL,cur,p_model);
+	if (!MatchIndices(ids,vkey) ||
+	    v3.find(vkey.SwapAB())!=v3.end()) continue;
+	MODEL::VMIterator_Pair vmp(p_model->GetVertex(vkey.ID()));
+	for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
+	     vit!=vmp.second;++vit) {
+	  vkey.p_mv=vit->second;
+	  if (AddCurrent(ckey,vkey,n,dec,oewmax,oqcdmax,curs))
+	    v3.insert(Vertex_Key(vkey.p_a,vkey.p_b,NULL,cur,p_model));
 	}
       }
     }
   }
+  if (p_model->VInfo()&1)
+    for (size_t i(1);i<n-1;++i) {
+      for (size_t j(1);j<n-i;++j) {
+	for (size_t k(0);k<m_cur[i].size();++k) {
+	  for (size_t l(0);l<m_cur[j].size();++l) {
+	    for (size_t m(0);m<m_cur[n-i-j].size();++m) {
+	      Vertex_Key vkey(m_cur[i][k],m_cur[j][l],
+			      m_cur[n-i-j][m],cur,p_model);
+	      if (!MatchIndices(ids,vkey) ||
+		  v3.find(vkey.SwapAB())!=v3.end() ||
+		  v3.find(vkey.SwapBE())!=v3.end() ||
+		  v3.find(vkey.SwapEA())!=v3.end() ||
+		  v3.find(vkey.SwapEA().SwapAB())!=v3.end() ||
+		  v3.find(vkey.SwapEA().SwapBE())!=v3.end()) continue;
+	      MODEL::VMIterator_Pair vmp(p_model->GetVertex(vkey.ID()));
+	      for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
+		   vit!=vmp.second;++vit) {
+		vkey.p_mv=vit->second;
+		if (AddCurrent(ckey,vkey,n,dec,oewmax,oqcdmax,curs))
+		  v3.insert(Vertex_Key(vkey.p_a,vkey.p_b,
+				       vkey.p_e,cur,p_model));
+	      }
+	    }
+	  }
+	}
+      }
+    }
   if (v3.empty() && n>1) {
     delete cur;
     return;
   }
-  if (n==1 || n==m_n-1) curs[""]=cur;
+  if (n==1) curs[""]=cur;
   if (n==m_n-1) {
     m_maxoew=oewmax;
     m_maxoqcd=oqcdmax;
   }
-  Int_Vector isfs(ids.size());
-  for (size_t i(0);i<ids.size();++i)
+  Int_Vector isfs(ids.size()), pols(ids.size());
+  for (size_t i(0);i<ids.size();++i) {
     isfs[i]=m_fl[ids[i]].IsFermion();
-  for (std::map<std::string,Current_Base*>::iterator 
+    switch (m_fl[ids[i]].IntSpin()) {
+    case 0: pols[i]=1; break;
+    case 1: pols[i]=2; break;
+    case 2: pols[i]=m_fl[ids[i]].IsMassive()?3:2; break;
+    default:
+      THROW(not_implemented,"Cannot handle spin "+
+	    ToString(m_fl[i].Spin())+" particles");
+    }
+  }
+  for (std::map<std::string,Current*>::iterator 
 	 cit(curs.begin());cit!=curs.end();++cit) {
     cit->second->SetId(ids);
     cit->second->SetFId(isfs);
     cit->second->FindPermutations();
+    cit->second->InitPols(pols);
     cit->second->SetKey(m_cur[n].size());
     m_cur[n].push_back(cit->second);
     cit->second->Print();
@@ -293,36 +585,52 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 }
 
 bool Amplitude::Construct(Flavour_Vector &fls,
-			       Int_Vector ids,const size_t &n)
+			  Int_Vector ids,const size_t &n)
 {
   if (ids.size()==n) {
     if (n==m_n-1) {
-      if (!m_fl.front().IsOn()) return false;
-      AddCurrent(ids,n,m_fl.front().Bar(),m_dirs.front());
+      if (p_dinfo->Mode()==0) {
+	if (!m_fl.front().IsOn()) return false;
+	AddCurrent(ids,n,m_fl.front().Bar(),m_dirs.front());
+      }
+      else {
+	size_t kid(0);
+	for (size_t i(0);i<ids.size();++i) {
+	  if (ids[i]>(int)kid) break;
+	  else ++kid;
+	}
+	if (kid>=m_cur[1].size()) THROW(fatal_error,"Internal error");
+	if (!m_fl[kid].IsOn()) return false;
+	AddCurrent(ids,n,m_fl[kid].Bar(),m_dirs[kid]);
+	if (kid==0 && (m_cur.back().size()==0 || 
+		       m_cur.back().back()->CId()&1)) return false;
+      }
     }
     else {
-      for (size_t i(0);i<fls.size();++i) {
-	AddCurrent(ids,n,fls[i],0);
-	if (fls[i].Bar()!=fls[i])
-	  AddCurrent(ids,n,fls[i].Bar(),0);
+      if (m_affm.size()) {
+	for (size_t i(0);i<m_affm[n].size();++i) {
+	  Flavour cfl((kf_code)abs(m_affm[n][i]),m_affm[n][i]<0);
+	  AddCurrent(ids,n,cfl,0);
+	}
+      }
+      else {
+	for (size_t i(0);i<fls.size();++i)
+	  AddCurrent(ids,n,fls[i],0);
       }
     }
     return true;
   }
-  // currents are unordered -> use ordered indexing
   size_t last(ids.empty()?0:ids.back());
   ids.push_back(0);
-  if (n==m_n-1) {
-    // calculate only one final current
+  if (p_dinfo->Mode()==0 && n==m_n-1) {
     ids.back()=last+1;
     if (!Construct(fls,ids,n)) return false;
     return m_cur.back().size();
   }
-  for (size_t i(last+1);i<m_n;++i) {
-    // fill currents 0..n-1 for external partons
-    // currents 0..n-2 each index for internal partons
+  int first(p_dinfo->Mode()&&ids.size()==1?last:last+1);
+  for (size_t i(first);i<m_n;++i) {
     ids.back()=i;
-    if (!Construct(fls,ids,n) && n==1) return false;
+    if (!Construct(fls,ids,n) && (n==1 || n==m_n-1)) return false;
   }
   return true;
 }
@@ -343,8 +651,23 @@ bool Amplitude::Construct(const Flavour_Vector &flavs)
     AddCurrent(ids,1,m_fl[i],m_dirs[i]);
   }
   ids.clear();
-  for (size_t i(2);i<m_n;++i)
+  if ((p_dinfo->Mode()&2) && !AddVIDipoles()) return false;
+  if (!Construct(fls,ids,2)) return false;
+  if (p_dinfo->Mode()==1 && !AddRSDipoles()) return false;
+  for (size_t i(3);i<m_n;++i)
     if (!Construct(fls,ids,i)) return false;
+  if (p_dinfo->Mode()) {
+    for (Current_Vector::iterator cit(m_cur.back().begin());
+	 cit!=m_cur.back().end();++cit)
+      if ((*cit)->Sub()==NULL && (*cit)->CId()&1) {
+#ifdef DEBUG__BG
+	msg_Debugging()<<"delete obsolete current "<<*cit<<"\n";
+	(*cit)->Print();
+#endif
+	delete *cit;
+	cit=--m_cur.back().erase(cit);
+      }
+  }
   for (size_t j(m_n-2);j>1;--j)
     for (Current_Vector::iterator cit(m_cur[j].begin());
 	 cit!=m_cur[j].end();++cit)
@@ -354,26 +677,224 @@ bool Amplitude::Construct(const Flavour_Vector &flavs)
 		       <<", O("<<(*cit)->OrderEW()<<","<<(*cit)->OrderQCD()
 		       <<") vs. O("<<m_oew<<","<<m_oqcd<<") / O_{max}("
 		       <<m_maxoew<<","<<m_maxoqcd<<"), n t-ch = "
-		       <<(*cit)->NTChannel()<<" vs. "<<m_minntch<<"\n";
+		       <<(*cit)->NTChannel()<<" vs. "<<m_minntc<<"\n";
 #endif
+	if ((*cit)->Sub() && (*cit)->Sub()->Sub()==*cit)
+	  (*cit)->Sub()->SetSub(NULL);
 	delete *cit;
 	cit=--m_cur[j].erase(cit);
       }
+  if (p_dinfo->Mode()) {
+    for (Current_Vector::iterator cit(m_cur.back().begin());
+	 cit!=m_cur.back().end();++cit)
+      if ((*cit)->Sub()==NULL) {
+	Current *c(*cit);
+	m_cur.back().erase(cit);
+	m_cur.back().insert(m_cur.back().begin(),c);
+	break;
+      }
+    for (Current_Vector::iterator cit(m_scur.begin());
+	 cit!=m_scur.end();++cit)
+      if ((*cit)->Sub()==NULL) {
+#ifdef DEBUG__BG
+	msg_Debugging()<<"delete dipole current "<<**cit<<"\n";
+#endif
+	delete *cit;
+	cit=--m_scur.erase(cit);
+      }
+  }
   FillCombinations();
   msg_Debugging()<<METHOD<<"(): Amplitude statistics (n="
 		 <<m_n<<") {\n  level currents vertices\n"<<std::right;
-  size_t csum(0), vsum(0);
+  size_t csum(0), vsum(0), scsum(0), svsum(0);
   for (size_t i(1);i<m_n;++i) {
-    csum+=m_cur[i].size();
-    size_t cvsum(0);
-    for (size_t j(0);j<m_cur[i].size();++j) cvsum+=m_cur[i][j]->NIn();
+    size_t cvsum(0), csvsum(0);
+    for (size_t j(0);j<m_cur[i].size();++j) {
+      if (m_cur[i][j]->Sub()) {
+	++scsum;
+	csvsum+=m_cur[i][j]->NIn();
+      }
+      else {
+	++csum;
+	cvsum+=m_cur[i][j]->NIn();
+      }
+    }
     msg_Debugging()<<"  "<<std::setw(5)<<i<<" "<<std::setw(8)
 		   <<m_cur[i].size()<<" "<<std::setw(8)<<cvsum<<"\n";
     vsum+=cvsum;
+    svsum+=csvsum;
   }
-  msg_Debugging()<<std::left<<"} -> "<<csum<<" currents, "
-		 <<vsum<<" vertices"<<std::endl;
+  msg_Debugging()<<std::left<<"} -> "<<csum<<"(+"<<scsum<<") currents, "
+		 <<vsum<<"(+"<<svsum<<") vertices"<<std::endl;
   return true;
+}
+
+bool Amplitude::ReadInAmpFile(const std::string &name)
+{
+  std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
+		      +"/Process/Comix/"+name+".map");
+  std::ifstream amp(ampfile.c_str());
+  if (!amp.good()) return false;
+  std::string cname, cmname;
+  amp>>cname>>cmname;
+  if (cname!=name || cmname!=name || amp.eof())
+    THROW(fatal_error,"Corrupted map file '"+ampfile+"'");
+  m_affm.resize(m_n);
+  for (size_t size, i(2);i<m_n;++i) {
+    amp>>size;
+    m_affm[i].resize(size);
+    for (size_t j(0);j<size;++j) amp>>m_affm[i][j];
+  }
+  amp>>cname;
+  if (cname!="eof")
+    THROW(fatal_error,"Corrupted map file '"+ampfile+"'");
+  return true;
+}
+
+void Amplitude::WriteOutAmpFile(const std::string &name)
+{
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()) return;
+#endif
+  std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
+		      +"/Process/Comix/"+name+".map");
+  if (FileExists(ampfile)) return;
+  std::ofstream amp(ampfile.c_str());
+  if (!amp.good()) return;
+  amp<<name<<" "<<name<<"\n";
+  m_affm.resize(m_n);
+  for (size_t i(2);i<m_n;++i) {
+    std::set<long int> kfcs;
+    m_affm[i].clear();
+    for (size_t j(0);j<m_cur[i].size();++j) {
+      long int kfc(m_cur[i][j]->Flav());
+      if (kfcs.find(kfc)==kfcs.end()) m_affm[i].push_back(kfc);
+      kfcs.insert(kfc);
+    }
+    amp<<m_affm[i].size();
+    for (size_t j(0);j<m_affm[i].size();++j) amp<<" "<<m_affm[i][j];
+    amp<<"\n";
+  }
+  amp<<"eof\n";
+}
+
+bool Amplitude::Initialize
+(const size_t &nin,const size_t &nout,const std::vector<Flavour> &flavs,
+ const double &isf,const double &fsf,MODEL::Model_Base *const model,
+ MODEL::Coupling_Map *const cpls,const int smode,const size_t &oew,
+ const size_t &oqcd,const size_t &maxoew,const size_t &maxoqcd,
+ const size_t &minntc,const std::string &name)
+{
+  CleanUp();
+  m_nin=nin;
+  m_nout=nout;
+  m_n=m_nin+m_nout;
+  m_oew=oew;
+  m_oqcd=oqcd;
+  m_minntc=minntc;
+  m_maxoew=Min(oew,maxoew);
+  m_maxoqcd=Min(oqcd,maxoqcd);
+  p_dinfo->SetMode(smode);
+  ReadInAmpFile(name);
+  Int_Vector incs(m_nin,1);
+  incs.resize(flavs.size(),-1);
+  if (!Construct(incs,flavs,model,cpls)) return false;
+  std::map<Flavour,size_t> fc;
+  for (size_t i(nin);i<flavs.size();++i) {
+    std::map<Flavour,size_t>::iterator fit(fc.find(flavs[i]));
+    if (fit==fc.end()) {
+      fc[flavs[i]]=0;
+      fit=fc.find(flavs[i]);
+    }
+    ++fit->second;
+  }
+  m_fsf=fsf;
+  m_sf=m_fsf*isf;
+  return true;
+}
+
+void Amplitude::ConstructNLOEvents()
+{
+  msg_Debugging()<<METHOD<<"(): {\n";
+  for (size_t i(0);i<m_scur.size();++i) {
+    Dipole_Kinematics *kin(m_scur[i]->Sub()->In().front()->Kin());
+    NLO_subevt *sub(new NLO_subevt());
+    m_subs.push_back(sub);
+    sub->m_n=m_nin+m_nout-1;
+    Flavour *fls(new Flavour[sub->m_n]);
+    size_t *ids(new size_t[sub->m_n]);
+    sub->m_i=kin->JI()->Id().front();
+    sub->m_j=kin->JJ()->Id().front();
+    sub->m_k=kin->JK()->Id().front();
+    Current_Vector cur(sub->m_n,NULL);
+    for (size_t i(0), j(0);i<m_nin+m_nout;++i) {
+      if (i==sub->m_j) continue;
+      if (i==sub->m_i) {
+	cur[j]=kin->JIJT();
+	sub->m_ijt=j;
+      }
+      else if (i==sub->m_k) {
+	cur[j]=kin->JKT();
+	sub->m_kt=j;
+      }
+      else {
+	cur[j]=m_cur[1][i];
+      }
+      fls[j]=cur[j]->Flav();
+      ids[j]=cur[j]->CId();
+      ++j;
+    }
+    kin->SetCurrents(cur);
+    sub->p_mom=&kin->Momenta().front();
+    sub->p_fl=fls;
+    sub->p_id=ids;
+    sub->p_dec=&m_decid;
+    sub->m_pname=PHASIC::Process_Base::GenerateName(sub,m_nin);
+    msg_Indent();
+    msg_Debugging()<<*sub<<"\n";
+  }
+  NLO_subevt *sub(new NLO_subevt());
+  m_subs.push_back(sub);
+  sub->m_n=m_nin+m_nout;
+  Flavour *fls(new Flavour[sub->m_n]);
+  size_t *ids(new size_t[sub->m_n]);
+  for (size_t i(0);i<m_nin+m_nout;++i) {
+    fls[i]=m_fl[i];
+    ids[i]=1<<i;
+  }
+  sub->p_mom=&m_p.front();
+  sub->p_fl=fls;
+  sub->p_id=ids;
+  sub->p_dec=&m_decid;
+  sub->m_pname=PHASIC::Process_Base::GenerateName(sub,m_nin);
+  sub->m_i=sub->m_j=sub->m_k=0;
+  {
+    msg_Indent();
+    msg_Debugging()<<*sub<<"\n";
+  }
+  for (size_t i(0);i<m_subs.size();++i) m_subs[i]->p_real=sub;
+  m_sid.resize(1,0);
+  for (size_t i(1);i<m_cur.back().size();++i)
+    for (size_t j(0);j<m_subs.size();++j)
+      if (m_cur.back()[i]->Sub()==m_scur[j]) {
+	m_sid.push_back(j);
+	break;
+      }
+  msg_Debugging()<<"}\n";
+}
+
+void Amplitude::ConstructDSijMap()
+{
+  m_dsm.clear();
+  size_t c(0);
+  std::vector<int> plist(m_fl.size());
+  for (size_t i(0);i<m_fl.size();++i)
+    plist[i]=m_fl[i].Strong()?c++:0;
+  m_dsij.resize(c,std::vector<double>(c));
+  for (size_t j(1);j<m_cur.back().size();++j)
+    m_dsm[j]=std::pair<int,int>
+      (plist[m_cur.back()[j]->Sub()->Sub()->Id().front()],
+       plist[m_cur.back()[j]->Sub()->Id().front()]);
 }
 
 void Amplitude::FillCombinations()
@@ -382,6 +903,8 @@ void Amplitude::FillCombinations()
   msg_Debugging()<<"  flavours {\n";
   for (size_t i(2);i<m_n-1;++i)
     for (size_t j(0);j<m_cur[i].size();++j) {
+      if (m_cur[i][j]->Sub() || 
+	  m_cur[i][j]->Flav().IsDummy()) continue;
       size_t id(m_cur[i][j]->CId());
       m_flavs[id].push_back(m_cur[i][j]->Flav());
       m_flavs[(1<<m_n)-1-id].push_back(m_cur[i][j]->Flav().Bar());
@@ -392,8 +915,13 @@ void Amplitude::FillCombinations()
   msg_Debugging()<<"  combinations {\n";
   for (size_t i(2);i<m_n;++i)
     for (size_t j(0);j<m_cur[i].size();++j) {
+      if (m_cur[i][j]->Sub() ||
+	  m_cur[i][j]->Flav().IsDummy()) continue;
       Vertex_Vector ins(m_cur[i][j]->In());
       for (size_t k(0);k<ins.size();++k) {
+	if (ins[k]->JE() ||
+	    ins[k]->JA()->Flav().IsDummy() ||
+	    ins[k]->JA()->Flav().IsDummy()) continue;
 	size_t ida(ins[k]->JA()->CId());
 	size_t idb(ins[k]->JB()->CId());
 	size_t idc((1<<m_n)-1-ins[k]->JC()->CId());
@@ -415,12 +943,12 @@ bool Amplitude::Map(const Amplitude &ampl,Flavour_Map &flmap)
 {
   flmap.clear();
   msg_Debugging()<<METHOD<<"(): {\n";
-  size_t svlmode(Vertex_Base::VLMode());
-  Vertex_Base::SetVLMode(7);
+  size_t svlmode(Vertex::VLMode());
+  Vertex::SetVLMode(7);
   for (size_t n(1);n<m_n;++n) {
     if (ampl.m_cur[n].size()!=m_cur[n].size()) {
       msg_Debugging()<<"  current count differs\n} no match\n";
-      Vertex_Base::SetVLMode(svlmode);
+      Vertex::SetVLMode(svlmode);
       flmap.clear();
       return false;
     }
@@ -434,7 +962,7 @@ bool Amplitude::Map(const Amplitude &ampl,Flavour_Map &flmap)
 	    m_cur[n][i]->Flav().IsAnti()) {
 	  msg_Debugging()<<"    particle type differs\n  }\n";
 	  msg_Debugging()<<"} no match\n";
-          Vertex_Base::SetVLMode(svlmode);
+          Vertex::SetVLMode(svlmode);
 	  flmap.clear();
 	  return false;
 	}
@@ -444,7 +972,7 @@ bool Amplitude::Map(const Amplitude &ampl,Flavour_Map &flmap)
 	    m_cur[n][i]->Flav().Width()) {
 	  msg_Debugging()<<"    mass or width differs\n  }\n";
 	  msg_Debugging()<<"} no match\n";
-          Vertex_Base::SetVLMode(svlmode);
+          Vertex::SetVLMode(svlmode);
 	  flmap.clear();
 	  return false;
 	}
@@ -452,7 +980,7 @@ bool Amplitude::Map(const Amplitude &ampl,Flavour_Map &flmap)
 	    m_cur[n][i]->Flav().StrongCharge()) {
 	  msg_Debugging()<<"    color structure differs\n  }\n";
 	  msg_Debugging()<<"} no match\n";
-          Vertex_Base::SetVLMode(svlmode);
+          Vertex::SetVLMode(svlmode);
 	  flmap.clear();
 	  return false;
 	}
@@ -463,7 +991,7 @@ bool Amplitude::Map(const Amplitude &ampl,Flavour_Map &flmap)
 	    flmap[ampl.m_cur[n][i]->Flav()]) {
 	  msg_Debugging()<<"    current differs\n  }\n";
 	  msg_Debugging()<<"} no match\n";
-	  Vertex_Base::SetVLMode(svlmode);
+	  Vertex::SetVLMode(svlmode);
 	  flmap.clear();
 	  return false;
 	}
@@ -473,17 +1001,18 @@ bool Amplitude::Map(const Amplitude &ampl,Flavour_Map &flmap)
       if (avin.size()!=vin.size()) {
 	msg_Debugging()<<"    vertex count differs\n  }\n";
 	msg_Debugging()<<"} no match\n";
-	Vertex_Base::SetVLMode(svlmode);
+	Vertex::SetVLMode(svlmode);
 	flmap.clear();
 	return false;
       }
+      if (n>1)
       for (size_t j(0);j<vin.size();++j) {
 #ifdef DEBUG__BG
 	msg_Debugging()<<"    check m_in["<<j<<"] {\n";
 #endif
 	if (!avin[j]->Map(*vin[j])) {
 	  msg_Debugging()<<"    } no match\n  }\n} no match\n";
-	  Vertex_Base::SetVLMode(svlmode);
+	  Vertex::SetVLMode(svlmode);
 	  flmap.clear();
 	  return false;
 	}
@@ -495,7 +1024,7 @@ bool Amplitude::Map(const Amplitude &ampl,Flavour_Map &flmap)
     }
   }
   msg_Debugging()<<"} matched\n";
-  Vertex_Base::SetVLMode(svlmode);
+  Vertex::SetVLMode(svlmode);
   return true;
 }
 
@@ -521,13 +1050,10 @@ void *Amplitude::TCalcJL(void *arg)
 
 void Amplitude::CalcJL()
 {
-  for (size_t i(0);i<m_cur[m_n-1].size();++i) {
-    const Vertex_Vector &in(m_cur[m_n-1][i]->In());
-    for (size_t j(0);j<in.size();++j)
-      in[j]->SetCplFac(CouplingFactor(in[j]));
-  }
-  for (size_t i(0);i<m_cur[1].size();++i) 
+  SetCouplings();
+  for (size_t i(0);i<m_n;++i) 
     m_cur[1][i]->ConstructJ(m_p[i],m_ch[i],m_cl[i][0],m_cl[i][1]);
+  for (size_t i(m_n);i<m_cur[1].size();++i) m_cur[1][i]->Evaluate();
   for (size_t n(2);n<m_n;++n) {
 #ifdef USING__Threading
     if (m_cts.empty()) {
@@ -555,42 +1081,42 @@ void Amplitude::CalcJL()
       }
     }
 #else
-    for (size_t i(0);i<m_cur[n].size();++i) 
+    for (size_t i(0);i<m_cur[n].size();++i)
       m_cur[n][i]->Evaluate();
 #endif
   }
 }
 
-double Amplitude::CouplingFactor(Vertex_Base *const v) const
+void Amplitude::SetCouplings() const
 {
-#ifdef DEBUG__BG
+#ifdef DEBUG__CF
   msg_Debugging()<<METHOD<<"(): {\n";
 #endif
-  double fac(1.0);
-  int oqcd(v->OrderQCD()+v->JA()->OrderQCD()+v->JB()->OrderQCD());
-  int oew(v->OrderEW()+v->JA()->OrderEW()+v->JB()->OrderEW());
-//   if (v->JE()) {
-//     oqcd+=v->JE()->OrderQCD();
-//     oew+=v->JE()->OrderEW();
-//   }
-  if (p_aqcd && oqcd) {
-#ifdef DEBUG__BG
-    msg_Debugging()<<"  qcd: "<<sqrt(p_aqcd->Factor())<<" ^ "<<oqcd
-		   <<" = "<<pow(p_aqcd->Factor(),oqcd/2.0)<<"\n";
+  for (size_t i(0);i<m_cpls.size();++i) {
+    double fac(1.0);
+    Vertex *v(m_cpls[i].p_v);
+    size_t oqcd(m_cpls[i].m_oqcd), oew(m_cpls[i].m_oew);
+    MODEL::Coupling_Data *aqcd(m_cpls[i].p_aqcd);
+    MODEL::Coupling_Data *aqed(m_cpls[i].p_aqed);
+    if (aqcd && oqcd) {
+#ifdef DEBUG__CF
+      msg_Debugging()<<"  qcd: "<<sqrt(aqcd->Factor())<<" ^ "<<oqcd
+		     <<" = "<<pow(aqcd->Factor(),oqcd/2.0)<<"\n";
 #endif
-    fac*=pow(p_aqcd->Factor(),oqcd/2.0);
+      fac*=pow(aqcd->Factor(),oqcd/2.0);
+    }
+    if (aqed && oew) {
+#ifdef DEBUG__CF
+      msg_Debugging()<<"  qed: "<<sqrt(aqed->Factor())<<" ^ "<<oew
+		     <<" = "<<pow(aqed->Factor(),oew/2.0)<<"\n";
+#endif
+      fac*=pow(aqed->Factor(),oew/2.0);
+    }
+    v->SetCplFac(fac);
   }
-  if (p_aqed && oew) {
-#ifdef DEBUG__BG
-    msg_Debugging()<<"  qed: "<<sqrt(p_aqed->Factor())<<" ^ "<<oew
-		   <<" = "<<pow(p_aqed->Factor(),oew/2.0)<<"\n";
+#ifdef DEBUG__CF
+  msg_Debugging()<<"}\n";
 #endif
-    fac*=pow(p_aqed->Factor(),oew/2.0);
-  }
-#ifdef DEBUG__BG
-  msg_Debugging()<<"} -> "<<fac<<"\n";
-#endif
-  return fac;
 }
 
 void Amplitude::ResetZero()
@@ -601,7 +1127,7 @@ void Amplitude::ResetZero()
   }
 }
 
-void Amplitude::SetMomenta(const Vec4D_Vector &moms)
+bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
 {
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"():\n";
@@ -619,6 +1145,27 @@ void Amplitude::SetMomenta(const Vec4D_Vector &moms)
   if (!IsEqual(sum,Vec4D(),accu)) 
     msg_Error()<<METHOD<<"(): Four momentum not conserved. sum = "
 	       <<sum<<"."<<std::endl;
+  if (m_subs.empty()) return true;
+  p_dinfo->SetStat(1);
+  for (size_t i(0);i<m_cur[1].size();++i) m_cur[1][i]->SetP(m_p[i]);
+  for (size_t i(0);i<m_scur.size();++i)
+    m_scur[i]->Sub()->In().front()->Kin()->Evaluate();
+  return p_dinfo->Stat();
+}
+
+bool Amplitude::JetTrigger(PHASIC::Combined_Selector *const sel)
+{
+  if (m_scur.empty() || sel==NULL) return true;
+  NLO_subevtlist tmp;
+  tmp.resize(1,m_subs.back());
+  bool trig(m_trig=sel->JetTrigger(m_p,&tmp));
+  for (size_t i(0);i<m_scur.size();++i) {
+    tmp.back()=m_subs[i];
+    Dipole_Kinematics *kin(m_scur[i]->Sub()->In().front()->Kin());
+    kin->AddTrig(sel->JetTrigger(kin->Momenta(),&tmp));
+    trig|=kin->Trig();
+  }
+  return trig;
 }
 
 void Amplitude::SetColors(const Int_Vector &rc,
@@ -636,36 +1183,31 @@ void Amplitude::SetColors(const Int_Vector &rc,
 #endif
   }
   if (set) {
-    Vertex_Base::SetCIMin(1);
-    Vertex_Base::SetCIMax(0);
+    Color_Calculator::SetCIMin(1);
+    Color_Calculator::SetCIMax(0);
   }
   else {
-    Vertex_Base::SetCIMin(1);
-    Vertex_Base::SetCIMax(3);
+    Color_Calculator::SetCIMin(1);
+    Color_Calculator::SetCIMax(3);
   }
+}
+
+double Amplitude::EpsSchemeFactor(const Vec4D_Vector &mom) const
+{
+  if (p_loop) return p_loop->Eps_Scheme_Factor(mom);
+  return 4.0*M_PI;
 }
 
 bool Amplitude::Evaluate(const Int_Vector &chirs)
 {
-  for (size_t j(0);j<m_n;++j) m_ch[j]=chirs[j];
-  CalcJL();
-  size_t ihp(MakeId(m_ch,1)), ihm(MakeId(m_ch,-1));
-  QComplex res;
-  if (m_pmode=='D') res=m_cur[1].front()->
-    Contract<double>(*m_cur.back()[0],ihm,ihp);
-  else if (m_pmode=='Q') res=m_cur[1].front()->
-    Contract<long double>(*m_cur.back()[0],ihm,ihp);
-  else THROW(not_implemented,"Internal error");
-#ifdef DEBUG__BG
-  msg_Debugging()<<"A"<<chirs<<" = "<<res<<" "
-		 <<std::abs(res)<<" {"<<ihm<<","<<ihp<<"}\n";
-#endif
-  m_res=(res*std::conj(res)).real();
+  THROW(not_implemented,"Helicity sampling currently disabled");
   return true;
 }
 
 bool Amplitude::EvaluateAll()
 {
+  if (p_loop) p_dinfo->SetDRMode(p_loop->DRMode());
+  for (size_t i(0);i<m_subs.size();++i) m_subs[i]->Reset();
   for (size_t j(0);j<m_n;++j) m_ch[j]=0;
   CalcJL();
 #ifdef DEBUG__BG
@@ -673,12 +1215,8 @@ bool Amplitude::EvaluateAll()
 #endif
   if (m_pmode=='D') {
     DComplex_Vector ress(m_ress.size(),DComplex(0.0));
-    m_cur[1].front()->Contract(*m_cur.back()[0],m_cchirs,ress);
+    m_cur.back()[0]->Contract(*m_cur[1].front(),m_cchirs,ress);
     for (size_t i(0);i<m_ress.size();++i) m_ress[i]=ress[i];
-  }
-  else if (m_pmode=='Q') {
-    for (size_t i(0);i<m_ress.size();++i) m_ress[i]=0.0;
-    m_cur[1].front()->Contract(*m_cur.back()[0],m_cchirs,m_ress);
   }
   else {
     THROW(not_implemented,"Internal error");
@@ -689,68 +1227,161 @@ bool Amplitude::EvaluateAll()
   double csum(0.0);
   for (size_t j(0);j<m_ress.size();++j) {
 #ifdef DEBUG__BG
-    msg_Debugging()<<"A["<<j<<"]"<<m_chirs[j]
+    msg_Debugging()<<"A["<<j<<"]"<<m_ress(j)
 		   <<" = "<<m_ress[j]<<" -> "<<std::abs(m_ress[j])<<"\n";
 #endif
     csum+=(m_ress[j]*std::conj(m_ress[j])).real();
   }
-  m_res=csum;
+  m_res=csum/m_sf;
+  m_cmur[1]=m_cmur[0]=csum=0.0;
+  if (p_dinfo->Mode()) {
+    MODEL::Coupling_Data *cpl(m_cpls.front().p_aqcd);
+    double asf(cpl->Default()*cpl->Factor()/(2.0*M_PI));
+    double mu2(cpl->Scale());
+    if (p_loop) {
+      p_loop->SetRenScale(mu2);
+      p_loop->Calc(m_p);
+    }
+    if (p_dinfo->Mode()==1) {
+      if (!m_trig) m_res=0.0;
+      m_subs.back()->m_me=m_subs.back()->m_mewgt=m_res;
+    }
+    if (p_dinfo->Mode()&2) m_dsij[0][0]=m_res;
+    for (size_t j(1);j<m_cur.back().size();++j) {
+#ifdef DEBUG__BG
+      msg_Debugging()<<"Dipole "<<m_cur.back()[j]->Sub()->Sub()->Id()
+		     <<" <-> "<<m_cur.back()[j]->Sub()->Id()<<"\n";
+#endif
+      if (m_pmode=='D') {
+	for (size_t i(0);i<m_rress.size();++i) m_cress[i]=m_rress[i]=0.0;
+	m_cur.back()[j]->Contract(*m_cur.back()[j]->Sub(),m_cchirs,m_rress);
+	m_cur.back()[j]->Contract(*m_cur.back()[j]->Sub(),m_cchirs,m_cress,1);
+	m_cur.back()[j]->Contract(*m_cur.back()[j]->Sub(),m_cchirs,m_cress,2);
+      }
+      else {
+	THROW(not_implemented,"Internal error");
+      }
+      double ccsum(0.0);
+      for (size_t i(0);i<m_rress.size();++i) {
+#ifdef DEBUG__BG
+	msg_Debugging()<<"A["<<i<<"]"<<m_ress(i)<<" = "
+		       <<m_rress[i]<<" * "<<m_cress[i]<<" -> "
+		       <<m_rress[i]*std::conj(m_cress[i])<<"\n";
+#endif
+	ccsum+=(m_rress[i]*std::conj(m_cress[i])).real();
+      }
+#ifdef DEBUG__BG
+      msg_Debugging()<<"ccsum = "<<ccsum<<" for "
+		     <<m_cur.back()[j]->Sub()->Id()
+		     <<m_cur.back()[j]->Sub()->Sub()->Id()<<"\n";
+#endif
+      ccsum/=m_sf;
+      if (p_dinfo->Mode()==1) {
+	m_subs[m_sid[j]]->m_me=m_subs[m_sid[j]]->m_mewgt=ccsum;
+      }
+      else {
+	Dipole_Kinematics *kin=m_cur.back()[j]->
+	  Sub()->Sub()->In().front()->Kin();
+	double lf(log(2.0*M_PI*mu2/EpsSchemeFactor(m_p)/
+		      dabs(kin->JIJT()->P()*kin->JK()->P())));
+#ifdef DEBUG__BG
+	msg_Debugging()<<"e^2 = "<<kin->Res(2)<<", e = "<<kin->Res(1)
+		       <<", f = "<<kin->Res(0)<<", l = "<<lf
+		       <<" ( "<<p_loop<<" )\n";
+#endif
+	m_dsij[m_dsm[j].first][m_dsm[j].second]=ccsum;
+	m_dsij[m_dsm[j].second][m_dsm[j].first]=ccsum;
+	m_cmur[1]-=ccsum*asf*kin->Res(2);
+	m_cmur[0]-=ccsum*asf*(kin->Res(1)+lf*kin->Res(2));
+	ccsum*=-asf*(kin->Res(0)+lf*kin->Res(1)+0.5*sqr(lf)*kin->Res(2));
+      }
+      csum+=ccsum;
+    }
+    if (p_loop) {
+      double cw(p_loop->Mode()?1.0:m_res);
+      if (p_loop->ColMode()==0) cw*=3.0/p_colint->GlobalWeight();
+      if (p_dinfo->Mode()&8) {
+	double e1p(-m_cmur[0]/m_res/asf), e2p(-m_cmur[1]/m_res/asf);
+	if (!IsEqual(e2p,p_loop->ME_E2()))
+	  msg_Error()<<METHOD<<"(): Double pole does not match. V -> "
+		     <<p_loop->ME_E2()<<", I -> "<<e2p<<", rel. diff. "
+		     <<(e2p/p_loop->ME_E2()-1.0)<<".\n";
+	if (!IsEqual(e1p,p_loop->ME_E1()))
+	  msg_Error()<<METHOD<<"(): Single pole does not match. V -> "
+		     <<p_loop->ME_E1()<<", I -> "<<e1p<<", rel. diff. "
+		     <<(e1p/p_loop->ME_E1()-1.0)<<".\n";
+      }
+      csum+=cw*asf*p_loop->ME_Finite();
+      if (m_sccmur) {
+	double b0(11.0/6.0*3.0-2.0/3.0*0.5*Flavour(kf_quark).Size()/2);
+	m_cmur[0]+=cw*asf*(p_loop->ME_E1()+m_oqcd*b0);
+	m_cmur[1]+=cw*asf*p_loop->ME_E2();
+      }
+      else {
+	m_cmur[0]+=cw*asf*p_loop->ScaleDependenceCoefficient(1);
+	m_cmur[1]+=cw*asf*p_loop->ScaleDependenceCoefficient(2);
+      }
+    }
+    if ((p_dinfo->Mode()&2) && !(p_dinfo->Mode()&4)) m_res=0.0;
+  }
+#ifdef DEBUG__BG
+  msg_Debugging()<<"m_res = "<<m_res<<", csum = "<<csum
+		 <<" -> "<<m_res+csum<<"\n";
+#endif
+  m_res+=csum;
   return true;
 }
 
-bool Amplitude::CheckChirs(const Int_Vector &chirs)
+double Amplitude::Differential(const std::vector<Vec4D> &momenta)
 {
-  Int_Vector q(m_nf+1,0);
-  size_t p(0), m(0), mp(0);
-  if (m_maxoew>0) return true;
-  for (size_t i(0);i<chirs.size();++i) {
-    if (m_fl[i].IsMassive()) ++mp;
-    if (m_fl[i].IsQuark() && !m_fl[i].IsMassive()) 
-      q[m_fl[i].Kfcode()]+=chirs[i];
-    if (chirs[i]>0) ++p;
-    else if (chirs[i]<0) ++m;
-    else THROW(fatal_error,"Invalid helicities");
-  }
-  for (size_t i(0);i<q.size();++i) 
-    if (q[i]!=0) return false;
-  return mp>0 || (p>1 && m>1);
+  return Differential(momenta,p_colint->I(),p_colint->J());
 }
 
-bool Amplitude::ConstructChirs(Int_Vector chirs,const size_t &i)
+double Amplitude::Differential
+(const std::vector<Vec4D> &momenta,
+ const Int_Vector &ci,const Int_Vector &cj,const bool set)
 {
-  if (i==chirs.size()) {
-    if (CheckChirs(chirs)) {
-#ifdef DEBUG__BG
-      msg_Debugging()<<METHOD<<"(): Add configuration "<<chirs<<"\n";
-#endif
-      m_chirs.push_back(chirs);
-      m_ress.push_back(0.0);
-    }
-    return true;
+  SetColors(ci,cj,set);
+  if (p_helint!=NULL && p_helint->On()) {
+    Evaluate(p_helint->Chiralities());
+    return m_res;
   }
-  if (chirs[i]!=0) {
-    ConstructChirs(chirs,i+1);
+  EvaluateAll();
+  return m_res;
+}
+
+bool Amplitude::ConstructChirs()
+{
+  m_ress=Spin_Structure<DComplex>(m_fl,0.0);
+  m_cchirs.resize(m_ress.size());
+  m_cur.back().front()->HM().resize(m_ress.size());
+  for (size_t i(0);i<m_ress.size();++i) {
+    m_cur.back().front()->HM()[i]=i;
+    m_cchirs[i]=1;
   }
-  else {
-    switch (m_fl[i].IntSpin()) {
-    case 0:
-      ConstructChirs(chirs,i+1);
-      break;
-    case 1:
-      for (int ch(1);ch>=-1;ch-=2) {
-	chirs[i]=ch;
-	ConstructChirs(chirs,i+1);
-      }
-      break;
-    case 2:
-      for (int ch(m_fl[i].IsMassive()?3:1);ch>=-1;ch-=2) {
-	chirs[i]=ch;
-	ConstructChirs(chirs,i+1);
-      }
-      break;
-    default:
-      THROW(not_implemented,"Cannot handle spin "+
-	    ToString(m_fl[i].Spin())+" particles");
+  if (p_dinfo->Mode()==0) return true;
+  m_cress=m_rress=m_ress;
+  for (size_t i(0);i<m_scur.size();++i) {
+    Dipole_Kinematics *kin(m_scur[i]->Sub()->In().front()->Kin());
+    Current *last(NULL);
+    for (size_t j(1);j<m_cur.back().size();++j)
+      if (m_cur.back()[j]->Sub()==m_scur[i]) last=m_cur.back()[j];
+    last->HM().resize(m_ress.size(),0);
+    kin->PM().resize(m_ress.size(),0);
+    int ii(kin->JI()?kin->JI()->Id().front():-1);
+    int ij(kin->JJ()?kin->JJ()->Id().front():-1);
+    size_t ik(kin->JK()->Id().front());
+    Flavour_Vector cfl(1,m_scur[i]->Flav());
+    for (size_t j(0);j<m_n;++j) if (j!=ik) cfl.push_back(m_fl[j]);
+    Spin_Structure<int> tch(cfl,0.0);
+    for (size_t j(0);j<m_ress.size();++j) {
+      Int_Vector id(m_ress.GetSpinCombination(j)), di(1,id[ik]);
+      for (size_t k(0);k<m_n;++k)
+	if (k!=ik) di.push_back(id[k]);
+      last->HM()[tch.GetNumber(di)]=j;
+      if (ii==-1 || ij==-1 || id[ii]==id[ij]) continue;
+      std::swap<int>(id[ii],id[ij]);
+      kin->PM()[j]=m_ress.GetNumber(id);
     }
   }
   return true;
@@ -758,24 +1389,58 @@ bool Amplitude::ConstructChirs(Int_Vector chirs,const size_t &i)
 
 bool Amplitude::Construct
 (const Int_Vector &incs,const Flavour_Vector &flavs,
- Model *const model,MODEL::Coupling_Map *const cpls)
+ MODEL::Model_Base *const model,MODEL::Coupling_Map *const cpls)
 {
-  CleanUp();
   p_model=model;
   m_dirs=incs;
   if (!Construct(flavs)) return false;
-  Int_Vector chirs(flavs.size(),0);
-  if (!ConstructChirs(chirs,0)) return false;
-  for (size_t i(0);i<m_ress.size();++i) {
-    size_t ihp(MakeId(m_chirs[i],1)), ihm(MakeId(m_chirs[i],-1));
-    m_cchirs[ihm][ihp]=i;
-#ifdef DEBUG__BG
-    msg_Debugging()<<"map A"<<m_chirs[i]<<" -> {"<<ihm
-		   <<MakeId(ihm,m_n)<<","<<ihp<<MakeId(ihp,m_n)<<"}\n";
-#endif
+  if (!ConstructChirs()) return false;
+  if (p_dinfo->Mode()==1) ConstructNLOEvents();
+  if (p_dinfo->Mode()&2) ConstructDSijMap();
+  MODEL::Coupling_Data *rqcd(cpls->Get("Alpha_QCD"));
+  MODEL::Coupling_Data *rqed(cpls->Get("Alpha_QED"));
+  for (size_t i(0);i<m_cur[m_n-1].size();++i) {
+    for (size_t j(0);j<m_cur[m_n-1][i]->In().size();++j) {
+      Vertex *v(m_cur[m_n-1][i]->In()[j]);
+      int oqcd(v->OrderQCD()+v->JA()->OrderQCD()+v->JB()->OrderQCD());
+      int oew(v->OrderEW()+v->JA()->OrderEW()+v->JB()->OrderEW());
+      if (v->JE()) {
+	oqcd+=v->JE()->OrderQCD();
+	oew+=v->JE()->OrderEW();
+      }
+      m_cpls.push_back(Coupling_Info(v,oqcd,oew,rqcd,rqed));
+    }
   }
-  if (cpls->find("Alpha_QCD")!=cpls->end()) p_aqcd=(*cpls)["Alpha_QCD"];
-  if (cpls->find("Alpha_QED")!=cpls->end()) p_aqed=(*cpls)["Alpha_QED"];
+  if (p_dinfo->Mode()==1)
+  for (size_t i(0);i<m_scur.size();++i) {
+    MODEL::Coupling_Data *aqcd(cpls->Get("Alpha_QCD",m_subs[i]));
+    if (aqcd==NULL && rqcd) {
+      aqcd = new MODEL::Coupling_Data(*rqcd,m_subs[i]);
+      cpls->insert(std::make_pair("Alpha_QCD",aqcd));
+    }
+    MODEL::Coupling_Data *aqed(cpls->Get("Alpha_QED",m_subs[i]));
+    if (aqed==NULL && rqed) {
+      aqed = new MODEL::Coupling_Data(*rqed,m_subs[i]);
+      cpls->insert(std::make_pair("Alpha_QED",aqed));
+    }
+    Current *last(NULL);
+    for (size_t j(0);j<m_cur.back().size();++j)
+      if (m_cur.back()[j]->Sub()==m_scur[i]) {
+	last=m_cur.back()[j];
+	break;
+      }
+    if (last==NULL) THROW(fatal_error,"Internal error");
+    for (size_t j(0);j<last->In().size();++j) {
+      Vertex *v(last->In()[j]);
+      int oqcd(v->OrderQCD()+v->JA()->OrderQCD()+v->JB()->OrderQCD());
+      int oew(v->OrderEW()+v->JA()->OrderEW()+v->JB()->OrderEW());
+      if (v->JE()) {
+	oqcd+=v->JE()->OrderQCD();
+	oew+=v->JE()->OrderEW();
+      }
+      m_cpls.push_back(Coupling_Info(v,oqcd,oew,aqcd,aqed));
+    }
+  }
   return true;
 }
 
@@ -794,30 +1459,70 @@ Amplitude::CombinedFlavour(const size_t &idij) const
   return fit->second;
 }
 
+void Amplitude::FillAmplitudes
+(std::vector<Spin_Amplitudes> &amps,
+ std::vector<std::vector<Complex> > &cols)
+{
+  cols.push_back(std::vector<Complex>(1,1.0));
+  amps.push_back(Spin_Amplitudes(m_fl,Complex(0.0,0.0)));
+  for (size_t i(0);i<m_ress.size();++i)
+    amps.back().Insert(Complex(m_ress[i]),m_ress(i));
+}
+
+double Amplitude::Coupling(const int mode) const
+{
+  MODEL::Coupling_Data *cpl(m_cpls.front().p_aqcd);
+  return cpl->Default()*cpl->Factor();
+}
+
+void Amplitude::FillMEWeights(ME_wgtinfo &wgtinfo) const
+{
+  if (wgtinfo.m_nx<2) return;
+  for (int i=0;i<2;i++) wgtinfo.p_wx[i]=m_cmur[i];
+}
+
 void Amplitude::SetGauge(const size_t &n)
 {
   Vec4D k(1.0,0.0,1.0,0.0);
   switch(n) {
-  case 1: k=Vec4D(1.0,1.0,0.0,0.0); break;
-  case 2: k=Vec4D(1.0,invsqrttwo,invsqrttwo,0.0); break;
-  case 3: k=Vec4D(1.0,invsqrttwo,-invsqrttwo,0.0); break;
-  case 4: k=Vec4D(1.0,invsqrttwo,0.0,invsqrttwo); break;
-  case 5: k=Vec4D(1.0,invsqrttwo,0.0,-invsqrttwo); break;
-  case 6: k=Vec4D(1.0,0.0,invsqrttwo,invsqrttwo); break;
-  case 7: k=Vec4D(1.0,0.0,invsqrttwo,-invsqrttwo); break;
+  case 1: k=Vec4D(1.0,0.0,invsqrttwo,invsqrttwo); break;
+  case 2: k=Vec4D(1.0,invsqrttwo,0.0,invsqrttwo); break;
+  case 3: k=Vec4D(1.0,invsqrttwo,invsqrttwo,0.0); break;
   }
   for (size_t j(1);j<m_cur.size();++j)
     for (size_t i(0);i<m_cur[j].size();++i) m_cur[j][i]->SetGauge(k);
+  for (size_t i(0);i<m_scur.size();++i) m_scur[i]->SetGauge(k);
 }
 
-bool Amplitude::GaugeTest(const Vec4D_Vector &moms)
+bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
 {
+  if (mode==0) {
+    size_t nt(0);
+    bool cnt(true);
+    while (cnt) {
+      while (!p_colint->GeneratePoint());
+      SetColors(p_colint->I(),p_colint->J());
+      if (!GaugeTest(moms,1)) return false;
+      if (m_res!=0.0) cnt=false;
+      if (cnt) {
+	if (++nt>100) 
+	  msg_Error()<<METHOD<<"(): Zero result. Redo gauge test."<<std::endl;
+	while (!p_colint->GeneratePoint());
+      }
+    }
+    return true;
+  }
   msg_Tracking()<<METHOD<<"(): Performing gauge test ..."<<std::flush;
   msg_Indent();
-  SetGauge(0);
+  if (m_pmode=='D') {
+    int sd(Spinor<double>::DefaultGauge());
+    Spinor<double>::SetGauge(sd>0?sd-1:sd+1);
+  }
+  SetGauge(2);
   SetMomenta(moms);
   if (!EvaluateAll()) return false;
-  QComplex_Vector ress(m_ress);
+  Spin_Structure<DComplex> ress(m_ress);
+  if (m_pmode=='D') Spinor<double>::ResetGauge();
   SetGauge(1);
   SetMomenta(moms);
   if (!EvaluateAll()) return false;
@@ -834,7 +1539,7 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms)
     for (size_t i(0);i<m_ress.size();++i) {
       xs+=sqr(std::abs(m_ress[i]));
       rxs+=sqr(std::abs(ress[i]));
-      msg_Debugging()<<"A("<<m_chirs[i]<<") = "<<std::abs(m_ress[i])
+      msg_Debugging()<<"A("<<m_ress(i)<<") = "<<std::abs(m_ress[i])
 		     <<" vs. "<<std::abs(ress[i])<<"\n";
     }
     msg_Debugging()<<"\\sigma_{tot} = "<<xs<<" vs. "<<rxs
@@ -860,7 +1565,7 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms)
   }
   else {
     for (size_t i(0);i<m_ress.size();++i) {
-      msg_Debugging()<<"A("<<m_chirs[i]
+      msg_Debugging()<<"A("<<m_ress(i)
 		     <<") = "<<m_ress[i]<<" vs. "<<ress[i]<<" -> dev. "
 		     <<m_ress[i].real()/ress[i].real()-1.0<<" "
 		     <<m_ress[i].imag()/ress[i].imag()-1.0<<"\n";
@@ -959,6 +1664,7 @@ void Amplitude::WriteOutGraph
 
 void Amplitude::WriteOutGraphs(const std::string &file) const
 {
+  msg_Tracking()<<METHOD<<"(): Write diagrams to '"<<file<<"'.\n";
   Graph_Node graphs("j_1",true);
   graphs.push_back("    %% "+graphs.back());
   m_cur.back().front()->CollectGraphs(&graphs);
@@ -1023,4 +1729,3 @@ void Amplitude::PrintStatistics
   if (mode&1) str<<std::left<<"} -> ";
   str<<csum<<" currents, "<<vsum<<" vertices"<<std::endl;
 }
-

@@ -33,6 +33,26 @@ Interaction_Model_SM_EHC::Interaction_Model_SM_EHC(MODEL::Model_Base * _model,
   
   double scale = rpa->gen.CplScale();
   
+  g1    = Kabbala(string("g_1"),
+		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),scale)));
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
+  }else{
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ComplexConstant(std::string("csin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ComplexConstant(std::string("cvev")));
+  }
+  
   Data_Reader read(" ",";","!","=");
   double ehc_scale2 = read.GetValue<double>("EHC_SCALE2", sqr(Flavour(kf_h0).Mass()));
   p_model->GetScalarConstants()->insert(std::make_pair(std::string("EHC_SCALE2"),ehc_scale2));
@@ -45,25 +65,16 @@ Interaction_Model_SM_EHC::Interaction_Model_SM_EHC(MODEL::Model_Base * _model,
   double asggh=read.GetValue<double>("ALPHAS_GGH",ScalarFunction(std::string("alpha_S"),ehc_scale2));
   ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(std::string("h0_gg_fac"))*
 		  asggh/
-		  (2.*M_PI*ScalarConstant(std::string("vev"))));
+		  (2.*M_PI*vev.Value()));
   msg_Info()<<METHOD<<"() {\n"
       <<"  ggh coupling is "<<ghgg.Value()<<" ( \\alpha_s = "<<asggh<<" )\n"
       <<"  pph coupling is "<<ghpp.Value()<<" ( 1/\\alpha_qed = "<<1./aqedpph<<" )\n"
       <<"  taken at \\mu = "<<sqrt(ehc_scale2)<<"\n}\n";
-  g1    = Kabbala(string("g_1"),
-		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),scale)));
-  g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
-		  g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
   g3  = Kabbala(string("g_3"),sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),scale)));
-  sintW = Kabbala(std::string("\\sin\\theta_W"),
-		  sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  costW = Kabbala(std::string("\\cos\\theta_W"),
-		  sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
   PL    = Kabbala(string("P_L"),1.);
   PR    = Kabbala(string("P_R"),1.);
   M_I   = Kabbala(string("i"),Complex(0.,1.));
   root2 = Kabbala(string("\\sqrt{2}"),sqrt(2.));
-  vev   = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
 }
 
 void Interaction_Model_SM_EHC::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)

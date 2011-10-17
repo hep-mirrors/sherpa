@@ -75,9 +75,10 @@ void Channel_Elements::Isotropic2Momenta(Vec4D p,double s1,double s2,
   CheckMasses(s1,p1,s2,p2);
 }
 
-double Channel_Elements::Anisotropic2Weight(double ctexp,
-					    double ctmin,double ctmax,
-					    const Vec4D& p1,const Vec4D& p2)
+double Channel_Elements::Anisotropic2Weight(Vec4D& p1,Vec4D& p2,
+					    double& ran1,double& ran2,
+					    double ctexp,
+					    double ctmin,double ctmax)
 {
   Vec4D  p      = p1+p2;
   double s      = p.Abs2();
@@ -95,7 +96,17 @@ double Channel_Elements::Anisotropic2Weight(double ctexp,
   if ((ct<ctmin) || (ct>ctmax)) return 0.;
 
   double wt = 1./(M_PI*Channel_Basics::SqLam(s,s1,s2)/4.*
-                    pow(a+ct,ctexp)*Channel_Basics::PeakedWeight(a,ctexp,ctmin,ctmax,1));
+		  pow(a+ct,ctexp)*Channel_Basics::PeakedWeight(a,ctexp,ctmin,ctmax,ct,1,ran1));
+  p1h=p1;
+  Vec4D pref(p[0],0.,0.,pmass);
+  Poincare Rot(pref,p);
+  Rot.RotateBack(p1h);
+  Vec4D p1ref=p1h;
+  Channel_Basics::Boost(1,pref,p1h,p1ref);
+
+  ran2        = ::asin(p1h[1]/p1h.PPerp())/(2.*M_PI);
+  if(p1h[2]<0.) ran2=.5-ran2;
+  if (ran2<0.) ran2+=1.;
   if (!(wt>0) && !(wt<0)) 
     msg_Error()<<"Anisotropic2Weight produces a nan!"<<endl;
 
@@ -103,10 +114,9 @@ double Channel_Elements::Anisotropic2Weight(double ctexp,
 }
 
 void Channel_Elements::Anisotropic2Momenta(Vec4D p,double s1,double s2,
-					   double ctexp,
-					   double ctmin,double ctmax,
 					   Vec4D& p1,Vec4D& p2,
-					   double ran1,double ran2)
+					   double ran1,double ran2,double ctexp,
+					   double ctmin,double ctmax)
 {
   double s        = p.Abs2();
   double pabs     = sqrt(dabs(s));

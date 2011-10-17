@@ -56,15 +56,20 @@ void QQ_QQQQ_Spectator::SetModelParameters( GeneralModel _md )
   m_colourflip_ratio = _md("colourflip_ratio",0.0);
 }
 
-void QQ_QQQQ_Spectator::operator()(
-                      const Vec4D             * p,
-                      METOOLS::Spin_Amplitudes * amps)
+void QQ_QQQQ_Spectator::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
   double factor = m_GF*m_Vxx_decay*m_Vxx_production;
-  Flavour partonflavs[] = {m_decayer, m_flavs[p_i[1]], m_flavs[p_i[2]], m_flavs[p_i[3]]};
-  Vec4D partonmoms[] = {p[p_i[1]]+p[p_i[2]]+p[p_i[3]], 
-                        p[p_i[1]], p[p_i[2]], p[p_i[3]]};
-  XYZFunc F(4,partonmoms,partonflavs,Tools::k0,m_anti);
+  Flavour_Vector partonflavs;
+  partonflavs.push_back(m_decayer);
+  partonflavs.push_back(m_flavs[p_i[1]]);
+  partonflavs.push_back(m_flavs[p_i[2]]);
+  partonflavs.push_back(m_flavs[p_i[3]]);
+  Vec4D_Vector partonmoms;
+  partonmoms.push_back(p[p_i[1]]+p[p_i[2]]+p[p_i[3]]);
+  partonmoms.push_back(p[p_i[1]]);
+  partonmoms.push_back(p[p_i[2]]);
+  partonmoms.push_back(p[p_i[3]]);
+  XYZFunc F(partonmoms,partonflavs,m_anti);
   
   vector<pair<int,int> > spins(5);
   spins[0] = make_pair(p_i[0],0);
@@ -80,14 +85,14 @@ void QQ_QQQQ_Spectator::operator()(
 
           Complex amp = factor * F.Z(0,h0, 1,h1, 3,h3, 2,h2,
                                      m_cR_decay, m_cL_decay, m_cR_production, m_cL_production);
-          amps->Add(amp,spins);
+          Insert(amp,spins);
         }
       }
     }
   }
 }
 
-bool QQ_QQQQ_Spectator::SetColorFlow(std::vector<ATOOLS::Particle*> outparts,int n_q, int n_g)
+bool QQ_QQQQ_Spectator::SetColorFlow(std::vector<ATOOLS::Particle*> outparts,int n_q, int n_g, bool m_anti)
 {
   int pos = m_anti ? 2 : 1;
   if(ran->Get()<m_colourflip_ratio) { // colourflip
@@ -127,9 +132,7 @@ void Baryon_Diquark_3Quarks::SetModelParameters( GeneralModel _md )
   m_GF = _md("GF",8.033333333e-6);
 }
 
-void Baryon_Diquark_3Quarks::operator()(
-                      const Vec4D             * p,
-                      METOOLS::Spin_Amplitudes * amps)
+void Baryon_Diquark_3Quarks::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
   vector<pair<int,int> > spins(5);
   for(int h0=0; h0<m_flavs[p_i[0]].IntSpin()+1;++h0) {
@@ -142,7 +145,7 @@ void Baryon_Diquark_3Quarks::operator()(
 	  spins[3] = make_pair(p_i[3],h3);
 	  for( int h4=0; h4<m_flavs[p_i[4]].IntSpin()+1; h4++ ) {
 	    spins[4] = make_pair(p_i[4],h4);
-	    amps->Add(Complex(1.0,0.0),spins);
+	    Insert(Complex(1.0,0.0),spins);
 	  }
 	}
       }
@@ -150,7 +153,8 @@ void Baryon_Diquark_3Quarks::operator()(
   }
 }
 
-bool Baryon_Diquark_3Quarks::SetColorFlow(std::vector<ATOOLS::Particle*> outparts,int n_q, int n_g)
+bool Baryon_Diquark_3Quarks::SetColorFlow(vector<ATOOLS::Particle*> outparts,
+                                          int n_q, int n_g, bool m_anti)
 {
   int pos = m_anti ? 2 : 1;
   outparts[p_i[2]-1]->SetFlow(pos,-1);
@@ -164,5 +168,80 @@ bool Baryon_Diquark_3Quarks::SetColorFlow(std::vector<ATOOLS::Particle*> outpart
 DEFINE_ME_GETTER(Baryon_Diquark_3Quarks,Baryon_Diquark_3Quarks_Getter,"Baryon_Diquark_3Quarks")
 
 void Baryon_Diquark_3Quarks_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+  st<<endl;
+}
+
+
+
+
+void B_tautau_pinupinu::SetModelParameters( GeneralModel _md )
+{
+}
+
+void B_tautau_pinupinu::Calculate(const Vec4D_Vector& p, bool m_anti)
+{
+  // internal ordering: B=0, pi+=1, nub=2, pi-=3, nu=4
+
+  // production process: h -> tau+ tau-
+  Vec4D_Vector prod_moms;
+  Flavour_Vector prod_flavs;
+  prod_moms.push_back(p[p_i[0]]);
+  prod_flavs.push_back(Flavour(kf_B));
+  prod_moms.push_back(p[p_i[1]]+p[p_i[2]]);
+  prod_flavs.push_back(Flavour(kf_tau).Bar());
+  prod_moms.push_back(p[p_i[3]]+p[p_i[4]]);
+  prod_flavs.push_back(Flavour(kf_tau));
+  XYZFunc F_prod(prod_moms,prod_flavs, m_anti);
+
+  // decay process tau+ -> pi+ nub
+  Vec4D_Vector decay1_moms;
+  Flavour_Vector decay1_flavs;
+  decay1_moms.push_back(p[p_i[1]]+p[p_i[2]]);
+  decay1_flavs.push_back(Flavour(kf_tau).Bar());
+  decay1_moms.push_back(p[p_i[1]]);
+  decay1_flavs.push_back(Flavour(kf_pi_plus));
+  decay1_moms.push_back(p[p_i[2]]);
+  decay1_flavs.push_back(Flavour(kf_nutau).Bar());
+  XYZFunc F_decay1(decay1_moms,decay1_flavs, m_anti);
+
+  // decay process tau- -> pi- nu
+  Vec4D_Vector decay2_moms;
+  Flavour_Vector decay2_flavs;
+  decay2_moms.push_back(p[p_i[3]]+p[p_i[4]]);
+  decay2_flavs.push_back(Flavour(kf_tau));
+  decay2_moms.push_back(p[p_i[3]]);
+  decay2_flavs.push_back(Flavour(kf_pi_plus).Bar());
+  decay2_moms.push_back(p[p_i[4]]);
+  decay2_flavs.push_back(Flavour(kf_nutau));
+  XYZFunc F_decay2(decay2_moms,decay2_flavs, m_anti);
+
+
+  vector<pair<int,int> > spins(5);
+  spins[0] = make_pair(p_i[0],0);
+  spins[1] = make_pair(p_i[1],0);
+  spins[3] = make_pair(p_i[3],0);
+  for(int h2=0; h2<2; ++h2) {
+    spins[2] = make_pair(p_i[2],h2);
+    for(int h4=0; h4<2; ++h4) {
+      spins[4] = make_pair(p_i[4],h4);
+
+      Complex amp(0.0, 0.0);
+      for (size_t htauplus=0; htauplus<2; ++htauplus) {
+        for (size_t htauminus=0; htauminus<2; ++htauminus) {
+          amp += Complex(0.0,-1.0)
+              *F_prod.Y(1, htauplus, 2, htauminus,
+                                            Complex(1.0, 0.0), Complex(1.0, 0.0))
+              *F_decay1.X(0, htauplus, decay1_moms[1], 2, h2, Complex(0.0, 0.0), Complex(1.0, 0.0))
+              *F_decay2.X(2, h4, decay2_moms[1], 0, htauminus, Complex(0.0, 0.0), Complex(1.0, 0.0));
+        }
+      }
+      Insert(amp,spins);
+    }
+  }
+}
+
+DEFINE_ME_GETTER(B_tautau_pinupinu,B_tautau_pinupinu_Getter,"B_tautau_pinupinu")
+
+void B_tautau_pinupinu_Getter::PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }

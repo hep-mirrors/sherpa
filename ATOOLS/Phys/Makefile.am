@@ -10,9 +10,6 @@ libToolsPhys_la_SOURCES       =	\
 				Ordering.C \
 				Particle.C \
 			        Simple_Polarisation_Info.C \
-				Decay_Channel.C \
-				Decay_Table.C \
-				Decay_Map.C \
 				Particle_List.C \
 				NLO_Subevt.C \
 				RB_Data.C \
@@ -24,13 +21,10 @@ libToolsPhys_la_SOURCES       =	\
 				Parton_Finder.C \
 				Color_Tester.C \
 				Momentum_Shifter.C \
-				Spin_Correlation_Tensor.C \
-				Spin_Density_Matrix.C \
 				Flow.C \
 				Color.C \
 				Spinor.C \
-				Momenta_Stretcher.C \
-				Mass_Handler.C
+				Momenta_Stretcher.C
 
 localinc_HEADERS      =	\
 			Ordering.H \
@@ -39,9 +33,6 @@ localinc_HEADERS      =	\
 			Particle.H \
 			Simple_Polarisation_Info.H \
 			Particle_List.H \
-			Decay_Channel.H \
-			Decay_Table.H \
-			Decay_Map.H \
 			NLO_Subevt.H \
 			RB_Data.H \
 			Decay_Info.H \
@@ -53,9 +44,6 @@ localinc_HEADERS      =	\
 			Parton_Finder.H \
 			Color_Tester.H \
 			Momentum_Shifter.H \
-			Spin_Correlation_Tensor.H \
-			Spin_Density_Matrix.H \
 			Color.H \
 			Spinor.H \
-			Momenta_Stretcher.H \
-			Mass_Handler.H
+			Momenta_Stretcher.H

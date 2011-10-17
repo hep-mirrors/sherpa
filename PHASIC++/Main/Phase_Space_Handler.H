@@ -14,6 +14,7 @@
 namespace ATOOLS { 
   class Blob_Data_Base; 
   class Poincare;
+  class Mass_Selector;
 }
 
 namespace BEAM {
@@ -120,7 +121,8 @@ namespace PHASIC {
 
     static void TestPoint(ATOOLS::Vec4D *const p,
 			  ATOOLS::Vec4D_Vector cp,ATOOLS::Flavour_Vector fl,
-			  const Subprocess_Info *info,size_t &n);
+			  const Subprocess_Info *info,size_t &n,
+                          const ATOOLS::Mass_Selector* ms);
 
   public:
 
@@ -154,11 +156,12 @@ namespace PHASIC {
     void CalculateME();
     void CalculatePS();
 
-    static void TestPoint(ATOOLS::Vec4D *const p,
-			  const Process_Info *info,const int mode=0);
+    static void TestPoint(ATOOLS::Vec4D *const p,const Process_Info *info,
+                          const ATOOLS::Mass_Selector* ms,const int mode=0);
     static void TestPoint(ATOOLS::Vec4D *const p,
 			  const size_t &nin,const size_t &nout,
-			  const ATOOLS::Flavour_Vector &flavs);
+			  const ATOOLS::Flavour_Vector &flavs,
+			  const ATOOLS::Mass_Selector* ms);
 
     void MPISync();
     void Optimize();

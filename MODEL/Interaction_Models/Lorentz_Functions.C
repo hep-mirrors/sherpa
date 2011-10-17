@@ -84,6 +84,32 @@ public:
   }
 };
 DEFINE_LF_GETTER(LF_Gauge3,LFGauge3_Getter,"Gauge3","")
+class LF_GaugeP4: public Lorentz_Function {
+public:  
+  LF_GaugeP4(): Lorentz_Function("GaugeP4") {}
+  int NofIndex() const { return 3; }
+  void InitPermutation() 
+  {
+    Lorentz_Function::InitPermutation(); 
+    AddPermutation( 1,0,1,2);
+    AddPermutation(-1,0,2,1);  
+    AddPermutation(-1,1,0,2);
+    AddPermutation(-1,2,1,0);  
+    AddPermutation( 1,1,2,0);
+    AddPermutation( 1,2,0,1);  
+  }
+  std::string String(int shortversion) const 
+  {
+    return "1";
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_GaugeP4());
+    *copy=*this;
+    return copy;
+  }
+};
+DEFINE_LF_GETTER(LF_GaugeP4,LFGaugeP4_Getter,"GaugeP4","")
 class LF_Gauge4: public Lorentz_Function {
 public:  
   LF_Gauge4(): Lorentz_Function("Gauge4") {}
@@ -795,4 +821,21 @@ public:
 
 };
 DEFINE_LF_GETTER(LF_SSVgen,SSVgen_Getter,"SSVgen","")
+
+class LF_TAUPI: public Lorentz_Function {
+public:
+  LF_TAUPI(): Lorentz_Function("TAUPI") {}
+  int NofIndex() const { return 0; }
+  std::string String(int shortversion) const
+  {
+    return "1";
+  }
+  Lorentz_Function *GetCopy() const
+  {
+    Lorentz_Function *copy(new LF_TAUPI());
+    *copy=*this;
+    return copy;
+  }
+};
+DEFINE_LF_GETTER(LF_TAUPI,LFTAUPI_Getter,"TAUPI","")
 

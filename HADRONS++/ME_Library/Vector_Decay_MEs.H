@@ -8,7 +8,7 @@ namespace HADRONS {
   public:
     V_FF(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -16,7 +16,7 @@ namespace HADRONS {
   public:
     V_PP(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -24,7 +24,7 @@ namespace HADRONS {
   public:
     V_VP(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -32,7 +32,7 @@ namespace HADRONS {
   public:
     V_AP(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -40,7 +40,7 @@ namespace HADRONS {
   public:
     V_VS(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -48,7 +48,7 @@ namespace HADRONS {
   public:
     V_VV(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -56,7 +56,7 @@ namespace HADRONS {
   public:
     A_VP(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
 
@@ -65,7 +65,7 @@ namespace HADRONS {
   public:
     V_PFF(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
   
@@ -73,7 +73,7 @@ namespace HADRONS {
   public:
     V_PPP(ATOOLS::Flavour * flavs,int n,int* indices,std::string name) :
       HD_ME_Base(flavs,n,indices,name) {};
-    void operator()(const ATOOLS::Vec4D *,METOOLS::Spin_Amplitudes *,int);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
     void SetModelParameters(GeneralModel);
   };
   

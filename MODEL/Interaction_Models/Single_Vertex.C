@@ -12,7 +12,7 @@ using namespace std;
 
 // Constructors and Destructors
 Single_Vertex::Single_Vertex()
-{ t = 0; nleg=3; cpl.resize(4);}
+{ t = 0; nleg=3; cpl.resize(4); oew=1; oqcd=0; dec=0; }
 
 Single_Vertex::Single_Vertex(const Single_Vertex& v): 
   t(0)
@@ -30,6 +30,13 @@ Complex Single_Vertex::Coupling(size_t i) const
   return cpl[i].Value();
 }
  
+std::string Single_Vertex::PID() const
+{
+  std::string name;
+  for (int i(nleg-1);i>0;--i) name+='{'+in[i].IDName()+'}';
+  return name+'{'+in[0].IDName()+'}';
+}
+
 int Single_Vertex::CheckCoupling() const
 {
   for (size_t i(0);i<cpl.size();++i) 
@@ -53,6 +60,9 @@ Single_Vertex& Single_Vertex::operator=(const Single_Vertex& v)
 	Str  = v.Str;
 	on   = v.on;
 	t=v.t;
+	oew=v.oew;
+	oqcd=v.oqcd;
+	dec=v.dec;
 	Color.resize(v.Color.size());
 	for (size_t i(0);i<Color.size();++i)
 	  Color[i] = v.Color[i];

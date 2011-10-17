@@ -1,0 +1,360 @@
+(run){
+  EVENTS = 0
+}(run)
+(me){
+  ME_SIGNAL_GENERATOR = Comix
+  SCALES = VAR{sqr(90.0)}
+  YUKAWA_MASSES         = Fixed
+}(me)
+(integration){
+  ERROR =  1.e-2   ! Error by calculating matrix-elements 
+  FINISH_OPTIMIZATION = Off ! Integrate until optimization is completed      
+  INTEGRATOR = 0
+  VEGAS = Off
+}(integration)
+(model){
+  MASSIVE[1]=1
+  MASSIVE[2]=1
+  MASSIVE[3]=1
+  MASSIVE[4]=1
+  MASSIVE[5]=1
+  MASSIVE[6]=1
+  MASSIVE[11]=1
+  MASSIVE[12]=1
+  MASSIVE[13]=1
+  MASSIVE[14]=1
+  MASSIVE[15]=1
+  MASSIVE[16]=1
+  MASSIVE[21]=1
+  MASSIVE[22]=1
+  MASSIVE[23]=1
+  MASSIVE[24]=1
+  MASSIVE[25]=1
+!  WIDTH[6]=0
+!  WIDTH[15]=0
+!  WIDTH[23]=0
+!  WIDTH[24]=0
+!  WIDTH[25]=0
+  STABLE[6]=0
+  STABLE[23]=0
+  STABLE[24]=0
+  STABLE[25]=0
+}(model)
+(processes){
+  # W+ --> u db
+  Process : 24 -> 2 -1
+  Print_Graphs Process/graphs
+  End process
+
+
+  # W+ --> c sb
+  Process : 24 -> 4 -3
+  Print_Graphs Process/graphs
+  End process
+
+
+  # W+ --> nu_e e+
+  Process : 24 -> 12 -11
+  Print_Graphs Process/graphs
+  End process
+
+
+  # W+ --> nu_mu mu+
+  Process : 24 -> 14 -13
+  Print_Graphs Process/graphs
+  End process
+
+
+  # W+ --> nu_tau tau+
+  Process : 24 -> 16 -15
+  Print_Graphs Process/graphs
+  End process
+
+  #########################
+
+  # Z --> d db
+  Process : 23 -> 1 -1
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> u ub
+  Process : 23 -> 2 -2
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> s sb
+  Process : 23 -> 3 -3
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> c cb
+  Process : 23 -> 4 -4
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> b bb
+  Process : 23 -> 5 -5
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> e- e+
+  Process : 23 -> 11 -11
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> nu_e nu_eb
+  Process : 23 -> 12 -12
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> mu- mu+
+  Process : 23 -> 13 -13
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> nu_mu nu_mub
+  Process : 23 -> 14 -14
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> tau- tau+
+  Process : 23 -> 15 -15
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> nu_tau nu_taub
+  Process : 23 -> 16 -16
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> W+ ub d
+  Process : 23 -> 24 -24[a]
+  Decay : -24[a] -> -2 1
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> W+ cb s
+  Process : 23 -> 24 -24[a]
+  Decay : -24[a] -> -4 3
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> W+ nu_eb e-
+  Process : 23 -> 24 -24[a]
+  Decay : -24[a] -> -12 11
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> W+ nu_mub mu-
+  Process : 23 -> 24 -24[a]
+  Decay : -24[a] -> -14 13
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> W+ nu_taub tau-
+  Process : 23 -> 24 -24[a]
+  Decay : -24[a] -> -16 15
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> W- u db
+  Process : 23 -> -24 24[a]
+  Decay : 24[a] -> 2 -1
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> W- c sb
+  Process : 23 -> -24 24[a]
+  Decay : 24[a] -> 4 -3
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> W- nu_e e+
+  Process : 23 -> -24 24[a]
+  Decay : 24[a] -> 12 -11
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> W- nu_mu mu+
+  Process : 23 -> -24 24[a]
+  Decay : 24[a] -> 14 -13
+  Print_Graphs Process/graphs
+  End process
+
+
+  # Z --> W- nu_tau tau+
+  Process : 23 -> -24 24[a]
+  Decay : 24[a] -> 16 -15
+  Print_Graphs Process/graphs
+  End process
+
+  #######################
+
+  # h0 --> b bb
+  Process : 25 -> 5 -5
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> tau- tau+
+  Process : 25 -> 15 -15
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> W- u db
+  Process : 25 -> -24 2 -1
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> W- c sb
+  Process : 25 -> -24 4 -3
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> W- nu_e e+
+  Process : 25 -> -24 12 -11
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> W- nu_mu mu+
+  Process : 25 -> -24 14 -13
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> W- nu_tau tau+
+  Process : 25 -> -24 24[a]
+  Decay : 24[a] -> 16 -15
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> W+ ub d
+  Process : 25 -> 24 -2 1
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> W+ cb s
+  Process : 25 -> 24 -4 3
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> W+ nu_eb e-
+  Process : 25 -> 24 -12 11
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> W+ nu_mub mu-
+  Process : 25 -> 24 -14 13
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> W+ nu_taub tau-
+  Process : 25 -> 24 -24[a]
+  Decay : -24[a] -> -16 15
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> Z d db
+  Process : 25 -> 23 1 -1
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> Z u ub
+  Process : 25 -> 23 2 -2
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> Z s sb
+  Process : 25 -> 23 3 -3
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> Z c cb
+  Process : 25 -> 23 4 -4
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> Z b bb
+  Process : 25 -> 23 23[a]
+  Decay : 23[a] -> 5 -5
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> Z e- e+
+  Process : 25 -> 23 11 -11
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> Z nu_e nu_eb
+  Process : 25 -> 23 12 -12
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> Z mu- mu+
+  Process : 25 -> 23 13 -13
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> Z nu_mu nu_mub
+  Process : 25 -> 23 14 -14
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> Z tau- tau+
+  Process : 25 -> 23 23[a]
+  Decay : 23[a] -> 15 -15
+  Print_Graphs Process/graphs
+  End process
+
+
+  # h0 --> Z nu_tau nu_taub
+  Process : 25 -> 23 16 -16
+  Print_Graphs Process/graphs
+  End process
+
+  ######################
+
+  # t --> W+ b
+  Process : 6 -> 24 5
+  Print_Graphs Process/graphs
+  End process
+
+}(processes)

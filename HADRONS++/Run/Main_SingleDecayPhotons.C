@@ -15,7 +15,7 @@ has to be started with the following specialities:
 
 static Flavour mother_flav;
 static Blob* ref_blob;
-static Hadrons* hadrons;
+static SHERPA::Hadron_Decay_Handler* hadrons;
 static PHOTONS::Photons* photons;
 
 #ifdef USING__ROOT
@@ -35,10 +35,7 @@ void InitialiseGenerator(int argc, char *argv[])
 
   small_sherpa_init(argc, argv);
 
-  hadrons = new Hadrons("./Decaydata/",
-                        string("HadronDecays.dat"),
-                        string("HadronConstants.dat") ) ;
-
+  hadrons = new SHERPA::Hadron_Decay_Handler(".", "Fragmentation.dat");
 
   Data_Reader * reader = new Data_Reader(" ",";","!","=");
   reader->AddWordSeparator("\t");
@@ -63,8 +60,11 @@ void InitialiseGenerator(int argc, char *argv[])
   ref_blob->SetStatus(blob_status::needs_hadrondecays);
   ref_blob->AddToInParticles(mother_part);
 
-  if(!hadrons->FillDecayBlob(ref_blob, mother_part->Momentum())) {
-    THROW(normal_exit,"Hadrons::PerformDecay didn't succeed.");
+  try {
+    hadrons->FillOnshellDecay(ref_blob, NULL);
+  } catch (Return_Value::code ret) {
+    msg_Error()<<METHOD<<" Something went wrong for blob: "<<ref_blob<<endl;
+    return;
   }
 }
 

@@ -449,8 +449,9 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   cur->SetMomenta(p_lab);
   double xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
   ME_wgtinfo* wgtinfo=p_active->Process()->GetMEwgtinfo();
-  double pnf=dabs(m_result_1)/(dabs(m_result_1)+dabs(m_result_2));
-  if (pnf<ATOOLS::ran->Get()) {
+  double pnf=m_result_1/(m_result_1+m_result_2);
+  double sw=dabs(m_result_1)/(dabs(m_result_1)+dabs(m_result_2));
+  if (sw<ATOOLS::ran->Get()) {
     cur->SwapInOrder();
     dxs=m_result_2/m_psweight;
     xf1=p_isrhandler->XF1(1);
@@ -489,7 +490,8 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
 
 void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 				    ATOOLS::Vec4D_Vector cp,ATOOLS::Flavour_Vector fl,
-				    const Subprocess_Info *info,size_t &n)
+				    const Subprocess_Info *info,size_t &n,
+				    const ATOOLS::Mass_Selector* ms)
 {
   size_t nin(fl.size());
   for (size_t i(0);i<nin;++i) msg_Debugging()<<fl[i]<<" ";
@@ -505,7 +507,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
     for (size_t i(0);i<nin;++i) cp.back()+=cp[i];
   }
   else {
-    Single_Channel * TestCh = new Rambo(nin,info->m_ps.size(),&fl.front());
+    Single_Channel * TestCh = new Rambo(nin,info->m_ps.size(),&fl.front(),ms);
     TestCh->GeneratePoint(&cp.front(),(Cut_Data*)(NULL));
     delete TestCh;
     if (nin==1) {
@@ -525,7 +527,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 		     <<sqrt(dabs(cp[nin+i].Abs2()))<<" ("<<fl[nin+i]<<")\n";
       Vec4D_Vector ncp(1,cp[nin+i]);
       Flavour_Vector nfl(1,info->m_ps[i].m_fl);
-      TestPoint(p,ncp,nfl,&info->m_ps[i],n);
+      TestPoint(p,ncp,nfl,&info->m_ps[i],n,ms);
     }
   }
   msg_Debugging()<<"}\n";
@@ -533,6 +535,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 
 void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 				    const Process_Info *info,
+				    const ATOOLS::Mass_Selector* ms,
 				    const int mode)
 {
   DEBUG_FUNC(mode);
@@ -560,14 +563,14 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
     
   if (osd_counter==info->m_fi.GetDecayInfos().size() || mode==1) {
     size_t n(fl_i.size());
-    TestPoint(p,cp,fl_i,&info->m_fi,n);
+    TestPoint(p,cp,fl_i,&info->m_fi,n,ms);
   }
   else {
     Flavour_Vector fl_f(info->m_fi.GetExternal());
     Flavour_Vector fl_tot(fl_i);
     fl_tot.insert(fl_tot.end(),fl_f.begin(),fl_f.end());
     //
-    Single_Channel * TestCh = new Rambo(fl_i.size(),fl_f.size(),&fl_tot.front());
+    Single_Channel * TestCh = new Rambo(fl_i.size(),fl_f.size(),&fl_tot.front(),ms);
     TestCh->GeneratePoint(p,(Cut_Data*)(NULL));
     //
     delete TestCh;
@@ -576,7 +579,8 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 
 void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 				    const size_t &nin,const size_t &nout,
-				    const Flavour_Vector &flavs)
+				    const Flavour_Vector &flavs,
+				    const ATOOLS::Mass_Selector* ms)
 {
   if (nin==1) {
     p[0]=Vec4D(flavs[0].Mass(),0.0,0.0,0.0);
@@ -589,7 +593,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
     p[0]=Vec4D(x*E,0.0,0.0,sqrt(sqr(x*E)-m[0]*m[0]));
     p[1]=Vec4D((1.0-x)*E,Vec3D(-p[0]));
   }
-  Single_Channel * TestCh = new Rambo(nin,nout,&flavs.front());
+  Single_Channel * TestCh = new Rambo(nin,nout,&flavs.front(),ms);
   TestCh->GeneratePoint(p,(Cut_Data*)(NULL));
   delete TestCh;
 }

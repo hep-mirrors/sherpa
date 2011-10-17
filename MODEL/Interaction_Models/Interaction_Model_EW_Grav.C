@@ -15,13 +15,23 @@ Interaction_Model_EW_Grav::Interaction_Model_EW_Grav(MODEL::Model_Base * _model,
 { 
   g1    = Kabbala(string("g_1"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_QED"),rpa->gen.CplScale())));
-  g2    = Kabbala(string("g_1/\\sin\\theta_W"), 
-		  g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  sintW = Kabbala(std::string("\\sin\\theta_W"),
-		  sqrt(ScalarConstant(std::string("sin2_thetaW"))));
-  costW = Kabbala(std::string("\\cos\\theta_W"),
-		  sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
-  vev   = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
+  }else{
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ComplexConstant(std::string("csin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ComplexConstant(std::string("cvev")));
+  }
 
   kap   = Kabbala(string("kappa"),ScalarConstant(string("kappa")));
   om    = Kabbala(string("omega"),ScalarConstant(string("omega")));
@@ -53,8 +63,13 @@ void Interaction_Model_EW_Grav::c_FFT(std::vector<Single_Vertex>& vertex,int& va
 	  if (flav1==flav2) {
 	    
 	    if (flgraviton.IsOn()) {
-	      
-	      Kabbala mf = Kabbala(string("M_{")+flav1.TexName()+string("}"),flav1.Mass());
+	      Kabbala mf;
+	      if(ScalarNumber(std::string("WidthScheme"))==0){
+	        mf = Kabbala(string("M_{")+flav1.TexName()+string("}"),flav1.Mass());
+	      }else{
+	        mf = Kabbala(string("M_{")+flav1.TexName()+string("}"),
+	                           sqrt(sqr(flav1.Mass())-Complex(0.,1.)*flav1.Width()*flav1.Mass()));
+	      }
 	      Kabbala kcpl0,kcpl1;
 	      kcpl0 = -M_I*kap/num4;
 	      kcpl1 = num2*mf;
@@ -86,8 +101,13 @@ void Interaction_Model_EW_Grav::c_FFT(std::vector<Single_Vertex>& vertex,int& va
 	    }
 	    //scalar graviton mode
 	    if (flgs.IsOn()) {
-	      
-	      Kabbala mf = Kabbala(string("M_{")+flav1.TexName()+string("}"),flav1.Mass());
+	      Kabbala mf;
+	      if(ScalarNumber(std::string("WidthScheme"))==0){
+	        mf = Kabbala(string("M_{")+flav1.TexName()+string("}"),flav1.Mass());
+	      }else{
+	        mf = Kabbala(string("M_{")+flav1.TexName()+string("}"),
+	                           sqrt(sqr(flav1.Mass())-Complex(0.,1.)*flav1.Width()*flav1.Mass()));
+	      }
 	      Kabbala kcpl0,kcpl1;
 	      kcpl0 = M_I*om*kap*Kabbala(string("3/4"),.75);
 	      kcpl1 = mf*Kabbala(string("8/3"),8./3.);
@@ -409,7 +429,12 @@ void Interaction_Model_EW_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& va
       vertex[vanz].in[2] = flav;
       
       kcpl0 = -M_I*kap;
-      kcpl1 = Kabbala(string("\\sqr(M_{")+flav.TexName()+string("})"),sqr(flav.Mass()));
+      if(ScalarNumber(std::string("WidthScheme"))==0){
+        kcpl1 = Kabbala(string("\\sqr(M_{")+flav.TexName()+string("})"),sqr(flav.Mass()));
+      }else{
+        kcpl1 = Kabbala(string("\\sqr(M_{")+flav.TexName()+string("})"),
+                        sqr(flav.Mass())-Complex(0.,1.)*flav.Width()*flav.Mass());
+      }
       
       vertex[vanz].cpl[0]  = kcpl0;
       vertex[vanz].cpl[1]  = kcpl1;
@@ -434,8 +459,12 @@ void Interaction_Model_EW_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& va
       vertex[vanz].in[2] = flav;
       
       kcpl0 = -M_I*kap;
-      kcpl1 = Kabbala(string("\\sqr(M_{")+flav.TexName()+string("})"),sqr(flav.Mass()));
-      
+      if(ScalarNumber(std::string("WidthScheme"))==0){
+        kcpl1 = Kabbala(string("\\sqr(M_{")+flav.TexName()+string("})"),sqr(flav.Mass()));
+      }else{
+        kcpl1 = Kabbala(string("\\sqr(M_{")+flav.TexName()+string("})"),
+                        sqr(flav.Mass())-Complex(0.,1.)*flav.Width()*flav.Mass());
+      }
       vertex[vanz].cpl[0]  = kcpl0;
       vertex[vanz].cpl[1]  = kcpl1;
       vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
@@ -483,8 +512,14 @@ void Interaction_Model_EW_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& va
     vertex[vanz].in[0] = flav;
     vertex[vanz].in[1] = flgs;
     vertex[vanz].in[2] = flav;
+    Kabbala ma;
     
-    Kabbala ma = Kabbala(string("\\sqr(M_{")+flav.TexName()+string("})"),sqr(flav.Mass()));
+    if(ScalarNumber(std::string("WidthScheme"))==0){
+        ma = Kabbala(string("\\sqr(M_{")+flav.TexName()+string("})"),sqr(flav.Mass()));
+      }else{
+        ma = Kabbala(string("\\sqr(M_{")+flav.TexName()+string("})"),
+                        sqr(flav.Mass())-Complex(0.,1.)*flav.Width()*flav.Mass());
+      }
     kcpl0 = M_I*om*kap;
     kcpl1 = ma;
     
@@ -509,8 +544,14 @@ void Interaction_Model_EW_Grav::c_VVT(std::vector<Single_Vertex>& vertex,int& va
     vertex[vanz].in[0] = flav;
     vertex[vanz].in[1] = flgs;
     vertex[vanz].in[2] = flav;
+    Kabbala ma;
     
-    Kabbala ma = Kabbala(string("\\sqr(M_{")+flav.TexName()+string("})"),sqr(flav.Mass()));
+    if(ScalarNumber(std::string("WidthScheme"))==0){
+        ma = Kabbala(string("\\sqr(M_{")+flav.TexName()+string("})"),sqr(flav.Mass()));
+      }else{
+        ma = Kabbala(string("\\sqr(M_{")+flav.TexName()+string("})"),
+                        sqr(flav.Mass())-Complex(0.,1.)*flav.Width()*flav.Mass());
+      }
     kcpl0 = M_I*om*kap;
     kcpl1 = ma;
 
@@ -628,7 +669,12 @@ void Interaction_Model_EW_Grav::c_SST(std::vector<Single_Vertex>& vertex,int& va
     vertex[vanz].in[2] = flh;
 
     kcpl0 = -M_I*kap;
-    kcpl1 = Kabbala(string("\\sqr(M_{")+flh.TexName()+string("})"),sqr(flh.Yuk()));
+    if(ScalarNumber(std::string("WidthScheme"))==0){
+      kcpl1 = Kabbala(string("\\sqr(M_{")+flh.TexName()+string("})"),sqr(flh.Yuk()));
+    }else{
+      kcpl1 = Kabbala(string("\\sqr(M_{")+flh.TexName()+string("})"),
+                      sqr(flh.Yuk())-Complex(0.,1.)*flh.Width()*flh.Yuk());
+    }
     
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl1;
@@ -651,7 +697,12 @@ void Interaction_Model_EW_Grav::c_SST(std::vector<Single_Vertex>& vertex,int& va
     vertex[vanz].in[2] = flh;
 
     kcpl0 = -M_I*om*kap;
-    kcpl1 = num2*Kabbala(string("\\sqr(M_{")+flh.TexName()+string("})"),sqr(flh.Yuk()));
+    if(ScalarNumber(std::string("WidthScheme"))==0){
+      kcpl1 = num2*Kabbala(string("\\sqr(M_{")+flh.TexName()+string("})"),sqr(flh.Yuk()));
+    }else{
+      kcpl1 = num2*Kabbala(string("\\sqr(M_{")+flh.TexName()+string("})"),
+                      sqr(flh.Yuk())-Complex(0.,1.)*flh.Width()*flh.Yuk());
+    }
     
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = kcpl1;
@@ -686,7 +737,13 @@ void Interaction_Model_EW_Grav::c_SSST(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[2] = flh;
     vertex[vanz].in[3] = flgraviton;
 
-    yuk   = Kabbala(string("M_{")+flh.TexName()+string("}"),flh.Yuk());
+
+    if(ScalarNumber(std::string("WidthScheme"))==0){
+      yuk = Kabbala(string("M_{")+flh.TexName()+string("}"),flh.Yuk());
+    }else{
+      yuk = Kabbala(string("M_{")+flh.TexName()+string("}"),
+                      sqrt(sqr(flh.Yuk())-Complex(0.,1.)*flh.Width()*flh.Yuk()));
+    }
     kcpl0 = -M_I*kap*yuk*yuk*(num3/vev);
     kcpl1 = kcpl0;
     //kcpl0=Kabbala("",320);
@@ -714,7 +771,12 @@ void Interaction_Model_EW_Grav::c_SSST(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[2] = flh;
     vertex[vanz].in[3] = flgs;
 
-    yuk   = Kabbala(string("M_{")+flh.TexName()+string("}"),flh.Yuk());
+    if(ScalarNumber(std::string("WidthScheme"))==0){
+      yuk = Kabbala(string("M_{")+flh.TexName()+string("}"),flh.Yuk());
+    }else{
+      yuk = Kabbala(string("M_{")+flh.TexName()+string("}"),
+                      sqrt(sqr(flh.Yuk())-Complex(0.,1.)*flh.Width()*flh.Yuk()));
+    }
     kcpl0 = -M_I*num2*om*kap*yuk*yuk*(num3/vev);
     kcpl1 = kcpl0;
     //kcpl0=Kabbala("",300);

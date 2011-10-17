@@ -64,9 +64,7 @@ void B_KStar_Semileptonic::SetModelParameters( GeneralModel _md )
   m_ms  = _md("ms",0.2); 
 }
 
-void B_KStar_Semileptonic::operator()( 
-    const Vec4D             * _p,
-    METOOLS::Spin_Amplitudes * amps)
+void B_KStar_Semileptonic::Calculate(const Vec4D_Vector& _p, bool m_anti)
 {
   double s     = (_p[p_i[2]]+_p[p_i[3]]).Abs2();
   double shat  = s/(m_mB*m_mB);
@@ -112,7 +110,7 @@ void B_KStar_Semileptonic::operator()(
   Complex G = 1.0/(1.0+m_mKhat)*m_C10*A2;
   Complex H = 1.0/shat*m_C10 * ( (1.0+m_mKhat)*A1-(1.0-m_mKhat)*A2-2.0*m_mKhat*A0 );  
 
-  XYZFunc Func(m_n,_p,m_flavs,Tools::k0,m_anti,p_i);
+  XYZFunc Func(_p,m_flavs, m_anti,p_i);
   Complex i(0.0,1.0);
   Polarization_Vector pol(_p[p_i[1]], sqr(m_flavs[p_i[1]].HadMass()));
   for(int hhad = 0; hhad <3; hhad++) {
@@ -133,7 +131,7 @@ void B_KStar_Semileptonic::operator()(
         spins.push_back(make_pair(p_i[1],hhad)); // K*
         spins.push_back(make_pair(p_i[2],hlm));  // lepton-
         spins.push_back(make_pair(p_i[3],hlp));  // lepton+
-        amps->Add(m_global * M, spins);
+        Insert(m_global * M, spins);
       }
     }
   }

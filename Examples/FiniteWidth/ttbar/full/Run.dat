@@ -1,0 +1,45 @@
+(run){
+  OUTPUT = 2
+  ANALYSIS = 1
+  ME_SIGNAL_GENERATOR = Comix
+  FRAGMENTATION=Off
+  EVENT_GENERATION_MODE=Weighted
+}(run)
+(me){
+  SCALES          = VAR{sqr(175.0)}
+}(me)
+(shower){
+  SHOWER_GENERATOR=None
+}(shower)
+(fragmentation){
+  YFS_MODE = 0
+}(fragmentation)
+(beam){
+  BEAM_1          = 2212
+  BEAM_ENERGY_1   = 3500
+  BEAM_2          = 2212
+  BEAM_ENERGY_2   = 3500
+}(beam)
+(processes){
+  Process 93 93 -> 6[a] -6[b]
+
+  Decay  6[a] -> 24[c] 5
+  Decay 24[c] -> -11 12
+
+  Decay -6[b] -> -24[d] -5
+  Decay -24[d] -> 11 -12
+  End process
+}(processes)
+
+(analysis){
+  BEGIN_ANALYSIS {
+
+    // the analysis level
+    LEVEL  Hadron
+    JETCONTS 0
+
+    // observables
+    3Mass 5 -11 12 160. 190.0 30 LinErr FinalState
+  }
+  END_ANALYSIS
+}(analysis)

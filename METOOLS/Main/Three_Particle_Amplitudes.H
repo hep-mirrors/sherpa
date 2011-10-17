@@ -10,10 +10,11 @@ namespace METOOLS {
   class SSS : public Partial_Amplitude_Base {
   private:
   public:
-    SSS(ATOOLS::Flavour *fl,int *i,bool *out);
+    SSS(const ATOOLS::Flavour_Vector& flavs,
+        const std::vector<int>& i, const std::vector<bool>& out);
     ~SSS() {}
 
-    void operator()(const ATOOLS::Vec4D * moms,const bool anti);
+    void Calculate(const ATOOLS::Vec4D_Vector& moms, bool anti=false);
   };
 
   class SFF : public Partial_Amplitude_Base {
@@ -22,10 +23,12 @@ namespace METOOLS {
     int                m_bar, m_nonbar;
     XYZFunc          * p_xyz;
   public:
-    SFF(ATOOLS::Flavour *fl,int* i,bool *out,const Complex cl,const Complex cR);
+    SFF(const ATOOLS::Flavour_Vector& flavs,
+        const std::vector<int>& i, const std::vector<bool>& out,
+        const Complex cl,const Complex cR);
     ~SFF() { if (p_xyz) delete p_xyz; }
 
-    void operator()(const ATOOLS::Vec4D * moms,const bool anti);
+    void Calculate(const ATOOLS::Vec4D_Vector& moms, bool anti=false);
   };
 
   class SFF_FPI : public Partial_Amplitude_Base {
@@ -34,28 +37,32 @@ namespace METOOLS {
     int                m_bar, m_nonbar;
     XYZFunc          * p_xyz;
   public:
-    SFF_FPI(ATOOLS::Flavour *fl,int *i,bool *out,const Complex c=Complex(1.0,0.0));
+    SFF_FPI(const ATOOLS::Flavour_Vector& flavs,
+            const std::vector<int>& i, const std::vector<bool>& out,
+            const Complex c=Complex(1.0,0.0));
     ~SFF_FPI() { if (p_xyz) delete p_xyz; }
 
-    void operator()(const ATOOLS::Vec4D * moms,const bool anti);
+    void Calculate(const ATOOLS::Vec4D_Vector& moms, bool anti=false);
   };
 
   class SSV : public Partial_Amplitude_Base {
   private:
   public:
-    SSV(ATOOLS::Flavour *fl,int *i,bool *out);
+    SSV(const ATOOLS::Flavour_Vector& flavs,
+        const std::vector<int>& i, const std::vector<bool>& out);
     ~SSV() {}
 
-    void operator()(const ATOOLS::Vec4D * moms,const bool anti);
+    void Calculate(const ATOOLS::Vec4D_Vector& moms, bool anti=false);
   };
 
   class SVV : public Partial_Amplitude_Base {
   private:
   public:
-    SVV(ATOOLS::Flavour *fl,int *i,bool *out);
+    SVV(const ATOOLS::Flavour_Vector& flavs,
+        const std::vector<int>& i, const std::vector<bool>& out);
     ~SVV() {}
 
-    void operator()(const ATOOLS::Vec4D * moms,const bool anti);
+    void Calculate(const ATOOLS::Vec4D_Vector& moms, bool anti=false);
   };
 
   class VFF : public Partial_Amplitude_Base {
@@ -64,46 +71,52 @@ namespace METOOLS {
     int                m_bar, m_nonbar;
     XYZFunc          * p_xyz;
   public:
-    VFF(ATOOLS::Flavour *fl,int *i,bool *out,const Complex cl,const Complex cR);
+    VFF(const ATOOLS::Flavour_Vector& flavs,
+        const std::vector<int>& i, const std::vector<bool>& out,
+        const Complex cl,const Complex cR);
     ~VFF() { if (p_xyz) delete p_xyz; }
 
-    void operator()(const ATOOLS::Vec4D * moms,const bool anti);
+    void Calculate(const ATOOLS::Vec4D_Vector& moms, bool anti=false);
   };
 
   class VVV : public Partial_Amplitude_Base {
   private:
   public:
-    VVV(ATOOLS::Flavour *fl,int *i,bool *out);
+    VVV(const ATOOLS::Flavour_Vector& flavs,
+        const std::vector<int>& i, const std::vector<bool>& out);
     ~VVV() {}
 
-    void operator()(const ATOOLS::Vec4D * moms,const bool anti);
+    void Calculate(const ATOOLS::Vec4D_Vector& moms, bool anti=false);
   };
 
   class TSS : public Partial_Amplitude_Base {
   private:
   public:
-    TSS(ATOOLS::Flavour *fl,int *i,bool *out);
+    TSS(const ATOOLS::Flavour_Vector& flavs,
+        const std::vector<int>& i, const std::vector<bool>& out);
     ~TSS() {}
 
-    void operator()(const ATOOLS::Vec4D * moms,const bool anti);
+    void Calculate(const ATOOLS::Vec4D_Vector& moms, bool anti=false);
   };
 
   class TVS : public Partial_Amplitude_Base {
   private:
   public:
-    TVS(ATOOLS::Flavour *fl,int *i,bool *out);
+    TVS(const ATOOLS::Flavour_Vector& flavs,
+        const std::vector<int>& i, const std::vector<bool>& out);
     ~TVS() {}
 
-    void operator()(const ATOOLS::Vec4D * moms,const bool anti);
+    void Calculate(const ATOOLS::Vec4D_Vector& moms, bool anti=false);
   };
 
   class TVV : public Partial_Amplitude_Base {
   private:
   public:
-    TVV(ATOOLS::Flavour *fl,int *i,bool *out);
+    TVV(const ATOOLS::Flavour_Vector& flavs,
+        const std::vector<int>& i, const std::vector<bool>& out);
     ~TVV() {}
 
-    void operator()(const ATOOLS::Vec4D * moms,const bool anti);
+    void Calculate(const ATOOLS::Vec4D_Vector& moms, bool anti=false);
   };
 }
 

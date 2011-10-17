@@ -9,6 +9,7 @@
 #include "PHASIC++/Channels/Sarge.H"
 #include "PHASIC++/Channels/VHAAG.H"
 #include "PHASIC++/Channels/VHAAG_ND.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Channels/VHAAG_res.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -58,7 +59,8 @@ bool FSR_Channels::Initialize()
     }
       
     if (m_nin==1 && m_nout==2) Add(new Decay2Channel(m_nin,m_nout,&p_psh->Flavs().front()));
-    else Add(new Rambo(m_nin,m_nout,&p_psh->Flavs().front()));
+    else Add(new Rambo(m_nin,m_nout,&p_psh->Flavs().front(),
+                       p_psh->Process()->Process()->Generator()));
     break;
   case 1: 
     {
@@ -102,7 +104,8 @@ bool FSR_Channels::Initialize()
     break;
   default:
     msg_Error()<<"Wrong phasespace integration switch ! Using RAMBO as default."<<std::endl;
-    Add(new Rambo(m_nin,m_nout,&p_psh->Flavs().front()));
+    Add(new Rambo(m_nin,m_nout,&p_psh->Flavs().front(),
+                  p_psh->Process()->Process()->Generator()));
   }  
   if (!p_psh->Process()->Process()->InitIntegrator(p_psh))
     THROW(critical_error,"InitIntegrator failed");

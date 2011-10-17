@@ -14,7 +14,6 @@ namespace MODEL {
   public :
     SM_AxiGluon(std::string,std::string,bool);
     ~SM_AxiGluon();
-    bool FillDecay(ATOOLS::Decay_Table *) { return 0; }
     bool ModelInit(PDF::ISR_Handler *const isr);
   };
   /*!

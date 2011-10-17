@@ -16,7 +16,9 @@ namespace ATOOLS {
 namespace SHERPA {
   class HepEvt_Interface;
 
-  class Lund_Interface : public ATOOLS::Terminator_Object {
+  class Lund_Interface :
+      public ATOOLS::Terminator_Object,
+      public ATOOLS::Mass_Selector {
   private:
     static size_t s_errors, s_maxerrors;
 
@@ -75,6 +77,7 @@ namespace SHERPA {
     void SwitchOffMassSmearing();
     double GenerateMass(ATOOLS::Flavour flav, double min, double max);
     static void SaveStatus();
+    inline double Mass(const ATOOLS::Flavour &fl) const { return fl.HadMass(); }
   };// end of class Lund_Interface
 
   /*!

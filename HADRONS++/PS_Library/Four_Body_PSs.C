@@ -140,8 +140,10 @@ void TwoResonances::GenerateWeight(ATOOLS::Vec4D * p,PHASIC::Cut_Data * cuts)
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-IsotropicSpectator::IsotropicSpectator(const ATOOLS::Flavour * fl, int spectator) :
-  Single_Channel(1,4,fl), m_spectator(spectator), m_spectator_mass(fl[spectator].HadMass())
+IsotropicSpectator::IsotropicSpectator(const ATOOLS::Flavour * fl, int spectator,
+                                       const ATOOLS::Mass_Selector* ms) :
+  Single_Channel(1,4,fl), m_spectator(spectator),
+  m_spectator_mass(ms->Mass(fl[spectator]))
 {
   Flavour isotropicflavs[4];
   isotropicflavs[0] = Flavour(kf_none);
@@ -152,10 +154,10 @@ IsotropicSpectator::IsotropicSpectator(const ATOOLS::Flavour * fl, int spectator
       j++;
     }
   }
-  double mass_saved = isotropicflavs[0].HadMass();
-  m_decayer_mass = fl[0].HadMass()-fl[spectator].HadMass();
+  double mass_saved = ms->Mass(isotropicflavs[0]);
+  m_decayer_mass = ms->Mass(fl[0])-ms->Mass(fl[spectator]);
   isotropicflavs[0].SetMass(m_decayer_mass);
-  m_rambo = new Rambo(1,3,isotropicflavs,true);
+  m_rambo = new Rambo(1,3,isotropicflavs,ms);
   isotropicflavs[0].SetMass(mass_saved);
 }
 

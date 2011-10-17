@@ -84,6 +84,7 @@ Amegic::Amegic():
 {
   DrawLogo(msg->Info());
   p_testmoms=NULL;
+  p_gen=this;
 }
 
 Amegic::~Amegic() 
@@ -101,6 +102,14 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   m_file=file;
   p_int->SetBeam(beamhandler);
   p_int->SetISR(isrhandler);
+  Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
+  read.AddWordSeparator("\t");
+  read.SetInputPath(path);
+  read.SetInputFile(file);
+  int gauge(read.GetValue<int>("AMEGIC_DEFAULT_GAUGE",10));
+  AMEGIC::Process_Base::SetGauge(gauge);
+  if (gauge!=10) msg_Info()<<METHOD<<"(): Set gauge "<<gauge<<"."<<std::endl;
   return true;
 }
 
@@ -115,6 +124,7 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
   Topology top(nis+nfs);
   if (nt>nis+nfs) {
     newxs = new AMEGIC::Process_Group();
+    newxs->SetGenerator(this);
     newxs->Init(pi,p_int->Beam(),p_int->ISR());
     if (!newxs->Get<AMEGIC::Process_Group>()->
 	InitAmplitude(p_model,&top)) {
@@ -136,6 +146,7 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
   else {
     newxs = GetProcess(pi);
     if (!newxs) return NULL;
+    newxs->SetGenerator(this);
     newxs->Init(pi,p_int->Beam(),p_int->ISR());
     p_testmoms = new Vec4D[newxs->NIn()+newxs->NOut()];
     if (!p_pinfo) {
@@ -145,7 +156,7 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
       for (size_t i=0;i<m_nin;i++) 
 	m_flavs.push_back(newxs->Flavours()[i]);
     }
-    Phase_Space_Handler::TestPoint(p_testmoms,&newxs->Info());
+    Phase_Space_Handler::TestPoint(p_testmoms,&newxs->Info(),this);
     Vec4D sum;
     Poincare lab(Vec4D(sqrt(10.0),0.0,0.0,1.0));
     msg_Debugging()<<"After boost:\n";

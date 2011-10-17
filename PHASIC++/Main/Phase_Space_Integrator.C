@@ -30,6 +30,8 @@ Phase_Space_Integrator::Phase_Space_Integrator()
   if (!read.ReadFromFile(nmax,"PSI_NMAX")) 
     nmax=std::numeric_limits<long unsigned int>::max();
   else msg_Info()<<METHOD<<"(): Set n_{max} = "<<nmax<<".\n";
+  if (!read.ReadFromFile(itmin,"PSI_ITMIN")) itmin=5000;
+  else msg_Info()<<METHOD<<"(): Set n_{iter} = "<<itmin<<".\n";
   if (!read.ReadFromFile(wadjust,"PSI_ADJUST_POINTS")) wadjust=1;
   addtime=0.0;
 }
@@ -143,8 +145,8 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
   (psh->FSRIntegrator())->Reset();
   numberofchannels += psh->FSRIntegrator()->NChannels();
   msg_Tracking()<<"   Found "<<psh->FSRIntegrator()->NChannels()<<" FSR integrators."<<endl;
-  iter = iter0 = Max((int)psh->Process()->ItMin(),Max(20*int(numberofchannels),5000));
-  iter1      = Max(2*(int)psh->Process()->ItMin(),Max(100*int(numberofchannels),10000));
+  iter = iter0 = Max(itmin,Max((int)psh->Process()->ItMin(),Max(20*int(numberofchannels),5000)));
+  iter1      = Max(2*itmin,Max(2*(int)psh->Process()->ItMin(),Max(100*int(numberofchannels),10000)));
   if (iter1>50000) iter1=Max(iter0,50000);
   int hlp = (iter1-1)/iter0+1;
   iter1   = hlp*iter0;

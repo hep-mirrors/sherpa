@@ -6,16 +6,19 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "HADRONS++/ME_Library/HD_ME_Base.H"
+#include "HADRONS++/ME_Library/Current_ME.H"
 #include "HADRONS++/Current_Library/Current_Base.H"
 #include "ATOOLS/Org/Getter_Function.H"
+#include "HADRONS++/Main/Mixing_Handler.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
+using namespace PHASIC;
 using namespace std;
 
-Hadron_Decay_Map::Hadron_Decay_Map(string path,string file,string constfile) :
-  m_decaypath(path), m_decayfile(file), m_constfile(constfile),
-  m_fixed_next_tables(0)
+Hadron_Decay_Map::Hadron_Decay_Map(const Mass_Selector* ms) :
+  Decay_Map(ms),
+  m_fixed_next_tables(0), p_mixinghandler(NULL)
 {
 }
 
@@ -27,7 +30,7 @@ Hadron_Decay_Map::~Hadron_Decay_Map()
   }
 }
 
-void Hadron_Decay_Map::ReadInConstants()
+void Hadron_Decay_Map::ReadInConstants(const string& path, const string& file)
 {
   m_startmd.clear();                            // clear model
   Data_Reader reader = Data_Reader(" ",";","!","|");
@@ -35,12 +38,12 @@ void Hadron_Decay_Map::ReadInConstants()
   reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
-  reader.SetInputPath(m_decaypath);
-  reader.SetInputFile(m_constfile);
+  reader.SetInputPath(path);
+  reader.SetInputFile(file);
 
   vector<vector<string> > constants;
   if(!reader.MatrixFromFile(constants)) {
-    msg_Error()<<"Warning! The file "<<m_decaypath<<m_constfile<<" does not exist"<<endl
+    msg_Error()<<"Warning! The file "<<path<<file<<" does not exist"<<endl
              <<"     or has some syntax error."<<endl;
     msg_Error()<<"     Will ignore it and hope for the best."<<endl;
     return;
@@ -52,16 +55,13 @@ void Hadron_Decay_Map::ReadInConstants()
           reader.Interpreter()->Interprete(constants[i][2]) );
     }
   }
-}
-
-void Hadron_Decay_Map::SetHadronProperties()
-{
-  FlavourSet neutral_mesons;
+  
+  FlavourMultiSet neutral_mesons;
   neutral_mesons.insert(Flavour(kf_K));
   neutral_mesons.insert(Flavour(kf_D));
   neutral_mesons.insert(Flavour(kf_B));
   neutral_mesons.insert(Flavour(kf_B_s));
-  FlavourSet::const_iterator flavit;
+  FlavourMultiSet::const_iterator flavit;
   for(flavit = neutral_mesons.begin(); flavit!=neutral_mesons.end(); flavit++) {
     GeneralModel::iterator yit(m_startmd.find("y_"+flavit->IDName()));
     GeneralModel::iterator xit(m_startmd.find("x_"+flavit->IDName()));
@@ -113,7 +113,7 @@ void Hadron_Decay_Map::Read(const string& path, const string& file, bool verify)
   vector<vector<string> > Decayers;
   if(reader.MatrixFromFile(Decayers)) {
     msg_Info()<<METHOD<<":"
-              <<"   Initializing from "<<file<<", this may take some time."
+              <<"   Initializing "<<file<<". This may take some time."
               <<endl;
   }
   else {
@@ -123,17 +123,18 @@ void Hadron_Decay_Map::Read(const string& path, const string& file, bool verify)
   }
   
   Flavour fl;
-  bool createbooklet=false;
+  std::string createbooklet;
   for (size_t i=0;i<Decayers.size();++i) {
     vector<string> line = Decayers[i];
     if( line.size()>0 && line[0] == string("CREATE_BOOKLET") ) {
-      createbooklet = true;
+      createbooklet = line.size()>1?line[1]:"hadrons.tex";
     }
     else if (line.size()==3) {
       int decayerkf = atoi((line[0]).c_str());
       Flavour decayerflav = Flavour( (kf_code) abs(decayerkf), decayerkf<0);
-      Hadron_Decay_Table * dt = new Hadron_Decay_Table(decayerflav);
-      dt->Read(m_decaypath+line[1], line[2]);
+      Hadron_Decay_Table * dt = new Hadron_Decay_Table(decayerflav, p_ms,
+                                                       p_mixinghandler);
+      dt->Read(path+line[1], line[2]);
       // add decayer to decaymap
       Decay_Map::iterator it = find(decayerflav);
       if (it==end()) {
@@ -149,22 +150,25 @@ void Hadron_Decay_Map::Read(const string& path, const string& file, bool verify)
                  <<" contains incorrect line: "<<endl<<line);
     }
   }
-  if(createbooklet) {
+  if(!createbooklet.empty()) {
     Initialise();
-    CreateBooklet();
+    ofstream f(createbooklet.c_str());
+    CreateBooklet(f);
+    THROW(normal_exit, string("Created HADRONS++ booklet. ")
+          +"Run 'latex hadrons.tex' for compilation.");
   }
 }
 
 
-void Hadron_Decay_Map::ReadFixedTables()
+void Hadron_Decay_Map::ReadFixedTables(const string& path, const string& file)
 {
   Data_Reader reader = Data_Reader(" ",";","!","->");
   reader.AddWordSeparator("\t");
   reader.SetAddCommandLine(false);
   reader.AddComment("#");
   reader.AddComment("//");
-  reader.SetInputPath(m_decaypath);
-  reader.SetInputFile("FixedDecays.dat");
+  reader.SetInputPath(path);
+  reader.SetInputFile(file);
   
   vector<vector<string> > Decayers;
   if(!reader.MatrixFromFile(Decayers)) {
@@ -178,8 +182,9 @@ void Hadron_Decay_Map::ReadFixedTables()
       std::string table_id = line[0];
       int decayerkf = atoi((line[1]).c_str());
       Flavour decayerflav = Flavour( (kf_code) abs(decayerkf), decayerkf<0);
-      Hadron_Decay_Table * dt = new Hadron_Decay_Table(decayerflav);
-      dt->Read(m_decaypath+line[2], line[3]);
+      Hadron_Decay_Table * dt = new Hadron_Decay_Table(decayerflav, p_ms,
+                                                       p_mixinghandler);
+      dt->Read(path+line[2], line[3]);
       pair<SDtMMapIt, SDtMMapIt> found=m_fixed_tables.equal_range(table_id);
       for (SDtMMapIt it=found.first; it!=found.second; ++it) {
         if (it->second->Flav()==decayerflav) {
@@ -228,50 +233,8 @@ void Hadron_Decay_Map::Initialise()
 }
 
 
-Hadron_Decay_Table* Hadron_Decay_Map::FindDecay(const ATOOLS::Flavour & decayer)
+void Hadron_Decay_Map::CreateBooklet(std::ostream& f)
 {
-  // first check, whether a fixed decaytable has been requested for this decayer
-  for (size_t i=0; i<m_fixed_next_tables.size(); ++i) {
-    if (m_fixed_next_tables[i]->Flav().Kfcode()==decayer.Kfcode()) {
-      return m_fixed_next_tables[i];
-    }
-  }
-
-  Flavour tempdecayer=decayer;
-  Decay_Map::iterator it = find(decayer);
-  if(it==end()) {
-    it = find(decayer.Bar());
-    tempdecayer=decayer.Bar();
-  }
-  if(it==end()) return NULL;
-
-  // there may be multiple decay tables for one flavour, so find the right one
-  int count = it->second.size()-1; // default to last decay table available
-  map<ATOOLS::Flavour,int>::iterator counterit = m_counters.find(tempdecayer);
-  if(counterit!=m_counters.end() &&
-     counterit->second < int(it->second.size()-1) )
-  {
-    count = counterit->second;
-    counterit->second++;
-  }
-  return (Hadron_Decay_Table*) it->second[count];
-}
-
-
-void Hadron_Decay_Map::ResetCounters()
-{
-  map<ATOOLS::Flavour,int>::iterator it;
-  for(it=m_counters.begin(); it!=m_counters.end(); it++) {
-    it->second=0;
-  }
-}
-
-
-void Hadron_Decay_Map::CreateBooklet()
-{
-  string fn = string("hadrons.tex");
-  ofstream f(fn.c_str());
-  
   // header
   f<<"\\documentclass[a4paper]{scrartcl}\n"
    <<"\\usepackage{latexsym,amssymb,amsmath,amsxtra,longtable,fullpage}\n"
@@ -294,177 +257,20 @@ void Hadron_Decay_Map::CreateBooklet()
   std::string replaceto="\\_";
   f<<"\\section{Available Decay Matrix Elements}"<<endl;
   f<<"\\subsection{Complete Matrix Elements}"<<endl;
-  Getter_Function<HD_ME_Base,Flavour_Info>::PrintGetterInfo(
+  Getter_Function<HD_ME_Base,ME_Parameters>::PrintGetterInfo(
     f,30,indent, separator, lineend, replacefrom, replaceto);
   f<<"\\subsection{Weak Currents}"<<endl;
-  Getter_Function<Current_Base,Flavour_Info>::PrintGetterInfo(
+  Getter_Function<Current_Base,ME_Parameters>::PrintGetterInfo(
     f,30,indent, separator, lineend, replacefrom, replaceto);
 
   // text 
   f<<"\\section{Decay Channels}"<<endl;
-  Hadron_Decay_Channel * dc (NULL);
-  std::vector<MEPair> mes; std::vector<CurrentsPair> currents;
-  FlavourSet outs;
-  char helpstr[100];
-  int total_decaychannels(0),total_mes(0);
+  std::vector<HD_ME_Base*> mes;
   for ( Decay_Map::iterator pos = begin(); pos != end(); ++pos) {
     Hadron_Decay_Table* dt=(Hadron_Decay_Table*) pos->second[0];
     if(dt==NULL) continue;
-    f<<"\\subsection{\\texorpdfstring{Decaying Particle: $"<<dt->Flav().TexName()<<"$"
-     <<" ["<<dt->Flav().Kfcode()<<"]}"
-     <<"{"<<"["<<dt->Flav().Kfcode()<<"] "<<dt->Flav()<<"}}"<<endl;
-    f<<"\\begin{tabular}{ll}"<<endl;
-    f<<" number of decay channels:    & "<<dt->size()<<"\\\\ "<<endl;
-    f<<" total width:               & "<<dt->TotalWidth()<<" GeV \\\\ "<<endl;
-    f<<" experimental width:        & "<<dt->Flav().Width()<<" GeV \\\\ "<<endl;
-    f<<"\\end{tabular}"<<endl;
-    f<<"\\begin{longtable}[l]{lll}"<<endl;
-    f<<"\\multicolumn{3}{c}{\\bf Exclusive Decays}\\\\"<<endl;
-    f<<"\\hline"<<endl;
-    f<<"Decay Channel & Input BR [Origin]/Integrated BR [Matrix Element]\\\\"<<endl;
-    f<<"\\hline\n\\hline"<<endl;
-    for(size_t i=0; i<dt->size(); ++i) {
-      dc = dt->at(i);
-      if(dc->Width()==0.0) continue;
-      total_decaychannels++;
-      outs = dc->GetDecayProducts();
-      f<<"$"<<dc->GetDecaying().TexName()<<"$ $\\to$ ";
-      for (FlSetConstIter fl=outs.begin();fl!=outs.end();++fl) f<<"$"<<fl->TexName()<<"$ ";
-      f<<" & ";
-      sprintf( helpstr, "%.4f", dc->Width()/dt->Flav().Width()*100. );
-      f<<helpstr;
-      if( dc->DeltaWidth() > 0. ) {
-        sprintf( helpstr, "%.4f", dc->DeltaWidth()/dt->Flav().Width()*100. );
-        f<<" $\\pm$ "<<helpstr;
-      }
-      f<<" \\% ";
-      if(dc->Origin()!="") {
-        f<<"[\\verb;"<<dc->Origin()<<";]";
-      }
-      f<<"\\\\"<<endl;
-      if((dc->GetMEs().size()>0 && dc->GetMEs()[0].second->Name()!="Generic") ||
-          dc->GetCurrents().size()>0 )
-      {
-        sprintf( helpstr, "%.4f", dc->GetPS()->Result()/dt->Flav().Width()*100. );
-        f<<" & "<<helpstr;
-        if( dc->GetPS()->Error() > 0. ) {
-          sprintf( helpstr, "%.4f", dc->GetPS()->Error()/dt->TotalWidth()*100. );
-          f<<" $\\pm$ "<<helpstr;
-        }
-        f<<" \\% ";
-      }
-      mes=dc->GetMEs();
-      for(size_t i=0;i<mes.size();i++) {
-        if(mes[i].second->Name()!="Generic") {
-          f<<"\\verb;"<<mes[i].second->Name()<<"; & \\\\"<<endl;
-          total_mes++;
-        }
-      }
-      currents=dc->GetCurrents();
-      for(size_t i=0;i<currents.size();i++) {
-        f<<"\\verb;"<<currents[i].second.first->Name()
-         <<"; $\\otimes$ \\verb;"<<currents[i].second.second->Name()<<"; & \\\\"<<endl;
-        total_mes++;
-      }
-    }
-    // skip inclusives for now
-    f<<"\\hline"<<endl;
-    f<<"\\end{longtable}"<<endl;
-    continue;
-
-    f<<"\\hline"<<endl;
-    msg_Out()<<"Creating booklet for "<<dt->Flav().TexName()<<endl;
-    map<string,pair<double,double> > brmap;
-    GetInclusives(dt,brmap);
-    f<<"\\multicolumn{3}{c}{\\hfill}\\\\"<<endl;
-    f<<"\\multicolumn{3}{c}{\\bf Inclusive Decays with $BR>10^{-6}$}\\\\"<<endl;
-    f<<"\\hline"<<endl;
-    f<<"Decay Channel & Branching Ratio \\\\"<<endl;
-    f<<"\\hline\n\\hline"<<endl;
-    for( BRMapString::iterator brit=brmap.begin(); brit != brmap.end(); ++brit ) {
-      double br  = (brit->second.first+brit->second.second)/2.;
-      double dbr = (brit->second.first-brit->second.second)/2.;
-      if( br>1.e-6 ) {
-        f<<"$"<<dc->GetDecaying().TexName()<<"$ $\\to$ $"<<brit->first<<"$ & ";
-        sprintf( helpstr, "%.4f", br*100. );
-        f<<helpstr;
-        if( dbr > 0. ) {
-          sprintf( helpstr, "%.4f", dbr*100. );
-          f<<" $\\pm$ "<<helpstr;
-        }
-        f<<" \\% \\\\"<<endl;
-      }
-    }
-    f<<"\\hline"<<endl;
-    f<<"\\end{longtable}"<<endl;
+    dt->LatexOutput(f);
   }
-   
   // end 
   f<<"\\end{document}"<<endl;
-  THROW(normal_exit,"Created HADRONS++ booklet for "+ToString<int>(total_decaychannels)
-        +" decaychannels with "+ToString<int>(total_mes)+" MEs."
-        +" Run 'latex hadrons.tex' for compilation.");
-  abort();
-}
-
-std::vector<BRPairFlavourSet> Hadron_Decay_Map::GetInclusives(
-    Hadron_Decay_Table * dt,                        // decay table to be considered
-    BRMapString & brmap,                            // map with flavourset <-> (upper, lower)
-    FlavourSet flset,                               // flavour set
-    DoublePair br,                                  // upper, lower br
-    bool eoi )                                      // end of iteration
-{
-  Decay_Channel * dc;
-  FlavourSet outs;
-  vector<BRPairFlavourSet> new_flset, flvec;
-  // for each decay channel
-  for(size_t I=0; I<dt->size(); ++I) {
-    dc = dt->at(I);                            // decay channel
-    outs = dc->GetDecayProducts();                          // FlavourSet of products
-    // for each decay product
-    new_flset.clear();
-    double dbr = (dc->DeltaWidth()>0.)? dc->DeltaWidth()/dt->TotalWidth() : 0.;
-    new_flset.push_back(BRPairFlavourSet(
-          flset,
-          DoublePair(
-            br.first*(dc->Width()/dt->TotalWidth()+dbr),
-            br.second*(dc->Width()/dt->TotalWidth()-dbr))
-          ));
-    for (FlSetConstIter fl=outs.begin();fl!=outs.end();++fl) {
-      if (this->find((*fl))==this->end() ||
-          fl->IsStable()) {                                  // if daughter is stable
-        for( size_t i=0; i<new_flset.size(); ++i ) {
-          new_flset[i].first.insert(*fl);
-        }
-      }
-      else {                                                 // if daughter has DT 
-        vector< vector<BRPairFlavourSet> > dauchans; 
-        for( size_t i=0; i<new_flset.size(); ++i ) {
-          dauchans.push_back( GetInclusives( (Hadron_Decay_Table*) (*this)[(*fl)][0], brmap, new_flset[i].first, new_flset[i].second, 0 ) );
-        }
-        new_flset.clear();
-        for( size_t i=0; i<dauchans.size(); ++i ) 
-          for( size_t j=0; j<dauchans[i].size(); ++j )
-            new_flset.push_back( dauchans[i][j] );
-      }
-    }
-    // end of iteration?
-    if( eoi ) {
-      // add to map
-      for( size_t i=0; i<new_flset.size(); ++i ) {
-        string channel = string("");
-        for (FlSetConstIter fl=new_flset[i].first.begin();fl!=new_flset[i].first.end();++fl) 
-          channel += fl->TexName()+string(" ");
-        brmap[channel].first += new_flset[i].second.first;          // upper limit
-        brmap[channel].second += new_flset[i].second.second;        // lower limit
-      }
-    }
-    else {
-      for( size_t i=0; i<new_flset.size(); ++i ) 
-        flvec.push_back(new_flset[i]);
-    }
-  }
-  if( flvec.size() ) {
-  }
-  return flvec;
 }

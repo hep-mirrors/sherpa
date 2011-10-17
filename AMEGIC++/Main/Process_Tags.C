@@ -549,7 +549,8 @@ bool Check_External_Flavours::MHVCalculable(const PHASIC::Process_Info& pi) {
     }
     if (flin.size()+flout.size()>9 || n_l>0) return 0;
     if (n_q<=2) return 1;
-    if (n_q==4 && (pi.m_oew==0||pi.m_maxoew==0) ) return 1;
+    // !!! TEMPORARY BUGFIX FOR BLACKHAT !!!
+    // if (n_q==4 && (pi.m_oew==0||pi.m_maxoew==0) ) return 1;
     return 0;
 //     if (n_q>4 || flin.size()+flout.size()>9 || n_l>2 || (n_l>0 && n_q!=2)) return 0;
     return 1;

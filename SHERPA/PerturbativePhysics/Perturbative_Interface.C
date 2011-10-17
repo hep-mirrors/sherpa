@@ -2,8 +2,9 @@
 
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
+#include "SHERPA/Single_Events/Decay_Handler_Base.H"
+#include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
-#include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -20,8 +21,8 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 Perturbative_Interface::Perturbative_Interface
-(Matrix_Element_Handler *const meh,Shower_Handler *const psh):
-  p_me(meh), p_mi(NULL), p_hd(NULL), p_shower(psh),
+(Matrix_Element_Handler *const meh,Hard_Decay_Handler*const dec,Shower_Handler *const psh):
+  p_me(meh), p_dec(dec), p_mi(NULL), p_hd(NULL), p_shower(psh),
   p_ampl(NULL), m_cmode(0)
 {
   Data_Reader read(" ",";","!","=");
@@ -39,7 +40,7 @@ Perturbative_Interface::Perturbative_Interface
   p_ampl(NULL), m_cmode(0) {}
 
 Perturbative_Interface::Perturbative_Interface
-(Hadron_Decay_Handler *const hdh,Shower_Handler *const psh):
+(Decay_Handler_Base *const hdh,Shower_Handler *const psh):
   p_me(NULL), p_mi(NULL), p_hd(hdh), p_shower(psh),
   p_ampl(NULL), m_cmode(0) {}
 
@@ -52,7 +53,7 @@ bool Perturbative_Interface::SetColours
 (Cluster_Amplitude *ampl,Blob *const bl)
 {
   msg_Debugging()<<METHOD<<"(): {\n";
-  while (ampl->Prev()) ampl=ampl->Prev();
+  //while (ampl->Prev()) ampl=ampl->Prev();
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *cl(ampl->Leg(i));
     if (i<ampl->NIn()) {
@@ -106,7 +107,10 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     cmax=Max(cmax,(size_t)p_ampl->Leg(i)->Col().m_i);
   while (Flow::Counter()<cmax);
   p_me->Process()->Parent()->SetRBMap(p_ampl);
-  if (!SetColours(p_ampl,blob)) return Return_Value::New_Event;
+  p_dec->DefineInitialConditions(p_ampl, blob);
+  while (p_ampl->Prev()) p_ampl=p_ampl->Prev();
+  //if (!SetColours(p_ampl,blob)) return Return_Value::New_Event;
+  //if (!p_dec->SetColours(p_ampl,blob)) return Return_Value::New_Event;
   m_weight=1.0;
   if (p_me->Process()->Info().m_ckkw&1) {
     if (m_bbarmode && p_me->HasNLO()==2 &&
@@ -193,8 +197,13 @@ bool Perturbative_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
     if (!p_hd)
       for (int i(0);i<p_hard->NInP();++i)
 	sblob->AddToOutParticles(p_hard->InParticle(i));
-    for (int i(0);i<p_hard->NOutP();++i)
-      sblob->AddToInParticles(p_hard->OutParticle(i));
+    for (size_t j(0);j<blobs->size();++j) {
+      Blob *cb((*blobs)[j]);
+      if (cb->Has(blob_status::needs_showers))
+	for (int i(0);i<cb->NOutP();++i)
+	  if (cb->OutParticle(i)->DecayBlob()==NULL)
+	    sblob->AddToInParticles(cb->OutParticle(i));
+    }
   }
   blobs->push_back(sblob);
   p_shower->FillBlobs(blobs); 

@@ -6,7 +6,7 @@
 #include "PDF/Remnant/Remnant_Base.H"
 
 namespace METOOLS {
-  class Amplitude_Tensor;
+  class Amplitude2_Tensor;
 }
 
 namespace SHERPA {
@@ -16,7 +16,7 @@ namespace SHERPA {
 
     Matrix_Element_Handler *p_mehandler;
     PDF::Remnant_Base      *p_remnants[2];
-    METOOLS::Amplitude_Tensor *p_amps;
+    METOOLS::Amplitude2_Tensor* p_atensor;
 
     double m_overweight;
 

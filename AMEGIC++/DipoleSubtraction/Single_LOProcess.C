@@ -533,7 +533,7 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
   First test : gauge test
   
   --------------------------------------------------- */
-  p_BS->Setk0(1);
+  p_BS->Setk0(s_gauge);
   p_BS->CalcEtaMu(p_testmoms);
   number++;
 
@@ -776,7 +776,7 @@ int Single_LOProcess::TestLib(std::vector<double> * pfactors)
     }
   }
 
-  if (!rpa->gen.SpinCorrelation()) {
+  if (!(rpa->gen.SoftSC()||rpa->gen.HardSC())) {
     if (m_emit==m_spect) {
       for (size_t i=0;i<p_hel->MaxHel();i++) {
 	if (p_hel->On(i)) {
@@ -1131,7 +1131,7 @@ double Single_LOProcess::Calc_M2ik(int ci, int ck)
 }
 
 void Single_LOProcess::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
-				  const ATOOLS::Vec4D *mom, double **dsij,const int mode) 
+				  const ATOOLS::Vec4D *mom,std::vector<std::vector<double> > &dsij,const int mode) 
 {
   if (p_partner!=this) {
     p_partner->Calc_AllXS(labmom,mom,dsij,mode);
@@ -1161,12 +1161,6 @@ void Single_LOProcess::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
   }
 }
 
-
-void AMEGIC::Single_LOProcess::FillAmplitudes(METOOLS::Amplitude_Tensor* atensor,double sfactor)
-{
-  if (p_partner==this) p_ampl->FillAmplitudes(atensor,p_hel,sfactor);
-  else p_partner->FillAmplitudes(atensor,sfactor*sqrt(m_sfactor));
-}
 
 String_Handler *AMEGIC::Single_LOProcess::GetStringHandler()
 { 

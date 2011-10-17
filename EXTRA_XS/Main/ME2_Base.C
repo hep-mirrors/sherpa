@@ -42,8 +42,8 @@ bool ME2_Base::SetColours(const Vec4D_Vector& mom)
 
 void ME2_Base::SetCouplings(MODEL::Coupling_Map *const cpls)
 {
-  if (cpls->find("Alpha_QCD")!=cpls->end()) p_aqcd=(*cpls)["Alpha_QCD"];
-  if (cpls->find("Alpha_QED")!=cpls->end()) p_aqed=(*cpls)["Alpha_QED"];
+  p_aqcd=cpls->Get("Alpha_QCD");
+  p_aqed=cpls->Get("Alpha_QED");
 }
 
 double ME2_Base::CouplingFactor(const int oqcd,const int oew) const

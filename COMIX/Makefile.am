@@ -1,1 +1,1 @@
-SUBDIRS       = Amplitude Main Phasespace Models Currents Vertices Cluster
+SUBDIRS       = Amplitude Main Phasespace Cluster

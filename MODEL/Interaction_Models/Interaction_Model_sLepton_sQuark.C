@@ -15,19 +15,30 @@ Interaction_Model_sLepton_sQuark::Interaction_Model_sLepton_sQuark(MODEL::Model_
 { 
   g1       = Kabbala(string("g_1"),
 		     sqrt(4.*M_PI*ScalarFunction(string("alpha_QED"),rpa->gen.CplScale())));
-  g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
-		     g1.Value()/sqrt(ScalarConstant(string("sin2_thetaW"))));
-  sintW    = Kabbala(string("\\sin\\theta_W"),
-		     sqrt(ScalarConstant(string("sin2_thetaW"))));
-  costW    = Kabbala(string("\\cos\\theta_W"),
-		     sqrt(1.-ScalarConstant(string("sin2_thetaW"))));
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ScalarConstant(std::string("sin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ScalarConstant(std::string("vev")));
+  }else{
+    g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
+		     g1.Value()/sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    sintW    = Kabbala(std::string("\\sin\\theta_W"),
+		     sqrt(ComplexConstant(std::string("csin2_thetaW"))));
+    costW    = Kabbala(std::string("\\cos\\theta_W"),
+		     sqrt(1.-ComplexConstant(std::string("csin2_thetaW"))));
+    vev      = Kabbala(string("v_{EW}"),ComplexConstant(std::string("cvev")));
+  }
+
   PL       = Kabbala(string("P_L"),1.);
   PR       = Kabbala(string("P_R"),1.);
   M_I      = Kabbala(string("i"),Complex(0.,1.));
-  vev      = Kabbala(string("v_{EW}"),ScalarConstant(string("vev")));
-  v1       = Kabbala(string("v_1"),ScalarConstant(string("vev")) *
+  v1       = Kabbala(string("v_1"),vev.Value() *
 		     sqrt(1./(1.+sqr(ScalarConstant(string("tan(beta)"))))));
-  v2       = Kabbala(string("v_2"),ScalarConstant(string("vev")) *
+  v2       = Kabbala(string("v_2"),vev.Value() *
 		     ScalarConstant(string("tan(beta)")) *
 		     sqrt(1./(1.+sqr(ScalarConstant(string("tan(beta)"))))));
   mu       = Kabbala(string("h"),ScalarConstant(string("mu")));
@@ -362,7 +373,7 @@ Kabbala Interaction_Model_sLepton_sQuark::K_l(short int i)
   sprintf(hi,"%i",i);
   
   return Kabbala(string("l^")+string(hi),
-		 -Flavour((kf_code)(2*i+11)).Yuk()/v1.Value()*sqrt(2.));
+		 -K_yuk(Flavour((kf_code)(2*i+11))).Value()/v1.Value()*sqrt(2.));
 
 }
 
@@ -372,7 +383,7 @@ Kabbala Interaction_Model_sLepton_sQuark::K_u(short int i)
   sprintf(hi,"%i",i);
   
   return Kabbala(string("u^")+string(hi),
-		 Flavour((kf_code)(2*i+2)).Yuk()/v2.Value()*sqrt(2.));
+		 K_yuk(Flavour((kf_code)(2*i+2))).Value()/v2.Value()*sqrt(2.));
 }
 
 Kabbala Interaction_Model_sLepton_sQuark::K_d(short int i)
@@ -381,7 +392,7 @@ Kabbala Interaction_Model_sLepton_sQuark::K_d(short int i)
   sprintf(hi,"%i",i);
   
   return Kabbala(string("d^")+string(hi),
-		 -Flavour((kf_code)(2*i+1)).Yuk()/v1.Value()*sqrt(2.));
+		 -K_yuk(Flavour((kf_code)(2*i+1))).Value()/v1.Value()*sqrt(2.));
 }
 
 Kabbala Interaction_Model_sLepton_sQuark::K_Z_Nu(short int i,short int j)       
@@ -421,7 +432,12 @@ Kabbala Interaction_Model_sLepton_sQuark::K_Z_U(short int i,short int j)
 }  
 
 Kabbala Interaction_Model_sLepton_sQuark::K_yuk(Flavour fl) {
-  return Kabbala(string("M_{"+fl.TexName()+"}"),fl.Yuk());
+  if(ScalarNumber(std::string("WidthScheme"))==0){
+    return Kabbala(string("M_{"+fl.TexName()+"}"),fl.Yuk());
+  }else{
+    return Kabbala(string("M_{"+fl.TexName()+"}"),sqrt(sqr(fl.Yuk())-
+                   Complex(0.,1.)*fl.Width()*fl.Yuk()));
+  }
 }
 
 Kabbala Interaction_Model_sLepton_sQuark::K_yuk_sign(Flavour fl) {

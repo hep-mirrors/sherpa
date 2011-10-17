@@ -1,0 +1,26 @@
+(run){
+  OUTPUT = 3;
+  EVENTS = 1;
+}(run);
+(processes){
+  Process 11 -11 -> 23 23;
+  End process;
+}(processes);
+(me){
+  ME_SIGNAL_GENERATOR Amegic;
+  FINISH_OPTIMIZATION Off;
+  STORE_DECAY_RESULTS 1;
+}(me);
+(model){
+  STABLE[23] = 0;
+}(model)
+(beam){
+  BEAM_1  11; BEAM_ENERGY_1 450.625;
+  BEAM_2 -11; BEAM_ENERGY_2 450.625;
+}(beam);
+(shower){
+  SHOWER_GENERATOR CSS;
+}(shower);
+(fragmentation){
+  DECAYMODEL = Off;
+}(fragmentation)

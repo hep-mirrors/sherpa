@@ -78,7 +78,7 @@ VA_B_B3::~VA_B_B3() {
   delete p_ff;
 }
 
-void VA_B_B3::Calc(const ATOOLS::Vec4D * moms)
+void VA_B_B3::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   p_ff->CalcFFs(moms[p_i[0]], moms[p_i[1]]);
 
@@ -99,7 +99,7 @@ void VA_B_B3::Calc(const ATOOLS::Vec4D * moms)
     -m_v*p_ff->V4()+m_a*p_ff->A4() :
     m_v*p_ff->V4()-m_a*p_ff->A4();
 
-  XYZFunc F(2, moms, m_flavs, Tools::k0, m_anti);
+  XYZFunc F(moms, m_flavs, m_anti, p_i);
   for(int h0=0; h0<2; h0++) {
     for(int h1=0; h1<2; h1++) {
       // 1 is "the barred spinor" in the current, 0 is the not-barred one

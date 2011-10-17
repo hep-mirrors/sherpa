@@ -495,6 +495,12 @@ void Process_Base::FillOnshellConditions()
       (PSId(m_decins[i]->m_id),sqr(m_decins[i]->m_fl.Mass()));
 }
 
+void Process_Base::FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amp,
+                                  std::vector<std::vector<Complex> >& cols)
+{
+  msg_Error()<<METHOD<<" called virtual function."<<std::endl;
+}
+
 void Process_Base::SetSelector(const Selector_Key &key)
 {
   if (IsMapped()) return;

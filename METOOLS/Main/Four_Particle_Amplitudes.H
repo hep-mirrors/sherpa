@@ -9,10 +9,11 @@ namespace METOOLS {
   class VSSS : public Partial_Amplitude_Base {
   private:
   public:
-    VSSS(ATOOLS::Flavour *fl,int *i,bool *out);
+    VSSS(const ATOOLS::Flavour_Vector& flavs,
+         const std::vector<int>& i, const std::vector<bool>& out);
     ~VSSS() {}
 
-    void operator()(const ATOOLS::Vec4D * moms,const bool anti);
+    void Calculate(const ATOOLS::Vec4D_Vector& moms, bool anti=false);
   };
 
 }

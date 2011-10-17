@@ -15,9 +15,7 @@ void Baryon_Diquark_Quark::SetModelParameters( GeneralModel _md )
   m_GF = _md("GF",1.0);
 }
 
-void Baryon_Diquark_Quark::operator()(
-                      const Vec4D             * p,
-                      METOOLS::Spin_Amplitudes * amps)
+void Baryon_Diquark_Quark::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
   vector<pair<int,int> > spins(3);
   for(int h0=0; h0<m_flavs[p_i[0]].IntSpin()+1;++h0) {
@@ -26,13 +24,14 @@ void Baryon_Diquark_Quark::operator()(
       spins[1] = make_pair(p_i[1],h1);
       for( int h2=0; h2<m_flavs[p_i[2]].IntSpin()+1; h2++ ) {
 	spins[2] = make_pair(p_i[2],h2);
-	amps->Add(Complex(1.0,0.0),spins);
+	Insert(Complex(1.0,0.0),spins);
       }
     }
   }
 }
 
-bool Baryon_Diquark_Quark::SetColorFlow(std::vector<ATOOLS::Particle*> outparts,int n_q, int n_g)
+bool Baryon_Diquark_Quark::SetColorFlow(std::vector<ATOOLS::Particle*> outparts,
+                                        int n_q, int n_g, bool m_anti)
 {
   int pos = m_anti ? 2 : 1;
   outparts[p_i[2]-1]->SetFlow(pos,-1);

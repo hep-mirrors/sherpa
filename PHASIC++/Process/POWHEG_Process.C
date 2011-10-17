@@ -194,8 +194,8 @@ Cluster_Amplitude *POWHEG_Process::CreateAmplitude(const NLO_subevt *sub) const
   Cluster_Amplitude *ampl = Cluster_Amplitude::New();
   ampl->SetNIn(m_nin);
   ampl->SetMS(p_sproc->Generator());
-  ampl->SetMuF2(sub->m_muf2);
-  ampl->SetMuR2(sub->m_mur2);
+  ampl->SetMuF2(sub->m_mu2[stp::fac]);
+  ampl->SetMuR2(sub->m_mu2[stp::ren]);
   Int_Vector ci(sub->m_n,0), cj(sub->m_n,0);
   for (size_t i=0;i<sub->m_n;++i) {
     ampl->CreateLeg(i<m_nin?-sub->p_mom[i]:sub->p_mom[i],

@@ -8,8 +8,10 @@
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "PHASIC++/Main/Helicity_Integrator.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -18,22 +20,30 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
-#include <sys/stat.h>
 #ifdef USING__MPI
 #include "mpi.h"
 #endif
-
-// #define TIME_CDBG_ME
 
 using namespace COMIX;
 using namespace PHASIC;
 using namespace ATOOLS;
 
-COMIX::Single_Process::Single_Process(): COMIX::Process_Base(this),
-  p_bg(NULL), p_map(NULL), m_etime(0.0), m_en(0.0) {}
+COMIX::Single_Process::Single_Process():
+  COMIX::Process_Base(this),
+  p_bg(NULL), p_map(NULL),
+  p_loop(NULL), p_kpterms(NULL) {}
 
 COMIX::Single_Process::~Single_Process()
 {
+  if (p_kpterms) delete p_kpterms;
+  if (p_loop) delete p_loop;
+  if (p_map) {
+    for (size_t i(0);i<m_subs.size();++i) {
+      delete [] m_subs[i]->p_id;
+      delete [] m_subs[i]->p_fl;
+      delete m_subs[i];
+    }
+  }
   if (p_bg!=NULL) delete p_bg;
 }
 
@@ -46,21 +56,30 @@ bool COMIX::Single_Process::Initialize
   if (p_bg!=NULL) delete p_bg;
   p_bg=NULL;
   if (pmap->find(m_name)!=pmap->end()) {
-    std::string mapname((*pmap)[m_name]);
-    msg_Debugging()<<METHOD<<"(): Map '"<<m_name<<"' onto '"
-		   <<mapname<<"'"<<std::endl;
-    if (mapname=="x") return false;
-    if (mapname!=m_name) {
-      std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
-			  +"/Process/Comix/"+m_name+".fmap");
-      if (FileExists(mapfile)) return true;
-      msg_Info()<<METHOD<<"(): Flavour map file '"
-		<<mapfile<<"' not found."<<std::endl;
+    if ((*pmap)[m_name]!="x") THROW(fatal_error,"Internal error");
+    return false;
+  }
+  std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
+		      +"/Process/Comix/"+m_name+".map");
+  if (FileExists(mapfile)) {
+    msg_Tracking()<<METHOD<<"(): Map file '"<<mapfile<<"' found.\n";
+    std::ifstream mapstream(mapfile.c_str());
+    if (mapstream.good()) {
+      std::string cname, mapname;
+      mapstream>>cname>>mapname;
+      if (cname!=m_name)
+	THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
+      (*pmap)[m_name]=mapname;
+      if (mapname!=m_name) {
+	msg_Debugging()<<METHOD<<"(): Map '"<<m_name
+		       <<"' onto '"<<mapname<<"'\n";
+	return true;
+      }
     }
   }
   msg_Debugging()<<"'"<<m_name<<"' not pre-mapped"<<std::endl;
-  p_model->GetModel()->GetCouplings(m_cpls);
-  p_bg = new Matrix_Element();
+  p_model->GetCouplings(m_cpls);
+  p_bg = new Amplitude();
   double isf(m_pinfo.m_ii.ISSymmetryFactor());
   double fsf(m_pinfo.m_fi.FSSymmetryFactor());
   Subprocess_Info info(m_pinfo.m_ii);
@@ -68,17 +87,74 @@ bool COMIX::Single_Process::Initialize
   p_bg->SetDecayInfos(m_decins);
   std::vector<Flavour> flavs(m_nin+m_nout);
   for (size_t i(0);i<m_nin+m_nout;++i) flavs[i]=m_flavs[i];
+  int smode(0);
+  if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) smode=1;
+  if (m_pinfo.m_fi.NLOType()&nlo_type::vsub) {
+    smode=2;
+    if (m_pinfo.m_fi.NLOType()&nlo_type::born) smode|=4;
+  }
+  if (m_pinfo.m_fi.NLOType()&nlo_type::loop) {
+    smode|=16;
+    if (m_pinfo.m_fi.NLOType()&nlo_type::polecheck) smode|=8;
+  }
   if (p_bg->Initialize(m_nin,m_nout,flavs,isf,fsf,&*p_model,
-		       &m_cpls,m_pinfo.m_oew,m_pinfo.m_oqcd,
+		       &m_cpls,smode,m_pinfo.m_oew,m_pinfo.m_oqcd,
 		       m_pinfo.m_maxoew,m_pinfo.m_maxoqcd,
-		       m_pinfo.m_ntchan)) {
+		       m_pinfo.m_ntchan,m_name)) {
+    if (smode&2) {
+      p_kpterms = new KP_Terms(this,0);
+      p_kpterms->SetAlpha(p_bg->DInfo()->AMax());
+      m_wgtinfo.AddMEweights(18);
+    }
+    if (smode&16) {
+      smode&=~16;
+      Process_Info cinfo(m_pinfo);
+      cinfo.m_fi.m_nloqcdtype=nlo_type::loop;
+      p_loop = PHASIC::Virtual_ME2_Base::GetME2(cinfo);
+      if (p_loop==NULL) {
+	msg_Error()<<METHOD<<"(): "<<cinfo<<"\n";
+	THROW(not_implemented,"No virtual ME for this process");
+      }
+      if (m_wgtinfo.m_nx==0) m_wgtinfo.AddMEweights(2);
+    }
+    p_bg->SetLoopME(p_loop);
     m_oew=p_bg->MaxOrderEW();
     m_oqcd=p_bg->MaxOrderQCD();
     (*pmap)[m_name]=m_name;
     return true;
   }
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()==0) {
+#endif
+  mapfile=rpa->gen.Variable("SHERPA_CPP_PATH")
+    +"/Process/Comix/"+Parent()->Name()+".map";
+  std::fstream map(mapfile.c_str(),std::ios::out|std::ios::app);
+  if (map.good()) map<<m_name<<" x\n";
+#ifdef USING__MPI
+  }
+#endif
   (*pmap)[m_name]="x";
   return false;
+}
+
+void COMIX::Single_Process::MapSubEvts()
+{
+  m_wgtinfo.AddMEweights(p_map->m_wgtinfo.m_nx);
+  m_subs.resize(p_map->p_bg->SubEvts().size());
+  const NLO_subevtlist &rsubs(p_map->p_bg->SubEvts());
+  for (size_t i(0);i<m_subs.size();++i) {
+    m_subs[i] = new NLO_subevt(rsubs[i]);
+    Flavour *fls(new Flavour[m_subs[i]->m_n]);
+    size_t *ids(new size_t[m_subs[i]->m_n]);
+    m_subs[i]->p_fl = fls;
+    m_subs[i]->p_id = ids;
+    m_subs[i]->p_mom=rsubs[i]->p_mom;
+    m_subs[i]->p_dec=rsubs[i]->p_dec;
+    for (size_t j(0);j<m_subs[i]->m_n;++j) {
+      fls[j]=ReMap(rsubs[i]->p_fl[j]);
+      ids[j]=rsubs[i]->p_id[j];
+    }
+  }
 }
 
 bool COMIX::Single_Process::MapProcess()
@@ -90,27 +166,32 @@ bool COMIX::Single_Process::MapProcess()
 	p_mapproc=p_map=(*p_umprocs)[i];
 	m_oew=p_map->p_bg->MaxOrderEW();
 	m_oqcd=p_map->p_bg->MaxOrderQCD();
-	msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"
-		      <<mapname<<"'."<<std::endl;
+	msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"<<mapname<<"'.\n";
 	std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
-			    +"/Process/Comix");
-	MakeDir(mapfile,true);
-	mapfile+="/"+m_name+".fmap";
+			    +"/Process/Comix/"+m_name+".map");
 	std::ifstream map(mapfile.c_str());
 	if (!map.good()) {
-	  THROW(fatal_error,"Flavour map file '"+mapfile+"' not found");
+	  THROW(fatal_error,"Map file '"+mapfile+"' not found");
 	}
 	else {
-	  while (!map.eof()) {
+	  size_t nfmap;
+	  std::string cname, cmapname;
+	  map>>cname>>cmapname>>nfmap;
+	  if (cname!=m_name || cmapname!=mapname || map.eof())
+	    THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
+	  for (size_t j(0);j<nfmap;++j) {
 	    long int src, dest;
 	    map>>src>>dest;
-	    if (map.eof()) break;
 	    Flavour ft((kf_code)(abs(src)),src<0);
 	    Flavour fb((kf_code)(abs(dest)),dest<0);
 	    m_fmap[ft]=fb;
 	    msg_Debugging()<<"  fmap '"<<ft<<"' onto '"<<fb<<"'\n";
 	  }
+	  map>>cname;
+	  if (cname!="eof")
+	    THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
 	}
+	MapSubEvts();
 	return true;
       }
     THROW(fatal_error,"Map process '"+mapname+"' not found");
@@ -118,7 +199,7 @@ bool COMIX::Single_Process::MapProcess()
   for (size_t i(0);i<p_umprocs->size();++i) {
     msg_Debugging()<<METHOD<<"(): Try mapping '"
 		   <<Name()<<"' -> '"<<(*p_umprocs)[i]->Name()<<"'\n";
-    if (p_bg->Map((*p_umprocs)[i]->p_bg,m_fmap)) {
+    if (p_bg->Map(*(*p_umprocs)[i]->p_bg,m_fmap)) {
       p_mapproc=p_map=(*p_umprocs)[i];
       mapname=p_map->Name();
       msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"
@@ -127,12 +208,11 @@ bool COMIX::Single_Process::MapProcess()
       if (MPI::COMM_WORLD.Get_rank()==0) {
 #endif
       std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
-			  +"/Process/Comix");
-      MakeDir(mapfile,true);
-      mapfile+="/"+m_name+".fmap";
+			  +"/Process/Comix/"+m_name+".map");
       if (!FileExists(mapfile)) {
 	std::ofstream map(mapfile.c_str());
 	if (map.good()) {
+	  map<<m_name<<" "<<mapname<<"\n"<<m_fmap.size()<<"\n";
 	  for (Flavour_Map::const_iterator 
 		 fit(m_fmap.begin());fit!=m_fmap.end();++fit) {
 	    msg_Debugging()<<"  fmap '"<<fit->first
@@ -140,11 +220,13 @@ bool COMIX::Single_Process::MapProcess()
 	    long int src(fit->first), dest(fit->second);
 	    map<<src<<" "<<dest<<"\n";
 	  }
+	  map<<"eof\n";
 	}
       }
 #ifdef USING__MPI
       }
 #endif
+      MapSubEvts();
       delete p_bg;
       p_bg=NULL;
       (*p_pmap)[m_name]=mapname;
@@ -155,14 +237,15 @@ bool COMIX::Single_Process::MapProcess()
     msg_Tracking()<<ComixLogo()<<" initialized '"<<m_name<<"', ";
     p_bg->PrintStatistics(msg->Tracking(),0);
   }
+  p_bg->WriteOutAmpFile(m_name);
   p_umprocs->push_back(this);
   return false;
 }
 
 bool COMIX::Single_Process::GeneratePoint()
 {
+  SetZero();
   m_zero=true;
-  m_lastxs=m_last[1]=m_last[0]=0.0;
   if (p_map!=NULL && m_lookup && p_map->m_lookup) 
     return !(m_zero=p_map->m_zero);
   if (!p_int->ColorIntegrator()->GeneratePoint()) return false;
@@ -178,47 +261,107 @@ double COMIX::Single_Process::Differential(const Cluster_Amplitude &ampl)
   return PHASIC::Process_Base::Differential(ampl);
 }
 
+double COMIX::Single_Process::SetZero()
+{
+  if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
+    const NLO_subevtlist &rsubs(p_map?m_subs:p_bg->SubEvts());
+    for (size_t i(0);i<rsubs.size();++i) rsubs[i]->Reset();
+  }
+  return m_lastxs=m_last[1]=m_last[0]=0.0;
+}
+
 double COMIX::Single_Process::Partonic
 (const Vec4D_Vector &p,const int mode) 
 {
-  if (mode==1 && !(p_map!=NULL?p_map:this)
-      ->p_scale->Scale2()) return m_lastxs;
-  if (m_zero || !Selector()->Result()) return m_lastxs=0.0;
+  Single_Process *sp(p_map!=NULL?p_map:this);
+  if (mode==1 && !sp->p_scale->Scale2())
+    return m_lastxs=m_dxs+sp->GetKPTerms(m_flavs,mode);
+  if (m_zero || !Selector()->Result()) return m_lastxs;
   for (size_t i(0);i<m_nin+m_nout;++i) {
     m_p[i]=p[i];
     double psm(m_flavs[i].Mass());
-    if (m_p[i][0]<psm) return m_lastxs=0.0;
-    if (i<m_nin && psm==0.0) m_p[i][0]=dabs(m_p[i][3]);
+    if (m_p[i][0]<psm) return m_lastxs;
   }
   if (p_map!=NULL && m_lookup && p_map->m_lookup) {
-    m_lastxs=p_map->m_lastxs;
+    m_dxs=p_map->m_dxs;
+    if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
+      const NLO_subevtlist &rsubs(p_map->p_bg->SubEvts());
+      for (size_t i(0);i<rsubs.size();++i)
+	m_subs[i]->CopyXSData(rsubs[i]);
+    }
   }
   else {
-    Single_Process *sp(p_map!=NULL?p_map:this);
     sp->p_scale->CalculateScale(p,mode);
-#ifdef TIME_CDBG_ME
-    double stime(rpa->gen.Timer().UserTime());
-#endif
-    m_lastxs=(p_map!=NULL?p_map->p_bg:p_bg)->
-      Differential(m_p,&*p_int->ColorIntegrator(),
-		   &*p_int->HelicityIntegrator());
-#ifdef TIME_CDBG_ME
-    m_etime+=rpa->gen.Timer().UserTime()-stime;
-    ++m_en;
-#endif
-    m_lastxs*=p_int->ColorIntegrator()->GlobalWeight();
+    m_dxs=sp->p_bg->Differential(m_p);
+    m_w=p_int->ColorIntegrator()->GlobalWeight();
     if (p_int->HelicityIntegrator()!=NULL) 
-      m_lastxs*=p_int->HelicityIntegrator()->Weight();
-    m_lastxs*=p_map!=NULL?p_map->KFactor():KFactor();
+      m_w*=p_int->HelicityIntegrator()->Weight();
+    m_w*=sp->KFactor();
+    m_dxs*=m_w;
+    if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
+      if (p_map==NULL) p_bg->SubEvts().MultME(m_w);
+      else {
+	const NLO_subevtlist &rsubs(p_map->p_bg->SubEvts());
+	for (size_t i(0);i<rsubs.size();++i)
+	  m_subs[i]->CopyXSData(rsubs[i]);
+	m_subs.MultME(m_w);
+      }
+    }
   }
-  return m_lastxs;
+  double kpterms(sp->GetKPTerms(m_flavs,mode));
+  if (m_wgtinfo.m_nx) {
+    sp->FillMEWeights(m_wgtinfo);
+    m_wgtinfo*=m_w;
+    m_wgtinfo.m_w0=m_dxs;
+  }
+  return m_lastxs=m_dxs+kpterms;
+}
+
+double COMIX::Single_Process::GetKPTerms
+(const Flavour_Vector &fl,const int mode)
+{
+  if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return 0.0;
+  if (mode==0) {
+    m_x[0]=m_x[1]=1.0;
+    double eta0=1.0, eta1=1.0;
+    double w=p_bg->Coupling(0)/(2.0*M_PI);
+    if (m_flavs[0].Strong()) {
+      eta0=p_int->ISR()->X1();
+      m_x[0]=eta0+ran->Get()*(1.0-eta0);
+      w*=(1.0-eta0);
+    }
+    if (m_flavs[1].Strong()) {
+      eta1=p_int->ISR()->X2();
+      m_x[1]=eta1+ran->Get()*(1.-eta1);
+      w*=(1.0-eta1);
+    }
+    p_kpterms->SetDSij(p_bg->DSij());
+    p_kpterms->Calculate
+      (p_int->Momenta(),m_x[0],m_x[1],eta0,eta1,w);
+  }
+  double eta0(0.0), eta1(0.0);
+  if (mode==0) {
+    eta0=p_int->Momenta()[0].PPlus()/rpa->gen.PBeam(0).PPlus();
+    eta1=p_int->Momenta()[1].PMinus()/rpa->gen.PBeam(1).PMinus();
+  }
+  else {
+    eta0=p_int->Momenta()[0].PPlus()/rpa->gen.PBeam(1).PMinus();
+    eta1=p_int->Momenta()[1].PMinus()/rpa->gen.PBeam(0).PPlus();
+  }
+  return m_w*p_kpterms->Get(m_x[0],m_x[1],eta0,eta1,fl,mode);
+}
+
+void COMIX::Single_Process::FillMEWeights(ME_wgtinfo &wgtinfo) const
+{
+  wgtinfo.m_y1=m_x[0];
+  wgtinfo.m_y2=m_x[1];
+  p_bg->FillMEWeights(wgtinfo);
+  if (p_kpterms) p_kpterms->FillMEwgts(wgtinfo);
 }
 
 bool COMIX::Single_Process::Tests()
 {
-  msg_Debugging()<<METHOD<<"(): Test '"<<m_name<<"' <- '"
-		 <<p_int->PSHandler()->Process()->
-    Process()->Name()<<"'."<<std::endl;
+  msg_Debugging()<<METHOD<<"(): Test '"<<m_name<<"'."<<std::endl;
   if (p_map!=NULL) {
     p_int->SetColorIntegrator(p_map->Integrator()->ColorIntegrator());
     p_int->SetHelicityIntegrator(p_map->Integrator()->HelicityIntegrator());
@@ -230,7 +373,7 @@ bool COMIX::Single_Process::Tests()
     return false;
   }
   MakeDir(m_gpath,448);
-  if (m_gpath.length()>0) p_bg->PrintGraphs(m_gpath+"/"+m_name+".tex");
+  if (m_gpath.length()>0) p_bg->WriteOutGraphs(m_gpath+"/"+m_name+".tex");
   if (p_int->HelicityScheme()==hls::sample) {
     p_int->SetHelicityIntegrator(new Helicity_Integrator());
     p_bg->SetHelicityIntegrator(&*p_int->HelicityIntegrator());
@@ -251,7 +394,7 @@ bool COMIX::Single_Process::Tests()
   }
   if (!p_int->ColorIntegrator()->
       ConstructRepresentations(ids,types,acts)) return false;
-  const DecayInfo_Vector &dinfos(p_bg->GetAmplitude()->DecayInfos());
+  const DecayInfo_Vector &dinfos(p_bg->DecayInfos());
   std::vector<size_t> dids(dinfos.size());
   acts.resize(dids.size());
   types.resize(dids.size());
@@ -263,7 +406,7 @@ bool COMIX::Single_Process::Tests()
     else types[i]=1;
   }
   p_int->ColorIntegrator()->SetDecayIds(dids,types,acts);
-  Phase_Space_Handler::TestPoint(&m_p.front(),&Info(),1);
+  Phase_Space_Handler::TestPoint(&m_p.front(),&Info(),Generator(),1);
   bool res(p_bg->GaugeTest(m_p));
   if (!res) {
     msg_Info()<<METHOD<<"(): Gauge test failed for '"
@@ -271,6 +414,22 @@ bool COMIX::Single_Process::Tests()
   }
   else if (!msg_LevelIsTracking()) msg_Info()<<"."<<std::flush;
   return res;
+}
+
+bool COMIX::Single_Process::Trigger(const ATOOLS::Vec4D_Vector &p)
+{
+  if (m_zero) return false;
+  if (p_map!=NULL && m_lookup && p_map->m_lookup)
+    return Selector()->Result();
+  if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
+    if (!Selector()->NoJetTrigger(p)) return false;
+    Amplitude *bg(p_map!=NULL?p_map->p_bg:p_bg);
+    if (bg->SetMomenta(p) && bg->JetTrigger(Selector())) return true;
+    Selector()->SetResult(0);
+    return false;
+  }
+  (p_map!=NULL?p_map->p_bg:p_bg)->SetMomenta(p);
+  return Selector()->Trigger(p);
 }
 
 void COMIX::Single_Process::InitPSGenerator(const size_t &ismode)
@@ -288,17 +447,11 @@ void COMIX::Single_Process::ConstructPSVertices(PS_Generator *ps)
 {
   if (m_psset.find(ps)!=m_psset.end()) return;
   m_psset.insert(ps);
-  if (p_bg!=NULL) ps->Construct(p_bg->GetAmplitude());
+  if (p_bg!=NULL) ps->Construct(p_bg);
   else p_map->ConstructPSVertices(ps);
 }
 
 Amplitude *COMIX::Single_Process::GetAmplitude() const
-{
-  if (p_bg!=NULL) return p_bg->GetAmplitude();
-  return p_map->p_bg->GetAmplitude();
-}
-
-Matrix_Element *COMIX::Single_Process::GetME() const
 {
   if (p_bg!=NULL) return p_bg;
   return p_map->p_bg;
@@ -324,7 +477,7 @@ bool COMIX::Single_Process::Combinable
 (const size_t &idi,const size_t &idj)
 {
   if (p_map) return p_map->Combinable(idi,idj);
-  return p_bg->GetAmplitude()->Combinable(idi,idj);
+  return p_bg->Combinable(idi,idj);
 }
 
 const Flavour_Vector &COMIX::Single_Process::
@@ -338,5 +491,19 @@ CombinedFlavour(const size_t &idij)
     m_cfmap[idij]=cf;
     return m_cfmap[idij];
   }
-  return p_bg->GetAmplitude()->CombinedFlavour(idij);
+  return p_bg->CombinedFlavour(idij);
+}
+
+void COMIX::Single_Process::FillAmplitudes
+(std::vector<Spin_Amplitudes> &amps,
+ std::vector<std::vector<Complex> > &cols)
+{
+  p_bg->FillAmplitudes(amps,cols);
+}
+
+NLO_subevtlist *COMIX::Single_Process::GetSubevtList()
+{
+  if (m_pinfo.m_fi.NLOType()&nlo_type::rsub)
+    return &(p_map?m_subs:p_bg->SubEvts());
+  return NULL;
 }

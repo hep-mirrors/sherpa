@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Phys/Flow.H"
 
 using namespace ATOOLS;
 
@@ -168,6 +169,14 @@ Cluster_Amplitude *Cluster_Amplitude::InitNext()
   return p_next;
 }
 
+Cluster_Amplitude *Cluster_Amplitude::InitPrev()
+{
+  if (p_prev!=NULL) return NULL;
+  p_prev = new Cluster_Amplitude();
+  p_prev->p_next=this;
+  return p_prev;
+}
+
 void Cluster_Amplitude::SetNext(Cluster_Amplitude *const next) 
 {
   if (p_next!=NULL) p_next->Delete();
@@ -229,6 +238,85 @@ Cluster_Leg *Cluster_Amplitude::IdLeg(const size_t &id) const
     if (m_legs[i]->Id()==id) return m_legs[i];
   return NULL;
 }
+
+void Cluster_Amplitude::SetColours
+(Cluster_Leg *const lij,Cluster_Leg *const li,Cluster_Leg *const lj)
+{
+  ColorID colij(lij->Col()), coli(0,0), colj(0,0);
+  if (lij->Flav().StrongCharge()==3) {
+    if (li->Flav().StrongCharge()==3) {
+      if (lj->Flav().Strong()) {
+	size_t nc(Flow::Counter());
+	colj.m_j=coli.m_i=nc;
+	colj.m_i=colij.m_i;
+      }
+      else {
+	colj.m_j=colj.m_i=0;
+	coli.m_i=colij.m_i;
+      }
+    }
+    else {
+      if (li->Flav().Strong()) {
+	size_t nc(Flow::Counter());
+	coli.m_j=colj.m_i=nc;
+	coli.m_i=colij.m_i;
+      }
+      else {
+	coli.m_j=coli.m_i=0;
+	colj.m_i=colij.m_i;
+      }
+    }
+  }
+  else if (lij->Flav().StrongCharge()==-3) {
+    if (li->Flav().StrongCharge()==-3) {
+      if (lj->Flav().Strong()) {
+	size_t nc(Flow::Counter());
+	colj.m_i=coli.m_j=nc;
+	colj.m_j=colij.m_j;
+      }
+      else {
+	colj.m_j=colj.m_i=0;
+	coli.m_j=colij.m_j;
+      }
+    }
+    else {
+      if (li->Flav().Strong()) {
+	size_t nc(Flow::Counter());
+	coli.m_i=colj.m_j=nc;
+	coli.m_j=colij.m_j;
+      }
+      else {
+	coli.m_j=coli.m_i=0;
+	colj.m_j=colij.m_j;
+      }
+    }
+  }
+  else if (lij->Flav().Strong()) {
+    if (li->Flav().StrongCharge()==8) {
+      size_t nc(Flow::Counter());
+      colj.m_i=coli.m_j=nc;
+      colj.m_j=colij.m_j;
+      coli.m_i=colij.m_i;
+    }
+    else {
+      coli.m_i=colij.m_i;
+      colj.m_j=colij.m_j;
+      if (li->Flav().StrongCharge()<0)
+	std::swap<ColorID>(coli,colj);
+    }
+  }
+  else {
+    if (li->Flav().Strong()) {
+      size_t nc(Flow::Counter());
+      coli.m_i=colj.m_j=nc;
+      if (li->Flav().StrongCharge()<0)
+	std::swap<ColorID>(coli,colj);
+    }
+  }
+  li->SetCol(coli);
+  lj->SetCol(colj);
+}
+
 
 size_t Cluster_Amplitude::IdIndex(const size_t &id) const
 {

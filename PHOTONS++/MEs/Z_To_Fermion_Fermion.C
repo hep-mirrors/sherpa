@@ -135,7 +135,7 @@ double Z_To_Fermion_Fermion::Smod(unsigned int kk) {
 Complex Z_To_Fermion_Fermion::InfraredSubtractedME_0_0() {
   m_moms = m_moms0;
   Vec4C epsZ = Polarization_Vector(m_moms[0])[m_spins[0]];
-  XYZFunc XYZ(3,m_moms,m_flavs,1,false);
+  XYZFunc XYZ(3,m_moms,m_flavs,false);
   return  XYZ.X(1,m_spins[1],epsZ,2,m_spins[2],m_cL,m_cR);
 }
 
@@ -158,7 +158,7 @@ Complex Z_To_Fermion_Fermion::InfraredSubtractedME_1_05(unsigned int i) {
   m_moms[6]    = m_moms[7] = pb;
   m_flavs[4]   = m_flavs[6] = m_flavs[1];   // set to corresponding particle/antiparticle
   m_flavs[5]   = m_flavs[7] = m_flavs[2];
-  XYZFunc XYZ(8,m_moms,m_flavs,1,false);
+  XYZFunc XYZ(8,m_moms,m_flavs,false);
   Complex r1 = Complex(0.,0.);
   Complex r2 = Complex(0.,0.);
   Complex r3 = Complex(0.,0.);

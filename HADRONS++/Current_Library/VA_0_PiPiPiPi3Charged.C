@@ -547,11 +547,11 @@ Vec4C VA_0_PiPiPiPi3Charged::KS::operator()()
 
 // General framework
 
-void VA_0_PiPiPiPi3Charged::Calc(const ATOOLS::Vec4D * moms)
+void VA_0_PiPiPiPi3Charged::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   Vec4C help(0.,0.,0.,0.);
   // Lorentz structure
-  p_lorenz->SetPrivates(moms, p_i);
+  p_lorenz->SetPrivates(&moms.front(), &p_i.front());
   help = (*p_lorenz)();
   Insert( help*m_global , 0);
 }

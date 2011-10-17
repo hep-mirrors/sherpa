@@ -9,12 +9,13 @@ class Polynomial : public FormFactor_Base {
   double m_f0_0, m_f0_lambda, m_f0_m2;
   double Fit(double q2, double m2, double f_0, double lambda);
 public:
-  Polynomial(struct GeneralModel model, double* masses, Flavour* flavs, int* i);
+  Polynomial(GeneralModel model, double* masses, const Flavour_Vector& flavs,
+             std::vector<int>& indices);
   void CalcFFs(ATOOLS::Vec4D p0, ATOOLS::Vec4D p1);
 };
 
-Polynomial::Polynomial(GeneralModel model, double* masses, Flavour* flavs,
-                       int* i) :
+Polynomial::Polynomial(GeneralModel model, double* masses,
+                       const Flavour_Vector& flavs, std::vector<int>& i) :
   FormFactor_Base(model, masses, flavs, i)
 {
   m_fplus_0=0.0; m_fplus_lambda=0.0; m_fplus_m2=0.0;

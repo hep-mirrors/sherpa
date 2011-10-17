@@ -15,27 +15,57 @@
 namespace HADRONS
 {
 
-  struct Flavour_Info {
-    int n;
-    ATOOLS::Flavour* flavs;
-    int* indices;
+  /** 
+   * Object containing all parameters needed to initialise a HD_ME_Base
+   * or Current_Base. This is necessary as argument for the Getter_Function
+   * of these objects.
+   */
+  struct ME_Parameters {
+    const ATOOLS::Flavour_Vector& flavs;
+    const std::vector<int>& indices;
+    ME_Parameters(const ATOOLS::Flavour_Vector& _flavs,
+                  const std::vector<int>& _indices) :
+      flavs(_flavs), indices(_indices)
+    {}
   };
 
-  typedef std::map<std::string,double> String_Map;
-
-  struct GeneralModel: public String_Map {
+  /**
+   * A map with all relevant parameters for a certain decay amplitude.
+   * It is a map that both contains the name of the parameter (as it is written
+   * in the decay channel file) and its (double precision) value.
+   */
+  struct GeneralModel: public std::map<std::string,double> {
     std::map<kf_code, kf_code> m_aliases;
     
   public:
+    /** 
+     * Returns the value of the parameter with the name <var>tag</var>.
+     * If such a parameter does not exist, it returns the default value given
+     * by <var>def</var>.
+     */
     inline double operator()(const std::string &tag,const double &def) const 
     {
-      String_Map::const_iterator fit(find(tag));
+      std::map<std::string,double>::const_iterator fit(find(tag));
       return fit!=end()?fit->second:def;
     }
   };
 
+  /** 
+   * Utility class providing some regularly needed tools. They are all
+   * implemented as static objects, such that they can be used without
+   * instantiation.
+   */
   class Tools {
   public:
+    /** 
+     * Phase space function \f$\lambda = (a-b-c)^2-4bc\f$;
+     * 
+     * @param a 
+     * @param b 
+     * @param c 
+     * 
+     * @return \f$ \lambda \f$
+     */
     static double   Lambda(double a,double b,double c);
     static Complex  BreitWigner( double s, double Mass2, double MassWidth );
     static Complex  BreitWignerFix( double s, double Mass2, double MassWidth );
@@ -44,7 +74,8 @@ namespace HADRONS
 				       double Width, double ms );
     static double   OffShellMassWidth( double s, double Mass2, 
 				       double Width, double ms1, double ms2 );
-    static const int k0;
+    //@{
+    /** CKM matrix element. */
     static const double Vud;
     static const double Vus;
     static const double Vub;
@@ -54,22 +85,8 @@ namespace HADRONS
     static const double Vtd;
     static const double Vts;
     static const double Vtb;
+    //@}
   }; 
-    /*!
-      \file Tools.H
-      \brief Declares the class HADRONS::Tools
-      */
-    /*!
-      \class Tools
-      \brief A small collection of frequently used functions for ME's
-
-      This class is completely static so that it does not need a constructor.
-      Its methods can be called directly.
-      */
-  /*!
-    \fn Tools::Lambda( double a, double b, double c )
-    \brief Returns the value of the triangulation function
-    */
 }
 
 #endif

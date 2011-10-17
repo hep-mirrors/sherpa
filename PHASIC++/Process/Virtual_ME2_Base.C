@@ -13,7 +13,7 @@ Virtual_ME2_Base::Virtual_ME2_Base(const Process_Info& pi,
                              const Flavour_Vector& flavs) :
   m_pinfo(pi), m_flavs(flavs),
   m_res(0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
-  m_mur2(1.0), m_mode(0), m_drmode(0)
+  m_mur2(1.0), m_mode(0), m_drmode(0), m_colmode(0)
 {
 }
 
@@ -24,7 +24,13 @@ Virtual_ME2_Base::~Virtual_ME2_Base()
 double Virtual_ME2_Base::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
 {
   //MSbar
-  return 2.*M_PI*m_mur2/(mom[0]*mom[1]);
+  return 4.0*M_PI;
+}
+
+double Virtual_ME2_Base::ScaleDependenceCoefficient(const int i)
+{
+  THROW(not_implemented,"Invalid call");
+  return 0.0;
 }
 
 typedef ATOOLS::Getter_Function<Virtual_ME2_Base, PHASIC::Process_Info>

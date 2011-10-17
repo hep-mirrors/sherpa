@@ -16,6 +16,7 @@
 namespace ATOOLS {
 
   class Flavour;
+  class Mass_Selector;
   
   void OutputHadrons(std::ostream&);
   void OutputParticles(std::ostream&);
@@ -116,7 +117,7 @@ namespace ATOOLS {
     int  Ctq() const;
     void FromCtq(const int code);
 
-    int HepEvt();
+    int HepEvt() const;
     void FromHepEvt(long int code);
     void FromHadron(long int code);
 
@@ -131,6 +132,8 @@ namespace ATOOLS {
     bool IsC_Hadron() const;
 
     double GenerateLifeTime() const;
+    double RelBWMass(const Mass_Selector* ms,
+                     const double& min, const double& max) const;
 
     // inline functions
     inline Flavour Bar() const { return Flavour(*p_info,!m_anti); }
@@ -330,7 +333,7 @@ namespace ATOOLS {
   class Flavour_Sorting_Criterion {
   public :
     // something is wrong with this criterion
-    // if you need a flavour set, use Flavour_Set, not FlavourSet !!!
+    // if you need a flavour set, use Flavour_Set, not FlavourMultiSet !!!
     inline bool operator()(const Flavour &fl1,const Flavour &fl2) const
     {
       kf_code kf1(fl1.Kfcode()), kf2(fl2.Kfcode());
@@ -340,9 +343,9 @@ namespace ATOOLS {
     }
   };// end of class Flavour_Sorting_Criterion
 
-  typedef std::set<Flavour,Flavour_Sorting_Criterion> FlavourSet;
-  typedef FlavourSet::iterator FlSetIter;
-  typedef FlavourSet::const_iterator FlSetConstIter;
+  typedef std::set<Flavour,Flavour_Sorting_Criterion> FlavourMultiSet;
+  typedef FlavourMultiSet::iterator FlSetIter;
+  typedef FlavourMultiSet::const_iterator FlSetConstIter;
   typedef std::vector<Flavour> Flavour_Vector;
   typedef std::map<Flavour,Flavour> Flavour_Map;
   typedef std::set<Flavour> Flavour_Set;

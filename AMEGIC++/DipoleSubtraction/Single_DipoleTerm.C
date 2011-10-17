@@ -495,8 +495,8 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
     else m_lastxs = p_partner->operator()(mom,cms,mode)*m_sfactor*Norm()/p_partner->Norm();
     m_subevt.m_result = m_subevt.m_last[0] = m_subevt.m_last[1] = 0.;
     m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
-    m_subevt.m_muf2 = p_partner->GetSubevt()->m_muf2;
-    m_subevt.m_mur2 = p_partner->GetSubevt()->m_mur2;
+    m_subevt.m_mu2[stp::fac] = p_partner->GetSubevt()->m_mu2[stp::fac];
+    m_subevt.m_mu2[stp::ren] = p_partner->GetSubevt()->m_mu2[stp::ren];
     return m_lastxs;
   }
 
@@ -525,8 +525,8 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
 
   m_lastxs = M2 * df * p_dipole->SPFac() * KFactor() * Norm();
   m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
-  m_subevt.m_muf2 = p_scale->Scale(stp::fac);
-  m_subevt.m_mur2 = p_scale->Scale(stp::ren);
+  m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);
+  m_subevt.m_mu2[stp::ren] = p_scale->Scale(stp::ren);
   return m_lastxs;
 }
 
@@ -550,12 +550,6 @@ void Single_DipoleTerm::AddChannels(std::list<std::string>*psln)
 {
   if (p_LO_process==NULL) return;
   p_LO_process->AddChannels(psln);
-}
-
-void Single_DipoleTerm::FillAmplitudes(METOOLS::Amplitude_Tensor* atensor,double sfactor)
-{
-  if (p_partner==this) p_LO_process->FillAmplitudes(atensor,sfactor);
-  else p_partner->FillAmplitudes(atensor,sfactor*sqrt(m_sfactor));
 }
 
 std::string Single_DipoleTerm::GetSplitConfID()

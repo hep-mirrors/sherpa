@@ -13,11 +13,11 @@ namespace PHASIC { class Subprocess_Info; }
 namespace COMIX {
 
   struct Cluster_Info {
-    Vertex_Base *p_v;
+    Vertex *p_v;
     size_t m_k, m_oew, m_oqcd;
     PDF::CParam m_kt2;
     ATOOLS::Flavour m_mofl;
-    Cluster_Info(Vertex_Base *const v,const size_t &k,
+    Cluster_Info(Vertex *const v,const size_t &k,
 		 const PDF::CParam &kt2=PDF::CParam(-1.0,-1.0),
 		 const size_t &oew=0,const size_t &oqcd=0,
 		 const ATOOLS::Flavour &mofl=ATOOLS::Flavour(kf_none)): 
@@ -62,11 +62,8 @@ namespace COMIX {
     size_t m_cnt, m_rej, m_wmode;
     double m_lfrac;
 
-    template <class SType>
-    ATOOLS::ColorID GetPColor(Current_Base *const j,
-			      Current_Base *const fcur) const;
-    ATOOLS::ColorID GetColor(Current_Base *const j,
-			     Current_Base *const fcur) const;
+    ATOOLS::ColorID GetColor(Current *const j,
+			     Current *const fcur) const;
 
     bool EWConnected(const ATOOLS::Flavour &c,const ATOOLS::Flavour &s) const;
     bool ColorConnected(const ATOOLS::ColorID &i,const ATOOLS::ColorID &j,
@@ -77,16 +74,16 @@ namespace COMIX {
 			   Double_Map &kt2,const SizeT_Map &cid);
 
     void CalculateMeasures(const size_t &step,const Vertex_Set &nocl,
-			   const Current_Vector &curs,Current_Base *const fcur,
+			   const Current_Vector &curs,Current *const fcur,
 			   ClusterInfo_Map &cinfo,Double_Map &kt2,
 			   const SizeT_Map &cid);
     bool CombineWinner(const Cluster_Info &ci,Current_Vector &ccurs,
-		       Current_Base *&fcur,ClusterInfo_Map &cinfo);
+		       Current *&fcur,ClusterInfo_Map &cinfo);
     bool ClusterStep(const size_t &step,Vertex_Set &nocl,
-		     Current_Vector &ccurs,Current_Base *&fcur,
+		     Current_Vector &ccurs,Current *&fcur,
 		     ClusterInfo_Map &cinfo,Double_Map &kt2);
     bool Cluster(const size_t &step,const Vertex_Set &nocl,
-		 const Current_Vector &ccurs,Current_Base *const fcur,
+		 const Current_Vector &ccurs,Current *const fcur,
 		 const ClusterInfo_Map &cinfo);
 
     bool SetRandomColors(Single_Process *const xs);

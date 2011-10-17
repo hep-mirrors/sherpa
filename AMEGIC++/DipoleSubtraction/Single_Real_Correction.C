@@ -358,8 +358,8 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
        sit!=m_subevtlist.end();++sit) (*sit)->p_real=&m_realevt;
 
   if (trg) {
-    m_realevt.m_muf2=p_tree_process->ScaleSetter()->CalculateScale(_mom,mode);
-    m_realevt.m_mur2=p_tree_process->ScaleSetter()->Scale(stp::ren);
+    m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->CalculateScale(_mom,mode);
+    m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
     m_realevt.m_me = m_realevt.m_mewgt
       = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
     if (IsBad(m_realevt.m_me)) res=false;
@@ -409,12 +409,6 @@ Point * Single_Real_Correction::Diagram(int i) {
   if (p_partner==this) return p_tree_process->Diagram(i); 
   return p_partner->Diagram(i);
 } 
-
-void Single_Real_Correction::FillAmplitudes(METOOLS::Amplitude_Tensor* atensor,double sfactor)
-{
-  if (p_partner==this) p_tree_process->FillAmplitudes(atensor,sfactor);
-  else p_partner->FillAmplitudes(atensor,sfactor*sqrt(m_sfactor));
-}
 
 void Single_Real_Correction::AddChannels(std::list<std::string>* list) 
 { 
@@ -477,6 +471,10 @@ void Single_Real_Correction::SetSelector(const Selector_Key &key)
 
 void Single_Real_Correction::SetGenerator(ME_Generator_Base *const gen) 
 { 
+  if (p_tree_process==NULL) {
+    p_gen=gen;
+    return;
+  }
   p_tree_process->SetGenerator(gen);
   for (size_t i=0;i<m_subtermlist.size();++i) {
     if (m_subtermlist[i]->GetLOProcess())

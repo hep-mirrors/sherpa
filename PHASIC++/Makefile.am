@@ -1,1 +1,1 @@
-SUBDIRS       = Main Channels Process Scales Selectors
+SUBDIRS       = Main Channels Process Scales Selectors Decays

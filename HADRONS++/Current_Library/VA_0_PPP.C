@@ -5,8 +5,9 @@ using namespace HADRONS;
 using namespace ATOOLS;
 using namespace std;
 
-VA_0_PPP::VA_0_PPP(ATOOLS::Flavour* flavs, int n, int* indices, std::string name) :
-  Current_Base(flavs, n, indices, name)
+VA_0_PPP::VA_0_PPP(const ATOOLS::Flavour_Vector& flavs,
+                   const std::vector<int>& indices, const std::string& name) :
+  Current_Base(flavs, indices, name)
 {
   int nPion_0(0), nPion_ch(0), nKaon_0(0), nKaon_ch(0), nKaon_S (0), nKaon_L(0);
   // count number of pions, kaons and calc. mass^2
@@ -97,7 +98,7 @@ void VA_0_PPP::SetModelParameters( struct GeneralModel _md )
 }
 
 
-void VA_0_PPP::Calc(const ATOOLS::Vec4D * moms)
+void VA_0_PPP::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
 {
   Vec4D p1( moms[p_i[0]] ),
         p2( moms[p_i[1]] ),
