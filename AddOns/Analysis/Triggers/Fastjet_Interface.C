@@ -63,12 +63,8 @@ public:
       jets=cs.inclusive_jets(m_ptmin);
     }
     std::vector<double> *ktdrs(new std::vector<double>());
-    for (size_t i(0);i<jets.size();++i) {
-      Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
-      ktdrs->push_back(pj.PPerp2());
-    }
-    for (size_t i(jets.size());i<input.size();++i)
-      ktdrs->push_back(cs.exclusive_dmerge(i));
+    for (size_t i(input.size());i>0;--i)
+      ktdrs->push_back(cs.exclusive_dmerge(i-1));
     std::string key("KtJetrates(1)"+m_outlist);
     p_ana->AddData(key,new Blob_Data<std::vector<double> *>(ktdrs));
     outlist.resize(jets.size());

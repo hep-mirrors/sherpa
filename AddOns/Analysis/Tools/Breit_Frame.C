@@ -8,25 +8,25 @@ using namespace ATOOLS;
 
 namespace ANALYSIS {
 
-  class BreitFrame : public Analysis_Object {
+  class Breit_Frame : public Analysis_Object {
   private:
     std::string  m_inlist, m_outlist;
   public:
-    BreitFrame(const std::string &inlist,
+    Breit_Frame(const std::string &inlist,
 	    const std::string &outlist);
     void CreateParticleList();
     void Evaluate(const ATOOLS::Blob_List &bl,double weight,double ncount);
     Analysis_Object *GetCopy() const;    
-  };// end of class BreitFrame
+  };// end of class Breit_Frame
 
 } // namespace ANALYSIS
 
 using namespace ANALYSIS;
 
-DECLARE_GETTER(BreitFrame_Getter,"BreitFrame",
+DECLARE_GETTER(Breit_Frame_Getter,"BreitFrame",
  	       Analysis_Object,Argument_Matrix);
 
-void BreitFrame_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void Breit_Frame_Getter::PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  list\n"
@@ -35,7 +35,7 @@ void BreitFrame_Getter::PrintInfo(std::ostream &str,const size_t width) const
 }
 
 Analysis_Object *
-BreitFrame_Getter::operator()(const Argument_Matrix &parameters) const
+Breit_Frame_Getter::operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist("FinalState"), outlist("Selected");
   for (size_t i=0;i<parameters.size();++i) {
@@ -43,21 +43,21 @@ BreitFrame_Getter::operator()(const Argument_Matrix &parameters) const
     if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
     else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
   }
-  return new BreitFrame(inlist,outlist);
+  return new Breit_Frame(inlist,outlist);
 }
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
 
 using namespace ATOOLS;
 
-BreitFrame::BreitFrame(const std::string &inlist,
+Breit_Frame::Breit_Frame(const std::string &inlist,
 		       const std::string &outlist):
   m_inlist(inlist), m_outlist(outlist)
 {
-  m_name="BreitFrame";
+  m_name="Breit_Frame";
 }
 
-void BreitFrame::Evaluate(const ATOOLS::Blob_List &bl,double weight,double ncount)
+void Breit_Frame::Evaluate(const ATOOLS::Blob_List &bl,double weight,double ncount)
 {
   Vec4D l, lp, pp;
   for (size_t i(0);i<bl.size();++i)
@@ -105,7 +105,7 @@ void BreitFrame::Evaluate(const ATOOLS::Blob_List &bl,double weight,double ncoun
   p_ana->AddParticleList(m_outlist,outlist);
 }
 
-Analysis_Object *BreitFrame::GetCopy() const
+Analysis_Object *Breit_Frame::GetCopy() const
 {
-  return new BreitFrame(m_inlist,m_outlist);
+  return new Breit_Frame(m_inlist,m_outlist);
 }
