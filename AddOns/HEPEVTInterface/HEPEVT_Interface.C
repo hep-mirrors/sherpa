@@ -137,7 +137,7 @@ void HEPEVT_Interface::ConvertParticle
     ConvertParticle(pb->InParticle(0),3,0,mdmap);
   if (mdmap.find(cp)==mdmap.end()) {
   int n=hepevt.nhep;
-  MD_Info &cmd(mdmap[cp]=MD_Info(n));
+  MD_Info &cmd(mdmap[sc==2?NULL:cp]=MD_Info(n));
   hepevt.jmohep[n][0]=hepevt.jmohep[n][1]=0;
   hepevt.jdahep[n][0]=hepevt.jdahep[n][1]=0;
   hepevt.idhep[n]=cp->Flav().HepEvt();
@@ -198,9 +198,9 @@ void HEPEVT_Interface::CheckParticle
   if (pb && pb->NInP()==1 && mode==0)
     CheckParticle(pb->InParticle(0),3,0,mdmap);
   if (cmd.m_c==0) {
-  cmd.m_c=1;
+  if (sc!=2) cmd.m_c=1;
   int n=hepevt.nhep;
-  if (cmd.m_n!=n) THROW(fatal_error,"Internal error");
+  if (sc!=2 && cmd.m_n!=n) THROW(fatal_error,"Internal error");
   if (hepevtp.jmohep[n][0]!=cmd.m_mo[0] ||
       hepevtp.jmohep[n][1]!=cmd.m_mo[1])
     THROW(fatal_error,"HZFILHEP error JMOHEP");
