@@ -250,6 +250,11 @@ void HEPEVT_Interface::Convert(ATOOLS::Blob_List *const bl,
   Blob_List bb(bl->Find(btp::Bunch));
   ConvertParticle(bb[0]->InParticle(0),3,-1,mdmap);
   ConvertParticle(bb[1]->InParticle(0),3,-1,mdmap);
+  Blob *sb(bl->FindFirst(btp::Shower));
+  for (int n(0);n<sb->NOutP();++n)
+    if (sb->OutParticle(n)->DecayBlob()==NULL ||
+	sb->OutParticle(n)->DecayBlob()->Type()!=btp::Signal_Process)
+      ConvertParticle(sb->OutParticle(n),2,0,mdmap);
   Particle_List pl(bl->ExtractParticles(1));
   for (size_t n(0);n<pl.size();++n)
     if (pl[n]->DecayBlob()==NULL)
@@ -264,6 +269,11 @@ void HEPEVT_Interface::Check(ATOOLS::Blob_List *const bl,
   Blob_List bb(bl->Find(btp::Bunch));
   CheckParticle(bb[0]->InParticle(0),3,-1,mdmap);
   CheckParticle(bb[1]->InParticle(0),3,-1,mdmap);
+  Blob *sb(bl->FindFirst(btp::Shower));
+  for (int n(0);n<sb->NOutP();++n)
+    if (sb->OutParticle(n)->DecayBlob()==NULL ||
+	sb->OutParticle(n)->DecayBlob()->Type()!=btp::Signal_Process)
+      CheckParticle(sb->OutParticle(n),2,0,mdmap);
   Particle_List pl(bl->ExtractParticles(1));
   for (size_t n(0);n<pl.size();++n)
     if (pl[n]->DecayBlob()==NULL)
