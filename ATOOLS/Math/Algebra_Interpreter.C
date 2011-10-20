@@ -322,6 +322,7 @@ DEFINE_ONE_TERM_FUNCTION(Vec4D_PPlus,"PPlus",PPlus)
 DEFINE_ONE_TERM_FUNCTION(Vec4D_PMinus,"PMinus",PMinus)
 DEFINE_ONE_TERM_FUNCTION(Vec4D_Abs2,"Abs2",Abs2)
 DEFINE_ONE_TERM_FUNCTION(Vec4D_Mass,"Mass",Mass)
+DEFINE_ONE_TERM_FUNCTION(Vec4D_PSpat,"PSpat",PSpat)
 DEFINE_ONE_TERM_FUNCTION(Vec4D_PPerp,"PPerp",PPerp)
 DEFINE_ONE_TERM_FUNCTION(Vec4D_PPerp2,"PPerp2",PPerp2)
 DEFINE_ONE_TERM_FUNCTION(Vec4D_MPerp,"MPerp",MPerp)
@@ -634,6 +635,7 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Vec4D_PMinus());
   AddFunction(new Vec4D_Abs2());
   AddFunction(new Vec4D_Mass());
+  AddFunction(new Vec4D_PSpat());
   AddFunction(new Vec4D_PPerp());
   AddFunction(new Vec4D_PPerp2());
   AddFunction(new Vec4D_MPerp());

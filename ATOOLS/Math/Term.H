@@ -72,6 +72,7 @@ namespace ATOOLS {
     Term *PMinus() const;
     Term *Abs2() const;
     Term *Mass() const;
+    Term *PSpat() const;
     Term *PPerp() const;
     Term *PPerp2() const;
     Term *MPerp() const;
