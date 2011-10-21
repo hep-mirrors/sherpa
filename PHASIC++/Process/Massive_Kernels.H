@@ -2,6 +2,7 @@
 #define PHASIC__Process__Massive_Kernels_H
 
 #include <vector>
+#include <cstddef>
 
 namespace PHASIC {
 
