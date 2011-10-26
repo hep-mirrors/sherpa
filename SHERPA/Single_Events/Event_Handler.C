@@ -186,6 +186,8 @@ bool Event_Handler::GenerateEvent(int mode)
           m_blobs.Clear();
 	  m_blobs=m_sblobs.Copy();
 	  p_signal=m_blobs.FindFirst(btp::Signal_Process);
+	  for (Phase_Iterator cpit=p_phases->begin();
+	       cpit!=p_phases->end();++cpit) (*cpit)->CleanUp();
 	  pit=p_phases->begin();
 	  break;
 	  }
