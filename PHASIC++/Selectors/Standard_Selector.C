@@ -622,7 +622,6 @@ void Rapidity_Selector::SetRange(std::vector<Flavour> crit,double _min,
     if (crit[0].Includes(m_fl[i])) {
       pl      = sqrt(E*E-sqr(m_fl[i].SelMass())); 
       y       = log((E+pl)/(E-pl));
-      std::cout<<" determined y yields : "<<y<<std::endl;
       ymin[i] = Max(_min,-y);
       ymax[i] = Min(_max,y);
       if (m_fl[i].Strong()) m_strong = 1;
