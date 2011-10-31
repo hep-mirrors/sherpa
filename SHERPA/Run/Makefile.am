@@ -18,8 +18,7 @@ PGSLIBS       =	-L../../AddOns/PGS -lPGSSherpa \
 endif
 
 Sherpa@VERSIONING@_LDADD  =	-L@SHERPABUILDDIR@/Main -lSherpaMain \
-		$(HZTOOLLIBS) $(PGSLIBS) \
-		@CONDITIONAL_HEPMC2LIBS@ @ATOOLSLIBS@
+		$(HZTOOLLIBS) $(PGSLIBS) @ATOOLSLIBS@
 
 Sherpa@VERSIONING@_LDFLAGS        =	@ldflags@
 
