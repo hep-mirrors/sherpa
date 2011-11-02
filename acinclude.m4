@@ -17,7 +17,7 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
       AC_DEFINE([LD_PATH_NAME], "DYLD_LIBRARY_PATH", [ld path name set to DYLD_LIBRARY_PATH]) ;;
     *linux*:*:*)
       echo "checking for architecture...  Linux"
-      AM_LDFLAGS="-rdynamic -Xlinker --no-as-needed -Xlinker --copy-dt-needed-entries"
+      AM_LDFLAGS="-rdynamic -Xlinker --no-as-needed -Xlinker --add-needed"
       ldflags="-rdynamic"
       SEDCOMMAND="sed -i -r"
       AC_DEFINE([ARCH_LINUX], "1", [Architecture identified as Linux])
@@ -30,7 +30,7 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
       echo "please inform us about build results at info@sherpa-mc.de"
       echo "(will continue in 10 seconds)"
       sleep 10
-      AM_LDFLAGS="-rdynamic -Xlinker --no-as-needed -Xlinker --copy-dt-needed-entries"
+      AM_LDFLAGS="-rdynamic -Xlinker --no-as-needed -Xlinker --add-needed"
       ldflags="-rdynamic"
       SEDCOMMAND="sed -i -r"
       AC_DEFINE([ARCH_UNIX], "1", [Architecture identified as Unix])
