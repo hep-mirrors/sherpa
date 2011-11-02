@@ -9,16 +9,20 @@ localinc_HEADERS          =    Sherpa.H
 
 SYSLIBS	      =	$(FCLIBS) -lm -ldl $(CONDITIONAL_THREADLIBS)
 
-libSherpaMain_la_LIBADD = -L$(SHERPABUILDDIR)/Initialization -L$(SHERPABUILDDIR)/Single_Events -L$(SHERPABUILDDIR)/Tools \
-                -L$(SHERPABUILDDIR)/PerturbativePhysics -L$(SHERPABUILDDIR)/SoftPhysics -L$(SHERPABUILDDIR)/LundTools \
+libSherpaMain_la_LIBADD = -L$(SHERPABUILDDIR)/Initialization \
+		-L$(SHERPABUILDDIR)/Single_Events -L$(SHERPABUILDDIR)/Tools \
+                -L$(SHERPABUILDDIR)/PerturbativePhysics \
+		-L$(SHERPABUILDDIR)/SoftPhysics -L$(SHERPABUILDDIR)/LundTools \
                 -lSherpaInitialization -lSherpaSingleEvents \
-                -lSherpaPerturbativePhysics -lSherpaSoftPhysics -lLundTools -lSherpaTools \
+                -lSherpaPerturbativePhysics -lSherpaSoftPhysics \
+		-lLundTools -lSherpaTools \
 		@AMISICLIBS@ @CSSLIBS@ @ATOOLSLIBS@ @AHADICLIBS@ \
-		@BEAMLIBS@ @COMIXLIBS@ @AMEGICLIBS@ @MODELLIBS@ @PDFLIBS@ @POWHEGLIBS@ @PHASICLIBS@  \
+		@BEAMLIBS@ @COMIXLIBS@ @AMEGICLIBS@ @MODELLIBS@ \
+		@PDFLIBS@ @POWHEGLIBS@ @PHASICLIBS@  \
 		@METOOLSLIBS@ @CONDITIONAL_HEPMC2LIBS@ \
 		@CONDITIONAL_HADRONSLIBS@ @CONDITIONAL_PHOTONSLIBS@ \
 		@CONDITIONAL_GZIPLIBS@ \
 		@EXTRAXSLIBS@ \
                 $(SYSLIBS)
 
-libSherpaMain_la_LDFLAGS = @ldflags@
+libSherpaMain_la_LDFLAGS = $(AM_LDFLAGS) @ldflags@

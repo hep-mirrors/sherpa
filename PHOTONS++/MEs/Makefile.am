@@ -15,6 +15,7 @@ libPhotonsMEs_la_SOURCES =	SVN_Info.C \
 				Vector_To_Fermion_Fermion.C \
 				Vector_To_Scalar_Scalar.C
 
+libPhotonsMEs_la_LIBADD = @METOOLSLIBS@
 
 localinc_HEADERS =	PHOTONS_ME_Base.H \
 			Scalar_To_Scalar_Scalar.H \
