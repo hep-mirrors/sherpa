@@ -9,7 +9,6 @@
 
 (model){
   MODEL=SM+EHC;
-  FINITE_TOP_MASS=0;
 }(model);
 
 (processes){

@@ -18,9 +18,9 @@ Things to notice:
 @item This is a LHC setup at 7 TeV for a parton shower matched NLO 
 simulation, using the POWHEG method.
 @item The model has been set to the Standard Model supplemented with effective 
-Higgs couplings, cf. @ref{EHC}. The infinite top mass limit is taken.
+Higgs couplings, cf. @ref{EHC}.
 @item The explicite generation of an s-channel Higgs-resonance decaying into 
-a pair of W-bosons, in turn decaying leptonically, is enforced. Width effects 
+two leptons and two neutrinos, is enforced. Width effects, interferences 
 and spin-correlations are accounted for.
 @item The renormalisation and factorisation scales are set to the transverse 
 mass of the leptonic final state.
