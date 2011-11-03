@@ -24,8 +24,6 @@
 
 (selector){
   "Calc(Mass(p[0]+p[1]+p[2]+p[3]))" 90,90,91,91 10.,E_CMS [PT_UP,PT_UP,PT_UP,PT_UP]
-#  Mass 90 90 10. E_CMS
-#  "m" 90,90 10.,E_CMS
 }(selector)
 
 (me){
