@@ -163,7 +163,6 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  AddOns/Analysis/Triggers/Makefile \
 	  AddOns/Analysis/Observables/Makefile \
 	  AddOns/Analysis/Analyses/Makefile \
-	  AddOns/Analysis/Scripts/Makefile \
 	  AddOns/Analysis/Makefile \
 	  AddOns/BlackHat/Makefile \
 	  AddOns/MCFM/Makefile \
