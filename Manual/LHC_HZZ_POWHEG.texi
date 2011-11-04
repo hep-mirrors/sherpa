@@ -17,10 +17,14 @@ Things to notice:
 @itemize @bullet
 @item This is a LHC setup at 7 TeV for a parton shower matched NLO 
 simulation, using the POWHEG method.
-@item A Higgs boson is produced via gluon fusion and decays into a pair of 
-Z bosons. They, in turn, decay fully leptonically into all four final states.
-@item A @ref{Universal selector} is used to restrain the invariant masses of
-both lepton pairs around the Z mass.
+@item The model has been set to the Standard Model supplemented with effective 
+Higgs couplings, cf. @ref{EHC}.
+@item A Higgs boson is produced via gluon fusion and decays into four charged
+lepton. Width effects, interferences and spin-correlations are accounted for.
+@item The renormalisation and factorisation scales are set to the transverse 
+mass of the leptonic final state.
+@item The automated dipole subtraction implemented in matrix element generator 
+Amegic @mycite{Gleisberg2007md} is used.
 @item An internal hardcoded one-loop matrix element is used for the virtual term. 
 @item Neither hadronisation nor underlying event corrections are taken into 
 account. Both can be switched on by setting the relevant @ref{Parameters} 
