@@ -49,30 +49,30 @@ namespace METOOLS {
       p_b=b;
       switch (m_type) {
       case 1:
-	m_singlet=(*a)(0)==(*b)(1);
+	m_singlet=(*a)(0)==(*b)(1) && (*a)(0)<=s_cimax;
 	m_stat=true;
 	return m_stat;
       case 2:
-	m_singlet=(*a)(1)==(*b)(0);
+	m_singlet=(*a)(1)==(*b)(0) && (*a)(1)<=s_cimax;
 	m_stat=true;
 	return m_stat;
       case 3:
-	m_singlet=(*b)(0)==(*b)(1) && (*b)(0)>0;
+	m_singlet=(*b)(0)==(*b)(1) && (*b)(0)>0 && (*b)(0)<=s_cimax;
 	m_match=(*a)(0)==(*b)(1);
 	m_stat=m_singlet || m_match;
 	return m_stat;
       case 4:
-	m_singlet=(*b)(0)==(*b)(1) && (*b)(0)>0;
+	m_singlet=(*b)(0)==(*b)(1) && (*b)(0)>0 && (*b)(0)<=s_cimax;
 	m_match=(*a)(1)==(*b)(0);
 	m_stat=m_singlet || m_match;
 	return m_stat;
       case 5:
-	m_singlet=(*a)(0)==(*a)(1) && (*a)(0)>0;
+	m_singlet=(*a)(0)==(*a)(1) && (*a)(0)>0 && (*a)(0)<=s_cimax;
 	m_match=(*b)(0)==(*a)(1);
 	m_stat=m_singlet || m_match;
 	return m_stat;
       case 6:
-	m_singlet=(*a)(0)==(*a)(1) && (*a)(0)>0;
+	m_singlet=(*a)(0)==(*a)(1) && (*a)(0)>0 && (*a)(0)<=s_cimax;
 	m_match=(*b)(1)==(*a)(0);
 	m_stat=m_singlet || m_match;
 	return m_stat;
