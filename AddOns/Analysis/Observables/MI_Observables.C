@@ -146,25 +146,19 @@ MI_Statistics::~MI_Statistics()
 
 void MI_Statistics::Evaluate(const Blob_List &  blobs,double weight,double ncount)
 {
-  double hard=0.0;
   unsigned int number=0;
   for (Blob_List::const_iterator bit=blobs.begin();bit!=blobs.end();++bit) {
     double scale=0.0;
-    if ((*bit)->Type()==ATOOLS::btp::Hard_Collision) {
+    if ((*bit)->Type()==ATOOLS::btp::Signal_Process ||
+	(*bit)->Type()==ATOOLS::btp::Hard_Collision) {
       ++number;
-      ATOOLS::Blob_Data_Base *info=(*(*bit))["MI_Scale"];
-      if (info!=NULL) scale=info->Get<double>();
-    }
-    else if ((*bit)->Type()==ATOOLS::btp::Signal_Process) {
-      ATOOLS::Blob_Data_Base *info=(*(*bit))["MI_Scale"];
-      if (info!=NULL) hard=info->Get<double>();
+      scale=(*bit)->OutParticle(0)->Momentum().PPerp();
     }
     if (number-1<m_scales.size() && scale!=0.0) {
       m_scales[number-1]->Insert(scale,weight,ncount);
     }
   }
-  if (number==0) m_scales[0]->Insert(hard,weight,ncount);
-  p_histo->Insert((double)number,weight,ncount);
+  p_histo->Insert((double)number-1,weight,ncount);
 }
 
 Primitive_Observable_Base &MI_Statistics::
