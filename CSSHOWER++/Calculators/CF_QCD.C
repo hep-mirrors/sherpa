@@ -60,6 +60,11 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
 {
   p_cpl=(MODEL::Running_AlphaS*)md->GetScalarFunction("alpha_S");
   m_cplfac=((m_type/10==1)?fsfac:isfac);
+  if (m_kfmode==3) {
+    if (p_lf->FlA().IsGluon() &&
+	!p_lf->FlB().IsGluon()) m_kfmode=0;
+    else m_kfmode=1;
+  }
   m_cplmax.push_back((*p_cpl)(k0sq)*m_q);
   m_cplmax.push_back(0.0);
   return true;
