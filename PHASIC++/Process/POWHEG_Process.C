@@ -239,32 +239,12 @@ double POWHEG_Process::GetRho(const int mode)
     m_rho[i]=0.0;
     asum+=p_mc->SelectionWeight(i);
   }
-  std::map<Process_Base*,Rho_Map> rhomap;
   for (size_t i(0);i<p_sproc->Size();++i) {
     NLO_subevtlist *subs((*p_sproc)[i]->GetSubevtList());
     (*m_pmap[nlo_type::lo])[subs->back()->m_pname]->
       SetLast(subs->back()->m_last[mode],mode);
     msg_Debugging()<<i<<": "<<subs->back()->m_pname<<"\n";
     msg_Indent();
-    Rho_Map rhops;
-    if (m_smode!=1) {
-      if ((*p_sproc)[i]->IsMapped()) {
-	rhops=rhomap[(*p_sproc)[i]->MapProc()];
-	msg_Debugging()<<"map rho from '"<<
-	  (*p_sproc)[i]->MapProc()->Name()<<"'\n";
-      }
-      else {
-	Cluster_Amplitude *rampl(CreateAmplitude(subs->back()));
-	rampl->SetProcs(&m_pmap);
-	rampl->SetDInfo(&m_dinfo);
-	bool lookup(m_lookup);
-	p_bproc->SetLookUp(false);
-	rhops=p_powheg->GetRho(rampl);
-	p_bproc->SetLookUp(lookup);
-	rampl->Delete();
-      }
-      rhomap[(*p_sproc)[i]]=rhops;
-    }
     double rsum(0.0);
     std::vector<double> rhos(m_rho.size(),0.0);
     for (size_t j(0);j<subs->size()-1;++j) {
@@ -276,24 +256,8 @@ double POWHEG_Process::GetRho(const int mode)
       msg_Debugging()<<"S '"<<sub->m_pname<<"'[("<<sub->m_i
 		     <<","<<sub->m_j<<")("<<sub->m_k<<")|"<<id
 		     <<"] -> "<<-sub->m_me;
-      if (m_smode==1) {
-	rhos[id]+=sub->m_me;
-	rsum+=sub->m_me;
-      }
-      else {
-	Rho_Map::const_iterator rit(rhops.find(*sub));
-	if (rit==rhops.end()) THROW(fatal_error,"Internal error");
-	if (rit->second.m_t>rhops.m_t0) {
-	  msg_Debugging()<<" / "<<(rit->second.m_trig?rit->second.m_d:0.0)
-			 <<" ("<<rit->second.m_d<<")";
-	  rhos[id]+=rit->second.m_d;
-	  rsum+=rit->second.m_d;
-	}
-	else {
-	  rhos[id]+=sub->m_me;
-	  rsum+=sub->m_me;
-	}
-      }
+      rhos[id]+=sub->m_me;
+      rsum+=sub->m_me;
       msg_Debugging()<<"\n";
     }
     if (rsum==0.0) {
