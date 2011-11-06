@@ -615,7 +615,6 @@ double POWHEG_Process::SelectBProcess()
   }
   p_selected=p_bproc;
   p_bproc->SetSelected(bproc);
-  p_bproc->Integrator()->SetMomenta(*p_ampl);
   msg_Debugging()<<"B selected "<<*p_ampl<<"\n";
   return stat?bproc->Integrator()->SelectionWeight(0)/
     p_int->SelectionWeight(0):0.0;

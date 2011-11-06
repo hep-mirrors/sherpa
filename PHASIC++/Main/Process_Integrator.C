@@ -209,12 +209,9 @@ void Process_Integrator::SetMomenta(const Cluster_Amplitude &ampl)
         <<" because dimensions do not match.\n}\n";
     return;
   }
-  if (m_swaped) p_proc->SwapInOrder();
-  m_swaped=false;
-  if (ampl.Leg(0)->Flav().Bar()!=p_proc->Flavours()[0]) {
-    p_proc->SwapInOrder();
-    m_swaped=true;
-  }
+  if (m_swaped) RestoreInOrder();
+  if (ampl.Leg(0)->Flav().Bar()==p_proc->Flavours()[1] &&
+      ampl.Leg(1)->Flav().Bar()==p_proc->Flavours()[0]) SwapInOrder();
   for (size_t i(0);i<ampl.NIn();++i)
     p_momenta[i]=-ampl.Leg(i)->Mom();
   for (size_t i(ampl.NIn());i<p_momenta.size();++i)
