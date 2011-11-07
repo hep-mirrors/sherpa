@@ -5,15 +5,6 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 
-#ifdef PROFILE__all
-#define PROFILE__Beam_Remnant_Handler
-#endif
-#ifdef PROFILE__Beam_Remnant_Handler
-#include "prof.hh" 
-#else
-#define PROFILE_HERE
-#endif
-
 using namespace SHERPA;
 using namespace ATOOLS;
 
@@ -74,7 +65,6 @@ Return_Value::code Beam_Remnant_Handler::
 FillBunchBlobs(Blob_List *const  bloblist,
 	       Particle_List *const particlelist)
 {
-  PROFILE_HERE;
   for (Blob_List::iterator bit=bloblist->begin();
 	 bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Bunch) return Return_Value::Nothing;

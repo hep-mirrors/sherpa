@@ -8,13 +8,6 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
-#ifdef PROFILE__Analysis_Phase
-#include "prof.hh"
-#else 
-#define PROFILE_HERE {}
-#define PROFILE_LOCAL(LOCALNAME) {}
-#endif
-
 using namespace PHASIC;
 using namespace ATOOLS;
 
@@ -100,7 +93,6 @@ KT_Finder::~KT_Finder() {
 
 void KT_Finder::Init(const Vec4D * p)
 {
-  PROFILE_HERE;
   if (m_nin==2) {
     switch (m_type) {
     case 4 : return;
@@ -158,7 +150,6 @@ void KT_Finder::Init(const Vec4D * p)
 
 bool KT_Finder::ConstructJets(Particle_List * pl, double y_res,int number, bool final_only) 
 {
-  PROFILE_HERE;
   std::vector<Vec4D>   momsout;
 
   Vec4D   momsin[2];
@@ -267,8 +258,6 @@ bool KT_Finder::ConstructJets(Particle_List * pl, double y_res,int number, bool 
 bool KT_Finder::ConstructJets(const Particle_List * parts,
 			       const std::vector<int> & jets,std::vector<double> & lastys,bool final_only) 
 {
-  PROFILE_HERE;
-
   std::vector<Vec4D>   momsout;
   Vec4D   momsin[2];
   Flavour flavsin[2];
@@ -341,7 +330,6 @@ bool KT_Finder::ConstructJets(const Particle_List * parts,
 bool KT_Finder::ConstructJetSystem(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> & momsout,
 				    std::vector<int> jets,std::vector<double> & lastys) 
 {
-  PROFILE_HERE;
   int j,k;
   bool ordered = 1;
   // Calculate ymin and store for comparison
@@ -369,7 +357,6 @@ bool KT_Finder::ConstructJetSystem(Vec4D * momsin,Flavour * flavsin,std::vector<
 
 double KT_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> momsout,int & j1,int & k1)
 {
-  PROFILE_HERE;
   double ymin = 2.;
   j1=-3; k1=-3;
   for (size_t j=0;j<momsout.size();j++) {
@@ -633,7 +620,6 @@ void KT_Finder::PrepareMomList(const Vec4D* vec) {
 bool KT_Finder::Trigger(const Vec4D_Vector &p)
 {
   FillCombinations();
-  PROFILE_HERE;
   // create copy
   std::vector<Vec4D> vec(m_nin+m_nout);
   for (int i(0);i<m_nin+m_nout;++i) {
@@ -738,7 +724,6 @@ double KT_Finder::GetScaledGlobalYcut(const size_t &i,const size_t &j) const {
 
 double KT_Finder::YminKt(int & j1,int & k1,int cl)
 {
-  PROFILE_HERE;
   double ymin = 2.;
   Vec4D p0(m_moms[1]), p1(m_moms[2]);
   double m0(m_flavs[1].SelMass()), m1(m_flavs[2].SelMass());

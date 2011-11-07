@@ -7,15 +7,6 @@
 #include <algorithm>
 #include <iomanip>
 
-#ifdef PROFILE__all
-#define PROFILE__QCD_Remnant_Base
-#endif
-#ifdef PROFILE__QCD_Remnant_Base
-#include "prof.hh" 
-#else
-#define PROFILE_HERE
-#endif
-
 using namespace PDF;
 
 QCD_Remnant_Base::
@@ -38,7 +29,6 @@ QCD_Remnant_Base::~QCD_Remnant_Base()
 
 void QCD_Remnant_Base::Clear()
 {
-  PROFILE_HERE;
   if (p_start!=NULL) delete p_start;
   while (m_connected.size()>0) {
     if (m_connected.front()!=p_start) delete m_connected.front();
@@ -51,7 +41,6 @@ void QCD_Remnant_Base::Clear()
 
 void QCD_Remnant_Base::AssignRemnants() 
 {
-  PROFILE_HERE;
   ATOOLS::Particle *startreal=p_start->Begin(qri::real);
   ATOOLS::Particle *startanti=p_start->Begin(qri::anti);
   for (ATOOLS::Particle_List::iterator pit=m_extracted.begin();
@@ -65,7 +54,6 @@ void QCD_Remnant_Base::AssignRemnants()
 Color_Dipole *QCD_Remnant_Base::FindClosest(const Color_Dipole *dipole,
 					    const qri::type type)
 {
-  PROFILE_HERE;
   Color_Dipole *closest=p_start;
   const ATOOLS::Vec4D &ref=dipole->End(type)->Momentum();
   double min=std::numeric_limits<double>::max();
@@ -89,7 +77,6 @@ Color_Dipole *QCD_Remnant_Base::FindClosest(const Color_Dipole *dipole,
 Color_Dipole *QCD_Remnant_Base::FindRandom(const Color_Dipole *dipole,
 					   const qri::type type)
 {
-  PROFILE_HERE;
   Dipole_Vector cand;
   for (Dipole_Vector::iterator dit=m_connected.begin();
        dit!=m_connected.end();++dit) {
@@ -125,7 +112,6 @@ bool Compare_PT::operator()(const std::pair<qri::type,Color_Dipole *> i1,
 
 bool QCD_Remnant_Base::Connect(const bool sort) 
 {
-  PROFILE_HERE;
   std::vector<std::pair<qri::type,Color_Dipole*> > sorted;
   for (Dipole_Vector::iterator dit=m_connected.begin();
        dit!=m_connected.end();++dit) {
@@ -154,7 +140,6 @@ bool QCD_Remnant_Base::Connect(const bool sort)
 
 bool QCD_Remnant_Base::AdjustColors() 
 {
-  PROFILE_HERE;
   if (!m_active) return true;
   QCD_Remnant_Base *partner=dynamic_cast<QCD_Remnant_Base*>(p_partner);
   if (partner==NULL) {
@@ -229,7 +214,6 @@ bool QCD_Remnant_Base::AdjustColors()
 
 void QCD_Remnant_Base::FillRemnants()
 {
-  PROFILE_HERE;
   for (ATOOLS::Particle_List::iterator pit=m_extracted.begin();
        pit!=m_extracted.end();++pit) {
     p_beamblob->AddToOutParticles(*pit);

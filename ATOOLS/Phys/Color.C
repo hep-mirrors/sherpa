@@ -4,8 +4,6 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#else
-#include "HADRONS++/Main/Tools.H"
 #endif
 #include <algorithm>
 

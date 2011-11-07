@@ -6,15 +6,6 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "BEAM/Main/Beam_Base.H"
 
-#ifdef PROFILE__all
-#define PROFILE__Remnant_Base
-#endif
-#ifdef PROFILE__Remnant_Base
-#include "prof.hh" 
-#else
-#define PROFILE_HERE
-#endif
-
 using namespace PDF;
 using namespace ATOOLS;
 
@@ -56,7 +47,6 @@ void Remnant_Base::Clear()
 
 void Remnant_Base::QuickClear()
 {
-  PROFILE_HERE;
   m_extracted.clear();
   m_erem=p_beam->Energy();
   m_initialized=false;
@@ -64,7 +54,6 @@ void Remnant_Base::QuickClear()
 
 bool Remnant_Base::AdjustKinematics()
 {
-  PROFILE_HERE;
   if (!m_active) return true;
   if (p_partner==NULL) {
     THROW(critical_error,"No partner remnant found.");
@@ -157,7 +146,6 @@ double Remnant_Base::MinimalEnergy(const ATOOLS::Flavour &flavour)
 
 bool Remnant_Base::Extract(ATOOLS::Particle *parton) 
 { 
-  PROFILE_HERE;
   if (TestExtract(parton)) {
     m_initialized=true;
     m_extracted.push_back(parton); 
@@ -180,7 +168,6 @@ bool Remnant_Base::TestExtract(ATOOLS::Particle *parton)
 bool Remnant_Base::TestExtract(const ATOOLS::Flavour &flav,
 			       const ATOOLS::Vec4D &mom) 
 {
-  PROFILE_HERE;
   double E(mom[0]), Eb(p_beam->Energy());
   if (E<0.0 || (E>Eb && !ATOOLS::IsEqual(E,Eb,1.0e-3))) {
     msg_Error()<<"Remnant_Base::TestExtract("<<flav<<","<<E<<"): "

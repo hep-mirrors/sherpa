@@ -6,16 +6,6 @@
 #include "ATOOLS/Org/Message.H"
 #include <iomanip>
 
-#ifdef PROFILE__all
-#include "prof.hh"
-#else
-#ifdef PROFILE__Particle
-#include "prof.hh"
-#else
-#define PROFILE_HERE
-#endif
-#endif
-
 namespace ATOOLS {
   int Particle::s_totalnumber=0;
   long unsigned int Particle::s_currentnumber=0;

@@ -10,15 +10,6 @@
 #include "AMISIC++/Main/Amisic.H"
 #endif
 
-#ifdef PROFILE__all
-#define PROFILE__MI_Handler
-#endif
-#ifdef PROFILE__MI_Handler
-#include "prof.hh" 
-#else
-#define PROFILE_HERE
-#endif
-
 using namespace SHERPA;
 using namespace ATOOLS;
 
@@ -73,7 +64,6 @@ MI_Handler::~MI_Handler()
 
 bool MI_Handler::GenerateHardProcess(ATOOLS::Blob *blob)
 {
-  PROFILE_HERE;
   switch (m_type) {
 #ifdef USING__Amisic
   case Amisic: return p_amisic->GenerateHardProcess(blob);
@@ -85,7 +75,6 @@ bool MI_Handler::GenerateHardProcess(ATOOLS::Blob *blob)
 
 bool MI_Handler::GenerateSoftProcess(ATOOLS::Blob *blob)
 {
-  PROFILE_HERE;
   switch (m_type) {
 #ifdef USING__Amisic
   case Amisic: return p_amisic->GenerateSoftProcess(blob);

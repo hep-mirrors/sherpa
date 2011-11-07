@@ -5,17 +5,6 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-#ifdef PROFILE__all
-#define PROFILE__Hadronization
-#endif
-#ifdef PROFILE__Hadronization
-#include "prof.hh"
-#else 
-#define PROFILE_HERE {}
-#define PROFILE_LOCAL(LOCALNAME) {}
-#endif
-
-
 Hadronization::Hadronization(Fragmentation_Handler * fragmentation) :
   p_fragmentationhandler(fragmentation)
 {
@@ -27,7 +16,6 @@ Hadronization::~Hadronization() {}
 
 Return_Value::code Hadronization::Treat(ATOOLS::Blob_List *bloblist,double &weight) 
 {
-  PROFILE_LOCAL("Hadronization::Treat");
   if (bloblist->empty()) {
     msg_Error()<<"Hadronization::Treat("<<bloblist<<","<<weight<<"): "<<endl
 	       <<"   Blob list contains "<<bloblist->size()<<" entries."<<endl

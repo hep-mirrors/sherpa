@@ -2,12 +2,12 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS       = \
 		ATOOLS \
-		METOOLS \
 		BEAM \
 		PDF \
 		MODEL \
-		POWHEG \
+		METOOLS \
 		PHASIC++ \
+		POWHEG \
 		EXTRA_XS \
 		AMEGIC++ \
 		COMIX \

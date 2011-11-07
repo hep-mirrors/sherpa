@@ -5,15 +5,6 @@
 #include "ATOOLS/Org/Message.H"
 #include <iomanip>
 
-#ifdef PROFILE__all
-#define PROFILE__Color_Dipole
-#endif
-#ifdef PROFILE__Color_Dipole
-#include "prof.hh" 
-#else
-#define PROFILE_HERE
-#endif
-
 #define COMPANIONTAG 0
 
 using namespace PDF;

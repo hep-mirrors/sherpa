@@ -8,15 +8,6 @@
 #include "BEAM/Main/Beam_Base.H"
 #include "ATOOLS/Math/Random.H"
 
-#ifdef PROFILE__all
-#define PROFILE__Simple_String
-#endif
-#ifdef PROFILE__Simple_String
-#include "prof.hh"
-#else
-#define PROFILE_HERE
-#endif
-
 using namespace AMISIC;
 using namespace ATOOLS;
 
@@ -57,7 +48,6 @@ void Simple_String::CleanUp()
 
 bool Simple_String::Initialize()
 {
-  PROFILE_HERE;
   CleanUp();
   if (InputPath()=="" && InputFile()=="") return false;
   if (!rpa->gen.Beam1().IsHadron() ||
@@ -93,7 +83,6 @@ bool Simple_String::Initialize()
 
 bool Simple_String::CreateMomenta()
 {
-  PROFILE_HERE;
   m_filledblob=false;
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
     msg_Error()<<"Simple_String::CreateMomenta(): "

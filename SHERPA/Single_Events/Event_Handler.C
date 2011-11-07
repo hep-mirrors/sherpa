@@ -12,13 +12,6 @@
 
 #include "ATOOLS/Math/Random.H"
 
-#ifdef PROFILE__Event_Handler
-#include "prof.hh"
-#else 
-#define PROFILE_HERE {}
-#define PROFILE_LOCAL(LOCALNAME) {}
-#endif
-
 using namespace SHERPA;
 using namespace ATOOLS;
 

@@ -10,15 +10,6 @@
 #include "AHADIC++/Main/Ahadic.H"
 #endif
 
-#ifdef PROFILE__all
-#define PROFILE__Fragmentation_Handler
-#endif
-#ifdef PROFILE__Fragmentation_Handler
-#include "prof.hh" 
-#else
-#define PROFILE_HERE
-#endif
-
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
@@ -102,7 +93,6 @@ void Fragmentation_Handler::PrepareTerminate()
 Return_Value::code Fragmentation_Handler::PerformFragmentation(Blob_List *bloblist,
 							       Particle_List *particlelist) 
 {
-  PROFILE_HERE;
   if (m_mode==0 || bloblist->size()==0) return Return_Value::Nothing;
   switch (int(ExtractSinglets(bloblist))) {
     case int(Return_Value::Success) : break;

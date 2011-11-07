@@ -1,19 +1,9 @@
 #include "PDF/Remnant/Hadron_Remnant.H"
 
-#include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "BEAM/Main/Beam_Base.H"
 #include "ATOOLS/Math/Random.H"
-
-#ifdef PROFILE__all
-#define PROFILE__Hadron_Remnant
-#endif
-#ifdef PROFILE__Hadron_Remnant
-#include "prof.hh" 
-#else
-#define PROFILE_HERE
-#endif
 
 using namespace PDF;
 using namespace ATOOLS;
@@ -67,7 +57,6 @@ GetConstituents(const ATOOLS::Flavour flav)
 bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
 			      ATOOLS::Particle_List *particlelist)
 {
-  PROFILE_HERE;
   p_beamblob=beamblob;
   m_pbeam=beamblob->InParticle(0)->Momentum();
   m_hardpt=Vec4D();
@@ -100,7 +89,6 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
 
 bool Hadron_Remnant::GenerateKinematics()
 {
-  PROFILE_HERE;
   unsigned int trials;
   Vec4D ptot=m_pbeam;
   double m_xtot=1.0;
@@ -213,7 +201,6 @@ ATOOLS::Flavour Hadron_Remnant::Opposite(ATOOLS::Flavour flav) const
 
 bool Hadron_Remnant::DecomposeHadron() 
 {
-  PROFILE_HERE;
   bool success=true;
   double Eb(p_beam->Energy());
   for (Particle_List::iterator pit=m_extracted.begin();
@@ -253,7 +240,6 @@ bool Hadron_Remnant::DecomposeHadron()
 
 double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale) 
 {
-  PROFILE_HERE;
   double cut, x;
   cut=2.0*(flavour.HadMass()+m_hardpt.PPerp()/
 	   sqr(m_companions.size()))/p_beam->OutMomentum()[0];
@@ -293,7 +279,6 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
 
 double Hadron_Remnant::MinimalEnergy(const ATOOLS::Flavour &flavour) 
 {
-  PROFILE_HERE;
   if (!m_initialized) {
     if (!flavour.Strong()) {
       return p_beam->Beam().HadMass();

@@ -637,12 +637,13 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       if test -d "$CONDITIONAL_LHAPDFDIR"; then
         if test -f "$CONDITIONAL_LHAPDFDIR/lib/libLHAPDF.la"; then
           CONDITIONAL_LHAPDFLIBS="-L\${PDFBUILDDIR}/LHAPDF -lLHAPDFSherpa -L$CONDITIONAL_LHAPDFDIR/lib -lLHAPDF";
+          CONDITIONAL_LHAPDFINCS="-I$CONDITIONAL_LHAPDFDIR/include";
         else
           CONDITIONAL_LHAPDFLIBS="-L\${PDFBUILDDIR}/LHAPDF -lLHAPDFSherpa $CONDITIONAL_LHAPDFDIR/lib/libLHAPDF.a";
+          CONDITIONAL_LHAPDFINCS="-I$CONDITIONAL_LHAPDFDIR/include";
         fi;
         if test -f "$CONDITIONAL_LHAPDFDIR/include/LHAPDF/LHAPDF.h"; then
           lhapdfnativewrapper=true;
-          CONDITIONAL_LHAPDFINCS="-I$CONDITIONAL_LHAPDFDIR/include";
         fi;
         AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;
       else
@@ -655,15 +656,11 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   if test "$lhapdf" = "true" ; then
     AC_DEFINE_UNQUOTED([LHAPDF_PATH], "$CONDITIONAL_LHAPDFDIR", [LHAPDF directory])
     AC_DEFINE([USING__LHAPDF], "1", [using LHAPDF])
-    if test "$lhapdfnativewrapper" = "true"; then
-      AC_DEFINE([LHAPDF__NATIVE__WRAPPER], "1", [using native C++ wrapper])
-    fi
   fi
   AC_SUBST(CONDITIONAL_LHAPDFDIR)
   AC_SUBST(CONDITIONAL_LHAPDFLIBS)
   AC_SUBST(CONDITIONAL_LHAPDFINCS)
   AM_CONDITIONAL(LHAPDF_SUPPORT, test "$lhapdf" = "true")
-  AM_CONDITIONAL(LHAPDF_NATIVE_WRAPPER, test "$lhapdfnativewrapper" = "true")
 
   AC_ARG_ENABLE(
     hztool,

@@ -2,15 +2,6 @@
 
 #include "ATOOLS/Org/Exception.H"
 
-#ifdef PROFILE__all
-#define PROFILE__Parton_Finder
-#endif
-#ifdef PROFILE__Parton_Finder
-#include "prof.hh" 
-#else
-#define PROFILE_HERE
-#endif
-
 size_t s_maxdepth=1000;
 
 using namespace ATOOLS;
@@ -117,7 +108,6 @@ FindConstConnectedBackward(const Particle *start)
 const Particle *Parton_Finder::
 FindConstConnected(const Particle *start,bool forward)
 {
-  PROFILE_HERE;
   m_track.clear();
   m_forward=forward;
   for (short unsigned int i=0;i<2;++i) {
