@@ -298,10 +298,16 @@ void Cluster_Amplitude::SetColours
       colj.m_j=colij.m_j;
       coli.m_i=colij.m_i;
     }
-    else {
+    else if (abs(li->Flav().StrongCharge())==3) {
       coli.m_i=colij.m_i;
       colj.m_j=colij.m_j;
       if (li->Flav().StrongCharge()<0)
+	std::swap<ColorID>(coli,colj);
+    }
+    else {
+      coli.m_i=colij.m_i;
+      coli.m_j=colij.m_j;
+      if (lj->Flav().StrongCharge()==8)
 	std::swap<ColorID>(coli,colj);
     }
   }
