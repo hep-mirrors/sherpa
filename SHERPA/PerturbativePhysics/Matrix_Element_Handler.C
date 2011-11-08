@@ -337,7 +337,7 @@ void Matrix_Element_Handler::BuildProcesses()
   // set kfactor scheme
   std::string kfactor=read.GetValue<std::string>("KFACTOR","NO");
   // set scale scheme
-  std::string scale=read.GetValue<std::string>("SCALES","METS");
+  std::string scale=read.GetValue<std::string>("SCALES","METS{MU_F2}{MU_R2}");
   std::vector<std::string> helpsv;
   if (!read.VectorFromFile(helpsv,"COUPLINGS"))
     helpsv.push_back("Alpha_QCD 1");
@@ -650,7 +650,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  jfargs.push_back("CUT");
 	}
       }
-      if (procs.size()>1) skey.SetData("METS",jfargs);
+      if (procs.size()>1) skey.SetData("METS{MU_F2}{MU_R2}",jfargs);
     }
     procs[i]->SetSelector(skey);
     procs[i]->SetScale
