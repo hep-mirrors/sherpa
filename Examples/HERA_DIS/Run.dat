@@ -2,6 +2,7 @@
   OUTPUT 2; EVENTS 10000000;
   NJET:=4; QCUT:=5; SDIS:=0.6;
   CDXS_ITMAX 5000; CSS_AS_FAC 2.5;
+  COUPLING_SCHEME Running;
 }(run);
 
 (beam){
@@ -13,6 +14,8 @@
   Process -11 93 -> -11 93 93{NJET};
   Order_EW 2; Max_N_Quarks 6;
   CKKW sqr(QCUT/E_CMS)/(1.0+sqr(QCUT/SDIS)/Abs2(p[2]-p[0]));
+  Scales METS{MU_F2}{MU_R2}{Abs2(p[2]-p[0])};
+  Couplings Alpha_QCD 1, Alpha_QED 2;
   Integration_Error 0.02 {6};
   Max_Epsilon 1e-1 {5,6};
   End process;

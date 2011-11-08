@@ -61,9 +61,7 @@ namespace PHASIC {
   class METS_Scale_Setter: public Scale_Setter_Base {
   private:
 
-    std::string m_muf2tag, m_mur2tag;
-
-    ATOOLS::Algebra_Interpreter m_muf2calc, m_mur2calc;
+    std::vector<ATOOLS::Algebra_Interpreter*> m_calcs;
 
     Tag_Setter m_tagset;
 
@@ -113,7 +111,7 @@ namespace PHASIC {
     double Calculate(const ATOOLS::Vec4D_Vector &p,const int mode);
     double CalculateMyScale(const ATOOLS::Vec4D_Vector &p,const int mode);
 
-    void SetScale(const std::string &mu2tag,Tag_Setter &mu2tagset,
+    void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
 
   };// end of class METS_Scale_Setter
@@ -177,26 +175,26 @@ METS_Scale_Setter::METS_Scale_Setter
   Scale_Setter_Base(args), m_tagset(this),
   m_cnt(0), m_rej(0), m_mode(mode), m_lfrac(0.0)
 {
-  size_t pos(args.m_scale.find('{'));
-  std::string mur2tag("MU_R2"), muf2tag("MU_F2");
-  if (pos!=std::string::npos) {
-    muf2tag=args.m_scale.substr(pos+1);
-    pos=muf2tag.rfind('}');
-    if (pos==std::string::npos)
-      THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
-    muf2tag=muf2tag.substr(0,pos);
-    pos=muf2tag.find("}{");
+  std::string tag(args.m_scale);
+  while (true) {
+    size_t pos(tag.find('{'));
     if (pos==std::string::npos) {
-      mur2tag=muf2tag;
+      if (!m_calcs.empty()) break;
+      else { THROW(fatal_error,"Invalid scale '"+args.m_scale+"'"); }
     }
-    else {
-      mur2tag=muf2tag.substr(pos+2);
-      muf2tag=muf2tag.substr(0,pos);
-    }
+    tag=tag.substr(pos+1);
+    pos=tag.find('}');
+    if (pos==std::string::npos) 
+      THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
+    std::string ctag(tag.substr(0,pos));
+    tag=tag.substr(pos+1);
+    m_calcs.push_back(new Algebra_Interpreter());
+    m_calcs.back()->AddFunction(MODEL::as->GetAIGMeanFunction());
+    m_calcs.back()->SetTagReplacer(&m_tagset);
+    if (m_calcs.size()==1) m_tagset.SetCalculator(m_calcs.back());
+    SetScale(ctag,*m_calcs.back());
   }
-  SetScale(muf2tag,m_tagset,m_muf2calc);
-  SetScale(mur2tag,m_tagset,m_mur2calc);
-  m_scale.resize(p_proc->NOut());
+  m_scale.resize(Max(m_scale.size(),m_calcs.size()));
   SetCouplings();
   m_f=p_proc->Flavours();
   m_decids=p_proc->DecayInfos();
@@ -527,21 +525,22 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 {
   double mur2(muf2), mup2(muf2);
   if (ampl) {
+    std::vector<double> scale(p_proc->NOut());
     msg_Debugging()<<"Setting scales {\n";
     mur2=1.0;
     double as(1.0), oqcd(0.0), mum2(1.0);
     for (size_t idx(2);ampl->Next();++idx,ampl=ampl->Next()) {
-      m_scale[idx]=Max(ampl->Mu2(),MODEL::as->CutQ2());
-      m_scale[idx]=Min(m_scale[idx],sqr(rpa->gen.Ecms()));
-      mum2=Min(mum2,m_scale[idx]);
+      scale[idx]=Max(ampl->Mu2(),MODEL::as->CutQ2());
+      scale[idx]=Min(scale[idx],sqr(rpa->gen.Ecms()));
+      mum2=Min(mum2,scale[idx]);
       mup2=Max(mup2,ampl->KT2());
       if (m_rproc && ampl->Prev()==NULL) continue;
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
       if (coqcd>0.0) {
-	double cas(MODEL::as->BoundedAlphaS(m_scale[idx]));
-	msg_Debugging()<<"  \\mu_{"<<idx<<"} = "<<sqrt(m_scale[idx])
+	double cas(MODEL::as->BoundedAlphaS(scale[idx]));
+	msg_Debugging()<<"  \\mu_{"<<idx<<"} = "<<sqrt(scale[idx])
 		       <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
-	mur2*=pow(m_scale[idx],coqcd);
+	mur2*=pow(scale[idx],coqcd);
 	as*=pow(cas,coqcd);
 	oqcd+=coqcd;
       }
@@ -578,12 +577,15 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
   m_scale[stp::ren]=mur2;
   msg_Debugging()<<"Core / QCD scale = "<<sqrt(m_scale[stp::fac])
 		 <<" / "<<sqrt(m_scale[stp::ren])<<"\n";
-  m_scale[stp::fac]=m_muf2calc.Calculate()->Get<double>();
-  m_scale[stp::ren]=m_mur2calc.Calculate()->Get<double>();
+  for (size_t i(0);i<m_calcs.size();++i)
+    m_scale[i]=m_calcs[i]->Calculate()->Get<double>();
+  if (m_calcs.size()==1) m_scale[1]=m_scale[0];
   msg_Debugging()<<METHOD<<"(): Set {\n"
 		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
-		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n"
-		 <<"} <- "<<p_proc->Name()<<"\n";
+		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n";
+  for (size_t i(2);i<m_calcs.size();++i)
+    msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
+  msg_Debugging()<<"} <- "<<(p_proc?p_proc->Name():"")<<"\n";
   if (ampl) {
     ampl->SetMuF2(m_scale[stp::fac]);
     ampl->SetMuR2(m_scale[stp::ren]);
@@ -597,15 +599,13 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 }
 
 void METS_Scale_Setter::SetScale
-(const std::string &mu2tag,Tag_Setter &mu2tagset,Algebra_Interpreter &mu2calc)
+(const std::string &mu2tag,Algebra_Interpreter &mu2calc)
 { 
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): scale '"<<mu2tag
 		 <<"' in '"<<p_caller->Name()<<"' {\n";
   msg_Indent();
-  mu2tagset.SetCalculator(&mu2calc);
-  mu2calc.SetTagReplacer(&mu2tagset);
-  mu2tagset.SetTags(&mu2calc);
+  m_tagset.SetTags(&mu2calc);
   mu2calc.Interprete(mu2tag);
   if (msg_LevelIsDebugging()) mu2calc.PrintEquation();
   msg_Debugging()<<"}\n";
