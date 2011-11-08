@@ -484,7 +484,7 @@ void Standard_Model::FixEWParameters() {
       break;
     }
   }
-  aqed                    = new Running_AlphaQED(alphaQED,sqr(MZ));
+  aqed                    = new Running_AlphaQED(alphaQED,0.0);
   double alphaQED_default = 1./p_dataread->GetValue<double>("1/ALPHAQED(default)",1./(*aqed)(sqr(MZ)));
   aqed->SetDefault(alphaQED_default);
 
