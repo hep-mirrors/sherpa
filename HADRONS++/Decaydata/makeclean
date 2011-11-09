@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 DIRECTORIES=`find -maxdepth 1 -mindepth 1 -type d | grep -v '/[.]'`
 
@@ -11,7 +11,7 @@ for I in $DIRECTORIES; do
   done;
   for J in $FILES; do                 # for all files
     cp $J .$J.old
-    csplit --quiet $J /Result/                # split at line above Result
+    csplit --quiet $J /Result/        # split at line above Result. Use "csplit --quiet $J /Result/-1" (with care) to also delete the empty line above the Result section.
     mv xx00 $J                        # rename file
     rm xx01                           # delete last 3 lines
   done;
