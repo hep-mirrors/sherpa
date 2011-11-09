@@ -1,9 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
 FILES=`find -maxdepth 2 -name ".*.dat.old"`  # find files ./.<name>.dat.old    
-for I in $FILES; do                         # for all files
-  DIRECTORY=`echo $I | cut -d "." -f 2,3,4 --complement`
-  FILENAME=`echo $I | cut -d "." -f 2,3,4`
-  echo "rename $I to $DIRECTORY$FILENAME"
-  mv $I $DIRECTORY/$FILENAME                            # rename file
+for I in $FILES; do
+  mv $I ${I/.dat.old/.dat}
 done  

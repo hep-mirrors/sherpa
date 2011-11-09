@@ -20,8 +20,5 @@ done;
 
 PSF=`find -name "PhaseSpaceFunctions"`  # find Phase Space Functions dir
 for I in $PSF; do
-  FILES=`find $I -name "*.dat"`
-  for J in $FILES; do
-    rm $J
-  done;
+  rm `find $I -name "GQ2*.dat"`
 done;
