@@ -11,9 +11,7 @@ libLHAPDFSherpa_la_SOURCES  =	\
 localinc_HEADERS      =	LHAPDF_Fortran_Interface.H
 
 else
-libLHAPDFSherpa_la_SOURCES  =	SVN_Info.C
-
-LHAPDFEXTRADIST = LHAPDF_Fortran_Interface.H LHAPDF_Fortran_Interface.C
+LHAPDFEXTRADIST = SVN_Info.C LHAPDF_Fortran_Interface.H LHAPDF_Fortran_Interface.C
 endif
 
 libLHAPDFSherpa_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_LHAPDFINCS@
