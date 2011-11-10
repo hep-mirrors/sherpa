@@ -4,10 +4,8 @@ Sherpa@VERSIONING@_SOURCES        =	Main.C
 
 if HZTOOL_SUPPORT
 if CERNLIB_SUPPORT
-HZTOOLLIBS    = \
-	-L../../AddOns/HZTool -lHZToolSherpa \
-	@CONDITIONAL_HZTOOLLIBS@ @CONDITIONAL_CERNLIBLIBS@ \
-	@METOOLSLIBS@
+HZTOOLLIBS    = -L../../AddOns/HZTool -lHZToolSherpa \
+		@CONDITIONAL_HZTOOLLIBS@ @CONDITIONAL_CERNLIBLIBS@
 else
 HZTOOLLIBS    =
 endif
@@ -19,11 +17,8 @@ PGSLIBS       =	-L../../AddOns/PGS -lPGSSherpa \
 		@CONDITIONAL_PGSLIBS@
 endif
 
-Sherpa@VERSIONING@_LDADD  = -L@SHERPABUILDDIR@/Main -lSherpaMain \
-			$(HZTOOLLIBS) $(PGSLIBS) \
-			@ATOOLSLIBS@ @METOOLSLIBS@
-
-Sherpa@VERSIONING@_LDFLAGS        =	$(AM_LDFLAGS) @ldflags@
+Sherpa@VERSIONING@_LDADD  =	-L@SHERPABUILDDIR@/Main -lSherpaMain \
+		$(HZTOOLLIBS) $(PGSLIBS) @ATOOLSLIBS@
 
 dist_pkgdata_DATA         = \
 			Analysis.dat \

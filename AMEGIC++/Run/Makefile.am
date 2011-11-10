@@ -6,6 +6,3 @@ Amegic_LDADD = $(pkglibdir)/libProcess.la \
            -L$(pkglibdir) @AMEGICLIBS@ @ATOOLSLIBS@ @MODELLIBS@ \
            @PDFLIBS@ @PHASICLIBS@ @BEAMLIBS@ \
 	       -lg2c -lm @CONDITIONAL_ROOTLIBS@
-
-Amegic_LDFLAGS = @ldflags@
-
