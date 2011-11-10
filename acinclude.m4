@@ -575,7 +575,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 
   AC_ARG_ENABLE(
     root,
-    AC_HELP_STRING([--enable-root\[=/path/to/root\]], [Enable ROOT support and specify where it is installed if non-standard.]),
+    AC_HELP_STRING([--enable-root=/path/to/root], [Enable ROOT support and specify where it is installed if non-standard.]),
     [ AC_MSG_CHECKING(for ROOT installation directory)
       case "${enableval}" in
         no)  AC_MSG_RESULT(ROOT not enabled); root=false;;
