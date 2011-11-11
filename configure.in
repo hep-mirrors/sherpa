@@ -42,7 +42,7 @@ else
 fi
 AM_CONDITIONAL(USING__MPI, test "$mpi" = "true" )
 
-CXX="$CXX -Wl,--no-as-needed -Wl,--add-needed"
+CXX="$CXX -Wl,--no-as-needed"
 
 AM_PROG_LIBTOOL
 dnl Checks for header files.
