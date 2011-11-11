@@ -1,6 +1,5 @@
 (run){
-  EVENTS 100000; ANALYSIS_WRITEOUT_INTERVAL 0.1;
-  ANALYSIS 1; ANALYSIS_OUTPUT Wjets/;
+  EVENTS 100000;
 }(run);
 (processes){
   Process 93 93 -> 11 -12 93;
@@ -15,19 +14,12 @@
   EVENT_GENERATION_MODE Weighted;
   SCALES VAR{PPerp2(p[2]+p[3])+sqr(80.419)}{PPerp2(p[2]+p[3])+sqr(80.419)};
 }(me);
-(model){
-  ORDER_ALPHAS 1; ALPHAS(MZ) 0.118;
-}(model);
 (beam){
   BEAM_1  2212; BEAM_ENERGY_1 7000;
   BEAM_2  2212; BEAM_ENERGY_2 7000;
   K_PERP_MEAN_1 0.; K_PERP_SIGMA_1 0.;
   K_PERP_MEAN_2 0.; K_PERP_SIGMA_2 0.;
 }(beam);
-(isr){
-  PDF_LIBRARY = CTEQ6Sherpa
-  PDF_SET = cteq6m
-}(isr);
 (integration){
   INTEGRATOR 7; ERROR 0.05;
   FINISH_OPTIMIZATION On;
@@ -38,30 +30,3 @@
 (fragmentation){
   FRAGMENTATION Off;
 }(fragmentation);
-(analysis){
-    BEGIN_ANALYSIS {
-        LEVEL ME
-        PATH_PIECE W1jborn
-
-        PartSel {
-            InList FinalState;
-            OutList partons;
-            Qual Parton;
-        }
-
-        Trigger {
-            InList partons
-            OutList jets
-            Finder 93  10. -4. 4. 1. 1
-        }
-
-        JetPT     0.   400.  40   1  1  1 LinErr  jets
-        JetPT     0.5   400.  40   1  1  1 LogErr  jets
-        JetEta   -3.     3.   60   1  1  1 LinErr  jets
-        HT        0.  1000.  20          LinErr  FinalState
-        PT        11  0. 1000. 100 LinErr FinalState
-        PT        -12  0. 1000. 100 LinErr FinalState
-        DR        11 -12 0. 10. 100 LinErr
-        Eta       11  -10. 10. 1 LinErr FinalState
-    } END_ANALYSIS;
-}(analysis)
