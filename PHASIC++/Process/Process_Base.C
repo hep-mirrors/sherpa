@@ -88,13 +88,12 @@ void Process_Base::SetUseBIWeight(bool on)
 
 double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode) 
 {
-  Vec4D_Vector &p(p_int->Momenta());
+  Vec4D_Vector p(ampl.Legs().size());
   for (size_t i(0);i<ampl.NIn();++i) p[i]=-ampl.Leg(i)->Mom();
   if (mode&16) return Get<Single_Process>()->BeamISRWeight(ampl.MuF2(),0);
   for (size_t i(ampl.NIn());i<p.size();++i) p[i]=ampl.Leg(i)->Mom();
-  bool selon(Selector()->On()), trig(true);
+  bool selon(Selector()->On());
   if (!Trigger(p)) {
-    trig=false;
     if ((mode&1) && selon) {
       SetSelectorOn(false);
       Trigger(p);
@@ -110,7 +109,6 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
   double res(this->Differential(p));
   if (mode&4) SetUseBIWeight(true);
   if (mode&2) SetFixedScale(std::vector<double>());
-  if ((mode&8) && !trig) res=-res;
   if (Selector()->On()!=selon) SetSelectorOn(selon);
   return res;
 }

@@ -1,6 +1,7 @@
 #include "ATOOLS/Phys/NLO_Subevt.H"
 
 #include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/MyStrStream.H"
 
 using namespace ATOOLS;
@@ -100,11 +101,12 @@ ATOOLS::Particle_List *NLO_subevt::CreateParticleList() const
   return pl;
 }
 
-std::string NLO_subevt::IDString() const
+std::string NLO_subevt::IDString(const int mode) const
 {
   std::string tag;
-  for (size_t i(0);i<m_n;++i) tag+=ToString(p_id[i])+"_";
-  tag+="_"+ToString(m_i|m_j)+"_"+ToString(m_k);
+  bool si(mode&&(p_id[0]&1)==0);
+  for (size_t i(0);i<m_n;++i) tag+=ToString(p_id[i<2&&si?1-i:i])+"_";
+  tag+="_"+ToString(1<<m_i)+"_"+ToString(1<<m_j)+"_"+ToString(1<<m_k);
   return tag;
 }
 
@@ -135,8 +137,11 @@ namespace ATOOLS
   }
   std::ostream &operator<<(std::ostream &ostr,const NLO_subevt &sevt)
   {
+    ATOOLS::Flavour_Vector flavs;
+    for (size_t i(0);i<sevt.m_n;++i) flavs.push_back(sevt.p_fl[i]);
     return ostr<<sevt.m_pname<<" "<<(Dip_ID)(sevt)
-               <<" {\n  result = "<<sevt.m_result
+               <<" {\n  fl: "<<flavs
+               <<"\n  result = "<<sevt.m_result
                <<" ( "<<sevt.m_last[0]<<" , "<<sevt.m_last[1]<<" ) "
                <<" ,  ME = "<<sevt.m_me
 	       <<"\n  \\mu_F = "<<sqrt(sevt.m_mu2[stp::fac])

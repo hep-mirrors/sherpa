@@ -7,7 +7,7 @@ namespace ATOOLS { class Cluster_Amplitude; }
 
 namespace PDF {
   class Cluster_Definitions_Base;
-  class POWHEG_Base;
+  class NLOMC_Base;
 }
 
 namespace MODEL { class Running_AlphaS; }
@@ -17,18 +17,6 @@ namespace PHASIC {
   class ME_Generators;
   class POWHEG_Multi_Channel;
   class POWHEG_Process;
-
-  typedef std::set<ATOOLS::IDip_ID>       IInfo_Set;
-  typedef std::set<ATOOLS::DDip_ID>       DInfo_Set;
-  typedef std::map<std::string,IInfo_Set> IInfo_Map;
-  typedef std::map<std::string,DInfo_Set> DInfo_Map;
-
-  typedef std::map<std::string,Process_Base*> Process_Map;
-
-  struct ProcessMap_Map: public std::map<nlo_type::code,Process_Map*> {
-    POWHEG_Process *p_proc;
-    inline ProcessMap_Map(POWHEG_Process *const proc): p_proc(proc) {}
-  };
 
   struct ZH_Key {
     ATOOLS::NLO_subevt *p_sub;
@@ -49,9 +37,9 @@ namespace PHASIC {
     std::vector<PHASIC::POWHEG_Process*> m_pprocs;
 
     Process_Base     *p_bproc, *p_viproc, *p_rproc, *p_sproc;
-    PDF::POWHEG_Base *p_powheg;
+    PDF::NLOMC_Base  *p_powheg;
 
-    ProcessMap_Map m_pmap;
+    NLOTypeStringProcessMap_Map m_pmap;
 
     POWHEG_Multi_Channel  *p_mc;
     MODEL::Running_AlphaS *p_as;
@@ -59,8 +47,8 @@ namespace PHASIC {
     double m_lastrs, m_lastb, m_lastvi, m_zhsum[2];
     int    m_smode, m_rmode;
 
-    IInfo_Map m_iinfo;
-    DInfo_Map m_dinfo;
+    ATOOLS::StringIDipSet_Map m_iinfo;
+    ATOOLS::StringDDipSet_Map m_dinfo;
 
     std::map<const size_t*,size_t> m_dmap;
 
@@ -146,7 +134,7 @@ namespace PHASIC {
 
     inline size_t SMode() const { return m_smode; }
 
-    inline void SetPOWHEG(PDF::POWHEG_Base *const powheg)
+    inline void SetPOWHEG(PDF::NLOMC_Base *const powheg)
     { p_powheg=powheg; }
 
   };// end of class POWHEG_Process

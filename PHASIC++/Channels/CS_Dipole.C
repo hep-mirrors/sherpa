@@ -10,14 +10,19 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PDF/Main/ISR_Handler.H"
 
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
+
 using namespace ATOOLS;
 using namespace PHASIC;
 
 CS_Dipole::CS_Dipole(NLO_subevt *const sub,
+		     Extra_Emission_Generator *const eeg,
 		     Phase_Space_Handler *const psh):
   m_sub(*sub), p_vegas(NULL),
   m_alpha(1.0), m_oldalpha(1.0), m_weight(1.0),
-  m_amin(0.0), m_type(0)
+  m_amin(0.0), m_type(0), m_on(false), p_eeg(eeg)
 {
   p_fsmc=psh->FSRIntegrator();
   p_ismc=psh->ISRIntegrator();
@@ -52,6 +57,7 @@ CS_Dipole::~CS_Dipole()
 
 bool CS_Dipole::IsMapped(CS_Dipole *const dip) const
 {
+  if ((m_type&1) && m_ijt!=m_sub.m_i) return true;
   if (m_sub.m_i!=dip->m_sub.m_i ||
       m_sub.m_j!=dip->m_sub.m_j ||
       m_sub.m_k!=dip->m_sub.m_k) return false;
@@ -64,24 +70,112 @@ void CS_Dipole::InitVegas(const std::string &pid)
   p_vegas = new Vegas(3,100,m_id,0);
 }
 
-void CS_Dipole::AddPoint(const double &weight,const double &ewgt)
+double CS_Dipole::Alpha(const int mode) const
 {
-  if (m_weight==0.0) {
-    p_vegas->AddPoint(0.0,m_rn);
-    return;
-  }
-  double wgt(m_weight!=0.0?sqr(weight)*ewgt/m_weight:0.0);
+  if (m_on) return mode?m_alpha:1.0;
+  return 0.0;
+}
+
+void CS_Dipole::AddPoint(const double &value,const double &ewgt,
+			 const double &bme,const double &rme,
+			 const int mode)
+{
+  if (value==0.0 || m_weight==0.0) return;
+  double wgt(sqr(value)*ewgt/m_weight);
+#ifdef USING__MPI
+  ++m_mnp;
+  m_msum+=wgt;
+  m_msum2+=sqr(wgt);
+#else
   ++m_np;
   m_sum+=wgt;
   m_sum2+=sqr(wgt);
-  m_max=ATOOLS::Max(m_max,dabs(wgt));
-  p_vegas->AddPoint(weight,m_rn);
+#endif
+  if (mode==1) p_vegas->AddPoint(dabs(wgt),m_rn);
+}
+
+void CS_Dipole::Optimize()
+{
+  p_vegas->Optimize();
+}
+
+void CS_Dipole::EndOptimize()
+{
+  p_vegas->EndOptimize();
+}
+
+void CS_Dipole::MPISync()
+{
+  p_vegas->MPISync();
+#ifdef USING__MPI
+  int size=MPI::COMM_WORLD.Get_size();
+  if (size>1) {
+    int rank=MPI::COMM_WORLD.Get_rank();
+    double val[3];
+    if (rank==0) {
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	MPI::COMM_WORLD.Recv(&val,3,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+	m_mnp+=val[0];
+	m_msum+=val[1];
+	m_msum2+=val[2];
+      }
+      val[0]=m_mnp;
+      val[1]=m_msum;
+      val[2]=m_msum2;
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	MPI::COMM_WORLD.Send(&val,3,MPI::DOUBLE,tag,size+tag);
+      }
+    }
+    else {
+      val[0]=m_mnp;
+      val[1]=m_msum;
+      val[2]=m_msum2;
+      MPI::COMM_WORLD.Send(&val,3,MPI::DOUBLE,0,rank);
+      MPI::COMM_WORLD.Recv(&val,3,MPI::DOUBLE,0,size+rank);
+      m_mnp=val[0];
+      m_msum=val[1];
+      m_msum2=val[2];
+    }
+  }
+  m_np+=m_mnp;
+  m_sum+=m_msum;
+  m_sum2+=m_msum2;
+  m_mnp=m_msum=m_msum2=0.0;
+#endif
 }
 
 void CS_Dipole::Reset()
 {
-  m_np=0.0;
-  m_sum=m_sum2=m_max=0.0;
+  m_np=m_mnp=0.0;
+  m_sum=m_sum2=m_msum=m_msum2=0.0;
+}
+
+void CS_Dipole::WriteOut(const std::string &pid,
+			 std::vector<std::string> &info) const
+{
+  p_vegas->WriteOut(pid);
+  info.resize(6);
+  info[0]=m_id;
+  info[1]=ToString(m_alpha,12);
+  info[2]=ToString(m_oldalpha,12);
+  info[3]=ToString(m_np,12);
+  info[4]=ToString(m_sum,12);
+  info[5]=ToString(m_sum2,12);
+}
+
+void CS_Dipole::ReadIn(const std::string &pid,
+		       const std::vector<std::string> &info)
+{
+  p_vegas->ReadIn(pid);
+  if (info.size()!=6 || info[0]!=m_id)
+    THROW(fatal_error,"Corrupted input file");
+  m_alpha=ToType<double>(info[1],12);
+  m_oldalpha=ToType<double>(info[2],12);
+  m_np=ToType<double>(info[3],12);
+  m_sum=ToType<double>(info[4],12);
+  m_sum2=ToType<double>(info[5],12);
 }
 
 double CS_Dipole::Lambda

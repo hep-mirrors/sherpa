@@ -1,6 +1,6 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
-#include "MCFM_Wrapper.H"
+#include "AddOns/MCFM/MCFM_Wrapper.H"
 
 namespace MCFM {
 

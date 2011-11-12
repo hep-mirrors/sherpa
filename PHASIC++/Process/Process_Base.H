@@ -214,6 +214,11 @@ namespace PHASIC {
 
   typedef std::vector<PHASIC::Process_Base*> Process_Vector;
 
+  typedef std::map<std::string,Process_Base*> StringProcess_Map;
+
+  typedef std::map<nlo_type::code,StringProcess_Map*>
+  NLOTypeStringProcessMap_Map;
+
 }// end of namespace ATOOLS
 
 #endif

@@ -95,7 +95,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   m_subevt.m_i    = m_pi;
   m_subevt.m_j    = m_pj;
   m_subevt.m_k    = m_pk;
-  m_subevt.p_proc = p_LO_process->Integrator();
+  m_subevt.p_proc = this;
 
   m_sids.resize(m_nin+m_nout-1);
   size_t em=p_LO_process->GetEmit();
@@ -168,6 +168,8 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
 
 Single_DipoleTerm::~Single_DipoleTerm()
 {
+  p_selector=NULL;
+  p_kfactor=NULL;
   p_scale=NULL;
   if (p_LO_process) {delete p_LO_process; p_LO_process=0;}
   if (p_LO_mom)     {delete[] p_LO_mom; p_LO_mom=0;}
@@ -324,8 +326,12 @@ void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms,const ATOOLS::Poincare &c
   p_LO_labmom[sp] = p_LO_mom[sp] = p_dipole->Getptk();
 
   if (p_LO_mom[0][3]<0.) {
+    m_iiswap=2;
     for (size_t i=0;i<m_nin+m_nout-1;i++) 
       p_LO_mom[i]=Vec4D(p_LO_mom[i][0],-p_LO_mom[i][1],-p_LO_mom[i][2],-p_LO_mom[i][3]);
+  }
+  else {
+    m_iiswap=0;
   }
   Poincare bst(p_LO_mom[0]+p_LO_mom[1]);
   for (size_t i=0;i<m_nin+m_nout-1;i++) bst.Boost(p_LO_mom[i]);
@@ -430,18 +436,12 @@ int Single_DipoleTerm::InitAmplitude(Model_Base *model,Topology* top,
     }
     if (canmap) {
       msg_Tracking()<<"Can map Dipole Term: "<<Name()<<" -> "<<check->Name()<<" Factor: "<<m_sfactor<<endl;
-      p_partner = check;
+      p_mapproc = p_partner = check;
       Minimize();  //can be switched on if actually mapped!
-      m_subevt.m_nco = p_partner->m_subevt.m_nco;
       return 1;
     }
   }
   links.push_back(this);
-  // Complex C(p_LO_process->GetAmplitudeHandler()->CommonColorFactor());
-  // if (C!=Complex(0.,0.)) {
-  //   if (C.real()<0) m_subevt.m_nco=1;
-  //   else m_subevt.m_nco=2;
-  // }
 
   return 1;
 }
@@ -485,8 +485,21 @@ void Single_DipoleTerm::Minimize()
   m_subevt.p_mom = p_partner->GetSubevt()->p_mom;
 }
 
+bool Single_DipoleTerm::Trigger(const ATOOLS::Vec4D_Vector &p)
+{
+  return true;
+}
 
-double Single_DipoleTerm::Partonic(const Vec4D_Vector &_moms,const int mode) { return 0.; }
+double Single_DipoleTerm::Partonic(const Vec4D_Vector &_moms,const int mode)
+{
+  Poincare cms;
+  Vec4D_Vector pp(_moms);
+  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+    cms=Poincare(pp[0]+pp[1]);
+    for (size_t i(0);i<pp.size();++i) cms.Boost(pp[i]);
+  }
+  return operator()(&pp.front(),cms,mode);
+}
 
 double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poincare &cms,const int mode)
 {
@@ -506,8 +519,8 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   p_dipole->CalcDiPolarizations();
   SetLOMomenta(mom,cms);
 
-  bool trg(false);
-  trg= p_LO_process->Trigger(p_LO_labmom) || !p_LO_process->Selector()->On();
+  bool trg(!p_LO_process->Selector()->On());
+  if (!trg) trg=p_LO_process->Trigger(p_LO_labmom);
   p_int->SetMomenta(p_LO_labmom);
   p_LO_process->Integrator()->SetMomenta(p_LO_labmom);
 
@@ -519,7 +532,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
 
   double M2 =trg ? p_LO_process->operator()
     (p_LO_labmom,p_LO_mom,p_dipole->GetFactors(),
-     p_dipole->GetDiPolarizations(),mode) : 0.0;
+     p_dipole->GetDiPolarizations(),m_iiswap|mode) : 0.0;
 
   if (!trg) return m_lastxs=m_subevt.m_me=m_subevt.m_mewgt=0.;
 
@@ -534,6 +547,13 @@ void Single_DipoleTerm::SetSelector(const PHASIC::Selector_Key &key)
 {
   if (p_LO_process==NULL) return;
   p_LO_process->SetSelector(key);
+  p_selector=p_LO_process->Selector();
+}
+
+void Single_DipoleTerm::SetShower(PDF::Shower_Base *const ps)
+{
+  p_shower=ps;
+  if (p_LO_process) p_LO_process->SetShower(ps);
 }
 
 int Single_DipoleTerm::NumberOfDiagrams() { 
@@ -574,4 +594,10 @@ void Single_DipoleTerm::SetScale(const Scale_Setter_Arguments &args)
   if (p_LO_process==NULL) return;
   if (!p_LO_process->IsMapped()) p_LO_process->SetScale(args);
   p_scale=p_LO_process->Partner()->ScaleSetter();
+}
+
+void Single_DipoleTerm::SetKFactor(const KFactor_Setter_Arguments &args)
+{
+  if (!p_LO_process->IsMapped()) p_LO_process->SetKFactor(args);
+  p_kfactor=p_LO_process->Partner()->KFactorSetter();
 }

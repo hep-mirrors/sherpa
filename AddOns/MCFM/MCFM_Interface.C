@@ -36,7 +36,7 @@ namespace MCFM {
 
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
-#include "MCFM_Wrapper.H"
+#include "AddOns/MCFM/MCFM_Wrapper.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"

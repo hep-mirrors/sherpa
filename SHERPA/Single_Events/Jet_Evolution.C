@@ -111,7 +111,8 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist,
 						Perturbative_Interface * interface) 
 {
-  if (!p_showerhandler->On()) {
+  if (!p_showerhandler->On() ||
+      (interface->MEHandler() && interface->MEHandler()->Process()->Info().m_nlomode==1)) {
     AftermathOfNoShower(blob,bloblist);
     return Return_Value::Nothing;
   }

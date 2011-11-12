@@ -204,7 +204,7 @@ METS_Scale_Setter::METS_Scale_Setter
   m_vproc=!p_proc->Parent()->Info().m_fi.NLOType()==nlo_type::lo;
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
   Data_Reader read(" ",";","!","=");
-  if (!read.ReadFromFile(m_vmode,"METS_SCALE_VMODE")) m_vmode=8|2|4;
+  if (!read.ReadFromFile(m_vmode,"METS_SCALE_VMODE")) m_vmode=8;
   else msg_Info()<<METHOD<<"(): Set NLO scale mode "<<m_vmode<<".\n";
   if (!read.ReadFromFile(m_mufmode,"METS_SCALE_MUFMODE")) m_mufmode=0;
   else msg_Info()<<METHOD<<"(): Set METS \\mu_F mode "<<m_mufmode<<".\n";
@@ -253,8 +253,15 @@ double METS_Scale_Setter::CalculateStrict
 }
 
 double METS_Scale_Setter::Calculate
-(const Vec4D_Vector &momenta,const int mode) 
+(const Vec4D_Vector &imomenta,const int imode) 
 {
+  int mode(imode&1);
+  Vec4D_Vector momenta(imomenta);
+  if (imode&2) {
+    for (size_t i(0);i<momenta.size();++i)
+      momenta[i]=Vec4D(momenta[i][0],-momenta[i][1],
+		       -momenta[i][2],-momenta[i][3]);
+  }
   if (mode==0) return CalculateMyScale(momenta,mode);
   if (m_mode==2 || (m_mode==1 && !p_caller->LookUp())) {
     p_caller->Integrator()->SetMomenta(momenta);
@@ -284,7 +291,7 @@ double METS_Scale_Setter::CalculateMyScale
     return CalculateStrict(momenta,mode);
   }
   if (p_caller->Shower()==NULL) THROW(fatal_error,"No shower generator");
-  DEBUG_FUNC(p_proc->Name());
+  DEBUG_FUNC(p_proc->Name()<<" mode="<<mode);
   for (int ic(p_ci==NULL?1:0);ic<2;++ic) {
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   ampl->SetNIn(p_proc->NIn());
@@ -344,10 +351,6 @@ double METS_Scale_Setter::CalculateMyScale
 			       <<" <-> "<<ID(cs.m_idk)<<"\n";
 		trials.insert(cs);
 		continue;
-	      }
-	      if (m_vproc) {
-		if (m_vmode&2) cs.m_mu2=cs.m_kt2;
-		if (m_vmode&4) cs.m_mu2*=4.0;
 	      }
 	      if (m_rproc && ampl->Prev()==NULL) cs.m_op2=
 		1.0/PDF::Qij2(li->Mom(),lj->Mom(),lk->Mom(),
@@ -490,6 +493,8 @@ double METS_Scale_Setter::CalculateMyScale
 	continue;
       }
       kt2core=CoreScale(ampl);
+      msg_Debugging()<<"Core = "<<*ampl<<" => "<<sqrt(kt2core)
+		     <<" <-> "<<sqrt(ops[ampl->Legs().size()-4])<<"\n";
       if (ops[ampl->Legs().size()-4]>kt2core) {
 	msg_Debugging()<<"unordered configuration (core) [ ord = "
 		       <<ords[ampl->Legs().size()-4]<<" ]\n";
@@ -517,7 +522,6 @@ double METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl)
   double kt2cmin(p_proc->Shower()->GetClusterDefinitions()->CoreScale(ampl));
   ampl->SetKT2(kt2cmin);
   ampl->SetMu2(kt2cmin);
-  msg_Debugging()<<"Core = "<<*ampl<<" -> "<<sqrt(kt2cmin)<<"\n";
   return kt2cmin;
 }
 

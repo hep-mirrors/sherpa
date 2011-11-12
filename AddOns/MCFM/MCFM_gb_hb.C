@@ -1,7 +1,7 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_Fermion_Mass.H"
-#include "MCFM_Wrapper.H"
+#include "AddOns/MCFM/MCFM_Wrapper.H"
 
 namespace MCFM {
   // README:

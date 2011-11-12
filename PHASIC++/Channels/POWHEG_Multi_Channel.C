@@ -134,6 +134,13 @@ void POWHEG_Multi_Channel::EndOptimize(double error)
   if (m_emode) m_eeg.EndOptimize();
 }
 
+void POWHEG_Multi_Channel::MPISync()
+{
+  Multi_Channel::MPISync();
+  p_fsmc->MPISync();
+  if (m_emode) m_eeg.MPISync();
+}
+
 bool POWHEG_Multi_Channel::OptimizationFinished()
 {
   return p_fsmc->OptimizationFinished();

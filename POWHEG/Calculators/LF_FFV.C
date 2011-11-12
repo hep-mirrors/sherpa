@@ -1,6 +1,6 @@
 #include "POWHEG/Showers/Splitting_Function_Base.H"
 
-#define USING_DIS_MEC 
+// #define USING_DIS_MEC 
 
 namespace POWHEG {
   

@@ -11,6 +11,7 @@ namespace PHASIC {
   public:
 
     FF_Dipole(ATOOLS::NLO_subevt *const sub,
+	      Extra_Emission_Generator *const eeg,
 	      Phase_Space_Handler *const psh);
 
     ~FF_Dipole();
@@ -20,6 +21,7 @@ namespace PHASIC {
      Cut_Data *const cuts,const double *rns);
     double GenerateWeight(const ATOOLS::Vec4D_Vector &p,
 			  Cut_Data *const cuts);
+    bool ValidPoint(const ATOOLS::Vec4D_Vector& p);
 
     void Calculate
     (const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
@@ -38,6 +40,7 @@ namespace PHASIC {
   public:
 
     FI_Dipole(ATOOLS::NLO_subevt *const sub,
+	      Extra_Emission_Generator *const eeg,
 	      Phase_Space_Handler *const psh);
 
     ~FI_Dipole();
@@ -47,6 +50,7 @@ namespace PHASIC {
      Cut_Data *const cuts,const double *rns);
     double GenerateWeight(const ATOOLS::Vec4D_Vector &p,
 			  Cut_Data *const cuts);
+    bool ValidPoint(const ATOOLS::Vec4D_Vector& p);
 
     void Calculate(const ATOOLS::Vec4D &pi, const ATOOLS::Vec4D &pj,
                    const ATOOLS::Vec4D &pk,
@@ -66,6 +70,7 @@ namespace PHASIC {
   public:
 
     IF_Dipole(ATOOLS::NLO_subevt *const sub,
+	      Extra_Emission_Generator *const eeg,
 	      Phase_Space_Handler *const psh);
 
     ~IF_Dipole();
@@ -75,6 +80,7 @@ namespace PHASIC {
      Cut_Data *const cuts,const double *rns);
     double GenerateWeight(const ATOOLS::Vec4D_Vector &p,
 			  Cut_Data *const cuts);
+    bool ValidPoint(const ATOOLS::Vec4D_Vector& p);
 
     void Calculate(const ATOOLS::Vec4D &pi, const ATOOLS::Vec4D &pj,
                    const ATOOLS::Vec4D &pk,
@@ -94,6 +100,7 @@ namespace PHASIC {
   public:
 
     II_Dipole(ATOOLS::NLO_subevt *const sub,
+	      Extra_Emission_Generator *const eeg,
 	      Phase_Space_Handler *const psh);
 
     ~II_Dipole();
@@ -103,6 +110,7 @@ namespace PHASIC {
      Cut_Data *const cuts,const double *rns);
     double GenerateWeight(const ATOOLS::Vec4D_Vector &p,
 			  Cut_Data *const cuts);
+    bool ValidPoint(const ATOOLS::Vec4D_Vector& p);
 
     void Calculate(const ATOOLS::Vec4D &pi, const ATOOLS::Vec4D &pj,
                    const ATOOLS::Vec4D &pk,

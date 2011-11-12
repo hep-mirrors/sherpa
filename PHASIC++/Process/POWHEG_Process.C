@@ -10,7 +10,7 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Process/Single_Process.H"
-#include "PDF/Main/POWHEG_Base.H"
+#include "PDF/Main/NLOMC_Base.H"
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/Jet_Criterion.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
@@ -32,7 +32,7 @@ POWHEG_Process::POWHEG_Process
 (ME_Generators& gens,const Process_Vector *procs):
   m_gens(gens), p_bproc(NULL), p_viproc(NULL),
   p_rproc(NULL), p_sproc(NULL), p_powheg(NULL),
-  m_pmap(this), p_mc(NULL), m_smode(1), p_ampl(NULL)
+  p_mc(NULL), m_smode(1), p_ampl(NULL)
 {
   m_tinfo=0;
   for (size_t i(0);i<procs->size();++i) {
@@ -52,7 +52,7 @@ POWHEG_Process::POWHEG_Process
 POWHEG_Process::~POWHEG_Process()
 {
   if (p_ampl) p_ampl->Delete();
-  for (std::map<nlo_type::code,Process_Map*>::const_iterator
+  for (std::map<nlo_type::code,StringProcess_Map*>::const_iterator
 	 pmit(m_pmap.begin());pmit!=m_pmap.end();++pmit) delete pmit->second;
   if (p_sproc) delete p_sproc;
   if (p_rproc) delete p_rproc;
@@ -92,7 +92,7 @@ void POWHEG_Process::Init(const Process_Info &pi,
   else msg_Info()<<METHOD<<"(): Set RB integration mode "<<m_rmode<<".\n";
   for (size_t i(0);i<m_pprocs.size();++i) {
     if (m_pprocs[i]->Name()==Name()) THROW(fatal_error,"Doubled process");
-    for (std::map<nlo_type::code,Process_Map*>::const_iterator
+    for (std::map<nlo_type::code,StringProcess_Map*>::const_iterator
 	   pmit(m_pprocs[i]->m_pmap.begin());
 	 pmit!=m_pprocs[i]->m_pmap.end();++pmit) {
       m_pmap[pmit->first]->insert(pmit->second->begin(),pmit->second->end());
@@ -132,7 +132,8 @@ Process_Base* POWHEG_Process::InitProcess
     if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
     if (nlotype&nlo_type::vsub) nlotype=nlo_type::vsub;
     if (nlotype&nlo_type::rsub) nlotype=nlo_type::rsub;
-    if (m_pmap.find(nlotype)==m_pmap.end()) m_pmap[nlotype] = new Process_Map();
+    if (m_pmap.find(nlotype)==m_pmap.end())
+      m_pmap[nlotype] = new StringProcess_Map();
     (*m_pmap[nlotype])[fname]=(*proc)[i];
   }
   return proc;
@@ -153,7 +154,6 @@ bool POWHEG_Process::InitSubtermInfo()
 	dit=idmap.find(tag);
       }
       m_dmap[sub->p_id]=dit->second;
-      if (sub->m_nco==2) continue;
       for (size_t ij(0);ij<sub->m_n;++ij)
 	for (size_t k(0);k<sub->m_n;++k)
 	  if (k!=ij && sub->p_fl[k]==sub->p_fl[sub->m_kt] && 
@@ -172,7 +172,7 @@ Process_Base *POWHEG_Process::FindProcess
  const bool error) const
 {
   std::string name(Process_Base::GenerateName(ampl));
-  Process_Map::const_iterator pit(m_pmap.find(type)->second->find(name));
+  StringProcess_Map::const_iterator pit(m_pmap.find(type)->second->find(name));
   if (pit!=m_pmap.find(type)->second->end()) return pit->second;
   if (error)
     THROW(fatal_error,"Process '"+name+"'("+ToString(type)+") not found");
@@ -182,7 +182,7 @@ Process_Base *POWHEG_Process::FindProcess
 Process_Base *POWHEG_Process::FindProcess
 (const NLO_subevt *sub,const nlo_type::code type) const
 {
-  Process_Map::const_iterator pit
+  StringProcess_Map::const_iterator pit
     (m_pmap.find(type)->second->find(sub->m_pname));
   if (pit!=m_pmap.find(type)->second->end()) return pit->second;
   THROW(fatal_error,"Process '"+sub->m_pname+"'("+ToString(type)+") not found");
@@ -284,13 +284,13 @@ double POWHEG_Process::GetRho(const int mode)
     for (size_t j(0);j<subs->size()-1;++j) {
       NLO_subevt *sub((*subs)[j]);
       size_t id(m_dmap.find(sub->p_id)->second);
-      if (id==aidx && subs->back()->m_me && sub->m_nco!=2) {
+      if (id==aidx && subs->back()->m_me) {
 	Process_Base *bproc((*m_pmap[nlo_type::lo])[sub->m_pname]);
 	RB_Data *rbd(bproc->Integrator()->RBMap()[sub]);
 	if (rbd->m_ktres==0.0) continue;
 	if (qij2<0.0) qij2=PDF::Qij2Min(p_mc->RealMoms(),subs);
 	if (qij2<p_powheg->KT2Min()) continue;
-        ZH_Pair zh(p_powheg->ZHSplit
+        SH_Pair zh(p_powheg->SHSplit
                    (bproc->Get<Single_Process>()->LastXS()*
 		    bproc->SymFac(),qij2,rbd));
         double res(zh.second/(zh.first+zh.second)
@@ -512,6 +512,7 @@ double POWHEG_Process::SelectBProcess()
   p_ampl->Decays()=m_decins;
   bool lookup(m_lookup);
   SetLookUp(false);
+  DEBUG_VAR(p_powheg);
   p_powheg->SetShower(p_shower);
   int stat(p_powheg->GeneratePoint(p_ampl));
   SetLookUp(lookup);
@@ -553,11 +554,13 @@ double POWHEG_Process::SelectBProcess()
     (p_ampl=ampl)->SetNext(next);
     ampl->SetMuF2(next->MuF2());
     ampl->SetMuR2(next->MuR2());
+    ampl->SetNLO(2);
     next->SetKin(kt2.m_kin);
     if (!(ampl->Leg(0)->Id()&next->Leg(0)->Id()))
       std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
     while (ampl->Next()) {
       ampl=ampl->Next();
+      ampl->SetNLO(2);
       for (size_t i(0);i<ampl->Legs().size();++i) {
 	ampl->Leg(i)->SetNMax(p_ampl->Leg(i)->NMax());
 	size_t cid(ampl->Leg(i)->Id());
@@ -579,6 +582,9 @@ double POWHEG_Process::SelectBProcess()
   }
   p_selected=p_bproc;
   p_bproc->SetSelected(bproc);
+  ampl=p_ampl;
+  ampl->SetNLO(3);
+  while ((ampl=ampl->Next())!=NULL) ampl->SetNLO(3);
   msg_Debugging()<<"B selected "<<*p_ampl<<"\n";
   return stat?bproc->Integrator()->SelectionWeight(0)/
     p_int->SelectionWeight(0):0.0;

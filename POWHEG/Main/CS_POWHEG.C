@@ -18,7 +18,7 @@ using namespace std;
 
 CS_POWHEG::CS_POWHEG(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model,
 		     Data_Reader *const _dataread) : 
-  POWHEG_Base("CSS"), p_isr(_isr), 
+  NLOMC_Base("POWHEG_CSS"), p_isr(_isr), 
   p_powheg(NULL), p_cluster(NULL), p_gamma(NULL)
 {
   m_maxem=_dataread->GetValue<int>("PH_CSS_MAXEM",1);
@@ -92,7 +92,7 @@ int CS_POWHEG::PerformPOWHEG(const size_t &maxem,size_t &nem)
   std::set<Parton*> nxs;
   Singlet *last(*(m_allsinglets.end()-1));
   std::string pname(Process_Base::GenerateName(p_rampl));
-  const IInfo_Set &iinfo((*p_rampl->IInfo<IInfo_Map>())[pname]);
+  const IDip_Set &iinfo((*p_rampl->IInfo<StringIDipSet_Map>())[pname]);
   for (Singlet::iterator cit(last->begin());cit!=last->end();++cit) {
     msg_Debugging()<<"filling partner list for "<<(*cit)->GetFlavour()
 		   <<ID((*cit)->Id())<<" ... ";
@@ -245,25 +245,20 @@ void CS_POWHEG::AddRBPoint(ATOOLS::Cluster_Amplitude *const ampl)
   p_gamma->AddRBPoint(ampl);
 }
 
-ZH_Pair CS_POWHEG::ZHSplit(const double &B,const double &Qij2,
+SH_Pair CS_POWHEG::SHSplit(const double &B,const double &Qij2,
 			   const RB_Data *rbd) const
 {
-  if (rbd->m_ktres<1.0) return ZH_Pair(1.0,0.0);
-  double Z(Min(1.0,B/rbd->m_bmax));
+  if (rbd->m_ktres<1.0) return SH_Pair(1.0,0.0);
+  double S(Min(1.0,B/rbd->m_bmax));
   double H(Min(1.0,Qij2/sqr(rpa->gen.Ecms()/rbd->m_ktres)));
-  return ZH_Pair(Z,H);
-}
-
-Rho_Map CS_POWHEG::GetRho(Cluster_Amplitude *const ampl)
-{
-  return p_gamma->GetRho(ampl);
+  return SH_Pair(S,H);
 }
 
 namespace PDF {
 
-  DECLARE_GETTER(CSS_POWHEG_Getter,"CSS",POWHEG_Base,POWHEG_Key);
+  DECLARE_GETTER(CSS_POWHEG_Getter,"POWHEG_CSS",NLOMC_Base,NLOMC_Key);
 
-  POWHEG_Base *CSS_POWHEG_Getter::operator()(const POWHEG_Key &key) const
+  NLOMC_Base *CSS_POWHEG_Getter::operator()(const NLOMC_Key &key) const
   {
     return new CS_POWHEG(key.p_isr,key.p_model,key.p_read);
   }

@@ -41,6 +41,7 @@ namespace PHASIC {
 
     void Optimize(double);
     void EndOptimize(double);
+    void MPISync();
 
     void AddPoint(double value);
 

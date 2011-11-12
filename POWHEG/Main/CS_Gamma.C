@@ -48,8 +48,8 @@ Weight_Map CS_Gamma::CalculateWeight(Cluster_Amplitude *const ampl,
     idmap[1<<i]=rampl->Leg(i)->Id();
     rampl->Leg(i)->SetId(1<<i);
   }
-  std::map<nlo_type::code,Process_Map*> *procs
-    (ampl->Procs<std::map<nlo_type::code,Process_Map*> >());
+  NLOTypeStringProcessMap_Map *procs
+    (ampl->Procs<NLOTypeStringProcessMap_Map>());
   std::string rname(Process_Base::GenerateName(rampl));
   p_rproc=(*(*procs)[nlo_type::lo])[rname]->Get<Single_Process>();
   if (p_rproc==NULL) {
@@ -116,7 +116,7 @@ int CS_Gamma::CalculateWeights(Cluster_Amplitude *const ampl,
 	  }
 	  if (CheckCore(nampl)) {
 	    std::string pname(Process_Base::GenerateName(ampl));
-	    const DInfo_Set &dinfo((*nampl->DInfo<DInfo_Map>())[pname]);
+	    const DDip_Set &dinfo((*nampl->DInfo<StringDDipSet_Map>())[pname]);
 	    if (dinfo.find(DDip_ID(i,j,k))!=dinfo.end()) {
 	      int stat(SingleWeight(nampl,li,lj,lk,cs,idmap,ws,mode,userb));
 	      if (stat==-1) return -1;
@@ -297,42 +297,12 @@ double CS_Gamma::TrialWeight(Cluster_Amplitude *const ampl)
     THROW(fatal_error,"Internal error");
   RB_Data *rbd(rbit->second);
   if (rbd->m_ktres>0.0) {
-    ZH_Pair zh(p_css->ZHSplit(wact.m_b,wact.m_qij2,rbd));
+    SH_Pair zh(p_css->SHSplit(wact.m_b,wact.m_qij2,rbd));
     rme*=zh.first/(zh.first+zh.second);
     msg_Debugging()<<" -> "<<rme/wact.m_me;
   }
   msg_Debugging()<<"\n";
   return rme/(wact.m_me*wact.p_sf->RBMax());
-}
-
-Rho_Map CS_Gamma::GetRho(Cluster_Amplitude *const ampl)
-{
-  DEBUG_FUNC("");
-  p_ms=ampl->MS();
-  p_shower->SetMS(p_ms);
-  Weight_Map ws(CalculateWeight(ampl,8));
-  if (ws.empty()) return Rho_Map();
-  Rho_Map rhos;
-  rhos.m_t0=p_shower->GetSudakov()->PT2Min();
-#ifdef DEBUG__Trial_Weight
-  msg_Debugging()<<"Accumulate weights {\n";
-#endif
-  for (Weight_Map::const_iterator
-	 wit(ws.begin());wit!=ws.end();++wit) {
-#ifdef DEBUG__Trial_Weight
-    msg_Debugging()<<"  "<<wit->first<<" -> "<<wit->second<<"\n";
-#endif
-    std::vector<int> ijs(ID(wit->first.m_ij));
-    rhos[DDip_ID(ijs.front(),ijs.back(),
-		 ID(wit->first.m_k).front())]=
-      Dipole_Value(wit->second.p_proc,wit->second.m_me,
-		   wit->second.m_b,wit->second.m_muf2,
-		   0.0,wit->second.m_trig);
-  }
-#ifdef DEBUG__Trial_Weight
-  msg_Debugging()<<"}\n";
-#endif
-  return rhos;
 }
 
 void CS_Gamma::AddRBPoint(Cluster_Amplitude *const ampl)
@@ -385,7 +355,7 @@ void CS_Gamma::AddRBPoint(Cluster_Amplitude *const ampl)
         msg_Debugging()<<" -> not considering point, only taking stats on m_bmax.\n";
         return;
       }
-      ZH_Pair zh(p_css->ZHSplit(bit->second.m_b,bit->second.m_qij2,rbd));
+      SH_Pair zh(p_css->SHSplit(bit->second.m_b,bit->second.m_qij2,rbd));
       rme*=zh.first/(zh.first+zh.second);
       msg_Debugging()<<" -> "<<rme/wgt;
     }
@@ -407,10 +377,11 @@ Weight_Value CS_Gamma::Differential
   int olv(msg->Level());
   msg->SetLevel(2);
 #endif
-  ProcessMap_Map *procs(ampl->Procs<ProcessMap_Map>());
+  NLOTypeStringProcessMap_Map *procs
+    (ampl->Procs<NLOTypeStringProcessMap_Map>());
   Process_Base::SortFlavours(ampl);
   std::string pname(Process_Base::GenerateName(ampl));
-  Process_Map::const_iterator pit((*(*procs)[nlo_type::lo]).find(pname));
+  StringProcess_Map::const_iterator pit((*(*procs)[nlo_type::lo]).find(pname));
   if (pit==(*(*procs)[nlo_type::lo]).end()) 
     THROW(fatal_error,"Process '"+pname+"' not found");
   Weight_Value meps(pit->second);
@@ -421,7 +392,7 @@ Weight_Value CS_Gamma::Differential
   }
   meps.m_me*=pit->second->SymFac();
   if (mode&1024) {
-    Process_Map::const_iterator sit((*(*procs)[nlo_type::rsub]).find(pname));
+    StringProcess_Map::const_iterator sit((*(*procs)[nlo_type::rsub]).find(pname));
     if (sit==(*(*procs)[nlo_type::rsub]).end()) 
       THROW(fatal_error,"Process '"+pname+"' not found");
     if (!pit->second->Selector()->Trigger

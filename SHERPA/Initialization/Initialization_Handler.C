@@ -1,4 +1,3 @@
-#include <time.h>
 #include "SHERPA/Initialization/Initialization_Handler.H"
 
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
@@ -30,7 +29,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Selectors/Selector.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
-#include "PDF/Main/POWHEG_Base.H"
+#include "PDF/Main/NLOMC_Base.H"
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
@@ -39,6 +38,7 @@
 #include "SHERPA/Tools/RootNtuple_Reader.H"
 
 #include <sys/stat.h>
+#include <time.h>
 
 using namespace SHERPA;
 using namespace MODEL;
@@ -239,10 +239,10 @@ void Initialization_Handler::ShowParameterSyntax()
     PHASIC::ME_Generator_Base::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
-  if (!read.ReadFromFile(helpi,"SHOW_POWHEG_GENERATORS")) helpi=0;
+  if (!read.ReadFromFile(helpi,"SHOW_NLOMC_GENERATORS")) helpi=0;
   if (helpi>0) {
     msg->SetLevel(2);
-    PDF::POWHEG_Base::ShowSyntax(helpi);
+    PDF::NLOMC_Base::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
   if (!read.ReadFromFile(helpi,"SHOW_SHOWER_GENERATORS")) helpi=0;

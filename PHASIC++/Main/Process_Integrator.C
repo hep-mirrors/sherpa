@@ -30,7 +30,8 @@ Process_Integrator::Process_Integrator(Process_Base *const proc):
   p_proc(proc), p_pshandler(NULL),
   p_beamhandler(NULL), p_isrhandler(NULL),
   m_nin(0), m_nout(0), m_smode(1),
-  m_threshold(0.), m_enhancefac(1.0), m_maxeps(0.0), m_rbmaxeps(0.0),
+  m_threshold(0.), m_enhancefac(1.0), m_maxeps(0.0),
+  m_rbmaxeps(0.0), m_rsfac(1.0),
   m_n(0), m_itmin(0), m_max(0.), m_totalxs(0.), 
   m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), 
   m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), m_vmean(0.),
@@ -217,7 +218,7 @@ void Process_Integrator::SetMomenta(const Cluster_Amplitude &ampl)
   for (size_t i(ampl.NIn());i<p_momenta.size();++i)
     p_momenta[i]=ampl.Leg(i)->Mom();
   if (p_proc->Selected() && p_proc->Selected()!=p_proc)
-    p_proc->Selected()->Integrator()->SetMomenta(p_momenta);
+    THROW(fatal_error,"Invalid function call");
 }
 
 void Process_Integrator::InitWeightHistogram()
@@ -460,6 +461,14 @@ void Process_Integrator::SetRBMaxEpsilon(const double &rbmaxeps)
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->SetRBMaxEpsilon(rbmaxeps);
+}
+
+void Process_Integrator::SetRSEnhanceFactor(const double &rsfac)
+{ 
+  m_rsfac=rsfac; 
+  if (p_proc->IsGroup())
+    for (size_t i(0);i<p_proc->Size();++i)
+      (*p_proc)[i]->Integrator()->SetRSEnhanceFactor(rsfac);
 }
 
 void Process_Integrator::AddPoint(const double value) 

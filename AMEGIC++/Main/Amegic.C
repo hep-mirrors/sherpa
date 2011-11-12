@@ -102,11 +102,14 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   m_file=file;
   p_int->SetBeam(beamhandler);
   p_int->SetISR(isrhandler);
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
+  Data_Reader read(" ",";","#","=");
   read.AddWordSeparator("\t");
-  read.SetInputPath(path);
-  read.SetInputFile(file);
+  read.SetInputPath(m_path+"/");
+  read.SetInputFile(m_file);
+  double alpha=read.GetValue<double>("AMEGIC_CHANNEL_ALPHA",0.4);
+  rpa->gen.SetVariable("AMEGIC_CHANNEL_ALPHA",ToString(alpha));
+  double eps=read.GetValue<double>("AMEGIC_CHANNEL_EPSILON",0.0);
+  rpa->gen.SetVariable("AMEGIC_CHANNEL_EPSILON",ToString(eps));
   int gauge(read.GetValue<int>("AMEGIC_DEFAULT_GAUGE",10));
   AMEGIC::Process_Base::SetGauge(gauge);
   if (gauge!=10) msg_Info()<<METHOD<<"(): Set gauge "<<gauge<<"."<<std::endl;

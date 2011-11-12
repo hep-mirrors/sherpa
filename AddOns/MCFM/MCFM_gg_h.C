@@ -1,6 +1,6 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
-#include "MCFM_Wrapper.H"
+#include "AddOns/MCFM/MCFM_Wrapper.H"
 
 namespace MCFM {
   // README:
@@ -157,39 +157,69 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_gg_h_Getter,"MCFM_gg_h")
 Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
 {
-  DEBUG_FUNC("");
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
+  if (MODEL::s_model->Name()!=std::string("SM+EHC"))    return NULL;
+  if (pi.m_oew>2)                                       return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     // check for right model and absence of b Yukawa couplings
     Flavour_Vector fl(pi.ExtractFlavours());
+
     // two incoming strongly interacting particles.
     if (!fl[0].Strong() || !fl[1].Strong())             return NULL;
     int pID(0);
-    if (pi.m_fi.m_ps.size()<1 || pi.m_fi.m_ps.size()>2) return NULL;
-    ATOOLS::Flavour flh(pi.m_fi.m_ps[0].m_fl[0]);
-    // higgs propagator
-    if (flh!=ATOOLS::Flavour(kf_h0))                    return NULL;
-    if (pi.m_fi.m_ps.size()==2 && 
-	!pi.m_fi.m_ps[1].m_fl[0].Strong())              return NULL;
+    bool resonant(false);
+    // resonant setup (not suitable for nlomode 2 at the moment)
+    if ((pi.m_fi.m_ps.size()==1 || pi.m_fi.m_ps.size()==2) &&
+        pi.m_fi.m_ps[0].m_ps.size()>1) {
+      ATOOLS::Flavour flh(pi.m_fi.m_ps[0].m_fl[0]);
+      // higgs propagator
+      if (!flh==ATOOLS::Flavour(kf_h0))                   return NULL;
+      if (pi.m_fi.m_ps.size()==2 &&
+          !pi.m_fi.m_ps[1].m_fl[0].Strong())              return NULL;
 
-    if (MODEL::s_model->ScalarConstant("Yukawa_b")>0.) {
-      if (MODEL::s_model->Name()==std::string("THDM"))  return NULL;
-      if (MODEL::s_model->Name()!=std::string("SM+EHC") ||
-	  !Flavour(kf_h0).IsOn()) {
-	msg_Error()<<"Warning in "<<METHOD<<":\n"
-		   <<"   Try to initialise process gg->H(+jet) in MCFM.\n"
-		   <<"   Inconsistent setting with Sherpa: "<<std::endl
-		   <<"YUKAWA_B = "<<MODEL::s_model->ScalarConstant("Yukawa_b")
-		   <<" (should be 0), "
-		   <<"MODEL = "<<MODEL::s_model->Name()
-		   <<"(should be 'SM+EHC', and "
-		   <<"ACTIVE[25] = "<<Flavour(kf_h0).IsOn()<<" (should be 1).\n"
-		   <<"   Will exit the run."<<std::endl;
-	exit(1);
-	return NULL;
+    if (MODEL::s_model->ScalarConstant("Yukawa_b")>0. ||
+	MODEL::s_model->Name()!=std::string("SM+EHC") ||
+	!Flavour(kf_h0).IsOn()) {
+      msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
+		 <<"   Try to initialise process gg->H(+jet) in MCFM."<<std::endl
+		 <<"   Inconsistent setting with Sherpa: "<<std::endl
+		 <<"YUKAWA_B = "<<MODEL::s_model->ScalarConstant("Yukawa_b")<<" (should be 0), "
+		 <<"MODEL = "<<MODEL::s_model->Name()<<"(should be 'SM+EHC', and "
+		 <<"ACTIVE[25] = "<<Flavour(kf_h0).IsOn()<<" (should be 1)."
+		 <<std::endl<<"   Will exit the run."<<std::endl;
+      exit(1);
+      return NULL;
+    }
+    }
+    // non-resonant setup (at the moment needed for nlomode 2)
+    // works at the moment only for tau tau FS
+    else if (pi.m_fi.m_ps.size()==2 || pi.m_fi.m_ps.size()==3) {
+      if (pi.m_fi.m_ps.size()==3 &&
+          !pi.m_fi.m_ps[2].m_fl.Strong())                    return NULL;
+      if (Flavour(kf_Z).IsOn() || Flavour(kf_photon).IsOn() ||
+          ATOOLS::Flavour(kf_b).Yuk()>0. ||
+          MODEL::s_model->Name()!=std::string("SM+EHC") ||
+          !Flavour(kf_h0).IsOn()) {
+        msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
+            <<"   Try to initialise process gg->H(+jet) in MCFM."<<std::endl
+            <<"   Inconsistent setting with Sherpa: "<<std::endl
+            <<"Yuk(b) = "<<ATOOLS::Flavour(kf_b).Yuk()<<" (should be 0), "
+            <<"model = "<<MODEL::s_model->Name()<<"(should be 'SM+EHC', and "
+            <<"higgs on = "<<Flavour(kf_h0).IsOn()<<"(should be 1),"
+            <<"Z on = "<<Flavour(kf_Z).IsOn()<<"(should be 0),"
+            <<"photon on = "<<Flavour(kf_photon).IsOn()<<"(should be 0)."
+            <<std::endl<<"   Will exit the run."<<std::endl;
+        THROW(fatal_error,"Setup inconsistent with MCFM.")
+        return NULL;
+      }
+      if (fl[2].Kfcode()!=15) {
+        THROW(fatal_error,"Non-resonant setup only works for tau final states.");
+        return NULL;
       }
     }
+    else return NULL;
+    msg_Out()<<" ... check for tau tau FS."<<std::endl;
     // tau tau final state
     if ((fl.size()==4 || fl.size()==5) && 
 	(fl[2]==fl[3].Bar() && fl[2].Kfcode()==15)) {
@@ -197,13 +227,22 @@ Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
 	msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
 		   <<"   Setup for gg->[h->tau tau] (+jet), but tau Yukawa = 0."
 		   <<std::endl;
-	exit(1);
+        THROW(fatal_error,"Inconsistent setup.");
       }
-      if (fl.size()==4 && pi.m_fi.m_ps.size()==1 && 
-	  fl[0].IsGluon() && fl[1].IsGluon()) pID = 112;
-      if (fl.size()==5 && pi.m_fi.m_ps.size()==2 && 
-	  fl[0].Strong() && fl[1].Strong() &&
-	  pi.m_fi.m_ps[1].m_fl[0].Strong())   pID = 204;
+      if (resonant) {
+        if (fl.size()==4 && pi.m_fi.m_ps.size()==1 &&
+            fl[0].IsGluon() && fl[1].IsGluon()) pID = 112;
+        if (fl.size()==5 && pi.m_fi.m_ps.size()==2 &&
+            fl[0].Strong() && fl[1].Strong() &&
+            pi.m_fi.m_ps[1].m_fl[0].Strong())   pID = 204;
+      }
+      else {
+        if (fl.size()==4 &&
+            fl[0].IsGluon() && fl[1].IsGluon()) pID = 112;
+        if (fl.size()==5 &&
+            fl[0].Strong() && fl[1].Strong() &&
+            pi.m_fi.m_ps[2].m_fl.Strong())      pID = 204;
+      }
       // consider extra jet flavour - maybe will need more tests in future ...
     }
     // VV final states
@@ -222,8 +261,8 @@ Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
 	  msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
 		     <<"   Setup for gg->[h->WW] (+jet), but W Yukawa = 0."
 		     <<std::endl;
-	  exit(1);
-	}
+          THROW(fatal_error,"Inconsistent setup.");
+        }
 	if (fl.size()==6 && pi.m_fi.m_ps.size()==1 && 
 	    fl[0].IsGluon() && fl[1].IsGluon()) pID = 113;
 	if (fl.size()==7 && pi.m_fi.m_ps.size()==2 && 
@@ -237,14 +276,15 @@ Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
 	  msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
 		     <<"   Setup for gg->[h->ZZ] (+jet), but Z Yukawa = 0."
 		     <<std::endl;
-	  exit(1);
-	}
+          THROW(fatal_error,"Inconsistent setup.");
+        }
 	int neutrino(0);
 	if (fl[2].IsUptype() && fl[4].IsUptype()) {
 	  msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
 		     <<"   Setup for gg->[h->ZZ] with 4 nu FS."<<std::endl
 		     <<"   not implemented in MCFM."<<std::endl;
-	  return NULL;
+          THROW(fatal_error,"Inconsistent setup.");
+          return NULL;
 	}
 	if ((fl[2].IsUptype() && fl[4].IsDowntype()) ||
 	    (fl[2].IsDowntype() && fl[4].IsUptype())) neutrino=1;
@@ -257,13 +297,15 @@ Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
 	    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
 		       <<"   Setup for gg->[h->ZZ]+jet with 2 nu FS."<<std::endl
 		       <<"   not implemented in MCFM."<<std::endl;
-	    return NULL;
+            THROW(fatal_error,"Inconsistent setup.");
+            return NULL;
 	  }
 	  pID = 209;
 	}
 	// consider extra jet flavour - maybe will need more tests in future ...
       }
     }
+    PRINT_VAR(pID);
     if (pID>0) {
       zerowidth_.zerowidth=true;
       if (nproc_.nproc>=0) {

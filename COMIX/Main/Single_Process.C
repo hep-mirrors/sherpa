@@ -143,7 +143,7 @@ void COMIX::Single_Process::MapSubEvts()
   m_subs.resize(p_map->p_bg->SubEvts().size());
   const NLO_subevtlist &rsubs(p_map->p_bg->SubEvts());
   for (size_t i(0);i<m_subs.size();++i) {
-    m_subs[i] = new NLO_subevt(rsubs[i]);
+    m_subs[i] = new NLO_subevt(*rsubs[i]);
     Flavour *fls(new Flavour[m_subs[i]->m_n]);
     size_t *ids(new size_t[m_subs[i]->m_n]);
     m_subs[i]->p_fl = fls;

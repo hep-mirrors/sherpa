@@ -37,7 +37,7 @@ private:
   size_t m_nevt;
   double m_sum_of_weights;
   bool   m_finished;
-  bool   m_splitjetconts, m_splitcoreprocs, m_usehepmcshort, m_ignorebeams;
+  bool   m_splitjetconts, m_splitSH, m_splitcoreprocs, m_usehepmcshort, m_ignorebeams;
   
   RivetMap m_rivet;
   HepMC2_Interface m_hepmc2;
@@ -94,6 +94,7 @@ public:
       reader.AddFileEnd("}END_"+m_tag);
       
       m_splitjetconts=reader.GetValue<int>("JETCONTS", 0);
+      m_splitSH=reader.GetValue<int>("SPLITSH", 0);
       m_splitcoreprocs=reader.GetValue<int>("SPLITCOREPROCS", 0);
       m_usehepmcshort=reader.GetValue<int>("USE_HEPMC_SHORT", 0);
       m_ignorebeams=reader.GetValue<int>("IGNOREBEAMS", 0);
@@ -250,6 +251,17 @@ public:
         GetRivet(GetCoreProc(sp->TypeSpec()), 0)->analyze(event);
         if (m_splitjetconts) {
           GetRivet(GetCoreProc(sp->TypeSpec()), sp->NOutP())->analyze(event);
+        }
+      }
+      if (m_splitSH) {
+        if (sp->TypeSpec().find("+S")!=std::string::npos) {
+          GetRivet("S", 0)->analyze(event);
+        }
+        else if (sp->TypeSpec().find("+H")!=std::string::npos) {
+          GetRivet("H", 0)->analyze(event);
+        }
+        else {
+          GetRivet("O", 0)->analyze(event);
         }
       }
     }

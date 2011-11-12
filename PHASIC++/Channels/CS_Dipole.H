@@ -11,6 +11,7 @@ namespace PHASIC {
   class Cut_Data;
   class Multi_Channel;
   class Phase_Space_Handler;
+  class Extra_Emission_Generator;
 
   class CS_Dipole {
   protected:
@@ -23,16 +24,21 @@ namespace PHASIC {
     Multi_Channel    *p_fsmc, *p_ismc;
     ATOOLS::Info_Key  m_isrspkey, m_isrykey;
 
-    double m_alpha, m_oldalpha, m_weight, m_np, m_sum, m_sum2, m_max;
-    double m_amin;
+    double m_alpha, m_oldalpha, m_weight, m_rbweight;
+    double m_np, m_sum, m_sum2;
+    double m_mnp, m_msum, m_msum2;
+    double m_amin, m_q2min;
 
     std::string m_id;
 
     std::map<size_t,size_t> m_brmap, m_rbmap;
 
     size_t m_type, m_ijt, m_kt, m_idx, m_isrmode;
+    bool   m_on;
 
     ATOOLS::Flavour m_fli, m_flj, m_flk, m_flij;
+
+    Extra_Emission_Generator *p_eeg;
 
     double Lambda(const double &s,const double &sb,
 		  const double &sc) const;
@@ -54,6 +60,7 @@ namespace PHASIC {
   public:
 
     CS_Dipole(ATOOLS::NLO_subevt *const sub,
+	      Extra_Emission_Generator *const eeg,
 	      Phase_Space_Handler *const psh);
 
     virtual ~CS_Dipole();
@@ -64,42 +71,47 @@ namespace PHASIC {
     virtual double GenerateWeight
     (const ATOOLS::Vec4D_Vector &p,Cut_Data *const cuts) = 0;
 
+    virtual bool ValidPoint(const ATOOLS::Vec4D_Vector& p) = 0;
+
     void InitVegas(const std::string &pid);
 
     double Phi(ATOOLS::Vec4D pijt,ATOOLS::Vec4D pkt,
                ATOOLS::Vec4D pi,const bool ii) const;
 
-    void AddPoint(const double &weight,const double &ewgt);
+    double Alpha(const int mode) const;
+
+    void AddPoint(const double &value,const double &ewgt,
+		  const double &bme,const double &rme,const int mode);
+    void Optimize();
+    void EndOptimize();
+    void MPISync();
     void Reset();
 
     bool IsMapped(CS_Dipole *const dip) const;
 
+    void WriteOut(const std::string &pid,
+		  std::vector<std::string> &info) const;
+    void ReadIn(const std::string &pid,
+		const std::vector<std::string> &info);
+
     // inline functions
     inline const ATOOLS::NLO_subevt *GetSubEvt() const { return &m_sub; }
 
-    inline Vegas *GetVegas() const { return p_vegas; }
-
-    inline void SetAMin(const double &amin) { m_amin=amin; }
+    inline void SetAMin(const double &amin)   { m_amin=amin;   }
+    inline void SetQ2Min(const double &q2min) { m_q2min=q2min; }
 
     inline double Alpha() const    { return m_alpha;    }
     inline double OldAlpha() const { return m_oldalpha; }
 
-    inline double Weight() const { return m_weight; }
+    inline double Weight() const   { return m_weight;   }
+    inline double RBWeight() const { return m_rbweight; }
 
     inline void SetAlpha(const double &alpha)    { m_alpha=alpha;    }
     inline void SetOldAlpha(const double &alpha) { m_oldalpha=alpha; }
 
     inline void SetIdx(const size_t &idx) { m_idx=idx; }
 
-    inline double N() const    { return m_np;   }
-    inline double Sum() const  { return m_sum;  }
-    inline double Sum2() const { return m_sum2; }
-    inline double Max() const  { return m_max;  }
-
-    inline void SetN(const double &n)       { m_np=n;      }
-    inline void SetSum(const double &sum)   { m_sum=sum;   }
-    inline void SetSum2(const double &sum2) { m_sum2=sum2; }
-    inline void SetMax(const double &max)   { m_max=max;   }
+    inline double N() const { return m_np; }
 
     inline double Mean() const { return m_sum/m_np; }
     inline double Variance() const    
@@ -111,6 +123,9 @@ namespace PHASIC {
 
     inline size_t Type() const { return m_type; }
     inline size_t Idx() const  { return m_idx;  }
+
+    inline void SetOn(const bool on) { m_on=on; }
+    inline bool On() const { return m_on; }
 
   };// end of struct Dipole
 

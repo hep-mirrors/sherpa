@@ -43,7 +43,7 @@ namespace PHASIC {
     cls::scheme m_colorscheme;
     hls::scheme m_helicityscheme;
 
-    double m_threshold, m_enhancefac, m_maxeps, m_rbmaxeps;
+    double m_threshold, m_enhancefac, m_maxeps, m_rbmaxeps, m_rsfac;
 
     long unsigned int m_n, m_itmin;
 
@@ -127,6 +127,7 @@ namespace PHASIC {
     void SetEnhanceFactor(const double &efac);
     void SetMaxEpsilon(const double &maxeps);
     void SetRBMaxEpsilon(const double &maxeps);
+    void SetRSEnhanceFactor(const double &rsfac);
 
     void PrintRBInfo() const;
 
@@ -162,6 +163,7 @@ namespace PHASIC {
 
     inline double ISRThreshold() const      { return m_threshold;   }
     inline double EnhanceFactor() const     { return m_enhancefac;  }
+    inline double RSEnhanceFactor() const   { return m_rsfac;       }
 
     inline cls::scheme ColorScheme() const    { return m_colorscheme;    }
     inline hls::scheme HelicityScheme() const { return m_helicityscheme; }

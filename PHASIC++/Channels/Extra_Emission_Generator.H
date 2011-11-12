@@ -18,12 +18,14 @@ namespace PHASIC {
     CS_Dipole       *p_active;
 
     size_t m_nin, m_opt, m_omode;
-    double m_weight, m_amin;
+    double m_weight, m_asum, m_amin, m_Q2min;
 
     ATOOLS::Integration_Info    *p_info;
     std::map<size_t,CS_Dipole*>  m_dmap;
 
     POWHEG_Process *p_proc;
+
+    bool m_numtrig;
 
     bool AddDipole(POWHEG_Process *const proc,CS_Dipole *const dip);
 
@@ -49,6 +51,7 @@ namespace PHASIC {
 
     void Optimize();
     void EndOptimize();
+    void MPISync();
 
     void WriteOut(std::string pid);
     void ReadIn(std::string pid);
@@ -60,6 +63,8 @@ namespace PHASIC {
     inline size_t Opt() const { return m_opt; }
 
     inline CS_Dipole *Active() const { return p_active; }
+
+    inline const bool NumericsTrigger() const { return m_numtrig; }
 
   };// end of class Extra_Emission_Generator
 

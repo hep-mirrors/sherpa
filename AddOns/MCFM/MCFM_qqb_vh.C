@@ -1,5 +1,5 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
-#include "MCFM_Wrapper.H"
+#include "AddOns/MCFM/MCFM_Wrapper.H"
 
 namespace MCFM {
   class MCFM_qqb_vh: public PHASIC::Virtual_ME2_Base {
@@ -116,6 +116,7 @@ Virtual_ME2_Base *MCFM_qqb_vh_Getter::operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC("");
   if (pi.m_loopgenerator!="MCFM") return NULL;
+  if (MODEL::s_model->Name()!=std::string("SM")) return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     Flavour_Vector fl(pi.ExtractFlavours());

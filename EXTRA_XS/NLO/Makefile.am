@@ -4,6 +4,7 @@ SVNTAG = EXTRA_XS/NLO
 include ../../svn.make
 
 libExtraXSNLO_la_SOURCES      =	SVN_Info.C \
+				Dummy_QCD_Virtual.C \
 				DY_QCD_Virtual.C \
 				SingleTop_QCD_Virtual.C \
 				Higgs_QCD_Virtual.C \

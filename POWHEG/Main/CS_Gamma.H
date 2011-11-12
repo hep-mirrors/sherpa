@@ -3,7 +3,7 @@
 
 #include "POWHEG/Showers/Shower.H"
 #include "POWHEG/Main/CS_Cluster_Definitions.H"
-#include "PDF/Main/POWHEG_Base.H"
+#include "PDF/Main/NLOMC_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 
 namespace PHASIC {
@@ -84,8 +84,6 @@ namespace POWHEG {
 
     CS_Gamma(CS_POWHEG *const css,Shower *const shower,
 	     CS_Cluster_Definitions *const clus);
-
-    PDF::Rho_Map GetRho(ATOOLS::Cluster_Amplitude *const ampl);
 
     bool Reject();
     void AddRBPoint(ATOOLS::Cluster_Amplitude *const ampl);

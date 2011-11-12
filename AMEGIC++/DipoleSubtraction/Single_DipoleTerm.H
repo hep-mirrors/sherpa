@@ -25,7 +25,7 @@ namespace AMEGIC {
     ATOOLS::Vec4D_Vector    p_LO_labmom;
 
     dpt::dipoltype          m_dipoletype;
-    int                     m_ftype;
+    int                     m_ftype, m_iiswap;
     size_t                  m_pi,m_pj,m_pk;
     size_t                  m_LOpij,m_LOpk;
     ATOOLS::Flavour         m_fli,m_flj,m_flij,m_flk;
@@ -48,6 +48,7 @@ namespace AMEGIC {
     ~Single_DipoleTerm();
 
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
+    void SetKFactor(const PHASIC::KFactor_Setter_Arguments &args);
 
     /*------------------------------------------------------------------------------
 
@@ -75,6 +76,7 @@ namespace AMEGIC {
 				      std::vector<Process_Base *> &,
 				      std::vector<Process_Base *> &);
     bool                SetUpIntegrator();
+    bool                Trigger(const ATOOLS::Vec4D_Vector &p);
     String_Handler    * GetStringHandler()             { return p_partner->GetLOProcess()->GetStringHandler();}
     Amplitude_Handler * GetAmplitudeHandler()          { return p_partner->GetLOProcess()->GetAmplitudeHandler();}
     Helicity *          GetHelicity()                  { return p_partner->GetLOProcess()->GetHelicity(); }    
@@ -109,6 +111,7 @@ namespace AMEGIC {
     void             Minimize();
 
     void SetSelector(const PHASIC::Selector_Key &key);
+    void SetShower(PDF::Shower_Base *const ps);
     
     /*------------------------------------------------------------------------------
 

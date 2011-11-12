@@ -1,6 +1,6 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
-#include "MCFM_Wrapper.H"
+#include "AddOns/MCFM/MCFM_Wrapper.H"
 
 namespace MCFM {
 
@@ -129,6 +129,7 @@ Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC("");
   if (pi.m_loopgenerator!="MCFM")        return NULL;
+  if (MODEL::s_model->Name()!=std::string("SM")) return NULL;
   if (pi.m_oew>2)                        return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
@@ -146,8 +147,7 @@ Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
 		   <<"   Will return 0 and hope for the best.\n";
 	return NULL;
       }
-      if ((fl[2]==fl[3].Bar() && 
-	   MODEL::s_model->ScalarConstant("Yukawa_b")>0. &&
+      if ((fl[2]==fl[3].Bar() && MODEL::s_model->ScalarConstant("Yukawa_b")>0. &&
 	   ATOOLS::Flavour(kf_b).IsMassive()==0) ||
 	  MODEL::s_model->Name()!=std::string("SM")) {
 	msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl

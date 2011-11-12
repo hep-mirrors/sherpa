@@ -595,6 +595,7 @@ int AMEGIC::Single_Process::CheckStrings(Single_Process* tproc)
   delete shand1;
 
   if (ATOOLS::IsEqual(M2s,Result())) {
+    m_newlib = true;
     m_libname = tproc->LibName();
     m_pslibname = tproc->PSLibName();
     CreateMappingFile(this);

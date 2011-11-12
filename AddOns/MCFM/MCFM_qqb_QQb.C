@@ -1,5 +1,5 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
-#include "MCFM_Wrapper.H"
+#include "AddOns/MCFM/MCFM_Wrapper.H"
 
 namespace MCFM {
   class MCFM_qqb_QQb: public PHASIC::Virtual_ME2_Base {

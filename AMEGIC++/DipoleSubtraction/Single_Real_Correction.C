@@ -58,8 +58,8 @@ Single_Real_Correction::~Single_Real_Correction()
   if (p_tree_process) delete p_tree_process;
   for (size_t i=0;i<m_subtermlist.size();i++) delete m_subtermlist[i];
   for (size_t i=0;i<m_subostermlist.size();i++) delete m_subostermlist[i];
-  for (std::map<void*,ATOOLS::Flavour_Vector*>::const_iterator it(m_dfmap.begin());
-       it!=m_dfmap.end();++it) delete it->second;
+  for (std::map<void*,DM_Info>::const_iterator it(m_dfmap.begin());
+       it!=m_dfmap.end();++it) delete it->second.p_fl;
 }
 
 
@@ -99,7 +99,7 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
 
   SetOrderQCD(p_tree_process->OrderQCD());
   SetOrderEW(p_tree_process->OrderEW());
-  if (p_tree_process->NewLibs()) m_newlib = 1;
+  if (p_tree_process->Partner()->NewLibs()) m_newlib = 1;
 
   m_iresult=p_tree_process->Result();
   if (status==0) {
@@ -116,7 +116,7 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
 	msg_Tracking()<<"Can map full real process: "<<Name()<<" -> "<<partnerID<<" Factor: "<<p_tree_process->GetSFactor()<<endl;
 	p_mapproc = p_partner = (Single_Real_Correction*)links[j];
 	m_sfactor = p_tree_process->GetSFactor();
-	return 1;
+	// return 1;
       }
     }
   }
@@ -135,7 +135,8 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
   m_realevt.p_id=&m_sids.front();
   m_realevt.m_pname = GenerateName(m_pinfo.m_ii,m_pinfo.m_fi);
   m_realevt.m_pname = m_realevt.m_pname.substr(0,m_realevt.m_pname.rfind("__"));
-  m_realevt.p_proc = p_tree_process->Integrator();
+  m_realevt.p_proc = this;
+  m_realevt.p_real = &m_realevt;
 
   Process_Info cinfo(m_pinfo);
   cinfo.m_fi.m_nloqcdtype&=(nlo_type::code)~nlo_type::real;
@@ -153,7 +154,7 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
           int st=pdummy->InitAmplitude(model,top,links,errs);
           if (pdummy->IsValid()) {
             status=Min(st,status);
-            if (pdummy->NewLibs()) m_newlib = 1;
+            if (pdummy->Partner()->NewLibs()) m_newlib = 1;
             m_subtermlist.push_back(pdummy);
             m_subtermlist.back()->SetNorm(p_tree_process->Norm());
           }
@@ -188,9 +189,10 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
     }
   }
 
+  if (p_mapproc && !p_partner->NewLibs()) Minimize();
+
   if (status>=0) links.push_back(this);
   if (status<0) errs.push_back(this);
-
   return status;
 }
 
@@ -256,34 +258,43 @@ void Single_Real_Correction::Minimize()
 //     m_subtermlist[i]->Minimize();
 //   for (size_t i=0;i<m_subostermlist.size();i++) 
 //     m_subostermlist[i]->Minimize();
+  for (size_t i=0;i<m_subevtlist.size();++i) delete m_subevtlist[i];
+  m_subevtlist.clear();
+  for (size_t i=0;i<p_partner->m_subtermlist.size();i++)
+    if (p_partner->m_subtermlist[i]->IsValid()) {
+      m_subevtlist.push_back(new NLO_subevt(*p_partner->m_subtermlist[i]->GetSubevt()));
+      ReMapFlavs(m_subevtlist.back(),1);
+    }
+  m_subevtlist.push_back(new NLO_subevt(p_partner->m_realevt));
+  ReMapFlavs(m_subevtlist.back(),1);
+  for (size_t i=0;i<m_subtermlist.size();++i)
+    m_subevtlist[i]->p_proc=m_subtermlist[i];
+  m_subevtlist.back()->p_proc=this;
+  for (size_t i=0;i<m_subevtlist.size()-1;++i)
+    m_subevtlist[i]->p_real=m_subevtlist.back();
 }
 
-void Single_Real_Correction::ReMapFlavs(NLO_subevt *const sub)
+void Single_Real_Correction::ReMapFlavs(NLO_subevt *const sub,const int mode)
 {
-  std::map<void*,Flavour_Vector*>::const_iterator it(m_dfmap.find((void*)sub->p_fl));
-  if (it!=m_dfmap.end()) {
-    sub->p_fl=&it->second->front();
-    sub->m_pname=m_dnmap[(void*)sub->p_fl];
+  if (mode==0) {
+    std::map<void*,DM_Info>::const_iterator it(m_dfmap.find((void*)sub->p_fl));
+    if (it==m_dfmap.end()) THROW(fatal_error,"Internal error");
+    sub->p_fl=&it->second.p_fl->front();
+    sub->m_pname=it->second.m_pname;
     return;
   }
-  std::string name(sub->m_pname);
+  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
+  ampl->SetNIn(m_nin);
   Flavour_Vector *fls(new Flavour_Vector());
-  if (m_pinfo.m_nlomode!=2) {
-    for (size_t i(0);i<sub->m_n;++i) fls->push_back(sub->p_fl[i]);
+  for (size_t i(0);i<sub->m_n;++i) {
+    fls->push_back(p_tree_process->ReMap(sub->p_fl[i],ToString(sub->p_id[i])));
+    ampl->CreateLeg(Vec4D(),i<m_nin?fls->back().Bar():fls->back(),ColorID(),sub->p_id[i]);
   }
-  else {
-    for (size_t i(0);i<sub->m_n;++i)
-      fls->push_back(p_tree_process->ReMap(sub->p_fl[i],ToString(sub->p_id[i])));
-    for (size_t pos(0), i(0);i<fls->size();++i) {
-      std::string ofln(ToString(sub->p_fl[i])), nfln(ToString((*fls)[i]));
-      pos=name.find(ofln,pos);
-      name.replace(pos,ofln.length(),nfln);
-      pos+=nfln.length();
-    }
-  }
-  m_dfmap[(void*)sub->p_fl]=fls;
-  sub->p_fl=&fls->front();
-  sub->m_pname=m_dnmap[(void*)sub->p_fl]=name;
+  ampl->Decays()=*sub->p_dec;
+  SortFlavours(ampl);
+  m_dfmap[(void*)sub->p_fl]=DM_Info(fls,GenerateName(ampl));
+  ampl->Delete();
+  ReMapFlavs(sub,0);
 }
 
 double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const int mode)
@@ -297,18 +308,10 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const i
   else {
     if (m_lookup) m_lastdxs = p_partner->LastDXS()*m_sfactor;
     else m_lastdxs = p_partner->operator()(moms,mode)*m_sfactor;
-    for (size_t i=0;i<m_subevtlist.size();++i) delete m_subevtlist[i];
-    m_subevtlist.clear();
     std::vector<NLO_subevt*>* partnerlist=p_partner->GetSubevtList();
-    if (partnerlist->size()==0) return 0.;
-    for (size_t i=0;i<partnerlist->size();++i) {
-      NLO_subevt* cpevt=new NLO_subevt((*partnerlist)[i]);
-      cpevt->m_result = cpevt->m_last[0] = cpevt->m_last[1] = 0.;
-      ReMapFlavs(cpevt);
-      m_subevtlist.push_back(cpevt);
-    }
-    for (size_t i=0;i<m_subevtlist.size()-1;++i)
-      m_subevtlist[i]->p_real=m_subevtlist.back();
+    if (partnerlist->size()!=m_subevtlist.size()) THROW(fatal_error,"Internal error");
+    for (size_t i=0;i<partnerlist->size();++i)
+      m_subevtlist[i]->CopyXSData((*partnerlist)[i]);
     m_subevtlist.Mult(m_sfactor);
   }
   return m_lastxs=m_lastdxs;
@@ -331,31 +334,26 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   for (size_t i=0;i<m_subtermlist.size();i++) if (m_subtermlist[i]->IsValid()){
     double test = (*m_subtermlist[i])(&mom.front(),cms,mode);
     if (IsBad(test)) res=false;
-    if (test!=0.0 || m_pinfo.m_nlomode==2) {
-      m_subevtlist.push_back(m_subtermlist[i]->GetSubevt());
-    }
+    m_subevtlist.push_back(m_subtermlist[i]->GetSubevt());
+    m_subevtlist.back()->p_real=&m_realevt;
   }
 
   if (m_ossubon){
     for (size_t i=0;i<m_subostermlist.size();i++) if (m_subostermlist[i]->IsValid()){
       double test = (*m_subostermlist[i])(&mom.front(),cms,mode);
       if (IsBad(test)) res=false;
-      if (test!=0.0 || m_pinfo.m_nlomode==2) {
-        m_subevtlist.push_back(m_subostermlist[i]->GetSubevt());
-      }
+      m_subevtlist.push_back(m_subostermlist[i]->GetSubevt());
+      m_subevtlist.back()->p_real=&m_realevt;
     }
   }
 
   m_subevtlist.push_back(&m_realevt);
-  m_realevt.m_me   = m_realevt.m_result =
-    m_realevt.m_last[0] = m_realevt.m_last[1] = 0.0;
+  m_realevt.m_me = m_realevt.m_mewgt
+    = m_realevt.m_result = m_realevt.m_last[0] = m_realevt.m_last[1] = 0.0;
 
   bool trg(false);
   trg=p_tree_process->Selector()->JetTrigger(_mom,&m_subevtlist);
   trg|=!p_tree_process->Selector()->On();
-
-  for (NLO_subevtlist::const_iterator sit(m_subevtlist.begin());
-       sit!=m_subevtlist.end();++sit) (*sit)->p_real=&m_realevt;
 
   if (trg) {
     m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->CalculateScale(_mom,mode);
@@ -368,7 +366,8 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   if (!res) {
     for (size_t i(0);i<m_subevtlist.size();++i)
       m_subevtlist[i]->m_result=m_subevtlist[i]->m_last[0]=
-        m_subevtlist[i]->m_last[1]=m_subevtlist[i]->m_me=0.0;
+        m_subevtlist[i]->m_last[1]=m_subevtlist[i]->m_me=
+          m_subevtlist[i]->m_mewgt=0.0;
   }
   m_lastdxs = m_realevt.m_me;
   return m_lastdxs;
@@ -487,10 +486,11 @@ void Single_Real_Correction::SetGenerator(ME_Generator_Base *const gen)
 
 void Single_Real_Correction::SetShower(PDF::Shower_Base *const ps)
 {
+  p_shower=ps;
   p_tree_process->SetShower(ps);
   for (size_t i=0;i<m_subtermlist.size();++i) {
     if (m_subtermlist[i]->GetLOProcess())
-    m_subtermlist[i]->GetLOProcess()->SetShower(ps);
+    m_subtermlist[i]->SetShower(ps);
   }
 }
 

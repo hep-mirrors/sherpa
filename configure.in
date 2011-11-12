@@ -83,6 +83,11 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  MODEL/Interaction_Models/Makefile \
 	  MODEL/Main/Makefile \
 	  MODEL/Makefile \
+	  MCATNLO/Tools/Makefile \
+	  MCATNLO/Calculators/Makefile \
+	  MCATNLO/Showers/Makefile \
+	  MCATNLO/Main/Makefile \
+	  MCATNLO/Makefile \
 	  POWHEG/Tools/Makefile \
 	  POWHEG/Calculators/Makefile \
 	  POWHEG/Showers/Makefile \

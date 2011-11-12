@@ -30,6 +30,10 @@ namespace ATOOLS {
 
   std::ostream &operator<<(std::ostream &ostr,const IDip_ID &idi);
 
+  typedef std::set<IDip_ID> IDip_Set;
+
+  typedef std::map<std::string,IDip_Set> StringIDipSet_Map;
+
   struct DDip_ID {
     size_t m_i, m_j, m_k;
   public:
@@ -42,6 +46,10 @@ namespace ATOOLS {
   };// end of struct DDip_ID
 
   std::ostream &operator<<(std::ostream &ostr,const DDip_ID &ddi);
+
+  typedef std::set<DDip_ID> DDip_Set;
+
+  typedef std::map<std::string,DDip_Set> StringDDipSet_Map;
 
   struct Dip_ID: public IDip_ID, public DDip_ID {
     inline Dip_ID(const size_t &ijt=0,const size_t &kt=0,
@@ -72,7 +80,7 @@ namespace ATOOLS {
     NLO_subevt *p_real;
     void       *p_proc;
 
-    size_t m_n, m_nco, m_flip;
+    size_t m_n, m_flip;
     double m_result, m_last[2], m_me, m_mewgt;
 
     std::vector<double> m_mu2;
@@ -85,21 +93,19 @@ namespace ATOOLS {
 		      const Flavour *fl=NULL,const Vec4D *mom=NULL,
 		      const int i=-1,const int j=-1,const int k=-1):
       Dip_ID(0,0,i,j,k), p_fl(fl), p_mom(mom), p_id(id), p_dec(NULL),
-      p_real(NULL), p_proc(NULL), m_n(n), m_nco(0), m_flip(0),
+      p_real(NULL), p_proc(NULL), m_n(n), m_flip(0),
       m_result(0.0), m_me(0.0), m_mewgt(0.0), m_mu2(2,0.0)
     { m_last[0]=0.0; m_last[1]=0.0; }
-
-    inline NLO_subevt(const NLO_subevt *nlos)
-    { *this=*nlos; m_result=0.; m_last[0]=0.; m_last[1]=0.; }
 
     void CopyXSData(const NLO_subevt *sub);
 
     Particle_List *CreateParticleList() const;
 
-    std::string IDString() const;
+    std::string IDString(const int mode=0) const;
 
     inline void Mult(const double &scal)
-    { m_result*=scal; m_last[0]*=scal; m_last[1]*=scal; m_me*=scal; m_mewgt*=scal; }
+    { m_result*=scal; m_last[0]*=scal; m_last[1]*=scal;
+      m_me*=scal; m_mewgt*=scal; }
     inline void MultME(const double &scal) { m_me*=scal; m_mewgt*=scal; }
     inline void MultMEwgt(const double &scal) { m_mewgt*=scal; }
 

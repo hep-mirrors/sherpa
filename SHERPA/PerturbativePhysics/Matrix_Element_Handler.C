@@ -11,8 +11,9 @@
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "PDF/Main/Shower_Base.H"
-#include "PDF/Main/POWHEG_Base.H"
+#include "PDF/Main/NLOMC_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "PHASIC++/Process/MCatNLO_Process.H"
 #include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -35,7 +36,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
   p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(NULL),
   m_path(dir), m_file(file), m_processfile(processfile),
   m_selectorfile(selectorfile), m_eventmode(0), m_hasnlo(0),
-  p_shower(NULL), p_powheg(NULL), m_totalxs(0.0), 
+  p_shower(NULL), p_nlomc(NULL), m_totalxs(0.0), 
   m_ranidx(0), p_ranin(NULL), p_ranout(NULL)
 {
   Data_Reader read(" ",";","!","=");
@@ -90,18 +91,20 @@ Matrix_Element_Handler::~Matrix_Element_Handler()
   if (p_ranin) delete p_ranin;
   if (p_ranout) delete p_ranout;
   for (size_t i=0; i<m_procs.size(); ++i)
-    if (dynamic_cast<POWHEG_Process*>(m_procs[i])) delete m_procs[i];
-  if (p_powheg) delete p_powheg;
+    if (dynamic_cast<MCatNLO_Process*>(m_procs[i]) ||
+	dynamic_cast<POWHEG_Process*>(m_procs[i])) delete m_procs[i];
+  if (p_nlomc) delete p_nlomc;
 }
 
-void Matrix_Element_Handler::InitPOWHEG()
+void Matrix_Element_Handler::InitNLOMC()
 {
   Data_Reader read(" ",";","!","=");
   read.AddComment("#");
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
-  std::string powheg=read.GetValue<std::string>("POWHEG_GENERATOR","CSS");
-  p_powheg = POWHEG_Getter::GetObject(powheg,POWHEG_Key(p_model,p_isr,&read));
+  std::string nlomc(m_nlomode!=2?"MC@NLO":"POWHEG");
+  nlomc+="_"+read.GetValue<std::string>("NLOMC_GENERATOR","CSS");
+  p_nlomc = NLOMC_Getter::GetObject(nlomc,NLOMC_Key(p_model,p_isr,&read));
 }
 
 bool Matrix_Element_Handler::CalculateTotalXSecs() 
@@ -203,13 +206,24 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Proce
     return procs;
   }
   else {
+    if (m_nlomode==3) {
+      m_hasnlo=3;
+      if (p_nlomc==NULL) InitNLOMC();
+      MCatNLO_Process *proc=new MCatNLO_Process(m_gens,&m_procs);
+      proc->Init(pi,p_beam,p_isr);
+      proc->SetShower(p_shower->GetShower());
+      proc->SetMCatNLO(p_nlomc);
+      m_procs.push_back(proc);
+      procs.push_back(proc);
+      return procs;
+    }
     if (m_nlomode==2) {
       m_hasnlo=2;
-      if (p_powheg==NULL) InitPOWHEG();
+      if (p_nlomc==NULL) InitNLOMC();
       POWHEG_Process *proc=new POWHEG_Process(m_gens,&m_procs);
-      proc->Init(pi, p_beam, p_isr);
+      proc->Init(pi,p_beam,p_isr);
       proc->SetShower(p_shower->GetShower());
-      proc->SetPOWHEG(p_powheg);
+      proc->SetPOWHEG(p_nlomc);
       m_procs.push_back(proc);
       procs.push_back(proc);
       return procs;
@@ -440,6 +454,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vrbmaxeps,nf);
 	}
+	if (cur[0]=="RS_Enhance_Factor") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vrsefac,nf);
+	}
 	if (cur[0]=="Enhance_Factor") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vefac,nf);
@@ -615,10 +633,11 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	    proc[i]->Integrator()->SetEnhanceFactor(dd);
 	  if (GetMPvalue(pbi.m_vmaxeps,nfs,pnid,dd))
 	    proc[i]->Integrator()->SetMaxEpsilon(dd);
-	  else
-	    proc[i]->Integrator()->SetMaxEpsilon(1.0e-3);
+	  else proc[i]->Integrator()->SetMaxEpsilon(1.0e-3);
 	  if (GetMPvalue(pbi.m_vrbmaxeps,nfs,pnid,dd))
 	    proc[i]->Integrator()->SetRBMaxEpsilon(dd);
+	  if (GetMPvalue(pbi.m_vrsefac,nfs,pnid,dd))
+	    proc[i]->Integrator()->SetRSEnhanceFactor(dd);
 	  double maxerr(-1.0);
 	  std::string eobs, efunc;
 	  if (GetMPvalue(pbi.m_vmaxerr,nfs,pnid,dd)) maxerr=dd;

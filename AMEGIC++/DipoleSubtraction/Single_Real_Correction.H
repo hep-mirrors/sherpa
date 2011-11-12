@@ -12,6 +12,13 @@
 namespace AMEGIC {
   class Single_DipoleTerm;
   class Helicity;
+  struct DM_Info {
+    ATOOLS::Flavour_Vector *p_fl;
+    std::string m_pname;
+    DM_Info(ATOOLS::Flavour_Vector *const fl=NULL,
+	    const std::string &pname=""):
+      p_fl(fl), m_pname(pname) {}
+  };
   class Single_Real_Correction : public Process_Base {
   private:
     bool                    m_newlib;
@@ -30,9 +37,8 @@ namespace AMEGIC {
     ATOOLS::NLO_subevt              m_realevt;
 
     std::vector<size_t> m_sids;
-    std::map<void*,ATOOLS::Flavour_Vector*> m_dfmap;
-    std::map<void*,std::string> m_dnmap;
-    void ReMapFlavs(ATOOLS::NLO_subevt *const sub);
+    std::map<void*,DM_Info> m_dfmap;
+    void ReMapFlavs(ATOOLS::NLO_subevt *const sub,const int mode=0);
     /*------------------------------------------------------------------------------
 
       Constructors

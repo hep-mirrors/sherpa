@@ -64,7 +64,7 @@ void CS_Shower::SetScalesNLO()
 {
   All_Singlets::const_reverse_iterator sit(m_allsinglets.rbegin());
   if (!(*sit)->NLO()) return;
-  if (p_rampl->RBMap()==NULL) ++sit;
+  if (p_rampl->NLO()!=3) ++sit;
   for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it) {
     Parton *p(*it);
     p->SetTMin(std::numeric_limits<double>::max());
