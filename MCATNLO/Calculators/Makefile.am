@@ -1,6 +1,6 @@
 pkglib_LTLIBRARIES = libMCatNLOCalculators.la
 
-SVNTAG = MCatNLO/Calculators
+SVNTAG = MCATNLO/Calculators
 include ../../svn.make
 
 libMCatNLOCalculators_la_SOURCES = \
