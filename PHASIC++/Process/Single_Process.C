@@ -274,8 +274,8 @@ Cluster_Amplitude *Single_Process::Cluster
   int amode=cd->AMode();
   if (mode&512) cd->SetAMode(1);
   p_gen->SetClusterDefinitions(cd);
-  Cluster_Amplitude* ret=p_gen->ClusterConfiguration(this,mode,kt2);
-  ret->Decays()=m_pinfo.m_fi.GetDecayInfos();
+  Cluster_Amplitude* ampl(p_gen->ClusterConfiguration(this,mode,kt2));
+  if (ampl) ampl->Decays()=m_pinfo.m_fi.GetDecayInfos();
   cd->SetAMode(amode);
-  return ret;
+  return ampl;
 }
