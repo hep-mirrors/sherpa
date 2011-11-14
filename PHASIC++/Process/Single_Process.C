@@ -1,6 +1,7 @@
 #include "PHASIC++/Process/Single_Process.H"
 
 #include "PHASIC++/Process/ME_Generator_Base.H"
+#include "PHASIC++/Process/MCatNLO_Process.H"
 #include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
@@ -249,6 +250,11 @@ ATOOLS::ME_wgtinfo *Single_Process::GetMEwgtinfo()
 Cluster_Amplitude *Single_Process::Cluster
 (const size_t &mode,const double &kt2)
 {
+  MCatNLO_Process *mp(dynamic_cast<MCatNLO_Process*>(Parent()));
+  if (mp) {
+    Cluster_Amplitude *ampl(mp->GetAmplitude());
+    if (ampl) return ampl;
+  }
   POWHEG_Process *pp(dynamic_cast<POWHEG_Process*>(Parent()));
   if (pp) {
     Cluster_Amplitude *ampl(pp->GetAmplitude());
