@@ -27,6 +27,7 @@ namespace POWHEG {
     ATOOLS::Mass_Selector *p_ms;
     ATOOLS::RB_Map *p_rbmap;
     void *p_procs;
+    double m_mur2;
     bool ArrangeColours(Parton *, Parton *, Parton *);
   public :
     Singlet() : 
@@ -59,6 +60,10 @@ namespace POWHEG {
     inline void SetProcs(void *const procs) { p_procs=procs; }
 
     inline ATOOLS::RB_Map *RBMap() const { return p_rbmap; }
+
+    inline double MuR2() const { return m_mur2; }
+
+    inline void SetMuR2(const double &mu2) { m_mur2=mu2; }
 
     template <class Type> inline Type *Procs() const 
     { return static_cast<Type*>(p_procs); }

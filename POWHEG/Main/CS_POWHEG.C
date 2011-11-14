@@ -163,6 +163,7 @@ Singlet *CS_POWHEG::TranslateAmplitude
   singlet->SetMS(p_ms);
   singlet->SetRBMap(ampl->RBMap());
   singlet->SetProcs(ampl->Procs<void>());
+  singlet->SetMuR2(ampl->MuR2());
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *cl(ampl->Leg(i));
     if (cl->Flav().IsHadron() && cl->Id()&((1<<ampl->NIn())-1)) continue;
