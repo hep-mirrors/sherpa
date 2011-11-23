@@ -11,7 +11,7 @@ using namespace std;
 namespace CSSHOWER {
   std::ostream& operator<<(std::ostream& str, const Parton &part) {
     str<<"  Parton "<<&part<<" ("<<part.p_sing<<"), stat="
-       <<part.m_stat<<", kin="<<part.m_kin<<" ["<<ATOOLS::ID(part.m_id)
+       <<part.m_stat<<", kin="<<part.m_kin<<", col="<<part.m_col<<" ["<<ATOOLS::ID(part.m_id)
        <<"]: "<<part.m_flav<<" : "<<part.m_mom
        <<" "<<sqrt(dabs(part.m_mom.Abs2()))<<" "<<sqrt(dabs(part.Mass2()))
        <<" ("<<part.GetFlow(1)<<","<<part.GetFlow(2)<<")"
