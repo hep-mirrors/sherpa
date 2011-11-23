@@ -14,7 +14,7 @@ libMEToolsCurrents_la_SOURCES         =	\
 					V_C.C \
 					T_C.C
 
-localinc_HEADERS      =	
+localinc_HEADERS      =	\
 			C_Scalar.H \
 			C_Spinor.H \
 			C_Vector.H \
