@@ -395,20 +395,6 @@ bool Singlet::RearrangeColours(Parton * mother, Parton * daughter1, Parton * dau
       }
       else if (d1.StrongCharge()==8 && 
 	       d2.StrongCharge()==8) {
-	if (mother->Col()<0) {
-	  if (mother->GetRight()==mother->GetSpect()) {
-	    newc[1]=daughter2->GetFlow(2);
-	    SetColours(daughter2,NULL,newc,oldc);
-	    daughter1->SetRightOf(mother);
-	    daughter2->SetLeftOf(mother);
-	    return true;
-	  }
-	  newc[0]=daughter2->GetFlow(1);
-	  SetColours(daughter2,NULL,newc,oldc);
-	  daughter1->SetLeftOf(mother);
-	  daughter2->SetRightOf(mother);
-	  return true;
-	}
 	if (mother->GetRight()==mother->GetSpect()) {
 	  newc[1]=daughter1->GetFlow(2);
 	  SetColours(daughter1,NULL,newc,oldc);
@@ -502,20 +488,6 @@ bool Singlet::RearrangeColours(Parton * mother, Parton * daughter1, Parton * dau
       }
       else if (mo.StrongCharge()==8 && 
 	       d2.StrongCharge()==8) {
-	if (daughter1->Col()<0) {
-	  if (daughter1->GetRight()==daughter1->GetSpect()) {
-	    newc[1]=daughter2->GetFlow(2);
-	    SetColours(daughter2,NULL,newc,oldc);
-	    daughter2->SetLeftOf(daughter1);
-	    mother->SetRightOf(daughter1);
-	    return true;
-	  }
-	  newc[0]=daughter2->GetFlow(1);
-	  SetColours(daughter2,NULL,newc,oldc);
-	  daughter2->SetRightOf(daughter1);
-	  mother->SetLeftOf(daughter1);
-	  return true;
-	}
 	if (daughter1->GetRight()==daughter1->GetSpect()) {
 	  newc[1]=mother->GetFlow(2);
 	  SetColours(mother,NULL,newc,oldc);
@@ -675,38 +647,6 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
       }
       else if (d1.StrongCharge()==8 && 
 	       d2.StrongCharge()==8) {
-	if (mother->Col()<0) {
-	  if (mother->GetRight()==mother->GetSpect()) {
-	    daughter2->SetFlow(1,mother->GetFlow(1));
-	    daughter2->SetMEFlow(1,mother->GetMEFlow(1));
-	    daughter2->SetFlow(2,-1);
-	    daughter1->SetFlow(1,daughter2->GetFlow(2));
-	    daughter1->SetFlow(2,mother->GetFlow(2));
-	    daughter1->SetMEFlow(2,mother->GetMEFlow(2));
-	    newc[1]=daughter2->GetFlow(2);
-	    daughter1->UpdateColours();
-	    SetColours(daughter2,daughter1,oldc,newc);
-	    mother->SetRightOf(daughter1);
-	    daughter1->SetLeft(daughter2);
-	    daughter2->SetRight(daughter1);
-	    mother->SetLeftOf(daughter2);
-	    return true;
-	  }
-	  daughter2->SetFlow(2,mother->GetFlow(2));
-	  daughter2->SetMEFlow(2,mother->GetMEFlow(2));
-	  daughter2->SetFlow(1,-1);
-	  daughter1->SetFlow(2,daughter2->GetFlow(1));
-	  daughter1->SetFlow(1,mother->GetFlow(1));
-	  daughter1->SetMEFlow(1,mother->GetMEFlow(1));
-	  newc[0]=daughter2->GetFlow(1);
-	  daughter1->UpdateColours();
-	  SetColours(daughter2,daughter1,oldc,newc);
-	  mother->SetLeftOf(daughter1);
-	  daughter1->SetRight(daughter2);
-	  daughter2->SetLeft(daughter1);
-	  mother->SetRightOf(daughter2);
-	  return true;
-	}
 	if (mother->GetRight()==mother->GetSpect()) {
 	  daughter1->SetFlow(1,mother->GetFlow(1));
 	  daughter1->SetMEFlow(1,mother->GetMEFlow(1));
@@ -884,38 +824,6 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
       }
       else if (mo.StrongCharge()==8 && 
 	       d2.StrongCharge()==8) {
-	if (daughter1->Col()<0) {
-	  if (daughter1->GetRight()==daughter1->GetSpect()) {
-	    daughter2->SetFlow(1,daughter1->GetFlow(1));
-	    daughter2->SetMEFlow(1,daughter1->GetMEFlow(1));
-	    daughter2->SetFlow(2,-1);	
-	    mother->SetFlow(2,daughter1->GetFlow(2));
-	    mother->SetMEFlow(2,daughter1->GetMEFlow(2));
-	    mother->SetFlow(1,daughter2->GetFlow(2));
-	    newc[1]=daughter2->GetFlow(2);
-	    mother->UpdateColours();
-	    SetColours(daughter2,mother,oldc,newc);
-	    daughter1->SetLeftOf(daughter2);
-	    daughter2->SetRight(mother);
-	    mother->SetLeft(daughter2);
-	    daughter1->SetRightOf(mother);
-	    return true;
-	  }
-	  daughter2->SetFlow(2,daughter1->GetFlow(2));
-	  daughter2->SetMEFlow(2,daughter1->GetMEFlow(2));
-	  daughter2->SetFlow(1,-1);	
-	  mother->SetFlow(1,daughter1->GetFlow(1));
-	  mother->SetMEFlow(1,daughter1->GetMEFlow(1));
-	  mother->SetFlow(2,daughter2->GetFlow(1));
-	  newc[0]=daughter2->GetFlow(1);
-	  mother->UpdateColours();
-	  SetColours(daughter2,mother,oldc,newc);
-	  daughter1->SetRightOf(daughter2);
-	  daughter2->SetLeft(mother);
-	  mother->SetRight(daughter2);
-	  daughter1->SetLeftOf(mother);
-	  return true;
-	}
 	if (daughter1->GetRight()==daughter1->GetSpect()) {
 	  mother->SetFlow(1,daughter1->GetFlow(1));
 	  mother->SetMEFlow(1,daughter1->GetMEFlow(1));
