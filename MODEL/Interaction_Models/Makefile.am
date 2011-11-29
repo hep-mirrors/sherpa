@@ -69,5 +69,3 @@ localinc_HEADERS   = \
 		      		Interaction_Model_MSSM_EHC.H \
 		      		Interaction_Model_FeynRules.H \
 		      		Interaction_Model_HiddenValley.H 
-
-libModelInteractions_la_CXXFLAGS = -g -pedantic -Wall
