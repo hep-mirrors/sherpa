@@ -166,21 +166,21 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file):
 
 bool Lund_Interface::IsAllowedDecay(kf_code can)
 {
-  // if (can==kf_tau) return false;
-  if (pycomp(int(can))<501 && pydat3.mdcy[1-1][pycomp(int(can))-1]==1) return true;
+  int kc=pycomp(SherpaToIdhep(Flavour(can)));
+  if (kc>0 && kc<501 && pydat3.mdcy[1-1][kc-1]==1) return true;
   return false;
 }
 
 void Lund_Interface::SwitchOffDecays(kf_code kfc)
 {
-  int kc = pycomp(int(kfc));
+  int kc = pycomp(SherpaToIdhep(Flavour(kfc)));
   if(kc>500) return;
   pydat3.mdcy[1-1][kc-1]=0;
 }
 
 void Lund_Interface::AdjustProperties(Flavour flav)
 {
-  int kc = pycomp(int(flav.Kfcode()));
+  int kc = pycomp(SherpaToIdhep(flav));
   if(kc>500) return;
   // adjust mass
   double pythiamass = pydat2.pmas[1-1][kc-1];
@@ -199,7 +199,7 @@ void Lund_Interface::SwitchOffMassSmearing()
 
 double Lund_Interface::GenerateMass(Flavour flav, double min, double max)
 {
-  int kc = pycomp(flav.Kfcode())-1;
+  int kc = pycomp(SherpaToIdhep(flav))-1;
   double peak = pydat2.pmas[1-1][kc];
   double w_cut = pydat2.pmas[3-1][kc];
   if(w_cut == 0.0) {
@@ -293,7 +293,7 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
 
   Particle * part = blob->InParticle(0);
   Flavour fl = part->Flav();
-  int kc = pycomp(int(fl.Kfcode()))-1;
+  int kc = pycomp(SherpaToIdhep(fl))-1;
   double peak = pydat2.pmas[1-1][kc];
   double w_cut = pydat2.pmas[3-1][kc];
   if( part->FinalMass()+Accu() < peak-w_cut || part->FinalMass()-Accu() > peak+w_cut) {
@@ -301,18 +301,7 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
   }
 
   int nhep(0);
-  int idhep = fl.HepEvt();
-  switch (idhep) {
-  case  9000111: idhep =  10111;   break;
-  case  9000211: idhep =  10211;   break;
-  case -9000211: idhep = -10211;   break;
-  case  9010221: idhep =  10221;   break;
-  case    10111: idhep =  9000111; break;
-  case    10211: idhep =  9000211; break;
-  case   -10211: idhep = -9000211; break;
-  case    10221: idhep =  10331; break;
-  case    10331: idhep =  9010221; break;
-  }
+  int idhep = SherpaToIdhep(fl);
   hepevt.idhep[nhep] = idhep;
   for (short int j=1;j<4;++j) hepevt.phep[nhep][j-1]=part->Momentum()[j];
   hepevt.phep[nhep][3] = part->Momentum()[0];
@@ -352,7 +341,7 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
 int Lund_Interface::PrepareFragmentationBlob(Blob * blob) 
 {
   int nhep = 0;
-  hepevt.idhep[nhep]=Flavour(kf_photon).HepEvt();
+  hepevt.idhep[nhep]=SherpaToIdhep(Flavour(kf_photon));
   for (short int j=1;j<4;++j) hepevt.phep[nhep][j-1]=blob->CMS()[j];
   hepevt.phep[nhep][3]=blob->CMS()[0];
   double pabs=(blob->CMS()).Abs2();
@@ -420,8 +409,7 @@ Return_Value::code Lund_Interface::StringFragmentation(Blob *blob,Blob_List *blo
   while(goon) {
     goon=false;
     for(int i=0; i<hepevt.nhep; ++i) {
-      ATOOLS::Flavour flav;
-      flav.FromHepEvt(hepevt.idhep[i]);
+      ATOOLS::Flavour flav(IdhepToSherpa(hepevt.idhep[i]));
       if(hepevt.isthep[i]==1 && (flav.Strong()||flav.IsDiQuark())) {
 	goon=true;
 	int ipp(i+1);
@@ -462,7 +450,7 @@ Return_Value::code Lund_Interface::StringFragmentation(Blob *blob,Blob_List *blo
 
 void Lund_Interface::AddPartonToString(Particle *parton,int &nhep)
 {
-  hepevt.idhep[nhep]=parton->Flav().HepEvt();
+  hepevt.idhep[nhep]=SherpaToIdhep(parton->Flav());
   for (short int j=1; j<4; ++j) hepevt.phep[nhep][j-1]=parton->Momentum()[j];
   hepevt.phep[nhep][3]=parton->Momentum()[0];
   double pabs=(parton->Momentum()).Abs2();
@@ -486,11 +474,11 @@ void Lund_Interface::FillFragmentationBlob(Blob *blob)
   for (int i=0;i<hepevt.nhep;++i) {
     if ((hepevt.isthep[i]!=2)&&(hepevt.isthep[i]!=1)&&(hepevt.isthep[i]!=149)) continue;
     if (hepevt.idhep[i]==93) flav=Flavour(kf_cluster);
-                        else flav.FromHepEvt(hepevt.idhep[i]);
+    else flav=IdhepToSherpa(hepevt.idhep[i]);
     if (flav==Flavour(kf_string) || 
 	flav==Flavour(kf_cluster)) {
       for (int j=hepevt.jdahep[i][0]-1;j<hepevt.jdahep[i][1];j++) {
-        flav.FromHepEvt(hepevt.idhep[j]);
+        flav=IdhepToSherpa(hepevt.idhep[j]);
 	momentum=Vec4D(hepevt.phep[j][3],hepevt.phep[j][0],
 		       hepevt.phep[j][1],hepevt.phep[j][2]);
 	position=Vec4D(hepevt.vhep[j][3],hepevt.vhep[j][0],
@@ -517,18 +505,7 @@ void Lund_Interface::FillOutgoingParticlesInBlob(Blob *blob)
   int n_q(0), n_g(0); Particle_Vector partons;
   for (int j=hepevt.jdahep[0][0]-1;j<hepevt.jdahep[0][1];j++) {
     int idhep = hepevt.idhep[j];
-    switch (idhep) {
-    case  9000111: idhep =  10111;   break;
-    case  9000211: idhep =  10211;   break;
-    case -9000211: idhep = -10211;   break;
-    case  9010221: idhep =  10331;   break;
-    case    10111: idhep =  9000111; break;
-    case    10211: idhep =  9000211; break;
-    case   -10211: idhep = -9000211; break;
-    case    10221: idhep =  9010221; break;
-    case    10331: idhep =  10221; break;
-    }
-    flav.FromHepEvt(idhep);
+    flav=IdhepToSherpa(idhep);
     momentum=Vec4D(hepevt.phep[j][3],hepevt.phep[j][0],
 		   hepevt.phep[j][1],hepevt.phep[j][2]);
     // don't fill blob position vector here, because decay is in CMS until boosting back
@@ -728,3 +705,27 @@ Return_Value::code Lund_Interface::OneEvent(Blob_List * const blobs,double &weig
   if (okay) return Return_Value::Success;
   return Return_Value::Nothing;
 } 
+
+Flavour Lund_Interface::IdhepToSherpa(long int idhep) {
+  // This is not a simple conversion of PDG or HepEvt <-> Sherpa
+  // since Pythia is using the same swapped codes for a_0 and f_0 as Sherpa
+  kf_code kfc = (kf_code) abs(idhep);
+  if (abs(idhep)==91) kfc=kf_cluster;
+  else if (abs(idhep)==92) kfc=kf_string;
+  else if (abs(idhep)==13122) kfc=23122;
+  else if (abs(idhep)==23122) kfc=13122;
+
+  return Flavour(kfc, idhep<0);
+}
+
+long int Lund_Interface::SherpaToIdhep(const Flavour& flav) {
+  // This is not a simple conversion of PDG or HepEvt <-> Sherpa
+  // since Pythia is using the same swapped codes for a_0 and f_0 as Sherpa
+  long int idhep=flav.Kfcode();
+  if (idhep==kf_cluster) idhep=91;
+  else if (idhep==kf_string) idhep=92;
+  else if (idhep==23122) idhep=13122;
+  else if (idhep==13122) idhep=23122;
+
+  return (flav.IsAnti() ? -idhep : idhep);
+}

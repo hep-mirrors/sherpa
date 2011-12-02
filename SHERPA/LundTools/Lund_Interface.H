@@ -78,6 +78,9 @@ namespace SHERPA {
     double GenerateMass(ATOOLS::Flavour flav, double min, double max);
     static void SaveStatus();
     inline double Mass(const ATOOLS::Flavour &fl) const { return fl.HadMass(); }
+
+    ATOOLS::Flavour IdhepToSherpa(long int idhep);
+    long int SherpaToIdhep(const ATOOLS::Flavour& flav);
   };// end of class Lund_Interface
 
   /*!
