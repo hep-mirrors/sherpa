@@ -7,6 +7,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 #include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
 #include "SHERPA/Tools/Analysis_Interface.H"
@@ -21,23 +22,9 @@ namespace ATOOLS {
 
 namespace SHERPA {
 
-  struct isr {
-
-    enum id {
-      none            =  0,
-      hard_process    =  1,
-      hard_subprocess =  2,
-      unknown         = 99
-    };
-
-  };// end of struct isr
-
-  typedef std::map<isr::id,PDF::ISR_Handler*> ISR_Handler_Map;
-
   class Input_Output_Handler;
   class Matrix_Element_Handler;
   class Hard_Decay_Handler;
-  class Shower_Handler;
   class Beam_Remnant_Handler;
   class Fragmentation_Handler;
   class Hadron_Decay_Handler;
@@ -67,10 +54,10 @@ namespace SHERPA {
 
     MODEL::Model_Base          * p_model;
     BEAM::Beam_Spectra_Handler * p_beamspectra;
-    ISR_Handler_Map              m_isrhandlers;
-    MEHandlersMap                m_mehandlers;
+    PDF::ISR_Handler_Map              m_isrhandlers;
+    Matrix_Element_Handler     * p_mehandler;
     Hard_Decay_Handler         * p_harddecays;
-    Shower_Handler             * p_showerhandler;
+    Shower_Handler_Map           m_showerhandlers;
     Beam_Remnant_Handler       * p_beamremnants;
     Fragmentation_Handler      * p_fragmentation;
     Hadron_Decay_Handler         * p_hdhandler;
@@ -119,16 +106,15 @@ namespace SHERPA {
     const std::string & File()    const { return m_file; }
     const std::string & EvtFile() const { return m_evtfile; }
 
-    Matrix_Element_Handler       * GetMatrixElementHandler(std::string);
+    Matrix_Element_Handler       * GetMatrixElementHandler()  const { return p_mehandler; }
     Hadron_Decay_Handler         * GetHDHandler() { return p_hdhandler; }
-    inline PDF::ISR_Handler      * GetISRHandler(const isr::id id) { return m_isrhandlers[id]; }
-    MEHandlersMap                * GetMatrixElementHandlers()       { return &m_mehandlers;     }
+    inline PDF::ISR_Handler      * GetISRHandler(const PDF::isr::id id) { return m_isrhandlers[id]; }
     Analysis_Vector              * GetAnalyses()                    { return &m_analyses;       }
     MODEL::Model_Base            * GetModel()                 const { return p_model;           }
-    ISR_Handler_Map              * GetISRHandlers()                 { return &m_isrhandlers;    }
+    PDF::ISR_Handler_Map              * GetISRHandlers()                 { return &m_isrhandlers;    }
     BEAM::Beam_Spectra_Handler   * GetBeamSpectraHandler()    const { return p_beamspectra;     }
     Hard_Decay_Handler           * GetHardDecayHandler()      const { return p_harddecays;      }
-    Shower_Handler               * GetShowerHandler()         const { return p_showerhandler;   }
+    const Shower_Handler_Map     & GetShowerHandlers()        const { return m_showerhandlers;   }
     Beam_Remnant_Handler         * GetBeamRemnantHandler()    const { return p_beamremnants;    }
     Fragmentation_Handler        * GetFragmentationHandler()  const { return p_fragmentation;   }
     ATOOLS::Flavour              * GetBunches()                     { return m_bunch_particles; }
@@ -249,7 +235,7 @@ namespace SHERPA {
   */
   /*!
     \var Matrix_Element_Handler * Initialization_Handler::p_mehandler
-    A pointer to the abstract wrapper around the matrix elements (the pdf's) that are initialized 
+    A pointer to the abstract wrapper around the matrix elements that are initialized
     by the Initialization_Handler.
   */
   /*!

@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Function_Base.H"
+#include "PDF/Main/ISR_Handler.H"
 
 namespace PDF { struct PDF_Base; }
 
@@ -21,7 +22,7 @@ namespace MODEL {
   // cf. T. van Ritbergen, J. Vermaseren, S. Larin PLB 400 (1997) 379
   // up to factor 4^(i+1)
 
-  class Running_AlphaS : public ATOOLS::Function_Base {
+  class One_Running_AlphaS {
   protected:
 
     int         m_order,m_pdf;
@@ -48,12 +49,12 @@ namespace MODEL {
   public:
 
     // constructor
-    Running_AlphaS(const double as_MZ,const double m2_MZ,
+    One_Running_AlphaS(const double as_MZ,const double m2_MZ,
 		   const int order=0, const int thmode=1,
 		   PDF::PDF_Base *const pdf=NULL);
     
     // destructor
-    ~Running_AlphaS();
+    ~One_Running_AlphaS();
 
     // member functions
     double operator()(double q2); 
@@ -67,7 +68,6 @@ namespace MODEL {
     inline double Beta2(const double q2) { return Beta2(Nf(q2)); }
     inline double Beta3(const double q2) { return Beta3(Nf(q2)); }
     inline double AsMZ()                 { return m_as_MZ;      }
-    inline double AsFixed()              { return m_defval;     }
     int    Nf(const double q2);
 
     inline double CutQ2() { return m_cutq2; }    
@@ -76,6 +76,45 @@ namespace MODEL {
     inline double BoundedAlphaS(const double &q2)
     { return (*this)(std::max(q2,m_cutq2)); }
   };
+
+
+  class Running_AlphaS : public ATOOLS::Function_Base {
+  protected:
+
+    typedef std::map<PDF::isr::id, One_Running_AlphaS*> AlphasMap;
+    AlphasMap m_alphas;
+    One_Running_AlphaS* p_active;
+    PDF::isr::id m_active;
+
+  public:
+
+    // constructor
+    Running_AlphaS(const double as_MZ,const double m2_MZ,
+                   const int order, const int thmode,
+                   const PDF::ISR_Handler_Map& isr);
+
+    // destructor
+    ~Running_AlphaS();
+
+    // member functions
+    void SetActiveAs(PDF::isr::id id);
+    inline PDF::isr::id ActiveAs() { return m_active; }
+
+    // proxy member functions
+    inline double operator()(double q2)   { return p_active->operator()(q2); }
+    inline double AlphaS(const double q2) { return p_active->AlphaS(q2); }
+    inline int    Order()                 { return p_active->Order(); }
+    inline double Beta0(const double q2)  { return p_active->Beta0(q2); }
+    inline double Beta1(const double q2)  { return p_active->Beta1(q2); }
+    inline double Beta2(const double q2)  { return p_active->Beta2(q2); }
+    inline double Beta3(const double q2)  { return p_active->Beta3(q2); }
+    inline double AsMZ()                  { return p_active->AsMZ(); }
+    inline int    Nf(const double q2)     { return p_active->Nf(q2); }
+    inline double CutQ2()                 { return p_active->CutQ2(); }
+    inline double ScaleFactor()           { return p_active->ScaleFactor(); }
+    inline double BoundedAlphaS(const double &q2) { return p_active->BoundedAlphaS(q2); }
+  };
+
 
   extern Running_AlphaS * as;
 

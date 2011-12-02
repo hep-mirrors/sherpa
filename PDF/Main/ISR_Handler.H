@@ -14,6 +14,17 @@ namespace BEAM   { class Beam_Base;      }
 
 namespace PDF {
 
+  struct isr {
+    enum id {
+      none            =  0,
+      hard_process    =  1,
+      hard_subprocess =  2,
+      unknown         = 99
+    };
+  };
+
+  class ISR_Handler;
+  typedef std::map<isr::id,PDF::ISR_Handler*> ISR_Handler_Map;
   typedef std::vector<double> Double_Vector;
 
   class Remnant_Base; 

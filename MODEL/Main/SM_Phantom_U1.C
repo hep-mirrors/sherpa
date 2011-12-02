@@ -38,7 +38,7 @@ SM_Phantom_U1::SM_Phantom_U1(std::string _dir,std::string _file,bool _elementary
   }
 }
 
-bool SM_Phantom_U1::ModelInit(PDF::ISR_Handler *const isr)
+bool SM_Phantom_U1::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
   if (m_elementary)
     msg_Info()<<"Initialize the Standard Model plus U(1) phantom Higgs from "
@@ -79,7 +79,7 @@ void SM_Phantom_U1::ParticleInit() {
   ReadParticleData();
 }
 
-void SM_Phantom_U1::FillSpectrum(PDF::ISR_Handler *const isr) {
+void SM_Phantom_U1::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
   p_dataread->RereadInFile();
   p_constants->insert(make_pair(string("Tan(Beta)"),    
 				p_dataread->GetValue<double>("Tan(Beta)",1.)));

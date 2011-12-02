@@ -52,7 +52,6 @@ namespace MODEL {
     // member functions
     double operator()(double q2); 
     double Alpha_HV(const double q2);
-    void   SelfTest();
 
     // inline functions
     

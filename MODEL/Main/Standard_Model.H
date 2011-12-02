@@ -11,12 +11,12 @@ namespace MODEL {
     void FixCKM();
   protected:
     void ParticleInit();
-    void FillSpectrum(PDF::ISR_Handler *const isr);
+    void FillSpectrum(const PDF::ISR_Handler_Map& isr);
   public :
     Standard_Model(std::string,std::string,bool,const int =0);
     ~Standard_Model()                   {}
 
-    bool ModelInit(PDF::ISR_Handler *const isr);
+    bool ModelInit(const PDF::ISR_Handler_Map& isr);
 
     bool CheckFlavours(int nin, int nout, ATOOLS::Flavour* flavs);
   };

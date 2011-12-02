@@ -27,7 +27,7 @@ namespace SHERPA {
   private :
     bool                      m_on;
     bool                      m_qed;
-    MEHandlersMap           * p_mehandlers;
+    Matrix_Element_Handler  * p_mehandler;
     Soft_Photon_Handler     * p_sphotons;
 
     std::map<std::string,SubInfoVector> m_proc_lep_map;
@@ -53,7 +53,7 @@ namespace SHERPA {
   public :
 
     // constructor
-    Signal_Process_FS_QED_Correction(MEHandlersMap *,Soft_Photon_Handler *);
+    Signal_Process_FS_QED_Correction(Matrix_Element_Handler *,Soft_Photon_Handler *);
 
     // destructor
     ~Signal_Process_FS_QED_Correction();

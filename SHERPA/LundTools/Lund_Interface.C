@@ -31,7 +31,7 @@ double * Lund_Interface::s_saved_rrpy=new double[100];
 
 ATOOLS::Blob_List *Lund_Interface::s_bloblist=NULL; 
 
-Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
+Lund_Interface::Lund_Interface(string _m_path,string _m_file):
   m_path(_m_path),m_file(_m_file), m_maxtrials(2),
   p_hepevt(NULL), 
   m_compress(true),m_writeout(false),
@@ -92,12 +92,7 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
   reader->AddIgnore("(");
   reader->AddIgnore(")");
   reader->AddIgnore(",");
-  if (!sherpa) {
-    if (!reader->ReadFromFile(pysubs.msel,"MSEL")) pysubs.msel=1;
-  }
-  else {
-    pysubs.msel=0;
-  }
+  pysubs.msel=0;
   reader->MatrixFromFile(help,"MSUB");
   for (size_t i=0;i<help.size();++i) {
     if (help[i].size()>1) if ((int)help[i][0]>0) pysubs.msub[(int)help[i][0]-1]=(int)help[i][1];
@@ -158,39 +153,13 @@ Lund_Interface::Lund_Interface(string _m_path,string _m_file,bool sherpa):
     }
   }
   // the next lines replace the apyinit_ call
-  if (sherpa) {
-    hepevt.nhep=100;
-    for (int i=pydat3.mdcy[2-1][23-1];i<pydat3.mdcy[2-1][23-1]+pydat3.mdcy[3-1][23-1];++i) {
-      if (abs(pydat3.kfdp[1-1][i-1])>=2) pydat3.mdme[1-1][i-1]=Min(0,pydat3.mdme[1-1][i-1]);
-    }
-    pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),100.0);
+  hepevt.nhep=100;
+  for (int i=pydat3.mdcy[2-1][23-1];i<pydat3.mdcy[2-1][23-1]+pydat3.mdcy[3-1][23-1];++i) {
+    if (abs(pydat3.kfdp[1-1][i-1])>=2) pydat3.mdme[1-1][i-1]=Min(0,pydat3.mdme[1-1][i-1]);
   }
+  pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),100.0);
   // replacement ends here
   if (msg_LevelIsDebugging()) ListLundParameters();
-  if (!sherpa) {
-    int helpi;
-    if (reader->ReadFromFile(helpi,"EXPORT_ALPHAS")) s_exportas=(bool)helpi;
-    int orderas;
-    double asmz, asdef, mz;  
-    reader->SetInputFile("Model.dat");
-    if (!reader->ReadFromFile(orderas,"ORDER_ALPHAS")) orderas=0;
-    if (!reader->ReadFromFile(asmz,"ALPHAS(MZ)")) asmz=0.1188;
-    if (!reader->ReadFromFile(asdef,"ALPHAS(default)")) asdef=asmz;
-    mz=91.188;
-    MODEL::as = new MODEL::Running_AlphaS(asmz,mz*mz,orderas);
-    MODEL::as->SetDefault(asdef);
-    p_hepevt = new HepEvt_Interface(gtp::Pythia);
-    if (pypars.mstp[105-1]==0) p_hepevt->SetHadronized(false);
-    pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
-    if (reader->ReadFromFile(m_outfile,"OUTPUT_FILE")) {
-      m_writeout = true;
-      if (!reader->ReadFromFile(m_evtsperfile,"EVENTS_PER_FILE")) m_evtsperfile=1000;
-      NextFile(true);
-      int helper;
-      if (!reader->ReadFromFile(helper,"COMPRESS")) helper=1;
-      m_compress=(bool)helper;
-    }
-  }
   pylist(0);
   delete reader;
 }

@@ -47,7 +47,7 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
     init.Init();
     init.OverWriteProperties(dr);
     ATOOLS::OutputHadrons(msg->Tracking());
-    p_lund = new Lund_Interface(m_dir,m_sfile,true);
+    p_lund = new Lund_Interface(m_dir,m_sfile);
     m_mode=1;
     exh->AddTerminatorObject(this);
     // hack for particle initialization, because we don't want to replicate

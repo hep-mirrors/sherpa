@@ -14,23 +14,24 @@ namespace SHERPA {
 
   class Jet_Evolution: public Event_Phase_Handler {
   private :
-    Shower_Handler          * p_showerhandler;
     PertInterfaceMap          m_interfaces;
 
     ATOOLS::Return_Value::code AttachShowers(ATOOLS::Blob *,ATOOLS::Blob_List *,
 					     Perturbative_Interface *);
     
     void Reset();
-    void Update(const ATOOLS::Blob *,const size_t);
-    bool DefineInitialConditions(const ATOOLS::Blob *,const ATOOLS::Blob_List *); 
+    void Update(const ATOOLS::Blob *,const size_t,
+                Perturbative_Interface *interface);
+    bool DefineInitialConditions(const ATOOLS::Blob *,const ATOOLS::Blob_List *,
+                                 Perturbative_Interface *interface);
     void AftermathOfNoShower(ATOOLS::Blob *,ATOOLS::Blob_List *);
     void AftermathOfSuccessfulShower(ATOOLS::Blob *,ATOOLS::Blob_List *,
 				     Perturbative_Interface *);    
   public :
 
     // constructor
-    Jet_Evolution(MEHandlersMap *, Hard_Decay_Handler*,
-                  Decay_Handler_Base *,MI_Handler *,Shower_Handler *);
+    Jet_Evolution(Matrix_Element_Handler *, Hard_Decay_Handler*,
+                  Decay_Handler_Base *,MI_Handler *, const Shower_Handler_Map &);
 
     // destructor
     ~Jet_Evolution();

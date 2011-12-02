@@ -8,13 +8,12 @@
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Org/Getter_Function.H"
 #include "MODEL/Main/Coupling_Data.H"
+#include "PDF/Main/ISR_Handler.H"
 #include <map>
 
 namespace ATOOLS { 
   class Data_Reader;
 } 
-
-namespace PDF { class ISR_Handler; }
 
 namespace MODEL {
 
@@ -75,14 +74,14 @@ namespace MODEL {
     void CustomContainerInit();
 
     virtual void ParticleInit() = 0;
-    virtual void FillSpectrum(PDF::ISR_Handler *const isr) = 0;
+    virtual void FillSpectrum(const PDF::ISR_Handler_Map& isr) = 0;
     void ReadParticleData();
     void InitMEInfo();
   public:
     Model_Base(std::string,std::string,bool);
     virtual ~Model_Base();
 
-    virtual bool ModelInit(PDF::ISR_Handler *const isr) = 0;
+    virtual bool ModelInit(const PDF::ISR_Handler_Map& isr) = 0;
 
     static void ShowSyntax(const size_t mode);
     void InitializeInteractionModel();

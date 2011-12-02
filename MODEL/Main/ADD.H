@@ -9,11 +9,11 @@ namespace MODEL {
   private :
     Standard_Model *p_sm;
     void ParticleInit();
-    void FillSpectrum(PDF::ISR_Handler *const isr);
+    void FillSpectrum(const PDF::ISR_Handler_Map& isr);
   public :
     ADD(std::string,std::string,bool);
     ~ADD();
-    bool ModelInit(PDF::ISR_Handler *const isr);
+    bool ModelInit(const PDF::ISR_Handler_Map& isr);
   };
   /*!
     \class ADD

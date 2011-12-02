@@ -15,6 +15,7 @@ namespace MODEL {
 
 using namespace MODEL;
 using namespace ATOOLS;
+using namespace PDF;
 using namespace std;
 
 namespace MODEL {
@@ -30,7 +31,7 @@ namespace MODEL {
 
 }
 
-Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
+One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
 			       const int order, const int thmode,
 			       PDF::PDF_Base *const aspdf) : 
   m_order(order), m_pdf(0),
@@ -41,8 +42,6 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
     m_fac=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   }
   if (m_fac!=1.0) msg_Debugging()<<METHOD<<"(): Setting scale factor "<<m_fac<<"\n";
-  m_type  = std::string("Running Coupling");
-  m_name  = "Alpha_QCD";
   p_thresh  = NULL;
 
   m_CF    = 4./3.;        
@@ -164,24 +163,24 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
 }
 
 
-Running_AlphaS::~Running_AlphaS()
+One_Running_AlphaS::~One_Running_AlphaS()
 {
   if (p_thresh!=0) { delete [] p_thresh; p_thresh = NULL; }
 }
 
-double Running_AlphaS::Beta0(const int nf) {
+double One_Running_AlphaS::Beta0(const int nf) {
   return 1./4. * (11. - (2./3.)*nf);
 }
 
-double Running_AlphaS::Beta1(const int nf) {
+double One_Running_AlphaS::Beta1(const int nf) {
   return 1./16. * (102. - (38./3.)*nf);
 }
 
-double Running_AlphaS::Beta2(const int nf) {
+double One_Running_AlphaS::Beta2(const int nf) {
   return 1./64. * (2857./2. - (5033./18.)*nf + (325./54.)*nf*nf);
 }
 
-double Running_AlphaS::Beta3(const int nf) {
+double One_Running_AlphaS::Beta3(const int nf) {
   double zeta3 = 1.2020569031595942854;
   return 1./256. * ( (149753./6. + 3564.*zeta3) +
 		     (-1078361./162. -6508./27.*zeta3)*nf +
@@ -189,7 +188,7 @@ double Running_AlphaS::Beta3(const int nf) {
 		     (1093/729)*nf*nf*nf);
 }
 
-double Running_AlphaS::Lambda2(const int nr) {
+double One_Running_AlphaS::Lambda2(const int nr) {
   double as  = p_thresh[nr].as_low; 
   double mu2 = p_thresh[nr].low_scale;
   if (as==0.) {
@@ -236,7 +235,7 @@ double Running_AlphaS::Lambda2(const int nr) {
   return lambda2;
 }
 
-double Running_AlphaS::AlphaSLam(const double Q2,const int nr)
+double One_Running_AlphaS::AlphaSLam(const double Q2,const int nr)
 {
   // using shorter names
   double & beta0   = p_thresh[nr].beta0;
@@ -266,7 +265,7 @@ double Running_AlphaS::AlphaSLam(const double Q2,const int nr)
   return M_PI*a;
 }
 
-double Running_AlphaS::ZetaOS2(const double as,const double mass2_os,
+double One_Running_AlphaS::ZetaOS2(const double as,const double mass2_os,
 			       const double mu2,const int nl) {
   double zeta2g = 1.;
 
@@ -296,7 +295,7 @@ double Running_AlphaS::ZetaOS2(const double as,const double mass2_os,
   return zeta2g;
 }
 
-double Running_AlphaS::InvZetaOS2(const double as,const double mass2_os,
+double One_Running_AlphaS::InvZetaOS2(const double as,const double mass2_os,
 				  const double mu2,const int nl) {
   // might be simplified considerably when using mu2==mass2
   double zeta2g  = 1.;
@@ -328,7 +327,7 @@ double Running_AlphaS::InvZetaOS2(const double as,const double mass2_os,
 
 
 
-void Running_AlphaS::ContinueAlphaS(int & nr) {
+void One_Running_AlphaS::ContinueAlphaS(int & nr) {
   // shrink actual domain
   //  * to given t0        or
   //  * to alphaS=alphaCut
@@ -365,7 +364,7 @@ void Running_AlphaS::ContinueAlphaS(int & nr) {
 
 
 
-double Running_AlphaS::operator()(double q2)
+double One_Running_AlphaS::operator()(double q2)
 {
   if (m_pdf) return p_pdf->AlphaSPDF(q2);
   double as;
@@ -391,11 +390,11 @@ double Running_AlphaS::operator()(double q2)
   return as;
 }  
 
-double  Running_AlphaS::AlphaS(const double q2){
+double  One_Running_AlphaS::AlphaS(const double q2){
   return operator()(q2);
 }
 
-int Running_AlphaS::Nf(const double sc) 
+int One_Running_AlphaS::Nf(const double sc)
 {
   double q2(sc*m_fac);
   for (int i=0;i<=m_nth;++i) {
@@ -405,7 +404,7 @@ int Running_AlphaS::Nf(const double sc)
   return m_nth;
 }
 
-void Running_AlphaS::SelfTest() {
+void One_Running_AlphaS::SelfTest() {
   /*
   fastfunc ff_as;
 
@@ -431,3 +430,41 @@ void Running_AlphaS::SelfTest() {
   */
 }
 
+
+Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
+                               const int order, const int thmode,
+                               const PDF::ISR_Handler_Map &isr)
+{
+  m_type  = std::string("Running Coupling");
+  m_name  = "Alpha_QCD";
+  for (ISR_Handler_Map::const_iterator it=isr.begin(); it!=isr.end(); ++it) {
+    if (m_alphas.find(it->first)!=m_alphas.end())
+      THROW(fatal_error, "Internal error.");
+    PDF::PDF_Base *pdf(NULL);
+    if (it->second->PDF(0)) pdf=it->second->PDF(0);
+    if ((pdf==NULL||pdf->ASInfo().m_order<0) && it->second->PDF(1))
+      pdf=it->second->PDF(1);
+    m_alphas.insert(make_pair(it->first, new One_Running_AlphaS
+                              (as_MZ,m2_MZ, order, thmode, pdf)));
+  }
+  SetActiveAs(PDF::isr::hard_process);
+}
+
+Running_AlphaS::~Running_AlphaS()
+{
+  for (AlphasMap::iterator it=m_alphas.begin(); it!=m_alphas.end(); ++it) {
+    delete it->second;
+  }
+  m_alphas.clear();
+}
+
+void Running_AlphaS::SetActiveAs(PDF::isr::id id)
+{
+  AlphasMap::iterator it=m_alphas.find(id);
+  if (it==m_alphas.end()) {
+    THROW(fatal_error, "Internal Error");
+  }
+  else {
+    p_active=it->second;
+  }
+}

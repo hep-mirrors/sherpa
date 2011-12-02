@@ -208,19 +208,18 @@ bool Sherpa::InitializeTheEventHandler()
     (*it)->SetEventHandler(p_eventhandler);
   }
   
-  std::string sme = std::string("SignalMEs");
   if (mode>9000) {
     p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader())); 
   }
   else {
-    p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(sme)));
+    p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
-    p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandlers(),
+    p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
                                                     p_inithandler->GetHardDecayHandler(),
 						    p_inithandler->GetHDHandler(),
 						    p_inithandler->GetMIHandler(),
-						    p_inithandler->GetShowerHandler()));
-    p_eventhandler->AddEventPhase(new Signal_Process_FS_QED_Correction(p_inithandler->GetMatrixElementHandlers(),
+						    p_inithandler->GetShowerHandlers()));
+    p_eventhandler->AddEventPhase(new Signal_Process_FS_QED_Correction(p_inithandler->GetMatrixElementHandler(),
                                                                        p_inithandler->GetSoftPhotonHandler()));
     p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));

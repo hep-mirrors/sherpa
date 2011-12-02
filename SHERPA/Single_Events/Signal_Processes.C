@@ -9,6 +9,7 @@
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Random.H"
+#include "MODEL/Main/Running_AlphaS.H"
 
 using namespace SHERPA;
 using namespace METOOLS;
@@ -34,7 +35,8 @@ Signal_Processes::~Signal_Processes()
 Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 {
   Blob *blob(bloblist->FindFirst(btp::Signal_Process));
-  if (blob && blob->Has(blob_status::needs_signal))
+  if (blob && blob->Has(blob_status::needs_signal)) {
+    MODEL::as->SetActiveAs(PDF::isr::hard_process);
     while (true) {
       if (m_overweight>0.0) {
 	if (m_overweight<ran->Get()) {
@@ -57,6 +59,7 @@ Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight
       }
       else return Return_Value::New_Event;
     }
+  }
   return Return_Value::Nothing;
 }
 

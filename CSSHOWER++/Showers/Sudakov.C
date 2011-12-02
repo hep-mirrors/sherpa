@@ -19,7 +19,6 @@ Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) :
   m_ewmode=qed;
   p_pdf = new PDF::PDF_Base*[2];
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
-
 }
 
 Sudakov::~Sudakov() 
@@ -50,16 +49,20 @@ public:
 
 void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
 {
-  SFC_Filler_Getter::Getter_List flist(SFC_Filler_Getter::GetGetters());
-  for (SFC_Filler_Getter::Getter_List::const_iterator git(flist.begin());
-       git!=flist.end();++git) (*git)->GetObject(SFC_Filler_Key(md,&m_cgets));
-  if (msg_LevelIsDebugging()) {
-    msg_Out()<<METHOD<<"(): {\n\n"
-	     <<"   // available coupling calcs\n\n";
-    SFC_Getter::PrintGetterInfo(msg->Out(),25);
-    msg_Out()<<"\n   // available lorentz calcs\n\n";
-    SFL_Getter::PrintGetterInfo(msg->Out(),25);
-    msg_Out()<<"\n}"<<std::endl;
+  static bool init(false);
+  if (!init) {
+    init=true;
+    SFC_Filler_Getter::Getter_List flist(SFC_Filler_Getter::GetGetters());
+    for (SFC_Filler_Getter::Getter_List::const_iterator git(flist.begin());
+         git!=flist.end();++git) (*git)->GetObject(SFC_Filler_Key(md,&m_cgets));
+    if (msg_LevelIsDebugging()) {
+      msg_Out()<<METHOD<<"(): {\n\n"
+               <<"   // available coupling calcs\n\n";
+      SFC_Getter::PrintGetterInfo(msg->Out(),25);
+      msg_Out()<<"\n   // available lorentz calcs\n\n";
+      SFL_Getter::PrintGetterInfo(msg->Out(),25);
+      msg_Out()<<"\n}"<<std::endl;
+    }
   }
   msg_Debugging()<<METHOD<<"(): Init splitting functions {\n";
   msg_Indent();

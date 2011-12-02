@@ -16,11 +16,11 @@ namespace MODEL {
   private :
     Standard_Model *p_sm;
     void ParticleInit();
-    void FillSpectrum(PDF::ISR_Handler *const isr);
+    void FillSpectrum(const PDF::ISR_Handler_Map& isr);
   public :
     SM_TauPi(std::string,std::string,bool);
     ~SM_TauPi();
-    bool ModelInit(PDF::ISR_Handler *const isr);
+    bool ModelInit(const PDF::ISR_Handler_Map& isr);
   };
 }
 
@@ -55,7 +55,7 @@ SM_TauPi::SM_TauPi(std::string _dir,std::string _file,bool _elementary) :
   }
 }
 
-bool SM_TauPi::ModelInit(PDF::ISR_Handler *const isr)
+bool SM_TauPi::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
   if (m_elementary)
     msg_Info()<<"Initialize the Standard Model plus TauPi from "
@@ -85,7 +85,7 @@ void SM_TauPi::ParticleInit() {
   ReadParticleData();
 }
 
-void SM_TauPi::FillSpectrum(PDF::ISR_Handler *const isr) {
+void SM_TauPi::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
   p_dataread->RereadInFile();
   p_constants->insert(make_pair(string("F_PI"),
 				p_dataread->GetValue<double>("F_PI",0.0924)));

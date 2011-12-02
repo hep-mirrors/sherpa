@@ -39,7 +39,7 @@ THDM::THDM(std::string _dir,std::string _file,bool _elementary) :
   }
 }
 
-bool THDM::ModelInit(PDF::ISR_Handler *const isr)
+bool THDM::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
   if (m_elementary)
     msg_Info()<<"Initialize the THDM from "<<m_dir<<" / "<<m_file<<std::endl;
@@ -72,7 +72,7 @@ void THDM::ParticleInit() {
   ReadParticleData();
 }
 
-void THDM::FillSpectrum(PDF::ISR_Handler *const isr) {
+void THDM::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
   p_dataread->RereadInFile();
   p_constants->insert(std::make_pair(std::string("tan(beta)"),    
 				     p_dataread->GetValue<double>("TAN(BETA)",0.)));

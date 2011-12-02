@@ -10,6 +10,7 @@
 #include "SHERPA/Tools/Event_Reader_Base.H"
 #include "SHERPA/Tools/Input_Output_Handler.H"
 #include "MODEL/Main/Model_Base.H"
+#include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/Structure_Function.H"
 #include "PDF/Main/Intact.H"
 #include "PDF/Main/PDF_Base.H"
@@ -52,7 +53,7 @@ typedef void (*PDF_Exit_Function)();
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
   m_mode(0), m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
-  p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
+  p_mehandler(NULL), p_harddecays(NULL), p_beamremnants(NULL),
   p_fragmentation(NULL), p_hdhandler(NULL), p_mihandler(NULL), p_softphotons(NULL),
   p_iohandler(NULL), p_evtreader(NULL)
 {
@@ -180,9 +181,9 @@ Initialization_Handler::~Initialization_Handler()
   }
   if (p_evtreader)     { delete p_evtreader;     p_evtreader     = NULL; }
   if (p_iohandler)     { delete p_iohandler;     p_iohandler     = NULL; }
+  if (p_mehandler)     { delete p_mehandler;     p_mehandler     = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
-  if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
   if (p_hdhandler)     { delete p_hdhandler;     p_hdhandler     = NULL; }
   if (p_softphotons)   { delete p_softphotons;   p_softphotons   = NULL; } 
@@ -194,17 +195,13 @@ Initialization_Handler::~Initialization_Handler()
     delete m_analyses.back();
     m_analyses.pop_back();
   }
-  std::set<Matrix_Element_Handler*> deletedme;
-  while (m_mehandlers.size()>0) {
-    if (deletedme.find(m_mehandlers.begin()->second)==deletedme.end()) {
-      deletedme.insert(m_mehandlers.begin()->second);
-      delete m_mehandlers.begin()->second;
-    }
-    m_mehandlers.erase(m_mehandlers.begin());
-  }
   while (m_isrhandlers.size()>0) {
     delete m_isrhandlers.begin()->second;
     m_isrhandlers.erase(m_isrhandlers.begin());
+  }
+  while (m_showerhandlers.size()>0) {
+    delete m_showerhandlers.begin()->second;
+    m_showerhandlers.erase(m_showerhandlers.begin());
   }
   PHASIC::Phase_Space_Handler::DeleteInfo();
   exh->RemoveTerminatorObject(this);
@@ -342,7 +339,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
-  if (!p_model->ModelInit(m_isrhandlers[isr::hard_process]))
+  if (!p_model->ModelInit(m_isrhandlers))
     THROW(critical_error,"Model cannot be initialized");
   p_model->InitializeInteractionModel();
   okay = okay && InitializeTheAnalyses();
@@ -428,7 +425,7 @@ bool Initialization_Handler::CheckBeamISRConsistency()
 bool Initialization_Handler::InitializeTheIO()
 {
   p_iohandler = new Input_Output_Handler(p_dataread);
-  p_iohandler->SetMEHandler(m_mehandlers["SignalMEs"]);
+  p_iohandler->SetMEHandler(p_mehandler);
   return true;
 }
 
@@ -600,46 +597,39 @@ bool Initialization_Handler::InitializeTheHardDecays()
 
 bool Initialization_Handler::InitializeTheMatrixElements()
 {
-  Matrix_Element_Handler * me = NULL;
-  me = new Matrix_Element_Handler(m_path,m_medat,m_processesdat,m_selectordat);
-  me->SetShowerHandler(p_showerhandler);
-  me->InitializeProcesses(p_model,p_beamspectra,m_isrhandlers[isr::hard_process]);
-  MEHandlersMap::iterator it=m_mehandlers.find("SignalMEs");
-  if (it!=m_mehandlers.end()) delete it->second;
-  m_mehandlers["SignalMEs"]=me; 
+  if (p_mehandler) delete p_mehandler;
+  p_mehandler = new Matrix_Element_Handler(m_path,m_medat,m_processesdat,m_selectordat);
+  p_mehandler->SetShowerHandler(m_showerhandlers[isr::hard_process]);
+  p_mehandler->InitializeProcesses(p_model,p_beamspectra,m_isrhandlers[isr::hard_process]);
   msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes."
             <<endl;
   return 1;
 }
 
-Matrix_Element_Handler * Initialization_Handler::GetMatrixElementHandler(std::string _key) { 
-  MEHandlerIter pos = m_mehandlers.find(_key);
-  if (pos!=m_mehandlers.end()) return pos->second;
-  msg_Error()<<"Error in Initialization_Handler::GetMatrixElementHandler("<<_key<<") :"
-		     <<"   Key not found. Return Null pointer."<<endl;
-  return NULL;
-}
-
-
 bool Initialization_Handler::InitializeTheUnderlyingEvents()
 {
+  as->SetActiveAs(isr::hard_subprocess);
   p_mihandler = new MI_Handler(m_path,m_midat,p_model,p_beamspectra,
 			       m_isrhandlers[isr::hard_subprocess]);
+  as->SetActiveAs(isr::hard_process);
   if (p_mihandler->Type()!=0)
     msg_Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;
-  if (p_mihandler->Name()=="None") {
-    ISR_Handler_Map::iterator iit=m_isrhandlers.find(isr::hard_subprocess);
-    delete iit->second;
-    m_isrhandlers.erase(iit);
-  }
   return true;
 }
 
 bool Initialization_Handler::InitializeTheShowers()
 {
-  if (p_showerhandler) delete p_showerhandler;
-  p_showerhandler = new Shower_Handler(m_path,m_showerdat,p_model,
-				       m_isrhandlers[isr::hard_process]);
+  std::vector<isr::id> isrtypes;
+  isrtypes.push_back(isr::hard_process);
+  isrtypes.push_back(isr::hard_subprocess);
+  for (size_t i=0; i<isrtypes.size(); ++i) {
+    as->SetActiveAs(isrtypes[i]);
+    Shower_Handler_Map::iterator it=m_showerhandlers.find(isrtypes[i]);
+    if (it!=m_showerhandlers.end()) delete it->second;
+    m_showerhandlers[isrtypes[i]]=new Shower_Handler
+        (m_path, m_showerdat, p_model, m_isrhandlers[isrtypes[i]]);
+  }
+  as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized the Shower_Handler."<<endl;
   return 1;
 }
@@ -659,7 +649,9 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
 bool Initialization_Handler::InitializeTheFragmentation() 
 {
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
+  as->SetActiveAs(isr::hard_subprocess);
   p_fragmentation = new Fragmentation_Handler(m_path,m_fragmentationdat);
+  as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized the Fragmentation_Handler."<<endl;
   return 1;
 }
@@ -678,8 +670,10 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   msg_Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
   if (decmodel=="Off") return true;
   else if (decmodel==std::string("Hadrons")) {
+    as->SetActiveAs(isr::hard_subprocess);
     Hadron_Decay_Handler* hd=new Hadron_Decay_Handler(m_path,m_hadrondecaysdat);
     hd->SetSoftPhotonHandler(p_softphotons);
+    as->SetActiveAs(isr::hard_process);
     p_hdhandler=hd;
   }
   else if ((decmodel==string("Lund")) ) {
@@ -734,12 +728,12 @@ bool Initialization_Handler::InitializeTheAnalyses()
 bool Initialization_Handler::CalculateTheHardProcesses()
 {
   if (m_mode>9000) return true;
-  Matrix_Element_Handler * me = GetMatrixElementHandler(std::string("SignalMEs"));
   msg_Events()<<"=========================================================================="<<std::endl
               <<"Start calculating the hard cross sections. This may take some time.       "<<std::endl;
   ATOOLS::Data_Reader read(" ",";","!","=");
   ATOOLS::msg->SetLevel(read.GetValue<int>("INT_OUTPUT",ATOOLS::msg->Level()));
-  int ok = me->CalculateTotalXSecs();
+  as->SetActiveAs(isr::hard_process);
+  int ok = p_mehandler->CalculateTotalXSecs();
   if (ok) {
     msg_Events()<<"Calculating the hard cross sections has been successful.                  "<<std::endl
 	     <<"=========================================================================="<<std::endl;

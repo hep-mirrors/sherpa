@@ -34,7 +34,7 @@ MSSM::MSSM(std::string _dir,std::string _file,bool _elementary) :
   ParticleInit();
 }
 
-bool MSSM::ModelInit(PDF::ISR_Handler *const isr)
+bool MSSM::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
   if (m_elementary) 
     msg_Info()<<"Initialize the MSSM from "<<m_dir<<" / "<<m_file<<std::endl;
@@ -101,13 +101,13 @@ void MSSM::ParticleInit() {
   ReadParticleData(); 
 }
 
-void MSSM::FillSpectrum(PDF::ISR_Handler *const isr) {
+void MSSM::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
   p_dataread->RereadInFile();
-  RunSpectrumGenerator();
+  RunSpectrumGenerator(isr);
 }
 
 
-void MSSM::RunSpectrumGenerator() {
+void MSSM::RunSpectrumGenerator(const PDF::ISR_Handler_Map& isr) {
   p_spectrumgenerator = new LesHouches_Interface(p_dataread,this,m_dir);
-  p_spectrumgenerator->Run();
+  p_spectrumgenerator->Run(isr);
 }

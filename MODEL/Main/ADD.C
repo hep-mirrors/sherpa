@@ -40,7 +40,7 @@ ADD::ADD(std::string _dir,std::string _file,bool _elementary) :
   }
 }
 
-bool ADD::ModelInit(PDF::ISR_Handler *const isr)
+bool ADD::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
   msg_Info()<<"Initialize the ADD from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("ADD");
@@ -70,7 +70,7 @@ void ADD::ParticleInit() {
   ReadParticleData();
 }
 
-void ADD::FillSpectrum(PDF::ISR_Handler *const isr) {
+void ADD::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
   p_dataread->RereadInFile();
 
   

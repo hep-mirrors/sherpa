@@ -45,7 +45,7 @@ SM_AGC::SM_AGC(std::string _dir,std::string _file,bool _elementary) :
   }
 }
 
-bool SM_AGC::ModelInit(PDF::ISR_Handler *const isr)
+bool SM_AGC::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
   if (m_elementary)
     msg_Info()<<"Initialize the Standard Model \\w AGC from "<<m_dir<<" / "<<m_file<<std::endl;
@@ -68,7 +68,7 @@ bool SM_AGC::ModelInit(PDF::ISR_Handler *const isr)
   return true;
 }
 
-void SM_AGC::FillSpectrum(PDF::ISR_Handler *const isr) {
+void SM_AGC::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
   p_dataread->RereadInFile();
   
   //Anomalous gauge couplings (hep-ph/0001065)

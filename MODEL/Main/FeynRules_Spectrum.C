@@ -44,7 +44,7 @@ void FeynRules_Spectrum::PrepareTerminate()
   Copy(m_dir+"/"+m_paramfile,path+m_paramfile);
 }
 
-void FeynRules_Spectrum::Run(PDF::ISR_Handler *const isr) {
+void FeynRules_Spectrum::Run(const PDF::ISR_Handler_Map& isr) {
 
   msg_Info()<<"========== Generate FeynRules Model ========== "<<endl;
   
@@ -86,7 +86,7 @@ void FeynRules_Spectrum::PrepareReader(string filename) {
 			    "FeynRules_Spectrum","PrepareReader"));
 }
 
-void FeynRules_Spectrum::SetExternalParameters(PDF::ISR_Handler *const isr) {
+void FeynRules_Spectrum::SetExternalParameters(const PDF::ISR_Handler_Map& isr) {
 
   PrepareReader(m_identfile);
   
@@ -180,13 +180,7 @@ void FeynRules_Spectrum::SetExternalParameters(PDF::ISR_Handler *const isr) {
   int    th_alphaS	= p_dataread->GetValue<int>("THRESHOLD_ALPHAS",1);
   double alphaS_default = p_dataread->GetValue<double>("ALPHAS(default)",asMZ);
   double MZ = Flavour(kf_Z).Mass();
-  PDF::PDF_Base *aspdf(NULL);
-  if (isr) {
-    if (isr->PDF(0)) aspdf=isr->PDF(0);
-    if ((aspdf==NULL || aspdf->ASInfo().m_order<0) &&
-	isr->PDF(1)) aspdf=isr->PDF(1);
-  }
-  as = new Running_AlphaS(asMZ,sqr(MZ),order_alphaS,th_alphaS,aspdf);
+  as = new Running_AlphaS(asMZ,sqr(MZ),order_alphaS,th_alphaS,isr);
   as->SetDefault(alphaS_default);
   p_model->GetScalarFunctions()->insert(make_pair(string("alpha_S"),as));
   //insert aS @ cpl scale

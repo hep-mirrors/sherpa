@@ -9,6 +9,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "MODEL/Main/Running_AlphaS.H"
 
 #ifdef USING__Amisic
 #include "AMISIC++/Main/Amisic.H"
@@ -103,6 +104,7 @@ Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,doub
   }
   Return_Value::code cbc(CheckBlobList(bloblist));
   if (cbc!=Return_Value::Success) return cbc;
+  MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
   p_mihandler->SetScaleMax(m_emax[0],2);
   p_mihandler->SetScaleMax(m_emax[1],3);
   if (!m_generated) {

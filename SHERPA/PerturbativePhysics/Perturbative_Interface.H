@@ -66,6 +66,8 @@ namespace SHERPA {
 
     ATOOLS::Cluster_Amplitude *Amplitude() const { return p_ampl; }
 
+    Shower_Handler* Shower() { return p_shower; }
+
   };// end of class Perturbative_Interface
 
   typedef std::map<std::string,Perturbative_Interface *> PertInterfaceMap;

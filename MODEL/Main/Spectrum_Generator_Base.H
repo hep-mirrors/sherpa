@@ -17,7 +17,7 @@ namespace MODEL {
   public:
     Spectrum_Generator_Base(ATOOLS::Data_Reader *,Model_Base *);
     virtual ~Spectrum_Generator_Base();
-    virtual void Run(PDF::ISR_Handler *const isr=NULL) = 0;
+    virtual void Run(const PDF::ISR_Handler_Map& isr) = 0;
   };
 
   /*!

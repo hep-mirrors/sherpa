@@ -41,7 +41,7 @@ SM_EHC::SM_EHC(std::string _dir,std::string _file,bool _elementary) :
   }
 }
 
-bool SM_EHC::ModelInit(PDF::ISR_Handler *const isr)
+bool SM_EHC::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
   if (m_elementary)
     msg_Info()<<"Initialize the Standard Model \\w EHC from "<<m_dir<<" / "<<m_file<<std::endl;
@@ -72,7 +72,7 @@ void SM_EHC::ParticleInit() {
   //particle data read by SM
 }
 
-void SM_EHC::FillSpectrum(PDF::ISR_Handler *const isr) {
+void SM_EHC::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
   p_dataread->RereadInFile();
   
   //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 
@@ -129,7 +129,7 @@ MSSM_EHC::MSSM_EHC(std::string _dir,std::string _file,bool _elementary) :
   }
 }
 
-bool MSSM_EHC::ModelInit(PDF::ISR_Handler *const isr)
+bool MSSM_EHC::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
   if (m_elementary)
     msg_Info()<<"Initialize the MSSM \\w EHCs from "<<m_dir<<" / "<<m_file<<std::endl;
@@ -160,7 +160,7 @@ void MSSM_EHC::ParticleInit() {
 }
 
 
-void MSSM_EHC::FillSpectrum(PDF::ISR_Handler *const isr) {
+void MSSM_EHC::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
   p_dataread->RereadInFile();
   
   //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 

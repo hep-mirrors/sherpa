@@ -27,9 +27,9 @@ using namespace std;
 
 
 Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
-(MEHandlersMap *_mehandlers, Soft_Photon_Handler *_sphotons) :
+(Matrix_Element_Handler *_mehandler, Soft_Photon_Handler *_sphotons) :
   m_on(true), m_qed(true),
-  p_mehandlers(_mehandlers), p_sphotons(_sphotons)
+  p_mehandler(_mehandler), p_sphotons(_sphotons)
 {
   m_name      = string("Lepton_FS_QED_Corrections:");
   m_type      = eph::Perturbative;
@@ -55,16 +55,7 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
   // if NLO_Mode 1, switch off completely, unless explicitely stated
   if (nlomode==1 && !expliciteon) m_on = false;
 
-  if (m_on && p_mehandlers->size()>1) {
-    m_qed = false;
-    msg_Error()<<METHOD<<"() {\n"
-               <<"  there are "<<p_mehandlers->size()<<" ME Handlers present ...\n"
-               <<"  do not know how to continue ...\n"
-               <<"  event generation will commence without QED corrections to leptons from hard scatter ...\n"
-               <<"}\n";
-  }
-
-  Process_Vector pvec(p_mehandlers->begin()->second->AllProcesses());
+  Process_Vector pvec(p_mehandler->AllProcesses());
   if (m_qed) {
     m_name += p_sphotons->SoftQEDGenerator();
     msg_Debugging()<<METHOD<<"(){\n";
@@ -249,7 +240,7 @@ Flavour Signal_Process_FS_QED_Correction::DetermineResonanceFlavour
   for (size_t j=0;j<partvec.size();++j) msg_Debugging()<<*partvec[j]<<endl;
   SubInfoVector siv;
   FindSubProcessInfosContainingLeptons
-  (p_mehandlers->begin()->second->Process()->Info(),siv);
+  (p_mehandler->Process()->Info(),siv);
   // if two leptons of same flavour, take Z for now
   if ((partvec.size()==2) &&
       (partvec[0]->Flav()==partvec[1]->Flav().Bar())) {
@@ -321,7 +312,7 @@ Blob_Vector Signal_Process_FS_QED_Correction::BuildResonantBlobs
 (Particle_Vector& pv)
 {
   // get production subprocesses for the active process
-  std::string name(p_mehandlers->begin()->second->Process()->Name());
+  std::string name(p_mehandler->Process()->Name());
   SubInfoVector siv(m_proc_lep_map[name]);
   // create blobs accordingly (only if lepton list is unambiguous)
   Blob_Vector blobs;

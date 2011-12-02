@@ -47,7 +47,7 @@ HiddenValley::HiddenValley(std::string _dir,std::string _file,bool _elementary) 
   }
 }
 
-bool HiddenValley::ModelInit(PDF::ISR_Handler *const isr)
+bool HiddenValley::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
   p_dataread->RereadInFile();
   if (m_elementary)
@@ -83,7 +83,7 @@ void HiddenValley::ParticleInit() {
   ReadParticleData();
 }
 
-void HiddenValley::FillSpectrum(PDF::ISR_Handler *const isr) {
+void HiddenValley::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
 
   int    order_alpha_HV = p_dataread->GetValue<int>("ORDER_ALPHA_HV",1);
   double alpha_HV       = p_dataread->GetValue<double>("ALPHA_HV(MZ)",0.118);

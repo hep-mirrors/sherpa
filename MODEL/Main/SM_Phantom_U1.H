@@ -10,12 +10,12 @@ namespace MODEL {
   private :
     Standard_Model *p_sm;
     void ParticleInit();
-    void FillSpectrum(PDF::ISR_Handler *const isr);
+    void FillSpectrum(const PDF::ISR_Handler_Map& isr);
     bool SanityChecks();
   public :
     SM_Phantom_U1(std::string,std::string,bool);
     ~SM_Phantom_U1();
-    bool ModelInit(PDF::ISR_Handler *const isr);
+    bool ModelInit(const PDF::ISR_Handler_Map& isr);
   };
   /*!
     \class SM_Phantom_U1

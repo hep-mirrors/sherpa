@@ -40,7 +40,7 @@ SM_U1_B::SM_U1_B(std::string _dir,std::string _file,bool _elementary) :
   }
 }
 
-bool SM_U1_B::ModelInit(PDF::ISR_Handler *const isr)
+bool SM_U1_B::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
   if (m_elementary)
     msg_Info()<<"Initialize the Standard Model plus U(1)_B from "
@@ -78,7 +78,7 @@ void SM_U1_B::ParticleInit() {
   ReadParticleData();
 }
 
-void SM_U1_B::FillSpectrum(PDF::ISR_Handler *const isr) {
+void SM_U1_B::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
   p_dataread->RereadInFile();
   p_constants->insert(make_pair(string("M_Z'"),    
 				p_dataread->GetValue<double>("M_Z'",-1.)));

@@ -155,9 +155,6 @@ namespace SHERPA {
 
   };// end of class Matrix_Element_Handler
 
-  typedef std::map<std::string,Matrix_Element_Handler *> MEHandlersMap;
-  typedef MEHandlersMap::iterator                        MEHandlerIter;
-
 }// end of namespace SHERPA
 
 #endif

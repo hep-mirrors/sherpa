@@ -59,7 +59,7 @@ namespace SHERPA {
     void PrepareTerminate();
   public:
 
-    Lund_Interface(std::string _m_path,std::string _m_file,bool sherpa);
+    Lund_Interface(std::string _m_path,std::string _m_file);
     ~Lund_Interface();
 
     ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob_List *);

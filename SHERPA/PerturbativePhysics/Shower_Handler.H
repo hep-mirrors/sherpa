@@ -2,12 +2,12 @@
 #define SHERPA_PerturbativePhysics_Shower_Handler_H
 
 #include "ATOOLS/Phys/Blob_List.H"
+#include "PDF/Main/ISR_Handler.H"
 
 namespace MODEL { class Model_Base; }
 
 namespace PDF { 
 
-  class ISR_Handler; 
   class Shower_Base;
 
 }
@@ -45,6 +45,7 @@ namespace SHERPA {
     inline bool On() { return p_shower!=NULL; }
 
   };
+  typedef std::map<PDF::isr::id, Shower_Handler*> Shower_Handler_Map;
 
 }
 
