@@ -6,8 +6,7 @@
 namespace MODEL {
   class Standard_Model : public Model_Base {
     int  m_trivialextension;
-    int  m_ewscheme,m_ckmorder;
-    std::string m_widthscheme;
+    int  m_ckmorder;
     void FixEWParameters();
     void FixCKM();
   protected:
