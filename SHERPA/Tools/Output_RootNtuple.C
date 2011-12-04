@@ -134,7 +134,7 @@ void Output_RootNtuple::PrepareTerminate()
   if (p_t3==NULL) return;
   p_t3->AutoSave();
   delete p_t3;
-  delete p_f;
+  // delete p_f;
   ATOOLS::exh->RemoveTerminatorObject(this);
 #endif
   cout<<"ROOTNTUPLE_OUTPUT stored: "<<m_s2/m_c2<<" +/- "<<sqrt((m_sq2/m_c2-sqr(m_s2/m_c2))/(m_c2-1.))<<" pb  (reweighted 1) \n"; 
