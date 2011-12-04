@@ -70,7 +70,7 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
     ("EVT_FILE_PATH",rpa->gen.Variable("SHERPA_RUN_PATH"));
   int precision       = dr->GetValue<int>("OUTPUT_PRECISION",12);
   m_outmode = dr->GetValue<string>("EVENT_MODE",string("Sherpa"));
-  m_filesize = dr->GetValue<int>("FILE_SIZE",std::numeric_limits<int>::max());
+  m_filesize = dr->GetNumber<long int>("FILE_SIZE",std::numeric_limits<int>::max());
 
   if (!sherpaoutput.empty()) {
     m_outmap["SHERPA"]=
@@ -79,9 +79,9 @@ bool Input_Output_Handler::InitialiseOutput(Data_Reader* dr) {
   if (!rootntupleoutput.empty()) {
 #ifdef USING__ROOT
     if (rootntupleoutput[0] == '/'){
-    m_outmap["ROOTNTUPLE"]= new Output_RootNtuple(rootntupleoutput,".root", precision);
+      m_outmap["ROOTNTUPLE"]= new Output_RootNtuple(rootntupleoutput,".root", precision,m_filesize);
     } else {
-      m_outmap["ROOTNTUPLE"]= new Output_RootNtuple(evtpath+"/"+rootntupleoutput,".root", precision);
+      m_outmap["ROOTNTUPLE"]= new Output_RootNtuple(evtpath+"/"+rootntupleoutput,".root", precision,m_filesize);
     }
 #else
     THROW(fatal_error,"ROOTNTUPLE format can only be created when Sherpa was linked "

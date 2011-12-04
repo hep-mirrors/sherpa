@@ -4,6 +4,7 @@
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
 #include "MODEL/Main/Model_Base.H"
 
@@ -20,7 +21,8 @@ MPI_Datatype MPI_rntuple_evt2;
 MPI_Datatype MPI_Vec4D;
 #endif
 
-Output_RootNtuple::Output_RootNtuple(std::string basename,std::string ext,int precision)
+Output_RootNtuple::Output_RootNtuple(std::string basename,std::string ext,
+				     int precision,long int filesize)
 {
   Data_Reader dr(" ",";","!","=");
   dr.AddComment("#");
@@ -85,7 +87,7 @@ Output_RootNtuple::Output_RootNtuple(std::string basename,std::string ext,int pr
 #endif
   p_f=new TFile((m_basename+m_ext).c_str(),"recreate");
   p_t3 = new TTree("t3","Reconst ntuple");
-  p_t3->SetMaxTreeSize(10000000000);
+  p_t3->SetMaxTreeSize(Min(filesize,Number<long int>("100GB")));
   p_t3->Branch("id",&m_id,"id/I");
   p_t3->Branch("nparticle",&m_nparticle,"nparticle/I");
   p_t3->Branch("px",p_px,"px[nparticle]/F");

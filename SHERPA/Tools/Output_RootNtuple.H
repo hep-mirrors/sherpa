@@ -55,7 +55,8 @@ namespace SHERPA {
     void StoreEvt();
     void MPISync();
   public:
-    Output_RootNtuple(std::string basename,std::string ext,int precision);
+    Output_RootNtuple(std::string basename,std::string ext,
+		      int precision,long int filesize);
     ~Output_RootNtuple();
     void ChangeFile(std::string nr);
     void Output(ATOOLS::Blob_List* blobs, double weight);

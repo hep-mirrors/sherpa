@@ -206,6 +206,14 @@ MatrixFromString(std::vector<std::vector<Read_Type> > &result,
   else return false; 
 }
 
+template <class Read_Type> inline Read_Type Data_Reader::
+GetNumber(const std::string &parameter,const Read_Type &def)
+{ 
+  std::string val;
+  if (!ReadFromFile<std::string>(val,parameter)) return def; 
+  return Number<Read_Type>(val); 
+}
+
 namespace ATOOLS {
 
   template bool Data_Reader::ReadFromFile<int>
@@ -297,5 +305,12 @@ namespace ATOOLS {
   (std::vector<std::vector<double> > &,std::string);
   template bool Data_Reader::MatrixFromString<std::string>
   (std::vector<std::vector<std::string> > &,std::string);
+
+  template int Data_Reader::GetNumber<int>
+  (const std::string &parameter,const int &def);
+  template long int Data_Reader::GetNumber<long int>
+  (const std::string &parameter,const long int &def);
+  template double Data_Reader::GetNumber<double>
+  (const std::string &parameter,const double &def);
 
 }

@@ -25,7 +25,7 @@ namespace SHERPA {
   class Input_Output_Handler {
   private :
     std::map<std::string, Output_Base *> m_outmap;
-    int m_filesize, m_evtnumber, m_evtcount;
+    long int m_filesize, m_evtnumber, m_evtcount;
 #ifdef USING__HEPMC2
     HepMC2_Interface         * p_hepmc2;
 #endif

@@ -50,6 +50,9 @@ namespace ATOOLS {
     bool MatrixFromString(std::vector<std::vector<Read_Type> >& values,
 			  std::string parameter=nullstring);
 
+    template <class Read_Type> Read_Type
+    GetNumber(const std::string &parameter,const Read_Type &def);
+
     void SetString(const std::string string);
 
     // inline functions

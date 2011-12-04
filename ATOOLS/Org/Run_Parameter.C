@@ -212,7 +212,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 #endif
   MakeDir(gen.m_variables["HOME"]+"/.sherpa/",true);
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
-  gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
+  gen.m_nevents            = dr.GetNumber<long int>("EVENTS",100);
   s_loader->AddPath(rpa->gen.Variable("SHERPA_RUN_PATH"));
 
   // read only if defined (no error message if not defined)
