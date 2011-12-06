@@ -9,7 +9,7 @@
 using namespace ATOOLS;
 
 Data_Reader::Data_Reader(): 
-  Read_Write_Base(2,0)
+  Read_Write_Base(2,0), m_allowunits(false)
 {
   SetInFileMode(fom::permanent);
 }
@@ -22,7 +22,7 @@ Data_Reader::~Data_Reader()
 
 Data_Reader::Data_Reader(const std::string &wordsep,const std::string &linesep,
 			 const std::string &comment,const std::string &ignore):
-  Read_Write_Base(2,0,wordsep,linesep,comment,ignore)
+  Read_Write_Base(2,0,wordsep,linesep,comment,ignore), m_allowunits(false)
 {
   SetInFileMode(fom::permanent);
 }
@@ -55,6 +55,7 @@ Read_Type Data_Reader::Convert(std::string cur) const
       typeid(value)==typeid(float) ||	typeid(value)==typeid(double)) {
     if (!AllowNans()) 
       if (cur=="nan" || cur=="inf" || cur=="NAN" || cur=="INF") cur="1";
+    if (AllowUnits()) cur=ReplaceUnits(cur);
     if (Interprete()) cur=Interpreter()->Interprete(StripEscapes(cur));
   }
   return ATOOLS::ToType<Read_Type>(cur);
@@ -206,14 +207,6 @@ MatrixFromString(std::vector<std::vector<Read_Type> > &result,
   else return false; 
 }
 
-template <class Read_Type> inline Read_Type Data_Reader::
-GetNumber(const std::string &parameter,const Read_Type &def)
-{ 
-  std::string val;
-  if (!ReadFromFile<std::string>(val,parameter)) return def; 
-  return Number<Read_Type>(val); 
-}
-
 namespace ATOOLS {
 
   template bool Data_Reader::ReadFromFile<int>
@@ -305,12 +298,5 @@ namespace ATOOLS {
   (std::vector<std::vector<double> > &,std::string);
   template bool Data_Reader::MatrixFromString<std::string>
   (std::vector<std::vector<std::string> > &,std::string);
-
-  template int Data_Reader::GetNumber<int>
-  (const std::string &parameter,const int &def);
-  template long int Data_Reader::GetNumber<long int>
-  (const std::string &parameter,const long int &def);
-  template double Data_Reader::GetNumber<double>
-  (const std::string &parameter,const double &def);
 
 }

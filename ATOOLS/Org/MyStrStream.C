@@ -27,27 +27,23 @@ namespace ATOOLS {
     return result;
   }
 
-  template <class Type> Type Number(std::string v)
+  std::string ReplaceUnits(std::string v)
   {
-    Type f(1);
+    std::string f("");
     size_t l(v.length());
     for (size_t i(0);i<l;) {
       if (v[i]==' ' || v[i]=='\t');
-      else if (v[i]=='k') f*=(i+1<l && v[i+1]=='B')?(1<<10):1000;
-      else if (v[i]=='M') f*=(i+1<l && v[i+1]=='B')?(1<<20):1000000;
-      else if (v[i]=='G') f*=(i+1<l && v[i+1]=='B')?(1<<30):1000000000;
+      else if (v[i]=='k') f+=(i+1<l && v[i+1]=='B')?"*(1<<10)":"*1000";
+      else if (v[i]=='M') f+=(i+1<l && v[i+1]=='B')?"*(1<<20)":"*1000000";
+      else if (v[i]=='G') f+=(i+1<l && v[i+1]=='B')?"*(1<<30)":"*1000000000";
       else {
 	++i;
 	continue;
       }
-      v.erase(i,1);
-      if (v[i]=='B') v.erase(i,1);
+      v.replace(i,(i+1<l && v[i+1]=='B')?2:1,f);
+      f="";
     }
-    return ToType<Type>(v)*f;
+    return v;
   }
-
-  template int Number<int>(std::string v);
-  template long int Number<long int>(std::string v);
-  template double Number<double>(std::string v);
 
 }// end of namespace ATOOLS;

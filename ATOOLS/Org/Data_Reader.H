@@ -10,6 +10,8 @@ namespace ATOOLS {
     
     std::string m_string;
 
+    bool m_allowunits;
+
     template <class Read_Type > Read_Type 
     Convert(std::string cur) const;
 
@@ -50,9 +52,6 @@ namespace ATOOLS {
     bool MatrixFromString(std::vector<std::vector<Read_Type> >& values,
 			  std::string parameter=nullstring);
 
-    template <class Read_Type> Read_Type
-    GetNumber(const std::string &parameter,const Read_Type &def);
-
     void SetString(const std::string string);
 
     // inline functions
@@ -74,6 +73,10 @@ namespace ATOOLS {
       if (!ReadFromString(val,parameter)) return def; 
       return val; 
     }
+
+    inline void SetAllowUnits(const bool units) { m_allowunits=units; }
+
+    inline bool AllowUnits() const { return m_allowunits; }
 
   }; // end of class Data_Reader
 

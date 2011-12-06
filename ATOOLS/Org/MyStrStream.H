@@ -64,7 +64,7 @@ namespace ATOOLS {
   std::string StringReplace(const std::string &original,
                             const std::string &from, const std::string &to);
 
-  template <class Type> Type Number(std::string v);
+  std::string ReplaceUnits(std::string v);
 
 }// end of namespace ATOOLS;
 

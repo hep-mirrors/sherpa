@@ -212,25 +212,23 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 #endif
   MakeDir(gen.m_variables["HOME"]+"/.sherpa/",true);
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
-  gen.m_nevents            = dr.GetNumber<long int>("EVENTS",100);
+  dr.SetAllowUnits(true);
+  gen.m_nevents            = dr.GetValue<long int>("EVENTS",100);
+  dr.SetAllowUnits(false);
   s_loader->AddPath(rpa->gen.Variable("SHERPA_RUN_PATH"));
 
   // read only if defined (no error message if not defined)
-  Data_Reader dreader(" ",";","!","=");
-  dreader.AddComment("#");
-  dreader.AddWordSeparator("\t");
-  dreader.SetInputFile(m_path+file);
   std::vector<long int> seeds;
   std::vector<long int> seed1;
   std::vector<long int> seed2;
   gen.m_seed2 = -1;
-  if (dreader.VectorFromFile(seeds,"RANDOM_SEED")) {
+  if (dr.VectorFromFile(seeds,"RANDOM_SEED")) {
     gen.m_seed = seeds[0];
     // if 2nd seed is given, store it
     if (seeds.size() == 2) { gen.m_seed2 = seeds[1]; } 
   } 
-  else if (dreader.VectorFromFile(seed1,"RANDOM_SEED1") && 
-	   dreader.VectorFromFile(seed2,"RANDOM_SEED2")) {
+  else if (dr.VectorFromFile(seed1,"RANDOM_SEED1") && 
+	   dr.VectorFromFile(seed2,"RANDOM_SEED2")) {
     gen.m_seed  = seed1[0];
     gen.m_seed2 = seed2[0]; 
   }
@@ -262,7 +260,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   msg_Tracking()<<METHOD<<"(): Getting memory limit "
 		<<slim/double(1<<30)<<" GB."<<std::endl;
   std::vector<std::string> aspars;
-  if (!dreader.VectorFromFile(aspars,"RLIMIT_AS")) {
+  if (!dr.VectorFromFile(aspars,"RLIMIT_AS")) {
     lims.rlim_cur=(rlim_t)(slim-double(100*(1<<20)));
   }
   else {
