@@ -192,11 +192,9 @@ bool Amplitude::AddRSDipoles()
   for (size_t j(0);j<m_n;++j) {
     for (size_t i(0);i<m_cur[2].size();++i) {
       if (m_cur[2][i]->CId()&m_cur[1][j]->CId()) continue;
-      int sc[3]={m_cur[2][i]->In().front()->JA()->Flav().StrongCharge(),
-		 m_cur[2][i]->In().front()->JB()->Flav().StrongCharge(),
-		 m_cur[1][j]->Flav().StrongCharge()};
       // begin temporary
-      if (sc[0]==0 || sc[1]==0 || sc[2]==0) continue;
+      if (!(m_cur[2][i]->In().front()->OrderQCD()==1 &&
+	    m_cur[1][j]->Flav().StrongCharge())) continue;
       // end temporary
       if (m_cur[2][i]->In().size()!=1)
 	THROW(not_implemented,"Invalid current");
