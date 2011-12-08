@@ -47,7 +47,7 @@ void Dipole_Kinematics::Evaluate()
   Vec4D Q(m_pi+m_pj+m_pk);
   if (m_type==0) {
     double mij2=sqr(p_ijt->Flav().Mass());
-    double mk2=sqr(p_k->Out().front()->JC()->Flav().Mass());
+    double mk2=sqr(p_k->Flav().Mass());
     double Q2=Q.Abs2(), lrat=Lam(Q2,mij2,mk2)/Lam(Q2,(m_pi+m_pj).Abs2(),mk2);
     Vec4D pkt(sqrt(lrat)*(m_pk-(Q*m_pk/Q2)*Q)+(Q2+mk2-mij2)/(2.*Q2)*Q);
     p_ijt->SetP(Q-pkt);
@@ -67,7 +67,7 @@ void Dipole_Kinematics::Evaluate()
   }
   else if (m_type==2) {
     double mij2=sqr(p_ijt->Flav().Mass());
-    double ma2=sqr(p_k->Out().front()->JC()->Flav().Mass());
+    double ma2=sqr(p_k->Flav().Mass());
     double Q2=Q.Abs2(), lrat=Lam(Q2,mij2,ma2)/Lam(Q2,(m_pi+m_pj).Abs2(),ma2);
     Vec4D pkt(sqrt(lrat)*(m_pk-(Q*m_pk/Q2)*Q)+(Q2+ma2-mij2)/(2.*Q2)*Q);
     p_ijt->SetP(Q-pkt);
@@ -87,7 +87,7 @@ void Dipole_Kinematics::Evaluate()
   }
   else if (m_type==1) {
     double pjpa=m_pj*m_pi, pkpa=m_pk*m_pi, pjpk=m_pj*m_pk, Q2=Q.Abs2();
-    double mk2=sqr(p_k->Out().front()->JC()->Flav().Mass());
+    double mk2=sqr(p_k->Flav().Mass());
     double sjk=(m_pj+m_pk).Abs2(), lrat=Lam(Q2,mk2,0.0)/Lam(Q2,sjk,0.0);
     p_ijt->SetP(sqrt(lrat)*(m_pi-(Q2-sjk)/(2.0*Q2)*Q)
 		+(Q2-mk2)/(2.0*Q2)*Q);
