@@ -30,9 +30,10 @@ Phase_Space_Integrator::Phase_Space_Integrator()
   if (!read.ReadFromFile(nmax,"PSI_NMAX")) 
     nmax=std::numeric_limits<long unsigned int>::max();
   else msg_Info()<<METHOD<<"(): Set n_{max} = "<<nmax<<".\n";
+  if (!read.ReadFromFile(wadjust,"PSI_ADJUST_POINTS")) wadjust=1;
+  read.SetAllowUnits(true);
   if (!read.ReadFromFile(itmin,"PSI_ITMIN")) itmin=5000;
   else msg_Info()<<METHOD<<"(): Set n_{iter} = "<<itmin<<".\n";
-  if (!read.ReadFromFile(wadjust,"PSI_ADJUST_POINTS")) wadjust=1;
   addtime=0.0;
 }
 

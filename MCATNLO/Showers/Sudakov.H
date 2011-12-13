@@ -24,7 +24,7 @@ namespace MCATNLO {
     ATOOLS::Mass_Selector *  p_rms;
     ATOOLS::Flavour m_cfl, m_flspec;
     Parton * p_split, * p_spect;
-    SF_EEE_Map m_ffmap, m_fimap, m_ifmap, m_iimap;
+    SF_EEE_Map m_fffmap, m_ffimap, m_iffmap, m_ifimap, m_fifmap, m_fiimap;
     SF_EEE_Map m_sffmap, m_sfimap, m_sifmap, m_siimap;
     std::vector<Splitting_Function_Base *> m_addsplittings;
     Shower *p_shower;
@@ -58,10 +58,12 @@ namespace MCATNLO {
 
     inline ATOOLS::Mass_Selector *MS() const { return p_rms; }
 
-    inline const SF_EEE_Map &FFMap() const { return m_ffmap; }
-    inline const SF_EEE_Map &FIMap() const { return m_fimap; }
-    inline const SF_EEE_Map &IFMap() const { return m_ifmap; }
-    inline const SF_EEE_Map &IIMap() const { return m_iimap; }
+    inline const SF_EEE_Map &FFFMap() const { return m_fffmap; }
+    inline const SF_EEE_Map &FFIMap() const { return m_ffimap; }
+    inline const SF_EEE_Map &IFFMap() const { return m_iffmap; }
+    inline const SF_EEE_Map &IFIMap() const { return m_ifimap; }
+    inline const SF_EEE_Map &FIFMap() const { return m_fifmap; }
+    inline const SF_EEE_Map &FIIMap() const { return m_fiimap; }
 
     const SF_E_Map *HasKernel(const ATOOLS::Flavour &fli,
 			      const ATOOLS::Flavour &flj,

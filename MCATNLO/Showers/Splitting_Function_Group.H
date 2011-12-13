@@ -34,6 +34,8 @@ namespace MCATNLO {
     virtual const ATOOLS::Flavour & GetFlavourC() const    { return p_selected->GetFlavourC(); }
     virtual const ATOOLS::Flavour & GetFlavourSpec() const { return p_selected->GetFlavourSpec(); }
 
+    virtual int GetCol() const { return p_selected->GetCol(); }
+
     inline Splitting_Function_Base *Selected() const { return p_selected; }
 
     friend std::ostream& operator<<(std::ostream &,Splitting_Function_Group &);

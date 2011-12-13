@@ -54,6 +54,7 @@ Single_Real_Correction::Single_Real_Correction() :
 
 Single_Real_Correction::~Single_Real_Correction()
 {
+  p_scale=NULL;
   p_selector=NULL;
   if (p_tree_process) delete p_tree_process;
   for (size_t i=0;i<m_subtermlist.size();i++) delete m_subtermlist[i];
@@ -355,9 +356,9 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   trg=p_tree_process->Selector()->JetTrigger(_mom,&m_subevtlist);
   trg|=!p_tree_process->Selector()->On();
 
+  m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->CalculateScale(_mom,mode);
+  m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
   if (trg) {
-    m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->CalculateScale(_mom,mode);
-    m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
     m_realevt.m_me = m_realevt.m_mewgt
       = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
     if (IsBad(m_realevt.m_me)) res=false;
@@ -383,6 +384,7 @@ bool Single_Real_Correction::Trigger(const ATOOLS::Vec4D_Vector &p)
 void Single_Real_Correction::SetScale(const Scale_Setter_Arguments &args)
 {
   p_tree_process->SetScale(args);
+  p_scale=p_tree_process->ScaleSetter();
   for (size_t i(0);i<m_subtermlist.size();++i) {
     m_subtermlist[i]->SetScale(args);
   }

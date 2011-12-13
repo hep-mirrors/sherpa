@@ -252,13 +252,24 @@ double MCatNLO_Process::OneHEvent(const int wmode)
       p_rproc->SetSelected(rproc=(*p_rproc)[i]);
       break;
     }
+  int swaped(p_rsproc->Selected()->Integrator()->InSwaped());
+  p_rsproc->Selected()->Integrator()->RestoreInOrder();
+  rproc->Integrator()->RestoreInOrder();
   Vec4D_Vector &p(p_rsproc->Selected()->Integrator()->Momenta());
+  rproc->SetFixedScale(p_rsproc->Selected()->ScaleSetter(1)->Scales());
+  rproc->ScaleSetter(1)->CalculateScale(Vec4D_Vector(),swaped);
+  rproc->SetFixedScale(std::vector<double>());
+  rproc->GetMEwgtinfo()->m_mur2=
+    p_rsproc->Selected()->GetMEwgtinfo()->m_mur2;
   rproc->Trigger(p);
   rproc->Differential(p);
   rproc->Differential2();
-  rproc->Integrator()->RestoreInOrder();
-  if (p_rsproc->Selected()->Integrator()->InSwaped())
+  if (!rproc->IsMapped()) {
+  }
+  if (swaped) {
+    p_rsproc->Selected()->Integrator()->SwapInOrder();
     rproc->Integrator()->SwapInOrder();
+  }
   Selector_Base *jf=(*p_bviproc)[0]->
     Selector()->GetSelector("Jetfinder");
   if (jf) {
@@ -285,13 +296,17 @@ double MCatNLO_Process::OneSEvent(const int wmode)
       p_bproc->SetSelected(bproc=(*p_bproc)[i]);
       break;
     }
+  int swaped(p_bviproc->Selected()->Integrator()->InSwaped());
+  p_bviproc->Selected()->Integrator()->RestoreInOrder();
+  bproc->Integrator()->RestoreInOrder();
   Vec4D_Vector &p(p_bviproc->Selected()->Integrator()->Momenta());
   bproc->Trigger(p);
   bproc->Differential(p);
   bproc->Differential2();
-  bproc->Integrator()->RestoreInOrder();
-  if (p_bviproc->Selected()->Integrator()->InSwaped())
+  if (swaped) {
+    p_bviproc->Selected()->Integrator()->SwapInOrder();
     bproc->Integrator()->SwapInOrder();
+  }
   p_ampl = dynamic_cast<Single_Process*>(bproc)->Cluster(256);
   SortFlavours(p_ampl);
   p_ampl->SetProcs(&m_pmap);
@@ -310,6 +325,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     if (ampl->Leg(0)->Mom().PPlus()>ampl->Leg(1)->Mom().PPlus())
       std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
     rproc->Integrator()->SetMomenta(*ampl);
+    rproc->GetMEwgtinfo()->m_mur2=bproc->GetMEwgtinfo()->m_mur2;
     Cluster_Leg *lij(NULL);
     for (size_t i(0);i<next->Legs().size();++i)
       if (next->Leg(i)->K()) {

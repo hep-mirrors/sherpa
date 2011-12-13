@@ -492,8 +492,10 @@ void Combine_Table::FillTable(Leg **legs,const int nlegs,const int nampl)
 		if (((sci==8 || scj==8 || sc==8) && 
 		     (sci!=0 && scj!=0 && sc!=0)) ||
 		    (sci!=8 && scj!=8 && sc!=8) ||
-		    Combinable(lmo,p_legs[k][l],i,l))
+		    Combinable(lmo,p_legs[k][l],i,l)) {
 		  AddPossibility(i,j,l,k);
+		  if (sci==8 && scj==8) AddPossibility(j,i,l,k);
+		}
 	      }
 	  }
 	}
@@ -705,16 +707,16 @@ bool Combine_Table::SelectWinner(const size_t &mode)
 Combine_Table *Combine_Table::CreateNext()
 {
   --m_nl;
+  int i(m_cdata_winner->first.m_i), j(m_cdata_winner->first.m_j);
+  if (i>j) std::swap<int>(i,j);
   if (!m_cdata_winner->second.p_down) {
     Vec4D * amoms;
     // generate new momenta
-    if (!CombineMoms(p_moms,m_cdata_winner->first.m_i,
-		     m_cdata_winner->first.m_j,m_nl,amoms)) return NULL;
+    if (!CombineMoms(p_moms,i,j,m_nl,amoms)) return NULL;
     Leg ** alegs = new Leg*[m_cdata_winner->second.m_graphs.size()];
     for (size_t k=0;k<m_cdata_winner->second.m_graphs.size();++k) {
       alegs[k] = CombineLegs
-	(p_legs[m_cdata_winner->second.m_graphs[k]],
-	 m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,m_nl,
+	(p_legs[m_cdata_winner->second.m_graphs[k]],i,j,m_nl,
 	 m_cdata_winner->second.m_pt2ij.m_mu2,m_cdata_winner->second.m_pt2ij.m_kin);
     }
     m_cdata_winner->second.p_down = 
@@ -722,8 +724,7 @@ Combine_Table *Combine_Table::CreateNext()
     {
       Combine_Table *tab((Combine_Table*)m_cdata_winner->second.p_down);
       tab->m_decids=m_decids;
-      size_t pid(p_legs[0][m_cdata_winner->first.m_i].ID()+
-		 p_legs[0][m_cdata_winner->first.m_j].ID());
+      size_t pid(p_legs[0][i].ID()+p_legs[0][j].ID());
       for (size_t i(0);i<p_decids->size();++i)
         if ((*p_decids)[i]->m_id==pid) {
 	  tab->m_decids.push_back((*p_decids)[i]);
@@ -735,7 +736,7 @@ Combine_Table *Combine_Table::CreateNext()
   } 
   else {
     if (!((Combine_Table*)m_cdata_winner->second.p_down)->
-	CombineMoms(p_moms,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,m_nl)) return NULL;
+	CombineMoms(p_moms,i,j,m_nl)) return NULL;
   }
 
   Combine_Table *tab((Combine_Table*)m_cdata_winner->second.p_down);

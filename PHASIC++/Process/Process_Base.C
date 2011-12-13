@@ -275,14 +275,14 @@ void Process_Base::SortFlavours(Process_Info &pi)
 
 void Process_Base::Init(const Process_Info &pi,
 			BEAM::Beam_Spectra_Handler *const beamhandler,
-			PDF::ISR_Handler *const isrhandler)
+			PDF::ISR_Handler *const isrhandler,const int mode)
 {
   m_pinfo=pi;
   m_nin=m_pinfo.m_ii.NExternal();
   m_nout=m_pinfo.m_fi.NExternal();
   m_flavs.resize(m_nin+m_nout);
   if (m_pinfo.m_ii.m_ps.size()>0 && m_pinfo.m_fi.m_ps.size()>0) {
-    SortFlavours(m_pinfo);
+    if (!(mode&1)) SortFlavours(m_pinfo);
     std::vector<Flavour> fl;
     m_pinfo.m_ii.GetExternal(fl);
     m_pinfo.m_fi.GetExternal(fl);

@@ -35,8 +35,11 @@ CS_Parameters CS_Cluster_Definitions::KT2
  ATOOLS::Mass_Selector *const ms,const int ikin)
 {
   p_ms=ms;
-  int kin(ikin<0?p_shower->KinScheme():ikin);
-  if ((i->Id()&3)<(j->Id()&3)) std::swap<const Cluster_Leg*>(i,j);
+  int kin(ikin<0?p_shower->KinScheme():ikin), col(1);
+  if ((i->Id()&3)<(j->Id()&3)) {
+    std::swap<const Cluster_Leg*>(i,j);
+    col=-1;
+  }
   p_b=ampl->Leg(i==ampl->Leg(0)?1:0);
   Vec4D pi(i->Mom()), pj(j->Mom()), pk(k->Mom());
   double Q2=(pi+pj+pk).Abs2(), mb2=p_ms->Mass2(p_b->Flav());
@@ -93,6 +96,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
       }
     }
   }
+  cs.m_col=col;
   KernelWeight(i,j,k,mo,cs);
   return cs;
 }
@@ -128,10 +132,12 @@ void CS_Cluster_Definitions::KernelWeight
  const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo,
  CS_Parameters &cs) const
 {
-  const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFMap());
-  if (cs.m_mode==2) cmap=&p_shower->GetSudakov()->FIMap();
-  else if (cs.m_mode==1) cmap=&p_shower->GetSudakov()->IFMap();
-  else if (cs.m_mode==3) cmap=&p_shower->GetSudakov()->IIMap();
+  const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFFMap());
+  if (cs.m_mode==2) cmap=&p_shower->GetSudakov()->FFIMap();
+  else if (cs.m_mode==1) cmap=cs.m_col>0?&p_shower->GetSudakov()->IFFMap():
+			   &p_shower->GetSudakov()->FIFMap();
+  else if (cs.m_mode==3) cmap=cs.m_col>0?&p_shower->GetSudakov()->IFIMap():
+			   &p_shower->GetSudakov()->FIIMap();
   SF_EEE_Map::const_iterator eees(cmap->find(ProperFlav(i->Flav())));
   if (eees==cmap->end()) {
     msg_Debugging()<<"No splitting function, skip kernel weight calc for "
@@ -163,15 +169,16 @@ void CS_Cluster_Definitions::KernelWeight
     cs.m_ws=cs.m_wk=-1.0;
     return;
   }
+  double Q2=dabs((i->Mom()+j->Mom()+k->Mom()).Abs2());
   cs.p_sf=cdip;
-  cs.m_mu2=cs.m_kt2*cdip->Coupling()->CplFac(cs.m_kt2);
+  p_shower->SetMS(p_ms);
+  cdip->SetFlavourSpec(fls);
+  cs.m_mu2=cdip->Lorentz()->Mu2(cs.m_z,cs.m_y,Q2);
+  cs.m_mu2=Max(cs.m_mu2,p_shower->GetSudakov()->PT2Min());
   cs.m_idi=i->Id();
   cs.m_idj=j->Id();
   cs.m_idk=k->Id();
   if (!(m_mode&1)) return;
-  p_shower->SetMS(p_ms);
-  cdip->SetFlavourSpec(fls);
-  double Q2=dabs((i->Mom()+j->Mom()+k->Mom()).Abs2());
   double scale=cs.m_kt2, eta=1.0;
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
@@ -181,7 +188,8 @@ void CS_Cluster_Definitions::KernelWeight
       (m_amode==1 && !cdip->On()))
     cs.m_wk=sqrt(std::numeric_limits<double>::min());
   cs.m_ws=cs.m_kt2/cs.m_wk;
-  msg_Debugging()<<"Kernel weight ["<<cs.m_mode<<"] ( x = "<<eta
+  msg_Debugging()<<"Kernel weight [m="
+		 <<cs.m_mode<<",c="<<cs.m_col<<"] ( x = "<<eta
 		 <<" ) {\n  "<<*i<<"\n  "<<*j<<"\n  "<<*k
 		 <<"\n} -> w = "<<cs.m_wk<<" ("<<cs.m_ws<<")\n";
 }

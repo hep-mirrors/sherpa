@@ -34,8 +34,11 @@ CS_Parameters CS_Cluster_Definitions::KT2
  ATOOLS::Mass_Selector *const ms,const int ikin)
 {
   p_ms=ms;
-  int kin(ikin<0?p_shower->KinScheme():ikin);
-  if ((i->Id()&3)<(j->Id()&3)) std::swap<const Cluster_Leg*>(i,j);
+  int kin(ikin<0?p_shower->KinScheme():ikin), col(1);
+  if ((i->Id()&3)<(j->Id()&3)) {
+    std::swap<const Cluster_Leg*>(i,j);
+    col=-1;
+  }
   p_b=ampl->Leg(i==ampl->Leg(0)?1:0);
   Vec4D pi(i->Mom()), pj(j->Mom()), pk(k->Mom());
   double Q2=(pi+pj+pk).Abs2(), mb2=p_ms->Mass2(p_b->Flav());
@@ -92,6 +95,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
       }
     }
   }
+  cs.m_col=col;
   KernelWeight(i,j,k,mo,cs);
   return cs;
 }
@@ -127,10 +131,12 @@ void CS_Cluster_Definitions::KernelWeight
  const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo,
  CS_Parameters &cs) const
 {
-  const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFMap());
-  if (cs.m_mode==2) cmap=&p_shower->GetSudakov()->FIMap();
-  else if (cs.m_mode==1) cmap=&p_shower->GetSudakov()->IFMap();
-  else if (cs.m_mode==3) cmap=&p_shower->GetSudakov()->IIMap();
+  const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFFMap());
+  if (cs.m_mode==2) cmap=&p_shower->GetSudakov()->FFIMap();
+  else if (cs.m_mode==1) cmap=cs.m_col>0?&p_shower->GetSudakov()->IFFMap():
+			   &p_shower->GetSudakov()->FIFMap();
+  else if (cs.m_mode==3) cmap=cs.m_col>0?&p_shower->GetSudakov()->IFIMap():
+			   &p_shower->GetSudakov()->FIIMap();
   SF_EEE_Map::const_iterator eees(cmap->find(ProperFlav(i->Flav())));
   if (eees==cmap->end()) {
     msg_Debugging()<<"No splitting function (i), skip kernel weight calc\n";
@@ -156,14 +162,15 @@ void CS_Cluster_Definitions::KernelWeight
     cs.m_ws=cs.m_wk=-1.0;
     return;
   }
+  double Q2=dabs((i->Mom()+j->Mom()+k->Mom()).Abs2());
   cs.p_sf=cdip;
-  cs.m_mu2=Max(cs.m_kt2,p_shower->GetSudakov()->PT2Min());
+  p_shower->SetMS(p_ms);
+  cdip->SetFlavourSpec(fls);
+  cs.m_mu2=cdip->Lorentz()->Mu2(cs.m_z,cs.m_y,Q2);
+  cs.m_mu2=Max(cs.m_mu2,p_shower->GetSudakov()->PT2Min());
   cs.m_mu2*=cdip->Coupling()->CplFac(cs.m_mu2);
   if (!cdip->On()) cs.m_mu2=Max(cs.m_mu2,sqr(mo.Mass()));
   if (!(m_mode&1)) return;
-  p_shower->SetMS(p_ms);
-  cdip->SetFlavourSpec(fls);
-  double Q2=dabs((i->Mom()+j->Mom()+k->Mom()).Abs2());
   double scale=cs.m_kt2, eta=1.0;
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
@@ -178,7 +185,7 @@ void CS_Cluster_Definitions::KernelWeight
     cs.m_ws=1.0/cs.m_wk;
   }
   msg_Debugging()<<"Kernel weight (A="<<AMode()
-		 <<") ["<<cs.m_mode<<"] ( x = "<<eta
+		 <<") [m="<<cs.m_mode<<",c="<<cs.m_col<<"] ( x = "<<eta
 		 <<" ) {\n  "<<*i<<"\n  "<<*j<<"\n  "<<*k
 		 <<"\n} -> w = "<<cs.m_wk<<" ("<<cs.m_ws<<")\n";
 }
@@ -234,7 +241,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
   return after;
 }
 
-double CS_Cluster_Definitions::CoreScale
+CParam CS_Cluster_Definitions::CoreScale
 (ATOOLS::Cluster_Amplitude *const ampl)
 {
   if (ampl->Legs().size()!=4) THROW(fatal_error,"Invalid function call");
@@ -262,7 +269,7 @@ double CS_Cluster_Definitions::CoreScale
 	       <<"\\sum p = "<<psum<<" in\n"<<*ampl<<std::endl;
   }
   PHASIC::Single_Process *proc(ampl->Procs<PHASIC::Single_Process>());
-  double kt2cmin((p[0]+p[1]).Abs2());
+  double kt2cmin((p[0]+p[1]).Abs2()), mu2min(kt2cmin);
   SP(PHASIC::Color_Integrator) ci(proc->Integrator()->ColorIntegrator());
   for (size_t i(0);i<4;++i) {
     Cluster_Leg *li(ampl->Leg(i));
@@ -276,10 +283,10 @@ double CS_Cluster_Definitions::CoreScale
 	for (size_t f(0);f<cf.size();++f) {
 	  Flavour mo(ProperFlav(cf[f]));
 	  if (mo!=cf[f] || !CheckColors(li,lj,lk,mo)) continue;
-	  const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFMap());
-	  if (i>1 && k<2) cmap=&p_shower->GetSudakov()->FIMap();
-	  else if (i<2 && k>1) cmap=&p_shower->GetSudakov()->IFMap();
-	  else if (i<2 && k<2) cmap=&p_shower->GetSudakov()->IIMap();
+	  const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFFMap());
+	  if (i>1 && k<2) cmap=&p_shower->GetSudakov()->FFIMap();
+	  else if (i<2 && k>1) cmap=&p_shower->GetSudakov()->IFFMap();
+	  else if (i<2 && k<2) cmap=&p_shower->GetSudakov()->IFIMap();
 	  SF_EEE_Map::const_iterator eees(cmap->find(ProperFlav(li->Flav())));
 	  if (eees==cmap->end()) continue;
 	  SF_EE_Map::const_iterator ees
@@ -299,13 +306,15 @@ double CS_Cluster_Definitions::CoreScale
 	  else if (i>1 && cf[f]==lj->Flav()) {
 	    kt2*=dabs((p[i]*p[k])/(p[j]*p[k]));
 	  }
-	  kt2*=cdip->Coupling()->CplFac(kt2);
-	  kt2cmin=Min(kt2cmin,kt2);
+	  if (kt2<kt2cmin) {
+	    kt2cmin=kt2;
+	    mu2min=kt2*cdip->Coupling()->CplFac(kt2);
+	  }
 	}
       }
     }
   }
-  return kt2cmin;
+  return CParam(kt2cmin,kt2cmin,0.0,mu2min,-1);
 }
 
 bool CS_Cluster_Definitions::CheckColors

@@ -35,7 +35,7 @@ Single_LOProcess::Single_LOProcess(const Process_Info &pi,
   m_gen_str(2), m_emit(-1), m_spect(-1),
   p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this)
 {
-  PHASIC::Process_Base::Init(pi, beam, isr);
+  PHASIC::Process_Base::Init(pi, beam, isr, 1);
   AMEGIC::Process_Base::Init();
   m_newlib   = false;
   m_libnumb  = 0;

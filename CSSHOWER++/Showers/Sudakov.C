@@ -84,18 +84,26 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
 	if (v->in[2]==v->in[0]) dmode=1;
 	else if (v->in[1]!=v->in[0] && 
 		 v->in[1].IsAnti() && !v->in[2].IsAnti()) dmode=1;
-	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FF,kfmode,m_ewmode)));
-	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FI,kfmode,m_ewmode)));
+	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FF,kfmode,m_ewmode,1)));
+	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FF,kfmode,m_ewmode,-1)));
+	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FI,kfmode,m_ewmode,1)));
+	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FI,kfmode,m_ewmode,-1)));
 	if (v->in[0].Mass()<100.0) {
-  	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::IF,kfmode,m_ewmode)));
- 	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::II,kfmode,m_ewmode)));
+  	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::IF,kfmode,m_ewmode,1)));
+  	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::IF,kfmode,m_ewmode,-1)));
+ 	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::II,kfmode,m_ewmode,1)));
+ 	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::II,kfmode,m_ewmode,-1)));
 	}
 	if (v->in[1]!=v->in[2]) {
-	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FF,kfmode,m_ewmode)));
-	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FI,kfmode,m_ewmode)));
+	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FF,kfmode,m_ewmode,1)));
+	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FF,kfmode,m_ewmode,-1)));
+	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FI,kfmode,m_ewmode,1)));
+	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FI,kfmode,m_ewmode,-1)));
 	  if (v->in[0].Mass()<100.0) {
-  	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::IF,kfmode,m_ewmode)));
- 	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::II,kfmode,m_ewmode)));
+  	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::IF,kfmode,m_ewmode,1)));
+  	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::IF,kfmode,m_ewmode,-1)));
+ 	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::II,kfmode,m_ewmode,1)));
+ 	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::II,kfmode,m_ewmode,-1)));
 	  }
 	}
       }
@@ -158,9 +166,25 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
     m_addsplittings.push_back(split);
     msg_Debugging()<<"\n";
   }
+  if (split->GetCol()<0) {
+    switch(split->GetType()) {
+    case cstp::IF:
+      m_fifmap[split->GetFlavourA().Bar()]
+	[split->GetFlavourC()]
+	[split->GetFlavourB().Bar()]=split;
+      break;
+    case cstp::II:
+      m_fiimap[split->GetFlavourA().Bar()]
+	[split->GetFlavourC()]
+	[split->GetFlavourB().Bar()]=split;
+      break;
+    default: break;
+    }
+    return;
+  }
   switch(split->GetType()) {
   case cstp::FF:
-    m_ffmap[split->GetFlavourB()]
+    m_fffmap[split->GetFlavourB()]
       [split->GetFlavourC()]
       [split->GetFlavourA()]=split;
     if (split->On())
@@ -169,7 +193,7 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
 	[split->GetFlavourA()]=split;
     break;
   case cstp::FI:
-    m_fimap[split->GetFlavourB()]
+    m_ffimap[split->GetFlavourB()]
       [split->GetFlavourC()]
       [split->GetFlavourA()]=split;
     if (split->On())
@@ -178,7 +202,7 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
 	[split->GetFlavourA()]=split;
     break;
   case cstp::IF:
-    m_ifmap[split->GetFlavourA().Bar()]
+    m_iffmap[split->GetFlavourA().Bar()]
       [split->GetFlavourC()]
       [split->GetFlavourB().Bar()]=split;
     if (split->On())
@@ -187,7 +211,7 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
 	[split->GetFlavourB()]=split;
     break;
   case cstp::II:
-    m_iimap[split->GetFlavourA().Bar()]
+    m_ifimap[split->GetFlavourA().Bar()]
       [split->GetFlavourC()]
       [split->GetFlavourB().Bar()]=split;
     if (split->On())

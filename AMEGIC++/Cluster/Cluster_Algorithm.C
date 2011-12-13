@@ -451,6 +451,7 @@ void Cluster_Algorithm::Convert()
     int iwin, jwin, kwin;
     double mu2;
     double kt2qcd(ct_tmp->GetWinner(iwin,jwin,kwin,mu2));
+    if (iwin>jwin) std::swap<int>(iwin,jwin);
     ct_tmp=ct_tmp->Down();
     const Leg &win(ct_tmp->GetLeg(iwin));
     Cluster_Amplitude *ampl(p_ampl);
@@ -486,9 +487,9 @@ void Cluster_Algorithm::Convert()
     p_ampl->SetKin(win.Kin());
   }
   p_ampl->SetProcs(p_proc);
-  double scale(p_clus->CoreScale(p_ampl));
-  p_ampl->SetKT2(scale);
-  p_ampl->SetMu2(scale);
+  PDF::CParam scale(p_clus->CoreScale(p_ampl));
+  p_ampl->SetKT2(scale.m_kt2);
+  p_ampl->SetMu2(scale.m_mu2);
   size_t nmax(p_proc->Info().m_fi.NMaxExternal());
   if (dynamic_cast<POWHEG_Process*>(p_proc->Parent())) {
     if (p_proc->Parent()->Info().m_fi.NExternal()<=nmax) ++nmax;

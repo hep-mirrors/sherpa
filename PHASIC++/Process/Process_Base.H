@@ -111,7 +111,7 @@ namespace PHASIC {
 
     virtual void Init(const Process_Info &pi,
 		      BEAM::Beam_Spectra_Handler *const beamhandler,
-		      PDF::ISR_Handler *const isrhandler);
+		      PDF::ISR_Handler *const isrhandler,const int mode=0);
 
     virtual bool FillIntegrator(Phase_Space_Handler *const psh);
     virtual bool InitIntegrator(Phase_Space_Handler *const psh);
@@ -190,8 +190,10 @@ namespace PHASIC {
     inline void SwapInOrder() 
     { std::swap<ATOOLS::Flavour>(m_flavs[0],m_flavs[1]); }
 
-    inline Scale_Setter_Base   *ScaleSetter() const   { return p_scale;   }
-    inline KFactor_Setter_Base *KFactorSetter() const { return p_kfactor; }
+    inline Scale_Setter_Base *ScaleSetter(const int map=0) const
+    { return map?(p_mapproc?p_mapproc->p_scale:p_scale):p_scale; }
+    inline KFactor_Setter_Base *KFactorSetter(const int map=0) const
+    { return map?(p_mapproc?p_mapproc->p_kfactor:p_kfactor):p_kfactor; }
 
     inline bool IsMapped() const { return p_mapproc; }
 

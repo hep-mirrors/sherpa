@@ -30,7 +30,7 @@ using namespace ATOOLS;
 double SF_Lorentz::s_pdfcut=1.0e-6;
 
 SF_Lorentz::SF_Lorentz(const SF_Key &key):
-  p_ms(key.p_ms), p_cf(key.p_cf) 
+  p_ms(key.p_ms), p_cf(key.p_cf), m_col(0)
 {
   m_flavs[0]=key.p_v->in[0];
   if (key.m_mode==0) {
@@ -49,6 +49,11 @@ double SF_Lorentz::Lambda
 (const double &a,const double &b,const double &c)
 {
   return a*a+b*b+c*c-2.*(a*b+a*c+b*c);
+}
+
+double SF_Lorentz::AsymmetryFactor(const double z,const double y)
+{
+  return 1.0;
 }
 
 SF_Coupling::SF_Coupling(const SF_Key &key):
@@ -110,7 +115,8 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
 		 <<p_lf->FlB()<<","<<p_lf->FlC()
 		 <<" => ("<<Demangle(typeid(*p_lf).name()).substr(8)
 		 <<","<<Demangle(typeid(*p_cf).name()).substr(8)
-		 <<"), sf="<<m_symf<<", polfac="<<m_polfac;
+		 <<"), sf="<<m_symf<<", polfac="<<m_polfac
+		 <<", col="<<p_lf->Col();
 }
 
 Splitting_Function_Base::~Splitting_Function_Base()
@@ -186,6 +192,11 @@ double Splitting_Function_Base::operator()
 {
   return dabs((*p_lf)(z,y,eta,scale,Q2,sub))
     *BWFactor(z,y,eta,scale,Q2)/m_symf/m_polfac;
+}
+
+double Splitting_Function_Base::AsymmetryFactor(const double z,const double y)
+{
+  return p_lf->AsymmetryFactor(z,y);
 }
 
 double Splitting_Function_Base::OverIntegrated
@@ -330,6 +341,11 @@ const Flavour & Splitting_Function_Base::GetFlavourC() const
 const Flavour & Splitting_Function_Base::GetFlavourSpec() const
 {
   return p_lf->FlSpec();
+}
+
+int Splitting_Function_Base::GetCol() const
+{
+  return p_lf->Col();
 }
 
 bool Splitting_Function_Base::PureQCD() const

@@ -21,7 +21,7 @@ Cluster_Definitions_Base::~Cluster_Definitions_Base()
 {
 }
 
-double Cluster_Definitions_Base::CoreScale
+CParam Cluster_Definitions_Base::CoreScale
 (ATOOLS::Cluster_Amplitude *const ampl)
 {
   THROW(fatal_error,"Invalid function call");

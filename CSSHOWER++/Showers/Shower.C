@@ -17,7 +17,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
 	       Data_Reader *const dataread) : 
   p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
 {
-  int kfmode = dataread->GetValue<int>("CSS_KFACTOR_SCHEME",3);
+  int kfmode = dataread->GetValue<int>("CSS_KFACTOR_SCHEME",1);
   double k0sq   = dataread->GetValue<double>("CSS_PT2MIN",0.7);
   double as_fac = dataread->GetValue<double>("CSS_AS_FAC",1.0);
   m_kscheme = dataread->GetValue<int>("CSS_KIN_SCHEME",0);
@@ -221,12 +221,18 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   newpB->UpdateDaughters();
   newpC->UpdateNewDaughters(newpB);
   split->GetSpect()->UpdateDaughters();
-  split->GetSing()->ArrangeColours(split,newpB,newpC);
+  if (mode==0) split->GetSing()->ArrangeColours(split,newpB,newpC);
+  else {
+    newpB->SetFlow(1,split->GetFlow(1));
+    newpB->SetFlow(2,split->GetFlow(2));
+  }
+  split->SetFlow(1,newpB->GetFlow(1));
+  split->SetFlow(2,newpB->GetFlow(2));
   newpB->SetPrev(split);
   int rd(ReconstructDaughters(split->GetSing(),mode,newpB,newpC));
   split->GetSing()->RemoveParton(newpC);
   if (rd<=0 || (mode&2)) {
-    split->GetSing()->RearrangeColours(split,newpB,newpC);
+    if (mode==0) split->GetSing()->RearrangeColours(split,newpB,newpC);
     if (split->GetNext()) {
       newpB->GetNext()->SetPrev(split);
       split->SetNext(newpB->GetNext());
@@ -479,6 +485,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  fla=flb=rp->GetFlavour();
 	  flc=Flavour(kf_gluon);
 	}
+	rp->SetCol(split->Col());
 	int vstat(MakeKinematics(rp,fla,flb,flc,2));
 	if (vstat==0) return false;
       }
@@ -538,6 +545,7 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
       m_flavA = m_sudakov.GetFlavourA();
       m_flavB = m_sudakov.GetFlavourB();
       m_flavC = m_sudakov.GetFlavourC();
+      split->SetCol(m_sudakov.GetCol());
       split->SetTest(kt2,z,y,phi);
       return true;
     }

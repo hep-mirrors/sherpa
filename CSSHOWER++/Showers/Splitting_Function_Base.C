@@ -30,7 +30,7 @@ using namespace ATOOLS;
 double SF_Lorentz::s_pdfcut=1.0e-6;
 
 SF_Lorentz::SF_Lorentz(const SF_Key &key):
-  p_ms(key.p_ms), p_cf(key.p_cf) 
+  p_ms(key.p_ms), p_cf(key.p_cf), m_col(0)
 {
   m_flavs[0]=key.p_v->in[0];
   if (key.m_mode==0) {
@@ -118,7 +118,8 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
 		 <<p_lf->FlB()<<","<<p_lf->FlC()
 		 <<" => ("<<Demangle(typeid(*p_lf).name()).substr(10)
 		 <<","<<Demangle(typeid(*p_cf).name()).substr(10)
-		 <<"), sf="<<m_symf<<", polfac="<<m_polfac;
+		 <<"), sf="<<m_symf<<", polfac="<<m_polfac
+		 <<", col="<<p_lf->Col();
 }
 
 Splitting_Function_Base::~Splitting_Function_Base()
@@ -334,6 +335,11 @@ const Flavour & Splitting_Function_Base::GetFlavourC() const
 const Flavour & Splitting_Function_Base::GetFlavourSpec() const
 {
   return p_lf->FlSpec();
+}
+
+int Splitting_Function_Base::GetCol() const
+{
+  return p_lf->Col();
 }
 
 bool Splitting_Function_Base::PureQCD() const

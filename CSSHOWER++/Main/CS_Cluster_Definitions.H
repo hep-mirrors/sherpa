@@ -10,14 +10,14 @@ namespace CSSHOWER {
 
   struct CS_Parameters {
     double m_kt2, m_z, m_y, m_phi, m_x, m_wk, m_ws, m_q2, m_mu2;
-    int m_mode, m_kin;
+    int m_mode, m_kin, m_col;
     Splitting_Function_Base *p_sf;
     CS_Parameters(const double &kt2,const double &z,
 		  const double &y,const double &phi,
 		  const double &x,const double &q2,
 		  const int mode,const int kin):
       m_kt2(kt2), m_z(z), m_y(y), m_phi(phi), m_x(x), m_wk(1.0), m_ws(kt2),
-      m_q2(q2), m_mu2(kt2), m_mode(mode), m_kin(kin), p_sf(NULL) {}
+      m_q2(q2), m_mu2(kt2), m_mode(mode), m_kin(kin), m_col(0), p_sf(NULL) {}
   };// end of struct CS_Parameters
 
   std::ostream &operator<<(std::ostream &str,const CS_Parameters &cs);
@@ -67,7 +67,7 @@ namespace CSSHOWER {
 				 ATOOLS::Mass_Selector *const ms=NULL,
 				 const int kin=0);
     
-    double CoreScale(ATOOLS::Cluster_Amplitude *const ampl);
+    PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl);
     
   };// end of class CS_Cluster_Definitions
 

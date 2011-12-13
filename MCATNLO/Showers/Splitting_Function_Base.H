@@ -37,16 +37,16 @@ namespace MCATNLO {
   public:
     ATOOLS::Mass_Selector *&p_ms;
     const MODEL::Single_Vertex *p_v;
-    int m_mode, m_kfmode, m_ewmode;
+    int m_mode, m_kfmode, m_ewmode, m_col;
     cstp::code m_type;
     SF_Coupling *p_cf;
   public:
     inline SF_Key(ATOOLS::Mass_Selector *&ms,
 		  const MODEL::Single_Vertex *v,
 		  const int mode,const cstp::code type,
-		  const int kfmode,const int ewmode):
+		  const int kfmode,const int ewmode,const int col):
       p_ms(ms), p_v(v), m_mode(mode), m_kfmode(kfmode),
-      m_ewmode(ewmode), m_type(type), p_cf(NULL) {}
+      m_ewmode(ewmode), m_col(col), m_type(type), p_cf(NULL) {}
     std::string ID(const int mode) const;
   };
 
@@ -65,7 +65,7 @@ namespace MCATNLO {
     Splitting_Function_Base *p_sf;
 
     double m_zmin, m_zmax;
-    int m_beam;
+    int m_beam, m_col;
 
     static double s_pdfcut;
 
@@ -81,6 +81,7 @@ namespace MCATNLO {
       (const double z,const double y,const double eta,
        const double scale,const double Q2,
        ATOOLS::Cluster_Amplitude *const sub=NULL) = 0;
+    virtual double AsymmetryFactor(const double z,const double y);
     /**
       * Overestimate integrated over [zmin, zmax]
       */
@@ -94,6 +95,8 @@ namespace MCATNLO {
       * Generate z according to OverEstimated (solve OverIntegrated for new z)
       */
     virtual double Z() = 0;
+
+    virtual double Mu2(const double &z,const double &y,const double &Q2) const = 0;
 
     double JFF(const double &y) const;
     double JFI(const double &y,const double &eta,const double &scale,
@@ -118,6 +121,8 @@ namespace MCATNLO {
     inline void SetSF(Splitting_Function_Base *const sf) { p_sf=sf; }
 
     inline const ATOOLS::Mass_Selector *MS() const { return p_ms; }
+
+    inline int Col() const { return m_col; }
 
   };
 
@@ -211,8 +216,12 @@ namespace MCATNLO {
     virtual const ATOOLS::Flavour & GetFlavourC() const;
     virtual const ATOOLS::Flavour & GetFlavourSpec() const;
 
+    virtual int GetCol() const;
+
     virtual void ResetLastInt();
     virtual void ClearSpecs();
+
+    double AsymmetryFactor(const double z,const double y);
 
     double MEPSWeight(const double &z,const double &y,const double &eta,
 		      const double &scale,const double &Q2,

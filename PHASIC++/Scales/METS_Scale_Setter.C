@@ -246,7 +246,7 @@ double METS_Scale_Setter::CalculateStrict
   }
   Cluster_Amplitude *rampl(ampl);
   while (rampl->Next()) rampl=rampl->Next();
-  double muf2(SetScales(rampl->Mu2(),ampl));
+  double muf2(SetScales(rampl->KT2(),ampl));
   if (p_caller->LookUp()) ampl->Delete();
   else m_ampls.push_back(ampl);
   return muf2;
@@ -519,10 +519,10 @@ double METS_Scale_Setter::CalculateMyScale
 double METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl)
 {
   ampl->SetProcs(p_proc);
-  double kt2cmin(p_proc->Shower()->GetClusterDefinitions()->CoreScale(ampl));
-  ampl->SetKT2(kt2cmin);
-  ampl->SetMu2(kt2cmin);
-  return kt2cmin;
+  PDF::CParam kt2(p_proc->Shower()->GetClusterDefinitions()->CoreScale(ampl));
+  ampl->SetKT2(kt2.m_kt2);
+  ampl->SetMu2(kt2.m_mu2);
+  return kt2.m_kt2;
 }
 
 double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)

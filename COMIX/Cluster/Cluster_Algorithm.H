@@ -66,7 +66,7 @@ namespace COMIX {
 			     Current *const fcur) const;
 
     bool EWConnected(const ATOOLS::Flavour &c,const ATOOLS::Flavour &s) const;
-    bool ColorConnected(const ATOOLS::ColorID &i,const ATOOLS::ColorID &j,
+    int  ColorConnected(const ATOOLS::ColorID &i,const ATOOLS::ColorID &j,
 			const ATOOLS::ColorID &k) const;
     
     PDF::CParam GetMeasure(const size_t &idi,const size_t &idj,
