@@ -264,8 +264,6 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   rproc->Trigger(p);
   rproc->Differential(p);
   rproc->Differential2();
-  if (!rproc->IsMapped()) {
-  }
   if (swaped) {
     p_rsproc->Selected()->Integrator()->SwapInOrder();
     rproc->Integrator()->SwapInOrder();
