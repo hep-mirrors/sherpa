@@ -15,7 +15,7 @@ namespace PHASIC {
     double ** p_ktij;
     int    *  p_imap;
     double *  p_kis;
-    std::vector<double> m_jetpt;
+    std::vector<double> m_jetpt, m_kt2;
 
 
     double DEta12(ATOOLS::Vec4D &,ATOOLS::Vec4D &);
@@ -115,6 +115,7 @@ void NJet_Finder::AddToJetlist(const Vec4D &jet) {
   if (dabs(jet.Eta())<m_etamax) {
     if (jet.EPerp2()>=m_et2min&&jet.PPerp2()>=m_pt2min) m_jetpt.push_back(jet.PPerp2());
   }
+  m_kt2.push_back(jet.PPerp2());
 }
 
 bool NJet_Finder::NoJetTrigger(const Vec4D_Vector &p)
@@ -125,10 +126,11 @@ bool NJet_Finder::NoJetTrigger(const Vec4D_Vector &p)
 
 bool NJet_Finder::Trigger(const Vec4D_Vector &p)
 {
-  if (m_n<1) return true;
+  if (m_n==0) return true;
 
   // create copy
   m_jetpt.clear();
+  m_kt2.clear();
   int n=0;
   Vec4D * moms = new Vec4D[m_nout];
   for (int i=m_nin;i<m_nout+m_nin;i++) {
@@ -143,6 +145,17 @@ bool NJet_Finder::Trigger(const Vec4D_Vector &p)
   ConstructJets(moms,n);
 
   delete [] moms;
+
+  if (m_n<0) {
+    size_t np(0);
+    for (size_t i(0);i<m_kt2.size();++i) {
+      if (i>0 && m_kt2[i]<m_kt2[i-1])
+	return 1-m_sel_log->Hit(1);
+      if (m_kt2[i]>m_pt2min) ++np;
+    }
+    return 1-m_sel_log->Hit(np<-m_n);
+  }
+
   if (n<m_n) return 0;
 
   bool trigger(true);
@@ -153,10 +166,11 @@ bool NJet_Finder::Trigger(const Vec4D_Vector &p)
 
 bool NJet_Finder::JetTrigger(const Vec4D_Vector &p,NLO_subevtlist *const subs)
 {
-  if (m_n<1) return true;
+  if (m_n==0) return true;
 
   // create copy
   m_jetpt.clear();
+  m_kt2.clear();
   int n=0, ns=subs->back()->m_n-m_nin;
   Vec4D * moms = new Vec4D[ns];
   for (int i=m_nin;i<ns+m_nin;i++) {
@@ -172,6 +186,17 @@ bool NJet_Finder::JetTrigger(const Vec4D_Vector &p,NLO_subevtlist *const subs)
   ConstructJets(moms,n);
 
   delete [] moms;
+
+  if (m_n<0) {
+    size_t np(0);
+    for (size_t i(0);i<m_kt2.size();++i) {
+      if (i>0 && m_kt2[i]<m_kt2[i-1])
+	return 1-m_sel_log->Hit(1);
+      if (m_kt2[i]>m_pt2min) ++np;
+    }
+    return 1-m_sel_log->Hit(np<-m_n);
+  }
+
   if (n<m_n) return 0;
 
   bool trigger(true);
@@ -210,6 +235,7 @@ void NJet_Finder::ConstructJets(Vec4D * p, int n)
     if (ii!=jj) {
       // combine precluster
       p[p_imap[jj]]+=p[p_imap[ii]];
+      m_kt2.push_back(p_ktij[ii][jj]);
     }
     else {
       // add to jet list
