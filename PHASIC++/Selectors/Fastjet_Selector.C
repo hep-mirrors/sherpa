@@ -14,6 +14,7 @@ namespace PHASIC {
     fastjet::SISConePlugin * p_siscplug;
     ATOOLS::Algebra_Interpreter m_calc;
     ATOOLS::Vec4D_Vector m_p;
+    std::vector<double> m_mu2;
 
     std::string ReplaceTags(std::string &expr) const;
 
@@ -83,11 +84,14 @@ Fastjet_Selector::Fastjet_Selector
   m_sel_log    = new Selector_Log(m_name);
 
   m_p.resize(m_n);
+  m_mu2.resize(m_nout);
 
   m_calc.AddTag("H_T2","1.0");
   m_calc.AddTag("P_SUM","(1.0,0.0,0.0,0.0)");
-  for (size_t i=0;i<m_p.size();++i) 
+  for (size_t i=0;i<m_p.size();++i)
     m_calc.AddTag("p["+ToString(i)+"]",ToString(m_p[i]));
+  for (size_t i=0;i<m_mu2.size();++i)
+    m_calc.AddTag("MU_"+ToString(i)+"2",ToString(m_mu2[i]));
 
   m_calc.SetTagReplacer(this);
   m_calc.Interprete(expression);
@@ -111,6 +115,10 @@ std::string Fastjet_Selector::ReplaceTags(std::string &expr) const
 
 Term *Fastjet_Selector::ReplaceTags(Term *term) const
 {
+  if (term->Id()>=1000) {
+    term->Set(m_mu2[term->Id()-1000]);
+    return term;
+  }
   if (term->Id()>=100) {
     term->Set(m_p[term->Id()-100]);
     return term;
@@ -134,6 +142,11 @@ void Fastjet_Selector::AssignId(Term *term)
 {
   if (term->Tag()=="H_T2") term->SetId(5);
   else if (term->Tag()=="P_SUM") term->SetId(6);
+  else if (term->Tag().find("MU_")==0) {
+    int idx(ToType<int>(term->Tag().substr(3,term->Tag().length()-4)));
+    if (idx>=m_mu2.size()) THROW(fatal_error,"Invalid syntax");
+    term->SetId(1000+idx);
+  }
   else {
     int idx(ToType<int>(term->Tag().substr(2,term->Tag().length()-3)));
     if (idx>=m_n) THROW(fatal_error,"Invalid syntax");
@@ -151,7 +164,7 @@ bool Fastjet_Selector::NoJetTrigger(const Vec4D_Vector &p)
 
 bool Fastjet_Selector::Trigger(const Vec4D_Vector &p)
 {
-  if (m_n<1) return true;
+  if (m_n<0) return true;
 
   std::vector<fastjet::PseudoJet> input,jets;
   for (size_t i(m_nin);i<p.size();++i) {
@@ -167,6 +180,8 @@ bool Fastjet_Selector::Trigger(const Vec4D_Vector &p)
     Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
     if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin) m_p.push_back(pj);
   }
+  for (size_t i(0);i<input.size();++i)
+    m_mu2[i]=cs.exclusive_dmerge_max(i);
 
   bool trigger((int)m_p.size()>=m_n);
   if (trigger) trigger=(int)m_calc.Calculate()->Get<double>();
@@ -177,7 +192,7 @@ bool Fastjet_Selector::Trigger(const Vec4D_Vector &p)
 bool Fastjet_Selector::JetTrigger(const Vec4D_Vector &p,
 				ATOOLS::NLO_subevtlist *const subs)
 {
-  if (m_n<1) return true;
+  if (m_n<0) return true;
 
   std::vector<fastjet::PseudoJet> input,jets;
   for (size_t i(m_nin);i<subs->back()->m_n;++i) {
@@ -193,6 +208,9 @@ bool Fastjet_Selector::JetTrigger(const Vec4D_Vector &p,
     Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
     if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin) m_p.push_back(pj);
   }
+
+  for (size_t i(0);i<input.size();++i)
+    m_mu2[i]=cs.exclusive_dmerge_max(i);
 
   bool trigger((int)m_p.size()>=m_n);
   if (trigger) trigger=(int)m_calc.Calculate()->Get<double>();
@@ -224,8 +242,8 @@ Selector_Base *Fastjet_Selector_Getter::operator()(const Selector_Key &key) cons
 
 void Fastjet_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"Fastjet expression algorithm n ptmin etmin dr [f(siscone)=0.75]\n" 
-     <<"        algorithm: kt,antikt,cambridge,siscone";
+  str<<"FastjetSelector expression algorithm n ptmin etmin dr [f(siscone)=0.75]\n" 
+     <<"                algorithm: kt,antikt,cambridge,siscone";
 }
 
 }
