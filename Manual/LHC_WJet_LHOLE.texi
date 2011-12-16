@@ -1,0 +1,37 @@
+@node LHC_WJet_LHOLE
+@section LHC_WJet_LHOLE
+
+This example computes the next-to-leading W+jet-production
+cross section at current LHC energies using the Binoth Les Houches interface 
+proposal for an external one-loop generator @mycite{Binoth2010xt}. 
+
+@example
+@smallformat
+
+Run_B.dat :
+@verbatiminclude Examples/LHC_WJet_LHOLE/Run_B.dat
+
+Run_I.dat :
+@verbatiminclude Examples/LHC_WJet_LHOLE/Run_I.dat
+
+Run_R.dat :
+@verbatiminclude Examples/LHC_WJet_LHOLE/Run_R.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize @bullet
+@item this setup includes three run cards, separating the three different 
+contributions to an NLO calculation: @code{Run_B.dat} contains the Born 
+contribution, @code{Run_I.dat} the virtual and integrated subtraction terms, 
+and @code{Run_R.dat} the real and real-subtraction terms.
+@item the setup including the virtual bit sets @code{LHOLE} as the loop 
+generator. It also need to be added to the @ref{ME_SIGNAL_GENERATOR} list. 
+For additional information see @ref{External one-loop ME}.
+@item The switch @code{SHERPA_LDADD} present in @code{Run_I.dat} has to 
+be set to the appropriate library name (and path) of the one-loop generator. 
+In the above example, the corresponding to be loaded would be 
+called @code{libOLE.so}.
+@item both the factorisation and renormalisation scales are set to the 
+transverse mass of the electron-neutrino pair.
+@end itemize

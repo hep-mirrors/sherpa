@@ -1,5 +1,6 @@
 (run){
   EVENTS 100000;
+  SHERPA_LDADD OLE
 }(run);
 (processes){
   Process 93 93 -> 11 -12 93;

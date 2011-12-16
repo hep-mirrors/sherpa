@@ -69,6 +69,10 @@ combined) only the virtual piece requires the interface.
 @item The line @code{Loop_Generator LHOLE} tells the code to use
 the interface for computing one-loop matrix elements.
 
+@item The switch @code{SHERPA_LDADD} present in @code{Run_I.dat} has to 
+be set to the appropriate library name (and path) of the one-loop generator, 
+see @ref{LHC_WJet_LHOLE}.
+
 @item Sherpa's internal analysis package can be used to generate a few 
 histograms. Thus, then when installing Sherpa the option
 @code{--enable-analysis} must be include on the command line when

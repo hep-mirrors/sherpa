@@ -15,7 +15,6 @@ using namespace std;
 
 namespace OLE {
 extern "C" void OLP_Start(const char * filename, int* success);
-extern "C" void OLP_Option(const char * assignment, int* success); // This is GoSam specific
 extern "C" void OLP_EvalSubProcess(int,double*,double,double*,double*);
 
   class LH_OLE_Interface : public Virtual_ME2_Base {
@@ -107,27 +106,17 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
   switch (pstatus) {
   case -2: 
   case 0:
-    THROW(fatal_error,"OLE did not return valid process ID");
+    THROW(fatal_error,"OLE did not return valid process ID.");
   case -1: 
-    THROW(fatal_error,"Process not found in contract file");
+    THROW(fatal_error,"Process not found in contract file.");
   default:
-    if (pstatus!=1) cout<<endl<<"Found "<<pstatus<<" subprocesses. Cannot handle this yet,"
-			<<" only first ID will be used!"<<endl;
+    if (pstatus!=1) msg_Info()<<"Found "<<pstatus<<" subprocesses. Cannot "
+			<<"handle this yet, only first ID will be used!"<<endl;
     m_OLE_id=lhfile.GetID(2,m_pn-2,flavs,0);
   }
 
   if (s_oleinit==0) {
     int check(0);
-    // -- GoSam specific: --
-    string mZ_string("mZ="+ToString(Flavour(kf_Z).Mass()));
-    string wZ_string("wZ="+ToString(Flavour(kf_Z).Width()));
-    string mW_string("mW="+ToString(Flavour(kf_Wplus).Mass()));
-    string wW_string("wW="+ToString(Flavour(kf_Wplus).Width()));
-    OLE::OLP_Option(mZ_string.c_str(),&check);
-    OLE::OLP_Option(wZ_string.c_str(),&check);
-    OLE::OLP_Option(mW_string.c_str(),&check);
-    OLE::OLP_Option(wW_string.c_str(),&check);
-    // -- GoSam specific end --
     OLE::OLP_Start(fname.c_str(),&check);
     if (check != 1) THROW(fatal_error,"OLP initialisation failed");
     s_oleinit=1;
