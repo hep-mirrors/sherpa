@@ -15,10 +15,10 @@ helicity and colour summed one-loop matrix element
 (more specific: the coefficients of the Laurent series in the dimensional
 regularization parameter epsilon up to the order epsilon^0).
 
-The directory @code{./AddOns/LH_OLE} includes an example interface which 
-follows the Binoth Les Houches interface proposal @mycite{Binoth2010xt}
-of the 2009 Les Houches workshop.
-A sample setup for W+1jet production at LHC 14TeV is included.
+An example setup for interfacing such an external one-loop code, following 
+the Binoth Les Houches interface proposal @mycite{Binoth2010xt} of the 
+2009 Les Houches workshop, is provided in @ref{LHC_WJet_LHOLE}. To use 
+the LH-OLE interface, Sherpa has to configured with @code{--enable-lhole}.
 
 The interface:
 @itemize @bullet
@@ -27,8 +27,8 @@ The interface:
 one-loop processes that are needed for the NLO calculation. This information
 is stored in a file, by default called @code{OLE_order.lh}. 
 The external one-loop code (OLE) should confirm these settings/requests
-writing out a file @code{OLE_contract.lh}. For the syntax and 
-details see the above url.
+and write out a file @code{OLE_contract.lh}. For the syntax and 
+details see @mycite{Binoth2010xt}.
 
 For Sherpa the output/input of the order/contract file is handled
 in @code{LH_OLE_Communicator.[CH]}.
@@ -36,7 +36,6 @@ The actual interface is contained in @code{LH_OLE_Interface.C}.
 The parameters to be exchanged with the OLE are defined in the
 latter file via
 @verbatim
-
   lhfile.AddParameter(...);
 @end verbatim
 
@@ -46,22 +45,17 @@ and might require an update for specific OLE or processes.
 @item At runtime the communication is performed via function calls.
 To allow Sherpa to call the external code the functions
 @verbatim
-
   void OLP_Start(const char * filename);
   void OLP_EvalSubProcess(int,double*,double,double,double*);
 @end verbatim
 
-which are defined and called in @code{LH_OLE_Interface.C} 
-must be specified.
-For keywords possible data fields passed with this functions see
-@mycite{Binoth2010xt}.
+which are defined and called in @code{LH_OLE_Interface.C} must be specified. 
+For keywords and possible data fields passed with this functions 
+see @mycite{Binoth2010xt}.
 
 The function @code{OLP_Start(...)} is called once when Sherpa is starting.
 The function @code{OLP_EvalSubProcess(...)} will be called many times
 for different subprocesses and momentum configurations.
-
-@item An example @code{Makefile} shows how to compile the 
-sources above into a shared library.
 @end itemize
 
 The setup:
@@ -72,14 +66,11 @@ and the real correction piece @code{Run_R.dat}. While for a
 full NLO calculation all three must be employed (and their results
 combined) only the virtual piece requires the interface.
 
-@item The line @code{SHERPA_LDADD = LHOLE} in the @code{(run)} section of the run-card tells Sherpa to load the extra libraries.
-
 @item The line @code{Loop_Generator LHOLE} tells the code to use
 the interface for computing one-loop matrix elements.
 
-@item Sherpa's internal analysis package is used to 
-generate a few histograms. Therefore,
-when installing Sherpa the option
+@item Sherpa's internal analysis package can be used to generate a few 
+histograms. Thus, then when installing Sherpa the option
 @code{--enable-analysis} must be include on the command line when
 Sherpa is configured, see @ref{ANALYSIS}.
 

@@ -27,6 +27,7 @@ of the main features of these examples.
 * LHC_ADD::
 * LHC_SUSY::
 * NLO_W::
+* LHC_WJet_LHOLE::
 * Tevatron_ZJets_MENLOPS::
 * LHC_WJets_MENLOPS::
 * LHC_HWW_POWHEG::
@@ -53,6 +54,7 @@ of the main features of these examples.
 @include LHC_ADD.texi
 @include LHC_SUSY.texi
 @include W_NLO.texi
+@include LHC_WJet_LHOLE.texi
 @include Tevatron_ZJets_MENLOPS.texi
 @include LHC_WJets_MENLOPS.texi
 @include LHC_HWW_POWHEG.texi

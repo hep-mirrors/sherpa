@@ -12,11 +12,11 @@
 (me){
   ME_SIGNAL_GENERATOR Amegic;
   EVENT_GENERATION_MODE Weighted;
-  SCALES VAR{PPerp2(p[2]+p[3])+sqr(80.419)}{PPerp2(p[2]+p[3])+sqr(80.419)};
+  SCALES VAR{MPerp2(p[2]+p[3])}{MPerp2(p[2]+p[3])};
 }(me);
 (beam){
-  BEAM_1  2212; BEAM_ENERGY_1 7000;
-  BEAM_2  2212; BEAM_ENERGY_2 7000;
+  BEAM_1  2212; BEAM_ENERGY_1 3500;
+  BEAM_2  2212; BEAM_ENERGY_2 3500;
   K_PERP_MEAN_1 0.; K_PERP_SIGMA_1 0.;
   K_PERP_MEAN_2 0.; K_PERP_SIGMA_2 0.;
 }(beam);
