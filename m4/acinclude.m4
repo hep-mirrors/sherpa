@@ -578,6 +578,18 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(Phox_SUPPORT, test "$phox" = "true")
 
   AC_ARG_ENABLE(
+    lhole,
+    AC_HELP_STRING([--enable-lhole], [Enable Les Houches One-Loop Generator interface.]),
+    [ AC_MSG_CHECKING(for LHOLE)
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(no); lhole=false ;;
+        yes) AC_MSG_RESULT(yes); lhole=true ;;
+      esac ],
+    [ AC_MSG_CHECKING(for LHOLE); AC_MSG_RESULT(no); lhole=false ]
+  )
+  AM_CONDITIONAL(USING__LHOLE, test "$lhole" = "true" )
+
+  AC_ARG_ENABLE(
     root,
     AC_HELP_STRING([--enable-root=/path/to/root], [Enable ROOT support and specify where it is installed if non-standard.]),
     [ AC_MSG_CHECKING(for ROOT installation directory)

@@ -22,7 +22,7 @@ LH_OLE_Communicator::LH_OLE_Communicator(string name) :
   ofstream ofile;
   ofile.open(m_name.c_str(),ios::trunc);
   ofile<<"# "<<m_name<<endl;
-  ofile<<"# Created by Sherpa"<<endl<<endl;
+  ofile<<"# Created by Sherpa-"<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<endl<<endl;
   ofile.close();
 }
 

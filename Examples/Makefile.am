@@ -16,6 +16,9 @@ nobase_dist_examples_DATA         =	\
 			LHC_TTH/Run.dat \
 			LHC_ZJets/Run.dat \
                         LHC_WJets_MENLOPS/Run.dat \
+                        LHC_WJet_LHOLE/Run_B.dat \
+                        LHC_WJet_LHOLE/Run_I.dat \
+                        LHC_WJet_LHOLE/Run_R.dat \
 			NLO_W/Run.dat \
 			PEPII_BaBar/Run.dat \
 			Tevatron_DiBoson/Run.dat \

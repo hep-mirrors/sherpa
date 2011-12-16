@@ -1,5 +1,6 @@
 #include "LH_OLE_Communicator.H"
 
+#include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -13,8 +14,9 @@ using namespace ATOOLS;
 using namespace std;
 
 namespace OLE {
-  void OLP_Start(const char * filename, int) {}
-  void OLP_EvalSubProcess(int,double*,double,double,double*) {}
+extern "C" void OLP_Start(const char * filename, int* success);
+extern "C" void OLP_Option(const char * assignment, int* success); // This is GoSam specific
+extern "C" void OLP_EvalSubProcess(int,double*,double,double*,double*);
 
   class LH_OLE_Interface : public Virtual_ME2_Base {
     size_t m_pn;
@@ -45,6 +47,7 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
   m_active=active;
   if (!m_active) return;
   m_mode = 0;
+  m_drmode = 1;
   Flavour hfl(kf_quark);
   m_nf = hfl.Size()/2;
 
@@ -76,7 +79,7 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
     if (lhfile.FileStatus()==0) {
       lhfile.AddParameter("MatrixElementSquareType CHsummed");
       lhfile.AddParameter("CorrectionType          QCD");
-      lhfile.AddParameter("IRregularisation        CDR");
+      lhfile.AddParameter("IRregularisation        DRED");
       lhfile.AddParameter("AlphasPower             "+ToString(pi.m_oqcd-1));
       lhfile.AddParameter("AlphaPower              "+ToString(pi.m_oew));
       lhfile.AddParameter("OperationMode           CouplingsStrippedOff");
@@ -115,7 +118,17 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
 
   if (s_oleinit==0) {
     int check(0);
-    OLE::OLP_Start(fname.c_str(),check);
+    // -- GoSam specific: --
+    string mZ_string("mZ="+ToString(Flavour(kf_Z).Mass()));
+    string wZ_string("wZ="+ToString(Flavour(kf_Z).Width()));
+    string mW_string("mW="+ToString(Flavour(kf_Wplus).Mass()));
+    string wW_string("wW="+ToString(Flavour(kf_Wplus).Width()));
+    OLE::OLP_Option(mZ_string.c_str(),&check);
+    OLE::OLP_Option(wZ_string.c_str(),&check);
+    OLE::OLP_Option(mW_string.c_str(),&check);
+    OLE::OLP_Option(wW_string.c_str(),&check);
+    // -- GoSam specific end --
+    OLE::OLP_Start(fname.c_str(),&check);
     if (check != 1) THROW(fatal_error,"OLP initialisation failed");
     s_oleinit=1;
   }
@@ -136,8 +149,12 @@ void LH_OLE_Interface::Calc(const Vec4D_Vector& momenta) {
     p_momenta[2+i*5]=momenta[i][2];
     p_momenta[3+i*5]=momenta[i][3];
   }
+  double param(1.);
 
-  OLE::OLP_EvalSubProcess(m_OLE_id,p_momenta,sqrt(m_mur2),1.,p_result);
+  OLE::OLP_EvalSubProcess(m_OLE_id,p_momenta,sqrt(m_mur2),&param,p_result);
+  // correct normalization:
+  double one_over_2pi = 0.15915494309189533577;
+  for (size_t i=0;i<3;i++) p_result[i]/=one_over_2pi;
   // finite
   m_res.Finite()= p_result[2]/p_result[3];
   // 1/epsIR
@@ -160,6 +177,7 @@ Virtual_ME2_Base *LH_OLE_Interface_Getter::operator()(const Process_Info &pi) co
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="LHOLE") return NULL;
+  msg_Info()<<"Les Houches One-Loop Generator called.\n";
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
@@ -168,5 +186,8 @@ Virtual_ME2_Base *LH_OLE_Interface_Getter::operator()(const Process_Info &pi) co
   else if (pi.m_fi.m_nloqcdtype&nlo_type::vsub) {
     return new LH_OLE_Interface(pi, fl, false);
   }
+  msg_Info()<<"Les Houches One-Loop Generator could not provide one-loop \n"
+           <<"matrix element for "
+           <<PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_ii)<<".\n";
   return NULL;
 }
