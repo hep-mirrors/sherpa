@@ -9,10 +9,10 @@ using namespace std;
 
 
 Single_Transitions::Single_Transitions() :
-  m_singletsuppression2(sqr(hadpars.Get("Singlet_Suppression"))),
+  m_singletsuppression2(sqr(hadpars->Get("Singlet_Suppression"))),
   p_transitions(new Single_Transition_Map)
 {
-  Constituents * constituents = hadpars.GetConstituents();
+  Constituents * constituents = hadpars->GetConstituents();
 
   double mass=100.;
   for (FlavCCMap_Iterator flit=constituents->CCMap.begin();
@@ -23,7 +23,7 @@ Single_Transitions::Single_Transitions() :
     }
   }    
 
-  Hadron_WF_Map           * allwaves = hadpars.GetMultiplets()->GetWaveFunctions();
+  Hadron_WF_Map           * allwaves = hadpars->GetMultiplets()->GetWaveFunctions();
   WFcomponent             * waves;
   Single_Transition_Miter   stiter;
   Single_Transition_List  * stl;
@@ -44,7 +44,7 @@ Single_Transitions::Single_Transitions() :
 	  flnum  = int(hadron.Kfcode()/100)-10*int(hadron.Kfcode()/1000);
 	  lp     = int(hadron.Kfcode()/10000);
 	  spin   = int(hadron.Kfcode())-10*int(hadron.Kfcode()/10);
-	  hadpars.GetMultiplets()->LookUpAngles(lp,spin,costh,sinth);
+	  hadpars->GetMultiplets()->LookUpAngles(lp,spin,costh,sinth);
 	  if (flnum==2) wtprod *= sqrt(m_singletsuppression2*costh*costh+sinth*sinth);
 	  if (flnum==3) wtprod *= sqrt(m_singletsuppression2*sinth*sinth+costh*costh);
 	  //if (flnum==2 || flnum==3) {
@@ -118,7 +118,7 @@ void Single_Transitions::PrintSingleTransitions()
     msg_Out()<<"("<<stiter->first.first<<","<<stiter->first.second<<") : "<<endl;
     for (Single_Transition_Siter sit=stiter->second->begin();
 	 sit!=stiter->second->end();sit++) {
-      wave    = hadpars.GetMultiplets()->GetWaveFunction(sit->first);
+      wave    = hadpars->GetMultiplets()->GetWaveFunction(sit->first);
       wt      = sqr(wave->WaveWeight(stiter->first.first,stiter->first.second));
       mpletwt = wave->MultipletWeight();
       if (mpletwt<=0.) continue;
@@ -155,8 +155,8 @@ std::ostream & AHADIC::operator<<(std::ostream & s, const Double_Transition_List
 Double_Transitions::Double_Transitions() :
   p_transitions(new Double_Transition_Map)
 {
-  FlavCCMap constituents          = hadpars.GetConstituents()->CCMap;
-  Single_Transition_Map * singles = hadpars.GetSingleTransitions()->GetTransitions();
+  FlavCCMap constituents          = hadpars->GetConstituents()->CCMap;
+  Single_Transition_Map * singles = hadpars->GetSingleTransitions()->GetTransitions();
   Single_Transition_List * hads1, * hads2;
   Flavour trip,anti,popped;
   Flavour_Pair flpair,hadpair,hadpair1,wf1,wf2;

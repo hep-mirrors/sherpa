@@ -25,7 +25,8 @@ Ahadic::Ahadic(string path,string file,bool ana)  :
   dr.SetInputPath(path);
   dr.SetInputFile(file);
 
-  hadpars.Init(path,file);
+  hadpars =  new Hadronisation_Parameters();
+  hadpars->Init(path,file);
   ana=false;
 
   p_cformhandler = new Cluster_Formation_Handler(&m_clulist,ana);
@@ -38,6 +39,7 @@ Ahadic::~Ahadic()
   CleanUp();
   if (p_cdechandler)  { delete p_cdechandler;  p_cdechandler=NULL;  }
   if (p_cformhandler) { delete p_cformhandler; p_cformhandler=NULL; }
+  delete hadpars;
 }
 
 Return_Value::code Ahadic::Hadronize(Blob_List * blobs)

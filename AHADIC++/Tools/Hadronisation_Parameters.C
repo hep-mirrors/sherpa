@@ -11,7 +11,7 @@ using namespace ATOOLS;
 using namespace std;
 
 
-Hadronisation_Parameters AHADIC::hadpars;
+Hadronisation_Parameters *AHADIC::hadpars=NULL;
 
 
 Hadronisation_Parameters::Hadronisation_Parameters() :

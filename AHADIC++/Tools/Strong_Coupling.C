@@ -12,7 +12,7 @@ using namespace ATOOLS;
 Strong_Coupling::Strong_Coupling(const asform::code form) :
   m_form(form), 
   m_beta0(12.*M_PI/(33.-2.*4.)), m_Lambda(0.349), m_Lambda2(sqr(m_Lambda)),
-  m_pt02(dabs(hadpars.Get(std::string("pt02")))), 
+  m_pt02(dabs(hadpars->Get(std::string("pt02")))), 
   m_pt2max(10000.), m_lastpt2(0.), m_asmax(1.), 
   m_gamma(m_beta0/M_PI), m_a(3.008), m_b(1.425), m_c(0.908), m_d(0.84), m_m2(sqr(1.204))
 {
@@ -41,7 +41,7 @@ Strong_Coupling::Strong_Coupling(const asform::code form) :
     break;
   case asform::constant:
   default:
-    m_asmax = hadpars.Get(std::string("asfix"));
+    m_asmax = hadpars->Get(std::string("asfix"));
     break;
   }
   return;

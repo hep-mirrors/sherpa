@@ -254,7 +254,7 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
   Hadron_Wave_Function * wavefunction = new Hadron_Wave_Function;
   Flavour_Pair         * pair;
 
-  double hbe(hadpars.Get("Heavy_Baryon_Enhancement"));
+  double hbe(hadpars->Get("Heavy_Baryon_Enhancement"));
   double weight = (fl3>=4?hbe:1.);
 
   switch (wf) {
@@ -402,11 +402,11 @@ void All_Hadron_Multiplets::LookUpAngles(const int angular,const int spin,double
 {
   double angle=0.;
   switch (spin) {
-  case 9 : angle = hadpars.Get("Mixing_Angle_4+"); break;
-  case 7 : angle = hadpars.Get("Mixing_Angle_3-"); break;
-  case 5 : angle = hadpars.Get("Mixing_Angle_2+"); break;
-  case 3 : angle = hadpars.Get("Mixing_Angle_1-"); break;
-  case 1 : angle = hadpars.Get("Mixing_Angle_0+"); break; 
+  case 9 : angle = hadpars->Get("Mixing_Angle_4+"); break;
+  case 7 : angle = hadpars->Get("Mixing_Angle_3-"); break;
+  case 5 : angle = hadpars->Get("Mixing_Angle_2+"); break;
+  case 3 : angle = hadpars->Get("Mixing_Angle_1-"); break;
+  case 1 : angle = hadpars->Get("Mixing_Angle_0+"); break; 
   default: break;  
   }
   costh = cos(angle); sinth = sin(angle);
@@ -439,99 +439,99 @@ void All_Hadron_Multiplets::CreateMultiplets()
 	switch (spin) {
 	case     1:  
 	  multiplet->SetName(string("Pseudoscalars         (0-+)")); 
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L0R0S0"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L0R0S0"));
 	  break;
 	case     3:  
 	  multiplet->SetName(string("Vectors               (1--)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L0R0S1"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L0R0S1"));
 	  break;
 	case     5:  
 	  multiplet->SetName(string("Tensors               (2++)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L0R0S2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L0R0S2"));
 	  break;
 	case     7:  
 	  multiplet->SetName(string("Tensors               (3--)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L0R0S3"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L0R0S3"));
 	  break;
 	case     9:  
 	  multiplet->SetName(string("Tensors               (4++)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L0R0S4"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L0R0S4"));
 	  break;
 	case   101:  
 	  multiplet->SetName(string("L=1 Pseudoscalars     (0++)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L1R0S0"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L1R0S0"));
 	  break;
 	case   103:  
 	  multiplet->SetName(string("L=1 Vectors           (1+-)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L1R0S1"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L1R0S1"));
 	  break;
 	case   105:  
 	  multiplet->SetName(string("L=1 Tensors           (2-+)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L1R0S2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L1R0S2"));
 	  break;
 	case   107:  
 	  multiplet->SetName(string("L=1 Tensors           (3+-)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L1R0S3"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L1R0S3"));
 	  break;
 	case   109:  
 	  multiplet->SetName(string("L=1 Tensors           (4-+)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L1R0S4"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L1R0S4"));
 	  break;
 	case   203:  
 	  multiplet->SetName(string("L=2 Vectors           (1++)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L2R0S1"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L2R0S1"));
 	  break;
 	case   205:  
 	  multiplet->SetName(string("L=2 Tensors           (2--)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L2R0S2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L2R0S2"));
 	  break;
 	case   207:  
 	  multiplet->SetName(string("L=2 Tensors           (3++)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L2R0S3"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L2R0S3"));
 	  break;
 	case   209:  
 	  multiplet->SetName(string("L=2 Tensors           (4--)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L2R0S4"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L2R0S4"));
 	  break;
 	case   303:  
 	  multiplet->SetName(string("L=3 Vectors           (1--)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L3R0S1"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L3R0S1"));
 	  break;
 	case   305:  
 	  multiplet->SetName(string("L=3 Tensors           (2++)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L3R0S2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L3R0S2"));
 	  break;
 	case   307:  
 	  multiplet->SetName(string("L=3 Tensors           (3--)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L3R0S3"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L3R0S3"));
 	  break;
 	case   309:  
 	  multiplet->SetName(string("L=3 Tensors           (4++)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L3R0S4"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L3R0S4"));
 	  break;
 	case  1001:  
 	  multiplet->SetName(string("R=1 Pseudoscalars     (0-+)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L0R1S0"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L0R1S0"));
 	  break;
 	case  1003:  
 	  multiplet->SetName(string("R=1 Vectors           (1--)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_L0R1S1"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_L0R1S1"));
 	  break;
 	case 10001:  
 	  multiplet->SetName(string("Isoscalar Pseudoscalars     (0-+)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_Iso_L0R0S0"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_Iso_L0R0S0"));
 	  break;
 	case 10003:  
 	  multiplet->SetName(string("Isoscalar Vectors           (1--)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_Iso_L0R0S1"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_Iso_L0R0S1"));
 	  break;
 	case 10101:  
 	  multiplet->SetName(string("Isoscalar L=1 Pseudoscalars (0-+)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_Iso_L1R0S0"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_Iso_L1R0S0"));
 	  break;
 	case 10103:  
 	  multiplet->SetName(string("Isoscalar L=1 Vectors       (1--)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Meson_Iso_L1R0S1"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Meson_Iso_L1R0S1"));
 	  break;
 	default: multiplet->SetName(string("Don't know        ")); break;
 	}
@@ -540,51 +540,51 @@ void All_Hadron_Multiplets::CreateMultiplets()
 	switch (spin) {
 	case    2:  
 	  multiplet->SetName(string("Nucleons                  (1/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Nucleon_L0R0S1/2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Nucleon_L0R0S1/2"));
 	  break;
 	case   -2:  
 	  multiplet->SetName(string("Anti-Nucleons             (1/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Nucleon_L0R0S1/2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Nucleon_L0R0S1/2"));
 	  break;
 	case  102:                   
 	  multiplet->SetName(string("L=0 excited Nucleons      (1/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Nucleon_L0R0S1/2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_exc_Nucleon_L0R0S1/2"));
 	  break;
 	case -102: 
 	  multiplet->SetName(string("L=0 excited Anti-Nucleons  (1/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Nucleon_L0R0S1/2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_exc_Nucleon_L0R0S1/2"));
 	  break;
 	case  202:                   
 	  multiplet->SetName(string("L=1 excited Nucleons      (1/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Nucleon_L1R0S1/2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_exc_Nucleon_L1R0S1/2"));
 	  break;
 	case -202: 
 	  multiplet->SetName(string("L=1 excited Anti-Nucleons  (1/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Nucleon_L1R0S1/2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_exc_Nucleon_L1R0S1/2"));
 	  break;
 	case  104:                   
 	  multiplet->SetName(string("L=1 excited Nucleons      (3/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Nucleon_L1R0S3/2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_exc_Nucleon_L1R0S3/2"));
 	  break;
 	case -104: 
 	  multiplet->SetName(string("L=1 excited Anti-Nucleons  (3/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Nucleon_L1R0S3/2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_exc_Nucleon_L1R0S3/2"));
 	  break;
 	case    4:  
 	  multiplet->SetName(string("Decuplet                  (3/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Delta_L0R0S3/2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Delta_L0R0S3/2"));
 	  break;
 	case   -4:  
 	  multiplet->SetName(string("Anti-Decuplet             (3/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_Delta_L0R0S3/2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_Delta_L0R0S3/2"));
 	  break;
 	case  10104:
 	  multiplet->SetName(string("L=1 excited Decuplet      (3/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Delta_L1R0S3/2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_exc_Delta_L1R0S3/2"));
 	  break;
 	case -10104:
 	  multiplet->SetName(string("L=1 excited anti-Decuplet (3/2)"));
-	  multiplet->SetExtraWeight(hadpars.Get("Multiplet_exc_Delta_L1R0S3/2"));
+	  multiplet->SetExtraWeight(hadpars->Get("Multiplet_exc_Delta_L1R0S3/2"));
 	  break;
 	default:   multiplet->SetName(string("Don't know                (anti)")); break;
 	}

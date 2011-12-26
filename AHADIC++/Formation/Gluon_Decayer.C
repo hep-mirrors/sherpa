@@ -9,23 +9,23 @@ using namespace ATOOLS;
 
 Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter,bool ana) :
   p_splitter(splitter), 
-  m_pt2max(sqr(hadpars.Get(std::string("ptmax_factor"))*
-	       hadpars.Get(std::string("ptmax")))), 
+  m_pt2max(sqr(hadpars->Get(std::string("ptmax_factor"))*
+	       hadpars->Get(std::string("ptmax")))), 
   m_analyse(ana),m_tot(0),m_s(0),m_u(0),m_d(0)
 { 
   double norm(0.);
-  for (FlavCCMap_Iterator fdit=hadpars.GetConstituents()->CCMap.begin();
-       fdit!=hadpars.GetConstituents()->CCMap.end();fdit++) {
-    if (hadpars.GetConstituents()->TotWeight(fdit->first)>norm)
-      norm = hadpars.GetConstituents()->TotWeight(fdit->first);
+  for (FlavCCMap_Iterator fdit=hadpars->GetConstituents()->CCMap.begin();
+       fdit!=hadpars->GetConstituents()->CCMap.end();fdit++) {
+    if (hadpars->GetConstituents()->TotWeight(fdit->first)>norm)
+      norm = hadpars->GetConstituents()->TotWeight(fdit->first);
   }
   DecaySpecs * decspec;
-  for (FlavCCMap_Iterator fdit=hadpars.GetConstituents()->CCMap.begin();
-       fdit!=hadpars.GetConstituents()->CCMap.end();fdit++) {
+  for (FlavCCMap_Iterator fdit=hadpars->GetConstituents()->CCMap.begin();
+       fdit!=hadpars->GetConstituents()->CCMap.end();fdit++) {
     if (!fdit->first.IsAnti()) {
       decspec = new DecaySpecs;
-      decspec->popweight = hadpars.GetConstituents()->TotWeight(fdit->first)/norm;
-      decspec->massmin   = hadpars.GetConstituents()->Mass(fdit->first);
+      decspec->popweight = hadpars->GetConstituents()->TotWeight(fdit->first)/norm;
+      decspec->massmin   = hadpars->GetConstituents()->Mass(fdit->first);
       m_options.insert(std::make_pair(fdit->first,decspec));
     }
   }
@@ -280,8 +280,8 @@ bool Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
   Q += pk = (*dip2)->AntiTriplet()->m_mom;
   double Q2   = Q.Abs2();
   double pij2 = (pi+pj).Abs2(), pjk2 = (pj+pk).Abs2();
-  double mij2 = sqr(hadpars.GetConstituents()->Mass((*dip1)->Triplet()->m_flav)), mi2(mij2);
-  double mk2  = sqr(hadpars.GetConstituents()->Mass((*dip2)->AntiTriplet()->m_flav)), mjk2(mk2);
+  double mij2 = sqr(hadpars->GetConstituents()->Mass((*dip1)->Triplet()->m_flav)), mi2(mij2);
+  double mk2  = sqr(hadpars->GetConstituents()->Mass((*dip2)->AntiTriplet()->m_flav)), mjk2(mk2);
   double aij  = (sqr(Q2-mij2-mk2)-4.*mij2*mk2), bij = (sqr(Q2-pij2-mk2)-4.*pij2*mk2);
   double ajk  = (sqr(Q2-mjk2-mi2)-4.*mjk2*mi2), bjk = (sqr(Q2-pjk2-mi2)-4.*pjk2*mi2);
   if (aij/bij<0. && ajk/bjk<0.) {
@@ -401,11 +401,11 @@ void Gluon_Decayer::PrintDipoleList()
     msg_Debugging()<<"Dipole("<<((*dip)->MustDecay())<<", "
 		   <<sqrt((*dip)->Mass2())<<") : "<<std::endl
 		   <<"  "<<(*dip)->Triplet()->m_flav<<"("<<(*dip)->Triplet()->m_mom<<"), "
-		   <<" "<<hadpars.GetConstituents()->Mass((*dip)->Triplet()->m_flav)
+		   <<" "<<hadpars->GetConstituents()->Mass((*dip)->Triplet()->m_flav)
 		   <<" vs. "<<sqrt(Max((*dip)->Triplet()->m_mom.Abs2(),0.0))
 		   <<" --> kt^2_max = "<<(*dip)->Triplet()->m_kt2max<<";"<<std::endl
 		   <<"  "<<(*dip)->AntiTriplet()->m_flav<<"("<<(*dip)->AntiTriplet()->m_mom<<"),"
-		   <<" "<<hadpars.GetConstituents()->Mass((*dip)->AntiTriplet()->m_flav)
+		   <<" "<<hadpars->GetConstituents()->Mass((*dip)->AntiTriplet()->m_flav)
 		   <<" vs. "<<sqrt(Max((*dip)->AntiTriplet()->m_mom.Abs2(),0.0))
 		   <<" --> kt^2_max = "<<(*dip)->AntiTriplet()->m_kt2max<<"."<<std::endl;
   }

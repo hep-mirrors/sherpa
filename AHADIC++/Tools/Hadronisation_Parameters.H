@@ -57,7 +57,7 @@ namespace AHADIC {
     bool AdjustMomenta(const int,ATOOLS::Vec4D *,const double *);  
   };
 
-  extern Hadronisation_Parameters hadpars;
+  extern Hadronisation_Parameters *hadpars;
 
   /*!
     \file Hadronisation_Parameters.H

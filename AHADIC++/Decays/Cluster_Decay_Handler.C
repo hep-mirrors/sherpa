@@ -8,8 +8,8 @@ using namespace ATOOLS;
 using namespace std;
 
 Cluster_Decay_Handler::Cluster_Decay_Handler(Cluster_List * clulist,bool ana) :
-  p_softclusters(hadpars.GetSoftClusterHandler()),
-  p_clus(new Cluster_Part(hadpars.GetSplitter(),ana)),
+  p_softclusters(hadpars->GetSoftClusterHandler()),
+  p_clus(new Cluster_Part(hadpars->GetSplitter(),ana)),
   p_clulist(clulist),
   p_analysis(ana?new Cluster_Decay_Analysis():NULL)
 { }

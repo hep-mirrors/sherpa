@@ -34,12 +34,12 @@ Splitting_Tools(const leading::code & lead,const PTOrder::code & ptorder,
 		const bool & analyse) :
   m_leading(lead), m_ptorder(ptorder),
   m_fourquarks(false), m_analyse(true),
-  m_masstreatment(int(hadpars.Get(std::string("Mass_treatment")))), 
+  m_masstreatment(int(hadpars->Get(std::string("Mass_treatment")))), 
   p_as(as), p_kernels(new Splitting_Functions(zform,m_masstreatment)), 
   p_options(NULL), p_spect(NULL), p_split(NULL), p_out1(NULL), p_out2(NULL),
-  m_mmin_2(sqr(hadpars.GetConstituents()->MinMass())),
-  m_pt2max(sqr(hadpars.Get(std::string("ptmax")))), 
-  m_pt2max_factor(sqr(hadpars.Get(std::string("ptmax_factor")))), 
+  m_mmin_2(sqr(hadpars->GetConstituents()->MinMass())),
+  m_pt2max(sqr(hadpars->Get(std::string("ptmax")))), 
+  m_pt2max_factor(sqr(hadpars->Get(std::string("ptmax_factor")))), 
   m_lastpt2(-1.), 
   m_tot(0),m_d(0),m_s(0),m_u(0),m_reject_y(0),m_reject_z(0)
 { 

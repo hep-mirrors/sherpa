@@ -32,7 +32,7 @@ Proto_Particle::Proto_Particle(const Proto_Particle & pp) :
 
 Proto_Particle::Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info) :
   m_flav(flav), m_mom(mom), m_info(info), 
-  m_mass(hadpars.GetConstituents()->Mass(flav)), m_kt2max(0.), 
+  m_mass(hadpars->GetConstituents()->Mass(flav)), m_kt2max(0.), 
   p_partner(NULL)
 { 
   control::s_AHAprotoparticles++; 
@@ -50,13 +50,13 @@ Proto_Particle::~Proto_Particle()
 }
 
 bool Proto_Particle::CheckConsistency(std::ostream & s,std::string method) {
-  if (dabs(m_mass-hadpars.GetConstituents()->Mass(m_flav))>1.e-6 ||
+  if (dabs(m_mass-hadpars->GetConstituents()->Mass(m_flav))>1.e-6 ||
       dabs(m_mass-sqrt(m_mom.Abs2()))>1.e-6 ||
-      dabs(sqrt(m_mom.Abs2())-hadpars.GetConstituents()->Mass(m_flav))>1.e-6) {
+      dabs(sqrt(m_mom.Abs2())-hadpars->GetConstituents()->Mass(m_flav))>1.e-6) {
     s<<"Error in "<<METHOD<<" called by "<<method<<":"<<std::endl
 	 <<"   Masses and momenta not consistent for "<<m_flav<<"("<<m_mass<<"),"
      <<" sqrt(mom^2) = "<<sqrt(m_mom.Abs2())
-     <<" & constituent mass = "<<hadpars.GetConstituents()->Mass(m_flav)<<"."<<std::endl;
+     <<" & constituent mass = "<<hadpars->GetConstituents()->Mass(m_flav)<<"."<<std::endl;
     return false;
   }
   return true;

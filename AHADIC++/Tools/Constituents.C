@@ -10,11 +10,11 @@ Constituents::Constituents(bool no_diquarks) :
 {
   // Light quarks and diquarks
   double total(0.),udfrac(1.), ud0(1.);
-  double sfrac(hadpars.Get("Strange_fraction")); 
-  double bfrac(hadpars.Get("Baryon_fraction"));
-  double qssup(hadpars.Get("P_qs_by_P_qq"));
-  double sssup(hadpars.Get("P_ss_by_P_qq"));
-  double sp1sup(hadpars.Get("P_di_1_by_P_di_0"));
+  double sfrac(hadpars->Get("Strange_fraction")); 
+  double bfrac(hadpars->Get("Baryon_fraction"));
+  double qssup(hadpars->Get("P_qs_by_P_qq"));
+  double sssup(hadpars->Get("P_ss_by_P_qq"));
+  double sp1sup(hadpars->Get("P_di_1_by_P_di_0"));
 
   total  = 2.*(2.*udfrac+sfrac);
   total += bfrac*ud0*(1.+2.*qssup+3.*sp1sup*(3.+2.*qssup+sssup));

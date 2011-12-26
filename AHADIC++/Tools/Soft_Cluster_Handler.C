@@ -7,22 +7,22 @@ using namespace ATOOLS;
 using namespace std;
 
 Soft_Cluster_Handler::Soft_Cluster_Handler(bool ana) :
-  p_as(hadpars.GetCoupling()),
-  p_splitter(hadpars.GetSplitter()),
-  p_singletransitions(hadpars.GetSingleTransitions()), 
-  p_doubletransitions(hadpars.GetDoubleTransitions()),
-  m_transitionoffset(hadpars.Get(std::string("Offset_C->H"))), 
-  m_decayoffset(hadpars.Get(std::string("Offset_C->HH"))), 
-  m_kappa(hadpars.Get(std::string("MassExponent_C->H"))), 
-  m_lambda(hadpars.Get(std::string("WidthExponent_C->H"))), 
-  m_chi(hadpars.Get(std::string("MassExponent_C->HH"))), 
-  m_pt2max(sqr(hadpars.Get(string("ptmax")))),
-  m_pt2maxfac(sqr(hadpars.Get(std::string("ptmax_factor")))),
+  p_as(hadpars->GetCoupling()),
+  p_splitter(hadpars->GetSplitter()),
+  p_singletransitions(hadpars->GetSingleTransitions()), 
+  p_doubletransitions(hadpars->GetDoubleTransitions()),
+  m_transitionoffset(hadpars->Get(std::string("Offset_C->H"))), 
+  m_decayoffset(hadpars->Get(std::string("Offset_C->HH"))), 
+  m_kappa(hadpars->Get(std::string("MassExponent_C->H"))), 
+  m_lambda(hadpars->Get(std::string("WidthExponent_C->H"))), 
+  m_chi(hadpars->Get(std::string("MassExponent_C->HH"))), 
+  m_pt2max(sqr(hadpars->Get(string("ptmax")))),
+  m_pt2maxfac(sqr(hadpars->Get(std::string("ptmax_factor")))),
   m_transitions(0), m_dtransitions(0), m_decays(0), 
   m_forceddecays(0), m_lists(0),  
   m_ana(ana)
 {
-  switch (int(hadpars.Get(std::string("Selection_C->H")))) {
+  switch (int(hadpars->Get(std::string("Selection_C->H")))) {
   case 3:
     m_tweightmode = Trans_Weight::waveonly;
     break;
@@ -34,7 +34,7 @@ Soft_Cluster_Handler::Soft_Cluster_Handler(bool ana) :
     m_tweightmode = Trans_Weight::relativistic;
     break;
   }
-  switch (int(hadpars.Get(std::string("Selection_C->HH")))) {
+  switch (int(hadpars->Get(std::string("Selection_C->HH")))) {
   case 14:
     m_dweightmode = Decay_Weight::waves;
     break;
@@ -459,7 +459,7 @@ bool Soft_Cluster_Handler::EnforcedTransition(Cluster_List * clin) {
       break;
     }
   }
-  if (!hadpars.AdjustMomenta(size,&momenta.front(),&masses.front())) {
+  if (!hadpars->AdjustMomenta(size,&momenta.front(),&masses.front())) {
     if (size>1 /*&& msg->LevelIsDebugging()*/) {
       msg_Error()<<"Error in "<<METHOD<<" ("<<size<<" clusters) : \n"
 		 <<"   Could not adjust momenta for : \n";
@@ -938,7 +938,7 @@ bool Soft_Cluster_Handler::TryLocalCompensation(Cluster_List * clin)
       masses.push_back(mass2);
       momenta.push_back(cluster->Momentum());
       momenta.push_back(partner->Momentum());
-      if (!hadpars.AdjustMomenta(2,&momenta.front(),&masses.front())) {
+      if (!hadpars->AdjustMomenta(2,&momenta.front(),&masses.front())) {
 	return false;
       }
       cluster->SetFlav((*cluster)[0]);
@@ -979,7 +979,7 @@ bool Soft_Cluster_Handler::ForceMomenta(Cluster_List * clin)
     momenta.push_back(cluster->Momentum());
   }
 
-  if (!hadpars.AdjustMomenta(size,&momenta.front(),&masses.front())) {
+  if (!hadpars->AdjustMomenta(size,&momenta.front(),&masses.front())) {
     if (size>1) {
       msg_Error()<<"Error in "<<METHOD<<" ("<<size<<" clusters) : \n"
 		 <<"   Could not adjust momenta for : \n";

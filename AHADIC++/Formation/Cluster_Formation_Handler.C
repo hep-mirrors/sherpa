@@ -21,10 +21,10 @@ using namespace std;
 Cluster_Formation_Handler::Cluster_Formation_Handler(Cluster_List* clulist,
 						     bool ana) :
   m_single_cr(false), m_double_cr(false),
-  p_gludecayer(new Gluon_Decayer(hadpars.GetSplitter(),ana)), 
+  p_gludecayer(new Gluon_Decayer(hadpars->GetSplitter(),ana)), 
   p_cformer(new Cluster_Former()),
   p_recons(new Colour_Reconnections(0,0,1.)), 
-  p_softclusters(hadpars.GetSoftClusterHandler()),
+  p_softclusters(hadpars->GetSoftClusterHandler()),
   p_clulist(clulist), m_analyse(ana)
 { 
   if (m_analyse) {
@@ -108,7 +108,7 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
   Proto_Particle_List * pli(NULL);
   bool          construct(false);
   unsigned int  col1(0), col2(0);
-  leading::code leading(hadpars.GetSplitter()->Leading());
+  leading::code leading(hadpars->GetSplitter()->Leading());
   Particle   * part(NULL);
   for (int i=0;i<blob->NInP();i++) {
     part = blob->InParticle(i); 
@@ -181,7 +181,7 @@ bool Cluster_Formation_Handler::ShiftOnMassShells() {
     double mass(0.);
     for(pit=(*pplit)->begin(); pit!=(*pplit)->end(); ++pit) {
       mom  += (*pit)->m_mom;
-      mass += hadpars.GetConstituents()->Mass((*pit)->m_flav);
+      mass += hadpars->GetConstituents()->Mass((*pit)->m_flav);
     }
     
     if(mom.Abs2()>sqr(mass)) 
@@ -209,7 +209,7 @@ bool Cluster_Formation_Handler::ShiftOnMassShells() {
     double mass(0.);
     for(pit=pplin->begin(); pit!=pplin->end(); ++pit) {
       mom  += (*pit)->m_mom;
-      mass += hadpars.GetConstituents()->Mass((*pit)->m_flav);
+      mass += hadpars->GetConstituents()->Mass((*pit)->m_flav);
     }
     if(mom.Abs2()<sqr(mass)) {
       if(takefromshift) {
@@ -281,14 +281,14 @@ bool Cluster_Formation_Handler::ShiftList(Proto_Particle_List * pl)
 #ifdef AHAmomcheck
     checkbef  += momenta[k];
 #endif
-    masses[k]  = hadpars.GetConstituents()->Mass(flav);
+    masses[k]  = hadpars->GetConstituents()->Mass(flav);
   }
-  if (!hadpars.AdjustMomenta(number,&momenta.front(),&masses.front()))  {
+  if (!hadpars->AdjustMomenta(number,&momenta.front(),&masses.front()))  {
     msg_Error()<<"Warning in "<<METHOD<<".  Could not adjust momenta for:\n";
     for (pit=pl->begin();pit!=pl->end();++pit,++k) {
       msg_Error()<<"   "<<(*pit)->m_flav<<" "
 		 <<(*pit)->m_mom<<" ("<<(*pit)->m_mom.Abs2()<<") vs. "
-		 <<hadpars.GetConstituents()->Mass((*pit)->m_flav)<<".\n";
+		 <<hadpars->GetConstituents()->Mass((*pit)->m_flav)<<".\n";
     }
     return false;
   }

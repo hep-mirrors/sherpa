@@ -22,9 +22,9 @@ ZForm::code AHADIC::DefineZForm(const int & zform) {
 Splitting_Functions::
 Splitting_Functions(const ZForm::code & zform,const int & masstreatment) :
   m_zform(zform), m_masstreatment(masstreatment),
-  m_alpha(2. /*hadpars.Get(std::string(""))*/), 
-  m_sigma(hadpars.Get(std::string("pt02"))), 
-  m_kappa(hadpars.Get(std::string("P_qg_Exponent")))
+  m_alpha(2. /*hadpars->Get(std::string(""))*/), 
+  m_sigma(hadpars->Get(std::string("pt02"))), 
+  m_kappa(hadpars->Get(std::string("P_qg_Exponent")))
 {
 }
 
