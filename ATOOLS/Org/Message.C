@@ -150,9 +150,8 @@ std::streambuf::int_type indentbuf::overflow(int_type ch)
   return ch; 
 }
 
-Message::Message() : m_buf(std::cout.rdbuf())
+Message::Message() : m_buf(std::cout.rdbuf()), p_log(NULL)
 {      
-  std::cout.rdbuf(&m_buf);
   p_output = &std::cout;
   p_error = &std::cerr;
   p_no = new std::ofstream("/dev/null",std::ios::app);
@@ -164,13 +163,20 @@ Message::Message() : m_buf(std::cout.rdbuf())
 
 Message::~Message() 
 {      
-  std::cout.rdbuf(m_buf.BaseBuf());
+  p_output->rdbuf(m_buf.BaseBuf());
+  if (p_log) delete p_log;
   delete p_no;
-
 }
 
-void Message::Init(const std::string& level) 
+void Message::Init(const std::string& level,const std::string &logfile) 
 { 
+  if (logfile!="") {
+    p_log = new std::ofstream(logfile.c_str(),std::ios::app);
+    p_output=p_log;
+  }
+  m_buf.SetBaseBuf(p_output->rdbuf());
+  p_output->rdbuf(&m_buf);
+
   Data_Reader dr("|","[","!");
   dr.AddLineSeparator("]");
   dr.AddComment("#");

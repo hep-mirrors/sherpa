@@ -96,6 +96,7 @@ namespace ATOOLS {
     void Indent(size_t i=2);
     void DeIndent(size_t i=2);
     inline std::streambuf* BaseBuf() { return m_basebuf; }
+    inline void SetBaseBuf(std::streambuf *buf) { m_basebuf=buf; }
 
   protected:
     std::streambuf* m_basebuf;
@@ -112,7 +113,7 @@ namespace ATOOLS {
   class Message {
   private:
 
-    std::ofstream *p_no; 
+    std::ofstream *p_no, *p_log; 
     std::ostream  *p_output, *p_error;
     indentbuf m_buf;
 
@@ -135,7 +136,7 @@ namespace ATOOLS {
     ~Message(); 
 
     // member functions
-    void Init(const std::string& level);
+    void Init(const std::string& level,const std::string &logfile);
     void SetPrecision(const int precision);
     void SetStandard();
 

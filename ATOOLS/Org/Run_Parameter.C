@@ -169,7 +169,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   std::string color=dr.GetValue<std::string>("PRETTY_PRINT","On");
   if (color=="Off") msg->SetModifiable(false);
   std::string outputlevel = dr.GetValue<std::string>("OUTPUT","2");
-  msg->Init(outputlevel);
+  std::string logfile = dr.GetValue<std::string>("LOG_FILE","");
+  msg->Init(outputlevel,logfile);
   msg->SetMPIMode(dr.GetValue<int>("MPI_OUTPUT",0));
   exh->SetMPITimeOut(dr.GetValue<int>("MPI_TIMEOUT",3600));
   if (msg->LevelIsInfo()) 
@@ -246,7 +247,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_timeout = dr.GetValue<double>("TIMEOUT",std::numeric_limits<double>::max());
   if (gen.m_timeout<0.) gen.m_timeout=0.;
   rpa->gen.m_timer.Start();
-  gen.m_batchmode = dr.GetValue<int>("BATCH_MODE",1);
+  gen.m_batchmode = dr.GetValue<int>("BATCH_MODE",logfile==""?1:3);
   gen.m_clevel= dr.GetValue<int>("CITATION_DEPTH",1);
 #ifdef RLIMIT_AS
   rlimit lims;

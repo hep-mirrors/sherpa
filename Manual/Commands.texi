@@ -53,6 +53,9 @@ Set general output level @samp{<level>}, see @ref{OUTPUT}.
 @item -o <level>
 Set output level for event generation @samp{<level>}, see @ref{OUTPUT}.
 
+@item -l <logfile>
+Set log file name @samp{<logfile>}, see @ref{LOG_FILE}.
+
 @item -j <threads>
 Set number of threads @samp{<threads>}, see @ref{Multi-threading}.
 

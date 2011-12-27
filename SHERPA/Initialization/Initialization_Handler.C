@@ -864,6 +864,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     else if (ExtractValArg(helpsv,oit,"-b","BATCH_MODE","0"));
     else if (ExtractValArg(helpsv,oit,"-O","OUTPUT"));
     else if (ExtractValArg(helpsv,oit,"-o","EVT_OUTPUT"));
+    else if (ExtractValArg(helpsv,oit,"-l","LOG_FILE"));
     else if (ExtractValArg(helpsv,oit,"-j","PG_THREADS"));
     else if (ExtractValArg(helpsv,oit,"-g","GENERATE_RESULT_DIRECTORY","0"));
     else if (par=="--version" || par=="-v"){
@@ -888,6 +889,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       msg_Out()<<"\t\t-A <path>         set analysis output path <path>"<<endl;
       msg_Out()<<"\t\t-O <level>        set general output level <level>"<<endl;
       msg_Out()<<"\t\t-o <level>        set output level for event generation"<<endl;
+      msg_Out()<<"\t\t-l <logfile>      set log file name <logfile>"<<endl;
       msg_Out()<<"\t\t-j <threads>      set number of threads <threads>"<<endl;
       msg_Out()<<"\t\t-g                do not create result directory"<<endl;
       msg_Out()<<"\t\t-b                run in non-batch mode"<<endl;

@@ -6,6 +6,7 @@ The following parameters describe general run information. They may be set in th
 @menu
 * EVENTS::            Number of events to generate.
 * OUTPUT::            Output level.
+* LOG_FILE::          Log file.
 * RANDOM_SEED::       Seed for random number generator.
 * ANALYSIS::          Switch internal analysis on or off.
 * ANALYSIS_OUTPUT::   Directory for generated analysis histogram files.
@@ -57,6 +58,16 @@ The value can be any sum of the following:
 @end itemize
 
 E.g. OUTPUT=3 would display information, events and errors.
+
+@node LOG_FILE
+@subsection LOG_FILE
+@cindex LOG_FILE
+This parameter specifies the log file. If set, the standard output 
+from Sherpa is written to the specified file, but output from child
+processes is not redirected. This option is particularly useful to produce
+clean log files when running the code in MPI mode, see @ref{MPI parallelization}.
+A file name can alternatively be specified on the command line through option
+@option{-l}, see @ref{Command line}.
 
 @node RANDOM_SEED
 @subsection RANDOM_SEED
