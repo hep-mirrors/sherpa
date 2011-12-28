@@ -107,10 +107,6 @@ FFV_Calculator<SType>::FFV_Calculator(const Vertex_Key &key):
     m_cpll=SComplex((nuc?1.0:p_v->Coupling(1))*p_cc->Coupling());
     m_cplr=SComplex((nuc?1.0:p_v->Coupling(0))*p_cc->Coupling());
   }
-  if (m_dir==0 && key.FlA().IsAnti()) {
-    m_cpll=-m_cpll;
-    m_cplr=-m_cplr;
-  }
   m_cl=m_cpll!=SComplex(0.0,0.0);
   m_cr=m_cplr!=SComplex(0.0,0.0);
 }
@@ -336,10 +332,15 @@ void FFV_Calculator<SType>::ConstructFVIDipole()
   }
   for (size_t i(0);i<c->size();++i) {
     CSpinorType *j((CSpinorType*)(*c)[i].front()->Copy());
-    *j*=m_cpll;
+    *j*=m_cpll*std::conj(m_cpll);
     static_cast<Dipole_Color*>(p_cc)->AddJI(j,0);
     static_cast<Dipole_Color*>(p_cc)->AddJI(j,1);
+#ifndef DEBUG__BGS_AMAP
+    j->Delete();
+#else
+    *j*=SComplex(1.0)/(m_cpll*std::conj(m_cpll));
     p_v->AddJ(j);
+#endif
     p_v->SetZero(false);
   }
 #ifdef DEBUG__BG

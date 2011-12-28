@@ -22,6 +22,8 @@
 using namespace COMIX;
 using namespace ATOOLS;
 
+static bool csscite(false);
+
 static const double invsqrttwo(1.0/sqrt(2.0));
 
 Amplitude::Amplitude():
@@ -205,6 +207,11 @@ bool Amplitude::AddRSDipoles()
 #ifdef DEBUG__BG
   msg_Debugging()<<"} -> "<<m_scur.size()<<" dipoles\n";
 #endif
+  if (!csscite) {
+    rpa->gen.AddCitation
+      (1,"Comix subtraction is published in \\cite{Hoeche:2012xx}.");
+    csscite=true;
+  }
   return true;
 }
 
@@ -268,6 +275,11 @@ bool Amplitude::AddVIDipoles()
 #ifdef DEBUG__BG
   msg_Debugging()<<"} -> "<<m_scur.size()<<" dipoles\n";
 #endif
+  if (!csscite) {
+    rpa->gen.AddCitation
+      (1,"Comix subtraction is published in \\cite{Hoeche:2012xx}.");
+    csscite=true;
+  }
   return true;
 }
 
@@ -885,15 +897,34 @@ void Amplitude::ConstructNLOEvents()
 void Amplitude::ConstructDSijMap()
 {
   m_dsm.clear();
-  size_t c(0);
+  m_dsf.clear();
+  size_t c(0), ifp(0);
   std::vector<int> plist(m_fl.size());
   for (size_t i(0);i<m_fl.size();++i)
     plist[i]=m_fl[i].Strong()?c++:0;
   m_dsij.resize(c,std::vector<double>(c));
-  for (size_t j(1);j<m_cur.back().size();++j)
+  Flavour ifl(m_cur[1][0]->Flav());
+  if (ifl.IsFermion() && !ifl.IsAnti()) {
+    for (int i(m_fl.size()-1);i>0;--i)
+      if (m_cur[1][i]->Flav().IsFermion()) ++ifp;
+  }
+  m_dsf.resize(m_cur.back().size(),ifp%2?-1.0:1.0);
+  for (size_t j(1);j<m_cur.back().size();++j) {
     m_dsm[j]=std::pair<int,int>
       (plist[m_cur.back()[j]->Sub()->Sub()->Id().front()],
        plist[m_cur.back()[j]->Sub()->Id().front()]);
+    Flavour ffl(m_cur.back()[j]->Sub()->Flav());
+    if (!ffl.IsFermion()) continue;
+    int idx(m_cur.back()[j]->Sub()->Id().front());
+    if (ffl.IsAnti()) {
+      for (int i(0);i<idx;++i)
+	if (m_cur[1][i]->Flav().IsFermion()) m_dsf[j]=-m_dsf[j];
+    }
+    else {
+      for (int i(m_fl.size()-1);i>idx;--i)
+	if (m_cur[1][i]->Flav().IsFermion()) m_dsf[j]=-m_dsf[j];
+    }
+  }
 }
 
 void Amplitude::FillCombinations()
@@ -1253,7 +1284,30 @@ bool Amplitude::EvaluateAll()
 #endif
       if (m_pmode=='D') {
 	for (size_t i(0);i<m_rress.size();++i) m_cress[i]=m_rress[i]=0.0;
+ 	if (p_dinfo->Mode()==1)
+	  m_cur.back()[j]->Contract(*m_cur.back()[j]->Sub(),m_cchirs,m_rress);
+ 	else
+	  for (size_t i(0);i<m_rress.size();++i) m_rress[i]=m_dsf[j]*m_ress[i]; 
+#ifdef DEBUG__BGS_AMAP
+	for (size_t i(0);i<m_rress.size();++i) m_rress[i]=0.0;
 	m_cur.back()[j]->Contract(*m_cur.back()[j]->Sub(),m_cchirs,m_rress);
+	for (size_t i(0);i<m_rress.size();++i)
+	  if (m_ress[i].real() || m_ress[i].imag()) {
+	    msg_Debugging()<<"Check amplitude mapping ("<<m_dsf[j]<<"): "
+			   <<m_rress[i]<<" vs. "<<m_dsf[j]*m_ress[i]
+			   <<" -> "<<m_rress[i]/(m_dsf[j]*m_ress[i])<<"\n";
+	    if (!IsEqual(m_rress[i].real(),m_dsf[j]*m_ress[i].real(),1.0e-6)) {
+	      msg_Error()<<METHOD<<"(): Mapping error in";
+	      for (size_t l(0);l<m_nin;++l) msg_Error()<<" "<<m_fl[l];
+	      msg_Error()<<" ->";
+	      for (size_t l(m_nin);l<m_nin+m_nout;++l) msg_Error()<<" "<<m_fl[l];
+	      msg_Error()<<" ("<<m_cur.back()[j]->Sub()->Sub()->Id().front()<<","
+			 <<m_cur.back()[j]->Sub()->Id().front()<<")["<<i<<"]: "
+			 <<m_rress[i]<<" / "<<m_dsf[j]*m_ress[i]<<" = "
+			 <<m_rress[i]/(m_dsf[j]*m_ress[i])<<" ("<<m_dsf[j]<<")\n";
+	    }
+	  }
+#endif
 	m_cur.back()[j]->Contract(*m_cur.back()[j]->Sub(),m_cchirs,m_cress,1);
 	m_cur.back()[j]->Contract(*m_cur.back()[j]->Sub(),m_cchirs,m_cress,2);
       }

@@ -76,10 +76,6 @@ TAUPI_Calculator<SType>::TAUPI_Calculator(const Vertex_Key &key):
     m_cpll=SComplex(p_v->Coupling(1)*p_cc->Coupling());
     m_cplr=SComplex(p_v->Coupling(0)*p_cc->Coupling());
   }
-  if (m_dir==0 && key.p_a->Flav().IsAnti()) {
-    m_cpll=-m_cpll;
-    m_cplr=-m_cplr;
-  }
 }
  
 template <typename SType>

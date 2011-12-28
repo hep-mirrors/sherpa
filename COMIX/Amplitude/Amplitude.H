@@ -95,6 +95,8 @@ namespace COMIX {
     std::vector<std::vector<double> >     m_dsij;
     std::map<size_t,std::pair<int,int> >  m_dsm;
 
+    std::vector<double> m_dsf;
+
     double m_res, m_cmur[2];
 
     Current_Matrix m_cur;

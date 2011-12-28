@@ -216,10 +216,15 @@ void VVV_Calculator<SType>::ConstructIDipole()
   }
   for (size_t i(0);i<c->size();++i) {
     CVec4Type *j((CVec4Type*)(*c)[i].front()->Copy());
-    *j*=m_cpl;
+    *j*=m_cpl*std::conj(m_cpl);
     static_cast<Dipole_Color*>(p_cc)->AddJI(j,0);
     static_cast<Dipole_Color*>(p_cc)->AddJI(j,1);
+#ifndef DEBUG__BGS_AMAP
+    j->Delete();
+#else
+    *j*=SComplex(1.0)/(m_cpl*std::conj(m_cpl));
     p_v->AddJ(j);
+#endif
     p_v->SetZero(false);
   }
 #ifdef DEBUG__BG
