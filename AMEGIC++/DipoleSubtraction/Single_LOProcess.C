@@ -767,6 +767,10 @@ int Single_LOProcess::TestLib(std::vector<double> * pfactors)
   
   for (size_t i=0;i<p_hel->MaxHel();i++) {
     M_doub[i] = p_ampl->Differential(i)*p_hel->Multiplicity(i)*p_hel->PolarizationFactor(i);
+    if (IsNan(M_doub[i])) {
+      msg_Error()<<METHOD<<"("<<m_name<<"): Helicity "<<i<<" yields "<<M_doub[i]<<". Continuing."<<std::endl;
+      continue;
+    }
     if (pfactors) M2 += M_doub[i]*(*pfactors)[p_hel->GetEPol(i)-90];
     else M2 += M_doub[i];
   } 
