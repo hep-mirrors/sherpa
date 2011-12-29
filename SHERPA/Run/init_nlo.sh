@@ -16,18 +16,19 @@ fi;
 sed -e's/}(run)/  ONLY_MAPPING_FILE 1;\n}(run)/g' < $2 > $2.$tp;
 sed -e'/NLO_QCD/ d' < $2.$tp > $2.B;
 export SHERPA_CPP_PATH=$PWD/$nt;
+mkdir $nt; cp -r Process/ $nt/;
 $1 -f$2.B;
 for i in $nt/Process/Comix/*[^\)].map; do
   if grep -q x $i; then
-    sed -e's/ /__QCD('$tp') /g' -i $i;
-    mv $i $(echo $i | sed -e's/.map/__QCD('$tp').map/g');
+    sed -e's/ /__QCD('$tp') /g' $i > $i.tmp;
+    mv $i.tmp $(echo $i | sed -e's/.map/__QCD('$tp').map/g');
   else
-    sed -e'1 s/ /__QCD('$tp') /g' -e'1 s/$/__QCD('$tp')/g' -i $i;
-    if awk '{ if ($1!=$2) exit 1; exit 0; }' < $i; then rm $i;
-    else mv $i $(echo $i | sed -e's/.map/__QCD('$tp').map/g'); fi;
+    sed -e'1 s/ /__QCD('$tp') /g' -e'1 s/$/__QCD('$tp')/g' $i > $i.tmp;
+    if awk '{ if ($1!=$2) exit 1; exit 0; }' < $i; then rm $i.tmp;
+    else mv $i.tmp $(echo $i | sed -e's/.map/__QCD('$tp').map/g'); fi;
   fi
 done;
 $1 -f$2.$tp;
-cp -r $nt/Process .;
+cp -ur $nt/Process .;
 rm -rf $nt;
 rm $tn
