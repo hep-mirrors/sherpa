@@ -156,7 +156,6 @@ bool MCatNLO_Process::InitSubtermInfo()
     NLO_subevtlist *subs((*p_rsproc)[i]->GetSubevtList());
     for (size_t j(0);j<subs->size()-1;++j) {
       NLO_subevt *sub((*subs)[j]);
-      std::string tag(sub->IDString(1));
       for (size_t ij(0);ij<sub->m_n;++ij)
 	for (size_t k(0);k<sub->m_n;++k)
 	  if (k!=ij && sub->p_fl[k]==sub->p_fl[sub->m_kt] && 
