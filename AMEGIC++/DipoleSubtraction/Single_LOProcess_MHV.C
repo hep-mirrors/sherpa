@@ -87,6 +87,7 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
 
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
   p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
+  p_BS->Setk0(s_gauge);
   
   //////////////////////////////////////////////// 
 #ifdef Basic_Sfuncs_In_MHV
@@ -220,6 +221,7 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
   Flavour* fl = &m_flavs.front();
   p_hel    = new Helicity(m_nin,m_nout,fl,p_pl);
   p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,fl,p_b);  
+  p_BS->Setk0(s_gauge);
   p_epol   = epol;
   //////////////////////////////////////////////// 
 

@@ -169,6 +169,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
     p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b,hstr,hstr2);  
   }
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
+  p_BS->Setk0(s_gauge);
   p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
   int oew(m_oew), oqcd(m_oqcd), ntchanmin(m_ntchanmin);
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,oqcd,oew,ntchanmin,
@@ -357,6 +358,7 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
     p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b,hstr,hstr2);
   }
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
+  p_BS->Setk0(s_gauge);
   p_BS->SetEPol(&m_epol); 
   p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
 
