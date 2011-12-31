@@ -9,13 +9,13 @@
 
 namespace PHASIC {
   class Fastjet_Finder : public Selector_Base {
-    double m_ptmin,m_etmin,m_delta_r,m_f;
+    double m_ptmin,m_etmin,m_delta_r,m_f,m_eta,m_y;
     fastjet::JetDefinition * p_jdef;
     fastjet::SISConePlugin * p_siscplug;
 
   public:
     Fastjet_Finder(int nin, int nout,ATOOLS::Flavour * fl,std::string algo,
-		   double ptmin, double etmin, double dr, double f, int nn);
+		   double ptmin, double etmin, double dr, double f, double eta, double y, int nn);
 
     ~Fastjet_Finder();
 
@@ -48,9 +48,9 @@ using namespace ATOOLS;
   --------------------------------------------------------------------- */
 
 Fastjet_Finder::Fastjet_Finder(int nin, int nout,ATOOLS::Flavour * fl, std::string algo,
-			       double ptmin, double etmin, double dr, double f, int nn) : 
+			       double ptmin, double etmin, double dr, double f, double eta, double y, int nn) : 
   Selector_Base("Fastjetfinder"), m_ptmin(ptmin), m_etmin(etmin), 
-  m_delta_r(dr), m_f(f), p_jdef(0), p_siscplug(0)
+  m_delta_r(dr), m_f(f), m_eta(eta), m_y(y), p_jdef(0), p_siscplug(0)
 {
   fastjet::JetAlgorithm ja(fastjet::kt_algorithm);
 
@@ -103,7 +103,9 @@ bool Fastjet_Finder::Trigger(const Vec4D_Vector &p)
   int n=0;
   for (size_t i(0);i<jets.size();++i) {
     Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
-    if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin) n++;
+    if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
+	(m_eta==100 || dabs(pj.Eta())<m_eta) &&
+	(m_y==100 || dabs(pj.Y())<m_y)) n++;
   }
 
   bool trigger(true);
@@ -149,13 +151,16 @@ Selector_Base *Fastjet_Finder_Getter::operator()(const Selector_Key &key) const
  
   double f(.75);
   if (key.front().size()>=6) f=ToType<double>(key[0][5]);
+  double eta(100.), y(100.);
+  if (key.front().size()>=7) eta=ToType<double>(key[0][6]);
+  if (key.front().size()>=8) y=ToType<double>(key[0][7]);
 
   Fastjet_Finder *jf(new Fastjet_Finder(key.p_proc->NIn(),key.p_proc->NOut(),
 					(Flavour*)&key.p_proc->Process()->Flavours().front(),
 					key[0][0],
 					ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2])),
 					ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3])),
-					ToType<double>(key[0][4]),f,
+					ToType<double>(key[0][4]),f,eta,y,
 					ToType<int>(key[0][1])));
   jf->SetProcess(key.p_proc);
   return jf;
@@ -163,7 +168,7 @@ Selector_Base *Fastjet_Finder_Getter::operator()(const Selector_Key &key) const
 
 void Fastjet_Finder_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"FastjetFinder algorithm n ptmin etmin dr [f(siscone)=0.75]\n" 
+  str<<"FastjetFinder algorithm n ptmin etmin dr [f(siscone)=0.75 [eta=100 [y=100]]]\n" 
      <<"              algorithm: kt,antikt,cambridge,siscone";
 }
 
