@@ -93,6 +93,22 @@ void Particle_Info::SetResummed()
 
 void Particle_Info::Add(const Flavour &fl)
 { 
+  if (m_content.empty()) {
+    m_mass=fl.Mass();
+    m_massive=fl.IsMassive();
+  }
+  else {
+    if (m_mass!=fl.Mass()) {
+      msg_Error()<<METHOD<<"(): m_{"<<m_idname<<"} = "<<m_mass
+		 <<" vs. m_{"<<fl<<"} = "<<fl.Mass(true)<<std::endl;
+      THROW(critical_error,"Inconsistent input");
+    }
+    if (m_massive!=fl.IsMassive()) {
+      msg_Error()<<METHOD<<"(): massive_{"<<m_idname<<"} = "<<m_massive
+		 <<" vs. massive_{"<<fl<<"} = "<<fl.IsMassive()<<std::endl;
+      THROW(critical_error,"Inconsistent input");
+    }
+  }
   for (size_t i(0);i<fl.Size();++i) 
     m_content.push_back(new Flavour(fl[i])); 
 }
