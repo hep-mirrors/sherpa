@@ -7,7 +7,7 @@
 
 namespace PHASIC {
   class NJet_Finder : public Selector_Base {
-    double m_pt2min,m_et2min,m_delta_r,m_r2min,m_etamax;
+    double m_pt2min,m_et2min,m_delta_r,m_r2min,m_etamax,m_massmax;
     int    m_exp, m_type;
     double m_ene, m_s, m_sprime; 
     int    m_nstrong;
@@ -30,7 +30,8 @@ namespace PHASIC {
     void   ConstructJets(ATOOLS::Vec4D * p, int n);
   public:
     NJet_Finder(int nin, int nout,ATOOLS::Flavour * fl, 
-		double ptmin, double etmin, double dr, int exp, double etamax, int nn);
+		double ptmin, double etmin, double dr, int exp, double etamax, 
+                double massmax, int nn);
 
     ~NJet_Finder();
 
@@ -64,9 +65,10 @@ using namespace ATOOLS;
   --------------------------------------------------------------------- */
 
 NJet_Finder::NJet_Finder(int nin, int nout,ATOOLS::Flavour * fl, 
-			 double ptmin, double etmin, double dr, int exp, double etamax, int nn) : 
+			 double ptmin, double etmin, double dr, int exp, 
+                         double etamax, double massmax, int nn) : 
   Selector_Base("NJetfinder"), m_pt2min(sqr(ptmin)), m_et2min(sqr(etmin)), 
-  m_delta_r(dr), m_etamax(etamax), m_exp(exp)
+  m_delta_r(dr), m_etamax(etamax), m_massmax(massmax), m_exp(exp)
 {
   m_fl         = fl;
   m_ene        = rpa->gen.Ecms()/2.;
@@ -82,7 +84,9 @@ NJet_Finder::NJet_Finder(int nin, int nout,ATOOLS::Flavour * fl,
 
   if (m_nin==2) {
     int instrong(0);
-    for (int j=0;j<m_nin;j++) { if (m_fl[j].Resummed()) instrong++; }
+    for (int j=0;j<m_nin;j++) { 
+      if (m_fl[j].Resummed() || m_fl[j].Strong()) instrong++;
+    }
     if (instrong==0) m_type = 1;
     if (instrong==1) m_type = 2;
     if (instrong==2) m_type = 4;
@@ -96,7 +100,8 @@ NJet_Finder::NJet_Finder(int nin, int nout,ATOOLS::Flavour * fl,
   
   m_nstrong = 0;
   for (int i=m_nin;i<m_nout+m_nin;i++) {
-    if (fl[i].Resummed()) m_nstrong++;
+    if (fl[i].Resummed() || 
+        (fl[i].Strong() && fl[i].Mass()<m_massmax)) m_nstrong++;
   }
 
   m_sel_log    = new Selector_Log(m_name);
@@ -134,7 +139,8 @@ bool NJet_Finder::Trigger(const Vec4D_Vector &p)
   int n=0;
   Vec4D * moms = new Vec4D[m_nout];
   for (int i=m_nin;i<m_nout+m_nin;i++) {
-    if (m_fl[i].Resummed()) {
+    if (m_fl[i].Resummed() || 
+        (m_fl[i].Strong() && m_fl[i].Mass()<m_massmax)) {
       moms[n]=p[i];
       n++;
     }
@@ -174,7 +180,9 @@ bool NJet_Finder::JetTrigger(const Vec4D_Vector &p,NLO_subevtlist *const subs)
   int n=0, ns=subs->back()->m_n-m_nin;
   Vec4D * moms = new Vec4D[ns];
   for (int i=m_nin;i<ns+m_nin;i++) {
-    if (subs->back()->p_fl[i].Resummed()) {
+    if (subs->back()->p_fl[i].Resummed() || 
+        (subs->back()->p_fl[i].Strong() && 
+         subs->back()->p_fl[i].Mass()<m_massmax)) {
       moms[n]=p[i];
       n++;
     }
@@ -355,12 +363,14 @@ Selector_Base *NJet_Finder_Getter::operator()(const Selector_Key &key) const
   if (key.front().size()>=5) exp=ToType<int>(key[0][4]);
   double etamax(100.);
   if (key.front().size()>=6) etamax=ToType<double>(key[0][5]);
+  double massmax(0.);
+  if (key.front().size()>=7) massmax=ToType<double>(key[0][6]);
 
   NJet_Finder *jf(new NJet_Finder(key.p_proc->NIn(),key.p_proc->NOut(),
 				  (Flavour*)&key.p_proc->Process()->Flavours().front(),
 				  ToType<double>(key.p_read->Interpreter()->Interprete(key[0][1])),
 				  ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2])),
-				  ToType<double>(key[0][3]),exp,etamax,
+				  ToType<double>(key[0][3]),exp,etamax,massmax,
 				  ToType<int>(key[0][0])));
   jf->SetProcess(key.p_proc);
   return jf;
@@ -368,7 +378,7 @@ Selector_Base *NJet_Finder_Getter::operator()(const Selector_Key &key) const
 
 void NJet_Finder_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"NJetFinder n ptmin etmin dr [exp=1] [etamax=100]"; 
+  str<<"NJetFinder n ptmin etmin dr [exp=1] [etamax=100] [maxmass=0]"; 
 }
 
 }
