@@ -5,6 +5,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
@@ -75,12 +76,28 @@ RootNtuple_Reader::RootNtuple_Reader(const std::string & path,const std::string 
 #ifdef USING__ROOT
   p_vars = new RootNTupleReader_Variables();
   p_vars->p_f=new TChain("t3");
-  p_vars->p_f->Add(filename.c_str());
+  size_t bpos(filename.find("[")), epos(filename.find("]",bpos));
+  if (bpos==std::string::npos ||
+      epos==std::string::npos) {
+    p_vars->p_f->Add(filename.c_str());
+  }
+  else {
+    std::string basename(filename.substr(0,bpos));
+    std::string suffix(filename.substr(epos+1));
+    std::string range(filename.substr(bpos+1,epos-bpos-1));
+    size_t spos(range.find("-"));
+    if (spos==std::string::npos) THROW(fatal_error,"Ivalid syntax");
+    size_t i(ToType<size_t>(range.substr(0,spos)));
+    size_t e(ToType<size_t>(range.substr(spos+1)));
+    for (;i<=e;++i) {
+      std::string lfile(basename+ToString(i)+suffix);
+      if (FileExists(lfile)) p_vars->p_f->Add(lfile.c_str());
+    }
+  }
   m_entries=p_vars->p_f->GetEntries();
   if(m_entries==0) {
-    msg_Error()<<"ERROR: Event file "<<filename<<" does not contain any event."<<std::endl
-	       <<"   Will abort the run."<<std::endl;
-    abort();
+    msg_Error()<<"ERROR: Event file "<<filename<<" does not contain any event."<<std::endl;
+    THROW(fatal_error,"Missing input");
   }
   p_vars->p_f->SetBranchAddress("id",&p_vars->m_id);
   p_vars->p_f->SetBranchAddress("nparticle",&p_vars->m_nparticle);
