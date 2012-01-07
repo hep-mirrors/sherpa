@@ -1,6 +1,7 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "SHERPA/Tools/RootNtuple_Reader.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "PHASIC++/Process/Process_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -21,6 +22,23 @@ using namespace ATOOLS;
 using namespace std;
 
 namespace SHERPA {
+
+  class Dummy_Process: public PHASIC::Process_Base {
+  public:
+    void SetScale(const Scale_Setter_Arguments &args) {}
+    void SetKFactor(const KFactor_Setter_Arguments &args) {}
+    size_t Size() const { return 0; }
+    Process_Base *operator[](const size_t &i) { return NULL; }
+
+    Weight_Info *OneEvent(const int wmode,const int mode=0) { return NULL; }
+
+    double Differential(const ATOOLS::Vec4D_Vector &p) { return 0.0; }
+    double Differential2() { return 0.0; }
+    bool CalculateTotalXSec(const std::string &resultpath,
+			    const bool create=false) { return false; }
+    void SetLookUp(const bool lookup) {}
+  };
+
   struct RootNTupleReader_Variables {
 #ifdef USING__ROOT
     static const Int_t s_kMaxParticle = 100;
@@ -124,6 +142,13 @@ RootNtuple_Reader::RootNtuple_Reader(const std::string & path,const std::string 
 #endif
 }
 
+RootNtuple_Reader::~RootNtuple_Reader()
+{
+  for (std::map<int,PHASIC::Process_Base*>::iterator
+	 sit(m_procs.begin());sit!=m_procs.end();++sit) delete sit->second;
+  for (std::map<int,PHASIC::Scale_Setter_Base*>::iterator
+	 sit(m_scales.begin());sit!=m_scales.end();++sit) delete sit->second;
+}
 
 
 void RootNtuple_Reader::CloseFile() {
@@ -250,6 +275,17 @@ bool RootNtuple_Reader::ReadInSubEvent(Blob_List * blobs)
       p[2+i]=Vec4D(p_vars->p_E[i],p_vars->p_px[i],
 		   p_vars->p_py[i],p_vars->p_pz[i]);
     if (m_scales.find(p_vars->m_nparticle)==m_scales.end()) {
+      Process_Info pi;
+      Flavour fl1((kf_code)abs(p_vars->m_id1),p_vars->m_id1<0);
+      Flavour fl2((kf_code)abs(p_vars->m_id2),p_vars->m_id2<0);
+      pi.m_ii.m_ps.push_back(Subprocess_Info(fl1));
+      pi.m_ii.m_ps.push_back(Subprocess_Info(fl2));
+      for (int i=0;i<p_vars->m_nparticle;++i)
+	pi.m_fi.m_ps.push_back
+	  (Subprocess_Info(Flavour(abs(p_vars->p_kf[i]),
+				   p_vars->p_kf[i]<0)));
+      m_sargs.p_proc=m_procs[p_vars->m_nparticle] = new Dummy_Process();
+      m_sargs.p_proc->Init(pi,NULL,NULL);
       m_sargs.m_nout=p_vars->m_nparticle;
       m_scales[p_vars->m_nparticle] =
 	Scale_Setter_Base::Scale_Getter_Function::
@@ -345,6 +381,15 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
 		     p_vars->p_py[i],p_vars->p_pz[i]);
       }
       if (m_scales.find(p_vars->m_nparticle)==m_scales.end()) {
+	Process_Info pi;
+	Flavour fl1((kf_code)abs(p_vars->m_id1),p_vars->m_id1<0);
+	Flavour fl2((kf_code)abs(p_vars->m_id2),p_vars->m_id2<0);
+	pi.m_ii.m_ps.push_back(Subprocess_Info(fl1));
+	pi.m_ii.m_ps.push_back(Subprocess_Info(fl2));
+	for (int i=0;i<p_vars->m_nparticle;++i)
+	  pi.m_fi.m_ps.push_back(Subprocess_Info(flav[i+2]));
+	m_sargs.p_proc=m_procs[p_vars->m_nparticle] = new Dummy_Process();
+	m_sargs.p_proc->Init(pi,NULL,NULL);
 	m_sargs.m_nout=p_vars->m_nparticle;
 	m_scales[p_vars->m_nparticle] =
 	  Scale_Setter_Base::Scale_Getter_Function::

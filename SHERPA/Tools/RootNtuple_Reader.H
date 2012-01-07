@@ -23,6 +23,7 @@ namespace SHERPA {
     size_t             m_evtid,m_subevtid,m_evtcnt,m_entries,m_evtpos;
     ATOOLS::NLO_subevtlist m_nlos;
     PHASIC::Scale_Setter_Arguments m_sargs;
+    std::map<int,PHASIC::Process_Base*> m_procs;
     std::map<int,PHASIC::Scale_Setter_Base*> m_scales;
     PDF::ISR_Handler *p_isr;
 
@@ -34,6 +35,7 @@ namespace SHERPA {
   public:
     RootNtuple_Reader(const std::string &,const std::string &,int mode,
 		      MODEL::Model_Base *const model,PDF::ISR_Handler *const isr);
+    ~RootNtuple_Reader();
     bool        FillBlobs(ATOOLS::Blob_List *);
   };
 }

@@ -91,6 +91,7 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
     THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
   jtag=jtag.substr(0,pos);
   Data_Reader read(" ",",","#","=");
+  read.AddIgnore(":");
   read.SetAddCommandLine(false);
   read.SetString(jtag);
   m_mode=read.StringValue<int>("M",1);

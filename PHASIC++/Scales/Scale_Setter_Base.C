@@ -43,7 +43,7 @@ Scale_Setter_Base::Scale_Setter_Base
 
 void Scale_Setter_Base::SetCouplings()
 {
-  if (p_proc==NULL) return;
+  if (p_proc==NULL || p_proc->Integrator()->ISR()==NULL) return;
   DEBUG_FUNC(p_proc->Name());
   if (p_cpls==NULL) THROW(fatal_error,"No coupling information");
   p_subs=p_proc->GetSubevtList();
@@ -139,6 +139,6 @@ double Scale_Setter_Base::CalculateScale
       for (size_t j(0);j<stp::size;++j) sub->m_mu2[j]=m_scale[j];
     }
   }
-  if (p_proc) p_cpls->Calculate();
+  if (p_proc && p_proc->Integrator()->ISR()) p_cpls->Calculate();
   return m_scale[stp::fac];
 }
