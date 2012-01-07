@@ -1,7 +1,6 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "SHERPA/Tools/RootNtuple_Reader.H"
 #include "PDF/Main/ISR_Handler.H"
-#include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -46,7 +45,7 @@ RootNtuple_Reader::RootNtuple_Reader(const std::string & path,const std::string 
 				     MODEL::Model_Base *const model,PDF::ISR_Handler *const isr) :
   Event_Reader_Base(path,file), 
   m_eventmode(mode), m_evtid(0), m_subevtid(0), m_evtcnt(0), m_entries(0), m_evtpos(0),
-  p_scale(NULL), p_isr(isr)
+  p_isr(isr), m_sargs(NULL,"","")
 {
   std::string filename=m_path+m_file;
   msg_Out()<<" Reading from "<<filename<<"\n";
@@ -59,7 +58,6 @@ RootNtuple_Reader::RootNtuple_Reader(const std::string & path,const std::string 
   if (m_check) msg_Info()<<METHOD<<"(): Ntuple check mode set to "<<m_check<<"."<<std::endl;
   m_oqcd=dataread.GetValue<int>("ROOTNTUPLE_OQCD",0);
   if (m_oqcd) msg_Info()<<METHOD<<"(): Ntuple O(QCD) set to "<<m_oqcd<<"."<<std::endl;
-  int nout=dataread.GetValue<int>("ROOTNTUPLE_NOUT",2);
   dataread.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
   dataread.RereadInFile();
   std::string scale=dataread.GetValue<std::string>
@@ -68,11 +66,8 @@ RootNtuple_Reader::RootNtuple_Reader(const std::string & path,const std::string 
   if (!dataread.VectorFromFile(helpsv,"COUPLINGS")) helpsv.push_back("Alpha_QCD 1");
   std::string coupling(helpsv.size()?helpsv[0]:"");
   for (size_t i(1);i<helpsv.size();++i) coupling+=" "+helpsv[i];
-  Scale_Setter_Arguments cargs(model,scale,coupling);
-  cargs.m_nin=2;
-  cargs.m_nout=nout;
-  p_scale = Scale_Setter_Base::Scale_Getter_Function::GetObject(cargs.m_scale,cargs);
-  if (p_scale==NULL) THROW(fatal_error,"Invalid scale scheme");
+  m_sargs=Scale_Setter_Arguments(model,scale,coupling);
+  m_sargs.m_nin=2;
 #ifdef USING__ROOT
   p_vars = new RootNTupleReader_Variables();
   p_vars->p_f=new TChain("t3");
@@ -254,9 +249,18 @@ bool RootNtuple_Reader::ReadInSubEvent(Blob_List * blobs)
     for (int i=0;i<p_vars->m_nparticle;++i)
       p[2+i]=Vec4D(p_vars->p_E[i],p_vars->p_px[i],
 		   p_vars->p_py[i],p_vars->p_pz[i]);
-    p_scale->CalculateScale(p,0);
+    if (m_scales.find(p_vars->m_nparticle)==m_scales.end()) {
+      m_sargs.m_nout=p_vars->m_nparticle;
+      m_scales[p_vars->m_nparticle] =
+	Scale_Setter_Base::Scale_Getter_Function::
+	GetObject(m_sargs.m_scale,m_sargs);
+      if (m_scales[p_vars->m_nparticle]==NULL)
+	THROW(fatal_error,"Invalid scale scheme");
+    }
+    Scale_Setter_Base *scale(m_scales[p_vars->m_nparticle]);
+    scale->CalculateScale(p,0);
     double weight=CalculateWeight
-      (p_scale->Scale(stp::ren),p_scale->Scale(stp::fac),
+      (scale->Scale(stp::ren),scale->Scale(stp::fac),
        p_vars->m_nuwgt?1:0);
     if (m_check) {
       msg_Debugging()<<METHOD<<"(): computed "<<weight
@@ -340,10 +344,20 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
 	p[2+i]=Vec4D(p_vars->p_E[i],p_vars->p_px[i],
 		     p_vars->p_py[i],p_vars->p_pz[i]);
       }
-      p_scale->CalculateScale(p,0);
+      if (m_scales.find(p_vars->m_nparticle)==m_scales.end()) {
+	m_sargs.m_nout=p_vars->m_nparticle;
+	m_scales[p_vars->m_nparticle] =
+	  Scale_Setter_Base::Scale_Getter_Function::
+	  GetObject(m_sargs.m_scale,m_sargs);
+	if (m_scales[p_vars->m_nparticle]==NULL)
+	  THROW(fatal_error,"Invalid scale scheme");
+      }
+      Scale_Setter_Base *scale(m_scales[p_vars->m_nparticle]);
+      scale->CalculateScale(p,0);
       double weight=CalculateWeight
-	(p_scale->Scale(stp::ren),p_scale->Scale(stp::fac),
+	(scale->Scale(stp::ren),scale->Scale(stp::fac),
 	 p_vars->m_nuwgt?1:2);
+      m_nlos.back()->m_result=weight;
       m_weight+=weight;
       if (m_check) {
 	msg_Debugging()<<METHOD<<"(): computed "<<weight
@@ -358,6 +372,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     if (m_check && !m_calc) {
       double weight=CalculateWeight
 	(sqr(p_vars->m_mur),sqr(p_vars->m_muf),p_vars->m_nuwgt?1:2);
+      m_weight=weight;
       msg_Debugging()<<METHOD<<"(): computed "<<weight
 		     <<", stored "<<p_vars->m_wgt2
 		     <<", rel. diff. "<<weight/p_vars->m_wgt2-1.0<<".\n";

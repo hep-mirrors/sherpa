@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "SHERPA/Tools/Event_Reader_Base.H"
+#include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include <vector>
 
@@ -21,7 +22,8 @@ namespace SHERPA {
     int                m_eventmode,m_check,m_calc,m_oqcd;
     size_t             m_evtid,m_subevtid,m_evtcnt,m_entries,m_evtpos;
     ATOOLS::NLO_subevtlist m_nlos;
-    PHASIC::Scale_Setter_Base *p_scale;
+    PHASIC::Scale_Setter_Arguments m_sargs;
+    std::map<int,PHASIC::Scale_Setter_Base*> m_scales;
     PDF::ISR_Handler *p_isr;
 
     void               CloseFile();
