@@ -31,6 +31,8 @@ KP_Terms::KP_Terms(Process_Base *const proc,const int mode):
   }
   for (size_t i(0);i<p_proc->Flavours().size();++i)
     if (p_proc->Flavours()[i].Strong()) m_plist.push_back(i);
+  for (int i=0;i<8;i++) m_kpca[i]=0.;
+  for (int i=0;i<8;i++) m_kpcb[i]=0.;
 }
 
 KP_Terms::~KP_Terms()
