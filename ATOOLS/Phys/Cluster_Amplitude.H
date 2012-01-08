@@ -106,6 +106,8 @@ namespace ATOOLS {
     Cluster_Leg *IdLeg(const size_t &id) const;
     size_t       IdIndex(const size_t &id) const;
 
+    void OrderLegs();
+
     // inline functions
     inline const ClusterLeg_Vector &Legs() const { return m_legs; }
     inline ClusterLeg_Vector       &Legs()       { return m_legs; }

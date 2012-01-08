@@ -333,6 +333,21 @@ size_t Cluster_Amplitude::IdIndex(const size_t &id) const
 
 namespace ATOOLS {
 
+  class Order_LegID {
+  public:
+    bool operator()(Cluster_Leg *const a,Cluster_Leg *const b) const
+    { return a->Id()<b->Id(); }
+  };// end of class Sort_LegID
+
+}
+
+void Cluster_Amplitude::OrderLegs()
+{
+  std::stable_sort(m_legs.begin(),m_legs.end(),Order_LegID());
+}
+
+namespace ATOOLS {
+
   std::ostream &operator<<
     (std::ostream &ostr,const Cluster_Amplitude &ampl)
   {
