@@ -314,6 +314,8 @@ CParam CS_Cluster_Definitions::CoreScale
       }
     }
   }
+  kt2cmin+=ampl->Leg(2)->Mom().Abs2();
+  kt2cmin+=ampl->Leg(3)->Mom().Abs2();
   return CParam(kt2cmin,kt2cmin,0.0,mu2min,-1);
 }
 
