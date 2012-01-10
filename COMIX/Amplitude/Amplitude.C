@@ -372,7 +372,7 @@ int Amplitude::CheckDecay(const ATOOLS::Flavour &fl,
       dfl=dfl.Bar();
     }
     if (did==cid) {
-      if (fl==dfl) return i+1;
+      if (dfl.Includes(fl)) return i+1;
       return -1;
     }
     if (!((did&cid)==0 || (did&cid)==cid || (did&cid)==did)) {

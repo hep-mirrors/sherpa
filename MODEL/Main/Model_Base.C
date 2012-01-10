@@ -194,7 +194,8 @@ void Model_Base::CustomContainerInit()
     ppread.SetAddCommandLine(false);
     ppread.SetString(props);
     s_kftable[nkf] = new Particle_Info
-      (nkf,0.0,0.0,
+      (nkf,ppread.StringValue<double>("m",0.0),//Mass
+       ppread.StringValue<double>("W",0.0),//Width
        ppread.StringValue<int>("C",0),//ICharge
        ppread.StringValue<int>("I",0),//Isoweak
        ppread.StringValue<int>("Q",0),//Strong
