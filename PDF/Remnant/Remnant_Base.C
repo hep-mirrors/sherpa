@@ -64,7 +64,8 @@ bool Remnant_Base::AdjustKinematics()
   m_pzrem=(p_beam->OutMomentum()+
 	   p_partner->p_beam->OutMomentum())[3];
   if ((p_last[1]==NULL || p_last[0]==NULL) &&
-      (Type()==rtp::electron || p_partner->Type()==rtp::electron)) return true;
+      (Type()==rtp::electron || p_partner->Type()==rtp::electron ||
+       Type()==rtp::intact || p_partner->Type()==rtp::intact)) return true;
   for (size_t i=0;i<2;++i) {
     ATOOLS::Blob *cur=p_beamblob;
     if (i==1) cur=p_partner->p_beamblob;

@@ -46,6 +46,12 @@ Beam_Spectra_Handler::~Beam_Spectra_Handler() {
   if (p_BeamBase) { delete [] p_BeamBase; p_BeamBase = NULL; }
 }
 
+bool Beam_Spectra_Handler::Init()
+{
+  bool init(p_BeamBase[0]->Init());
+  if (!p_BeamBase[1]->Init()) init=false;
+  return init;
+}
 
 bool Beam_Spectra_Handler::SpecifySpectra(Data_Reader * dataread)
 {

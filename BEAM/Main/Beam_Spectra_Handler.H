@@ -42,6 +42,7 @@ namespace BEAM {
     Beam_Spectra_Handler(ATOOLS::Data_Reader *);
     ~Beam_Spectra_Handler();
     
+    bool   Init();
     void   Output();
     bool   CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *);
     bool   CheckConsistency(ATOOLS::Flavour *);

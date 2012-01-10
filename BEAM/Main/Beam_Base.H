@@ -51,6 +51,8 @@ namespace BEAM {
 
     virtual ~Beam_Base();
 
+    virtual bool Init(int mode=0);
+
     virtual Beam_Base * Copy()                                     = 0;
     virtual bool        CalculateWeight(const double,const double) = 0;
 

@@ -11,7 +11,12 @@ Beam_Base::Beam_Base(std::string _type,const ATOOLS::Flavour _beam,
   m_energy(_energy), m_polarisation(_polarisation),
   m_x(1.), m_Q2(0.), m_weight(1.)
 {
-  double disc      =  1.-ATOOLS::sqr(m_beam.Mass()/m_energy);
+  Init();
+}
+
+bool Beam_Base::Init(int mode)
+{
+  double disc      =  mode?1.0:1.0-ATOOLS::sqr(m_beam.Mass()/m_energy);
   if (disc<0) {
     msg_Error()<<"Error in Beam_Base :"<<m_type<<std::endl
 		       <<"   Mismatch of energy and mass of beam particle : "
@@ -19,8 +24,9 @@ Beam_Base::Beam_Base(std::string _type,const ATOOLS::Flavour _beam,
 		       <<"   Will lead to termination of program."<<std::endl;
     abort();
   }
-  m_lab    = ATOOLS::Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
-  m_vecout = ATOOLS::Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
+  m_lab    = ATOOLS::Vec4D(m_energy,0.,0.,m_dir*m_energy*sqrt(disc));
+  m_vecout = ATOOLS::Vec4D(m_energy,0.,0.,m_dir*m_energy*sqrt(disc));
+  return true;
 }
 
 Beam_Base::~Beam_Base() 
