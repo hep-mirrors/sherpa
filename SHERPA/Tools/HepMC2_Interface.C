@@ -333,7 +333,6 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
 
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob, HepMC::GenVertex *& vertex)
 {
-  if (blob->Type()==ATOOLS::btp::Bunch) return false;
   if (m_ignoreblobs.count(blob->Type())) return false;
   int count = m_blob2genvertex.count(blob);
   if (count>0) {
@@ -394,15 +393,29 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle
 
   ATOOLS::Vec4D mom  = parton->Momentum();
   HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
-  int stat = int(parton->Status());
-  if (parton->DecayBlob()!=NULL &&
-      m_ignoreblobs.count(parton->DecayBlob()->Type())==0) stat = 2;
-  else if (stat==2 || stat==4) stat=1;
-  if (stat==2) {
-    if (parton->DecayBlob()->Type()==ATOOLS::btp::Signal_Process ||
-	parton->ProductionBlob()->Type()==ATOOLS::btp::Signal_Process) stat = 3;
+  int status=11;
+  if (parton->DecayBlob()==NULL ||
+      m_ignoreblobs.count(parton->DecayBlob()->Type())!=0) {
+    status=1;
   }
-  particle = new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),stat);
+  else {
+    if (parton->DecayBlob()->Type()==ATOOLS::btp::Hadron_Decay ||
+        parton->DecayBlob()->Type()==ATOOLS::btp::Hadron_Mixing) {
+      status=2;
+    }
+    else if (parton->DecayBlob()->Type()==ATOOLS::btp::Signal_Process ||
+             (parton->ProductionBlob() &&
+              parton->ProductionBlob()->Type()==ATOOLS::btp::Signal_Process)) {
+      status=3;
+    }
+    else if (parton->DecayBlob()->Type()==ATOOLS::btp::Bunch) {
+      status=4;
+    }
+    else {
+      status=11;
+    }
+  }
+  particle = new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),status);
   for (int i=1;i<3;i++) {
     if (parton->GetFlow(i)>0) particle->set_flow(i,parton->GetFlow(i));
   }
