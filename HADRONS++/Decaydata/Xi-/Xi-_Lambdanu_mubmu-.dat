@@ -11,9 +11,10 @@
 </Phasespace>
 
 <ME>
-  GF 0.0 VA_B_B_hepph9409272[0,1] VA_F_F[3,2]
+#  GF 0.0 VA_B_B_hepph9409272[0,1] VA_F_F[3,2]
+  1.0 0.0 Generic
 </ME>
 
 <Result>
-  5.828e-19 3.216e-21 8.77e-18;
+  1.81e-06 9.569e-09 2.607e-05;
 </Result>
