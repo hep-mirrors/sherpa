@@ -37,6 +37,7 @@
 }(selector)
 
 (isr){
+  PDF_SET = None
   BUNCH_1         = 22
   BUNCH_2         = 11
 }(isr)
