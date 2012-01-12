@@ -1,5 +1,6 @@
 (run){
   EVENTS = 10000;
+  PDF_SET = None
 }(run);
 
 (beam){
