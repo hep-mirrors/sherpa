@@ -250,16 +250,6 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         bool flip(hardparton[0][3]<0);
         double u1((beamparts[0].first.e()-hardparton[flip?1:0][0])/res1);
         double u2((beamparts[1].first.e()-hardparton[flip?0:1][0])/res2);
-        // check for consistency: real event no remnant needs rescaling
-        //                        sub event exactly one remnant needs rescaling
-        if (sub->IsReal() && (!IsEqual(u1,1.,1e-6) || !IsEqual(u2,1.,1e-6))) {
-          msg_Error()<<METHOD<<"(): Error in creating real event. u1-1="
-                             <<u1-1.<<" ,  u2-1="<<u2-1.<<"\n";
-        }
-        else if (!(IsEqual(u1,1.,1e-6) || IsEqual(u2,1.,1e-6))) {
-          msg_Error()<<METHOD<<"(): Error in creating subtraction event. u1-1="
-                             <<u1-1.<<" ,  u2-1="<<u2-1.<<"\n";
-        }
         // filling
         for (size_t j(0);j<remnantparts1.size();++j) {
           HepMC::FourVector momentum(u1*remnantparts1[j].first.px(),
