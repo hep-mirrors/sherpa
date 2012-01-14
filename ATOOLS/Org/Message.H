@@ -287,10 +287,10 @@ namespace ATOOLS {
   ATOOLS::msg->ExtractMethodName(__PRETTY_FUNCTION__)
 
 #define PRINT_METHOD \
-  std::cout<<ATOOLS::om::blue<<METHOD<<ATOOLS::om::reset<<std::endl
+  msg_Out()<<ATOOLS::om::blue<<METHOD<<ATOOLS::om::reset<<std::endl
 
 #define PRINT_INFO(INFO) \
-  std::cout<<ATOOLS::om::blue<<METHOD<<ATOOLS::om::reset \
+  msg_Out()<<ATOOLS::om::blue<<METHOD<<ATOOLS::om::reset        \
            <<":("<<ATOOLS::om::green<<"\""<<INFO<<"\"" \
            <<ATOOLS::om::reset<<")"<<std::endl
 
