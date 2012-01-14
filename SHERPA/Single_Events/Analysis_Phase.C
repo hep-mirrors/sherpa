@@ -23,6 +23,7 @@ Analysis_Phase::Analysis_Phase(Analysis_Vector *const analyses):
   }
   if (m_name.length()>0) m_name.erase(m_name.length()-1);
   Data_Reader read(" ",";","!","=");
+  read.SetAllowUnits(true);
   double wit;
   if (read.ReadFromFile(wit,"ANALYSIS_WRITEOUT_INTERVAL")) {
     if (wit<1.0) {
