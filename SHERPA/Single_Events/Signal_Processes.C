@@ -71,9 +71,10 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->SetTypeSpec(proc->Parent()->Name());
   if (p_mehandler->NLOMode()==3 && proc->Parent()->Info().m_fi.NLOType()!=nlo_type::lo) {
     MCatNLO_Process* powproc=dynamic_cast<MCatNLO_Process*>(proc->Parent());
-    if (!powproc) { THROW(fatal_error, "Internal error"); }
-    if (powproc->WasSEvent()) blob->SetTypeSpec(proc->Parent()->Name()+"+S");
-    else blob->SetTypeSpec(proc->Parent()->Name()+"+H");
+    if (powproc) {
+      if (powproc->WasSEvent()) blob->SetTypeSpec(proc->Parent()->Name()+"+S");
+      else blob->SetTypeSpec(proc->Parent()->Name()+"+H");
+    }
   }
   Vec4D cms = Vec4D(0.,0.,0.,0.);
   for (size_t i=0;i<proc->NIn();i++) 
