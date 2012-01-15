@@ -30,7 +30,7 @@ namespace PHASIC {
     fastjet::JetDefinition *p_jdef;
     fastjet::SISConePlugin *p_siscplug;
 
-    double m_ptmin, m_etmin;
+    double m_ptmin, m_etmin, m_eta, m_y;
 
     ATOOLS::Flavour_Vector m_f;
 
@@ -78,8 +78,7 @@ PrintInfo(std::ostream &str,const size_t width) const
 Fastjet_Scale_Setter::Fastjet_Scale_Setter
 (const Scale_Setter_Arguments &args):
   Scale_Setter_Base(args), m_tagset(this),
-  p_jdef(NULL), p_siscplug(NULL),
-  m_ptmin(0.0), m_etmin(0.0)
+  p_jdef(NULL), p_siscplug(NULL)
 {
   std::string jtag(args.m_scale);
   size_t pos(jtag.find("FASTJET["));
@@ -97,6 +96,8 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
   m_mode=read.StringValue<int>("M",1);
   m_ptmin=read.StringValue<double>("PT",0.0);
   m_etmin=read.StringValue<double>("ET",0.0);
+  m_eta=read.StringValue<double>("Eta",100.0);
+  m_y=read.StringValue<double>("Y",100.0);
   double R(read.StringValue<double>("R",0.4));
   double f(read.StringValue<double>("f",0.75));
   std::string algo(read.StringValue<std::string>("A","antikt"));
@@ -174,7 +175,9 @@ double Fastjet_Scale_Setter::Calculate
   size_t idx(2);
   for (size_t i(0);i<jets.size();++i) {
     Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
-    if (pj.PPerp()>m_ptmin && pj.EPerp()>m_etmin) m_p.push_back(pj);
+    if (pj.PPerp()>m_ptmin && pj.EPerp()>m_etmin &&
+	(m_eta==100.0 || dabs(pj.Eta())<m_eta) &&
+	(m_y==100.0 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
     m_scale[idx++]=pj.PPerp2();
   }
   for (size_t i(jets.size());i<input.size();++i)
