@@ -410,7 +410,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     (*nlos).MultMEwgt(m_psweight);
   }
   m_enhance=(m_result_1||m_result_2)?EnhanceFactor():1.0;
-  return (m_result_1+m_result_2)*m_enhance;
+  return m_result_1+m_result_2;
 }
 
 bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D_Vector &p) 
@@ -601,14 +601,14 @@ void Phase_Space_Handler::AddPoint(const double value)
 {
   p_process->AddPoint(value);
   if (value!=0.0) {
-    if (p_beamchannels) p_beamchannels->AddPoint(value);
-    if (p_isrchannels)  p_isrchannels->AddPoint(value);
-    p_fsrchannels->AddPoint(value);
+    if (p_beamchannels) p_beamchannels->AddPoint(value*m_enhance);
+    if (p_isrchannels)  p_isrchannels->AddPoint(value*m_enhance);
+    p_fsrchannels->AddPoint(value*m_enhance);
     if (p_enhancehisto) {
       if (!p_process->Process()->Info().Has(nlo_type::rsub)) {
 	double val((*p_enhancefunc)(&p_lab.front(),
 				    &p_flavours.front(),m_nin+m_nout));
-	p_enhancehisto_current->Insert(val,value/m_enhance);
+	p_enhancehisto_current->Insert(val,value);
       }
       else {
 	for (size_t i(0);i<p_process->Process()->Size();++i) {
@@ -616,8 +616,7 @@ void Phase_Space_Handler::AddPoint(const double value)
 	  for (size_t j(0);j<nlos->size();++j) {
 	    double val((*p_enhancefunc)((*nlos)[j]->p_mom,
 					(*nlos)[j]->p_fl,(*nlos)[j]->m_n));
-	    p_enhancehisto_current->Insert
-	      (val,(*nlos)[j]->m_result/m_enhance);
+	    p_enhancehisto_current->Insert(val,(*nlos)[j]->m_result);
 	  }
 	}
       }
