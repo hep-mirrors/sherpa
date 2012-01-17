@@ -160,6 +160,7 @@ void Cluster_Algorithm::CalculateMeasures
 	  if (nocl.find(Cluster_Info(in[j],idk))!=nocl.end()) continue;
 	  ColorID colk(p_ampl->Leg(k)->Col());
 	  int cc(ColorConnected(coli,colj,colk));
+	  if (cc==2 && (idi&3)<(idj&3)) cc=-1;
 	  if (p_ampl->Legs().size()==4 ||
 	      (in[j]->OrderQCD()==0?
 	       EWConnected(in[j]->JC()->Flav(),p_ampl->Leg(k)->Flav()):cc)) {
