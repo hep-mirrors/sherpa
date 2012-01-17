@@ -79,7 +79,7 @@ public:
   bool Init()
   {
     if (m_nevt==0) {
-      Data_Reader reader(" ",";","//");
+      Data_Reader reader(" ",";","//","=");
       reader.AddWordSeparator("\t");
       reader.SetAddCommandLine(false);
       reader.SetInputPath(m_inpath);
@@ -97,7 +97,12 @@ public:
       m_splitSH=reader.GetValue<int>("SPLITSH", 0);
       m_splitcoreprocs=reader.GetValue<int>("SPLITCOREPROCS", 0);
       m_usehepmcshort=reader.GetValue<int>("USE_HEPMC_SHORT", 0);
+      if (m_usehepmcshort && m_tag!="RIVET") {
+        THROW(fatal_error, "Internal error.");
+      }
       m_ignorebeams=reader.GetValue<int>("IGNOREBEAMS", 0);
+
+      reader.SetIgnore("");
       Log::setLevel("Rivet", reader.GetValue<int>("-l", 20));
       reader.SetUseGlobalTags(false);
       reader.VectorFromFile(m_analyses,"-a");
@@ -345,6 +350,36 @@ void RivetShower_Interface_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 {
   str<<"Rivet interface on top of shower level events.";
+}
+
+
+DECLARE_GETTER(RivetME_Interface_Getter,"RivetME",
+	       Analysis_Interface,Analysis_Arguments);
+
+Analysis_Interface *RivetME_Interface_Getter::operator()
+(const Analysis_Arguments &args) const
+{
+  std::string outpath=args.m_outpath;
+  if (outpath[outpath.length()-1]=='/') {
+    outpath.erase(outpath.length()-1, 1);
+  }
+  std::vector<btp::code> ignoreblobs;
+  ignoreblobs.push_back(btp::Fragmentation);
+  ignoreblobs.push_back(btp::Hadron_Decay);
+  ignoreblobs.push_back(btp::Hadron_Mixing);
+  ignoreblobs.push_back(btp::Shower);
+  ignoreblobs.push_back(btp::Hadron_To_Parton);
+  ignoreblobs.push_back(btp::Hard_Collision);
+  ignoreblobs.push_back(btp::QED_Radiation);
+  ignoreblobs.push_back(btp::Soft_Collision);
+  return new Rivet_Interface
+    (args.m_inpath,args.m_infile,outpath+".ME", ignoreblobs, "RIVETME");
+}
+
+void RivetME_Interface_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{
+  str<<"Rivet interface on top of ME level events.";
 }
 
 #endif
