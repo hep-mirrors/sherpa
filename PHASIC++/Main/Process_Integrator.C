@@ -476,14 +476,14 @@ void Process_Integrator::AddPoint(const double value)
 #ifdef USING__MPI
   m_msn++;
   if (value!=0.0) ++m_msvn;
-  double differential=(value==0.0?0.0:value/p_pshandler->EnhanceFactor());
+  double differential=(value==0.0?0.0:value/p_pshandler->Enhance());
   m_mssum    += differential;
   m_mssumsqr += differential*differential;
 #else
   m_n++;
   m_sn++;
   if (value!=0.0) ++m_svn;
-  double differential=(value==0.0?0.0:value/p_pshandler->EnhanceFactor());
+  double differential=(value==0.0?0.0:value/p_pshandler->Enhance());
   m_ssum    += differential;
   m_ssumsqr += differential*differential;
 #endif
@@ -492,7 +492,7 @@ void Process_Integrator::AddPoint(const double value)
   if (max>m_max)  m_max  = max;
   if (max>m_smax) m_smax = max;
   if (p_whisto) {
-    if(value!=0.) p_whisto->Insert(max,1.0/p_pshandler->EnhanceFactor()); /*TODO*/
+    if(value!=0.) p_whisto->Insert(max,1.0/p_pshandler->Enhance()); /*TODO*/
     else p_whisto->SetFills(p_whisto->Fills()+1);
   }
   if (p_proc->IsGroup()) {

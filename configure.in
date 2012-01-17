@@ -96,9 +96,10 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  PHASIC++/Main/Makefile \
 	  PHASIC++/Channels/Makefile \
 	  PHASIC++/Process/Makefile \
-	  PHASIC++/Scales/Makefile \
-	  PHASIC++/Decays/Makefile \
 	  PHASIC++/Selectors/Makefile \
+	  PHASIC++/Scales/Makefile \
+	  PHASIC++/Enhance/Makefile \
+	  PHASIC++/Decays/Makefile \
 	  PHASIC++/Makefile \
 	  EXTRA_XS/Main/Makefile \
 	  EXTRA_XS/Two2Two/Makefile \

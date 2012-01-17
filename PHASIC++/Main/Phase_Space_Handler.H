@@ -30,6 +30,7 @@ namespace PHASIC {
   class Multi_Channel;
   class Subprocess_Info;
   class Process_Info;
+  class Enhance_Observable_Base;
 
   struct psm {
     
@@ -65,7 +66,7 @@ namespace PHASIC {
   class Phase_Space_Integrator;
   class Process_Base;
 
-  class Phase_Space_Handler: public ATOOLS::Tag_Replacer {
+  class Phase_Space_Handler {
   private: 
 
     std::string m_name;
@@ -74,10 +75,9 @@ namespace PHASIC {
     Phase_Space_Integrator *p_integrator;  
     Cut_Data               *p_cuts;  
 
-    ATOOLS::Algebra_Interpreter *p_enhancefunc;
-    ATOOLS::Algebra_Interpreter *p_enhanceobs;
-    ATOOLS::Histogram * p_enhancehisto;
-    ATOOLS::Histogram * p_enhancehisto_current;
+    Enhance_Observable_Base *p_enhancefunc;
+
+    ATOOLS::Histogram *p_enhancehisto, *p_enhancehisto_current;
 
     static ATOOLS::Integration_Info *p_info;
 
@@ -100,7 +100,7 @@ namespace PHASIC {
     long int m_maxtrials;
 
     double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight;
-    double m_result_1, m_result_2, m_error; 
+    double m_result_1, m_result_2, m_error, m_enhance; 
     
     std::vector<std::vector<double> > m_stats;
 
@@ -115,6 +115,8 @@ namespace PHASIC {
     static void *CalculateME(void *arg);
     static void *CalculatePS(void *arg);
 #endif
+
+    double EnhanceFactor();
 
     bool MakeIncoming(ATOOLS::Vec4D *const p);
     bool Check4Momentum(const ATOOLS::Vec4D_Vector &p);
@@ -149,10 +151,6 @@ namespace PHASIC {
 
     void AddPoint(const double xs);
 
-    double EnhanceFactor();
-    double EnhanceObservable();
-    double EnhanceFunction();
-
     void CalculateME();
     void CalculatePS();
 
@@ -172,11 +170,6 @@ namespace PHASIC {
     static void DeleteInfo();
 
     void AddStats(const std::vector<double> &stats);
-
-    std::string   ReplaceTags(std::string &expr) const;
-    ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;
-
-    void AssignId(ATOOLS::Term *term);
 
     // inline functions
     inline const ATOOLS::Flavour_Vector &Flavs() const { return p_flavours; }
@@ -200,6 +193,7 @@ namespace PHASIC {
     inline Process_Integrator* Active() const  { return p_active;  }
 
     inline double PSWeight() const { return m_psweight; }
+    inline double Enhance() const  { return m_enhance;  }
 
     inline void SetError(const double error) 
     { m_error=error; }

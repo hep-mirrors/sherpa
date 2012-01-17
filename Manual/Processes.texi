@@ -321,7 +321,7 @@ For multijet processes, the parameter can be specified
 per final state multiplicity. An example would be
 @verbatim
 Process 93 93 -> 11 -11 93{1}
-Enhance_Function PPerp2(p[4]) {3}
+Enhance_Function VAR{PPerp2(p[4])} {3}
 @end verbatim
 
 Here, the 1-jet process is enhanced with the
@@ -353,7 +353,7 @@ per final state multiplicity.
 An example would be
 @verbatim
 Process 93 93 -> 11 -11 93{1}
-Enhance_Observable log10(PPerp(p[2]+p[3]))|1.0|3.0; {3}
+Enhance_Observable VAR{log10(PPerp(p[2]+p[3]))}|1|3 {3}
 @end verbatim
 
 Here, the 1-jet process is flattened with respect to the logarithmic transverse

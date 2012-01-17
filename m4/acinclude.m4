@@ -233,10 +233,10 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   PHASICDIR="\${top_srcdir}/PHASIC++"
   PHASICBUILDDIR="\${top_builddir}/PHASIC++"
   PHASICLIBS="-L\${PHASICBUILDDIR}/Main -L\${PHASICBUILDDIR}/Channels \
-	-L\${PHASICBUILDDIR}/Process -L\${PHASICBUILDDIR}/Scales \
-	-L\${PHASICBUILDDIR}/Selectors \
-	-lPhasicChannels -lPhasicMain -lPhasicProcess -lPhasicScales \
-	-lPhasicSelectors \
+	-L\${PHASICBUILDDIR}/Process -L\${PHASICBUILDDIR}/Selectors \
+	-L\${PHASICBUILDDIR}/Scales -L\${PHASICBUILDDIR}/Enhance \
+	-lPhasicChannels -lPhasicMain -lPhasicProcess \
+	-lPhasicSelectors -lPhasicScales -lPhasicEnhance \
     -L\${PHASICBUILDDIR}/Decays -lPhasicDecays"
   AC_SUBST(PHASICDIR)
   AC_SUBST(PHASICBUILDDIR)

@@ -171,7 +171,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     m_evtinfo=*info;
     delete info;
     double wf(rpa->Picobarn()/sw/
-	      p_proc->Integrator()->PSHandler()->EnhanceFactor());
+	      p_proc->Integrator()->PSHandler()->Enhance());
     if (m_eventmode!=0) {
       double max=p_proc->Integrator()->Max(), disc=max*ran->Get();
       if (dabs(m_evtinfo.m_weight)<disc) continue;
