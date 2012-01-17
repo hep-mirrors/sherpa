@@ -102,7 +102,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
     msg_Info()<<METHOD<<"(): Analyzing MPI environment {\n";
-    int ppn=p_inithandler->DataReader()->GetValue("MPI_COMBINE_PROCS",4);
+    int ppn=p_inithandler->DataReader()->GetValue("MPI_COMBINE_PROCS",8);
     int rank=MPI::COMM_WORLD.Get_rank(), pid(getpid());
     char host[256];
     strncpy(host,rpa->gen.Variable("HOSTNAME").c_str(),255);
@@ -132,7 +132,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
       --procs[hosts[0]];
       std::string sranks;
       for (int tag=1;tag<size;++tag) {
-	if (++cprocs[hosts[tag]]==1) pid=Min(ppn,(int)procs[host]);
+	if (++cprocs[hosts[tag]]==1) pid=Min(ppn,(int)procs[hosts[tag]]);
 	else {
 	  pid=0;
 	  sranks+=" "+ToString(tag);
