@@ -310,20 +310,20 @@ bool Cluster_Algorithm::ClusterStep
 	win=cit;
 	wmin=cit->second.m_kt2.m_op2;
       }
-      else if (cit->second.m_kt2.m_mu2>=0.0 &&
-	       cit->second.m_kt2.m_mu2<rwmin) {
+      else if (cit->second.m_kt2.m_kt2>=0.0 &&
+	       cit->second.m_kt2.m_kt2<rwmin) {
 	rwin=cit;
-	rwmin=cit->second.m_kt2.m_mu2;
+	rwmin=cit->second.m_kt2.m_kt2;
       }
     }
     else {
       if (cit->second.m_kt2.m_op2>=0.0) {
 	sum+=1.0/cit->second.m_kt2.m_op2;
       }
-      else if (cit->second.m_kt2.m_mu2>=0.0 &&
-	       cit->second.m_kt2.m_mu2<rwmin) {
+      else if (cit->second.m_kt2.m_kt2>=0.0 &&
+	       cit->second.m_kt2.m_kt2<rwmin) {
 	rwin=cit;
-	rwmin=cit->second.m_kt2.m_mu2;
+	rwmin=cit->second.m_kt2.m_kt2;
       }
     }
   }
@@ -344,7 +344,7 @@ bool Cluster_Algorithm::ClusterStep
   if (win==cinfo.end()) return false;
   Cluster_Key wkey(win->first);
   Cluster_Info winfo(win->second);
-  nocl[winfo]=win->second.m_kt2.m_mu2-p_ampl->Mu2();
+  nocl[winfo]=win->second.m_kt2.m_kt2-p_ampl->KT2();
   if (!CombineWinner(winfo,ccurs,fcur,cinfo)) return false;
   DecayInfo_Vector decays(p_ampl->Decays());
   const DecayInfo_Vector &decids(p_bg->DecayInfos());
@@ -553,10 +553,10 @@ bool Cluster_Algorithm::Cluster
     if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo,kt2))
       if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo)) {
   	if (ampl->Legs().size()==4) return true;
-	if (ampl->Mu2()<=ampl->Next()->Mu2() ||
+	if (ampl->KT2()<=ampl->Next()->KT2() ||
 	    (m_wmode&16)) return true;
-	msg_Debugging()<<"reject ordering: "<<sqrt(ampl->Mu2())
-		       <<" vs. "<<sqrt(ampl->Next()->Mu2())<<"\n";
+	msg_Debugging()<<"reject ordering: "<<sqrt(ampl->KT2())
+		       <<" vs. "<<sqrt(ampl->Next()->KT2())<<"\n";
       }
     p_ampl=ampl;
     p_ampl->DeleteNext();
@@ -595,7 +595,7 @@ bool Cluster_Algorithm::Cluster
     Current *nfcur(fcur);
     ClusterInfo_Map ncinfo(cinfo);
     if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo,kt2))
-      if (p_ampl->Mu2()<sqrt(std::numeric_limits<double>::max()))
+      if (p_ampl->KT2()<sqrt(std::numeric_limits<double>::max()))
 	if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo)) return true;
     p_ampl=ampl;
     p_ampl->DeleteNext();

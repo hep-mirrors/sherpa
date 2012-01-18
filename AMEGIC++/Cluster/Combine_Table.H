@@ -129,7 +129,7 @@ namespace AMEGIC {
 
     Leg  CombinedLeg(Leg *legs,const int i,const int j);
     Leg *CombineLegs(Leg *legs,const int i,const int j,
-		     const int nlegs,const double pt2ij,const int kin);
+		     const int nlegs,const int kin);
     bool CombineMoms(ATOOLS::Vec4D *moms,const int i,const int j,
 		     const int maxl);
     bool CombineMoms(ATOOLS::Vec4D *moms,const int i,const int j,
