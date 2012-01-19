@@ -537,7 +537,22 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
       scale[idx]=Max(ampl->Mu2(),MODEL::as->CutQ2());
       scale[idx]=Min(scale[idx],sqr(rpa->gen.Ecms()));
       mum2=Min(mum2,scale[idx]);
-      mup2=Min(mup2,ampl->KT2());
+      bool dec(false);
+      Cluster_Amplitude *next(ampl->Next());
+      if (next->Decays().size()) {
+	size_t cid(0);
+	for (size_t i(0);i<next->Legs().size();++i)
+	  if (next->Leg(i)->K()) {
+	    cid=next->Leg(i)->Id();
+	    break;
+	  }
+	for (size_t i(0);i<next->Decays().size();++i)
+	  if ((next->Decays()[i]->m_id&cid)==cid) {
+	    dec=true;
+	    break;
+	  }
+      }
+      if (!dec) mup2=Min(mup2,ampl->KT2());
       if (m_rproc && ampl->Prev()==NULL) continue;
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
       if (coqcd>0.0) {
