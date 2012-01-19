@@ -193,44 +193,37 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,const size_t &id,
 			  KT2X_Map &kt2xmap,std::set<size_t> &aset)
 {
   msg_Indent();
+  double ckt2max(HardScale(ampl));
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *cl(ampl->Leg(i));
     if ((cl->Id()&id)==0) continue;
-    if (IdCount(cl->Id())>1) GetKT2Min(ampl->Prev(),cl->Id(),kt2xmap,aset);
-    else kt2xmap[cl->Id()].first=kt2xmap[cl->Id()].second=HardScale(ampl);
-    if (cl->K()) {
-      std::vector<size_t> cns;
-      double ckt2min(std::numeric_limits<double>::max()), ckt2max(0.0);
-      kt2xmap[cl->Id()].first=kt2xmap[cl->Id()].second=HardScale(ampl->Prev());
+    if (ampl->Prev()) GetKT2Min(ampl->Prev(),cl->Id(),kt2xmap,aset);
+    if (cl->Stat()==3 || cl->Stat()==5) {
+      double ckt2min=kt2xmap[cl->Id()].first=
+	kt2xmap[cl->Id()].second=cl->Mom().Abs2(); 
       for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
-	if (kit->first!=cl->Id() && kit->first&cl->Id() &&
+	if (kit->first!=cl->Id() && (kit->first&cl->Id()) &&
 	    aset.find(kit->first)==aset.end()) {
-	  ckt2min=Min(ckt2min,kit->second.first);
-	  ckt2max=Max(ckt2max,kit->second.second);
-	  if (cl->Stat()==3 || cl->Stat()==5) {
-	    bool ins(true);
-	    for (size_t j(0);j<cns.size();++j)
-	      if (cns[j]&kit->first) {
-		ins=false;
-		break;
-	      }
-	    if (ins) cns.push_back(kit->first);
-	  }
-	}
-      bool smin(true);
-      if ((cl->Stat()==3 || cl->Stat()==5) && cns.size()<cl->DMax()) smin=false;
-      for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
-	if (kit->first!=cl->Id() && kit->first&cl->Id() &&
-	    aset.find(kit->first)==aset.end()) {
-	  if (smin) kit->second.first=ckt2min;
-	  else kit->second.first=0.0;
+	  kit->second.first=ckt2min;
 	  kit->second.second=ckt2max;
-	  if (cl->Stat()==3 || cl->Stat()==5) aset.insert(kit->first);
+	  aset.insert(kit->first);
 	}
     }
-    if (cl->Stat()==3 || cl->Stat()==5) {
-      kt2xmap[cl->Id()].first=std::numeric_limits<double>::max();
-      kt2xmap[cl->Id()].second=0.0;
+    else if (ampl->Prev()==NULL) {
+      kt2xmap[cl->Id()].first=kt2xmap[cl->Id()].second=HardScale(ampl); 
+    }
+    else {
+      double ckt2min(std::numeric_limits<double>::max());
+      for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
+	if (kit->first&cl->Id()) {
+	  ckt2min=kit->second.first;
+	  ckt2max=Max(ckt2max,kit->second.second);
+	}
+      for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
+	if ((kit->first&cl->Id()) && aset.find(kit->first)==aset.end()) {
+	  kit->second.first=ckt2min;
+	  kit->second.second=ckt2max;
+	}
     }
   }
 }
@@ -531,8 +524,9 @@ double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
   if (ampl->Next()) {
     Cluster_Amplitude *next(ampl->Next());
     if (next->OrderQCD()<ampl->OrderQCD()) return ampl->KT2();
+    return HardScale(next);
   }
-  return ampl->MuF2();
+  return ampl->KT2();
 }
 
 double CS_Shower::CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,

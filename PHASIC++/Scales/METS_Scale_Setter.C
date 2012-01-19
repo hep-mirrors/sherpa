@@ -206,7 +206,7 @@ METS_Scale_Setter::METS_Scale_Setter
   Data_Reader read(" ",";","!","=");
   if (!read.ReadFromFile(m_vmode,"METS_SCALE_VMODE")) m_vmode=8;
   else msg_Info()<<METHOD<<"(): Set NLO scale mode "<<m_vmode<<".\n";
-  if (!read.ReadFromFile(m_mufmode,"METS_SCALE_MUFMODE")) m_mufmode=0;
+  if (!read.ReadFromFile(m_mufmode,"METS_SCALE_MUFMODE")) m_mufmode=1;
   else msg_Info()<<METHOD<<"(): Set METS \\mu_F mode "<<m_mufmode<<".\n";
   if (!read.ReadFromFile(m_wthres,"METS_WARNING_THRESHOLD")) m_wthres=0.1;
   if (m_vproc && (m_vmode&8)) m_mode=0;
@@ -537,7 +537,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
       scale[idx]=Max(ampl->Mu2(),MODEL::as->CutQ2());
       scale[idx]=Min(scale[idx],sqr(rpa->gen.Ecms()));
       mum2=Min(mum2,scale[idx]);
-      mup2=Max(mup2,ampl->KT2());
+      mup2=Min(mup2,ampl->KT2());
       if (m_rproc && ampl->Prev()==NULL) continue;
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
       if (coqcd>0.0) {
