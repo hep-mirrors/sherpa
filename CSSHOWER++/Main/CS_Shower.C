@@ -193,19 +193,18 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,const size_t &id,
 			  KT2X_Map &kt2xmap,std::set<size_t> &aset)
 {
   msg_Indent();
-  double ckt2max(HardScale(ampl));
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *cl(ampl->Leg(i));
     if ((cl->Id()&id)==0) continue;
     if (ampl->Prev()) GetKT2Min(ampl->Prev(),cl->Id(),kt2xmap,aset);
     if (cl->Stat()==3 || cl->Stat()==5) {
-      double ckt2min=kt2xmap[cl->Id()].first=
+      double ckt2=kt2xmap[cl->Id()].first=
 	kt2xmap[cl->Id()].second=cl->Mom().Abs2(); 
       for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
 	if (kit->first!=cl->Id() && (kit->first&cl->Id()) &&
 	    aset.find(kit->first)==aset.end()) {
-	  kit->second.first=ckt2min;
-	  kit->second.second=ckt2max;
+	  kit->second.first=ckt2;
+	  kit->second.second=ckt2;
 	  aset.insert(kit->first);
 	}
     }
@@ -213,6 +212,7 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,const size_t &id,
       kt2xmap[cl->Id()].first=kt2xmap[cl->Id()].second=HardScale(ampl); 
     }
     else {
+      double ckt2max(HardScale(ampl));
       double ckt2min(std::numeric_limits<double>::max());
       for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
 	if (kit->first&cl->Id()) {
