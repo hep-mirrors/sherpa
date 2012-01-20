@@ -20,6 +20,9 @@ Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) :
   //int hadron = rpa->gen.Beam1().Strong()==1?0:1;
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
 
+  Data_Reader read(" ",";","#","=");
+  m_scalescheme=read.GetValue<int>("MCATNLO_SCALE_SCHEME",0);
+  if (m_scalescheme!=0) PRINT_INFO("MCATNLO_SCALE_SCHEME="<<m_scalescheme);
 }
 
 Sudakov::~Sudakov() 
@@ -480,8 +483,20 @@ bool Sudakov::Veto(double Q2,double x) {
 
 bool Sudakov::Splitting(double Q2,double x) {
   double cplscale(m_kperp2);
-  if (cplscale>p_split->GetSing()->MuR2())
-    cplscale=2.0/(1.0/m_kperp2+1.0/p_split->GetSing()->MuR2());
+  switch (m_scalescheme) {
+  case 0:
+    if (cplscale>p_split->GetSing()->MuR2())
+      cplscale=2.0/(1.0/m_kperp2+1.0/p_split->GetSing()->MuR2());
+    break;
+  case 1:
+    cplscale=p_split->GetSing()->MuR2();
+    break;
+  case 2:
+    cplscale=m_kperp2;
+    break;
+  default:
+    THROW(fatal_error, "Unknown MCATNLO_SCALE_SCHEME");
+  }
   double wt(RejectionWeight(m_z,m_y,x,cplscale,Q2));
   if (ran->Get()>wt) {
     return false;  
