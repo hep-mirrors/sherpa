@@ -219,6 +219,8 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,const size_t &id,
 	  ckt2min=kit->second.first;
 	  ckt2max=Max(ckt2max,kit->second.second);
 	}
+      kt2xmap[cl->Id()].first=ckt2min;
+      kt2xmap[cl->Id()].second=ckt2max; 
       for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
 	if ((kit->first&cl->Id()) && aset.find(kit->first)==aset.end()) {
 	  kit->second.first=ckt2min;
