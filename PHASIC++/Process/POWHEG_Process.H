@@ -34,12 +34,8 @@ namespace PHASIC {
 
     ME_Generators &m_gens;
 
-    std::vector<PHASIC::POWHEG_Process*> m_pprocs;
-
     Process_Base     *p_bproc, *p_viproc, *p_rproc, *p_sproc;
     PDF::NLOMC_Base  *p_powheg;
-
-    NLOTypeStringProcessMap_Map m_pmap;
 
     POWHEG_Multi_Channel  *p_mc;
     MODEL::Running_AlphaS *p_as;
@@ -79,7 +75,7 @@ namespace PHASIC {
 
   public:
 
-    POWHEG_Process(ME_Generators &gens,const Process_Vector *procs);
+    POWHEG_Process(ME_Generators &gens,NLOTypeStringProcessMap_Map *pmap);
 
     ~POWHEG_Process();
 

@@ -29,18 +29,15 @@ using namespace PHASIC;
 using namespace PDF;
 
 POWHEG_Process::POWHEG_Process
-(ME_Generators& gens,const Process_Vector *procs):
+(ME_Generators& gens,NLOTypeStringProcessMap_Map *pmap):
   m_gens(gens), p_bproc(NULL), p_viproc(NULL),
   p_rproc(NULL), p_sproc(NULL), p_powheg(NULL),
   p_mc(NULL), m_smode(1), p_ampl(NULL)
 {
   m_tinfo=0;
-  for (size_t i(0);i<procs->size();++i) {
-    POWHEG_Process *proc(dynamic_cast<POWHEG_Process*>((*procs)[i]));
-    if (proc!=NULL) m_pprocs.push_back(proc);
-  }
   p_as=dynamic_cast<MODEL::Running_AlphaS*>
     (gens.Model()->GetScalarFunction("alpha_S"));
+  p_apmap=pmap;
   static bool ref(false);
   if (!ref) {
     ref=true;
@@ -52,8 +49,6 @@ POWHEG_Process::POWHEG_Process
 POWHEG_Process::~POWHEG_Process()
 {
   if (p_ampl) p_ampl->Delete();
-  for (std::map<nlo_type::code,StringProcess_Map*>::const_iterator
-	 pmit(m_pmap.begin());pmit!=m_pmap.end();++pmit) delete pmit->second;
   if (p_sproc) delete p_sproc;
   if (p_rproc) delete p_rproc;
   if (p_viproc) delete p_viproc;
@@ -90,14 +85,6 @@ void POWHEG_Process::Init(const Process_Info &pi,
   read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   if (!read.ReadFromFile(m_rmode,"PP_RMODE")) m_rmode=1;
   else msg_Info()<<METHOD<<"(): Set RB integration mode "<<m_rmode<<".\n";
-  for (size_t i(0);i<m_pprocs.size();++i) {
-    if (m_pprocs[i]->Name()==Name()) THROW(fatal_error,"Doubled process");
-    for (std::map<nlo_type::code,StringProcess_Map*>::const_iterator
-	   pmit(m_pprocs[i]->m_pmap.begin());
-	 pmit!=m_pprocs[i]->m_pmap.end();++pmit) {
-      m_pmap[pmit->first]->insert(pmit->second->begin(),pmit->second->end());
-    }
-  }
   if (p_sproc->Size()!=p_rproc->Size())
     THROW(fatal_error,"R and S have different size");
   for (size_t i(0);i<p_sproc->Size();++i)
@@ -132,9 +119,9 @@ Process_Base* POWHEG_Process::InitProcess
     if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
     if (nlotype&nlo_type::vsub) nlotype=nlo_type::vsub;
     if (nlotype&nlo_type::rsub) nlotype=nlo_type::rsub;
-    if (m_pmap.find(nlotype)==m_pmap.end())
-      m_pmap[nlotype] = new StringProcess_Map();
-    (*m_pmap[nlotype])[fname]=(*proc)[i];
+    if (p_apmap->find(nlotype)==p_apmap->end())
+      (*p_apmap)[nlotype] = new StringProcess_Map();
+    (*(*p_apmap)[nlotype])[fname]=(*proc)[i];
   }
   return proc;
 }
@@ -172,8 +159,8 @@ Process_Base *POWHEG_Process::FindProcess
  const bool error) const
 {
   std::string name(Process_Base::GenerateName(ampl));
-  StringProcess_Map::const_iterator pit(m_pmap.find(type)->second->find(name));
-  if (pit!=m_pmap.find(type)->second->end()) return pit->second;
+  StringProcess_Map::const_iterator pit(p_apmap->find(type)->second->find(name));
+  if (pit!=p_apmap->find(type)->second->end()) return pit->second;
   if (error)
     THROW(fatal_error,"Process '"+name+"'("+ToString(type)+") not found");
   return NULL;
@@ -183,8 +170,8 @@ Process_Base *POWHEG_Process::FindProcess
 (const NLO_subevt *sub,const nlo_type::code type) const
 {
   StringProcess_Map::const_iterator pit
-    (m_pmap.find(type)->second->find(sub->m_pname));
-  if (pit!=m_pmap.find(type)->second->end()) return pit->second;
+    (p_apmap->find(type)->second->find(sub->m_pname));
+  if (pit!=p_apmap->find(type)->second->end()) return pit->second;
   THROW(fatal_error,"Process '"+sub->m_pname+"'("+ToString(type)+") not found");
   return NULL;
 }
@@ -223,7 +210,7 @@ void POWHEG_Process::SetRBMap(Cluster_Amplitude *ampl)
 			+Process_Base::GenerateName(ampl)+"'.");
   do {
     ampl->SetRBMap(&proc->Integrator()->RBMap());
-    ampl->SetProcs(&m_pmap);
+    ampl->SetProcs(p_apmap);
     ampl->SetIInfo(&m_iinfo);
     ampl->SetDInfo(&m_dinfo);
     ampl=ampl->Next();
@@ -241,7 +228,7 @@ double POWHEG_Process::GetRho(const int mode)
   }
   for (size_t i(0);i<p_sproc->Size();++i) {
     NLO_subevtlist *subs((*p_sproc)[i]->GetSubevtList());
-    (*m_pmap[nlo_type::lo])[subs->back()->m_pname]->
+    (*(*p_apmap)[nlo_type::lo])[subs->back()->m_pname]->
       SetLast(subs->back()->m_last[mode],mode);
     msg_Debugging()<<i<<": "<<subs->back()->m_pname<<"\n";
     msg_Indent();
@@ -285,7 +272,7 @@ double POWHEG_Process::GetRho(const int mode)
       NLO_subevt *sub((*subs)[j]);
       size_t id(m_dmap.find(sub->p_id)->second);
       if (id==aidx && subs->back()->m_me) {
-	Process_Base *bproc((*m_pmap[nlo_type::lo])[sub->m_pname]);
+	Process_Base *bproc((*(*p_apmap)[nlo_type::lo])[sub->m_pname]);
 	RB_Data *rbd(bproc->Integrator()->RBMap()[sub]);
 	if (rbd->m_ktres==0.0) continue;
 	if (qij2<0.0) qij2=PDF::Qij2Min(p_mc->RealMoms(),subs);
@@ -324,7 +311,7 @@ double POWHEG_Process::Differential(const Vec4D_Vector &p)
 	  THROW(fatal_error,"Internal error");
         if (subs->back()->m_last[0]==0.0) continue;
 	Cluster_Amplitude *rampl(CreateAmplitude(subs->back()));
-	rampl->SetProcs(&m_pmap);
+	rampl->SetProcs(p_apmap);
 	rampl->SetIInfo(&m_iinfo);
 	rampl->SetDInfo(&m_dinfo);
 	bool lookup(m_lookup);
@@ -505,7 +492,7 @@ double POWHEG_Process::SelectBProcess()
     msg_Error()<<METHOD<<"(): no cluster amplitude available. new event.\n";
     return 0.;
   }
-  p_ampl->SetProcs(&m_pmap);
+  p_ampl->SetProcs(p_apmap);
   p_ampl->SetIInfo(&m_iinfo);
   p_ampl->SetDInfo(&m_dinfo);
   p_ampl->SetRBMap(&bproc->Integrator()->RBMap());

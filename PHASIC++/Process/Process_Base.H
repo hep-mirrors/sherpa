@@ -36,6 +36,15 @@ namespace PHASIC {
 
   struct Weight_Info;
 
+  class Process_Base;
+
+  typedef std::vector<PHASIC::Process_Base*> Process_Vector;
+
+  typedef std::map<std::string,Process_Base*> StringProcess_Map;
+
+  typedef std::map<nlo_type::code,StringProcess_Map*>
+  NLOTypeStringProcessMap_Map;
+
   class Process_Base {
   protected:
 
@@ -62,6 +71,8 @@ namespace PHASIC {
 
     MODEL::Coupling_Map m_cpls;
 
+    NLOTypeStringProcessMap_Map *p_apmap;
+
     static void SortFlavours(Subprocess_Info &info,FMMap *const fmm=0);
     static void SortFlavours(Process_Info &pi);
     static void SortFlavours(std::vector<ATOOLS::Cluster_Leg*> &legs,
@@ -83,6 +94,8 @@ namespace PHASIC {
 
     double LastPlus();
     double LastMinus();
+
+    void FillProcessMap(NLOTypeStringProcessMap_Map *apmap);
 
     virtual void SetScale(const Scale_Setter_Arguments &args) = 0;
     virtual void SetKFactor(const KFactor_Setter_Arguments &args) = 0;
@@ -212,14 +225,9 @@ namespace PHASIC {
     template <class PType> inline const PType *Get() const 
     { return dynamic_cast<PType*>(this); }
 
+    inline NLOTypeStringProcessMap_Map *AllProcs() { return p_apmap; }
+
   };// end of class Process_Base
-
-  typedef std::vector<PHASIC::Process_Base*> Process_Vector;
-
-  typedef std::map<std::string,Process_Base*> StringProcess_Map;
-
-  typedef std::map<nlo_type::code,StringProcess_Map*>
-  NLOTypeStringProcessMap_Map;
 
 }// end of namespace ATOOLS
 

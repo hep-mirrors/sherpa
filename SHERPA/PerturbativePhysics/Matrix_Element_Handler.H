@@ -37,6 +37,8 @@ namespace SHERPA {
   class Matrix_Element_Handler {
   public:
 
+    typedef std::vector<PHASIC::NLOTypeStringProcessMap_Map*> ProcMap_Vector;
+
     typedef std::map<std::string,std::pair<int,int> >         MPIV_Map;
     typedef std::map<std::string,std::pair<int,double> >      MPDV_Map;
     typedef std::map<std::string,std::pair<int,std::string> > MPSV_Map;
@@ -82,6 +84,8 @@ namespace SHERPA {
     std::ofstream *p_ranout;
 #endif
 
+    ProcMap_Vector m_pmaps;
+
     void BuildDecays
     (PHASIC::Subprocess_Info &ACFS,const std::vector<std::string> &dectags);
     void BuildSingleProcessList
@@ -107,7 +111,8 @@ namespace SHERPA {
 			 <std::string,std::pair<int,Type> >& dv,
 			 const int &priority);
 
-    std::vector<PHASIC::Process_Base*> InitializeProcess(const PHASIC::Process_Info &pi);
+    std::vector<PHASIC::Process_Base*> InitializeProcess
+    (const PHASIC::Process_Info &pi,PHASIC::NLOTypeStringProcessMap_Map *&pmap);
 
     void BuildProcesses();
 

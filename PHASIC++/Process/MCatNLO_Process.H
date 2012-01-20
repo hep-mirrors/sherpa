@@ -22,12 +22,8 @@ namespace PHASIC {
 
     ME_Generators &m_gens;
 
-    std::vector<PHASIC::MCatNLO_Process*> m_pprocs;
-
     Process_Base     *p_bviproc, *p_rsproc, *p_bproc, *p_rproc;
     PDF::NLOMC_Base  *p_nlomc;
-
-    NLOTypeStringProcessMap_Map m_pmap;
 
     double m_lastrs, m_lastb, m_lastvi;
     int    m_rmode, m_fomode, m_wassevent;
@@ -54,7 +50,7 @@ namespace PHASIC {
 
   public:
 
-    MCatNLO_Process(ME_Generators &gens,const Process_Vector *procs);
+    MCatNLO_Process(ME_Generators &gens,NLOTypeStringProcessMap_Map *pmap);
 
     ~MCatNLO_Process();
 

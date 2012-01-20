@@ -90,6 +90,12 @@ Matrix_Element_Handler::~Matrix_Element_Handler()
 {
   if (p_ranin) delete p_ranin;
   if (p_ranout) delete p_ranout;
+  for (size_t i=0;i<m_pmaps.size();++i) {
+    for (std::map<nlo_type::code,StringProcess_Map*>::const_iterator
+	   pmit(m_pmaps[i]->begin());pmit!=m_pmaps[i]->end();++pmit)
+      delete pmit->second;
+    delete m_pmaps[i];
+  }
   for (size_t i=0; i<m_procs.size(); ++i)
     if (dynamic_cast<MCatNLO_Process*>(m_procs[i]) ||
 	dynamic_cast<POWHEG_Process*>(m_procs[i])) delete m_procs[i];
@@ -193,7 +199,8 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   return false;
 }
 
-std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Process_Info &pi)
+std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
+(const Process_Info &pi,NLOTypeStringProcessMap_Map *&pmap)
 {
   std::vector<Process_Base*> procs;
   if (pi.m_fi.NLOType()==nlo_type::lo) {
@@ -201,6 +208,11 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Proce
     if (proc) {
       m_procs.push_back(proc);
       procs.push_back(proc);
+      if (pmap==NULL) {
+	m_pmaps.push_back(new NLOTypeStringProcessMap_Map());
+	pmap=m_pmaps.back();
+      }
+      m_procs.back()->FillProcessMap(pmap);
     }
     return procs;
   }
@@ -208,7 +220,11 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Proce
     if (m_nlomode==3) {
       m_hasnlo=3;
       if (p_nlomc==NULL) InitNLOMC();
-      MCatNLO_Process *proc=new MCatNLO_Process(m_gens,&m_procs);
+      if (pmap==NULL) {
+	m_pmaps.push_back(new NLOTypeStringProcessMap_Map());
+	pmap=m_pmaps.back();
+      }
+      MCatNLO_Process *proc=new MCatNLO_Process(m_gens,pmap);
       proc->Init(pi,p_beam,p_isr);
       proc->SetShower(p_shower->GetShower());
       proc->SetMCatNLO(p_nlomc);
@@ -219,7 +235,11 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Proce
     if (m_nlomode==2) {
       m_hasnlo=2;
       if (p_nlomc==NULL) InitNLOMC();
-      POWHEG_Process *proc=new POWHEG_Process(m_gens,&m_procs);
+      if (pmap==NULL) {
+	m_pmaps.push_back(new NLOTypeStringProcessMap_Map());
+	pmap=m_pmaps.back();
+      }
+      POWHEG_Process *proc=new POWHEG_Process(m_gens,pmap);
       proc->Init(pi,p_beam,p_isr);
       proc->SetShower(p_shower->GetShower());
       proc->SetPOWHEG(p_nlomc);
@@ -258,7 +278,14 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess(const Proce
 	  THROW(critical_error,"Failed to intialize process");
 	}
       }
-      for (size_t i(0);i<procs.size();i++) m_procs.push_back(procs[i]);
+      if (pmap==NULL) {
+	m_pmaps.push_back(new NLOTypeStringProcessMap_Map());
+	pmap=m_pmaps.back();
+      }
+      for (size_t i(0);i<procs.size();i++) {
+	m_procs.push_back(procs[i]);
+	m_procs.back()->FillProcessMap(pmap);
+      }
     }
   }
   return procs;
@@ -551,6 +578,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
   ExtractFlavours(AIS,ini);
   ExtractFlavours(AFS,fin);
   std::vector<Process_Base*> procs;
+  NLOTypeStringProcessMap_Map *pmap(NULL);
   for (size_t fss(0);fss<AFS.m_ps.size();++fss) {
     Subprocess_Info ACFS;
     ACFS.m_ps.push_back(AFS.m_ps[fss]);
@@ -620,7 +648,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
         }
 	if (GetMPvalue(pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
 	if (GetMPvalue(pbi.m_vloopgen,nfs,pnid,ds)) cpi.m_loopgenerator=ds;
-	std::vector<Process_Base*> proc=InitializeProcess(cpi);
+	std::vector<Process_Base*> proc=InitializeProcess(cpi,pmap);
 	for (size_t i(0);i<proc.size();i++) {
 	  if (proc[i]==NULL)
 	    msg_Error()<<METHOD<<"(): No process for {\n"

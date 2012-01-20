@@ -28,17 +28,14 @@ using namespace PHASIC;
 using namespace PDF;
 
 MCatNLO_Process::MCatNLO_Process
-(ME_Generators& gens,const Process_Vector *procs):
+(ME_Generators& gens,NLOTypeStringProcessMap_Map *pmap):
   m_gens(gens), p_bviproc(NULL), p_rsproc(NULL),
   p_bproc(NULL), p_rproc(NULL),
   p_nlomc(NULL), p_ampl(NULL)
 {
   m_tinfo=0;
-  for (size_t i(0);i<procs->size();++i) {
-    MCatNLO_Process *proc(dynamic_cast<MCatNLO_Process*>((*procs)[i]));
-    if (proc!=NULL) m_pprocs.push_back(proc);
-  }
   static bool ref(false);
+  p_apmap=pmap;
   if (!ref) {
     ref=true;
     rpa->gen.AddCitation
@@ -50,10 +47,6 @@ MCatNLO_Process::MCatNLO_Process
 MCatNLO_Process::~MCatNLO_Process()
 {
   if (p_ampl) p_ampl->Delete();
-  for (std::map<nlo_type::code,StringProcess_Map*>::const_iterator
-       pmit(m_pmap.begin());pmit!=m_pmap.end();++pmit) {
-    delete pmit->second;
-  }
   if (p_rproc) delete p_rproc;
   if (p_bproc) delete p_bproc;
   if (p_rsproc) delete p_rsproc;
@@ -96,14 +89,6 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   else msg_Info()<<METHOD<<"(): Set RB integration mode "<<m_rmode<<".\n";
   if (!read.ReadFromFile(m_fomode,"PP_FOMODE")) m_fomode=0;
   else msg_Info()<<METHOD<<"(): Set fixed order mode "<<m_fomode<<".\n";
-  for (size_t i(0);i<m_pprocs.size();++i) {
-    if (m_pprocs[i]->Name()==Name()) THROW(fatal_error,"Doubled process");
-    for (std::map<nlo_type::code,StringProcess_Map*>::const_iterator
-	   pmit(m_pprocs[i]->m_pmap.begin());
-	 pmit!=m_pprocs[i]->m_pmap.end();++pmit) {
-      m_pmap[pmit->first]->insert(pmit->second->begin(),pmit->second->end());
-    }
-  }
   if (p_rsproc->Size()!=p_rproc->Size())
     THROW(fatal_error,"R and RS have different size");
   if (p_bproc->Size()!=p_bviproc->Size())
@@ -143,9 +128,9 @@ Process_Base* MCatNLO_Process::InitProcess
     if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
     if (nlotype&nlo_type::vsub) nlotype=nlo_type::vsub;
     if (nlotype&nlo_type::rsub) nlotype=nlo_type::rsub;
-    if (m_pmap.find(nlotype)==m_pmap.end())
-      m_pmap[nlotype] = new StringProcess_Map();
-    (*m_pmap[nlotype])[fname]=(*proc)[i];
+    if (p_apmap->find(nlotype)==p_apmap->end())
+      (*p_apmap)[nlotype] = new StringProcess_Map();
+    (*(*p_apmap)[nlotype])[fname]=(*proc)[i];
   }
   return proc;
 }
@@ -163,7 +148,7 @@ bool MCatNLO_Process::InitSubtermInfo()
 	    m_iinfo[sub->m_pname].insert(IDip_ID(ij,k));
       m_dinfo[subs->back()->m_pname].insert(*sub);
       std::string name(sub->Proc<Process_Base>()->Name());
-      (*m_pmap[nlo_type::rsub])[name]=sub->Proc<Process_Base>();
+      (*(*p_apmap)[nlo_type::rsub])[name]=sub->Proc<Process_Base>();
     }
   }
   return true;
@@ -174,8 +159,8 @@ Process_Base *MCatNLO_Process::FindProcess
  const bool error) const
 {
   std::string name(Process_Base::GenerateName(ampl));
-  StringProcess_Map::const_iterator pit(m_pmap.find(type)->second->find(name));
-  if (pit!=m_pmap.find(type)->second->end()) return pit->second;
+  StringProcess_Map::const_iterator pit(p_apmap->find(type)->second->find(name));
+  if (pit!=p_apmap->find(type)->second->end()) return pit->second;
   if (error)
     THROW(fatal_error,"Process '"+name+"'("+ToString(type)+") not found");
   return NULL;
@@ -185,8 +170,8 @@ Process_Base *MCatNLO_Process::FindProcess
 (const NLO_subevt *sub,const nlo_type::code type) const
 {
   StringProcess_Map::const_iterator pit
-    (m_pmap.find(type)->second->find(sub->m_pname));
-  if (pit!=m_pmap.find(type)->second->end()) return pit->second;
+    (p_apmap->find(type)->second->find(sub->m_pname));
+  if (pit!=p_apmap->find(type)->second->end()) return pit->second;
   THROW(fatal_error,"Process '"+sub->m_pname+"'("+ToString(type)+") not found");
   return NULL;
 }
@@ -306,7 +291,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   }
   p_ampl = dynamic_cast<Single_Process*>(bproc)->Cluster(256);
   SortFlavours(p_ampl);
-  p_ampl->SetProcs(&m_pmap);
+  p_ampl->SetProcs(p_apmap);
   p_ampl->SetIInfo(&m_iinfo);
   p_ampl->SetDInfo(&m_dinfo);
   p_ampl->Decays()=m_decins;

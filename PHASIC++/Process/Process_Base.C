@@ -573,3 +573,24 @@ double Process_Base::LastMinus()
   double last(Last());
   return last<0.0?last:0.0;
 }
+
+void Process_Base::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
+{
+  p_apmap=apmap;
+  if (IsGroup()) {
+    for (size_t i(0);i<Size();++i) (*this)[i]->FillProcessMap(apmap);
+  }
+  else {
+    nlo_type::code nlot(m_pinfo.m_fi.m_nloqcdtype);
+    if (apmap->find(nlot)==apmap->end())
+      (*apmap)[nlot] = new StringProcess_Map();
+    std::string fname(m_name);
+    size_t pos=fname.find("EW");
+    if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
+    pos=fname.find("QCD");
+    if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
+    if (nlot&nlo_type::vsub) nlot=nlo_type::vsub;
+    if (nlot&nlo_type::rsub) nlot=nlo_type::rsub;
+    (*(*apmap)[m_pinfo.m_fi.m_nloqcdtype])[m_name]=this;
+  }
+}
