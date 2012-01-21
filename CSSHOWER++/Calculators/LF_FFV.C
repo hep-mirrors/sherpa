@@ -300,10 +300,10 @@ double LF_FFV_FF::operator()
   }
   else {
     //the massive case
-    //std::cout<<"                                          z "<<z<<" y "<<y<<" "<<" kt2 "<<scale<<" muk2 "<<muk2<< std::endl; 
     double vtijk = sqrt(Lambda(1.,muij2,muk2))/(1.-muij2-muk2);
     double vijk  = sqrt(sqr(2.*muk2+(1.-mui2-muk2)*(1.-y))-4.*muk2)/((1.-mui2-muk2)*(1.-y));
-    double pipj  = scale/(2.*z*(1.-z)) + (1.-z)*mi2/(2.*z);
+    double sij   = y*Q2*(1.0-muk2)+(1.0-y)*mi2;
+    double pipj  = (sij*z*(1.0-z)-(1.0-z)*mi2)/(2.*z*(1.-z)) + (1.-z)*mi2/(2.*z);
     double massive = ( 2./(1.-z+z*y) - vtijk/vijk * (1.+z + mi2/pipj) );
     if (massive < 0.) {
       //std::cout<<" Q -> Qg FF mass correction : "<<massive/massless<<" )\n"; 
@@ -363,7 +363,8 @@ double LF_FFV_FI::operator()
   }
   else {
     //the massive case
-    double pipj    = scale/(2.*z*(1.-z)) + (1.-z)*mi2/(2.*z);
+    double sij     = (y*Q2+mi2)/(1.0-y);
+    double pipj    = (sij*z*(1.0-z)-(1.0-z)*mi2)/(2.*z*(1.-z)) + (1.-z)*mi2/(2.*z);
     double massive = massless - mi2/pipj;
     if (massive < 0.) {
       //std::cout<<" Q -> Qg FI mass correction : "<<massive<<" / "<<massless<<"\n";
@@ -484,7 +485,8 @@ double LF_FVF_FF::operator()
     //the massive case
     double vtijk = sqrt(Lambda(1.,muij2,muk2))/(1.-muij2-muk2);
     double vijk  = sqrt(sqr(2.*muk2+(1.-muj2-muk2)*(1.-y))-4.*muk2)/((1.-muj2-muk2)*(1.-y));
-    double pipj  = scale/(2.*z*(1.-z)) + z*mj2/(2.*(1.-z));
+    double sij   = y*Q2*(1.0-muk2)+(1.0-y)*mj2;
+    double pipj  = (sij*z*(1.0-z)-z*mj2)/(2.*z*(1.-z)) + z*mj2/(2.*(1.-z));
     double massive = ( 2./(z+y-z*y) - vtijk/vijk * (2.+z + mj2/pipj) );
     if (massive < 0.) {
       //std::cout<<" Q -> gQ FF mass correction : "<<massive/massless<<"\n"; 
@@ -542,7 +544,8 @@ double LF_FVF_FI::operator() (const double z,const double y,
   }
   else {
     //the massive case
-    double pipj    = scale/(2.*z*(1.-z)) + z*mj2/(2.*(1.-z));
+    double sij     = (y*Q2+mj2)/(1.0-y);
+    double pipj    = (sij*z*(1.0-z)-z*mj2)/(2.*z*(1.-z)) + z*mj2/(2.*(1.-z));
     double massive = massless - mj2/pipj;
     if (massive < 0.) {
       //std::cout<<" Q -> gQ FI mass correction : "<<massive/massless<<"\n";
