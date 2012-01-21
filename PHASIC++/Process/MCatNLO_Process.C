@@ -252,6 +252,10 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     p_rsproc->Selected()->Integrator()->SwapInOrder();
     rproc->Integrator()->SwapInOrder();
   }
+  p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(256);
+  Cluster_Amplitude *ampl(p_ampl);
+  ampl->SetNLO(1);
+  while ((ampl=ampl->Next())!=NULL) ampl->SetNLO(1);
   Selector_Base *jf=(*p_bviproc)[0]->
     Selector()->GetSelector("Jetfinder");
   if (jf) {
