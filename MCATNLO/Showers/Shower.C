@@ -18,7 +18,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
 {
   int kfmode = dataread->GetValue<int>("NLO_CSS_KFACTOR_SCHEME",1);
-  double k0sq   = dataread->GetValue<double>("NLO_CSS_PT2MIN",1);
+  double k0sq   = dataread->GetValue<double>("NLO_CSS_PT2MIN",2.0);
   double as_fac = dataread->GetValue<double>("NLO_CSS_AS_FAC",1.0);
   m_kscheme = dataread->GetValue<int>("NLO_CSS_KIN_SCHEME",1);
   std::vector<std::vector<std::string> > helpsvv;
