@@ -198,8 +198,8 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,const size_t &id,
     if ((cl->Id()&id)==0) continue;
     if (ampl->Prev()) GetKT2Min(ampl->Prev(),cl->Id(),kt2xmap,aset);
     if (cl->Stat()==3 || cl->Stat()==5) {
-      double ckt2=kt2xmap[cl->Id()].first=
-	kt2xmap[cl->Id()].second=cl->Mom().Abs2(); 
+      double ckt2(cl->Mom().Abs2());
+      kt2xmap[cl->Id()].first=kt2xmap[cl->Id()].second=HardScale(ampl);
       for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
 	if (kit->first!=cl->Id() && (kit->first&cl->Id()) &&
 	    aset.find(kit->first)==aset.end()) {
