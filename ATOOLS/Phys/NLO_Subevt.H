@@ -80,7 +80,7 @@ namespace ATOOLS {
     NLO_subevt *p_real;
     void       *p_proc;
 
-    size_t m_n, m_flip;
+    size_t m_n, m_flip, m_iss;
     double m_result, m_last[2], m_me, m_mewgt;
 
     std::vector<double> m_mu2;
@@ -93,7 +93,7 @@ namespace ATOOLS {
 		      const Flavour *fl=NULL,const Vec4D *mom=NULL,
 		      const int i=-1,const int j=-1,const int k=-1):
       Dip_ID(0,0,i,j,k), p_fl(fl), p_mom(mom), p_id(id), p_dec(NULL),
-      p_real(NULL), p_proc(NULL), m_n(n), m_flip(0),
+      p_real(NULL), p_proc(NULL), m_n(n), m_flip(0), m_iss(0),
       m_result(0.0), m_me(0.0), m_mewgt(0.0), m_mu2(2,0.0)
     { m_last[0]=0.0; m_last[1]=0.0; }
 

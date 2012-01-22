@@ -112,7 +112,10 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   m_subevt.m_ijt=em;
   m_subevt.m_kt=sp;
   m_subevt.p_id=&m_sids.front();
-  m_subevt.m_pname=GenerateName(p_LO_process->Info().m_ii,p_LO_process->Info().m_fi);
+  Process_Info cpi(p_LO_process->Info());
+  Process_Base::SortFlavours(cpi);
+  m_subevt.m_iss=p_LO_process->Info().m_ii.m_ps[0].m_fl!=cpi.m_ii.m_ps[0].m_fl;
+  m_subevt.m_pname=GenerateName(cpi.m_ii,cpi.m_fi);
   m_subevt.m_pname=m_subevt.m_pname.substr(0,m_subevt.m_pname.rfind("__"));
 
   m_dalpha = 1.;

@@ -139,7 +139,7 @@ namespace ATOOLS
   {
     ATOOLS::Flavour_Vector flavs;
     for (size_t i(0);i<sevt.m_n;++i) flavs.push_back(sevt.p_fl[i]);
-    return ostr<<sevt.m_pname<<" "<<(Dip_ID)(sevt)
+    return ostr<<sevt.m_pname<<" "<<(Dip_ID)(sevt)<<", is "<<sevt.m_iss
                <<" {\n  fl: "<<flavs
                <<"\n  result = "<<sevt.m_result
                <<" ( "<<sevt.m_last[0]<<" , "<<sevt.m_last[1]<<" ) "

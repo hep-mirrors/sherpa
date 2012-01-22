@@ -144,8 +144,13 @@ bool POWHEG_Process::InitSubtermInfo()
       for (size_t ij(0);ij<sub->m_n;++ij)
 	for (size_t k(0);k<sub->m_n;++k)
 	  if (k!=ij && sub->p_fl[k]==sub->p_fl[sub->m_kt] && 
-	      sub->p_fl[ij]==sub->p_fl[sub->m_ijt])
-	    m_iinfo[sub->m_pname].insert(IDip_ID(ij,k));
+	      sub->p_fl[ij]==sub->p_fl[sub->m_ijt]) {
+	    if (sub->m_iss==0) m_iinfo[sub->m_pname].insert(IDip_ID(ij,k));
+	    else {
+	      size_t cij(ij<m_nin?1-ij:ij), ck(k<m_nin?1-k:k);
+	      m_iinfo[sub->m_pname].insert(IDip_ID(cij,ck));
+	    }
+	  }
       m_dinfo[subs->back()->m_pname].insert(*sub);
       Process_Base *bproc(FindProcess(sub));
       bproc->Integrator()->RBMap()[sub] = new RB_Data();
@@ -616,7 +621,7 @@ bool POWHEG_Process::CalculateTotalXSec(const std::string &resultpath,
   if (p_int->ISR())
     p_int->ISR()->SetSprimeMin(psh->Cuts()->Smin());
   psh->CreateIntegrators();
-  p_int->SetResultPath(resultpath);
+  p_int->SetResultPath(resultpath+"/POWHEG");
   p_int->ReadResults();
   exh->AddTerminatorObject(p_int);
   psh->InitIncoming();
