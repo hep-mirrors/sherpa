@@ -209,7 +209,10 @@ METS_Scale_Setter::METS_Scale_Setter
   if (!read.ReadFromFile(m_mufmode,"METS_SCALE_MUFMODE")) m_mufmode=1;
   else msg_Info()<<METHOD<<"(): Set METS \\mu_F mode "<<m_mufmode<<".\n";
   if (!read.ReadFromFile(m_wthres,"METS_WARNING_THRESHOLD")) m_wthres=0.1;
-  if (m_vproc && (m_vmode&8)) m_mode=0;
+  if (m_vproc && (m_vmode&8)) {
+    m_mode=0;
+    m_mufmode=0;
+  }
 }
 
 METS_Scale_Setter::~METS_Scale_Setter()
