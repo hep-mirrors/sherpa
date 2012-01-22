@@ -39,6 +39,7 @@ Return_Value::code Hadron_Decays::Treat(Blob_List * bloblist, double & weight)
     if (p_dechandler && blob->Has(blob_status::needs_hadrondecays)) {
       didit = true;
       p_dechandler->SetBlobList(bloblist);
+      blob->UnsetStatus(blob_status::needs_hadrondecays);
       try {
         if (p_dechandler->SpinCorr()) {
           Blob* signal=bloblist->FindFirst(btp::Signal_Process);
@@ -70,7 +71,6 @@ Return_Value::code Hadron_Decays::Treat(Blob_List * bloblist, double & weight)
                    <<endl<<" Will retry event."<<endl;
         return ret;
       }
-      blob->UnsetStatus(blob_status::needs_hadrondecays);
     }
   }
   return (didit ? Return_Value::Success : Return_Value::Nothing);
