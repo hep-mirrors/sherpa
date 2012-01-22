@@ -95,7 +95,6 @@ namespace AHADIC {
     const double & PT2() const   { return m_kt2; }
     const double & PT() const    { return m_kt; }
     const double & Z() const     { return m_z; }
-    const double & Phi() const   { return m_phi; }
 
     Proto_Particle * Spectator() { return p_spect; }
     Proto_Particle * Splitter()  { return p_split; }

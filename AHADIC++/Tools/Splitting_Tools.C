@@ -295,6 +295,7 @@ ProduceKinematics(const bool & first,const bool & vetodiquark) {
     if (m_kt2<0. || m_kt2>m_kt2max) continue;
     if ((*p_as)(m_kt2,false)/p_as->MaxValue()<ATOOLS::ran->Get()) continue;
     m_kt  = sqrt(m_kt2);
+    m_phi = 2.0*M_PI*ATOOLS::ran->Get();
     if (ConstructKinematics()) {
       m_lastpt2 = m_kt2;
       break;
