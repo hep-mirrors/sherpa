@@ -9,7 +9,7 @@ using namespace ATOOLS;
 
 // #define STRICT__Beam_Check
 
-double Kin_Args::s_uxeps=1.0e-4;
+double Kin_Args::s_uxeps=1.0e-3;
 
 double PHASIC::ComputePhi
 (Vec4D pijt,Vec4D pkt,Vec4D pi,const int mode)
