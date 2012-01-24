@@ -12,6 +12,7 @@ libDipoleSubtraction_la_SOURCES = \
 		       II_DipoleSplitting.C \
 		       Single_LOProcess.C \
 		       Single_LOProcess_MHV.C \
+		       Single_LOProcess_External.C \
                        Single_DipoleTerm.C \
                        Single_OSTerm.C \
                        Single_Virtual_Correction.C \
@@ -25,6 +26,7 @@ localinc_HEADERS   = \
 		     II_DipoleSplitting.H \
 		     Single_LOProcess.H \
 		     Single_LOProcess_MHV.H \
+		     Single_LOProcess_External.H \
                      Single_DipoleTerm.H \
                      Single_OSTerm.H \
                      Single_Virtual_Correction.H \

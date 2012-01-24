@@ -1,6 +1,7 @@
 #include "AMEGIC++/DipoleSubtraction/Single_Virtual_Correction.H"
 #include "AMEGIC++/DipoleSubtraction/DipoleSplitting_Base.H"
 #include "AMEGIC++/DipoleSubtraction/Single_LOProcess_MHV.H"
+#include "AMEGIC++/DipoleSubtraction/Single_LOProcess_External.H"
 #include "AMEGIC++/Phasespace/Phase_Space_Generator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "PDF/Main/ISR_Handler.H"
@@ -159,7 +160,12 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
 //   m_name+= "_VIRT";
 
   if (m_pinfo.m_amegicmhv>0) {
-    if (CF.MHVCalculable(m_pinfo))
+    if (m_pinfo.m_amegicmhv==10) {
+      if (m_pinfo.Has(nlo_type::vsub))
+	THROW(not_implemented,"Invalid NLO mode for Enable_MHV=10");
+      p_LO_process = new Single_LOProcess_External(m_pinfo, p_int->Beam(), p_int->ISR());
+    }
+    else if (CF.MHVCalculable(m_pinfo))
       p_LO_process = new Single_LOProcess_MHV(m_pinfo, p_int->Beam(), p_int->ISR());
     if (m_pinfo.m_amegicmhv==2) return 0;
   }
@@ -254,7 +260,7 @@ bool Single_Virtual_Correction::SetUpIntegrator()
 
 bool Single_Virtual_Correction::CreateChannelLibrary()
 {
-  if (!p_LO_process) return 1;
+  if (!p_LO_process || p_LO_process->NumberOfDiagrams()==0) return 1;
   p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
   bool newch  = 0;
   if (m_nin>=1)  newch = p_psgen->Construct(p_channellibnames,m_ptypename,m_pslibname,&m_flavs.front(),p_LO_process); 
