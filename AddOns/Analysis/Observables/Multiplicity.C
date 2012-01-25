@@ -12,10 +12,11 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
   if (parameters.size()==1) {
     if (parameters[0].size()<4) return NULL;
     std::string list=parameters[0].size()>4?parameters[0][4]:finalstate_list;
+    std::string reflist=parameters[0].size()>5?parameters[0][5]:finalstate_list;
     return new Class(HistogramType(parameters[0][3]),
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
-		     ATOOLS::ToType<int>(parameters[0][2]),list);
+		     ATOOLS::ToType<int>(parameters[0][2]),list,reflist);
   }
   else if (parameters.size()<4) return NULL;
   double min=0.0, max=1.0;
@@ -39,7 +40,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
 
 #define DEFINE_PRINT_METHOD(NAME)					\
   void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
-  { str<<"min max bins Lin|LinErr|Log|LogErr [list]"; }
+  { str<<"min max bins Lin|LinErr|Log|LogErr [list [reflist]]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
@@ -52,18 +53,20 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
 using namespace ATOOLS;
 
 DEFINE_OBSERVABLE_GETTER(Multiplicity,Multiplicity_Getter,"Multi")
+DEFINE_OBSERVABLE_GETTER(InclMultiplicity,InclMultiplicity_Getter,"InclMulti")
 DEFINE_OBSERVABLE_GETTER(Hadron_Multiplicities,Hadron_Multiplicities_Getter,"Hadron_Multis")
 
 
 
 
 Multiplicity::Multiplicity(int type,double xmin,double xmax,int nbins,
-			   const std::string & listname) :
+			   const std::string & listname,const std::string &reflist) :
   Primitive_Observable_Base(type,xmin,xmax,nbins)
 {
+  m_reflist=reflist;
   if (listname!="") {
     m_listname = listname;
-    m_name = listname+"_multi.dat";
+    m_name = listname+"_"+m_reflist+"_multi.dat";
   }
   else
     m_name = "multi.dat";
@@ -72,12 +75,82 @@ Multiplicity::Multiplicity(int type,double xmin,double xmax,int nbins,
 void Multiplicity::Evaluate(const ATOOLS::Particle_List & pl,
 			    double weight, double ncount)
 {
+  ATOOLS::Particle_List* ref=p_ana->GetParticleList(m_reflist);
+  if (ref==NULL || ref->empty()) {
+    p_histo->Insert(-1.0,0.0,ncount);
+    return;
+  }
   p_histo->Insert((double)pl.size(),weight,ncount); 
 }
 
+void Multiplicity::EvaluateNLOcontrib(double weight, double ncount)
+{
+  ATOOLS::Particle_List* ref=p_ana->GetParticleList(m_reflist);
+  if (ref==NULL || ref->empty()) {
+    p_histo->InsertMCB(-1.0,0.0,ncount);
+    return;
+  }
+  Particle_List *pl=p_ana->GetParticleList(m_listname);
+  p_histo->InsertMCB((double)pl->size(),weight,ncount); 
+}
+
+void Multiplicity::EvaluateNLOevt()
+{
+  p_histo->FinishMCB();
+}
 
 Primitive_Observable_Base * Multiplicity::Copy() const {
-  return new Multiplicity(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  return new Multiplicity(m_type,m_xmin,m_xmax,m_nbins,m_listname,m_reflist);
+}
+
+
+
+InclMultiplicity::InclMultiplicity(int type,double xmin,double xmax,int nbins,
+			   const std::string & listname,const std::string &reflist) :
+  Primitive_Observable_Base(type,xmin,xmax,nbins)
+{
+  m_reflist=reflist;
+  if (listname!="") {
+    m_listname = listname;
+    m_name = listname+"_"+m_reflist+"_inclmulti.dat";
+  }
+  else
+    m_name = "inclmulti.dat";
+}
+ 
+void InclMultiplicity::Evaluate(const ATOOLS::Particle_List & pl,
+			    double weight, double ncount)
+{
+  ATOOLS::Particle_List* ref=p_ana->GetParticleList(m_reflist);
+  if (ref==NULL || ref->empty()) {
+    p_histo->Insert(-1.0,0.0,ncount);
+    return;
+  }
+  for (size_t i(1);i<=pl.size();++i)
+    p_histo->Insert((double)i,weight,0); 
+  p_histo->Insert(0.0,weight,ncount); 
+}
+
+void InclMultiplicity::EvaluateNLOcontrib(double weight, double ncount)
+{
+  ATOOLS::Particle_List* ref=p_ana->GetParticleList(m_reflist);
+  if (ref==NULL || ref->empty()) {
+    p_histo->InsertMCB(-1.0,0.0,ncount);
+    return;
+  }
+  Particle_List *pl=p_ana->GetParticleList(m_listname);
+  for (size_t i(1);i<=pl->size();++i)
+    p_histo->InsertMCB((double)i,weight,0); 
+  p_histo->InsertMCB(0.0,weight,ncount); 
+}
+
+void InclMultiplicity::EvaluateNLOevt()
+{
+  p_histo->FinishMCB();
+}
+
+Primitive_Observable_Base * InclMultiplicity::Copy() const {
+  return new InclMultiplicity(m_type,m_xmin,m_xmax,m_nbins,m_listname,m_reflist);
 }
 
 
@@ -87,7 +160,7 @@ Primitive_Observable_Base * Multiplicity::Copy() const {
 
 
 Hadron_Multiplicities::Hadron_Multiplicities(int type,double xmin,double xmax,int nbins,
-					     const std::string & listname) :
+					     const std::string & listname,const std::string &reflist) :
   Normalized_Observable(4,0.,100.,100)
 {
   m_listname = listname; 
