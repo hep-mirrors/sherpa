@@ -30,7 +30,7 @@ CS_POWHEG::CS_POWHEG(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
   p_gamma = new CS_Gamma(this,p_powheg,p_cluster);
   p_powheg->SetGamma(p_gamma);
   p_gamma->SetZHParams(zhth,ktres);
-  m_kt2min=p_powheg->GetSudakov()->PT2Min();
+  m_kt2min=p_powheg->GetSudakov()->ISPT2Min();
 }
 
 CS_POWHEG::~CS_POWHEG() 

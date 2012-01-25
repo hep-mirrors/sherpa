@@ -25,7 +25,8 @@ namespace CSSHOWER {
 	m_cfl=key.p_v->in[key.m_mode==0?1:2];
     }
 
-    bool SetCoupling(MODEL::Model_Base *md,const double &k0sq,
+    bool SetCoupling(MODEL::Model_Base *md,
+		     const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
     double Coupling(const double &scale,const int pol);
     bool AllowSpec(const ATOOLS::Flavour &fl);
@@ -49,7 +50,8 @@ namespace CSSHOWER {
 	m_cfl=key.p_v->in[key.m_mode==0?1:2];
     }
 
-    bool SetCoupling(MODEL::Model_Base *md,const double &k0sq,
+    bool SetCoupling(MODEL::Model_Base *md,
+		     const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
     double Coupling(const double &scale,const int pol);
     bool AllowSpec(const ATOOLS::Flavour &fl);
@@ -61,7 +63,8 @@ namespace CSSHOWER {
 using namespace CSSHOWER;
 using namespace ATOOLS;
 
-bool CF_EW_FFZ::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
+bool CF_EW_FFZ::SetCoupling(MODEL::Model_Base *md,
+			    const double &k0sqi,const double &k0sqf,
 			    const double &isfac,const double &fsfac)
 {
   double stw(md->GetInteractionModel()->ScalarConstant("sin2_thetaW"));
@@ -102,7 +105,8 @@ bool CF_EW_FFZ::AllowSpec(const ATOOLS::Flavour &fl)
   }
 }
 
-bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
+bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,
+			    const double &k0sqi,const double &k0sqf,
 			    const double &isfac,const double &fsfac)
 {
   double stw(md->GetInteractionModel()->ScalarConstant("sin2_thetaW"));

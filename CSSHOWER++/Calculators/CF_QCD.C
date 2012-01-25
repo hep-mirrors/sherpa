@@ -41,7 +41,8 @@ namespace CSSHOWER {
       }
     }
 
-    bool SetCoupling(MODEL::Model_Base *md,const double &k0sq,
+    bool SetCoupling(MODEL::Model_Base *md,
+		     const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
     double Coupling(const double &scale,const int pol);
     bool AllowSpec(const ATOOLS::Flavour &fl);
@@ -55,12 +56,13 @@ namespace CSSHOWER {
 using namespace CSSHOWER;
 using namespace ATOOLS;
 
-bool CF_QCD::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
+bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
+			 const double &k0sqi,const double &k0sqf,
 			 const double &isfac,const double &fsfac)
 {
   p_cpl=(MODEL::Running_AlphaS*)md->GetScalarFunction("alpha_S");
   m_cplfac=((m_type/10==1)?fsfac:isfac);
-  m_cplmax.push_back((*p_cpl)(k0sq)*m_q);
+  m_cplmax.push_back((*p_cpl)(m_type==11?k0sqf:k0sqi)*m_q);
   m_cplmax.push_back(0.0);
   return true;
 }

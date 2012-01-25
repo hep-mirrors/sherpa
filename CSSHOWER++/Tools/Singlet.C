@@ -142,7 +142,7 @@ bool Singlet::JetVeto(Sudakov *const sud) const
     for (const_iterator iit(begin());iit!=end();++iit) {
       if ((*iit)->GetType()==pst::IS) continue;
       if ((*iit)->GetFlavour().Resummed())
-	if ((*iit)->Momentum().PPerp2()<sud->PT2Min()) {
+	if ((*iit)->Momentum().PPerp2()<sud->ISPT2Min()) {
  	  msg_Debugging()<<"p_T_{"<<ID((*iit)->Id())<<"} = "
 			 <<(*iit)->Momentum().PPerp()<<"\n";
 	  return false;

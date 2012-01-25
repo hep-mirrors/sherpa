@@ -112,26 +112,28 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   msg_Debugging()<<"}\n";
 }
 
-void Sudakov::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
+void Sudakov::SetCoupling(MODEL::Model_Base *md,
+			  const double &k0sqi,const double &k0sqf,
 			  const double &isfac,const double &fsfac)
 {
-  m_k0sq=k0sq;
+  m_k0sqi=k0sqi;
+  m_k0sqf=k0sqf;
   m_as_is_fac=m_as_fs_fac=std::numeric_limits<double>::max();
   for (std::vector<Splitting_Function_Base*>::iterator
 	 sit(m_splittings.begin());sit!=m_splittings.end();)
-    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sq,isfac,fsfac)) {
+    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sqi,m_k0sqf,isfac,fsfac)) {
       delete *sit;
       sit=m_splittings.erase(sit);
     }
     else {
       if ((*sit)->GetType()==cstp::FF || (*sit)->GetType()==cstp::FI)
-	m_as_fs_fac=Min(m_as_fs_fac,(*sit)->Coupling()->CplFac(m_k0sq));
-      else m_as_is_fac=Min(m_as_is_fac,(*sit)->Coupling()->CplFac(m_k0sq));
+	m_as_fs_fac=Min(m_as_fs_fac,(*sit)->Coupling()->CplFac(m_k0sqf));
+      else m_as_is_fac=Min(m_as_is_fac,(*sit)->Coupling()->CplFac(m_k0sqi));
       ++sit;
     }
   for (std::vector<Splitting_Function_Base*>::iterator
 	 sit(m_addsplittings.begin());sit!=m_addsplittings.end();)
-    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sq,isfac,fsfac)) {
+    if (!(*sit)->Coupling()->SetCoupling(md,m_k0sqi,m_k0sqf,isfac,fsfac)) {
       delete *sit;
       sit=m_addsplittings.erase(sit);
     }
@@ -289,12 +291,14 @@ bool Sudakov::Generate(Parton * split)
   
   double cf(p_split->GetType()==pst::IS?m_as_is_fac:m_as_fs_fac);
   bool success(false);
-  while (m_kperp2>=m_k0sq/cf) {
+  while (m_kperp2>=m_k0sqf/cf) {
     ProduceT();
     SelectOne();
     split->SetSpect(p_selected->SelectSpec());
     m_z = Z();
-    if (m_kperp2<m_k0sq/cf)  return false;
+    double k0sq(p_split->GetType()==pst::IS||
+		p_split->GetSpect()->GetType()==pst::IS?m_k0sqi:m_k0sqf);
+    if (m_kperp2<k0sq/cf)  return false;
     double Q2 = 0.;
     m_type=split->GetType()==pst::FS?
       (split->GetSpect()->GetType()==pst::FS?cstp::FF:cstp::FI):
@@ -356,10 +360,10 @@ bool Sudakov::Generate(Parton * split)
 
 bool Sudakov::DefineFFBoundaries(double Q2,double x)
 {
-  if (4.*m_k0sq>Q2) return false;
+  if (4.*m_k0sqf>Q2) return false;
   
   m_type=cstp::FF;
-  double deltaz(sqrt(1.-4.*m_k0sq/Q2));
+  double deltaz(sqrt(1.-4.*m_k0sqf/Q2));
   m_zmin   = 0.5*(1.-deltaz);
   m_zmax   = 0.5*(1.+deltaz);
   m_scale  = p_split->KtStart();
@@ -377,11 +381,11 @@ bool Sudakov::DefineFIBoundaries(double Q2,double x,int beam)
   double xmax = Min(0.999999,p_pdf[beam]->XMax()); 
   double xmin = Max(1.e-6,p_pdf[beam]->XMin());
   if (x>=xmax || x<=xmin)                                   return false;
-  if (m_k0sq*x>Q2*(1.-x))                                   return false;
+  if (m_k0sqi*x>Q2*(1.-x))                                   return false;
   if (Q2<=p_pdf[beam]->Q2Min() || Q2>=p_pdf[beam]->Q2Max()) return false;
   
   m_type=cstp::FI;
-  double deltaz(1.0-4.0*Min(1.0,x/(1.0-x))*(m_k0sq/Q2));
+  double deltaz(1.0-4.0*Min(1.0,x/(1.0-x))*(m_k0sqi/Q2));
   if (deltaz<0.0) return false;
   deltaz=sqrt(deltaz);
   m_zmin   = 0.5*(1.0-deltaz);
@@ -401,12 +405,12 @@ bool Sudakov::DefineIFBoundaries(double Q2,double x,int beam)
   double xmax = Min(0.999999,p_pdf[beam]->XMax()); 
   double xmin = Max(1.e-6,p_pdf[beam]->XMin());
   if (x>=xmax || x<=xmin)                                   return false;
-  if (m_k0sq>Q2)                                            return false;
+  if (m_k0sqi>Q2)                                           return false;
   if (Q2<=p_pdf[beam]->Q2Min() || Q2>=p_pdf[beam]->Q2Max()) return false;
   
   m_type=cstp::IF;
   m_zmin   = x/xmax;
-  m_zmax   = Q2/(Q2+m_k0sq);
+  m_zmax   = Q2/(Q2+m_k0sqi);
   if (m_zmin>m_zmax) return false;
   m_scale  = p_split->KtStart();
   if (OverIntegrated(m_zmin,m_zmax,m_scale,x,beam)<0.) {
@@ -423,12 +427,12 @@ bool Sudakov::DefineIIBoundaries(double Q2,double x,int beam)
   double xmax = Min(0.999999,p_pdf[beam]->XMax()); 
   double xmin = Max(1.e-6,p_pdf[beam]->XMin());
   if (x>=xmax || x<=xmin)                                   return false;
-  if (m_k0sq>Q2)                                            return false;
+  if (m_k0sqi>Q2)                                           return false;
   if (Q2<=p_pdf[beam]->Q2Min() || Q2>=p_pdf[beam]->Q2Max()) return false;
  
   m_type=cstp::II;
   m_zmin   = x/xmax;
-  m_zmax   = Q2/(Q2+m_k0sq);
+  m_zmax   = Q2/(Q2+m_k0sqi);
   if (m_zmin>m_zmax) return false;
   m_scale  = p_split->KtStart();
   if (OverIntegrated(m_zmin,m_zmax,m_scale,x,beam)<0.) {

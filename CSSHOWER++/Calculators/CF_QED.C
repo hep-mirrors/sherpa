@@ -27,7 +27,8 @@ namespace CSSHOWER {
       if (m_q==0.0) THROW(fatal_error,"Internal error");
     }
 
-    bool SetCoupling(MODEL::Model_Base *md,const double &k0sq,
+    bool SetCoupling(MODEL::Model_Base *md,
+		     const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
     double Coupling(const double &scale,const int pol);
     bool AllowSpec(const ATOOLS::Flavour &fl);
@@ -39,7 +40,8 @@ namespace CSSHOWER {
 using namespace CSSHOWER;
 using namespace ATOOLS;
 
-bool CF_QED::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
+bool CF_QED::SetCoupling(MODEL::Model_Base *md,
+			 const double &k0sqi,const double &k0sqf,
 			 const double &isfac,const double &fsfac)
 {
   p_cpl=md->GetScalarFunction("alpha_QED");

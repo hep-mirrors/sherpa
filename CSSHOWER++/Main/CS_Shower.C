@@ -590,7 +590,7 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl)
     for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
       if (ampl->Leg(i)->Flav().Resummed())
 	if (ampl->Leg(i)->Mom().PPerp2()<
-	    p_shower->GetSudakov()->PT2Min()) {
+	    p_shower->GetSudakov()->ISPT2Min()) {
  	  msg_Debugging()<<"p_T_{"<<ID(ampl->Leg(i)->Id())<<"} = "
 			 <<ampl->Leg(i)->Mom().PPerp()<<"\n";
 	  return false;

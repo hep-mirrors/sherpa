@@ -165,6 +165,9 @@ void CS_Cluster_Definitions::KernelWeight
   }
   cs.p_sf=cdip;
   cs.m_mu2=cs.m_kt2*cdip->Coupling()->CplFac(cs.m_kt2);
+  cs.m_mu2=Max(cs.m_mu2,cs.m_mode&1?
+	       p_shower->GetSudakov()->ISPT2Min():
+	       p_shower->GetSudakov()->FSPT2Min());
   cs.m_idi=i->Id();
   cs.m_idj=j->Id();
   cs.m_idk=k->Id();

@@ -174,7 +174,9 @@ void CS_Cluster_Definitions::KernelWeight
   p_shower->SetMS(p_ms);
   cdip->SetFlavourSpec(fls);
   cs.m_mu2=cdip->Lorentz()->Mu2(cs.m_z,cs.m_y,Q2);
-  cs.m_mu2=Max(cs.m_mu2,p_shower->GetSudakov()->PT2Min());
+  cs.m_mu2=Max(cs.m_mu2,cs.m_mode&1?
+	       p_shower->GetSudakov()->ISPT2Min():
+	       p_shower->GetSudakov()->FSPT2Min());
   cs.m_idi=i->Id();
   cs.m_idj=j->Id();
   cs.m_idk=k->Id();

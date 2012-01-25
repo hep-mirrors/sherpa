@@ -35,7 +35,8 @@ namespace CSSHOWER {
       }
     }
     
-    bool   SetCoupling(MODEL::Model_Base *md,const double &k0sq,
+    bool   SetCoupling(MODEL::Model_Base *md,
+		       const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
     double Coupling(const double &scale,const int pol);
     bool   AllowSpec(const ATOOLS::Flavour &fl);
@@ -47,7 +48,8 @@ namespace CSSHOWER {
 using namespace CSSHOWER;
 using namespace ATOOLS;
 
-bool CF_HV::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
+bool CF_HV::SetCoupling(MODEL::Model_Base *md,
+			const double &k0sqi,const double &k0sqf,
 			 const double &isfac,const double &fsfac)
 {
   double CF = double(md->ScalarConstant(std::string("CF")));
@@ -61,8 +63,9 @@ bool CF_HV::SetCoupling(MODEL::Model_Base *md,const double &k0sq,
   case 2: m_q=CF;break;
   }
   m_cplfac=((m_type/10==1)?fsfac:isfac);
-  m_cplmax.push_back((*p_cpl)(k0sq)*m_q);
-  std::cout<<" cpl max HV "<<m_cplmax.back()<<" "<<k0sq<<" "<<m_q <<std::endl; 
+  m_cplmax.push_back((*p_cpl)((m_type/10==1)?k0sqf:k0sqi)*m_q);
+  std::cout<<" cpl max HV "<<m_cplmax.back()<<" "
+	   <<k0sqi<<"/"<<k0sqf<<" "<<m_q <<std::endl; 
   m_cplmax.push_back(0.0);
   return true;
 }

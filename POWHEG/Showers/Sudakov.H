@@ -16,7 +16,7 @@ namespace POWHEG {
   class Shower;
 
   class Sudakov : public Splitting_Function_Group {
-    double m_k0sq, m_phi;
+    double m_k0sqi, m_k0sqf, m_phi;
     double m_deltaz, m_kperp2, m_z, m_y, m_ymin, m_ymax, m_scale;
     double m_as_is_fac,m_as_fs_fac,m_zmin,m_zmax, m_weight;
     int m_ewmode;
@@ -43,7 +43,8 @@ namespace POWHEG {
     ~Sudakov();
 
     void InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode);
-    void SetCoupling(MODEL::Model_Base *md,const double &k0sq,
+    void SetCoupling(MODEL::Model_Base *md,
+		     const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
     bool   Generate(Parton *);
     double OverIntegrated(const double,const double,const double,
@@ -51,7 +52,6 @@ namespace POWHEG {
     void SetRB(ATOOLS::RB_Map *const rbmap);
 
     inline void GetSplittingParameters(double &,double &,double &,double &);
-    inline void SetPT2Min(const double &pt2) {m_k0sq=pt2;}     
     inline double FSCplFac() const { return m_as_fs_fac; }
     inline double ISCplFac() const { return m_as_is_fac; }
 
@@ -73,7 +73,8 @@ namespace POWHEG {
                   const ATOOLS::Flavour &flk,
                   const cstp::code type) const;
 
-    inline double PT2Min() const { return m_k0sq; }
+    inline double FSPT2Min() const { return m_k0sqf; }
+    inline double ISPT2Min() const { return m_k0sqi; }
 
     inline void SetShower(Shower *const shower) { p_shower=shower; }
     inline double Weight() const { return m_weight; }

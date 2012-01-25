@@ -27,7 +27,7 @@ CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const mod
   p_cluster = new CS_Cluster_Definitions(p_powheg,1);
   p_gamma = new CS_Gamma(this,p_powheg,p_cluster);
   p_powheg->SetGamma(p_gamma);
-  m_kt2min=p_powheg->GetSudakov()->PT2Min();
+  m_kt2min=p_powheg->GetSudakov()->ISPT2Min();
 }
 
 CS_MCatNLO::~CS_MCatNLO() 
