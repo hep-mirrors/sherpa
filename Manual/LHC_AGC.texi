@@ -37,6 +37,8 @@ format, in the specified directory. In this example, the
 graphs will be found in the Process directory, after Sherpa 
 is run.
 
+@item the matrix element generator AMEGIC++ is used
+for this set-up, see @ref{Running Sherpa with AMEGIC++}.
 @end itemize
 
 

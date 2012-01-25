@@ -30,7 +30,7 @@ generator. It also need to be added to the @ref{ME_SIGNAL_GENERATOR} list.
 For additional information see @ref{External one-loop ME}.
 @item The switch @code{SHERPA_LDADD} present in @code{Run_I.dat} has to 
 be set to the appropriate library name (and path) of the one-loop generator. 
-In the above example, the corresponding to be loaded would be 
+In the above example, the corresponding library to be loaded would be 
 called @code{libOLE.so}.
 @item both the factorisation and renormalisation scales are set to the 
 transverse mass of the electron-neutrino pair.
