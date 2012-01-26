@@ -443,6 +443,7 @@ int One_Variable_Selector::Evaluate
       for (Particle_List::iterator pit(reflist.begin());
 	   pit!=reflist.end();++pit) 
 	if (*pit==moms[l]) {
+	  if (m_items[i][l]>=0) continue;
 	  msg_Debugging()<<"  erase "<<**pit<<"\n";
 	  reflist.erase(pit);
 	  break;
