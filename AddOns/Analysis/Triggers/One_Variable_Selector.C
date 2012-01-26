@@ -438,16 +438,20 @@ int One_Variable_Selector::Evaluate
     if (m_dists[i]!=NULL && (eval-1==m_histos[4][i] || m_histos[4][i]<0))
       m_dists[i]->Insert(val,weight,ncount);
     if (pass) return 1;
-    if (m_items[i][0]>=0 || m_vars[i]->IDName()=="Count") return 0;
-    for (size_t l(0);l<moms.size();++l)
+    if (m_vars[i]->IDName()=="Count") return 0;
+    bool rem(false);
+    for (size_t l(0);l<moms.size();++l) {
+      if (m_items[i][l]>=0) continue;
       for (Particle_List::iterator pit(reflist.begin());
 	   pit!=reflist.end();++pit) 
 	if (*pit==moms[l]) {
-	  if (m_items[i][l]>=0) continue;
 	  msg_Debugging()<<"  erase "<<**pit<<"\n";
 	  reflist.erase(pit);
+	  rem=true;
 	  break;
 	}
+    }
+    if (!rem) return 0;
     moms.clear();
     return -1;
   }
