@@ -136,6 +136,7 @@ bool Extra_Emission_Generator::GenerateWeight
   DEBUG_FUNC("");
   m_weight=0.0;
   p_info->ResetAll();
+  if (p.empty()) return false;
   double asum(0.0);
   for (size_t i(0);i<m_dipoles.size();++i) {
     CS_Dipole *cdip(m_dipoles[i]);
