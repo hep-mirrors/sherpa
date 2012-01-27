@@ -80,7 +80,7 @@ namespace PHASIC {
     void SetClusterDefinitions
     (PDF::Cluster_Definitions_Base *const cluster);
 
-    double LocalKFactor(const ATOOLS::Vec4D_Vector &pb);
+    double LocalKFactor(const ATOOLS::Cluster_Amplitude &ampl);
 
     ATOOLS::Cluster_Amplitude *GetAmplitude();
 

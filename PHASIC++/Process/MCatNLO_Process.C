@@ -215,10 +215,20 @@ double MCatNLO_Process::Differential2()
   return m_last[1];
 }
 
-double MCatNLO_Process::LocalKFactor(const Vec4D_Vector &ppb)
+double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
 {
-  PRINT_VAR("returning 1");
-  return 1.0;
+  DEBUG_FUNC(Name());
+  DEBUG_VAR(ampl);
+  if (ampl.Legs().size()+1!=m_nin+m_nout) return 0.0;
+  Process_Base *bviproc(FindProcess(&ampl,nlo_type::vsub,false));
+  if (bviproc==NULL) return 0.0;
+  msg_Debugging()<<"Found '"<<bviproc->Name()<<"'\n";
+  Process_Base *bproc(FindProcess(&ampl));
+  if (bproc==NULL) THROW(fatal_error,"BVI but no B");
+  double bvi(bviproc->Differential(ampl,2|4));
+  double b(bviproc->Differential(ampl,2|4));
+  msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b<<" -> K = "<<bvi/b<<"\n";
+  return bvi/b;
 }
 
 Cluster_Amplitude *MCatNLO_Process::GetAmplitude()
@@ -258,6 +268,10 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     rproc->Integrator()->SwapInOrder();
   }
   p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(256);
+  if (p_ampl==NULL) {
+    msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;
+    return 0.0;
+  }
   Cluster_Amplitude *ampl(p_ampl);
   ampl->SetNLO(1);
   while ((ampl=ampl->Next())!=NULL) ampl->SetNLO(1);

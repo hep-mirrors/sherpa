@@ -11,6 +11,7 @@
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/POWHEG_Process.H"
+#include "PHASIC++/Process/MCatNLO_Process.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -113,7 +114,7 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   //if (!p_dec->SetColours(p_ampl,blob)) return Return_Value::New_Event;
   m_weight=1.0;
   if (p_me->Process()->Info().m_ckkw&1) {
-    if (m_bbarmode && p_me->HasNLO()==2 &&
+    if (m_bbarmode && p_me->HasNLO() &&
         p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
       // Bbar reweighting for smooth merging
       DEBUG_FUNC("Bbar reweighting");
@@ -168,6 +169,13 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
     }
     DEBUG_VAR(amplflavs);
     for (size_t i=0; i<procs.size(); ++i) {
+      MCatNLO_Process* mcnloproc=dynamic_cast<MCatNLO_Process*>(procs[i]);
+      if (mcnloproc) {
+	double K(mcnloproc->LocalKFactor(*ampl));
+	if (K==0.0) continue;
+	m_weight*=K;
+	return true;
+      }
       POWHEG_Process* powproc = dynamic_cast<POWHEG_Process*>(procs[i]);
       if (powproc==NULL) continue;
       if (ampl->Legs().size()!=procs[i]->NIn()+procs[i]->NOut()-1) continue;
