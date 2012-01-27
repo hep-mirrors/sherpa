@@ -226,9 +226,9 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   msg_Debugging()<<"Found '"<<bviproc->Name()<<"'\n";
   Process_Base *bproc(FindProcess(&ampl));
   if (bproc==NULL) THROW(fatal_error,"BVI but no B");
-  double b(bproc->Differential(ampl,2|4|rm));
+  double b(bproc->Differential(ampl,4|rm));
   if (b==0.0) return 0.0;
-  double bvi(bviproc->Differential(ampl,2|4|rm));
+  double bvi(bviproc->Differential(ampl,4|rm));
   msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b<<" -> K = "<<bvi/b<<"\n";
   return bvi/b;
 }

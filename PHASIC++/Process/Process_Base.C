@@ -92,6 +92,8 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
   for (size_t i(0);i<ampl.NIn();++i) p[i]=-ampl.Leg(i)->Mom();
   if (mode&16) return Get<Single_Process>()->BeamISRWeight(ampl.MuF2(),0);
   for (size_t i(ampl.NIn());i<p.size();++i) p[i]=ampl.Leg(i)->Mom();
+  int swap(p_int->InSwaped());
+  p_int->RestoreInOrder();
   if (mode&1024) {
     for (size_t i(0);i<p.size();++i)
       p[i]=Vec4D(p[i][0],-p[i][1],-p[i][2],-p[i][3]);
@@ -115,6 +117,7 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
   if (mode&4) SetUseBIWeight(true);
   if (mode&2) SetFixedScale(std::vector<double>());
   if (Selector()->On()!=selon) SetSelectorOn(selon);
+  if (swap) p_int->SwapInOrder();
   return res;
 }
 
