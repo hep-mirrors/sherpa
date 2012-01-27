@@ -591,6 +591,7 @@ void Process_Base::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
     if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
     if (nlot&nlo_type::vsub) nlot=nlo_type::vsub;
     if (nlot&nlo_type::rsub) nlot=nlo_type::rsub;
-    (*(*apmap)[m_pinfo.m_fi.m_nloqcdtype])[m_name]=this;
+    StringProcess_Map *cmap((*apmap)[m_pinfo.m_fi.m_nloqcdtype]);
+    if (cmap->find(m_name)==cmap->end()) (*cmap)[m_name]=this;
   }
 }
