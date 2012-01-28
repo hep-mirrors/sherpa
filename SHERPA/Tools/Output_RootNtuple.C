@@ -8,6 +8,9 @@
 #include "ATOOLS/Org/Message.H"
 #include "MODEL/Main/Model_Base.H"
 
+#include "TPluginManager.h"
+#include "TROOT.h"
+
 #ifdef USING__MPI
 #include "mpi.h"
 #endif
@@ -115,6 +118,8 @@ Output_RootNtuple::Output_RootNtuple(std::string basename,std::string ext,
 #else
   msg_Error()<<"Sherpa must be linked with root to enable ROOTNTUPLE output!"<<endl;
 #endif
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo","*",
+					"TStreamerInfo","RIO","TStreamerInfo()"); 
 }
 
 Output_RootNtuple::~Output_RootNtuple()

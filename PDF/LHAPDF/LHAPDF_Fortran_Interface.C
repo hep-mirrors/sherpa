@@ -164,8 +164,8 @@ extern "C" void InitPDFLib()
   read.AddComment("#");
   read.AddWordSeparator("\t");
   std::string path;
-  if (!read.ReadFromFile(path,"LHAPDF_GRID_PATH")) path=LHAPDF::pdfsetsPath();
-  std::vector<std::string> files=LHAPDF_ScanDir(path);
+  if (read.ReadFromFile(path,"LHAPDF_GRID_PATH")) LHAPDF::setPDFPath(path); 
+  std::vector<std::string> files=LHAPDF_ScanDir(LHAPDF::pdfsetsPath());
   p_get_lhapdf.resize(files.size());
   for (size_t i(0);i<files.size();++i) p_get_lhapdf[i] = new LHAPDF_Getter(files[i]);
 }
