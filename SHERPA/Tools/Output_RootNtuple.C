@@ -8,8 +8,10 @@
 #include "ATOOLS/Org/Message.H"
 #include "MODEL/Main/Model_Base.H"
 
+#ifdef USING__ROOT
 #include "TPluginManager.h"
 #include "TROOT.h"
+#endif
 
 #ifdef USING__MPI
 #include "mpi.h"
@@ -115,11 +117,11 @@ Output_RootNtuple::Output_RootNtuple(std::string basename,std::string ext,
   p_t3->Branch("nuwgt",&m_nuwgt,"nuwgt/I");
   p_t3->Branch("usr_wgts",p_uwgt,"usr_wgts[nuwgt]/D");
   ATOOLS::exh->AddTerminatorObject(this);
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo","*",
+					"TStreamerInfo","RIO","TStreamerInfo()"); 
 #else
   msg_Error()<<"Sherpa must be linked with root to enable ROOTNTUPLE output!"<<endl;
 #endif
-  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo","*",
-					"TStreamerInfo","RIO","TStreamerInfo()"); 
 }
 
 Output_RootNtuple::~Output_RootNtuple()
