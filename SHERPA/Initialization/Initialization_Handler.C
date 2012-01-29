@@ -715,7 +715,7 @@ bool Initialization_Handler::InitializeTheAnalyses()
     if (analyses[i]=="Internal")
       if (!s_loader->LoadLibrary("SherpaAnalysis")) 
         THROW(missing_module,"Cannot load Analysis library (--enable-analysis).");
-    if (analyses[i]=="Rivet" || analyses[i]=="RivetShower")
+    if (analyses[i]=="Rivet" || analyses[i]=="RivetME" || analyses[i]=="RivetShower")
       if (!s_loader->LoadLibrary("SherpaRivetAnalysis")) 
         THROW(missing_module,"Cannot load RivetAnalysis library (--enable-rivet).");
     Analysis_Interface* ana=Analysis_Interface::Analysis_Getter_Function::GetObject
