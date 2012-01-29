@@ -81,7 +81,8 @@ The two independent integer-valued seeds are specified by the option
 0 to 30081, respectively. They can also directly be set using 
 ``RANDOM_SEED1=A'' and ``RANDOM_SEED2=B'' If RANDOM_SEED is not 
 specified at all or only by one integer number, the old random-number 
-generator (SHERPA 1.0.6 and older) will be used.
+generator (SHERPA 1.0.6 and older) will be used. This value can also be set 
+using the command line option @option{-R}, see @ref{Command line}.
 
 @node ANALYSIS
 @subsection ANALYSIS
@@ -159,7 +160,8 @@ two numbers. This might have to be reduced if gauge tests fail for numerical rea
 @cindex SHERPA_CPP_PATH
 The path in which Sherpa will eventually store dynamically created C++ source code.
 If not specified otherwise, sets @option{SHERPA_LIB_PATH} to 
-@samp{$SHERPA_CPP_PATH/Process/lib}.
+@samp{$SHERPA_CPP_PATH/Process/lib}. This value can also be set using the command line 
+option @option{-L}, see @ref{Command line}.
 
 @node SHERPA_LIB_PATH
 @subsection SHERPA_LIB_PATH

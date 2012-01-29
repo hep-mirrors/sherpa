@@ -11,6 +11,10 @@ Read input from file @samp{<file>}.
 @item -p <path>
 Read input file from path @samp{<path>}.
 
+@item -L <path>
+Set Sherpa library path to @samp{<path>},
+see @ref{SHERPA_CPP_PATH}.
+
 @item -e <events>
 Set number of events to generate @samp{<events>},
 see @ref{EVENTS}.
@@ -18,6 +22,10 @@ see @ref{EVENTS}.
 @item -r <results>
 Set the result directory to @samp{<results>},
 see @ref{RESULT_DIRECTORY}.
+
+@item -R <seed>
+Set the seed of the random number generator to @samp{<seed>},
+see @ref{RANDOM_SEED}.
 
 @item -m <generators>
 Set the matrix element generator list to @samp{<generators>},

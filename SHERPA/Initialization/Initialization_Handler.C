@@ -855,6 +855,8 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     else if (ExtractValArg(helpsv,oit,"-p","PATH"));
     else if (ExtractValArg(helpsv,oit,"-e","EVENTS"));
     else if (ExtractValArg(helpsv,oit,"-r","RESULT_DIRECTORY"));
+    else if (ExtractValArg(helpsv,oit,"-L","SHERPA_CPP_PATH"));
+    else if (ExtractValArg(helpsv,oit,"-R","RANDOM_SEED"));
     else if (ExtractValArg(helpsv,oit,"-m","ME_SIGNAL_GENERATOR"));
     else if (ExtractValArg(helpsv,oit,"-w","EVENT_GENERATION_MODE"));
     else if (ExtractValArg(helpsv,oit,"-s","SHOWER_GENERATOR"));
