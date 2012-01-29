@@ -614,6 +614,7 @@ void Phase_Space_Handler::AddPoint(const double value)
 	for (size_t i(0);i<p_process->Process()->Size();++i) {
 	  NLO_subevtlist* nlos=(*p_process->Process())[i]->GetSubevtList();
 	  for (size_t j(0);j<nlos->size();++j) {
+	    if ((*nlos)[j]->m_result==0.0) continue;
 	    double val((*p_enhancefunc)((*nlos)[j]->p_mom,
 					(*nlos)[j]->p_fl,(*nlos)[j]->m_n));
 	    p_enhancehisto_current->Insert(val,(*nlos)[j]->m_result);
@@ -676,6 +677,7 @@ void Phase_Space_Handler::SetEnhanceFunction(const std::string &enhancefunc)
 double Phase_Space_Handler::EnhanceFactor()
 {
   if (p_enhancefunc==NULL) return 1.0;
+  if (p_process->Process()->Info().Has(nlo_type::rsub)) return 1.0;
   double obs=(*p_enhancefunc)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
   if (p_enhancehisto==NULL) return obs;
   if (obs>=p_enhancehisto->Xmax()) obs=p_enhancehisto->Xmax()-1e-12;

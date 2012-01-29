@@ -131,7 +131,9 @@ bool Fastjet_Finder::JetTrigger(const Vec4D_Vector &p,
   int n=0;
   for (size_t i(0);i<jets.size();++i) {
     Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
-    if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin) n++;
+    if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
+	(m_eta==100 || dabs(pj.Eta())<m_eta) &&
+	(m_y==100 || dabs(pj.Y())<m_y)) n++;
   }
 
   bool trigger(true);
