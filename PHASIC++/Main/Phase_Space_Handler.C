@@ -409,7 +409,6 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     (*nlos)*=m_psweight;
     (*nlos).MultMEwgt(m_psweight);
   }
-  m_enhance=(m_result_1||m_result_2)?EnhanceFactor():1.0;
   return m_result_1+m_result_2;
 }
 
@@ -599,6 +598,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 
 void Phase_Space_Handler::AddPoint(const double value)
 {
+  m_enhance=EnhanceFactor(p_process->Process());
   p_process->AddPoint(value);
   if (value!=0.0) {
     if (p_beamchannels) p_beamchannels->AddPoint(value*m_enhance);
@@ -674,11 +674,24 @@ void Phase_Space_Handler::SetEnhanceFunction(const std::string &enhancefunc)
   }
 }
 
-double Phase_Space_Handler::EnhanceFactor()
+double Phase_Space_Handler::EnhanceFactor(Process_Base *const proc)
 {
   if (p_enhancefunc==NULL) return 1.0;
-  if (p_process->Process()->Info().Has(nlo_type::rsub)) return 1.0;
-  double obs=(*p_enhancefunc)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
+  double obs=p_enhancehisto->Xmin();
+  if (!proc->Info().Has(nlo_type::rsub)) {
+    obs=(*p_enhancefunc)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
+  }
+  else {
+    double nobs(0.0);
+    for (size_t i(0);i<proc->Size();++i) {
+      NLO_subevtlist* nlos=(*proc)[i]->GetSubevtList();
+      if (nlos->back()->m_result==0.0) continue;
+      obs*=(*p_enhancefunc)(nlos->back()->p_mom,
+			    nlos->back()->p_fl,nlos->back()->m_n);
+      nobs+=1.0;
+    }
+    if (nobs) obs=pow(obs,1.0/nobs);
+  }
   if (p_enhancehisto==NULL) return obs;
   if (obs>=p_enhancehisto->Xmax()) obs=p_enhancehisto->Xmax()-1e-12;
   if (obs<=p_enhancehisto->Xmin()) obs=p_enhancehisto->Xmin()+1e-12;

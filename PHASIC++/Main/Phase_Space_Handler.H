@@ -116,7 +116,7 @@ namespace PHASIC {
     static void *CalculatePS(void *arg);
 #endif
 
-    double EnhanceFactor();
+    double EnhanceFactor(Process_Base *const proc);
 
     bool MakeIncoming(ATOOLS::Vec4D *const p);
     bool Check4Momentum(const ATOOLS::Vec4D_Vector &p);
