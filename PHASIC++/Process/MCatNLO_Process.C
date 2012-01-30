@@ -218,19 +218,30 @@ double MCatNLO_Process::Differential2()
 double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
 {
   DEBUG_FUNC(Name());
-  DEBUG_VAR(ampl);
-  int rm(ampl.Leg(0)->Mom()[3]>0.0?1024:0);
-  if (ampl.Legs().size()+1!=m_nin+m_nout) return 0.0;
+  Cluster_Amplitude *rampl(ampl.Prev());
+  if (rampl->Legs().size()!=m_nin+m_nout) return 0.0;
+  msg_Debugging()<<*rampl<<"\n";
+  int rm(rampl->Leg(0)->Mom()[3]>0.0?1024:0);
+  Process_Base *rsproc(FindProcess(rampl,nlo_type::rsub,false));
+  if (rsproc==NULL) return 0.0;
+  msg_Debugging()<<"Found '"<<rsproc->Name()<<"'\n";
+  Process_Base *rproc(FindProcess(ampl.Prev()));
+  double r(1.0), rs(rsproc->Differential(*rampl,2|4|rm));
+  if (rs) r=rproc->Differential(*rampl,2|4|rm);
+  msg_Debugging()<<"H = "<<rs<<", R = "<<r<<" -> "<<rs/r<<"\n";
+  if (IsEqual(rs,r,1.0e-6) || r==0.0) return 1.0;
+  msg_Debugging()<<ampl<<"\n";
+  rm=ampl.Leg(0)->Mom()[3]>0.0?1024:0;
   Process_Base *bviproc(FindProcess(&ampl,nlo_type::vsub,false));
   if (bviproc==NULL) return 0.0;
   msg_Debugging()<<"Found '"<<bviproc->Name()<<"'\n";
   Process_Base *bproc(FindProcess(&ampl));
-  if (bproc==NULL) THROW(fatal_error,"BVI but no B");
   double b(bproc->Differential(ampl,4|rm));
   if (b==0.0) return 0.0;
   double bvi(bviproc->Differential(ampl,4|rm));
-  msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b<<" -> K = "<<bvi/b<<"\n";
-  return bvi/b;
+  msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
+		 <<" -> K = "<<bvi/b*(1.0-rs/r)+rs/r<<"\n";
+  return bvi/b*(1.0-rs/r)+rs/r;
 }
 
 Cluster_Amplitude *MCatNLO_Process::GetAmplitude()
