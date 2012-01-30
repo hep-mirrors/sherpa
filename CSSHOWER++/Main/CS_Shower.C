@@ -251,6 +251,8 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap)
       if (ins) cns.push_back(kit->first);
     }
   bool smin(ampl->Legs().size()-ampl->NIn()==campl->Leg(2)->NMax());
+  if (campl->NLO()==1)
+    smin=ampl->Legs().size()-ampl->NIn()-1==campl->Leg(2)->NMax();
   for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
     if (aset.find(kit->first)==aset.end()) {
       if (smin) kit->second.first=ckt2min;
