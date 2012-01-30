@@ -39,7 +39,7 @@ namespace AMEGIC {
     PHASIC::KP_Terms      * p_kpterms;
     PHASIC::Virtual_ME2_Base* p_loopme;  
 
-    bool m_force_init, m_sccmur;
+    bool m_force_init, m_sccmur, m_kpcemode;
     /*------------------------------------------------------------------------------
 
       Constructors

@@ -37,11 +37,17 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   p_dipole(0), p_kpterms(0), p_loopme(0)
 { 
   m_dalpha = 1.;
+  m_kpcemode = 0;
+  int helpi;
   double helpd;
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
   reader.SetInputPath(rpa->GetPath());
   reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+  if (reader.ReadFromFile(helpi,"KP_CHECK_ENERGY")) {
+    m_kpcemode = helpi;
+    msg_Tracking()<<"Set KP-term energy check mode "<<m_kpcemode<<" . "<<std::endl;
+  }
   if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA")) {
     m_dalpha = helpd;
     msg_Tracking()<<"Set dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
@@ -178,7 +184,7 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
       m_dalpha_if!=m_dalpha ||
       m_dalpha_fi!=m_dalpha ||
       m_dalpha_ff!=m_dalpha) massive=1;
-  p_kpterms = new KP_Terms(this,massive);
+  p_kpterms = new KP_Terms(this,massive|(m_kpcemode?2:0));
   p_flkern=p_kpterms->FlavKern();
   p_masskern=p_kpterms->MassKern();
   if (!p_masskern) p_kpterms->SetAlpha(m_dalpha);

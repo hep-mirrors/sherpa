@@ -2,6 +2,7 @@
 
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -12,6 +13,7 @@ KP_Terms::KP_Terms(Process_Base *const proc,const int mode):
   SetNC(3.0);
   m_flavs=p_proc->Flavours();
   m_massive=mode&1;
+  m_cemode=mode&2;
   size_t fsgluons(0);
   for (size_t i=p_proc->NIn();i<m_flavs.size();i++) {
     if (m_flavs[i].Strong()&&m_flavs[i].IsMassive()) m_massive=1;
@@ -287,6 +289,11 @@ double KP_Terms::Get(const double &x0,const double &x1,
   double muf = p_proc->ScaleSetter()->Scale(stp::fac);
 
   if (sa) {
+    if (m_cemode && eta0*rpa->gen.PBeam(0)[0]<flav[0].Mass(true)) {
+      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta0*rpa->gen.PBeam(0)[0]
+		    <<" vs. "<<flav[0].Mass(true)<<" )"<<std::endl;
+      return 0.0;
+    }
     pdfa->Calculate(eta0/x0,muf);
     fagx = pdfa->GetXPDF(gluon)/eta0;
     if (flav[0].IsQuark()) faqx = pdfa->GetXPDF(flav[0])/eta0;
@@ -296,7 +303,7 @@ double KP_Terms::Get(const double &x0,const double &x1,
     }
     pdfa->Calculate(eta0,muf);
     fa  = pdfa->GetXPDF(flav[0])/eta0;
-    if (!fa>0.) return 0.;
+    if ((m_cemode && IsZero(fa,1.0e-16)) || !fa>0.) return 0.;
     fag = pdfa->GetXPDF(gluon)/eta0;
     if (flav[0].IsQuark()) faq = fa;
     else {
@@ -312,6 +319,11 @@ double KP_Terms::Get(const double &x0,const double &x1,
     }    
   }
   if (sb) {
+    if (m_cemode && eta1*rpa->gen.PBeam(1)[0]<flav[1].Mass(true)) {
+      msg_Tracking()<<METHOD<<"(): E < m ! ( "<<eta1*rpa->gen.PBeam(1)[0]
+		    <<" vs. "<<flav[1].Mass(true)<<" )"<<std::endl;
+      return 0.0;
+    }
     pdfb->Calculate(eta1/x1,muf);
     fbgx = pdfb->GetXPDF(gluon)/eta1;
     if (flav[1].IsQuark()) fbqx = pdfb->GetXPDF(flav[1])/eta1;
@@ -321,7 +333,7 @@ double KP_Terms::Get(const double &x0,const double &x1,
     }
     pdfb->Calculate(eta1,muf);
     fb = pdfb->GetXPDF(flav[1])/eta1;
-    if (!fb>0.) return 0.;
+    if ((m_cemode && IsZero(fb,1.0e-16)) || !fb>0.) return 0.;
     fbg = pdfb->GetXPDF(gluon)/eta1;
     if (flav[1].IsQuark()) fbq = fb;
     else {

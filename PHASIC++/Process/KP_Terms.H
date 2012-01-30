@@ -26,7 +26,7 @@ namespace PHASIC {
 
     ATOOLS::Flavour_Vector m_flavs;
 
-    bool   m_massive;
+    bool   m_massive, m_cemode;
     double m_a, m_loga, m_kpca[8], m_kpcb[8], m_cpldef;
 
     std::vector<std::vector<double> > m_dsij;
