@@ -202,6 +202,9 @@ bool PGS_Interface::Init()
   reader.AddComment("#");
   reader.SetFileBegin("BEGIN_PGS");
   reader.SetFileEnd("END_PGS");
+  std::string stag(rpa->gen.Variable("RNG_SEED"));
+  while (stag.find(' ')!=std::string::npos) stag.replace(stag.find(' '),1,"-");
+  reader.AddTag("RNG_SEED",stag);
   m_outfile=reader.GetValue<std::string>("FILE_NAME","sherpa_events.hep");
   m_imode=reader.GetValue<int>("WRITE_MODE",1);
   pgspars.nevsha=rpa->gen.NumberOfEvents();
