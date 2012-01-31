@@ -677,7 +677,7 @@ void Phase_Space_Handler::SetEnhanceFunction(const std::string &enhancefunc)
 double Phase_Space_Handler::EnhanceFactor(Process_Base *const proc)
 {
   if (p_enhancefunc==NULL) return 1.0;
-  double obs=p_enhancehisto->Xmin();
+  double obs=p_enhancehisto?p_enhancehisto->Xmin():1.0;
   if (!proc->Info().Has(nlo_type::rsub)) {
     obs=(*p_enhancefunc)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
   }
