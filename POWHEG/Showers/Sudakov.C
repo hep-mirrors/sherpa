@@ -262,16 +262,15 @@ bool Sudakov::Generate(Parton * split)
   m_kperp2       = split->KtStart();
   double x(0.); 
   
-  double cf(p_split->GetType()==pst::IS?m_as_is_fac:m_as_fs_fac);
   bool success(false);
-  while (m_kperp2>=m_k0sqf/cf) {
+  while (m_kperp2>=m_k0sqf) {
     ProduceT();
     SelectOne();
     split->SetSpect(p_selected->SelectSpec());
     m_z = Z();
     double k0sq(p_split->GetType()==pst::IS||
 		p_split->GetSpect()->GetType()==pst::IS?m_k0sqi:m_k0sqf);
-    if (m_kperp2<k0sq/cf)  return false;
+    if (m_kperp2<k0sq)  return false;
     double Q2 = 0.;
     m_type=split->GetType()==pst::FS?
       (split->GetSpect()->GetType()==pst::FS?cstp::FF:cstp::FI):

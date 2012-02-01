@@ -20,12 +20,13 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   int kfmode = dataread->GetValue<int>("CSS_KFACTOR_SCHEME",1);
   double k0sqf = dataread->GetValue<double>("CSS_FS_PT2MIN",1.0);
   double k0sqi = dataread->GetValue<double>("CSS_IS_PT2MIN",4.0);
-  double as_fac = dataread->GetValue<double>("CSS_AS_FAC",1.0);
+  double fs_as_fac = dataread->GetValue<double>("CSS_FS_AS_FAC",1.0/0.4);
+  double is_as_fac = dataread->GetValue<double>("CSS_IS_AS_FAC",0.25/0.4);
   m_kscheme = dataread->GetValue<int>("PH_CSS_KIN_SCHEME",1);
   std::vector<std::vector<std::string> > helpsvv;
   m_sudakov.SetShower(this);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
-  m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,as_fac,as_fac);
+  m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
   m_kinFF.SetSudakov(&m_sudakov);
   m_kinFI.SetSudakov(&m_sudakov);
   m_kinIF.SetSudakov(&m_sudakov);
