@@ -588,7 +588,7 @@ bool Initialization_Handler::InitializeTheHardDecays()
   dr.AddWordSeparator("\t");
   dr.SetInputPath(m_path);
   dr.SetInputFile(m_medat);
-  std::string decays=dr.GetValue<string>("HARD_DECAYS",string("On"));
+  std::string decays=dr.GetValue<string>("HARD_DECAYS",string("Off"));
   if (decays=="Off") return true;
 
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }

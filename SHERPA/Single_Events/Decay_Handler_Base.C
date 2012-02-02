@@ -150,10 +150,10 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
   for (size_t i=0; i<daughters.size(); ++i) shuffled[i]=i;
   for (size_t i=0; i<daughters.size(); ++i) {
     if (abs(daughters[i]->Momentum().Abs2()-sqr(daughters[i]->FinalMass()))>1e-6) {
-      cout<<"fragmentation particle "<<daughters[i]->Flav()<<" not onshell: "
-          <<"p^2="<<daughters[i]->Momentum().Mass()
-          <<" vs. m^2="<<daughters[i]->FinalMass()<<endl;
-      throw Return_Value::Retry_Event;
+      PRINT_INFO("Initial particle "<<daughters[i]->Flav()<<" not onshell: "
+                 <<"p^2="<<daughters[i]->Momentum().Mass()
+                 <<" vs. m^2="<<daughters[i]->FinalMass());
+      //      throw Return_Value::Retry_Event;
     }
   }
   random_shuffle(shuffled.begin(), shuffled.end(), *ran);
