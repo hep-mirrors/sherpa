@@ -42,7 +42,11 @@ else
 fi
 AM_CONDITIONAL(USING__MPI, test "$mpi" = "true" )
 
-CXX="$CXX -Wl,--no-as-needed"
+case "$build_os:$build_cpu:$build_vendor" in
+  *darwin*:*:*) ;;
+  *linux*:*:*) CXX="$CXX -Wl,--no-as-needed" ;;
+  *) CXX="$CXX -Wl,--no-as-needed" ;;
+esac
 
 AM_PROG_LIBTOOL
 dnl Checks for header files.

@@ -28,7 +28,7 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
       echo "please inform us about build results at info@sherpa-mc.de"
       echo "(will continue in 10 seconds)"
       sleep 10
-      AM_LDFLAGS="-rdynamic Wl,--no-as-needed"
+      AM_LDFLAGS="-rdynamic -Wl,--no-as-needed"
       SEDCOMMAND="sed -i -r"
       AC_DEFINE([ARCH_UNIX], "1", [Architecture identified as Unix])
       AC_DEFINE([LIB_SUFFIX], ".so", [library suffix set to .so]) 
