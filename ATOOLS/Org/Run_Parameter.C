@@ -50,6 +50,28 @@ double getpmem()
   return 1.e15;
 }
 
+int getncpu()
+{
+#if defined(ARCH_LINUX) || defined(ARCH_UNIX)
+  return sysconf(_SC_NPROCESSORS_ONLN);
+#endif
+#ifdef ARCH_DARWIN
+  int mib[2]={CTL_HW,HW_AVAILCPU};
+  unsigned long int miblen(2);
+  unsigned long int ncpu(1), len(sizeof(ncpu));
+  if (sysctl(mib,miblen,&ncpu,&len,NULL,0)!=0) {
+    mib[1]=HW_NCPU;
+    if (sysctl(mib,miblen,&ncpu,&len,NULL,0)!=0) {
+      std::cerr<<"sysctl failed"<<std::endl;
+      ncpu = 1;
+    }
+  }
+  return ncpu;
+#endif
+  std::cerr<<"cannot determine number of cpus"<<std::endl;
+  return 1;
+}
+
 using namespace ATOOLS;
 using namespace std;
 
@@ -249,6 +271,10 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   rpa->gen.m_timer.Start();
   gen.m_batchmode = dr.GetValue<int>("BATCH_MODE",logfile==""?1:3);
   gen.m_clevel= dr.GetValue<int>("CITATION_DEPTH",1);
+  int ncpus(getncpu());
+  msg_Tracking()<<METHOD<<"(): Getting number of CPU cores: "
+		<<ncpus<<"."<<std::endl;
+  gen.SetVariable("NUMBER_OF_CPUS",ToString(ncpus));
 #ifdef RLIMIT_AS
   rlimit lims;
   getrlimit(RLIMIT_AS,&lims);
@@ -258,7 +284,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     slim+=400000000.0;
   }
 #endif
-  msg_Tracking()<<METHOD<<"(): Getting memory limit "
+  msg_Tracking()<<METHOD<<"(): Getting memory limit: "
 		<<slim/double(1<<30)<<" GB."<<std::endl;
   std::vector<std::string> aspars;
   if (!dr.VectorFromFile(aspars,"RLIMIT_AS")) {
@@ -283,6 +309,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
       THROW(fatal_error,"Invalid syntax in '"+m_file+"'");
     }
   }
+  int limpercpu=dr.GetValue<int>("RLIMIT_BY_CPU",0);
+  if (limpercpu) lims.rlim_cur/=(double)ncpus;
   if (setrlimit(RLIMIT_AS,&lims)!=0)
     msg_Error()<<METHOD<<"(): Cannot set memory limit."<<std::endl;
   getrlimit(RLIMIT_AS,&lims);
