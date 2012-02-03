@@ -761,7 +761,7 @@ void Initialization_Handler::SetGlobalVariables()
   msg_Debugging()<<METHOD<<"(): Set scale factors {\n"
 		 <<"  fac scale: "<<rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR")<<"\n"
 		 <<"  ren scale: "<<rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")<<"\n}\n";
-  int cmode=dr.GetValue<int>("METS_CLUSTER_MODE",0);
+  int cmode=dr.GetValue<int>("METS_CLUSTER_MODE",16);
   rpa->gen.SetVariable("METS_CLUSTER_MODE",ToString(cmode));
   if (cmode!=0) msg_Info()<<METHOD<<"(): Set cluster mode "<<cmode<<".\n";
 }
