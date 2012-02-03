@@ -484,7 +484,7 @@ bool Initialization_Handler::InitializeThePDFs()
       deflib="CTEQ6Sherpa";
       defset[beam]="cteq6.6m";
     }
-    else if (p_beamspectra->GetBeam(beam)->Bunch().IsLepton()) {
+    else if (p_beamspectra->GetBeam(beam)->Bunch().Kfcode()==kf_e) {
       deflib="PDFESherpa";
       defset[beam]="PDFe";
     }
