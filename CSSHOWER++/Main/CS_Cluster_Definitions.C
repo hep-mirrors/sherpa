@@ -310,7 +310,7 @@ CParam CS_Cluster_Definitions::CoreScale
 	  }
 	  if (kt2<kt2cmin) {
 	    kt2cmin=kt2;
-	    mu2min=kt2*cdip->Coupling()->CplFac(kt2);
+	    mu2min=Min(mu2min,kt2*cdip->Coupling()->CplFac(kt2));
 	  }
 	}
       }
