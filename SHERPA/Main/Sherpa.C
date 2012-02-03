@@ -57,6 +57,7 @@ Sherpa::~Sherpa()
   exh->MPISync();
   delete ATOOLS::msg;
   delete ATOOLS::exh;
+  ATOOLS::s_kftable.clear();
 }
 
 bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
