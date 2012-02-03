@@ -13,6 +13,8 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
+bool CSSHOWER::Sudakov::s_init=false;
+
 Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) : 
   p_rms(NULL)
 {
@@ -26,6 +28,7 @@ Sudakov::~Sudakov()
   delete [] p_pdf;
   for (size_t i(0);i<m_addsplittings.size();++i) delete m_addsplittings[i];
   for (size_t i(0);i<m_cgets.size();++i) delete m_cgets[i];
+  s_init=false;
 }
 
 struct FTrip {
@@ -49,9 +52,8 @@ public:
 
 void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
 {
-  static bool init(false);
-  if (!init) {
-    init=true;
+  if (!s_init) {
+    s_init=true;
     SFC_Filler_Getter::Getter_List flist(SFC_Filler_Getter::GetGetters());
     for (SFC_Filler_Getter::Getter_List::const_iterator git(flist.begin());
          git!=flist.end();++git) (*git)->GetObject(SFC_Filler_Key(md,&m_cgets));

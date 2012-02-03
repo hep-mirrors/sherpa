@@ -28,6 +28,7 @@ namespace CSSHOWER {
     std::vector<Splitting_Function_Base *> m_addsplittings;
     Shower *p_shower;
     std::vector<SFC_Getter*> m_cgets;
+    static bool s_init;
     void ProduceT();
     bool Veto(double,double);
     bool KinCheck(double,double);
