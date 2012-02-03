@@ -696,7 +696,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  jfargs.push_back("CUT");
 	}
       }
-      if (procs.size()>1) skey.SetData("METS{MU_F2}{MU_R2}",jfargs);
+      skey.SetData("METS{MU_F2}{MU_R2}",jfargs);
     }
     procs[i]->SetSelector(skey);
     procs[i]->SetScale
