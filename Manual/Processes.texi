@@ -156,12 +156,14 @@ DecayOS -24[d] -> 94 94
 @subsection No_Decay
 Remove all diagrams associated with the decay of the given flavours.
 Serves to avoid resonant contributions in processes like W-associated
-single-top production. Note that this methods breaks gauge invariance!
+single-top production. Note that this method breaks gauge invariance!
 At the moment this flag can only be set for Comix.
 An example would be
 @verbatim
-Process 93 93 -> -24 6[a] 93{1}
+Process 93 93 -> 6[a] -24[b] 93{1}
 Decay 6[a] -> 5 24[c]
+DecayOS 24[c] -> -13 14
+DecayOS -24[b] -> 11 -12
 No_Decay -6
 @end verbatim
 

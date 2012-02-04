@@ -13,6 +13,7 @@ nobase_dist_examples_DATA         =	\
                         LHC_HZZ_POWHEG/Run.dat \
 			LHC_SUSY/Run.dat \
 			LHC_SUSY/LesHouches_SPS1A.dat \
+			LHC_SingleTop/Run.dat \
 			LHC_TTH/Run.dat \
 			LHC_ZJets/Run.dat \
                         LHC_WJets_MENLOPS/Run.dat \

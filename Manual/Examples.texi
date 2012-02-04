@@ -15,6 +15,7 @@ of the main features of these examples.
 * Tevatron_Photons::
 * LEP91::                     
 * HERA_DIS::
+* LHC_SingleTop::               
 * LHC_TTH::               
 * Tevatron_TopPair::          
 * Tevatron_UE::               
@@ -42,6 +43,7 @@ of the main features of these examples.
 @include Tevatron_Photons.texi
 @include LEP91.texi
 @include HERA_DIS.texi
+@include LHC_SingleTop.texi
 @include LHC_TTH.texi
 @include Tevatron_TopPair.texi
 @include Tevatron_UE.texi
