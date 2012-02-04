@@ -417,6 +417,11 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur[0]=="Decay") dectags.push_back(MakeString(cur,1));
 	if (cur[0]=="Onshell_Decay" ||
 	    cur[0]=="DecayOS") dectags.push_back("Z"+MakeString(cur,1));
+	if (cur[0]=="No_Decay")
+	  for (size_t i(1);i<cur.size();++i) {
+	    long int kfc(ToType<long int>(cur[i]));
+	    pi.m_nodecs.push_back(Flavour(abs(kfc),kfc<0));
+	  }
 	if (cur[0]=="Order_EW") pi.m_oew=ToType<int>(cur[1]);
 	if (cur[0]=="Order_QCD") pi.m_oqcd=ToType<int>(cur[1]);
 	if (cur[0]=="Max_Order_EW") pi.m_maxoew=ToType<int>(cur[1]);

@@ -75,7 +75,7 @@ namespace COMIX {
 
     MODEL::Model_Base *p_model;
 
-    ATOOLS::Flavour_Vector m_fl;
+    ATOOLS::Flavour_Vector m_fl, m_ndc;
     ATOOLS::Vec4D_Vector   m_p;
 
     ATOOLS::DecayInfo_Vector m_decid;
@@ -251,6 +251,8 @@ namespace COMIX {
     { m_decid=id; }
     inline const ATOOLS::DecayInfo_Vector &DecayInfos() const
     { return m_decid; }
+
+    inline void SetNoDecays(const ATOOLS::Flavour_Vector &id) { m_ndc=id; }
 
     inline char PMode() const { return m_pmode; }
 

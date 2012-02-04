@@ -85,6 +85,7 @@ bool COMIX::Single_Process::Initialize
   Subprocess_Info info(m_pinfo.m_ii);
   info.Add(m_pinfo.m_fi);
   p_bg->SetDecayInfos(m_decins);
+  p_bg->SetNoDecays(m_pinfo.m_nodecs);
   std::vector<Flavour> flavs(m_nin+m_nout);
   for (size_t i(0);i<m_nin+m_nout;++i) flavs[i]=m_flavs[i];
   int smode(0);

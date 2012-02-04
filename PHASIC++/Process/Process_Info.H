@@ -30,6 +30,8 @@ namespace PHASIC {
 
     ME_Generators* p_gens;
 
+    ATOOLS::Flavour_Vector m_nodecs;
+
   public:
 
     inline Process_Info(const Subprocess_Info &ii=Subprocess_Info(),

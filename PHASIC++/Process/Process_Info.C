@@ -20,6 +20,7 @@ std::ostream &PHASIC::operator<<(std::ostream &ostr,const Process_Info &info)
         <<info.m_selectorfile<<"', mpi process = "<<info.m_mpiprocess<<"\n";
     ostr<<"  gpath = '"<<info.m_gpath
 	<<"', min t-channels = "<<info.m_ntchan<<"\n";
+    if (info.m_nodecs.size()) ostr<<"  nodecs = "<<info.m_nodecs<<"\n";
     info.m_ii.Print(ostr,2);
     info.m_fi.Print(ostr,2);
   }

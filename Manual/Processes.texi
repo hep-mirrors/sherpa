@@ -10,6 +10,7 @@ The following parameters are used to steer the process setup.
 * Process::                 The process setup start tag.
 * Decay::                   Tag to add an exclusive decay.
 * Onshell_Decay::           Tag to add an exclusive on-shell decay.
+* No_Decay::                Tag to remove resonant diagrams.
 * Scales::                  Tag to set a process-specific scale.
 * Couplings::               Tag to set process-specific couplings.
 * CKKW::                    Tag to setup multijet merging.
@@ -148,6 +149,20 @@ DecayOS 6[a] -> 5 24[c]
 DecayOS -6[b] -> -5 -24[d]
 DecayOS 24[c] -> -13 14
 DecayOS -24[d] -> 94 94
+@end verbatim
+
+
+@node No_Decay
+@subsection No_Decay
+Remove all diagrams associated with the decay of the given flavours.
+Serves to avoid resonant contributions in processes like W-associated
+single-top production. Note that this methods breaks gauge invariance!
+At the moment this flag can only be set for Comix.
+An example would be
+@verbatim
+Process 93 93 -> -24 6[a] 93{1}
+Decay 6[a] -> 5 24[c]
+No_Decay -6
 @end verbatim
 
 
