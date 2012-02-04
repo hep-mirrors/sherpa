@@ -557,7 +557,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 	      break;
 	    }
 	}
-	if (!skip) mup2=Max(mup2,ampl->KT2());
+	if (!skip) mup2=Max(mup2,ampl->Mu2());
       }
       if (m_rproc && ampl->Prev()==NULL) continue;
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
@@ -597,7 +597,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 	msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl; 
     }
     msg_Debugging()<<"} -> as = "<<as<<" -> "<<sqrt(mur2)<<"\n";
-    if (ampl->OrderQCD()>0) mup2=Max(mup2,ampl->KT2());
+    if (ampl->OrderQCD()>0) mup2=Max(mup2,ampl->Mu2());
   }
   if (mup2==0.0) mup2=muf2;
   m_scale[stp::fac]=(m_mufmode&1)?mup2:muf2;
