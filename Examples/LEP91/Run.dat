@@ -24,6 +24,5 @@
 }(processes)
 
 (model){
-  ORDER_ALPHAS = 0
   MASSIVE[5] = 1
 }(model)
