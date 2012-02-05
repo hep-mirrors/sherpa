@@ -383,10 +383,10 @@ bool Process_Group::CheckFlavours
 (const Subprocess_Info &ii,const Subprocess_Info &fi) const
 {
   std::vector<Flavour> cfl;
-  ii.GetExternal(cfl);
-  fi.GetExternal(cfl);
+  for (size_t i(0);i<ii.m_ps.size();++i) cfl.push_back(ii.m_ps[i].m_fl);
+  for (size_t i(0);i<fi.m_ps.size();++i) cfl.push_back(fi.m_ps[i].m_fl);
   int charge(0), strong(0);
-  size_t quarks(0), nin(ii.NExternal());
+  size_t quarks(0), nin(ii.m_ps.size());
   for (size_t i(0);i<cfl.size();++i) {
     charge+=i<nin?-cfl[i].IntCharge():cfl[i].IntCharge();
     if (abs(cfl[i].StrongCharge())!=8)
@@ -404,7 +404,17 @@ bool Process_Group::CheckFlavours
     return false;
   }
   if (charge!=0 || strong!=0) return false;
-  return true;
+  bool res(true);
+  for (size_t i(0);i<fi.m_ps.size();++i) {
+    if (fi.m_ps[i].m_ps.empty()) continue;
+    Subprocess_Info cii;
+    cii.m_ps.push_back(fi.m_ps[i]);
+    if (!CheckFlavours(cii,fi.m_ps[i])) {
+      res=false;
+      break;
+    }
+  }
+  return res;
 }
 
 void Process_Group::SetFlavour(Subprocess_Info &cii,Subprocess_Info &cfi,
