@@ -272,7 +272,6 @@ CParam CS_Cluster_Definitions::CoreScale
   }
   PHASIC::Single_Process *proc(ampl->Procs<PHASIC::Single_Process>());
   double kt2cmin((p[0]+p[1]).Abs2()), mu2min(kt2cmin);
-  SP(PHASIC::Color_Integrator) ci(proc->Integrator()->ColorIntegrator());
   for (size_t i(0);i<4;++i) {
     Cluster_Leg *li(ampl->Leg(i));
     for (size_t j(i==0?2:i+1);j<4;++j) {
