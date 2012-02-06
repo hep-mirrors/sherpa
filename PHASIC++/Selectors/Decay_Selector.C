@@ -186,8 +186,8 @@ DecayMass_Selector::DecayMass_Selector(const Selector_Key &key):
 bool DecayMass_Selector::Trigger(const Vec4D_Vector &p)
 {
   DEBUG_FUNC("");
-  Vec4D sum;
   for (size_t j(0);j<m_ids.size();++j) {
+    Vec4D sum;
     for (size_t i(0);i<m_ids[j].size();++i) sum+=p[m_ids[j][i]];
     double value(sum.Mass());
     msg_Debugging()<<m_ids[j]<<" -> "<<value<<"\n";
