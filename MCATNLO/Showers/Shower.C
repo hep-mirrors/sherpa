@@ -17,11 +17,11 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
 	       Data_Reader *const dataread) : 
   p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
 {
-  int kfmode = dataread->GetValue<int>("CSS_KFACTOR_SCHEME",1);
-  double k0sqf = dataread->GetValue<double>("CSS_FS_PT2MIN",1.0);
-  double k0sqi = dataread->GetValue<double>("CSS_IS_PT2MIN",4.0);
-  double fs_as_fac = dataread->GetValue<double>("CSS_FS_AS_FAC",1.0/0.4);
-  double is_as_fac = dataread->GetValue<double>("CSS_IS_AS_FAC",0.25/0.4);
+  int kfmode = ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
+  double k0sqf = ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
+  double k0sqi = ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
+  double fs_as_fac = ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
+  double is_as_fac = ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   m_kscheme = dataread->GetValue<int>("NLO_CSS_KIN_SCHEME",1);
   std::vector<std::vector<std::string> > helpsvv;
   m_sudakov.SetShower(this);

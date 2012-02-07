@@ -764,6 +764,21 @@ void Initialization_Handler::SetGlobalVariables()
   int cmode=dr.GetValue<int>("METS_CLUSTER_MODE",16);
   rpa->gen.SetVariable("METS_CLUSTER_MODE",ToString(cmode));
   if (cmode!=0) msg_Info()<<METHOD<<"(): Set cluster mode "<<cmode<<".\n";
+  Data_Reader sdr(" ",";","!","=");
+  sdr.AddComment("#");
+  sdr.AddWordSeparator("\t");
+  sdr.SetInputPath(m_path);
+  sdr.SetInputFile(m_showerdat);
+  int kfmode = sdr.GetValue<int>("CSS_KFACTOR_SCHEME",1);
+  double k0sqf = sdr.GetValue<double>("CSS_FS_PT2MIN",1.0);
+  double k0sqi = sdr.GetValue<double>("CSS_IS_PT2MIN",4.0);
+  double fs_as_fac = sdr.GetValue<double>("CSS_FS_AS_FAC",1.5);
+  double is_as_fac = sdr.GetValue<double>("CSS_IS_AS_FAC",0.75);
+  rpa->gen.SetVariable("CSS_KFACTOR_SCHEME",ToString(kfmode));
+  rpa->gen.SetVariable("CSS_FS_PT2MIN",ToString(k0sqf));
+  rpa->gen.SetVariable("CSS_IS_PT2MIN",ToString(k0sqi));
+  rpa->gen.SetVariable("CSS_FS_AS_FAC",ToString(fs_as_fac));
+  rpa->gen.SetVariable("CSS_IS_AS_FAC",ToString(is_as_fac));
 }
 
 bool Initialization_Handler::ExtractValArg
