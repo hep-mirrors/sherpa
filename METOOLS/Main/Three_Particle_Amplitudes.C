@@ -64,7 +64,7 @@ void SFF::Calculate(const Vec4D_Vector& moms, const bool anti)
   p_xyz->Prepare(moms,anti);
   for (int hel1(0);hel1<2;hel1++) {
     for (int hel2(0);hel2<2;hel2++) {
-      amp = p_xyz->Y(m_bar,hel1,m_nonbar,hel2,m_cL,m_cR);
+      amp = p_xyz->Y(m_bar,hel1,m_nonbar,hel2,m_cR,m_cL);
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(0,0));
       spins.push_back(make_pair(1,hel1));
@@ -114,7 +114,7 @@ void SFF_FPI::Calculate(const Vec4D_Vector& moms, const bool anti)
   p_xyz->Prepare(moms,anti);
   for (int hel1(0);hel1<2;hel1++) {
     for (int hel2(0);hel2<2;hel2++) {
-      amp = p_xyz->X(m_bar,hel1,pS,m_nonbar,hel2,m_c,0.);
+      amp = p_xyz->X(m_bar,hel1,pS,m_nonbar,hel2,0.,m_c);
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(0,0));
       spins.push_back(make_pair(m_bar,hel1));
@@ -230,7 +230,7 @@ void VFF::Calculate(const Vec4D_Vector& moms, const bool anti)
   for (int Vpol(0);Vpol<npol;Vpol++) {
     for (int hel1(0);hel1<2;hel1++) {
       for (int hel2(0);hel2<2;hel2++) {
-	amp = p_xyz->X(m_bar,hel1,eps[Vpol],m_nonbar,hel2,m_cL,m_cR);
+	amp = p_xyz->X(m_bar,hel1,eps[Vpol],m_nonbar,hel2,m_cR,m_cL);
 	vector<pair<int,int> > spins;
 	spins.push_back(make_pair(0,Vpol));
 	spins.push_back(make_pair(m_bar,hel1));

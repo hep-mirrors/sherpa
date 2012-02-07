@@ -4,6 +4,7 @@
   ME_SIGNAL_GENERATOR = Comix
   MODEL=SM+TauPi
   FRAGMENTATION=Off
+  AMEGIC_DEFAULT_GAUGE = 10
 }(run)
 (me){
   SCALES          = VAR{sqr(80)}

@@ -35,7 +35,8 @@ void VA_F_F::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   Vec4C amp;
   for(int h0=0; h0<2; h0++) {
     for(int h1=0; h1<2; h1++) {
-      // 0 is "the barred spinor" in the current, 1 is the not-barred one
+      // the first current index in the decay channel file has to be the
+      // "barred spinor" (for the !m_anti case), the second the non-barred one
       amp=factor*F.L(0,h0, 1,h1, m_cR,m_cL);
       vector<pair<int,int> > spins;
       spins.push_back(make_pair(0,h0));

@@ -5,6 +5,7 @@
   MODEL=SM+TauPi
   HIGGS_PARITY=-1
   FRAGMENTATION=Off
+  AMEGIC_DEFAULT_GAUGE = 10
 }(run)
 (me){
   SCALES          = VAR{sqr(120)}

@@ -12,6 +12,8 @@
   STORE_DECAY_RESULTS=1
   ME_QED=Off
   BEAM_REMNANTS=Off
+  AMEGIC_DEFAULT_GAUGE = 10
+  HARD_DECAYS=On
 }(run)
 (me){
   SCALES          = VAR{sqr(80)}

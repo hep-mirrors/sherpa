@@ -299,20 +299,20 @@ Complex XYZFunc::X( const int t1, const Vec4C p2, const int t3,
   Complex mu2 = sqrt(p2*p2)/eta2;
   
   switch( hel_comb ) {
-  case 0:
+  case 0: // ++
     x  = m_mu[t1]*m_mu[t3]*eta2*eta2*cL;
     x += mu2*mu2*m_eta[t1]*m_eta[t3]*cR;
     x += cR*S(+1,t1,p2,eta2)*S(-1,p2,eta2,t3);
     break;
-  case 1:
+  case 1: // +-
     x  = cL*m_mu[t1]*eta2*S(+1,p2,eta2,t3);
     x += cR*m_mu[t3]*eta2*S(+1,t1,p2,eta2);
     break;
-  case 2:
+  case 2: // -+
     x  = cR*m_mu[t1]*eta2*S(-1,p2,eta2,t3);
     x += cL*m_mu[t3]*eta2*S(-1,t1,p2,eta2);
     break;
-  case 3:
+  case 3: // --
     x  = m_mu[t1]*m_mu[t3]*eta2*eta2*cR;
     x += mu2*mu2*m_eta[t1]*m_eta[t3]*cL;
     x += cL*S(-1,t1,p2,eta2)*S(+1,p2,eta2,t3);
@@ -397,7 +397,7 @@ Complex XYZFunc::Z(
 	const int t4, const int l4,
 	const Complex cR1, const Complex cL1, const Complex cR2, const Complex cL2 ) 
 {
-  const int hel_comb = ((1-l1)<<3) + ((1-l2)<<2) + ((1-l3)<<1) + (1-l4);
+  const int hel_comb = (l1<<3) + (l2<<2) + (l3<<1) + l4;
   return m_anti?
     conj(Z(t1,t2,t3,t4,hel_comb,conj(cR1),conj(cL1),conj(cR2),conj(cL2))):
     Z(t1,t2,t3,t4,hel_comb,cR1,cL1,cR2,cL2);
@@ -408,7 +408,7 @@ Complex XYZFunc::Y(
 	const int t2, const int l2,
 	const Complex cR, const Complex cL ) 
 {
-  const int hel_comb = ((1-l1)<<1) + (1-l2);
+  const int hel_comb = (l1<<1) + l2;
   return m_anti?
     conj(Y(t2,t1,hel_comb,conj(cL),conj(cR))):
     Y(t2,t1,hel_comb,cR,cL);
@@ -420,7 +420,7 @@ Complex XYZFunc::X(
                     const int t3, const int l3,
                     const Complex cR, const Complex cL )
 {
-  const int hel_comb = ((1-l1)<<1) + (1-l3);
+  const int hel_comb = (l1<<1) + l3;
   return m_anti?
     conj(X(t3,p2,t1,hel_comb,conj(cR),conj(cL))):
     X(t3,p2,t1,hel_comb,cR,cL);
@@ -443,7 +443,7 @@ Vec4C XYZFunc::L(
 	const int t2, const int l2,
 	const Complex cR, const Complex cL ) 
 {
-  const int hel_comb = ((1-l1)<<1) + (1-l2);
+  const int hel_comb = (l1<<1) + l2;
   return m_anti?
     conj(L(t1,t2,hel_comb,conj(cR),conj(cL))):
     L(t1,t2,hel_comb,cR,cL);

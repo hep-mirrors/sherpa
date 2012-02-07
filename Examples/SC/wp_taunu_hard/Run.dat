@@ -13,6 +13,8 @@
   ME_QED=Off
   BEAM_REMNANTS=Off
   PDF_SET_1=None
+  AMEGIC_DEFAULT_GAUGE = 10
+  HARD_DECAYS=On
 }(run)
 (me){
   SCALES          = VAR{sqr(80)}
