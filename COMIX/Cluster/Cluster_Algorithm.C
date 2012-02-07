@@ -143,6 +143,7 @@ void Cluster_Algorithm::CalculateMeasures
       const Vertex_Vector &in(curs[i]->In()); 
       for (size_t j(0);j<in.size();++j) {
 	if (in[j]->Zero()&&!m_nosol) continue;
+	if (in[j]->JC()->Flav().IsDummy()) continue;
 	if (find(ccurs.begin(),ccurs.end(),in[j]->JA())==ccurs.end()) continue;
 	if (find(ccurs.begin(),ccurs.end(),in[j]->JB())==ccurs.end()) continue;
 	size_t idi(in[j]->JA()->CId()), idj(in[j]->JB()->CId());
@@ -184,6 +185,9 @@ void Cluster_Algorithm::CalculateMeasures
     for (size_t i(1);i<ccurs.size();++i) {
       if (in[j]->JA()==ccurs[i] || in[j]->JB()==ccurs[i]) {
 	if (ccurs[i]->CId()&2) continue;
+	Flavour mofl((in[j]->JA()==ccurs[i]?
+		      in[j]->JB():in[j]->JA())->Flav().Bar());
+	if (mofl.IsDummy()) continue;
 	size_t idi(fcur->CId()), idj(ccurs[i]->CId());
 	msg_Debugging()<<ID(m_id[idi])<<"&"<<ID(m_id[idj])<<": "
 		       <<fcur->Flav()<<","<<ccurs[i]->Flav()<<" -> "
@@ -200,8 +204,6 @@ void Cluster_Algorithm::CalculateMeasures
 	    if (nocl.find(Cluster_Info(in[j],idk))!=nocl.end()) continue;
 	    ColorID colk(p_ampl->Leg(k)->Col());
 	    int cc(ColorConnected(coli,colj,colk));
-	    Flavour mofl((in[j]->JA()==ccurs[i]?
-			  in[j]->JB():in[j]->JA())->Flav().Bar());
 	    if (p_ampl->Legs().size()==4 ||
 		(in[j]->OrderQCD()==0?
 		 EWConnected(mofl,p_ampl->Leg(k)->Flav()):cc)) {
@@ -459,7 +461,7 @@ bool Cluster_Algorithm::Cluster
   if (p_bg==NULL) THROW(fatal_error,"Internal error");
   Selector_Base *jf=p_xs->Selector()
     ->GetSelector("Jetfinder");
-  msg_Debugging()<<METHOD<<"(): {\n";
+  msg_Debugging()<<METHOD<<"(mode = "<<mode<<"): {\n";
   msg_Indent();
   m_id.clear();
   Current_Vector ccurs(p_bg->Currents()[1]);
