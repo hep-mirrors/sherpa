@@ -18,7 +18,7 @@ namespace POWHEG {
   class Sudakov : public Splitting_Function_Group {
     double m_k0sqi, m_k0sqf, m_phi;
     double m_deltaz, m_kperp2, m_z, m_y, m_ymin, m_ymax, m_scale;
-    double m_as_is_fac,m_as_fs_fac,m_zmin,m_zmax, m_weight;
+    double m_zmin,m_zmax, m_weight;
     int m_ewmode;
     PDF::PDF_Base         *  p_pdf[2];
     ATOOLS::Mass_Selector *  p_rms;
@@ -52,8 +52,6 @@ namespace POWHEG {
     void SetRB(ATOOLS::RB_Map *const rbmap);
 
     inline void GetSplittingParameters(double &,double &,double &,double &);
-    inline double FSCplFac() const { return m_as_fs_fac; }
-    inline double ISCplFac() const { return m_as_is_fac; }
 
     inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_rms=ms; }
 

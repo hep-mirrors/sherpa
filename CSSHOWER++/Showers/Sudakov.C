@@ -121,7 +121,6 @@ void Sudakov::SetCoupling(MODEL::Model_Base *md,
 {
   m_k0sqi=k0sqi;
   m_k0sqf=k0sqf;
-  m_as_is_fac=m_as_fs_fac=std::numeric_limits<double>::max();
   for (std::vector<Splitting_Function_Base*>::iterator
 	 sit(m_splittings.begin());sit!=m_splittings.end();)
     if (!(*sit)->Coupling()->SetCoupling(md,m_k0sqi,m_k0sqf,isfac,fsfac)) {
@@ -129,9 +128,6 @@ void Sudakov::SetCoupling(MODEL::Model_Base *md,
       sit=m_splittings.erase(sit);
     }
     else {
-      if ((*sit)->GetType()==cstp::FF || (*sit)->GetType()==cstp::FI)
-	m_as_fs_fac=Min(m_as_fs_fac,(*sit)->Coupling()->CplFac(m_k0sqf));
-      else m_as_is_fac=Min(m_as_is_fac,(*sit)->Coupling()->CplFac(m_k0sqi));
       ++sit;
     }
   for (std::vector<Splitting_Function_Base*>::iterator
@@ -408,11 +404,11 @@ bool Sudakov::DefineFIBoundaries(double Q2,double x,int beam)
   double xmax = Min(0.999999,p_pdf[beam]->XMax()); 
   double xmin = Max(1.e-6,p_pdf[beam]->XMin());
   if (x>=xmax || x<=xmin)                                   return false;
-  if (m_k0sqi*x>Q2*(1.-x))                                   return false;
+  if (m_k0sqf*x>Q2*(1.-x))                                   return false;
   if (Q2<=p_pdf[beam]->Q2Min() || Q2>=p_pdf[beam]->Q2Max()) return false;
   
   m_type=cstp::FI;
-  double deltaz(1.0-4.0*Min(1.0,x/(1.0-x))*(m_k0sqi/Q2));
+  double deltaz(1.0-4.0*Min(1.0,x/(1.0-x))*(m_k0sqf/Q2));
   if (deltaz<0.0) return false;
   deltaz=sqrt(deltaz);
   m_zmin   = 0.5*(1.0-deltaz);
