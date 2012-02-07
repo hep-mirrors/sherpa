@@ -39,7 +39,7 @@ MCatNLO_Process::MCatNLO_Process
   if (!ref) {
     ref=true;
     rpa->gen.AddCitation
-      (1,"The automation of MCatNLO is published in \\cite{Hoeche:2010pf}.");
+      (1,"The automation of MCatNLO is published in \\cite{Hoeche:2011fd}.");
   }
   m_wassevent=false;
 }
