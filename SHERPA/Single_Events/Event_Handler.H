@@ -26,10 +26,8 @@ namespace SHERPA {
     Event_Handler();
     ~Event_Handler();
 
-    void                  AddEventPhase(Event_Phase_Handler *);
-    Event_Phase_Handler * GetEventPhase(const size_t);
-    size_t                NumberOfEventPhases();
-    void                  EmptyEventPhases();
+    void AddEventPhase(Event_Phase_Handler *);
+    void EmptyEventPhases();
 
     void PrintGenericEventStructure();
 

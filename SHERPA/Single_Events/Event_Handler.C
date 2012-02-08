@@ -48,22 +48,6 @@ void Event_Handler::AddEventPhase(Event_Phase_Handler * phase)
   p_phases->push_back(phase);
 }
 
-Event_Phase_Handler * Event_Handler::GetEventPhase(const size_t i) {
-  if (i<p_phases->size()) {
-    size_t count=i;
-    for (Phase_Iterator pit=p_phases->begin();pit<p_phases->end();pit++) {
-      if (count==0) return (*pit);
-      count--;
-    }
-  }
-  msg_Error()<<"Error in Event_Handler::GetEventPhase("<<i<<")"<<std::endl
-	     <<"   Out of bounds, only "<<p_phases->size()<<" event phases."<<std::endl
-	     <<"   Will return NULL."<<std::endl;
-  return NULL;
-}
-
-size_t Event_Handler::NumberOfEventPhases() { return p_phases->size(); }
-
 void Event_Handler::EmptyEventPhases() 
 {
   if (p_phases) {
