@@ -64,7 +64,7 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
 {
   p_cpl=(MODEL::Running_AlphaS*)md->GetScalarFunction("alpha_S");
   m_cplfac=((m_type/10==1)?fsfac:isfac);
-  m_cplmax.push_back((*p_cpl)(m_type==11?k0sqf:k0sqi)*m_q);
+  m_cplmax.push_back((*p_cpl)(m_type/10==1?k0sqf:k0sqi)*m_q);
   m_cplmax.push_back(0.0);
   return true;
 }

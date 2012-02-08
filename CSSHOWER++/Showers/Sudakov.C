@@ -309,8 +309,7 @@ bool Sudakov::Generate(Parton * split)
     SelectOne();
     split->SetSpect(p_selected->SelectSpec());
     m_z = Z();
-    double k0sq(p_split->GetType()==pst::IS||
-		p_split->GetSpect()->GetType()==pst::IS?m_k0sqi:m_k0sqf);
+    double k0sq(p_split->GetType()==pst::IS?m_k0sqi:m_k0sqf);
     if (m_kperp2<k0sq)  return false;
     double Q2 = 0.;
     m_type=split->GetType()==pst::FS?
