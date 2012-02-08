@@ -27,6 +27,8 @@ AC_SUBST(AM_FFLAGS)
 FORTRANLIBADD="$FCLIBS"
 AC_SUBST(FORTRANLIBADD)
 
+CXX="$CXX -Wl,--no-as-needed"
+
 AM_PROG_LIBTOOL
 dnl Checks for header files.
 AC_HEADER_STDC
