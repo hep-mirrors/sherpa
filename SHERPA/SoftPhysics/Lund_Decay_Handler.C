@@ -5,6 +5,7 @@
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Exception.H"
 #ifdef USING__PYTHIA
 #include "SHERPA/LundTools/Lund_Interface.H"
 #endif
