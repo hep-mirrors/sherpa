@@ -5,7 +5,9 @@
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#ifdef USING__PYTHIA
 #include "SHERPA/LundTools/Lund_Interface.H"
+#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -17,6 +19,7 @@ Lund_Decay_Handler::Lund_Decay_Handler(Lund_Interface* lund,
                                        string path, string fragfile) :
   Decay_Handler_Base(), p_lund(lund)
 {
+#ifdef USING__PYTHIA
   Data_Reader dr(" ",";","!","=");
   dr.AddWordSeparator("\t");
   dr.SetInputPath(path);
@@ -46,6 +49,9 @@ Lund_Decay_Handler::Lund_Decay_Handler(Lund_Interface* lund,
   m_spincorr=false;
 
   p_decaymap=NULL;
+#else
+  THROW(fatal_error, "DECAYMODEL=Lund needs configure option --enable-pythia.");
+#endif
 }
 
 Lund_Decay_Handler::~Lund_Decay_Handler()
@@ -55,11 +61,16 @@ Lund_Decay_Handler::~Lund_Decay_Handler()
 Amplitude2_Tensor*
 Lund_Decay_Handler::FillOnshellDecay(Blob *blob, Spin_Density* sigma)
 {
+#ifdef USING__PYTHIA
   DEBUG_FUNC("");
 
-  p_lund->PerformDecay(blob);
+  if (p_lund->PerformDecay(blob) != Return_Value::Success) {
+    PRINT_INFO("Lund decay failed. Retrying event.");
+    throw Return_Value::Retry_Event;
+  }
 
   DEBUG_VAR(*blob);
+#endif
   return NULL;
 }
 
@@ -104,5 +115,9 @@ void Lund_Decay_Handler::SetPosition(ATOOLS::Blob* blob)
 
 bool Lund_Decay_Handler::CanDecay(const ATOOLS::Flavour& flav)
 {
+#ifdef USING__PYTHIA
   return p_lund->IsAllowedDecay(flav.Kfcode());
+#else
+  return false;
+#endif
 }
