@@ -4,6 +4,8 @@
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/SoftPhysics/Beam_Remnant_Handler.H"
 #include "SHERPA/SoftPhysics/Fragmentation_Handler.H"
+#include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
+#include "SHERPA/SoftPhysics/Lund_Decay_Handler.H"
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
 #include "SHERPA/LundTools/Lund_Interface.H"
@@ -679,7 +681,16 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   }
   else if ((decmodel==string("Lund")) ) {
 #ifdef USING__PYTHIA
-    THROW(not_implemented, "Lund hadron decays not implemented.");
+    as->SetActiveAs(isr::hard_subprocess);
+    Lund_Interface * lund(NULL);
+    if (p_fragmentation->GetLundInterface()==NULL) {
+      string lfile = dr.GetValue<string>("LUND_FILE","Lund.dat");
+      lund = new Lund_Interface(m_path,lfile);
+    }
+    else lund = p_fragmentation->GetLundInterface();
+    Lund_Decay_Handler* hd=new Lund_Decay_Handler(lund,m_path,m_hadrondecaysdat);
+    as->SetActiveAs(isr::hard_process);
+    p_hdhandler=hd;
 #else
     THROW(fatal_error, string("Pythia not enabled during compilation. ")+
           "Use the configure option --enable-pythia to enable it.");

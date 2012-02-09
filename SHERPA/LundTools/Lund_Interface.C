@@ -280,8 +280,7 @@ Return_Value::code Lund_Interface::Hadronize(Blob_List *bloblist)
 
 Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
 {
-  if (!blob->Has(blob_status::needs_hadrondecays) ||
-      blob->NInP()!=1 ||
+  if (blob->NInP()!=1 ||
       blob->InParticle(0)->Status()!=part_status::active)
   {
     msg_Error()<<METHOD<<" returns Error."<<endl;
@@ -512,7 +511,7 @@ void Lund_Interface::FillOutgoingParticlesInBlob(Blob *blob)
     particle = new Particle(-1,flav,momentum);
     particle->SetNumber(0);
     particle->SetStatus(part_status::active);
-    particle->SetInfo('P');
+    particle->SetInfo('D');
     particle->SetFinalMass(hepevt.phep[j][4]);
     blob->AddToOutParticles(particle);
     

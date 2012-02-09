@@ -56,6 +56,7 @@ namespace SHERPA {
     inline void SetBlobList(ATOOLS::Blob_List* bl) { p_bloblist=bl; }
     inline bool SpinCorr() { return m_spincorr; }
     virtual bool Decays(const ATOOLS::Flavour& flav);
+    virtual bool CanDecay(const ATOOLS::Flavour& flav);
     inline PHASIC::Decay_Map* DecayMap() { return p_decaymap; }
   };
 

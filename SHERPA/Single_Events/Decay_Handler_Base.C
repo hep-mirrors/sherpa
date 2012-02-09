@@ -239,7 +239,7 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
   random_shuffle(daughters.begin(), daughters.end(), *ran);
   for (PVIt it=daughters.begin();it!=daughters.end();++it) {
     if (Decays((*it)->Flav())) {
-      if (!p_decaymap->Knows(inpart->Flav())) {
+      if (!CanDecay(inpart->Flav())) {
         msg_Error()<<METHOD<<" Particle '"<<inpart->Flav()<<"' set unstable, "
                    <<"but decay handler doesn't know how to deal with it.";
         throw Return_Value::Retry_Event;
@@ -270,7 +270,7 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
       if (m_spincorr) DEBUG_VAR(*amps);
     }
     else {
-      if (!p_decaymap->Knows(inpart->Flav())) {
+      if (!CanDecay(inpart->Flav())) {
         msg_Error()<<METHOD<<" Particle '"<<inpart->Flav()<<"' set unstable, "
                    <<"but decay handler doesn't know how to deal with it."
                    <<endl<<*blob<<endl;
@@ -424,7 +424,7 @@ Cluster_Amplitude* Decay_Handler_Base::ClusterConfiguration(Blob *const bl)
 
 void Decay_Handler_Base::CleanUp()
 {
-  p_decaymap->ResetCounters();
+  if (p_decaymap) p_decaymap->ResetCounters();
 }
 
 bool Decay_Handler_Base::Decays(const ATOOLS::Flavour& flav)
@@ -432,4 +432,10 @@ bool Decay_Handler_Base::Decays(const ATOOLS::Flavour& flav)
   if (!flav.IsOn()) return false;
   if (flav.IsStable()) return false;
   return true;
+}
+
+bool Decay_Handler_Base::CanDecay(const ATOOLS::Flavour& flav)
+{
+  if (p_decaymap) return p_decaymap->Knows(flav);
+  else return false;
 }

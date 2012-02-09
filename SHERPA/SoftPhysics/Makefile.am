@@ -9,6 +9,7 @@ libSherpaSoftPhysics_la_SOURCES	      =	\
 					Beam_Remnant_Handler.C \
 				   	Fragmentation_Handler.C \
 					Hadron_Decay_Handler.C \
+					Lund_Decay_Handler.C \
 					Soft_Photon_Handler.C
 
 localinc_HEADERS      =	\
@@ -16,4 +17,5 @@ localinc_HEADERS      =	\
 			Beam_Remnant_Handler.H \
 		 	Fragmentation_Handler.H \
 			Hadron_Decay_Handler.H \
+                        Lund_Decay_Handler.H \
 			Soft_Photon_Handler.H

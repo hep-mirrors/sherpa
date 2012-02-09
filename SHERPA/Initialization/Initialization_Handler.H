@@ -9,7 +9,6 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
-#include "SHERPA/SoftPhysics/Hadron_Decay_Handler.H"
 #include "SHERPA/Tools/Analysis_Interface.H"
 
 #include <map>
@@ -27,7 +26,7 @@ namespace SHERPA {
   class Hard_Decay_Handler;
   class Beam_Remnant_Handler;
   class Fragmentation_Handler;
-  class Hadron_Decay_Handler;
+  class Decay_Handler_Base;
   class MI_Handler;
   class Soft_Photon_Handler;
   class Lund_Interface;
@@ -60,7 +59,7 @@ namespace SHERPA {
     Shower_Handler_Map           m_showerhandlers;
     Beam_Remnant_Handler       * p_beamremnants;
     Fragmentation_Handler      * p_fragmentation;
-    Hadron_Decay_Handler         * p_hdhandler;
+    Decay_Handler_Base         * p_hdhandler;
     MI_Handler                 * p_mihandler; 
     Soft_Photon_Handler        * p_softphotons;
     Input_Output_Handler       * p_iohandler;
@@ -107,7 +106,7 @@ namespace SHERPA {
     const std::string & EvtFile() const { return m_evtfile; }
 
     Matrix_Element_Handler       * GetMatrixElementHandler()  const { return p_mehandler; }
-    Hadron_Decay_Handler         * GetHDHandler() { return p_hdhandler; }
+    Decay_Handler_Base           * GetHDHandler() { return p_hdhandler; }
     inline PDF::ISR_Handler      * GetISRHandler(const PDF::isr::id id) { return m_isrhandlers[id]; }
     Analysis_Vector              * GetAnalyses()                    { return &m_analyses;       }
     MODEL::Model_Base            * GetModel()                 const { return p_model;           }
