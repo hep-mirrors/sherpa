@@ -57,6 +57,8 @@ Sherpa::~Sherpa()
   exh->MPISync();
   delete ATOOLS::msg;
   delete ATOOLS::exh;
+  for (KF_Table::const_iterator kfit(s_kftable.begin());kfit!=s_kftable.end();++kfit)
+    delete kfit->second;
   ATOOLS::s_kftable.clear();
 }
 
