@@ -78,11 +78,8 @@ void Event_Handler::PrintGenericEventStructure()
 void Event_Handler::Reset()
 {
   m_sblobs.Clear();
-  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-    if ((*pit)->Type()!=eph::Perturbative ||
-	(*pit)->Name().find("Signal_Processes")==std::string::npos) 
-      (*pit)->CleanUp();
-  }
+  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit)
+    (*pit)->CleanUp();
   m_blobs.Clear();
   if (Particle::Counter()>m_lastparticlecounter || 
       Blob::Counter()>m_lastblobcounter) {
