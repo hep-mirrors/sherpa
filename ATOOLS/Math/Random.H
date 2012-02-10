@@ -85,6 +85,18 @@ namespace ATOOLS {
     ptrdiff_t operator() (ptrdiff_t max);
     // produce two Gaussian distributed random number using active Generator
     void   Gaussian(double &,double &);
+    // produce Poissonian distributed random number using active Generator
+    inline double Poissonian(const double & lambda) {
+      if(lambda>500.) {
+	double u = Get();
+	double v = Get();
+	return int(lambda*sqrt(-2.*log(u))*cos(2.*M_PI*v)+lambda);
+      }
+      double disc(std::exp(-lambda)),p(1.);
+      int N(0);
+      while ((p*=Get())>disc) N++; 
+      return N;
+    }
 
     inline double Theta() { return acos(2.*Get()-1.); }  
     double        GetNZ();

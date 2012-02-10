@@ -1,29 +1,29 @@
 # outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
 
 # leptonic
-{16,11,-12}	 | 0.1784	 | tau-_nu_taunu_ebe-.dat;
+{16,11,-12}	 | 0.1785	 | tau-_nu_taunu_ebe-.dat;
 {16,13,-14}	 | 0.1736	 | tau-_nu_taunu_mubmu-.dat;
 
 # modes with 1 pseudoscalar
-{16,-211}	 | 0.1106	 | tau-_pi-nu_tau.dat;
-{16,-321}	 | 0.00686	 | tau-_K-nu_tau.dat;
+{16,-211}	 | 0.109	 | tau-_pi-nu_tau.dat;
+{16,-321}	 | 0.00696	 | tau-_K-nu_tau.dat;
 
 # modes with 2 pseudoscalar
-{16,-211,111}	 | 0.2542	 | tau-_pi-pinu_tau.dat;
-{16,-321,310}	 | 0.00077	 | tau-_K-KSnu_tau.dat;
-{16,-321,130}	 | 0.00077	 | tau-_K-KLnu_tau.dat;
-{16,-211,310}	 | 0.00445	 | tau-_KSpi-nu_tau.dat;
-{16,-211,130}	 | 0.00445	 | tau-_pi-KLnu_tau.dat;
+{16,-211,111}	 | 0.255	 | tau-_pi-pinu_tau.dat;
+{16,-321,310}	 | 0.0007	 | tau-_K-KSnu_tau.dat;
+{16,-321,130}	 | 0.0007	 | tau-_K-KLnu_tau.dat;
+{16,-211,310}	 | 0.0042	 | tau-_KSpi-nu_tau.dat;
+{16,-211,130}	 | 0.0042	 | tau-_pi-KLnu_tau.dat;
 {16,-321,111}	 | 0.0045	 | tau-_K-pinu_tau.dat;
 
 # modes with 3 pseudoscalars
 {16,-211,111,111}	 | 0.0917	 | tau-_pi-pipinu_tau.dat;
-{16,211,-211,-211}	 | 0.0916	 | tau-_pi+pi-pi-nu_tau.dat;
+{16,211,-211,-211}	 | 0.0932	 | tau-_pi+pi-pi-nu_tau.dat;
 {16,-211,310,111}	 | 0.00185	 | tau-_KSpi-pinu_tau.dat;
 {16,-211,130,111}	 | 0.00185	 | tau-_pi-KLpinu_tau.dat;
-{16,-321,211,-211}	 | 0.0033	 | tau-_K-pi+pi-nu_tau.dat;
+{16,-321,211,-211}	 | 0.00342	 | tau-_K-pi+pi-nu_tau.dat;
 {16,111,111,-321}	 | 0.00058	 | tau-_K-pipinu_tau.dat;
-{16,-321,321,-211}	 | 0.00155	 | tau-_K+K-pi-nu_tau.dat;
+{16,-321,321,-211}	 | 0.00146	 | tau-_K+K-pi-nu_tau.dat;
 {16,-321,310,111}	 | 0.000755	 | tau-_K-KSpinu_tau.dat;
 {16,-321,130,111}	 | 0.000755	 | tau-_K-KLpinu_tau.dat;
 {16,-211,310,130}	 | 0.00055	 | tau-_KSpi-KLnu_tau.dat;
@@ -32,8 +32,8 @@
 {16,-321,-321,321}	 | 3.7e-5	 | tau-_K+K-K-nu_tau.dat;
 
 # modes with 4 pseudoscalars
-{16,211,-211,-211,111}	 | 0.0425	 | tau-_pi+pi-pi-pinu_tau.dat;
-{16,-211,111,111,111}	 | 0.0108	 | tau-_pi-pipipinu_tau.dat;
+{16,211,-211,-211,111}	 | 0.045	 | tau-_pi+pi-pi-pinu_tau.dat;
+{16,-211,111,111,111}	 | 0.0104	 | tau-_pi-pipipinu_tau.dat;
 {16,-321,111,111,111}	 | 0.00038	 | tau-_K-pipipinu_tau.dat;
 {16,310,-211,111,111}	 | 0.000312	 | tau-_KSpi-pipinu_tau.dat;
 {16,130,-211,111,111}	 | 0.000312	 | tau-_pi-KLpipinu_tau.dat;
@@ -52,4 +52,4 @@
 
 # modes with 6 pseudoscalars
 {16,-211,-211,211,111,111,111}	 | 0.002748	 | tau-_pi+pi-pi-pipipinu_tau.dat;
-{16,-211,-211,-211,211,211,111}	 | 0.000181	 | tau-_pi+pi+pi-pi-pi-pinu_tau.dat;
+{16,-211,-211,-211,211,211,111}	 | 0.00102	 | tau-_pi+pi+pi-pi-pi-pinu_tau.dat;

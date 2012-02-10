@@ -29,6 +29,7 @@ libSherpaTools_la_SOURCES     =	\
 				RootNtuple_Reader.C
 
 localinc_HEADERS      =	\
+			Definitions.H \
 			Input_Output_Handler.H \
 			Output_Base.H \
 			Output_Sherpa.H \
@@ -44,7 +45,7 @@ localinc_HEADERS      =	\
 			Analysis_Interface.H \
 			RootNtuple_Reader.H
 
-libSherpaTools_la_LIBADD = @CONDITIONAL_ROOTLIBS@
+libSherpaTools_la_LIBADD = @CONDITIONAL_ROOTLIBS@ @CONDITIONAL_HEPMC2LIBS@
 
 libSherpaTools_la_CXXFLAGS = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
 

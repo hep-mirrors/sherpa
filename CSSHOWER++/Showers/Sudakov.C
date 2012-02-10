@@ -228,12 +228,25 @@ bool Sudakov::Generate(Parton * split)
   m_weight=1.0;
   ClearSpecs();
   ResetLastInt();
-  m_cfl = split->GetFlavour();
-  
-  m_type     = cstp::none;
+  m_cfl  = split->GetFlavour();
+  m_type = cstp::none;
   std::vector<Parton*> slist;
-  if (split->GetLeft()) slist.push_back(split->GetLeft());
-  if (split->GetRight()) slist.push_back(split->GetRight());
+  msg_Tracking()<<"---- "<<METHOD<<":\n"
+	   <<"   Check spectators for [type = "<<split->GetType()<<"]"
+	   <<" ("<<split->GetFlow(1)<<", "<<split->GetFlow(2)<<").\n";
+  if (split->GetLeft() && split!=split->GetLeft())  {
+    slist.push_back(split->GetLeft());
+    msg_Tracking()<<"   --> add left: "<<split->GetLeft()->GetType()
+	     <<" ("<<split->GetLeft()->GetFlow(1)<<", "
+	     <<split->GetLeft()->GetFlow(2)<<").\n";
+  }
+  if (split->GetRight() && split!=split->GetRight()) {
+    slist.push_back(split->GetRight());
+    msg_Tracking()<<"   --> add right: "<<split->GetRight()->GetType()
+	     <<" ("<<split->GetRight()->GetFlow(1)<<", "
+	     <<split->GetRight()->GetFlow(2)<<").\n";
+  }
+  msg_Tracking()<<"   ===> found "<<slist.size()<<" spectator(s).\n";
   int sc=split->GetFlavour().IntCharge();
   if (split->GetType()==pst::IS) sc=-sc;
   if (sc!=0 || split->GetFlavour().IsPhoton() ||
@@ -389,9 +402,11 @@ bool Sudakov::DefineFFBoundaries(double Q2,double x)
   m_zmin   = 0.5*(1.-deltaz);
   m_zmax   = 0.5*(1.+deltaz);
   m_scale  = p_split->KtStart();
-  if (OverIntegrated(m_zmin,m_zmax,m_scale,Q2)<0.) {
-    msg_Error()<<"Error in Sudakov::DefineFFBoundaries : "<<endl
-    	       <<"   Integral for SF's<0 : {"<<m_zmin<<","<<m_zmax<<","<<m_scale<<"}"<<endl;
+  double over(OverIntegrated(m_zmin,m_zmax,m_scale,Q2));
+  if (over<0. || IsNan(over)) {
+    msg_Error()<<"Error in "<<METHOD<<"\n"
+    	       <<"   Integral for SF's<0 :"
+	       <<"{"<<m_zmin<<","<<m_zmax<<","<<m_scale<<"}"<<endl;
     return false;
   }
   return true;
@@ -413,9 +428,11 @@ bool Sudakov::DefineFIBoundaries(double Q2,double x,int beam)
   m_zmin   = 0.5*(1.0-deltaz);
   m_zmax   = 0.5*(1.0+deltaz);
   m_scale  = p_split->KtStart();
-  if (OverIntegrated(m_zmin,m_zmax,m_scale,x,beam)<0.) {
-    msg_Error()<<"Error in Sudakov::DefineFIBoundaries : "<<endl
-	       <<"   Integral for SF's<0 : {"<<m_zmin<<","<<m_zmax<<","<<m_scale<<"}"<<endl;
+  double over(OverIntegrated(m_zmin,m_zmax,m_scale,x,beam));
+  if (over<0. || IsNan(over)) {
+    msg_Error()<<"Error in "<<METHOD<<"\n"
+    	       <<"   Integral for SF's<0 :"
+	       <<"{"<<m_zmin<<","<<m_zmax<<","<<m_scale<<"}"<<endl;
     return false;
   }
   return true;
@@ -435,9 +452,11 @@ bool Sudakov::DefineIFBoundaries(double Q2,double x,int beam)
   m_zmax   = Q2/(Q2+m_k0sqi);
   if (m_zmin>m_zmax) return false;
   m_scale  = p_split->KtStart();
-  if (OverIntegrated(m_zmin,m_zmax,m_scale,x,beam)<0.) {
-    msg_Error()<<"Error in Sudakov::DefineIFBoundaries : "<<endl
-	       <<"   Integral for SF's<0 : {"<<m_zmin<<","<<m_zmax<<","<<m_scale<<"}"<<endl;
+  double over(OverIntegrated(m_zmin,m_zmax,m_scale,x,beam));
+  if (over<0. || IsNan(over)) {
+    msg_Error()<<"Error in "<<METHOD<<"\n"
+    	       <<"   Integral for SF's<0 :"
+	       <<"{"<<m_zmin<<","<<m_zmax<<","<<m_scale<<"}"<<endl;
     return false;
   }
   return true;
@@ -457,9 +476,11 @@ bool Sudakov::DefineIIBoundaries(double Q2,double x,int beam)
   m_zmax   = Q2/(Q2+m_k0sqi);
   if (m_zmin>m_zmax) return false;
   m_scale  = p_split->KtStart();
-  if (OverIntegrated(m_zmin,m_zmax,m_scale,x,beam)<0.) {
-    msg_Error()<<"Error in Sudakov::DefineIIBoundaries : "<<endl
-	       <<"   Integral for SF's<0 : {"<<m_zmin<<","<<m_zmax<<","<<m_scale<<"}"<<endl;
+  double over(OverIntegrated(m_zmin,m_zmax,m_scale,x,beam));
+  if (over<0. || IsNan(over)) {
+    msg_Error()<<"Error in "<<METHOD<<"\n"
+    	       <<"   Integral for SF's<0 :"
+	       <<"{"<<m_zmin<<","<<m_zmax<<","<<m_scale<<"}"<<endl;
     return false;
   }
   return true;
@@ -589,8 +610,8 @@ bool Sudakov::Splitting(double Q2,double x) {
   }
   else {
     m_weight*=1.0/efac;
-    return true;
   }
+  return true;
 }
 
 const SF_E_Map *Sudakov::HasKernel(const ATOOLS::Flavour &fli,

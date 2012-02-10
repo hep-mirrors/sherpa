@@ -49,15 +49,17 @@ void Colour_Reconnections::Two_Singlet_CR(Cluster_List * cl1,Cluster_List * cl2)
 
 bool Colour_Reconnections::TestClusters(Cluster * cl1,Cluster * cl2,int gen)
 {
-  double kinweight = KinematicWeight(cl1->GetTrip()->m_mom,cl1->GetAnti()->m_mom,
-				     cl2->GetTrip()->m_mom,cl2->GetAnti()->m_mom);
+  double kinweight = 
+    KinematicWeight(cl1->GetTrip()->m_mom,cl1->GetAnti()->m_mom,
+		    cl2->GetTrip()->m_mom,cl2->GetAnti()->m_mom);
   double colweight = ColourWeight(gen);
   if (kinweight*colweight>ran->Get()) return true;
   return false;
 }
 
-double Colour_Reconnections::KinematicWeight(const Vec4D & mom1,const Vec4D & mom2,
-					     const Vec4D & mom3,const Vec4D & mom4)
+double Colour_Reconnections::
+KinematicWeight(const Vec4D & mom1,const Vec4D & mom2,
+		const Vec4D & mom3,const Vec4D & mom4)
 {
   switch (m_kinmode) {
   case 2:
@@ -72,8 +74,8 @@ double Colour_Reconnections::KinematicWeight(const Vec4D & mom1,const Vec4D & mo
     m_w14 = m_w23 = 1.e64;
     break;
   }
-  double w1234 = m_t0/(m_t0+4.*sqr(m_w12+m_w34));
-  double w1423 = m_t0/(m_t0+4.*sqr(m_w14+m_w23));
+  double w1234 = m_t0/(m_t0+4.*m_w12*m_w34);
+  double w1423 = m_t0/(m_t0+4.*m_w14*m_w23);
 
   return w1423/(w1234+w1423);
 }
@@ -83,8 +85,8 @@ double Colour_Reconnections::ColourWeight(int gen) {
   switch (m_colmode) {
   case 1:
     if (gen==0) return 0.;
-    if (gen==1) return 1./9.;
-    return pow(1./9.,gen); 
-  default: return 0.;
+    if (gen==1) return 1.;
+    return pow(1./9.,gen-1); 
+  default: return 1.;
   }
 }

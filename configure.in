@@ -152,6 +152,13 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
           PHOTONS++/PhaseSpace/Makefile \
           PHOTONS++/MEs/Makefile \
 	  PHOTONS++/Makefile \
+	  SINIC++/Makefile \
+	  SINIC++/Main/Makefile \
+	  SINIC++/Event_Generation/Makefile \
+	  SINIC++/Beam_Remnants/Makefile \
+	  SINIC++/Cross_Sections/Makefile \
+	  SINIC++/Eikonals/Makefile \
+	  SINIC++/Tools/Makefile \
 	  SHERPA/Tools/Makefile \
 	  SHERPA/LundTools/Makefile \
 	  SHERPA/LundTools/pythia-6.4.18.f \

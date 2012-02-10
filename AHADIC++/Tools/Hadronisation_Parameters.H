@@ -4,8 +4,8 @@
 #include "AHADIC++/Tools/Constituents.H"
 #include "AHADIC++/Tools/Hadron_Multiplet.H"
 #include "AHADIC++/Tools/Transitions.H"
-#include "AHADIC++/Tools/Strong_Coupling.H"
 #include "AHADIC++/Tools/Dipole_Splitter.H"
+#include "MODEL/Main/Strong_Coupling.H"
 #include "ATOOLS/Math/Vector.H"
 
 #include <map>
@@ -31,8 +31,8 @@ namespace AHADIC {
     leading::code            m_leading;
     PTOrder::code            m_ptorder;
     ZForm::code              m_zform;
-    asform::code             m_asform;
-    Strong_Coupling        * p_coupling; 
+    bool                     m_ana;
+    MODEL::Strong_Coupling * p_coupling; 
     Dipole_Splitter        * p_splitter;
 
     StringDoubleMap          m_parametermap;
@@ -45,12 +45,13 @@ namespace AHADIC {
 
     void   Init(std::string,std::string);
     double Get(std::string keyword);
+    const bool & AnaOn() const { return m_ana; }
 
     Constituents           * GetConstituents()       { return p_constituents;      }
     All_Hadron_Multiplets  * GetMultiplets()         { return p_multiplets;        }
     Single_Transitions     * GetSingleTransitions()  { return p_singletransitions; }
     Double_Transitions     * GetDoubleTransitions()  { return p_doubletransitions; }
-    Strong_Coupling        * GetCoupling()           { return p_coupling;          }
+    MODEL::Strong_Coupling * GetCoupling()           { return p_coupling;          }
     Dipole_Splitter        * GetSplitter()           { return p_splitter;          }
     Soft_Cluster_Handler   * GetSoftClusterHandler() { return p_softclusters;      }
 

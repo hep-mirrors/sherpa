@@ -290,14 +290,12 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
   Blob         * hardblob, * showerblob, * hadronblob;
   bool           fhard, fshower, fhadron;
 
-  hardblob         = new Blob();
-  hardblob->SetType(btp::Signal_Process);
+  hardblob         = blobs->FindFirst(btp::Signal_Process);
   hardblob->SetTypeSpec(m_generator);
   hardblob->SetId();
   hardblob->SetPosition(Vec4D(0.,0.,0.,0.));
   hardblob->SetStatus(blob_status::code(30));
   hardblob->SetWeight(m_weight);
-  blobs->push_back(hardblob);
   hardblob->AddData("ME_Weight",new Blob_Data<double>(m_weight));
 
   showerblob         = new Blob();

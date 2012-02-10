@@ -65,7 +65,8 @@ bool Proto_Particle::CheckConsistency(std::ostream & s,std::string method) {
 std::ostream & AHADIC::operator<<(std::ostream & s, const Proto_Particle& proto) {
   s<<"   "<<proto.m_info<<" : "<<proto.m_flav<<" "<<proto.m_mom
    <<" "<<sqrt(ATOOLS::Max(0.,proto.m_mom.Abs2()))
-   <<", kt_max = "<<sqrt(ATOOLS::Max(0.,proto.m_kt2max))<<std::endl;
+   <<", kt_max = "<<sqrt(ATOOLS::Max(0.,proto.m_kt2max))<<", "
+   <<"pt = "<<proto.m_mom.PPerp()<<", y = "<<proto.m_mom.Y()<<std::endl;
   return s;
 }
 
@@ -127,9 +128,10 @@ void Cluster::Update()
       ((p_anti->m_flav.IsQuark() && p_anti->m_flav.IsAnti()) || 
        (p_anti->m_flav.IsDiQuark() && !p_anti->m_flav.IsAnti()))) return;
 
-  msg_Error()<<"Error in Cluster::Cluster("<<p_trip->m_flav<<","<<p_anti->m_flav<<") :"<<std::endl
-	     <<"   Cannot handle this colour structure, will abort the run."<<std::endl
-	     <<"   Please contact the Sherpa group for further assistance."<<std::endl;
+  msg_Error()
+    <<"Error in Cluster::Cluster("<<p_trip->m_flav<<","<<p_anti->m_flav<<") :\n"
+    <<"   Cannot handle this colour structure, will abort the run.\n"
+    <<"   Please contact the Sherpa group for further assistance.";
   exit(0);
 }
 
@@ -148,8 +150,8 @@ bool Cluster::CheckConsistency(std::ostream & s,std::string method) {
     Vec4D check(Momentum()-p_left->Momentum()-p_right->Momentum());
     if (!IsZero(check.Abs2()) || !IsZero(check[0]/1.e6)) {
       s<<"Error in "<<METHOD<<" called by "<<method<<":"<<std::endl
-       <<"   Four-momentum not conserved: "<<check<<" ("<<check.Abs2()<<") for "<<std::endl
-       <<"   "<<Momentum()<<"  ---> "<<std::endl
+       <<"   Four-momentum not conserved: "<<check<<" ("<<check.Abs2()<<") "
+       <<"for "<<Momentum()<<"  ---> "<<std::endl
        <<"   "<<p_left->Momentum()<<" + "<<p_right->Momentum()<<"."<<std::endl;
     }
   }
@@ -372,8 +374,10 @@ void Cluster::Delete() {
 
 std::ostream& AHADIC::operator<<(std::ostream& str, const Cluster &cluster) {
   str<<"-------------------------------------------------------------"<<std::endl
-     <<"Cluster ["<<cluster.m_flav<<", "<<cluster.m_number<<", "<<cluster.size()<<"] "
-     <<"("<<cluster.m_momentum<<","<<sqrt(cluster.m_momentum.Abs2())<<" ) ";
+     <<"Cluster ["<<cluster.m_flav<<", "<<cluster.m_number<<", "
+     <<cluster.size()<<"] "
+     <<"("<<cluster.m_momentum<<","<<sqrt(cluster.m_momentum.Abs2())<<", "
+     <<cluster.m_momentum.Y()<<") ";
   if (cluster.p_nbtrip!=NULL) str<<" [> "<<cluster.p_nbtrip->Number()<<"] ";
   if (cluster.p_nbanti!=NULL) str<<" [< "<<cluster.p_nbanti->Number()<<"] ";
   str<<":"<<std::endl;

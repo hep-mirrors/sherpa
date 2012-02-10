@@ -1,8 +1,4 @@
 # outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
 
-{22,22}	 | 0.2	 | etab1S_PP.dat;
-{211,211,211,-211,-211,-211}	 | 0.2	 | etab1S_pi+pi+pi+pi-pi-pi-.dat;
-{321,321,321,-321,-321,-321}	 | 0.2	 | etab1S_K+K+K+K-K-K-.dat;
-{211,211,211,211,-211,-211,-211,-211}	 | 0.2	 | etab1S_pi+pi+pi+pi+pi-pi-pi-pi-.dat;
-{321,321,321,321,-321,-321,-321,-321}	 | 0.2	 | etab1S_K+K+K+K+K-K-K-K-.dat;
+{21,21}	 | 1.0	 | etab1S_GG.dat;
 

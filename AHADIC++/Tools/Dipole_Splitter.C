@@ -10,7 +10,7 @@ using namespace ATOOLS;
 
 Dipole_Splitter::
 Dipole_Splitter(const leading::code & lead,const PTOrder::code & ptorder,
-		const ZForm::code & zform,Strong_Coupling * as,
+		const ZForm::code & zform,MODEL::Strong_Coupling * as,
 		const bool & analyse) :
   p_tools(new Splitting_Tools(lead,ptorder,zform,as,analyse)),
   m_analyse(analyse)
@@ -61,6 +61,10 @@ bool Dipole_Splitter::SplitCluster(Cluster * cluster) {
 		   cluster->GetAnti()->m_flav.IsDiQuark());
 
   bool first(false);
+
+  //msg_Out()<<METHOD<<"(ptmax = "
+  //	   <<sqrt(dip1->Triplet()->m_kt2max)<<" / "
+  //	   <<sqrt(dip1->AntiTriplet()->m_kt2max)<<").\n";
   if (dip1->Triplet()->m_info=='L' && dip1->AntiTriplet()->m_info=='L' &&
       dip1->Triplet()->m_kt2max==dip1->AntiTriplet()->m_kt2max) first = true;
   if (!EmitGluon(dip1,dip2,first)) return false;
@@ -110,17 +114,21 @@ EmitGluon(Dipole * dip1,Dipole *& dip2,const bool & first) {
   dip1->Update();
   dip2->Update();
 
+  //msg_Out()<<"****** Out of "<<METHOD<<"\n";
   return true;
 }
 
 bool Dipole_Splitter::
 SplitDipole(Dipole * dip,const bool & first,const bool & vetodiquark) {
+  //msg_Out()<<"****** "<<METHOD<<" for \n";
+  //dip->Output();
   p_tools->SetSpectatorAndSplitter(dip);
   if (!p_tools->PrepareKinematics(dip,first) || 
       !p_tools->DetermineSplitting(dip,first,vetodiquark)) {
     return false;
   }  
   p_tools->AftermathOfSplitting(dip);
+  //msg_Out()<<"****** Out of "<<METHOD<<"\n";
   return true;
 }
 

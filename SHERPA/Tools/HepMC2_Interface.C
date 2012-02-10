@@ -98,9 +98,11 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   std::vector<std::pair<HepMC::FourVector,int> > beamparts,
                                                  remnantparts1, remnantparts2;
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
-  Blob_Data_Base * bdb((*sp)["NLO_subeventlist"]);
   NLO_subevtlist* subevtlist(NULL);
-  if (bdb) subevtlist=bdb->Get<NLO_subevtlist*>();
+  if (sp) {
+    Blob_Data_Base * bdb((*sp)["NLO_subeventlist"]);
+    if (bdb) subevtlist=bdb->Get<NLO_subevtlist*>();
+  }
   for (ATOOLS::Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
     Blob* blob=*blit;
     for (int i=0;i<blob->NInP();i++) {

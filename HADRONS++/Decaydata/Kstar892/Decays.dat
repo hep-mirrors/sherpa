@@ -1,4 +1,4 @@
 # outgoing part. 	 | BR(Delta BR)   [Origin] 	| DC-file
-{321,-211}	         | 0.66513	 		| Kstar892_K+pi-.dat;
-{311,111}	         | 0.33257	 		| Kstar892_Kpi.dat;
-{311,22}	         | 0.0023(0.0002) [PDG]	| Kstar892_KP.dat;
+{321,-211}	         | 0.66507	 		| Kstar892_K+pi-.dat;
+{311,111}	         | 0.33253	 		| Kstar892_Kpi.dat;
+{311,22}	         | 0.0024(0.0002) [PDG]		| Kstar892_KP.dat;

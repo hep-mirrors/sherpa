@@ -1,4 +1,4 @@
 # outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
 
-{443,22}	 | 0.359(0.019)[PDG]	 | chic01P_Jpsi1SP.dat;
-{21,21}	 | 0.641	 | chic01P_GG.dat;
+{443,22}	 | 0.016(0.0008)[PDG]	 | chic01P_Jpsi1SP.dat;
+{21,21}	 | 0.984	 | chic01P_GG.dat;

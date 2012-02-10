@@ -2,16 +2,16 @@
 
 {3122,12,-11}	 | 0.018[EvtGen]	 | Lambdac+_Lambdanu_ee+.dat;
 {3122,14,-13}	 | 0.018[EvtGen]	 | Lambdac+_Lambdanu_mumu+.dat;
-{23122,12,-11}	 | 0.002[FS]	 | Lambdac+_Lambda1405nu_ee+.dat;
-{23122,14,-13}	 | 0.002[FS]	 | Lambdac+_Lambda1405nu_mumu+.dat;
-{13122,12,-11}	 | 2e-05[FS]	 | Lambdac+_Lambda1600nu_ee+.dat;
-{13122,14,-13}	 | 2e-05[FS]	 | Lambdac+_Lambda1600nu_mumu+.dat;
+{102132,12,-11}	 | 0.002[FS]	 | Lambdac+_Lambda1405nu_ee+.dat;
+{102132,14,-13}	 | 0.002[FS]	 | Lambdac+_Lambda1405nu_mumu+.dat;
+{203122,12,-11}	 | 2e-05[FS]	 | Lambdac+_Lambda1600nu_ee+.dat;
+{203122,14,-13}	 | 2e-05[FS]	 | Lambdac+_Lambda1600nu_mumu+.dat;
 {2112,12,-11}	 | 0.003[EvtGen]	 | Lambdac+_nnu_ee+.dat;
 {2112,14,-13}	 | 0.003[EvtGen]	 | Lambdac+_nnu_mumu+.dat;
-{12112,12,-11}	 | 0.0002[FS]	 | Lambdac+_N1440nu_ee+.dat;
-{12112,14,-13}	 | 0.0002[FS]	 | Lambdac+_N1440nu_mumu+.dat;
-{22112,12,-11}	 | 0.0002[FS]	 | Lambdac+_N1535nu_ee+.dat;
-{22112,14,-13}	 | 0.0002[FS]	 | Lambdac+_N1535nu_mumu+.dat;
+{202112,12,-11}	 | 0.0002[FS]	 | Lambdac+_N1440nu_ee+.dat;
+{202112,14,-13}	 | 0.0002[FS]	 | Lambdac+_N1440nu_mumu+.dat;
+{102112,12,-11}	 | 0.0002[FS]	 | Lambdac+_N1535nu_ee+.dat;
+{102112,14,-13}	 | 0.0002[FS]	 | Lambdac+_N1535nu_mumu+.dat;
 {3212,12,-11}	 | 0.018[EvtGen]	 | Lambdac+_Sigmanu_ee+.dat;
 {3212,14,-13}	 | 0.005[EvtGen]	 | Lambdac+_Sigmanu_mumu+.dat;
 {3214,12,-11}	 | 0.018[EvtGen]	 | Lambdac+_Sigma1385nu_ee+.dat;

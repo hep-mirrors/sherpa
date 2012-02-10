@@ -123,11 +123,12 @@ bool Singlet::JetVeto(Sudakov *const sud) const
 	cstp::code et((ii||ji)?(ki?cstp::II:cstp::IF):(ki?cstp::FI:cstp::FF));
 	if (sud->HasKernel(fi,fj,(*kit)->GetFlavour(),et)) {
 	  double q2ijk(PDF::Qij2(ii?-(*iit)->Momentum():(*iit)->Momentum(),
-				  ji?-(*jit)->Momentum():(*jit)->Momentum(),
-				  ki?-(*kit)->Momentum():(*kit)->Momentum(),
-				  ii?fi.Bar():fi,ji?fj.Bar():fj,p_jf->DR()));
+				 ji?-(*jit)->Momentum():(*jit)->Momentum(),
+				 ki?-(*kit)->Momentum():(*kit)->Momentum(),
+				 ii?fi.Bar():fi,ji?fj.Bar():fj,p_jf->DR()));
  	  msg_Debugging()<<"Q_{"<<ID((*iit)->Id())<<ID((*jit)->Id())
-			 <<","<<ID((*kit)->Id())<<"} = "<<sqrt(q2ijk)<<"\n";
+			 <<","<<ID((*kit)->Id())<<"} = "<<sqrt(q2ijk)
+			 <<" vs "<<(*kit)->KtVeto()<<"\n";
 	  if (q2ijk<(*kit)->KtVeto()) return false;
 	  check=true;
 	}
@@ -538,6 +539,19 @@ bool Singlet::RearrangeColours(Parton * mother, Parton * daughter1, Parton * dau
   return false;
 }
 
+
+void Singlet::
+ReestablishConnections(Parton * mother, Parton * daughter1, Parton * daughter2)
+{
+  Parton * parton;
+  for (Parton_List::iterator pit=begin();pit!=end();pit++) {
+    parton = (*pit);
+    if (parton->Connected()) continue;
+    if (parton->GetLeft()==mother)  parton->SetLeft(daughter1);
+    if (parton->GetRight()==mother) parton->SetRight(daughter2);
+  }
+}
+
 bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daughter2)
 {
   daughter1->SetSing(this);
@@ -545,6 +559,11 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
   int oldc[2]={mother->GetFlow(1),mother->GetFlow(2)}, newc[2]={oldc[0],oldc[1]};
   if (mother->GetType()==pst::IS) std::swap<Parton*>(mother,daughter1);
   Flavour mo(mother->GetFlavour()), d1(daughter1->GetFlavour()), d2(daughter2->GetFlavour());
+  ReestablishConnections(mother,daughter1,daughter2);
+  msg_Tracking()<<METHOD<<" for "<<mo<<" --> "<<d1<<" & "<<d2
+  	   <<" (FS = "<<(mother->GetType()==pst::FS)<<", "
+  	   <<"conn = "<<mother->Connected()<<") "
+  	   <<"["<<oldc[0]<<", "<<oldc[1]<<"]\n";
   if (mother->GetType()==pst::FS) {
     if (mo.StrongCharge()==-3) {
       if (d1.StrongCharge()==-3) {

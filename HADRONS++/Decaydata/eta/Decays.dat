@@ -1,10 +1,10 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{22,22}	 | 0.3943(0.0026) [PDG]	 | eta_PP.dat;
-{111,111,111}	 | 0.3251(0.0029) [PDG]	 | eta_pipipi.dat;
-{111,22,22}	 | 0.00072(0.00014) [PDG]	 | eta_piPP.dat;
-{111,211,-211}	 | 0.226(0.004) [PDG]	 | eta_pi+pi-pi.dat;
-{211,-211,22}	 | 0.0468(0.0011) [PDG]	 | eta_pi+pi-P.dat;
-{211,-211,11,-11}	 | 0.0004(0.00027) [PDG]	 | eta_pi+pi-e-e+.dat;
-{11,-11,22}	 | 0.006(0.0008) [PDG]	 | eta_Pe-e+.dat;
-{13,-13,22}	 | 0.00031(0.0004) [PDG]	 | eta_Pmu-mu+.dat;
+# outgoing part.  | BR(Delta BR)  [Origin] 	 | DC-file
+{22,22}		  | 0.3931(0.0020) [PDG]	 | eta_PP.dat;
+{111,111,111}	  | 0.3257(0.0023) [PDG]	 | eta_pipipi.dat;
+{111,22,22}	  | 0.00027(0.00005) [PDG]	 | eta_piPP.dat;
+{111,211,-211}	  | 0.2274(0.0028) [PDG]	 | eta_pi+pi-pi.dat;
+{211,-211,22}	  | 0.046(0.0016) [PDG]		 | eta_pi+pi-P.dat;
+{211,-211,11,-11} | 0.000268(0.000011) [PDG]	 | eta_pi+pi-e-e+.dat;
+{11,-11,22}	  | 0.007(0.0008) [PDG]		 | eta_Pe-e+.dat;
+{13,-13,22}	  | 0.00031(0.0004) [PDG]	 | eta_Pmu-mu+.dat;
 

@@ -35,6 +35,7 @@ namespace ATOOLS {
 
     unsigned int Code(const unsigned int index=1) const;
     int          Index(const unsigned int code) const;
+    void         SwapColourIndices();
 
     // inline functions
     inline static void ResetCounter() { s_qcd_counter=600; }

@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
+#include "SHERPA/Tools/Definitions.H"
 
 namespace SHERPA {
 
@@ -21,6 +22,13 @@ namespace SHERPA {
     ATOOLS::Blob_List   m_blobs, m_sblobs;
     ATOOLS::Blob      * p_signal;
 
+    bool GenerateStandardPerturbativeEvent(eventtype::code &mode);
+    bool GenerateMinimumBiasEvent();
+    bool GenerateHadronDecayEvent();
+    void InitialiseSeedBlob(ATOOLS::btp::code type,
+			    ATOOLS::blob_status::code status);
+    bool AnalyseEvent(double & weight);
+    int  IterateEventPhases(double & weight);
   public:
 
     Event_Handler();
@@ -31,7 +39,7 @@ namespace SHERPA {
 
     void PrintGenericEventStructure();
 
-    bool GenerateEvent(int=0);
+    bool GenerateEvent(eventtype::code mode=eventtype::StandardPerturbative);
     void Reset();
     void Finish();
 
@@ -41,7 +49,7 @@ namespace SHERPA {
     inline double TotalVar() const
     { return (m_sumsqr-m_sum*m_sum/m_n)/(m_n-1); }
     inline double TotalErr() const {
-      if (m_n==1) return TotalXS();
+      if (m_n<=1) return TotalXS();
       else if (ATOOLS::IsEqual
 	       (m_sumsqr*m_n,m_sum*m_sum,1.0e-6)) return 0.0;
       else return sqrt(TotalVar()/m_n);

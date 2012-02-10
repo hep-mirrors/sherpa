@@ -35,33 +35,41 @@ Constituents::Constituents(bool no_diquarks) :
   if (!no_diquarks && bfrac>0.) {
     // Light Di-quarks, spin 0
     flav = Flavour(kf_ud_0);
-    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),0,bfrac*ud0*norm);
+    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),0,
+						bfrac*ud0*norm);
     flav = Flavour(kf_sd_0);
-    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),0,bfrac*qssup*norm);
+    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),0,
+						bfrac*qssup*norm);
     flav = Flavour(kf_su_0);
-    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),0,bfrac*qssup*norm);
+    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),0,
+						bfrac*qssup*norm);
 
     // Light Di-quarks, spin 1
     flav = Flavour(kf_uu_1);
-    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),2,3.*bfrac*sp1sup*norm);
+    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),2,
+						3.*bfrac*sp1sup*norm);
     flav = Flavour(kf_ud_1);
-    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),2,3.*bfrac*sp1sup*norm);
+    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),2,
+						3.*bfrac*sp1sup*norm);
     flav = Flavour(kf_dd_1);
-    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),2,3.*bfrac*sp1sup*norm);
+    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),2,
+						3.*bfrac*sp1sup*norm);
     flav = Flavour(kf_su_1);
-    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),2,3.*bfrac*sp1sup*qssup*norm);
+    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),2,
+						3.*bfrac*sp1sup*qssup*norm);
     flav = Flavour(kf_sd_1);
-    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),2,3.*bfrac*sp1sup*qssup*norm);
+    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),2,
+						3.*bfrac*sp1sup*qssup*norm);
     flav = Flavour(kf_ss_1);
-    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),2,3.*bfrac*sp1sup*sssup*norm);
+    CCMap[flav] = new ConstituentCharacteristic(flav.HadMass(),2,
+						3.*bfrac*sp1sup*sssup*norm);
   }
 
-  //double totwt(0.);
+  double massoffset(hadpars->Get("minmass2"));
   for (FlavCCMap_Iterator cmit=CCMap.begin(); cmit!=CCMap.end();cmit++) {
     if (cmit->first!=Flavour(kf_gluon) &&
-	cmit->second->Mass()<m_minmass) m_minmass = cmit->second->Mass();
-    //totwt += cmit->second->TotWeight();
-    //std::cout<<"Weight for "<<cmit->first<<" : "<<cmit->second->TotWeight()<<"."<<std::endl;
+	cmit->second->Mass()+massoffset<m_minmass) 
+      m_minmass = cmit->second->Mass()+massoffset;
   }
 }
 

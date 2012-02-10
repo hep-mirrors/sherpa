@@ -331,6 +331,20 @@ void Histogram::Restore() {
   }
 }
 
+double Histogram::Average() const
+{
+  double prod=0., sum=0., bin=m_lower;
+  double width=(m_upper-m_lower)/m_nbin;
+  bin += width/2.;
+
+  for (int i=1;i<m_nbin-1;++i) {
+    prod += m_yvalues[i]*bin;
+    bin  += width;
+    sum  += m_yvalues[i];
+  }
+  return prod/sum;
+}
+
 double Histogram::Mean() const
 {
   double sum=0., range=0.;
@@ -485,7 +499,7 @@ void Histogram::MPISync()
 void Histogram::Insert(double coordinate) {
   if (!m_active) {
     msg_Error()<<"Error in Histogram : Tried to access a "
-			  <<"histogram with binsize <= 0 !"<<std::endl;
+	       <<"histogram with binsize <= 0 !"<<std::endl;
     return;
   }
 

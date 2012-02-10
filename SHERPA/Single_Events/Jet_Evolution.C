@@ -15,6 +15,7 @@ Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *_mehandler,
                              Hard_Decay_Handler * _dechandler,
                              Decay_Handler_Base *_hdhandler,
 			     MI_Handler *_mihandler,
+			     Soft_Collision_Handler *_schandler,
                              const Shower_Handler_Map& showers)
 {
   Shower_Handler_Map::const_iterator shIter=showers.find(isr::hard_process);
@@ -30,12 +31,18 @@ Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *_mehandler,
   shIter=showers.find(isr::hard_subprocess);
   interface = new Perturbative_Interface(_hdhandler,
                                          shIter->second);
-  if (interface!=NULL) m_interfaces.insert(make_pair("HadronDecays",interface));
+  if (interface!=NULL) 
+    m_interfaces.insert(make_pair("HadronDecays",interface));
 
   if (_mihandler) {
     interface = new Perturbative_Interface(_mihandler,
                                            shIter->second);
     if (interface!=NULL) m_interfaces.insert(make_pair("MPIs",interface));
+  }
+  if (_schandler) {
+    interface = new Perturbative_Interface(_schandler, shIter->second);
+    if (interface!=NULL) 
+      m_interfaces.insert(make_pair("SoftCollisions",interface));
   }
 }
 
@@ -69,19 +76,21 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
       if (blob->Has(blob_status::needs_showers) &&
           blob->Type()!=btp::Hard_Decay) {
 	switch (int(blob->Type())) {
-        case (int(btp::Signal_Process)) :
-          tag = string("SignalMEs");
-          MODEL::as->SetActiveAs(PDF::isr::hard_process);
-          break;
-        case (int(btp::Hard_Collision)) :
-          tag = string("MPIs");
-          MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
-          break;
-        case (int(btp::Hadron_Decay))   :
-          tag = string("HadronDecays");
-          MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
-          break;
-        default:
+	  case (int(btp::Signal_Process)) :
+            tag = string("SignalMEs");
+            MODEL::as->SetActiveAs(PDF::isr::hard_process);
+	    break;
+	  case (int(btp::Hard_Collision)) : 
+	    tag = string("MPIs"); 
+	    if (blob->TypeSpec()=="MinBias") 
+	      tag = string("SoftCollisions"); 
+            MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
+	    break;
+	  case (int(btp::Hadron_Decay))   : 
+	    tag = string("HadronDecays"); 
+            MODEL::as->SetActiveAs(PDF::isr::hard_subprocess);
+	    break;
+	  default:
 	    msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 		       <<"   Do not have an interface for this type of blob:"<<std::endl
 		       <<(*blob)<<std::endl

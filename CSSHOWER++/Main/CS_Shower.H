@@ -41,7 +41,11 @@ namespace CSSHOWER {
 				std::map<Parton*,ATOOLS::Cluster_Leg*> &lmap,
 				const KT2X_Map &kt2xmap);
 
-    int PerformShowers(const size_t &maxem,size_t &nem);
+    bool PrepareStandardShower(ATOOLS::Cluster_Amplitude *const ampl);
+    bool PrepareShowerFromSoft(ATOOLS::Cluster_Amplitude *const ampl);
+    int  PerformShowers(const size_t &maxem,size_t &nem);
+    void EstablishRelations(Parton * parton,ATOOLS::Cluster_Leg * leg,
+			    std::map<ATOOLS::Cluster_Leg*,Parton*> & pmap);
 
     void SetScalesNLO();
     void RefCopy();
@@ -67,7 +71,8 @@ namespace CSSHOWER {
 
     // inline functions
     PDF::Cluster_Definitions_Base * GetClusterDefinitions();
-    bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl);
+    bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl,
+		       const bool & soft=false);
     bool JetVeto(ATOOLS::Cluster_Amplitude *const ampl);
 
     double CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,

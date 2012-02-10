@@ -1,7 +1,1 @@
-Checked by fsiegert: Pythia very different (only two-particle-final states):
-
-{211,-211}       | 0.52 [Pythia]     | f01370_pi+pi-.dat;
-{111,111}        | 0.26 [Pythia]     | f01370_pipi.dat;
-{321,-321}       | 0.11 [Pythia]     | f01370_K+K-.dat;
-{130,130}        | 0.055 [Pythia]     | f01370_KLKL.dat;
-{310,310}        | 0.055 [Pythia]     | f01370_KSKS.dat;
+The 4*pi decay is mainly via 2*rho, but the f0(1370) is too light for that.

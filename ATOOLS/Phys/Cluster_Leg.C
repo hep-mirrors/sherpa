@@ -35,6 +35,7 @@ Cluster_Leg *Cluster_Leg::New
     return new Cluster_Leg(ampl,ref);
   }
   Cluster_Leg *cl(s_legs.back());
+  cl->SetConnected(true);
   s_legs.pop_back();
   s_legs.MtxUnLock();
   *cl=ref;
@@ -52,6 +53,7 @@ Cluster_Leg *Cluster_Leg::New
     return new Cluster_Leg(ampl,p,fl,c);
   }
   Cluster_Leg *cl(s_legs.back());
+  cl->SetConnected(true);
   s_legs.pop_back();
   s_legs.MtxUnLock();
   cl->p_ampl=ampl;
@@ -63,6 +65,7 @@ Cluster_Leg *Cluster_Leg::New
   cl->m_p=p;
   cl->m_fl=fl;
   cl->m_c=c;
+  cl->m_ktstart=cl->m_ktmax=cl->m_ktveto=0.;
   return cl;
 }
 
@@ -89,6 +92,10 @@ namespace ATOOLS {
 	<<sqrt(dabs(leg.Mom().Abs2()))<<" "<<leg.Col();
     ostr<<" ["<<leg.Stat()<<"|"<<leg.NMax()<<","<<leg.DMax()<<"]";
     if (leg.K()>0) ostr<<" <-> "<<ID(leg.K());
+    if (leg.KTStart()>0. || leg.KTMax()>0. || leg.KTVeto()>0.)
+      ostr<<"\n"
+	  <<"   kts: start = "<<leg.KTStart()<<", max = "<<leg.KTMax()<<", "
+	  <<"veto = "<<leg.KTVeto()<<".\n";
     return ostr;
   }
 

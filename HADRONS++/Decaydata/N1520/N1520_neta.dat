@@ -1,0 +1,19 @@
+# Decay: N(1520) --> n eta 
+#        0       --> 1 2   
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  0.005252 0 0.01597;
+</Result>

@@ -17,6 +17,12 @@ void Cluster_Former::ConstructClusters(Proto_Particle_List * plin, Cluster_List 
     pit1 = plin->begin();
     pit2 = pit1;pit2++;
     cluster = new Cluster((*pit1),(*pit2));
+    if ((*pit1)->m_mom[0]<0. || (*pit2)->m_mom[0]<0.) {
+      msg_Out()<<"Error in "<<METHOD<<": negative hadron energies\n"
+	       <<(*cluster)<<"\n"
+	       <<"   Will exit the run.\n";
+      exit(1);
+    }
 #ifdef memchecker
     std::cout<<"*** New cluster ("<<cluster->Number()<<"/"<<cluster<<") with "
 	     <<"pps ("<<(*pit1)<<"/"<<(*pit2)<<") from "<<METHOD<<"."<<std::endl;
@@ -24,7 +30,6 @@ void Cluster_Former::ConstructClusters(Proto_Particle_List * plin, Cluster_List 
     clout->push_back(cluster);
     pit1 = plin->erase(pit1);
     pit1 = plin->erase(pit1);
-
   }
   EstablishRelations(clout);
 }

@@ -2,7 +2,6 @@
 #define AHADIC_Formation_Gluon_Decayer_H
 
 #include "AHADIC++/Tools/Dipole_Splitter.H"
-#include "AHADIC++/Tools/Strong_Coupling.H"
 #include "AHADIC++/Tools/Cluster.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Math/Histogram.H"

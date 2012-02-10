@@ -55,7 +55,7 @@ Particle_Info::Particle_Info
   m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(0.0), m_width(width),
   m_icharge(icharge), m_isoweak(isoweak), m_strong(0), m_resummed(0), m_spin(spin), 
   m_stable(stable), m_masssign(1), m_dummy(0), m_majorana(0), m_formfactor(0), m_on(on),
-  m_massive(1), m_hadron(1), m_idname(idname), m_texname(texname) 
+  m_massive(1), m_hadron(1), m_idname(texname), m_texname(texname) 
 {
   m_content.push_back(new Flavour(*this));
 }
@@ -194,8 +194,17 @@ void Flavour::FromHepEvt(long int code)
 
 std::string Flavour::TexName() const 
 {
-  std::string name;
-  if (m_anti && (!SelfAnti())) name="\\overline{";
+  if (IsPhoton()) return std::string("\\gamma");
+  std::string name, idname(IDName());
+  bool barit(false);
+  if (m_anti && (!SelfAnti()) && IsHadron()) { 
+    if (idname.find("++")!=std::string::npos ||
+	idname.find("+")!=std::string::npos  ||
+	idname.find("-")!=std::string::npos  ||
+	idname.find("--")!=std::string::npos) barit = true;
+    else name="\\bar ";
+  }
+
   switch (Kfcode()) {
   case kf_pi : {name+=std::string("\\pi^{0}");break;}
   case kf_K : {name+=std::string("K^{0}");break;}
@@ -204,32 +213,55 @@ std::string Flavour::TexName() const
   case kf_D : {name+=std::string("D^{0}"); break;}
   case kf_B : {name+=std::string("B^{0}"); break;}
   default :
-    if (IsHadron()) {
-      name+=IDName();
-      name=StringReplace(name, "+", "{^{+}}");
-      name=StringReplace(name, "-", "{^{-}}");
-      name=StringReplace(name, "*", "{^{*}}");
-      name=StringReplace(name, "'", "{^{\\prime}}");
-      name=StringReplace(name, "(", "{_{(");
-      name=StringReplace(name, ")", ")}}");
-      name=StringReplace(name, "eta", "\\eta ");
-      name=StringReplace(name, "rho", "\\rho ");
-      name=StringReplace(name, "pi", "\\pi ");
-      name=StringReplace(name, "omega", "\\omega ");
-      name=StringReplace(name, "phi", "\\phi ");
-      name=StringReplace(name, "psi", "\\psi ");
-      name=StringReplace(name, "Delta", "\\Delta ");
-      name=StringReplace(name, "Sigma", "\\Sigma ");
-      name=StringReplace(name, "Lambda", "\\Lambda ");
-      name=StringReplace(name, "Xi", "\\Xi ");
-      name=StringReplace(name, "Omega", "\\Omega ");
+    //if (IsHadron()) {
+    name+=IDName();
+    if (barit) {
+      if (name.find("++")!=std::string::npos)      name=StringReplace(name, "++", "--");
+      else if (name.find("+")!=std::string::npos)  name=StringReplace(name, "+", "-");
+      else if (name.find("--")!=std::string::npos) name=StringReplace(name, "--", "++");
+      else if (name.find("-")!=std::string::npos)  name=StringReplace(name, "-", "+");
     }
-    else {
-      name+=p_info->m_texname;
-    }
+    
+    if (name.find("++")!=std::string::npos)      name=StringReplace(name, "++", "^{++}");
+    else if (name.find("--")!=std::string::npos) name=StringReplace(name, "--", "^{--}");
+    else if (name.find("*+")!=std::string::npos) name=StringReplace(name, "*+", "^{*+}");
+    else if (name.find("*-")!=std::string::npos) name=StringReplace(name, "*-", "^{*-}");
+    else if (name.find("'+")!=std::string::npos) name=StringReplace(name, "'+", "^{\\prime +}");
+    else if (name.find("'-")!=std::string::npos) name=StringReplace(name, "'-", "^{\\prime -}");
+    else if (name.find("*")!=std::string::npos)  name=StringReplace(name, "*", "^{*}");
+    else if (name.find("'")!=std::string::npos)  name=StringReplace(name, "'", "^{\\prime }");
+    else if (name.find("+")!=std::string::npos)  name=StringReplace(name, "+", "^{+}");
+    else if (name.find("-")!=std::string::npos)  name=StringReplace(name, "-", "^{-}");
+    name=StringReplace(name, "_fict", "[\\mathrm{fict.}]");
+    name=StringReplace(name, "chi", "\\chi ");
+    name=StringReplace(name, "nu", "\\nu");
+    name=StringReplace(name, "mu", "\\mu");
+    name=StringReplace(name, "tau", "\\tau");
+    name=StringReplace(name, "\\nu_eb", "\\bar\\nu_e");
+    name=StringReplace(name, "\\nu_\\mub", "\\bar\\nu_\\mu");
+    name=StringReplace(name, "\\nu_\\taub", "\\bar\\nu_\\tau");
+    name=StringReplace(name, "eta", "\\eta ");
+    name=StringReplace(name, "rho", "\\rho ");
+    name=StringReplace(name, "pi", "\\pi ");
+    name=StringReplace(name, "omega", "\\omega ");
+    name=StringReplace(name, "phi", "\\phi ");
+    name=StringReplace(name, "psi", "\\psi ");
+    name=StringReplace(name, "Delta", "\\Delta ");
+    name=StringReplace(name, "Sigma", "\\Sigma ");
+    name=StringReplace(name, "Lambda", "\\Lambda ");
+    name=StringReplace(name, "Xi", "\\Xi ");
+    name=StringReplace(name, "Omega", "\\Omega ");
+    name=StringReplace(name, "U\\psi lon", "\\Upsilon ");
+    name=StringReplace(name, " _", "_");
+    //}
+    //else {
+    //  name+=p_info->m_texname;
+    //}
+    if (IsAnti() && name[name.length()-1]=='b') name.erase(name.length()-1);
     break;
   }
-  if (m_anti && (!SelfAnti())) {
+  /*
+    if (m_anti && (!SelfAnti())) {
     name+="}";
     switch (Kfcode()) {
     case kf_pi : {name=std::string("\\pi^{0}");break;}
@@ -244,7 +276,8 @@ std::string Flavour::TexName() const
     case kf_rho_1450_plus : {name=std::string("\\rho_{(1450)}^{-}"); break;}
     case kf_rho_1700_plus : {name=std::string("\\rho_{(1700)}^{-}"); break;}
     }
-  }
+    }
+  */
   return name;
 }
 
@@ -276,8 +309,7 @@ std::string Flavour::IDName() const
     else name+="-";      
   }
   else {
-    if (Kfcode()==kf_Hplus || Kfcode()==kf_Wplus ||
-        (IsHadron() && !IsBaryon() && name[name.length()-1]=='+')) {
+    if (Kfcode()==kf_Hplus || Kfcode()==kf_Wplus) {
       name.erase(name.length()-1,1);
       if (IsAnti()) name+="-";
       else name+="+";      

@@ -50,6 +50,7 @@ namespace ATOOLS {
       needs_hadronization = 32,
       needs_hadrondecays  = 64,
       needs_extraQED      = 128,
+      needs_minBias       = 256,
       needs_smearing      = 16384,
       internal_flag       = 32768,
       fully_active        = 65535
@@ -67,6 +68,7 @@ namespace ATOOLS {
       Hard_Decay          =     2,
       Hard_Collision      =     4,
       Soft_Collision      =     8,
+      QElastic_Collision  =     9,
       Shower              =    16,
       QED_Radiation       =    32,
       Beam                =   256,
@@ -96,6 +98,7 @@ namespace ATOOLS {
     int                     m_id;
     double                  m_weight;
     blob_status::code       m_status;
+    int                     m_beam;
     bool                    m_hasboost;
     btp::code               m_type;
     std::string             m_typespec;
@@ -117,6 +120,7 @@ namespace ATOOLS {
     Particle_Vector GetInParticles()  { return m_inparticles;  }
     Particle * OutParticle(int);
     Particle * InParticle(int);
+    Particle * GetParticle(int);
     const Particle *ConstOutParticle(const size_t i) const;
     const Particle *ConstInParticle(const size_t i) const;
     Particle * RemoveInParticle(int,bool = true);
@@ -159,6 +163,7 @@ namespace ATOOLS {
     }
     void        SetType(btp::code _type)          { m_type     = _type; }
     void        SetTypeSpec(std::string _type)    { m_typespec = _type; }
+    void        SetBeam(int _beam)                { m_beam     = _beam; }
     void        SetWeight(double _weight)         { 
       m_weightcontainer.clear();
       m_weightcontainer.push_back(_weight);
@@ -181,13 +186,15 @@ namespace ATOOLS {
 
     int      Id()                        const { return m_id; }
     int      Status()                    const { return m_status; }
+    int      Beam()                      const { return m_beam; }
     int      NInP()                      const { return m_inparticles.size(); }
     int      NOutP()                     const { return m_outparticles.size(); }
  
     const double& Weight()               const { return m_weight; }
     std::vector<double> WeightContainer()      { return m_weightcontainer; } 
-    Vec4D        CheckMomentumConservation() const;
+    Vec4D CheckMomentumConservation() const;
     bool  MomentumConserved();
+    bool  CheckColour();
     const Vec4D& Position()              const { return m_position; }
     const Vec4D& CMS()                   const { return m_cms_vec; }
     const btp::code& Type()              const { return m_type; }

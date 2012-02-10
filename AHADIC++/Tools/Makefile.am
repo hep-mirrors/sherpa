@@ -10,7 +10,6 @@ libAhadicTools_la_SOURCES = \
                             Hadron_Wave_Function.C \
                             Hadron_Multiplet.C \
                             Transitions.C \
-			    Strong_Coupling.C \
 			    Dipole_Splitter.C \
 			    Splitting_Functions.C \
 			    Splitting_Tools.C \
@@ -24,7 +23,6 @@ localincdir = $(pkgincludedir)/AHADIC++/Tools
 localinc_HEADERS   = \
 		     Cluster.H \
                      Constituents.H \
-		     Strong_Coupling.H \
 		     Dipole_Splitter.H \
 		     Splitting_Functions.H \
 		     Splitting_Tools.H \

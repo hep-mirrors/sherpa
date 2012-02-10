@@ -20,10 +20,11 @@ using namespace std;
 
 Cluster_Formation_Handler::Cluster_Formation_Handler(Cluster_List* clulist,
 						     bool ana) :
-  m_single_cr(false), m_double_cr(false),
+  m_single_cr(hadpars->Get(string("colour_reconnections"))==1), 
+  m_double_cr(false),
   p_gludecayer(new Gluon_Decayer(hadpars->GetSplitter(),ana)), 
   p_cformer(new Cluster_Former()),
-  p_recons(new Colour_Reconnections(0,0,1.)), 
+  p_recons(new Colour_Reconnections(2,1,hadpars->Get(string("pt02")))), 
   p_softclusters(hadpars->GetSoftClusterHandler()),
   p_clulist(clulist), m_analyse(ana)
 { 
@@ -63,13 +64,11 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob) {
 
   if (blob==NULL) return 1;
   assert(m_partlists.empty() && m_clulists.empty());
-
-  msg_Debugging()<<"\n\n\n\n"
-		 <<"====================================================\n"
-		 <<"====================================================\n"
-		 <<"====================================================\n"
-		 <<"In "<<METHOD<<": hadronize "<<blob->NInP()<<" partons.\n"
-		 <<(*blob)<<"\n";
+  //msg_Out()<<"\n\n\n\n"
+  //		<<"====================================================\n"
+  //		<<"====================================================\n"
+  //		<<"====================================================\n"
+  //		<<"In "<<METHOD<<": hadronize "<<blob->NInP()<<" partons.\n";
   if (!ExtractSinglets(blob))      { Reset(); return -1; }
   if (!ShiftOnMassShells())        { Reset(); return -1; }
   if (!FormOriginalClusters())     { Reset(); return -1; }
@@ -78,6 +77,8 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob) {
   if (!ClustersToHadrons(blob))    { 
     Reset(); return -1; 
   }
+  msg_Tracking()<<METHOD<<":\n"<<(*p_clulist)<<"\n";
+  //msg_Out()<<(*blob)<<"\n";
 
   return 1;
 }
@@ -119,7 +120,7 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
       if (part->GetFlow(2)==col1) {
 	Proto_Particle * copy = 
 	  new Proto_Particle(part->Flav(),part->Momentum(),
-			     part->Info()=='B'?'B':'L');
+			     (part->Info()=='B')?'B':'L');
 	SetInfoTagForPrimaryParticle(copy,leading);
 	pli->push_back(copy);
 	col1 = part->GetFlow(1);
@@ -353,7 +354,8 @@ bool Cluster_Formation_Handler::ApplyColourReconnections()
 {
   std::vector<Cluster_List *>::iterator clit1, clit2;
   if (m_single_cr) {
-    for (clit1=m_clulists.begin();clit1!=m_clulists.end();clit1++) p_recons->Singlet_CR((*clit1));
+    for (clit1=m_clulists.begin();clit1!=m_clulists.end();clit1++) 
+      p_recons->Singlet_CR((*clit1));
   }
   if (m_double_cr && m_clulists.size()>1) {
     clit1 = m_clulists.begin(); 
@@ -369,7 +371,7 @@ bool Cluster_Formation_Handler::ApplyColourReconnections()
 
   Histogram * histomass;
   if (m_analyse) {
-    histomass = (m_histograms.find(string("Cluster_Mass_Reconnections")))->second;
+    histomass = m_histograms[string("Cluster_Mass_Reconnections")];
     for (clit1=m_clulists.begin();clit1!=m_clulists.end();clit1++) {
       for (Cluster_Iterator cit=(*clit1)->begin();cit!=(*clit1)->end();cit++) {
 	histomass->Insert((*cit)->Mass());
@@ -387,8 +389,8 @@ bool Cluster_Formation_Handler::MergeClusterListsIntoOne() {
     delete m_clulists[j];
   m_clulists.clear();
 
+  msg_Tracking()<<METHOD<<":\n"<<(*p_clulist)<<"\n";
   return true;
-
 }
 
 

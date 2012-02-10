@@ -8,22 +8,23 @@ using namespace ATOOLS;
 
 std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
   switch (btpc) {
-  case btp::Unspecified:        return ostr<<"Unspecified       ";
-  case btp::Signal_Process:     return ostr<<"Signal Process    ";
-  case btp::Hard_Decay:         return ostr<<"Hard Decay        ";
-  case btp::Hard_Collision:     return ostr<<"Hard Collision    ";
-  case btp::Soft_Collision:     return ostr<<"Soft Collision    "; 
-  case btp::Shower:             return ostr<<"Shower            ";
-  case btp::QED_Radiation:      return ostr<<"QED Radiation     ";
-  case btp::Beam:               return ostr<<"Beam              ";
-  case btp::Bunch:              return ostr<<"Bunch             ";
-  case btp::Fragmentation:      return ostr<<"Fragmentation     ";
-  case btp::Cluster_Formation:  return ostr<<"Cluster Formation ";
-  case btp::Cluster_Decay:      return ostr<<"Cluster Decay     ";
-  case btp::Hadron_Decay:       return ostr<<"Hadron Decay      ";
-  case btp::Hadron_Mixing:      return ostr<<"Hadron Mixing     ";
-  case btp::Hadron_To_Parton:   return ostr<<"Hadron-To-Partons ";
-  default:                      return ostr<<"Unknown           ";
+  case btp::Unspecified:        return ostr<<"Unspecified             ";
+  case btp::Signal_Process:     return ostr<<"Signal Process          ";
+  case btp::Hard_Decay:         return ostr<<"Hard Decay              ";
+  case btp::Hard_Collision:     return ostr<<"Hard Collision          ";
+  case btp::Soft_Collision:     return ostr<<"Soft Collision          "; 
+  case btp::QElastic_Collision: return ostr<<"Quasi-elastic Collision "; 
+  case btp::Shower:             return ostr<<"Shower                  ";
+  case btp::QED_Radiation:      return ostr<<"QED Radiation           ";
+  case btp::Beam:               return ostr<<"Beam                    ";
+  case btp::Bunch:              return ostr<<"Bunch                   ";
+  case btp::Fragmentation:      return ostr<<"Fragmentation           ";
+  case btp::Cluster_Formation:  return ostr<<"Cluster Formation       ";
+  case btp::Cluster_Decay:      return ostr<<"Cluster Decay           ";
+  case btp::Hadron_Decay:       return ostr<<"Hadron Decay            ";
+  case btp::Hadron_Mixing:      return ostr<<"Hadron Mixing           ";
+  case btp::Hadron_To_Parton:   return ostr<<"Hadron-To-Partons       ";
+  default:                      return ostr<<"Unknown                 ";
   }
 }
 
@@ -47,6 +48,9 @@ namespace ATOOLS {
 #endif
     ostr<<std::setw(4)<<std::setprecision(4);
     ostr<<"Blob ["<<bl.Status()<<"]( "<<bl.Id()<<", "<<bl.Type()<<", ";
+    if (bl.Beam() != -1) {
+      ostr<<" from Beam "<<bl.Beam()<<", ";
+    }
     ostr<<bl.NInP()<<" -> "<<bl.NOutP()<<" @ "<<bl.Position()<<std::endl;
     ostr<<"Incoming particles :"<<std::endl;
     for (Particle_Vector::const_iterator part = bl.m_inparticles.begin();
@@ -73,19 +77,20 @@ namespace ATOOLS {
 
 Blob::Blob(const Vec4D _pos, const int _id) : 
   m_position(_pos), m_id(_id), m_weight(1.), m_status(blob_status::inactive), 
-  m_hasboost(false), 
+  m_beam(-1), m_hasboost(false), 
   m_type(btp::Unspecified), m_typespec(std::string("none")) 
 { ++s_totalnumber; }
 
 Blob::Blob(const Blob * blob,const bool copyparts) :
   m_position(blob->m_position), m_id(blob->m_id), m_weight(blob->m_weight),
-  m_status(blob->m_status),
+  m_status(blob->m_status), m_beam(blob->m_beam),
   m_type(blob->m_type), m_typespec(blob->m_typespec),
   m_cms_vec(blob->m_cms_vec), m_cms_boost(Poincare(m_cms_vec))
 {
   ++s_totalnumber;
   if (copyparts) {
-  for (int i=0;i<blob->NInP();i++)  AddToInParticles(new Particle((*blob->ConstInParticle(i))));
+  for (int i=0;i<blob->NInP();i++)  
+    AddToInParticles(new Particle((*blob->ConstInParticle(i))));
   Particle * part(NULL);
   for (int i=0;i<blob->NOutP();i++) {
     part = new Particle((*blob->ConstOutParticle(i)));
@@ -93,7 +98,8 @@ Blob::Blob(const Blob * blob,const bool copyparts) :
     AddToOutParticles(part);
   }
   }
-  for (String_BlobDataBase_Map::const_iterator it=blob->m_datacontainer.begin(); it!=blob->m_datacontainer.end(); ++it) {
+  for (String_BlobDataBase_Map::const_iterator it=
+	 blob->m_datacontainer.begin(); it!=blob->m_datacontainer.end(); ++it) {
     AddData(it->first, it->second->ClonePtr());
   }
 }
@@ -125,6 +131,12 @@ Particle * Blob::InParticle(int _pos) {
 Particle * Blob::OutParticle(int _pos) {
   if (_pos>(int)m_outparticles.size()-1 || _pos<0) { return NULL; }
   return m_outparticles[_pos];
+}
+
+Particle * Blob::GetParticle(int _pos) {
+  if (_pos>(int)m_inparticles.size()-1)
+    return OutParticle(_pos-m_inparticles.size());
+  return InParticle(_pos);
 }
 
 const Particle *Blob::ConstInParticle(const size_t i) const
@@ -340,13 +352,19 @@ Vec4D Blob::CheckMomentumConservation() const {
   Vec4D sump = Vec4D(0.,0.,0.,0.);
   for (Particle_Vector::const_iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
-    if ((*part)->Info()=='F' && m_type==btp::Shower) sump = sump + (-1.) * (*part)->Momentum();
-                                                else sump = sump + (*part)->Momentum();
+    //if (((*part)->Info()=='F'||(*part)->Info()=='B'||(*part)->Info()=='R') && 
+    //	m_type==btp::Shower) 
+    //  sump = sump + (-1.) * (*part)->Momentum();
+    //else 
+      sump = sump + (*part)->Momentum();
   }
   for (Particle_Vector::const_iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
-    if ((*part)->Info()=='I' && m_type==btp::Shower) sump = sump + (*part)->Momentum();
-                         else sump = sump + (-1.)*((*part)->Momentum());
+    //if (((*part)->Info()=='I') 
+    //	&& m_type==btp::Shower) 
+    // sump = sump + (*part)->Momentum();
+    //else 
+      sump = sump + (-1.)*((*part)->Momentum());
   }
   return sump;
 }
@@ -360,6 +378,75 @@ bool Blob::MomentumConserved() {
     return false;
   }
   return true;
+}
+
+bool Blob::CheckColour() {
+  std::list<int> trips, antis;
+  Particle * part;
+  bool error(false);
+  for (int i=0;i<NInP();i++) {
+    part = InParticle(i);
+    if ((part->Flav().IsGluon() && 
+	 (part->GetFlow(1)==0 || part->GetFlow(2)==0)) ||
+	(part->Flav().IsQuark() && part->Flav().IsAnti() && 
+	 part->GetFlow(2)==0) ||
+	(part->Flav().IsQuark() && !part->Flav().IsAnti() && 
+	 part->GetFlow(1)==0)) {
+      msg_Error()<<"Error in "<<METHOD<<":\n"
+		 <<"   Wrong colour state for particle "<<part->Number()<<"\n";
+      error = true;
+    }
+    if (part->GetFlow(1)!=0) antis.push_back(part->GetFlow(1));
+    if (part->GetFlow(2)!=0) trips.push_back(part->GetFlow(2));
+  }
+  for (int i=0;i<NOutP();i++) {
+    part = OutParticle(i);
+    if ((part->Flav().IsGluon() && 
+	 (part->GetFlow(1)==0 || part->GetFlow(2)==0)) ||
+	(part->Flav().IsQuark() && part->Flav().IsAnti() && 
+	 part->GetFlow(2)==0) ||
+	(part->Flav().IsQuark() && !part->Flav().IsAnti() && 
+	 part->GetFlow(1)==0)) {
+      msg_Error()<<"Error in "<<METHOD<<":\n"
+		 <<"   Wrong colour state for particle "<<part->Number()<<"\n";
+      error = true;
+    }
+    if (part->GetFlow(1)!=0) trips.push_back(part->GetFlow(1));
+    if (part->GetFlow(2)!=0) antis.push_back(part->GetFlow(2));
+  }
+  if (error) return false;
+
+  std::list<int>::iterator cit=trips.begin(),dit;
+  bool found;
+  while (cit!=trips.end()) {
+    found = false;
+    for (dit=antis.begin();dit!=antis.end();dit++) {
+      if ((*cit)==(*dit)) {
+	antis.erase(dit);
+	found = true;
+	break;
+      }
+    }
+    if (!found) cit++;
+    else cit = trips.erase(cit);
+  }
+  if (!trips.empty() || !antis.empty()) {
+    msg_Out()<<"---------------------------------------------\n"
+	     <<METHOD<<" for "<<m_id<<" yields surviving colours "
+	     <<"("<<trips.size()<<", "<<antis.size()<<"):\n";
+  }
+  if (!trips.empty()) {
+    msg_Out()<<"   Trips: ";
+    for (cit=trips.begin();cit!=trips.end();cit++) msg_Out()<<(*cit)<<" ";
+    msg_Out()<<".\n";
+  }
+  if (!antis.empty()) {
+    msg_Out()<<"   Antis: ";
+    for (cit=antis.begin();cit!=antis.end();cit++) msg_Out()<<(*cit)<<" ";
+    msg_Out()<<".\n";
+  }
+
+  return (trips.empty() && antis.empty());
 }
 
 void Blob::Boost(const Poincare& boost) {
@@ -400,6 +487,7 @@ void Blob::BoostInLab() {
     OutParticle(i)->SetMomentum(dummy);
   }
 }
+
 
 void Blob::SetCMS() {
   m_cms_vec = Vec4D(0.,0.,0.,0.);

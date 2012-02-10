@@ -36,6 +36,7 @@ Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter,bool ana) :
     m_histograms[std::string("Flavour_Rescue")]    = new Histogram(0,0.,15.,15);
     m_histograms[std::string("MergedMassBefore")]  = new Histogram(0,0.,15.,30);
     m_histograms[std::string("MergedMassAfter")]   = new Histogram(0,0.,30.,60);
+    m_histograms[std::string("SelectedMass")]      = new Histogram(0,0.,20.,200);
   }
 
   p_splitter->SetOptions(&m_options);
@@ -85,19 +86,28 @@ bool Gluon_Decayer::DecayList(Proto_Particle_List * plin)
 
 bool Gluon_Decayer::FillDipoleList(Proto_Particle_List * plin)
 {
+  if (plin->size()<2) return false;
+  for (PPL_Iterator pit(plin->begin());pit!=plin->end();pit++) {
+    (*pit)->m_kt2max = 1.e12;
+  }
   PPL_Iterator pit(plin->begin()), pit1(plin->begin());
   pit1++;
   Proto_Particle * begin(*pit);
   Dipole * dip;
-  double pt2dip,pt2;
+  double pt2dip;
   do {
-    pt2dip = ATOOLS::Min((*pit)->m_mom.PPerp2((*pit1)->m_mom),
-			 (*pit1)->m_mom.PPerp2((*pit)->m_mom));
-    if ((*pit)->m_info=='B' || (*pit1)->m_info=='B') pt2dip = 0.01;
-    else if (!((*pit)->m_flav.IsGluon() || (*pit1)->m_flav.IsGluon()))
-      pt2dip = ((*pit)->m_mom+(*pit1)->m_mom).Abs2();
-    pt2 = ATOOLS::Min(pt2dip,m_pt2max);
-    (*pit)->m_kt2max  = (*pit1)->m_kt2max = pt2;
+    double pl       = Vec3D((*pit)->m_mom).Abs();
+    double pl1      = Vec3D((*pit1)->m_mom).Abs();
+    double costheta = Vec3D((*pit)->m_mom)*Vec3D((*pit1)->m_mom)/pl/pl1;
+    //if ((*pit)->m_info=='B' && (*pit)->m_info!='B') 
+    //  pt2dip = (*pit1)->m_mom.PPerp2();
+    //else if ((*pit1)->m_info=='B' && (*pit)->m_info!='B') 
+    //  pt2dip = (*pit)->m_mom.PPerp2();
+    //else
+    pt2dip          = 2.*sqr(Min(pl,pl1))*(1.-costheta);
+    //pt2dip          = ((*pit)->m_mom+(*pit1)->m_mom).Abs2(); 
+    (*pit)->m_kt2max  = Min((*pit)->m_kt2max,pt2dip);
+    (*pit1)->m_kt2max = Min((*pit1)->m_kt2max,pt2dip);
     dip = new Dipole(*pit,*pit1);
     m_dipoles.push_back(dip);
     pit = pit1;
@@ -152,8 +162,7 @@ bool Gluon_Decayer::DecayDipoles() {
 	break;
       case 1:
 	if (m_analyse) {
-	  Histogram* histo((m_histograms.find(std::string("PT_Rescue")))->second);
-	  histo->Insert(sqrt(p_splitter->PT2()));
+	  m_histograms[std::string("PT_Rescue")]->Insert(sqrt(p_splitter->PT2()));
 	}
       default:
 	break;
@@ -161,8 +170,7 @@ bool Gluon_Decayer::DecayDipoles() {
     }
     else {
       if (m_analyse) {
-	m_histograms.find(std::string("PT_Gluon"))->second->
-	  Insert(sqrt(p_splitter->PT2()));
+	m_histograms[std::string("PT_Gluon")]->Insert(sqrt(p_splitter->PT2()));
       }
       AfterSplit(dipiter);
     }
@@ -177,13 +185,15 @@ DipIter Gluon_Decayer::SelectDipole() {
   DipIter winner=m_dipoles.end();
   for (DipIter dip=m_dipoles.begin();dip!=m_dipoles.end();dip++) {
     if (!(*dip)->MustDecay()) continue;
-    //stest = (*dip)->MassBar2();
     stest = (*dip)->Triplet()->m_mom.PPerp2((*dip)->AntiTriplet()->m_mom);
     if (winner==m_dipoles.end() || stest<smin) {
       smin   = stest;
       smax   = stest;
       winner = dip;
     }
+  }
+  if (m_analyse) {
+    m_histograms[std::string("SelectedMass")]->Insert(sqrt(smin));
   }
   return winner;
 }
@@ -254,7 +264,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
 
 bool Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
   if (m_analyse) {
-    Histogram* histo((m_histograms.find(std::string("MergedMassBefore")))->second);
+    Histogram* histo(m_histograms[std::string("MergedMassBefore")]);
     histo->Insert(sqrt((*dip1)->Mass2()));
     histo->Insert(sqrt((*dip2)->Mass2()));
   }
@@ -263,14 +273,18 @@ bool Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
   Dipole save2(new Proto_Particle((*(*dip2)->Triplet())),
 	       new Proto_Particle((*(*dip2)->AntiTriplet())));
 #ifdef memchecker
-  std::cout<<"### New Proto_Particle ("
-	   <<save1.Triplet()->m_flav<<"/"<<save1.Triplet()<<") from "<<METHOD<<"."<<std::endl;
-  std::cout<<"### New Proto_Particle ("
-	   <<save1.AntiTriplet()->m_flav<<"/"<<save1.AntiTriplet()<<") from "<<METHOD<<"."<<std::endl;
-  std::cout<<"### New Proto_Particle ("
-	   <<save2.Triplet()->m_flav<<"/"<<save2.Triplet()<<") from "<<METHOD<<"."<<std::endl;
-  std::cout<<"### New Proto_Particle ("
-	   <<save2.AntiTriplet()->m_flav<<"/"<<save2.AntiTriplet()<<") from "<<METHOD<<"."<<std::endl;
+  cout<<"### New Proto_Particle ("
+	   <<save1.Triplet()->m_flav<<"/"<<save1.Triplet()<<") from "
+	   <<METHOD<<"."<<std::endl;
+  cout<<"### New Proto_Particle ("
+	   <<save1.AntiTriplet()->m_flav<<"/"<<save1.AntiTriplet()
+	   <<") from "<<METHOD<<"."<<std::endl;
+  cout<<"### New Proto_Particle ("
+	   <<save2.Triplet()->m_flav<<"/"<<save2.Triplet()<<") from "
+	   <<METHOD<<"."<<std::endl;
+  cout<<"### New Proto_Particle ("
+	   <<save2.AntiTriplet()->m_flav<<"/"<<save2.AntiTriplet()
+	   <<") from "<<METHOD<<"."<<std::endl;
 #endif
 
 
@@ -280,26 +294,28 @@ bool Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
   Q += pk = (*dip2)->AntiTriplet()->m_mom;
   double Q2   = Q.Abs2();
   double pij2 = (pi+pj).Abs2(), pjk2 = (pj+pk).Abs2();
-  double mij2 = sqr(hadpars->GetConstituents()->Mass((*dip1)->Triplet()->m_flav)), mi2(mij2);
-  double mk2  = sqr(hadpars->GetConstituents()->Mass((*dip2)->AntiTriplet()->m_flav)), mjk2(mk2);
-  double aij  = (sqr(Q2-mij2-mk2)-4.*mij2*mk2), bij = (sqr(Q2-pij2-mk2)-4.*pij2*mk2);
-  double ajk  = (sqr(Q2-mjk2-mi2)-4.*mjk2*mi2), bjk = (sqr(Q2-pjk2-mi2)-4.*pjk2*mi2);
+  double mij2 = sqr(hadpars->GetConstituents()->Mass((*dip1)->Triplet()->m_flav));
+  double mk2  = sqr(hadpars->GetConstituents()->Mass((*dip2)->AntiTriplet()->m_flav));
+  double mjk2(mk2), mi2(mij2);
+  double aij  = (sqr(Q2-mij2-mk2)-4.*mij2*mk2);
+  double bij  = (sqr(Q2-pij2-mk2)-4.*pij2*mk2);
+  double ajk  = (sqr(Q2-mjk2-mi2)-4.*mjk2*mi2);
+  double bjk  = (sqr(Q2-pjk2-mi2)-4.*pjk2*mi2);
   if (aij/bij<0. && ajk/bjk<0.) {
     msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
-	       <<"   Cannot merge dipoles, kinematics does not work out."<<std::endl
-	       <<"   Try new event."<<std::endl;
+	       <<"   Cannot merge dipoles, kinematics does not work out.\n"
+	       <<"   Try new event.\n";
     return false;
   }
   if (ajk/bjk<0. || (pij2>pjk2 && aij/bij>0.)) {
-    Vec4D  pkt  = sqrt(aij/bij) * (pk - (Q*pk)/Q2*Q) + (Q2 + mk2-mij2)/(2.*Q2)*Q;  
+    Vec4D  pkt  = sqrt(aij/bij) * (pk-(Q*pk)/Q2*Q)+(Q2 + mk2-mij2)/(2.*Q2)*Q;  
     Vec4D  pijt = Q-pkt;
     (*dip1)->Triplet()->m_mom      = pijt;
     (*dip2)->AntiTriplet()->m_mom  = pkt;
   }
   else {
-    Vec4D pit  = sqrt(ajk/bjk) * (pi - (Q*pi)/Q2*Q) + (Q2 + mi2-mjk2)/(2.*Q2)*Q;  
+    Vec4D pit  = sqrt(ajk/bjk) * (pi-(Q*pi)/Q2*Q)+(Q2 + mi2-mjk2)/(2.*Q2)*Q;  
     Vec4D pjkt = Q-pit;
-
     (*dip1)->Triplet()->m_mom      = pit;
     (*dip2)->AntiTriplet()->m_mom  = pjkt;
   }
@@ -346,7 +362,7 @@ void Gluon_Decayer::SplitIt(DipIter dipiter,Vec4D checkbef) {
   Proto_Particle * new1, * new2;
   p_splitter->GetNewParticles(new1,new2);
 
-  if (new2->m_flav==Flavour(kf_d)) m_d++;
+  if      (new2->m_flav==Flavour(kf_d)) m_d++;
   else if (new2->m_flav==Flavour(kf_u)) m_u++;
   else if (new2->m_flav==Flavour(kf_s)) m_s++;
   m_tot++; 
@@ -397,17 +413,20 @@ void Gluon_Decayer::SplitIt(DipIter dipiter,Vec4D checkbef) {
 
 void Gluon_Decayer::PrintDipoleList()
 {
+  if (!msg->LevelIsDebugging()) return;
   for (DipIter dip=m_dipoles.begin();dip!=m_dipoles.end();dip++) {
-    msg_Debugging()<<"Dipole("<<((*dip)->MustDecay())<<", "
-		   <<sqrt((*dip)->Mass2())<<") : "<<std::endl
-		   <<"  "<<(*dip)->Triplet()->m_flav<<"("<<(*dip)->Triplet()->m_mom<<"), "
-		   <<" "<<hadpars->GetConstituents()->Mass((*dip)->Triplet()->m_flav)
-		   <<" vs. "<<sqrt(Max((*dip)->Triplet()->m_mom.Abs2(),0.0))
-		   <<" --> kt^2_max = "<<(*dip)->Triplet()->m_kt2max<<";"<<std::endl
-		   <<"  "<<(*dip)->AntiTriplet()->m_flav<<"("<<(*dip)->AntiTriplet()->m_mom<<"),"
-		   <<" "<<hadpars->GetConstituents()->Mass((*dip)->AntiTriplet()->m_flav)
-		   <<" vs. "<<sqrt(Max((*dip)->AntiTriplet()->m_mom.Abs2(),0.0))
-		   <<" --> kt^2_max = "<<(*dip)->AntiTriplet()->m_kt2max<<"."<<std::endl;
+    msg_Out()
+      <<"Dipole(must decay = "<<((*dip)->MustDecay())<<", "
+      <<sqrt((*dip)->Mass2())<<") : "<<std::endl
+      <<"  "<<(*dip)->Triplet()->m_flav<<"("<<(*dip)->Triplet()->m_mom<<"), "
+      <<" "<<hadpars->GetConstituents()->Mass((*dip)->Triplet()->m_flav)
+      <<" vs. "<<sqrt(Max((*dip)->Triplet()->m_mom.Abs2(),0.0))
+      <<" --> kt^2_max = "<<(*dip)->Triplet()->m_kt2max<<";"<<std::endl
+      <<"  "<<(*dip)->AntiTriplet()->m_flav<<"("
+      <<(*dip)->AntiTriplet()->m_mom<<"),"
+      <<" "<<hadpars->GetConstituents()->Mass((*dip)->AntiTriplet()->m_flav)
+      <<" vs. "<<sqrt(Max((*dip)->AntiTriplet()->m_mom.Abs2(),0.0))
+      <<" --> kt^2_max = "<<(*dip)->AntiTriplet()->m_kt2max<<"."<<std::endl;
   }
 }
 

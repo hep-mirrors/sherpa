@@ -90,10 +90,13 @@ void Fragmentation_Handler::PrepareTerminate()
   Copy(m_dir+"/"+m_sfile,path+"/"+m_sfile);
 }
 
-Return_Value::code Fragmentation_Handler::PerformFragmentation(Blob_List *bloblist,
-							       Particle_List *particlelist) 
+Return_Value::code 
+Fragmentation_Handler::PerformFragmentation(Blob_List *bloblist,
+					    Particle_List *particlelist) 
 {
   if (m_mode==0 || bloblist->size()==0) return Return_Value::Nothing;
+
+  Return_Value::code success;
   switch (int(ExtractSinglets(bloblist))) {
     case int(Return_Value::Success) : break;
     case int(Return_Value::Nothing) : return Return_Value::Nothing;
@@ -109,12 +112,17 @@ Return_Value::code Fragmentation_Handler::PerformFragmentation(Blob_List *blobli
     case 1  : return p_lund->Hadronize(bloblist);
 #endif
 #ifdef USING__Ahadic
-    case 2  : return p_ahadic->Hadronize(bloblist);
+  case 2  : success = p_ahadic->Hadronize(bloblist);
+    if (success!=Return_Value::Success &&
+	success!=Return_Value::Nothing) {
+      msg_Tracking()<<"Potential problem in "<<METHOD<<":\n"<<(*bloblist)<<"\n";
+    }
+    return success;
 #endif
     default : 
-      msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
-		 <<"   Unknown hadronization model in mode = "<<m_mode<<"."<<std::endl
-		 <<"   Abort the run."<<std::endl;
+      msg_Error()<<"ERROR in "<<METHOD<<":\n"
+		 <<"   Unknown hadronization model in mode = "<<m_mode<<".\n"
+		 <<"   Abort the run.\n";
       THROW(critical_error,"Fragmentation model not implemented.");
   }
 }
@@ -138,13 +146,19 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
         plist=new Part_List;
         plists.push_back(plist);
       }
-
+      
       std::vector<Particle*> taus;
       for (int i=0;i<(*blit)->NOutP();i++) {
 	part = (*blit)->OutParticle(i); 
 	if (part->Status()==part_status::active && 
 	    part->Info()!='G' && part->Info()!='I') {
 	  if (part->GetFlow(1)!=0 || part->GetFlow(2)!=0) {
+	    if (part->GetFlow(1)==part->GetFlow(2)) {
+	      msg_Error()<<"Error in "<<METHOD<<":\n"
+			 <<"   Blob with funny colour assignements.\n"
+			 <<"   Will demand new event and hope for the best.\n";
+	      return Return_Value::New_Event;
+	    }
 	    plist->push_back(part);
 	    part->SetStatus(part_status::fragmented);
 	  }
@@ -170,51 +184,34 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
     }
   }
   if (plists[0]->empty() && plists.size()<2) {
-    msg_Debugging()<<"WARNING in Lund_Interface::PrepareFragmentationBlob:"<<endl
-		   <<"   No coloured particle found leaving shower blobs."<<endl;
+    msg_Debugging()<<"WARNING in Lund_Interface::PrepareFragmentationBlob:\n"
+		   <<"   No coloured particle found leaving shower blobs.\n";
     return Return_Value::Nothing;
   }
-
-
+  
+  
   Return_Value::code ret(Return_Value::Success);
   for (size_t i=0; i<plists.size(); ++i) {
-  if (plists[i]->empty()) continue;
-  SP(Part_List) plist=plists[i];
-  int  col1, col2;
-  bool hit1, hit2;
-  Part_List * pli(NULL);
-  vector<SP(Part_List)> partlists; 
-  do {
-    hit1 = false;
-    for (Part_Iterator pit=plist->begin();pit!=plist->end();++pit) {
-      col1 = (*pit)->GetFlow(1);
-      col2 = (*pit)->GetFlow(2);
-      if (col1!=0 && col2==0) {
-	hit1 = true;
-	pli  = new Part_List;
-	pli->push_back((*pit));
-	pit  = plist->erase(pit);
-	partlists.push_back(pli);
-	do {
-	  hit2 = false;
-	  for (Part_Iterator pit1=plist->begin();pit1!=plist->end();++pit1) {
-	    if ((int)((*pit1)->GetFlow(2))==col1) {
-	      col1 = (*pit1)->GetFlow(1);
-	      pli->push_back((*pit1));
-	      pit1 = plist->erase(pit1);
-	      hit2 = true;
-	      break;
-	    }
-	  }
-	} while (hit2 && col1!=0);
-      }
-      if (hit1) break;
-    }
-    if (!hit1) {
+    if (plists[i]->empty()) continue;
+    SP(Part_List) plist=plists[i];
+    int  col1, col2;
+    bool hit1, hit2;
+    Part_List * pli(NULL);
+    vector<SP(Part_List)> partlists; 
+    int plsize;
+    do {
+      plsize=plist->size();
+      hit1    = false;
       for (Part_Iterator pit=plist->begin();pit!=plist->end();++pit) {
 	col1 = (*pit)->GetFlow(1);
 	col2 = (*pit)->GetFlow(2);
-	if (col1!=0 && col2!=0) {
+	if (col1!=0 && col1==col2) {
+	  msg_Error()<<"Error in "<<METHOD<<":\n"
+		     <<"   Blob with funny colour assignements.\n"
+		     <<"   Will demand new event and hope for the best.\n";
+	  return Return_Value::New_Event;
+	}
+	if (col1!=0 && col2==0) {
 	  hit1 = true;
 	  pli  = new Part_List;
 	  pli->push_back((*pit));
@@ -231,33 +228,64 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 		break;
 	      }
 	    }
-	  } while (hit2 && col1!=col2);
+	  } while (hit2 && col1!=0);
 	}
 	if (hit1) break;
       }
-    }
-  } while(plist->size()>0);
-
-  if (plist->empty()) {
-    blob = new Blob();
-    blob->SetId();
-    blob->SetType(btp::Fragmentation);
-    blob->SetStatus(blob_status::needs_hadronization);
-    bloblist->push_back(blob);
-    for (vector<SP(Part_List)>::iterator pliter=partlists.begin();
-	 pliter!=partlists.end();pliter++) {
-      while (!(*pliter)->empty()) {
-	blob->AddToInParticles((*pliter)->front());
-	(*pliter)->pop_front();
+      if (!hit1) {
+	for (Part_Iterator pit=plist->begin();pit!=plist->end();++pit) {
+	  col1 = (*pit)->GetFlow(1);
+	  col2 = (*pit)->GetFlow(2);
+	  if (col1!=0 && col2!=0) {
+	    hit1 = true;
+	    pli  = new Part_List;
+	    pli->push_back((*pit));
+	    pit  = plist->erase(pit);
+	    partlists.push_back(pli);
+	    do {
+	      hit2 = false;
+	      for (Part_Iterator pit1=plist->begin();
+		   pit1!=plist->end();++pit1) {
+		if ((int)((*pit1)->GetFlow(2))==col1) {
+		  col1 = (*pit1)->GetFlow(1);
+		  pli->push_back((*pit1));
+		pit1 = plist->erase(pit1);
+		hit2 = true;
+		break;
+		}
+	      }
+	    } while (hit2 && col1!=col2);
+	  }
+	  if (hit1) break;
+	}
       }
-    }
+      if (!hit1 && plist->size()==plsize) {
+	msg_Error()<<"Error in "<<METHOD<<":\n"
+		   <<"   Will throw new event.\n";
+	return Return_Value::New_Event;
+      }
+    } while(plist->size()>0);
     
-    ret=Return_Value::Success;
-  }
-  else {
-    ret=Return_Value::Error;
-    break;
-  }
+    if (plist->empty()) {
+      blob = new Blob();
+      blob->SetId();
+      blob->SetType(btp::Fragmentation);
+      blob->SetStatus(blob_status::needs_hadronization);
+      bloblist->push_back(blob);
+      for (vector<SP(Part_List)>::iterator pliter=partlists.begin();
+	   pliter!=partlists.end();pliter++) {
+	while (!(*pliter)->empty()) {
+	  blob->AddToInParticles((*pliter)->front());
+	  (*pliter)->pop_front();
+	}
+      }
+      
+      ret=Return_Value::Success;
+    }
+    else {
+      ret=Return_Value::Error;
+      break;
+    }
   }
   return ret;
 }

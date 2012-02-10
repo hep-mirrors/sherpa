@@ -12,6 +12,7 @@ namespace SHERPA {
   class Hard_Decay_Handler;
   class Decay_Handler_Base;
   class MI_Handler;
+  class Soft_Collision_Handler;
   class Shower_Handler;
 
   class Perturbative_Interface {
@@ -21,6 +22,7 @@ namespace SHERPA {
     Hard_Decay_Handler     *p_dec;
     MI_Handler             *p_mi;
     Decay_Handler_Base     *p_hd;
+    Soft_Collision_Handler *p_sc;
     Shower_Handler         *p_shower;        
 
     ATOOLS::Blob *p_hard;
@@ -44,6 +46,8 @@ namespace SHERPA {
     Perturbative_Interface(Decay_Handler_Base *const hdh,
 			   Shower_Handler *const psh);
     Perturbative_Interface(MI_Handler *const hdh,
+			   Shower_Handler *const psh);
+    Perturbative_Interface(Soft_Collision_Handler *const sch,
 			   Shower_Handler *const psh);
 
     // destructor

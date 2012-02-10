@@ -521,7 +521,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 
 Parton *Shower::SelectSplitting(double & kt2win) {
   Parton *winner(NULL);
-  for (PLiter splitter = p_actual->begin(); splitter!=p_actual->end();splitter++) {
+  for (PLiter splitter = p_actual->begin(); 
+       splitter!=p_actual->end();splitter++) {
     if (TrialEmission(kt2win,*splitter)) winner = *splitter;
   }
   return winner;
@@ -529,6 +530,7 @@ Parton *Shower::SelectSplitting(double & kt2win) {
 
 bool Shower::TrialEmission(double & kt2win,Parton * split) 
 {
+  if (split->KtStart()==0. || split->KtVeto()==0.) return false;
   double kt2(0.),z(0.),y(0.),phi(0.);
   while (true) {
   if (m_sudakov.Generate(split)) {

@@ -1,7 +1,6 @@
 #ifndef AHADIC_Tools_Splitting_Functions_H
 #define AHADIC_Tools_Splitting_Functions_H
 
-#include "AHADIC++/Tools/Strong_Coupling.H"
 #include "AHADIC++/Tools/Cluster.H"
 #include "AHADIC++/Tools/Dipole.H"
 #include "ATOOLS/Math/Poincare.H"

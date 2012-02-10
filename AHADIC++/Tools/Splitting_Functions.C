@@ -57,13 +57,16 @@ SelectZFromG2QQSplittingFunction(const double & zmin,const double & zmax) {
 double Splitting_Functions::
 SelectZFromQ2QGSplittingFunction(const double & zmin,const double & zmax,
 				 const double & expo) {
-  if (expo==1.) {
-    double z(1.-(1.-zmin)*pow((1.-zmax)/(1.-zmin),ran->Get()));
-    return z;
-  }
-  double rn = ran->Get();
-  return 1.-pow(rn*pow(1.-zmax,1.-expo)+
-		(1.-rn)*pow(1.-zmin,1.-expo),1./(1.-expo));
+  double z,rn;
+  do {
+    rn = ran->Get();
+    if (expo==1.) 
+      z = (1.-(1.-zmin)*pow((1.-zmax)/(1.-zmin),rn));
+    else
+      z = 1.-pow(rn*pow(1.-zmax,1.-expo)+
+		 (1.-rn)*pow(1.-zmin,1.-expo),1./(1.-expo));
+  } while (false || 1.+z*z<2.*ran->Get());
+  return z;
 }
 
 double Splitting_Functions::

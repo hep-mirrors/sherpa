@@ -29,8 +29,8 @@ Ahadic::Ahadic(string path,string file,bool ana)  :
   hadpars->Init(path,file);
   ana=false;
 
-  p_cformhandler = new Cluster_Formation_Handler(&m_clulist,ana);
-  p_cdechandler  = new Cluster_Decay_Handler(&m_clulist,ana);
+  p_cformhandler = new Cluster_Formation_Handler(&m_clulist,hadpars->AnaOn());
+  p_cdechandler  = new Cluster_Decay_Handler(&m_clulist,hadpars->AnaOn());
   msg_Tracking()<<"Initialisation of Ahadic complete."<<endl;
 }
 
@@ -47,14 +47,14 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   static std::string mname(METHOD);
   Return_Value::IncCall(mname);
   if (msg->LevelIsDebugging()) {
-    msg_Out()<<"##########################################################################"<<endl
-	     <<"###################################### IN ################################"<<endl;
+    msg_Out()<<"#######################################################\n"
+	     <<"################### IN ################################\n";
     for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
       if ((*blit)->Has(blob_status::needs_hadronization) &&
 	  (*blit)->Type()==btp::Fragmentation) 
-	msg_Out()<<"##########################################################################"<<endl
-		 <<(**blit)<<std::endl
-		 <<"##########################################################################"<<endl;
+	msg_Out()<<"#################################################\n"
+		 <<(**blit)<<"\n"
+		 <<"#################################################\n";
     }
   }
   Blob * blob(NULL);
@@ -65,6 +65,23 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
     if ((*blit)->Has(blob_status::needs_hadronization) &&
 	(*blit)->Type()==btp::Fragmentation) {
       blob   = (*blit);
+      //Particle * part;
+      //double DeltaR, DeltaY, DeltaPhi,S12;
+      //Vec4D mom1, mom2;
+      //for (int i=0;i<blob->NInP()-1;i++) {
+      //	part = blob->InParticle(i);
+      //	mom1 = blob->InParticle(i)->Momentum();
+      //	mom2 = blob->InParticle(i+1)->Momentum();
+      //	DeltaPhi = dabs(mom1.Phi()-mom2.Phi());
+      //	DeltaY   = (mom1.Eta()-mom2.Eta());
+      //	DeltaR   = sqrt(DeltaY*DeltaY+DeltaPhi*DeltaPhi);
+      //	S12      = (mom1+mom2).Abs2();
+      //}
+      //msg_Out()<<"  {"<<mom1.Y()<<", "<<mom1.Phi()<<", "<<mom1.PPerp()<<"} "
+      //	       <<" ["<<part->GetFlow(1)<<", "<<part->GetFlow(2)<<"] "
+      //	       <<" from "<<part->ProductionBlob()->Id()<<"\n"
+      //	       <<"-----------------------------------------------\n";
+      //part = blob->InParticle(blob->NInP()-1);
       moveon = false;
       Reset();
       for (short int i=0;i<m_maxtrials;i++) {
@@ -73,36 +90,50 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	} catch (Return_Value::code ret) {
 	  msg_Error()<<"ERROR in "<<METHOD<<" : "<<std::endl
 		     <<"   Hadronization for blob "
-		     <<"("<<blob<<"; "<<blob->NInP()<<" -> "<<blob->NOutP()<<") "
+		     <<"("<<blob<<"; "<<blob->NInP()<<" -> "
+		     <<blob->NOutP()<<") "
 		     <<"did not work out,"<<std::endl
 		     <<"   will trigger retrying the event."<<std::endl;
 	  CleanUp(blob);
 	  return Return_Value::Retry_Event;
 	}
-
+	
 	switch (result) {
 	case Return_Value::Success : 
 	  ++blit;
 	  moveon = true;
 	  break;
 	case Return_Value::Retry_Event : 
-	  msg_Tracking()<<"ERROR in "<<METHOD<<" : "<<std::endl
-			<<"   Hadronization for blob "
-			<<"("<<blob<<"; "<<blob->NInP()<<" -> "<<blob->NOutP()<<") "
-			<<"did not work out,"<<std::endl
-			<<"   will trigger retrying the event."<<std::endl;
-	  CleanUp(blob);
-	  if (rpa->gen.Beam1().IsLepton() ||
-	      rpa->gen.Beam2().IsLepton()) {
-	    msg_Tracking()<<METHOD<<"(): Non-hh collision. Request new event instead.\n";
-	    return Return_Value::New_Event;
+	  {
+	    bool badcol(false);
+	    for (Blob_List::iterator blitz=blobs->begin();
+		 blitz!=blobs->end();++blitz) {
+	      if (!(*blitz)->CheckColour()) {
+		msg_Error()<<"Found bad colour configuration in \n"
+			   <<(**blitz)<<"\n";
+	      }
+	    }
+	    msg_Tracking()<<"ERROR in "<<METHOD<<" : "<<std::endl
+			  <<"   Hadronization for blob "
+			  <<"("<<blob<<"; "<<blob->NInP()<<" -> "
+			  <<blob->NOutP()<<") "
+			  <<"did not work out,"<<std::endl
+			  <<"   will trigger retrying the event."<<std::endl;
+	    CleanUp(blob);
+	    if (rpa->gen.Beam1().IsLepton() ||
+	        rpa->gen.Beam2().IsLepton()) {
+	      msg_Tracking()<<METHOD<<"(): Non-hh collision. Request new event instead.\n";
+	      return Return_Value::New_Event;
+	    }
+	    return result;
 	  }
-	  return result;
 	case Return_Value::Retry_Method :
 	  msg_Tracking()<<"Warning in "<<METHOD<<" : "<<std::endl
 			<<"   Hadronization for blob "
-			<<"("<<blob<<"; "<<blob->NInP()<<" -> "<<blob->NOutP()<<") "
-			<<"did not work out properly in the "<<(i+1)<<"th attempt,"<<std::endl
+			<<"("<<blob<<"; "<<blob->NInP()<<" -> "
+			<<blob->NOutP()<<") "
+			<<"did not work out properly in the "
+			<<(i+1)<<"th attempt,"<<std::endl
 			<<"   retry it "<<m_maxtrials<<" times."<<std::endl;
 	  Return_Value::IncRetryMethod(mname);
 	  CleanUp(blob);
@@ -110,8 +141,8 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	case Return_Value::Nothing :
 	default:
 	  msg_Tracking()<<"Warning in "<<METHOD<<":"<<std::endl
-			<<"   Calling Hadronization for Blob("<<blob<<") yields "
-			<<int(result)<<"."<<std::endl
+			<<"   Calling Hadronization for Blob("<<blob<<") "
+			<<"yields "<<int(result)<<"."<<std::endl
 			<<"   Continue and hope for the best."<<std::endl;
 	  moveon = true;
 	  ++blit;
@@ -144,8 +175,6 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
   blob->SetTypeSpec("AHADIC-1.0");
 
 
-  //msg_Out()<<endl<<"######################## "<<METHOD<<" for "<<blob->NInP()<<" partons."<<std::endl;
-
   switch (p_cformhandler->FormClusters(blob)) {
   case -1 : 
     msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl
@@ -158,7 +187,8 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
     p_cformhandler->Reset();
     return Return_Value::Retry_Method;
   case 1 :
-    if (retry>=0) msg_Tracking()<<"   Passed cluster formation now ("<<retry<<"th trial)."<<std::endl;    
+    if (retry>=0) 
+      msg_Tracking()<<"   Passed cluster form now ("<<retry<<"th trial).\n";
     break;
   }
   
@@ -172,7 +202,8 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
 		  <<"   Will retry method."<<std::endl;
     return Return_Value::Retry_Method;
   case  1 :
-    if (retry>=0) msg_Tracking()<<"   Passed cluster decays now ("<<retry<<"th trial)."<<std::endl;
+    if (retry>=0) 
+      msg_Tracking()<<"   Passed cluster decays now ("<<retry<<"th trial).\n";
     break;
   }
 
@@ -185,19 +216,9 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
   }
   assert(m_clulist.empty());
 
-#ifdef AHAmomcheck
-  Vec4D blobvecout(0.,0.,0.,0.), blobvecin(0.,0.,0.,0.);
-  for (int i=0;i<blob->NOutP();i++) blobvecout += blob->OutParticle(i)->Momentum();
-  for (int i=0;i<blob->NInP();i++)  blobvecin  += blob->InParticle(i)->Momentum();
-  //msg_Out()<<"#### Momentum conservation at the end : "
-	   //<<blob->CheckMomentumConservation()<<endl
-	   //<<"#### from "<<blobvecin<<" --> "<<blobvecout<<"."<<endl;
-  //msg_Out()<<(*blob)<<endl;
-  if (blob->CheckMomentumConservation().Abs2()<1.e-6)
-    //msg_Out()<<"##########################  OUT : Okay ################################"<<endl<<endl;
-  else
-    //msg_Out()<<"##########################  OUT : Error ###############################"<<endl<<endl;
-#endif
+  if (blob->CheckMomentumConservation().Abs2()>1.e-6) 
+    msg_Error()<<"Error in "<<METHOD<<": blob seem to be fishy.\n"
+	       <<(*blob)<<"\n";
   return Return_Value::Success;
 }
 
@@ -205,7 +226,7 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
 void Ahadic::Reset() {
   if (Cluster::RemainingClusters()) {
     msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-	       <<"   "<<Cluster::RemainingClusters()<<" clusters undeleted."<<std::endl;
+	       <<"   "<<Cluster::RemainingClusters()<<" clusters undeleted.\n";
   }
   assert(!Cluster::RemainingClusters());
   Cluster::ResetClusterNumber();
@@ -216,10 +237,11 @@ bool Ahadic::SanityCheck(Blob * blob,double norm2) {
   if (dabs(blob->CheckMomentumConservation().Abs2())/norm2>1.e-12 ||
       (norm2<0. && norm2>0.) ||
       Cluster::RemainingClusters()!=0 ||
-      control::s_AHAparticles!=blob->NOutP()/* ||
-					       control::s_AHAprotoparticles!=0*/) {
+      control::s_AHAparticles!=blob->NOutP()
+      /* || control::s_AHAprotoparticles!=0*/) {
     msg_Error()<<"ERROR in "<<METHOD<<" : "<<endl
-	       <<"   Momentum/particle-blob number violation for "<<(Cluster::RemainingClusters())
+	       <<"   Momentum/particle-blob number violation for "
+	       <<(Cluster::RemainingClusters())
 	       <<" remaining clusters (norm2 = "<<norm2<<")."<<endl
 	       <<"   Protoparticles = "<<control::s_AHAprotoparticles
 	       <<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()

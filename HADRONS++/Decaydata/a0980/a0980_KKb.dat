@@ -1,0 +1,19 @@
+# Decay: a_{0}(980) --> K Kb 
+#        0          --> 1 2  
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  0.000727 0 0.001448;
+</Result>

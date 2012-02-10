@@ -3,12 +3,12 @@
 {4122,-12,11}	 | 0.0546[EvtGen]	 | Lambdab_Lambdac+nu_ebe-.dat;
 {4122,-14,13}	 | 0.0546[EvtGen]	 | Lambdab_Lambdac+nu_mubmu-.dat;
 {4122,-16,15}	 | 0.0172[EvtGen]	 | Lambdab_Lambdac+nu_taubtau-.dat;
-{14122,-12,11}	 | 0.0128[EvtGen]	 | Lambdab_Lambdac2595+nu_ebe-.dat;
-{14122,-14,13}	 | 0.0128[EvtGen]	 | Lambdab_Lambdac2595+nu_mubmu-.dat;
-{14122,-16,15}	 | 0.0043[EvtGen]	 | Lambdab_Lambdac2595+nu_taubtau-.dat;
-{4124,-12,11}	 | 0.0096[EvtGen]	 | Lambdab_Lambdac2625+nu_ebe-.dat;
-{4124,-14,13}	 | 0.0096[EvtGen]	 | Lambdab_Lambdac2625+nu_mubmu-.dat;
-{4124,-16,15}	 | 0.0032[EvtGen]	 | Lambdab_Lambdac2625+nu_taubtau-.dat;
+{102142,-12,11}	 | 0.0128[EvtGen]	 | Lambdab_Lambdac2595+nu_ebe-.dat;
+{102142,-14,13}	 | 0.0128[EvtGen]	 | Lambdab_Lambdac2595+nu_mubmu-.dat;
+{102142,-16,15}	 | 0.0043[EvtGen]	 | Lambdab_Lambdac2595+nu_taubtau-.dat;
+{102144,-12,11}	 | 0.0096[EvtGen]	 | Lambdab_Lambdac2625+nu_ebe-.dat;
+{102144,-14,13}	 | 0.0096[EvtGen]	 | Lambdab_Lambdac2625+nu_mubmu-.dat;
+{102144,-16,15}	 | 0.0032[EvtGen]	 | Lambdab_Lambdac2625+nu_taubtau-.dat;
 
 {4122,-211}	 | 0.006[EvtGen]	 | Lambdab_Lambdac+pi-.dat;
 {4122,211,-211,-211}	 | 0.022[EvtGen]	 | Lambdab_Lambdac+pi+pi-pi-.dat;

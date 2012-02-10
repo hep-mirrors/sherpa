@@ -115,14 +115,14 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
   for (All_Singlets::const_iterator rit(p_refs->begin()),
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit,++rit) {
     msg_Debugging()<<"before shower step\n";
-      for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it)
-	if ((*it)->GetPrev()) 
-	  if((*it)->GetPrev()->GetNext()==*it) {
-	    if ((*it)->GetPrev()->TMin()==std::numeric_limits<double>::max())
-	      (*it)->SetStart((*it)->GetPrev()->KtNext());
-	    else (*it)->SetStart((*it)->GetPrev()->KtStart());
-	  }
-      msg_Debugging()<<**sit;
+    for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it)
+      if ((*it)->GetPrev()) 
+	if((*it)->GetPrev()->GetNext()==*it) {
+	  if ((*it)->GetPrev()->TMin()==std::numeric_limits<double>::max())
+	    (*it)->SetStart((*it)->GetPrev()->KtNext());
+	  else (*it)->SetStart((*it)->GetPrev()->KtStart());
+	}
+    msg_Debugging()<<**sit;
     size_t pem(nem);
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
     m_weight*=p_shower->Weight();
@@ -132,7 +132,7 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
     }
     msg_Debugging()<<"after shower step with "<<nem-pem
 		   <<" of "<<nem<<" emission(s)\n";
-      msg_Debugging()<<**sit;
+    msg_Debugging()<<**sit;
     msg_Debugging()<<"\n";
   }
   return 1;
@@ -261,14 +261,200 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap)
     }
   msg_Debugging()<<"k_{T,min} / k_{T,max} = {\n";
   for (KT2X_Map::const_iterator
-	 kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
+  	 kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
     msg_Debugging()<<"  "<<ID(kit->first)
-		   <<" -> "<<sqrt(kit->second.first)
-		   <<" / "<<sqrt(kit->second.second)<<"\n";
+		  <<" -> "<<sqrt(kit->second.first)
+		  <<" / "<<sqrt(kit->second.second)<<"\n";
   msg_Debugging()<<"}\n";
 }
 
-bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl)
+bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl,const bool & soft)
+{
+  if (soft) return PrepareShowerFromSoft(ampl);
+  return PrepareStandardShower(ampl);
+}
+
+
+void CS_Shower::EstablishRelations(Parton * parton,Cluster_Leg * leg,
+				   std::map<Cluster_Leg*,Parton*> & pmap) {
+  int no = leg->NumberOfSpectators();
+  if (no==0) return;
+
+  /*
+    msg_Out()<<"   "<<no<<" spectators for "
+    <<"["<<leg->Col().m_i<<", "<<leg->Col().m_j<<"]";
+    for (std::set<Cluster_Leg *>::iterator clit=leg->GetSpectators().begin();
+    clit!=leg->GetSpectators().end();clit++) {
+    msg_Out()<<" --> ["<<(*clit)->Col().m_i<<", "<<(*clit)->Col().m_j<<"]";
+    }
+    msg_Out()<<".\n";
+  */
+
+  size_t col1(parton->GetFlow(1)),col2(parton->GetFlow(2));
+  bool connect;
+  for (std::set<Cluster_Leg *>::iterator clit=leg->GetSpectators().begin();
+       clit!=leg->GetSpectators().end();clit++) {
+    connect = false;
+    Parton * spect = pmap[(*clit)];
+    if (col1!=0 && col1==spect->GetFlow(2)) {
+      if ((parton->GetLeft() && parton->GetLeft()!=spect) ||
+	  (spect->GetRight() && spect->GetRight()!=parton)) {
+	msg_Error()<<"Error in "<<METHOD<<":\n"
+		   <<"   have already left colour partner for \n"<<(*parton)
+		   <<"  --> ["<<parton->GetLeft()->GetFlow(1)
+		   <<", "<<parton->GetLeft()->GetFlow(2)<<"] while trying "
+		   <<"["<<spect->GetFlow(1)<<", "<<spect->GetFlow(2)<<"].\n"
+		   <<"   or right colour partner for \n"<<(*spect);
+      }
+      else {
+	//msg_Tracking()<<"Set ["<<spect->GetFlow(1)<<", "
+	//<<spect->GetFlow(2)<<"] "
+	//	 <<" as left of ["<<parton->GetFlow(1)
+	//	 <<", "<<parton->GetFlow(2)<<"].\n";
+	parton->SetLeft(spect);
+	spect->SetRight(parton);
+	connect = true;
+      }
+    }
+    if (col2!=0 && col2==spect->GetFlow(1)) {
+      if ((parton->GetRight() && parton->GetRight()!=spect) ||
+	  (spect->GetLeft() && spect->GetLeft()!=parton)) {
+	msg_Error()<<"Error in "<<METHOD<<":\n"
+		   <<"   have already right colour partner for \n"<<(*parton)
+		   <<"  --> ["<<parton->GetRight()->GetFlow(1)
+		   <<", "<<parton->GetRight()->GetFlow(2)<<"] while trying "
+		   <<"["<<spect->GetLeft()->GetFlow(1)<<", "
+		   <<spect->GetLeft()->GetFlow(2)<<"].\n"
+		   <<"   or left colour partner for \n"<<(*spect);
+      }
+      else {
+	//msg_Tracking()<<"Set ["<<spect->GetFlow(1)<<", "
+	//<<spect->GetFlow(2)<<"] "
+	//	 <<" as right of ["<<parton->GetFlow(1)
+	//	 <<", "<<parton->GetFlow(2)<<"].\n";
+	parton->SetRight(spect);
+	spect->SetLeft(parton);
+	connect = true;
+      }
+    }
+    if (!connect) {
+      if (spect->GetLeft()==parton) {
+	msg_Tracking()<<"Set ["<<spect->GetFlow(1)<<", "
+		      <<spect->GetFlow(2)<<"] "
+		      <<" as help right of ["<<parton->GetFlow(1)
+		      <<", "<<parton->GetFlow(2)<<"].\n";
+	parton->SetRight(spect);
+      }
+      else if (spect->GetRight()==parton) {
+	msg_Tracking()<<"Set ["<<spect->GetFlow(1)<<", "
+		      <<spect->GetFlow(2)<<"] "
+		      <<" as help left of ["<<parton->GetFlow(1)
+		      <<", "<<parton->GetFlow(2)<<"].\n";
+	parton->SetLeft(spect);
+      }
+      else {
+	if (!parton->GetLeft()) {
+	  msg_Tracking()<<"Set ["<<spect->GetFlow(1)<<", "
+			<<spect->GetFlow(2)<<"] "
+			<<" as help left of ["<<parton->GetFlow(1)
+			<<", "<<parton->GetFlow(2)<<"].\n";
+	  parton->SetLeft(spect);
+	}
+	else if (!parton->GetRight()) {
+	  msg_Tracking()<<"Set ["<<spect->GetFlow(1)<<", "
+			<<spect->GetFlow(2)<<"] "
+			<<" as help right of ["<<parton->GetFlow(1)
+			<<", "<<parton->GetFlow(2)<<"].\n";
+	  parton->SetRight(spect);
+	}
+      }
+    }
+  }
+  parton->SetStat(leg->Stat());
+  msg_Tracking()<<(*parton);
+}
+
+bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
+{
+  CleanUp();
+  msg_Tracking()<<"===============================================\n"
+  	   <<METHOD<<"(ms = "<<ampl->MS()<<"):\n";
+  //msg_Indent();
+  p_rampl = ampl;
+  p_ms    = ampl->MS();
+  p_next->clear();
+  //msg_Tracking()<<*ampl<<"\n";
+  std::map<Parton*,Cluster_Leg*> lmap;
+  std::map<Cluster_Leg*,Parton*> pmap;
+
+  Parton      * parton;
+  Cluster_Leg * leg;
+  Singlet *singlet(new Singlet());
+  singlet->SetMS(p_ms);
+  singlet->SetNLO(ampl->NLO());
+  for (size_t i(0);i<ampl->Legs().size();++i) {
+    leg = ampl->Leg(i);
+    if (leg->Flav().IsHadron() && 
+	leg->Flav().Kfcode()!=kf_pomeron &&
+	leg->Flav().Kfcode()!=kf_reggeon && 
+	leg->Id()&((1<<ampl->NIn())-1)) continue;
+    bool is(leg->Id()&((1<<ampl->NIn())-1));
+    Particle p(1,is?leg->Flav().Bar():leg->Flav(),is?-leg->Mom():leg->Mom());
+    if (is) {
+      p.SetFlow(2,leg->Col().m_i);
+      p.SetFlow(1,leg->Col().m_j);
+    }
+    else {
+      p.SetFlow(1,leg->Col().m_i);
+      p.SetFlow(2,leg->Col().m_j);
+    }
+    parton       = new Parton(&p,is?pst::IS:pst::FS);
+    pmap[leg]    = parton;
+    lmap[parton] = leg;
+    parton->SetRFlow();
+    parton->SetKin(p_shower->KinScheme());
+    parton->SetId(leg->Id());
+    if (is) {
+      if (Vec3D(p.Momentum())*Vec3D(rpa->gen.PBeam(0))>0.) {
+	parton->SetBeam(0);
+      }
+      else { 
+	parton->SetBeam(1);
+      }
+    }
+    double kt2max(leg->KTMax()),kt2veto(leg->KTVeto()),kt2start(leg->KTStart());
+    parton->SetStart(kt2start);   // start scale of shower
+    parton->SetKtMax(kt2max);    // no jet veto below ktmax
+    parton->SetKtPrev(kt2veto);   // upper kt - acts as veto
+    parton->SetKtNext(0.0);       // lower kt - set to 0.
+    parton->SetVeto(kt2veto);     // irrelevant 
+    parton->SetConnected(leg->Connected());
+    parton->SetMass2(p_ms->Mass2(leg->Flav()));
+    singlet->push_back(parton);
+    parton->SetSing(singlet);
+    
+    //msg_Out()<<"Add parton "<<parton->Id()<<",conn="<<leg->Connected()<<") "
+    //	     <<parton->GetFlavour()<<" "<<parton->Momentum()
+    //	     <<" ["<<parton->GetFlow(1)<<", "<<parton->GetFlow(2)<<"]: "
+    //	     <<"start = "<<parton->KtStart()<<" --> "
+    //	     <<parton->KtPrev()<<"\n";
+  }
+  for (std::map<Parton*,Cluster_Leg*>::iterator pit=lmap.begin();
+       pit!=lmap.end();pit++) {
+    parton = pit->first;
+    leg    = pit->second;
+    EstablishRelations(parton,leg,pmap);
+  }
+  p_shower->SetMS(p_ms);
+
+  pmap.clear();
+  lmap.clear();
+  //msg_Tracking()<<(*singlet)<<"\n";
+  m_allsinglets.push_back(singlet);
+  return true;
+}
+
+bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 {
   CleanUp();
   msg_Debugging()<<METHOD<<"(): {\n";

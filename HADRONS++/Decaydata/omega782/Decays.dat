@@ -1,11 +1,11 @@
 # outgoing part.    | BR(Delta BR)         [Origin]   	 | DC-file
-{211,-211,111}	    | 0.891(0.007)	   [PDG]	 | omega782_pi+pi-pi.dat;
-{111,22}	    | 0.0892(0.0028)	   [PDG]	 | omega782_piP.dat;
-{111,111,22}	    | 0.000067(0.000011)   [PDG]	 | omega782_pipiP.dat;
-{221,22}	    | 0.00049(0.00005)     [PDG]	 | omega782_etaP.dat;
-{111,11,-11}	    | 0.00059(0.00019)     [PDG]	 | omega782_pie-e+.dat;
-{111,13,-13}	    | 0.00096(0.00023)	   [PDG]	 | omega782_pimu-mu+.dat;
-{211,-211}	    | 0.017(0.0027)	   [PDG]   	 | omega782_pi+pi-.dat;
-{11,-11}	    | 0.0000714(0.0000013) [PDG]	 | omega782_e-e+.dat;
+{211,-211,111}	    | 0.892(0.007)	   [PDG]	 | omega782_pi+pi-pi.dat;
+{111,22}	    | 0.0828(0.0028)	   [PDG]	 | omega782_piP.dat;
+{111,111,22}	    | 0.000066(0.000011)   [PDG]	 | omega782_pipiP.dat;
+{221,22}	    | 0.00046(0.00005)     [PDG]	 | omega782_etaP.dat;
+{111,11,-11}	    | 0.00077(0.00006)     [PDG]	 | omega782_pie-e+.dat;
+{111,13,-13}	    | 0.00013(0.00004)	   [PDG]	 | omega782_pimu-mu+.dat;
+{211,-211}	    | 0.0153(0.0012)	   [PDG]   	 | omega782_pi+pi-.dat;
+{11,-11}	    | 0.0000728(0.0000013) [PDG]	 | omega782_e-e+.dat;
 {13,-13}	    | 0.00009(0.000031)    [PDG]	 | omega782_mu-mu+.dat;
 

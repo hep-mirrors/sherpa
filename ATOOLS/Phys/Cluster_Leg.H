@@ -64,6 +64,11 @@ namespace ATOOLS {
     Flavour m_fl;
     ColorID m_c;
 
+    double  m_ktstart, m_ktmax, m_ktveto;
+
+    bool    m_connected;
+    std::set<Cluster_Leg *> m_spectators;
+
     static ClusterLeg_PVector s_legs;
 
   public:
@@ -75,7 +80,9 @@ namespace ATOOLS {
 		       const Vec4D &p,const Flavour &fl,
 		       const ColorID &c=ColorID()):
       p_ampl(ampl), m_id(0), m_st(0), m_n(0), m_d(0), m_k(0),
-      m_p(p), m_fl(fl), m_c(c) {}
+      m_p(p), m_fl(fl), m_c(c),
+      m_ktstart(0.), m_ktmax(0.), m_ktveto(0.), m_connected(true)
+    {}
 
     inline ~Cluster_Leg() {}
 
@@ -84,6 +91,9 @@ namespace ATOOLS {
     static Cluster_Leg *New(Cluster_Amplitude *const ampl,
 			    const Vec4D &p,const Flavour &fl,
 			    const ColorID &c=ColorID());
+    inline std::set<Cluster_Leg *> & GetSpectators() { return m_spectators; }
+    inline void AddToSpectators(Cluster_Leg * cl) { m_spectators.insert(cl); }
+    inline int NumberOfSpectators() const { return m_spectators.size(); }
 
     void Delete();
 
@@ -98,6 +108,12 @@ namespace ATOOLS {
     inline void SetMom(const Vec4D &p)     { m_p=p; }
     inline void SetFlav(const Flavour &fl) { m_fl=fl; }
 
+    inline void SetKTStart(const double & kt) { m_ktstart = kt; }
+    inline void SetKTMax(const double & kt)   { m_ktmax   = kt; }
+    inline void SetKTVeto(const double & kt)  { m_ktveto  = kt; }
+
+    inline void SetConnected(const bool & c)  { m_connected = c; }
+
     inline Cluster_Amplitude *Amplitude() const { return p_ampl; }
 
     inline Vec4D   Mom() const  { return m_p;  }
@@ -110,6 +126,11 @@ namespace ATOOLS {
     inline size_t DMax() const { return m_d;  }
     inline size_t K() const    { return m_k;  }
 
+    inline const double KTStart() const { return m_ktstart; }
+    inline const double KTMax() const   { return m_ktmax; }
+    inline const double KTVeto() const  { return m_ktveto; }
+
+    inline const bool Connected() const { return m_connected; }
   };// end of class Cluster_Leg
 
   typedef std::vector<Cluster_Leg*> ClusterLeg_Vector;

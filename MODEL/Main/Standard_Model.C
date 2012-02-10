@@ -1,6 +1,7 @@
 #include "MODEL/Main/Standard_Model.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "MODEL/Main/Strong_Coupling.H"
 #include "MODEL/Main/Running_Fermion_Mass.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Message.H"
@@ -42,6 +43,11 @@ PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+7)<<" "<<"- A (Wolfenstein A)\n"
      <<std::setw(width+7)<<" "<<"- RHO (Wolfenstein Rho)\n"
      <<std::setw(width+7)<<" "<<"- ETA (Wolfenstein Eta)\n"
+     <<std::setw(width+4)<<" "<<"}";
+  str<<"Infrared continuation of alphaS:\n";
+  str<<std::setw(width+4)<<" "<<"{\n"
+     <<std::setw(width+7)<<" "<<"- AS_FORM (values 0,1,2,3,10, see documentation)\n"
+     <<std::setw(width+7)<<" "<<"- Q2_AS (corresponding infrared parameter, see documentation)\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
@@ -323,6 +329,17 @@ void Standard_Model::FillSpectrum(const PDF::ISR_Handler_Map& isr)
   as->SetDefault(alphaS_default);
   p_constants->insert(std::make_pair(std::string("alpha_S(MZ)"),alphaS));
   p_functions->insert(std::make_pair(std::string("alpha_S"),as));
+
+  double Q2aS = p_dataread->GetValue<double>("Q2_AS",1.);
+  std::string asf  = p_dataread->GetValue<std::string>("As_Form",std::string("smooth"));
+  asform::code as_form(asform::smooth);
+  if (asf==std::string("constant"))    as_form = asform::constant;
+  else if (asf==std::string("frozen")) as_form = asform::frozen;
+  else if (asf==std::string("smooth")) as_form = asform::smooth;
+  else if (asf==std::string("IR0"))    as_form = asform::IR0;
+  else if (asf==std::string("GDH"))    as_form = asform::GDH_inspired;
+  Strong_Coupling * strong_cpl(new Strong_Coupling(as,as_form,Q2aS));
+  p_functions->insert(make_pair(std::string("strong_cpl"),strong_cpl));
 
   Running_Fermion_Mass * md   = new Running_Fermion_Mass(Flavour(kf_d),
 							 ScalarConstant(std::string("Yukawa_d")),as);

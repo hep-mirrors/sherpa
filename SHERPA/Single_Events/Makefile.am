@@ -9,6 +9,7 @@ libSherpaSingleEvents_la_SOURCES      =	\
 					Event_Phase_Handler.C \
 				   	Signal_Processes.C \
 					Multiple_Interactions.C \
+					Minimum_Bias.C \
 					Jet_Evolution.C \
 					Signal_Process_FS_QED_Correction.C \
 					Hard_Decays.C \
@@ -24,6 +25,7 @@ localinc_HEADERS      =	\
 			Event_Phase_Handler.H \
 		 	Signal_Processes.H \
 			Multiple_Interactions.H \
+			Minimum_Bias.H \
 			Jet_Evolution.H \
 			Signal_Process_FS_QED_Correction.H \
 			Hard_Decays.H \

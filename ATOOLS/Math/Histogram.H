@@ -43,6 +43,7 @@ namespace ATOOLS {
     void Output(const std::string);
     void Finalize();
     void Restore();
+    double Average() const;
     double Mean() const;
     void SetBin(int i, double y)  { m_yvalues[i]=y; }
     void SetBin2(int i, double y2)  { m_y2values[i]=y2; }

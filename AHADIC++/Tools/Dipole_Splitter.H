@@ -2,7 +2,6 @@
 #define AHADIC_Tools_Dipole_Splitter_H
 
 #include "AHADIC++/Tools/Splitting_Tools.H"
-#include "AHADIC++/Tools/Strong_Coupling.H"
 #include "AHADIC++/Tools/Cluster.H"
 #include "AHADIC++/Tools/Dipole.H"
 #include "ATOOLS/Math/Poincare.H"
@@ -32,7 +31,7 @@ namespace AHADIC {
   public:
     Dipole_Splitter(const leading::code & lead,const PTOrder::code & ptorder,
 		    const ZForm::code & zform,
-		    Strong_Coupling *,const bool & analyse);
+		    MODEL::Strong_Coupling *,const bool & analyse);
     ~Dipole_Splitter();
 
     bool SplitCluster(Cluster * clu);

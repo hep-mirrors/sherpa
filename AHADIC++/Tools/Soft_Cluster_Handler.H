@@ -2,10 +2,10 @@
 #define AHADIC_Tools_Soft_Cluster_Handler_H
 
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
-#include "AHADIC++/Tools/Strong_Coupling.H"
 #include "AHADIC++/Tools/Dipole_Splitter.H"
 #include "AHADIC++/Tools/Transitions.H"
 #include "AHADIC++/Tools/Cluster.H"
+#include "MODEL/Main/Strong_Coupling.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
 
@@ -30,18 +30,23 @@ namespace AHADIC {
 
   class Soft_Cluster_Handler {
   private:
-    Strong_Coupling    * p_as;
-    Dipole_Splitter    * p_splitter;
-    Single_Transitions * p_singletransitions;
-    Double_Transitions * p_doubletransitions;
+    MODEL::Strong_Coupling * p_as;
+    Dipole_Splitter        * p_splitter;
+    Single_Transitions     * p_singletransitions;
+    Double_Transitions     * p_doubletransitions;
     
     Trans_Weight::code   m_tweightmode;
     Decay_Weight::code   m_dweightmode;
-    double               m_transitionoffset,m_decayoffset,m_kappa,m_lambda,m_chi;
+    int                  m_HHdecaymode;
+    double               m_transitionoffset,m_decayoffset;
+    double               m_kappa,m_lambda,m_chi;
     double               m_pt2min,m_pt2max,m_pt2maxfac;
+    MODEL::asform::code  m_asform;
+    double               m_pt02,m_asmax;
     Cluster_List *       m_clin;
 
-    long int             m_transitions, m_dtransitions, m_decays, m_forceddecays, m_lists;
+    long int             m_transitions, m_dtransitions;
+    long int             m_decays, m_forceddecays, m_lists;
     bool                                      m_ana;
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
@@ -51,16 +56,21 @@ namespace AHADIC {
     int           CheckCluster(Cluster *,bool);
 
     double        TransformWeight(Cluster *,ATOOLS::Flavour &,
-				  const bool & lighter=false,const bool & enforce=false);
+				  const bool & lighter=false,
+				  const bool & enforce=false);
     double        TransformKin(const double MC,const ATOOLS::Flavour & flav,
 			       const bool & enforce=false);
 
     double        DecayWeight(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,
 			      const bool & enforce=false);
-    bool          ClusterAnnihilation(Cluster * cluster,ATOOLS::Flavour &,ATOOLS::Flavour &);
+    bool          ClusterAnnihilation(Cluster * cluster,
+				      ATOOLS::Flavour &,ATOOLS::Flavour &);
     void          FixHHDecay(Cluster * cluster,ATOOLS::Blob * blob,
-			     const ATOOLS::Flavour had1,const ATOOLS::Flavour had2,
+			     const ATOOLS::Flavour had1,
+			     const ATOOLS::Flavour had2,
 			     const bool & constrained=false);
+    double        SelectPT2(const double & pt2max,const double & masscor,
+			    const bool & expo=true,const bool & beam=false);
 
 
     bool          CheckIfAllowed(Cluster_List * clin,double & E);

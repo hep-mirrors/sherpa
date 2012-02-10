@@ -47,6 +47,9 @@
 #define      kf_h0_qsc                  925
 #define      kf_Z_qgc                   923
 #define      kf_Wplus_qgc               924
+// Regge stuff
+#define      kf_reggeon                 110
+#define      kf_pomeron                 990
 // susy
 #define      kf_Chargino1               1000024
 #define      kf_Chargino2               1000037
@@ -362,5 +365,7 @@
 #define      kf_Xi_b_5940               5314
 #define      kf_Xi_b_5940_minus         5324
 #define      kf_Omega_b_star            5334
+#define      kf_N_1440                202112
+#define      kf_N_1440_plus           202212
 
 #endif

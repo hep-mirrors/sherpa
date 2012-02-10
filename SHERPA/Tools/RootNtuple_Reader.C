@@ -261,8 +261,7 @@ double RootNtuple_Reader::CalculateWeight
 bool RootNtuple_Reader::ReadInSubEvent(Blob_List * blobs) 
 {
   if (!ReadInEntry()) return 0;
-  Blob         *signalblob=new Blob();
-  signalblob->SetType(btp::Signal_Process);
+  Blob         *signalblob=blobs->FindFirst(btp::Signal_Process);
   signalblob->SetTypeSpec("NLOsubevt");
   signalblob->SetId();
   signalblob->SetPosition(Vec4D(0.,0.,0.,0.));
@@ -335,7 +334,6 @@ bool RootNtuple_Reader::ReadInSubEvent(Blob_List * blobs)
 #endif
 
 
-  blobs->push_back(signalblob);
   m_evtcnt++;
   return 1;
 }
@@ -352,9 +350,8 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     m_nlos.clear();
   }
   if (m_evtid==0) if (!ReadInEntry()) return 0;
-  Blob         *signalblob=new Blob();
+  Blob         *signalblob=blobs->FindFirst(btp::Signal_Process);
   m_weight = 0.;
-  signalblob->SetType(btp::Signal_Process);
   signalblob->SetTypeSpec("NLO");
   signalblob->SetId();
   signalblob->SetPosition(Vec4D(0.,0.,0.,0.));
@@ -438,7 +435,6 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   signalblob->AddData("Weight",new Blob_Data<double>(m_weight));
   signalblob->AddData("Trials",new Blob_Data<double>(1.));
   signalblob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(&m_nlos));
-  blobs->push_back(signalblob);
   m_evtcnt++;  
   return 1;
 }

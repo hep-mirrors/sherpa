@@ -1,5 +1,6 @@
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "AHADIC++/Tools/Soft_Cluster_Handler.H"
+#include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "ATOOLS/Math/MathTools.H"
@@ -18,7 +19,7 @@ Hadronisation_Parameters::Hadronisation_Parameters() :
   p_constituents(NULL),p_multiplets(NULL),
   p_singletransitions(NULL),p_doubletransitions(NULL),
   p_softclusters(NULL), 
-  m_leading(leading::none),m_asform(asform::constant), 
+  m_leading(leading::none),
   p_coupling(NULL), p_splitter(NULL)
 { }
 
@@ -28,14 +29,12 @@ Hadronisation_Parameters::~Hadronisation_Parameters() {
   if (p_singletransitions!=NULL) { delete p_singletransitions; p_singletransitions=NULL;  }
   if (p_doubletransitions!=NULL) { delete p_doubletransitions; p_doubletransitions=NULL;  }
   if (p_splitter!=NULL)          { delete p_splitter;          p_splitter=NULL;           }
-  if (p_coupling!=NULL)          { delete p_coupling;          p_coupling=NULL;           }
   if (p_softclusters!=NULL)      { delete p_softclusters;      p_softclusters=NULL;       }
 }
 
 void Hadronisation_Parameters::Init(string dir,string file)
 {
   msg_Tracking()<<"In Hadronisation_Parameters::Init("<<dir<<file<<")"<<endl;
-  bool ana(true);
   ReadParameters(dir,file);
 
   p_constituents      = new Constituents(false);
@@ -76,26 +75,11 @@ void Hadronisation_Parameters::Init(string dir,string file)
   m_ptorder = DefinePTOrder(int(m_parametermap[string("PT_Ordering")]));
   m_zform   = DefineZForm(int(m_parametermap[string("Z_Form")]));
 
-  switch (int(m_parametermap[string("asform")])) {
-  case 8:
-    m_asform = asform::GDH_inspired;
-    break;
-  case 2:
-    m_asform = asform::IRregularised_IR0; 
-    break;
-  case 1:
-    m_asform = asform::IRregularised; 
-    break;
-  case 0:
-  default:
-    m_asform = asform::constant; 
-    break;
-  }
-  p_coupling          = new Strong_Coupling(m_asform);
+  p_coupling          = (MODEL::Strong_Coupling*)MODEL::s_model->GetScalarFunction("strong_cpl");
   p_splitter          = new Dipole_Splitter(m_leading,m_ptorder,m_zform,
-					    p_coupling,ana);
+					    p_coupling,m_ana);
 
-  p_softclusters      = new Soft_Cluster_Handler(ana);
+  p_softclusters      = new Soft_Cluster_Handler(m_ana);
 }
   
 void Hadronisation_Parameters::ReadParameters(string dir,string file)
@@ -106,46 +90,51 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   dataread.SetInputPath(dir);
   dataread.SetInputFile(file);
   // General switches for operational modes
-  m_parametermap[string("leading")]            = 
+  m_ana = dataread.GetValue<int>("FRAGMENTATION_ANALYSIS",1)==1;
+  m_parametermap[string("colour_reconnections")] = 
+    dataread.GetValue<int>("COLOUR_RECONNECTIONS",1);
+  m_parametermap[string("leading")]              = 
     dataread.GetValue<int>("LEADING",1);
-  m_parametermap[string("asform")]             = 
-    dataread.GetValue<int>("ALPHAS_FORM",1);
-  m_parametermap[string("Mass_treatment")]     = 
+  m_parametermap[string("Mass_treatment")]       = 
     dataread.GetValue<int>("MASS_TREATMENT",0);
-  m_parametermap[string("Selection_C->H")]     = 
+  m_parametermap[string("Selection_C->H")]       = 
     dataread.GetValue<int>("TRANSITION_SELECTION",1);
-  m_parametermap[string("Selection_C->HH")]    = 
+  m_parametermap[string("Selection_C->HH")]      = 
     dataread.GetValue<int>("DECAY_SELECTION",3);
-  m_parametermap[string("PT_Ordering")]        = 
-    dataread.GetValue<int>("PT_ORDERING",1);
-  m_parametermap[string("Z_Form")]             = 
-    dataread.GetValue<int>("Z_FORM",2);
+  m_parametermap[string("PT_Ordering")]          = 
+    dataread.GetValue<int>("PT_ORDERING",3);
+  m_parametermap[string("HHDecayMode")]          = 
+    dataread.GetValue<int>("HHDecayMode",1);
+  m_parametermap[string("Z_Form")]               = 
+    dataread.GetValue<int>("Z_FORM",1);            
   // Parameters for kinematics of cluster decays
-  m_parametermap[string("asfix")]              = 
+  m_parametermap[string("asfix")]                = 
     dataread.GetValue<double>("AS_FIX",1.0);
-  m_parametermap[string("pt02")]               = 
-    dataread.GetValue<double>("PT^2_0",1.58);
-  m_parametermap[string("ptmax")]              = 
-    dataread.GetValue<double>("PT_MAX",2.3);
-  m_parametermap[string("ptmax_factor")]       = 
-    dataread.GetValue<double>("PT_MAX_FACTOR",2.0);
-  m_parametermap[string("P_qg_Exponent")] =
+  m_parametermap[string("pt02")]                 = 
+    dataread.GetValue<double>("PT^2_0",1.0);
+  m_parametermap[string("ptmax")]                = 
+    dataread.GetValue<double>("PT_MAX",1.0);
+  m_parametermap[string("minmass2")]             = 
+    dataread.GetValue<double>("MIN_MASS2",0.0);
+  m_parametermap[string("ptmax_factor")]         = 
+    dataread.GetValue<double>("PT_MAX_FACTOR",0.5);
+  m_parametermap[string("P_qg_Exponent")]        =
     dataread.GetValue<double>("P_Q2QG_EXPONENT",1.0);      
   // parameters for clusters to hadrons
-  m_parametermap[string("Offset_C->H")]        =
+  m_parametermap[string("Offset_C->H")]          =
     dataread.GetValue<double>("TRANSITION_OFFSET",0.0);      
-  m_parametermap[string("MassExponent_C->H")]  =
+  m_parametermap[string("MassExponent_C->H")]    =
     dataread.GetValue<double>("TRANSITION_EXPONENT",1.0);      
-  m_parametermap[string("WidthExponent_C->H")] =
+  m_parametermap[string("WidthExponent_C->H")]   =
     dataread.GetValue<double>("TRANSITION_EXPONENT2",0.0);      
-  m_parametermap[string("Offset_C->HH")]       =
+  m_parametermap[string("Offset_C->HH")]         =
     dataread.GetValue<double>("DECAY_OFFSET",1.06);      
-  m_parametermap[string("MassExponent_C->HH")] =
+  m_parametermap[string("MassExponent_C->HH")]   =
     dataread.GetValue<double>("DECAY_EXPONENT",1.54);      
-  m_parametermap[string("Strange_fraction")]   =
+  m_parametermap[string("Strange_fraction")]     =
     dataread.GetValue<double>("STRANGE_FRACTION",0.47);      
-  m_parametermap[string("Baryon_fraction")]    = 
-    dataread.GetValue<double>("BARYON_FRACTION",0.54);
+  m_parametermap[string("Baryon_fraction")]      = 
+    dataread.GetValue<double>("BARYON_FRACTION",0.7);
   m_parametermap[string("Heavy_Baryon_Enhancement")]    = 
     dataread.GetValue<double>("HEAVY_BARYON_ENHANCEMEMT",7.5);
   m_parametermap[string("P_qs_by_P_qq")]       = 

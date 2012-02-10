@@ -5,6 +5,7 @@
 #include "SHERPA/Single_Events/Decay_Handler_Base.H"
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
 #include "SHERPA/PerturbativePhysics/MI_Handler.H"
+#include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -23,7 +24,7 @@ using namespace ATOOLS;
 
 Perturbative_Interface::Perturbative_Interface
 (Matrix_Element_Handler *const meh,Hard_Decay_Handler*const dec,Shower_Handler *const psh):
-  p_me(meh), p_dec(dec), p_mi(NULL), p_hd(NULL), p_shower(psh),
+  p_me(meh), p_dec(dec), p_mi(NULL), p_hd(NULL), p_sc(NULL), p_shower(psh),
   p_ampl(NULL), m_cmode(0)
 {
   Data_Reader read(" ",";","!","=");
@@ -37,24 +38,45 @@ Perturbative_Interface::Perturbative_Interface
 
 Perturbative_Interface::Perturbative_Interface
 (MI_Handler *const mi,Shower_Handler *const psh):
-  p_me(NULL), p_mi(mi), p_hd(NULL), p_shower(psh),
+  p_me(NULL), p_mi(mi), p_hd(NULL), p_sc(NULL), p_shower(psh),
   p_ampl(NULL), m_cmode(0) {}
 
 Perturbative_Interface::Perturbative_Interface
 (Decay_Handler_Base *const hdh,Shower_Handler *const psh):
-  p_me(NULL), p_mi(NULL), p_hd(hdh), p_shower(psh),
+  p_me(NULL), p_mi(NULL), p_hd(hdh), p_sc(NULL), p_shower(psh),
   p_ampl(NULL), m_cmode(0) {}
+
+Perturbative_Interface::Perturbative_Interface
+(Soft_Collision_Handler *const sch,Shower_Handler *const psh):
+  p_me(NULL), p_mi(NULL), p_hd(NULL), p_sc(sch), p_shower(psh),
+  p_ampl(NULL), m_cmode(0)  {}
 
 Perturbative_Interface::~Perturbative_Interface() 
 {
   if (p_ampl) p_ampl->Delete();
 }
 
-bool Perturbative_Interface::SetColours
-(Cluster_Amplitude *ampl,Blob *const bl)
+bool Perturbative_Interface::
+SetColours(Cluster_Amplitude *ampl,Blob *const bl)
 {
-  msg_Debugging()<<METHOD<<"(): {\n";
-  //while (ampl->Prev()) ampl=ampl->Prev();
+  if (!bl) return false;
+  if (!ampl) {
+    Particle * part;
+    for (size_t i(0);i<bl->NInP();++i) {
+      part = bl->InParticle(i); 
+      for (size_t j(1);j<3;j++) {
+	part->SetFlow(j,Max(0,int(part->GetFlow(j)-100)));
+      }
+    }
+    for (size_t i(0);i<bl->NOutP();++i) {
+      part = bl->OutParticle(i); 
+      for (size_t j(1);j<3;j++) {
+	part->SetFlow(j,Max(0,int(part->GetFlow(j)-100)));
+      }
+    }
+    return true;
+  }
+  while (ampl->Prev()) ampl=ampl->Prev();
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *cl(ampl->Leg(i));
     if (i<ampl->NIn()) {
@@ -66,8 +88,6 @@ bool Perturbative_Interface::SetColours
       bl->OutParticle(i-ampl->NIn())->SetFlow(2,Max(0,cl->Col().m_j-100));
     }
   }
-  msg_Debugging()<<*bl<<"\n";
-  msg_Debugging()<<"}\n";
   return true;
 }
 
@@ -92,13 +112,32 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   if (p_mi) {
     p_ampl=p_mi->ClusterConfiguration();
     if (!SetColours(p_ampl,blob)) return Return_Value::New_Event;
-    if (!p_shower->GetShower()->PrepareShower(p_ampl)) return Return_Value::New_Event;
+    if (!p_shower->GetShower()->PrepareShower(p_ampl,true))
+      return Return_Value::New_Event;
     return Return_Value::Success;
   }
   if (p_hd) {
     p_ampl=p_hd->ClusterConfiguration(blob);
     if (!SetColours(p_ampl,blob)) return Return_Value::New_Event;
-    if (!p_shower->GetShower()->PrepareShower(p_ampl)) return Return_Value::New_Event;
+    if (!p_shower->GetShower()->PrepareShower(p_ampl))
+      return Return_Value::New_Event;
+    return Return_Value::Success;
+  }
+  if (p_sc) {
+    p_sc->SetClusterDefinitions(p_shower->GetShower()->GetClusterDefinitions());
+    p_ampl=p_sc->ClusterConfiguration(blob);
+    if (p_ampl==NULL) {
+      msg_Out()<<METHOD<<": Soft_Collision_Handler has no amplitude.\n";
+      return Return_Value::New_Event;
+    }
+    if (!SetColours(NULL,blob)) {
+      msg_Out()<<METHOD<<": could not set colours.\n"; 
+      return Return_Value::New_Event;
+    }
+    if (!p_shower->GetShower()->PrepareShower(p_ampl,true)) {
+      msg_Out()<<METHOD<<": could not prepare shower.\n"; 
+      return Return_Value::New_Event;
+    }
     return Return_Value::Success;
   }
   p_ampl=p_me->Process()->Get<Single_Process>()->Cluster(m_cmode);

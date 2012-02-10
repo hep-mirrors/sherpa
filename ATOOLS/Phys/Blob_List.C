@@ -145,7 +145,8 @@ bool Blob_List::TotalFourMomentum(Blob *blob,std::set<Blob*> &summed,
       if (abs2>0 && abs2<0) return false;
       if (part->ProductionBlob()==NULL) inisum+=part->Momentum(); 
       else 
-	if (!TotalFourMomentum(part->ProductionBlob(),summed,inisum,finsum,mode))
+	if (!TotalFourMomentum(part->ProductionBlob(),
+			       summed,inisum,finsum,mode))
 	  success=false;
     }
   if (mode>=0)

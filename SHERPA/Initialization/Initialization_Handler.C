@@ -54,9 +54,11 @@ typedef void (*PDF_Init_Function)();
 typedef void (*PDF_Exit_Function)();
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
-  m_mode(0), m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
+  m_mode(eventtype::StandardPerturbative), 
+  m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
   p_mehandler(NULL), p_harddecays(NULL), p_beamremnants(NULL),
-  p_fragmentation(NULL), p_hdhandler(NULL), p_mihandler(NULL), p_softphotons(NULL),
+  p_fragmentation(NULL), p_softcollisions(NULL), p_hdhandler(NULL), p_mihandler(NULL),
+  p_softphotons(NULL),
   p_iohandler(NULL), p_evtreader(NULL)
 {
   m_path=std::string("./");
@@ -69,7 +71,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   ExtractCommandLineParameters(argc, argv);
 
-  if (m_mode==9999) {
+  if (m_mode==eventtype::EventReader) {
     ShowParameterSyntax();
     p_evtreader   = new Event_Reader(m_path,m_evtfile);
     p_dataread    = new Data_Reader(" ",";","!","=");
@@ -114,6 +116,7 @@ void Initialization_Handler::SetFileNames()
   m_showerdat        = p_dataread->GetValue<string>("SHOWER_DATA_FILE",string("Shower.dat"));
   m_beamremnantdat   = p_dataread->GetValue<string>("BEAMREMNANT_DATA_FILE",string("Beam.dat"));
   m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
+  m_softcollisiondat = p_dataread->GetValue<string>("SOFTCOLLISIONS_DATA_FILE",string("SoftCollisions.dat"));
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_softphotonsdat   = p_dataread->GetValue<string>("SOFT_PHOTON_DATA_FILE",string("Fragmentation.dat"));
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
@@ -189,6 +192,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
   if (p_hdhandler)     { delete p_hdhandler;     p_hdhandler     = NULL; }
   if (p_softphotons)   { delete p_softphotons;   p_softphotons   = NULL; } 
+  if (p_softcollisions){ delete p_softcollisions;p_softcollisions= NULL; } 
   if (p_mihandler)     { delete p_mihandler;     p_mihandler     = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
@@ -333,7 +337,18 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   SetGlobalVariables();
   okay = okay && InitializeTheModel();  
   
-  if (m_mode>=9000 && !(m_mode==9990 || m_mode==9991)) {
+  std::string eventtype("StandardPerturbative");
+  if (m_mode!=eventtype::StandardPerturbative) eventtype="";
+  Data_Reader read(" ",";","!","=");
+  read.ReadFromFile(eventtype,"EVENT_TYPE");
+  if (eventtype=="StandardPerturbative") 
+    m_mode=eventtype::StandardPerturbative;
+  else if (eventtype=="MinimumBias") 
+    m_mode=eventtype::MinimumBias;
+  else if (eventtype=="HadronDecay") 
+    m_mode=eventtype::HadronDecay;
+  else if (eventtype=="EventReader") {
+    m_mode=eventtype::EventReader;
     msg_Events()<<"SHERPA will read in the events."<<std::endl
 		<<"   The full framework is not needed."<<std::endl;
     InitializeTheAnalyses();
@@ -347,10 +362,11 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   p_model->InitializeInteractionModel();
   okay = okay && InitializeTheAnalyses();
   if (!CheckBeamISRConsistency()) return 0.;
-  if (m_mode==9990 || m_mode==9991) {
+  if (m_mode==eventtype::PartialPartonLevelRootNtuple ||
+      m_mode==eventtype::FullPartonLevelRootNtuple) {
     p_evtreader = new RootNtuple_Reader
-      (m_path,m_evtfile,m_mode-9990,p_model,
-       m_isrhandlers[isr::hard_process]);
+      (m_path,m_evtfile,m_mode==eventtype::FullPartonLevelRootNtuple?1:0,
+       p_model,m_isrhandlers[isr::hard_process]);
     msg_Events()<<"SHERPA will read in the events."<<std::endl
 		<<"   The full framework is not needed."<<std::endl;
     InitializeTheIO();
@@ -358,6 +374,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     return true;
   }
   PHASIC::Phase_Space_Handler::GetInfo();
+  okay = okay && InitializeTheSoftCollisions();
   okay = okay && InitializeTheBeamRemnants();
   okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheShowers();
@@ -638,13 +655,24 @@ bool Initialization_Handler::InitializeTheShowers()
 }
 
 
+bool Initialization_Handler::InitializeTheSoftCollisions() 
+{
+  if (p_softcollisions) { delete p_softcollisions; p_softcollisions = NULL; }
+  p_softcollisions = new Soft_Collision_Handler(m_path,m_softcollisiondat,
+						p_beamspectra,
+						m_isrhandlers[isr::hard_process]);
+  msg_Info()<<"Initialized the Soft_Collision_Handler."<<endl;
+  return 1;
+}
+
 bool Initialization_Handler::InitializeTheBeamRemnants() 
 {
   if (p_beamremnants)  delete p_beamremnants;
   p_beamremnants = 
     new Beam_Remnant_Handler(m_path,m_beamremnantdat,
-			     m_isrhandlers[isr::hard_process],p_beamspectra);
-  p_beamremnants->SetScale(4.0);
+			     p_beamspectra,
+			     m_isrhandlers[isr::hard_process],
+			     p_softcollisions);
   msg_Info()<<"Initialized the Beam_Remnant_Handler."<<endl;
   return 1;
 }
@@ -739,20 +767,21 @@ bool Initialization_Handler::InitializeTheAnalyses()
 
 bool Initialization_Handler::CalculateTheHardProcesses()
 {
-  if (m_mode>9000) return true;
-  msg_Events()<<"=========================================================================="<<std::endl
-              <<"Start calculating the hard cross sections. This may take some time.       "<<std::endl;
+  if (m_mode!=eventtype::StandardPerturbative) return true;
+  
+  msg_Events()<<"===================================================================\n"
+              <<"Start calculating the hard cross sections. This may take some time.\n";
   ATOOLS::Data_Reader read(" ",";","!","=");
   ATOOLS::msg->SetLevel(read.GetValue<int>("INT_OUTPUT",ATOOLS::msg->Level()));
   as->SetActiveAs(isr::hard_process);
   int ok = p_mehandler->CalculateTotalXSecs();
   if (ok) {
-    msg_Events()<<"Calculating the hard cross sections has been successful.                  "<<std::endl
-	     <<"=========================================================================="<<std::endl;
+    msg_Events()<<"Calculating the hard cross sections has been successful.\n"
+		<<"====================================================================\n";
   }
   else {
-    msg_Events()<<"Calculating the hard cross sections failed. Check this carefully.         "<<std::endl
-	     <<"=========================================================================="<<std::endl;
+    msg_Events()<<"Calculating the hard cross sections failed. Check this carefully.\n"
+		<<"=======================================================================\n";
   }
   return ok;
 }
@@ -819,7 +848,7 @@ bool Initialization_Handler::ExtractValArg
   return true;
 }
 
-int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
+void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 {
   std::string datpath;
   std::vector<std::string> helpsv(argc-1);
@@ -854,20 +883,20 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
         oit=helpsv.erase(oit);
       }
       else if (key=="EVTDATA") {
-	m_mode       = 9999;
+	m_mode       = eventtype::EventReader;
 	m_evtfile    = value;
 	msg_Out()<<" Sherpa will read in events from : "<<value<<endl;
         oit=helpsv.erase(oit);
       }
       else if (key=="EVTDATA_ROOTNTUPLE") {
-	m_mode       = 9990;
+	m_mode       = eventtype::PartialPartonLevelRootNtuple;
 	m_evtfile    = value;
 	msg_Out()<<" Sherpa will read in root ntuple events from : "<<value<<endl;
         Read_Write_Base::AddCommandLine("ROOTNTUPLE_OUTPUT=");
         oit=helpsv.erase(oit);
       }
       else if (key=="EVTDATA_ROOTNTUPLE_RC") {
-	m_mode       = 9991;
+	m_mode       = eventtype::FullPartonLevelRootNtuple;
 	m_evtfile    = value;
 	msg_Out()<<" Sherpa will read in root ntuple events from : "<<value<<endl;
         Read_Write_Base::AddCommandLine("ROOTNTUPLE_OUTPUT=");
@@ -998,8 +1027,6 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     }
   }
   rpa->gen.SetVariable("RUN_DATA_FILE",m_file);
-
-  return m_mode;
 }
 
 

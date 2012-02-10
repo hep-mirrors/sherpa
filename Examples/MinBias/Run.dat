@@ -1,0 +1,91 @@
+(run){
+  EVENTS     = 100000
+  OUTPUT     = 2   #[Ladder_Generator|7][Final_State|7];
+  EVENT_TYPE      = MinimumBias
+  SOFT_COLLISIONS = Sinic
+  Sinic_Mode      = Inelastic # Xsecs
+  MB_Weight_Mode  = Unweighted  
+  Ladder_Weight   = Regge
+  #CSS_AS_FAC      = 2.5
+  MASSIVE[5]      = 1
+  MASSIVE[4]      = 1
+  MAX_PROPER_LIFETIME = 10. #[mm]
+  #######################################################
+  ANALYSIS                = Rivet
+  ANALYSIS_OUTPUT         = Analysis_7000
+  #EVENT_MODE              = HepMC_Short
+  #HEPMC2_SHORT_OUTPUT     = new
+  #HEPMC2_GENEVENT_OUTPUT  = new
+  #FILE_SIZE              = 1000000
+  #
+  #
+  ################################# external params, don't touch
+  deltaY          = 1.5           # tunable  0.0  ..... 2.5  rap cutoff for beams
+                                  # may influence energy extrapolation of xsecs.
+  bmin            = 0.            # impact parameters
+  bmax            = 20.           # impact parameters
+  accu            = 0.005         # 
+  #################################
+  #################################
+  ################################# form factors: touch for inclusive tune
+  FF_Form         = dipole        # Gauss, dipole - keep dipole
+  GW_States       = 2             # fixed, don't touch
+  Absorption      = exponential   # exponential, factorial - don't touch
+  beta_0^2        = 33.           # tunable   25.  ..... 50. 
+  Lambda2         = 1.5           # tunable   0.5  ..... 2.5
+  kappa           = 0.55          # tunable   0.1  ..... 0.9
+  xi              = 0.225         # tunable   0.01 ..... 1.0
+  ################################# 'BFKL' DEq paramters: touch
+  lambda          = 0.20          # tunable   0.1 ... 1.0
+  Delta           = 0.40          # tunable   0.1 ... 0.6
+  #################################
+  ################################# 
+  ################################# Filling the ladders: touch for exclusive tune
+  Ordering        = ao_phys       # seems to be the best
+  As_Form         = smooth        # IR0, smooth, frozen, constant
+  KT_Form         = smooth        # IR0, smooth, frozen, cut
+  Q_0^2           = 4.00          # 0. ... 4.
+  Q_1^2           = 0.00          # 0. ... 4.
+  Q_N^2           = 0.00          # 0. ... 4.    - irrelevant
+  Q_as^2          = 1.00          # 0.20 ... 1.
+  K_diff          = 0.0           #
+  D_diff^2        = 0.            # 	  
+  ################################# Showering: touch
+  Shower_Mode     = 2             # no shower (0), only connected(1), all(2)
+  KT2_Factor      = 1.00          # multiplying the start scale of the shower
+  Diff_Factor	  = 1.00          # multiplying the start scale of the shower,
+                                  #  extra factor for diffractive events.
+  ################################# Rescattering: touch
+  Rescattering    = same          # off, same, space
+  Resc_NoSinglet  = on            # enforce no-singlet for rescatters: on, off
+  RescProb        = 1.0           # 0.0 ... 4.0
+  SpatProb        = 0.            #
+  SpatWidth       = 0.0000001     #
+  Resc_KTMin      = off           # on/off
+  KTMin_Mode      = 0             # 1=from props, 0=none
+  Reconnections   = fix           # run/fix/off
+  Q_RC^2          = 1.00          # 0. ....
+  ReconnProb      = 1.00          # 0.0 ... 4.0
+  #
+}(run)
+
+(beam){
+  BEAM_1 =  2212; BEAM_ENERGY_1 = 3500.;
+  BEAM_2 =  2212; BEAM_ENERGY_2 = 3500.;
+}(beam)
+
+(analysis){
+  BEGIN_RIVET {
+  #USE_HEPMC_SHORT 1
+  #-a CDF_2001_S4751469 CDF_1988_S1865951 CDF_1990_S2089246 CDF_2002_S4796047
+  -a ATLAS_2010_S8918562 ATLAS_2010_S8894728 ATLAS_2010_S8994773
+  } END_RIVET
+}(analysis)
+
+(shower) {
+   CSS_PT2MIN=1.
+}(shower)
+
+(me){
+  ME_SIGNAL_GENERATOR = None
+}(me)

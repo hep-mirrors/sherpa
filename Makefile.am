@@ -17,6 +17,7 @@ SUBDIRS       = \
 		AHADIC++ \
 		HADRONS++ \
 		PHOTONS++ \
+		SINIC++ \
 		AddOns \
 		SHERPA \
 		Manual \

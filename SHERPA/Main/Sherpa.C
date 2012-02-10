@@ -6,6 +6,7 @@
 #include "SHERPA/Single_Events/EvtReadin_Phase.H"
 #include "SHERPA/Single_Events/Signal_Processes.H"
 #include "SHERPA/Single_Events/Hard_Decays.H"
+#include "SHERPA/Single_Events/Minimum_Bias.H"
 #include "SHERPA/Single_Events/Multiple_Interactions.H"
 #include "SHERPA/Single_Events/Jet_Evolution.H"
 #include "SHERPA/Single_Events/Signal_Process_FS_QED_Correction.H"
@@ -203,7 +204,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 bool Sherpa::InitializeTheEventHandler() 
 {
   p_iohandler     = p_inithandler->GetIOHandler();
-  int mode        = p_inithandler->Mode();
+  eventtype::code mode = p_inithandler->Mode();
   p_eventhandler  = new Event_Handler();
   p_iohandler->SetEventHandler(p_eventhandler);
   Analysis_Vector *anas(p_inithandler->GetAnalyses());
@@ -211,7 +212,8 @@ bool Sherpa::InitializeTheEventHandler()
     (*it)->SetEventHandler(p_eventhandler);
   }
   
-  if (mode>9000) {
+  if (mode==eventtype::EventReader ||
+      mode==eventtype::FullPartonLevelRootNtuple || mode==eventtype::PartialPartonLevelRootNtuple) {
     p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader())); 
   }
   else {
@@ -221,10 +223,12 @@ bool Sherpa::InitializeTheEventHandler()
                                                     p_inithandler->GetHardDecayHandler(),
 						    p_inithandler->GetHDHandler(),
 						    p_inithandler->GetMIHandler(),
+						    p_inithandler->GetSoftCollisionHandler(),
 						    p_inithandler->GetShowerHandlers()));
     p_eventhandler->AddEventPhase(new Signal_Process_FS_QED_Correction(p_inithandler->GetMatrixElementHandler(),
                                                                        p_inithandler->GetSoftPhotonHandler()));
     p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
+    p_eventhandler->AddEventPhase(new Minimum_Bias(p_inithandler->GetSoftCollisionHandler()));
     p_eventhandler->AddEventPhase(new Beam_Remnants(p_inithandler->GetBeamRemnantHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetFragmentationHandler()));
     p_eventhandler->AddEventPhase(new Hadron_Decays(p_inithandler->GetHDHandler()));
@@ -238,8 +242,6 @@ bool Sherpa::InitializeTheEventHandler()
 
 bool Sherpa::GenerateOneEvent(bool reset) 
 {
-  ATOOLS::rpa->gen.SetNumberOfGeneratedEvents(ATOOLS::rpa->gen.NumberOfGeneratedEvents()+1);
-  for (int i=0;i<m_trials;i++) {
     if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
       std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
       ran->WriteOutStatus(("random."+fname).c_str());
@@ -249,6 +251,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
     }
     if (reset) p_eventhandler->Reset();
     if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
+      rpa->gen.SetNumberOfGeneratedEvents(rpa->gen.NumberOfGeneratedEvents()+1);
       if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
         std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
         std::ofstream eventout(("refevent."+fname).c_str());
@@ -265,8 +268,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
       p_iohandler->PrintEvent(p_eventhandler->GetBlobs());
       return 1;
     }
-  }
-  return 0;
+    return 0;
 }
 
 void Sherpa::PrepareTerminate()

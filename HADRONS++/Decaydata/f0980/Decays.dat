@@ -1,5 +1,5 @@
 # outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{211,-211}	 | 0.60 [FK]	 | f0980_pi+pi-.dat;
-{111,111}	 | 0.30 [FK]	 | f0980_pipi.dat;
-{22,22}	 | 0.10 [FK]	 | f0980_PP.dat;
+{211,-211}	 | 0.66 [HH]	 | f0980_pi+pi-.dat;
+{111,111}	 | 0.33 [HH]	 | f0980_pipi.dat;
+{22,22}	 | 0.01 [HH]	 | f0980_PP.dat;
 

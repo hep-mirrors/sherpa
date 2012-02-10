@@ -43,7 +43,8 @@ namespace PDF {
 
     virtual Cluster_Definitions_Base *GetClusterDefinitions() = 0;
 
-    virtual bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl) = 0;
+    virtual bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl,
+                               const bool & soft=false) = 0;
     virtual bool JetVeto(ATOOLS::Cluster_Amplitude *const ampl) = 0;
 
     static void ShowSyntax(const int mode);

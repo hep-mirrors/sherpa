@@ -26,7 +26,7 @@ namespace CSSHOWER {
     str<<"  k_T test : "<<sqrt(part.m_kt_test);
     str<<"  k_T veto : "<<sqrt(part.m_kt_veto)<<"("<<sqrt(part.m_kt_max)<<")";
     str<<"  x_B : "<<part.m_xBj<<std::endl;
-    if (part.p_prev || part.p_next || 
+    if (part.p_prev || part.p_next ||
 	part.m_kt_prev!=0.0 || part.m_kt_next!=0.0) {
       if (part.p_prev) str<<"  P="<<part.p_prev;
       if (part.p_next) str<<"  N="<<part.p_next;
@@ -100,7 +100,7 @@ void Parton::UpdateColours()
   msg_IODebugging()<<"}\n";
 }
 
-double Parton::Weight(const double &scale) 
+double Parton::Weight(const double &scale)
 {
   double weight=1.0;
   for (size_t i(0);i<m_weights.size();++i)
@@ -108,4 +108,37 @@ double Parton::Weight(const double &scale)
     else break;
   return weight;
 }
-    
+
+void Parton::SetLeftOf(Parton * part) {
+  //msg_Out()<<"   "<<METHOD
+  //	   <<" for this ["<<m_flow.Code(1)<<", "<<m_flow.Code(2)<<"], "
+  //	   <<"part ["<<part->GetFlow(1)<<", "<<part->GetFlow(2)<<"]";
+  if (!m_connected) {
+    //msg_Out()<<" --> NOT CONNECTED.\n";
+    return;
+  }
+  //if (p_left) {
+  //msg_Out()<<", left ["<<p_left->GetFlow(1)<<", "<<p_left->GetFlow(2)<<"]";
+  //}
+  //msg_Out()<<".\n";
+  part->SetLeft(p_left);
+  if (p_left) p_left->SetRight(part);
+}
+
+void Parton::SetRightOf(Parton * part) {
+  //msg_Out()<<"   "<<METHOD
+  //	   <<" for this ["<<m_flow.Code(1)<<", "<<m_flow.Code(2)<<"], "
+  //	   <<"part ["<<part->GetFlow(1)<<", "<<part->GetFlow(2)<<"]";
+  if (!m_connected) {
+    //msg_Out()<<" --> NOT CONNECTED.\n";
+    return;
+  }
+  //if (p_right) {
+  //  msg_Out()<<", right ["<<p_right->GetFlow(1)<<", "
+  //<<p_right->GetFlow(2)<<"]";
+  //}
+  //msg_Out()<<".\n";
+  part->SetRight(p_right);
+  if (p_right) p_right->SetLeft(part);
+}
+

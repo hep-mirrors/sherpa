@@ -242,6 +242,17 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(PHASICBUILDDIR)
   AC_SUBST(PHASICLIBS)
   
+  SINICDIR="\${top_srcdir}/SINIC++"
+  SINICBUILDDIR="\${top_builddir}/SINIC++"
+  SINICLIBS="-L\${SINICBUILDDIR}/Main -L\${SINICBUILDDIR}/Event_Generation \
+        -L\${SINICBUILDDIR}/Beam_Remnants -L\${SINICBUILDDIR}/Cross_Sections \
+       -L\${SINICBUILDDIR}/Eikonals -L\${SINICBUILDDIR}/Tools \
+        -lSinicMain -lSinicEvents -lSinicBeamRemnants \
+       -lSinicXsecs -lSinicEikonals -lSinicTools"           
+  AC_SUBST(SINICDIR)
+  AC_SUBST(SINICBUILDDIR)
+  AC_SUBST(SINICLIBS)
+
   SHERPADIR="\${top_srcdir}/SHERPA"
   SHERPABUILDDIR="\${top_builddir}/SHERPA"
   SHERPALIBS="-L\${SHERPABUILDDIR}/Single_Events -L\${SHERPABUILDDIR}/PerturbativePhysics \

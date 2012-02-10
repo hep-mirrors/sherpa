@@ -1,7 +1,7 @@
 # outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{433,111}	 | 0.68(0.68) [FS]	 | Ds12460+_Dsstar+pi.dat;
-{431,22}	 | 0.21(0.21) [FS]	 | Ds12460+_Ds+P.dat;
-{431,211,-211}	 | 0.095(0.095) [FS]	 | Ds12460+_Ds+pi+pi-.dat;
-{433,22}	 | 0.01(0.01) [FS]	 | Ds12460+_Dsstar+P.dat;
-{10431,22}	 | 0.005(0.005) [FS]	 | Ds12460+_Ds0star2317+P.dat;
+{433,111}	 | 0.48(0.11) [PDG]	 | Ds12460+_Dsstar+pi.dat;
+{431,22}	 | 0.18(0.04) [PDG]	 | Ds12460+_Ds+P.dat;
+{431,211,-211}	 | 0.043(0.013) [PDG]	 | Ds12460+_Ds+pi+pi-.dat;
+{433,22}	 | 0.01(0.01) [PDG]	 | Ds12460+_Dsstar+P.dat;
+{10431,22}	 | 0.037(0.03) [PDG]	 | Ds12460+_Ds0star2317+P.dat;
 

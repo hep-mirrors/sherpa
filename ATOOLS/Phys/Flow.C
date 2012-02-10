@@ -56,6 +56,11 @@ int Flow::Index(const unsigned int code) const
   return -1;
 }
 
+void Flow::SwapColourIndices() {
+  unsigned int help(m_code[1]);
+  m_code[1] = m_code[2];
+  m_code[2] = help;
+}
 
 
 

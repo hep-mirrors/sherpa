@@ -1,4 +1,6 @@
 # outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{221,111}	 | 0.90 [FK]	 | a0980_etapi.dat;
-{22,22}	 | 0.10 [FK]	 | a0980_PP.dat;
+{221,111}	 | 0.907 [Herwig]	 | a0980_etapi.dat;
+{321,-321}	 | 0.049 [Herwig]	 | a0980_K+K-.dat;
+{311,-311}	 | 0.044 [Herwig]	 | a0980_KKb.dat;
+{22,22}		 | 0.000003 [Herwig]	 | a0980_PP.dat;
 

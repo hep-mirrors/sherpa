@@ -2,9 +2,9 @@
 #define AHADIC_Tools_Splitting_Tools_H
 
 #include "AHADIC++/Tools/Splitting_Functions.H"
-#include "AHADIC++/Tools/Strong_Coupling.H"
 #include "AHADIC++/Tools/Cluster.H"
 #include "AHADIC++/Tools/Dipole.H"
+#include "MODEL/Main/Strong_Coupling.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
@@ -49,9 +49,9 @@ namespace AHADIC {
 
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
-    Strong_Coupling     * p_as; 
-    Splitting_Functions * p_kernels;
-    FlavDecayMap        * p_options;
+    MODEL::Strong_Coupling * p_as; 
+    Splitting_Functions    * p_kernels;
+    FlavDecayMap           * p_options;
 
     Proto_Particle   * p_spect, * p_split, * p_out1, * p_out2;
     double             m_mmin_2, m_pt2max, m_pt2max_factor;
@@ -76,8 +76,9 @@ namespace AHADIC {
 			     const ATOOLS::Vec4D & q3);
     bool   ConstructKinematics();
    public:
-    Splitting_Tools(const leading::code &,const PTOrder::code &,const ZForm::code &,
-		    Strong_Coupling *,const bool &);
+    Splitting_Tools(const leading::code &,const PTOrder::code &,
+		    const ZForm::code &,
+		    MODEL::Strong_Coupling * as,const bool &);
     ~Splitting_Tools();
 
     void   SetSpectatorAndSplitter(Dipole * dip);

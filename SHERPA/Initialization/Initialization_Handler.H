@@ -9,7 +9,9 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
+#include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "SHERPA/Tools/Analysis_Interface.H"
+#include "SHERPA/Tools/Definitions.H"
 
 #include <map>
 #include <string>
@@ -39,7 +41,7 @@ namespace SHERPA {
     std::set<std::string> m_pdflibs;
     std::string m_modeldat, m_beamdat, m_isrdat[2], m_medat, m_midat, m_showerdat;
     std::string m_beamremnantdat, m_fragmentationdat, m_hadrondecaysdat, m_analysisdat;
-    std::string m_softphotonsdat;
+    std::string m_softcollisiondat, m_softphotonsdat;
     std::string m_processesdat;
     std::string m_selectordat;
 
@@ -48,7 +50,7 @@ namespace SHERPA {
 
     ATOOLS::Data_Reader *p_dataread;
 
-    int m_mode;
+    eventtype::code m_mode;
     bool m_savestatus;
 
     MODEL::Model_Base          * p_model;
@@ -59,6 +61,7 @@ namespace SHERPA {
     Shower_Handler_Map           m_showerhandlers;
     Beam_Remnant_Handler       * p_beamremnants;
     Fragmentation_Handler      * p_fragmentation;
+    Soft_Collision_Handler     * p_softcollisions;
     Decay_Handler_Base         * p_hdhandler;
     MI_Handler                 * p_mihandler; 
     Soft_Photon_Handler        * p_softphotons;
@@ -78,6 +81,7 @@ namespace SHERPA {
     bool InitializeTheShowers();
     bool InitializeTheBeamRemnants();
     bool InitializeTheFragmentation();
+    bool InitializeTheSoftCollisions();
     bool InitializeTheHadronDecays();
     bool InitializeTheSoftPhotons();
     bool InitializeTheAnalyses();
@@ -87,7 +91,7 @@ namespace SHERPA {
      std::vector<std::string>::iterator &it,
      const std::string &arg,const std::string &tag,
      const std::string &def=std::string("")) const;
-    int  ExtractCommandLineParameters(int argc,char * argv[]);
+    void ExtractCommandLineParameters(int argc,char * argv[]);
     bool CheckBeamISRConsistency();
     void SetGlobalVariables();
     void PrepareTerminate();
@@ -116,13 +120,14 @@ namespace SHERPA {
     const Shower_Handler_Map     & GetShowerHandlers()        const { return m_showerhandlers;   }
     Beam_Remnant_Handler         * GetBeamRemnantHandler()    const { return p_beamremnants;    }
     Fragmentation_Handler        * GetFragmentationHandler()  const { return p_fragmentation;   }
+    Soft_Collision_Handler       * GetSoftCollisionHandler()  const { return p_softcollisions;  }
     ATOOLS::Flavour              * GetBunches()                     { return m_bunch_particles; }
     MI_Handler                   * GetMIHandler()             const { return p_mihandler;       }
     Soft_Photon_Handler          * GetSoftPhotonHandler()     const { return p_softphotons;     }
     Input_Output_Handler         * GetIOHandler()             const { return p_iohandler;       }
     Event_Reader_Base            * GetEventReader()           const { return p_evtreader;       }
 
-    int    Mode()           const { return m_mode; };
+    eventtype::code Mode() const { return m_mode; };
 
     inline  ATOOLS::Data_Reader *DataReader() const { return p_dataread; }
 
