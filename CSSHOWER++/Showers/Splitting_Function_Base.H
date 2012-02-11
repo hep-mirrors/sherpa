@@ -91,8 +91,6 @@ namespace CSSHOWER {
       */
     virtual double Z() = 0;
 
-    virtual double Mu2(const double &z,const double &y,const double &Q2) const = 0;
-
     double JFF(const double &y) const;
     double JFI(const double &y,const double &eta,const double &scale) const;
     double JIF(const double &z,const double &y,

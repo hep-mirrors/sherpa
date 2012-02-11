@@ -15,10 +15,6 @@ namespace CSSHOWER {
 			  const double,const double);
     double OverEstimated(const double,const double);
     double Z();
-    double Mu2(const double &z,const double &y,const double &Q2) const
-    {
-      return (Q2-p_ms->Mass2(m_flavs[1])-p_ms->Mass2(m_flavs[2])-p_ms->Mass2(m_flspec))*y*(1.0-z);
-    }
 
   };
 
@@ -40,10 +36,6 @@ namespace CSSHOWER {
 			  const double,const double);
     double OverEstimated(const double,const double);
     double Z();
-    double Mu2(const double &z,const double &y,const double &Q2) const
-    {
-      return (Q2+p_ms->Mass2(m_flavs[1])+p_ms->Mass2(m_flavs[2])+p_ms->Mass2(m_flspec))*y/(1.0-y)*(1.0-z);
-    }
 
   };
 
@@ -65,10 +57,6 @@ namespace CSSHOWER {
 			  const double,const double);
     double OverEstimated(const double,const double);
     double Z();
-    double Mu2(const double &z,const double &y,const double &Q2) const
-    {
-      return (Q2+p_ms->Mass2(m_flavs[0])+p_ms->Mass2(m_flavs[2])+p_ms->Mass2(m_flspec))*y/z*(1.0-z);
-    }
 
   };
 
@@ -87,10 +75,6 @@ namespace CSSHOWER {
 			  const double,const double);
     double OverEstimated(const double,const double);
     double Z();
-    double Mu2(const double &z,const double &y,const double &Q2) const
-    {
-      return (Q2-p_ms->Mass2(m_flavs[0])-p_ms->Mass2(m_flavs[2])-p_ms->Mass2(m_flspec))*y/z*(1.0-z);
-    }
 
   };
 
@@ -105,10 +89,6 @@ namespace CSSHOWER {
 			  const double,const double);
     double OverEstimated(const double,const double);
     double Z();
-    double Mu2(const double &z,const double &y,const double &Q2) const
-    {
-      return (Q2-p_ms->Mass2(m_flavs[1])-p_ms->Mass2(m_flavs[2])-p_ms->Mass2(m_flspec))*y*z;
-    }
 
   };
 
@@ -130,10 +110,6 @@ namespace CSSHOWER {
 			  const double,const double);
     double OverEstimated(const double,const double);
     double Z();
-    double Mu2(const double &z,const double &y,const double &Q2) const
-    {
-      return (Q2+p_ms->Mass2(m_flavs[1])+p_ms->Mass2(m_flavs[2])+p_ms->Mass2(m_flspec))*y/(1.0-y)*z;
-    }
 
   };
 
@@ -155,10 +131,6 @@ namespace CSSHOWER {
 			  const double,const double);
     double OverEstimated(const double,const double);
     double Z();
-    double Mu2(const double &z,const double &y,const double &Q2) const
-    {
-      return (Q2+p_ms->Mass2(m_flavs[0])+p_ms->Mass(m_flavs[2])+p_ms->Mass2(m_flspec))*y/z;
-    }
 
   };
 
@@ -177,10 +149,6 @@ namespace CSSHOWER {
 			  const double,const double);
     double OverEstimated(const double,const double);
     double Z();
-    double Mu2(const double &z,const double &y,const double &Q2) const
-    {
-      return (Q2-p_ms->Mass2(m_flavs[0])-p_ms->Mass(m_flavs[2])-p_ms->Mass2(m_flspec))*y/z;
-    }
 
   };
 
@@ -195,10 +163,6 @@ namespace CSSHOWER {
 			  const double,const double);
     double OverEstimated(const double,const double);
     double Z();
-    double Mu2(const double &z,const double &y,const double &Q2) const
-    {
-      return (Q2-p_ms->Mass2(m_flavs[1])-p_ms->Mass2(m_flavs[2])-p_ms->Mass2(m_flspec))*y;
-    }
 
   };
 
@@ -220,10 +184,6 @@ namespace CSSHOWER {
 			  const double,const double);
     double OverEstimated(const double,const double);
     double Z();
-    double Mu2(const double &z,const double &y,const double &Q2) const
-    {
-      return (Q2+p_ms->Mass2(m_flavs[1])+p_ms->Mass2(m_flavs[2])+p_ms->Mass2(m_flspec))*y/(1.0-y);
-    }
 
   };
 
@@ -245,10 +205,6 @@ namespace CSSHOWER {
 			  const double,const double);
     double OverEstimated(const double,const double);
     double Z();
-    double Mu2(const double &z,const double &y,const double &Q2) const
-    {
-      return (Q2+p_ms->Mass2(m_flavs[0])+p_ms->Mass2(m_flavs[2])+p_ms->Mass2(m_flspec))*y/z;
-    }
 
   };
 
@@ -267,10 +223,6 @@ namespace CSSHOWER {
 			  const double,const double);
     double OverEstimated(const double,const double);
     double Z();
-    double Mu2(const double &z,const double &y,const double &Q2) const
-    {
-      return (Q2-p_ms->Mass2(m_flavs[0])-p_ms->Mass2(m_flavs[2])-p_ms->Mass2(m_flspec))*y/z;
-    }
 
   };
 
@@ -286,7 +238,6 @@ double LF_FFV_FF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double mu2 = Mu2(z,y,Q2);
   double muij2 = sqr(p_ms->Mass(m_flavs[0]))/Q2;
   double mi2   = sqr(p_ms->Mass(m_flavs[1]));
   double mui2  = mi2/Q2;
@@ -295,7 +246,7 @@ double LF_FFV_FF::operator()
   double massless = ( 2./(1.-z+z*y) - (1.+z) );
   if (muij2==0. && mui2==0. && muk2==0.) {
     double longpol = 0.5 * ( 1. - z );
-    double value = 2.0 * p_cf->Coupling(mu2,0) * massless + p_cf->Coupling(mu2,1) * longpol;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y);
   }
   else {
@@ -311,7 +262,7 @@ double LF_FFV_FF::operator()
     }
     massive *= 1./((1.-mui2-muk2)+1./y*(mui2-muij2))*sqr(1.-mui2-muk2)/sqrt(Lambda(1.,muij2,muk2));
     double longpol = 0.5 * ( 1. - z );
-    double value = 2.0 * p_cf->Coupling(mu2,0) * massive + p_cf->Coupling(mu2,1) * longpol;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y);
   } 
 }
@@ -352,13 +303,12 @@ double LF_FFV_FI::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {  
-  double mu2 = Mu2(z,y,Q2);
   double mi2 = sqr(p_ms->Mass(m_flavs[1]));
   //the massless case
   double massless = ( 2./(1.-z+y) - 1.-z + CDIS(z,y) );
   if (mi2==0.) {
     double longpol = 0.5 * ( 1. - z );
-    double value = 2.0 * p_cf->Coupling(mu2,0) * massless + p_cf->Coupling(mu2,1) * longpol;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
   }
   else {
@@ -371,7 +321,7 @@ double LF_FFV_FI::operator()
       return 0.;
     }
     double longpol = 0.5 * ( 1. - z );
-    double value = 2.0 * p_cf->Coupling(mu2,0) * massive + p_cf->Coupling(mu2,1) * longpol;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
   }
 }
@@ -413,9 +363,8 @@ double LF_FFV_IF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double mu2 = Mu2(z,y,Q2);
-  double value = 2.0 * p_cf->Coupling(mu2,0) * ( 2./(1.-z+y) - (1.+z) + CDIS(z,y) )
-    + p_cf->Coupling(mu2,1) * 0.5 * ( 1. - z );
+  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./(1.-z+y) - (1.+z) + CDIS(z,y) )
+    + p_cf->Coupling(scale,1) * 0.5 * ( 1. - z );
   return value * JIF(z,y,eta,scale);
 }
 
@@ -441,9 +390,8 @@ double LF_FFV_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double mu2 = Mu2(z,y,Q2);
-  double value = 2.0 * p_cf->Coupling(mu2,0) * ( 2./(1.-z) - (1.+z) )
-    + p_cf->Coupling(mu2,1) * 0.5 * ( 1. - z );
+  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./(1.-z) - (1.+z) )
+    + p_cf->Coupling(scale,1) * 0.5 * ( 1. - z );
   return value * JII(z,y,eta,scale);
 }
 
@@ -469,7 +417,6 @@ double LF_FVF_FF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double mu2 = Mu2(z,y,Q2);
   double muij2 = sqr(p_ms->Mass(m_flavs[0]))/Q2;
   double mj2   = sqr(p_ms->Mass(m_flavs[2]));
   double muj2  = mj2/Q2;
@@ -478,7 +425,7 @@ double LF_FVF_FF::operator()
   double massless = ( 2./(z+y-z*y) - 2. + z );
   if (muij2==0. && muj2==0. && muk2==0.) {
     double longpol = 0.5 * z;
-    double value = 2.0 * p_cf->Coupling(mu2,0) * massless + p_cf->Coupling(mu2,1) * longpol;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y);
   }
   else {
@@ -494,7 +441,7 @@ double LF_FVF_FF::operator()
     }
     massive *= 1./((1.-muj2-muk2)+1./y*(muj2-muij2))*sqr(1.-muj2-muk2)/sqrt(Lambda(1.,muij2,muk2));
     double longpol = 0.5 * z;
-    double value = 2.0 * p_cf->Coupling(mu2,0) * massive + p_cf->Coupling(mu2,1) * longpol;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y);
   }
 }
@@ -533,13 +480,12 @@ double LF_FVF_FI::CDISMax()
 
 double LF_FVF_FI::operator() (const double z,const double y,
 			    const double eta, const double scale,const double Q2) {
-  double mu2 = Mu2(z,y,Q2);
   double mj2 = sqr(p_ms->Mass(m_flavs[2]));
   //the massless case
   double massless = (2./(z+y) - 2.+z + CDIS(1.-z,y));
   if (mj2==0.) {
     double longpol = 0.5 * z;
-    double value = 2.0 * p_cf->Coupling(mu2,0) * massless + p_cf->Coupling(mu2,1) * longpol;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
   }
   else {
@@ -552,7 +498,7 @@ double LF_FVF_FI::operator() (const double z,const double y,
       return 0.;
     }
     double longpol = 0.5 * z;
-    double value = 2.0 * p_cf->Coupling(mu2,0) * massive + p_cf->Coupling(mu2,1) * longpol;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
   }
 }
@@ -593,14 +539,13 @@ double LF_FVF_IF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double mu2 = Mu2(z,y,Q2);
   double mk2  = sqr(p_ms->Mass(m_flspec));
   double muk2 = mk2*z/(Q2-mk2); 
   double massless = ( 2./z - 2. +z + CDIS(1.-z,y));
   if (muk2==0.) {
     //the massless case
     double longpol = 0.5 * z;
-    double value = 2.0 * p_cf->Coupling(mu2,0) * massless + p_cf->Coupling(mu2,1) * longpol;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JIF(z,y,eta,scale);
   }
   else {
@@ -611,7 +556,7 @@ double LF_FVF_IF::operator()
       return 0.;
     }
     double longpol = 0.5 * z;
-    double value = 2.0 * p_cf->Coupling(mu2,0) * massive + p_cf->Coupling(mu2,1) * longpol;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
     return value * JIF(z,y,eta,scale);
   }
 }
@@ -641,9 +586,8 @@ double LF_FVF_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double mu2 = Mu2(z,y,Q2);
-  double value = 2.0 * p_cf->Coupling(mu2,0) * ( 2./z - 2. +z )
-    + p_cf->Coupling(mu2,1) * 0.5 * z;
+  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./z - 2. +z )
+    + p_cf->Coupling(scale,1) * 0.5 * z;
   return value * JII(z,y,eta,scale);
 }
 
@@ -672,7 +616,6 @@ double LF_VFF_FF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double mu2 = Mu2(z,y,Q2);
   //if (scale<4.*sqr(p_ms->Mass(m_flavs[1]))) return 0.;
   double mui2  = sqr(p_ms->Mass(m_flavs[1]))/Q2;
   double muj2  = sqr(p_ms->Mass(m_flavs[2]))/Q2;
@@ -681,7 +624,7 @@ double LF_VFF_FF::operator()
   double massless = (1.-2.*z*(1.-z));
   double longpol = 0.5;
   if (mui2==0. && muj2==0. && muk2==0.) {
-    double value = 2.0 * p_cf->Coupling(mu2,0) * massless + p_cf->Coupling(mu2,1) * longpol;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y);
   }
   else {
@@ -694,7 +637,7 @@ double LF_VFF_FF::operator()
     double zp = frac*(1.+ viji*vijk);
     double massive = vijk * (1.- 2.*(z*(1.-z) - 2.* zp*zm));
     massive *= 1./((1.-mui2-muj2-muk2)+1./y*(mui2+muj2))*sqr(1.-mui2-muj2-muk2)/sqrt(Lambda(1.,0.,muk2));
-    double value = 2.0 * p_cf->Coupling(mu2,0) * massive + p_cf->Coupling(mu2,1) * longpol;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y);
   }
 }
@@ -741,13 +684,12 @@ double LF_VFF_FI::operator()
   
   if (scale<4.*sqr(p_ms->Mass(m_flavs[1]))) return 0.;
   
-  double mu2 = Mu2(z,y,Q2);
   double muQ2 = sqr(p_ms->Mass(m_flavs[1]))*(1.-y)/Q2;
   //the massless case 
   double massless = ( (1.-2.*z*(1.-z))*(1.-0.5/z*CDIS(y,z)) + CDIS(z,y) );
   double longpol = 0.5;
   if (muQ2==0.) {
-    double value = 2.0 * p_cf->Coupling(mu2,0) * massless + p_cf->Coupling(mu2,1) * longpol;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
   }
   else {
@@ -757,7 +699,7 @@ double LF_VFF_FI::operator()
     double zm      = 0.5 * (1  - delta); 
     double massive = (1.-2.*(zp-z)*(z-zm));
     if (massive < 0.) std::cout<<" massive V_FF FI < 0. "<<massive<<std::endl; 
-    double value = 2.0 * p_cf->Coupling(mu2,0) * massive + p_cf->Coupling(mu2,1) * longpol;
+    double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
   }
 }
@@ -803,9 +745,8 @@ double LF_VFF_IF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double mu2 = Mu2(z,y,Q2);
-  double value = 2.0 * p_cf->Coupling(mu2,0) * ( (1.-2.*z*(1.-z))*(1.0-0.5/z*CDIS(y,z)) + CDIS(z,y) )
-    + p_cf->Coupling(mu2,1) * 0.5;
+  double value = 2.0 * p_cf->Coupling(scale,0) * ( (1.-2.*z*(1.-z))*(1.0-0.5/z*CDIS(y,z)) + CDIS(z,y) )
+    + p_cf->Coupling(scale,1) * 0.5;
   return value * JIF(z,y,eta,scale);
 }
 
@@ -834,9 +775,8 @@ double LF_VFF_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double mu2 = Mu2(z,y,Q2);
-  double value = 2.0 * p_cf->Coupling(mu2,0) * (1.-2.*z*(1.-z))
-    + p_cf->Coupling(mu2,1) * 0.5;
+  double value = 2.0 * p_cf->Coupling(scale,0) * (1.-2.*z*(1.-z))
+    + p_cf->Coupling(scale,1) * 0.5;
   return value * JII(z,y,eta,scale);
 }
 

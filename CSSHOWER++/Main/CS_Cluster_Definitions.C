@@ -61,8 +61,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
       if ((k->Id()&3)==0) {
 	Kin_Args ff(ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,1|(kin?4:0)));
 	if (ff.m_stat!=1) return cs;
-	double kt2=2.0*(pi*pj)*ff.m_z*(1.0-ff.m_z)
-	  -sqr(1.0-ff.m_z)*mi2-sqr(ff.m_z)*mj2;
+	double kt2=2.0*(pi*pj)*ff.m_z*(1.0-ff.m_z);
 	cs=CS_Parameters(kt2,ff.m_z,ff.m_y,ff.m_phi,1.0,Q2,0,kin);
       }
       else {
@@ -70,8 +69,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
 	if (fi.m_pk.PPlus()>sum.PPlus() || fi.m_y>1.0 ||
 	    fi.m_pk.PMinus()>sum.PMinus() || fi.m_stat!=1) return cs;
-	double kt2=2.0*(pi*pj)*fi.m_z*(1.0-fi.m_z)
-	  -sqr(1.0-fi.m_z)*mi2-sqr(fi.m_z)*mj2;
+	double kt2=2.0*(pi*pj)*fi.m_z*(1.0-fi.m_z);
 	cs=CS_Parameters(kt2,fi.m_z,fi.m_y,fi.m_phi,1.0-fi.m_y,Q2,2,kin);
       }
     }
@@ -83,14 +81,14 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	Kin_Args fi(ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-p_b->Mom(),1|(kin?4:0)));
 	if (fi.m_pi.PPlus()>sum.PPlus() || fi.m_z<0.0 ||
 	    fi.m_pi.PMinus()>sum.PMinus() || fi.m_stat!=1) return cs;
-	double kt2=-2.0*(pi*pj)*(1.0-fi.m_z)-mj2-sqr(1.0-fi.m_z)*mi2;
+	double kt2=-2.0*(pi*pj)*(1.0-fi.m_z);
 	cs=CS_Parameters(kt2,fi.m_z,fi.m_y,fi.m_phi,fi.m_z,Q2,1,fi.m_mode);
       }
       else {
 	Kin_Args ii(ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,1|(kin?4:0)));
 	if (ii.m_pi.PPlus()>sum.PPlus() || ii.m_z<0.0 ||
 	    ii.m_pi.PMinus()>sum.PMinus() || ii.m_stat!=1) return cs;
-	double kt2=-2.0*(pi*pj)*(1.0-ii.m_z)-mj2-sqr(1.0-ii.m_z)*mi2;
+	double kt2=-2.0*(pi*pj)*(1.0-ii.m_z);
 	cs=CS_Parameters(kt2,ii.m_z,ii.m_y,ii.m_phi,ii.m_z,Q2,3,kin);
       }
     }
@@ -166,8 +164,7 @@ void CS_Cluster_Definitions::KernelWeight
   cs.p_sf=cdip;
   p_shower->SetMS(p_ms);
   cdip->SetFlavourSpec(fls);
-  cs.m_mu2=cdip->Lorentz()->Mu2(cs.m_z,cs.m_y,Q2);
-  cs.m_mu2=Max(cs.m_mu2,cs.m_mode&1?
+  cs.m_mu2=Max(cs.m_kt2,cs.m_mode&1?
 	       p_shower->GetSudakov()->ISPT2Min():
 	       p_shower->GetSudakov()->FSPT2Min());
   cs.m_mu2*=cdip->Coupling()->CplFac(cs.m_mu2);
@@ -308,7 +305,7 @@ CParam CS_Cluster_Definitions::CoreScale
 	    kt2*=dabs((p[i]*p[k])/(p[j]*p[k]));
 	  }
 	  if (kt2<kt2cmin) {
-	    kt2cmin=kt2;
+	    kt2cmin=kt2*cdip->Coupling()->CplFac(kt2);
 	    mu2min=kt2*cdip->Coupling()->CplFac(kt2);
 	  }
 	}
