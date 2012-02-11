@@ -132,7 +132,7 @@ DefineDissociation(const int & Nladders,const double & xcut,const double & eta,
     int     trials(0);
     double  weight,wt,x,xsum,maxwt(0.);
     Flavour flav;
-    while (trials++<pow(10,ATOOLS::Min(4,Nladders+3))) {
+    while (trials++<pow(10.,ATOOLS::Min(4,Nladders+3))) {
       m_xs.clear();
       weight = startweight;
       xsum   = 0.;
