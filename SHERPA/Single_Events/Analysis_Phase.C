@@ -42,7 +42,8 @@ Return_Value::code Analysis_Phase::Treat(Blob_List *bloblist,double &weight)
       if (!m_inits[*it]) m_inits[*it]=(*it)->Init();
       (*it)->Run(bloblist);
     }
-  if (rpa->gen.NumberOfGeneratedEvents()%m_wit==0 &&
+  if (rpa->gen.NumberOfGeneratedEvents()>0 &&
+      rpa->gen.NumberOfGeneratedEvents()%m_wit==0 &&
       rpa->gen.NumberOfGeneratedEvents()<rpa->gen.NumberOfEvents()) 
     for (Analysis_Vector::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it)
       (*it)->WriteOut();
