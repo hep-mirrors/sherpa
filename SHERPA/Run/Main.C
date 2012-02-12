@@ -34,7 +34,7 @@ int main(int argc,char* argv[])
       Data_Reader read(" ",";","!","=");
       msg->SetLevel(read.GetValue<int>("EVT_OUTPUT",msg->Level()));
       double starttime=rpa->gen.Timer().RealTime();
-      for (int i=1;i<=rpa->gen.NumberOfEvents();i++) {
+      for (size_t i=1;i<=rpa->gen.NumberOfEvents();) {
 	if (i%100==0 && i<rpa->gen.NumberOfEvents()) {
 	  double diff=rpa->gen.Timer().RealTime()-starttime;
 	  msg_Info()<<"  Event "<<i<<" ( "
@@ -54,8 +54,10 @@ int main(int argc,char* argv[])
 	  if (rpa->gen.BatchMode()&2) { msg_Info()<<std::endl; }
 	  else { msg_Info()<<bm::cr<<std::flush; }
 	}
-	if (Generator->GenerateOneEvent())
+	if (Generator->GenerateOneEvent()) {
 	  msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
+	  ++i;
+	}
       }
       msg_Info()<<"  Event "<<rpa->gen.NumberOfEvents()<<" ( "
 		<<size_t(rpa->gen.Timer().RealTime()-starttime)

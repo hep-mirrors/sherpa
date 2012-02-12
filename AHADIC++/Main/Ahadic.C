@@ -105,14 +105,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	  break;
 	case Return_Value::Retry_Event : 
 	  {
-	    bool badcol(false);
-	    for (Blob_List::iterator blitz=blobs->begin();
-		 blitz!=blobs->end();++blitz) {
-	      if (!(*blitz)->CheckColour()) {
-		msg_Error()<<"Found bad colour configuration in \n"
-			   <<(**blitz)<<"\n";
-	      }
-	    }
+	    blobs->ColorConservation();
 	    msg_Tracking()<<"ERROR in "<<METHOD<<" : "<<std::endl
 			  <<"   Hadronization for blob "
 			  <<"("<<blob<<"; "<<blob->NInP()<<" -> "

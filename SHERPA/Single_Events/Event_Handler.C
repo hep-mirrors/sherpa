@@ -248,7 +248,8 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
   }
   else {
     if (!m_blobs.FourMomentumConservation()) {
-      msg_Error()<<METHOD<<"(): Four moemntum not conserved. Rejecting event."<<std::endl;
+      msg_Debugging()<<m_blobs<<"\n";
+      msg_Error()<<METHOD<<"(): Four momentum not conserved. Rejecting event."<<std::endl;
       return false;
     }
   }

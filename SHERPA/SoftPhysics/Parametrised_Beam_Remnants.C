@@ -109,7 +109,7 @@ FillBeamBlobs(Blob_List *const bloblist,
     }
     return Return_Value::Success;
   }
-  return Return_Value::Retry_Event;
+  return Return_Value::New_Event;
 }
 
 

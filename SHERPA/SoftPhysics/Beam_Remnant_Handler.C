@@ -12,6 +12,14 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
   p_sinic(softcollisions?softcollisions->GetSinic():NULL),
   p_beam(beam), m_fill(true)
 {
+  Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
+  read.SetInputPath(path);
+  read.SetInputFile(file);
+  if (!read.ReadFromFile(m_fill,"BEAM_REMNANTS")) m_fill=1;
+  else msg_Info()<<METHOD<<"(): Set remnants "<<m_fill<<"."<<std::endl;
+  if (!read.ReadFromFile(m_vmode,"BRH_VMODE")) m_vmode=0;
+  else msg_Info()<<METHOD<<"(): Set check mode "<<m_vmode<<"."<<std::endl;
   if (p_sinic==NULL) {
     p_parametrised = new Parametrised_Beam_Remnants(path,file,isr,p_beam);
     p_parametrised->SetScale(4.0);
@@ -27,7 +35,22 @@ Beam_Remnant_Handler::~Beam_Remnant_Handler()
 Return_Value::code 
 Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
 {
-  if (!m_fill) return Return_Value::Nothing;
+  if (!m_fill) {
+    bool set(false);
+    for (Blob_List::iterator bit=bloblist->begin();
+	 bit!=bloblist->end();++bit) {
+      if ((*bit)->Has(blob_status::needs_beams)) {
+	(*bit)->UnsetStatus(blob_status::needs_beams);
+	(*bit)->UnsetStatus(blob_status::internal_flag);
+	set=true;
+      }
+    }
+    if (!set) return Return_Value::Nothing;
+    if (bloblist->FourMomentumConservation())
+      return Return_Value::Success;
+    if (m_vmode) abort();
+    return Return_Value::New_Event;
+  }
   for (Blob_List::iterator bit=bloblist->begin();
 	 bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Beam) {
@@ -46,6 +69,7 @@ Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
   }
   else {
     fbc = p_parametrised->FillBeamBlobs(bloblist);
+    if (fbc==Return_Value::New_Event && m_vmode) abort();
   }
   if (fbc!=Return_Value::Success) return fbc;
   fbc = FillBunchBlobs(bloblist);

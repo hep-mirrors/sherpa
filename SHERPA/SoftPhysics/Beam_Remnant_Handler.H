@@ -13,9 +13,7 @@ namespace SHERPA {
     BEAM::Beam_Spectra_Handler * p_beam;
     ATOOLS::Blob               * p_beamblobs[2];
 
-    bool m_fill;
-    int  m_beam;
-
+    int m_beam, m_fill, m_vmode;
 
     ATOOLS::Blob             * InitBeamBlob(const int beam);
     ATOOLS::Blob             * FillBunchBlob(const int,ATOOLS::Particle *);
