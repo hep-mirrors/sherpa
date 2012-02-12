@@ -321,7 +321,7 @@ ProduceKinematics(const bool & first,const bool & vetodiquark) {
 }
 
 bool Splitting_Tools::ConstructKinematics() {
-  if (IsNan(m_kt) || IsNan(m_y) || IsNan(m_z)) {
+  if (IsNan(m_kt) || IsNan(m_z) || IsNan(m_y)) {
     msg_Error()<<"Error in "<<METHOD
     	       <<"(kt = "<<m_kt<<", z = "<<m_z<<", y = "<<m_y<<").\n";
     return false;
@@ -387,6 +387,13 @@ FixZRange(double & zmin,double & zmax) {
     zmin = 0.01;
     zmax = 1.-zmin;
   }
+  if (zmin > zmax) {
+    double temp = zmin;
+    zmin = zmax;
+    zmax = temp;
+  }
+  zmin = Max(0., zmin);
+  zmax = Min(1., zmax);
   return true;
 }
 
