@@ -18,7 +18,7 @@ Cluster_Part::Cluster_Part(Dipole_Splitter * splitter,bool ana) :
 Cluster_Part::~Cluster_Part()
 {
   if (m_ana) {
-    msg_Out()<<METHOD<<" (had "<<m_fails<<" fails in "<<m_att<<" attempts).\n";
+    msg_Tracking()<<METHOD<<" (had "<<m_fails<<" fails in "<<m_att<<" attempts).\n";
     Histogram * histo;
     string name;
     for (map<string,Histogram *>::iterator hit=m_histograms.begin();

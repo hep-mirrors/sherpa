@@ -122,8 +122,6 @@ void Grid_Creator::Clear()
 bool Grid_Creator::ReadInGrid()
 {
   double sum=0.0;
-  int formerlevel=msg->Level();
-  msg->SetLevel(m_outputlevel);
   msg_Info()<<METHOD<<"(): Reading grid ";
   msg_Tracking()<<"{\n";
   for (Amisic_Histogram_Map::iterator hit=p_histograms->begin();
@@ -134,7 +132,6 @@ bool Grid_Creator::ReadInGrid()
 	  m_gridxmax-hit->second->XMax()>m_gridxmax*1.0e-7 ||
 	  hit->second->Entries()<m_initevents) {
 	Clear();
-	msg->SetLevel(formerlevel);
 	return false;
       }
       double cur=hit->second->Norm()*rpa->Picobarn();
@@ -144,13 +141,11 @@ bool Grid_Creator::ReadInGrid()
     }
     else {
       Clear();
-      msg->SetLevel(formerlevel);
       return false;
     }
   }
   msg_Info()<<" done."<<std::endl;
   msg_Tracking()<<"} -> sum = "<<sum<<" pb\n";
-  msg->SetLevel(formerlevel);
   return true;
 }
 
