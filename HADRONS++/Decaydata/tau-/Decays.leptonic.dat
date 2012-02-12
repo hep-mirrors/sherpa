@@ -1,6 +1,6 @@
 # outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
 
 # leptonic
-{16,11,-12}	 | 0.1784	 | tau-_nu_taunu_ebe-.dat;
+{16,11,-12}	 | 0.1785	 | tau-_nu_taunu_ebe-.dat;
 {16,13,-14}	 | 0.1736	 | tau-_nu_taunu_mubmu-.dat;
 
