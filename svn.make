@@ -16,7 +16,7 @@ SVN_Info.C: SVN_Info.C.in
 	else \
 	  cur=$$(echo "/"$(SVNTAG) | sed -e's/[+]/[+]/g'); \
 	  url=$$(svn info $(srcdir) | awk '{ if ($$1=="URL:") { \
-	    split($$2,a,"svn/sherpa/"); \
+	    split($$2,a,"/sherpa/"); \
 	    sub("'$$cur'","",a[2]); print a[2]; } }'); \
 	  rev=$$(svnversion $(srcdir)); \
 	  echo '#include "ATOOLS/Org/SVN_Info.H"' > $@.tmp; \
