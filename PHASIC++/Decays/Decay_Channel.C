@@ -328,9 +328,11 @@ void Decay_Channel::GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
     }
     value = Differential(momenta,anti,sigma, parts);
     if(value/m_max>1.05 && m_max>1e-30) {
-      msg_Info()<<METHOD<<"("<<Name()<<") warning:"<<endl
-                <<"  d\\Gamma(x)="<<value<<" > max(d\\Gamma)="<<m_max
-                <<std::endl;
+      if(value/m_max>1.3) {
+        msg_Info()<<METHOD<<"("<<Name()<<") warning:"<<endl
+                  <<"  d\\Gamma(x)="<<value<<" > max(d\\Gamma)="<<m_max
+                  <<std::endl;
+      }
       m_max=value;
       Return_Value::IncRetryMethod(mname);
       break;
