@@ -341,8 +341,8 @@ void Hadron_Init::Init() {
   s_kftable[103324]=new Particle_Info(103324,1.823,0.024,0,0,3,1,0,"Xi(1820)","Xi(1820)");
   s_kftable[102134]=new Particle_Info(102134,1.5195,0.0156,0,0,3,0,0,"Lambda(1520)","Lambda(1520)");
   s_kftable[102144]=new Particle_Info(102144,2.625,0.002,3,0,3,1,0,"Lambda(c)(2625)+","Lambda_{c}+(2625)");
-  s_kftable[103144]=new Particle_Info(103144,2.815,0.002,3,0,3,1,0,"Xi(c)(2625)","Xi_{c}(2815)");
-  s_kftable[103244]=new Particle_Info(103244,2.815,0.002,3,0,3,1,0,"Xi(c)(2625)+","Xi_{c}+(2815)");
+  s_kftable[103144]=new Particle_Info(103144,2.815,0.002,0,0,3,0,0,"Xi(c)(2815)","Xi_{c}(2815)");
+  s_kftable[103244]=new Particle_Info(103244,2.815,0.002,3,0,3,0,0,"Xi(c)(2815)+","Xi_{c}+(2815)");
   //s_kftable[102154]=new Particle_Info(102154,5.91,0.002,0,0,3,1,0,"Lambda(b)(5910)","Lambda_{b}(5910)");
   // Nucleons (octet) - L_N = 1_1 -- plus "singlet heavies" ###########################################
   s_kftable[102112]=new Particle_Info(102112,1.535,0.15,0,0,1,1,0,"N(1535)","N(1535)");
