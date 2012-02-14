@@ -862,7 +862,7 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
       value = par.substr(equal+1);
       key   = par = par.substr(0,equal);
       if (key=="PATH") {
-	if (value[value.length()-1]=='/') value.erase(value.length()-1,1);
+	if (value[value.length()-1]!='/') value+='/';
 	m_path=value;
         oit=helpsv.erase(oit);
       }
