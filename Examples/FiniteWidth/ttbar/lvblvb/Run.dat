@@ -1,0 +1,52 @@
+(run){
+  OUTPUT = 2
+  ANALYSIS = Rivet
+  EVENTS 100000
+
+  EVENT_GENERATION_MODE=Weighted
+  SHOWER_GENERATOR=None
+  YFS_MODE = 0
+  ME_QED = Off
+  FRAGMENTATION=Off
+
+  SCALES          = VAR{sqr(175.0)}
+
+  BEAM_1          = 2212
+  BEAM_ENERGY_1   = 3500
+  BEAM_2          = 2212
+  BEAM_ENERGY_2   = 3500
+
+  WIDTH[6] = 1.54716
+  WIDTH[24] = 2.03574
+
+  SCTAG:=1
+  HARD_SPIN_CORRELATIONS=SCTAG
+
+  ANALYSIS_OUTPUT=Analysis.SCSCTAG
+}(run)
+
+(processes){
+  Process 93 93 -> 6[a] -6[b]
+
+  Decay  6[a] -> 24[c] 5
+  Decay 24[c] -> 90 91
+
+  Decay -6[b] -> -24[d] -5
+  Decay -24[d] -> 94 94
+  End process
+
+  Process 93 93 -> 6[a] -6[b]
+
+  Decay  6[a] -> 24[c] 5
+  Decay 24[c] -> 94 94
+
+  Decay -6[b] -> -24[d] -5
+  Decay -24[d] -> 90 91
+  End process
+}(processes)
+
+(analysis){
+  BEGIN_RIVET {
+    -a MC_TTBAR
+  } END_RIVET
+}(analysis)
