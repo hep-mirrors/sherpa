@@ -499,7 +499,7 @@ void COMIX::Single_Process::FillAmplitudes
 (std::vector<Spin_Amplitudes> &amps,
  std::vector<std::vector<Complex> > &cols)
 {
-  p_bg->FillAmplitudes(amps,cols);
+  (p_map?p_map->p_bg:p_bg)->FillAmplitudes(amps,cols);
 }
 
 NLO_subevtlist *COMIX::Single_Process::GetSubevtList()
