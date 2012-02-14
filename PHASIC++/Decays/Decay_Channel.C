@@ -288,9 +288,9 @@ double Decay_Channel::ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
       }
     }
   }
-  if (!IsZero(sumijlambda_AiAjCiCj.imag())) {
+  if (!IsZero(sumijlambda_AiAjCiCj.imag(),1.0e-6)) {
+    PRINT_INFO("Sum-Squaring matrix element yielded imaginary part.");
     PRINT_VAR(sumijlambda_AiAjCiCj);
-    THROW(fatal_error, "Sum-Squaring matrix element yielded imaginary part.");
   }
 
   double value=sumijlambda_AiAjCiCj.real();

@@ -45,7 +45,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file)
   dr.SetInputFile(file);
   m_mass_smearing=dr.GetValue<int>("MASS_SMEARING",1);
   m_spincorr=rpa->gen.HardSC();
-  m_store_results=dr.GetValue<int>("STORE_DECAY_RESULTS",0);
+  m_store_results=dr.GetValue<int>("STORE_DECAY_RESULTS",1);
   m_decay_tau=dr.GetValue<int>("DECAY_TAU_HARD",0);
   m_resultdir=dr.GetValue<std::string>("RESULT_DIRECTORY","Results");
   if (m_store_results) {
