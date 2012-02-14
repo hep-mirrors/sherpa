@@ -264,6 +264,8 @@ double MCatNLO_Process::OneHEvent(const int wmode)
       p_rproc->SetSelected(rproc=(*p_rproc)[i]);
       break;
     }
+  rproc->Integrator()->SetMax
+    (p_rsproc->Selected()->Integrator()->Max());
   int swaped(p_rsproc->Selected()->Integrator()->InSwaped());
   p_rsproc->Selected()->Integrator()->RestoreInOrder();
   rproc->Integrator()->RestoreInOrder();
@@ -340,6 +342,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     if (rproc==NULL) THROW(fatal_error,"Invalid splitting");
     p_selected=p_rproc;
     p_rproc->SetSelected(rproc);
+    rproc->Integrator()->SetMax(bproc->Integrator()->Max());
     if (ampl->Leg(0)->Mom().PPlus()>ampl->Leg(1)->Mom().PPlus())
       std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
     rproc->Integrator()->SetMomenta(*ampl);
@@ -469,6 +472,9 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
 	   (resultpath+"/MCatNLO",create));
   if (!p_rsproc->CalculateTotalXSec
       (resultpath+"/MCatNLO",create)) res=false;
+  for (size_t i(0);i<p_bviproc->Size();++i)
+    (*p_bproc)[i]->Integrator()->SetMax
+      ((*p_bviproc)[i]->Integrator()->Max());
   return res;
 }
 

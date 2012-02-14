@@ -83,8 +83,8 @@ Process_Integrator::~Process_Integrator()
 
 double Process_Integrator::SelectionWeight(const int mode) const
 {
-  if (mode!=0) return m_max*m_enhancefac;
   if (!p_proc->IsGroup()) {
+    if (mode!=0) return m_max*m_enhancefac;
     if (m_totalxs==0.0) return -1.0;
     return dabs(m_totalxs)*m_enhancefac;
   }
@@ -387,7 +387,7 @@ void Process_Integrator::PrintRBInfo() const
 double Process_Integrator::GetMaxEps(double epsilon)
 {
   if (!p_whisto) return m_max;
-  double res = TotalResult();
+  double res = dabs(TotalResult());
   double pxs = res*epsilon*p_whisto->Fills();
   double cutxs = 0.;
   double cnt = 0.;
@@ -398,7 +398,7 @@ double Process_Integrator::GetMaxEps(double epsilon)
     cnt+= p_whisto->Value(i);
     double twmax = exp(log(10.)*(p_whisto->Xmin()+(i-1)*p_whisto->BinSize()));
     if (cutxs-cnt*twmax>pxs) {
-      return Sign(res)*Min(exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())),dabs(m_max));
+      return Min(exp(log(10.)*(p_whisto->Xmin()+i*p_whisto->BinSize())),dabs(m_max));
     }
   }
   return m_max;
