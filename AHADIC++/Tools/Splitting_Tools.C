@@ -246,6 +246,7 @@ bool Splitting_Tools::SelectFlavour(const bool & vetodiquark)
 
 bool Splitting_Tools::
 DetermineSplitting(Dipole * dip1,const bool & first,const bool & vetodiquark) {
+  if (m_Q < m_m1) return false;
   int trials(0);
   while ((trials++)<1000) {
     if (ProduceKinematics(first,vetodiquark)) {
