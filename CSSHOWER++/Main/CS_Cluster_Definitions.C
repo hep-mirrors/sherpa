@@ -264,7 +264,7 @@ CParam CS_Cluster_Definitions::CoreScale
 	       <<"  p_A = "<<-p[0]<<"\n  p_B = "<<-p[1]<<std::endl;
   if (!IsEqual(psum,Vec4D(),1.0e-3) &&
       -p[0][0]>1.0e-3 && -p[1][0]>1.0e-3) {
-    msg_Error()<<METHOD<<"(): Momentum not conserved.\n"
+    msg_Tracking()<<METHOD<<"(): Momentum not conserved.\n"
 	       <<"\\sum p = "<<psum<<" in\n"<<*ampl<<std::endl;
   }
   PHASIC::Single_Process *proc(ampl->Procs<PHASIC::Single_Process>());
