@@ -810,7 +810,7 @@ void Initialization_Handler::SetGlobalVariables()
   sdr.SetInputPath(m_path);
   sdr.SetInputFile(m_showerdat);
   int kfmode = sdr.GetValue<int>("CSS_KFACTOR_SCHEME",1);
-  double k0sqf = sdr.GetValue<double>("CSS_FS_PT2MIN",1.0);
+  double k0sqf = sdr.GetValue<double>("CSS_FS_PT2MIN",0.4);
   double k0sqi = sdr.GetValue<double>("CSS_IS_PT2MIN",4.0);
   double fs_as_fac = sdr.GetValue<double>("CSS_FS_AS_FAC",2.0);
   double is_as_fac = sdr.GetValue<double>("CSS_IS_AS_FAC",1.0);
