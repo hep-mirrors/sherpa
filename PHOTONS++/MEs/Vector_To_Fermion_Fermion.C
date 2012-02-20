@@ -159,7 +159,7 @@ Complex Vector_To_Fermion_Fermion::InfraredSubtractedME_0_0() {
   m_moms = m_moms0;
   Vec4C epsV = Polarization_Vector(m_moms[0])[m_spins[0]];
   XYZFunc XYZ(3,m_moms,m_flavs,false);
-  return  XYZ.X(1,m_spins[1],epsV,2,m_spins[2],m_cL,m_cR);
+  return  XYZ.X(1,m_spins[1],epsV,2,m_spins[2],m_cR,m_cL);
 }
 
 Complex Vector_To_Fermion_Fermion::InfraredSubtractedME_0_1() {
@@ -174,7 +174,7 @@ Complex Vector_To_Fermion_Fermion::InfraredSubtractedME_0_1() {
   double mu2(s);
   Complex term1(0.,0.), term2(0.,0.), term3(0.,0.), term4(0.,0.);
   // ~ u_1 \Gamma_V u_2
-  term1 = XYZ.X(1,m_spins[1],epsV,2,m_spins[2],m_cL,m_cR);
+  term1 = XYZ.X(1,m_spins[1],epsV,2,m_spins[2],m_cR,m_cL);
   term1 *=((p1p2+0.5*m2)*(C_11(m2,m2,s,0.,m2,m2,mu2)+C_12(m2,m2,s,0.,m2,m2,mu2))
            +(D-2.)/4.*(C_21(m2,m2,s,0.,m2,m2,mu2)+C_22(m2,m2,s,0.,m2,m2,mu2))
            +(p1p2+(D-4.)/2.)*C_23(m2,m2,s,0.,m2,m2,mu2)
@@ -183,16 +183,16 @@ Complex Vector_To_Fermion_Fermion::InfraredSubtractedME_0_1() {
            -0.5*B_0(m2,0.,m2,mu2)
            +(D-1.)/4.*B_0(0.,m2,m2,mu2)).Finite();
   // ~ u_1 \tilde\Gamma_V u_2
-  term2 = XYZ.X(1,m_spins[1],epsV,2,m_spins[2],m_cR,m_cL);
+  term2 = XYZ.X(1,m_spins[1],epsV,2,m_spins[2],m_cL,m_cR);
   term2 *= 0.5*m2*(C_11(m2,m2,s,0.,m2,m2,mu2)
                     +C_12(m2,m2,s,0.,m2,m2,mu2)).Finite();
   // ~ u_1 (LL+RR) u_2
-  term3 = XYZ.Y(1,m_spins[1],2,m_spins[2],m_cL,m_cR);
+  term3 = XYZ.Y(1,m_spins[1],2,m_spins[2],m_cR,m_cL);
   term3 *=(-m*(m_moms[2]*epsV)*(C_11(m2,m2,s,0.,m2,m2,mu2)
                                   +(D-2.)/2.*C_23(m2,m2,s,0.,m2,m2,mu2))
            -m*(m_moms[1]*epsV)*(D-2.)/2.*C_21(m2,m2,s,0.,m2,m2,mu2)).Finite();
   // ~ u_1 (LR+RL) u_2
-  term4 = XYZ.Y(1,m_spins[1],2,m_spins[2],m_cR,m_cL);
+  term4 = XYZ.Y(1,m_spins[1],2,m_spins[2],m_cL,m_cR);
   term4 *=(-m*(m_moms[1]*epsV)*(C_12(m2,m2,s,0.,m2,m2,mu2)
                                   +(D-2.)/2.*C_23(m2,m2,s,0.,m2,m2,mu2))
            -m*(m_moms[2]*epsV)*(D-2.)/2.*C_22(m2,m2,s,0.,m2,m2,mu2)).Finite();
@@ -221,12 +221,12 @@ Complex Vector_To_Fermion_Fermion::InfraredSubtractedME_1_05(unsigned int i) {
   Complex r4 = Complex(0.,0.);
   for (unsigned int s=0; s<=1; s++) {
     r1 += XYZ.X(1,m_spins[1],epsP,4,s,1.,1.)
-          *XYZ.X(4,s,epsV,2,m_spins[2],m_cL,m_cR);
+          *XYZ.X(4,s,epsV,2,m_spins[2],m_cR,m_cL);
     r2 += XYZ.X(1,m_spins[1],epsP,5,s,1.,1.)
-          *XYZ.X(5,s,epsV,2,m_spins[2],m_cL,m_cR);
-    r3 += XYZ.X(1,m_spins[1],epsV,6,s,m_cL,m_cR)
+          *XYZ.X(5,s,epsV,2,m_spins[2],m_cR,m_cL);
+    r3 += XYZ.X(1,m_spins[1],epsV,6,s,m_cR,m_cL)
           *XYZ.X(6,s,epsP,2,m_spins[2],1.,1.);
-    r4 += XYZ.X(1,m_spins[1],epsV,7,s,m_cL,m_cR)
+    r4 += XYZ.X(1,m_spins[1],epsV,7,s,m_cR,m_cL)
           *XYZ.X(7,s,epsP,2,m_spins[2],1.,1.);
   }
   // add prefactors

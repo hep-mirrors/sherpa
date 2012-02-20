@@ -6,7 +6,6 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Math/MyComplex.H"
 #include "ATOOLS/Phys/Flavour.H"
-#include "METOOLS/Main/XYZFuncs.H"
 #include "METOOLS/Main/Polarization_Tools.H"
 #include "ATOOLS/Org/Getter_Function.H"
 #include "PHOTONS++/Main/Dipole_Type.H"

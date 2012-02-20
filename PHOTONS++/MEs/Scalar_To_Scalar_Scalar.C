@@ -2,7 +2,6 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Particle.H"
-#include "METOOLS/Main/XYZFuncs.H"
 #include "METOOLS/Main/Polarization_Tools.H"
 #include "METOOLS/Loops/Master_Integrals.H"
 

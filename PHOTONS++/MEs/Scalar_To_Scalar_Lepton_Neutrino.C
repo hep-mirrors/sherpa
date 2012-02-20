@@ -191,12 +191,12 @@ Complex Scalar_To_Scalar_Lepton_Neutrino::InfraredSubtractedME_0_0() {
   if (m_ffmodel == true) {
     m_M00results[m_spins[0]][m_spins[1]][m_spins[2]][m_spins[3]].second
       = m_sqrt2*m_GF
-          *(Fplus(t)*XYZ.X(3,m_spins[3],m_moms[0]+m_moms[1],2,m_spins[2],m_cL,m_cR)
-           -Fminus(t)*XYZ.X(3,m_spins[3],m_moms[0]-m_moms[1],2,m_spins[2],m_cL,m_cR));
+          *(Fplus(t)*XYZ.X(3,m_spins[3],m_moms[0]+m_moms[1],2,m_spins[2],m_cR,m_cL)
+           -Fminus(t)*XYZ.X(3,m_spins[3],m_moms[0]-m_moms[1],2,m_spins[2],m_cR,m_cL));
   }
   else {
     m_M00results[m_spins[0]][m_spins[1]][m_spins[2]][m_spins[3]].second
-      = m_sqrt2*m_GF*XYZ.X(3,m_spins[3],m_moms[0]+m_moms[1],2,m_spins[2],m_cL,m_cR);
+      = m_sqrt2*m_GF*XYZ.X(3,m_spins[3],m_moms[0]+m_moms[1],2,m_spins[2],m_cR,m_cL);
   }
   return m_M00results[m_spins[0]][m_spins[1]][m_spins[2]][m_spins[3]].second;
 }
@@ -227,13 +227,13 @@ Complex Scalar_To_Scalar_Lepton_Neutrino::InfraredSubtractedME_0_1() {
           -0.25*(B_0(m22,0.,m22,mu2)-B_0(0.,m22,m22,mu2))
           +0.125*(2.*B_0(pp,m12,m22,mu2)
                   -B_0(0.,m12,m12,mu2)-B_0(0.,m22,m22,mu2));
-  term1 *= XYZ.X(3,m_spins[3],m_moms[0]+m_moms[1],2,m_spins[2],m_cL,m_cR);
+  term1 *= XYZ.X(3,m_spins[3],m_moms[0]+m_moms[1],2,m_spins[2],m_cR,m_cL);
   // ~ u_3 p p_1 P_R v_2
   term2 = 0.5*m2*C_12(m12,m22,pp,0,m12,m22,mu2);
   Complex temp(0.,0.);
   for (unsigned short int s(0);s<=1;++s)
     temp += XYZ.Y(3,m_spins[3],4,s,1.,1.)
-            *XYZ.X(4,s,m_moms[1],2,m_spins[2],m_cR,m_cL);
+            *XYZ.X(4,s,m_moms[1],2,m_spins[2],m_cL,m_cR);
   term2 *= temp;
   // ~ u_3 p_1 P_L v_2
   term3 = 0.25*B_0(pp,m12,m22,mu2)
@@ -241,14 +241,14 @@ Complex Scalar_To_Scalar_Lepton_Neutrino::InfraredSubtractedME_0_1() {
           -p1p2*C_11(m12,m22,pp,0.,m12,m22,mu2)
           -0.5*p1p2*C_21(m12,m22,pp,0.,m12,m22,mu2)
           -0.5*m22*C_23(m12,m22,pp,0.,m12,m22,mu2);
-  term3 *= XYZ.X(3,m_spins[3],m_moms[1],2,m_spins[2],m_cL,m_cR);
+  term3 *= XYZ.X(3,m_spins[3],m_moms[1],2,m_spins[2],m_cR,m_cL);
   // ~ u_3 P_R v_2
   term4 = -0.25*m2*B_1(pp,m12,m22,mu2)
           +m2*(0.5*m12*+p1p2)*C_12(m12,m22,pp,0.,m12,m22,mu2)
           +0.5*m2*m22*C_22(m12,m22,pp,0.,m12,m22,mu2)
           +0.5*m2*p1p2*C_23(m12,m22,pp,0.,m12,m22,mu2)
           +0.5*m2*C_24(m12,m22,pp,0.,m12,m22,mu2);
-  term4 *= XYZ.Y(3,m_spins[3],2,m_spins[2],m_cR,m_cL);
+  term4 *= XYZ.Y(3,m_spins[3],2,m_spins[2],m_cL,m_cR);
   return m_sqrt2*m_GF*m_alpha/M_PI*(term1+term2+term3+term4).Finite();
 }
 
@@ -274,14 +274,14 @@ Complex Scalar_To_Scalar_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int
     double t1 = (m_moms[2]+m_moms[3]).Abs2();
     double t2 = (m_moms[0]-m_moms[1]).Abs2();
     r1 = XYZ.X(3,m_spins[3],(2.*m_moms[0]-m_moms[2])*Fplus(t1)
-                              +m_moms[2]*Fminus(t1),2,m_spins[2],m_cL,m_cR);
+                              +m_moms[2]*Fminus(t1),2,m_spins[2],m_cR,m_cL);
     r1 = m_sqrt2*m_e*m_GF*(m_moms[1]*epsP)/(m_moms[1]*m_moms[4])*r1;
     for (unsigned int s=0; s<=1; s++) {
       r2 = r2 + XYZ.X(3,m_spins[3],(2.*m_moms[0]-ql)*Fplus(t2)
-                                    +ql*Fminus(t2),5,s,m_cL,m_cR)
+                                    +ql*Fminus(t2),5,s,m_cR,m_cL)
                 *XYZ.X(5,s,epsP,2,m_spins[2],1,1);
       r3 = r3 + XYZ.X(3,m_spins[3],(2.*m_moms[0]-ql)*Fplus(t2)
-                                    +ql*Fminus(t2),6,s,m_cL,m_cR)
+                                    +ql*Fminus(t2),6,s,m_cR,m_cL)
                 *XYZ.X(6,s,epsP,2,m_spins[2],1,1);
     }
     r2 = -m_sqrt2*m_e*m_GF*(1.-ml/sqrt(ql.Abs2()))/(4.*m_moms[2]*m_moms[4])*r2;
@@ -289,20 +289,20 @@ Complex Scalar_To_Scalar_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int
     r4 = XYZ.X(3,m_spins[3],epsP*(Fplus(t2)-Fminus(t2))
                             -2.*(2.*m_moms[0]-m_moms[2])*m_fplusprimezero
                                *((m_moms[0]-m_moms[1])*epsP)
-                                                      ,2,m_spins[2],m_cL,m_cR);
+                                                      ,2,m_spins[2],m_cR,m_cL);
     r4 = -m_sqrt2*m_e*m_GF*r4;
     return r1+r2+r3+r4;
   }
   // point-like
   else {
     r1 = XYZ.X(3,m_spins[3],m_moms[0]+m_moms[1]+m_moms[4]
-                                                      ,2,m_spins[2],m_cL,m_cR);
+                                                      ,2,m_spins[2],m_cR,m_cL);
     r1 = ((2.*m_moms[1]+m_moms[4])*epsP)*r1;
     r1 = m_sqrt2*m_e*m_GF/((m_moms[1]+m_moms[4]).Abs2()-mS*mS)*r1;
     for (unsigned int s=0; s<=1; s++) {
-      r2 = r2 + XYZ.X(3,m_spins[3],m_moms[0]+m_moms[1],5,s,m_cL,m_cR)
+      r2 = r2 + XYZ.X(3,m_spins[3],m_moms[0]+m_moms[1],5,s,m_cR,m_cL)
                 *XYZ.X(5,s,epsP,2,m_spins[2],1.,1.);
-      r3 = r3 + XYZ.X(3,m_spins[3],m_moms[0]+m_moms[1],6,s,m_cL,m_cR)
+      r3 = r3 + XYZ.X(3,m_spins[3],m_moms[0]+m_moms[1],6,s,m_cR,m_cL)
                 *XYZ.X(6,s,epsP,2,m_spins[2],1.,1.);
     }
     r2 = (1.-ml/sqrt(ql.Abs2()))*r2;

@@ -177,7 +177,7 @@ Complex Scalar_To_Vector_Lepton_Neutrino::InfraredSubtractedME_0_0() {
     return 0;
   }
   else {
-    return m_sqrt2*m_GF*XYZ.X(3,m_spins[3],auxvec,2,m_spins[2],m_cL,m_cR);
+    return m_sqrt2*m_GF*XYZ.X(3,m_spins[3],auxvec,2,m_spins[2],m_cR,m_cL);
   }
   return 0;
 }
@@ -219,9 +219,9 @@ Complex Scalar_To_Vector_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int
     double tA = (m_moms[0]-m_moms[1]).Abs2();
     Vec4C auxvecA = Contraction(AuxiliaryTensor(m_moms[0],m_moms[1],tA),2,epsV);
     for (unsigned int s=0; s<=1; s++) {
-      r1 = r1 + XYZ.X(3,m_spins[3],auxvecA,5,s,m_cL,m_cR)
+      r1 = r1 + XYZ.X(3,m_spins[3],auxvecA,5,s,m_cR,m_cL)
                 * XYZ.X(5,s,epsP,2,m_spins[2],1.,1.);
-      r2 = r2 + XYZ.X(3,m_spins[3],auxvecA,6,s,m_cL,m_cR)
+      r2 = r2 + XYZ.X(3,m_spins[3],auxvecA,6,s,m_cR,m_cL)
                 * XYZ.X(6,s,epsP,2,m_spins[2],1.,1.);
     }
     r1 = -(0.5*m_sqrt2*m_e*m_GF)/(ql.Abs2()-ml*ml) * (1-ml/ql.Abs()) * r1;
@@ -236,7 +236,7 @@ Complex Scalar_To_Vector_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int
                          +(epsV*epsP)*(qV*(m_moms[1]-k))
                          +(qV*epsV)*((-2*m_moms[1]-k)*epsP) );
     r3 = (m_sqrt2*m_e*m_GF)/(qV.Abs2()-mV*mV)
-          * XYZ.X(3,m_spins[3],auxvecB,2,m_spins[2],m_cL,m_cR);
+          * XYZ.X(3,m_spins[3],auxvecB,2,m_spins[2],m_cR,m_cL);
     return r1+r2+r3;
   }
   return 0;

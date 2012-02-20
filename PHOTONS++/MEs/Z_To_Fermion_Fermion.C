@@ -136,7 +136,7 @@ Complex Z_To_Fermion_Fermion::InfraredSubtractedME_0_0() {
   m_moms = m_moms0;
   Vec4C epsZ = Polarization_Vector(m_moms[0])[m_spins[0]];
   XYZFunc XYZ(3,m_moms,m_flavs,false);
-  return  XYZ.X(1,m_spins[1],epsZ,2,m_spins[2],m_cL,m_cR);
+  return  XYZ.X(1,m_spins[1],epsZ,2,m_spins[2],m_cR,m_cL);
 }
 
 Complex Z_To_Fermion_Fermion::InfraredSubtractedME_0_1() {
@@ -166,12 +166,12 @@ Complex Z_To_Fermion_Fermion::InfraredSubtractedME_1_05(unsigned int i) {
   // emission off fermion (a) and (b)
   for (unsigned int s=0; s<=1; s++) {
     r1 += XYZ.X(1,m_spins[1],epsP,4,s,1.,1.)
-          *XYZ.X(4,s,epsZ,2,m_spins[2],m_cL,m_cR);
+          *XYZ.X(4,s,epsZ,2,m_spins[2],m_cR,m_cL);
     r2 += XYZ.X(1,m_spins[1],epsP,5,s,1.,1.)
-          *XYZ.X(5,s,epsZ,2,m_spins[2],m_cL,m_cR);
-    r3 += XYZ.X(1,m_spins[1],epsZ,6,s,m_cL,m_cR)
+          *XYZ.X(5,s,epsZ,2,m_spins[2],m_cR,m_cL);
+    r3 += XYZ.X(1,m_spins[1],epsZ,6,s,m_cR,m_cL)
           *XYZ.X(6,s,epsP,2,m_spins[2],1.,1.);
-    r4 += XYZ.X(1,m_spins[1],epsZ,7,s,m_cL,m_cR)
+    r4 += XYZ.X(1,m_spins[1],epsZ,7,s,m_cR,m_cL)
           *XYZ.X(7,s,epsP,2,m_spins[2],1.,1.);
   }
   // add prefactors

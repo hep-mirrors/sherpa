@@ -158,7 +158,7 @@ Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_0_0() {
   m_moms = m_moms0;
   XYZFunc XYZ(3,m_moms,m_flavs,false);
   m_M00results[m_spins[0]][m_spins[1]][m_spins[2]].second
-    = XYZ.Y(1,m_spins[1],2,m_spins[2],m_cL,m_cR);
+    = XYZ.Y(1,m_spins[1],2,m_spins[2],m_cR,m_cL);
   m_M00results[m_spins[0]][m_spins[1]][m_spins[2]].first = true;
   return m_M00results[m_spins[0]][m_spins[1]][m_spins[2]].second;
 }
@@ -180,8 +180,8 @@ Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_0_1() {
           -0.25*(D-2.)/m2*A_0(m2,mu2)
           -0.5*(B_0(m2,0.,m2,mu2)-B_0(0.,m2,m2,mu2));
   term2 = -m2*C_11(m2,m2,s,0.,m2,m2,mu2);
-  Complex t1(XYZ.Y(1,m_spins[1],2,m_spins[2],m_cL,m_cR)*term1.Finite());
-  Complex t2(XYZ.Y(1,m_spins[1],2,m_spins[2],m_cR,m_cL)*term2.Finite());
+  Complex t1(XYZ.Y(1,m_spins[1],2,m_spins[2],m_cR,m_cL)*term1.Finite());
+  Complex t2(XYZ.Y(1,m_spins[1],2,m_spins[2],m_cL,m_cR)*term2.Finite());
   return m_alpha/M_PI*(t1+t2);
 }
 
@@ -206,10 +206,10 @@ Complex Scalar_To_Fermion_Fermion::InfraredSubtractedME_1_05(unsigned int i) {
   Complex r4 = Complex(0.,0.);
   // emission off fermions
   for (unsigned int s=0; s<=1; s++) { // spin of pseudo-particle in propagator representation
-    r1 += XYZ.X(1,m_spins[1],epsP,4,s,1.,1.)*XYZ.Y(4,s,2,m_spins[2],m_cL,m_cR);
-    r2 += XYZ.X(1,m_spins[1],epsP,5,s,1.,1.)*XYZ.Y(5,s,2,m_spins[2],m_cL,m_cR);
-    r3 += XYZ.Y(1,m_spins[1],6,s,m_cL,m_cR)*XYZ.X(6,s,epsP,2,m_spins[2],1.,1.);
-    r4 += XYZ.Y(1,m_spins[1],7,s,m_cL,m_cR)*XYZ.X(7,s,epsP,2,m_spins[2],1.,1.);
+    r1 += XYZ.X(1,m_spins[1],epsP,4,s,1.,1.)*XYZ.Y(4,s,2,m_spins[2],m_cR,m_cL);
+    r2 += XYZ.X(1,m_spins[1],epsP,5,s,1.,1.)*XYZ.Y(5,s,2,m_spins[2],m_cR,m_cL);
+    r3 += XYZ.Y(1,m_spins[1],6,s,m_cR,m_cL)*XYZ.X(6,s,epsP,2,m_spins[2],1.,1.);
+    r4 += XYZ.Y(1,m_spins[1],7,s,m_cR,m_cL)*XYZ.X(7,s,epsP,2,m_spins[2],1.,1.);
   }
   r1 *= m_e/(2.*(pa*pa-m*m))*(1.+m/sqrt(pa*pa));
   r2 *= m_e/(2.*(pa*pa-m*m))*(1.-m/sqrt(pa*pa));

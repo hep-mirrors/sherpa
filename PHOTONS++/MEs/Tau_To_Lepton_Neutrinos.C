@@ -181,14 +181,14 @@ Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_0_0() {
   if (m_fermi == true)
     return m_i/(mW*mW)*
              XYZ.Z(3,m_spins[3],0,m_spins[0],1,m_spins[1],2,m_spins[2],
-                                                           m_cL,m_cR,m_cL,m_cR);
+                                                           m_cR,m_cL,m_cR,m_cL);
   // full SM
   else
     return  -m_i/(q*q-mW*mW)*
             (XYZ.Z(3,m_spins[3],0,m_spins[0],1,m_spins[1],2,m_spins[2],
-                                                           m_cL,m_cR,m_cL,m_cR)
-              -1./(mW*mW)*XYZ.X(3,m_spins[3],q,0,m_spins[0],m_cL,m_cR)
-                          *XYZ.X(1,m_spins[1],q,2,m_spins[2],m_cL,m_cR));
+                                                           m_cR,m_cL,m_cR,m_cL)
+              -1./(mW*mW)*XYZ.X(3,m_spins[3],q,0,m_spins[0],m_cR,m_cL)
+                          *XYZ.X(1,m_spins[1],q,2,m_spins[2],m_cR,m_cL));
 }
 
 Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_0_1() {
@@ -226,12 +226,12 @@ Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_1_05(unsigned int i) {
     Complex r4 = Complex(0.,0.);
     for (unsigned int s=0; s<=1; s++) { // spin of pseudo-particle in propagator representation
       r1 += XYZ.X(5,s,epsP,0,m_spins[0],1.,1.)
-            *XYZ.Z(3,m_spins[3],5,s,1,m_spins[1],2,m_spins[2],m_cL,m_cR,m_cL,m_cR);
+            *XYZ.Z(3,m_spins[3],5,s,1,m_spins[1],2,m_spins[2],m_cR,m_cL,m_cR,m_cL);
       r2 += XYZ.X(6,s,epsP,0,m_spins[0],1.,1.)
-            *XYZ.Z(3,m_spins[3],6,s,1,m_spins[1],2,m_spins[2],m_cL,m_cR,m_cL,m_cR);
-      r3 += XYZ.Z(3,m_spins[3],0,m_spins[0],7,s,2,m_spins[2],m_cL,m_cR,m_cL,m_cR)
+            *XYZ.Z(3,m_spins[3],6,s,1,m_spins[1],2,m_spins[2],m_cR,m_cL,m_cR,m_cL);
+      r3 += XYZ.Z(3,m_spins[3],0,m_spins[0],7,s,2,m_spins[2],m_cR,m_cL,m_cR,m_cL)
             *XYZ.X(1,m_spins[1],epsP,7,s,1.,1.);
-      r4 += XYZ.Z(3,m_spins[3],0,m_spins[0],8,s,2,m_spins[2],m_cL,m_cR,m_cL,m_cR)
+      r4 += XYZ.Z(3,m_spins[3],0,m_spins[0],8,s,2,m_spins[2],m_cR,m_cL,m_cR,m_cL)
             *XYZ.X(1,m_spins[1],epsP,8,s,1.,1.);
     }
     // add prefactors to those terms
@@ -255,24 +255,24 @@ Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_1_05(unsigned int i) {
     // emission off fermions
     for (unsigned int s=0; s<=1; s++) { // spin of pseudo-particle in propagator representation
       r1 += XYZ.X(5,s,epsP,0,m_spins[0],1.,1.)
-            *XYZ.Z(3,m_spins[3],5,s,1,m_spins[1],2,m_spins[2],m_cL,m_cR,m_cL,m_cR);
+            *XYZ.Z(3,m_spins[3],5,s,1,m_spins[1],2,m_spins[2],m_cR,m_cL,m_cR,m_cL);
       r2 += XYZ.X(5,s,epsP,0,m_spins[0],1.,1.)
-            *XYZ.X(3,m_spins[3],q1,5,s,m_cL,m_cR)
-            *XYZ.X(1,m_spins[1],q1,2,m_spins[2],m_cL,m_cR);
+            *XYZ.X(3,m_spins[3],q1,5,s,m_cR,m_cL)
+            *XYZ.X(1,m_spins[1],q1,2,m_spins[2],m_cR,m_cL);
       r3 += XYZ.X(6,s,epsP,0,m_spins[0],1.,1.)
-            *XYZ.Z(3,m_spins[3],6,s,1,m_spins[1],2,m_spins[2],m_cL,m_cR,m_cL,m_cR);
+            *XYZ.Z(3,m_spins[3],6,s,1,m_spins[1],2,m_spins[2],m_cR,m_cL,m_cR,m_cL);
       r4 += XYZ.X(6,s,epsP,0,m_spins[0],1.,1.)
-            *XYZ.X(3,m_spins[3],q1,6,s,m_cL,m_cR)
-            *XYZ.X(1,m_spins[1],q1,2,m_spins[2],m_cL,m_cR);
-      r5 += XYZ.Z(3,m_spins[3],0,m_spins[0],7,s,2,m_spins[2],m_cL,m_cR,m_cL,m_cR)
+            *XYZ.X(3,m_spins[3],q1,6,s,m_cR,m_cL)
+            *XYZ.X(1,m_spins[1],q1,2,m_spins[2],m_cR,m_cL);
+      r5 += XYZ.Z(3,m_spins[3],0,m_spins[0],7,s,2,m_spins[2],m_cR,m_cL,m_cR,m_cL)
             *XYZ.X(1,m_spins[1],epsP,7,s,1.,1.);
-      r6 += XYZ.X(3,m_spins[3],q2,0,m_spins[0],m_cL,m_cR)
-            *XYZ.X(7,s,q2,2,m_spins[2],m_cL,m_cR)
+      r6 += XYZ.X(3,m_spins[3],q2,0,m_spins[0],m_cR,m_cL)
+            *XYZ.X(7,s,q2,2,m_spins[2],m_cR,m_cL)
             *XYZ.X(1,m_spins[1],epsP,7,s,1.,1.);
-      r7 += XYZ.Z(3,m_spins[3],0,m_spins[0],8,s,m_spins[2],2,m_cL,m_cR,m_cL,m_cR)
+      r7 += XYZ.Z(3,m_spins[3],0,m_spins[0],8,s,m_spins[2],2,m_cR,m_cL,m_cR,m_cL)
             *XYZ.X(1,m_spins[1],epsP,8,s,1.,1.);
-      r8 += XYZ.X(3,m_spins[3],q2,0,m_spins[0],m_cL,m_cR)
-            *XYZ.X(8,s,q2,2,m_spins[2],m_cL,m_cR)
+      r8 += XYZ.X(3,m_spins[3],q2,0,m_spins[0],m_cR,m_cL)
+            *XYZ.X(8,s,q2,2,m_spins[2],m_cR,m_cL)
             *XYZ.X(1,m_spins[1],epsP,8,s,1.,1.);
     }
     // add prefactors to those terms
@@ -286,15 +286,15 @@ Complex Tau_To_Lepton_Neutrinos::InfraredSubtractedME_1_05(unsigned int i) {
     r8 *=  (1.-ml/sqrt(ql*ql))/(mW*mW);
     // calculate terms arising from emission off the W propagator
     Complex Z = XYZ.Z(3,m_spins[3],0,m_spins[0],1,m_spins[1],2,m_spins[2],
-                                                           m_cL,m_cR,m_cL,m_cR);
-    Complex X1 = XYZ.X(3,m_spins[3],q2,0,m_spins[0],m_cL,m_cR);
-    Complex X2 = XYZ.X(3,m_spins[3],q1,0,m_spins[0],m_cL,m_cR);
-    Complex X3 = XYZ.X(3,m_spins[3],epsP,0,m_spins[0],m_cL,m_cR);
-    Complex X4 = XYZ.X(3,m_spins[3],q1-k,0,m_spins[0],m_cL,m_cR);
-    Complex X5 = XYZ.X(1,m_spins[1],q1,2,m_spins[2],m_cL,m_cR);
-    Complex X6 = XYZ.X(1,m_spins[1],q2,2,m_spins[2],m_cL,m_cR);
-    Complex X7 = XYZ.X(1,m_spins[1],epsP,2,m_spins[2],m_cL,m_cR);
-    Complex X8 = XYZ.X(1,m_spins[1],q2+k,2,m_spins[2],m_cL,m_cR);
+                                                           m_cR,m_cL,m_cR,m_cL);
+    Complex X1 = XYZ.X(3,m_spins[3],q2,0,m_spins[0],m_cR,m_cL);
+    Complex X2 = XYZ.X(3,m_spins[3],q1,0,m_spins[0],m_cR,m_cL);
+    Complex X3 = XYZ.X(3,m_spins[3],epsP,0,m_spins[0],m_cR,m_cL);
+    Complex X4 = XYZ.X(3,m_spins[3],q1-k,0,m_spins[0],m_cR,m_cL);
+    Complex X5 = XYZ.X(1,m_spins[1],q1,2,m_spins[2],m_cR,m_cL);
+    Complex X6 = XYZ.X(1,m_spins[1],q2,2,m_spins[2],m_cR,m_cL);
+    Complex X7 = XYZ.X(1,m_spins[1],epsP,2,m_spins[2],m_cR,m_cL);
+    Complex X8 = XYZ.X(1,m_spins[1],q2+k,2,m_spins[2],m_cR,m_cL);
 
     Complex s1 = - Z * ((q1+q2)*epsP);
     Complex s2 = X3*X8;

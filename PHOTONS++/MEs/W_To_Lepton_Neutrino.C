@@ -128,7 +128,7 @@ Complex W_To_Lepton_Neutrino::InfraredSubtractedME_0_0() {
   m_moms = m_moms0;
   Vec4C epsW = Polarization_Vector(m_moms[0])[m_spins[0]];
   XYZFunc XYZ(3,m_moms,m_flavs,false);
-  return m_i*m_e/(m_sqrt2*m_sW)*XYZ.X(1,m_spins[1],epsW,2,m_spins[2],m_cL,m_cR);
+  return m_i*m_e/(m_sqrt2*m_sW)*XYZ.X(1,m_spins[1],epsW,2,m_spins[2],m_cR,m_cL);
 }
 
 Complex W_To_Lepton_Neutrino::InfraredSubtractedME_0_1() {
@@ -162,16 +162,16 @@ Complex W_To_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int i) {
   Complex r8 = Complex(0.,0.);
   for (unsigned int s=0; s<=1; s++) {
     r1 += XYZ.X(1,m_spins[1],epsP,4,s,1.,1.)
-          *XYZ.X(4,s,epsW,2,m_spins[2],m_cL,m_cR);
+          *XYZ.X(4,s,epsW,2,m_spins[2],m_cR,m_cL);
     r2 += XYZ.X(1,m_spins[1],epsP,5,s,1.,1.)
-          *XYZ.X(5,s,epsW,2,m_spins[2],m_cL,m_cR);
+          *XYZ.X(5,s,epsW,2,m_spins[2],m_cR,m_cL);
   }
   Vec4D p = m_moms[0];
   Vec4D k = m_moms[3];
-  r3 = XYZ.X(1,m_spins[1],epsW,2,m_spins[2],m_cL,m_cR);
-  r4 = XYZ.X(1,m_spins[1],p+k,2,m_spins[2],m_cL,m_cR);
-  r5 = XYZ.X(1,m_spins[1],epsP,2,m_spins[2],m_cL,m_cR);
-  r6 = r7 = r8 = XYZ.X(1,m_spins[1],p-k,2,m_spins[2],m_cL,m_cR);
+  r3 = XYZ.X(1,m_spins[1],epsW,2,m_spins[2],m_cR,m_cL);
+  r4 = XYZ.X(1,m_spins[1],p+k,2,m_spins[2],m_cR,m_cL);
+  r5 = XYZ.X(1,m_spins[1],epsP,2,m_spins[2],m_cR,m_cL);
+  r6 = r7 = r8 = XYZ.X(1,m_spins[1],p-k,2,m_spins[2],m_cR,m_cL);
   r1 *= (1.+m/sqrt(q*q))/(q*q-m*m);
   r2 *= (1.-m/sqrt(q*q))/(q*q-m*m);
   r3 *= (epsP*(-2.*p+k))/(Q*Q-M*M);
