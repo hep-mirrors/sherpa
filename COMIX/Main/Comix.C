@@ -154,6 +154,8 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   m_path=path;
   m_file=file;
   p_model=model;
+  if (model->Name()!="SM") THROW
+    (not_implemented,"Comix cannot handle model '"+model->Name()+"'");
   PrintLogo(msg->Info());
   PrintVertices();
   p_int->SetBeam(beamhandler); 
