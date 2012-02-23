@@ -275,7 +275,7 @@ ProduceKinematics(const bool & first,const bool & vetodiquark) {
   }
   double zmin,zmax;
   double OneMinExpo(-1),rand;
-  double masscor(m_glusplit?1.:Max(m_m3_2/m_pt2max,1.));
+  double masscor(m_glusplit?1.:Max(m_m3_2/m_pt2max,1.)*Max(m_m1_2/m_pt2max,1.));
   double exparg(m_pt2max_factor*m_pt2max/masscor);
 
   int trials(0);
