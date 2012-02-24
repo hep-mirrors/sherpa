@@ -45,7 +45,8 @@ namespace PDF {
 
     virtual bool PrepareShower(ATOOLS::Cluster_Amplitude *const ampl,
                                const bool & soft=false) = 0;
-    virtual bool JetVeto(ATOOLS::Cluster_Amplitude *const ampl) = 0;
+    virtual bool JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
+			 const int mode=0) = 0;
 
     static void ShowSyntax(const int mode);
 

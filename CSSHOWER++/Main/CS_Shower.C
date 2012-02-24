@@ -729,7 +729,8 @@ double CS_Shower::CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
   return p_shower->GetSudakov()->CplFac(fli, flj, flk,stp,cpl,mu2);
 }
 
-bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl)
+bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
+			const int mode)
 {
   DEBUG_FUNC("");
   msg_Debugging()<<*ampl<<"\n";
@@ -743,6 +744,9 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl)
       nospec|=ampl->Decays()[i]->m_id;
   }
   msg_Debugging()<<"noem = "<<ID(noem)<<", nospec = "<<ID(nospec)<<"\n";
+  double q2min(std::numeric_limits<double>::max());
+  size_t imin(0), jmin(0), kmin(0);
+  Flavour mofl;
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *li(ampl->Leg(i));
     if (li->Id()&noem) continue;
@@ -765,7 +769,20 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl)
 				 li->Flav(),lj->Flav(),jf->DR()));
  	  msg_Debugging()<<"Q_{"<<ID(li->Id())<<ID(lj->Id())
 			 <<","<<ID(lk->Id())<<"} = "<<sqrt(q2ijk)<<"\n";
-	  if (q2ijk<q2cut) return false;
+	  if (mode==0) {
+	    if (q2ijk<q2cut) return false;
+	  }
+	  else {
+	    if (q2ijk<q2min) {
+	      q2min=q2ijk;
+	      mofl=Flavour(kf_gluon);
+	      if (li->Flav().IsGluon()) mofl=lj->Flav();
+	      if (lj->Flav().IsGluon()) mofl=li->Flav();
+	      imin=i;
+	      jmin=j;
+	      kmin=k;
+	    }
+	  }
 	}
 	else {
 	  msg_Debugging()<<"No kernel for "<<fi<<" "<<fj
@@ -773,6 +790,27 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl)
 	}
       }
     }
+  }
+  if (mode!=0) {
+    Vec4D_Vector p=p_cluster->Combine(*ampl,imin,jmin,kmin,mofl,ampl->MS(),1);
+    Cluster_Amplitude *bampl(Cluster_Amplitude::New());
+    bampl->SetNIn(ampl->NIn());
+    bampl->SetJF(ampl->JF<void>());
+    for (int i(0), j(0);i<ampl->Legs().size();++i) {
+      if (i==jmin) continue;
+      if (i==imin) {
+	bampl->CreateLeg(p[j],mofl,ampl->Leg(i)->Col());
+	bampl->Legs().back()->SetId(ampl->Leg(imin)->Id()|ampl->Leg(jmin)->Id());
+	bampl->Legs().back()->SetK(ampl->Leg(kmin)->Id());	
+      }
+      else {
+	bampl->CreateLeg(p[j],ampl->Leg(i)->Flav(),ampl->Leg(i)->Col());
+      }
+      ++j;
+    }
+    bool res=JetVeto(bampl,0);
+    bampl->Delete();
+    return res;
   }
   if (his) {
     for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)

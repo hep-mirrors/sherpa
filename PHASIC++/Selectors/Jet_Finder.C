@@ -70,15 +70,22 @@ bool Jet_Finder::Trigger(const Vec4D_Vector &p)
 bool Jet_Finder::JetTrigger(const ATOOLS::Vec4D_Vector &p,
                             NLO_subevtlist *const subs)
 {
+  for (size_t i(0);i<p.size();++i)
+    p_ampl->Leg(i)->SetMom((int)i<m_nin?-p[i]:p[i]);
+  p_ampl->SetMS((Mass_Selector*)p_proc->Process()->Generator());
+  m_ycut=p_yccalc->Calculate()->Get<double>();
   if (!m_on) return true;
-  THROW(not_implemented,"Don't even try!");
-  return true;
+  msg_Debugging()<<METHOD<<"(): '"<<p_proc->Process()->Name()
+		 <<"' Q_cut = "<<sqrt(m_ycut*m_s)<<(m_on?" {":", off")<<"\n";
+  p_ampl->Decays()=p_proc->Process()->Info().m_fi.GetDecayInfos();
+  bool res=p_proc->Process()->Shower()->JetVeto(p_ampl,1);
+  msg_Debugging()<<"} -> "<<res<<"\n";
+  return 1-m_sel_log->Hit(!res);
 }
 
 bool Jet_Finder::NoJetTrigger(const ATOOLS::Vec4D_Vector &p)
 {
   if (!m_on) return true;
-  THROW(not_implemented,"Don't even try!");
   return true;
 }
 
