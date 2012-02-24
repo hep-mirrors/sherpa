@@ -152,6 +152,7 @@ PrepareKinematics(Dipole * dip,const bool & first,const bool & enforce) {
     msg_Error()<<"Error in "<<METHOD<<" cannot prepare kinematics for "
 	       <<"   "<<m_mom1<<" + "<<m_mom3<<" from \n";
     dip->Output();
+    return false;
   }
   m_Q      = sqrt(m_Q2);
   m_cms    = Poincare(m_mom0);
