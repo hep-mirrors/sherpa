@@ -463,8 +463,7 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   SP(Phase_Space_Handler) psh(p_rsproc->Integrator()->PSHandler());
   do {
     psh->TestPoint(&p.front(),&p_rsproc->Info(),p_rsproc->Generator());
-    for (size_t i(0);i<p.size();++i)
-      ampl->Leg(i)->SetMom(i<m_nin?-p[i]:p[i]);
+    for (size_t i(0);i<p.size();++i) ampl->Leg(i)->SetMom(p[i]);
     p_rsproc->Differential(*ampl,4);
   } while (!InitSubtermInfo());
   ampl->Delete();
