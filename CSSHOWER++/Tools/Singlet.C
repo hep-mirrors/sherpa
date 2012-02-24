@@ -274,7 +274,21 @@ void Singlet::ExtractPartons
 	part->SetInfo('I');
 	blob->AddToInParticles(part);
       } 
-      else blob->AddToOutParticles(part);
+      else {
+        blob->AddToOutParticles(part);
+        if (rpa->gen.SoftSC()) {
+          size_t j=2;
+          for (size_t i=0; i<blob->NInP(); ++i) {
+            if (blob->InParticle(i)->ProductionBlob() &&
+                blob->InParticle(i)->ProductionBlob()->Type()!=btp::Beam) {
+              if ((*plit)->Id()==(1<<j)) {
+                part->SetOriginalPart(blob->InParticle(i));
+              }
+              ++j;
+            }
+          }
+        }
+      }
       if ((*plit)->GetType()==pst::FS) {
 	part->SetFlow(1,(*plit)->GetFlow(1));
 	part->SetFlow(2,(*plit)->GetFlow(2));

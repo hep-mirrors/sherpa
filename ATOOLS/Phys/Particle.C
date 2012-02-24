@@ -240,7 +240,10 @@ Blob *       Particle::ProductionBlob() const {return p_startblob;}
 Vec4D Particle::XDec() const
 { if (p_endblob) return p_endblob->Position(); return Vec4D(); }
 Blob *       Particle::DecayBlob() const      {return p_endblob;}
-Particle *   Particle::OriginalPart() const   {return p_originalpart;}
+Particle *   Particle::OriginalPart() const   {
+  if (p_originalpart==this) return p_originalpart;
+  else return p_originalpart->OriginalPart();
+}
 
 // Flavour and flow
 Flavour        Particle::Flav() const                   { return m_fl; }

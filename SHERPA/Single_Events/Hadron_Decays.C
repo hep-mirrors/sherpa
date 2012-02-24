@@ -25,14 +25,6 @@ Return_Value::code Hadron_Decays::Treat(Blob_List * bloblist, double & weight)
   DEBUG_FUNC("bloblist->size()="<<bloblist->size());
   if(bloblist->empty()) return Return_Value::Nothing;
 
-//   p_bloblist = bloblist;
-//   Blob* spblob = p_bloblist->FindFirst(btp::Signal_Process);
-//   if (spblob==NULL) {
-//     spblob = p_bloblist->at(0);
-//   }
-//   for (HDHandlersIter hd=p_dechandlers->begin();hd!=p_dechandlers->end();hd++) {
-//     hd->second->SetSignalProcessBlob(spblob);
-//   }
   bool didit(false);
   for (size_t blit(0);blit<bloblist->size();++blit) {
     Blob* blob=(*bloblist)[blit];
@@ -53,14 +45,17 @@ Return_Value::code Hadron_Decays::Treat(Blob_List * bloblist, double & weight)
             for (size_t i=0; i<outparts.size(); ++i) {
               bool found(false);
               for (size_t j=0; j<signalparts.size(); ++j) {
-                if ((outparts[i]->Flav()==signalparts[j]->Flav()) &&
-                    (outparts[i]->Momentum()==signalparts[j]->Momentum())) {
+                if (outparts[i]->OriginalPart()==signalparts[j]) {
                   origparts.push_back(signalparts[j]);
+                  DEBUG_INFO("Found original: "<<*signalparts[j]);
                   found=true;
                   break;
                 }
               }
-              if (!found) origparts.push_back(NULL);
+              if (!found) {
+                DEBUG_INFO("Found no original particle.");
+                origparts.push_back(NULL);
+              }
             }
             p_dechandler->TreatInitialBlob(blob, amps, origparts);
           }
