@@ -7,6 +7,7 @@ namespace AHADIC {
   class Colour_Reconnections {
   private:
     int    m_kinmode, m_colmode;
+    double m_crstrength;
     double m_t0,m_w12,m_w34,m_w14,m_w23;
 
     bool   TestClusters(Cluster * cl1,Cluster * cl2,int gen=1);

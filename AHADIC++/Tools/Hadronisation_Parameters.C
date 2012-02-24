@@ -108,6 +108,8 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   m_parametermap[string("Z_Form")]               = 
     dataread.GetValue<int>("Z_FORM",1);
   // Parameters for kinematics of cluster decays
+  m_parametermap[string("colour_reconnection_strength")] = 
+    dataread.GetValue<double>("COLOUR_RECONNECTION_STRENGTH",0.5);
   m_parametermap[string("asfix")]                = 
     dataread.GetValue<double>("AS_FIX",1.0);
   m_parametermap[string("pt02")]                 = 

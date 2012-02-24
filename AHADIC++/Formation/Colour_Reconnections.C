@@ -1,4 +1,5 @@
 #include "AHADIC++/Formation/Colour_Reconnections.H"
+#include "AHADIC++/Tools/Hadronisation_Parameters.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
 
@@ -8,7 +9,8 @@ using namespace std;
 
 
 Colour_Reconnections::Colour_Reconnections(int kinmode,int colmode,double t0) : 
-  m_kinmode(kinmode), m_colmode(colmode), m_t0(t0)
+  m_kinmode(kinmode), m_colmode(colmode), m_t0(t0),
+  m_crstrength(hadpars->Get(string("colour_reconnection_strength")))
 { }
 
 Colour_Reconnections::~Colour_Reconnections() 
@@ -85,8 +87,8 @@ double Colour_Reconnections::ColourWeight(int gen) {
   switch (m_colmode) {
   case 1:
     if (gen==0) return 0.;
-    if (gen==1) return 1.;
-    return pow(1./9.,gen-1); 
-  default: return 1.;
+    if (gen==1) return m_crstrength;
+    return m_crstrength * pow(1./9.,gen-1); 
+  default: return m_crstrength;
   }
 }
