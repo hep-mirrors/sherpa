@@ -267,8 +267,10 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter)
   Flavour haddec1(Flavour(kf_none)), haddec2(Flavour(kf_none));
   Flavour hadtrans(Flavour(kf_none));
 
-  bool   direct(cluster->GetTrip()->m_info=='B' && 
-		cluster->GetAnti()->m_info=='B');
+  bool   direct((cluster->GetTrip()->m_info=='B' && 
+		 cluster->GetAnti()->m_info=='B') ||
+		(cluster->GetTrip()->m_info=='L' && 
+		 cluster->GetAnti()->m_info=='L'));
   double decayweight(DecayWeight(cluster,haddec1,haddec2,direct));
   double transformweight(TransformWeight(cluster,hadtrans,lighter,false));
   if (decayweight>0. || transformweight>0.) {
