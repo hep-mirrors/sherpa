@@ -438,25 +438,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
   Cluster_Amplitude *ampl(p_ampl->Next());
   if (ampl) {
     if (ampl->NLO()!=0) ampl=ampl->Next();
-    if (ampl) {
-      Cluster_Amplitude *rampl(ampl->Prev()->Copy());
-      SortFlavours(rampl);
-      int rrm(ampl->Prev()->Leg(0)->Id()!=rampl->Leg(0)->Id());
-      Process_Base *rproc(FindProcess(rampl));
-      if (rproc==NULL) THROW(fatal_error,"Process not found");
-      double r(rproc->Differential(*rampl,rrm?1024:0));
-      Process_Base *hproc(FindProcess(rampl,nlo_type::rsub));
-      if (hproc==NULL) THROW(fatal_error,"Process not found");
-      double h(hproc->Differential(*rampl,rrm?1024:0));
-      rampl->Delete();
-      double w(h/r);
-      if (dabs(w)>ran->Get()) ampl->SetNLO(1);
-      else {
-	ampl->SetNLO(2);
-	if (dabs(w)>1.0) winfo->m_weight*=dabs(w);
-      }
-      if (w<0.0) winfo->m_weight=-winfo->m_weight;
-    }
+    if (ampl) ampl->SetNLO(2);
   }
   return winfo;
 }
