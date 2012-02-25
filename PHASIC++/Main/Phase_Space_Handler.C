@@ -686,7 +686,7 @@ void Phase_Space_Handler::SetEnhanceFunction(const std::string &enhancefunc)
 double Phase_Space_Handler::EnhanceFactor(Process_Base *const proc)
 {
   if (p_enhancefunc==NULL) return 1.0;
-  double obs=p_enhancehisto?p_enhancehisto->Xmin():1.0;
+  double obs=p_enhancehisto?p_enhancehisto->Xmin():0.0;
   if (!proc->Info().Has(nlo_type::rsub)) {
     obs=(*p_enhancefunc)(&p_lab.front(),&p_flavours.front(),m_nin+m_nout);
   }
@@ -695,11 +695,11 @@ double Phase_Space_Handler::EnhanceFactor(Process_Base *const proc)
     for (size_t i(0);i<proc->Size();++i) {
       NLO_subevtlist* nlos=(*proc)[i]->GetSubevtList();
       if (nlos->back()->m_result==0.0) continue;
-      obs*=(*p_enhancefunc)(nlos->back()->p_mom,
-			    nlos->back()->p_fl,nlos->back()->m_n);
+      obs+=log((*p_enhancefunc)(nlos->back()->p_mom,
+				nlos->back()->p_fl,nlos->back()->m_n));
       nobs+=1.0;
     }
-    if (nobs) obs=pow(obs,1.0/nobs);
+    if (nobs) obs=exp(obs/nobs);
   }
   if (p_enhancehisto==NULL) return obs;
   if (obs>=p_enhancehisto->Xmax()) obs=p_enhancehisto->Xmax()-1e-12;
