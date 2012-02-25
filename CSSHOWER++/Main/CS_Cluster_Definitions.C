@@ -304,9 +304,10 @@ CParam CS_Cluster_Definitions::CoreScale
 	  else if (i>1 && cf[f]==lj->Flav()) {
 	    kt2*=dabs((p[i]*p[k])/(p[j]*p[k]));
 	  }
+	  kt2*=cdip->Coupling()->CplFac(kt2);
 	  if (kt2<kt2cmin) {
-	    kt2cmin=kt2*cdip->Coupling()->CplFac(kt2);
-	    mu2min=kt2*cdip->Coupling()->CplFac(kt2);
+	    kt2cmin=kt2;
+	    mu2min=kt2;
 	  }
 	}
       }
