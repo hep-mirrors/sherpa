@@ -439,24 +439,23 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
   if (ampl) {
     if (ampl->NLO()!=0) ampl=ampl->Next();
     if (ampl) {
-      ampl->SetNLO(2);
-      Cluster_Amplitude *bampl(ampl->Copy());
       Cluster_Amplitude *rampl(ampl->Prev()->Copy());
-      SortFlavours(bampl);
       SortFlavours(rampl);
-      int brm(ampl->Leg(0)->Id()!=bampl->Leg(0)->Id());
       int rrm(ampl->Prev()->Leg(0)->Id()!=rampl->Leg(0)->Id());
-      Process_Base *bvi(FindProcess(bampl,nlo_type::vsub));
-      if (bvi==NULL) THROW(fatal_error,"Process not found");
-      Process_Base *rs(FindProcess(rampl,nlo_type::rsub));
-      if (rs==NULL) THROW(fatal_error,"Process not found");
-      double sh(bvi->Differential(*bampl,32|(brm?1024:0))/
-		rs->Differential(*rampl,32|(rrm?1024:0)));
-      bampl->Delete();
+      Process_Base *rproc(FindProcess(rampl));
+      if (rproc==NULL) THROW(fatal_error,"Process not found");
+      double r(rproc->Differential(*rampl,rrm?1024:0));
+      Process_Base *hproc(FindProcess(rampl,nlo_type::rsub));
+      if (hproc==NULL) THROW(fatal_error,"Process not found");
+      double h(hproc->Differential(*rampl,rrm?1024:0));
       rampl->Delete();
-      ampl->SetProcs(p_apmap);
-      sh=dabs(sh);
-      if (sh/(sh+1.0)<ran->Get()) ampl->SetNLO(2);
+      double w(h/r);
+      if (dabs(w)>ran->Get()) ampl->SetNLO(1);
+      else {
+	ampl->SetNLO(2);
+	if (dabs(w)>1.0) winfo->m_weight*=dabs(w);
+      }
+      if (w<0.0) winfo->m_weight=-winfo->m_weight;
     }
   }
   return winfo;
