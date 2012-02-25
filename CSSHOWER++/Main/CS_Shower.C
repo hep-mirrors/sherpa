@@ -776,7 +776,7 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
       }
     }
   }
-  if (mode!=0) {
+  if (mode!=0 && imin!=jmin) {
     Vec4D_Vector p=p_cluster->Combine(*ampl,imin,jmin,kmin,mofl,ampl->MS(),1);
     Cluster_Amplitude *bampl(Cluster_Amplitude::New());
     bampl->SetNIn(ampl->NIn());
