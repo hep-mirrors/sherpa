@@ -99,7 +99,6 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   for (size_t i(0);i<p_bviproc->Size();++i)
     if ((*p_bviproc)[i]->Flavours()!=(*p_bproc)[i]->Flavours())
       THROW(fatal_error,"Ordering differs in B and BVI");
-  Vec4D_Vector p(m_nin+m_nout);
 }
 
 Process_Base* MCatNLO_Process::InitProcess
@@ -282,14 +281,12 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     p_rsproc->Selected()->Integrator()->SwapInOrder();
     rproc->Integrator()->SwapInOrder();
   }
-  p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(256);
+  p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(256|512);
   if (p_ampl==NULL) {
     msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;
     return 0.0;
   }
-  Cluster_Amplitude *ampl(p_ampl);
-  ampl->SetNLO(1);
-  while ((ampl=ampl->Next())!=NULL) ampl->SetNLO(1);
+  p_ampl->Next()->SetNLO(1);
   Selector_Base *jf=(*p_bviproc)[0]->
     Selector()->GetSelector("Jetfinder");
   if (jf) {
@@ -327,12 +324,14 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     p_bviproc->Selected()->Integrator()->SwapInOrder();
     bproc->Integrator()->SwapInOrder();
   }
-  p_ampl = dynamic_cast<Single_Process*>(bproc)->Cluster(256);
+  p_ampl = dynamic_cast<Single_Process*>(bproc)->Cluster(256|512);
   SortFlavours(p_ampl);
   p_ampl->SetProcs(p_apmap);
   p_ampl->SetIInfo(&m_iinfo);
   p_ampl->SetDInfo(&m_dinfo);
   p_ampl->Decays()=m_decins;
+  if (p_ampl->Next()) p_ampl->Next()->SetBF
+    (p_bviproc->Selected()->Last()/bproc->Last());
   p_nlomc->SetShower(p_shower);
   int stat(p_nlomc->GeneratePoint(p_ampl));
   Cluster_Amplitude *next(p_ampl), *ampl(p_ampl->Prev());
@@ -368,11 +367,10 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     p_ampl=ampl;
     ampl->SetMuF2(next->MuF2());
     ampl->SetMuR2(next->MuR2());
-    ampl->SetNLO(2);
+    ampl->Next()->SetNLO(1);
     next->SetKin(kt2.m_kin);
     while (ampl->Next()) {
       ampl=ampl->Next();
-      ampl->SetNLO(2);
       if (!(ampl->Leg(0)->Id()&p_ampl->Leg(0)->Id()))
 	std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
       if (ampl->IdNew()&iid) ampl->SetIdNew(ampl->IdNew()|jid);
@@ -398,8 +396,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   if (p_ampl->Leg(0)->Mom().PPlus()>p_ampl->Leg(1)->Mom().PPlus())
     std::swap<Cluster_Leg*>(p_ampl->Legs()[0],p_ampl->Legs()[1]);
   ampl=p_ampl;
-  ampl->SetNLO(3);
-  while ((ampl=ampl->Next())!=NULL) ampl->SetNLO(3);
+  ampl->SetNLO(1);
   bproc->Integrator()->SetMomenta(*p_ampl);
   msg_Debugging()<<"B selected "<<*p_ampl
 		 <<" ( w = "<<p_nlomc->Weight()<<" )\n";
@@ -436,6 +433,31 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
   if (winfo && winfo->m_weight==0) {
     delete winfo;
     winfo=NULL;
+  }
+  if (winfo==NULL || m_fomode!=0) return winfo;
+  Cluster_Amplitude *ampl(p_ampl->Next());
+  if (ampl) {
+    if (ampl->NLO()!=0) ampl=ampl->Next();
+    if (ampl) {
+      ampl->SetNLO(2);
+      Cluster_Amplitude *bampl(ampl->Copy());
+      Cluster_Amplitude *rampl(ampl->Prev()->Copy());
+      SortFlavours(bampl);
+      SortFlavours(rampl);
+      int brm(ampl->Leg(0)->Id()!=bampl->Leg(0)->Id());
+      int rrm(ampl->Prev()->Leg(0)->Id()!=rampl->Leg(0)->Id());
+      Process_Base *bvi(FindProcess(bampl,nlo_type::vsub));
+      if (bvi==NULL) THROW(fatal_error,"Process not found");
+      Process_Base *rs(FindProcess(rampl,nlo_type::rsub));
+      if (rs==NULL) THROW(fatal_error,"Process not found");
+      double sh(bvi->Differential(*bampl,32|(brm?1024:0))/
+		rs->Differential(*rampl,32|(rrm?1024:0)));
+      bampl->Delete();
+      rampl->Delete();
+      ampl->SetProcs(p_apmap);
+      sh=dabs(sh);
+      if (sh/(sh+1.0)<ran->Get()) ampl->SetNLO(2);
+    }
   }
   return winfo;
 }

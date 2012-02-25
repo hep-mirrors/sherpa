@@ -32,7 +32,7 @@ std::ostream& CSSHOWER::operator<<(std::ostream& str, Singlet & singlet) {
     if (singlet.GetSpec()) str<<"Spec:  "<<singlet.GetSpec()<<"  ";
     str<<"\n";
   }
-  str<<"mom sum "<<sum<<"\n";
+  str<<"mom sum "<<sum<<", BB/B = "<<singlet.BF()<<"\n";
   str<<"-------------------------------------------------------------------------"<<endl;
   return str;
 }
@@ -71,6 +71,8 @@ Singlet *Singlet::RefCopy(All_Singlets *const all,std::map<Parton*,Parton*> &pma
   p_ref->p_all=all;
   p_ref->p_ms=p_ms;
   p_ref->p_jf=p_jf;
+  p_ref->m_nlo=m_nlo;
+  p_ref->m_bf=m_bf;
   p_ref->m_decs=m_decs;
   for (const_iterator it(begin());it!=end();++it) {
     Parton *c(new Parton(**it));

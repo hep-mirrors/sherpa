@@ -32,6 +32,7 @@ Cluster_Amplitude::Cluster_Amplitude(Cluster_Amplitude *const prev):
   p_prev(prev), p_next(NULL), 
   m_oew(0), m_oqcd(0), m_nin(0), m_new(0), m_kin(0), m_nlo(0),
   m_mur2(0.0), m_muf2(0.0), m_mu2(0.0), m_kt2(0.0), m_z(0.0), m_phi(0.0),
+  m_bf(1.0),
   p_jf(NULL), p_procs(NULL), p_dinfo(NULL),
   p_rb(NULL), p_ms(NULL)
 {
@@ -62,6 +63,7 @@ Cluster_Amplitude *Cluster_Amplitude::New
   ca->m_nin=ca->m_new=ca->m_kin=ca->m_nlo=0;
   ca->m_mur2=ca->m_muf2=ca->m_mu2=0.0;
   ca->m_kt2=ca->m_z=ca->m_phi=0.0;
+  ca->m_bf=1.0;
   ca->p_jf=ca->p_procs=ca->p_dinfo=NULL;
   ca->p_rb=NULL;
   ca->p_ms=NULL;
@@ -359,7 +361,8 @@ namespace ATOOLS {
     ostr<<"  k_T = "<<sqrt(ampl.KT2())<<", z = "<<ampl.Z()
 	<<", phi = "<<ampl.Phi()<<", kin = "<<ampl.Kin()<<"\n";
     ostr<<"  oew = "<<ampl.OrderEW()<<", oqcd = "<<ampl.OrderQCD()
-	<<", nlo = "<<ampl.NLO()<<", new = "<<ID(ampl.IdNew())<<"\n";
+	<<", nlo = "<<ampl.NLO()<<"  bf = "<<ampl.BF()
+	<<", new = "<<ID(ampl.IdNew())<<"\n";
     if (ampl.Decays().size()) {
       std::string ds;
       for (DecayInfo_Vector::const_iterator cit(ampl.Decays().begin());

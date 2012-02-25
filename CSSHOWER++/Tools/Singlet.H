@@ -24,6 +24,7 @@ namespace CSSHOWER {
     Singlet *p_ref;
     ATOOLS::Mass_Selector *p_ms;
     int m_nlo;
+    double m_bf;
     ATOOLS::DecayInfo_Vector m_decs;
     void SetColours(Singlet *const sing,Parton *const np,
 		    const int oldc[2],const int newc[2]);
@@ -34,7 +35,7 @@ namespace CSSHOWER {
   public :
     Singlet() : 
       p_split(NULL), p_left(NULL), p_right(NULL), p_spec(NULL),
-      p_jf(NULL), p_all(NULL), p_ref(NULL), m_nlo(0) {}
+      p_jf(NULL), p_all(NULL), p_ref(NULL), m_nlo(0), m_bf(1.0) {}
     ~Singlet();
 
     Singlet *RefCopy(All_Singlets *const all,std::map<Parton*,Parton*> &pmap);
@@ -83,8 +84,10 @@ namespace CSSHOWER {
     inline void SetDecays(const ATOOLS::DecayInfo_Vector &d) { m_decs=d; }
 
     inline void SetNLO(const int nlo) { m_nlo=nlo; }
+    inline void SetBF(const double bf) { m_bf=bf; }
 
     inline int NLO() const { return m_nlo; }
+    inline double BF() const { return m_bf; }
 
   };
 

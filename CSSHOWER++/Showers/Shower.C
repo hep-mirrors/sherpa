@@ -512,6 +512,11 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
           (*it)->SetKtPrev(kt2win);
         }
       }
+      if (p_actual->BF()!=1.0) {
+	msg_Debugging()<<"Apply BF weight: "<<p_actual->BF()<<"\n";
+	m_weight/=p_actual->BF();
+	p_actual->SetBF(1.0);
+      }
       if (++nem>=maxem) return true;
       kt2old=kt2win;
     }

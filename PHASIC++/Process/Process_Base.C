@@ -114,6 +114,10 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
   if (mode&4) SetUseBIWeight(false);
   double res(this->Differential(p));
   if (mode&1024) res=this->Differential2();
+  if (mode&32) {
+    SP(Phase_Space_Handler) psh(Parent()->Integrator()->PSHandler());
+    res*=psh->Weight(p);
+  }
   if (mode&4) SetUseBIWeight(true);
   if (mode&2) SetFixedScale(std::vector<double>());
   if (Selector()->On()!=selon) SetSelectorOn(selon);
@@ -600,6 +604,6 @@ void Process_Base::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
     if (nlot&nlo_type::vsub) nlot=nlo_type::vsub;
     if (nlot&nlo_type::rsub) nlot=nlo_type::rsub;
     StringProcess_Map *cmap((*apmap)[m_pinfo.m_fi.m_nloqcdtype]);
-    if (cmap->find(m_name)==cmap->end()) (*cmap)[m_name]=this;
+    if (cmap->find(fname)==cmap->end()) (*cmap)[fname]=this;
   }
 }

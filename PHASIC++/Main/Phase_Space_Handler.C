@@ -262,6 +262,15 @@ void Phase_Space_Handler::CalculateME()
   }
 }
 
+double Phase_Space_Handler::Weight(Vec4D_Vector &plab)
+{
+  p_lab=plab;
+  m_isrspkey[3]=(plab[0]+plab[1]).Abs2();
+  m_isrykey[2]=(plab[0]+plab[1]).Y();;
+  CalculatePS();
+  return m_psweight;
+}
+
 void Phase_Space_Handler::CalculatePS()
 {
   m_psweight=1.0;

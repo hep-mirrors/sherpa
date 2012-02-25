@@ -60,21 +60,6 @@ CS_Shower::~CS_Shower()
   delete p_refs;
 }
 
-void CS_Shower::SetScalesNLO()
-{
-  All_Singlets::const_reverse_iterator sit(m_allsinglets.rbegin());
-  if (!(*sit)->NLO()) return;
-  if (p_rampl->NLO()!=3) ++sit;
-  for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it) {
-    Parton *p(*it);
-    p->SetTMin(std::numeric_limits<double>::max());
-    while (p->GetPrev()) {
-      p->GetPrev()->SetTMin(p->TMin());
-      p=p->GetPrev();
-    }
-  }
-}
-
 void CS_Shower::RefCopy()
 {
   p_refs->clear();
@@ -110,7 +95,6 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 {
   if (!p_shower) return 1;
   m_weight=1.0;
-  SetScalesNLO();
   RefCopy();
   for (All_Singlets::const_iterator rit(p_refs->begin()),
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit,++rit) {
@@ -391,7 +375,6 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
   Cluster_Leg * leg;
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
-  singlet->SetNLO(ampl->NLO());
   for (size_t i(0);i<ampl->Legs().size();++i) {
     leg = ampl->Leg(i);
     if (leg->Flav().IsHadron() && 
@@ -643,6 +626,7 @@ Singlet *CS_Shower::TranslateAmplitude
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
   singlet->SetNLO(ampl->NLO());
+  singlet->SetBF(ampl->BF());
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *cl(ampl->Leg(i));
     if (cl->Flav().IsHadron() && cl->Id()&((1<<ampl->NIn())-1)) continue;
@@ -664,6 +648,7 @@ Singlet *CS_Shower::TranslateAmplitude
     lmap[parton]=cl;
     parton->SetRFlow();
     parton->SetKin(p_shower->KinScheme());
+    if (ampl->NLO()==1) parton->SetTMin(std::numeric_limits<double>::max());
     if (is) parton->SetBeam(i);
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
     parton->SetStart(xit->second.second);

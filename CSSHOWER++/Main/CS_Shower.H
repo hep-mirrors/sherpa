@@ -47,7 +47,6 @@ namespace CSSHOWER {
     void EstablishRelations(Parton * parton,ATOOLS::Cluster_Leg * leg,
 			    std::map<ATOOLS::Cluster_Leg*,Parton*> & pmap);
 
-    void SetScalesNLO();
     void RefCopy();
 
   public:

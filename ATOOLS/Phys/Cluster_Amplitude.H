@@ -51,7 +51,7 @@ namespace ATOOLS {
     DecayInfo_Vector  m_decs;
 
     size_t m_oew, m_oqcd, m_nin, m_new, m_kin, m_nlo;
-    double m_mur2, m_muf2, m_mu2, m_kt2, m_z, m_phi;
+    double m_mur2, m_muf2, m_mu2, m_kt2, m_z, m_phi, m_bf;
     CI_Map m_cmap;
 
     void *p_jf, *p_procs, *p_iinfo, *p_dinfo;
@@ -137,6 +137,8 @@ namespace ATOOLS {
     inline void SetZ(const double &z)     { m_z=z;     }
     inline void SetPhi(const double &phi) { m_phi=phi; }
 
+    inline void SetBF(const double &bf) { m_bf=bf; }
+
     inline void SetJF(void *const jf)   { p_jf=jf;   }
     inline void SetProcs(void *const p) { p_procs=p; }
     inline void SetIInfo(void *const i) { p_iinfo=i; }
@@ -162,6 +164,8 @@ namespace ATOOLS {
     inline double KT2() const { return m_kt2; }
     inline double Z() const   { return m_z;   }
     inline double Phi() const { return m_phi; }
+
+    inline double BF() const { return m_bf; }
 
     inline CI_Map       &ColorMap()       { return m_cmap; }
     inline const CI_Map &ColorMap() const { return m_cmap; }
