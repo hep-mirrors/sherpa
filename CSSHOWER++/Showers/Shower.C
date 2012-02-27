@@ -489,7 +489,14 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	}
 	rp->SetCol(split->Col());
 	int vstat(MakeKinematics(rp,fla,flb,flc,2));
-	if (vstat==0) return false;
+	if (vstat==0) {
+	  if (p_actual->NLO()==2) {
+	    msg_Debugging()<<"Skip first truncated emission\n";
+	    p_actual->SetNLO(0);
+	    continue;
+	  }
+	  return false;
+	}
       }
       int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,m_noem?2:0));
       if (kstat<0) continue;
@@ -511,11 +518,6 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
              it!=p_actual->end();++it) {
           (*it)->SetKtPrev(kt2win);
         }
-      }
-      if (p_actual->BF()!=1.0) {
-	msg_Debugging()<<"Apply BF weight: "<<p_actual->BF()<<"\n";
-	m_weight/=p_actual->BF();
-	p_actual->SetBF(1.0);
       }
       if (++nem>=maxem) return true;
       kt2old=kt2win;

@@ -626,7 +626,6 @@ Singlet *CS_Shower::TranslateAmplitude
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
   singlet->SetNLO(ampl->NLO());
-  singlet->SetBF(ampl->BF());
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *cl(ampl->Leg(i));
     if (cl->Flav().IsHadron() && cl->Id()&((1<<ampl->NIn())-1)) continue;

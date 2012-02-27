@@ -286,7 +286,7 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;
     return 0.0;
   }
-  p_ampl->Next()->SetNLO(1);
+  // p_ampl->Next()->SetNLO(1);
   Selector_Base *jf=(*p_bviproc)[0]->
     Selector()->GetSelector("Jetfinder");
   if (jf) {
@@ -330,8 +330,6 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   p_ampl->SetIInfo(&m_iinfo);
   p_ampl->SetDInfo(&m_dinfo);
   p_ampl->Decays()=m_decins;
-  if (p_ampl->Next()) p_ampl->Next()->SetBF
-    (p_bviproc->Selected()->Last()/bproc->Last());
   p_nlomc->SetShower(p_shower);
   int stat(p_nlomc->GeneratePoint(p_ampl));
   Cluster_Amplitude *next(p_ampl), *ampl(p_ampl->Prev());
@@ -417,6 +415,11 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
 	->Integrator()->SelectionWeight(wmode)/
 	p_bviproc->Selected()->Integrator()
 	->SelectionWeight(wmode);
+      Cluster_Amplitude *ampl(p_ampl->Next());
+      if (ampl) {
+	if (ampl->NLO()!=0) ampl=ampl->Next();
+	if (ampl) ampl->SetNLO(2);
+      }
     }
   }
   else {
@@ -433,12 +436,6 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
   if (winfo && winfo->m_weight==0) {
     delete winfo;
     winfo=NULL;
-  }
-  if (winfo==NULL || m_fomode!=0) return winfo;
-  Cluster_Amplitude *ampl(p_ampl->Next());
-  if (ampl) {
-    if (ampl->NLO()!=0) ampl=ampl->Next();
-    if (ampl) ampl->SetNLO(2);
   }
   return winfo;
 }
