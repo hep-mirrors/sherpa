@@ -112,6 +112,7 @@ bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl)
 
 double CF_QCD::CplFac(const double &scale) const
 {
+  if (m_kfmode==-1) return 1.0;
   if (m_kfmode==0) return m_cplfac;
   double nf=p_cpl->Nf(scale);
   double kfac=exp(-(67.0-3.0*sqr(M_PI)-10.0/3.0*nf)/(33.0-2.0*nf));

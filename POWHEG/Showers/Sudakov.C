@@ -454,8 +454,14 @@ bool Sudakov::Veto(double Q2,double x) {
 
 bool Sudakov::Splitting(double Q2,double x) {
   double cplscale(m_kperp2);
-  cplscale=Min(m_kperp2,p_split->GetSing()->MuR2());
+  int kfmode(p_selected->Coupling()->KFMode());
+  if (m_kperp2*p_selected->Coupling()->CplFac(m_kperp2)>
+      p_split->GetSing()->MuR2()) {
+    p_selected->Coupling()->SetKFMode(-1);    
+    cplscale=p_split->GetSing()->MuR2();
+  }
   double wt(RejectionWeight(m_z,m_y,x,cplscale,Q2));
+  p_selected->Coupling()->SetKFMode(kfmode);
   if (ran->Get()>wt) {
     return false;  
   }

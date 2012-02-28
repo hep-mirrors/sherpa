@@ -160,6 +160,10 @@ namespace MCATNLO {
 
     inline void SetLF(SF_Lorentz *const lf) { p_lf=lf; }
 
+    inline int KFMode() { return m_kfmode; }
+
+    inline void SetKFMode(const int kfmode) { m_kfmode=kfmode; }
+
   };
 
   class Shower;

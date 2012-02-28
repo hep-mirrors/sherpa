@@ -480,13 +480,22 @@ bool Sudakov::Veto(double Q2,double x) {
 }
 
 bool Sudakov::Splitting(double Q2,double x) {
+  int kfmode(p_selected->Coupling()->KFMode());
   double cplscale(m_kperp2);
   switch (m_scalescheme) {
   case 0:
-    cplscale=Min(m_kperp2,p_split->GetSing()->MuR2());
+    if (m_kperp2*p_selected->Coupling()->CplFac(m_kperp2)>
+	p_split->GetSing()->MuR2()) {
+      p_selected->Coupling()->SetKFMode(-1);    
+      cplscale=p_split->GetSing()->MuR2();
+    }
     break;
   case 1:
-    cplscale=p_split->GetSing()->MuR2();
+    if (m_kperp2*p_selected->Coupling()->CplFac(m_kperp2)>
+	p_split->GetSing()->MuR2()) {
+      p_selected->Coupling()->SetKFMode(-1);    
+      cplscale=p_split->GetSing()->MuR2();
+    }
     break;
   case 2:
     cplscale=m_kperp2;
@@ -495,6 +504,7 @@ bool Sudakov::Splitting(double Q2,double x) {
     THROW(fatal_error, "Unknown MCATNLO_SCALE_SCHEME");
   }
   double wt(RejectionWeight(m_z,m_y,x,cplscale,Q2));
+  p_selected->Coupling()->SetKFMode(kfmode);
   if (ran->Get()>wt) {
     return false;  
   }
