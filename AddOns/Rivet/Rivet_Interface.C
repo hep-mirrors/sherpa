@@ -242,31 +242,32 @@ public:
     }
     else {
       GetRivet("", 0)->analyze(event);
+      
+      std::string multi=sp->TypeSpec();
+      if (multi[3]=='_') multi=multi.substr(2,1);
+      else multi=multi.substr(2,2);
+      size_t parts=ToType<size_t>(multi);
+
       if (m_splitjetconts) {
-        // temporary fix for powheg & menlops
-        // - only works if the core proc is powheg and the others ar LO
-        // - nlo w/ powheg emission goes into n_core-analysis
-        // - nlo w/o powheg emission goes into (n_core-1)-analysis
-        // => still separating these bits
-        size_t parts(sp->NOutP());
-        if (sp->TypeSpec().find("BVIRS")!=std::string::npos) --parts;
         GetRivet("", parts)->analyze(event);
       }
       if (m_splitcoreprocs) {
         GetRivet(GetCoreProc(sp->TypeSpec()), 0)->analyze(event);
         if (m_splitjetconts) {
-          GetRivet(GetCoreProc(sp->TypeSpec()), sp->NOutP())->analyze(event);
+          GetRivet(GetCoreProc(sp->TypeSpec()), parts)->analyze(event);
         }
       }
       if (m_splitSH) {
-        if (sp->TypeSpec().find("+S")!=std::string::npos) {
-          GetRivet("S", 0)->analyze(event);
-        }
-        else if (sp->TypeSpec().find("+H")!=std::string::npos) {
-          GetRivet("H", 0)->analyze(event);
-        }
-        else {
-          GetRivet("O", 0)->analyze(event);
+        std::string type="O";
+        std::string typespec=sp->TypeSpec();
+        typespec=typespec.substr(typespec.length()-2, 2);
+        if (typespec=="+S") type="S";
+        else if (typespec=="+H") type="H";
+        else type="O";
+
+        GetRivet(type, 0)->analyze(event);
+        if (m_splitjetconts) {
+          GetRivet(type, parts)->analyze(event);
         }
       }
     }
