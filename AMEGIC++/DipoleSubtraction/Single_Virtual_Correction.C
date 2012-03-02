@@ -543,14 +543,14 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   double eta0=1.,eta1=1.;
   double w=1.;
   if (m_flavs[0].Strong()) {
-    eta0 = p_int->ISR()->X1();
+    eta0 = mom[0].PPlus()/p_int->Beam()->GetBeam(0)->OutMomentum().PPlus();
     m_x0 = eta0+ran->Get()*(1.-eta0);
     w *= (1.-eta0);
 //       m_x0 = eta0*std::exp(-ran->Get()*log(eta0));
 //       w *= -m_x0*log(eta0);
   }
   if (m_flavs[1].Strong()) {
-    eta1 = p_int->ISR()->X2();
+    eta1 = mom[1].PMinus()/p_int->Beam()->GetBeam(1)->OutMomentum().PMinus();
     m_x1 = eta1+ran->Get()*(1.-eta1);
     w *= (1.-eta1);
 //        m_x1 = eta1*std::exp(-ran->Get()*log(eta1));

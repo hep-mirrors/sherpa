@@ -362,12 +362,13 @@ Weight_Value CS_Gamma::Differential
   NLOTypeStringProcessMap_Map *procs
     (ampl->Procs<NLOTypeStringProcessMap_Map>());
   Process_Base::SortFlavours(ampl);
+  int rm(ampl->Leg(0)->Mom()[3]<0.0?0:1024);
   std::string pname(Process_Base::GenerateName(ampl));
   StringProcess_Map::const_iterator pit((*(*procs)[type]).find(pname+add));
   if (pit==(*(*procs)[nlo_type::lo]).end()) 
     THROW(fatal_error,"Process '"+pname+"' not found");
   Weight_Value meps(pit->second);
-  meps.m_b=meps.m_me=pit->second->Differential(*ampl,2|4);
+  meps.m_b=meps.m_me=pit->second->Differential(*ampl,2|4|rm);
   meps.m_me*=pit->second->SymFac();
   meps.m_muf2=ampl->MuF2();
   meps.m_mur2=ampl->MuR2();

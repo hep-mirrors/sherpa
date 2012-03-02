@@ -495,6 +495,7 @@ bool Single_DipoleTerm::Trigger(const ATOOLS::Vec4D_Vector &p)
 
 double Single_DipoleTerm::Partonic(const Vec4D_Vector &_moms,const int mode)
 {
+  p_int->SetMomenta(_moms);
   Poincare cms;
   Vec4D_Vector pp(_moms);
   if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
@@ -524,7 +525,6 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
 
   bool trg(!p_LO_process->Selector()->On());
   if (!trg) trg=p_LO_process->Trigger(p_LO_labmom);
-  p_int->SetMomenta(p_LO_labmom);
   p_LO_process->Integrator()->SetMomenta(p_LO_labmom);
 
   double df = p_dipole->GetF();
