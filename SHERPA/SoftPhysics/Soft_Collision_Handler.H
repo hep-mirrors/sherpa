@@ -7,12 +7,12 @@
 #include "ATOOLS/Org/Return_Value.H"
 #include "ATOOLS/Org/Exception.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
-#include "SINIC++/Main/Sinic.H"
 #include "SHERPA/SoftPhysics/Cluster_Algorithm.H"
 
 namespace ATOOLS { class Cluster_Amplitude; class Cluster_Definitions_Base; }
 namespace PDF    { class ISR_Handler; }
 namespace BEAM   { class Beam_Spectra_Handler; }
+namespace SINIC  { class Sinic; }
 
 namespace SHERPA {
   class Soft_Collision_Handler: public ATOOLS::Terminator_Object {

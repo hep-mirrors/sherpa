@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "SHERPA/SoftPhysics/Cluster_Algorithm.H"
+#include "SINIC++/Main/Sinic.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Soft_Collision_Handler
