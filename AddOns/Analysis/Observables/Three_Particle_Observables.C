@@ -280,6 +280,12 @@ void Three_Particle_3Mass2::Evaluate(const Vec4D & mom1,const Vec4D & mom2,const
   p_histo->Insert(mass,weight,ncount); 
 } 
 
+void Three_Particle_3Mass2::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, double ncount) 
+{ 
+  double mass = (mom1+mom2+mom3).Abs2();
+  p_histo->InsertMCB(mass,weight,ncount);
+} 
+
 Primitive_Observable_Base * Three_Particle_3Mass2::Copy() const 
 {
     return new Three_Particle_3Mass2(m_flav1,m_flav2,m_flav3,m_type,m_xmin,m_xmax,m_nbins,m_listname);

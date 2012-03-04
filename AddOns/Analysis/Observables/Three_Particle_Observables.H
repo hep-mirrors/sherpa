@@ -83,6 +83,8 @@ namespace ANALYSIS {
     Three_Particle_3Mass2(const ATOOLS::Flavour & flav1, const ATOOLS::Flavour & flav2,
 			const ATOOLS::Flavour & flav3, int type, double xmin, 
 			double xmax, int nbins, const std::string & listname);
+    void EvaluateNLOcontrib(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
+			    const ATOOLS::Vec4D & mom3, double weight, double ncount); 
     Primitive_Observable_Base * Copy() const;
   };
 

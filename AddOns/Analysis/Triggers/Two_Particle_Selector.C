@@ -154,6 +154,21 @@ namespace ANALYSIS {
     
   };// end of class Two_MT_Selector
 
+  class Two_MT2_Selector: public Two_Particle_Selector_Base {  
+  public:
+
+    Two_MT2_Selector(const ATOOLS::Flavour flav,const size_t item,
+		     const ATOOLS::Flavour ref,const size_t refitem,
+		     const double min,const double max,
+		     const std::string &inlist,const std::string &reflist,
+		     const std::string &outlist);
+    
+    bool Select(const Particle *p1,const Particle *p2) const;
+
+    Analysis_Object *GetCopy() const;
+    
+  };// end of class Two_MT2_Selector
+
   class Two_PT_Selector: public Two_Particle_Selector_Base {  
   public:
 
@@ -510,6 +525,32 @@ Analysis_Object *Two_MT_Selector::GetCopy() const
 {
   return new Two_MT_Selector(m_flavour,m_item,m_refflavour,m_refitem,
 			     m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
+}
+
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_MT2_Selector,
+				 Two_MT2_Selector_Getter,"TwoMT2Sel")
+
+Two_MT2_Selector::
+Two_MT2_Selector(const ATOOLS::Flavour flav,const size_t item,
+		 const ATOOLS::Flavour refflav,const size_t refitem,
+		 const double min,const double max,
+		 const std::string &inlist,const std::string &reflist,
+		 const std::string &outlist):
+  Two_Particle_Selector_Base(flav,item,refflav,refitem,min,max,
+			     inlist,reflist,outlist) {}
+
+bool Two_MT2_Selector::Select(const Particle *p1,const Particle *p2) const
+{
+  Vec4D mom1 = p1->Momentum(), mom2 = p2->Momentum();
+  double mass = sqrt(2.*(mom1.PPerp()*mom2.PPerp()-mom1[1]*mom2[1]-mom1[2]*mom2[2]));
+  if (mass<m_xmin || mass>m_xmax) return false;
+  return true;
+}
+
+Analysis_Object *Two_MT2_Selector::GetCopy() const
+{
+  return new Two_MT2_Selector(m_flavour,m_item,m_refflavour,m_refitem,
+			      m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
 }
 
 DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_PT_Selector,
