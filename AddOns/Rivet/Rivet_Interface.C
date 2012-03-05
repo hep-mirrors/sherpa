@@ -242,13 +242,14 @@ public:
     }
     else {
       GetRivet("", 0)->analyze(event);
-      
-      std::string multi(sp?sp->TypeSpec():"");
-      if (multi[3]=='_') multi=multi.substr(2,1);
-      else multi=multi.substr(2,2);
-      size_t parts=ToType<size_t>(multi);
-
-      if (m_splitjetconts) {
+      size_t parts=0;
+      if (sp) {
+	std::string multi(sp?sp->TypeSpec():"");
+	if (multi[3]=='_') multi=multi.substr(2,1);
+	else multi=multi.substr(2,2);
+	parts=ToType<size_t>(multi);
+      }
+      if (m_splitjetconts && sp) {
         GetRivet("", parts)->analyze(event);
       }
       if (m_splitcoreprocs && sp) {
