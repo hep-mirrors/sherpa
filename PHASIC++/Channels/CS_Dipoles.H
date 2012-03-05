@@ -11,7 +11,6 @@ namespace PHASIC {
   public:
 
     FF_Dipole(ATOOLS::NLO_subevt *const sub,
-	      Extra_Emission_Generator *const eeg,
 	      Phase_Space_Handler *const psh);
 
     ~FF_Dipole();
@@ -40,7 +39,6 @@ namespace PHASIC {
   public:
 
     FI_Dipole(ATOOLS::NLO_subevt *const sub,
-	      Extra_Emission_Generator *const eeg,
 	      Phase_Space_Handler *const psh);
 
     ~FI_Dipole();
@@ -70,7 +68,6 @@ namespace PHASIC {
   public:
 
     IF_Dipole(ATOOLS::NLO_subevt *const sub,
-	      Extra_Emission_Generator *const eeg,
 	      Phase_Space_Handler *const psh);
 
     ~IF_Dipole();
@@ -100,7 +97,6 @@ namespace PHASIC {
   public:
 
     II_Dipole(ATOOLS::NLO_subevt *const sub,
-	      Extra_Emission_Generator *const eeg,
 	      Phase_Space_Handler *const psh);
 
     ~II_Dipole();

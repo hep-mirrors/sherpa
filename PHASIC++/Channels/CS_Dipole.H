@@ -11,7 +11,6 @@ namespace PHASIC {
   class Cut_Data;
   class Multi_Channel;
   class Phase_Space_Handler;
-  class Extra_Emission_Generator;
 
   class CS_Dipole {
   protected:
@@ -38,8 +37,6 @@ namespace PHASIC {
 
     ATOOLS::Flavour m_fli, m_flj, m_flk, m_flij;
 
-    Extra_Emission_Generator *p_eeg;
-
     double Lambda(const double &s,const double &sb,
 		  const double &sc) const;
 
@@ -60,7 +57,6 @@ namespace PHASIC {
   public:
 
     CS_Dipole(ATOOLS::NLO_subevt *const sub,
-	      Extra_Emission_Generator *const eeg,
 	      Phase_Space_Handler *const psh);
 
     virtual ~CS_Dipole();

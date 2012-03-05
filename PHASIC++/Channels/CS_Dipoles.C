@@ -3,7 +3,6 @@
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PHASIC++/Channels/Vegas.H"
 #include "PHASIC++/Channels/Channel_Basics.H"
-#include "PHASIC++/Channels/Extra_Emission_Generator.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Poincare.H"
@@ -16,9 +15,8 @@ using namespace ATOOLS;
 using namespace PHASIC;
 
 FF_Dipole::FF_Dipole(NLO_subevt *const sub,
-		     Extra_Emission_Generator *const eeg,
 		     Phase_Space_Handler *const psh):
-  CS_Dipole(sub,eeg,psh), m_yexp(0.5), m_zexp(0.01)
+  CS_Dipole(sub,psh), m_yexp(0.5), m_zexp(0.01)
 {
   // read in y,z mode
   Data_Reader read(" ",";","!","=");
@@ -142,9 +140,8 @@ void FF_Dipole::Construct
 }
 
 FI_Dipole::FI_Dipole(ATOOLS::NLO_subevt *const sub,
-		     Extra_Emission_Generator *const eeg,
 		     Phase_Space_Handler *const psh):
-  CS_Dipole(sub,eeg,psh), m_xexp(0.5), m_zexp(0.01)
+  CS_Dipole(sub,psh), m_xexp(0.5), m_zexp(0.01)
 {
   // read in x,z mode
   Data_Reader read(" ",";","!","=");
@@ -281,9 +278,8 @@ void FI_Dipole::Construct
 }
 
 IF_Dipole::IF_Dipole(ATOOLS::NLO_subevt *const sub,
-		     Extra_Emission_Generator *const eeg,
 		     Phase_Space_Handler *const psh):
-  CS_Dipole(sub,eeg,psh), m_xexp(0.5), m_uexp(0.5)
+  CS_Dipole(sub,psh), m_xexp(0.5), m_uexp(0.5)
 {
   // read in x,u mode
   Data_Reader read(" ",";","!","=");
@@ -428,9 +424,8 @@ void IF_Dipole::Construct
 }
 
 II_Dipole::II_Dipole(ATOOLS::NLO_subevt *const sub,
-		     Extra_Emission_Generator *const eeg,
 		     Phase_Space_Handler *const psh):
-  CS_Dipole(sub,eeg,psh), m_xexp(0.5), m_vexp(0.5)
+  CS_Dipole(sub,psh), m_xexp(0.5), m_vexp(0.5)
 {
   // read in x,v mode
   Data_Reader read(" ",";","!","=");

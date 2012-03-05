@@ -71,12 +71,12 @@ bool Extra_Emission_Generator::InitDipoles
     for (size_t j(0);j<subs->size()-1;++j) {
       NLO_subevt *sub((*subs)[j]);
       if (sub->m_i<m_nin) {
-        if (sub->m_k<m_nin) AddDipole(proc,new II_Dipole(sub,this,psh));
-        else AddDipole(proc,new IF_Dipole(sub,this,psh));
+        if (sub->m_k<m_nin) AddDipole(proc,new II_Dipole(sub,psh));
+        else AddDipole(proc,new IF_Dipole(sub,psh));
       }
       else {
-        if (sub->m_k<m_nin) AddDipole(proc,new FI_Dipole(sub,this,psh));
-        else AddDipole(proc,new FF_Dipole(sub,this,psh));
+        if (sub->m_k<m_nin) AddDipole(proc,new FI_Dipole(sub,psh));
+        else AddDipole(proc,new FF_Dipole(sub,psh));
       }
     }
   }

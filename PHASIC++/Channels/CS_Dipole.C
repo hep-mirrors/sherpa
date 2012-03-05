@@ -18,11 +18,10 @@ using namespace ATOOLS;
 using namespace PHASIC;
 
 CS_Dipole::CS_Dipole(NLO_subevt *const sub,
-		     Extra_Emission_Generator *const eeg,
 		     Phase_Space_Handler *const psh):
   m_sub(*sub), p_vegas(NULL),
   m_alpha(1.0), m_oldalpha(1.0), m_weight(1.0),
-  m_amin(0.0), m_type(0), m_on(false), p_eeg(eeg)
+  m_amin(0.0), m_type(0), m_on(false)
 {
   p_fsmc=psh->FSRIntegrator();
   p_ismc=psh->ISRIntegrator();
