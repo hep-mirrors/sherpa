@@ -112,7 +112,7 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   if (p_mi) {
     p_ampl=p_mi->ClusterConfiguration();
     if (!SetColours(p_ampl,blob)) return Return_Value::New_Event;
-    if (!p_shower->GetShower()->PrepareShower(p_ampl,true))
+    if (!p_shower->GetShower()->PrepareShower(p_ampl))
       return Return_Value::New_Event;
     return Return_Value::Success;
   }
