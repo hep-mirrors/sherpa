@@ -26,7 +26,7 @@ namespace SHERPA {
 			 Soft_Collision_Handler *const softcollisions);
     ~Beam_Remnant_Handler();
     ATOOLS::Return_Value::code FillBeamAndBunchBlobs(ATOOLS::Blob_List *const);
-    void CleanUp();
+    void CleanUp(const size_t & mode=0);
   };// end of class Beam_Remnant_Handler
 
 }// end of namespace SHERPA

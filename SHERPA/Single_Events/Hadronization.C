@@ -26,7 +26,7 @@ Return_Value::code Hadronization::Treat(ATOOLS::Blob_List *bloblist,double &weig
 }
 
 
-void Hadronization::CleanUp() {}
+void Hadronization::CleanUp(const size_t & mode) {}
 
 void Hadronization::Finish(const std::string &) {}
 

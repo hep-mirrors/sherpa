@@ -175,7 +175,7 @@ void Multiple_Interactions::Finish(const std::string &resultpath)
 {
 }
 
-void Multiple_Interactions::CleanUp() 
+void Multiple_Interactions::CleanUp(const size_t & mode) 
 {
   p_mihandler->CleanUp();
   m_ptmax=std::numeric_limits<double>::max();

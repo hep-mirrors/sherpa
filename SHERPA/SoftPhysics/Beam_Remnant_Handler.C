@@ -160,10 +160,10 @@ ATOOLS::Blob * Beam_Remnant_Handler::InitBeamBlob(const int beam)
   return blob;
 }
 
-void Beam_Remnant_Handler::CleanUp()
+void Beam_Remnant_Handler::CleanUp(const size_t & mode)
 {
   if (p_sinic) {
-    p_sinic->CleanUp();
+    p_sinic->CleanUp(mode);
   }
   else p_parametrised->CleanUp();
 }

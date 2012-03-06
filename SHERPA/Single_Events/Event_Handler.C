@@ -75,12 +75,19 @@ void Event_Handler::PrintGenericEventStructure()
   msg_Out()<<"---------------------------------------------------------"<<std::endl;
 }
 
-void Event_Handler::Reset()
+void Event_Handler::Reset(const size_t & mode)
 {
   m_sblobs.Clear();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit)
     (*pit)->CleanUp();
   m_blobs.Clear();
+  if (mode==1) {
+    for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+      if ((*pit)->Name()==std::string("Beam_Remnants")) {
+	(*pit)->CleanUp(1);    
+      }
+    }
+  }
   if (Particle::Counter()>m_lastparticlecounter || 
       Blob::Counter()>m_lastblobcounter) {
     msg_Error()<<METHOD<<"(): "<<Particle::Counter()
@@ -89,7 +96,6 @@ void Event_Handler::Reset()
     m_lastparticlecounter=Particle::Counter();
     m_lastblobcounter=Blob::Counter();
   }
-
   Blob::Reset();
   Particle::Reset();
   Flow::ResetCounter();
@@ -132,6 +138,7 @@ void Event_Handler::InitialiseSeedBlob(ATOOLS::btp::code type,
   p_signal->SetType(type);
   p_signal->SetId();
   p_signal->SetStatus(status);
+  p_signal->AddData("Trials",new Blob_Data<double>(0));
   m_blobs.push_back(p_signal);
 }
 
@@ -200,8 +207,8 @@ int Event_Handler::IterateEventPhases(double & weight) {
     case Return_Value::New_Event : 
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncNewEvent((*pit)->Name());
-      m_addn+=(*p_signal)["Trials"]->Get<double>();
-      Reset();
+      if (p_signal) m_addn+=(*p_signal)["Trials"]->Get<double>();
+      Reset(1);
       return 2;
     case Return_Value::Error :
       Return_Value::IncCall((*pit)->Name());

@@ -384,7 +384,7 @@ void Signal_Process_FS_QED_Correction::FillBlob
   blob->InParticle(0)->SetFinalMass(blob->InParticle(0)->Momentum().Mass());
 }
 
-void Signal_Process_FS_QED_Correction::CleanUp() {}
+void Signal_Process_FS_QED_Correction::CleanUp(const size_t & mode) {}
 
 void Signal_Process_FS_QED_Correction::Finish(const std::string &) {}
 

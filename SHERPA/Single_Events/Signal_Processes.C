@@ -170,7 +170,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   return success;
 }
 
-void Signal_Processes::CleanUp() 
+void Signal_Processes::CleanUp(const size_t & mode) 
 { 
   if (m_overweight>0.0) return;
   if (p_mehandler)

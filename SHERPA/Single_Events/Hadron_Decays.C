@@ -71,7 +71,7 @@ Return_Value::code Hadron_Decays::Treat(Blob_List * bloblist, double & weight)
   return (didit ? Return_Value::Success : Return_Value::Nothing);
 }
 
-void Hadron_Decays::CleanUp()
+void Hadron_Decays::CleanUp(const size_t & mode)
 {
   if (p_dechandler) p_dechandler->CleanUp();
 }

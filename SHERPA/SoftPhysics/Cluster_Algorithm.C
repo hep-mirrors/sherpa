@@ -161,7 +161,7 @@ ProjectOnSinglets(Blob * const blob,std::list<ParticleList *> & singlets) {
 double Cluster_Algorithm::
 PT2(const Vec4D & pi,const Vec4D & pj,const bool & beam) const 
 {
-  double pref(8.);
+  double pref(1.);
   double pti2(pi.PPerp2()), ptj2(pj.PPerp2());
   double ptij2    = 
     2.*Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-cos(pi.Phi()-pj.Phi()));
@@ -255,8 +255,8 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       while (j==i) { j = 2+int(ATOOLS::ran->Get()*(nlegs-2)); }
       split->AddToSpectators(legs[j]);
       split->SetConnected(false);
-      kt2max = 4.*split->Mom().PPerp2(); //m_minkt2; 
-      kt2min = 4.*split->Mom().PPerp2();
+      kt2max = split->Mom().PPerp2(); //m_minkt2; 
+      kt2min = split->Mom().PPerp2();
     }
     if (kt2max>totmax) totmax = kt2max;
     split->SetKTStart(kt2max);
@@ -273,13 +273,6 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
   p_ampl->SetMuF2(totmax);
   p_ampl->SetMu2(totmax);
 
-  //if (kt2max>1000.) {
-  //msg_Out()<<"===========================================\n"
-  // 	   <<"===========================================\n"
-  // 	   <<"===========================================\n"
-  //	   <<METHOD<<"(kt^2 = "<<m_minkt2<<"):\n"<<"\n"<<(*p_ampl)<<"\n";
-  //}
-  //msg_Out()<<(*p_ampl)<<"\n";
   return true;
 }
 

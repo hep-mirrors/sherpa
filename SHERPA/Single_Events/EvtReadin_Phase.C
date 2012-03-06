@@ -35,6 +35,6 @@ Return_Value::code EvtReadin_Phase::Treat(ATOOLS::Blob_List * bloblist,
 }
 
 
-void EvtReadin_Phase::CleanUp()                   { m_read = false; }
-void EvtReadin_Phase::Finish(const std::string &) {}
+void EvtReadin_Phase::CleanUp(const size_t & mode) { m_read = false; }
+void EvtReadin_Phase::Finish(const std::string &)  {}
 

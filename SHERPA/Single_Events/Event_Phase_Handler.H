@@ -29,7 +29,7 @@ namespace SHERPA {
     Event_Phase_Handler(std::string);
     virtual ~Event_Phase_Handler();
     virtual ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *,double &)=0;
-    virtual void                       CleanUp()=0;
+    virtual void                       CleanUp(const size_t & mode=0)=0;
     virtual void                       Finish(const std::string &)=0;
 
     const eph::code & Type() const          { return m_type; }

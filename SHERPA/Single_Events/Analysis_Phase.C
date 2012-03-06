@@ -45,19 +45,22 @@ Return_Value::code Analysis_Phase::Treat(Blob_List *bloblist,double &weight)
   if (rpa->gen.NumberOfGeneratedEvents()>0 &&
       rpa->gen.NumberOfGeneratedEvents()%m_wit==0 &&
       rpa->gen.NumberOfGeneratedEvents()<rpa->gen.NumberOfEvents()) 
-    for (Analysis_Vector::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it)
+    for (Analysis_Vector::iterator it=p_analyses->begin(); 
+	 it!=p_analyses->end(); ++it)
       (*it)->WriteOut();
   return Return_Value::Nothing;
 }
 
-void Analysis_Phase::CleanUp() 
+void Analysis_Phase::CleanUp(const size_t & mode) 
 {
-  for (Analysis_Vector::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it)
+  for (Analysis_Vector::iterator it=p_analyses->begin(); 
+       it!=p_analyses->end(); ++it)
     (*it)->CleanUp();
 }
 
 void Analysis_Phase::Finish(const std::string &path)
 {
-  for (Analysis_Vector::iterator it=p_analyses->begin(); it!=p_analyses->end(); ++it)
+  for (Analysis_Vector::iterator it=p_analyses->begin(); 
+       it!=p_analyses->end(); ++it)
     (* it)->Finish();
 }

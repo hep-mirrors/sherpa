@@ -20,7 +20,7 @@ Minimum_Bias::Treat(ATOOLS::Blob_List * blobs, double & weight) {
   return p_schandler->GenerateMinimumBiasEvent(blobs,weight);
 }
 
-void Minimum_Bias::CleanUp() {
+void Minimum_Bias::CleanUp(const size_t & mode) {
   p_schandler->CleanUp();
 }
 

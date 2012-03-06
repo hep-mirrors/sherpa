@@ -268,7 +268,7 @@ void Jet_Evolution::AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist
   }
 }
 
-void Jet_Evolution::CleanUp() 
+void Jet_Evolution::CleanUp(const size_t & mode) 
 { 
   for (PertInterfaceIter piIter=m_interfaces.begin();
        piIter!=m_interfaces.end(); ++piIter) {
