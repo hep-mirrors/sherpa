@@ -46,7 +46,7 @@ namespace SINIC {
 			 std::vector<Continued_PDF> & pdfs);
     ~Beam_Remnant_Handler();
 
-    void Reset();
+    void Reset(const size_t & mode=0);
     bool InitialiseCollision(const int & N=0,Omega_ik * eikonal=NULL);
     bool NextIS(ATOOLS::Particle *& part1,ATOOLS::Particle *& part2);
     bool UpdateColours(Ladder * ladder,const bool & lastladder);

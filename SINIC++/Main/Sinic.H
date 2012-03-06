@@ -66,7 +66,7 @@ namespace SINIC {
     ~Sinic();
 
     int  GenerateEvent(ATOOLS::Blob_List * blobs);
-    void CleanUp();
+    void CleanUp(const size_t & mode=0);
 
     ATOOLS::Return_Value::code FillBeamBlobs(ATOOLS::Blob_List * blobs);
 

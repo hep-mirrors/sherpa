@@ -287,6 +287,11 @@ bool Rescatter_Handler::ConnectBlobs(Blob_List * blobs,Blob * add) {
 	  if (!found) { 
 	    msg_Error()<<"Error in "<<METHOD<<".\n"<<(*orig)<<"\n"<<(*repl)
 		       <<"\n"<<(*add)<<"\n"<<(*blob)<<"\n"; 
+	    if (add) {
+	      add->DeleteOutParticles();
+	      add->DeleteInParticles();
+	      delete add;
+	    }
 	    return false;
 	  }
 	}
@@ -294,10 +299,15 @@ bool Rescatter_Handler::ConnectBlobs(Blob_List * blobs,Blob * add) {
       }
     }
     if (!found) {
-      msg_Error()<<"Error in "<<METHOD<<":\n"
+      msg_Error()<<"WARNING in "<<METHOD<<":\n"
 		 <<"   Failed to connect "
-		 <<orig->Number()<<" <--> "<<repl->Number()<<" in \n"
-		 <<(*blobs)<<"\n";
+		 <<orig->Number()<<" <--> "<<repl->Number()<<" in "
+		 <<blobs->size()<<" blobs.\n";
+      if (add) {
+	add->DeleteOutParticles();
+	add->DeleteInParticles();
+	delete add;
+      }
       return false;
     }
     m_partmap.erase(m_partmap.begin());

@@ -77,7 +77,8 @@ InitialiseCollision(const int & N,Omega_ik * eikonal) {
   p_blob->SetId();
   p_blob->SetStatus(blob_status::needs_hadronization |
 		    blob_status::needs_beams);
-  for (size_t beam=0;beam<2;beam++) m_hadrons[beam]->AddParticlesToBlob(p_blob,beam);
+  for (size_t beam=0;beam<2;beam++) 
+    m_hadrons[beam]->AddParticlesToBlob(p_blob,beam);
   p_colour->SetSoftBlob(p_blob);
   m_paircounter = 0;
   return true;
@@ -215,9 +216,6 @@ NextIS(Particle *& part1,Particle *& part2) {
   Px += xp[1] = xt2[1]/xm[1];
 
   for (int beam=0;beam<2;beam++) {
-/*    p_part[beam]->SetMomentum(Vec4D(xp[beam]*m_beams[0]->OutMomentum()+
-				    xm[beam]*m_beams[1]->OutMomentum()+
-                                    m_hadrons[beam]->Kperp(m_paircounter)));*/
     p_part[beam]->SetMomentum(Vec4D(xp[beam]*m_beamvecs[0]+
 				    xm[beam]*m_beamvecs[1]+
 				    m_hadrons[beam]->Kperp(m_paircounter)));
@@ -226,7 +224,8 @@ NextIS(Particle *& part1,Particle *& part2) {
     if (m_paircounter+1 == m_hadrons[beam]->Size()
         && !ATOOLS::IsEqual(m_checkmom[beam],m_beamvecs[beam],1e-3))
       msg_Out()<<METHOD<<" Four Momentum not conserved in intial state: "
-                       <<(m_checkmom[beam]-m_beamvecs[beam])/m_beamvecs[beam][0]<<std::endl;
+                       <<(m_checkmom[beam]-m_beamvecs[beam])/
+	m_beamvecs[beam][0]<<std::endl;
   }	   
   m_paircounter++;
   part1 = p_part[0]; part2 = p_part[1];
@@ -243,7 +242,7 @@ bool Beam_Remnant_Handler::UpdateColours(Ladder * ladder,const bool & last) {
   return true;
 }
 
-void Beam_Remnant_Handler::Reset() {
+void Beam_Remnant_Handler::Reset(const size_t & mode) {
   for (int beam=0;beam<2;beam++) 
     m_hadrons[beam]->Reset(m_beamvecs[beam]);
   m_shat        = (m_beams[0]->OutMomentum()+m_beams[1]->OutMomentum()).Abs2();
@@ -251,4 +250,10 @@ void Beam_Remnant_Handler::Reset() {
   m_checkmom[0] = ATOOLS::Vec4D(0,0,0,0);
   m_checkmom[1] = ATOOLS::Vec4D(0,0,0,0);
   p_colour->Reset();
+
+  if (mode>0) {
+    if (p_blob && (p_blob->NInP()>0 || p_blob->NOutP()>0)) { 
+      delete p_blob; p_blob = NULL; 
+    }
+  }
 }

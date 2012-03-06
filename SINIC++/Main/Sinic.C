@@ -174,8 +174,8 @@ ATOOLS::Return_Value::code Sinic::FillBeamBlobs(ATOOLS::Blob_List * blobs) {
 				       p_generator->Smin());
 }
 
-void Sinic::CleanUp() {
-  p_beamremnants->Reset();
+void Sinic::CleanUp(const size_t & mode) {
+  p_beamremnants->Reset(mode);
 }
 
 void Sinic::GenerateXsecs() {

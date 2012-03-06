@@ -234,11 +234,6 @@ size_t Colour_Generator::
 SelectColourReplacement(Particle * part1,Particle * part2) {
   bool dir(ran->Get()>=0.5),found(false);
   size_t beam,index,col,col1,idcol;
-//   msg_Out()<<METHOD<<"(dir = "<<dir<<").\n";
-/*    msg_Out()<<"********** find replacement for = "
-    		  <<"["<<part1->GetFlow(1)<<" "<<part1->GetFlow(2)<<"] "
-    		  <<"["<<part2->GetFlow(1)<<" "<<part2->GetFlow(2)<<"].\n";*/
-//   PrintPendingColours();
   for (size_t i=0;i<2;i++) {
     beam = dir?i:1-i;
     for (index = 1;index<3;index++) {
@@ -248,15 +243,13 @@ SelectColourReplacement(Particle * part1,Particle * part2) {
 	if (col==(*cit)) {
 	  col1 = (beam==1?part1:part2)->GetFlow(3-index);
 	  if (col1!=0) {
-// 	    msg_Out()<<METHOD<<" found index "<<col<<" in beam "<<beam<<" with partner "<<col1<<std::endl;
 	    found = false;
             for (int i=0;i<m_hadrons[1-beam]->GetParticles().size();i++){ 
-	      if (m_hadrons[1-beam]->GetParticles()[i]->GetFlow(index)==col 
-		&& m_hadrons[1-beam]->GetParticles()[i]->GetFlow(3-index)!=col1) {
+	      if (m_hadrons[1-beam]->GetParticles()[i]->GetFlow(index)==col && 
+		  m_hadrons[1-beam]->GetParticles()[i]->GetFlow(3-index)!=col1){
 		found = true;
-	        idcol = m_hadrons[1-beam]->GetParticles()[i]->GetFlow(3-index);
-// 	        msg_Out()<<METHOD<<" gotcha: idcol = "<<idcol<<std::endl;
-	        break;
+		idcol = m_hadrons[1-beam]->GetParticles()[i]->GetFlow(3-index);
+		break;
 	      }
 	    }	      
 	    break;
@@ -267,10 +260,7 @@ SelectColourReplacement(Particle * part1,Particle * part2) {
     }
     if (found) break;
   }
-//   msg_Out()<<"Out of "<<METHOD<<" with 0.\n";
   if (!found) return 0;
-//    msg_Out()<<METHOD<<" --> could replace "<<col<<" --> "<<col1
-//    		<<" with beam.\n";
 
   p_compensator = new Blob(p_ladder->Position()*rpa->hBar()*rpa->c());
   p_compensator->SetId();
@@ -305,10 +295,8 @@ SelectColourReplacement(Particle * part1,Particle * part2) {
 
   for (int i=0;i<p_blob->NInP();i++) {
     part = p_blob->InParticle(i);
-/*    msg_Out()<<"   "<<part->GetFlow(1)<<" "<<part->GetFlow(2)
-    		  <<" vs. "<<index<<" & "<<col<<".\n";*/
-    if (part->GetFlow(index)==col && part->GetFlow(3-index)==idcol && part->Beam()==(1-beam)){
-//       msg_Out()<<METHOD<<" do replacement of "<<col<<" with "<<col1<<" with partner "<<idcol<<std::endl;
+    if (part->GetFlow(index)==col && part->GetFlow(3-index)==idcol && 
+	part->Beam()==(1-beam)){
       part->SetFlow(index,col1);
       break;
     }
@@ -323,9 +311,6 @@ SelectColourReplacement(Particle * part1,Particle * part2) {
   m_col[beam][2-index].erase(col);
   m_col[beam][2-index].insert(col1);
 
-/*  msg_Out()<<"   .. fit for ["<<beam<<", "<<index<<"]: "
-  		<<col<<" --> "<<col1<<".\n"<<(*p_compensator)<<"\n"
-  		<<(*p_blob)<<"\n";*/
   return (beam==1?3-index:index);
 }
 
@@ -358,11 +343,6 @@ bool Colour_Generator::Primary(Particle ** parts,const size_t & counter) {
     }
   }
   if (!p_ladder->GenerateColourIndices(fix)) return false;
-//   msg_Out()<<"-----------------------------------------------------\n"
-//   		<<METHOD<<":\n"<<(*p_ladder)<<"\n"
-//   		<<"   "<<m_col[0][0].size()<<" "<<m_col[0][1].size()<<"\n"
-//   		<<"   "<<m_col[1][0].size()<<" "<<m_col[1][1].size()<<"\n"
-//   		<<"----------------------------------------------\n";
 
   return true;
 }

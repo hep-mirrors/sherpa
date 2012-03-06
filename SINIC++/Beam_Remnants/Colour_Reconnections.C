@@ -237,6 +237,5 @@ Blob * Colour_Reconnections::AddReconnectionBlob() {
     partout->SetNumber();
     blob->AddToOutParticles(partout);
   }
-  //msg_Out()<<(*blob)<<"\n";
   return blob;
 }
