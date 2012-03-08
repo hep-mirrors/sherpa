@@ -117,7 +117,8 @@ bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,
   if (f1.IsQuark()) {
     if (f1.IsDowntype()) std::swap<Flavour>(f1,f2);
     int i((int)(f1.Kfcode())), j((int)(f2.Kfcode()));
-    vij=md->ComplexMatrixElement("CKM",i/2-1,(j-1)/2);
+    if (md->Name().find("SM")==std::string::npos) vij=1.0;
+    else vij=md->ComplexMatrixElement("CKM",i/2-1,(j-1)/2);
   }
   else {
     if (f1.Kfcode()%2==0) std::swap<Flavour>(f1,f2);
