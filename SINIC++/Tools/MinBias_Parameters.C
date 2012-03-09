@@ -21,11 +21,10 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
 			       ATOOLS::Flavour(kf_p_plus).HadMass());
   m_params["deltaY"]      = dr->GetValue<double>("deltaY",1.5);
   m_params["bmin"]        = dr->GetValue<double>("bmin",0.);
-  m_params["bmax"]        = dr->GetValue<double>("bmax",12.);
+  m_params["bmax"]        = dr->GetValue<double>("bmax",20.);
   m_params["accu"]        = dr->GetValue<double>("accu",5.e-3);
   // form factors
   m_params["NGWstates"]   = dr->GetValue<int>("GW_States",2);
-  m_params["KTMin_Mode"]  = dr->GetValue<int>("KTMin_Mode",1);
   m_params["FFpref"]      = 1./sqrt(m_params["NGWstates"]);
   m_params["Lambda2"]     = dr->GetValue<double>("Lambda2",1.5);
   m_params["beta02(mb)"]  = dr->GetValue<double>("beta_0^2",33.);
@@ -34,29 +33,44 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   m_params["kappa"]       = dr->GetValue<double>("kappa",0.55);
   m_params["xi"]          = dr->GetValue<double>("xi",0.225);
   // parameters of the eikonal
-  m_params["lambda"]      = dr->GetValue<double>("lambda",0.40);
-  m_params["Delta"]       = dr->GetValue<double>("Delta",0.36);
+  m_params["lambda"]      = dr->GetValue<double>("lambda",0.20);
+  m_params["Delta"]       = dr->GetValue<double>("Delta",0.40);
   // ladder generation
-  m_params["Q_as2"]       = dr->GetValue<double>("Q_as^2",1.);
+  m_params["KTMin_Mode"]  = dr->GetValue<int>("KTMin_Mode",0);
+  m_params["Q_as2"]       = dr->GetValue<double>("Q_as^2",0.25);
   m_params["Q02"]         = dr->GetValue<double>("Q_0^2",1.);
   m_params["Q12"]         = dr->GetValue<double>("Q_1^2",0.);
-  m_params["QN2"]         = dr->GetValue<double>("Q_N^2",0.2);
+  m_params["QN2"]         = dr->GetValue<double>("Q_N^2",0.);
   m_params["Ddiff2"]      = dr->GetValue<double>("D_diff^2",0.);
   m_params["kdiff"]       = dr->GetValue<double>("K_diff",0.);
   // showering off soft stuff
-  m_params["shower_mode"] = dr->GetValue<int>("Shower_Mode",2);
+  m_params["shower_mode"] = dr->GetValue<int>("Shower_Mode",3);
   m_params["min_kt2"]     = dr->GetValue<double>("Shower_Min_KT2",16.);
   m_params["kt2_factor"]  = dr->GetValue<double>("KT2_Factor",1.);
   m_params["diff_factor"] = dr->GetValue<double>("Diff_Factor",1.);
   // rescatterings
   m_params["RescProb"]    = dr->GetValue<double>("RescProb",1.);
-  m_params["SpatProb"]    = dr->GetValue<double>("SpatProb",1.);
+  m_params["SpatProb"]    = dr->GetValue<double>("SpatProb",0.);
   m_params["SpatWidth"]   = dr->GetValue<double>("SpatWidth",
 						 m_params["Lambda2"]);
-  m_params["QRC2"]        = dr->GetValue<double>("Q_RC^2",4.);
-  m_params["ReconnProb"]  = dr->GetValue<double>("RescProb",1./9.);
+  m_params["QRC2"]        = dr->GetValue<double>("Q_RC^2",8.);
+  m_params["ReconnProb"]  = dr->GetValue<double>("RescProb",8.);
 
-  std::string asf(dr->GetValue<std::string>("As_Form",std::string("smooth")));
+  std::string ffform = 
+    dr->GetValue<std::string>("FF_Form",std::string("dipole"));
+  if (ffform==std::string("dipole"))
+    m_ffform = ff_form::dipole;
+  else
+    m_ffform = ff_form::Gauss;
+
+  std::string absorption = 
+    dr->GetValue<std::string>("Absorption",std::string("exponential"));
+  if (absorption==std::string("exponential"))
+    m_absorp = absorption::exponential;
+  else
+    m_absorp = absorption::factorial;
+
+  std::string asf(dr->GetValue<std::string>("As_Form",std::string("IR0")));
   MODEL::asform::code as_form(MODEL::asform::smooth);
   if (asf==std::string("constant"))    m_as_form = MODEL::asform::constant;
   else if (asf==std::string("frozen")) m_as_form = MODEL::asform::frozen;
@@ -65,7 +79,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   else if (asf==std::string("GDH"))    m_as_form = MODEL::asform::GDH_inspired;
  
   std::string runmode =
-    dr->GetValue<std::string>("Sinic_Mode",std::string("Xsecs"));
+    dr->GetValue<std::string>("Sinic_Mode",std::string("Inelastic"));
   if (runmode==std::string("Xsecs")) 
     m_runmode = run_mode::xsecs_only;
   else if (runmode==std::string("Elastic")) 
@@ -90,20 +104,6 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   else if (weightmode==std::string("Weighted")) 
     m_weightmode = weight_mode::weighted;
 
-  std::string ffform = 
-    dr->GetValue<std::string>("FF_Form",std::string("dipole"));
-  if (ffform==std::string("dipole"))
-    m_ffform = ff_form::dipole;
-  else
-    m_ffform = ff_form::Gauss;
-
-  std::string absorption = 
-    dr->GetValue<std::string>("Absorption",std::string("exponential"));
-  if (absorption==std::string("exponential"))
-    m_absorp = absorption::exponential;
-  else
-    m_absorp = absorption::factorial;
-
   std::string ladderweight = 
     dr->GetValue<std::string>("Ladder_Weight",std::string("Regge"));
   if (ladderweight==std::string("IntervalOnly"))
@@ -112,7 +112,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
     m_ladderweight = ladder_weight::Regge;
 
   std::string ktform =
-    dr->GetValue<std::string>("KT_Form",std::string("smooth"));
+    dr->GetValue<std::string>("KT_Form",std::string("IR0"));
   if (ktform==std::string("cut"))
     m_ktform = ktform::cut;
   else if (ktform==std::string("frozen"))
@@ -165,7 +165,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   }
 
   std::string reconnmode =
-    dr->GetValue<std::string>("Reconnections",std::string("run"));
+    dr->GetValue<std::string>("Reconnections",std::string("fix"));
   if (reconnmode==std::string("off")) {
     m_reconnmode = reconn_mode::off;
   }
