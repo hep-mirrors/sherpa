@@ -268,37 +268,37 @@ void Singlet::ExtractPartons
   Particle * part;
   for (PLiter plit=begin();plit!=end();plit++) {
     if ((*plit)->Stat()==1) continue;
-      part = new Particle(-1,(*plit)->GetFlavour(),(*plit)->Momentum(),'F');
-      part->SetNumber(0);
-      if ((*plit)->GetType()==pst::IS) {
-	part->SetBeam((*plit)->Beam());
-	part->SetInfo('I');
-	blob->AddToInParticles(part);
-      } 
-      else {
-        blob->AddToOutParticles(part);
-        if (rpa->gen.SoftSC()) {
-          size_t j=2;
-          for (size_t i=0; i<blob->NInP(); ++i) {
-            if (blob->InParticle(i)->ProductionBlob() &&
-                blob->InParticle(i)->ProductionBlob()->Type()!=btp::Beam) {
-              if ((*plit)->Id()==(1<<j)) {
-                part->SetOriginalPart(blob->InParticle(i));
-              }
-              ++j;
-            }
-          }
-        }
+    part = new Particle(-1,(*plit)->GetFlavour(),(*plit)->Momentum(),'F');
+    part->SetNumber(0);
+    if ((*plit)->GetType()==pst::IS) {
+      part->SetBeam((*plit)->Beam());
+      part->SetInfo('I');
+      blob->AddToInParticles(part);
+    } 
+    else {
+      blob->AddToOutParticles(part);
+      if (rpa->gen.SoftSC()) {
+	size_t j=2;
+	for (size_t i=0; i<blob->NInP(); ++i) {
+	  if (blob->InParticle(i)->ProductionBlob() &&
+	      blob->InParticle(i)->ProductionBlob()->Type()!=btp::Beam) {
+	    if ((*plit)->Id()==(1<<j)) {
+	      part->SetOriginalPart(blob->InParticle(i));
+	    }
+	    ++j;
+	  }
+	}
       }
-      if ((*plit)->GetType()==pst::FS) {
-	part->SetFlow(1,(*plit)->GetFlow(1));
-	part->SetFlow(2,(*plit)->GetFlow(2));
-      }
-      else if ((*plit)->GetType()==pst::IS) {
-	part->SetFlow(1,(*plit)->GetFlow(2));
-	part->SetFlow(2,(*plit)->GetFlow(1));
-      }
-      part->SetFinalMass(ms->Mass((*plit)->GetFlavour()));
+    }
+    if ((*plit)->GetType()==pst::FS) {
+      part->SetFlow(1,(*plit)->GetFlow(1));
+      part->SetFlow(2,(*plit)->GetFlow(2));
+    }
+    else if ((*plit)->GetType()==pst::IS) {
+      part->SetFlow(1,(*plit)->GetFlow(2));
+      part->SetFlow(2,(*plit)->GetFlow(1));
+    }
+    part->SetFinalMass(ms->Mass((*plit)->GetFlavour()));
   }
 }
 
