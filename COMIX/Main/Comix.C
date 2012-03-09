@@ -154,8 +154,6 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   m_path=path;
   m_file=file;
   p_model=model;
-  if (model->Name()!="SM") THROW
-    (not_implemented,"Comix cannot handle model '"+model->Name()+"'");
   PrintLogo(msg->Info());
   PrintVertices();
   p_int->SetBeam(beamhandler); 
@@ -167,6 +165,9 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
   m_break=read.GetValue<int>("ONLY_MAPPING_FILE",0);
+  if (!read.GetValue<int>("COMIX_ALLOW_BSM",0))
+    if (model->Name()!="SM") THROW
+      (not_implemented,"Comix cannot handle model '"+model->Name()+"'");
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_rank()==0)
 #endif

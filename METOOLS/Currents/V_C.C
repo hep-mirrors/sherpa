@@ -78,21 +78,7 @@ template <typename SType>
 CV<SType>::CV(const Current_Key &key): 
   Current(key), m_cmass2(0.0), m_cmass(0.0)
 {
-  switch (key.m_fl.Kfcode()) {
-  case kf_Wplus: {
-    SComplex mw(MODEL::s_model->ScalarConstant("MW")), 
-      gw(MODEL::s_model->ScalarConstant("GammaW"));
-    m_cmass=sqrt(m_cmass2=mw*mw-M_I*gw*mw);
-    break;
-  }
-  case kf_Z: {
-    SComplex mz(MODEL::s_model->ScalarConstant("MZ")), 
-      gz(MODEL::s_model->ScalarConstant("GammaZ"));
-    m_cmass=sqrt(m_cmass2=mz*mz-M_I*gz*mz);
-    break;
-  }
-  default: break;
-  }
+  m_cmass=sqrt(m_cmass2=SComplex(sqr(this->m_mass),-this->m_mass*this->m_width));
 }
 
 template <typename SType> CVec4<SType> 

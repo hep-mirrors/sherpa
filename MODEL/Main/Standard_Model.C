@@ -499,8 +499,6 @@ void Standard_Model::FixEWParameters() {
   p_constants->insert(std::make_pair(std::string("vev"),         vev));
   p_constants->insert(std::make_pair(std::string("MW"),          MW));
   p_constants->insert(std::make_pair(std::string("MZ"),          MZ));
-  p_constants->insert(std::make_pair(std::string("GammaW"),      Flavour(kf_Wplus).Width()));
-  p_constants->insert(std::make_pair(std::string("GammaZ"),      Flavour(kf_Z).Width()));
   p_constants->insert(std::make_pair(std::string("MH"),          MH));
   p_constants->insert(std::make_pair(std::string("lambdaH"),     lambdaH));
   p_constants->insert(std::make_pair(std::string("GF"),          GF));

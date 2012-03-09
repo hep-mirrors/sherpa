@@ -61,13 +61,12 @@ CS<SType>::CS(const Current_Key &key):
   Current(key), m_pseudo(false)
 {
   switch (key.m_fl.Kfcode()) {
-  case kf_h0:
-    m_cmass2=SComplex(sqr(this->m_mass),-this->m_mass*this->m_width);
-    break;
   case kf_h0_qsc:
     m_pseudo=true;
     break;
-  default: break;
+  default:
+    m_cmass2=SComplex(sqr(this->m_mass),-this->m_mass*this->m_width);
+    break;
   }
 }
 
