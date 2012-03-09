@@ -158,8 +158,8 @@ int Cluster_Algorithm::SetDecayColours(const Vec4D_Vector& p, Flavour * fl,int c
   for (int i=0; i<3; ++i) {
     if (fl[i].Strong()) {
       ++ncol;
-      if (fl[i].IsQuark() || fl[i].IsSquark()) ++nquark;
-      if (fl[i].IsGluon() || fl[i].IsGluino()) ++ngluon;
+      if (abs(fl[i].StrongCharge())==3) ++nquark;
+      if (fl[i].StrongCharge()==8) ++ngluon;
     }
   }  
   m_colors[0][0] = col1; m_colors[0][1] = col2; 
@@ -180,7 +180,7 @@ int Cluster_Algorithm::SetDecayColours(const Vec4D_Vector& p, Flavour * fl,int c
     }
     // 1->33 1->88
     if (col1==0 && col2==0) {
-      if ((fl[1].IsQuark()||fl[1].IsSquark()) && (fl[2].IsQuark()||fl[2].IsSquark())) {
+      if (abs(fl[1].StrongCharge())==3 && abs(fl[2].StrongCharge())==3) {
 	if (fl[1].IsAnti() && !(fl[2].IsAnti())) {
 	  m_colors[1][1] = m_colors[2][0] = ATOOLS::Flow::Counter();
 	  return 0;
@@ -190,7 +190,7 @@ int Cluster_Algorithm::SetDecayColours(const Vec4D_Vector& p, Flavour * fl,int c
 	  return 0;
 	}
       }
-      if ((fl[1].IsGluon()||fl[1].IsGluino()) && (fl[2].IsGluon()||fl[2].IsGluino())) {
+      if (fl[1].StrongCharge()==8 && fl[2].StrongCharge()==8) {
 	m_colors[1][1] = m_colors[2][0] = ATOOLS::Flow::Counter();
 	m_colors[1][0] = m_colors[2][1] = ATOOLS::Flow::Counter();
 	return 0;
@@ -221,8 +221,8 @@ int Cluster_Algorithm::SetColours(const Vec4D_Vector& p,Flavour * fl)
   for (int i=0; i<4; ++i) {
     if (fl[i].Strong()) {
       ++ncol;
-      if (fl[i].IsQuark() || fl[i].IsSquark()) ++nquark;
-      if (fl[i].IsGluon() || fl[i].IsGluino()) ++ngluon;
+      if (abs(fl[i].StrongCharge())==3) ++nquark;
+      if (fl[i].StrongCharge()==8) ++ngluon;
     }
     m_colors[i][0]=m_colors[i][1]=0;
   }
@@ -250,10 +250,32 @@ int Cluster_Algorithm::Set4Colours(const int nquark,const int ngluon,
 {
   double scale;
   int prop(p_ct->IdentifyHardPropagator(scale));
-  if (fl[0].IsGluon() || fl[0].IsGluino() || 
-      fl[1].IsGluon() || fl[1].IsGluino() || 
-      fl[2].IsGluon() || fl[2].IsGluino() || 
-      fl[3].IsGluon() || fl[3].IsGluino() || prop<0) {
+  if (fl[0].StrongCharge()==8 && fl[1].StrongCharge()==8 &&
+      fl[2].StrongCharge()!=8 && fl[3].StrongCharge()!=8) {
+    int ri(fl[2].StrongCharge()>0?2:3);
+    switch (prop) {
+    case 1: {
+      int ni(Min(1,(int)(2.0*ran->Get())));
+      m_colors[ni][0]=m_colors[1-ni][1]=500;
+      m_colors[ri][0]=m_colors[1-ni][0]=501;
+      m_colors[5-ri][1]=m_colors[ni][1]=502;
+      break;
+    }
+    case 2:
+      m_colors[ri-2][1]=m_colors[3-ri][0]=500;
+      m_colors[ri][0]=m_colors[ri-2][0]=501;
+      m_colors[5-ri][1]=m_colors[3-ri][1]=502;
+      break;
+    case 3:
+      m_colors[ri-2][0]=m_colors[3-ri][1]=500;
+      m_colors[ri][0]=m_colors[3-ri][0]=501;
+      m_colors[5-ri][1]=m_colors[ri-2][1]=502;
+      break;
+    }    
+    return true;
+  }
+  if (fl[0].StrongCharge()==8 || fl[1].StrongCharge()==8 || 
+      fl[2].StrongCharge()==8 || fl[3].StrongCharge()==8) {
 
     msg_Out()<<METHOD<<"(): Cannot set colours for "<<std::endl;
     Combine_Table *ct(p_ct);
@@ -296,10 +318,10 @@ int Cluster_Algorithm::Set2Colours(const int nquark,const int ngluon,
   int j(0);
   for (int i=0;i<4;i++) {
     if (!fl[i].Strong()) continue;
-    if (fl[i].IsQuark() || fl[i].IsSquark()) {
+    if (abs(fl[i].StrongCharge())==3) {
       m_colors[i][0+int(fl[i].IsAnti())] = 500;
     }
-    else if (fl[i].IsGluon()) {
+    else if (fl[i].StrongCharge()==8) {
       m_colors[i][j] = 500; m_colors[i][1-j] = 501;
     }
     connected[j++]=i;
@@ -319,7 +341,7 @@ int Cluster_Algorithm::Set3Colours(const int nquark,const int ngluon,
 	singlet = i; 
 	continue; 
       }
-      if (fl[i].IsGluon() || fl[i].IsGluino()) {
+      if (fl[i].StrongCharge()==8) {
 	connected[j] = i;
 	m_colors[i][0+(i>1)] = 500+j; 
 	if (j==2) j=-1;
@@ -334,7 +356,7 @@ int Cluster_Algorithm::Set3Colours(const int nquark,const int ngluon,
 	singlet = i; 
 	continue; 
       }
-      if (fl[i].IsQuark() || fl[i].IsSquark()) {
+      if (abs(fl[i].StrongCharge())==3) {
 	connected[j] = i;
 	m_colors[i][0+int(fl[i].IsAnti())] = 500+j;
 	j++;
@@ -342,7 +364,7 @@ int Cluster_Algorithm::Set3Colours(const int nquark,const int ngluon,
     }
     bool tmode = (connected[0]<2) ^ (connected[1]<2);
     for (int i=0;i<4;i++) {
-      if (fl[i].IsGluon() || fl[i].IsGluino()) {
+      if (fl[i].StrongCharge()==8) {
 	if (tmode) {
 	  if (i<2) {
 	    m_colors[i][1-int(fl[connected[1]].IsAnti())] = 500;
@@ -392,13 +414,13 @@ int Cluster_Algorithm::SetColours(EXTRAXS::ME2_Base * xs,
   if (!p_xs) return SetColours(p,fl);
   bool test(p_xs->SetColours(p)), check(true);
   for (int i=0; i<4; ++i) {
-    if (fl[i].IsQuark() || fl[i].IsSquark()) {
+    if (abs(fl[i].StrongCharge())==3) {
       if ( fl[i].IsAnti() && 
 	   (p_xs->Colours()[i][0]!=0 || p_xs->Colours()[i][1]==0)) check=false;
       if (!fl[i].IsAnti() && 
 	  (p_xs->Colours()[i][0]==0 || p_xs->Colours()[i][1]!=0)) check=false;
     }
-    if ((fl[i].IsGluon() || fl[i].IsGluino()) && 
+    if (fl[i].StrongCharge()==8 && 
 	(p_xs->Colours()[i][0]==0 || p_xs->Colours()[i][1]==0))   check=false;
     if (!check) {
       msg_Error()<<"Cluster_Algorithm::SetColours(..): \n"
