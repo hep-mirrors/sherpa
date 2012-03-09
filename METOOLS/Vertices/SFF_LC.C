@@ -61,8 +61,8 @@ SFF_Calculator<SType>::SFF_Calculator(const Vertex_Key &key):
     m_cplr=SComplex(-p_v->Coupling(1)*p_cc->Coupling());
   }
   else {
-    m_cpll=SComplex(p_v->Coupling(1)*p_cc->Coupling());
-    m_cplr=SComplex(p_v->Coupling(0)*p_cc->Coupling());
+    m_cpll=SComplex(-p_v->Coupling(1)*p_cc->Coupling());
+    m_cplr=SComplex(-p_v->Coupling(0)*p_cc->Coupling());
   }
 }
 
@@ -218,7 +218,7 @@ SFF_Calculator<SType>::LorentzRight(const CSpinorType &a,
     msg_Debugging()<<"<| R "<<a<<"\n";
     msg_Debugging()<<"     "<<b<<"\n";
 #endif
-    CSpinorType j(a.R(),a.B(),0,0,a.H()|b.H(),a.S()|b.S(),1);
+    CSpinorType j(a.R(),a.B(),0,0,a.H()|b.H(),a.S()|b.S(),2);
     j[2]=a[2]*b[0]*m_cplr;
     j[3]=a[3]*b[0]*m_cplr;
     j[1]=j[0]=SComplex(0.0,0.0);
@@ -229,7 +229,7 @@ SFF_Calculator<SType>::LorentzRight(const CSpinorType &a,
     msg_Debugging()<<"|> R "<<a<<"\n";
     msg_Debugging()<<"     "<<b<<"\n";
 #endif
-    CSpinorType j(a.R(),a.B(),0,0,a.H()|b.H(),a.S()|b.S(),2);
+    CSpinorType j(a.R(),a.B(),0,0,a.H()|b.H(),a.S()|b.S(),1);
     j[3]=j[2]=SComplex(0.0,0.0);
     j[0]=a[0]*b[0]*m_cplr;
     j[1]=a[1]*b[0]*m_cplr;
