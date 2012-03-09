@@ -383,7 +383,9 @@ void Model_Base::InitMEInfo()
 	for (size_t j(1);j<all[i].Lorentz.size();++j)
 	  msg_Out()<<"|"<<all[i].Lorentz[j]->Type()
 		   <<","<<all[i].Color[j].PID();
-	msg_Out()<<(all[i].dec>0?'}':(all[i].dec<0?')':']'))<<"\n";
+	msg_Out()<<(all[i].dec>0?'}':(all[i].dec<0?')':']'))
+		 <<", C0 = "<<all[i].Coupling(0)
+		 <<", C1 = "<<all[i].Coupling(1)<<"\n";
       }
     }
   }

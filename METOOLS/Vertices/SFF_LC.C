@@ -56,14 +56,8 @@ SFF_Calculator<SType>::SFF_Calculator(const Vertex_Key &key):
   m_dir(key.p_b->Flav().IsFermion()?
 	(key.p_a->Flav().IsFermion()?0:2):1) 
 {
-  if (m_dir!=0 && key.p_c->Flav().IsAnti()) {
-    m_cpll=SComplex(-p_v->Coupling(0)*p_cc->Coupling());
-    m_cplr=SComplex(-p_v->Coupling(1)*p_cc->Coupling());
-  }
-  else {
-    m_cpll=SComplex(-p_v->Coupling(1)*p_cc->Coupling());
-    m_cplr=SComplex(-p_v->Coupling(0)*p_cc->Coupling());
-  }
+  m_cpll=SComplex(p_v->Coupling(0)*p_cc->Coupling());
+  m_cplr=SComplex(p_v->Coupling(1)*p_cc->Coupling());
 }
 
  
@@ -182,12 +176,12 @@ SFF_Calculator<SType>::LorentzLeft(const CSpinorType &a,
   switch (a.B()) {
   case -1: {
 #ifdef DEBUG__BG
-    msg_Debugging()<<"<| L "<<a<<"\n";
+    msg_Debugging()<<"<| R "<<a<<"\n";
     msg_Debugging()<<"     "<<b<<"\n";
 #endif
     CSpinorType j(a.R(),a.B(),0,0,a.H()|b.H(),a.S()|b.S(),1);
-    j[0]=a[0]*b[0]*m_cpll;
-    j[1]=a[1]*b[0]*m_cpll;
+    j[0]=a[0]*b[0]*m_cplr;
+    j[1]=a[1]*b[0]*m_cplr;
     j[3]=j[2]=SComplex(0.0,0.0);
     return j;
   }
@@ -215,12 +209,12 @@ SFF_Calculator<SType>::LorentzRight(const CSpinorType &a,
   switch (a.B()) {
   case -1: {
 #ifdef DEBUG__BG
-    msg_Debugging()<<"<| R "<<a<<"\n";
+    msg_Debugging()<<"<| L "<<a<<"\n";
     msg_Debugging()<<"     "<<b<<"\n";
 #endif
     CSpinorType j(a.R(),a.B(),0,0,a.H()|b.H(),a.S()|b.S(),2);
-    j[2]=a[2]*b[0]*m_cplr;
-    j[3]=a[3]*b[0]*m_cplr;
+    j[2]=a[2]*b[0]*m_cpll;
+    j[3]=a[3]*b[0]*m_cpll;
     j[1]=j[0]=SComplex(0.0,0.0);
     return j;
   }
