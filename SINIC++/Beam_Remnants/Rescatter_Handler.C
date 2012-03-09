@@ -132,8 +132,7 @@ void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
   if (!m_rescatter) return;
   double y1(part->Momentum().Y()),y2,s12,prob,sup;
   int    nbeamp(part->Info()=='B'),nbeam;
-  //double supp(nbeamp==1?1.:
-  //	      p_alphaS->Weight(part->Momentum().PPerp2(),true));
+  double supp(nbeamp==1?1.:p_alphaS->Weight(part->Momentum().PPerp2(),true));
   double expo(p_eikonal->EffectiveIntercept(m_b1,m_b2));
   bool allowed;
   for (set<Particle *>::iterator piter=m_particles.begin();
@@ -152,9 +151,9 @@ void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
     if (prob<0.00000001 || !CanRescatter((*piter),part)) continue;
     s12   = ((*piter)->Momentum()+part->Momentum()).Abs2();
     nbeam = nbeamp+int((*piter)->Info()=='B');
-    //sup   = supp * (*piter)->Info()=='B'?1.:
-    //  p_alphaS->Weight((*piter)->Momentum().PPerp2(),true);
-    prob *= p_eikonal->RescatterProbability(m_b1,m_b2,y1,y2,1.,nbeam); 
+    sup   = supp * (*piter)->Info()=='B'?1.:
+      p_alphaS->Weight((*piter)->Momentum().PPerp2(),true);
+    prob *= p_eikonal->RescatterProbability(m_b1,m_b2,y1,y2,sup,nbeam); 
     //sup,nbeam);
     prob *= pow(s12/Max(s12,m_smin),1.+expo);
     //double pt21(part->Momentum().PPerp2());

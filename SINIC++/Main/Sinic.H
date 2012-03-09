@@ -74,11 +74,7 @@ namespace SINIC {
       p_beamremnants->SetBeamBlob(beamblob,beam);
     }
     inline int    ShowerMode()   const { return MBpars("shower_mode"); }
-    inline double ShowerMinKT2() const { return 
-	ATOOLS::Max(p_generator->Smin(),MBpars("min_kt2")); 
-    }
-
-
+    inline double ShowerMinKT2() const { return p_generator->ShowerMinKT2(); }
     inline const double & XSec() const { return p_generator->XSec(); } 
     inline const double   Smin() const { return p_generator->Smin(); }
   };

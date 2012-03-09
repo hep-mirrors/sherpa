@@ -52,14 +52,15 @@ Ladder_Generator::~Ladder_Generator() {
       <<"   mean number of extra emissions in primary ladders: "
       <<(m_histograms[string("Nemit1")]->Average()-2)<<", "
       <<"Delta = "<<m_histograms[string("Delta1")]->Average()<<", "
-      <<" average kt = "<<m_histograms[string("KT1")]->Average()<<";\n";
+      <<" average kt = "<<m_histograms[string("KT1")]->Average()
+      <<"(mid-y:"<<m_histograms[string("KT1mid")]->Average()<<");\n";
     if (MBpars.RescMode()!=resc_mode::off &&
 	m_histograms[string("Nemit2")]->Integral()>1.e-6) 
       msg_Info()<<"   mean number of extra emissions in secondary ladders: "
 		<<(m_histograms[string("Nemit2")]->Average()-2)<<", "
 		<<"Delta = "<<m_histograms[string("Delta2")]->Average()<<", "
 		<<" average kt = "<<m_histograms[string("KT2")]->Average()
-		<<";\n";
+		<<"(mid-y:"<<m_histograms[string("KT2mid")]->Average()<<");\n";
     if (m_resc1>0) 
       msg_Info()<<"   had to enforce "<<(m_resc0/(m_resc1+m_resc0))<<" "
 		<<"secondary ladders to be singlets.\n";
@@ -96,10 +97,6 @@ Ladder * Ladder_Generator::
 operator()(Particle * part1,Particle * part2,const bool & rescatter,
 	   const bool & first,const bool & weighted)
 {
-  //msg_Tracking()
-  //  <<"   ------------------------------------------------------\n"
-  //  <<"   "<<METHOD<<"("<<part1->Flav()<<" ["<<part1->Number()<<"], "
-  //  <<"("<<part2->Flav()<<" ["<<part2->Number()<<"]): \n";
   double weight(0.),isweight(0.);  
   int trials(0);
   
@@ -244,12 +241,9 @@ double Ladder_Generator::Weight(const double & isweight) {
     double mu2(4.*p_ladder->Mu2());
     Flavour in1,in2,out1,out2;
     if (!p_ladder->ReconstructMEFlavours(in1,in2,out1,out2)) return 0.;
-    //msg_Out()<<METHOD<<": MRK = "<<p_ladder->MRKweight()
-    //	     <<" that = "<<that<<" for\n"<<(*p_ladder)<<"\n";
     double expo(3.*m_FS.AlphaSMax()/M_PI*dabs(p_ladder->DeltaYhat()));
-    //weight *= pow(smin/Max(smin,shat),1.+expo);
     weight *= p_ladder->MRKweight();
-    weight *= pow(mu2/Max(that,mu2),1.+expo);
+    weight *= pow(smin/Max(that,smin),1.+expo);
     if (p_ladder->IsHardDiffractive()) {
       weight *= sqr(m_FS.AlphaS(that)/m_FS.AlphaSMax());
     }
@@ -258,8 +252,6 @@ double Ladder_Generator::Weight(const double & isweight) {
   }
   m_histograms[string("LadderWt")]->Insert(weight);
   return weight;
-  //weight *= pow(Max(that,smin)/Max(smin,shat),1.+expo);
-  //weight *= ((uhat*shat)/sqr(that+1.));
 }
 
 
@@ -353,7 +345,8 @@ void Ladder_Generator::Analyse(const bool & isprimary) {
     }
   }
   Histogram * histokt(m_histograms[isprimary?string("KT1"):string("KT2")]);
-  Histogram * histoktmid(m_histograms[isprimary?string("KT1mid"):string("KT2mid")]);
+  Histogram * histoktmid(m_histograms[isprimary?string("KT1mid"):
+				      string("KT2mid")]);
   Histogram * histoy(m_histograms[string("y1")]);
   double kt,y;
   for (LadderMap::iterator piter=p_ladder->GetEmissionsBegin();

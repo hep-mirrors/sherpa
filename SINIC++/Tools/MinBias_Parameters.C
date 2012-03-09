@@ -37,6 +37,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   m_params["lambda"]      = dr->GetValue<double>("lambda",0.40);
   m_params["Delta"]       = dr->GetValue<double>("Delta",0.36);
   // ladder generation
+  m_params["Q_as2"]       = dr->GetValue<double>("Q_as^2",1.);
   m_params["Q02"]         = dr->GetValue<double>("Q_0^2",1.);
   m_params["Q12"]         = dr->GetValue<double>("Q_1^2",0.);
   m_params["QN2"]         = dr->GetValue<double>("Q_N^2",0.2);
@@ -55,6 +56,14 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   m_params["QRC2"]        = dr->GetValue<double>("Q_RC^2",4.);
   m_params["ReconnProb"]  = dr->GetValue<double>("RescProb",1./9.);
 
+  std::string asf(dr->GetValue<std::string>("As_Form",std::string("smooth")));
+  MODEL::asform::code as_form(MODEL::asform::smooth);
+  if (asf==std::string("constant"))    m_as_form = MODEL::asform::constant;
+  else if (asf==std::string("frozen")) m_as_form = MODEL::asform::frozen;
+  else if (asf==std::string("smooth")) m_as_form = MODEL::asform::smooth;
+  else if (asf==std::string("IR0"))    m_as_form = MODEL::asform::IR0;
+  else if (asf==std::string("GDH"))    m_as_form = MODEL::asform::GDH_inspired;
+ 
   std::string runmode =
     dr->GetValue<std::string>("Sinic_Mode",std::string("Xsecs"));
   if (runmode==std::string("Xsecs")) 

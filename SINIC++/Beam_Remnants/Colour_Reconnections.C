@@ -58,6 +58,7 @@ void Colour_Reconnections::HarvestParticles(Blob_List * blobs) {
     if (blob->Has(blob_status::needs_hadronization)) {
       for (int i=0;i<blob->NOutP();i++) {
 	part = blob->OutParticle(i);
+	if (dabs(part->Momentum().Y())>5.) part->SetInfo('B');
 	if (part->Status()==part_status::active &&
 	    part->DecayBlob()==NULL) {
 	  parts.push_back(part);
@@ -96,7 +97,8 @@ void Colour_Reconnections::ShuffleColours() {
 	double w34(Weight(pit3->first,pit4->first));
 	double w14(Weight(pit1->first,pit4->first));
 	double w32(Weight(pit3->first,pit2->first));
-	double w1234(w12*w34),w1432(m_reconn*w14*w32),summed(w1234+w1432);
+	double w1234(w12*w34),w1432(m_colfac*m_reconn*w14*w32);
+	double summed(w1234+w1432);
 	double m12(sqrt((pit1->first->Momentum()+
 			 pit2->first->Momentum()).Abs2()));
 	double m34(sqrt((pit3->first->Momentum()+
@@ -215,7 +217,7 @@ Weight(ATOOLS::Particle * part1,ATOOLS::Particle * part2,const bool & spatial) {
   if (spatial && part1->ProductionBlob()!=part2->ProductionBlob()) {
     dist2 = (part1->ProductionBlob()->Position().Perp()-
 	     part2->ProductionBlob()->Position().Perp()).Abs2();
-    weight *= m_colfac * exp(-dist2/m_b02);
+    weight *= exp(-dist2/m_b02);
   }
   return weight;
 }

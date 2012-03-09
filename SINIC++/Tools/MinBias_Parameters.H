@@ -1,6 +1,7 @@
 #ifndef SINIC_Tools_MinBias_Parameters_H
 #define SINIC_Tools_MinBias_Parameters_H
 
+#include "MODEL/Main/Strong_Coupling.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
@@ -144,6 +145,7 @@ namespace SINIC {
     spat_mode::code      m_spacemode;
     reconn_mode::code    m_reconnmode;
     StringDoubleMap      m_params;
+    MODEL::asform::code  m_as_form;
   public:
     MinBias_Parameters();
     ~MinBias_Parameters();
@@ -170,6 +172,7 @@ namespace SINIC {
     const resc_ktmin::code     RescKTMin()     const { return m_resc_ktmin; }
     const resc_nosing::code    RescNoSing()    const { return m_resc_nosing; }
     const reconn_mode::code    ReconnMode()    const { return m_reconnmode; }
+    const MODEL::asform::code  AsForm()        const { return m_as_form; }
   };
   
   extern MinBias_Parameters MBpars;

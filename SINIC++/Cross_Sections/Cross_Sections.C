@@ -48,10 +48,12 @@ void Cross_Sections::CalculateTotalCrossSections()
     <<"sigma_in ("<<m_sinel/1.e9<<"), "
     <<"sigma_el ("<<m_sel/1.e9<<"), "
     <<"sigma_SD ("<<m_sSD/1.e9<<"), "
-    <<"sigma_DD ("<<m_sDD/1.e9<<") mbarn."<<std::endl
-    <<"   Sum = "<<(m_sinel+m_sel+m_sSD+m_sDD)/1.e9<<" vs. "<<m_stot/1.e9<<" mbarn, "
-    <<"should maybe adjust sigma_inel to fit sigma_tot."<<std::endl;
-
+    <<"sigma_DD ("<<m_sDD/1.e9<<") mbarn."<<std::endl;
+  if (1.-dabs((m_sinel+m_sel+m_sSD+m_sDD)/m_stot)>1.e-2) {
+    msg_Info()<<"   Sum = "<<(m_sinel+m_sel+m_sSD+m_sDD)/1.e9
+	      <<" vs. "<<m_stot/1.e9<<" mbarn, "
+	      <<"should maybe adjust sigma_inel to fit sigma_tot.\n";
+  }
   if(m_test==1) {
     sigma_tot.TestTotalCrossSection();
     m_sigma_elastic.TestElasticCrossSection();

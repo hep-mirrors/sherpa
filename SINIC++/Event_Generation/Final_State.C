@@ -8,6 +8,8 @@
 
 using namespace SINIC;
 using namespace ATOOLS;
+using namespace MODEL;
+using namespace std;
 
 // asform:         constant=-1, frozen=0, smooth=1, IR0=2
 // ktform:         frozen=0, smooth=1, cut=-1
@@ -19,8 +21,11 @@ Final_State::Final_State(const int & test) :
   m_resc_ktmin(MBpars.RescKTMin()),
   m_resc_nosing(MBpars.RescNoSing()),
   m_ktmin_mode(MBpars("KTMin_Mode")),
-  p_alphaS(static_cast<MODEL::Strong_Coupling *>
-	   (MODEL::s_model->GetScalarFunction(std::string("strong_cpl")))), 
+  //p_alphaS(static_cast<MODEL::Strong_Coupling *>
+  //	   (MODEL::s_model->GetScalarFunction(std::string("strong_cpl")))), 
+  p_alphaS(new Strong_Coupling(static_cast<Running_AlphaS *>
+			       (s_model->GetScalarFunction(string("alpha_S"))),
+				MBpars.AsForm(),MBpars("Q_as2"))),
   m_Q02(MBpars("Q02")), m_Q12(MBpars("Q12")), m_QN2(MBpars("QN2")), 
   m_d2(MBpars("Ddiff2")), m_kdiff(MBpars("kdiff")), 
   m_test(test), m_output(true)
@@ -56,7 +61,9 @@ operator()(Ladder * ladder,const double & Deltay,
 
   double y0(m_plusiter->first), y1(m_minusiter->first);
   m_lastwt = 1.;
-  int nbeam(p_ladder->IsRescatter()?0:2);
+  int nbeam(!p_ladder->IsRescatter()?2:
+	    int(dabs(p_ladder->GetIn1()->m_mom.Y())>6.)+
+	    int(dabs(p_ladder->GetIn2()->m_mom.Y())>6.));
   if (firstattempt && FirstSinglet(y0,y1,1.,nbeam)) {
     m_histomap[std::string("Delta_final")]->Insert(1./dabs(y0-y1)); 
     p_ladder->GetProps()->begin()->m_col = colour_type::singlet;
@@ -193,7 +200,7 @@ TryEmission(double & kt12,const bool & dir) {
 
 
   double colfac(3.);
-  double Delta(colfac*p_alphaS->MaxValue()/M_PI*
+  double Delta(colfac*p_alphaS->MaxValue()/M_PI *
 	       KT2integral(kt1max2,kt1min2,m_Q02eff,ktexpo));
   m_histomap[std::string("Delta_naive")]->Insert(Delta); 
   if (dir) m_histomap[std::string("Delta_naive1")]->Insert(Delta); 
@@ -306,18 +313,18 @@ TryEmission(double & kt12,const bool & dir) {
     mu12_2 = Q02((k_1.Y()+k_2.Y())/2.);
     if (dir) m_histomap[std::string("ytest1")]->Insert(y1);
         else m_histomap[std::string("ytest0")]->Insert(y1);
-    if (MBpars.LadderWeight()==ladder_weight::Regge) {
-      rarg = Min(mu01_2/m_q01_2,1.);
-      expo = colfac*p_alphaS->MaxValue()*deltay/M_PI; 
+    if (MBpars.LadderWeight()==ladder_weight::Regge && deltay>1.) {
+      rarg = Min(4.*mu01_2/q01.PPerp2(),q01.PPerp2()/(4.*mu01_2));
+      //Min(mu01_2/m_q01_2,1.);
+      expo = colfac*(*p_alphaS)(q01.PPerp2())*deltay/M_PI; 
       wt  *= reggewt = pow(rarg,expo);
       //wt  *= kmrwt   = q01.PPerp2()/m_q01_2;
       //m_histomap[std::string("KMRWt")]->Insert(kmrwt);
       m_histomap[std::string("ReggeWt")]->Insert(reggewt);
     }
-    sup    = 1.; //SuppressionTerm(m_q01_2,m_q12_2);
+    sup    = SuppressionTerm(m_q01_2,m_q12_2);
     wt    *= recombwt = 
-      //(dabs(y1-y0)>1.5 || (dabs(y1-y0)<1.5 && kt2>m_Q02eff))?
-      Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup)); //:0.;
+      Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup));
     m_histomap[std::string("RecombWt")]->Insert(recombwt);
     if (dir) {
       m_histomap[std::string("ReggeWt1")]->Insert(reggewt);
@@ -352,19 +359,19 @@ TryEmission(double & kt12,const bool & dir) {
 
 bool Final_State::MomViolation(ATOOLS::Vec4D & k_0, ATOOLS::Vec4D & k_1,
 			       ATOOLS::Vec4D & k_2, bool dir) {
-  if (k_0[0]<0. || k_1[0]<0. || k_2[0]<0.) {
+  //if (k_0[0]<0. || k_1[0]<0. || k_2[0]<0.) {
+  //  m_rej_offshell++;
+  //  return true;
+  //}
+  if (k_0[0]<0. || k_0.Nan() || dabs(k_0.Abs2())>1.e-3) {
     m_rej_offshell++;
     return true;
   }
-  if (k_0[0]<0. || k_0.Nan() || dabs(k_0.Abs2())>1.e-6) {
+  if (k_1[0]<0. || k_1.Nan() || dabs(k_1.Abs2())>1.e-3) {
     m_rej_offshell++;
     return true;
   }
-  if (k_1[0]<0. || k_1.Nan() || dabs(k_1.Abs2())>1.e-6) {
-    m_rej_offshell++;
-    return true;
-  }
-  if (k_2[0]<0. || k_2.Nan() || dabs(k_2.Abs2())>1.e-6) {
+  if (k_2[0]<0. || k_2.Nan() || dabs(k_2.Abs2())>1.e-3) {
     m_rej_offshell++;
     return true;
   }

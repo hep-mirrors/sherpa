@@ -35,7 +35,7 @@ Soft_Collision_Handler::Soft_Collision_Handler(string _dir,string _file,
   if (m_softcollisionmodel==string("Sinic")) {
     m_sfile=dr.GetValue<string>("SINIC_FILE",string("Sinic.dat"));
     p_sinic = new Sinic(&dr,beam,isr);
-    m_cluster.SetShowerParams(p_sinic->ShowerMode(),0.);
+    m_cluster.SetShowerParams(p_sinic->ShowerMode(),p_sinic->ShowerMinKT2());
     m_mode=1;
     exh->AddTerminatorObject(this);
     return;

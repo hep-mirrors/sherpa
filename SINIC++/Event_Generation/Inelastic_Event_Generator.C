@@ -187,7 +187,7 @@ AddScatter(Blob_List * blobs,const double & xsec)
     m_rescatterhandler.UpdateCollision(blobs);
     if (m_rescatterhandler.SelectRescatter(part1,part2)) {
       m_Nsec++;
-      m_laddergenerator.SetLadderGeneration(1+m_Nsec);
+      //m_laddergenerator.SetLadderGeneration(1+m_Nsec);
       p_ladder = m_laddergenerator(part1,part2,true);
       if (!p_ladder) return -1;
       p_beams->SetInitials(part1,part2);

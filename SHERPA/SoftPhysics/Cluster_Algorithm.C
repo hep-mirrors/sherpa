@@ -164,18 +164,16 @@ PT2(const Vec4D & pi,const Vec4D & pj,const bool & beam) const
   double pref(1.);
   double pti2(pi.PPerp2()), ptj2(pj.PPerp2());
   double ptij2    = 
-    2.*Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-cos(pi.Phi()-pj.Phi()));
+    Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-cos(pi.Phi()-pj.Phi()));
   return (beam?Min(pref*pti2,ptij2):ptij2);
 }
 
 bool Cluster_Algorithm::Cluster(Blob *const blob)
 {
-  //msg_Out()<<"===========================================\n"
-  // 	   <<"===========================================\n"
-  // 	   <<"===========================================\n"
-  //	   <<METHOD<<"(kt^2 = "<<m_minkt2<<")for:\n"<<(*blob)<<"\n";
   std::list<ParticleList * > singlets;
   ProjectOnSinglets(blob,singlets);
+
+  double scale((m_mode>2?m_minkt2:0.)/1.);
 
   p_ampl=Cluster_Amplitude::New(NULL);
   Vec4D axis1(blob->GetParticle(0)->Momentum());
@@ -207,9 +205,9 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       p_ampl->CreateLeg(mom,flav,col,id);
       Cluster_Leg * leg(p_ampl->Legs().back());
       leg->SetStat(0);
-      leg->SetKTStart(m_minkt2);
-      leg->SetKTMax(m_minkt2);
-      leg->SetKTVeto(m_minkt2);
+      leg->SetKTStart(scale);
+      leg->SetKTMax(scale);
+      leg->SetKTVeto(scale);
       leg->SetNMax(blob->NOutP()+3);
       leg->GetSpectators().clear();
       leg->SetConnected(false);
@@ -229,19 +227,34 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
   for (size_t i=2;i<nlegs;i++) {
     split   = legs[i];
     ysplit  = dabs(split->Mom().Y());
-    kt2max  = m_minkt2; 
-    kt2min  = shat; 
+    kt2max  = 0.;
+    kt2min  = (m_mode>2)?scale:shat; 
     for (size_t j=nlegs;j>0;j--) {
       if (i==j-1) continue;
       spect = legs[j-1];
       int nconn(ColorConnected(split->Col(),spect->Col()));
       if (nconn==0) continue;
-      kt2FS = PT2(split->Mom(),spect->Mom(),
-		  i==2 || i==nlegs-1 || j==nlegs-1 || j<=3);
-      if (j>2) sFS = (split->Mom()+spect->Mom()).Abs2()/4.; 
+      kt2FS = PT2(split->Mom(),spect->Mom(),i==2 || i==nlegs-1);
+      //|| j==nlegs-1 || j<=3);
+      if (j>2) sFS = (split->Mom()+spect->Mom()).Abs2(); 
           else sFS = 0.;
       if (kt2FS>kt2max) kt2max = kt2FS;
-      if (kt2FS<kt2min) kt2min = kt2FS;
+      //if (sFS>kt2max) kt2max = sFS;
+      switch (m_mode) {
+      case 7:
+      case 6:
+      case 5:
+      case 4:
+	if (kt2FS>kt2min) kt2min = kt2FS;
+	break;
+      case 3:
+      case 2:
+      case 1:
+      case 0:
+      default:
+	if (kt2FS<kt2min) kt2min = kt2FS;
+	break;
+      }
       if (j>2) {
 	do {
 	  split->AddToSpectators(spect);
@@ -255,13 +268,32 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       while (j==i) { j = 2+int(ATOOLS::ran->Get()*(nlegs-2)); }
       split->AddToSpectators(legs[j]);
       split->SetConnected(false);
-      kt2max = split->Mom().PPerp2(); //m_minkt2; 
-      kt2min = split->Mom().PPerp2();
+      switch (m_mode) {
+      case 7:
+	kt2max = kt2min = scale;
+	break;
+      case 6:
+	kt2max = kt2min = scale/2.;
+	break;
+      case 5:
+	kt2max = kt2min = sqrt(split->Mom().PPerp2()*scale);
+	break;
+      case 4:
+      case 3:
+	kt2max = PT2(split->Mom(),legs[j]->Mom(),false);
+	break;
+      case 2:
+      case 1:
+      case 0:
+      default:
+	kt2max = kt2min = split->Mom().PPerp2();
+	break;
+      }
     }
     if (kt2max>totmax) totmax = kt2max;
     split->SetKTStart(kt2max);
+    split->SetKTMax(kt2max);
     split->SetKTVeto(kt2min);
-    split->SetKTMax(kt2min);
   }
   p_ampl->SetNIn(blob->NInP());
   p_ampl->SetOrderEW(0);

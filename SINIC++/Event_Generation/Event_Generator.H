@@ -28,7 +28,7 @@ namespace SINIC {
     Inelastic_Event_Generator          * p_inelastic;
     Event_Generator_Base               * p_active;
 
-    double m_xsec;
+    double m_xsec, m_minkt2;
   public:
     Event_Generator() : 
       p_elastic(NULL), p_sdiff(NULL), p_qelastic(NULL), p_inelastic(NULL) {};
@@ -45,6 +45,10 @@ namespace SINIC {
     inline Omega_ik * GetEikonal() const { return p_active->GetEikonal(); }
     inline const double & XSec()   const { return m_xsec; } 
     inline const double   Smin()   const { return p_active->Smin(); }
+    inline double ShowerMinKT2() {
+      if (p_active) return ATOOLS::Max(p_active->Smin(),m_minkt2); 
+      return m_minkt2;
+    }
   };
 }
 #endif
