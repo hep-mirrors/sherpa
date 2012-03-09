@@ -118,6 +118,8 @@ void Interaction_Model_FeynRules::c_FFV(std::vector<Single_Vertex>& vertex,int &
 	  sprintf(sarg3,"%i",arg3);
 	  //
 	  vertex[vanz].Color.push_back(Color_Function(cf::F,arg1,arg2,arg3,sarg1[0],sarg2[0],sarg3[0]));
+	  vertex[vanz].oqcd=1;
+	  vertex[vanz].oew=0;
 	  break;
 	}
 	case 'T' : {
@@ -130,6 +132,8 @@ void Interaction_Model_FeynRules::c_FFV(std::vector<Single_Vertex>& vertex,int &
 	  sprintf(sarg3,"%i",arg3);
 	  //
 	  vertex[vanz].Color.push_back(Color_Function(cf::T,arg1,arg2,arg3,sarg1[0],sarg2[0],sarg3[0]));
+	  vertex[vanz].oqcd=1;
+	  vertex[vanz].oew=0;
 	  break;
 	}
 	case 'D' : {
