@@ -292,7 +292,7 @@ ProduceKinematics(const bool & first,const bool & vetodiquark) {
     FixZRange(zmin,zmax);
     m_z   = p_kernels->SelectZ(zmin,zmax,1.,m_glusplit,m_leadsplit);
     m_kt2 = m_z*(1.-m_z)*m_s23-(1.-m_z)*m_m3_2-m_z*m_m2_2;
-    double weight = m_kt2<0.||m_kt2>m_kt2max?0.:1.;
+    double weight = (m_kt2<0.||m_kt2>m_kt2max)?0.:1.;
     weight *= (*p_as)(m_kt2,false)/p_as->MaxValue() * 
       (m_glusplit?m_kt2/m_s23<ran->Get():1.) * 
       (m_kt2>m_pt2max?exp(-sqr((m_kt2-m_pt2max)/exparg)):1.);

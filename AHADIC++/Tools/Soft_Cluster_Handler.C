@@ -933,8 +933,10 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
 }
 
 double Soft_Cluster_Handler::
-SelectPT2(const double & pt2max,const double & masscor,const bool & expo,const bool & beam) {
-  double pt2(0.), arg((pt2max+m_pt02)/m_pt02), exparg(m_pt2maxfac*m_pt2max/masscor), wt(0.);
+SelectPT2(const double & pt2max,const double & masscor,
+	  const bool & expo,const bool & beam) {
+  double pt2(0.), arg((pt2max+m_pt02)/m_pt02);
+  double exparg(m_pt2maxfac*m_pt2max/masscor), wt(0.);
   bool   runit(true);
   do {
     pt2 = m_pt02*(pow(arg,ran->Get())-1.);

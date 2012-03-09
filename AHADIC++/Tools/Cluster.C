@@ -349,9 +349,12 @@ void Cluster::RotateAndBoostBack(ATOOLS::Vec4D & mom) {
 }
 
 void Cluster::Print() {
-  msg_Out()<<"   Cluster [active = "<<m_active<<", number = "<<m_number<<", size = "<<size()<<"], "
-	   <<"constituents = "<<p_trip->m_flav<<" & "<<p_anti->m_flav<<std::endl
-	   <<"      flavour = "<<m_flav<<" with "<<m_momentum<<"), "<<m_momentum.Abs2()<<" ---> ";
+  msg_Out()<<"   Cluster [active = "<<m_active<<", number = "
+	   <<m_number<<", size = "<<size()<<"], "
+	   <<"constituents = "<<p_trip->m_flav<<" & "
+	   <<p_anti->m_flav<<std::endl
+	   <<"      flavour = "<<m_flav<<" with "
+	   <<m_momentum<<"), "<<m_momentum.Abs2()<<" ---> ";
   if (m_decayproducts.size()>0) {
     for (size_t i=0;i<m_decayproducts.size();i++) 
       msg_Out()<<m_decayproducts[i]<<" ";
