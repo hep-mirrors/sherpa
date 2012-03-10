@@ -343,9 +343,10 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     return false;
 }
 
-double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,
+double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* _psh,
                                               double maxerror) 
 { 
+  psh=_psh;
   mn=mnstep=mncstep=0;
   msg_Info()<<"Starting the calculation for a decay. Lean back and enjoy ... ."<<endl; 
   
@@ -372,16 +373,14 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,
     
     if (value>max) max = value;
 
-    if (value!=0. && value==oldvalue) break;
-    oldvalue = value;
-    
-    //Nan Check
-    if (!((psh->Process())->TotalResult()>0.) && !((psh->Process())->TotalResult()<0.)) {
-      msg_Out()<<"NaN knockout!!!!"<<endl;
+    if (value!=0. && value==oldvalue) {
+      MPISync();
       break;
     }
+    oldvalue = value;
     
     if (!(n%iter)) {
+      MPISync();
       if (n<=maxopt) {
 	psh->Optimize();
 	(psh->Process())->OptimizeResult();
@@ -389,11 +388,6 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,
       if (n==maxopt) {
 	psh->EndOptimize();
 	optiter = iter = 50000;
-      }
-      //Nan Check
-      if (!((psh->Process())->TotalResult()>0.) && !((psh->Process())->TotalResult()<0.)) {
-	msg_Out()<<"NaN knockout!!!!"<<endl;
-	break;
       }
       if ((psh->Process())->TotalResult()==0.) break;
       

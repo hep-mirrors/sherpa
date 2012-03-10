@@ -185,6 +185,7 @@ namespace PHASIC {
     void GeneratePoint(ATOOLS::Vec4D * p,Cut_Data *,double * _ran) { GeneratePoint(p,_ran); } 
     void GenerateWeight(ATOOLS::Vec4D * p,Cut_Data *)              { GenerateWeight(p); }
     void ISRInfo(int &,double &,double &);
+    void MPISync() { }
     int  ChNumber()                 { return chnumber;      }
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }
   };
