@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "MODEL/Main/Strong_Coupling.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -201,6 +202,17 @@ void FeynRules_Spectrum::SetExternalParameters(const PDF::ISR_Handler_Map& isr) 
 	   <<p_model->ScalarFunction(string("alpha_S"),sqr(MZ))<<" "<<sqr(MZ)<<endl;
   msg_Info()<<"   set alphaQED(MZ) to "
 	   <<p_model->ScalarFunction(string("alpha_QED"),sqr(MZ))<<" "<<sqr(MZ)<<endl;
+
+  double Q2aS = p_dataread->GetValue<double>("Q2_AS",1.);
+  std::string asf  = p_dataread->GetValue<std::string>("As_Form",std::string("smooth"));
+  asform::code as_form(asform::smooth);
+  if (asf==std::string("constant"))    as_form = asform::constant;
+  else if (asf==std::string("frozen")) as_form = asform::frozen;
+  else if (asf==std::string("smooth")) as_form = asform::smooth;
+  else if (asf==std::string("IR0"))    as_form = asform::IR0;
+  else if (asf==std::string("GDH"))    as_form = asform::GDH_inspired;
+  Strong_Coupling * strong_cpl(new Strong_Coupling(as,as_form,Q2aS));
+  p_model->GetScalarFunctions()->insert(make_pair(std::string("strong_cpl"),strong_cpl));
   
   //read-in decay widths
   msg_Info()<<endl<<"   Reading decay data: "<<endl;
