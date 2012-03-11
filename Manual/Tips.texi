@@ -5,6 +5,7 @@
 * Bash completion:: How to add bash completion for Sherpa parameters
 * Rivet analyses:: How to analyse Sherpa events using Rivet
 * HZTool analyses:: How to analyse Sherpa events using HZTool
+* PGS interface:: How to pass Sherpa events on to PGS
 * MCFM interface:: How to use the MCFM interface in NLO calculation
 * Debugging a crashing/stalled event::  How to recover the random seed for an event that is hanging or crashing
 * Versioned installation:: How to install multiple Sherpa versions in the same prefix.
@@ -104,6 +105,44 @@ and create an analysis section in @code{Run.dat} that reads as follows:
 The line starting with @code{HZ_ENABLE} specifies which HZTool analyses to run.
 The histogram output directory can be changed using the @code{ANALYSIS_OUTPUT}
 switch, while @code{HISTO_NAME} specifies the hbook output file.
+
+@node PGS interface
+@section PGS interface
+
+Sherpa is equipped with an interface to StdHEP, which can be used to pass events to
+@uref{http://physics.ucdavis.edu/~conway/research/software/pgs/pgs4-general.htm,,PGS}.
+To enable the interface, PGS must be installed and your Sherpa compilation has to be 
+configured with the following options:
+@verbatim
+  ./configure --enable-pgs=/path/to/pgs
+@end verbatim
+
+To use the interface, specify the switch
+@verbatim
+  Sherpa ANALYSIS=PGS
+@end verbatim
+
+and create an analysis section in @code{Run.dat} that reads as follows:
+@verbatim
+  (analysis){
+    BEGIN_PGS {
+      FILE_NAME events.lhe;
+      WRITE_MODE 4;
+    } END_PGS;
+  }(analysis)
+@end verbatim
+
+The line starting with @code{FILE_NAME} specifies the name of the StdHEP output file,
+while @code{WRITE_MODE} controls the content of the file. It should be set to 4 for
+weighted events, and can be 1 or 4 for unweighted. If set to 4, the event weight
+may be located in the @code{HEPEV4} common block as @code{EVENTWEIGHTLH}.
+Please refer to the StdHEP documentation for more details.
+
+Please refer to the PGS documentation for how to pass StdHEP event files on to PGS.
+If you are using the LHC olympics executeable, this can be achieved with
+@verbatim
+  ./olympics --stdhep events.lhe <other options>
+@end verbatim
 
 @node MCFM interface
 @section MCFM interface
