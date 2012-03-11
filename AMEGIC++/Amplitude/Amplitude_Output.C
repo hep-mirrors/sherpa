@@ -18,10 +18,10 @@ Amplitude_Output::Amplitude_Output(std::string pid, Topology * _top)
   subcounter=0;
   super_amplitude=false;
   for (int i=0; i<3;++i) captions.push_back("");
-  WriteHeader();
+  WriteHeader(pid.substr(pid.rfind('/')+1));
 }
 
-void Amplitude_Output::WriteHeader()
+void Amplitude_Output::WriteHeader(const std::string &name)
 {
   pios<<"\\documentclass{article} "<<endl;
   pios<<"\\usepackage{feynmp} "<<endl;
@@ -41,7 +41,7 @@ void Amplitude_Output::WriteHeader()
   pios<<"\\setlength{\\tabcolsep}{5mm}  "<<endl;
 
   pios<<"\\begin{document} "<<endl;
-  pios<<"\\begin{fmffile}{graphs} "<<endl;
+  pios<<"\\begin{fmffile}{"<<name<<"_fg} "<<endl;
 
 }
 

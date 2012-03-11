@@ -29,7 +29,7 @@ namespace AMEGIC {
     void LegCount(Point * mo);
     void DrawLine(std::string from, Point * d);
     int InclInComming(Point * mo);
-    void WriteHeader();
+    void WriteHeader(const std::string &name);
   public:
     Amplitude_Output() { top=0; ampl=0;}
     Amplitude_Output(std::string pid, Topology * _top);
