@@ -56,8 +56,8 @@ SFF_Calculator<SType>::SFF_Calculator(const Vertex_Key &key):
   m_dir(key.p_b->Flav().IsFermion()?
 	(key.p_a->Flav().IsFermion()?0:2):1) 
 {
-  m_cpll=SComplex(p_v->Coupling(0)*p_cc->Coupling());
-  m_cplr=SComplex(p_v->Coupling(1)*p_cc->Coupling());
+  m_cpll=SComplex(-p_v->Coupling(0)*p_cc->Coupling());
+  m_cplr=SComplex(-p_v->Coupling(1)*p_cc->Coupling());
 }
 
  
