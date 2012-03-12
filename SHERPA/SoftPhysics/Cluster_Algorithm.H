@@ -34,6 +34,7 @@ namespace SHERPA {
     };
   private:
     int    m_mode;
+    bool   m_resc;
     double m_minkt2;
 
     ATOOLS::Cluster_Amplitude     *p_ampl;
@@ -65,6 +66,7 @@ namespace SHERPA {
     SetClusterDefinitions(PDF::Cluster_Definitions_Base *const cb) 
     { p_clus=cb; }
     inline void SetMinKT2(const double & minkt2) { m_minkt2 = minkt2; }
+    inline void SetRescatt(const double & resc)  { m_resc = resc; }
 
     double Mass(const ATOOLS::Flavour &fl) const;
   };// end of class Cluster_Algorithm

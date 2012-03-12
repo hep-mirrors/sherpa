@@ -93,6 +93,7 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List * blobs,
 Cluster_Amplitude *Soft_Collision_Handler::ClusterConfiguration(Blob *const bl)
 {
   m_cluster.SetMinKT2(p_sinic->Smin());
+  m_cluster.SetRescatt(p_sinic->IsLastRescatter());
   if (!m_cluster.Cluster(bl)) {
     msg_Error()<<"Error in "<<METHOD<<": could not cluster blob.\n"
 	       <<(*bl)<<"\n";

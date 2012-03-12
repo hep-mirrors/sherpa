@@ -234,7 +234,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       spect = legs[j-1];
       int nconn(ColorConnected(split->Col(),spect->Col()));
       if (nconn==0) continue;
-      kt2FS = PT2(split->Mom(),spect->Mom(),i==2 || i==nlegs-1);
+      kt2FS = PT2(split->Mom(),spect->Mom(),!m_resc && (i==2||i==nlegs-1));
       //|| j==nlegs-1 || j<=3);
       if (j>2) sFS = (split->Mom()+spect->Mom()).Abs2(); 
           else sFS = 0.;
@@ -286,7 +286,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       case 1:
       case 0:
       default:
-	kt2max = kt2min = split->Mom().PPerp2();
+	kt2max = kt2min = Min(scale/16.,split->Mom().PPerp2());
 	break;
       }
     }
