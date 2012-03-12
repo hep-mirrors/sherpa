@@ -49,6 +49,10 @@ namespace SINIC {
       if (p_active) return ATOOLS::Max(p_active->Smin(),m_minkt2); 
       return m_minkt2;
     }
+    inline const bool IsLastRescatter() const {
+      if (p_active) return p_active->IsLastRescatter();
+      return false;
+    }
   };
 }
 #endif

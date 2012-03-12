@@ -105,8 +105,6 @@ int Inelastic_Event_Generator::
 InelasticEvent(Blob_List * blobs,const double & xsec,
 	       const bool & isUE,const bool & weighted) {
   Blob * blob(blobs->FindFirst(btp::Soft_Collision));
-  if (blobs->size()==1) 
-    blob->AddData("Weight",new Blob_Data<double>(p_sigma->Sigma()));
   if (blob && blob->Status()==blob_status::needs_minBias) {
     InitInelasticEvent(isUE,weighted);
 
@@ -285,9 +283,9 @@ CreateBlob(Blob_List * blobs,const double & xsec) {
          else blob->SetTypeSpec("MinBias");    
   blob->SetStatus(blob_status::needs_showers);
   blob->SetPosition(pos);
+  Blob_Data_Base *winfo((*blob)["Weight"]);
+  if (!winfo) blob->AddData("Weight",new ATOOLS::Blob_Data<double>(1.));
   
-  blob->AddData("Weight",new Blob_Data<double>(xsec));
-
   Particle * part;
   for (LadderMap::iterator liter=p_ladder->GetEmissionsBegin();
        liter!=p_ladder->GetEmissionsEnd();liter++) {
@@ -336,6 +334,11 @@ const double Inelastic_Event_Generator::Smin() const {
   smin *= m_kt2fac;
   if (p_ladder->IsHardDiffractive() && p_ladder->Size()==2) smin *= m_difffac;
   return smin; 
+}
+
+const bool Inelastic_Event_Generator::IsLastRescatter() const {
+  if (!p_ladder) return false;
+  return p_ladder->IsRescatter();
 }
 /////////////////////////////////////////////////////////////////////////
 

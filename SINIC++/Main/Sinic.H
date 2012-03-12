@@ -77,6 +77,9 @@ namespace SINIC {
     inline double ShowerMinKT2() const { return p_generator->ShowerMinKT2(); }
     inline const double & XSec() const { return p_generator->XSec(); } 
     inline const double   Smin() const { return p_generator->Smin(); }
+    inline const bool     IsLastRescatter() const { 
+      return p_generator->IsLastRescatter(); 
+    }
   };
 }
 #endif

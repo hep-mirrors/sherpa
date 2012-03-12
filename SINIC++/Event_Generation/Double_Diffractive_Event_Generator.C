@@ -97,15 +97,6 @@ DoubleDiffractiveEvent(ATOOLS::Blob_List * blobs,const double & xsec) {
     blob->SetStatus(ATOOLS::blob_status::needs_beams);
     blob->SetType(ATOOLS::btp::QElastic_Collision);
 
-    blob->AddData("Weight",new ATOOLS::Blob_Data<double>(xsec));
-
-/*    msg_Out()<<METHOD<<" in particles: \n"
-             <<(*part1in)<<"\n"<<(*part2in)<<"\n"
-             <<"         out particles: \n"
-             <<(*part1out)<<"\n"<<(*part2out)<<"\n"
-             <<"momentum sum: "
-             <<(part1in->Momentum()+part2in->Momentum()-part1out->Momentum()-part2out->Momentum())<<std::endl;*/
-    
     return true;
   }
   return false;

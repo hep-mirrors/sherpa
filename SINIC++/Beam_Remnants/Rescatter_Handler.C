@@ -10,7 +10,7 @@ using namespace std;
 
 Rescatter_Handler::Rescatter_Handler(Beam_Remnant_Handler * beams) :
   m_rescatter(MBpars.RescMode()!=resc_mode::off), 
-  m_mustmatch(false), m_singletwt(0.),
+  m_mustmatch(false), m_singletwt(1.),
   m_rescprob(MBpars("RescProb")), m_resc1prob(1.), 
   p_beams(beams),
   p_alphaS(static_cast<MODEL::Strong_Coupling *>
@@ -130,9 +130,7 @@ bool Rescatter_Handler::DealWithBlob(ATOOLS::Blob * blob) {
 
 void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
   if (!m_rescatter) return;
-  double y1(part->Momentum().Y()),y2,s12,prob,sup;
-  int    nbeamp(part->Info()=='B'),nbeam;
-  double supp(nbeamp==1?1.:p_alphaS->Weight(part->Momentum().PPerp2(),true));
+  double y1(part->Momentum().Y()),y2,s12,prob;
   double expo(p_eikonal->EffectiveIntercept(m_b1,m_b2));
   bool allowed;
   for (set<Particle *>::iterator piter=m_particles.begin();
@@ -140,25 +138,18 @@ void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
     allowed = true;
     prob    = 0.;
     y2      = (*piter)->Momentum().Y();
-      for (list<pair<double,double> >::iterator sit=m_intervals.begin();
-	   sit!=m_intervals.end();sit++) {
-	if ((y1<=sit->first && y2>=sit->second) ||
-	    (y2<=sit->first && y1>=sit->second)) {
-	  prob = m_singletwt;
-	}
-	else prob = m_resc1prob;
+    for (list<pair<double,double> >::iterator sit=m_intervals.begin();
+	 sit!=m_intervals.end();sit++) {
+      if ((y1<=sit->first && y2>=sit->second) ||
+	  (y2<=sit->first && y1>=sit->second)) {
+	prob = m_singletwt;
       }
+      else prob = 1.;
+    }
     if (prob<0.00000001 || !CanRescatter((*piter),part)) continue;
     s12   = ((*piter)->Momentum()+part->Momentum()).Abs2();
-    nbeam = nbeamp+int((*piter)->Info()=='B');
-    sup   = supp * (*piter)->Info()=='B'?1.:
-      p_alphaS->Weight((*piter)->Momentum().PPerp2(),true);
-    prob *= p_eikonal->RescatterProbability(m_b1,m_b2,y1,y2,sup,nbeam); 
-    //sup,nbeam);
+    prob *= p_eikonal->RescatterProbability(m_b1,m_b2,y1,y2,m_rescprob,0); 
     prob *= pow(s12/Max(s12,m_smin),1.+expo);
-    //double pt21(part->Momentum().PPerp2());
-    //double pt22((*piter)->Momentum().PPerp2());
-    //prob *= pt21/(pt21+4.) * pt22/(pt22+4.);
     prob /= double(m_Nfact);
     if (IsColourConnected((*piter),part)) prob *= 3.;
     if (m_analyse) m_histomap["Rescatter_wt"]->Insert(m_B,prob);
@@ -196,7 +187,7 @@ bool Rescatter_Handler::
 SelectRescatter(Particle *& part1,Particle *& part2) {
   if (!m_rescatter || m_probpairs.empty()) return false;
   while (!m_probpairs.empty()) {
-    if (m_rescprob*m_probpairs.begin()->first>ran->Get()) {
+    if (m_resc1prob*m_probpairs.begin()->first>ran->Get()) {
       part1   = m_probpairs.begin()->second.first;
       part2   = m_probpairs.begin()->second.second;
       DeleteProbPairs(part1,part2);
@@ -242,9 +233,10 @@ bool Rescatter_Handler::ConnectBlobs(Blob_List * blobs,Blob * add) {
 	  delete blob->RemoveInParticle(test);
 	  found = true;
 	  if (!blob->CheckColour()) {
-	    msg_Error()<<"Problem in "<<METHOD<<":\n"
-		       <<"   Scattering blob ("<<blob->Id()<<") seems fishy: "
-		       <<"Bad colour configuration.\n"<<(*blob)<<"\n";
+	    msg_Tracking()<<"Problem in "<<METHOD<<":\n"
+			  <<"   Scattering blob ("<<blob->Id()<<") "
+			  <<"seems fishy: "
+			  <<"Bad colour configuration.\n"<<(*blob)<<"\n";
 	    return false;
 	  }
 	  break;
@@ -274,9 +266,9 @@ bool Rescatter_Handler::ConnectBlobs(Blob_List * blobs,Blob * add) {
 	      blobs->push_back(add);
 	      delete add->RemoveInParticle(test);
 	      if (!add->CheckColour()) {
-		msg_Error()<<"Problem in "<<METHOD<<":\n"
-			   <<"   Extra blob ("<<add->Id()<<") seems fishy: "
-			   <<"Bad colour configuration.\n"<<(*add)<<"\n";
+		msg_Tracking()<<"Problem in "<<METHOD<<":\n"
+			      <<"   Extra blob ("<<add->Id()<<") seems fishy: "
+			      <<"Bad colour configuration.\n"<<(*add)<<"\n";
 		return false;
 	      }
 	      found = true;
@@ -284,8 +276,8 @@ bool Rescatter_Handler::ConnectBlobs(Blob_List * blobs,Blob * add) {
 	    }
 	  }
 	  if (!found) { 
-	    msg_Error()<<"Error in "<<METHOD<<".\n"<<(*orig)<<"\n"<<(*repl)
-		       <<"\n"<<(*add)<<"\n"<<(*blob)<<"\n"; 
+	    msg_Tracking()<<"Error in "<<METHOD<<".\n"<<(*orig)<<"\n"<<(*repl)
+			  <<"\n"<<(*add)<<"\n"<<(*blob)<<"\n"; 
 	    if (add) {
 	      add->DeleteOutParticles();
 	      add->DeleteInParticles();
@@ -298,10 +290,10 @@ bool Rescatter_Handler::ConnectBlobs(Blob_List * blobs,Blob * add) {
       }
     }
     if (!found) {
-      msg_Error()<<"WARNING in "<<METHOD<<":\n"
-		 <<"   Failed to connect "
-		 <<orig->Number()<<" <--> "<<repl->Number()<<" in "
-		 <<blobs->size()<<" blobs.\n";
+      msg_Tracking()<<"WARNING in "<<METHOD<<":\n"
+		    <<"   Failed to connect "
+		    <<orig->Number()<<" <--> "<<repl->Number()<<" in "
+		    <<blobs->size()<<" blobs.\n";
       if (add) {
 	add->DeleteOutParticles();
 	add->DeleteInParticles();

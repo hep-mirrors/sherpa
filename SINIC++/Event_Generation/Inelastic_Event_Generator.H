@@ -58,6 +58,7 @@ namespace SINIC {
 			const bool & isUE=false,const bool & weighted=false);
 
     const double Smin() const;
+    const bool   IsLastRescatter() const;
 
     void Reset();
 

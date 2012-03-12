@@ -12,6 +12,7 @@ namespace SINIC {
     ~Event_Generator_Base(){};
     virtual Omega_ik * GetEikonal() const {return p_eikonal;}
     virtual const double Smin() const {return m_smin;}
+    virtual const bool IsLastRescatter() const { return false; }
   };
 }
 #endif

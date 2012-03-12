@@ -80,6 +80,11 @@ bool Event_Generator::DressShowerBlob(ATOOLS::Blob * blob) {
 }
 
 int Event_Generator::MinimumBiasEvent(ATOOLS::Blob_List * blobs) {
+  //msg_Out()<<METHOD<<": "<<blobs->size()<<".\n";
+  if (blobs->size()==1) {
+    (*blobs)[0]->AddData("Weight",new ATOOLS::Blob_Data<double>(m_xsec));
+    //msg_Out()<<METHOD<<": put xsec = "<<m_xsec<<" in |"<<(*blobs)[0]<<"|\n";
+  }
   switch (m_runmode) {
   case run_mode::elastic_events:
     p_active = p_elastic;

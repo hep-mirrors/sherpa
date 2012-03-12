@@ -62,8 +62,6 @@ ElasticEvent(ATOOLS::Blob_List * blobs,const double & xsec) {
     blob->SetStatus(ATOOLS::blob_status::needs_beams);
     blob->SetType(ATOOLS::btp::QElastic_Collision);
 
-    blob->AddData("Weight",new ATOOLS::Blob_Data<double>(xsec));
-
     return true;
   }
   return false;
