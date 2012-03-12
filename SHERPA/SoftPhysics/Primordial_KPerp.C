@@ -30,12 +30,12 @@ Primordial_KPerp::Primordial_KPerp(std::string _m_path,std::string _m_file):
     defaultsigma1(0.0), defaultsigma2(0.0);
   if (rpa->gen.Beam1().IsHadron() && rpa->gen.Beam2().IsHadron()) {
   if (rpa->gen.Beam1().Kfcode()==kf_p_plus) {
-    defaultmean1=0.917;
-    defaultsigma1=0.903;
+    defaultmean1=0.975;
+    defaultsigma1=1.51;
   }
   if (rpa->gen.Beam2().Kfcode()==kf_p_plus) {
-    defaultmean2=0.917;
-    defaultsigma2=0.903;
+    defaultmean2=0.975;
+    defaultsigma2=1.51;
   }
   }
   m_kperpmean[0]  = dataread.GetValue<double>("K_PERP_MEAN_1",defaultmean1);
