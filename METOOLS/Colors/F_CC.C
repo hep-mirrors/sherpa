@@ -3,7 +3,6 @@
 #include "METOOLS/Explicit/Vertex.H"
 #include "MODEL/Interaction_Models/Single_Vertex.H"
 #include "MODEL/Interaction_Models/Color_Function.H"
-#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 
 namespace METOOLS {
@@ -21,11 +20,6 @@ namespace METOOLS {
       Color_Calculator(key) 
     { 
       m_cpl=Complex(0.0,sqrt(0.5));
-      if (key.p_mv->Color[key.m_n].ParticleArg(0)!=0)
-	THROW(fatal_error,"Invalid color index");
-      if (key.p_mv->Color[key.m_n].ParticleArg(1)==1) m_cpl=-m_cpl;
-      else if (key.p_mv->Color[key.m_n].ParticleArg(1)!=2)
-	THROW(fatal_error,"Invalid color index");
     }
 
     std::string Label() const
