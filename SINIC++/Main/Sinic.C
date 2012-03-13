@@ -202,13 +202,14 @@ void Sinic::GenerateXsecs() {
   Energies.push_back(2360.);
   //Energies.push_back(5000.);
   Energies.push_back(7000.);
-  //Energies.push_back(10000.);
-  //Energies.push_back(14000.);
+  Energies.push_back(8000.);
+  Energies.push_back(14000.);
   //Energies.push_back(100000.);
   std::set<double> Elastics;
   Elastics.insert(62.5);
   Elastics.insert(546.);
   Elastics.insert(1800.);
+  Elastics.insert(7000.);
 
 
   std::string filename(dirname+std::string("/xsecs_total.dat"));

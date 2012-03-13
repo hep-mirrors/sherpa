@@ -1,10 +1,10 @@
 (run){
-  EVENTS              = 10000
+  EVENTS              = 50000
   OUTPUT              = 2
-  EVENT_TYPE          = MinimumBias
+  EVENT_TYPE          = MinimumBias 
   MAX_PROPER_LIFETIME = 10. #[mm]
   SOFT_COLLISIONS     = Sinic
-  # Sinic_Mode        = Inelastic # Xsecs
+  # Sinic_Mode        = Xsecs
   # MB_Weight_Mode    = Unweighted  
   # Ladder_Weight     = Regge
   #######################################################
@@ -17,9 +17,10 @@
   #
   #
   ################################### external params, don't touch
-  # deltaY          = 1.5           # tunable  0.0  ..... 2.5  
+    deltaY          = 2.0           # tunable  0.0  ..... 2.5  
   #                                 # rap cutoff for beams
-  #                                 # may influence energy extrapolation of xsecs.
+  #                                 # may influence energy extrapolation 
+  #                                 # of xsecs.
   # bmin            = 0.            # impact parameters
   # bmax            = 20.           # impact parameters
   # accu            = 0.005         # 
@@ -28,17 +29,18 @@
   ################################### form factors: touch for inclusive tune
   # FF_Form         = dipole        # Gauss, dipole - keep dipole
   # GW_States       = 2             # fixed, don't touch
-  # Absorption      = exponential   # exponential, factorial - don't touch
-  # beta_0^2        = 33.           # tunable   25.  ..... 50. 
-  # Lambda2         = 1.5           # tunable   0.5  ..... 2.5
-  # kappa           = 0.55          # tunable   0.1  ..... 0.9
+    Absorption      = factorial     # exponential, factorial - don't touch
+    beta_0^2        = 30.           # tunable   25.  ..... 50. 
+    Lambda2         = 1.5           # tunable   0.5  ..... 2.5
+    kappa           = 0.63          # tunable   0.1  ..... 0.9
   # xi              = 0.225         # tunable   0.01 ..... 1.0
   ################################### 'BFKL' DEq paramters: touch
-  # lambda          = 0.20          # tunable   0.1 ... 1.0
-  # Delta           = 0.40          # tunable   0.1 ... 0.6
+  lambda          = 0.30          # tunable   0.1 ... 1.0
+  Delta           = 0.35          # tunable   0.1 ... 0.6
   ###################################
   ################################### 
-  ################################### Filling the ladders: touch for exclusive tune
+  ################################### Filling the ladders: 
+  #                                 # touch for exclusive tune
   # Ordering        = ao_phys       # seems to be the best
   # As_Form         = IR0           # IR0, smooth, frozen, constant
   # KT_Form         = IR0           # IR0, smooth, frozen, cut
@@ -54,18 +56,18 @@
   # Shower_Min_KT2  = 16.0          # minimal scala to start and veto shower,
   #                                 # if mode>2.
   # KT2_Factor      = 1.00          # multiplying the start scale of the shower
-  # Diff_Factor	   = 1.00          # multiplying the start scale of the shower,
+  # Diff_Factor	   = 1.00           # multiplying the start scale of the shower,
   #                                 #  extra factor for diffractive events.
   ################################### Rescattering: touch
   # Rescattering    = same          # off, same, space
   # Resc_NoSinglet  = off           # enforce no-singlet for rescatters: on, off
-  # RescProb        = 1.0           # 0.0 ... 4.0
+    RescProb        = 0.5           # 0.0 ... 4.0
   # SpatProb        = 0.            #
   # SpatWidth       = 0.0000001     #
   # Resc_KTMin      = off           # on/off
-  # Reconnections   = fix           # run/fix/off
-  # Q_RC^2          = 4.00          # 0. ....
-  # ReconnProb      = 8.00          # 0.0 ... 4.0
+    Reconnections   = fix           # run/fix/off
+    Q_RC^2          = 4.00          # 0. ....
+    ReconnProb      = 8.00          # 0.0 ... 4.0
   ##
 }(run)
 

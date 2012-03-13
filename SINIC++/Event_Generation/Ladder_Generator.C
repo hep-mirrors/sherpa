@@ -107,7 +107,9 @@ operator()(Particle * part1,Particle * part2,const bool & rescatter,
       return p_ladder; 
     }
     isweight = weight  = InitialiseLadder(part1,part2,rescatter);
-    weight  *= Max(0.,m_FS(p_ladder,0.,first,trials==0))*Weight(isweight);; 
+    weight  *= 
+      Max(0.,m_FS(p_ladder,m_cutoffY,first,trials==0))*
+      Weight(isweight);; 
   } while ((trials++)<1000 && weight<ran->Get());
   if (p_ladder->Size()<2) {
     msg_Error()<<"Error in "<<METHOD<<":\n"
@@ -241,7 +243,7 @@ double Ladder_Generator::Weight(const double & isweight) {
     Flavour in1,in2,out1,out2;
     if (!p_ladder->ReconstructMEFlavours(in1,in2,out1,out2)) return 0.;
     double expo(3.*m_FS.AlphaSMax()/M_PI*dabs(p_ladder->DeltaYhat()));
-    weight *= p_ladder->MRKweight();
+    //weight *= p_ladder->MRKweight();
     weight *= pow(smin/Max(that,smin),1.+expo);
     if (p_ladder->IsHardDiffractive()) {
       weight *= sqr(m_FS.AlphaS(that)/m_FS.AlphaSMax());
