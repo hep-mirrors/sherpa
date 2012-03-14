@@ -6,7 +6,6 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "AMEGIC++/Main/Process_Base.H"
-#include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "ATOOLS/Phys/Flow.H"
 #include "ATOOLS/Math/Random.H"
@@ -513,15 +512,6 @@ void Cluster_Algorithm::Convert()
   p_ampl->SetKT2(scale.m_kt2);
   p_ampl->SetMu2(scale.m_mu2);
   size_t nmax(p_proc->Info().m_fi.NMaxExternal());
-  if (dynamic_cast<POWHEG_Process*>(p_proc->Parent())) {
-    if (p_proc->Parent()->Info().m_fi.NExternal()<=nmax) ++nmax;
-    else nmax=eampl->Legs().size()-eampl->NIn();
-    eampl->SetNLO(1);
-    while (eampl->Next()) {
-      eampl=eampl->Next();
-      eampl->SetNLO(1);
-    }
-  }
   p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
   SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,nmax);
   for (size_t i(0);i<2;++i)

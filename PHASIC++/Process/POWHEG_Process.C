@@ -546,13 +546,12 @@ double POWHEG_Process::SelectBProcess()
     (p_ampl=ampl)->SetNext(next);
     ampl->SetMuF2(next->MuF2());
     ampl->SetMuR2(next->MuR2());
-    ampl->SetNLO(2);
+    ampl->Next()->SetNLO(1);
     next->SetKin(kt2.m_kin);
     if (!(ampl->Leg(0)->Id()&next->Leg(0)->Id()))
       std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
     while (ampl->Next()) {
       ampl=ampl->Next();
-      ampl->SetNLO(2);
       for (size_t i(0);i<ampl->Legs().size();++i) {
 	ampl->Leg(i)->SetNMax(p_ampl->Leg(i)->NMax());
 	size_t cid(ampl->Leg(i)->Id());
@@ -575,8 +574,7 @@ double POWHEG_Process::SelectBProcess()
   p_selected=p_bproc;
   p_bproc->SetSelected(bproc);
   ampl=p_ampl;
-  ampl->SetNLO(3);
-  while ((ampl=ampl->Next())!=NULL) ampl->SetNLO(3);
+  ampl->SetNLO(1);
   msg_Debugging()<<"B selected "<<*p_ampl<<"\n";
   return stat?bproc->Integrator()->SelectionWeight(0)/
     p_int->SelectionWeight(0):0.0;

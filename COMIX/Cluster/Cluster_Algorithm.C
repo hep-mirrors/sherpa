@@ -4,7 +4,6 @@
 #include "COMIX/Main/Single_Process.H"
 #include "COMIX/Amplitude/Amplitude.H"
 #include "PHASIC++/Process/Process_Base.H"
-#include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "COMIX/Phasespace/PS_Channel.H"
@@ -511,15 +510,6 @@ bool Cluster_Algorithm::Cluster
   }
   msg_Debugging()<<"}\n";
   size_t nmax(xs->Process()->Info().m_fi.NMaxExternal());
-  if (dynamic_cast<POWHEG_Process*>(xs->Process()->Parent())) {
-    if (xs->Process()->Parent()->Info().m_fi.NExternal()<=nmax) ++nmax;
-    else nmax=eampl->Legs().size()-eampl->NIn();
-    eampl->SetNLO(1);
-    while (eampl->Next()) {
-      eampl=eampl->Next();
-      eampl->SetNLO(1);
-    }
-  }
   SetNMax(p_ampl,(1<<ccurs.size())-1,nmax);
   msg_Debugging()<<*p_ampl<<"\n";
   while (p_ampl->Prev()) {
