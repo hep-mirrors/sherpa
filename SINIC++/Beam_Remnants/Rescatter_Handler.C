@@ -9,9 +9,9 @@ using namespace ATOOLS;
 using namespace std;
 
 Rescatter_Handler::Rescatter_Handler(Beam_Remnant_Handler * beams) :
-  m_rescatter(MBpars.RescMode()!=resc_mode::off), 
-  m_mustmatch(false), m_singletwt(0.),
-  m_rescprob(MBpars("RescProb")), m_resc1prob(1.), 
+  m_rescatter(MBpars.RescMode()!=resc_mode::off), m_mustmatch(false), 
+  m_rescprob(MBpars("RescProb")),
+  m_singprob(MBpars.RescOverSing()==resc_over_sing::on?MBpars("RescProb1"):0.), 
   p_beams(beams),
   p_alphaS(static_cast<MODEL::Strong_Coupling *>
 	   (MODEL::s_model->GetScalarFunction(string("strong_cpl")))),
@@ -142,7 +142,7 @@ void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
 	 sit!=m_intervals.end();sit++) {
       if ((y1<=sit->first && y2>=sit->second) ||
 	  (y2<=sit->first && y1>=sit->second)) {
-	prob = m_singletwt;
+	prob = m_singprob;
         continue;
       }
     }
@@ -187,7 +187,7 @@ bool Rescatter_Handler::
 SelectRescatter(Particle *& part1,Particle *& part2) {
   if (!m_rescatter || m_probpairs.empty()) return false;
   while (!m_probpairs.empty()) {
-    if (m_resc1prob*m_probpairs.begin()->first>ran->Get()) {
+    if (m_probpairs.begin()->first>ran->Get()) {
       part1   = m_probpairs.begin()->second.first;
       part2   = m_probpairs.begin()->second.second;
       DeleteProbPairs(part1,part2);

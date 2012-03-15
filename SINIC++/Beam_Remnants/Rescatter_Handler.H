@@ -13,7 +13,7 @@ namespace SINIC {
   class Rescatter_Handler {
   private:
     bool                      m_rescatter, m_mustmatch;
-    double                    m_rescprob, m_resc1prob, m_singletwt;
+    double                    m_rescprob, m_singprob;
     Beam_Remnant_Handler    * p_beams;
     MODEL::Strong_Coupling  * p_alphaS;
     Singlet_Sorter            m_sorter;

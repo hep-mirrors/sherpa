@@ -313,13 +313,20 @@ TryEmission(double & kt12,const bool & dir) {
     mu12_2 = Q02((k_1.Y()+k_2.Y())/2.);
     if (dir) m_histomap[std::string("ytest1")]->Insert(y1);
         else m_histomap[std::string("ytest0")]->Insert(y1);
-    if (MBpars.LadderWeight()==ladder_weight::Regge && 
+    if ((MBpars.LadderWeight()==ladder_weight::Regge || 
+	 MBpars.LadderWeight()==ladder_weight::ReggeDiffusion) && 
 	deltay>m_Deltay) {
       rarg = Min(mu01_2/q01.PPerp2(),q01.PPerp2()/mu01_2);
       expo = colfac*(*p_alphaS)(q01.PPerp2())*deltay/M_PI; 
       //expo = colfac*p_alphaS->MaxValue()*deltay/M_PI; 
       wt  *= reggewt = pow(rarg,expo);
       m_histomap[std::string("ReggeWt")]->Insert(reggewt);
+    }
+    if (MBpars.LadderWeight()==ladder_weight::Regge && 
+	dabs(m_kdiff)>1.e-6) {
+      wt    *= diffwt =
+	exp(-m_kdiff*sqrt(m_d2+sqr(log(Max(m_q01_2,m_Q02eff)/
+				       Max(m_q12_2,m_Q02eff)))));
     }
     sup    = SuppressionTerm(m_q01_2,m_q12_2);
     wt    *= recombwt= 
@@ -334,11 +341,6 @@ TryEmission(double & kt12,const bool & dir) {
       m_histomap[std::string("ReggeWt0")]->Insert(reggewt);
       m_histomap[std::string("RecombWt0")]->Insert(recombwt);
       m_histomap[std::string("RecombSup0")]->Insert(sup);
-    }
-    if (dabs(m_kdiff)>1.e-6) {
-      wt    *= diffwt =
-	exp(-m_kdiff*sqrt(m_d2+sqr(log(Max(m_q01_2,m_Q02eff)/
-				       Max(m_q12_2,m_Q02eff)))));
     }
   } while (wt<ran->Get());
 

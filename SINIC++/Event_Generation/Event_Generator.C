@@ -8,7 +8,8 @@ Event_Generator::Event_Generator(const run_mode::code & runmode,
 				 const weight_mode::code & weightmode) :
   m_runmode(runmode), m_weightmode(weightmode), 
   p_cross(NULL),
-  p_elastic(NULL), p_sdiff(NULL), p_qelastic(NULL), p_inelastic(NULL), 
+  p_elastic(NULL), p_sdiff(NULL), p_ddiff(NULL), 
+  p_qelastic(NULL), p_inelastic(NULL), 
   p_active(NULL),
   m_minkt2(MBpars("min_kt2"))
 { }

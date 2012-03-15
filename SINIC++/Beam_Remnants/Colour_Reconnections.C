@@ -12,7 +12,7 @@ Colour_Reconnections::Colour_Reconnections() :
   m_colfac(1./(64.-1.)), m_reconn(MBpars("ReconnProb")), 
   m_Q02(MBpars("QRC2")), m_b02(4.*m_Q02*sqr(rpa->hBar()*rpa->c())),
   m_inveta(-2.),
-  m_ycut(MBpars("originalY")-2.*MBpars("deltaY")),
+  m_ycut(MBpars("originalY")-MBpars("deltaY")),
   m_analyse(true)
 {
   if (m_analyse) {

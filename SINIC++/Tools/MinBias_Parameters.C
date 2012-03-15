@@ -19,7 +19,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   // impact parameters
   m_params["originalY"]   = log(ATOOLS::rpa->gen.Ecms()/
 			       ATOOLS::Flavour(kf_p_plus).HadMass());
-  m_params["deltaY"]      = dr->GetValue<double>("deltaY",1.5);
+  m_params["deltaY"]      = dr->GetValue<double>("deltaY",2.0);
   m_params["bmin"]        = dr->GetValue<double>("bmin",0.);
   m_params["bmax"]        = dr->GetValue<double>("bmax",20.);
   m_params["accu"]        = dr->GetValue<double>("accu",5.e-3);
@@ -27,14 +27,14 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   m_params["NGWstates"]   = dr->GetValue<int>("GW_States",2);
   m_params["FFpref"]      = 1./sqrt(m_params["NGWstates"]);
   m_params["Lambda2"]     = dr->GetValue<double>("Lambda2",1.5);
-  m_params["beta02(mb)"]  = dr->GetValue<double>("beta_0^2",33.);
+  m_params["beta02(mb)"]  = dr->GetValue<double>("beta_0^2",30.);
   m_params["beta0"]       = sqrt(1.e9*m_params["beta02(mb)"]/
 				 ATOOLS::rpa->Picobarn());
-  m_params["kappa"]       = dr->GetValue<double>("kappa",0.55);
+  m_params["kappa"]       = dr->GetValue<double>("kappa",0.63);
   m_params["xi"]          = dr->GetValue<double>("xi",0.225);
   // parameters of the eikonal
-  m_params["lambda"]      = dr->GetValue<double>("lambda",0.20);
-  m_params["Delta"]       = dr->GetValue<double>("Delta",0.40);
+  m_params["lambda"]      = dr->GetValue<double>("lambda",0.30);
+  m_params["Delta"]       = dr->GetValue<double>("Delta",0.35);
   // ladder generation
   m_params["KTMin_Mode"]  = dr->GetValue<int>("KTMin_Mode",0);
   m_params["Q_as2"]       = dr->GetValue<double>("Q_as^2",0.25);
@@ -47,14 +47,15 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   // showering off soft stuff
   m_params["shower_mode"] = dr->GetValue<int>("Shower_Mode",3);
   m_params["min_kt2"]     = dr->GetValue<double>("Shower_Min_KT2",16.);
-  m_params["kt2_factor"]  = dr->GetValue<double>("KT2_Factor",1.);
+  m_params["kt2_factor"]  = dr->GetValue<double>("KT2_Factor",4.);
   m_params["diff_factor"] = dr->GetValue<double>("Diff_Factor",1.);
   // rescatterings
   m_params["RescProb"]    = dr->GetValue<double>("RescProb",1.);
+  m_params["RescProb1"]   = dr->GetValue<double>("RescProb1",0.);
   m_params["SpatProb"]    = dr->GetValue<double>("SpatProb",0.);
   m_params["SpatWidth"]   = dr->GetValue<double>("SpatWidth",
 						 m_params["Lambda2"]);
-  m_params["QRC2"]        = dr->GetValue<double>("Q_RC^2",8.);
+  m_params["QRC2"]        = dr->GetValue<double>("Q_RC^2",4.);
   m_params["ReconnProb"]  = dr->GetValue<double>("RescProb",8.);
 
   std::string ffform = 
@@ -65,7 +66,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
     m_ffform = ff_form::Gauss;
 
   std::string absorption = 
-    dr->GetValue<std::string>("Absorption",std::string("exponential"));
+    dr->GetValue<std::string>("Absorption",std::string("factorial"));
   if (absorption==std::string("exponential"))
     m_absorp = absorption::exponential;
   else
@@ -109,6 +110,8 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
     dr->GetValue<std::string>("Ladder_Weight",std::string("Regge"));
   if (ladderweight==std::string("IntervalOnly"))
     m_ladderweight = ladder_weight::IntervalOnly;
+  else if (ladderweight==std::string("ReggeDiffusion"))
+    m_ladderweight = ladder_weight::ReggeDiffusion;
   else
     m_ladderweight = ladder_weight::Regge;
 
@@ -137,7 +140,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
     m_ordering = ordering::rap_only;
 
   std::string resktmin =
-    dr->GetValue<std::string>("Resc_KTMin",std::string("off"));
+    dr->GetValue<std::string>("Resc_KTMin",std::string("on"));
   if (resktmin==std::string("off"))
     m_resc_ktmin = resc_ktmin::off;
   else
@@ -149,6 +152,13 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
     m_resc_nosing = resc_nosing::off;
   else
     m_resc_nosing = resc_nosing::on;
+
+  std::string rescoversing =
+    dr->GetValue<std::string>("RescOverSinglet",std::string("off"));
+  if (rescoversing==std::string("off"))
+    m_resc_over_sing = resc_over_sing::off;
+  else
+    m_resc_over_sing = resc_over_sing::on;
 
 
   std::string rescmode =
@@ -250,8 +260,9 @@ std::ostream & SINIC::operator<<(std::ostream & s,
 
 std::ostream & operator<<(std::ostream & s, 
 			  const ladder_weight::code & wt) {
-  if (wt==ladder_weight::IntervalOnly)      s<<"y interval only ";
-  else if (wt==ladder_weight::Regge) s<<"Regge factor ";
+  if (wt==ladder_weight::IntervalOnly)        s<<"y interval only ";
+  else if (wt==ladder_weight::ReggeDiffusion) s<<"Regge factor + diffusion ";
+  else if (wt==ladder_weight::Regge)          s<<"Regge factor ";
   else                                    s<<"unknown";
   return s;
 }
