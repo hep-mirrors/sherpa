@@ -245,7 +245,7 @@ double Ladder_Generator::Weight(const double & isweight) {
     if (!p_ladder->ReconstructMEFlavours(in1,in2,out1,out2)) return 0.;
     double expo(3.*m_FS.AlphaSMax()/M_PI*dabs(p_ladder->DeltaYhat()));
     //weight *= p_ladder->MRKweight();
-    weight *= pow(Min(mu2/that,that/smin),1.+expo);
+    weight *= pow(Min(smin/that,that/smin),1.+expo);
     if (p_ladder->IsHardDiffractive()) {
       weight *= sqr(m_FS.AlphaS(that)/m_FS.AlphaSMax());
     }
