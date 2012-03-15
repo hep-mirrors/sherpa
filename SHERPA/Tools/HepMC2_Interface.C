@@ -69,8 +69,6 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
           HepMC::PdfInfo pdfinfo(fl1, fl2, x1, x2, q, p1, p2);
           event.set_pdf_info(pdfinfo);
         }
-        std::vector<double> weights; weights.push_back(weight);
-        event.weights()=weights;
       }
       else if ((*blit)->Type()==ATOOLS::btp::Beam) {
         if (vertex->particles_in_size()==1) {
@@ -82,6 +80,8 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   if (beamparticles.size()==2) {
     event.set_beam_particles(beamparticles[0],beamparticles[1]);
   }
+  std::vector<double> weights; weights.push_back(weight);
+  event.weights()=weights;
   return true;
 }
 

@@ -15,11 +15,11 @@ Event_Generator::Event_Generator(const run_mode::code & runmode,
 
 Event_Generator::~Event_Generator() 
 {   
-  if (p_inelastic) delete p_inelastic;
-  if (p_qelastic)  delete p_qelastic;
-  if (p_sdiff)     delete p_sdiff;
-  if (p_ddiff)     delete p_ddiff;
-  if (p_elastic)   delete p_elastic;
+  if (p_inelastic) delete p_inelastic; p_inelastic=NULL;
+  if (p_qelastic)  delete p_qelastic; p_qelastic=NULL;
+  if (p_sdiff)     delete p_sdiff; p_sdiff=NULL;
+  if (p_ddiff)     delete p_ddiff; p_ddiff=NULL;
+  if (p_elastic)   delete p_elastic; p_elastic=NULL;
 }
 
 void Event_Generator::
