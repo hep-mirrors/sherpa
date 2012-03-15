@@ -68,6 +68,10 @@ as shown below:
 @code{./configure --enable-hepmc2=/path/to/hepmc2 --enable-lhapdf=/path/to/lhapdf}
 @end example
 
+Here, the paths have to point to the top level installation directories of
+the external packages, i.e. the ones containing the @code{lib/}, @code{share/},
+... subdirectories.
+
 For a complete list of possible configuration options run
 @samp{./configure --help}.
 
