@@ -293,8 +293,8 @@ CreateBlob(Blob_List * blobs,const double & xsec) {
     part = liter->second.GetParticle();
     blob->AddToOutParticles(part);
   }
-  p_ladder->GetEmissionsBegin()->second.GetParticle()->SetInfo('B');
-  p_ladder->GetEmissionsRBegin()->second.GetParticle()->SetInfo('B');
+  //p_ladder->GetEmissionsBegin()->second.GetParticle()->SetInfo('B');
+  //p_ladder->GetEmissionsRBegin()->second.GetParticle()->SetInfo('B');
 
   m_rescatterhandler.FillInitialStateIntoBlob(blob,p_ladder);
   blob->SetCMS();  

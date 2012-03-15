@@ -10,7 +10,7 @@ namespace SINIC {
   class Colour_Reconnections {
   private:
     bool           m_on, m_shuffled;
-    double         m_colfac, m_reconn, m_Q02, m_b02, m_inveta, m_smin;
+    double         m_colfac, m_reconn, m_Q02, m_b02, m_inveta, m_smin, m_ycut;
     PCList         m_pclist;
     Singlet_Sorter m_sorter;
     
