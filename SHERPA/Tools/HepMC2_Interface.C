@@ -149,14 +149,14 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         HepMC::PdfInfo pdfinfo(fl1, fl2, x1, x2, q, p1, p2);
         event.set_pdf_info(pdfinfo);
       }
-      std::vector<double> weights; weights.push_back(weight);
-      event.weights()=weights;
     }
   }
   event.add_vertex(vertex);
   if (beamparticles.size()==2) {
     event.set_beam_particles(beamparticles[0],beamparticles[1]);
   }
+  std::vector<double> weights; weights.push_back(weight);
+  event.weights()=weights;
 
   if (subevtlist) {
     // build GenEvent for all subevts (where only the signal is available)
