@@ -38,6 +38,9 @@ namespace SINIC {
     double             m_shat;
     size_t             m_paircounter;
 
+    bool                                        m_analyse;
+    std::map<std::string, ATOOLS::Histogram * > m_histomap;
+
     void LinkShowerInitiators(ATOOLS::Blob * blob);
     void AddSpectators();
   public:

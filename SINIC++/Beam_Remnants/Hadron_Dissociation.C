@@ -9,12 +9,12 @@ using namespace std;
 
 Hadron_Dissociation::Hadron_Dissociation(Continued_PDF *const pdf) :
   p_pdf(pdf), m_bunch(p_pdf->Bunch()), 
-  m_ycut(MBpars("originalY")-MBpars("deltaY")),
+  m_ycut(MBpars("originalY")), //-MBpars("deltaY")),
   m_analyse(true)
 { 
   if (m_analyse) {
-    m_histomap[string("KT_remn_orig")] = new Histogram(0,0.0,20.0,200);
-    m_histomap[string("KT_remn_resc")] = new Histogram(0,0.0,20.0,200);
+    m_histomap[string("KT_remn_orig")] = new Histogram(0,0.0,5.0,50);
+    m_histomap[string("KT_remn_resc")] = new Histogram(0,0.0,5.0,50);
     m_histomap[string("X_quark")]      = new Histogram(0,0.0,1.0,1000);
     m_histomap[string("X_gluon")]      = new Histogram(0,0.0,1.0,1000);
     m_histomap[string("X_diquark")]    = new Histogram(0,0.0,1.0,1000);
@@ -249,10 +249,14 @@ void Hadron_Dissociation::FillBeamBlob() {
   if (!m_elastic) {
     for (size_t i=0;i<m_particles.size();i++) {
       p_blob->AddToOutParticles(m_particles[i]);
-      //msg_Out()<<METHOD<<" i = "<<i<<"("<<m_particles.size()<<") : "
-      //	     <<m_particles[i]->Flav()<<" "<<m_particles[i]->Momentum()
-      //	     <<" ("<<m_particles[i]->Momentum().Abs2()<<").\n";
     }
+  }
+}
+
+void Hadron_Dissociation::AddParticlesToBlob(ATOOLS::Blob * blob,int beam) {
+  for (size_t i=0;i<m_particles.size();i++) {
+    m_particles[i]->SetBeam(beam);
+    blob->AddToInParticles(m_particles[i]);
   }
 }
 

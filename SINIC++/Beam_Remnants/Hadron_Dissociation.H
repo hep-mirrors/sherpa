@@ -39,6 +39,7 @@ namespace SINIC {
 			    const double & eta,Form_Factor * ff);
     void Reshuffle(const size_t & N);
     void FillBeamBlob();
+    void AddParticlesToBlob(ATOOLS::Blob * blob,int beam);
     bool MustReplaceColour(const size_t & pos,
 			   const size_t & c1,const size_t & c2);
     inline void Reset(const ATOOLS::Vec4D & mom) {
@@ -52,12 +53,6 @@ namespace SINIC {
     inline const bool & Elastic() const { return m_elastic; } 
     inline void SetBeamBlob(ATOOLS::Blob * blob) { p_blob = blob; }
     inline ATOOLS::Blob * GetBeamBlob() const { return p_blob; }
-    inline void AddParticlesToBlob(ATOOLS::Blob * blob,int beam) {
-      for (size_t i=0;i<m_particles.size();i++) {
-	m_particles[i]->SetBeam(beam);
-	blob->AddToInParticles(m_particles[i]);
-      }
-    }
     inline const std::vector<ATOOLS::Particle * > & GetParticles() const {
       return m_particles;
     }

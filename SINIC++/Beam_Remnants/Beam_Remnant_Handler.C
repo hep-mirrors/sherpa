@@ -13,7 +13,8 @@ using namespace std;
 Beam_Remnant_Handler::
 Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler * beamspectra,
 		     vector<Continued_PDF> & pdfs) :
-  p_blob(NULL), p_pdfs(&pdfs), m_paircounter(0)
+  p_blob(NULL), p_pdfs(&pdfs), m_paircounter(0),
+  m_analyse(true)
 {
   m_checkmom.push_back(Vec4D(0,0,0,0)); 
   m_checkmom.push_back(Vec4D(0,0,0,0));
@@ -26,9 +27,28 @@ Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler * beamspectra,
   }
   p_colour        = new Colour_Generator(&m_hadrons);
   p_reconnections = new Colour_Reconnections();
+  
+  if (m_analyse) {
+    m_histomap[string("KT_remn_phys")] = new Histogram(0,0.0,20.0,200);
+    m_histomap[string("Y_remn_phys")] = new Histogram(0,-10.0,10.0,200);
+  }
 }
 
 Beam_Remnant_Handler::~Beam_Remnant_Handler() {
+  if (!m_histomap.empty()) {
+    Histogram * histo;
+    string name;
+    for (map<string,Histogram *>::iterator 
+	   hit=m_histomap.begin();hit!=m_histomap.end();hit++) {
+      histo = hit->second;
+      name  = string("Ladder_Analysis/")+hit->first+string(".dat");
+      histo->Finalize();
+      histo->Output(name);
+      delete histo;
+    }
+    m_histomap.clear();
+  }
+
   while (!m_hadrons.empty()) {
     delete m_hadrons.back();
     m_hadrons.pop_back();
@@ -216,9 +236,13 @@ NextIS(Particle *& part1,Particle *& part2) {
   Px += xp[1] = xt2[1]/xm[1];
 
   for (int beam=0;beam<2;beam++) {
-    p_part[beam]->SetMomentum(Vec4D(xp[beam]*m_beamvecs[0]+
-				    xm[beam]*m_beamvecs[1]+
-				    m_hadrons[beam]->Kperp(m_paircounter)));
+    Vec4D mom(xp[beam]*m_beamvecs[0]+xm[beam]*m_beamvecs[1]+
+	      m_hadrons[beam]->Kperp(m_paircounter));
+    if (m_analyse) {
+      m_histomap["KT_remn_phys"]->Insert(mom.PPerp());
+      m_histomap["Y_remn_phys"]->Insert(mom.Y());
+    }
+    p_part[beam]->SetMomentum(mom);
     p_blob->AddToOutParticles(p_part[beam]);
     m_checkmom[beam] += p_part[beam]->Momentum();
     if (m_paircounter+1 == m_hadrons[beam]->Size()

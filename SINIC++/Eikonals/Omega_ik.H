@@ -39,6 +39,7 @@ namespace SINIC {
     double                m_originalY, m_cutoffY, m_Y, m_Ysteps;
     Eikonal_Contributor   m_Omegaik, m_Omegaki;
     double                m_Bmin, m_Bmax, m_deltaB;
+    double                m_singletwt;
     double                m_sigmaInelastic;
     std::vector<double>   m_gridB, m_gridBmax, m_gridD;
     double                m_eta, m_prefactor;

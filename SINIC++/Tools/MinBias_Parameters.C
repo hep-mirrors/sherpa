@@ -41,6 +41,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   m_params["Q02"]         = dr->GetValue<double>("Q_0^2",1.);
   m_params["Q12"]         = dr->GetValue<double>("Q_1^2",0.);
   m_params["QN2"]         = dr->GetValue<double>("Q_N^2",0.);
+  m_params["SingletWt"]   = dr->GetValue<double>("Chi_S",1.);
   m_params["Ddiff2"]      = dr->GetValue<double>("D_diff^2",0.);
   m_params["kdiff"]       = dr->GetValue<double>("K_diff",0.);
   // showering off soft stuff

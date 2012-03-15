@@ -19,6 +19,7 @@ Omega_ik::Omega_ik(Form_Factor * ff1,Form_Factor * ff2,
   m_Omegaki(Eikonal_Contributor(ff1,ff2)),
   m_Bmin(MBpars("bmin")), m_Bmax(MBpars("bmax")), 
   m_deltaB((m_Bmax-m_Bmin)/double(Bsteps)), 
+  m_singletwt(MBpars("SingletWt")),
   m_sigmaInelastic(0.), 
   m_test(test)
 {
@@ -125,7 +126,7 @@ double Omega_ik::SingletWeight(const double & b1,const double & b2,
     weight = sqr(1.-exp(-term/2.));
     break;
   }
-  return weight;
+  return m_singletwt*weight;
 }
 
 double Omega_ik::OctetWeight(const double & b1,const double & b2,
