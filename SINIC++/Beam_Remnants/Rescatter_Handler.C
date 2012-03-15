@@ -136,15 +136,15 @@ void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
   for (set<Particle *>::iterator piter=m_particles.begin();
        piter!=m_particles.end();piter++) {
     allowed = true;
-    prob    = 0.;
+    prob    = 1.;
     y2      = (*piter)->Momentum().Y();
     for (list<pair<double,double> >::iterator sit=m_intervals.begin();
 	 sit!=m_intervals.end();sit++) {
       if ((y1<=sit->first && y2>=sit->second) ||
 	  (y2<=sit->first && y1>=sit->second)) {
 	prob = m_singletwt;
+        continue;
       }
-      else prob = 1.;
     }
     if (prob<0.00000001 || !CanRescatter((*piter),part)) continue;
     s12   = ((*piter)->Momentum()+part->Momentum()).Abs2();

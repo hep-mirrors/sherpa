@@ -174,6 +174,8 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
   ProjectOnSinglets(blob,singlets);
 
   double scale((m_mode>2?m_minkt2:0.)/1.);
+  double ymin(10000.),ymax(-10000.);
+  int iymin(-1),iymax(-1),n(1);
 
   p_ampl=Cluster_Amplitude::New(NULL);
   Vec4D axis1(blob->GetParticle(0)->Momentum());
@@ -197,11 +199,20 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
   while (!singlets.empty()) {
     ParticleList * sing=singlets.front();
     while (!sing->empty()) {
+      n++;
       Particle *const copy(sing->front());
       size_t id(1<<p_ampl->Legs().size());
       ColorID col(copy->GetFlow(1),copy->GetFlow(2));
       Flavour flav(copy->Flav());
       Vec4D mom(copy->Momentum());
+      if(mom.Y()<ymin){
+	ymin = mom.Y();
+	iymin = n;
+      }
+      if(mom.Y()>ymax){
+	ymax = mom.Y();
+	iymax = n;
+      }
       p_ampl->CreateLeg(mom,flav,col,id);
       Cluster_Leg * leg(p_ampl->Legs().back());
       leg->SetStat(0);
@@ -234,8 +245,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       spect = legs[j-1];
       int nconn(ColorConnected(split->Col(),spect->Col()));
       if (nconn==0) continue;
-      kt2FS = PT2(split->Mom(),spect->Mom(),!m_resc && (i==2||i==nlegs-1));
-      //|| j==nlegs-1 || j<=3);
+      kt2FS = PT2(split->Mom(),spect->Mom(),!m_resc && (i==iymin||i==iymax));
       if (j>2) sFS = (split->Mom()+spect->Mom()).Abs2(); 
           else sFS = 0.;
       if (kt2FS>kt2max) kt2max = kt2FS;
