@@ -112,7 +112,8 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
         HepMC::GenParticle* inpart = new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),2);
         vertex->add_particle_in(inpart);
-        if (blob->Type()==btp::Bunch) {
+        // distinct because SINIC has no bunches for some reason
+        if (blob->Type()==btp::Beam || blob->Type()==btp::Bunch) {
           beamparticles.push_back(inpart);
           beamparts.push_back(std::make_pair(momentum,parton->Flav().HepEvt()));
         }

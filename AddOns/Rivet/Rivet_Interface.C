@@ -219,8 +219,7 @@ public:
   
   bool Run(ATOOLS::Blob_List *const bl)
   {
-    Blob *sp(bl->FindFirst(btp::Signal_Process));
-    double weight(sp?(*sp)["Weight"]->Get<double>():bl->ExternalWeight());
+    double weight(bl->Weight());
     HepMC::GenEvent event;
     if (m_usehepmcshort)  m_hepmc2.Sherpa2ShortHepMC(bl, event, weight);
     else                  m_hepmc2.Sherpa2HepMC(bl, event, weight);
@@ -242,12 +241,13 @@ public:
     }
     else {
       GetRivet("", 0)->analyze(event);
+      Blob *sp(bl->FindFirst(btp::Signal_Process));
       size_t parts=0;
       if (sp) {
-	std::string multi(sp?sp->TypeSpec():"");
-	if (multi[3]=='_') multi=multi.substr(2,1);
-	else multi=multi.substr(2,2);
-	parts=ToType<size_t>(multi);
+        std::string multi(sp?sp->TypeSpec():"");
+        if (multi[3]=='_') multi=multi.substr(2,1);
+        else multi=multi.substr(2,2);
+        parts=ToType<size_t>(multi);
       }
       if (m_splitjetconts && sp) {
         GetRivet("", parts)->analyze(event);
