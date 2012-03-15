@@ -22,10 +22,10 @@ std::ostream &ATOOLS::operator<<(std::ostream &s,const Blob_List &list)
 }
 
 Blob_List::Blob_List():
-  m_destructor(NULL) {}
+  m_destructor(NULL), m_extweight(1.) {}
 
 Blob_List::Blob_List(const bool destruct):
-  m_destructor(destruct?this:NULL) {}
+  m_destructor(destruct?this:NULL), m_extweight(1.) {}
 
 Blob *Blob_List::FindFirst(const btp::code code) const
 {

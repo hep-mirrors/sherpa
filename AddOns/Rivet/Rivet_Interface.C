@@ -220,7 +220,7 @@ public:
   bool Run(ATOOLS::Blob_List *const bl)
   {
     Blob *sp(bl->FindFirst(btp::Signal_Process));
-    double weight(sp?(*sp)["Weight"]->Get<double>():bl->Weight());
+    double weight(sp?(*sp)["Weight"]->Get<double>():bl->ExternalWeight());
     HepMC::GenEvent event;
     if (m_usehepmcshort)  m_hepmc2.Sherpa2ShortHepMC(bl, event, weight);
     else                  m_hepmc2.Sherpa2HepMC(bl, event, weight);

@@ -121,6 +121,7 @@ InelasticEvent(Blob_List * blobs,const double & xsec,
       return 1;
     case 0:
       blobs->push_front(p_beams->GetSoftColourBlob());
+      blobs->SetExternalWeight(xsec);
       m_done = true;
       return 1;
     case -1:

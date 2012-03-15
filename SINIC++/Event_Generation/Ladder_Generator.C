@@ -108,7 +108,8 @@ operator()(Particle * part1,Particle * part2,const bool & rescatter,
     }
     isweight = weight  = InitialiseLadder(part1,part2,rescatter);
     weight  *= 
-      Max(0.,m_FS(p_ladder,m_cutoffY,first,trials==0))*
+      //Max(0.,m_FS(p_ladder,m_cutoffY,first,trials==0))*
+      Max(0.,m_FS(p_ladder,0.,first,trials==0))*
       Weight(isweight);; 
   } while ((trials++)<1000 && weight<ran->Get());
   if (p_ladder->Size()<2) {

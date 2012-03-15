@@ -28,6 +28,7 @@ namespace ATOOLS {
 
     };// end of class Destructor
 
+    double m_extweight;
     Destructor m_destructor;
 
     friend std::ostream &operator<<(std::ostream &str,const Blob_List &list);
@@ -85,7 +86,8 @@ namespace ATOOLS {
     Blob_List Copy() const;
 
     double Weight() const;
-
+    void   SetExternalweight(const double & wt) { m_extweight = wt; }
+    double ExternalWeight() const { return m_extweight; }
   };// end of class Blob_List
   
   std::ostream &operator<<(std::ostream &str,const Blob_List &list);

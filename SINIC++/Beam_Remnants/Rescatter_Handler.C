@@ -10,7 +10,7 @@ using namespace std;
 
 Rescatter_Handler::Rescatter_Handler(Beam_Remnant_Handler * beams) :
   m_rescatter(MBpars.RescMode()!=resc_mode::off), 
-  m_mustmatch(false), m_singletwt(1.),
+  m_mustmatch(false), m_singletwt(0.),
   m_rescprob(MBpars("RescProb")), m_resc1prob(1.), 
   p_beams(beams),
   p_alphaS(static_cast<MODEL::Strong_Coupling *>
