@@ -9,7 +9,7 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
 		     PDF::ISR_Handler *const isr,
 		     Soft_Collision_Handler *const softcollisions):
   p_parametrised(NULL), 
-  p_sinic(softcollisions?softcollisions->GetSinic():NULL),
+  p_shrimps(softcollisions?softcollisions->GetShrimps():NULL),
   p_beam(beam), m_fill(true)
 {
   Data_Reader read(" ",";","!","=");
@@ -20,7 +20,7 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
   else msg_Info()<<METHOD<<"(): Set remnants "<<m_fill<<"."<<std::endl;
   if (!read.ReadFromFile(m_vmode,"BRH_VMODE")) m_vmode=0;
   else msg_Info()<<METHOD<<"(): Set check mode "<<m_vmode<<"."<<std::endl;
-  if (p_sinic==NULL) {
+  if (p_shrimps==NULL) {
     p_parametrised = new Parametrised_Beam_Remnants(path,file,isr,p_beam);
     p_parametrised->SetScale(4.0);
   }
@@ -59,13 +59,13 @@ Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
   }
   for (short unsigned int i=0;i<2;++i) {
     p_beamblobs[i]    = InitBeamBlob(i);
-    if (p_sinic)        p_sinic->SetBeamBlob(p_beamblobs[i],i);
+    if (p_shrimps)        p_shrimps->SetBeamBlob(p_beamblobs[i],i);
     if (p_parametrised) p_parametrised->SetBeamBlob(p_beamblobs[i],i);
     //msg_Out()<<METHOD<<"("<<i<<"):\n"<<(*p_beamblobs[i])<<"\n";
   }
   Return_Value::code fbc(Return_Value::Error);
-  if (p_sinic) {
-    fbc =  p_sinic->FillBeamBlobs(bloblist);
+  if (p_shrimps) {
+    fbc =  p_shrimps->FillBeamBlobs(bloblist);
   }
   else {
     fbc = p_parametrised->FillBeamBlobs(bloblist);
@@ -162,8 +162,8 @@ ATOOLS::Blob * Beam_Remnant_Handler::InitBeamBlob(const int beam)
 
 void Beam_Remnant_Handler::CleanUp(const size_t & mode)
 {
-  if (p_sinic) {
-    p_sinic->CleanUp(mode);
+  if (p_shrimps) {
+    p_shrimps->CleanUp(mode);
   }
   else p_parametrised->CleanUp();
 }

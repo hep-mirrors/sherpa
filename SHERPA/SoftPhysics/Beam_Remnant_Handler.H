@@ -3,13 +3,13 @@
 
 #include "SHERPA/SoftPhysics/Parametrised_Beam_Remnants.H"
 #include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
-#include "SINIC++/Main/Sinic.H"
+#include "SHRiMPS/Main/Shrimps.H"
 
 namespace SHERPA {
   class Beam_Remnant_Handler {
   private:
     Parametrised_Beam_Remnants * p_parametrised;
-    SINIC::Sinic               * p_sinic;
+    SHRIMPS::Shrimps               * p_shrimps;
     BEAM::Beam_Spectra_Handler * p_beam;
     ATOOLS::Blob               * p_beamblobs[2];
 

@@ -3,8 +3,8 @@
   OUTPUT              = 2
   EVENT_TYPE          = MinimumBias 
   MAX_PROPER_LIFETIME = 10. #[mm]
-  SOFT_COLLISIONS     = Sinic
-  # Sinic_Mode        = Xsecs
+  SOFT_COLLISIONS     = Shrimps
+  # Shrimps_Mode        = Xsecs
   # MB_Weight_Mode    = Unweighted  
   # Ladder_Weight     = Regge
   #######################################################

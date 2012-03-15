@@ -320,9 +320,9 @@ void Hadron_Init::Init() {
   s_kftable[5324]=new Particle_Info(5324,5.930,0.001,0,0,3,1,0,"Xi(b)*_fict","Xi*_{b}_fict");
   s_kftable[5334]=new Particle_Info(5334,6.090,0.0003,-3,0,3,1,0,"Omega(b)*-_fict","Omega*-_{b}_fict");
   // Nucleons (octet) - the Roper resonance - L_N = 0_2 ###############################################
-  if(s_kftable.find(202112)==s_kftable.end()) // if not initialised in SINIC
+  if(s_kftable.find(202112)==s_kftable.end()) // if not initialised in SHRIMPS
     s_kftable[202112]=new Particle_Info(202112,1.44,0.35,0,0,1,1,0,"N(1440)","N(1440)");
-  if(s_kftable.find(202212)==s_kftable.end()) // if not initialised in SINIC 
+  if(s_kftable.find(202212)==s_kftable.end()) // if not initialised in SHRIMPS 
     s_kftable[202212]=new Particle_Info(202212,1.44,0.35,3,0,1,1,0,"N(1440)+","N+(1440)");
   s_kftable[203112]=new Particle_Info(203112,1.66,0.1,-3,0,1,1,0,"Sigma(1660)-","Sigma-(1660)");
   s_kftable[203212]=new Particle_Info(203212,1.66,0.1,0,0,1,1,0,"Sigma(1660)","Sigma(1660)");

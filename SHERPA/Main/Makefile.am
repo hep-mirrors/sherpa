@@ -13,7 +13,7 @@ libSherpaMain_la_LIBADD = -L$(SHERPABUILDDIR)/Initialization -L$(SHERPABUILDDIR)
                 -L$(SHERPABUILDDIR)/PerturbativePhysics -L$(SHERPABUILDDIR)/SoftPhysics -L$(SHERPABUILDDIR)/LundTools \
                 -lSherpaInitialization -lSherpaSingleEvents \
                 -lSherpaPerturbativePhysics -lSherpaSoftPhysics -lLundTools -lSherpaTools \
-		@AMISICLIBS@ @CSSLIBS@ @ATOOLSLIBS@ @AHADICLIBS@ @SINICLIBS@ \
+		@AMISICLIBS@ @CSSLIBS@ @ATOOLSLIBS@ @AHADICLIBS@ @SHRIMPSLIBS@ \
 		@BEAMLIBS@ @COMIXLIBS@ @AMEGICLIBS@ @MODELLIBS@ @PDFLIBS@ \
 		@MCATNLOLIBS@ @POWHEGLIBS@ @PHASICLIBS@  \
 		@METOOLSLIBS@ @CONDITIONAL_HEPMC2LIBS@ \

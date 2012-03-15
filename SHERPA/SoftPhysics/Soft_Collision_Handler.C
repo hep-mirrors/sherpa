@@ -4,7 +4,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "SHERPA/SoftPhysics/Cluster_Algorithm.H"
-#include "SINIC++/Main/Sinic.H"
+#include "SHRiMPS/Main/Shrimps.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Soft_Collision_Handler
@@ -16,14 +16,14 @@
 #endif
 
 using namespace SHERPA;
-using namespace SINIC;
+using namespace SHRIMPS;
 using namespace ATOOLS;
 using namespace std;
 
 Soft_Collision_Handler::Soft_Collision_Handler(string _dir,string _file,
 					       BEAM::Beam_Spectra_Handler *beam,
 					       PDF::ISR_Handler *isr):
-  m_dir(_dir), m_file(_file), m_mode(0), p_sinic(NULL)
+  m_dir(_dir), m_file(_file), m_mode(0), p_shrimps(NULL)
 {
   Data_Reader dr(" ",";","!","=");
   dr.AddWordSeparator("\t");
@@ -32,10 +32,10 @@ Soft_Collision_Handler::Soft_Collision_Handler(string _dir,string _file,
   dr.SetInputPath(m_dir);
   dr.SetInputFile(m_file);
   m_softcollisionmodel=dr.GetValue<string>("SOFT_COLLISIONS",string("Off"));
-  if (m_softcollisionmodel==string("Sinic")) {
-    m_sfile=dr.GetValue<string>("SINIC_FILE",string("Sinic.dat"));
-    p_sinic = new Sinic(&dr,beam,isr);
-    m_cluster.SetShowerParams(p_sinic->ShowerMode(),p_sinic->ShowerMinKT2());
+  if (m_softcollisionmodel==string("Shrimps")) {
+    m_sfile=dr.GetValue<string>("SHRIMPS_FILE",string("Shrimps.dat"));
+    p_shrimps = new Shrimps(&dr,beam,isr);
+    m_cluster.SetShowerParams(p_shrimps->ShowerMode(),p_shrimps->ShowerMinKT2());
     m_mode=1;
     exh->AddTerminatorObject(this);
     return;
@@ -46,12 +46,12 @@ Soft_Collision_Handler::Soft_Collision_Handler(string _dir,string _file,
    
 Soft_Collision_Handler::~Soft_Collision_Handler() 
 {
-  if (p_sinic) delete p_sinic;
+  if (p_shrimps) delete p_shrimps;
   exh->RemoveTerminatorObject(this);
 }
 
 void Soft_Collision_Handler::CleanUp() {
-  if (p_sinic) p_sinic->CleanUp();
+  if (p_shrimps) p_shrimps->CleanUp();
 } 
 
 void Soft_Collision_Handler::PrepareTerminate() 
@@ -72,7 +72,7 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List * blobs,
     weight = 1.;
     //msg_Out()<<"#################################"<<std::endl
     //	     <<METHOD<<"("<<blobs->size()<<")"<<std::endl;
-    outcome = p_sinic->GenerateEvent(blobs);
+    outcome = p_shrimps->GenerateEvent(blobs);
     //msg_Out()<<(*blobs)<<"\n";
     //msg_Out()<<"####################### yields "<<outcome<<"."<<std::endl
     //	     <<"#################################"<<std::endl<<std::endl;
@@ -81,7 +81,7 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List * blobs,
     case 0: return Return_Value::Nothing;
     default:
       msg_Tracking()<<"Error in "<<METHOD<<":"<<std::endl
-		    <<"   Did not manage to produce a Sinic event."<<std::endl;
+		    <<"   Did not manage to produce a Shrimps event."<<std::endl;
       return Return_Value::New_Event;
     }
   default:
@@ -92,8 +92,8 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List * blobs,
 
 Cluster_Amplitude *Soft_Collision_Handler::ClusterConfiguration(Blob *const bl)
 {
-  m_cluster.SetMinKT2(p_sinic->Smin());
-  m_cluster.SetRescatt(p_sinic->IsLastRescatter());
+  m_cluster.SetMinKT2(p_shrimps->Smin());
+  m_cluster.SetRescatt(p_shrimps->IsLastRescatter());
   if (!m_cluster.Cluster(bl)) {
     msg_Error()<<"Error in "<<METHOD<<": could not cluster blob.\n"
 	       <<(*bl)<<"\n";

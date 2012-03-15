@@ -12,7 +12,7 @@
 namespace ATOOLS { class Cluster_Amplitude; class Cluster_Definitions_Base; }
 namespace PDF    { class ISR_Handler; }
 namespace BEAM   { class Beam_Spectra_Handler; }
-namespace SINIC  { class Sinic; }
+namespace SHRIMPS  { class Shrimps; }
 
 namespace SHERPA {
   class Soft_Collision_Handler: public ATOOLS::Terminator_Object {
@@ -21,7 +21,7 @@ namespace SHERPA {
     std::string m_softcollisionmodel;
     int         m_mode;
 
-    SINIC::Sinic      * p_sinic;
+    SHRIMPS::Shrimps      * p_shrimps;
     Cluster_Algorithm   m_cluster;
     void PrepareTerminate(); 
   public:
@@ -43,8 +43,8 @@ namespace SHERPA {
     inline const std::string &  Soft_CollisionModel() const { 
       return m_softcollisionmodel; 
     }
-    inline SINIC::Sinic * const GetSinic() const { 
-      return p_sinic; 
+    inline SHRIMPS::Shrimps * const GetShrimps() const { 
+      return p_shrimps; 
     }
   };// end of class Soft_Collision_Handler
 }

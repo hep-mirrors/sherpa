@@ -242,16 +242,16 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(PHASICBUILDDIR)
   AC_SUBST(PHASICLIBS)
   
-  SINICDIR="\${top_srcdir}/SINIC++"
-  SINICBUILDDIR="\${top_builddir}/SINIC++"
-  SINICLIBS="-L\${SINICBUILDDIR}/Main -L\${SINICBUILDDIR}/Event_Generation \
-        -L\${SINICBUILDDIR}/Beam_Remnants -L\${SINICBUILDDIR}/Cross_Sections \
-       -L\${SINICBUILDDIR}/Eikonals -L\${SINICBUILDDIR}/Tools \
-        -lSinicMain -lSinicEvents -lSinicBeamRemnants \
-       -lSinicXsecs -lSinicEikonals -lSinicTools"           
-  AC_SUBST(SINICDIR)
-  AC_SUBST(SINICBUILDDIR)
-  AC_SUBST(SINICLIBS)
+  SHRIMPSDIR="\${top_srcdir}/SHRiMPS"
+  SHRIMPSBUILDDIR="\${top_builddir}/SHRiMPS"
+  SHRIMPSLIBS="-L\${SHRIMPSBUILDDIR}/Main -L\${SHRIMPSBUILDDIR}/Event_Generation \
+        -L\${SHRIMPSBUILDDIR}/Beam_Remnants -L\${SHRIMPSBUILDDIR}/Cross_Sections \
+       -L\${SHRIMPSBUILDDIR}/Eikonals -L\${SHRIMPSBUILDDIR}/Tools \
+        -lShrimpsMain -lShrimpsEvents -lShrimpsBeamRemnants \
+       -lShrimpsXsecs -lShrimpsEikonals -lShrimpsTools"           
+  AC_SUBST(SHRIMPSDIR)
+  AC_SUBST(SHRIMPSBUILDDIR)
+  AC_SUBST(SHRIMPSLIBS)
 
   SHERPADIR="\${top_srcdir}/SHERPA"
   SHERPABUILDDIR="\${top_builddir}/SHERPA"
