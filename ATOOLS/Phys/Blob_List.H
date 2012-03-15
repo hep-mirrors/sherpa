@@ -86,7 +86,7 @@ namespace ATOOLS {
     Blob_List Copy() const;
 
     double Weight() const;
-    void   SetExternalweight(const double & wt) { m_extweight = wt; }
+    void   SetExternalWeight(const double & wt) { m_extweight = wt; }
     double ExternalWeight() const { return m_extweight; }
   };// end of class Blob_List
   
