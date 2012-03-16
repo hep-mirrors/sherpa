@@ -98,7 +98,7 @@ Their respective syntax is
 @verbatim
 JetFinder  <ycut>[<ycut decay 1>[<ycut decay 11>...]...]... <D parameter>
 ConeFinder <min R> 
-NJetFinder <n> <ptmin> <etmin> <D parameter> [<exponent>] [<eta max>]
+NJetFinder <n> <ptmin> <etmin> <D parameter> [<exponent>] [<eta max>] [<mass max>]
 @end verbatim
 
 For @option{JetFinder}, it is possible to give different values
@@ -115,7 +115,10 @@ The @option{NJetFinder} allows to select for kinematic configurations with
 at least @option{<n>} jets that satisfy both, the @option{<ptmin>} and
 the @option{<etmin>} minimum requirements and that are in a PseudoRapidity region
 |eta|<@option{<eta max>}. The @option{<exponent>} allows to apply a kt-algorithm
-(1) or an anti-kt algorithm (-1).
+(1) or an anti-kt algorithm (-1). As only massless partons are clustered by 
+default, the @option{<mass max>} allows to also include partons with a mass 
+up to the specified values. This is useful e.g. in calculations with massive 
+b-quarks which shall nonetheless satisfy jet criteria.
 
 
 @node Universal selector
@@ -230,7 +233,7 @@ correction required. Currently only the following selectors meet this requiremen
 @item QCD parton cuts
 
 @verbatim
-NJetFinder <n> <ptmin> <etmin> <D parameter> [<exponent>] [<eta max>]
+NJetFinder <n> <ptmin> <etmin> <D parameter> [<exponent>] [<eta max>] [<mass max>]
 @end verbatim
 (see @ref{Jet finders})
 
