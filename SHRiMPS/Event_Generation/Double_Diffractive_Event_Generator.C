@@ -93,8 +93,8 @@ DoubleDiffractiveEvent(ATOOLS::Blob_List * blobs,const double & xsec) {
     blob->AddToOutParticles(part1out);
     blob->AddToOutParticles(part2out);
     blob->UnsetStatus(ATOOLS::blob_status::needs_minBias);
-    blob->SetStatus(ATOOLS::blob_status::needs_hadrondecays);
-    blob->SetStatus(ATOOLS::blob_status::needs_beams);
+    blob->AddStatus(ATOOLS::blob_status::needs_hadrondecays);
+    blob->AddStatus(ATOOLS::blob_status::needs_beams);
     blob->SetType(ATOOLS::btp::QElastic_Collision);
 
     return true;
