@@ -463,14 +463,15 @@ double POWHEG_Process::SelectZHProcess()
       p_rproc->SetSelected(rproc);
       rproc->Integrator()->SetMomenta(p_mc->RealMoms());
       if (p_int->InSwaped()) rproc->Integrator()->SwapInOrder();
+      p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(256|512);
+      if (p_ampl==NULL) {
+	msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;
+	return 0.0;
+      }
       Selector_Base *jf=(*p_bproc)[0]->
 	Selector()->GetSelector("Jetfinder");
-      if (jf) {
-	Cluster_Amplitude *rampl
-	  (CreateAmplitude(m_zh[mode][i].p_sub->p_real));
-	rampl->SetJF(jf);
-	bool res(p_shower->JetVeto(rampl));
-	rampl->Delete();
+      if (jf && m_nout-1<m_pinfo.m_fi.NMaxExternal()) {
+	bool res(p_shower->JetVeto(p_ampl));
 	if (res) return 0.0;
       }
       return rproc->Integrator()->SelectionWeight(0)/
@@ -597,6 +598,9 @@ Weight_Info *POWHEG_Process::OneEvent(const int wmode,const int mode)
     }
   }
   m_smode=1;
+  if (p_ampl && m_nout-1>=m_pinfo.m_fi.NMaxExternal())
+    for (Cluster_Amplitude *ampl(p_ampl);
+	 ampl;ampl=ampl->Next()) ampl->SetJF(NULL);
   return winfo;
 }
 

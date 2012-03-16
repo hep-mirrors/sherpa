@@ -289,13 +289,8 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   // p_ampl->Next()->SetNLO(1);
   Selector_Base *jf=(*p_bviproc)[0]->
     Selector()->GetSelector("Jetfinder");
-  if (jf) {
-    Cluster_Amplitude *rampl
-      (CreateAmplitude(p_rsproc->Selected()->
-		       GetSubevtList()->back()));
-    rampl->SetJF(jf);
-    bool res(p_shower->JetVeto(rampl));
-    rampl->Delete();
+  if (jf && m_nout-1<m_pinfo.m_fi.NMaxExternal()) {
+    bool res(p_shower->JetVeto(p_ampl));
     if (res) return 0.0;
   }
   return 1.0;
@@ -437,6 +432,9 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
     delete winfo;
     winfo=NULL;
   }
+  if (p_ampl && m_nout-1>=m_pinfo.m_fi.NMaxExternal())
+    for (Cluster_Amplitude *ampl(p_ampl);
+	 ampl;ampl=ampl->Next()) ampl->SetJF(NULL);
   return winfo;
 }
 
