@@ -70,9 +70,12 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
           event.set_pdf_info(pdfinfo);
         }
       }
-      else if ((*blit)->Type()==ATOOLS::btp::Beam) {
-        if (vertex->particles_in_size()==1) {
-          beamparticles.push_back(*vertex->particles_in_const_begin());
+      else if ((*blit)->Type()==ATOOLS::btp::Beam || (*blit)->Type()==ATOOLS::btp::Bunch) {
+        for (HepMC::GenVertex::particles_in_const_iterator pit=vertex->particles_in_const_begin();
+             pit!=vertex->particles_in_const_end(); ++pit) {
+          if ((*pit)->production_vertex()==NULL) {
+            beamparticles.push_back(*pit);
+          }
         }
       }
     }
