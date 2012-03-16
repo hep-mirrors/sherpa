@@ -43,7 +43,7 @@ namespace SHERPA {
     inline const std::string &  Soft_CollisionModel() const { 
       return m_softcollisionmodel; 
     }
-    inline SHRIMPS::Shrimps * const GetShrimps() const { 
+    inline SHRIMPS::Shrimps * GetShrimps() const { 
       return p_shrimps; 
     }
   };// end of class Soft_Collision_Handler

@@ -9,7 +9,6 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
-#include "SHERPA/SoftPhysics/Soft_Collision_Handler.H"
 #include "SHERPA/Tools/Analysis_Interface.H"
 #include "SHERPA/Tools/Definitions.H"
 
@@ -34,6 +33,7 @@ namespace SHERPA {
   class Lund_Interface;
   class Event_Reader_Base;
   class Analysis_Interface;
+  class Soft_Collision_Handler;
 
   class Initialization_Handler: public ATOOLS::Terminator_Object {
   private :

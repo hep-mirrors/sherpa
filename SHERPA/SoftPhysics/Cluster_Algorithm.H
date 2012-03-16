@@ -30,7 +30,7 @@ namespace SHERPA {
 	m_ycut(kt2/ATOOLS::sqr(ATOOLS::rpa->gen.Ecms())) {}
       ~JF() {};
       inline const double & Ycut() const { return m_ycut; }
-      inline const double   DR()   const { return 1.; }
+      inline double DR()   const { return 1.; }
     };
   private:
     int    m_mode;

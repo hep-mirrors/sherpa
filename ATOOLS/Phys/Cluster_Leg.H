@@ -126,9 +126,9 @@ namespace ATOOLS {
     inline size_t DMax() const { return m_d;  }
     inline size_t K() const    { return m_k;  }
 
-    inline const double KTStart() const { return m_ktstart; }
-    inline const double KTMax() const   { return m_ktmax; }
-    inline const double KTVeto() const  { return m_ktveto; }
+    inline const double& KTStart() const { return m_ktstart; }
+    inline const double& KTMax() const   { return m_ktmax; }
+    inline const double& KTVeto() const  { return m_ktveto; }
 
     inline const bool Connected() const { return m_connected; }
   };// end of class Cluster_Leg
