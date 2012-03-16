@@ -18,6 +18,9 @@ Shrimps::Shrimps(ATOOLS::Data_Reader * dr,
   m_test(dr->GetValue<int>("TestShrimps",0)),
   p_generator(NULL)
 {
+  ATOOLS::rpa->gen.AddCitation
+    (1,"SHRiMPS is not published yet. \
+Please contact the authors if you are using it.");
   double Ecms(ATOOLS::rpa->gen.Ecms());
   MBpars.Init(dr);
   MBpars.Set(std::string("originalY"),
