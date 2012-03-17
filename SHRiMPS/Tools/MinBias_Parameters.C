@@ -41,16 +41,16 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   m_params["Q02"]         = dr->GetValue<double>("Q_0^2",1.);
   m_params["Q12"]         = dr->GetValue<double>("Q_1^2",0.);
   m_params["QN2"]         = dr->GetValue<double>("Q_N^2",0.);
-  m_params["SingletWt"]   = dr->GetValue<double>("Chi_S",1.);
+  m_params["SingletWt"]   = dr->GetValue<double>("Chi_S",2.);
   m_params["Ddiff2"]      = dr->GetValue<double>("D_diff^2",0.);
   m_params["kdiff"]       = dr->GetValue<double>("K_diff",0.);
   // showering off soft stuff
   m_params["shower_mode"] = dr->GetValue<int>("Shower_Mode",3);
   m_params["min_kt2"]     = dr->GetValue<double>("Shower_Min_KT2",16.);
-  m_params["kt2_factor"]  = dr->GetValue<double>("KT2_Factor",4.);
+  m_params["kt2_factor"]  = dr->GetValue<double>("KT2_Factor",2.);
   m_params["diff_factor"] = dr->GetValue<double>("Diff_Factor",1.);
   // rescatterings
-  m_params["RescProb"]    = dr->GetValue<double>("RescProb",1.);
+  m_params["RescProb"]    = dr->GetValue<double>("RescProb",2.);
   m_params["RescProb1"]   = dr->GetValue<double>("RescProb1",0.);
   m_params["SpatProb"]    = dr->GetValue<double>("SpatProb",0.);
   m_params["SpatWidth"]   = dr->GetValue<double>("SpatWidth",

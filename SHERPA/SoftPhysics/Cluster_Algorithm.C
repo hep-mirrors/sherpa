@@ -161,11 +161,11 @@ ProjectOnSinglets(Blob * const blob,std::list<ParticleList *> & singlets) {
 double Cluster_Algorithm::
 PT2(const Vec4D & pi,const Vec4D & pj,const bool & beam) const 
 {
-  double pref(1.);
+  double pref(4.);
   double pti2(pi.PPerp2()), ptj2(pj.PPerp2());
   double ptij2    = 
-    Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-cos(pi.Phi()-pj.Phi()));
-  return (beam?Min(pref*pti2,ptij2):ptij2);
+    2.*Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-cos(pi.Phi()-pj.Phi()));
+  return 2.*(beam?Min(pref*pti2,ptij2):ptij2);
 }
 
 bool Cluster_Algorithm::Cluster(Blob *const blob)
@@ -290,7 +290,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
 	break;
       case 4:
       case 3:
-	kt2max = PT2(split->Mom(),legs[j]->Mom(),false);
+	kt2max = PT2(split->Mom(),legs[j]->Mom(),true);
 	break;
       case 2:
       case 1:
