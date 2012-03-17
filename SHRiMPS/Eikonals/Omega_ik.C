@@ -115,7 +115,7 @@ double Omega_ik::SingletWeight(const double & b1,const double & b2,
     ommin = (y1<y2)?m_Omegaki(b1,b2,y2):m_Omegaki(b1,b2,y1);
   }
 
-  double term   = pow(sup*m_lambda,2-nbeam)*dabs(ommaj-ommin)/ommin;
+  double term   = m_singletwt*pow(sup*m_lambda,2-nbeam)*dabs(ommaj-ommin)/ommin;
   double weight = 0.;
   switch (m_absorp) {
   case absorption::factorial: 
@@ -126,7 +126,7 @@ double Omega_ik::SingletWeight(const double & b1,const double & b2,
     weight = sqr(1.-exp(-term/2.));
     break;
   }
-  return m_singletwt*weight;
+  return weight;
 }
 
 double Omega_ik::OctetWeight(const double & b1,const double & b2,
