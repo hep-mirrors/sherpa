@@ -5,6 +5,7 @@
   MODEL=SM+TauPi
   FRAGMENTATION=Off
   AMEGIC_DEFAULT_GAUGE = 10
+  COMIX_ALLOW_BSM = 1
 }(run)
 (me){
   SCALES          = VAR{sqr(90)}
