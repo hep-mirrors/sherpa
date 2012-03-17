@@ -13,7 +13,7 @@
   SHOWER_GENERATOR=None
 }(shower)
 (fragmentation){
-  YFS_MODE = 0
+  YFS_MODE = 1
 }(fragmentation)
 (model){
   STABLE[15] = 0
