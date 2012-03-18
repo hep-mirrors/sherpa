@@ -154,7 +154,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
     m_resc_nosing = resc_nosing::on;
 
   std::string rescoversing =
-    dr->GetValue<std::string>("RescOverSinglet",std::string("off"));
+    dr->GetValue<std::string>("RescOverSinglet",std::string("on"));
   if (rescoversing==std::string("off"))
     m_resc_over_sing = resc_over_sing::off;
   else
