@@ -763,6 +763,9 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
 bool Amplitude_Generator::CheckTChannels(Point * p) {
   int ntchan(-1);
   p->CountT(ntchan,0);
+  //to treat decays correctly
+  if (ntchan==-1) ntchan++;
+  //
   msg_Debugging()<<METHOD<<" yields "<<ntchan<<" t-channel props, "
 		 <<"("<<ntchan_min<<"), start = "<<p->fl<<"."<<std::endl;
   if (ntchan>=ntchan_min) return true;
