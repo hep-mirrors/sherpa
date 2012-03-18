@@ -24,7 +24,9 @@ Output_HepMC2_Short::Output_HepMC2_Short(std::string basename,
 {
 #ifdef USING__HEPMC2__IOGENEVENT
   p_iogenevent = new HepMC::IO_GenEvent(m_outstream);
+#ifdef HEPMC_HAS_CROSS_SECTION
   p_iogenevent->precision(precision);
+#endif
 #else
   THROW(fatal_error,"HepMC::IO_GenEvent asked for, but HepMC version too old.");
 #endif
