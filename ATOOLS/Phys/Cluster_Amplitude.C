@@ -293,10 +293,16 @@ void Cluster_Amplitude::SetColours
   }
   else if (lij->Flav().Strong()) {
     if (li->Flav().StrongCharge()==8) {
-      size_t nc(Flow::Counter());
-      colj.m_i=coli.m_j=nc;
-      colj.m_j=colij.m_j;
-      coli.m_i=colij.m_i;
+      if (lj->Flav().StrongCharge()==0) {
+	coli.m_i=colij.m_i;
+	coli.m_j=colij.m_j;
+      }
+      else {
+	size_t nc(Flow::Counter());
+	colj.m_i=coli.m_j=nc;
+	colj.m_j=colij.m_j;
+	coli.m_i=colij.m_i;
+      }
     }
     else if (abs(li->Flav().StrongCharge())==3) {
       coli.m_i=colij.m_i;
@@ -305,10 +311,8 @@ void Cluster_Amplitude::SetColours
 	std::swap<ColorID>(coli,colj);
     }
     else {
-      coli.m_i=colij.m_i;
-      coli.m_j=colij.m_j;
-      if (lj->Flav().StrongCharge()==8)
-	std::swap<ColorID>(coli,colj);
+      colj.m_i=colij.m_i;
+      colj.m_j=colij.m_j;
     }
   }
   else {
