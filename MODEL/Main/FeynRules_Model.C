@@ -178,17 +178,5 @@ void FeynRules_Model::RunSpectrumGenerator(const PDF::ISR_Handler_Map& isr) {
 
 bool FeynRules_Model::CheckFlavours(int nin, int nout, Flavour* flavs)
 {
-  // baryon number
-  double bnum(0.);
-  for (int i=0;i<nin;i++) bnum-=flavs[i].BaryonNumber();
-  for (int i=nin;i<nin+nout;i++) bnum+=flavs[i].BaryonNumber();
-  if (!IsZero(bnum)) return false;
-  // lepton numbers
-  int lnum[3]={0,0,0};
-  for (int i=0;i<nin;i++) if (flavs[i].IsLepton()) 
-    lnum[flavs[i].LeptonFamily()-1]-=flavs[i].LeptonNumber();
-  for (int i=nin;i<nin+nout;i++) if (flavs[i].IsLepton()) 
-    lnum[flavs[i].LeptonFamily()-1]+=flavs[i].LeptonNumber();
-  for (int i=0;i<3;i++) if (lnum[i]!=0) return false;
   return true;
 }
