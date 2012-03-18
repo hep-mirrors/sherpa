@@ -51,7 +51,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   m_params["diff_factor"] = dr->GetValue<double>("Diff_Factor",1.);
   // rescatterings
   m_params["RescProb"]    = dr->GetValue<double>("RescProb",2.);
-  m_params["RescProb1"]   = dr->GetValue<double>("RescProb1",0.);
+  m_params["RescProb1"]   = dr->GetValue<double>("RescProb1",0.125);
   m_params["SpatProb"]    = dr->GetValue<double>("SpatProb",0.);
   m_params["SpatWidth"]   = dr->GetValue<double>("SpatWidth",
 						 m_params["Lambda2"]);
