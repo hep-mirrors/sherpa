@@ -130,7 +130,7 @@ namespace ATOOLS {
     inline const double& KTMax() const   { return m_ktmax; }
     inline const double& KTVeto() const  { return m_ktveto; }
 
-    inline const bool Connected() const { return m_connected; }
+    inline const bool& Connected() const { return m_connected; }
   };// end of class Cluster_Leg
 
   typedef std::vector<Cluster_Leg*> ClusterLeg_Vector;
