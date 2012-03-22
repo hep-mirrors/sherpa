@@ -50,7 +50,7 @@ namespace SHRIMPS {
     Ladder * operator()(ATOOLS::Particle * part1,ATOOLS::Particle * part2,
 			const bool & rescatter,
 			const bool & first=false,const bool & weighted=false);
-    Ladder * MakeLadder(ATOOLS::Blob * blob);
+//     Ladder * MakeLadder(ATOOLS::Blob * blob);
 
     inline void SetLadderGeneration(const int & N) { m_FS.SetQ02eff(N); }
 //     inline const double & B1()   const { return m_b1; }

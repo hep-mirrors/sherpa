@@ -257,63 +257,63 @@ double Ladder_Generator::Weight(const double & isweight) {
 }
 
 
-Ladder * Ladder_Generator::MakeLadder(Blob * blob) {
-  p_ladder = new Ladder(Vec4D(0.,0.,0.,0.));
-
-  Particle * part;
-  Ladder_Particle * lpart, * lpart1(NULL), *lpart2(NULL);
-  Vec4D pextra(Vec4D(0.,0.,0.,0.));
-  list<Particle *> lpextra;
-  for (int i=0;i<blob->NOutP();i++) {
-    part = blob->OutParticle(i);    
-    if (part->Status()==part_status::active && part->Info()=='F') {
-      msg_Tracking()<<part->Number()<<" ("<<part->Momentum().Y()<<") ";
-      lpart = new Ladder_Particle(part);
-      p_ladder->AddParticle(part->Momentum().Y(),(*lpart));
-    }
-    if (part->Status()==part_status::decayed && part->Info()=='H') {
-      if (part->Flav().Strong()) {
-	msg_Error()<<"Error in "<<METHOD<<":\n"
-		   <<"   Did not expect strongly interacting particle with "
-		   <<"decay blob here!\n"<<(*part)<<"\n";
-	if (part->DecayBlob()) msg_Error()<<(*part->DecayBlob())<<"\n";
-	exit(1);
-      }
-      lpextra.push_back(part);
-      pextra += part->Momentum();
-    }
-  }
-  lpart = new Ladder_Particle(Flavour(kf_cluster),pextra);
-  p_ladder->AddParticle(pextra.Y(),(*lpart));
-  if (lpextra.size()>0) {
-    for (list<Particle *>::iterator piter=lpextra.begin();
-	 piter!=lpextra.end();piter++) msg_Tracking()<<(*piter)->Number()<<" ";
-  }
-  for (int i=0;i<blob->NInP();i++) {
-    part = blob->InParticle(i);    
-    if (part->Info()=='I' && part->ProductionBlob()==NULL) {
-      lpart = new Ladder_Particle(part->Flav(),part->Momentum());
-      if (rpa->gen.PBeam(0)[3]*lpart->m_mom[3]>0.) lpart1 = lpart;
-                                                     else lpart2 = lpart;
-    }
-  }
-  p_ladder->SetInParticles(lpart1,lpart2);
-  int trials(0);
-  double weight(1.);
-  do {
-    /*
-      if (m_IS.ProvideInitialState(p_ladder)) {
-      m_pos    = m_IS.Pos();
-      m_b1     = m_IS.B1();
-      m_b2     = m_IS.B2();
-      weight   = m_IS.Weight();
-      
-      m_FS.Init(p_eikonal,m_b1,m_b2);  
-      }
-    */
-  } while (trials<1000 && weight<ran->Get());
-  return p_ladder;
-}
+// Ladder * Ladder_Generator::MakeLadder(Blob * blob) {
+//   p_ladder = new Ladder(Vec4D(0.,0.,0.,0.));
+// 
+//   Particle * part;
+//   Ladder_Particle * lpart, * lpart1(NULL), *lpart2(NULL);
+//   Vec4D pextra(Vec4D(0.,0.,0.,0.));
+//   list<Particle *> lpextra;
+//   for (int i=0;i<blob->NOutP();i++) {
+//     part = blob->OutParticle(i);    
+//     if (part->Status()==part_status::active && part->Info()=='F') {
+//       msg_Tracking()<<part->Number()<<" ("<<part->Momentum().Y()<<") ";
+//       lpart = new Ladder_Particle(part);
+//       p_ladder->AddParticle(part->Momentum().Y(),(*lpart));
+//     }
+//     if (part->Status()==part_status::decayed && part->Info()=='H') {
+//       if (part->Flav().Strong()) {
+// 	msg_Error()<<"Error in "<<METHOD<<":\n"
+// 		   <<"   Did not expect strongly interacting particle with "
+// 		   <<"decay blob here!\n"<<(*part)<<"\n";
+// 	if (part->DecayBlob()) msg_Error()<<(*part->DecayBlob())<<"\n";
+// 	exit(1);
+//       }
+//       lpextra.push_back(part);
+//       pextra += part->Momentum();
+//     }
+//   }
+//   lpart = new Ladder_Particle(Flavour(kf_cluster),pextra);
+//   p_ladder->AddParticle(pextra.Y(),(*lpart));
+//   if (lpextra.size()>0) {
+//     for (list<Particle *>::iterator piter=lpextra.begin();
+// 	 piter!=lpextra.end();piter++) msg_Tracking()<<(*piter)->Number()<<" ";
+//   }
+//   for (int i=0;i<blob->NInP();i++) {
+//     part = blob->InParticle(i);    
+//     if (part->Info()=='I' && part->ProductionBlob()==NULL) {
+//       lpart = new Ladder_Particle(part->Flav(),part->Momentum());
+//       if (rpa->gen.PBeam(0)[3]*lpart->m_mom[3]>0.) lpart1 = lpart;
+//                                                      else lpart2 = lpart;
+//     }
+//   }
+//   p_ladder->SetInParticles(lpart1,lpart2);
+//   int trials(0);
+//   double weight(1.);
+//   do {
+//     /*
+//       if (m_IS.ProvideInitialState(p_ladder)) {
+//       m_pos    = m_IS.Pos();
+//       m_b1     = m_IS.B1();
+//       m_b2     = m_IS.B2();
+//       weight   = m_IS.Weight();
+//       
+//       m_FS.Init(p_eikonal,m_b1,m_b2);  
+//       }
+//     */
+//   } while (trials<1000 && weight<ran->Get());
+//   return p_ladder;
+// }
 
 
 

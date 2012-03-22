@@ -36,6 +36,7 @@ Final_State::Final_State(const int & test) :
 
 bool Final_State::FirstSinglet(const double & y1,const double & y2,
 			       const double & sup,const int & nbeam) {
+  return false;
   if (p_ladder->IsRescatter() && m_resc_nosing==resc_nosing::on) return false;
   double wt1 = p_eikonal->SingletWeight(m_b1,m_b2,y1,y2,sup,nbeam); 
   double wt8 = p_eikonal->OctetWeight(m_b1,m_b2,y1,y2,sup,nbeam); 
@@ -65,6 +66,7 @@ operator()(Ladder * ladder,const double & Deltay,
 	    int(dabs(p_ladder->GetIn1()->m_mom.Y())>6.)+
 	    int(dabs(p_ladder->GetIn2()->m_mom.Y())>6.));
   if (firstattempt && FirstSinglet(y0,y1,1.,nbeam)) {
+    m_firstsing++;
     m_histomap[std::string("Delta_final")]->Insert(1./dabs(y0-y1)); 
     p_ladder->GetProps()->begin()->m_col = colour_type::singlet;
     p_ladder->SetDiffractive(true);
@@ -103,6 +105,8 @@ double Final_State::GenerateEmissions() {
       p_ladder->SetMaxKT2(kt2);
       if (FixPropColours(split,spect)) run = true;
       else {
+	m_singexit++;
+        m_histomap[std::string("Deltay_singexit")]->Insert(dabs(m_k2.Y()-m_k1.Y()));
 	msg_Tracking()
 	  <<"   active interval in singlet for "
 	  <<p_ladder->Size()<<", lastwt="<<m_lastwt<<".\n";
@@ -225,6 +229,7 @@ TryEmission(double & kt12,const bool & dir) {
     m_histomap[std::string("Deltay_test")]->Insert(deltay1); 
     if (y1>ystop || y1<y0old) {
       m_ys++;
+      m_histomap[std::string("Deltay_regexit")]->Insert(dabs(y2old-y0old));
       m_histomap[std::string("Delta_final")]->Insert(0.); 
       return false;
     }
@@ -764,10 +769,15 @@ void Final_State::InitHistograms() {
     new Histogram(0,0.0,400.0,100);
   m_histomap[std::string("q12_2_0")] = 
     new Histogram(0,0.0,400.0,100);
+  m_histomap[std::string("Deltay_regexit")] = 
+    new Histogram(0,0.0,20.0,100);
+  m_histomap[std::string("Deltay_singexit")] = 
+    new Histogram(0,0.0,20.0,100);
 
   m_trials=m_rej_negkt1=m_rej_nokt2=m_rej_nokt0=m_rej_nophi0=m_rej_noy0=0;
   m_rej_offshell=m_rej_nofit=m_rej_order=m_alphaS=m_ys=0;
   m_dir0=m_dir1=m_rej_order1=m_rej_order0=m_cols=0;
+  m_singexit=m_firstsing=0;
 }
 
 void Final_State::OutputHistograms() {
@@ -800,6 +810,11 @@ void Final_State::OutputHistograms() {
     <<m_histomap[std::string("Delta_order")]->Average()<<";\n"
     <<"   after all weights, final Delta          = "
     <<m_histomap[std::string("Delta_final")]->Average()<<".\n";
+  msg_Info()
+    <<METHOD<<" ways of exiting:\n"
+    <<"   regular exits       "<<m_ys<<"\n"
+    <<"   singlet exits       "<<m_singexit<<"\n"
+    <<"   first singlet       "<<m_firstsing<<"\n";
   
   Histogram * histo;
   std::string name;

@@ -240,6 +240,7 @@ bool Perturbative_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
   sblob->SetType(btp::Shower);
   sblob->SetStatus(blob_status::needs_showers);
   sblob->SetId();
+  sblob->SetPosition(p_hard->Position());
   if (p_shower->On()) {
     if (!p_hd)
       for (int i(0);i<p_hard->NInP();++i)

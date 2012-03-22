@@ -41,6 +41,7 @@ namespace SHRIMPS {
     long int m_rej_negkt1,m_rej_nokt2,m_rej_nokt0,m_rej_nophi0,m_rej_noy0;
     long int m_rej_offshell,m_rej_nofit,m_rej_order,m_trials,m_ys,m_alphaS;
     long int m_dir0,m_dir1,m_rej_order0,m_rej_order1,m_cols;
+    long int m_singexit,m_firstsing;
 
     double GenerateEmissions();
     bool   FirstSinglet(const double & y1,const double & y2,

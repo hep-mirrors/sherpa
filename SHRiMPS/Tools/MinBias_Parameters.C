@@ -56,7 +56,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   m_params["SpatWidth"]   = dr->GetValue<double>("SpatWidth",
 						 m_params["Lambda2"]);
   m_params["QRC2"]        = dr->GetValue<double>("Q_RC^2",4.);
-  m_params["ReconnProb"]  = dr->GetValue<double>("RescProb",8.);
+  m_params["ReconnProb"]  = dr->GetValue<double>("ReconnProb",8.);
 
   std::string ffform = 
     dr->GetValue<std::string>("FF_Form",std::string("dipole"));
