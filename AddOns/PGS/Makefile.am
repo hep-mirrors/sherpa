@@ -1,6 +1,6 @@
 
 PGS_SOURCES   =	\
-		pgs_interface.f \
+		pgs_finterface.f \
 		PGS_Interface.C
 
 AM_FFLAGS     =	-fno-automatic
