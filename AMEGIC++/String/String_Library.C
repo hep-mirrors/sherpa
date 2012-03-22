@@ -37,6 +37,7 @@ void String_Library::UpdateConfigure(std::string pathID)
     file<<"AM_DISABLE_STATIC"<<endl;
     file<<"AC_PREFIX_DEFAULT("<<ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")
 	<<"/Process)"<<endl;
+    file<<"m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])"<<endl;
     file<<"dnl Checks for programs."<<endl;
     file<<"AC_PROG_INSTALL"<<endl;
     file<<"AC_PROG_MAKE_SET"<<endl;
