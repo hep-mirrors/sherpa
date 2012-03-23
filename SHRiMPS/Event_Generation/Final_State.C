@@ -320,7 +320,7 @@ TryEmission(double & kt12,const bool & dir) {
         else m_histomap[std::string("ytest0")]->Insert(y1);
     if ((MBpars.LadderWeight()==ladder_weight::Regge || 
 	 MBpars.LadderWeight()==ladder_weight::ReggeDiffusion) && 
-	deltay>m_Deltay) {
+	deltay>m_Deltay) { 
       rarg = Min(mu01_2/q01.PPerp2(),q01.PPerp2()/mu01_2);
       expo = colfac*(*p_alphaS)(q01.PPerp2())*deltay/M_PI; 
       //expo = colfac*p_alphaS->MaxValue()*deltay/M_PI; 
@@ -354,8 +354,8 @@ TryEmission(double & kt12,const bool & dir) {
   m_k2 = k_2;
 
   if (MBpars.LadderWeight()==ladder_weight::Regge) {
-    rarg      = Min(mu12_2/m_q12_2,1.);
-    expo      = colfac*p_alphaS->MaxValue()*dabs(k_2.Y()-k_1.Y())/M_PI; 
+    rarg = Min(mu12_2/q12.PPerp2(),q12.PPerp2()/mu12_2);
+    expo = colfac*(*p_alphaS)(q01.PPerp2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
     m_lastwt  = pow(rarg,expo);
     //m_lastwt *= kmrwt = q12.PPerp2()/m_q12_2;
     //m_histomap[std::string("KMRWt")]->Insert(kmrwt);
