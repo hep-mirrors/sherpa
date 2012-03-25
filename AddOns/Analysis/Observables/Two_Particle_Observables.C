@@ -196,6 +196,30 @@ Primitive_Observable_Base * Two_Particle_PT::Copy() const
   return new Two_Particle_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
+DEFINE_OBSERVABLE_GETTER(Two_Particle_ETW,Two_Particle_ETW_Getter,"ET2W")
+
+Two_Particle_ETW::Two_Particle_ETW(const Flavour & flav1,const Flavour & flav2,
+				   int type,double xmin,double xmax,int nbins,
+				   const std::string & listname) :
+  Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"ETW") { }
+
+void Two_Particle_ETW::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, double ncount) 
+{
+  double etw = sqrt(sqr(mom1[1]+mom2[1]) + sqr(mom1[2]+mom2[2]) + sqr(Flavour(kf_Wplus).Mass()));
+  p_histo->Insert(etw,weight,ncount); 
+} 
+
+void Two_Particle_ETW::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom2,double weight, double ncount) 
+{
+  double etw = sqrt(sqr(mom1[1]+mom2[1]) + sqr(mom1[2]+mom2[2]) + sqr(Flavour(kf_Wplus).Mass()));
+  p_histo->InsertMCB(etw,weight,ncount); 
+} 
+
+Primitive_Observable_Base * Two_Particle_ETW::Copy() const 
+{
+  return new Two_Particle_ETW(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
 DEFINE_OBSERVABLE_GETTER(Two_Particle_Scalar_PT,
 			 Two_Particle_Scalar_PT_Getter,"SPT2")
 

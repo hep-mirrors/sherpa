@@ -34,7 +34,6 @@ My_Root::My_Root():
 	(fst.st_mode&S_IFMT)==S_IFREG) {
       remove((OutputPath()+OutputFile()).c_str());
     }
-    p_file = new TFile((OutputPath()+OutputFile()).c_str(),"recreate");
   }
   delete [] argvf;
 } 
@@ -61,6 +60,8 @@ void My_Root::PrepareTerminate()
 bool My_Root::AddObject(TObject *const object,const std::string &key) 
 { 
   if (m_objects.find(key)==m_objects.end()) {
+    if (p_file==NULL) p_file = new TFile
+      ((OutputPath()+OutputFile()).c_str(),"recreate");
     m_objects.insert(String_Object_Map::value_type(key,object)); 
     return true;
   }

@@ -276,7 +276,7 @@ double COMIX::Single_Process::Partonic
 {
   Single_Process *sp(p_map!=NULL?p_map:this);
   if (mode==1 && !sp->p_scale->Scale2())
-    return m_lastxs=m_dxs+sp->GetKPTerms(m_flavs,mode);
+    return m_lastxs=m_dxs+m_w*sp->GetKPTerms(m_flavs,mode);
   if (m_zero || !Selector()->Result()) return m_lastxs;
   for (size_t i(0);i<m_nin+m_nout;++i) {
     m_p[i]=p[i];
@@ -309,7 +309,7 @@ double COMIX::Single_Process::Partonic
       }
     }
   }
-  double kpterms(sp->GetKPTerms(m_flavs,mode));
+  double kpterms(m_w*sp->GetKPTerms(m_flavs,mode));
   if (m_wgtinfo.m_nx) {
     sp->FillMEWeights(m_wgtinfo);
     m_wgtinfo*=m_w;
@@ -349,7 +349,7 @@ double COMIX::Single_Process::GetKPTerms
     eta0=p_int->Momenta()[0].PPlus()/rpa->gen.PBeam(1).PMinus();
     eta1=p_int->Momenta()[1].PMinus()/rpa->gen.PBeam(0).PPlus();
   }
-  return m_w*p_kpterms->Get(m_x[0],m_x[1],eta0,eta1,fl,mode);
+  return p_kpterms->Get(m_x[0],m_x[1],eta0,eta1,fl,mode);
 }
 
 void COMIX::Single_Process::FillMEWeights(ME_wgtinfo &wgtinfo) const

@@ -7,6 +7,13 @@ ANATRIGGER_SOURCES    =	\
 			Jet_Particle_Selector.C \
 			Four_Particle_Calculator.C \
 			Two_Particle_X_Selector.C\
+			Custom_Selector.C \
+			ranlux.cpp reference.cpp geom_2d.cpp \
+			momentum.cpp hash.cpp quadtree.cpp vicinity.cpp \
+			protocones.cpp split_merge.cpp siscone.cpp \
+			siscone_error.cpp area.cpp \
+			SISCone.C \
+			MCFMCone.C \
 			HT_Selector.C \
 			AlphaT_Selector.C \
 			Uni_Selector.C\
@@ -30,6 +37,23 @@ ANATRIGGER_ADDS       =	\
 			Trigger_Base.H \
 			Durham_Algorithm.H \
 			Cambridge_Algorithm.H \
+			area.h\
+			circulator.h\
+			defines.h\
+			geom_2d.h\
+			hash.h\
+			momentum.h\
+			protocones.h\
+			quadtree.h\
+			ranlux.h\
+			reference.h\
+			siscone_error.h\
+			siscone.h\
+			split_merge.h\
+			vicinity.h\
+			config.h \
+			SISCone.H \
+			MCFMCone.H \
 			Kt_Algorithm.H \
 			DIS_Algorithm.H \
 			Final_Selector.H \

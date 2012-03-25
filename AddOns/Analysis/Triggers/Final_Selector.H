@@ -48,6 +48,7 @@ namespace ANALYSIS {
     bool   DeltaRSelect(const ATOOLS::Vec4D &,const ATOOLS::Vec4D &,double); 
     bool   MassSelect(const ATOOLS::Vec4D &,const ATOOLS::Vec4D &,double,double); 
     double DeltaR(const ATOOLS::Vec4D &,const ATOOLS::Vec4D &); 
+    void   JetSelect(Particle_List * pl,const Flavour& jf);
 
     void   Select(ATOOLS::Particle_List *,Final_Data_Map::iterator);
     void   Select2(ATOOLS::Particle_List *,Final_Correlator_Map::iterator);

@@ -13,6 +13,11 @@ ANAOBS_SOURCES        =	\
 			One_Variable_Observable.C \
 			HT.C \
 			TotalMass.C \
+			LMass.C \
+			EV_C_Observables.C \
+			EV_C2_Observables.C \
+			EV_C4_Observables.C \
+			EV_SC_Observables.C \
 			PSM_Observables.C \
 			Multiplicity.C \
 			MI_Observables.C \

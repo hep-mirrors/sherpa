@@ -7,6 +7,8 @@ using namespace ANALYSIS;
 #include "AddOns/Analysis/Tools/Particle_Qualifier.H"
 #include "AddOns/Analysis/Triggers/Midpoint_Cone.H"
 #include "AddOns/Analysis/Triggers/DIS_Algorithm.H"
+#include "AddOns/Analysis/Triggers/SISCone.H"
+#include "AddOns/Analysis/Triggers/MCFMCone.H"
 #include <iomanip>
 
 DECLARE_GETTER(Final_Selector_Getter,"Trigger",
@@ -60,7 +62,9 @@ Final_Selector_Getter::operator()(const Argument_Matrix &parameters) const
       data.pt_min=0.;
       data.eta_min=-20.;
       data.eta_max=+20.;
+      data.f=0.5;
       if (cur.size()>2) data.pt_min=ATOOLS::ToType<double>(cur[2]);
+      if (data.pt_min<0.) { data.et_min=-data.pt_min;data.pt_min=0.; }
       if (cur.size()>3) data.eta_min=ATOOLS::ToType<double>(cur[3]);
       if (cur.size()>4) data.eta_max=ATOOLS::ToType<double>(cur[4]);
       if (cur.size()>5 && (kf==93 || kf==97)) data.r_min=ATOOLS::ToType<double>(cur[5]);
@@ -209,6 +213,9 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
 	      Calorimeter_Cone(fs.pt_min,fs.eta_min,fs.eta_max);break;
     case 10: p_jetalg = new Midpoint_Cone(--p_qualifier,0,fs.f); break;
     case 11: p_jetalg = new Midpoint_Cone(--p_qualifier,1,fs.f); break;
+    case 20: p_jetalg = new SISCone(--p_qualifier,fs.f); break;
+    case 30: p_jetalg = new MCFMCone(--p_qualifier,fs.f); break;
+    case 40: p_jetalg = new Kt_Algorithm(--p_qualifier); break;
     }
     if (p_jetalg) p_jetalg->Setbflag(fs.bf);
   }
@@ -394,6 +401,19 @@ void Final_Selector::Select(Particle_List * pl,Final_Data_Map::iterator it)
   }
 }
 
+void Final_Selector::JetSelect(Particle_List * pl,const Flavour& jf) 
+{
+  for (Particle_List::iterator pit=pl->begin();pit!=pl->end();) {
+    if ((*pit)->Flav()!=jf) {
+      if (m_ownlist) delete *pit;
+      pit = pl->erase(pit);
+    }
+    else {
+      ++pit;
+    }
+  }
+}
+
 void Final_Selector::Select2(Particle_List * pl,Final_Correlator_Map::iterator it) 
 {
   if (it->second.r_min<=0.) return;
@@ -474,6 +494,7 @@ void Final_Selector::Evaluate(const Blob_List &bl,double value, double ncount) {
       std::vector<double> * diffrates=new std::vector<double>();
       p_jetalg->SetBlobList(&bl);
       p_jetalg->ConstructJets(pl_in,pl_out,diffrates,it->second.r_min);
+      JetSelect(pl_out,it->first);
       // add leptons
       for (Particle_List::iterator pit=pl_in->begin();pit!=pl_in->end();++pit) {
 	if (!(*p_qualifier)(*pit))  pl_out->push_back(new Particle(**pit));

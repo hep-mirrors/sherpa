@@ -149,6 +149,12 @@ void Three_Particle_PT::Evaluate(const Vec4D& mom1, const Vec4D& mom2,
   p_histo->Insert(pt,weight,ncount);
 }
 
+void Three_Particle_PT::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom2,const Vec4D & mom3,double weight, double ncount) 
+{ 
+  double pt = sqrt(sqr(mom1[1]+mom2[1]+mom3[1]) + sqr(mom1[2]+mom2[2]+mom3[2]));
+  p_histo->InsertMCB(pt,weight,ncount);
+} 
+
 Primitive_Observable_Base* Three_Particle_PT::Copy() const {
   return new Three_Particle_PT(m_flav1,m_flav2,m_flav3,m_type,
 			       m_xmin,m_xmax,m_nbins,m_listname);

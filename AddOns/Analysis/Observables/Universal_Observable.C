@@ -122,6 +122,7 @@ Universal_Observable::Universal_Observable(const std::string &obs,int type,doubl
     pos=help.find("item[");
   }
   m_interpreter.AddTag("H_T","1.0");
+  m_interpreter.AddTag("P_SUM","(10.,1.,4.,5.)");
   pos=m_expression.find("item[-");
   while (pos!=string::npos) {
     m_expression[pos+5]='m';
@@ -210,6 +211,14 @@ ATOOLS::Term *Universal_Observable::ReplaceTags(ATOOLS::Term *term) const
     for  (size_t i=0;i<plist->size();++i)
       ht+=(*plist)[i]->Momentum().PPerp();
     term->Set(ht);
+    return term;
+  }
+
+  if (term->Tag()=="P_SUM") {
+    ATOOLS::Vec4D ps(0.,0.,0.,0.);
+    for  (size_t i=0;i<plist->size();++i)
+      ps+=(*plist)[i]->Momentum();
+    term->Set(ps);
     return term;
   }
 

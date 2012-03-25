@@ -1,6 +1,7 @@
 #include "AddOns/Analysis/Observables/Primitive_Observable_Base.H"
 
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/Histogram_2D.H"
 #include <iomanip>
 
 using namespace ATOOLS;
@@ -33,6 +34,42 @@ namespace ANALYSIS {
     virtual double Calc(const Particle *p1,const Particle *p2) = 0;
 
   };// end of class STwo_Particle_Observable_Base
+
+  class STwo2D_Particle_Observable_Base: public Primitive_Observable_Base {  
+  protected:
+
+    std::string     m_reflist;
+    ATOOLS::Flavour m_flavour, m_refflavour;
+
+    size_t m_item, m_refitem;
+    ATOOLS::Histogram_2D* p_2dhisto;
+
+  public:
+
+    STwo2D_Particle_Observable_Base
+    (const ATOOLS::Flavour flav,const size_t item,
+     const ATOOLS::Flavour ref,const size_t refitem,
+     const int type,const double min,const double max,const int bins,
+     const std::string &inlist,const std::string &reflist,
+     const std::string &name);
+    ~STwo2D_Particle_Observable_Base();
+
+    void Evaluate(const ATOOLS::Particle_List &particlelist,
+		  double weight=1.,double ncount=1);
+    
+    void EvaluateNLOcontrib(double weight, double ncount);
+    void EvaluateNLOevt();
+
+    void EndEvaluation(double scale=1.);
+    void Reset();
+    void Restore(double scale=1.0);
+    void Output(const std::string & pname);
+    Primitive_Observable_Base & operator+=(const Primitive_Observable_Base & ob);
+    
+    virtual double Calc1(const Particle *p) = 0;
+    virtual double Calc2(const Particle *p) = 0;
+
+  };// end of class STwo2D_Particle_Observable_Base
 
   class Two_DPhi_Distribution: public STwo_Particle_Observable_Base {  
   public:
@@ -132,6 +169,34 @@ namespace ANALYSIS {
     
   };// end of class Two_PT_Distribution
 
+  class Two_DPT_Distribution: public STwo_Particle_Observable_Base {  
+  public:
+
+    Two_DPT_Distribution(const ATOOLS::Flavour flav,const size_t item,
+			 const ATOOLS::Flavour ref,const size_t refitem,
+			 const int type,const double min,const double max,const int bins,
+			 const std::string &inlist,const std::string &reflist);
+    
+    double Calc(const Particle *p1,const Particle *p2);
+
+    Primitive_Observable_Base *Copy() const;
+    
+  };// end of class Two_DPT_Distribution
+
+  class Two_RPT_Distribution: public STwo_Particle_Observable_Base {  
+  public:
+
+    Two_RPT_Distribution(const ATOOLS::Flavour flav,const size_t item,
+			 const ATOOLS::Flavour ref,const size_t refitem,
+			 const int type,const double min,const double max,const int bins,
+			 const std::string &inlist,const std::string &reflist);
+    
+    double Calc(const Particle *p1,const Particle *p2);
+
+    Primitive_Observable_Base *Copy() const;
+    
+  };// end of class Two_RPT_Distribution
+
   class Two_DR_Distribution: public STwo_Particle_Observable_Base {  
   public:
 
@@ -159,6 +224,21 @@ namespace ANALYSIS {
     Primitive_Observable_Base *Copy() const;
     
   };// end of class Two_ETFrac_Distribution
+
+  class Two_PT2D_Distribution: public STwo2D_Particle_Observable_Base {  
+  public:
+
+    Two_PT2D_Distribution(const ATOOLS::Flavour flav,const size_t item,
+			const ATOOLS::Flavour ref,const size_t refitem,
+			const int type,const double min,const double max,const int bins,
+			const std::string &inlist,const std::string &reflist);
+    
+    double Calc1(const Particle *p);
+    double Calc2(const Particle *p);
+
+    Primitive_Observable_Base *Copy() const;
+    
+  };// end of class Two_PT_Distribution
 
 }// end of namespace ANALYSIS
 
@@ -231,6 +311,7 @@ GetSTwoParticleObservable(const Argument_Matrix &parameters)
   DEFINE_TWO_OBSERVABLE_PRINT_METHOD(NAME)
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 
 STwo_Particle_Observable_Base::
 STwo_Particle_Observable_Base(const ATOOLS::Flavour flav,const size_t item,
@@ -320,6 +401,152 @@ void STwo_Particle_Observable_Base::EvaluateNLOevt()
 {
   p_histo->FinishMCB();
 }
+
+
+STwo2D_Particle_Observable_Base::
+STwo2D_Particle_Observable_Base(const ATOOLS::Flavour flav,const size_t item,
+				const ATOOLS::Flavour refflav,const size_t refitem,
+				const int type,const double min,const double max,const int bins,
+				const std::string &inlist,const std::string &reflist,
+				const std::string &name):
+  Primitive_Observable_Base(type,min,max,bins), 
+  m_reflist(reflist),
+  m_flavour(flav),
+  m_refflavour(refflav),
+  m_item(item),
+  m_refitem(refitem)
+{
+  int type2d(m_type);
+  if ((type2d%1000)/100==1) type2d+=900;
+  if ((type2d%100)/10==1) type2d+=100*((type2d%100)/10);
+  p_2dhisto = new Histogram_2D(type2d,m_xmin,m_xmax,m_nbins,m_xmin,m_xmax,m_nbins);
+  m_listname=inlist;
+  m_name=name+"_"+ToString(m_flavour)+"-"+ToString(m_item)+"_"
+    +ToString(m_refflavour)+"-"+ToString(m_refitem)+".dat";
+}
+
+STwo2D_Particle_Observable_Base::~STwo2D_Particle_Observable_Base()
+{
+  delete p_2dhisto;
+}
+
+void STwo2D_Particle_Observable_Base::Evaluate(const ATOOLS::Particle_List &list,
+					       double weight,double ncount)
+{
+  ATOOLS::Particle_List *reflist=p_ana->GetParticleList(m_reflist);
+  int no=-1, refno=-1; 
+  size_t pos=std::string::npos, refpos=std::string::npos;
+  for (size_t i=0;i<list.size();++i) {
+    if (list[i]->Flav()==m_flavour || 
+	m_flavour.Kfcode()==kf_none) {
+      ++no;
+      if (no==(int)m_item) {
+	pos=i;
+	if (refpos!=std::string::npos) break;
+      }
+    }
+  }
+  for (size_t i=0;i<reflist->size();++i) {
+    if ((*reflist)[i]->Flav()==m_refflavour || 
+	m_refflavour.Kfcode()==kf_none) {
+      ++refno;
+      if (refno==(int)m_refitem) {
+	refpos=i;
+	if (pos!=std::string::npos) break;
+      }
+    }
+  }
+  if (pos==std::string::npos || refpos==std::string::npos) {
+    p_2dhisto->Insert(0.,0.,0.,ncount);
+    return;
+  }
+  p_2dhisto->Insert(Calc1(list[pos]),Calc2((*reflist)[refpos]),weight,ncount);
+}
+
+void STwo2D_Particle_Observable_Base::EvaluateNLOcontrib(double weight,double ncount)
+{
+  ATOOLS::Particle_List * plist =p_ana->GetParticleList(m_listname);
+  ATOOLS::Particle_List *reflist=p_ana->GetParticleList(m_reflist);
+  int no=-1, refno=-1; 
+  size_t pos=std::string::npos, refpos=std::string::npos;
+  for (size_t i=0;i<plist->size();++i) {
+    if ((*plist)[i]->Flav()==m_flavour || 
+	m_flavour.Kfcode()==kf_none) {
+      ++no;
+      if (no==(int)m_item) {
+	pos=i;
+	if (refpos!=std::string::npos) break;
+      }
+    }
+  }
+  for (size_t i=0;i<reflist->size();++i) {
+    if ((*reflist)[i]->Flav()==m_refflavour || 
+	m_refflavour.Kfcode()==kf_none) {
+      ++refno;
+      if (refno==(int)m_refitem) {
+	refpos=i;
+	if (pos!=std::string::npos) break;
+      }
+    }
+  }
+  if (pos==std::string::npos || refpos==std::string::npos) {
+    p_2dhisto->InsertMCB(0.,0.,0.,ncount);
+    return;
+  }
+  p_2dhisto->InsertMCB(Calc1((*plist)[pos]),Calc2((*reflist)[refpos]),weight,ncount);
+}
+
+void STwo2D_Particle_Observable_Base::EvaluateNLOevt()
+{
+  p_2dhisto->FinishMCB();
+}
+
+Primitive_Observable_Base & STwo2D_Particle_Observable_Base::operator+=(const Primitive_Observable_Base & ob)
+{
+  STwo2D_Particle_Observable_Base* ob2d = (STwo2D_Particle_Observable_Base*)(&ob);
+  if (p_2dhisto) {
+    (*p_2dhisto)+=(*ob2d->p_2dhisto);
+  }
+  else {
+    abort();
+  }
+  return *this;
+}
+
+void STwo2D_Particle_Observable_Base::EndEvaluation(double scale) {
+  if (p_2dhisto) {
+    p_2dhisto->Finalize();
+    if (scale!=1.) p_2dhisto->Scale(scale);
+    p_2dhisto->Output();
+  }
+}
+
+void STwo2D_Particle_Observable_Base::Restore(double scale) 
+{
+  if (p_2dhisto) {
+    if (scale!=1.) p_2dhisto->Scale(scale);
+    p_2dhisto->Restore();
+  }
+}
+
+void STwo2D_Particle_Observable_Base::Output(const std::string & pname) {
+  if (p_2dhisto) {
+    ATOOLS::MakeDir(pname); 
+    p_2dhisto->Output((pname+std::string("/")+m_name).c_str());
+  }
+}
+
+void STwo2D_Particle_Observable_Base::Reset()
+{
+  if (p_2dhisto) p_2dhisto->Reset();
+}
+
+
+
+
+
+
+
 
 DEFINE_TWO_OBSERVABLE_GETTER(Two_DPhi_Distribution,
 			     Two_DPhi_Distribution_Getter,"TwoDPhi")
@@ -475,6 +702,50 @@ Primitive_Observable_Base *Two_PT_Distribution::Copy() const
 				 m_type,m_xmin,m_xmax,m_nbins,m_listname,m_reflist);
 }
 
+DEFINE_TWO_OBSERVABLE_GETTER(Two_DPT_Distribution,
+			     Two_DPT_Distribution_Getter,"TwoDPT")
+
+  Two_DPT_Distribution::
+Two_DPT_Distribution(const ATOOLS::Flavour flav,const size_t item,
+		     const ATOOLS::Flavour refflav,const size_t refitem,
+		     const int type,const double min,const double max,const int bins,
+		     const std::string &inlist,const std::string &reflist):
+  STwo_Particle_Observable_Base(flav,item,refflav,refitem,type,min,max,bins,
+				inlist,reflist,"TwoDPT") {}
+
+double Two_DPT_Distribution::Calc(const Particle *p1,const Particle *p2)
+{
+  return p1->Momentum().PPerp()-p2->Momentum().PPerp();
+}
+
+Primitive_Observable_Base *Two_DPT_Distribution::Copy() const
+{
+  return new Two_DPT_Distribution(m_flavour,m_item,m_refflavour,m_refitem,
+				  m_type,m_xmin,m_xmax,m_nbins,m_listname,m_reflist);
+}
+
+DEFINE_TWO_OBSERVABLE_GETTER(Two_RPT_Distribution,
+			     Two_RPT_Distribution_Getter,"TwoRPT")
+
+  Two_RPT_Distribution::
+Two_RPT_Distribution(const ATOOLS::Flavour flav,const size_t item,
+		     const ATOOLS::Flavour refflav,const size_t refitem,
+		     const int type,const double min,const double max,const int bins,
+		     const std::string &inlist,const std::string &reflist):
+  STwo_Particle_Observable_Base(flav,item,refflav,refitem,type,min,max,bins,
+				inlist,reflist,"TwoRPT") {}
+
+double Two_RPT_Distribution::Calc(const Particle *p1,const Particle *p2)
+{
+  return p1->Momentum().PPerp()/p2->Momentum().PPerp();
+}
+
+Primitive_Observable_Base *Two_RPT_Distribution::Copy() const
+{
+  return new Two_RPT_Distribution(m_flavour,m_item,m_refflavour,m_refitem,
+				  m_type,m_xmin,m_xmax,m_nbins,m_listname,m_reflist);
+}
+
 DEFINE_TWO_OBSERVABLE_GETTER(Two_DR_Distribution,
 			     Two_DR_Distribution_Getter,"TwoDR")
 
@@ -520,5 +791,31 @@ Primitive_Observable_Base *Two_ETFrac_Distribution::Copy() const
 				     m_type,m_xmin,m_xmax,m_nbins,m_listname,m_reflist);
 }
 
+DEFINE_TWO_OBSERVABLE_GETTER(Two_PT2D_Distribution,
+			     Two_PT2D_Distribution_Getter,"TwoPT2D")
+	  
+  Two_PT2D_Distribution::
+Two_PT2D_Distribution(const ATOOLS::Flavour flav,const size_t item,
+		    const ATOOLS::Flavour refflav,const size_t refitem,
+		    const int type,const double min,const double max,const int bins,
+		    const std::string &inlist,const std::string &reflist):
+  STwo2D_Particle_Observable_Base(flav,item,refflav,refitem,type,min,max,bins,
+				  inlist,reflist,"TwoPT2D") {}
+
+double Two_PT2D_Distribution::Calc1(const Particle *p)
+{
+  return (p->Momentum()).PPerp();
+}
+
+double Two_PT2D_Distribution::Calc2(const Particle *p)
+{
+  return (p->Momentum()).PPerp();
+}
+
+Primitive_Observable_Base *Two_PT2D_Distribution::Copy() const
+{
+  return new Two_PT2D_Distribution(m_flavour,m_item,m_refflavour,m_refitem,
+				 m_type,m_xmin,m_xmax,m_nbins,m_listname,m_reflist);
+}
 
 	  
