@@ -27,14 +27,6 @@ My_Root::My_Root():
   char **argvf = new char*[1];
   argvf[0] = "";
   p_root = new TApplication("MyRoot",&argcf,argvf);
-  if ((OutputPath()+OutputFile())!="") {
-    ATOOLS::MakeDir(OutputPath());
-    struct stat fst;
-    if (stat((OutputPath()+OutputFile()).c_str(),&fst)!=-1 && 
-	(fst.st_mode&S_IFMT)==S_IFREG) {
-      remove((OutputPath()+OutputFile()).c_str());
-    }
-  }
   delete [] argvf;
 } 
 
@@ -60,8 +52,15 @@ void My_Root::PrepareTerminate()
 bool My_Root::AddObject(TObject *const object,const std::string &key) 
 { 
   if (m_objects.find(key)==m_objects.end()) {
-    if (p_file==NULL) p_file = new TFile
-      ((OutputPath()+OutputFile()).c_str(),"recreate");
+    if (p_file==NULL && (OutputPath()+OutputFile())!="") {
+      ATOOLS::MakeDir(OutputPath());
+      struct stat fst;
+      if (stat((OutputPath()+OutputFile()).c_str(),&fst)!=-1 && 
+	  (fst.st_mode&S_IFMT)==S_IFREG) {
+	remove((OutputPath()+OutputFile()).c_str());
+      }
+      p_file = new TFile((OutputPath()+OutputFile()).c_str(),"recreate");
+    }
     m_objects.insert(String_Object_Map::value_type(key,object)); 
     return true;
   }
