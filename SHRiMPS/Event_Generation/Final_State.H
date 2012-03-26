@@ -77,7 +77,7 @@ namespace SHRIMPS {
       p_eikonal=eikonal;m_b1=b1;m_b2=b2;
     }
     inline void   SetQ02eff(const int & N) { 
-      m_Q02eff = m_Q02+ATOOLS::sqr(N-1)*m_QN2;
+      m_Q02eff = m_Q02+(N-1)*m_QN2;
     }
     double AlphaS(const double & kt2) { return (*p_alphaS)(kt2); }
     inline double AlphaSMax() const { return p_alphaS->MaxValue(); }

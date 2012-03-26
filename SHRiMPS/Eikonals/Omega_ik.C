@@ -105,6 +105,7 @@ EmissionWeight(const double & b1,const double & b2,const double & y,
 double Omega_ik::SingletWeight(const double & b1,const double & b2,
 			       const double & y1,const double & y2,
 			       const double & sup,const int & nbeam) {
+  if ((y1<-m_Y && y2<-m_Y) || (y1>m_Y && y2>m_Y)) return 0.;
   double meany((y1+y2)/2.), ommaj, ommin;
   if (meany<0.) {
     ommaj = (y1<y2)?m_Omegaik(b1,b2,y2):m_Omegaik(b1,b2,y1);
