@@ -35,7 +35,7 @@ namespace SHERPA {
   private:
     int    m_mode;
     bool   m_resc;
-    double m_minkt2;
+    double m_minkt2,m_showerfac;
 
     ATOOLS::Cluster_Amplitude     *p_ampl;
     PDF::Cluster_Definitions_Base *p_clus;
@@ -61,6 +61,9 @@ namespace SHERPA {
       m_mode   = mode; 
       m_minkt2 = minkt2;
       if (m_mode<2) m_minkt2 = 0.;
+    }
+    inline void SetShowerFac(const double & sfac) {
+      m_showerfac = sfac; 
     }
     inline void 
     SetClusterDefinitions(PDF::Cluster_Definitions_Base *const cb) 

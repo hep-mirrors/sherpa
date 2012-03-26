@@ -74,6 +74,7 @@ namespace SHRIMPS {
       p_beamremnants->SetBeamBlob(beamblob,beam);
     }
     inline int    ShowerMode()   const { return MBpars("shower_mode"); }
+    inline int    ShowerFac()    const { return MBpars("kt2_factor"); }
     inline double ShowerMinKT2() const { return p_generator->ShowerMinKT2(); }
     inline const double & XSec() const { return p_generator->XSec(); } 
     inline const double   Smin() const { return p_generator->Smin(); }

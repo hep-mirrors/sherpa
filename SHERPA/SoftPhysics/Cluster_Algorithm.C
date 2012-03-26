@@ -13,7 +13,7 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 Cluster_Algorithm::Cluster_Algorithm():
-  p_ampl(NULL), p_clus(NULL), p_jf(NULL) {}
+  p_ampl(NULL), p_clus(NULL), p_jf(NULL),m_showerfac(1.) {}
 
 Cluster_Algorithm::~Cluster_Algorithm()
 {
@@ -165,7 +165,7 @@ PT2(const Vec4D & pi,const Vec4D & pj,const bool & beam) const
   double pti2(pi.PPerp2()), ptj2(pj.PPerp2());
   double ptij2    = 
     2.*Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-cos(pi.Phi()-pj.Phi()));
-  return 2.*(beam?Min(pref*pti2,ptij2):ptij2);
+  return m_showerfac*(beam?Min(pref*pti2,ptij2):ptij2);
 }
 
 bool Cluster_Algorithm::Cluster(Blob *const blob)
