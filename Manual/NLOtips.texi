@@ -140,7 +140,7 @@ The generated events can be stored in a ROOT NTuple file, see
 @subsubsection Computing (differential) cross sections of real correction events with statistical errors
 
 Real correction events and their counter-events from subtraction terms are 
-highly correlated with exhibit large cancellations. Although a treatment of 
+highly correlated and exhibit large cancellations. Although a treatment of 
 sub-events as independent events leads to the correct cross section the 
 statistical error would be greatly overestimated. In order to get a realistic 
 statistical error sub-events belonging to the same event must be combined 
