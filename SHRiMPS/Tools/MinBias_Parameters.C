@@ -27,7 +27,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   m_params["NGWstates"]   = dr->GetValue<int>("GW_States",2);
   m_params["FFpref"]      = 1./sqrt(m_params["NGWstates"]);
   m_params["Lambda2"]     = dr->GetValue<double>("Lambda2",1.5);
-  m_params["beta02(mb)"]  = dr->GetValue<double>("beta_0^2",30.);
+  m_params["beta02(mb)"]  = dr->GetValue<double>("beta_0^2",22.5);
   m_params["beta0"]       = sqrt(1.e9*m_params["beta02(mb)"]/
 				 ATOOLS::rpa->Picobarn());
   m_params["kappa"]       = dr->GetValue<double>("kappa",0.63);

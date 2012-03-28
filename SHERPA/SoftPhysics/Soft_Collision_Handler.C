@@ -36,6 +36,7 @@ Soft_Collision_Handler::Soft_Collision_Handler(string _dir,string _file,
     m_sfile=dr.GetValue<string>("SHRIMPS_FILE",string("Shrimps.dat"));
     p_shrimps = new Shrimps(&dr,beam,isr);
     m_cluster.SetShowerParams(p_shrimps->ShowerMode(),p_shrimps->ShowerMinKT2());
+    m_cluster.SetShowerFac(p_shrimps->ShowerFac());
     m_mode=1;
     exh->AddTerminatorObject(this);
     return;

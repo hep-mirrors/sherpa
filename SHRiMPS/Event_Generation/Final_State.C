@@ -142,7 +142,7 @@ double Final_State::GenerateEmissions() {
   }
   if (check) msg_Tracking()<<METHOD<<" yields ladder with tested colours:\n"
 			   <<(*p_ladder);
-
+  
   return m_lastwt;
 }
 
@@ -355,7 +355,7 @@ TryEmission(double & kt12,const bool & dir) {
 
   if (MBpars.LadderWeight()==ladder_weight::Regge) {
     rarg = Min(mu12_2/q12.PPerp2(),q12.PPerp2()/mu12_2);
-    expo = colfac*(*p_alphaS)(q01.PPerp2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
+    expo = colfac*(*p_alphaS)(q12.PPerp2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
     m_lastwt  = pow(rarg,expo);
     //m_lastwt *= kmrwt = q12.PPerp2()/m_q12_2;
     //m_histomap[std::string("KMRWt")]->Insert(kmrwt);
@@ -488,7 +488,7 @@ bool Final_State::FixPropColours(const LadderMap::iterator & split,
   tot += wt88 =       
     p_eikonal->OctetWeight(m_b1,m_b2,y0,y1,sup01,beam1)*
     p_eikonal->OctetWeight(m_b1,m_b2,y1,y2,sup12,beam2);
-
+        
   std::pair<colour_type::code,colour_type::code> cols;
 
   tot *= ran->Get();

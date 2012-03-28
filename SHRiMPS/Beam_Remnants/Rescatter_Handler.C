@@ -3,6 +3,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Phys/Momenta_Stretcher.H"
 
 using namespace SHRIMPS;
 using namespace ATOOLS;
@@ -94,6 +95,16 @@ void Rescatter_Handler::UpdateCollision(Blob_List * blobs) {
 }
 
 bool Rescatter_Handler::DealWithBlob(ATOOLS::Blob * blob) {
+  bool stretch(false);
+  for (int i=0;i<blob->NOutP();i++) {
+    if (blob->OutParticle(i)->Momentum().Abs2()<-1e-8) stretch=true;
+  }
+  if(stretch){
+    Momenta_Stretcher momstretcher;
+    if (!momstretcher.StretchBlob(blob)){
+      msg_Error()<<"Error in "<<METHOD<<": cannot adjust momenta to put all particles on-shell.\n";
+    }   
+  } 
   Vec4D pos(blob->Position()/(rpa->hBar()*rpa->c()));
   m_b1 = pos.PPerp();
   m_b2 = sqrt(m_B*m_B+m_b1*m_b1-2.*m_B*m_b1*pos.CosPhi());
@@ -147,7 +158,7 @@ void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
       }
     }
     if (prob<0.00000001 || !CanRescatter((*piter),part)) continue;
-    s12   = ((*piter)->Momentum()+part->Momentum()).Abs2();
+    s12   = Max(0.,((*piter)->Momentum()+part->Momentum()).Abs2());
     prob *= p_eikonal->RescatterProbability(m_b1,m_b2,y1,y2,m_rescprob,0); 
     prob *= pow(s12/Max(s12,m_smin),1.+expo);
     prob /= double(m_Nfact);

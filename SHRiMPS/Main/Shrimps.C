@@ -39,6 +39,7 @@ Please contact the authors if you are using it.");
   case run_mode::double_diffractive_events:
   case run_mode::quasi_elastic_events:
   case run_mode::inelastic_events:
+  case run_mode::all_min_bias:  
   case run_mode::underlying_event:
     InitialiseFormFactors();
     InitialiseSingleChannelEikonals(Ecms);
