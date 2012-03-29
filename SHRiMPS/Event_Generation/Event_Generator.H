@@ -29,6 +29,7 @@ namespace SHRIMPS {
     Event_Generator_Base               * p_active;
 
     double m_xsec, m_minkt2;
+    bool   m_done;
   public:
     Event_Generator() : 
       p_elastic(NULL), p_sdiff(NULL), p_qelastic(NULL), p_inelastic(NULL) {};
@@ -42,6 +43,7 @@ namespace SHRIMPS {
     bool DressShowerBlob(ATOOLS::Blob * blob);
     int  MinimumBiasEvent(ATOOLS::Blob_List * blobs);
 
+    inline void Reset() { m_done = false; }
     inline Omega_ik * GetEikonal() const { return p_active->GetEikonal(); }
     inline const double & XSec()   const { return m_xsec; } 
     inline const double   Smin()   const { return p_active->Smin(); }

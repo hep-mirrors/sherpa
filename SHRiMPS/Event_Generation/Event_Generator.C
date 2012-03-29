@@ -11,7 +11,8 @@ Event_Generator::Event_Generator(const run_mode::code & runmode,
   p_elastic(NULL), p_sdiff(NULL), p_ddiff(NULL), 
   p_qelastic(NULL), p_inelastic(NULL), 
   p_active(NULL),
-  m_minkt2(MBpars("min_kt2"))
+  m_minkt2(MBpars("min_kt2")),
+  m_done(false)
 { }
 
 Event_Generator::~Event_Generator() 
@@ -81,22 +82,25 @@ bool Event_Generator::DressShowerBlob(ATOOLS::Blob * blob) {
 }
 
 int Event_Generator::MinimumBiasEvent(ATOOLS::Blob_List * blobs) {
-  //msg_Out()<<METHOD<<": "<<blobs->size()<<".\n";
+  if (m_done) return 0;
   if (blobs->size()==1) {
     (*blobs)[0]->AddData("Weight",new ATOOLS::Blob_Data<double>(m_xsec));
-    //msg_Out()<<METHOD<<": put xsec = "<<m_xsec<<" in |"<<(*blobs)[0]<<"|\n";
   }
   switch (m_runmode) {
   case run_mode::elastic_events:
+    m_done   = true;
     p_active = p_elastic;
     return p_elastic->ElasticEvent(blobs,m_xsec);
   case run_mode::single_diffractive_events:
+    m_done   = true;
     p_active = p_sdiff;
     return p_sdiff->SingleDiffractiveEvent(blobs,m_xsec);
   case run_mode::double_diffractive_events:
+    m_done   = true;
     p_active = p_ddiff;
     return p_ddiff->DoubleDiffractiveEvent(blobs,m_xsec);
   case run_mode::quasi_elastic_events:
+    m_done   = true;
     p_active = p_qelastic;
     return p_qelastic->QuasiElasticEvent(blobs,m_xsec);
   case run_mode::inelastic_events:
@@ -106,15 +110,15 @@ int Event_Generator::MinimumBiasEvent(ATOOLS::Blob_List * blobs) {
   case run_mode::all_min_bias:
     switch (p_cross->SelectCollisionMode()) {
     case 0:
-      // elastic collision
+      m_done   = true;
       p_active = p_elastic;
       return p_elastic->ElasticEvent(blobs,m_xsec);
     case 1:
-      // single diffractive collision
+      m_done   = true;
       p_active = p_sdiff;
       return p_sdiff->SingleDiffractiveEvent(blobs,m_xsec);
     case 2:
-      // double diffractive collision
+      m_done   = true;
       p_active = p_ddiff;
       return p_ddiff->DoubleDiffractiveEvent(blobs,m_xsec);
     case 10:

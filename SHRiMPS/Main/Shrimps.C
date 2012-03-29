@@ -179,6 +179,7 @@ ATOOLS::Return_Value::code Shrimps::FillBeamBlobs(ATOOLS::Blob_List * blobs) {
 }
 
 void Shrimps::CleanUp(const size_t & mode) {
+  p_generator->Reset();
   p_beamremnants->Reset(mode);
 }
 
