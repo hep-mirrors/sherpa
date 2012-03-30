@@ -19,22 +19,24 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   // impact parameters
   m_params["originalY"]   = log(ATOOLS::rpa->gen.Ecms()/
 			       ATOOLS::Flavour(kf_p_plus).HadMass());
-  m_params["deltaY"]      = dr->GetValue<double>("deltaY",2.0);
+  m_params["deltaY"]      = dr->GetValue<double>("deltaY",0.977);
   m_params["bmin"]        = dr->GetValue<double>("bmin",0.);
   m_params["bmax"]        = dr->GetValue<double>("bmax",20.);
   m_params["accu"]        = dr->GetValue<double>("accu",5.e-3);
   // form factors
   m_params["NGWstates"]   = dr->GetValue<int>("GW_States",2);
   m_params["FFpref"]      = 1./sqrt(m_params["NGWstates"]);
-  m_params["Lambda2"]     = dr->GetValue<double>("Lambda2",1.5);
-  m_params["beta02(mb)"]  = dr->GetValue<double>("beta_0^2",22.5);
+  m_params["Lambda2"]     = dr->GetValue<double>("Lambda2",0.77);
+  m_params["beta02(mb)"]  = dr->GetValue<double>("beta_0^2",20.10);
   m_params["beta0"]       = sqrt(1.e9*m_params["beta02(mb)"]/
 				 ATOOLS::rpa->Picobarn());
-  m_params["kappa"]       = dr->GetValue<double>("kappa",0.63);
-  m_params["xi"]          = dr->GetValue<double>("xi",0.225);
+  m_params["kappa"]       = dr->GetValue<double>("kappa",0.199);
+  m_params["xi"]          = dr->GetValue<double>("xi",0.100);
   // parameters of the eikonal
-  m_params["lambda"]      = dr->GetValue<double>("lambda",0.30);
-  m_params["Delta"]       = dr->GetValue<double>("Delta",0.35);
+  m_params["lambda"]      = dr->GetValue<double>("lambda",0.40);
+  m_params["Delta"]       = dr->GetValue<double>("Delta",0.21);
+  // cut-off for quasi-elastic events
+//   m_params["PtMax"]       = dr->GetValue<double>("PtMax",1.0);
   // ladder generation
   m_params["KTMin_Mode"]  = dr->GetValue<int>("KTMin_Mode",0);
   m_params["Q_as2"]       = dr->GetValue<double>("Q_as^2",0.25);
