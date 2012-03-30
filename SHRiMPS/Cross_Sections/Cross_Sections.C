@@ -59,20 +59,20 @@ void Cross_Sections::CalculateTotalCrossSections()
     m_sigma_elastic.TestElasticCrossSection();
     m_sigma_inelastic.TestInelasticCrossSection();
   }
-  m_modemap[0]  = m_sel/m_stot;
-  m_modemap[1]  = m_sSD/m_stot;
-  m_modemap[2]  = m_sDD/m_stot;
-  m_modemap[10] = m_sinel/m_stot;
+  m_modemap[run_mode::elastic_events]            = m_sel/m_stot;
+  m_modemap[run_mode::single_diffractive_events] = m_sSD/m_stot;
+  m_modemap[run_mode::double_diffractive_events] = m_sDD/m_stot;
+  m_modemap[run_mode::inelastic_events]          = m_sinel/m_stot;
 }
 
-int Cross_Sections::SelectCollisionMode() {
+run_mode::code Cross_Sections::SelectCollisionMode() {
   double random(ran->Get());
-  for (std::map<int,double>::iterator miter=m_modemap.begin();
+  for (std::map<run_mode::code,double>::iterator miter=m_modemap.begin();
        miter!=m_modemap.end();miter++) {
     random -= miter->second;
     if (random<=0) return miter->first;
   }
-  return -1;
+  return run_mode::unknown;
 }
 
 

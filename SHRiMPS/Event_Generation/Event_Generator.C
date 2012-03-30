@@ -6,7 +6,7 @@ using namespace SHRIMPS;
 
 Event_Generator::Event_Generator(const run_mode::code & runmode,
 				 const weight_mode::code & weightmode) :
-  m_runmode(runmode), m_weightmode(weightmode), 
+  m_runmode(runmode), m_thisevent(m_runmode), m_weightmode(weightmode), 
   p_cross(NULL),
   p_elastic(NULL), p_sdiff(NULL), p_ddiff(NULL), 
   p_qelastic(NULL), p_inelastic(NULL), 
@@ -83,10 +83,12 @@ bool Event_Generator::DressShowerBlob(ATOOLS::Blob * blob) {
 
 int Event_Generator::MinimumBiasEvent(ATOOLS::Blob_List * blobs) {
   if (m_done) return 0;
+  if (m_thisevent==run_mode::all_min_bias) 
+    m_thisevent=p_cross->SelectCollisionMode();
   if (blobs->size()==1) {
     (*blobs)[0]->AddData("Weight",new ATOOLS::Blob_Data<double>(m_xsec));
   }
-  switch (m_runmode) {
+  switch (m_thisevent) {
   case run_mode::elastic_events:
     m_done   = true;
     p_active = p_elastic;
@@ -108,37 +110,11 @@ int Event_Generator::MinimumBiasEvent(ATOOLS::Blob_List * blobs) {
     return p_inelastic->InelasticEvent(blobs,m_xsec,false,
 				       m_weightmode==weight_mode::weighted);
   case run_mode::all_min_bias:
-    switch (p_cross->SelectCollisionMode()) {
-    case 0:
-      m_done   = true;
-      p_active = p_elastic;
-      return p_elastic->ElasticEvent(blobs,m_xsec);
-    case 1:
-      m_done   = true;
-      p_active = p_sdiff;
-      return p_sdiff->SingleDiffractiveEvent(blobs,m_xsec);
-    case 2:
-      m_done   = true;
-      p_active = p_ddiff;
-      return p_ddiff->DoubleDiffractiveEvent(blobs,m_xsec);
-    case 10:
-      // inelastic collision
-      p_active = p_inelastic;
-      return p_inelastic->InelasticEvent(blobs,m_xsec,false,
-					 m_weightmode==weight_mode::weighted);
-      break;
-    case -1:
-    default:
-      msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-		 <<"   Did not generate a meaningful collision mode."<<std::endl
-		 <<"   Return 'false' and hope for the best."<<std::endl;
-    }
-    return -1;
   default:
-      msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-		 <<"   Event mode "<<m_runmode<<" not initialised yet."
-		 <<std::endl
-		 <<"   Return 'false' and hope for the best."<<std::endl;
+    msg_Error()<<"Error in "<<METHOD<<" (event omde = "<<m_thisevent<<"):\n"
+	       <<"   No meaningful mode for this event selected.\n"
+	       <<"   Will exit.\n";
+    exit(1);
   }
   return -1;
 }

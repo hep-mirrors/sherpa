@@ -22,7 +22,7 @@ namespace SHRIMPS {
     Sigma_SD                m_sigma_SD;
     Sigma_DD                m_sigma_DD;
     double                  m_stot, m_sinel, m_sel, m_sSD, m_sDD, m_sval;
-    std::map<int,double>    m_modemap;
+    std::map<run_mode::code,double> m_modemap;
     int                     m_test;
     double 	            m_Delta,m_pref,m_Lambda2,m_beta,m_kappa;
   public:
@@ -31,8 +31,8 @@ namespace SHRIMPS {
 		   const int & test);
     ~Cross_Sections();
     
-    void CalculateTotalCrossSections();
-    int  SelectCollisionMode();
+    void           CalculateTotalCrossSections();
+    run_mode::code SelectCollisionMode();
 
     std::list<Omega_ik *> * GetEikonals() { return p_eikonals; }    
 

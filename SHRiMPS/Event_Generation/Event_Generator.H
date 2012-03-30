@@ -17,7 +17,7 @@ namespace PDF    { class ISR_Handler; }
 namespace SHRIMPS {
   class Event_Generator {
   private:
-    run_mode::code    m_runmode;
+    run_mode::code    m_runmode, m_thisevent;
     weight_mode::code m_weightmode;
 
     Cross_Sections                     * p_cross;
@@ -43,7 +43,7 @@ namespace SHRIMPS {
     bool DressShowerBlob(ATOOLS::Blob * blob);
     int  MinimumBiasEvent(ATOOLS::Blob_List * blobs);
 
-    inline void Reset() { m_done = false; }
+    inline void Reset() { m_done = false; m_thisevent = m_runmode; }
     inline Omega_ik * GetEikonal() const { return p_active->GetEikonal(); }
     inline const double & XSec()   const { return m_xsec; } 
     inline const double   Smin()   const { return p_active->Smin(); }
