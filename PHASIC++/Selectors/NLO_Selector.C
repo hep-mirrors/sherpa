@@ -62,6 +62,20 @@ namespace PHASIC {
     void     BuildCuts(Cut_Data *);
   };
 
+  class MT2NLO_Selector : public Selector_Base {
+    std::vector<double>  ptmin, ptmax;
+    std::vector<ATOOLS::Flavour> flav1,flav2;
+    int     m_strong;
+  public:
+    MT2NLO_Selector(int,int,ATOOLS::Flavour *);
+    ~MT2NLO_Selector();
+    void     SetRange(ATOOLS::Flavour_Vector,double,double);
+    bool     Trigger(const ATOOLS::Vec4D_Vector & );
+    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
+    bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
+    void     BuildCuts(Cut_Data *);
+  };
+
   class Isolation_Cut : public Selector_Base {
     int    m_mode;
     double m_d0;
@@ -613,6 +627,148 @@ Selector_Base *PT2NLO_Selector_Getter::operator()(const Selector_Key &key) const
 void PT2NLO_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"PT2NLO selector"; 
+}
+
+}
+
+/*--------------------------------------------------------------------
+
+  MT2NLO Selector
+
+  --------------------------------------------------------------------*/
+
+MT2NLO_Selector::MT2NLO_Selector(int _nin,int _nout, Flavour * _fl):
+  Selector_Base("MT2NLO_Selector")
+{
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl   = _fl;
+  m_smin = 0.;
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
+  m_strong = 0;
+  if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = -1;
+  
+  m_sel_log = new Selector_Log(m_name);
+}
+
+MT2NLO_Selector::~MT2NLO_Selector() {
+}
+
+
+bool MT2NLO_Selector::Trigger(const Vec4D_Vector & mom) 
+{
+  double ptij;
+  for (size_t k=0;k<flav1.size();k++) {
+    for (int i=m_nin;i<m_n;i++) {
+      for (int j=i+1;j<m_n;j++) {
+	if ( ((flav1[k].Includes(m_fl[i])) && (flav2[k].Includes(m_fl[j])) ) || 
+	     ((flav1[k].Includes(m_fl[j])) && (flav2[k].Includes(m_fl[i])) ) ) {
+	  ptij = sqrt(2.*(mom[i].PPerp()*mom[j].PPerp()-mom[i][1]*mom[j][1]-mom[i][2]*mom[j][2]));
+	  if (m_sel_log->Hit( ((ptij<ptmin[k]) || (ptij>ptmax[k])) )) return 0;
+	}
+      }
+    }
+  }
+  return 1;
+}
+
+bool MT2NLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevtlist *const subs)
+{
+  if (m_strong==0) return 1;
+  if (m_strong==-1) {
+    double ptij;
+    for (size_t k=0;k<flav1.size();k++) {
+      for (size_t i=m_nin;i<subs->back()->m_n;i++) {
+	for (size_t j=i+1;j<subs->back()->m_n;j++) {
+	  if ( ((flav1[k].Includes(subs->back()->p_fl[i])) &&
+		(flav2[k].Includes(subs->back()->p_fl[j])) ) || 
+	       ((flav1[k].Includes(subs->back()->p_fl[j])) &&
+		(flav2[k].Includes(subs->back()->p_fl[i])) ) ) {
+	    ptij = sqrt(2.*(mom[i].PPerp()*mom[j].PPerp()-mom[i][1]*mom[j][1]-mom[i][2]*mom[j][2]));
+	    if (m_sel_log->Hit( ((ptij<ptmin[k]) || (ptij>ptmax[k])) )) return 0;
+	  }
+	}
+      }
+    }
+    return 1;
+  }
+  msg_Error()<<"PTNLO_Selector::JetTrigger: IR unsave cut"<<std::endl;
+  return 0;
+}
+
+bool MT2NLO_Selector::NoJetTrigger(const Vec4D_Vector &mom)
+{
+  if (m_strong==0) return Trigger(mom);
+  return 1;
+}
+
+
+void MT2NLO_Selector::BuildCuts(Cut_Data * cuts) 
+{
+}
+
+void MT2NLO_Selector::SetRange(std::vector<Flavour> crit,double _min, 
+			       double _max)
+{
+  if (crit.size() != 2) {
+    msg_Error()<<"Wrong number of arguments in PTNLO_Selector::SetRange : "
+	       <<crit.size()<<endl;
+    return;
+  }
+
+  double MaxPTmin = 0.;
+  flav1.push_back(crit[0]);
+  flav2.push_back(crit[1]);
+  ptmin.push_back(_min);
+  ptmax.push_back(Min(_max,(rpa->gen.PBeam(0)[0]+rpa->gen.PBeam(1)[0])));
+  bool used=0;
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      if ( ((crit[0].Includes(m_fl[i])) && (crit[1].Includes(m_fl[j])) ) || 
+	   ((crit[0].Includes(m_fl[j])) && (crit[1].Includes(m_fl[i])) ) ) {
+	used=1;
+	MaxPTmin = _min;
+	if (m_fl[i].Strong()||m_fl[j].Strong()) m_strong = 1;
+	break;
+      }
+    }
+  }
+  if (!used) {
+    flav1.pop_back();
+    flav2.pop_back();
+    ptmin.pop_back();
+    ptmax.pop_back();
+  }
+  m_smin = Max(m_smin,4.*MaxPTmin*MaxPTmin);
+}
+
+
+namespace PHASIC{
+
+DECLARE_ND_GETTER(MT2NLO_Selector_Getter,"MT2NLO",Selector_Base,Selector_Key,true);
+
+Selector_Base *MT2NLO_Selector_Getter::operator()(const Selector_Key &key) const
+{
+  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
+  int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
+  int crit2=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][1]));
+  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
+  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
+  Flavour flav = Flavour((kf_code)abs(crit1));
+  if (crit1<0) flav = flav.Bar();
+  Flavour_Vector critflavs(1,flav);
+  flav = Flavour((kf_code)abs(crit2));
+  if (crit2<0) flav = flav.Bar();
+  critflavs.push_back(flav);
+  MT2NLO_Selector *sel = new MT2NLO_Selector
+    (key.p_proc->NIn(),key.p_proc->NOut(),
+     (Flavour*)&key.p_proc->Process()->Flavours().front());
+  sel->SetRange(critflavs,min,max);
+  return sel;
+}
+
+void MT2NLO_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"MT2NLO selector"; 
 }
 
 }
