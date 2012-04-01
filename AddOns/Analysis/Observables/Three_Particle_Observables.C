@@ -8,7 +8,7 @@ using namespace ANALYSIS;
 #include "ATOOLS/Org/Exception.H"
 
 template <class Class>
-Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters)
+Primitive_Observable_Base *GetObservable(const Argument_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {

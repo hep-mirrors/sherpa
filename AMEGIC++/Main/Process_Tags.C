@@ -391,7 +391,7 @@ void Process_Tags::Expand()
 	}
 	m_sublist.push_back(dummy);
       }
-      for (size_t i=nout-1;i>=0;--i) {
+      for (int i=nout-1;i>=0;--i) {
 	if (m_sublist[0][i]->p_fl->Size()-1>flindex[i]) {
 	  ++flindex[i];
 	  break;

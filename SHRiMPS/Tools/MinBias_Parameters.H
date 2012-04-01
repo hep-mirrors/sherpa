@@ -168,20 +168,20 @@ namespace SHRIMPS {
       }
     }
 
-    const run_mode::code       RunMode()      const { return m_runmode; }
-    const weight_mode::code    WeightMode()   const { return m_weightmode; }
-    const ff_form::code        FF_Form()      const { return m_ffform; }  
-    const absorption::code     Absorption()   const { return m_absorp; }  
-    const ladder_weight::code  LadderWeight() const { return m_ladderweight; }
-    const ktform::code         KTForm()       const { return m_ktform; }
-    const ordering::code       Ordering()     const { return m_ordering; }
-    const resc_mode::code      RescMode()     const { return m_rescmode; }
-    const spat_mode::code      SpaceMode()    const { return m_spacemode; }
-    const resc_ktmin::code     RescKTMin()    const { return m_resc_ktmin; }
-    const resc_nosing::code    RescNoSing()   const { return m_resc_nosing; }
-    const resc_over_sing::code RescOverSing() const { return m_resc_over_sing; }
-    const reconn_mode::code    ReconnMode()   const { return m_reconnmode; }
-    const MODEL::asform::code  AsForm()       const { return m_as_form; }
+    run_mode::code       RunMode()      const { return m_runmode; }
+    weight_mode::code    WeightMode()   const { return m_weightmode; }
+    ff_form::code        FF_Form()      const { return m_ffform; }  
+    absorption::code     Absorption()   const { return m_absorp; }  
+    ladder_weight::code  LadderWeight() const { return m_ladderweight; }
+    ktform::code         KTForm()       const { return m_ktform; }
+    ordering::code       Ordering()     const { return m_ordering; }
+    resc_mode::code      RescMode()     const { return m_rescmode; }
+    spat_mode::code      SpaceMode()    const { return m_spacemode; }
+    resc_ktmin::code     RescKTMin()    const { return m_resc_ktmin; }
+    resc_nosing::code    RescNoSing()   const { return m_resc_nosing; }
+    resc_over_sing::code RescOverSing() const { return m_resc_over_sing; }
+    reconn_mode::code    ReconnMode()   const { return m_reconnmode; }
+    MODEL::asform::code  AsForm()       const { return m_as_form; }
   };
   
   extern MinBias_Parameters MBpars;

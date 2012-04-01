@@ -141,13 +141,13 @@ Particle * Blob::GetParticle(int _pos) {
 
 const Particle *Blob::ConstInParticle(const size_t i) const
 {
-  if (i>m_inparticles.size()-1 || i<0) return NULL;
+  if (i>m_inparticles.size()-1) return NULL;
   return m_inparticles[i];
 }
 
 const Particle *Blob::ConstOutParticle(const size_t i) const 
 {
-  if (i>m_outparticles.size()-1 || i<0) return NULL; 
+  if (i>m_outparticles.size()-1) return NULL; 
   return m_outparticles[i];
 }
 

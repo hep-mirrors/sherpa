@@ -57,12 +57,12 @@ namespace SHRIMPS {
       return m_particles;
     }
     inline ATOOLS::Particle * GetParticle(const size_t & n) const {
-      if (n>=0 && n<m_particles.size()) return m_particles[n];
+      if (n<m_particles.size()) return m_particles[n];
       return NULL;
     }
     inline void GetXs(const size_t & n,double & xp,double & xm,double & xt2,
 		      const double & shat) {
-      if (n>=0 && n<m_particles.size()) {
+      if (n<m_particles.size()) {
 	if (m_bunchmom[3]>0.) { xp = m_xs[n]; xm = 0.; }
 	                 else { xm = m_xs[n]; xp = 0.; }
 	xt2 = ATOOLS::dabs(m_qtvecs[n].Abs2())/shat;
@@ -71,7 +71,7 @@ namespace SHRIMPS {
       msg_Error()<<"Error in "<<METHOD<<"("<<n<<"): out of bounds.\n";
     }
     inline const ATOOLS::Vec4D Kperp(const size_t & n) const {
-      if (n>=0 && n<m_particles.size()) return m_qtvecs[n];
+      if (n<m_particles.size()) return m_qtvecs[n];
       msg_Error()<<"Error in "<<METHOD<<"("<<n<<"): out of bounds.\n";
       return ATOOLS::Vec4D(0.,0.,0.,0.);
     }

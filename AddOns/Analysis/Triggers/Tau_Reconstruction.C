@@ -33,7 +33,7 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 template <class Class>
-Analysis_Object *const GetTrigger(const Argument_Matrix &parameters)
+Analysis_Object *GetTrigger(const Argument_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
   if (parameters[0].size()<2) return NULL;

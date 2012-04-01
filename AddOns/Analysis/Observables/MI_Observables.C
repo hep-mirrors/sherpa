@@ -9,7 +9,7 @@ using namespace ANALYSIS;
 #include <algorithm>
 
 template <class Class>
-Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters)
+Primitive_Observable_Base *GetObservable(const Argument_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -52,7 +52,7 @@ Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters
   DEFINE_PRINT_METHOD(NAME)
 
 template <class Class>
-Primitive_Observable_Base *const GetOffsetObservable(const Argument_Matrix &parameters)
+Primitive_Observable_Base *GetOffsetObservable(const Argument_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {

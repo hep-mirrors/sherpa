@@ -35,9 +35,9 @@ namespace MODEL {
     double Weight(const double & pt2,const bool & noless=false) const { 
       return (*this)(noless?ATOOLS::Max(m_pt02,pt2):pt2)/m_asmax; 
     }
-    const double & MaxValue() const { return m_asmax; }
-    const double & PT02()     const { return m_pt02; }
-    const asform::code Form() const { return m_form; }
+    double MaxValue() const { return m_asmax; }
+    double PT02()     const { return m_pt02; }
+    asform::code Form() const { return m_form; }
   };
 }
 

@@ -90,7 +90,7 @@ namespace CSSHOWER {
     inline Parton *                GetPrev();
     inline Parton *                GetNext();
     inline Singlet*                GetSing();
-    inline const bool              Connected()   const { return m_connected; }
+    inline bool                    Connected()   const { return m_connected; }
 
     inline void SetFlavour(const ATOOLS::Flavour &);
     inline void SetMomentum(const ATOOLS::Vec4D &);

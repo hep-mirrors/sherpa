@@ -332,7 +332,7 @@ size_t Cluster_Amplitude::IdIndex(const size_t &id) const
 {
   for (size_t i(0);i<m_legs.size();i++)
     if (m_legs[i]->Id()==id) return i;
-  return -1;
+  return std::string::npos;
 }
 
 namespace ATOOLS {

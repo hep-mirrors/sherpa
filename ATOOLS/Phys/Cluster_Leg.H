@@ -108,11 +108,11 @@ namespace ATOOLS {
     inline void SetMom(const Vec4D &p)     { m_p=p; }
     inline void SetFlav(const Flavour &fl) { m_fl=fl; }
 
-    inline void SetKTStart(const double & kt) { m_ktstart = kt; }
-    inline void SetKTMax(const double & kt)   { m_ktmax   = kt; }
-    inline void SetKTVeto(const double & kt)  { m_ktveto  = kt; }
+    inline void SetKTStart(const double &kt) { m_ktstart = kt; }
+    inline void SetKTMax(const double &kt)   { m_ktmax   = kt; }
+    inline void SetKTVeto(const double &kt)  { m_ktveto  = kt; }
 
-    inline void SetConnected(const bool & c)  { m_connected = c; }
+    inline void SetConnected(const bool &c)  { m_connected = c; }
 
     inline Cluster_Amplitude *Amplitude() const { return p_ampl; }
 
@@ -126,11 +126,11 @@ namespace ATOOLS {
     inline size_t DMax() const { return m_d;  }
     inline size_t K() const    { return m_k;  }
 
-    inline const double& KTStart() const { return m_ktstart; }
-    inline const double& KTMax() const   { return m_ktmax; }
-    inline const double& KTVeto() const  { return m_ktveto; }
+    inline double KTStart() const { return m_ktstart; }
+    inline double KTMax() const   { return m_ktmax; }
+    inline double KTVeto() const  { return m_ktveto; }
 
-    inline const bool& Connected() const { return m_connected; }
+    inline bool Connected() const { return m_connected; }
   };// end of class Cluster_Leg
 
   typedef std::vector<Cluster_Leg*> ClusterLeg_Vector;

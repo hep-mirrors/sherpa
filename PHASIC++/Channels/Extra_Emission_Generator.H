@@ -64,7 +64,7 @@ namespace PHASIC {
 
     inline CS_Dipole *Active() const { return p_active; }
 
-    inline const bool NumericsTrigger() const { return m_numtrig; }
+    inline bool NumericsTrigger() const { return m_numtrig; }
 
   };// end of class Extra_Emission_Generator
 

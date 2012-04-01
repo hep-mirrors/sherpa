@@ -89,7 +89,7 @@ namespace ATOOLS {
 
 
 template <class Class>
-Particle_Qualifier_Base *const GetQualifier(const std::string &parameter)
+Particle_Qualifier_Base *GetQualifier(const std::string &parameter)
 {									
   return new Class();
 }									

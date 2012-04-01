@@ -46,7 +46,7 @@ using namespace ANALYSIS;
 using namespace std;
 
 template <class Class>
-Analysis_Object *const 
+Analysis_Object *
 GetUniSelector(const Argument_Matrix &parameters) 
 {				
   if (parameters.size()<1) return NULL;

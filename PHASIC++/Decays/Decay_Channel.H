@@ -122,7 +122,7 @@ namespace PHASIC {
     inline const ATOOLS::Flavour& GetDecaying() const { return m_flin; }      
     inline const ATOOLS::FlavourMultiSet& GetDecayProducts() const { return m_flouts; }
     inline const ATOOLS::Flavour& GetDecayProduct(size_t i) const {
-      if (i<0 || i>m_flouts.size())
+      if (i>m_flouts.size())
         THROW(fatal_error,ATOOLS::ToString(i)+" out of bounds.");
       for (ATOOLS::FlSetConstIter flit=m_flouts.begin();
            flit!=m_flouts.end();++flit) {

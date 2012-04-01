@@ -141,7 +141,7 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 template <class Class>
-Analysis_Object *const 
+Analysis_Object *
 GetParticleSelector(const Argument_Matrix &parameters) 
 {									
   if (parameters.size()<1) return NULL;
@@ -181,7 +181,7 @@ GetParticleSelector(const Argument_Matrix &parameters)
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
 
 template <class Class>
-Analysis_Object *const 
+Analysis_Object *
 GetParticleDSelector(const Argument_Matrix &parameters) 
 {									
   if (parameters.size()<1) return NULL;

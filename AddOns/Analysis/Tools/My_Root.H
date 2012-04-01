@@ -39,7 +39,7 @@ namespace MYROOT {
     // member functions
     bool AddObject(TObject *const object,const std::string &key); 
 
-    TObject *const GetObject(const std::string &key);
+    TObject *GetObject(const std::string &key);
 
     void PrepareTerminate();
 
@@ -47,7 +47,7 @@ namespace MYROOT {
     inline void operator()(TObject *const object,const std::string &key) 
     { AddObject(object,key); }
 
-    inline TObject *const operator[](const std::string &key) 
+    inline TObject *operator[](const std::string &key) 
     { return GetObject(key); }
 
   };// end of class My_Root

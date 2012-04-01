@@ -50,7 +50,7 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 
 template <class Class>
-Primitive_Observable_Base *const 
+Primitive_Observable_Base *
 GetFourParticleSelector(const Argument_Matrix &parameters) 
 {									
   if (parameters.size()<1) return NULL;

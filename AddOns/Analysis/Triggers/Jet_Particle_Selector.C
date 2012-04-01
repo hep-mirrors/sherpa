@@ -105,7 +105,7 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 
 template <class Class>
-Analysis_Object *const 
+Analysis_Object *
 GetJetParticleDeltaSelector(const Argument_Matrix &parameters) 
 {
   if (parameters.size()<1) return NULL;

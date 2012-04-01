@@ -20,7 +20,7 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 
 template <class Class>
-Analysis_Object *const GetOrdering(const Argument_Matrix &parameters)
+Analysis_Object *GetOrdering(const Argument_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {

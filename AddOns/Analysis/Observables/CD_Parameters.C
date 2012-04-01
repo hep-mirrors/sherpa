@@ -31,7 +31,7 @@ void CD_Parameter_Calculator_Getter::PrintInfo(std::ostream &str,const size_t wi
 }
 
 template <class Class>
-Primitive_Observable_Base *const GetObservable(const Argument_Matrix &parameters)
+Primitive_Observable_Base *GetObservable(const Argument_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {

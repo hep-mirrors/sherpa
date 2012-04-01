@@ -39,7 +39,7 @@ My_Root::~My_Root()
   delete p_root;
 }
 
-TObject *const My_Root::GetObject(const std::string &key)
+TObject *My_Root::GetObject(const std::string &key)
 {
   return m_objects.find(key)->second;
 }
