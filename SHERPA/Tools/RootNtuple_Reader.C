@@ -370,8 +370,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     m_nlos.push_back(new NLO_subevt(p_vars->m_nparticle+2,NULL,flav,moms));
     m_nlos.back()->m_result=p_vars->m_wgt2;
     m_nlos.back()->m_flip=0;
-    if (!m_calc) m_weight+=p_vars->m_wgt2;
-    else {
+    if (m_calc) {
       Vec4D_Vector p(2+p_vars->m_nparticle);
       for (int i=0;i<p_vars->m_nparticle;++i) {
 	p[2+i]=Vec4D(p_vars->p_E[i],p_vars->p_px[i],
@@ -411,10 +410,10 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
 		     <<weight<<", stored "<<p_vars->m_wgt2<<"."<<std::endl;
       }
     }
-    if (m_check && !m_calc) {
+    else if (m_check) {
       double weight=CalculateWeight
 	(sqr(p_vars->m_mur),sqr(p_vars->m_muf),p_vars->m_nuwgt?1:2);
-      m_weight=weight;
+      m_weight+=weight;
       msg_Debugging()<<METHOD<<"(): computed "<<weight
 		     <<", stored "<<p_vars->m_wgt2
 		     <<", rel. diff. "<<weight/p_vars->m_wgt2-1.0<<".\n";
@@ -422,6 +421,9 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
 	msg_Error()<<METHOD<<"(): Weights differ by "
 		   <<(weight/p_vars->m_wgt2-1.0)<<".\n  computed "
 		   <<weight<<", stored "<<p_vars->m_wgt2<<"."<<std::endl;
+    }
+    else {
+      m_weight+=p_vars->m_wgt2;
     }
     if (!ReadInEntry()) m_evtid=0;
   }  
