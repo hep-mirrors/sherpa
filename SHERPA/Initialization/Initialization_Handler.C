@@ -371,7 +371,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     msg_Events()<<"SHERPA will read in the events."<<std::endl
 		<<"   The full framework is not needed."<<std::endl;
     InitializeTheIO();
-    InitializeTheAnalyses();
     return true;
   }
   PHASIC::Phase_Space_Handler::GetInfo();
