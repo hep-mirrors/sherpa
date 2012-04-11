@@ -9,6 +9,7 @@ if PGS_SUPPORT
 pkglib_LTLIBRARIES    =	libPGSSherpa.la
 
 libPGSSherpa_la_SOURCES       =	$(PGS_SOURCES)
+libPGSSherpa_la_LIBADD        =	@CONDITIONAL_PGSLIBS@
 else
 PGS_EXTRA_DIST    = $(PGS_SOURCES)
 endif
