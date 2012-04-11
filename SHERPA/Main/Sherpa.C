@@ -167,7 +167,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   }
 #endif
 
-  DrawLogo();
+  DrawLogo(p_inithandler->DataReader()->GetValue("PRINT_VERSION_INFO",0));
 
   if (p_inithandler->InitializeTheFramework()) {
     if (!p_inithandler->CalculateTheHardProcesses()) return false;
@@ -283,7 +283,7 @@ bool Sherpa::SummarizeRun()
   return true; 
 }
 
-void Sherpa::DrawLogo() 
+void Sherpa::DrawLogo(const int mode) 
 { 
   msg_Info()<<"-----------------------------------------------------------------------------"<<std::endl;
   if (msg->Level()>0) msg_Out()<<"-----------    Event generation run with SHERPA started .......   -----------"<<std::endl;
@@ -339,7 +339,7 @@ void Sherpa::DrawLogo()
 	    <<"                                                                             "<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
 	    <<std::endl;
-  rpa->gen.PrintSVNVersion(msg->Info());
+  rpa->gen.PrintSVNVersion(msg->Info(),mode);
   rpa->gen.AddCitation
     (0,"The complete Sherpa package is published under \\cite{Gleisberg:2008ta}.");
 }

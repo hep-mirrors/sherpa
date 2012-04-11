@@ -17,7 +17,7 @@ namespace SHERPA {
     Event_Handler          * p_eventhandler;
     Input_Output_Handler   * p_iohandler;
 
-    void DrawLogo();  
+    void DrawLogo(const int mode);  
 
     void PrepareTerminate();
 
