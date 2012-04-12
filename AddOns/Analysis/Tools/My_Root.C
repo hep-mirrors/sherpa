@@ -2,6 +2,7 @@
 
 #ifdef USING__ROOT
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "TStyle.h"
 
@@ -44,23 +45,32 @@ TObject *My_Root::GetObject(const std::string &key)
   return m_objects.find(key)->second;
 }
 
+std::string My_Root::GetKey()
+{
+  return "Key_"+ATOOLS::ToString(m_objects.size());
+}
+
 void My_Root::PrepareTerminate()
 {
   if (p_file!=NULL) p_file->Write();
 }
 
+void My_Root::InitFile()
+{
+  if (p_file) return;
+  if (OutputPath()=="" && OutputFile()=="") return;
+  ATOOLS::MakeDir(OutputPath());
+  struct stat fst;
+  if (stat((OutputPath()+OutputFile()).c_str(),&fst)!=-1 && 
+      (fst.st_mode&S_IFMT)==S_IFREG) {
+    remove((OutputPath()+OutputFile()).c_str());
+  }
+  p_file = new TFile((OutputPath()+OutputFile()).c_str(),"recreate");
+}
+
 bool My_Root::AddObject(TObject *const object,const std::string &key) 
 { 
   if (m_objects.find(key)==m_objects.end()) {
-    if (p_file==NULL && (OutputPath()+OutputFile())!="") {
-      ATOOLS::MakeDir(OutputPath());
-      struct stat fst;
-      if (stat((OutputPath()+OutputFile()).c_str(),&fst)!=-1 && 
-	  (fst.st_mode&S_IFMT)==S_IFREG) {
-	remove((OutputPath()+OutputFile()).c_str());
-      }
-      p_file = new TFile((OutputPath()+OutputFile()).c_str(),"recreate");
-    }
     m_objects.insert(String_Object_Map::value_type(key,object)); 
     return true;
   }

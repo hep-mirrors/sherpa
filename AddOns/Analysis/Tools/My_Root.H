@@ -42,6 +42,9 @@ namespace MYROOT {
     TObject *GetObject(const std::string &key);
 
     void PrepareTerminate();
+    void InitFile();
+
+    std::string GetKey();
 
     // inline functions
     inline void operator()(TObject *const object,const std::string &key) 
