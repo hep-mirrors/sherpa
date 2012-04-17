@@ -39,26 +39,26 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
 //   m_params["PtMax"]       = dr->GetValue<double>("PtMax",1.0);
   // ladder generation
   m_params["KTMin_Mode"]  = dr->GetValue<int>("KTMin_Mode",0);
-  m_params["Q_as2"]       = dr->GetValue<double>("Q_as^2",0.25);
-  m_params["Q02"]         = dr->GetValue<double>("Q_0^2",1.);
+  m_params["Q_as2"]       = dr->GetValue<double>("Q_as^2",0.22);
+  m_params["Q02"]         = dr->GetValue<double>("Q_0^2",3.1);
   m_params["Q12"]         = dr->GetValue<double>("Q_1^2",0.);
   m_params["QN2"]         = dr->GetValue<double>("Q_N^2",0.);
-  m_params["SingletWt"]   = dr->GetValue<double>("Chi_S",2.);
+  m_params["SingletWt"]   = dr->GetValue<double>("Chi_S",2.3);
   m_params["Ddiff2"]      = dr->GetValue<double>("D_diff^2",0.);
   m_params["kdiff"]       = dr->GetValue<double>("K_diff",0.);
   // showering off soft stuff
   m_params["shower_mode"] = dr->GetValue<int>("Shower_Mode",3);
   m_params["min_kt2"]     = dr->GetValue<double>("Shower_Min_KT2",16.);
-  m_params["kt2_factor"]  = dr->GetValue<double>("KT2_Factor",2.);
+  m_params["kt2_factor"]  = dr->GetValue<double>("KT2_Factor",4.);
   m_params["diff_factor"] = dr->GetValue<double>("Diff_Factor",1.);
   // rescatterings
-  m_params["RescProb"]    = dr->GetValue<double>("RescProb",2.);
-  m_params["RescProb1"]   = dr->GetValue<double>("RescProb1",0.125);
+  m_params["RescProb"]    = dr->GetValue<double>("RescProb",0.27);
+  m_params["RescProb1"]   = dr->GetValue<double>("RescProb1",3.5);
   m_params["SpatProb"]    = dr->GetValue<double>("SpatProb",0.);
   m_params["SpatWidth"]   = dr->GetValue<double>("SpatWidth",
 						 m_params["Lambda2"]);
-  m_params["QRC2"]        = dr->GetValue<double>("Q_RC^2",4.);
-  m_params["ReconnProb"]  = dr->GetValue<double>("ReconnProb",8.);
+  m_params["QRC2"]        = dr->GetValue<double>("Q_RC^2",4.4);
+  m_params["ReconnProb"]  = dr->GetValue<double>("ReconnProb",1.6);
 
   std::string ffform = 
     dr->GetValue<std::string>("FF_Form",std::string("dipole"));
