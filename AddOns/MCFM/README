@@ -1,3 +1,4 @@
 In order to make this work:
 
 - Add a "-fPIC" flag to the Fortran makefile in the MCFM subdirectory.
+- Copy "process.DAT" from MCFM/MCFM/Bin to the run directory

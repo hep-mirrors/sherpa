@@ -6,12 +6,18 @@ namespace MCFM {
 
   class MCFM_qqb_v: public PHASIC::Virtual_ME2_Base {
   private:
-    int      m_pID, m_njets;
-    double * p_p, * p_msqv;
-    MODEL::Running_AlphaS * p_as;
-    double   m_normcorr;
+    int      m_pID, m_njets;         // process ID from MCFM (this is taken 
+                                     //  from the "Getter" function, hardwired
+                                     //  there) and # of jets
+    double * p_p, * p_msqv;          // momenta as arrays of doubles for Fortran
+                                     // compliance and |M|^2
+    MODEL::Running_AlphaS * p_as;    // SHERPA's strong coupling constant
+    double   m_normcorr;             // part of the correction to make them
+                                     // talk with each other in a meaningful
+                                     // way.
 
-    double CallMCFM(const int & i,const int & j);
+    double CallMCFM(const int & i,const int & j); 
+    // produce the p_msqv in dependence on the flavour tags i and j
   public:
     MCFM_qqb_v(const int & pID,const PHASIC::Process_Info& pi,
 	       const ATOOLS::Flavour_Vector& flavs);
@@ -22,6 +28,8 @@ namespace MCFM {
 
 }// end of namespace MCFM
 
+
+// routines to be taken from MCFM, that's why they're declared external! 
 extern "C" { 
   void qqb_z_v_(double *p,double *msqv); 
   void qqb_z1jet_v_(double *p,double *msqv); 
@@ -99,7 +107,7 @@ void MCFM_qqb_v::Calc(const Vec4D_Vector &p)
     //	     <<"."<<std::endl;
     corrfactor *= pow((*p_as)(m_mur2)/qcdcouple_.as,m_njets);
   }
-  for (int n(0);n<2;++n)        GetMom(p_p,n,-p[n]);
+  for (int n(0);n<2;++n)           GetMom(p_p,n,-p[n]);
   for (size_t n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
   long int i(m_flavs[0]), j(m_flavs[1]);
   if (i==21) { i=0; corrfactor *= 8./3.; }
@@ -127,11 +135,14 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_qqb_v_Getter,"MCFM_qqb_v")
 Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
 {
+  msg_Out()<<"\n In "<<METHOD<<" with "<<pi.m_fi.m_ps.size()<<"... .\n";
   DEBUG_FUNC("");
-  if (pi.m_loopgenerator!="MCFM")        return NULL;
-  if (MODEL::s_model->Name()!=std::string("SM")) return NULL;
-  if (pi.m_oew>2)                        return NULL;
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
+  if (pi.m_loopgenerator!="MCFM")                    return NULL;
+  if (MODEL::s_model->Name()!=std::string("SM") &&
+      MODEL::s_model->Name()!=std::string("THDM") &&
+      MODEL::s_model->Name()!=std::string("SM+EHC")) return NULL;
+  if (pi.m_oew>2)                                    return NULL;
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo)             return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     int pID(0);
     Flavour_Vector fl(pi.ExtractFlavours());
@@ -147,7 +158,8 @@ Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
 		   <<"   Will return 0 and hope for the best.\n";
 	return NULL;
       }
-      if ((fl[2]==fl[3].Bar() && MODEL::s_model->ScalarConstant("Yukawa_b")>0. &&
+      if ((fl[2]==fl[3].Bar() && 
+	   MODEL::s_model->ScalarConstant("Yukawa_b")>0. &&
 	   ATOOLS::Flavour(kf_b).IsMassive()==0) ||
 	  MODEL::s_model->Name()!=std::string("SM")) {
 	msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
@@ -178,7 +190,8 @@ Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
     if (pID>0) {
       if (nproc_.nproc>=0) {
 	if (nproc_.nproc!=pID)
-	  THROW(not_implemented,"Only one process class allowed when using MCFM");
+	  THROW(not_implemented,
+		"Only one process class allowed when using MCFM");
       }
       else {
 	msg_Info()<<"\n";
