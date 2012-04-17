@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tarname=mcfm-5.8.tar.gz
+tarname=mcfm-6.1.tar.gz
 
 if ! test -f $tarname; then
   wget http://mcfm.fnal.gov/$tarname
