@@ -86,10 +86,12 @@ MCFM_gg_h::MCFM_gg_h(const int & pID,const Process_Info& pi,
     break;
   }
   m_cplcorr *=
-    ATOOLS::sqr(MODEL::s_model->ScalarConstant(std::string("h0_gg_fac"))/(2./3.));
+    ATOOLS::sqr(MODEL::s_model->ScalarConstant(std::string("h0_gg_fac"))/
+		(2./3.));
 
   msg_Tracking()<<"Potential finite top mass correction (enabled) yields: "
-		<<MODEL::s_model->ScalarConstant(std::string("h0_gg_fac"))/(2./3.)
+		<<(MODEL::s_model->ScalarConstant(std::string("h0_gg_fac"))/
+		   (2./3.))
 		<<"."<<std::endl;
 
   p_p = new double[4*MCFM_NMX];

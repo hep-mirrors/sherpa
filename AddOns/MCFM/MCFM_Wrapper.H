@@ -100,7 +100,9 @@ extern "C" {
   extern struct {
     bool zerowidth;
   } zerowidth_;
-
+  extern struct {
+    double bbsqmin,bbsqmax,wsqmin,wsqmax;
+  } limits_;
 }
 
 #endif

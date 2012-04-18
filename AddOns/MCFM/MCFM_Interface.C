@@ -121,6 +121,9 @@ bool MCFM_Interface::Initialize
   qcdcouple_.ason4pi = qcdcouple_.as/(4.*M_PI);
   std::string dummy  = std::string("mstw8lo");
   dummy.copy(pdlabel_.pdlabel,7);
+  limits_.wsqmin = 1.e-6;
+  limits_.wsqmax = 1.e99;
+
   msg_Info()<<"}\n";
 
   verbose_.verbose = true;

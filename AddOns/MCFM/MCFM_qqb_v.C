@@ -158,22 +158,46 @@ Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
 		   <<"   Will return 0 and hope for the best.\n";
 	return NULL;
       }
-      if ((fl[2]==fl[3].Bar() && 
-	   MODEL::s_model->ScalarConstant("Yukawa_b")>0. &&
-	   ATOOLS::Flavour(kf_b).IsMassive()==0) ||
-	  MODEL::s_model->Name()!=std::string("SM")) {
-	msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
-		   <<"   Try to initialise process qqb->llbar in MCFM.\n"
-		   <<"   Inconsistent setting with Sherpa: "<<std::endl
-		   <<"YUKAWA_B = "<<MODEL::s_model->ScalarConstant("Yukawa_b")
-		   <<" (should be 0 for llbar, to play it safe), and "
-		   <<"MODEL = "<<MODEL::s_model->Name()<<" (should be 'SM')."
-		   <<std::endl<<"   Will exit the run."<<std::endl;
-	exit(1);
+      if ((fl[2].IsAnti() && fl[3].IsAnti()) ||
+	  (!fl[2].IsAnti() && !fl[3].IsAnti())) {
+	msg_Error()<<"Warning in "<<METHOD<<":\n"
+		   <<"   Do you really want a combination like this: "
+		   <<fl[2]<<" & "<<fl[3]<<" as ougoing leptons?"<<std::endl;
 	return NULL;
+
+      }
+      if (fl[2]==fl[3].Bar()) {
+	if (((fl[2].Kfcode()==11 && 
+	      MODEL::s_model->ScalarConstant("Yukawa_e")>0.) ||
+	     (fl[2].Kfcode()==13 && 
+	      MODEL::s_model->ScalarConstant("Yukawa_mu")>0.) ||
+	     (fl[2].Kfcode()==15 && 
+	      MODEL::s_model->ScalarConstant("Yukawa_tau")>0.)) &&
+	    (fl[0].Kfcode()==5 &&
+	     MODEL::s_model->ScalarConstant("Yukawa_b")>0. &&
+	     ATOOLS::Flavour(kf_b).IsMassive()==0)) {
+	  msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
+		     <<"   Try to initialise process qqb->llbar in MCFM.\n"
+		     <<"   Inconsistent setting with Sherpa: "<<std::endl
+		     <<"YUKAWA_B = "<<MODEL::s_model->ScalarConstant("Yukawa_b")
+		     <<" (should be 0 for llbar, to play it safe), and "
+		     <<"MODEL = "<<MODEL::s_model->Name()<<" (should be 'SM')."
+		     <<std::endl<<"   Will exit the run."<<std::endl;
+	  exit(1);
+	  return NULL;
+	}
+	if ((pi.m_fi.m_ps[0].m_fl[0]==ATOOLS::Flavour(kf_Z) ||
+	     !ATOOLS::Flavour(kf_photon).IsOn()) && 
+	    (fl[2].IsLepton() && fl[2].IsDowntype())) {
+	  msg_Error()<<"Warning in "<<METHOD<<":\n"
+		     <<"   You try to ignore the Z/gamma interference!\n"
+		     <<"   Cannot initialise such an ME from MCFM.\n";
+	  return NULL;
+	}
       }
       bool flag = false;
       if (fl[2]==fl[3].Bar()) {
+	limits_.wsqmin = 4.*sqr(fl[2].HadMass());
 	if (fl[2].IsUptype()) flag = true;
 	if (fl.size()==4)                                     pID = flag?32:31;
 	if (fl.size()==5 && fl[4].Strong())                   pID = flag?42:41;
@@ -184,7 +208,14 @@ Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
 	if (fl[2].IsUptype()) flag = true;
 	if (fl.size()==4)                                     pID = flag?1:6;
 	if (fl.size()==5 && fl[4].Strong())                   pID = flag?11:16;
-	if (fl.size()==6 && fl[4].Strong() && fl[5].Strong()) pID = flag?22:27;
+	if (fl.size()==6 && fl[4].Strong() && fl[5].Strong()) {
+	  msg_Error()<<"Warning in "<<METHOD<<":\n"
+		     <<"   Pole check does not work - no poles from virtual "
+		     <<"contribution yet unearthed.\n"
+		     <<"  Continue & hope for the best.\n";
+	  exit(1);
+	  pID = flag?22:27;
+	}
       }
     }
     if (pID>0) {
