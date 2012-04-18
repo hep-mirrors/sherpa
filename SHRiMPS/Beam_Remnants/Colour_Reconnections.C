@@ -85,7 +85,7 @@ void Colour_Reconnections::ShuffleColours() {
       continue;
     }
     if (pit2==m_pclist.end()) break;
-    pit3 = pit1; pit3++;
+    pit3 = pit2; pit3++;
     while (pit3!=m_pclist.end()) {
       pit4 = pit3; pit4++;
       if (pit4==m_pclist.end()) break;
