@@ -46,7 +46,7 @@ FinishConfiguration(Blob_List * blobs,const double & smin) {
   m_pclist.clear();
   HarvestParticles(blobs);
   ShuffleColours();
-  if (m_shuffled) blobs->push_back(AddReconnectionBlob());
+  blobs->push_back(AddReconnectionBlob());
   return true;
 }
 
@@ -100,21 +100,21 @@ void Colour_Reconnections::ShuffleColours() {
 	double w32(Weight(pit3->first,pit2->first));
 	double w1234(w12*w34),w1432(m_colfac*m_reconn*w14*w32);
 	double summed(w1234+w1432);
-	double m12(sqrt((pit1->first->Momentum()+
-			 pit2->first->Momentum()).Abs2()));
-	double m34(sqrt((pit3->first->Momentum()+
-			 pit4->first->Momentum()).Abs2()));
+	double m12(sqrt((pit1->first->Momentum()*(pit1->first->Flav().IsGluon()?0.5:1.0)+
+			 pit2->first->Momentum()*(pit2->first->Flav().IsGluon()?0.5:1.0)).Abs2()));
+	double m34(sqrt((pit3->first->Momentum()*(pit3->first->Flav().IsGluon()?0.5:1.0)+
+			 pit4->first->Momentum()*(pit4->first->Flav().IsGluon()?0.5:1.0)).Abs2()));
+	double m14(sqrt((pit1->first->Momentum()*(pit1->first->Flav().IsGluon()?0.5:1.0)+
+			 pit4->first->Momentum()*(pit4->first->Flav().IsGluon()?0.5:1.0)).Abs2()));
+	double m32(sqrt((pit3->first->Momentum()*(pit3->first->Flav().IsGluon()?0.5:1.0)+
+			 pit2->first->Momentum()*(pit2->first->Flav().IsGluon()?0.5:1.0)).Abs2()));
 	if (m_analyse) {
 	  m_histomap[string("Reconn_MassBefore")]->Insert(m12);
 	  m_histomap[string("Reconn_MassBefore")]->Insert(m34);
 	}
-	if (w1432>summed*ran->Get()) {
+	if (m12*m34 > m14*m32 && ran->Get()<1.00) {
 	  SkewList(pit1,pit2,pit3,pit4);
 	  if (m_analyse) {
-	    double m14(sqrt((pit1->first->Momentum()+
-			     pit4->first->Momentum()).Abs2()));
-	    double m32(sqrt((pit3->first->Momentum()+
-			     pit2->first->Momentum()).Abs2()));
 	    m_histomap[string("Reconn_MassAfter")]->Insert(m14);
 	    m_histomap[string("Reconn_MassAfter")]->Insert(m32);
 	  }
