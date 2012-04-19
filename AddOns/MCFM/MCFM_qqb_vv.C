@@ -49,7 +49,7 @@ MCFM_qqb_vv::MCFM_qqb_vv(const int & pID,const bool & swapped,
   p_p = new double[4*MCFM_NMX];
   p_msqv = new double[sqr(2*MCFM_NF+1)];
   m_drmode=m_mode=1;
-  // surprisingly, no summation over nus in WZ production.
+  if (m_pID==72 || m_pID==77) m_normcorr /= 3.;
   if (m_pID==82 || m_pID==87) m_normcorr /= 3.;
 }
 
@@ -190,6 +190,12 @@ Virtual_ME2_Base *MCFM_qqb_vv_Getter::operator()(const Process_Info &pi) const
 	  (fl2==Flavour(kf_Wplus) && fl1==Flavour(kf_Wplus).Bar())) {
 	if (fl[2].IsLepton() && fl[3].IsLepton() && 
 	    fl[4].IsLepton() && fl[5].IsLepton()) {
+	  //msg_Out()<<"Check for top on:   "<<Flavour(kf_t).IsOn()<<".\n";
+	  //msg_Out()<<"Check for yukawa b: "<<Flavour(kf_b).Yuk()<<".\n";
+	  //const MODEL::Vertex_Table * vt(MODEL::s_model->VertexTable());
+	  //msg_Out()<<"List vertices for "<<vt->size()<<" flavours.\n";
+	  //msg_Out()<<"Also for tops: "
+	  //	   <<(vt->find(ATOOLS::Flavour(kf_t))!=vt->end())<<".\n";
 	  pID = 61;
           zerowidth_.zerowidth=true;
 	}
