@@ -1,32 +1,42 @@
 #ifndef SHRIMPS_Beam_Remnants_Colour_Reconnections_H
 #define SHRIMPS_Beam_Remnants_Colour_Reconnections_H
 
-#include "SHRiMPS/Beam_Remnants/Singlet_Sorter.H"
+//#include "SHRiMPS/Beam_Remnants/Singlet_Sorter.H"
+#include "ATOOLS/Phys/Blob_List.H"
+#include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Return_Value.H"
 #include <map>
 
 namespace SHRIMPS {
+  typedef std::pair<unsigned int,unsigned int> colpair;
+  typedef std::pair<ATOOLS::Particle *,ATOOLS::Particle *> partpair;
+  typedef std::map<double,ATOOLS::Particle *> partdists; 
   class Colour_Reconnections {
   private:
     bool           m_on, m_shuffled;
-    double         m_colfac, m_reconn, m_Q02, m_b02, m_inveta, m_smin, m_ycut;
-    PCList         m_pclist;
-    Singlet_Sorter m_sorter;
+    double         m_reconn, m_Q02, m_b02, m_eta, m_smin, m_ycut;
     
+    std::set<int>                m_colours;
+    std::set<ATOOLS::Particle *> m_trips, m_antis;
+    std::map<ATOOLS::Particle *, partdists> m_links;
+    std::map<ATOOLS::Particle *, colpair> m_newcols;
+    std::list<partpair> m_pairs;
+
     bool                                        m_analyse;
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
 
     void HarvestParticles(ATOOLS::Blob_List * blobs);
+    void FillWeightTable();
+    void OutputWeightTable();
     void ShuffleColours();
-    void SkewList(PCList::iterator & pit1,PCList::iterator & pit2,
-		  PCList::iterator & pit3,PCList::iterator & pit4);
-    const double Weight(ATOOLS::Particle * part1,ATOOLS::Particle * part2,
-			const bool & spatial=true);
+    void SaveLastGluon(ATOOLS::Particle * part);
+    const double Distance(ATOOLS::Particle * part1,ATOOLS::Particle * part2,
+			  const bool & spat=true);
 
     ATOOLS::Blob * AddReconnectionBlob();
 
-    bool ColourConnected(ATOOLS::Particle * part1,ATOOLS::Particle * part2);
+    size_t ColourConnected(ATOOLS::Particle * part1,ATOOLS::Particle * part2);
   public:
     Colour_Reconnections();
     ~Colour_Reconnections();
@@ -34,12 +44,12 @@ namespace SHRIMPS {
 			     const double & smin=-1.);
   };
 
-  inline bool Colour_Reconnections::
+  inline size_t Colour_Reconnections::
   ColourConnected(ATOOLS::Particle * part1,ATOOLS::Particle * part2) {
     for (size_t i=1;i<3;i++) {
-      if (part1->GetFlow(i)==part2->GetFlow(3-i)) return true;
+      if (part1->GetFlow(i)==part2->GetFlow(3-i)) return i;
     }
-    return false;
+    return 0;
   }
 }
 #endif

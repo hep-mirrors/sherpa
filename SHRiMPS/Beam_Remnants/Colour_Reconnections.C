@@ -9,9 +9,9 @@ using namespace std;
 
 Colour_Reconnections::Colour_Reconnections() :
   m_on(MBpars.ReconnMode()!=reconn_mode::off),
-  m_colfac(1./(64.-1.)), m_reconn(MBpars("ReconnProb")), 
+  m_reconn(MBpars("ReconnProb")), 
   m_Q02(MBpars("QRC2")), m_b02(4.*m_Q02*sqr(rpa->hBar()*rpa->c())),
-  m_inveta(-2.),
+  m_eta(2.),
   m_ycut(MBpars("originalY")-MBpars("deltaY")),
   m_analyse(true)
 {
@@ -40,11 +40,16 @@ Colour_Reconnections::~Colour_Reconnections()
   
 bool Colour_Reconnections::
 FinishConfiguration(Blob_List * blobs,const double & smin) {
-  if (!m_on) return true;
   m_shuffled = false;
   m_smin     = (smin<0. || MBpars.ReconnMode()==reconn_mode::fix)?m_Q02:smin;
-  m_pclist.clear();
+  m_newcols.clear();
+  m_colours.clear();
+  m_trips.clear();
+  m_antis.clear();
+  m_links.clear();
+  m_pairs.clear();
   HarvestParticles(blobs);
+  FillWeightTable();
   ShuffleColours();
   blobs->push_back(AddReconnectionBlob());
   return true;
@@ -53,7 +58,6 @@ FinishConfiguration(Blob_List * blobs,const double & smin) {
 void Colour_Reconnections::HarvestParticles(Blob_List * blobs) {
   Blob * blob;
   Particle * part;
-  PartList parts;
   for (Blob_List::iterator bit=blobs->begin();bit!=blobs->end();bit++) {
     blob = (*bit);
     if (blob->Has(blob_status::needs_hadronization)) {
@@ -62,7 +66,17 @@ void Colour_Reconnections::HarvestParticles(Blob_List * blobs) {
 	if (dabs(part->Momentum().Y())>m_ycut) part->SetInfo('B');
 	if (part->Status()==part_status::active &&
 	    part->DecayBlob()==NULL) {
-	  parts.push_back(part);
+	  unsigned int col1 = part->GetFlow(1);
+	  unsigned int col2 = part->GetFlow(2);
+	  colpair cols = colpair(col1,col2);
+	  m_newcols[part] = cols;
+	  if (col1!=0) {
+	    m_trips.insert(part);
+	    m_colours.insert(col1);
+	  }
+	  if (col2!=0) {
+	    m_antis.insert(part);
+	  }
 	}
       }
       blob->UnsetStatus(blob_status::needs_beams);
@@ -71,156 +85,135 @@ void Colour_Reconnections::HarvestParticles(Blob_List * blobs) {
       blob->UnsetStatus(blob_status::needs_hadronization);
     }
   }
-  m_sorter.Sort(&parts,&m_pclist);
 }
 
+void Colour_Reconnections::FillWeightTable() {
+  set<Particle *>::iterator tripit, antiit;
+  Particle * trip, * anti;
+  for (tripit=m_trips.begin();tripit!=m_trips.end();tripit++) {
+    trip = (*tripit);
+    map<double,Particle *> dists;
+    for (antiit=m_antis.begin();antiit!=m_antis.end();antiit++) {
+      anti = (*antiit);
+      if (anti==trip) continue;
+      double dist(Distance(trip,anti));
+      switch (ColourConnected(trip,anti)) {
+      case 2:
+	dist *= m_reconn;
+	break;
+      case 1:
+	dist /= m_reconn;
+	break;
+      case 0:
+      default:
+	break;
+      }
+      dists[dist] = anti;
+    }
+    m_links[trip] = dists;
+  }
+}
 
 void Colour_Reconnections::ShuffleColours() {
-  PCList::iterator pit1(m_pclist.begin()), pit2, pit3, pit4;
-  while (pit1!=m_pclist.end()) {
-    pit2 = pit1; pit2++;
-    if (pit1->second.first!=pit2->second.second ||
-	pit1->second.first==0) { 
-      pit1++;
-      continue;
-    }
-    if (pit2==m_pclist.end()) break;
-    pit3 = pit2; pit3++;
-    while (pit3!=m_pclist.end()) {
-      pit4 = pit3; pit4++;
-      if (pit4==m_pclist.end()) break;
-      if ((pit3->first!=pit2->first) &&
-	  !(pit1->second.second==pit4->second.first && 
-	    pit1->second.second!=0) &&
-	  (pit3->second.first==pit4->second.second && 
-	   pit3->second.first!=0)) {
-	double w12(Weight(pit1->first,pit2->first));
-	double w34(Weight(pit3->first,pit4->first));
-	double w14(Weight(pit1->first,pit4->first));
-	double w32(Weight(pit3->first,pit2->first));
-	double w1234(w12*w34),w1432(m_colfac*m_reconn*w14*w32);
-	double summed(w1234+w1432);
-	double m12(sqrt((pit1->first->Momentum()*(pit1->first->Flav().IsGluon()?0.5:1.0)+
-			 pit2->first->Momentum()*(pit2->first->Flav().IsGluon()?0.5:1.0)).Abs2()));
-	double m34(sqrt((pit3->first->Momentum()*(pit3->first->Flav().IsGluon()?0.5:1.0)+
-			 pit4->first->Momentum()*(pit4->first->Flav().IsGluon()?0.5:1.0)).Abs2()));
-	double m14(sqrt((pit1->first->Momentum()*(pit1->first->Flav().IsGluon()?0.5:1.0)+
-			 pit4->first->Momentum()*(pit4->first->Flav().IsGluon()?0.5:1.0)).Abs2()));
-	double m32(sqrt((pit3->first->Momentum()*(pit3->first->Flav().IsGluon()?0.5:1.0)+
-			 pit2->first->Momentum()*(pit2->first->Flav().IsGluon()?0.5:1.0)).Abs2()));
-	if (m_analyse) {
-	  m_histomap[string("Reconn_MassBefore")]->Insert(m12);
-	  m_histomap[string("Reconn_MassBefore")]->Insert(m34);
-	}
-	if (m12*m34 > m14*m32 && ran->Get()<1.00) {
-	  SkewList(pit1,pit2,pit3,pit4);
-	  if (m_analyse) {
-	    m_histomap[string("Reconn_MassAfter")]->Insert(m14);
-	    m_histomap[string("Reconn_MassAfter")]->Insert(m32);
+  OutputWeightTable();
+  map<Particle *,map<double, Particle *> >::iterator mapit;
+  map<double,Particle *>           dists;
+  map<double,Particle *>::iterator distit;
+  Particle * test1, * test2, * trip, * anti;
+  while (!m_trips.empty()) {
+    double maxdist = 0.;
+    msg_Out()<<"Start looping to look for next colour connection: "
+	     <<m_trips.size()<<" particles still to do.\n";
+    for (mapit=m_links.begin();mapit!=m_links.end();mapit++) {
+      test1 = mapit->first;
+      if (m_trips.find(test1)==m_trips.end()) continue;
+      dists = mapit->second;
+      distit = dists.begin();
+      while (distit!=dists.end()) {
+	test2 = distit->second;
+	if (m_antis.find(test2)!=m_antis.end()) {
+	  if (distit->first>maxdist) {
+	    trip    = test1;
+	    anti    = test2;
+	    maxdist = distit->first;
+	    msg_Out()<<"     candidate  (dist = "<<maxdist<<") "
+		     <<"["<<test1->Number()<<" "<<test2->Number()<<"]\n";
 	  }
 	  break;
 	}
-	else {
-	  if (m_analyse) {
-	    m_histomap[string("Reconn_MassAfter")]->Insert(m12);
-	    m_histomap[string("Reconn_MassAfter")]->Insert(m34);
-	  }
-	}
+	distit++;
       }
-      pit3++;
     }
-    pit1++;
+    if (trip==NULL || anti==NULL) {
+      msg_Error()<<"Error in "<<METHOD<<":\n"
+		 <<"   did not find a viable pair!\n";
+      exit(1);
+    }
+    msg_Out()<<"   * want to establish connection between "
+	     <<"["<<trip->Number()<<"]"
+	     <<"("<<trip->GetFlow(1)<<", "<<trip->GetFlow(2)<<") and "
+	     <<"["<<anti->Number()<<"]"
+	     <<"("<<anti->GetFlow(1)<<", "<<anti->GetFlow(2)<<"), "
+	     <<"dist = "<<maxdist<<".\n";
+    m_trips.erase(trip);
+    m_antis.erase(anti);    
+    m_pairs.push_back(partpair(trip,anti));
+    msg_Out()<<"   * now "<<m_trips.size()<<" / "<<m_antis.size()<<" "
+	     <<"particles left for triplet/antitriplet.\n";
+    if (m_trips.size()==1 &&
+	(*m_trips.begin())==(*m_antis.begin())) {
+      msg_Out()<<"Would have to save last gluon.\n"
+	       <<(**m_trips.begin())<<"\n";
+      SaveLastGluon((*m_trips.begin()));
+      exit(1);
+    }
   }
 }
 
-void Colour_Reconnections::
-SkewList(PCList::iterator & pit1,PCList::iterator & pit2,
-	 PCList::iterator & pit3,PCList::iterator & pit4) {
-  m_shuffled = true;
-  PCList::iterator start(pit2), stop(pit4), test(stop), test1;
-  bool ring(true);
-  while (test!=m_pclist.end()) {
-    if (test->second.first==0) {
-      ring = false;
-      break;
+void Colour_Reconnections::SaveLastGluon(Particle * part) {
+  partpair winner;
+  double combdist(1.e99), testdist;
+  Particle *test1, * test2, * trip, * anti;
+  partdists pdists(m_links[part]), tdists;
+  for (std::list<partpair>::iterator ppit=m_pairs.begin();
+       ppit!=m_pairs.end();ppit++) {
+    test1 = ppit->first;
+    test2 = ppit->second;
+    testdist = 0.;
+    tdists = m_links[test1];
+    for (partdists::iterator tit=tdists.begin();tit!=tdists.end();tit++) {
+      if (tit->second==part) {
+	testdist += tit->first;
+	break;
+      }
     }
-    test++;
-  }
-  //msg_Out()<<METHOD<<"(ring = "<<ring<<") for "
-  //	   <<m_pclist.size()<<" particles.\n";
-  unsigned int help(pit2->second.second);
-  pit2->second.second = pit4->second.second;
-  pit4->second.second = help;
-  PCList helplist;
-
-  if (!ring) {
-    while (start!=stop) {
-      helplist.push_back((*start));
-      start = m_pclist.erase(start);
-    } 
-    size_t count(helplist.size());
-    //msg_Out()<<METHOD<<" must reorder "<<count<<" elements.\n";
-    while (count>0 && helplist.begin()->second.second!=0) {
-      helplist.push_back((*helplist.begin()));
-      helplist.pop_front();
-      count--;
+    for (partdists::iterator pit=pdists.begin();pit!=pdists.end();pit++) {
+      if (pit->second==test2) {
+	testdist += pit->first;
+	break;
+      }
     }
-    while (!helplist.empty()) {
-      m_pclist.push_back((*helplist.begin()));
-      helplist.pop_front();
+    if (testdist<combdist) {
+      trip = test1;
+      anti = test2;
+      combdist = testdist;
     }
   }
-  else {
-    test  = stop;
-    //msg_Out()<<"try to extract ring and rotate it, start with: "
-    //	     <<test->first->Number()<<".\n";
-    while (test!=m_pclist.end()) {
-      //msg_Out()<<"  add (+): "<<test->first->Number()<<".\n";
-      helplist.push_back((*test));
-      test = m_pclist.erase(test);
-      if (test==m_pclist.end() ||
-	  test->second.second!=helplist.back().second.first) break;
-    }
-    test--;
-    while (helplist.back().second.first==test->second.second &&
-	   test!=start) {
-      helplist.push_back((*test));
-      //msg_Out()<<"  add (-): "<<test->first->Number()<<", "
-      //       <<"check col: "<<helplist.back().second.first<<".\n";
-      test = m_pclist.erase(test);
-      test--;
-    }
-    //msg_Out()<<"check treatment of ring: "<<helplist.size()<<" members "
-    //	     <<"for pos:"<<start->first->Number()<<".\n";
-    //for (PCList::iterator pit=helplist.begin();
-    //	 pit!=helplist.end();pit++) {
-    //  msg_Out()<<(*(pit->first))
-    //	       <<"["<<pit->second.first<<", "<<pit->second.second<<"]\n";
-    //}
-    //msg_Out()<<"---------------------------------------------------\n";
-    m_pclist.splice(start,helplist);
-    //msg_Out()<<"splicing successful before "<<start->first->Number()<<".\n";
-  }
-  
-  //msg_Out()<<"Output "<<m_pclist.size()<<" particles.\n";
-  //for (PCList::iterator pit=m_pclist.begin();
-  //   pit!=m_pclist.end();pit++) {
-  //msg_Out()<<(*(pit->first))
-  //	     <<"["<<pit->second.first<<", "<<pit->second.second<<"]\n";
-  //}
+  msg_Out()<<"Would like to insert "<<part->Number()<<" between "
+	   <<"["<<trip->Number()<<" and "<<anti->Number()<<"], "
+	   <<"comb = "<<combdist<<".\n";
 }
-  
+
 const double Colour_Reconnections::
-Weight(ATOOLS::Particle * part1,ATOOLS::Particle * part2,const bool & spatial) {
-  double weight(pow(1.+(part1->Momentum()+part2->Momentum()).Abs2()/m_smin,
-		    m_inveta));
-  double dist2(0.);
-  if (spatial && part1->ProductionBlob()!=part2->ProductionBlob()) {
-    dist2 = (part1->ProductionBlob()->Position().Perp()-
-	     part2->ProductionBlob()->Position().Perp()).Abs2();
-    weight *= exp(-dist2/m_b02);
+Distance(Particle * part1,Particle * part2,const bool & spat) {
+  double sij((part1->Momentum()+part2->Momentum()).Abs2());
+  double dist(pow((m_smin+sij)/m_smin,m_eta));
+  if (spat && part1->ProductionBlob()!=part2->ProductionBlob()) {
+    double deltar = (part1->ProductionBlob()->Position().Perp()-
+		     part2->ProductionBlob()->Position().Perp()).Abs2();
+    dist  *= exp(deltar/m_b02);
   }
-  return weight;
+  return dist;
 }
 
 Blob * Colour_Reconnections::AddReconnectionBlob() {
@@ -230,15 +223,43 @@ Blob * Colour_Reconnections::AddReconnectionBlob() {
   blob->SetId();
   blob->SetStatus(blob_status::needs_hadronization);
   Particle * partin, * partout;
-  for (PCList::iterator pit=m_pclist.begin();pit!=m_pclist.end();pit++) {
+  map<Particle *,colpair>::iterator pcit;
+  for (map<Particle *,map<double,Particle *> >::iterator pit=m_links.begin();
+       pit!=m_links.end();pit++) {
     partin = pit->first;
-    blob->AddToInParticles(partin);
     partin->SetStatus(part_status::decayed);
+    blob->AddToInParticles(partin);
+    pcit = m_newcols.find(partin);
+    if (pcit==m_newcols.end()) {
+      msg_Error()<<"Error in "<<METHOD<<":\n"
+		 <<"   Did not find particle ["<<partin->Number()<<"] "
+		 <<"in new colours list.\n"
+		 <<"   Will exit the run.\n";
+      exit(1);
+    }
     partout = new Particle(0,partin->Flav(),partin->Momentum(),partin->Info());
-    partout->SetFlow(1,pit->second.first);
-    partout->SetFlow(2,pit->second.second);
+    partout->SetFlow(1,pcit->second.first);
+    partout->SetFlow(2,pcit->second.second);
     partout->SetNumber();
     blob->AddToOutParticles(partout);
   }
   return blob;
 }
+
+void Colour_Reconnections::OutputWeightTable() {
+  for (map<Particle *,map<double, Particle *> >::iterator mapit=m_links.begin();
+       mapit!=m_links.end();mapit++) {
+    msg_Out()<<"Links for particle ["<<mapit->first->Number()<<"]"
+	     <<"("<<mapit->first->GetFlow(1)<<", "
+	     <<mapit->first->GetFlow(2)<<"):\n";
+    map<double,Particle *> dists = mapit->second;
+    for (map<double, Particle *>::iterator distit=dists.begin();
+	 distit!=dists.end();distit++) {
+      msg_Out()<<"   "<<distit->first<<"     "
+	       <<"["<<distit->second->Number()<<"]"
+	       <<"("<<distit->second->GetFlow(1)<<", "
+	       <<distit->second->GetFlow(2)<<")\n";
+    }
+  }
+}
+
