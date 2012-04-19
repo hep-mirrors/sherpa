@@ -22,7 +22,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   m_params["deltaY"]      = dr->GetValue<double>("deltaY",0.977);
   m_params["bmin"]        = dr->GetValue<double>("bmin",0.);
   m_params["bmax"]        = dr->GetValue<double>("bmax",20.);
-  m_params["accu"]        = dr->GetValue<double>("accu",5.e-3);
+  m_params["accu"]        = dr->GetValue<double>("accu",5.e-4);
   // form factors
   m_params["NGWstates"]   = dr->GetValue<int>("GW_States",2);
   m_params["FFpref"]      = 1./sqrt(m_params["NGWstates"]);
@@ -35,8 +35,6 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   // parameters of the eikonal
   m_params["lambda"]      = dr->GetValue<double>("lambda",0.40);
   m_params["Delta"]       = dr->GetValue<double>("Delta",0.21);
-  // cut-off for quasi-elastic events
-//   m_params["PtMax"]       = dr->GetValue<double>("PtMax",1.0);
   // ladder generation
   m_params["KTMin_Mode"]  = dr->GetValue<int>("KTMin_Mode",0);
   m_params["Q_as2"]       = dr->GetValue<double>("Q_as^2",0.22);

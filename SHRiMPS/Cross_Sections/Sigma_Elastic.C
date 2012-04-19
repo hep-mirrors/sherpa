@@ -17,8 +17,7 @@ Sigma_Elastic(std::list<Omega_ik *> * eikonals,const double & energy,
 	      const int & test) : 
   Sigma_Base(eikonals),
   m_Bmin(MBpars("bmin")), m_Bmax(MBpars("bmax")),
-  m_Qmax(energy/2.), m_logQsteps(160), m_logdelta(8.),
-  m_test(test) 
+  m_Qmax(energy/2.), m_logQsteps(160), m_logdelta(8.),m_test(test) 
 { 
   FillGrid(); 
 }
@@ -47,7 +46,9 @@ void Sigma_Elastic::FillGrid() {
     msg_Debugging()<<"   Q = "<<Q<<" --> dsigma/dt = "
 		   <<(value/1.e9)<<" mbarn"<<std::endl;
     if (step>0) {
-      cumul += (value+pref)/2. * (prefQ-Q)*(prefQ+Q);
+      cumul += (value+pref)/2. * (prefQ-Q);//*(prefQ+Q);
+//     msg_Out()<<"   Q = "<<Q<<" --> cumul = "
+// 		   <<(cumul/1.e9)<<std::endl;
       m_intgrid.push_back(cumul);
     }
     prefQ = Q;
@@ -58,7 +59,7 @@ void Sigma_Elastic::FillGrid() {
   value = 
     ATOOLS::sqr(integrator.Integrate(m_Bmin,m_Bmax,m_accu,1.))*
     ATOOLS::rpa->Picobarn()/(4.*M_PI);
-  cumul += (value+pref)/2. * (prefQ-Q)*(prefQ+Q);
+  cumul += (value+pref)/2. * (prefQ-Q);//*(prefQ+Q);
   m_intgrid.push_back(cumul);
   m_sigma = cumul;
   msg_Debugging()<<"   Q = "<<Q<<" --> dsigma/dt = "
@@ -89,8 +90,8 @@ void Sigma_Elastic::PrintDifferentialelasticXsec(const bool & onscreen,
     value = 
       ATOOLS::sqr(integrator.Integrate(m_Bmin,m_Bmax,m_accu,1.))/(4.*M_PI) *
       ATOOLS::rpa->Picobarn()/1.e9;
-    was<<" "<<(Q*Q)<<"   "<<value<<std::endl;
-    if (onscreen) msg_Out()<<" "<<(Q*Q)<<"   "<<value<<" mbarn/GeV^2\n";
+    was<<" "<<(Q*Q)<<"   "<<value/(2.*Q)<<std::endl;
+    if (onscreen) msg_Out()<<" "<<(Q*Q)<<"   "<<value/(2.*Q)<<" mbarn/GeV^2\n";
     step++;
   }
   Q = 0.;
@@ -128,12 +129,12 @@ double Sigma_Elastic::GetDiffArgument(const double & B) {
   return value;
 }
 
-double Sigma_Elastic::PT() const {  
+double Sigma_Elastic::PT() const {
   double random(ran->Get());
   unsigned int i(0);
   while (random-m_intgrid[i]>=0) i++;
 
-  double Q1(m_Qmax*exp(-double(i-1)/4.));
+  double Q1(m_Qmax*exp(-double(i-1)/m_logdelta));
   double Q2(i==m_intgrid.size()-1?0.:m_Qmax*exp(-double(i)/m_logdelta));
   return ((Q2*(m_intgrid[i-1]-random)+Q1*(random-m_intgrid[i]))/
 	  (m_intgrid[i-1]-m_intgrid[i]));

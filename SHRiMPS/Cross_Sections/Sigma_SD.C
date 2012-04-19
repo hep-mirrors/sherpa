@@ -101,8 +101,8 @@ void Sigma_SD::FillGrids() {
 		  <<(value1/1.e9)<<"/"<<(value2/1.e9)<<" mbarn."<<std::endl;
 
     if (step>0) {
-      cumul1 += (value1+pref1)/2. * (prefQ-Q)*(prefQ+Q);
-      cumul2 += (value2+pref2)/2. * (prefQ-Q)*(prefQ+Q);
+      cumul1 += (value1+pref1)/2. * (prefQ-Q);//*(prefQ+Q);
+      cumul2 += (value2+pref2)/2. * (prefQ-Q);//*(prefQ+Q);
       m_intgrid_SD1.push_back(cumul1);
       m_intgrid_SD2.push_back(cumul2);
     }
@@ -138,8 +138,8 @@ void Sigma_SD::FillGrids() {
   m_diffgrid_SD1.push_back(value1);
   m_diffgrid_SD2.push_back(value2);
 
-  cumul1 += (value1+pref1)/2. * (prefQ-Q)*(prefQ+Q);
-  cumul2 += (value2+pref2)/2. * (prefQ-Q)*(prefQ+Q);
+  cumul1 += (value1+pref1)/2. * (prefQ-Q);//*(prefQ+Q);
+  cumul2 += (value2+pref2)/2. * (prefQ-Q);//*(prefQ+Q);
   m_intgrid_SD1.push_back(cumul1);
   m_intgrid_SD2.push_back(cumul2);
 
@@ -157,7 +157,7 @@ void Sigma_SD::FillGrids() {
     m_intgrid_SD2[i] -= grid[i]*sigmael;
     m_intgrid_SD1[i] /= (cumul1-sigmael);
     m_intgrid_SD2[i] /= (cumul2-sigmael);
-    msg_Tracking()<<i<<"  Q = "<<m_Qmax*exp(-double(i)/m_logdelta)<<" --> "
+    msg_Debugging()<<i<<"  Q = "<<m_Qmax*exp(-double(i)/m_logdelta)<<" --> "
 		  <<m_intgrid_SD1[i]<<", "<<m_intgrid_SD2[i]<<"."<<std::endl;
   }
 }
@@ -210,8 +210,8 @@ void Sigma_SD::PrintDifferentialElasticAndSDXsec(const bool & onscreen,std::stri
 
   for (size_t i=0;i<m_diffgrid_SD1.size();i++) {
     Q     = m_Qmax*exp(-double(i)/m_logdelta);
-    was<<" "<<(Q*Q)<<"   "<<(m_diffgrid_SD1[i]+m_diffgrid_SD2[i])/1.e9<<std::endl;
-    if (onscreen) msg_Out()<<" "<<(Q*Q)<<"   "<<(m_diffgrid_SD1[i]+m_diffgrid_SD2[i])/1.e9<<" mbarn/GeV^2\n";
+    was<<" "<<(Q*Q)<<"   "<<(m_diffgrid_SD1[i]+m_diffgrid_SD2[i])/(2.*Q*1.e9)<<std::endl;
+    if (onscreen) msg_Out()<<" "<<(Q*Q)<<"   "<<(m_diffgrid_SD1[i]+m_diffgrid_SD2[i])/(2.*Q*1.e9)<<" mbarn/GeV^2\n";
   }
   was.close();
   if (onscreen) msg_Out()<<"---------------------------------------------\n";

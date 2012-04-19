@@ -111,7 +111,7 @@ int Event_Generator::MinimumBiasEvent(ATOOLS::Blob_List * blobs) {
 				       m_weightmode==weight_mode::weighted);
   case run_mode::all_min_bias:
   default:
-    msg_Error()<<"Error in "<<METHOD<<" (event omde = "<<m_thisevent<<"):\n"
+    msg_Error()<<"Error in "<<METHOD<<" (event mode = "<<m_thisevent<<"):\n"
 	       <<"   No meaningful mode for this event selected.\n"
 	       <<"   Will exit.\n";
     exit(1);
