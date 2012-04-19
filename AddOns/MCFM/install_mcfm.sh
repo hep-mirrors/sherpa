@@ -1,14 +1,20 @@
 #!/bin/bash
 
-tarname=mcfm-6.1.tar.gz
+version=5.8
+
+tarname=mcfm-${version}.tar.gz
+dirname=MCFM-${version}
+
+echo "installing MCFM from ${tarname} to ${dirname}"
 
 if ! test -f $tarname; then
   wget http://mcfm.fnal.gov/$tarname
 fi
 
-if ! test -d MCFM; then
+if ! test -d $dirname; then
   tar -xzf $tarname
-  cd MCFM
+  mv MCFM $dirname
+  cd $dirname
   mkdir obj
   sed -e's/\/Users\/johnmc\/MCFM/'$(pwd | sed -e's/\//\\\//g')'/g' \
       -e's/\(FFLAGS.*=.*\)-fno-f2c/\1-fPIC -DPIC/g' -i makefile
@@ -17,7 +23,7 @@ if ! test -d MCFM; then
   cd -
 fi
 
-cd MCFM
+cd $dirname
 
 make
 
