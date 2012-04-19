@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=5.8
+version=6.1
 
 tarname=mcfm-${version}.tar.gz
 dirname=MCFM-${version}
@@ -24,6 +24,12 @@ if ! test -d $dirname; then
 fi
 
 cd $dirname
+
+if test -d QCDLoop; then
+  cd QCDLoop
+  make
+  cd -
+fi
 
 make
 
