@@ -35,6 +35,8 @@ namespace SHRIMPS {
 			  const bool & spat=true);
 
     ATOOLS::Blob * AddReconnectionBlob();
+    void AddParticleToReconnectionBlob(ATOOLS::Blob * blob,
+				       ATOOLS::Particle * part);
 
     size_t ColourConnected(ATOOLS::Particle * part1,ATOOLS::Particle * part2);
   public:
