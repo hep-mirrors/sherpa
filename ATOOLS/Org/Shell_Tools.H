@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <sys/types.h>
+#include <unistd.h> 
 
 namespace ATOOLS {
 
