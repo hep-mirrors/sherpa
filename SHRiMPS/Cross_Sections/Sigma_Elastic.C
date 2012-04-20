@@ -125,7 +125,7 @@ void Sigma_Elastic::PrintDifferentialelasticXsec(const bool & onscreen,
     std::ofstream was;
     std::string filename(dirname+std::string("/Dsigma_el_by_dt_tuning_"+Estring+".dat"));
     was.open(filename.c_str());
-    was<<"# BEGIN HISTOGRAM tmp"<<std::endl;
+    was<<"# BEGIN HISTOGRAM /DSIGMA_EL_BY_DT_TUNING_"+Estring+"/d01-x01-y01"<<std::endl;
     double value(1.), Q(m_Qmax),Qlow,Qhigh,vallow,valhigh,a,b;
     unsigned int ilow,ihigh;
 //     msg_Out()<<"Calculating differential elastic cross sections for tuning."<<std::endl;
