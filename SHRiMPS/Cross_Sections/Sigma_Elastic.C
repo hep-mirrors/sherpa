@@ -17,7 +17,7 @@ Sigma_Elastic(std::list<Omega_ik *> * eikonals,const double & energy,
 	      const int & test) : 
   Sigma_Base(eikonals),
   m_Bmin(MBpars("bmin")), m_Bmax(MBpars("bmax")),
-  m_Qmax(energy/2.), m_logQsteps(160), m_logdelta(8.),m_test(test) 
+  m_Qmax(energy/2.), m_logQsteps(300), m_logdelta(20.),m_test(test) 
 { 
   FillGrid(); 
 }
@@ -31,6 +31,7 @@ void Sigma_Elastic::FillGrid() {
 		<<"   Maximal sqrt{|t|} = "<<m_Qmax<<"."<<std::endl;
   m_intgrid.clear();
   m_intgrid.push_back(0.);
+  m_diffgrid.clear();
 
 
   dSigma_dt differential(this);
@@ -45,8 +46,9 @@ void Sigma_Elastic::FillGrid() {
       ATOOLS::rpa->Picobarn()/(4.*M_PI);
     msg_Debugging()<<"   Q = "<<Q<<" --> dsigma/dt = "
 		   <<(value/1.e9)<<" mbarn"<<std::endl;
+    m_diffgrid.push_back(value);
     if (step>0) {
-      cumul += (value+pref)/2. * (prefQ-Q);//*(prefQ+Q);
+      cumul += (value+pref)/2. * (prefQ-Q);
 //     msg_Out()<<"   Q = "<<Q<<" --> cumul = "
 // 		   <<(cumul/1.e9)<<std::endl;
       m_intgrid.push_back(cumul);
@@ -59,7 +61,8 @@ void Sigma_Elastic::FillGrid() {
   value = 
     ATOOLS::sqr(integrator.Integrate(m_Bmin,m_Bmax,m_accu,1.))*
     ATOOLS::rpa->Picobarn()/(4.*M_PI);
-  cumul += (value+pref)/2. * (prefQ-Q);//*(prefQ+Q);
+  m_diffgrid.push_back(value);  
+  cumul += (value+pref)/2. * (prefQ-Q);
   m_intgrid.push_back(cumul);
   m_sigma = cumul;
   msg_Debugging()<<"   Q = "<<Q<<" --> dsigma/dt = "
@@ -73,37 +76,78 @@ void Sigma_Elastic::FillGrid() {
 }
 
 void Sigma_Elastic::PrintDifferentialelasticXsec(const bool & onscreen,
-						 std::string dirname) {
-  std::ofstream was;
-  std::string Estring(ATOOLS::ToString(2.*m_Qmax));
-  std::string filename(dirname+std::string("/Dsigma_el_by_dt_"+Estring+".dat"));
-  was.open(filename.c_str());
+			const bool & tuning, std::string dirname) {
+  if(!tuning){
+    std::ofstream was;
+    std::string Estring(ATOOLS::ToString(2.*m_Qmax));
+    std::string filename(dirname+std::string("/Dsigma_el_by_dt_"+Estring+".dat"));
+    was.open(filename.c_str());
 
-  dSigma_dt differential(this);
-  ATOOLS::Gauss_Integrator integrator(&differential);
-  double value(1.), Q(m_Qmax);
-  size_t step(0);
-  if (onscreen) msg_Out()<<"---------------------------------------------\n";
-  while (Q>1.e-3) {
-    Q     = m_Qmax*exp(-double(step)/20.);
+    dSigma_dt differential(this);
+    ATOOLS::Gauss_Integrator integrator(&differential);
+    double value(1.), Q(m_Qmax);
+    size_t step(0);
+    if (onscreen) msg_Out()<<"---------------------------------------------\n";
+    while (Q>1.e-3) {
+      Q     = m_Qmax*exp(-double(step)/20.);
+      differential.SetQ(Q);
+      value = 
+        ATOOLS::sqr(integrator.Integrate(m_Bmin,m_Bmax,m_accu,1.))/(4.*M_PI) *
+        ATOOLS::rpa->Picobarn()/1.e9;
+      was<<" "<<(Q*Q)<<"   "<<value/(2.*Q)<<std::endl;
+      if (onscreen) msg_Out()<<" "<<(Q*Q)<<"   "<<value/(2.*Q)<<" mbarn/GeV^2\n";
+      step++;
+    }
+    Q = 0.;
     differential.SetQ(Q);
     value = 
       ATOOLS::sqr(integrator.Integrate(m_Bmin,m_Bmax,m_accu,1.))/(4.*M_PI) *
       ATOOLS::rpa->Picobarn()/1.e9;
-    was<<" "<<(Q*Q)<<"   "<<value/(2.*Q)<<std::endl;
-    if (onscreen) msg_Out()<<" "<<(Q*Q)<<"   "<<value/(2.*Q)<<" mbarn/GeV^2\n";
-    step++;
-  }
-  Q = 0.;
-  differential.SetQ(Q);
-  value = 
-    ATOOLS::sqr(integrator.Integrate(m_Bmin,m_Bmax,m_accu,1.))/(4.*M_PI) *
-    ATOOLS::rpa->Picobarn()/1.e9;
-  was<<" "<<(Q*Q)<<"   "<<value<<std::endl;
-  was.close();
-  if (onscreen) 
-    msg_Out()<<" "<<(Q*Q)<<"   "<<value<<" mbarn/GeV^2\n"
+    was<<" "<<(Q*Q)<<"   "<<value<<std::endl;
+    was.close();
+    if (onscreen) 
+      msg_Out()<<" "<<(Q*Q)<<"   "<<value<<" mbarn/GeV^2\n"
 	     <<"---------------------------------------------\n";
+  }
+  else{
+    std::string Estring(ATOOLS::ToString(2.*m_Qmax));
+    std::vector<double> tvals;
+    std::string infile(std::string("tvals_dsigma_el_dt_"+Estring+".dat"));
+    std::ifstream input;
+    input.open(infile.c_str());
+    std::string test;
+    while (!input.eof()) {
+      input>>test;
+      tvals.push_back(std::atof(test.c_str()));
+    }
+    input.close();
+    
+    std::ofstream was;
+    std::string filename(dirname+std::string("/Dsigma_el_by_dt_tuning_"+Estring+".dat"));
+    was.open(filename.c_str());
+    was<<"# BEGIN HISTOGRAM tmp"<<std::endl;
+    double value(1.), Q(m_Qmax),Qlow,Qhigh,vallow,valhigh,a,b;
+    unsigned int ilow,ihigh;
+//     msg_Out()<<"Calculating differential elastic cross sections for tuning."<<std::endl;
+    for (int i=0; i<tvals.size(); i++) {
+//       msg_Out()<<"calculating for t = "<<tvals[i]<<" GeV^2"<<std::endl;
+      Q=sqrt(tvals[i]);
+      ilow=int(m_logdelta*log(m_Qmax/Q))+1;
+      if(ilow>m_logQsteps) ilow=m_diffgrid.size();
+      ihigh=int(m_logdelta*log(m_Qmax/Q));
+      Qlow=(ilow==m_diffgrid.size()?0.:m_Qmax*exp(-double(ilow)/m_logdelta));
+      Qhigh=m_Qmax*exp(-double(ihigh)/m_logdelta);
+      if(ilow>m_logQsteps) ilow=m_logQsteps;
+      vallow=m_diffgrid[ilow];
+      valhigh=m_diffgrid[ihigh];
+      a=(valhigh-vallow)/(Qhigh-Qlow);
+      b=vallow-a*Qlow;
+      value=a*Q+b;
+      was<<tvals[i]<<"   "<<tvals[i]<<"   "<<value/(2.*Q*1.e9)<<"   0.0\n";
+    }
+    was<<"# END HISTOGRAM"<<std::endl;
+    was.close();
+  }
 }
 
 

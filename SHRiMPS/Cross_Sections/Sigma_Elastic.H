@@ -18,10 +18,8 @@ namespace SHRIMPS {
     double              m_Qmax;
     size_t              m_logQsteps;
     double              m_logdelta;
-    std::vector<double> m_intgrid;
+    std::vector<double> m_intgrid, m_diffgrid;
     int                 m_test;
-
-
 
     void FillGrid();
   public:
@@ -32,7 +30,7 @@ namespace SHRIMPS {
     double GetCombinedValue(const double & B);
     double GetDiffArgument(const double & B);
     double PT() const;
-    void   PrintDifferentialelasticXsec(const bool & onscreen=false,
+    void   PrintDifferentialelasticXsec(const bool & onscreen=false, const bool & tuning=false, 
 					std::string dirname=std::string("."));
     void   TestElasticCrossSection();
 
