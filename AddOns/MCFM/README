@@ -5,3 +5,6 @@ In order to make this work:
 - Run "make" in the QCDloop directory
 - Apply the W1jet patch already there -- we'll have to merge patches 
   into one ....
+- Produce a H1jet patch --- essentially replace epinv**2 with epinv2
+- Produce a H2jet patch --- essentially replace epinv**2 with epinv2
+- Make scheme "dred" for H2jet.
