@@ -29,7 +29,7 @@ namespace PHOTONS {
     static inline void ResetAlphaQED()
     { s_alpha=MODEL::aqed->AqedThomson(); }
     static inline void SetAlphaQED(const double& scale)
-    { if (s_userunningparameters) s_alpha=MODEL::aqed->Aqed(scale); }
+    { if (s_userunningparameters) s_alpha=(*MODEL::aqed)(scale); }
 
     static int                  s_mode;
     static bool                 s_useme;

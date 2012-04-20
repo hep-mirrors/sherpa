@@ -7,19 +7,15 @@
 namespace MODEL {
   class Running_AlphaQED : public ATOOLS::Function_Base {
     const static double m_A[4],m_B[4],m_C[4];
-    double m_alpha0,m_alpha_MZ,m_alpha_eff;
-    double m_MZ2,m_split_scale;
-  
+    double m_alpha0;
 
     double  PiGamma(const ATOOLS::Flavour &, double);
   public:
-    Running_AlphaQED(const double,const double,const double=0.);
+    Running_AlphaQED(const double);
 
     double operator()(double); 
     double AqedThomson()  { return m_alpha0; }
-    double AqedMZ()       { return m_alpha_MZ; }
     double AqedFixed()    { return m_defval; }
-    double Aqed(double);
   };
 
   extern Running_AlphaQED * aqed;
@@ -55,27 +51,6 @@ namespace MODEL {
     \f[\alpha^{(0)}_{QED} = 1/137.03599976\,.\f]
   */
   /*!
-    \var double Running_AlphaQED::m_alpha_MZ
-    \f$\alpha_{QED}\f$ at the Z-pole.    
-  */
-  /*!
-    \var double Running_AlphaQED::m_alpha_eff
-    \todo Not used at the moment.
-  */
-  /*!
-    \var double Running_AlphaQED::m_MZ2
-    The square of the Z-mass to calculate \f$\alpha_{QED}\f$ at the Z-pole. 
-  */
-  /*!
-    \var double Running_AlphaQED::m_ecms2
-    The square of the c.m. energy as given by the beams.
-    \todo Not used at the moment.
-  */
-  /*!
-    \var double Running_AlphaQED::m_split_scale
-    \todo Not used at the moment.
-  */
-  /*!
     \fn double Running_AlphaQED::PiGamma(const ATOOLS::Flavour &, double)
     With the mass of the particle and the scale the vacuum polarization is given by
     \f[\Pi_\gamma(m^2,s)] = \left\{ \begin{array}{lcl}
@@ -88,8 +63,8 @@ namespace MODEL {
 		    \end{array} \right.\f]
   */
   /*!
-    \fn Running_AlphaQED::Running_AlphaQED(const double,const double,const double=0.);
-    Initialises \f$\alpha_{QED}\f$, mainly the scales and default values.
+    \fn Running_AlphaQED::Running_AlphaQED(const double);
+    Initialises \f$\alpha_{QED}\f$ with the value at scale t=0
   */
   /*!
     \fn double Running_AlphaQED::operator()(double); 
@@ -108,16 +83,8 @@ namespace MODEL {
     Returns \f$\alpha_{QED}\f$ in the Thomson limit.
   */
   /*!
-    \fn double Running_AlphaQED::AqedMZ()
-    Returns \f$\alpha_{QED}\f$ at the Z-pole.
-  */
-  /*!
     \fn double Running_AlphaQED::AqedFixed()
     Returns the default value for \f$\alpha_{QED}\f$.
-  */
-  /*!
-    \fn double Running_AlphaQED::Aqed(double);
-    Returns the operator, Running_AlphaQED::operator()(double).
   */
 }
 #endif

@@ -19,23 +19,12 @@ namespace MODEL {
 }
 
 
-Running_AlphaQED::Running_AlphaQED(const double _alpha0,const double _MZ2,const double _split_scale) :
-  m_alpha0(_alpha0),m_MZ2(_MZ2),m_split_scale(_split_scale)
+Running_AlphaQED::Running_AlphaQED(const double _alpha0) :
+  m_alpha0(_alpha0)
 {
   m_type = std::string("Running Coupling");
   m_name  = "Alpha_QED";
-  m_split_scale = sqr(m_split_scale);
-  m_alpha_MZ    = Aqed(m_MZ2);
-  m_defval      = Aqed(m_MZ2);
-}
-
-
-// possibly running coupling (if switched on)
-double  Running_AlphaQED::Aqed(double t){
-  return operator()(t);
-
-  if (t>m_split_scale) return m_defval;
-  return m_alpha0;
+  m_defval = _alpha0;
 }
 
 

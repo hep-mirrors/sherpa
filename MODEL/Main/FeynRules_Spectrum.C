@@ -189,9 +189,8 @@ void FeynRules_Spectrum::SetExternalParameters(const PDF::ISR_Handler_Map& isr) 
   p_model->GetScalarConstants()->insert(make_pair(string("aS"),as_cpl));
   //QED coupling and EW parameters
   p_model->GetScalarConstants()->insert(make_pair(string("alpha_QED(0)"),1./137.03599976));
-  double aQEDMZ = 1./p_model->ScalarConstant(string("aEWM1"));
-  aqed = new Running_AlphaQED(aQEDMZ,sqr(MZ));
-  aqed->SetDefault(aQEDMZ);
+  aqed = new Running_AlphaQED(1./137.03599976);
+  aqed->SetDefault(1./p_model->ScalarConstant(string("aEWM1")));
   p_model->GetScalarFunctions()->insert(make_pair(string("alpha_QED"),aqed));
   double sin2TW = 1.-sqr(Flavour(kf_Wplus).Mass()/Flavour(kf_Z).Mass());
   p_model->GetScalarConstants()->insert(make_pair(std::string("sin2_thetaW"),sin2TW));

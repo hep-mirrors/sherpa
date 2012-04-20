@@ -11,7 +11,7 @@ namespace MODEL {
     Interaction_Model_EW  * p_moew;
     Interaction_Model_QCD * p_moqcd;
     ATOOLS::Kabbala g1,g2,sintW,costW,PL,PR,M_I,root2,vev;
-    ATOOLS::Kabbala GF,tanb,ghpp,gHpp,ghgg,gHgg;
+    ATOOLS::Kabbala tanb,ghpp,gHpp,ghgg,gHgg;
   public:
     Interaction_Model_SM_Phantom_U1(MODEL::Model_Base *,std::string,std::string);
     void c_FFV(std::vector<Single_Vertex>&,int &);

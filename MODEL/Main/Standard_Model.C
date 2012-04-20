@@ -386,8 +386,8 @@ void Standard_Model::FillSpectrum(const PDF::ISR_Handler_Map& isr)
 }
 
 void Standard_Model::FixEWParameters() {
-  double MW,MZ,MH,alphaQED,sin2thetaW,cos2thetaW,vev,lambdaH,GF=1.16639e-5;
-  Complex csin2thetaW, ccos2thetaW, cvev,clambdaH, calphaQED, cGF;
+  double MW,MZ,MH,GW,GZ,GH,alphaQED0,sin2thetaW,cos2thetaW,vev,lambdaH,GF;
+  Complex csin2thetaW, ccos2thetaW, cvev,clambdaH, I(0.0, 1.0);
   std::string widthscheme = p_dataread->GetValue<std::string>("WIDTH_SCHEME","Fixed");
   p_numbers->insert(std::make_pair(std::string("WidthScheme"), widthscheme=="CMS"));
   int ewscheme = p_dataread->GetValue<int>("EW_SCHEME",0);
@@ -396,95 +396,95 @@ void Standard_Model::FixEWParameters() {
   switch (ewscheme) {
   case 0:
     // all SM parameters given explicitly
-    alphaQED   = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
     MW         = Flavour(kf_Wplus).Mass();
     MZ         = Flavour(kf_Z).Mass();
     MH         = Flavour(kf_h0).Mass();
+    GW         = Flavour(kf_Wplus).Width();
+    GZ         = Flavour(kf_Z).Width();
+    GH         = Flavour(kf_h0).Width();
+    alphaQED0  = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
+    aqed       = new Running_AlphaQED(alphaQED0);
+    aqed->SetDefault(1./p_dataread->GetValue<double>("1/ALPHAQED(default)",
+                                                     1./(*aqed)(sqr(MZ))));
     sin2thetaW = p_dataread->GetValue<double>("SIN2THETAW",0.23);
     cos2thetaW = 1.-sin2thetaW;
     vev        = p_dataread->GetValue<double>("VEV",246.);
     lambdaH    = p_dataread->GetValue<double>("LAMBDA",0.47591);
-    aqed       = new Running_AlphaQED(alphaQED, 0.0);
-    aqed->SetDefault(1./p_dataread->GetValue<double>("1/ALPHAQED(default)",
-                                                     1./(*aqed)(sqr(MZ))));
-    GF         = sqrt(2.)*(*aqed)(sqr(Flavour(kf_mu).Mass(true)))*M_PI/
-      (2.*sin2thetaW*sqr(MW));
+    GF         = p_dataread->GetValue<double>("GF",1.16639e-5);
     if (widthscheme=="CMS") {
       THROW(not_implemented, "CMS not implemented for EW_SCHEME=0");
     }
     break;
   case 1:
-    // SM parameters given by alphaQED, M_W, M_Z, M_H
-    alphaQED   = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
+    // SM parameters given by alphaQED0, M_W, M_Z, M_H
     MW         = Flavour(kf_Wplus).Mass();
     MZ         = Flavour(kf_Z).Mass();
     MH         = Flavour(kf_h0).Mass();
-    cos2thetaW = sqr(MW/MZ);
-    sin2thetaW = 1.-cos2thetaW;
-    vev        = 2.*MW*sqrt(sin2thetaW/(4.*M_PI*alphaQED));
-    lambdaH    = 2.*sqr(MH/vev);
-    aqed       = new Running_AlphaQED(alphaQED, 0.0);
+    GW         = Flavour(kf_Wplus).Width();
+    GZ         = Flavour(kf_Z).Width();
+    GH         = Flavour(kf_h0).Width();
+    alphaQED0   = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
+    aqed       = new Running_AlphaQED(alphaQED0);
     aqed->SetDefault(1./p_dataread->GetValue<double>("1/ALPHAQED(default)",
                                                      1./(*aqed)(sqr(MZ))));
-    GF         = sqrt(2.)*(*aqed)(sqr(Flavour(kf_mu).Mass(true)))*M_PI/
-      (2.*sin2thetaW*sqr(MW));
+    cos2thetaW = sqr(MW/MZ);
+    sin2thetaW = 1.-cos2thetaW;
+    vev        = 2.*MW*sqrt(sin2thetaW/(4.*M_PI*aqed->AqedFixed()));
+    lambdaH    = 2.*sqr(MH/vev);
+    GF         = p_dataread->GetValue<double>("GF",1.16639e-5);
     if (widthscheme=="CMS") {
-      ccos2thetaW = (MW*(MW-Complex(0.0,1.0)*Flavour(kf_Wplus).Width()))/
-        (MZ*(MZ-Complex(0.0,1.0)*Flavour(kf_Z).Width()));
+      Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ)), muH2(MH*(MH-I*GH));
+      ccos2thetaW = muW2/muZ2;
       csin2thetaW = 1.-ccos2thetaW;
-      cvev        = 2.*sqrt((MW*(MW-Complex(0.0,1.0)*Flavour(kf_Wplus).Width()))
-                            *csin2thetaW/(4.*M_PI*alphaQED));
-      clambdaH    = 2.*(MH*(MH-Complex(0.0,1.0)*Flavour(kf_h0).Width()))/(cvev*cvev);
-      cGF = sqrt(2.)*(*aqed)(sqr(Flavour(kf_mu).Mass(true)))*M_PI/
-            (2.*csin2thetaW*(sqr(MW)-Complex(0.,1.)*MW*Flavour(kf_Wplus).Width()));
+      cvev        = 2.*sqrt(muW2*csin2thetaW/(4.*M_PI*aqed->AqedFixed()));
+      clambdaH    = 2.*muH2/(cvev*cvev);
     }
     break;
   case 2:
-    // SM parameters given by alphaQED, sinthetaW, v, M_H
-    alphaQED   = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
+    // SM parameters given by alphaQED0, sinthetaW, v, M_H
+    alphaQED0   = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
     vev        = p_dataread->GetValue<double>("VEV",246.);
     sin2thetaW = p_dataread->GetValue<double>("SIN2THETAW",0.23);
     cos2thetaW = 1.-sin2thetaW;
-    MW         = vev/2.*sqrt((4.*M_PI*alphaQED)/sin2thetaW);
-    MZ         = vev/2.*sqrt((4.*M_PI*alphaQED)*(1/sin2thetaW+1/cos2thetaW));
-    MH         = p_dataread->GetValue<double>("MH",120.);
+    MW         = vev/2.*sqrt((4.*M_PI*aqed->AqedFixed())/sin2thetaW);
+    MZ         = vev/2.*sqrt((4.*M_PI*aqed->AqedFixed())*(1/sin2thetaW+1/cos2thetaW));
+    MH         = Flavour(kf_h0).Mass();
+    GW         = Flavour(kf_Wplus).Width();
+    GZ         = Flavour(kf_Z).Width();
+    GH         = Flavour(kf_h0).Width();
     lambdaH    = 2.*sqr(MH/vev);
-    aqed       = new Running_AlphaQED(alphaQED, 0.0);
+    aqed       = new Running_AlphaQED(alphaQED0);
     aqed->SetDefault(1./p_dataread->GetValue<double>("1/ALPHAQED(default)",
                                                      1./(*aqed)(sqr(MZ))));
-    GF         = sqrt(2.)*(*aqed)(sqr(Flavour(kf_mu).Mass(true)))*M_PI/
-      (2.*sin2thetaW*sqr(MW));
+    GF         = p_dataread->GetValue<double>("GF",1.16639e-5);
     if (widthscheme=="CMS") {
       THROW(not_implemented, "CMS not implemented for EW_SCHEME=2");
     }
     break;
   case 3:
     //gmu scheme
+    GF         = p_dataread->GetValue<double>("GF",1.16639e-5);
     MW         = Flavour(kf_Wplus).Mass();
     MZ         = Flavour(kf_Z).Mass();
-    GF         = p_dataread->GetValue<double>("GF",1.16639e-5);
+    MH         = Flavour(kf_h0).Mass();
+    GW         = Flavour(kf_Wplus).Width();
+    GZ         = Flavour(kf_Z).Width();
+    GH         = Flavour(kf_h0).Width();
+    alphaQED0  = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
+    aqed       = new Running_AlphaQED(alphaQED0);
+    aqed->SetDefault(sqrt(2.)*GF/M_PI*sqr(MW)*sin2thetaW);
     sin2thetaW = 1.-sqr(MW/MZ);
     cos2thetaW = 1.-sin2thetaW;
-    alphaQED   = sqrt(2.)*GF*sqr(MW)*sin2thetaW/M_PI;
-    aqed       = new Running_AlphaQED(alphaQED, 0.0);
-    aqed->SetDefault(1./p_dataread->GetValue<double>("1/ALPHAQED(default)",
-                                                     1./(*aqed)(sqr(MZ))));
-    MH         = Flavour(kf_h0).Mass();
     vev        = 1./(pow(2.,0.25)*sqrt(GF));
     lambdaH    = 2.*sqr(MH/vev); 
     if (widthscheme=="CMS") {
-      THROW(not_implemented, "CMS not implemented for EW_SCHEME=3");
-      /// TODO: need to implement complex alpha for Gmu scheme ???
-      /// Supposedly ok to use real alpha
-      /*
-      p_numbers->insert(std::make_pair(std::string("WidthScheme"), 2));
-      ccos2thetaW = (MW*MW-Complex(0.0,1.0)*Flavour(kf_Wplus).Width())/(MZ*MZ-Complex(0.0,1.0)*Flavour(kf_Z).Width());
+      Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ)), muH2(MH*(MH-I*GH));
+      ccos2thetaW = muW2/muZ2;
       csin2thetaW = 1.-ccos2thetaW;
-      calphaQED   = sqrt(2.)*GF*(sqr(MW)-Complex(0.0,1.0)*Flavour(kf_Wplus).Width())*csin2thetaW/M_PI;
+      aqed->SetDefault(Complex(sqrt(2.)*GF/M_PI*muW2*csin2thetaW).real());
       cvev        = 1./(pow(2.,0.25)*sqrt(GF));
-      clambdaH    = 2.*(MH*MH-Complex(0.0,1.0)*Flavour(kf_h0).Width())/(cvev*cvev);
+      clambdaH    = 2.*muH2/(cvev*cvev);
       break;
-      */
     }
     break;
   default:
@@ -493,7 +493,7 @@ void Standard_Model::FixEWParameters() {
   }
 
   p_functions->insert(std::make_pair(std::string("alpha_QED"),aqed));
-  p_constants->insert(std::make_pair(std::string("alpha_QED(0)"),alphaQED));
+  p_constants->insert(std::make_pair(std::string("alpha_QED(0)"),alphaQED0));
   p_constants->insert(std::make_pair(std::string("sin2_thetaW"), sin2thetaW));
   p_constants->insert(std::make_pair(std::string("cos2_thetaW"), cos2thetaW));
   p_constants->insert(std::make_pair(std::string("vev"),         vev));
@@ -510,7 +510,6 @@ void Standard_Model::FixEWParameters() {
     p_complexconstants->insert(std::make_pair(std::string("csin2_thetaW"), csin2thetaW));
     p_complexconstants->insert(std::make_pair(std::string("cvev"), cvev));
     p_complexconstants->insert(std::make_pair(std::string("clambdaH"), clambdaH));
-    p_complexconstants->insert(std::make_pair(std::string("cGF"), cGF));
   }
 }
 

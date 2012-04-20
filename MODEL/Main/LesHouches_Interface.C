@@ -132,7 +132,7 @@ void LesHouches_Interface::SetSMInput(const PDF::ISR_Handler_Map& isr) {
     MW = sqrt((sqr(MZ)/2.)+sqrt(pow(MZ,4.)/4.-sqr(MZ)*(alphaQED*M_PI)/(sqrt(2.)*GF)));
     sin2TW = 1.-sqr(MW/MZ);
         
-    aqed = new Running_AlphaQED(1./137.0359895,sqr(MZ));
+    aqed = new Running_AlphaQED(1./137.0359895);
     aqed->SetDefault(alphaQED);
     
     p_model->GetScalarFunctions()->insert(std::make_pair(std::string("alpha_QED"),aqed));
