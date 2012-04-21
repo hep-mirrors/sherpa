@@ -1,3 +1,5 @@
+MAKEFLAGS=-j1
+
 ## For documentation on texinfo, see
 ## http://www.gnu.org/software/texinfo/manual
 
