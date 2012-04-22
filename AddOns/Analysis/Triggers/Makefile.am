@@ -13,6 +13,7 @@ ANATRIGGER_SOURCES    =	\
 			protocones.cpp split_merge.cpp siscone.cpp \
 			siscone_error.cpp area.cpp \
 			SISCone.C \
+			ConeMCFM.C \
 			MCFMCone.C \
 			HT_Selector.C \
 			AlphaT_Selector.C \
@@ -54,6 +55,7 @@ ANATRIGGER_ADDS       =	\
 			vicinity.h\
 			config.h \
 			SISCone.H \
+			ConeMCFM.H \
 			MCFMCone.H \
 			Kt_Algorithm.H \
 			DIS_Algorithm.H \
