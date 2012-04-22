@@ -1,0 +1,23 @@
+#!/bin/bash
+
+function print_help()
+{
+  echo "usage: mpilog [options] [command]" && echo && \
+  echo "options: -n <procs>  set number of processes" && \
+  echo "         -l <file>   set log file basename" && \
+  echo "         -h          display this help and exit" && echo;
+}
+
+while getopts n:l:h OPT;
+do
+  case $OPT in
+  n) np=$OPTARG ;;
+  l) lf=$OPTARG ;;
+  h) print_help && exit 0 ;;
+  \?) print_help && exit 1
+  esac;
+done;
+
+test -z "$lf" && lf=run; rm -f $lf.err $lf.out $lf.log
+mpirun -n $np ${@:$OPTIND:$#} -l$lf.log 2>$lf.err 1>$lf.out & 
+tail --pid=$! -s 0.1 -F $lf.log
