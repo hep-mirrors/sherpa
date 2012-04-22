@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <dirent.h>
 #include <cstdlib>
+#include <unistd.h>
 #if __GNUC__
 #include <cxxabi.h>
 #endif
