@@ -189,7 +189,7 @@ void Sigma_DD::PrintDifferentialElasticAndDiffXsec(const bool & onscreen,std::st
   }
 
 
-double Sigma_DD::PT() {  
+double Sigma_DD::PT2() {  
   const std::vector<double> & grid = m_intgrid_DD;
 
   double random(ran->Get());

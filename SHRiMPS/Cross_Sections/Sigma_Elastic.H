@@ -29,7 +29,7 @@ namespace SHRIMPS {
     double GetValue(const double & B); 
     double GetCombinedValue(const double & B);
     double GetDiffArgument(const double & B);
-    double PT() const;
+    double PT2() const;
     void   PrintDifferentialelasticXsec(const bool & onscreen=false, const bool & tuning=false, 
 					std::string dirname=std::string("."));
     void   TestElasticCrossSection();

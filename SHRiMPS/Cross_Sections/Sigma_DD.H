@@ -40,7 +40,7 @@ namespace SHRIMPS {
     double GetValue(const double & B); 
     double GetCombinedValue(const double & B);
     double GetDiffArgument(const double & B);
-    double PT();
+    double PT2();
     void   PrintDifferentialElasticAndDiffXsec(const bool & onscreen=false,
 					       std::string dirname=std::string("."));
   };  

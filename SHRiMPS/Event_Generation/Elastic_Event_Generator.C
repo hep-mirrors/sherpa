@@ -90,7 +90,7 @@ ElasticEvent(ATOOLS::Blob_List * blobs,const double & xsec) {
 
 
 void Elastic_Event_Generator::FixKinematics() {
-  double pt2(p_sigma->PT()), pt(sqrt(pt2));
+  double pt2(p_sigma->PT2()), pt(sqrt(pt2));
   m_histomap[std::string("Q_elastic")]->Insert(pt2);  
   double phi(2.*M_PI*ran->Get()), ptx(pt*cos(phi)), pty(pt*sin(phi));
   double pl1(m_sign1*sqrt(m_pl12-pt2)), pl2(-m_sign1*sqrt(m_pl22-pt2));

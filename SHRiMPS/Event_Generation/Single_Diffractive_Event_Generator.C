@@ -131,7 +131,7 @@ SingleDiffractiveEvent(ATOOLS::Blob_List * blobs,const double & xsec) {
 bool Single_Diffractive_Event_Generator::FixKinematics() {
   bool mode(true);
   double etot(m_p1[0]+m_p2[0]);
-  double pt2(p_sigma->PT(mode)), pt(sqrt(pt2));
+  double pt2(p_sigma->PT2(mode)), pt(sqrt(pt2));
   m_histomap[std::string("Q_sd")]->Insert(pt2);  
   double phi(2.*M_PI*ran->Get()), ptx(pt*cos(phi)), pty(pt*sin(phi));
   double e1,e2,pl1,pl2,m1,m2;

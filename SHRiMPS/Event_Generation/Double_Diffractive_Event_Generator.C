@@ -126,7 +126,7 @@ DoubleDiffractiveEvent(ATOOLS::Blob_List * blobs,const double & xsec) {
 
 void Double_Diffractive_Event_Generator::FixKinematics() {
   double etot(m_p1[0]+m_p2[0]);
-  double pt2(p_sigma->PT()), pt(sqrt(pt));
+  double pt2(p_sigma->PT2()), pt(sqrt(pt2));
   m_histomap[std::string("Q_dd")]->Insert(pt2);  
   double phi(2.*M_PI*ran->Get()), ptx(pt*cos(phi)), pty(pt*sin(phi));
   double e1,e2,pl1,pl2,m1,m2;

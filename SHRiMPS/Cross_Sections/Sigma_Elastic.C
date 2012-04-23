@@ -173,7 +173,7 @@ double Sigma_Elastic::GetDiffArgument(const double & B) {
   return value;
 }
 
-double Sigma_Elastic::PT() const {
+double Sigma_Elastic::PT2() const {
   double random(ran->Get());
   unsigned int i(0);
   while (random-m_intgrid[i]>=0) i++;

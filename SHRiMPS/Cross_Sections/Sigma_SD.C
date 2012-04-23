@@ -219,7 +219,7 @@ void Sigma_SD::PrintDifferentialElasticAndSDXsec(const bool & onscreen,std::stri
 }
 
 
-double Sigma_SD::PT(bool & mode) {  
+double Sigma_SD::PT2(bool & mode) {  
   const std::vector<double> & grid = m_intgrid_SD1;
   if (m_sigma_SD1/m_sigma>ATOOLS::ran->Get()) mode = false;
   else mode = true;
