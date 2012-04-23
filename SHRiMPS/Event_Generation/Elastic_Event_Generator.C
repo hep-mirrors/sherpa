@@ -7,6 +7,10 @@
 
 using namespace SHRIMPS;
 
+Elastic_Event_Generator::Elastic_Event_Generator(){
+  m_histomap[std::string("Q_elastic")] = new Histogram(0,0.0,10.0,1000);
+}
+
 Elastic_Event_Generator::
 Elastic_Event_Generator(Sigma_Elastic * sigma,Beam_Remnant_Handler * beams,
 			const int & test) :
@@ -25,6 +29,23 @@ Elastic_Event_Generator(Sigma_Elastic * sigma,Beam_Remnant_Handler * beams,
 	       <<" not in c.m. System."<<std::endl
 	       <<"   Will terminate the run."<<std::endl;
     exit(1);
+  }
+  m_histomap[std::string("Q_elastic")] = new Histogram(0,0.0,10.0,1000);
+}
+
+Elastic_Event_Generator::~Elastic_Event_Generator() {
+  if (!m_histomap.empty()) {
+    Histogram * histo;
+    std::string name;
+    for (std::map<std::string,Histogram *>::iterator 
+	   hit=m_histomap.begin();hit!=m_histomap.end();hit++) {
+      histo = hit->second;
+      name  = std::string("QE_Analysis/")+hit->first+std::string(".dat");
+      histo->Finalize();
+      histo->Output(name);
+      delete histo;
+    }
+    m_histomap.clear();
   }
 }
 
@@ -69,7 +90,8 @@ ElasticEvent(ATOOLS::Blob_List * blobs,const double & xsec) {
 
 
 void Elastic_Event_Generator::FixKinematics() {
-  double pt(p_sigma->PT()), pt2(pt*pt);
+  double pt2(p_sigma->PT()), pt(sqrt(pt2));
+  m_histomap[std::string("Q_elastic")]->Insert(pt2);  
   double phi(2.*M_PI*ran->Get()), ptx(pt*cos(phi)), pty(pt*sin(phi));
   double pl1(m_sign1*sqrt(m_pl12-pt2)), pl2(-m_sign1*sqrt(m_pl22-pt2));
 

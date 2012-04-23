@@ -90,7 +90,7 @@ void Sigma_DD::FillGrids() {
 		  <<(value/1.e9)<<" mbarn."<<std::endl;
 
     if (step>0) {
-      cumul += (value+pref)/2. * (prefQ-Q);//*(prefQ+Q);
+      cumul += (value+pref)/2. * (prefQ-Q)*(prefQ+Q);
       m_intgrid_DD.push_back(cumul);
     }
     prefQ = Q;
@@ -116,7 +116,7 @@ void Sigma_DD::FillGrids() {
   value *= ATOOLS::rpa->Picobarn()/(4.*M_PI);
   m_diffgrid_DD.push_back(value);
 
-  cumul += (value+pref)/2. * (prefQ-Q);//*(prefQ+Q);
+  cumul += (value+pref)/2. * (prefQ-Q)*(prefQ+Q);
   m_intgrid_DD.push_back(cumul);
 
   m_sigma_DD = cumul-sigmasd-sigmael;
@@ -181,8 +181,8 @@ void Sigma_DD::PrintDifferentialElasticAndDiffXsec(const bool & onscreen,std::st
 
   for (size_t i=0;i<m_diffgrid_DD.size();i++) {
     Q     = m_Qmax*exp(-double(i)/m_logdelta);
-    was<<" "<<(Q*Q)<<"   "<<m_diffgrid_DD[i]/(2.*Q*1.e9)<<std::endl;
-    if (onscreen) msg_Out()<<" "<<(Q*Q)<<"   "<<m_diffgrid_DD[i]/(2.*Q*1.9)<<" mbarn/GeV^2\n";
+    was<<" "<<(Q*Q)<<"   "<<m_diffgrid_DD[i]/1.e9<<std::endl;
+    if (onscreen) msg_Out()<<" "<<(Q*Q)<<"   "<<m_diffgrid_DD[i]/1.9<<" mbarn/GeV^2\n";
   }
   was.close();
   if (onscreen) msg_Out()<<"---------------------------------------------\n";
@@ -196,7 +196,7 @@ double Sigma_DD::PT() {
   size_t i(0);
   while (random-grid[i]>=0) i++;
 
-  double Q1(m_Qmax*exp(-double(i-1)/m_logdelta));
-  double Q2(i==grid.size()-1?0.:m_Qmax*exp(-double(i)/m_logdelta));
+  double Q1(sqr(m_Qmax*exp(-double(i-1)/m_logdelta)));
+  double Q2(sqr(i==grid.size()-1?0.:m_Qmax*exp(-double(i)/m_logdelta)));
   return ((Q2*(grid[i-1]-random)+Q1*(random-grid[i]))/(grid[i-1]-grid[i]));
 }

@@ -7,7 +7,9 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Math/Histogram.H"
 #include <vector>
+#include <map>
 
 namespace SHRIMPS {
   class Double_Diffractive_Event_Generator : public Event_Generator_Base {
@@ -21,11 +23,14 @@ namespace SHRIMPS {
     double                 m_accu;
     int                    m_test;
 
+    std::map<std::string, ATOOLS::Histogram * > m_histomap;
+
     void   FixKinematics();
   public:
-    Double_Diffractive_Event_Generator() {}
+    Double_Diffractive_Event_Generator();
     Double_Diffractive_Event_Generator(Sigma_DD * sigma,Beam_Remnant_Handler * beams,
 				       const int & test=0);
+    ~Double_Diffractive_Event_Generator();
 
     bool DoubleDiffractiveEvent(ATOOLS::Blob_List * blobs,
 				const double & xsec=0.);

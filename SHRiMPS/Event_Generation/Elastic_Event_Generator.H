@@ -7,7 +7,9 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Math/Histogram.H"
 #include <vector>
+#include <map>
 
 namespace SHRIMPS {
   class Elastic_Event_Generator : public Event_Generator_Base {
@@ -21,11 +23,14 @@ namespace SHRIMPS {
     double                 m_accu;
     int                    m_test;
 
+    std::map<std::string, ATOOLS::Histogram * > m_histomap;
+
     void   FixKinematics();
   public:
-    Elastic_Event_Generator() {}
+    Elastic_Event_Generator();
     Elastic_Event_Generator(Sigma_Elastic * sigma,Beam_Remnant_Handler * beams,
 			    const int & test=0);
+    ~Elastic_Event_Generator();
 
     bool ElasticEvent(ATOOLS::Blob_List * blobs,const double & xsec=0.);
     const double & XSec() const { return p_sigma->XSec(); }

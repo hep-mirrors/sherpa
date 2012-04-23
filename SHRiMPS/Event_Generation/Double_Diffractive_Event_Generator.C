@@ -8,6 +8,10 @@
 
 using namespace SHRIMPS;
 
+Double_Diffractive_Event_Generator::Double_Diffractive_Event_Generator(){
+  m_histomap[std::string("Q_dd")] = new Histogram(0,0.0,10.0,1000);
+}
+
 Double_Diffractive_Event_Generator::
 Double_Diffractive_Event_Generator(Sigma_DD * sigma,Beam_Remnant_Handler * beams,
 				   const int & test) :
@@ -19,6 +23,7 @@ Double_Diffractive_Event_Generator(Sigma_DD * sigma,Beam_Remnant_Handler * beams
   m_sign1(double(-1+2*int(m_p1[3]>0))), m_needsboost(false),
   m_accu(1.e-2), m_test(test)
 {
+  m_histomap[std::string("Q_dd")] = new Histogram(0,0.0,10.0,1000);
   if (test==-1) return;
   // Assume symmetric collisions only
   if ((ATOOLS::Vec3D(m_p1)+ATOOLS::Vec3D(m_p2)).Sqr()>1.e-4) {
@@ -55,6 +60,22 @@ Double_Diffractive_Event_Generator(Sigma_DD * sigma,Beam_Remnant_Handler * beams
   }
 
 //   m_pl12 = m_pl22 = m_pl12+sqr(m_beam1.Mass())-sqr(m_out1.Mass());
+}
+
+Double_Diffractive_Event_Generator::~Double_Diffractive_Event_Generator() {
+  if (!m_histomap.empty()) {
+    Histogram * histo;
+    std::string name;
+    for (std::map<std::string,Histogram *>::iterator 
+	   hit=m_histomap.begin();hit!=m_histomap.end();hit++) {
+      histo = hit->second;
+      name  = std::string("QE_Analysis/")+hit->first+std::string(".dat");
+      histo->Finalize();
+      histo->Output(name);
+      delete histo;
+    }
+    m_histomap.clear();
+  }
 }
 
 bool Double_Diffractive_Event_Generator::
@@ -105,7 +126,8 @@ DoubleDiffractiveEvent(ATOOLS::Blob_List * blobs,const double & xsec) {
 
 void Double_Diffractive_Event_Generator::FixKinematics() {
   double etot(m_p1[0]+m_p2[0]);
-  double pt(p_sigma->PT()), pt2(pt*pt);
+  double pt2(p_sigma->PT()), pt(sqrt(pt));
+  m_histomap[std::string("Q_dd")]->Insert(pt2);  
   double phi(2.*M_PI*ran->Get()), ptx(pt*cos(phi)), pty(pt*sin(phi));
   double e1,e2,pl1,pl2,m1,m2;
   m1 = m_out1.Mass();

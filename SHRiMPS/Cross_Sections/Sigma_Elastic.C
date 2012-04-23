@@ -48,7 +48,7 @@ void Sigma_Elastic::FillGrid() {
 		   <<(value/1.e9)<<" mbarn"<<std::endl;
     m_diffgrid.push_back(value);
     if (step>0) {
-      cumul += (value+pref)/2. * (prefQ-Q);
+      cumul += (value+pref)/2. * (prefQ-Q)*(prefQ+Q);
 //     msg_Out()<<"   Q = "<<Q<<" --> cumul = "
 // 		   <<(cumul/1.e9)<<std::endl;
       m_intgrid.push_back(cumul);
@@ -62,7 +62,7 @@ void Sigma_Elastic::FillGrid() {
     ATOOLS::sqr(integrator.Integrate(m_Bmin,m_Bmax,m_accu,1.))*
     ATOOLS::rpa->Picobarn()/(4.*M_PI);
   m_diffgrid.push_back(value);  
-  cumul += (value+pref)/2. * (prefQ-Q);
+  cumul += (value+pref)/2. * (prefQ-Q)*(prefQ+Q);
   m_intgrid.push_back(cumul);
   m_sigma = cumul;
   msg_Debugging()<<"   Q = "<<Q<<" --> dsigma/dt = "
@@ -94,8 +94,8 @@ void Sigma_Elastic::PrintDifferentialelasticXsec(const bool & onscreen,
       value = 
         ATOOLS::sqr(integrator.Integrate(m_Bmin,m_Bmax,m_accu,1.))/(4.*M_PI) *
         ATOOLS::rpa->Picobarn()/1.e9;
-      was<<" "<<(Q*Q)<<"   "<<value/(2.*Q)<<std::endl;
-      if (onscreen) msg_Out()<<" "<<(Q*Q)<<"   "<<value/(2.*Q)<<" mbarn/GeV^2\n";
+      was<<" "<<(Q*Q)<<"   "<<value<<std::endl;
+      if (onscreen) msg_Out()<<" "<<(Q*Q)<<"   "<<value<<" mbarn/GeV^2\n";
       step++;
     }
     Q = 0.;
@@ -143,7 +143,7 @@ void Sigma_Elastic::PrintDifferentialelasticXsec(const bool & onscreen,
       a=(valhigh-vallow)/(Qhigh-Qlow);
       b=vallow-a*Qlow;
       value=a*Q+b;
-      was<<tvals[i]<<"   "<<tvals[i]<<"   "<<value/(2.*Q*1.e9)<<"   0.0\n";
+      was<<tvals[i]<<"   "<<tvals[i]<<"   "<<value/1.e9<<"   0.0\n";
     }
     was<<"# END HISTOGRAM"<<std::endl;
     was.close();
@@ -178,8 +178,8 @@ double Sigma_Elastic::PT() const {
   unsigned int i(0);
   while (random-m_intgrid[i]>=0) i++;
 
-  double Q1(m_Qmax*exp(-double(i-1)/m_logdelta));
-  double Q2(i==m_intgrid.size()-1?0.:m_Qmax*exp(-double(i)/m_logdelta));
+  double Q1(sqr(m_Qmax*exp(-double(i-1)/m_logdelta)));
+  double Q2(sqr(i==m_intgrid.size()-1?0.:m_Qmax*exp(-double(i)/m_logdelta)));
   return ((Q2*(m_intgrid[i-1]-random)+Q1*(random-m_intgrid[i]))/
 	  (m_intgrid[i-1]-m_intgrid[i]));
 }
