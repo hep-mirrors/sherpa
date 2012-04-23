@@ -2,6 +2,7 @@
 #define AddOns_MCFM_MCFM_Wrapper_H
 
 #include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/MyComplex.H"
 #include <cstring>
 
 inline void MakeFortranString
@@ -41,6 +42,9 @@ extern "C" {
   extern struct {
     char scheme[4];
   } scheme_;
+  extern struct {
+    double deltar;
+  } deltar_;
   extern struct {
     double scale,musq;
   } scale_;
@@ -103,6 +107,9 @@ extern "C" {
   extern struct {
     double bbsqmin,bbsqmax,wsqmin,wsqmax;
   } limits_;
+  extern struct {
+    Complex za[MCFM_NMX*MCFM_NMX], zb[MCFM_NMX*MCFM_NMX];
+  } zprods_;
 }
 
 #endif
