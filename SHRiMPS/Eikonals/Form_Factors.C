@@ -88,7 +88,7 @@ void Form_Factor::Initialise(const std::vector<double> & params) {
     exit(1);
   }
   m_norm   = NormAnalytical();
-  m_bmax   = ATOOLS::Min(16.,params[params.size()-2]);
+  m_bmax   = ATOOLS::Max(16.,params[params.size()-2]);
   m_deltab = (m_bmax/double(m_bsteps));
   m_accu   = params[params.size()-1];
   m_ftarg  = FT_Argument(this);
