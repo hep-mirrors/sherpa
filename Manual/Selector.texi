@@ -14,6 +14,7 @@ Sherpa provides the following selectors
 * Universal selector::        user-defined cuts
 * Minimum selector::          cuts that are inclusive for several selectors
 * NLO selectors::             selectors for NLO QCD calculations
+* Fastjet selector::          selector using jets built by Fastjet
 @end menu
 
 @node One particle selectors
@@ -255,3 +256,29 @@ Mass <flavour1 code> <flavour2 code> <min value> <max value>
 @item The @ref{Minimum selector} can be used if constructed with other selectors mentioned in this section
 
 @end table
+
+@node Fastjet selector
+@subsection Fastjet selector
+
+If @uref{http://www.fastjet.fr,,FastJet} is enabled, the momenta and nodal 
+values of the jets found with Fastjet can be used to calculate more elaborate 
+selector criteria. The syntax of this selector is
+
+@verbatim
+FastjetSelector <expression> <algorithm> <n> <ptmin> <etmin> <dr> [<f(siscone)>=0.75] [<eta-max>] [<y-max>]
+@end verbatim
+
+wherein @code{algorithm} can take the values @code{kt,antikt,cambridge,siscone}. 
+In the algebraic @code{expression} @code{MU_n2} (n=2..njet+1) signify the nodal 
+values of the jets found and @code{p[i]} are their momenta. For details see
+@ref{Scale setting using jets}. For example, in lepton pair production in 
+association with jets
+
+@verbatim
+FastjetSelector "Calc(p[4]+p[5]>100.)" antikt 2 40. 0. 0.5
+@end verbatim
+
+selects all parameter points where two anti-kt jets with at least 40 GeV of
+transverse momentum and an invariant mass of at least 100 GeV are found. The 
+expression must calculate a boolean value.
+

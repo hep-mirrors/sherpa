@@ -252,9 +252,8 @@ sets the scale of one strong coupling to the transverse momentum of the
 hardest jet, and the scale of the second strong coupling to the transverse 
 momentum of second hardest jet. Note @code{M=1} in this case.
 
-The additional tags @var{MU_22} .. @var{MU_n2}, with @var{n} the number 
-of strongly interacting final state particles, hold the nodal values of the 
-jet clustering in descending order.
+The additional tags @var{MU_22} .. @var{MU_n2}  (n=2..njet+1), hold the nodal 
+values of the jet clustering in descending order.
 
 Please note that currently this type of scale setting can only be done within 
 the process block (@ref{Processes}) and not within the (me) section.
