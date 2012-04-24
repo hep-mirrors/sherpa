@@ -113,7 +113,7 @@ used to set a scale based on jet, rather than parton momenta.
 FastJet with the arguments given as follows
 
 @verbatim
-Scales FASTJET[A=antikt,PT=10,ET=0,R=0.4,M=1]{...}
+SCALES FASTJET[A=antikt,PT=10,ET=0,R=0.4,M=1]{...}
 @end verbatim
 
 Thereby, @kbd{A} defines the jet algorithm, @kbd{R} sets the cone size,
@@ -178,9 +178,9 @@ infrared safe w.r.t. to the radiation of an extra parton. Infrared safe
 
 @itemize
 @item any function of momenta of NOT strongly interacting particles
-@item sum of transverse quantities of all partons (e.g. H_T2)
+@item sum of transverse quantities of all partons (e.g. @code{H_T2})
 @item any quantity refering to jets, constructed by an IR safe
-jet algorithm (not implemented yet)
+jet algorithm, see below.
 @end itemize
 
 Not infrared safe are
@@ -195,6 +195,64 @@ including the initial state partons itself
 Since the total number of partons is different for different pieces
 of the NLO calculation any explicit reference to a parton momentum
 will lead to an inconsistent result.
+
+
+@subsubsection Scale setting using jets
+
+Sherpa allows to define scales based on jet rather than parton momenta. The 
+final state parton configuration is first clustered using FastJet and 
+resulting jet momenta are then added back to the list of non strongly 
+interacting particles. The numbering of momenta therefore stays effectively 
+the same as in standard Sherpa, except that final state partons are replaced 
+with jets, if applicable (a parton might not pass the jet criteria and get 
+"lost"). Jet momenta can then be accessed just like parton momenta in the 
+@code{VAR} scale setter through the identifiers @code{p[i]}, and their nodal 
+values can be used through @code{MU_n2}. The syntax is
+
+@verbatim
+Scales FASTJET[<jet-algo-paramter>]{<scale-definition>}
+@end verbatim
+
+Therein the parameters of the jet algorithm to be used to define the jets 
+are given as a comma separated of 
+
+@itemize
+@item the jet algorithm @code{A=kt,antikt,cambridge,siscone} 
+      (default @code{antikt})
+@item phase space restrictions, i.e. @code{PT=<min-pt>}, @code{ET=<min-et>}, 
+      @code{Eta=<max-eta>}, @code{Y=<max-rap>} (otherwise unrestricted)
+@item radial parameter @code{R=<rad-param>} (default @code{0.4})
+@item f-parameter for Siscone @code{f=<f-param>} (default @code{0.75})
+@item recombination scheme @code{C=E,pt,pt2,Et,Et2,BIpt,BIpt2} 
+      (default @code{E})
+@item scale setting mode @code{M=0,1} (default @code{1})
+@end itemize
+
+Consider the example of lepton pair production in association with jets. The 
+following scale setter 
+
+@verbatim
+Scales FASTJET[A=kt,PT=10,R=0.4,M=0]{sqrt(PPerp2(p[4])*PPerp2(p[5]))}
+@end verbatim
+
+reconstructs jets using the kt-algorithm with R=0.4 and a minimum transverse 
+momentum of 10 GeV. The scale of all strong couplings is then set to the 
+geometric mean of the hardest and second hardest jet. Note @code{M=0}.
+
+Similarly, in processes with multiple strong couplings, their renormalisation 
+scales ca be set to different values, e.g.
+
+@verbatim
+Scales FASTJET[A=kt,PT=10,R=0.4,M=1]{PPerp2(p[4])}{PPerp2(p[5])}
+@end verbatim
+
+sets the scale of one strong coupling to the transverse momentum of the 
+hardest jet, and the scale of the second strong coupling to the transverse 
+momentum of second hardest jet. Note @code{M=1} in this case.
+
+Please note that currently this type of scale setting can only be done within 
+the process block (@ref{Processes}) and not within the (me) section.
+
 
 @subsubsection Simple scale variations
 
