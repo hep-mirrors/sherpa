@@ -78,6 +78,13 @@ event weight will exceed the otherwise constant value.
 This parameter specifies how to compute the renormalization and
 factorization scale and potential additional scales.
 
+@menu
+* Scale schemes for NLO calculations::       Scale schemes for NLO calculations
+* Scale setting using jets::                 Scale setting using jets
+* Simple scale variations::                  Simple scale variations
+@end menu
+
+
 Sherpa provides several built-in scale schemes.
 The options which are currently available are
 
@@ -113,18 +120,10 @@ used to set a scale based on jet, rather than parton momenta.
 FastJet with the arguments given as follows
 
 @verbatim
-SCALES FASTJET[A=antikt,PT=10,ET=0,R=0.4,M=1]{...}
+Scales FASTJET[A=antikt,PT=10,ET=0,R=0.4,M=1]{...}
 @end verbatim
 
-Thereby, @kbd{A} defines the jet algorithm, @kbd{R} sets the cone size,
-and @kbd{PT} / @kbd{ET} define the minimum transverse momentum/energy
-of the jets. The additional argument @kbd{M} (default 1) sets the
-averaging mode. After jet finding, the jet momenta are ordered as in
-FastJet. Non-QCD partons are unaffected by this procedure, i.e. their
-momentum indices remain the same. The additional tags @var{MU_22} .. 
-@var{MU_n2}, with @var{n} the number of strongly interacting
-final state particles, hold the nodal values of the jet clustering and
-the transverse momenta of the final state jets in descending order.
+For a detailed description see @ref{Scale setting using jets}.
 
 @item QCD
 The matrix element is clustered onto a core 2->2 configuration using a
@@ -166,6 +165,7 @@ scheme within Sherpa. For advice on this topic
 please contact the authors, @ref{Authors}.
 
 
+@node Scale schemes for NLO calculations
 @subsubsection Scale schemes for NLO calculations
 
 For next-to-leading order calculations it must be guaranteed that the scale is 
@@ -197,6 +197,7 @@ of the NLO calculation any explicit reference to a parton momentum
 will lead to an inconsistent result.
 
 
+@node Scale setting using jets
 @subsubsection Scale setting using jets
 
 Sherpa allows to define scales based on jet rather than parton momenta. The 
@@ -205,9 +206,10 @@ resulting jet momenta are then added back to the list of non strongly
 interacting particles. The numbering of momenta therefore stays effectively 
 the same as in standard Sherpa, except that final state partons are replaced 
 with jets, if applicable (a parton might not pass the jet criteria and get 
-"lost"). Jet momenta can then be accessed just like parton momenta in the 
-@code{VAR} scale setter through the identifiers @code{p[i]}, and their nodal 
-values can be used through @code{MU_n2}. The syntax is
+"lost"). In particular, the indices of the initial state partons and all EW 
+particles are uneffected. Jet momenta can then be accessed just like parton 
+momenta in the @code{VAR} scale setter through the identifiers @code{p[i]}, 
+and their nodal values can be used through @code{MU_n2}. The syntax is
 
 @verbatim
 Scales FASTJET[<jet-algo-paramter>]{<scale-definition>}
@@ -250,10 +252,15 @@ sets the scale of one strong coupling to the transverse momentum of the
 hardest jet, and the scale of the second strong coupling to the transverse 
 momentum of second hardest jet. Note @code{M=1} in this case.
 
+The additional tags @var{MU_22} .. @var{MU_n2}, with @var{n} the number 
+of strongly interacting final state particles, hold the nodal values of the 
+jet clustering in descending order.
+
 Please note that currently this type of scale setting can only be done within 
 the process block (@ref{Processes}) and not within the (me) section.
 
 
+@node Simple scale variations
 @subsubsection Simple scale variations
 
 @cindex FACTORIZATION_SCALE_FACTOR
