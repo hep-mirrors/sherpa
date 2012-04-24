@@ -492,6 +492,10 @@ void Standard_Model::FixEWParameters() {
     break;
   }
 
+  Flavour(kf_Wplus).SetMass(MW);
+  Flavour(kf_Z).SetMass(MZ);
+  Flavour(kf_h0).SetMass(MH);
+
   p_functions->insert(std::make_pair(std::string("alpha_QED"),aqed));
   p_constants->insert(std::make_pair(std::string("alpha_QED(0)"),alphaQED0));
   p_constants->insert(std::make_pair(std::string("sin2_thetaW"), sin2thetaW));
