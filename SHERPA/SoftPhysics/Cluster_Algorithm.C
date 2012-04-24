@@ -239,7 +239,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
     split   = legs[i];
     ysplit  = dabs(split->Mom().Y());
     kt2max  = 0.;
-    kt2min  = (m_mode>2)?scale:shat; 
+    kt2min  = m_showerfac*((m_mode>2)?scale:shat); 
     for (size_t j=nlegs;j>0;j--) {
       if (i==j-1) continue;
       spect = legs[j-1];
@@ -280,13 +280,13 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       split->SetConnected(false);
       switch (m_mode) {
       case 7:
-	kt2max = kt2min = scale;
+	kt2max = kt2min = m_showerfac*scale;
 	break;
       case 6:
-	kt2max = kt2min = scale/2.;
+	kt2max = kt2min = m_showerfac*scale/4.;
 	break;
       case 5:
-	kt2max = kt2min = sqrt(split->Mom().PPerp2()*scale);
+	kt2max = kt2min = m_showerfac*sqrt(split->Mom().PPerp2()*scale);
 	break;
       case 4:
       case 3:
@@ -296,7 +296,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       case 1:
       case 0:
       default:
-	kt2max = kt2min = Min(scale/16.,split->Mom().PPerp2());
+	kt2max = kt2min = Min(m_showerfac*scale,split->Mom().PPerp2());
 	break;
       }
     }
