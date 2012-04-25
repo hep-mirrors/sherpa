@@ -470,13 +470,13 @@ void Standard_Model::FixEWParameters() {
     GW         = Flavour(kf_Wplus).Width();
     GZ         = Flavour(kf_Z).Width();
     GH         = Flavour(kf_h0).Width();
-    alphaQED0  = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
-    aqed       = new Running_AlphaQED(alphaQED0);
-    aqed->SetDefault(sqrt(2.)*GF/M_PI*sqr(MW)*sin2thetaW);
     sin2thetaW = 1.-sqr(MW/MZ);
     cos2thetaW = 1.-sin2thetaW;
     vev        = 1./(pow(2.,0.25)*sqrt(GF));
     lambdaH    = 2.*sqr(MH/vev); 
+    alphaQED0  = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
+    aqed       = new Running_AlphaQED(alphaQED0);
+    aqed->SetDefault(sqrt(2.)*GF/M_PI*sqr(MW)*sin2thetaW);
     if (widthscheme=="CMS") {
       Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ)), muH2(MH*(MH-I*GH));
       ccos2thetaW = muW2/muZ2;
