@@ -280,7 +280,7 @@ ProduceKinematics(const bool & first,const bool & vetodiquark) {
   double exparg(m_pt2max_factor*m_pt2max/masscor);
 
   int trials(0);
-  while ((trials++)<1000) {
+  while ((trials++)<150) {
     rand  = ATOOLS::ran->Get();
     if (OneMinExpo<=0.)  
       m_y = ymin * pow(ymax/ymin,rand);
@@ -319,7 +319,7 @@ ProduceKinematics(const bool & first,const bool & vetodiquark) {
   if (m_analyse) {
     m_histograms.find(std::string("Kinematics_Trials"))->second->Insert(trials);
   }
-  return (trials<1000); 
+  return (trials<150); 
 }
 
 bool Splitting_Tools::ConstructKinematics() {
