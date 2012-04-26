@@ -399,11 +399,11 @@ Vertex *Amplitude::AddCurrent
   size_t oqcd(vkey.p_a->OrderQCD()+
 	      vkey.p_b->OrderQCD()+v->OrderQCD());
   size_t ntc(vkey.p_a->NTChannel()+vkey.p_b->NTChannel());
-  bool isa(false), isb(false);
+  bool isa((vkey.p_a->CId()&1)^(vkey.p_a->CId()&2));
+  bool isb((vkey.p_b->CId()&1)^(vkey.p_b->CId()&2));
   if (n<m_n-1 && vkey.p_e==NULL) {
-    isa=(vkey.p_a->CId()&1)^(vkey.p_a->CId()&2);
-    isb=(vkey.p_b->CId()&1)^(vkey.p_b->CId()&2);
-    ntc+=isa^isb;
+    if (!isb) ntc+=isa&&!vkey.p_a->Flav().Strong();
+    if (!isa) ntc+=isb&&!vkey.p_b->Flav().Strong();
   }
   if (vkey.p_e) {
     oew+=vkey.p_e->OrderEW();
@@ -411,7 +411,9 @@ Vertex *Amplitude::AddCurrent
     ntc+=vkey.p_e->NTChannel();
     if (n<m_n-1) {
       bool ise((vkey.p_e->CId()&1)^(vkey.p_e->CId()&2));
-      ntc+=isa^isb^ise;
+      if (!(isb^ise)) ntc+=isa&&!vkey.p_a->Flav().Strong();
+      if (!(isa^ise)) ntc+=isb&&!vkey.p_b->Flav().Strong();
+      if (!(isa^isb)) ntc+=ise&&!vkey.p_e->Flav().Strong();
     }
   }
   if (!v->Active() || oew>m_oew || oqcd>m_oqcd ||
