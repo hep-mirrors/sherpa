@@ -1,5 +1,8 @@
 @node External one-loop ME
 @section External one-loop ME
+@cindex LHOLE_ORDERFILE
+@cindex LHOLE_CONTRACTFILE
+@cindex LHOLE_CMSBOOST
 
 Sherpa includes only a very limited selection of one-loop matrix elements.
 To make full use of the implemented automated dipole subtraction it is
@@ -27,7 +30,9 @@ The interface:
 one-loop processes that are needed for the NLO calculation. This information
 is stored in a file, by default called @code{OLE_order.lh}. 
 The external one-loop code (OLE) should confirm these settings/requests
-and write out a file @code{OLE_contract.lh}. For the syntax and 
+and write out a file @code{OLE_contract.lh}. Both filenames can be customised 
+using @code{LHOLE_ORDERFILE=<order-file>} and 
+@code{<LHOLE_CONTRACTFILE=<contract-file>}. For their syntax and 
 details see @mycite{Binoth2010xt}.
 
 For Sherpa the output/input of the order/contract file is handled
@@ -39,8 +44,13 @@ latter file via
   lhfile.AddParameter(...);
 @end verbatim
 
-and might require an update for specific OLE or processes.
-
+and might require an update for specific OLE or processes. Per default, 
+in addition to the standard options @code{MatrixElementSquareType}, 
+@code{CorrectionType}, @code{IRregularisation}, @code{AlphasPower}, 
+@code{AlphaPower} and @code{OperationMode} the masses and width of the 
+W, Z and Higgs bosons and the top and bottom quarks are written out 
+in free format, such that the respective OLE parameters can be easily 
+synchronised.
 
 @item At runtime the communication is performed via function calls.
 To allow Sherpa to call the external code the functions
@@ -77,5 +87,9 @@ see @ref{LHC_WJet_LHOLE}.
 histograms. Thus, then when installing Sherpa the option
 @code{--enable-analysis} must be include on the command line when
 Sherpa is configured, see @ref{ANALYSIS}.
+
+@item Per default, Sherpa generates phase space points in the lab frame. 
+If @code{LHOLE_CMSBOOST=1} is set, these phase space points are boosted to 
+the centre of mass system before they are passed to the OLE.
 
 @end itemize

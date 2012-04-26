@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Math/Poincare.H"
 
 using namespace OLE;
 using namespace PHASIC;
@@ -19,7 +20,7 @@ extern "C" void OLP_EvalSubProcess(int,double*,double,double*,double*);
 
   class LH_OLE_Interface : public Virtual_ME2_Base {
     size_t m_pn;
-    bool m_active;
+    bool m_active, m_needcmsboost;
     int m_OLE_id;
     double* p_momenta;
     double p_result[4];
@@ -40,17 +41,20 @@ extern "C" void OLP_EvalSubProcess(int,double*,double,double*,double*);
 
 int LH_OLE_Interface::s_oleinit=0;
 
-LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector& flavs,bool active) :
-  Virtual_ME2_Base(pi, flavs), m_OLE_id(-1), p_momenta(0)
+LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, 
+                                   const Flavour_Vector& flavs,bool active) :
+  Virtual_ME2_Base(pi, flavs), m_pn(flavs.size()), m_active(active), 
+  m_needcmsboost(false), m_OLE_id(-1), p_momenta(NULL), m_nf(0)
 {
-  m_active=active;
   if (!m_active) return;
   m_mode = 0;
   m_drmode = 1;
-  Flavour hfl(kf_quark);
-  m_nf = hfl.Size()/2;
-
-  m_pn=flavs.size();
+  for (size_t i(0);i<Flavour(kf_quark).Size();++i) {
+    if (Flavour(kf_quark)[i].Strong()) ++m_nf;
+  }
+  if (m_nf%2==1) THROW(fatal_error,"Uneven number of quark and anti-quark flavours.");
+  m_nf/=2;
+  msg_Debugging()<<METHOD<<"(): nf = "<<m_nf<<std::endl;
 
   bool contract(0);
   string orderfn("OLE_order.lh");
@@ -64,6 +68,7 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
   if (reader.ReadFromFile(fname,"LHOLE_CONTRACTFILE")) {
     contractfn=fname;
   }
+  m_needcmsboost=reader.GetValue<int>("LHOLE_CMSBOOST",0);
   ifstream ifile;
   ifile.open(contractfn.c_str());
   if (ifile) {
@@ -89,6 +94,12 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
       lhfile.AddParameter("W_width                 "+ToString(Flavour(kf_Wplus).Width()));
       double sin_th_2=MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"));
       lhfile.AddParameter("sin_th_2                "+ToString(sin_th_2));
+      lhfile.AddParameter("H_mass                  "+ToString(Flavour(kf_h0).Mass()));
+      lhfile.AddParameter("H_width                 "+ToString(Flavour(kf_h0).Width()));
+      lhfile.AddParameter("top_mass                "+ToString(Flavour(kf_t).Mass()));
+      lhfile.AddParameter("top_width               "+ToString(Flavour(kf_t).Width()));
+      lhfile.AddParameter("bottom_mass             "+ToString(Flavour(kf_b).Mass()));
+      lhfile.AddParameter("bottom_width            "+ToString(Flavour(kf_b).Width()));
       lhfile.AddParameter("");
       lhfile.AddParameter("# process list");
     }
@@ -128,10 +139,15 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi, const Flavour_Vector&
   p_result[3]=1.;
 }
 
-void LH_OLE_Interface::Calc(const Vec4D_Vector& momenta) {
+void LH_OLE_Interface::Calc(const Vec4D_Vector& pp) {
   if (!m_active) return;
   if (m_OLE_id<0) return;
 
+  Vec4D_Vector momenta(pp);
+  if (m_needcmsboost) {
+    Poincare cms(momenta[0]+momenta[1]);
+    for (size_t i(0);i<momenta.size();++i) cms.Boost(momenta[i]);
+  }
   for (size_t i=0;i<m_pn;i++) {
     p_momenta[0+i*5]=momenta[i][0];
     p_momenta[1+i*5]=momenta[i][1];
