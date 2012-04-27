@@ -762,6 +762,7 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
 
 bool Amplitude_Generator::CheckTChannels(Point * p) {
   int ntchan(-1);
+  if (p->fl.Strong()) ntchan++;
   p->CountT(ntchan,0);
   //to treat decays correctly
   if (ntchan==-1) ntchan++;
