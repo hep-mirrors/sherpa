@@ -48,12 +48,12 @@ FinishConfiguration(Blob_List * blobs,const double & smin) {
   m_antis.clear();
   m_links.clear();
   m_pairs.clear();
-  HarvestParticles(blobs);
   if (m_on) {
+    HarvestParticles(blobs);
     FillWeightTable();
     ShuffleColours();
+    blobs->push_back(AddReconnectionBlob());
   }
-  blobs->push_back(AddReconnectionBlob());
   return true;
 }
 
