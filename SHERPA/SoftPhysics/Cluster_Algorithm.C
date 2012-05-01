@@ -307,7 +307,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
 	   lit!=split->GetSpectators().end();lit++)
 	msg_Out()<<" "<<(*lit)->Id();
     }
-    msg_Out()<<"]:"<<split->Mom()<<" "<split->Mom().PPerp()<<"\n";
+    msg_Out()<<"]:"<<split->Mom()<<" "<<split->Mom().PPerp()<<"\n";
     if (kt2max>totmax) totmax = kt2max;
     split->SetKTStart(kt2max);
     split->SetKTMax(kt2max);
