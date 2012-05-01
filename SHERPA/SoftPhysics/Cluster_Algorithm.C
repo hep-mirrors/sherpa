@@ -300,6 +300,14 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
 	break;
       }
     }
+    msg_Out()<<" "<<i<<"["<<split->Id()<<", "<<split->Connected();
+    if (split->Connected()) {
+      msg_Out()<<":";
+      for (std::set<Cluster_Leg *>::iterator lit=split->GetSpectators().begin();
+	   lit!=split->GetSpectators().end();lit++)
+	msg_Out()<<" "<<(*lit)->Id();
+    }
+    msg_Out()<<"]:"<<split->Mom()<<" "<split->Mom().PPerp()<<"\n";
     if (kt2max>totmax) totmax = kt2max;
     split->SetKTStart(kt2max);
     split->SetKTMax(kt2max);
