@@ -2,6 +2,11 @@
 
 import os, sys
 
+def ReplaceNaN(x,default):
+    if not x==x:
+        return default
+    return x
+
 class SherpaHistogram:
     def __init__(self, path, filename):
         self.path = path
@@ -29,11 +34,24 @@ class SherpaHistogram:
                 self.data.append({'LowEdge': float(linearray[0]),
                                   'Content': float(linearray[1]),
                                   'Error':   float(linearray[2])})
+            elif len(linearray)==4:
+                self.data.append({'LowEdge': float(linearray[0]),
+                                  'Content': float(linearray[1]),
+                                  'Error':   float(linearray[2])})
+            elif len(linearray)==5:
+                self.data.append({'LowEdge': float(linearray[0]),
+                                  'Content': float(linearray[1]),
+                                  'Error':   float(linearray[2])})
             else:
-                print "Can't handle line of length %s:\n %s" % (len(linearray), linearray)
+                print "Can't handle 1D histo with line of length %s:\n %s" % (len(linearray), linearray)
         f.close()
 
     def write_datapoint(self, f, xval, xerr, yval, yerr):
+        if opts.REPLACE_NANS:
+	    xval=ReplaceNaN(xval,0)
+	    xerr=ReplaceNaN(xerr,0)
+	    yval=ReplaceNaN(yval,0)
+	    yerr=ReplaceNaN(yerr,0)
         f.write('    <dataPoint>\n')
         f.write('      <measurement errorPlus="%e" value="%e" errorMinus="%e"/>\n' %(xerr, xval, xerr))
         f.write('      <measurement errorPlus="%e" value="%e" errorMinus="%e"/>\n' %(yerr, yval, yerr))
@@ -102,10 +120,17 @@ class SherpaHistogram2D:
                                   'Content': float(linearray[2]),
                                   'Error':   float(linearray[3])})
             else:
-                print "Can't handle line of length %s:\n %s" % (len(linearray), linearray)
+                print "Can't handle 2D histo with line of length %s:\n %s" % (len(linearray), linearray)
         f.close()
 
     def write_datapoint(self, f, xval, xerr, yval, yerr, zval, zerr):
+        if opts.REPLACE_NANS:
+	    xval=ReplaceNaN(xval,0)
+	    xerr=ReplaceNaN(xerr,0)
+	    yval=ReplaceNaN(yval,0)
+	    yerr=ReplaceNaN(yerr,0)
+	    yval=ReplaceNaN(zval,0)
+	    yerr=ReplaceNaN(zerr,0)
         f.write('    <dataPoint>\n')
         f.write('      <measurement errorPlus="%e" value="%e" errorMinus="%e"/>\n' %(xerr, xval, xerr))
         f.write('      <measurement errorPlus="%e" value="%e" errorMinus="%e"/>\n' %(yerr, yval, yerr))
@@ -159,6 +184,10 @@ e.g. rivet-mkhtml anadir1.aida [anadir2.aida ...].
 """)
 parser.add_option("-a", "--ananame", dest="ANA_NAME", default=None, metavar="NAME",
                   help="give an optional path name for the analysis")
+parser.add_option("-n", "--no-jX-dirs", dest="NO_JX_DIRS", action="store_true", default=False, metavar="NO_JX_DIRS",
+                  help="omit jX subdirectories")
+parser.add_option("-r", "--replace-nans", dest="REPLACE_NANS", action="store_true", default=False, metavar="REPLACE_NANS",
+                  help="replace nan's with zeros")
 
 opts, args = parser.parse_args()
 
@@ -181,6 +210,11 @@ for dir in args:
     f.write('  <implementation version="1.1" package="FreeHEP"/>\n')
 
     for path, dirs, files in os.walk(dir):
+	if opts.NO_JX_DIRS and len(dirs) > 0:
+	    for testdir in dirs:
+		if len(testdir)<=3 and testdir[:1]=="j":
+		    dirs.remove(testdir)
+		    print "Skipping %s/%s" %(path,testdir)
         for file in files:
             if not file[-4:]==".dat":
                 continue
