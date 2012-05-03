@@ -332,7 +332,7 @@ CreateBlob(Blob_List * blobs,const double & xsec) {
 const double Inelastic_Event_Generator::Smin() const {
   double smin(m_luminosity.Smin());
   if (!p_ladder) return smin;
-  smin *= m_kt2fac;
+//   smin *= m_kt2fac;
   if (p_ladder->IsHardDiffractive() && p_ladder->Size()==2) smin *= m_difffac;
   return smin; 
 }

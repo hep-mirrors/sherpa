@@ -13,12 +13,30 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 Cluster_Algorithm::Cluster_Algorithm():
-  p_ampl(NULL), p_clus(NULL), p_jf(NULL),m_showerfac(1.) {}
+  p_ampl(NULL), p_clus(NULL), p_jf(NULL),m_showerfac(1.) {
+    m_histomap[std::string("startvspt")] = new Histogram(0,0.0,100.0,100);
+    m_histomap[std::string("vetovspt")] = new Histogram(0,0.0,100.0,100);
+    m_histomap[std::string("nstartvspt")] = new Histogram(0,0.0,100.0,100);
+    m_histomap[std::string("nvetovspt")] = new Histogram(0,0.0,100.0,100);
+}
 
 Cluster_Algorithm::~Cluster_Algorithm()
 {
   if (p_jf) delete p_jf;
   //if (p_ampl!=NULL) p_ampl->Delete();
+  if (!m_histomap.empty()) {
+    Histogram * histo;
+    std::string name;
+    for (std::map<std::string,Histogram *>::iterator 
+	   hit=m_histomap.begin();hit!=m_histomap.end();hit++) {
+      histo = hit->second;
+      name  = std::string("Ladder_Analysis/")+hit->first+std::string(".dat");
+      histo->Finalize();
+      histo->Output(name);
+      delete histo;
+    }
+    m_histomap.clear();
+  }
 }
 
 int Cluster_Algorithm::ColorConnected(const ColorID &i,const ColorID &j) const
@@ -165,7 +183,8 @@ PT2(const Vec4D & pi,const Vec4D & pj,const bool & beam) const
   double pti2(pi.PPerp2()), ptj2(pj.PPerp2());
   double ptij2    = 
     2.*Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-cos(pi.Phi()-pj.Phi()));
-  return m_showerfac*(beam?Min(pref*pti2,ptij2):ptij2);
+//   return m_showerfac*Min(pref*pti2,ptij2);
+  return m_showerfac*pref*pti2;
 }
 
 bool Cluster_Algorithm::Cluster(Blob *const blob)
@@ -240,16 +259,15 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
     ysplit  = dabs(split->Mom().Y());
     kt2max  = 0.;
     kt2min  = m_showerfac*((m_mode>2)?scale:shat); 
-    for (size_t j=nlegs;j>0;j--) {
+    for (size_t j=nlegs;j>2;j--) {
       if (i==j-1) continue;
       spect = legs[j-1];
       int nconn(ColorConnected(split->Col(),spect->Col()));
       if (nconn==0) continue;
       kt2FS = PT2(split->Mom(),spect->Mom(),!m_resc && (i==iymin||i==iymax));
-      if (j>2) sFS = (split->Mom()+spect->Mom()).Abs2(); 
-          else sFS = 0.;
+/*      if (j>2) sFS = (split->Mom()+spect->Mom()).Abs2(); 
+          else sFS = 0.;*/
       if (kt2FS>kt2max) kt2max = kt2FS;
-      //if (sFS>kt2max) kt2max = sFS;
       switch (m_mode) {
       case 7:
       case 6:
@@ -262,7 +280,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       case 1:
       case 0:
       default:
-	if (kt2FS<kt2min) kt2min = kt2FS;
+// 	if (kt2FS<kt2min) kt2min = kt2FS;
 	break;
       }
       if (j>2) {
@@ -300,18 +318,15 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
 	break;
       }
     }
-    msg_Out()<<" "<<i<<"["<<split->Id()<<", "<<split->Connected();
-    if (split->Connected()) {
-      msg_Out()<<":";
-      for (std::set<Cluster_Leg *>::iterator lit=split->GetSpectators().begin();
-	   lit!=split->GetSpectators().end();lit++)
-	msg_Out()<<" "<<(*lit)->Id();
-    }
-    msg_Out()<<"]:"<<split->Mom()<<" "<<split->Mom().PPerp()<<"\n";
+    if(kt2max>kt2min) kt2min = sqrt(kt2min*kt2max);
     if (kt2max>totmax) totmax = kt2max;
     split->SetKTStart(kt2max);
     split->SetKTMax(kt2max);
     split->SetKTVeto(kt2min);
+
+    m_histomap[std::string("startvspt")]->Insert(split->Mom().PPerp(),kt2max);  
+    m_histomap[std::string("vetovspt")]->Insert(split->Mom().PPerp(),kt2min);  
+    m_histomap[std::string("nstartvspt")]->Insert(split->Mom().PPerp());  
   }
   p_ampl->SetNIn(blob->NInP());
   p_ampl->SetOrderEW(0);

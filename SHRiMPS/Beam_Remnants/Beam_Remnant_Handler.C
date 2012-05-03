@@ -276,7 +276,8 @@ void Beam_Remnant_Handler::Reset(const size_t & mode) {
   p_colour->Reset();
 
   if (mode>0) {
-    if (p_blob && (p_blob->NInP()>0 || p_blob->NOutP()>0)) { 
+    if (p_blob && (p_blob->NInP()>0 || p_blob->NOutP()>0)) {
+//       msg_Out()<<(*p_blob)<<std::endl;
       delete p_blob; p_blob = NULL; 
     }
   }

@@ -258,6 +258,10 @@ void Shrimps::GenerateXsecs() {
     std::string infile("energies_xsecs.dat");
     std::ifstream input;
     input.open(infile.c_str());
+    if(!input){
+      msg_Error()<<"File "<<infile<<" does not exist, will exit now."<<std::endl;
+      exit(1);
+    }
     std::string test;
     while (!input.eof()) {
       input>>test;

@@ -5,6 +5,8 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
+#include "ATOOLS/Math/Histogram.H"
+#include <map>
 #include <list>
 
 namespace ATOOLS { 
@@ -36,6 +38,8 @@ namespace SHERPA {
     int    m_mode;
     bool   m_resc;
     double m_minkt2,m_showerfac;
+
+    std::map<std::string, ATOOLS::Histogram * > m_histomap;
 
     ATOOLS::Cluster_Amplitude     *p_ampl;
     PDF::Cluster_Definitions_Base *p_clus;

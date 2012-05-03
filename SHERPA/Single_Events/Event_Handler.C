@@ -170,12 +170,17 @@ int Event_Handler::IterateEventPhases(double & weight) {
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
   do {
+/*    msg_Out()<<"\n";
+    PRINT_VAR((*pit)->Type());
+    PRINT_VAR((*pit)->Name());
+    msg_Out()<<m_blobs<<"\n";*/
     if ((*pit)->Type()==eph::Analysis) {
       ++pit;
       continue;
     }
 
     Return_Value::code rv((*pit)->Treat(&m_blobs,weight));
+//     PRINT_VAR(rv);
     if (rv!=Return_Value::Nothing)
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "<<rv<<std::endl;
     switch (rv) {
@@ -208,6 +213,7 @@ int Event_Handler::IterateEventPhases(double & weight) {
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncNewEvent((*pit)->Name());
       if (p_signal) m_addn+=(*p_signal)["Trials"]->Get<double>();
+//       msg_Out()<<"Got New_Event, is this causing the problem?"<<std::endl;
       Reset(1);
       return 2;
     case Return_Value::Error :

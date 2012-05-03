@@ -36,7 +36,7 @@ Final_State::Final_State(const int & test) :
 
 bool Final_State::FirstSinglet(const double & y1,const double & y2,
 			       const double & sup,const int & nbeam) {
-  return false;
+//   return false;
   if (p_ladder->IsRescatter() && m_resc_nosing==resc_nosing::on) return false;
   double wt1 = p_eikonal->SingletWeight(m_b1,m_b2,y1,y2,sup,nbeam); 
   double wt8 = p_eikonal->OctetWeight(m_b1,m_b2,y1,y2,sup,nbeam); 
@@ -323,6 +323,8 @@ TryEmission(double & kt12,const bool & dir) {
 	deltay>m_Deltay) { 
       rarg = Min(mu01_2/q01.PPerp2(),q01.PPerp2()/mu01_2);
       expo = colfac*(*p_alphaS)(q01.PPerp2())*deltay/M_PI; 
+//       rarg = Min(mu01_2/q01.Abs2(),q01.Abs2()/mu01_2);
+//       expo = colfac*(*p_alphaS)(q01.Abs2())*deltay/M_PI; 
       //expo = colfac*p_alphaS->MaxValue()*deltay/M_PI; 
       wt  *= reggewt = pow(rarg,expo);
       m_histomap[std::string("ReggeWt")]->Insert(reggewt);
@@ -356,6 +358,8 @@ TryEmission(double & kt12,const bool & dir) {
   if (MBpars.LadderWeight()==ladder_weight::Regge) {
     rarg = Min(mu12_2/q12.PPerp2(),q12.PPerp2()/mu12_2);
     expo = colfac*(*p_alphaS)(q12.PPerp2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
+//     rarg = Min(mu12_2/q12.Abs2(),q12.Abs2()/mu12_2);
+//     expo = colfac*(*p_alphaS)(q12.Abs2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
     m_lastwt  = pow(rarg,expo);
     //m_lastwt *= kmrwt = q12.PPerp2()/m_q12_2;
     //m_histomap[std::string("KMRWt")]->Insert(kmrwt);
