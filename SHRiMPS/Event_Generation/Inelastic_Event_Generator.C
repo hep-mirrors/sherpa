@@ -22,7 +22,7 @@ Inelastic_Event_Generator(Sigma_Inelastic * sigma,
   m_deltaB((m_Bmax-m_Bmin)/double(m_Bsteps)),
   m_first(true), m_done(false), 
   m_kt2fac(MBpars("kt2_factor")), m_difffac(MBpars("diff_factor")),
-  m_test(test), m_output(1), m_analyse(m_output>0)
+  m_test(test), m_output(1), m_analyse(m_output>0), p_ladder(NULL)
 { 
   if (m_analyse) {
     m_histograms[string("N_ladder_naive")] = new Histogram(0,0.0,25.0,25);
@@ -91,6 +91,7 @@ void Inelastic_Event_Generator::FillGrids() {
 }
 
 void Inelastic_Event_Generator::Reset() {
+  delete p_ladder;
   p_ladder = NULL;
 }
 

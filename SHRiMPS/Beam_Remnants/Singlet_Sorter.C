@@ -89,7 +89,11 @@ Particle * Singlet_Sorter::FindNextStart() {
       }
     }
   }
-  if (start==m_inlist->end()) exit(1);
+  if (start==m_inlist->end()) {
+    msg_Error()<<"Error in "<<METHOD<<":\n"
+               <<"   Exiting run.\n";
+    exit(1);
+  }
   part=(*start);
   m_inlist->erase(start);
   return (part);
