@@ -778,10 +778,10 @@ void AMEGIC::Single_Process_Combined::Minimize()
 
 double AMEGIC::Single_Process_Combined::Partonic(const Vec4D_Vector &_moms,const int mode) 
 { 
-  if (mode==1 && !p_partner->ScaleSetter()->Scale2()) return m_lastxs;
+  if (mode==1) return m_lastxs;
   if (!Selector()->Result()) return m_lastxs = 0.0;
   if (!(IsMapped() && LookUp())) {
-    p_partner->ScaleSetter()->CalculateScale(_moms,mode);
+    p_partner->ScaleSetter()->CalculateScale(_moms);
   }
   Vec4D_Vector moms(_moms);
   if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {

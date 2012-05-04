@@ -156,7 +156,7 @@ namespace AMEGIC {
     // destructor
     ~Combine_Table();
     // member functions
-    CD_List::iterator    CalcPropagator(CD_List::iterator &cit);
+    CD_List::iterator    CalcPropagator(CD_List::iterator &cit,int mode);
     Combine_Table * CalcJet(int nl,ATOOLS::Vec4D *moms,const size_t mode,const double &kt2);
     void                 FillTable(Leg **legs,const int nlegs,const int nampl);
     double               GetWinner(int &i, int &j,int &k,double &mu2);

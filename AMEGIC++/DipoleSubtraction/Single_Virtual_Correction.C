@@ -306,7 +306,7 @@ void Single_Virtual_Correction::Minimize()
 
 double Single_Virtual_Correction::Partonic(const ATOOLS::Vec4D_Vector &_moms,const int mode)
 {
-  if (mode==1 && !p_partner->ScaleSetter()->Scale2()) return DSigma2();
+  if (mode==1) return DSigma2();
   if (!Selector()->Result()) return m_lastxs = m_lastdxs = 0.0;
   Vec4D_Vector moms(_moms);
   if (!(m_nin==2 && p_int->ISR() && p_int->ISR()->On())) {

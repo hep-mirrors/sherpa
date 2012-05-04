@@ -1100,7 +1100,7 @@ double Single_LOProcess::operator()(const ATOOLS::Vec4D_Vector &labmom,const ATO
 
   double M2(0.);
   p_int->SetMomenta(labmom);
-  p_scale->CalculateScale(labmom,mode);
+  p_scale->CalculateScale(labmom);
  
   for (size_t i=0;i<m_epol.size();i++) m_epol[i]=(*epol)[i];
   p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom);
@@ -1150,7 +1150,7 @@ void Single_LOProcess::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
     return;
   }
   p_int->SetMomenta(labmom);
-  p_scale->CalculateScale(labmom,mode);
+  p_scale->CalculateScale(labmom);
 
   p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom);
   p_hel->InitializeSpinorTransformation(p_BS);

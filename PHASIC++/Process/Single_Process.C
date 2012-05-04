@@ -61,6 +61,30 @@ double Single_Process::BeamISRWeight
     wgt*=p_int->ISR()->Weight
       (mode,p_int->Momenta()[0],p_int->Momenta()[1],
        Q2,Q2,m_flavs[0],m_flavs[1]);
+    double LQ2(Q2);
+    ClusterAmplitude_Vector &ampls
+      ((IsMapped()?p_mapproc:this)->ScaleSetter()->Amplitudes());
+    if (ampls.size()) {
+      Cluster_Amplitude *ampl(ampls.front());
+      if (m_pinfo.Has(nlo_type::real)) ampl=ampl->Next();
+      for (;ampl;ampl=ampl->Next()) {
+	if (IsEqual(LQ2,ampl->KT2())) continue;
+	if (ampl->Prev() && LQ2>ampl->KT2()) {
+	  LQ2=ampl->KT2();
+	  continue;
+	}
+	msg_Debugging()<<"PDF ratio "<<sqrt(LQ2);
+	double wd=p_int->ISR()->Weight
+	  (mode,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),
+	   LQ2,LQ2,ampl->Leg(0)->Flav(),ampl->Leg(1)->Flav(),0);
+	LQ2=ampl->KT2();
+	double wn=p_int->ISR()->Weight
+	  (mode,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),
+	   LQ2,LQ2,ampl->Leg(0)->Flav(),ampl->Leg(1)->Flav(),0);
+	msg_Debugging()<<" / "<<sqrt(LQ2)<<" -> "<<wn/wd<<"\n";
+	if (wn>0.0 && wd>0.0) wgt*=wn/wd;
+      }
+    }
   }
   if (p_int->Beam() && p_int->Beam()->On()) {
     p_int->Beam()->MtxLock();
@@ -266,11 +290,18 @@ Cluster_Amplitude *Single_Process::Cluster
     if (ampls.size()) {
       msg_Debugging()<<METHOD<<"(): Found "
 		     <<ampls.size()<<" amplitude(s) ... ";
-      if (ampls.size()>2) 
-	THROW(fatal_error,"Invalid number of amplitudes");
       if (p_int->InSwaped()) {
 	msg_Debugging()<<"select 2nd.\n";
-	return ampls.back()->CopyAll();
+	Cluster_Amplitude *ampl(ampls.front()->CopyAll());
+	for (Cluster_Amplitude *campl(ampl);
+	     campl;campl=campl->Next()) {
+	  std::swap<Cluster_Leg*>(campl->Legs()[0],campl->Legs()[1]);
+	  for (size_t i(0);i<campl->Legs().size();++i) {
+	    const Vec4D &p(campl->Leg(i)->Mom());
+	    campl->Leg(i)->SetMom(Vec4D(p[0],-p[1],-p[2],-p[3]));
+	  }
+	}
+	return ampl;
       }
       msg_Debugging()<<"select 1st.\n";
       return ampls.front()->CopyAll();

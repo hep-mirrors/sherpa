@@ -23,8 +23,7 @@ namespace PHASIC {
 
     ~Variable_Scale_Setter();
 
-    double Calculate(const std::vector<ATOOLS::Vec4D> &p,
-		     const int mode);
+    double Calculate(const std::vector<ATOOLS::Vec4D> &p);
 
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
@@ -84,9 +83,8 @@ Variable_Scale_Setter::~Variable_Scale_Setter()
 }
 
 double Variable_Scale_Setter::Calculate
-(const std::vector<ATOOLS::Vec4D> &momenta,const int mode) 
+(const std::vector<ATOOLS::Vec4D> &momenta) 
 {
-  if (mode==1) return m_scale[stp::fac];
   for (size_t i(0);i<m_calcs.size();++i)
     m_scale[i]=m_calcs[i]->Calculate()->Get<double>();
   if (m_calcs.size()==1) m_scale[1]=m_scale[0];

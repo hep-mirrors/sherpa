@@ -27,11 +27,11 @@ std::ostream &operator<<(std::ostream &ostr,const stp::id &scl)
 }
 
 Scale_Setter_Base::Scale_Setter_Base
-(const Scale_Setter_Arguments &args,const bool scale2):
+(const Scale_Setter_Arguments &args):
   p_proc(args.p_proc), p_caller(p_proc),
   p_model(args.p_model), p_cpls(args.p_cpls), p_subs(NULL),
   m_scale(stp::size), m_coupling(args.m_coupling),
-  m_scale2(scale2), m_nin(args.m_nin), m_nout(args.m_nout)
+  m_nin(args.m_nin), m_nout(args.m_nout)
 {
   for (size_t i(0);i<stp::size;++i) m_scale[i]=rpa->gen.CplScale();
   if (p_proc) {
@@ -115,7 +115,7 @@ Vec4D Scale_Setter_Base::PSum() const
 }
 
 double Scale_Setter_Base::CalculateScale
-(const ATOOLS::Vec4D_Vector &p,const int mode)
+(const ATOOLS::Vec4D_Vector &p)
 {
   DEBUG_FUNC((p_proc?p_proc->Name():""));
   if (!m_escale.empty()) {
@@ -127,7 +127,7 @@ double Scale_Setter_Base::CalculateScale
   if (p_subs==NULL) {
     m_p.resize(p.size());
     for (size_t j(0);j<m_p.size();++j) m_p[j]=p[j];
-    Calculate(p,mode);
+    Calculate(p);
   }
   else {
     for (size_t i(0);i<p_subs->size();++i) {
@@ -135,7 +135,7 @@ double Scale_Setter_Base::CalculateScale
       m_p.resize(sub->m_n);
       for (size_t j(0);j<m_p.size();++j)
 	m_p[j]=j<p_proc->NIn()?-sub->p_mom[j]:sub->p_mom[j];
-      Calculate(Vec4D_Vector(m_p),mode);
+      Calculate(Vec4D_Vector(m_p));
       for (size_t j(0);j<stp::size;++j) sub->m_mu2[j]=m_scale[j];
     }
   }

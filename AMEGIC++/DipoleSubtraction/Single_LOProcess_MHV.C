@@ -438,7 +438,7 @@ double Single_LOProcess_MHV::operator()(const ATOOLS::Vec4D_Vector &labmom,const
     return m_lastxs = p_partner->operator()(labmom,mom,pfactors,epol,mode)*m_sfactor;
   }
   p_int->SetMomenta(labmom);
-  p_scale->CalculateScale(labmom,mode);
+  p_scale->CalculateScale(labmom);
 
 #ifdef Basic_Sfuncs_In_MHV
      p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom); 
@@ -467,7 +467,7 @@ void Single_LOProcess_MHV::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
 				      const ATOOLS::Vec4D *mom,std::vector<std::vector<double> > &dsij,const int mode) 
 {
   p_int->SetMomenta(labmom);
-  p_scale->CalculateScale(labmom,mode);
+  p_scale->CalculateScale(labmom);
 #ifdef Basic_Sfuncs_In_MHV
   p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom); 
 #else

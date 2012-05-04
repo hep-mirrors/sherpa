@@ -155,14 +155,8 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   if (p_me->Process()->Info().m_ckkw&1) {
     if (m_bbarmode && p_me->HasNLO() &&
         p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
-      // Bbar reweighting for smooth merging
-      DEBUG_FUNC("Bbar reweighting");
-      Cluster_Amplitude *ampl=p_ampl->CopyAll();
-      if (!LocalKFactor(ampl)) {
-        DEBUG_INFO("didn't find PowProc along these cluster amplitudes. "
-                   <<"trying with exclusively clustered amplitude:");
         Cluster_Amplitude *excl_ampl=
-            p_me->Process()->Get<Single_Process>()->Cluster(m_cmode|256|512);
+            p_me->Process()->Get<Single_Process>()->Cluster(m_cmode|256|512|1024);
 	if (excl_ampl) {
         if (!LocalKFactor(excl_ampl)) {
           DEBUG_INFO("didn't find PowProc in exclusively clustered amplitude");
@@ -170,9 +164,6 @@ DefineInitialConditions(ATOOLS::Blob *blob)
         while (excl_ampl->Prev()) excl_ampl=excl_ampl->Prev();
         excl_ampl->Delete();
 	}
-      }
-      while (ampl->Prev()) ampl=ampl->Prev();
-      ampl->Delete();
     }
     blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
     if (p_me->EventGenerationMode()!=0) {

@@ -275,7 +275,7 @@ double COMIX::Single_Process::Partonic
 (const Vec4D_Vector &p,const int mode) 
 {
   Single_Process *sp(p_map!=NULL?p_map:this);
-  if (mode==1 && !sp->p_scale->Scale2())
+  if (mode==1)
     return m_lastxs=m_dxs+m_w*sp->GetKPTerms(m_flavs,mode);
   if (m_zero || !Selector()->Result()) return m_lastxs;
   for (size_t i(0);i<m_nin+m_nout;++i) {
@@ -292,7 +292,7 @@ double COMIX::Single_Process::Partonic
     }
   }
   else {
-    sp->p_scale->CalculateScale(p,mode);
+    sp->p_scale->CalculateScale(p);
     m_dxs=sp->p_bg->Differential(m_p);
     m_w=p_int->ColorIntegrator()->GlobalWeight();
     if (p_int->HelicityIntegrator()!=NULL) 

@@ -270,7 +270,7 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   rproc->Integrator()->RestoreInOrder();
   Vec4D_Vector &p(p_rsproc->Selected()->Integrator()->Momenta());
   rproc->SetFixedScale(p_rsproc->Selected()->ScaleSetter(1)->Scales());
-  rproc->ScaleSetter(1)->CalculateScale(Vec4D_Vector(),swaped);
+  rproc->ScaleSetter(1)->CalculateScale(Vec4D_Vector());
   rproc->SetFixedScale(std::vector<double>());
   rproc->GetMEwgtinfo()->m_mur2=
     p_rsproc->Selected()->GetMEwgtinfo()->m_mur2;

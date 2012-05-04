@@ -174,7 +174,7 @@ void CS_Cluster_Definitions::KernelWeight
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
   else if (cs.m_mode==3) eta=GetX(i,cdip)*cs.m_z;
-  cs.m_wk=(*cdip)(cs.m_z,cs.m_y,eta,scale,Q2);
+  cs.m_wk=(*cdip)(cs.m_z,cs.m_y,eta,-1.0,Q2);
   if (cs.m_wk<=0.0 || IsBad(cs.m_wk))
     cs.m_wk=sqrt(std::numeric_limits<double>::min());
   cs.m_ws=cs.m_kt2/cs.m_wk;

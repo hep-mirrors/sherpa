@@ -295,7 +295,7 @@ void ISR_Handler::SetLimits(Double_Vector &spkey,Double_Vector &ykey,
 }
 
 double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
-			   double Q12,double Q22,Flavour fl1,Flavour fl2)
+			   double Q12,double Q22,Flavour fl1,Flavour fl2,int warn)
 {
   if (m_mode==0) return 0.25/sqrt(sqr(p1*p2)-p1.Abs2()*p2.Abs2());
   msg_IODebugging()<<METHOD<<"(mode = "<<mode<<")\n";
@@ -330,16 +330,16 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
           !p_isrbase[1]->PDF()->Contains(fl2)) { MtxUnLock(); return 0.; }
       if (x1>p_isrbase[0]->PDF()->RescaleFactor() ||
           x2>p_isrbase[1]->PDF()->RescaleFactor()) { MtxUnLock(); return 0.; }
-      if (p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12) &&
-          p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22)) break;
+      if (p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12,warn) &&
+          p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22,warn)) break;
     case 2 :
       if (!p_isrbase[1]->PDF()->Contains(fl2)) { MtxUnLock(); return 0.; }
       if (m_x[1]>p_isrbase[1]->PDF()->RescaleFactor()) { MtxUnLock(); return 0.; }
-      if (p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22)) break;
+      if (p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22,warn)) break;
     case 1 :
       if (!p_isrbase[0]->PDF()->Contains(fl1)) { MtxUnLock(); return 0.; }
       if (m_x[0]>p_isrbase[0]->PDF()->RescaleFactor()) { MtxUnLock(); return 0.; }
-      if (p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12)) break;
+      if (p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12,warn)) break;
     case 0 : break;
     default : MtxUnLock(); return 0.;
   }

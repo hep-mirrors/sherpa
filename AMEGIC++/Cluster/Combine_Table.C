@@ -504,7 +504,7 @@ void Combine_Table::FillTable(Leg **legs,const int nlegs,const int nampl)
   }
 }
 
-CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit)
+CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit,int mode)
 {
     if (cit->second.m_calc) return cit;
     Cluster_Amplitude *ampl(Cluster_Amplitude::New());
@@ -515,7 +515,7 @@ CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit)
     cit->second.m_calc=1;
     cit->second.m_pt2ij=p_clus->KPerp2
       (*ampl,cit->first.m_i,cit->first.m_j,cit->first.m_k,
-       cit->first.m_i<2?cit->second.m_mo.Bar():cit->second.m_mo,p_ms);
+       cit->first.m_i<2?cit->second.m_mo.Bar():cit->second.m_mo,p_ms,(mode&1024)?1:0);
     msg_Debugging()<<"Calculate m_perp("<<cit->first.m_i<<"["
 		   <<p_legs[0][cit->first.m_i].Flav()<<"],"
 		   <<cit->first.m_j<<"["<<p_legs[0][cit->first.m_j].Flav()<<"],"
@@ -663,7 +663,7 @@ bool Combine_Table::SelectWinner(const size_t &mode)
   double kt2(std::numeric_limits<double>::max());
   double rkt2(std::numeric_limits<double>::max()), sum(0.0);
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
-    CD_List::iterator tit(CalcPropagator(cit));
+    CD_List::iterator tit(CalcPropagator(cit,mode));
     double pt2ij(cit->second.m_pt2ij.m_op2);
     if (cit->second.m_graphs.size()==0) continue;
     if (m_rejected.find(cit->first)==m_rejected.end()) {

@@ -34,8 +34,7 @@ namespace PHASIC {
 
     QCD_Scale_Setter(const Scale_Setter_Arguments &args);
 
-    double Calculate(const std::vector<ATOOLS::Vec4D> &p,
-		     const int mode);
+    double Calculate(const std::vector<ATOOLS::Vec4D> &p);
 
     void SetScale(const std::string &mu2tag,Tag_Setter &mu2tagset,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
@@ -137,9 +136,8 @@ QCD_Scale_Setter::QCD_Scale_Setter(const Scale_Setter_Arguments &args):
 }
 
 double QCD_Scale_Setter::Calculate
-(const std::vector<ATOOLS::Vec4D> &momenta,const int mode) 
+(const std::vector<ATOOLS::Vec4D> &momenta) 
 {
-  if (mode==1) return m_scale[stp::fac];
   m_p=momenta;
   p_ci=p_proc->Integrator()->ColorIntegrator();
   for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];

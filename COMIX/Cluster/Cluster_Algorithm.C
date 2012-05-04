@@ -108,7 +108,7 @@ CParam Cluster_Algorithm::GetMeasure
   if (ismo) mmofl=mmofl.Bar();
   if (p_ampl->Legs().size()>4) {
     kt2[idi][idj][idk][mofl]=
-      p_clus->KPerp2(*p_ampl,i,j,k,mmofl,p_ms);
+      p_clus->KPerp2(*p_ampl,i,j,k,mmofl,p_ms,(m_wmode&1024)?1:0);
   }
   else {
     p_ampl->SetProcs(p_xs);

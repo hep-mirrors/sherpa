@@ -120,7 +120,7 @@ double Single_LOProcess_External::operator()(const ATOOLS::Vec4D_Vector &labmom,
   }
 
   p_int->SetMomenta(labmom);
-  p_scale->CalculateScale(labmom,mode);
+  p_scale->CalculateScale(labmom);
  
   Vec4D_Vector moms(mom,&mom[m_nin+m_nout]);
   m_lastxs = p_me2->Calc(moms);
@@ -136,7 +136,7 @@ void Single_LOProcess_External::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
     return;
   }
   p_int->SetMomenta(labmom);
-  p_scale->CalculateScale(labmom,mode);
+  p_scale->CalculateScale(labmom);
 
   Vec4D_Vector moms(mom,&mom[m_nin+m_nout]);
   dsij[0][0]=p_me2->Calc(moms);
