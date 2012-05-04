@@ -231,8 +231,7 @@ double Ladder_Generator::Weight(const double & isweight) {
   if (!p_ladder->ExtractHardest()) {
     msg_Error()<<"Error in "<<METHOD<<": "<<endl
 	       <<"   Could not extract hardest 2->2 scatter in ladder:\n"
-	       <<(*p_ladder)
-	       <<"   Will exit the run."<<endl;
+	       <<(*p_ladder)<<endl;
     return 0.;
   }
   double weight(1.);

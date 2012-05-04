@@ -201,8 +201,7 @@ TryEmission(double & kt12,const bool & dir) {
   double wt,expo,rarg,reggewt(0.),sup(0.),recombwt(0.),diffwt(0.);
   double kmrwt(0.);
   size_t ntrials(0);
-
-
+  
   double colfac(3.);
   double Delta(colfac*p_alphaS->MaxValue()/M_PI *
 	       KT2integral(kt1max2,kt1min2,m_Q02eff,ktexpo));
@@ -290,10 +289,16 @@ TryEmission(double & kt12,const bool & dir) {
       continue;
     }
     y0      = log(expy0);
-    k_0     = kt0*Vec4D(cosh(y0),cphi0,sphi0,sinh(y0));
+    double coshy0(cosh(y0)),coshy1(cosh(y1)),coshy2(cosh(y2)); 
+    k_0     = kt0*Vec4D(coshy0,cphi0,sphi0,(y0>0.?1.:-1.)*sqrt((coshy0+1.)*(coshy0-1.)));
+    k_1     = kt1*Vec4D(coshy1,cphi1,sphi1,(y1>0.?1.:-1.)*sqrt((coshy1+1.)*(coshy1-1.)));
+    k_2     = kt2*Vec4D(coshy2,cphi2,sphi2,(y2>0.?1.:-1.)*sqrt((coshy2+1.)*(coshy2-1.)));
+/*    k_0     = kt0*Vec4D(cosh(y0),cphi0,sphi0,sinh(y0));
     k_1     = kt1*Vec4D(cosh(y1),cphi1,sphi1,sinh(y1));
-    k_2     = kt2*Vec4D(cosh(y2),cphi2,sphi2,sinh(y2));
+    k_2     = kt2*Vec4D(cosh(y2),cphi2,sphi2,sinh(y2));*/
     k_0[0]  = k_0.P();
+    k_1[0]  = k_1.P();
+    k_2[0]  = k_2.P();
     if (MomViolation(k_0,k_1,k_2,dir)) continue;
     m_histomap[std::string("Delta_kin")]->Insert(1./Max(1.e-2,dabs(y1-y0))); 
     q01   = dir?m_q0+k_0:m_q0-k_0;
