@@ -238,9 +238,11 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   double b(bproc->Differential(ampl,4|rm));
   if (b==0.0) return 0.0;
   double bvi(bviproc->Differential(ampl,4|rm));
+  double k(bvi/b*(1.0-rs/r)+rs/r);
   msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
-		 <<" -> K = "<<bvi/b*(1.0-rs/r)+rs/r<<"\n";
-  return bvi/b*(1.0-rs/r)+rs/r;
+		 <<" -> K = "<<k<<"\n";
+  if (dabs(k)-1.0>r/b*ampl.Prev()->KT2()/ampl.KT2()) return 1.0;
+  return k;
 }
 
 Cluster_Amplitude *MCatNLO_Process::GetAmplitude()
