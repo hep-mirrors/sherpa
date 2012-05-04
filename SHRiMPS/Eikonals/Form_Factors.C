@@ -205,7 +205,7 @@ double Form_Factor::FourierTransform(const double & b) const
   }
   else {
     size_t bbin(size_t(b/m_deltab));
-    if (bbin>=0 && bbin<m_bsteps) {
+    if (bbin<m_bsteps) {
       if (dabs(b-bbin*m_deltab)/m_deltab<1.e-3) ft = m_values[bbin];
       else if (bbin>=1 && bbin<m_values.size()-2) {
 	double ft1(m_values[bbin-1]), b1=(bbin-1)*m_deltab;
@@ -218,7 +218,7 @@ double Form_Factor::FourierTransform(const double & b) const
 	  ft3 * (b-b1)*(b-b2)*(b-b4)/((b3-b1)*(b3-b2)*(b3-b4)) +
 	  ft4 * (b-b1)*(b-b2)*(b-b3)/((b4-b1)*(b4-b2)*(b4-b3));	
       }
-      else if (bbin>=0 && bbin<m_values.size()-1) {
+      else if (bbin<m_values.size()-1) {
 	double ft1(m_values[bbin]),   b1=bbin*m_deltab;
 	double ft2(m_values[bbin+1]), b2=(bbin+1)*m_deltab;
 	ft = (ft1*(b2-b) + ft2*(b-b1))/m_deltab;
