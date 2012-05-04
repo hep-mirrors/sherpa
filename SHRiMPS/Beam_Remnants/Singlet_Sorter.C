@@ -68,6 +68,7 @@ void Singlet_Sorter::Sort(PartList * inlist,PCList * outlist) {
 
 Particle * Singlet_Sorter::FindNextStart() {
   double maxFB(0.), y;
+  Particle * part(NULL);
   PartList::iterator pit(m_inlist->end()),start(pit);
   for (pit=m_inlist->begin();pit!=m_inlist->end();pit++) {
     if ((*pit)->Flav().IsGluon() ||
@@ -89,8 +90,9 @@ Particle * Singlet_Sorter::FindNextStart() {
     }
   }
   if (start==m_inlist->end()) exit(1);
+  part=(*start);
   m_inlist->erase(start);
-  return (*start);
+  return (part);
 }
 
 Particle * Singlet_Sorter::

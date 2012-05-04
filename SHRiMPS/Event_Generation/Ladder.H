@@ -49,7 +49,9 @@ namespace SHRIMPS {
       m_flow(ATOOLS::Flow(NULL)),m_marked(false),m_beam(false),m_IS(false)
     {}
 
-    ~Ladder_Particle() { }
+    ~Ladder_Particle() { 
+      if (p_part) { delete p_part; p_part = NULL; }
+    }
 
     inline void SetFlow(const unsigned int & pos,const int & code=-1) {
       if(code==-1) m_flow.SetCode(pos);
