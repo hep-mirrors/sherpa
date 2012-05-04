@@ -41,7 +41,7 @@ void Continued_PDF::CalculateNorms()
   m_Vnorm = vintegrator.Integrate(m_xmin,m_xmax,0.0001,1);
 }
 
-const double Continued_PDF::XPDF(const Flavour & flav,const bool & defmax) {
+double Continued_PDF::XPDF(const Flavour & flav,const bool & defmax) {
   if (flav.IsDiQuark()) {
     if (m_bunch==Flavour(kf_p_plus) && !flav.IsAnti()) {
       return XPDF(Flavour(kf_u));

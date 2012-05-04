@@ -75,7 +75,7 @@ namespace SHRIMPS {
       msg_Error()<<"Error in "<<METHOD<<"("<<n<<"): out of bounds.\n";
       return ATOOLS::Vec4D(0.,0.,0.,0.);
     }
-    inline const size_t Size() const {
+    inline size_t Size() const {
       return m_particles.size();
     }
     inline void DeleteParticles() {

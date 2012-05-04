@@ -60,7 +60,7 @@ namespace SHRIMPS {
     Continued_PDF(PDF::PDF_Base * pdf,const ATOOLS::Flavour & bunch);
     ~Continued_PDF();
 
-    const double XPDF(const ATOOLS::Flavour & flav,const bool & defmax=false);
+    double XPDF(const ATOOLS::Flavour & flav,const bool & defmax=false);
 
     inline void Calculate(const double & x,const double & Q2) {
       m_x  = x; 
@@ -80,10 +80,10 @@ namespace SHRIMPS {
     }
     inline const double &          XMin()  const { return m_xmin; }
     inline const double &          XMax()  const { return m_xmax; }
-    inline const double            Q2Min() const { return 0.; }
+    inline double                  Q2Min() const { return 0.; }
     inline const ATOOLS::Flavour & Bunch() const { return m_bunch; }
 
-    inline const double   XPDFMax(const ATOOLS::Flavour & flav) {
+    inline double   XPDFMax(const ATOOLS::Flavour & flav) {
       ATOOLS::Flavour flav1(flav);
       if (flav.IsDiQuark()) {
 	flav1 = ATOOLS::Flavour(kf_u);
@@ -94,7 +94,7 @@ namespace SHRIMPS {
       if (found==m_xpdfmax.end()) return -1.;
       return found->second;
     }
-    inline const double   XMaxPDF(const ATOOLS::Flavour & flav) {
+    inline double   XMaxPDF(const ATOOLS::Flavour & flav) {
       ATOOLS::Flavour flav1(flav);
       if (flav.IsDiQuark()) {
 	flav1 = ATOOLS::Flavour(kf_u);

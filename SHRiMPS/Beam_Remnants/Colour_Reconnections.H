@@ -31,7 +31,7 @@ namespace SHRIMPS {
     void OutputWeightTable();
     void ShuffleColours();
     void SaveLastGluon(ATOOLS::Particle * part);
-    const double Distance(ATOOLS::Particle * part1,ATOOLS::Particle * part2,
+    double Distance(ATOOLS::Particle * part1,ATOOLS::Particle * part2,
 			  const bool & spat=true);
 
     ATOOLS::Blob * AddReconnectionBlob();

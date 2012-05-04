@@ -142,9 +142,9 @@ namespace SHRIMPS {
     inline const double            & DeltaYhat()  const { return m_DeltaYhat; }
     inline const colour_type::code & Propcolour() const { return m_propcol; }
     const bool & IsHardDiffractive() const { return m_harddiffractive; } 
-    const bool ExtractHardest(); 
-    const bool ReconstructMEFlavours(ATOOLS::Flavour & i1,ATOOLS::Flavour & i2,
-				     ATOOLS::Flavour & o1,ATOOLS::Flavour & o2);
+    bool ExtractHardest(); 
+    bool ReconstructMEFlavours(ATOOLS::Flavour & i1,ATOOLS::Flavour & i2,
+			       ATOOLS::Flavour & o1,ATOOLS::Flavour & o2);
     inline Ladder_Particle * GetMEFSParticle(const int & i) const {
       if (i==1) return p_part1;
       return p_part2;
@@ -155,7 +155,7 @@ namespace SHRIMPS {
     }
 
     // Simple service functions
-    const bool CheckFourMomentum();
+    bool CheckFourMomentum();
     inline void Reset(const bool & all=true) { 
       m_emissions.clear(); 
       m_tprops.clear();
@@ -184,7 +184,7 @@ namespace SHRIMPS {
     const double & Y()             const { return m_Y; }
     const bool   & IsDiffractive() const { return m_diffractive; } 
     const bool   & IsRescatter()   const { return m_rescatter; } 
-    const double MRKweight() const;
+    double MRKweight() const;
     inline Ladder_Particle * GetIn(const int & pos) {
       if (pos==0) return p_inpart1;
       return p_inpart2;
@@ -233,7 +233,7 @@ namespace SHRIMPS {
     inline T_Prop * GetHardestProp()  { return p_hardestprop; }
     // Organizing the emissions and propagators
     bool SwapColourIndices();
-    inline const size_t Size()  const { return m_emissions.size(); }
+    inline size_t Size()  const { return m_emissions.size(); }
     inline LadderMap * GetEmissions() { return &m_emissions; }
     inline TPropList * GetProps()     { return &m_tprops; }
     inline void MakeDiffractive() {

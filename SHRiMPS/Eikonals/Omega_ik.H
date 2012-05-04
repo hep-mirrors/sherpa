@@ -81,7 +81,7 @@ namespace SHRIMPS {
 
     void   PrepareQT(const double & b1,const double & b2);
 
-    const double   Prefactor() const { 
+    double   Prefactor() const { 
       return ATOOLS::sqr(p_ff1->Prefactor()*p_ff2->Prefactor()); 
     }
     const double & lambda() const    { return m_lambda; }

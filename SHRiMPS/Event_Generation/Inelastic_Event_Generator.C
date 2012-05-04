@@ -330,7 +330,7 @@ CreateBlob(Blob_List * blobs,const double & xsec) {
 }
 
 
-const double Inelastic_Event_Generator::Smin() const {
+double Inelastic_Event_Generator::Smin() const {
   double smin(m_luminosity.Smin());
   if (!p_ladder) return smin;
 //   smin *= m_kt2fac;
@@ -338,7 +338,7 @@ const double Inelastic_Event_Generator::Smin() const {
   return smin; 
 }
 
-const bool Inelastic_Event_Generator::IsLastRescatter() const {
+bool Inelastic_Event_Generator::IsLastRescatter() const {
   if (!p_ladder) return false;
   return p_ladder->IsRescatter();
 }

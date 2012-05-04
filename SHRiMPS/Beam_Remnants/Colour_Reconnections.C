@@ -230,7 +230,7 @@ void Colour_Reconnections::SaveLastGluon(Particle * part) {
   m_pairs.insert(winit,partpair(part,anti));
 }
 
-const double Colour_Reconnections::
+double Colour_Reconnections::
 Distance(Particle * part1,Particle * part2,const bool & spat) {
   double sij((part1->Momentum()+part2->Momentum()).Abs2());
   double dist(pow((m_smin+sij)/m_smin,m_eta));

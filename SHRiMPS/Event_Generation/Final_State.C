@@ -544,7 +544,7 @@ bool Final_State::FixPropColours(const LadderMap::iterator & split,
 
 
 
-const bool Final_State::
+bool Final_State::
 IsOrdered(const bool & dir,Vec4D & k_0,
 	  Vec4D & k_1,Vec4D & k_2,const double & t) {
   double xi0=k_0.PPerp2()/sqr(k_0[3]);

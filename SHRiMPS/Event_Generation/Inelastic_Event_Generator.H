@@ -57,8 +57,8 @@ namespace SHRIMPS {
     int  InelasticEvent(ATOOLS::Blob_List * blobs,const double & xsec=1.,
 			const bool & isUE=false,const bool & weighted=false);
 
-    const double Smin() const;
-    const bool   IsLastRescatter() const;
+    double Smin() const;
+    bool   IsLastRescatter() const;
 
     void Reset();
 

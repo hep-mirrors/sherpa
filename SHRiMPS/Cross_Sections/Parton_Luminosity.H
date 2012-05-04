@@ -22,10 +22,10 @@ namespace SHRIMPS {
 	m_smin(smin), m_smax(smax), m_eta(0.), m_shat(0.) {}
       inline ~Kernel() {}
       double operator()(double y);
-      inline const double Weight(const double & shat) const {
+      inline double Weight(const double & shat) const {
 	return pow(shat/m_smin,m_eta); 
       }
-      inline const double Weight(const double & shat,const double & eta) const {
+      inline double Weight(const double & shat,const double & eta) const {
 	return pow(shat/m_smin,eta); 
       }
       inline void SetISR(Continued_PDF *pdf[2]) {
@@ -62,10 +62,10 @@ namespace SHRIMPS {
     ~Parton_Luminosity();
     void   FillGrids(std::list<Omega_ik *> * eikonals);
     void   SetEikonal(Omega_ik * eikonal);
-    inline const double Weight(const double & s) const{
+    inline double Weight(const double & s) const{
       return m_kernel.Weight(s);
     }
-    inline const double Weight(const double & s,const double & eta) const{
+    inline double Weight(const double & s,const double & eta) const{
       return m_kernel.Weight(s,eta);
     }
     inline void SetPDF(Continued_PDF *const pdf,const int & beam) {

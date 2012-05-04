@@ -46,12 +46,12 @@ namespace SHRIMPS {
     inline void Reset() { m_done = false; m_thisevent = m_runmode; }
     inline Omega_ik * GetEikonal() const { return p_active->GetEikonal(); }
     inline const double & XSec()   const { return m_xsec; } 
-    inline const double   Smin()   const { return p_active->Smin(); }
+    inline double         Smin()   const { return p_active->Smin(); }
     inline double ShowerMinKT2() {
       if (p_active) return ATOOLS::Max(p_active->Smin(),m_minkt2); 
       return m_minkt2;
     }
-    inline const bool IsLastRescatter() const {
+    inline bool IsLastRescatter() const {
       if (p_active) return p_active->IsLastRescatter();
       return false;
     }

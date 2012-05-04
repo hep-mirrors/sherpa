@@ -58,7 +58,7 @@ namespace SHRIMPS {
 					     const double & smin);
     void AddBeamBlobs(ATOOLS::Blob_List * blobs);
 
-    inline Continued_PDF * const GetPDF(const int & beam) {
+    inline Continued_PDF * GetPDF(const int & beam) {
       if (beam!=0 && beam!=1) return NULL;
       return &(*p_pdfs)[beam];
     }

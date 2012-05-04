@@ -16,7 +16,7 @@ namespace SHRIMPS {
   */
   class Special_Functions {
   public:
-    const double LnGamma(const double & x) const
+    double LnGamma(const double & x) const
     {
       static const double coeff[6] = 
 	{ 76.18009172947146, -86.50532032941677, 24.01409824083091, 
@@ -28,7 +28,7 @@ namespace SHRIMPS {
       return -tmp+log(2.5066282746310005*arg/x);
     }
 
-    const double IncompleteGamma(const double & a, const double & x) const
+    double IncompleteGamma(const double & a, const double & x) const
     {
       double incgam(0.);
       if (x<0. || a<0.) {
@@ -68,7 +68,7 @@ namespace SHRIMPS {
       return incgam;
     }
 
-    const double Jn(const int order,const double & arg) const 
+    double Jn(const int order,const double & arg) const 
     {
       double jn(0.),darg(dabs(arg));
       if (order==0) {
@@ -98,7 +98,7 @@ namespace SHRIMPS {
       return jn;
     }
 
-    const double In(const int order,const double & arg) const 
+    double In(const int order,const double & arg) const 
     {
       double in(0.),darg(dabs(arg)), y;
       switch (order) {
@@ -137,9 +137,9 @@ namespace SHRIMPS {
     }
 
 
-    const double I0(const double & arg)  const { return In(0,arg); }
+    double I0(const double & arg)  const { return In(0,arg); }
 
-    const double Kn(const int order,const double & arg) const
+    double Kn(const int order,const double & arg) const
     {
       if (arg<=0.) return 0.;
       double kn(0.),darg(dabs(arg)), y;

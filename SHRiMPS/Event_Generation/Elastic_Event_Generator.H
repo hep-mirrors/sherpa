@@ -35,7 +35,7 @@ namespace SHRIMPS {
     bool ElasticEvent(ATOOLS::Blob_List * blobs,const double & xsec=0.);
     const double & XSec() const { return p_sigma->XSec(); }
     Omega_ik * GetEikonal() const { return NULL; }
-    const double Smin()   const { return 0.; }
+    double Smin()   const { return 0.; }
   };
 }
 #endif

@@ -36,10 +36,10 @@ namespace SHRIMPS {
     bool DealWithBlob(ATOOLS::Blob * blob);
     void AddParticleToRescatters(ATOOLS::Particle * part);
     void DeleteProbPairs(ATOOLS::Particle *& lpart1,ATOOLS::Particle *& lpart2);
-    const bool CanRescatter(const ATOOLS::Particle * lpart1,
-			    const ATOOLS::Particle * lpart2) const;
-    const bool IsColourConnected(const ATOOLS::Particle * lpart1,
-				 const ATOOLS::Particle * lpart2) const;
+    bool CanRescatter(const ATOOLS::Particle * lpart1,
+		      const ATOOLS::Particle * lpart2) const;
+    bool IsColourConnected(const ATOOLS::Particle * lpart1,
+			   const ATOOLS::Particle * lpart2) const;
   public:
     Rescatter_Handler() {}
     Rescatter_Handler(Beam_Remnant_Handler * beams);

@@ -126,7 +126,7 @@ void Ladder::UpdatePropagators() {
   }
 }
 
-const double Ladder::MRKweight() const {
+double Ladder::MRKweight() const {
   //std::cout<<METHOD<<":\n";
   double mrkweight(1.), qt2,q2;
   if (m_tprops.size()>1) {
@@ -140,7 +140,7 @@ const double Ladder::MRKweight() const {
   return ATOOLS::dabs(mrkweight);
 }
 
-const bool Ladder::ExtractHardest() {
+bool Ladder::ExtractHardest() {
   UpdatePropagators();
   m_that = m_mu2 = -1.;
   m_harddiffractive = false;
@@ -184,7 +184,7 @@ const bool Ladder::ExtractHardest() {
   return true;
 }
  
-const bool Ladder::
+bool Ladder::
 ReconstructMEFlavours(Flavour & i1,Flavour & i2,
 		      Flavour & o1,Flavour & o2) {
   o1 = p_part1->m_flav;  o2 = p_part2->m_flav;
@@ -244,7 +244,7 @@ ReconstructMEFlavours(Flavour & i1,Flavour & i2,
 }
 
 
-const bool Ladder::CheckFourMomentum() {
+bool Ladder::CheckFourMomentum() {
   Vec4D check(p_inpart1->m_mom+p_inpart2->m_mom);
   TPropList::iterator prop = m_tprops.begin();
   for (LadderMap::iterator liter=m_emissions.begin();

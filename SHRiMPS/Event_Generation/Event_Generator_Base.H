@@ -10,9 +10,9 @@ namespace SHRIMPS {
   public:
     Event_Generator_Base(): p_eikonal(NULL),m_smin(0.) {} 
     ~Event_Generator_Base() {};
-    virtual Omega_ik * GetEikonal()      const { return p_eikonal;}
-    virtual const double Smin()          const { return m_smin;}
-    virtual const bool IsLastRescatter() const { return false; }
+    virtual Omega_ik * GetEikonal() const { return p_eikonal;}
+    virtual double Smin()           const { return m_smin;}
+    virtual bool IsLastRescatter()  const { return false; }
   };
 }
 #endif

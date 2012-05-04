@@ -174,7 +174,7 @@ void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
 }
 
 
-const bool Rescatter_Handler::
+bool Rescatter_Handler::
 IsColourConnected(const Particle * part1,const Particle * part2) const
 {
   if (!(part1->GetFlow(1)==part2->GetFlow(2) && part1->GetFlow(1)!=0) &&
@@ -183,7 +183,7 @@ IsColourConnected(const Particle * part1,const Particle * part2) const
   return true;
 }
 
-const bool Rescatter_Handler::
+bool Rescatter_Handler::
 CanRescatter(const Particle * part1,const Particle * part2) const
 {
   if (part1==part2) return false;

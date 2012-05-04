@@ -59,7 +59,7 @@ namespace SHRIMPS {
 			ATOOLS::Vec4D & k_2,bool dir);
     double KT2integral(const double & kt2max,const double & kt2min,
 		       const double & q02,const double & ktexpo);
-    const bool IsOrdered(const bool & dir,ATOOLS::Vec4D & k_0,
+    bool IsOrdered(const bool & dir,ATOOLS::Vec4D & k_0,
 			 ATOOLS::Vec4D & k_1,ATOOLS::Vec4D & k_2,
 			 const double & t);
     double SuppressionTerm(const double & q02,const double & q12);
@@ -72,7 +72,7 @@ namespace SHRIMPS {
 
     double operator()(Ladder * ladder,const double & Deltay,
 		      const bool & firstladder,const bool & firstattempt);
-    inline MODEL::Strong_Coupling * const GetAS(){ return p_alphaS; }
+    inline MODEL::Strong_Coupling * GetAS(){ return p_alphaS; }
     inline void Init(Omega_ik * eikonal,const double & b1,const double & b2) { 
       p_eikonal=eikonal;m_b1=b1;m_b2=b2;
     }
