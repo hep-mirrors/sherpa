@@ -79,10 +79,15 @@ double Single_Process::BeamISRWeight
 	  f1=ReMap(f1,ampl->Leg(0)->Id());
 	  f2=ReMap(f2,ampl->Leg(1)->Id());
 	}
+	if (Q2<sqr(f1.Mass(true)) || Q2<sqr(f2.Mass(true))) {
+	  LQ2=ampl->KT2();
+	  continue;
+	}
 	msg_Debugging()<<"PDF ratio "<<f1<<","<<f2<<" at "<<sqrt(LQ2);
 	double wd=p_int->ISR()->Weight
 	  (mode,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
 	LQ2=ampl->KT2();
+	if (Q2<sqr(f1.Mass(true)) || Q2<sqr(f2.Mass(true))) continue;
 	double wn=p_int->ISR()->Weight
 	  (mode,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
 	msg_Debugging()<<" / "<<sqrt(LQ2)<<" -> "<<wn/wd<<"\n";
