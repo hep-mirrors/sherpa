@@ -65,6 +65,7 @@ double Single_Process::BeamISRWeight
     ClusterAmplitude_Vector &ampls
       ((IsMapped()?p_mapproc:this)->ScaleSetter()->Amplitudes());
     if (ampls.size()) {
+      DEBUG_FUNC(m_name<<", mode = "<<mode);
       Cluster_Amplitude *ampl(ampls.front());
       if (m_pinfo.Has(nlo_type::real)) ampl=ampl->Next();
       for (;ampl;ampl=ampl->Next()) {
@@ -83,7 +84,9 @@ double Single_Process::BeamISRWeight
 	  LQ2=ampl->KT2();
 	  continue;
 	}
-	msg_Debugging()<<"PDF ratio "<<f1<<","<<f2<<" at "<<sqrt(LQ2);
+	msg_Debugging()<<"PDF ratio "<<f1<<"("<<ampl->Leg(0)->Flav().Bar()
+		       <<"),"<<f2<<"("<<ampl->Leg(1)->Flav().Bar()
+		       <<") at "<<sqrt(LQ2);
 	double wd=p_int->ISR()->Weight
 	  (mode,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
 	LQ2=ampl->KT2();

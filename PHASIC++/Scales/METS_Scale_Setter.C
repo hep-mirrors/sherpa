@@ -218,7 +218,7 @@ double METS_Scale_Setter::CalculateStrict
 (const Vec4D_Vector &momenta)
 {
   if (p_caller->Shower()==NULL) THROW(fatal_error,"No shower generator");
-  DEBUG_FUNC(p_caller->Name());
+  DEBUG_FUNC(p_proc->Name()<<" from "<<p_caller->Name());
   p_caller->Integrator()->SetMomenta(momenta);
   p_caller->Generator()->SetClusterDefinitions
     (p_caller->Shower()->GetClusterDefinitions());
@@ -262,7 +262,7 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta)
     return CalculateStrict(momenta);
   }
   if (p_caller->Shower()==NULL) THROW(fatal_error,"No shower generator");
-  DEBUG_FUNC(p_proc->Name());
+  DEBUG_FUNC(p_proc->Name()<<" from "<<p_caller->Name());
   for (int ic(p_ci==NULL?1:0);ic<2;++ic) {
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   ampl->SetNIn(p_proc->NIn());
@@ -573,7 +573,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n";
   for (size_t i(2);i<m_calcs.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
-  msg_Debugging()<<"} <- "<<(p_proc?p_proc->Name():"")<<"\n";
+  msg_Debugging()<<"} <- "<<(p_caller?p_caller->Name():"")<<"\n";
   if (ampl) {
     ampl->SetMuF2(m_scale[stp::fac]);
     ampl->SetMuR2(m_scale[stp::ren]);
