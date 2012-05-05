@@ -104,7 +104,7 @@ CParam Cluster_Algorithm::GetMeasure
   if (p_ampl->Leg(i)->Id()!=idi || p_ampl->Leg(j)->Id()!=idj || 
       p_ampl->Leg(k)->Id()!=idk) THROW(fatal_error,"Internal error");
   bool ismo(idi&((1<<p_xs->NIn())-1));
-  Flavour mmofl(p_xs->ReMap(ismo?mofl.Bar():mofl));
+  Flavour mmofl(p_xs->ReMap(ismo?mofl.Bar():mofl,0));
   if (ismo) mmofl=mmofl.Bar();
   if (p_ampl->Legs().size()>4) {
     kt2[idi][idj][idk][mofl]=
@@ -420,7 +420,7 @@ bool Cluster_Algorithm::ClusterStep
   p_ampl->Decays()=decays;
   for (size_t i(0);i<ccurs.size();++i) {
     size_t cid(m_id[ccurs[i]->CId()]);
-    Flavour flav(p_xs->ReMap(ccurs[i]->Flav()));
+    Flavour flav(p_xs->ReMap(ccurs[i]->Flav(),0));
     if (ccurs[i]==fcur) flav=flav.Bar();
     ColorID col;
     for (size_t j(0);j<ampl->Legs().size();++j) {
@@ -479,7 +479,7 @@ bool Cluster_Algorithm::Cluster
   double mur2(pb->ScaleSetter()->Scale(stp::ren));
   for (size_t i(0);i<ccurs.size();++i) {
     size_t cid(m_id[ccurs[i]->CId()]=1<<p_ampl->Legs().size());
-    Flavour flav(p_xs->ReMap(ccurs[i]->Flav()));
+    Flavour flav(p_xs->ReMap(ccurs[i]->Flav(),0));
     if (ccurs[i]==fcur) flav=flav.Bar();
     size_t idx(i<2?(m_swap?1-i:i):i);
     Vec4D mom(i<2?-xs->Process()->Integrator()->Momenta()[idx]:

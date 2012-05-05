@@ -518,3 +518,7 @@ void Single_Real_Correction::SetSelectorOn(const bool on)
     m_subostermlist[i]->GetOSProcess()->SetSelectorOn(on);
 }
 
+ATOOLS::Flavour Single_Real_Correction::ReMap(const ATOOLS::Flavour &fl,const size_t &id) const
+{
+  return p_tree_process->ReMap(fl,id);
+}

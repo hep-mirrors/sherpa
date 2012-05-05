@@ -152,7 +152,7 @@ void COMIX::Single_Process::MapSubEvts()
     m_subs[i]->p_mom=rsubs[i]->p_mom;
     m_subs[i]->p_dec=rsubs[i]->p_dec;
     for (size_t j(0);j<m_subs[i]->m_n;++j) {
-      fls[j]=ReMap(rsubs[i]->p_fl[j]);
+      fls[j]=ReMap(rsubs[i]->p_fl[j],0);
       ids[j]=rsubs[i]->p_id[j];
     }
   }
@@ -463,7 +463,8 @@ bool COMIX::Single_Process::FillIntegrator(Phase_Space_Handler *const psh)
   return COMIX::Process_Base::FillIntegrator(psh);
 }
 
-Flavour COMIX::Single_Process::ReMap(const Flavour &fl) const
+Flavour COMIX::Single_Process::ReMap
+(const Flavour &fl,const size_t &id) const
 {
   if (p_map==NULL) return fl;
   Flavour_Map::const_iterator fit(m_fmap.find(fl));
@@ -488,7 +489,7 @@ CombinedFlavour(const size_t &idij)
     CFlavVector_Map::const_iterator fit(m_cfmap.find(idij));
     if (fit!=m_cfmap.end()) return fit->second;
     Flavour_Vector cf(p_map->CombinedFlavour(idij));
-    for (size_t i(0);i<cf.size();++i) cf[i]=ReMap(cf[i]);
+    for (size_t i(0);i<cf.size();++i) cf[i]=ReMap(cf[i],0);
     m_cfmap[idij]=cf;
     return m_cfmap[idij];
   }
