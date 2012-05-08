@@ -299,6 +299,13 @@ TryEmission(double & kt12,const bool & dir) {
     k_0[0]  = k_0.P();
     k_1[0]  = k_1.P();
     k_2[0]  = k_2.P();
+    if ( k_0[3]>k_0[0] || k_1[3]>k_1[0] || k_2[3]>k_2[0]) {
+      msg_Error()<<METHOD<<": Reject emission due to inaccuracy in four-momentum\n"
+                 <<"k_0 = "<<k_0<<" with y = "<<k_0.Y()<<"\n"
+                 <<"k_1 = "<<k_1<<" with y = "<<k_1.Y()<<"\n"
+                 <<"k_2 = "<<k_2<<" with y = "<<k_2.Y()<<std::endl;
+      continue;
+    }
     if (MomViolation(k_0,k_1,k_2,dir)) continue;
     m_histomap[std::string("Delta_kin")]->Insert(1./Max(1.e-2,dabs(y1-y0))); 
     q01   = dir?m_q0+k_0:m_q0-k_0;
@@ -404,7 +411,7 @@ bool Final_State::MomViolation(ATOOLS::Vec4D & k_0, ATOOLS::Vec4D & k_1,
   if (dabs((bef-aft)[3]/bef[0])>1.e-6) {
     momviolation = true;
   }
-  k_2 = m_k0+m_k2-k_0-k_1;
+//   k_2 = m_k0+m_k2-k_0-k_1;
   if (momviolation) m_rej_nofit++;
   return momviolation;
 }

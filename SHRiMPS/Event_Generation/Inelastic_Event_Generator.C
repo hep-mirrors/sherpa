@@ -303,7 +303,7 @@ CreateBlob(Blob_List * blobs,const double & xsec) {
   if (blob->CheckMomentumConservation().Abs2()>1.e-6 ||
       blob->CheckMomentumConservation()[0]>1.e-3 ||
       blob->CheckMomentumConservation()[3]>1.e-3) {
-    if (blob->CheckMomentumConservation()[0]>1.e-3) {
+/*    if (blob->CheckMomentumConservation()[0]>1.e-3) {
       msg_Error()<<METHOD<<" try to flip orientation of momenta.\n";
       Vec4D mom;
       for (int i=0;i<blob->NOutP();i++) {
@@ -311,7 +311,7 @@ CreateBlob(Blob_List * blobs,const double & xsec) {
 	mom[3] *= -1.;
 	blob->OutParticle(i)->SetMomentum(mom);
       }
-    }
+    }*/
     msg_Error()<<"Problem in "<<METHOD<<":\n"
 	       <<"   Scattering blob ("<<blob->Id()<<") seems fishy: "
 	       <<blob->CheckMomentumConservation()<<".\n"
