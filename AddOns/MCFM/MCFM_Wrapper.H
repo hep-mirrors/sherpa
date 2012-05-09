@@ -110,6 +110,13 @@ extern "C" {
   extern struct {
     Complex za[MCFM_NMX*MCFM_NMX], zb[MCFM_NMX*MCFM_NMX];
   } zprods_;
+  extern struct{
+    int nwz;
+  }nwz_;
+  extern struct{
+    double s[MCFM_NMX*MCFM_NMX];
+  }sprods_;
+
 }
 
 #endif
