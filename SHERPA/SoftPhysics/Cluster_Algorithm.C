@@ -318,7 +318,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
 	break;
       }
     }
-    if(kt2max>kt2min) kt2min = sqrt(kt2min*kt2max);
+    if (kt2max>kt2min) kt2min = sqrt(kt2min*kt2max);
     if (kt2max>totmax) totmax = kt2max;
     split->SetKTStart(kt2max);
     split->SetKTMax(kt2max);
