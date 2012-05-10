@@ -197,6 +197,7 @@ void Beam_Remnant_Handler::LinkShowerInitiators(Blob * blob) {
   Particle_Vector outps(p_blob->GetOutParticles());
   for (int i=inps.size()-1;i>=0;i--) {
     if (inps[i]->ProductionBlob()) continue;
+    outps = p_blob->GetOutParticles();
     for (int j=outps.size()-1;j>=0;j--) {
       if (inps[i]->Flav()==outps[j]->Flav() &&
 	  inps[i]->Momentum()==outps[j]->Momentum()) {
