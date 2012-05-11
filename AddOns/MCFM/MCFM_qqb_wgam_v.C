@@ -11,20 +11,16 @@ namespace MCFM {
   private:
     int                     m_pID;
     double                * p_p, *p_msqv;
-    double                  m_MZ;                  
     MODEL::Running_AlphaS * p_as;
     MODEL::Running_AlphaQED*p_aem;
     double                  m_sin2_thetaW;
     double                  m_MW;
     double                  m_GW;
-    double                  m_GF;
     double                  m_Qu;
     double                  m_Qd;
     double                  m_CF;
     double                  m_NC; //hopefully
     double                  m_aqed;
-    double                  m_cplcorr;
-    double                  m_normcorr;
     // Add any other things in here...
   public:
     MCFM_qqb_wgam(int & pID, bool & swapped,const PHASIC::Process_Info& pi,
@@ -39,7 +35,7 @@ namespace MCFM {
 		     Complex * zb,
 		     int hgamma);
     //double * DoMCFM(const Vec4D_Vector &p);
-    double * DoMCFM(double * p);
+    void DoMCFM(const Vec4D_Vector &p);
   };
 
 }
@@ -83,21 +79,16 @@ using namespace std;
 MCFM_qqb_wgam::MCFM_qqb_wgam(int & pID, bool & swapped,const PHASIC::Process_Info& pi,
 			 const Flavour_Vector& flavs) :
   Virtual_ME2_Base(pi,flavs), m_pID(pID),
-  m_MZ(Flavour(kf_Z).Mass()),
   p_as((Running_AlphaS *)s_model->GetScalarFunction(string("alpha_S"))),
   p_aem((Running_AlphaQED *)s_model->GetScalarFunction(string("alpha_QED"))),
   m_sin2_thetaW(s_model->ScalarConstant(string("sin2_thetaW"))),
   m_MW(Flavour(kf_Wplus).Mass()),
   m_GW(Flavour(kf_Wplus).Width()),
-  m_GF(1.16639e-5),
   m_Qu(Flavour(kf_u).Charge()),
   m_Qd(Flavour(kf_d).Charge()),
   m_CF(CF),
   m_NC(NC),
-  m_aqed(s_model->ScalarFunction(string("alpha_QED"))),
-  m_cplcorr(pow(4.*M_PI*m_aqed/m_sin2_thetaW/ewcouple_.gwsq,2.)
-	    *4.*M_PI*m_aqed/ewcouple_.esq),
-  m_normcorr(4.*9./qcdcouple_.ason2pi)
+  m_aqed(s_model->ScalarFunction(string("alpha_QED")))
 {
   rpa->gen.AddCitation
     (1,"The NLO matrix elements have been taken from MCFM \\cite{}.");
@@ -133,15 +124,16 @@ Complex MCFM_qqb_wgam::agamtree(int p1, int p2, int p3, int p4, int p5,
   anomcoup_.xdelk_g=xfac*anomcoup_.delk_g;
   anomcoup_.xlambda_g=xfac*anomcoup_.lambda_g;
   */
-  
+
   if (zerowidth_.zerowidth){
     // zerowidth: no final state radiation, so we can set prp12 to zero
+    std::cout << "zerowidth! " << std::endl;
     prp12=Complex(0.,0.);}
   else{
     // otherwise, usual Breit-Wigner form
     prp12=sprods_.s[p1+p2mx]/Complex((sprods_.s[p1+p2mx]-pow(m_MW,2)),m_MW*m_GW);
+    // std::cout << "Prop:  " << prp12 << std::endl;
   }
-  //std::cout << "S Z " << zprods_.zb[p2+p5mx] << std::endl;;
   //  c.f. Eqs.(4.4),(4.5) of hep-ph/9803250 (multiplied by -i)
   //       for the terms proportional to prp34
   if (hgamma == -1){
@@ -188,12 +180,13 @@ Complex MCFM_qqb_wgam::agamvirt(int p1, int p2, int p3, int p4, int p5,
 {
   Complex prop,vpl,Agamvirt;
   double s34,s12;
-  s34=real((za[(p3-1) + (p4-1)*MCFM_NMX])*
-	   (zb[(p4-1) + (p3-1)*MCFM_NMX]));
-  s12=real((za[(p1-1) + (p2-1)*MCFM_NMX])*
-	   (zb[(p2-1) + (p1-1)*MCFM_NMX]));
+  s34=real(za[(p3-1) + (p4-1)*MCFM_NMX]*
+	   zb[(p4-1) + (p3-1)*MCFM_NMX]);
+  s12=real(za[(p1-1) + (p2-1)*MCFM_NMX]*
+	   zb[(p2-1) + (p1-1)*MCFM_NMX]);
   prop=s34/Complex(s34-pow(m_MW,2),m_MW * m_GW);
   vpl=vpole_(&s12);
+  //std::cout << "Vpole:  " << vpl << std::endl;
 
   if    (hgamma == +1) {
     Agamvirt=prop*(m_Qd*fagamma_(&p1,&p2,&p3,&p4,&p5,za,zb)
@@ -208,45 +201,44 @@ Complex MCFM_qqb_wgam::agamvirt(int p1, int p2, int p3, int p4, int p5,
   return Agamvirt;
 } 
 
-double * MCFM_qqb_wgam::DoMCFM(double * p){
+//double * MCFM_qqb_wgam::DoMCFM(const Vec4D_Vector &p){
+void MCFM_qqb_wgam::DoMCFM(const Vec4D_Vector &p){
 
-  double corrfactor(m_cplcorr*m_normcorr);
-  double a[11][11];
-  qqb_wgam_v_(p_p,*a);
+  //double a[11][11];
+  //qqb_wgam_v_(p_p,*a);
   double fac;
   double qbq;
   double qqb;
   // factor in the colour factors plus the symmetrisation
-  
-  //spinoru_(p.size(),p_p,zprods_.za,zprods_.zb);
-  spinoru_(5,p_p,zprods_.za,zprods_.zb);
-  //fac=(*p_as)(m_mur2)/(2*M_PI)*m_CF*0.25/pow(m_NC,2)*2.*m_NC*4*M_PI
-  //*pow((*p_aem)(m_mur2)/m_sin2_thetaW,2)*(*p_aem)(m_mur2); 
 
-  fac=m_CF*2.
-    *m_NC*pow(4*M_PI*m_aqed/m_sin2_thetaW,2)*4*M_PI
-    *m_aqed; 
-  //std::cout << "gwsq:    " << ewcouple_.gwsq << std::endl;
-  //std::cout << "-->      " << m_aqed/m_sin2_thetaW*4.*M_PI << std::endl;
-  //std::cout << "esq:     " << ewcouple_.esq << std::endl;
-  //std::cout << "-->      " << 4*M_PI*m_aqed << std::endl;
-
+  spinoru_(p.size(),p_p,zprods_.za,zprods_.zb);
+  //spinoru_(5,p_p,zprods_.za,zprods_.zb);
   //fac = 7.32644899267936281*pow(10,-5);
-  std::cout << "Sherpa fac:  " << fac << std::endl;
+  fac=m_CF*2.*m_NC*pow(4*M_PI*m_aqed/m_sin2_thetaW,2)*4*M_PI*m_aqed; 
+  //std::cout << "Sherpa fac " << fac << std::endl;
   if (nwz_.nwz == -1){
     // ie ub-d
+    
+    //    qbq=fac*2.0*real(conj(agamtree(1,2,3,4,5,zprods_.za,zprods_.zb,+1))
+    //		     *agamvirt(1,2,3,4,5,zprods_.za,zprods_.zb,+1))
+    //+fac*2.0*real(conj(agamtree(1,2,3,4,5,zprods_.za,zprods_.zb,-1))
+    //		    *agamvirt(1,2,3,4,5,zprods_.za,zprods_.zb,-1));
+    qbq=fac*2.0*real(conj(agamtree(1,2,5,4,3,zprods_.za,zprods_.zb,+1))
+		     *agamvirt(1,2,5,4,3,zprods_.za,zprods_.zb,+1))
+      +fac*2.0*real(conj(agamtree(1,2,5,4,3,zprods_.za,zprods_.zb,-1))
+		    *agamvirt(1,2,5,4,3,zprods_.za,zprods_.zb,-1));
 
-    qbq=fac*2.0*real(conj(agamtree(1,2,3,4,5,zprods_.za,zprods_.zb,+1))
-		     *agamvirt(1,2,3,4,5,zprods_.za,zprods_.zb,+1))
-      +fac*2.0*real(conj(agamtree(1,2,3,4,5,zprods_.za,zprods_.zb,-1))
-		    *agamvirt(1,2,3,4,5,zprods_.za,zprods_.zb,-1));
-      
     // ie d-ub
  
-    qqb=fac*2.0*real(conj(agamtree(2,1,3,4,5,zprods_.za,zprods_.zb,+1))
-		     *agamvirt(2,1,3,4,5,zprods_.za,zprods_.zb,+1))
-      +fac*2.0*real(conj(agamtree(2,1,3,4,5,zprods_.za,zprods_.zb,-1))
-		    *agamvirt(2,1,3,4,5,zprods_.za,zprods_.zb,-1));
+    //    qqb=fac*2.0*real(conj(agamtree(2,1,3,4,5,zprods_.za,zprods_.zb,+1))
+    //		     *agamvirt(2,1,3,4,5,zprods_.za,zprods_.zb,+1))
+    //+fac*2.0*real(conj(agamtree(2,1,3,4,5,zprods_.za,zprods_.zb,-1))
+    //		    *agamvirt(2,1,3,4,5,zprods_.za,zprods_.zb,-1));
+    qqb=fac*2.0*real(conj(agamtree(2,1,4,5,3,zprods_.za,zprods_.zb,+1))
+		     *agamvirt(2,1,4,5,3,zprods_.za,zprods_.zb,+1))
+      +fac*2.0*real(conj(agamtree(2,1,4,5,3,zprods_.za,zprods_.zb,-1))
+		    *agamvirt(2,1,4,5,3,zprods_.za,zprods_.zb,-1));
+    //std::cout << "SHERPA qqb:  " << qqb << std::endl;
   }
 
   else if (nwz_.nwz == +1){ 
@@ -266,67 +258,83 @@ double * MCFM_qqb_wgam::DoMCFM(double * p){
   }
   int k,l;
 
-  double Vsq[2*MCFM_NF+1][2*MCFM_NF+1]={ 0 };
-  if (nwz_.nwz==1){
-    Vsq[MCFM_NF+2][MCFM_NF-1]=pow(cabib_.Vud,2);
-    Vsq[MCFM_NF+2][MCFM_NF-3]=pow(cabib_.Vus,2);
-    Vsq[MCFM_NF+2][MCFM_NF-5]=pow(cabib_.Vub,2);
-    Vsq[MCFM_NF+4][MCFM_NF-1]=pow(cabib_.Vcd,2);
-    Vsq[MCFM_NF+4][MCFM_NF-3]=pow(cabib_.Vcs,2);
-    Vsq[MCFM_NF+4][MCFM_NF-5]=pow(cabib_.Vcb,2);
-  }
 
-  else if (nwz_.nwz==-1){
-    Vsq[MCFM_NF+1][MCFM_NF-2]=pow(cabib_.Vud,2);
-    Vsq[MCFM_NF+3][MCFM_NF-2]=pow(cabib_.Vus,2);
-    Vsq[MCFM_NF+5][MCFM_NF-2]=pow(cabib_.Vub,2);
-    Vsq[MCFM_NF+1][MCFM_NF-4]=pow(cabib_.Vcd,2);
-    Vsq[MCFM_NF+3][MCFM_NF-4]=pow(cabib_.Vcs,2);
-    Vsq[MCFM_NF+5][MCFM_NF-4]=pow(cabib_.Vcb,2);
-  }
+  double Vsq[2*MCFM_NF+1][2*MCFM_NF+1]={ 0 };
+  Vsq[MCFM_NF+2][MCFM_NF-1]=pow(cabib_.Vud,2);
+  Vsq[MCFM_NF+2][MCFM_NF-3]=pow(cabib_.Vus,2);
+  Vsq[MCFM_NF+2][MCFM_NF-5]=pow(cabib_.Vub,2);
+  Vsq[MCFM_NF+4][MCFM_NF-1]=pow(cabib_.Vcd,2);
+  Vsq[MCFM_NF+4][MCFM_NF-3]=pow(cabib_.Vcs,2);
+  Vsq[MCFM_NF+4][MCFM_NF-5]=pow(cabib_.Vcb,2);
+  
+  Vsq[MCFM_NF+1][MCFM_NF-2]=pow(cabib_.Vud,2);
+  Vsq[MCFM_NF+3][MCFM_NF-2]=pow(cabib_.Vus,2);
+  Vsq[MCFM_NF+5][MCFM_NF-2]=pow(cabib_.Vub,2);
+  Vsq[MCFM_NF+1][MCFM_NF-4]=pow(cabib_.Vcd,2);
+  Vsq[MCFM_NF+3][MCFM_NF-4]=pow(cabib_.Vcs,2);
+  Vsq[MCFM_NF+5][MCFM_NF-4]=pow(cabib_.Vcb,2);
+  
 
   for  (k=0;k<=2*MCFM_NF;k++){
     for (l=0;l<=2*MCFM_NF;l++){
       // set msqv=0 to initalize
-      p_msqv[k*MCFM_NF + l]=0.;
+      //p_msqv[k*MCFM_NF + l]=0.;
       if ((k > MCFM_NF) and (l < MCFM_NF)){
-	p_msqv[(k*MCFM_NF)+l]=Vsq[k][l]*qqb;
+	p_msqv[(k*(2*MCFM_NF+1))+l]=Vsq[k][l]*qqb;
       }
       else if ((k < MCFM_NF) and (l > MCFM_NF)) {
-	p_msqv[(k*MCFM_NF)+l]=Vsq[k][l]*qbq;
-
+	p_msqv[(k*(2*MCFM_NF+1))+l]=Vsq[l][k]*qbq;
+	
       }
     }
   }
-
-  return p_msqv;
+ 
+  //return p_msqv;
 
 }
 
 void MCFM_qqb_wgam::Calc(const Vec4D_Vector &p)
 {
-  double corrfactor(m_cplcorr*m_normcorr);
   for (int n(0);n<2;++n)           GetMom(p_p,n,-p[n]);
   for (size_t n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
-  
+
   int i(m_flavs[0]), j(m_flavs[1]); 
   if (i==21) { i=0; } // correct for gluons
   if (j==21) { j=0; }
   scale_.musq=m_mur2;
   scale_.scale=sqrt(scale_.musq);
+  std::cout << "quarks involved are: " << i << " and " << j << std::endl;
+  //  double corr = 4.*9./qcdcouple_.ason2pi
+  //*pow(4*M_PI*m_aqed/m_sin2_thetaW,2)*4*M_PI*m_aqed
+  ///(ewcouple_.esq*pow(ewcouple_.gwsq,2));
 
   i+=MCFM_NF; j+=MCFM_NF; // so the index runs from 0 over the array
-
-
+  //double b[121];
+  //double c[121];
+  //double d[121];
   epinv_.epinv=epinv2_.epinv2=0.0;
-  double res(DoMCFM(p_p)[(i*MCFM_NF)+j]);
+  DoMCFM(p);
+  //std::cout << "msq res ud " << p_msqv[i*(2*MCFM_NF+1) + j] <<std::endl;
+  double res(p_msqv[(i*(2*MCFM_NF+1))+j]);
+  //qqb_wgam_v_(p_p,b);
+  //double (MCFM_res)(b[j*(2*MCFM_NF+1)+i]);
+  //std::cout << "MCFM res: " << MCFM_res*corr << std::endl;
   epinv_.epinv=1.0;
-  double res1(DoMCFM(p_p)[(i*MCFM_NF)+j]);
+  DoMCFM(p);
+  //std::cout << "msq res1 ud " << p_msqv[i*(2*MCFM_NF+1) + j] <<std::endl;
+  //qqb_wgam_v_(p_p,c);
+  //double (MCFM_res1)(c[j*(2*MCFM_NF+1)+i]);
+  double res1(p_msqv[(i*(2*MCFM_NF+1))+j]);
+  //std::cout << "MCFM res1: " << MCFM_res1*corr << std::endl;
   epinv2_.epinv2=1.0;
-  double res2(DoMCFM(p_p)[(i*MCFM_NF)+j]);
+  DoMCFM(p); 
+  //std::cout << "msq res2 ud " << p_msqv[i*(2*MCFM_NF+1) + j] <<std::endl;
+  //qqb_wgam_v_(p_p,d); 
+  //double (MCFM_res2)(d[j*(2*MCFM_NF+1)+i]);
+  double res2(p_msqv[(i*(2*MCFM_NF+1))+j]);
+  //std::cout << "MCFM res2: " << MCFM_res2*corr << std::endl;
 
   m_res.Finite() = res;
-
   m_res.IR()     = (res1-res);
   m_res.IR2()    = (res2-res1);
 
