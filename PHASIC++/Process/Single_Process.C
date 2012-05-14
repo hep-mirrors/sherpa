@@ -70,6 +70,13 @@ double Single_Process::BeamISRWeight
       if (m_pinfo.Has(nlo_type::real)) ampl=ampl->Next();
       for (;ampl;ampl=ampl->Next()) {
 	if (IsEqual(LQ2,ampl->KT2())) continue;
+	if (ampl->Next()) {
+	  if (ampl->Next()->Splitter()->Stat()==3) {
+	    msg_Debugging()<<"Skip decay "<<
+	      ID(ampl->Next()->Splitter()->Id())<<"\n";
+	    continue;
+	  }
+	}
 	if (ampl->Prev() && LQ2>ampl->KT2()) {
 	  LQ2=ampl->KT2();
 	  continue;
