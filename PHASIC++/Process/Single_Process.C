@@ -77,17 +77,13 @@ double Single_Process::BeamISRWeight
 	    continue;
 	  }
 	}
-	if (ampl->Prev() && LQ2>ampl->KT2()) {
-	  LQ2=ampl->KT2();
-	  continue;
-	}
 	Flavour f1(ampl->Leg(0)->Flav().Bar());
 	Flavour f2(ampl->Leg(1)->Flav().Bar());
 	if (MapProc() && LookUp()) {
 	  f1=ReMap(f1,ampl->Leg(0)->Id());
 	  f2=ReMap(f2,ampl->Leg(1)->Id());
 	}
-	if (Q2<sqr(f1.Mass(true)) || Q2<sqr(f2.Mass(true))) {
+	if (LQ2<sqr(f1.Mass(true)) || LQ2<sqr(f2.Mass(true))) {
 	  LQ2=ampl->KT2();
 	  continue;
 	}
@@ -97,11 +93,11 @@ double Single_Process::BeamISRWeight
 	double wd=p_int->ISR()->Weight
 	  (mode,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
 	LQ2=ampl->KT2();
-	if (Q2<sqr(f1.Mass(true)) || Q2<sqr(f2.Mass(true))) continue;
+	if (LQ2<sqr(f1.Mass(true)) || LQ2<sqr(f2.Mass(true))) continue;
 	double wn=p_int->ISR()->Weight
 	  (mode,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
 	msg_Debugging()<<" / "<<sqrt(LQ2)<<" -> "<<wn/wd<<"\n";
-	if (wn>0.0 && wd>0.0) wgt*=wn/wd;
+	if (!IsZero(wn) && !IsZero(wd)) wgt*=wn/wd;
       }
     }
   }
