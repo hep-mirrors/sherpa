@@ -93,11 +93,6 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  MCATNLO/Showers/Makefile \
 	  MCATNLO/Main/Makefile \
 	  MCATNLO/Makefile \
-	  POWHEG/Tools/Makefile \
-	  POWHEG/Calculators/Makefile \
-	  POWHEG/Showers/Makefile \
-	  POWHEG/Main/Makefile \
-	  POWHEG/Makefile \
 	  PHASIC++/Main/Makefile \
 	  PHASIC++/Channels/Makefile \
 	  PHASIC++/Process/Makefile \

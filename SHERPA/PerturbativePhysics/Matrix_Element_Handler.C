@@ -14,7 +14,6 @@
 #include "PDF/Main/NLOMC_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
-#include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
@@ -97,8 +96,7 @@ Matrix_Element_Handler::~Matrix_Element_Handler()
     delete m_pmaps[i];
   }
   for (size_t i=0; i<m_procs.size(); ++i)
-    if (dynamic_cast<MCatNLO_Process*>(m_procs[i]) ||
-	dynamic_cast<POWHEG_Process*>(m_procs[i])) delete m_procs[i];
+    if (dynamic_cast<MCatNLO_Process*>(m_procs[i])) delete m_procs[i];
   if (p_nlomc) delete p_nlomc;
 }
 
@@ -108,7 +106,7 @@ void Matrix_Element_Handler::InitNLOMC()
   read.AddComment("#");
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
-  std::string nlomc(m_nlomode!=2?"MC@NLO":"POWHEG");
+  std::string nlomc(m_nlomode!=2?"MC@NLO":"");
   nlomc+="_"+read.GetValue<std::string>("NLOMC_GENERATOR","CSS");
   p_nlomc = NLOMC_Getter::GetObject(nlomc,NLOMC_Key(p_model,p_isr,&read));
 }
@@ -228,21 +226,6 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
       proc->Init(pi,p_beam,p_isr);
       proc->SetShower(p_shower->GetShower());
       proc->SetMCatNLO(p_nlomc);
-      m_procs.push_back(proc);
-      procs.push_back(proc);
-      return procs;
-    }
-    if (m_nlomode==2) {
-      m_hasnlo=2;
-      if (p_nlomc==NULL) InitNLOMC();
-      if (pmap==NULL) {
-	m_pmaps.push_back(new NLOTypeStringProcessMap_Map());
-	pmap=m_pmaps.back();
-      }
-      POWHEG_Process *proc=new POWHEG_Process(m_gens,pmap);
-      proc->Init(pi,p_beam,p_isr);
-      proc->SetShower(p_shower->GetShower());
-      proc->SetPOWHEG(p_nlomc);
       m_procs.push_back(proc);
       procs.push_back(proc);
       return procs;
