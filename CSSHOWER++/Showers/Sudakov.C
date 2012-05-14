@@ -231,22 +231,22 @@ bool Sudakov::Generate(Parton * split)
   m_cfl  = split->GetFlavour();
   m_type = cstp::none;
   std::vector<Parton*> slist;
-  msg_Tracking()<<"---- "<<METHOD<<":\n"
+  msg_IODebugging()<<"---- "<<METHOD<<":\n"
 	   <<"   Check spectators for [type = "<<split->GetType()<<"]"
 	   <<" ("<<split->GetFlow(1)<<", "<<split->GetFlow(2)<<").\n";
   if (split->GetLeft() && split!=split->GetLeft())  {
     slist.push_back(split->GetLeft());
-    msg_Tracking()<<"   --> add left: "<<split->GetLeft()->GetType()
+    msg_IODebugging()<<"   --> add left: "<<split->GetLeft()->GetType()
 	     <<" ("<<split->GetLeft()->GetFlow(1)<<", "
 	     <<split->GetLeft()->GetFlow(2)<<").\n";
   }
   if (split->GetRight() && split!=split->GetRight()) {
     slist.push_back(split->GetRight());
-    msg_Tracking()<<"   --> add right: "<<split->GetRight()->GetType()
+    msg_IODebugging()<<"   --> add right: "<<split->GetRight()->GetType()
 	     <<" ("<<split->GetRight()->GetFlow(1)<<", "
 	     <<split->GetRight()->GetFlow(2)<<").\n";
   }
-  msg_Tracking()<<"   ===> found "<<slist.size()<<" spectator(s).\n";
+  msg_IODebugging()<<"   ===> found "<<slist.size()<<" spectator(s).\n";
   int sc=split->GetFlavour().IntCharge();
   if (split->GetType()==pst::IS) sc=-sc;
   if (sc!=0 || split->GetFlavour().IsPhoton() ||
