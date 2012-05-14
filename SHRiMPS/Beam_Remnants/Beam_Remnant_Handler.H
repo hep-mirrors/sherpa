@@ -15,11 +15,6 @@
 namespace BEAM   { class Beam_Spectra_Handler; }
 
 namespace SHRIMPS {
-  typedef std::map<ATOOLS::Particle *,ATOOLS::Vec4D> partvecmap;
-
-  typedef std::set<ATOOLS::Particle *>               PartSet;
-  typedef std::map<double,ATOOLS::Particle *>        ReconnProb;
-  typedef std::map<ATOOLS::Particle *,ReconnProb * > ProbMap;
 
   class Beam_Remnant_Handler {
   private:
