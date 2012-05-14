@@ -549,14 +549,20 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
   Flavour_Vector fl_i(info->m_ii.GetExternal());
   Vec4D_Vector cp(fl_i.size());
   if (fl_i.size()==1) {
-    p[0]=cp[0]=Vec4D(fl_i[0].Mass(),0.0,0.0,0.0);
+    double m(0.0);
+    for (size_t j(0);j<fl_i[0].Size();++j) m+=ms->Mass(fl_i[0][j]);
+    p[0]=cp[0]=Vec4D(m/fl_i[0].Size(),0.0,0.0,0.0);
     msg_Debugging()<<"p[0] = "<<p[0]<<"\n";
   }
   else {
     double m[2]={fl_i[0].Mass(),fl_i[1].Mass()};
     double E=rpa->gen.Ecms();
-    if (info->m_fi.m_ps.size()==1)
-      E=info->m_fi.m_ps.front().m_fl.Mass();
+    if (info->m_fi.m_ps.size()==1) {
+      E=0.0;
+      Flavour dfl(info->m_fi.m_ps.front().m_fl);
+      for (size_t j(0);j<dfl.Size();++j) E+=ms->Mass(dfl[j]);
+      E/=dfl.Size();
+    }
     if (E<m[0]+m[1]) return;
     double x=1.0/2.0+(m[0]*m[0]-m[1]*m[1])/(2.0*E*E);
     p[0]=cp[0]=Vec4D(x*E,0.0,0.0,sqrt(sqr(x*E)-m[0]*m[0]));

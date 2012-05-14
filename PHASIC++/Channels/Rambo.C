@@ -18,7 +18,9 @@ Rambo::Rambo(int _nin,int _nout,const Flavour * fl, const Mass_Selector* _ms) :
   rannum=0;
   massflag = 0;
   for (short int i=0;i<nin+nout;i++) {
-    ms[i]=sqr(p_ms->Mass(fl[i]));
+    ms[i]=0.0;
+    for (size_t j(0);j<fl[i].Size();++j) ms[i]+=p_ms->Mass(fl[i][j]);
+    ms[i]=sqr(ms[i]/fl[i].Size());
     if (!ATOOLS::IsZero(ms[i])) massflag = 1;
   } 
 
