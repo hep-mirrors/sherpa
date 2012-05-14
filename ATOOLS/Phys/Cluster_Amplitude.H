@@ -108,6 +108,8 @@ namespace ATOOLS {
 
     void OrderLegs();
 
+    Cluster_Leg *Splitter() const;
+
     // inline functions
     inline const ClusterLeg_Vector &Legs() const { return m_legs; }
     inline ClusterLeg_Vector       &Legs()       { return m_legs; }

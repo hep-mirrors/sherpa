@@ -239,6 +239,13 @@ Cluster_Leg *Cluster_Amplitude::IdLeg(const size_t &id) const
   return NULL;
 }
 
+Cluster_Leg *Cluster_Amplitude::Splitter() const
+{
+  for (size_t i(0);i<m_legs.size();i++)
+    if (m_legs[i]->K()) return m_legs[i];
+  return NULL;
+}
+
 void Cluster_Amplitude::SetColours
 (Cluster_Leg *const lij,Cluster_Leg *const li,Cluster_Leg *const lj)
 {
