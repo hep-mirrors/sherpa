@@ -46,9 +46,9 @@ Complex Basic_MassTermfunc::MassTermCalc(int a,Flavour flav)
 #endif
 
   mass = flav.Mass();
-
+  
 #ifdef Complex_Mass_Scheme
-  mass -= Complex(0.,1./2.)*flav.Width();
+  mass = sqrt(mass*mass-Complex(0.,1)*mass*flav.Width());
 #endif
 
   if (a<0)           mass = -mass;
