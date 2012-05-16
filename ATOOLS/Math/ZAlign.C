@@ -32,7 +32,7 @@ ZAlign::ZAlign(const Vec4D &pa,const Vec4D &pb,
     else kap=sqrt(kap);
     double kr((pb.PMinus()*Q.PPlus())/(pb.PPlus()*Q.PMinus()));
     double ks((papb+mb2+kap)/(papb+mb2-kap));
-    if (dabs(kr*ks-1.0)<dabs(kr/ks-1.0)) kap=-kap;
+    if (Max(kr*ks,1.0/(kr*ks))<Max(kr/ks,ks/kr)) kap=-kap;
     m_pan=Vec4D((pb[0]*papb+pb[3]*kap)/mb2,0.0,
 		0.0,(pb[3]*papb+pb[0]*kap)/mb2);
   }
