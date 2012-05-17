@@ -302,7 +302,7 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
   if (fl1.Size()>1 || fl2.Size()>1)
     THROW(fatal_error,"Do not try to calculate an ISR weight with containers.");
   double x1(0.),x2(0.);
-  if (mode) {
+  if (mode&1) {
     p1[3]=-p1[3];
     p2[3]=-p2[3];
     std::swap<Flavour>(fl1,fl2);
@@ -322,9 +322,10 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
   if (PDF(1) && (Q22<PDF(1)->Q2Min() || Q22>PDF(1)->Q2Max()))
     return 0.;
   MtxLock();
-  m_mu2[mode]=Q12;
-  m_mu2[1-mode]=Q22;
-  switch (m_mode) {
+  m_mu2[mode&1]=Q12;
+  m_mu2[1-(mode&1)]=Q22;
+  int cmode(((mode&6)>>1)?((mode&6)>>1):m_mode);
+  switch (cmode) {
     case 3 :
       if (!p_isrbase[0]->PDF()->Contains(fl1) ||
           !p_isrbase[1]->PDF()->Contains(fl2)) { MtxUnLock(); return 0.; }
@@ -343,11 +344,12 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
     case 0 : break;
     default : MtxUnLock(); return 0.;
   }
-  if (m_mode!=3 || (CheckRemnantKinematics(fl1,x1,0,false) &&
+  if (cmode!=3 || (CheckRemnantKinematics(fl1,x1,0,false) &&
                     CheckRemnantKinematics(fl2,x2,1,false))) {
-    double f1=p_isrbase[0]->Weight(fl1), f2=p_isrbase[1]->Weight(fl2);
-    m_xf1[mode]=x1*f1;
-    m_xf2[mode]=x2*f2;
+    double f1=(cmode&1)?p_isrbase[0]->Weight(fl1):1.0;
+    double f2=(cmode&2)?p_isrbase[1]->Weight(fl2):1.0;
+    m_xf1[mode&1]=x1*f1;
+    m_xf2[mode&1]=x2*f2;
     MtxUnLock();
     msg_IODebugging()<<"  PDF1: "<<rpa->gen.Beam1()<<" -> "<<fl1<<" at ("<<x1
 		   <<","<<sqrt(Q12)<<") -> "<<om::bold<<f1<<om::reset<<"\n";

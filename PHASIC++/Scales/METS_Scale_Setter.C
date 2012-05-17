@@ -278,7 +278,13 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta)
   Single_Process *proc(p_proc->Get<Single_Process>());
   std::vector<std::set<CS_Params> > alltrials(ampl->Legs().size()-4);
   std::vector<bool> ords(ampl->Legs().size()-3,true);
-  std::vector<double> ops(ampl->Legs().size()-3,0.0);
+  std::vector<std::vector<std::pair<size_t,double> > >
+    ops(ampl->Legs().size()-3);
+  ops[ampl->Legs().size()-4].push_back
+    (std::pair<size_t,double>((1<<ampl->Legs().size())-1,0.0));
+  for (size_t i(0);i<m_decids.size();++i)
+    ops[ampl->Legs().size()-4].push_back
+      (std::pair<size_t,double>(m_decids[i]->m_id,0.0));
   double kt2core(ampl->Legs().size()>4?0.0:CoreScale(ampl));
   ampl->SetOrderQCD(proc->OrderQCD());
   while (ampl->Legs().size()>4) {
@@ -415,11 +421,28 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta)
 		   <<ID(ckw.m_idi)<<" & "<<ID(ckw.m_idj)
 		   <<" <-> "<<ID(ckw.m_idk)
 		   <<" => "<<sqrt(ckw.m_kt2)
-		   <<" ("<<sqrt(ckw.m_op2)<<") <-> "
-		   <<sqrt(ops[ampl->Legs().size()-4])<<"\n";
-    if (ops[ampl->Legs().size()-4]>ckw.m_kt2) {
+		   <<" ("<<sqrt(ckw.m_op2)<<")\n";
+    std::vector<std::pair<size_t,double> > 
+      &cops(ops[ampl->Legs().size()-5]),
+      &pops(ops[ampl->Legs().size()-4]);
+    cops=pops;
+    size_t sid(ckw.m_idi|ckw.m_idj), lmin(100), li(0);
+    for (size_t i(0);i<cops.size();++i) {
+      if ((cops[i].first&sid)==sid &&
+	  IdCount(cops[i].first)<lmin) {
+	lmin=IdCount(cops[i].first);
+	li=i;
+      }
+    }
+    cops[li].second=ckw.m_kt2;
+    msg_Debugging()<<"set last k_T = "<<sqrt(ckw.m_kt2)
+		   <<" "<<ID(cops[li].first)<<"\n";
+    if (cops[li].second<pops[li].second) {
       msg_Debugging()<<"unordered configuration [ ord = "
-		     <<ords[ampl->Legs().size()-4]<<" ]\n";
+		     <<ords[ampl->Legs().size()-4]<<" ]: "
+		     <<sqrt(cops[li].second)<<" vs. "
+		     <<sqrt(pops[li].second)<<" "
+		     <<ID(pops[li].first)<<"\n";
       if (ords[ampl->Legs().size()-4] && !(m_cmode&16)) continue;
     }
     ampl->SetKT2(ckw.m_kt2);
@@ -434,8 +457,10 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta)
       continue;
     }
     ampl->SetOrderQCD(ampl->OrderQCD()-ckw.m_oqcd);
-    if (ckw.p_dec) ampl->Decays().push_back(ckw.p_dec);
-    ops[ampl->Legs().size()-4]=ckw.m_kt2;
+    if (ckw.p_dec) {
+      ampl->Decays().push_back(ckw.p_dec);
+      ampl->Splitter()->SetStat(3);
+    }
 #ifdef CHECK__stepwise
     Vec4D psum;
     for (size_t i(0);i<ampl->Legs().size();++i) {
@@ -455,20 +480,17 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta)
 	ampl->DeleteNext();
 	continue;
       }
-      if (ampl->Decays().size()!=m_decids.size() &&
-	  (IdCount(ampl->Leg(0)->Id())>1 ||
-	   IdCount(ampl->Leg(1)->Id())>1)) {
-	msg_Debugging()<<"unclustered decay\n";
-	ampl=ampl->Prev();
-	ampl->DeleteNext();
-	continue;
-      }
       kt2core=CoreScale(ampl);
-      msg_Debugging()<<"Core = "<<*ampl<<" => "<<sqrt(kt2core)
-		     <<" <-> "<<sqrt(ops[ampl->Legs().size()-4])<<"\n";
-      if (ops[ampl->Legs().size()-4]>kt2core) {
+      msg_Debugging()<<"Core = "<<*ampl<<" => "<<sqrt(kt2core)<<"\n";
+      bool ord(true);
+      std::vector<std::pair<size_t,double> > 
+	&pops(ops[ampl->Legs().size()-4]);
+      if (kt2core<pops.front().second) {
 	msg_Debugging()<<"unordered configuration (core) [ ord = "
-		       <<ords[ampl->Legs().size()-4]<<" ]\n";
+		       <<ords[ampl->Legs().size()-4]<<" ]: "
+		       <<sqrt(kt2core)<<" vs. "
+		       <<sqrt(pops.front().second)<<" "
+		       <<ID(pops.front().first)<<"\n";
 	if (ords[ampl->Legs().size()-4] && !(m_cmode&16)) {
 	  ampl=ampl->Prev();
 	  ampl->DeleteNext();
@@ -613,16 +635,16 @@ void METS_Scale_Setter::KT2
   Vec4D pi(li->Mom()), pj(lj->Mom()), pk(lk->Mom());
   double mi2=sqr(li->Flav().Mass()), mj2=sqr(lj->Flav().Mass());
   double mij2=sqr(cs.m_fl.Mass()), mk2=sqr(lk->Flav().Mass());
+  if (li->Stat()==3) mi2=pi.Abs2();
+  if (lj->Stat()==3) mj2=pj.Abs2();
+  if (lk->Stat()==3) mk2=pk.Abs2();
+  if (cs.p_dec) mij2=(pi+pj).Abs2();
   if (li->Flav().Strong() && lj->Flav().Strong() &&
       cs.m_fl.Strong()) cs.m_oqcd=1;
   cs.m_op2=1.0/PDF::Qij2(pi,pj,pk,li->Flav(),lj->Flav());
   if ((li->Id()&3)==0) {
-    if (mi2>0.0 && !li->Flav().Strong()) mi2=pi.Abs2();
-    if (mij2>0.0 && !cs.m_fl.Strong()) mij2=(pi+pj).Abs2();
     if ((lj->Id()&3)==0) {
-      if (mj2>0.0 && !lj->Flav().Strong()) mj2=pj.Abs2();
       if ((lk->Id()&3)==0) {
-	if (mk2>0.0 && !lk->Flav().Strong()) mk2=pk.Abs2();
 	Kin_Args ffp(ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,3));
 	double kt2=2.0*(pi*pj)*ffp.m_z*(1.0-ffp.m_z)
 	  -sqr(1.0-ffp.m_z)*mi2-sqr(ffp.m_z)*mj2;
@@ -636,8 +658,9 @@ void METS_Scale_Setter::KT2
 	double kt2=2.0*(pi*pj)*fip.m_z*(1.0-fip.m_z)
 	  -sqr(1.0-fip.m_z)*mi2-sqr(fip.m_z)*mj2;
 	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
-	if (fip.m_pk.PPlus()>sum.PPlus() ||
-	    fip.m_pk.PMinus()>sum.PMinus() || fip.m_stat<0 ||
+	if ((cs.m_k==0 && fip.m_pk[3]<0.0) ||
+	    (cs.m_k==1 && fip.m_pk[3]>0.0) ||
+	    fip.m_pk[0]<0.0 || fip.m_stat<0 ||
 	    fip.m_pk[0]>rpa->gen.PBeam(cs.m_k)[0]) kt2=-1.0;
  	cs.SetParams(kt2,fip.m_z,fip.m_y,fip.m_pi,-fip.m_pk);
 	cs.m_mu2*=p_proc->Shower()->CplFac
@@ -647,14 +670,13 @@ void METS_Scale_Setter::KT2
   }
   else {
     if ((lj->Id()&3)==0) {
-      if (mj2>0.0 && !lj->Flav().Strong()) mj2=pj.Abs2();
       if ((lk->Id()&3)==0) {
-	if (mk2>0.0 && !lk->Flav().Strong()) mk2=pk.Abs2();
 	Kin_Args ifp(ClusterIFDipole(mi2,mj2,mij2,mk2,0.0,-pi,pj,pk,pk,3|4));
 	double kt2=-2.0*(pi*pj)*(1.0-ifp.m_z)-mj2-sqr(1.0-ifp.m_z)*mi2;
 	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
-	if (ifp.m_pi.PPlus()>sum.PPlus() ||
-	    ifp.m_pi.PMinus()>sum.PMinus() || ifp.m_stat<0 ||
+	if ((cs.m_i==0 && ifp.m_pi[3]<0.0) ||
+	    (cs.m_i==1 && ifp.m_pi[3]>0.0) ||
+	    ifp.m_pi[0]<0.0 || ifp.m_stat<0 ||
 	    ifp.m_pi[0]>rpa->gen.PBeam(cs.m_i)[0]) kt2=-1.0;
  	cs.SetParams(kt2,ifp.m_z,ifp.m_y,-ifp.m_pi,ifp.m_pk);
 	cs.m_mu2*=p_proc->Shower()->CplFac
@@ -664,8 +686,9 @@ void METS_Scale_Setter::KT2
 	Kin_Args iip(ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,3));
 	double kt2=-2.0*(pi*pj)*(1.0-iip.m_z)-mj2-sqr(1.0-iip.m_z)*mi2;
 	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
-	if (iip.m_pi.PPlus()>sum.PPlus() ||
-	    iip.m_pi.PMinus()>sum.PMinus() || iip.m_stat<0 ||
+	if ((cs.m_i==0 && iip.m_pi[3]<0.0) ||
+	    (cs.m_i==1 && iip.m_pi[3]>0.0) ||
+	    iip.m_pi[0]<0.0 || iip.m_stat<0 ||
 	    iip.m_pi[0]>rpa->gen.PBeam(cs.m_i)[0]) kt2=-1.0;
  	cs.SetParams(kt2,iip.m_z,iip.m_y,-iip.m_pi,-iip.m_pk,iip.m_lam);
 	cs.m_mu2*=p_proc->Shower()->CplFac
@@ -684,11 +707,11 @@ bool METS_Scale_Setter::Combine(Cluster_Amplitude &ampl,int i,int j,int k,
   li->SetFlav(cs.m_fl);
   li->SetMom(cs.m_pijt);
   lk->SetMom(cs.m_pkt);
+  for (size_t m(0);m<ampl.Legs().size();++m) ampl.Leg(m)->SetK(0);
   if (i<2) {
     for (size_t m(0);m<ampl.Legs().size();++m) {
       if ((int)m==i || (int)m==j || (int)m==k) continue;
       ampl.Leg(m)->SetMom(cs.m_lam*ampl.Leg(m)->Mom());
-      ampl.Leg(m)->SetK(0);
     }
   }
   li->SetId(li->Id()+lj->Id());

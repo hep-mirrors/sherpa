@@ -83,21 +83,22 @@ double Single_Process::BeamISRWeight
 	  f1=ReMap(f1,ampl->Leg(0)->Id());
 	  f2=ReMap(f2,ampl->Leg(1)->Id());
 	}
-	if (LQ2<sqr(f1.Mass(true)) || LQ2<sqr(f2.Mass(true))) {
-	  LQ2=ampl->KT2();
-	  continue;
-	}
 	msg_Debugging()<<"PDF ratio "<<f1<<"("<<ampl->Leg(0)->Flav().Bar()
 		       <<"),"<<f2<<"("<<ampl->Leg(1)->Flav().Bar()
 		       <<") at "<<sqrt(LQ2);
-	double wd=p_int->ISR()->Weight
-	  (mode,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
+	double wd1=p_int->ISR()->Weight
+	  (mode|2,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
+	double wd2=p_int->ISR()->Weight
+	  (mode|4,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
 	LQ2=ampl->KT2();
-	if (LQ2<sqr(f1.Mass(true)) || LQ2<sqr(f2.Mass(true))) continue;
-	double wn=p_int->ISR()->Weight
-	  (mode,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
-	msg_Debugging()<<" / "<<sqrt(LQ2)<<" -> "<<wn/wd<<"\n";
-	if (!IsZero(wn) && !IsZero(wd)) wgt*=wn/wd;
+	double wn1=p_int->ISR()->Weight
+	  (mode|2,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
+	double wn2=p_int->ISR()->Weight
+	  (mode|4,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
+	if (!IsZero(wn1) && !IsZero(wd1)) wgt*=wn1/wd1;
+	if (!IsZero(wn2) && !IsZero(wd2)) wgt*=wn2/wd2;
+	msg_Debugging()<<" / "<<sqrt(LQ2)<<" -> "
+		       <<wn1/wd1<<" * "<<wn2/wd2<<" ( "<<wgt<<" )\n";
       }
     }
   }
