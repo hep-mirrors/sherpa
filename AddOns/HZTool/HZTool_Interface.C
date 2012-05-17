@@ -11,6 +11,8 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
+namespace HZTOOL {
+
 typedef void (*HZTool_Analysis)(int *flag);
 
 class HZTool_Interface: public SHERPA::Analysis_Interface {
@@ -384,3 +386,5 @@ void HZTool_Interface_Getter::PrintInfo
 {
   str<<"HZTool interface";
 }
+
+}// end of namespace HZTOOL

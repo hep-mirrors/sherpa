@@ -50,6 +50,8 @@ extern struct {
 
 }
 
+namespace PGS {
+
 struct MD_Info {
   int m_n, m_c, m_mo[2], m_da[2];
   inline MD_Info(const int n=0): m_n(n), m_c(0)
@@ -259,3 +261,5 @@ void PGS_Interface_Getter::PrintInfo
 {
   str<<"PGS interface";
 }
+
+}// end of namespace PGS

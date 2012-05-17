@@ -114,13 +114,14 @@ Sherpa is equipped with an interface to StdHEP, which can be used to pass events
 To enable the interface, PGS must be installed and your Sherpa compilation has to be 
 configured with the following options:
 @verbatim
-  ./configure --enable-pgs=/path/to/pgs
+  ./configure --enable-pgs=/path/to/pgs --enable-hepevtsize=4000
 @end verbatim
 
-To use the interface, specify the switch
+To use the interface, run Sherpa with
 @verbatim
   Sherpa ANALYSIS=PGS
 @end verbatim
+or specify @code{ANALYSIS PGS;} in the @option{(run)} section of your input file.
 
 and create an analysis section in @code{Run.dat} that reads as follows:
 @verbatim
