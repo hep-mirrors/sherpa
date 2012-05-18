@@ -325,6 +325,8 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
   m_mu2[mode&1]=Q12;
   m_mu2[1-(mode&1)]=Q22;
   int cmode(((mode&6)>>1)?((mode&6)>>1):m_mode);
+  if ((cmode==1 && PDF(0)==NULL) ||
+      (cmode==2 && PDF(1)==NULL)) return 1.0;
   switch (cmode) {
     case 3 :
       if (!p_isrbase[0]->PDF()->Contains(fl1) ||
