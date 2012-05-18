@@ -400,14 +400,16 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  if (m_flavA!=split->GetFlavour()) {
 	    msg_Debugging()<<"... Veto flavour change ...\n\n";
 	    ResetScales(split);
-	    continue;
+	    if (split->TMin()) continue;
+	    return false;
 	  }
 	}
 	else {
 	  if (m_flavB!=split->GetFlavour()) {
 	    msg_Debugging()<<"... Veto flavour change ...\n\n";
 	    ResetScales(split);
-	    continue;
+	    if (split->TMin()) continue;
+	    return false;
 	  }
 	}
       }
