@@ -58,10 +58,13 @@ FinishConfiguration(Blob_List * blobs,const double & smin) {
 }
 
 void Colour_Reconnections::HarvestParticles(Blob_List * blobs) {
+//   msg_Out()<<"==============================================\n";
+//   msg_Out()<<METHOD<<std::endl;
   Blob * blob;
   Particle * part;
   for (Blob_List::iterator bit=blobs->begin();bit!=blobs->end();bit++) {
     blob = (*bit);
+//     msg_Out()<<(*blob)<<std::endl;
     if (blob->Has(blob_status::needs_hadronization)) {
       for (int i=0;i<blob->NOutP();i++) {
 	part = blob->OutParticle(i);
@@ -101,10 +104,11 @@ void Colour_Reconnections::FillWeightTable() {
       double dist(Distance(trip,anti));
       switch (ColourConnected(trip,anti)) {
       case 2:
-	dist *= m_reconn;
+// 	dist *= m_reconn;
 	break;
       case 1:
-	dist /= m_reconn;
+// 	dist /= m_reconn;
+	dist *= m_reconn;
 	break;
       case 0:
       default:
@@ -117,7 +121,7 @@ void Colour_Reconnections::FillWeightTable() {
 }
 
 void Colour_Reconnections::ShuffleColours() {
-  //OutputWeightTable();
+//   OutputWeightTable();
   map<Particle *,map<double, Particle *> >::iterator mapit;
   map<double,Particle *>           dists;
   map<double,Particle *>::iterator distit;
@@ -126,7 +130,7 @@ void Colour_Reconnections::ShuffleColours() {
     double maxdist = 0.;
     //msg_Out()<<"Start looping to look for next colour connection: "
     //	     <<m_trips.size()<<" particles still to do.\n";
-    for (mapit=m_links.begin();mapit!=m_links.end();mapit++) {
+/*    for (mapit=m_links.begin();mapit!=m_links.end();mapit++) {
       test1 = mapit->first;
       if (m_trips.find(test1)==m_trips.end()) continue;
       dists = mapit->second;
@@ -143,37 +147,62 @@ void Colour_Reconnections::ShuffleColours() {
 	}
 	distit++;
       }
+    }*/
+    map<double, pair<Particle *, Particle *> > smallestdists;
+    double mindist;
+    for (mapit=m_links.begin();mapit!=m_links.end();mapit++) {
+      mindist=1.0e300;
+      test1 = mapit->first;
+      if (m_trips.find(test1)==m_trips.end()) continue;
+      dists = mapit->second;
+      distit = dists.begin();
+      while (distit!=dists.end()) {
+	test2 = distit->second;
+	if (m_antis.find(test2)!=m_antis.end()) {
+	  if (distit->first<mindist) {
+	    trip    = test1;
+	    anti    = test2;
+	    mindist = distit->first;
+	  }
+	}
+	distit++;
+      }
+      pair<Particle *, Particle *> parts (trip,anti);
+      smallestdists[mindist]=parts;
     }
+    maxdist=smallestdists.rbegin()->first;
+    trip=smallestdists.rbegin()->second.first;
+    anti=smallestdists.rbegin()->second.second;
     if (trip==NULL || anti==NULL) {
       msg_Error()<<"Error in "<<METHOD<<":\n"
 		 <<"   did not find a viable pair!\n";
       exit(1);
     }
-    //msg_Out()<<"   * want to establish connection between "
-    //	     <<"["<<trip->Number()<<"]"
-    //	     <<"("<<trip->GetFlow(1)<<", "<<trip->GetFlow(2)<<") and "
-    //	     <<"["<<anti->Number()<<"]"
-    //	     <<"("<<anti->GetFlow(1)<<", "<<anti->GetFlow(2)<<"), "
-    //	     <<"dist = "<<maxdist<<".\n";
+/*    msg_Out()<<"   * want to establish connection between "
+    	     <<"["<<trip->Number()<<"]"
+    	     <<"("<<trip->GetFlow(1)<<", "<<trip->GetFlow(2)<<") and "
+    	     <<"["<<anti->Number()<<"]"
+    	     <<"("<<anti->GetFlow(1)<<", "<<anti->GetFlow(2)<<"), "
+    	     <<"dist = "<<maxdist<<".\n";*/
     m_trips.erase(trip);
     m_antis.erase(anti);    
     m_pairs.push_back(partpair(trip,anti));
     size_t col = trip->GetFlow(1);
     m_newcols[anti].second = col;
     m_colours.erase(col);
-    //msg_Out()<<"   * now "<<m_trips.size()<<" / "<<m_antis.size()<<" "
-    //	     <<"particles left for triplet/antitriplet, "
-    //	     <<m_colours.size()<<" colours left.\n";
+/*    msg_Out()<<"   * now "<<m_trips.size()<<" / "<<m_antis.size()<<" "
+    	     <<"particles left for triplet/antitriplet, "
+    	     <<m_colours.size()<<" colours left.\n";*/
     if (m_trips.size()==1 &&
 	(*m_trips.begin())==(*m_antis.begin())) {
-      //msg_Out()<<"Would have to save last gluon.\n"
-      //	       <<(**m_trips.begin())<<"\n";
+      msg_Out()<<"Would have to save last gluon.\n"
+      	       <<(**m_trips.begin())<<"\n";
       SaveLastGluon((*m_trips.begin()));
     }
   }
-  //msg_Out()<<"   * now "<<m_trips.size()<<" / "<<m_antis.size()<<" "
-  //	   <<"particles left for triplet/antitriplet, "
-  //	   <<m_colours.size()<<" colours left.\n";
+/*  msg_Out()<<"   * now "<<m_trips.size()<<" / "<<m_antis.size()<<" "
+  	   <<"particles left for triplet/antitriplet, "
+  	   <<m_colours.size()<<" colours left.\n";*/
 }
 
 void Colour_Reconnections::SaveLastGluon(Particle * part) {
