@@ -9,6 +9,15 @@
 #include <map>
 
 namespace SHRIMPS {
+
+  struct partcomp{
+    bool operator() (const ATOOLS::Particle * part1, const ATOOLS::Particle * part2) const
+    {
+      if (part1->Number() < part2->Number()) return true;
+      else return false;
+    }
+  };
+
   typedef std::pair<unsigned int,unsigned int> colpair;
   typedef std::pair<ATOOLS::Particle *,ATOOLS::Particle *> partpair;
   typedef std::map<double,ATOOLS::Particle *> partdists; 
@@ -18,8 +27,8 @@ namespace SHRIMPS {
     double         m_reconn, m_Q02, m_b02, m_eta, m_smin, m_ycut;
     
     std::set<int>                m_colours;
-    std::vector<ATOOLS::Particle *> m_trips, m_antis;
-    std::map<ATOOLS::Particle *, partdists> m_links;
+    std::set<ATOOLS::Particle *,partcomp> m_trips, m_antis;
+    std::map<ATOOLS::Particle *, partdists,partcomp> m_links;
     std::map<ATOOLS::Particle *, colpair> m_newcols;
     std::list<partpair> m_pairs;
 

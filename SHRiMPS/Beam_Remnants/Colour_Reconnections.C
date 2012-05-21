@@ -76,11 +76,11 @@ void Colour_Reconnections::HarvestParticles(Blob_List * blobs) {
 	  colpair cols = colpair(col1,col2);
 	  m_newcols[part] = cols;
 	  if (col1!=0) {
-	    m_trips.push_back(part);
+	    m_trips.insert(part);
 	    m_colours.insert(col1);
 	  }
 	  if (col2!=0) {
-	    m_antis.push_back(part);
+	    m_antis.insert(part);
 	  }
 	}
       }
@@ -93,21 +93,22 @@ void Colour_Reconnections::HarvestParticles(Blob_List * blobs) {
 }
 
 void Colour_Reconnections::FillWeightTable() {
+  set<Particle *,partcomp>::iterator tripit, antiit;
   Particle * trip, * anti;
-  for (size_t i=0; i<m_trips.size(); i++) {
-    trip = m_trips[i];
+  for (tripit=m_trips.begin();tripit!=m_trips.end();tripit++) {
+    trip = (*tripit);
     map<double,Particle *> dists;
-    for (size_t j=0; j<m_antis.size(); j++) {
-      anti = m_antis[j];
+    for (antiit=m_antis.begin();antiit!=m_antis.end();antiit++) {
+      anti = (*antiit);
       if (anti==trip) continue;
       double dist(Distance(trip,anti));
       switch (ColourConnected(trip,anti)) {
       case 2:
-// 	dist *= m_reconn;
+//    dist *= m_reconn;
 	break;
       case 1:
-// 	dist /= m_reconn;
-	dist *= m_reconn;
+//    dist /= m_reconn;
+  dist *= m_reconn;
 	break;
       case 0:
       default:
@@ -121,7 +122,7 @@ void Colour_Reconnections::FillWeightTable() {
 
 void Colour_Reconnections::ShuffleColours() {
 //   OutputWeightTable();
-  map<Particle *,map<double, Particle *> >::iterator mapit;
+  map<Particle *,map<double, Particle *>,partcomp>::iterator mapit;
   map<double,Particle *>           dists;
   map<double,Particle *>::iterator distit;
   Particle * test1, * test2, * trip, * anti;
@@ -129,7 +130,7 @@ void Colour_Reconnections::ShuffleColours() {
     double maxdist = 0.;
     //msg_Out()<<"Start looping to look for next colour connection: "
     //	     <<m_trips.size()<<" particles still to do.\n";
-/*    for (mapit=m_links.begin();mapit!=m_links.end();mapit++) {
+    for (mapit=m_links.begin();mapit!=m_links.end();mapit++) {
       test1 = mapit->first;
       if (m_trips.find(test1)==m_trips.end()) continue;
       dists = mapit->second;
@@ -137,84 +138,29 @@ void Colour_Reconnections::ShuffleColours() {
       while (distit!=dists.end()) {
 	test2 = distit->second;
 	if (m_antis.find(test2)!=m_antis.end()) {
-	  if (distit->first>maxdist) {
+    if (distit->first>maxdist) {
 	    trip    = test1;
 	    anti    = test2;
-	    maxdist = distit->first;
+      maxdist = distit->first;
 	  }
-	  break;
+    break;
 	}
 	distit++;
       }
-    }*/
-    map<double, pair<Particle *, Particle *> > smallestdists;
-    double mindist;
-    for (mapit=m_links.begin();mapit!=m_links.end();mapit++) {
-      mindist=1.0e300;
-      test1 = mapit->first;
-
-      // FIXME: Das muss schoener gehen
-      //if (std::find(m_trips.begin(), m_trips.end(), test1)==m_trips.end()) continue;
-      bool found=false;
-      for (std::vector<ATOOLS::Particle *>::iterator tripit=m_trips.begin(); tripit!=m_trips.end(); tripit++) {
-        if (*tripit==test1) {
-          found=true;
-          break;
-        }
-      }
-      if (!found) continue;
-
-      dists = mapit->second;
-      distit = dists.begin();
-      while (distit!=dists.end()) {
-	test2 = distit->second;
-        // FIXME: Das muss schoener gehen
-        found=false;
-        for (std::vector<ATOOLS::Particle *>::iterator antiit=m_antis.begin(); antiit!=m_antis.end(); antiit++) {
-          if (*antiit==test2) {
-            found=true;
-            break;
-          }
-        }
-        if (found) {
-	  if (distit->first<mindist) {
-	    trip    = test1;
-	    anti    = test2;
-	    mindist = distit->first;
-	  }
-	}
-	distit++;
-      }
-      pair<Particle *, Particle *> parts (trip,anti);
-      smallestdists[mindist]=parts;
     }
-    maxdist=smallestdists.rbegin()->first;
-    trip=smallestdists.rbegin()->second.first;
-    anti=smallestdists.rbegin()->second.second;
     if (trip==NULL || anti==NULL) {
       msg_Error()<<"Error in "<<METHOD<<":\n"
 		 <<"   did not find a viable pair!\n";
       exit(1);
     }
-/*    msg_Out()<<"   * want to establish connection between "
-    	     <<"["<<trip->Number()<<"]"
-    	     <<"("<<trip->GetFlow(1)<<", "<<trip->GetFlow(2)<<") and "
-    	     <<"["<<anti->Number()<<"]"
-    	     <<"("<<anti->GetFlow(1)<<", "<<anti->GetFlow(2)<<"), "
-    	     <<"dist = "<<maxdist<<".\n";*/
-    // FIXME: Das muss schoener gehen
-    for (std::vector<ATOOLS::Particle *>::iterator tripit=m_trips.begin(); tripit!=m_trips.end(); tripit++) {
-      if (*tripit==trip) {
-        m_trips.erase(tripit);
-        break;
-      }
-    }
-    for (std::vector<ATOOLS::Particle *>::iterator antiit=m_antis.begin(); antiit!=m_antis.end(); antiit++) {
-      if (*antiit==anti) {
-        m_antis.erase(antiit);
-        break;
-      }
-    }
+//    msg_Out()<<"   * want to establish connection between "
+//    	     <<"["<<trip->Number()<<"]"
+//    	     <<"("<<trip->GetFlow(1)<<", "<<trip->GetFlow(2)<<") and "
+//    	     <<"["<<anti->Number()<<"]"
+//    	     <<"("<<anti->GetFlow(1)<<", "<<anti->GetFlow(2)<<"), "
+//           <<"dist = "<<maxdist<<".\n";
+    m_trips.erase(trip);
+    m_antis.erase(anti);    
     m_pairs.push_back(partpair(trip,anti));
     size_t col = trip->GetFlow(1);
     m_newcols[anti].second = col;
@@ -222,11 +168,11 @@ void Colour_Reconnections::ShuffleColours() {
 /*    msg_Out()<<"   * now "<<m_trips.size()<<" / "<<m_antis.size()<<" "
     	     <<"particles left for triplet/antitriplet, "
     	     <<m_colours.size()<<" colours left.\n";*/
-    if (m_trips.size()==1 && !m_antis.empty() &&
-	*(m_trips[0])==*(m_antis[0])) {
-//      msg_Out()<<"Would have to save last gluon.\n"
-//      	       <<(*(m_trips[0]))<<"\n";
-      SaveLastGluon(m_trips[0]);
+    if (m_trips.size()==1 &&
+	(*m_trips.begin())==(*m_antis.begin())) {
+      msg_Out()<<"Would have to save last gluon.\n"
+      	       <<(**m_trips.begin())<<"\n";
+      SaveLastGluon((*m_trips.begin()));
     }
   }
 /*  msg_Out()<<"   * now "<<m_trips.size()<<" / "<<m_antis.size()<<" "
@@ -278,8 +224,8 @@ void Colour_Reconnections::SaveLastGluon(Particle * part) {
   col = part->GetFlow(1);
   m_newcols[anti].second = col;
   m_colours.erase(col);
-  m_trips.erase(m_trips.begin());
-  m_antis.erase(m_antis.begin());    
+  m_trips.erase(part);
+  m_antis.erase(part);    
   //msg_Out()<<"done: "
   //	   <<"("<<m_newcols[trip].first<<", "<<m_newcols[trip].second<<") "
   //	   <<"("<<m_newcols[part].first<<", "<<m_newcols[part].second<<") "
@@ -339,7 +285,7 @@ AddParticleToReconnectionBlob(Blob * blob,Particle * partin) {
 }
 
 void Colour_Reconnections::OutputWeightTable() {
-  for (map<Particle *,map<double, Particle *> >::iterator mapit=m_links.begin();
+  for (map<Particle *,map<double, Particle *>,partcomp>::iterator mapit=m_links.begin();
        mapit!=m_links.end();mapit++) {
     msg_Out()<<"Links for particle ["<<mapit->first->Number()<<"]"
 	     <<"("<<mapit->first->GetFlow(1)<<", "
