@@ -79,7 +79,7 @@ bool AMEGIC::operator<(const Combine_Key & a,const Combine_Key & b)
 
 std::ostream& AMEGIC::operator<<(std::ostream &s,const Combine_Data &cd)
 {
-  s<<" "<<cd.m_pt2ij<<" ";
+  s<<" "<<cd.m_pt2ij<<" "<<cd.m_dec<<" ";
   std::string graphs;
   for (size_t k=0;k<cd.m_graphs.size();++k) graphs+=","+ToString(cd.m_graphs[k]);
   s<<graphs.substr(1);
@@ -319,7 +319,7 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,const int 
     (*ampl,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,
      m_cdata_winner->first.m_k,m_cdata_winner->first.m_i<2?
      m_cdata_winner->second.m_mo.Bar():m_cdata_winner->second.m_mo,p_ms,
-     m_cdata_winner->second.m_pt2ij.m_kin);
+     m_cdata_winner->second.m_pt2ij.m_kin,m_cdata_winner->second.m_pt2ij.m_mode);
   ampl->Delete();
   if (after.empty()) {
     msg_Debugging()<<"combine moms failed\n";
@@ -349,7 +349,7 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,
     (*ampl,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,
      m_cdata_winner->first.m_k,m_cdata_winner->first.m_i<2?
      m_cdata_winner->second.m_mo.Bar():m_cdata_winner->second.m_mo,p_ms,
-     m_cdata_winner->second.m_pt2ij.m_kin);
+     m_cdata_winner->second.m_pt2ij.m_kin,m_cdata_winner->second.m_pt2ij.m_mode);
   ampl->Delete();
   if (after.empty()) {
     msg_Debugging()<<"combine moms failed\n";
@@ -456,6 +456,7 @@ void Combine_Table::AddPossibility(const int i,const int j,const int k,
     Combine_Data cd(0.,ngraph);
     cd.m_strong=cl.OrderQCD();
     cd.m_mo=cl.Flav();
+    cd.m_dec=cl.Point()->t;
     m_combinations[Combine_Key(i,j,k,cl.Flav())]=cd;
   }
 }
@@ -515,7 +516,8 @@ CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit,int mode)
     cit->second.m_calc=1;
     cit->second.m_pt2ij=p_clus->KPerp2
       (*ampl,cit->first.m_i,cit->first.m_j,cit->first.m_k,
-       cit->first.m_i<2?cit->second.m_mo.Bar():cit->second.m_mo,p_ms,(mode&1024)?1:0);
+       cit->first.m_i<2?cit->second.m_mo.Bar():cit->second.m_mo,p_ms,
+       (mode&1024)?1:-1,cit->second.m_dec>10||!cit->second.m_mo.Strong());
     msg_Debugging()<<"Calculate m_perp("<<cit->first.m_i<<"["
 		   <<p_legs[0][cit->first.m_i].Flav()<<"],"
 		   <<cit->first.m_j<<"["<<p_legs[0][cit->first.m_j].Flav()<<"],"

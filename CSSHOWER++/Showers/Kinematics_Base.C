@@ -19,11 +19,31 @@ void Kinematics_Base::SetFixVec(Parton *const p,Vec4D mom,
     lam.Invert();
     mom=lam*mom;
   }
-  Poincare oldcms(oldp), newcms(mom);
-  oldcms.Boost(ref);
-  newcms.BoostBack(ref);
-//   ref*=mom[0]/ref[0];
-//   ref[0]=ref.PSpat();
+  Vec4D np(0.0,cross(Vec3D(oldp),Vec3D(mom)));
+  if (np.PSpat2()<=1.0e-6) {
+    msg_Debugging()<<"Set fixed n_perp\n";
+    np=Vec4D(0.0,cross(Vec3D(oldp),Vec3D(1.0,1.0,0.0)));
+  }
+  np*=1.0/np.PSpat();
+  Vec4D lp(0.0,cross(Vec3D(oldp),Vec3D(np)));
+  lp*=1.0/lp.PSpat();
+  Vec4D pl(0.0,(Vec3D(ref)*Vec3D(lp))*lp);
+  Vec4D pn(0.0,(Vec3D(ref)*Vec3D(np))*np);
+  double D(oldp*ref), sp(ref.Abs2()+pl.PSpat2()+pn.PSpat2());
+  double Q(mom[0]), P(mom.PSpat()), S(mom.Abs2());
+  Poincare rot(oldp,mom);
+  if (D*D<sp*S) {
+    Poincare oldcms(oldp), newcms(mom);
+    oldcms.Boost(ref);
+    rot.Rotate(ref);
+    newcms.BoostBack(ref);
+  }
+  else {
+    double E((Q*D-Sign(Q)*P*sqrt(D*D-sp*S))/S);
+    ref=Vec4D(E,Vec3D(mom)*(Q*E-D)/(P*P));
+    ref+=pn+rot*pl;
+    if (mode==3 || (mode==1 && lt.m_mode==0)) ref=lt.m_lam*ref;
+  }
   p->SetFixSpec(ref);
   p->SetOldMomentum(mom);
 }
@@ -44,12 +64,9 @@ int Kinematics_FF::MakeKinematics
   Vec4D p1 = split->Momentum(), p2 = spect->Momentum();
 
   double mij2 = split->Mass2(), mk2 = spect->Mass2();
-  if (mk2 && !spect->GetFlavour().Strong()) mk2=p2.Abs2();
+  if (spect->KScheme()) mk2=p2.Abs2();
   bool nospec(false);
-  if (p_ms->Mass2(split->GetFlavour())>10.0 &&
-      !split->GetFlavour().Strong()) {
-    if (split->GetPrev()==NULL)
-      THROW(fatal_error,"Missing splitting information");
+  if (mode && split->GetPrev() && split->GetPrev()->KScheme()) {
     mij2=p1.Abs2();
     p2=split->GetPrev()->FixSpec();
     mk2=0.0;
@@ -100,10 +117,7 @@ int Kinematics_FI::MakeKinematics
 
   double ma2 = spect->Mass2(), mij2 = split->Mass2(); 
   bool nospec(false);
-  if (p_ms->Mass2(split->GetFlavour())>10.0 &&
-      !split->GetFlavour().Strong()) {
-    if (split->GetPrev()==NULL)
-      THROW(fatal_error,"Missing splitting information");
+  if (mode && split->GetPrev() && split->GetPrev()->KScheme()) {
     mij2=p1.Abs2();
     p2=split->GetPrev()->FixSpec();
     ma2=0.0;
@@ -117,7 +131,10 @@ int Kinematics_FI::MakeKinematics
 
   split->SetMomentum(fi.m_pi);
   if (mi2) SetFixVec(split,fi.m_pi,fi,2);
-  if (!nospec) spect->SetMomentum(fi.m_pk);
+  if (!nospec) {
+    if (ma2) SetFixVec(spect,fi.m_pk,fi,2);
+    spect->SetMomentum(fi.m_pk);
+  }
   else if (!IsEqual(fi.m_pk,p2,1.0e-3))
     msg_Error()<<METHOD<<"(): Error in EW splitting ( y = "<<y
 	       <<" ).\n  Shifted p_k = "
@@ -159,8 +176,15 @@ int Kinematics_IF::MakeKinematics
   Vec4D p1 = split->Momentum(), p2 = spect->Momentum();
 
   double mk2 = spect->Mass2(), mai2 = split->Mass2(); 
-  if (mk2 && !spect->GetFlavour().Strong()) mk2=p2.Abs2();
-  
+  if (spect->KScheme()) mk2=p2.Abs2();
+  bool nospec(false);
+  if (mode && split->GetPrev() && split->GetPrev()->KScheme()) {
+    mai2=p1.Abs2();
+    p2=split->GetPrev()->FixSpec();
+    mk2=0.0;
+    nospec=true;
+  }
+
   double y=GetY((p2-p1).Abs2(),split->KtTest(),split->ZTest(),ma2,mi2,mk2,1);
   Kin_Args ifp(y,split->ZTest(),split->Phi(),split->Kin());
   if (dabs(y-split->ZTest())<Kin_Args::s_uxeps) ifp.m_mode=1;
@@ -169,8 +193,16 @@ int Kinematics_IF::MakeKinematics
 
   split->SetLT(ifp.m_lam);
   split->SetMomentum(ifp.m_pi);
-  spect->SetMomentum(ifp.m_pk);
-  if (mk2) SetFixVec(spect,ifp.m_pk,ifp,1);
+  if (ma2) SetFixVec(split,ifp.m_pi,ifp,1);
+  if (nospec) {
+    Vec4D ps(ifp.m_lam*spect->Momentum());
+    if (mk2) SetFixVec(spect,ps,ifp,1);
+    spect->SetMomentum(ps);
+  }
+  else {
+    if (mk2) SetFixVec(spect,ifp.m_pk,ifp,1);
+    spect->SetMomentum(ifp.m_pk);
+  }
   if (pc==NULL) {
     pc = new Parton(fli,ifp.m_pj,pst::FS);
     pc->SetMass2(p_ms->Mass2(fli));
@@ -199,6 +231,13 @@ int Kinematics_II::MakeKinematics
   Vec4D p1 = split->Momentum(), p2 = spect->Momentum();
   
   double mai2 = split->Mass2(), mb2 = spect->Mass2();
+  bool nospec(false);
+  if (mode && split->GetPrev() && split->GetPrev()->KScheme()) {
+    mai2=p1.Abs2();
+    p2=split->GetPrev()->FixSpec();
+    mb2=0.0;
+    nospec=true;
+  }
 
   double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),ma2,mi2,mb2,1);
   Kin_Args ii(y,split->ZTest(),split->Phi(),split->Kin());
@@ -207,7 +246,16 @@ int Kinematics_II::MakeKinematics
 
   split->SetLT(ii.m_lam);
   split->SetMomentum(ii.m_pi);
-  spect->SetMomentum(ii.m_pk);
+  if (ma2) SetFixVec(split,ii.m_pi,ii,3);
+  if (nospec) {
+    Vec4D ps(ii.m_lam*spect->Momentum());
+    if (mb2) SetFixVec(spect,ps,ii,3);
+    spect->SetMomentum(ps);
+  }
+  else {
+    if (mb2) SetFixVec(spect,ii.m_pk,ii,3);
+    spect->SetMomentum(ii.m_pk);
+  }
   if (pc==NULL) {
     pc = new Parton(newfl,ii.m_pj,pst::FS);
     pc->SetMass2(p_ms->Mass2(newfl));

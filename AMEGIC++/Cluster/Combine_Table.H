@@ -82,7 +82,7 @@ namespace AMEGIC {
   class Combine_Data {
   public:
     PDF::CParam m_pt2ij;
-    int    m_strong, m_calc;
+    int    m_strong, m_calc, m_dec;
     Combine_Table *p_down;
     ATOOLS::Flavour m_mo;
     std::vector<int>    m_graphs;

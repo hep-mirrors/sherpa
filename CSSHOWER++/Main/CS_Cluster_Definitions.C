@@ -19,19 +19,20 @@ CS_Cluster_Definitions::CS_Cluster_Definitions
 
 CParam CS_Cluster_Definitions::KPerp2
 (const Cluster_Amplitude &ampl,int i,int j,int k,
- const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,const int kin)
+ const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,
+ const int kin,const int mode)
 {
   m_mode=m_kmode;
-  CS_Parameters cs(KT2(&ampl,ampl.Leg(i),ampl.Leg(j),ampl.Leg(k),mo,ms,kin));
+  CS_Parameters cs(KT2(&ampl,ampl.Leg(i),ampl.Leg(j),ampl.Leg(k),mo,ms,kin,mode));
   m_mode=0;
-  return CParam(cs.m_kt2,cs.m_ws,cs.m_x,cs.m_mu2,cs.m_kin);
+  return CParam(cs.m_kt2,cs.m_ws,cs.m_x,cs.m_mu2,cs.m_kin,cs.m_kmode);
 }
 
 CS_Parameters CS_Cluster_Definitions::KT2
 (const ATOOLS::Cluster_Amplitude *ampl,
  const ATOOLS::Cluster_Leg *i,const ATOOLS::Cluster_Leg *j,
  const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo,
- ATOOLS::Mass_Selector *const ms,const int ikin)
+ ATOOLS::Mass_Selector *const ms,const int ikin,const int kmode)
 {
   p_ms=ms;
   int kin(ikin<0?p_shower->KinScheme():ikin), col(1);
@@ -41,20 +42,25 @@ CS_Parameters CS_Cluster_Definitions::KT2
   }
   p_b=ampl->Leg(i==ampl->Leg(0)?1:0);
   Vec4D pi(i->Mom()), pj(j->Mom()), pk(k->Mom());
-  double Q2=(pi+pj+pk).Abs2(), mb2=p_ms->Mass2(p_b->Flav());
-  double mi2=p_ms->Mass2(i->Flav()), mj2=p_ms->Mass2(j->Flav());
-  double mk2=p_ms->Mass2(k->Flav()), mij2=p_ms->Mass2(mo);
-  if (!(i->Id()&3) && mi2>10.0 && !i->Flav().Strong()) mi2=pi.Abs2();
-  if (!(j->Id()&3) && mj2>10.0 && !j->Flav().Strong()) mj2=pj.Abs2();
-  if (!(k->Id()&3) && mk2>10.0 && !k->Flav().Strong()) mk2=pk.Abs2();
-  if (!(i->Id()&3) && !(j->Id()&3) && mij2>10.0 && !mo.Strong()) {
+  double Q2=(pi+pj+pk).Abs2();
+  double mb2=p_b->Mom().Abs2(), mfb2=p_ms->Mass2(p_b->Flav());
+  if ((mfb2==0.0 && IsZero(mb2,1.0e-6)) || IsEqual(mb2,mfb2,1.0e-6)) mb2=mfb2;
+  double mi2=pi.Abs2(), mfi2=p_ms->Mass2(i->Flav());
+  double mj2=pj.Abs2(), mfj2=p_ms->Mass2(j->Flav());
+  double mk2=pk.Abs2(), mfk2=p_ms->Mass2(k->Flav());
+  if ((mfi2==0.0 && IsZero(mi2,1.0e-6)) || IsEqual(mi2,mfi2,1.0e-6)) mi2=mfi2;
+  if ((mfj2==0.0 && IsZero(mj2,1.0e-6)) || IsEqual(mj2,mfj2,1.0e-6)) mj2=mfj2;
+  if ((mfk2==0.0 && IsZero(mk2,1.0e-6)) || IsEqual(mk2,mfk2,1.0e-6)) mk2=mfk2;
+  double mij2=p_ms->Mass2(mo);
+  if (kmode) {
     mij2=(pi+pj).Abs2();
     pk[0]=pk[0]<0.0?-pk.PSpat():pk.PSpat();
     mk2=0.0;
+    kin=0;
   }
   CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),
 		   1.0,1.0,0.0,0.0,0.0,
-		   ((i->Id()&3)?1:0)|((k->Id()&3)?2:0),kin);
+		   ((i->Id()&3)?1:0)|((k->Id()&3)?2:0),kin,kmode);
   cs.m_wk=cs.m_ws=-1.0;
   if ((i->Id()&3)==0) {
     if ((j->Id()&3)==0) {
@@ -62,15 +68,18 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	Kin_Args ff(ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,1|(kin?4:0)));
 	if (ff.m_stat!=1) return cs;
 	double kt2=2.0*(pi*pj)*ff.m_z*(1.0-ff.m_z);
-	cs=CS_Parameters(kt2,ff.m_z,ff.m_y,ff.m_phi,1.0,Q2,0,kin);
+	cs=CS_Parameters(kt2,ff.m_z,ff.m_y,ff.m_phi,1.0,Q2,0,kin,kmode);
+	cs.m_pk=pk;
       }
       else {
 	Kin_Args fi(ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,1|(kin?4:0)));
 	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
-	if (fi.m_pk.PPlus()>sum.PPlus() || fi.m_y>1.0 ||
-	    fi.m_pk.PMinus()>sum.PMinus() || fi.m_stat!=1) return cs;
+	if ((k==ampl->Leg(0) && fi.m_pk[3]<0.0) ||
+	    (k==ampl->Leg(1) && fi.m_pk[3]>0.0) ||
+	    fi.m_pk[0]<0.0 || fi.m_y>1.0 || fi.m_stat!=1) return cs;
 	double kt2=2.0*(pi*pj)*fi.m_z*(1.0-fi.m_z);
-	cs=CS_Parameters(kt2,fi.m_z,fi.m_y,fi.m_phi,1.0-fi.m_y,Q2,2,kin);
+	cs=CS_Parameters(kt2,fi.m_z,fi.m_y,fi.m_phi,1.0-fi.m_y,Q2,2,kin,kmode);
+	cs.m_pk=-pk;
       }
     }
   }
@@ -79,17 +88,22 @@ CS_Parameters CS_Cluster_Definitions::KT2
       Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
       if ((k->Id()&3)==0) {
 	Kin_Args fi(ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-p_b->Mom(),1|(kin?4:0)));
-	if (fi.m_pi.PPlus()>sum.PPlus() || fi.m_z<0.0 ||
-	    fi.m_pi.PMinus()>sum.PMinus() || fi.m_stat!=1) return cs;
+	if (kmode && fi.m_mode) fi.m_stat=-1;
+	if ((i==ampl->Leg(0) && fi.m_pi[3]<0.0) ||
+	    (i==ampl->Leg(1) && fi.m_pi[3]>0.0) ||
+	    fi.m_pi[0]<0.0 || fi.m_z<0.0 || fi.m_stat!=1) return cs;
 	double kt2=-2.0*(pi*pj)*(1.0-fi.m_z);
-	cs=CS_Parameters(kt2,fi.m_z,fi.m_y,fi.m_phi,fi.m_z,Q2,1,fi.m_mode);
+	cs=CS_Parameters(kt2,fi.m_z,fi.m_y,fi.m_phi,fi.m_z,Q2,1,fi.m_mode,kmode);
+	cs.m_pk=pk;
       }
       else {
 	Kin_Args ii(ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,1|(kin?4:0)));
-	if (ii.m_pi.PPlus()>sum.PPlus() || ii.m_z<0.0 ||
-	    ii.m_pi.PMinus()>sum.PMinus() || ii.m_stat!=1) return cs;
+	if ((i==ampl->Leg(0) && ii.m_pi[3]<0.0) ||
+	    (i==ampl->Leg(1) && ii.m_pi[3]>0.0) ||
+	    ii.m_pi[0]<0.0 || ii.m_z<0.0 || ii.m_stat!=1) return cs;
 	double kt2=-2.0*(pi*pj)*(1.0-ii.m_z);
-	cs=CS_Parameters(kt2,ii.m_z,ii.m_y,ii.m_phi,ii.m_z,Q2,3,kin);
+	cs=CS_Parameters(kt2,ii.m_z,ii.m_y,ii.m_phi,ii.m_z,Q2,3,kin,kmode);
+	cs.m_pk=-pk;
       }
     }
   }
@@ -191,43 +205,48 @@ void CS_Cluster_Definitions::KernelWeight
 
 ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
 (const Cluster_Amplitude &ampl,int i,int j,int k,
- const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,const int kin)
+ const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,
+ const int ikin,const int kmode)
 {
   p_ms=ms;
+  int kin(ikin);
   if (i>j) std::swap<int>(i,j);
   Vec4D_Vector after(ampl.Legs().size()-1);
-  double mi2=p_ms->Mass2(ampl.Leg(i)->Flav());
-  double mj2=p_ms->Mass2(ampl.Leg(j)->Flav());
-  double mk2=p_ms->Mass2(ampl.Leg(k)->Flav()), mij2=p_ms->Mass2(mo);
-  double mb2=i<2?p_ms->Mass2(ampl.Leg(1-i)->Flav()):0.0;
+  double mb2(0.0);
+  if (i<2) {
+    mb2=ampl.Leg(1-i)->Mom().Abs2();
+    double mfb2(p_ms->Mass2(ampl.Leg(1-i)->Flav()));
+    if ((mfb2==0.0 && IsZero(mb2,1.0e-6)) || IsEqual(mb2,mfb2,1.0e-6)) mb2=mfb2;
+  }
   Vec4D pi(ampl.Leg(i)->Mom()), pj(ampl.Leg(j)->Mom());
   Vec4D pk(ampl.Leg(k)->Mom()), pb(i<2?ampl.Leg(1-i)->Mom():Vec4D());
-  if (i>1 && mi2>10.0 && !ampl.Leg(i)->Flav().Strong()) mi2=pi.Abs2();
-  if (j>1 && mj2>10.0 && !ampl.Leg(j)->Flav().Strong()) mj2=pj.Abs2();
-  if (k>1 && mk2>10.0 && !ampl.Leg(k)->Flav().Strong()) mk2=pk.Abs2();
+  double mi2=pi.Abs2(), mfi2=p_ms->Mass2(ampl.Leg(i)->Flav());
+  double mj2=pj.Abs2(), mfj2=p_ms->Mass2(ampl.Leg(j)->Flav());
+  double mk2=pk.Abs2(), mfk2=p_ms->Mass2(ampl.Leg(k)->Flav());
+  if ((mfi2==0.0 && IsZero(mi2,1.0e-6)) || IsEqual(mi2,mfi2,1.0e-6)) mi2=mfi2;
+  if ((mfj2==0.0 && IsZero(mj2,1.0e-6)) || IsEqual(mj2,mfj2,1.0e-6)) mj2=mfj2;
+  if ((mfk2==0.0 && IsZero(mk2,1.0e-6)) || IsEqual(mk2,mfk2,1.0e-6)) mk2=mfk2;
+  double mij2=p_ms->Mass2(mo);
   bool sk(true);
-  if (i>1 && j>1 && mij2>10.0 && !mo.Strong()) {
+  if (kmode) {
     mij2=(pi+pj).Abs2();
     pk[0]=pk[0]<0.0?-pk.PSpat():pk.PSpat();
     if (mk2) sk=false;
     mk2=0.0;
+    kin=0;
   }
   Kin_Args lt;
   if (i>1) {
     if (k>1) lt=ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,2|(kin?4:0));
     else lt=ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,2|(kin?4:0));
-    if (k<=1) {
-      Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
-      if (lt.m_pk.PPlus()>sum.PPlus() ||
-	  lt.m_pk.PMinus()>sum.PMinus()) return Vec4D_Vector();
-    }
+    if ((k==0 && lt.m_pk[3]<0.0) ||
+	(k==1 && lt.m_pk[3]>0.0) || lt.m_pk[0]<0.0) return Vec4D_Vector();
   }
   else {
     if (k>1) lt=ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-pb,2|(kin?4:0));
     else lt=ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,2|(kin?4:0));
-    Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
-    if (lt.m_pi.PPlus()>sum.PPlus() ||
-	lt.m_pi.PMinus()>sum.PMinus()) return Vec4D_Vector();
+    if ((i==0 && lt.m_pi[3]<0.0) ||
+	(i==1 && lt.m_pi[3]>0.0) || lt.m_pi[0]<0.0) return Vec4D_Vector();
   }
   if (lt.m_stat<0) return Vec4D_Vector();
   for (size_t l(0), m(0);m<ampl.Legs().size();++m) {
@@ -304,7 +323,7 @@ CParam CS_Cluster_Definitions::CoreScale
 	  else if (i>1 && cf[f]==lj->Flav()) {
 	    kt2*=dabs((p[i]*p[k])/(p[j]*p[k]));
 	  }
-	  kt2*=cdip->Coupling()->CplFac(kt2);
+	  // kt2*=cdip->Coupling()->CplFac(kt2);
 	  if (kt2<kt2cmin) {
 	    kt2cmin=kt2;
 	    mu2min=kt2;
@@ -419,7 +438,8 @@ namespace CSSHOWER {
   std::ostream &operator<<(std::ostream &str,const CS_Parameters &cs)
   {
     return str<<"CS{kt="<<sqrt(cs.m_kt2)<<",z="<<cs.m_z<<",phi="<<cs.m_phi
-	      <<",mode="<<cs.m_mode<<",kin="<<cs.m_kin<<"}";
+	      <<",mode="<<cs.m_mode<<",kin="<<cs.m_kin
+	      <<",kmode="<<cs.m_kmode<<"}";
   }
 
 }

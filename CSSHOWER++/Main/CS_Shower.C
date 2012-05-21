@@ -182,7 +182,7 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,const size_t &id,
     if ((cl->Id()&id)==0) continue;
     if (ampl->Prev()) GetKT2Min(ampl->Prev(),cl->Id(),kt2xmap,aset);
     if (cl->Stat()==3 || cl->Stat()==5) {
-      double ckt2(cl->Mom().Abs2());
+      double ckt2(dabs(cl->Mom().Abs2()));
       kt2xmap[cl->Id()].first=kt2xmap[cl->Id()].second=HardScale(ampl);
       for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
 	if (kit->first!=cl->Id() && (kit->first&cl->Id()) &&
@@ -468,6 +468,8 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 	  THROW(fatal_error,"Invalid tree structure");
 	k->SetNext(cit->second);
 	cit->second->SetPrev(k);
+	k->SetKScheme(cit->second->KScheme());
+	if (k->KScheme()) k->SetMass2(k->Momentum().Abs2());
 	k->SetStat(1);
 	kmap[cl->Id()]=k;
 	continue;
@@ -500,9 +502,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
     }
     if (sing->GetSpec()) {
       split->SetOldMomentum(split->Momentum());
-      Vec4D fixspec(sing->GetSpec()->Momentum());
-      fixspec[0]=fixspec[0]<0.0?-fixspec.PSpat():fixspec.PSpat();
-      split->SetFixSpec(fixspec);
       sing->SetSpec(sing->GetSpec()->GetNext());
       if (split==NULL) THROW(fatal_error,"Invalid tree structure");
       sing->SetSplit(split);
@@ -511,21 +510,27 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
       almap[s]->SetMom(almap[s]->Id()&3?-s->Momentum():s->Momentum());
       split->SetKin(campl->Kin());
+      split->SetKScheme(almap[split]->Stat()==3);
+      if (split->KScheme()) split->SetMass2(split->Momentum().Abs2());
       CS_Parameters cp(p_cluster->KT2
 		       (campl->Prev(),almap[l],almap[r],almap[s],
 			split->GetType()==pst::FS?split->GetFlavour():
-			split->GetFlavour().Bar(),p_ms,split->Kin()));
+			split->GetFlavour().Bar(),p_ms,
+			split->Kin(),split->KScheme()));
       l->SetTest(cp.m_kt2,cp.m_z,cp.m_y,cp.m_phi);
       l->SetStart(cp.m_kt2);
       r->SetStart(cp.m_kt2);
+      if (split->KScheme()) split->SetFixSpec(cp.m_pk);
       msg_Debugging()<<"Set reco params: kt = "<<sqrt(cp.m_kt2)<<", z = "
 		     <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi
-		     <<", mode = "<<cp.m_mode<<", scheme = "<<split->Kin()<<"\n";
+		     <<", mode = "<<cp.m_mode<<", scheme = "<<split->Kin()
+		     <<", kmode = "<<split->KScheme()<<"\n";
       sing->SetAll(p_next);
+      Vec4D oldl(l->Momentum()), oldr(r->Momentum()), olds(s->Momentum());
       if (m_recocheck&1) {
       std::cout.precision(12);
-      Vec4D oldl(l->Momentum()), oldr(r->Momentum()), olds(s->Momentum());
       Vec4D oldfl(l->FixSpec()), oldfr(r->FixSpec()), oldfs(s->FixSpec());
+      Vec4D oldsf(split->FixSpec()), oldso(split->OldMomentum());
       sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode|4);
       p_shower->ReconstructDaughters(sing,1);
       almap[l]->SetMom(almap[l]->Id()&3?-l->Momentum():l->Momentum());
@@ -534,7 +539,8 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       CS_Parameters ncp(p_cluster->KT2
 			(campl->Prev(),almap[l],almap[r],almap[s],
 			 split->GetType()==pst::FS?split->GetFlavour():
-			 split->GetFlavour().Bar(),p_ms,split->Kin()));
+			 split->GetFlavour().Bar(),p_ms,
+			 split->Kin(),split->KScheme()));
       msg_Debugging()<<"New reco params: kt = "<<sqrt(ncp.m_kt2)<<", z = "
 		     <<ncp.m_z<<", y = "<<ncp.m_y<<", phi = "<<ncp.m_phi
 		     <<", kin = "<<ncp.m_kin<<"\n";
@@ -562,14 +568,14 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       l->SetMomentum(oldl);
       r->SetMomentum(oldr);
       s->SetMomentum(olds);
-      l->SetOldMomentum(oldl);
-      r->SetOldMomentum(oldr);
-      s->SetOldMomentum(olds);
       l->SetFixSpec(oldfl);
       r->SetFixSpec(oldfr);
       s->SetFixSpec(oldfs);
       }
-      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode|4);
+      l->SetOldMomentum(oldl);
+      r->SetOldMomentum(oldr);
+      s->SetOldMomentum(olds);
+      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode|4|8);
     }
     double kt2prev(campl->Next()?campl->KT2():kt2xmap[1].second);
     double kt2next(campl->Prev()?campl->Prev()->KT2():0.0);
@@ -639,8 +645,6 @@ Singlet *CS_Shower::TranslateAmplitude
     }
     Parton *parton(new Parton(&p,is?pst::IS:pst::FS));
     parton->SetMass2(p_ms->Mass2(p.Flav()));
-    if (!is && parton->Mass2()>10.0 && !p.Flav().Strong())
-      parton->SetMass2(parton->Momentum().Abs2());
     pmap[cl]=parton;
     lmap[parton]=cl;
     parton->SetRFlow();
