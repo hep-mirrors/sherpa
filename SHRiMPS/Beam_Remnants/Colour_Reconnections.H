@@ -18,7 +18,7 @@ namespace SHRIMPS {
     double         m_reconn, m_Q02, m_b02, m_eta, m_smin, m_ycut;
     
     std::set<int>                m_colours;
-    std::set<ATOOLS::Particle *> m_trips, m_antis;
+    std::vector<ATOOLS::Particle *> m_trips, m_antis;
     std::map<ATOOLS::Particle *, partdists> m_links;
     std::map<ATOOLS::Particle *, colpair> m_newcols;
     std::list<partpair> m_pairs;

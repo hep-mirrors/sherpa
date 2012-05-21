@@ -76,11 +76,11 @@ void Colour_Reconnections::HarvestParticles(Blob_List * blobs) {
 	  colpair cols = colpair(col1,col2);
 	  m_newcols[part] = cols;
 	  if (col1!=0) {
-	    m_trips.insert(part);
+	    m_trips.push_back(part);
 	    m_colours.insert(col1);
 	  }
 	  if (col2!=0) {
-	    m_antis.insert(part);
+	    m_antis.push_back(part);
 	  }
 	}
       }
@@ -93,13 +93,12 @@ void Colour_Reconnections::HarvestParticles(Blob_List * blobs) {
 }
 
 void Colour_Reconnections::FillWeightTable() {
-  set<Particle *>::iterator tripit, antiit;
   Particle * trip, * anti;
-  for (tripit=m_trips.begin();tripit!=m_trips.end();tripit++) {
-    trip = (*tripit);
+  for (size_t i=0; i<m_trips.size(); i++) {
+    trip = m_trips[i];
     map<double,Particle *> dists;
-    for (antiit=m_antis.begin();antiit!=m_antis.end();antiit++) {
-      anti = (*antiit);
+    for (size_t j=0; j<m_antis.size(); j++) {
+      anti = m_antis[j];
       if (anti==trip) continue;
       double dist(Distance(trip,anti));
       switch (ColourConnected(trip,anti)) {
@@ -153,12 +152,31 @@ void Colour_Reconnections::ShuffleColours() {
     for (mapit=m_links.begin();mapit!=m_links.end();mapit++) {
       mindist=1.0e300;
       test1 = mapit->first;
-      if (m_trips.find(test1)==m_trips.end()) continue;
+
+      // FIXME: Das muss schoener gehen
+      //if (std::find(m_trips.begin(), m_trips.end(), test1)==m_trips.end()) continue;
+      bool found=false;
+      for (std::vector<ATOOLS::Particle *>::iterator tripit=m_trips.begin(); tripit!=m_trips.end(); tripit++) {
+        if (*tripit==test1) {
+          found=true;
+          break;
+        }
+      }
+      if (!found) continue;
+
       dists = mapit->second;
       distit = dists.begin();
       while (distit!=dists.end()) {
 	test2 = distit->second;
-	if (m_antis.find(test2)!=m_antis.end()) {
+        // FIXME: Das muss schoener gehen
+        found=false;
+        for (std::vector<ATOOLS::Particle *>::iterator antiit=m_antis.begin(); antiit!=m_antis.end(); antiit++) {
+          if (*antiit==test2) {
+            found=true;
+            break;
+          }
+        }
+        if (found) {
 	  if (distit->first<mindist) {
 	    trip    = test1;
 	    anti    = test2;
@@ -184,8 +202,19 @@ void Colour_Reconnections::ShuffleColours() {
     	     <<"["<<anti->Number()<<"]"
     	     <<"("<<anti->GetFlow(1)<<", "<<anti->GetFlow(2)<<"), "
     	     <<"dist = "<<maxdist<<".\n";*/
-    m_trips.erase(trip);
-    m_antis.erase(anti);    
+    // FIXME: Das muss schoener gehen
+    for (std::vector<ATOOLS::Particle *>::iterator tripit=m_trips.begin(); tripit!=m_trips.end(); tripit++) {
+      if (*tripit==trip) {
+        m_trips.erase(tripit);
+        break;
+      }
+    }
+    for (std::vector<ATOOLS::Particle *>::iterator antiit=m_antis.begin(); antiit!=m_antis.end(); antiit++) {
+      if (*antiit==anti) {
+        m_antis.erase(antiit);
+        break;
+      }
+    }
     m_pairs.push_back(partpair(trip,anti));
     size_t col = trip->GetFlow(1);
     m_newcols[anti].second = col;
@@ -193,11 +222,11 @@ void Colour_Reconnections::ShuffleColours() {
 /*    msg_Out()<<"   * now "<<m_trips.size()<<" / "<<m_antis.size()<<" "
     	     <<"particles left for triplet/antitriplet, "
     	     <<m_colours.size()<<" colours left.\n";*/
-    if (m_trips.size()==1 &&
-	(*m_trips.begin())==(*m_antis.begin())) {
-      msg_Out()<<"Would have to save last gluon.\n"
-      	       <<(**m_trips.begin())<<"\n";
-      SaveLastGluon((*m_trips.begin()));
+    if (m_trips.size()==1 && !m_antis.empty() &&
+	*(m_trips[0])==*(m_antis[0])) {
+//      msg_Out()<<"Would have to save last gluon.\n"
+//      	       <<(*(m_trips[0]))<<"\n";
+      SaveLastGluon(m_trips[0]);
     }
   }
 /*  msg_Out()<<"   * now "<<m_trips.size()<<" / "<<m_antis.size()<<" "
@@ -249,8 +278,8 @@ void Colour_Reconnections::SaveLastGluon(Particle * part) {
   col = part->GetFlow(1);
   m_newcols[anti].second = col;
   m_colours.erase(col);
-  m_trips.erase(part);
-  m_antis.erase(part);    
+  m_trips.erase(m_trips.begin());
+  m_antis.erase(m_antis.begin());    
   //msg_Out()<<"done: "
   //	   <<"("<<m_newcols[trip].first<<", "<<m_newcols[trip].second<<") "
   //	   <<"("<<m_newcols[part].first<<", "<<m_newcols[part].second<<") "
