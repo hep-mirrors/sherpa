@@ -358,11 +358,12 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
     msg_IODebugging()<<"  PDF2: "<<rpa->gen.Beam2()<<" -> "<<fl2<<" at ("<<x2
 		   <<","<<sqrt(Q22)<<") -> "<<om::bold<<f2<<om::reset<<"\n";
     double flux=0.25/sqrt(sqr(p1*p2)-p1.Abs2()*p2.Abs2());
-    msg_IODebugging()<<"  Flux: "<<flux<<", Weight: "<<f1*f2*flux<<std::endl;
+    msg_IODebugging()<<"  Flux: "<<flux<<", Weight: "
+		     <<f1*f2*((mode&6)?1.0:flux)<<std::endl;
     if (IsBad(f1*f2)) return 0.0;
     if (s_nozeropdf && f1*f2==0.0)
       return pow(std::numeric_limits<double>::min(),0.25);
-    return f1*f2*flux;
+    return f1*f2*((mode&6)?1.0:flux);
   }
   MtxUnLock();
   return 0.;
