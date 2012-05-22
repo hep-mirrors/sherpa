@@ -279,11 +279,11 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   rproc->Trigger(p);
   rproc->Differential(p);
   rproc->Differential2();
+  p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(256|512);
   if (swaped) {
     p_rsproc->Selected()->Integrator()->SwapInOrder();
     rproc->Integrator()->SwapInOrder();
   }
-  p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(256|512);
   if (p_ampl==NULL) {
     msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;
     return 0.0;
