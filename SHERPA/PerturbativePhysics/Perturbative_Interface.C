@@ -155,8 +155,11 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   if (p_me->Process()->Info().m_ckkw&1) {
     if (m_bbarmode && p_me->HasNLO() &&
         p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
+        int swap(p_me->Process()->Integrator()->InSwaped());
+        p_me->Process()->Integrator()->RestoreInOrder();
         Cluster_Amplitude *excl_ampl=
             p_me->Process()->Get<Single_Process>()->Cluster(m_cmode|256|512|1024);
+	if (swap) p_me->Process()->Integrator()->SwapInOrder();
 	if (excl_ampl) {
         if (!LocalKFactor(excl_ampl)) {
           DEBUG_INFO("didn't find PowProc in exclusively clustered amplitude");
