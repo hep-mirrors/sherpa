@@ -80,7 +80,10 @@ bool Color_Setter::SetRandomColors
 	oc[i]=ColorID(ni[i],nj[i]);
     }
   }
-  if (trials>=s_clmaxtrials) {
+  if (trials<s_clmaxtrials) {
+    p_xs->GetAmplitude()->ResetZero();
+  }
+  else {
     msg_Error()<<METHOD<<"(): No solution."<<std::endl;
     return false;
   }
@@ -192,6 +195,7 @@ bool Color_Setter::SetLargeNCColors
     }
   }
   colint->SetOTFCC(sotfcc);
+  p_xs->GetAmplitude()->ResetZero();
   return true;
 }
 
