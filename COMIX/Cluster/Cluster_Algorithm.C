@@ -559,7 +559,10 @@ bool Cluster_Algorithm::Cluster
 	  li=i;
 	}
       }
-      if (split->Stat()!=3) kt2ord[li].second=ampl->Next()->KT2();
+      if ((split->Stat()!=3 &&
+	   split->Flav().Strong()) ||
+	  p_ampl->Legs().size()==4)
+	kt2ord[li].second=ampl->Next()->KT2();
       msg_Debugging()<<"set last k_T = "<<sqrt(ampl->Next()->KT2())
 		     <<" "<<ID(kt2ord[li].first)<<"\n";
       KT2Info_Vector nkt2ord(kt2ord);
