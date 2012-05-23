@@ -27,6 +27,8 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
     m_maxem=maxem;
     msg_Info()<<METHOD<<"(): Set max emissions "<<m_maxem<<"\n";
   }
+  int mtmode=_dataread->GetValue<int>("CSS_CORE_MTMODE",1);
+  if (mtmode!=1) msg_Info()<<METHOD<<"(): Set core m_T mode "<<mtmode<<"\n";
   m_kmode=_dataread->GetValue<int>("CSS_KMODE",1);
   if (m_kmode!=1) msg_Info()<<METHOD<<"(): Set kernel mode "<<m_kmode<<"\n";
   m_recocheck=_dataread->GetValue<int>("CSS_RECO_CHECK",0);
@@ -48,6 +50,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
 
   p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode);
   p_cluster->SetAMode(amode);
+  p_cluster->SetMTMode(mtmode);
 }
 
 CS_Shower::~CS_Shower() 

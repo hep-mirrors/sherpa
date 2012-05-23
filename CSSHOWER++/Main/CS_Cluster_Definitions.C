@@ -15,7 +15,7 @@ using namespace ATOOLS;
 
 CS_Cluster_Definitions::CS_Cluster_Definitions
 (Shower *const shower,const int kmode):
-  p_shower(shower), m_mode(0), m_kmode(kmode) {}
+  p_shower(shower), m_mode(0), m_kmode(kmode), m_mtmode(1) {}
 
 CParam CS_Cluster_Definitions::KPerp2
 (const Cluster_Amplitude &ampl,int i,int j,int k,
@@ -322,6 +322,19 @@ CParam CS_Cluster_Definitions::CoreScale
 	  }
 	  else if (i>1 && cf[f]==lj->Flav()) {
 	    kt2*=dabs((p[i]*p[k])/(p[j]*p[k]));
+	  }
+	  if (m_mtmode) {
+	    double nm(1.0);
+	    kt2=nm/kt2;
+	    if (ampl->Leg(2)->Flav().Mass()) {
+	      kt2+=1.0/ampl->Leg(2)->Mom().Abs2();
+	      ++nm;
+	    }
+	    if (ampl->Leg(3)->Flav().Mass()) {
+	      kt2+=1.0/ampl->Leg(3)->Mom().Abs2();
+	      ++nm;
+	    }
+	    kt2=nm/kt2;
 	  }
 	  kt2*=cdip->Coupling()->CplFac(kt2);
 	  if (kt2<kt2cmin) {

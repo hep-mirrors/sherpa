@@ -30,7 +30,7 @@ namespace CSSHOWER {
     ATOOLS::Cluster_Leg   *p_b;
     
     Shower *p_shower;
-    int     m_mode, m_kmode;
+    int     m_mode, m_kmode, m_mtmode;
 
     void KernelWeight(const ATOOLS::Cluster_Leg *i,
 		      const ATOOLS::Cluster_Leg *j,
@@ -71,6 +71,8 @@ namespace CSSHOWER {
 				 const int kin=0,const int mode=0);
     
     PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl);
+
+    inline void SetMTMode(const int mtmode) { m_mtmode=mtmode; }
     
   };// end of class CS_Cluster_Definitions
 
