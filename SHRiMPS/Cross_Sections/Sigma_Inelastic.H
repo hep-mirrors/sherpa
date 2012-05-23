@@ -4,10 +4,23 @@
 #include <map>
 
 namespace SHRIMPS {
+  
+  struct eikcomp{
+    bool operator() (const Omega_ik * eik1, const Omega_ik * eik2) const
+    {
+      if(eik1->FF1()->Number() < eik2->FF1()->Number()) return true;
+      else if(eik1->FF1()->Number() > eik2->FF1()->Number()) return false;
+      else {
+	if (eik1->FF2()->Number() < eik2->FF2()->Number()) return true;
+	else return false;
+      }
+    }
+  };
+
   class Sigma_Inelastic : public Sigma_Base {
     double m_Bmin, m_Bmax, m_deltaB;
-    std::map<Omega_ik *,double>               m_xsecs;
-    std::map<Omega_ik *,std::vector<double> > m_grids;
+    std::map<Omega_ik *,double,eikcomp>               m_xsecs;
+    std::map<Omega_ik *,std::vector<double>,eikcomp>  m_grids;
   public:
     Sigma_Inelastic() {};
     Sigma_Inelastic(std::list<Omega_ik *> * eikonals) : 
