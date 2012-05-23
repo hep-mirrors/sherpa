@@ -235,6 +235,10 @@ int Kinematics_II::MakeKinematics
   if (mode && split->GetPrev() && split->GetPrev()->KScheme()) {
     mai2=p1.Abs2();
     p2=split->GetPrev()->FixSpec();
+    // temporary !!!
+    p2[1]=p2[2]=0.0;
+    p2[0]=dabs(p2[3]);
+    // end temporary
     mb2=0.0;
     nospec=true;
   }

@@ -1030,6 +1030,10 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   if (f->KScheme()) {
     mai2=(pa-pi).Abs2();
     pk=f->FixSpec();
+    // temporary !!!
+    pk[1]=pk[2]=0.0;
+    pk[0]=dabs(pk[3]);
+    // end temporary
     mk2=0.0;
   }
   Kin_Args lp;
