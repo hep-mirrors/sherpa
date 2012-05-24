@@ -120,7 +120,7 @@ void MCFM_qqb_vv::Calc(const Vec4D_Vector &p)
   //	   <<"s45 = "<<sqrt((p[4]+p[5]).Abs2())<<"; "
   //	   <<"corr = "<<m_cplcorr<<" * "<<m_normcorr
   //	   <<" = "<<corrfactor<<"."<<std::endl;
-
+ 
   long int i(m_flavs[0]), j(m_flavs[1]);
   if (i==21) { i=0; }
   if (j==21) { j=0; }
@@ -170,16 +170,24 @@ Virtual_ME2_Base *MCFM_qqb_vv_Getter::operator()(const Process_Info &pi) const
 	// check for right model and absence of b Yukawa couplings
 	if ((MODEL::s_model->ScalarConstant("Yukawa_b")>0. && fl1==fl2.Bar()) ||
 	    MODEL::s_model->Name()!=std::string("SM") ||
-	    (Flavour(kf_t).IsOn() && fl1.Kfcode()==24 && fl2.Kfcode()==24)) {
+	    ( ( Flavour(kf_t).IsOn() || 
+		( Flavour(kf_b).IsOn() && !(Flavour(kf_b).Mass()) ))
+	      && fl1.Kfcode()==24 && fl2.Kfcode()==24)) {
+	  //(  Flavour(kf_t).IsOn()
+	  //  && fl1.Kfcode()==24 && fl2.Kfcode()==24)) {
+
 	  msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
 		     <<"   Try to initialise process qqb->VV in MCFM.\n"
 		     <<"   Inconsistent setting with Sherpa: \n"
 		     <<"YUKAWA_B = "<<MODEL::s_model->ScalarConstant("Yukawa_b")
 		     <<" (should be 0), "
 		     <<"MODEL = "<<MODEL::s_model->Name()
-		     <<"(should be 'SM', and "
+		     <<" (should be 'SM'), "
 		     <<"ACTIVE[6] = "<<Flavour(kf_t).IsOn()
-		     <<"(should be 0 for WW).\n"
+		     <<" (should be 0 for WW), and "<<std::endl
+		     <<"ACTIVE[5] = "<<Flavour(kf_b).IsOn()<<" and "
+		     <<"MASSIVE[5] = "<<Flavour(kf_b).Mass()
+		     <<" (should have either ACTIVE[5] = 0 or MASSIVE[5] = 1 for WW).\n"
 		     <<"   Will exit the run."<<std::endl;
 	  exit(1);
 	  return NULL;
@@ -190,6 +198,7 @@ Virtual_ME2_Base *MCFM_qqb_vv_Getter::operator()(const Process_Info &pi) const
 	  (fl2==Flavour(kf_Wplus) && fl1==Flavour(kf_Wplus).Bar())) {
 	if (fl[2].IsLepton() && fl[3].IsLepton() && 
 	    fl[4].IsLepton() && fl[5].IsLepton()) {
+	  
 	  //msg_Out()<<"Check for top on:   "<<Flavour(kf_t).IsOn()<<".\n";
 	  //msg_Out()<<"Check for yukawa b: "<<Flavour(kf_b).Yuk()<<".\n";
 	  //const MODEL::Vertex_Table * vt(MODEL::s_model->VertexTable());
@@ -197,7 +206,7 @@ Virtual_ME2_Base *MCFM_qqb_vv_Getter::operator()(const Process_Info &pi) const
 	  //msg_Out()<<"Also for tops: "
 	  //	   <<(vt->find(ATOOLS::Flavour(kf_t))!=vt->end())<<".\n";
 	  pID = 61;
-          zerowidth_.zerowidth=true;
+	  zerowidth_.zerowidth=true;
 	}
       }
       // ZZ final state
@@ -205,8 +214,28 @@ Virtual_ME2_Base *MCFM_qqb_vv_Getter::operator()(const Process_Info &pi) const
 	int neutrino(0);
 	if (fl[2].IsLepton() && fl[3].IsLepton() && 
 	    fl[4].IsLepton() && fl[5].IsLepton()) {
-	  if ((fl[2].IsUptype() && fl[4].IsDowntype()) ||
-	      (fl[2].IsDowntype() && fl[4].IsUptype())) neutrino=1;
+	  //if ((fl[2].IsUptype() && fl[4].IsDowntype()) ||
+	  //  (fl[2].IsDowntype() && fl[4].IsUptype())) neutrino=1;
+	  
+	  if (fl[2].IsDowntype() && fl[4].IsUptype()) neutrino=1;
+
+	  if (fl[2].IsUptype() && fl[4].IsDowntype()){
+	    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+	    	       <<"   Order of decays in runcard is:   "<<std::endl
+	    	       <<"      Z -> nu nub , Z -> l+ l-   should be "<<std::endl
+	    	       <<"      Z -> l+ l- , Z-> nu nub ."
+	    	       <<std::endl<<"   Will exit the run."<<std::endl;
+	    exit(1);
+	  }
+
+	  if (fl[2].IsUptype() && fl[3].IsUptype() && fl[4].IsUptype()
+	      && fl[5].IsUptype()){
+	    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+	  	       <<"   Cannot do Z Z -> nu nub nu nub  "
+	  	       <<std::endl<<"   Will exit the run."<<std::endl;
+	    exit(1);
+	  }
+	  
 	  pID = 86+neutrino;
           zerowidth_.zerowidth=true;
 	}
@@ -352,3 +381,4 @@ Virtual_ME2_Base *MCFM_qqb_vv_Getter::operator()(const Process_Info &pi) const
   }
   return NULL;
 }
+
