@@ -96,6 +96,9 @@ namespace COMIX {
     void SetNMax(ATOOLS::Cluster_Amplitude *const ampl,
 		 const size_t &id,const size_t &nmax) const;
 
+    KT2Info_Vector UpdateKT2(const KT2Info_Vector &kt2ord,
+			     const Cluster_Amplitude *ampl) const;
+
   public:
 
     Cluster_Algorithm(ATOOLS::Mass_Selector *const ms);

@@ -77,6 +77,12 @@ double Single_Process::BeamISRWeight
 	    continue;
 	  }
 	}
+	if (ampl->Prev() && LQ2>ampl->KT2()) {
+	  msg_Debugging()<<"Skip unordering "<<
+	    sqrt(LQ2)<<" > "<<sqrt(ampl->KT2())<<"\n";
+	  LQ2=ampl->KT2();
+	  continue;
+	}
 	Flavour f1(ampl->Leg(0)->Flav().Bar());
 	Flavour f2(ampl->Leg(1)->Flav().Bar());
 	if (MapProc() && LookUp()) {

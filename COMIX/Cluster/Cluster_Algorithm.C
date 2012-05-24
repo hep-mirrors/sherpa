@@ -530,6 +530,30 @@ bool Cluster_Algorithm::Cluster
   return true;
 }
 
+KT2Info_Vector Cluster_Algorithm::UpdateKT2
+(const KT2Info_Vector &kt2ord,const Cluster_Amplitude *ampl) const
+{
+  KT2Info_Vector nkt2ord(kt2ord);
+  Cluster_Leg *split(ampl->Next()->Splitter());
+  size_t sid(split->Id()), lmin(100), li(0);
+  for (size_t i(0);i<nkt2ord.size();++i) {
+    if ((nkt2ord[i].first&sid)==sid &&
+	IdCount(nkt2ord[i].first)<lmin) {
+      lmin=IdCount(nkt2ord[i].first);
+      li=i;
+    }
+  }
+  if ((split->Stat()!=3 &&
+       split->Flav().Strong()) ||
+      ampl->Legs().size()==4) {
+    nkt2ord[li].second=ampl->KT2();
+    msg_Debugging()<<"set last k_T = "<<sqrt(nkt2ord[li].second)
+		   <<" for "<<ID(nkt2ord[li].first)
+		   <<" from "<<ID(sid)<<"\n";
+  }
+  return nkt2ord;
+}
+
 bool Cluster_Algorithm::Cluster
 (const size_t &step,const Vertex_Set &onocl,const Current_Vector &ccurs,
  Current *const fcur,const ClusterInfo_Map &cinfo,KT2Info_Vector &kt2ord)
@@ -550,35 +574,27 @@ bool Cluster_Algorithm::Cluster
     Current *nfcur(fcur);
     ClusterInfo_Map ncinfo(cinfo);
     if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo,kt2)) {
-      Cluster_Leg *split(ampl->Next()->Splitter());
-      size_t sid(split->Id()), lmin(100), li(0);
-      for (size_t i(0);i<kt2ord.size();++i) {
-	if ((kt2ord[i].first&sid)==sid &&
-	    IdCount(kt2ord[i].first)<lmin) {
-	  lmin=IdCount(kt2ord[i].first);
-	  li=i;
+      KT2Info_Vector nkt2ord(UpdateKT2(kt2ord,ampl)), nnkt2ord(nkt2ord);
+      if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo,nnkt2ord)) {
+  	if (ampl->Legs().size()==4) {
+	  kt2ord=nkt2ord;
+	  return true;
 	}
-      }
-      if ((split->Stat()!=3 &&
-	   split->Flav().Strong()) ||
-	  p_ampl->Legs().size()==4)
-	kt2ord[li].second=ampl->Next()->KT2();
-      msg_Debugging()<<"set last k_T = "<<sqrt(ampl->Next()->KT2())
-		     <<" "<<ID(kt2ord[li].first)<<"\n";
-      KT2Info_Vector nkt2ord(kt2ord);
-      if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo,nkt2ord)) {
-  	if (ampl->Legs().size()==4) return true;
 	bool ord(true);
-	for (size_t i(0);i<kt2ord.size();++i)
-	  if (nkt2ord[i].second<kt2ord[i].second) {
+	for (size_t i(0);i<nkt2ord.size();++i) {
+	  if (nnkt2ord[i].second<nkt2ord[i].second) {
 	    msg_Debugging()<<"unordered configuration: "
-			   <<sqrt(nkt2ord[i].second)<<" vs. "
-			   <<sqrt(kt2ord[i].second)<<" "
-			   <<ID(kt2ord[i].first)<<"\n";
+			   <<sqrt(nnkt2ord[i].second)<<" vs. "
+			   <<sqrt(nkt2ord[i].second)<<" "
+			   <<ID(nkt2ord[i].first)<<"\n";
 	    ord=false;
 	    break;
 	  }
-	if (ord || (m_wmode&16)) return true;
+	}
+	if (ord || (m_wmode&16)) {
+	  kt2ord=nkt2ord;
+	  return true;
+	}
 	msg_Debugging()<<"reject ordering\n";
       }
     }
@@ -620,7 +636,10 @@ bool Cluster_Algorithm::Cluster
     ClusterInfo_Map ncinfo(cinfo);
     if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo,kt2))
       if (p_ampl->KT2()<sqrt(std::numeric_limits<double>::max()))
-	if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo,kt2ord)) return true;
+	if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo,kt2ord)) {
+	  kt2ord=UpdateKT2(kt2ord,ampl);
+	  return true;
+	}
     p_ampl=ampl;
     p_ampl->DeleteNext();
   }
