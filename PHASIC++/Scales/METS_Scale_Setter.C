@@ -244,7 +244,8 @@ double METS_Scale_Setter::CalculateStrict
   Cluster_Amplitude *rampl(ampl);
   while (rampl->Next()) rampl=rampl->Next();
   double muf2(SetScales(rampl->KT2(),ampl));
-  m_ampls.push_back(ampl);
+  if (!m_vproc) m_ampls.push_back(ampl);
+  else ampl->Delete();
   return muf2;
 }
 
@@ -395,7 +396,8 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta)
 	msg_Debugging()<<METHOD<<"(): No CSS history for '"
 		       <<p_proc->Name()<<"'. Set \\hat{s}.\n";
 	if (ic<1) {
-	  m_ampls.push_back(ampl);
+	  if (!m_vproc) m_ampls.push_back(ampl);
+	  else ampl->Delete();
 	  ampl=NULL;
 	  break;
 	}
@@ -409,7 +411,8 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta)
 		     <<(int(m_lfrac*10000)/100.0)
 		     <<"% of calls. Set \\hat{s}."<<std::endl;
 	}
-	m_ampls.push_back(ampl);
+	if (!m_vproc) m_ampls.push_back(ampl);
+	else ampl->Delete();
 	return SetScales((m_p[0]+m_p[1]).Abs2(),NULL);
       }
       ampl=ampl->Prev();
@@ -502,7 +505,8 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta)
   if (ampl==NULL) continue;
   while (ampl->Prev()) ampl=ampl->Prev();
   double muf2(SetScales(kt2core,ampl));
-  m_ampls.push_back(ampl);
+  if (!m_vproc) m_ampls.push_back(ampl);
+  else ampl->Delete();
   return muf2;
   }
   THROW(fatal_error,"Internal error");
