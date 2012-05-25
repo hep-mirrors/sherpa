@@ -61,6 +61,7 @@ double Single_Process::BeamISRWeight
     wgt*=p_int->ISR()->Weight
       (mode,p_int->Momenta()[0],p_int->Momenta()[1],
        Q2,Q2,m_flavs[0],m_flavs[1]);
+    int set(false);
     double LQ2(Q2);
     ClusterAmplitude_Vector &ampls
       ((IsMapped()?p_mapproc:this)->ScaleSetter()->Amplitudes());
@@ -77,7 +78,7 @@ double Single_Process::BeamISRWeight
 	    continue;
 	  }
 	}
-	if (ampl->Prev() && LQ2>ampl->KT2()) {
+	if (set && LQ2>ampl->KT2()) {
 	  msg_Debugging()<<"Skip unordering "<<
 	    sqrt(LQ2)<<" > "<<sqrt(ampl->KT2())<<"\n";
 	  LQ2=ampl->KT2();
@@ -97,6 +98,7 @@ double Single_Process::BeamISRWeight
 	double wd2=p_int->ISR()->Weight
 	  (mode|4,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
 	LQ2=ampl->KT2();
+	set=true;
 	double wn1=p_int->ISR()->Weight
 	  (mode|2,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
 	double wn2=p_int->ISR()->Weight
