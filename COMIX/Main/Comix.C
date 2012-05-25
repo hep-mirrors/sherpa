@@ -27,7 +27,7 @@ namespace COMIX {
     std::vector<PHASIC::Process_Base*>         m_rsprocs;
 
     std::string m_path, m_file;
-    int    m_break;
+    int    m_break, m_act;
     time_t m_mets;
 
     void PrintLogo(std::ostream &s);
@@ -151,11 +151,10 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
 		       BEAM::Beam_Spectra_Handler *const beamhandler,
 		       PDF::ISR_Handler *const isrhandler) 
 {
+  m_act=true;
   m_path=path;
   m_file=file;
   p_model=model;
-  PrintLogo(msg->Info());
-  PrintVertices();
   p_int->SetBeam(beamhandler); 
   p_int->SetISR(isrhandler);
   // init mapping file
@@ -166,8 +165,11 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   read.SetInputFile(m_file);
   m_break=read.GetValue<int>("ONLY_MAPPING_FILE",0);
   if (!read.GetValue<int>("COMIX_ALLOW_BSM",0))
-    if (model->Name()!="SM") THROW
-      (not_implemented,"Comix cannot handle model '"+model->Name()+"'");
+    if (model->Name()!="SM") m_act=false;
+  if (m_act) {
+    PrintLogo(msg->Info());
+    PrintVertices();
+  }
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_rank()==0)
 #endif
@@ -179,7 +181,7 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
 PHASIC::Process_Base *Comix::
 InitializeProcess(const PHASIC::Process_Info &pi, bool add)
 {
-  if (p_model==NULL) return NULL;
+  if (p_model==NULL || !m_act) return NULL;
   m_umprocs.push_back(std::vector<Single_Process*>());
   PHASIC::Process_Base *newxs(NULL);
   size_t nis(pi.m_ii.NExternal()), nfs(pi.m_fi.NExternal());
