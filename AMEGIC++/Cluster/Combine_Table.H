@@ -16,6 +16,9 @@ namespace AMEGIC {
 
   std::ostream &operator<<(std::ostream &str,const std::vector<int> &info);
 
+  typedef std::pair<size_t,double> KT2_Info;
+  typedef std::vector<KT2_Info>    KT2Info_Vector;
+
   class Leg {
   private:
     AMEGIC::Point *p_point;
@@ -126,6 +129,10 @@ namespace AMEGIC {
     AMEGIC::Process_Base *p_proc;
     
     ATOOLS::DecayInfo_Vector m_decids, *p_decids;
+
+    KT2Info_Vector m_kt2ord;
+
+    KT2Info_Vector UpdateKT2(const CD_List::iterator &cdit) const;
 
     Leg  CombinedLeg(Leg *legs,const int i,const int j);
     Leg *CombineLegs(Leg *legs,const int i,const int j,
