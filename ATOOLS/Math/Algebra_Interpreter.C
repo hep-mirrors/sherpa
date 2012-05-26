@@ -346,6 +346,7 @@ DEFINE_TWO_TERM_FUNCTION(Vec4D_PPerpR,"PPerpR",PPerp)
 DEFINE_TWO_TERM_FUNCTION(Vec4D_ThetaR,"ThetaR",Theta)
 DEFINE_TWO_TERM_FUNCTION(Vec4D_DEta,"DEta",DEta)
 DEFINE_TWO_TERM_FUNCTION(Vec4D_DPhi,"DPhi",DPhi)
+DEFINE_TWO_TERM_FUNCTION(Vec4D_DR,"DR",DR)
 
 Interpreter_Function::~Interpreter_Function() 
 {
@@ -648,6 +649,7 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Vec4D_ThetaR());
   AddFunction(new Vec4D_DEta());
   AddFunction(new Vec4D_DPhi());
+  AddFunction(new Vec4D_DR());
 }
 
 Algebra_Interpreter::~Algebra_Interpreter()

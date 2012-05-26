@@ -83,7 +83,7 @@ Fastjet_Selector::Fastjet_Selector
 
   m_sel_log    = new Selector_Log(m_name);
 
-  m_p.resize(m_n);
+  m_p.resize(m_nin+m_nout);
   m_mu2.resize(m_nout);
 
   m_calc.AddTag("H_T2","1.0");
@@ -149,7 +149,7 @@ void Fastjet_Selector::AssignId(Term *term)
   }
   else {
     int idx(ToType<int>(term->Tag().substr(2,term->Tag().length()-3)));
-    if (idx>=m_n) THROW(fatal_error,"Invalid syntax");
+    if (idx>=m_nin+m_nout) THROW(fatal_error,"Invalid syntax");
     term->SetId(100+idx);
   }
 }
@@ -166,15 +166,18 @@ bool Fastjet_Selector::Trigger(const Vec4D_Vector &p)
 {
   if (m_n<0) return true;
 
+  m_p.clear();
+  for (size_t i(0);i<m_nin;++i) m_p.push_back(p[i]);
   std::vector<fastjet::PseudoJet> input,jets;
   for (size_t i(m_nin);i<p.size();++i) {
     if (m_fl[i].Strong())
       input.push_back(fastjet::PseudoJet(p[i][1],p[i][2],p[i][3],p[i][0])); 
+    else m_p.push_back(p[i]);
   }
+  int nj=m_p.size();
   
   fastjet::ClusterSequence cs(input,*p_jdef);
   jets=cs.inclusive_jets();
-  m_p.clear();
   for (size_t i(0);i<jets.size();++i) {
     Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
     if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
@@ -184,7 +187,7 @@ bool Fastjet_Selector::Trigger(const Vec4D_Vector &p)
   for (size_t i(0);i<input.size();++i)
     m_mu2[i]=cs.exclusive_dmerge_max(i);
 
-  bool trigger((int)m_p.size()>=m_n);
+  bool trigger((int)(m_p.size()-nj)>=m_n);
   if (trigger) trigger=(int)m_calc.Calculate()->Get<double>();
 
   return (1-m_sel_log->Hit(1-trigger));
@@ -195,16 +198,19 @@ bool Fastjet_Selector::JetTrigger(const Vec4D_Vector &p,
 {
   if (m_n<0) return true;
 
+  m_p.clear();
+  for (size_t i(0);i<m_nin;++i) m_p.push_back(p[i]);
   std::vector<fastjet::PseudoJet> input,jets;
   for (size_t i(m_nin);i<subs->back()->m_n;++i) {
     if (subs->back()->p_fl[i].Strong())
       input.push_back(fastjet::PseudoJet(p[i][1],p[i][2],p[i][3],p[i][0]));      
+    else m_p.push_back(p[i]);
   }
+  int nj=m_p.size();
   
   fastjet::ClusterSequence cs(input,*p_jdef);
   jets=cs.inclusive_jets();
 
-  m_p.clear();
   for (size_t i(0);i<jets.size();++i) {
     Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
     if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
@@ -215,7 +221,7 @@ bool Fastjet_Selector::JetTrigger(const Vec4D_Vector &p,
   for (size_t i(0);i<input.size();++i)
     m_mu2[i]=cs.exclusive_dmerge_max(i);
 
-  bool trigger((int)m_p.size()>=m_n);
+  bool trigger((int)(m_p.size()-nj)>=m_n);
   if (trigger) trigger=(int)m_calc.Calculate()->Get<double>();
   
   return (1-m_sel_log->Hit(1-trigger));
