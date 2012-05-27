@@ -10,6 +10,10 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
+
 inline void MakeFortranString
 (char *output,std::string input,unsigned int length)
 {
@@ -208,6 +212,13 @@ bool PGS_Interface::Init()
   while (stag.find(' ')!=std::string::npos) stag.replace(stag.find(' '),1,"-");
   reader.AddTag("RNG_SEED",stag);
   m_outfile=reader.GetValue<std::string>("FILE_NAME","sherpa_events.hep");
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_size()>1) {
+    size_t pos(m_outfile.find('.'));
+    if (pos==std::string::npos) pos=m_outfile.length();
+    m_outfile.insert(pos,"_"+rpa->gen.Variable("RNG_SEED"));
+  }
+#endif
   m_imode=reader.GetValue<int>("WRITE_MODE",1);
   pgspars.nevsha=rpa->gen.NumberOfEvents();
   MakeFortranString(pgspars.shafile,m_outfile,80);
