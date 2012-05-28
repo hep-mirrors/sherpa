@@ -243,7 +243,10 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
 	(k==1 && lt.m_pk[3]>0.0) || lt.m_pk[0]<0.0) return Vec4D_Vector();
   }
   else {
-    if (k>1) lt=ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-pb,2|(kin?4:0));
+    if (k>1) {
+      lt=ClusterIFDipole(mi2,mj2,mij2,mk2,mb2,-pi,pj,pk,-pb,2|(kin?4:0));
+      if (kmode && lt.m_mode) lt.m_stat=-1;
+    }
     else lt=ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,2|(kin?4:0));
     if ((i==0 && lt.m_pi[3]<0.0) ||
 	(i==1 && lt.m_pi[3]>0.0) || lt.m_pi[0]<0.0) return Vec4D_Vector();

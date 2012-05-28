@@ -302,7 +302,7 @@ bool Cluster_Algorithm::ClusterStep
     return false;
   }
   double wmin(std::numeric_limits<double>::max());
-  double rwmin(std::numeric_limits<double>::max()), sum(0.0);
+  double rwmin(sqrt(std::numeric_limits<double>::max())), sum(0.0);
   ClusterInfo_Map::const_iterator win(cinfo.end()), rwin(win);
   for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
        cit!=cinfo.end();++cit) {
