@@ -16,6 +16,7 @@ using namespace ATOOLS;
 extern "C" {
   void    setct10_(int &);
   double  ct10pdf_(int &,double &, double &);
+  void    shabrt_() { abort(); }
 }
 
 

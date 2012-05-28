@@ -300,7 +300,7 @@ C                     x     0  Xmin               x                 1
 C
       If     (JLx .LE. -1) Then
         Print '(A,1pE12.4)','Severe error: x <= 0 in PartonX10! x = ',x
-        Stop
+        call Shabrt
       ElseIf (JLx .Eq. 0) Then
          Jx = 0
       Elseif (JLx .LE. Nx-2) Then
@@ -315,7 +315,7 @@ C                                      Keep at least 4 points >= Jx
          Jx = JLx - 2
       Else
         Print '(A,1pE12.4)','Severe error: x > 1 in PartonX10! x = ',x
-        Stop
+        call Shabrt
       Endif
 C          ---------- Note: JLx uniquely identifies the x-bin; Jx does not.
 
