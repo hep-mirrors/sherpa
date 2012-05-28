@@ -1032,6 +1032,7 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
     pk=f->FixSpec();
     if (mode&2) {
     // temporary !!!
+    pk=s->Momentum();
     pk[1]=pk[2]=0.0;
     pk[0]=dabs(pk[3]);
     // end temporary
