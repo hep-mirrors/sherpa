@@ -142,6 +142,7 @@ bool Rescatter_Handler::DealWithBlob(ATOOLS::Blob * blob) {
 void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
   if (!m_rescatter) return;
   double y1(part->Momentum().Y()),y2,s12,prob;
+  int nbeam(dabs(y1)>m_Ylimit);
   double expo(p_eikonal->EffectiveIntercept(m_b1,m_b2));
   bool allowed;
   for (set<Particle *>::iterator piter=m_particles.begin();
@@ -159,7 +160,8 @@ void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
     }
     if (prob<0.00000001 || !CanRescatter((*piter),part)) continue;
     s12   = Max(0.,((*piter)->Momentum()+part->Momentum()).Abs2());
-    prob *= p_eikonal->RescatterProbability(m_b1,m_b2,y1,y2,m_rescprob,0); 
+    prob *= p_eikonal->RescatterProbability(m_b1,m_b2,y1,y2,m_rescprob,
+					    nbeam+int(dabs(y2)>m_Ylimit)); 
     prob *= pow(s12/Max(s12,m_smin),1.+expo);
     prob /= double(m_Nfact);
 //     if (IsColourConnected((*piter),part)) prob *= 3.;

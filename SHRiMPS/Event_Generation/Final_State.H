@@ -18,7 +18,7 @@ namespace SHRIMPS {
     MODEL::Strong_Coupling * p_alphaS;
     double                   m_Q02,m_Q12,m_Q02eff,m_QN2;
     double                   m_kt1cut2,m_kt1min2,m_kt1max2;
-    double                   m_d2, m_kdiff;
+    double                   m_d2, m_kdiff, m_Ylimit;
     int                      m_test;
 
     Ladder                 * p_ladder;

@@ -28,6 +28,7 @@ Final_State::Final_State(const int & test) :
 				MBpars.AsForm(),MBpars("Q_as2"))),
   m_Q02(MBpars("Q02")), m_Q12(MBpars("Q12")), m_QN2(MBpars("QN2")), 
   m_d2(MBpars("Ddiff2")), m_kdiff(MBpars("kdiff")), 
+  m_Ylimit(MBpars("originalY")-MBpars("deltaY")),
   m_test(test), m_output(true)
 {
   InitHistograms();
@@ -62,9 +63,9 @@ operator()(Ladder * ladder,const double & Deltay,
 
   double y0(m_plusiter->first), y1(m_minusiter->first);
   m_lastwt = 1.;
-  int nbeam(!p_ladder->IsRescatter()?2:
-	    int(dabs(p_ladder->GetIn1()->m_mom.Y())>6.)+
-	    int(dabs(p_ladder->GetIn2()->m_mom.Y())>6.));
+  int nbeam(//!p_ladder->IsRescatter()?2:
+	    int(dabs(p_ladder->GetIn1()->m_mom.Y())>m_Ylimit)+
+	    int(dabs(p_ladder->GetIn2()->m_mom.Y())>m_Ylimit));
   if (firstattempt && FirstSinglet(y0,y1,1.,nbeam)) {
     m_firstsing++;
     m_histomap[std::string("Delta_final")]->Insert(1./dabs(y0-y1)); 
@@ -489,8 +490,7 @@ bool Final_State::FixPropColours(const LadderMap::iterator & split,
 
   double y0(m_k0.Y()), y1(m_k1.Y()), y2(m_k2.Y());
   double wt81(0.), wt18(0.), wt88(0.);
-  int    beam1 = int((split==p_emissions->begin()) || split==emend);
-  int	 beam2 = int((spect==p_emissions->begin()) || spect==emend);
+  int beam1(int(y0>m_Ylimit)), beam2(int(y2>m_Ylimit));
 
   double sup01(SuppressionTerm(m_q01_2,m_q01_2));
   double sup12(SuppressionTerm(m_q12_2,m_q12_2));
