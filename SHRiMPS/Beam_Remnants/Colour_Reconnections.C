@@ -48,12 +48,11 @@ FinishConfiguration(Blob_List * blobs,const double & smin) {
   m_antis.clear();
   m_links.clear();
   m_pairs.clear();
-  if (m_on) {
-    HarvestParticles(blobs);
-    FillWeightTable();
-    ShuffleColours();
-    blobs->push_back(AddReconnectionBlob());
-  }
+  if(!m_on) m_reconn=0.;
+  HarvestParticles(blobs);
+  FillWeightTable();
+  ShuffleColours();
+  blobs->push_back(AddReconnectionBlob());
   return true;
 }
 
@@ -64,8 +63,8 @@ void Colour_Reconnections::HarvestParticles(Blob_List * blobs) {
   Particle * part;
   for (Blob_List::iterator bit=blobs->begin();bit!=blobs->end();bit++) {
     blob = (*bit);
-//     msg_Out()<<(*blob)<<std::endl;
     if (blob->Has(blob_status::needs_hadronization)) {
+//       msg_Out()<<(*blob)<<std::endl;
       for (int i=0;i<blob->NOutP();i++) {
 	part = blob->OutParticle(i);
 	if (dabs(part->Momentum().Y())>m_ycut) part->SetInfo('B');
@@ -108,7 +107,7 @@ void Colour_Reconnections::FillWeightTable() {
 	break;
       case 1:
 //    dist /= m_reconn;
-  dist *= m_reconn;
+        dist *= m_reconn;
 	break;
       case 0:
       default:
@@ -127,7 +126,7 @@ void Colour_Reconnections::ShuffleColours() {
   map<double,Particle *>::iterator distit;
   Particle * test1, * test2, * trip, * anti;
   while (!m_trips.empty()) {
-    double maxdist = 0.;
+    double maxdist = -1.;
     //msg_Out()<<"Start looping to look for next colour connection: "
     //	     <<m_trips.size()<<" particles still to do.\n";
     for (mapit=m_links.begin();mapit!=m_links.end();mapit++) {
@@ -138,12 +137,13 @@ void Colour_Reconnections::ShuffleColours() {
       while (distit!=dists.end()) {
 	test2 = distit->second;
 	if (m_antis.find(test2)!=m_antis.end()) {
-    if (distit->first>maxdist) {
+          if (distit->first>maxdist) {
+//           if (test1->GetFlow(1) == test2->GetFlow(2)) {
 	    trip    = test1;
 	    anti    = test2;
-      maxdist = distit->first;
+            maxdist = distit->first;
 	  }
-    break;
+        break;
 	}
 	distit++;
       }
@@ -153,12 +153,12 @@ void Colour_Reconnections::ShuffleColours() {
 		 <<"   did not find a viable pair!\n";
       exit(1);
     }
-//    msg_Out()<<"   * want to establish connection between "
-//    	     <<"["<<trip->Number()<<"]"
-//    	     <<"("<<trip->GetFlow(1)<<", "<<trip->GetFlow(2)<<") and "
-//    	     <<"["<<anti->Number()<<"]"
-//    	     <<"("<<anti->GetFlow(1)<<", "<<anti->GetFlow(2)<<"), "
-//           <<"dist = "<<maxdist<<".\n";
+/*   msg_Out()<<"   * want to establish connection between "
+   	     <<"["<<trip->Number()<<"]"
+   	     <<"("<<trip->GetFlow(1)<<", "<<trip->GetFlow(2)<<") and "
+   	     <<"["<<anti->Number()<<"]"
+   	     <<"("<<anti->GetFlow(1)<<", "<<anti->GetFlow(2)<<"), "
+          <<"dist = "<<maxdist<<".\n";*/
     m_trips.erase(trip);
     m_antis.erase(anti);    
     m_pairs.push_back(partpair(trip,anti));
@@ -170,8 +170,8 @@ void Colour_Reconnections::ShuffleColours() {
     	     <<m_colours.size()<<" colours left.\n";*/
     if (m_trips.size()==1 &&
 	(*m_trips.begin())==(*m_antis.begin())) {
-      msg_Out()<<"Would have to save last gluon.\n"
-      	       <<(**m_trips.begin())<<"\n";
+/*      msg_Out()<<"Would have to save last gluon.\n"
+      	       <<(**m_trips.begin())<<"\n";*/
       SaveLastGluon((*m_trips.begin()));
     }
   }
@@ -260,7 +260,7 @@ Blob * Colour_Reconnections::AddReconnectionBlob() {
     partin = ppit->second;
     if (partin->GetFlow(1)==0) AddParticleToReconnectionBlob(blob,partin);
   }
-  //msg_Out()<<(*blob)<<"\n";
+//   msg_Out()<<(*blob)<<"\n";
   return blob;
 }
 
@@ -277,6 +277,7 @@ AddParticleToReconnectionBlob(Blob * blob,Particle * partin) {
     exit(1);
   }
   Particle * partout = 
+//     new Particle(partin->Number(),partin->Flav(),partin->Momentum(),partin->Info());
     new Particle(0,partin->Flav(),partin->Momentum(),partin->Info());
   partout->SetFlow(1,pcit->second.first);
   partout->SetFlow(2,pcit->second.second);

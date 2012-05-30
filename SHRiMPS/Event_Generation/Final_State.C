@@ -299,7 +299,7 @@ TryEmission(double & kt12,const bool & dir) {
     k_0[0]  = k_0.P();
     k_1[0]  = k_1.P();
     k_2[0]  = k_2.P();
-    if ( k_0[3]>k_0[0] || k_1[3]>k_1[0] || k_2[3]>k_2[0]) {
+    if ( k_0[3]>=k_0[0] || k_1[3]>=k_1[0] || k_2[3]>=k_2[0]) {
       msg_Error()<<METHOD<<": Reject emission due to inaccuracy in four-momentum\n"
                  <<"k_0 = "<<k_0<<" with y = "<<k_0.Y()<<"\n"
                  <<"k_1 = "<<k_1<<" with y = "<<k_1.Y()<<"\n"
@@ -347,7 +347,7 @@ TryEmission(double & kt12,const bool & dir) {
 	exp(-m_kdiff*sqrt(m_d2+sqr(log(Max(m_q01_2,m_Q02eff)/
 				       Max(m_q12_2,m_Q02eff)))));
     }
-    sup    = SuppressionTerm(m_q01_2,m_q12_2);
+    sup    = SuppressionTerm(m_q01_2,m_q12_2)*m_Q02eff/(m_Q02eff+kt12);
     wt    *= recombwt= 
       Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup));
     m_histomap[std::string("RecombWt")]->Insert(recombwt);

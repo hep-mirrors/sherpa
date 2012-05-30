@@ -96,7 +96,7 @@ Particle * Singlet_Sorter::FindNextStart() {
   }
   part=(*start);
   m_inlist->erase(start);
-  return (part);
+  return part;
 }
 
 Particle * Singlet_Sorter::

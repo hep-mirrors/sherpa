@@ -162,7 +162,7 @@ void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
     prob *= p_eikonal->RescatterProbability(m_b1,m_b2,y1,y2,m_rescprob,0); 
     prob *= pow(s12/Max(s12,m_smin),1.+expo);
     prob /= double(m_Nfact);
-    if (IsColourConnected((*piter),part)) prob *= 3.;
+//     if (IsColourConnected((*piter),part)) prob *= 3.;
     if (m_analyse) m_histomap["Rescatter_wt"]->Insert(m_B,prob);
     PartPair partpair;
     partpair.first  = y1<y2?part:(*piter);

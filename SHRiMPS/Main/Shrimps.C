@@ -213,6 +213,8 @@ void Shrimps::GenerateXsecs() {
     Energies.push_back(7000.);
     Energies.push_back(8000.);
     Energies.push_back(14000.);
+    Energies.push_back(55000.);
+    Energies.push_back(100000.);
     //Energies.push_back(100000.);
     std::set<double> Elastics;
     Elastics.insert(62.5);

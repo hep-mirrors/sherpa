@@ -276,10 +276,10 @@ void Beam_Remnant_Handler::Reset(const size_t & mode) {
   m_checkmom[1] = ATOOLS::Vec4D(0,0,0,0);
   p_colour->Reset();
 
-//  if (mode>0) {
-//    if (p_blob && (p_blob->NInP()>0 || p_blob->NOutP()>0)) {
-//      delete p_blob;
-//      p_blob = NULL; 
-//    }
-//  }
+/* if (mode>0) {
+   if (p_blob && (p_blob->NInP()>0 || p_blob->NOutP()>0)) {
+     delete p_blob;
+     p_blob = NULL; 
+   }
+ }*/
 }
