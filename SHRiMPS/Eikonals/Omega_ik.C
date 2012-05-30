@@ -117,16 +117,19 @@ double Omega_ik::SingletWeight(const double & b1,const double & b2,
   }
 
   double term   = m_singletwt*pow(sup*m_lambda,2-nbeam)*dabs(ommaj-ommin)/ommin;
-  double weight = 0.;
-  switch (m_absorp) {
-  case absorption::factorial: 
+  double weight = sqr(1.-(1.-exp(-term/2.))/(term/2.));
+  /*
+    double weight = 0.;
+    switch (m_absorp) {
+    case absorption::factorial: 
     weight = sqr(1.-(1.-exp(-term/2.))/(term/2.));
     break;
-  case absorption::exponential:
-  default:
+    case absorption::exponential:
+    default:
     weight = sqr(1.-exp(-term/2.));
     break;
-  }
+    }
+  */
   return weight;
 }
 
@@ -158,18 +161,21 @@ double Omega_ik::RescatterProbability(const double & b1,const double & b2,
     ommaj = (y1<y2)?m_Omegaki(b1,b2,y1):m_Omegaki(b1,b2,y2);
     ommin = (y1<y2)?m_Omegaki(b1,b2,y2):m_Omegaki(b1,b2,y1);
   }
-  double term  = pow(sup*m_lambda,2-nbeam)*dabs(ommaj-ommin)/(ommin);
-  double weight(0.);
-  switch (m_absorp) {
-  case absorption::factorial: 
+  double term   = pow(sup*m_lambda,2-nbeam)*dabs(ommaj-ommin)/(ommin);
+  double weight = 1.-exp(-term);
+  /*
+    double weight(0.);
+    switch (m_absorp) {
+    case absorption::factorial: 
     if (!ATOOLS::IsZero(term)) 
-      weight = 1.-(1.-exp(-term))/term; 
+    weight = 1.-(1.-exp(-term))/term; 
     break;
-  case absorption::exponential:
-  default:
+    case absorption::exponential:
+    default:
     weight = 1.-exp(-term);
     break;
-  }
+    }
+  */
   return weight;
 }
 
