@@ -212,9 +212,9 @@ void Hadron_Dissociation::Reshuffle(const size_t & N) {
 }
 
 void Hadron_Dissociation::DefineTransverseMomenta(Form_Factor * ff) {
-  double QT2min(0.),QT2cut(25.),E,QT2max,KT(0.),qt2,qt,phi;
+  double QT2min(0.),QT2cut(25.),E,QT2max,KL(0.),qt2,qt,phi;
   Vec4D sumvec(0.,0.,0.,0.);
-  vector<double> qts;
+  vector<double> qts, qls;
 
   m_qtvecs.clear();
   for (size_t i=0;i<m_xs.size();i++) {
@@ -222,17 +222,19 @@ void Hadron_Dissociation::DefineTransverseMomenta(Form_Factor * ff) {
     QT2max = Min(QT2cut,E/cosh(m_ycut));
     do { qt2 = ff->SelectQT2(QT2max,QT2min);
     } while (qt2>QT2max || qt2<QT2min);
-    KT     += qt = sqrt(qt2);
+    qt = sqrt(qt2);
     qts.push_back(qt);
+    qls.push_back(sqrt(E*E-qt2));
     if (m_analyse) {
       m_histomap["KT_remn_orig"]->Insert(qt);
     }
     phi     = ran->Get()*2.*M_PI;
     m_qtvecs.push_back(qt*Vec4D(0.,cos(phi),sin(phi),0.));
     sumvec += m_qtvecs.back(); 
+    KL     += m_qls.back();
   }
   for (size_t i=0;i<m_xs.size();i++) {
-    m_qtvecs[i] -= qts[i]/KT*sumvec;
+    m_qtvecs[i] -= qls[i]/KL*sumvec;
     if (m_analyse) {
       qt = m_qtvecs[i].PPerp();
       m_histomap["KT_remn_resc"]->Insert(qt);
