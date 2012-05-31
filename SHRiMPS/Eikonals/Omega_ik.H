@@ -45,6 +45,9 @@ namespace SHRIMPS {
     double                m_eta, m_prefactor;
     int                   m_test;
     double                m_diffmax;
+    double                DeltaOmega(const double & b1,const double & b2,
+				     const double & y1,const double & y2,
+				     const double & sup=1.,const int & nbeam=1);
 
   public:
     Omega_ik(Form_Factor * ff1,Form_Factor * ff2,

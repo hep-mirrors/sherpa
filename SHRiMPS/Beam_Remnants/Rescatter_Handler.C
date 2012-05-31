@@ -102,7 +102,8 @@ bool Rescatter_Handler::DealWithBlob(ATOOLS::Blob * blob) {
   if(stretch){
     Momenta_Stretcher momstretcher;
     if (!momstretcher.StretchBlob(blob)){
-      msg_Error()<<"Error in "<<METHOD<<": cannot adjust momenta to put all particles on-shell.\n";
+      msg_Error()<<"Error in "<<METHOD<<": "
+		 <<"cannot adjust momenta to put all particles on-shell.\n";
     }   
   } 
   Vec4D pos(blob->Position()/(rpa->hBar()*rpa->c()));

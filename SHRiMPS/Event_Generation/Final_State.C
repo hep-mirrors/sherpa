@@ -336,8 +336,8 @@ TryEmission(double & kt12,const bool & dir) {
 	deltay>m_Deltay) { 
       rarg = Min(mu01_2/q01.PPerp2(),q01.PPerp2()/mu01_2);
       expo = colfac*(*p_alphaS)(q01.PPerp2())*deltay/M_PI; 
-//       rarg = Min(mu01_2/q01.Abs2(),q01.Abs2()/mu01_2);
-//       expo = colfac*(*p_alphaS)(q01.Abs2())*deltay/M_PI; 
+      //rarg = Min(mu01_2/q01.Abs2(),q01.Abs2()/mu01_2);
+      //expo = colfac*(*p_alphaS)(q01.Abs2())*deltay/M_PI; 
       //expo = colfac*p_alphaS->MaxValue()*deltay/M_PI; 
       wt  *= reggewt = pow(rarg,expo);
       m_histomap[std::string("ReggeWt")]->Insert(reggewt);
@@ -371,8 +371,8 @@ TryEmission(double & kt12,const bool & dir) {
   if (MBpars.LadderWeight()==ladder_weight::Regge) {
     rarg = Min(mu12_2/q12.PPerp2(),q12.PPerp2()/mu12_2);
     expo = colfac*(*p_alphaS)(q12.PPerp2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
-//     rarg = Min(mu12_2/q12.Abs2(),q12.Abs2()/mu12_2);
-//     expo = colfac*(*p_alphaS)(q12.Abs2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
+    //rarg = Min(mu12_2/q12.Abs2(),q12.Abs2()/mu12_2);
+    //expo = colfac*(*p_alphaS)(q12.Abs2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
     m_lastwt  = pow(rarg,expo);
     //m_lastwt *= kmrwt = q12.PPerp2()/m_q12_2;
     //m_histomap[std::string("KMRWt")]->Insert(kmrwt);
@@ -507,7 +507,7 @@ bool Final_State::FixPropColours(const LadderMap::iterator & split,
         
   std::pair<colour_type::code,colour_type::code> cols;
 
-  tot *= ran->Get();
+  tot *= (0.999999999999*ran->Get());
   tot -= wt18;
   if (tot<0.) {
     cols.first  = colour_type::singlet;

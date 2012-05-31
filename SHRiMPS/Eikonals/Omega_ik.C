@@ -105,31 +105,8 @@ EmissionWeight(const double & b1,const double & b2,const double & y,
 double Omega_ik::SingletWeight(const double & b1,const double & b2,
 			       const double & y1,const double & y2,
 			       const double & sup,const int & nbeam) {
-  if ((y1<-m_Y && y2<-m_Y) || (y1>m_Y && y2>m_Y)) return 0.;
-  double meany((y1+y2)/2.), ommaj, ommin;
-  if (meany<0.) {
-    ommaj = (y1<y2)?m_Omegaik(b1,b2,y2):m_Omegaik(b1,b2,y1);
-    ommin = (y1<y2)?m_Omegaik(b1,b2,y1):m_Omegaik(b1,b2,y2);
-  }
-  else {
-    ommaj = (y1<y2)?m_Omegaki(b1,b2,y1):m_Omegaki(b1,b2,y2);
-    ommin = (y1<y2)?m_Omegaki(b1,b2,y2):m_Omegaki(b1,b2,y1);
-  }
-
-  double term   = m_singletwt*pow(sup*m_lambda,2-nbeam)*dabs(ommaj-ommin)/ommin;
-  double weight = sqr(1.-(1.-exp(-term/2.))/(term/2.));
-  /*
-    double weight = 0.;
-    switch (m_absorp) {
-    case absorption::factorial: 
-    weight = sqr(1.-(1.-exp(-term/2.))/(term/2.));
-    break;
-    case absorption::exponential:
-    default:
-    weight = sqr(1.-exp(-term/2.));
-    break;
-    }
-  */
+  double term   =  DeltaOmega(b1,b2,y1,y2,sup,nbeam); 
+  double weight = sqr(1.-exp(-term/2.));
   return weight;
 }
 
@@ -139,18 +116,17 @@ double Omega_ik::OctetWeight(const double & b1,const double & b2,
   return (1.-SingletWeight(b1,b2,y1,y2,sup,nbeam));
 }
 
-double Omega_ik::Sum(const double & b1,const double & b2,const double & y){
-  if (y<-m_originalY || y>m_originalY) return 0.;
-  if (y<-m_Y || y>m_Y) return 1.;
-  double term1 = m_Omegaik(b1,b2,y)/p_ff1->FourierTransform(b1);
-  double term2 = m_Omegaki(b1,b2,y)/p_ff2->FourierTransform(b2);
-
-  return term1+term2;
-}
-
 double Omega_ik::RescatterProbability(const double & b1,const double & b2,
 				      const double & y1,const double & y2,
 				      const double & sup,const int & nbeam) {
+  double term   = DeltaOmega(b1,b2,y1,y2,sup,nbeam); 
+  double weight = 1.-exp(-term);
+  return weight;
+}
+
+double Omega_ik::DeltaOmega(const double & b1,const double & b2,
+			    const double & y1,const double & y2,
+			    const double & sup,const int & nbeam) {
   if (dabs(y1)>m_originalY || dabs(y2)>m_originalY) return 0.;
   double meany((y1+y2)/2.), ommaj, ommin;
   if (meany<0.) {
@@ -161,24 +137,17 @@ double Omega_ik::RescatterProbability(const double & b1,const double & b2,
     ommaj = (y1<y2)?m_Omegaki(b1,b2,y1):m_Omegaki(b1,b2,y2);
     ommin = (y1<y2)?m_Omegaki(b1,b2,y2):m_Omegaki(b1,b2,y1);
   }
-  double term   = pow(sup*m_lambda,2-nbeam)*dabs(ommaj-ommin)/(ommin);
-  double weight = 1.-exp(-term);
-  /*
-    double weight(0.);
-    switch (m_absorp) {
-    case absorption::factorial: 
-    if (!ATOOLS::IsZero(term)) 
-    weight = 1.-(1.-exp(-term))/term; 
-    break;
-    case absorption::exponential:
-    default:
-    weight = 1.-exp(-term);
-    break;
-    }
-  */
-  return weight;
+  return m_singletwt*pow(sup*m_lambda,2-nbeam)*dabs(ommaj-ommin)/(ommin);
 }
 
+double Omega_ik::Sum(const double & b1,const double & b2,const double & y){
+  if (y<-m_originalY || y>m_originalY) return 0.;
+  if (y<-m_Y || y>m_Y) return 1.;
+  double term1 = m_Omegaik(b1,b2,y)/p_ff1->FourierTransform(b1);
+  double term2 = m_Omegaki(b1,b2,y)/p_ff2->FourierTransform(b2);
+
+  return term1+term2;
+}
 
 void Omega_ik::PrepareQT(const double & b1,const double & b2) {  
   double D1,D2,invD,y;
