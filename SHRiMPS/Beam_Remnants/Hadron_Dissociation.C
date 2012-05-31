@@ -231,7 +231,7 @@ void Hadron_Dissociation::DefineTransverseMomenta(Form_Factor * ff) {
     phi     = ran->Get()*2.*M_PI;
     m_qtvecs.push_back(qt*Vec4D(0.,cos(phi),sin(phi),0.));
     sumvec += m_qtvecs.back(); 
-    KL     += m_qls.back();
+    KL     += qls.back();
   }
   for (size_t i=0;i<m_xs.size();i++) {
     m_qtvecs[i] -= qls[i]/KL*sumvec;
