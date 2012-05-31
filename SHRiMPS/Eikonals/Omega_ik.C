@@ -137,7 +137,7 @@ double Omega_ik::DeltaOmega(const double & b1,const double & b2,
     ommaj = (y1<y2)?m_Omegaki(b1,b2,y1):m_Omegaki(b1,b2,y2);
     ommin = (y1<y2)?m_Omegaki(b1,b2,y2):m_Omegaki(b1,b2,y1);
   }
-  return m_singletwt*pow(sup*m_lambda,2-nbeam)*dabs(ommaj-ommin)/(ommin);
+  return pow(sup*m_singletwt*m_lambda,2-nbeam)*dabs(ommaj-ommin)/(ommin);
 }
 
 double Omega_ik::Sum(const double & b1,const double & b2,const double & y){

@@ -142,7 +142,8 @@ bool Rescatter_Handler::DealWithBlob(ATOOLS::Blob * blob) {
 
 void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
   if (!m_rescatter) return;
-  double y1(part->Momentum().Y()),y2,s12,prob;
+  double y1(part->Momentum().Y()),kt12(part->Momentum().PPerp2()),y2,kt22;
+  double sup,s12,prob;
   int nbeam(dabs(y1)>m_Ylimit);
   double expo(p_eikonal->EffectiveIntercept(m_b1,m_b2));
   bool allowed;
@@ -161,7 +162,9 @@ void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
     }
     if (prob<0.00000001 || !CanRescatter((*piter),part)) continue;
     s12   = Max(0.,((*piter)->Momentum()+part->Momentum()).Abs2());
-    prob *= p_eikonal->RescatterProbability(m_b1,m_b2,y1,y2,m_rescprob,
+    kt22  = (*piter)->Momentum().PPerp2();
+    sup   = m_rescprob * SuppressionTerm(kt12,kt22);
+      prob *= p_eikonal->RescatterProbability(m_b1,m_b2,y1,y2,sup,
 					    nbeam+int(dabs(y2)>m_Ylimit)); 
     prob *= pow(s12/Max(s12,m_smin),1.+expo);
     prob /= double(m_Nfact);
@@ -343,4 +346,9 @@ void Rescatter_Handler::
 FillInitialStateIntoBlob(ATOOLS::Blob * blob,Ladder * ladder) {
   blob->AddToInParticles(ladder->GetIn1()->GetParticle());
   blob->AddToInParticles(ladder->GetIn2()->GetParticle());
+}
+
+double Rescatter_Handler::
+SuppressionTerm(const double & q02,const double & q12) {
+  return sqrt(p_alphaS->Weight(q02,true)*p_alphaS->Weight(q12,true));
 }

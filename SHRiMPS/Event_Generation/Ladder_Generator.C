@@ -240,6 +240,8 @@ double Ladder_Generator::Weight(const double & isweight) {
     double that(dabs(p_ladder->That())),shat(p_ladder->Shat());
     double uhat(dabs(p_ladder->Uhat())),Yhat(p_ladder->Yhat());
     double mu2(sqrt(4.*p_ladder->Mu2()*smin));
+    //double slad((p_ladder->GetIn1()->m_mom+p_ladder->GetIn2()->m_mom).Abs2());
+    //double mu2 = p_ladder->Mu2()*pow(shat/that,-0.225);
     Flavour in1,in2,out1,out2;
     if (!p_ladder->ReconstructMEFlavours(in1,in2,out1,out2)) return 0.;
     double pt2=4.*that*uhat*shat/(shat*shat+uhat*uhat+that*that);

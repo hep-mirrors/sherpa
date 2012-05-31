@@ -40,6 +40,7 @@ namespace SHRIMPS {
 		      const ATOOLS::Particle * lpart2) const;
     bool IsColourConnected(const ATOOLS::Particle * lpart1,
 			   const ATOOLS::Particle * lpart2) const;
+    double SuppressionTerm(const double & q02,const double & q12);
   public:
     Rescatter_Handler() {}
     Rescatter_Handler(Beam_Remnant_Handler * beams);
