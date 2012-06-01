@@ -12,7 +12,6 @@ namespace MCFM {
     int                       m_pID;
     double                  * p_p, *p_msqv;
     MODEL::Running_AlphaS   * p_as;
-    MODEL::Running_AlphaQED * p_aem;
     double                    m_sin2_thetaW;
     double                    m_MW;
     double                    m_GW;
@@ -21,14 +20,12 @@ namespace MCFM {
     double                    m_CF;
     double                    m_NC;
     double                    m_aqed;
-    Complex                   m_Vud;
-    Complex                   m_Vus;
-    Complex                   m_Vcd;
-    Complex                   m_Vcs;
-    Complex                   m_Vub;
-    Complex                   m_Vcb;
     int                       m_lepton_order;
-  
+    double                    m_kappat_gamma;
+    double                    m_lambdat_gamma;
+    double                    m_unitarization_scale;
+    double                    m_unitarization_n;
+   
   public:
     MCFM_qqb_wgam(int & pID, bool & swapped,const PHASIC::Process_Info& pi,
 		  const Flavour_Vector& flavs, int lepton_order);
@@ -39,7 +36,7 @@ namespace MCFM {
 		     Complex * zb, int hgamma);
     Complex agamvirt(int p1, int p2, int p3, int p4, int p5, Complex * za,
 		     Complex * zb, int hgamma);
-    void DoMCFM(const Vec4D_Vector &p);
+    void DoMCFM();
   };
 
 }
@@ -56,8 +53,6 @@ extern "C" {
 		const int & i3, const int & i4,
 		const int & i5, Complex * za,
 		Complex * zb);
-  void qqb_wgam_v_(double * p, double * msqv);
-  void qqb_wgam_(double * p, double * msqv);
 }
 
 #include "MODEL/Main/Model_Base.H"
@@ -75,7 +70,6 @@ MCFM_qqb_wgam::MCFM_qqb_wgam(int & pID, bool & swapped,
 			     int lepton_order) :
   Virtual_ME2_Base(pi,flavs), m_pID(pID),
   p_as((Running_AlphaS *)s_model->GetScalarFunction(string("alpha_S"))),
-  p_aem((Running_AlphaQED *)s_model->GetScalarFunction(string("alpha_QED"))),
   m_sin2_thetaW(s_model->ScalarConstant(string("sin2_thetaW"))),
   m_MW(Flavour(kf_Wplus).Mass()),
   m_GW(Flavour(kf_Wplus).Width()),
@@ -84,13 +78,11 @@ MCFM_qqb_wgam::MCFM_qqb_wgam(int & pID, bool & swapped,
   m_CF(CF),
   m_NC(NC),
   m_aqed(s_model->ScalarFunction(string("alpha_QED"))),
-  m_Vud(s_model->ComplexMatrixElement("CKM",0,0)),
-  m_Vus(s_model->ComplexMatrixElement("CKM",0,1)),
-  m_Vcd(s_model->ComplexMatrixElement("CKM",1,0)),
-  m_Vcs(s_model->ComplexMatrixElement("CKM",1,1)),
-  m_Vub(s_model->ComplexMatrixElement("CKM",0,2)),
-  m_Vcb(s_model->ComplexMatrixElement("CKM",1,2)),
-  m_lepton_order(lepton_order)
+  m_lepton_order(lepton_order),
+  m_kappat_gamma(0),
+  m_lambdat_gamma(0),
+  m_unitarization_scale(0),
+  m_unitarization_n(0)
 {
   rpa->gen.AddCitation
     (1,"The NLO matrix elements have been taken from MCFM \\cite{}.");
@@ -119,17 +111,21 @@ Complex MCFM_qqb_wgam::agamtree(int p1, int p2, int p3, int p4, int p5,
   int p4mx = (p4-1)*MCFM_NMX-1;
   int p5mx = (p5-1)*MCFM_NMX-1;
   prp34=sprods_.s[p3+p4mx]/Complex((sprods_.s[p3+p4mx]-pow(m_MW,2)),m_MW*m_GW);
-  //std::cout << "prp34 SHERPA: " << prp34 << std::endl;
-  //double a[11][11];
-  //qqb_wgam_(p_p,*a);
-  // apply a dipole form factor to anomalous couplings, with power two
-  //anomcoup_.tevscale = 2.;
-  //anomcoup_.delk_g = 0.2;
-  //anomcoup_.lambda_g = 0.3;
-  xfac=1.0/pow(1.0+sprods_.s[p1+p2mx]/pow(anomcoup_.tevscale*1000.,2),2);
+  if (zerowidth_.zerowidth){
+    m_kappat_gamma=s_model->ScalarConstant(string("kappa_gamma"));
+    m_lambdat_gamma=s_model->ScalarConstant(string("lambda_gamma"));
+    m_unitarization_scale=s_model->ScalarConstant(string("UNITARIZATION_SCALE"));
+    m_unitarization_n=s_model->ScalarConstant(string("UNITARIZATION_N"));
+    anomcoup_.tevscale = m_unitarization_scale;
+    anomcoup_.delk_g = m_kappat_gamma;
+    anomcoup_.lambda_g = m_lambdat_gamma;
+  }
+  xfac=1.0/pow(1.0+sprods_.s[p1+p2mx]/
+	       pow(anomcoup_.tevscale*1000.,2),m_unitarization_n)
+    *4*M_PI*m_aqed/ewcouple_.esq;
   anomcoup_.xdelk_g=xfac*anomcoup_.delk_g;
   anomcoup_.xlambda_g=xfac*anomcoup_.lambda_g;
-    
+     
   if (zerowidth_.zerowidth){
     // zerowidth: no final state radiation, so we can set prp12 to zero
     prp12=Complex(0.,0.);}
@@ -140,8 +136,7 @@ Complex MCFM_qqb_wgam::agamtree(int p1, int p2, int p3, int p4, int p5,
   //  c.f. Eqs.(4.4),(4.5) of hep-ph/9803250 (multiplied by -i)
   //       for the terms proportional to prp34
   if (hgamma == -1){  
-    //std::cout << "hel -1" << std::endl;
-    Agamtree=-pow(zb[p2+p4mx],2)
+     Agamtree=-pow(zb[p2+p4mx],2)
       /(sprods_.s[p1+p2mx]-sprods_.s[p3+p4mx]) 
       *(m_Qu*(za[p2+p5mx]/(zb[p4+p3mx]*zb[p1+p5mx])*prp34
 	      -za[p4+p5mx]/(zb[p1+p2mx]*zb[p3+p5mx])*prp12)
@@ -149,15 +144,13 @@ Complex MCFM_qqb_wgam::agamtree(int p1, int p2, int p3, int p4, int p5,
 	     +za[p4+p5mx]/(zb[p1+p2mx]*zb[p3+p5mx])*prp12)); 
    }
   else if (hgamma == +1){
-    //std::cout << "hel +1" << std::endl;
-    Agamtree=-pow(za[p1+p3mx],2)
+     Agamtree=-pow(za[p1+p3mx],2)
       /(sprods_.s[p1+p2mx]-sprods_.s[p3+p4mx]) 
       *(m_Qd*(zb[p1+p5mx]/(za[p3+p4mx]*za[p2+p5mx])*prp34
 	      +zb[p4+p5mx]/(za[p2+p1mx]*za[p3+p5mx])*prp12)
 	+m_Qu*(zb[p2+p5mx]/(za[p3+p4mx]*za[p1+p5mx])*prp34
 	       -zb[p4+p5mx]/(za[p2+p1mx]*za[p3+p5mx])*prp12));  
   }
-
   // additional anomalous coupling component, Eqs. (7)-(9) of hep-ph/0002138
   if  (hgamma == -1){
     Agamtree=Agamtree+prp34*(m_Qu-m_Qd)*za[p5+p3mx]/
@@ -173,7 +166,6 @@ Complex MCFM_qqb_wgam::agamtree(int p1, int p2, int p3, int p4, int p5,
 		      *zb[p2+p5mx]*zb[p3+p4mx]
 		      +anomcoup_.xlambda_g*za[p1+p5mx]*zb[p5+p2mx]*zb[p4+p5mx]);
   }
-
   return Agamtree;
 }
 
@@ -200,94 +192,35 @@ Complex MCFM_qqb_wgam::agamvirt(int p1, int p2, int p3, int p4, int p5,
   return Agamvirt;
 } 
 
-void MCFM_qqb_wgam::DoMCFM(const Vec4D_Vector &p){
+void MCFM_qqb_wgam::DoMCFM(){
 
   double fac;
   double qbq;
   double qqb;
   // factor in the colour factors plus the symmetrisation
-  spinoru_(p.size(),p_p,zprods_.za,zprods_.zb); // set inner products
-                                                // za and zb.
+  spinoru_(5,p_p,zprods_.za,zprods_.zb); // set inner products
+                                         // za and zb.
   fac=m_CF*2.*m_NC*pow(4*M_PI*m_aqed/m_sin2_thetaW,2)*4*M_PI*m_aqed;
      
   if (nwz_.nwz == -1){
-    // ie ub-d 
-    // qbq=fac*2.0*real(conj(agamtree(1,2,3,4,5,zprods_.za,zprods_.zb,+1))
-    //		     *agamvirt(1,2,3,4,5,zprods_.za,zprods_.zb,+1))
-    //+fac*2.0*real(conj(agamtree(1,2,3,4,5,zprods_.za,zprods_.zb,-1))
-    //		    *agamvirt(1,2,3,4,5,zprods_.za,zprods_.zb,-1));
-    qbq=fac*2.0*real(conj(agamtree(1,2,3,4,5,zprods_.za,zprods_.zb,+1))
-    		     *agamvirt(1,2,3,4,5,zprods_.za,zprods_.zb,+1))
-      +fac*2.0*real(conj(agamtree(1,2,3,4,5,zprods_.za,zprods_.zb,-1))
-    		    *agamvirt(1,2,3,4,5,zprods_.za,zprods_.zb,-1));
-
     // ie d-ub
-    //qqb=fac*2.0*real(conj(agamtree(2,1,3,4,5,zprods_.za,zprods_.zb,+1))
-    //		     *agamvirt(2,1,3,4,5,zprods_.za,zprods_.zb,+1))
-    //+fac*2.0*real(conj(agamtree(2,1,3,4,5,zprods_.za,zprods_.zb,-1))
-    //		    *agamvirt(2,1,3,4,5,zprods_.za,zprods_.zb,-1));
     qqb=fac*2.0*real(conj(agamtree(2,1,3,4,5,zprods_.za,zprods_.zb,+1))
     		     *agamvirt(2,1,3,4,5,zprods_.za,zprods_.zb,+1))
       +fac*2.0*real(conj(agamtree(2,1,3,4,5,zprods_.za,zprods_.zb,-1))
     		    *agamvirt(2,1,3,4,5,zprods_.za,zprods_.zb,-1));
-    /*
-   double cross_sec = 
-      (abs(pow(agamtree(2,1,3,4,5,zprods_.za,zprods_.zb,+1),2))
-       +abs(pow(agamtree(2,1,3,4,5,zprods_.za,zprods_.zb,-1),2)))*
-      2*3*pow(4*M_PI*m_aqed/m_sin2_thetaW,2)*4.*M_PI*m_aqed;
-    std::cout << "agamtree:  " << 
-      cross_sec << std::endl;
-    double b[11][11];
-    qqb_wgam_(p_p,*b);
-    double MCFM_xsec = b[MCFM_NF-1][MCFM_NF+2];
-    std::cout << "MCFM_xsec:  " << MCFM_xsec << std::endl;
-    */
   }
 
   else if (nwz_.nwz == +1){ 
-    // ie db-u
-    qbq=fac*2.0*real(conj(agamtree(2,1,4,3,5,zprods_.zb,zprods_.za,+1))
-		     *agamvirt(2,1,4,3,5,zprods_.zb,zprods_.za,+1))
-      +fac*2.0*real(conj(agamtree(2,1,4,3,5,zprods_.zb,zprods_.za,-1))
-		    *agamvirt(2,1,4,3,5,zprods_.zb,zprods_.za,-1));
-  
     // ie u-db
     qqb=fac*2.0*real(conj(agamtree(1,2,4,3,5,zprods_.zb,zprods_.za,+1))
 		     *agamvirt(1,2,4,3,5,zprods_.zb,zprods_.za,+1))
       +fac*2.0*real(conj(agamtree(1,2,4,3,5,zprods_.zb,zprods_.za,-1))
 		    *agamvirt(1,2,4,3,5,zprods_.zb,zprods_.za,-1));
-    /*
-    double cross_sec = 
-      (abs(pow(agamtree(1,2,4,3,5,zprods_.zb,zprods_.za,+1),2))
-       +abs(pow(agamtree(1,2,4,3,5,zprods_.zb,zprods_.za,-1),2)))*
-      2*3*pow(4*M_PI*m_aqed/m_sin2_thetaW,2)*4.*M_PI*m_aqed;
-    std::cout << "agamtree:  " << 
-      cross_sec << std::endl;
-    double b[11][11];
-    qqb_wgam_(p_p,*b);
-    double MCFM_xsec = b[MCFM_NF+2][MCFM_NF-1];
-    std::cout << "MCFM_xsec:  " << MCFM_xsec << std::endl;
-    */
   }
   int k,l;
 
   double Vsq[2*MCFM_NF+1][2*MCFM_NF+1]={ 0 }; // set matrix with elements 
                                               // of CKM matrix squared.
-  /*
-  Vsq[MCFM_NF+2][MCFM_NF-1]=real(pow(m_Vud,2));
-  Vsq[MCFM_NF+2][MCFM_NF-3]=real(pow(m_Vus,2));
-  Vsq[MCFM_NF+2][MCFM_NF-5]=real(pow(m_Vub,2));
-  Vsq[MCFM_NF+4][MCFM_NF-1]=real(pow(m_Vcd,2));
-  Vsq[MCFM_NF+4][MCFM_NF-3]=real(pow(m_Vcs,2));
-  Vsq[MCFM_NF+4][MCFM_NF-5]=real(pow(m_Vcb,2));
-  
-  Vsq[MCFM_NF+1][MCFM_NF-2]=real(pow(m_Vud,2));
-  Vsq[MCFM_NF+3][MCFM_NF-2]=real(pow(m_Vus,2));
-  Vsq[MCFM_NF+5][MCFM_NF-2]=real(pow(m_Vub,2));
-  Vsq[MCFM_NF+1][MCFM_NF-4]=real(pow(m_Vcd,2));
-  Vsq[MCFM_NF+3][MCFM_NF-4]=real(pow(m_Vcs,2));
-  Vsq[MCFM_NF+5][MCFM_NF-4]=real(pow(m_Vcb,2));*/
-  
   Vsq[MCFM_NF+2][MCFM_NF-1]=pow(cabib_.Vud,2);
   Vsq[MCFM_NF+2][MCFM_NF-3]=pow(cabib_.Vus,2);
   Vsq[MCFM_NF+2][MCFM_NF-5]=pow(cabib_.Vub,2);
@@ -306,12 +239,7 @@ void MCFM_qqb_wgam::DoMCFM(const Vec4D_Vector &p){
     for (l=0;l<=2*MCFM_NF;l++){
       // set msqv=0 to initalize
       p_msqv[k*(2*MCFM_NF+1) + l]=0.;
-      if ((k > MCFM_NF) and (l < MCFM_NF)){
-	p_msqv[(k*(2*MCFM_NF+1))+l]=Vsq[k][l]*qqb;
-      }
-      else if ((k < MCFM_NF) and (l > MCFM_NF)) {
-	p_msqv[(k*(2*MCFM_NF+1))+l]=Vsq[l][k]*qbq;
-      }
+      p_msqv[(k*(2*MCFM_NF+1))+l]=Vsq[k][l]*qqb;
     }
   }
 }
@@ -319,18 +247,15 @@ void MCFM_qqb_wgam::DoMCFM(const Vec4D_Vector &p){
 void MCFM_qqb_wgam::Calc(const Vec4D_Vector &p)
 {
   for (int n(0);n<2;++n)           GetMom(p_p,n,-p[n]);
-  //for (size_t n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
   if (!(m_lepton_order)){
     GetMom(p_p,2,p[3]);
     GetMom(p_p,3,p[4]);
     GetMom(p_p,4,p[2]);
   }
-  else if (m_lepton_order==1){
+  else{
     for (size_t n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
   }
   // All momenta outgoing
-  //std::cout << m_flavs[0] << " " << m_flavs[1] << " " << m_flavs[2]
-  //	    << " " << m_flavs[3] << std::endl;
   long int i(m_flavs[0]), j(m_flavs[1]); // incoming partons
   if (i==21) { i=0; } // correct for gluons
   if (j==21) { j=0; }
@@ -340,15 +265,15 @@ void MCFM_qqb_wgam::Calc(const Vec4D_Vector &p)
   i+=MCFM_NF; j+=MCFM_NF; // so the index runs from 0 over the array
 
   epinv_.epinv=epinv2_.epinv2=0.0;// set single and double poles to zero
-  DoMCFM(p);
+  DoMCFM();
   double res(p_msqv[(i*(2*MCFM_NF+1))+j]);
 
   epinv_.epinv=1.0; // set single poles to one 
-  DoMCFM(p);
+  DoMCFM();
   double res1(p_msqv[(i*(2*MCFM_NF+1))+j]);
 
   epinv2_.epinv2=1.0; // set double poles to one
-  DoMCFM(p); 
+  DoMCFM(); 
   double res2(p_msqv[(i*(2*MCFM_NF+1))+j]);
 
   // get poles
@@ -367,15 +292,14 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_qqb_wgam_Getter,"MCFM_qqb_wgam")
 Virtual_ME2_Base *MCFM_qqb_wgam_Getter::operator()(const Process_Info &pi) const
 {
-  std::cout << "---My Getter---" << std::endl;
+  std::cout << "My Getter" << std::endl;
   DEBUG_FUNC("");
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
-  if (MODEL::s_model->Name()!=std::string("SM"))        return NULL;
+  if ((MODEL::s_model->Name()!=std::string("SM")) &&
+      (MODEL::s_model->Name()!=std::string("SM+AGC")))  return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     Flavour_Vector fl(pi.ExtractFlavours());
-    //std::cout << "fl.size()  " << fl.size() << std::endl;
-    // two incoming strongly interacting particles.
     if (!fl[0].Strong() || !fl[1].Strong())             return NULL;
     if (fl.size()!=5)                                   return NULL;
     // check for fully leptonic FS
@@ -396,12 +320,14 @@ Virtual_ME2_Base *MCFM_qqb_wgam_Getter::operator()(const Process_Info &pi) const
       ATOOLS::Flavour fl1(pi.m_fi.m_ps[0].m_fl[0]);
       ATOOLS::Flavour fl2(pi.m_fi.m_ps[1].m_fl[0]);
       if (fl[3].IsLepton() && fl[4]==fl[3].Bar()) {
-	if (MODEL::s_model->Name()!=std::string("SM")) {
+	if (MODEL::s_model->Name()!=std::string("SM")&&
+	    MODEL::s_model->Name()!=std::string("SM+AGC")) {
 	  msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
 		     <<"   Try to initialise process qqb->Vgamma in MCFM."
 		     <<std::endl
 		     <<"   Inconsistent setting with Sherpa: "<<std::endl
-		     <<"model = "<<MODEL::s_model->Name()<<"(should be 'SM')."
+		     <<"model = "<<MODEL::s_model->Name()<<
+	    "(should be 'SM'or 'SM+AGC')."
 		     <<std::endl<<"   Will exit the run."<<std::endl;
 	  exit(1);
 	  return NULL;
@@ -412,8 +338,8 @@ Virtual_ME2_Base *MCFM_qqb_wgam_Getter::operator()(const Process_Info &pi) const
       // W + gamma final state
       if ((fl[2].IsLepton() && fl[3].IsLepton())
 	  || (fl[3].IsLepton() && fl[4].IsLepton())) {
-	//std::cout << "Check for +/-" << std::endl;  
-	if (MODEL::s_model->Name()!=std::string("SM")) {
+	if (MODEL::s_model->Name()!=std::string("SM") &&
+	    MODEL::s_model->Name()!=std::string("SM+AGC")) {
 	  msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
 		     <<"   Try to initialise process qqb->Vgamma in MCFM."
 		     <<std::endl
@@ -423,22 +349,21 @@ Virtual_ME2_Base *MCFM_qqb_wgam_Getter::operator()(const Process_Info &pi) const
 	  exit(1);
 	  return NULL;
 	}
-	//std::cout << fl[2].Kfcode() << " " << fl[3].Kfcode() <<
-	//  " " << fl[4].Kfcode() << std::endl;
 	if ((fl[2].IsUptype() && fl[3].IsDowntype()) ||
 	    (fl[4].IsDowntype() && fl[3].IsUptype())){
 	  if (fl[2].IsUptype()) {
 	    lepton_order=1;
 	    zerowidth_.zerowidth=true;
 	  }
-	  //std::cout << "have a process..." << std::endl;
 	  pID = 290; // W+ + gamma
-	  zerowidth_.zerowidth=false;
+	  if (MODEL::s_model->Name()=="SM") zerowidth_.zerowidth=false;
+	  else if (MODEL::s_model->Name()=="SM+AGC") zerowidth_.zerowidth=true;
 	  swapped=true;
 	}
 	else if (fl[3].IsDowntype() && fl[4].IsUptype()) {
 	  pID = 295; // W- + gamma
-	  zerowidth_.zerowidth=false;
+	  if (MODEL::s_model->Name()=="SM") zerowidth_.zerowidth=false;
+	  else if (MODEL::s_model->Name()=="SM+AGC") zerowidth_.zerowidth=true;
 	  swapped=true;
 	}
       } 
