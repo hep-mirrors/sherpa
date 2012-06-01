@@ -93,6 +93,7 @@ PDF_Base *MRST99_Getter::operator()
   int mode=args.p_read->GetValue<int>("PDF_SET_VERSION",1);
   int ibeam=args.m_ibeam;
   mode=args.p_read->GetValue<int>("PDF_SET_VERSION_"+ToString(ibeam+1),mode);
+  rpa->gen.SetPDFMember(ibeam,mode);
   return new PDF_MRST99(args.m_bunch,mode);
 }
 

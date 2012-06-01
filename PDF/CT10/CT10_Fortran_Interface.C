@@ -170,6 +170,7 @@ PDF_Base *CT10_Getter::operator()
   int member=args.p_read->GetValue<int>("PDF_SET_VERSION",0);
   int ibeam=args.m_ibeam;
   member=args.p_read->GetValue<int>("PDF_SET_VERSION_"+ToString(ibeam+1),member);
+  rpa->gen.SetPDFMember(ibeam,member);
   return new CT10_Fortran_Interface(args.m_bunch,m_key,member);
 }
 

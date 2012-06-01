@@ -569,6 +569,7 @@ bool Initialization_Handler::InitializeThePDFs()
       }
       pdfbase = PDF_Base::PDF_Getter_Function::GetObject
 	(set,PDF_Arguments(m_bunch_particles[j],&dataread, j));
+      rpa->gen.SetPDF(j,set);
       if (m_bunch_particles[j].IsHadron() && pdfbase==NULL)
 	THROW(critical_error,"PDF '"+set+"' does not exist in any of the loaded"
               +" libraries for "+ToString(m_bunch_particles[j])+" bunch.");

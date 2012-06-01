@@ -112,6 +112,8 @@ Run_Parameter::Run_Parameter()
   gen.m_cutscheme = 0;
   gen.m_ecms      = gen.m_accu        = 0.;
   gen.m_beam1     = gen.m_beam2      = Flavour(kf_none);
+  gen.m_pdfset[0] = gen.m_pdfset[1] = std::string("");
+  gen.m_pdfmember[0] = gen.m_pdfmember[1] = 0;
   gen.m_ngenevents = 0;
   gen.m_batchmode = 1;
   gen.SetTimeOut(3600);
