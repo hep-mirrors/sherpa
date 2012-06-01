@@ -126,7 +126,7 @@ some relevance when running SHERPA on a batch system. Since in many cases jobs a
 terminated, this allows to interrupt a run, to store all relevant information and to restart
 it without any loss. This is particularly useful when carrying out long integrations.
 Alternatively, setting the TIMEOUT variable to -1, which is the default setting, translates into
-having no run time limitation at all.
+having no run time limitation at all. The unit is seconds.
 
 @node BATCH_MODE
 @subsection BATCH_MODE
@@ -175,6 +175,8 @@ C++ source code, cf. @ref{SHERPA_CPP_PATH}.
 @cindex SHERPA_OUTPUT
 @cindex HEPMC2_GENEVENT_OUTPUT
 @cindex HEPEVT_OUTPUT
+@cindex LHEF_OUTPUT
+@cindex ROOTNTUPLE_OUTPUT
 @cindex FILE_SIZE
 @cindex EVT_FILE_PATH
 @cindex OUTPUT_PRECISION
@@ -201,6 +203,14 @@ outgoing particles are stored. Intermediate and decayed particles are not
 listed.
 @item HEPEVT_OUTPUT=<filename>
 Filename for output in HepEvt format.
+@item LHEF_OUTPUT=<filename>
+Filename for output in Les Houches Event File format. This output format is 
+intended for output of matrix element configurations only. Since the 
+format requires PDF information to be written out in the outdated 
+PDFLIB/LHAGLUE enumeration format this is only available automatically if 
+LHAPDF is used, otherwise the indetification numbers have to be given 
+explicitly via @code{LHEF_PDF_NUMBER} (@code{LHEF_PDF_NUMBER_1} and 
+@code{LHEF_PDF_NUMBER_2} if both beams carry different structure functions).
 @item ROOTNTUPLE_OUTPUT=<filename>
 Filename for output in ROOT ntuple format for NLO event generation. 
 For details on ntuple format, see @ref{Structure of ROOT NTuple Output}.

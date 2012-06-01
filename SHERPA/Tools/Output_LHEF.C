@@ -8,6 +8,10 @@
 #include <stdio.h>
 #include <cassert>
 
+#ifdef USING__LHAPDF
+#include "LHAPDF/LHAPDF.h"
+#endif
+
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
@@ -63,8 +67,15 @@ void Output_LHEF::Header()
   int NPRUP = 1;
   int PDFGUP1 = 0;
   int PDFGUP2 = 0;
-  int PDFSUP1 =10041;
-  int PDFSUP2 =10041;
+  int defnum  = dr.GetValue<int>("LHEF_PDF_NUMBER",10800); //ct10
+  int PDFSUP1 = dr.GetValue<int>("LHEF_PDF_NUMBER_1",defnum);
+  int PDFSUP2 = dr.GetValue<int>("LHEF_PDF_NUMBER_2",defnum);
+#ifdef USING__LHAPDF
+  if (dr.GetValue<std::string>("PDF_LIBRARY","")==std::string("LHAPDFSherpa")) {
+    PDFSUP1 = LHAPDF::getPDFSetInfo(rpa->gen.PDF(0),rpa->gen.PDFMember(0)).id;
+    PDFSUP2 = LHAPDF::getPDFSetInfo(rpa->gen.PDF(1),rpa->gen.PDFMember(1)).id;
+  }
+#endif
 
   m_outstream<<std::setprecision(10);
   m_outstream<<std::setw(6)<<IDBMUP1<<" "
