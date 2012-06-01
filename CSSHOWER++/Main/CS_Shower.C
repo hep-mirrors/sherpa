@@ -268,7 +268,7 @@ void CS_Shower::EstablishRelations(Parton * parton,Cluster_Leg * leg,
   /*
     msg_Out()<<"   "<<no<<" spectators for "
     <<"["<<leg->Col().m_i<<", "<<leg->Col().m_j<<"]";
-    for (std::set<Cluster_Leg *>::iterator clit=leg->GetSpectators().begin();
+    for (std::list<Cluster_Leg *>::iterator clit=leg->GetSpectators().begin();
     clit!=leg->GetSpectators().end();clit++) {
     msg_Out()<<" --> ["<<(*clit)->Col().m_i<<", "<<(*clit)->Col().m_j<<"]";
     }
@@ -277,7 +277,7 @@ void CS_Shower::EstablishRelations(Parton * parton,Cluster_Leg * leg,
 
   size_t col1(parton->GetFlow(1)),col2(parton->GetFlow(2));
   bool connect;
-  for (std::set<Cluster_Leg *>::iterator clit=leg->GetSpectators().begin();
+  for (std::list<Cluster_Leg *>::iterator clit=leg->GetSpectators().begin();
        clit!=leg->GetSpectators().end();clit++) {
     connect = false;
     Parton * spect = pmap[(*clit)];

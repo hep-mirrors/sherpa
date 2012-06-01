@@ -4,73 +4,14 @@
   EVENT_TYPE          = MinimumBias 
   MAX_PROPER_LIFETIME = 10. #[mm]
   SOFT_COLLISIONS     = Shrimps
-   Shrimps_Mode        = All
-  # MB_Weight_Mode    = Unweighted  
-  # Ladder_Weight     = Regge
+  Shrimps_Mode        = All
   #######################################################
-  ANALYSIS                = Rivet
-  ANALYSIS_OUTPUT         = Analysis_test
-  #EVENT_MODE              = HepMC_Short
-  #HEPMC2_SHORT_OUTPUT     = new
-  #HEPMC2_GENEVENT_OUTPUT  = new
-  #FILE_SIZE              = 1000000
-  #
-  #
-  ################################### external params, don't touch
-    deltaY          = 1.00           # tunable  0.0  ..... 2.5  
-  #                                 # rap cutoff for beams
-  #                                 # may influence energy extrapolation 
-  #                                 # of xsecs.
-  # bmin            = 0.            # impact parameters
-  # bmax            = 20.           # impact parameters
-  # accu            = 0.005         # 
-  ###################################
-  ###################################
-  ################################### form factors: touch for inclusive tune
-  # FF_Form         = dipole        # Gauss, dipole - keep dipole
-  # GW_States       = 2             # fixed, don't touch
-#    Absorption      = factorial     # exponential, factorial - don't touch
-     beta_0^2        = 22.5           # tunable   25.  ..... 50. 
-#    Lambda2         = 1.5           # tunable   0.5  ..... 2.5
-  #  kappa           = 0.30          # tunable   0.1  ..... 0.9
-  # xi              = 0.225         # tunable   0.01 ..... 1.0
-  ################################### 'BFKL' DEq paramters: touch
-  lambda          = 0.38          # tunable   0.1 ... 1.0
-#  Delta           = 0.31          # tunable   0.1 ... 0.6
-  ###################################
-  ################################### 
-  ################################### Filling the ladders: 
-  #                                 # touch for exclusive tune
-  # Ordering        = ao_phys       # seems to be the best
-  # As_Form         = IR0           # IR0, smooth, frozen, constant
-  # KT_Form         = IR0           # IR0, smooth, frozen, cut
-  # KTMin_Mode      = 0             # 1=from props, 0=none
-#    Q_0^2           = 2.00          # 0. ... 4.
-    Chi_S           = 6.          # 0. ... 12.    extra weight for singlets.
-  # Q_1^2           = 0.00          # 0. ... 4.
-  # Q_N^2           = 0.30          # 0. ... 4.    - irrelevant
-  # Q_as^2          = 0.25          # 0.20 ... 1.
-  # K_diff          = 0.0           #
-  # D_diff^2        = 0.            # 	  
-  ################################### Showering: touch
-  # Shower_Mode     = 3             # no shower (0), only connected(1), all(2)
-  # Shower_Min_KT2  = 16.0          # minimal scala to start and veto shower,
-  #                                 # if mode>2.
-#    KT2_Factor     = 4.00          # multiplying the start scale of the shower
-#    Diff_Factor    = 4.00          # multiplying the start scale of the shower,
-  #                                 #  extra factor for diffractive events.
-  ################################### Rescattering: touch
-  # Rescattering    = same          # off, same, space
-#    Resc_NoSinglet  = on            # enforce no-singlet for rescatters: on, off
-    RescProb        = 0.75          # 0.0 ... 4.0
-    RescProb1       = 0.00          # 0.0 ... 4.0
-  # SpatProb        = 0.            #
-  # SpatWidth       = 0.0000001     #
-#    Resc_KTMin      = on            # on/off
-#    Reconnections   = fix           # run/fix/off
-#    Q_RC^2          = 4.00          # 0. ....32.
-#    ReconnProb      = 8.00          # 0.0 ... 63.0
-  ##
+  ANALYSIS            = Rivet
+  ANALYSIS_OUTPUT     = Analysis_test
+
+  Q_0^2               = 1.5          # 0. ... 4.
+  Q_as^2              = 0.25
+  # Q_as^2, Q_RC^2, Chi_S, Shower_Min_KT2, KT2_Factor
 }(run)
 
 (beam){
@@ -80,7 +21,7 @@
 
 (analysis){
   BEGIN_RIVET {
-  -a ATLAS_2010_S8918562 ATLAS_2010_S8894728 ATLAS_2010_S8994773 ATLAS_2012_I1084540 GAPANALYSIS TOTEM_2012_DNDETA
+  -a ATLAS_2010_S8918562 ATLAS_2010_S8894728 ATLAS_2012_I1084540 
   } END_RIVET
 }(analysis)
 

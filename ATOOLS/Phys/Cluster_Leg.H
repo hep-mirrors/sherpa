@@ -4,6 +4,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
+#include <list>
 
 #ifdef USING__Threading
 #include <pthread.h>
@@ -67,7 +68,7 @@ namespace ATOOLS {
     double  m_ktstart, m_ktmax, m_ktveto;
 
     bool    m_connected;
-    std::set<Cluster_Leg *> m_spectators;
+    std::list<Cluster_Leg *> m_spectators;
 
     static ClusterLeg_PVector s_legs;
 
@@ -91,8 +92,9 @@ namespace ATOOLS {
     static Cluster_Leg *New(Cluster_Amplitude *const ampl,
 			    const Vec4D &p,const Flavour &fl,
 			    const ColorID &c=ColorID());
-    inline std::set<Cluster_Leg *> & GetSpectators() { return m_spectators; }
-    inline void AddToSpectators(Cluster_Leg * cl) { m_spectators.insert(cl); }
+    inline std::list<Cluster_Leg *> & GetSpectators() { return m_spectators; }
+    inline void AddToSpectators(Cluster_Leg * cl) 
+    { m_spectators.push_back(cl); }
     inline int NumberOfSpectators() const { return m_spectators.size(); }
 
     void Delete();
