@@ -9,7 +9,7 @@ Singlet_Sorter::Singlet_Sorter() {}
 
 void Singlet_Sorter::Sort(PartList * inlist,PSetYSet * outlists) {
   m_inlist = inlist;
-  unsigned int ref1, ref2, cont;
+  unsigned int ref1, ref2, cont=0;
   Particle * part;
   PartYSet  * pset;
   while (!m_inlist->empty()) {
