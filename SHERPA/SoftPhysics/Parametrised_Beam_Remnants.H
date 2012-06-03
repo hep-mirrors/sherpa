@@ -36,7 +36,7 @@ namespace SHERPA {
 					     ATOOLS::Particle_List *const=NULL);
 
     // inline functions
-    inline PDF::Remnant_Base *const BeamParticle(const size_t i) const { 
+    inline PDF::Remnant_Base * BeamParticle(const size_t i) const { 
       return p_beampart[i]; 
     }
     inline void SetBeamBlob(ATOOLS::Blob * const blob,const int & beam) {

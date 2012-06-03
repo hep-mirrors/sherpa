@@ -124,7 +124,7 @@ namespace SHRIMPS {
 
     const bool & Inelastic() const { return m_inelastic; }
     const double & MaxConv() const { return m_maxconv; }
-    const double Prefactor() const { return ATOOLS::sqr(p_ff1->Prefactor()*p_ff2->Prefactor()); }
+    double Prefactor() const { return ATOOLS::sqr(p_ff1->Prefactor()*p_ff2->Prefactor()); }
 
     const double & Beta2() const   { return m_beta2; }
     const double & Lambda2() const { return p_ff1->Lambda2(); }

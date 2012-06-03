@@ -77,8 +77,8 @@ namespace SHRIMPS {
     inline double ShowerFac()    const { return MBpars("kt2_factor"); }
     inline double ShowerMinKT2() const { return p_generator->ShowerMinKT2(); }
     inline const double & XSec() const { return p_generator->XSec(); } 
-    inline const double   Smin() const { return p_generator->Smin(); }
-    inline const bool     IsLastRescatter() const { 
+    inline double Smin()         const { return p_generator->Smin(); }
+    inline bool   IsLastRescatter() const { 
       return p_generator->IsLastRescatter(); 
     }
   };

@@ -76,8 +76,7 @@ double Eikonal_Contributor::operator()(const double & y) const
   double ff1low(m_ff1max-ff1bin*m_deltaff1), ff1up(m_ff1max-(ff1bin+1)*m_deltaff1);
   double ff2low(m_ff2max-ff2bin*m_deltaff2), ff2up(m_ff2max-(ff2bin+1)*m_deltaff2);
   double d1up(ff1up-ff1), d1low(ff1-ff1low), d2up(ff2up-ff2), d2low(ff2-ff2low);
-  if (ff1bin<0 || ff2bin<0 || 
-      ff1bin>=m_grid.size()-1 || ff2bin>=m_grid[0].size()-1) {
+  if (ff1bin>=m_grid.size()-1 || ff2bin>=m_grid[0].size()-1) {
     msg_Error()<<"Error in "<<METHOD<<"[1]("<<m_b1<<", "<<m_b2<<", "<<y<<"):"
 	       <<std::endl
 	       <<"   ff1 = "<<ff1<<" --> "<<ff1bin
@@ -118,8 +117,7 @@ double Eikonal_Contributor::operator()(const double & y) const
     size_t ybin((y+m_Y)/m_deltay);
     double ylow(-m_Y+ybin*m_deltay), yup(-m_Y+(ybin+1)*m_deltay);
     double dyup(yup-y), dylow(y-ylow);
-    if (ff1bin<0 || ff2bin<0 || ybin<0 ||
-	ff1bin>=m_grid.size()-1 || ff2bin>=m_grid[0].size()-1 || 
+    if (ff1bin>=m_grid.size()-1 || ff2bin>=m_grid[0].size()-1 || 
 	ybin>=m_grid[0][0].size()-1) {
       msg_Error()<<"Error in "<<METHOD<<"[2]"
 		 <<"("<<m_b1<<", "<<m_b2<<", "<<y<<"):"<<std::endl
