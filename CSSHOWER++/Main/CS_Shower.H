@@ -8,6 +8,16 @@
 
 namespace CSSHOWER {
 
+
+  struct partcomp{
+    bool operator() (const Parton * part1, const Parton * part2) const
+    {
+      if (part1->Id() < part2->Id()) return true;
+      else return false;
+    }
+  };
+
+
   class Splitting_Function_Base;
 
   typedef std::map<size_t,std::pair<double,double> > KT2X_Map;
