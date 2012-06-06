@@ -117,10 +117,8 @@ void Hadron_Decay_Table::Write(std::ostream& ostr)
   for (size_t j=0; j<size();j++) {
     Hadron_Decay_Channel* hdc = at(j);
     double dBR=hdc->DeltaWidth()/Flav().Width();
-    FlavourMultiSet decprods=hdc->GetDecayProducts();
-    FlSetConstIter flit=decprods.begin();
-    ostr<<"{"<<int(*flit);
-    for (++flit;flit!=decprods.end();++flit) ostr<<","<<int(*flit);
+    ostr<<"{"<<int(hdc->Flavs()[0]);
+    for (size_t k=0; k<hdc->Flavs().size();++k) ostr<<","<<int(hdc->Flavs()[k]);
     ostr<<"}\t | ";
     ostr<<hdc->Width()/Flav().Width();
     if(dBR>0.0)           ostr<<"("<<dBR<<")";
@@ -247,9 +245,8 @@ Decay_Channel * Hadron_Decay_Table::Select(Blob* blob) const
       Decay_Channel* dc;
       do {
         dc = Decay_Table::Select();
-        FlavourMultiSet flavs=dc->GetDecayProducts();
-        for (FlSetIter fl=flavs.begin(); fl!=flavs.end(); fl++) {
-          if(fl->Strong()) {
+        for (size_t i=0; i<dc->Flavs().size(); ++i) {
+          if(dc->Flavs()[i].Strong()) {
             partonic_finalstate=true;
             break;
           }

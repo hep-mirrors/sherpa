@@ -23,8 +23,9 @@ Decay_Table::~Decay_Table()
 void Decay_Table::AddDecayChannel(Decay_Channel * _dc)
 {
   for(size_t i=0;i<size();i++) {
-    if(at(i)->GetDecayProducts()==_dc->GetDecayProducts() &&
-       _dc->Width()!=0.0) {
+    if(at(i)->Flavs()==_dc->Flavs() &&
+       _dc->Width()!=0.0 && at(i)->Width()!=0.0 &&
+       _dc->Active()>-1 && at(i)->Active()>-1) {
       msg_Error()<<METHOD<<" Warning: Duplicate decaychannel: ";
       _dc->Output();
       msg_Error()<<endl;
@@ -101,10 +102,12 @@ void Decay_Table::ScaleToWidth() {
 }
 
 Decay_Channel * Decay_Table::GetDecayChannel
-    (const FlavourMultiSet& decayproducts) const
+    (const Flavour_Vector& flavs) const
 {
   for(size_t i=0;i<size();i++) {
-    if(at(i)->GetDecayProducts() == decayproducts) return at(i);
+    if(at(i)->Flavs() == flavs && at(i)->Active()>0) {
+      return at(i);
+    }
   }
   return NULL;
 }

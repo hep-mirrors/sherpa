@@ -10,6 +10,7 @@
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include "METOOLS/SpinCorrelations/Decay_Matrix.H"
+#include <algorithm>
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -147,14 +148,17 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
         DEBUG_FUNC(decayblob->InParticle(0));
         DEBUG_VAR(*fblob);
         Return_Value::IncCall(mname);
-        FlavourMultiSet decayresults;
+        Flavour_Vector decayresults;
         for(int i=0;i<fblob->NOutP();i++) {
-          decayresults.insert(fblob->OutParticle(i)->Flav());
+          decayresults.push_back(fblob->OutParticle(i)->Flav());
         }
-        Decay_Map::iterator dt=
-          p_decaymap->find(decayblob->InParticle(0)->Flav());
+        std::sort(decayresults.begin(), decayresults.end());
+        Flavour_Vector flavs(decayresults.size()+1);
+        flavs[0]=decayblob->InParticle(0)->Flav();
+        for (size_t i=0; i<decayresults.size(); ++i) flavs[i+1]=decayresults[i];
+        Decay_Map::iterator dt=p_decaymap->find(flavs[0]);
         if(dt!=p_decaymap->end() &&
-           dt->second[0]->GetDecayChannel(decayresults)) {
+           dt->second[0]->GetDecayChannel(flavs)) {
           Return_Value::IncRetryPhase(mname);
           DEBUG_INFO("rejected. retrying decay.");
           p_bloblist->Delete(fblob);

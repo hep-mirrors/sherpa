@@ -83,9 +83,15 @@ void Multi_Channel::DropAllChannels(const bool del)
 
 void Multi_Channel::Reset() 
 {
-  if (channels.size()==0) return;
-  if (s1==0) s1 =  new double[channels.size()];
-  if (s2==0) s2 =  new double[channels.size()];
+  if (channels.size()==0) {
+    if (s1!=NULL) delete[] s1; s1=NULL;
+    if (s2!=NULL) delete[] s2; s2=NULL;
+    return;
+  }
+  if (s1!=NULL) delete[] s1;
+  s1 =  new double[channels.size()];
+  if (s2!=NULL) delete[] s2;
+  s2 =  new double[channels.size()];
   if (!m_readin) {
     s1xmin     = 1.e32;
     n_points   = 0;  

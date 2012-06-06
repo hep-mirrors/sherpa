@@ -330,22 +330,6 @@ namespace ATOOLS {
 
   };// end of class Flavour
 
-  class Flavour_Sorting_Criterion {
-  public :
-    // something is wrong with this criterion
-    // if you need a flavour set, use Flavour_Set, not FlavourMultiSet !!!
-    inline bool operator()(const Flavour &fl1,const Flavour &fl2) const
-    {
-      kf_code kf1(fl1.Kfcode()), kf2(fl2.Kfcode());
-      if (kf1>kf2) return true;
-      if (kf1<kf2) return false;
-      return !(fl1.IsAnti()&&!fl2.IsAnti());
-    }
-  };// end of class Flavour_Sorting_Criterion
-
-  typedef std::set<Flavour,Flavour_Sorting_Criterion> FlavourMultiSet;
-  typedef FlavourMultiSet::iterator FlSetIter;
-  typedef FlavourMultiSet::const_iterator FlSetConstIter;
   typedef std::vector<Flavour> Flavour_Vector;
   typedef std::map<Flavour,Flavour> Flavour_Map;
   typedef std::set<Flavour> Flavour_Set;

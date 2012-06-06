@@ -19,6 +19,7 @@ namespace METOOLS {
 
 namespace PHASIC {
   class Multi_Channel;
+  class Single_Channel;
   class Color_Function_Decay;
 
   typedef 
@@ -71,8 +72,6 @@ namespace PHASIC {
       */
     int m_active;
 
-    ATOOLS::Flavour m_flin;
-    ATOOLS::FlavourMultiSet m_flouts;
     std::vector<ATOOLS::Flavour> m_flavours;
     DiagColVec m_diagrams;
     std::vector<std::vector<Complex> > m_colormatrix;
@@ -118,25 +117,21 @@ namespace PHASIC {
       return m_colormatrix;
     }
 
-    inline int NOut() const { return m_flouts.size(); }
-    inline const ATOOLS::Flavour& GetDecaying() const { return m_flin; }      
-    inline const ATOOLS::FlavourMultiSet& GetDecayProducts() const { return m_flouts; }
-    inline const ATOOLS::Flavour& GetDecayProduct(size_t i) const {
-      if (i>m_flouts.size())
-        THROW(fatal_error,ATOOLS::ToString(i)+" out of bounds.");
-      for (ATOOLS::FlSetConstIter flit=m_flouts.begin();
-           flit!=m_flouts.end();++flit) {
-        if (i==0) return (*flit);
-        --i;
-      }
-      return *m_flouts.begin();
-    }
+    inline int NOut() const { return m_flavours.size()-1; }
     inline const std::vector<ATOOLS::Flavour>& Flavs() const{return m_flavours;}
+    inline const ATOOLS::Flavour& GetDecaying() const { return m_flavours[0]; }
+    inline const ATOOLS::Flavour& GetDecayProduct(size_t i) const {
+      return m_flavours[i+1];
+    }
     inline const DiagColVec& GetDiagrams() const { return m_diagrams; }
     void AddDiagram(METOOLS::Spin_Amplitudes* amp, Color_Function_Decay* c);
     inline PHASIC::Multi_Channel* Channels() const { return p_channels; }
     inline void SetChannels(PHASIC::Multi_Channel* chans) { p_channels=chans; }
-    
+    void AddChannel(PHASIC::Single_Channel* chan);
+
+    inline void ResetDiagrams() { m_diagrams.clear(); }
+    void ResetChannels();
+
     void Output() const;
 
     void CalculateWidth();

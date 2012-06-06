@@ -45,7 +45,11 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file)
   dr.SetInputFile(file);
   m_mass_smearing=dr.GetValue<int>("MASS_SMEARING",1);
   m_spincorr=rpa->gen.HardSC();
-  m_store_results=dr.GetValue<int>("STORE_DECAY_RESULTS",1);
+  /*
+    TODO: Writing out a 1->3 channel which might have a large width in one
+    resolved configuration, and a small one in another?
+    */
+  m_store_results=dr.GetValue<int>("STORE_DECAY_RESULTS",0);
   m_decay_tau=dr.GetValue<int>("DECAY_TAU_HARD",0);
   m_resultdir=dr.GetValue<std::string>("RESULT_DIRECTORY","Results");
   if (m_store_results) {
@@ -131,6 +135,7 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
     dc->Channels()->SetNout(dc->NOut());
     Rambo* rambo = new Rambo(1,dc->NOut(),&dc->Flavs().front(),this);
     dc->Channels()->Add(rambo);
+    dc->Channels()->Reset();
 
     if (CalculateWidth(dc)) dt->AddDecayChannel(dc);
     else delete dc;
@@ -177,20 +182,38 @@ void Hard_Decay_Handler::RefineDecaysByWidth(Decay_Table* dt) {
     vector<Decay_Channel*> new_dcs=ResolveDecay(dc);
     double sum_resolved_widths=0.0;
     for (size_t j=0; j<new_dcs.size(); ++j) {
-      sum_resolved_widths+=new_dcs[j]->Width();
-      dt->AddDecayChannel(new_dcs[j]);
+      Decay_Channel* dup=dt->GetDecayChannel(new_dcs[j]->Flavs());
+      if (dup) {
+        DEBUG_INFO("Duplicate for "<<*dup);
+        for (DiagColVec::const_iterator it=new_dcs[j]->GetDiagrams().begin();
+             it!=new_dcs[j]->GetDiagrams().end(); ++it) {
+          dup->AddDiagram(it->first, it->second);
+        }
+        for (vector<Single_Channel*>::const_iterator it=new_dcs[j]->Channels()->Channels().begin();
+             it!=new_dcs[j]->Channels()->Channels().end(); ++it) {
+          dup->AddChannel(*it);
+        }
+        new_dcs[j]->ResetDiagrams();
+        new_dcs[j]->ResetChannels();
+        delete new_dcs[j];
+        new_dcs[j]=NULL;
+        sum_resolved_widths-=dup->Width();
+        CalculateWidth(dup);
+        sum_resolved_widths+=dup->Width();
+      }
+      else {
+        sum_resolved_widths+=new_dcs[j]->Width();
+        dt->AddDecayChannel(new_dcs[j]);
+      }
     }
-    DEBUG_VAR("resolved="<<sum_resolved_widths<<" vs. "<<dc->Width());
+    DEBUG_INFO("resolved="<<sum_resolved_widths<<" vs. "<<dc->Width());
 
     if (sum_resolved_widths>dc->Width()) {
       dc->SetActive(-1);
-      for (size_t j=0; j<new_dcs.size(); ++j) {
-        DEBUG_INFO("Adding "<<*new_dcs[j]);
-      }
     }
     else {
       for (size_t j=0; j<new_dcs.size(); ++j) {
-        new_dcs[j]->SetActive(-1);
+        if (new_dcs[j]) new_dcs[j]->SetActive(-1);
       }
     }
   }
@@ -222,6 +245,7 @@ vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
       dc->AddDecayProduct(sv->in[2]);
       DEBUG_FUNC("trying "<<*dc);
       // TODO what about W+ -> b t -> b W b -> b b ... two diagrams, factor 2, ...?
+      // TODO what about W' -> b t -> b W b ... two diagrams, factor 2, ...?
       for (size_t l=1; l<4; ++l) {
         if (dc->Flavs()[l]==flavs1[3-j]) nonprop=l;
       }
@@ -252,6 +276,7 @@ vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
       dc->Channels()->SetNout(dc->NOut());
       Rambo* rambo = new Rambo(1,dc->NOut(),&dc->Flavs().front(),this);
       dc->Channels()->Add(rambo);
+      dc->Channels()->Reset();
 
       if (CalculateWidth(dc)) new_dcs.push_back(dc);
       else delete dc;
@@ -259,20 +284,9 @@ vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
   }
 
   return new_dcs;
-  /* Avoiding duplicate decay channels
-     This has to be implemented, as soon as the following can appear
-     in a model:
-           b                       b
-          /                   ____/
-    a ___/                 e /    \
-         \c    d       a ___/      d
-          \___/             \
-              \              \ d
-               d
-     Then we will also need a mapping in the decay channel of
-     flavours in the decay channel and in the matrix element.
-     This mapping can then also be used to choose the right
-     clustering for the Cluster_Amplitude.
+  /* TODO:
+     What about cases where a 1->3 was resolved from one 1->2, but would have
+     been possible from another 1->2 where it was decided not to be resolved?
      */
 }
 

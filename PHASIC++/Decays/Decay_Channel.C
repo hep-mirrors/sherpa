@@ -10,6 +10,7 @@
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include "PHASIC++/Decays/Color_Function_Decay.H"
+#include <algorithm>
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -21,8 +22,9 @@ Decay_Channel::Decay_Channel(const Flavour & _flin,
                              const ATOOLS::Mass_Selector* ms) :
   m_width(0.), m_deltawidth(-1.), m_minmass(0.), m_max(0.), m_symfac(-1.0),
   m_iwidth(0.), m_ideltawidth(-1.), m_active(1),
-  m_flin(_flin), p_channels(NULL), p_amps(NULL), p_ms(ms)
+  p_channels(NULL), p_amps(NULL), p_ms(ms)
 {
+  m_flavours.push_back(_flin);
 }
 
 Decay_Channel::~Decay_Channel()
@@ -35,15 +37,42 @@ Decay_Channel::~Decay_Channel()
   if (p_amps) delete p_amps;
 }
 
+bool FlavourSort(const Flavour &fl1,const Flavour &fl2)
+{
+  // TODO: Get rid of this custom sorting, but then the hadron decay channel
+  // files have to be changed as well (order mapping in MEs)
+  kf_code kf1(fl1.Kfcode()), kf2(fl2.Kfcode());
+  if (kf1>kf2) return true;
+  if (kf1<kf2) return false;
+  /*
+      anti anti -> true
+      anti part -> false
+      part anti -> true
+      anti anti -> true
+      */
+  return !(fl1.IsAnti()&&!fl2.IsAnti());
+}
+
+
 void Decay_Channel::AddDecayProduct(const ATOOLS::Flavour& flout)
 {
-  m_flouts.insert(flout); 
-  m_minmass += p_ms->Mass(flout);
-  m_flavours.clear();
-  m_flavours.push_back(m_flin);
-  for (FlSetConstIter flit=m_flouts.begin(); flit!=m_flouts.end(); ++flit) {
-    m_flavours.push_back(*flit);
+  m_flavours.push_back(flout);
+
+  // sort
+  Flavour flin=m_flavours[0];
+  Flavour_Vector flouts(m_flavours.size()-1);
+  for (size_t i=1; i<m_flavours.size(); ++i) {
+    flouts[i-1]=m_flavours[i];
   }
+  std::sort(flouts.begin(), flouts.end(),FlavourSort);
+  m_flavours.clear();
+  m_flavours.resize(flouts.size()+1);
+  m_flavours[0]=flin;
+  for (size_t i=0; i<flouts.size(); ++i) {
+    m_flavours[i+1]=flouts[i];
+  }
+
+  m_minmass += p_ms->Mass(flout);
 }
 
 void Decay_Channel::AddDiagram(METOOLS::Spin_Amplitudes* amp,
@@ -56,14 +85,29 @@ void Decay_Channel::AddDiagram(METOOLS::Spin_Amplitudes* amp,
   if (m_colormatrix.size()!=index) THROW(fatal_error,"Wrong size of cols.");
   for (size_t i=0; i<m_colormatrix.size(); ++i) {
     if (m_colormatrix[i].size()!=index) THROW(fatal_error,"Wrong size of cols");
+    DEBUG_INFO("Contracting "<<*m_diagrams[i].second<<" with "<<*col);
     m_colormatrix[i].push_back(m_diagrams[i].second->Contract(*col));
+    DEBUG_VAR(m_colormatrix[i].back());
   }
 
   DEBUG_INFO("Add an additional row");
   m_colormatrix.resize(m_colormatrix.size()+1);
   for (size_t i=0; i<m_diagrams.size(); ++i) {
+    DEBUG_INFO("Contracting "<<*col<<" with "<<*m_diagrams[i].second);
     m_colormatrix.back().push_back(col->Contract(*m_diagrams[i].second));
+    DEBUG_VAR(m_colormatrix.back().back());
   }
+}
+
+void Decay_Channel::AddChannel(PHASIC::Single_Channel* chan)
+{
+  p_channels->Add(chan);
+}
+
+void Decay_Channel::ResetChannels()
+{
+  p_channels->DropAllChannels(false);
+  p_channels->Reset();
 }
 
 void Decay_Channel::Output() const
@@ -90,18 +134,18 @@ namespace PHASIC {
 
 string Decay_Channel::Name() const
 {
-  string name=m_flin.IDName()+string(" --> ");
-  for (FlSetConstIter flit=m_flouts.begin();flit!=m_flouts.end();++flit) {
-    name+=flit->IDName()+string(" ");
+  string name=m_flavours[0].IDName()+string(" --> ");
+  for (size_t i=1; i<m_flavours.size(); ++i) {
+    name+=m_flavours[i].IDName()+string(" ");
   }
   return name;
 }
 
 string Decay_Channel::IDCode() const
 {
-  string code="{"+ToString(m_flin.HepEvt());
-  for (FlSetConstIter flit=m_flouts.begin();flit!=m_flouts.end();++flit) {
-    code+=","+ToString(flit->HepEvt());
+  string code="{"+ToString(m_flavours[0].HepEvt());
+  for (size_t i=1; i<m_flavours.size(); ++i) {
+    code+=","+ToString(m_flavours[i].HepEvt());
   }
   code+="}";
   return code;
@@ -134,7 +178,7 @@ double Decay_Channel::GenerateMass(const double& max) const
   double decaymin = MinimalMass();
   DEBUG_FUNC(decaymin<<" < m["<<GetDecaying()<<"] < "<<max);
   if(decaymin>max) mass=-1.0;
-  else if (decaymin==0.0) mass=m_flin.RelBWMass(p_ms, decaymin, max);
+  else if (decaymin==0.0) mass=m_flavours[0].RelBWMass(p_ms, decaymin, max);
   else {
     double s=sqr(p_ms->Mass(GetDecaying()));
     double mb(0.0), mc(0.0);
@@ -151,7 +195,7 @@ double Decay_Channel::GenerateMass(const double& max) const
     double w=0.0;
     int trials(0);
     do {
-      mass=m_flin.RelBWMass(p_ms, decaymin, max);
+      mass=m_flavours[0].RelBWMass(p_ms, decaymin, max);
       double sp=sqr(mass);
       w=MassWeight(s,sp,b,c);
       ++trials;
@@ -167,9 +211,9 @@ double Decay_Channel::SymmetryFactor()
 {
   if (m_symfac<0.0) {
     std::map<Flavour,size_t> fc;
-    for (FlSetConstIter flit=m_flouts.begin(); flit!=m_flouts.end(); ++flit) {
-      std::map<Flavour,size_t>::iterator fit(fc.find(*flit));
-      if (fit==fc.end()) fit=fc.insert(make_pair(*flit,0)).first;
+    for (size_t i=1; i<m_flavours.size(); ++i) {
+      std::map<Flavour,size_t>::iterator fit(fc.find(m_flavours[i]));
+      if (fit==fc.end()) fit=fc.insert(make_pair(m_flavours[i],0)).first;
       ++fit->second;
     }
     m_symfac=1.0;

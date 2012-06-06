@@ -609,7 +609,7 @@ void All_Hadron_Multiplets::AddMultipletWeights()
     mplet = miter->second;
     miter->second->SetSpinWeight(double(spin));
     miter->second->SetWeight();
-    for (FlSetIter flit=miter->second->GetElements()->begin();
+    for (std::set<ATOOLS::Flavour>::iterator flit=miter->second->GetElements()->begin();
  	 flit!=miter->second->GetElements()->end();flit++) {
       wave = GetWaveFunction((*flit));
       if (wave!=NULL) {
@@ -641,7 +641,7 @@ void All_Hadron_Multiplets::PrintWaveFunctions()
     if (mplet->second->Weight()<=0.) continue;
     msg_Out()<<"-----------------------------------------------"<<endl
 	     <<" "<<mplet->second->Name()<<" with "<<mplet->second->Size()<<" elements: "<<endl;
-    for (FlSetIter fl=mplet->second->GetElements()->begin();
+    for (std::set<ATOOLS::Flavour>::iterator fl=mplet->second->GetElements()->begin();
 	 fl!=mplet->second->GetElements()->end();fl++) {
       wfm = p_wavefunctions->find((*fl));
       if (wfm!=p_wavefunctions->end()) msg_Out()<<(*wfm->second); 
@@ -676,7 +676,7 @@ void All_Hadron_Multiplets::PrintMultiplets()
     msg_Out()<<"* "<<miter->first<<" "<<miter->second->Name()<<" : "
 	     <<"spin weight = "<<miter->second->Weight()<<", "
 	     <<"extra weight = "<<miter->second->ExtraWeight()<<endl;
-    for (FlSetIter flit=miter->second->GetElements()->begin();
+    for (std::set<ATOOLS::Flavour>::iterator flit=miter->second->GetElements()->begin();
  	 flit!=miter->second->GetElements()->end();flit++) {
       msg_Out()<<"  "<<(*flit);
     }

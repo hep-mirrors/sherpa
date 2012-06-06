@@ -149,14 +149,17 @@ Complex Color_Function_Decay::Contract(const Color_Function_Decay& c)
   double max=std::max(m_max, c.m_max);
   Color_Function_Decay c1(c);
   for (size_t i(0); i<c1.Internal().size(); ++i) {
+    DEBUG_VAR(i);
+    DEBUG_VAR(c1.m_internal[i]);
     if (c1.m_internal[i]<=max) continue;
     c1.ReplaceIndex(c1.m_internal[i], max+1+i);
   }
   c1.Conjugate();
+  DEBUG_VAR(String());
   DEBUG_VAR(c1.String());
 
   Expression expr(String()+"*"+c1.String());
-  if (msg->LevelIsDebugging()) expr.Print();
+  if (msg_LevelIsDebugging()) expr.Print();
   if (expr.Evaluate()) {
     DEBUG_VAR(expr.Result());
     return expr.Result();

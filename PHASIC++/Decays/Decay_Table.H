@@ -39,7 +39,7 @@ namespace PHASIC {
     const ATOOLS::Flavour& Flav() const      { return m_flin;      }
     const double &  TotalWidth() const       { return m_totalwidth; }
     const double &  ActiveWidth() const      { return m_activewidth; }
-    Decay_Channel * GetDecayChannel(const ATOOLS::FlavourMultiSet&) const;
+    Decay_Channel * GetDecayChannel(const ATOOLS::Flavour_Vector&) const;
     void            EraseDecayChannel(const int);
     Decay_Channel * Select() const;
 

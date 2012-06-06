@@ -54,10 +54,10 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
   }
   
   double totalmass=0.0;
-  for (FlSetConstIter flit=m_flouts.begin();flit!=m_flouts.end();++flit) {
-    totalmass+=(*flit).HadMass();
+  for (size_t i=1; i<m_flavours.size(); ++i) {
+    totalmass+=m_flavours[i].HadMass();
   }
-  if(totalmass>m_flin.HadMass()) {
+  if(totalmass>m_flavours[0].HadMass()) {
     msg_Error()<<"Error in "<<METHOD<<" for "<<Name()<<endl;
     msg_Error()<<"  Total outgoing mass heavier than incoming particle. Will abort."<<endl;
     abort();
@@ -335,10 +335,10 @@ void Hadron_Decay_Channel::WriteOut(bool newfile) {
 
     // write header
     to<<"# Decay: "<<Name()<<endl;
-    to<<"#        "<<setw(m_flin.IDName().length())<<left<<"0"<<" --> ";
+    to<<"#        "<<setw(m_flavours[0].IDName().length())<<left<<"0"<<" --> ";
     int i=0;
-    for (FlSetConstIter flit=m_flouts.begin();flit!=m_flouts.end();++flit) {
-      to<<setw(flit->IDName().length()+1)<<left<<i+1;
+    for (size_t i=1; i<m_flavours.size(); ++i) {
+      to<<setw(m_flavours[i].IDName().length()+1)<<left<<i+1;
       i++;
     }
     to<<endl<<endl;
@@ -517,8 +517,8 @@ HD_ME_Base * Hadron_Decay_Channel::SelectME(string me_string)
 void Hadron_Decay_Channel::LatexOutput(std::ostream& f, double totalwidth)
 {
   f<<"$"<<GetDecaying().TexName()<<"$ $\\to$ ";
-  for (FlSetConstIter fl=m_flouts.begin();fl!=m_flouts.end();++fl)
-    f<<"$"<<fl->TexName()<<"$ ";
+  for (size_t i=1; i<m_flavours.size(); ++i)
+    f<<"$"<<m_flavours[i].TexName()<<"$ ";
   f<<" & ";
   char helpstr[100];
   sprintf( helpstr, "%.4f", Width()/totalwidth*100. );

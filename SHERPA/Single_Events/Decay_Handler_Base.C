@@ -313,11 +313,9 @@ Amplitude2_Tensor* Decay_Handler_Base::FillOnshellDecay(Blob *blob,
   
   Particle* inpart=blob->InParticle(0);
   inpart->SetStatus(part_status::decayed);
-  FlavourMultiSet daughters=dc->GetDecayProducts();
   Flavour flav; Particle* particle=NULL;
-  for (FlavourMultiSet::iterator dpit=daughters.begin(); dpit!=daughters.end();
-       dpit++ ) {
-    flav=(*dpit);
+  for (size_t i=1; i<dc->Flavs().size(); ++i) {
+    flav=dc->Flavs()[i];
     if (inpart->Flav().IsAnti()) flav = flav.Bar();
     particle = new Particle(0, flav);
     particle->SetFinalMass();

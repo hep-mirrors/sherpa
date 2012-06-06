@@ -56,12 +56,12 @@ void Hadron_Decay_Map::ReadInConstants(const string& path, const string& file)
     }
   }
   
-  FlavourMultiSet neutral_mesons;
+  set<Flavour> neutral_mesons;
   neutral_mesons.insert(Flavour(kf_K));
   neutral_mesons.insert(Flavour(kf_D));
   neutral_mesons.insert(Flavour(kf_B));
   neutral_mesons.insert(Flavour(kf_B_s));
-  FlavourMultiSet::const_iterator flavit;
+  set<Flavour>::const_iterator flavit;
   for(flavit = neutral_mesons.begin(); flavit!=neutral_mesons.end(); flavit++) {
     GeneralModel::iterator yit(m_startmd.find("y_"+flavit->IDName()));
     GeneralModel::iterator xit(m_startmd.find("x_"+flavit->IDName()));
