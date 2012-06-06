@@ -42,6 +42,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
     m_asinfo.m_order=1;
     m_asinfo.m_asmz=0.118;
     path+="CTEQ66Grid";
+    m_lhef_number=10550+m_member;
   }
   if (m_set==std::string("cteq6.6a1")) {
     iset = 460;
@@ -176,7 +177,6 @@ PDF_Base *CTEQ6_Getter::operator()
   int mode=args.p_read->GetValue<int>("PDF_SET_VERSION",0);
   int ibeam=args.m_ibeam;
   mode=args.p_read->GetValue<int>("PDF_SET_VERSION_"+ToString(ibeam+1),mode);
-  rpa->gen.SetPDFMember(ibeam,mode);
   return new CTEQ6_Fortran_Interface(args.m_bunch,m_key,mode);
 }
 

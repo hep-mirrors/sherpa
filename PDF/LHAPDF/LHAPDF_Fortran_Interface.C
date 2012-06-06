@@ -64,7 +64,9 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_partons.insert(Flavour(kf_gluon));
   m_partons.insert(Flavour(kf_jet));
   m_partons.insert(Flavour(kf_quark));
-  m_partons.insert(Flavour(kf_quark).Bar());                               
+  m_partons.insert(Flavour(kf_quark).Bar());
+
+  m_lhef_number = LHAPDF::getPDFSetInfo(m_set,m_member).id;
 }
 
 PDF_Base * LHAPDF_Fortran_Interface::GetCopy() 
@@ -113,7 +115,6 @@ PDF_Base *LHAPDF_Getter::operator()
   int mode=args.p_read->GetValue<int>("PDF_SET_VERSION",0);
   int ibeam=args.m_ibeam;
   mode=args.p_read->GetValue<int>("PDF_SET_VERSION_"+ToString(ibeam+1),mode);
-  rpa->gen.SetPDFMember(ibeam,mode);
   return new LHAPDF_Fortran_Interface(args.m_bunch,m_key,mode);
 }
 

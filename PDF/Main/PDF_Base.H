@@ -47,6 +47,7 @@ namespace PDF {
     std::string m_type;    
 
     int m_member;
+    int m_lhef_number;
 
     double m_exponent, m_rescale;
     double m_xmin, m_xmax, m_q2min, m_q2max;
@@ -115,6 +116,8 @@ namespace PDF {
     inline PDF_AS_Info ASInfo() const { return m_asinfo; }
 
     inline int Member() const { return m_member; }
+
+    int LHEFNumber() const { return m_lhef_number; }
 
   };
   

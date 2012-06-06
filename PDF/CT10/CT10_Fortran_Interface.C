@@ -50,6 +50,8 @@ namespace PDF {
         iset = 100+m_member;
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.118;
+        if (m_member==0) m_lhef_number=10800;
+        else m_lhef_number=10801;
       }
       double asmz[10] = {0.116, 0.117, 0.119, 0.120, 0.113, 0.114, 0.115, 0.121, 0.122, 0.123};
       for (size_t i=0; i<10; ++i) {
@@ -170,7 +172,6 @@ PDF_Base *CT10_Getter::operator()
   int member=args.p_read->GetValue<int>("PDF_SET_VERSION",0);
   int ibeam=args.m_ibeam;
   member=args.p_read->GetValue<int>("PDF_SET_VERSION_"+ToString(ibeam+1),member);
-  rpa->gen.SetPDFMember(ibeam,member);
   return new CT10_Fortran_Interface(args.m_bunch,m_key,member);
 }
 

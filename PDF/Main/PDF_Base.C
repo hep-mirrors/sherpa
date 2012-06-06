@@ -9,6 +9,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace PDF;
 using namespace ATOOLS;
@@ -21,6 +22,9 @@ PDF_Base::PDF_Base():
     m_fac_scale_factor = ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
   if (m_fac_scale_factor!=1.0) 
     msg_Debugging()<<METHOD<<"(): Setting scale factor "<<m_fac_scale_factor<<"\n";
+
+  Data_Reader dr(" ",";","!","=");
+  m_lhef_number = dr.GetValue<int>("LHEF_PDF_NUMBER",-1);
 }
 
 PDF_Base::~PDF_Base()
@@ -115,4 +119,3 @@ void PDF_Base::ShowSyntax(const size_t i)
   PDF_Getter_Function::PrintGetterInfo(msg->Out(),25);
   msg_Out()<<"\n}"<<std::endl;
 }
-

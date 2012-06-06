@@ -9,6 +9,10 @@
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Org/MyTiming.H"
 
+namespace PDF {
+  class PDF_Base;
+}
+
 namespace ATOOLS {  
 
   class Run_Parameter {
@@ -30,8 +34,7 @@ namespace ATOOLS {
       double              m_accu;
       Flavour  m_beam1, m_beam2, p_bunch[2];
       Vec4D m_pbeam[2];
-      std::string m_pdfset[2];
-      int m_pdfmember[2];
+      PDF::PDF_Base* m_pdfset[2];
       MyTiming m_timer;
       double m_timeout;
       int m_batchmode;
@@ -61,10 +64,8 @@ namespace ATOOLS {
       inline const  Flavour Beam2()           { return m_beam2; }
       void   SetBeam1(const Flavour b);
       void   SetBeam2(const Flavour b);
-      inline void   SetPDF(size_t i, std::string pdf) { m_pdfset[i]=pdf; }
-      inline std::string PDF(size_t i)                { return m_pdfset[i]; }
-      inline void   SetPDFMember(size_t i, int mem)   { m_pdfmember[i]=mem; }
-      inline int    PDFMember(size_t i)               { return m_pdfmember[i]; }
+      inline void   SetPDF(size_t i, PDF::PDF_Base* pdf) { m_pdfset[i]=pdf; }
+      inline PDF::PDF_Base* PDF(size_t i)                { return m_pdfset[i]; }
       inline const  Flavour Bunch(const size_t i)            { return p_bunch[i]; }
       inline void   SetBunch(const Flavour b,const size_t i) { p_bunch[i] = b;    }
       inline void      SetTimeOut(const long int timeout) { m_timeout=timeout;  }
