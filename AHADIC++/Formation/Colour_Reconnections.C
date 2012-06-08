@@ -51,13 +51,13 @@ void Colour_Reconnections::Two_Singlet_CR(Cluster_List * cl1,Cluster_List * cl2)
 
 bool Colour_Reconnections::TestClusters(Cluster * cl1,Cluster * cl2,int gen)
 {
+  double kinweight = 
+    KinematicWeight(cl1->GetTrip()->m_mom,cl1->GetAnti()->m_mom,
+		    cl2->GetTrip()->m_mom,cl2->GetAnti()->m_mom);
   if (cl1->GetTrip()->m_info=='B' || cl1->GetAnti()->m_info=='B' ||
       cl2->GetTrip()->m_info=='B' || cl2->GetAnti()->m_info=='B') return false;
   if (cl1->GetTrip()->m_info=='L' || cl1->GetAnti()->m_info=='L' ||
       cl2->GetTrip()->m_info=='L' || cl2->GetAnti()->m_info=='L') return false;
-  double kinweight = 
-    KinematicWeight(cl1->GetTrip()->m_mom,cl1->GetAnti()->m_mom,
-		    cl2->GetTrip()->m_mom,cl2->GetAnti()->m_mom);
   double colweight = ColourWeight(gen);
   if (kinweight*colweight>ran->Get()) return true;
   return false;
