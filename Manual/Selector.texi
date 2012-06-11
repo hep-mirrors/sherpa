@@ -275,10 +275,10 @@ values of the jets found and @code{p[i]} are their momenta. For details see
 association with jets
 
 @verbatim
-FastjetSelector "Calc(p[4]+p[5]>100.)" antikt 2 40. 0. 0.5
+FastjetSelector Calc(p[4]+p[5]>100.) antikt 2 40. 0. 0.5
 @end verbatim
 
-selects all parameter points where two anti-kt jets with at least 40 GeV of
+selects all phase space points where two anti-kt jets with at least 40 GeV of
 transverse momentum and an invariant mass of at least 100 GeV are found. The 
 expression must calculate a boolean value.
 
