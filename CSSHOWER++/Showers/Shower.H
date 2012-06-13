@@ -31,7 +31,7 @@ namespace CSSHOWER {
 
     double m_weight;
 
-    void   ResetScales(Parton *const split);
+    void   ResetScales(const double &kt2);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,
 			const ATOOLS::Vec4D &pspect,
 			Parton *const split,Parton *const newb,
@@ -59,8 +59,6 @@ namespace CSSHOWER {
     double EFac(const std::string &sfk) const;
     inline Sudakov *GetSudakov() { return &m_sudakov; }
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }
-    inline Parton *const *GetLast() const { return m_last; }
-    inline ATOOLS::Cluster_Leg *GetOld(const int i) const { return p_old[i]; }
 
     inline const Kinematics_FF *KinFF() const { return &m_kinFF; }
     inline const Kinematics_FI *KinFI() const { return &m_kinFI; }

@@ -32,7 +32,8 @@ std::ostream& CSSHOWER::operator<<(std::ostream& str, Singlet & singlet) {
     if (singlet.GetSpec()) str<<"Spec:  "<<singlet.GetSpec()<<"  ";
     str<<"\n";
   }
-  str<<"mom sum "<<sum<<"\n";
+  str<<"mom sum "<<sum<<", k_T,prev = "<<sqrt(singlet.KtPrev())
+     <<", k_T,next = "<<sqrt(singlet.KtNext())<<"\n";
   str<<"-------------------------------------------------------------------------"<<endl;
   return str;
 }

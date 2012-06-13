@@ -597,7 +597,6 @@ bool Sudakov::KinCheck(double Q2,double x) {
 }
 
 bool Sudakov::Splitting(double Q2,double x) {
-  if (m_kperp2>p_split->KtPrev()) return false;
   double wt(RejectionWeight(m_z,m_y,x,m_kperp2,Q2));
   double efac=p_selected->EFac();
   if (ran->Get()>wt) {

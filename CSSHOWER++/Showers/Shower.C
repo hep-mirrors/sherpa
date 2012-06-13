@@ -214,10 +214,6 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   newpC->SetKtMax(split->KtMax());
   newpB->SetVeto(split->KtVeto());
   newpC->SetVeto(split->KtVeto());
-  newpB->SetKtPrev(split->KtPrev());
-  newpC->SetKtPrev(split->KtPrev());
-  newpB->SetKtNext(split->KtNext());
-  newpC->SetKtNext(split->KtNext());
   newpB->SetStat(split->Stat());
   if (split->GetNext()) {
     split->GetNext()->SetPrev(newpB);
@@ -235,7 +231,8 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   }
   split->SetFlow(1,newpB->GetFlow(1));
   split->SetFlow(2,newpB->GetFlow(2));
-  newpB->SetPrev(split);
+  newpB->SetPrev(split->GetPrev());
+  newpC->SetPrev(split->GetPrev());
   newpB->SetFixSpec(split->FixSpec());
   newpB->SetOldMomentum(split->OldMomentum());
   int rd(ReconstructDaughters(split->GetSing(),mode,newpB,newpC));
@@ -256,10 +253,11 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   return rd;
 }
 
-void Shower::ResetScales(Parton *const split)
+void Shower::ResetScales(const double &kt2)
 {
   for (PLiter pit(p_actual->begin());pit!=p_actual->end();++pit)
-    (*pit)->SetStart(split->KtTest());
+    if ((*pit)->GetPrev()==NULL ||
+	(*pit)->GetPrev()->KScheme()!=1) (*pit)->SetStart(kt2);
   m_last[0]=m_last[1]=m_last[2]=NULL;
 }
 
@@ -325,7 +323,6 @@ int Shower::MakeKinematics
     spect->SetOldMomentum(psm);
     split->SetFixSpec(pef);
     spect->SetFixSpec(psf);
-    if (mode==0) ResetScales(split);
     delete pj;
     return stat;
   }
@@ -362,7 +359,6 @@ int Shower::MakeKinematics
     split->UpdateDaughters();
     spect->UpdateDaughters();
     if (mode==0) {
-      ResetScales(split);
       if (!ReconstructDaughters(split->GetSing(),0)) {
 	msg_Error()<<METHOD<<"(): Reconstruction error. Reject event."<<std::endl;
 	return 0;
@@ -381,7 +377,12 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 {
   p_actual=act;
   Vec4D mom;
-  double kt2win, kt2old(std::numeric_limits<double>::max());
+  double kt2win;
+  if (p_actual->GetSplit() &&
+      p_actual->GetSplit()->KScheme()==1) {
+    p_actual->GetLeft()->GetSing()->SetKtPrev(p_actual->KtPrev());
+    return true;
+  }
   if (nem>=maxem) return true;
   while (true) {
     for (Singlet::const_iterator it=p_actual->begin();it!=p_actual->end();++it)
@@ -401,23 +402,22 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     else {
       msg_Debugging()<<"Emission "<<m_flavA<<" -> "<<m_flavB<<" "<<m_flavC
 		     <<" at kt = "<<sqrt(split->KtTest())
-		     <<"( "<<sqrt(split->KtNext())<<" .. "
-		     <<sqrt(split->KtPrev())<<" ), z = "<<split->ZTest()<<", y = "
+		     <<"( "<<sqrt(split->GetSing()->KtNext())<<" .. "
+		     <<sqrt(split->KtStart())<<" ), z = "<<split->ZTest()<<", y = "
 		     <<split->YTest()<<" for\n"<<*split
 		     <<*split->GetSpect()<<"\n";
       m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
-      if (kt2win<split->KtNext()) {
+      if (kt2win<split->GetSing()->KtNext()) {
 	msg_Debugging()<<"... Defer split ...\n\n";
+	ResetScales(split->GetSing()->KtNext());
 	return true;
       }
-      if (kt2win>Min(kt2old,split->KtPrev())) {
-	THROW(fatal_error,"Internal error");
-      }
+      ResetScales(kt2win);
+      if (kt2win>split->GetSing()->KtPrev()) continue;
       if (split->GetSing()->GetLeft()) {
 	if (split->GetType()==pst::IS) {
 	  if (m_flavA!=split->GetFlavour()) {
 	    msg_Debugging()<<"... Veto flavour change ...\n\n";
-	    ResetScales(split);
 	    if (split->TMin()) continue;
 	    return false;
 	  }
@@ -425,7 +425,6 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	else {
 	  if (m_flavB!=split->GetFlavour()) {
 	    msg_Debugging()<<"... Veto flavour change ...\n\n";
-	    ResetScales(split);
 	    if (split->TMin()) continue;
 	    return false;
 	  }
@@ -530,17 +529,9 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
             m_weight*=(*it)->Weight(m_last[0]->KtStart());
             (*it)->Weights().clear();
           }
-          (*it)->SetKtPrev(m_last[0]->KtStart());
-        }
-      }
-      else {
-        for (Singlet::const_iterator it=p_actual->begin();
-             it!=p_actual->end();++it) {
-          (*it)->SetKtPrev(kt2win);
         }
       }
       if (++nem>=maxem) return true;
-      kt2old=kt2win;
     }
   }
   return true;
@@ -557,20 +548,13 @@ Parton *Shower::SelectSplitting(double & kt2win) {
 
 bool Shower::TrialEmission(double & kt2win,Parton * split) 
 {
-  if (split->KtStart()==0. || split->KtVeto()==0.) return false;
+  if (split->KtStart()==0.0 ||
+      split->KtStart()<split->GetSing()->KtNext()) return false;
   double kt2(0.),z(0.),y(0.),phi(0.);
   while (true) {
   if (m_sudakov.Generate(split)) {
     m_sudakov.GetSplittingParameters(kt2,z,y,phi);
     split->SetWeight(m_sudakov.Weight());
-    if (kt2>split->KtNext() && kt2>split->KtPrev()) {
-      split->SetStart(kt2);
-      continue;
-    }
-    if (kt2<split->KtNext()) {
-      split->SetKtNext(split->KtStart());
-      return false;
-    }
     if (kt2>kt2win) {
       kt2win  = kt2;
       m_flavA = m_sudakov.GetFlavourA();

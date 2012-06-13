@@ -27,7 +27,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
     m_maxem=maxem;
     msg_Info()<<METHOD<<"(): Set max emissions "<<m_maxem<<"\n";
   }
-  int mtmode=_dataread->GetValue<int>("CSS_CORE_MTMODE",1);
+  int mtmode=_dataread->GetValue<int>("CSS_CORE_MTMODE",0);
   if (mtmode!=1) msg_Info()<<METHOD<<"(): Set core m_T mode "<<mtmode<<"\n";
   m_kmode=_dataread->GetValue<int>("CSS_KMODE",1);
   if (m_kmode!=1) msg_Info()<<METHOD<<"(): Set kernel mode "<<m_kmode<<"\n";
@@ -103,12 +103,8 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit,++rit) {
     msg_Debugging()<<"before shower step\n";
     for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it)
-      if ((*it)->GetPrev()) 
-	if((*it)->GetPrev()->GetNext()==*it) {
-	  if ((*it)->GetPrev()->TMin()==std::numeric_limits<double>::max())
-	    (*it)->SetStart((*it)->GetPrev()->KtNext());
-	  else (*it)->SetStart((*it)->GetPrev()->KtStart());
-	}
+      if ((*it)->GetPrev() && (*it)->GetPrev()->KScheme()!=1)
+	(*it)->SetStart((*it)->GetPrev()->KtStart());
     msg_Debugging()<<**sit;
     size_t pem(nem);
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
@@ -407,10 +403,8 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
       }
     }
     double kt2max(leg->KTMax()),kt2veto(leg->KTVeto()),kt2start(leg->KTStart());
-    parton->SetStart(kt2start);   // start scale of shower
+    parton->SetStart(Min(kt2veto,kt2start));   // start scale of shower
     parton->SetKtMax(kt2max);    // no jet veto below ktmax
-    parton->SetKtPrev(kt2veto);   // upper kt - acts as veto
-    parton->SetKtNext(0.0);       // lower kt - set to 0.
     parton->SetVeto(kt2veto);     // irrelevant 
     parton->SetConnected(leg->Connected());
     parton->SetMass2(p_ms->Mass2(leg->Flav()));
@@ -521,8 +515,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 			split->GetFlavour().Bar(),p_ms,
 			split->Kin(),split->KScheme()));
       l->SetTest(cp.m_kt2,cp.m_z,cp.m_y,cp.m_phi);
-      l->SetStart(cp.m_kt2);
-      r->SetStart(cp.m_kt2);
       if (split->KScheme()) split->SetFixSpec(cp.m_pk);
       msg_Debugging()<<"Set reco params: kt = "<<sqrt(cp.m_kt2)<<", z = "
 		     <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi
@@ -584,14 +576,8 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
     }
     double kt2prev(campl->Next()?campl->KT2():kt2xmap[1].second);
     double kt2next(campl->Prev()?campl->Prev()->KT2():0.0);
-    for (size_t i(0);i<campl->Legs().size();++i) {
-      std::map<Cluster_Leg*,Parton*>::const_iterator 
-	pit(apmap.find(campl->Leg(i)));
-      if (pit!=apmap.end()) {
-	pit->second->SetKtPrev(Min(kt2prev,m_kt2prev));
-	pit->second->SetKtNext(kt2next);
-      }
-    }
+    sing->SetKtPrev(kt2prev);
+    sing->SetKtNext(kt2next);
     if (ampl->NIn()==1 && ampl->Leg(0)->Flav().IsHadron()) break;
     p_next->push_back(sing);
   }
@@ -611,7 +597,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 	if ((*pit)->GetPrev()) {
 	  if ((*pit)->GetPrev()->GetNext()==*pit) 
 	    (*pit)->SetStart((*pit)->GetPrev()->KtStart());
-	  (*pit)->SetKtPrev(Min((*pit)->GetPrev()->KtNext(),m_kt2prev));
 	}
       }
       (*sit)->SetJF(ampl->JF<PHASIC::Jet_Finder>());
@@ -634,7 +619,7 @@ Singlet *CS_Shower::TranslateAmplitude
   double ktveto2(jf?jf->Ycut()*sqr(rpa->gen.Ecms()):4.0*ampl->MuR2());
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
-  singlet->SetNLO(ampl->NLO());
+  singlet->SetNLO(ampl->NLO()&~1);
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *cl(ampl->Leg(i));
     if (cl->Flav().IsHadron() && cl->Id()&((1<<ampl->NIn())-1)) continue;
@@ -654,7 +639,7 @@ Singlet *CS_Shower::TranslateAmplitude
     lmap[parton]=cl;
     parton->SetRFlow();
     parton->SetKin(p_shower->KinScheme());
-    if (ampl->NLO()==1) parton->SetTMin(std::numeric_limits<double>::max());
+    if (ampl->NLO()&4) parton->SetTMin(std::numeric_limits<double>::max());
     if (is) parton->SetBeam(i);
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
     parton->SetStart(xit->second.second);

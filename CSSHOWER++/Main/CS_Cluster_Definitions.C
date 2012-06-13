@@ -326,20 +326,19 @@ CParam CS_Cluster_Definitions::CoreScale
 	  else if (i>1 && cf[f]==lj->Flav()) {
 	    kt2*=dabs((p[i]*p[k])/(p[j]*p[k]));
 	  }
+	  kt2*=cdip->Coupling()->CplFac(kt2);
 	  if (m_mtmode) {
-	    double nm(1.0);
-	    kt2=nm/kt2;
+	    double akt(0.0), nm(0.0);
 	    if (ampl->Leg(2)->Flav().Mass()) {
-	      kt2+=1.0/ampl->Leg(2)->Mom().Abs2();
+	      akt+=ampl->Leg(2)->Mom().Mass();
 	      ++nm;
 	    }
 	    if (ampl->Leg(3)->Flav().Mass()) {
-	      kt2+=1.0/ampl->Leg(3)->Mom().Abs2();
+	      akt+=ampl->Leg(3)->Mom().Mass();
 	      ++nm;
 	    }
-	    kt2=nm/kt2;
+	    kt2+=sqr(akt/nm);
 	  }
-	  kt2*=cdip->Coupling()->CplFac(kt2);
 	  if (kt2<kt2cmin) {
 	    kt2cmin=kt2;
 	    mu2min=kt2;
