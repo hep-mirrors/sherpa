@@ -146,6 +146,7 @@ Virtual_ME2_Base *MCFM_wbf_Getter::operator()(const Process_Info &pi) const
     if (!fl[0].Strong() || !fl[1].Strong())             return NULL;
     int pID(0);
     if (pi.m_fi.m_ps.size()!=3)                         return NULL;
+    if (MODEL::s_model->Name()!=std::string("SM"))      return NULL;
     ATOOLS::Flavour flh(pi.m_fi.m_ps[0].m_fl[0]);
     msg_Out()<<"  Higgs candidate = "<<flh<<"."<<std::endl;
     // higgs propagator
