@@ -152,7 +152,7 @@ void COMIX::Single_Process::MapSubEvts()
     m_subs[i]->p_mom=rsubs[i]->p_mom;
     m_subs[i]->p_dec=rsubs[i]->p_dec;
     for (size_t j(0);j<m_subs[i]->m_n;++j) {
-      fls[j]=ReMap(rsubs[i]->p_fl[j],0);
+      fls[j]=ReMap(rsubs[i]->p_fl[j]);
       ids[j]=rsubs[i]->p_id[j];
     }
   }
@@ -275,7 +275,7 @@ double COMIX::Single_Process::Partonic
 (const Vec4D_Vector &p,const int mode) 
 {
   Single_Process *sp(p_map!=NULL?p_map:this);
-  if (mode==1)
+  if (mode==1 && !sp->p_scale->Scale2())
     return m_lastxs=m_dxs+m_w*sp->GetKPTerms(m_flavs,mode);
   if (m_zero || !Selector()->Result()) return m_lastxs;
   for (size_t i(0);i<m_nin+m_nout;++i) {
@@ -292,7 +292,7 @@ double COMIX::Single_Process::Partonic
     }
   }
   else {
-    sp->p_scale->CalculateScale(p);
+    sp->p_scale->CalculateScale(p,mode);
     m_dxs=sp->p_bg->Differential(m_p);
     m_w=p_int->ColorIntegrator()->GlobalWeight();
     if (p_int->HelicityIntegrator()!=NULL) 
@@ -463,8 +463,7 @@ bool COMIX::Single_Process::FillIntegrator(Phase_Space_Handler *const psh)
   return COMIX::Process_Base::FillIntegrator(psh);
 }
 
-Flavour COMIX::Single_Process::ReMap
-(const Flavour &fl,const size_t &id) const
+Flavour COMIX::Single_Process::ReMap(const Flavour &fl) const
 {
   if (p_map==NULL) return fl;
   Flavour_Map::const_iterator fit(m_fmap.find(fl));
@@ -489,7 +488,7 @@ CombinedFlavour(const size_t &idij)
     CFlavVector_Map::const_iterator fit(m_cfmap.find(idij));
     if (fit!=m_cfmap.end()) return fit->second;
     Flavour_Vector cf(p_map->CombinedFlavour(idij));
-    for (size_t i(0);i<cf.size();++i) cf[i]=ReMap(cf[i],0);
+    for (size_t i(0);i<cf.size();++i) cf[i]=ReMap(cf[i]);
     m_cfmap[idij]=cf;
     return m_cfmap[idij];
   }

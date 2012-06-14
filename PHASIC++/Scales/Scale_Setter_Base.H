@@ -46,15 +46,18 @@ namespace PHASIC {
 
     std::string m_coupling;
 
+    bool m_scale2;
+
     size_t m_nin, m_nout;
 
     ATOOLS::ClusterAmplitude_Vector m_ampls;
 
-    virtual double Calculate(const ATOOLS::Vec4D_Vector &p) = 0;
+    virtual double Calculate(const ATOOLS::Vec4D_Vector &p,const int mode) = 0;
 
   public:
 
-    Scale_Setter_Base(const Scale_Setter_Arguments &args);
+    Scale_Setter_Base(const Scale_Setter_Arguments &args,
+		      const bool scale2=false);
 
     virtual ~Scale_Setter_Base();
 
@@ -64,7 +67,7 @@ namespace PHASIC {
 
     ATOOLS::Vec4D PSum() const;
 
-    double CalculateScale(const ATOOLS::Vec4D_Vector &p);
+    double CalculateScale(const ATOOLS::Vec4D_Vector &p,const int mode);
 
     inline void SetFixedScale(const std::vector<double> &s) { m_escale=s; }
 
@@ -76,6 +79,8 @@ namespace PHASIC {
     inline const std::vector<double> &Scales() const { return m_scale; }
 
     inline Process_Base *Process() const { return p_proc; }
+
+    inline bool Scale2() { return m_scale2; }
 
     inline ATOOLS::ClusterAmplitude_Vector &Amplitudes() { return m_ampls; }
 

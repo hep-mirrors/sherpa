@@ -85,7 +85,6 @@ bool CF_EW_FFZ::SetCoupling(MODEL::Model_Base *md,
 double CF_EW_FFZ::Coupling(const double &scale,const int pol)
 {
   if (pol>1) return 0.0;
-  if (scale<0.0) return m_cplmax.front()*m_q[pol];
   double scl(CplFac(scale)*scale);
   return (*p_cpl)(scl)*m_q[pol];
 }
@@ -138,7 +137,6 @@ bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,
 double CF_EW_FFW::Coupling(const double &scale,const int pol)
 {
   if (pol>1) return 0.0;
-  if (scale<0.0) return m_cplmax.front()*m_q[pol];
   double scl(CplFac(scale)*scale);
   return (*p_cpl)(scl)*m_q[pol];
 }

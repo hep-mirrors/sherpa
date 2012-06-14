@@ -12,7 +12,7 @@ namespace PDF {
     Intact(ATOOLS::Flavour);     
 
     // member functions
-    bool   CalculateWeight(double x,double z,double kp2,double Q2,int warn);
+    bool   CalculateWeight(double x,double z,double kp2,double Q2);
     double Weight(ATOOLS::Flavour flavour);
 
   };// end of class Intact

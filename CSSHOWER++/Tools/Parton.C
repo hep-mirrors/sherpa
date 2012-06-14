@@ -11,8 +11,7 @@ using namespace std;
 namespace CSSHOWER {
   std::ostream& operator<<(std::ostream& str, const Parton &part) {
     str<<"  Parton "<<&part<<" ("<<part.p_sing<<"), stat="
-       <<part.m_stat<<", kin="<<part.m_kin<<", kscheme="<<part.m_kscheme
-       <<", col="<<part.m_col<<" ["<<ATOOLS::ID(part.m_id)
+       <<part.m_stat<<", kin="<<part.m_kin<<", col="<<part.m_col<<" ["<<ATOOLS::ID(part.m_id)
        <<"]: "<<part.m_flav<<" : "<<part.m_mom
        <<" "<<sqrt(dabs(part.m_mom.Abs2()))<<" "<<sqrt(dabs(part.Mass2()))
        <<" ("<<part.GetFlow(1)<<","<<part.GetFlow(2)<<")"
@@ -27,9 +26,12 @@ namespace CSSHOWER {
     str<<"  k_T test : "<<sqrt(part.m_kt_test);
     str<<"  k_T veto : "<<sqrt(part.m_kt_veto)<<"("<<sqrt(part.m_kt_max)<<")";
     str<<"  x_B : "<<part.m_xBj<<std::endl;
-    if (part.p_prev || part.p_next) {
+    if (part.p_prev || part.p_next ||
+	part.m_kt_prev!=0.0 || part.m_kt_next!=0.0) {
       if (part.p_prev) str<<"  P="<<part.p_prev;
       if (part.p_next) str<<"  N="<<part.p_next;
+      str<<"  k_T prev : "<<sqrt(part.m_kt_prev);
+      str<<"  k_T next : "<<sqrt(part.m_kt_next);
       str<<std::endl;
     }
     if (part.m_fixspec!=Vec4D())
@@ -76,6 +78,8 @@ void Parton::UpdateNewDaughters(Parton *ref)
   p_next->SetStart(m_kt_start);
   p_next->SetKtMax(m_kt_max);
   p_next->SetVeto(m_kt_veto);
+  p_next->SetKtPrev(ref->KtPrev());
+  p_next->SetKtNext(ref->KtNext());
   p_next->SetId(m_id);
   msg_IODebugging()<<*p_next;
   p_next->UpdateNewDaughters(ref);

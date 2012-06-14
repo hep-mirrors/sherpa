@@ -270,7 +270,7 @@ double LF_FFV_FF::operator()
 double LF_FFV_FF::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
-  //if (scale<sqr(p_ms->Mass(m_flavs[1]))) return 0.;
+  if (scale<sqr(p_ms->Mass(m_flavs[1]))) return 0.;
   m_zmin = zmin; m_zmax = zmax;
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) *log((1.-zmin)/(1.-zmax));
 }
@@ -329,7 +329,7 @@ double LF_FFV_FI::operator()
 double LF_FFV_FI::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
-  //if (scale<sqr(p_ms->Mass(m_flavs[1]))) return 0.;
+  if (scale<sqr(p_ms->Mass(m_flavs[1]))) return 0.;
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax=m_flspec.Kfcode()<3?5.:1.;
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))*log((1.-zmin)/(1.-zmax)) * m_Jmax;
@@ -449,7 +449,7 @@ double LF_FVF_FF::operator()
 double LF_FVF_FF::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
-  //if (scale<sqr(p_ms->Mass(m_flavs[2]))) return 0.;
+  if (scale<sqr(p_ms->Mass(m_flavs[2]))) return 0.;
   m_zmin = zmin; m_zmax = zmax;
   return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))*log(zmax/zmin);
 }
@@ -505,7 +505,7 @@ double LF_FVF_FI::operator() (const double z,const double y,
 double LF_FVF_FI::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
-  //if (scale<sqr(p_ms->Mass(m_flavs[2]))) return 0.;
+  if (scale<sqr(p_ms->Mass(m_flavs[2]))) return 0.;
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax=m_flspec.Kfcode()<3?5.:1.;
   return (2.0*p_cf->MaxCoupling(0)*(2.+CDISMax()) + 0.5*p_cf->MaxCoupling(1)) * log(zmax/zmin) * m_Jmax;
@@ -645,7 +645,7 @@ double LF_VFF_FF::operator()
 double LF_VFF_FF::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
-  //if (scale<4.*sqr(p_ms->Mass(m_flavs[1]))) return 0.;
+  if (scale<4.*sqr(p_ms->Mass(m_flavs[1]))) return 0.;
   m_zmin = zmin; m_zmax = zmax;
   return (2.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (m_zmax-m_zmin);
 }
@@ -682,7 +682,7 @@ double LF_VFF_FI::operator()
    const double scale,const double Q2)
 {
   
-  //if (scale<4.*sqr(p_ms->Mass(m_flavs[1]))) return 0.;
+  if (scale<4.*sqr(p_ms->Mass(m_flavs[1]))) return 0.;
   
   double muQ2 = sqr(p_ms->Mass(m_flavs[1]))*(1.-y)/Q2;
   //the massless case 
@@ -707,7 +707,7 @@ double LF_VFF_FI::operator()
 double LF_VFF_FI::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
-  //if (scale<4.*sqr(p_ms->Mass(m_flavs[1]))) return 0.;
+  if (scale<4.*sqr(p_ms->Mass(m_flavs[1]))) return 0.;
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax=m_flspec.Kfcode()<3?5.:1.;
   return (2.0*p_cf->MaxCoupling(0)*(1.+CDISMax()) + 0.5*p_cf->MaxCoupling(1))* (m_zmax-m_zmin) * m_Jmax;

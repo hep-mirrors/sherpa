@@ -293,7 +293,7 @@ bool RootNtuple_Reader::ReadInSubEvent(Blob_List * blobs)
 	THROW(fatal_error,"Invalid scale scheme");
     }
     Scale_Setter_Base *scale(m_scales[p_vars->m_nparticle]);
-    scale->CalculateScale(p);
+    scale->CalculateScale(p,0);
     double weight=CalculateWeight
       (scale->Scale(stp::ren),scale->Scale(stp::fac),
        p_vars->m_nuwgt?1:0);
@@ -394,7 +394,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
 	  THROW(fatal_error,"Invalid scale scheme");
       }
       Scale_Setter_Base *scale(m_scales[p_vars->m_nparticle]);
-      scale->CalculateScale(p);
+      scale->CalculateScale(p,0);
       double weight=CalculateWeight
 	(scale->Scale(stp::ren),scale->Scale(stp::fac),
 	 p_vars->m_nuwgt?1:2);

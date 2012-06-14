@@ -90,7 +90,8 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
   if (mode&2) return !split->JetVeto(&m_sudakov);
   if (split->GetLeft()==NULL) return 1;
   if (split->GetRight()==NULL) THROW(fatal_error,"Invalid tree structure");
-  DEBUG_FUNC(split);
+  msg_Debugging()<<METHOD<<"("<<split<<"): {\n";
+  msg_Indent();
   Parton *l(split->GetLeft()), *r(split->GetRight());
   Parton *c(split->GetSplit()->FollowUp()), *s(split->GetSpec());
   int kin(l->Kin()), ckin(c->Kin());
@@ -110,6 +111,7 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
 	      s->UpdateDaughters();
 	      s=*sit;
 	      msg_Debugging()<<"new spec for "<<cf<<" "<<*s<<"\n";
+	      ckin=m_kscheme;
 	      break;
 	    }
 	  break;
@@ -144,7 +146,8 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
       l->SetMass2(mi2);
       if (stat>0) stat=RemnantTest(s);
       if (stat>0)
-	split->BoostAllFS(l,r,s,c,c->GetFlavour(),4|2);
+	split->BoostAllFS(l,r,s,split->GetSplit(),
+			  split->GetSplit()->GetFlavour(),2);
     }
   }
   else {
@@ -154,7 +157,8 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
       l->SetMass2(mi2);
       if (stat>0) stat=RemnantTest(l);
       if (stat>0)
-	split->BoostAllFS(l,r,s,c,c->GetFlavour(),4|1);
+	split->BoostAllFS(l,r,s,split->GetSplit(),
+			  split->GetSplit()->GetFlavour(),1);
     }
     else {
       stat=m_kinII.MakeKinematics(l,mi2,mj2,flj,r,1);
@@ -162,7 +166,8 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
       l->SetMass2(mi2);
       if (stat>0) stat=RemnantTest(l);
       if (stat>0)
-	split->BoostAllFS(l,r,s,c,c->GetFlavour(),4|3);
+	split->BoostAllFS(l,r,s,split->GetSplit(),
+			  split->GetSplit()->GetFlavour(),3);
     }
   }
   if (stat<=0) {
@@ -185,20 +190,10 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
   int nres(ReconstructDaughters(l->GetSing(),mode,pi,pj));
   if (nres>0 && l->GetSing()!=r->GetSing())
     nres=ReconstructDaughters(r->GetSing(),mode,pi,pj);
-  if (stat>0) {
-    l->SetKin(ckin);
-    split->BoostBackAllFS
-      (l,r,s,c,c->GetFlavour(),
-       (s->GetType()==pst::IS?(c->GetType()==pst::IS?3:2):
-	(c->GetType()==pst::IS?1:0))|4);
-    l->SetKin(kin);
-    l->SetFixSpec(spi);
-    r->SetFixSpec(spj);
-    s->SetFixSpec(spk);
-    l->SetOldMomentum(opi);
-    r->SetOldMomentum(opj);
-    s->SetOldMomentum(opk);
-  }
+  if (stat>0) split->BoostBackAllFS
+    (l,r,s,split->GetSplit(),split->GetSplit()->GetFlavour(),
+     (s->GetType()==pst::IS?(c->GetType()==pst::IS?3:2):
+      (c->GetType()==pst::IS?1:0))|4);
   msg_Debugging()<<"} -> "<<nres<<"\n";
   if (s!=split->GetSpec()) s->GetPrev()->UpdateDaughters();
   return nres;
@@ -214,6 +209,10 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   newpC->SetKtMax(split->KtMax());
   newpB->SetVeto(split->KtVeto());
   newpC->SetVeto(split->KtVeto());
+  newpB->SetKtPrev(split->KtPrev());
+  newpC->SetKtPrev(split->KtPrev());
+  newpB->SetKtNext(split->KtNext());
+  newpC->SetKtNext(split->KtNext());
   newpB->SetStat(split->Stat());
   if (split->GetNext()) {
     split->GetNext()->SetPrev(newpB);
@@ -231,10 +230,7 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   }
   split->SetFlow(1,newpB->GetFlow(1));
   split->SetFlow(2,newpB->GetFlow(2));
-  newpB->SetPrev(split->GetPrev());
-  newpC->SetPrev(split->GetPrev());
-  newpB->SetFixSpec(split->FixSpec());
-  newpB->SetOldMomentum(split->OldMomentum());
+  newpB->SetPrev(split);
   int rd(ReconstructDaughters(split->GetSing(),mode,newpB,newpC));
   split->GetSing()->RemoveParton(newpC);
   if (rd<=0 || (mode&2)) {
@@ -245,6 +241,7 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
     }
     return rd;
   }
+  newpB->SetPrev(split->GetPrev());
   if (split==split->GetSing()->GetSplit()) {
     split->GetSing()->SetSplit(newpB);
     split->GetSing()->GetLeft()->SetPrev(newpB);
@@ -253,11 +250,10 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   return rd;
 }
 
-void Shower::ResetScales(const double &kt2)
+void Shower::ResetScales(Parton *const split)
 {
   for (PLiter pit(p_actual->begin());pit!=p_actual->end();++pit)
-    if ((*pit)->GetPrev()==NULL ||
-	(*pit)->GetPrev()->KScheme()!=1) (*pit)->SetStart(kt2);
+    (*pit)->SetStart(split->KtTest());
   m_last[0]=m_last[1]=m_last[2]=NULL;
 }
 
@@ -283,31 +279,28 @@ int Shower::MakeKinematics
   DEBUG_FUNC(mode);
   Parton *spect(split->GetSpect()), *pj(NULL);
   Vec4D peo(split->Momentum()), pso(spect->Momentum());
-  Vec4D pem(split->OldMomentum()), psm(spect->OldMomentum());
-  Vec4D pef(split->FixSpec()), psf(spect->FixSpec());
   int stype(-1), stat(-1);
-  double mc2(m_kinFF.MS()->Mass2(flc)), mi2(0.0);
+  double mc2(m_kinFF.MS()->Mass2(flc));
   if (split->GetType()==pst::FS) {
-    mi2=m_kinFF.MS()->Mass2(flb);
-    if (mode==0 && split->KScheme()) mi2=split->Mass2();
+    double mb2(m_kinFF.MS()->Mass2(flb));
     if (spect->GetType()==pst::FS) {
       stype=0;
-      stat=m_kinFF.MakeKinematics(split,mi2,mc2,flc,pj);
+      stat=m_kinFF.MakeKinematics(split,mb2,mc2,flc,pj);
     }
     else {
       stype=2;
-      stat=m_kinFI.MakeKinematics(split,mi2,mc2,flc,pj);
+      stat=m_kinFI.MakeKinematics(split,mb2,mc2,flc,pj);
     }
   }
   else {
-    mi2=m_kinFF.MS()->Mass2(fla);
+    double ma2(m_kinFF.MS()->Mass2(fla));
     if (spect->GetType()==pst::FS) {
       stype=1;
-      stat=m_kinIF.MakeKinematics(split,mi2,mc2,flc,pj);
+      stat=m_kinIF.MakeKinematics(split,ma2,mc2,flc,pj);
     }
     else {
       stype=3;
-      stat=m_kinII.MakeKinematics(split,mi2,mc2,flc,pj);
+      stat=m_kinII.MakeKinematics(split,ma2,mc2,flc,pj);
     }
   }
   if (stat==1) {
@@ -319,19 +312,15 @@ int Shower::MakeKinematics
   if (stat==-1) {
     split->SetMomentum(peo);
     spect->SetMomentum(pso);
-    split->SetOldMomentum(pem);
-    spect->SetOldMomentum(psm);
-    split->SetFixSpec(pef);
-    spect->SetFixSpec(psf);
+    if (mode==0) ResetScales(split);
     delete pj;
     return stat;
   }
   Parton *pi(new Parton((stype&1)?fla:flb,
 			split->Momentum(),split->GetType()));
-  pi->SetMass2(mi2);
+  pi->SetMass2(m_sudakov.MS()->Mass2(pi->GetFlavour()));
   pi->SetSing(split->GetSing());
   pi->SetId(split->Id());
-  pi->SetKScheme(split->KScheme());
   pi->SetKin(split->Kin());
   pj->SetKin(m_kscheme);
   pi->SetLT(split->LT());
@@ -351,14 +340,11 @@ int Shower::MakeKinematics
     pj->DeleteAll();
     split->SetMomentum(peo);
     spect->SetMomentum(pso);
-    split->SetOldMomentum(pem);
-    spect->SetOldMomentum(psm);
-    split->SetFixSpec(pef);
-    spect->SetFixSpec(psf);
     msg_Debugging()<<"Save history for\n"<<*split<<*spect<<"\n";
     split->UpdateDaughters();
     spect->UpdateDaughters();
     if (mode==0) {
+      ResetScales(split);
       if (!ReconstructDaughters(split->GetSing(),0)) {
 	msg_Error()<<METHOD<<"(): Reconstruction error. Reject event."<<std::endl;
 	return 0;
@@ -377,12 +363,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 {
   p_actual=act;
   Vec4D mom;
-  double kt2win;
-  if (p_actual->GetSplit() &&
-      p_actual->GetSplit()->KScheme()==1) {
-    p_actual->GetLeft()->GetSing()->SetKtPrev(p_actual->KtPrev());
-    return true;
-  }
+  double kt2win, kt2old(std::numeric_limits<double>::max());
   if (nem>=maxem) return true;
   while (true) {
     for (Singlet::const_iterator it=p_actual->begin();it!=p_actual->end();++it)
@@ -402,31 +383,31 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     else {
       msg_Debugging()<<"Emission "<<m_flavA<<" -> "<<m_flavB<<" "<<m_flavC
 		     <<" at kt = "<<sqrt(split->KtTest())
-		     <<"( "<<sqrt(split->GetSing()->KtNext())<<" .. "
-		     <<sqrt(split->KtStart())<<" ), z = "<<split->ZTest()<<", y = "
+		     <<"( "<<sqrt(split->KtNext())<<" .. "
+		     <<sqrt(split->KtPrev())<<" ), z = "<<split->ZTest()<<", y = "
 		     <<split->YTest()<<" for\n"<<*split
 		     <<*split->GetSpect()<<"\n";
       m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
-      if (kt2win<split->GetSing()->KtNext()) {
+      if (kt2win<split->KtNext()) {
 	msg_Debugging()<<"... Defer split ...\n\n";
-	ResetScales(split->GetSing()->KtNext());
 	return true;
       }
-      ResetScales(kt2win);
-      if (kt2win>split->GetSing()->KtPrev()) continue;
+      if (kt2win>Min(kt2old,split->KtPrev())) {
+	THROW(fatal_error,"Internal error");
+      }
       if (split->GetSing()->GetLeft()) {
 	if (split->GetType()==pst::IS) {
 	  if (m_flavA!=split->GetFlavour()) {
 	    msg_Debugging()<<"... Veto flavour change ...\n\n";
-	    if (split->TMin()) continue;
-	    return false;
+	    ResetScales(split);
+	    continue;
 	  }
 	}
 	else {
 	  if (m_flavB!=split->GetFlavour()) {
 	    msg_Debugging()<<"... Veto flavour change ...\n\n";
-	    if (split->TMin()) continue;
-	    return false;
+	    ResetScales(split);
+	    continue;
 	  }
 	}
       }
@@ -529,9 +510,17 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
             m_weight*=(*it)->Weight(m_last[0]->KtStart());
             (*it)->Weights().clear();
           }
+          (*it)->SetKtPrev(m_last[0]->KtStart());
+        }
+      }
+      else {
+        for (Singlet::const_iterator it=p_actual->begin();
+             it!=p_actual->end();++it) {
+          (*it)->SetKtPrev(kt2win);
         }
       }
       if (++nem>=maxem) return true;
+      kt2old=kt2win;
     }
   }
   return true;
@@ -548,13 +537,20 @@ Parton *Shower::SelectSplitting(double & kt2win) {
 
 bool Shower::TrialEmission(double & kt2win,Parton * split) 
 {
-  if (split->KtStart()==0.0 ||
-      split->KtStart()<split->GetSing()->KtNext()) return false;
+  if (split->KtStart()==0. || split->KtVeto()==0.) return false;
   double kt2(0.),z(0.),y(0.),phi(0.);
   while (true) {
   if (m_sudakov.Generate(split)) {
     m_sudakov.GetSplittingParameters(kt2,z,y,phi);
     split->SetWeight(m_sudakov.Weight());
+    if (kt2>split->KtNext() && kt2>split->KtPrev()) {
+      split->SetStart(kt2);
+      continue;
+    }
+    if (kt2<split->KtNext()) {
+      split->SetKtNext(split->KtStart());
+      return false;
+    }
     if (kt2>kt2win) {
       kt2win  = kt2;
       m_flavA = m_sudakov.GetFlavourA();

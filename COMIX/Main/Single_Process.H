@@ -76,8 +76,7 @@ namespace COMIX {
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes> &amps,
 			std::vector<std::vector<Complex> > &cols);
 
-    ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl,
-			  const size_t &id) const;
+    ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl) const;
 
     ATOOLS::NLO_subevtlist *GetSubevtList();
 

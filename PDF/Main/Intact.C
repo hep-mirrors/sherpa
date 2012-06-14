@@ -11,7 +11,7 @@ Intact::Intact(ATOOLS::Flavour _bunch):
   m_weight = 1.;
 }
 
-bool Intact::CalculateWeight(double x,double z,double kp2,double q2,int warn) 
+bool Intact::CalculateWeight(double x,double z,double kp2,double q2) 
 { 
   return 1; 
 }

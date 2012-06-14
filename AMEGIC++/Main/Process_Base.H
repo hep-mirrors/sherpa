@@ -86,7 +86,6 @@ namespace AMEGIC {
     virtual double operator()(const ATOOLS::Vec4D *) { return 0.; }
     virtual void               PrintProcessSummary(int=0);
     ATOOLS::Flavour ReMap(const ATOOLS::Flavour&,const std::string&) const;
-    ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl,const size_t &id) const;
     inline static void SetGauge(const int gauge) { s_gauge=gauge; }
   protected:
     double         SymmetryFactors();

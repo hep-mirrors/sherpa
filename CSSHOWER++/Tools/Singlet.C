@@ -32,8 +32,7 @@ std::ostream& CSSHOWER::operator<<(std::ostream& str, Singlet & singlet) {
     if (singlet.GetSpec()) str<<"Spec:  "<<singlet.GetSpec()<<"  ";
     str<<"\n";
   }
-  str<<"mom sum "<<sum<<", k_T,prev = "<<sqrt(singlet.KtPrev())
-     <<", k_T,next = "<<sqrt(singlet.KtNext())<<"\n";
+  str<<"mom sum "<<sum<<"\n";
   str<<"-------------------------------------------------------------------------"<<endl;
   return str;
 }
@@ -1011,11 +1010,11 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   for (All_Singlets::const_iterator asit(p_all->begin());
        asit!=p_all->end();++asit) {
     for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-      if (*plit==f || *plit==l || *plit==r || *plit==s) continue;
       if ((*plit)->FixSpec()!=Vec4D()) {
 	(*plit)->SetFixSpec(l->LT()*(*plit)->FixSpec());
 	(*plit)->SetOldMomentum(l->LT()*(*plit)->OldMomentum());
       }
+      if (*plit==f || *plit==l || *plit==r || *plit==s) continue;
       (*plit)->SetMomentum(l->LT()*(*plit)->Momentum());
     }
   }
@@ -1028,18 +1027,6 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   Vec4D pa(l->Momentum()), pk(s->Momentum()), pi(r->Momentum());
   double ma2(l->Mass2()), mk2(s->Mass2());
   double mi2(r->Mass2()), mai2(f->Mass2());
-  if (f->KScheme()) {
-    mai2=(pa-pi).Abs2();
-    pk=f->FixSpec();
-    if (mode&2) {
-    // temporary !!!
-    pk=s->Momentum();
-    pk[1]=pk[2]=0.0;
-    pk[0]=dabs(pk[3]);
-    // end temporary
-    }
-    mk2=0.0;
-  }
   Kin_Args lp;
   if (mode&2) {
     if (mode&1) {
@@ -1055,12 +1042,9 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 	  break;
 	}
       if (b==NULL) THROW(fatal_error,"Corrupted singlet");
-      lp=ClusterIFDipole(ma2,mi2,mai2,mk2,b->Mass2(),pa,pi,pk,
+      double mb2(p_ms->Mass2(b->GetFlavour()));
+      lp=ClusterIFDipole(ma2,mi2,mai2,mk2,mb2,pa,pi,pk,
 			 b->Momentum(),2|(((mode&4)?f:l)->Kin()?4:0));
-      if ((mode&8) && f->KScheme()) {
-	f->SetFixSpec(lp.m_lam*f->FixSpec());
-	f->SetOldMomentum(lp.m_lam*f->OldMomentum());
-      }
     }
   }
   if (lp.m_lam.empty()) return;

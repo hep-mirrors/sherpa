@@ -115,8 +115,6 @@ namespace AMEGIC {
     int            NumberOfDiagrams();
     Point        * Diagram(int i);
 
-    ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl,const size_t &id) const;
-
     bool PerformTests() { return true; }
 
    /*------------------------------------------------------------------------------

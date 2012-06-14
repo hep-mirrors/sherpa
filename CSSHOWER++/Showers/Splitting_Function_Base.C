@@ -280,7 +280,6 @@ double SF_Lorentz::JFF(const double &y) const
 double SF_Lorentz::JFI(const double &y,const double &eta,
 		       const double &scale) const
 { 
-  if (scale<0.0) return 1.0;
   double scalea(scale), scaleb(scale);
   double fresh = p_sf->GetXPDF(scalea,eta/(1.0-y),m_flspec,m_beam);
   double old = p_sf->GetXPDF(scaleb,eta,m_flspec,m_beam);
@@ -291,7 +290,6 @@ double SF_Lorentz::JFI(const double &y,const double &eta,
 double SF_Lorentz::JIF(const double &z,const double &y,const double &eta,
 		       const double &scale) const
 { 
-  if (scale<0.0) return 1.0/z;
   double scalea(scale), scaleb(scale);
   double fresh = p_sf->GetXPDF(scalea,eta/z,m_flavs[0],m_beam);
   double old = p_sf->GetXPDF(scaleb,eta,m_flavs[1],m_beam);
@@ -302,7 +300,6 @@ double SF_Lorentz::JIF(const double &z,const double &y,const double &eta,
 double SF_Lorentz::JII(const double &z,const double &y,const double &eta,
 		       const double &scale) const
 { 
-  if (scale<0.0) return 1.0/z;
   double scalea(scale), scaleb(scale);
   double fresh = p_sf->GetXPDF(scalea,eta/z,m_flavs[0],m_beam);
   double old = p_sf->GetXPDF(scaleb,eta,m_flavs[1],m_beam);

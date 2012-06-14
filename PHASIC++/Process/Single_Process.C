@@ -61,54 +61,6 @@ double Single_Process::BeamISRWeight
     wgt*=p_int->ISR()->Weight
       (mode,p_int->Momenta()[0],p_int->Momenta()[1],
        Q2,Q2,m_flavs[0],m_flavs[1]);
-    int set(false);
-    double LQ2(Q2);
-    ClusterAmplitude_Vector &ampls
-      ((IsMapped()?p_mapproc:this)->ScaleSetter()->Amplitudes());
-    if (ampls.size()) {
-      DEBUG_FUNC(m_name<<", mode = "<<mode);
-      Cluster_Amplitude *ampl(ampls.front());
-      if (m_pinfo.Has(nlo_type::real)) ampl=ampl->Next();
-      for (;ampl;ampl=ampl->Next()) {
-	if (IsEqual(LQ2,ampl->KT2())) continue;
-	if (ampl->Next()) {
-	  if (ampl->Next()->Splitter()->Stat()==3) {
-	    msg_Debugging()<<"Skip decay "<<
-	      ID(ampl->Next()->Splitter()->Id())<<"\n";
-	    continue;
-	  }
-	}
-	if (set && LQ2>ampl->KT2()) {
-	  msg_Debugging()<<"Skip unordering "<<
-	    sqrt(LQ2)<<" > "<<sqrt(ampl->KT2())<<"\n";
-	  LQ2=ampl->KT2();
-	  continue;
-	}
-	Flavour f1(ampl->Leg(0)->Flav().Bar());
-	Flavour f2(ampl->Leg(1)->Flav().Bar());
-	if (MapProc() && LookUp()) {
-	  f1=ReMap(f1,ampl->Leg(0)->Id());
-	  f2=ReMap(f2,ampl->Leg(1)->Id());
-	}
-	msg_Debugging()<<"PDF ratio "<<f1<<"("<<ampl->Leg(0)->Flav().Bar()
-		       <<"),"<<f2<<"("<<ampl->Leg(1)->Flav().Bar()
-		       <<") at "<<sqrt(LQ2);
-	double wd1=p_int->ISR()->Weight
-	  (mode|2,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
-	double wd2=p_int->ISR()->Weight
-	  (mode|4,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
-	LQ2=ampl->KT2();
-	set=true;
-	double wn1=p_int->ISR()->Weight
-	  (mode|2,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
-	double wn2=p_int->ISR()->Weight
-	  (mode|4,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
-	if (!IsZero(wn1) && !IsZero(wd1)) wgt*=wn1/wd1;
-	if (!IsZero(wn2) && !IsZero(wd2)) wgt*=wn2/wd2;
-	msg_Debugging()<<" / "<<sqrt(LQ2)<<" -> "
-		       <<wn1/wd1<<" * "<<wn2/wd2<<" ( "<<wgt<<" )\n";
-      }
-    }
   }
   if (p_int->Beam() && p_int->Beam()->On()) {
     p_int->Beam()->MtxLock();
@@ -295,12 +247,6 @@ ATOOLS::ME_wgtinfo *Single_Process::GetMEwgtinfo()
   return &m_wgtinfo; 
 }
 
-ATOOLS::Flavour Single_Process::ReMap
-(const ATOOLS::Flavour &fl,const size_t &id) const
-{
-  return fl;
-}
-
 Cluster_Amplitude *Single_Process::Cluster
 (const size_t &mode,const double &kt2)
 {
@@ -320,18 +266,11 @@ Cluster_Amplitude *Single_Process::Cluster
     if (ampls.size()) {
       msg_Debugging()<<METHOD<<"(): Found "
 		     <<ampls.size()<<" amplitude(s) ... ";
+      if (ampls.size()>2) 
+	THROW(fatal_error,"Invalid number of amplitudes");
       if (p_int->InSwaped()) {
 	msg_Debugging()<<"select 2nd.\n";
-	Cluster_Amplitude *ampl(ampls.front()->CopyAll());
-	for (Cluster_Amplitude *campl(ampl);
-	     campl;campl=campl->Next()) {
-	  std::swap<Cluster_Leg*>(campl->Legs()[0],campl->Legs()[1]);
-	  for (size_t i(0);i<campl->Legs().size();++i) {
-	    const Vec4D &p(campl->Leg(i)->Mom());
-	    campl->Leg(i)->SetMom(Vec4D(p[0],-p[1],-p[2],-p[3]));
-	  }
-	}
-	return ampl;
+	return ampls.back()->CopyAll();
       }
       msg_Debugging()<<"select 1st.\n";
       return ampls.front()->CopyAll();

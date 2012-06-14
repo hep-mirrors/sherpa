@@ -45,7 +45,8 @@ namespace PHASIC {
 
     ~Fastjet_Scale_Setter();
 
-    double Calculate(const std::vector<ATOOLS::Vec4D> &p);
+    double Calculate(const std::vector<ATOOLS::Vec4D> &p,
+		     const int mode);
 
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
@@ -157,8 +158,9 @@ const Vec4D_Vector &Fastjet_Scale_Setter::Momenta() const
 }
 
 double Fastjet_Scale_Setter::Calculate
-(const std::vector<ATOOLS::Vec4D> &momenta) 
+(const std::vector<ATOOLS::Vec4D> &momenta,const int mode) 
 {
+  if (mode==1) return m_scale[stp::fac];
   m_p.resize(2);
   m_p[0]=-momenta[0];
   m_p[1]=-momenta[1];

@@ -10,15 +10,14 @@ namespace CSSHOWER {
 
   struct CS_Parameters {
     double m_kt2, m_z, m_y, m_phi, m_x, m_wk, m_ws, m_q2, m_mu2;
-    int m_mode, m_kin, m_col, m_kmode;
+    int m_mode, m_kin, m_col;
     Splitting_Function_Base *p_sf;
-    ATOOLS::Vec4D m_pk;
     CS_Parameters(const double &kt2,const double &z,
 		  const double &y,const double &phi,
 		  const double &x,const double &q2,
-		  const int mode,const int kin,const int kmode):
+		  const int mode,const int kin):
       m_kt2(kt2), m_z(z), m_y(y), m_phi(phi), m_x(x), m_wk(1.0), m_ws(kt2),
-      m_q2(q2), m_mu2(kt2), m_mode(mode), m_kin(kin), m_col(0), m_kmode(kmode), p_sf(NULL) {}
+      m_q2(q2), m_mu2(kt2), m_mode(mode), m_kin(kin), m_col(0), p_sf(NULL) {}
   };// end of struct CS_Parameters
 
   std::ostream &operator<<(std::ostream &str,const CS_Parameters &cs);
@@ -53,22 +52,20 @@ namespace CSSHOWER {
     PDF::CParam KPerp2(const ATOOLS::Cluster_Amplitude &ampl,
 		  int i,int j,int k,
 		  const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
-		       ATOOLS::Mass_Selector *const ms=NULL,
-		       const int kin=-1,const int mode=0);
+		       ATOOLS::Mass_Selector *const ms=NULL,const int kin=-1);
     CS_Parameters KT2(const ATOOLS::Cluster_Amplitude *ampl,
 		      const ATOOLS::Cluster_Leg *i,
 		      const ATOOLS::Cluster_Leg *j,
 		      const ATOOLS::Cluster_Leg *k,
 		      const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
-		      ATOOLS::Mass_Selector *const ms=NULL,
-		      const int kin=-1,const int mode=0);
+		      ATOOLS::Mass_Selector *const ms=NULL,const int kin=-1);
 
     // CS cluster kinematics
     ATOOLS::Vec4D_Vector Combine(const ATOOLS::Cluster_Amplitude &ampl,
 				 int i,int j,int k,
 				 const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
 				 ATOOLS::Mass_Selector *const ms=NULL,
-				 const int kin=0,const int mode=0);
+				 const int kin=0);
     
     PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl);
 

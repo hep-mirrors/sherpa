@@ -8,14 +8,13 @@ namespace PDF {
 
   struct CParam {
     double m_kt2, m_op2, m_x, m_mu2;
-    int m_kin, m_mode;
+    int m_kin;
     inline CParam(const double &kt2=0.0,
 		  const double &op2=0.0,
 		  const double &x=0.0,
 		  const double &mu2=0.0,
-		  const int kin=0,const int mode=0):
-      m_kt2(kt2), m_op2(op2), m_x(x), m_mu2(mu2),
-      m_kin(kin), m_mode(mode) {}
+		  const int kin=0):
+      m_kt2(kt2), m_op2(op2), m_x(x), m_mu2(mu2), m_kin(kin) {}
   };// end of struct CParam
 
   std::ostream &operator<<(std::ostream &str,const CParam &cp);
@@ -30,14 +29,12 @@ namespace PDF {
     virtual CParam KPerp2
     (const ATOOLS::Cluster_Amplitude &ampl,int i,int j=-1,int k=-1,
      const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
-     ATOOLS::Mass_Selector *const ms=NULL,
-     const int kin=-1,const int mode=0) = 0;
+     ATOOLS::Mass_Selector *const ms=NULL,const int kin=-1) = 0;
 
     virtual ATOOLS::Vec4D_Vector Combine
     (const ATOOLS::Cluster_Amplitude &ampl,int i,int j,int k=-1,
      const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
-     ATOOLS::Mass_Selector *const ms=NULL,
-     const int kin=0,const int mode=0) = 0;
+     ATOOLS::Mass_Selector *const ms=NULL,const int kin=0) = 0;
 
     virtual CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl);
 

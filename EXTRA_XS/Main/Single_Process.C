@@ -94,10 +94,10 @@ bool Single_Process::Initialize()
 double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta,
 				const int mode) 
 {
-  if (mode==1) return m_lastxs;
+  if (mode==1 && !p_scale->Scale2()) return m_lastxs;
   if (m_nlotype==nlo_type::lo && !Selector()->Result()) return m_lastxs=0.0;
   
-  p_scale->CalculateScale(momenta);
+  p_scale->CalculateScale(momenta,mode);
   if (p_born_me2) {
     m_lastxs=(*p_born_me2)(momenta);
   }

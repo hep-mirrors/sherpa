@@ -41,9 +41,6 @@ namespace COMIX {
 
   typedef std::map<Cluster_Info,double> Vertex_Set;
 
-  typedef std::pair<size_t,double> KT2_Info;
-  typedef std::vector<KT2_Info>    KT2Info_Vector;
-
   class Single_Process;
 
   class Cluster_Algorithm {
@@ -74,7 +71,7 @@ namespace COMIX {
     
     PDF::CParam GetMeasure(const size_t &idi,const size_t &idj,
 			   const size_t &idk,const ATOOLS::Flavour &mofl,
-			   Double_Map &kt2,const SizeT_Map &cid,int cut);
+			   Double_Map &kt2,const SizeT_Map &cid);
 
     void CalculateMeasures(const size_t &step,const Vertex_Set &nocl,
 			   const Current_Vector &curs,Current *const fcur,
@@ -87,7 +84,7 @@ namespace COMIX {
 		     ClusterInfo_Map &cinfo,Double_Map &kt2);
     bool Cluster(const size_t &step,const Vertex_Set &nocl,
 		 const Current_Vector &ccurs,Current *const fcur,
-		 const ClusterInfo_Map &cinfo,KT2Info_Vector &kt2ord);
+		 const ClusterInfo_Map &cinfo);
 
     bool SetRandomColors(Single_Process *const xs);
     bool SetLargeNCColors(Single_Process *const xs);
@@ -95,9 +92,6 @@ namespace COMIX {
 
     void SetNMax(ATOOLS::Cluster_Amplitude *const ampl,
 		 const size_t &id,const size_t &nmax) const;
-
-    KT2Info_Vector UpdateKT2(const KT2Info_Vector &kt2ord,
-			     const Cluster_Amplitude *ampl) const;
 
   public:
 

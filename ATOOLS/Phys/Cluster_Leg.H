@@ -103,6 +103,7 @@ namespace ATOOLS {
     inline void SetId(const size_t &id)   { m_id=id; }
     inline void SetStat(const size_t &st) { m_st=st; }
     inline void SetNMax(const size_t &n)  { m_n=n;   }
+    inline void SetDMax(const size_t &d)  { m_d=d;   }
     inline void SetK(const size_t &k)     { m_k=k;   }
       
     inline void SetCol(const ColorID &c)   { m_c=c; }
@@ -124,6 +125,7 @@ namespace ATOOLS {
     inline size_t Id() const   { return m_id; }
     inline size_t Stat() const { return m_st; }
     inline size_t NMax() const { return m_n;  }
+    inline size_t DMax() const { return m_d;  }
     inline size_t K() const    { return m_k;  }
 
     inline double KTStart() const { return m_ktstart; }

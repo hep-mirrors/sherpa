@@ -295,14 +295,14 @@ void ISR_Handler::SetLimits(Double_Vector &spkey,Double_Vector &ykey,
 }
 
 double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
-			   double Q12,double Q22,Flavour fl1,Flavour fl2,int warn)
+			   double Q12,double Q22,Flavour fl1,Flavour fl2)
 {
   if (m_mode==0) return 0.25/sqrt(sqr(p1*p2)-p1.Abs2()*p2.Abs2());
   msg_IODebugging()<<METHOD<<"(mode = "<<mode<<")\n";
   if (fl1.Size()>1 || fl2.Size()>1)
     THROW(fatal_error,"Do not try to calculate an ISR weight with containers.");
   double x1(0.),x2(0.);
-  if (mode&1) {
+  if (mode) {
     p1[3]=-p1[3];
     p2[3]=-p2[3];
     std::swap<Flavour>(fl1,fl2);
@@ -322,48 +322,43 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
   if (PDF(1) && (Q22<PDF(1)->Q2Min() || Q22>PDF(1)->Q2Max()))
     return 0.;
   MtxLock();
-  m_mu2[mode&1]=Q12;
-  m_mu2[1-(mode&1)]=Q22;
-  int cmode(((mode&6)>>1)?((mode&6)>>1):m_mode);
-  if ((cmode==1 && PDF(0)==NULL) ||
-      (cmode==2 && PDF(1)==NULL)) return 1.0;
-  switch (cmode) {
+  m_mu2[mode]=Q12;
+  m_mu2[1-mode]=Q22;
+  switch (m_mode) {
     case 3 :
       if (!p_isrbase[0]->PDF()->Contains(fl1) ||
           !p_isrbase[1]->PDF()->Contains(fl2)) { MtxUnLock(); return 0.; }
       if (x1>p_isrbase[0]->PDF()->RescaleFactor() ||
           x2>p_isrbase[1]->PDF()->RescaleFactor()) { MtxUnLock(); return 0.; }
-      if (p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12,warn) &&
-          p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22,warn)) break;
+      if (p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12) &&
+          p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22)) break;
     case 2 :
       if (!p_isrbase[1]->PDF()->Contains(fl2)) { MtxUnLock(); return 0.; }
       if (m_x[1]>p_isrbase[1]->PDF()->RescaleFactor()) { MtxUnLock(); return 0.; }
-      if (p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22,warn)) break;
+      if (p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22)) break;
     case 1 :
       if (!p_isrbase[0]->PDF()->Contains(fl1)) { MtxUnLock(); return 0.; }
       if (m_x[0]>p_isrbase[0]->PDF()->RescaleFactor()) { MtxUnLock(); return 0.; }
-      if (p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12,warn)) break;
+      if (p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12)) break;
     case 0 : break;
     default : MtxUnLock(); return 0.;
   }
-  if (cmode!=3 || (CheckRemnantKinematics(fl1,x1,0,false) &&
+  if (m_mode!=3 || (CheckRemnantKinematics(fl1,x1,0,false) &&
                     CheckRemnantKinematics(fl2,x2,1,false))) {
-    double f1=(cmode&1)?p_isrbase[0]->Weight(fl1):1.0;
-    double f2=(cmode&2)?p_isrbase[1]->Weight(fl2):1.0;
-    m_xf1[mode&1]=x1*f1;
-    m_xf2[mode&1]=x2*f2;
+    double f1=p_isrbase[0]->Weight(fl1), f2=p_isrbase[1]->Weight(fl2);
+    m_xf1[mode]=x1*f1;
+    m_xf2[mode]=x2*f2;
     MtxUnLock();
     msg_IODebugging()<<"  PDF1: "<<rpa->gen.Beam1()<<" -> "<<fl1<<" at ("<<x1
 		   <<","<<sqrt(Q12)<<") -> "<<om::bold<<f1<<om::reset<<"\n";
     msg_IODebugging()<<"  PDF2: "<<rpa->gen.Beam2()<<" -> "<<fl2<<" at ("<<x2
 		   <<","<<sqrt(Q22)<<") -> "<<om::bold<<f2<<om::reset<<"\n";
     double flux=0.25/sqrt(sqr(p1*p2)-p1.Abs2()*p2.Abs2());
-    msg_IODebugging()<<"  Flux: "<<flux<<", Weight: "
-		     <<f1*f2*((mode&6)?1.0:flux)<<std::endl;
+    msg_IODebugging()<<"  Flux: "<<flux<<", Weight: "<<f1*f2*flux<<std::endl;
     if (IsBad(f1*f2)) return 0.0;
     if (s_nozeropdf && f1*f2==0.0)
       return pow(std::numeric_limits<double>::min(),0.25);
-    return f1*f2*((mode&6)?1.0:flux);
+    return f1*f2*flux;
   }
   MtxUnLock();
   return 0.;

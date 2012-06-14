@@ -238,11 +238,9 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   double b(bproc->Differential(ampl,4|rm));
   if (b==0.0) return 0.0;
   double bvi(bviproc->Differential(ampl,4|rm));
-  double k(bvi/b*(1.0-rs/r)+rs/r);
   msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
-		 <<" -> K = "<<k<<"\n";
-  if (dabs(k)-1.0>r/b*ampl.Prev()->KT2()/ampl.KT2()) return 1.0;
-  return k;
+		 <<" -> K = "<<bvi/b*(1.0-rs/r)+rs/r<<"\n";
+  return bvi/b*(1.0-rs/r)+rs/r;
 }
 
 Cluster_Amplitude *MCatNLO_Process::GetAmplitude()
@@ -272,24 +270,17 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   rproc->Integrator()->RestoreInOrder();
   Vec4D_Vector &p(p_rsproc->Selected()->Integrator()->Momenta());
   rproc->SetFixedScale(p_rsproc->Selected()->ScaleSetter(1)->Scales());
-  rproc->ScaleSetter(1)->CalculateScale(Vec4D_Vector());
+  rproc->ScaleSetter(1)->CalculateScale(Vec4D_Vector(),swaped);
   rproc->SetFixedScale(std::vector<double>());
   rproc->GetMEwgtinfo()->m_mur2=
     p_rsproc->Selected()->GetMEwgtinfo()->m_mur2;
   rproc->Trigger(p);
   rproc->Differential(p);
   rproc->Differential2();
-  p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(256);
+  p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(256|512);
   if (swaped) {
     p_rsproc->Selected()->Integrator()->SwapInOrder();
     rproc->Integrator()->SwapInOrder();
-    for (Cluster_Amplitude *ampl(p_ampl);ampl;ampl=ampl->Next()) {
-      std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
-      for (size_t i(0);i<ampl->Legs().size();++i) {
-	Vec4D p(ampl->Leg(i)->Mom());
-	ampl->Leg(i)->SetMom(Vec4D(p[0],-p[1],-p[2],-p[3]));
-      }
-    }
   }
   if (p_ampl==NULL) {
     msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;

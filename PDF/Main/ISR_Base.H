@@ -46,7 +46,7 @@ namespace PDF {
     { p_pdf->Reset();    }
 
     // member functions
-    virtual bool   CalculateWeight(double x,double z,double kp2,double Q2,int warn) = 0;
+    virtual bool   CalculateWeight(double x,double z,double kp2,double Q2) = 0;
     virtual double Weight(ATOOLS::Flavour) = 0;
 
   };// end of class ISR_Base

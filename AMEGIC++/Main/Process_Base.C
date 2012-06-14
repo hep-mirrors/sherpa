@@ -202,10 +202,3 @@ ATOOLS::Flavour AMEGIC::Process_Base::ReMap(const ATOOLS::Flavour& f0,const std:
   }
   return f0;
 }
-
-ATOOLS::Flavour AMEGIC::Process_Base::ReMap
-(const ATOOLS::Flavour &fl,const size_t &id) const
-{
-  return ReMap(fl,ToString(PSId(id)));
-}
-

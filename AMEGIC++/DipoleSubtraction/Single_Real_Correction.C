@@ -302,7 +302,7 @@ void Single_Real_Correction::ReMapFlavs(NLO_subevt *const sub,const int mode)
 
 double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const int mode)
 {
-  if (mode==1) return m_lastxs;
+  if (mode==1 && !p_partner->p_tree_process->ScaleSetter()->Scale2()) return m_lastxs;
   m_lastxs = 0.;
     // So far only massless partons!!!!
 
@@ -358,7 +358,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   trg=p_tree_process->Selector()->JetTrigger(_mom,&m_subevtlist);
   trg|=!p_tree_process->Selector()->On();
 
-  m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->CalculateScale(_mom);
+  m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->CalculateScale(_mom,mode);
   m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
   if (trg) {
     m_realevt.m_me = m_realevt.m_mewgt
@@ -518,7 +518,3 @@ void Single_Real_Correction::SetSelectorOn(const bool on)
     m_subostermlist[i]->GetOSProcess()->SetSelectorOn(on);
 }
 
-ATOOLS::Flavour Single_Real_Correction::ReMap(const ATOOLS::Flavour &fl,const size_t &id) const
-{
-  return p_tree_process->ReMap(fl,id);
-}

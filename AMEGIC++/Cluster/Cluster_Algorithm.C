@@ -494,11 +494,9 @@ void Cluster_Algorithm::Convert()
       else if (i==iwin) {
 	p_ampl->Legs().back()->SetK(ampl->Leg(kwin)->Id());
 	ampl->SetIdNew(ct_tmp->Up()->GetLeg(jwin).ID());
-	if (win.Point()->t>10 || !flav.Strong()) {
-	  size_t dmax(win.Point()->t>10?win.Point()->t-10:0);
-	  if (dmax==0) dmax=IdCount(id);
+	if (win.Point()->t>10) {
 	  p_ampl->Legs().back()->SetStat(3);
-	  SetNMax(p_ampl->Prev(),id,dmax);
+	  SetNMax(p_ampl->Prev(),id,win.Point()->t-10);
 	}
       }
     }

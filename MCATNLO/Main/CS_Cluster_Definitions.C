@@ -20,20 +20,19 @@ CS_Cluster_Definitions::CS_Cluster_Definitions
 
 CParam CS_Cluster_Definitions::KPerp2
 (const Cluster_Amplitude &ampl,int i,int j,int k,
- const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,
- const int kin,const int kmode)
+ const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,const int kin)
 {
   m_mode=m_kmode;
-  CS_Parameters cs(KT2(&ampl,ampl.Leg(i),ampl.Leg(j),ampl.Leg(k),mo,ms,kmode));
+  CS_Parameters cs(KT2(&ampl,ampl.Leg(i),ampl.Leg(j),ampl.Leg(k),mo,ms));
   m_mode=0;
-  return CParam(cs.m_kt2,cs.m_ws,cs.m_x,cs.m_mu2,cs.m_kin,cs.m_kmode);
+  return CParam(cs.m_kt2,cs.m_ws,cs.m_x,cs.m_mu2,cs.m_kin);
 }
 
 CS_Parameters CS_Cluster_Definitions::KT2
 (const ATOOLS::Cluster_Amplitude *ampl,
  const ATOOLS::Cluster_Leg *i,const ATOOLS::Cluster_Leg *j,
  const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo,
- ATOOLS::Mass_Selector *const ms,const int ikin,const int kmode)
+ ATOOLS::Mass_Selector *const ms,const int ikin)
 {
   p_ms=ms;
   int kin(ikin<0?p_shower->KinScheme():ikin), col(1);
@@ -198,8 +197,7 @@ void CS_Cluster_Definitions::KernelWeight
 
 ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
 (const Cluster_Amplitude &ampl,int i,int j,int k,
- const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,
- const int kin,const int kmode)
+ const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,const int kin)
 {
   p_ms=ms;
   if (i>j) std::swap<int>(i,j);

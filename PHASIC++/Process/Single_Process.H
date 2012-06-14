@@ -52,9 +52,6 @@ namespace PHASIC {
     virtual const ATOOLS::Flavour_Vector &
     CombinedFlavour(const size_t &idij);
 
-    virtual ATOOLS::Flavour ReMap
-    (const ATOOLS::Flavour &fl,const size_t &id) const;
-
     inline void ResetLastXS() { m_lastxs=0.0; }
 
     inline double LastXS() const { return m_lastxs; }
