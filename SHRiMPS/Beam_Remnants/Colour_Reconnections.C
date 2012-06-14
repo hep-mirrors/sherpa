@@ -107,7 +107,7 @@ void Colour_Reconnections::FillWeightTable() {
 	break;
       case 1:
 //    dist /= m_reconn;
-        dist *= m_reconn;
+        dist *= exp(m_reconn);
 	break;
       case 0:
       default:

@@ -189,7 +189,7 @@ void Shrimps::GenerateXsecs() {
   std::string dirname = std::string("InclusiveQuantities");
   ATOOLS::MakeDir(dirname);
 
-  bool tuning(false);
+  bool tuning(true);
   
   if(!tuning){
     std::list<double> Energies;
