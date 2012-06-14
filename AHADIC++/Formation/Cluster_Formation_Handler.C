@@ -63,7 +63,7 @@ Cluster_Formation_Handler::~Cluster_Formation_Handler() {
 int Cluster_Formation_Handler::FormClusters(Blob * blob) {
 
   if (blob==NULL) return 1;
-  assert(m_partlists.empty() && m_clulists.empty());
+  if (!m_partlists.empty() || !m_clulists.empty()) Reset();
   //msg_Out()<<"\n\n\n\n"
   //		<<"====================================================\n"
   //		<<"====================================================\n"
