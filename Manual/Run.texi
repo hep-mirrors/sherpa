@@ -212,7 +212,7 @@ LHAPDF is used, otherwise the indetification numbers have to be given
 explicitly via @code{LHEF_PDF_NUMBER} (@code{LHEF_PDF_NUMBER_1} and 
 @code{LHEF_PDF_NUMBER_2} if both beams carry different structure functions).
 @item ROOTNTUPLE_OUTPUT=<filename>
-Filename for output in ROOT ntuple format for NLO event generation. 
+Filename for output in ROOT ntuple format @strong{for NLO event generation only}. 
 For details on ntuple format, see @ref{Structure of ROOT NTuple Output}.
 This output option is only available if Sherpa was linked to ROOT during 
 installation by using the configure option @code{--enable-root=/path/to/root}.
