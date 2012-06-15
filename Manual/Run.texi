@@ -205,7 +205,7 @@ listed.
 Filename for output in HepEvt format.
 @item LHEF_OUTPUT=<filename>
 Filename for output in Les Houches Event File format. This output format is 
-intended for output of matrix element configurations only. Since the 
+intended for output of @strong{matrix element configurations only}. Since the 
 format requires PDF information to be written out in the outdated 
 PDFLIB/LHAGLUE enumeration format this is only available automatically if 
 LHAPDF is used, otherwise the indetification numbers have to be given 
