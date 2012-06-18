@@ -162,14 +162,14 @@ DefineInitialConditions(ATOOLS::Blob *blob)
         DEBUG_INFO("didn't find PowProc along these cluster amplitudes. "
                    <<"trying with exclusively clustered amplitude:");
         Cluster_Amplitude *excl_ampl=
-            p_me->Process()->Get<Single_Process>()->Cluster(m_cmode|256|512);
+	  p_me->Process()->Get<Single_Process>()->Cluster(m_cmode|256|512);
 	if (excl_ampl) {
         if (!LocalKFactor(excl_ampl)) {
           DEBUG_INFO("didn't find PowProc in exclusively clustered amplitude");
 	}
         while (excl_ampl->Prev()) excl_ampl=excl_ampl->Prev();
         excl_ampl->Delete();
-	}
+      }
       }
       while (ampl->Prev()) ampl=ampl->Prev();
       ampl->Delete();
@@ -184,7 +184,8 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     double meweight(winfo->Get<double>());
     blob->AddData("Weight",new Blob_Data<double>(meweight*m_weight));
   }
-  if (!p_shower->GetShower()->PrepareShower(p_ampl)) return Return_Value::New_Event;
+  if (!p_shower->GetShower()->PrepareShower(p_ampl)) 
+    return Return_Value::New_Event;
   return Return_Value::Success;
 }
 

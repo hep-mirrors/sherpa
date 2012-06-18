@@ -265,8 +265,8 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       int nconn(ColorConnected(split->Col(),spect->Col()));
       if (nconn==0) continue;
       kt2FS = PT2(split->Mom(),spect->Mom(),!m_resc && (i==iymin||i==iymax));
-/*      if (j>2) sFS = (split->Mom()+spect->Mom()).Abs2(); 
-          else sFS = 0.;*/
+      /*      if (j>2) sFS = (split->Mom()+spect->Mom()).Abs2(); 
+	      else sFS = 0.;*/
       if (kt2FS>kt2max) kt2max = kt2FS;
       switch (m_mode) {
       case 7:
@@ -280,7 +280,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       case 1:
       case 0:
       default:
-// 	if (kt2FS<kt2min) kt2min = kt2FS;
+	// 	if (kt2FS<kt2min) kt2min = kt2FS;
 	break;
       }
       if (j>2) {
@@ -293,8 +293,10 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
     }
     if (!split->Connected()) {
       int j(i);
-      while (j==i) { j = 2+int(ATOOLS::ran->Get()*(nlegs-2)); }
-      split->AddToSpectators(legs[j]);
+      for (int cnt=0;cnt<1+int(split->Flav().IsGluon());cnt++) {
+	while (j==i) { j = 2+int(ATOOLS::ran->Get()*(nlegs-2)); }
+	split->AddToSpectators(legs[j]);
+      }
       split->SetConnected(false);
       switch (m_mode) {
       case 7:
