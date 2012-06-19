@@ -21,9 +21,12 @@ Inelastic_Event_Generator(Sigma_Inelastic * sigma,
   m_Bmin(MBpars("bmin")), m_Bmax(MBpars("bmax")), m_Bsteps(400), 
   m_deltaB((m_Bmax-m_Bmin)/double(m_Bsteps)),
   m_first(true), m_done(false), 
+  m_Nladders_fix(MBpars("NLaddersFix")),
   m_kt2fac(MBpars("kt2_factor")), m_difffac(MBpars("diff_factor")),
   m_test(test), m_output(1), m_analyse(m_output>0), p_ladder(NULL)
 { 
+  msg_Out()<<METHOD<<" for "<<m_Nladders_fix<<" vs "
+	   <<MBpars("NLaddersFix")<<".\n";
   if (m_analyse) {
     m_histograms[string("N_ladder_naive")] = new Histogram(0,0.0,25.0,25);
     m_histograms[string("N_ladder_start")] = new Histogram(0,0.0,25.0,25);
@@ -146,7 +149,9 @@ InitInelasticEvent(const bool & isUE,const bool & weighted) {
     int trials(0);
     if (m_analyse) m_histograms[string("B_naive")]->Insert(m_B);
     do {
-      m_Nladders = ran->Poissonian((*p_eikonal)(m_B));//+(m_isUE?0:1);
+      if (m_Nladders_fix<0) 
+	m_Nladders = ran->Poissonian((*p_eikonal)(m_B));//+(m_isUE?0:1);
+      else m_Nladders = m_Nladders_fix;
       msg_Debugging()<<"   check this: "<<m_B<<" --> "<<m_Nladders<<".\n";
       if (m_analyse) m_histograms[string("N_ladder_naive")]->Insert(m_Nladders);
       if (m_Nladders<1) continue;

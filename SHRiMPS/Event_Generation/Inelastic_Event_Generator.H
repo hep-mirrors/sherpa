@@ -27,7 +27,7 @@ namespace SHRIMPS {
     int        m_Bsteps;
     double     m_deltaB;
     bool       m_isUE, m_weighted, m_first, m_done;
-    int        m_Nladders, m_Ngen, m_Nprim, m_Nsec;
+    int        m_Nladders_fix,m_Nladders, m_Ngen, m_Nprim, m_Nsec;
     double     m_kt2fac, m_difffac;
     Ladder *   p_ladder;
 

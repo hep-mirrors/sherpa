@@ -36,6 +36,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   m_params["lambda"]      = dr->GetValue<double>("lambda",0.56);
   m_params["Delta"]       = dr->GetValue<double>("Delta",0.28);
   // ladder generation
+  m_params["NLaddersFix"] = dr->GetValue<int>("N_Ladders_Fix",-1);
   m_params["KTMin_Mode"]  = dr->GetValue<int>("KTMin_Mode",0);
   m_params["Q02"]         = dr->GetValue<double>("Q_0^2",1.);
   m_params["Q_as2"]       = dr->GetValue<double>("Q_as^2",m_params["Q02"]);
