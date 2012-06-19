@@ -149,7 +149,7 @@ InitInelasticEvent(const bool & isUE,const bool & weighted) {
     int trials(0);
     if (m_analyse) m_histograms[string("B_naive")]->Insert(m_B);
     do {
-      if (m_Nladders_fix<0) 
+      if (m_Nladders_fix<=0) 
 	m_Nladders = ran->Poissonian((*p_eikonal)(m_B));//+(m_isUE?0:1);
       else m_Nladders = m_Nladders_fix;
       msg_Debugging()<<"   check this: "<<m_B<<" --> "<<m_Nladders<<".\n";
