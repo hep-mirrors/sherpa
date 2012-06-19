@@ -179,12 +179,11 @@ ProjectOnSinglets(Blob * const blob,std::list<ParticleList *> & singlets) {
 double Cluster_Algorithm::
 PT2(const Vec4D & pi,const Vec4D & pj,const bool & beam) const 
 {
-  double pref(4.);
   double pti2(pi.PPerp2()), ptj2(pj.PPerp2());
   double ptij2    = 
     2.*Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-cos(pi.Phi()-pj.Phi()));
-//   return m_showerfac*Min(pref*pti2,ptij2);
-  return m_showerfac*pref*pti2;
+  //   return m_showerfac*Min(pref*pti2,ptij2);
+  return m_showerfac*Min(pti2,ptij2);
 }
 
 bool Cluster_Algorithm::Cluster(Blob *const blob)
@@ -192,7 +191,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
   std::list<ParticleList * > singlets;
   ProjectOnSinglets(blob,singlets);
 
-  double scale((m_mode>2?m_minkt2:0.)/1.);
+  double scale(m_mode>2?m_minkt2:0.);
   double ymin(10000.),ymax(-10000.);
   int iymin(-1),iymax(-1),n(1);
 
@@ -258,7 +257,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
     split   = legs[i];
     ysplit  = dabs(split->Mom().Y());
     kt2max  = 0.;
-    kt2min  = m_showerfac*((m_mode>2)?scale:shat); 
+    kt2min  = m_showerfac/4.*((m_mode>2)?scale:shat); 
     for (size_t j=nlegs;j>2;j--) {
       if (i==j-1) continue;
       spect = legs[j-1];
@@ -300,23 +299,24 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       split->SetConnected(false);
       switch (m_mode) {
       case 7:
-	kt2max = kt2min = m_showerfac*scale;
-	break;
-      case 6:
 	kt2max = kt2min = m_showerfac*scale/4.;
 	break;
+      case 6:
+	kt2max = kt2min = m_showerfac*scale/16.;
+	break;
       case 5:
-	kt2max = kt2min = m_showerfac*sqrt(split->Mom().PPerp2()*scale);
+	kt2max = kt2min = m_showerfac*sqrt(split->Mom().PPerp2()*scale/4.);
 	break;
       case 4:
       case 3:
-	kt2max = PT2(split->Mom(),legs[j]->Mom(),true);
+	// default choice
+	kt2max = PT2(split->Mom(),legs[j]->Mom(),true)/m_showerfac;
 	break;
       case 2:
       case 1:
       case 0:
       default:
-	kt2max = kt2min = Min(m_showerfac*scale,split->Mom().PPerp2());
+	kt2max = kt2min = Min(m_showerfac*scale/4.,split->Mom().PPerp2());
 	break;
       }
     }
