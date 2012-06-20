@@ -47,8 +47,8 @@ void Output_LHEF::Header()
 	m_outstream<<std::endl;
       }
     }
+    m_outstream<<"</SHRunCard> "<<std::endl; 
   }
-  m_outstream<<"</SHRunCard> "<<std::endl; 
   m_outstream<<"</header>"<<std::endl;
   
   m_outstream<<"<init>"<<std::endl;
