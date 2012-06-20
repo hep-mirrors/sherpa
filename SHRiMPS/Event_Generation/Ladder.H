@@ -108,7 +108,7 @@ namespace SHRIMPS {
     LadderMap           m_emissions;
     TPropList           m_tprops;
     bool                m_diffractive, m_rescatter, m_harddiffractive;
-    double              m_maxkt2, m_minkt2;
+    double              m_maxkt2, m_minkt2, m_ktcut2;
     double              m_shat, m_that, m_uhat, m_mu2, m_Yhat, m_DeltaYhat;
     colour_type::code   m_propcol;
     Ladder_Particle   * p_inpart1, * p_inpart2, * p_part1, * p_part2;
@@ -156,6 +156,14 @@ namespace SHRIMPS {
 
     // Simple service functions
     bool CheckFourMomentum();
+    inline void ProdProps(double & kt2prod,int & Nprobs) {
+      for (TPropList::iterator tit=m_tprops.begin();tit!=m_tprops.end();
+	   tit++) {
+	kt2prod *= ATOOLS::Max(tit->m_qt2, tit->m_q02);
+	Nprobs++;
+      }
+    }
+
     inline void Reset(const bool & all=true) { 
       m_emissions.clear(); 
       m_tprops.clear();
@@ -180,6 +188,7 @@ namespace SHRIMPS {
     const double & Weight()        const { return m_weight; }
     const double & MaxKT2()        const { return m_maxkt2; }
     const double & MinKT2()        const { return m_minkt2; }
+    const double & KtCut2()        const { return m_ktcut2; }
     const double & Mu2()           const { return m_mu2; }
     const double & Y()             const { return m_Y; }
     const bool   & IsDiffractive() const { return m_diffractive; } 
@@ -205,6 +214,7 @@ namespace SHRIMPS {
       if (maxkt2>m_maxkt2) m_maxkt2 = maxkt2; 
     }
     inline void SetMinKT2(const double & minkt2)  { m_minkt2 = minkt2; }
+    inline void SetKtCut2(const double & ktcut2)  { m_ktcut2 = ktcut2; }
     inline void SetMu2(const double & mu2)        { m_mu2    = mu2; }
     inline void SetDiffractive(const bool & diff) { m_diffractive = diff; }
     inline void SetRescatter(const bool & resc)   { m_rescatter = resc; }

@@ -81,8 +81,12 @@ operator()(Ladder * ladder,const double & Deltay,
     
     if (m_resc_ktmin==resc_ktmin::off || !p_ladder->IsRescatter()) 
       m_kt1cut2 = 0.;
-    else 
-      m_kt1cut2 = sqrt(m_pprop.PPerp2()*m_mprop.PPerp2()); 
+    else {
+      if (p_ladder->KtCut2()<0. || m_resc_ktmin==resc_ktmin::on) 
+	m_kt1cut2 = sqrt(m_pprop.PPerp2()*m_mprop.PPerp2()); 
+      else            
+	m_kt1cut2 = p_ladder->KtCut2();
+    }
     m_kt1max2   = 0.;
     m_Deltay    = Deltay;
     m_lastwt    = GenerateEmissions();
@@ -107,7 +111,8 @@ double Final_State::GenerateEmissions() {
       if (FixPropColours(split,spect)) run = true;
       else {
 	m_singexit++;
-        m_histomap[std::string("Deltay_singexit")]->Insert(dabs(m_k2.Y()-m_k1.Y()));
+        m_histomap[std::string("Deltay_singexit")]->
+	  Insert(dabs(m_k2.Y()-m_k1.Y()));
 	msg_Tracking()
 	  <<"   active interval in singlet for "
 	  <<p_ladder->Size()<<", lastwt="<<m_lastwt<<".\n";

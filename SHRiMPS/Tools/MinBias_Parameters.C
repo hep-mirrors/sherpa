@@ -142,10 +142,12 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
 
   std::string resktmin =
     dr->GetValue<std::string>("Resc_KTMin",std::string("on"));
-  if (resktmin==std::string("off"))
-    m_resc_ktmin = resc_ktmin::off;
-  else
+  if (resktmin==std::string("props"))
+    m_resc_ktmin = resc_ktmin::props;
+  else if (resktmin==std::string("on"))
     m_resc_ktmin = resc_ktmin::on;
+  else
+    m_resc_ktmin = resc_ktmin::off;
 
   std::string rescnosing =
     dr->GetValue<std::string>("Resc_NoSinglet",std::string("off"));

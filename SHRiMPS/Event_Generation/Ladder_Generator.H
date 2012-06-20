@@ -23,6 +23,8 @@ namespace SHRIMPS {
     double            m_B,m_b1,m_b2;
     double            m_Ycms, m_Ymin, m_Ymax, m_deltaY, m_Yrange;
     double            m_maxkt2;
+    double            m_prodkt2;
+    int               m_Nprops;
     ATOOLS::Vec4D     m_pos;
 
     Ladder          * p_ladder;
@@ -50,11 +52,11 @@ namespace SHRIMPS {
     Ladder * operator()(ATOOLS::Particle * part1,ATOOLS::Particle * part2,
 			const bool & rescatter,
 			const bool & first=false,const bool & weighted=false);
-//     Ladder * MakeLadder(ATOOLS::Blob * blob);
+    //     Ladder * MakeLadder(ATOOLS::Blob * blob);
 
     inline void SetLadderGeneration(const int & N) { m_FS.SetQ02eff(N); }
-//     inline const double & B1()   const { return m_b1; }
-//     inline const double & B2()   const { return m_b2; }
+    //     inline const double & B1()   const { return m_b1; }
+    //     inline const double & B2()   const { return m_b2; }
     inline const double & B1()   const { return m_IS.B1(); }
     inline const double & B2()   const { return m_IS.B2(); }
     inline const double & B()    const { return m_B; }

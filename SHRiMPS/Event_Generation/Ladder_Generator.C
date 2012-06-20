@@ -107,6 +107,11 @@ operator()(Particle * part1,Particle * part2,const bool & rescatter,
       return p_ladder; 
     }
     isweight = weight  = InitialiseLadder(part1,part2,rescatter);
+    if (p_ladder->IsRescatter()) {
+      p_ladder->SetKtCut2(m_prodkt2/double(m_Nprops));
+    }
+    else 
+      p_ladder->SetKtCut2(0.);
     weight  *= 
       //Max(0.,m_FS(p_ladder,m_cutoffY,first,trials==0))*
       Max(0.,m_FS(p_ladder,0.,first,trials==0))*
@@ -127,8 +132,14 @@ operator()(Particle * part1,Particle * part2,const bool & rescatter,
     msg_Out()<<METHOD<<" Four Momentum violation in ladder"<<std::endl
              <<(*p_ladder)<<std::endl;
   
-  if (m_output) Analyse(!p_ladder->IsRescatter());
+  if (!p_ladder->IsRescatter()) {
+    m_prodkt2 = 1.;
+    m_Nprops  = 0;
+  }
+  p_ladder->ProdProps(m_prodkt2,m_Nprops);
 
+
+  if (m_output) Analyse(!p_ladder->IsRescatter());
   msg_Tracking()<<(*p_ladder);
   msg_Tracking()
     <<"    ---> accepted ladder with total weight="<<weight<<".\n"

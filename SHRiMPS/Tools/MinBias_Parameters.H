@@ -97,8 +97,9 @@ namespace SHRIMPS {
   };
   struct resc_ktmin {
     enum code {
-      on  = 1,
-      off = 0
+      props = 2,
+      on    = 1,
+      off   = 0,
     };
   };
   struct resc_nosing {
