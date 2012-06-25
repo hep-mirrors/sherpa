@@ -31,6 +31,7 @@ Inelastic_Event_Generator(Sigma_Inelastic * sigma,
     m_histograms[string("N_ladder_naive")] = new Histogram(0,0.0,25.0,25);
     m_histograms[string("N_ladder_start")] = new Histogram(0,0.0,25.0,25);
     m_histograms[string("N_ladder_prim")]  = new Histogram(0,0.0,25.0,25);
+    m_histograms[string("N_ladder_sec")]   = new Histogram(0,0.0,25.0,25);
     m_histograms[string("N_ladder_true")]  = new Histogram(0,0.0,25.0,25);
     m_histograms[string("B_naive")]        = new Histogram(0,0.0,25.0,50);
     m_histograms[string("B_real")]         = new Histogram(0,0.0,25.0,50);
@@ -162,6 +163,7 @@ InitInelasticEvent(const bool & isUE,const bool & weighted) {
   } while (!success);
   if (m_analyse) m_histograms[string("B_real")]->Insert(m_B);
   m_laddergenerator.InitCollision(p_eikonal,m_B);
+  m_laddergenerator.SetNPrim(m_Nladders);
   m_rescatterhandler.ResetCollision(p_eikonal,Smin(),m_B);
   m_luminosity.SetEikonal(p_eikonal);
   msg_Tracking()
@@ -216,7 +218,7 @@ AddScatter(Blob_List * blobs,const double & xsec)
   if (m_Nprim<m_Nladders) {
     if (!p_beams->NextIS(part1,part2)) return -1;
     m_Nsec = 0;
-    m_laddergenerator.SetLadderGeneration(1);
+    //m_laddergenerator.SetLadderGeneration(1);
     p_ladder = m_laddergenerator(part1,part2,false,m_Nprim==0,m_weighted);
     if (!p_ladder) return -1;
     if (!p_beams->UpdateColours(p_ladder,m_Nprim+1==m_Nladders)) {
@@ -246,6 +248,7 @@ AddScatter(Blob_List * blobs,const double & xsec)
     if (m_analyse) {
       m_histograms[string("N_ladder_prim")]->Insert(m_Nprim);
       m_histograms[string("N_ladder_true")]->Insert(m_Ngen);
+      m_histograms[string("N_ladder_sec")]->Insert(m_Ngen-m_Nprim);
       m_histograms[string("N_ladder1_B")]->Insert(m_B,m_Nprim);
       m_histograms[string("N_ladder_all_B")]->Insert(m_B,m_Ngen);
     }

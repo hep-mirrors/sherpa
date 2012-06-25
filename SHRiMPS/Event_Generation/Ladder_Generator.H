@@ -54,6 +54,7 @@ namespace SHRIMPS {
 			const bool & first=false,const bool & weighted=false);
     //     Ladder * MakeLadder(ATOOLS::Blob * blob);
 
+    inline void SetNPrim(const int & N) { m_FS.SetQ02eff(N); }
     inline void SetLadderGeneration(const int & N) { m_FS.SetQ02eff(N); }
     //     inline const double & B1()   const { return m_b1; }
     //     inline const double & B2()   const { return m_b2; }
