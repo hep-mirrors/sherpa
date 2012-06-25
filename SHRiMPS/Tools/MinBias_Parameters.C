@@ -74,7 +74,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
     m_absorp = absorption::factorial;
 
   std::string asf(dr->GetValue<std::string>("As_Form",std::string("IR0")));
-  MODEL::asform::code as_form(MODEL::asform::smooth);
+  m_as_form = MODEL::asform::smooth;
   if (asf==std::string("constant"))    m_as_form = MODEL::asform::constant;
   else if (asf==std::string("frozen")) m_as_form = MODEL::asform::frozen;
   else if (asf==std::string("smooth")) m_as_form = MODEL::asform::smooth;
@@ -116,14 +116,12 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   else
     m_ladderweight = ladder_weight::Regge;
 
-  std::string ktform =
-    dr->GetValue<std::string>("KT_Form",std::string("IR0"));
-  if (ktform==std::string("cut"))
-    m_ktform = ktform::cut;
-  else if (ktform==std::string("frozen"))
-    m_ktform = ktform::frozen;
-  else
-    m_ktform = ktform::smooth;
+  std::string ktform(dr->GetValue<std::string>("KT_Form",std::string("IR0")));
+  m_ktform = ktform::smooth;
+  if (ktform==std::string("cut"))         m_ktform = ktform::cut;
+  else if (ktform==std::string("IR0"))    m_ktform = ktform::IR0;
+  else if (ktform==std::string("frozen")) m_ktform = ktform::frozen;
+  else if (ktform==std::string("smooth")) m_ktform = ktform::smooth;
 
   std::string ordering =
     dr->GetValue<std::string>("Ordering",std::string("ao_phys"));

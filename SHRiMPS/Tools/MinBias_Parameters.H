@@ -79,7 +79,7 @@ namespace SHRIMPS {
 
   struct ktform {
     enum code {
-      IR0      = 2,
+      IR0    = 2,
       smooth = 1,
       frozen = 0,
       cut    = -1
