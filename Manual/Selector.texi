@@ -253,6 +253,13 @@ PT2NLO <flavour1 code> <flavour2 code> <min value> <max value>
 Mass <flavour1 code> <flavour2 code> <min value> <max value>
 @end verbatim
 
+@item Cuts on photons
+
+@verbatim
+IsolationCut 22 <dR> <exponent> <epsilon>
+@end verbatim
+implements the Frixione isolation cone @mycite{Frixione1998jh}.
+
 @item The @ref{Minimum selector} can be used if constructed with other selectors mentioned in this section
 
 @end table
