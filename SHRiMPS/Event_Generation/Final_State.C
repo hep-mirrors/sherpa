@@ -327,7 +327,7 @@ TryEmission(double & kt12,const bool & dir) {
       m_histomap[std::string("q01_2_0")]->Insert(m_q01_2);
       m_histomap[std::string("q12_2_0")]->Insert(m_q12_2);
     }
-    m_histomap[std::string("Delta_order")]->Insert(1./Max(1.e-2,dabs(y1-y0))); 
+//     m_histomap[std::string("Delta_order")]->Insert(1./Max(1.e-2,dabs(y1-y0))); 
     if (!IsOrdered(dir,k_0,k_1,k_2,m_q01_2)) continue;
     m_histomap[std::string("Delta_order")]->Insert(1./Max(1.e-2,dabs(y1-y0))); 
     wt   = 1.;
@@ -339,7 +339,8 @@ TryEmission(double & kt12,const bool & dir) {
     if ((MBpars.LadderWeight()==ladder_weight::Regge || 
 	 MBpars.LadderWeight()==ladder_weight::ReggeDiffusion) && 
 	deltay>m_Deltay) { 
-      rarg = Min(mu01_2/q01.PPerp2(),q01.PPerp2()/mu01_2);
+//       rarg = Min(mu01_2/q01.PPerp2(),q01.PPerp2()/mu01_2);
+      rarg = mu01_2/(q01.PPerp2()+mu01_2);
       expo = colfac*(*p_alphaS)(q01.PPerp2())*deltay/M_PI; 
       //rarg = Min(mu01_2/q01.Abs2(),q01.Abs2()/mu01_2);
       //expo = colfac*(*p_alphaS)(q01.Abs2())*deltay/M_PI; 
@@ -374,7 +375,8 @@ TryEmission(double & kt12,const bool & dir) {
   m_k2 = k_2;
 
   if (MBpars.LadderWeight()==ladder_weight::Regge) {
-    rarg = Min(mu12_2/q12.PPerp2(),q12.PPerp2()/mu12_2);
+//     rarg = Min(mu12_2/q12.PPerp2(),q12.PPerp2()/mu12_2);
+    rarg = mu12_2/(q12.PPerp2()+mu12_2);
     expo = colfac*(*p_alphaS)(q12.PPerp2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
     //rarg = Min(mu12_2/q12.Abs2(),q12.Abs2()/mu12_2);
     //expo = colfac*(*p_alphaS)(q12.Abs2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
