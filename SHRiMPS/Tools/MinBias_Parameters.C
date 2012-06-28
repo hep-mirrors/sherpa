@@ -125,18 +125,13 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
 
   std::string ordering =
     dr->GetValue<std::string>("Ordering",std::string("ao_phys"));
-  if (ordering==std::string("rap_phys"))
-    m_ordering = ordering::rap_phys;
-  else if (ordering==std::string("ao_keep"))
-    m_ordering = ordering::ao_keep;
-  else if (ordering==std::string("ao"))
-    m_ordering = ordering::ao;
-  else if (ordering==std::string("keep"))
-    m_ordering = ordering::keep;
-  else if (ordering==std::string("rap_only"))
-    m_ordering = ordering::rap_only;
-  else
-    m_ordering = ordering::rap_only;
+  m_ordering = ordering::ao_phys;
+  if (ordering==std::string("rap_phys"))      m_ordering = ordering::rap_phys;
+  else if (ordering==std::string("ao_phys"))  m_ordering = ordering::ao_phys;
+  else if (ordering==std::string("ao_keep"))  m_ordering = ordering::ao_keep;
+  else if (ordering==std::string("ao"))       m_ordering = ordering::ao;
+  else if (ordering==std::string("keep"))     m_ordering = ordering::keep;
+  else if (ordering==std::string("rap_only")) m_ordering = ordering::rap_only;
 
   std::string resktmin =
     dr->GetValue<std::string>("Resc_KTMin",std::string("on"));
