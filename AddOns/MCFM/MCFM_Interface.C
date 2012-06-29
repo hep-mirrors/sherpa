@@ -115,6 +115,24 @@ bool MCFM_Interface::Initialize
   nlooprun_.nlooprun = MODEL::as->Order()+1;
   couple_.amz        = model->ScalarFunction(std::string("alpha_S"));
 
+  if (model->Name()==std::string("SM+AGC")){
+    anomcoup_.delg1_z  = model->ScalarConstant(std::string("g1_Z"))-1;
+    anomcoup_.delg1_g  = model->ScalarConstant(std::string("g1_gamma"))-1;
+    anomcoup_.lambda_g = model->ScalarConstant(std::string("lambda_gamma"));
+    anomcoup_.lambda_z = model->ScalarConstant(std::string("lambda_Z"));
+    anomcoup_.h1Z      = model->ScalarConstant(std::string("h1_Z"));
+    anomcoup_.h2z      = model->ScalarConstant(std::string("h2_Z"));
+    anomcoup_.h3z      = model->ScalarConstant(std::string("h3_Z"));
+    anomcoup_.h4z      = model->ScalarConstant(std::string("h4_Z"));
+    anomcoup_.h1gam    = model->ScalarConstant(std::string("h1_gamma"));
+    anomcoup_.h2gam    = model->ScalarConstant(std::string("h2_gamma"));
+    anomcoup_.h3gam    = model->ScalarConstant(std::string("h3_gamma"));
+    anomcoup_.h4gam    = model->ScalarConstant(std::string("h4_gamma"));
+    anomcoup_.delk_g   = model->ScalarConstant(std::string("kappa_gamma"))-1;
+    anomcoup_.delk_z   = model->ScalarConstant(std::string("kappa_Z"))-1;
+    anomcoup_.tevscale = model->ScalarConstant(std::string("UNITARIZATION_SCALE"))/1000;
+    }
+
   qcdcouple_.as      = model->ScalarFunction(std::string("alpha_S"));
   qcdcouple_.gsq     = 4.*M_PI*qcdcouple_.as;
   qcdcouple_.ason2pi = qcdcouple_.as/(2.*M_PI);
