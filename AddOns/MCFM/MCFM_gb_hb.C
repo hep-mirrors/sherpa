@@ -151,6 +151,7 @@ DECLARE_VIRTUALME2_GETTER(MCFM_gb_hb_Getter,"MCFM_gb_hb")
 Virtual_ME2_Base *MCFM_gb_hb_Getter::operator()(const Process_Info &pi) const
 {
   msg_Out()<<"In "<<METHOD<<":\n";
+  return NULL;
   DEBUG_FUNC("");
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;

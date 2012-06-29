@@ -112,10 +112,10 @@ extern "C" {
   } zprods_;
   extern struct{
     int nwz;
-  }nwz_;
+  } nwz_;
   extern struct{
     double s[MCFM_NMX*MCFM_NMX];
-  }sprods_;
+  } sprods_;
   extern struct{
     double delg1_z,delg1_g,lambda_g,lambda_z,
       h1Z,h2Z,h3Z,h4Z,h1gam,h2gam,h3gam,h4gam,
@@ -124,7 +124,7 @@ extern "C" {
       h1tZ,h2tZ,h3tZ,h4tZ,h1tgam,h2tgam,h3tgam,h4tgam,
       xdelk_g,xdelk_z;
     bool anomtgc;
-    }anomcoup_;
+  } anomcoup_;
   
 }
 
