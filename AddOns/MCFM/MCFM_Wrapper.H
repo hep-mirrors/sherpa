@@ -105,6 +105,9 @@ extern "C" {
     bool zerowidth;
   } zerowidth_;
   extern struct {
+    bool srdiags;
+  } srdiags_;
+  extern struct {
     double bbsqmin,bbsqmax,wsqmin,wsqmax;
   } limits_;
   extern struct {

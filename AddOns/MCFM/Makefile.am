@@ -4,7 +4,8 @@ MCFM_SOURCES  =	\
 		MCFM_gg_h.C \
 		MCFM_gg_hgg.C \
 		MCFM_qqb_vh.C \
-		MCFM_qqb_vv.C \
+		MCFM_qqb_WZ.C \
+		MCFM_qqb_ZZ.C \
 		MCFM_qqb_v.C \
 		MCFM_wbf.C \
 		MCFM_gb_hb.C \

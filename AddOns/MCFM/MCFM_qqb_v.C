@@ -135,7 +135,7 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_qqb_v_Getter,"MCFM_qqb_v")
 Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
 {
-  msg_Out()<<"\n In "<<METHOD<<" with "<<pi.m_fi.m_ps.size()<<"... .\n";
+  msg_Out()<<"In "<<METHOD<<" with "<<pi.m_fi.m_ps.size()<<"... .\n";
   DEBUG_FUNC("");
   if (pi.m_loopgenerator!="MCFM")                    return NULL;
   if (MODEL::s_model->Name()!=std::string("SM") &&
