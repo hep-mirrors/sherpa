@@ -194,107 +194,123 @@ Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
       MODEL::s_model->ScalarConstant("Yukawa_b")>0. ||
       !Flavour(kf_h0).IsOn())                           return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
-  if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
-    Flavour_Vector fl(pi.ExtractFlavours());
-    msg_Out()<<"Check numbers: "
-	     <<fl.size()<<" external particles, "
-	     <<pi.m_fi.m_ps.size()<<" props";
-    if (pi.m_fi.m_ps.size()==0) msg_Out()<<".\n";
-    else {
-      msg_Out()<<":\n";
-      for (size_t i=0;i<pi.m_fi.m_ps.size();i++) {
-	msg_Out()<<"     "<<pi.m_fi.m_ps[i].m_ps.size()
-		 <<" final state particles for propagator "<<i<<" "
-		 <<"with flavour "<<pi.m_fi.m_ps[i].m_fl[0]<<".\n";
-	for (size_t j=0;j<pi.m_fi.m_ps[i].m_ps.size();j++) {
-	  msg_Out()<<"     "<<pi.m_fi.m_ps[i].m_ps[j].m_ps.size()
-		   <<" final state particles for propagator "<<i<<"["<<j<<"] "
-		   <<"with flavour "<<pi.m_fi.m_ps[i].m_ps[j].m_fl[0]<<".\n";
-	}
+  if (!(pi.m_fi.m_nloqcdtype&nlo_type::loop))           return NULL;
+  Flavour_Vector fl(pi.ExtractFlavours());
+  if (!(fl[0].IsGluon() && fl[1].IsGluon()))            return NULL;
+  if (pi.m_fi.m_ps.size()!=1)                           return NULL;
+  Flavour flh(pi.m_fi.m_ps[0].m_fl[0]);
+  if (!flh==Flavour(kf_h0))                             return NULL;
+
+  msg_Out()<<"Check numbers: "
+	   <<fl.size()<<" external particles, "
+	   <<pi.m_fi.m_ps.size()<<" props";
+  if (pi.m_fi.m_ps.size()==0) msg_Out()<<".\n";
+  else {
+    msg_Out()<<":\n";
+    for (size_t i=0;i<pi.m_fi.m_ps.size();i++) {
+      msg_Out()<<"     "<<pi.m_fi.m_ps[i].m_ps.size()
+	       <<" final state particles for propagator "<<i<<" "
+	       <<"with flavour "<<pi.m_fi.m_ps[i].m_fl[0]<<".\n";
+      for (size_t j=0;j<pi.m_fi.m_ps[i].m_ps.size();j++) {
+	msg_Out()<<"     "<<pi.m_fi.m_ps[i].m_ps[j].m_ps.size()
+		 <<" final state particles for propagator "<<i<<"["<<j<<"] "
+		 <<"with flavour "<<pi.m_fi.m_ps[i].m_ps[j].m_fl[0]<<".\n";
       }
     }
-    if (!fl[0].Strong() || !fl[1].Strong())             return NULL;
-    if (!(pi.m_fi.m_ps.size()>=1 &&
-	  pi.m_fi.m_ps[0].m_ps.size()>1))               return NULL;
-    Flavour flh(pi.m_fi.m_ps[0].m_fl[0]);
-    if (!flh==Flavour(kf_h0))                           return NULL;
-    int pID(0);
-    // tau tau final states
-    if (fl[2]==fl[3].Bar() && fl[2].Kfcode()==15) {
-      if (Flavour(kf_tau).Yuk()<=0.) {
-	msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-		   <<"   Setup for gg->[h->tau tau] (+jet), but tau Yukawa = 0."
-		   <<std::endl;
-        THROW(fatal_error,"Inconsistent setup.");
-      }
-      if (fl.size()==4 && pi.m_fi.m_ps.size()==1 &&
-	  fl[0].IsGluon() && fl[1].IsGluon())               pID = 112;
-    }
-    // photon photon final states 
-    else if (fl[2]==fl[3] && fl[2].Kfcode()==22) {
+  }
+
+  int pID(0);
+  //////////////////////////////////////////////////////////////////
+  // tau tau final states
+  ////////////////////////////////////////////////////////////////// 
+  if (fl.size()==4 && pi.m_fi.m_ps.size()==1 &&
+      fl[2]==fl[3].Bar() && fl[2].Kfcode()==15) {
+    if (Flavour(kf_tau).Yuk()<=0.) {
       msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-		 <<"   gg->[h->gamma gamma] not yet debugged.\n";
-      THROW(fatal_error,"Not yet working.");
-      if (fl.size()==4 && pi.m_fi.m_ps.size()==1 &&
-	  fl[0].IsGluon() && fl[1].IsGluon())               pID = 117;
+		 <<"   Setup for gg->[h->tau tau] (+jet), but tau Yukawa = 0."
+		 <<std::endl;
+      THROW(fatal_error,"Inconsistent setup.");
     }
-    // Z Z final states 
-    else if (pi.m_fi.m_ps[0].m_ps[0].m_fl[0].Kfcode()==23 &&
-	     pi.m_fi.m_ps[0].m_ps[0].m_ps.size()==2 &&
-	     pi.m_fi.m_ps[0].m_ps[1].m_fl[0].Kfcode()==23 &&
-	     pi.m_fi.m_ps[0].m_ps[1].m_ps.size()==2) {
-      Flavour Z11,Z12,Z21,Z22;
-      Z11 = pi.m_fi.m_ps[0].m_ps[0].m_ps[0].m_fl[0];
-      Z12 = pi.m_fi.m_ps[0].m_ps[0].m_ps[1].m_fl[0];
-      Z21 = pi.m_fi.m_ps[0].m_ps[1].m_ps[0].m_fl[0];
-      Z22 = pi.m_fi.m_ps[0].m_ps[1].m_ps[1].m_fl[0];
-      msg_Out()<<"   test for ZZ: \n"
-	       <<"   {"<<Z11<<", "<<Z12<<"} {"<<Z21<<", "<<Z22<<"}.\n";
-      if (Z11=Z12.Bar() && Z11.IsLepton() && Z11.Charge()!=0 &&
-	  Z11.Kfcode()!=15) {
-	if (Z21=Z22.Bar() && Z21.IsLepton() && Z21.Kfcode()!=15) {
-	  if (Z21.Charge()!=0)                             pID = 114;
-	  if (Z21.Charge()==0) {
-	    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-		       <<"   gg->[h->[Z->ll][Z->nunu]] not yet debugged.\n";
-	    THROW(fatal_error,"Not yet working.");
-	    pID = 115;
-	  }
-	}
-      }
+    pID = 112;
+  }
+  //////////////////////////////////////////////////////////////////
+  // photon photon final states 
+  //////////////////////////////////////////////////////////////////
+  else if (fl.size()==4 && pi.m_fi.m_ps.size()==1 &&
+	   fl[2]==fl[3] && fl[2].Kfcode()==22) {
+    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+	       <<"   gg->[h->gamma gamma] not yet debugged.\n";
+    THROW(fatal_error,"Not yet working.");
+    pID = 117;
+  }
+  //////////////////////////////////////////////////////////////////
+  // Z Z final states 
+  //////////////////////////////////////////////////////////////////
+  else if (fl.size()==6 && pi.m_fi.m_ps.size()==1 && 
+	   pi.m_fi.m_ps[0].m_ps.size()==2 &&
+	   pi.m_fi.m_ps[0].m_ps[0].m_fl[0].Kfcode()==23 &&
+	   pi.m_fi.m_ps[0].m_ps[0].m_ps.size()==2 &&
+	   pi.m_fi.m_ps[0].m_ps[1].m_fl[0].Kfcode()==23 &&
+	   pi.m_fi.m_ps[0].m_ps[1].m_ps.size()==2) {
+    Flavour Z11,Z12,Z21,Z22;
+    Z11 = pi.m_fi.m_ps[0].m_ps[0].m_ps[0].m_fl[0];
+    Z12 = pi.m_fi.m_ps[0].m_ps[0].m_ps[1].m_fl[0];
+    Z21 = pi.m_fi.m_ps[0].m_ps[1].m_ps[0].m_fl[0];
+    Z22 = pi.m_fi.m_ps[0].m_ps[1].m_ps[1].m_fl[0];
+    msg_Out()<<"   test for ZZ: \n"
+	     <<"   {"<<Z11<<", "<<Z12<<"} {"<<Z21<<", "<<Z22<<"}.\n";
+    if (!(Z11==Z12.Bar() && Z21==Z22.Bar())) {
+      msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+		 <<"   wrong flavour pairs: "
+		 <<Z11<<" & "<<Z12<<", "<<Z21<<" & "<<Z22<<".\n"; 
+      THROW(fatal_error,"wrong process.");
+      return NULL;
     }
-    // W W final states 
-    else if (pi.m_fi.m_ps[0].m_ps[0].m_fl[0].Kfcode()==24 &&
-	     pi.m_fi.m_ps[0].m_ps[0].m_ps.size()==2 &&
-	     pi.m_fi.m_ps[0].m_ps[1].m_fl[0].Kfcode()==24 &&
-	     pi.m_fi.m_ps[0].m_ps[1].m_ps.size()==2) {
-      Flavour W11,W12,W21,W22;
-      W11 = pi.m_fi.m_ps[0].m_ps[0].m_ps[0].m_fl[0];
-      W12 = pi.m_fi.m_ps[0].m_ps[0].m_ps[1].m_fl[0];
-      W21 = pi.m_fi.m_ps[0].m_ps[1].m_ps[0].m_fl[0];
-      W22 = pi.m_fi.m_ps[0].m_ps[1].m_ps[1].m_fl[0];
-      msg_Out()<<"   test for WW: \n"
-	       <<"   {"<<W11<<", "<<W12<<"} {"<<W21<<", "<<W22<<"}.\n";
-      if (!W11.IsAnti() && W12.IsAnti() && !W21.IsAnti() && W22.IsAnti() &&
-	  ((W11.Kfcode()==11 && W12.Kfcode()==12) || 
-	   (W11.Kfcode()==13 && W12.Kfcode()==14)) && 
-	  ((W21.Kfcode()==12 && W22.Kfcode()==11) || 
-	   (W21.Kfcode()==14 && W22.Kfcode()==13)))        pID = 113;
-      
+    if (Z11.Kfcode()==15 || Z21.Kfcode()==15) {
+      msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+		 <<"   process should not involve taus: "
+		 <<Z11<<" & "<<Z12<<", "<<Z21<<" & "<<Z22<<".\n"; 
+      THROW(fatal_error,"wrong process.");
+      return NULL;
     }
-    PRINT_VAR(pID);
-    if (pID>0) {
-      zerowidth_.zerowidth=true;
-      if (nproc_.nproc>=0) {
-	if (nproc_.nproc!=pID)
-	  THROW(not_implemented,
-		"Only one process class allowed when using MCFM");
-      }
-      nproc_.nproc=pID;
-      chooser_();
-      msg_Info()<<"Initialise MCFM with nproc = "<<nproc_.nproc<<"\n";
-      return new MCFM_gg_h(pID,pi,fl);
+    if (Z11.Charge()!=0 && Z21.Charge()!=0)      pID = 114;
+    else if (Z11.Charge()!=0 && Z21.Charge()==0) pID = 115;
+  }  
+  //////////////////////////////////////////////////////////////////
+  // W W final states 
+  //////////////////////////////////////////////////////////////////
+  else if (fl.size()==6 && pi.m_fi.m_ps.size()==1 && 
+	   pi.m_fi.m_ps[0].m_ps.size()==2 &&
+	   pi.m_fi.m_ps[0].m_ps[0].m_fl[0].Kfcode()==24 &&
+	   pi.m_fi.m_ps[0].m_ps[0].m_ps.size()==2 &&
+	   pi.m_fi.m_ps[0].m_ps[1].m_fl[0].Kfcode()==24 &&
+	   pi.m_fi.m_ps[0].m_ps[1].m_ps.size()==2) {
+    Flavour W11,W12,W21,W22;
+    W11 = pi.m_fi.m_ps[0].m_ps[0].m_ps[0].m_fl[0];
+    W12 = pi.m_fi.m_ps[0].m_ps[0].m_ps[1].m_fl[0];
+    W21 = pi.m_fi.m_ps[0].m_ps[1].m_ps[0].m_fl[0];
+    W22 = pi.m_fi.m_ps[0].m_ps[1].m_ps[1].m_fl[0];
+    msg_Out()<<"   test for WW: \n"
+	     <<"   {"<<W11<<", "<<W12<<"} {"<<W21<<", "<<W22<<"}.\n";
+    if (!W11.IsAnti() && W12.IsAnti() && !W21.IsAnti() && W22.IsAnti() &&
+	((W11.Kfcode()==11 && W12.Kfcode()==12) || 
+	 (W11.Kfcode()==13 && W12.Kfcode()==14)) && 
+	((W21.Kfcode()==12 && W22.Kfcode()==11) || 
+	 (W21.Kfcode()==14 && W22.Kfcode()==13)))        pID = 113;
+  }
+
+  PRINT_VAR(pID);
+  if (pID>0) {
+    zerowidth_.zerowidth=true;
+    if (nproc_.nproc>=0) {
+      if (nproc_.nproc!=pID)
+	THROW(not_implemented,
+	      "Only one process class allowed when using MCFM");
     }
+    nproc_.nproc=pID;
+    chooser_();
+    msg_Info()<<"Initialise MCFM with nproc = "<<nproc_.nproc<<"\n";
+    return new MCFM_gg_h(pID,pi,fl);
   }
   return NULL;
 }
