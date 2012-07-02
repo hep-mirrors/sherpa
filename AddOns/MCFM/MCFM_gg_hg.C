@@ -39,6 +39,7 @@ extern "C" {
   void gg_hg_v_(double *p,double *msqv); 
   void gg_hwwg_v_(double *p,double *msqv); 
   void gg_hzzg_v_(double *p,double *msqv); 
+  void gg_hgagag_v_(double *p,double *msqv); 
 }
 
 #include "MODEL/Main/Model_Base.H"
@@ -110,7 +111,7 @@ double MCFM_gg_hg::CallMCFM(const int & i,const int & j) {
   case 204: gg_hg_v_(p_p,p_msqv); break;
   case 208: gg_hwwg_v_(p_p,p_msqv); break;
   case 209: gg_hzzg_v_(p_p,p_msqv); break;
-  case 210: exit(1);
+  case 210: gg_hgagag_v_(p_p,p_msqv); break;
   }
   return p_msqv[mr(i,j)];
 }
