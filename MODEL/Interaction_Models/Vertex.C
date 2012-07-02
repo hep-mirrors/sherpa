@@ -263,7 +263,7 @@ void Vertex::GenerateVertex()
 
 
 int Vertex::CheckExistence(Single_Vertex& probe)
-{ // Checks if a vertex with the same flavours at the same legs allready
+{ // Checks if a vertex with the same flavours at the same legs already
   // exists; RETURNS TRUE IF NO SUCH VERTEX EXISTS. 
 
   // check either m_v or m_v4 depending on the probe's number of legs

@@ -7,6 +7,7 @@ MCFM_SOURCES  =	\
 		MCFM_qqb_vh.C \
 		MCFM_qqb_WZ.C \
 		MCFM_qqb_ZZ.C \
+		MCFM_qqb_WW.C \	
 		MCFM_qqb_v.C \
 		MCFM_wbf.C \
 		MCFM_gb_hb.C \

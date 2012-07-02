@@ -127,8 +127,8 @@ extern "C" {
     double xdelg1_z,xdelg1_g,xlambda_g,xlambda_z,
       h1tz,h2tz,h3tz,h4tz,h1tgam,h2tgam,h3tgam,h4tgam,
       xdelk_g,xdelk_z;
-  }anomcoup_;
-  
+  } anomcoup_;  
+
 }
 
 #endif

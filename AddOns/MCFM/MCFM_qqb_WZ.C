@@ -23,6 +23,7 @@ namespace MCFM {
 
 extern "C" { 
   void qqb_wz_v_(double *p,double *msqv); 
+  void qqb_wz_(double *p,double *a);
 }
 
 #include "MODEL/Main/Model_Base.H"
@@ -69,21 +70,25 @@ void MCFM_qqb_WZ::Calc(const Vec4D_Vector &p)
 
   // u( q2)+dbar( q1)-->nu(q3)+e^+(q4)+mu^-(q6)+mu^+(q5)
 
-  for (int n(0);n<2;++n) GetMom(p_p,n,p[1-n]);
+  for (int n(0);n<2;++n) GetMom(p_p,n,-p[n]);
   GetMom(p_p,4,p[2]); 
   GetMom(p_p,5,p[3]); 
   GetMom(p_p,2,p[4]); 
   GetMom(p_p,3,p[5]); 
-
+  
   long int i(m_flavs[0]), j(m_flavs[1]);
   if (i==21) { i=0; }
   if (j==21) { j=0; }
   scale_.musq=m_mur2;
   scale_.scale=sqrt(scale_.musq);
+  double a[11][11];
+
+  qqb_wz_(p_p,*a);
+  std::cout << "MCFM born = " << a[j+MCFM_NF][i+MCFM_NF]*m_cplcorr<<std::endl;
 
   epinv_.epinv=epinv2_.epinv2=0.0;
   double res(CallMCFM(i,j)  * corrfactor);
-  epinv_.epinv=1.0;
+  epinv_.epinv=1.0; 
   double res1(CallMCFM(i,j) * corrfactor);
   epinv2_.epinv2=1.0;
   double res2(CallMCFM(i,j) * corrfactor);
@@ -116,24 +121,30 @@ Virtual_ME2_Base *MCFM_qqb_WZ_Getter::operator()(const Process_Info &pi) const
   // - have W/Z
   if (!(fl[0].IsQuark() && fl[1].IsQuark()))            return NULL;
   if (fl.size()!=6)                                     return NULL;
+  if ((fl[2].IsUptype() && fl[3].IsDowntype())
+      || fl[2].IsDowntype() && fl[3].IsUptype())        return NULL;
   if (pi.m_fi.m_ps.size()==2 &&
       pi.m_fi.m_ps[0].m_fl[0].Kfcode()==23 && pi.m_fi.m_ps[0].m_fl[1].Kfcode()==24) {
     msg_Error()<<"Error in "<<METHOD<<": "
 	       <<"   does not project on intermediate propagators.\n";
     THROW(fatal_error,"Not working."); 
   }
-  if (pi.m_fi.m_ps.size()!=4)                           return NULL;
-
+  if (fl[2].IsDowntype()){
+    msg_Error()<<"Error in "<<METHOD<<": "
+  	       <<"   Cannot have Z->l+l- final state due to photon interference.\n";
+    THROW(fatal_error,"Not working."); 
+  }
+  //if (pi.m_fi.m_ps.size()!=4)                           return NULL;
   msg_Out()<<METHOD<<":";
   for (size_t i=0;i<6;i++) msg_Out()<<" "<<fl[i];
   msg_Out()<<"\n";
-
+  /*
   if (!(fl[2].IsLepton() && fl[3].IsLepton() &&
 	fl[4].IsLepton() && fl[5].IsLepton())) {
     msg_Error()<<"Error in "<<METHOD<<":\n"
 	       <<"   WZ production for lepton/neutrino final states only.\n";
     THROW(fatal_error,"Not yet working."); 
-  }
+    }*/
   if ((fl[2]!=fl[3].Bar()) || abs(fl[4].Kfcode()-fl[5].Kfcode())!=1) {
     msg_Error()<<"Error in "<<METHOD<<":\n"
 	       <<"   Lepton final states unfeasible.\n";
@@ -148,15 +159,15 @@ Virtual_ME2_Base *MCFM_qqb_WZ_Getter::operator()(const Process_Info &pi) const
   int pID(0);
   bool swapped(false);
 
-  if (fl[2].IsUptype()   && fl[4].IsDowntype()) pID = 76;
-  if (fl[2].IsUptype()   && fl[4].IsUptype())   pID = 71;
-  if (fl[2].IsDowntype() && fl[4].IsDowntype()) pID = 77;
-  if (fl[2].IsDowntype() && fl[4].IsUptype())   pID = 72;
-
+  if (fl[2].IsUptype()   && fl[4].IsDowntype()) pID = 77;
+  if (fl[2].IsUptype()   && fl[4].IsUptype())   pID = 72;
+  if (fl[2].IsDowntype() && fl[4].IsDowntype()) pID = 76;
+  if (fl[2].IsDowntype() && fl[4].IsUptype())   pID = 71;
+  
   if (pID!=0) {
-    msg_Error()<<"Error in "<<METHOD<<":\n"
+    /*  msg_Error()<<"Error in "<<METHOD<<":\n"
 	       <<"   this class of processes is not yet working.\n";
-    THROW(fatal_error,"Not yet working."); 
+	       THROW(fatal_error,"Not yet working."); */
 
     if (nproc_.nproc>=0) {
       if (nproc_.nproc!=pID)
@@ -164,6 +175,7 @@ Virtual_ME2_Base *MCFM_qqb_WZ_Getter::operator()(const Process_Info &pi) const
 	      "Only one process class allowed when using MCFM");
     }
     nproc_.nproc=pID;
+    zerowidth_.zerowidth=true;
     chooser_();
     msg_Info()<<"Initialise MCFM with nproc = "<<nproc_.nproc<<"\n";
     return new MCFM_qqb_WZ(pID,swapped,pi,fl);

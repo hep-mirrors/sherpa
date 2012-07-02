@@ -6,12 +6,13 @@ namespace MCFM {
   private:
     int     m_pID;
     double  m_aqed,m_cplcorr, m_normcorr;
+    bool    m_change_order;
     double *p_p, *p_msqv;
 
     double CallMCFM(const int & i,const int & j);
   public:
     MCFM_qqb_ZZ(const int & pID,const PHASIC::Process_Info& pi,
-		const ATOOLS::Flavour_Vector& flavs);
+		const ATOOLS::Flavour_Vector& flavs, bool change_order);
     ~MCFM_qqb_ZZ();
     void Calc(const ATOOLS::Vec4D_Vector& momenta);
     double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
@@ -31,11 +32,12 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 MCFM_qqb_ZZ::MCFM_qqb_ZZ(const int & pID,const PHASIC::Process_Info& pi,
-			 const Flavour_Vector& flavs):
+			 const Flavour_Vector& flavs, bool change_order):
   Virtual_ME2_Base(pi,flavs), m_pID(pID),
   m_aqed(MODEL::s_model->ScalarFunction(std::string("alpha_QED"))),
   m_cplcorr(ATOOLS::sqr(4.*M_PI*m_aqed/ewcouple_.esq)),
-  m_normcorr(4.*9./qcdcouple_.ason2pi)
+  m_normcorr(4.*9./qcdcouple_.ason2pi),
+  m_change_order(change_order)
 {
   rpa->gen.AddCitation
     (1,"The NLO matrix elements have been taken from MCFM \\cite{Campbell:1999ah}.");
@@ -59,18 +61,26 @@ double MCFM_qqb_ZZ::CallMCFM(const int & i,const int & j) {
 void MCFM_qqb_ZZ::Calc(const Vec4D_Vector &p)
 {
   double corrfactor(m_cplcorr*m_normcorr);
-
+  if (m_pID==87) corrfactor*=1./3.;
   msg_Out()<<METHOD<<": "
 	   <<"m34 = "<<sqrt((p[2]+p[3]).Abs2())<<", "
 	   <<"m56 = "<<sqrt((p[4]+p[5]).Abs2())<<".\n";
 
   // u( q2)+dbar( q1)-->nu(q3)+e^+(q4)+mu^-(q6)+mu^+(q5)
 
-  for (int n(0);n<2;++n) GetMom(p_p,n,p[n]);
-  GetMom(p_p,2,p[2]); 
-  GetMom(p_p,3,p[4]); 
-  GetMom(p_p,4,p[3]); 
-  GetMom(p_p,5,p[5]); 
+  for (int n(0);n<2;++n) GetMom(p_p,n,-p[n]);
+  if (m_change_order){
+    GetMom(p_p,2,p[4]); 
+    GetMom(p_p,3,p[5]); 
+    GetMom(p_p,4,p[2]); 
+    GetMom(p_p,5,p[3]);   
+  }
+  else{
+    GetMom(p_p,2,p[2]); 
+    GetMom(p_p,3,p[3]); 
+    GetMom(p_p,4,p[4]); 
+    GetMom(p_p,5,p[5]); 
+  }
 
   long int i(m_flavs[0]), j(m_flavs[1]);
   if (i==21) { i=0; }
@@ -112,6 +122,7 @@ Virtual_ME2_Base *MCFM_qqb_ZZ_Getter::operator()(const Process_Info &pi) const
   // - have W/Z
   if (!(fl[0].IsQuark() && fl[1].IsQuark()))            return NULL;
   if (fl.size()!=6)                                     return NULL;
+  if (!(fl[2]==fl[3].Bar() && fl[4]==fl[5].Bar()))      return NULL;
   msg_Out()<<METHOD<<":";
   for (size_t i=0;i<6;i++) msg_Out()<<" "<<fl[i];
   msg_Out()<<"\n";
@@ -122,6 +133,7 @@ Virtual_ME2_Base *MCFM_qqb_ZZ_Getter::operator()(const Process_Info &pi) const
     THROW(fatal_error,"Not yet working."); 
   }
   int pID(0);
+  bool change_order(false);
   if (pi.m_fi.m_ps.size()==2 &&
       pi.m_fi.m_ps[0].m_fl[0].Kfcode()==23 && pi.m_fi.m_ps[0].m_fl[1].Kfcode()==23) {
     if (MODEL::s_model->ScalarConstant("Yukawa_b")>0.) {
@@ -131,26 +143,28 @@ Virtual_ME2_Base *MCFM_qqb_ZZ_Getter::operator()(const Process_Info &pi) const
     }
 
     if (fl[2].IsDowntype() && fl[4].IsUptype())   pID = 87;
+    if (fl[2].IsUptype() && fl[4].IsDowntype())   pID = 87;
     if (fl[2].IsDowntype() && fl[4].IsDowntype()) pID = 86;
     if (fl[2].IsUptype() && fl[4].IsDowntype()){
-      msg_Error()<<"Error in "<<METHOD<<":\n"
-		 <<"   Order of decays in runcard is: "
-		 <<"Z -> nu nub , Z -> l+ l- should be Z -> l+ l- , Z-> nu nub.\n";
-      THROW(fatal_error,"Not working."); 
+      change_order=true;
+      // msg_Error()<<"Error in "<<METHOD<<":\n"
+      //	 <<"   Order of decays in runcard is: "
+      //	 <<"Z -> nu nub , Z -> l+ l- should be Z -> l+ l- , Z-> nu nub.\n";
+      //THROW(fatal_error,"Change decay ordering."); 
     }
   }
   else if (pi.m_fi.m_ps.size()==4) {
     msg_Error()<<"Error in "<<METHOD<<":\n"
-	       <<"   4-lepton final states not yet unfeasible.\n";
+	       <<"   4-lepton final states not yet feasible.\n";
     THROW(fatal_error,"Not working."); 
   }  
   
 
 
   if (pID!=0) {
-    msg_Error()<<"Error in "<<METHOD<<":\n"
-	       <<"   this class of processes is not yet working.\n";
-    THROW(fatal_error,"Not yet working."); 
+    // msg_Error()<<"Error in "<<METHOD<<":\n"
+    //	       <<"   this class of processes is not yet working.\n";
+    //THROW(fatal_error,"Not yet working."); 
 
     if (nproc_.nproc>=0) {
       if (nproc_.nproc!=pID)
@@ -162,7 +176,7 @@ Virtual_ME2_Base *MCFM_qqb_ZZ_Getter::operator()(const Process_Info &pi) const
     if (pID==81 || pID==82) zerowidth_.zerowidth=false;
     chooser_();
     msg_Info()<<"Initialise MCFM with nproc = "<<nproc_.nproc<<"\n";
-    return new MCFM_qqb_ZZ(pID,pi,fl);
+    return new MCFM_qqb_ZZ(pID,pi,fl,change_order);
   }
   return NULL;
 }
