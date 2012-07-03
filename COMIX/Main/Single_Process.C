@@ -167,6 +167,11 @@ bool COMIX::Single_Process::MapProcess()
 	p_mapproc=p_map=(*p_umprocs)[i];
 	m_oew=p_map->p_bg->MaxOrderEW();
 	m_oqcd=p_map->p_bg->MaxOrderQCD();
+	if (p_map->p_kpterms) {
+	  p_kpterms = new KP_Terms(p_map,0);
+	  p_kpterms->SetAlpha(p_map->p_bg->DInfo()->AMax());
+	  m_wgtinfo.AddMEweights(18);
+	}
 	msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"<<mapname<<"'.\n";
 	std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 			    +"/Process/Comix/"+m_name+".map");
@@ -202,6 +207,11 @@ bool COMIX::Single_Process::MapProcess()
 		   <<Name()<<"' -> '"<<(*p_umprocs)[i]->Name()<<"'\n";
     if (p_bg->Map(*(*p_umprocs)[i]->p_bg,m_fmap)) {
       p_mapproc=p_map=(*p_umprocs)[i];
+      if (p_kpterms) {
+	delete p_kpterms;
+	p_kpterms = new KP_Terms(p_map,0);
+	p_kpterms->SetAlpha(p_map->p_bg->DInfo()->AMax());
+      }
       mapname=p_map->Name();
       msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"
 		    <<mapname<<"'."<<std::endl;
@@ -276,7 +286,7 @@ double COMIX::Single_Process::Partonic
 {
   Single_Process *sp(p_map!=NULL?p_map:this);
   if (mode==1 && !sp->p_scale->Scale2())
-    return m_lastxs=m_dxs+m_w*sp->GetKPTerms(m_flavs,mode);
+    return m_lastxs=m_dxs+m_w*GetKPTerms(m_flavs,mode);
   if (m_zero || !Selector()->Result()) return m_lastxs;
   for (size_t i(0);i<m_nin+m_nout;++i) {
     m_p[i]=p[i];
@@ -285,6 +295,7 @@ double COMIX::Single_Process::Partonic
   }
   if (p_map!=NULL && m_lookup && p_map->m_lookup) {
     m_dxs=p_map->m_dxs;
+    m_w=p_map->m_w;
     if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
       const NLO_subevtlist &rsubs(p_map->p_bg->SubEvts());
       for (size_t i(0);i<rsubs.size();++i)
@@ -309,7 +320,7 @@ double COMIX::Single_Process::Partonic
       }
     }
   }
-  double kpterms(m_w*sp->GetKPTerms(m_flavs,mode));
+  double kpterms(m_w*GetKPTerms(m_flavs,mode));
   if (m_wgtinfo.m_nx) {
     sp->FillMEWeights(m_wgtinfo);
     m_wgtinfo*=m_w;
@@ -323,20 +334,22 @@ double COMIX::Single_Process::GetKPTerms
 {
   if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return 0.0;
   if (mode==0) {
+    Single_Process *sp(p_map!=NULL?p_map:this);
     m_x[0]=m_x[1]=1.0;
     double eta0=1.0, eta1=1.0;
-    double w=p_bg->Coupling(0)/(2.0*M_PI);
+    double w=sp->p_bg->Coupling(0)/(2.0*M_PI);
+    bool map(p_map!=NULL && m_lookup && p_map->m_lookup);
     if (m_flavs[0].Strong()) {
       eta0=p_int->ISR()->X1();
-      m_x[0]=eta0+ran->Get()*(1.0-eta0);
+      m_x[0]=map?p_map->m_x[0]:eta0+ran->Get()*(1.0-eta0);
       w*=(1.0-eta0);
     }
     if (m_flavs[1].Strong()) {
       eta1=p_int->ISR()->X2();
-      m_x[1]=eta1+ran->Get()*(1.-eta1);
+      m_x[1]=map?p_map->m_x[1]:eta1+ran->Get()*(1.-eta1);
       w*=(1.0-eta1);
     }
-    p_kpterms->SetDSij(p_bg->DSij());
+    p_kpterms->SetDSij(sp->p_bg->DSij());
     p_kpterms->Calculate
       (p_int->Momenta(),m_x[0],m_x[1],eta0,eta1,w);
   }
