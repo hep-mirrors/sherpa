@@ -22,7 +22,7 @@ namespace MCFM {
     MODEL::Running_AlphaS * p_as;
     double                  m_vev,m_mh2,m_Gh2,m_mZ2,m_GZ2,m_mW2,m_GW2;
     double                  m_ehcscale2,m_cplcorr,m_normcorr;
-
+    double                  m_cpl_llrr,m_cpl_lrrl;
     void SelectIndices();
   public:
     MCFM_gg_hgg(const int & pID,
@@ -37,6 +37,7 @@ namespace MCFM {
 
 extern "C" { 
   void   spinoru_(const int & N,double *p,Complex * za,Complex * zb);
+  void   couplz_(const double & xw);
   double hggggvsqanal_(int & j1,int & j2,int & j3,int & j4);
   double haqggvsqanal_(int & j1,int & j2,int & j3,int & j4);
   double hqarbvsqanal_(int & j1,int & j2,int & j3,int & j4);
@@ -81,8 +82,27 @@ MCFM_gg_hgg::MCFM_gg_hgg(const int & pID,const Process_Info& pi,
 	  MODEL::s_model->ScalarConstant(std::string("vev")));
     break;
   case 273:
+    m_cplcorr *= 
+      m_mW2*
+      pow(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_QED"))/
+	  MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")),3.);
+    break;
   case 274:
-    exit(1);
+    double charge1(m_flavs[2].Charge()),charge2(m_flavs[4].Charge());
+    double isow1(m_flavs[2].IsoWeak()),isow2(m_flavs[4].IsoWeak());
+    double sinsqW(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")));
+    couplz_(sinsqW);
+    double sin2W(2.*sqrt(sinsqW*(1.-sinsqW)));
+    double l1(2.*(isow1-charge1*sinsqW)/sin2W);
+    double l2(2.*(isow2-charge2*sinsqW)/sin2W);
+    double r1(-2.*charge1*sinsqW/sin2W);
+    double r2(-2.*charge2*sinsqW/sin2W);
+    m_cpl_llrr = sqr(l1*l2)+sqr(r1*r2);
+    m_cpl_lrrl = sqr(l1*r2)+sqr(r1*l2);
+    m_cplcorr *= 
+      4.*m_mZ2*sinsqW*sinsqW/(1.-sinsqW)*
+      pow(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_QED"))/
+	  sinsqW,3.);
     break;
   }
 
@@ -193,13 +213,27 @@ void MCFM_gg_hgg::Calc(const Vec4D_Vector &p)
 	    (p[2]+p[3]).Abs2() :
 	    (p[2]+p[3]+p[4]+p[5]).Abs2());
   corrfactor *= 1./(sqr(sh-m_mh2)+m_mh2*m_Gh2);
+  double s23((p[2]+p[3]).Abs2()), s45((p[4]+p[5]).Abs2());
+  double s24((p[2]+p[4]).Abs2()), s35((p[3]+p[5]).Abs2());
+  double s25((p[2]+p[5]).Abs2()), s34((p[3]+p[4]).Abs2());
   switch (m_pID) {
   case 272:
     corrfactor *= 2.*sh;
+    break;
+  case 273:
+    corrfactor *= 
+      s24*s35/((sqr(s23-m_mW2)+m_mW2*m_GW2)*(sqr(s45-m_mW2)+m_mW2*m_GW2));
+    break;
+  case 274:
+    corrfactor *= 
+      (m_cpl_llrr*s24*s35 + m_cpl_lrrl*s25*s34)/
+      ((sqr(s23-m_mZ2)+m_mZ2*m_GZ2)*(sqr(s45-m_mZ2)+m_mZ2*m_GZ2));
+    break;
   }
 
   for (int n(0);n<2;++n)           GetMom(p_p,n,-p[n]);
   for (size_t n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
+
 
   spinoru_(p.size(),p_p,zprods_.za,zprods_.zb);
 
