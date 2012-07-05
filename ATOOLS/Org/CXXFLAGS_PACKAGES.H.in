@@ -37,6 +37,9 @@
 /* setSumOfWeights function available in Rivet */
 #undef USING__RIVET__SETSOW
 
+/* Rivet uses YODA as its histogramming backend */
+#undef USING__RIVET__YODA
+
 /* using FASTJET */
 #undef USING__FASTJET
 
