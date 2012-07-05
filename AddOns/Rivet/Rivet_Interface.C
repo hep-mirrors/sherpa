@@ -289,7 +289,11 @@ public:
       if (it->first.first!="") out+="."+it->first.first;
       if (it->first.second!=0) out+=".j"+ToString(it->first.second);
       it->second->finalize();
+#ifdef USING__RIVET__YODA
+      it->second->writeData(out+".yoda");
+#else
       it->second->writeData(out+".aida");
+#endif
     }
     m_finished=true;
     return true;
