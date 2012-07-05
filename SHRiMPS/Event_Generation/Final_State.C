@@ -26,7 +26,7 @@ Final_State::Final_State(const int & test) :
   p_alphaS(new Strong_Coupling(static_cast<Running_AlphaS *>
 			       (s_model->GetScalarFunction(string("alpha_S"))),
 				MBpars.AsForm(),MBpars("Q_as2"))),
-  m_Q02(MBpars("Q02")), m_Q12(MBpars("Q12")), m_QN2(MBpars("QN2")), 
+  m_Q02(MBpars("Q02")), m_Q12(MBpars("Q12")), m_QN2(MBpars("QN2")), m_nprimlad(1), 
   m_d2(MBpars("Ddiff2")), m_kdiff(MBpars("kdiff")), 
   m_Ylimit(MBpars("originalY")-MBpars("deltaY")),
   m_test(test), m_output(true)
@@ -210,7 +210,7 @@ TryEmission(double & kt12,const bool & dir) {
   
   double colfac(3.);
   double Delta(colfac*p_alphaS->MaxValue()/M_PI *
-	       KT2integral(kt1max2,kt1min2,m_Q02eff,ktexpo));
+	       KT2integral(kt1max2,kt1min2,Q02(0.),ktexpo));
   m_histomap[std::string("Delta_naive")]->Insert(Delta); 
   if (dir) m_histomap[std::string("Delta_naive1")]->Insert(Delta); 
   else m_histomap[std::string("Delta_naive0")]->Insert(Delta);
@@ -240,10 +240,14 @@ TryEmission(double & kt12,const bool & dir) {
     }
     y0      = y0old;
     y2      = y2old;
-    kt12    = SelectKT2(kt1max2,kt1min2,m_Q02eff,ktexpo);
+    kt12    = SelectKT2(kt1max2,kt1min2,Q02(y1),ktexpo);
     m_histomap[std::string("KT2_test1")]->Insert(kt12); 
     m_histomap[std::string("KT2_test2")]->Insert(kt12); 
     if (p_alphaS->Weight(kt12)<ran->Get()) {
+      m_alphaS++;
+      continue;
+    }
+    if (FKT2(kt12,Q02(y1),ktexpo)/FKT2(kt12,Q02(0.),ktexpo)<ran->Get()) {
       m_alphaS++;
       continue;
     }
@@ -351,10 +355,10 @@ TryEmission(double & kt12,const bool & dir) {
     if (MBpars.LadderWeight()==ladder_weight::Regge && 
 	dabs(m_kdiff)>1.e-6) {
       wt    *= diffwt =
-	exp(-m_kdiff*sqrt(m_d2+sqr(log(Max(m_q01_2,m_Q02eff)/
-				       Max(m_q12_2,m_Q02eff)))));
+	exp(-m_kdiff*sqrt(m_d2+sqr(log(Max(m_q01_2,Q02((y0+y1)/2.))/
+				       Max(m_q12_2,Q02((y1+y2)/2.))))));
     }
-    sup    = SuppressionTerm(m_q01_2,m_q12_2)*m_Q02eff/(m_Q02eff+kt12);
+    sup    = SuppressionTerm(m_q01_2,m_q12_2)*Q02(y1)/(Q02(y1)+kt12);
     wt    *= recombwt= 
       Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup));
     m_histomap[std::string("RecombWt")]->Insert(recombwt);
@@ -640,9 +644,16 @@ double Final_State::SuppressionTerm(const double & q02,const double & q12) {
   return sqrt(p_alphaS->Weight(q02,true)*p_alphaS->Weight(q12,true));
 }
 
-double Final_State::Q02(const double & y,const bool & first) {
-  return m_Q02eff; //+m_Q12*term;
+double Final_State::Q02(const double & y) {
+  //return m_Q02eff; //+m_Q12*term;
   //double term = pow(p_eikonal->Sum(m_b1,m_b2,y),1.5);
+  if (MBpars("Misha")) {
+    double eik = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
+    return m_Q02*eik + (m_nprimlad-1)*m_QN2*eik;
+  }
+  else {
+    return m_Q02 + (m_nprimlad-1)*m_QN2;
+  }
 }
 
 double Final_State::SelectKT2(const double & kt2max,const double & kt2min,
@@ -710,7 +721,7 @@ double Final_State::KT2integral(const double & kt2max,const double & kt2min,
     case ktform::cut:
       if (kt2max>q02) {
 	if (expo==0.) logterm = log(kt2max/Max(q02,kt2min));
-	else logterm = (pow(Max(q02,kt2min),expo)-pow(kt2max,expo))/expo;
+	else logterm = (pow(Max(q02,kt2min)/q02,expo)-pow(kt2max/q02,expo))/expo;
       }
       break;      
     case ktform::smooth:
@@ -720,17 +731,39 @@ double Final_State::KT2integral(const double & kt2max,const double & kt2min,
     case ktform::IR0:
       if (kt2min<q02) fixterm = 0.5*(1.-sqr(kt2min/q02));
       if (expo==0.) logterm = log(Max(q02,kt2max)/Max(q02,kt2min));
-      else logterm = (pow(Max(q02,kt2min),expo)-pow(Max(q02,kt2max),expo))/expo;
+      else logterm = (pow(Max(q02,kt2min)/q02,expo)-pow(Max(q02,kt2max)/q02,expo))/expo;
       break;
     case ktform::frozen:
     default:
       if (kt2min<q02) fixterm = 1.-kt2min/q02;
       if (expo==0.) logterm = log(Max(q02,kt2max)/Max(q02,kt2min));
-      else logterm = (pow(Max(q02,kt2min),expo)-pow(Max(q02,kt2max),expo))/expo;
+      else logterm = (pow(Max(q02,kt2min)/q02,expo)-pow(Max(q02,kt2max)/q02,expo))/expo;
       break;
     }
   }
   return fixterm + logterm;
+}
+
+double Final_State::FKT2(const double & kt2,const double & q02, const double & expo) {
+  double res(0.);
+    switch (m_ktform) {
+    case ktform::cut:
+      if (kt2>q02) res= 1./(q02*pow(kt2/q02,1.+expo));
+      break;      
+    case ktform::smooth:
+      res = 1./(q02*pow(kt2/q02+1.,1.+expo));
+      break;      
+    case ktform::IR0:
+      if (kt2<q02) res = kt2/sqr(q02);
+      else res= 1./(q02*pow(kt2/q02,1.+expo));
+      break;
+    case ktform::frozen:
+    default:
+      if (kt2<q02) res = 1./q02;
+      else res= 1./(q02*pow(kt2/q02,1.+expo));
+      break;
+    }
+  return res;
 }
 
 void Final_State::InitHistograms() {

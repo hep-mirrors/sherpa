@@ -20,6 +20,7 @@ namespace SHRIMPS {
     double                   m_kt1cut2,m_kt1min2,m_kt1max2;
     double                   m_d2, m_kdiff, m_Ylimit;
     int                      m_test;
+    int                      m_nprimlad;
 
     Ladder                 * p_ladder;
     Omega_ik               * p_eikonal;
@@ -59,6 +60,7 @@ namespace SHRIMPS {
 			ATOOLS::Vec4D & k_2,bool dir);
     double KT2integral(const double & kt2max,const double & kt2min,
 		       const double & q02,const double & ktexpo);
+    double FKT2(const double &, const double &, const double &);
     bool IsOrdered(const bool & dir,ATOOLS::Vec4D & k_0,
 			 ATOOLS::Vec4D & k_1,ATOOLS::Vec4D & k_2,
 			 const double & t);
@@ -79,11 +81,12 @@ namespace SHRIMPS {
     inline void   SetQ02eff(const int & N) { 
       m_Q02eff = m_Q02+(N-1)*m_QN2;
     }
+    inline void SetNLad(const int & N) { m_nprimlad = N; }
     double AlphaS(const double & kt2) { return (*p_alphaS)(kt2); }
     inline double AlphaSMax() const { return p_alphaS->MaxValue(); }
     double SelectKT2(const double & kt2max,const double & kt2min,
 		     const double & mu2,const double & expo=1.);
-    double Q02(const double & y=0.,const bool & first=false);
+    double Q02(const double & y=0.);
     const double & KTMin2() const { return m_kt1min2; }
   };
 }
