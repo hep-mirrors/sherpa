@@ -1,18 +1,20 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "AddOns/MCFM/MCFM_Wrapper.H"
-
+ 
 namespace MCFM {
   class MCFM_qqb_WW: public PHASIC::Virtual_ME2_Base {
   private:
     int     m_pID;
     double  m_aqed,m_cplcorr, m_normcorr;
     bool    m_change_order;
+    bool    m_four_lepton;
     double *p_p, *p_msqv;
    
     double CallMCFM(const int & i,const int & j);
   public:
     MCFM_qqb_WW(const int & pID,const PHASIC::Process_Info& pi,
-		const ATOOLS::Flavour_Vector& flavs, bool change_order);
+		const ATOOLS::Flavour_Vector& flavs, bool change_order,
+		bool four_lepton);
     ~MCFM_qqb_WW();
     void Calc(const ATOOLS::Vec4D_Vector& momenta);
     double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
@@ -32,12 +34,14 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 MCFM_qqb_WW::MCFM_qqb_WW(const int & pID,const PHASIC::Process_Info& pi,
-			 const Flavour_Vector& flavs, bool change_order):
+			 const Flavour_Vector& flavs, bool change_order,
+			 bool four_lepton):
   Virtual_ME2_Base(pi,flavs), m_pID(pID),
   m_aqed(MODEL::s_model->ScalarFunction(std::string("alpha_QED"))),
   m_cplcorr(ATOOLS::sqr(4.*M_PI*m_aqed/ewcouple_.esq)),
   m_normcorr(4.*9./qcdcouple_.ason2pi),
-  m_change_order(change_order)
+  m_change_order(change_order),
+  m_four_lepton(four_lepton)
 {
   rpa->gen.AddCitation
     (1,"The NLO matrix elements have been taken from MCFM \\cite{Campbell:1999ah}.");
@@ -70,6 +74,13 @@ void MCFM_qqb_WW::Calc(const Vec4D_Vector &p)
     GetMom(p_p,4,p[2]);
     GetMom(p_p,5,p[3]);
   }
+  else if (m_four_lepton)  {
+    GetMom(p_p,2,p[3]);
+    GetMom(p_p,3,p[4]);
+    GetMom(p_p,4,p[2]);
+    GetMom(p_p,5,p[5]); 
+  }
+
   else
     for (size_t n(2);n<p.size();++n) GetMom(p_p,n,p[n]);
   
@@ -102,7 +113,8 @@ DECLARE_VIRTUALME2_GETTER(MCFM_qqb_WW_Getter,"MCFM_qqb_WW")
 Virtual_ME2_Base *MCFM_qqb_WW_Getter::operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC("");
-  if (MODEL::s_model->Name()!=std::string("SM"))        return NULL;
+  if (MODEL::s_model->Name()!=std::string("SM")
+      && MODEL::s_model->Name()!=std::string("SM+AGC")) return NULL;
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
   if (!pi.m_fi.m_nloqcdtype&nlo_type::loop)             return NULL;
@@ -124,6 +136,7 @@ Virtual_ME2_Base *MCFM_qqb_WW_Getter::operator()(const Process_Info &pi) const
   }
   int pID(0);
   bool change_order(false);
+  bool four_lepton(false);
   if (pi.m_fi.m_ps.size()==2 &&
       pi.m_fi.m_ps[0].m_fl[0].Kfcode()==24 && pi.m_fi.m_ps[0].m_fl[1].Kfcode()==24) {
     if (MODEL::s_model->ScalarConstant("Yukawa_b")>0.) {
@@ -139,34 +152,42 @@ Virtual_ME2_Base *MCFM_qqb_WW_Getter::operator()(const Process_Info &pi) const
     }
     pID = 61;
   }
-  if (fl[2].IsDowntype()){
-    change_order=true;
-    //   msg_Error()<<"Error in "<<METHOD<<":\n"
-    //	       <<"   Order of decays in runcard is: "
-    //	       <<"W- -> l- nub , W+ -> l+ nu should be W+ -> l+ nu , W- -> l- nub.\n";
-    //THROW(fatal_error,"Change decay ordering."); 
+  else if (fl[2].IsDowntype() && fl[3].IsUptype()) {
+    if (MODEL::s_model->Name()==std::string("SM+AGC")) {
+      msg_Error()<<"Error in "<<METHOD<<":\n"
+		 <<"   Must have explicit boson decays for anomalous couplings.\n";
+      THROW(fatal_error,"Not working."); 
+    }
+    if (MODEL::s_model->ScalarConstant("Yukawa_b")>0.) {
+      msg_Error()<<"Error in "<<METHOD<<":\n"
+		 <<"   Must switch off Yukawa couplings of b quarks.\n";
+      THROW(fatal_error,"Wrong model assupmtions."); 
+    }
+    if (Flavour(kf_t).IsOn() || 
+	Flavour(kf_b).IsOn() && !(Flavour(kf_b).Mass())) {
+      msg_Error()<<"Error in "<<METHOD<<":\n"
+		 <<"   Must switch off the top in the t-channel.\n";
+      THROW(fatal_error,"Wrong model assupmtions."); 
+    }
+    pID=61;
+    four_lepton=true;
   }
-  else if (pi.m_fi.m_ps.size()==4) {
-    msg_Error()<<"Error in "<<METHOD<<":\n"
-	       <<"   4-lepton final states not yet feasible.\n";
-    THROW(fatal_error,"Not working."); 
-  }  
-
-  if (pID!=0) {
-    // msg_Error()<<"Error in "<<METHOD<<":\n"
-    //	       <<"   this class of processes is not yet working.\n";
-    //THROW(fatal_error,"Not yet working."); 
+  if (fl[2].IsDowntype() && !(four_lepton)) change_order=true;
     
+  if (pID!=0) {
     if (nproc_.nproc>=0) {
       if (nproc_.nproc!=pID)
 	THROW(not_implemented,
 	      "Only one process class allowed when using MCFM");
     }
     nproc_.nproc=pID;
-    if (pID=61) zerowidth_.zerowidth=true;
+    if (pID=61) {
+      if (four_lepton) zerowidth_.zerowidth=false;
+      else             zerowidth_.zerowidth=true;
+    }
     chooser_();
     msg_Info()<<"Initialise MCFM with nproc = "<<nproc_.nproc<<"\n";
-    return new MCFM_qqb_WW(pID,pi,fl,change_order);
+    return new MCFM_qqb_WW(pID,pi,fl,change_order,four_lepton);
   }
   return NULL;
 }

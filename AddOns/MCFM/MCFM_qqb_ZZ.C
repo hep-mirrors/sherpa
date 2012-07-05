@@ -38,7 +38,7 @@ MCFM_qqb_ZZ::MCFM_qqb_ZZ(const int & pID,const PHASIC::Process_Info& pi,
   m_cplcorr(ATOOLS::sqr(4.*M_PI*m_aqed/ewcouple_.esq)),
   m_normcorr(4.*9./qcdcouple_.ason2pi),
   m_change_order(change_order)
-{
+ {
   rpa->gen.AddCitation
     (1,"The NLO matrix elements have been taken from MCFM \\cite{Campbell:1999ah}.");
   p_p = new double[4*MCFM_NMX];
@@ -62,18 +62,19 @@ void MCFM_qqb_ZZ::Calc(const Vec4D_Vector &p)
 {
   double corrfactor(m_cplcorr*m_normcorr);
   if (m_pID==87) corrfactor*=1./3.;
-  msg_Out()<<METHOD<<": "
-	   <<"m34 = "<<sqrt((p[2]+p[3]).Abs2())<<", "
-	   <<"m56 = "<<sqrt((p[4]+p[5]).Abs2())<<".\n";
-
-  // u( q2)+dbar( q1)-->nu(q3)+e^+(q4)+mu^-(q6)+mu^+(q5)
-
+  
   for (int n(0);n<2;++n) GetMom(p_p,n,-p[n]);
   if (m_change_order){
     GetMom(p_p,2,p[4]); 
     GetMom(p_p,3,p[5]); 
     GetMom(p_p,4,p[2]); 
     GetMom(p_p,5,p[3]);   
+  }
+  else if (m_pID==81 || m_pID==82) {
+    GetMom(p_p,4,p[2]); 
+    GetMom(p_p,2,p[3]); 
+    GetMom(p_p,5,p[4]);  
+    GetMom(p_p,3,p[5]); 
   }
   else{
     GetMom(p_p,2,p[2]); 
@@ -110,8 +111,9 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_qqb_ZZ_Getter,"MCFM_qqb_ZZ")
 Virtual_ME2_Base *MCFM_qqb_ZZ_Getter::operator()(const Process_Info &pi) const
 {
+  double mz = Flavour(kf_Z).Mass();
   DEBUG_FUNC("");
-  if (MODEL::s_model->Name()!=std::string("SM"))        return NULL;
+  if (MODEL::s_model->Name()!=std::string("SM")) return NULL;
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
   if (!pi.m_fi.m_nloqcdtype&nlo_type::loop)             return NULL;
@@ -122,7 +124,8 @@ Virtual_ME2_Base *MCFM_qqb_ZZ_Getter::operator()(const Process_Info &pi) const
   // - have W/Z
   if (!(fl[0].IsQuark() && fl[1].IsQuark()))            return NULL;
   if (fl.size()!=6)                                     return NULL;
-  if (!(fl[2]==fl[3].Bar() && fl[4]==fl[5].Bar()))      return NULL;
+  if (!(fl[2]==fl[3].Bar() && fl[4]==fl[5].Bar())
+      && !(fl[2]==fl[4].Bar() && fl[3]==fl[5].Bar()))   return NULL;
   msg_Out()<<METHOD<<":";
   for (size_t i=0;i<6;i++) msg_Out()<<" "<<fl[i];
   msg_Out()<<"\n";
@@ -141,31 +144,32 @@ Virtual_ME2_Base *MCFM_qqb_ZZ_Getter::operator()(const Process_Info &pi) const
 		 <<"   Must switch off Yukawa couplings of b quarks.\n";
       THROW(fatal_error,"Wrong model assupmtions."); 
     }
-
     if (fl[2].IsDowntype() && fl[4].IsUptype())   pID = 87;
     if (fl[2].IsUptype() && fl[4].IsDowntype())   pID = 87;
     if (fl[2].IsDowntype() && fl[4].IsDowntype()) pID = 86;
-    if (fl[2].IsUptype() && fl[4].IsDowntype()){
-      change_order=true;
-      // msg_Error()<<"Error in "<<METHOD<<":\n"
-      //	 <<"   Order of decays in runcard is: "
-      //	 <<"Z -> nu nub , Z -> l+ l- should be Z -> l+ l- , Z-> nu nub.\n";
-      //THROW(fatal_error,"Change decay ordering."); 
-    }
+    if (fl[2].IsUptype() && fl[4].IsDowntype())   change_order=true;
   }
   else if (pi.m_fi.m_ps.size()==4) {
-    msg_Error()<<"Error in "<<METHOD<<":\n"
-	       <<"   4-lepton final states not yet feasible.\n";
-    THROW(fatal_error,"Not working."); 
-  }  
+    if (fl[2]==fl[3]){
+      msg_Error()<<"Error in "<<METHOD<<":\n"
+		 <<"   No interference allowed in this process.\n";
+      THROW(fatal_error,"Not working."); 
+    }
+    if (abs(fl[2].Kfcode()-fl[3].Kfcode())==1){
+      msg_Error()<<"Error in "<<METHOD<<":\n"
+		 <<"   This final state not possible due to Z/W interference.\n";
+      THROW(fatal_error,"Not yet working."); 
+    }
+    else if (fl[2].IsDowntype() && fl[3].IsDowntype()) pID=81;
+    else if (fl[2].IsDowntype() && fl[3].IsUptype()) pID=82; 
+    if (pID==82){
+      msg_Error()<<"Error in "<<METHOD<<":\n"
+    		 <<"   Not working for ll nu nu final state.\n";
+      THROW(fatal_error,"Not yet working."); 
+    }
+  }
   
-
-
   if (pID!=0) {
-    // msg_Error()<<"Error in "<<METHOD<<":\n"
-    //	       <<"   this class of processes is not yet working.\n";
-    //THROW(fatal_error,"Not yet working."); 
-
     if (nproc_.nproc>=0) {
       if (nproc_.nproc!=pID)
 	THROW(not_implemented,
@@ -177,7 +181,7 @@ Virtual_ME2_Base *MCFM_qqb_ZZ_Getter::operator()(const Process_Info &pi) const
     chooser_();
     msg_Info()<<"Initialise MCFM with nproc = "<<nproc_.nproc<<"\n";
     return new MCFM_qqb_ZZ(pID,pi,fl,change_order);
-  }
+  } 
   return NULL;
 }
 

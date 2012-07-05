@@ -29,7 +29,7 @@ namespace MCFM {
     (PHASIC::Process_Base *const proc,const size_t &mode,const double &kt2);
 
   }; // end of class MCFM_Interface
-
+ 
 } // end of namespace MCFM
 
 #endif
@@ -42,7 +42,7 @@ namespace MCFM {
 #include "ATOOLS/Org/Exception.H"
 
 using namespace MCFM;
-using namespace PHASIC;
+using namespace PHASIC; 
 using namespace ATOOLS;
 
 MCFM_Interface::MCFM_Interface(): 
@@ -90,7 +90,7 @@ bool MCFM_Interface::Initialize
   breit_.mass2=Flavour(kf_t).Mass();
   breit_.width2=Flavour(kf_t).Width();
   breit_.mass3=breit_.width3=0.;
-  // ew params
+  // ew params 
   ewscheme_.ewscheme = 3;
   ewinput_.aemmz_inp = model->ScalarFunction(std::string("alpha_QED"));
   ewinput_.gf_inp    = model->ScalarConstant(std::string("GF"));
@@ -132,6 +132,8 @@ bool MCFM_Interface::Initialize
     anomcoup_.delk_z   = model->ScalarConstant(std::string("kappa_Z"))-1;
     anomcoup_.tevscale = model->ScalarConstant(std::string("UNITARIZATION_SCALE"))/1000;
     }
+  
+  if (!zerowidth_.zerowidth) limits_.bbsqmin = 1.; 
 
   qcdcouple_.as      = model->ScalarFunction(std::string("alpha_S"));
   qcdcouple_.gsq     = 4.*M_PI*qcdcouple_.as;
