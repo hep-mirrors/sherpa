@@ -437,7 +437,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         CONDITIONAL_RIVETLDADD="$($CONDITIONAL_RIVETDIR/bin/rivet-config --ldflags) $($CONDITIONAL_RIVETDIR/bin/rivet-config --ldadd)";
         CONDITIONAL_RIVETCPPFLAGS="$($CONDITIONAL_RIVETDIR/bin/rivet-config --cppflags)";
         AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]); rivet=true;
-	`"$CONDITIONAL_RIVETDIR/bin/rivet-config" --version` | grep '^1\.' || rivetyoda=true
+	"$CONDITIONAL_RIVETDIR/bin/rivet-config" --version | grep '^1\.' || rivetyoda=true
       else
         AC_MSG_ERROR(Unable to use Rivet from specified path.);
       fi;
