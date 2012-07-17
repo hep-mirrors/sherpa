@@ -160,7 +160,7 @@ Current *Amplitude::CopyCurrent(Current *const c)
   Current_Key ckey(c->Flav(),p_model);
   Current *cur(Current_Getter::GetObject
 	       (std::string(1,m_pmode)+ckey.Type(),ckey));
-  if (cur==NULL) return false;
+  if (cur==NULL) return NULL;
   cur->SetDirection(c->Direction());
   cur->SetCut(c->Cut());
   cur->SetOnShell(c->OnShell());

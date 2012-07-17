@@ -14,6 +14,8 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
+#include <unistd.h>
+
 using namespace AMEGIC;
 using namespace MODEL;
 using namespace PHASIC;
