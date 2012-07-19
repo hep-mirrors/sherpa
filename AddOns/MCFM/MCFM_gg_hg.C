@@ -167,12 +167,12 @@ void MCFM_gg_hg::Calc(const Vec4D_Vector &p)
   m_res.IR()     = (res1-res);
   m_res.IR2()    = (res2-res1);
 
-  msg_Out()<<METHOD<<" yields "<<m_res.Finite()
-  	   <<" + 1/eps * "<<m_res.IR()
-  	   <<" + 1/eps^2 * "<<m_res.IR2()
-	   <<" for mb = "<<masses_.mb
-	   <<" and "<<nflav_.nflav<<" active flavours"
-	   <<" in "<<scheme_.scheme<<" ...  .\n";
+  //msg_Out()<<METHOD<<" yields "<<m_res.Finite()
+  //	   <<" + 1/eps * "<<m_res.IR()
+  //	   <<" + 1/eps^2 * "<<m_res.IR2()
+  //	   <<" for mb = "<<masses_.mb
+  //	   <<" and "<<nflav_.nflav<<" active flavours"
+  //	   <<" in "<<scheme_.scheme<<" ...  .\n";
 }
 
 double MCFM_gg_hg::Eps_Scheme_Factor(const Vec4D_Vector& mom)
