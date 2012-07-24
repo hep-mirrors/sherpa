@@ -241,15 +241,20 @@ bool Perturbative_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
   sblob->SetStatus(blob_status::needs_showers);
   sblob->SetId();
   if (p_shower->On()) {
-    if (!p_hd)
+    if (!p_hd) {
       for (int i(0);i<p_hard->NInP();++i)
 	sblob->AddToOutParticles(p_hard->InParticle(i));
-    for (size_t j(0);j<blobs->size();++j) {
-      Blob *cb((*blobs)[j]);
-      if (cb->Has(blob_status::needs_showers))
-	for (int i(0);i<cb->NOutP();++i)
-	  if (cb->OutParticle(i)->DecayBlob()==NULL)
-	    sblob->AddToInParticles(cb->OutParticle(i));
+      for (size_t j(0);j<blobs->size();++j) {
+        Blob *cb((*blobs)[j]);
+        if (cb->Has(blob_status::needs_showers))
+          for (int i(0);i<cb->NOutP();++i)
+            if (cb->OutParticle(i)->DecayBlob()==NULL)
+              sblob->AddToInParticles(cb->OutParticle(i));
+      }
+    }
+    else {
+      for (int i(0);i<p_hard->NOutP();++i)
+        sblob->AddToInParticles(p_hard->OutParticle(i));
     }
   }
   blobs->push_back(sblob);
