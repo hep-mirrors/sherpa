@@ -226,14 +226,12 @@ double Subprocess_Info::FSSymmetryFactor() const
       msg_Indent();
       sf*=m_ps[i].FSSymmetryFactor();
     }
-    else {
-      std::map<Flavour,size_t>::iterator fit(fc.find(m_ps[i].m_fl));
-      if (fit==fc.end()) {
-	fc[m_ps[i].m_fl]=0;
-	fit=fc.find(m_ps[i].m_fl);
-      }
-      ++fit->second;
+    std::map<Flavour,size_t>::iterator fit(fc.find(m_ps[i].m_fl));
+    if (fit==fc.end()) {
+      fc[m_ps[i].m_fl]=0;
+      fit=fc.find(m_ps[i].m_fl);
     }
+    ++fit->second;
   }
   for (std::map<Flavour,size_t>::const_iterator fit(fc.begin());
        fit!=fc.end();++fit) {
