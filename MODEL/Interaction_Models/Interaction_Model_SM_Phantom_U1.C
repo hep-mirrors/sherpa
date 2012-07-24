@@ -46,7 +46,6 @@ Interaction_Model_SM_Phantom_U1(MODEL::Model_Base * _model,
     costW    = Kabbala(std::string("\\cos\\theta_W"),
   		     sqrt(1.-ScalarConstant(std::string("sin2_thetaW"))));
     vev      = Kabbala(string("v_{Higgs_SM}"),ScalarConstant(std::string("vev")));
-    GF       = Kabbala(string("GF"),ScalarConstant(string("GF")));
   }else{
     g2       = Kabbala(string("g_1/\\sin\\theta_W"), 
 		     g1.Value()/sqrt(ComplexConstant(std::string("csin2_thetaW"))));
@@ -55,7 +54,6 @@ Interaction_Model_SM_Phantom_U1(MODEL::Model_Base * _model,
     costW    = Kabbala(std::string("\\cos\\theta_W"),
 		     sqrt(1.-ComplexConstant(std::string("csin2_thetaW"))));
     vev      = Kabbala(string("v_{Higgs_SM}"),ComplexConstant(std::string("cvev")));
-    GF       = Kabbala(string("GF"),ComplexConstant(string("cGF")));
   }
   PL    = Kabbala(string("P_L"),1.);
   PR    = Kabbala(string("P_R"),1.);

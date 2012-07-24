@@ -26,27 +26,31 @@ parameter, whose default is @option{0}. The following options are provided:
   
     all EW parameters are explicitly given.
     Here the W, Z and Higgs masses are taken as inputs, and
-    the parameters @code{1/ALPHAQED(0)}, @code{SIN2THETAW}, @code{VEV}
+    the parameters @code{1/ALPHAQED(default)}, @code{SIN2THETAW}, @code{VEV}
     and @code{LAMBDA} have to be specified as well. While 
-    @code{1/ALPHAQED(0)} corresponds to the fine structure constant
-    at zero momentum transfer, the parameters @code{SIN2THETAW}, 
+    @code{1/ALPHAQED(default)} corresponds to the fine structure constant,
+    (which by default is not running), the parameters @code{SIN2THETAW}, 
     @code{VEV}, and @code{LAMBDA} thereby specify the weak mixing angle,
     the Higgs field vacuum expectation value, and the Higgs quartic
-    coupling respectively.
+    coupling respectively. 
   @item  Case @code{1}:
   
     all EW parameters are calculated out of the W, Z and Higgs masses and
-    @code{1/ALPHAQED(0)}. 
+    @code{1/ALPHAQED(default)} using tree-level relations.
   @item  Case @code{2}:
   
-    all EW parameters are calculated out of @code{1/ALPHAQED(0)}, 
-    @code{SIN2THETAW}, @code{VEV} and the Higgs mass.
+    all EW parameters are calculated out of @code{1/ALPHAQED(default)}, 
+    @code{SIN2THETAW}, @code{VEV} and the Higgs mass using tree-level relations.
   @item  Case @code{3}:
   
     this choice corresponds to the G_mu-scheme. The EW parameters are 
     calculated out of the weak gauge boson masses M_W, M_Z, the Higgs
-    boson mass M_H and the Fermi constant @code{GF}.
+    boson mass M_H and the Fermi constant @code{GF} using tree-level relations.
   @end itemize
+
+The electro-weak coupling is by default not running. If its running has been
+enabled (cf. @ref{COUPLINGS}), one can specify its value at zero momentum
+transfer as input value by @code{1/ALPHAQED(0)}.
 
 To account for quark mixing the CKM matrix elements have to be assigned. 
 For this purpose the Wolfenstein parametrization @mycite{Wolfenstein1983yz} is
@@ -67,11 +71,14 @@ and @option{0.227}, respectively.
 
 The remaining parameter to fully specify the Standard Model 
 is the strong coupling constant at the Z-pole, given through
-@code{ALPHAS(MZ)}. Its default value is @option{0.118}. For 
-the two fine structure constants there is the option to provide
-fixed values that can be used in calculations of matrix elements
-in case running of the couplings is disabled. The two keywords
-are @code{1/ALPHAQED(default)} and @code{ALPHAS(default)}. When using
+@code{ALPHAS(MZ)}. Its default value is @option{0.118}. If the setup
+at hand involves hadron collisions and thus PDFs, the value of the
+strong coupling constant is automatically set consistent with the PDF fit
+and can not be changed by the user. For 
+this fine structure constant there is also the option to provide
+a fixed value that can be used in calculations of matrix elements
+in case running of the coupling is disabled (cf. @ref{COUPLINGS}). The keyword
+is @code{ALPHAS(default)}. When using
 a running strong coupling, the order of the perturbative expansion 
 used can be set through @code{ORDER_ALPHAS}, where the default @option{0}
 corresponds to one-loop running and @code{1},@code{2},@code{3} 
