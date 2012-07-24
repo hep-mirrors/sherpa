@@ -163,17 +163,17 @@ bool Point::CountT(int & tchan,const long unsigned int & kfcode) {
   if (left) {
     if (left->CountT(tchan,kfcode)) { 
       comp=left->fl.Kfcode();
-      if (comp==kfcode || kfcode==0) tchan++; 
+      if ((comp==kfcode || kfcode==0) && !fl.Strong()) tchan++; 
       return true;
     }
     if (right->CountT(tchan,kfcode)) {
       comp=right->fl.Kfcode();
-      if (comp==kfcode || kfcode==0) tchan++; 
+      if ((comp==kfcode || kfcode==0) && !fl.Strong()) tchan++; 
       return true;
     }
     if (middle && middle->CountT(tchan,kfcode)) {
       comp=middle->fl.Kfcode();
-      if (comp==kfcode || kfcode==0) tchan++; 
+      if ((comp==kfcode || kfcode==0) && !fl.Strong()) tchan++; 
       return true;
     }
   }

@@ -28,6 +28,7 @@ static const double invsqrttwo(1.0/sqrt(2.0));
 
 Amplitude::Amplitude():
   p_model(NULL), m_nin(0), m_nout(0), m_n(0), m_nf(6), m_ngpl(3),
+  m_ew_tchan_mode(0),
   m_oew(99), m_oqcd(99), m_maxoew(99), m_maxoqcd(99), m_minntc(0),
   m_pmode('D'), p_dinfo(new Dipole_Info()), p_colint(NULL), p_helint(NULL),
   m_trig(true), p_loop(NULL)
@@ -45,6 +46,8 @@ Amplitude::Amplitude():
   if (!read.ReadFromFile(helpi,"COMIX_VL_MODE")) helpi=0;
   else msg_Info()<<METHOD<<"(): Set vertex label mode "<<helpi<<".\n";
   Vertex::SetVLMode(helpi);
+  if (!read.ReadFromFile(m_ew_tchan_mode,"EW_TCHAN_MODE")) m_ew_tchan_mode=0;
+  else msg_Info()<<METHOD<<"(): Set EW Tchannel mode "<<m_ew_tchan_mode<<".\n";
   if (!read.ReadFromFile(helpi,"COMIX_N_GPL")) helpi=3;
   else msg_Info()<<METHOD<<"(): Set graphs per line "<<helpi<<".\n";
   m_ngpl=Max(1,Min(helpi,5));
@@ -400,10 +403,19 @@ Vertex *Amplitude::AddCurrent
 	      vkey.p_b->OrderQCD()+v->OrderQCD());
   size_t ntc(vkey.p_a->NTChannel()+vkey.p_b->NTChannel());
   bool isa(false), isb(false);
+  if (m_ew_tchan_mode==0) {
   if (n<m_n-1 && vkey.p_e==NULL) {
     isa=(vkey.p_a->CId()&1)^(vkey.p_a->CId()&2);
     isb=(vkey.p_b->CId()&1)^(vkey.p_b->CId()&2);
     ntc+=isa^isb;
+  }
+  }
+  else {
+    isa=(vkey.p_a->CId()&1)^(vkey.p_a->CId()&2);
+    isb=(vkey.p_b->CId()&1)^(vkey.p_b->CId()&2);
+    if (n<m_n-1 && vkey.p_e==NULL) {
+      ntc+=(isa^isb)&&!ckey.m_fl.Strong();
+    }
   }
   if (vkey.p_e) {
     oew+=vkey.p_e->OrderEW();
@@ -411,7 +423,12 @@ Vertex *Amplitude::AddCurrent
     ntc+=vkey.p_e->NTChannel();
     if (n<m_n-1) {
       bool ise((vkey.p_e->CId()&1)^(vkey.p_e->CId()&2));
-      ntc+=isa^isb^ise;
+      if (m_ew_tchan_mode==0) {
+        ntc+=isa^isb^ise;
+      }
+      else {
+        ntc+=(isa^isb^ise)&&!ckey.m_fl.Strong();
+      }
     }
   }
   if (!v->Active() || oew>m_oew || oqcd>m_oqcd ||

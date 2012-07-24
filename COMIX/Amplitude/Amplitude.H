@@ -86,7 +86,7 @@ namespace COMIX {
     Int_Matrix   m_cl;
 
     size_t m_nin, m_nout;
-    size_t m_n, m_nf, m_pgmode, m_ngpl, m_sccmur;
+    size_t m_n, m_nf, m_pgmode, m_ngpl, m_sccmur, m_ew_tchan_mode;
     size_t m_oew, m_oqcd, m_maxoew, m_maxoqcd, m_minntc;
     char   m_pmode;
 
