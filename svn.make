@@ -2,7 +2,7 @@
 MD5_EXCLUDE ?= 
 
 SVN_Info.C: SVN_Info.C.in
-	@if ! which svn > /dev/null || ! test -d $(srcdir)/.svn; then \
+	@if ! which svn > /dev/null || ! test -d $(top_srcdir)/.svn; then \
 	  if test -f $(srcdir)/$@; then \
 	    cp $(srcdir)/$@ $@.tmp; chmod u+rw $@.tmp; \
 	  else \
