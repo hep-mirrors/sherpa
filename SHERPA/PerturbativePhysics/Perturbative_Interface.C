@@ -34,6 +34,7 @@ Perturbative_Interface::Perturbative_Interface
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
   m_bbarmode=read.GetValue<int>("METS_BBAR_MODE",1);
   m_globalkfac=read.GetValue<double>("GLOBAL_KFAC",0.);
+  m_maxkfac=read.GetValue<double>("MENLOPS_MAX_KFAC",10.0);
 }
 
 Perturbative_Interface::Perturbative_Interface
@@ -212,7 +213,7 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
       MCatNLO_Process* mcnloproc=dynamic_cast<MCatNLO_Process*>(procs[i]);
       if (mcnloproc) {
 	double K(mcnloproc->LocalKFactor(*ampl));
-	if (K==0.0) continue;
+	if (K==0.0 || K>m_maxkfac) continue;
 	m_weight*=K;
 	return true;
       }
