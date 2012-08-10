@@ -1,27 +1,53 @@
-(run){
+run){
   EVENTS              = 250000
   OUTPUT              = 2
   EVENT_TYPE          = MinimumBias 
-  MAX_PROPER_LIFETIME = 10. #[mm]
   SOFT_COLLISIONS     = Shrimps
-  Shrimps_Mode        = All
-  #######################################################
-  ANALYSIS            = Rivet
-  ANALYSIS_OUTPUT     = Analysis_test
+  Shrimps_Mode        = Inelastic
 
-  Q_0^2               = 1.5          # 0. ... 4.
-  Q_as^2              = 0.25
-  # Q_as^2, Q_RC^2, Chi_S, Shower_Min_KT2, KT2_Factor
+  ANALYSIS            = Rivet
+  ANALYSIS_OUTPUT     = new
+
+  MAX_PROPER_LIFETIME = 10.
+
+  deltaY      = 1.62
+  Lambda2     = 1.45
+  Delta       = 0.32
+  lambda      = 0.25
+  beta_0^2    = 26.
+  xi          = 0.145
+  kappa       = 0.6
+
+  Misha       = 1
+
+  KT2_Factor  = 25.
+  Q_RC^2      = 15.
+  ReconnProb  = -1.5
+
+  Q_0^2       = 1.063477e-01
+  Q_N^2       = 4.152194e-03
+  Q_as^2      = 2.650606e-01
+  Chi_S       = 1.100000e-01
+  RescProb1   = 4.510509e-02
+  RescProb    = 6.209753e-01
+
+#  Ordering    = rap_only
+#  As_Form     = frozen
+#  KT_Form     = frozen
 }(run)
 
 (beam){
   BEAM_1 =  2212; BEAM_ENERGY_1 = 3500.;
   BEAM_2 =  2212; BEAM_ENERGY_2 = 3500.;
+#  BEAM_1 =  2212; BEAM_ENERGY_1 = 450.;
+#  BEAM_2 =  2212; BEAM_ENERGY_2 = 450.;
 }(beam)
 
 (analysis){
   BEGIN_RIVET {
-  -a ATLAS_2010_S8918562 ATLAS_2010_S8894728 ATLAS_2012_I1084540 
+  -a DIFFMASS ATLAS_2010_S8918562 ATLAS_2010_S8894728 ATLAS_2011_S8994773 ATLAS_2012_I1084540 TOTEM_2012_DNDETA 
+
+#ATLAS_2011_I919017 CMS_2011_S8978280 CMS_2011_S9120041 CMS_2011_S9215166 #CMS_2010_S8547297 CMS_2010_S8656010 CMS_2011_S8884919 CMS_QCD_10_024
   } END_RIVET
 }(analysis)
 
