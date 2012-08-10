@@ -177,13 +177,20 @@ ProjectOnSinglets(Blob * const blob,std::list<ParticleList *> & singlets) {
 }
 
 double Cluster_Algorithm::
-PT2(const Vec4D & pi,const Vec4D & pj,const bool & beam) const 
+PTij2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pj) const
 {
   double pti2(pi.PPerp2()), ptj2(pj.PPerp2());
   double ptij2    = 
     2.*Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-cos(pi.Phi()-pj.Phi()));
   //   return m_showerfac*Min(pref*pti2,ptij2);
-  return m_showerfac*Min(pti2,ptij2);
+  return m_showerfac*ptij2;
+}
+
+double Cluster_Algorithm::
+PTi2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pbeam) const
+{
+  double t((pi+pbeam).Abs2());
+  return m_showerfac*t*pi[0]/pbeam[0];
 }
 
 bool Cluster_Algorithm::Cluster(Blob *const blob)
@@ -253,6 +260,9 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
   double shat((legs[0]->Mom()+legs[1]->Mom()).Abs2());
   size_t nlegs(legs.size());
 
+
+  Vec4D pbeam0(-legs[0]->Mom()),  pbeam1(-legs[1]->Mom());
+  //msg_Out()<<METHOD<<": "<<pbeam0<<" & "<<pbeam1<<".\n";
   for (size_t i=2;i<nlegs;i++) {
     split   = legs[i];
     ysplit  = dabs(split->Mom().Y());
@@ -263,9 +273,13 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       spect = legs[j-1];
       int nconn(ColorConnected(split->Col(),spect->Col()));
       if (nconn==0) continue;
-      kt2FS = PT2(split->Mom(),spect->Mom(),!m_resc && (i==iymin||i==iymax));
-      /*      if (j>2) sFS = (split->Mom()+spect->Mom()).Abs2(); 
-	      else sFS = 0.;*/
+      kt2FS = Min(PTij2(split->Mom(),spect->Mom()),
+		  Min(PTi2(split->Mom(),pbeam0),
+		      PTi2(split->Mom(),pbeam1)));
+      //msg_Out()<<"kt2FS for "<<split->Mom()<<" = "<<kt2FS
+      //       <<" from ptij2 = "<<PTij2(split->Mom(),spect->Mom())<<", "
+      //       <<"pti2 = "<<PTi2(split->Mom(),pbeam0)
+      //       <<" "<<PTi2(split->Mom(),pbeam1)<<".\n";
       if (kt2FS>kt2max) kt2max = kt2FS;
       switch (m_mode) {
       case 7:
@@ -310,7 +324,9 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       case 4:
       case 3:
 	// default choice
-	kt2max = PT2(split->Mom(),legs[j]->Mom(),true)/m_showerfac;
+	kt2max = Min(PTij2(split->Mom(),legs[j]->Mom())/m_showerfac,
+		     Min(PTi2(split->Mom(),pbeam0),
+			 PTi2(split->Mom(),pbeam1)));
 	break;
       case 2:
       case 1:

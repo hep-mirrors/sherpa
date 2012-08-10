@@ -50,8 +50,8 @@ namespace SHERPA {
 			const ATOOLS::ColorID &j) const;
     void ProjectOnSinglets(ATOOLS::Blob *const blob,
     			   std::list<ParticleList *> & singlets);
-    double PT2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pj,
-	       const bool & beam=false) const;
+    double PTij2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pj) const;
+    double PTi2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pbeam) const;
   public:
     Cluster_Algorithm();
 
