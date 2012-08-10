@@ -462,6 +462,7 @@ void Form_Factor::PrintFFGrids(const int & mode) {
   msg_Out()<<"   Form factor in Q space: "<<std::endl;
   filename = std::string("Form_Factor_In_Qspace.")+tag+std::string(".dat");
   was.open(filename.c_str());
+  was<<"#   Form factor in Q space: "<<std::endl;
   for (int qstep=0;qstep<10000;qstep++) {
     q = qstep*1./1000.;
     was<<" "<<q<<"   "<<diporig(q)<<"   "<<dipana(q)<<"   "
@@ -470,24 +471,29 @@ void Form_Factor::PrintFFGrids(const int & mode) {
   was.close();
   
   msg_Out()<<"   Form factor in B space: "<<std::endl
-	   <<" b   orig   xi->0  analytic   Gauss   analytic"<<std::endl;  
+	   <<" b   orig   xi->0  analytic     xi=0.5    Gauss   analytic  "<<std::endl;  
+  was<<"#   Form factor in B space: "<<std::endl
+	   <<"# b   orig   xi->0  analytic     xi=0.5    Gauss   analytic  "<<std::endl;  
   filename = std::string("Form_Factor_In_Bspace.")+tag+std::string(".dat");
   was.open(filename.c_str());
-  double b(0.), val1, val2, val2a, val3, val3a;
+  double b(0.), val1, val2, val2a, val2b, val3, val3a;
   while (b<=8.) {
     val1  = diporig.FourierTransform(b);
     val2  = dipana.FourierTransform(b);
     val2a = dipana.AnalyticalFourierTransform(b);
+    val2b = diphalf.FourierTransform(b);
     val3  = dipGauss.FourierTransform(b);
     val3a = dipGauss.AnalyticalFourierTransform(b);
     was<<" "<<b<<"   "<<val1
        <<"   "<<val2<<"   "<<val2a<<" ("<<(100.*(1.-val2/val2a))<<")    "
+       <<"   "<<val2b
        <<"   "<<val3<<"   "<<val3a<<" ("<<(100.*(1.-val3/val3a))<<")"
        <<std::endl;
     if (b<=4.) {
       msg_Out()<<" "<<b<<"   "<<val1
 	       <<"   "<<val2<<"   "<<val2a<<" "
 	       <<"("<<(100.*(1.-val2/val2a))<<"%)    "
+               <<"   "<<val2b
 	       <<"   "<<val3<<"   "<<val3a<<" "
 	       <<"("<<(100.*(1.-val3/val3a))<<"%)"<<std::endl;
       b += m_deltab/10.;
@@ -499,6 +505,8 @@ void Form_Factor::PrintFFGrids(const int & mode) {
 
   msg_Out()<<"   Form factor in B space, dependence on kappa: "<<std::endl
 	   <<" b   orig   kappa=0   kappa->-kappa"<<std::endl;  
+  was<<"#   Form factor in B space, dependence on kappa: "<<std::endl
+	   <<"# b   orig   kappa=0   kappa->-kappa"<<std::endl;  
   filename = std::string("Form_Factor_In_Bspace_kappa.")+tag+
     std::string(".dat");
   was.open(filename.c_str());

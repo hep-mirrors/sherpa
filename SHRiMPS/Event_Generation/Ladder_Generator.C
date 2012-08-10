@@ -175,6 +175,7 @@ bool Ladder_Generator::FixFirstOutgoings() {
   bool keep(true);
   //!(p_ladder->IsRescatter() &&
   //	      inmom1.PPerp()<1. && inmom2.PPerp()<1.));
+  if(p_ladder->IsRescatter()) keep=false;
   if (!Fix2To2Outgoing(inmom1,inmom2,outmom1,outmom2,keep)) return false;
   outflav1 = p_ladder->GetIn1()->m_flav;
   outflav2 = p_ladder->GetIn2()->m_flav;
@@ -188,10 +189,10 @@ bool Ladder_Generator::FixFirstOutgoings() {
   T_Prop prop(colour_type::octet,qt,m_FS.Q02((outmom1.Y()+outmom2.Y())/2.));
   p_ladder->GetProps()->push_back(prop);
   p_ladder->SetMaxKT2(Max(outmom1.PPerp2(),outmom2.PPerp2()));
-  if (!keep &&
+/*  if (!keep &&
       (dabs(inmom1.PPerp()-outmom1.PPerp())>1. ||
        dabs(inmom2.PPerp()-outmom2.PPerp())>1.)) 
-    msg_Out()<<METHOD<<":\n"<<(*p_ladder)<<"\n";
+    msg_Out()<<METHOD<<":\n"<<(*p_ladder)<<"\n";*/
   return true;
 }
 
@@ -205,10 +206,15 @@ Fix2To2Outgoing(const ATOOLS::Vec4D & inmom1,const ATOOLS::Vec4D & inmom2,
     // Distribute kt according to geometric mean of both form factors
     ATOOLS::Vec4D cms(inmom1+inmom2);  
     double shat  = cms.Abs2(), QT2min(0.0), QT2max = ATOOLS::Min(4.,shat/4.);
-    double q1T2  = p_eikonal->FF1()->SelectQT2(QT2max,QT2min);
+/*    double q1T2  = p_eikonal->FF1()->SelectQT2(QT2max,QT2min);
     double q2T2  = p_eikonal->FF2()->SelectQT2(QT2max,QT2min);
     double QT2   = sqrt(q1T2*q2T2); //ATOOLS::Max(q1T2,q2T2);//
-    double QT    = sqrt(QT2);
+    double QT    = sqrt(QT2);*/
+    double QT,QT2;
+    do {
+      QT2 = m_FS.SelectKT2(QT2max,QT2min,m_FS.Q02(0.),3.);
+    } while (sqr(m_FS.AlphaS(QT2)/m_FS.AlphaSMax()) < ran->Get());
+    QT=sqrt(QT2);
     //msg_Out()<<METHOD<<": QT = "<<QT<<".\n";
     if (m_output) m_histograms[string("QT")]->Insert(QT);
     double dy    = acosh(sqrt(shat/(4.*QT2)));
@@ -246,7 +252,8 @@ double Ladder_Generator::Weight(const double & isweight) {
     return 0.;
   }
   double weight(1.);
-  if (p_ladder->Size()>2) {
+//   if (p_ladder->Size()>2) {
+  if (p_ladder->Size()>1) {
     double smin(m_IS.Smin());
     double that(dabs(p_ladder->That())),shat(p_ladder->Shat());
     double uhat(dabs(p_ladder->Uhat())),Yhat(p_ladder->Yhat());
@@ -259,11 +266,12 @@ double Ladder_Generator::Weight(const double & isweight) {
     double pt2=4.*that*uhat*shat/(shat*shat+uhat*uhat+that*that);
     //double expo(3.*m_FS.AlphaS(pt2)/M_PI*dabs(p_ladder->DeltaYhat()));
     weight *=mu2/(mu2+that);
+//     weight *=mu2/Max(mu2,that);
     if (p_ladder->IsHardDiffractive()) {
       weight *= sqr(m_FS.AlphaS(pt2)/m_FS.AlphaSMax());
     }
-    else if (p_ladder->Size()==3) 
-      weight *= m_FS.AlphaS(pt2)/m_FS.AlphaSMax();
+/*    else if (p_ladder->Size()==3) 
+      weight *= m_FS.AlphaS(pt2)/m_FS.AlphaSMax();*/
   }
   m_histograms[string("LadderWt")]->Insert(weight);
   return weight;

@@ -51,7 +51,21 @@ Omega_ik * Eikonal_Creator::CreateEikonal(Form_Factor * ff1,Form_Factor * ff2)
   CreateEikonalTerms(eikonal);
   CreateImpactParameterGrid(eikonal);
   if (m_test) TestEikonal(eikonal);
-
+  
+/*//     std::string comb(ATOOLS::ToString(ff1->Number())+ATOOLS::ToString(ff2->Number()));
+//     std::string filename("InclusiveQuantities/eikonal-def_"+comb+".dat");
+    std::string filename("InclusiveQuantities/eikonal-def.dat");
+    std::ofstream was;
+    was.open(filename.c_str());
+    was<<"# B    Omega_{ik}(B) :  num  "<<std::endl;
+    was<<"# i = "<<ff1->Number()<<"   k = "<<ff2->Number()<<std::endl;
+    for (int j=0;j<200;j++) {
+      double B = j*0.05;
+      was<<B<<"   "<<(*eikonal)(B)<<std::endl;
+    }
+    was.close();
+//     exit(1);*/
+  
   return eikonal;
 }
 

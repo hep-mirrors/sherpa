@@ -189,7 +189,7 @@ void Shrimps::GenerateXsecs() {
   std::string dirname = std::string("InclusiveQuantities");
   ATOOLS::MakeDir(dirname);
 
-  bool tuning(true);
+  bool tuning(false);
   
   if(!tuning){
     std::list<double> Energies;
@@ -330,7 +330,8 @@ void Shrimps::PrintPDFandAlphaS()
     Q2 = double(i);
     was<<"# Q^2 = "<<Q2<<" GeV^2"<<std::endl;
     for (int j=0;j<=nxval; j++){
-      x = j*(1.-xmin)/(nxval)+xmin;
+//       x = j*(1.-xmin)/(nxval)+xmin;
+      x = pow(10.,-double(j)*0.05);
       m_pdfs[0].Calculate(x,Q2);
       updf    = m_pdfs[0].XPDF(ATOOLS::Flavour(kf_u));
       ubarpdf = m_pdfs[0].XPDF(ATOOLS::Flavour(kf_u).Bar());
