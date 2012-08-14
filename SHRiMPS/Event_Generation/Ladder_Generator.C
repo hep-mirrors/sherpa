@@ -231,11 +231,22 @@ Fix2To2Outgoing(const ATOOLS::Vec4D & inmom1,const ATOOLS::Vec4D & inmom2,
     ATOOLS::Poincare boost(cms);
     boost.BoostBack(outmom1);
     boost.BoostBack(outmom2);
-    if (dabs(inmom1.Y()-outmom1.Y())>dabs(inmom1.Y()-outmom2.Y())) {
+/*    if ((dabs(inmom1.Y()-outmom1.Y())>dabs(inmom1.Y()-outmom2.Y())) || 
+        (dabs(inmom2.Y()-outmom2.Y())>dabs(inmom2.Y()-outmom1.Y()))) {
       //msg_Out()<<METHOD<<" swap: "
       //       <<inmom1[3]*outmom1[3]<<"<"<<inmom1[3]*outmom2[3]<<", "
       //       <<"y_in = {"<<inmom1.Y()<<", "<<inmom2.Y()<<"} -->"
       //       <<"y_out = {"<<outmom1.Y()<<", "<<outmom2.Y()<<"}.\n";
+      Vec4D help = outmom1;
+      outmom1 = outmom2;
+      outmom2 = help;
+    }*/
+    if (((inmom1.Y()<inmom2.Y()) && (outmom1.Y()>outmom2.Y())) || 
+        ((inmom1.Y()>inmom2.Y()) && (outmom1.Y()<outmom2.Y()))) { 
+/*      msg_Out()<<METHOD<<" swap: "
+            <<inmom1[3]*outmom1[3]<<"<"<<inmom1[3]*outmom2[3]<<", "
+            <<"y_in = {"<<inmom1.Y()<<", "<<inmom2.Y()<<"} -->"
+            <<"y_out = {"<<outmom1.Y()<<", "<<outmom2.Y()<<"}.\n";*/
       Vec4D help = outmom1;
       outmom1 = outmom2;
       outmom2 = help;
