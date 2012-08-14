@@ -344,7 +344,7 @@ TryEmission(double & kt12,const bool & dir) {
 	 MBpars.LadderWeight()==ladder_weight::ReggeDiffusion) && 
 	deltay>m_Deltay) { 
 //       rarg = Min(mu01_2/q01.PPerp2(),q01.PPerp2()/mu01_2);
-      rarg = mu01_2/(q01.PPerp2()+mu01_2);
+      rarg = mu01_2/(dabs(q01.Abs2())+mu01_2);
       expo = colfac*(*p_alphaS)(q01.PPerp2())*deltay/M_PI; 
       //rarg = Min(mu01_2/q01.Abs2(),q01.Abs2()/mu01_2);
       //expo = colfac*(*p_alphaS)(q01.Abs2())*deltay/M_PI; 
@@ -380,7 +380,7 @@ TryEmission(double & kt12,const bool & dir) {
 
   if (MBpars.LadderWeight()==ladder_weight::Regge) {
 //     rarg = Min(mu12_2/q12.PPerp2(),q12.PPerp2()/mu12_2);
-    rarg = mu12_2/(q12.PPerp2()+mu12_2);
+    rarg = mu12_2/(dabs(q12.Abs2())+mu12_2);
     expo = colfac*(*p_alphaS)(q12.PPerp2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
     //rarg = Min(mu12_2/q12.Abs2(),q12.Abs2()/mu12_2);
     //expo = colfac*(*p_alphaS)(q12.Abs2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
