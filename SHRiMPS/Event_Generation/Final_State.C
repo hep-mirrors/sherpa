@@ -352,7 +352,7 @@ TryEmission(double & kt12,const bool & dir) {
       wt  *= reggewt = pow(rarg,expo);
       m_histomap[std::string("ReggeWt")]->Insert(reggewt);
     }
-    if (MBpars.LadderWeight()==ladder_weight::Regge && 
+    if (MBpars.LadderWeight()==ladder_weight::ReggeDiffusion && 
 	dabs(m_kdiff)>1.e-6) {
       wt    *= diffwt =
 	exp(-m_kdiff*sqrt(m_d2+sqr(log(Max(m_q01_2,Q02((y0+y1)/2.))/
