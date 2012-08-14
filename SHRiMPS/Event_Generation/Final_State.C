@@ -682,7 +682,7 @@ double Final_State::SelectKT2(const double & kt2max,const double & kt2min,
       if (expo==0.) logterm = log(Max(mu2,kt2max)/kt2cut);
       else logterm = (pow(kt2cut,expo)-pow(Max(mu2,kt2max),expo))/expo;
       if (fixterm>ran->Get()*(fixterm+logterm)) {
-	kt2 = sqrt(kt2min+rand*(mu2-kt2min));
+	kt2 = sqrt(kt2min*kt2min+rand*(mu2*mu2-kt2min*kt2min));
       }
       else {
 	if (expo==0.) 

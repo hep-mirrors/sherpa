@@ -191,8 +191,8 @@ bool Ladder_Generator::FixFirstOutgoings() {
   p_ladder->SetMaxKT2(Max(outmom1.PPerp2(),outmom2.PPerp2()));
 /*  if (!keep &&
       (dabs(inmom1.PPerp()-outmom1.PPerp())>1. ||
-       dabs(inmom2.PPerp()-outmom2.PPerp())>1.)) 
-    msg_Out()<<METHOD<<":\n"<<(*p_ladder)<<"\n";*/
+       dabs(inmom2.PPerp()-outmom2.PPerp())>1.)) */
+//     msg_Out()<<METHOD<<":\n"<<(*p_ladder)<<"\n";
   return true;
 }
 
