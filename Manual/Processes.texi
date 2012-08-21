@@ -97,13 +97,15 @@ at level @option{2}.
 
 @cindex PARTICLE_CONTAINER
 It is also possible to define a custom particle container using the keyword 
-@code{PARTICLE_CONTAINER} either on the command line or in the @code{(model)}
+@code{PARTICLE_CONTAINER} either on the command line or in the @code{(run)}
 section of the input file. The container must be given an unassigned particle 
-ID (kf-code) and its name and content must be specified. An example would be 
-the collection of all down-type quarks, which could be declared as
+ID (kf-code) and its name (freely chosen by you) and content must be specified.
+An example would be the collection of all down-type quarks, which could be
+declared as
 @verbatim
-  PARTICLE_CONTAINER 98 downs 1 3 5;
+  PARTICLE_CONTAINER 98 downs 1 -1 3 -3 5 -5;
 @end verbatim
+Note that, if wanted, you have to add both particles and anti-particles.
 
 
 
