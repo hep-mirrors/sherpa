@@ -16,6 +16,7 @@ The following parameters are used to steer the MPI setup.
 * PROFILE_PARAMETERS::  The hadron profile function
 * REFERENCE_SCALE::     The reference scale
 * RESCALE_EXPONENT::    The rescaling exponent
+* SIGMA_ND_FACTOR::     The non-diffractive cross section factor
 @end menu
 
 
@@ -56,7 +57,6 @@ integration cutoff is used as is, see @ref{SCALE_MIN}.
 This parameter should not be changed by the user. The default is
 @samp{1800}, corresponding to Tevatron Run I energies.
 
-
 @node RESCALE_EXPONENT
 @subsection RESCALE_EXPONENT
 @cindex RESCALE_EXPONENT
@@ -64,3 +64,8 @@ Specifies the rescaling exponent for fixing the transverse momentum
 integration cutoff at centre-of-mass energies different from the
 reference scale, see @ref{SCALE_MIN}, @ref{REFERENCE_SCALE}.
 
+@node SIGMA_ND_FACTOR
+@subsection SIGMA_ND_FACTOR
+@cindex SIGMA_ND_FACTOR
+Specifies the factor to scale the non-diffractive cross section 
+calculated in the MPI initialisation.
