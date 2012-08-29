@@ -35,7 +35,7 @@ namespace PDF {
     ISR_Base **p_isrbase;
 
     std::string m_name, m_type;
-
+ 
     int m_mode, m_rmode; 
 
     double m_mass2[2], m_exponent[2], m_x[2], m_mu2[2];
@@ -46,6 +46,8 @@ namespace PDF {
     ATOOLS::Vec4D    m_fixvecs[2], p_cms[2];
 
     std::vector<double> m_info_lab, m_info_cms;
+    int m_nflav_runcard;
+    std::vector<int> m_pdf_flavs;
 
     BEAM::Beam_Base *p_beam[2];
     Remnant_Base    *p_remnants[2];
@@ -115,7 +117,7 @@ namespace PDF {
 
     inline std::string Name() { return m_name; }
     inline std::string Type() { return m_type; }
-
+ 
     inline PDF_Base        *PDF(const size_t beam)  
     { return p_isrbase[beam]->PDF();     }
     inline ATOOLS::Flavour  Flav(const size_t beam) 
