@@ -26,8 +26,7 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   p_isrbase(isrbase),
   m_rmode(0),
   m_info_lab(8),
-  m_info_cms(8),
-  m_nflav_runcard(5)
+  m_info_cms(8)
 {
   int nflav_pdf=0;
   for (int i=0;i<2;i++){
@@ -221,33 +220,17 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *par
 
 bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *partons) 
 {
-  if (Flavour(kf_b).Mass()){
-    m_nflav_runcard=4;
-    if (Flavour(kf_c).Mass()) m_nflav_runcard=3;
-  }
-
   if (m_pdf_flavs[0]>0 && m_pdf_flavs[1]>0){
     if (m_pdf_flavs[0]!=m_pdf_flavs[1]){
         msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
-		   <<"   The number of light flavours in beam 1 is "
+		   <<"   The number of flavours in beam 1 is "
 		   << m_pdf_flavs[0] << std::endl
-		   <<"  while the number of light flavours in beam 2 is "
+		   <<"  while the number of flavours in beam 2 is "
 		   << m_pdf_flavs[1] << std::endl;
-      THROW(fatal_error,"Inconsistent light flavours");
+      THROW(fatal_error,"Inconsistent flavours");
     }
   }
   
-  for (int i=0;i<2;i++){
-    if ((m_pdf_flavs[i]>0) && (m_pdf_flavs[i]!=m_nflav_runcard)){
-      msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
-		 <<"   Number of light flavours required from runcard = " << m_nflav_runcard
-		 <<std::endl
-		 <<"  not equal to number of light flavours in pdf ="
-		 << m_pdf_flavs[i] << std::endl;
-      THROW(fatal_error,"Inconsistent light flavours");
-    }
-  }
-
   bool fit = 1;
   for (int i=0;i<2;i++) {
     if (p_isrbase[i]->On()) {

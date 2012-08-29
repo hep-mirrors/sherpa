@@ -46,7 +46,6 @@ namespace PDF {
     ATOOLS::Vec4D    m_fixvecs[2], p_cms[2];
 
     std::vector<double> m_info_lab, m_info_cms;
-    int m_nflav_runcard;
     std::vector<int> m_pdf_flavs;
 
     BEAM::Beam_Base *p_beam[2];
