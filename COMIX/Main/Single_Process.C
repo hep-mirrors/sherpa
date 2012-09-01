@@ -322,7 +322,7 @@ double COMIX::Single_Process::Partonic
   }
   double kpterms(m_w*GetKPTerms(m_flavs,mode));
   if (m_wgtinfo.m_nx) {
-    sp->FillMEWeights(m_wgtinfo);
+    FillMEWeights(m_wgtinfo);
     m_wgtinfo*=m_w;
     m_wgtinfo.m_w0=m_dxs;
   }
@@ -369,7 +369,7 @@ void COMIX::Single_Process::FillMEWeights(ME_wgtinfo &wgtinfo) const
 {
   wgtinfo.m_y1=m_x[0];
   wgtinfo.m_y2=m_x[1];
-  p_bg->FillMEWeights(wgtinfo);
+  (p_map?p_map:this)->p_bg->FillMEWeights(wgtinfo);
   if (p_kpterms) p_kpterms->FillMEwgts(wgtinfo);
 }
 
