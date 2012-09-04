@@ -423,8 +423,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   for (Algebra_Interpreter::Function_Map::const_reverse_iterator 
 	 fit=p_interpreter->Functions().rbegin();
        fit!=p_interpreter->Functions().rend();++fit) {
-    if ((pos=expr.rfind(fit->second->Tag()))!=std::string::npos &&
-	pos<rem) {
+    if ((pos=expr.rfind(fit->second->Tag()+'('))!=
+	std::string::npos && pos<rem) {
       func=fit->second;
       rem=pos;
     }}
