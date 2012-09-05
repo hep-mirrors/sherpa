@@ -302,15 +302,17 @@ CreateBlob(Blob_List * blobs,const double & xsec) {
     part = liter->second.GetParticle();
     blob->AddToOutParticles(part);
   }
+  double shat((p_ladder->GetIn1()->GetParticle()->Momentum()
+	      +p_ladder->GetIn2()->GetParticle()->Momentum()).Abs2());
   //p_ladder->GetEmissionsBegin()->second.GetParticle()->SetInfo('B');
   //p_ladder->GetEmissionsRBegin()->second.GetParticle()->SetInfo('B');
 
   m_rescatterhandler.FillInitialStateIntoBlob(blob,p_ladder);
   blob->SetCMS();  
 
-  if (blob->CheckMomentumConservation().Abs2()>1.e-6 ||
-      blob->CheckMomentumConservation()[0]>1.e-3 ||
-      blob->CheckMomentumConservation()[3]>1.e-3) {
+  if (blob->CheckMomentumConservation().Abs2()/shat>1.e-6 ||
+      blob->CheckMomentumConservation()[0]/sqrt(shat)>1.e-3 ||
+      blob->CheckMomentumConservation()[3]/sqrt(shat)>1.e-3) {
 /*    if (blob->CheckMomentumConservation()[0]>1.e-3) {
       msg_Error()<<METHOD<<" try to flip orientation of momenta.\n";
       Vec4D mom;

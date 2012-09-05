@@ -8,6 +8,7 @@
 #include "SHRiMPS/Cross_Sections/Parton_Luminosity.H"
 
 #include "ATOOLS/Math/Histogram.H"
+#include "ATOOLS/Math/Histogram_2D.H"
 
 namespace SHRIMPS {
   class Ladder_Generator {
@@ -33,6 +34,7 @@ namespace SHRIMPS {
     bool              m_output;
 
     std::map<std::string, ATOOLS::Histogram * > m_histograms;
+    std::map<std::string, ATOOLS::Histogram_2D * > m_histogram2ds;
 
     double InitialiseLadder(ATOOLS::Particle * part1,ATOOLS::Particle * part2,
 			    const bool & rescatter);

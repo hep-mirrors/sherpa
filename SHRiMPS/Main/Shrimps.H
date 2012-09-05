@@ -81,6 +81,7 @@ namespace SHRIMPS {
     inline bool   IsLastRescatter() const { 
       return p_generator->IsLastRescatter(); 
     }
+    inline const double LadderTMax() const {return p_generator->TMax(); }  
   };
 }
 #endif

@@ -105,8 +105,8 @@ EmissionWeight(const double & b1,const double & b2,const double & y,
 double Omega_ik::SingletWeight(const double & b1,const double & b2,
 			       const double & y1,const double & y2,
 			       const double & sup,const int & nbeam) {
-  //double term   =  DeltaOmega(b1,b2,y1,y2,sup,nbeam); 
-  double term   =  DeltaOmega(b1,b2,y1,y2,1.,nbeam); 
+  double term   =  DeltaOmega(b1,b2,y1,y2,sup,nbeam); 
+//   double term   =  DeltaOmega(b1,b2,y1,y2,1.,nbeam); 
   double weight = sqr(1.-exp(-term/2.));
   return weight;
 }
@@ -120,8 +120,8 @@ double Omega_ik::OctetWeight(const double & b1,const double & b2,
 double Omega_ik::RescatterProbability(const double & b1,const double & b2,
 				      const double & y1,const double & y2,
 				      const double & sup,const int & nbeam) {
-  //double term   = DeltaOmega(b1,b2,y1,y2,sup,nbeam); 
-  double term   = DeltaOmega(b1,b2,y1,y2,1.,nbeam); 
+  double term   = DeltaOmega(b1,b2,y1,y2,sup,nbeam); 
+//   double term   = DeltaOmega(b1,b2,y1,y2,1.,nbeam); 
   double weight = 1.-exp(-term);
   return weight;
 }

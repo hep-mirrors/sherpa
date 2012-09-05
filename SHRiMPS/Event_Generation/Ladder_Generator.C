@@ -39,6 +39,8 @@ Ladder_Generator(Parton_Luminosity * lumi,const int & test) :
     m_histograms[string("y1")]       = new Histogram(0,-10.0,10.0,100);
     m_histograms[string("LadderWt")] = new Histogram(0,0.0,2.0,200);
     m_histograms[string("QT")]       = new Histogram(0, 0.0,10.0,200);
+    
+    m_histogram2ds[string("pt2vspt2othat")] = new Histogram_2D(0, 0.0, 100, 100, 0.0, 2.0, 20);
   }
 }
 
@@ -79,6 +81,17 @@ Ladder_Generator::~Ladder_Generator() {
     histo->Finalize();
     histo->Output(name);
     delete histo;
+  }
+  m_histograms.clear();
+  
+  Histogram_2D * histo2d;
+  for (map<string,Histogram_2D *>::iterator 
+	 hit=m_histogram2ds.begin();hit!=m_histogram2ds.end();hit++) {
+    histo2d = hit->second;
+    name  = string("Ladder_Analysis/")+hit->first+string(".dat");
+    histo2d->Finalize();
+    histo2d->Output(name);
+    delete histo2d;
   }
   m_histograms.clear();
   
@@ -152,7 +165,7 @@ InitialiseLadder(Particle * part1,Particle * part2,const bool & rescatter) {
   Ladder_Particle * lpart1(new Ladder_Particle(part1));
   Ladder_Particle * lpart2(new Ladder_Particle(part2));
   m_IS.DefineIS(lpart1,lpart2,rescatter); 
-  m_FS.Init(p_eikonal,m_IS.B1(),m_IS.B2());
+  m_FS.Init(p_eikonal,m_IS.B1(),m_IS.B2(),m_IS.B());
   p_ladder = new Ladder(m_IS.Pos());
   p_ladder->SetInParticles(lpart1,lpart2);
   p_ladder->SetRescatter(rescatter);
@@ -172,10 +185,11 @@ bool Ladder_Generator::FixFirstOutgoings() {
   Vec4D inmom2(p_ladder->GetIn2()->m_mom);
   Vec4D outmom1, outmom2,qt;
   Flavour outflav1,outflav2;
+//   bool keep(false);
   bool keep(true);
   //!(p_ladder->IsRescatter() &&
   //	      inmom1.PPerp()<1. && inmom2.PPerp()<1.));
-  if(p_ladder->IsRescatter()) keep=false;
+//   if(!p_ladder->IsRescatter()) keep=true;
   if (!Fix2To2Outgoing(inmom1,inmom2,outmom1,outmom2,keep)) return false;
   outflav1 = p_ladder->GetIn1()->m_flav;
   outflav2 = p_ladder->GetIn2()->m_flav;
@@ -206,13 +220,14 @@ Fix2To2Outgoing(const ATOOLS::Vec4D & inmom1,const ATOOLS::Vec4D & inmom2,
     // Distribute kt according to geometric mean of both form factors
     ATOOLS::Vec4D cms(inmom1+inmom2);  
     double shat  = cms.Abs2(), QT2min(0.0), QT2max = ATOOLS::Min(4.,shat/4.);
+    double meany = (inmom1.Y()+inmom2.Y())/2.;
 /*    double q1T2  = p_eikonal->FF1()->SelectQT2(QT2max,QT2min);
     double q2T2  = p_eikonal->FF2()->SelectQT2(QT2max,QT2min);
     double QT2   = sqrt(q1T2*q2T2); //ATOOLS::Max(q1T2,q2T2);//
     double QT    = sqrt(QT2);*/
     double QT,QT2;
     do {
-      QT2 = m_FS.SelectKT2(QT2max,QT2min,m_FS.Q02(0.),3.);
+      QT2 = m_FS.SelectKT2(QT2max,QT2min,m_FS.Q02(meany),3.);
     } while (sqr(m_FS.AlphaS(QT2)/m_FS.AlphaSMax()) < ran->Get());
     QT=sqrt(QT2);
     //msg_Out()<<METHOD<<": QT = "<<QT<<".\n";
@@ -275,11 +290,15 @@ double Ladder_Generator::Weight(const double & isweight) {
     Flavour in1,in2,out1,out2;
     if (!p_ladder->ReconstructMEFlavours(in1,in2,out1,out2)) return 0.;
     double pt2=4.*that*uhat*shat/(shat*shat+uhat*uhat+that*that);
-    //double expo(3.*m_FS.AlphaS(pt2)/M_PI*dabs(p_ladder->DeltaYhat()));
-    weight *= mu2*(mu2+pt2)/sqr(mu2+that);
-//     weight *=mu2/Max(mu2,that);
+    double expo(3.*m_FS.AlphaS(pt2)/M_PI*dabs(p_ladder->DeltaYhat()));
+//    weight*=Min(that/smin,pow(smin/that,1.+expo))*uhat/shat;
+//     weight *= mu2*(mu2+pt2)/sqr(mu2+that);
+//      weight *=mu2/Max(mu2,that);
+     weight *=pow(mu2/(mu2+that),1.);
+    m_histogram2ds[string("pt2vspt2othat")]->Insert(pt2,pt2/that);
     if (p_ladder->IsHardDiffractive()) {
       weight *= sqr(m_FS.AlphaS(pt2)/m_FS.AlphaSMax());
+//       weight *= mu2/(mu2+that);
     }
 /*    else if (p_ladder->Size()==3) 
       weight *= m_FS.AlphaS(pt2)/m_FS.AlphaSMax();*/

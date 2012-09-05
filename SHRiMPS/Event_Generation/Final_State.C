@@ -63,6 +63,7 @@ operator()(Ladder * ladder,const double & Deltay,
 
   double y0(m_plusiter->first), y1(m_minusiter->first);
   m_lastwt = 1.;
+  m_recombwt = 1.;
   int nbeam(//!p_ladder->IsRescatter()?2:
 	    int(dabs(p_ladder->GetIn1()->m_mom.Y())>m_Ylimit)+
 	    int(dabs(p_ladder->GetIn2()->m_mom.Y())>m_Ylimit));
@@ -71,6 +72,14 @@ operator()(Ladder * ladder,const double & Deltay,
     m_histomap[std::string("Delta_final")]->Insert(1./dabs(y0-y1)); 
     p_ladder->GetProps()->begin()->m_col = colour_type::singlet;
     p_ladder->SetDiffractive(true);
+    if (MBpars.LadderWeight()==ladder_weight::Regge) {
+      double colfac(3.);
+      double q02_2(p_ladder->GetPropsBegin()->m_qt2);
+      double mu02_2(Q02((y0+y1)/2.));
+      double rarg(mu02_2/(dabs(q02_2)+mu02_2));
+      double expo(2.*colfac*p_alphaS->MaxValue()*dabs(y0-y1)/M_PI); 
+      m_lastwt  = pow(rarg,expo);
+    }
   }
   else {
     m_pprop    = -p_ladder->GetIn1()->m_mom;
@@ -110,6 +119,14 @@ double Final_State::GenerateEmissions() {
       p_ladder->SetMaxKT2(kt2);
       if (FixPropColours(split,spect)) run = true;
       else {
+        if (MBpars.LadderWeight()==ladder_weight::Regge) {
+          double colfac(3.);
+          double q12_2(m_propiter->m_qt2);
+          double mu12_2(Q02((m_k1.Y()+m_k2.Y())/2.));
+          double rarg(mu12_2/(dabs(q12_2)+mu12_2));
+          double expo(2.*colfac*p_alphaS->MaxValue()*dabs(m_k2.Y()-m_k1.Y())/M_PI); 
+          m_lastwt  = pow(rarg,expo);
+        }
 	m_singexit++;
         m_histomap[std::string("Deltay_singexit")]->
 	  Insert(dabs(m_k2.Y()-m_k1.Y()));
@@ -121,6 +138,17 @@ double Final_State::GenerateEmissions() {
     }
   } while (run);
 
+  if (p_ladder->GetEmissions()->size()==2) {
+    if (MBpars.LadderWeight()==ladder_weight::Regge) {
+      double colfac(3.);
+      double q02_2(p_ladder->GetPropsBegin()->m_qt2);
+      double mu02_2(Q02((m_k0.Y()+m_k2.Y())/2.));
+      double rarg(mu02_2/(dabs(q02_2)+mu02_2));
+      double expo(colfac*(*p_alphaS)(dabs(q02_2))*dabs(m_k2.Y()-m_k0.Y())/M_PI); 
+      m_lastwt  = pow(rarg,expo);
+    }
+  }
+  
   double Delta = 
     double(p_ladder->Size()-1)/
     dabs(p_ladder->GetEmissionsBegin()->second.m_mom.Y()-
@@ -149,6 +177,7 @@ double Final_State::GenerateEmissions() {
   if (check) msg_Tracking()<<METHOD<<" yields ladder with tested colours:\n"
 			   <<(*p_ladder);
   
+//   return m_lastwt*m_recombwt;
   return m_lastwt;
 }
 
@@ -199,6 +228,7 @@ TryEmission(double & kt12,const bool & dir) {
   double kt0old(m_k0.PPerp()), y0old(m_k0.Y());
   double ystop(y2old);
   double kt2(kt2old), y2(y2old), phi2(phi2old), kt02, kt0, y0(y0old);
+//   double Delta12,DeltaQ1,DeltaQ2,k2perp,termk1,termk2,that;
 
   double y1(m_k0.Y()),mu01_2(0.),mu12_2(0.),kt1,phi1;
   double term1(MT*cosh(Y-y2old)-QT*cos(Phi-phi2old)), term2, term3;
@@ -241,6 +271,19 @@ TryEmission(double & kt12,const bool & dir) {
     y0      = y0old;
     y2      = y2old;
     kt12    = SelectKT2(kt1max2,kt1min2,Q02(y1),ktexpo);
+/*    phi1    = ran->Get()*2.*M_PI;
+    cphi1   = cos(phi1);
+    sphi1   = sin(phi1);
+    that    = -SelectKT2(kt1max2,kt1min2,Q02(y1),ktexpo);
+    Delta12 = cosh(y1-y2)-cos(phi1-phi2);
+    DeltaQ1 = MT*cosh(Y-y1)-QT*cos(Phi-phi1);
+    DeltaQ2 = MT*cosh(Y-y2)-QT*cos(Phi-phi2);
+    termk1 = kt2old/2.+(Q2+that)/(4.*DeltaQ2);
+    termk2 = sqr(kt2old/2.+(Q2+that)/(4.*DeltaQ2)) - that*DeltaQ1/(2.*Delta12*DeltaQ2) - Q2*kt2old/(2.*DeltaQ2);
+    kt2 = termk1-sqrt(termk2);
+    kt1 = that/(2.*Delta12*(kt2-kt2old));
+    kt12 = kt1*kt1;*/
+    
     m_histomap[std::string("KT2_test1")]->Insert(kt12); 
     m_histomap[std::string("KT2_test2")]->Insert(kt12); 
     if (p_alphaS->Weight(kt12)<ran->Get()) {
@@ -248,7 +291,6 @@ TryEmission(double & kt12,const bool & dir) {
       continue;
     }
     if (FKT2(kt12,Q02(y1),ktexpo)/FKT2(kt12,Q02(0.),ktexpo)<ran->Get()) {
-      m_alphaS++;
       continue;
     }
     kt1     = sqrt(kt12);
@@ -358,9 +400,10 @@ TryEmission(double & kt12,const bool & dir) {
 	exp(-m_kdiff*sqrt(m_d2+sqr(log(Max(m_q01_2,Q02((y0+y1)/2.))/
 				       Max(m_q12_2,Q02((y1+y2)/2.))))));
     }
-    sup    = SuppressionTerm(m_q01_2,m_q12_2)*Q02(y1)/(Q02(y1)+kt12);
+    sup    = SuppressionTerm(m_q01_2,m_q12_2);//*Q02(y1)/(Q02(y1)+kt12);
     wt    *= recombwt= 
       Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup));
+//     recombwt = Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup));
     m_histomap[std::string("RecombWt")]->Insert(recombwt);
     if (dir) {
       m_histomap[std::string("ReggeWt1")]->Insert(reggewt);
@@ -377,7 +420,9 @@ TryEmission(double & kt12,const bool & dir) {
   m_k0 = k_0;
   m_k1 = k_1;
   m_k2 = k_2;
-
+  
+//   m_recombwt *= recombwt;
+  
   if (MBpars.LadderWeight()==ladder_weight::Regge) {
 //     rarg = Min(mu12_2/q12.PPerp2(),q12.PPerp2()/mu12_2);
     rarg = mu12_2/(dabs(q12.Abs2())+mu12_2);
@@ -649,7 +694,9 @@ double Final_State::Q02(const double & y) {
   //double term = pow(p_eikonal->Sum(m_b1,m_b2,y),1.5);
   if (MBpars("Misha")) {
     double eik = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
-    return m_Q02*eik + (m_nprimlad-1)*m_QN2*eik;
+//     double eik = (*p_eikonal)(m_B);
+        return m_Q02*eik + (m_nprimlad-1)*m_QN2*eik;
+//     return m_Q02*eik + (m_nprimlad-1)*m_QN2;
   }
   else {
     return m_Q02 + (m_nprimlad-1)*m_QN2;

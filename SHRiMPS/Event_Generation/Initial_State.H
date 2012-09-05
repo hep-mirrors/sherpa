@@ -31,6 +31,7 @@ namespace SHRIMPS {
     inline const ATOOLS::Vec4D & Pos()  const { return m_pos; }
     inline const double & B1()          const { return m_b1; }
     inline const double & B2()          const { return m_b2; }
+    inline const double & B()           const { return m_B; }
     inline const double & Ycms()        const { return m_ycms; }
     inline const double & Weight()      const { return m_weight; }
     inline const double & Shat()        const { return m_shat; }

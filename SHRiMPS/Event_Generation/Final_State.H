@@ -26,7 +26,7 @@ namespace SHRIMPS {
     Omega_ik               * p_eikonal;
     double                   m_B,m_b1,m_b2,m_shat,m_Deltay;
 
-    double                   m_lastwt;
+    double                   m_lastwt,m_recombwt;
 
     LadderMap              * p_emissions;
     LadderMap::iterator      m_plusiter;
@@ -75,8 +75,8 @@ namespace SHRIMPS {
     double operator()(Ladder * ladder,const double & Deltay,
 		      const bool & firstladder,const bool & firstattempt);
     inline MODEL::Strong_Coupling * GetAS(){ return p_alphaS; }
-    inline void Init(Omega_ik * eikonal,const double & b1,const double & b2) { 
-      p_eikonal=eikonal;m_b1=b1;m_b2=b2;
+    inline void Init(Omega_ik * eikonal,const double & b1,const double & b2,const double & B) { 
+      p_eikonal=eikonal;m_b1=b1;m_b2=b2;m_B=B;
     }
     inline void   SetQ02eff(const int & N) { 
       m_Q02eff = m_Q02+(N-1)*m_QN2;

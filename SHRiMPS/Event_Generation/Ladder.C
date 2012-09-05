@@ -246,6 +246,7 @@ ReconstructMEFlavours(Flavour & i1,Flavour & i2,
 
 bool Ladder::CheckFourMomentum() {
   Vec4D check(p_inpart1->m_mom+p_inpart2->m_mom);
+  double shat(check.Abs2());
   TPropList::iterator prop = m_tprops.begin();
   for (LadderMap::iterator liter=m_emissions.begin();
        liter!=m_emissions.end();liter++) {
@@ -260,7 +261,7 @@ bool Ladder::CheckFourMomentum() {
       prop++;
     }
   }
-  if (dabs(check.Abs2())>1.e-6) {
+  if (dabs(check.Abs2())/shat>1.e-6) {
     msg_Error()<<"-------------------------------------------\n"
 	       <<METHOD<<" failed: check = "<<check<<", "<<check.Abs2()<<"\n"
 	       <<(*this)<<"\n"<<p_inpart1->m_mom<<" / "
