@@ -96,6 +96,7 @@ Cluster_Amplitude *Soft_Collision_Handler::ClusterConfiguration(Blob *const bl)
 {
   m_cluster.SetMinKT2(p_shrimps->Smin());
   m_cluster.SetRescatt(p_shrimps->IsLastRescatter());
+  m_cluster.SetTMax(p_shrimps->LadderTMax());
   if (!m_cluster.Cluster(bl)) {
     msg_Error()<<"Error in "<<METHOD<<": could not cluster blob.\n"
 	       <<(*bl)<<"\n";

@@ -37,7 +37,7 @@ namespace SHERPA {
   private:
     int    m_mode;
     bool   m_resc;
-    double m_minkt2,m_showerfac;
+    double m_minkt2,m_showerfac,m_tmax;
 
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
 
@@ -74,6 +74,7 @@ namespace SHERPA {
     { p_clus=cb; }
     inline void SetMinKT2(const double & minkt2) { m_minkt2 = minkt2; }
     inline void SetRescatt(const double & resc)  { m_resc = resc; }
+    inline void SetTMax(const double & tmax)  { m_tmax = tmax; }
 
     double Mass(const ATOOLS::Flavour &fl) const;
   };// end of class Cluster_Algorithm

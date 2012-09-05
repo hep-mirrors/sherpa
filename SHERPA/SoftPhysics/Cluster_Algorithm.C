@@ -190,7 +190,7 @@ double Cluster_Algorithm::
 PTi2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pbeam) const
 {
   double t((pi+pbeam).Abs2());
-  return m_showerfac*t*pi[0]/pbeam[0];
+  return m_showerfac*t*Min(pi[0],pbeam[0])/Max(pi[0],pbeam[0]);
 }
 
 bool Cluster_Algorithm::Cluster(Blob *const blob)
@@ -198,7 +198,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
   std::list<ParticleList * > singlets;
   ProjectOnSinglets(blob,singlets);
 
-  double scale(m_mode>2?m_minkt2:0.);
+  double scale(m_minkt2);
   double ymin(10000.),ymax(-10000.);
   int iymin(-1),iymax(-1),n(1);
 
@@ -257,45 +257,55 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
   Cluster_Leg * split, * spect;
 
   double kt2max, kt2min, kt2FS, sFS, ysplit, totmax(m_minkt2);
+  double magicfac(0.3),ybar,deltay;
   double shat((legs[0]->Mom()+legs[1]->Mom()).Abs2());
   size_t nlegs(legs.size());
 
 
   Vec4D pbeam0(-legs[0]->Mom()),  pbeam1(-legs[1]->Mom());
+  ColorID colbeam0(legs[0]->Col()), colbeam1(legs[1]->Col());
   //msg_Out()<<METHOD<<": "<<pbeam0<<" & "<<pbeam1<<".\n";
   for (size_t i=2;i<nlegs;i++) {
     split   = legs[i];
     ysplit  = dabs(split->Mom().Y());
-    kt2max  = 0.;
-    kt2min  = m_showerfac/4.*((m_mode>2)?scale:shat); 
+    kt2max  = 0.;//1.e10;
+    kt2min  = m_showerfac/4.*(scale); 
     for (size_t j=nlegs;j>2;j--) {
       if (i==j-1) continue;
       spect = legs[j-1];
+/*      ybar   = dabs(split->Mom().Y()+spect->Mom().Y())/2.;
+      deltay = dabs(split->Mom().Y()-spect->Mom().Y());*/
       int nconn(ColorConnected(split->Col(),spect->Col()));
       if (nconn==0) continue;
-      kt2FS = Min(PTij2(split->Mom(),spect->Mom()),
+/*      if (ColorConnected(split->Col(),colbeam0)>0) {
+	kt2FS = Min(PTi2(split->Mom(),spect->Mom())*exp(magicfac*ybar),
+		      PTi2(split->Mom(),pbeam0))*exp(magicfac*ysplit);
+      }
+      else if (ColorConnected(split->Col(),colbeam1)>0) {
+	kt2FS = Min(PTi2(split->Mom(),spect->Mom())*exp(magicfac*ybar),
+		      PTi2(split->Mom(),pbeam1))*exp(magicfac*ysplit);
+      }
+      else {
+	kt2FS = PTi2(split->Mom(),spect->Mom())*exp(magicfac*ybar);
+      }*/
+      kt2FS = Max((split->Mom()+spect->Mom()).Abs2(),scale);
+      if (ColorConnected(split->Col(),colbeam0)>0 || ColorConnected(split->Col(),colbeam1)>0) {
+// 	kt2min = scale;
+        kt2min = Max(m_tmax,scale/4.);
+      }
+      else {
+        kt2min = m_tmax;
+      }
+/*      kt2FS = Min(PTij2(split->Mom(),spect->Mom()),
 		  Min(PTi2(split->Mom(),pbeam0),
-		      PTi2(split->Mom(),pbeam1)));
+		      PTi2(split->Mom(),pbeam1)));*/
       //msg_Out()<<"kt2FS for "<<split->Mom()<<" = "<<kt2FS
       //       <<" from ptij2 = "<<PTij2(split->Mom(),spect->Mom())<<", "
       //       <<"pti2 = "<<PTi2(split->Mom(),pbeam0)
       //       <<" "<<PTi2(split->Mom(),pbeam1)<<".\n";
+      if (kt2FS<kt2min) kt2min=kt2FS;
       if (kt2FS>kt2max) kt2max = kt2FS;
-      switch (m_mode) {
-      case 7:
-      case 6:
-      case 5:
-      case 4:
-	if (kt2FS>kt2min) kt2min = kt2FS;
-	break;
-      case 3:
-      case 2:
-      case 1:
-      case 0:
-      default:
-	// 	if (kt2FS<kt2min) kt2min = kt2FS;
-	break;
-      }
+//       if (kt2FS<kt2max) kt2max = kt2FS;
       if (j>2) {
 	do {
 	  split->AddToSpectators(spect);
@@ -311,35 +321,24 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
 	split->AddToSpectators(legs[j]);
       }
       split->SetConnected(false);
-      switch (m_mode) {
-      case 7:
-	kt2max = kt2min = m_showerfac*scale/4.;
-	break;
-      case 6:
-	kt2max = kt2min = m_showerfac*scale/16.;
-	break;
-      case 5:
-	kt2max = kt2min = m_showerfac*sqrt(split->Mom().PPerp2()*scale/4.);
-	break;
-      case 4:
-      case 3:
 	// default choice
-	kt2max = Min(PTij2(split->Mom(),legs[j]->Mom())/m_showerfac,
+/*        if (ColorConnected(split->Col(),colbeam0)>0) {
+	  kt2max = PTi2(split->Mom(),pbeam0)*exp(magicfac*ysplit);
+        }
+        else {
+	  kt2max = PTi2(split->Mom(),pbeam1)*exp(magicfac*ysplit);
+        }*/
+        kt2max = m_showerfac*scale;
+	kt2min = scale/4.;
+/*	kt2max = Min(PTij2(split->Mom(),legs[j]->Mom())/m_showerfac,
 		     Min(PTi2(split->Mom(),pbeam0),
-			 PTi2(split->Mom(),pbeam1)));
-	break;
-      case 2:
-      case 1:
-      case 0:
-      default:
-	kt2max = kt2min = Min(m_showerfac*scale/4.,split->Mom().PPerp2());
-	break;
-      }
+			 PTi2(split->Mom(),pbeam1)));*/
     }
-    if (kt2max>kt2min) kt2min = sqrt(kt2min*kt2max);
+//     if (kt2max>kt2min) kt2min = sqrt(kt2min*kt2max);
     if (kt2max>totmax) totmax = kt2max;
     split->SetKTStart(kt2max);
-    split->SetKTMax(kt2max);
+//     split->SetKTMax(kt2max);
+    split->SetKTMax(kt2min);
     split->SetKTVeto(kt2min);
 
     m_histomap[std::string("startvspt")]->Insert(split->Mom().PPerp(),kt2max);  
