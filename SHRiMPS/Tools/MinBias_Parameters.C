@@ -26,15 +26,15 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   // form factors
   m_params["NGWstates"]   = dr->GetValue<int>("GW_States",2);
   m_params["FFpref"]      = 1./sqrt(m_params["NGWstates"]);
-  m_params["Lambda2"]     = dr->GetValue<double>("Lambda2",0.89);
-  m_params["beta02(mb)"]  = dr->GetValue<double>("beta_0^2",25.0);
+  m_params["Lambda2"]     = dr->GetValue<double>("Lambda2",1.45);
+  m_params["beta02(mb)"]  = dr->GetValue<double>("beta_0^2",26.0);
   m_params["beta0"]       = sqrt(1.e9*m_params["beta02(mb)"]/
 				 ATOOLS::rpa->Picobarn());
-  m_params["kappa"]       = dr->GetValue<double>("kappa",0.36);
-  m_params["xi"]          = dr->GetValue<double>("xi",0.01);
+  m_params["kappa"]       = dr->GetValue<double>("kappa",0.6);
+  m_params["xi"]          = dr->GetValue<double>("xi",0.145);
   // parameters of the eikonal
-  m_params["lambda"]      = dr->GetValue<double>("lambda",0.56);
-  m_params["Delta"]       = dr->GetValue<double>("Delta",0.28);
+  m_params["lambda"]      = dr->GetValue<double>("lambda",0.25);
+  m_params["Delta"]       = dr->GetValue<double>("Delta",0.32);
   // ladder generation
   m_params["NLaddersFix"] = dr->GetValue<int>("N_Ladders_Fix",-1);
   m_params["KTMin_Mode"]  = dr->GetValue<int>("KTMin_Mode",0);
@@ -52,13 +52,13 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   m_params["diff_factor"] = dr->GetValue<double>("Diff_Factor",1.);
   // rescatterings
   m_params["RescProb"]    = dr->GetValue<double>("RescProb",1.);
-  m_params["RescProb1"]   = dr->GetValue<double>("RescProb1",0.);
+  m_params["RescProb1"]   = dr->GetValue<double>("RescProb1",1.);
   m_params["SpatProb"]    = dr->GetValue<double>("SpatProb",0.);
   m_params["SpatWidth"]   = dr->GetValue<double>("SpatWidth",
 						 m_params["Lambda2"]);
   m_params["QRC2"]        = dr->GetValue<double>("Q_RC^2",4.*m_params["Q02"]);
   m_params["ReconnProb"]  = dr->GetValue<double>("ReconnProb",1.);
-  m_params["Misha"]       = dr->GetValue<int>("Misha",0);
+  m_params["Misha"]       = dr->GetValue<int>("Misha",1);
 
   std::string ffform = 
     dr->GetValue<std::string>("FF_Form",std::string("dipole"));
@@ -173,7 +173,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   }
 
   std::string reconnmode =
-    dr->GetValue<std::string>("Reconnections",std::string("fix"));
+    dr->GetValue<std::string>("Reconnections",std::string("off"));
   if (reconnmode==std::string("off")) {
     m_reconnmode = reconn_mode::off;
   }

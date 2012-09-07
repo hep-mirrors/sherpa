@@ -128,7 +128,7 @@ operator()(Particle * part1,Particle * part2,const bool & rescatter,
     weight  *= 
       //Max(0.,m_FS(p_ladder,m_cutoffY,first,trials==0))*
       Max(0.,m_FS(p_ladder,0.,first,trials==0))*
-      Weight(isweight);; 
+      Weight(isweight);
   } while ((trials++)<1000 && weight<ran->Get());
   if (p_ladder->Size()<2) {
     msg_Error()<<"Error in "<<METHOD<<":\n"
@@ -185,11 +185,10 @@ bool Ladder_Generator::FixFirstOutgoings() {
   Vec4D inmom2(p_ladder->GetIn2()->m_mom);
   Vec4D outmom1, outmom2,qt;
   Flavour outflav1,outflav2;
-//   bool keep(false);
   bool keep(true);
   //!(p_ladder->IsRescatter() &&
   //	      inmom1.PPerp()<1. && inmom2.PPerp()<1.));
-//   if(!p_ladder->IsRescatter()) keep=true;
+//   if(p_ladder->IsRescatter()) keep=false;
   if (!Fix2To2Outgoing(inmom1,inmom2,outmom1,outmom2,keep)) return false;
   outflav1 = p_ladder->GetIn1()->m_flav;
   outflav2 = p_ladder->GetIn2()->m_flav;
@@ -278,8 +277,7 @@ double Ladder_Generator::Weight(const double & isweight) {
     return 0.;
   }
   double weight(1.);
-//   if (p_ladder->Size()>2) {
-  if (p_ladder->Size()>1) {
+  if (p_ladder->Size()>2) {
     double smin(m_IS.Smin());
     double that(dabs(p_ladder->That())),shat(p_ladder->Shat());
     double uhat(dabs(p_ladder->Uhat())),Yhat(p_ladder->Yhat());

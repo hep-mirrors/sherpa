@@ -67,7 +67,7 @@ void Colour_Reconnections::HarvestParticles(Blob_List * blobs) {
       //       msg_Out()<<(*blob)<<std::endl;
       for (int i=0;i<blob->NOutP();i++) {
 	part = blob->OutParticle(i);
-	//if (dabs(part->Momentum().Y())>m_ycut) part->SetInfo('B');
+	if (dabs(part->Momentum().Y())>m_ycut) part->SetInfo('B');
 	if (part->Status()==part_status::active &&
 	    part->DecayBlob()==NULL) {
 	  unsigned int col1 = part->GetFlow(1);

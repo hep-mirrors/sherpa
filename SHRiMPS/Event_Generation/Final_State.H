@@ -16,7 +16,7 @@ namespace SHRIMPS {
     resc_nosing::code        m_resc_nosing;
     int                      m_ktmin_mode;
     MODEL::Strong_Coupling * p_alphaS;
-    double                   m_Q02,m_Q12,m_Q02eff,m_QN2;
+    double                   m_Q02,m_Q12,m_Q02eff,m_QN2,m_q02min;
     double                   m_kt1cut2,m_kt1min2,m_kt1max2;
     double                   m_d2, m_kdiff, m_Ylimit;
     int                      m_test;
@@ -65,6 +65,7 @@ namespace SHRIMPS {
 			 ATOOLS::Vec4D & k_1,ATOOLS::Vec4D & k_2,
 			 const double & t);
     double SuppressionTerm(const double & q02,const double & q12);
+    double Q02MinEstimate(const double, const double);
     void   InitHistograms();
     void   OutputHistograms();
   public:

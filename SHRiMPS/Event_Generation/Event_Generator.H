@@ -57,7 +57,7 @@ namespace SHRIMPS {
     }
     inline const double TMax() const {
       if (p_active) return p_active->TMax();
-      return false;
+      return 0.;
     }
   };
 }

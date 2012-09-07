@@ -62,6 +62,7 @@ operator()(Ladder * ladder,const double & Deltay,
   m_minusiter = p_emissions->end(); m_minusiter--;
 
   double y0(m_plusiter->first), y1(m_minusiter->first);
+  m_q02min = Q02MinEstimate(y0,y1);
   m_lastwt = 1.;
   m_recombwt = 1.;
   int nbeam(//!p_ladder->IsRescatter()?2:
@@ -203,6 +204,7 @@ OneEmission(LadderMap::iterator & split,LadderMap::iterator & spect,
 
 bool Final_State::
 TryEmission(double & kt12,const bool & dir) {
+//   return false;
   m_trials++;
   Vec4D Q(m_k0+m_k2);
   double Q2(Q.Abs2()),kt1max2(Q2/4.);
@@ -235,12 +237,12 @@ TryEmission(double & kt12,const bool & dir) {
   double cphi0,sphi0,cphi1,sphi1,cphi2(cos(phi2)),sphi2(sin(phi2));
   double expy0,expy1,expy2(std::exp(y2));
   double wt,expo,rarg,reggewt(0.),sup(0.),recombwt(0.),diffwt(0.);
-  double kmrwt(0.);
+  double kmrwt(0.),q02wt(0.);
   size_t ntrials(0);
   
   double colfac(3.);
   double Delta(colfac*p_alphaS->MaxValue()/M_PI *
-	       KT2integral(kt1max2,kt1min2,Q02(0.),ktexpo));
+	       KT2integral(kt1max2,kt1min2,m_q02min,ktexpo));
   m_histomap[std::string("Delta_naive")]->Insert(Delta); 
   if (dir) m_histomap[std::string("Delta_naive1")]->Insert(Delta); 
   else m_histomap[std::string("Delta_naive0")]->Insert(Delta);
@@ -290,7 +292,12 @@ TryEmission(double & kt12,const bool & dir) {
       m_alphaS++;
       continue;
     }
-    if (FKT2(kt12,Q02(y1),ktexpo)/FKT2(kt12,Q02(0.),ktexpo)<ran->Get()) {
+    q02wt = FKT2(kt12,Q02(y1),ktexpo)/FKT2(kt12,m_q02min,ktexpo);
+    if (q02wt>1.001) msg_Out()<<METHOD<<": Q02 minimum violated for y="<<y1
+                           <<" (Q_0^2 min="<<m_q02min<<" but Q_0^2="<<Q02(y1)
+                           <<")\n                          q02wt="
+                           <<FKT2(kt12,Q02(y1),ktexpo)<<"/"<<FKT2(kt12,m_q02min,ktexpo)<<"="<<q02wt<<".\n";
+    if (q02wt<ran->Get()) {
       continue;
     }
     kt1     = sqrt(kt12);
@@ -703,6 +710,27 @@ double Final_State::Q02(const double & y) {
   }
 }
 
+double Final_State::Q02MinEstimate(const double y0, const double y1) {
+  double y(Min(y0,y1)),eik,eikmin(0.);
+  int nstep(20);
+  
+  eikmin = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
+  if (MBpars("Misha")) {  
+/*    for (int i=0;i<=nstep;i++) {*/
+    while (y<Max(y0,y1)) {
+//       y = y0 + i*(y1-y0)/nstep;
+      y+=0.1;
+      eik = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
+      if (eik < eikmin) eikmin = eik;
+    }
+    eikmin/=2.;
+    return m_Q02*eikmin + (m_nprimlad-1)*m_QN2*eikmin;
+  }
+  else {
+    return m_Q02 + (m_nprimlad-1)*m_QN2;
+  }
+}
+
 double Final_State::SelectKT2(const double & kt2max,const double & kt2min,
 			      const double & mu2,const double & ktexpo) {
   double fixterm(0.), logterm(0.), expo(1.-ktexpo), kt2(-1.);
@@ -795,19 +823,19 @@ double Final_State::FKT2(const double & kt2,const double & q02, const double & e
   double res(0.);
     switch (m_ktform) {
     case ktform::cut:
-      if (kt2>q02) res= 1./(q02*pow(kt2/q02,1.+expo));
+      if (kt2>q02) res= 1./(q02*pow(kt2/q02,expo));
       break;      
     case ktform::smooth:
-      res = 1./(q02*pow(kt2/q02+1.,1.+expo));
+      res = 1./(q02*pow(kt2/q02+1.,expo));
       break;      
     case ktform::IR0:
       if (kt2<q02) res = kt2/sqr(q02);
-      else res= 1./(q02*pow(kt2/q02,1.+expo));
+      else res= 1./(q02*pow(kt2/q02,expo));
       break;
     case ktform::frozen:
     default:
       if (kt2<q02) res = 1./q02;
-      else res= 1./(q02*pow(kt2/q02,1.+expo));
+      else res= 1./(q02*pow(kt2/q02,expo));
       break;
     }
   return res;
