@@ -288,7 +288,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       else {
 	kt2FS = PTi2(split->Mom(),spect->Mom())*exp(magicfac*ybar);
       }*/
-      kt2FS = Max((split->Mom()+spect->Mom()).Abs2(),scale);
+      kt2FS = (split->Mom()+spect->Mom()).Abs2();
       if (ColorConnected(split->Col(),colbeam0)>0 || ColorConnected(split->Col(),colbeam1)>0) {
 // 	kt2min = scale;
         kt2min = Max(m_tmax,scale/4.);
@@ -328,8 +328,9 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
         else {
 	  kt2max = PTi2(split->Mom(),pbeam1)*exp(magicfac*ysplit);
         }*/
-        kt2max = m_showerfac*scale;
-	kt2min = scale/4.;
+        kt2max = scale;
+// 	kt2min = scale/16.;
+	kt2min = m_tmax;
 /*	kt2max = Min(PTij2(split->Mom(),legs[j]->Mom())/m_showerfac,
 		     Min(PTi2(split->Mom(),pbeam0),
 			 PTi2(split->Mom(),pbeam1)));*/
