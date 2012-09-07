@@ -293,10 +293,10 @@ TryEmission(double & kt12,const bool & dir) {
       continue;
     }
     q02wt = FKT2(kt12,Q02(y1),ktexpo)/FKT2(kt12,m_q02min,ktexpo);
-    if (q02wt>1.001) msg_Out()<<METHOD<<": Q02 minimum violated for y="<<y1
+/*    if (q02wt>1.001) msg_Out()<<METHOD<<": Q02 minimum violated for y="<<y1
                            <<" (Q_0^2 min="<<m_q02min<<" but Q_0^2="<<Q02(y1)
                            <<")\n                          q02wt="
-                           <<FKT2(kt12,Q02(y1),ktexpo)<<"/"<<FKT2(kt12,m_q02min,ktexpo)<<"="<<q02wt<<".\n";
+                           <<FKT2(kt12,Q02(y1),ktexpo)<<"/"<<FKT2(kt12,m_q02min,ktexpo)<<"="<<q02wt<<".\n";*/
     if (q02wt<ran->Get()) {
       continue;
     }
