@@ -16,6 +16,10 @@
 #include "TChain.h"
 #endif
 
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
+
 using namespace SHERPA;
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -102,6 +106,39 @@ RootNtuple_Reader::RootNtuple_Reader(const std::string & path,const std::string 
     if (spos==std::string::npos) THROW(fatal_error,"Ivalid syntax");
     size_t i(ToType<size_t>(range.substr(0,spos)));
     size_t e(ToType<size_t>(range.substr(spos+1)));
+#ifdef USING__MPI
+    exh->MPISync();
+    int size=MPI::COMM_WORLD.Get_size();
+    int rank=MPI::COMM_WORLD.Get_rank();
+    int le=e, nact=1, values[2];
+    if (size>1) {
+      if (rank==0) {
+	msg_Info()<<"MPI Analysis {\n";
+	for (int tag=1;tag<size;++tag) if (exh->MPIStat(tag)) ++nact;
+	int inc=Max(1,(int)((e-i+1)/nact));
+	e=i+inc-1;
+	msg_Info()<<"  Rank 0 analyzes "<<basename
+		  <<"["<<i<<"-"<<e<<"].\n";
+	for (int tag=1;tag<size;++tag) {
+	  if (!exh->MPIStat(tag)) continue;
+	  values[0]=i+tag*inc;
+	  values[1]=i+(tag+1)*inc-1;
+	  if (tag==nact-1) values[1]=le;
+	  MPI::COMM_WORLD.Send(&values,2,MPI::INT,tag,tag);
+	  MPI::COMM_WORLD.Recv(&values,2,MPI::INT,MPI::ANY_SOURCE,size+tag);
+	  msg_Info()<<"  Rank "<<tag<<" analyzes "
+		    <<basename<<"["<<values[0]<<"-"<<values[1]<<"].\n";
+	}
+	msg_Info()<<"}\n";
+      }
+      else {
+	MPI::COMM_WORLD.Recv(&values,2,MPI::INT,0,rank);
+	i=values[0];
+	e=values[1];
+	MPI::COMM_WORLD.Send(&values,2,MPI::INT,0,size+rank);
+      }
+    }
+#endif
     for (;i<=e;++i) {
       std::string lfile(basename+ToString(i)+suffix);
       if (FileExists(lfile)) p_vars->p_f->Add(lfile.c_str());

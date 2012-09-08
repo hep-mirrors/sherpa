@@ -346,6 +346,7 @@ DEFINE_TWO_TERM_FUNCTION(Vec4D_PPerpR,"PPerpR",PPerp)
 DEFINE_TWO_TERM_FUNCTION(Vec4D_ThetaR,"ThetaR",Theta)
 DEFINE_TWO_TERM_FUNCTION(Vec4D_DEta,"DEta",DEta)
 DEFINE_TWO_TERM_FUNCTION(Vec4D_DPhi,"DPhi",DPhi)
+DEFINE_TWO_TERM_FUNCTION(Vec4D_DR,"DR",DR)
 
 Interpreter_Function::~Interpreter_Function() 
 {
@@ -422,8 +423,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   for (Algebra_Interpreter::Function_Map::const_reverse_iterator 
 	 fit=p_interpreter->Functions().rbegin();
        fit!=p_interpreter->Functions().rend();++fit) {
-    if ((pos=expr.rfind(fit->second->Tag()))!=std::string::npos &&
-	pos<rem) {
+    if ((pos=expr.rfind(fit->second->Tag()+'('))!=
+	std::string::npos && pos<rem) {
       func=fit->second;
       rem=pos;
     }}
@@ -648,6 +649,7 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard):
   AddFunction(new Vec4D_ThetaR());
   AddFunction(new Vec4D_DEta());
   AddFunction(new Vec4D_DPhi());
+  AddFunction(new Vec4D_DR());
 }
 
 Algebra_Interpreter::~Algebra_Interpreter()

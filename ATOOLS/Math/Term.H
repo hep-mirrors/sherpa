@@ -86,6 +86,7 @@ namespace ATOOLS {
     Term *Theta(const Term &ref) const;
     Term *DEta(const Term &ref) const;
     Term *DPhi(const Term &ref) const;
+    Term *DR(const Term &ref) const;
 
     inline void SetTag(const std::string &tag) { m_tag=tag; }
     inline void SetId(const size_t &id)        { m_id=id;   }

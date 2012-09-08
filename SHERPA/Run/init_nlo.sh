@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if test $# -ne 2; then 
+if test $# -lt 2; then 
   echo "usage: $0 <sherpa exe> <input file>";
   exit 1;
 fi;
@@ -14,7 +14,7 @@ if test $tp = RS; then
 fi;
 sed -e's/}(run)/  ONLY_MAPPING_FILE 1;\n}(run)/g' < $2 > $2.$tp;
 sed -e'/NLO_QCD/ d' < $2.$tp > $2.B;
-cp -r $PWD/Process/ $nt/ 2>&1;
+test -z "$3" && cp -r $PWD/Process/ $nt/ 2>&1;
 $1 -f$2.B SHERPA_CPP_PATH=$nt;
 for i in $nt/Process/Comix/*[^\)].map; do
   if grep -q x $i; then

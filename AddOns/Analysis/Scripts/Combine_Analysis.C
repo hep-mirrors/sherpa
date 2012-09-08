@@ -31,8 +31,19 @@ void PrintInfo()
   cout<<"          -rescale=<factor> rescale output by <factor>"<<endl;
 }
 
+#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
+
 int main(int argc,char **argv)
 {
+#ifdef USING__MPI
+  MPI::Init(argc,argv);
+#endif
+  ATOOLS::exh = new Exception_Handler();
+  ATOOLS::msg = new Message();
   if (argc<3){
     PrintInfo();
     return 0;
@@ -205,6 +216,11 @@ int main(int argc,char **argv)
   }
   if (sc>0) cout<<"successfully combined "<<inlist.size()
 		<<" directories containing "<<sc<<" histograms"<<endl; 
+  delete ATOOLS::msg;
+  delete ATOOLS::exh;
+#ifdef USING__MPI
+  MPI::Finalize();
+#endif
   return 0;
 }
  

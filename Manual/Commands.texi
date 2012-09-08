@@ -73,6 +73,9 @@ Do not create result directory, see @ref{RESULT_DIRECTORY}.
 @item -b
 Switch to non-batch mode, see @ref{BATCH_MODE}.
 
+@item -V
+Print extended version information at startup.
+
 @item -v, --version
 Print versioning information.
 
