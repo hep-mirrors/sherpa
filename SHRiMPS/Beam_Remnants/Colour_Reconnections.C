@@ -48,9 +48,9 @@ FinishConfiguration(Blob_List * blobs,const double & smin) {
   m_antis.clear();
   m_links.clear();
   m_pairs.clear();
-  if(!m_on) m_reconn=0.;
   HarvestParticles(blobs);
   FillWeightTable();
+//   OutputWeightTable();
   ShuffleColours();
   blobs->push_back(AddReconnectionBlob());
   return true;
@@ -64,7 +64,7 @@ void Colour_Reconnections::HarvestParticles(Blob_List * blobs) {
   for (Blob_List::iterator bit=blobs->begin();bit!=blobs->end();bit++) {
     blob = (*bit);
     if (blob->Has(blob_status::needs_hadronization)) {
-      //       msg_Out()<<(*blob)<<std::endl;
+//             msg_Out()<<(*blob)<<std::endl;
       for (int i=0;i<blob->NOutP();i++) {
 	part = blob->OutParticle(i);
 	if (dabs(part->Momentum().Y())>m_ycut) part->SetInfo('B');
@@ -101,7 +101,7 @@ void Colour_Reconnections::FillWeightTable() {
       anti = (*antiit);
       if (anti==trip) continue;
       double dist(Distance(trip,anti));
-      switch (ColourConnected(trip,anti)) {
+/*      switch (ColourConnected(trip,anti)) {
       case 2:
 //    dist *= m_reconn;
 	break;
@@ -112,6 +112,10 @@ void Colour_Reconnections::FillWeightTable() {
       case 0:
       default:
 	break;
+      }*/
+      if (trip->GetFlow(1)==anti->GetFlow(2)) {
+	if (m_on) dist *= exp(m_reconn);
+	else dist = 0.;
       }
       dists[dist] = anti;
     }
@@ -260,7 +264,7 @@ Blob * Colour_Reconnections::AddReconnectionBlob() {
     partin = ppit->second;
     if (partin->GetFlow(1)==0) AddParticleToReconnectionBlob(blob,partin);
   }
-//   msg_Out()<<(*blob)<<"\n";
+//   msg_Out()<<METHOD<<": outgoing blob:\n"<<(*blob)<<"\n";
   return blob;
 }
 

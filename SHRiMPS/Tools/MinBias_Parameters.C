@@ -173,7 +173,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   }
 
   std::string reconnmode =
-    dr->GetValue<std::string>("Reconnections",std::string("off"));
+    dr->GetValue<std::string>("Reconnections",std::string("fix"));
   if (reconnmode==std::string("off")) {
     m_reconnmode = reconn_mode::off;
   }

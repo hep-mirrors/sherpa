@@ -76,6 +76,7 @@ operator()(Ladder * ladder,const double & Deltay,
     if (MBpars.LadderWeight()==ladder_weight::Regge) {
       double colfac(3.);
       double q02_2(p_ladder->GetPropsBegin()->m_qt2);
+//       double q02_2(p_ladder->GetPropsBegin()->m_q2);
       double mu02_2(Q02((y0+y1)/2.));
       double rarg(mu02_2/(dabs(q02_2)+mu02_2));
       double expo(2.*colfac*p_alphaS->MaxValue()*dabs(y0-y1)/M_PI); 
@@ -123,6 +124,7 @@ double Final_State::GenerateEmissions() {
         if (MBpars.LadderWeight()==ladder_weight::Regge) {
           double colfac(3.);
           double q12_2(m_propiter->m_qt2);
+//           double q12_2(m_propiter->m_q2);
           double mu12_2(Q02((m_k1.Y()+m_k2.Y())/2.));
           double rarg(mu12_2/(dabs(q12_2)+mu12_2));
           double expo(2.*colfac*p_alphaS->MaxValue()*dabs(m_k2.Y()-m_k1.Y())/M_PI); 
@@ -143,6 +145,7 @@ double Final_State::GenerateEmissions() {
     if (MBpars.LadderWeight()==ladder_weight::Regge) {
       double colfac(3.);
       double q02_2(p_ladder->GetPropsBegin()->m_qt2);
+//       double q02_2(p_ladder->GetPropsBegin()->m_q2);
       double mu02_2(Q02((m_k0.Y()+m_k2.Y())/2.));
       double rarg(mu02_2/(dabs(q02_2)+mu02_2));
       double expo(colfac*(*p_alphaS)(dabs(q02_2))*dabs(m_k2.Y()-m_k0.Y())/M_PI); 
@@ -395,8 +398,8 @@ TryEmission(double & kt12,const bool & dir) {
 //       rarg = Min(mu01_2/q01.PPerp2(),q01.PPerp2()/mu01_2);
       rarg = mu01_2/(dabs(q01.Abs2())+mu01_2);
       expo = colfac*(*p_alphaS)(q01.PPerp2())*deltay/M_PI; 
-      //rarg = Min(mu01_2/q01.Abs2(),q01.Abs2()/mu01_2);
-      //expo = colfac*(*p_alphaS)(q01.Abs2())*deltay/M_PI; 
+/*      rarg = Min(mu01_2/q01.Abs2(),q01.Abs2()/mu01_2);
+      expo = colfac*(*p_alphaS)(q01.Abs2())*deltay/M_PI;*/
       //expo = colfac*p_alphaS->MaxValue()*deltay/M_PI; 
       wt  *= reggewt = pow(rarg,expo);
       m_histomap[std::string("ReggeWt")]->Insert(reggewt);
@@ -434,8 +437,8 @@ TryEmission(double & kt12,const bool & dir) {
 //     rarg = Min(mu12_2/q12.PPerp2(),q12.PPerp2()/mu12_2);
     rarg = mu12_2/(dabs(q12.Abs2())+mu12_2);
     expo = colfac*(*p_alphaS)(q12.PPerp2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
-    //rarg = Min(mu12_2/q12.Abs2(),q12.Abs2()/mu12_2);
-    //expo = colfac*(*p_alphaS)(q12.Abs2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
+/*    rarg = Min(mu12_2/q12.Abs2(),q12.Abs2()/mu12_2);
+    expo = colfac*(*p_alphaS)(q12.Abs2())*dabs(k_2.Y()-k_1.Y())/M_PI; */
     m_lastwt  = pow(rarg,expo);
     //m_lastwt *= kmrwt = q12.PPerp2()/m_q12_2;
     //m_histomap[std::string("KMRWt")]->Insert(kmrwt);
