@@ -1,6 +1,7 @@
 (run){
   EVENTS 100000;
   SHERPA_LDADD OLE
+  LHOLE_CMSBOOST 0
 }(run);
 (processes){
   Process 93 93 -> 11 -12 93;

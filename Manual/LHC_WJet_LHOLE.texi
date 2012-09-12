@@ -34,4 +34,6 @@ In the above example, the corresponding library to be loaded would be
 called @code{libOLE.so}.
 @item both the factorisation and renormalisation scales are set to the 
 transverse mass of the electron-neutrino pair.
+@item @code{LHOLE_CMSBOOST} can be set to @code{1} if the OLE requires the phase 
+space points to be in the CMS.
 @end itemize
