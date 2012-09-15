@@ -210,7 +210,11 @@ format requires PDF information to be written out in the outdated
 PDFLIB/LHAGLUE enumeration format this is only available automatically if 
 LHAPDF is used, otherwise the indetification numbers have to be given 
 explicitly via @code{LHEF_PDF_NUMBER} (@code{LHEF_PDF_NUMBER_1} and 
-@code{LHEF_PDF_NUMBER_2} if both beams carry different structure functions).
+@code{LHEF_PDF_NUMBER_2} if both beams carry different structure functions). 
+This format currently outputs matrix element information only, no information 
+about the large-Nc colour flow is given as the LHEF output format is not 
+suited to communicate enough information for meaningful parton showering 
+on top of multiparton final states.
 @item ROOTNTUPLE_OUTPUT=<filename>
 Filename for output in ROOT ntuple format @strong{for NLO event generation only}. 
 For details on ntuple format, see @ref{Structure of ROOT NTuple Output}.
