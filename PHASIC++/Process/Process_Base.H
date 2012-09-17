@@ -77,9 +77,6 @@ namespace PHASIC {
     static void SortFlavours(Process_Info &pi);
     static void SortFlavours(std::vector<ATOOLS::Cluster_Leg*> &legs,
 			     FMMap *const fmm=0);
-    static std::string GenerateDecayName(ATOOLS::DecayInfo_Vector& decs,
-                                         ATOOLS::ClusterLeg_Vector& legs,
-                                         ATOOLS::Decay_Info* cur=NULL);
 
   public:
 
