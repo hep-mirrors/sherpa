@@ -350,6 +350,12 @@ std::string Process_Base::GenerateName
   return name;
 }
 
+class Order_NDecay {
+public:
+  int operator()(const Decay_Info *a,const Decay_Info *b) 
+  { return IdCount(a->m_id)>IdCount(b->m_id); }
+};// end of class Order_NDecay
+
 void Process_Base::SortFlavours
 (std::vector<Cluster_Leg*> &legs,FMMap *const fmm)
 {
@@ -375,7 +381,34 @@ void Process_Base::SortFlavours
 void Process_Base::SortFlavours(Cluster_Amplitude *const ampl)
 {
   FMMap fmm;
+  DecayInfo_Vector cs;
   ClusterLeg_Vector il, fl;
+  std::vector<int> dec(ampl->Legs().size(),0);
+  std::map<size_t,ClusterLeg_Vector> dmap;
+  for (size_t j(0);j<ampl->Decays().size();++j) {
+    Decay_Info *cdi(ampl->Decays()[j]);
+    size_t did(cdi->m_id), ndc(IdCount(did));
+    for (size_t i(ampl->NIn());i<dec.size();++i)
+      if (did&ampl->Leg(i)->Id()) {
+	dec[i]=1;
+	dmap[cdi->m_id].push_back(ampl->Leg(i));
+      }
+    bool core(true);
+    for (size_t i(0);i<ampl->Decays().size();++i)
+      if ((ampl->Decays()[i]->m_id&did) &&
+	  IdCount(ampl->Decays()[i]->m_id)>ndc) {
+	core=false;
+	break;
+      }
+    if (!core) continue;
+    int kfc(cdi->m_fl.Kfcode());
+    if (fmm.find(kfc)==fmm.end()) fmm[kfc]=0;
+    if (cdi->m_fl.IsFermion()) {
+      fmm[kfc]+=10;
+      if (!cdi->m_fl.IsAnti()) fmm[kfc]+=10;
+    }
+    cs.push_back(cdi);
+  }
   for (size_t i(0);i<ampl->Legs().size();++i)
     if (i<ampl->NIn()) {
       ampl->Leg(i)->SetFlav(ampl->Leg(i)->Flav().Bar());
@@ -388,13 +421,46 @@ void Process_Base::SortFlavours(Cluster_Amplitude *const ampl)
       }
     }
     else {
+      if (dec[i]) continue;
       fl.push_back(ampl->Leg(i));
       int kfc(ampl->Leg(i)->Flav().Kfcode());
       if (fmm.find(kfc)==fmm.end()) fmm[kfc]=0;
       if (ampl->Leg(i)->Flav().IsFermion()) ++fmm[kfc];
     }
   SortFlavours(il,&fmm);
+  for (size_t i(0);i<cs.size();++i) {
+    ampl->CreateLeg(Vec4D(),cs[i]->m_fl,ColorID(),cs[i]->m_id);
+    fl.push_back(ampl->Legs().back());
+  }
   SortFlavours(fl,&fmm);
+  if (cs.size()) {
+    cs=ampl->Decays();
+    std::sort(cs.begin(),cs.end(),Order_NDecay());
+    while (fl.size()<ampl->Legs().size()-ampl->NIn())
+      for (ClusterLeg_Vector::iterator
+	     fit(fl.begin());fit!=fl.end();++fit)
+	if (dmap.find((*fit)->Id())!=dmap.end()) {
+	  ClusterLeg_Vector cl(dmap[(*fit)->Id()]);
+	  size_t inc(0), ncd(IdCount((*fit)->Id()));
+	  for (size_t i(0);i<cs.size();++i)
+	    if (IdCount(cs[i]->m_id)<ncd &&
+		(cs[i]->m_id&(*fit)->Id()) && (cs[i]->m_id&inc)==0) {
+	    ampl->CreateLeg(Vec4D(),cs[i]->m_fl,ColorID(),cs[i]->m_id);
+	    for (ClusterLeg_Vector::iterator
+		   cit(cl.begin());cit!=cl.end();)
+	      if (!((*cit)->Id()&cs[i]->m_id)) ++cit;
+	      else cit=cl.erase(cit);
+	    cl.push_back(ampl->Legs().back());
+	    inc|=cs[i]->m_id;
+	  }
+	  SortFlavours(cl,&fmm);
+	  (*fit)->Delete();
+	  fit=fl.erase(fit);
+	  fl.insert(fit,cl.begin(),cl.end());
+	  ampl->Legs().pop_back();
+	  break;
+	}
+  }
   for (size_t i(0);i<ampl->NIn();++i) {
     il[i]->SetFlav(il[i]->Flav().Bar());
     ampl->Legs()[i]=il[i];
@@ -413,59 +479,18 @@ std::string Process_Base::GenerateName(const Cluster_Amplitude *ampl)
   std::string name(nii+std::string("_")+nfi);
   for (size_t i(0);i<ampl->NIn();++i) 
     name+="__"+ampl->Leg(i)->Flav().Bar().IDName();
-  ClusterLeg_Vector legs(ampl->Legs().size()-ampl->NIn());
-  for (size_t i(0);i<legs.size();++i) legs[i]=ampl->Leg(ampl->NIn()+i);
   DecayInfo_Vector decs(ampl->Decays());
-  while (decs.size()) {
-    name+="__"+GenerateDecayName(decs,legs);
-  }
-  for (size_t i(0);i<legs.size();++i) name+="__"+legs[i]->Flav().IDName();
-  msg_Debugging()<<METHOD<<"(){ name = "<<name<<" }\n";
-  return name;
-}
-
-std::string Process_Base::GenerateDecayName(DecayInfo_Vector& decs,
-                                            ClusterLeg_Vector& legs,
-                                            Decay_Info* cur)
-{
-  size_t nc(0);
-  DecayInfo_Vector::iterator dc(decs.end());
-  // look for the one with the highest multiplicity
-  for (DecayInfo_Vector::iterator
-         dit(decs.begin());dit!=decs.end();++dit) {
-    bool sdfound(true);
-    // only check IdCount amogst decays subsequent to cur
-    if (cur) {
-      sdfound=false;
-      for (DecayInfo_Vector::const_iterator sdit=cur->SubsequentDecayInfos().begin();
-           sdit!=cur->SubsequentDecayInfos().end();++sdit) {
-        if (*dit==*sdit) {
-          sdfound=true; break;
-        }
-      }
+  std::sort(decs.begin(),decs.end(),Order_NDecay());
+  for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+    std::string op, cl;
+    for (size_t j(0);j<decs.size();++j) {
+      Int_Vector ids(ID(decs[j]->m_id));
+      if (ampl->Leg(i)->Id()==(1<<ids.front()))
+	op+=ToString(decs[j]->m_fl)+"[";
+      else if (ampl->Leg(i)->Id()==(1<<ids.back())) cl+="]";
     }
-    if (!sdfound) continue;
-    size_t nit(IdCount((*dit)->m_id));
-    if (nit>nc) {
-      nc=nit;
-      dc=dit;
-    }
+    name+="__"+op+ampl->Leg(i)->Flav().IDName()+cl;
   }
-  cur=*dc;
-  decs.erase(dc);
-  std::string name(cur->m_fl.IDName()+"[");
-  for (size_t i(cur->SubsequentDecayInfos().size());i>0;--i) {
-    name+=GenerateDecayName(decs,legs,cur);
-    name+="__";
-  }
-  for (ClusterLeg_Vector::iterator lit(legs.begin());lit!=legs.end();) {
-    if (!((*lit)->Id()&cur->m_id)) ++lit;
-    else {
-      name+=(*lit)->Flav().IDName()+"__";
-      lit=legs.erase(lit);
-    }
-  }
-  name.replace(name.length()-2,2,"]");
   return name;
 }
 

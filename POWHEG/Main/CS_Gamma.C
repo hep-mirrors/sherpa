@@ -53,9 +53,7 @@ Weight_Map CS_Gamma::CalculateWeight(Cluster_Amplitude *const ampl,
   std::string rname(Process_Base::GenerateName(rampl));
   p_rproc=(*(*procs)[nlo_type::lo])[rname]->Get<Single_Process>();
   if (p_rproc==NULL) {
-    msg_Debugging()<<"invalid real process '"<<rname<<"'\n";
-    rampl->Delete();
-    return Weight_Map();
+    THROW(fatal_error,"Process '"+rname+"' not found");
   }
   Weight_Map ws;
   int stat(CalculateWeights(rampl,idmap,ws,mode,userb));
