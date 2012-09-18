@@ -293,15 +293,15 @@ Selector_Base *Variable_Selector_Getter::operator()(const Selector_Key &key) con
   return vs;
 }
 
-bool Variable_Selector::NoJetTrigger(const Vec4D_Vector &p) 
+bool Variable_Selector::NoJetTrigger(const Vec4D_Vector &) 
 {
-  return Trigger(p);
+  return true;
 }
 
 bool Variable_Selector::JetTrigger
-(const Vec4D_Vector &,NLO_subevtlist *const)
+(const Vec4D_Vector &p,NLO_subevtlist *const)
 {
-  return true;
+  return Trigger(p);
 }
 
 void Variable_Selector_Getter::PrintInfo

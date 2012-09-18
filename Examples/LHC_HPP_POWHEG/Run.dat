@@ -1,9 +1,10 @@
 (run){
   EVENTS 1000000;
   OUTPUT 2;
-  MASS[25]=115.
+  MASS[25]=125.5
   YUKAWA_B=0.;
   FRAGMENTATION Off;
+  EXCLUSIVE_CLUSTER_MODE=1;
 }(run);
 
 (model){
@@ -13,12 +14,13 @@
 }(model);
 
 (processes){
-  Process 93 93 -> 25[a]
+  Process 93 93 -> 25[a] 93{1}
     Decay   25[a] -> 22 22;
-  NLO_QCD_Part BVIRS;
-  Loop_Generator Internal;
-  Print_Graphs 1;
   Order_EW 1;
+  CKKW sqr(20./E_CMS);
+  NLO_QCD_Part BVIRS {2};
+  Loop_Generator Internal;
+  Scales VAR{Abs2(p[2]+p[3])} {2};
   End process;
 }(processes);
 
@@ -30,12 +32,11 @@
   ME_SIGNAL_GENERATOR Amegic Internal;
   EVENT_GENERATION_MODE Weighted;
   NLO_Mode 2;
-  SCALES VAR{MPerp2(p[2]+p[3])};
 }(me);
 
 (beam){
-  BEAM_1  2212; BEAM_ENERGY_1 3500;
-  BEAM_2  2212; BEAM_ENERGY_2 3500;
+  BEAM_1  2212; BEAM_ENERGY_1 4000;
+  BEAM_2  2212; BEAM_ENERGY_2 4000;
 }(beam);
 
 (mi){
