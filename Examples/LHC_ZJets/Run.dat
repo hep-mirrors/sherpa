@@ -8,8 +8,10 @@
 }(beam)
 
 (processes){
-  Process 93 93 -> 11 -11
+  Process 93 93 -> 11 -11 93{4}
   Order_EW 2;
+  CKKW sqr(30/E_CMS)
+  Integration_Error 0.02 {6};
   End process;
 }(processes)
 
