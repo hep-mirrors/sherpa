@@ -219,6 +219,8 @@ Initialization_Handler::~Initialization_Handler()
     if (exit==NULL) THROW(fatal_error,"Cannot unload PDF library "+*pdflib);
     ((PDF_Exit_Function)exit)();
   }
+  String_Vector dummy;
+  Read_Write_Base::SetCommandLine(dummy);
 }
 
 void Initialization_Handler::LoadLibraries() const
