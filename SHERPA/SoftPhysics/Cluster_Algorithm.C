@@ -290,8 +290,8 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       }*/
       kt2FS = (split->Mom()+spect->Mom()).Abs2();
       if (ColorConnected(split->Col(),colbeam0)>0 || ColorConnected(split->Col(),colbeam1)>0) {
-// 	kt2min = scale;
-        kt2min = Max(m_tmax,scale/4.);
+//         kt2min = Max(m_tmax,scale/4.);
+        kt2min = Max(m_tmax,scale);
       }
       else {
         kt2min = m_tmax;

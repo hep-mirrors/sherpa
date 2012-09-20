@@ -292,7 +292,8 @@ double Ladder_Generator::Weight(const double & isweight) {
 //    weight*=Min(that/smin,pow(smin/that,1.+expo))*uhat/shat;
 //     weight *= mu2*(mu2+pt2)/sqr(mu2+that);
 //      weight *=mu2/Max(mu2,that);
-     weight *=pow(mu2/(mu2+that),1.);
+//      weight *=pow(mu2/(mu2+that),1.);
+     weight *=pow((smin/4.)/(smin/4.+that),1.);
     m_histogram2ds[string("pt2vspt2othat")]->Insert(pt2,pt2/that);
     if (p_ladder->IsHardDiffractive()) {
       weight *= sqr(m_FS.AlphaS(pt2)/m_FS.AlphaSMax());

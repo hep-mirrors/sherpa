@@ -149,6 +149,7 @@ double Final_State::GenerateEmissions() {
       double mu02_2(Q02((m_k0.Y()+m_k2.Y())/2.));
       double rarg(mu02_2/(dabs(q02_2)+mu02_2));
       double expo(colfac*(*p_alphaS)(dabs(qt02_2))*dabs(m_k2.Y()-m_k0.Y())/M_PI); 
+//       double expo(colfac*(*p_alphaS)(dabs(q02_2))*dabs(m_k2.Y()-m_k0.Y())/M_PI); 
       m_lastwt  = pow(rarg,expo);
     }
   }
@@ -398,8 +399,8 @@ TryEmission(double & kt12,const bool & dir) {
 //       rarg = Min(mu01_2/q01.PPerp2(),q01.PPerp2()/mu01_2);
       rarg = mu01_2/(dabs(q01.Abs2())+mu01_2);
       expo = colfac*(*p_alphaS)(q01.PPerp2())*deltay/M_PI; 
-/*      rarg = Min(mu01_2/q01.Abs2(),q01.Abs2()/mu01_2);
-      expo = colfac*(*p_alphaS)(q01.Abs2())*deltay/M_PI;*/
+//       rarg = Min(mu01_2/q01.Abs2(),q01.Abs2()/mu01_2);
+//       expo = colfac*(*p_alphaS)(q01.Abs2())*deltay/M_PI;
       //expo = colfac*p_alphaS->MaxValue()*deltay/M_PI; 
       wt  *= reggewt = pow(rarg,expo);
       m_histomap[std::string("ReggeWt")]->Insert(reggewt);
@@ -410,7 +411,7 @@ TryEmission(double & kt12,const bool & dir) {
 	exp(-m_kdiff*sqrt(m_d2+sqr(log(Max(m_q01_2,Q02((y0+y1)/2.))/
 				       Max(m_q12_2,Q02((y1+y2)/2.))))));
     }
-    sup    = SuppressionTerm(m_q01_2,m_q12_2);//*Q02(y1)/(Q02(y1)+kt12);
+    sup    = SuppressionTerm(m_q01_2,m_q12_2)*Q02(y1)/(Q02(y1)+kt12);
     wt    *= recombwt= 
       Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup));
 //     recombwt = Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup));
@@ -437,8 +438,8 @@ TryEmission(double & kt12,const bool & dir) {
 //     rarg = Min(mu12_2/q12.PPerp2(),q12.PPerp2()/mu12_2);
     rarg = mu12_2/(dabs(q12.Abs2())+mu12_2);
     expo = colfac*(*p_alphaS)(q12.PPerp2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
-/*    rarg = Min(mu12_2/q12.Abs2(),q12.Abs2()/mu12_2);
-    expo = colfac*(*p_alphaS)(q12.Abs2())*dabs(k_2.Y()-k_1.Y())/M_PI; */
+//     rarg = Min(mu12_2/q12.Abs2(),q12.Abs2()/mu12_2);
+//     expo = colfac*(*p_alphaS)(q12.Abs2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
     m_lastwt  = pow(rarg,expo);
     //m_lastwt *= kmrwt = q12.PPerp2()/m_q12_2;
     //m_histomap[std::string("KMRWt")]->Insert(kmrwt);
@@ -704,7 +705,8 @@ double Final_State::Q02(const double & y) {
   //double term = pow(p_eikonal->Sum(m_b1,m_b2,y),1.5);
   if (MBpars("Misha")) {
     double eik = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
-//     double eik = (*p_eikonal)(m_B);
+    double eik2 = (*p_eikonal)(m_B);
+    eik*=eik2;
         return m_Q02*eik + (m_nprimlad-1)*m_QN2*eik;
 //     return m_Q02*eik + (m_nprimlad-1)*m_QN2;
   }
@@ -714,16 +716,19 @@ double Final_State::Q02(const double & y) {
 }
 
 double Final_State::Q02MinEstimate(const double y0, const double y1) {
-  double y(Min(y0,y1)),eik,eikmin(0.);
+  double y(Min(y0,y1)),eik,eik2(1.),eikmin(0.);
   int nstep(20);
   
+  eik2 = (*p_eikonal)(m_B);
   eikmin = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
+  eikmin*=eik2;
   if (MBpars("Misha")) {  
 /*    for (int i=0;i<=nstep;i++) {*/
     while (y<Max(y0,y1)) {
 //       y = y0 + i*(y1-y0)/nstep;
       y+=0.1;
       eik = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
+      eik*=eik2;
       if (eik < eikmin) eikmin = eik;
     }
     eikmin/=2.;
