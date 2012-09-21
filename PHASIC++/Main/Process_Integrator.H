@@ -36,7 +36,7 @@ namespace PHASIC {
     PDF::ISR_Handler           *p_isrhandler;
 
     std::string m_resultpath;
-    size_t      m_nin, m_nout, m_smode;
+    size_t      m_nin, m_nout, m_smode, m_swmode;
 
     ATOOLS::Vec4D_Vector p_momenta;
 
@@ -66,13 +66,13 @@ namespace PHASIC {
 
     ATOOLS::RB_Map m_rbmap;
 
-    double Sigma2();
+    double Sigma2() const;
 
   public:
 
-    double TotalSigma2();
-    double TotalResult();
-    double TotalVar();
+    double TotalSigma2() const;
+    double TotalResult() const;
+    double TotalVar() const;
     double RemainTimeFactor(double maxerr); 
 
   public:

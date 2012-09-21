@@ -29,7 +29,7 @@ static int s_omitnlosuffix(0), s_genresdir(0);
 Process_Integrator::Process_Integrator(Process_Base *const proc):
   p_proc(proc), p_pshandler(NULL),
   p_beamhandler(NULL), p_isrhandler(NULL),
-  m_nin(0), m_nout(0), m_smode(1),
+  m_nin(0), m_nout(0), m_smode(1), m_swmode(0),
   m_threshold(0.), m_enhancefac(1.0), m_maxeps(0.0),
   m_rbmaxeps(0.0), m_rsfac(1.0),
   m_n(0), m_itmin(0), m_max(0.), m_totalxs(0.), 
@@ -52,9 +52,10 @@ bool Process_Integrator::Initialize
   p_momenta.resize(m_nin+m_nout);
   p_beamhandler=beamhandler;
   p_isrhandler=isrhandler;
+  Data_Reader read(" ",";","!","=");
+  m_swmode=read.GetValue<int>("SELECTION_WEIGHT_MODE", 0);
   static bool minit(false);
   if (!minit) {
-    Data_Reader read(" ",";","!","=");
     int smode;
     if (read.ReadFromFile(smode,"IB_SMODE")) {
       m_smode=smode;
@@ -86,7 +87,10 @@ double Process_Integrator::SelectionWeight(const int mode) const
   if (!p_proc->IsGroup()) {
     if (mode!=0) return m_max*m_enhancefac;
     if (m_totalxs==0.0) return -1.0;
-    return dabs(m_totalxs)*m_enhancefac;
+    double selweight = m_swmode==0 ?
+      sqrt((m_n-1) * sqr(TotalVar()) + sqr(TotalResult())) :
+      dabs(m_totalxs);
+    return selweight*m_enhancefac;
   }
   double sw(0.0);
   for (size_t i(0);i<p_proc->Size();++i) {
@@ -95,7 +99,7 @@ double Process_Integrator::SelectionWeight(const int mode) const
   return sw;
 }
 
-double Process_Integrator::Sigma2()
+double Process_Integrator::Sigma2() const
 { 
   Process_Integrator *p(p_proc->Parent()->Integrator());
   if (m_sn!=p->m_sn) {
@@ -110,12 +114,12 @@ double Process_Integrator::Sigma2()
     ((p->m_ssumsqr/m_sn-sqr(p->m_ssum/m_sn))/(m_sn-1));
 }
 
-double Process_Integrator::TotalSigma2()
+double Process_Integrator::TotalSigma2() const
 { 
   return m_ssigma2+Sigma2();
 }
 
-double Process_Integrator::TotalResult()
+double Process_Integrator::TotalResult() const
 { 
   if (m_ssigma2==0.0) return m_ssum/m_sn; 
   switch (m_smode) {
@@ -134,7 +138,7 @@ double Process_Integrator::TotalResult()
   return 0.0;
 }
 
-double Process_Integrator::TotalVar() 
+double Process_Integrator::TotalVar() const
 {
   if (m_nin==1 && m_nout==2) return 0.;
   switch (m_smode) {
