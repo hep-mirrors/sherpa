@@ -1026,6 +1026,9 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
       else {
         Read_Write_Base::AddCommandLine(key+" = "+value+"; ");
       }
+      if (key=="TUNE") {
+        SetTuneParameters(value);
+      }
     }
     else {
       Read_Write_Base::AddCommandLine(par+";");
@@ -1034,4 +1037,38 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
   rpa->gen.SetVariable("RUN_DATA_FILE",m_file);
 }
 
-
+void Initialization_Handler::SetTuneParameters(const std::string tune)
+{
+  std::vector<std::string> tuneparams;
+  if (tune == "NNPDF23") {
+    tuneparams.push_back("PDF_LIBRARY                  = LHAPDFSherpa");
+    tuneparams.push_back("PDF_SET                      = NNPDF23_nlo_as_0119.LHgrid");
+    tuneparams.push_back("K_PERP_MEAN_1                = 1.08");
+    tuneparams.push_back("K_PERP_MEAN_2                = 1.08");
+    tuneparams.push_back("K_PERP_SIGMA_1               = 1.10");
+    tuneparams.push_back("K_PERP_SIGMA_2               = 1.10");
+    tuneparams.push_back("PROFILE_PARAMETERS           = 0.44 0.93");
+    tuneparams.push_back("RESCALE_EXPONENT             = 0.208");
+    tuneparams.push_back("SCALE_MIN                    = 2.63");
+    tuneparams.push_back("SIGMA_ND_FACTOR              = 0.388");
+    tuneparams.push_back("CSS_IS_AS_FAC                = 0.872");
+    tuneparams.push_back("CSS_IS_PT2MIN                = 2.21");
+    tuneparams.push_back("COLOUR_RECONNECTION_STRENGTH = 0.25");
+  } else {
+    msg_Error()<<"Ignoring unknown tune name \"" << tune << "\"" << std::endl;
+    return;
+  }
+  msg_Out()<<"******************************************************" << std::endl;
+  msg_Out()<<"****" << std::endl;
+  msg_Out()<<"**** Setting tune parameters for " << tune << std::endl;
+  msg_Out()<<"****" << std::endl;
+  for (size_t i=0; i<tuneparams.size(); i++) {
+    msg_Out()<<"**** " << tuneparams[i] << std::endl;
+    Read_Write_Base::AddCommandLine(tuneparams[i]);
+  }
+  msg_Out()<<"****" << std::endl;
+  msg_Out()<<"**** Note that these parameters might get overwritten on the command line" << std::endl;
+  msg_Out()<<"**** or by parameters set appearing later in the run card." << std::endl;
+  msg_Out()<<"****" << std::endl;
+  msg_Out()<<"******************************************************" << std::endl;
+}

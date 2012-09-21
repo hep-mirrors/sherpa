@@ -92,6 +92,7 @@ namespace SHERPA {
      const std::string &arg,const std::string &tag,
      const std::string &def=std::string("")) const;
     void ExtractCommandLineParameters(int argc,char * argv[]);
+    void SetTuneParameters(const std::string tune);
     bool CheckBeamISRConsistency();
     void SetGlobalVariables();
     void PrepareTerminate();
