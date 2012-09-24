@@ -1058,6 +1058,26 @@ void Initialization_Handler::SetTuneParameters(const std::string tune)
     tuneparams.push_back("CSS_IS_AS_FAC                = 0.872");
     tuneparams.push_back("CSS_IS_PT2MIN                = 2.21");
     tuneparams.push_back("COLOUR_RECONNECTION_STRENGTH = 0.25");
+  } else if (tune == "CT10" || tune == "CT10_UEup" || tune == "CT10_UEdown") {
+    tuneparams.push_back("PDF_LIBRARY                  = CT10Sherpa");
+    tuneparams.push_back("PDF_SET                      = ct10");
+    tuneparams.push_back("K_PERP_MEAN_1                = 0.975");
+    tuneparams.push_back("K_PERP_MEAN_2                = 0.975");
+    tuneparams.push_back("K_PERP_SIGMA_1               = 1.51");
+    tuneparams.push_back("K_PERP_SIGMA_2               = 1.51");
+    tuneparams.push_back("PROFILE_PARAMETERS           = 0.906 0.761");
+    tuneparams.push_back("RESCALE_EXPONENT             = 0.24");
+    tuneparams.push_back("SCALE_MIN                    = 2.75");
+    if (tune == "CT10_UEup") {
+      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.31");
+    } else if (tune == "CT10_UEdown") {
+      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.37");
+    } else {
+      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.34");
+    }
+    tuneparams.push_back("CSS_IS_AS_FAC                = 0.73");
+    tuneparams.push_back("CSS_IS_PT2MIN                = 3.47");
+    tuneparams.push_back("COLOUR_RECONNECTION_STRENGTH = 0.38");
   } else {
     msg_Error()<<"Ignoring unknown tune name \"" << tune << "\"" << std::endl;
     return;
