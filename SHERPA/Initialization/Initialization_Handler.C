@@ -1038,7 +1038,7 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
 void Initialization_Handler::SetTuneParameters(const std::string tune)
 {
   std::vector<std::string> tuneparams;
-  if (tune == "NNPDF23") {
+  if (tune == "NNPDF23" || tune == "NNPDF23_UEup" || tune == "NNPDF23_UEdown") {
     tuneparams.push_back("PDF_LIBRARY                  = LHAPDFSherpa");
     tuneparams.push_back("PDF_SET                      = NNPDF23_nlo_as_0119.LHgrid");
     tuneparams.push_back("K_PERP_MEAN_1                = 1.08");
@@ -1048,7 +1048,13 @@ void Initialization_Handler::SetTuneParameters(const std::string tune)
     tuneparams.push_back("PROFILE_PARAMETERS           = 0.44 0.93");
     tuneparams.push_back("RESCALE_EXPONENT             = 0.208");
     tuneparams.push_back("SCALE_MIN                    = 2.63");
-    tuneparams.push_back("SIGMA_ND_FACTOR              = 0.388");
+    if (tune == "NNPDF23_UEup") {
+      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.358");
+    } else if (tune == "NNPDF23_UEdown") {
+      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.418");
+    } else {
+      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.388");
+    }
     tuneparams.push_back("CSS_IS_AS_FAC                = 0.872");
     tuneparams.push_back("CSS_IS_PT2MIN                = 2.21");
     tuneparams.push_back("COLOUR_RECONNECTION_STRENGTH = 0.25");
