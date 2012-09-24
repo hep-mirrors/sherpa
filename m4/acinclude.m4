@@ -468,6 +468,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                 CONDITIONAL_FASTJETDIR="$FASTJETDIR"
                 CONDITIONAL_FASTJETINCS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --cxxflags)";
                 CONDITIONAL_FASTJETLIBS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --libs --plugins=yes)"
+                CONDITIONAL_FASTJETVERSION="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --version)";
               else
                 AC_MSG_ERROR(\$FASTJETDIR is not a valid path.);
               fi;
@@ -476,6 +477,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                 CONDITIONAL_FASTJETDIR="${enableval}"
                 CONDITIONAL_FASTJETINCS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --cxxflags)";
                 CONDITIONAL_FASTJETLIBS="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --libs --plugins=yes)"
+                CONDITIONAL_FASTJETVERSION="$($CONDITIONAL_FASTJETDIR/bin/fastjet-config --version)";
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);
               fi;
@@ -486,6 +488,9 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   )
   if test "$fastjet" = "true" ; then
     AC_DEFINE([USING__FASTJET], "1", [Using FASTJET])
+  fi
+  if test "$(echo $CONDITIONAL_FASTJETVERSION | cut -d . -f 1)" = "3"; then
+    AC_DEFINE([USING__FASTJET__3], "1", [Using FASTJET 3])
   fi
   AC_SUBST(CONDITIONAL_FASTJETDIR)
   AC_SUBST(CONDITIONAL_FASTJETINCS)

@@ -40,6 +40,9 @@
 /* using FASTJET */
 #undef USING__FASTJET
 
+/* using FASTJET 3 */
+#undef USING__FASTJET__3
+
 /* using BLACKHAT */
 #undef USING__BLACKHAT
 
