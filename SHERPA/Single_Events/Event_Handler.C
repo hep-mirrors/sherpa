@@ -9,9 +9,13 @@
 #endif
 #include <unistd.h>
 #include <cassert>
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
 
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Data_Reader.H"
+
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -21,6 +25,9 @@ static int s_retrymax(100);
 Event_Handler::Event_Handler():
   m_lastparticlecounter(0), m_lastblobcounter(0), 
   m_n(0), m_addn(0), m_sum(0.0), m_sumsqr(0.0)
+#ifdef USING__MPI
+  , m_mn(0), m_msum(0.0), m_msumsqr(0.0)
+#endif
 {
   p_phases  = new Phase_List;
 }
@@ -273,6 +280,9 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
   m_n      += trials+m_addn;
   m_sum    += cxs;
   m_sumsqr += sqr(cxs);
+  m_mn      += trials+m_addn;
+  m_msum    += cxs;
+  m_msumsqr += sqr(cxs);
   m_addn    = 0.0;
 
   return AnalyseEvent(weight);
@@ -318,6 +328,9 @@ bool Event_Handler::GenerateMinimumBiasEvent() {
   m_n++;
   m_sum    += xs;
   m_sumsqr += sqr(xs);
+  m_mn++;
+  m_msum    += xs;
+  m_msumsqr += sqr(xs);
   msg_Tracking()<<METHOD<<" for event with xs = "<<(xs/1.e9)<<" mbarn.\n";
   return AnalyseEvent(weight);
 }
@@ -399,7 +412,7 @@ void Event_Handler::Finish() {
     m_lastblobcounter=Blob::Counter();
   }
   Blob::Reset();
-  double xs(TotalXS()), err(TotalErr());
+  double xs(TotalStatsMPI()[0]), err(TotalStatsMPI()[2]);
   std::string res;
   MyStrStream conv;
   conv<<om::bold<<"Total XS"<<om::reset<<" is "
@@ -413,4 +426,81 @@ void Event_Handler::Finish() {
   msg_Out()<<'|'<<om::reset<<"  "<<res<<"  "<<om::bold<<"|\n";
   msg_Out()<<'|'<<std::string(res.length()-md,' ')<<"|\n";
   msg_Out()<<'+'<<std::string(res.length()-md,'-')<<'+'<<om::reset<<std::endl;
+}
+
+void Event_Handler::MPISync()
+{
+#ifdef USING__MPI
+  int size=MPI::COMM_WORLD.Get_size();
+  if (size>1) {
+    int rank=MPI::COMM_WORLD.Get_rank();
+    int cn=3;
+    double *values = new double[cn];
+    if (rank==0) {
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+        m_mn+=values[0];
+        m_msum+=values[1];
+        m_msumsqr+=values[2];
+      }
+      values[0]=m_mn;
+      values[1]=m_msum;
+      values[2]=m_msumsqr;
+      for (int tag=1;tag<size;++tag) {
+	if (!exh->MPIStat(tag)) continue;
+	MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,tag,size+tag);
+      }
+    }
+    else {
+      values[0]=m_mn;
+      values[1]=m_msum;
+      values[2]=m_msumsqr;
+      MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,0,rank);
+      MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,0,size+rank);
+      m_mn=0.0;
+      m_msum=0.0;
+      m_msumsqr=0.0;
+    }
+    delete [] values;
+  }
+#endif
+}
+
+double Event_Handler::TotalXS() const
+{
+  return m_sum/m_n;
+}
+
+
+double Event_Handler::TotalVar() const
+{
+  return (m_sumsqr-m_sum*m_sum/m_n)/(m_n-1);
+}
+
+
+double Event_Handler::TotalErr() const
+{
+  if (m_n<=1) return TotalXS();
+  else if (ATOOLS::IsEqual
+           (m_sumsqr*m_n,m_sum*m_sum,1.0e-6)) return 0.0;
+  else return sqrt(TotalVar()/m_n);
+}
+
+std::vector<double> Event_Handler::TotalStatsMPI()
+{
+  std::vector<double> stats(3, 0.0);
+#ifdef USING__MPI
+  MPISync();
+  stats[0] = m_msum/m_mn;
+  stats[1] = (m_msumsqr-m_msum*m_msum/m_mn)/(m_mn-1);
+  if (m_mn<=1) stats[2] = stats[0];
+  else if (IsEqual(m_msumsqr*m_mn,m_msum*m_msum,1.0e-6)) stats[2] = 0.0;
+  else stats[2] = sqrt(stats[1]/m_mn);
+#else
+  stats[0] = TotalXS();
+  stats[1] = TotalVar();
+  stats[2] = TotalErr();
+#endif
+  return stats;
 }

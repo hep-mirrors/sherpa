@@ -18,6 +18,7 @@ PGSLIBS       =	-L../../AddOns/PGS -lPGSSherpa \
 endif
 
 Sherpa@VERSIONING@_LDADD  =	-L@SHERPABUILDDIR@/Main -lSherpaMain \
+		-L@SHERPABUILDDIR@/Single_Events -lSherpaSingleEvents \
 		$(HZTOOLLIBS) $(PGSLIBS) @ATOOLSLIBS@
 
 dist_pkgdata_DATA         = \

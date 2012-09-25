@@ -6,6 +6,7 @@
 
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/Tools/Definitions.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 
 namespace SHERPA {
 
@@ -17,6 +18,9 @@ namespace SHERPA {
 
     long int m_lastparticlecounter, m_lastblobcounter;
     double m_n, m_addn, m_sum, m_sumsqr;
+#ifdef USING__MPI
+    double m_mn, m_msum, m_msumsqr;
+#endif
 
     Phase_List        * p_phases;
     ATOOLS::Blob_List   m_blobs, m_sblobs;
@@ -29,6 +33,8 @@ namespace SHERPA {
 			    ATOOLS::blob_status::code status);
     bool AnalyseEvent(double & weight);
     int  IterateEventPhases(double & weight);
+
+    void MPISync();
   public:
 
     Event_Handler();
@@ -45,15 +51,10 @@ namespace SHERPA {
 
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }
 
-    inline double TotalXS() const { return m_sum/m_n; }
-    inline double TotalVar() const
-    { return (m_sumsqr-m_sum*m_sum/m_n)/(m_n-1); }
-    inline double TotalErr() const {
-      if (m_n<=1) return TotalXS();
-      else if (ATOOLS::IsEqual
-	       (m_sumsqr*m_n,m_sum*m_sum,1.0e-6)) return 0.0;
-      else return sqrt(TotalVar()/m_n);
-    }
+    double TotalXS() const;
+    double TotalVar() const;
+    double TotalErr() const;
+    std::vector<double> TotalStatsMPI();
 
   };
 
