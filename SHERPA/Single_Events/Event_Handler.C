@@ -280,9 +280,11 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
   m_n      += trials+m_addn;
   m_sum    += cxs;
   m_sumsqr += sqr(cxs);
+#ifdef USING__MPI
   m_mn      += trials+m_addn;
   m_msum    += cxs;
   m_msumsqr += sqr(cxs);
+#endif
   m_addn    = 0.0;
 
   return AnalyseEvent(weight);
@@ -328,9 +330,11 @@ bool Event_Handler::GenerateMinimumBiasEvent() {
   m_n++;
   m_sum    += xs;
   m_sumsqr += sqr(xs);
+#ifdef USING__MPI
   m_mn++;
   m_msum    += xs;
   m_msumsqr += sqr(xs);
+#endif
   msg_Tracking()<<METHOD<<" for event with xs = "<<(xs/1.e9)<<" mbarn.\n";
   return AnalyseEvent(weight);
 }
