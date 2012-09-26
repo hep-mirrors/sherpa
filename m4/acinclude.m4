@@ -437,6 +437,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         CONDITIONAL_RIVETLDADD="$($CONDITIONAL_RIVETDIR/bin/rivet-config --ldflags) $($CONDITIONAL_RIVETDIR/bin/rivet-config --ldadd)";
         CONDITIONAL_RIVETCPPFLAGS="$($CONDITIONAL_RIVETDIR/bin/rivet-config --cppflags)";
         AC_MSG_RESULT([${CONDITIONAL_RIVETDIR}]); rivet=true;
+	"$CONDITIONAL_RIVETDIR/bin/rivet-config" --version | grep -q '^1\.' || rivetyoda=true
       else
         AC_MSG_ERROR(Unable to use Rivet from specified path.);
       fi;
@@ -452,6 +453,9 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   fi
   if test "$rivetsetsow" = "true" ; then
     AC_DEFINE([USING__RIVET__SETSOW], "1", [setSumOfWeights function available in Rivet])
+  fi
+  if test "$rivetyoda" = "true" ; then
+    AC_DEFINE([USING__RIVET__YODA], "1", [Rivet uses YODA as its histogramming backend])
   fi
   AC_SUBST(CONDITIONAL_RIVETLDADD)
   AC_SUBST(CONDITIONAL_RIVETCPPFLAGS)
