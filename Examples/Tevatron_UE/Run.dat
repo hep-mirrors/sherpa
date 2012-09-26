@@ -23,5 +23,5 @@
 }(selector)
 
 (mi){
-  MI_HANDLER = None
+  MI_HANDLER = Amisic
 }(mi)
