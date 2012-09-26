@@ -366,7 +366,7 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
   p_ms    = ampl->MS();
   p_next->clear();
   //msg_Tracking()<<*ampl<<"\n";
-  std::map<Parton*,Cluster_Leg*> lmap;
+  std::map<Parton*,Cluster_Leg*,partcomp> lmap;
   std::map<Cluster_Leg*,Parton*> pmap;
 
   Parton      * parton;
