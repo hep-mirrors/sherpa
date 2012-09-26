@@ -1,5 +1,6 @@
 #include "AHADIC++/Formation/Cluster_Former.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Return_Value.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -18,10 +19,10 @@ void Cluster_Former::ConstructClusters(Proto_Particle_List * plin, Cluster_List 
     pit2 = pit1;pit2++;
     cluster = new Cluster((*pit1),(*pit2));
     if ((*pit1)->m_mom[0]<0. || (*pit2)->m_mom[0]<0.) {
-      msg_Out()<<"Error in "<<METHOD<<": negative hadron energies\n"
-	       <<(*cluster)<<"\n"
-	       <<"   Will exit the run.\n";
-      exit(1);
+      msg_Error()<<"Error in "<<METHOD<<": negative hadron energies\n"
+	         <<(*cluster)<<"\n"
+	         <<"   Will retry event.\n";
+      throw Return_Value::Retry_Event;
     }
 #ifdef memchecker
     std::cout<<"*** New cluster ("<<cluster->Number()<<"/"<<cluster<<") with "

@@ -1,6 +1,7 @@
 #include "AHADIC++/Tools/Soft_Cluster_Handler.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Return_Value.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
@@ -875,8 +876,8 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
   if (p1[0]<0. || p2[0]<0.) {
     msg_Error()<<"Error in "<<METHOD<<": negative hadron energies\n"
 	       <<(*cluster)<<"\n"
-	       <<"   Will exit the run.\n";
-    exit(1);
+	       <<"   Will retry event.\n";
+    throw Return_Value::Retry_Event;
   }
 
   if (cluster->GetLeft()) {
