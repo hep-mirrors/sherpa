@@ -8,7 +8,6 @@ SUBDIRS       = \
 		METOOLS \
 		PHASIC++ \
 		MCATNLO \
-		POWHEG \
 		EXTRA_XS \
 		AMEGIC++ \
 		COMIX \

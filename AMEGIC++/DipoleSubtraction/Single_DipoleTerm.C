@@ -54,12 +54,19 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   if (m_pi<m_pk&&m_pi>=m_nin) m_LOpk--;
   if (m_pj<m_pk) m_LOpk--;
 
- //Construct LO Process
+  //Construct LO Process
   Process_Info lopi=m_pinfo;
+  for (size_t i(0);i<m_nin;++i) lopi.m_ii.m_ps[i].m_tag=i;
+  int tag=m_nin;
+  lopi.m_fi.SetTags(tag);
+  if (tag!=m_nin+m_nout) {
+    THROW(fatal_error, "Internal error");
+  }
+
   if (m_pi<m_nin) {
     lopi.m_ii.m_ps[m_pi]=Subprocess_Info(m_flij,m_pinfo.m_ii.m_ps[m_pi].m_id,
 					 m_pinfo.m_ii.m_ps[m_pi].m_pol);
-    lopi.m_ii.m_ps[m_pi].m_tag=1;
+    lopi.m_ii.m_ps[m_pi].m_tag=-1;
     lopi.m_fi.m_ps.erase(FindInInfo(lopi.m_fi, m_pj-m_nin));
   }
   else {
@@ -67,11 +74,13 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
     lopi.m_fi.m_ps.erase(FindInInfo(lopi.m_fi, m_pj-m_nin-1));
     vector<Subprocess_Info>::iterator part=FindInInfo(m_pinfo.m_fi, m_pi-m_nin);
     lopi.m_fi.m_ps.push_back(Subprocess_Info(m_flij,part->m_id, part->m_pol));
-    lopi.m_fi.m_ps.back().m_tag=1;
+    lopi.m_fi.m_ps.back().m_tag=-1;
   }
-  if (m_LOpk<m_nin) lopi.m_ii.m_ps[m_LOpk].m_tag=2;
-  else FindInInfo(lopi.m_fi, m_LOpk-m_nin)->m_tag=2;
+  if (m_LOpk<m_nin) lopi.m_ii.m_ps[m_LOpk].m_tag=-2;
+  else FindInInfo(lopi.m_fi, m_LOpk-m_nin)->m_tag=-2;
   DEBUG_VAR(lopi);
+  Flavour f0(lopi.m_ii.m_ps[0].m_fl);
+  SortFlavours(lopi);
 
   if (lopi.m_amegicmhv>0) {
     if (CF.MHVCalculable(lopi))
@@ -100,12 +109,9 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   m_sids.resize(m_nin+m_nout-1);
   size_t em=p_LO_process->GetEmit();
   size_t sp=p_LO_process->GetSpect();
-  for (size_t cnt=0, i=0;i<m_nin+m_nout;i++) {
-    for (;cnt==em||cnt==sp;) cnt++;
-    if (i!=m_pi&&i!=m_pj&&i!=m_pk) {
-      m_sids[cnt] = 1<<i;
-      cnt++;
-    }
+  for (size_t i=0;i<m_nin+m_nout;++i) {
+    int cnt=p_LO_process->SRMap()[i];
+    if (cnt>=0) m_sids[cnt] = 1<<i;
   }
   m_sids[em]=(1<<m_pi)|(1<<m_pj);
   m_sids[sp]=1<<m_pk;
@@ -113,13 +119,12 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   m_subevt.m_kt=sp;
   m_subevt.p_id=&m_sids.front();
   Process_Info cpi(p_LO_process->Info());
-  Process_Base::SortFlavours(cpi);
-  m_subevt.m_iss=p_LO_process->Info().m_ii.m_ps[0].m_fl!=cpi.m_ii.m_ps[0].m_fl;
   m_subevt.m_pname=GenerateName(cpi.m_ii,cpi.m_fi);
   m_subevt.m_pname=m_subevt.m_pname.substr(0,m_subevt.m_pname.rfind("__"));
 
   m_dalpha = 1.;
   double helpd;
+  m_dkt2max = std::numeric_limits<double>::max();
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
   reader.SetInputPath(rpa->GetPath());
@@ -127,6 +132,10 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA")) {
     m_dalpha = helpd;
     msg_Tracking()<<"Set dipole cut alpha="<<m_dalpha<<"."<<std::endl;
+  }
+  if (reader.ReadFromFile(helpd,"DIPOLE_KT2MAX")) {
+    m_dkt2max = helpd;
+    msg_Tracking()<<"Set dipole cut kt2max="<<m_dkt2max<<"."<<std::endl;
   }
   switch (m_dipoletype) {
   case dpt::f_f:
@@ -318,33 +327,27 @@ void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms,const ATOOLS::Poincare &c
     THROW(fatal_error,"Incorrect emitter and spectator assignments.");
   }
   for (size_t i=0;i<m_nin+m_nout;i++) {
-    for (;cnt==em||cnt==sp;) cnt++;
-    if (i!=m_pi&&i!=m_pj&&i!=m_pk) {
-      p_LO_labmom[cnt] = p_LO_mom[cnt] = (*(p_dipole->GetMomenta()))[i];
-      cnt++;
-    }
+    int cnt=p_LO_process->SRMap()[i];
+    if (cnt<0) continue;
+    p_LO_labmom[cnt] = p_LO_mom[cnt] = (*(p_dipole->GetMomenta()))[i];
   }
   
   p_LO_labmom[em] = p_LO_mom[em] = p_dipole->Getptij();
   p_LO_labmom[sp] = p_LO_mom[sp] = p_dipole->Getptk();
 
-  if (p_LO_mom[0][3]<0.) {
-    m_iiswap=2;
-    for (size_t i=0;i<m_nin+m_nout-1;i++) 
-      p_LO_mom[i]=Vec4D(p_LO_mom[i][0],-p_LO_mom[i][1],-p_LO_mom[i][2],-p_LO_mom[i][3]);
-  }
-  else {
-    m_iiswap=0;
-  }
   Poincare bst(p_LO_mom[0]+p_LO_mom[1]);
   for (size_t i=0;i<m_nin+m_nout-1;i++) bst.Boost(p_LO_mom[i]);
   size_t ndip=(p_dipole->GetDiPolarizations())->size();
   for (size_t i=0;i<ndip;i++) bst.Boost((*(p_dipole->GetDiPolarizations()))[i]);
 
-  p_LO_mom[0]=Vec4D(p_LO_mom[0][0],0.,0.,p_LO_mom[0][0]);
-  p_LO_mom[1]=Vec4D(p_LO_mom[0][0],0.,0.,-p_LO_mom[0][0]);
+  if (m_subevt.m_i<m_nin &&
+      m_subevt.m_ijt!=m_subevt.m_i) {
+    for (size_t i=0;i<m_nin+m_nout-1;++i) cms.Boost(p_LO_labmom[i]);
+  }
+  else {
+    for (size_t i=0;i<m_nin+m_nout-1;++i) cms.BoostBack(p_LO_labmom[i]);
+  }
 
-  for (size_t i=0;i<m_nin+m_nout-1;++i) cms.BoostBack(p_LO_labmom[i]);
 }
 
 bool Single_DipoleTerm::CompareLOmom(const ATOOLS::Vec4D* p)
@@ -419,6 +422,7 @@ int Single_DipoleTerm::InitAmplitude(Model_Base *model,Topology* top,
 
   p_dipole->SetCoupling(((Single_LOProcess*)p_LO_process->Partner())->CouplingMap());
   p_dipole->SetAlpha(m_dalpha);
+  p_dipole->SetKt2Max(m_dkt2max);
 
   map<string,Complex> dummy;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
@@ -476,13 +480,12 @@ void Single_DipoleTerm::SetLookUp(const bool lookup)
 {
   m_lookup=lookup; 
   if (p_LO_process) p_LO_process->SetLookUp(lookup);
+  if (p_partner!=this) p_partner->SetLookUp(lookup);
 }
 
 void Single_DipoleTerm::Minimize()
 {
   if (p_partner==this) return;
-  if (m_pinfo.m_amegicmhv==0&&p_LO_process) 
-    {delete p_LO_process; p_LO_process=0;}
   if (p_LO_mom)     {delete[] p_LO_mom; p_LO_mom=0;}
   if (p_dipole)     {delete p_dipole; p_dipole=0;}
   m_subevt.p_mom = p_partner->GetSubevt()->p_mom;
@@ -507,13 +510,17 @@ double Single_DipoleTerm::Partonic(const Vec4D_Vector &_moms,const int mode)
 
 double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poincare &cms,const int mode)
 {
+  if (mode==1) return m_lastxs;
   if (p_partner!=this) {
+    size_t mcmode(p_partner->MCMode());
+    p_partner->SetMCMode(m_mcmode);
     if (m_lookup) m_lastxs = p_partner->LastXS()*m_sfactor*Norm()/p_partner->Norm();
     else m_lastxs = p_partner->operator()(mom,cms,mode)*m_sfactor*Norm()/p_partner->Norm();
-    m_subevt.m_result = m_subevt.m_last[0] = m_subevt.m_last[1] = 0.;
+    m_subevt.m_result = 0.;
     m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
     m_subevt.m_mu2[stp::fac] = p_partner->GetSubevt()->m_mu2[stp::fac];
     m_subevt.m_mu2[stp::ren] = p_partner->GetSubevt()->m_mu2[stp::ren];
+    p_partner->SetMCMode(mcmode);
     return m_lastxs;
   }
 
@@ -523,19 +530,25 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   p_dipole->CalcDiPolarizations();
   SetLOMomenta(mom,cms);
 
+  p_scale->SetCaller(p_LO_process);
+
   bool trg(!p_LO_process->Selector()->On());
   if (!trg) trg=p_LO_process->Trigger(p_LO_labmom);
   p_LO_process->Integrator()->SetMomenta(p_LO_labmom);
 
+  double M2 =trg ? p_LO_process->operator()
+    (p_LO_labmom,p_LO_mom,p_dipole->GetFactors(),
+     p_dipole->GetDiPolarizations(),mode) : 0.0;
+
+  p_dipole->SetMCMode(m_mcmode);
+  if (trg && m_mcmode) p_dipole->SetKt2Max(p_scale->Scale(stp::res));
+
   double df = p_dipole->GetF();
-  m_subevt.m_me = m_subevt.m_mewgt = m_subevt.m_result =
-    m_subevt.m_last[0] = m_subevt.m_last[1] = 0.;
+  m_subevt.m_me = m_subevt.m_mewgt = m_subevt.m_result = 0.;
 
   if (!(df>0.)&& !(df<0.)) return m_lastxs=df;
 
-  double M2 =trg ? p_LO_process->operator()
-    (p_LO_labmom,p_LO_mom,p_dipole->GetFactors(),
-     p_dipole->GetDiPolarizations(),m_iiswap|mode) : 0.0;
+  if (m_mcmode && p_dipole->MCSign()<0) df=-df;
 
   if (!trg) return m_lastxs=m_subevt.m_me=m_subevt.m_mewgt=0.;
 
@@ -543,6 +556,8 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
   m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);
   m_subevt.m_mu2[stp::ren] = p_scale->Scale(stp::ren);
+  m_subevt.m_mu2[stp::res] = p_scale->Scale(stp::res);
+  m_subevt.m_kt2=p_dipole->KT2();
   return m_lastxs;
 }
 
@@ -603,4 +618,17 @@ void Single_DipoleTerm::SetKFactor(const KFactor_Setter_Arguments &args)
 {
   if (!p_LO_process->IsMapped()) p_LO_process->SetKFactor(args);
   p_kfactor=p_LO_process->Partner()->KFactorSetter();
+}
+
+size_t Single_DipoleTerm::SetClusterMode(const size_t cmode)
+{
+  size_t ccmode(p_LO_process->SetClusterMode(cmode));
+  m_cmode=cmode;
+  return ccmode;
+}
+
+
+ATOOLS::Flavour Single_DipoleTerm::ReMap(const ATOOLS::Flavour &fl,const size_t &id) const
+{
+  return p_LO_process->ReMap(fl,id);
 }

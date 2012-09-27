@@ -78,8 +78,8 @@ int CS_Gamma::CalculateWeights(Cluster_Amplitude *const ampl,
 	for (size_t k(0);k<ampl->Legs().size();++k) {
 	  Cluster_Leg *lk(ampl->Leg(k));
 	  if (k==i || k==j) continue;
-	  if (!CheckColors(li,lj,lk,cf[f])) continue;
 	  if (!cf[f].Strong()) continue;/*QCD only so far*/
+	  if (!CheckColors(li,lj,lk,cf[f])) continue;
 	  if (cur) {
 	    if (((idmap.find(li->Id())->second|
 		  idmap.find(lj->Id())->second)&cur[0]->Id())==0 ||
@@ -103,6 +103,7 @@ int CS_Gamma::CalculateWeights(Cluster_Amplitude *const ampl,
 	  nampl->SetNIn(ampl->NIn());
 	  nampl->SetMuF2(cs.m_kt2);
 	  nampl->SetMuR2(ampl->MuR2());
+	  nampl->ColorMap()=ampl->ColorMap();
 	  nampl->Decays()=ampl->Decays();
 	  nampl->SetProcs(ampl->Procs<void>());
 	  nampl->SetDInfo(ampl->DInfo<void>());
@@ -110,7 +111,8 @@ int CS_Gamma::CalculateWeights(Cluster_Amplitude *const ampl,
 	  for (size_t l(0), m(0);l<ampl->Legs().size();++l) {
 	    if (l==j) continue;
 	    else if (l==i) {
-	      nampl->CreateLeg(p[m],cf[f],ColorID(0,0),li->Id()|lj->Id());
+	      nampl->CreateLeg(p[m],cf[f],CombineColors
+			       (li,lj,lk,cf[f]),li->Id()|lj->Id());
 	      nampl->Legs().back()->SetK(lk->Id());
 	      lijt=nampl->Legs().back();
 	    }
@@ -121,13 +123,11 @@ int CS_Gamma::CalculateWeights(Cluster_Amplitude *const ampl,
 	    }
 	    ++m;
 	  }
-	  if (CheckCore(nampl)) {
-	    std::string pname(Process_Base::GenerateName(ampl));
-	    const DDip_Set &dinfo((*nampl->DInfo<StringDDipSet_Map>())[pname]);
-	    if (dinfo.find(DDip_ID(i,j,k))!=dinfo.end()) {
-	      int stat(SingleWeight(nampl,li,lj,lk,cs,idmap,ws,mode));
-	      if (stat==-1) return -1;
-	    }
+	  std::string pname(Process_Base::GenerateName(ampl));
+	  const DDip_Set &dinfo((*nampl->DInfo<StringDDipSet_Map>())[pname]);
+	  if (dinfo.find(DDip_ID(i,j,k))!=dinfo.end()) {
+	    int stat(SingleWeight(nampl,li,lj,lk,cs,idmap,ws,mode));
+	    if (stat==-1) return -1;
 	  }
 	  ampl->DeleteNext();
 	}
@@ -167,10 +167,9 @@ int CS_Gamma::SingleWeight
 #ifdef DEBUG__Trial_Weight
   double me=meps.m_me;
 #endif
-  meps.m_me*=(*cdip)(cs.m_z,cs.m_y,eta,cs.m_kt2,cs.m_q2,ampl)*
+  Color_Info ci(li->Col(),lj->Col(),lk->Col(),0);
+  meps.m_me*=(*cdip)(cs.m_z,cs.m_y,eta,cs.m_kt2,cs.m_q2,ci,ampl)*
     cdip->MEPSWeight(cs.m_z,cs.m_y,eta,cs.m_kt2,cs.m_q2,ampl);
-  meps.m_qij2=PDF::Qij2(li->Mom(),lj->Mom(),lk->Mom(),
-			li->Flav(),lj->Flav());
   if (meps.m_me==0.0) {
 #ifdef DEBUG__Trial_Weight
     msg_Debugging()<<"zero matrix element\n";
@@ -190,57 +189,10 @@ int CS_Gamma::SingleWeight
   return 1;
 }
 
-bool CS_Gamma::CheckCore(const ATOOLS::Cluster_Amplitude *ampl) const
-{
-  std::vector<std::vector<size_t> > allids(ampl->Legs().size()-2);
-  std::vector<std::set<std::pair<size_t,size_t> > > allncs(allids.size()-1);
-  std::vector<size_t> &ids(allids.front());
-  ids.resize(ampl->Legs().size());
-  for (size_t i(0);i<ids.size();++i) ids[i]=ampl->Leg(i)->Id();
-  for (size_t n(0);n<allids.size();) {
-    std::set<std::pair<size_t,size_t> > &ncs(allncs[n]);
-    std::vector<size_t> &ids(allids[n+1]=allids[n]);
-    bool cb(false);
-    for (std::vector<size_t>::iterator i(ids.begin());i!=ids.end();++i) {
-      for (std::vector<size_t>::iterator j(i+1);j!=ids.end();++j) {
-	if (p_rproc->Combinable(*i,*j) && 
-	    ncs.find(std::pair<size_t,size_t>(*i,*j))==ncs.end()) {
-	  ncs.insert(std::pair<size_t,size_t>(*i,*j));
-	  *i|=*j;
-	  j=ids.erase(j);
-	  cb=true;
-	  break;
-	}
-      }
-      if (cb) break;
-    }
-    if (ids.size()==3) {
-      if (p_rproc->Combinable(ids[0],ids[1]) &&
-	  p_rproc->Combinable(ids[0],ids[2]) &&
-	  p_rproc->Combinable(ids[1],ids[2])) {
-#ifdef DEBUG__Trial_Weight
-	msg_Debugging()<<"accept "<<Process_Base::GenerateName(ampl)<<"\n";
-#endif
-	return true;
-      }
-    }
-    if (cb && ids.size()>3) ++n;
-    else {
-      if (n==0) break;
-      ncs.clear();
-      --n;
-    }
-  }
-#ifdef DEBUG__Trial_Weight
-  msg_Debugging()<<"reject "<<Process_Base::GenerateName(ampl)<<"\n";
-#endif
-  return false;
-}
-
 bool CS_Gamma::Reject()
 {
   if (m_on==0) return false;
-  Cluster_Amplitude *rampl=p_css->GetRealEmissionAmplitude();
+  Cluster_Amplitude *rampl=p_css->GetRealEmissionAmplitude(1);
   Trial_Weight wgt(TrialWeight(rampl));
   rampl->Delete();
   if (wgt.MC()>ran->Get()) {
@@ -381,16 +333,166 @@ bool CS_Gamma::CheckColors
  const ATOOLS::Cluster_Leg *lk,const ATOOLS::Flavour &mo) const
 {
   if (mo.StrongCharge()==8) {
-    if (lk->Flav().Strong()) return true;
+    if (!lk->Flav().Strong()) return false;
   }
   else if (mo.Strong()) {
-    if (lk->Flav().StrongCharge()==8 ||
-	lk->Flav().StrongCharge()==-mo.StrongCharge()) return true;
+    if (!(lk->Flav().StrongCharge()==8 ||
+	  lk->Flav().StrongCharge()==-mo.StrongCharge())) return false;
   }
   else {
-    if (lk->Flav().StrongCharge()!=8) return true;
+    if (lk->Flav().StrongCharge()==8) return false;
+    if (li->Col().m_i==-1 && lj->Col().m_i==-1 &&
+	lk->Col().m_i==-1) return true;
+    ColorID ci(li->Col()), cj(lj->Col());
+    if (ci.m_i==cj.m_j && ci.m_j==0 && cj.m_i==0) return true;
+    if (ci.m_j==cj.m_i && ci.m_i==0 && cj.m_j==0) return true;
+    return false;
+  }
+  if (li->Col().m_i==-1 && lj->Col().m_i==-1 &&
+      lk->Col().m_i==-1) return true;
+  ColorID ci(li->Col()), cj(lj->Col()), ck(lk->Col());
+  if (ci.m_i<0 && cj.m_i<0 && ck.m_i<0) return true;
+  if (li->Flav().StrongCharge()==3) {
+    if (lj->Flav().StrongCharge()==-3) {
+      if (lk->Flav().StrongCharge()==0) return true;
+      if (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
+	  (ci.m_i==cj.m_j && (ck.m_i>0 || ck.m_j>0))) return true;
+    }
+    else if (lj->Flav().StrongCharge()==8) {
+      if (lk->Flav().StrongCharge()==0) return false;
+      if (ci.m_i==cj.m_j && 
+	  (cj.m_i==ck.m_j || ck.Singlet())) return true;
+      if ((ci.m_i==ck.m_j || ck.Singlet()) && 
+	  cj.Singlet()) return true;
+    }
+    else {
+      if (lk->Flav().StrongCharge()==8) return false;
+      return true;
+    }
+  }
+  else if (li->Flav().StrongCharge()==-3) {
+    if (lj->Flav().StrongCharge()==3) {
+      if (lk->Flav().StrongCharge()==0) return true;
+      if (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
+	  (ci.m_j==cj.m_i && (ck.m_i>0 || ck.m_j>0))) return true;
+    }
+    else if (lj->Flav().StrongCharge()==8) {
+      if (lk->Flav().StrongCharge()==0) return false;
+      if (ci.m_j==cj.m_i && 
+	  (cj.m_j==ck.m_i || ck.Singlet())) return true;
+      if ((ci.m_j==ck.m_i || ck.Singlet()) && 
+	  cj.Singlet()) return true;
+    }
+    else {
+      if (lk->Flav().StrongCharge()==8) return false;
+      return true;
+    }
+  }
+  else if (li->Flav().StrongCharge()==8) {
+    if (lk->Flav().StrongCharge()==0) return false;
+    if (lj->Flav().StrongCharge()==8) {
+      if (ci.m_i==cj.m_j && 
+	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
+	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8))) 
+	return true;
+      if (ci.m_j==cj.m_i && 
+	  (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
+	   (ci.m_i==cj.m_j && lk->Flav().StrongCharge()!=8)))
+	return true;
+    }
+    else if (lj->Flav().StrongCharge()==3) {
+      if (ci.m_j==cj.m_i &&
+	  (ci.m_i==ck.m_j || ck.Singlet())) return true;
+      if ((cj.m_i==ck.m_j || ck.Singlet()) &&
+	  ci.Singlet()) return true;
+    }
+    else if (lj->Flav().StrongCharge()==-3) {
+      if (ci.m_i==cj.m_j &&
+	  (ci.m_j==ck.m_i || ck.Singlet())) return true;
+      if ((cj.m_j==ck.m_i || ck.Singlet()) &&
+	  ci.Singlet()) return true;
+    }
+    else {
+      return false;
+    }
+  }
+  else {
+    if (lj->Flav().StrongCharge()==8 ||
+	lk->Flav().StrongCharge()==8) {
+      return false;
+    }
+    return true;
   }
   return false;
+}
+
+ColorID CS_Gamma::CombineColors
+(const Cluster_Leg *li,const Cluster_Leg *lj,const Cluster_Leg *lk,
+ const ATOOLS::Flavour &mo) const
+{
+  ColorID ci(li->Col()), cj(lj->Col()), ck(lk->Col());
+  if (ci.m_i==-1 && cj.m_i==-1 && ck.m_i==-1) return ColorID();
+  if (!mo.Strong()) return ColorID(0,0);
+  if (li->Flav().StrongCharge()==3) {
+    if (lj->Flav().StrongCharge()==-3) {
+      return ColorID(ci.m_i,cj.m_j);
+    }
+    else if (lj->Flav().StrongCharge()==8) {
+      if (cj.Singlet()) return ColorID(ci.m_i,0);
+      return ColorID(cj.m_i,0);
+    }
+    else {
+      return ColorID(ci.m_i,0);
+    }
+  }
+  else if (li->Flav().StrongCharge()==-3) {
+    if (lj->Flav().StrongCharge()==3) {
+      return ColorID(cj.m_i,ci.m_j);
+    }
+    else if (lj->Flav().StrongCharge()==8) {
+      if (cj.Singlet()) return ColorID(0,ci.m_j);
+      return ColorID(0,cj.m_j);
+    }
+    else {
+      return ColorID(0,ci.m_j);
+    }
+  }
+  else if (li->Flav().StrongCharge()==8) {
+    if (lj->Flav().StrongCharge()==8) {
+      if (ci.m_i==cj.m_j && 
+	  (ci.m_j==ck.m_i || cj.m_i==ck.m_j ||
+	   (ci.m_j==cj.m_i && lk->Flav().StrongCharge()!=8))) 
+	return ColorID(cj.m_i,ci.m_j);
+      if (ci.m_j==cj.m_i && 
+	  (ci.m_i==ck.m_j || cj.m_j==ck.m_i ||
+	   (ci.m_i==cj.m_j && lk->Flav().StrongCharge()!=8)))
+	return ColorID(ci.m_i,cj.m_j);
+      THROW(fatal_error,"Invalid clustering");
+    }
+    else if (lj->Flav().StrongCharge()==3) {
+      if (ci.Singlet()) return ColorID(cj.m_i,0);
+      return ColorID(ci.m_i,0);
+    }
+    else if (lj->Flav().StrongCharge()==-3) {
+      if (ci.Singlet()) return ColorID(0,cj.m_j);
+      return ColorID(0,ci.m_j);
+    }
+    else {
+      THROW(fatal_error,"Invalid combination");
+    }
+  }
+  else {
+    if (lj->Flav().StrongCharge()==3) {
+      return ColorID(cj.m_i,0);
+    }
+    else if (lj->Flav().StrongCharge()==-3) {
+      return ColorID(0,cj.m_j);
+    }
+    else {
+      return ColorID(0,0);
+    }
+  }
+  return ColorID();
 }
 
 namespace MCATNLO {

@@ -93,11 +93,6 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  MCATNLO/Showers/Makefile \
 	  MCATNLO/Main/Makefile \
 	  MCATNLO/Makefile \
-	  POWHEG/Tools/Makefile \
-	  POWHEG/Calculators/Makefile \
-	  POWHEG/Showers/Makefile \
-	  POWHEG/Main/Makefile \
-	  POWHEG/Makefile \
 	  PHASIC++/Main/Makefile \
 	  PHASIC++/Channels/Makefile \
 	  PHASIC++/Process/Makefile \
@@ -181,6 +176,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  AddOns/Analysis/Scripts/Makefile \
 	  AddOns/Analysis/Makefile \
 	  AddOns/BlackHat/Makefile \
+	  AddOns/OpenLoops/Makefile \
           AddOns/MCFM/Makefile \
           AddOns/LH_OLE/Makefile \
 	  AddOns/Phox/Makefile \

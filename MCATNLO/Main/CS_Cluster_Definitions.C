@@ -20,19 +20,20 @@ CS_Cluster_Definitions::CS_Cluster_Definitions
 
 CParam CS_Cluster_Definitions::KPerp2
 (const Cluster_Amplitude &ampl,int i,int j,int k,
- const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,const int kin)
+ const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,
+ const int kin,const int kmode)
 {
   m_mode=m_kmode;
-  CS_Parameters cs(KT2(&ampl,ampl.Leg(i),ampl.Leg(j),ampl.Leg(k),mo,ms));
+  CS_Parameters cs(KT2(&ampl,ampl.Leg(i),ampl.Leg(j),ampl.Leg(k),mo,ms,kmode));
   m_mode=0;
-  return CParam(cs.m_kt2,cs.m_ws,cs.m_x,cs.m_mu2,cs.m_kin);
+  return CParam(cs.m_kt2,cs.m_ws,cs.m_x,cs.m_mu2,cs.m_kin,cs.m_kmode);
 }
 
 CS_Parameters CS_Cluster_Definitions::KT2
 (const ATOOLS::Cluster_Amplitude *ampl,
  const ATOOLS::Cluster_Leg *i,const ATOOLS::Cluster_Leg *j,
  const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo,
- ATOOLS::Mass_Selector *const ms,const int ikin)
+ ATOOLS::Mass_Selector *const ms,const int ikin,const int kmode)
 {
   p_ms=ms;
   int kin(ikin<0?p_shower->KinScheme():ikin), col(1);
@@ -184,7 +185,8 @@ void CS_Cluster_Definitions::KernelWeight
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
   else if (cs.m_mode==3) eta=GetX(i,cdip)*cs.m_z;
-  cs.m_wk=(*cdip)(cs.m_z,cs.m_y,eta,scale,Q2);
+  Color_Info ci(i->Col(),j->Col(),k->Col());
+  cs.m_wk=(*cdip)(cs.m_z,cs.m_y,eta,scale,Q2,ci);
   if (cs.m_wk<=0.0 || IsBad(cs.m_wk) || 
       (m_amode==1 && !cdip->On()))
     cs.m_wk=sqrt(std::numeric_limits<double>::min());
@@ -197,7 +199,8 @@ void CS_Cluster_Definitions::KernelWeight
 
 ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
 (const Cluster_Amplitude &ampl,int i,int j,int k,
- const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,const int kin)
+ const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,
+ const int kin,const int kmode)
 {
   p_ms=ms;
   if (i>j) std::swap<int>(i,j);

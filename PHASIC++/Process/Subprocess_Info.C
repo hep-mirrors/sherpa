@@ -252,6 +252,14 @@ size_t Subprocess_Info::NMaxExternal() const
   return n;
 }
 
+bool Subprocess_Info::IsGroup() const
+{
+  if (m_ps.empty()) return m_fl.IsGroup();
+  size_t naregroup(0);
+  for (size_t i(0);i<m_ps.size();++i) naregroup+=m_ps[i].IsGroup();
+  return naregroup;
+}
+
 void Subprocess_Info::SetNMax(const Subprocess_Info &ref)
 {
   m_nmax=Max(m_ps.size(),ref.m_nmax);
@@ -295,6 +303,32 @@ void Subprocess_Info::SetNLOType(nlo_type::code nlotype)
   }
 }
 
+void Subprocess_Info::SetTags(int& start)
+{
+  if (m_ps.size()==0) {
+    m_tag=start;
+    ++start;
+  }
+  else {
+    for (size_t i=0; i<m_ps.size(); ++i) {
+      m_ps[i].SetTags(start);
+    }
+  }
+}
+
+void Subprocess_Info::GetTags(std::vector<int>& tags) const
+{
+  if (m_ps.size()==0) {
+    tags.push_back(m_tag);
+  }
+  else {
+    for (size_t i=0; i<m_ps.size(); ++i) {
+      m_ps[i].GetTags(tags);
+    }
+  }
+}
+
+
 void Subprocess_Info::Print(std::ostream &ostr,const size_t &ni) const
 {
   ostr<<std::string(ni,' ')<<m_fl;
@@ -319,7 +353,6 @@ std::ostream &PHASIC::operator<<(std::ostream &str,const nlo_type::code &c)
   if (c&nlo_type::vsub) out+="I";
   if (c&nlo_type::real) out+="R";
   if (c&nlo_type::rsub) out+="S";
-  if (c&nlo_type::polecheck) out+="P";
   return str<<out;
 }
 
@@ -333,6 +366,5 @@ std::istream &PHASIC::operator>>(std::istream &str,nlo_type::code &c)
   if (tag.find('I')!=std::string::npos) c|=nlo_type::vsub;
   if (tag.find('R')!=std::string::npos) c|=nlo_type::real;
   if (tag.find('S')!=std::string::npos) c|=nlo_type::rsub;
-  if (tag.find('P')!=std::string::npos) c|=nlo_type::polecheck;
   return str;
 }

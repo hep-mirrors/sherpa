@@ -90,12 +90,13 @@ namespace ATOOLS {
 	<<" "<<std::left<<leg.Mom()
 	<<(leg.Mom().Abs2()<0.0?" -":" ")
 	<<sqrt(dabs(leg.Mom().Abs2()))<<" "<<leg.Col();
-    ostr<<" ["<<leg.Stat()<<"|"<<leg.NMax()<<","<<leg.DMax()<<"]";
+    ostr<<" ["<<leg.Stat()<<"|"<<leg.NMax()<<"]";
     if (leg.K()>0) ostr<<" <-> "<<ID(leg.K());
     if (leg.KTStart()>0. || leg.KTMax()>0. || leg.KTVeto()>0.)
       ostr<<"\n"
-	  <<"   kts: start = "<<leg.KTStart()<<", max = "<<leg.KTMax()<<", "
-	  <<"veto = "<<leg.KTVeto()<<".\n";
+	  <<"   kts: start = "<<sqrt(leg.KTStart())
+	  <<", max = "<<sqrt(leg.KTMax())<<", "
+	  <<"veto = "<<sqrt(leg.KTVeto());
     return ostr;
   }
 

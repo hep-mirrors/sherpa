@@ -22,7 +22,8 @@ namespace AMEGIC {
   protected:
     std::string             m_ptypename,m_pslibname;
     double                  m_iresult;
-    double                  m_dalpha,m_dalpha_ff,m_dalpha_fi,m_dalpha_if,m_dalpha_ii;
+    double                  m_dalpha,m_dalpha_ff,
+                            m_dalpha_fi,m_dalpha_if,m_dalpha_ii;
     Phase_Space_Generator * p_psgen;
 
     std::vector<std::vector<double> > p_dsij;
@@ -40,6 +41,13 @@ namespace AMEGIC {
     PHASIC::Virtual_ME2_Base* p_loopme;  
 
     bool m_force_init, m_sccmur, m_kpcemode;
+    bool m_checkborn, m_checkpoles, m_checkfinite;
+    double m_checkpolesthreshold;
+    int m_bvimode, m_user_bvimode;
+
+    double m_bsum, m_vsum, m_isum, m_n;
+    double m_mbsum, m_mvsum, m_misum, m_mn;
+    double m_lastb, m_lastv, m_lasti, m_lastkp;
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -49,6 +57,11 @@ namespace AMEGIC {
 
     Single_Virtual_Correction();
     ~Single_Virtual_Correction();
+
+    void AddPoint(const double &value);
+    bool ReadIn(const std::string &pid);
+    void WriteOut(const std::string &pid);
+    void MPISync();
 
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
@@ -108,7 +121,6 @@ namespace AMEGIC {
   public:
     double         Partonic(const ATOOLS::Vec4D_Vector &,const int mode);
     double         DSigma(const ATOOLS::Vec4D_Vector &,bool,const int);
-    double         DSigma2();
     double         operator()(const ATOOLS::Vec4D_Vector &,const int mode);
 
     int            NumberOfDiagrams();
@@ -127,6 +139,7 @@ namespace AMEGIC {
 			       const double&,const double&,ATOOLS::Flavour_Vector&); 
     void           CheckPoleCancelation(const ATOOLS::Vec4D*);
     void           FillMEwgts(ATOOLS::ME_wgtinfo&);
+    void           EndOptimize();
 
   };
 }

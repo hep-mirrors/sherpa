@@ -23,6 +23,7 @@ namespace CSSHOWER {
     All_Singlets *p_all;
     Singlet *p_ref;
     ATOOLS::Mass_Selector *p_ms;
+    double m_kt2_prev, m_kt2_next, m_lkf;
     int m_nlo;
     ATOOLS::DecayInfo_Vector m_decs;
     void SetColours(Singlet *const sing,Parton *const np,
@@ -34,7 +35,8 @@ namespace CSSHOWER {
   public :
     Singlet() : 
       p_split(NULL), p_left(NULL), p_right(NULL), p_spec(NULL),
-      p_jf(NULL), p_all(NULL), p_ref(NULL), m_nlo(0) {}
+      p_jf(NULL), p_all(NULL), p_ref(NULL),
+      m_kt2_prev(1.0e37), m_kt2_next(0.0), m_lkf(0.0), m_nlo(0) {}
     ~Singlet();
 
     Singlet *RefCopy(All_Singlets *const all,std::map<Parton*,Parton*> &pmap);
@@ -83,8 +85,16 @@ namespace CSSHOWER {
     inline void SetDecays(const ATOOLS::DecayInfo_Vector &d) { m_decs=d; }
 
     inline void SetNLO(const int nlo) { m_nlo=nlo; }
+    inline void SetLKF(const double &lkf) { m_lkf=lkf; } 
 
     inline int NLO() const { return m_nlo; }
+    inline double LKF() const { return m_lkf; }
+
+    inline void SetKtPrev(const double &kt2) { m_kt2_prev=kt2; } 
+    inline void SetKtNext(const double &kt2) { m_kt2_next=kt2; } 
+
+    inline double KtPrev() const { return m_kt2_prev; }
+    inline double KtNext() const { return m_kt2_next; }
 
   };
 

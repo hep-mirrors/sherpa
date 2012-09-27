@@ -12,8 +12,7 @@ namespace PHASIC {
       loop = 2,
       vsub = 4,
       real = 8,
-      rsub = 16,
-      polecheck = 32
+      rsub = 16
     };
   };// end of struct nlo_type
 
@@ -70,6 +69,7 @@ namespace PHASIC {
     size_t NExternal() const;
     size_t NTotalExternal() const;
     size_t NMaxExternal() const;
+    bool   IsGroup() const;
 
     void SetExternal(const std::vector<ATOOLS::Flavour> &fl);
     void SetExternal(const ATOOLS::Flavour &fl,const size_t &i);
@@ -90,6 +90,9 @@ namespace PHASIC {
 
     nlo_type::code NLOType() const;
     void SetNLOType(nlo_type::code nlotype);
+
+    void SetTags(int& start);
+    void GetTags(std::vector<int>& tags) const;
 
   };// end of struct Subprocess_Info
 

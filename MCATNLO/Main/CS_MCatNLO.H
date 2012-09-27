@@ -19,9 +19,11 @@ namespace MCATNLO {
  
     PDF::ISR_Handler * p_isr;
     size_t m_maxem, m_nem;
+    double m_scale2fac;
     
     Shower          * p_powheg;
     All_Singlets m_allsinglets;
+    MODEL::Running_AlphaS  * p_as;
     CS_Cluster_Definitions *p_cluster;
     CS_Gamma *p_gamma;
     All_Singlets *p_next;
@@ -53,10 +55,7 @@ namespace MCATNLO {
 
     void AddRBPoint(ATOOLS::Cluster_Amplitude *const ampl);
 
-    ATOOLS::Cluster_Amplitude *GetRealEmissionAmplitude();
-
-    PDF::SH_Pair SHSplit(const double &B,const double &Qij2,
-			 const ATOOLS::RB_Data *rbd) const;
+    ATOOLS::Cluster_Amplitude *GetRealEmissionAmplitude(const int mode=0);
 
   };
 

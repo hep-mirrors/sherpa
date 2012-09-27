@@ -93,8 +93,8 @@ extern "C" {
     double amz;
   } couple_;
   extern struct {
-    double mb_msbar;
-  } mb_msbar_;
+    double mc_msbar,mb_msbar,mt_msbar;
+  } msbarmasses_;
   extern struct {
     int nproc;
   } nproc_;

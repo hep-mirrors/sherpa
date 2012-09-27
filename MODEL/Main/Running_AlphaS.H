@@ -33,6 +33,7 @@ namespace MODEL {
     double      m_cutq2;
 
     AsDataSet * p_thresh;
+    AsDataSet * p_shower;
 
     PDF::PDF_Base *p_pdf;
 
@@ -58,7 +59,9 @@ namespace MODEL {
 
     // member functions
     double operator()(double q2); 
-    double AlphaS(const double q2);
+    void   FixShowerLambda2(const double mu2,const double asmu,
+			    const int nf=5,const int order=0);
+    double AlphaS(const double q2,bool shower=false);
     void   SelfTest();
 
     // inline functions
@@ -101,8 +104,18 @@ namespace MODEL {
     inline PDF::isr::id ActiveAs() { return m_active; }
 
     // proxy member functions
-    inline double operator()(double q2)   { return p_active->operator()(q2); }
-    inline double AlphaS(const double q2) { return p_active->AlphaS(q2); }
+    inline double operator()(double q2) { 
+      //std::cout<<"In Running_AlphaS("<<sqrt(q2)<<") from |"<<this<<"| "
+      //       <<"vs active = |"<<p_active<<"|\n";
+      return p_active->operator()(q2); 
+    }
+    inline void FixShowerLambda2(const double mu2,const double asmu,
+				 const int nf=5,const int order=0) {
+      p_active->FixShowerLambda2(mu2,asmu,nf,order);
+    }
+    inline double AlphaS(const double q2,bool shower=false) { 
+      return p_active->AlphaS(q2,shower); 
+    }
     inline int    Order()                 { return p_active->Order(); }
     inline double Beta0(const double q2)  { return p_active->Beta0(q2); }
     inline double Beta1(const double q2)  { return p_active->Beta1(q2); }

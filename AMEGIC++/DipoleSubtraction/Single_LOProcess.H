@@ -32,6 +32,7 @@ namespace AMEGIC {
 
     Single_LOProcess      * p_partner;
     std::vector<size_t>     m_partonlist;
+    std::vector<int>        m_rsmap,m_srmap;
 
     std::vector<ATOOLS::Vec4D> m_epol;
 
@@ -132,6 +133,8 @@ namespace AMEGIC {
 			      std::vector<double>*,std::vector<ATOOLS::Vec4D>*,const int);
     virtual void   Calc_AllXS(const ATOOLS::Vec4D_Vector &,
 			      const ATOOLS::Vec4D *,std::vector<std::vector<double> > &,const int);
+    inline const std::vector<int> &RSMap() const { return m_rsmap; }
+    inline const std::vector<int> &SRMap() const { return m_srmap; }
   };
 }
 

@@ -15,8 +15,8 @@ using namespace ATOOLS;
 using namespace PHASIC;
 
 FF_Dipole::FF_Dipole(NLO_subevt *const sub,
-		     Phase_Space_Handler *const psh):
-  CS_Dipole(sub,psh), m_yexp(0.5), m_zexp(0.01)
+		     Phase_Space_Handler *const psh,const bool bmcw):
+  CS_Dipole(sub,psh,bmcw), m_yexp(0.5), m_zexp(0.01)
 {
   // read in y,z mode
   Data_Reader read(" ",";","!","=");
@@ -64,11 +64,13 @@ double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
   Calculate(p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],
 	    m_rn[0],m_rn[1],m_rn[2],pp[m_ijt],pp[m_kt]);
   if (!ValidPoint(pp)) return m_weight=m_rbweight=0.0;
-  p_fsmc->GenerateWeight(&pp.front(),cuts);
-  if (p_ismc) {
-    m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
-    m_isrykey[2]=(pp[0]+pp[1]).Y();
-    p_ismc->GenerateWeight(m_isrmode);
+  if (m_bmcw) {
+    p_fsmc->GenerateWeight(&pp.front(),cuts);
+    if (p_ismc) {
+      m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
+      m_isrykey[2]=(pp[0]+pp[1]).Y();
+      p_ismc->GenerateWeight(m_isrmode);
+    }
   }
   if (m_rn[2]<0.0) m_rn[2]+=2.0*M_PI;
   msg_Debugging()<<"again :       ";
@@ -89,6 +91,7 @@ double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
   msg_Debugging()<<"y = "<<m_rn[0]<<", z = "<<m_rn[1]
                  <<", phi = "<<m_rn[2]<<"\n";
   m_rbweight=m_weight*=p_vegas->GenerateWeight(m_rn);
+  if (!m_bmcw) return m_weight;
   if (p_ismc) m_weight*=p_ismc->Weight();
   return m_weight*=p_fsmc->Weight();
 }
@@ -140,8 +143,8 @@ void FF_Dipole::Construct
 }
 
 FI_Dipole::FI_Dipole(ATOOLS::NLO_subevt *const sub,
-		     Phase_Space_Handler *const psh):
-  CS_Dipole(sub,psh), m_xexp(0.5), m_zexp(0.01)
+		     Phase_Space_Handler *const psh,const bool bmcw):
+  CS_Dipole(sub,psh,bmcw), m_xexp(0.5), m_zexp(0.01)
 {
   // read in x,z mode
   Data_Reader read(" ",";","!","=");
@@ -207,10 +210,12 @@ double FI_Dipole::GenerateWeight
     m_rbweight=m_weight=0.0;
     return 0.0;
   }
-  p_fsmc->GenerateWeight(&pp.front(),cuts);
-  m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
-  m_isrykey[2]=(pp[0]+pp[1]).Y();
-  p_ismc->GenerateWeight(m_isrmode);
+  if (m_bmcw) {
+    p_fsmc->GenerateWeight(&pp.front(),cuts);
+    m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
+    m_isrykey[2]=(pp[0]+pp[1]).Y();
+    p_ismc->GenerateWeight(m_isrmode);
+  }
   // 2(pijt*pk)/16pi^2
   m_weight=(pp[m_ijt]+p[m_sub.m_k]).Abs2()/
     (16.0*sqr(M_PI))/m_rn[0];
@@ -224,6 +229,7 @@ double FI_Dipole::GenerateWeight
   msg_Debugging()<<"x = "<<m_rn[0]<<", z = "<<m_rn[1]
                  <<", phi = "<<m_rn[2]<<", xmin = "<<m_xmin<<"\n";
   m_rbweight=m_weight*=p_vegas->GenerateWeight(m_rn);
+  if (!m_bmcw) return m_weight;
   return m_weight*=p_fsmc->Weight()*p_ismc->Weight();
 }
 
@@ -278,8 +284,8 @@ void FI_Dipole::Construct
 }
 
 IF_Dipole::IF_Dipole(ATOOLS::NLO_subevt *const sub,
-		     Phase_Space_Handler *const psh):
-  CS_Dipole(sub,psh), m_xexp(0.5), m_uexp(0.5)
+		     Phase_Space_Handler *const psh,const bool bmcw):
+  CS_Dipole(sub,psh,bmcw), m_xexp(0.5), m_uexp(0.5)
 {
   // read in x,u mode
   Data_Reader read(" ",";","!","=");
@@ -353,10 +359,12 @@ double IF_Dipole::GenerateWeight
     m_rbweight=m_weight=0.0;
     return 0.0;
   }
-  p_fsmc->GenerateWeight(&pp.front(),cuts);
-  m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
-  m_isrykey[2]=(pp[0]+pp[1]).Y();
-  p_ismc->GenerateWeight(m_isrmode);
+  if (m_bmcw) {
+    p_fsmc->GenerateWeight(&pp.front(),cuts);
+    m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
+    m_isrykey[2]=(pp[0]+pp[1]).Y();
+    p_ismc->GenerateWeight(m_isrmode);
+  }
   // 2(pa*pkt)/16pi^2
   m_weight=(pp[m_ijt]+pp[m_kt]).Abs2()/
     (16.0*sqr(M_PI))/sqr(m_rn[0]);
@@ -370,6 +378,7 @@ double IF_Dipole::GenerateWeight
   msg_Debugging()<<"x = "<<m_rn[0]<<", u = "<<m_rn[1]
                  <<", phi = "<<m_rn[2]<<", xmin = "<<m_xmin<<"\n";
   m_rbweight=m_weight*=p_vegas->GenerateWeight(m_rn);
+  if (!m_bmcw) return m_weight;
   return m_weight*=p_fsmc->Weight()*p_ismc->Weight();
 }
 
@@ -424,8 +433,8 @@ void IF_Dipole::Construct
 }
 
 II_Dipole::II_Dipole(ATOOLS::NLO_subevt *const sub,
-		     Phase_Space_Handler *const psh):
-  CS_Dipole(sub,psh), m_xexp(0.5), m_vexp(0.5)
+		     Phase_Space_Handler *const psh,const bool bmcw):
+  CS_Dipole(sub,psh,bmcw), m_xexp(0.5), m_vexp(0.5)
 {
   // read in x,v mode
   Data_Reader read(" ",";","!","=");
@@ -495,10 +504,12 @@ double II_Dipole::GenerateWeight
     m_rbweight=m_weight=0.0;
     return 0.0;
   }
-  p_fsmc->GenerateWeight(&pp.front(),cuts);
-  m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
-  m_isrykey[2]=(pp[0]+pp[1]).Y();
-  p_ismc->GenerateWeight(m_isrmode);
+  if (m_bmcw) {
+    p_fsmc->GenerateWeight(&pp.front(),cuts);
+    m_isrspkey[3]=(pp[0]+pp[1]).Abs2();
+    m_isrykey[2]=(pp[0]+pp[1]).Y();
+    p_ismc->GenerateWeight(m_isrmode);
+  }
   // 2(pa*pb)/16pi^2
   m_weight=(p[m_sub.m_i]+p[m_sub.m_k]).Abs2()/
     (16.0*sqr(M_PI))/m_rn[0];
@@ -512,6 +523,7 @@ double II_Dipole::GenerateWeight
   msg_Debugging()<<"x = "<<m_rn[0]<<", v = "<<m_rn[1]
                  <<", phi = "<<m_rn[2]<<", xmin = "<<m_xmin<<"\n";
   m_rbweight=m_weight*=p_vegas->GenerateWeight(m_rn);
+  if (!m_bmcw) return m_weight;
   return m_weight*=p_fsmc->Weight()*p_ismc->Weight();
 }
 
@@ -526,11 +538,11 @@ void II_Dipole::Calculate
   x=(pipk-pipj-pjpk)/pipk;
   v=pipj/pipk;
 
-  pijt=x*Rotate(pi);
-  pkt=Rotate(pk);
+  pijt=x*pi;
+  pkt=pk;
 
   double kp(sqrt(2.*pipk*v*(1.-x-v)));
-  Vec4D kperp(Rotate(pj)-(1.-x-v)/x*pijt-v*pkt);
+  Vec4D kperp(pj-(1.-x-v)/x*pijt-v*pkt);
   if      ((kperp[1]>=0. && kperp[2]>=0.) || (kperp[1]>=0. && kperp[2]<0.))
     phi=acos(kperp[2]/kp);
   else if ((kperp[1]<0. && kperp[2]<0.) || (kperp[1]<0. && kperp[2]>=0.))
@@ -542,9 +554,12 @@ void II_Dipole::Calculate
                                  - 2./(K+Kt).Abs2()*BuildTensor(Kt+K,Kt+K)
                                  + 2./Kt.Abs2()*BuildTensor(Kt,K);
 
+  pijt=Rotate(pijt);
+  pkt=Rotate(pkt);
+
   for (size_t j(2), i(j);j<kjt.size();++i,++j) {
     if (i==m_sub.m_j) ++i;
-    kjt[m_rbmap[i]] = Contraction(Lambda,2,kj[i]);
+    kjt[m_rbmap[i]] = Rotate(Contraction(Lambda,2,kj[i]));
     msg_Debugging()<<"("<<i<<"):"<<kj[i]
 		   <<" -> ("<<m_rbmap[i]<<"):"<<kjt[m_rbmap[i]]<<std::endl;
   }
@@ -554,10 +569,12 @@ void II_Dipole::Construct
 (ATOOLS::Vec4D &pi, ATOOLS::Vec4D &pj, ATOOLS::Vec4D &pk,
  ATOOLS::Vec4D_Vector& kj,
  const double &x, const double &v, const double &phi,
- const ATOOLS::Vec4D &pijt, const ATOOLS::Vec4D &pkt,
+ const ATOOLS::Vec4D &ipijt, const ATOOLS::Vec4D &ipkt,
  const ATOOLS::Vec4D_Vector& kjt)
 {
   DEBUG_FUNC("");
+  Vec4D pijt=Rotate(ipijt);
+  Vec4D pkt=Rotate(ipkt);
   pi=1./x*pijt;
   pk=pkt;
 
@@ -565,9 +582,6 @@ void II_Dipole::Construct
   Vec4D kperp(0.,sin(phi)*kp,cos(phi)*kp,0.);
 
   pj=(1.-x-v)/x*pijt + v*pkt + kperp;
-  pi=Rotate(pi);
-  pj=Rotate(pj);
-  pk=Rotate(pk);
   msg_Debugging()<<"("<<m_ijt<<"):"<<pijt
                  <<" -> ("<<m_sub.m_i<<"):"<<pi
                  <<" ("<<m_sub.m_j<<"):"<<pj<<std::endl;
@@ -581,7 +595,7 @@ void II_Dipole::Construct
 
   for (size_t i(0);i<kjt.size();++i) {
     if (i!=m_ijt && i!=m_kt) {
-      kj[m_brmap[i]] = Contraction(Lambda,2,kjt[i]);
+      kj[m_brmap[i]] = Contraction(Lambda,2,Rotate(kjt[i]));
       msg_Debugging()<<"("<<i<<"):"<<kjt[i]
                      <<" -> ("<<m_brmap[i]<<"):"<<kj[m_brmap[i]]<<std::endl;
     }

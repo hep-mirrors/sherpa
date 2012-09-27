@@ -12,6 +12,7 @@
 
 using namespace MODEL;
 using namespace ATOOLS;
+using namespace std;
 
 DECLARE_GETTER(Standard_Model_Getter,
 	       "SM",Model_Base,Model_Arguments);
@@ -23,32 +24,32 @@ operator()(const Model_Arguments &args) const
 }
 
 void Standard_Model_Getter::
-PrintInfo(std::ostream &str,const size_t width) const
+PrintInfo(ostream &str,const size_t width) const
 { 
   str<<"The Standard Model\n";
-  str<<std::setw(width+4)<<" "<<"{\n"
-     <<std::setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
-     <<std::setw(width+7)<<" "<<"- EW_SCHEME (values 0,1,2,3, EW input schemes, see documentation)\n"
-     <<std::setw(width+7)<<" "<<"- WIDTH_SCHEME (Fixed or CMS, see documentation)\n"
-     <<std::setw(width+7)<<" "<<"- ALPHAS(MZ) (strong coupling at MZ)\n"
-     <<std::setw(width+7)<<" "<<"- ALPHAS(default) (fixed strong coupling)\n"
-     <<std::setw(width+7)<<" "<<"- ORDER_ALPHAS (0,1,2 -> 1, 2, 3-loop running)\n"
-     <<std::setw(width+7)<<" "<<"- 1/ALPHAQED(0) (alpha QED Thompson limit)\n"
-     <<std::setw(width+7)<<" "<<"- 1/ALPHAQED(default) (fixed alpha QED)\n"
-     <<std::setw(width+7)<<" "<<"- SIN2THETAW (weak mixing angle)\n"
-     <<std::setw(width+7)<<" "<<"- VEV (Higgs vev)\n"
-     <<std::setw(width+7)<<" "<<"- LAMBDA (Higgs quartic coupling)\n"
-     <<std::setw(width+7)<<" "<<"- CKMORDER (0,1,2,3 - order of CKM expansion in Cabibbo angle)\n"
-     <<std::setw(width+7)<<" "<<"- CABIBBO (Cabibbo angle in Wolfenstein parameterization)\n"
-     <<std::setw(width+7)<<" "<<"- A (Wolfenstein A)\n"
-     <<std::setw(width+7)<<" "<<"- RHO (Wolfenstein Rho)\n"
-     <<std::setw(width+7)<<" "<<"- ETA (Wolfenstein Eta)\n"
-     <<std::setw(width+4)<<" "<<"}";
+  str<<setw(width+4)<<" "<<"{\n"
+     <<setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
+     <<setw(width+7)<<" "<<"- EW_SCHEME (values 0,1,2,3, EW input schemes, see documentation)\n"
+     <<setw(width+7)<<" "<<"- WIDTH_SCHEME (Fixed or CMS, see documentation)\n"
+     <<setw(width+7)<<" "<<"- ALPHAS(MZ) (strong coupling at MZ)\n"
+     <<setw(width+7)<<" "<<"- ALPHAS(default) (fixed strong coupling)\n"
+     <<setw(width+7)<<" "<<"- ORDER_ALPHAS (0,1,2 -> 1, 2, 3-loop running)\n"
+     <<setw(width+7)<<" "<<"- 1/ALPHAQED(0) (alpha QED Thompson limit)\n"
+     <<setw(width+7)<<" "<<"- 1/ALPHAQED(default) (fixed alpha QED)\n"
+     <<setw(width+7)<<" "<<"- SIN2THETAW (weak mixing angle)\n"
+     <<setw(width+7)<<" "<<"- VEV (Higgs vev)\n"
+     <<setw(width+7)<<" "<<"- LAMBDA (Higgs quartic coupling)\n"
+     <<setw(width+7)<<" "<<"- CKMORDER (0,1,2,3 - order of CKM expansion in Cabibbo angle)\n"
+     <<setw(width+7)<<" "<<"- CABIBBO (Cabibbo angle in Wolfenstein parameterization)\n"
+     <<setw(width+7)<<" "<<"- A (Wolfenstein A)\n"
+     <<setw(width+7)<<" "<<"- RHO (Wolfenstein Rho)\n"
+     <<setw(width+7)<<" "<<"- ETA (Wolfenstein Eta)\n"
+     <<setw(width+4)<<" "<<"}";
   str<<"Infrared continuation of alphaS:\n";
-  str<<std::setw(width+4)<<" "<<"{\n"
-     <<std::setw(width+7)<<" "<<"- AS_FORM (values 0,1,2,3,10, see documentation)\n"
-     <<std::setw(width+7)<<" "<<"- Q2_AS (corresponding infrared parameter, see documentation)\n"
-     <<std::setw(width+4)<<" "<<"}";
+  str<<setw(width+4)<<" "<<"{\n"
+     <<setw(width+7)<<" "<<"- AS_FORM (values 0,1,2,3,10, see documentation)\n"
+     <<setw(width+7)<<" "<<"- Q2_AS (corresponding infrared parameter, see documentation)\n"
+     <<setw(width+4)<<" "<<"}";
 }
 
 DECLARE_GETTER(Standard_Model_Top_Getter,
@@ -61,29 +62,29 @@ operator()(const Model_Arguments &args) const
 }
 
 void Standard_Model_Top_Getter::
-PrintInfo(std::ostream &str,const size_t width) const
+PrintInfo(ostream &str,const size_t width) const
 { 
   str<<"The Standard Model + non-standard top couplings\n";
-  str<<std::setw(width+4)<<" "<<"{\n"
-     <<std::setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
-     <<std::setw(width+7)<<" "<<"- EW_SCHEME (values 0,1,2,3, EW input schemes, see documentation)\n"
-     <<std::setw(width+7)<<" "<<"- WIDTH_SCHEME (Fixed or CMS, see documentation)\n"
-     <<std::setw(width+7)<<" "<<"- ALPHAS(MZ) (strong coupling at MZ)\n"
-     <<std::setw(width+7)<<" "<<"- ALPHAS(default) (fixed strong coupling)\n"
-     <<std::setw(width+7)<<" "<<"- ORDER_ALPHAS (0,1,2 -> 1, 2, 3-loop running)\n"
-     <<std::setw(width+7)<<" "<<"- 1/ALPHAQED(0) (alpha QED Thompson limit)\n"
-     <<std::setw(width+7)<<" "<<"- 1/ALPHAQED(default) (fixed alpha QED)\n"
-     <<std::setw(width+7)<<" "<<"- SIN2THETAW (weak mixing angle)\n"
-     <<std::setw(width+7)<<" "<<"- VEV (Higgs vev)\n"
-     <<std::setw(width+7)<<" "<<"- LAMBDA (Higgs quartic coupling)\n"
-     <<std::setw(width+7)<<" "<<"- CKMORDER (0,1,2,3 - order of CKM expansion in Cabibbo angle)\n"
-     <<std::setw(width+7)<<" "<<"- CABIBBO (Cabibbo angle in Wolfenstein parameterization)\n"
-     <<std::setw(width+7)<<" "<<"- A (Wolfenstein A)\n"
-     <<std::setw(width+7)<<" "<<"- RHO (Wolfenstein Rho)\n"
-     <<std::setw(width+7)<<" "<<"- ETA (Wolfenstein Eta)\n"
-     <<std::setw(width+7)<<" "<<"- KAPPA_{TBW} (rel. factor of tbW w.r.t. SM)\n"
-     <<std::setw(width+7)<<" "<<"- THETA_{TBW} (angle of tbW in PL-PR w.r.t. SM)\n"
-     <<std::setw(width+4)<<" "<<"}";
+  str<<setw(width+4)<<" "<<"{\n"
+     <<setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
+     <<setw(width+7)<<" "<<"- EW_SCHEME (values 0,1,2,3, EW input schemes, see documentation)\n"
+     <<setw(width+7)<<" "<<"- WIDTH_SCHEME (Fixed or CMS, see documentation)\n"
+     <<setw(width+7)<<" "<<"- ALPHAS(MZ) (strong coupling at MZ)\n"
+     <<setw(width+7)<<" "<<"- ALPHAS(default) (fixed strong coupling)\n"
+     <<setw(width+7)<<" "<<"- ORDER_ALPHAS (0,1,2 -> 1, 2, 3-loop running)\n"
+     <<setw(width+7)<<" "<<"- 1/ALPHAQED(0) (alpha QED Thompson limit)\n"
+     <<setw(width+7)<<" "<<"- 1/ALPHAQED(default) (fixed alpha QED)\n"
+     <<setw(width+7)<<" "<<"- SIN2THETAW (weak mixing angle)\n"
+     <<setw(width+7)<<" "<<"- VEV (Higgs vev)\n"
+     <<setw(width+7)<<" "<<"- LAMBDA (Higgs quartic coupling)\n"
+     <<setw(width+7)<<" "<<"- CKMORDER (0,1,2,3 - order of CKM expansion in Cabibbo angle)\n"
+     <<setw(width+7)<<" "<<"- CABIBBO (Cabibbo angle in Wolfenstein parameterization)\n"
+     <<setw(width+7)<<" "<<"- A (Wolfenstein A)\n"
+     <<setw(width+7)<<" "<<"- RHO (Wolfenstein Rho)\n"
+     <<setw(width+7)<<" "<<"- ETA (Wolfenstein Eta)\n"
+     <<setw(width+7)<<" "<<"- KAPPA_{TBW} (rel. factor of tbW w.r.t. SM)\n"
+     <<setw(width+7)<<" "<<"- THETA_{TBW} (angle of tbW in PL-PR w.r.t. SM)\n"
+     <<setw(width+4)<<" "<<"}";
 }
 
 
@@ -97,53 +98,53 @@ operator()(const Model_Arguments &args) const
 }
 
 void Standard_Model_Gen4_Getter::
-PrintInfo(std::ostream &str,const size_t width) const
+PrintInfo(ostream &str,const size_t width) const
 { 
   str<<"The Standard Model + 4th generation\n";
-  str<<std::setw(width+4)<<" "<<"{\n"
-     <<std::setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
-     <<std::setw(width+7)<<" "<<"- EW_SCHEME (values 0,1,2,3, EW input schemes, see documentation)\n"
-     <<std::setw(width+7)<<" "<<"- WIDTH_SCHEME (Fixed or CMS, see documentation)\n"
-     <<std::setw(width+7)<<" "<<"- ALPHAS(MZ)          (strong coupling at MZ)\n"
-     <<std::setw(width+7)<<" "<<"- ALPHAS(default)     (fixed strong coupling)\n"
-     <<std::setw(width+7)<<" "<<"- ORDER_ALPHAS        (0,1,2 -> 1, 2, 3-loop running)\n"
-     <<std::setw(width+7)<<" "<<"- 1/ALPHAQED(0)       (alpha QED Thompson limit)\n"
-     <<std::setw(width+7)<<" "<<"- 1/ALPHAQED(default) (fixed alpha QED)\n"
-     <<std::setw(width+7)<<" "<<"- SIN2THETAW          (weak mixing angle)\n"
-     <<std::setw(width+7)<<" "<<"- VEV    (Higgs vev)\n"
-     <<std::setw(width+7)<<" "<<"- LAMBDA (Higgs quartic coupling)\n"
-     <<std::setw(width+7)<<" "<<"masses, widths, etc:\n"
-     <<std::setw(width+7)<<" "<<"- MASS[7,8,17,18], WIDTH[7,8,17,18], etc.\n"
-     <<std::setw(width+7)<<" "<<"3x3 CKM matrix:\n"
-     <<std::setw(width+7)<<" "<<"- CKMORDER (0,1,2,3 - order of CKM expansion in Cabibbo angle)\n"
-     <<std::setw(width+7)<<" "<<"- CABIBBO  (Cabibbo angle in Wolfenstein parameterization)\n"
-     <<std::setw(width+7)<<" "<<"- A        (Wolfenstein A)\n"
-     <<std::setw(width+7)<<" "<<"- RHO      (Wolfenstein Rho)\n"
-     <<std::setw(width+7)<<" "<<"- ETA      (Wolfenstein Eta)\n"
-     <<std::setw(width+7)<<" "<<"4th generation extension (Phys.Lett.B192:441,1987):\n"
-     <<std::setw(width+7)<<" "<<"- A_14     (quark mixing angle a_14)\n"
-     <<std::setw(width+7)<<" "<<"- A_24     (quark mixing angle a_24)\n"
-     <<std::setw(width+7)<<" "<<"- A_34     (quark mixing angle a_34)\n"
-     <<std::setw(width+7)<<" "<<"- PHI_2    (quark mixing angle phi_2)\n"
-     <<std::setw(width+7)<<" "<<"- PHI_3    (quark mixing angle phi_3)\n"
-     <<std::setw(width+7)<<" "<<"4th generation lepton mixing:\n"
-     <<std::setw(width+7)<<" "<<"- THETA_L14   (lepton mixing angle theta_L,14)\n"
-     <<std::setw(width+7)<<" "<<"- THETA_L24   (lepton mixing angle theta_L,24)\n"
-     <<std::setw(width+7)<<" "<<"- THETA_L34   (lepton mixing angle theta_L,34)\n"
-     <<std::setw(width+7)<<" "<<"- PHI_L2    (lepton mixing angle phi_L,2)\n"
-     <<std::setw(width+7)<<" "<<"- PHI_L3    (lepton mixing angle phi_L,3)\n"
-     <<std::setw(width+7)<<" "<<"possibly different Yukawa couplings for 4th generation:\n"
-     <<std::setw(width+7)<<" "<<"- YUKAWA_U4   (Yukawa coupling of 4th generation up-type quark)\n"
-     <<std::setw(width+7)<<" "<<"- YUKAWA_D4   (Yukawa coupling of 4th generation down-type quark)\n"
-     <<std::setw(width+7)<<" "<<"- YUKAWA_L4   (Yukawa coupling of 4th generation lepton)\n"
-     <<std::setw(width+7)<<" "<<"- YUKAWA_Nu4  (Yukawa coupling of 4th generation neutrino)\n"
-     <<std::setw(width+7)<<" "<<"output of mixing matrices [1=on,0=off(default)]:\n"
-     <<std::setw(width+7)<<" "<<"- OUTPUT_MIXING  (Print the matrices for lepton and quark mixing)\n"
-     <<std::setw(width+4)<<" "<<"}";
+  str<<setw(width+4)<<" "<<"{\n"
+     <<setw(width+7)<<" "<<"parameter specification [keyword=value]\n"
+     <<setw(width+7)<<" "<<"- EW_SCHEME (values 0,1,2,3, EW input schemes, see documentation)\n"
+     <<setw(width+7)<<" "<<"- WIDTH_SCHEME (Fixed or CMS, see documentation)\n"
+     <<setw(width+7)<<" "<<"- ALPHAS(MZ)          (strong coupling at MZ)\n"
+     <<setw(width+7)<<" "<<"- ALPHAS(default)     (fixed strong coupling)\n"
+     <<setw(width+7)<<" "<<"- ORDER_ALPHAS        (0,1,2 -> 1, 2, 3-loop running)\n"
+     <<setw(width+7)<<" "<<"- 1/ALPHAQED(0)       (alpha QED Thompson limit)\n"
+     <<setw(width+7)<<" "<<"- 1/ALPHAQED(default) (fixed alpha QED)\n"
+     <<setw(width+7)<<" "<<"- SIN2THETAW          (weak mixing angle)\n"
+     <<setw(width+7)<<" "<<"- VEV    (Higgs vev)\n"
+     <<setw(width+7)<<" "<<"- LAMBDA (Higgs quartic coupling)\n"
+     <<setw(width+7)<<" "<<"masses, widths, etc:\n"
+     <<setw(width+7)<<" "<<"- MASS[7,8,17,18], WIDTH[7,8,17,18], etc.\n"
+     <<setw(width+7)<<" "<<"3x3 CKM matrix:\n"
+     <<setw(width+7)<<" "<<"- CKMORDER (0,1,2,3 - order of CKM expansion in Cabibbo angle)\n"
+     <<setw(width+7)<<" "<<"- CABIBBO  (Cabibbo angle in Wolfenstein parameterization)\n"
+     <<setw(width+7)<<" "<<"- A        (Wolfenstein A)\n"
+     <<setw(width+7)<<" "<<"- RHO      (Wolfenstein Rho)\n"
+     <<setw(width+7)<<" "<<"- ETA      (Wolfenstein Eta)\n"
+     <<setw(width+7)<<" "<<"4th generation extension (Phys.Lett.B192:441,1987):\n"
+     <<setw(width+7)<<" "<<"- A_14     (quark mixing angle a_14)\n"
+     <<setw(width+7)<<" "<<"- A_24     (quark mixing angle a_24)\n"
+     <<setw(width+7)<<" "<<"- A_34     (quark mixing angle a_34)\n"
+     <<setw(width+7)<<" "<<"- PHI_2    (quark mixing angle phi_2)\n"
+     <<setw(width+7)<<" "<<"- PHI_3    (quark mixing angle phi_3)\n"
+     <<setw(width+7)<<" "<<"4th generation lepton mixing:\n"
+     <<setw(width+7)<<" "<<"- THETA_L14   (lepton mixing angle theta_L,14)\n"
+     <<setw(width+7)<<" "<<"- THETA_L24   (lepton mixing angle theta_L,24)\n"
+     <<setw(width+7)<<" "<<"- THETA_L34   (lepton mixing angle theta_L,34)\n"
+     <<setw(width+7)<<" "<<"- PHI_L2    (lepton mixing angle phi_L,2)\n"
+     <<setw(width+7)<<" "<<"- PHI_L3    (lepton mixing angle phi_L,3)\n"
+     <<setw(width+7)<<" "<<"possibly different Yukawa couplings for 4th generation:\n"
+     <<setw(width+7)<<" "<<"- YUKAWA_U4   (Yukawa coupling of 4th generation up-type quark)\n"
+     <<setw(width+7)<<" "<<"- YUKAWA_D4   (Yukawa coupling of 4th generation down-type quark)\n"
+     <<setw(width+7)<<" "<<"- YUKAWA_L4   (Yukawa coupling of 4th generation lepton)\n"
+     <<setw(width+7)<<" "<<"- YUKAWA_Nu4  (Yukawa coupling of 4th generation neutrino)\n"
+     <<setw(width+7)<<" "<<"output of mixing matrices [1=on,0=off(default)]:\n"
+     <<setw(width+7)<<" "<<"- OUTPUT_MIXING  (Print the matrices for lepton and quark mixing)\n"
+     <<setw(width+4)<<" "<<"}";
 }
 
 
-Standard_Model::Standard_Model(std::string _dir,std::string _file,
+Standard_Model::Standard_Model(string _dir,string _file,
 			       bool _elementary,int _trivialextension) :
   Model_Base(_dir,_file,_elementary), m_trivialextension(_trivialextension)
 {
@@ -158,8 +159,9 @@ Standard_Model::Standard_Model(std::string _dir,std::string _file,
 bool Standard_Model::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
   if (m_elementary) 
-    msg_Info()<<"Initialize the Standard Model from "<<m_dir<<" / "<<m_file<<std::endl;
-  m_name      = std::string("SM");
+    msg_Info()<<"Initialize the Standard Model from "<<m_dir
+	      <<" / "<<m_file<<endl;
+  m_name      = string("SM");
   p_numbers          = new ScalarNumbersMap();
   p_constants        = new ScalarConstantsMap();
   p_complexconstants = new ComplexConstantsMap();
@@ -210,22 +212,22 @@ void Standard_Model::ParticleInit() {
 
   // add pseudo particles and containers
   s_kftable[kf_none] = new
-    Particle_Info(kf_none,-1,0,0,0,0,0,-1,0,1,0,"no_particle","no particle",1);
+    Particle_Info(kf_none,-1,0,0,0,0,0,-1,0,1,0,"no_particle","no particle",1,1);
   s_kftable[kf_resummed] = new
-    Particle_Info(kf_resummed,0.,0.,0,0,1,2,1,1,1,0,"r","resummed");
+    Particle_Info(kf_resummed,0.,0.,0,0,1,2,1,1,1,0,"r","resummed",0,1);
   s_kftable[kf_bjet] = new
-    Particle_Info(kf_bjet,0.,0.,0,0,1,2,0,1,1,0,"bj","bjet",1);
+    Particle_Info(kf_bjet,0.,0.,0,0,1,2,0,1,1,0,"bj","bjet",1,1);
 
   s_kftable[kf_fermion] = new
-    Particle_Info(kf_fermion,0.,0., 0,0,0,1,0,1,1,0,"fermion","fermion",1);
+    Particle_Info(kf_fermion,0.,0., 0,0,0,1,0,1,1,0,"fermion","fermion",1,1);
   s_kftable[kf_jet] = new
-    Particle_Info(kf_jet,0.,0.,0,0,1, 2,1,1,1,0,"j","jet",1);
+    Particle_Info(kf_jet,0.,0.,0,0,1, 2,1,1,1,0,"j","jet",1,1);
   s_kftable[kf_quark] = new
-    Particle_Info(kf_quark,0.,0.,0, 0,1,1,0,1,1,0,"Q","Quark",1);
+    Particle_Info(kf_quark,0.,0.,0, 0,1,1,0,1,1,0,"Q","Quark",1,1);
   s_kftable[kf_lepton] = new
-    Particle_Info(kf_lepton,0.,0.,-3,-1,0,1,0,1,1,0,"lepton","lepton",1);
+    Particle_Info(kf_lepton,0.,0.,-3,-1,0,1,0,1,1,0,"lepton","lepton",1,1);
   s_kftable[kf_neutrino] = new
-    Particle_Info(kf_neutrino,0.,0.,0,1,0, 1,0,1,1,0,"neutrino","neutrino",1);
+    Particle_Info(kf_neutrino,0.,0.,0,1,0, 1,0,1,1,0,"neutrino","neutrino",1,1);
   s_kftable[kf_fermion]->Clear();
   s_kftable[kf_jet]->Clear();
   s_kftable[kf_resummed]->Clear();
@@ -271,24 +273,24 @@ void Standard_Model::FillSpectrum(const PDF::ISR_Handler_Map& isr)
   p_dataread->RereadInFile();
   FixEWParameters();  
   FixCKM();
-  p_constants->insert(std::make_pair(std::string("Yukawa_e"), 
-				     p_dataread->GetValue<double>("YUKAWA_E",0.)));
-  p_constants->insert(std::make_pair(std::string("Yukawa_mu"), 
-				     p_dataread->GetValue<double>("YUKAWA_MU",0.)));
-  p_constants->insert(std::make_pair(std::string("Yukawa_tau"), 
-				     p_dataread->GetValue<double>("YUKAWA_TAU",Flavour(kf_tau).Mass(true))));
-  p_constants->insert(std::make_pair(std::string("Yukawa_d"), 
-				     p_dataread->GetValue<double>("YUKAWA_D",0.)));
-  p_constants->insert(std::make_pair(std::string("Yukawa_u"), 
-				     p_dataread->GetValue<double>("YUKAWA_U",0.)));
-  p_constants->insert(std::make_pair(std::string("Yukawa_s"), 
-				     p_dataread->GetValue<double>("YUKAWA_S",0.)));
-  p_constants->insert(std::make_pair(std::string("Yukawa_c"), 
-				     p_dataread->GetValue<double>("YUKAWA_C",0.)));
-  p_constants->insert(std::make_pair(std::string("Yukawa_b"), 
-				     p_dataread->GetValue<double>("YUKAWA_B",Flavour(kf_b).Mass(true))));
-  p_constants->insert(std::make_pair(std::string("Yukawa_t"), 
-				     p_dataread->GetValue<double>("YUKAWA_T",Flavour(kf_t).Mass(true))));
+  p_constants->insert(make_pair(string("Yukawa_e"), 
+				p_dataread->GetValue<double>("YUKAWA_E",0.)));
+  p_constants->insert(make_pair(string("Yukawa_mu"), 
+				p_dataread->GetValue<double>("YUKAWA_MU",0.)));
+  p_constants->insert(make_pair(string("Yukawa_tau"), 
+				p_dataread->GetValue<double>("YUKAWA_TAU",Flavour(kf_tau).Mass(true))));
+  p_constants->insert(make_pair(string("Yukawa_d"), 
+				p_dataread->GetValue<double>("YUKAWA_D",0.)));
+  p_constants->insert(make_pair(string("Yukawa_u"), 
+				p_dataread->GetValue<double>("YUKAWA_U",0.)));
+  p_constants->insert(make_pair(string("Yukawa_s"), 
+				p_dataread->GetValue<double>("YUKAWA_S",0.)));
+  p_constants->insert(make_pair(string("Yukawa_c"), 
+				p_dataread->GetValue<double>("YUKAWA_C",0.)));
+  p_constants->insert(make_pair(string("Yukawa_b"), 
+				p_dataread->GetValue<double>("YUKAWA_B",Flavour(kf_b).Mass(true))));
+  p_constants->insert(make_pair(string("Yukawa_t"), 
+				p_dataread->GetValue<double>("YUKAWA_T",Flavour(kf_t).Mass(true))));
   ATOOLS::Flavour(kf_e).SetYuk(ScalarConstant("Yukawa_e"));
   ATOOLS::Flavour(kf_mu).SetYuk(ScalarConstant("Yukawa_mu"));
   ATOOLS::Flavour(kf_tau).SetYuk(ScalarConstant("Yukawa_tau"));
@@ -301,95 +303,123 @@ void Standard_Model::FillSpectrum(const PDF::ISR_Handler_Map& isr)
 
   // Extra coupling parameters for non-Standard tbW coupling
   if (m_trivialextension==1) {
-    p_constants->insert(std::make_pair(std::string("tbW_RelFactor"),
-				       m_trivialextension==1?
-				       p_dataread->GetValue<double>("KAPPA_{TBW}",1.):1.));
-    p_constants->insert(std::make_pair(std::string("tbW_Angle"),
-				       m_trivialextension==1?
-				       p_dataread->GetValue<double>("THETA_{TBW}",0.):0.));
+    p_constants->insert(make_pair(string("tbW_RelFactor"),
+				  m_trivialextension==1?
+				  p_dataread->GetValue<double>("KAPPA_{TBW}",1.):1.));
+    p_constants->insert(make_pair(string("tbW_Angle"),
+				  m_trivialextension==1?
+				  p_dataread->GetValue<double>("THETA_{TBW}",0.):0.));
   }
   if (m_trivialextension==2) { 
-    p_constants->insert(std::make_pair(std::string("Yukawa_D4"), 
-				       p_dataread->GetValue<double>("YUKAWA_D4",Flavour(kf_D4).Mass(true))));
-    p_constants->insert(std::make_pair(std::string("Yukawa_U4"), 
-				       p_dataread->GetValue<double>("YUKAWA_U4",Flavour(kf_U4).Mass(true))));
-    p_constants->insert(std::make_pair(std::string("Yukawa_L4"), 
-				       p_dataread->GetValue<double>("YUKAWA_L4",Flavour(kf_L4).Mass(true))));
-    p_constants->insert(std::make_pair(std::string("Yukawa_Nu4"), 
-				       p_dataread->GetValue<double>("YUKAWA_Nu4",Flavour(kf_Nu4).Mass(true))));
+    p_constants->insert(make_pair(string("Yukawa_D4"), 
+				  p_dataread->GetValue<double>("YUKAWA_D4",Flavour(kf_D4).Mass(true))));
+    p_constants->insert(make_pair(string("Yukawa_U4"), 
+				  p_dataread->GetValue<double>("YUKAWA_U4",Flavour(kf_U4).Mass(true))));
+    p_constants->insert(make_pair(string("Yukawa_L4"), 
+				  p_dataread->GetValue<double>("YUKAWA_L4",Flavour(kf_L4).Mass(true))));
+    p_constants->insert(make_pair(string("Yukawa_Nu4"), 
+				  p_dataread->GetValue<double>("YUKAWA_Nu4",Flavour(kf_Nu4).Mass(true))));
   }
 
   int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",1);
   int    th_alphaS	= p_dataread->GetValue<int>("THRESHOLD_ALPHAS",1);
   double alphaS         = p_dataread->GetValue<double>("ALPHAS(MZ)",0.118);
   double alphaS_default = p_dataread->GetValue<double>("ALPHAS(default)",alphaS);
-  double MZ2            = sqr((*p_constants)[std::string("MZ")]);
+  double MZ2            = sqr((*p_constants)[string("MZ")]);
 
   as = new Running_AlphaS(alphaS,MZ2,order_alphaS,th_alphaS,isr);
   as->SetDefault(alphaS_default);
-  p_constants->insert(std::make_pair(std::string("alpha_S(MZ)"),alphaS));
-  p_functions->insert(std::make_pair(std::string("alpha_S"),as));
+  p_constants->insert(make_pair(string("alpha_S(MZ)"),alphaS));
+  p_functions->insert(make_pair(string("alpha_S"),as));
 
-  double Q2aS = p_dataread->GetValue<double>("Q2_AS",1.);
-  std::string asf  = p_dataread->GetValue<std::string>("As_Form",std::string("smooth"));
+
+  double Q2aS      = p_dataread->GetValue<double>("Q2_AS",1.);
+  string asf  = p_dataread->GetValue<string>("As_Form",
+						       string("smooth"));
   asform::code as_form(asform::smooth);
-  if (asf==std::string("constant"))    as_form = asform::constant;
-  else if (asf==std::string("frozen")) as_form = asform::frozen;
-  else if (asf==std::string("smooth")) as_form = asform::smooth;
-  else if (asf==std::string("IR0"))    as_form = asform::IR0;
-  else if (asf==std::string("GDH"))    as_form = asform::GDH_inspired;
+  if (asf==string("constant"))    as_form = asform::constant;
+  else if (asf==string("frozen")) as_form = asform::frozen;
+  else if (asf==string("smooth")) as_form = asform::smooth;
+  else if (asf==string("IR0"))    as_form = asform::IR0;
+  else if (asf==string("GDH"))    as_form = asform::GDH_inspired;
   Strong_Coupling * strong_cpl(new Strong_Coupling(as,as_form,Q2aS));
-  p_functions->insert(make_pair(std::string("strong_cpl"),strong_cpl));
+  p_functions->insert(make_pair(string("strong_cpl"),strong_cpl));
 
-  Running_Fermion_Mass * md   = new Running_Fermion_Mass(Flavour(kf_d),
-							 ScalarConstant(std::string("Yukawa_d")),as);
-  Running_Fermion_Mass * mu   = new Running_Fermion_Mass(Flavour(kf_u),
-							 ScalarConstant(std::string("Yukawa_u")),as);
-  Running_Fermion_Mass * ms   = new Running_Fermion_Mass(Flavour(kf_s),
-							 ScalarConstant(std::string("Yukawa_s")),as);
-  Running_Fermion_Mass * mc   = new Running_Fermion_Mass(Flavour(kf_c),
-							 ScalarConstant(std::string("Yukawa_c")),as);
-  Running_Fermion_Mass * mb   = new Running_Fermion_Mass(Flavour(kf_b),
-							 ScalarConstant(std::string("Yukawa_b")),as);
-  Running_Fermion_Mass * mt   = new Running_Fermion_Mass(Flavour(kf_t),
-							 ScalarConstant(std::string("Yukawa_t")),as);
-  Running_Fermion_Mass * me   = new Running_Fermion_Mass(Flavour(kf_e),
-   							 ScalarConstant(std::string("Yukawa_e")),as);
-  Running_Fermion_Mass * mmu  = new Running_Fermion_Mass(Flavour(kf_mu),
-   							 ScalarConstant(std::string("Yukawa_mu")),as);
-  Running_Fermion_Mass * mtau = new Running_Fermion_Mass(Flavour(kf_tau),
-   							 ScalarConstant(std::string("Yukawa_tau")),as);
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_d).IDName()),md));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_u).IDName()),mu));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_s).IDName()),ms));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_c).IDName()),mc));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_b).IDName()),mb));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_t).IDName()),mt));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_e).IDName()),me));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_mu).IDName()),mmu));
-  p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_tau).IDName()),mtau));
+  Running_Fermion_Mass * md   = 
+    new Running_Fermion_Mass(Flavour(kf_d),
+			     ScalarConstant(string("Yukawa_d")),as);
+  Running_Fermion_Mass * mu   = 
+    new Running_Fermion_Mass(Flavour(kf_u),
+			     ScalarConstant(string("Yukawa_u")),as);
+  Running_Fermion_Mass * ms   = 
+    new Running_Fermion_Mass(Flavour(kf_s),
+			     ScalarConstant(string("Yukawa_s")),as);
+  Running_Fermion_Mass * mc   = 
+    new Running_Fermion_Mass(Flavour(kf_c),
+			     ScalarConstant(string("Yukawa_c")),as);
+  Running_Fermion_Mass * mb   = 
+    new Running_Fermion_Mass(Flavour(kf_b),
+			     ScalarConstant(string("Yukawa_b")),as);
+  Running_Fermion_Mass * mt   = 
+    new Running_Fermion_Mass(Flavour(kf_t),
+			     ScalarConstant(string("Yukawa_t")),as);
+  Running_Fermion_Mass * me   = 
+    new Running_Fermion_Mass(Flavour(kf_e),
+			     ScalarConstant(string("Yukawa_e")),as);
+  Running_Fermion_Mass * mmu  = 
+    new Running_Fermion_Mass(Flavour(kf_mu),
+			     ScalarConstant(string("Yukawa_mu")),as);
+  Running_Fermion_Mass * mtau = 
+    new Running_Fermion_Mass(Flavour(kf_tau),
+			     ScalarConstant(string("Yukawa_tau")),as);
+  p_functions->insert(make_pair(string("m")+
+				string(Flavour(kf_d).IDName()),md));
+  p_functions->insert(make_pair(string("m")+
+				string(Flavour(kf_u).IDName()),mu));
+  p_functions->insert(make_pair(string("m")+
+				string(Flavour(kf_s).IDName()),ms));
+  p_functions->insert(make_pair(string("m")+
+				string(Flavour(kf_c).IDName()),mc));
+  p_functions->insert(make_pair(string("m")+
+				string(Flavour(kf_b).IDName()),mb));
+  p_functions->insert(make_pair(string("m")+
+				string(Flavour(kf_t).IDName()),mt));
+  p_functions->insert(make_pair(string("m")+
+				string(Flavour(kf_e).IDName()),me));
+  p_functions->insert(make_pair(string("m")+
+				string(Flavour(kf_mu).IDName()),mmu));
+  p_functions->insert(make_pair(string("m")+
+				string(Flavour(kf_tau).IDName()),mtau));
 
   if (m_trivialextension==2) {
-    Running_Fermion_Mass * mD4  = new Running_Fermion_Mass(Flavour(kf_D4),
-							   ScalarConstant(std::string("Yukawa_D4")),as);
-    Running_Fermion_Mass * mU4  = new Running_Fermion_Mass(Flavour(kf_U4),
-							   ScalarConstant(std::string("Yukawa_U4")),as);
-    Running_Fermion_Mass * mL4  = new Running_Fermion_Mass(Flavour(kf_L4),
-                     ScalarConstant(std::string("Yukawa_L4")),as);
-    Running_Fermion_Mass * mNu4  = new Running_Fermion_Mass(Flavour(kf_Nu4),
-                     ScalarConstant(std::string("Yukawa_Nu4")),as);
-    p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_D4).IDName()),mD4));
-    p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_U4).IDName()),mU4));
-    p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_L4).IDName()),mL4));
-    p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf_Nu4).IDName()),mNu4));
+    Running_Fermion_Mass * mD4  = 
+      new Running_Fermion_Mass(Flavour(kf_D4),
+			       ScalarConstant(string("Yukawa_D4")),as);
+    Running_Fermion_Mass * mU4  = 
+      new Running_Fermion_Mass(Flavour(kf_U4),
+			       ScalarConstant(string("Yukawa_U4")),as);
+    Running_Fermion_Mass * mL4  = 
+      new Running_Fermion_Mass(Flavour(kf_L4),
+			       ScalarConstant(string("Yukawa_L4")),as);
+    Running_Fermion_Mass * mNu4  = 
+      new Running_Fermion_Mass(Flavour(kf_Nu4),
+			       ScalarConstant(string("Yukawa_Nu4")),as);
+    p_functions->insert(make_pair(string("m")+
+				  string(Flavour(kf_D4).IDName()),mD4));
+    p_functions->insert(make_pair(string("m")+
+				  string(Flavour(kf_U4).IDName()),mU4));
+    p_functions->insert(make_pair(string("m")+
+				  string(Flavour(kf_L4).IDName()),mL4));
+    p_functions->insert(make_pair(string("m")+
+				  string(Flavour(kf_Nu4).IDName()),mNu4));
   }
 }
 
 void Standard_Model::FixEWParameters() {
   double MW,MZ,MH,GW,GZ,GH,alphaQED0,sin2thetaW,cos2thetaW,vev,lambdaH,GF;
   Complex csin2thetaW, ccos2thetaW, cvev,clambdaH, I(0.0, 1.0);
-  std::string widthscheme = p_dataread->GetValue<std::string>("WIDTH_SCHEME","Fixed");
-  p_numbers->insert(std::make_pair(std::string("WidthScheme"), widthscheme=="CMS"));
+  string widthscheme = p_dataread->GetValue<string>("WIDTH_SCHEME","Fixed");
+  p_numbers->insert(make_pair(string("WidthScheme"), widthscheme=="CMS"));
   int ewscheme = p_dataread->GetValue<int>("EW_SCHEME",0);
   // TODO: Shouldn't we make 1 the default?
 
@@ -496,24 +526,24 @@ void Standard_Model::FixEWParameters() {
   Flavour(kf_Z).SetMass(MZ);
   Flavour(kf_h0).SetMass(MH);
 
-  p_functions->insert(std::make_pair(std::string("alpha_QED"),aqed));
-  p_constants->insert(std::make_pair(std::string("alpha_QED(0)"),alphaQED0));
-  p_constants->insert(std::make_pair(std::string("sin2_thetaW"), sin2thetaW));
-  p_constants->insert(std::make_pair(std::string("cos2_thetaW"), cos2thetaW));
-  p_constants->insert(std::make_pair(std::string("vev"),         vev));
-  p_constants->insert(std::make_pair(std::string("MW"),          MW));
-  p_constants->insert(std::make_pair(std::string("MZ"),          MZ));
-  p_constants->insert(std::make_pair(std::string("MH"),          MH));
-  p_constants->insert(std::make_pair(std::string("lambdaH"),     lambdaH));
-  p_constants->insert(std::make_pair(std::string("GF"),          GF));
-  p_numbers->insert(std::make_pair(std::string("HIGGS_PARITY"),
-                                   p_dataread->GetValue<int>("HIGGS_PARITY",1)));
+  p_functions->insert(make_pair(string("alpha_QED"),aqed));
+  p_constants->insert(make_pair(string("alpha_QED(0)"),alphaQED0));
+  p_constants->insert(make_pair(string("sin2_thetaW"), sin2thetaW));
+  p_constants->insert(make_pair(string("cos2_thetaW"), cos2thetaW));
+  p_constants->insert(make_pair(string("vev"),         vev));
+  p_constants->insert(make_pair(string("MW"),          MW));
+  p_constants->insert(make_pair(string("MZ"),          MZ));
+  p_constants->insert(make_pair(string("MH"),          MH));
+  p_constants->insert(make_pair(string("lambdaH"),     lambdaH));
+  p_constants->insert(make_pair(string("GF"),          GF));
+  p_numbers->insert(make_pair(string("HIGGS_PARITY"),
+			      p_dataread->GetValue<int>("HIGGS_PARITY",1)));
 
   if (widthscheme=="CMS") {
-    p_complexconstants->insert(std::make_pair(std::string("ccos2_thetaW"), ccos2thetaW));
-    p_complexconstants->insert(std::make_pair(std::string("csin2_thetaW"), csin2thetaW));
-    p_complexconstants->insert(std::make_pair(std::string("cvev"), cvev));
-    p_complexconstants->insert(std::make_pair(std::string("clambdaH"), clambdaH));
+    p_complexconstants->insert(make_pair(string("ccos2_thetaW"), ccos2thetaW));
+    p_complexconstants->insert(make_pair(string("csin2_thetaW"), csin2thetaW));
+    p_complexconstants->insert(make_pair(string("cvev"), cvev));
+    p_complexconstants->insert(make_pair(string("clambdaH"), clambdaH));
   }
 }
 
@@ -547,7 +577,7 @@ void Standard_Model::FixCKM() {
   }
 
   if (m_trivialextension!=2) {
-    p_matrices->insert(std::make_pair(std::string("CKM"),CKM));
+    p_matrices->insert(make_pair(string("CKM"),CKM));
 
     CMatrix L_CKM(3);   
     for (int i=0;i<3;i++) {
@@ -556,7 +586,7 @@ void Standard_Model::FixCKM() {
 	else      L_CKM[i][j] = Complex(1.,0.);
       }
     }
-    p_matrices->insert(std::make_pair(std::string("L_CKM"),L_CKM));
+    p_matrices->insert(make_pair(string("L_CKM"),L_CKM));
   }
   else {
     CMatrix V4(4);   
@@ -659,22 +689,22 @@ void Standard_Model::FixCKM() {
       }
     }
 
-    p_matrices->insert(std::make_pair(std::string("CKM"),CKM4));
-    p_matrices->insert(std::make_pair(std::string("L_CKM"),L_CKM4));
+    p_matrices->insert(make_pair(string("CKM"),CKM4));
+    p_matrices->insert(make_pair(string("L_CKM"),L_CKM4));
 
     bool output = p_dataread->GetValue<int>("OUTPUT_MIXING",0);
     if (output) {
       unsigned int os(25);
       msg_Out()<<"quark mixing matrix:\n";
       for (int i=0;i<4;++i)
-        msg_Out()<<std::setw(os)<<CKM4[i][0]<<std::setw(os)<<CKM4[i][1]
-                 <<std::setw(os)<<CKM4[i][2]<<std::setw(os)<<CKM4[i][3]
+        msg_Out()<<setw(os)<<CKM4[i][0]<<setw(os)<<CKM4[i][1]
+                 <<setw(os)<<CKM4[i][2]<<setw(os)<<CKM4[i][3]
                  <<"\n";
       msg_Out()<<"\n";
       msg_Out()<<"lepton mixing matrix:\n";
       for (int i=0;i<4;++i)
-        msg_Out()<<std::setw(os)<<L_CKM4[i][0]<<std::setw(os)<<L_CKM4[i][1]
-                 <<std::setw(os)<<L_CKM4[i][2]<<std::setw(os)<<L_CKM4[i][3]
+        msg_Out()<<setw(os)<<L_CKM4[i][0]<<setw(os)<<L_CKM4[i][1]
+                 <<setw(os)<<L_CKM4[i][2]<<setw(os)<<L_CKM4[i][3]
                  <<"\n";
       msg_Out()<<"\n";
     }

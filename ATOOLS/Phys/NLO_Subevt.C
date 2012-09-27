@@ -72,8 +72,7 @@ void NLO_subevt::CopyXSData(const NLO_subevt *sub)
   m_me=sub->m_me;
   m_mewgt=sub->m_mewgt;
   for (size_t i(0);i<m_mu2.size();++i) m_mu2[i]=sub->m_mu2[i];
-  m_flip=sub->m_flip;
-  m_result=m_last[1]=m_last[0]=0.0;
+  m_result=0.0;
 }
 
 void NLO_subevtlist::Mult(const double &scal)
@@ -97,7 +96,6 @@ ATOOLS::Particle_List *NLO_subevt::CreateParticleList() const
   for (size_t i=2;i<m_n;i++) {
     pl->push_back(new ATOOLS::Particle(i,p_fl[i],p_mom[i]));
   }
-  if (m_flip) pl->Flip();
   return pl;
 }
 
@@ -114,8 +112,6 @@ NLO_subevtlist &NLO_subevtlist::operator*=(const double scal)
 {
   for (const_iterator it=begin();it!=end();it++) {
     (*it)->m_result*=scal;
-    (*it)->m_last[0]*=scal;
-    (*it)->m_last[1]*=scal;
   }
   return *this;
 }
@@ -137,15 +133,21 @@ namespace ATOOLS
   }
   std::ostream &operator<<(std::ostream &ostr,const NLO_subevt &sevt)
   {
+    std::vector<int> ids;
     ATOOLS::Flavour_Vector flavs;
-    for (size_t i(0);i<sevt.m_n;++i) flavs.push_back(sevt.p_fl[i]);
-    return ostr<<sevt.m_pname<<" "<<(Dip_ID)(sevt)<<", is "<<sevt.m_iss
-               <<" {\n  fl: "<<flavs
+    for (size_t i(0);i<sevt.m_n;++i) {
+      flavs.push_back(sevt.p_fl[i]);
+      ids.push_back(sevt.p_id[i]);
+    }
+    return ostr<<sevt.m_pname<<" "<<(Dip_ID)(sevt)
+	       <<", idx "<<sevt.m_idx
+               <<" {\n  fl: "<<flavs<<", id: "<<ids
                <<"\n  result = "<<sevt.m_result
-               <<" ( "<<sevt.m_last[0]<<" , "<<sevt.m_last[1]<<" ) "
                <<" ,  ME = "<<sevt.m_me
-	       <<"\n  \\mu_F = "<<sqrt(sevt.m_mu2[stp::fac])
-	       <<", \\mu_R = "<<sqrt(sevt.m_mu2[stp::ren])<<"\n}";
+	       <<"\n  Q = "<<sqrt(sevt.m_mu2[stp::res])
+	       <<",  \\mu_F = "<<sqrt(sevt.m_mu2[stp::fac])
+	       <<", \\mu_R = "<<sqrt(sevt.m_mu2[stp::ren])
+	       <<", k_T = "<<sqrt(sevt.m_kt2)<<"\n}";
   }
 }
 

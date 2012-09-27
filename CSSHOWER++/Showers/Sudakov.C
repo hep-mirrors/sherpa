@@ -141,6 +141,13 @@ void Sudakov::SetCoupling(MODEL::Model_Base *md,
     }
 }
 
+void Sudakov::SetCouplingMax(const double &k0sqi,const double &k0sqf,
+			     const double &isfac,const double &fsfac) {
+  for (std::vector<Splitting_Function_Base*>::iterator
+	 sit(m_splittings.begin());sit!=m_splittings.end(); sit++)
+    (*sit)->Coupling()->SetCouplingMax(m_k0sqi,m_k0sqf,isfac,fsfac);
+}
+
 void Sudakov::Add(Splitting_Function_Base * split) 
 {
   if (split->On()<0) {
@@ -597,7 +604,6 @@ bool Sudakov::KinCheck(double Q2,double x) {
 }
 
 bool Sudakov::Splitting(double Q2,double x) {
-  if (m_kperp2>p_split->KtPrev()) return false;
   double wt(RejectionWeight(m_z,m_y,x,m_kperp2,Q2));
   double efac=p_selected->EFac();
   if (ran->Get()>wt) {

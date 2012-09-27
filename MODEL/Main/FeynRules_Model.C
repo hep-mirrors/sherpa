@@ -110,22 +110,22 @@ void FeynRules_Model::ParticleInit() {
   
   // add containers
   s_kftable[kf_none] = new
-    Particle_Info(kf_none,-1,0,0,0,0,0,-1,0,1,0,"no_particle","no particle");
+    Particle_Info(kf_none,-1,0,0,0,0,0,-1,0,1,0,"no_particle","no particle",0,1);
   s_kftable[kf_resummed] = new
-    Particle_Info(kf_resummed,0.,0.,0,0,1,2,0,1,1,0,"r","resummed");
+    Particle_Info(kf_resummed,0.,0.,0,0,1,2,0,1,1,0,"r","resummed",0,1);
   s_kftable[kf_bjet] = new
-    Particle_Info(kf_bjet,0.,0.,0,0,1,2,0,1,1,0,"bj","bjet");
+    Particle_Info(kf_bjet,0.,0.,0,0,1,2,0,1,1,0,"bj","bjet",0,1);
 
   s_kftable[kf_fermion] = new
-    Particle_Info(kf_fermion,0.,0., 0,0,0,1,0,1,1,0,"fermion","fermion");
+    Particle_Info(kf_fermion,0.,0., 0,0,0,1,0,1,1,0,"fermion","fermion",0,1);
   s_kftable[kf_jet] = new
-    Particle_Info(kf_jet,0.,0.,0,0,1, 2,0,1,1,0,"j","jet");
+    Particle_Info(kf_jet,0.,0.,0,0,1, 2,0,1,1,0,"j","jet",0,1);
   s_kftable[kf_quark] = new
-    Particle_Info(kf_quark,0.,0.,0, 0,1,1,0,1,1,0,"Q","Quark");
+    Particle_Info(kf_quark,0.,0.,0, 0,1,1,0,1,1,0,"Q","Quark",0,1);
   s_kftable[kf_lepton] = new
-    Particle_Info(kf_lepton,0.,0.,-3,-1,0,1,0,1,1,0,"lepton","lepton");
+    Particle_Info(kf_lepton,0.,0.,-3,-1,0,1,0,1,1,0,"lepton","lepton",0,1);
   s_kftable[kf_neutrino] = new
-    Particle_Info(kf_neutrino,0.,0.,0,1,0, 1,0,1,1,0,"neutrino","neutrino");
+    Particle_Info(kf_neutrino,0.,0.,0,1,0, 1,0,1,1,0,"neutrino","neutrino",0,1);
   s_kftable[kf_fermion]->Clear();
   s_kftable[kf_jet]->Clear();
   s_kftable[kf_resummed]->Clear();

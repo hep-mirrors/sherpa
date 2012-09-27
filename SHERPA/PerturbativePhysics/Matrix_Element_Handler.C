@@ -14,7 +14,6 @@
 #include "PDF/Main/NLOMC_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
-#include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
@@ -83,6 +82,11 @@ Matrix_Element_Handler::Matrix_Element_Handler
     if (p_ranout!=NULL && !p_ranout->good()) THROW
       (fatal_error,"Cannot initialize random generator status file");
   }
+  else if (m_seedmode==3) {
+    ran->SetSeedStorageIncrement(read.GetValue("EVENT_SEED_INCREMENT",1));
+    msg_Info()<<METHOD<<"(): Set seed increment to "
+              <<read.GetValue("EVENT_SEED_INCREMENT",1)<<std::endl;
+  }
   if (!read.ReadFromFile(m_nlomode,"NLO_Mode")) m_nlomode=1;
 }
 
@@ -97,8 +101,7 @@ Matrix_Element_Handler::~Matrix_Element_Handler()
     delete m_pmaps[i];
   }
   for (size_t i=0; i<m_procs.size(); ++i)
-    if (dynamic_cast<MCatNLO_Process*>(m_procs[i]) ||
-	dynamic_cast<POWHEG_Process*>(m_procs[i])) delete m_procs[i];
+    if (dynamic_cast<MCatNLO_Process*>(m_procs[i])) delete m_procs[i];
   if (p_nlomc) delete p_nlomc;
 }
 
@@ -108,7 +111,7 @@ void Matrix_Element_Handler::InitNLOMC()
   read.AddComment("#");
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
-  std::string nlomc(m_nlomode!=2?"MC@NLO":"POWHEG");
+  std::string nlomc((m_nlomode&2)?"MC@NLO":"");
   nlomc+="_"+read.GetValue<std::string>("NLOMC_GENERATOR","CSS");
   p_nlomc = NLOMC_Getter::GetObject(nlomc,NLOMC_Key(p_model,p_isr,&read));
 }
@@ -154,12 +157,14 @@ void Matrix_Element_Handler::SetRandomSeed()
 bool Matrix_Element_Handler::GenerateOneEvent() 
 {
   p_proc=NULL;
-  SetRandomSeed();
+  if (m_seedmode!=3) SetRandomSeed();
   p_isr->SetPDFMember();
   double sum(0.0);
   for (size_t i(0);i<m_procs.size();++i)
     sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
   for (size_t n(1);true;++n) {
+    if (m_seedmode==3 && rpa->gen.NumberOfGeneratedEvents())
+      ran->ResetToLastIncrementedSeed();
     double disc(sum*ran->Get()), csum(0.0);
     Process_Base *proc(NULL);
     for (size_t i(0);i<m_procs.size();++i) {
@@ -232,27 +237,12 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
       procs.push_back(proc);
       return procs;
     }
-    if (m_nlomode==2) {
-      m_hasnlo=2;
-      if (p_nlomc==NULL) InitNLOMC();
-      if (pmap==NULL) {
-	m_pmaps.push_back(new NLOTypeStringProcessMap_Map());
-	pmap=m_pmaps.back();
-      }
-      POWHEG_Process *proc=new POWHEG_Process(m_gens,pmap);
-      proc->Init(pi,p_beam,p_isr);
-      proc->SetShower(p_shower->GetShower());
-      proc->SetPOWHEG(p_nlomc);
-      m_procs.push_back(proc);
-      procs.push_back(proc);
-      return procs;
-    }
     else if (m_nlomode==1) {
       m_hasnlo=1;
       if (pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|nlo_type::born)) {
 	Process_Info rpi(pi);
 	rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|
-					       nlo_type::polecheck|nlo_type::born));
+					       nlo_type::born));
 	procs.push_back(m_gens.InitializeProcess(rpi,true));
 	if (procs.back()==NULL) {
 	  msg_Error()<<"No such process:\n"<<rpi<<std::endl;
@@ -377,7 +367,8 @@ void Matrix_Element_Handler::BuildProcesses()
   // set kfactor scheme
   std::string kfactor=read.GetValue<std::string>("KFACTOR","NO");
   // set scale scheme
-  std::string scale=read.GetValue<std::string>("SCALES","METS{MU_F2}{MU_R2}");
+  std::string scale=read.GetValue<std::string>
+    ("SCALES","METS{MU_F2}{MU_R2}{MU_Q2}");
   std::vector<std::string> helpsv;
   if (!read.VectorFromFile(helpsv,"COUPLINGS"))
     helpsv.push_back("Alpha_QCD 1");
@@ -480,10 +471,6 @@ void Matrix_Element_Handler::BuildProcesses()
 	if (cur[0]=="Max_Epsilon") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vmaxeps,nf);
-	}
-	if (cur[0]=="RB_Max_Epsilon") {
-	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vrbmaxeps,nf);
 	}
 	if (cur[0]=="RS_Enhance_Factor") {
 	  std::string cb(MakeString(cur,1));
@@ -666,8 +653,6 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  if (GetMPvalue(pbi.m_vmaxeps,nfs,pnid,dd))
 	    proc[i]->Integrator()->SetMaxEpsilon(dd);
 	  else proc[i]->Integrator()->SetMaxEpsilon(1.0e-3);
-	  if (GetMPvalue(pbi.m_vrbmaxeps,nfs,pnid,dd))
-	    proc[i]->Integrator()->SetRBMaxEpsilon(dd);
 	  if (GetMPvalue(pbi.m_vrsefac,nfs,pnid,dd))
 	    proc[i]->Integrator()->SetRSEnhanceFactor(dd);
 	  double maxerr(-1.0);
@@ -701,7 +686,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  jfargs.push_back("CUT");
 	}
       }
-      skey.SetData("METS{MU_F2}{MU_R2}",jfargs);
+      skey.SetData("METS{MU_F2}{MU_R2}{MU_Q2}",jfargs);
     }
     procs[i]->SetSelector(skey);
     procs[i]->SetScale

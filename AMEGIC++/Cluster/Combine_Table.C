@@ -79,7 +79,7 @@ bool AMEGIC::operator<(const Combine_Key & a,const Combine_Key & b)
 
 std::ostream& AMEGIC::operator<<(std::ostream &s,const Combine_Data &cd)
 {
-  s<<" "<<cd.m_pt2ij<<" ";
+  s<<" "<<cd.m_pt2ij<<" "<<cd.m_dec<<" ";
   std::string graphs;
   for (size_t k=0;k<cd.m_graphs.size();++k) graphs+=","+ToString(cd.m_graphs[k]);
   s<<graphs.substr(1);
@@ -155,6 +155,9 @@ std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct)
 	}
       }
     }
+    s<<" k_{T,min}\n";
+    for (size_t i(0);i<ct.m_kt2ord.size();++i)
+      s<<ID(ct.m_kt2ord[i].first)<<" -> "<<sqrt(ct.m_kt2ord[i].second)<<"\n";
   } 
   else
     s<<"***empty Combine_Table***"<<std::endl;
@@ -174,6 +177,9 @@ Combine_Table::Combine_Table(AMEGIC::Process_Base *const proc,
 {
   p_proc=proc;
   m_no=++s_all;
+  m_kt2ord=KT2Info_Vector(1,KT2_Info((1<<proc->NIn()+proc->NOut())-1,0.0));
+  for (size_t i(0);i<m_decids.size();++i)
+    m_kt2ord.push_back(std::make_pair(m_decids[i]->m_id,0.0));
 }
 
 Combine_Table::~Combine_Table()
@@ -319,17 +325,17 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,const int 
     (*ampl,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,
      m_cdata_winner->first.m_k,m_cdata_winner->first.m_i<2?
      m_cdata_winner->second.m_mo.Bar():m_cdata_winner->second.m_mo,p_ms,
-     m_cdata_winner->second.m_pt2ij.m_kin);
+     m_cdata_winner->second.m_pt2ij.m_kin,m_cdata_winner->second.m_pt2ij.m_mode);
   ampl->Delete();
   if (after.empty()) {
     msg_Debugging()<<"combine moms failed\n";
     return false;
   }
   bool swap(p_legs[0][0].ID()&2);
-  if ((moms[swap][0]>rpa->gen.PBeam(0)[0] &&
-       !IsEqual(moms[swap][0],rpa->gen.PBeam(0)[0],1.0e-6)) ||
-      (moms[1-swap][0]>rpa->gen.PBeam(1)[0] &&
-       !IsEqual(moms[1-swap][0]>rpa->gen.PBeam(1)[0],1.0e-6))) {
+  if ((-after[swap][0]>rpa->gen.PBeam(0)[0] &&
+       !IsEqual(-after[swap][0],rpa->gen.PBeam(0)[0],1.0e-6)) ||
+      (-after[1-swap][0]>rpa->gen.PBeam(1)[0] &&
+       !IsEqual(-after[1-swap][0]>rpa->gen.PBeam(1)[0],1.0e-6))) {
     msg_Debugging()<<"kinematics failed\n";
     return false;
   }
@@ -349,17 +355,17 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,
     (*ampl,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,
      m_cdata_winner->first.m_k,m_cdata_winner->first.m_i<2?
      m_cdata_winner->second.m_mo.Bar():m_cdata_winner->second.m_mo,p_ms,
-     m_cdata_winner->second.m_pt2ij.m_kin);
+     m_cdata_winner->second.m_pt2ij.m_kin,m_cdata_winner->second.m_pt2ij.m_mode);
   ampl->Delete();
   if (after.empty()) {
     msg_Debugging()<<"combine moms failed\n";
     return false;
   }
   bool swap(p_legs[0][0].ID()&2);
-  if ((moms[swap][0]>rpa->gen.PBeam(0)[0] &&
-       !IsEqual(moms[swap][0],rpa->gen.PBeam(0)[0],1.0e-6)) ||
-      (moms[1-swap][0]>rpa->gen.PBeam(1)[0] &&
-       !IsEqual(moms[1-swap][0]>rpa->gen.PBeam(1)[0],1.0e-6))) {
+  if ((-after[swap][0]>rpa->gen.PBeam(0)[0] &&
+       !IsEqual(-after[swap][0],rpa->gen.PBeam(0)[0],1.0e-6)) ||
+      (-after[1-swap][0]>rpa->gen.PBeam(1)[0] &&
+       !IsEqual(-after[1-swap][0]>rpa->gen.PBeam(1)[0],1.0e-6))) {
     msg_Debugging()<<"kinematics failed\n";
     return false;
   }
@@ -456,6 +462,7 @@ void Combine_Table::AddPossibility(const int i,const int j,const int k,
     Combine_Data cd(0.,ngraph);
     cd.m_strong=cl.OrderQCD();
     cd.m_mo=cl.Flav();
+    cd.m_dec=cl.Point()->t;
     m_combinations[Combine_Key(i,j,k,cl.Flav())]=cd;
   }
 }
@@ -504,7 +511,7 @@ void Combine_Table::FillTable(Leg **legs,const int nlegs,const int nampl)
   }
 }
 
-CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit)
+CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit,int mode)
 {
     if (cit->second.m_calc) return cit;
     Cluster_Amplitude *ampl(Cluster_Amplitude::New());
@@ -515,7 +522,9 @@ CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit)
     cit->second.m_calc=1;
     cit->second.m_pt2ij=p_clus->KPerp2
       (*ampl,cit->first.m_i,cit->first.m_j,cit->first.m_k,
-       cit->first.m_i<2?cit->second.m_mo.Bar():cit->second.m_mo,p_ms);
+       cit->first.m_i<2?cit->second.m_mo.Bar():cit->second.m_mo,p_ms,
+       (mode&1024)||(mode&4096)?1:-1,(cit->second.m_dec>10||!cit->second.m_mo.Strong()?1:0)|
+       (p_proc->Parent()->Info().m_fi.m_nloqcdtype!=PHASIC::nlo_type::lo?2:0));
     msg_Debugging()<<"Calculate m_perp("<<cit->first.m_i<<"["
 		   <<p_legs[0][cit->first.m_i].Flav()<<"],"
 		   <<cit->first.m_j<<"["<<p_legs[0][cit->first.m_j].Flav()<<"],"
@@ -523,6 +532,29 @@ CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit)
 		   <<"],"<<cit->second.m_mo<<") -> "<<cit->second.m_pt2ij<<std::endl;
     ampl->Delete();
     return cit;
+}
+
+KT2Info_Vector Combine_Table::UpdateKT2(const CD_List::iterator &cdit) const
+{
+  KT2Info_Vector nkt2ord(m_kt2ord);
+  size_t sid(p_legs[0][cdit->first.m_i].ID()|
+	     p_legs[0][cdit->first.m_j].ID()), lmin(100), li(0);
+  for (size_t i(0);i<nkt2ord.size();++i) {
+    if ((nkt2ord[i].first&sid)==sid &&
+	IdCount(nkt2ord[i].first)<lmin) {
+      lmin=IdCount(nkt2ord[i].first);
+      li=i;
+    }
+  }
+  if ((cdit->second.m_dec<10 &&
+       cdit->first.m_flav.Strong()) ||
+      m_nlegs==4) {
+    nkt2ord[li].second=cdit->second.m_pt2ij.m_kt2;
+    msg_Debugging()<<"set last k_T = "<<sqrt(nkt2ord[li].second)
+		   <<" for "<<ID(nkt2ord[li].first)
+		   <<" from "<<ID(sid)<<"\n";
+  }
+  return nkt2ord;
 }
 
 Combine_Table *Combine_Table::
@@ -546,39 +578,62 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
 	      break;
 	    }
 	}
-	if (decids.size()!=p_decids->size()) {
-	  msg_Debugging()<<"Unclustered decay\n"<<*this<<"\n";
-	  delete this;
-	  return NULL;
-	}
-	std::set<int> rej;
-	while (rej.size()<(size_t)m_nampl) {
 	  m_graph_winner=-1;
 	  double kt2min(std::numeric_limits<double>::max());
 	  for (int i(0);i<m_nampl;++i)
-	    if (rej.find(i)==rej.end() && p_scale[i]<kt2min) {
+	    if (p_scale[i]<kt2min) {
 	      kt2min=p_scale[i];
 	      m_graph_winner=i;
 	    }
-	  rej.insert(m_graph_winner);
-	  if (kt2>kt2min) {
-	    msg_Debugging()<<"unordered configuration (core) "
-			   <<sqrt(kt2)<<" vs. "<<sqrt(kt2min)<<"\n";
-	    if (!(mode&16)) continue;
+	  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
+	  ampl->SetProcs(p_proc);
+	  ampl->SetMS(p_ms);
+	  for (int i=0;i<m_nlegs;++i)
+	    ampl->CreateLeg(i<2?-p_moms[i]:p_moms[i],
+			    i<2?p_legs[0][i].Flav().Bar():p_legs[0][i].Flav(),
+			    ColorID(),p_legs[0][i].ID());
+	  PDF::CParam scale(p_clus->CoreScale(ampl));
+	  ampl->Delete();
+	  bool ord(true);
+	  for (size_t i(0);i<m_kt2ord.size();++i) {
+	    if (scale.m_kt2<m_kt2ord[i].second &&
+		p_hard[m_graph_winner][0].Flav().Strong()) {
+	      msg_Debugging()<<"unordered configuration: "
+			     <<sqrt(scale.m_kt2)<<" vs. "
+			     <<sqrt(m_kt2ord[i].second)<<" "
+			     <<ID(m_kt2ord[i].first)<<" "
+			     <<p_hard[m_graph_winner][0].Flav()
+			     <<" (mode="<<mode<<")\n";
+	      if ((p_up && p_up->p_up) || !(mode&4096)) ord=false;
+	      break;
+	    }
 	  }
-	  if (m_graph_winner>=0) return this;
-	}
-	delete this;
-	return NULL;
+	  if (!ord) {
+	    if (!(mode&16)) {
+	      delete this;
+	      return NULL;
+	    }
+	  }
+	  return this;
       }
       break;
     }
     m_rejected[m_cdata_winner->first]=m_cdata_winner->second;
     if (m_cdata_winner->second.m_pt2ij.m_op2<0.0) continue;
     invonly=false;
-    if (kt2>m_cdata_winner->second.m_pt2ij.m_kt2) {
-      msg_Debugging()<<"unordered configuration "<<sqrt(kt2)<<" vs. "
-		     <<sqrt(m_cdata_winner->second.m_pt2ij.m_kt2)<<"\n";
+    bool ord(true);
+    KT2Info_Vector nkt2ord(UpdateKT2(m_cdata_winner));
+    for (size_t i(0);i<nkt2ord.size();++i) {
+      if (nkt2ord[i].second<m_kt2ord[i].second) {
+	msg_Debugging()<<"unordered configuration: "
+		       <<sqrt(nkt2ord[i].second)<<" vs. "
+		       <<sqrt(m_kt2ord[i].second)<<" "
+		       <<ID(m_kt2ord[i].first)<<" (mode="<<mode<<")\n";
+	if ((p_up && p_up->p_up) || !(mode&4096)) ord=false;
+	break;
+      }
+    }
+    if (!ord) {
       if (!(mode&16)) continue;
     }
     if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
@@ -659,23 +714,27 @@ bool Combine_Table::SelectWinner(const size_t &mode)
   if (cl.size()==0) return false;
   // calculate pt2ij and determine "best" combination
   m_cdata_winner = cl.end();
-  CD_List::iterator rdata_winner(cl.end());
-  double kt2(std::numeric_limits<double>::max());
+  CD_List::iterator rdata_winner(cl.end()), ldata_winner(cl.end());
+  double kt2(std::numeric_limits<double>::max()), lkt2(kt2);
   double rkt2(std::numeric_limits<double>::max()), sum(0.0);
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
-    CD_List::iterator tit(CalcPropagator(cit));
+    CD_List::iterator tit(CalcPropagator(cit,mode));
     double pt2ij(cit->second.m_pt2ij.m_op2);
     if (cit->second.m_graphs.size()==0) continue;
     if (m_rejected.find(cit->first)==m_rejected.end()) {
       if (pt2ij>0.0) {
-	if (mode&1) {
+	// if (mode&1) {
 	  if (pt2ij<kt2) {
 	    m_cdata_winner=cit;
 	    kt2=pt2ij;
 	  }
-	}
+	// }
 	else {
 	sum+=1.0/pt2ij;
+	}
+	if (cit->second.m_pt2ij.m_kt2<lkt2) {
+	  ldata_winner=cit;
+	  lkt2=cit->second.m_pt2ij.m_kt2;
 	}
       }
       else if (cit->second.m_pt2ij.m_kt2>0.0 &&
@@ -685,7 +744,7 @@ bool Combine_Table::SelectWinner(const size_t &mode)
       }
     }
   }
-  if (!(mode&1)) {
+  if (!(mode&1) && !(mode&4096)) {
     double disc(sum*ran->Get()), psum(0.0);
     for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
       double pt2ij(cit->second.m_pt2ij.m_op2);
@@ -700,6 +759,7 @@ bool Combine_Table::SelectWinner(const size_t &mode)
       THROW(fatal_error,"Internal error");
   }
   if (m_cdata_winner==cl.end() && !(mode&512)) m_cdata_winner=rdata_winner;
+  // if (mode&1) m_cdata_winner=ldata_winner;
   msg_Debugging()<<*this<<"\n";
   return m_cdata_winner!=cl.end();
 }
@@ -723,6 +783,7 @@ Combine_Table *Combine_Table::CreateNext()
       new Combine_Table(p_proc,p_ms,p_clus,amoms,this,p_decids);
     {
       Combine_Table *tab((Combine_Table*)m_cdata_winner->second.p_down);
+      tab->m_kt2ord=UpdateKT2(m_cdata_winner);
       tab->m_decids=m_decids;
       size_t pid(p_legs[0][i].ID()+p_legs[0][j].ID());
       for (size_t i(0);i<p_decids->size();++i)

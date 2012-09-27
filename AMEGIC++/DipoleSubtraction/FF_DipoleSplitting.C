@@ -37,6 +37,9 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   m_zi   = (m_pi*m_ptk)/(m_ptij*m_ptk);
   m_zj   = 1.-m_zi;
 
+  m_Q2 = (m_pi+m_pj+m_pk).Abs2();
+  m_kt2 = m_Q2*m_yijk*m_zi*m_zj;
+
 //   m_pt1   =     m_zi*m_pi;
 //   m_pt2   = -1.*m_zj*m_pj;
   m_pt1   =     m_zi*m_pi-m_zj*m_pj;
@@ -59,7 +62,7 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
 
 double FF_DipoleSplitting::GetF()
 {
-   if (m_yijk>m_alpha) return 0.;
+  if (Reject(m_yijk)) return 0.;
 
    if (m_yijk<=m_amin) {
       return nan;

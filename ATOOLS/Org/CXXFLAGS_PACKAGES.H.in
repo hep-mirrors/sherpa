@@ -52,5 +52,8 @@
 /* BLACKHAT directory */
 #undef BLACKHAT_PATH
 
+/* OpenLoops installation prefix */
+#undef OPENLOOPS_PREFIX
+
 /* using MCFM */
 #undef USING__MCFM

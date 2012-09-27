@@ -4,6 +4,7 @@
 #include "MCATNLO/Showers/Splitting_Function_Base.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
+#include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -16,12 +17,18 @@ using namespace PDF;
 using namespace ATOOLS;
 using namespace std;
 
-CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model,
-		     Data_Reader *const _dataread) : 
+CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,
+		       MODEL::Model_Base *const model,
+		       Data_Reader *const _dataread) : 
   NLOMC_Base("MC@NLO_CSS"), p_isr(_isr), 
-  p_powheg(NULL), p_cluster(NULL), p_gamma(NULL)
+  p_powheg(NULL), p_as(NULL), p_cluster(NULL), p_gamma(NULL)
 {
   m_maxem=_dataread->GetValue<int>("NLO_CSS_MAXEM",1);
+  m_scale2fac  = _dataread->GetValue<double>("CSS_SHOWER_SCALE2_FACTOR",-1.);
+  if (m_scale2fac>0. && m_scale2fac!=1.) {
+    p_as = (MODEL::Running_AlphaS*)model->GetScalarFunction("alpha_S");
+  }
+
   p_powheg = new Shower(_isr,0,_dataread);
   p_next = new All_Singlets();
   p_cluster = new CS_Cluster_Definitions(p_powheg,1);
@@ -63,7 +70,7 @@ int CS_MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
     while (rampl->Next()) {
       rampl=rampl->Next();
       for (size_t i(0);i<rampl->Legs().size();++i) {
-	rampl->Leg(i)->SetNMax(rampl->Leg(i)->NMax()+1);
+	rampl->Leg(i)->SetNMax(rampl->Leg(i)->NMax());
 	size_t cid(rampl->Leg(i)->Id());
 	if (cid&last[0]->Id()) {
 	  for (size_t j(0);j<rampl->Legs().size();++j)
@@ -148,6 +155,23 @@ bool CS_MCatNLO::PrepareMCatNLO(Cluster_Amplitude *const ampl)
   }
   msg_Debugging()<<"}\n";
   p_powheg->SetMS(p_ms);
+  // p_as is alphaS in case we do a shower variation it is != NULL.
+  if (p_as && m_scale2fac!=-1. && m_scale2fac!=1.) {
+    double mu2=(ampl->Q2());
+    double newasmu2((*p_as)(m_scale2fac*mu2));
+    // fixes an operator (*p_as)(qt^2,true) to be with new Lambda2
+    p_as->FixShowerLambda2(mu2,newasmu2,p_as->Nf(mu2),p_as->Order());
+    p_powheg->SetCouplingMax();
+    // msg_Out()<<METHOD<<" tests alphaS(order = "<<p_as->Order()<<", "
+    // 	     <<"mu = "<<sqrt(mu2)<<"): \n"
+    // 	     <<" mu alphaS(mu) alphaS(mu,new)\n"
+    // 	     <<"  5. "<<(*p_as)(25.)<<"  "<<p_as->AlphaS(25.,true)<<"\n"
+    // 	     <<" 10. "<<(*p_as)(100.)<<"  "<<p_as->AlphaS(100.,true)<<"\n"
+    // 	     <<" 25. "<<(*p_as)(625.)<<"  "<<p_as->AlphaS(625.,true)<<"\n"
+    // 	     <<" 50. "<<(*p_as)(2500.)<<"  "<<p_as->AlphaS(2500.,true)<<"\n"
+    // 	     <<"100. "<<(*p_as)(10000.)<<"  "<<p_as->AlphaS(10000.,true)<<"\n";
+  }
+
   return true;
 }
 
@@ -160,6 +184,8 @@ Singlet *CS_MCatNLO::TranslateAmplitude
   singlet->SetMS(p_ms);
   singlet->SetProcs(ampl->Procs<void>());
   singlet->SetMuR2(ampl->MuR2());
+  CI_Map col(ampl->ColorMap());
+  col[0]=0;
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *cl(ampl->Leg(i));
     if (cl->Flav().IsHadron() && cl->Id()&((1<<ampl->NIn())-1)) continue;
@@ -180,7 +206,12 @@ Singlet *CS_MCatNLO::TranslateAmplitude
     lmap[parton]=cl;
     parton->SetIdx(i);
     parton->SetId(cl->Id());
-    parton->SetRFlow();
+    CI_Map::const_iterator ci(col.find(parton->GetFlow(1)));
+    CI_Map::const_iterator cj(col.find(parton->GetFlow(2)));
+    if (ci!=col.end()) parton->SetMEFlow(1,ci->second);
+    else parton->SetMEFlow(1,0);
+    if (cj!=col.end()) parton->SetMEFlow(2,cj->second);
+    else parton->SetMEFlow(2,0);
     parton->SetKin(p_powheg->KinScheme());
     if (is) {
       if (Vec3D(p.Momentum())*Vec3D(rpa->gen.PBeam(0))>0.) {
@@ -192,9 +223,9 @@ Singlet *CS_MCatNLO::TranslateAmplitude
 	parton->SetBeam(1);
       }
     }
-    parton->SetStart(sqr(rpa->gen.Ecms()));
+    parton->SetStart(ampl->Q2());
     double ktveto2(jf?jf->Ycut()*sqr(rpa->gen.Ecms()):parton->KtStart());
-    double ktmax2(ampl->Legs().size()-ampl->NIn()==
+    double ktmax2(ampl->Legs().size()-ampl->NIn()+1==
 		  ampl->Leg(2)->NMax()?parton->KtStart():0.0);
     parton->SetKtMax(ktmax2);
     parton->SetVeto(ktveto2);
@@ -204,7 +235,8 @@ Singlet *CS_MCatNLO::TranslateAmplitude
   return singlet;
 }
 
-ATOOLS::Cluster_Amplitude *CS_MCatNLO::GetRealEmissionAmplitude()
+ATOOLS::Cluster_Amplitude *CS_MCatNLO::
+GetRealEmissionAmplitude(const int mode)
 {
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   Singlet *sing(*(m_allsinglets.end()-1));
@@ -216,22 +248,25 @@ ATOOLS::Cluster_Amplitude *CS_MCatNLO::GetRealEmissionAmplitude()
     if ((*it)->GetType()==pst::IS)
       ampl->CreateLeg
 	(-(*it)->Momentum(),(*it)->GetFlavour().Bar(),
-	 ColorID((*it)->GetFlow(1),(*it)->GetFlow(2)),
+	 mode==0?ColorID((*it)->GetFlow(1),(*it)->GetFlow(2)):
+	 ColorID((*it)->GetMEFlow(1),(*it)->GetMEFlow(2)),
 	 (*it)->Id()?(*it)->Id():ampl->IdNew());
     ampl->Legs().back()->SetStat(1);
-    ampl->Legs().back()->SetNMax(p_rampl->Leg(2)->NMax()+1);
+    ampl->Legs().back()->SetNMax(p_rampl->Leg(2)->NMax());
   }
   for (Singlet::const_iterator
 	 it(sing->begin());it!=sing->end();++it) {
     if ((*it)->GetType()==pst::FS)
       ampl->CreateLeg
 	((*it)->Momentum(),(*it)->GetFlavour(),
-	 ColorID((*it)->GetFlow(1),(*it)->GetFlow(2)),
+	 mode==0?ColorID((*it)->GetFlow(1),(*it)->GetFlow(2)):
+	 ColorID((*it)->GetMEFlow(1),(*it)->GetMEFlow(2)),
 	 (*it)->Id()?(*it)->Id():ampl->IdNew());
     ampl->Legs().back()->SetStat(1);
-    ampl->Legs().back()->SetNMax(p_rampl->Leg(2)->NMax()+1);
+    ampl->Legs().back()->SetNMax(p_rampl->Leg(2)->NMax());
   }
-  ampl->SetKT2(p_powheg->GetLast()[0]->KtStart());
+  ampl->SetKT2(p_rampl->KT2());
+  ampl->SetNewCol(p_powheg->GetLast()[3]->Color().m_new);
   Process_Base::SortFlavours(ampl);
   return ampl;
 }
@@ -239,13 +274,6 @@ ATOOLS::Cluster_Amplitude *CS_MCatNLO::GetRealEmissionAmplitude()
 void CS_MCatNLO::AddRBPoint(ATOOLS::Cluster_Amplitude *const ampl)
 {
   p_gamma->AddRBPoint(ampl);
-}
-
-SH_Pair CS_MCatNLO::SHSplit(const double &B,const double &Qij2,
-			    const ATOOLS::RB_Data *rbd) const
-{
-  THROW(fatal_error,"Invalid call");
-  return SH_Pair(0.0,0.0);
 }
 
 namespace PDF {

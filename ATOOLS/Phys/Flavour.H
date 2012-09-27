@@ -31,7 +31,7 @@ namespace ATOOLS {
     double  m_mass, m_hmass, m_yuk, m_width, m_dg, m_dm, m_qoverp2;
     int     m_icharge, m_isoweak, m_strong, m_resummed;
     int     m_spin, m_stable, m_masssign, m_dummy, m_majorana, m_formfactor;
-    bool    m_on, m_massive, m_hadron;
+    bool    m_on, m_massive, m_hadron, m_isgroup;
 
     std::string m_idname, m_texname;
 
@@ -45,13 +45,14 @@ namespace ATOOLS {
       m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(0), m_isoweak(0),
       m_strong(0), m_resummed(0), m_spin(0), m_stable(1), m_masssign(0), 
       m_dummy(1), m_majorana(0), m_formfactor(0), m_on(0), m_massive(0),
-      m_hadron(0) {}
+      m_hadron(0), m_isgroup(0) {}
     Particle_Info(const Particle_Info &info);
     Particle_Info(const kf_code &kfc,const double &mass,const double &width,
 		  const int icharge,const int isoweak,const int strong,
 		  const int spin,const int majorana,const bool on,
 		  const int stable,bool massive,const std::string &idname,
-		  const std::string &texname,const bool dummy=0);
+		  const std::string &texname,const bool dummy=0, 
+		  const bool isgroup=false);
     Particle_Info(const kf_code &kfc,const double &mass,const double &width, 
 		  const int icharge,const int isoweak,const int spin,
 		  const bool on,const int stable,const std::string &idname,
@@ -71,7 +72,8 @@ namespace ATOOLS {
     Flavour operator[](const size_t &i) const;
     
     inline size_t Size() const  { return m_content.size();   }
-    inline bool   Group() const { return m_content.size()>1; }
+    inline bool   Group() const { return m_isgroup||m_content.size()>1; }
+    inline void   SetIsGroup(bool isgroup) { m_isgroup = isgroup; };
 
     void SetResummed();
 
@@ -141,6 +143,7 @@ namespace ATOOLS {
     inline kf_code Kfcode() const { return p_info->m_kfc; }
 
     inline size_t Size() const { return p_info->Size(); }
+    inline size_t IsGroup() const { return p_info->Group(); }
 
     inline bool Includes(const Flavour &fl) const 
     {

@@ -16,6 +16,7 @@ namespace AMEGIC {
     double                  m_iresult;
     bool                    m_valid;
     double                  m_dalpha;
+    double                  m_dkt2max;
     double                  m_maxgsmass;
 
     Single_DipoleTerm     * p_partner;
@@ -25,7 +26,7 @@ namespace AMEGIC {
     ATOOLS::Vec4D_Vector    p_LO_labmom;
 
     dpt::dipoltype          m_dipoletype;
-    int                     m_ftype, m_iiswap;
+    int                     m_ftype;
     size_t                  m_pi,m_pj,m_pk;
     size_t                  m_LOpij,m_LOpk;
     ATOOLS::Flavour         m_fli,m_flj,m_flij,m_flk;
@@ -49,6 +50,7 @@ namespace AMEGIC {
 
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
     void SetKFactor(const PHASIC::KFactor_Setter_Arguments &args);
+    size_t SetClusterMode(const size_t cmode);
 
     /*------------------------------------------------------------------------------
 
@@ -70,6 +72,8 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
 
   public:
+
+    ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl,const size_t &id) const;
     void                AddChannels(std::list<std::string>*);
     bool                NewLibs() {return p_LO_process?p_LO_process->NewLibs():false;}
     int                 InitAmplitude(MODEL::Model_Base *,Topology *,

@@ -60,7 +60,10 @@ Single_Real_Correction::~Single_Real_Correction()
   for (size_t i=0;i<m_subtermlist.size();i++) delete m_subtermlist[i];
   for (size_t i=0;i<m_subostermlist.size();i++) delete m_subostermlist[i];
   for (std::map<void*,DM_Info>::const_iterator it(m_dfmap.begin());
-       it!=m_dfmap.end();++it) delete it->second.p_fl;
+       it!=m_dfmap.end();++it) {
+    delete it->second.p_fl;
+    delete it->second.p_id;
+  }
 }
 
 
@@ -87,6 +90,8 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
     if (m_pinfo.m_amegicmhv==2) return 0;
   }
   if (!p_tree_process) p_tree_process = new AMEGIC::Single_Process();
+
+  p_tree_process->SetSubevtList(&m_subevtlist);
 
   int status;
 
@@ -282,6 +287,7 @@ void Single_Real_Correction::ReMapFlavs(NLO_subevt *const sub,const int mode)
     std::map<void*,DM_Info>::const_iterator it(m_dfmap.find((void*)sub->p_fl));
     if (it==m_dfmap.end()) THROW(fatal_error,"Internal error");
     sub->p_fl=&it->second.p_fl->front();
+    sub->p_id=&it->second.p_id->front();
     sub->m_pname=it->second.m_pname;
     return;
   }
@@ -295,14 +301,19 @@ void Single_Real_Correction::ReMapFlavs(NLO_subevt *const sub,const int mode)
   }
   ampl->Decays()=*sub->p_dec;
   SortFlavours(ampl);
-  m_dfmap[(void*)sub->p_fl]=DM_Info(fls,GenerateName(ampl));
+  std::vector<size_t> *ids(new std::vector<size_t>(sub->m_n));
+  for (size_t i(0);i<sub->m_n;++i) {
+    (*fls)[i]=i<m_nin?ampl->Leg(i)->Flav().Bar():ampl->Leg(i)->Flav();
+    (*ids)[i]=ampl->Leg(i)->Id();
+  }
+  m_dfmap[(void*)sub->p_fl]=DM_Info(fls,ids,GenerateName(ampl));
   ampl->Delete();
   ReMapFlavs(sub,0);
 }
 
 double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const int mode)
 {
-  if (mode==1 && !p_partner->p_tree_process->ScaleSetter()->Scale2()) return m_lastxs;
+  if (mode==1) return m_lastxs;
   m_lastxs = 0.;
     // So far only massless partons!!!!
 
@@ -351,15 +362,15 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   }
 
   m_subevtlist.push_back(&m_realevt);
-  m_realevt.m_me = m_realevt.m_mewgt
-    = m_realevt.m_result = m_realevt.m_last[0] = m_realevt.m_last[1] = 0.0;
+  m_realevt.m_me = m_realevt.m_mewgt = m_realevt.m_result = 0.0;
 
   bool trg(false);
+
+  m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->CalculateScale(_mom,m_cmode);
+  m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
+  m_realevt.m_mu2[stp::res]=p_tree_process->ScaleSetter()->Scale(stp::res);
   trg=p_tree_process->Selector()->JetTrigger(_mom,&m_subevtlist);
   trg|=!p_tree_process->Selector()->On();
-
-  m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->CalculateScale(_mom,mode);
-  m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
   if (trg) {
     m_realevt.m_me = m_realevt.m_mewgt
       = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
@@ -368,8 +379,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
 
   if (!res) {
     for (size_t i(0);i<m_subevtlist.size();++i)
-      m_subevtlist[i]->m_result=m_subevtlist[i]->m_last[0]=
-        m_subevtlist[i]->m_last[1]=m_subevtlist[i]->m_me=
+      m_subevtlist[i]->m_result=m_subevtlist[i]->m_me=
           m_subevtlist[i]->m_mewgt=0.0;
   }
   m_lastdxs = m_realevt.m_me;
@@ -381,6 +391,24 @@ bool Single_Real_Correction::Trigger(const ATOOLS::Vec4D_Vector &p)
 //   if (p_tree_process->IsMapped() && p_tree_process->LookUp())
 //     return p_tree_process->Selector()->Result();
   return p_tree_process->Selector()->NoJetTrigger(p);
+}
+
+size_t Single_Real_Correction::SetMCMode(const size_t mcmode)
+{
+  size_t cmcmode(p_tree_process->SetMCMode(mcmode));
+  for (size_t i(0);i<m_subtermlist.size();++i)
+    m_subtermlist[i]->SetMCMode(mcmode);
+  m_mcmode=mcmode;
+  return cmcmode;
+}
+
+size_t Single_Real_Correction::SetClusterMode(const size_t cmode)
+{
+  size_t ccmode(p_tree_process->SetClusterMode(cmode));
+  for (size_t i(0);i<m_subtermlist.size();++i)
+    m_subtermlist[i]->SetClusterMode(cmode);
+  m_cmode=cmode;
+  return ccmode;
 }
 
 void Single_Real_Correction::SetScale(const Scale_Setter_Arguments &args)
@@ -518,3 +546,12 @@ void Single_Real_Correction::SetSelectorOn(const bool on)
     m_subostermlist[i]->GetOSProcess()->SetSelectorOn(on);
 }
 
+ATOOLS::Flavour Single_Real_Correction::ReMap(const ATOOLS::Flavour &fl,const size_t &id) const
+{
+  return p_tree_process->ReMap(fl,id);
+}
+
+AMEGIC::Process_Base *AMEGIC::Single_Real_Correction::GetReal()
+{
+  return p_tree_process;
+}

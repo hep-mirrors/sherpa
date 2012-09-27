@@ -77,7 +77,7 @@ void Model_Base::ShowSyntax(const size_t i)
 
 void Model_Base::ReadParticleData() {
   std::map<int,double> cdm, cdw;
-  std::map<int,int> cia, cis, cim, cic;
+  std::map<int,int> cia, cis, cim, cic, csc;
   Data_Reader dr(" ",";","!","=");
   dr.AddComment("#");
   dr.AddWordSeparator("\t");
@@ -105,6 +105,9 @@ void Model_Base::ReadParticleData() {
   if (dr.MatrixFromFile(helpdvv,"INTCHARGE"))
     for (size_t i(0);i<helpdvv.size();++i)
       if (helpdvv[i].size()==2) cic[int(helpdvv[i][0])]=int(helpdvv[i][1]);
+  if (dr.MatrixFromFile(helpdvv,"STRONGCHARGE"))
+    for (size_t i(0);i<helpdvv.size();++i)
+      if (helpdvv[i].size()==2) csc[int(helpdvv[i][0])]=int(helpdvv[i][1]);
 
   //set masses
   std::map<int,double>::const_iterator dit=cdm.begin();
@@ -171,6 +174,15 @@ void Model_Base::ReadParticleData() {
 		    <<Flavour(iit->first).Charge()<<std::endl; 
     }
   }
+  //set strong charges
+  iit=csc.begin();
+  for (;iit!=csc.end();iit++) {
+    if (s_kftable.find(iit->first)!=s_kftable.end()) {
+      s_kftable[iit->first]->m_strong = iit->second;
+      msg_Tracking()<<" set strong charge of "<<Flavour(iit->first)<<" to "
+		    <<Flavour(iit->first).StrongCharge()<<std::endl; 
+    }
+  }
 }
 
 void Model_Base::CustomContainerInit()
@@ -208,6 +220,7 @@ void Model_Base::CustomContainerInit()
       long int kfc(ToType<long int>(helpsvv[i][j]));
       s_kftable[nkf]->Add(Flavour((kf_code)abs(kfc),kfc<0));
     }
+    s_kftable[nkf]->SetIsGroup(true);
     msg_Debugging()<<" }\n";
   }
 }
@@ -298,11 +311,12 @@ Function_Base * Model_Base::GetScalarFunction(const std::string _name) {
 double Model_Base::ScalarFunction(const std::string _name,double _t) {
   if (p_functions->empty()) {
     msg_Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
-	       <<"   No functions stored in model "<<m_name<<". Return 0."<<std::endl;
+	       <<"   No functions stored in model "<<m_name<<". Return 0\n.";
     return 0.;
   }
-  if (p_functions->count(_name)>0) return (*(*p_functions)[_name])(_t);
-
+  if (p_functions->count(_name)>0) {
+    return (*(*p_functions)[_name])(_t);
+  }
   msg_Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
 	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
   return 0.;
@@ -312,7 +326,7 @@ double Model_Base::ScalarFunction(const std::string _name,double _t) {
 double Model_Base::ScalarFunction(const std::string _name) {
   if (p_functions->empty()) {
     msg_Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
-	       <<"   No functions stored in model "<<m_name<<". Return 0."<<std::endl;
+	       <<"   No functions stored in model "<<m_name<<". Return 0.\n";
     return 0.;
   }
   if (p_functions->count(_name)>0) return (*(*p_functions)[_name])();

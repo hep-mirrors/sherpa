@@ -50,6 +50,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   dr.SetInputPath(rpa->GetPath());
   dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   m_error    = dr.GetValue<double>("ERROR",0.01);
+  m_abserror    = dr.GetValue<double>("ABS_ERROR",0.0);
   m_maxtrials = dr.GetValue<int>("MAX_TRIALS",1000000);
   m_fin_opt  = dr.GetValue<std::string>("FINISH_OPTIMIZATION","On")=="On"?1:0;
   m_enhancexs = dr.GetValue<int>("ENHANCE_XS",0);
@@ -58,14 +59,20 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   }
   p_flavours=proc->Process()->Flavours();
   p_fsrchannels = new FSR_Channels(this,"fsr_"+proc->Process()->Name());
+  double minalpha = dr.GetValue<double>("INT_MINALPHA",0.0);
+  p_fsrchannels->SetMinAlpha(minalpha);
   m_m[0] = p_flavours[0].Mass(); m_m2[0] = m_m[0]*m_m[0];
   if (m_nin==2) {
     m_m[1] = p_flavours[1].Mass(); m_m2[1] = m_m[1]*m_m[1]; 
     if (p_beamhandler) {
-      if (p_beamhandler->On()>0) p_beamchannels = new Beam_Channels(this,"beam_"+proc->Process()->Name());
+      if (p_beamhandler->On()>0) {
+        p_beamchannels = new Beam_Channels(this,"beam_"+proc->Process()->Name());
+        p_beamchannels->SetMinAlpha(minalpha);
+      }
     }
     if (p_isrhandler && p_isrhandler->On()>0) {
       p_isrchannels = new ISR_Channels(this,"isr_"+proc->Process()->Name());
+      p_isrchannels->SetMinAlpha(minalpha);
     }
   }
   if (m_nin==2) {
@@ -177,7 +184,7 @@ double Phase_Space_Handler::Integrate()
   p_fsrchannels->Print();
   m_dmode=0;
   double res(0.0);
-  if (m_nin==2) res=p_integrator->Calculate(this,m_error,m_fin_opt);
+  if (m_nin==2) res=p_integrator->Calculate(this,m_error,m_abserror,m_fin_opt);
   if (m_nin==1) res=p_integrator->CalculateDecay(this,m_error);
   m_dmode=1;
 #ifdef USING__Threading
@@ -248,18 +255,7 @@ double Phase_Space_Handler::Differential()
 
 void Phase_Space_Handler::CalculateME()
 {
-  if (m_nin==1) {
-    m_result_1=p_active->Process()->Differential(p_lab);
-  }
-  else {
-    m_result_1=p_active->Process()->Differential(p_lab);
-    if (p_isrhandler->On()!=3) {
-      m_result_2=0.0;
-    }
-    else {
-      m_result_2=p_active->Process()->Differential2();
-    }
-  }
+  m_result=p_active->Process()->Differential(p_lab);
 }
 
 double Phase_Space_Handler::Weight(Vec4D_Vector &plab)
@@ -376,7 +372,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
       p_massboost->BoostBack(p_lab[i]);
   }
   p_fsrchannels->GeneratePoint(&p_lab.front(),p_cuts);
-  m_result_2=m_result_1=0.0;
+  m_result=0.0;
   if (process->Process()->Trigger(p_lab)) {
     Check4Momentum(p_lab);
 #ifdef USING__Threading
@@ -397,28 +393,24 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     else {
       CalculatePS();
       CalculateME();
-      if (m_result_1+m_result_2==0.) { return 0.;}
+      if (m_result==0.) { return 0.;}
     }
 #else
     CalculatePS();
     CalculateME();
-    if (m_result_1+m_result_2==0.) { return 0.;}
+    if (m_result==0.) { return 0.;}
 #endif
-    msg_Debugging()<<"csum: me = "<<m_result_1<<" / "<<m_result_2
+    msg_Debugging()<<"csum: me = "<<m_result
 		   <<", ps = "<<m_psweight<<", p[2] = "<<p_lab[2]
 		   <<" "<<p_active->Process()->Name()<<"\n";
-    m_result_1*=m_psweight;
-    m_result_2*=m_psweight;
+    m_result*=m_psweight;
   }
   NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
   if (nlos) {
-    for (size_t i=0;i<nlos->size();i++) {
-      (*nlos)[i]->m_flip=0;
-    }
     (*nlos)*=m_psweight;
     (*nlos).MultMEwgt(m_psweight);
   }
-  return m_result_1+m_result_2;
+  return m_result;
 }
 
 bool Phase_Space_Handler::Check4Momentum(const ATOOLS::Vec4D_Vector &p) 
@@ -449,45 +441,21 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   if (!m_initialized) InitIncoming();
   if (proc==NULL) THROW(fatal_error,"No process.");
   Process_Integrator *cur(proc->Integrator());
-  cur->RestoreInOrder();
   p_isrhandler->SetRunMode(1);
   double value=Differential(cur,(psm::code)mode);
   if (value==0.0 || IsBad(value)) return NULL;
   cur->SetMomenta(p_lab);
   double xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
   ME_wgtinfo* wgtinfo=p_active->Process()->GetMEwgtinfo();
-  double pnf=m_result_1/(m_result_1+m_result_2);
-  double sw=dabs(m_result_1)/(dabs(m_result_1)+dabs(m_result_2));
-  if (sw<ATOOLS::ran->Get()) {
-    cur->SwapInOrder();
-    dxs=m_result_2/m_psweight;
-    xf1=p_isrhandler->XF1(1);
-    xf2=p_isrhandler->XF2(1);
-    mu12=p_isrhandler->MuF2(1);
-    mu22=p_isrhandler->MuF2(0);
-    NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
-    if (nlos) {
-      (*nlos).MultMEwgt(1./(1.-pnf));
-      for (size_t l=0;l<nlos->size();l++) 
-	(*nlos)[l]->m_flip=1;
-    }	
-    if (wgtinfo) {
-      (*wgtinfo)*=m_psweight/(1.-pnf);
-      wgtinfo->m_x1=p_isrhandler->X1();
-      wgtinfo->m_x2=p_isrhandler->X2();
-      wgtinfo->Flip();
-    }
-  }
-  else {
-    dxs=m_result_1/m_psweight;
+  {
+    dxs=m_result/m_psweight;
     xf1=p_isrhandler->XF1(0);
     xf2=p_isrhandler->XF2(0);
     mu12=p_isrhandler->MuF2(0);
     mu22=p_isrhandler->MuF2(1);
     NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
-    if (nlos) (*nlos).MultMEwgt(1./pnf);
     if (wgtinfo) {
-      (*wgtinfo)*=m_psweight/pnf;
+      (*wgtinfo)*=m_psweight;
       wgtinfo->m_x1=p_isrhandler->X1();
       wgtinfo->m_x2=p_isrhandler->X2();
     }

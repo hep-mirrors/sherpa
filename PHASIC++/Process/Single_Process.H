@@ -8,8 +8,9 @@ namespace PHASIC {
   class Single_Process: public Process_Base {
   protected:
 
-    double m_lastxs;
+    double m_lastxs, m_lastbxs;
     bool   m_zero;
+    int    m_nloct;
 
     ATOOLS::ME_wgtinfo m_wgtinfo;
 
@@ -25,12 +26,14 @@ namespace PHASIC {
 
     double KFactor() const;
 
-    double BeamISRWeight(const double &Q2,const int mode) const;
+    double NLOCounterTerms() const;
+
+    double BeamISRWeight(const double &Q2,const int mode,
+			 const ATOOLS::ClusterAmplitude_Vector &ampls) const;
     void BeamISRWeight(ATOOLS::NLO_subevtlist *const subs,
 		       const int mode) const;
 
     double Differential(const ATOOLS::Vec4D_Vector &p);
-    double Differential2();
 
     bool CalculateTotalXSec(const std::string &resultpath,
 			    const bool create);
@@ -51,6 +54,9 @@ namespace PHASIC {
 			    const size_t &idj);
     virtual const ATOOLS::Flavour_Vector &
     CombinedFlavour(const size_t &idij);
+
+    virtual ATOOLS::Flavour ReMap
+    (const ATOOLS::Flavour &fl,const size_t &id) const;
 
     inline void ResetLastXS() { m_lastxs=0.0; }
 

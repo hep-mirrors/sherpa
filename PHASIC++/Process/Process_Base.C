@@ -6,6 +6,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Process/Single_Process.H"
+#include "PHASIC++/Channels/BBar_Multi_Channel.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/Decay_Info.H"
 #include "ATOOLS/Org/STL_Tools.H"
@@ -18,15 +19,15 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 Process_Base::Process_Base():
-  p_parent(NULL), p_selected(this), p_mapproc(NULL),
+  p_parent(NULL), p_selected(this), p_mapproc(NULL), p_sproc(NULL),
   p_int(new Process_Integrator(this)), p_selector(NULL),
-  p_cuts(NULL), p_gen(NULL), p_shower(NULL),
+  p_cuts(NULL), p_gen(NULL), p_shower(NULL), p_mc(NULL),
   p_scale(NULL), p_kfactor(NULL),
   m_nin(0), m_nout(0), 
-  m_oqcd(0), m_oew(0), m_tinfo(1),
+  m_oqcd(0), m_oew(0), m_tinfo(1), m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true)
 {
-  m_last[1]=m_last[0]=0.0;
+  m_last=m_lastb=0.0;
 }
 
 Process_Base::~Process_Base() 
@@ -70,6 +71,26 @@ bool Process_Base::GeneratePoint()
   return true;
 }
 
+void Process_Base::AddPoint(const double &value)
+{
+}
+
+bool Process_Base::ReadIn(const std::string &pid)
+{
+}
+
+void Process_Base::WriteOut(const std::string &pid)
+{
+}
+
+void Process_Base::EndOptimize()
+{
+}
+
+void Process_Base::MPISync()
+{
+}
+
 void Process_Base::SetFixedScale(const std::vector<double> &s)
 {
   if (IsMapped()) p_mapproc->SetFixedScale(s);
@@ -90,14 +111,9 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
 {
   Vec4D_Vector p(ampl.Legs().size());
   for (size_t i(0);i<ampl.NIn();++i) p[i]=-ampl.Leg(i)->Mom();
-  if (mode&16) return Get<Single_Process>()->BeamISRWeight(ampl.MuF2(),0);
+  if (mode&16) return Get<Single_Process>()->BeamISRWeight
+		 (ampl.MuF2(),0,ScaleSetter(1)->Amplitudes());
   for (size_t i(ampl.NIn());i<p.size();++i) p[i]=ampl.Leg(i)->Mom();
-  int swap(p_int->InSwaped());
-  p_int->RestoreInOrder();
-  if (mode&1024) {
-    for (size_t i(0);i<p.size();++i)
-      p[i]=Vec4D(p[i][0],-p[i][1],-p[i][2],-p[i][3]);
-  }
   bool selon(Selector()->On());
   if (!Trigger(p)) {
     if ((mode&1) && selon) {
@@ -106,14 +122,14 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
     }
   }
   if (mode&2) {
-    std::vector<double> s(stp::size);
+    std::vector<double> s(stp::size,0.0);
     s[stp::fac]=ampl.MuF2();
     s[stp::ren]=ampl.MuR2();
+    s[stp::res]=ampl.Q2();
     SetFixedScale(s);
   }
   if (mode&4) SetUseBIWeight(false);
   double res(this->Differential(p));
-  if (mode&1024) res=this->Differential2();
   if (mode&32) {
     SP(Phase_Space_Handler) psh(Parent()->Integrator()->PSHandler());
     res*=psh->Weight(p);
@@ -121,7 +137,6 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
   if (mode&4) SetUseBIWeight(true);
   if (mode&2) SetFixedScale(std::vector<double>());
   if (Selector()->On()!=selon) SetSelectorOn(selon);
-  if (swap) p_int->SwapInOrder();
   return res;
 }
 
@@ -139,6 +154,10 @@ bool Process_Base::FillIntegrator
 bool Process_Base::InitIntegrator
 (Phase_Space_Handler *const psh)
 {
+  if (!p_sproc) return true;
+  DEBUG_FUNC(m_name);
+  SetBBarMC(new BBar_Multi_Channel(this,p_sproc,psh));
+  psh->SetFSRIntegrator(p_mc);
   return true;
 }
 
@@ -263,7 +282,7 @@ void Process_Base::SortFlavours(Subprocess_Info &info,FMMap *const fmm)
   for (size_t i(0);i<info.m_ps.size();++i) SortFlavours(info.m_ps[i]);
 }
 
-void Process_Base::SortFlavours(Process_Info &pi)
+void Process_Base::SortFlavours(Process_Info &pi,const int mode)
 {
   FMMap fmm;
   for (size_t i(0);i<pi.m_ii.m_ps.size();++i) {
@@ -281,7 +300,7 @@ void Process_Base::SortFlavours(Process_Info &pi)
       fmm[int(hfl->Kfcode())]=0;
     if (hfl->IsFermion()) fmm[int(hfl->Kfcode())]++;
   }
-  SortFlavours(pi.m_ii,&fmm);
+  if (mode&1) SortFlavours(pi.m_ii,&fmm);
   SortFlavours(pi.m_fi,&fmm);
 }
 
@@ -378,7 +397,8 @@ void Process_Base::SortFlavours
   std::stable_sort(legs.begin(),legs.end(),Order_Coupling());
 }
 
-void Process_Base::SortFlavours(Cluster_Amplitude *const ampl)
+void Process_Base::SortFlavours
+(Cluster_Amplitude *const ampl,const int mode)
 {
   FMMap fmm;
   DecayInfo_Vector cs;
@@ -427,7 +447,7 @@ void Process_Base::SortFlavours(Cluster_Amplitude *const ampl)
       if (fmm.find(kfc)==fmm.end()) fmm[kfc]=0;
       if (ampl->Leg(i)->Flav().IsFermion()) ++fmm[kfc];
     }
-  SortFlavours(il,&fmm);
+  if (mode&1) SortFlavours(il,&fmm);
   for (size_t i(0);i<cs.size();++i) {
     ampl->CreateLeg(Vec4D(),cs[i]->m_fl,ColorID(),cs[i]->m_id);
     fl.push_back(ampl->Legs().back());
@@ -554,6 +574,11 @@ NLO_subevtlist *Process_Base::GetSubevtList()
   return NULL;
 }
 
+NLO_subevtlist *Process_Base::GetRSSubevtList()
+{
+  return NULL;
+}
+
 ME_wgtinfo *Process_Base::GetMEwgtinfo()
 {
   return NULL;
@@ -568,11 +593,6 @@ void Process_Base::BuildCuts(Cut_Data *const cuts)
 {
   if (IsMapped() && LookUp()) return;
   Selector()->BuildCuts(cuts);
-}
-
-void Process_Base::MultiplyLast(const double &w,const int mode)
-{
-  m_last[mode]*=w;
 }
 
 void Process_Base::SetRBMap(Cluster_Amplitude *ampl)
@@ -619,8 +639,6 @@ void Process_Base::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
   }
   else {
     nlo_type::code nlot(m_pinfo.m_fi.m_nloqcdtype);
-    if (apmap->find(nlot)==apmap->end())
-      (*apmap)[nlot] = new StringProcess_Map();
     std::string fname(m_name);
     size_t pos=fname.find("EW");
     if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
@@ -628,7 +646,45 @@ void Process_Base::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
     if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
     if (nlot&nlo_type::vsub) nlot=nlo_type::vsub;
     if (nlot&nlo_type::rsub) nlot=nlo_type::rsub;
-    StringProcess_Map *cmap((*apmap)[m_pinfo.m_fi.m_nloqcdtype]);
+    if (apmap->find(nlot)==apmap->end())
+      (*apmap)[nlot] = new StringProcess_Map();
+    StringProcess_Map *cmap((*apmap)[nlot]);
     if (cmap->find(fname)==cmap->end()) (*cmap)[fname]=this;
   }
+}
+
+size_t Process_Base::SetMCMode(const size_t mcmode)
+{
+  size_t cmcmode(m_mcmode);
+  m_mcmode=mcmode;
+  if (IsGroup())
+    for (size_t i(0);i<Size();++i)
+      (*this)[i]->SetMCMode(mcmode);
+  return cmcmode;
+}
+
+size_t Process_Base::SetClusterMode(const size_t cmode)
+{
+  size_t ccmode(m_cmode);
+  m_cmode=cmode;
+  if (IsGroup())
+    for (size_t i(0);i<Size();++i)
+      (*this)[i]->SetClusterMode(cmode);
+  return ccmode;
+}
+
+void Process_Base::SetSProc(Process_Base *sproc)
+{
+  p_sproc=sproc;
+  if (IsGroup())
+    for (size_t i(0);i<Size();++i)
+      (*this)[i]->SetSProc(sproc);
+}
+
+void Process_Base::SetBBarMC(BBar_Multi_Channel *mc)
+{
+  p_mc=mc;
+  if (IsGroup())
+    for (size_t i(0);i<Size();++i)
+      (*this)[i]->SetBBarMC(mc);
 }

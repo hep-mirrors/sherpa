@@ -35,6 +35,22 @@ Single_LOProcess::Single_LOProcess(const Process_Info &pi,
   m_gen_str(2), m_emit(-1), m_spect(-1),
   p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this)
 {
+  m_nin=pi.m_ii.NExternal();
+  m_nout=pi.m_fi.NExternal();
+  m_rsmap.resize(m_nin+m_nout);
+  m_srmap.resize(m_nin+m_nout+1,-1);
+  for (size_t i(0);i<m_nin;++i) {
+    m_rsmap[i]=pi.m_ii.m_ps[i].m_tag;
+    if (m_rsmap[i]>=0) m_srmap[m_rsmap[i]]=i;
+  }
+  vector<int> fi_tags;
+  pi.m_fi.GetTags(fi_tags);
+  if (fi_tags.size()!=m_nout) THROW(fatal_error, "Internal error.");
+  for (size_t i(0);i<m_nout;++i) {
+    m_rsmap[m_nin+i]=fi_tags[i];
+    if (m_rsmap[m_nin+i]>=0) m_srmap[m_rsmap[m_nin+i]]=m_nin+i;
+  }
+
   PHASIC::Process_Base::Init(pi, beam, isr, 1);
   AMEGIC::Process_Base::Init();
   m_newlib   = false;
@@ -45,28 +61,26 @@ Single_LOProcess::Single_LOProcess(const Process_Info &pi,
 
   int cnt=0;
   for (size_t i(0);i<m_pinfo.m_ii.m_ps.size();++i) {
-    if (m_pinfo.m_ii.m_ps[i].m_tag==1) {
+    if (m_pinfo.m_ii.m_ps[i].m_tag==-1) {
       m_emit=i;
       cnt++;
     }
-    if (m_pinfo.m_ii.m_ps[i].m_tag==2) {
+    if (m_pinfo.m_ii.m_ps[i].m_tag==-2) {
       m_spect=i;
       cnt+=10;
     }
   }
-  int npart=0;
-  for (size_t i(0);i<m_pinfo.m_fi.m_ps.size();++i) {
-    if (m_pinfo.m_fi.m_ps[i].m_tag==1) {
-      m_emit=npart+NIn();
+  for (size_t i(0);i<m_nout;++i) {
+    if (fi_tags[i]==-1) {
+      m_emit=i+NIn();
       cnt++;
     }
-    if (m_pinfo.m_fi.m_ps[i].m_tag==2) {
-      m_spect=npart+NIn();
+    if (fi_tags[i]==-2) {
+      m_spect=i+NIn();
       cnt+=10;
     }
-    npart+=m_pinfo.m_fi.m_ps[i].NExternal();
   }
-  if (cnt!=0&&cnt!=11) THROW(critical_error,"misstaged process "+m_name);
+  if (cnt!=0&&cnt!=11) THROW(critical_error,"mistagged process "+m_name);
 }
 
 
@@ -116,6 +130,7 @@ bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,s
 	m_oew=p_partner->OrderEW();
 	m_ntchanmin=p_partner->NTchanMin();
 	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
+	InitFlavmap(p_partner);
 	return true;
       }
     }
@@ -209,6 +224,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 	}
 
 	p_mapproc = p_partner = (Single_LOProcess*)links[j];
+	InitFlavmap(p_partner);
 	WriteAlternativeName(p_partner->Name());
 	m_iresult = p_partner->Result()*m_sfactor;
 
@@ -230,6 +246,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 			  <<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
 			  <<"   Map processes."<<std::endl;
 	    p_mapproc = p_partner = (Single_LOProcess*)links[j];
+	    InitFlavmap(p_partner);
 	    break;
 	  }
 	}
@@ -257,6 +274,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 			<<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
 			<<"   Map processes."<<std::endl;
 	  p_mapproc = p_partner = (Single_LOProcess*)links[j];
+	  InitFlavmap(p_partner);
 	  break;
 	}
       } 
@@ -271,6 +289,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 	msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : "<<std::endl
 		      <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
 	p_mapproc = p_partner   = (Single_LOProcess*)links[j];
+	InitFlavmap(p_partner);
 	m_pslibname = links[j]->PSLibName();
 	WriteAlternativeName(p_partner->Name());
 	break;
@@ -389,6 +408,7 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 			  <<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
 			  <<"   Map processes."<<std::endl;
 	    p_mapproc = p_partner = (Single_LOProcess*)links[j];
+	    InitFlavmap(p_partner);
 	    break;
 	  }
 	}
@@ -1100,7 +1120,7 @@ double Single_LOProcess::operator()(const ATOOLS::Vec4D_Vector &labmom,const ATO
 
   double M2(0.);
   p_int->SetMomenta(labmom);
-  p_scale->CalculateScale(labmom,mode);
+  p_scale->CalculateScale(labmom,m_cmode);
  
   for (size_t i=0;i<m_epol.size();i++) m_epol[i]=(*epol)[i];
   p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom);
@@ -1150,7 +1170,7 @@ void Single_LOProcess::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
     return;
   }
   p_int->SetMomenta(labmom);
-  p_scale->CalculateScale(labmom,mode);
+  p_scale->CalculateScale(labmom,m_cmode);
 
   p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom);
   p_hel->InitializeSpinorTransformation(p_BS);

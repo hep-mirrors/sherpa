@@ -11,6 +11,8 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 
+#include <algorithm>
+
 using namespace AMEGIC;
 using namespace PHASIC;
 using namespace EXTRAXS;
@@ -29,7 +31,7 @@ Cluster_Algorithm::~Cluster_Algorithm()
 bool Cluster_Algorithm::Cluster
 (Process_Base *const xs,const size_t mode,const double &kt2)
 {
-  p_proc=xs;
+  p_proc=xs->GetReal();
   p_ampl=NULL;
   int nampl=p_proc->NumberOfDiagrams();
   int nlegs=p_proc->NIn()+p_proc->NOut();
@@ -37,16 +39,62 @@ bool Cluster_Algorithm::Cluster
   CreateTables(legs,nampl,mode,kt2);
   ++m_cnt;
   if (p_ct==NULL) {
-    msg_Debugging()<<METHOD<<"(): No valid PS history.\n";
-    ++m_rej;
-    double frac(m_rej/(double)m_cnt);
-    if (frac>1.25*m_lfrac && m_cnt>1000) {
-      m_lfrac=frac;
-      msg_Error()<<METHOD<<"(): No valid PS history in >"
-		 <<(int(m_lfrac*1000)/10.0)<<"% of calls.\n";
-    }
     p_combi=NULL;
-    return false;
+    msg_Debugging()<<METHOD<<"(): {\n";
+    p_ampl = Cluster_Amplitude::New();
+    p_ampl->SetMS(p_ms);
+    p_ampl->SetJF(p_proc->Selector()->GetSelector("Jetfinder"));
+    p_ampl->SetNIn(p_proc->NIn());
+    p_ampl->SetOrderEW(p_proc->OrderEW());
+    p_ampl->SetOrderQCD(p_proc->OrderQCD());
+    PHASIC::Process_Base *pb(p_proc->IsMapped()?
+			     p_proc->MapProc():p_proc);
+    double muf2(pb->ScaleSetter()->Scale(stp::fac));
+    double mur2(pb->ScaleSetter()->Scale(stp::ren));
+    double Q2(pb->ScaleSetter()->Scale(stp::res));
+    std::vector<size_t> tids, atids;
+    for (int i(0);i<pb->NIn()+pb->NOut();++i) {
+      Flavour flav(i<pb->NIn()?p_proc->Flavours()[i].Bar():
+		   p_proc->Flavours()[i]);
+      Vec4D mom(i<pb->NIn()?-pb->Integrator()->Momenta()[i]:
+		pb->Integrator()->Momenta()[i]);
+      p_ampl->CreateLeg(mom,flav,ColorID(),1<<i);
+      p_ampl->Legs().back()->SetStat(1);
+      int sc(p_ampl->Legs().back()->Flav().StrongCharge());
+      if (sc==0) p_ampl->Legs().back()->SetCol(ColorID(0,0));
+      if (sc==3 || sc==8) {
+	p_ampl->Legs().back()->SetCol(ColorID(Flow::Counter(),0));
+	tids.push_back(i);
+      }
+      if (sc==-3 || sc==8) {
+	p_ampl->Legs().back()->SetCol
+	  (ColorID(sc==8?p_ampl->Legs().back()->Col().m_i:0,-1));
+	atids.push_back(i);
+      }
+    }
+    while (true) {
+      std::random_shuffle(tids.begin(),tids.end());
+      size_t i(0);
+      for (;i<tids.size();++i) if (tids[i]==atids[i]) break;
+      if (i==tids.size()) break;
+    }
+    for (size_t i(0);i<atids.size();++i)
+      p_ampl->Leg(atids[i])->SetCol
+	(ColorID(p_ampl->Leg(atids[i])->Col().m_i,
+		 p_ampl->Leg(tids[i])->Col().m_i));
+    p_ampl->SetMuR2(mur2);
+    p_ampl->SetMuF2(muf2);
+    p_ampl->SetQ2(Q2);
+    p_ampl->SetProcs(p_proc);
+    p_ampl->SetKT2((p_ampl->Leg(0)->Mom()+
+		    p_ampl->Leg(1)->Mom()).Abs2());
+    p_ampl->SetMu2(p_ampl->KT2());
+    size_t nmax(p_proc->Info().m_fi.NMaxExternal());
+    p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
+    SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,nmax);
+    msg_Debugging()<<*p_ampl<<"\n";
+    msg_Debugging()<<"}\n";
+    return true;
   }
   Vec4D_Vector moms(4);
   ATOOLS::Flavour_Vector fl(4);
@@ -105,12 +153,8 @@ Leg **Cluster_Algorithm::CreateLegs(int &nampl,const int nlegs)
   for (int k=0;k<nampl;++k) {
     for (int i(0);i<nlegs;++i) {
       Flavour fl(p_proc->Flavours()[i]);
-      if (i<2 && p_proc->Integrator()->InSwaped()) {
-	fl=p_proc->Flavours()[1-i];
-      }
       legs[k][i].SetMapFlavour(fl);
-//       msg_Debugging()<<"set mapfl: "<<k<<", "<<i<<": "<<fl<<" "
-// 		     <<p_proc->Integrator()->InSwaped()<<"\n";
+//       msg_Debugging()<<"set mapfl: "<<k<<", "<<i<<": "<<fl<<"\n";
     }
   }
   return legs;
@@ -125,11 +169,6 @@ void Cluster_Algorithm::CreateTables
   Vec4D * amoms = new Vec4D[nlegs];
   for (int i=0;i<nin+nout;++i)  
     amoms[i]     = p_proc->Integrator()->Momenta()[i];
-  if (p_proc->Integrator()->InSwaped()) {
-    Vec4D help=amoms[0];
-    amoms[0]=amoms[1];
-    amoms[1]=help;
-  }
   if (!p_combi) {
     /*
       - copy moms to insert into Combine_Table (will be delete there)
@@ -458,6 +497,7 @@ void Cluster_Algorithm::Convert()
 			   p_proc->MapProc():p_proc);
   double muf2(pb->ScaleSetter()->Scale(stp::fac));
   double mur2(pb->ScaleSetter()->Scale(stp::ren));
+  double Q2(pb->ScaleSetter()->Scale(stp::res));
   for (int i(0);i<ct_tmp->NLegs();++i) {
     size_t id(ct_tmp->GetLeg(i).ID());
     Flavour flav(i<2?ct_tmp->Flav(i).Bar():ct_tmp->Flav(i));
@@ -465,6 +505,7 @@ void Cluster_Algorithm::Convert()
     p_ampl->CreateLeg(mom,flav,ColorID(),id);
     p_ampl->Legs().back()->SetStat(1);
   }
+  p_ampl->SetQ2(Q2);
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
   Cluster_Amplitude *eampl(p_ampl);
@@ -494,12 +535,15 @@ void Cluster_Algorithm::Convert()
       else if (i==iwin) {
 	p_ampl->Legs().back()->SetK(ampl->Leg(kwin)->Id());
 	ampl->SetIdNew(ct_tmp->Up()->GetLeg(jwin).ID());
-	if (win.Point()->t>10) {
+	if (win.Point()->t>10 || !flav.Strong()) {
+	  size_t dmax(win.Point()->t>10?win.Point()->t-10:0);
+	  if (dmax==0) dmax=IdCount(id);
 	  p_ampl->Legs().back()->SetStat(3);
-	  SetNMax(p_ampl->Prev(),id,win.Point()->t-10);
+	  SetNMax(p_ampl->Prev(),id,dmax);
 	}
       }
     }
+    p_ampl->SetQ2(ampl->Q2());
     p_ampl->SetMuR2(ampl->MuR2());
     p_ampl->SetMuF2(ampl->MuF2());
     p_ampl->Decays()=ct_tmp->Decays();
@@ -520,6 +564,7 @@ void Cluster_Algorithm::Convert()
     p_ampl->Leg(i)->SetCol(ColorID(m_colors[i][0],m_colors[i][1]));
   while (p_ampl->Prev()) {
     Cluster_Amplitude *ampl(p_ampl->Prev());
+    ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
     size_t jwin(std::numeric_limits<size_t>::max());
     for (size_t i(0);i<ampl->Legs().size();++i) {
       if (i==jwin) continue;
@@ -539,13 +584,9 @@ void Cluster_Algorithm::Convert()
 	}
       }
     }
-    if (p_proc->Integrator()->InSwaped())
-      std::swap<Cluster_Leg*>(p_ampl->Legs()[0],p_ampl->Legs()[1]);
     msg_Debugging()<<*p_ampl<<"\n";
     p_ampl=p_ampl->Prev();
   }
-  if (p_proc->Integrator()->InSwaped())
-    std::swap<Cluster_Leg*>(p_ampl->Legs()[0],p_ampl->Legs()[1]);
   msg_Debugging()<<*p_ampl<<"\n";
   msg_Debugging()<<"}\n";
 }

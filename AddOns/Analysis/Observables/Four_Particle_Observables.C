@@ -448,3 +448,28 @@ Primitive_Observable_Base * Four_Particle_EnergyCMS::Copy() const
   return new Four_Particle_EnergyCMS(m_flavs,m_type,m_xmin,m_xmax,m_nbins,
                                       m_listname);
 }
+
+
+//=============================================================================
+
+DEFINE_OBSERVABLE_GETTER(Four_Particle_Mass,
+       Four_Particle_Mass_Getter,"4Mass")
+
+void Four_Particle_Mass::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
+                                 const Vec4D& mom3,const Vec4D& mom4,
+                                 double weight, double ncount)
+{
+  Vec4D  p = mom1+mom2+mom3+mom4;
+  p_histo->Insert(p.Mass(),weight,ncount);
+}
+
+Four_Particle_Mass::Four_Particle_Mass(const std::vector<Flavour>& flavs,
+                            int type,double xmin,double xmax,int nbins,
+                            const std::string & listname)
+  : Four_Particle_Observable_Base(flavs,type,xmin,xmax,nbins,listname,"4Mass") {}
+
+Primitive_Observable_Base* Four_Particle_Mass::Copy() const
+{
+  return new Four_Particle_Mass(m_flavs,m_type,m_xmin,
+                               m_xmax,m_nbins,m_listname);
+}

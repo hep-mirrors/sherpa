@@ -10,6 +10,7 @@ The following parameters are used to steer the integration.
 @menu
 * ERROR::                The relative integration error
 * INTEGRATOR::           The integrator type
+* RS_INTEGRATOR::        The RS integrator type
 * VEGAS::                Whether to enable Vegas
 * FINISH_OPTIMIZATION::  Whether to fully optimise the Vegas grid
 * PSI_NMAX::             Maximum number of points per process
@@ -29,7 +30,23 @@ Specifies the integrator. The possible integrator types
 depend on the matrix element generator. In general users 
 should rely on the default value and otherwise seek the 
 help of the authors, see @ref{Authors}.
-However, there are a few generator independent choices
+The options for AMEGIC++ are
+@itemize
+@item @option{0}: RAMBO @mycite{Kleiss1985gy}. Generates isotropic 
+final states.
+@item @option{4}: building up the channels is achieved through 
+respecting the peak structure given by the propagators. The 
+algorithm works recursively starting from the initial state.
+@item @option{5}: this is an extension of option 4. In the case of competing peaks (e.g. a Higgs boson decaying into W+W−, which further decay), additional channels are produced to account for all kinematical conﬁgurations where one 
+of the propagating particles is produced on its mass shell.
+@item @option{6}: in contrast to option 4 the algorithm now starts from the 
+ﬁnal state. The extra channels described in option 5 are produced as well. 
+This is the default integrator.
+@item @option{7}: Same as option @option{4} but with tweaked 
+exponents. Optimised for the integration of real-subtracted 
+matrix-elements.
+@end itemize
+In addition, however, there are a few generator independent choices
 which have been designed for specific processes and might 
 be more efficient there:
 @itemize @bullet
@@ -44,10 +61,13 @@ outgoing particle. The defaults are @code{VHAAG_RES_D1=2}
 and @code{VHAAG_RES_D2=3}, which is the correct choice for
 all processes where the decay products are the only not
 strongly interacting final state particles.
- @item @option{2}: is an integrator designed for pure QCD final
-states. It is based on the HAAG algorithm 
-@mycite{vanHameren2002tc}.     
 @end itemize
+
+@node RS_INTEGRATOR
+@subsection RS_INTEGRATOR
+@cindex RS_INTEGRATOR
+In an NLO process, specifies the integrator for real-subtracted processes. 
+It takes the same values as @ref{INTEGRATOR}, but defaults to @code{7}.
 
 @node VEGAS
 @subsection VEGAS

@@ -46,8 +46,9 @@ namespace AMEGIC {
 
   class DipoleSplitting_Base {
   protected:
-    double m_alpha,m_amin,m_kappa;
-    int m_nf;
+    double m_alpha,m_kt2max,m_amin,m_kappa;
+    double m_Q2,m_kt2;
+    int m_nf, m_mcmode, m_mcsign;
     ATOOLS::Vec4D m_pt1,m_pt2;
 
     dpt::dipoltype m_type;
@@ -68,6 +69,8 @@ namespace AMEGIC {
     
     virtual void SetMomenta(const ATOOLS::Vec4D*);
     void SetCoupling(const MODEL::Coupling_Map *cpls);
+    bool Reject(const double &alpha);
+    void SetMCMode(const int mcmode) { m_mcmode=mcmode; }
     std::vector<ATOOLS::Vec4D>* GetMomenta() {return &m_mom;}
     ATOOLS::Vec4D Getptij() {return m_ptij;}
     ATOOLS::Vec4D Getptk()  {return m_ptk;}
@@ -75,6 +78,8 @@ namespace AMEGIC {
     virtual double GetDPSF()   {return 0.;}
     virtual void CalcDiPolarizations() {}
     virtual void SetAlpha(double alp) {m_alpha=alp;}
+    virtual void SetKt2Max(double kt2m) { m_kt2max=kt2m; }
+    inline double KT2() const { return m_kt2; }
     double GetR(const ATOOLS::Vec4D*,const ATOOLS::Vec4D*);
     std::vector<ATOOLS::Vec4D>* GetDiPolarizations() {return &m_dpollist;}
     std::vector<double>* GetFactors() {return &m_pfactors;}
@@ -85,6 +90,7 @@ namespace AMEGIC {
     double Vie2(int type);
     double SPFac() { return m_spfdef*p_cpl->Factor(); }
     double G2() { return m_g2; }
+    int MCSign() { return m_mcsign; }
   };
 }
 #endif

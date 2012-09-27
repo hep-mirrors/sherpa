@@ -185,8 +185,13 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_gg_hg_Getter,"MCFM_gg_hg")
 Virtual_ME2_Base *MCFM_gg_hg_Getter::operator()(const Process_Info &pi) const
 {
-  msg_Out()<<"In "<<METHOD<<":\n";
-  if (pi.m_loopgenerator!="MCFM")                       return NULL;
+  msg_Out()<<"In "<<METHOD<<": ";
+  if (pi.m_loopgenerator!="MCFM") {
+    msg_Out()<<"not relevant for MCFM: "
+	     <<"use "<<pi.m_loopgenerator<<" instead.\n";
+    return NULL;
+  }
+  else msg_Out()<<".\n";
   if (MODEL::s_model->Name()!=std::string("SM+EHC") ||
       MODEL::s_model->ScalarConstant("Yukawa_b")>0. ||
       !Flavour(kf_h0).IsOn())                           return NULL;
@@ -298,7 +303,19 @@ Virtual_ME2_Base *MCFM_gg_hg_Getter::operator()(const Process_Info &pi) const
 	((W21.Kfcode()==12 && W22.Kfcode()==11) || 
 	 (W21.Kfcode()==14 && W22.Kfcode()==13)))        pID = 208;
   }
-
+  //////////////////////////////////////////////////////////////////
+  // check for 5 light flavours, this is hard-coded in MCFM
+  //////////////////////////////////////////////////////////////////
+  Flavour lq(kf_quark);
+  double nlf(0.);
+  for (size_t i(0); i<lq.Size(); ++i) if (!lq[i].IsMassive()) nlf++;
+  nlf/=2.;
+  if (nlf!=5.) {
+    msg_Error()<<METHOD<<"(): MCFM only available for five light quark "
+                       <<"flavours for this process"<<std::endl;
+    THROW(fatal_error, "Five-flavour calculations with MCFM only.")
+  }
+  
   PRINT_VAR(pID);
   if (pID>0) {
     zerowidth_.zerowidth=true;

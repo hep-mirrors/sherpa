@@ -27,7 +27,6 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   Selector_Base *jf=xs->Selector()
     ->GetSelector("Jetfinder");
   ME2_Base *me(xs->GetME());
-  bool swap(xs->Integrator()->InSwaped());
   if (me==NULL) THROW(not_implemented,"Non-ME-specified process");
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
@@ -39,7 +38,7 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   double muf2(pb->ScaleSetter()->Scale(stp::fac));
   double mur2(pb->ScaleSetter()->Scale(stp::ren));
   for (size_t i(0);i<xs->NIn()+xs->NOut();++i) {
-    size_t idx(i<2?(swap?1-i:i):i);
+    size_t idx(i);
     ColorID col(me->Colours()[idx][0],me->Colours()[idx][1]);
     if (i<2) col=col.Conj();
     Flavour flav(i<2?xs->Flavours()[i].Bar():

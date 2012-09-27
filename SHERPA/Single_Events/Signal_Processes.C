@@ -173,11 +173,6 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
 void Signal_Processes::CleanUp(const size_t & mode) 
 { 
   if (m_overweight>0.0) return;
-  if (p_mehandler)
-    if (p_mehandler->Process())
-      if (p_mehandler->Process()->Parent())
-        if (p_mehandler->Process()->Parent()->Integrator())
-          p_mehandler->Process()->Parent()->Integrator()->RestoreInOrder();
 }
 
 void Signal_Processes::Finish(const std::string &) 

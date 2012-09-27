@@ -144,6 +144,10 @@ namespace PDF {
 
     double GetXPDF(const ATOOLS::Flavour infl) {
       if ((m_x>m_xmax && m_rescale<1.) || m_rescale<0.) return 0.;
+      if (!(m_x>=0.0 && m_x<=1.0)) {
+        PRINT_INFO("PDF called with x="<<m_x);
+        return 0.;
+      }
       int cteqindex;
       switch (infl.Kfcode()) {
       case kf_gluon: cteqindex=0;                  break;

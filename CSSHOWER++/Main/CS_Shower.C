@@ -3,6 +3,7 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
 #include "PDF/Main/Jet_Criterion.H"
+#include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -14,10 +15,11 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model,
+CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
+		     MODEL::Model_Base *const model,
 		     Data_Reader *const _dataread) : 
   Shower_Base("CSS"), p_isr(_isr), 
-  p_shower(NULL), p_cluster(NULL), p_ampl(NULL)
+  p_shower(NULL), p_as(NULL), p_cluster(NULL), p_ampl(NULL)
 {
   rpa->gen.AddCitation
     (1,"The Catani-Seymour subtraction based shower is published under \\cite{Schumann:2007mg}.");
@@ -27,7 +29,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
     m_maxem=maxem;
     msg_Info()<<METHOD<<"(): Set max emissions "<<m_maxem<<"\n";
   }
-  int mtmode=_dataread->GetValue<int>("CSS_CORE_MTMODE",1);
+  int mtmode=_dataread->GetValue<int>("CSS_CORE_MTMODE",0);
   if (mtmode!=1) msg_Info()<<METHOD<<"(): Set core m_T mode "<<mtmode<<"\n";
   m_kmode=_dataread->GetValue<int>("CSS_KMODE",1);
   if (m_kmode!=1) msg_Info()<<METHOD<<"(): Set kernel mode "<<m_kmode<<"\n";
@@ -38,12 +40,21 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model
   if (amode!=0) msg_Info()<<METHOD<<"(): Set exclusive cluster mode "<<amode<<".\n";
   
   m_weightmode = int(_dataread->GetValue<int>("WEIGHT_MODE",1));
+  m_kt2fac     = _dataread->GetValue<double>("CSS_SHOWER_KT2_FACTOR",1.);
+  
+  m_scale2fac  = _dataread->GetValue<double>("CSS_SHOWER_SCALE2_FACTOR",-1.);
+
+  //msg_Out()<<METHOD<<"(scale2fac = "<<m_scale2fac<<").\n";
+  //exit(1);
+  if (m_scale2fac>0. && m_scale2fac!=1.) {
+    p_as = (MODEL::Running_AlphaS*)model->GetScalarFunction("alpha_S");
+  }
   
   int _qed=_dataread->GetValue<int>("CSS_EW_MODE",0);
   if (_qed==1) {
     s_kftable[kf_photon]->SetResummed();
   }
-  p_shower = new Shower(_isr,_qed,_dataread);
+  p_shower = new Shower(_isr,_qed,m_kt2fac,_dataread);
   
   p_next = new All_Singlets();
   p_refs = new All_Singlets();
@@ -99,16 +110,39 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
   if (!p_shower) return 1;
   m_weight=1.0;
   RefCopy();
+  // p_as is alphaS in case we do a shower variation it is != NULL.
+  if (p_as && m_as_showerflag &&
+      m_scale2fac!=-1. && m_scale2fac!=1.) {
+    double mu2=((*(*m_allsinglets.begin())->begin())->KtStart());
+    double newasmu2((*p_as)(m_scale2fac*mu2));
+    // fixes an operator (*p_as)(qt^2,true) to be with new Lambda2
+    p_as->FixShowerLambda2(mu2,newasmu2,p_as->Nf(mu2),p_as->Order());
+    p_shower->SetCouplingMax();
+    for (All_Singlets::const_iterator rit(p_refs->begin()),
+	   sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit,++rit) {
+      for (Singlet::const_iterator it((*sit)->begin());
+	   it!=(*sit)->end();++it) {
+	// update shower scales.
+	double kt2(m_kt2fac*(*it)->KtStart());
+	(*it)->SetStart(kt2);
+      }
+    }
+    // msg_Out()<<METHOD<<" tests alphaS(order = "<<p_as->Order()<<", "
+    // 	     <<"mu = "<<sqrt(mu2)<<"): \n"
+    // 	     <<" mu alphaS(mu) alphaS(mu,new)\n"
+    // 	     <<"  5. "<<(*p_as)(25.)<<"  "<<p_as->AlphaS(25.,true)<<"\n"
+    // 	     <<" 10. "<<(*p_as)(100.)<<"  "<<p_as->AlphaS(100.,true)<<"\n"
+    // 	     <<" 25. "<<(*p_as)(625.)<<"  "<<p_as->AlphaS(625.,true)<<"\n"
+    // 	     <<" 50. "<<(*p_as)(2500.)<<"  "<<p_as->AlphaS(2500.,true)<<"\n"
+    // 	     <<"100. "<<(*p_as)(10000.)<<"  "<<p_as->AlphaS(10000.,true)<<"\n";
+  }
+
   for (All_Singlets::const_iterator rit(p_refs->begin()),
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit,++rit) {
     msg_Debugging()<<"before shower step\n";
     for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it)
-      if ((*it)->GetPrev()) 
-	if((*it)->GetPrev()->GetNext()==*it) {
-	  if ((*it)->GetPrev()->TMin()==std::numeric_limits<double>::max())
-	    (*it)->SetStart((*it)->GetPrev()->KtNext());
-	  else (*it)->SetStart((*it)->GetPrev()->KtStart());
-	}
+      if ((*it)->GetPrev() && (*it)->GetPrev()->KScheme()!=1)
+	(*it)->SetStart((*it)->GetPrev()->KtStart());
     msg_Debugging()<<**sit;
     size_t pem(nem);
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
@@ -185,7 +219,7 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,const size_t &id,
     if ((cl->Id()&id)==0) continue;
     if (ampl->Prev()) GetKT2Min(ampl->Prev(),cl->Id(),kt2xmap,aset);
     if (cl->Stat()==3 || cl->Stat()==5) {
-      double ckt2(cl->Mom().Abs2());
+      double ckt2(dabs(cl->Mom().Abs2()));
       kt2xmap[cl->Id()].first=kt2xmap[cl->Id()].second=HardScale(ampl);
       for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
 	if (kit->first!=cl->Id() && (kit->first&cl->Id()) &&
@@ -409,8 +443,6 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
     double kt2max(leg->KTMax()),kt2veto(leg->KTVeto()),kt2start(leg->KTStart());
     parton->SetStart(kt2start);   // start scale of shower
     parton->SetKtMax(kt2max);    // no jet veto below ktmax
-    parton->SetKtPrev(kt2veto);   // upper kt - acts as veto
-    parton->SetKtNext(0.0);       // lower kt - set to 0.
     parton->SetVeto(kt2veto);     // irrelevant 
     parton->SetConnected(leg->Connected());
     parton->SetMass2(p_ms->Mass2(leg->Flav()));
@@ -471,6 +503,8 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 	  THROW(fatal_error,"Invalid tree structure");
 	k->SetNext(cit->second);
 	cit->second->SetPrev(k);
+	k->SetKScheme(cit->second->KScheme());
+	if (k->KScheme()) k->SetMass2(k->Momentum().Abs2());
 	k->SetStat(1);
 	kmap[cl->Id()]=k;
 	continue;
@@ -503,9 +537,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
     }
     if (sing->GetSpec()) {
       split->SetOldMomentum(split->Momentum());
-      Vec4D fixspec(sing->GetSpec()->Momentum());
-      fixspec[0]=fixspec[0]<0.0?-fixspec.PSpat():fixspec.PSpat();
-      split->SetFixSpec(fixspec);
       sing->SetSpec(sing->GetSpec()->GetNext());
       if (split==NULL) THROW(fatal_error,"Invalid tree structure");
       sing->SetSplit(split);
@@ -514,22 +545,26 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
       almap[s]->SetMom(almap[s]->Id()&3?-s->Momentum():s->Momentum());
       split->SetKin(campl->Kin());
+      split->SetKScheme(almap[split]->Stat()==3);
+      if (split->KScheme()) split->SetMass2(split->Momentum().Abs2());
       CS_Parameters cp(p_cluster->KT2
 		       (campl->Prev(),almap[l],almap[r],almap[s],
 			split->GetType()==pst::FS?split->GetFlavour():
-			split->GetFlavour().Bar(),p_ms,split->Kin()));
-      l->SetTest(cp.m_kt2,cp.m_z,cp.m_y,cp.m_phi);
-      l->SetStart(cp.m_kt2);
-      r->SetStart(cp.m_kt2);
+			split->GetFlavour().Bar(),p_ms,
+			split->Kin(),split->KScheme()));
+      l->SetTest(cp.m_kt2*m_kt2fac,cp.m_z,cp.m_y,cp.m_phi);
+      if (split->KScheme()) split->SetFixSpec(cp.m_pk);
       msg_Debugging()<<"Set reco params: kt = "<<sqrt(cp.m_kt2)<<", z = "
 		     <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi
-		     <<", mode = "<<cp.m_mode<<", scheme = "<<split->Kin()<<"\n";
+		     <<", mode = "<<cp.m_mode<<", scheme = "<<split->Kin()
+		     <<", kmode = "<<split->KScheme()<<"\n";
       sing->SetAll(p_next);
+      Vec4D oldl(l->Momentum()), oldr(r->Momentum()), olds(s->Momentum());
       if (m_recocheck&1) {
       std::cout.precision(12);
-      Vec4D oldl(l->Momentum()), oldr(r->Momentum()), olds(s->Momentum());
       Vec4D oldfl(l->FixSpec()), oldfr(r->FixSpec()), oldfs(s->FixSpec());
-      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode|4);
+      Vec4D oldsf(split->FixSpec()), oldso(split->OldMomentum());
+      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode|4|8);
       p_shower->ReconstructDaughters(sing,1);
       almap[l]->SetMom(almap[l]->Id()&3?-l->Momentum():l->Momentum());
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
@@ -537,7 +572,8 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       CS_Parameters ncp(p_cluster->KT2
 			(campl->Prev(),almap[l],almap[r],almap[s],
 			 split->GetType()==pst::FS?split->GetFlavour():
-			 split->GetFlavour().Bar(),p_ms,split->Kin()));
+			 split->GetFlavour().Bar(),p_ms,
+			 split->Kin(),split->KScheme()));
       msg_Debugging()<<"New reco params: kt = "<<sqrt(ncp.m_kt2)<<", z = "
 		     <<ncp.m_z<<", y = "<<ncp.m_y<<", phi = "<<ncp.m_phi
 		     <<", kin = "<<ncp.m_kin<<"\n";
@@ -565,25 +601,21 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       l->SetMomentum(oldl);
       r->SetMomentum(oldr);
       s->SetMomentum(olds);
-      l->SetOldMomentum(oldl);
-      r->SetOldMomentum(oldr);
-      s->SetOldMomentum(olds);
       l->SetFixSpec(oldfl);
       r->SetFixSpec(oldfr);
       s->SetFixSpec(oldfs);
+      split->SetFixSpec(oldsf);
+      split->SetOldMomentum(oldso);
       }
-      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode|4);
+      l->SetOldMomentum(oldl);
+      r->SetOldMomentum(oldr);
+      s->SetOldMomentum(olds);
+      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode|4|8);
     }
-    double kt2prev(campl->Next()?campl->KT2():kt2xmap[1].second);
-    double kt2next(campl->Prev()?campl->Prev()->KT2():0.0);
-    for (size_t i(0);i<campl->Legs().size();++i) {
-      std::map<Cluster_Leg*,Parton*>::const_iterator 
-	pit(apmap.find(campl->Leg(i)));
-      if (pit!=apmap.end()) {
-	pit->second->SetKtPrev(Min(kt2prev,m_kt2prev));
-	pit->second->SetKtNext(kt2next);
-      }
-    }
+    double kt2prev((campl->Next()?campl->KT2():kt2xmap[1].second)*m_kt2fac);
+    double kt2next((campl->Prev()?campl->Prev()->KT2():0.0)*m_kt2fac);
+    sing->SetKtPrev(kt2prev);
+    sing->SetKtNext(kt2next);
     if (ampl->NIn()==1 && ampl->Leg(0)->Flav().IsHadron()) break;
     p_next->push_back(sing);
   }
@@ -603,7 +635,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 	if ((*pit)->GetPrev()) {
 	  if ((*pit)->GetPrev()->GetNext()==*pit) 
 	    (*pit)->SetStart((*pit)->GetPrev()->KtStart());
-	  (*pit)->SetKtPrev(Min((*pit)->GetPrev()->KtNext(),m_kt2prev));
 	}
       }
       (*sit)->SetJF(ampl->JF<PHASIC::Jet_Finder>());
@@ -622,11 +653,16 @@ Singlet *CS_Shower::TranslateAmplitude
  std::map<Cluster_Leg*,Parton*> &pmap,std::map<Parton*,Cluster_Leg*> &lmap,
  const KT2X_Map &kt2xmap)
 {
+  if (!(ampl->NLO()&4)) m_as_showerflag=true;
+  else m_as_showerflag=false;
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
-  double ktveto2(jf?jf->Ycut()*sqr(rpa->gen.Ecms()):4.0*ampl->MuR2());
+  double ktveto2(jf?jf->Ycut()*sqr(rpa->gen.Ecms()):
+		 sqrt(std::numeric_limits<double>::max()));
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
-  singlet->SetNLO(ampl->NLO());
+  singlet->SetNLO(ampl->NLO()&~1);
+  if (jf==NULL && (ampl->NLO()&2)) singlet->SetNLO(4);
+  singlet->SetLKF(ampl->LKF());
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *cl(ampl->Leg(i));
     if (cl->Flav().IsHadron() && cl->Id()&((1<<ampl->NIn())-1)) continue;
@@ -642,18 +678,15 @@ Singlet *CS_Shower::TranslateAmplitude
     }
     Parton *parton(new Parton(&p,is?pst::IS:pst::FS));
     parton->SetMass2(p_ms->Mass2(p.Flav()));
-    if (!is && parton->Mass2()>10.0 && !p.Flav().Strong())
-      parton->SetMass2(parton->Momentum().Abs2());
     pmap[cl]=parton;
     lmap[parton]=cl;
     parton->SetRFlow();
     parton->SetKin(p_shower->KinScheme());
-    if (ampl->NLO()==1) parton->SetTMin(std::numeric_limits<double>::max());
     if (is) parton->SetBeam(i);
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
-    parton->SetStart(xit->second.second);
-    parton->SetKtMax(xit->second.first);
-    parton->SetVeto(ktveto2);
+    parton->SetStart(xit->second.second*m_kt2fac);
+    parton->SetKtMax(xit->second.first*m_kt2fac);
+    parton->SetVeto(ktveto2*m_kt2fac);
     singlet->push_back(parton);
     parton->SetSing(singlet);
   }
@@ -696,6 +729,7 @@ Singlet *CS_Shower::TranslateAmplitude
 
 double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
 {
+  if ((ampl->NLO()&1) && ampl->JF<void>()==NULL) return ampl->Q2();
   if (ampl->Next()) {
     Cluster_Amplitude *next(ampl->Next());
     if (next->OrderQCD()<ampl->OrderQCD()) return ampl->KT2();

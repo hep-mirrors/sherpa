@@ -11,22 +11,34 @@ using namespace ATOOLS;
 
 double Kin_Args::s_uxeps=1.0e-3;
 
+LN_Pair PHASIC::GetLN
+(const Vec4D &pi,const Vec4D &pk,const int mode)
+{
+  double ecm(pi*pk), mi2(pi.Abs2());
+  double gam(ecm*ecm-mi2*pk.Abs2());
+  if (gam<0.0) return Vec4D();
+  gam=ecm+Sign(ecm)*sqrt(gam);
+  Vec4D l(0.5/ecm*(gam*pi-mi2*pk));
+  return LN_Pair(l,pi+pk-l,mode);
+}
+
 double PHASIC::ComputePhi
 (Vec4D pijt,Vec4D pkt,Vec4D pi,const int mode)
 {
-  Vec4D ktt(0.0,cross(Vec3D(pijt),Vec3D(pkt)));
-  Poincare cms(pijt+pkt);
-  cms.Boost(pijt);
+  LN_Pair ln(GetLN(pijt,pkt,1));
+  Vec4D ktt(0.0,cross(Vec3D(ln.m_l),Vec3D(ln.m_n)));
+  Poincare cms(ln.m_l+ln.m_n);
+  cms.Boost(ln.m_l);
   cms.Boost(pi);
-  Poincare zax(pijt,Vec4D::ZVEC);
+  Poincare zax(ln.m_l,Vec4D::ZVEC);
   if (mode!=3 && ktt.PSpat2()>1.0e-6) {
     zax.Rotate(ktt);
   }
   else {
     msg_Debugging()<<"Set fixed n_perp\n";
-    if (IsZero(pijt[1],1.0e-6) &&
-	IsZero(pijt[2],1.0e-6)) pijt[1]=pijt[2]=0.0;
-    zax=Poincare(pijt,Vec4D::ZVEC);
+    if (IsZero(ln.m_l[1],1.0e-6) &&
+	IsZero(ln.m_l[2],1.0e-6)) ln.m_l[1]=ln.m_l[2]=0.0;
+    zax=Poincare(ln.m_l,Vec4D::ZVEC);
     ktt=Vec4D(0.0,1.0,1.0,0.0);
   }
   zax.Rotate(pi);
@@ -249,17 +261,18 @@ int PHASIC::ConstructIFDipole
     Vec4D pa(pn/po*(paj-(Q2+maj2-mk2)/(2.0*(Q2+kt2))*Ql)
 	     +(Q2+ma2-sjk)/(2.0*(Q2+kt2))*Ql);
     ifp.m_pk=ifp.m_pj=(ifp.m_pi=pa)-Q;
-    Vec4D n_perp(0.0,cross(Vec3D(ifp.m_pj),Vec3D(ifp.m_pi)));
-    Poincare cms(ifp.m_pj+ifp.m_pi);
-    cms.Boost(ifp.m_pj);
+    LN_Pair ln(GetLN(ifp.m_pj,ifp.m_pi,1));
+    Vec4D n_perp(0.0,cross(Vec3D(ln.m_l),Vec3D(ln.m_n)));
+    Poincare cms(ln.m_l+ln.m_n);
+    cms.Boost(ln.m_l);
     if (n_perp.PSpat2()<=1.0e-6) {
       msg_Debugging()<<"Set fixed n_perp\n";
       n_perp=Vec4D(0.0,1.0,1.0,0.0);
-      Poincare zrot(ifp.m_pj,Vec4D::ZVEC);
+      Poincare zrot(ln.m_l,Vec4D::ZVEC);
       zrot.RotateBack(n_perp);
     }
     n_perp*=1.0/n_perp.PSpat();
-    Vec4D l_perp(0.0,cross(Vec3D(ifp.m_pj),Vec3D(n_perp)));
+    Vec4D l_perp(0.0,cross(Vec3D(ln.m_l),Vec3D(n_perp)));
     l_perp*=1.0/l_perp.PSpat();
     double pnn(Sign(ecm)*sqrt(sqr(ecm)-4.0*sjk*ma2)), gam(0.5*(ecm+pnn));
     double zt(ecm/pnn*(ifp.m_y-ma2/gam*(sjk+mj2-mk2)/ecm));
@@ -276,12 +289,14 @@ int PHASIC::ConstructIFDipole
     ifp.m_pk=ifp.m_pi-Q-ifp.m_pj;
   }
   else {
-    Vec4D Q(paj-pk), rpaj(paj), n_perp(0.0,cross(Vec3D(paj),Vec3D(pk)));
+    LN_Pair ln(GetLN(paj,pk,1));
+    Vec4D n_perp(0.0,cross(Vec3D(ln.m_l),Vec3D(ln.m_n)));
     n_perp*=1.0/n_perp.PSpat();
-    Poincare cms(paj+pk);
-    cms.Boost(rpaj);
-    Vec4D l_perp(0.0,cross(Vec3D(rpaj),Vec3D(n_perp)));
+    Poincare cms(ln.m_l+ln.m_n);
+    cms.Boost(ln.m_l);
+    Vec4D l_perp(0.0,cross(Vec3D(ln.m_l),Vec3D(n_perp)));
     l_perp*=1.0/l_perp.PSpat();
+    Vec4D Q(paj-pk);
     double Q2(Q.Abs2()), po(sqr(Q2-maj2-mk2)-4.0*maj2*mk2);
     double yt(ifp.m_y/ifp.m_z), saj(yt*(Q2-mk2)+(1.0-yt)*(ma2+mj2));
     double ecm(Q2-saj-mk2), pn(sqr(ecm)-4.0*saj*mk2);

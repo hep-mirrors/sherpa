@@ -171,14 +171,6 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(MCATNLOBUILDDIR)
   AC_SUBST(MCATNLOLIBS)
   
-  POWHEGDIR="\${top_srcdir}/POWHEG"
-  POWHEGBUILDDIR="\${top_builddir}/POWHEG"
-  POWHEGLIBS="-L\${POWHEGBUILDDIR}/Main -L\${POWHEGBUILDDIR}/Calculators -L\${POWHEGBUILDDIR}/Showers -L\${POWHEGBUILDDIR}/Tools \
-		-lPOWHEGTools -lPOWHEGCalculators -lPOWHEGShowers -lPOWHEGMain"
-  AC_SUBST(POWHEGDIR)
-  AC_SUBST(POWHEGBUILDDIR)
-  AC_SUBST(POWHEGLIBS)
-  
   CSSDIR="\${top_srcdir}/CSSHOWER++"
   CSSBUILDDIR="\${top_builddir}/CSSHOWER++"
   CSSLIBS="-L\${CSSBUILDDIR}/Main -L\${CSSBUILDDIR}/Calculators -L\${CSSBUILDDIR}/Showers -L\${CSSBUILDDIR}/Tools \
@@ -535,6 +527,27 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_BLACKHATINCS)
   AC_SUBST(CONDITIONAL_BLACKHATLIBS)
   AM_CONDITIONAL(BLACKHAT_SUPPORT, test "$blackhat" = "true")
+
+  AC_ARG_ENABLE(
+    openloops,
+    AC_HELP_STRING([--enable-openloops=/path/to/openloops], [Enable OpenLoops.]),
+    [ AC_MSG_CHECKING(for OpenLoops installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(OpenLoops not enabled); openloops=false ;;
+        *)   OPENLOOPS_PREFIX="$(echo ${enableval} | sed -e 's/\/$//g')"
+             if test -d "${OPENLOOPS_PREFIX}"; then
+                AC_MSG_RESULT([${OPENLOOPS_PREFIX}]); openloops=true;
+             else
+                AC_MSG_ERROR(${OPENLOOPS_PREFIX} is not a valid path.);
+             fi;;
+      esac
+      ],
+    [ openloops=false ]
+  )
+  if test "$openloops" = "true" ; then
+    AC_DEFINE_UNQUOTED([OPENLOOPS_PREFIX], "$OPENLOOPS_PREFIX", [Openloops installation prefix])
+  fi
+  AM_CONDITIONAL(OPENLOOPS_SUPPORT, test "$openloops" = "true")
 
   AC_ARG_ENABLE(
     mcfm,

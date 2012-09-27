@@ -33,6 +33,9 @@ namespace ATOOLS {
     int      m_inext,m_inextp;
     int      m_sinext,m_sinextp;
 
+    std::stringstream m_lastincrementedseed;
+    size_t m_nsinceinit, m_increment;
+
     External_RNG *p_external;
 
     // Variables for Ran4()
@@ -45,7 +48,7 @@ namespace ATOOLS {
     double Ran1(long *idum);
     double Ran2(long *idum);
     double Ran3();
-    double Ran4();              
+    double Ran4();
 
     void InitRan3(long*);
  
@@ -54,7 +57,9 @@ namespace ATOOLS {
 
     // temporary methods for Ran4()
     int  WriteOutStatus4(const char *outfile); 
+    int  WriteOutStatus4(std::ostream &os,const size_t &idx);
     void ReadInStatus4(const char * filename);
+    size_t ReadInStatus4(std::istream &is,const size_t &idx);
     void SaveStatus4();
     void RestoreStatus4();
 
@@ -79,6 +84,10 @@ namespace ATOOLS {
     size_t ReadInStatus(std::istream &is,const size_t &idx);
     void SaveStatus();
     void RestoreStatus();
+    void ResetToLastIncrementedSeed();
+    inline void EraseLastIncrementedSeed() 
+    { m_lastincrementedseed.str(std::string()); }
+    inline void SetSeedStorageIncrement(size_t inc) { m_increment=inc; }
 
     // return uniformly distributed random number in [0,1] using active Generator
     double Get();   

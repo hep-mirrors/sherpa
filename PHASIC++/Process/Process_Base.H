@@ -37,6 +37,7 @@ namespace PHASIC {
   struct Weight_Info;
 
   class Process_Base;
+  class BBar_Multi_Channel;
 
   typedef std::vector<PHASIC::Process_Base*> Process_Vector;
 
@@ -48,25 +49,27 @@ namespace PHASIC {
   class Process_Base {
   protected:
 
-    Process_Base       *p_parent, *p_selected, *p_mapproc;
+    Process_Base       *p_parent, *p_selected, *p_mapproc, *p_sproc;
     Process_Integrator *p_int;
     Combined_Selector  *p_selector;
     Cut_Data           *p_cuts;
     ME_Generator_Base  *p_gen;
 
-    PDF::Shower_Base *p_shower;
+    PDF::Shower_Base   *p_shower;
+    BBar_Multi_Channel *p_mc;
+
 
     Scale_Setter_Base   *p_scale;
     KFactor_Setter_Base *p_kfactor;
 
-    size_t      m_nin, m_nout, m_oqcd, m_oew, m_tinfo;
+    size_t      m_nin, m_nout, m_oqcd, m_oew, m_tinfo, m_mcmode, m_cmode;
     std::string m_name;
 
     ATOOLS::Flavour_Vector m_flavs;
     Process_Info           m_pinfo;
     ATOOLS::DecayInfo_Vector m_decins;
 
-    double m_last[2], m_symfac;
+    double m_last, m_lastb, m_symfac;
     bool   m_lookup, m_use_biweight;
 
     MODEL::Coupling_Map m_cpls;
@@ -74,7 +77,6 @@ namespace PHASIC {
     NLOTypeStringProcessMap_Map *p_apmap;
 
     static void SortFlavours(Subprocess_Info &info,FMMap *const fmm=0);
-    static void SortFlavours(Process_Info &pi);
     static void SortFlavours(std::vector<ATOOLS::Cluster_Leg*> &legs,
 			     FMMap *const fmm=0);
 
@@ -94,12 +96,18 @@ namespace PHASIC {
 
     void FillProcessMap(NLOTypeStringProcessMap_Map *apmap);
 
+    void SetSProc(Process_Base *sproc);
+    void SetBBarMC(BBar_Multi_Channel *mc);
+
     virtual void SetScale(const Scale_Setter_Arguments &args) = 0;
     virtual void SetKFactor(const KFactor_Setter_Arguments &args) = 0;
 
     virtual void SetFixedScale(const std::vector<double> &s);
     virtual void SetSelectorOn(const bool on);
     virtual void SetUseBIWeight(bool on);
+
+    virtual size_t SetMCMode(const size_t mcmode);
+    virtual size_t SetClusterMode(const size_t mcmode);
 
     virtual size_t Size() const = 0;
     virtual Process_Base *operator[](const size_t &i) = 0;
@@ -109,9 +117,13 @@ namespace PHASIC {
     virtual double Differential(const ATOOLS::Vec4D_Vector &p) = 0;
     virtual double Differential(const ATOOLS::Cluster_Amplitude &ampl,
                                 int mode=0);
-    virtual double Differential2() = 0;
 
     virtual bool GeneratePoint();
+    virtual void AddPoint(const double &value);
+    virtual bool ReadIn(const std::string &pid);
+    virtual void WriteOut(const std::string &pid);
+    virtual void EndOptimize();
+    virtual void MPISync();
 
     virtual bool IsGroup() const;
 
@@ -138,9 +150,8 @@ namespace PHASIC {
     virtual bool Trigger(const ATOOLS::Vec4D_Vector &p);
 
     virtual ATOOLS::NLO_subevtlist *GetSubevtList();
+    virtual ATOOLS::NLO_subevtlist *GetRSSubevtList();
     virtual ATOOLS::ME_wgtinfo     *GetMEwgtinfo();
-
-    virtual void MultiplyLast(const double &w,const int mode);
 
     virtual void SetRBMap(ATOOLS::Cluster_Amplitude *ampl);
     virtual void InitPSHandler(const double &maxerror,
@@ -149,7 +160,9 @@ namespace PHASIC {
 
     virtual void FillOnshellConditions();
 
-    static void SortFlavours(ATOOLS::Cluster_Amplitude *const ampl);
+    static void SortFlavours(ATOOLS::Cluster_Amplitude *const ampl,
+			     const int mode=0);
+    static void SortFlavours(Process_Info &pi,const int mode=0);
 
     static std::string GenerateName(const ATOOLS::Cluster_Amplitude *ampl);
     static std::string GenerateName(const ATOOLS::NLO_subevt *sub,
@@ -185,20 +198,15 @@ namespace PHASIC {
 
     inline Process_Integrator *Integrator() const { return p_int; }
 
-    inline void SetLast(const double &last,const int mode)
-    { m_last[mode]=last; }
     virtual void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                                 std::vector<std::vector<Complex> >& cols);
 
-    inline double Last(const int mode) const { return m_last[mode]; }
-    inline double Last() const { return m_last[0]+m_last[1]; }
+    inline double Last() const { return m_last; }
+    inline double LastB() const { return m_lastb; }
 
     inline bool LookUp() const { return m_lookup; }
 
     inline double SymFac() const { return m_symfac; }
-
-    inline void SwapInOrder() 
-    { std::swap<ATOOLS::Flavour>(m_flavs[0],m_flavs[1]); }
 
     inline Scale_Setter_Base *ScaleSetter(const int map=0) const
     { return map?(p_mapproc?p_mapproc->p_scale:p_scale):p_scale; }
@@ -208,6 +216,9 @@ namespace PHASIC {
     inline bool IsMapped() const { return p_mapproc; }
 
     inline size_t ThreadInfo() const { return m_tinfo; }
+
+    inline size_t MCMode() const      { return m_mcmode; }
+    inline size_t ClusterMode() const { return m_cmode;  }
 
     inline ME_Generator_Base *Generator() const { return p_gen; }
 
@@ -223,6 +234,8 @@ namespace PHASIC {
     { return dynamic_cast<PType*>(this); }
 
     inline NLOTypeStringProcessMap_Map *AllProcs() { return p_apmap; }
+
+    inline BBar_Multi_Channel *BBarMC() const { return p_mc; }
 
   };// end of class Process_Base
 

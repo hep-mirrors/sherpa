@@ -185,8 +185,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         const ATOOLS::Flavour *fl(sub->p_fl);
         for (size_t j(0);j<2;++j) {
           HepMC::FourVector momentum;
-          if (sub->m_flip) momentum.set(-mom[j][1],-mom[j][2],-mom[j][3],mom[j][0]);
-          else             momentum.set( mom[j][1], mom[j][2], mom[j][3],mom[j][0]);
+          momentum.set( mom[j][1], mom[j][2], mom[j][3],mom[j][0]);
           ATOOLS::Flavour flc(fl[j]);
           HepMC::GenParticle* inpart
               = new HepMC::GenParticle(momentum,flc.HepEvt(),1);
@@ -197,8 +196,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
       const ATOOLS::Flavour *fl(sub->p_fl);
       for (size_t j(2);j<(*subevtlist)[i]->m_n;++j) {
         HepMC::FourVector momentum;
-        if (sub->m_flip) momentum.set(-mom[j][1],-mom[j][2],-mom[j][3],mom[j][0]);
-        else             momentum.set( mom[j][1], mom[j][2], mom[j][3],mom[j][0]);
+	momentum.set( mom[j][1], mom[j][2], mom[j][3],mom[j][0]);
         ATOOLS::Flavour flc(fl[j]);
         HepMC::GenParticle* outpart
             = new HepMC::GenParticle(momentum,flc.HepEvt(),1);
@@ -249,8 +247,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         }
         ATOOLS::Vec4D hardparton[2];
         for (size_t j(0);j<2;++j) {
-          if (sub->m_flip) hardparton[j]=ATOOLS::Vec4D(mom[j][0],Vec3D(-mom[j]));
-          else             hardparton[j]=ATOOLS::Vec4D(mom[j][0],Vec3D( mom[j]));
+	  hardparton[j]=ATOOLS::Vec4D(mom[j][0],Vec3D( mom[j]));
         }
         // incoming partons might need to be flipped due to particle sorting
         bool flip(hardparton[0][3]<0);

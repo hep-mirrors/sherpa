@@ -21,8 +21,8 @@ Sudakov::Sudakov(PDF::ISR_Handler *isr,const int qed) :
   for (int i=0;i<2; i++) p_pdf[i] = isr->PDF(i);
 
   Data_Reader read(" ",";","#","=");
-  m_scalescheme=read.GetValue<int>("MCATNLO_SCALE_SCHEME",0);
-  if (m_scalescheme!=0) PRINT_INFO("MCATNLO_SCALE_SCHEME="<<m_scalescheme);
+  m_scalescheme=read.GetValue<int>("MCATNLO_SCALE_SCHEME",2);
+  if (m_scalescheme!=2) PRINT_INFO("MCATNLO_SCALE_SCHEME="<<m_scalescheme);
 }
 
 Sudakov::~Sudakov() 
@@ -57,9 +57,9 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
        git!=flist.end();++git) (*git)->GetObject(SFC_Filler_Key(md,&m_cgets));
   if (msg_LevelIsDebugging()) {
     msg_Out()<<METHOD<<"(): {\n\n"
-	     <<"   // available coupling calcs\n\n";
+	     <<"   // available coupling calcs for MC@NLO\n\n";
     SFC_Getter::PrintGetterInfo(msg->Out(),25);
-    msg_Out()<<"\n   // available lorentz calcs\n\n";
+    msg_Out()<<"\n   // available lorentz calcs for MC@NLO\n\n";
     SFL_Getter::PrintGetterInfo(msg->Out(),25);
     msg_Out()<<"\n}"<<std::endl;
   }
@@ -136,6 +136,13 @@ void Sudakov::SetCoupling(MODEL::Model_Base *md,
     else {
       ++sit;
     }
+}
+
+void Sudakov::SetCouplingMax(const double &k0sqi,const double &k0sqf,
+                            const double &isfac,const double &fsfac) {
+  for (std::vector<Splitting_Function_Base*>::iterator
+        sit(m_splittings.begin());sit!=m_splittings.end(); sit++)
+    (*sit)->Coupling()->SetCouplingMax(m_k0sqi,m_k0sqf,isfac,fsfac);
 }
 
 void Sudakov::Add(Splitting_Function_Base * split) 
@@ -290,6 +297,7 @@ bool Sudakov::Generate(Parton * split)
     ProduceT();
     SelectOne();
     split->SetSpect(p_selected->SelectSpec());
+    p_selected->ColorPoint(split);
     m_z = Z();
     double k0sq(p_split->GetType()==pst::IS?m_k0sqi:m_k0sqf);
     if (m_kperp2<k0sq)  return false;

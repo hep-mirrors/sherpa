@@ -27,13 +27,14 @@ namespace MCATNLO {
     ATOOLS::Mass_Selector *p_ms;
     void *p_procs;
     double m_mur2;
-    bool ArrangeColours(Parton *, Parton *, Parton *);
+    Parton_List m_dels;
   public :
     Singlet() : 
       p_jf(NULL), p_all(NULL), p_procs(NULL) {}
     ~Singlet();
 
     int       SplitParton(Parton *, Parton *, Parton *);
+    bool      ArrangeColours(Parton *, Parton *, Parton *);
 
     void        BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 			   const ATOOLS::Flavour &mo,const int mode);

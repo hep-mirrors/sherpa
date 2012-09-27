@@ -59,8 +59,8 @@ double Splitting_Function_Group::OverIntegrated(const double zmin,const double z
 
 double Splitting_Function_Group::operator() (const double z,const double y,
 					     const double eta,const double scale,
-					     const double Q2,Cluster_Amplitude *const sub) { 
-  return (*p_selected)(z,y,eta,scale,Q2,sub); 
+					     const double Q2,const Color_Info &ci,Cluster_Amplitude *const sub) { 
+  return (*p_selected)(z,y,eta,scale,Q2,ci,sub); 
 }
 
 double Splitting_Function_Group::Overestimated(const double z,const double y) { 

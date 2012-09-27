@@ -29,12 +29,13 @@ namespace COMIX {
     PSGenerator_Set m_psset;
 
     double m_w, m_dxs, m_x[2];
+    bool   m_checkpoles;
 
     ATOOLS::NLO_subevtlist m_subs;
 
     void InitPSGenerator(const size_t &ismode);
 
-    void MapSubEvts();
+    void MapSubEvts(const int mode);
 
     double SetZero();
 
@@ -60,7 +61,8 @@ namespace COMIX {
     Amplitude *GetAmplitude() const;
     
     double Partonic(const ATOOLS::Vec4D_Vector &p,const int mode);
-    double Differential(const ATOOLS::Cluster_Amplitude &ampl);
+    double Differential(const ATOOLS::Cluster_Amplitude &ampl,
+			int mode=0);
 
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
 
@@ -76,9 +78,16 @@ namespace COMIX {
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes> &amps,
 			std::vector<std::vector<Complex> > &cols);
 
-    ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl) const;
+    ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl,
+			  const size_t &id) const;
 
     ATOOLS::NLO_subevtlist *GetSubevtList();
+
+    void SetScale(const PHASIC::Scale_Setter_Arguments &args);
+    void SetSelector(const PHASIC::Selector_Key &key);
+    void SetShower(PDF::Shower_Base *const ps);
+
+    size_t SetMCMode(const size_t mcmode);
 
   };// end of class Single_Process
 

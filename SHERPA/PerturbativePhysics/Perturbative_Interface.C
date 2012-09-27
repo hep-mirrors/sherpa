@@ -11,7 +11,6 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
-#include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -156,24 +155,15 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   if (p_me->Process()->Info().m_ckkw&1) {
     if (m_bbarmode && p_me->HasNLO() &&
         p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
-      // Bbar reweighting for smooth merging
-      DEBUG_FUNC("Bbar reweighting");
-      Cluster_Amplitude *ampl=p_ampl->CopyAll();
-      if (!LocalKFactor(ampl)) {
-        DEBUG_INFO("didn't find PowProc along these cluster amplitudes. "
-                   <<"trying with exclusively clustered amplitude:");
         Cluster_Amplitude *excl_ampl=
-	  p_me->Process()->Get<Single_Process>()->Cluster(m_cmode|256|512);
+            p_me->Process()->Get<Single_Process>()->Cluster(m_cmode|256|512|1024);
 	if (excl_ampl) {
         if (!LocalKFactor(excl_ampl)) {
           DEBUG_INFO("didn't find PowProc in exclusively clustered amplitude");
 	}
         while (excl_ampl->Prev()) excl_ampl=excl_ampl->Prev();
         excl_ampl->Delete();
-      }
-      }
-      while (ampl->Prev()) ampl=ampl->Prev();
-      ampl->Delete();
+	}
     }
     blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
     if (p_me->EventGenerationMode()!=0) {
@@ -198,6 +188,7 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
   }
   DEBUG_FUNC(ampl->Legs().size());
   Process_Vector procs(p_me->AllProcesses());
+  Process_Base::SortFlavours(ampl);
   while (ampl->Next()!=NULL) {
     ampl=ampl->Next();
     Process_Base::SortFlavours(ampl);
@@ -212,22 +203,12 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
     for (size_t i=0; i<procs.size(); ++i) {
       MCatNLO_Process* mcnloproc=dynamic_cast<MCatNLO_Process*>(procs[i]);
       if (mcnloproc) {
+	ampl->SetQ2(ampl->KT2());
+	ampl->Prev()->SetQ2(ampl->KT2());
 	double K(mcnloproc->LocalKFactor(*ampl));
 	if (K==0.0 || K>m_maxkfac) continue;
 	m_weight*=K;
 	return true;
-      }
-      POWHEG_Process* powproc = dynamic_cast<POWHEG_Process*>(procs[i]);
-      if (powproc==NULL) continue;
-      if (ampl->Legs().size()!=procs[i]->NIn()+procs[i]->NOut()-1) continue;
-      Process_Base* bornprocs = (*powproc)[2];
-      for (size_t iflav=0; iflav<bornprocs->Size(); ++iflav) {
-        DEBUG_VAR((*bornprocs)[iflav]->Flavours());
-        if (amplflavs==(*bornprocs)[iflav]->Flavours()) {
-          m_weight*=powproc->LocalKFactor(pb);
-          DEBUG_VAR(m_weight);
-          return true;
-        }
       }
     }
   }

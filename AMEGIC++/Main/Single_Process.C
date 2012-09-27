@@ -188,6 +188,7 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
 	p_mapproc = p_partner = (Single_Process*)links[j];
 	WriteAlternativeName(p_partner->Name());
 	m_iresult = p_partner->Result()*m_sfactor;
+	InitFlavmap(p_partner);
 
 	Minimize();
 	return 1;
@@ -238,6 +239,7 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
 	  p_mapproc = p_partner   = (Single_Process*)links[j];
 	  m_pslibname = links[j]->PSLibName();
 	  WriteAlternativeName(p_partner->Name());
+	  InitFlavmap(p_partner);
 	  break;
 	}
       } 
@@ -773,17 +775,12 @@ void AMEGIC::Single_Process::Minimize()
 
 double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms,const int mode) 
 { 
-  if (mode==1 && !p_partner->ScaleSetter()->Scale2()) return m_lastxs;
+  if (mode==1) return m_lastxs;
   if (!Selector()->Result()) return m_lastxs = 0.0;
   if (!(IsMapped() && LookUp())) {
-    p_partner->ScaleSetter()->CalculateScale(_moms,mode);
+    p_partner->ScaleSetter()->CalculateScale(_moms,m_cmode);
   }
-  Vec4D_Vector moms(_moms);
-  if (!(m_nin==2 && p_int->ISR() && p_int->ISR()->On())) {
-    Poincare cms(Vec4D(10.0,0.0,0.0,1.0));
-    for (size_t i(0);i<moms.size();++i) cms.Boost(moms[i]);
-  }
-  return DSigma(moms,m_lookup); 
+  return DSigma(_moms,m_lookup); 
 }
 
 double AMEGIC::Single_Process::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool lookup)

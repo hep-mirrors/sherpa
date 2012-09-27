@@ -54,6 +54,8 @@ bool CF_QED::SetCoupling(MODEL::Model_Base *md,
 double CF_QED::Coupling(const double &scale,const int pol)
 {
   if (pol!=0) return 0.0;
+  if (scale<0.0) return
+    m_cplmax.front()*m_q*dabs(p_lf->FlSpec().Charge());
   double scl(CplFac(scale)*scale);
   return (*p_cpl)(scl)*m_q*dabs(p_lf->FlSpec().Charge());
 }

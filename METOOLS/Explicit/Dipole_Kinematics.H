@@ -15,7 +15,7 @@ namespace METOOLS {
 
     int m_type, m_swap, m_trig;
 
-    double m_z, m_y, m_phase[2], m_res[3];
+    double m_z, m_y, m_kt2, m_phase[2], m_res[3];
 
     Dipole_Info *p_info;
     SizeT_Vector m_pm;
@@ -59,6 +59,8 @@ namespace METOOLS {
     inline double Z() const { return m_z; }
     inline double Y() const { return m_y; }
 
+    inline double KT2() const { return m_kt2; }
+
     inline double Phase(const int i) const { return m_phase[i]; }
     inline double Res(const int i) const   { return m_res[i];   }
 
@@ -75,6 +77,7 @@ namespace METOOLS {
     inline const ATOOLS::Vec4D_Vector &Momenta() const { return m_p; }
 
     inline void AddTrig(const int trig) { m_trig&=trig; }
+    inline void SetTrig(const int trig) { m_trig=trig;  }
 
     inline SizeT_Vector &PM() { return m_pm; }
 

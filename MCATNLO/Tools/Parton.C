@@ -17,4 +17,11 @@ namespace MCATNLO {
     str<<"  x_B : "<<part.m_xBj<<std::endl;
     return str;
   }
+
+  std::ostream &operator<<(std::ostream &str,const Color_Info &ci)
+  {
+    return str<<"("<<ci.m_i[0]<<","<<ci.m_i[1]<<")("
+	      <<ci.m_j[0]<<","<<ci.m_j[1]<<")<->("
+	      <<ci.m_k[0]<<","<<ci.m_k[1]<<")";
+  }
 }

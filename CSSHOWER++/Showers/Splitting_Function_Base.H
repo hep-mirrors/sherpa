@@ -142,6 +142,8 @@ namespace CSSHOWER {
     virtual bool SetCoupling(MODEL::Model_Base *md,
 			     const double &k0sqi,const double &k0sqf,
 			     const double &isfac,const double &fsfac) = 0;
+    virtual void SetCouplingMax(const double &k0sqi,const double &k0sqf,
+			       const double &isfac,const double &fsfac) {}
     virtual double Coupling(const double &scale,const int pol) = 0;
     virtual bool AllowSpec(const ATOOLS::Flavour &fl) = 0;
 
@@ -150,6 +152,8 @@ namespace CSSHOWER {
     inline double MaxCoupling(const int mode) const { return m_cplmax[mode]; }
 
     inline void SetLF(SF_Lorentz *const lf) { p_lf=lf; }
+
+    inline double CplFac() const { return m_cplfac; }
 
   };
 

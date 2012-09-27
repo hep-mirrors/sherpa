@@ -117,6 +117,8 @@ namespace AMEGIC {
                         std::vector<std::vector<Complex> >& cols,
                         double sfactor);
     bool PerformTests();
+    ATOOLS::NLO_subevtlist*             GetRSSubevtList()
+    { return p_subevtlist; }
 
   };
 }

@@ -12,7 +12,6 @@ libPhasicProcess_la_SOURCES   =	\
 				Process_Group.C \
 				Single_Process.C \
 				MCatNLO_Process.C \
-				POWHEG_Process.C \
 				Virtual_ME2_Base.C \
 				Tree_ME2_Base.C \
 				Flavour_Kernels.C \
@@ -28,7 +27,6 @@ localinc_HEADERS      =	\
 			Process_Group.H \
 			Single_Process.H \
 			MCatNLO_Process.H \
-			POWHEG_Process.H \
 			Virtual_ME2_Base.H \
 			Tree_ME2_Base.H \
 			Flavour_Kernels.H \

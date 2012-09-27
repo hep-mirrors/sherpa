@@ -120,10 +120,11 @@ void Phase_Space_Integrator::MPISync()
   lrtime=ATOOLS::rpa->gen.Timer().RealTime();
 }
 
-double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxerror, int _fin_opt) 
+double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxerror, double _maxabserror, int _fin_opt) 
 {
   mn=mnstep=mncstep=0;
   maxerror=_maxerror;
+  maxabserror=_maxabserror;
   fin_opt=_fin_opt;
   psh=_psh;
   msg_Info()<<"Starting the calculation. Lean back and enjoy ... ."<<endl; 
@@ -266,6 +267,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	endopt++;
 	(psh->Process())->ResetMax(1);
 	(psh->Process())->InitWeightHistogram();
+	(psh->Process())->EndOptimize();
 #ifdef USING__Threading
 	rlotime = ATOOLS::rpa->gen.Timer().RealTime();
 #endif
@@ -338,7 +340,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       bool allowbreak = true;
       if (fin_opt==1 && (endopt<2||ncontrib<maxopt)) allowbreak = false;
       if (dabs(error)<maxerror && allowbreak) return true;
-
+      if (dabs(psh->Process()->TotalVar()*rpa->Picobarn())<maxabserror && allowbreak) return true;
     }
     return false;
 }

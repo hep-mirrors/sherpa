@@ -5,7 +5,6 @@
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Org/Info_Key.H"
 #include "PHASIC++/Process/Process_Base.H"
-#include "ATOOLS/Phys/RB_Data.H"
 #include "ATOOLS/Org/Exception.H"
 
 #include <string>
@@ -43,7 +42,7 @@ namespace PHASIC {
     cls::scheme m_colorscheme;
     hls::scheme m_helicityscheme;
 
-    double m_threshold, m_enhancefac, m_maxeps, m_rbmaxeps, m_rsfac;
+    double m_threshold, m_enhancefac, m_maxeps, m_rsfac;
 
     long unsigned int m_n, m_itmin;
 
@@ -56,15 +55,12 @@ namespace PHASIC {
 
     long unsigned int m_sn, m_svn, m_son;
 
-    bool m_swaped;
     bool m_writeout;
 
     ATOOLS::Histogram *p_whisto;
 
     SP(Color_Integrator)    p_colint;
     SP(Helicity_Integrator) p_helint;
-
-    ATOOLS::RB_Map m_rbmap;
 
     double Sigma2() const;
 
@@ -90,9 +86,6 @@ namespace PHASIC {
     void SetMomenta(const ATOOLS::Vec4D_Vector &p);
     void SetMomenta(const ATOOLS::Cluster_Amplitude &ampl);
 
-    void SwapInOrder();
-    void RestoreInOrder();
-
     void AddPoint(const double xs);
     void Reset();
 
@@ -111,10 +104,8 @@ namespace PHASIC {
     bool ReadInXSecs(const std::string &path);
     void WriteOutXSecs(const std::string &path);
 
-    bool WriteOutRB(const std::string &path);
-    bool ReadInRB(const std::string &path);
-
     void OptimizeResult();
+    void EndOptimize();
 
     double GetMaxEps(double);
     void   SetUpEnhance(const int omode=0);
@@ -126,10 +117,7 @@ namespace PHASIC {
 
     void SetEnhanceFactor(const double &efac);
     void SetMaxEpsilon(const double &maxeps);
-    void SetRBMaxEpsilon(const double &maxeps);
     void SetRSEnhanceFactor(const double &rsfac);
-
-    void PrintRBInfo() const;
 
     double SelectionWeight(const int mode) const;
 
@@ -159,16 +147,12 @@ namespace PHASIC {
     inline double VMean() const      { return m_vmean;    }
     inline double Max() const        { return m_max;      }
 
-    inline ATOOLS::RB_Map &RBMap() { return m_rbmap; }
-
     inline double ISRThreshold() const      { return m_threshold;   }
     inline double EnhanceFactor() const     { return m_enhancefac;  }
     inline double RSEnhanceFactor() const   { return m_rsfac;       }
 
     inline cls::scheme ColorScheme() const    { return m_colorscheme;    }
     inline hls::scheme HelicityScheme() const { return m_helicityscheme; }
-
-    inline bool InSwaped() const { return m_swaped;  }
 
     inline void SetBeam(BEAM::Beam_Spectra_Handler *const beam) 
     { p_beamhandler=beam; }

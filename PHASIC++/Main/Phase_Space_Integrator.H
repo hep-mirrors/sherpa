@@ -13,7 +13,7 @@ namespace PHASIC {
     static long unsigned int nmax;
 
     double starttime, lotime, totalopt, addtime, lrtime;
-    double value, maxerror, rstarttime, rlotime;
+    double value, maxerror, maxabserror, rstarttime, rlotime;
     long unsigned int n, ncontrib, endopt, nlo, fin_opt, nstep, ncstep;
     long int mn, mnstep, mncstep;
 
@@ -27,7 +27,7 @@ namespace PHASIC {
     
     ~Phase_Space_Integrator();
 
-    double Calculate(Phase_Space_Handler*,double,int); 
+    double Calculate(Phase_Space_Handler*,double,double,int); 
     double CalculateDecay(Phase_Space_Handler*,double); 
 
     //! Simple access methods.

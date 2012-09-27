@@ -34,7 +34,7 @@ DipoleSplitting_Base::DipoleSplitting_Base()
   m_tk=-1;
   m_m=0;
   m_alpha=1.;
-
+  m_kt2max=std::numeric_limits<double>::max();
   m_amin = max(ATOOLS::Accu(),1.e-8);
   double helpd;
   Data_Reader reader(" ",";","!","=");
@@ -181,3 +181,21 @@ double DipoleSplitting_Base::Vie2(int type)
   return 1.;
 }
 
+bool DipoleSplitting_Base::Reject(const double &alpha)
+{
+  if (m_mcmode==1) {
+    int da(m_kt2<m_kt2max), ds(alpha<m_alpha);
+    m_mcsign=ds-da;
+    return m_mcsign==0;
+  }
+  if (m_mcmode==2) {
+    m_mcsign=m_kt2<m_kt2max;
+    return m_mcsign==0;
+  }
+  if (m_mcmode==3) {
+    int ds(alpha<m_alpha);
+    m_mcsign=ds-1;
+    return m_mcsign==0;
+  }
+  return alpha>m_alpha || m_kt2>m_kt2max;
+}

@@ -27,11 +27,12 @@ std::ostream &operator<<(std::ostream &ostr,const stp::id &scl)
 }
 
 Scale_Setter_Base::Scale_Setter_Base
-(const Scale_Setter_Arguments &args,const bool scale2):
+(const Scale_Setter_Arguments &args):
   p_proc(args.p_proc), p_caller(p_proc),
   p_model(args.p_model), p_cpls(args.p_cpls), p_subs(NULL),
   m_scale(stp::size), m_coupling(args.m_coupling),
-  m_scale2(scale2), m_nin(args.m_nin), m_nout(args.m_nout)
+  m_nin(args.m_nin), m_nout(args.m_nout), 
+  m_htyfac(0.3), m_htyexp(1.)
 {
   for (size_t i(0);i<stp::size;++i) m_scale[i]=rpa->gen.CplScale();
   if (p_proc) {
@@ -114,13 +115,47 @@ Vec4D Scale_Setter_Base::PSum() const
   return sum;
 }
 
+double Scale_Setter_Base::HTYweighted() const
+{
+  Vec4D psum(0.,0.,0.,0.);
+  for (size_t i(m_nin);i<m_p.size();++i) psum+=m_p[i];
+  double yboost((psum/(double)(m_p.size()-m_nin)).Y());
+  double hty(0.0);
+  for (size_t i(m_nin);i<m_p.size();++i) 
+    hty+=m_p[i].PPerp()*exp(m_htyfac*pow(abs(m_p[i].Y()-yboost),m_htyexp));
+  return hty;
+}
+
+bool Scale_Setter_Base::SetHTYweightedParameters(std::string par, 
+                                                 std::string val)
+{
+  DEBUG_FUNC(par<<" -> "<<val);
+  if      (par=="fac") m_htyfac=ToType<double>(val);
+  else if (par=="exp") m_htyexp=ToType<double>(val);
+  else                 THROW(fatal_error,"Unknown parameters.");
+  msg_Debugging()<<"fac: "<<m_htyfac<<" ,  exp: "<<m_htyexp<<std::endl;
+  return true;
+}
+
+double Scale_Setter_Base::BeamThrust() const
+{
+  double tauB(0.);
+  for (size_t i(m_nin);i<m_p.size();++i) tauB+=m_p[i][0]-abs(m_p[i][3]);
+  return tauB;
+}
+
 double Scale_Setter_Base::CalculateScale
-(const ATOOLS::Vec4D_Vector &p,const int mode)
+(const ATOOLS::Vec4D_Vector &p,const size_t mode)
 {
   DEBUG_FUNC((p_proc?p_proc->Name():""));
   if (!m_escale.empty()) {
-    m_scale[stp::fac]=m_escale[stp::fac];
-    m_scale[stp::ren]=m_escale[stp::ren];
+    for (size_t i(0);i<stp::size;++i) m_scale[i]=m_escale[i];
+    if (p_subs) {
+      for (size_t i(0);i<p_subs->size();++i) {
+	NLO_subevt *sub((*p_subs)[i]);
+	for (size_t j(0);j<stp::size;++j) sub->m_mu2[j]=m_scale[j];
+      }
+    }
     p_cpls->Calculate();
     return m_scale[stp::fac];    
   }

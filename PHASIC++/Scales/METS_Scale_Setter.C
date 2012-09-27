@@ -69,8 +69,9 @@ namespace PHASIC {
 
     SP(Color_Integrator) p_ci;
 
-    size_t m_cnt, m_rej, m_mode, m_rproc, m_vmode, m_vproc, m_cmode, m_mufmode;
+    size_t m_cnt, m_rej, m_mode, m_cmode;
     double m_lfrac, m_aqed, m_wthres;
+    int    m_rproc, m_vproc, m_nproc;
 
     ATOOLS::DecayInfo_Vector m_decids;
 
@@ -99,7 +100,8 @@ namespace PHASIC {
 
     double SetScales(const double &muf2,ATOOLS::Cluster_Amplitude *ampl);
 
-    double CalculateStrict(const ATOOLS::Vec4D_Vector &momenta,const int mode);
+    double CalculateStrict(const ATOOLS::Vec4D_Vector &momenta,
+			   const size_t &mode);
 
   public:
 
@@ -108,8 +110,7 @@ namespace PHASIC {
 
     ~METS_Scale_Setter();
 
-    double Calculate(const ATOOLS::Vec4D_Vector &p,const int mode);
-    double CalculateMyScale(const ATOOLS::Vec4D_Vector &p,const int mode);
+    double Calculate(const ATOOLS::Vec4D_Vector &p,const size_t &mode);
 
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
@@ -195,24 +196,18 @@ METS_Scale_Setter::METS_Scale_Setter
     SetScale(ctag,*m_calcs.back());
   }
   m_scale.resize(Max(m_scale.size(),m_calcs.size()));
+  m_scale.resize(Max(m_scale.size(),size_t(stp::size+2)));
   SetCouplings();
   m_f=p_proc->Flavours();
   m_decids=p_proc->DecayInfos();
   m_aqed=(*MODEL::aqed)(sqr(Flavour(kf_Z).Mass()));
   for (size_t i(0);i<p_proc->NIn();++i) m_f[i]=m_f[i].Bar();
   m_rproc=p_proc->Info().Has(nlo_type::real);
-  m_vproc=!p_proc->Parent()->Info().m_fi.NLOType()==nlo_type::lo;
+  m_vproc=p_proc->Info().Has(nlo_type::vsub);
+  m_nproc=!p_proc->Parent()->Info().m_fi.NLOType()==nlo_type::lo;
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
   Data_Reader read(" ",";","!","=");
-  if (!read.ReadFromFile(m_vmode,"METS_SCALE_VMODE")) m_vmode=8;
-  else msg_Info()<<METHOD<<"(): Set NLO scale mode "<<m_vmode<<".\n";
-  if (!read.ReadFromFile(m_mufmode,"METS_SCALE_MUFMODE")) m_mufmode=1;
-  else msg_Info()<<METHOD<<"(): Set METS \\mu_F mode "<<m_mufmode<<".\n";
   if (!read.ReadFromFile(m_wthres,"METS_WARNING_THRESHOLD")) m_wthres=0.1;
-  if (m_vproc && (m_vmode&8)) {
-    m_mode=0;
-    m_mufmode=0;
-  }
 }
 
 METS_Scale_Setter::~METS_Scale_Setter()
@@ -221,27 +216,32 @@ METS_Scale_Setter::~METS_Scale_Setter()
 }
 
 double METS_Scale_Setter::CalculateStrict
-(const Vec4D_Vector &momenta,const int mode)
+(const Vec4D_Vector &momenta,const size_t &mode)
 {
   if (p_caller->Shower()==NULL) THROW(fatal_error,"No shower generator");
   DEBUG_FUNC(p_proc->Name()<<" from "<<p_caller->Name());
-  p_caller->Integrator()->SetMomenta(momenta);
-  p_caller->Generator()->SetClusterDefinitions
-    (p_caller->Shower()->GetClusterDefinitions());
-  int amode(p_caller->Shower()->GetClusterDefinitions()->AMode()?512:0);
+  Process_Base *proc((mode&1)?p_proc:p_caller);
+  proc->Integrator()->SetMomenta(momenta);
+  PDF::Cluster_Definitions_Base* cd=
+    proc->Shower()->GetClusterDefinitions();
+  proc->Generator()->SetClusterDefinitions(cd);
+  int amode(cd->AMode()), camode((m_nproc|amode)?512:0);
+  cd->SetAMode((camode&512)?1:0);
+  if (m_rproc) camode|=4096;
   Cluster_Amplitude *ampl
-    (p_caller->Generator()->
-     ClusterConfiguration(p_caller,m_vproc|m_cmode|amode));
+    (proc->Generator()->
+     ClusterConfiguration(proc,m_cmode|camode|mode));
+  cd->SetAMode(amode);
   if (ampl==NULL) {
     msg_Debugging()<<METHOD<<"(): No CSS history for '"
-		   <<p_caller->Name()<<"'. Set \\hat{s}.\n";
+		   <<proc->Name()<<"'. Set \\hat{s}.\n";
     ++m_rej;
     double frac(m_rej/(double)m_cnt);
     if (frac>1.25*m_lfrac && m_cnt>5000) {
       m_lfrac=frac;
       if (m_lfrac>m_wthres)
       msg_Error()<<METHOD<<"(): No CSS history for '"
-		 <<p_caller->Name()<<"' in >"
+		 <<proc->Name()<<"' in >"
 		 <<(int(m_lfrac*10000)/100.0)
 		 <<"% of calls. Set \\hat{s}."<<std::endl;
     }
@@ -250,51 +250,25 @@ double METS_Scale_Setter::CalculateStrict
   Cluster_Amplitude *rampl(ampl);
   while (rampl->Next()) rampl=rampl->Next();
   double muf2(SetScales(rampl->KT2(),ampl));
-  if (p_caller->LookUp()) ampl->Delete();
-  else m_ampls.push_back(ampl);
+  m_ampls.push_back(ampl);
   return muf2;
 }
 
-double METS_Scale_Setter::Calculate
-(const Vec4D_Vector &imomenta,const int imode) 
-{
-  int mode(imode&1);
-  Vec4D_Vector momenta(imomenta);
-  if (imode&2) {
-    for (size_t i(0);i<momenta.size();++i)
-      momenta[i]=Vec4D(momenta[i][0],-momenta[i][1],
-		       -momenta[i][2],-momenta[i][3]);
-  }
-  if (mode==0) return CalculateMyScale(momenta,mode);
-  if (m_mode==2 || (m_mode==1 && !p_caller->LookUp())) {
-    p_caller->Integrator()->SetMomenta(momenta);
-    p_caller->Integrator()->SwapInOrder();
-    double muf2(CalculateMyScale(p_caller->Integrator()->Momenta(),1));
-    p_caller->Integrator()->RestoreInOrder();
-    return muf2;
-  }
-  return m_scale[stp::fac];
-}
-
-double METS_Scale_Setter::CalculateMyScale
-(const Vec4D_Vector &momenta,const int mode) 
+double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mode) 
 {
   ++m_cnt;
   m_p=momenta;
   p_ci=p_proc->Integrator()->ColorIntegrator();
   for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];
-  if (mode==0) {
-    while (m_ampls.size()) {
-      m_ampls.back()->Delete();
-      m_ampls.pop_back();
-    }
+  while (m_ampls.size()) {
+    m_ampls.back()->Delete();
+    m_ampls.pop_back();
   }
   if (m_mode==2 || (m_mode==1 && !p_caller->LookUp())) {
-    m_scale2=p_proc->Integrator()->ISR()->On() && m_f[0]!=m_f[1];
     return CalculateStrict(momenta,mode);
   }
   if (p_caller->Shower()==NULL) THROW(fatal_error,"No shower generator");
-  DEBUG_FUNC(p_proc->Name()<<" mode="<<mode);
+  DEBUG_FUNC(p_proc->Name()<<" from "<<p_caller->Name());
   for (int ic(p_ci==NULL?1:0);ic<2;++ic) {
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   ampl->SetNIn(p_proc->NIn());
@@ -310,9 +284,15 @@ double METS_Scale_Setter::CalculateMyScale
   Single_Process *proc(p_proc->Get<Single_Process>());
   std::vector<std::set<CS_Params> > alltrials(ampl->Legs().size()-4);
   std::vector<bool> ords(ampl->Legs().size()-3,true);
-  std::vector<double> ops(ampl->Legs().size()-3,0.0);
+  std::vector<std::vector<std::pair<size_t,double> > >
+    ops(ampl->Legs().size()-3);
+  ops[ampl->Legs().size()-4].push_back
+    (std::pair<size_t,double>((1<<ampl->Legs().size())-1,0.0));
+  for (size_t i(0);i<m_decids.size();++i)
+    ops[ampl->Legs().size()-4].push_back
+      (std::pair<size_t,double>(m_decids[i]->m_id,0.0));
   double kt2core(ampl->Legs().size()>4?0.0:CoreScale(ampl));
-  ampl->SetOrderQCD(proc->OrderQCD());
+  ampl->SetOrderQCD(p_caller->OrderQCD());
   while (ampl->Legs().size()>4) {
     msg_Debugging()<<"Actual = "<<*ampl<<"\n";
     std::set<CS_Params> &trials(alltrials[ampl->Legs().size()-5]);
@@ -355,9 +335,6 @@ double METS_Scale_Setter::CalculateMyScale
 		trials.insert(cs);
 		continue;
 	      }
-	      if (m_rproc && ampl->Prev()==NULL) cs.m_op2=
-		1.0/PDF::Qij2(li->Mom(),lj->Mom(),lk->Mom(),
-			      kf_gluon,kf_gluon);
 	      msg_Debugging()<<ID(cs.m_idi)<<" & "<<ID(cs.m_idj)
 			     <<" <-> "<<ID(cs.m_idk)<<" ["<<cf[f]
 			     <<"]: "<<cs.m_op2<<" -> ";
@@ -435,7 +412,7 @@ double METS_Scale_Setter::CalculateMyScale
 		     <<(int(m_lfrac*10000)/100.0)
 		     <<"% of calls. Set \\hat{s}."<<std::endl;
 	}
-	ampl->Delete();
+	m_ampls.push_back(ampl);
 	return SetScales((m_p[0]+m_p[1]).Abs2(),NULL);
       }
       ampl=ampl->Prev();
@@ -447,11 +424,28 @@ double METS_Scale_Setter::CalculateMyScale
 		   <<ID(ckw.m_idi)<<" & "<<ID(ckw.m_idj)
 		   <<" <-> "<<ID(ckw.m_idk)
 		   <<" => "<<sqrt(ckw.m_kt2)
-		   <<" ("<<sqrt(ckw.m_op2)<<") <-> "
-		   <<sqrt(ops[ampl->Legs().size()-4])<<"\n";
-    if (ops[ampl->Legs().size()-4]>ckw.m_kt2) {
+		   <<" ("<<sqrt(ckw.m_op2)<<")\n";
+    std::vector<std::pair<size_t,double> > 
+      &cops(ops[ampl->Legs().size()-5]),
+      &pops(ops[ampl->Legs().size()-4]);
+    cops=pops;
+    size_t sid(ckw.m_idi|ckw.m_idj), lmin(100), li(0);
+    for (size_t i(0);i<cops.size();++i) {
+      if ((cops[i].first&sid)==sid &&
+	  IdCount(cops[i].first)<lmin) {
+	lmin=IdCount(cops[i].first);
+	li=i;
+      }
+    }
+    cops[li].second=ckw.m_kt2;
+    msg_Debugging()<<"set last k_T = "<<sqrt(ckw.m_kt2)
+		   <<" "<<ID(cops[li].first)<<"\n";
+    if (cops[li].second<pops[li].second) {
       msg_Debugging()<<"unordered configuration [ ord = "
-		     <<ords[ampl->Legs().size()-4]<<" ]\n";
+		     <<ords[ampl->Legs().size()-4]<<" ]: "
+		     <<sqrt(cops[li].second)<<" vs. "
+		     <<sqrt(pops[li].second)<<" "
+		     <<ID(pops[li].first)<<"\n";
       if (ords[ampl->Legs().size()-4] && !(m_cmode&16)) continue;
     }
     ampl->SetKT2(ckw.m_kt2);
@@ -466,8 +460,10 @@ double METS_Scale_Setter::CalculateMyScale
       continue;
     }
     ampl->SetOrderQCD(ampl->OrderQCD()-ckw.m_oqcd);
-    if (ckw.p_dec) ampl->Decays().push_back(ckw.p_dec);
-    ops[ampl->Legs().size()-4]=ckw.m_kt2;
+    if (ckw.p_dec) {
+      ampl->Decays().push_back(ckw.p_dec);
+      ampl->Splitter()->SetStat(3);
+    }
 #ifdef CHECK__stepwise
     Vec4D psum;
     for (size_t i(0);i<ampl->Legs().size();++i) {
@@ -487,20 +483,17 @@ double METS_Scale_Setter::CalculateMyScale
 	ampl->DeleteNext();
 	continue;
       }
-      if (ampl->Decays().size()!=m_decids.size() &&
-	  (IdCount(ampl->Leg(0)->Id())>1 ||
-	   IdCount(ampl->Leg(1)->Id())>1)) {
-	msg_Debugging()<<"unclustered decay\n";
-	ampl=ampl->Prev();
-	ampl->DeleteNext();
-	continue;
-      }
       kt2core=CoreScale(ampl);
-      msg_Debugging()<<"Core = "<<*ampl<<" => "<<sqrt(kt2core)
-		     <<" <-> "<<sqrt(ops[ampl->Legs().size()-4])<<"\n";
-      if (ops[ampl->Legs().size()-4]>kt2core) {
+      msg_Debugging()<<"Core = "<<*ampl<<" => "<<sqrt(kt2core)<<"\n";
+      bool ord(true);
+      std::vector<std::pair<size_t,double> > 
+	&pops(ops[ampl->Legs().size()-4]);
+      if (kt2core<pops.front().second) {
 	msg_Debugging()<<"unordered configuration (core) [ ord = "
-		       <<ords[ampl->Legs().size()-4]<<" ]\n";
+		       <<ords[ampl->Legs().size()-4]<<" ]: "
+		       <<sqrt(kt2core)<<" vs. "
+		       <<sqrt(pops.front().second)<<" "
+		       <<ID(pops.front().first)<<"\n";
 	if (ords[ampl->Legs().size()-4] && !(m_cmode&16)) {
 	  ampl=ampl->Prev();
 	  ampl->DeleteNext();
@@ -512,7 +505,7 @@ double METS_Scale_Setter::CalculateMyScale
   if (ampl==NULL) continue;
   while (ampl->Prev()) ampl=ampl->Prev();
   double muf2(SetScales(kt2core,ampl));
-  ampl->Delete();
+  m_ampls.push_back(ampl);
   return muf2;
   }
   THROW(fatal_error,"Internal error");
@@ -530,38 +523,43 @@ double METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl)
 
 double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 {
-  double mur2(muf2), mup2(0.0);
+  double mur2(muf2), mup2(muf2);
+  m_scale[stp::res]=muf2;
   if (ampl) {
     std::vector<double> scale(p_proc->NOut());
     msg_Debugging()<<"Setting scales {\n";
     mur2=1.0;
+    int smup(false);
     double as(1.0), oqcd(0.0), mum2(1.0);
+    if (!m_nproc) m_scale[stp::res]=0.0;
+    else m_scale[stp::res]=std::numeric_limits<double>::max();
     for (size_t idx(2);ampl->Next();++idx,ampl=ampl->Next()) {
       scale[idx]=Max(ampl->Mu2(),MODEL::as->CutQ2());
       scale[idx]=Min(scale[idx],sqr(rpa->gen.Ecms()));
       mum2=Min(mum2,scale[idx]);
-      if (m_mufmode&1) {
-	bool skip(false);
-	Cluster_Amplitude *next(ampl->Next());
-	if (ampl->OrderQCD()==next->OrderQCD()) skip=true;
-	if (!skip && next->Decays().size()) {
-	  size_t cid(0);
-	  for (size_t i(0);i<next->Legs().size();++i)
-	    if (next->Leg(i)->K()) {
-	      cid=next->Leg(i)->Id();
-	      break;
-	    }
-	  for (size_t i(0);i<next->Decays().size();++i)
-	    if ((next->Decays()[i]->m_id&cid)==cid) {
-	      skip=true;
-	      break;
-	    }
-	}
-	if (!skip) mup2=Max(mup2,ampl->KT2());
+      bool skip(false);
+      Cluster_Amplitude *next(ampl->Next());
+      if (!skip && next->Decays().size()) {
+	size_t cid(0);
+	for (size_t i(0);i<next->Legs().size();++i)
+	  if (next->Leg(i)->K()) {
+	    cid=next->Leg(i)->Id();
+	    break;
+	  }
+	for (size_t i(0);i<next->Decays().size();++i)
+	  if ((next->Decays()[i]->m_id&cid)==cid) {
+	    skip=true;
+	    break;
+	  }
       }
+      if (skip) continue;
       if (m_rproc && ampl->Prev()==NULL) continue;
+      if (m_nproc) m_scale[stp::res]=Min(m_scale[stp::res],ampl->KT2());
+      else m_scale[stp::res]=Max(m_scale[stp::res],ampl->KT2());
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
       if (coqcd>0.0) {
+	if (!smup) mup2=ampl->KT2();
+	smup=true;
 	double cas(MODEL::as->BoundedAlphaS(scale[idx]));
 	msg_Debugging()<<"  \\mu_{"<<idx<<"} = "<<sqrt(scale[idx])
 		       <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
@@ -570,47 +568,45 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 	oqcd+=coqcd;
       }
     }
-    if (ampl->OrderQCD()) {
+    if (ampl->OrderQCD()-(m_vproc?1:0)) {
       double mu2(Max(ampl->Mu2(),MODEL::as->CutQ2()));
       mum2=Min(mum2,mu2);
+      int coqcd(ampl->OrderQCD()-(m_vproc?1:0));
       double cas(MODEL::as->BoundedAlphaS(mu2));
       msg_Debugging()<<"  \\mu_{0} = "<<sqrt(mu2)<<", as = "<<cas
-		     <<", O(QCD) = "<<ampl->OrderQCD()<<"\n";
-      mur2*=pow(mu2,ampl->OrderQCD());
-      as*=pow(cas,ampl->OrderQCD());
-      oqcd+=ampl->OrderQCD();
-    }
-    if (m_vproc && (m_vmode&1)) {
-      double cas(MODEL::as->BoundedAlphaS(muf2));
-      msg_Debugging()<<"  \\mu_{"<<0<<"} = "<<sqrt(muf2)
-		     <<", as = "<<cas<<", O(QCD) = "<<1<<"\n";
-      mur2*=pow(muf2,1);
-      as*=pow(cas,1);
-      oqcd+=1;
+		     <<", O(QCD) = "<<coqcd<<"\n";
+      mur2*=pow(mu2,coqcd);
+      as*=pow(cas,coqcd);
+      oqcd+=coqcd;
     }
     if (oqcd==0.0) mur2=muf2;
     else {
       mur2=pow(mur2,1.0/oqcd);
       as=pow(as,1.0/oqcd);
-      mur2=MODEL::as->WDBSolve(as,mum2,rpa->gen.CplScale());
+      mur2=MODEL::as->WDBSolve(as,mum2,1.01*rpa->gen.CplScale());
       if (!IsEqual((*MODEL::as)(mur2),as))
 	msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl; 
     }
     msg_Debugging()<<"} -> as = "<<as<<" -> "<<sqrt(mur2)<<"\n";
-    if (ampl->OrderQCD()>0) mup2=Max(mup2,ampl->KT2());
+    if (ampl->OrderQCD()>(m_vproc?1:0)) {
+      if (m_nproc) m_scale[stp::res]=Min(m_scale[stp::res],ampl->KT2());
+      else m_scale[stp::res]=Max(m_scale[stp::res],ampl->KT2());
+    }
+    if (m_scale[stp::res]==std::numeric_limits<double>::max())
+      m_scale[stp::res]=muf2;
   }
-  if (mup2==0.0) mup2=muf2;
-  m_scale[stp::fac]=(m_mufmode&1)?mup2:muf2;
-  m_scale[stp::ren]=mur2;
+  m_scale[stp::size+stp::fac]=m_scale[stp::fac]=mup2;
+  m_scale[stp::size+stp::ren]=m_scale[stp::ren]=mur2;
   msg_Debugging()<<"Core / QCD scale = "<<sqrt(m_scale[stp::fac])
 		 <<" / "<<sqrt(m_scale[stp::ren])<<"\n";
   for (size_t i(0);i<m_calcs.size();++i)
     m_scale[i]=m_calcs[i]->Calculate()->Get<double>();
-  if (m_calcs.size()==1) m_scale[1]=m_scale[0];
+  for (size_t i(m_calcs.size());i<stp::size;++i) m_scale[i]=m_scale[0];
   msg_Debugging()<<METHOD<<"(): Set {\n"
+		 <<"  Q^2   = "<<sqrt(m_scale[stp::res])<<"\n"
 		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
 		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n";
-  for (size_t i(2);i<m_calcs.size();++i)
+  for (size_t i(stp::size);i<m_calcs.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
   msg_Debugging()<<"} <- "<<(p_caller?p_caller->Name():"")<<"\n";
   if (ampl) {
@@ -652,16 +648,16 @@ void METS_Scale_Setter::KT2
   Vec4D pi(li->Mom()), pj(lj->Mom()), pk(lk->Mom());
   double mi2=sqr(li->Flav().Mass()), mj2=sqr(lj->Flav().Mass());
   double mij2=sqr(cs.m_fl.Mass()), mk2=sqr(lk->Flav().Mass());
+  if (li->Stat()==3) mi2=pi.Abs2();
+  if (lj->Stat()==3) mj2=pj.Abs2();
+  if (lk->Stat()==3) mk2=pk.Abs2();
+  if (cs.p_dec) mij2=(pi+pj).Abs2();
   if (li->Flav().Strong() && lj->Flav().Strong() &&
       cs.m_fl.Strong()) cs.m_oqcd=1;
   cs.m_op2=1.0/PDF::Qij2(pi,pj,pk,li->Flav(),lj->Flav());
   if ((li->Id()&3)==0) {
-    if (mi2>0.0 && !li->Flav().Strong()) mi2=pi.Abs2();
-    if (mij2>0.0 && !cs.m_fl.Strong()) mij2=(pi+pj).Abs2();
     if ((lj->Id()&3)==0) {
-      if (mj2>0.0 && !lj->Flav().Strong()) mj2=pj.Abs2();
       if ((lk->Id()&3)==0) {
-	if (mk2>0.0 && !lk->Flav().Strong()) mk2=pk.Abs2();
 	Kin_Args ffp(ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,3));
 	double kt2=2.0*(pi*pj)*ffp.m_z*(1.0-ffp.m_z)
 	  -sqr(1.0-ffp.m_z)*mi2-sqr(ffp.m_z)*mj2;
@@ -675,8 +671,9 @@ void METS_Scale_Setter::KT2
 	double kt2=2.0*(pi*pj)*fip.m_z*(1.0-fip.m_z)
 	  -sqr(1.0-fip.m_z)*mi2-sqr(fip.m_z)*mj2;
 	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
-	if (fip.m_pk.PPlus()>sum.PPlus() ||
-	    fip.m_pk.PMinus()>sum.PMinus() || fip.m_stat<0 ||
+	if ((cs.m_k==0 && fip.m_pk[3]<0.0) ||
+	    (cs.m_k==1 && fip.m_pk[3]>0.0) ||
+	    fip.m_pk[0]<0.0 || fip.m_stat<0 ||
 	    fip.m_pk[0]>rpa->gen.PBeam(cs.m_k)[0]) kt2=-1.0;
  	cs.SetParams(kt2,fip.m_z,fip.m_y,fip.m_pi,-fip.m_pk);
 	cs.m_mu2*=p_proc->Shower()->CplFac
@@ -686,14 +683,13 @@ void METS_Scale_Setter::KT2
   }
   else {
     if ((lj->Id()&3)==0) {
-      if (mj2>0.0 && !lj->Flav().Strong()) mj2=pj.Abs2();
       if ((lk->Id()&3)==0) {
-	if (mk2>0.0 && !lk->Flav().Strong()) mk2=pk.Abs2();
 	Kin_Args ifp(ClusterIFDipole(mi2,mj2,mij2,mk2,0.0,-pi,pj,pk,pk,3|4));
 	double kt2=-2.0*(pi*pj)*(1.0-ifp.m_z)-mj2-sqr(1.0-ifp.m_z)*mi2;
 	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
-	if (ifp.m_pi.PPlus()>sum.PPlus() ||
-	    ifp.m_pi.PMinus()>sum.PMinus() || ifp.m_stat<0 ||
+	if ((cs.m_i==0 && ifp.m_pi[3]<0.0) ||
+	    (cs.m_i==1 && ifp.m_pi[3]>0.0) ||
+	    ifp.m_pi[0]<0.0 || ifp.m_stat<0 ||
 	    ifp.m_pi[0]>rpa->gen.PBeam(cs.m_i)[0]) kt2=-1.0;
  	cs.SetParams(kt2,ifp.m_z,ifp.m_y,-ifp.m_pi,ifp.m_pk);
 	cs.m_mu2*=p_proc->Shower()->CplFac
@@ -703,8 +699,9 @@ void METS_Scale_Setter::KT2
 	Kin_Args iip(ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,3));
 	double kt2=-2.0*(pi*pj)*(1.0-iip.m_z)-mj2-sqr(1.0-iip.m_z)*mi2;
 	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
-	if (iip.m_pi.PPlus()>sum.PPlus() ||
-	    iip.m_pi.PMinus()>sum.PMinus() || iip.m_stat<0 ||
+	if ((cs.m_i==0 && iip.m_pi[3]<0.0) ||
+	    (cs.m_i==1 && iip.m_pi[3]>0.0) ||
+	    iip.m_pi[0]<0.0 || iip.m_stat<0 ||
 	    iip.m_pi[0]>rpa->gen.PBeam(cs.m_i)[0]) kt2=-1.0;
  	cs.SetParams(kt2,iip.m_z,iip.m_y,-iip.m_pi,-iip.m_pk,iip.m_lam);
 	cs.m_mu2*=p_proc->Shower()->CplFac
@@ -723,11 +720,11 @@ bool METS_Scale_Setter::Combine(Cluster_Amplitude &ampl,int i,int j,int k,
   li->SetFlav(cs.m_fl);
   li->SetMom(cs.m_pijt);
   lk->SetMom(cs.m_pkt);
+  for (size_t m(0);m<ampl.Legs().size();++m) ampl.Leg(m)->SetK(0);
   if (i<2) {
     for (size_t m(0);m<ampl.Legs().size();++m) {
       if ((int)m==i || (int)m==j || (int)m==k) continue;
       ampl.Leg(m)->SetMom(cs.m_lam*ampl.Leg(m)->Mom());
-      ampl.Leg(m)->SetK(0);
     }
   }
   li->SetId(li->Id()+lj->Id());

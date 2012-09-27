@@ -14,10 +14,12 @@ namespace AMEGIC {
   class Helicity;
   struct DM_Info {
     ATOOLS::Flavour_Vector *p_fl;
+    std::vector<size_t> *p_id;
     std::string m_pname;
     DM_Info(ATOOLS::Flavour_Vector *const fl=NULL,
+	    std::vector<size_t> *const id=NULL,
 	    const std::string &pname=""):
-      p_fl(fl), m_pname(pname) {}
+      p_fl(fl), p_id(id), m_pname(pname) {}
   };
   class Single_Real_Correction : public Process_Base {
   private:
@@ -56,6 +58,8 @@ namespace AMEGIC {
     void SetFixedScale(const std::vector<double> &s);
     void SetSelectorOn(const bool on);
     void SetGenerator(PHASIC::ME_Generator_Base *const gen);
+    size_t SetMCMode(const size_t mcmode);
+    size_t SetClusterMode(const size_t cmode);
     /*------------------------------------------------------------------------------
 
       Initializing libraries, amplitudes, etc.
@@ -115,6 +119,8 @@ namespace AMEGIC {
     int            NumberOfDiagrams();
     Point        * Diagram(int i);
 
+    ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl,const size_t &id) const;
+
     bool PerformTests() { return true; }
 
    /*------------------------------------------------------------------------------
@@ -126,6 +132,8 @@ namespace AMEGIC {
     void           PrintProcessSummary(int=0); 
     void           PrintSubevtSummary();
     size_t         NumberOfDipoles() {return m_subtermlist.size();} 
+    Process_Base *GetReal();
+
   };
 }
 

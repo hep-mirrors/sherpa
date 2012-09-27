@@ -209,8 +209,6 @@ ATOOLS::Cluster_Amplitude *MI_Handler::ClusterConfiguration()
   if (xs->Get<EXTRAXS::Single_Process>()==NULL) return NULL;
   EXTRAXS::ME2_Base *me(xs->Get<EXTRAXS::Single_Process>()->GetME());
   if (me==NULL) THROW(fatal_error,"Cannot handle non-generic ME's.");
-  bool swap(xs->Integrator()->InSwaped());
-  if (me==NULL) THROW(not_implemented,"Non-ME-specified process");
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
   p_ampl = Cluster_Amplitude::New();
@@ -220,7 +218,7 @@ ATOOLS::Cluster_Amplitude *MI_Handler::ClusterConfiguration()
   double mur2(xs->ScaleSetter()->Scale(stp::ren));
   for (size_t i(0);i<xs->NIn()+xs->NOut();++i) {
     size_t id(1<<p_ampl->Legs().size());
-    size_t idx(i<2?(swap?1-i:i):i);
+    size_t idx(i);
     ColorID col(me->Colours()[idx][0],me->Colours()[idx][1]);
     if (i<2) col=col.Conj();
     Flavour flav(i<2?xs->Flavours()[i].Bar():

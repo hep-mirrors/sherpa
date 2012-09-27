@@ -44,7 +44,7 @@ namespace SHERPA {
     typedef std::map<std::string,std::pair<int,std::string> > MPSV_Map;
 
     struct Processblock_Info {
-      MPDV_Map m_vmaxerr, m_vmaxeps, m_vefac, m_vrbmaxeps, m_vrsefac;
+      MPDV_Map m_vmaxerr, m_vmaxeps, m_vefac, m_vrsefac;
       MPSV_Map m_veobs, m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac,
 	m_vsfile, m_vnloqcd, m_vnloew, m_vmegen, m_vloopgen, m_vgpath;
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv, m_vntchan;

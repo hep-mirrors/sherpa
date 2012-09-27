@@ -53,7 +53,6 @@ ANATRIGGER_ADDS       =	\
 			siscone.h\
 			split_merge.h\
 			vicinity.h\
-			config.h \
 			SISCone.H \
 			ConeMCFM.H \
 			MCFMCone.H \

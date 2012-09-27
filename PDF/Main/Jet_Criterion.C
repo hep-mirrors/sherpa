@@ -8,17 +8,33 @@ using namespace ATOOLS;
 
 double PDF::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
 		 const Flavour &fi,const Flavour &fj,
-		 const double &dparam,const int mode)
+		 const double &dparam,const int imode)
 {
+  int mode(imode|2);
+  if (mode&4) {
+    Vec4D npi(pi), npj(pj);
+    if (npj[0]<0.0 && npi[0]>0.0) std::swap<Vec4D>(npi,npj); 
+    if (npi[0]>0.0) {
+      double pipj(npi*npj), pipk(npi*pk), pjpk(npj*pk);
+      double zi(pipk/(pipk+pjpk));
+      return 2.0*pipj*zi*(1.0-zi);
+    }
+    else {
+      double papj(npi*npj), papk(npi*pk), pjpk(npj*pk);
+      double zj(pk[0]<0.0?-papj/papk:papj/(papj+papk));
+      return -2.0*papj*(1.0-zj);
+    }
+  }
   Vec4D npi(pi), npj(pj);
-  Flavour nfi(fi), nfj(fj);
+  Flavour nfi((mode&2)?Flavour(kf_gluon):fi);
+  Flavour nfj((mode&2)?Flavour(kf_gluon):fj);
   if (npi[0]<0.0) {
     npi=-pi-pj;
-    if (mode==0) nfi=fi==fj.Bar()?Flavour(kf_gluon):(fi.IsVector()?fj.Bar():fi);
+    if (!(mode&1)) nfi=fi==fj.Bar()?Flavour(kf_gluon):(fi.IsVector()?fj.Bar():fi);
   }
   else if (npj[0]<0.0) {
     npj=-pj-pi;
-    if (mode==0) nfj=fj==fi.Bar()?Flavour(kf_gluon):(fj.IsVector()?fi.Bar():fj);
+    if (!(mode&1)) nfj=fj==fi.Bar()?Flavour(kf_gluon):(fj.IsVector()?fi.Bar():fj);
   }
   if (nfi.IsQuark() && nfj.IsQuark() && nfi!=nfj.Bar()) return -1.0;
   if ((fi.IsPhoton() && fj.IntCharge()==0) ||

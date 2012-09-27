@@ -47,6 +47,8 @@ namespace CSSHOWER {
     void SetCoupling(MODEL::Model_Base *md,
 		     const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
+    void SetCouplingMax(const double &k0sqi,const double &k0sqf,
+			const double &isfac,const double &fsfac);
     bool   Generate(Parton *);
     double OverIntegrated(const double,const double,const double,
 			  const double=1.,const int=-1);

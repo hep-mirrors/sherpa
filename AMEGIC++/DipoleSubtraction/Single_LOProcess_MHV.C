@@ -184,22 +184,26 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
 	     newpath+"/makelibs");
   }
   int cnt=0;
+
+  vector<int> fi_tags;
+  m_pinfo.m_fi.GetTags(fi_tags);
+  if (fi_tags.size()!=m_nout) THROW(fatal_error, "Internal error.");
   for (size_t i(0);i<m_pinfo.m_ii.m_ps.size();++i) {
-    if (m_pinfo.m_ii.m_ps[i].m_tag==1) {
+    if (m_pinfo.m_ii.m_ps[i].m_tag==-1) {
       m_emit=i;
       cnt++;
     }
-    if (m_pinfo.m_ii.m_ps[i].m_tag==2) {
+    if (m_pinfo.m_ii.m_ps[i].m_tag==-2) {
       m_spect=i;
       cnt+=10;
     }
   }
-  for (size_t i(0);i<m_pinfo.m_fi.m_ps.size();++i) {
-    if (m_pinfo.m_fi.m_ps[i].m_tag==1) {
+  for (size_t i(0);i<m_nout;++i) {
+    if (fi_tags[i]==-1) {
       m_emit=i+NIn();
       cnt++;
     }
-    if (m_pinfo.m_fi.m_ps[i].m_tag==2) {
+    if (fi_tags[i]==-2) {
       m_spect=i+NIn();
       cnt+=10;
     }
@@ -438,7 +442,7 @@ double Single_LOProcess_MHV::operator()(const ATOOLS::Vec4D_Vector &labmom,const
     return m_lastxs = p_partner->operator()(labmom,mom,pfactors,epol,mode)*m_sfactor;
   }
   p_int->SetMomenta(labmom);
-  p_scale->CalculateScale(labmom,mode);
+  p_scale->CalculateScale(labmom,m_cmode);
 
 #ifdef Basic_Sfuncs_In_MHV
      p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom); 
@@ -467,7 +471,7 @@ void Single_LOProcess_MHV::Calc_AllXS(const ATOOLS::Vec4D_Vector &labmom,
 				      const ATOOLS::Vec4D *mom,std::vector<std::vector<double> > &dsij,const int mode) 
 {
   p_int->SetMomenta(labmom);
-  p_scale->CalculateScale(labmom,mode);
+  p_scale->CalculateScale(labmom,m_cmode);
 #ifdef Basic_Sfuncs_In_MHV
   p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom); 
 #else

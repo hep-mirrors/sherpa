@@ -26,10 +26,10 @@ namespace MCATNLO {
   struct Weight_Value {
     PHASIC::Process_Base *p_proc;
     Splitting_Function_Base *p_sf;
-    double m_me, m_b, m_qij2, m_muf2, m_mur2;
+    double m_me, m_b, m_muf2, m_mur2;
     inline Weight_Value(PHASIC::Process_Base *const proc=NULL,
 			const double &muf2=0.0,const double &mur2=0.0):
-      p_proc(proc), p_sf(NULL), m_me(0.0), m_b(0.0), m_qij2(0.0),
+      p_proc(proc), p_sf(NULL), m_me(0.0), m_b(0.0),
       m_muf2(muf2), m_mur2(mur2) {}
   };// end of struct Weight_Value
 
@@ -66,12 +66,14 @@ namespace MCATNLO {
     int    m_on;
     double m_weight;
 
-    bool CheckCore(const ATOOLS::Cluster_Amplitude *ampl) const;
-
     bool CheckColors(const ATOOLS::Cluster_Leg *li,
 		     const ATOOLS::Cluster_Leg *lj,
 		     const ATOOLS::Cluster_Leg *lk,
 		     const ATOOLS::Flavour &mo) const;
+    ATOOLS::ColorID CombineColors(const ATOOLS::Cluster_Leg *li,
+				  const ATOOLS::Cluster_Leg *lj,
+				  const ATOOLS::Cluster_Leg *lk,
+				  const ATOOLS::Flavour &mo) const;
 
     int SingleWeight(ATOOLS::Cluster_Amplitude *const rampl,
 		     ATOOLS::Cluster_Leg *const li,

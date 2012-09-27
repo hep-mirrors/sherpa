@@ -86,7 +86,7 @@ namespace PDF {
 
     double Weight(const int mode,
 		  ATOOLS::Vec4D p1,ATOOLS::Vec4D p2,double Q12,double Q22,
-		  ATOOLS::Flavour fl1,ATOOLS::Flavour fl2);
+		  ATOOLS::Flavour fl1,ATOOLS::Flavour fl2,int warn=1);
 
     bool BoostInCMS(ATOOLS::Vec4D *p,const size_t n);
     bool BoostInLab(ATOOLS::Vec4D *p,const size_t n);

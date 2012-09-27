@@ -46,7 +46,7 @@ namespace PHASIC {
     ~Fastjet_Scale_Setter();
 
     double Calculate(const std::vector<ATOOLS::Vec4D> &p,
-		     const int mode);
+		     const size_t &mode);
 
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
@@ -139,7 +139,7 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
   }
   for (size_t i(p_proc->NIn());i<m_f.size();++i)
     if (m_f[i].Strong()) m_scale.push_back(0.0);
-  m_scale.resize(Max(m_scale.size(),m_calcs.size()+2));
+  m_scale.resize(Max(m_scale.size(),m_calcs.size()+stp::size));
   for (size_t i(0);i<m_calcs.size();++i)
     SetScale(ctags[i],*m_calcs[i]);
   SetCouplings();
@@ -158,9 +158,8 @@ const Vec4D_Vector &Fastjet_Scale_Setter::Momenta() const
 }
 
 double Fastjet_Scale_Setter::Calculate
-(const std::vector<ATOOLS::Vec4D> &momenta,const int mode) 
+(const std::vector<ATOOLS::Vec4D> &momenta,const size_t &mode) 
 {
-  if (mode==1) return m_scale[stp::fac];
   m_p.resize(2);
   m_p[0]=-momenta[0];
   m_p[1]=-momenta[1];
@@ -172,26 +171,24 @@ double Fastjet_Scale_Setter::Calculate
 			  momenta[i][3],momenta[i][0]));
   fastjet::ClusterSequence cs(input,*p_jdef);
   std::vector<fastjet::PseudoJet> jets(cs.inclusive_jets());
-  size_t idx(2);
   for (size_t i(0);i<jets.size();++i) {
     Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
     if (pj.PPerp()>m_ptmin && pj.EPerp()>m_etmin &&
 	(m_eta==100.0 || dabs(pj.Eta())<m_eta) &&
 	(m_y==100.0 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
-    m_scale[idx++]=pj.PPerp2();
   }
-  for (size_t i(jets.size());i<input.size();++i)
-    m_scale[idx++]=cs.exclusive_dmerge(i);
-  std::sort(m_scale.begin()+2,m_scale.end(),std::greater<double>());
+  for (size_t idx(stp::size), i(0);i<input.size();++i)
+    m_scale[idx++]=cs.exclusive_dmerge_max(i);
   for (size_t i(0);i<m_calcs.size();++i)
-    m_scale[m_mode==1?i+2:i]=m_calcs[i]->Calculate()->Get<double>();
-  if (m_calcs.size()==1) m_scale[1]=m_scale[0];
-  if (m_mode==1) m_scale[stp::fac]=
-    m_scale[stp::ren]=ASMeanScale(m_scale,2);
+    m_scale[m_mode==1?i+stp::size:i]=m_calcs[i]->Calculate()->Get<double>();
+  if (m_mode==1) m_scale[stp::res]=m_scale[stp::fac]=
+		   m_scale[stp::ren]=ASMeanScale(m_scale,stp::size);
+  else for (size_t i(m_calcs.size());i<stp::size;++i) m_scale[i]=m_scale[0];
   msg_Debugging()<<METHOD<<"(): Set {\n"
+		 <<"  Q     = "<<sqrt(m_scale[stp::res])<<"\n"
 		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
 		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n";
-  for (size_t i(2);i<m_scale.size();++i)
+  for (size_t i(stp::size);i<m_scale.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
   msg_Debugging()<<"} <- "<<p_proc->Name()<<"\n";
   return m_scale[stp::fac];

@@ -12,7 +12,6 @@ libToolsPhys_la_SOURCES       =	\
 			        Simple_Polarisation_Info.C \
 				Particle_List.C \
 				NLO_Subevt.C \
-				RB_Data.C \
 				Decay_Info.C \
 				Cluster_Leg.C \
 				Cluster_Amplitude.C \
@@ -34,7 +33,6 @@ localinc_HEADERS      =	\
 			Simple_Polarisation_Info.H \
 			Particle_List.H \
 			NLO_Subevt.H \
-			RB_Data.H \
 			Decay_Info.H \
 			Cluster_Leg.H \
 			Cluster_Amplitude.H \

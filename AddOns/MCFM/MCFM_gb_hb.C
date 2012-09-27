@@ -107,9 +107,9 @@ void MCFM_gb_hb::Calc(const Vec4D_Vector &p)
 
   scale_.musq        = m_mur2;
   scale_.scale       = sqrt(scale_.musq);
-  mb_msbar_.mb_msbar = m_Yukb;
+  msbarmasses_.mb_msbar = m_Yukb;
 
-  double mbeff_MCFM(massfrun_(mb_msbar_.mb_msbar,sqrt(m_mur2),
+  double mbeff_MCFM(massfrun_(msbarmasses_.mb_msbar,sqrt(m_mur2),
 			      couple_.amz,2));
 
   double sh((p[2]+p[3]).Abs2());

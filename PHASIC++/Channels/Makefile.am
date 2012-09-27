@@ -24,10 +24,10 @@ libPhasicChannels_la_SOURCES  =	\
 				ISR_Channels.C \
 				Beam_Channels.C \
 				FSR_Channels.C \
-				POWHEG_Multi_Channel.C \
+				BBar_Multi_Channel.C \
 				CS_Dipole.C \
                                 CS_Dipoles.C \
-                                Extra_Emission_Generator.C
+                                BBar_Emission_Generator.C
 
 localinc_HEADERS      =	\
 			CSS_Kinematics.H \
@@ -48,7 +48,7 @@ localinc_HEADERS      =	\
 			ISR_Channels.H \
 			Beam_Channels.H \
 			FSR_Channels.H \
-			POWHEG_Multi_Channel.H \
+			BBar_Multi_Channel.H \
 			CS_Dipole.H \
 			CS_Dipoles.H \
-			Extra_Emission_Generator.H
+			BBar_Emission_Generator.H

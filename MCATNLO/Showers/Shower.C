@@ -18,15 +18,15 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
 {
   int kfmode = ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
-  double k0sqf = ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
-  double k0sqi = ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
-  double fs_as_fac = ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
-  double is_as_fac = ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
+  m_k0sqf = ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
+  m_k0sqi = ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
+  m_fs_as_fac = ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
+  m_is_as_fac = ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   m_kscheme = dataread->GetValue<int>("NLO_CSS_KIN_SCHEME",1);
   std::vector<std::vector<std::string> > helpsvv;
   m_sudakov.SetShower(this);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
-  m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
+  m_sudakov.SetCoupling(MODEL::s_model,m_k0sqi,m_k0sqf,m_is_as_fac,m_fs_as_fac);
   m_kinFF.SetSudakov(&m_sudakov);
   m_kinFI.SetSudakov(&m_sudakov);
   m_kinIF.SetSudakov(&m_sudakov);
@@ -70,6 +70,17 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   newpC->SetKtMax(split->KtMax());
   newpB->SetVeto(split->KtVeto());
   newpC->SetVeto(split->KtVeto());
+  newpB->SetSing(split->GetSing());
+  newpC->SetSing(split->GetSing());
+  newpB->SetMEFlow(1,split->Color().m_i[0]);
+  newpB->SetMEFlow(2,split->Color().m_i[1]);
+  newpC->SetMEFlow(1,split->Color().m_j[0]);
+  newpC->SetMEFlow(2,split->Color().m_j[1]);
+  int scol[2]={split->GetSpect()->GetMEFlow(1),
+	       split->GetSpect()->GetMEFlow(2)};
+  split->GetSpect()->SetMEFlow(1,split->Color().m_k[0]);
+  split->GetSpect()->SetMEFlow(2,split->Color().m_k[1]);
+  split->GetSing()->ArrangeColours(split,newpB,newpC);
   int rd(1);
   if (rd) {
     if (newpB->GetType()==pst::IS &&
@@ -78,10 +89,13 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
 	RemnantTest(split->GetSpect())==-1) rd=-1;
   }
   int sci[2]={split->GetFlow(1),split->GetFlow(2)};
+  int scim[2]={split->GetMEFlow(1),split->GetMEFlow(2)};
   m_flav=split->GetFlavour();
   split->SetFlavour(newpB->GetFlavour());
   split->SetFlow(1,newpB->GetFlow(1));
   split->SetFlow(2,newpB->GetFlow(2));
+  split->SetMEFlow(1,newpB->GetMEFlow(1));
+  split->SetMEFlow(2,newpB->GetMEFlow(2));
   if (rd==1) rd=p_gamma->Reject()?-1:1;
   DEBUG_VAR(p_gamma->Weight());
   m_weight*=p_gamma->Weight();
@@ -90,6 +104,12 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   split->SetFlavour(m_flav);
   split->SetFlow(1,sci[0]);
   split->SetFlow(2,sci[1]);
+  split->SetMEFlow(1,scim[0]);
+  split->SetMEFlow(2,scim[1]);
+  if (rd==0) {
+    split->GetSpect()->SetMEFlow(1,scol[0]);
+    split->GetSpect()->SetMEFlow(2,scol[1]);
+  }
   return rd;
 }
 
@@ -146,7 +166,6 @@ int Shower::MakeKinematics
   if (stat==-1) {
     split->SetMomentum(peo);
     spect->SetMomentum(pso);
-    if (mode==0) ResetScales(split);
     delete pj;
     return stat;
   }
@@ -175,7 +194,6 @@ int Shower::MakeKinematics
     msg_Debugging()<<"Save history for\n"<<*split<<*spect<<"\n";
     split->SetMomentum(peo);
     spect->SetMomentum(pso);
-    if (mode==0) ResetScales(split);
     return ustat;
   }
   split->GetSing()->SplitParton(split,pi,pj);
@@ -188,11 +206,10 @@ bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
   p_actual=act;
   Parton * split;
   Vec4D mom;
-  double kt2win, kt2old(std::numeric_limits<double>::max());
   
   if (nem>=maxem) return true;
   while (true) {
-    kt2win = 0.;
+    double kt2win = 0.;
     split = SelectSplitting(kt2win);
     //no shower anymore 
     if (split==NULL) {
@@ -205,15 +222,12 @@ bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
 		     <<split->YTest()<<" for\n"<<*split
 		     <<*split->GetSpect()<<"\n";
       m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
-      if (kt2win>kt2old) {
-	THROW(fatal_error,"Internal error");
-      }
+      ResetScales(split);
       int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,0));
       if (kstat<0) continue;
       if (kstat==0) return false;
       msg_Debugging()<<"nem = "<<nem+1<<" vs. maxem = "<<maxem<<"\n";
       if (++nem>=maxem) return true;
-      kt2old=kt2win;
     }
     //cout<<"-----------------------------------------------------------"<<endl<<(*p_actual);
   }
@@ -239,6 +253,7 @@ bool Shower::TrialEmission(double & kt2win,Parton * split)
       m_flavA = m_sudakov.GetFlavourA();
       m_flavB = m_sudakov.GetFlavourB();
       m_flavC = m_sudakov.GetFlavourC();
+      split->SetCol(m_sudakov.GetCol());
       split->SetTest(kt2,z,y,phi);
       return true;
     }

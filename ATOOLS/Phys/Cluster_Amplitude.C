@@ -30,10 +30,10 @@ ClusterAmplitude_PVector Cluster_Amplitude::s_ampls;
 
 Cluster_Amplitude::Cluster_Amplitude(Cluster_Amplitude *const prev):
   p_prev(prev), p_next(NULL), 
-  m_oew(0), m_oqcd(0), m_nin(0), m_new(0), m_kin(0), m_nlo(0),
-  m_mur2(0.0), m_muf2(0.0), m_mu2(0.0), m_kt2(0.0), m_z(0.0), m_phi(0.0),
-  p_jf(NULL), p_procs(NULL), p_dinfo(NULL),
-  p_rb(NULL), p_ms(NULL)
+  m_oew(0), m_oqcd(0), m_nin(0), m_new(0), m_ncl(0), m_kin(0), m_nlo(0),
+  m_mur2(0.0), m_muf2(0.0), m_Q2(0.0), m_mu2(0.0),
+  m_kt2(0.0), m_z(0.0), m_phi(0.0), m_lkf(0.0),
+  p_jf(NULL), p_procs(NULL), p_dinfo(NULL), p_ms(NULL)
 {
   if (p_prev!=NULL) p_prev->p_next=this;
 }
@@ -59,11 +59,10 @@ Cluster_Amplitude *Cluster_Amplitude::New
   ca->p_prev=prev;
   ca->p_next=NULL;
   ca->m_oew=ca->m_oqcd=0;
-  ca->m_nin=ca->m_new=ca->m_kin=ca->m_nlo=0;
-  ca->m_mur2=ca->m_muf2=ca->m_mu2=0.0;
-  ca->m_kt2=ca->m_z=ca->m_phi=0.0;
+  ca->m_nin=ca->m_new=ca->m_ncl=ca->m_kin=ca->m_nlo=0;
+  ca->m_mur2=ca->m_muf2=ca->m_Q2=ca->m_mu2=0.0;
+  ca->m_kt2=ca->m_z=ca->m_phi=ca->m_lkf=0.0;
   ca->p_jf=ca->p_procs=ca->p_dinfo=NULL;
-  ca->p_rb=NULL;
   ca->p_ms=NULL;
   if (ca->p_prev!=NULL) ca->p_prev->p_next=ca;
   return ca;
@@ -366,26 +365,20 @@ namespace ATOOLS {
 	<<" -> "<<ampl.Legs().size()-ampl.NIn()<<" {\n";
     ostr<<"  \\mu_r = "<<sqrt(ampl.MuR2())
 	<<", \\mu_f = "<<sqrt(ampl.MuF2())
+	<<", Q = "<<sqrt(ampl.Q2())
 	<<", \\mu = "<<sqrt(ampl.Mu2())<<"\n";
     ostr<<"  k_T = "<<sqrt(ampl.KT2())<<", z = "<<ampl.Z()
-	<<", phi = "<<ampl.Phi()<<", kin = "<<ampl.Kin()<<"\n";
+	<<", phi = "<<ampl.Phi()<<", kin = "<<ampl.Kin()
+	<<", K = "<<ampl.LKF()<<"\n";
     ostr<<"  oew = "<<ampl.OrderEW()<<", oqcd = "<<ampl.OrderQCD()
-	<<", nlo = "<<ampl.NLO()<<", new = "<<ID(ampl.IdNew())<<"\n";
+	<<", nlo = "<<ampl.NLO()<<", new = "<<ID(ampl.IdNew())
+	<<", ncl = "<<ampl.NewCol()<<"\n";
     if (ampl.Decays().size()) {
       std::string ds;
       for (DecayInfo_Vector::const_iterator cit(ampl.Decays().begin());
 	   cit!=ampl.Decays().end();++cit) 
         ds+=ToString(**cit)+" ";
       ostr<<"  decs = { "<<ds<<"}\n";
-    }
-    if (ampl.RBMap()) {
-      ostr<<"  rbs = { ";
-      for (RB_Map::const_iterator rbit(ampl.RBMap()->begin());
-	   rbit!=ampl.RBMap()->end();++rbit) 
-	ostr<<"["<<rbit->first.m_type<<";"
-	    <<rbit->first.m_flij<<"->"<<rbit->first.m_fli<<","
-	    <<rbit->first.m_flj<<"]->("<<rbit->second->m_max<<") ";
-      ostr<<"}\n";
     }
     if (ampl.ColorMap().size()) {
       std::string cs;

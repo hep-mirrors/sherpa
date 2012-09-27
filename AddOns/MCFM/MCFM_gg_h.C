@@ -72,8 +72,8 @@ MCFM_gg_h::MCFM_gg_h(const int & pID,const Process_Info& pi,
     (1,"The NLO matrix elements have been taken from MCFM \\cite{}.");
   switch (m_pID) {
   case 112:
-    m_cplcorr *= 
-      sqr(Flavour(kf_tau).Yuk())/masses_.mbsq/3. *
+    m_cplcorr *= 1./256. * // wherever this factor comes from
+      sqr(Flavour(kf_tau).Yuk()/masses_.mtau) *
       4.*sqr(masses_.wmass)/ewcouple_.gwsq/
       sqr(MODEL::s_model->ScalarConstant(std::string("vev")));
     break;
@@ -87,11 +87,12 @@ MCFM_gg_h::MCFM_gg_h(const int & pID,const Process_Info& pi,
     m_cplcorr *= (pID==115)?1./3.:1.;
     break;
   case 117:
-    m_cplcorr *= 
-      sqr(MODEL::s_model->ScalarFunction(std::string("alpha_QED"),m_ehcscale2)/
-	  (ewcouple_.esq/(4.*M_PI))) *
-      1./(sqrt(2.)*ewcouple_.Gf*
-	  sqr(MODEL::s_model->ScalarConstant(std::string("vev"))));
+    m_cplcorr *= 1./7085.;
+    // corrections necessario if msqgamgam wasn't rigged
+//      sqr(MODEL::s_model->ScalarFunction(std::string("alpha_QED"))/
+//	  (ewcouple_.esq/(4.*M_PI))) *
+//      1./(sqrt(2.)*ewcouple_.Gf*
+//	  sqr(MODEL::s_model->ScalarConstant(std::string("vev"))));
     break;
   }
 
@@ -170,12 +171,12 @@ void MCFM_gg_h::Calc(const Vec4D_Vector &p)
   m_res.IR()     = (res1-res);
   m_res.IR2()    = (res2-res1);
 
-  msg_Out()<<METHOD<<" yields "<<m_res.Finite()
-  	   <<" + 1/eps * "<<m_res.IR()
-  	   <<" + 1/eps^2 * "<<m_res.IR2()
-	   <<" for mb = "<<masses_.mb
-	   <<" and "<<nflav_.nflav<<" active flavours"
-	   <<" in "<<scheme_.scheme<<" ...  .\n";
+  msg_Debugging()<<METHOD<<" yields "<<m_res.Finite()
+		 <<" + 1/eps * "<<m_res.IR()
+		 <<" + 1/eps^2 * "<<m_res.IR2()
+		 <<" for mb = "<<masses_.mb
+		 <<" and "<<nflav_.nflav<<" active flavours"
+		 <<" in "<<scheme_.scheme<<" ...  .\n";
 }
 
 double MCFM_gg_h::Eps_Scheme_Factor(const Vec4D_Vector& mom)
@@ -238,9 +239,6 @@ Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
   //////////////////////////////////////////////////////////////////
   else if (fl.size()==4 && pi.m_fi.m_ps.size()==1 &&
 	   fl[2]==fl[3] && fl[2].Kfcode()==22) {
-    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-	       <<"   gg->[h->gamma gamma] not yet debugged.\n";
-    THROW(fatal_error,"Not yet working.");
     pID = 117;
   }
   //////////////////////////////////////////////////////////////////
@@ -297,6 +295,9 @@ Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
 	 (W11.Kfcode()==13 && W12.Kfcode()==14)) && 
 	((W21.Kfcode()==12 && W22.Kfcode()==11) || 
 	 (W21.Kfcode()==14 && W22.Kfcode()==13)))        pID = 113;
+    else {
+      msg_Out()<<"   potential problem: MCFM needs sequence W-W+.\n";
+    }
   }
 
   PRINT_VAR(pID);

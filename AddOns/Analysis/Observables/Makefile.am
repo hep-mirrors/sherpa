@@ -6,6 +6,7 @@ endif
 
 ANAOBS_SOURCES        =	\
 			Event_Output.C \
+			Blobdata.C \
 			$(EXTRAOBS) \
 			Global_Calculator.C \
 			Primitive_Observable_Base.C \

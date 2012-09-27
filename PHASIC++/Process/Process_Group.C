@@ -63,24 +63,20 @@ void *Process_Group::TDifferential(void *arg)
     pthread_cond_signal(&tid->m_s_cnd);
     if (tid->m_s==0) return NULL;
     // worker routine
-    tid->m_d=0.0;
+    tid->m_b=tid->m_d=0.0;
     if (tid->m_m&4) {
-      if (tid->m_m&1)
-	for (tid->m_i=tid->m_b;tid->m_i<tid->m_e;++tid->m_i)
+	for (tid->m_i=tid->m_b;tid->m_i<tid->m_e;++tid->m_i) {
 	  tid->m_d+=tid->p_proc->
 	    m_mprocs[tid->m_i]->Differential(*tid->p_p);
-      else
-	for (tid->m_i=tid->m_b;tid->m_i<tid->m_e;++tid->m_i) 
-	  tid->m_d+=tid->p_proc->m_mprocs[tid->m_i]->Differential2();
+	  tid->m_b+=tid->p_proc->m_mprocs[tid->m_i]->LastB();
+	}
     }
     else {
-      if (tid->m_m&1)
-	for (tid->m_i=tid->m_b;tid->m_i<tid->m_e;++tid->m_i)
+	for (tid->m_i=tid->m_b;tid->m_i<tid->m_e;++tid->m_i) {
 	  tid->m_d+=tid->p_proc->
 	    m_umprocs[tid->m_i]->Differential(*tid->p_p);
-      else
-	for (tid->m_i=tid->m_b;tid->m_i<tid->m_e;++tid->m_i) 
-	  tid->m_d+=tid->p_proc->m_umprocs[tid->m_i]->Differential2();
+	  tid->m_b+=tid->p_proc->m_umprocs[tid->m_i]->LastB();
+	}
     }
     // signal group to continue
     pthread_cond_wait(&tid->m_t_cnd,&tid->m_t_mtx);
@@ -91,11 +87,13 @@ void *Process_Group::TDifferential(void *arg)
 
 double Process_Group::Differential(const Vec4D_Vector &p)
 {
-  m_last[0]=0.0;
+  m_lastb=m_last=0.0;
 #ifdef USING__Threading
   if (m_cts.empty()) {
-    for (size_t i=0;i<m_procs.size();i++)
-      m_last[0]+=m_procs[i]->Differential(p);
+    for (size_t i=0;i<m_procs.size();i++) {
+      m_last+=m_procs[i]->Differential(p);
+      m_lastb+=m_procs[i]->LastB();
+    }
   }
   else {
     // start calculator threads
@@ -116,7 +114,8 @@ double Process_Group::Differential(const Vec4D_Vector &p)
       pthread_mutex_lock(&tid->m_t_mtx);
       pthread_mutex_unlock(&tid->m_t_mtx);
       pthread_cond_signal(&tid->m_t_cnd);
-      m_last[0]+=tid->m_d;
+      m_last+=tid->m_d;
+      m_lastb+=tid->m_b;
     }
     // start calculator threads
     d=m_mprocs.size()/m_cts.size();
@@ -136,76 +135,20 @@ double Process_Group::Differential(const Vec4D_Vector &p)
       pthread_mutex_lock(&tid->m_t_mtx);
       pthread_mutex_unlock(&tid->m_t_mtx);
       pthread_cond_signal(&tid->m_t_cnd);
-      m_last[0]+=tid->m_d;
+      m_last+=tid->m_d;
+      m_lastb+=tid->m_b;
     }
   }
 #else
-  for (size_t i(0);i<m_procs.size();++i)
-    m_last[0]+=m_procs[i]->Differential(p);
+  for (size_t i(0);i<m_procs.size();++i) {
+    m_last+=m_procs[i]->Differential(p);
+    m_lastb+=m_procs[i]->LastB();
+  }
 #endif
-  if (IsNan(m_last[0]))
+  if (IsNan(m_last))
     msg_Error()<<METHOD<<"(): "<<om::red
 		<<"Cross section is 'nan'."<<om::reset<<std::endl;
-  return m_last[0];
-}
-
-double Process_Group::Differential2()
-{
-  if (p_int->ISR()==NULL || p_int->ISR()->On()==0) return 0.0;
-  m_last[1]=0.0;
-#ifdef USING__Threading
-  if (m_cts.empty()) {
-    for (size_t i=0;i<m_procs.size();i++)
-      m_last[1]+=m_procs[i]->Differential2();
-  }
-  else {
-    // start calculator threads
-    size_t d(m_umprocs.size()/m_cts.size());
-    if (m_umprocs.size()%m_cts.size()>0) ++d;
-    for (size_t j(0), i(0);j<m_cts.size()&&i<m_umprocs.size();++j) {
-      PG_TID *tid(m_cts[j]);
-      tid->m_m=2;
-      tid->m_b=i;
-      tid->m_e=Min(i+=d,m_umprocs.size());
-      pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
-    }
-    // suspend calculator threads
-    for (size_t j(0), i(0);j<m_cts.size()&&i<m_umprocs.size();++j) {
-      i+=d;
-      PG_TID *tid(m_cts[j]);
-      pthread_mutex_lock(&tid->m_t_mtx);
-      pthread_mutex_unlock(&tid->m_t_mtx);
-      pthread_cond_signal(&tid->m_t_cnd);
-      m_last[1]+=tid->m_d;
-    }
-    // start calculator threads
-    d=m_mprocs.size()/m_cts.size();
-    if (m_mprocs.size()%m_cts.size()>0) ++d;
-    for (size_t j(0), i(0);j<m_cts.size()&&i<m_mprocs.size();++j) {
-      PG_TID *tid(m_cts[j]);
-      tid->m_m=6;
-      tid->m_b=i;
-      tid->m_e=Min(i+=d,m_mprocs.size());
-      pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
-    }
-    // suspend calculator threads
-    for (size_t j(0), i(0);j<m_cts.size()&&i<m_mprocs.size();++j) {
-      i+=d;
-      PG_TID *tid(m_cts[j]);
-      pthread_mutex_lock(&tid->m_t_mtx);
-      pthread_mutex_unlock(&tid->m_t_mtx);
-      pthread_cond_signal(&tid->m_t_cnd);
-      m_last[1]+=tid->m_d;
-    }
-  }
-#else
-  for (size_t i(0);i<m_procs.size();++i)
-    m_last[1]+=m_procs[i]->Differential2();
-#endif
-  if (IsNan(m_last[1]))
-    msg_Error()<<METHOD<<"(): "<<om::red
-	       <<"Cross section is 'nan'."<<om::reset<<std::endl;
-  return m_last[1];
+  return m_last;
 }
 
 void Process_Group::SetScale(const Scale_Setter_Arguments &args)
@@ -523,13 +466,6 @@ bool Process_Group::Trigger(const Vec4D_Vector &p)
   return trigger;
 }
  
-void Process_Group::MultiplyLast(const double &w,const int mode)
-{
-  m_last[mode]*=w;
-  for (size_t i(0);i<m_procs.size();++i)
-    m_procs[i]->MultiplyLast(w,mode);
-}
-
 void Process_Group::FillOnshellConditions()
 {
   Process_Base::FillOnshellConditions();

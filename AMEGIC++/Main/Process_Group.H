@@ -37,6 +37,7 @@ namespace AMEGIC {
 
     // member functions
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
+    void EndOptimize();
 
     PHASIC::Process_Base *GetProcess(const PHASIC::Process_Info &pi) const;
     bool Initialize(PHASIC::Process_Base *const proc);

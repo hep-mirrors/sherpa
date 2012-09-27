@@ -14,7 +14,8 @@ using namespace ATOOLS;
 using namespace std;
 
 Multi_Channel::Multi_Channel(string _name,int id) : 
-  fl(NULL), m_id(id), s1(NULL), s2(NULL), m_readin(false), m_fixalpha(false)
+  fl(NULL), m_id(id), s1(NULL), s2(NULL), m_readin(false), m_fixalpha(false),
+  m_minalpha(0.0)
 {
   string help;
   int    pos;
@@ -207,7 +208,7 @@ void Multi_Channel::Optimize(double error)
       if (dabs(aptot-sqrt(s1[i]))>s1x) s1x = dabs(aptot-sqrt(s1[i]));
       if (channels.size()>1) {
       channels[i]->SetAlpha(channels[i]->Alpha() * sqrt(s1[i])/aptot);
-      if (channels[i]->Alpha() < Min(1.e-4,1.e-3/(double)channels.size()) ) channels[i]->SetAlpha(0.);
+      if (channels[i]->Alpha() < Min(1.e-4,1.e-3/(double)channels.size()) ) channels[i]->SetAlpha(m_minalpha);
       }
     }
   }
@@ -251,7 +252,7 @@ void Multi_Channel::EndOptimize(double error)
 
   for (i=0;i<channels.size();i++) {
     channels[i]->SetAlpha(channels[i]->AlphaSave());
-    if (channels[i]->Alpha() < Min(1.e-4,1.e-2/(double)channels.size())) channels[i]->SetAlpha(0.);
+    if (channels[i]->Alpha() < Min(1.e-4,1.e-2/(double)channels.size())) channels[i]->SetAlpha(m_minalpha);
   }
   double norm = 0;
   for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();

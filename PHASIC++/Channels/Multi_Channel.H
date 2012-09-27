@@ -39,6 +39,7 @@ namespace PHASIC {
     double                        s1xmin, * s1, * s2;
     std::vector<Single_Channel *> channels, m_best;
     bool m_readin, m_fixalpha;
+    double m_minalpha;
     int m_lastdice,m_optcnt;
     double m_pol;
     int m_otype;
@@ -91,6 +92,7 @@ namespace PHASIC {
     virtual bool    ReadIn(std::string);
 
     inline void FixAlpha() { m_fixalpha=true; }
+    inline void SetMinAlpha(const double& minalpha) { m_minalpha=minalpha; }
 
     size_t NChannels() const;
 

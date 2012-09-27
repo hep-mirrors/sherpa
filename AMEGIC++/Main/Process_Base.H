@@ -19,7 +19,7 @@ namespace AMEGIC {
 
     std::string m_resdir;
 
-    int *p_b;
+    int *p_b, m_eoreset;
 
     AMEGIC::Pol_Info      *p_pl;
     
@@ -34,6 +34,8 @@ namespace AMEGIC {
 
     std::map<ATOOLS::Flavour,ATOOLS::Flavour> m_eflmap;
     std::map<std::string,ATOOLS::Flavour> m_fmap;
+
+    ATOOLS::NLO_subevtlist* p_subevtlist;
 
     static int s_gauge;
 
@@ -86,7 +88,13 @@ namespace AMEGIC {
     virtual double operator()(const ATOOLS::Vec4D *) { return 0.; }
     virtual void               PrintProcessSummary(int=0);
     ATOOLS::Flavour ReMap(const ATOOLS::Flavour&,const std::string&) const;
+    ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl,const size_t &id) const;
     inline static void SetGauge(const int gauge) { s_gauge=gauge; }
+    inline void SetSubevtList(ATOOLS::NLO_subevtlist *subs) { p_subevtlist=subs; }
+
+    virtual Process_Base *GetReal();
+
+    inline int EOReset() const { return m_eoreset; }
   protected:
     double         SymmetryFactors();
     double         SBSymmetryFactor(ATOOLS::Flavour* flout,size_t nout);

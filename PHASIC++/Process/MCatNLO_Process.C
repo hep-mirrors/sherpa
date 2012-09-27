@@ -6,10 +6,10 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/ME_Generators.H"
-#include "PHASIC++/Channels/POWHEG_Multi_Channel.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Process/Single_Process.H"
+#include "PHASIC++/Channels/BBar_Multi_Channel.H"
 #include "PDF/Main/NLOMC_Base.H"
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/Jet_Criterion.H"
@@ -72,23 +72,30 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   if (pi.Has(nlo_type::real)!=pi.Has(nlo_type::rsub))
     THROW(fatal_error, "R/S can't be initialised separately.");
   Process_Info spi(pi);
+  ++spi.m_fi.m_nmax;
   spi.m_fi.SetNLOType(cpi.m_fi.NLOType());
   p_bproc=InitProcess(spi,nlo_type::lo,false);
   p_rproc=InitProcess(spi,nlo_type::lo,true);
-  p_bviproc=InitProcess(spi,nlo_type::born|nlo_type::loop|nlo_type::vsub|
-		       (pi.m_fi.NLOType()&nlo_type::polecheck),false);
+  p_bviproc=InitProcess(spi,nlo_type::born|nlo_type::loop|nlo_type::vsub,false);
   p_rsproc=InitProcess(spi,nlo_type::real|nlo_type::rsub,true);
+  p_bviproc->FillProcessMap(p_apmap);
+  p_rsproc->FillProcessMap(p_apmap);
+  p_bviproc->SetSProc(p_rsproc);
   p_bproc->SetLookUp(false);
   p_rproc->SetLookUp(false);
   p_bproc->SetParent(this);
   p_rproc->SetParent(this);
+  p_bproc->FillProcessMap(p_apmap);
+  p_rproc->FillProcessMap(p_apmap);
   Data_Reader read(" ",";","!","=");
   read.SetInputPath(rpa->GetPath());
   read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  if (!read.ReadFromFile(m_rmode,"PP_RMODE")) m_rmode=1;
-  else msg_Info()<<METHOD<<"(): Set RB integration mode "<<m_rmode<<".\n";
   if (!read.ReadFromFile(m_fomode,"PP_FOMODE")) m_fomode=0;
   else msg_Info()<<METHOD<<"(): Set fixed order mode "<<m_fomode<<".\n";
+  if (!m_fomode) {
+    p_bviproc->SetMCMode(1);
+    p_rsproc->SetMCMode(2);
+  }
   if (p_rsproc->Size()!=p_rproc->Size())
     THROW(fatal_error,"R and RS have different size");
   if (p_bproc->Size()!=p_bviproc->Size())
@@ -106,7 +113,6 @@ Process_Base* MCatNLO_Process::InitProcess
 {
   Process_Info cpi(pi);
   cpi.m_fi.SetNLOType(nlotype);
-  cpi.m_megenerator="Amegic";
   if (real) {
     if (cpi.m_fi.m_nloqcdtype==nlotype)
       cpi.m_fi.m_ps.push_back(Subprocess_Info(kf_jet,"",""));
@@ -118,18 +124,6 @@ Process_Base* MCatNLO_Process::InitProcess
   if (proc==NULL) {
     msg_Error()<<cpi<<std::endl;
     THROW(not_implemented, "Process not found.");
-  }
-  for (size_t i=0;i<proc->Size();++i) {
-    std::string fname((*proc)[i]->Name());
-    size_t pos=fname.find("EW");
-    if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
-    pos=fname.find("QCD");
-    if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
-    if (nlotype&nlo_type::vsub) nlotype=nlo_type::vsub;
-    if (nlotype&nlo_type::rsub) nlotype=nlo_type::rsub;
-    if (p_apmap->find(nlotype)==p_apmap->end())
-      (*p_apmap)[nlotype] = new StringProcess_Map();
-    (*(*p_apmap)[nlotype])[fname]=(*proc)[i];
   }
   return proc;
 }
@@ -144,11 +138,7 @@ bool MCatNLO_Process::InitSubtermInfo()
 	for (size_t k(0);k<sub->m_n;++k)
 	  if (k!=ij && sub->p_fl[k]==sub->p_fl[sub->m_kt] && 
 	      sub->p_fl[ij]==sub->p_fl[sub->m_ijt]) {
-	    if (sub->m_iss==0) m_iinfo[sub->m_pname].insert(IDip_ID(ij,k));
-	    else {
-	      size_t cij(ij<m_nin?1-ij:ij), ck(k<m_nin?1-k:k);
-	      m_iinfo[sub->m_pname].insert(IDip_ID(cij,ck));
-	    }
+	    m_iinfo[sub->m_pname].insert(IDip_ID(ij,k));
 	  }
       m_dinfo[subs->back()->m_pname].insert(*sub);
       std::string name(sub->Proc<Process_Base>()->Name());
@@ -205,13 +195,7 @@ Cluster_Amplitude *MCatNLO_Process::CreateAmplitude(const NLO_subevt *sub) const
 double MCatNLO_Process::Differential(const Vec4D_Vector &p)
 {
   THROW(fatal_error,"Invalid function call");
-  return m_last[0];
-}
-
-double MCatNLO_Process::Differential2()
-{
-  THROW(fatal_error,"Invalid function call");
-  return m_last[1];
+  return m_last;
 }
 
 double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
@@ -224,9 +208,8 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   Process_Base *rsproc(FindProcess(rampl,nlo_type::rsub,false));
   if (rsproc==NULL) return 0.0;
   msg_Debugging()<<"Found '"<<rsproc->Name()<<"'\n";
-  Process_Base *rproc(FindProcess(ampl.Prev()));
-  double r(1.0), rs(rsproc->Differential(*rampl,2|4|rm));
-  if (rs) r=rproc->Differential(*rampl,2|4|rm);
+  double rs(rsproc->Differential(*rampl,2|4|rm));
+  double r(rsproc->GetSubevtList()->back()->m_result);
   msg_Debugging()<<"H = "<<rs<<", R = "<<r<<" -> "<<rs/r<<"\n";
   if (IsEqual(rs,r,1.0e-6) || r==0.0) return 1.0;
   msg_Debugging()<<ampl<<"\n";
@@ -237,10 +220,15 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   Process_Base *bproc(FindProcess(&ampl));
   double b(bproc->Differential(ampl,4|rm));
   if (b==0.0) return 0.0;
+  bviproc->BBarMC()->GenerateEmissionPoint(ampl,rm);
+  size_t mcmode(bviproc->SetMCMode(3));
   double bvi(bviproc->Differential(ampl,4|rm));
+  bviproc->SetMCMode(mcmode);
+  double k(bvi/b*(1.0-rs/r)+rs/r);
   msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
-		 <<" -> K = "<<bvi/b*(1.0-rs/r)+rs/r<<"\n";
-  return bvi/b*(1.0-rs/r)+rs/r;
+		 <<" -> K = "<<k<<"\n";
+  // if (dabs(k)-1.0>r/b*ampl.Prev()->KT2()/ampl.KT2()) return 1.0;
+  return k;
 }
 
 Cluster_Amplitude *MCatNLO_Process::GetAmplitude()
@@ -255,7 +243,6 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   msg_Debugging()<<"H event\n";
   m_wassevent=false;
   if (p_ampl) p_ampl->Delete();
-  p_ampl=NULL;
   p_selected=p_rproc;
   Process_Base *rproc(NULL);
   for (size_t i(0);i<p_rsproc->Size();++i)
@@ -265,28 +252,30 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     }
   rproc->Integrator()->SetMax
     (p_rsproc->Selected()->Integrator()->Max());
-  int swaped(p_rsproc->Selected()->Integrator()->InSwaped());
-  p_rsproc->Selected()->Integrator()->RestoreInOrder();
-  rproc->Integrator()->RestoreInOrder();
   Vec4D_Vector &p(p_rsproc->Selected()->Integrator()->Momenta());
   rproc->SetFixedScale(p_rsproc->Selected()->ScaleSetter(1)->Scales());
-  rproc->ScaleSetter(1)->CalculateScale(Vec4D_Vector(),swaped);
+  rproc->ScaleSetter(1)->CalculateScale(Vec4D_Vector());
   rproc->SetFixedScale(std::vector<double>());
   rproc->GetMEwgtinfo()->m_mur2=
     p_rsproc->Selected()->GetMEwgtinfo()->m_mur2;
   rproc->Trigger(p);
-  rproc->Differential(p);
-  rproc->Differential2();
-  p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(256|512);
-  if (swaped) {
-    p_rsproc->Selected()->Integrator()->SwapInOrder();
-    rproc->Integrator()->SwapInOrder();
+  rproc->Integrator()->SetMomenta(p);
+  p_ampl = dynamic_cast<Single_Process*>
+	 (p_rsproc->Selected())->Cluster(512|2048|4096);
+  if (p_ampl==NULL) {
+    rproc->Differential(p);
+    p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(256|512|4096);
   }
   if (p_ampl==NULL) {
     msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;
     return 0.0;
   }
-  // p_ampl->Next()->SetNLO(1);
+  Scale_Setter_Base *scs(p_rsproc->Selected()->ScaleSetter(1));
+  for (Cluster_Amplitude *ampl(p_ampl);ampl;ampl=ampl->Next()) {
+    ampl->SetMuR2(scs->Scale(stp::ren));
+    ampl->SetMuF2(scs->Scale(stp::fac));
+    ampl->SetQ2(scs->Scale(stp::res));
+  }
   Selector_Base *jf=(*p_bviproc)[0]->
     Selector()->GetSelector("Jetfinder");
   if (jf && m_nout-1<m_pinfo.m_fi.NMaxExternal()) {
@@ -308,18 +297,10 @@ double MCatNLO_Process::OneSEvent(const int wmode)
       p_bproc->SetSelected(bproc=(*p_bproc)[i]);
       break;
     }
-  int swaped(p_bviproc->Selected()->Integrator()->InSwaped());
-  p_bviproc->Selected()->Integrator()->RestoreInOrder();
-  bproc->Integrator()->RestoreInOrder();
   Vec4D_Vector &p(p_bviproc->Selected()->Integrator()->Momenta());
   bproc->Trigger(p);
   bproc->Differential(p);
-  bproc->Differential2();
-  if (swaped) {
-    p_bviproc->Selected()->Integrator()->SwapInOrder();
-    bproc->Integrator()->SwapInOrder();
-  }
-  p_ampl = dynamic_cast<Single_Process*>(bproc)->Cluster(256|512);
+  p_ampl = dynamic_cast<Single_Process*>(bproc)->Cluster(256|512|4096);
   SortFlavours(p_ampl);
   p_ampl->SetProcs(p_apmap);
   p_ampl->SetIInfo(&m_iinfo);
@@ -360,10 +341,13 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     p_ampl=ampl;
     ampl->SetMuF2(next->MuF2());
     ampl->SetMuR2(next->MuR2());
-    ampl->Next()->SetNLO(1);
+    ampl->SetQ2(kt2.m_kt2);
+    ampl->SetOrderQCD(next->OrderQCD()+1);
+    ampl->Next()->SetNLO(4);
     next->SetKin(kt2.m_kin);
     while (ampl->Next()) {
       ampl=ampl->Next();
+      ampl->SetQ2(kt2.m_kt2);
       if (!(ampl->Leg(0)->Id()&p_ampl->Leg(0)->Id()))
 	std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
       if (ampl->IdNew()&iid) ampl->SetIdNew(ampl->IdNew()|jid);
@@ -389,7 +373,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   if (p_ampl->Leg(0)->Mom().PPlus()>p_ampl->Leg(1)->Mom().PPlus())
     std::swap<Cluster_Leg*>(p_ampl->Legs()[0],p_ampl->Legs()[1]);
   ampl=p_ampl;
-  ampl->SetNLO(1);
+  ampl->SetNLO(4);
   bproc->Integrator()->SetMomenta(*p_ampl);
   msg_Debugging()<<"B selected "<<*p_ampl
 		 <<" ( w = "<<p_nlomc->Weight()<<" )\n";
@@ -398,6 +382,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
 
 Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
 {
+  DEBUG_FUNC("");
   double S(p_bviproc->Integrator()->SelectionWeight(wmode));
   double H(p_rsproc->Integrator()->SelectionWeight(wmode));
   Weight_Info *winfo(NULL);
@@ -410,16 +395,26 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
 	->Integrator()->SelectionWeight(wmode)/
 	p_bviproc->Selected()->Integrator()
 	->SelectionWeight(wmode);
+      double lkf(p_bviproc->Selected()->Last()/
+		 p_bproc->Selected()->Last());
+      for (Cluster_Amplitude *ampl(p_ampl);
+	   ampl;ampl=ampl->Next()) ampl->SetLKF(lkf);
       Cluster_Amplitude *ampl(p_ampl->Next());
       if (ampl) {
-	if (ampl->NLO()!=0) ampl=ampl->Next();
-	if (ampl) ampl->SetNLO(2);
+	Selector_Base *jf=(*p_bviproc)[0]->
+	  Selector()->GetSelector("Jetfinder");
+	if (jf) {
+	  if (ampl->NLO()!=0) ampl=ampl->Next();
+	  for (;ampl;ampl=ampl->Next()) ampl->SetNLO(2);
+	}
       }
     }
   }
   else {
     p_selected=p_rsproc;
+    p_rsproc->SetClusterMode(1|1024);
     winfo=p_rsproc->OneEvent(wmode,mode);
+    p_rsproc->SetClusterMode(0);
     if (winfo && m_fomode==0) {
       winfo->m_weight*=OneHEvent(wmode);
       winfo->m_weight*=p_rproc->Selected()
@@ -428,13 +423,12 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
 	->SelectionWeight(wmode);
     }
   }
+  for (Cluster_Amplitude *ampl(p_ampl);ampl;
+       ampl=ampl->Next()) ampl->SetNLO(1|ampl->NLO());
   if (winfo && winfo->m_weight==0) {
     delete winfo;
     winfo=NULL;
   }
-  if (p_ampl && m_nout-1>=m_pinfo.m_fi.NMaxExternal())
-    for (Cluster_Amplitude *ampl(p_ampl);
-	 ampl;ampl=ampl->Next()) ampl->SetJF(NULL);
   return winfo;
 }
 
@@ -466,9 +460,9 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   } while (!InitSubtermInfo());
   ampl->Delete();
   bool res(p_bviproc->CalculateTotalXSec
-	   (resultpath+"/MCatNLO",create));
+	   (resultpath+"/"+p_bviproc->Generator()->Name(),create));
   if (!p_rsproc->CalculateTotalXSec
-      (resultpath+"/MCatNLO",create)) res=false;
+      (resultpath+"/"+p_rsproc->Generator()->Name(),create)) res=false;
   for (size_t i(0);i<p_bviproc->Size();++i)
     (*p_bproc)[i]->Integrator()->SetMax
       ((*p_bviproc)[i]->Integrator()->Max());

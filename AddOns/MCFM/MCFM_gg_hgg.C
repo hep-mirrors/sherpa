@@ -74,12 +74,12 @@ MCFM_gg_hgg::MCFM_gg_hgg(const int & pID,const Process_Info& pi,
   rpa->gen.AddCitation
     (1,"The NLO matrix elements have been taken from MCFM \\cite{}.");
   switch (m_pID) {
+  case 270:
+    m_cplcorr *= 0.042670320138; // works for mh=125.5
+    break;
   case 272:
-    msg_Out()<<METHOD<<"(pID = 272), eff vertex = "
-	     <<MODEL::s_model->ScalarConstant(std::string("h0_gg_fac"))<<".\n";
     m_cplcorr *= 
-      sqr(Flavour(kf_tau).Yuk()/
-	  MODEL::s_model->ScalarConstant(std::string("vev")));
+      sqr(Flavour(kf_tau).Yuk()/m_vev);
     break;
   case 273:
     m_cplcorr *= 
@@ -128,7 +128,7 @@ void MCFM_gg_hgg::SelectIndices() {
   m_j1 = 1; m_j2 = 2;  m_j3 = flsize-1; m_j4 = flsize;
   if (ng==4) {
     m_me = 0;
-    m_normcorr *= sqr(8./3.);
+    m_normcorr *= sqr(8./3.)/512.;
   }
   else if (ng==2) {
     m_me = 1;
@@ -136,14 +136,14 @@ void MCFM_gg_hgg::SelectIndices() {
 	m_flavs[0]==m_flavs[1].Bar()) {
       if (m_flavs[1].IsAnti()) { m_j1 = 1; m_j2 = 2; }
                           else { m_j1 = 2; m_j2 = 1; }
-      m_normcorr *= sqr(8./3.);
+      m_normcorr *= sqr(8./3.)/72.;
     }
     else if (m_flavs[flsize-2].IsQuark() && m_flavs[flsize-1].IsQuark() &&
 	     m_flavs[flsize-2]==m_flavs[flsize-1].Bar()) {
       if (m_flavs[flsize-1].IsAnti()) { m_j1 = flsize;   m_j2 = flsize-1; }
                                  else { m_j1 = flsize-1; m_j2 = flsize;   }
       m_j3 = 1; m_j4 = 2;
-      m_normcorr *= sqr(8./3.);
+      m_normcorr *= sqr(8./3.)/256.;
     }
     else {
       for (size_t i=0;i<2;i++) {
@@ -154,7 +154,7 @@ void MCFM_gg_hgg::SelectIndices() {
 	    if (m_flavs[1-i].IsAnti()) { m_j1 = flsize-j; m_j2 = 2-i; }
 	                          else { m_j1 = 2-i;      m_j2 = flsize-j; }
 	    m_j3 = i+1; m_j4 = flsize-1+j;    
-	    m_normcorr *= sqr(8./3.);
+	    m_normcorr *= sqr(8./3.)/96.;
 	  }
 	}
       }
@@ -163,7 +163,7 @@ void MCFM_gg_hgg::SelectIndices() {
   else if (ng==0) {
     for (size_t i=0;i<2;i++) {
       for (size_t j=0;j<2;j++) {
-	if (m_flavs[i] == m_flavs[flsize-2+j] &&
+	if (m_flavs[i]==m_flavs[flsize-2+j] &&
 	    m_flavs[1-i]==m_flavs[flsize-1-j]) {
 	  if (m_flavs[i].IsAnti()) { m_j3 = i+1;        m_j4 = flsize-1+j; }
 	                      else { m_j3 = flsize-1+j; m_j4 = i+1; }
@@ -177,25 +177,45 @@ void MCFM_gg_hgg::SelectIndices() {
 	    else {
 	      m_k1 = m_j3; m_k2 = m_j2; m_k3 = m_j1; m_k4 = m_j4;
 	    }
+	    if (m_flavs[i]==m_flavs[1-i].Bar()) m_normcorr*=1./36.;
+	    else                                m_normcorr*=1./72.;
 	  }
+	  else m_normcorr*=1./36.;
 	  m_normcorr *= sqr(8./3.);
 	  i = 2; j = 2; break;
 	}
 	else if (m_flavs[i]==m_flavs[1-i].Bar() &&
-		 m_flavs[flsize-2+j]==m_flavs[flsize-1-j].Bar()) {
-	  if (m_flavs[i].IsAnti()) { m_j3 = i+1;          m_j4 = 2-i; }
-	                      else { m_j3 = 2-i;          m_j4 = i+1; }
+		 m_flavs[flsize-2+j]==m_flavs[flsize-1-j].Bar() &&
+		 m_flavs[i].Kfcode()==m_flavs[flsize-2+j].Kfcode()) {
+	  // only db d -> h d db should be in here
+	  if (m_flavs[i].IsAnti()) { m_j3 = 2-i;          m_j4 = i+1; }
+	                      else { m_j3 = i+1;          m_j4 = 2-i; }
 	  if (m_flavs[1-i].IsAnti()) { m_j1 = flsize-1+j; m_j2 = flsize-j; }
 	                       else  { m_j1 = flsize-j;   m_j2 = flsize-1+j; }
 	  m_me = m_flavs[i].Kfcode()!=m_flavs[flsize-2+j].Kfcode()?2:3;
 	  if (m_me==3) { 
 	    if (m_flavs[i].IsAnti()) {
-	      m_k1 = m_j1; m_k2 = m_j4; m_k3 = m_j3; m_k4 = m_j2;
-	    }
-	    else {
 	      m_k1 = m_j3; m_k2 = m_j2; m_k3 = m_j1; m_k4 = m_j4;
 	    }
+	    else { THROW(fatal_error,"Internal error"); }
+	    if (m_flavs[i]==m_flavs[1-i].Bar()) m_normcorr*=1./36.;
+	    else                                m_normcorr*=1./72.;
 	  }
+	  else m_normcorr*=1./36.;
+	  m_normcorr *= sqr(8./3.);
+	  i = 2; j = 2; break;
+	}
+	else if (m_flavs[i]==m_flavs[1-i].Bar() &&
+		 m_flavs[flsize-2+j]==m_flavs[flsize-1-j].Bar() &&
+		 m_flavs[i].Kfcode()!=m_flavs[flsize-2+j].Kfcode()) {
+	  // only d db -> h u ub should be in here
+	  if (m_flavs[i].IsAnti()) { m_j3 = i+1;          m_j4 = 2-i; }
+	                      else { m_j3 = 2-i;          m_j4 = i+1; }
+	  if (m_flavs[1-i].IsAnti()) { m_j1 = flsize-1+j; m_j2 = flsize-j; }
+	                       else  { m_j1 = flsize-j;   m_j2 = flsize-1+j; }
+	  m_me = m_flavs[i].Kfcode()!=m_flavs[flsize-2+j].Kfcode()?2:3;
+	  if (m_me==3) { THROW(fatal_error,"Internal error"); }
+	  else m_normcorr*=1./36.;
 	  m_normcorr *= sqr(8./3.);
 	  i = 2; j = 2; break;
 	}
@@ -209,7 +229,7 @@ void MCFM_gg_hgg::Calc(const Vec4D_Vector &p)
   double corrfactor(m_cplcorr*m_normcorr);
   corrfactor *= sqr((*p_as)(m_mur2));
   // propagator corrections
-  double sh(m_pID==272?
+  double sh((m_pID==270||m_pID==272)?
 	    (p[2]+p[3]).Abs2() :
 	    (p[2]+p[3]+p[4]+p[5]).Abs2());
   corrfactor *= 1./(sqr(sh-m_mh2)+m_mh2*m_Gh2);
@@ -217,6 +237,9 @@ void MCFM_gg_hgg::Calc(const Vec4D_Vector &p)
   double s24((p[2]+p[4]).Abs2()), s35((p[3]+p[5]).Abs2());
   double s25((p[2]+p[5]).Abs2()), s34((p[3]+p[4]).Abs2());
   switch (m_pID) {
+  case 270:
+    // decay h->pp ~ g^\mu\nu \eps*_\mu \eps*_\nu
+    break;
   case 272:
     corrfactor *= 2.*sh;
     break;
@@ -349,10 +372,7 @@ Virtual_ME2_Base *MCFM_gg_hgg_Getter::operator()(const Process_Info &pi) const
   else if (fl.size()==6 && pi.m_fi.m_ps.size()==3 && 
 	   fl[4].Strong() && fl[5].Strong() &&
 	   fl[2]==fl[3] && fl[2].Kfcode()==22) {
-    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-	       <<"   gg->[h->gamma gamma] not yet debugged.\n";
-    THROW(fatal_error,"Not yet working.");
-    if (fl.size()==4 && pi.m_fi.m_ps.size()==1)           pID = 210;
+    pID = 270;
   }
   //////////////////////////////////////////////////////////////////
   // Z Z final states 

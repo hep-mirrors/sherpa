@@ -122,10 +122,10 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
   if (pi.m_fi.m_nloewtype!=PHASIC::nlo_type::lo) return NULL;
   PHASIC::Process_Base *newxs(NULL);
   size_t nis(pi.m_ii.NExternal()), nfs(pi.m_fi.NExternal());
-  size_t nt(pi.m_ii.NTotalExternal()+pi.m_fi.NTotalExternal());
   std::string name(PHASIC::Process_Base::GenerateName(pi.m_ii,pi.m_fi));
   Topology top(nis+nfs);
-  if (nt>nis+nfs) {
+  bool oneisgroup(pi.m_ii.IsGroup()||pi.m_fi.IsGroup());
+  if (oneisgroup) {
     newxs = new AMEGIC::Process_Group();
     newxs->SetGenerator(this);
     newxs->Init(pi,p_int->Beam(),p_int->ISR());

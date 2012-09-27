@@ -23,7 +23,7 @@ using namespace ATOOLS;
 
 Cluster_Algorithm::Cluster_Algorithm(ATOOLS::Mass_Selector *const ms):
   m_cs(this), p_ms(ms), p_ampl(NULL), p_clus(NULL),
-  m_cnt(0), m_rej(0), m_lfrac(0.0)
+  m_lfrac(0.0)
 {
 }
 
@@ -84,7 +84,7 @@ ColorConnected(const ColorID &i,const ColorID &j,const ColorID &k) const
 
 CParam Cluster_Algorithm::GetMeasure
 (const size_t &idi,const size_t &idj,const size_t &idk,
- const ATOOLS::Flavour &mofl,Double_Map &kt2,const SizeT_Map &cid)
+ const ATOOLS::Flavour &mofl,Double_Map &kt2,const SizeT_Map &cid,int cut)
 {
   Double_Map::const_iterator iit(kt2.find(idi));
   if (iit!=kt2.end()) {
@@ -104,11 +104,12 @@ CParam Cluster_Algorithm::GetMeasure
   if (p_ampl->Leg(i)->Id()!=idi || p_ampl->Leg(j)->Id()!=idj || 
       p_ampl->Leg(k)->Id()!=idk) THROW(fatal_error,"Internal error");
   bool ismo(idi&((1<<p_xs->NIn())-1));
-  Flavour mmofl(p_xs->ReMap(ismo?mofl.Bar():mofl));
+  Flavour mmofl(p_xs->ReMap(ismo?mofl.Bar():mofl,0));
   if (ismo) mmofl=mmofl.Bar();
   if (p_ampl->Legs().size()>4) {
     kt2[idi][idj][idk][mofl]=
-      p_clus->KPerp2(*p_ampl,i,j,k,mmofl,p_ms);
+      p_clus->KPerp2(*p_ampl,i,j,k,mmofl,p_ms,(m_wmode&1024)?1:-1,
+		     (cut||!mmofl.Strong())?1:0);
   }
   else {
     p_ampl->SetProcs(p_xs);
@@ -166,7 +167,8 @@ void Cluster_Algorithm::CalculateMeasures
 	       EWConnected(in[j]->JC()->Flav(),p_ampl->Leg(k)->Flav()):cc)) {
 	    if (cc==0) cc=1;
 	    CParam ckt2(GetMeasure(m_id[cc>0?idi:idj],m_id[cc>0?idj:idi],idk,
-				   in[j]->JC()->Flav(),kt2,cid));
+				   in[j]->JC()->Flav(),kt2,cid,
+				   in[j]->JC()->Cut()));
 	    cinfo.insert(ClusterInfo_Pair
 			 (Cluster_Key(cc>0?idi:idj,cc>0?idj:idi),
 			  Cluster_Info(in[j],idk,ckt2,in[j]->OrderEW(),
@@ -208,7 +210,7 @@ void Cluster_Algorithm::CalculateMeasures
 		 EWConnected(mofl,p_ampl->Leg(k)->Flav()):cc)) {
 	      if (cc==0) cc=1;
 	      CParam ckt2(GetMeasure(m_id[cc>0?idi:idj],m_id[cc>0?idj:idi],
-				     idk,mofl,kt2,cid));
+				     idk,mofl,kt2,cid,0));
 	      cinfo.insert(ClusterInfo_Pair
 			   (Cluster_Key(cc>0?idi:idj,cc>0?idj:idi),
 			    Cluster_Info(in[j],idk,ckt2,in[j]->OrderEW(),
@@ -300,7 +302,7 @@ bool Cluster_Algorithm::ClusterStep
     return false;
   }
   double wmin(std::numeric_limits<double>::max());
-  double rwmin(std::numeric_limits<double>::max()), sum(0.0);
+  double rwmin(sqrt(std::numeric_limits<double>::max())), sum(0.0);
   ClusterInfo_Map::const_iterator win(cinfo.end()), rwin(win);
   for (ClusterInfo_Map::const_iterator cit(cinfo.begin());
        cit!=cinfo.end();++cit) {
@@ -382,15 +384,16 @@ bool Cluster_Algorithm::ClusterStep
   if (p_ampl->Legs().size()>4) {
     p=p_clus->Combine(*p_ampl,cid[m_id[wkey.first]],
 		      cid[m_id[wkey.second]],cid[winfo.m_k],
-		      winfo.m_mofl,p_ms,winfo.m_kt2.m_kin);
+		      winfo.m_mofl,p_ms,winfo.m_kt2.m_kin,
+		      winfo.m_kt2.m_mode);
     if (p.empty()) {
       msg_Debugging()<<"kinematics failed\n";
       return false;
     }
-    if ((-p[m_swap][0]>rpa->gen.PBeam(0)[0] &&
-	 !IsEqual(-p[m_swap][0],rpa->gen.PBeam(0)[0],1.0e-6)) ||
-	(-p[1-m_swap][0]>rpa->gen.PBeam(1)[0] &&
-	 !IsEqual(-p[1-m_swap][0]>rpa->gen.PBeam(1)[0],1.0e-6))) {
+    if ((-p[0][0]>rpa->gen.PBeam(0)[0] &&
+	 !IsEqual(-p[0][0],rpa->gen.PBeam(0)[0],1.0e-6)) ||
+	(-p[1][0]>rpa->gen.PBeam(1)[0] &&
+	 !IsEqual(-p[1][0]>rpa->gen.PBeam(1)[0],1.0e-6))) {
       msg_Debugging()<<"kinematics failed\n";
       return false;
     }
@@ -409,6 +412,7 @@ bool Cluster_Algorithm::ClusterStep
   p_ampl=p_ampl->InitNext();
   p_ampl->SetMS(p_ms);
   p_ampl->SetNIn(ampl->NIn());
+  p_ampl->SetQ2(ampl->Q2());
   p_ampl->SetMuR2(ampl->MuR2());
   p_ampl->SetMuF2(ampl->MuF2());
   p_ampl->SetKT2(winfo.m_kt2.m_kt2);
@@ -420,7 +424,7 @@ bool Cluster_Algorithm::ClusterStep
   p_ampl->Decays()=decays;
   for (size_t i(0);i<ccurs.size();++i) {
     size_t cid(m_id[ccurs[i]->CId()]);
-    Flavour flav(p_xs->ReMap(ccurs[i]->Flav()));
+    Flavour flav(p_xs->ReMap(ccurs[i]->Flav(),0));
     if (ccurs[i]==fcur) flav=flav.Bar();
     ColorID col;
     for (size_t j(0);j<ampl->Legs().size();++j) {
@@ -436,17 +440,16 @@ bool Cluster_Algorithm::ClusterStep
     if (IdCount(m_id[ccurs[i]->CId()])==1) {
       p_ampl->Legs().back()->SetStat(1);
     }
-    else if (col.m_i<0 && ccurs[i]->Cut()) {
+    else if (col.m_i<0 && winfo.m_kt2.m_mode) {
+      size_t dmax(ccurs[i]->Cut()?ccurs[i]->Cut():IdCount(cid));
       p_ampl->Legs().back()->SetStat(3);
-      SetNMax(p_ampl->Prev(),cid,ccurs[i]->Cut());
-      p_ampl->Legs().back()->SetDMax(ccurs[i]->Cut());
+      SetNMax(p_ampl->Prev(),cid,dmax);
     }
     if (col.m_i<0) {
       p_ampl->Legs().back()->SetCol(GetColor(ccurs[i],fcur));
       p_ampl->Legs().back()->SetK(winfo.m_k);
     }
   }
-  // set colour connections 
   msg_Debugging()<<"} step = "<<step<<"\n";
   return true;
 }
@@ -456,7 +459,6 @@ bool Cluster_Algorithm::Cluster
 {
   m_wmode=mode;
   p_bg=(p_xs=xs)->GetAmplitude();
-  m_swap=xs->Process()->Integrator()->InSwaped();
   if (p_bg==NULL) THROW(fatal_error,"Internal error");
   Selector_Base *jf=p_xs->Selector()
     ->GetSelector("Jetfinder");
@@ -477,55 +479,74 @@ bool Cluster_Algorithm::Cluster
 			   xs->Process()->MapProc():xs);
   double muf2(pb->ScaleSetter()->Scale(stp::fac));
   double mur2(pb->ScaleSetter()->Scale(stp::ren));
+  double Q2(pb->ScaleSetter()->Scale(stp::res));
   for (size_t i(0);i<ccurs.size();++i) {
     size_t cid(m_id[ccurs[i]->CId()]=1<<p_ampl->Legs().size());
-    Flavour flav(p_xs->ReMap(ccurs[i]->Flav()));
+    Flavour flav(p_xs->ReMap(ccurs[i]->Flav(),0));
     if (ccurs[i]==fcur) flav=flav.Bar();
-    size_t idx(i<2?(m_swap?1-i:i):i);
+    size_t idx(i);
     Vec4D mom(i<2?-xs->Process()->Integrator()->Momenta()[idx]:
 	      xs->Process()->Integrator()->Momenta()[idx]);
     p_ampl->CreateLeg(mom,flav,ColorID(),cid);
     p_ampl->Legs().back()->SetStat(1);
   }
+  p_ampl->SetQ2(Q2);
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
   Cluster_Amplitude *eampl(p_ampl);
-  if (m_swap) xs->Process()->SwapInOrder();
   m_nosol=!m_cs.SetColors(xs);
-  if (m_swap) xs->Process()->SwapInOrder();
   ClusterInfo_Map cinfo;
-  ++m_cnt;
-  if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo)) {
-    msg_Debugging()<<METHOD<<"(): No valid PS history.\n";
-    ++m_rej;
-    double frac(m_rej/(double)m_cnt);
-    if (frac>1.25*m_lfrac && m_cnt>1000) {
-      m_lfrac=frac;
-      msg_Error()<<METHOD<<"(): No valid PS history in >"
-		 <<(int(m_lfrac*1000)/10.0)<<"% of calls.\n";
-    }
-    p_ampl->Delete();
-    p_ampl=NULL;
-    return false;
-  }
   msg_Debugging()<<"}\n";
+  KT2Info_Vector kt2ord
+    (1,KT2_Info((1<<p_ampl->Legs().size())-1,0.0));
+  const DecayInfo_Vector &decids(p_bg->DecayInfos());
+  for (size_t i(0);i<decids.size();++i)
+    kt2ord.push_back(std::make_pair(decids[i]->m_id,0.0));
+  if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo,kt2ord)) {
+    msg_Debugging()<<"classify as born\n";
+    Vec4D sum;
+    for (size_t i(0);i<p_ampl->NIn();++i) sum+=p_ampl->Leg(i)->Mom();
+    p_ampl->SetKT2(sum.Abs2());
+    p_ampl->SetMu2(sum.Abs2());
+    return true;
+  }
   size_t nmax(xs->Process()->Info().m_fi.NMaxExternal());
   SetNMax(p_ampl,(1<<ccurs.size())-1,nmax);
   msg_Debugging()<<*p_ampl<<"\n";
   while (p_ampl->Prev()) {
-    if (m_swap) std::swap<Cluster_Leg*>
-      (p_ampl->Legs()[0],p_ampl->Legs()[1]);
     p_ampl=p_ampl->Prev();
     msg_Debugging()<<*p_ampl<<"\n";
   }
-  if (m_swap) std::swap<Cluster_Leg*>
-    (p_ampl->Legs()[0],p_ampl->Legs()[1]);
   return true;
+}
+
+KT2Info_Vector Cluster_Algorithm::UpdateKT2
+(const KT2Info_Vector &kt2ord,const Cluster_Amplitude *ampl) const
+{
+  KT2Info_Vector nkt2ord(kt2ord);
+  Cluster_Leg *split(ampl->Next()->Splitter());
+  size_t sid(split->Id()), lmin(100), li(0);
+  for (size_t i(0);i<nkt2ord.size();++i) {
+    if ((nkt2ord[i].first&sid)==sid &&
+	IdCount(nkt2ord[i].first)<lmin) {
+      lmin=IdCount(nkt2ord[i].first);
+      li=i;
+    }
+  }
+  if ((split->Stat()!=3 &&
+       split->Flav().Strong()) ||
+      ampl->Legs().size()==4) {
+    nkt2ord[li].second=ampl->KT2();
+    msg_Debugging()<<"set last k_T = "<<sqrt(nkt2ord[li].second)
+		   <<" for "<<ID(nkt2ord[li].first)
+		   <<" from "<<ID(sid)<<"\n";
+  }
+  return nkt2ord;
 }
 
 bool Cluster_Algorithm::Cluster
 (const size_t &step,const Vertex_Set &onocl,const Current_Vector &ccurs,
- Current *const fcur,const ClusterInfo_Map &cinfo)
+ Current *const fcur,const ClusterInfo_Map &cinfo,KT2Info_Vector &kt2ord)
 {
   if (p_ampl->Legs().size()==3) {
     p_ampl=p_ampl->Prev();
@@ -542,14 +563,31 @@ bool Cluster_Algorithm::Cluster
     Current_Vector nccurs(ccurs);
     Current *nfcur(fcur);
     ClusterInfo_Map ncinfo(cinfo);
-    if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo,kt2))
-      if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo)) {
-  	if (ampl->Legs().size()==4) return true;
-	if (ampl->KT2()<=ampl->Next()->KT2() ||
-	    (m_wmode&16)) return true;
-	msg_Debugging()<<"reject ordering: "<<sqrt(ampl->KT2())
-		       <<" vs. "<<sqrt(ampl->Next()->KT2())<<"\n";
+    if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo,kt2)) {
+      KT2Info_Vector nkt2ord(UpdateKT2(kt2ord,ampl)), nnkt2ord(nkt2ord);
+      if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo,nnkt2ord)) {
+  	if (ampl->Legs().size()==4) {
+	  kt2ord=nkt2ord;
+	  return true;
+	}
+	bool ord(true);
+	for (size_t i(0);i<nkt2ord.size();++i) {
+	  if (nnkt2ord[i].second<nkt2ord[i].second) {
+	    msg_Debugging()<<"unordered configuration: "
+			   <<sqrt(nnkt2ord[i].second)<<" vs. "
+			   <<sqrt(nkt2ord[i].second)<<" "
+			   <<ID(nkt2ord[i].first)<<"\n";
+	    ord=false;
+	    break;
+	  }
+	}
+	if (ord || (m_wmode&16)) {
+	  kt2ord=nkt2ord;
+	  return true;
+	}
+	msg_Debugging()<<"reject ordering\n";
       }
+    }
     p_ampl=ampl;
     p_ampl->DeleteNext();
   } while (oldsize<nocl.size());
@@ -588,7 +626,10 @@ bool Cluster_Algorithm::Cluster
     ClusterInfo_Map ncinfo(cinfo);
     if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo,kt2))
       if (p_ampl->KT2()<sqrt(std::numeric_limits<double>::max()))
-	if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo)) return true;
+	if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo,kt2ord)) {
+	  kt2ord=UpdateKT2(kt2ord,ampl);
+	  return true;
+	}
     p_ampl=ampl;
     p_ampl->DeleteNext();
   }

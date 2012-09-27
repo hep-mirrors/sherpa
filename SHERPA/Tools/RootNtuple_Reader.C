@@ -330,7 +330,7 @@ bool RootNtuple_Reader::ReadInSubEvent(Blob_List * blobs)
 	THROW(fatal_error,"Invalid scale scheme");
     }
     Scale_Setter_Base *scale(m_scales[p_vars->m_nparticle]);
-    scale->CalculateScale(p,0);
+    scale->CalculateScale(p);
     double weight=CalculateWeight
       (scale->Scale(stp::ren),scale->Scale(stp::fac),
        p_vars->m_nuwgt?1:0);
@@ -406,7 +406,6 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     }
     m_nlos.push_back(new NLO_subevt(p_vars->m_nparticle+2,NULL,flav,moms));
     m_nlos.back()->m_result=p_vars->m_wgt2;
-    m_nlos.back()->m_flip=0;
     if (m_calc) {
       Vec4D_Vector p(2+p_vars->m_nparticle);
       for (int i=0;i<p_vars->m_nparticle;++i) {
@@ -431,7 +430,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
 	  THROW(fatal_error,"Invalid scale scheme");
       }
       Scale_Setter_Base *scale(m_scales[p_vars->m_nparticle]);
-      scale->CalculateScale(p,0);
+      scale->CalculateScale(p);
       double weight=CalculateWeight
 	(scale->Scale(stp::ren),scale->Scale(stp::fac),
 	 p_vars->m_nuwgt?1:2);

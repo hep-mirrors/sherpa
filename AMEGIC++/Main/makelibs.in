@@ -85,6 +85,7 @@ for J in $DIRS ; do
     echo "makeinstall: error: \"make install\" in $I failed"
     exit 1
   fi
+  make distclean
   fi
   cd ../..
 done

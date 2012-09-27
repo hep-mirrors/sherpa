@@ -69,6 +69,15 @@ double SF_Coupling::CplFac(const double &scale) const
   return m_cplfac;
 }
 
+void SF_Coupling::ColorPoint(Parton *const p) const
+{
+}
+
+double SF_Coupling::ColorWeight(const Color_Info &ci) const
+{
+  return 1.0;
+}
+
 Splitting_Function_Base::Splitting_Function_Base():
   p_lf(NULL), p_cf(NULL), m_type(cstp::none),
   m_on(1), m_bwon(0), m_qcd(-1)
@@ -188,9 +197,11 @@ double Splitting_Function_Base::MEPSWeight
 
 double Splitting_Function_Base::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,Cluster_Amplitude *const sub)
+   const double scale,const double Q2,const Color_Info &ci,
+   Cluster_Amplitude *const sub)
 {
   return dabs((*p_lf)(z,y,eta,scale,Q2,sub))
+    *(ci.m_new<0?1.0:p_cf->ColorWeight(ci))
     *BWFactor(z,y,eta,scale,Q2)/m_symf/m_polfac;
 }
 
@@ -240,6 +251,11 @@ double Splitting_Function_Base::RejectionWeight
   return res;
 }
 
+void Splitting_Function_Base::ColorPoint(Parton *const p) const
+{
+  p_cf->ColorPoint(p);
+}
+        
 Parton *Splitting_Function_Base::SetSpec(Parton *const spec)
 {
   SetFlavourSpec(spec->GetFlavour());

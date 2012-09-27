@@ -41,8 +41,8 @@ ATOOLS::Random *ATOOLS::ran(NULL);
 
 
 ATOOLS::Random::Random(long nid): 
-  p_external(NULL)
-{ 
+  m_nsinceinit(0), m_increment(0), p_external(NULL)
+{
   SetSeed(nid); 
   ATOOLS::exh->AddTerminatorObject(this);
   SaveStatus();
@@ -87,10 +87,10 @@ double ATOOLS::Random::Ran2(long *idum)
   if (idum2 < 0) idum2 += IM2;
   j=iy/NDIV;
   iy=iv[j]-idum2;
-	iv[j] = *idum;
-	if (iy < 1) iy += IMM1;
-	if ((temp=AM*iy) > RNMX) return RNMX;
-	else return temp;
+  iv[j] = *idum;
+  if (iy < 1) iy += IMM1;
+  if ((temp=AM*iy) > RNMX) return RNMX;
+  else return temp;
 }
 #undef IM1
 #undef IM2
@@ -222,6 +222,7 @@ int ATOOLS::Random::WriteOutStatus(const char * filename)
 int ATOOLS::Random::WriteOutStatus
 (std::ostream &outstream,const size_t &idx)
 {
+  if (activeGenerator==4) return WriteOutStatus4(outstream,idx);
   outstream<<idx<<"\t"<<m_id<<"\t"<<m_inext<<"\t"<<m_inextp<<"\t";
   for (int i=0;i<56;++i) outstream<<m_ma[i]<<"\t";
   outstream<<iy<<"\t"<<idum2<<"\t";
@@ -275,6 +276,7 @@ void ATOOLS::Random::ReadInStatus(const char * filename)
 size_t ATOOLS::Random::ReadInStatus
 (std::istream &myinstream,const size_t &idx)
 {
+  if (activeGenerator==4) { ReadInStatus4(myinstream,idx); } 
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_size()>1) return std::string::npos;
 #endif
@@ -301,6 +303,7 @@ double ATOOLS::Random::GetNZ()
 
 void ATOOLS::Random::SetSeed(long int nid) 
 {
+  msg_Info()<<METHOD<<"(): Seed set to "<<nid<<std::endl;
   m_id = nid<0 ? nid : -nid;
   InitRan3(&m_id);
   activeGenerator = 2;
@@ -332,6 +335,12 @@ void ATOOLS::Random::RestoreStatus()
   iy=siy;
   idum2=sidum2;
   for (int i=0;i<NTAB;++i) iv[i]=siv[i];
+}
+
+void ATOOLS::Random:: ResetToLastIncrementedSeed()
+{
+  m_nsinceinit=0;
+  ReadInStatus(m_lastincrementedseed,0);
 }
 
 
@@ -382,58 +391,61 @@ bool Random::InitExternal(const std::string &path,const std::string &file)
   return true;
 }
 
-ATOOLS::Random::Random(int ij,int kl) : p_external(NULL)
+ATOOLS::Random::Random(int ij,int kl) : 
+  m_lastincrementedseed(ios_base::binary|ios_base::in|ios_base::out),
+  m_nsinceinit(0), m_increment(0), p_external(NULL)
 {  
-   SetSeed(ij, kl); 
-   ATOOLS::exh->AddTerminatorObject(this);
-   SaveStatus(); 
+  SetSeed(ij, kl); 
+  ATOOLS::exh->AddTerminatorObject(this);
+  SaveStatus(); 
 }
 
 
 void ATOOLS::Random::SetSeed(int ij, int kl)
 {
-   // mark Generator 4 as used one and set idTag for file output
-   activeGenerator = 4;
-   strcpy(status.idTag, "Rnd4_GMarsaglia");
+  msg_Info()<<METHOD<<"(): Seeds set to "<<ij<<" "<<kl<<std::endl;
+  // mark Generator 4 as used one and set idTag for file output
+  activeGenerator = 4;
+  strcpy(status.idTag, "Rnd4_GMarsaglia");
 
-   // Init routine of the Random Generator Rnd4
-   double s,t;
-   int ii,i,j,k,l,jj,m;
+  // Init routine of the Random Generator Rnd4
+  double s,t;
+  int ii,i,j,k,l,jj,m;
 
-   /*  Handle the seed range errors
-         First random number seed must be between 0 and 31328
-         Second seed must have a value between 0 and 30081    */
-   if (ij < 0 || ij > 31328 || kl < 0 || kl > 30081) {
-		ij = 1802;
-		kl = 9373;
-   }
+  /*  Handle the seed range errors
+      First random number seed must be between 0 and 31328
+      Second seed must have a value between 0 and 30081    */
+  if (ij < 0 || ij > 31328 || kl < 0 || kl > 30081) {
+    ij = 1802;
+    kl = 9373;
+  }
 
-   i = (ij / 177) % 177 + 2;
-   j = (ij % 177)       + 2;
-   k = (kl / 169) % 178 + 1;
-   l = (kl % 169);
+  i = (ij / 177) % 177 + 2;
+  j = (ij % 177)       + 2;
+  k = (kl / 169) % 178 + 1;
+  l = (kl % 169);
 
-   for (ii=0; ii<97; ii++) {
-      s = 0.0;
-      t = 0.5;
-      for (jj=0; jj<24; jj++) {
-         m = (((i * j) % 179) * k) % 179;
-         i = j;
-         j = k;
-         k = m;
-         l = (53 * l + 1) % 169;
-         if (((l * m % 64)) >= 32)
-            s += t;
-         t *= 0.5;
-      }
-      status.u[ii] = s;
-   }
+  for (ii=0; ii<97; ii++) {
+    s = 0.0;
+    t = 0.5;
+    for (jj=0; jj<24; jj++) {
+      m = (((i * j) % 179) * k) % 179;
+      i = j;
+      j = k;
+      k = m;
+      l = (53 * l + 1) % 169;
+      if (((l * m % 64)) >= 32)
+        s += t;
+      t *= 0.5;
+    }
+    status.u[ii] = s;
+  }
 
-   status.c    = 362436.0 / 16777216.0;
-   status.cd   = 7654321.0 / 16777216.0;
-   status.cm   = 16777213.0 / 16777216.0;
-   status.i97  = 97;
-   status.j97  = 33;
+  status.c    = 362436.0 / 16777216.0;
+  status.cd   = 7654321.0 / 16777216.0;
+  status.cm   = 16777213.0 / 16777216.0;
+  status.i97  = 97;
+  status.j97  = 33;
 }
 
 
@@ -446,19 +458,19 @@ double ATOOLS::Random::Ran4()
     ++uni;
   status.u[status.i97-1] = uni;
   //   --status.i97;
-   if (--status.i97 == 0)
-     status.i97 = 97;
-   // --status.j97;
-   if (--status.j97 == 0)
-     status.j97 = 97;
-   status.c -= status.cd;
-   if (status.c < 0.0)
-     status.c += status.cm;
-   uni -= status.c;
-   if (uni < 0.0)
-     ++uni;
-   
-   return(uni);
+  if (--status.i97 == 0)
+    status.i97 = 97;
+  // --status.j97;
+  if (--status.j97 == 0)
+    status.j97 = 97;
+  status.c -= status.cd;
+  if (status.c < 0.0)
+    status.c += status.cm;
+  uni -= status.c;
+  if (uni < 0.0)
+   ++uni;
+  
+  return(uni);
 }
 
 
@@ -473,6 +485,12 @@ int ATOOLS::Random::WriteOutStatus4(const char * filename)
   return file.tellp()/sizeof(Ran4Status); 
 }
 
+int ATOOLS::Random::WriteOutStatus4(std::ostream &os,const size_t &idx)
+{
+  msg_Error()<<METHOD<<"(): This does not work yet for Ran4.\n";
+  os.write((char*) (&status), sizeof(Ran4Status));
+  return os.tellp()/sizeof(Ran4Status); 
+}
 
 void ATOOLS::Random::ReadInStatus4(const char * filename)
 {
@@ -495,6 +513,21 @@ void ATOOLS::Random::ReadInStatus4(const char * filename)
     msg_Error()<<"ERROR in Random::ReadInStatus4 : "<<filename<<" not found!!"<<endl;
 }
 
+size_t ATOOLS::Random::ReadInStatus4(std::istream &is,const size_t &idx)
+{
+  THROW(fatal_error,std::string("Reading in temporary random status does not")
+                    +std::string(" work yet for Ran4."));
+  msg_Error()<<METHOD<<"(): This does not work yet for Ran4.\n";
+  is.read((char*) (&status), sizeof(Ran4Status));
+
+  char temp[16];
+  strncpy(temp,status.idTag,16);
+  if (strcmp(temp, "Rnd4_GMarsaglia")) {
+    // Data read in was not from a RndGen of the same type
+    msg_Error()<<"WARNING in Random::ReadInStatus4: Data "
+               <<" is not of the expected type."<<endl;
+  }
+}
 
 void ATOOLS::Random::SaveStatus4() { backupStat = status; }
 void ATOOLS::Random::RestoreStatus4() { status = backupStat; }
@@ -503,8 +536,15 @@ double ATOOLS::Random::Get()
 {
   if (p_external) return p_external->Get();
   // Sherpa internal
-  if (activeGenerator==4) return Ran4();
-  else                    return Ran2(&m_id);
+  double rng(0.);
+  ++m_nsinceinit;
+  if (activeGenerator==4) rng=Ran4();
+  else                    rng=Ran2(&m_id);
+  if (activeGenerator!=4 && m_increment && m_nsinceinit==m_increment) {
+    EraseLastIncrementedSeed();
+    WriteOutStatus(m_lastincrementedseed,0);
+  }
+  return rng;
 }
 
 ptrdiff_t ATOOLS::Random::operator() (ptrdiff_t max) {

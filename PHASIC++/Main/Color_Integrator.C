@@ -183,28 +183,25 @@ void Color_Integrator::SetPoint(const Cluster_Amplitude *const ampl)
 {
   if (ampl->Legs().size()!=m_ids.size()) 
     THROW(fatal_error,"Invalid number of colours");
-  CI_Map cmap(ampl->Prev()->ColorMap());
+  CI_Map cmap(ampl->ColorMap());
   cmap[0]=0;
-  size_t iidx(0), jidx(0);
+  size_t iidx(std::string::npos), jidx(iidx);
   for (size_t i(0);i<m_ids.size();++i) {
     ColorID cc(ampl->Leg(i)->Col());
     CI_Map::iterator iit(cmap.find(cc.m_i)), jit(cmap.find(cc.m_j));
     if (iit!=cmap.end()) m_ids[i]->SetI(iit->second);
-    else iidx=i;
+    else m_ids[i]->SetI(cc.m_i);
     if (jit!=cmap.end()) m_ids[i]->SetJ(jit->second);
-    else jidx=i;
+    else m_ids[i]->SetJ(cc.m_j);
   }
-  int nc(Min(3,1+(int)(3.0*ran->Get())));
-  m_ids[iidx]->SetI(nc);
-  m_ids[jidx]->SetJ(nc);
-  Int_Vector jids;
-  for (size_t i(0);i<m_ids.size();++i) 
-    if (m_ids[i]->J()!=0) jids.push_back(i);
-  size_t j(Min(jids.size()-1,(size_t)(ran->Get()*jids.size())));
-  int oc(m_ids[jids[j]]->J());
-  m_ids[jids[j]]->SetJ(m_ids[jidx]->J());
-  m_ids[jidx]->SetJ(oc);
-  size_t nr(0), ng(0), nb(0);
+#ifdef DEBUG__BG
+  msg_Debugging()<<I()<<"\n";
+  msg_Debugging()<<J()<<"\n";
+#endif
+  int nr(0), ng(0), nb(0), niids(0);
+  if (ampl->NewCol()==1) --nr;
+  if (ampl->NewCol()==2) --ng;
+  if (ampl->NewCol()==3) --nb;
   for (size_t k(0);k<m_ids.size();++k) {
     int idx(m_ids[k]->I());
     if (idx==1) ++nr;
@@ -214,7 +211,6 @@ void Color_Integrator::SetPoint(const Cluster_Amplitude *const ampl)
   if (nr==0) ++nr;
   if (ng==0) ++ng;
   if (nb==0) ++nb;
-  size_t niids(0);
   for (size_t i(0);i<m_ids.size();++i)
     if (m_ids[i]->Act() && m_ids[i]->Type()>=0) ++niids;
   m_weight=pow(3.0,niids)*Factorial(niids)/

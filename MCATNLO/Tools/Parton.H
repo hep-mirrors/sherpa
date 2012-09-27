@@ -4,6 +4,7 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Phys/Cluster_Leg.H"
 #include "ATOOLS/Org/Message.H"
 #include <list>
 
@@ -20,13 +21,30 @@ namespace MCATNLO {
     };
   };
 
+  class Parton;
+
+  struct Color_Info {
+    int m_i[2], m_j[2], m_k[2], m_new;
+    inline Color_Info(): m_new(0)
+    { m_i[0]=m_i[1]=m_j[0]=m_j[1]=m_k[0]=m_k[1]=0; }
+    inline Color_Info(ATOOLS::ColorID ci,ATOOLS::ColorID cj,
+		      ATOOLS::ColorID ck,const int nc=-1): m_new(nc)
+    {
+      m_i[0]=ci.m_i; m_i[1]=ci.m_j;
+      m_j[0]=cj.m_i; m_j[1]=cj.m_j;
+      m_k[0]=ck.m_i; m_k[1]=ck.m_j;
+    }
+  };// end of struct Color_Info
+
+  std::ostream &operator<<(std::ostream &str,const Color_Info &ci);
+
   class Parton {
   private:
     ATOOLS::Flavour m_flav;
     ATOOLS::Vec4D   m_mom;
     ATOOLS::Flow    m_flow,m_meflow;
     pst::code       m_pst;
-    int             m_beam,m_kin;
+    int             m_beam,m_kin,m_col;
     double          m_kt_start, m_kt_veto, m_kt_test;
     double          m_kt_max, m_phi;
     double          m_z_test, m_y_test, m_xBj;
@@ -37,6 +55,8 @@ namespace MCATNLO {
 
     std::vector<Parton*> m_specs;
     Splitting_Function_Base *p_sf;
+
+    Color_Info m_ci;
 
   public:
     inline Parton();
@@ -57,6 +77,8 @@ namespace MCATNLO {
     inline int                     GetRFlow(const int) const;
     inline int                     Beam()        const;
     inline int                     Kin()         const { return m_kin; }
+    inline int                     Col()         const { return m_col; }
+    inline Color_Info             &Color() { return m_ci; }
     inline size_t                  Id()          const;
     inline size_t                  Idx()         const { return m_idx; }
     inline Splitting_Function_Base *SF()         const { return p_sf; }
@@ -85,9 +107,9 @@ namespace MCATNLO {
     inline void SetSing(Singlet *);
     inline void SetFlow(int code_index,int code=0);
     inline void SetMEFlow(int code_index,int code=0);
-    inline void SetRFlow();
     inline void SetBeam(int);
     inline void SetKin(int kin) { m_kin=kin; }
+    inline void SetCol(int col) { m_col=col; }
     inline void SetId(size_t);
     inline void SetIdx(size_t idx) { m_idx=idx; }
     inline void SetSF(Splitting_Function_Base *const sf) { p_sf=sf; }
@@ -187,10 +209,6 @@ namespace MCATNLO {
   void Parton::SetMEFlow(const int index, const int code) {
     if ((!m_flav.IsDiQuark()) && (!m_flav.Strong())) return;
     m_meflow.SetCode(index,code);
-  }
-  void Parton::SetRFlow() {
-    m_meflow.SetCode(1,m_flow.Code(1));
-    m_meflow.SetCode(2,m_flow.Code(2));
   }
   void Parton::SetBeam(const int beam)                { m_beam = beam;}          
   void Parton::SetId(const size_t id)                 { m_id = id;}          

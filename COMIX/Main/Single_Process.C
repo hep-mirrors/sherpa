@@ -1,6 +1,7 @@
 #include "COMIX/Main/Single_Process.H"
 
 #include "COMIX/Main/Process_Group.H"
+#include "COMIX/Main/Single_Dipole_Term.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "COMIX/Phasespace/PS_Generator.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -31,7 +32,19 @@ using namespace ATOOLS;
 COMIX::Single_Process::Single_Process():
   COMIX::Process_Base(this),
   p_bg(NULL), p_map(NULL),
-  p_loop(NULL), p_kpterms(NULL) {}
+  p_loop(NULL), p_kpterms(NULL),
+  m_checkpoles(false)
+{
+  int helpi;
+  Data_Reader reader(" ",";","!","=");
+  reader.AddComment("#");
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+  if (reader.ReadFromFile(helpi,"CHECK_POLES")) {
+    m_checkpoles = helpi;
+    msg_Tracking()<<"Set infrared poles check mode "<<m_checkpoles<<" .\n";
+  }
+}
 
 COMIX::Single_Process::~Single_Process()
 {
@@ -41,8 +54,18 @@ COMIX::Single_Process::~Single_Process()
     for (size_t i(0);i<m_subs.size();++i) {
       delete [] m_subs[i]->p_id;
       delete [] m_subs[i]->p_fl;
+      if (i<m_subs.size()-1) delete static_cast
+	  <Single_Dipole_Term*>(m_subs[i]->p_proc);
       delete m_subs[i];
     }
+  }
+  else if (p_bg) {
+    NLO_subevtlist *subs(GetSubevtList());
+    if (subs && subs->size())
+      for (size_t i(0);i<subs->size()-1;++i)
+	     if ((*subs)[i]->p_proc)
+	       delete static_cast
+		 <Single_Dipole_Term*>((*subs)[i]->p_proc);
   }
   if (p_bg!=NULL) delete p_bg;
 }
@@ -96,12 +119,18 @@ bool COMIX::Single_Process::Initialize
   }
   if (m_pinfo.m_fi.NLOType()&nlo_type::loop) {
     smode|=16;
-    if (m_pinfo.m_fi.NLOType()&nlo_type::polecheck) smode|=8;
+    if (m_checkpoles) smode|=8;
   }
   if (p_bg->Initialize(m_nin,m_nout,flavs,isf,fsf,&*p_model,
 		       &m_cpls,smode,m_pinfo.m_oew,m_pinfo.m_oqcd,
 		       m_pinfo.m_maxoew,m_pinfo.m_maxoqcd,
 		       m_pinfo.m_ntchan,m_name)) {
+    if (smode&1) {
+      NLO_subevtlist *subs(GetSubevtList());
+      for (size_t i(0);i<subs->size()-1;++i)
+	(*subs)[i]->p_proc =
+	  new Single_Dipole_Term(this,(*subs)[i],(*subs)[i]);
+    }
     if (smode&2) {
       p_kpterms = new KP_Terms(this,0);
       p_kpterms->SetAlpha(p_bg->DInfo()->AMax());
@@ -138,10 +167,11 @@ bool COMIX::Single_Process::Initialize
   return false;
 }
 
-void COMIX::Single_Process::MapSubEvts()
+void COMIX::Single_Process::MapSubEvts(const int mode)
 {
   m_wgtinfo.AddMEweights(p_map->m_wgtinfo.m_nx);
   m_subs.resize(p_map->p_bg->SubEvts().size());
+  const NLO_subevtlist &subs(p_bg->SubEvts());
   const NLO_subevtlist &rsubs(p_map->p_bg->SubEvts());
   for (size_t i(0);i<m_subs.size();++i) {
     m_subs[i] = new NLO_subevt(*rsubs[i]);
@@ -152,8 +182,21 @@ void COMIX::Single_Process::MapSubEvts()
     m_subs[i]->p_mom=rsubs[i]->p_mom;
     m_subs[i]->p_dec=rsubs[i]->p_dec;
     for (size_t j(0);j<m_subs[i]->m_n;++j) {
-      fls[j]=ReMap(rsubs[i]->p_fl[j]);
+      fls[j]=ReMap(rsubs[i]->p_fl[j],0);
       ids[j]=rsubs[i]->p_id[j];
+    }
+    PHASIC::Process_Info cpi;
+    for (size_t j(0);j<m_nin;++j)
+      cpi.m_ii.m_ps.push_back(PHASIC::Subprocess_Info(fls[j]));
+    for (size_t j(m_nin);j<m_subs[i]->m_n;++j)
+      cpi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(fls[j]));
+    PHASIC::Process_Base::SortFlavours(cpi);
+    m_subs[i]->m_pname=
+      PHASIC::Process_Base::GenerateName(cpi.m_ii,cpi.m_fi);
+    if (i+1<m_subs.size()) {
+    if (mode&1)
+      delete static_cast<Single_Dipole_Term*>(subs[i]->p_proc);
+    m_subs[i]->p_proc = new Single_Dipole_Term(this,rsubs[i],m_subs[i]);
     }
   }
 }
@@ -197,7 +240,7 @@ bool COMIX::Single_Process::MapProcess()
 	  if (cname!="eof")
 	    THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
 	}
-	MapSubEvts();
+	MapSubEvts(0);
 	return true;
       }
     THROW(fatal_error,"Map process '"+mapname+"' not found");
@@ -237,7 +280,7 @@ bool COMIX::Single_Process::MapProcess()
 #ifdef USING__MPI
       }
 #endif
-      MapSubEvts();
+      MapSubEvts(1);
       delete p_bg;
       p_bg=NULL;
       (*p_pmap)[m_name]=mapname;
@@ -265,11 +308,13 @@ bool COMIX::Single_Process::GeneratePoint()
   return !(m_zero=false);
 }
 
-double COMIX::Single_Process::Differential(const Cluster_Amplitude &ampl) 
+double COMIX::Single_Process::Differential
+(const Cluster_Amplitude &ampl,int mode) 
 {
+  DEBUG_FUNC(Name());
   m_zero=false;
   p_int->ColorIntegrator()->SetPoint(&ampl);
-  return PHASIC::Process_Base::Differential(ampl);
+  return PHASIC::Process_Base::Differential(ampl,mode);
 }
 
 double COMIX::Single_Process::SetZero()
@@ -278,14 +323,14 @@ double COMIX::Single_Process::SetZero()
     const NLO_subevtlist &rsubs(p_map?m_subs:p_bg->SubEvts());
     for (size_t i(0);i<rsubs.size();++i) rsubs[i]->Reset();
   }
-  return m_w=m_dxs=m_lastxs=m_last[1]=m_last[0]=0.0;
+  return m_w=m_dxs=m_lastxs=m_last=0.0;
 }
 
 double COMIX::Single_Process::Partonic
 (const Vec4D_Vector &p,const int mode) 
 {
   Single_Process *sp(p_map!=NULL?p_map:this);
-  if (mode==1 && !sp->p_scale->Scale2())
+  if (mode==1)
     return m_lastxs=m_dxs+m_w*GetKPTerms(m_flavs,mode);
   if (m_zero || !Selector()->Result()) return m_lastxs;
   for (size_t i(0);i<m_nin+m_nout;++i) {
@@ -303,7 +348,10 @@ double COMIX::Single_Process::Partonic
     }
   }
   else {
-    sp->p_scale->CalculateScale(p,mode);
+    sp->p_scale->CalculateScale(p);
+    if (m_pinfo.m_fi.NLOType()&nlo_type::rsub &&
+	!sp->p_bg->JetTrigger(Selector(),m_mcmode))
+      return m_lastxs=m_dxs=0.0;
     m_dxs=sp->p_bg->Differential(m_p);
     m_w=p_int->ColorIntegrator()->GlobalWeight();
     if (p_int->HelicityIntegrator()!=NULL) 
@@ -438,7 +486,7 @@ bool COMIX::Single_Process::Trigger(const ATOOLS::Vec4D_Vector &p)
   if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
     if (!Selector()->NoJetTrigger(p)) return false;
     Amplitude *bg(p_map!=NULL?p_map->p_bg:p_bg);
-    if (bg->SetMomenta(p) && bg->JetTrigger(Selector())) return true;
+    if (bg->SetMomenta(p)) return true;
     Selector()->SetResult(0);
     return false;
   }
@@ -476,7 +524,8 @@ bool COMIX::Single_Process::FillIntegrator(Phase_Space_Handler *const psh)
   return COMIX::Process_Base::FillIntegrator(psh);
 }
 
-Flavour COMIX::Single_Process::ReMap(const Flavour &fl) const
+Flavour COMIX::Single_Process::ReMap
+(const Flavour &fl,const size_t &id) const
 {
   if (p_map==NULL) return fl;
   Flavour_Map::const_iterator fit(m_fmap.find(fl));
@@ -501,7 +550,7 @@ CombinedFlavour(const size_t &idij)
     CFlavVector_Map::const_iterator fit(m_cfmap.find(idij));
     if (fit!=m_cfmap.end()) return fit->second;
     Flavour_Vector cf(p_map->CombinedFlavour(idij));
-    for (size_t i(0);i<cf.size();++i) cf[i]=ReMap(cf[i]);
+    for (size_t i(0);i<cf.size();++i) cf[i]=ReMap(cf[i],0);
     m_cfmap[idij]=cf;
     return m_cfmap[idij];
   }
@@ -520,4 +569,52 @@ NLO_subevtlist *COMIX::Single_Process::GetSubevtList()
   if (m_pinfo.m_fi.NLOType()&nlo_type::rsub)
     return &(p_map?m_subs:p_bg->SubEvts());
   return NULL;
+}
+
+void COMIX::Single_Process::SetScale(const Scale_Setter_Arguments &args)
+{
+  PHASIC::Single_Process::SetScale(args);
+  Scale_Setter_Base *scs(p_map?p_map->p_scale:p_scale);
+  NLO_subevtlist *subs(GetSubevtList());
+  if (subs) {
+    for (size_t i(0);i<subs->size()-1;++i)
+      static_cast<Single_Dipole_Term*>
+	((*subs)[i]->p_proc)->SetScaleSetter(scs);
+  }
+}
+
+void COMIX::Single_Process::SetSelector(const Selector_Key &key)
+{
+  PHASIC::Single_Process::SetSelector(key);
+  Combined_Selector *sel(Selector());
+  NLO_subevtlist *subs(GetSubevtList());
+  if (subs) {
+    for (size_t i(0);i<subs->size()-1;++i)
+      static_cast<Single_Dipole_Term*>
+	((*subs)[i]->p_proc)->SetSelector(sel);
+  }
+}
+
+void COMIX::Single_Process::SetShower(PDF::Shower_Base *const ps)
+{
+  PHASIC::Single_Process::SetShower(ps);
+  NLO_subevtlist *subs(GetSubevtList());
+  if (subs) {
+    for (size_t i(0);i<subs->size()-1;++i)
+      static_cast<Single_Dipole_Term*>
+	((*subs)[i]->p_proc)->SetShower(ps);
+  }
+}
+
+size_t COMIX::Single_Process::SetMCMode(const size_t mcmode)
+{
+  size_t cmcmode(m_mcmode);
+  m_mcmode=mcmode;
+  NLO_subevtlist *subs(GetSubevtList());
+  if (subs) {
+    for (size_t i(0);i<subs->size()-1;++i)
+      static_cast<Single_Dipole_Term*>
+	((*subs)[i]->p_proc)->SetMCMode(mcmode);
+  }
+  return cmcmode;
 }

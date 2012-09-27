@@ -3,7 +3,6 @@
 
 #include "ATOOLS/Phys/Cluster_Leg.H"
 #include "ATOOLS/Phys/Decay_Info.H"
-#include "ATOOLS/Phys/RB_Data.H"
 
 #include <vector>
 #include <map>
@@ -50,13 +49,11 @@ namespace ATOOLS {
     ClusterLeg_Vector m_legs;
     DecayInfo_Vector  m_decs;
 
-    size_t m_oew, m_oqcd, m_nin, m_new, m_kin, m_nlo;
-    double m_mur2, m_muf2, m_mu2, m_kt2, m_z, m_phi;
+    size_t m_oew, m_oqcd, m_nin, m_new, m_ncl, m_kin, m_nlo;
+    double m_mur2, m_muf2, m_Q2, m_mu2, m_kt2, m_z, m_phi, m_lkf;
     CI_Map m_cmap;
 
     void *p_jf, *p_procs, *p_iinfo, *p_dinfo;
-
-    RB_Map *p_rb;
 
     Mass_Selector *p_ms;
 
@@ -124,6 +121,7 @@ namespace ATOOLS {
 
     inline void SetNIn(const size_t &nin)  { m_nin=nin; }
     inline void SetIdNew(const size_t &id) { m_new=id;  }
+    inline void SetNewCol(const size_t &c) { m_ncl=c;   }
 
     inline void SetKin(const size_t &kin)   { m_kin=kin; }
     inline void SetNLO(const size_t &nlo)   { m_nlo=nlo; }
@@ -135,6 +133,8 @@ namespace ATOOLS {
     inline void SetMuR2(const double &mur2) { m_mur2=mur2; }
     inline void SetMu2(const double &mu2)   { m_mu2=mu2;   }
 
+    inline void SetQ2(const double &Q2) { m_Q2=Q2; }
+
     inline void SetKT2(const double &kt2) { m_kt2=kt2; }
     inline void SetZ(const double &z)     { m_z=z;     }
     inline void SetPhi(const double &phi) { m_phi=phi; }
@@ -144,12 +144,11 @@ namespace ATOOLS {
     inline void SetIInfo(void *const i) { p_iinfo=i; }
     inline void SetDInfo(void *const d) { p_dinfo=d; }
 
-    inline void SetRBMap(RB_Map *const rb) { p_rb=rb; }
-
     inline void SetMS(Mass_Selector *const ms) { p_ms=ms; }
 
-    inline size_t NIn() const   { return m_nin; }
-    inline size_t IdNew() const { return m_new; }
+    inline size_t NIn() const    { return m_nin; }
+    inline size_t IdNew() const  { return m_new; }
+    inline size_t NewCol() const { return m_ncl; }
 
     inline size_t Kin() const  { return m_kin; }
     inline size_t NLO() const  { return m_nlo; }
@@ -161,14 +160,18 @@ namespace ATOOLS {
     inline double MuR2() const { return m_mur2; }
     inline double Mu2() const  { return m_mu2;  }
 
+    inline double Q2() const { return m_Q2; }
+
     inline double KT2() const { return m_kt2; }
     inline double Z() const   { return m_z;   }
     inline double Phi() const { return m_phi; }
 
+    inline void SetLKF(const double &lkf) { m_lkf=lkf; }
+
+    inline double LKF() const { return m_lkf; }
+
     inline CI_Map       &ColorMap()       { return m_cmap; }
     inline const CI_Map &ColorMap() const { return m_cmap; }
-
-    inline RB_Map *RBMap() const { return p_rb; }
 
     inline Mass_Selector *MS() const { return p_ms; }
 

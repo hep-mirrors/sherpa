@@ -185,9 +185,9 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
   m_umprocs.push_back(std::vector<Single_Process*>());
   PHASIC::Process_Base *newxs(NULL);
   size_t nis(pi.m_ii.NExternal()), nfs(pi.m_fi.NExternal());
-  size_t nt(pi.m_ii.NTotalExternal()+pi.m_fi.NTotalExternal());
+  bool oneisgroup(pi.m_ii.IsGroup()||pi.m_fi.IsGroup());
   std::map<std::string,std::string> pmap;
-  if (nt>nis+nfs) {
+  if (oneisgroup) {
     newxs = new Process_Group();
     newxs->SetGenerator(this);
     newxs->Init(pi,p_int->Beam(),p_int->ISR());

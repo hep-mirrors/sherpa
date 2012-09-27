@@ -2,8 +2,7 @@
 #define MCATNLO_Showers_Splitting_Function_Base_H
 
 #include "ATOOLS/Org/Getter_Function.H"
-#include "ATOOLS/Phys/Flavour.H"
-#include "ATOOLS/Math/Vector.H"
+#include "MCATNLO/Tools/Parton.H"
 
 namespace ATOOLS { 
   class Function_Base;
@@ -150,11 +149,17 @@ namespace MCATNLO {
     virtual bool SetCoupling(MODEL::Model_Base *md,
 			     const double &k0sqi,const double &k0sqf,
 			     const double &isfac,const double &fsfac) = 0;
+    virtual void SetCouplingMax(const double &k0sqi,const double &k0sqf,
+				const double &isfac,const double &fsfac) {}
     virtual double Coupling(const double &scale,const int pol,
 			    ATOOLS::Cluster_Amplitude *const sub) = 0;
     virtual bool AllowSpec(const ATOOLS::Flavour &fl) = 0;
 
     virtual double CplFac(const double &scale) const;
+
+    virtual void ColorPoint(Parton *const p) const;
+
+    virtual double ColorWeight(const Color_Info &ci) const;
 
     inline double MaxCoupling(const int mode) const { return m_cplmax[mode]; }
 
@@ -205,6 +210,7 @@ namespace MCATNLO {
     virtual double operator()
       (const double z,const double y,const double eta,
        const double scale,const double Q2,
+       const Color_Info &ci=Color_Info(),
        ATOOLS::Cluster_Amplitude *const sub=NULL);
     virtual double OverIntegrated(const double,const double,
 				  const double,const double);
@@ -238,6 +244,10 @@ namespace MCATNLO {
     bool PureQCD() const;
 
     Parton *SetSpec(Parton *const spec);
+
+    void ColorPoint(Parton *const p) const;
+
+    double ColorWeight(Parton *const p) const;
 
     inline double     Last() const    { return m_lastint; } 
     inline cstp::code GetType() const { return m_type;    } 

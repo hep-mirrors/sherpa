@@ -55,6 +55,7 @@ void Dipole_Kinematics::Evaluate()
     double pijpk((m_pi+m_pj)*m_pk);
     m_z=(m_pi*m_pk)/pijpk;
     m_y=1.0/(1.0+pijpk/(m_pi*m_pj));
+    m_kt2=Q2*m_y*m_z*(1.0-m_z);
     if (p_info->Stat() && (m_pi[0]>1.0e-3 && m_pj[0]>1.0e-3) &&
 	(pkt[0]<0.0 || Q[0]<pkt[0])) {
       p_info->SetStat(0);
@@ -75,6 +76,7 @@ void Dipole_Kinematics::Evaluate()
     double pijpa((m_pi+m_pj)*m_pk);
     m_z=(m_pi*m_pk)/pijpa;
     m_y=-(m_pi*m_pj)/pijpa;
+    m_kt2=Q2*m_y/(1.0-m_y)*m_z*(1.0-m_z);
     if (p_info->Stat() && (m_pi[0]>1.0e-3 && m_pj[0]>1.0e-3) &&
 	(Q[0]<pkt[0] || lrat<0.0)) {
       p_info->SetStat(0);
@@ -94,6 +96,7 @@ void Dipole_Kinematics::Evaluate()
     p_kt->SetP(Q-p_ijt->P());
     m_z=(pjpa+pkpa+pjpk)/(pjpa+pkpa);
     m_y=pjpa/(pjpa+pkpa);
+    m_kt2=Q2*m_y/m_z*(1.0-m_z);
     for (size_t i(0);i<m_cur.size();++i) m_p[i]=m_cur[i]->P();
   }
   else if (m_type==3) {
@@ -104,6 +107,7 @@ void Dipole_Kinematics::Evaluate()
     p_ijt->SetP(pajt);
     p_kt->SetP(m_pi+m_pj+m_pk-pajt);
     m_y=-pjpa/papb;
+    m_kt2=Q.Abs2()*m_y/m_z*(1.0-m_z);
     for (size_t i(0);i<m_cur.size();++i) {
       const Vec4D &p(m_cur[i]->P());
       m_p[i]=p-2.0*p*KpKt/(KpKt*KpKt)*KpKt+2.0*p*K/(Kt*Kt)*Kt;
@@ -116,6 +120,7 @@ void Dipole_Kinematics::Evaluate()
     THROW(fatal_error,"Invalid dipole type");
   }
   m_trig=m_y<p_info->AMax();
+  if (m_trig) m_trig=m_kt2<p_info->KT2Max();
   if (m_y<p_info->AMin()) p_info->SetStat(0);
   if (p_info->Stat() &&
       p_i->P()+p_j->P()+p_k->P()!=p_ijt->P()+p_kt->P()) {

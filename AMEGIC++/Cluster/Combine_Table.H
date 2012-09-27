@@ -16,6 +16,9 @@ namespace AMEGIC {
 
   std::ostream &operator<<(std::ostream &str,const std::vector<int> &info);
 
+  typedef std::pair<size_t,double> KT2_Info;
+  typedef std::vector<KT2_Info>    KT2Info_Vector;
+
   class Leg {
   private:
     AMEGIC::Point *p_point;
@@ -82,7 +85,7 @@ namespace AMEGIC {
   class Combine_Data {
   public:
     PDF::CParam m_pt2ij;
-    int    m_strong, m_calc;
+    int    m_strong, m_calc, m_dec;
     Combine_Table *p_down;
     ATOOLS::Flavour m_mo;
     std::vector<int>    m_graphs;
@@ -127,6 +130,10 @@ namespace AMEGIC {
     
     ATOOLS::DecayInfo_Vector m_decids, *p_decids;
 
+    KT2Info_Vector m_kt2ord;
+
+    KT2Info_Vector UpdateKT2(const CD_List::iterator &cdit) const;
+
     Leg  CombinedLeg(Leg *legs,const int i,const int j);
     Leg *CombineLegs(Leg *legs,const int i,const int j,
 		     const int nlegs,const int kin);
@@ -156,7 +163,7 @@ namespace AMEGIC {
     // destructor
     ~Combine_Table();
     // member functions
-    CD_List::iterator    CalcPropagator(CD_List::iterator &cit);
+    CD_List::iterator    CalcPropagator(CD_List::iterator &cit,int mode);
     Combine_Table * CalcJet(int nl,ATOOLS::Vec4D *moms,const size_t mode,const double &kt2);
     void                 FillTable(Leg **legs,const int nlegs,const int nampl);
     double               GetWinner(int &i, int &j,int &k,double &mu2);

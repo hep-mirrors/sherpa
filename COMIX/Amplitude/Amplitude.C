@@ -55,6 +55,9 @@ Amplitude::Amplitude():
   if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA")) helpd=1.0;
   else msg_Tracking()<<METHOD<<"(): Set dipole \\alpha_{max} "<<helpd<<".\n";
   p_dinfo->SetAMax(helpd);
+  if (!read.ReadFromFile(helpd,"DIPOLE_KT2MAX")) helpd=sqr(rpa->gen.Ecms());
+  else msg_Tracking()<<METHOD<<"(): Set dipole \\k_{T,max}^2 "<<helpd<<".\n";
+  p_dinfo->SetKT2Max(helpd);
   p_dinfo->SetDRMode(0);
   m_sccmur=read.GetValue("USR_WGT_MODE",1);
 #ifdef USING__Threading
@@ -833,6 +836,7 @@ void Amplitude::ConstructNLOEvents()
     Dipole_Kinematics *kin(m_scur[i]->Sub()->In().front()->Kin());
     NLO_subevt *sub(new NLO_subevt());
     m_subs.push_back(sub);
+    sub->m_idx=i;
     sub->m_n=m_nin+m_nout-1;
     Flavour *fls(new Flavour[sub->m_n]);
     size_t *ids(new size_t[sub->m_n]);
@@ -840,18 +844,18 @@ void Amplitude::ConstructNLOEvents()
     sub->m_j=kin->JJ()->Id().front();
     sub->m_k=kin->JK()->Id().front();
     Current_Vector cur(sub->m_n,NULL);
-    for (size_t i(0), j(0);i<m_nin+m_nout;++i) {
-      if (i==sub->m_j) continue;
-      if (i==sub->m_i) {
+    for (size_t k(0), j(0);k<m_nin+m_nout;++k) {
+      if (k==sub->m_j) continue;
+      if (k==sub->m_i) {
 	cur[j]=kin->JIJT();
 	sub->m_ijt=j;
       }
-      else if (i==sub->m_k) {
+      else if (k==sub->m_k) {
 	cur[j]=kin->JKT();
 	sub->m_kt=j;
       }
       else {
-	cur[j]=m_cur[1][i];
+	cur[j]=m_cur[1][k];
       }
       fls[j]=cur[j]->Flav();
       ids[j]=cur[j]->CId();
@@ -859,10 +863,17 @@ void Amplitude::ConstructNLOEvents()
     }
     kin->SetCurrents(cur);
     sub->p_mom=&kin->Momenta().front();
+    for (size_t j(0);j<m_nin;++j) fls[j]=fls[j].Bar();
     sub->p_fl=fls;
     sub->p_id=ids;
     sub->p_dec=&m_decid;
-    sub->m_pname=PHASIC::Process_Base::GenerateName(sub,m_nin);
+    PHASIC::Process_Info cpi;
+    for (size_t j(0);j<m_nin;++j)
+      cpi.m_ii.m_ps.push_back(PHASIC::Subprocess_Info(fls[j]));
+    for (size_t j(m_nin);j<m_nin+m_nout-1;++j)
+      cpi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(fls[j]));
+    PHASIC::Process_Base::SortFlavours(cpi);
+    sub->m_pname=PHASIC::Process_Base::GenerateName(cpi.m_ii,cpi.m_fi);
     msg_Indent();
     msg_Debugging()<<*sub<<"\n";
   }
@@ -879,7 +890,13 @@ void Amplitude::ConstructNLOEvents()
   sub->p_fl=fls;
   sub->p_id=ids;
   sub->p_dec=&m_decid;
-  sub->m_pname=PHASIC::Process_Base::GenerateName(sub,m_nin);
+  PHASIC::Process_Info cpi;
+  for (size_t j(0);j<m_nin;++j)
+    cpi.m_ii.m_ps.push_back(PHASIC::Subprocess_Info(fls[j]));
+  for (size_t j(m_nin);j<m_nin+m_nout;++j)
+    cpi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(fls[j]));
+  PHASIC::Process_Base::SortFlavours(cpi);
+  sub->m_pname=PHASIC::Process_Base::GenerateName(cpi.m_ii,cpi.m_fi);
   sub->m_i=sub->m_j=sub->m_k=0;
   {
     msg_Indent();
@@ -1185,7 +1202,8 @@ bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
   return p_dinfo->Stat();
 }
 
-bool Amplitude::JetTrigger(PHASIC::Combined_Selector *const sel)
+bool Amplitude::JetTrigger
+(PHASIC::Combined_Selector *const sel,const int mode)
 {
   if (m_scur.empty() || sel==NULL) return true;
   NLO_subevtlist tmp;
@@ -1194,10 +1212,40 @@ bool Amplitude::JetTrigger(PHASIC::Combined_Selector *const sel)
   for (size_t i(0);i<m_scur.size();++i) {
     tmp.back()=m_subs[i];
     Dipole_Kinematics *kin(m_scur[i]->Sub()->In().front()->Kin());
-    kin->AddTrig(sel->JetTrigger(kin->Momenta(),&tmp));
+    int ltrig(sel->JetTrigger(kin->Momenta(),&tmp));
+    kin->AddTrig(ltrig);
+    if (mode==1) {
+      int da(kin->KT2()<m_subs[i]->m_mu2[stp::res]);
+      int ds(kin->Y()<p_dinfo->AMax());
+      kin->SetTrig(ltrig&abs(ds-da));
+    }
+    else if (mode==2) {
+      int da(kin->KT2()<m_subs[i]->m_mu2[stp::res]);
+      kin->SetTrig(ltrig&da);
+    }
     trig|=kin->Trig();
   }
   return trig;
+}
+
+double Amplitude::KT2Trigger(NLO_subevt *const sub,const int mode)
+{
+  if (mode==0) return 1.0;
+  Dipole_Kinematics *kin
+    (m_scur[sub->m_idx]->Sub()->In().front()->Kin());
+  if (mode==1) {
+    int da(kin->KT2()<sub->m_mu2[stp::res]);
+    int ds(kin->Y()<p_dinfo->AMax());
+    kin->SetTrig(abs(ds-da));
+    return ds-da;
+  }
+  if (mode==2) {
+    int da(kin->KT2()<sub->m_mu2[stp::res]);
+    kin->SetTrig(da);
+    return da;
+  }
+  THROW(not_implemented,"Invalid call");
+  return 0.0;
 }
 
 void Amplitude::SetColors(const Int_Vector &rc,
@@ -1387,8 +1435,10 @@ bool Amplitude::EvaluateAll()
   return true;
 }
 
-double Amplitude::Differential(const std::vector<Vec4D> &momenta)
+double Amplitude::Differential(const std::vector<Vec4D> &momenta,
+			       NLO_subevt *const sub)
 {
+  p_sub=sub;
   return Differential(momenta,p_colint->I(),p_colint->J());
 }
 

@@ -390,14 +390,13 @@ double Single_OSTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poincar
   p_int->SetMomenta(p_OS_labmom);
   p_os_process->Integrator()->SetMomenta(p_OS_labmom);
 
-  m_subevt.m_me = m_subevt.m_mewgt = m_subevt.m_result =
-    m_subevt.m_last[0] = m_subevt.m_last[1] = 0.;
+  m_subevt.m_me = m_subevt.m_mewgt = m_subevt.m_result = 0.;
 
   if (!trg) return m_lastxs=m_subevt.m_me=m_subevt.m_mewgt=0.;
 
   ATOOLS::Vec4D_Vector lomoms;
   for (size_t i=0;i<m_nin+m_nout;i++) lomoms.push_back(p_OS_mom[i]);
-  p_os_process->ScaleSetter()->CalculateScale(lomoms,0);
+  p_os_process->ScaleSetter()->CalculateScale(lomoms);
   double norm = p_os_process->Norm();
   double M2 =p_os_process->operator()(&lomoms.front())*norm;
 

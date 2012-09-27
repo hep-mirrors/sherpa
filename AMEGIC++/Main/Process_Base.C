@@ -19,7 +19,7 @@ int AMEGIC::Process_Base::s_gauge=10;
 
 AMEGIC::Process_Base::Process_Base(): 
   p_model(NULL),
-  p_b(0),p_pl(0), 
+  p_b(0), m_eoreset(0), p_pl(0), 
   m_print_graphs(false), p_testmoms(0), m_Norm(1.), m_sfactor(1.)
 {
   p_channellibnames = new std::list<std::string>();
@@ -201,4 +201,15 @@ ATOOLS::Flavour AMEGIC::Process_Base::ReMap(const ATOOLS::Flavour& f0,const std:
     THROW(critical_error,"Flavour map incomplete!");
   }
   return f0;
+}
+
+ATOOLS::Flavour AMEGIC::Process_Base::ReMap
+(const ATOOLS::Flavour &fl,const size_t &id) const
+{
+  return ReMap(fl,ToString(PSId(id)));
+}
+
+AMEGIC::Process_Base *AMEGIC::Process_Base::GetReal()
+{
+  return this;
 }

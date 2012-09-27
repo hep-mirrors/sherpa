@@ -8,7 +8,7 @@ namespace METOOLS {
 
     int m_mode, m_stat, m_drmode;
 
-    double m_amin, m_amax;
+    double m_amin, m_amax, m_kt2max;
 
   public:
 
@@ -20,6 +20,8 @@ namespace METOOLS {
     inline void SetAMin(const double &amin) { m_amin=amin; }
     inline void SetAMax(const double &amax) { m_amax=amax; }
 
+    inline void SetKT2Max(const double &kt2max) { m_kt2max=kt2max; }
+
     inline int Mode() const   { return m_mode;   }
     inline int DRMode() const { return m_drmode; }
 
@@ -27,6 +29,8 @@ namespace METOOLS {
 
     inline double AMin() const { return m_amin; }
     inline double AMax() const { return m_amax; }
+
+    inline double KT2Max() const { return m_kt2max; }
 
   };// end of class Dipole_Info
 

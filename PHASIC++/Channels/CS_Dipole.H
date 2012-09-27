@@ -33,7 +33,7 @@ namespace PHASIC {
     std::map<size_t,size_t> m_brmap, m_rbmap;
 
     size_t m_type, m_ijt, m_kt, m_idx, m_isrmode;
-    bool   m_on;
+    bool   m_on, m_bmcw;
 
     ATOOLS::Flavour m_fli, m_flj, m_flk, m_flij;
 
@@ -57,7 +57,7 @@ namespace PHASIC {
   public:
 
     CS_Dipole(ATOOLS::NLO_subevt *const sub,
-	      Phase_Space_Handler *const psh);
+	      Phase_Space_Handler *const psh,const bool bmcw=0);
 
     virtual ~CS_Dipole();
 
@@ -76,8 +76,7 @@ namespace PHASIC {
 
     double Alpha(const int mode) const;
 
-    void AddPoint(const double &value,const double &ewgt,
-		  const double &bme,const double &rme,const int mode);
+    void AddPoint(const double &value,const double &ewgt,const int mode);
     void Optimize();
     void EndOptimize();
     void MPISync();

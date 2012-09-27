@@ -209,6 +209,14 @@ bool AMEGIC::Process_Group::FillIntegrator
   return false;
 }
 
+void AMEGIC::Process_Group::EndOptimize()
+{
+  int reset(0);
+  for (size_t i(0);i<m_procs.size();++i)
+    if (m_procs[i]->Get<AMEGIC::Process_Base>()->EOReset()) reset=1;
+  if (reset) p_int->Reset();
+}
+
 AMEGIC::Process_Base *AMEGIC::Process_Group::Partner() const  
 { 
   return 0; 

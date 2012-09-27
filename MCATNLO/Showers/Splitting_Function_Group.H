@@ -19,12 +19,12 @@ namespace MCATNLO {
     virtual void SelectOne();
 
     virtual double operator() (const double,const double,const double,
-			       const double,const double,ATOOLS::Cluster_Amplitude*const);
+			       const double,const double,const Color_Info &ci,
+			       ATOOLS::Cluster_Amplitude*const);
     virtual double OverIntegrated(const double,const double,const double,const double);
     virtual double Overestimated(const double,const double);
     virtual double RejectionWeight(const double,const double,
-				   const double eta=1.,const double scale=0.,
-				   const double Q2=0.);
+				   const double eta,const double scale,const double Q2);
     virtual double Z();
     virtual void ResetLastInt();
     virtual void ClearSpecs();

@@ -1,0 +1,38 @@
+(run){
+  EVENTS=10000
+
+  BEAM_1 = 2212; BEAM_ENERGY_1 = 3500;
+  BEAM_2 = 2212; BEAM_ENERGY_2 = 3500;
+
+  EVENT_GENERATION_MODE=Weighted
+  SHOWER_GENERATOR=None
+  FRAGMENTATION=Off
+  BEAM_REMNANTS=Off
+
+  LOOPGEN:=OpenLoops
+  ME_SIGNAL_GENERATOR=Amegic LOOPGEN
+  NLO_Mode=1
+  SCALES=VAR{PPerp2(p[2])}
+
+  WIDTH_SCHEME=CMS
+  EW_SCHEME=1
+  1/ALPHAQED(default)=137.03599976
+  MASS[23]=91.188
+  MASS[24]=80.419
+
+  CHECK_BORN=0
+  CHECK_POLES=0
+}(run)
+
+(processes){
+  Process 2 -2 -> 21 21;
+  Order_EW 0
+  NLO_QCD_Part VI;
+  Enable_MHV 0;
+  Loop_Generator LOOPGEN;
+  End process;
+}(processes)
+
+(selector){
+  NJetFinder  2  20.  0.  0.4  -1
+}(selector)

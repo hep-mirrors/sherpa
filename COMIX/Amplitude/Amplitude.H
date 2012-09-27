@@ -118,6 +118,8 @@ namespace COMIX {
 
     std::vector<std::vector<long int> > m_affm;
 
+    ATOOLS::NLO_subevt *p_sub;
+
 #ifdef USING__Threading 
     CDBG_ME_TID_Vector m_cts;
 
@@ -191,7 +193,8 @@ namespace COMIX {
     bool Evaluate(const Int_Vector &chirs);
     bool EvaluateAll();
 
-    double Differential(const std::vector<ATOOLS::Vec4D> &momenta);
+    double Differential(const std::vector<ATOOLS::Vec4D> &momenta,
+			NLO_subevt *const sub=NULL);
     double Differential(const std::vector<ATOOLS::Vec4D> &momenta,
 			const Int_Vector &ci,const Int_Vector &cj,
 			const bool set=false);
@@ -203,7 +206,7 @@ namespace COMIX {
     void SetColors(const Int_Vector &rc,
 		   const Int_Vector &ac,const bool set=false);
 
-    bool JetTrigger(PHASIC::Combined_Selector *const sel);
+    bool JetTrigger(PHASIC::Combined_Selector *const sel,const int mode);
 
     bool Combinable(const size_t &idi,const size_t &idj) const;
 
@@ -222,6 +225,8 @@ namespace COMIX {
 
     double Coupling(const int mode) const;
     void   FillMEWeights(ATOOLS::ME_wgtinfo &wgtinfo) const;
+
+    double KT2Trigger(ATOOLS::NLO_subevt *const sub,const int mode);
 
     // inline functions
     inline void SetColorIntegrator(PHASIC::Color_Integrator *const cint)

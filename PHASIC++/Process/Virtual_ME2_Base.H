@@ -4,6 +4,7 @@
 #include "PHASIC++/Process/Process_Info.H"
 #include "METOOLS/Loops/Divergence_Array.H"
 #include "ATOOLS/Math/Vector.H"
+#include "MODEL/Main/Model_Base.H"
 
 namespace PHASIC {
 
@@ -12,8 +13,10 @@ namespace PHASIC {
     const Process_Info& m_pinfo;
     const ATOOLS::Flavour_Vector m_flavs;
     METOOLS::DivArrD m_res;
+    double m_born;
     double m_mur2;
     int m_mode, m_drmode, m_colmode;
+    MODEL::Coupling_Data* p_aqcd, * p_aqed;
   public:
     Virtual_ME2_Base(const PHASIC::Process_Info& pi,
                   const ATOOLS::Flavour_Vector& flavs);
@@ -28,8 +31,13 @@ namespace PHASIC {
     inline double ME_Finite() { return m_res.GetFinite(); }
     inline double ME_E1() { return m_res.GetIR(); }
     inline double ME_E2() { return m_res.GetIR2(); }
+    inline double ME_Born() { return m_born; }
 
     inline void SetRenScale(const double& mur2) { m_mur2=mur2; }
+    void SetCouplings(const MODEL::Coupling_Map& cpls);
+
+    double AlphaQCD() const;
+    double AlphaQED() const;
 
     inline int Mode() const    { return m_mode;    }
     inline int DRMode() const  { return m_drmode;  }

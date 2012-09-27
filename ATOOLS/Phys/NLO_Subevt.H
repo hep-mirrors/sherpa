@@ -64,7 +64,8 @@ namespace ATOOLS {
     enum id {
       fac     =  0,
       ren     =  1,
-      size    =  2
+      res     =  2,
+      size    =  3
     };
   };// end of struct stp
 
@@ -80,8 +81,8 @@ namespace ATOOLS {
     NLO_subevt *p_real;
     void       *p_proc;
 
-    size_t m_n, m_flip, m_iss;
-    double m_result, m_last[2], m_me, m_mewgt;
+    size_t m_n, m_idx;
+    double m_result, m_me, m_mewgt, m_kt2;
 
     std::vector<double> m_mu2;
 
@@ -93,9 +94,9 @@ namespace ATOOLS {
 		      const Flavour *fl=NULL,const Vec4D *mom=NULL,
 		      const int i=-1,const int j=-1,const int k=-1):
       Dip_ID(0,0,i,j,k), p_fl(fl), p_mom(mom), p_id(id), p_dec(NULL),
-      p_real(NULL), p_proc(NULL), m_n(n), m_flip(0), m_iss(0),
-      m_result(0.0), m_me(0.0), m_mewgt(0.0), m_mu2(2,0.0)
-    { m_last[0]=0.0; m_last[1]=0.0; }
+      p_real(NULL), p_proc(NULL), m_n(n), m_idx(0),
+      m_result(0.0), m_me(0.0), m_mewgt(0.0), m_kt2(0.0),
+      m_mu2(stp::size,0.0) {}
 
     void CopyXSData(const NLO_subevt *sub);
 
@@ -104,23 +105,22 @@ namespace ATOOLS {
     std::string IDString(const int mode=0) const;
 
     inline void Mult(const double &scal)
-    { m_result*=scal; m_last[0]*=scal; m_last[1]*=scal;
-      m_me*=scal; m_mewgt*=scal; }
+    { m_result*=scal; m_me*=scal; m_mewgt*=scal; }
     inline void MultME(const double &scal) { m_me*=scal; m_mewgt*=scal; }
     inline void MultMEwgt(const double &scal) { m_mewgt*=scal; }
 
     inline bool IsReal() const { return m_i==m_j; }
 
     inline NLO_subevt &operator*=(const double &scal)
-    { m_result*=scal; m_last[0]*=scal; m_last[1]*=scal; return *this; }
+    { m_result*=scal; return *this; }
     inline NLO_subevt &operator+=(const double &sm)
-    { m_result+=sm; m_last[0]+=sm; m_last[1]+=sm; return *this; }
+    { m_result+=sm; return *this; }
 
     template <class Type> inline Type *Proc() const 
     { return static_cast<Type*>(p_proc); }
 
     inline void Reset()
-    { m_result=m_last[0]=m_last[1]=m_me=m_mewgt=0.0; }
+    { m_result=m_me=m_mewgt=0.0; }
 
   };// end of class NLO_subevt
 

@@ -18,10 +18,10 @@ using namespace ATOOLS;
 using namespace PHASIC;
 
 CS_Dipole::CS_Dipole(NLO_subevt *const sub,
-		     Phase_Space_Handler *const psh):
+		     Phase_Space_Handler *const psh,const bool bmcw):
   m_sub(*sub), p_vegas(NULL),
   m_alpha(1.0), m_oldalpha(1.0), m_weight(1.0),
-  m_amin(0.0), m_type(0), m_on(false)
+  m_amin(0.0), m_type(0), m_on(false), m_bmcw(bmcw)
 {
   p_fsmc=psh->FSRIntegrator();
   p_ismc=psh->ISRIntegrator();
@@ -56,11 +56,11 @@ CS_Dipole::~CS_Dipole()
 
 bool CS_Dipole::IsMapped(CS_Dipole *const dip) const
 {
-  if ((m_type&1) && m_ijt!=m_sub.m_i) return true;
   if (m_sub.m_i!=dip->m_sub.m_i ||
       m_sub.m_j!=dip->m_sub.m_j ||
       m_sub.m_k!=dip->m_sub.m_k) return false;
   if (m_ijt!=dip->m_ijt || m_kt!=dip->m_kt) return false;
+  if (m_brmap!=dip->m_brmap) return false;
   return true;
 }
 
@@ -75,9 +75,8 @@ double CS_Dipole::Alpha(const int mode) const
   return 0.0;
 }
 
-void CS_Dipole::AddPoint(const double &value,const double &ewgt,
-			 const double &bme,const double &rme,
-			 const int mode)
+void CS_Dipole::AddPoint(const double &value,
+			 const double &ewgt,const int mode)
 {
   if (value==0.0 || m_weight==0.0) return;
   double wgt(sqr(value)*ewgt/m_weight);

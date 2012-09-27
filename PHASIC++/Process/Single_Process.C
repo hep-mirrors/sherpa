@@ -2,23 +2,36 @@
 
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
-#include "PHASIC++/Process/POWHEG_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PHASIC++/Channels/BBar_Multi_Channel.H"
+#include "PHASIC++/Channels/CS_Dipole.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
+#include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "BEAM/Main/Beam_Spectra_Handler.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 
-Single_Process::Single_Process(): m_zero(false)
+Single_Process::Single_Process(): m_lastbxs(0.0), m_zero(false)
 {
+  Data_Reader read(" ",";","!","=");
+  read.SetInputPath(rpa->GetPath());
+  read.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+  if (!read.ReadFromFile(m_nloct,"SP_NLOCT")) m_nloct=0;
+  else {
+    static bool print(false);
+    if (!print) msg_Info()
+      <<METHOD<<"(): Set NLO counterterm mode "<<m_nloct<<".\n";
+    print=true;
+  }
 }
 
 Single_Process::~Single_Process()
@@ -51,9 +64,146 @@ double Single_Process::KFactor() const
   return 1.0;
 }
 
-double Single_Process::BeamISRWeight
-(const double& Q2,const int mode) const
+namespace PHASIC {
+
+  double Beta0()
+  {
+    return 11.0/6.0*3.0-2.0/3.0*0.5*(Flavour(kf_jet).Size()/2);
+  }
+
+  double Hab(const Flavour &a,const Flavour &b)
+  {
+    if (a.IsQuark()) {
+      if (b.IsQuark()) return a==b?4.0/3.0*3.0/2.0:0.0;
+      return 0.0;
+    }
+    else {
+      if (b.IsQuark()) return 0.0;
+      return 11.0/6.0*3.0-2.0/3.0*0.5*(Flavour(kf_jet).Size()/2);
+    }
+  }
+
+  double FPab(const Flavour &a,const Flavour &b,const double &z)
+  {
+    if (a.IsQuark()) {
+      if (b.IsQuark()) return a==b?-4.0/3.0*(1.0+z):0.0;
+      return 4.0/3.0*(1.0+sqr(1.0-z))/z;
+    }
+    else {
+      if (b.IsQuark()) return 1.0/2.0*(z*z+sqr(1.0-z));
+      return 3.0*2.0*((1.0-z)/z-1.0+z*(1.0-z));
+    }
+  }
+
+  double SPab(const Flavour &a,const Flavour &b,const double &z)
+  {
+    if (a.IsQuark()) {
+      if (b.IsQuark()) return a==b?4.0/3.0*2.0/(1.0-z):0.0;
+      return 0.0;
+    }
+    else {
+      if (b.IsQuark()) return 0.0;
+      return 3.0*2.0/(1.0-z);
+    }
+  }
+
+  double IPab(const Flavour &a,const Flavour &b,const double &x)
+  {
+    if (a.IsQuark()) {
+      if (b.IsQuark() && a==b)
+	return 4.0/3.0*2.0*log(1.0/(1.0-x));
+      return 0.0;
+    }
+    else {
+      if (b.IsQuark()) return 0.0;
+      return 3.0*2.0*log(1.0/(1.0-x));
+    }
+  }
+
+}
+
+double Single_Process::NLOCounterTerms() const
 {
+  static double th(1.0e-12);
+  if (!m_use_biweight) return 1.;
+  DEBUG_FUNC(m_name);
+  if (p_scale->Scales().size()<stp::size+2)
+    THROW(fatal_error,"Invalid number of scales: "+
+	  ToString(p_scale->Scales().size())+
+	  " < "+ToString(stp::size+2));
+  double lmuf2(p_scale->Scale(stp::id(stp::fac)));
+  double lmur2(p_scale->Scale(stp::id(stp::ren)));
+  double muf2(p_scale->Scale(stp::id(stp::size+stp::fac)));
+  double mur2(p_scale->Scale(stp::id(stp::size+stp::ren)));
+  msg_Debugging()<<"\\mu_F = "<<sqrt(muf2)<<" -> "<<sqrt(muf2/lmuf2)<<"\n";
+  msg_Debugging()<<"\\mu_R = "<<sqrt(mur2)<<" -> "<<sqrt(mur2/lmur2)<<"\n";
+  MODEL::Coupling_Data *cpl(m_cpls.Get("Alpha_QCD"));
+  double as(cpl->Default()*cpl->Factor());
+  double ct(0.0);
+  if (m_oqcd>1) ct-=double(m_oqcd-1)*as/(2.0*M_PI)*Beta0()*log(mur2/lmur2);
+  msg_Debugging()<<"\\alpha_s term: "<<(m_oqcd-1)<<" * "<<as
+		 <<"/\\pi * "<<Beta0()<<" * log("<<sqrt(mur2)<<"/"
+		 <<sqrt(lmur2)<<") -> "<<ct<<"\n";
+  if (p_int->ISR() && p_int->ISR()->On()) {
+    double x[2]={p_int->Momenta()[0].PPlus()/
+		 p_int->Beam()->GetBeam(0)->OutMomentum().PPlus(),
+		 p_int->Momenta()[1].PMinus()/
+		 p_int->Beam()->GetBeam(1)->OutMomentum().PMinus()};
+    double z[2]={m_wgtinfo.m_y1,m_wgtinfo.m_y2};
+    double fct[2]={0.0,0.0}, lt(log(muf2/lmuf2));
+    msg_Debugging()<<"PDF terms: "<<as<<"/\\pi * log("<<sqrt(muf2)
+		   <<"/"<<sqrt(lmuf2)<<") = "<<as/(2.0*M_PI)*lt<<" {\n";
+    Flavour jet(kf_jet);
+    for (size_t i(0);i<2;++i) {
+      if (p_int->ISR()->On()&(1<<i)) {
+	Vec4D mom(p_int->Momenta()[i]);
+	double fb=p_int->ISR()->Weight
+	  (1<<(i+1),mom,mom,lmuf2,lmuf2,m_flavs[i],m_flavs[i],0);
+	if (IsZero(fb,th)) {
+	  msg_Error()<<METHOD<<"(): Zero xPDF. Skip.\n";
+	  continue;
+	}
+	msg_Debugging()<<"  Beam "<<i<<": z = "<<z[i]
+		       <<", f_{"<<m_flavs[i]<<"}("<<x[i]<<","
+		       <<sqrt(lmuf2)<<") = "<<fb<<" {\n";
+	for (size_t j(0);j<jet.Size();++j) {
+	  double Pf(FPab(jet[j],m_flavs[i],z[i]));
+	  double Ps(SPab(jet[j],m_flavs[i],z[i]));
+	  if (Pf+Ps==0.0) continue;
+	  double Pi(IPab(jet[j],m_flavs[i],x[i]));
+	  double H(Hab(jet[j],m_flavs[i]));
+	  double fa=p_int->ISR()->Weight
+	    (1<<(i+1),mom/z[i],mom/z[i],lmuf2,lmuf2,jet[j],jet[j],0);
+	  double fc=p_int->ISR()->Weight
+	    (1<<(i+1),mom,mom,lmuf2,lmuf2,jet[j],jet[j],0);
+	  msg_Debugging()<<"    P_{"<<jet[j]<<","<<m_flavs[i]
+			 <<"}("<<z[i]<<") = {F="<<Pf<<",S="<<Ps
+			 <<",I="<<Pi<<"}, f_{"<<jet[j]<<"}("
+			 <<x[i]/z[i]<<","<<sqrt(lmuf2)<<") = "<<fa
+			 <<", f_{"<<jet[j]<<"}("<<x[i]<<","
+			 <<sqrt(lmuf2)<<") = "<<fc<<"\n";
+	  if (IsZero(fa,th)||IsZero(fc,th)) {
+	    msg_Error()<<METHOD<<"(): Zero xPDF. Skip.\n";
+	    continue;
+	  }
+	  fct[i]+=as/(2.0*M_PI)*lt*
+	    ((fa/z[i]*Pf+(fa/z[i]-fc)*Ps)*(1.0-x[i])+fc*(H-Pi))/fb;
+	}
+	msg_Debugging()<<"  } -> "<<fct[i]<<"\n";
+      }
+    }
+    ct+=fct[0]+fct[1];
+    msg_Debugging()<<"}\n";
+  }
+  msg_Debugging()<<"C = "<<ct<<"\n";
+  return ct;
+}
+
+double Single_Process::BeamISRWeight
+(const double& Q2,const int imode,
+ const ClusterAmplitude_Vector &ampls) const
+{
+  int mode(imode&1);
   if (!m_use_biweight) return 1.;
   double wgt(1.0);
   if (m_nin!=2) return 0.5/p_int->Momenta()[0].Mass();
@@ -61,6 +211,59 @@ double Single_Process::BeamISRWeight
     wgt*=p_int->ISR()->Weight
       (mode,p_int->Momenta()[0],p_int->Momenta()[1],
        Q2,Q2,m_flavs[0],m_flavs[1]);
+    int set(false);
+    double LQ2(Q2);
+    if (ampls.size()) {
+      DEBUG_FUNC(m_name<<", mode = "<<mode);
+      Cluster_Amplitude *ampl(ampls.front());
+      const Single_Process *proc
+	((imode&4)?ampl->Procs<Single_Process>():this);
+      if (imode&2) ampl=ampl->Next();
+      for (;ampl;ampl=ampl->Next()) {
+	if (IsEqual(LQ2,ampl->KT2())) continue;
+	if (ampl->Next()) {
+	  if (ampl->Next()->Splitter()->Stat()==3) {
+	    msg_Debugging()<<"Skip decay "<<
+	      ID(ampl->Next()->Splitter()->Id())<<"\n";
+	    continue;
+	  }
+	}
+	if (set && LQ2>ampl->KT2()) {
+	  msg_Debugging()<<"Skip unordering "<<
+	    sqrt(LQ2)<<" > "<<sqrt(ampl->KT2())<<"\n";
+	  LQ2=sqrt(std::numeric_limits<double>::max());
+	  continue;
+	}
+	if (ampl->Prev()==NULL ||
+	    ((imode&2) && ampl->Prev()->Prev()==NULL)) {
+	  LQ2=ampl->KT2();
+	  continue;
+	}
+	Flavour f1(ampl->Leg(0)->Flav().Bar());
+	Flavour f2(ampl->Leg(1)->Flav().Bar());
+	if ((MapProc() && LookUp()) || (imode&4)) {
+	  f1=proc->ReMap(f1,ampl->Leg(0)->Id());
+	  f2=proc->ReMap(f2,ampl->Leg(1)->Id());
+	}
+	msg_Debugging()<<"PDF ratio "<<f1<<"("<<ampl->Leg(0)->Flav().Bar()
+		       <<"),"<<f2<<"("<<ampl->Leg(1)->Flav().Bar()
+		       <<") at "<<sqrt(LQ2);
+	double wd1=p_int->ISR()->Weight
+	  (mode|2,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
+	double wd2=p_int->ISR()->Weight
+	  (mode|4,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
+	LQ2=ampl->KT2();
+	set=true;
+	double wn1=p_int->ISR()->Weight
+	  (mode|2,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
+	double wn2=p_int->ISR()->Weight
+	  (mode|4,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
+	if (!IsZero(wn1) && !IsZero(wd1)) wgt*=wn1/wd1;
+	if (!IsZero(wn2) && !IsZero(wd2)) wgt*=wn2/wd2;
+	msg_Debugging()<<" / "<<sqrt(LQ2)<<" -> "
+		       <<wn1/wd1<<" * "<<wn2/wd2<<" ( "<<wgt<<" )\n";
+      }
+    }
   }
   if (p_int->Beam() && p_int->Beam()->On()) {
     p_int->Beam()->MtxLock();
@@ -79,82 +282,81 @@ void Single_Process::BeamISRWeight
     size_t nscales(0);
     for (size_t i(0);i<subs->size();++i) {
       NLO_subevt *sub((*subs)[i]);
-      if (!IsEqual(sub->m_mu2[stp::fac],muf2) && sub->m_me!=0.0) {
-        sub->m_result+=sub->m_last[mode]=
-          sub->m_me*BeamISRWeight(sub->m_mu2[stp::fac],mode);
+      if ((!IsEqual(sub->m_mu2[stp::fac],muf2) ||
+	   m_pinfo.m_nlomode!=1) && sub->m_me!=0.0) {
+	ClusterAmplitude_Vector &ampls
+	  (((Single_Process*)sub->p_proc)->
+	   ScaleSetter(1)->Amplitudes());
+	if (ampls.size()) ampls.front()->SetProcs(sub->p_proc);
+        sub->m_result+=sub->m_me*
+	  BeamISRWeight(sub->m_mu2[stp::fac],mode|
+			4|(i==subs->size()-1?2:0),ampls);
 	++nscales;
       }
     }
-    if (nscales<subs->size()) {
-      double lumi(BeamISRWeight(muf2,mode));
+    if (nscales<subs->size() && m_pinfo.m_nlomode==1) {
+      double lumi(BeamISRWeight(muf2,mode,ClusterAmplitude_Vector()));
       for (size_t i(0);i<subs->size();++i) {
 	if (IsEqual((*subs)[i]->m_mu2[stp::fac],muf2) &&
 	    (*subs)[i]->m_me!=0.0) {
-          (*subs)[i]->m_result+=(*subs)[i]->m_last[mode]=
-            (*subs)[i]->m_me*lumi;
+          (*subs)[i]->m_result+=(*subs)[i]->m_me*lumi;
         }
       }
     }
   }
   else {
     for (size_t i(0);i<subs->size();++i) {
-      (*subs)[i]->m_result+=(*subs)[i]->m_last[mode]=
-        (*subs)[i]->m_me*BeamISRWeight((*subs)[i]->m_mu2[stp::fac],mode);
+      ClusterAmplitude_Vector &ampls
+	(((Single_Process*)(*subs)[i]->p_proc)->
+	 ScaleSetter(1)->Amplitudes());
+      if (ampls.size()) ampls.front()->SetProcs((*subs)[i]->p_proc);
+      (*subs)[i]->m_result+=(*subs)[i]->m_me*
+	BeamISRWeight((*subs)[i]->m_mu2[stp::fac],mode,ampls);
     }
   }
 }
 
 double Single_Process::Differential(const Vec4D_Vector &p)
 {
-  m_wgtinfo.m_w0=m_last[0]=0.0;
+  m_wgtinfo.m_w0=m_lastb=m_last=0.0;
   p_int->SetMomenta(p);
   double flux=0.25/sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
   if (GetSubevtList()==NULL) {
     if (m_zero) return 0.0;
-    Scale_Setter_Base *scs(ScaleSetter());
-    if (IsMapped()) {
-      p_mapproc->Integrator()->SetMomenta(p);
-      scs=p_mapproc->ScaleSetter();
-    }
+    Scale_Setter_Base *scs(ScaleSetter(1));
+    if (IsMapped()) p_mapproc->Integrator()->SetMomenta(p);
     scs->SetCaller(this);
     if (Partonic(p,0)==0.0) return 0.0;
     if (m_wgtinfo.m_nx==0) m_wgtinfo.m_w0 = m_lastxs;
     m_wgtinfo*=flux;
     m_wgtinfo.m_mur2=scs->Scale(stp::ren);
-    if (m_lastxs==0.0) return m_last[0]=0.0;
-    return m_last[0]=m_lastxs*BeamISRWeight(scs->Scale(stp::fac),0);
+    if (m_lastxs==0.0) return m_last=0.0;
+    m_last=m_lastxs;
+    if (m_nloct && m_pinfo.Has(nlo_type::born))
+      m_last+=m_lastbxs*NLOCounterTerms();
+    m_lastb=m_last*=BeamISRWeight
+      (scs->Scale(stp::fac),0,scs->Amplitudes());
+    if (p_mc==NULL) return m_last;
+    Dipole_Params dps(p_mc->Active(this));
+    for (size_t i(0);i<dps.m_procs.size();++i) {
+      Process_Base *cp(dps.m_procs[i]);
+      size_t mcmode(cp->SetMCMode(m_mcmode));
+      bool lookup(cp->LookUp());
+      cp->SetLookUp(false);
+      m_last-=cp->Differential(dps.m_p)*dps.m_weight;
+      cp->SetLookUp(lookup);
+      cp->SetMCMode(mcmode);
+    }
+    return m_last;
   }
   Partonic(p,0);
   NLO_subevtlist *subs(GetSubevtList());
   BeamISRWeight(subs,0);
   for (size_t i=0;i<subs->size();++i) {
-    m_last[0]+=(*subs)[i]->m_last[0];
+    m_last+=(*subs)[i]->m_result;
     (*subs)[i]->m_mewgt*=flux;
   }
-  return m_last[0];
-}
-
-double Single_Process::Differential2()
-{
-  m_last[1]=0.0;
-  if (m_nin!=2 || p_int->ISR()==NULL ||
-      p_int->ISR()->On()!=3) return 0.0;
-  if (m_flavs[0]==m_flavs[1]) return 0.0;
-  if (!p_int->ISR()->PDF(0)->Contains(m_flavs[1]) ||
-      !p_int->ISR()->PDF(1)->Contains(m_flavs[0])) return 0.0;
-  if (GetSubevtList()==NULL) {
-    if (m_lastxs==0.0) return 0.0;
-    Scale_Setter_Base *scs((IsMapped()?p_mapproc:this)->ScaleSetter());
-    scs->SetCaller(this);
-    m_last[1]=Partonic(p_int->Momenta(),1);
-    if (m_last[1]!=0.0) m_last[1]*=BeamISRWeight(scs->Scale(stp::fac),1);
-    return m_last[1];
-  }
-  Partonic(p_int->Momenta(),1);
-  NLO_subevtlist *subs(GetSubevtList());
-  BeamISRWeight(subs,1);
-  for (size_t i=0;i<subs->size();++i) m_last[1]+=(*subs)[i]->m_last[1];
-  return m_last[1];
+  return m_last;
 }
 
 bool Single_Process::CalculateTotalXSec(const std::string &resultpath,
@@ -247,6 +449,12 @@ ATOOLS::ME_wgtinfo *Single_Process::GetMEwgtinfo()
   return &m_wgtinfo; 
 }
 
+ATOOLS::Flavour Single_Process::ReMap
+(const ATOOLS::Flavour &fl,const size_t &id) const
+{
+  return fl;
+}
+
 Cluster_Amplitude *Single_Process::Cluster
 (const size_t &mode,const double &kt2)
 {
@@ -255,26 +463,15 @@ Cluster_Amplitude *Single_Process::Cluster
     Cluster_Amplitude *ampl(mp->GetAmplitude());
     if (ampl) return ampl;
   }
-  POWHEG_Process *pp(dynamic_cast<POWHEG_Process*>(Parent()));
-  if (pp) {
-    Cluster_Amplitude *ampl(pp->GetAmplitude());
-    if (ampl) return ampl;
-  }
   if (!(mode&256)) {
-    ClusterAmplitude_Vector &ampls
-      ((IsMapped()?p_mapproc:this)->ScaleSetter()->Amplitudes());
+    ClusterAmplitude_Vector &ampls(ScaleSetter(1)->Amplitudes());
     if (ampls.size()) {
       msg_Debugging()<<METHOD<<"(): Found "
 		     <<ampls.size()<<" amplitude(s) ... ";
-      if (ampls.size()>2) 
-	THROW(fatal_error,"Invalid number of amplitudes");
-      if (p_int->InSwaped()) {
-	msg_Debugging()<<"select 2nd.\n";
-	return ampls.back()->CopyAll();
-      }
       msg_Debugging()<<"select 1st.\n";
       return ampls.front()->CopyAll();
     }
+    if (mode&2048) return NULL;
   }
   PDF::Cluster_Definitions_Base* cd=p_shower->GetClusterDefinitions();
   int amode=cd->AMode(), cmode=mode;

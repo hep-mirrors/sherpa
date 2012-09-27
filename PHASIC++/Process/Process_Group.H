@@ -16,7 +16,7 @@ namespace PHASIC {
   struct PG_TID {
     pthread_t m_id;
     Process_Group *p_proc;
-    double m_d;
+    double m_d, m_b;
     const ATOOLS::Vec4D_Vector *p_p;
     size_t m_s, m_m, m_b, m_e, m_i;
     pthread_mutex_t m_s_mtx, m_t_mtx;
@@ -69,7 +69,6 @@ namespace PHASIC {
     Weight_Info *OneEvent(const int wmode,const int mode=0);
 
     double Differential(const ATOOLS::Vec4D_Vector &p);
-    double Differential2();
 
     void SetScale(const Scale_Setter_Arguments &args);
     void SetKFactor(const KFactor_Setter_Arguments &args);
@@ -91,8 +90,6 @@ namespace PHASIC {
     void SetShower(PDF::Shower_Base *const ps);
     void SetSelector(const Selector_Key &key);
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
-
-    void MultiplyLast(const double &w,const int mode);
 
     void FillOnshellConditions();
 

@@ -44,6 +44,8 @@ namespace CSSHOWER {
     bool SetCoupling(MODEL::Model_Base *md,
 		     const double &k0sqi,const double &k0sqf,
 		     const double &isfac,const double &fsfac);
+    void SetCouplingMax(const double &k0sqi,const double &k0sqf,
+			const double &isfac,const double &fsfac);  
     double Coupling(const double &scale,const int pol);
     bool AllowSpec(const ATOOLS::Flavour &fl);
 
@@ -62,21 +64,35 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
 {
   p_cpl=(MODEL::Running_AlphaS*)md->GetScalarFunction("alpha_S");
   m_cplfac=((m_type/10==1)?fsfac:isfac);
-  m_cplmax.push_back((*p_cpl)(m_type/10==1?k0sqf:k0sqi)*m_q);
+  m_cplmax.push_back(p_cpl->AlphaS(m_type/10==1?fsfac*k0sqf:isfac*k0sqi)*m_q);
   m_cplmax.push_back(0.0);
   return true;
+}
+
+void CF_QCD::SetCouplingMax(const double &k0sqi,const double &k0sqf,
+			    const double &isfac,const double &fsfac) {
+  m_cplmax.clear();
+  m_cplfac=((m_type/10==1)?fsfac:isfac);
+  double newasmax=p_cpl->AlphaS(m_type/10==1?fsfac*k0sqf:isfac*k0sqi,true);
+  //msg_Out()<<METHOD<<" yields new asmax("
+  //	   <<(m_type/10==1?fsfac*k0sqf:isfac*k0sqi)<<"): "
+  //	   <<newasmax<<" ["<<(m_type/10==1?"FS":"IS")<<":"
+  //	   <<(m_type/10==1?fsfac:isfac)<<"]\n";
+  m_cplmax.push_back(newasmax*m_q);  
+  m_cplmax.push_back(0.0);
 }
 
 double CF_QCD::Coupling(const double &scale,const int pol)
 {
   if (pol!=0) return 0.0;
+  if (scale<0.0) return m_cplmax.front()*m_q;
   double scl(CplFac(scale)*scale);
-  double cpl=(*p_cpl)(scl)*m_q;
+  double cpl=p_cpl->AlphaS(scl,true)*m_q;
   if (cpl>m_cplmax.front()) return m_cplmax.front();
 #ifdef DEBUG__Trial_Weight
   msg_Debugging()<<"as weight kt = "<<sqrt(CplFac(scale))<<" * "
 		 <<sqrt(scale)<<", \\alpha_s("<<sqrt(scl)<<") = "
-		 <<(*p_cpl)(scl)<<", m_q = "<<m_q<<"\n";
+		 <<p_cpl->AlphaS(scl)<<", m_q = "<<m_q<<"\n";
 #endif
   return cpl;
 }

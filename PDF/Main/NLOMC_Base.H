@@ -55,9 +55,6 @@ namespace PDF {
 
     virtual void AddRBPoint(ATOOLS::Cluster_Amplitude *const ampl) = 0;
 
-    virtual SH_Pair SHSplit(const double &B,const double &Qij2,
-			    const ATOOLS::RB_Data *rbd) const = 0;
-
     static void ShowSyntax(const int mode);
 
     inline const std::string &Name() const { return m_name; }

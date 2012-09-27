@@ -46,18 +46,18 @@ namespace PHASIC {
 
     std::string m_coupling;
 
-    bool m_scale2;
-
     size_t m_nin, m_nout;
+
+    double m_htyfac, m_htyexp;
 
     ATOOLS::ClusterAmplitude_Vector m_ampls;
 
-    virtual double Calculate(const ATOOLS::Vec4D_Vector &p,const int mode) = 0;
+    virtual double Calculate(const ATOOLS::Vec4D_Vector &p,
+			     const size_t &mode) = 0;
 
   public:
 
-    Scale_Setter_Base(const Scale_Setter_Arguments &args,
-		      const bool scale2=false);
+    Scale_Setter_Base(const Scale_Setter_Arguments &args);
 
     virtual ~Scale_Setter_Base();
 
@@ -67,7 +67,12 @@ namespace PHASIC {
 
     ATOOLS::Vec4D PSum() const;
 
-    double CalculateScale(const ATOOLS::Vec4D_Vector &p,const int mode);
+    double HTYweighted() const;
+    bool   SetHTYweightedParameters(std::string par, std::string val);
+    
+    double BeamThrust() const;
+
+    double CalculateScale(const ATOOLS::Vec4D_Vector &p,const size_t mode=0);
 
     inline void SetFixedScale(const std::vector<double> &s) { m_escale=s; }
 
@@ -78,9 +83,9 @@ namespace PHASIC {
 
     inline const std::vector<double> &Scales() const { return m_scale; }
 
-    inline Process_Base *Process() const { return p_proc; }
+    inline const std::vector<double> &FixedScales() const { return m_escale; }
 
-    inline bool Scale2() { return m_scale2; }
+    inline Process_Base *Process() const { return p_proc; }
 
     inline ATOOLS::ClusterAmplitude_Vector &Amplitudes() { return m_ampls; }
 
