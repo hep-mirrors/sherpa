@@ -96,6 +96,20 @@ namespace PHASIC {
     bool   NoJetTrigger(const ATOOLS::Vec4D_Vector & p) {return 1;}
     void   BuildCuts(Cut_Data *);
   };
+
+  class DeltaRNLO_Selector : public Selector_Base {
+    double ** drmin, ** drmax;
+    std::vector<ATOOLS::Flavour> flav1,flav2;
+    int     m_strong;
+  public:
+    DeltaRNLO_Selector(int,int,ATOOLS::Flavour *);
+    ~DeltaRNLO_Selector();
+    void     SetRange(ATOOLS::Flavour_Vector,double,double);
+    bool     Trigger(const ATOOLS::Vec4D_Vector & );
+    bool     JetTrigger(const ATOOLS::Vec4D_Vector &,ATOOLS::NLO_subevtlist *const);
+    bool     NoJetTrigger(const ATOOLS::Vec4D_Vector &);
+    void     BuildCuts(Cut_Data *);
+  };
 }
 
 #endif
@@ -932,6 +946,166 @@ Selector_Base *Isolation_Cut_Getter::operator()(const Selector_Key &key) const
 void Isolation_Cut_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"Isolation_Cut selector: hep-ph/9801442"; 
+}
+
+}
+
+
+/*--------------------------------------------------------------------
+
+  DeltaRNLO Selector
+
+  --------------------------------------------------------------------*/
+
+DeltaRNLO_Selector::DeltaRNLO_Selector(int _nin,int _nout, Flavour * _fl):
+  Selector_Base("DeltaRNLO_Selector")
+{
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl   = _fl;
+  m_smin = 0.;
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
+
+  drmin = new double*[m_n];
+  drmax = new double*[m_n];
+  for (int i=0;i<m_n;i++) { 
+    drmin[i] = new double[m_n]; 
+    drmax[i] = new double[m_n];
+  }
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      drmin[i][j] = drmin[j][i] = 0.; 
+      drmax[i][j] = drmax[j][i] = 200.;
+    }
+  }
+
+  m_strong = 0;
+  if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = -1;
+  
+  m_sel_log = new Selector_Log(m_name);
+}
+
+DeltaRNLO_Selector::~DeltaRNLO_Selector() {
+  for (int i=0;i<m_n;i++) {
+    delete [] drmin[i];
+    delete [] drmax[i];
+  }
+  delete [] drmin;
+  delete [] drmax;
+}
+
+
+bool DeltaRNLO_Selector::Trigger(const Vec4D_Vector & mom) 
+{
+  double drij;
+  for (size_t k=0;k<flav1.size();k++) {
+    for (int i=m_nin;i<m_n;i++) {
+      for (int j=i+1;j<m_n;j++) {
+	if ( ((flav1[k].Includes(m_fl[i])) && (flav2[k].Includes(m_fl[j])) ) || 
+	     ((flav1[k].Includes(m_fl[j])) && (flav2[k].Includes(m_fl[i])) ) ) {
+	  drij = mom[i].DR(mom[j]);
+	  if (m_sel_log->Hit( ((drij<drmin[i][j]) ||
+                               (drij>drmax[i][j])) )) return 0;
+	}
+      }
+    }
+  }
+  return 1;
+}
+
+bool DeltaRNLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevtlist *const subs)
+{
+  if (m_strong==0) return 1;
+  if (m_strong==-1) {
+    double drij;
+    for (size_t k=0;k<flav1.size();k++) {
+      for (size_t i=m_nin;i<subs->back()->m_n;i++) {
+	for (size_t j=i+1;j<subs->back()->m_n;j++) {
+	  if ( ((flav1[k].Includes(subs->back()->p_fl[i])) &&
+		(flav2[k].Includes(subs->back()->p_fl[j])) ) || 
+	       ((flav1[k].Includes(subs->back()->p_fl[j])) &&
+		(flav2[k].Includes(subs->back()->p_fl[i])) ) ) {
+	    drij = mom[i].DR(mom[j]);
+	    if (m_sel_log->Hit( ((drij<drmin[i][j]) || (drij>drmax[i][j])) )) return 0;
+	  }
+	}
+      }
+    }
+    return 1;
+  }
+  msg_Error()<<"PTNLO_Selector::JetTrigger: IR unsave cut"<<std::endl;
+  return 0;
+}
+
+bool DeltaRNLO_Selector::NoJetTrigger(const Vec4D_Vector &mom)
+{
+  if (m_strong==0) return Trigger(mom);
+  return 1;
+}
+
+
+void DeltaRNLO_Selector::BuildCuts(Cut_Data * cuts) 
+{
+}
+
+void DeltaRNLO_Selector::SetRange(std::vector<Flavour> crit,double _min, 
+			       double _max)
+{
+  if (crit.size() != 2) {
+    msg_Error()<<"Wrong number of arguments in DeltaRNLO_Selector::SetRange : "
+	       <<crit.size()<<endl;
+    return;
+  }
+
+  flav1.push_back(crit[0]);
+  flav2.push_back(crit[1]);
+
+  bool used=0;
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      if ( ((crit[0].Includes(m_fl[i])) && (crit[1].Includes(m_fl[j])) ) || 
+	   ((crit[0].Includes(m_fl[j])) && (crit[1].Includes(m_fl[i])) ) ) {
+	used=1;
+	drmin[i][j] = drmin[j][i] = _min;
+	drmax[i][j] = drmax[j][i] = _max;
+	if (m_fl[i].Strong()||m_fl[j].Strong()) m_strong = 1;
+	break;
+      }
+    }
+  }
+  if (!used) {
+    flav1.pop_back();
+    flav2.pop_back();
+  }
+}
+
+
+namespace PHASIC{
+
+DECLARE_ND_GETTER(DeltaRNLO_Selector_Getter,"DeltaRNLO",Selector_Base,Selector_Key,true);
+
+Selector_Base *DeltaRNLO_Selector_Getter::operator()(const Selector_Key &key) const
+{
+  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
+  int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
+  int crit2=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][1]));
+  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
+  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
+  Flavour flav = Flavour((kf_code)abs(crit1));
+  if (crit1<0) flav = flav.Bar();
+  Flavour_Vector critflavs(1,flav);
+  flav = Flavour((kf_code)abs(crit2));
+  if (crit2<0) flav = flav.Bar();
+  critflavs.push_back(flav);
+  DeltaRNLO_Selector *sel = new DeltaRNLO_Selector
+    (key.p_proc->NIn(),key.p_proc->NOut(),
+     (Flavour*)&key.p_proc->Process()->Flavours().front());
+  sel->SetRange(critflavs,min,max);
+  return sel;
+}
+
+void DeltaRNLO_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"DeltaRNLO selector"; 
 }
 
 }
