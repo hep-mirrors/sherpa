@@ -9,11 +9,10 @@ libLHAPDFSherpa_la_SOURCES  =	\
 			LHAPDF_Fortran_Interface.C
 
 localinc_HEADERS      =	LHAPDF_Fortran_Interface.H
-LHAPDFEXTRADIST       =	Dummy.C
 
 else
-libLHAPDFSherpa_la_SOURCES  =	Dummy.C
 LHAPDFEXTRADIST = SVN_Info.C LHAPDF_Fortran_Interface.H LHAPDF_Fortran_Interface.C
+NOMD5SUM      =	1
 endif
 
 libLHAPDFSherpa_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_LHAPDFINCS@
