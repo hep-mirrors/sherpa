@@ -1320,7 +1320,11 @@ bool Amplitude::EvaluateAll()
     double mu2(cpl->Scale());
     if (p_loop) {
       p_loop->SetRenScale(mu2);
+      m_p[0]=-m_p[0];
+      m_p[1]=-m_p[1];
       p_loop->Calc(m_p);
+      m_p[0]=-m_p[0];
+      m_p[1]=-m_p[1];
     }
     if (p_dinfo->Mode()==1) {
       if (!m_trig) m_res=0.0;
@@ -1402,7 +1406,8 @@ bool Amplitude::EvaluateAll()
     }
     if (p_loop) {
       double cw(p_loop->Mode()?1.0:m_res);
-      if (p_loop->ColMode()==0) cw*=3.0/p_colint->GlobalWeight();
+      if (p_loop->Mode() && p_loop->ColMode()==0)
+         cw*=3.0/p_colint->GlobalWeight();
       if (p_dinfo->Mode()&8) {
 	double e1p(-m_cmur[0]/m_res/asf), e2p(-m_cmur[1]/m_res/asf);
 	if (!IsEqual(e2p,p_loop->ME_E2()))
@@ -1425,7 +1430,7 @@ bool Amplitude::EvaluateAll()
 	m_cmur[1]+=cw*asf*p_loop->ScaleDependenceCoefficient(2);
       }
     }
-    if ((p_dinfo->Mode()&2) && !(p_dinfo->Mode()&4)) m_res=0.0;
+    if ((p_dinfo->Mode()&18) && !(p_dinfo->Mode()&4)) m_res=0.0;
   }
 #ifdef DEBUG__BG
   msg_Debugging()<<"m_res = "<<m_res<<", csum = "<<csum
