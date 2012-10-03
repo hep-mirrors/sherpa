@@ -273,7 +273,6 @@ void Single_Real_Correction::Minimize()
     }
   m_subevtlist.push_back(new NLO_subevt(p_partner->m_realevt));
   ReMapFlavs(m_subevtlist.back(),1);
-  if (m_pinfo.m_nlomode!=1)
     for (size_t i=0;i<m_subtermlist.size();++i)
       m_subevtlist[i]->p_proc=m_subtermlist[i];
   m_subevtlist.back()->p_proc=this;
@@ -295,8 +294,7 @@ void Single_Real_Correction::ReMapFlavs(NLO_subevt *const sub,const int mode)
   ampl->SetNIn(m_nin);
   Flavour_Vector *fls(new Flavour_Vector());
   for (size_t i(0);i<sub->m_n;++i) {
-    fls->push_back(m_pinfo.m_nlomode==1?sub->p_fl[i]:
-		   p_tree_process->ReMap(sub->p_fl[i],ToString(sub->p_id[i])));
+    fls->push_back(p_tree_process->ReMap(sub->p_fl[i],ToString(sub->p_id[i])));
     ampl->CreateLeg(Vec4D(),i<m_nin?fls->back().Bar():fls->back(),ColorID(),sub->p_id[i]);
   }
   ampl->Decays()=*sub->p_dec;
