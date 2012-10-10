@@ -77,6 +77,7 @@ void Process_Base::AddPoint(const double &value)
 
 bool Process_Base::ReadIn(const std::string &pid)
 {
+  return true;
 }
 
 void Process_Base::WriteOut(const std::string &pid)
