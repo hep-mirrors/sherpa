@@ -4,8 +4,8 @@ OPENLOOPS_SOURCES      =	\
 			OpenLoops_Interface.C
 
 OPENLOOPS_ADDS         =	\
-			OpenLoops_Tree.H \
-			OpenLoops_Virtual.H
+			OpenLoops_Virtual.H \
+			OpenLoops_Interface.H
 
 if OPENLOOPS_SUPPORT
 pkglib_LTLIBRARIES    =	libSherpaOpenLoops.la
