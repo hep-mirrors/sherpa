@@ -17,7 +17,6 @@ using namespace std;
 namespace OLE {
 extern "C" void OLP_Start(const char * filename, int* success);
 extern "C" void OLP_EvalSubProcess(int,double*,double,double*,double*);
-extern "C" void OLP_Option(const char * assignment, int* success);
 
   class LH_OLE_Interface : public Virtual_ME2_Base {
     size_t m_pn;
@@ -88,20 +87,13 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
       lhfile.AddParameter("AlphasPower             "+ToString(pi.m_oqcd-1));
       lhfile.AddParameter("AlphaPower              "+ToString(pi.m_oew));
       lhfile.AddParameter("OperationMode           CouplingsStrippedOff");
-      std::string widthscheme("FixedWidthScheme");
-      if (MODEL::s_model->ScalarNumber(std::string("WidthScheme")))
-        widthscheme=std::string("ComplexMassScheme");
-      lhfile.AddParameter("ResonanceTreatment      "+widthscheme);
-      lhfile.AddParameter("EWRenormalisationScheme alphaMZ");
       lhfile.AddParameter("");
       lhfile.AddParameter("Z_mass                  "+ToString(Flavour(kf_Z).Mass()));
       lhfile.AddParameter("Z_width                 "+ToString(Flavour(kf_Z).Width()));
       lhfile.AddParameter("W_mass                  "+ToString(Flavour(kf_Wplus).Mass()));
       lhfile.AddParameter("W_width                 "+ToString(Flavour(kf_Wplus).Width()));
-      std::string sin_th_2(ToString(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"))));
-      if (MODEL::s_model->ScalarNumber(std::string("WidthScheme")))
-        sin_th_2=ToString(ToString(MODEL::s_model->ScalarConstant(std::string("csin2_thetaW"))));
-      lhfile.AddParameter("sin_th_2                "+sin_th_2);
+      double sin_th_2=MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"));
+      lhfile.AddParameter("sin_th_2                "+ToString(sin_th_2));
       lhfile.AddParameter("H_mass                  "+ToString(Flavour(kf_h0).Mass()));
       lhfile.AddParameter("H_width                 "+ToString(Flavour(kf_h0).Width()));
       lhfile.AddParameter("top_mass                "+ToString(Flavour(kf_t).Mass()));
@@ -136,28 +128,6 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
 
   if (s_oleinit==0) {
     int check(0);
-    // -- GoSam specific: --
-    // Weak Gauge Bosons + Higgs
-    string mZ_string("mZ="+ToString(Flavour(kf_Z).Mass()));
-    string wZ_string("wZ="+ToString(Flavour(kf_Z).Width()));
-    string mW_string("mW="+ToString(Flavour(kf_Wplus).Mass()));
-    string wW_string("wW="+ToString(Flavour(kf_Wplus).Width()));
-    string mH_string("mH="+ToString(Flavour(kf_h0).Mass()));
-    OLE::OLP_Option(mZ_string.c_str(),&check);
-    OLE::OLP_Option(wZ_string.c_str(),&check);
-    OLE::OLP_Option(mW_string.c_str(),&check);
-    OLE::OLP_Option(wW_string.c_str(),&check);
-    OLE::OLP_Option(mH_string.c_str(),&check);
-    // Quarks
-    string mB_string("mB="+ToString(Flavour(kf_b).Mass()));
-    string wB_string("wB="+ToString(Flavour(kf_b).Width()));
-    string mT_string("mT="+ToString(Flavour(kf_t).Mass()));
-    string wT_string("wT="+ToString(Flavour(kf_t).Width()));
-    OLE::OLP_Option(mB_string.c_str(),&check);
-    OLE::OLP_Option(wB_string.c_str(),&check);
-    OLE::OLP_Option(mT_string.c_str(),&check);
-    OLE::OLP_Option(wT_string.c_str(),&check);
-    // -- GoSam specific end --
     OLE::OLP_Start(fname.c_str(),&check);
     if (check != 1) THROW(fatal_error,"OLP initialisation failed");
     s_oleinit=1;
@@ -191,11 +161,11 @@ void LH_OLE_Interface::Calc(const Vec4D_Vector& pp) {
   double one_over_2pi = 0.15915494309189533577;
   for (size_t i=0;i<3;i++) p_result[i]/=one_over_2pi;
   // finite
-  m_res.Finite() = p_result[2]/p_result[3];
+  m_res.Finite()= p_result[2]/p_result[3];
   // 1/epsIR
-  m_res.IR()     = p_result[1]/p_result[3];
+  m_res.IR()=  p_result[1]/p_result[3];
   // 1/epsIR2
-  m_res.IR2()    = p_result[0]/p_result[3];
+  m_res.IR2()= p_result[0]/p_result[3];
 }
 
 bool LH_OLE_Interface::SetColours(const ATOOLS::Vec4D_Vector& momenta) {
