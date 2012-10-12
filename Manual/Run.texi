@@ -131,13 +131,26 @@ having no run time limitation at all. The unit is seconds.
 @node BATCH_MODE
 @subsection BATCH_MODE
 @cindex BATCH_MODE
-Whether or not to run Sherpa in batch mode. The default is @option{1}, meaning Sherpa
-does not attempt to save runtime information when catching a signal or an exception.
-On the contrary, if option @option{0} is used, Sherpa will store potential integration
-information and analysis results, once the run is terminated abnormally.
+Whether or not to run Sherpa in batch mode. The default is @option{1}, 
+meaning Sherpa does not attempt to save runtime information when catching 
+a signal or an exception. On the contrary, if option @option{0} is used, 
+Sherpa will store potential integration information and analysis results, 
+once the run is terminated abnormally. All possible settings are:
+@itemize
+@item @var{0} Sherpa attempts to write out integration and analysis 
+results when catching an exception.
+@item @var{1} Sherpa does not attempt to write out integration and 
+analysis results when catching an exception.
+@item @var{2} Sherpa outputs the event counter continously, instead 
+of overwriting the previous one (default when using @ref{LOG_FILE}).
+@item @var{4} Sherpa increases the on-screen event counter in constant 
+steps of 100 instead of an increase relative to the current event 
+number.
+@end itemize
+The settings are additive such that multiple settings can be employed 
+at the same time.
 
-@emph{Note that when running the code on a cluster or in a grid environment, BATCH_MODE
-should never be different from 1.}
+@emph{Note that when running the code on a cluster or in a grid environment, BATCH_MODE should always contain setting 1 (i.e. BATCH_MODE=[1|3|5|7]).}
 
 The command line option @option{-b} should therefore not be used in this case, see
 @ref{Command line}.
@@ -182,12 +195,9 @@ C++ source code, cf. @ref{SHERPA_CPP_PATH}.
 @cindex OUTPUT_PRECISION
 @cindex EVENT_MODE
 
-Sherpa provides the possibility to output events in its native and two other
-output formats:
-The HepEVT common block structure or the HepMC format.
-The authors of Sherpa assume
-that the user is sufficiently acquainted with these formats when
-selecting them.
+Sherpa provides the possibility to output events in its native and various other output formats, e.g. the HepEVT common block structure or the HepMC format.
+The authors of Sherpa assume that the user is sufficiently acquainted with 
+these formats when selecting them.
 
 If the events are to be written to file, the following parameters have to be
 specified:
@@ -208,7 +218,7 @@ Filename for output in Les Houches Event File format. This output format is
 intended for output of @strong{matrix element configurations only}. Since the 
 format requires PDF information to be written out in the outdated 
 PDFLIB/LHAGLUE enumeration format this is only available automatically if 
-LHAPDF is used, otherwise the indetification numbers have to be given 
+LHAPDF is used, the identification numbers otherwise have to be given 
 explicitly via @code{LHEF_PDF_NUMBER} (@code{LHEF_PDF_NUMBER_1} and 
 @code{LHEF_PDF_NUMBER_2} if both beams carry different structure functions). 
 This format currently outputs matrix element information only, no information 
