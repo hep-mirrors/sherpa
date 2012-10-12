@@ -1,0 +1,22 @@
+
+HAWK_SOURCES  =	\
+		HAWK_Interface.C
+
+HAWK_ADDS     =	\
+		HAWK_Wrapper.H
+
+if HAWK_SUPPORT
+pkglib_LTLIBRARIES    =	libSherpaHAWK.la
+
+libSherpaHAWK_la_SOURCES      =	$(HAWK_SOURCES)
+
+libSherpaHAWK_la_LIBADD       =	@CONDITIONAL_HAWKLIBS@
+
+libSherpaHAWK_la_CPPFLAGS     =	$(AM_CPPFLAGS)
+
+HAWK_EXTRA_DIST = $(HAWK_ADDS)
+else
+HAWK_EXTRA_DIST = $(HAWK_SOURCES) $(HAWK_ADDS)
+endif
+
+EXTRA_DIST = @SVNINCLUDE@ $(HAWK_EXTRA_DIST) install_hawk.sh
