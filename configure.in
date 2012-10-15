@@ -177,9 +177,10 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  AddOns/Analysis/Makefile \
 	  AddOns/BlackHat/Makefile \
 	  AddOns/OpenLoops/Makefile \
-          AddOns/MCFM/Makefile \
-          AddOns/LH_OLE/Makefile \
+	  AddOns/MCFM/Makefile \
+	  AddOns/LH_OLE/Makefile \
 	  AddOns/Phox/Makefile \
+	  AddOns/HAWK/Makefile \
 	  AddOns/HZTool/Makefile \
 	  AddOns/PGS/Makefile \
 	  AddOns/Rivet/Makefile \

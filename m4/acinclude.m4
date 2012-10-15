@@ -611,6 +611,36 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(Phox_SUPPORT, test "$phox" = "true")
 
   AC_ARG_ENABLE(
+    hawk,
+    AC_HELP_STRING([--enable-hawk=/path/to/hawk], [Enable hawk.]),
+    [ AC_MSG_CHECKING(for hawk installation directory);
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(hawk not enabled); hawk=false ;;
+        yes)  if test -d "$HAWKDIR"; then
+                CONDITIONAL_HAWKDIR="$HAWKDIR"
+                CONDITIONAL_HAWKLIBS="$CONDITIONAL_HAWKDIR/lib/libhawk.a"
+              else
+                AC_MSG_ERROR(\$HAWKDIR is not a valid path.);
+              fi;
+              AC_MSG_RESULT([${CONDITIONAL_HAWKDIR}]); hawk=true;;
+        *)    if test -d "${enableval}"; then
+                CONDITIONAL_HAWKDIR="${enableval}"
+              else
+                AC_MSG_ERROR(${enableval} is not a valid path.);
+              fi;
+              AC_MSG_RESULT([${CONDITIONAL_HAWKDIR}]); hawk=true;;
+      esac
+      ],
+    [ hawk=false ]
+  )
+  if test "$hawk" = "true" ; then
+    AC_DEFINE([USING__HAWK], "1", [Using hawk])
+  fi
+  AC_SUBST(CONDITIONAL_HAWKDIR)
+  AC_SUBST(CONDITIONAL_HAWKLIBS)
+  AM_CONDITIONAL(HAWK_SUPPORT, test "$hawk" = "true")
+
+  AC_ARG_ENABLE(
     lhole,
     AC_HELP_STRING([--enable-lhole], [Enable Les Houches One-Loop Generator interface.]),
     [ AC_MSG_CHECKING(for LHOLE)
