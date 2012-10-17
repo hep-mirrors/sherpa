@@ -447,25 +447,34 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 		Complex value;
 		
 		if (string_list.size()>0) {
-		  newaddend = BuildTChain(string_list);
+		  bool valid = true;
+		  newaddend = BuildTChain(string_list,valid);
 		  string_list.clear();
 		  factor_list.clear();
 		  
-		  //lookup string key in map 
-		  TF_Iterator tit = t_table.find(newaddend);
-		  if (tit!=t_table.end()) value = total*t_table[newaddend];
-		  else {
-		    st.Sort(*it);
-		    ReplaceT(*it);
-		    st.Expand(*it);
-		    st.Linear(*it);
-		    ReplaceD(*it,*it);
-		    value = st.evalcolor(*it);
-		    t_table.insert(std::make_pair(newaddend,value/total));
+		  if (valid) {
+		    //lookup string key in map 
+		    TF_Iterator tit = t_table.find(newaddend);
+		    if (tit!=t_table.end()) value = total*t_table[newaddend];
+		    else {
+		      st.Sort(*it);
+		      ReplaceT(*it);
+		      st.Expand(*it);
+		      st.Linear(*it);
+		      ReplaceD(*it,*it);
+		      value = st.evalcolor(*it);
+		      t_table.insert(std::make_pair(newaddend,value/total));
+		    }
+		    Kabbala* newone = new Kabbala(newaddend,value);
+		    (*it)->value = newone;
+		    (*it)->op = 0;
 		  }
-		  Kabbala* newone = new Kabbala(newaddend,value);
-		  (*it)->value = newone;
-		  (*it)->op = 0;
+		  else {
+		    //unvalid color structure, return zero 
+		    Kabbala* zero = new Kabbala(string("0"),Complex(0.,0.));
+		    (*it)->value = zero;
+		    (*it)->op = 0;
+		  }
 		}
 		else {
 		  st.Sort(*it);
@@ -547,15 +556,20 @@ CFColor::~CFColor()
   if (map) delete [] map;
 }
 
-string CFColor::BuildTChain(vector<string>  string_list) 
+string CFColor::BuildTChain(vector<string>  string_list, bool & valid) 
 {
   string    key;
   Char_Map  translator;  
   char tmp,ca = 'A';
   vector<string> tmp_list;
   
+  size_t length = string_list.size();
+  //approximate length faculty
+  size_t nperm = pow(length,length-1);
+  
   //generate the traces  
   for(;;) {
+    nperm--;
     if (tmp_list.size()==0) {
       tmp = string_list[0][2];
       tmp_list.push_back(string_list[0]);
@@ -583,6 +597,10 @@ string CFColor::BuildTChain(vector<string>  string_list)
       }
     }
     if (string_list.size()==0) break; 
+    if (nperm==0) {
+      valid = false;
+      break; 
+    }
   }
   return key;
 }
