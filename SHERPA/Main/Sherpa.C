@@ -280,6 +280,7 @@ void Sherpa::PrepareTerminate()
 bool Sherpa::SummarizeRun() 
 { 
   p_eventhandler->Finish(); 
+  PrintDisclaimer();
   return true; 
 }
 
@@ -339,7 +340,28 @@ void Sherpa::DrawLogo(const int mode)
 	    <<"                                                                             "<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
 	    <<std::endl;
+  PrintDisclaimer();
   rpa->gen.PrintSVNVersion(msg->Info(),mode);
   rpa->gen.AddCitation
     (0,"The complete Sherpa package is published under \\cite{Gleisberg:2008ta}.");
+}
+
+void Sherpa::PrintDisclaimer()
+{
+  msg_Out()<<om::bold<<om::blink<<om::red
+           <<"**************************************************************"<<std::endl
+           <<"**                                                          **"<<std::endl
+           <<"**  THIS VERSION OF SHERPA HAS ONLY BEEN TESTED FOR THE     **"<<std::endl
+           <<"**  FOLLOWING PROCESSES:                                    **"<<std::endl
+           <<"**                                                          **"<<std::endl
+           <<"**   - ee->hadrons  (MEPS,MC@NLO,MENLOPS,MEPS@NLO,NLO)      **"<<std::endl
+           <<"**   - pp->ll+jets  (MEPS,MC@NLO,MENLOPS,MEPS@NLO,NLO)      **"<<std::endl
+           <<"**   - pp->lnu+jets  (MEPS,MC@NLO,MENLOPS,MEPS@NLO,NLO)     **"<<std::endl
+           <<"**   - pp->h+jets (ggF)  (MEPS,MC@NLO,MENLOPS,MEPS@NLO,NLO) **"<<std::endl
+           <<"**                                                          **"<<std::endl
+           <<"**  FOR ANY OTHER PROCESS IT IS STRONGLY RECOMMENDED TO     **"<<std::endl
+           <<"**  USE SHERPA-1-4-2 FOR THE TIME BEING.                    **"<<std::endl
+           <<"**                                                          **"<<std::endl
+           <<"**************************************************************"<<std::endl
+           <<om::reset<<std::endl;
 }
