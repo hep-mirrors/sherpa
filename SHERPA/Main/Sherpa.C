@@ -362,6 +362,6 @@ void Sherpa::PrintDisclaimer()
            <<"**  FOR ANY OTHER PROCESS IT IS STRONGLY RECOMMENDED TO     **"<<std::endl
            <<"**  USE SHERPA-1-4-2 FOR THE TIME BEING.                    **"<<std::endl
            <<"**                                                          **"<<std::endl
-           <<"**************************************************************"<<std::endl
+           <<"**************************************************************"
            <<om::reset<<std::endl;
 }
