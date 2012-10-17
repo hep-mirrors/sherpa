@@ -27,6 +27,7 @@ namespace OpenLoops {
   std::vector<std::string> OpenLoops_Interface::s_allowed_libs;
   int OpenLoops_Interface::s_pole_mode;
   int OpenLoops_Interface::s_amp_switch;
+  int OpenLoops_Interface::s_amp_switch_rescue;
   int OpenLoops_Interface::s_nf;
   bool OpenLoops_Interface::s_generate_list;
   set<string> OpenLoops_Interface::s_shoppinglist;
@@ -58,6 +59,7 @@ namespace OpenLoops {
     reader.VectorFromFile(s_allowed_libs, "OL_ALLOWED_LIBS");
     s_pole_mode=reader.GetValue<int>("OL_POLE_MODE", 0);
     s_amp_switch=reader.GetValue<int>("OL_AMP_SWITCH", 1);
+    s_amp_switch_rescue=reader.GetValue<int>("OL_AMP_SWITCH_RESCUE", 7);
     s_nf=reader.GetValue<int>("OL_NF", 6);
     s_generate_list=reader.GetValue<size_t>("OL_GENERATE_LIST", false);
 
@@ -67,6 +69,7 @@ namespace OpenLoops {
     PRINT_VAR(s_proclib_path);
     PRINT_VAR(s_procdata_path);
     PRINT_VAR(s_amp_switch);
+    PRINT_VAR(s_amp_switch_rescue);
     PRINT_VAR(s_pole_mode);
     PRINT_VAR(s_nf);
     PRINT_VAR(s_allowed_libs);
@@ -132,13 +135,14 @@ namespace OpenLoops {
     double Width_H=Flavour(kf_h0).Width();
     int last_switch=1;
     int amp_switch=s_amp_switch;
+    int amp_switch_rescue=s_amp_switch_rescue;
     int use_coli_cache(true);
     int check_Ward_tree=false;
     int check_Ward_loop=false;
     int out_symmetry=true;
     parameters_init_(&Mass_E, &Mass_M, &Mass_L, &Mass_U, &Mass_D, &Mass_S, &Mass_C, &Width_C, &Mass_B, &Width_B, &Mass_T, &Width_T,
                      &Mass_W, &Width_W, &Mass_Z, &Width_Z, &Mass_H, &Width_H, &alpha_QED, &alpha_S,
-                     &last_switch, &amp_switch, &use_coli_cache, &check_Ward_tree, &check_Ward_loop, &out_symmetry);
+                     &last_switch, &amp_switch, &amp_switch_rescue, &use_coli_cache, &check_Ward_tree, &check_Ward_loop, &out_symmetry);
 
 
     double renscale=sqrt(mur2);
@@ -148,7 +152,7 @@ namespace OpenLoops {
     double pole1_IR=0.0;
     double pole2_IR=0.0;
     int polenorm_swi=0;
-    int N_light=5;
+    int nq_nondecoupled =5;
     double opp_rootsvalue=1000.0;
     double opp_limitvalue=0.01;
     double opp_thrs=0.000001;
@@ -166,7 +170,7 @@ namespace OpenLoops {
     double set_C_PV_threshold=1.E-10;
     double set_D_PV_threshold=1.E-10;
     int set_DD_red_mode=2;
-    loop_parameters_init_(&renscale, &fact_UV, &fact_IR, &pole1_UV, &pole1_IR, &pole2_IR, &polenorm_swi, &s_nf, &N_light,
+    loop_parameters_init_(&renscale, &fact_UV, &fact_IR, &pole1_UV, &pole1_IR, &pole2_IR, &polenorm_swi, &s_nf, &nq_nondecoupled ,
                           &opp_rootsvalue, &opp_limitvalue, &opp_thrs, &opp_idig, &opp_scaloop,
                           &sam_isca, &sam_verbosity, &sam_itest, &fermion_loops, &nonfermion_loops, &CT_on, &R2_on, &IR_on, &polemode,
                           &set_C_PV_threshold, &set_D_PV_threshold, &set_DD_red_mode);
@@ -343,7 +347,7 @@ namespace OpenLoops {
     if (grouptag!="") {
       s_loader->AddPath(OpenLoops_Interface::s_proclib_path);
 
-      string libraryfile="openloops_"+grouptag+"_1L";
+      string libraryfile="openloops_"+grouptag+"_1tL";
       // symbols in fortran are always defined as lower case
       string lc_functag(grouptag+"_"+process+"_"+subid+"_");
       for (size_t i(0);i<lc_functag.length();++i)

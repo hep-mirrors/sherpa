@@ -53,7 +53,7 @@ namespace OpenLoops {
 
     static std::string s_proclib_path, s_procdata_path;
     static std::vector<std::string> s_allowed_libs;
-    static int s_pole_mode, s_amp_switch, s_nf;
+    static int s_pole_mode, s_amp_switch, s_amp_switch_rescue, s_nf;
     static bool s_generate_list;
     static std::set<std::string> s_shoppinglist;
     static std::map<int, OpenLoops_Particle> s_particles;
@@ -77,11 +77,11 @@ extern "C" {
                         double* Mass_C, double* Width_C, double* Mass_B, double* Width_B, double* Mass_T, double* Width_T,
                         double* Mass_W, double* Width_W, double* Mass_Z, double* Width_Z, double* Mass_H, double* Width_H,
                         double* Coupl_Alpha_QED, double* Coupl_Alpha_QCD,
-                        int* last_switch, int* amp_switch, int* use_coli_cache, int* check_Ward_tree, int* check_Ward_loop, int* out_symmetry);
+                        int* last_switch, int* amp_switch, int* amp_switch_rescue, int* use_coli_cache, int* check_Ward_tree, int* check_Ward_loop, int* out_symmetry);
 
 
   void loop_parameters_init_(double* renscale, double* fact_UV, double* fact_IR, double* pole1_UV, double* pole1_IR, double* pole2_IR,
-                             int* polenorm_swi, int* N_quarks, int* N_light,
+                             int* polenorm_swi, int* N_quarks, int* nq_nondecoupled,
                              double* opp_rootsvalue, double* opp_limitvalue, double* opp_thrs, int* opp_idig, int* opp_scaloop,
                              int* sam_isca, int* sam_verbosity, int* sam_itest, int* fermion_loops, int* nonfermion_loops,
                              int* CT_on, int* R2_on, int* IR_on, int* polecheck, double* set_C_PV_threshold, double* set_D_PV_threshold, int* set_DD_red_mode);
