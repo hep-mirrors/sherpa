@@ -231,6 +231,8 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
       }
       MCatNLO_Process *proc=new MCatNLO_Process(m_gens,pmap);
       proc->Init(pi,p_beam,p_isr);
+      if (!p_shower->GetShower())
+        THROW(fatal_error,"Shower needs to be set for MC@NLO");
       proc->SetShower(p_shower->GetShower());
       proc->SetMCatNLO(p_nlomc);
       m_procs.push_back(proc);
