@@ -58,6 +58,8 @@ namespace AMISIC {
 
     std::string         m_regulator; 
     std::vector<double> m_regulation;
+
+    std::string m_xsec_output;
     
     PDF::Remnant_Base *p_remnants[2];
 

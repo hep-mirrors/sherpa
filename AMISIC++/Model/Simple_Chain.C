@@ -75,6 +75,7 @@ void Simple_Chain::Init()
   m_isrykey.Assign("y isr mi",2,0,PHASIC::Phase_Space_Handler::GetInfo());
   p_remnants[1]=p_remnants[0]=NULL;
   p_gridcreator=NULL;
+  m_xsec_output = std::string("MPI_Cross_Sections.dat");
 }
 
 Simple_Chain::~Simple_Chain()
@@ -429,6 +430,14 @@ bool Simple_Chain::Initialize()
       THROW(critical_error,"Determination of <\\tilde{O}> failed.");
     }
   }
+  std::ofstream ofile;
+  ofile.open(m_xsec_output.c_str());
+  ofile<<"MPIs in Sherpa, Model = Amisic: \n"
+       <<"   semihard xsec = "<<(m_sigmahard*rpa->Picobarn()/1.e9)<<" mb,\n"
+       <<"   non-diffractive xsec = "<<(m_norm*rpa->Picobarn()/1.e9)<<" mb "
+       <<"with nd factor = "<<m_sigma_nd_fac<<".\n";
+  ofile.close();
+
   return true;
 }
 
