@@ -34,8 +34,12 @@ namespace HAWK {
  
 } // end of namespace HAWK
 
-#endif
+//extern "C" { 
+//  void 
+//}
 
+
+#include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "AddOns/HAWK/HAWK_Wrapper.H"
@@ -166,12 +170,12 @@ bool HAWK_Interface::Initialize
     fmass_.cmf2[i] = Complex((double(i)+1.)*1.e-20,0.0);
   }
 
-  GEVFB_.gevfb = ATOOLS::rpa->Picobarn()*1000.;
+  gevfb_.gevfb = ATOOLS::rpa->Picobarn()*1000.;
   
-  UV_.mudim2  = sqr(param_.mw);
-  IR_.lambda  = param_.mw; 
-  IR_.lambda2 = sqr(IR_.lambda); 
-  IR_.deltas  = 0.1; 
+  uv_.mudim2  = sqr(param_.mw);
+  ir_.lambda  = param_.mw; 
+  ir_.lambda2 = sqr(ir_.lambda); 
+  ir_.deltas  = 0.1; 
 
   constsub_.constff =  1.0-sqr(M_PI)/3.;
   constsub_.constfi =  1.0-sqr(M_PI)/2.;
@@ -219,5 +223,26 @@ namespace PHASIC {
   { 
     str<<"Interface to the HAWK loop ME generator"; 
   }
-
 }
+
+DECLARE_VIRTUALME2_GETTER(HAWK_ME_Getter,"HAWK_ME")
+Virtual_ME2_Base * HAWK_ME_Getter::operator()(const Process_Info &pi) const
+{
+  msg_Out()<<"\n\n"<<"**** In "<<METHOD<<":\n"
+	   <<"**** loop generator = "<<pi.m_loopgenerator<<"\n"
+	   <<"**** model          = "<<MODEL::s_model->Name()<<"\n";
+  if (pi.m_loopgenerator!="HAWK")                       return NULL;
+  if (MODEL::s_model->Name()!=std::string("SM") ||
+      MODEL::s_model->ScalarConstant("Yukawa_b")>0. ||
+      !Flavour(kf_h0).IsOn())                           return NULL;
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
+  if (!(pi.m_fi.m_nloqcdtype&nlo_type::loop))           return NULL;
+  Flavour_Vector fl(pi.ExtractFlavours());
+  //if (fl[0].IsGluon() || fl[1].IsGluon())               return NULL;
+  //if (pi.m_fi.m_ps.size()!=1)                           return NULL;
+  //Flavour flh(pi.m_fi.m_ps[0].m_fl[0]);
+  //if (!flh==Flavour(kf_h0))                             return NULL;
+  msg_Out()<<" size = "<<pi.m_fi.m_ps.size()<<".\n";
+}
+
+#endif
