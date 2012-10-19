@@ -20,13 +20,13 @@ inline void GetMom(double * phawk,const int n,const ATOOLS::Vec4D &p)
 extern "C" {
   extern struct {
     double mudim2;
-  } uv_;
+  } UV_;
   extern struct {
-    double lambda, lambda2,deltas;
-  } ir_;
+    double lambda,lambda2,deltas;
+  } IR_;
   extern struct {
     double gevfb;
-  } gevfb_;
+  } GEVFB_;
   extern struct {
     double qu,qd,ql,qn,qf[4],mu,mu2,md,md2;
     Complex guu[3], gdd[3];

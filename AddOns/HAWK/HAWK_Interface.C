@@ -3,6 +3,7 @@
 
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 namespace HAWK {
 
@@ -50,6 +51,7 @@ using namespace std;
 HAWK_Interface::HAWK_Interface(): 
   ME_Generator_Base("HAWK")
 {
+  msg_Out()<<METHOD<<".\n";
 }
 
 HAWK_Interface::~HAWK_Interface() 
@@ -68,7 +70,6 @@ bool HAWK_Interface::Initialize
   param_.el      = sqrt(4.*param_.pi*param_.alpha);
   param_.GF      = model->ScalarConstant(string("GF"));
   param_.alphas  = model->ScalarConstant(string("alpha_S(MZ)"));
-  param_.alphasZ = model->ScalarConstant(string("alpha_S(MZ)"));
   param_.sw2     = model->ScalarConstant(string("sin2_thetaW"));
   param_.sw      = sqrt(param_.sw2);
   param_.cw2     = 1.-param_.sw2;
@@ -87,8 +88,8 @@ bool HAWK_Interface::Initialize
   param_.mh2     = sqr(param_.mh);
   for (int i=0;i<3;i++) {
     for (int j=0;j<3;j++) {
-      param_v[3*i+j]  = model->ComplexMatrixElement(string("CKM"),i,j);
-      param_cv[3*i+j] = model->ComplexMatrixElement(string("CKM"),i,j).conj();
+      param_.v[3*i+j]  = model->ComplexMatrixElement(string("CKM"),i,j);
+      param_.cv[3*i+j] = conj(model->ComplexMatrixElement(string("CKM"),i,j));
     }
   }
   param_.ml[0]  = Flavour(kf_e).Mass();
@@ -137,7 +138,7 @@ bool HAWK_Interface::Initialize
 
   xparam_.xmh  = param_.mh;
   xparam_.xmh2 = param_.mh2;
-  for (i(0);i<3;i++) {
+  for (int i=0;i<3;i++) {
     xparam_.xml[i]   = param_.ml[i];
     xparam_.xml2[i]  = param_.ml2[i];
     xparam_.xmqp[i]  = param_.mqp[i];
@@ -154,23 +155,23 @@ bool HAWK_Interface::Initialize
   qf_.mu2    = sqr(qf_.mu);
   qf_.md     = param_.mqp[0];
   qf_.md2    = sqr(qf_.md);
-  qf_.guu[0] = -qu*xsw/xcw; 
-  qf_.guu[2] = -qu*xsw/xcw+0.5/(xsw*xcw); 
-  qf_.gdd[0] = -qd*xsw/xcw; 
-  qf_.gdd[2] = -qd*xsw/xcw-0.5/(xsw*xcw); 
+  qf_.guu[0] = -qf_.qu*xparam_.xsw/xparam_.xcw; 
+  qf_.guu[2] = -qf_.qu*xparam_.xsw/xparam_.xcw+0.5/(xparam_.xsw*xparam_.xcw); 
+  qf_.gdd[0] = -qf_.qd*xparam_.xsw/xparam_.xcw; 
+  qf_.gdd[2] = -qf_.qd*xparam_.xsw/xparam_.xcw-0.5/(xparam_.xsw*xparam_.xcw); 
   qf_.guu[1] = qf_.gdd[1] = xparam_.zero;
 
-  for (i(0);i<5;i++) {
+  for (int i=0;i<5;i++) {
     fmass_.rmf2[i] = (double(i)+1.)*1.e-20;
     fmass_.cmf2[i] = Complex((double(i)+1.)*1.e-20,0.0);
   }
 
-  gevfb_.gevfb = rpa.gen.PicoBarn()*1000.;
+  GEVFB_.gevfb = ATOOLS::rpa->Picobarn()*1000.;
   
-  uv_.mudim   = sqr(param_.mw);
-  ir_.lambda  = param_.mw; 
-  ir_.lambda2 = sqr(ir_.lambda); 
-  ir_.deltas  = 0.1; 
+  UV_.mudim2  = sqr(param_.mw);
+  IR_.lambda  = param_.mw; 
+  IR_.lambda2 = sqr(IR_.lambda); 
+  IR_.deltas  = 0.1; 
 
   constsub_.constff =  1.0-sqr(M_PI)/3.;
   constsub_.constfi =  1.0-sqr(M_PI)/2.;
