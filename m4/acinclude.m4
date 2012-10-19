@@ -580,6 +580,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_MCFMLIBS)
   AM_CONDITIONAL(MCFM_SUPPORT, test "$mcfm" = "true")
 
+
   AC_ARG_ENABLE(
     phox,
     AC_HELP_STRING([--enable-phox=/path/to/phox], [Enable Phox.]),
@@ -625,10 +626,12 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
               AC_MSG_RESULT([${CONDITIONAL_HAWKDIR}]); hawk=true;;
         *)    if test -d "${enableval}"; then
                 CONDITIONAL_HAWKDIR="${enableval}"
+                CONDITIONAL_HAWKLIBS="$CONDITIONAL_HAWKDIR/lib/libhawk.a"
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);
               fi;
-              AC_MSG_RESULT([${CONDITIONAL_HAWKDIR}]); hawk=true;;
+              AC_MSG_RESULT([${CONDITIONAL_HAWKDIR}]); 
+              AC_MSG_RESULT([${CONDITIONAL_HAWKLIBS}]); hawk=true;;
       esac
       ],
     [ hawk=false ]
