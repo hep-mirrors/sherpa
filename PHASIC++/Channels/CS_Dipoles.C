@@ -246,7 +246,7 @@ double FI_Dipole::GenerateWeight
     m_isrykey[2]=(pp[0]+pp[1]).Y();
     p_ismc->GenerateWeight(m_isrmode);
   }
-  m_weight=Q2/(16.0*sqr(M_PI))/m_rn[0];
+  m_weight=Q2/(16.0*sqr(M_PI))/sqr(m_rn[0]);
   m_weight*=pow(m_rn[0],m_xexp)*pow(m_rn[1],m_zexp);
   if (!m_massive) {
     m_weight*=Channel_Basics::PeakedWeight
