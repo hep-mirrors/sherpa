@@ -332,7 +332,7 @@ void Process_Base::Init(const Process_Info &pi,
   double massin=0.0, massout=0.0;
   for (size_t i=0;i<m_nin;++i) massin+=m_flavs[i].Mass();
   for (size_t i=m_nin;i<m_nin+m_nout;++i) massout+=m_flavs[i].Mass();
-  p_int->SetISRThreshold(sqr(Max(massin,massout)));
+  p_int->SetISRThreshold(Max(massin,massout));
   p_int->Initialize(beamhandler,isrhandler);
   m_symfac=m_pinfo.m_fi.FSSymmetryFactor();
 }
