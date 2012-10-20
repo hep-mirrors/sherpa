@@ -7,7 +7,9 @@ namespace PHASIC {
 
   class FF_Dipole: public CS_Dipole {
   private:
-    double m_yexp, m_zexp;
+    double m_yexp, m_zexp, m_mi, m_mj, m_mk;
+    double m_mi2, m_mj2, m_mij2, m_mk2;
+    bool   m_massive;
   public:
 
     FF_Dipole(ATOOLS::NLO_subevt *const sub,
@@ -22,20 +24,13 @@ namespace PHASIC {
 			  Cut_Data *const cuts);
     bool ValidPoint(const ATOOLS::Vec4D_Vector& p);
 
-    void Calculate
-    (const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
-     const ATOOLS::Vec4D &pk,double &y,double &z,double &phi,
-     ATOOLS::Vec4D &pijt,ATOOLS::Vec4D &pkt);
-    void Construct
-    (ATOOLS::Vec4D &pi,ATOOLS::Vec4D &pj,ATOOLS::Vec4D &pk,
-     const double &y,const double &z,const double &phi,
-     const ATOOLS::Vec4D &pijt,const ATOOLS::Vec4D &pkt);
-
   };// end of class FF_Dipole
 
   class FI_Dipole: public CS_Dipole {
   private:
     double m_xmin, m_xexp, m_zexp;
+    double m_mi, m_mj, m_mi2, m_mj2, m_mij2;
+    bool   m_massive;
   public:
 
     FI_Dipole(ATOOLS::NLO_subevt *const sub,
@@ -50,19 +45,11 @@ namespace PHASIC {
 			  Cut_Data *const cuts);
     bool ValidPoint(const ATOOLS::Vec4D_Vector& p);
 
-    void Calculate(const ATOOLS::Vec4D &pi, const ATOOLS::Vec4D &pj,
-                   const ATOOLS::Vec4D &pk,
-                   double &x, double &z, double &phi,
-                   ATOOLS::Vec4D &pijt, ATOOLS::Vec4D &pkt);
-    void Construct(ATOOLS::Vec4D &pi, ATOOLS::Vec4D &pj, ATOOLS::Vec4D &pk,
-                   const double &x, const double &z, const double &phi,
-                   const ATOOLS::Vec4D &pijt, const ATOOLS::Vec4D &pkt);
-
   };// end of class FI_Dipole
 
   class IF_Dipole: public CS_Dipole {
   private:
-    double m_xmin,m_xexp, m_uexp;
+    double m_xmin,m_xexp, m_uexp, m_mk2;
     inline ATOOLS::Vec4D Rotate(const ATOOLS::Vec4D &p) const
     { return ATOOLS::Vec4D(p[0],-p[1],-p[2],-p[3]); }
   public:
@@ -78,14 +65,6 @@ namespace PHASIC {
     double GenerateWeight(const ATOOLS::Vec4D_Vector &p,
 			  Cut_Data *const cuts);
     bool ValidPoint(const ATOOLS::Vec4D_Vector& p);
-
-    void Calculate(const ATOOLS::Vec4D &pi, const ATOOLS::Vec4D &pj,
-                   const ATOOLS::Vec4D &pk,
-                   double &x, double &u, double &phi,
-                   ATOOLS::Vec4D &pijt, ATOOLS::Vec4D &pkt);
-    void Construct(ATOOLS::Vec4D &pi, ATOOLS::Vec4D &pj, ATOOLS::Vec4D &pk,
-                   const double &x, const double &u, const double &phi,
-                   const ATOOLS::Vec4D &pijt, const ATOOLS::Vec4D &pkt);
 
   };// end of class IF_Dipole
 

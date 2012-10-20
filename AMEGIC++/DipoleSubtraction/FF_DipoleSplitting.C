@@ -123,6 +123,8 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
   m_zi   = (m_pi*m_pk)/(m_pi*m_pk+m_pj*m_pk);
   m_zj   = 1.-m_zi;
 
+  m_kt2  = 2.0*m_pi*m_pj*m_zi*m_zj-sqr(m_zi)*m_mj-sqr(m_zj)*m_mi;
+
   m_vijk = Vrel(m_pi+m_pj,m_pk);
   
   m_zim  = m_zi-0.5*(1.-m_vijk);
@@ -165,7 +167,9 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
 
 double FF_MassiveDipoleSplitting::GetF()
 {
-   if (m_yijk>m_alpha*m_yp) return 0.;
+
+  if (Reject(m_yijk/m_yp)) return 0.;
+
    if (m_yijk<=m_amin) {
       return nan;
    }

@@ -546,7 +546,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   double df = p_dipole->GetF();
   m_subevt.m_me = m_subevt.m_mewgt = m_subevt.m_result = 0.;
 
-  if (!(df>0.)&& !(df<0.)) return m_lastxs=df;
+  if (!(df>0.)&& !(df<0.)) return m_lastxs=m_mcmode==1?0.0:df;
 
   if (m_mcmode && p_dipole->MCSign()<0) df=-df;
 

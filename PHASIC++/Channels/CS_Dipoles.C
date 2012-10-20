@@ -3,6 +3,7 @@
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PHASIC++/Channels/Vegas.H"
 #include "PHASIC++/Channels/Channel_Basics.H"
+#include "PHASIC++/Channels/CSS_Kinematics.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Poincare.H"
@@ -16,7 +17,10 @@ using namespace PHASIC;
 
 FF_Dipole::FF_Dipole(NLO_subevt *const sub,
 		     Phase_Space_Handler *const psh,const bool bmcw):
-  CS_Dipole(sub,psh,bmcw), m_yexp(0.5), m_zexp(0.01)
+  CS_Dipole(sub,psh,bmcw), m_yexp(0.5), m_zexp(0.01),
+  m_mi(m_fli.Mass()), m_mj(m_flj.Mass()), m_mk(m_flk.Mass()),
+  m_mi2(m_mi*m_mi), m_mj2(m_mj*m_mj), m_mij2(sqr(m_flij.Mass())),
+  m_mk2(m_mk*m_mk), m_massive(m_mi||m_mj||m_mij2||m_mk)
 {
   // read in y,z mode
   Data_Reader read(" ",";","!","=");
@@ -38,31 +42,56 @@ Vec4D_Vector FF_Dipole::GeneratePoint
 (const Vec4D_Vector &p,Cut_Data *const cuts,const double *rns)
 {
   DEBUG_FUNC("");
-  // massless y- and z-bounds so far
   double *rn(p_vegas->GeneratePoint(rns));
   msg_Debugging()<<"vegased :     ";
   msg_Debugging()<<"y = "<<rn[0]<<", z = "<<rn[1]
                  <<", phi = "<<rn[2]<<"\n";
-  m_rn[0]=Channel_Basics::PeakedDist(0.0,m_yexp,m_amin,1.0,1,rn[0]);
-  m_rn[1]=Channel_Basics::PeakedDist(0.0,m_zexp,0.0,1.0,1,rn[1]);
+  if (!m_massive) {
+    m_rn[0]=Channel_Basics::PeakedDist(0.0,m_yexp,m_amin,1.0,1,rn[0]);
+    m_rn[1]=Channel_Basics::PeakedDist(0.0,m_zexp,0.0,1.0,1,rn[1]);
+  }
+  else {
+    double Q2((p[m_ijt]+p[m_kt]).Abs2());
+    double eps(Q2-m_mi2-m_mj2-m_mk2);
+    double ymin(Max(ymin,2.0*m_mi*m_mj/eps));
+    double ymax(1.0-2.0*m_mk*(sqrt(Q2)-m_mk)/eps);
+    m_rn[0]=Channel_Basics::PeakedDist(0.0,m_yexp,ymin,ymax,1,rn[0]);
+    double viji(sqrt(sqr(eps*m_rn[0])-sqr(2.0*m_mi*m_mj))/
+		(eps*m_rn[0]+2.0*m_mi2));
+    double vijk(sqrt(sqr(2.0*m_mk2+eps*(1.0-m_rn[0]))-
+		     4.0*m_mk2*Q2)/(eps*(1.0-m_rn[0])));
+    double zc(0.5*(2.0*m_mi2+eps*m_rn[0])/
+	      (m_mi2+m_mj2+eps*m_rn[0]));
+    double zmin(zc*(1.0-viji*vijk)), zmax(zc*(1.0+viji*vijk));
+    m_rn[1]=Channel_Basics::PeakedDist(0.0,m_zexp,zmin,zmax,1,rn[1]);
+  }
   m_rn[2]=rn[2]*2.0*M_PI;
   msg_Debugging()<<"transformed : ";
   msg_Debugging()<<"y = "<<m_rn[0]<<", z = "<<m_rn[1]
                  <<", phi = "<<m_rn[2]<<"\n";
   Vec4D_Vector pp(p.size()+1);
   for (size_t i(0);i<p.size();++i) pp[m_brmap[i]]=p[i];
-  Construct(pp[m_sub.m_i],pp[m_sub.m_j],pp[m_sub.m_k],
-	    m_rn[0],m_rn[1],m_rn[2],p[m_ijt],p[m_kt]);
+  Kin_Args ff(m_rn[0],m_rn[1],m_rn[2]);
+  if (ConstructFFDipole(m_mi2,m_mj2,m_mij2,m_mk2,p[m_ijt],p[m_kt],ff)<0)
+    THROW(fatal_error,"Invalid kinematics");
+  pp[m_sub.m_i]=ff.m_pi;
+  pp[m_sub.m_j]=ff.m_pj;
+  pp[m_sub.m_k]=ff.m_pk;
   return pp;
 }
 
 double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
 {
-  // massless y-/z-bounds and weight so far
   Vec4D_Vector pp(p.size()-1);
   for (size_t i(0);i<p.size();++i) pp[m_rbmap[i]]=p[i];
-  Calculate(p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],
-	    m_rn[0],m_rn[1],m_rn[2],pp[m_ijt],pp[m_kt]);
+  Kin_Args ff(ClusterFFDipole(m_mi2,m_mj2,m_mij2,m_mk2,
+			      p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],1));
+  if (ff.m_stat!=1) THROW(fatal_error,"Invalid kinematics");
+  m_rn[0]=ff.m_y;
+  m_rn[1]=ff.m_z;
+  m_rn[2]=ff.m_phi;
+  pp[m_ijt]=ff.m_pi;
+  pp[m_kt]=ff.m_pk;
   if (!ValidPoint(pp)) return m_weight=m_rbweight=0.0;
   if (m_bmcw) {
     p_fsmc->GenerateWeight(&pp.front(),cuts);
@@ -82,10 +111,30 @@ double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
   }
   m_weight=(pp[m_ijt]+pp[m_kt]).Abs2()/(16.0*sqr(M_PI))*(1.0-m_rn[0]);
   m_weight*=pow(m_rn[0],m_yexp)*pow(m_rn[1],m_zexp);
-  m_weight*=Channel_Basics::PeakedWeight
-    (0.0,m_yexp,m_amin,1.0,m_rn[0],1,m_rn[0]);
-  m_weight*=Channel_Basics::PeakedWeight
-    (0.0,m_zexp,0.0,1.0,m_rn[1],1,m_rn[1]);
+  if (!m_massive) {
+    m_weight*=Channel_Basics::PeakedWeight
+      (0.0,m_yexp,m_amin,1.0,m_rn[0],1,m_rn[0]);
+    m_weight*=Channel_Basics::PeakedWeight
+      (0.0,m_zexp,0.0,1.0,m_rn[1],1,m_rn[1]);
+  }
+  else {
+    double Q2((pp[m_ijt]+pp[m_kt]).Abs2());
+    double eps(Q2-m_mi2-m_mj2-m_mk2);
+    double ymin(Max(ymin,2.0*m_mi*m_mj/eps));
+    double ymax(1.0-2.0*m_mk*(sqrt(Q2)-m_mk)/eps);
+    double viji(sqrt(sqr(eps*m_rn[0])-sqr(2.0*m_mi*m_mj))/
+		(eps*m_rn[0]+2.0*m_mi2));
+    double vijk(sqrt(sqr(2.0*m_mk2+eps*(1.0-m_rn[0]))-
+		     4.0*m_mk2*Q2)/(eps*(1.0-m_rn[0])));
+    double zc(0.5*(2.0*m_mi2+eps*m_rn[0])/
+	      (m_mi2+m_mj2+eps*m_rn[0]));
+    double zmin(zc*(1.0-viji*vijk)), zmax(zc*(1.0+viji*vijk));
+    m_weight*=eps*eps/Q2/sqrt(sqr(Q2-m_mij2-m_mk2)-4.0*m_mij2*m_mk2);
+    m_weight*=Channel_Basics::PeakedWeight
+      (0.0,m_yexp,ymin,ymax,m_rn[0],1,m_rn[0]);
+    m_weight*=Channel_Basics::PeakedWeight
+      (0.0,m_zexp,zmin,zmax,m_rn[1],1,m_rn[1]);
+  }
   m_rn[2]/=2.0*M_PI;
   msg_Debugging()<<"recovered :   ";
   msg_Debugging()<<"y = "<<m_rn[0]<<", z = "<<m_rn[1]
@@ -96,55 +145,12 @@ double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
   return m_weight*=p_fsmc->Weight();
 }
 
-void FF_Dipole::Calculate
-(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
- double &y,double &z,double &phi,Vec4D &pijt,Vec4D &pkt)
-{
-  Vec4D  Q(pi+pj+pk);
-  double pipj=pi*pj, sij=(pi+pj).Abs2(), pipk=pi*pk, pjpk=pj*pk;
-  double Q2=Q*Q, mk2=sqr(m_flk.Mass()), mij2=sqr(m_flij.Mass());
-  y=pipj/(pipj+pipk+pjpk);
-  z=pipk/(pipk+pjpk);
-  pkt=Vec4D(sqrt(Lambda(Q2,mij2,mk2)/Lambda(Q2,sij,mk2))*
-	    (pk-(Q*pk)/Q2*Q)+(Q2+mk2-mij2)/(2.0*Q2)*Q);
-  phi=Phi(Q-pkt,pkt,pi,0);
-  pijt=Q-pkt;
-}
-
-void FF_Dipole::Construct
-(ATOOLS::Vec4D &pi,ATOOLS::Vec4D &pj,ATOOLS::Vec4D &pk,
- const double &y,const double &z,const double &phi,
- const ATOOLS::Vec4D &pijt,const ATOOLS::Vec4D &pkt)
-{
-  Vec4D rpijt(pijt), Q(pijt+pkt), l, n;
-  Vec4D n_perp(0.0,cross(Vec3D(pijt),Vec3D(pkt)));
-  Poincare cms(Q);
-  cms.Boost(rpijt);
-  Poincare zrot(rpijt,Vec4D::ZVEC);
-  if (n_perp.PSpat2()<=1.0e-6) {
-    n_perp=Vec4D(0.0,1.0,1.0,0.0);
-    zrot.RotateBack(n_perp);
-  }
-  n_perp*=1.0/n_perp.PSpat();
-  Vec4D l_perp(0.0,cross(Vec3D(rpijt),Vec3D(n_perp)));
-  l_perp*=1.0/l_perp.PSpat();
-  double mi2(sqr(m_fli.Mass())), mj2(sqr(m_flj.Mass()));
-  double mk2(sqr(m_flk.Mass())), mij2(sqr(m_flij.Mass()));
-  double Q2(Q.Abs2()), sij(GetS(Q2,y,mi2,mj2,mk2));
-  double gam(ConstructLN(Q2,sij,mij2,mk2,Q,pk=pkt,l,n));
-  double zt(GetZ(Q2,sij,y,z,mi2,mk2));
-  double ktt(GetKT2(Q2,y,zt,mi2,mj2,mk2));
-  if (ktt<0.0) THROW(fatal_error,"Invalid kinematics");
-  ktt=sqrt(ktt);
-  pi=ktt*sin(phi)*l_perp;
-  cms.BoostBack(pi);
-  pi+=zt*l+(mi2+ktt*ktt)/(gam*zt)*n+ktt*cos(phi)*n_perp;
-  pj=Q-pi-pk;
-}
-
 FI_Dipole::FI_Dipole(ATOOLS::NLO_subevt *const sub,
 		     Phase_Space_Handler *const psh,const bool bmcw):
-  CS_Dipole(sub,psh,bmcw), m_xexp(0.5), m_zexp(0.01)
+  CS_Dipole(sub,psh,bmcw), m_xexp(0.5), m_zexp(0.01),
+  m_mi(m_fli.Mass()), m_mj(m_flj.Mass()), 
+  m_mi2(m_mi*m_mi), m_mj2(m_mj*m_mj), m_mij2(sqr(m_flij.Mass())),
+  m_massive(m_mi||m_mj||m_mij2)
 {
   // read in x,z mode
   Data_Reader read(" ",";","!","=");
@@ -171,34 +177,58 @@ ATOOLS::Vec4D_Vector FI_Dipole::GeneratePoint
 (const ATOOLS::Vec4D_Vector &p,Cut_Data *const cuts,const double *rns)
 {
   DEBUG_FUNC("");
-  // massless x- and z-bounds so far
   double *rn(p_vegas->GeneratePoint(rns));
   msg_Debugging()<<"vegased :     ";
   if (m_kt==0) m_xmin=p[m_kt].PPlus()/rpa->gen.PBeam(0).PPlus();
   else m_xmin=p[m_kt].PMinus()/rpa->gen.PBeam(1).PMinus();
   msg_Debugging()<<"x = "<<rn[0]<<", z = "<<rn[1]
                  <<", phi = "<<rn[2]<<", xmin = "<<m_xmin<<"\n";
-  m_rn[0]=Channel_Basics::PeakedDist(0.0,m_xexp,m_xmin,1.0-m_amin,1,rn[0]);
-  m_rn[1]=Channel_Basics::PeakedDist(0.0,m_zexp,0.0,1.0,1,rn[1]);
+  if (!m_massive) {
+    m_rn[0]=Channel_Basics::PeakedDist(0.0,m_xexp,m_xmin,1.0-m_amin,1,rn[0]);
+    m_rn[1]=Channel_Basics::PeakedDist(0.0,m_zexp,0.0,1.0,1,rn[1]);
+  }
+  else {
+    double Q2(2.0*p[m_ijt]*p[m_kt]);
+    double xmax(Min(1.0-m_amin,Q2/(Q2+m_mij2-sqr(m_mi+m_mj))));
+    m_rn[0]=Channel_Basics::PeakedDist(0.0,m_xexp,m_xmin,xmax,1,rn[0]);
+    double eps((1-m_rn[0])*Q2+m_rn[0]*(m_mij2+m_mi2-m_mj2));
+    double kap(sqrt(sqr(eps-2.0*m_rn[0]*m_mi2)-4.0*m_mi2*m_mj2));
+    double zmin(0.5*(eps-kap)/((1-m_rn[0])*Q2+m_rn[0]*m_mij2));
+    double zmax(0.5*(eps+kap)/((1-m_rn[0])*Q2+m_rn[0]*m_mij2));
+    if (zmax>1.0 && IsEqual(zmax,1.0)) zmax=1.0;
+    m_rn[1]=Channel_Basics::PeakedDist(0.0,m_zexp,zmin,zmax,1,rn[1]);
+    m_rn[0]+=m_rn[0]/Q2*(m_mij2-m_mi2-m_mj2);
+  }
   m_rn[2]=rn[2]*2.0*M_PI;
   msg_Debugging()<<"transformed : ";
   msg_Debugging()<<"x = "<<m_rn[0]<<", z = "<<m_rn[1]
                  <<", phi = "<<m_rn[2]<<"\n";
   Vec4D_Vector pp(p.size()+1);
   for (size_t i(0);i<p.size();++i) pp[m_brmap[i]]=p[i];
-  Construct(pp[m_sub.m_i],pp[m_sub.m_j],pp[m_sub.m_k],
-            m_rn[0],m_rn[1],m_rn[2],p[m_ijt],p[m_kt]);
+  Kin_Args fi(1.0-m_rn[0],m_rn[1],m_rn[2]);
+  if (ConstructFIDipole(m_mi2,m_mj2,m_mij2,0.0,p[m_ijt],p[m_kt],fi)<0)
+    THROW(fatal_error,"Invalid kinematics");
+  pp[m_sub.m_i]=fi.m_pi;
+  pp[m_sub.m_j]=fi.m_pj;
+  pp[m_sub.m_k]=fi.m_pk;
   return pp;
 }
 
 double FI_Dipole::GenerateWeight
 (const ATOOLS::Vec4D_Vector &p,Cut_Data *const cuts)
 {
-  // massless x-/z-bounds and weight so far
   Vec4D_Vector pp(p.size()-1);
   for (size_t i(0);i<p.size();++i) pp[m_rbmap[i]]=p[i];
-  Calculate(p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],
-	    m_rn[0],m_rn[1],m_rn[2],pp[m_ijt],pp[m_kt]);
+  Kin_Args fi(ClusterFIDipole(m_mi2,m_mj2,m_mij2,0.0,
+			      p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],1));
+  if (fi.m_stat!=1) THROW(fatal_error,"Invalid kinematics");
+  m_rn[0]=1.0-fi.m_y;
+  m_rn[1]=fi.m_z;
+  m_rn[2]=fi.m_phi;
+  pp[m_ijt]=fi.m_pi;
+  pp[m_kt]=fi.m_pk;
+  double Q2(2.0*pp[m_ijt]*pp[m_kt]);
+  if (m_massive) m_rn[0]/=1.0+(m_mij2-m_mi2-m_mj2)/Q2;
   if (!ValidPoint(pp)) return m_weight=m_rbweight=0.0;
   if (m_rn[2]<0.0) m_rn[2]+=2.0*M_PI;
   if (m_kt==0) m_xmin=pp[m_kt].PPlus()/rpa->gen.PBeam(0).PPlus();
@@ -216,14 +246,26 @@ double FI_Dipole::GenerateWeight
     m_isrykey[2]=(pp[0]+pp[1]).Y();
     p_ismc->GenerateWeight(m_isrmode);
   }
-  // 2(pijt*pk)/16pi^2
-  m_weight=(pp[m_ijt]+p[m_sub.m_k]).Abs2()/
-    (16.0*sqr(M_PI))/m_rn[0];
+  m_weight=Q2/(16.0*sqr(M_PI))/m_rn[0];
   m_weight*=pow(m_rn[0],m_xexp)*pow(m_rn[1],m_zexp);
-  m_weight*=Channel_Basics::PeakedWeight
-    (0.0,m_xexp,m_xmin,1.0-m_amin,m_rn[0],1,m_rn[0]);
-  m_weight*=Channel_Basics::PeakedWeight
-    (0.0,m_zexp,0.0,1.0,m_rn[1],1,m_rn[1]);
+  if (!m_massive) {
+    m_weight*=Channel_Basics::PeakedWeight
+      (0.0,m_xexp,m_xmin,1.0-m_amin,m_rn[0],1,m_rn[0]);
+    m_weight*=Channel_Basics::PeakedWeight
+      (0.0,m_zexp,0.0,1.0,m_rn[1],1,m_rn[1]);
+  }
+  else {
+    double xmax(Min(1.0-m_amin,Q2/(Q2+m_mij2-sqr(m_mi+m_mj))));
+    double eps((1-m_rn[0])*Q2+m_rn[0]*(m_mij2+m_mi2-m_mj2));
+    double kap(sqrt(sqr(eps-2.0*m_rn[0]*m_mi2)-4.0*m_mi2*m_mj2));
+    double zmin(0.5*(eps-kap)/((1-m_rn[0])*Q2+m_rn[0]*m_mij2));
+    double zmax(0.5*(eps+kap)/((1-m_rn[0])*Q2+m_rn[0]*m_mij2));
+    if (zmax>1.0 && IsEqual(zmax,1.0)) zmax=1.0;
+    m_weight*=Channel_Basics::PeakedWeight
+      (0.0,m_xexp,m_xmin,Min(1.0-m_amin,xmax),m_rn[0],1,m_rn[0]);
+    m_weight*=Channel_Basics::PeakedWeight
+      (0.0,m_zexp,zmin,zmax,m_rn[1],1,m_rn[1]);
+  }
   m_rn[2]/=2.0*M_PI;
   msg_Debugging()<<"recovered :   ";
   msg_Debugging()<<"x = "<<m_rn[0]<<", z = "<<m_rn[1]
@@ -233,59 +275,10 @@ double FI_Dipole::GenerateWeight
   return m_weight*=p_fsmc->Weight()*p_ismc->Weight();
 }
 
-void FI_Dipole::Calculate
-(const ATOOLS::Vec4D &pi, const ATOOLS::Vec4D &pj, const ATOOLS::Vec4D &pk,
- double &x, double &z, double &phi,
- ATOOLS::Vec4D &pijt, ATOOLS::Vec4D &pkt)
-{
-  double pipj(pi*pj), pipk(pi*pk), pjpk(pj*pk);
-  x=(pjpk+pipk-pipj)/(pipk+pjpk);
-  z=pjpk/(pipk+pjpk);
-
-  pijt=pi+pj-(1.-x)*pk;
-  pkt=x*pk;
-
-  double kp(sqrt(2.*pijt*pk*(1.-x)*z*(1.-z)));
-  Vec4D kperp(pj-z*pijt-(1.-x)*(1.-z)*pk);
-  Poincare bf(pijt+pkt);
-  Poincare rot(bf*pijt,Vec4D(0.,0.,0.,1.));
-  bf.Boost(kperp);
-  rot.Rotate(kperp);
-  if      ((kperp[1]>=0. && kperp[2]>=0.) || (kperp[1]>=0. && kperp[2]<0.))
-    phi=acos(kperp[2]/kp);
-  else if ((kperp[1]<0. && kperp[2]<0.) || (kperp[1]<0. && kperp[2]>=0.))
-    phi=-acos(kperp[2]/kp)+2.*M_PI;
-  else THROW(fatal_error,"Could not determine phi.");
-}
-
-void FI_Dipole::Construct
-(ATOOLS::Vec4D &pi, ATOOLS::Vec4D &pj, ATOOLS::Vec4D &pk,
- const double &x, const double &z, const double &phi,
- const ATOOLS::Vec4D &pijt, const ATOOLS::Vec4D &pkt)
-{
-  DEBUG_FUNC("");
-  pk = 1./x*pkt;
-
-  double kp(sqrt(2.*pijt*pk*(1.-x)*z*(1.-z)));
-  Poincare bf(pkt+pijt);
-  Poincare rot(bf*pijt,Vec4D(0.,0.,0.,1.));
-  Vec4D kperp(0.,sin(phi)*kp,cos(phi)*kp,0.);
-  rot.RotateBack(kperp);
-  bf.BoostBack(kperp);
-
-  pi = (1.-z)*pijt + (1.-x)*z*pk - kperp;
-  pj = z*pijt + (1.-x)*(1.-z)*pk + kperp;
-
-  msg_Debugging()<<"("<<m_ijt<<"):"<<pijt
-                 <<" -> ("<<m_sub.m_i<<"):"<<pi
-                 <<" ("<<m_sub.m_j<<"):"<<pj<<std::endl;
-  msg_Debugging()<<"("<<m_kt<<"):"<<pkt
-                 <<" -> ("<<m_sub.m_k<<"):"<<pk<<std::endl;
-}
-
 IF_Dipole::IF_Dipole(ATOOLS::NLO_subevt *const sub,
 		     Phase_Space_Handler *const psh,const bool bmcw):
-  CS_Dipole(sub,psh,bmcw), m_xexp(0.5), m_uexp(0.5)
+  CS_Dipole(sub,psh,bmcw), m_xexp(0.5), m_uexp(0.5),
+  m_mk2(sqr(m_flk.Mass()))
 {
   // read in x,u mode
   Data_Reader read(" ",";","!","=");
@@ -308,7 +301,6 @@ ATOOLS::Vec4D_Vector IF_Dipole::GeneratePoint
 (const ATOOLS::Vec4D_Vector &p,Cut_Data *const cuts,const double *rns)
 {
   DEBUG_FUNC("");
-  // massless x- and u-bounds so far
   double *rn(p_vegas->GeneratePoint(rns));
   if (m_ijt==0) m_xmin=p[m_ijt].PPlus()/rpa->gen.PBeam(0).PPlus();
   else m_xmin=p[m_ijt].PMinus()/rpa->gen.PBeam(1).PMinus();
@@ -316,15 +308,21 @@ ATOOLS::Vec4D_Vector IF_Dipole::GeneratePoint
   msg_Debugging()<<"x = "<<rn[0]<<", u = "<<rn[1]
                  <<", phi = "<<rn[2]<<", xmin = "<<m_xmin<<"\n";
   m_rn[0]=Channel_Basics::PeakedDist(0.0,m_xexp,m_xmin,1.0,1,rn[0]);
-  m_rn[1]=Channel_Basics::PeakedDist(0.0,m_uexp,m_amin,1.0,1,rn[1]);
+  double umax((1.0-m_rn[0])/(1.0-m_rn[0]+m_rn[0]*m_mk2/(2.0*p[m_ijt]*p[m_kt])));
+  m_rn[1]=Channel_Basics::PeakedDist(0.0,m_uexp,m_amin,umax,1,rn[1]);
   m_rn[2]=rn[2]*2.0*M_PI;
   msg_Debugging()<<"transformed : ";
   msg_Debugging()<<"x = "<<m_rn[0]<<", u = "<<m_rn[1]
                  <<", phi = "<<m_rn[2]<<"\n";
   Vec4D_Vector pp(p.size()+1);
   for (size_t i(0);i<p.size();++i) pp[m_brmap[i]]=p[i];
-  Construct(pp[m_sub.m_i],pp[m_sub.m_j],pp[m_sub.m_k],
-            m_rn[0],m_rn[1],m_rn[2],p[m_ijt],p[m_kt]);
+  Kin_Args ifp(m_rn[1],m_rn[0],m_rn[2],1);
+  if (ConstructIFDipole(0.0,0.0,0.0,m_mk2,0.0,
+			p[m_ijt],p[m_kt],Vec4D(),ifp)<0)
+    THROW(fatal_error,"Invalid kinematics");
+  pp[m_sub.m_i]=ifp.m_pi;
+  pp[m_sub.m_j]=ifp.m_pj;
+  pp[m_sub.m_k]=ifp.m_pk;
   if (m_ijt!=m_sub.m_i) {
     for (size_t i(0);i<pp.size();++i) pp[i]=Rotate(pp[i]);
   }
@@ -334,18 +332,31 @@ ATOOLS::Vec4D_Vector IF_Dipole::GeneratePoint
 double IF_Dipole::GenerateWeight
 (const ATOOLS::Vec4D_Vector &p,Cut_Data *const cuts)
 {
-  // massless x-/v-bounds and weight so far
   Vec4D_Vector pp(p.size()-1);
   for (size_t i(0);i<p.size();++i) pp[m_rbmap[i]]=p[i];
   if (m_ijt==m_sub.m_i) {
-  Calculate(p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],
-	    m_rn[0],m_rn[1],m_rn[2],pp[m_ijt],pp[m_kt]);
+    Kin_Args ifp(ClusterIFDipole
+		(0.0,0.0,0.0,m_mk2,0.0,
+		 p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],Vec4D(),1|4));
+    if (ifp.m_stat!=1) THROW(fatal_error,"Invalid kinematics");
+    m_rn[0]=ifp.m_z;
+    m_rn[1]=ifp.m_y;
+    m_rn[2]=ifp.m_phi;
+    pp[m_ijt]=ifp.m_pi;
+    pp[m_kt]=ifp.m_pk;
   }
   else {
     for (size_t i(0);i<pp.size();++i) pp[i]=Rotate(pp[i]);
-    Calculate(Rotate(p[m_sub.m_i]),Rotate(p[m_sub.m_j]),
-	      Rotate(p[m_sub.m_k]),m_rn[0],m_rn[1],m_rn[2],
-	      pp[m_ijt],pp[m_kt]);
+    Kin_Args ifp(ClusterIFDipole
+		(0.0,0.0,0.0,m_mk2,0.0,
+		 Rotate(p[m_sub.m_i]),Rotate(p[m_sub.m_j]),
+		 Rotate(p[m_sub.m_k]),Vec4D(),1|4));
+    if (ifp.m_stat!=1) THROW(fatal_error,"Invalid kinematics");
+    m_rn[0]=ifp.m_z;
+    m_rn[1]=ifp.m_y;
+    m_rn[2]=ifp.m_phi;
+    pp[m_ijt]=ifp.m_pi;
+    pp[m_kt]=ifp.m_pk;
   }
   if (!ValidPoint(pp)) return m_weight=m_rbweight=0.0;
   if (m_rn[2]<0.0) m_rn[2]+=2.0*M_PI;
@@ -365,12 +376,12 @@ double IF_Dipole::GenerateWeight
     m_isrykey[2]=(pp[0]+pp[1]).Y();
     p_ismc->GenerateWeight(m_isrmode);
   }
-  // 2(pa*pkt)/16pi^2
-  m_weight=(pp[m_ijt]+pp[m_kt]).Abs2()/
-    (16.0*sqr(M_PI))/sqr(m_rn[0]);
+  double Q2(2.0*pp[m_ijt]*pp[m_kt]);
+  m_weight=Q2/(16.0*sqr(M_PI))/sqr(m_rn[0]);
   m_weight*=pow(m_rn[1],m_uexp)*pow(m_rn[0],m_xexp);
+  double umax((1.0-m_rn[0])/(1.0-m_rn[0]+m_rn[0]*m_mk2/Q2));
   m_weight*=Channel_Basics::PeakedWeight
-    (0.0,m_uexp,m_amin,1.0,m_rn[1],1,m_rn[1]);
+    (0.0,m_uexp,m_amin,umax,m_rn[1],1,m_rn[1]);
   m_weight*=Channel_Basics::PeakedWeight
     (0.0,m_xexp,m_xmin,1.0,m_rn[0],1,m_rn[0]);
   m_rn[2]/=2.0*M_PI;
@@ -380,56 +391,6 @@ double IF_Dipole::GenerateWeight
   m_rbweight=m_weight*=p_vegas->GenerateWeight(m_rn);
   if (!m_bmcw) return m_weight;
   return m_weight*=p_fsmc->Weight()*p_ismc->Weight();
-}
-
-void IF_Dipole::Calculate
-(const ATOOLS::Vec4D &pi, const ATOOLS::Vec4D &pj, const ATOOLS::Vec4D &pk,
- double &x, double &u, double &phi,
- ATOOLS::Vec4D &pijt, ATOOLS::Vec4D &pkt)
-{
-  double pipj(pi*pj), pipk(pi*pk), pjpk(pj*pk);
-  x=(pipj+pipk-pjpk)/(pipj+pipk);
-  u=pipj/(pipj+pipk);
-  pijt=x*pi;
-  pkt=pk+pj-(1.-x)*pi;
-
-  double kp(sqrt(2.*pi*pkt*(1.-x)*u*(1.-u)));
-  Vec4D kperp(pj-(1.-u)*(1.-x)/x*pijt-u*pkt);
-  Poincare bf(pijt+pkt);
-  Poincare rot(bf*pijt,Vec4D(0.,0.,0.,1.));
-  bf.Boost(kperp);
-  rot.Rotate(kperp);
-  if      ((kperp[1]>=0. && kperp[2]>=0.) || (kperp[1]>=0. && kperp[2]<0.))
-    phi=acos(kperp[2]/kp);
-  else if ((kperp[1]<0. && kperp[2]<0.) || (kperp[1]<0. && kperp[2]>=0.))
-    phi=-acos(kperp[2]/kp)+2.*M_PI;
-  else if (!IsZero(x) && u>m_amin)
-    THROW(fatal_error,"Could not determine phi.");
-}
-
-void IF_Dipole::Construct
-(ATOOLS::Vec4D &pi, ATOOLS::Vec4D &pj, ATOOLS::Vec4D &pk,
- const double &x, const double &u, const double &phi,
- const ATOOLS::Vec4D &pijt, const ATOOLS::Vec4D &pkt)
-{
-  DEBUG_FUNC("");
-  pi = 1./x*pijt;
-
-  double kp(sqrt(2.*pi*pkt*(1.-x)*u*(1.-u)));
-  Poincare bf(pkt+pijt);
-  Poincare rot(bf*pijt,Vec4D(0.,0.,0.,1.));
-  Vec4D kperp(0.,sin(phi)*kp,cos(phi)*kp,0.);
-  rot.RotateBack(kperp);
-  bf.BoostBack(kperp);
-
-  pj = (1.-u)*(1.-x)/x*pijt + u*pkt + kperp;
-  pk = u*(1.-x)/x*pijt + (1.-u)*pkt - kperp;
-
-  msg_Debugging()<<"("<<m_ijt<<"):"<<pijt
-                 <<" -> ("<<m_sub.m_i<<"):"<<pi
-                 <<" ("<<m_sub.m_j<<"):"<<pj<<std::endl;
-  msg_Debugging()<<"("<<m_kt<<"):"<<pkt
-                 <<" -> ("<<m_sub.m_k<<"):"<<pk<<std::endl;
 }
 
 II_Dipole::II_Dipole(ATOOLS::NLO_subevt *const sub,
