@@ -14,7 +14,7 @@ using namespace AMISIC;
 using namespace ATOOLS;
 
 Grid_Creator::Grid_Creator(Amisic_Histogram_Map *histograms,
-			   EXTRAXS::Process_Group *const processes):
+                           const std::vector<EXTRAXS::Process_Group*>& processes):
   p_histograms(histograms),
   p_processes(processes),
   m_xsextension("_xs.dat"),
@@ -22,11 +22,13 @@ Grid_Creator::Grid_Creator(Amisic_Histogram_Map *histograms,
   m_datatag("[x,w,w2,max,n]"),
   m_events(0)
 {
-  if (p_processes==NULL) {
+  if (p_processes.empty()) {
     THROW(fatal_error,"Process handler is not initialized");
   }
-  if (!CollectProcesses(p_processes)) {
-    THROW(fatal_error,"Process handler does not own any process");
+  for (size_t i=0; i<p_processes.size(); ++i) {
+    if (!CollectProcesses(p_processes[i])) {
+      THROW(fatal_error,"Process handler does not own any process");
+    }
   }
 }
 
@@ -69,10 +71,14 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
   else m_gridxvariable=MakeString(helps);
   if (!reader->VectorFromFile(helps,"Y_VARIABLE")) m_gridyvariable="";
   else m_gridyvariable=MakeString(helps);
-  if (m_gridxmin==0.0) 
-    m_gridxmin=sqrt
-      (ATOOLS::Max(p_processes->Integrator()->ISR()->PDF(0)->Q2Min(),
-		   p_processes->Integrator()->ISR()->PDF(1)->Q2Min()));
+  if (m_gridxmin==0.0) {
+    m_gridxmin=std::numeric_limits<double>::max();
+    for (size_t i=0; i<p_processes.size(); ++i) {
+      m_gridxmin=std::min(m_gridxmin, sqrt
+        (ATOOLS::Max(p_processes[i]->Integrator()->ISR()->PDF(0)->Q2Min(),
+		   p_processes[i]->Integrator()->ISR()->PDF(1)->Q2Min())));
+    }
+  }
   m_gridxmin=ATOOLS::Max(m_gridxmin,1.e-3);
   if (!reader->ReadFromFile(m_griddeltax,"GRID_DELTA_X")) 
     m_griddeltax=(log(m_gridxmax)-log(m_gridxmin))/250.;
@@ -149,7 +155,7 @@ bool Grid_Creator::ReadInGrid()
   return true;
 }
 
-bool Grid_Creator::InitializeCalculation(PHASIC::Process_Group *const processes)
+bool Grid_Creator::InitializeCalculation()
 {
   m_criterion=p_xaxis->Variable()->SelectorID();
   std::vector<std::string> bounds(3);
@@ -157,10 +163,12 @@ bool Grid_Creator::InitializeCalculation(PHASIC::Process_Group *const processes)
   bounds[1]=ToString(m_gridxmin);
   bounds[2]=ToString(m_gridxmax);
   Data_Reader read;
-  PHASIC::Selector_Key skey(processes->Integrator(),&read);
-  skey.SetData(m_criterion,bounds);
-  processes->SetSelector(skey);
-  processes->Integrator()->PSHandler()->InitCuts();
+  for (size_t i=0; i<p_processes.size(); ++i) {
+    PHASIC::Selector_Key skey(p_processes[i]->Integrator(),&read);
+    skey.SetData(m_criterion,bounds);
+    p_processes[i]->SetSelector(skey);
+    p_processes[i]->Integrator()->PSHandler()->InitCuts();
+  }
   return true;
 }
 
@@ -185,14 +193,15 @@ bool Grid_Creator::UpdateHistogram(PHASIC::Process_Base *const process)
   return true;
 }
 
-bool Grid_Creator::CreateGrid(PHASIC::Process_Group *const processes)
+bool Grid_Creator::CreateGridInternal()
 {
-  msg_Info()<<"Grid_Creator::CreateGrid("<<processes<<"): "
-	    <<"Initializing grid for MI.\n";
+  msg_Info()<<METHOD<<": Initializing grid for MI.\n";
   double starttime=ATOOLS::rpa->gen.Timer().UserTime();
   msg_Info()<<ATOOLS::tm::curoff;
   for (;m_events<m_maxevents;++m_events) {
-    if (!UpdateHistogram(processes)) return false;
+    for (size_t i=0; i<p_processes.size(); ++i) {
+      if (!UpdateHistogram(p_processes[i])) return false;
+    }
     if ((m_events%(m_maxevents/100))==0 && m_events>0) {
       double diff=ATOOLS::rpa->gen.Timer().UserTime()-starttime;
       msg_Info()<<"   "<<((100*m_events)/m_maxevents)<<" % ( "
@@ -226,9 +235,11 @@ bool Grid_Creator::CreateGrid()
   msg_Info()<<"Grid_Creator::CreateGrid(): "
 	    <<"Calculating grid {"<<std::endl;
   msg->SetLevel(m_outputlevel);
-  p_processes->CalculateTotalXSec(OutputPath()+OutputFile()
-				  +MCExtension(),true);
-  if (!CreateGrid(p_processes)) {
+  for (size_t i=0; i<p_processes.size(); ++i) {
+    p_processes[i]->CalculateTotalXSec(OutputPath()+OutputFile()
+                                       +MCExtension(),true);
+  }
+  if (!CreateGridInternal()) {
     msg_Out()<<"Grid_Creator_Base::CreateGrid(..): "
 	     <<"Grid creation failed."<<std::endl;
     success=false;

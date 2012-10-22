@@ -1,6 +1,7 @@
 #include "AMISIC++/Tools/Fixed_Variable_Channel.H"
 
 #include "PHASIC++/Channels/Channel_Elements.H"
+#include "ATOOLS/Org/Exception.H"
 
 using namespace PHASIC;
 
@@ -8,7 +9,11 @@ Fixed_Variable_Channel::
 Fixed_Variable_Channel(int nin,int nout,ATOOLS::Flavour *fl,
 		       const std::string &variable):
   PHASIC::Channel_Interface(nin,nout,fl),
-  p_variable(ATOOLS::Variable_Getter::GetObject(variable,"")) {}
+  p_variable(ATOOLS::Variable_Getter::GetObject(variable,""))
+{
+  if (ms[2]!=ms[3])
+    THROW(not_implemented, "MPI phase space only implemented for m2=m3.");
+}
 
 void Fixed_Variable_Channel::
 GeneratePoint(ATOOLS::Vec4D *p,double *ran)
@@ -16,11 +21,12 @@ GeneratePoint(ATOOLS::Vec4D *p,double *ran)
   if (p_variable->SelectorID()=="PT") {
     Ehat=sqrt((p[0]+p[1]).Abs2());
     pt=m_value;
-    if (Ehat/2.0>pt) {
+    double mt2=pt*pt+ms[2];
+    if (Ehat/2.0>sqrt(mt2)) {
       weight=1.0/sqrt((Ehat*Ehat)/(4.*pt*pt)-1.0);
       p[2]=ATOOLS::Vec4D(Ehat/2.0,pt*cos(2.0*M_PI*ran[1]),
 			 pt*sin(2.0*M_PI*ran[1]),
-			 sqrt(Ehat*Ehat/4.0-pt*pt));
+			 sqrt(Ehat*Ehat/4.0-mt2));
       m_trigger=true;
     }
     else {

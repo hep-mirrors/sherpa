@@ -22,7 +22,7 @@ namespace AMISIC {
   private:
     
     Amisic_Histogram_Map *p_histograms;
-    EXTRAXS::Process_Group    *p_processes;
+    std::vector<EXTRAXS::Process_Group*> p_processes;
     ATOOLS::Axis<double> *p_xaxis, *p_yaxis;
 
     const ATOOLS::Variable_Base<double> *p_variable;
@@ -56,7 +56,7 @@ namespace AMISIC {
       fills the respective histograms.
     */
 
-    bool CreateGrid(PHASIC::Process_Group *const process);
+    bool CreateGridInternal();
     /*!
       \fn bool CreateInitialGrid()
       \brief Creates the grid.
@@ -68,7 +68,7 @@ namespace AMISIC {
     
     // constructor
     Grid_Creator(Amisic_Histogram_Map *histograms,
-		 EXTRAXS::Process_Group *const processes);
+		 const std::vector<EXTRAXS::Process_Group*>& processes);
     /*!
       \fn Grid_Creator(Amisic_Histogram_Map *histograms,
       EXTRAXS::Process_Group *const processes)
@@ -100,7 +100,7 @@ namespace AMISIC {
       \brief Creates the grids. 
     */
 
-    bool InitializeCalculation(PHASIC::Process_Group *const process);
+    bool InitializeCalculation();
     /*!
       \fn bool InitializeCalculation()
       \brief Initializes the calculation.

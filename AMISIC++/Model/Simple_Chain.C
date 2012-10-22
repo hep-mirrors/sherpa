@@ -9,6 +9,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "PHASIC++/Channels/Vegas.H"
+#include "PHASIC++/Channels/Multi_Channel.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "PDF/Remnant/Remnant_Base.H"
@@ -34,7 +35,7 @@ Simple_Chain::Simple_Chain():
   p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0), 
   m_maxreduction(1.0), m_sigma_nd_fac(1.0),
   m_xsextension("_xs.dat"), m_mcextension("MC"),
-  p_processes(NULL), p_fsrinterface(NULL), p_model(NULL),
+  p_model(NULL),
   p_beam(NULL), p_isr(NULL), p_profile(NULL), m_maxtrials(1000),
   m_ecms(rpa->gen.Ecms()), m_external(false), m_regulate(false)
 {
@@ -48,7 +49,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0),
   m_maxreduction(1.0), m_sigma_nd_fac(1.0),
   m_xsextension("_xs.dat"), m_mcextension("MC"),
-  p_processes(NULL), p_fsrinterface(NULL), p_model(model), 
+  p_model(model),
   p_beam(beam), p_isr(isr), p_profile(NULL), m_maxtrials(1000),
   m_ecms(rpa->gen.Ecms()), m_external(true), m_regulate(false)
 {
@@ -90,12 +91,12 @@ void Simple_Chain::CleanUp()
     delete p_gridcreator;
     p_gridcreator=NULL;
   }
-  if (p_fsrinterface!=NULL) {
-    p_processes->SetFSRMode(3);
-    p_processes->CreateFSRChannels();
-    delete p_fsrinterface;
-    p_fsrinterface=NULL;
+  for (size_t i=0; i<p_processes.size(); ++i) {
+    p_processes[i]->SetFSRMode(3);
+    p_processes[i]->CreateFSRChannels();
+    delete p_fsrinterface[i];
   }
+  p_fsrinterface.clear();
   if (p_differential!=NULL) {
     delete p_differential;
     p_differential=NULL;
@@ -162,6 +163,7 @@ bool Simple_Chain::ReadInData()
     if (!reader->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1800.0;
     m_regulation[0]*=pow(m_ecms/scale,exponent);
   }
+  m_heavy_flavour = reader->GetValue<int>("MI_HEAVY_FLAVOUR",1);
   if (!reader->ReadFromFile(m_error,"PS_ERROR")) m_error=1.e-2;
   if (!reader->ReadFromFile(m_pathextra,"PATH_EXTRA")) m_pathextra="";
   m_sigma_nd_fac = reader->GetValue<double>("SIGMA_ND_FACTOR",0.34);
@@ -185,37 +187,26 @@ bool Simple_Chain::CreateGrid()
   if (!reader->ReadFromFile(m_selectorfile,"MI_SELECTOR_FILE")) 
     m_selectorfile="MICuts.dat";
   delete reader;
-  PHASIC::Process_Info pi;
-  for (size_t i(0);i<2;++i) {
-    pi.m_ii.m_ps.push_back(PHASIC::Subprocess_Info(kf_jet,"",""));
-    pi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(kf_jet,"",""));
+  InitializeProcessList(Flavour(kf_jet), Flavour(kf_jet),
+                        Flavour(kf_jet), Flavour(kf_jet));
+  if (m_heavy_flavour && !Flavour(kf_jet).Includes(Flavour(kf_b))) {
+    InitializeProcessList(Flavour(kf_jet), Flavour(kf_jet),
+                          Flavour(kf_b), Flavour(kf_b, true));
   }
-  pi.m_oew=0;
-  pi.m_oqcd=2;
-  pi.m_scale="MPI";
-  pi.m_coupling="Alpha_QCD 1";
-  pi.m_kfactor="NO";
-  pi.m_mpiprocess=true;
-  p_processes = new Semihard_QCD();
-  p_processes->Init(pi,p_beam,p_isr);
-  msg_Info()<<METHOD<<"(): Init processes ";
-  if (!p_processes->Get<EXTRAXS::Process_Group>()->ConstructProcesses())
-    THROW(fatal_error,"Cannot initialize MPI simulation.");
-  msg_Info()<<" done."<<std::endl;
-  p_processes->SetScale(PHASIC::Scale_Setter_Arguments
-			(p_model,pi.m_scale,pi.m_coupling));
-  p_processes->SetKFactor(PHASIC::KFactor_Setter_Arguments(pi.m_kfactor));
-  p_processes->InitPSHandler(m_error,"","");
-  for (size_t i(0);i<p_processes->Size();++i)
-    m_processmap[(*p_processes)[i]->Name()]=(*p_processes)[i];
-  p_gridcreator = new Grid_Creator(&m_differentials,p_processes);
+  if (m_heavy_flavour && !Flavour(kf_jet).Includes(Flavour(kf_c))) {
+    InitializeProcessList(Flavour(kf_jet), Flavour(kf_jet),
+                          Flavour(kf_c), Flavour(kf_c, true));
+  }
+  std::vector<EXTRAXS::Process_Group*> procs;
+  for (size_t i=0; i<p_processes.size(); ++i) procs.push_back(p_processes[i]);
+  p_gridcreator = new Grid_Creator(&m_differentials,procs);
   p_gridcreator->SetGridXMin(min);
   p_gridcreator->SetGridXMax(m_ecms/2.0);
   p_gridcreator->ReadInArguments(InputFile(),InputPath());
   p_gridcreator->SetXSExtension(m_xsextension);
   p_gridcreator->SetMCExtension(m_mcextension);
   p_gridcreator->SetOutputPath(OutputPath());
-  if (!p_gridcreator->InitializeCalculation(p_processes)) {
+  if (!p_gridcreator->InitializeCalculation()) {
     msg_Error()<<METHOD<<"(): Initialization failed! Abort."<<std::endl;
     return false;
   }
@@ -233,17 +224,54 @@ bool Simple_Chain::CreateGrid()
   return true;
 }
 
+bool Simple_Chain::InitializeProcessList(const Flavour& in1,
+                                         const Flavour& in2,
+                                         const Flavour& out1,
+                                         const Flavour& out2)
+{
+  PHASIC::Process_Info pi;
+  pi.m_ii.m_ps.push_back(PHASIC::Subprocess_Info(in1,"",""));
+  pi.m_ii.m_ps.push_back(PHASIC::Subprocess_Info(in2,"",""));
+  pi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(out1,"",""));
+  pi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(out2,"",""));
+  pi.m_oew=0;
+  pi.m_oqcd=2;
+  pi.m_scale="MPI";
+  pi.m_coupling="Alpha_QCD 1";
+  pi.m_kfactor="NO";
+  pi.m_mpiprocess=true;
+  p_processes.push_back(new Semihard_QCD());
+  p_processes.back()->Init(pi,p_beam,p_isr);
+  msg_Info()<<METHOD<<"(): Init processes ";
+  if (!p_processes.back()->Get<EXTRAXS::Process_Group>()->ConstructProcesses())
+      THROW(fatal_error,"Cannot initialize MPI simulation.");
+  msg_Info()<<" done."<<std::endl;
+  p_processes.back()->SetScale(PHASIC::Scale_Setter_Arguments
+                        (p_model,pi.m_scale,pi.m_coupling));
+  p_processes.back()->SetKFactor(PHASIC::KFactor_Setter_Arguments(pi.m_kfactor));
+  p_processes.back()->InitPSHandler(m_error,"","");
+  for (size_t i(0);i<p_processes.back()->Size();++i)
+    m_processmap[(*p_processes.back())[i]->Name()]=(*p_processes.back())[i];
+}
+
 bool Simple_Chain::SetUpInterface()
 {
-  Flavour flavour[4]={kf_jet,kf_jet,kf_jet,kf_jet};
-  if (p_fsrinterface!=NULL) delete p_fsrinterface;
-  p_fsrinterface = new FSR_Channel(2,2,flavour,
-				   p_total->XAxis()->Variable()->Name());
-  p_processes->InitIntegrators();
-  p_processes->CreateISRChannels();
-  p_processes->SetFSRInterface(p_fsrinterface);
-  p_processes->SetFSRMode(2);
-  p_processes->CreateFSRChannels();
+  for (size_t i=0; i<p_fsrinterface.size(); ++i) delete p_fsrinterface[i];
+  p_fsrinterface.resize(p_processes.size());
+  for (size_t i=0; i<p_fsrinterface.size(); ++i) {
+    Flavour flavour[4]={p_processes[i]->Flavours()[0],
+                        p_processes[i]->Flavours()[1],
+                        p_processes[i]->Flavours()[2],
+                        p_processes[i]->Flavours()[3]};
+    if (p_fsrinterface[i]!=NULL) delete p_fsrinterface[i];
+    p_fsrinterface[i] = new FSR_Channel(2,2,flavour,
+                                        p_total->XAxis()->Variable()->Name());
+    p_processes[i]->InitIntegrators();
+    p_processes[i]->CreateISRChannels();
+    p_processes[i]->SetFSRInterface(p_fsrinterface[i]);
+    p_processes[i]->SetFSRMode(2);
+    p_processes[i]->CreateFSRChannels();
+  }
   return true;
 }
 
@@ -464,7 +492,7 @@ void Simple_Chain::ResetISRRange()
 bool Simple_Chain::CreateMomenta()
 {
   m_filledblob=false;
-  if (p_processes==NULL) {
+  if (p_processes.empty()) {
     THROW(fatal_error,"Multiple interactions are not initialized");
   }
   m_inparticles.Clear();
@@ -475,7 +503,10 @@ bool Simple_Chain::CreateMomenta()
     size_t pstrials=0, trials=0;
     Amisic_Histogram<double> *cur=m_differentials[m_selected];
     double max=cur->BinMax(m_last[0]);
-    p_fsrinterface->SetTrigger(false);
+    FSR_Channel* fsr = dynamic_cast<FSR_Channel*>
+      (p_xs->Parent()->Integrator()->PSHandler()->FSRIntegrator()->Channel(0));
+    if (fsr==NULL) THROW(fatal_error, "Internal error.");
+    fsr->SetTrigger(false);
     while (++pstrials<m_maxtrials) {
       PHASIC::Weight_Info *data=p_xs->
 	OneEvent(0,PHASIC::psm::no_lim_isr);
@@ -514,7 +545,7 @@ bool Simple_Chain::CreateMomenta()
 	  }
 	}
 	if (!take || sum.Mass()<mass) continue;
-	if (p_fsrinterface->Trigger()) {
+	if (fsr->Trigger()) {
 	  double rn=ran->Get();
 	  if (weight*m_maxreduction>=max*rn) {
 	    if (weight*m_maxreduction<max) break;
@@ -613,7 +644,8 @@ bool Simple_Chain::GenerateProcess()
     m_generatedprocess=false;
     return true;
   }
-  p_fsrinterface->SetValue(m_last[0]);
+  for (size_t i=0; i<p_fsrinterface.size(); ++i)
+    p_fsrinterface[i]->SetValue(m_last[0]);
   Sort_Map sorter;
   Sort_Map::key_type norm=0.0, cur=0.0;
   for (Amisic_Histogram_Map::iterator hit=m_differentials.begin();

@@ -41,8 +41,8 @@ namespace AMISIC {
 
     std::string m_xsextension, m_mcextension, m_pathextra, m_selectorfile;
 
-    Semihard_QCD *p_processes;
-    FSR_Channel  *p_fsrinterface;
+    std::vector<Semihard_QCD*> p_processes;
+    std::vector<FSR_Channel*>  p_fsrinterface;
 
     MODEL::Model_Base          *p_model;
     BEAM::Beam_Spectra_Handler *p_beam;
@@ -54,7 +54,7 @@ namespace AMISIC {
 
     unsigned int m_maxtrials, m_check, m_vegas, m_pi;
     double       m_sigmahard, m_error, m_ecms;
-    bool         m_external, m_regulate;
+    bool         m_external, m_regulate, m_heavy_flavour;
 
     std::string         m_regulator; 
     std::vector<double> m_regulation;
@@ -72,7 +72,10 @@ namespace AMISIC {
     bool ReadInData();
 
     bool CreateGrid();
-    bool InitializeProcessList();
+    bool InitializeProcessList(const ATOOLS::Flavour& in1,
+                               const ATOOLS::Flavour& in2,
+                               const ATOOLS::Flavour& out1,
+                               const ATOOLS::Flavour& out2);
     void CalculateSigmaND();
     /*!
       \fn void CalculateSigmaND()
