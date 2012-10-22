@@ -565,7 +565,7 @@ string CFColor::BuildTChain(vector<string>  string_list, bool & valid)
   
   size_t length = string_list.size();
   //approximate length faculty
-  size_t nperm = pow(length,length-1);
+  size_t nperm = pow((double)length,(int)(length-1));
   
   //generate the traces  
   for(;;) {
