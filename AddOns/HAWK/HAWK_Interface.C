@@ -1,9 +1,16 @@
 #ifndef AddOns_HAWK_HAWK_Interface_H
 #define AddOns_HAWK_HAWK_Interface_H
 
+#include "AddOns/HAWK/HAWK_Wrapper.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
+#include "PHASIC++/Process/Virtual_ME2_Base.H"
+#include "MODEL/Main/Model_Base.H"
+#include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 
 namespace HAWK {
 
@@ -30,22 +37,28 @@ namespace HAWK {
     ATOOLS::Cluster_Amplitude *ClusterConfiguration
     (PHASIC::Process_Base *const proc,const size_t &mode,const double &kt2);
 
+  }; 
+
+  class HAWK_Process: public PHASIC::Virtual_ME2_Base {
+  private:
+    MODEL::Running_AlphaS * p_as;
+    double                * p_p;
+    double                * p_m2i, * p_m2i0, * p_m2if, * p_m2if0;
+    void CallHAWK(const int & i,const int & j,const int & k,const int & l);
+  public:
+    HAWK_Process(const PHASIC::Process_Info& pi,
+		 const ATOOLS::Flavour_Vector& flavs);
+    ~HAWK_Process();
+    void Calc(const ATOOLS::Vec4D_Vector& momenta);
+    double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
   }; // end of class HAWK_Interface
- 
-} // end of namespace HAWK
+}
 
-//extern "C" { 
-//  void 
-//}
-
-
-#include "PHASIC++/Process/Virtual_ME2_Base.H"
-#include "MODEL/Main/Model_Base.H"
-#include "MODEL/Main/Running_AlphaS.H"
-#include "AddOns/HAWK/HAWK_Wrapper.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/Exception.H"
+extern "C" { 
+  void mat2_(double * p,
+	     double * m2i0,double * m2if0,
+	     double * m2i,double * m2if);
+}
 
 using namespace HAWK;
 using namespace PHASIC; 
@@ -186,7 +199,8 @@ bool HAWK_Interface::Initialize
   return true;
 }
 
-Process_Base *HAWK_Interface::InitializeProcess(const Process_Info &pi, bool add)
+Process_Base *HAWK_Interface::
+InitializeProcess(const Process_Info &pi, bool add)
 {
   return NULL;
 }
@@ -205,6 +219,65 @@ Cluster_Amplitude *HAWK_Interface::ClusterConfiguration
 (Process_Base *const proc,const size_t &mode,const double &kt2)
 {
   return NULL;
+}
+
+HAWK_Process::HAWK_Process(const Process_Info& pi,
+			   const Flavour_Vector& flavs) :
+  Virtual_ME2_Base(pi,flavs), 
+  p_as((MODEL::Running_AlphaS *)
+       MODEL::s_model->GetScalarFunction(std::string("alpha_S")))
+{
+  rpa->gen.AddCitation
+    (1,"The NLO matrix elements have been taken from HAWK \\cite{}.");
+
+  p_p = new double[24];
+  for (size_t i=0;i<24;i++) p_p[i] = 0.;
+  p_m2i   = new double[sqr(2*HAWK_NF+1)];
+  p_m2i0  = new double[sqr(2*HAWK_NF+1)];
+  p_m2if  = new double[sqr(sqr(2*HAWK_NF+1))];
+  p_m2if0 = new double[sqr(sqr(2*HAWK_NF+1))];
+}
+
+HAWK_Process::~HAWK_Process() { }
+
+
+void HAWK_Process::CallHAWK(const int & i,const int & j,
+			    const int & k,const int & l) {
+  mat2_(p_p,p_m2i0,p_m2if0,p_m2i,p_m2if);
+
+  msg_Out()<<"Born & loop level for {"<<i<<" "<<j<<"} --> {"<<k<<" "<<l<<"}: "
+	   <<p_m2if0[mr2(i,j,k,l)]<<" "<<p_m2if[mr2(i,j,k,l)]<<".\n";
+}
+
+void HAWK_Process::Calc(const Vec4D_Vector &p)
+{
+  for (size_t n(0);n<p.size();++n) GetMom(p_p,n,p[n]);
+  long int i(m_flavs[0]), j(m_flavs[1]);
+  long int k(i), l(j);
+  msg_Out()<<"----------- "<<METHOD<<" -----------\n"
+	   <<"flavs = {"<<i<<", "<<j<<"} -> {"<<k<<", "<<l<<"}"
+	   <<" with "<<p.size()<<" vectors.\n";
+  for (size_t n=0;n<p.size();n++) {
+    msg_Out()<<" p["<<n<<"] = (";
+    for (size_t i=0;i<3;i++) msg_Out()<<p_p[mp(n,i)]<<",";
+    msg_Out()<<p_p[mp(n,3)]<<") from "<<p[n]<<" "
+	     <<"("<<sqrt(dabs(p[n].Abs2()))<<")\n";
+  }
+  CallHAWK(i,j,k,l);
+
+  m_res.Finite() = p_m2if[mr2(i,j,k,l)];
+  m_res.IR()     = p_m2if0[mr2(i,j,k,l)];
+  m_res.IR2()    = p_m2if0[mr2(i,j,k,l)];
+
+  msg_Debugging()<<METHOD<<" yields "<<m_res.Finite()
+		 <<" + 1/eps * "<<m_res.IR()
+		 <<" + 1/eps^2 * "<<m_res.IR2()
+		 <<" ...  .\n";
+}
+
+double HAWK_Process::Eps_Scheme_Factor(const Vec4D_Vector& mom)
+{
+  return 4.*M_PI;
 }
 
 namespace PHASIC {
@@ -243,6 +316,7 @@ Virtual_ME2_Base * HAWK_ME_Getter::operator()(const Process_Info &pi) const
   //Flavour flh(pi.m_fi.m_ps[0].m_fl[0]);
   //if (!flh==Flavour(kf_h0))                             return NULL;
   msg_Out()<<" size = "<<pi.m_fi.m_ps.size()<<".\n";
+  return new HAWK_Process(pi,fl);
 }
 
 #endif
