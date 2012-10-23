@@ -360,7 +360,6 @@ void *CF_QCD_Filler::operator()
   for (int i(1);i<=6;++i) {
     Flavour f((kf_code)i);
     if (!f.IsOn()) continue;
-    if (!Flavour(kf_jet).Includes(f)) continue;
     std::string qtag("{"+f.IDName()+"}");
     std::string qbtag ("{"+f.Bar().IDName()+"}");
     key.p_gets->push_back(new CF_QCD_Getter(gtag+qtag+qbtag));
