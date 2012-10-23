@@ -42,8 +42,9 @@ namespace HAWK {
   class HAWK_Process: public PHASIC::Virtual_ME2_Base {
   private:
     MODEL::Running_AlphaS * p_as;
-    double                * p_p;
-    double                * p_m2i, * p_m2i0, * p_m2if, * p_m2if0;
+    double * p_p;
+    double * p_m2i, * p_m2i0, * p_m2if, * p_m2if0;
+    double m_norm;
     void CallHAWK(const int & i,const int & j,const int & k,const int & l);
   public:
     HAWK_Process(const PHASIC::Process_Info& pi,
@@ -225,7 +226,8 @@ HAWK_Process::HAWK_Process(const Process_Info& pi,
 			   const Flavour_Vector& flavs) :
   Virtual_ME2_Base(pi,flavs), 
   p_as((MODEL::Running_AlphaS *)
-       MODEL::s_model->GetScalarFunction(std::string("alpha_S")))
+       MODEL::s_model->GetScalarFunction(std::string("alpha_S"))),
+  m_norm(1./36.*pow(param_.alpha/param_.alpha0,3))
 {
   rpa->gen.AddCitation
     (1,"The NLO matrix elements have been taken from HAWK \\cite{}.");
@@ -245,14 +247,15 @@ void HAWK_Process::CallHAWK(const int & i,const int & j,
 			    const int & k,const int & l) {
   mat2_(p_p,p_m2i0,p_m2if0,p_m2i,p_m2if);
 
-  msg_Out()<<"Born & loop level for {"<<i<<" "<<j<<"} --> {"<<k<<" "<<l<<"}: "
+  msg_Out()<<METHOD<<": "
+	   <<"Born & loop level for {"<<i<<" "<<j<<"} --> {"<<k<<" "<<l<<"}: "
 	   <<p_m2if0[mr2(i,j,k,l)]<<" "<<p_m2if[mr2(i,j,k,l)]<<".\n";
 }
 
 void HAWK_Process::Calc(const Vec4D_Vector &p)
 {
   for (size_t n(0);n<p.size();++n) GetMom(p_p,n,p[n]);
-  long int i(m_flavs[0]), j(m_flavs[1]);
+  long int i(m_flavs[0]+1), j(m_flavs[1]+1);
   long int k(i), l(j);
   msg_Out()<<"----------- "<<METHOD<<" -----------\n"
 	   <<"flavs = {"<<i<<", "<<j<<"} -> {"<<k<<", "<<l<<"}"
@@ -265,14 +268,14 @@ void HAWK_Process::Calc(const Vec4D_Vector &p)
   }
   CallHAWK(i,j,k,l);
 
-  m_res.Finite() = p_m2if[mr2(i,j,k,l)];
-  m_res.IR()     = p_m2if0[mr2(i,j,k,l)];
-  m_res.IR2()    = p_m2if0[mr2(i,j,k,l)];
+  double norm(m_norm*(k==l?0.5:1.));
+  m_res.Finite() = norm*p_m2if[mr2(i,j,k,l)];
+  m_res.IR()     = norm*p_m2if0[mr2(i,j,k,l)];
+  m_res.IR2()    = norm*p_m2if0[mr2(i,j,k,l)];
+  m_born         = norm*p_m2if0[mr2(i,j,k,l)];
 
-  msg_Debugging()<<METHOD<<" yields "<<m_res.Finite()
-		 <<" + 1/eps * "<<m_res.IR()
-		 <<" + 1/eps^2 * "<<m_res.IR2()
-		 <<" ...  .\n";
+  msg_Out()<<METHOD<<" yields finite virtual = "<<m_res.Finite()
+		 <<" with  Born = "<<m_born<<".\n";
 }
 
 double HAWK_Process::Eps_Scheme_Factor(const Vec4D_Vector& mom)
