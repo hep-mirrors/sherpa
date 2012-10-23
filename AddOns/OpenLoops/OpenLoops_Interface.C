@@ -347,13 +347,22 @@ namespace OpenLoops {
     if (grouptag!="") {
       s_loader->AddPath(OpenLoops_Interface::s_proclib_path);
 
-      string libraryfile="openloops_"+grouptag+"_1tL";
       // symbols in fortran are always defined as lower case
       string lc_functag(grouptag+"_"+process+"_"+subid+"_");
       for (size_t i(0);i<lc_functag.length();++i)
         lc_functag[i]=tolower(lc_functag[i]);
-      void *ampfunc(s_loader->GetLibraryFunction(libraryfile,"vamp2chk_"+lc_functag));
-      void *permfunc(s_loader->GetLibraryFunction(libraryfile,"set_permutation_"+lc_functag));
+      vector<string> suffixes;
+      suffixes.push_back("1t");
+      suffixes.push_back("1");
+      suffixes.push_back("1pt");
+      suffixes.push_back("0");
+      void *ampfunc, *permfunc;
+      for (size_t i=0; i<suffixes.size(); ++i) {
+        string libraryfile="openloops_"+grouptag+"_"+suffixes[i]+"L";
+        ampfunc=s_loader->GetLibraryFunction(libraryfile,"vamp2chk_"+lc_functag);
+        permfunc=s_loader->GetLibraryFunction(libraryfile,"set_permutation_"+lc_functag);
+        if (ampfunc!=NULL && permfunc!=NULL) break;
+      }
       if (ampfunc==NULL || permfunc==NULL) {
         PRINT_INFO("Didn't find functions");
         return NULL;
