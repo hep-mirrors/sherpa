@@ -315,10 +315,6 @@ double LF_FFV_FI::operator()
     //the massive case
     double pipj    = scale/(2.*z*(1.-z)) + (1.-z)*mi2/(2.*z);
     double massive = massless - mi2/pipj;
-    if (massive < 0.) {
-      //std::cout<<" Q -> Qg FI mass correction : "<<massive<<" / "<<massless<<"\n";
-      return 0.;
-    }
     double longpol = 0.5 * ( 1. - z );
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JFI(y,eta,scale,sub);
@@ -433,10 +429,6 @@ double LF_FVF_FF::operator()
     double vijk  = sqrt(sqr(2.*muk2+(1.-muj2-muk2)*(1.-y))-4.*muk2)/((1.-muj2-muk2)*(1.-y));
     double pipj  = scale/(2.*z*(1.-z)) + z*mj2/(2.*(1.-z));
     double massive = ( 2./(z+y-z*y) - vtijk/vijk * (2.+z + mj2/pipj) );
-    if (massive < 0.) {
-      //std::cout<<" Q -> gQ FF mass correction : "<<massive/massless<<"\n"; 
-      return 0.;
-    }
     massive *= 1./((1.-muj2-muk2)+1./y*(muj2-muij2));
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,1,sub) * longpol;
@@ -490,10 +482,6 @@ double LF_FVF_FI::operator() (const double z,const double y,
     //the massive case
     double pipj    = scale/(2.*z*(1.-z)) + z*mj2/(2.*(1.-z));
     double massive = massless - mj2/pipj;
-    if (massive < 0.) {
-      //std::cout<<" Q -> gQ FI mass correction : "<<massive/massless<<"\n";
-      return 0.;
-    }
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JFI(y,eta,scale,sub);
@@ -548,10 +536,6 @@ double LF_FVF_IF::operator()
   else {
     //the massive case
     double massive = massless - 2.*muk2*y/(z*(1.-y));
-    if (massive < 0.) {
-      //std::cout<<" q -> gq IF mass correction : "<<massive/massless<<" ( massive : "<<massive<<" massless : "<<massless<< " )\n"; 
-      return 0.;
-    }
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JIF(z,y,eta,scale,sub);
