@@ -128,6 +128,7 @@ Kin_Args PHASIC::ClusterFIDipole
   double sij((pi+pj).Abs2()), Q2(Q.Abs2()), kt2(Q.PPerp2());
   double po(sqr(Q2-mij2-ma2)-4.0*ma2*(mij2+kt2));
   double pn(sqr(Q2-sij-ma2)-4.0*ma2*(sij+kt2));
+  xija/=(Q2-mi2-mj2-ma2)/(Q2-mij2-ma2);
   if (pn<0.0 || po<0.0) {
     msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
     return Kin_Args();
@@ -175,7 +176,8 @@ int PHASIC::ConstructFIDipole
   Vec4D l_perp(0.0,cross(Vec3D(fip.m_pi),Vec3D(n_perp)));
   l_perp*=1.0/l_perp.PSpat();
   double pnn(Sign(ecm)*sqrt(sqr(ecm)-4.0*sij*ma2)), gam(0.5*(ecm+pnn));
-  double zt(ecm/pnn*(fip.m_z-ma2/gam*(sij+mi2-mj2)/ecm));
+  double xt(fip.m_z*(Q2-mi2-mj2-ma2)/(Q2-mij2-ma2));
+  double zt(ecm/pnn*(xt-ma2/gam*(sij+mi2-mj2)/ecm));
   double ktt(sij*zt*(1.0-zt)-(1.0-zt)*mi2-zt*mj2);
   if (ktt<0.0 || gam==0.0) {
     msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;

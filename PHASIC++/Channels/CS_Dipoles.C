@@ -197,7 +197,6 @@ ATOOLS::Vec4D_Vector FI_Dipole::GeneratePoint
     double zmax(0.5*(eps+kap)/((1-m_rn[0])*Q2+m_rn[0]*m_mij2));
     if (zmax>1.0 && IsEqual(zmax,1.0)) zmax=1.0;
     m_rn[1]=Channel_Basics::PeakedDist(0.0,m_zexp,zmin,zmax,1,rn[1]);
-    m_rn[0]+=m_rn[0]/Q2*(m_mij2-m_mi2-m_mj2);
   }
   m_rn[2]=rn[2]*2.0*M_PI;
   msg_Debugging()<<"transformed : ";
@@ -228,7 +227,6 @@ double FI_Dipole::GenerateWeight
   pp[m_ijt]=fi.m_pi;
   pp[m_kt]=fi.m_pk;
   double Q2(2.0*pp[m_ijt]*pp[m_kt]);
-  if (m_massive) m_rn[0]/=1.0+(m_mij2-m_mi2-m_mj2)/Q2;
   if (!ValidPoint(pp)) return m_weight=m_rbweight=0.0;
   if (m_rn[2]<0.0) m_rn[2]+=2.0*M_PI;
   if (m_kt==0) m_xmin=pp[m_kt].PPlus()/rpa->gen.PBeam(0).PPlus();
