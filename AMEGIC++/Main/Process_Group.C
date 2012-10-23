@@ -100,7 +100,7 @@ bool AMEGIC::Process_Group::Initialize(PHASIC::Process_Base *const proc)
     msg_Debugging()<<"} -> sum = "<<sum<<"\n";
   }
   AMEGIC::Process_Base* apb=proc->Get<AMEGIC::Process_Base>();
-  apb->SetPrintGraphs(m_pinfo.m_gpath!="");
+  apb->SetPrintGraphs(m_pinfo.m_gpath);
   apb->SetTestMoms(p_testmoms);
   if (!apb->InitAmplitude(p_model,p_top,m_umprocs,m_errprocs)) return false;
   proc->SetParent((PHASIC::Process_Base*)this);
@@ -158,10 +158,10 @@ bool AMEGIC::Process_Group::SetUpIntegrator()
   return true;
 }
 
-void AMEGIC::Process_Group::SetPrintGraphs(bool print_graphs) 
+void AMEGIC::Process_Group::SetPrintGraphs(std::string gpath) 
 {
  for (size_t i=0;i<m_procs.size();i++) 
-   m_procs[i]->Get<AMEGIC::Process_Base>()->SetPrintGraphs(print_graphs);
+   m_procs[i]->Get<AMEGIC::Process_Base>()->SetPrintGraphs(gpath);
 }
 
 

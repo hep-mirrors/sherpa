@@ -23,7 +23,7 @@ namespace AMEGIC {
 
     AMEGIC::Pol_Info      *p_pl;
     
-    bool m_print_graphs;
+    std::string m_print_graphs;
 
     std::list<std::string>               *p_channellibnames;
 
@@ -63,7 +63,7 @@ namespace AMEGIC {
     virtual void FillAlphaHistogram(ATOOLS::Histogram*,double) {}
 
     virtual double Result();
-    virtual void SetPrintGraphs(bool print_graphs=true);
+    virtual void SetPrintGraphs(std::string gpath="");
     virtual std::string LibName();
 
     virtual int                             NumberOfDiagrams() = 0;

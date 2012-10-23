@@ -9,7 +9,7 @@
   Decay  25[a] -> 15 -15
   NLO_QCD_Part BPIVRS;
   Loop_Generator MCFM;
-  Print_Graphs = 1;
+  Print_Graphs Graphs;
   Order_EW 1;
   End process;
 }(processes);

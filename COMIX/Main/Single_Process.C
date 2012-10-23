@@ -434,8 +434,11 @@ bool COMIX::Single_Process::Tests()
     msg_Error()<<METHOD<<"(): No amplitude for '"<<Name()<<"'"<<std::endl;
     return false;
   }
-  MakeDir(m_gpath,448);
-  if (m_gpath.length()>0) p_bg->WriteOutGraphs(m_gpath+"/"+m_name+".tex");
+  if (m_gpath.length()>0) {
+    m_gpath+=std::string("/Comix");
+    MakeDir(m_gpath,448);
+    p_bg->WriteOutGraphs(m_gpath+"/"+m_name+".tex");
+  }
   if (p_int->HelicityScheme()==hls::sample) {
     p_int->SetHelicityIntegrator(new Helicity_Integrator());
     p_bg->SetHelicityIntegrator(&*p_int->HelicityIntegrator());

@@ -17,7 +17,7 @@
     DecayOS -1000013[b] -> 1000022 -13;
   Order_EW 2;
   CKKW sqr(30/E_CMS);
-  Print_Graphs : Process;
+  Print_Graphs Graphs;
   End process;
 }(processes);
 

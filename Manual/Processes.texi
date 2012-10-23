@@ -266,22 +266,12 @@ to the given value.
 
 @node Print_Graphs
 @subsection Print_Graphs
-Writes out Feynman graphs in LaTeX format. 
-@itemize @bullet
-@item When using Comix, 
-the parameter specifies the directory name in which the diagram 
-information is stored. This directory is created automatically
-by Sherpa.
-
-@item When using AMEGIC++, the parameter must be
-set to @option{1}, and the diagram information is stored in
-the directory @code{Process/P<n>_<m>}, where n is the number 
-of incoming and m the number of outgoing particles of the 
-process it has generated.
-@end itemize
-
+Writes out Feynman graphs in LaTeX format. The parameter specifies the 
+directory name in which the diagram information is stored. This directory 
+is created automatically by Sherpa.
 After Sherpa has run, there will be a @code{.tex}-file located in the 
-diagram information directory with the name @code{<process>.tex}. This 
+Comix/Amegic subdirectory of the diagram information directory specified 
+with the name @code{<process>.tex}. This 
 has to be compiled by using @code{latex <process>.tex}, which 
 produces a @code{.mp}-file. Enter @code{mpost *.mp} and 
 again @code{latex <process>.tex} in order to produce the 

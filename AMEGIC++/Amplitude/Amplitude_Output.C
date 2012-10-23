@@ -1,5 +1,6 @@
 #include "AMEGIC++/Amplitude/Amplitude_Output.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
@@ -7,9 +8,13 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace std;
 
-Amplitude_Output::Amplitude_Output(std::string pid, Topology * _top)
+Amplitude_Output::Amplitude_Output(std::string pid, Topology * _top,
+                                   std::string gpath)
 {
-  std::string fname=rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pid+std::string(".tex");
+  gpath+=std::string("/Amegic/");
+  MakeDir(gpath);
+  pid=pid.substr(pid.rfind('/')+1);
+  std::string fname=gpath+pid+std::string(".tex");
   pios.open(fname.c_str());
   top = top;
   ampl=0;
@@ -18,7 +23,7 @@ Amplitude_Output::Amplitude_Output(std::string pid, Topology * _top)
   subcounter=0;
   super_amplitude=false;
   for (int i=0; i<3;++i) captions.push_back("");
-  WriteHeader(pid.substr(pid.rfind('/')+1));
+  WriteHeader(pid);
 }
 
 void Amplitude_Output::WriteHeader(const std::string &name)

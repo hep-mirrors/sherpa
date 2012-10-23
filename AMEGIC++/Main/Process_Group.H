@@ -51,7 +51,7 @@ namespace AMEGIC {
     Helicity *GetHelicity();
     bool NewLibs();
     std::string PSLibName();
-    void SetPrintGraphs(bool print_graphs=true);
+    void SetPrintGraphs(std::string gpath);
 
     bool PerformTests();
 

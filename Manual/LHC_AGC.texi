@@ -34,7 +34,7 @@ they are stored in
 tex
 @end ifnottex
 format, in the specified directory. In this example, the
-graphs will be found in the Process directory, after Sherpa 
+graphs will be found in the Graphs directory, after Sherpa 
 is run.
 
 @item the matrix element generator AMEGIC++ is used

@@ -24,7 +24,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
 				     int & _orderQCD,int & _orderEW,int & _ntchan,
 				     MODEL::Coupling_Map *const cpls,
 				     Basic_Sfuncs* BS,String_Handler* _shand, 
-				     bool print_graph,bool create_4V) 
+				     std::string print_graph,bool create_4V) 
   : shand(_shand),CFCol_Matrix(0),Mi(0), m_print_graph(print_graph)
 {
   groupname = "Amplitude_Handler";
@@ -258,8 +258,8 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
     PrintGraph();
     //BS->PrintMomlist();
   }
-  if (m_print_graph) {
-    Amplitude_Output ao(pID,top);
+  if (m_print_graph!="") {
+    Amplitude_Output ao(pID,top,m_print_graph);
     for (int i=0;i<namplitude;i++) {
       Amplitude_Base * am = GetAmplitude(i);
       if (am->Size()==1) {

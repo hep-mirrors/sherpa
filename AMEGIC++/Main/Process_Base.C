@@ -20,7 +20,7 @@ int AMEGIC::Process_Base::s_gauge=10;
 AMEGIC::Process_Base::Process_Base(): 
   p_model(NULL),
   p_b(0), m_eoreset(0), p_pl(0), 
-  m_print_graphs(false), p_testmoms(0), m_Norm(1.), m_sfactor(1.)
+  m_print_graphs(""), p_testmoms(0), m_Norm(1.), m_sfactor(1.)
 {
   p_channellibnames = new std::list<std::string>();
 }
@@ -42,9 +42,9 @@ std::string AMEGIC::Process_Base::LibName()
   return "error"; 
 }
 
-void AMEGIC::Process_Base::SetPrintGraphs(bool print_graphs) 
+void AMEGIC::Process_Base::SetPrintGraphs(std::string gpath) 
 {
- m_print_graphs=print_graphs; 
+ m_print_graphs=gpath; 
 }
 
 void AMEGIC::Process_Base::Init()

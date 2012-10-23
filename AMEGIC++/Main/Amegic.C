@@ -178,7 +178,7 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
     }
     msg_Debugging()<<"} -> sum = "<<sum<<"\n";
     newxs->Get<AMEGIC::Process_Base>()->SetTestMoms(p_testmoms);
-    newxs->Get<AMEGIC::Process_Base>()->SetPrintGraphs(pi.m_gpath!="");
+    newxs->Get<AMEGIC::Process_Base>()->SetPrintGraphs(pi.m_gpath);
     if (!newxs->Get<AMEGIC::Process_Base>()->
 	InitAmplitude(p_model,&top,m_umprocs,m_errprocs)) {
       msg_Debugging()<<METHOD<<"(): Init failed for '"

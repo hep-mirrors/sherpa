@@ -10,7 +10,7 @@
  # Order_QCD 2;
   Order_EW 0;
   #CKKW sqr(20/E_CMS);
-  Print_Graphs = 1;
+  Print_Graphs Graphs;
   End process;
 }(processes);
 

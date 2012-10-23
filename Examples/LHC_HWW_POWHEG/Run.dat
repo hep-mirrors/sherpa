@@ -16,7 +16,7 @@
     Decay   25[a] -> 90 90 91 91;
   NLO_QCD_Part BVIRS;
   Loop_Generator Internal;
-  Print_Graphs 1;
+  Print_Graphs Graphs;
   Order_EW 1;
   End process;
 }(processes);

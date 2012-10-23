@@ -11,9 +11,9 @@
 }(beam)
 
 (processes){
-  Process : 93 93 -> 11 -11 22
-  Print_Graphs : Process
-  Integration_Error : 0.02
+  Process 93 93 -> 11 -11 22
+  Print_Graphs Graphs
+  Integration_Error 0.02
   End process
 }(processes)
 

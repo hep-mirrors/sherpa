@@ -32,7 +32,7 @@ namespace AMEGIC {
     int probs;
     Single_Amplitude* firstgraph;
     std::vector<Point*> pointlist;
-    bool m_print_graph;
+    std::string m_print_graph;
     std::vector<Amplitude_Base*> m_ramplist;
 
     std::map<std::string,ATOOLS::Flavour> m_flavourmap;
@@ -55,7 +55,7 @@ namespace AMEGIC {
   public:
     Amplitude_Handler(int,ATOOLS::Flavour *,int *,Process_Tags*,
 		      MODEL::Model_Base *,Topology *,int &,int &,int &,MODEL::Coupling_Map *const cpls,
-		      Basic_Sfuncs *,String_Handler *,bool print_graph=false, bool create_4V=true);
+		      Basic_Sfuncs *,String_Handler *,std::string print_graph="", bool create_4V=true);
     ~Amplitude_Handler();
     void ConstructSignalAmplitudes(int N,ATOOLS::Flavour* fl,int* b,
 				   Process_Tags* pinfo,Single_Amplitude** sglist,

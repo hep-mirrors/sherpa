@@ -32,7 +32,7 @@ namespace AMEGIC {
     void WriteHeader(const std::string &name);
   public:
     Amplitude_Output() { top=0; ampl=0;}
-    Amplitude_Output(std::string pid, Topology * _top);
+    Amplitude_Output(std::string pid, Topology * _top, std::string gpath);
     void WriteOut(Point *);
     ~Amplitude_Output();
     void BeginSuperAmplitude();
