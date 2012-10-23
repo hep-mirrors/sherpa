@@ -46,7 +46,7 @@ SF_Lorentz::SF_Lorentz(const SF_Key &key):
 SF_Lorentz::~SF_Lorentz() {}
 
 double SF_Lorentz::Lambda
-(const double &a,const double &b,const double &c)
+(const double &a,const double &b,const double &c) const
 {
   return a*a+b*b+c*c-2.*(a*b+a*c+b*c);
 }
@@ -181,9 +181,11 @@ double Splitting_Function_Base::MEPSWeight
 (const double &z,const double &y,const double &eta,
  const double &scale,const double &Q2,const Cluster_Amplitude *const sub) const
 {
+  double mua2(p_lf->MS()->Mass2(p_lf->FlA())/Q2), mub2(p_lf->MS()->Mass2(p_lf->FlB())/Q2);
+  double muk2(p_lf->MS()->Mass2(p_lf->FlSpec())/Q2), muc2(p_lf->MS()->Mass2(p_lf->FlC())/Q2);
   switch (m_type) {
   case cstp::FF:
-    return (8.0*M_PI)/(Q2*y)/p_lf->JFF(y);
+    return (8.0*M_PI)/(Q2*y)/p_lf->JFF(y,mub2,muc2,muk2,mua2);
   case cstp::FI:
     return (8.0*M_PI)/(-Q2*y)/p_lf->JFI(y,eta,scale,sub);
   case cstp::IF:
@@ -294,9 +296,11 @@ double Splitting_Function_Base::GetXPDF
   return m_lpdf=p_pdf[beam]->GetXPDF(a);
 }
 
-double SF_Lorentz::JFF(const double &y) const
+double SF_Lorentz::JFF(const double &y,const double &mui2,
+		       const double &muj2,const double &muk2,
+		       const double &muij2) const
 { 
-  return (1.-y);
+  return (1.-y)*sqr(1.0-mui2-muj2-muk2)/sqrt(Lambda(1.0,muij2,muk2));
 }
 
 double SF_Lorentz::JFI(const double &y,const double &eta,

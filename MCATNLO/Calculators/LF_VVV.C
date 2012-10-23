@@ -163,7 +163,7 @@ double LF_VVV1_FF::operator()
   double massless = 2. * ( 1./(1.-z+z*y) -1. + z*(1.-z)/2.0 );
   if (muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless;
-    return value * JFF(y);
+    return value * JFF(y,0.0,0.0,0.0,0.0);
   }
   else {
     //the massive case
@@ -175,9 +175,8 @@ double LF_VVV1_FF::operator()
       //std::cout<<" g -> gg FF mass correction : "<<massive/massless<<"\n"; 
       return 0.;
     }
-    massive *= (1.-muk2)/sqrt(Lambda(1.,0.,muk2));
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive;
-    return value * JFF(y);
+    return value * JFF(y,0.0,0.0,muk2,0.0);
   }
 }
 
@@ -213,7 +212,7 @@ double LF_VVV2_FF::operator()
   double massless = 2. * ( 1./(z+y-z*y) -1. + z*(1.-z)/2.0 );
   if (muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless;
-    return value * JFF(y);
+    return value * JFF(y,0.0,0.0,0.0,0.0);
   }
   else {
     //the massive case
@@ -225,9 +224,8 @@ double LF_VVV2_FF::operator()
       //std::cout<<" g -> gg FF mass correction : "<<massive/massless<<"\n"; 
       return 0.;
     }
-    massive *= (1.-muk2)/sqrt(Lambda(1.,0.,muk2));
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive;
-    return value * JFF(y);
+    return value * JFF(y,0.0,0.0,muk2,0.0);
   }
 }
 

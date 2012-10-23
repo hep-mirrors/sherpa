@@ -247,7 +247,7 @@ double LF_FFV_FF::operator()
   if (muij2==0. && mui2==0. && muk2==0.) {
     double longpol = 0.5 * ( 1. - z );
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,1,sub) * longpol;
-    return value * JFF(y);
+    return value * JFF(y,0.0,0.0,0.0,0.0);
   }
   else {
     //the massive case
@@ -260,10 +260,10 @@ double LF_FFV_FF::operator()
       //std::cout<<" Q -> Qg FF mass correction : "<<massive/massless<<" )\n"; 
       return 0.;
     }
-    massive *= 1./((1.-mui2-muk2)+1./y*(mui2-muij2))*sqr(1.-mui2-muk2)/sqrt(Lambda(1.,muij2,muk2));
+    massive *= 1./((1.-mui2-muk2)+1./y*(mui2-muij2));
     double longpol = 0.5 * ( 1. - z );
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,1,sub) * longpol;
-    return value * JFF(y);
+    return value * JFF(y,mui2,0.0,muk2,muij2);
   } 
 }
 
@@ -425,7 +425,7 @@ double LF_FVF_FF::operator()
   if (muij2==0. && muj2==0. && muk2==0.) {
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,1,sub) * longpol;
-    return value * JFF(y);
+    return value * JFF(y,0.0,0.0,0.0,0.0);
   }
   else {
     //the massive case
@@ -437,10 +437,10 @@ double LF_FVF_FF::operator()
       //std::cout<<" Q -> gQ FF mass correction : "<<massive/massless<<"\n"; 
       return 0.;
     }
-    massive *= 1./((1.-muj2-muk2)+1./y*(muj2-muij2))*sqr(1.-muj2-muk2)/sqrt(Lambda(1.,muij2,muk2));
+    massive *= 1./((1.-muj2-muk2)+1./y*(muj2-muij2));
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,1,sub) * longpol;
-    return value * JFF(y);
+    return value * JFF(y,0.0,muj2,muk2,muij2);
   }
 }
 
@@ -622,7 +622,7 @@ double LF_VFF_FF::operator()
   double longpol = 0.5;
   if (mui2==0. && muj2==0. && muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,1,sub) * longpol;
-    return value * JFF(y);
+    return value * JFF(y,0.0,0.0,0.0,0.0);
   }
   else {
     //the massive case
@@ -633,9 +633,9 @@ double LF_VFF_FF::operator()
     double zm = frac*(1.- viji*vijk);  
     double zp = frac*(1.+ viji*vijk);
     double massive = vijk * (1.- 2.*(z*(1.-z) - 2.* zp*zm));
-    massive *= 1./((1.-mui2-muj2-muk2)+1./y*(mui2+muj2))*sqr(1.-mui2-muj2-muk2)/sqrt(Lambda(1.,0.,muk2));
+    massive *= 1./((1.-mui2-muj2-muk2)+1./y*(mui2+muj2));
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,1,sub) * longpol;
-    return value * JFF(y);
+    return value * JFF(y,mui2,muj2,muk2,0.0);
   }
 }
   

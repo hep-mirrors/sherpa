@@ -68,7 +68,7 @@ namespace MCATNLO {
 
     static double s_pdfcut;
 
-    double Lambda(const double &a,const double &b,const double &c);
+    double Lambda(const double &a,const double &b,const double &c) const;
 
   public:
 
@@ -95,7 +95,8 @@ namespace MCATNLO {
       */
     virtual double Z() = 0;
 
-    double JFF(const double &y) const;
+    double JFF(const double &y,const double &mui2,const double &muj2,
+	       const double &muk2,const double &muij2) const;
     double JFI(const double &y,const double &eta,const double &scale,
 	       const ATOOLS::Cluster_Amplitude *const sub) const;
     double JIF(const double &z,const double &y,
