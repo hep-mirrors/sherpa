@@ -40,7 +40,7 @@ int main(int argc,char* argv[])
           int exp;
           for (exp=5; i/int(pow(10,exp))==0; --exp) {}
           if (((rpa->gen.BatchMode()&4 && i%100==0) ||
-               (!rpa->gen.BatchMode()&4 && i%int(pow(10,exp))==0)) &&
+               (!(rpa->gen.BatchMode()&4) && i%int(pow(10,exp))==0)) &&
               i<rpa->gen.NumberOfEvents()) {
             double diff=rpa->gen.Timer().RealTime()-starttime;
             msg_Info()<<"  Event "<<i<<" ( "
