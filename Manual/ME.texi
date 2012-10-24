@@ -82,6 +82,7 @@ factorization scale and potential additional scales.
 * Scale schemes for NLO calculations::       Scale schemes for NLO calculations
 * Scale setting using jets::                 Scale setting using jets
 * Simple scale variations::                  Simple scale variations
+* Scale variations in parton showered and merged samples::       Scale variations in merged samples
 @end menu
 
 
@@ -281,6 +282,43 @@ when evaluating running couplings.
 
 Note: This affects also the running coupling used in the parton shower evolution.
 @end itemize
+
+@node Scale variations in parton showered and merged samples
+@subsubsection Scale variations in parton showered and merged samples
+
+@cindex CSS_SHOWER_SCALE2_FACTOR
+@cindex SP_NLOCT
+@anchor{CSS_SHOWER_SCALE2_FACTOR}
+@anchor{SP_NLOCT}
+
+When performing scale variations within parton showered samples 
+the naive @ref{FACTORIZATION_SCALE_FACTOR} and 
+@ref{RENORMALIZATION_SCALE_FACTOR} cannot be employed because they alter 
+the resummation behaviour of the parton shower and lead to an overestimate 
+of the associated uncertainty. Instead, the scales in the fixed-order 
+matrix element and the parton shower resummation should be varied separately. 
+This can be done for the matrix element by introducing the prefactor into 
+its scale definition, e.g.
+@verbatim
+SCALES VAR{0.25*H_T2}{0.25*H_T2}
+@end verbatim
+for setting both the renormalisation and factorisation scales to H_T/2. The 
+parton shower scale is then varied by setting 
+@code{CSS_SHOWER_SCALE2_FACTOR=<factor>}. It redefines the reference value of 
+the strong coupling constant at @code{mZ} by its nuerical value at 
+@code{mZ*<factor>} leaving its running unchanged.
+
+In merged samples the METS scale setter has to be used. The scales in the 
+respective multijet matrix elements can then be varied via
+@verbatim
+SCALES METS{<muF-var-factor>*MU_F2}{<muR-var-factor>*MU_R2}
+@end verbatim
+In NLO-merged (MEPSatNLO) samples proper counterterms for compensating the 
+change of scale at NLO have to be introduced via @code{SP_NLOCT=1}. Also, 
+the resummation scale can be varied
+@verbatim
+SCALES METS{<muF-var-factor>*MU_F2}{<muR-var-factor>*MU_R2}{<muQ-var-factor>*MU_Q2}
+@end verbatim
 
 @node COUPLINGS
 @subsection COUPLINGS
