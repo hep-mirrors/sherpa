@@ -160,7 +160,7 @@ double Single_Process::NLOCounterTerms() const
 	double fb=p_int->ISR()->Weight
 	  (1<<(i+1),mom,mom,lmuf2,lmuf2,m_flavs[i],m_flavs[i],0);
 	if (IsZero(fb,th)) {
-	  msg_Error()<<METHOD<<"(): Zero xPDF. Skip.\n";
+	  msg_Tracking()<<METHOD<<"(): Zero xPDF. Skip.\n";
 	  continue;
 	}
 	msg_Debugging()<<"  Beam "<<i<<": z = "<<z[i]
@@ -183,7 +183,7 @@ double Single_Process::NLOCounterTerms() const
 			 <<", f_{"<<jet[j]<<"}("<<x[i]<<","
 			 <<sqrt(lmuf2)<<") = "<<fc<<"\n";
 	  if (IsZero(fa,th)||IsZero(fc,th)) {
-	    msg_Error()<<METHOD<<"(): Zero xPDF. Skip.\n";
+	    msg_Tracking()<<METHOD<<"(): Zero xPDF. Skip.\n";
 	    continue;
 	  }
 	  fct[i]+=as/(2.0*M_PI)*lt*
