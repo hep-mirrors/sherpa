@@ -288,7 +288,7 @@ void Single_Process::BeamISRWeight
 	  (((Single_Process*)sub->p_proc)->
 	   ScaleSetter(1)->Amplitudes());
 	if (ampls.size()) ampls.front()->SetProcs(sub->p_proc);
-        sub->m_result+=sub->m_me*
+        sub->m_result=sub->m_me*
 	  BeamISRWeight(sub->m_mu2[stp::fac],mode|
 			4|(i==subs->size()-1?2:0),ampls);
 	++nscales;
@@ -299,7 +299,7 @@ void Single_Process::BeamISRWeight
       for (size_t i(0);i<subs->size();++i) {
 	if (IsEqual((*subs)[i]->m_mu2[stp::fac],muf2) &&
 	    (*subs)[i]->m_me!=0.0) {
-          (*subs)[i]->m_result+=(*subs)[i]->m_me*lumi;
+          (*subs)[i]->m_result=(*subs)[i]->m_me*lumi;
         }
       }
     }
@@ -310,7 +310,7 @@ void Single_Process::BeamISRWeight
 	(((Single_Process*)(*subs)[i]->p_proc)->
 	 ScaleSetter(1)->Amplitudes());
       if (ampls.size()) ampls.front()->SetProcs((*subs)[i]->p_proc);
-      (*subs)[i]->m_result+=(*subs)[i]->m_me*
+      (*subs)[i]->m_result=(*subs)[i]->m_me*
 	BeamISRWeight((*subs)[i]->m_mu2[stp::fac],mode,ampls);
     }
   }

@@ -235,15 +235,21 @@ void Standard_Model::ParticleInit() {
   s_kftable[kf_quark]->Clear();
   s_kftable[kf_lepton]->Clear();
   s_kftable[kf_neutrino]->Clear();
+  double jet_mass_threshold=p_dataread->GetValue<double>("JET_MASS_THRESHOLD", 500.0);
   for (int i=1;i<7+(m_trivialextension==2?2:0);i++) {
     Flavour addit((kf_code)i);
     if ((addit.Mass()==0.0 || !addit.IsMassive()) && addit.IsOn()) {
-      s_kftable[kf_jet]->Add(addit);
-      s_kftable[kf_jet]->Add(addit.Bar());
-      s_kftable[kf_quark]->Add(addit);
-      s_kftable[kf_quark]->Add(addit.Bar());
-      s_kftable[kf_fermion]->Add(addit);
-      s_kftable[kf_fermion]->Add(addit.Bar());
+      if (addit.Mass(true)<=jet_mass_threshold) {
+        s_kftable[kf_jet]->Add(addit);
+        s_kftable[kf_jet]->Add(addit.Bar());
+        s_kftable[kf_quark]->Add(addit);
+        s_kftable[kf_quark]->Add(addit.Bar());
+        s_kftable[kf_fermion]->Add(addit);
+        s_kftable[kf_fermion]->Add(addit.Bar());
+      }
+      else {
+        PRINT_INFO("Ignoring "<<addit<<" due to JET_MASS_THRESHOLD.");
+      }
     }
   }
   s_kftable[kf_jet]->Add(Flavour(kf_gluon));
@@ -511,7 +517,8 @@ void Standard_Model::FixEWParameters() {
       Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ)), muH2(MH*(MH-I*GH));
       ccos2thetaW = muW2/muZ2;
       csin2thetaW = 1.-ccos2thetaW;
-      aqed->SetDefault(Complex(sqrt(2.)*GF/M_PI*muW2*csin2thetaW).real());
+      //aqed->SetDefault(Complex(sqrt(2.)*GF/M_PI*muW2*csin2thetaW).real());
+      aqed->SetDefault(sqrt(2.)*GF/M_PI*MW*MW*(1-MW*MW/MZ/MZ));
       cvev        = 1./(pow(2.,0.25)*sqrt(GF));
       clambdaH    = 2.*muH2/(cvev*cvev);
       break;

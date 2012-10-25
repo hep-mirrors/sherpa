@@ -290,6 +290,15 @@ bool Single_DipoleTerm::DetermineType() {
     m_ftype = 0;
   }
 
+  if ((!Flavour(kf_jet).Includes(m_fli) ||
+       !Flavour(kf_jet).Includes(m_flj)) &&
+      Flavour(kf_jet).Includes(m_flij)) {
+    m_valid=false;
+  }
+  if (!Flavour(kf_jet).Includes(m_flj) && m_pi<m_nin) {
+    m_valid=false;
+  }
+
   if (m_ftype==0) m_valid=false;
   return m_valid;
 }

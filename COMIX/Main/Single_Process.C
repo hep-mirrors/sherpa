@@ -145,6 +145,7 @@ bool COMIX::Single_Process::Initialize
 	msg_Error()<<METHOD<<"(): "<<cinfo<<"\n";
 	THROW(not_implemented,"No virtual ME for this process");
       }
+      p_loop->SetCouplings(m_cpls);
       if (m_wgtinfo.m_nx==0) m_wgtinfo.AddMEweights(2);
     }
     p_bg->SetLoopME(p_loop);
