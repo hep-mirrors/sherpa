@@ -1,0 +1,69 @@
+(run){
+  EVENTS = 0
+}(run)
+
+(beam){
+  BEAM_1 =  11; BEAM_ENERGY_1 = 200.;
+  BEAM_2 = -11; BEAM_ENERGY_2 = 200.;
+}(beam)
+
+(isr){
+  PDF_SET None;
+  %PDF_Set PDFe;
+}(isr)
+
+(processes){
+  Process 11 -11 -> 23[a] 25[b]
+  Decay : 23[a] -> 13 -13
+  Decay : 25[b] -> 5 -5
+  End process;
+
+  Process 11 -11 -> 12 -12 25[b]
+  Decay : 25[b] -> 5 -5
+  End process;
+
+  Process 11 -11 -> 11 -11 25[b]
+  Decay : 25[b] -> 5 -5
+  End process;
+
+  Process 11 -11 -> 23[a] 25[b] 25[c]
+  Decay : 23[a] -> 13 -13
+  Decay : 25[b] -> 5 -5
+  Decay : 25[c] -> 5 -5
+  End process;
+
+  Process 11 -11 -> 12 -12 25[b] 25[c]
+  Decay : 25[b] -> 5 -5
+  Decay : 25[c] -> 5 -5
+  End process;
+
+  Process 11 -11 -> 11 -11 25[b] 25[c]
+  Decay : 25[b] -> 5 -5
+  Decay : 25[c] -> 5 -5
+  End process;
+}(processes)
+
+(me){
+  ME_SIGNAL_GENERATOR = Comix
+  SCALES              = VAR{sqr(90.0)}
+  YUKAWA_MASSES       = Fixed
+}(me)
+
+(selector){
+  BeamAngle   5  0   -0.9      0.9
+  BeamAngle  -5  0   -0.9      0.9
+  BeamAngle  11  0   -0.9      0.9
+  BeamAngle -11  0   -0.9      0.9
+  BeamAngle  13  0   -0.9      0.9
+  BeamAngle -13  0   -0.9      0.9
+  Mass       11 -11  10. E_CMS
+  Mass       12 -12  10. E_CMS
+  Mass       13 -13  10. E_CMS
+  Mass        5  -5  120. 130.
+}(selector)
+
+(model){
+  YUKAWA_B   = 4.5
+  MASSIVE[5] = 1
+  MASS[25]   = 125.
+}(model)
