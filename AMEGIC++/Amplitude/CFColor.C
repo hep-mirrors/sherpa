@@ -32,7 +32,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
   
   if (pID!=noname) {
     CSC.Init();
-    int ncol(CSC.Nc);
+    int ncol((int)CSC.Nc);
     if (ncol!=3) pID+="_NC"+ToString(ncol);
     std::string name=ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".col";
     IO_Handler ioh;
