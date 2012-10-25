@@ -1,0 +1,104 @@
+(run){
+  EVENTS 10000000; FRAGMENTATION Off
+  LPT:=BlackHat; NLOT:=BVIRS;
+  NJET:=0; LJET:=2; YCUT:=2.25;
+  RESULT_DIRECTORY r_yYCUT/;
+  METS_WARNING_THRESHOLD 0.01;
+  ANALYSIS_OUTPUT=Analysis.NJET.LJET.NLOT.YCUT
+}(run)
+(beam){
+  BEAM_1  11; BEAM_ENERGY_1 45.625;
+  BEAM_2 -11; BEAM_ENERGY_2 45.625;
+}(beam)
+(isr){
+#  ISR_1 On; ISR_2 On; PDF_SET PDFe;
+}(isr)
+(processes){
+  Process 11 -11 -> 93 93 93{NJET};
+  NLO_QCD_Part NLOT {LJET}; Loop_Generator LPT;
+  Order_EW 2; CKKW pow(10,-YCUT);
+  Integration_Error 0.02 {3,4};
+  End process;
+}(processes)
+(model){
+  ORDER_ALPHAS 1; ALPHAS(MZ) 0.1188;
+}(model)
+(me){
+  ME_SIGNAL_GENERATOR Amegic BlackHat;
+  EVENT_GENERATION_MODE W; NLO_Mode 2;
+}(me)
+
+
+(analysis){
+
+  BEGIN_RIVET {
+    -a JADE_OPAL_2000_S4300807 OPAL_2001_S4553896
+  } END_RIVET
+
+  BEGIN_ANALYSIS {
+
+  LEVEL ME Shower Hadron;
+
+  PartSel {
+    OutList Charged;
+    Qual Charged;
+  }
+  Trigger {
+    InList  FinalState;
+    OutList Analysed;
+    Finder 93 0 0 0 0.008 1;
+    Qual 4|3|kf22|kf21;
+  }
+  Trigger {
+    InList Analysed;
+    OutList AnalysedJets;
+    Keep 93;
+  }
+  EEShapes {
+    InList FinalState;
+    OutList EventShapes;
+    Qual Charged;
+  }
+
+  Thrust     0  0.5   50 LinErr EventShapes;
+  Major      0  0.64  64 LinErr EventShapes;
+  Minor      0  0.5   50 LinErr EventShapes;
+  Oblateness 0  0.52  52 LinErr EventShapes;
+  PTIn       0 14    140 LinErr EventShapes;
+  PTOut      0  3.5   70 LinErr EventShapes;
+
+  SphCalc EventShapes;
+  Sphericity 0 1   100 LinErr EventShapes;
+  Aplanarity 0 0.3  60 LinErr EventShapes;
+  Planarity  0 0.5 100 LinErr EventShapes;
+
+  CDCalc EventShapes;
+  CParam 0 1 100 LinErr EventShapes;
+  DParam 0 1 100 LinErr EventShapes;
+
+  JBCalc EventShapes;
+  BW 0 0.34 34 LinErr EventShapes;
+  BN 0 0.24 24 LinErr EventShapes;
+  BT 0 0.36 36 LinErr EventShapes;
+  BD 0 0.28 28 LinErr EventShapes;
+  MH 0 0.4  40 LinErr EventShapes;
+  ML 0 0.12 12 LinErr EventShapes;
+  MD 0 0.4  40 LinErr EventShapes;
+
+  XP    0 1   200 LinErr Charged;
+  LogXP 0 5.4 100 LinErr Charged;
+
+  Multi -0.5 100.5 101 LinErr FinalState;
+  Multi -0.5  50.5  51 LinErr Charged;
+
+  JetDRate 1e-5   1 100 1 1 5 LogErr Analysed;
+  JetPhi   -3.2 3.2 128 1 1 3 LinErr Analysed;
+
+  BZAngle   0 1 20 LinErr AnalysedJets;
+  NRAngle   0 1 20 LinErr AnalysedJets;
+  KSWAngle -1 1 20 LinErr AnalysedJets;
+  A34Angle -1 1 20 LinErr AnalysedJets;
+
+  } END_ANALYSIS
+
+}(analysis)
