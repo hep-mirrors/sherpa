@@ -8,7 +8,7 @@ namespace METOOLS {
 
     int m_mode, m_stat, m_drmode;
 
-    double m_amin, m_amax, m_kt2max;
+    double m_amin, m_kappa, m_amax, m_kt2max;
 
   public:
 
@@ -18,6 +18,8 @@ namespace METOOLS {
     inline void SetStat(const int stat) { m_stat=stat; }
 
     inline void SetAMin(const double &amin) { m_amin=amin; }
+    inline void SetKappa(const double &kap) { m_kappa=kap; }
+
     inline void SetAMax(const double &amax) { m_amax=amax; }
 
     inline void SetKT2Max(const double &kt2max) { m_kt2max=kt2max; }
@@ -27,7 +29,9 @@ namespace METOOLS {
 
     inline int Stat() const { return m_stat; }
 
-    inline double AMin() const { return m_amin; }
+    inline double AMin() const  { return m_amin;  }
+    inline double Kappa() const { return m_kappa; }
+
     inline double AMax() const { return m_amax; }
 
     inline double KT2Max() const { return m_kt2max; }

@@ -55,6 +55,9 @@ Amplitude::Amplitude():
   if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA")) helpd=1.0;
   else msg_Tracking()<<METHOD<<"(): Set dipole \\alpha_{max} "<<helpd<<".\n";
   p_dinfo->SetAMax(helpd);
+  if (!read.ReadFromFile(helpd,"DIPOLE_KAPPA")) helpd=2.0/3.0;
+  else msg_Tracking()<<METHOD<<"(): Set dipole \\kappa="<<helpd<<"\n.";
+  p_dinfo->SetKappa(helpd);
   if (!read.ReadFromFile(helpd,"DIPOLE_KT2MAX")) helpd=sqr(rpa->gen.Ecms());
   else msg_Tracking()<<METHOD<<"(): Set dipole \\k_{T,max}^2 "<<helpd<<".\n";
   p_dinfo->SetKT2Max(helpd);
