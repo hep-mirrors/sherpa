@@ -23,11 +23,6 @@ namespace PHASIC {
     Decay2_Selector(const Selector_Key &key);
 
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
-    bool NoJetTrigger(const ATOOLS::Vec4D_Vector &p)
-    { return Trigger(p); }
-    bool JetTrigger(const ATOOLS::Vec4D_Vector &p,
-		    ATOOLS::NLO_subevtlist *const subs)
-    { return true; }
 
     void BuildCuts(Cut_Data *) {}
 

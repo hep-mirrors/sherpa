@@ -85,7 +85,6 @@ bool Jet_Finder::JetTrigger(const ATOOLS::Vec4D_Vector &p,
 
 bool Jet_Finder::NoJetTrigger(const ATOOLS::Vec4D_Vector &p)
 {
-  if (!m_on) return true;
   return true;
 }
 
