@@ -90,12 +90,27 @@ void VVV_Calculator<SType>::ConstructSDipole()
   if (p_v->Kin()->Type()==0) {
     double zi(p_v->Kin()->Z()), zj(1.0-zi), y(p_v->Kin()->Y());
     Vec4D pi(p_v->Kin()->PI()), pj(p_v->Kin()->PJ());
-    Ai=2.0*zi*(1.0-y)/(1.0-zi*(1.0-y));
-    Aj=2.0*zj*(1.0-y)/(1.0-zj*(1.0-y));
+    double pipj(pi*pj), rv(1.0), sl(1.0), zim(zi), zjm(zj);
+    if (p_v->Kin()->Massive()) {
+      double mi(p_v->Kin()->JI()->Flav().Mass());
+      double mj(p_v->Kin()->JJ()->Flav().Mass());
+      double mk(p_v->Kin()->JK()->Flav().Mass());
+      double y(p_v->Kin()->Y()), Q2(p_v->Kin()->Q2());
+      double mi2(mi*mi), mj2(mj*mj), mk2(mk*mk), eps(Q2-mi2-mj2-mk2);
+      double viji(sqrt(sqr(eps*y)-sqr(2.0*mi*mj))/(eps*y+2.0*mi2));
+      rv=sqrt(sqr(2.0*mk2+eps*(1.0-y))-4.0*mk2*Q2)/(eps*(1.0-y));
+      double zc(0.5*(2.0*mi2+eps*y)/(mi2+mj2+eps*y));
+      double zm(zc*(1.0-viji*rv)), zp(zc*(1.0+viji*rv));
+      sl=(1.0-0.5*p_v->Info()->Kappa()*zp*zm)/rv;
+      zim-=0.5*(1.0-rv);
+      zjm-=0.5*(1.0-rv);
+    }
+    Ai=2.0*(1.0/(1.0-zi*(1.0-y))-sl);
+    Aj=2.0*(1.0/(1.0-zj*(1.0-y))-sl);
     if (p_v->Kin()->Swap()) std::swap<double>(Ai,Aj);
-    B=-2.0*zi*zj;
-    q=zi*pi-zj*pj;
-    t=2.0*(pi*pj);
+    q=zim*pi-zjm*pj;
+    B=q.Abs2()/pipj/rv;
+    t=2.0*pipj;
   }
   else if (p_v->Kin()->Type()==2) {
     double zi(p_v->Kin()->Z()), zj(1.0-zi), y(p_v->Kin()->Y());

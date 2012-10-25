@@ -65,7 +65,6 @@ namespace METOOLS {
     void ConstructFFSDipole();
     void ConstructFVSDipole();
 
-    void ConstructFFIDipole();
     void ConstructFVIDipole();
 
     inline SComplex PPlus(const CVec4<SType> &p) const  
@@ -132,12 +131,27 @@ void FFV_Calculator<SType>::ConstructFFSDipole()
   Vec4D p(p_v->JC()->P()), q;
   double A(0.0), B(0.0), t(0.0);
   if (p_v->Kin()->Type()==0) {
-    double zi(p_v->Kin()->Z()), zj(1.0-zi);
+    double zi(p_v->Kin()->Z()), zj(1.0-zi), rv(1.0);
     Vec4D pi(p_v->Kin()->PI()), pj(p_v->Kin()->PJ());
-    A=1.0;
-    B=4.0*zi*zj;
-    q=zi*pi-zj*pj;
-    t=2.0*(pi*pj);
+    double pij2((pi+pj).Abs2()), mt2(0.0), zim(zi), zjm(zj);
+    if (p_v->Kin()->Massive()) {
+      double mi(p_v->Kin()->JI()->Flav().Mass());
+      double mj(p_v->Kin()->JJ()->Flav().Mass());
+      double mk(p_v->Kin()->JK()->Flav().Mass());
+      double y(p_v->Kin()->Y()), Q2(p_v->Kin()->Q2());
+      double mi2(mi*mi), mj2(mj*mj), mk2(mk*mk), eps(Q2-mi2-mj2-mk2);
+      double viji(sqrt(sqr(eps*y)-sqr(2.0*mi*mj))/(eps*y+2.0*mi2));
+      rv=sqrt(sqr(2.0*mk2+eps*(1.0-y))-4.0*mk2*Q2)/(eps*(1.0-y));
+      double zc(0.5*(2.0*mi2+eps*y)/(mi2+mj2+eps*y));
+      double zm(zc*(1.0-viji*rv)), zp(zc*(1.0+viji*rv));
+      mt2=2.0*p_v->Info()->Kappa()*(zp*zm-mi2/pij2);
+      zim-=0.5*(1.0-rv);
+      zjm-=0.5*(1.0-rv);
+    }
+    q=zim*pi-zjm*pj;
+    A=1.0-mt2;
+    B=-4.0*q.Abs2()/pij2;
+    t=rv*pij2;
   }
   else if (p_v->Kin()->Type()==2) {
     double zi(p_v->Kin()->Z()), zj(1.0-zi);
@@ -261,15 +275,29 @@ void FFV_Calculator<SType>::ConstructFVSDipole()
   double A(0.0), t(0.0);
   if (p_v->Kin()->Type()==0) {
     double zi(p_v->Kin()->Z()), y(p_v->Kin()->Y());
-    if (iisf) A=2.0/(1.0-zi*(1.0-y))-(1.0+zi);
-    else A=2.0/(1.0-(1.0-zi)*(1.0-y))-(2.0-zi);
-    t=2.0*(p_v->Kin()->PI()*p_v->Kin()->PJ());
+    double pipj(p_v->Kin()->PI()*p_v->Kin()->PJ());
+    double rv(1.0), mt2(0.0);
+    if (p_v->Kin()->Massive()) {
+      double mij2(sqr(p_v->Kin()->JIJT()->Flav().Mass()));
+      double mk2(sqr(p_v->Kin()->JKT()->Flav().Mass()));
+      double pij2(2.0*pipj+mij2), Q2(p_v->Kin()->Q2());
+      rv=(Q2-pij2-mk2)/(Q2-mij2-mk2)*
+	sqrt((sqr(Q2-mij2-mk2)-4.0*mij2*mk2)/
+	     (sqr(Q2-pij2-mk2)-4.0*pij2*mk2));
+      mt2=mij2/pipj;
+    }
+    if (iisf) A=2.0/(1.0-zi*(1.0-y))-rv*(1.0+zi+mt2);
+    else A=2.0/(1.0-(1.0-zi)*(1.0-y))-rv*(2.0-zi+mt2);
+    t=2.0*pipj;
   }
   else if (p_v->Kin()->Type()==2) {
     double zi(p_v->Kin()->Z()), y(p_v->Kin()->Y());
-    if (iisf) A=2.0/(1.0-zi+y)-(1.0+zi);
-    else A=2.0/(1.0-(1.0-zi)+y)-(2.0-zi);
-    t=2.0*(p_v->Kin()->PI()*p_v->Kin()->PJ())*(1.0-y);
+    double pipj(p_v->Kin()->PI()*p_v->Kin()->PJ());
+    double mt2(p_v->Kin()->JIJT()->Flav().Mass());
+    if (mt2) mt2*=mt2/pipj;
+    if (iisf) A=2.0/(1.0-zi+y)-(1.0+zi+mt2);
+    else A=2.0/(1.0-(1.0-zi)+y)-(2.0-zi+mt2);
+    t=2.0*pipj*(1.0-y);
   }
   else if (p_v->Kin()->Type()==1) {
     double x(p_v->Kin()->Z()), ui(p_v->Kin()->Y());
@@ -295,12 +323,6 @@ void FFV_Calculator<SType>::ConstructFVSDipole()
 #ifdef DEBUG__BG
   p_v->JC()->Print();
 #endif
-}
-
-template <typename SType>
-void FFV_Calculator<SType>::ConstructFFIDipole()
-{
-  PRINT_VAR("FILL ME");
 }
 
 template <typename SType>
@@ -364,7 +386,6 @@ void FFV_Calculator<SType>::Evaluate()
     }
     else {
       switch (m_dir) {
-      case 0: ConstructFFIDipole(); return;
       case 1: ConstructFVIDipole(); return;
       case 2: ConstructFVIDipole(); return;
       default: THROW(fatal_error,"Internal error");
