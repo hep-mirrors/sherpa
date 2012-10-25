@@ -1,0 +1,12 @@
+m_zmode 0
+m_bmode 1
+m_omode 0
+m_vmode 9
+m_tmode 1
+m_vsopt 0
+m_nvints 8
+m_texp 0.9
+m_sexp 0.5
+m_thexp 1.5
+m_mfac 1
+m_nopt 20

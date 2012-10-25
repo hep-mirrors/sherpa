@@ -1,0 +1,62 @@
+(run){
+  EVENTS = 50000
+  ACTIVE[25] 0;
+  ANALYSIS=Rivet; 
+  ANALYSIS_OUTPUT  = Wplus_AGC_LAMBDAT_0.5
+  RESULT_DIRECTORY = Wplus_AGC_LAMBDAT_0.5
+}(run)
+
+(beam){
+  BEAM_1 = 2212; BEAM_ENERGY_1 = 4000.;
+  BEAM_2 = 2212; BEAM_ENERGY_2 = 4000.;
+}(beam)
+
+(processes){
+  Process 93 93 -> -11 12 22 93{1}
+  CKKW sqr(30/E_CMS);  
+  Order_EW 3;
+  End process;
+}(processes);
+
+(me){ 
+  EVENT_GENERATION_MODE = Weighted
+  SCALES VAR{Abs2(p[2]+p[3]+p[4])}
+  ME_SIGNAL_GENERATOR = Amegic
+  %Comix
+}(me);
+
+(model){
+  MODEL         = SM+AGC;
+  G1_GAMMA      = 1.
+  KAPPA_GAMMA   = 1.
+  LAMBDA_GAMMA  = 0.0
+  G4_GAMMA      = 0.
+  G5_GAMMA      = 0.
+  KAPPAT_GAMMA  = 0.
+  LAMBDAT_GAMMA = 0.5
+  UNITARIZATION_N      = 0.
+  UNITARIZATION_N3     = 0.
+  UNITARIZATION_N4     = 0.
+  UNITARIZATION_SCALE  = 1.e6
+  UNITARIZATION_SCALE3 = 1.e6
+  UNITARIZATION_SCALE4 = 1.e6
+}(model);
+
+(integration){
+  ERROR 0.01
+}(integration);
+
+(selector){
+  Mass 12 -11 10. E_CMS;
+  Mass 11 -12 10. E_CMS;
+  Mass 22  11 20. E_CMS;
+  Mass 22 -11 20. E_CMS;
+  PT   22     18. E_CMS;
+}(selector)
+
+(analysis){
+  BEGIN_RIVET {
+    -a MC_Anomalous_Wgamma
+  } END_RIVET
+}(analysis)
+
