@@ -9,6 +9,7 @@ DIRS=`find Process/ -name P?_?`" "`find Process/ -name P?_??`
 print_help(){
   echo "makelibs version 1.1" && echo && \
   echo "options: -c \"make clean\" before compiling" && \
+  echo "         -n skip \"make distclean\" after compiling" && \
   echo "         -o install single module" && \
   echo "         -j [N] allow N compilations at once" && \
   echo "         -h display this help and exit" && echo
@@ -20,10 +21,11 @@ defaults(){
 
 defaults;
 
-while getopts hcoj: OPT
+while getopts hcnoj: OPT
 do
   case $OPT in
   c) CLEAN=TRUE ;;
+  n) POSTCLEAN=FALSE ;;
   o) ONE=TRUE ;;
   j) JOBS=$OPTARG ;;
   h) print_help && exit 0 ;;
@@ -85,7 +87,7 @@ for J in $DIRS ; do
     echo "makeinstall: error: \"make install\" in $I failed"
     exit 1
   fi
-  make distclean
+  if `! test "$POSTCLEAN" = "FALSE"` ; then make distclean ; fi
   fi
   cd ../..
 done
