@@ -128,8 +128,8 @@ void VVV_Calculator<SType>::ConstructSDipole()
     Ai=2.0*(x-ui)/(1.0-x+ui);
     Aj=2.0*x*(1.0-x);
     if (p_v->Kin()->Swap()) std::swap<double>(Ai,Aj);
-    B=-2.0*(1.0-x)/x;
     q=pi/ui-pk/(1.0-ui);
+    B=(1.0-x)/x*ui*(1.0-ui)*q.Abs2()/(pi*pk);
     t=-2.0*(pi*p_v->Kin()->PI())*x;
   }
   else {

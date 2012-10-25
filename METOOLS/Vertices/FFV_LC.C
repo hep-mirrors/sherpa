@@ -165,9 +165,9 @@ void FFV_Calculator<SType>::ConstructFFSDipole()
   else if (p_v->Kin()->Type()==1) {
     double x(p_v->Kin()->Z()), ui(p_v->Kin()->Y());
     Vec4D pi(p_v->Kin()->PJ()), pk(p_v->Kin()->PK());
-    A=x;
-    B=-4.0*(1.0-x)/x;
     q=pi/ui-pk/(1.0-ui);
+    A=x;
+    B=2.0*(1.0-x)/x*ui*(1.0-ui)*q.Abs2()/(pi*pk);
     t=-2.0*(pi*p_v->Kin()->PI())*x;
   }
   else {
