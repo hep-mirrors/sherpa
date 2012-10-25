@@ -10,7 +10,10 @@ Dipole_Kinematics::Dipole_Kinematics
 (Dipole_Info *const info,Current *const i,Current *const j,
  Current *const k,Current *const ijt,Current *const kt):
   p_i(i), p_j(j), p_k(k), p_ijt(ijt), p_kt(kt),
-  m_type(0), m_swap(0), m_trig(1), p_info(info)
+  m_type(0), m_swap(0), m_trig(1), p_info(info),
+  m_mi2(sqr(p_i->Flav().Mass())), m_mj2(sqr(p_j->Flav().Mass())),
+  m_mij2(sqr(p_ijt->Flav().Mass())), m_mk2(sqr(p_k->Flav().Mass())),
+  m_ym(0.0), m_yp(1.0)
 {
   m_phase[1]=m_phase[0]=0.0;
   m_res[2]=m_res[1]=m_res[0]=0.0;
@@ -44,59 +47,65 @@ void Dipole_Kinematics::Evaluate()
   m_pi=p_i->P();
   m_pj=p_j->P();
   m_pk=p_k->P();
-  Vec4D Q(m_pi+m_pj+m_pk);
+  m_Q=m_pi+m_pj+m_pk;
+  m_Q2=m_Q.Abs2();
   if (m_type==0) {
-    double mij2=sqr(p_ijt->Flav().Mass());
-    double mk2=sqr(p_k->Flav().Mass());
-    double Q2=Q.Abs2(), lrat=Lam(Q2,mij2,mk2)/Lam(Q2,(m_pi+m_pj).Abs2(),mk2);
-    Vec4D pkt(sqrt(lrat)*(m_pk-(Q*m_pk/Q2)*Q)+(Q2+mk2-mij2)/(2.*Q2)*Q);
-    p_ijt->SetP(Q-pkt);
+    double lrat=Lam(m_Q2,m_mij2,m_mk2)/Lam(m_Q2,(m_pi+m_pj).Abs2(),m_mk2);
+    Vec4D pkt(sqrt(lrat)*(m_pk-(m_Q*m_pk/m_Q2)*m_Q)+
+	      (m_Q2+m_mk2-m_mij2)/(2.*m_Q2)*m_Q);
+    if (Massive()) {
+      double eps(m_Q2-m_mi2-m_mj2-m_mk2);
+      m_ym=2.0*sqrt(m_mi2*m_mj2)/eps;
+      m_yp=1.0-2.0*sqrt(m_mk2)*(sqrt(m_Q2)-sqrt(m_mk2))/eps;
+    }
+    p_ijt->SetP(m_Q-pkt);
     p_kt->SetP(pkt);
     double pijpk((m_pi+m_pj)*m_pk);
     m_z=(m_pi*m_pk)/pijpk;
     m_y=1.0/(1.0+pijpk/(m_pi*m_pj));
-    m_kt2=Q2*m_y*m_z*(1.0-m_z);
+    m_kt2=(m_Q2-m_mi2-m_mj2-m_mk2)*m_y*m_z*(1.0-m_z)-
+      sqr(1.0-m_z)*m_mi2-sqr(m_z)*m_mj2;
     if (p_info->Stat() && (m_pi[0]>1.0e-3 && m_pj[0]>1.0e-3) &&
-	(pkt[0]<0.0 || Q[0]<pkt[0])) {
+	(pkt[0]<0.0 || m_Q[0]<pkt[0])) {
       p_info->SetStat(0);
       msg_Error()<<METHOD<<"(): Negative energy in FF {\n  p_i = "
 		 <<m_pi<<"\n  p_j = "<<m_pj<<"\n  p_k = "<<m_pk
-		 <<"\n  p_ij -> "<<Q-pkt<<"\n  p_k  -> "
+		 <<"\n  p_ij -> "<<m_Q-pkt<<"\n  p_k  -> "
 		 <<pkt<<"\n}"<<std::endl;
     }
     for (size_t i(0);i<m_cur.size();++i) m_p[i]=m_cur[i]->P();
   }
   else if (m_type==2) {
-    double mij2=sqr(p_ijt->Flav().Mass());
-    double ma2=sqr(p_k->Flav().Mass());
-    double Q2=Q.Abs2(), lrat=Lam(Q2,mij2,ma2)/Lam(Q2,(m_pi+m_pj).Abs2(),ma2);
-    Vec4D pkt(sqrt(lrat)*(m_pk-(Q*m_pk/Q2)*Q)+(Q2+ma2-mij2)/(2.*Q2)*Q);
-    p_ijt->SetP(Q-pkt);
+    double lrat=Lam(m_Q2,m_mij2,m_mk2)/Lam(m_Q2,(m_pi+m_pj).Abs2(),m_mk2);
+    Vec4D pkt(sqrt(lrat)*(m_pk-(m_Q*m_pk/m_Q2)*m_Q)+
+	      (m_Q2+m_mk2-m_mij2)/(2.*m_Q2)*m_Q);
+    p_ijt->SetP(m_Q-pkt);
     p_kt->SetP(pkt);
     double pijpa((m_pi+m_pj)*m_pk);
     m_z=(m_pi*m_pk)/pijpa;
     m_y=-(m_pi*m_pj)/pijpa;
-    m_kt2=Q2*m_y/(1.0-m_y)*m_z*(1.0-m_z);
+    if (Massive()) m_yp=1.0+m_y*(m_mij2-sqr(sqrt(m_mi2)+sqrt(m_mj2)))/m_Q2;
+    m_kt2=2.0*(m_pi*m_pj)*m_z*(1.0-m_z)-sqr(1.0-m_z)*m_mi2-sqr(m_z)*m_mj2;
     if (p_info->Stat() && (m_pi[0]>1.0e-3 && m_pj[0]>1.0e-3) &&
-	(Q[0]<pkt[0] || lrat<0.0)) {
+	(m_Q[0]<pkt[0] || lrat<0.0)) {
       p_info->SetStat(0);
       msg_Error()<<METHOD<<"(): Negative energy in FI {\n  p_i = "
 		 <<m_pi<<"\n  p_j = "<<m_pj<<"\n  p_a = "<<m_pk
-		 <<"\n  p_ij -> "<<Q-pkt<<"\n  p_a  -> "
+		 <<"\n  p_ij -> "<<m_Q-pkt<<"\n  p_a  -> "
 		 <<pkt<<"\n}"<<std::endl;
     }
     for (size_t i(0);i<m_cur.size();++i) m_p[i]=m_cur[i]->P();
   }
   else if (m_type==1) {
-    double pjpa=m_pj*m_pi, pkpa=m_pk*m_pi, pjpk=m_pj*m_pk, Q2=Q.Abs2();
-    double mk2=sqr(p_k->Flav().Mass());
-    double sjk=(m_pj+m_pk).Abs2(), lrat=Lam(Q2,mk2,0.0)/Lam(Q2,sjk,0.0);
-    p_ijt->SetP(sqrt(lrat)*(m_pi-(Q2-sjk)/(2.0*Q2)*Q)
-		+(Q2-mk2)/(2.0*Q2)*Q);
-    p_kt->SetP(Q-p_ijt->P());
+    double pjpa=m_pj*m_pi, pkpa=m_pk*m_pi, pjpk=m_pj*m_pk;
+    double sjk=(m_pj+m_pk).Abs2();
+    double lrat=Lam(m_Q2,m_mk2,0.0)/Lam(m_Q2,sjk,0.0);
+    p_ijt->SetP(sqrt(lrat)*(m_pi-(m_Q2-sjk)/(2.0*m_Q2)*m_Q)
+		+(m_Q2-m_mk2)/(2.0*m_Q2)*m_Q);
+    p_kt->SetP(m_Q-p_ijt->P());
     m_z=(pjpa+pkpa+pjpk)/(pjpa+pkpa);
     m_y=pjpa/(pjpa+pkpa);
-    m_kt2=Q2*m_y/m_z*(1.0-m_z);
+    m_kt2=(-m_Q2+m_mk2)*m_y/m_z*(1.0-m_z);
     for (size_t i(0);i<m_cur.size();++i) m_p[i]=m_cur[i]->P();
   }
   else if (m_type==3) {
@@ -107,7 +116,7 @@ void Dipole_Kinematics::Evaluate()
     p_ijt->SetP(pajt);
     p_kt->SetP(m_pi+m_pj+m_pk-pajt);
     m_y=-pjpa/papb;
-    m_kt2=Q.Abs2()*m_y/m_z*(1.0-m_z);
+    m_kt2=m_Q2*m_y/m_z*(1.0-m_z);
     for (size_t i(0);i<m_cur.size();++i) {
       const Vec4D &p(m_cur[i]->P());
       m_p[i]=p-2.0*p*KpKt/(KpKt*KpKt)*KpKt+2.0*p*K/(Kt*Kt)*Kt;
@@ -119,9 +128,9 @@ void Dipole_Kinematics::Evaluate()
   else {
     THROW(fatal_error,"Invalid dipole type");
   }
-  m_trig=m_y<p_info->AMax();
+  m_trig=m_y/m_yp<p_info->AMax();
   if (m_trig) m_trig=m_kt2<p_info->KT2Max();
-  if (m_y<p_info->AMin()) p_info->SetStat(0);
+  if (m_y<Max(m_ym,p_info->AMin())) p_info->SetStat(0);
   if (p_info->Stat() &&
       p_i->P()+p_j->P()+p_k->P()!=p_ijt->P()+p_kt->P()) {
     msg_Error()<<METHOD<<"(): Momentum not conserved in type "<<m_type

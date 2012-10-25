@@ -11,11 +11,12 @@ namespace METOOLS {
 
     Current *p_i, *p_j, *p_k, *p_ijt, *p_kt;
 
-    ATOOLS::Vec4D m_pi, m_pj, m_pk;
+    ATOOLS::Vec4D m_pi, m_pj, m_pk, m_Q;
 
     int m_type, m_swap, m_trig;
 
-    double m_z, m_y, m_kt2, m_phase[2], m_res[3];
+    double m_z, m_y, m_kt2, m_Q2, m_phase[2], m_res[3];
+    double m_mi2, m_mj2, m_mij2, m_mk2, m_ym, m_yp;
 
     Dipole_Info *p_info;
     SizeT_Vector m_pm;
@@ -52,6 +53,8 @@ namespace METOOLS {
     inline const ATOOLS::Vec4D &PJ() const { return m_pj; }
     inline const ATOOLS::Vec4D &PK() const { return m_pk; }
 
+    inline const ATOOLS::Vec4D &Q() const { return m_Q; }
+
     inline int Type() const { return m_type; }
     inline int Swap() const { return m_swap; }
     inline int Trig() const { return m_trig; }
@@ -59,7 +62,11 @@ namespace METOOLS {
     inline double Z() const { return m_z; }
     inline double Y() const { return m_y; }
 
+    inline double YMin() const { return m_ym; }
+    inline double YMax() const { return m_yp; }
+
     inline double KT2() const { return m_kt2; }
+    inline double Q2() const  { return m_Q2;  }
 
     inline double Phase(const int i) const { return m_phase[i]; }
     inline double Res(const int i) const   { return m_res[i];   }
@@ -80,6 +87,9 @@ namespace METOOLS {
     inline void SetTrig(const int trig) { m_trig=trig;  }
 
     inline SizeT_Vector &PM() { return m_pm; }
+
+    inline bool Massive() const
+    { return m_mi2||m_mj2||m_mk2||m_mij2; }
 
   };// end of class Dipole_Kinematics
   
