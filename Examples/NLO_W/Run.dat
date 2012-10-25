@@ -3,6 +3,7 @@
   BATCH_MODE 0; OUTPUT 2;
   YUKAWA_B  = 0.
   MODEL     = SM+EHC
+  ME_QED Off;
 }(run);
 (processes){
   Process 21 21 -> 25[a] 21 21

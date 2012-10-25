@@ -1,22 +1,38 @@
 (run){
   EVENTS 1;
   BATCH_MODE 0; OUTPUT 2;
-  MASSIVE[5]=1;
+  MASSIVE[5]=0;
   YUKAWA_B=0.;
   FINITE_TOP_MASS=0
+  FINITE_W_MASS=0
 }(run);
 
 (processes){
-  Process 93 93 -> 25[a]
-  Decay 25[a] -> 15 -15
-  NLO_QCD_Part BVIRS;
-  Loop_Generator Internal;
+  Process 21 21 -> 25[a] 21 21
+  %Decay 25[a] -> 15 -15
+  %Decay  25[a] -> -24[b] 24[c]
+  %Decay -24[b] -> 11 -12
+  %Decay  24[c] -> -13 14
+  Decay  25[a] -> 23[b] 23[c]	
+  Decay  23[b] -> 11 -11
+  Decay  23[c] -> 13 -13
+  NLO_QCD_Part BPVIRS;
+  Loop_Generator MCFM;
   Order_EW 1;
   End process
 }(processes);
 
 (selector){
+  Mass 11 -11 10.  200.
+  Mass 12 -12 10.  200.
+  Mass 13 -13 10.  200.
+  Mass 14 -14 10.  200.
+  Mass 11 -12 10.  200.
+  Mass 12 -11 10.  200.
+  Mass 13 -14 10.  200.
+  Mass 14 -13 10.  200.
   Mass 15 -15 115. 125.
+  Mass 22  22 115. 125.
 }(selector)
 
 (me){
@@ -45,3 +61,4 @@
 (fragmentation){
   FRAGMENTATION Off;
 }(fragmentation);
+

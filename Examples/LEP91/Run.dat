@@ -1,5 +1,10 @@
 (run){
-  EVENTS = 10000
+  EVENTS = 1000
+  # ALPHAS(MZ) = 0.118 #  0.118, 0.131082, 0.1074303
+  ORDER_ALPHAS = 0
+  ANALYSIS = Rivet;
+  ANALYSIS_OUTPUT=Analysis.1000
+  CSS_SHOWER_FACTOR = 1.
 }(run)
 
 (beam){
@@ -12,17 +17,20 @@
 }(isr)
 
 (processes){
-  Process 11 -11 -> 93 93 93{1};
-  CKKW pow(10,-2.25);
-  Order_EW 2;
-  End process;
-
-  Process 11 -11 -> 5 -5 93{1};
-  CKKW pow(10,-2.25);
+  Process 11 -11 -> 93 93;
   Order_EW 2;
   End process;
 }(processes)
 
+(me){  
+}(me)
+
 (model){
-  MASSIVE[5] = 1
+  ORDER_ALPHAS = 1;
 }(model)
+
+(analysis){
+  BEGIN_RIVET {
+    -a DELPHI_1996_S3430090 ALEPH_2004_S5765862
+  } END_RIVET
+}
