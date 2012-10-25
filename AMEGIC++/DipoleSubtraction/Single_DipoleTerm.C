@@ -45,6 +45,14 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
 
   m_name+= "_RS"+ToString(m_pi)+"_"+ToString(m_pj)+"_"+ToString(m_pk);
 
+  Data_Reader reader(" ",";","!","=");
+  reader.AddComment("#");
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+  int helpi=reader.GetValue<int>("DIPOLE_NF_GSPLIT",Flavour(kf_quark).Size()/2);
+  Flavour flav((kf_code)(helpi));
+  m_maxgsmass=flav.Mass();
+
   bool val=DetermineType();
   if (!val) return;
 
@@ -125,10 +133,6 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   m_dalpha = 1.;
   double helpd;
   m_dkt2max = std::numeric_limits<double>::max();
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
   if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA")) {
     m_dalpha = helpd;
     msg_Tracking()<<"Set dipole cut alpha="<<m_dalpha<<"."<<std::endl;
@@ -169,12 +173,6 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
     break;
   }
 
-  int helpi;
-  if (reader.ReadFromFile(helpi,"DIPOLE_NF_GSPLIT")) {
-    msg_Tracking()<<"Set number of flavours from gluon splitting="<<helpi<<"."<<std::endl;
-    Flavour flav((kf_code)(helpi));
-    m_maxgsmass=flav.Mass();
-  }
 }
 
 
