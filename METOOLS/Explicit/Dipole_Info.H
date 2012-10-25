@@ -6,7 +6,7 @@ namespace METOOLS {
   class Dipole_Info {
   private:
 
-    int m_mode, m_stat, m_drmode;
+    int m_mode, m_stat, m_drmode, m_nf;
 
     double m_amin, m_kappa, m_amax, m_kt2max;
 
@@ -16,6 +16,8 @@ namespace METOOLS {
     inline void SetDRMode(const int mode) { m_drmode=mode; }
 
     inline void SetStat(const int stat) { m_stat=stat; }
+
+    inline void SetNf(const int nf) { m_nf=nf; }
 
     inline void SetAMin(const double &amin) { m_amin=amin; }
     inline void SetKappa(const double &kap) { m_kappa=kap; }
@@ -28,6 +30,8 @@ namespace METOOLS {
     inline int DRMode() const { return m_drmode; }
 
     inline int Stat() const { return m_stat; }
+
+    inline int Nf() const { return m_nf; }
 
     inline double AMin() const  { return m_amin;  }
     inline double Kappa() const { return m_kappa; }

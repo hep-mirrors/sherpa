@@ -58,6 +58,10 @@ Amplitude::Amplitude():
   if (!read.ReadFromFile(helpd,"DIPOLE_KAPPA")) helpd=2.0/3.0;
   else msg_Tracking()<<METHOD<<"(): Set dipole \\kappa="<<helpd<<"\n.";
   p_dinfo->SetKappa(helpd);
+  if (!read.ReadFromFile(helpi,"DIPOLE_NF_GSPLIT"))
+    helpi=Flavour(kf_jet).Size()/2;
+  else msg_Tracking()<<METHOD<<"(): Set dipole N_f="<<helpi<<"\n.";
+  p_dinfo->SetNf(helpi);
   if (!read.ReadFromFile(helpd,"DIPOLE_KT2MAX")) helpd=sqr(rpa->gen.Ecms());
   else msg_Tracking()<<METHOD<<"(): Set dipole \\k_{T,max}^2 "<<helpd<<".\n";
   p_dinfo->SetKT2Max(helpd);
@@ -230,6 +234,16 @@ bool Amplitude::AddRSDipole
   size_t isid((1<<m_nin)-1);
   if ((c->CId()&isid)==isid || c->Flav().IsDummy()) return true;
   Vertex *cin(c->In().front());
+  if (cin->JA()->Direction()>0 ||
+      cin->JB()->Direction()>0) {
+    if (cin->JA()->Flav().Mass() ||
+	cin->JB()->Flav().Mass()) return true;
+  }
+  else {
+    double mm(Flavour(p_dinfo->Nf()).Mass());
+    if (cin->JA()->Flav().Mass()>mm &&
+	cin->JB()->Flav().Mass()>mm) return true;
+  }
   for (size_t k(0);k<m_scur.size();++k)
     if (m_scur[k]->CId()==s->CId() &&
 	m_scur[k]->Sub()->CId()==c->CId()) return true;
