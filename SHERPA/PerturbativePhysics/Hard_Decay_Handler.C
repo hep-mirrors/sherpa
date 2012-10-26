@@ -43,7 +43,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file)
   dr.AddWordSeparator("\t");
   dr.SetInputPath(path);
   dr.SetInputFile(file);
-  m_mass_smearing=dr.GetValue<int>("MASS_SMEARING",1);
+  m_mass_smearing=dr.GetValue<int>("HARD_MASS_SMEARING",1);
   m_spincorr=rpa->gen.HardSC();
   /*
     TODO: Writing out a 1->3 channel which might have a large width in one

@@ -1,25 +1,22 @@
 (run){
   EVENTS = 10000
+  BEAM_1 = 2212; BEAM_ENERGY_1 = 4000;
+  BEAM_2 = 2212; BEAM_ENERGY_2 = 4000;
+
   FRAGMENTATION = Off
 
+  HARD_DECAYS=On
+  STORE_DECAY_RESULTS 1;
   STABLE[6]=0
-  STABLE[15]=0
   STABLE[23]=0
   STABLE[24]=0
   STABLE[25]=0
+  HARD_SPIN_CORRELATIONS=1
+  HARD_MASS_SMEARING=0
 }(run)
-
-(beam){
-  BEAM_1 = 2212; BEAM_ENERGY_1 = 7000;
-  BEAM_2 = 2212; BEAM_ENERGY_2 = 7000;
-}(beam)
 
 (processes){
   Process 93 93 -> 6 -6 25;
+  Order_EW 1
   End process;
 }(processes)
-
-(me){
-  ME_SIGNAL_GENERATOR = Comix
-  STORE_DECAY_RESULTS 1;
-}(me)

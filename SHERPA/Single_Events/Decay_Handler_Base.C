@@ -24,7 +24,7 @@ using namespace std;
 
 Decay_Handler_Base::Decay_Handler_Base() :
   p_decaymap(NULL), p_bloblist(NULL), p_ampl(NULL),
-  m_extraqed(false), m_spincorr(false), m_mass_smearing(2)
+  m_extraqed(false), m_spincorr(false), m_mass_smearing(1)
 {
 }
 

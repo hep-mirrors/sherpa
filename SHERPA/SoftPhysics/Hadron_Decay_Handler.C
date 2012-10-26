@@ -48,7 +48,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
                                        string("HadronAliases.dat"));
   string aliasdecayfile=dr.GetValue<string>("ALIASDECAYFILE",
                                             string("AliasDecays.dat"));
-  m_mass_smearing=dr.GetValue<int>("MASS_SMEARING",1);
+  m_mass_smearing=dr.GetValue<int>("SOFT_MASS_SMEARING",1);
   m_spincorr=rpa->gen.SoftSC();
 
   Hadron_Decay_Map * dmap = new Hadron_Decay_Map(this);

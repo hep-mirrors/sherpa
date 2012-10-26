@@ -83,7 +83,7 @@ TODO.
 @node HADRONS++
 @subsection HADRONS++
 @cindex DECAYPATH
-@cindex MASS_SMEARING
+@cindex SOFT_MASS_SMEARING
 @cindex MAX_PROPER_LIFETIME
 
 
@@ -108,7 +108,7 @@ Some general switches which relate to hadron decays can be adjusted in the
 @item  Hadron properties like mass, width, stable/unstable and active can be set
   in the @code{(fragmentation)} section in full analogy to the settings for fundamental particles
   in the @code{(model)} section (cf. @ref{Model Parameters}).
-@item @anchor{MASS_SMEARING} @code{MASS_SMEARING = [0,1,2]} (default: 1) 
+@item @anchor{SOFT_MASS_SMEARING} @code{SOFT_MASS_SMEARING = [0,1,2]} (default: 1) 
   Determines whether particles entering the hadron decay event
   phase should be put off-shell according to their mass
   distribution. It is taken care that no decay mode is suppressed
