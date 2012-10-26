@@ -39,13 +39,24 @@ namespace HAWK {
 
   }; 
 
+  inline int mr(const int i,const int j)
+  { return (j+HAWK_NF)*(2*HAWK_NF+1)+(i+HAWK_NF); }
+
+  inline int mr2(const int i,const int j,const int k,const int l)
+  { return (l+HAWK_NF)*pow(2*HAWK_NF+1,3)+(k+HAWK_NF)*pow(2*HAWK_NF+1,2)+
+      (j+HAWK_NF)*(2*HAWK_NF+1)+(i+HAWK_NF); 
+  }
+
   class HAWK_Process: public PHASIC::Virtual_ME2_Base {
   private:
     MODEL::Running_AlphaS * p_as;
+    int      m_in1, m_in2, m_out1, m_out2;
     double * p_p;
     double * p_m2i, * p_m2i0, * p_m2if, * p_m2if0;
     double m_norm;
     void CallHAWK(const int & i,const int & j,const int & k,const int & l);
+    int  mp(const int id,const int i);
+    void GetMom(double * phawk,const int n,const ATOOLS::Vec4D &p);
   public:
     HAWK_Process(const PHASIC::Process_Info& pi,
 		 const ATOOLS::Flavour_Vector& flavs);
@@ -56,6 +67,9 @@ namespace HAWK {
 }
 
 extern "C" { 
+  void qfsinit_(double & qu,double & qd,double & ql,double & qn,
+		double & mu,double & md,
+		Complex & xsw2,Complex & xcw2);
   void mat2_(double * p,
 	     double * m2i0,double * m2if0,
 	     double * m2i,double * m2if);
@@ -131,14 +145,14 @@ bool HAWK_Interface::Initialize
   rcoptions_.qtchan      = 1;
   rcoptions_.qch2        = 1;
   rcoptions_.qchint      = 1;
-  rcoptions_.qbini       = 0;// have to check for b's in 93.
-  rcoptions_.qbfin       = 0;// have to check for b's in 93.
+  rcoptions_.qbini       = 1;// have to check for b's in 93.
+  rcoptions_.qbfin       = 1;// have to check for b's in 93.
   rcoptions_.qwidth      = 1;
-  rcoptions_.qfact       = 0;
+  rcoptions_.qfact       = 1;
   rcoptions_.qbos        = 0;
   rcoptions_.qferm       = 0;
-  rcoptions_.qsoft       = 1;
-  rcoptions_.qhh2        = 1;
+  rcoptions_.qsoft       = 0;
+  rcoptions_.qhh2        = 0;
   rcoptions_.qqcddiag    = 0;
   rcoptions_.qqcdnondiag = 0;
   rcoptions_.qqcdgsplit  = 0;
@@ -165,19 +179,8 @@ bool HAWK_Interface::Initialize
     xparam_.xmqm2[i] = param_.mqm2[i];
   }
   xparam_.zero = Complex(0.,0.);
-  qf_.qf[0]  = qf_.qf[2] = qf_.qu = 2./3.;
-  qf_.qf[1]  = qf_.qf[3] = qf_.qd = -1./3.;
-  qf_.ql     = -1.;
-  qf_.qn     = 0.;
-  qf_.mu     = param_.mqm[0];
-  qf_.mu2    = sqr(qf_.mu);
-  qf_.md     = param_.mqp[0];
-  qf_.md2    = sqr(qf_.md);
-  qf_.guu[0] = -qf_.qu*xparam_.xsw/xparam_.xcw; 
-  qf_.guu[2] = -qf_.qu*xparam_.xsw/xparam_.xcw+0.5/(xparam_.xsw*xparam_.xcw); 
-  qf_.gdd[0] = -qf_.qd*xparam_.xsw/xparam_.xcw; 
-  qf_.gdd[2] = -qf_.qd*xparam_.xsw/xparam_.xcw-0.5/(xparam_.xsw*xparam_.xcw); 
-  qf_.guu[1] = qf_.gdd[1] = xparam_.zero;
+  double qu(2./3.),qd(-1./3.),ql(-1.),qn(0.);
+  qfsinit_(qu,qd,ql,qn,param_.mqm[0],param_.mqp[0],xparam_.xsw,xparam_.xcw);
 
   for (int i=0;i<5;i++) {
     fmass_.rmf2[i] = (double(i)+1.)*1.e-20;
@@ -227,12 +230,16 @@ HAWK_Process::HAWK_Process(const Process_Info& pi,
   Virtual_ME2_Base(pi,flavs), 
   p_as((MODEL::Running_AlphaS *)
        MODEL::s_model->GetScalarFunction(std::string("alpha_S"))),
-  m_norm(1./36.*pow(param_.alpha/param_.alpha0,3))
+  m_norm(1./36.) //*pow(param_.alpha0/param_.alpha,3.))
 {
   rpa->gen.AddCitation
     (1,"The NLO matrix elements have been taken from HAWK \\cite{}.");
 
-  p_p = new double[24];
+  m_in1   = m_flavs[0].Kfcode();
+  m_in2   = m_flavs[1].Kfcode();
+  m_out1  = m_flavs[3].Kfcode();
+  m_out2  = m_flavs[4].Kfcode();
+  p_p     = new double[24];
   for (size_t i=0;i<24;i++) p_p[i] = 0.;
   p_m2i   = new double[sqr(2*HAWK_NF+1)];
   p_m2i0  = new double[sqr(2*HAWK_NF+1)];
@@ -243,39 +250,71 @@ HAWK_Process::HAWK_Process(const Process_Info& pi,
 HAWK_Process::~HAWK_Process() { }
 
 
+inline int HAWK_Process::mp(const int id,const int i) { 
+  if (id<2)  return i*HAWK_NP+id; 
+  if (id==2) return i*HAWK_NP+4; 
+  if (id==3)  return i*HAWK_NP+2; 
+  if (id==4)  return i*HAWK_NP+3; 
+}
+
+inline void HAWK_Process::
+GetMom(double * phawk,const int n,const ATOOLS::Vec4D &p)
+{ 
+  for (int i(0);i<4;++i) phawk[mp(n,i)]=p[i]; 
+}
+
+
 void HAWK_Process::CallHAWK(const int & i,const int & j,
 			    const int & k,const int & l) {
   mat2_(p_p,p_m2i0,p_m2if0,p_m2i,p_m2if);
-
-  msg_Out()<<METHOD<<": "
-	   <<"Born & loop level for {"<<i<<" "<<j<<"} --> {"<<k<<" "<<l<<"}: "
-	   <<p_m2if0[mr2(i,j,k,l)]<<" "<<p_m2if[mr2(i,j,k,l)]<<".\n";
+  msg_Out()<<METHOD<<": "<<p_m2if0[mr2(-i,j,-k,l)]/36.<<"\n";
 }
 
 void HAWK_Process::Calc(const Vec4D_Vector &p)
 {
   for (size_t n(0);n<p.size();++n) GetMom(p_p,n,p[n]);
-  long int i(m_flavs[0]+1), j(m_flavs[1]+1);
-  long int k(i), l(j);
-  msg_Out()<<"----------- "<<METHOD<<" -----------\n"
-	   <<"flavs = {"<<i<<", "<<j<<"} -> {"<<k<<", "<<l<<"}"
+  msg_Out()<<"==============================================================\n"
+	   <<"==============================================================\n"
+	   <<"==============================================================\n"
+	   <<"----------- "<<METHOD<<" -----------\n"
+	   <<"flavs = {"<<m_in1<<", "<<m_in2<<"} -> "
+	   <<"{"<<m_out1<<", "<<m_out2<<"} "
+	   <<"for mH = "<<Flavour(kf_h0).Mass()
 	   <<" with "<<p.size()<<" vectors.\n";
   for (size_t n=0;n<p.size();n++) {
-    msg_Out()<<" p["<<n<<"] = (";
+    msg_Out()<<" "<<m_flavs[n]<<": p["<<n<<"] = (";
     for (size_t i=0;i<3;i++) msg_Out()<<p_p[mp(n,i)]<<",";
     msg_Out()<<p_p[mp(n,3)]<<") from "<<p[n]<<" "
 	     <<"("<<sqrt(dabs(p[n].Abs2()))<<")\n";
   }
-  CallHAWK(i,j,k,l);
+  msg_Out()<<"----------- "<<METHOD<<" -----------\n"
+	   <<"Invariants: t13 = "<<(p[3]-p[0]).Abs2()
+	   <<"   ["<<m_flavs[0]<<"-"<<m_flavs[3]<<"], "
+	   <<"t24 = "<<(p[4]-p[1]).Abs2()
+	   <<"   ["<<m_flavs[1]<<"-"<<m_flavs[4]<<"]\n"
+	   <<"   from "<<p[0]<<"-"<<p[3]<<"\n"
+	   <<"   and  "<<p[1]<<"-"<<p[4]<<".\n"
+	   <<"   now CallHawk("<<m_in1<<", "<<m_in2
+	   <<", "<<m_out1<<", "<<m_out2<<"),\n"
+	   <<"   WWH coupling = "<<Flavour(kf_Wplus).Yuk()<<", "
+	   <<"sin^2TW = "<<param_.sw2<<".\n";
+  CallHAWK(m_in1,m_in2,m_out1,m_out2);
 
-  double norm(m_norm*(k==l?0.5:1.));
-  m_res.Finite() = norm*p_m2if[mr2(i,j,k,l)];
-  m_res.IR()     = norm*p_m2if0[mr2(i,j,k,l)];
-  m_res.IR2()    = norm*p_m2if0[mr2(i,j,k,l)];
-  m_born         = norm*p_m2if0[mr2(i,j,k,l)];
+  double norm(m_norm*(m_out1==m_out2?0.5:1.));
+  m_res.Finite() = norm*p_m2if[mr2(m_in1,m_in2,m_out1,m_out2)];
+  m_res.IR()     = norm*p_m2if0[mr2(m_in1,m_in2,m_out1,m_out2)];
+  m_res.IR2()    = norm*p_m2if0[mr2(m_in1,m_in2,m_out1,m_out2)];
+  m_born         = norm*p_m2if0[mr2(m_in1,m_in2,m_out1,m_out2)];
 
   msg_Out()<<METHOD<<" yields finite virtual = "<<m_res.Finite()
-		 <<" with  Born = "<<m_born<<".\n";
+	   <<" with  Born = "<<m_born<<",\n"
+	   <<"   (normalisation of 1/36 included).\n"
+	   <<"   maybe have to multiply with "
+	   <<abs(pow(xparam_.xsw2/param_.sw2,3))<<" * "
+	   <<pow(param_.alpha0/param_.alpha,3.)<<"\n"
+    	   <<"==============================================================\n"
+	   <<"==============================================================\n"
+	   <<"==============================================================\n";
 }
 
 double HAWK_Process::Eps_Scheme_Factor(const Vec4D_Vector& mom)

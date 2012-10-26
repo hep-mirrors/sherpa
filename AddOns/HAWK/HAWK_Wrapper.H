@@ -8,25 +8,6 @@
 #define HAWK_NF 5
 #define HAWK_NP 6
 
-inline int mr(const int i,const int j)
-{ return (j+HAWK_NF)*(2*HAWK_NF+1)+(i+HAWK_NF); }
-
-inline int mr2(const int i,const int j,const int k,const int l)
-{ return (l+HAWK_NF)*pow(2*HAWK_NF+1,3)+(k+HAWK_NF)*pow(2*HAWK_NF+1,2)+
-    (j+HAWK_NF)*(2*HAWK_NF+1)+(i+HAWK_NF); 
-}
-
-inline int mp(const int id,const int i) { 
-  if (id<2)  return i*HAWK_NP+id; 
-  if (id==2) return i*HAWK_NP+(id+2); 
-  if (id>2)  return i*HAWK_NP+(id-1); 
-}
-
-inline void GetMom(double * phawk,const int n,const ATOOLS::Vec4D &p)
-{ 
-  for (int i(0);i<4;++i) phawk[mp(n,i)]=p[i]; 
-}
-
 extern "C" {
   extern struct {
     double mudim2;
@@ -37,10 +18,10 @@ extern "C" {
   extern struct {
     double gevfb;
   } gevfb_;
-  extern struct {
-    double qu,qd,ql,qn,qf[4],mu,mu2,md,md2;
-    Complex guu[3], gdd[3];
-  } qf_;
+  //extern struct {
+  //  double qu,qd,ql,qn,qf[4],mu,mu2,md,md2;
+  //  Complex guu[3], gdd[3];
+  //} qf_;
   // this common block does not need to be filled by us.
   extern struct {
     int dalpz,drbos,drferm,qalp;

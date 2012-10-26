@@ -1,6 +1,7 @@
 
 HAWK_SOURCES  =	\
-		HAWK_Interface.C
+		HAWK_Interface.C \
+		qfsinit.f
 
 HAWK_ADDS     =	\
 		HAWK_Wrapper.H
