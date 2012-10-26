@@ -1,10 +1,8 @@
 (run){
   EVENTS 2.5M; ERROR=0.1;
-  SP_NLOCT=1; SCF:=1.0; QF:=1.0;
+  SCF:=1.0; QF:=1.0;
   SCALES METS{SCF*MU_F2}{SCF*MU_R2}{QF*MU_Q2};
-  LJET:=2; NJET:=4; QCUT:=30;
-  EXCLUSIVE_CLUSTER_MODE 1;
-  LOOPGEN0:=Internal
+  NJET:=4; QCUT:=20;
   ANALYSIS Rivet;
   ANALYSIS_OUTPUT=ana.NJET.QCUT.SCF.QF
   RESULT_DIRECTORY=res.QCUT.SCF.QF
@@ -13,18 +11,12 @@
 (processes){
   Process 93 93 -> -13 14 93{NJET};
   Order_EW 2; CKKW sqr(QCUT/E_CMS);
-  NLO_QCD_Part BVIRS {LJET};
-  Loop_Generator LOOPGEN0 {2};
-  ME_Generator Amegic {LJET};
   Enhance_Factor 16 {3}; 
   Enhance_Factor 128 {4,5};
   End process;
 
   Process 93 93 -> 13 -14 93{NJET};
   Order_EW 2; CKKW sqr(QCUT/E_CMS);
-  NLO_QCD_Part BVIRS {LJET};
-  Loop_Generator LOOPGEN0 {2};
-  ME_Generator Amegic {LJET};
   Enhance_Factor 16 {3}; 
   Enhance_Factor 128 {4,5};
   End process;
@@ -35,9 +27,8 @@
 }(selector);
 
 (me){
-  ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN0;
+  ME_SIGNAL_GENERATOR Comix;
   EVENT_GENERATION_MODE Weighted;
-  NLO_Mode 3;
 }(me);
 
 (beam){
