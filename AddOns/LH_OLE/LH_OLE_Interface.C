@@ -222,13 +222,14 @@ Virtual_ME2_Base *LH_OLE_Interface_Getter::operator()(const Process_Info &pi) co
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="LHOLE") return NULL;
-  msg_Info()<<"Les Houches One-Loop Generator called.\n";
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
+    msg_Info()<<"Les Houches One-Loop Generator called.\n";
     return new LH_OLE_Interface(pi, fl, true);
   }
   else if (pi.m_fi.m_nloqcdtype&nlo_type::vsub) {
+    msg_Info()<<"Les Houches One-Loop Generator called in subtracted mode.\n";
     return new LH_OLE_Interface(pi, fl, false);
   }
   msg_Info()<<"Les Houches One-Loop Generator could not provide one-loop \n"
