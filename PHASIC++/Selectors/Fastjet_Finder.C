@@ -12,7 +12,7 @@
 namespace PHASIC {
   class Fastjet_Finder : public Selector_Base {
     double m_ptmin,m_etmin,m_delta_r,m_f,m_eta,m_y;
-    int m_nb;
+    int m_nb, m_eekt;
     fastjet::JetDefinition * p_jdef;
     fastjet::SISConePlugin * p_siscplug;
     fastjet::EECambridgePlugin * p_eecamplug;
@@ -57,15 +57,17 @@ using namespace ATOOLS;
 Fastjet_Finder::Fastjet_Finder(int nin, int nout,ATOOLS::Flavour * fl, std::string algo,
 			       double ptmin, double etmin, double dr, double f, double eta, double y, int nn, int nb) :
   Selector_Base("Fastjetfinder"), m_ptmin(ptmin), m_etmin(etmin), 
-  m_delta_r(dr), m_f(f), m_eta(eta), m_y(y), m_nb(nb), p_jdef(0),
+  m_delta_r(dr), m_f(f), m_eta(eta), m_y(y), m_nb(nb), m_eekt(0), p_jdef(0),
   p_siscplug(NULL), p_eecamplug(NULL), p_jadeplug(NULL)
 {
+  bool ee(rpa->gen.Beam1().IsLepton() && rpa->gen.Beam2().IsLepton());
+
   fastjet::JetAlgorithm ja(fastjet::kt_algorithm);
 
   if (algo=="cambridge") ja=fastjet::cambridge_algorithm;
   if (algo=="antikt")    ja=fastjet::antikt_algorithm;
   if (algo=="siscone") p_siscplug=new fastjet::SISConePlugin(m_delta_r,m_f);
-  if (rpa->gen.Beam1().IsLepton() && rpa->gen.Beam2().IsLepton()) {
+  if (ee) {
     if (algo=="eecambridge") p_eecamplug=new fastjet::EECambridgePlugin(dr);
     if (algo=="jade") p_jadeplug=new fastjet::JadePlugin();
   }
@@ -73,6 +75,10 @@ Fastjet_Finder::Fastjet_Finder(int nin, int nout,ATOOLS::Flavour * fl, std::stri
   if (p_siscplug) p_jdef=new fastjet::JetDefinition(p_siscplug);
   else if (p_eecamplug) p_jdef=new fastjet::JetDefinition(p_eecamplug);
   else if (p_jadeplug) p_jdef=new fastjet::JetDefinition(p_jadeplug);
+  else if (ee) {
+    p_jdef=new fastjet::JetDefinition(fastjet::ee_kt_algorithm);
+    m_eekt=1;
+  }
   else p_jdef=new fastjet::JetDefinition(ja,m_delta_r);
 
   m_fl         = fl;
@@ -119,6 +125,13 @@ bool Fastjet_Finder::Trigger(const Vec4D_Vector &p)
   fastjet::ClusterSequence cs(input,*p_jdef);
   jets=cs.inclusive_jets();
 
+  if (m_eekt) {
+    int n(0);
+    for (size_t i(0);i<input.size();++i)
+      if (cs.exclusive_dmerge_max(i)>sqr(m_ptmin)) ++n;
+    return (1-m_sel_log->Hit(1-(n>=m_n)));
+  }
+
   int n(0), nb(0);
   for (size_t i(0);i<jets.size();++i) {
     Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
@@ -154,6 +167,13 @@ bool Fastjet_Finder::JetTrigger(const Vec4D_Vector &p,
   
   fastjet::ClusterSequence cs(input,*p_jdef);
   jets=cs.inclusive_jets();
+
+  if (m_eekt) {
+    int n(0);
+    for (size_t i(0);i<input.size();++i)
+      if (cs.exclusive_dmerge_max(i)>sqr(m_ptmin)) ++n;
+    return (1-m_sel_log->Hit(1-(n>=m_n)));
+  }
 
   int n(0), nb(0);
   for (size_t i(0);i<jets.size();++i) {
