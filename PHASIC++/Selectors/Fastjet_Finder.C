@@ -6,6 +6,8 @@
 #include "fastjet/PseudoJet.hh"
 #include "fastjet/ClusterSequence.hh"
 #include "fastjet/SISConePlugin.hh"
+#include "fastjet/EECambridgePlugin.hh"
+#include "fastjet/JadePlugin.hh"
 
 namespace PHASIC {
   class Fastjet_Finder : public Selector_Base {
@@ -13,6 +15,8 @@ namespace PHASIC {
     int m_nb;
     fastjet::JetDefinition * p_jdef;
     fastjet::SISConePlugin * p_siscplug;
+    fastjet::EECambridgePlugin * p_eecamplug;
+    fastjet::JadePlugin * p_jadeplug;
 
     bool BTag(const fastjet::PseudoJet& jet);
 
@@ -53,15 +57,22 @@ using namespace ATOOLS;
 Fastjet_Finder::Fastjet_Finder(int nin, int nout,ATOOLS::Flavour * fl, std::string algo,
 			       double ptmin, double etmin, double dr, double f, double eta, double y, int nn, int nb) :
   Selector_Base("Fastjetfinder"), m_ptmin(ptmin), m_etmin(etmin), 
-  m_delta_r(dr), m_f(f), m_eta(eta), m_y(y), m_nb(nb), p_jdef(0), p_siscplug(0)
+  m_delta_r(dr), m_f(f), m_eta(eta), m_y(y), m_nb(nb), p_jdef(0),
+  p_siscplug(NULL), p_eecamplug(NULL), p_jadeplug(NULL)
 {
   fastjet::JetAlgorithm ja(fastjet::kt_algorithm);
 
   if (algo=="cambridge") ja=fastjet::cambridge_algorithm;
   if (algo=="antikt")    ja=fastjet::antikt_algorithm;
   if (algo=="siscone") p_siscplug=new fastjet::SISConePlugin(m_delta_r,m_f);
+  if (rpa->gen.Beam1().IsLepton() && rpa->gen.Beam2().IsLepton()) {
+    if (algo=="eecambridge") p_eecamplug=new fastjet::EECambridgePlugin(dr);
+    if (algo=="jade") p_jadeplug=new fastjet::JadePlugin();
+  }
 
   if (p_siscplug) p_jdef=new fastjet::JetDefinition(p_siscplug);
+  else if (p_eecamplug) p_jdef=new fastjet::JetDefinition(p_eecamplug);
+  else if (p_jadeplug) p_jdef=new fastjet::JetDefinition(p_jadeplug);
   else p_jdef=new fastjet::JetDefinition(ja,m_delta_r);
 
   m_fl         = fl;
@@ -79,6 +90,8 @@ Fastjet_Finder::Fastjet_Finder(int nin, int nout,ATOOLS::Flavour * fl, std::stri
 Fastjet_Finder::~Fastjet_Finder() {
   delete p_jdef;
   if (p_siscplug) delete p_siscplug;
+  if (p_eecamplug) delete p_eecamplug;
+  if (p_jadeplug) delete p_jadeplug;
 }
 
 
