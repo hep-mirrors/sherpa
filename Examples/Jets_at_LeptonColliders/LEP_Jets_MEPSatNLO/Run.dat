@@ -1,0 +1,33 @@
+(run){
+  EVENTS 5M;
+  SP_NLOCT=1
+  LJET:=2,3,4; NJET:=4; YCUT:=2.0; SCF:=1.0;
+  EXCLUSIVE_CLUSTER_MODE 1;
+  ALPHAS(MZ)=0.1176;
+  SCALES METS{SCF*MU_F2}{SCF*MU_R2}{MU_Q2};
+  ANALYSIS Rivet;
+  CSS_FS_PT2MIN 2; CSS_IS_PT2MIN 2;
+  CSS_FS_AS_FAC 2; CSS_IS_AS_FAC 1;
+  CSS_KIN_SCHEME 1;
+  LOOPGEN:=<my-loop-gen>
+  RESULT_DIRECTORY=Results.YCUT
+  ANALYSIS_OUTPUT=Analysis.scfSCF.RANDOMTAG
+}(run);
+(processes){
+  Process 11 -11 -> 93 93 93{NJET};
+  Order_EW 2; CKKW pow(10,-YCUT);
+  NLO_QCD_Part BVIRS {LJET}; Loop_Generator LOOPGEN; 
+  ME_Generator Amegic {LJET}; RS_Enhance_Factor 10;
+  End process;
+}(processes);
+(me){
+  ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN;
+  EVENT_GENERATION_MODE W; NLO_Mode 3;
+}(me);
+(beam){
+  BEAM_1  11; BEAM_ENERGY_1 45.625;
+  BEAM_2 -11; BEAM_ENERGY_2 45.625;
+}(beam);
+(isr){
+  PDF_SET None;
+}(isr);

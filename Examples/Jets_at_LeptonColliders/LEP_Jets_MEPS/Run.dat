@@ -1,0 +1,28 @@
+(run){
+  EVENTS = 10000
+}(run)
+
+(beam){
+  BEAM_1 =  11; BEAM_ENERGY_1 = 45.6;
+  BEAM_2 = -11; BEAM_ENERGY_2 = 45.6;
+}(beam)
+
+(isr){
+  PDF_SET PDFe;
+}(isr)
+
+(processes){
+  Process 11 -11 -> 93 93 93{2};
+  CKKW pow(10,-2.25);
+  Order_EW 2;
+  End process;
+
+  Process 11 -11 -> 5 -5 93{2};
+  CKKW pow(10,-2.25);
+  Order_EW 2;
+  End process;
+}(processes)
+
+(model){
+  MASSIVE[5] = 1
+}(model)
