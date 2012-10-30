@@ -83,7 +83,7 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
   smin = sqr(smin);
 
   Data_Reader read(" ",";","!","=");
-  double sijminfac = read.GetValue<int>("INT_MINSIJ_FACTOR", 1.e-12);
+  double sijminfac = read.GetValue<double>("INT_MINSIJ_FACTOR", 1.e-12);
   for (int i=0;i<ncut;i++) {
     for (int j=i;j<ncut;j++) {
       cosmin[i][j] = cosmin[j][i] = cosmin_save[i][j] = -1.;
