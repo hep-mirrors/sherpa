@@ -424,10 +424,9 @@ void Standard_Model::FillSpectrum(const PDF::ISR_Handler_Map& isr)
 void Standard_Model::FixEWParameters() {
   double MW,MZ,MH,GW,GZ,GH,alphaQED0,sin2thetaW,cos2thetaW,vev,lambdaH,GF;
   Complex csin2thetaW, ccos2thetaW, cvev,clambdaH, I(0.0, 1.0);
-  string widthscheme = p_dataread->GetValue<string>("WIDTH_SCHEME","Fixed");
+  string widthscheme = p_dataread->GetValue<string>("WIDTH_SCHEME","CMS");
   p_numbers->insert(make_pair(string("WidthScheme"), widthscheme=="CMS"));
-  int ewscheme = p_dataread->GetValue<int>("EW_SCHEME",0);
-  // TODO: Shouldn't we make 1 the default?
+  int ewscheme = p_dataread->GetValue<int>("EW_SCHEME",1);
 
   switch (ewscheme) {
   case 0:
@@ -517,8 +516,6 @@ void Standard_Model::FixEWParameters() {
       Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ)), muH2(MH*(MH-I*GH));
       ccos2thetaW = muW2/muZ2;
       csin2thetaW = 1.-ccos2thetaW;
-      //aqed->SetDefault(Complex(sqrt(2.)*GF/M_PI*muW2*csin2thetaW).real());
-      aqed->SetDefault(sqrt(2.)*GF/M_PI*MW*MW*(1-MW*MW/MZ/MZ));
       cvev        = 1./(pow(2.,0.25)*sqrt(GF));
       clambdaH    = 2.*muH2/(cvev*cvev);
       break;
