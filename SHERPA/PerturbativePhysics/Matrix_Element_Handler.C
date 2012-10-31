@@ -87,7 +87,17 @@ Matrix_Element_Handler::Matrix_Element_Handler
     msg_Info()<<METHOD<<"(): Set seed increment to "
               <<read.GetValue("EVENT_SEED_INCREMENT",1)<<std::endl;
   }
-  if (!read.ReadFromFile(m_nlomode,"NLO_Mode")) m_nlomode=1;
+  std::string nlomodestring("");
+  if (!read.ReadFromFile(nlomodestring,"NLO_Mode")) m_nlomode=1;
+  else {
+    if (nlomodestring=="MC@NLO" || nlomodestring=="MENLOPS" ||
+        nlomodestring=="MEPS@NLO" || nlomodestring=="3") m_nlomode=3;
+    else if (nlomodestring=="Fixed_Order") m_nlomode=1;
+    else m_nlomode=ToType<size_t>(nlomodestring);
+  }
+  msg_Debugging()<<METHOD<<"(): NLO_Mode = "<<m_nlomode<<std::endl;
+  if (m_nlomode!=1 && m_nlomode !=3)
+    THROW(fatal_error,"Unknown NLO_Mode="+nlomodestring);
 }
 
 Matrix_Element_Handler::~Matrix_Element_Handler()
