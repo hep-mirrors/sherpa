@@ -3,19 +3,12 @@
   SCF:=1.0; QF:=1.0;
   SCALES METS{SCF*MU_F2}{SCF*MU_R2}{QF*MU_Q2};
   NJET:=4; QCUT:=20;
-  ANALYSIS Rivet;
-  ANALYSIS_OUTPUT=ana.NJET.QCUT.SCF.QF
-  RESULT_DIRECTORY=res.QCUT.SCF.QF
+  RESULT_DIRECTORY=res.QCUT.SCF.QF;
+  MASSIVE[15] 1;
 }(run);
 
 (processes){
-  Process 93 93 -> -13 14 93{NJET};
-  Order_EW 2; CKKW sqr(QCUT/E_CMS);
-  Enhance_Factor 16 {3}; 
-  Enhance_Factor 128 {4,5};
-  End process;
-
-  Process 93 93 -> 13 -14 93{NJET};
+  Process 93 93 -> 90 91 93{NJET};
   Order_EW 2; CKKW sqr(QCUT/E_CMS);
   Enhance_Factor 16 {3}; 
   Enhance_Factor 128 {4,5};
@@ -35,9 +28,3 @@
   BEAM_1 2212; BEAM_ENERGY_1 3500;
   BEAM_2 2212; BEAM_ENERGY_2 3500;
 }(beam);
-
-(analysis){
-   BEGIN_RIVET {
-     -a ATLAS_2012_I1083318 ATLAS_2011_S9002537 ATLAS_2011_I925932 MC_WJETS MC_XS
-   } END_RIVET;
-}(analysis)
