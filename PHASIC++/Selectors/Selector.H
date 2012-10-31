@@ -96,9 +96,6 @@ namespace PHASIC {
     inline void SetProcess(Process_Integrator *const proc) 
     { p_proc=proc; }
 
-    inline void SetSRange(const double &smin,const double &smax)
-    {  m_smin=smin; m_smax=smax; }
-
     inline std::string Name() const { return m_name; }
 
   };// end of class Selector_Base
