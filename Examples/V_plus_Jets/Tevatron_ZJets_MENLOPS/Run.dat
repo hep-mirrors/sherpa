@@ -12,7 +12,8 @@
 (processes){
   Process 93 93 -> 90 -90 93{3};
   NLO_QCD_Part BVIRS {2};
-  Loop_Generator Internal;
+  Loop_Generator Internal {2};
+  ME_Generator Amegic {2};
   Order_EW 2;
   CKKW sqr(20./E_CMS);
   Scales VAR{MPerp2(p[2]+p[3])} {2};
@@ -26,9 +27,9 @@
 }(selector)
 
 (me){
-  ME_SIGNAL_GENERATOR Amegic Internal;
+  ME_SIGNAL_GENERATOR Comix Amegic Internal;
   EVENT_GENERATION_MODE Weighted;
-  NLO_Mode 2;
+  NLO_Mode MENLOPS;
 }(me)
 
 (mi){
