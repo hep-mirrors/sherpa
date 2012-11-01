@@ -1,0 +1,21 @@
+(run){
+  EVENTS 10000;
+  # Generator parameters
+  LGEN:=LHOLE;
+# SHERPA_LDADD golem_olp;
+# LHOLE_CONTRACTFILE OLE_order.olc;
+  LHOLE_CMSBOOST 1;
+  LHOLE_OLP GoSam;
+  ME_SIGNAL_GENERATOR Amegic LGEN;
+  # Physics parameters
+  BEAM_1  2212; BEAM_ENERGY_1 980;
+  BEAM_2 -2212; BEAM_ENERGY_2 980;
+}(run);
+
+(processes){
+  Process 93 93 -> 6 -6;
+  NLO_QCD_Part BVIRS;
+  Loop_Generator LGEN;
+  Order_EW 0;
+  End process;
+}(processes);
