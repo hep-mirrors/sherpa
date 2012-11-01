@@ -10,6 +10,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
 using namespace PDF;
@@ -31,7 +32,8 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   int nflav_pdf=0;
   for (int i=0;i<2;i++){
     if ((abs(p_isrbase[i]->Flavour())==2212) && 
-	(std::string(p_isrbase[i]->PDF()->Type().begin(),p_isrbase[i]->PDF()->Type().begin()+3)=="LHA")){
+	(std::string(p_isrbase[i]->PDF()->Type().begin(),
+		     p_isrbase[i]->PDF()->Type().begin()+3)=="LHA")){
       std::string pdf_type=p_isrbase[i]->PDF()->Type();
       std::string pdf = std::string(pdf_type.begin()+4,pdf_type.end()-1);
       std::string pdf_string = std::string(pdf.begin(),pdf.begin()+4);
@@ -77,8 +79,8 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
 
   for (int i=0; i<2; i++){
     if (m_pdf_flavs[i]==0){
-      std::cout << "Unsure of how many light partons in pdf for beam "
-		<< i+1<<" - will default to 5" << std::endl;
+      msg_Info() << "Unsure of how many light partons in pdf for beam "
+		 << i+1<<" - will default to 5" << std::endl;
       m_pdf_flavs[i]=5;
     }
   }
