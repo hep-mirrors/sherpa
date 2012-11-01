@@ -8,6 +8,11 @@ import gtk
 import ParameterBox    as parameterbox
 import BeamSection_GUI as beams_gui
 import PDFSection_GUI  as pdfs_gui
+import ProcSection_GUI as procs_gui
+import MESection_GUI   as mes_gui
+import SelSection_GUI  as sels_gui
+import SoftSection_GUI as soft_gui
+import AnaSection_GUI  as ana_gui
 
 class runcard_gui_gtk():
     def __init__(self):
@@ -23,9 +28,24 @@ class runcard_gui_gtk():
                                                "Beams","Beams",1)
         self.pdfs  = pdfs_gui.PDFsection_gui(self.parameters,
                                              "PDFs","PDFs",2)
-        #self.procs = procs_gui.Procsection_gui_gtk(self.parameters)
+        self.procs = procs_gui.Procsection_gui(self.parameters,
+                                               "Processes","Processes",3)
+        self.mes   = mes_gui.MEsection_gui(self.parameters,
+                                           "Loop Generators",
+                                           "Loop Generators",4)
+        self.sels  = sels_gui.Selsection_gui(self.parameters,
+                                             "Selectors",
+                                             "Selectors",5)
+        self.soft  = soft_gui.Softsection_gui(self.parameters,
+                                              "Nonperturbative",
+                                              "Nonperturbative",6)
+        self.ana   = ana_gui.Anasection_gui(self.parameters,
+                                            "Analysis",
+                                            "Analysis",7)
 
-        self.guiparts = [self.beams,self.pdfs]
+        self.guiparts = [self.beams,self.pdfs,
+                         self.procs,self.mes,self.sels,
+                         self.soft,self.ana]
 
 
     def visualSettings(self):
@@ -56,13 +76,17 @@ class runcard_gui_gtk():
         self.update("All")
         self.window.show_all()
 
-        writebutton = gtk.Button(label="Write to file")
-        writebutton.connect("clicked", self.writebutton_clicked)
+        writeSbutton = gtk.Button(label="Write to Sherpa file")
+        writeSbutton.connect("clicked", self.writebutton_clicked,"Sherpa")
+        writeHbutton = gtk.Button(label="Write to Herwig file")
+        writeHbutton.connect("clicked", self.writebutton_clicked,"Herwig")
         exitbutton = gtk.Button(label="Exit GUI without writing")
         exitbutton.connect("clicked", self.exitbutton_clicked)
-        table.attach(writebutton, 1,2,1,2)
-        table.attach(exitbutton, 2,3,1,2)
-        writebutton.show()
+        table.attach(writeSbutton, 1,2,1,2)
+        table.attach(writeHbutton, 2,3,1,2)
+        table.attach(exitbutton, 3,4,1,2)
+        writeSbutton.show()
+        writeHbutton.show()
         exitbutton.show()
 
     def update(self,mode):
@@ -71,11 +95,17 @@ class runcard_gui_gtk():
             collider = self.parameters.getBeamBox().getCollider()
             self.parameters.getPDFBox().initialiseDefaults(collider)
             self.pdfs.updateOptions()
+            self.parameters.getProcBox().initialiseDefaults(collider)
+            self.procs.updateOptions()
         if mode=="PDFs" or mode=="All":
             pass
+        if mode=="Procs" or mode=="All":
+            pass
 
-    def writebutton_clicked(self, widget):
-        self.parameters.write()
+    def writebutton_clicked(self, widget, genstring):
+        for guipart in self.guiparts:
+            guipart.extractParameters()
+        self.parameters.write(genstring)
 
     def exitbutton_clicked(self, widget):
         gtk.main_quit()

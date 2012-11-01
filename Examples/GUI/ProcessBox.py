@@ -5,150 +5,75 @@ import gtk
 
 class ProcessBox:
     def __init__(self):
-        self.LCmap = {
-            "Jets"                       : PI(["11 -11 -> 93 93 93{NJETS};"],
-                                              ["MODEL = SM;"],
-                                              6,4,0),
-            }
-        self.HCmap = {
-            # Format for input:
-            # [[<process_tag>,<decay_tags>],maxjets,nlojets,extra_FS_particles]
-            # use -1,-1,-1 to steer alternatives, may have to use
-            # the read-in facilities of Sherpa in a smarter way
-            #
-            "MinimumBias"                : PI(["MinimumBias"],[""],
-                                              -1,-1,-1),
-            "Jets"                       : PI(["93 93 -> 93 93 93{NJETS};"],
-                                              ["MODEL = SM;"],
-                                              4,2,1),
-            "Gamma+Jets"                 : PI(["93 93 -> 22 93 93{NJETS};"],
-                                              ["MODEL = SM;"],
-                                              4,2,0),
-            "(W^+ -> e^+ nu) + Jets"     : PI(["93 93 -> 24[a] 93{NJETS};",
-                                               "24[a] -> -11 12;"],
-                                              ["MODEL = SM;"],
-                                              5,2,2),
-            "(W^+ -> mu^+ nu) + Jets"    : PI(["93 93 -> 24[a] 93{NJETS};",
-                                               "24[a] -> -13 14;"],
-                                              ["MODEL = SM;"],
-                                              5,2,2),
-            "(W^+ -> tau^+ nu) + Jets"   : PI(["93 93 -> 24[a] 93{NJETS};",
-                                               "24[a] -> -15 16;"],
-                                              ["MODEL = SM;"],
-                                              5,2,2),
-            "(W^- -> e^- nu) + Jets"     : PI(["93 93 -> -24[a] 93{NJETS};",
-                                               "-24[a] -> 11 -12;"],
-                                              ["MODEL = SM;"],
-                                              5,2,2),
-            "(W^- -> mu^- nu) + Jets"    : PI(["93 93 -> -24[a] 93{NJETS};",
-                                               "-24[a] -> 13 -14;"],
-                                              ["MODEL = SM;"],
-                                              5,2,2),
-            "(W^- -> tau^- nu) + Jets"   : PI(["93 93 -> -24[a] 93{NJETS};",
-                                               "-24[a] -> 15 -16;"],
-                                              ["MODEL = SM;"],
-                                              5,2,2),
-            "(Z -> e^- e^+) + Jets"      : PI(["93 93 -> 23[a] 93{NJETS};",
-                                               "23[a] -> 11 -11;"],
-                                              ["MODEL = SM;"],
-                                              5,2,2),
-            "(Z -> mu^- mu^+) + Jets"    : PI(["93 93 -> 23[a] 93{NJETS};",
-                                               "23[a] -> 13 -13;"],
-                                              ["MODEL = SM;"],
-                                              5,2,2),
-            "(Z -> tau^- tau^+) + Jets"  : PI(["93 93 -> 23[a] 93{NJETS};",
-                                               "23[a] -> 15 -15;"],
-                                              ["MODEL = SM;"],
-                                              5,2,2),
-            "(Z -> nu nu) + Jets"        : PI(["93 93 -> 23[a] 93{NJETS};",
-                                               "23[a] -> 11 -11;"],
-                                              ["MODEL = SM;"],
-                                              5,2,2),
-            "(e^- e^+) + Jets"           : PI(["93 93 -> 11 -11 93{NJETS};"],
-                                              ["MODEL = SM;"],
-                                              5,2,2),
-            "(mu^- mu^+) + Jets"         : PI(["93 93 -> 13 -13 93{NJETS};"],
-                                              ["MODEL = SM;"],
-                                              5,2,2),
-            "(tau^- tau^+) + Jets"       : PI(["93 93 -> 15 -15 93{NJETS};"],
-                                              ["MODEL = SM;"],
-                                              5,2,2),
-            }
+        self.LCmap = {}
+        self.HCmap = {}
+        self.fillMaps()
         
+        self.NC = gtk.TreeStore(str, bool)
+        self.NC.append(None,["None",False])
+
+        self.LC = gtk.TreeStore(str, bool)
+        self.fillLCStore()
+
         self.HC = gtk.TreeStore(str, bool)
-        parent = self.HC.append(None,["Minimum Bias",False])
-        self.HC.append(parent,["MinimumBias",True])
-
-        parent = self.HC.append(None,["Hard QCD",False])
-        self.HC.append(parent,["Jets",True])
-
-        parent = self.HC.append(None,["V+jets",False])
-        self.HC.append(parent,["Gamma+Jets",True])
-        self.HC.append(parent,["(W^+ -> e^+ nu) + Jets",True])
-        self.HC.append(parent,["(W^+ -> mu^+ nu) + Jets",True])
-        self.HC.append(parent,["(W^+ -> tau^+ nu) + Jets",True])
-        self.HC.append(parent,["(W^- -> e^- nu) + Jets",True])
-        self.HC.append(parent,["(W^- -> mu^- nu) + Jets",True])
-        self.HC.append(parent,["(W^- -> tau^- nu) + Jets",True])
-        self.HC.append(parent,["(W^{+,-} -> mu^{+,-} nu) + Jets",True])
-        self.HC.append(parent,["(Z -> e^- e^+) + Jets",True])
-        self.HC.append(parent,["(Z -> mu^- mu^+) + Jets",True])
-        self.HC.append(parent,["(Z -> tau^- tau^+) + Jets",True])
-        self.HC.append(parent,["(Z -> nu nu) + Jets",True])
-        self.HC.append(parent,["(e^- e^+) + Jets",True])
-        self.HC.append(parent,["(mu^- mu^+) + Jets",True])
-        self.HC.append(parent,["(tau^- tau^+) + Jets",True])
-
-        parent = self.HC.append(None,["H+jets (gluon fusion)",False])
-        self.HC.append(parent,["(H -> gamma gamma) + Jets",True])
-        self.HC.append(parent,["(H -> tau tau) + Jets",True])
-        self.HC.append(parent,["(H -> e^+ nu mu^- nu) + Jets",True])
-        self.HC.append(parent,["(H -> e^+ e^- mu^+ mu^-) + Jets",True])
-        self.HC.append(parent,["(H -> e^+ e^- nu nu) + Jets",True])
+        self.fillHCStore()
       
-        self.default_process_tag = "Jets"
-        self.default_process     = self.HCmap[self.default_process_tag]
-        self.process_tag         = self.default_process_tag
-        self.process             = self.HCmap[self.process_tag]
-        self.processes           = self.HC
-        self.totjets             = 0
-        self.nlojets             = 0
-        self.ckkw_param          = 10.
+        self.type       = "None"
+        self.process    = None
+        self.processes  = self.NC
+        self.minjets    = 0
+        self.totjets    = 0
+        self.nlojets    = -1
+        self.ckkw_param = 0.
+        self.muF_factor = 1.
+        self.muR_factor = 1.
+        self.muQ_factor = 1.
 
     def initialiseDefaults(self,collider):
-        processes = None
+        print "Proc::initialiseDefaults",collider[2],collider[4]
+        self.processes = self.NC
+        self.type      = "None"
         if ((collider[2]==2212 or collider[2]==-2212) and
             (collider[4]==2212 or collider[4]==-2212)):
+            print "   select HC"
             self.processes = self.HC
+            self.type      = "HC"
+            return
         if ((collider[2]==11 or collider[2]==-11) and
             (collider[4]==11 or collider[4]==-11)):
+            print "   select LC"
             self.processes = self.LC
-
-        if self.processes!=None:
-            for row in self.processes:
-                if row[1]==self.default_process_tag:
-                    self.default_process = row
-                    self.process = self.default_process
-        if self.process!=None:
-            print "Initialised default process: ",self.default_process_tag
-        
-    def getNJets(self):
-        print "getNJets = ",self.process.declarationlines
-        if self.process!=None:
-            print "yields ",self.process.totjets,self.process.nlojets
-            return self.process.totjets,self.process.nlojets
-        return None,None
+            self.type      = "LC"
+            return
+        print"   select nothing"
 
     def getOptions(self):
         return self.processes
 
     def setProcess(self,process_tag):
-        print "Set process = ",process_tag
-        self.process_tag = process_tag
-        self.process     = self.HCmap[self.process_tag]
+        self.process=None
+        if self.processes==self.HC:
+            self.process = self.HCmap[process_tag]
+        if self.processes==self.LC:
+            self.process = self.LCmap[process_tag]
+        if self.process==None:
+            print "Set process = ",process_tag," --> not found."
+            return
+        print "Set process = ",process_tag," --> successful."
+            
+    def getType(self):
+        return self.type
+
+    def getNJets(self):
+        if self.process!=None:
+            return self.process.totjets,self.process.nlojets
+        return None,None
+
+    def getScaleFactors(self):
+        return self.muF_factor,self.muR_factor,self.muQ_factor
 
     def isNLO(self):
-        return (self.nlojets>0)
+        return (self.nlojets>-1)
 
     def setJetMultis(self,minjets=0,totjets=0,nlojets=0):
         self.minjets = minjets
@@ -160,47 +85,150 @@ class ProcessBox:
     def setCKKW(self,ckkw_param):
         self.ckkw_param = ckkw_param
 
+    def setMuFactors(self,muF,muR,muQ):
+        self.muF_factor = muF
+        self.muR_factor = muR
+        self.muQ_factor = muQ
+
     def write(self,runfile):
-        print "Write for ",self.process_tag
-        runfile.write('\n')
-        runfile.write('%%% Process setup: '+self.process_tag+'\n\n')
-        runfile.write('(processes){\n')
+        if self.process==None:
+            runfile.write("\n")
+            runfile.write("%%% Process setup: none selected\n\n")
+            return
+        print "Write for ",self.process[1]
+        runfile.write("\n")
+        runfile.write("%%% Process setup: "+self.process_tag+"\n\n")
+        runfile.write("(processes){\n")
         lineno = 0
         for line in self.process.declarationlines:
             if lineno==0:
-                runfile.write('  Process '+line)
+                runfile.write("  Process "+line)
             else: 
-                runfile.write('    Decay '+line)
-            runfile.write('\n')
+                runfile.write("    Decay "+line)
+            runfile.write("\n")
             lineno += 1
         if self.totjets>0:
-            runfile.write('    CKKW sqr(%0.2f/E_CMS);\n' %(self.ckkw_param))
+            runfile.write("    CKKW sqr(%0.2f/E_CMS);\n" %(self.ckkw_param))
         if self.nlojets>=0:
-            runfile.write('    NLO_QCD_PART BVIRS{')
+            runfile.write("    NLO_QCD_PART BVIRS{")
             ljmin = self.process.fsparts
             ljmax = ljmin+self.nlojets
             for ljet in range (ljmin,ljmax):
-                runfile.write('%i,' %(ljet))
-            runfile.write('%i};\n' %(ljmax))
+                runfile.write("%i," %(ljet))
+            runfile.write("%i};\n" %(ljmax))
         lineno = 0
-        runfile.write('\n')
-        runfile.write('}(processes)\n\n')
+        runfile.write("}(processes)\n\n")
         
-        runfile.write('(model){\n')
+        runfile.write("(model){\n")
         for line in self.process.modellines:
-            runfile.write('  '+line)
+            runfile.write("  "+line)
             lineno += 1
-            runfile.write('\n')
-        runfile.write('}(model)\n')
+            runfile.write("\n")
+        runfile.write("}(model)\n")
+
+    def fillMaps(self):
+        # Format for input:
+        # [[<process_tag>,<decay_tags>],maxjets,nlojets,extra_FS_particles]
+        # use -1,-1,-1 to steer alternatives, may have to use
+        # the read-in facilities of Sherpa in a smarter way
+        #
+        self.LCmap["Jets"] = PI(
+            ["11 -11 -> 93 93 93{NJETS};"],["MODEL = SM;"],6,4,0)
+
+        self.HCmap["MinimumBias"] = PI(
+            ["MinimumBias"],[""],-1,-1,-1)
+
+        self.HCmap["Jets"] = PI(
+            ["93 93 -> 93 93 93{NJETS};"],["MODEL = SM;"],4,2,1)
+
+        self.HCmap["Gamma + Jets"] = PI(
+            ["93 93 -> 22 93 93{NJETS};"],["MODEL = SM;"],4,2,0)
+
+        self.HCmap["(W^+ -> e^+ nu) + Jets"] = PI(
+            ["93 93 -> 24[a] 93{NJETS};","24[a] -> -11 12;"],
+            ["MODEL = SM;"],5,2,2)
+        self.HCmap["(W^+ -> mu^+ nu) + Jets"] = PI(
+            ["93 93 -> 24[a] 93{NJETS};","24[a] -> -13 14;"],
+            ["MODEL = SM;"],5,2,2)
+        self.HCmap["(W^+ -> tau^+ nu) + Jets"] = PI(
+            ["93 93 -> 24[a] 93{NJETS};","24[a] -> -15 16;"],
+            ["MODEL = SM;"],5,2,2)
+        self.HCmap["(W^- -> e^- nu) + Jets"] = PI(
+            ["93 93 -> -24[a] 93{NJETS};","-24[a] -> 11 -12;"],
+            ["MODEL = SM;"],5,2,2)
+        self.HCmap["(W^- -> mu^- nu) + Jets"] = PI(
+            ["93 93 -> -24[a] 93{NJETS};","-24[a] -> 13 -14;"],
+            ["MODEL = SM;"],5,2,2)
+        self.HCmap["(W^- -> tau^- nu) + Jets"] = PI(
+            ["93 93 -> -24[a] 93{NJETS};","-24[a] -> 15 -16;"],
+            ["MODEL = SM;"],5,2,2)
+
+        self.HCmap["(Z -> e^- e^+) + Jets"] = PI(
+            ["93 93 -> 23[a] 93{NJETS};","23[a] -> 11 -11;"],
+            ["MODEL = SM;"],5,2,2)
+        self.HCmap["(Z -> mu^- mu^+) + Jets"] = PI(
+            ["93 93 -> 23[a] 93{NJETS};","23[a] -> 13 -13;"],
+            ["MODEL = SM;"],5,2,2)
+        self.HCmap["(Z -> tau^- tau^+) + Jets"] = PI(
+            ["93 93 -> 23[a] 93{NJETS};","23[a] -> 15 -15;"],
+            ["MODEL = SM;"],5,2,2)
+        self.HCmap["(Z -> nu nu) + Jets"] = PI(
+            ["93 93 -> 23[a] 93{NJETS};","23[a] -> 11 -11;"],
+            ["MODEL = SM;"],5,2,2)
+
+        self.HCmap["(e^- e^+) + Jets"] = PI(
+            ["93 93 -> 11 -11 93{NJETS};"],["MODEL = SM;"],5,2,2)
+        self.HCmap["(mu^- mu^+) + Jets"] = PI(
+            ["93 93 -> 13 -13 93{NJETS};"],["MODEL = SM;"],5,2,2)
+        self.HCmap["(tau^- tau^+) + Jets"] = PI(
+            ["93 93 -> 15 -15 93{NJETS};"],["MODEL = SM;"],5,2,2)
+        
+    def fillLCStore(self):
+        parent = self.LC.append(None,["Hard QCD",False])
+        self.LC.append(parent,["Jets",True])
+
+    def fillHCStore(self):
+        parent = self.HC.append(None,["Minimum Bias",False])
+        self.HC.append(parent,["MinimumBias",True])
+
+        parent = self.HC.append(None,["Hard QCD",False])
+        self.HC.append(parent,["Jets",True])
+
+        parent = self.HC.append(None,["V + jets",False])
+        self.HC.append(parent,["Gamma + Jets",True])
+        daughter = self.HC.append(parent,["W + Jets",False])
+        self.HC.append(daughter,["(W^+ -> e^+ nu) + Jets",True])
+        self.HC.append(daughter,["(W^+ -> mu^+ nu) + Jets",True])
+        self.HC.append(daughter,["(W^+ -> tau^+ nu) + Jets",True])
+        self.HC.append(daughter,["(W^- -> e^- nu) + Jets",True])
+        self.HC.append(daughter,["(W^- -> mu^- nu) + Jets",True])
+        self.HC.append(daughter,["(W^- -> tau^- nu) + Jets",True])
+        self.HC.append(daughter,["(W^{+,-} -> mu^{+,-} nu) + Jets",True])
+        daughter = self.HC.append(parent,["Z + Jets",False])
+        self.HC.append(daughter,["(Z -> e^- e^+) + Jets",True])
+        self.HC.append(daughter,["(Z -> mu^- mu^+) + Jets",True])
+        self.HC.append(daughter,["(Z -> tau^- tau^+) + Jets",True])
+        self.HC.append(daughter,["(Z -> nu nu) + Jets",True])
+        daughter = self.HC.append(parent,["Z/gamma^* + Jets",False])
+        self.HC.append(daughter,["(e^- e^+) + Jets",True])
+        self.HC.append(daughter,["(mu^- mu^+) + Jets",True])
+        self.HC.append(daughter,["(tau^- tau^+) + Jets",True])
+
+        parent = self.HC.append(None,["H+jets (gluon fusion)",False])
+        self.HC.append(parent,["(H -> gamma gamma) + Jets",True])
+        self.HC.append(parent,["(H -> tau tau) + Jets",True])
+        self.HC.append(parent,["(H -> e^+ nu mu^- nu) + Jets",True])
+        self.HC.append(parent,["(H -> e^+ e^- mu^+ mu^-) + Jets",True])
+        self.HC.append(parent,["(H -> e^+ e^- nu nu) + Jets",True])
 
 
 
 
-class PI(object):
+
+class PI():
     def __init__(self,
                  declarationlines="",modellines="",
                  totjets=0,nlojets=0,fsparts=0):
-        gobject.gobject.__init__(self)
         self.declarationlines = declarationlines
         self.modellines       = modellines
         self.totjets          = totjets

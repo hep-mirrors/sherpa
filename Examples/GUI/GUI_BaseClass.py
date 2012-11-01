@@ -45,3 +45,6 @@ class gui_object():
         item.connect("activate", callback, data)
         item.show()
         return item
+
+    def extractParameters(self):
+        pass

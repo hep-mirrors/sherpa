@@ -9,11 +9,25 @@ import PDFBox
 
 class PDFsection_gui(guibase.gui_object):
     def initialise(self):
-        self.pdfs = self.parameters.getPDFBox()
+        self.pdfs   = self.parameters.getPDFBox()
+        self.opt    = [gtk.OptionMenu(),gtk.OptionMenu()]
+        self.menu   = [gtk.Menu(),gtk.Menu()]
+        for i in range(0,2):
+            self.opt[i].set_menu(self.menu[i])
+            self.menu[i].show()
+            self.opt[i].show()
+        self.label  = [gtk.Label('PDFs'),gtk.Label('PDF for Beam 2')]
+        self.adj   = [gtk.Adjustment(0,0,0,1,0),
+                      gtk.Adjustment(0,0,0,1,0)]
+        self.set   = [gtk.SpinButton(self.adj[0],1,0),
+                      gtk.SpinButton(self.adj[1],1,0)]
+        self.setstr = [gtk.Label('Set'),gtk.Label('Set')]
+        self.updateOptions()
 
     def getContent(self):
         pdfbox    = gtk.VBox(False,0)
         pdfbox.show()
+        self.updateOptions()
         pdfbox.pack_start(self.makePDFBox(),False,False,10)
         return pdfbox
 
@@ -21,47 +35,51 @@ class PDFsection_gui(guibase.gui_object):
         optbox    = gtk.HBox(False,spacing=10)
         optbox.set_border_width(10)
         optbox.show()
-        label      = gtk.Label()
-        label.set_text('PDFs')
-        opt1       = gtk.OptionMenu()
-        self.menu1 = gtk.Menu()
-        opt1.set_menu(self.menu1)
-        optbox.pack_start(label,False,False,2)
-        optbox.pack_start(opt1,False,False,10)
-        label2      = gtk.Label()
-        label2.set_text('PDF for Beam 2')
-        opt2       = gtk.OptionMenu()
-        self.menu2 = gtk.Menu()
-        opt2.set_menu(self.menu2)
-        optbox.pack_end(opt2,False,False,10)
-        optbox.pack_end(label2,False,False,10)
+        for i in range(0,2):
+            if i==0:
+                optbox.pack_start(self.label[i],False,False,2)
+                optbox.pack_start(self.opt[i],False,False,10)
+                optbox.pack_start(self.setstr[i],False,False,2)
+                optbox.pack_start(self.set[i],False,False,10)
+            else:
+                optbox.pack_end(self.set[i],False,False,10)
+                optbox.pack_end(self.setstr[i],False,False,2)
+                optbox.pack_end(self.opt[i],False,False,10)
+                optbox.pack_end(self.label[i],False,False,2)
         return optbox
 
     def updateOptions(self):
-        for i in self.menu1.get_children():
-            self.menu1.remove(i)
-        for i in self.menu2.get_children():
-            self.menu2.remove(i)
         pdfs = self.pdfs.getOptions()
+        print "PDFGUI::In updateOptions(",len(pdfs),len(pdfs[0]),")"
+        for beam in range(0,len(pdfs)):
+            for i in self.menu[beam].get_children():
+                self.menu[beam].remove(i)
+            for pdf in pdfs[beam]:
+                print "   ",pdf[0],"|",pdf[1],"[",pdf[2],pdf[3],pdf[4],"]"
+                item = self.make_menu_item(pdf[1],
+                                           self.selectPDF,[pdf[1],beam])
+                self.menu[beam].append(item)
+            self.adj[beam].set_value(pdf[2])
+            self.adj[beam].set_lower(pdf[3])
+            self.adj[beam].set_upper(pdf[4])
+            if self.pdfs.getType(beam)=='lepton':
+                self.setstr[beam] = gtk.Label('Ord')
+            if self.pdfs.getType(beam)=='hadron':
+                self.setstr[beam] = gtk.Label('Set')
         if (len(pdfs)==2): 
-            tag = 1
+            self.menu[1].set_sensitive(True)
+            self.set[1].set_sensitive(True)
         else:
-            tag = 0
-        for pdf in pdfs[0]:
-            print pdf[0],"|",pdf[1],"|"
-            item = self.make_menu_item(pdf[1],self.pdf1_select,pdf[0])
-            self.menu1.append(item)
-        for pdf in pdfs[tag]:
-            print pdf[0],"|",pdf[1],"|"
-            item = self.make_menu_item(pdf[1],self.pdf2_select,pdf[0])
-            self.menu2.append(item)
-        if (tag==0):
-            self.menu2.set_sensitive(False)
-        else: 
-            self.menu2.set_sensitive(True)
+            self.menu[1].set_sensitive(False)
+            self.set[1].set_sensitive(False)
 
-    def pdf1_select(self,item,tag):
-        pass
 
-    def pdf2_select(self,item,tag):
-        pass
+    def selectPDF(self,item,tags):
+        print "Select PDF for beam ",tags[1],": ",tags[0]
+        self.pdfs.setPDF(tags[1],tags[0])
+
+    def extractParameters(self):
+        for bid in range(0,2):
+            if self.set[bid].is_sensitive():
+                self.pdfs.setPDFset(bid,self.set[bid].get_value_as_int())
+        self.pdfs.printStatus()
