@@ -125,7 +125,7 @@ namespace PHASIC {
 double Single_Process::NLOCounterTerms() const
 {
   static double th(1.0e-12);
-  if (!m_use_biweight) return 1.;
+  if (!m_use_biweight) return 0.0;
   DEBUG_FUNC(m_name);
   if (p_scale->Scales().size()<stp::size+2)
     THROW(fatal_error,"Invalid number of scales: "+
