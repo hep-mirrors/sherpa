@@ -150,7 +150,8 @@ int PHASIC::ConstructFIDipole
  const double &ma2,const Vec4D &pij,const Vec4D &pa,Kin_Args &fip)
 {
   Vec4D Q(pa-pij), Ql(Vec4D(Q[0],0.0,0.0,Q[3]));
-  double Q2(Q.Abs2()), kt2(Q.PPerp2()), yt(fip.m_y/(1.0-fip.m_y));
+  double Q2(Q.Abs2()), kt2(Q.PPerp2()), yt(1.0-fip.m_y);
+  yt=((Q2-mij2-ma2)/(Q2-mi2-mj2-ma2)-yt)/yt;
   double sij(-yt*(Q2-ma2)+(1.0+yt)*(mi2+mj2));
   double po(sqr(Q2-mij2-ma2)-4.0*ma2*(mij2+kt2));
   double ecm(Q2-sij-ma2), pn(sqr(ecm)-4.0*ma2*(sij+kt2));
@@ -176,8 +177,7 @@ int PHASIC::ConstructFIDipole
   Vec4D l_perp(0.0,cross(Vec3D(fip.m_pi),Vec3D(n_perp)));
   l_perp*=1.0/l_perp.PSpat();
   double pnn(Sign(ecm)*sqrt(sqr(ecm)-4.0*sij*ma2)), gam(0.5*(ecm+pnn));
-  double xt(fip.m_z*(Q2-mi2-mj2-ma2)/(Q2-mij2-ma2));
-  double zt(ecm/pnn*(xt-ma2/gam*(sij+mi2-mj2)/ecm));
+  double zt(ecm/pnn*(fip.m_z-ma2/gam*(sij+mi2-mj2)/ecm));
   double ktt(sij*zt*(1.0-zt)-(1.0-zt)*mi2-zt*mj2);
   if (ktt<0.0 || gam==0.0) {
     msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
