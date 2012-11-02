@@ -7,6 +7,7 @@ import time
 import BeamBox
 import PDFBox
 import ProcessBox
+import SoftBox
 
 
 class ParameterBox():
@@ -15,6 +16,7 @@ class ParameterBox():
         self.beambox = BeamBox.BeamBox()
         self.pdfbox  = PDFBox.PDFBox()
         self.procbox = ProcessBox.ProcessBox()
+        self.softbox = SoftBox.SoftBox()
         self.initialiseDefaults()
 
     def initialiseDefaults(self):
@@ -22,6 +24,7 @@ class ParameterBox():
         self.beambox.initialiseDefaults()
         self.pdfbox.initialiseDefaults(self.beambox.getCollider())
         self.procbox.initialiseDefaults(self.beambox.getCollider())
+        self.softbox.initialiseDefaults(self.beambox.getCollider())
 
     def printStatus(self):
         self.beambox.printStatus()
@@ -32,6 +35,7 @@ class ParameterBox():
         self.beambox.setCollider(collider_tag)
         self.pdfbox.initialiseDefaults(self.beambox.getCollider())
         self.procbox.initialiseDefaults(self.beambox.getCollider())
+        self.softbox.initialiseDefaults(self.beambox.getCollider())
 
     def getBeamBox(self):
         return self.beambox
@@ -41,6 +45,9 @@ class ParameterBox():
 
     def getProcBox(self):
         return self.procbox
+
+    def getSoftBox(self):
+        return self.softbox
 
     def write(self,genstring):
         filename   = "Run.dat"

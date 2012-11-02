@@ -97,6 +97,8 @@ class runcard_gui_gtk():
             self.pdfs.updateOptions()
             self.parameters.getProcBox().initialiseDefaults(collider)
             self.procs.updateOptions()
+            self.parameters.getSoftBox().initialiseDefaults(collider)
+            self.soft.updateOptions()
         if mode=="PDFs" or mode=="All":
             pass
         if mode=="Proc" or mode=="All":
