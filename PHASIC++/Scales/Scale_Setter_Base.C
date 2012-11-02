@@ -92,6 +92,11 @@ Scale_Setter_Base::~Scale_Setter_Base()
 {
 }
 
+PDF::CParam Scale_Setter_Base::CoreScale(Cluster_Amplitude *const ampl) const
+{
+  return PDF::CParam(0.0);
+}
+
 void Scale_Setter_Base::ShowSyntax(const size_t i)
 {
   if (!msg_LevelIsInfo() || i==0) return;

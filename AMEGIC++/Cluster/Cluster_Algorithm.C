@@ -552,7 +552,7 @@ void Cluster_Algorithm::Convert()
     p_ampl->SetKin(win.Kin());
   }
   p_ampl->SetProcs(p_proc);
-  PDF::CParam scale(p_clus->CoreScale(p_ampl));
+  PDF::CParam scale(p_proc->ScaleSetter()->CoreScale(p_ampl));
   p_ampl->SetKT2(scale.m_kt2);
   p_ampl->SetMu2(scale.m_mu2);
   size_t nmax(p_proc->Info().m_fi.NMaxExternal());

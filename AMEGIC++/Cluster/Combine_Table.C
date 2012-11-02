@@ -592,7 +592,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
 	    ampl->CreateLeg(i<2?-p_moms[i]:p_moms[i],
 			    i<2?p_legs[0][i].Flav().Bar():p_legs[0][i].Flav(),
 			    ColorID(),p_legs[0][i].ID());
-	  PDF::CParam scale(p_clus->CoreScale(ampl));
+	  PDF::CParam scale(p_proc->ScaleSetter()->CoreScale(ampl));
 	  ampl->Delete();
 	  bool ord(true);
 	  for (size_t i(0);i<m_kt2ord.size();++i) {

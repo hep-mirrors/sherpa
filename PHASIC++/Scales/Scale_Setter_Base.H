@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Getter_Function.H"
 #include "MODEL/Main/Coupling_Data.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "PDF/Main/Cluster_Definitions_Base.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Math/Vector.H"
 
@@ -73,6 +74,8 @@ namespace PHASIC {
     double BeamThrust() const;
 
     double CalculateScale(const ATOOLS::Vec4D_Vector &p,const size_t mode=0);
+
+    virtual PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
     inline void SetFixedScale(const std::vector<double> &s) { m_escale=s; }
 

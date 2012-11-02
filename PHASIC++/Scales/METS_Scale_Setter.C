@@ -1,6 +1,7 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 
 #include "PHASIC++/Scales/Tag_Setter.H"
+#include "PHASIC++/Scales/Core_Scale_Setter.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Main/Process_Integrator.H"
@@ -61,6 +62,8 @@ namespace PHASIC {
   class METS_Scale_Setter: public Scale_Setter_Base {
   private:
 
+    Core_Scale_Setter *p_core;
+
     std::vector<ATOOLS::Algebra_Interpreter*> m_calcs;
 
     Tag_Setter m_tagset;
@@ -77,7 +80,7 @@ namespace PHASIC {
 
     static double s_eps, s_kt2max;
 
-    double CoreScale(ATOOLS::Cluster_Amplitude *const ampl);
+    PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
     bool CheckColors(const ATOOLS::Cluster_Leg *li,
 		     const ATOOLS::Cluster_Leg *lj,
@@ -208,11 +211,16 @@ METS_Scale_Setter::METS_Scale_Setter
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
   Data_Reader read(" ",";","!","=");
   if (!read.ReadFromFile(m_wthres,"METS_WARNING_THRESHOLD")) m_wthres=0.1;
+  std::string core;
+  if (!read.ReadFromFile(core,"CORE_SCALE")) core="SHOWER";
+  p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
+  if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
 }
 
 METS_Scale_Setter::~METS_Scale_Setter()
 {
   for (size_t i(0);i<m_ampls.size();++i) m_ampls[i]->Delete();
+  delete p_core;
 }
 
 double METS_Scale_Setter::CalculateStrict
@@ -291,7 +299,7 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
   for (size_t i(0);i<m_decids.size();++i)
     ops[ampl->Legs().size()-4].push_back
       (std::pair<size_t,double>(m_decids[i]->m_id,0.0));
-  double kt2core(ampl->Legs().size()>4?0.0:CoreScale(ampl));
+  double kt2core(ampl->Legs().size()>4?0.0:CoreScale(ampl).m_kt2);
   ampl->SetOrderQCD(p_caller->OrderQCD());
   while (ampl->Legs().size()>4) {
     msg_Debugging()<<"Actual = "<<*ampl<<"\n";
@@ -483,7 +491,7 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
 	ampl->DeleteNext();
 	continue;
       }
-      kt2core=CoreScale(ampl);
+      kt2core=CoreScale(ampl).m_kt2;
       msg_Debugging()<<"Core = "<<*ampl<<" => "<<sqrt(kt2core)<<"\n";
       bool ord(true);
       std::vector<std::pair<size_t,double> > 
@@ -512,13 +520,13 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
   return 0.0;
 }
 
-double METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl)
+PDF::CParam METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl) const
 {
   ampl->SetProcs(p_proc);
-  PDF::CParam kt2(p_proc->Shower()->GetClusterDefinitions()->CoreScale(ampl));
+  PDF::CParam kt2(p_core->Calculate(ampl));
   ampl->SetKT2(kt2.m_kt2);
   ampl->SetMu2(kt2.m_mu2);
-  return kt2.m_kt2;
+  return kt2;
 }
 
 double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
