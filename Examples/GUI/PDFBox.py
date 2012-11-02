@@ -75,10 +75,10 @@ class PDFBox:
         print "Set PDFset(",(1-bid),"):",self.pdf_tag[1-bid],self.pdf_set[1-bid]
 
     def getPDF(self,bid):
-        return self.pdf
+        return self.pdf_tag[bid]
 
     def getType(self,bid):
-        return self.pdf_type[bid-1]
+        return self.pdf_type[bid]
 
     def setLibrary(self,lib):
         if lib=="LHAPDF" or lib=="":

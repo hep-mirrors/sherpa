@@ -6,16 +6,8 @@ import gtk
 
 class SoftBox:
     def __init__(self):
-        self.had       = False
-        self.hadmodels = ["None","Ahadic","Lund"]
-        self.hadmodel  = "None"
-        self.hadmodes  = ["Low","Normal","High"]
-        self.hadmode   = "Normal"
-        self.mpi       = False
-        self.mpimodels = ["None","Amisic"]
-        self.mpimodel  = "None"
-        self.mpimodes  = ["Low","Normal","High"]
-        self.mpimode   = "Normal"
+        self.initHadModels()
+        self.initMPIModels()
         pass
 
     def initialiseDefaults(self,collider):
@@ -38,6 +30,7 @@ class SoftBox:
         return self.hadmodel
 
     def setHadModel(self,hadmodel):
+        print "Set hadmodel = ",hadmodel
         self.hadmodel = hadmodel
 
     def getHadModes(self):
@@ -46,9 +39,14 @@ class SoftBox:
     def getHadMode(self):
         return self.hadmode
 
-    def setHadMode(self,hadmodel):
+    def setHadMode(self,hadmode):
+        print "Set hadmode = ",hadmode
         self.hadmode = hadmode
 
+    def hasHadTunes(self,hadmodel):
+        for had in self.hadmodels:
+            if had[0]==hadmodel:
+                return had[1]
 
     def getMPIOn(self):
         return self.mpi
@@ -60,6 +58,7 @@ class SoftBox:
         return self.mpimodel
 
     def setMPIModel(self,mpimodel):
+        print "Set mpimodel = ",mpimodel
         self.mpimodel = mpimodel
 
     def getMPIModes(self):
@@ -68,10 +67,44 @@ class SoftBox:
     def getMPIMode(self):
         return self.mpimode
 
-    def setMPIMode(self,mpimodel):
+    def setMPIMode(self,mpimode):
+        print "Set mpimode = ",mpimode
         self.mpimode = mpimode
 
+    def hasMPITunes(self,mpimodel):
+        for mpi in self.mpimodels:
+            if mpi[0]==mpimodel:
+                return mpi[1]
 
-    def write(self,runfile,collider):
-        runfile.write('\n')
-        runfile.write('%%% Soft setup \n\n')
+
+    def write(self,runfile):
+        runfile.write("\n")
+        runfile.write("%%% Soft setup \n\n")
+        if self.hadmodel!="None" and self.had:
+            runfile.write("FRAGMENTATION      = %s\n" %(self.hadmodel))
+            runfile.write("FRAGMENTATION_TUNE = %s\n" %(self.hadmode))
+        else:
+            runfile.write("FRAGMENTATION      = Off\n" %(self.hadmodel))
+        runfile.write("MI_HANDLER    = %s\n" %(self.mpimodel)) 
+        if self.mpimodel!="None" and self.mpi:
+            runfile.write("MI_TUNE       = %s\n" %(self.mpimode))  
+        runfile.write("\n")
+        
+    def initHadModels(self):
+        self.had       = False
+        self.hadmodels = []
+        self.hadmodels.append(["None",False])
+        self.hadmodels.append(["Ahadic",True])
+        self.hadmodels.append(["Lund",False])
+        self.hadmodel  = "None"
+        self.hadmodes  = ["Low","Normal","High"]
+        self.hadmode   = "Normal"
+
+    def initMPIModels(self):
+        self.mpi       = False
+        self.mpimodels = []
+        self.mpimodels.append(["None",False])
+        self.mpimodels.append(["Amisic",True])
+        self.mpimodel  = "None"
+        self.mpimodes  = ["Low","Normal","High"]
+        self.mpimode   = "Normal"

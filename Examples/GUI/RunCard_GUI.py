@@ -100,7 +100,13 @@ class runcard_gui_gtk():
             self.parameters.getSoftBox().initialiseDefaults(collider)
             self.soft.updateOptions()
         if mode=="PDFs" or mode=="All":
-            pass
+            pdf = []
+            for bid in range(0,2):
+                pdf.append(self.parameters.getPDFBox().getType(bid))
+                pdf.append(self.parameters.getPDFBox().getPDF(bid))
+            # need to find a solution to select only valid tunes 
+            # dependent on the pdfs
+            # self.soft.updateModes(pdf)
         if mode=="Proc" or mode=="All":
             self.mes.updateOptions()
 
