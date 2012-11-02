@@ -118,6 +118,8 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     else weight/=m_overweight+1.0;
   }
   blob->AddData("Weight",new Blob_Data<double>(weight));
+  blob->AddData("Weight_Norm",new Blob_Data<double>
+		(p_mehandler->Sum()*rpa->Picobarn()));
   blob->AddData("Trials",new Blob_Data<double>(winfo.m_ntrial));
   blob->AddData("Enhance",new Blob_Data<double>
 		(p_mehandler->Process()->Integrator()->EnhanceFactor()));

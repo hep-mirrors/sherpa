@@ -35,7 +35,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
   p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(NULL),
   m_path(dir), m_file(file), m_processfile(processfile),
   m_selectorfile(selectorfile), m_eventmode(0), m_hasnlo(0),
-  p_shower(NULL), p_nlomc(NULL), m_totalxs(0.0), 
+  p_shower(NULL), p_nlomc(NULL), m_sum(0.0),
   m_ranidx(0), p_ranin(NULL), p_ranout(NULL)
 {
   Data_Reader read(" ",";","!","=");
@@ -132,7 +132,6 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
     MakeDir(m_respath+"/"+(*it)->Name(),false);
   }
 
-  m_totalxs=0.0;
   bool okay(true);
   for (size_t i=0;i<m_procs.size();++i) {
     m_procs[i]->SetUpThreading();
@@ -140,7 +139,6 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
     std::string name=m_procs[i]->Generator()?m_procs[i]->Generator()->Name():"";
     if (!m_procs[i]->CalculateTotalXSec(m_respath+"/"+name,false)) okay=false;
     m_procs[i]->SetLookUp(false);
-    m_totalxs+=m_procs[i]->Integrator()->TotalXS();
     m_procs[i]->Integrator()->SetUpEnhance();
   }
   return okay;
@@ -169,13 +167,13 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   p_proc=NULL;
   if (m_seedmode!=3) SetRandomSeed();
   p_isr->SetPDFMember();
-  double sum(0.0);
+  m_sum=0.0;
   for (size_t i(0);i<m_procs.size();++i)
-    sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
+    m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
   for (size_t n(1);true;++n) {
     if (m_seedmode==3 && rpa->gen.NumberOfGeneratedEvents())
       ran->ResetToLastIncrementedSeed();
-    double disc(sum*ran->Get()), csum(0.0);
+    double disc(m_sum*ran->Get()), csum(0.0);
     Process_Base *proc(NULL);
     for (size_t i(0);i<m_procs.size();++i) {
       if ((csum+=m_procs[i]->Integrator()->
@@ -187,7 +185,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     if (proc==NULL) THROW(fatal_error,"No process selected");
     PHASIC::Weight_Info *info=proc->OneEvent(m_eventmode);
     p_proc=proc->Selected();
-    double sw(p_proc->Integrator()->SelectionWeight(m_eventmode)/sum);
+    double sw(p_proc->Integrator()->SelectionWeight(m_eventmode)/m_sum);
     if (info==NULL) continue;
     m_evtinfo=*info;
     delete info;

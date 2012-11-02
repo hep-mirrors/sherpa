@@ -73,7 +73,7 @@ namespace SHERPA {
     Shower_Handler   *p_shower;
     PDF::NLOMC_Base  *p_nlomc;
 
-    double m_totalxs, m_ovwth, m_weightfactor;
+    double m_sum, m_ovwth, m_weightfactor;
     size_t m_nlomode, m_ranidx;
 
 #ifdef USING__GZIP
@@ -148,9 +148,9 @@ namespace SHERPA {
 
     inline void SetShowerHandler(Shower_Handler *const sh) { p_shower=sh; }
 
-    inline double TotalXS() const { return m_totalxs; }
-
     inline double WeightFactor() const { return m_weightfactor; }
+
+    inline double Sum() const { return m_sum; }
 
     inline const std::string &Path() const { return m_path; }
     inline const std::string &File() const { return m_file; }
