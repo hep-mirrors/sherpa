@@ -18,16 +18,21 @@ class ProcessBox:
         self.HC = gtk.TreeStore(str, bool)
         self.fillHCStore()
       
-        self.type       = "None"
-        self.process    = None
-        self.processes  = self.NC
-        self.minjets    = 0
-        self.totjets    = 0
-        self.nlojets    = -1
-        self.ckkw_param = 0.
-        self.muF_factor = 1.
-        self.muR_factor = 1.
-        self.muQ_factor = 1.
+        self.type        = "None"
+        self.process_tag = ""
+        self.process     = None
+        self.processes   = self.NC
+        self.minjets     = 0
+        self.totjets     = 0
+        self.nlomax      = 3 
+        self.nlojets     = -1
+        self.ckkw_param  = 0.
+        self.muFfactor   = 1.
+        self.muRfactor   = 1.
+        self.muQfactor   = 1.
+        self.loopgenerators = []
+        for i in range(0,self.nlomax+1): 
+            self.loopgenerators.append("None")
 
     def initialiseDefaults(self,collider):
         print "Proc::initialiseDefaults",collider[2],collider[4]
@@ -51,7 +56,8 @@ class ProcessBox:
         return self.processes
 
     def setProcess(self,process_tag):
-        self.process=None
+        self.process     = None
+        self.process_tag = process_tag
         if self.processes==self.HC:
             self.process = self.HCmap[process_tag]
         if self.processes==self.LC:
@@ -64,38 +70,51 @@ class ProcessBox:
     def getType(self):
         return self.type
 
+    def getNLOmax(self):
+        return self.nlomax
+
     def getNJets(self):
         if self.process!=None:
             return self.process.totjets,self.process.nlojets
         return None,None
 
+    def setScaleFactors(self,muF,muR,muQ):
+        self.muFfactor = muF
+        self.muRfactor = muR
+        self.muQfactor = muQ
+
     def getScaleFactors(self):
-        return self.muF_factor,self.muR_factor,self.muQ_factor
+        return self.muFfactor,self.muRfactor,self.muQfactor
 
     def isNLO(self):
-        return (self.nlojets>-1)
+        return (self.process.nlojets>-1)
 
     def setJetMultis(self,minjets=0,totjets=0,nlojets=0):
-        self.minjets = minjets
-        self.totjets = totjets
-        self.nlojets = nlojets
-        if (self.totjets<self.nlojets):
-            self.totjets=self.nlojets
+        if self.process!=None:
+            self.process.minjets = minjets
+            self.process.totjets = totjets
+            self.process.nlojets = nlojets
+            if (self.process.totjets<self.process.nlojets):
+                self.process.totjets=self.process.nlojets
 
     def setCKKW(self,ckkw_param):
         self.ckkw_param = ckkw_param
 
-    def setMuFactors(self,muF,muR,muQ):
-        self.muF_factor = muF
-        self.muR_factor = muR
-        self.muQ_factor = muQ
+    def setLoopGen(self,n,loopgen):
+        if n<len(self.loopgenerators):
+            self.loopgenerators[n] = loopgen
+            print "Set loopgen[",n,"] = ",loopgen
+
+    def getLoopGens(self):
+        print "Have ",len(self.loopgenerators)," LoopGens."
+        return self.loopgenerators
 
     def write(self,runfile):
         if self.process==None:
             runfile.write("\n")
             runfile.write("%%% Process setup: none selected\n\n")
             return
-        print "Write for ",self.process[1]
+        print "Write process stuff "
         runfile.write("\n")
         runfile.write("%%% Process setup: "+self.process_tag+"\n\n")
         runfile.write("(processes){\n")
@@ -107,22 +126,25 @@ class ProcessBox:
                 runfile.write("    Decay "+line)
             runfile.write("\n")
             lineno += 1
-        if self.totjets>0:
+        if self.process.totjets>0:
             runfile.write("    CKKW sqr(%0.2f/E_CMS);\n" %(self.ckkw_param))
-        if self.nlojets>=0:
+        if self.process.nlojets>=0:
             runfile.write("    NLO_QCD_PART BVIRS{")
             ljmin = self.process.fsparts
-            ljmax = ljmin+self.nlojets
+            ljmax = ljmin+self.process.nlojets
             for ljet in range (ljmin,ljmax):
                 runfile.write("%i," %(ljet))
             runfile.write("%i};\n" %(ljmax))
-        lineno = 0
+            for n in range(0,len(self.loopgenerators)):
+                gen = self.loopgenerators[n]
+                if gen!="None":
+                    runfile.write("    Loop_Generator = LOOPGEN%s {%s}\n" 
+                                  %(str(n),str(n+self.process.fsparts)))
         runfile.write("}(processes)\n\n")
         
         runfile.write("(model){\n")
         for line in self.process.modellines:
             runfile.write("  "+line)
-            lineno += 1
             runfile.write("\n")
         runfile.write("}(model)\n")
 
@@ -133,16 +155,16 @@ class ProcessBox:
         # the read-in facilities of Sherpa in a smarter way
         #
         self.LCmap["Jets"] = PI(
-            ["11 -11 -> 93 93 93{NJETS};"],["MODEL = SM;"],6,4,0)
+            ["11 -11 -> 93 93 93{NJETS};"],["MODEL = SM;"],6,4,2)
 
         self.HCmap["MinimumBias"] = PI(
             ["MinimumBias"],[""],-1,-1,-1)
 
         self.HCmap["Jets"] = PI(
-            ["93 93 -> 93 93 93{NJETS};"],["MODEL = SM;"],4,2,1)
+            ["93 93 -> 93 93 93{NJETS};"],["MODEL = SM;"],4,2,2)
 
         self.HCmap["Gamma + Jets"] = PI(
-            ["93 93 -> 22 93 93{NJETS};"],["MODEL = SM;"],4,2,0)
+            ["93 93 -> 22 93 93{NJETS};"],["MODEL = SM;"],4,2,2)
 
         self.HCmap["(W^+ -> e^+ nu) + Jets"] = PI(
             ["93 93 -> 24[a] 93{NJETS};","24[a] -> -11 12;"],

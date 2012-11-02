@@ -9,7 +9,6 @@ import PDFBox
 import ProcessBox
 
 
-
 class ParameterBox():
     def __init__(self):
         print "Initialising ParameterBox."
@@ -58,16 +57,20 @@ class ParameterBox():
         totjets, nlojets = self.procbox.getNJets()
         runfile.write("  NJETS:={}; NLOJETS:={};\n".format(totjets,nlojets))
         muF2,muR2,muQ2   = self.procbox.getScaleFactors() 
-        runfile.write("  SF2:={0:.2f}; SR2:={0:.2f}; SQ2:={0:.2f};\n".format(
-                muF2,muR2,muQ2))
+        runfile.write("  SF2:=%.2f; SR2:=%.2f; SQ2:=%.2f;\n" %(muF2,muR2,muQ2))
         runfile.write("\n")
-        runfile.write("ME_SIGNAL_GENERATORS = Comix, Amegic")
-        if self.procbox.isNLO():
-            runfile.write(", Internal, LOOPGEN\n")
+        loopstring = ""
+        if nlojets>-1:
+            gens = self.procbox.getLoopGens()
+            if gens!=None and len(gens)>-1:
+                for n in range(0,len(gens)):
+                    if gens[n]!="None":
+                        loopstring=loopstring+str("LOOPGEN%s, " %str(n))
+                        print ("LOOPGEN%s:=%s" %(str(n),gens[n]))
+                        runfile.write("LOOPGEN%s:=%s\n" %(str(n),gens[n]))
             runfile.write("NLO_Mode = 3;\n")
-        else:
-            runfile.write("\n")
-        runfile.write("\n")
+
+        runfile.write("ME_SIGNAL_GENERATORS = Comix, Amegic\n\n")
         runfile.write("SCALES METS{SCF2*MU_F2}{SCR2*MU_R2}{SCQ2*MU_Q2}\n\n")
 
 

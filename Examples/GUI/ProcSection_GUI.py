@@ -12,6 +12,10 @@ class Procsection_gui(guibase.gui_object):
         self.procbox   = self.parameters.getProcBox()
         self.initTV(self.procbox.getOptions())
         self.initButtons()
+        self.muF  = 1.
+        self.muR  = 1.
+        self.muQ  = 1.
+        self.ckkw = 0.
 
     def getContent(self):
         table     = gtk.Table(1,2,False)
@@ -44,19 +48,26 @@ class Procsection_gui(guibase.gui_object):
             self.ckkwbutton.get_adjustment().set_value(20.)
             self.ckkwbutton.get_adjustment().set_lower(10.)
             self.ckkwbutton.get_adjustment().set_upper(200.)
-            self.ckkwbutton.get_adjustment().set_step_increment(10.)
+            self.ckkwbutton.get_adjustment().set_step_increment(5.)
         if self.procbox.getType()=="None":
             self.ckkwbutton.get_adjustment().set_value(0.)
             self.ckkwbutton.get_adjustment().set_lower(0.)
             self.ckkwbutton.get_adjustment().set_upper(0.)
             self.ckkwbutton.get_adjustment().set_step_increment(0.)
+            self.ckkwbutton.set_sensitive(False)
         self.update("Proc")
 
     def ckkwChanged(self,button):
-        pass
+        self.ckkw = button.get_value()
 
     def scaleChanged(self,button,data):
-        pass
+        print " %s changed to %0.2f" %(data[0],data[1])
+        if (data[0]=="muF"):
+            self.muF = data[1]
+        if (data[0]=="muR"):
+            self.muR = data[1]
+        if (data[0]=="muQ"):
+            self.muQ = data[1]
 
     def buttonChanged(self,globalupdate,mode):
         self.minjets = self.minjetsbutton.get_value_as_int()
@@ -67,9 +78,24 @@ class Procsection_gui(guibase.gui_object):
         self.totjets = self.totjetsbutton.get_value_as_int()
         if (self.nlojetsbutton.get_adjustment().get_value()>self.totjets):
             self.nlojetsbutton.get_adjustment().set_value(self.totjets)
+        self.totjets = self.totjetsbutton.get_value_as_int()
+        self.minjets = self.minjetsbutton.get_value_as_int()
         self.nlojets = self.nlojetsbutton.get_value_as_int()
         self.procbox.setJetMultis(self.minjets,self.totjets,self.nlojets)
+        print "New multis in proc box:",self.procbox.getNJets()
+        if (self.nlojets>-1):
+            self.muqbox.set_sensitive(True)
+        else:
+            self.muqbox.set_sensitive(False)
+        if self.totjets>self.minjets:
+            self.ckkwbutton.set_sensitive(True)
+        else:
+            self.ckkwbutton.set_sensitive(False)            
         self.update("Proc")
+
+    def extractParameters(self):
+        self.procbox.setCKKW(self.ckkw)
+        self.procbox.setScaleFactors(self.muF,self.muR,self.muQ)
 
     def initTV(self,options):
         self.proc_view = gtk.TreeView(options)
@@ -104,18 +130,22 @@ class Procsection_gui(guibase.gui_object):
         self.ckkwbutton = gtk.SpinButton()
         self.ckkwbutton.set_adjustment(gtk.Adjustment(0.,0.,0.,5.,1))
         self.ckkwbutton.connect("changed",self.ckkwChanged)
+        self.ckkwbutton.set_sensitive(False)
 
         self.mufbox = gtk.HBox(False,10)
         self.mufbox.set_border_width(10) 
         self.mufbox.pack_start(gtk.Label("mu_F2:"),False,False,2)
         self.mufbutton = gtk.RadioButton(None,"0.25")
+        self.mufbutton.connect("toggled", self.scaleChanged, ["muF",0.25])
         self.mufbutton.show()
         self.mufbox.pack_start(self.mufbutton,False,False,2)
         self.mufbutton = gtk.RadioButton(self.mufbutton,"1.00")
+        self.mufbutton.connect("toggled", self.scaleChanged, ["muF",1.00])
         self.mufbutton.set_active(True)
         self.mufbutton.show()
         self.mufbox.pack_start(self.mufbutton,False,False,2)
         self.mufbutton = gtk.RadioButton(self.mufbutton,"4.00")
+        self.mufbutton.connect("toggled", self.scaleChanged, ["muF",4.00])
         self.mufbutton.show()
         self.mufbox.pack_start(self.mufbutton,False,False,2)
 
@@ -123,13 +153,16 @@ class Procsection_gui(guibase.gui_object):
         self.murbox.set_border_width(10) 
         self.murbox.pack_start(gtk.Label("mu_R2:"),False,False,2)
         self.murbutton = gtk.RadioButton(None,"0.25")
+        self.murbutton.connect("toggled", self.scaleChanged, ["muR",0.25])
         self.murbutton.show()
         self.murbox.pack_start(self.murbutton,False,False,2)
         self.murbutton = gtk.RadioButton(self.murbutton,"1.00")
+        self.murbutton.connect("toggled", self.scaleChanged, ["muR",1.00])
         self.murbutton.set_active(True)
         self.murbutton.show()
         self.murbox.pack_start(self.murbutton,False,False,2)
         self.murbutton = gtk.RadioButton(self.murbutton,"4.00")
+        self.murbutton.connect("toggled", self.scaleChanged, ["muR",4.00])
         self.murbutton.show()
         self.murbox.pack_start(self.murbutton,False,False,2)
 
@@ -137,13 +170,17 @@ class Procsection_gui(guibase.gui_object):
         self.muqbox.set_border_width(10) 
         self.muqbox.pack_start(gtk.Label("mu_Q2:"),False,False,2)
         self.muqbutton = gtk.RadioButton(None,"0.50")
+        self.muqbutton.connect("toggled", self.scaleChanged, ["muQ",0.50])
         self.muqbutton.show()
         self.muqbox.pack_start(self.muqbutton,False,False,2)
         self.muqbutton = gtk.RadioButton(self.muqbutton,"1.00")
+        self.muqbutton.connect("toggled", self.scaleChanged, ["muQ",1.00])
         self.muqbutton.set_active(True)
         self.muqbutton.show()
         self.muqbox.pack_start(self.muqbutton,False,False,2)
         self.muqbutton = gtk.RadioButton(self.muqbutton,"2.00")
+        self.muqbutton.connect("toggled", self.scaleChanged, ["muQ",2.00])
+        self.muqbox.set_sensitive(False)
         self.muqbutton.show()
         self.muqbox.pack_start(self.muqbutton,False,False,2)
 

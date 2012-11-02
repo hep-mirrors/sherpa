@@ -31,8 +31,8 @@ class runcard_gui_gtk():
         self.procs = procs_gui.Procsection_gui(self.parameters,
                                                "Processes","Processes",3)
         self.mes   = mes_gui.MEsection_gui(self.parameters,
-                                           "Loop Generators",
-                                           "Loop Generators",4)
+                                           "ME Generators",
+                                           "ME Generators",4)
         self.sels  = sels_gui.Selsection_gui(self.parameters,
                                              "Selectors",
                                              "Selectors",5)
@@ -99,8 +99,9 @@ class runcard_gui_gtk():
             self.procs.updateOptions()
         if mode=="PDFs" or mode=="All":
             pass
-        if mode=="Procs" or mode=="All":
-            pass
+        if mode=="Proc" or mode=="All":
+            self.mes.updateOptions()
+
 
     def writebutton_clicked(self, widget, genstring):
         for guipart in self.guiparts:
