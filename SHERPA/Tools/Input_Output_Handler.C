@@ -197,7 +197,7 @@ void Input_Output_Handler::PrintEvent(ATOOLS::Blob_List *const blobs) {
 bool Input_Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs)
 {
   double weight=blobs->Weight();
-  if (p_mehandler) weight/=p_mehandler->TotalXS()*rpa->Picobarn();
+  if (p_mehandler) weight/=p_mehandler->Sum()*rpa->Picobarn();
 
   double xs(1.0), xserr(0.0);
   if (p_eventhandler) {
