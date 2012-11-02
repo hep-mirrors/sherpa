@@ -2,8 +2,8 @@
   EVENTS 10000;
   # Generator parameters
   LGEN:=LHOLE;
-# SHERPA_LDADD golem_olp;
-# LHOLE_CONTRACTFILE OLE_order.olc;
+  # SHERPA_LDADD golem_olp;
+  # LHOLE_CONTRACTFILE OLE_order.olc;
   LHOLE_CMSBOOST 1;
   LHOLE_OLP GoSam;
   ME_SIGNAL_GENERATOR Amegic LGEN;

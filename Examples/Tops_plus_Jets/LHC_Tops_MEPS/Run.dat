@@ -1,0 +1,30 @@
+(run){
+  EVENTS = 10000
+  MI_HANDLER = None    # None or Amisic
+  FRAGMENTATION = Off
+  ANALYSIS = Rivet
+  ANALYSIS_OUTPUT = TopsDec.MEPS
+}(run)
+
+(beam){
+  BEAM_1 2212; BEAM_ENERGY_1 4000.;
+  BEAM_2 2212; BEAM_ENERGY_2 4000.;
+}(beam)
+
+(processes){
+  Process 93 93    -> 6[a] -6[b] 93{1};
+    DecayOS 6[a]   -> 5 24[c];
+    DecayOS 24[c]  -> -11 12;
+    DecayOS -6[b]  -> -5 -24[d];
+    DecayOS -24[d] -> 13 -14;
+  Order_EW 4; CKKW sqr(20/E_CMS);
+  End process;
+}(processes)
+
+(analysis){
+  BEGIN_ANALYSIS {
+    BEGIN_RIVET {
+      -a MC_TTSpins
+    } END_RIVET
+  } END_ANALYSIS
+}(analysis)
