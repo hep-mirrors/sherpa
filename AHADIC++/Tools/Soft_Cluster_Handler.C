@@ -849,11 +849,14 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
   }
 
   
-  if (IsNan(pt2max) || pt2max<0.) 
-    msg_Error()<<"Error in "<<METHOD
-	       <<"(pt2max = "<<pt2max<<", p2max = "<<p2max<<") for "
-	       <<M<<" --> "<<sqrt(m12)<<"("<<had1<<") + "
-	       <<sqrt(m22)<<"("<<had2<<"),\n"<<(*cluster)<<".\n";
+  if (IsNan(pt2max) || pt2max<0.) {
+    msg_Tracking()<<"Error in "<<METHOD
+		  <<"(pt2max = "<<pt2max<<", p2max = "<<p2max<<") for "
+		  <<M<<" --> "<<sqrt(m12)<<"("<<had1<<") + "
+		  <<sqrt(m22)<<"("<<had2<<"),\n"<<(*cluster)<<".\n"
+		  <<"Setting pt2max to p2max/4\n";
+    pt2max = p2max/4.;
+  }
 
   double pt(0.),pl1(0.);
   if (m_HHdecaymode==0) {
