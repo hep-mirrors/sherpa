@@ -15,13 +15,14 @@
 @cindex ALPHAS(default)
 @cindex ORDER_ALPHAS
 @cindex USE_PDF_ALPHAS
+@cindex WIDTH_SCHEME
 
 
 The SM inputs for the electroweak sector can be given in four different 
 schemes, that correspond to different choices of which SM physics 
 parameters are considered fixed and which are derived from the given 
 quantities. The input schemes are selected through the @code{EW_SCHEME} 
-parameter, whose default is @option{0}. The following options are provided:
+parameter, whose default is @option{1}. The following options are provided:
 @itemize @bullet
   @item  Case @code{0}:
   
@@ -33,7 +34,11 @@ parameter, whose default is @option{0}. The following options are provided:
     (which by default is not running), the parameters @code{SIN2THETAW}, 
     @code{VEV}, and @code{LAMBDA} thereby specify the weak mixing angle,
     the Higgs field vacuum expectation value, and the Higgs quartic
-    coupling respectively. 
+    coupling respectively.
+
+    Note that this mode allows to violate the tree-level relations between
+    some of the parameters and can thus not be used with the complex mass
+    scheme (cf. below).
   @item  Case @code{1}:
   
     all EW parameters are calculated out of the W, Z and Higgs masses and
@@ -42,6 +47,9 @@ parameter, whose default is @option{0}. The following options are provided:
   
     all EW parameters are calculated out of @code{1/ALPHAQED(default)}, 
     @code{SIN2THETAW}, @code{VEV} and the Higgs mass using tree-level relations.
+
+    Note that this mode can not be used with the complex mass scheme
+    (cf. below).
   @item  Case @code{3}:
   
     this choice corresponds to the G_mu-scheme. The EW parameters are 
@@ -87,3 +95,11 @@ used can be set through @code{ORDER_ALPHAS}, where the default @option{0}
 corresponds to one-loop running and @code{1},@code{2},@code{3} 
 to 2,3,4-loops, respectively.  
 
+If unstable particles (e.g. W/Z bosons) appear as intermediate propagators
+in the process, Sherpa uses the complex mass scheme to construct MEs
+in a gauge-invariant way. For full consistency with this scheme,
+by default the dependent EW parameters are also calculated from the complex
+masses (@option{WIDTHSCHEME=CMS}), yielding complex values e.g. for
+the weak mixing angle.
+To keep the parameters real one can set @option{WIDTHSCHEME=Fixed}. This may
+spoil gauge invariance though.
