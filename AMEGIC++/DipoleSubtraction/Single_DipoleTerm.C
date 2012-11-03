@@ -181,10 +181,7 @@ Single_DipoleTerm::~Single_DipoleTerm()
   p_selector=NULL;
   p_kfactor=NULL;
   p_scale=NULL;
-  if (p_LO_process) {
-    if (p_LO_process->IsMapped()) p_LO_process->SetScaleSetter(NULL);
-    delete p_LO_process; p_LO_process=0;
-  }
+  if (p_LO_process) {delete p_LO_process; p_LO_process=0;}
   if (p_LO_mom)     {delete[] p_LO_mom; p_LO_mom=0;}
   if (p_dipole)     {delete p_dipole; p_dipole=0;}
 }
@@ -619,9 +616,9 @@ void Single_DipoleTerm::PrintProcessSummary(int it)
 
 void Single_DipoleTerm::SetScale(const Scale_Setter_Arguments &args)
 {
+  if (p_LO_process==NULL) return;
   if (!p_LO_process->IsMapped()) p_LO_process->SetScale(args);
   p_scale=p_LO_process->Partner()->ScaleSetter();
-  if (p_LO_process->IsMapped()) p_LO_process->SetScaleSetter(p_scale);
 }
 
 void Single_DipoleTerm::SetKFactor(const KFactor_Setter_Arguments &args)
