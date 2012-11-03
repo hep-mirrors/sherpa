@@ -12,6 +12,7 @@
   BEAM_1  2212; BEAM_ENERGY_1 980;
   BEAM_2 -2212; BEAM_ENERGY_2 980;
   CORE_SCALE VAR{sqrt(MPerp2(p[2])*MPerp2(p[3]))};
+  WIDTH[6] 0;
 }(run);
 
 (processes){
