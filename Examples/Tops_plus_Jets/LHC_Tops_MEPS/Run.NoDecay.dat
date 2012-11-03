@@ -1,0 +1,32 @@
+(run){
+  EVENTS = 100000
+  MI_HANDLER = None    # None or Amisic
+  FRAGMENTATION = Off
+  ME_SIGNAL_GENERATOR Amegic
+  HARD_DECAYS=On
+  STORE_DECAY_RESULTS 1;
+  STABLE[6]=0
+  STABLE[24]=0
+  HARD_SPIN_CORRELATIONS=1
+  HARD_MASS_SMEARING=0
+  AMEGIC_DEFAULT_GAUGE=10
+  ANALYSIS = Rivet
+  ANALYSIS_OUTPUT = TopsNoDec.Amegic.MEPS
+}(run)
+
+(beam){
+  BEAM_1 2212; BEAM_ENERGY_1 4000.;
+  BEAM_2 2212; BEAM_ENERGY_2 4000.;
+}(beam)
+
+(processes){
+  Process 93 93    -> 6 -6 93{1};
+  Order_EW 0; CKKW sqr(50/E_CMS);
+  End process;
+}(processes)
+
+(analysis){
+  BEGIN_RIVET {
+  -a MC_TTSpins
+  } END_RIVET
+}(analysis)
