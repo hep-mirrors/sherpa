@@ -113,9 +113,9 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   m_parametermap[string("asfix")]                = 
     dataread.GetValue<double>("AS_FIX",1.0);
   m_parametermap[string("pt02")]                 = 
-    dataread.GetValue<double>("PT^2_0",2.15);
+    dataread.GetValue<double>("PT^2_0",2.0);
   m_parametermap[string("ptmax")]                = 
-    dataread.GetValue<double>("PT_MAX",1.62);
+    dataread.GetValue<double>("PT_MAX",1.7);
   m_parametermap[string("minmass2")]             = 
     dataread.GetValue<double>("MIN_MASS2",0.0);
   m_parametermap[string("ptmax_factor")]         = 
@@ -130,9 +130,9 @@ void Hadronisation_Parameters::ReadParameters(string dir,string file)
   m_parametermap[string("WidthExponent_C->H")]   =
     dataread.GetValue<double>("TRANSITION_EXPONENT2",0.0);
   m_parametermap[string("Offset_C->HH")]         =
-    dataread.GetValue<double>("DECAY_OFFSET",0.558);
+    dataread.GetValue<double>("DECAY_OFFSET",0.74);
   m_parametermap[string("MassExponent_C->HH")]   =
-    dataread.GetValue<double>("DECAY_EXPONENT",2.36);
+    dataread.GetValue<double>("DECAY_EXPONENT",3.4);
   m_parametermap[string("Strange_fraction")]     =
     dataread.GetValue<double>("STRANGE_FRACTION",0.40);
   m_parametermap[string("Baryon_fraction")]      = 
