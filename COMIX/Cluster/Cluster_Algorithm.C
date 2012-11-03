@@ -113,7 +113,9 @@ CParam Cluster_Algorithm::GetMeasure
   }
   else {
     p_ampl->SetProcs(p_xs);
-    kt2[idi][idj][idk][mofl]=p_xs->ScaleSetter()->CoreScale(p_ampl);
+    kt2[idi][idj][idk][mofl]=
+      (p_xs->IsMapped()?p_xs->MapProc():p_xs)
+      ->ScaleSetter()->CoreScale(p_ampl);
   }
   msg_Debugging()<<"calc Q_{"<<ID(idi)<<p_ampl->Leg(i)->Flav()
 		 <<","<<ID(idj)<<""<<p_ampl->Leg(j)->Flav()
