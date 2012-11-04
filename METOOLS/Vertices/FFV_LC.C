@@ -3,6 +3,7 @@
 #include "METOOLS/Explicit/Vertex.H"
 #include "METOOLS/Explicit/Dipole_Kinematics.H"
 #include "METOOLS/Explicit/Dipole_Color.H"
+#include "METOOLS/Explicit/Dipole_Terms.H"
 #include "METOOLS/Currents/C_Spinor.H"
 
 namespace METOOLS {
@@ -25,6 +26,8 @@ namespace METOOLS {
     SComplex m_cpll, m_cplr;
 
     int m_dir, m_cl, m_cr;
+
+    double m_mi, m_mi2, m_mj, m_mj2, m_mk, m_mk2, m_mij, m_mij2;
 
     void Evaluate(const CSpinorType &a,const CSpinorType &b,const size_t &h);
     void Evaluate(const CSpinorType &a,const CVec4Type &b,const size_t &h);
@@ -95,8 +98,18 @@ template <typename SType>
 FFV_Calculator<SType>::FFV_Calculator(const Vertex_Key &key): 
   Lorentz_Calculator(key),  
   m_dir(key.FlB().IsFermion()?
-	(key.FlA().IsFermion()?0:2):1) 
+	(key.FlA().IsFermion()?0:2):1),
+  m_mi(-1.0), m_mi2(-1.0), m_mj(-1.0), m_mj2(-1.0),
+  m_mij(-1.0), m_mij2(-1.0), m_mk(-1.0), m_mk2(-1.0)
 {
+  if (p_v->Kin()) {
+    if (p_v->Kin()->JI())
+      m_mi2=sqr(m_mi=p_v->Kin()->JI()->Flav().Mass());
+    if (p_v->Kin()->JJ())
+      m_mj2=sqr(m_mj=p_v->Kin()->JJ()->Flav().Mass());
+    m_mk2=sqr(m_mk=p_v->Kin()->JK()->Flav().Mass());
+    m_mij2=sqr(m_mij=p_v->Kin()->JIJT()->Flav().Mass());
+  }
   bool nuc(p_v->Info() && p_v->Info()->Mode()&2);
   if (m_dir!=0 && key.p_c->Flav().IsAnti()) {
     m_cpll=SComplex(-(nuc?1.0:p_v->Coupling(0))*p_cc->Coupling());
@@ -135,16 +148,13 @@ void FFV_Calculator<SType>::ConstructFFSDipole()
     Vec4D pi(p_v->Kin()->PI()), pj(p_v->Kin()->PJ());
     double pij2((pi+pj).Abs2()), mt2(0.0), zim(zi), zjm(zj);
     if (p_v->Kin()->Massive()) {
-      double mi(p_v->Kin()->JI()->Flav().Mass());
-      double mj(p_v->Kin()->JJ()->Flav().Mass());
-      double mk(p_v->Kin()->JK()->Flav().Mass());
       double y(p_v->Kin()->Y()), Q2(p_v->Kin()->Q2());
-      double mi2(mi*mi), mj2(mj*mj), mk2(mk*mk), eps(Q2-mi2-mj2-mk2);
-      double viji(sqrt(sqr(eps*y)-sqr(2.0*mi*mj))/(eps*y+2.0*mi2));
-      rv=sqrt(sqr(2.0*mk2+eps*(1.0-y))-4.0*mk2*Q2)/(eps*(1.0-y));
-      double zc(0.5*(2.0*mi2+eps*y)/(mi2+mj2+eps*y));
+      double s(Q2-m_mi2-m_mj2-m_mk2);
+      double viji(sqrt(sqr(s*y)-sqr(2.0*m_mi*m_mj))/(s*y+2.0*m_mi2));
+      rv=sqrt(sqr(2.0*m_mk2+s*(1.0-y))-4.0*m_mk2*Q2)/(s*(1.0-y));
+      double zc(0.5*(2.0*m_mi2+s*y)/(m_mi2+m_mj2+s*y));
       double zm(zc*(1.0-viji*rv)), zp(zc*(1.0+viji*rv));
-      mt2=2.0*p_v->Info()->Kappa()*(zp*zm-mi2/pij2);
+      mt2=2.0*p_v->Info()->Kappa()*(zp*zm-m_mi2/pij2);
       zim-=0.5*(1.0-rv);
       zjm-=0.5*(1.0-rv);
     }
@@ -279,13 +289,11 @@ void FFV_Calculator<SType>::ConstructFVSDipole()
     double pipj(p_v->Kin()->PI()*p_v->Kin()->PJ());
     double rv(1.0), mt2(0.0);
     if (p_v->Kin()->Massive()) {
-      double mij2(sqr(p_v->Kin()->JIJT()->Flav().Mass()));
-      double mk2(sqr(p_v->Kin()->JKT()->Flav().Mass()));
-      double pij2(2.0*pipj+mij2), Q2(p_v->Kin()->Q2());
-      rv=(Q2-pij2-mk2)/(Q2-mij2-mk2)*
-	sqrt((sqr(Q2-mij2-mk2)-4.0*mij2*mk2)/
-	     (sqr(Q2-pij2-mk2)-4.0*pij2*mk2));
-      mt2=mij2/pipj;
+      double pij2(2.0*pipj+m_mij2), Q2(p_v->Kin()->Q2());
+      rv=(Q2-pij2-m_mk2)/(Q2-m_mij2-m_mk2)*
+	sqrt((sqr(Q2-m_mij2-m_mk2)-4.0*m_mij2*m_mk2)/
+	     (sqr(Q2-pij2-m_mk2)-4.0*pij2*m_mk2));
+      mt2=m_mij2/pipj;
     }
     if (iisf) A=2.0/(1.0-zi*(1.0-y))-rv*(1.0+zi+mt2);
     else A=2.0/(1.0-(1.0-zi)*(1.0-y))-rv*(2.0-zi+mt2);
@@ -294,8 +302,7 @@ void FFV_Calculator<SType>::ConstructFVSDipole()
   else if (p_v->Kin()->Type()==2) {
     double zi(p_v->Kin()->Z()), y(p_v->Kin()->Y());
     double pipj(p_v->Kin()->PI()*p_v->Kin()->PJ());
-    double mt2(p_v->Kin()->JIJT()->Flav().Mass());
-    if (mt2) mt2*=mt2/pipj;
+    double mt2(m_mij?m_mij2/pipj:0.0);
     if (iisf) A=2.0/(1.0-zi+y)-(1.0+zi+mt2);
     else A=2.0/(1.0-(1.0-zi)+y)-(2.0-zi+mt2);
     t=2.0*pipj*(1.0-y);
@@ -336,23 +343,27 @@ void FFV_Calculator<SType>::ConstructFVIDipole()
   const CObject_Vector *cc(&p_v->Kin()->JK()->J().front());
   if (!p_cc->Evaluate(c->front().front(),cc->front())) return;
   double d(p_v->Info()->DRMode()?0.5:0.0);
-  double a(p_v->Info()->AMax()), loga(log(a));
-  p_v->Kin()->SetRes(1.0,2);
-  p_v->Kin()->SetRes(3.0/2.0,1);
-  p_v->Kin()->SetRes(5.0-sqr(M_PI)/2.0-sqr(loga)+1.5*(a-1-loga)-d,0);
-  if (p_v->Kin()->JK()->Flav().IsGluon()) {
-    double nf(Flavour(kf_quark).Size()/2);
-    double Vqq(-16.0/9.0-2.0/3.0*(a-1.0-loga)-d);
-    double Vgg(50.0/9.0-0.5*sqr(M_PI)-sqr(loga)+11.0/6.0*(a-1.0-loga)-d);
-    p_v->Kin()->AddRes(1.0,2);
-    p_v->Kin()->AddRes(11.0/6.0-2.0/3.0*0.5/3.0*nf,1);
-    p_v->Kin()->AddRes(Vgg+0.5/3.0*Vqq*nf,0);
+  I_Args ia((p_v->Kin()->JIJT()->P()+
+	     p_v->Kin()->JKT()->P()).Mass(),m_mij,m_mk);
+  NLO_Value iv(FFQQ(ia,p_v->Info()));
+  p_v->Kin()->SetRes(iv.m_e2,2);
+  p_v->Kin()->SetRes(iv.m_e1,1);
+  p_v->Kin()->SetRes(iv.m_f-d,0);
+  ia.Swap();
+  if (!p_v->Kin()->JK()->Flav().IsGluon()) {
+    iv=FFQQ(ia,p_v->Info());
   }
   else {
-    p_v->Kin()->AddRes(1.0,2);
-    p_v->Kin()->AddRes(3.0/2.0,1);
-    p_v->Kin()->AddRes(5.0-sqr(M_PI)/2.0-sqr(loga)+1.5*(a-1-loga)-d,0);
+    d=p_v->Info()->DRMode()?1.0/6.0:0.0;
+    double nf(Flavour(kf_quark).Size()/2);
+    iv=0.5/3.0*nf*FFGQ(ia,p_v->Info(),0.0);
+    for (size_t i(nf+1);i<=p_v->Info()->Nf();++i)
+      iv+=0.5/3.0*FFGQ(ia,p_v->Info(),Flavour(i).Mass());
+    iv+=FFGG(ia,p_v->Info());
   }
+  p_v->Kin()->AddRes(iv.m_e2,2);
+  p_v->Kin()->AddRes(iv.m_e1,1);
+  p_v->Kin()->AddRes(iv.m_f-d,0);
   for (size_t i(0);i<c->size();++i) {
     CSpinorType *j((CSpinorType*)(*c)[i].front()->Copy());
     *j*=m_cpll*std::conj(m_cpll);
