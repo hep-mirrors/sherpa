@@ -2,7 +2,6 @@
 
 #include "METOOLS/Explicit/Dipole_Info.H"
 #include "ATOOLS/Math/MathTools.H"
-#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace METOOLS;
@@ -175,16 +174,42 @@ double METOOLS::FFVNSGQ(const I_Args &a,const Dipole_Info *info,const double &m)
     (r2*r2*r2*log((r2-r1)/(r2+r1))-log((1.0-r1)/(1.0+r1))-8.0*r1*m*m/a.s);
 }
 
-double METOOLS::FFACGQ(const I_Args &a,const Dipole_Info *info,const double &m)
+double METOOLS::FFACGQ(const I_Args &ia,const Dipole_Info *info,const double &m)
 {
   if (info->AMax()==1.0) return 0.0;
-  if (a.mk==0.0)
-    return -2.0/3.0*(info->AMax()-1.0-log(info->AMax()));
-  double muk(a.mk/a.Q), al(info->AMax()*(1.0-muk)/(1.0+muk));
-  return 2.0/3.0*((1.0-muk-al*(1.0+muk))/(1.0+muk)
-		  +log(al*(1.0+muk)/(1.0-muk)))
-    +2.0*(info->Kappa()-2.0/3.0)*muk*muk/(1.0-muk*muk)
-    *log((1.0-al)*(1.0+muk)/(2.0*muk));
+  if (m==0.0) {
+    if (ia.mk==0.0)
+      return -2.0/3.0*(info->AMax()-1.0-log(info->AMax()));
+    double muk(ia.mk/ia.Q), al(info->AMax()*(1.0-muk)/(1.0+muk));
+    return 2.0/3.0*((1.0-muk-al*(1.0+muk))/(1.0+muk)
+		    +log(al*(1.0+muk)/(1.0-muk)))
+      +2.0*(info->Kappa()-2.0/3.0)*muk*muk/(1.0-muk*muk)
+      *log((1.0-al)*(1.0+muk)/(2.0*muk));
+  }
+  if (ia.s<4.0*m*(m+ia.mk)) return 0.0;
+  double yp(1.0-2.0*ia.mk*(ia.Q-ia.mk)/(ia.Q2-2.0*m*m-ia.mk2));
+  double al(info->AMax()), muj2(m*m/ia.Q2), muk2(ia.mk2/ia.Q2);
+  if (ia.mk==0.0) {
+    double f(sqrt(1.0-4.0*muj2));
+    double e(sqrt(sqr(al*(1.0-2.0*muj2))-4.0*muj2*muj2));
+    return -2.0/3.0*
+      (2.0*e/(2.0*(al-1.0)*muj2-al)+e+(2.0*muj2-1.0)
+       *(-log((e+al*(2.0*muj2-1.0))/(f+2.0*muj2-1.0))
+	 +2.0*atan(2.0*muj2/e)-2.0*atan(2.0*muj2/f))+f);
+  }
+  double c(-1.0+2.0*muj2+muk2), d(sqrt(sqr(al*c*yp)-4.0*muj2*muj2));
+  double b(sqrt(sqr(c*yp)-4.0*muj2*muj2)), a(sqrt(1.0-muk2));
+  return -((-8.0*a*muj2*muj2+2.0*a*c*(c+1.0)+4.0*a*muj2)
+	   *log((al*c*c*yp-d*sqrt(c*c-4.0*muj2*muj2)-4.0*muj2*muj2)/
+		(c*c*yp-b*sqrt(c*c-4.0*muj2*muj2)-4.0*muj2*muj2))
+	   -2.0*a*(c*c+c-4.0*muj2*muj2+2.0*muj2)*log((1.0-al*yp)/(1.0-yp))
+	   +(-3.0*c*c-2.0*c+4.0*c*muj2)
+	   *sqrt(2.0*muj2-c)*log((al*c*yp+d)/(c*yp+b))
+	   +2.0*sqrt(2.0*muj2-c)*(c*c-2.0*(c+1.0)*muj2+4.0*muj2*muj2)
+	   *(atan(2.0*muj2/d)-atan(2.0*muj2/b))
+	   +(c*sqrt(2.0*muj2-c)*c*c*yp*(al*al*b*yp-2.0*al*b-d*(yp-2.0))
+	     +4.0*c*muj2*(b*(al*yp-1.0)-d*(yp-1.0))+4.0*muj2*muj2*(b-d))/(b*d)
+	   )/(3.0*c*pow(2.0*muj2-c,3.0/2.0));
 }
 
 NLO_Value METOOLS::FFGG(const I_Args &a,const Dipole_Info *info)
