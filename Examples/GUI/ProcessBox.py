@@ -55,6 +55,9 @@ class ProcessBox:
     def getOptions(self):
         return self.processes
 
+    def getProcess(self):
+        return self.process
+
     def setProcess(self,process_tag):
         self.process     = None
         self.process_tag = process_tag

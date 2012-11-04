@@ -8,6 +8,7 @@ import BeamBox
 import PDFBox
 import ProcessBox
 import SoftBox
+import SelectorBox
 
 
 class ParameterBox():
@@ -17,6 +18,7 @@ class ParameterBox():
         self.pdfbox  = PDFBox.PDFBox()
         self.procbox = ProcessBox.ProcessBox()
         self.softbox = SoftBox.SoftBox()
+        self.selbox  = SelectorBox.SelectorBox()
         self.initialiseDefaults()
 
     def initialiseDefaults(self):
@@ -25,6 +27,7 @@ class ParameterBox():
         self.pdfbox.initialiseDefaults(self.beambox.getCollider())
         self.procbox.initialiseDefaults(self.beambox.getCollider())
         self.softbox.initialiseDefaults(self.beambox.getCollider())
+        self.selbox.initialiseDefaults(self.beambox.getCollider(),None)
 
     def printStatus(self):
         self.beambox.printStatus()
@@ -49,6 +52,9 @@ class ParameterBox():
     def getSoftBox(self):
         return self.softbox
 
+    def getSelectorBox(self):
+        return self.selbox
+
     def write(self,genstring):
         filename   = "Run.dat"
         runfile = open(filename,"w")
@@ -57,6 +63,7 @@ class ParameterBox():
         self.pdfbox.write(runfile,self.beambox.getCollider())
         self.softbox.write(runfile)
         self.procbox.write(runfile)
+        self.selbox.write(runfile)
 
     def write_general(self,runfile):
         username   = getpass.getuser()
