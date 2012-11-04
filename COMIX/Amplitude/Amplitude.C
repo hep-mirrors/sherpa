@@ -1335,6 +1335,7 @@ bool Amplitude::EvaluateAll()
     MODEL::Coupling_Data *cpl(m_cpls.front().p_aqcd);
     double asf(cpl->Default()*cpl->Factor()/(2.0*M_PI));
     double mu2(cpl->Scale());
+    p_dinfo->SetMu2(mu2);
     if (p_loop) {
       p_loop->SetRenScale(mu2);
       m_p[0]=-m_p[0];
