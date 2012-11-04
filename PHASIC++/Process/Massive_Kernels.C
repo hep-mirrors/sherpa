@@ -170,7 +170,7 @@ void Massive_Kernels::CalcVNSg(double s,double mk,bool ini)
 		  -0.5*log(sqr(m_massflav[i])/Q2));
       if (!simplev) {
 	double rho2=sqrt(1.-4.*sqr(m_massflav[i])/s);	
-	nfc+=(m_kappa-2./3.)*2.*(rho2*rho2*rho2*log((rho2-rho1)/(rho2+rho1))-log((1.-rho1)/(1.+rho1))
+	nfc+=(m_kappa-2./3.)*2.*sqr(mk)/s*(rho2*rho2*rho2*log((rho2-rho1)/(rho2+rho1))-log((1.-rho1)/(1.+rho1))
 		 -8.*rho1*sqr(m_massflav[i])/s);
       }
     }
