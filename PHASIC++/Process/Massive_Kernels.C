@@ -468,7 +468,7 @@ void Massive_Kernels::CalcAterms(int t,double mu2,double s,double mj,double mk)
      double muj4 = 4.*muj2*muj2;
      double a = sqrt(sqr(m_alpha_ff*(1.-2.*muj2)) -muj4);
      double b = sqrt(1.-4.*muj2);
-     m_aterm -= m_TR*2./3.*(2.*a/(2.*(m_alpha_ff-1.)-m_alpha_ff) +a + (2.*muj2 -1.)*
+     m_aterm -= m_TR*2./3.*(2.*a/(2.*(m_alpha_ff-1.)*muj2-m_alpha_ff) +a + (2.*muj2 -1.)*
         (-log(-2.*(a+m_alpha_ff*(2.*muj2-1.))) + 2.*atan(2.*muj2/a)
         +log(-2.*(2.*muj2 +b -1.)) - 2.*atan(2.*muj2/b)) + b); ///ref 0 eq A9
       }
