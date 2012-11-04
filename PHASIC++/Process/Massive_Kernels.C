@@ -510,11 +510,11 @@ void Massive_Kernels::CalcAterms(int t,double mu2,double s,double mj,double mk)
         double d = sqrt(sqr(m_alpha_ff*c*yp) - muj4);
         double e = sqrt(c2-muj4);
         yp = 1. - 2.*muk*(1.-muk)/(1.-2.*muj2 - muk2);
-        m_aterm -= m_TR*(b*d*((-8.*muj2*muj2 + 2.*c2 +2.*c+4.*muj2)*log((m_alpha_ff*c2*yp-d*e -muj4)/(-b*e+c2*yp-muj4))
-              +2.*(c2+c-muj4+2.*muj2)*log((1.-yp)/(1.-m_alpha_ff*yp)) + (-3.*c2 +4.*c*muj2 - 2.*c)*log((m_alpha_ff*c*yp+d)/(b+c*yp))
-              +2.*(c2-2.*(c+1.)*muj2+muj4)*(atan(2.*muj2/d) - atan(2.*muj2/b))) 
-              +c*(c2*yp*(m_alpha_ff*m_alpha_ff*b*yp - 2.*m_alpha_ff*b - d*(yp-2.)) + 4.*c*muj2*(b*(m_alpha_ff*yp -1.) - d*yp +d) +muj4*(b-d)))
-              /(3.*c*a*a*b*d);///ref 0 eq A6 reformulated. 
+        m_aterm -= m_TR*(b*d*((-8.*muj2*muj2 + 2.*c2 +2.*c+4.*muj2)*a*log((m_alpha_ff*c2*yp-d*e -muj4)/(-b*e+c2*yp-muj4))
+	      +2.*a*(c2+c-muj4+2.*muj2)*log((1.-yp)/(1.-m_alpha_ff*yp)) + (-3.*c2 +4.*c*muj2 - 2.*c)*sqrt(2.0*muj2-c)*log((m_alpha_ff*c*yp+d)/(b+c*yp))
+	      +2.*sqrt(2.0*muj2-c)*(c2-2.*(c+1.)*muj2+muj4)*(atan(2.*muj2/d) - atan(2.*muj2/b)))
+	      +(c*c2*yp*sqrt(2.0*muj2-c)*(m_alpha_ff*m_alpha_ff*b*yp - 2.*m_alpha_ff*b - d*(yp-2.)) + 4.*c*muj2*(b*(m_alpha_ff*yp -1.) - d*yp +d) +muj4*(b-d)))
+	  /(3.*c*pow(2.0*muj2-c,3.0/2.0)*b*d);///ref 0 eq A6 reformulated. 
       }
     }
   }
