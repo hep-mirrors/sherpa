@@ -112,13 +112,20 @@ void Interaction_Model_Higgs_SM::c_VVS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[1] = flh;
     vertex[vanz].in[2] = flWplus.Bar();
     
+    Kabbala kMW = Kabbala(std::string("M_W"),flWplus.Yuk());
     if(ScalarNumber(std::string("WidthScheme"))==0){
-      kcpl0 = M_I*g2*flWplus.Yuk();
-    }else{
-      kcpl0 = M_I*g2*sqrt(sqr(flWplus.Yuk())-Complex(0.,1.)*flWplus.Yuk()*flWplus.Width());
+      kcpl0 = M_I*g2*kMW;
     }
+    else
+      {
+      Kabbala kGW = Kabbala(std::string("\\Gamma_Z"),flWplus.Width());
+      Kabbala kyuk2 = kMW*kMW-M_I*kGW*kMW; 
+      Kabbala kyuk  = Kabbala(std::string("\\sqrt{"+kyuk2.String()+"}"),sqrt(kyuk2.Value()));
+      kcpl0 = M_I*g2*kyuk;
+      }
+    
     kcpl1 = kcpl0;
-
+    
     vertex[vanz].cpl[0]  = kcpl0;
     vertex[vanz].cpl[1]  = vertex[vanz].cpl[0];
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
@@ -184,12 +191,18 @@ void Interaction_Model_Higgs_SM::c_VVS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].in[1] = flh;
     vertex[vanz].in[2] = flav;
       
+    Kabbala kMZ = Kabbala(std::string("M_Z"),flav.Yuk());
     if(ScalarNumber(std::string("WidthScheme"))==0){
-      kcpl0 = M_I*g2*flav.Yuk()/costW;
-    }else{
-      kcpl0 = M_I*g2*sqrt(sqr(flav.Yuk())-Complex(0.,1.)*
-              flav.Width()*flav.Yuk())/costW;
+      kcpl0 = M_I*g2*kMZ/costW;
     }
+    else
+      {
+	Kabbala kGZ = Kabbala(std::string("\\Gamma_Z"),flav.Width());
+	Kabbala kyuk2 = kMZ*kMZ-M_I*kGZ*kMZ; 
+	Kabbala kyuk  = Kabbala(std::string("\\sqrt{"+kyuk2.String()+"}"),sqrt(kyuk2.Value()));
+	kcpl0 = M_I*g2*kyuk/costW;
+      }
+    
     kcpl1 = kcpl0;
 
     vertex[vanz].cpl[0]  = kcpl0;
