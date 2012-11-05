@@ -1,6 +1,7 @@
 #ifndef METOOLS__Explicit__Dipole_Terms_H
 #define METOOLS__Explicit__Dipole_Terms_H
 
+#include "ATOOLS/Math/Vector.H"
 #include <iostream>
 
 namespace METOOLS {
@@ -27,7 +28,9 @@ namespace METOOLS {
   struct I_Args {
     double Q, Q2, s, mij, mij2, mk, mk2;
     double v, r, r2, rj2, rk2, Qa2;
-    I_Args(const double &_s,const double &_mij, const double &_mk);
+    bool is;
+    I_Args(const ATOOLS::Vec4D &pij,const ATOOLS::Vec4D &pk,
+	   const double &_mij, const double &_mk);
     void Swap();
   };// end of struct I_Args
 
