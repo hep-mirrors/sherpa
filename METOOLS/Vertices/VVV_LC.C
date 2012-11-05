@@ -209,8 +209,8 @@ void VVV_Calculator<SType>::ConstructIDipole()
   const CVec4Type_Matrix *c(cj->J().Get<CVec4Type>());
   const CObject_Vector *cc(&p_v->Kin()->JK()->J().front());
   if (!p_cc->Evaluate(c->front().front(),cc->front())) return;
-  I_Args ia((p_v->Kin()->JIJT()->P()+
-	     p_v->Kin()->JKT()->P()).Mass(),0.0,m_mk);
+  I_Args ia(2.0*p_v->Kin()->JIJT()->P()
+	    *p_v->Kin()->JKT()->P(),0.0,m_mk);
   double nf(Flavour(kf_quark).Size()/2);
   double d(p_v->Info()->DRMode()?1.0/6.0:0.0);
   NLO_Value iv(0.5/3.0*nf*FFGQ(ia,p_v->Info(),0.0));

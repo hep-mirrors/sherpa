@@ -27,7 +27,7 @@ namespace METOOLS {
   struct I_Args {
     double Q, Q2, s, mij, mij2, mk, mk2;
     double v, r, r2, rj2, rk2, Qa2;
-    I_Args(const double &_Q,const double &_mij, const double &_mk);
+    I_Args(const double &_s,const double &_mij, const double &_mk);
     void Swap();
   };// end of struct I_Args
 

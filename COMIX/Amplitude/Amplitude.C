@@ -1306,6 +1306,9 @@ bool Amplitude::EvaluateAll()
   if (p_loop) p_dinfo->SetDRMode(p_loop->DRMode());
   for (size_t i(0);i<m_subs.size();++i) m_subs[i]->Reset();
   for (size_t j(0);j<m_n;++j) m_ch[j]=0;
+  MODEL::Coupling_Data *cpl(m_cpls.front().p_aqcd);
+  double mu2(cpl?cpl->Scale():-1.0);
+  p_dinfo->SetMu2(mu2);
   CalcJL();
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): "<<m_ress.size()<<" amplitudes {\n";
@@ -1332,10 +1335,7 @@ bool Amplitude::EvaluateAll()
   m_res=csum/m_sf;
   m_cmur[1]=m_cmur[0]=csum=0.0;
   if (p_dinfo->Mode()) {
-    MODEL::Coupling_Data *cpl(m_cpls.front().p_aqcd);
     double asf(cpl->Default()*cpl->Factor()/(2.0*M_PI));
-    double mu2(cpl->Scale());
-    p_dinfo->SetMu2(mu2);
     if (p_loop) {
       p_loop->SetRenScale(mu2);
       m_p[0]=-m_p[0];

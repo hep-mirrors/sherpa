@@ -132,8 +132,13 @@ bool COMIX::Single_Process::Initialize
 	  new Single_Dipole_Term(this,(*subs)[i],(*subs)[i]);
     }
     if (smode&2) {
-      p_kpterms = new KP_Terms(this,0);
-      p_kpterms->SetAlpha(p_bg->DInfo()->AMax());
+      int massive(0);
+      for (size_t i(m_nin);i<m_nin+m_nout;++i)
+	if (flavs[i].Mass()) massive=1;
+      p_kpterms = new KP_Terms(this,massive);
+      double a(p_bg->DInfo()->AMax());
+      if (!p_kpterms->MassKern()) p_kpterms->SetAlpha(a);
+      else p_kpterms->SetAlpha(a,a,a,a);
       m_wgtinfo.AddMEweights(18);
     }
     if (smode&16) {
@@ -212,8 +217,11 @@ bool COMIX::Single_Process::MapProcess()
 	m_oew=p_map->p_bg->MaxOrderEW();
 	m_oqcd=p_map->p_bg->MaxOrderQCD();
 	if (p_map->p_kpterms) {
-	  p_kpterms = new KP_Terms(p_map,0);
-	  p_kpterms->SetAlpha(p_map->p_bg->DInfo()->AMax());
+	  p_kpterms = new KP_Terms
+	    (p_map,p_map->p_kpterms->MassKern()?1:0);
+	  double a(p_map->p_bg->DInfo()->AMax());
+	  if (!p_kpterms->MassKern()) p_kpterms->SetAlpha(a);
+	  else p_kpterms->SetAlpha(a,a,a,a);
 	  m_wgtinfo.AddMEweights(18);
 	}
 	msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"<<mapname<<"'.\n";

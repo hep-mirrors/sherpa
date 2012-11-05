@@ -343,8 +343,8 @@ void FFV_Calculator<SType>::ConstructFVIDipole()
   const CObject_Vector *cc(&p_v->Kin()->JK()->J().front());
   if (!p_cc->Evaluate(c->front().front(),cc->front())) return;
   double d(p_v->Info()->DRMode()?0.5:0.0);
-  I_Args ia((p_v->Kin()->JIJT()->P()+
-	     p_v->Kin()->JKT()->P()).Mass(),m_mij,m_mk);
+  I_Args ia(2.0*p_v->Kin()->JIJT()->P()
+	    *p_v->Kin()->JKT()->P(),m_mij,m_mk);
   NLO_Value iv(FFQQ(ia,p_v->Info()));
   p_v->Kin()->SetRes(iv.m_e2,2);
   p_v->Kin()->SetRes(iv.m_e1,1);

@@ -12,16 +12,18 @@ double Lam(const double &a,const double &b,const double &c)
   return sqr(a-b-c)-4.0*b*c;
 }
 
-I_Args::I_Args(const double &_Q,const double &_mij,const double &_mk):
-  Q(_Q), Q2(Q*Q), mij(_mij), mij2(mij*mij), mk(_mk), mk2(mk*mk)
+I_Args::I_Args(const double &_s,const double &_mij,const double &_mk):
+  s(dabs(_s)), mij(_mij), mij2(mij*mij), mk(_mk), mk2(mk*mk),
+  r(0.0), rj2(0.0), rk2(0.0)
 {
-  Qa2=s=Q2-mij2-mk2;
+  Q=sqrt(Q2=s+mij2+mk2);
   v=sqrt(1.0-sqr(2.0*mij*mk)/(s*s));
   if (mij && mk) {
     r=sqrt(r2=(1.0-v)/(1.0+v));
     rj2=(1.0-v+2.0*mij2/s)/(1.0+v+2.0*mij2/s);
     rk2=(1.0-v+2.0*mk2/s)/(1.0+v+2.0*mk2/s);
   }
+  Qa2=s;
 }
 
 void I_Args::Swap()
