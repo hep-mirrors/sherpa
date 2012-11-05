@@ -261,8 +261,11 @@ bool COMIX::Single_Process::MapProcess()
       p_mapproc=p_map=(*p_umprocs)[i];
       if (p_kpterms) {
 	delete p_kpterms;
-	p_kpterms = new KP_Terms(p_map,0);
-	p_kpterms->SetAlpha(p_map->p_bg->DInfo()->AMax());
+	p_kpterms = new KP_Terms
+	  (p_map,p_map->p_kpterms->MassKern()?1:0);
+	double a(p_map->p_bg->DInfo()->AMax());
+	if (!p_kpterms->MassKern()) p_kpterms->SetAlpha(a);
+	else p_kpterms->SetAlpha(a,a,a,a);
       }
       mapname=p_map->Name();
       msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"
