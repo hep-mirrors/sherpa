@@ -22,10 +22,10 @@ class ProcessBox:
         self.process_tag = ""
         self.process     = None
         self.processes   = self.NC
-        self.minjets     = 0
-        self.totjets     = 0
-        self.nlomax      = 3 
+        self.minjets     = None
+        self.totjets     = None
         self.nlojets     = -1
+        self.nlomax      = 3 
         self.ckkw_param  = 0.
         self.muFfactor   = 1.
         self.muRfactor   = 1.
@@ -76,10 +76,32 @@ class ProcessBox:
     def getNLOmax(self):
         return self.nlomax
 
+    def getProcNJets(self):
+        if self.process!=None:
+            minj = self.process.minjets
+            totj = self.process.totjets
+            nloj = self.process.nlojets
+            return minj,totj,nloj
+        return None,None,None
+
+    def setJetMultis(self,minjets=0,totjets=0,nlojets=0):
+        if self.process!=None:
+            if totjets>=self.process.minjets and totjets<=self.process.totjets:
+                self.totjets = totjets
+            if minjets>=self.process.minjets and minjets<=self.totjets:
+                self.minjets = minjets
+            if nlojets>=self.minjets and nlojets<=self.totjets:
+                self.nlojets = nlojets
+
+    def getMinJets(self):
+        if self.process!=None:
+            return self.minjets
+        return 0
+
     def getNJets(self):
         if self.process!=None:
-            return self.process.totjets,self.process.nlojets
-        return None,None
+            return self.minjets,self.totjets,self.nlojets
+        return None,None,None
 
     def setScaleFactors(self,muF,muR,muQ):
         self.muFfactor = muF
@@ -91,14 +113,6 @@ class ProcessBox:
 
     def isNLO(self):
         return (self.process.nlojets>-1)
-
-    def setJetMultis(self,minjets=0,totjets=0,nlojets=0):
-        if self.process!=None:
-            self.process.minjets = minjets
-            self.process.totjets = totjets
-            self.process.nlojets = nlojets
-            if (self.process.totjets<self.process.nlojets):
-                self.process.totjets=self.process.nlojets
 
     def setCKKW(self,ckkw_param):
         self.ckkw_param = ckkw_param
@@ -158,55 +172,55 @@ class ProcessBox:
         # the read-in facilities of Sherpa in a smarter way
         #
         self.LCmap["Jets"] = PI(
-            ["11 -11 -> 93 93 93{NJETS};"],["MODEL = SM;"],6,4,2)
+            ["11 -11 -> 93 93 93{NJETS};"],["MODEL = SM;"],6,4,2,2)
 
         self.HCmap["MinimumBias"] = PI(
             ["MinimumBias"],[""],-1,-1,-1)
 
         self.HCmap["Jets"] = PI(
-            ["93 93 -> 93 93 93{NJETS};"],["MODEL = SM;"],4,2,2)
+            ["93 93 -> 93 93 93{NJETS};"],["MODEL = SM;"],4,2,2,2)
 
         self.HCmap["Gamma + Jets"] = PI(
-            ["93 93 -> 22 93 93{NJETS};"],["MODEL = SM;"],4,2,2)
+            ["93 93 -> 22 93 93{NJETS};"],["MODEL = SM;"],4,2,1,2)
 
         self.HCmap["(W^+ -> e^+ nu) + Jets"] = PI(
             ["93 93 -> 24[a] 93{NJETS};","24[a] -> -11 12;"],
-            ["MODEL = SM;"],5,2,2)
+            ["MODEL = SM;"],5,2,0,2)
         self.HCmap["(W^+ -> mu^+ nu) + Jets"] = PI(
             ["93 93 -> 24[a] 93{NJETS};","24[a] -> -13 14;"],
-            ["MODEL = SM;"],5,2,2)
+            ["MODEL = SM;"],5,2,0,2)
         self.HCmap["(W^+ -> tau^+ nu) + Jets"] = PI(
             ["93 93 -> 24[a] 93{NJETS};","24[a] -> -15 16;"],
-            ["MODEL = SM;"],5,2,2)
+            ["MODEL = SM;"],5,2,0,2)
         self.HCmap["(W^- -> e^- nu) + Jets"] = PI(
             ["93 93 -> -24[a] 93{NJETS};","-24[a] -> 11 -12;"],
-            ["MODEL = SM;"],5,2,2)
+            ["MODEL = SM;"],5,2,0,2)
         self.HCmap["(W^- -> mu^- nu) + Jets"] = PI(
             ["93 93 -> -24[a] 93{NJETS};","-24[a] -> 13 -14;"],
-            ["MODEL = SM;"],5,2,2)
+            ["MODEL = SM;"],5,2,0,2)
         self.HCmap["(W^- -> tau^- nu) + Jets"] = PI(
             ["93 93 -> -24[a] 93{NJETS};","-24[a] -> 15 -16;"],
-            ["MODEL = SM;"],5,2,2)
+            ["MODEL = SM;"],5,2,0,2)
 
         self.HCmap["(Z -> e^- e^+) + Jets"] = PI(
             ["93 93 -> 23[a] 93{NJETS};","23[a] -> 11 -11;"],
-            ["MODEL = SM;"],5,2,2)
+            ["MODEL = SM;"],5,2,0,2)
         self.HCmap["(Z -> mu^- mu^+) + Jets"] = PI(
             ["93 93 -> 23[a] 93{NJETS};","23[a] -> 13 -13;"],
-            ["MODEL = SM;"],5,2,2)
+            ["MODEL = SM;"],5,2,0,2)
         self.HCmap["(Z -> tau^- tau^+) + Jets"] = PI(
             ["93 93 -> 23[a] 93{NJETS};","23[a] -> 15 -15;"],
-            ["MODEL = SM;"],5,2,2)
+            ["MODEL = SM;"],5,2,0,2)
         self.HCmap["(Z -> nu nu) + Jets"] = PI(
             ["93 93 -> 23[a] 93{NJETS};","23[a] -> 11 -11;"],
-            ["MODEL = SM;"],5,2,2)
+            ["MODEL = SM;"],5,2,0,2)
 
         self.HCmap["(e^- e^+) + Jets"] = PI(
-            ["93 93 -> 11 -11 93{NJETS};"],["MODEL = SM;"],5,2,2)
+            ["93 93 -> 11 -11 93{NJETS};"],["MODEL = SM;"],5,2,0,2)
         self.HCmap["(mu^- mu^+) + Jets"] = PI(
-            ["93 93 -> 13 -13 93{NJETS};"],["MODEL = SM;"],5,2,2)
+            ["93 93 -> 13 -13 93{NJETS};"],["MODEL = SM;"],5,2,0,2)
         self.HCmap["(tau^- tau^+) + Jets"] = PI(
-            ["93 93 -> 15 -15 93{NJETS};"],["MODEL = SM;"],5,2,2)
+            ["93 93 -> 15 -15 93{NJETS};"],["MODEL = SM;"],5,2,0,2)
         
     def fillLCStore(self):
         parent = self.LC.append(None,["Hard QCD",False])
@@ -253,11 +267,12 @@ class ProcessBox:
 class PI():
     def __init__(self,
                  declarationlines="",modellines="",
-                 totjets=0,nlojets=0,fsparts=0):
+                 totjets=0,nlojets=0,minjets=0,fsparts=0):
         self.declarationlines = declarationlines
         self.modellines       = modellines
         self.totjets          = totjets
         self.nlojets          = nlojets
+        self.minjets          = minjets
         self.fsparts          = fsparts
 
     def getList(self):

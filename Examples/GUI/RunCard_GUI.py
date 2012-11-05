@@ -108,9 +108,11 @@ class runcard_gui_gtk():
             # dependent on the pdfs
             # self.soft.updateModes(pdf)
         if mode=="Proc" or mode=="All":
+            self.procs.updateOptions()
             self.mes.updateOptions()
             self.sels.updateOptions(self.parameters.getBeamBox().getCollider(),
-                                    self.parameters.getProcBox().getProcess())
+                                    self.parameters.getProcBox().getProcess(),
+                                    self.parameters.getProcBox().getMinJets())
 
 
     def writebutton_clicked(self, widget, genstring):

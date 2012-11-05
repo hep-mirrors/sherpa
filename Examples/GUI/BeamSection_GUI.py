@@ -18,6 +18,7 @@ class beamsection_gui(guibase.gui_object):
                       gtk.Adjustment(0.,0.,1000000.,1000.)]
         self.ene   = [None,None]
 
+
     def getContent(self):
         colbox    = gtk.VBox(False,0)
         colbox.show()

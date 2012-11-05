@@ -15,9 +15,9 @@ class Selsection_gui(guibase.gui_object):
         self.tcols    = 3
         self.boxtable = gtk.Table(self.tcols,self.trows,False)
         for col in range(0,self.tcols):
-            self.boxtable.set_col_spacing(col,20)
+            self.boxtable.set_col_spacing(col,30)
         for row in range(0,self.trows):
-            self.boxtable.set_row_spacing(row,20)
+            self.boxtable.set_row_spacing(row,30)
         self.resetTable()
         self.boxtable.show()
 
@@ -32,15 +32,19 @@ class Selsection_gui(guibase.gui_object):
         vbox.pack_start(hbox,False,False,2)
         return vbox
 
-    def updateOptions(self,collider,process):
-        self.selbox.initialiseDefaults(collider,process)
+    def updateOptions(self,collider,process,minjets):
+        self.selbox.initialiseDefaults(collider,process,minjets)
         row     = 0
         flag    = False
         print "SelectorGUI::updateOptions: reset table"
+        print len(self.selbox.getSelectorList())," selectors to be added."
         self.resetTable()
         for sel in self.selbox.getSelectorList():
-            flag = flag or self.addSelector(row,sel)
-            row = row+1
+            print "Deal with ",sel.getTag()
+            flag1 = self.addSelector(row,sel)
+            flag  = flag or flag1
+            row   = row+1
+            self.boxtable.set_row_spacing(row,50)
         if not(flag):
             self.boxtable.attach(self.label,0,self.tcols-1,
                                  int(self.trows/2),int(self.trows/2)+1)
@@ -79,43 +83,59 @@ class Selsection_gui(guibase.gui_object):
             return self.connectRangeSelector(row,sel)
         return False
 
-    def connectJetFinder(self,row,sel):
-        label    = gtk.Label("Mass[",sel.getParticleIds()[0],",",
-                             sel.getParticleIds()[1],"]")
-        params   = gtk.VBox(False,0)
-        switch   = gtk.Button()
+    def buildBox(self,label,sel,row):
+        box    = gtk.VBox(False,0)
+        switch = gtk.Button()
         if sel.isOn():
             switch.set_label("On")
-            params.set_sensitive(True)
+            box.set_sensitive(True)
         else:
             switch.set_label("Off")
-            params.set_sensitive(False)
-        switch.connect("clicked",self.switchedOn,sel,params)
-        param    = gtk.HBox(False,0)
-        param.show()
-        params.pack_start(param,False,False,2)
-        label.show()
-        switch.show()
-        params.show()
+            box.set_sensitive(False)
+        switch.connect("clicked",self.switchedOn,sel,box)
         self.boxtable.attach(label,0,1,row,row+1)
         self.boxtable.attach(switch,1,2,row,row+1)
-        self.boxtable.attach(params,2,3,row,row+2)
+        label.show()
+        switch.show()
+        box.show()
+        return box
+
+    def connectRangeSelector(self,row,sel):
+        label    = gtk.Label("Mass["+str(sel.getParticleIds()[0])+","+
+                             str(sel.getParticleIds()[1])+"]")
+        ranges   = sel.getRanges()
+        mini     = ranges["min"]
+        maxi     = ranges["max"]
+        param   = gtk.HBox(False,0)
+        print "adjustment for max: ",maxi[2]," in [",maxi[0],maxi[1],"]"
+        sel.setValue("max",maxi[2])
+        maxadj   = gtk.Adjustment(maxi[2],maxi[0],maxi[1],maxi[3])
+        maxsel   = gtk.SpinButton(maxadj,1,2)
+        maxsel.show()
+        maxsel.connect("value_changed",self.paramChanged,[sel,"max"])
+        param.pack_end(maxsel,False,False,2)
+        param.pack_end(gtk.Label("Max:"),False,False,2)            
+        print "adjustment for min: ",mini[2]," in [",mini[0],mini[1],"]"
+        sel.setValue("min",mini[2])
+        minadj   = gtk.Adjustment(mini[2],mini[0],mini[1],mini[3])
+        minsel   = gtk.SpinButton(minadj,1,2)
+        minsel.show()
+        minsel.connect("value_changed",self.paramChanged,[sel,"min"])
+        param.pack_end(minsel,False,False,2)
+        param.pack_end(gtk.Label("Min:"),False,False,2)            
+        param.show_all()
+
+        params   = self.buildBox(label,sel,row)
+        params.pack_start(param,False,False,2)
+        self.boxtable.attach(params,2,3,row,row+1)
         return True
 
     def connectJetFinder(self,row,sel):
         label    = gtk.Label("Jet finder")
-        params   = gtk.VBox(False,0)
-        switch   = gtk.Button()
-        if sel.isOn():
-            switch.set_label("On")
-            params.set_sensitive(True)
-        else:
-            switch.set_label("Off")
-            params.set_sensitive(False)
-        switch.connect("clicked",self.switchedOn,sel,params)
 
         param    = gtk.HBox(False,0)
         param.show()
+        params   = self.buildBox(label,sel,row)
         params.pack_start(param,False,False,2)
         param.pack_start(gtk.Label("Algorithm:"),False,False,2)
         algo     = gtk.RadioButton(None,"KT")
@@ -139,7 +159,7 @@ class Selsection_gui(guibase.gui_object):
         params.pack_start(param,False,False,2)
         print "adjustment for R: ",R[2]," in [",R[0],R[1],"]"
         sel.setValue("R",R[2])
-        Radj     = gtk.Adjustment(R[2],R[0],R[1],0.1)
+        Radj     = gtk.Adjustment(R[2],R[0],R[1],R[3])
         Rsize    = gtk.SpinButton(Radj,1,2)
         Rsize.show()
         Rsize.connect("value_changed",self.paramChanged,[sel,"R"])
@@ -147,7 +167,7 @@ class Selsection_gui(guibase.gui_object):
         param.pack_end(gtk.Label("Cone size R:"),False,False,2)            
         print "adjustment for PT: ",PT[2]," in [",PT[0],PT[1],"]"
         sel.setValue("PT",PT[2])
-        ptadj    = gtk.Adjustment(PT[2],PT[0],PT[1],5.0)
+        ptadj    = gtk.Adjustment(PT[2],PT[0],PT[1],PT[3])
         ptsize   = gtk.SpinButton(ptadj,1,0)
         ptsize.show()
         ptsize.connect("value_changed",self.paramChanged,[sel,"PT"])
@@ -155,16 +175,6 @@ class Selsection_gui(guibase.gui_object):
         param.pack_end(gtk.Label("PT:"),False,False,2)            
         param.show_all()
         
-        label.show()
-        switch.show()
-        params.show()
-        self.boxtable.attach(label,0,1,row,row+1)
-        self.boxtable.attach(switch,1,2,row,row+1)
         self.boxtable.attach(params,2,3,row,row+2)
         row = row+1
         return True
-
-        #self.sellist.append(["NJetFinder",True,
-        #                    ["",[0.,self.E_CMS],[0.,2.0]]])
-        #self.sellist.append(["PT 93",True,[0.,self.E_CMS]])
-        #self.sellist.append(["Eta 93",True,[-10.,10.]])

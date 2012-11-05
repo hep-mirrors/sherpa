@@ -62,13 +62,13 @@ class MEsection_gui(guibase.gui_object):
         return table
 
     def updateOptions(self):
-        totjets,nlojets = self.procbox.getNJets()
+        minjets,totjets,nlojets = self.procbox.getNJets()
         if totjets==None or nlojets==None:
             return
-        print "MEs::updateOptions()",totjets,nlojets
+        print "MEs::updateOptions()",minjets,totjets,nlojets
         for field in self.loopgenfield:
             field.set_sensitive(False)
-        for i in range(0,nlojets+1):
+        for i in range(minjets,nlojets+1):
             self.loopgenfield[i].set_sensitive(True)
 
     def extractParameters(self):

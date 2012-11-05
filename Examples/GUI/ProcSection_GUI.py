@@ -33,28 +33,46 @@ class Procsection_gui(guibase.gui_object):
         if iterator==None:
             return
         tagname = model.get_value(iterator,0)
-        print "   yields: ",tagname
         self.procbox.setProcess(tagname)
-        LOjets,NLOjets = self.procbox.getNJets()
-        self.minjetsbutton.get_adjustment().set_upper(LOjets)
-        self.totjetsbutton.get_adjustment().set_upper(LOjets)
-        self.nlojetsbutton.get_adjustment().set_upper(NLOjets)
-        if self.procbox.getType()=="LC":
-            self.ckkwbutton.get_adjustment().set_value(5.)
-            self.ckkwbutton.get_adjustment().set_lower(2.)
-            self.ckkwbutton.get_adjustment().set_upper(100.)
-            self.ckkwbutton.get_adjustment().set_step_increment(2.)
-        if self.procbox.getType()=="HC":
-            self.ckkwbutton.get_adjustment().set_value(20.)
-            self.ckkwbutton.get_adjustment().set_lower(10.)
-            self.ckkwbutton.get_adjustment().set_upper(200.)
-            self.ckkwbutton.get_adjustment().set_step_increment(5.)
-        if self.procbox.getType()=="None":
-            self.ckkwbutton.get_adjustment().set_value(0.)
-            self.ckkwbutton.get_adjustment().set_lower(0.)
-            self.ckkwbutton.get_adjustment().set_upper(0.)
-            self.ckkwbutton.get_adjustment().set_step_increment(0.)
+        minjets,LOjets,NLOjets = self.procbox.getProcNJets()
+        print "   yields: ",tagname," --> ",minjets,LOjets,NLOjets
+        if tagname=="MinimumBias":
+            self.minjetsbutton.set_sensitive(False)
+            self.totjetsbutton.set_sensitive(False)
+            self.nlojetsbutton.set_sensitive(False)
             self.ckkwbutton.set_sensitive(False)
+            self.mufbox.set_sensitive(False)
+            self.murbox.set_sensitive(False)
+            self.muqbox.set_sensitive(False)
+        else:
+            self.minjetsbutton.set_sensitive(True)
+            self.totjetsbutton.set_sensitive(True)
+            self.nlojetsbutton.set_sensitive(True)
+            self.ckkwbutton.set_sensitive(True)
+            self.mufbox.set_sensitive(True)
+            self.murbox.set_sensitive(True)
+            self.muqbox.set_sensitive(True)
+            self.minjetsbutton.get_adjustment().set_upper(LOjets)
+            self.totjetsbutton.get_adjustment().set_upper(LOjets)
+            self.nlojetsbutton.get_adjustment().set_upper(NLOjets)
+            if self.procbox.getType()=="LC":
+                self.ckkwbutton.get_adjustment().set_value(5.)
+                self.ckkwbutton.get_adjustment().set_lower(2.)
+                self.ckkwbutton.get_adjustment().set_upper(100.)
+                self.ckkwbutton.get_adjustment().set_step_increment(2.)
+                self.ckkwbutton.set_sensitive(True)
+            if self.procbox.getType()=="HC":
+                self.ckkwbutton.get_adjustment().set_value(20.)
+                self.ckkwbutton.get_adjustment().set_lower(10.)
+                self.ckkwbutton.get_adjustment().set_upper(200.)
+                self.ckkwbutton.get_adjustment().set_step_increment(5.)
+                self.ckkwbutton.set_sensitive(True)
+            if self.procbox.getType()=="None":
+                self.ckkwbutton.get_adjustment().set_value(0.)
+                self.ckkwbutton.get_adjustment().set_lower(0.)
+                self.ckkwbutton.get_adjustment().set_upper(0.)
+                self.ckkwbutton.get_adjustment().set_step_increment(0.)
+                self.ckkwbutton.set_sensitive(False)
         self.update("Proc")
 
     def ckkwChanged(self,button):
@@ -69,7 +87,7 @@ class Procsection_gui(guibase.gui_object):
         if (data[0]=="muQ"):
             self.muQ = data[1]
 
-    def buttonChanged(self,globalupdate,mode):
+    def buttonChanged(self,button,mode):
         self.minjets = self.minjetsbutton.get_value_as_int()
         print "new lower limits for jets:",self.minjets
         self.totjetsbutton.get_adjustment().set_lower(self.minjets)
@@ -91,6 +109,7 @@ class Procsection_gui(guibase.gui_object):
             self.ckkwbutton.set_sensitive(True)
         else:
             self.ckkwbutton.set_sensitive(False)            
+        self.procbox.setJetMultis(self.minjets,self.totjets,self.nlojets)
         self.update("Proc")
 
     def extractParameters(self):
@@ -128,7 +147,7 @@ class Procsection_gui(guibase.gui_object):
         self.nlojetsbutton.connect("changed",self.buttonChanged,"NLO")
 
         self.ckkwbutton = gtk.SpinButton()
-        self.ckkwbutton.set_adjustment(gtk.Adjustment(0.,0.,0.,5.,1))
+        self.ckkwbutton.set_adjustment(gtk.Adjustment(20.,0.,100.,5.,1))
         self.ckkwbutton.connect("changed",self.ckkwChanged)
         self.ckkwbutton.set_sensitive(False)
 
