@@ -35,7 +35,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
   p_proc(NULL), p_beam(NULL), p_isr(NULL), p_model(NULL),
   m_path(dir), m_file(file), m_processfile(processfile),
   m_selectorfile(selectorfile), m_eventmode(0), m_hasnlo(0),
-  p_shower(NULL), p_nlomc(NULL), m_sum(0.0),
+  p_shower(NULL), p_nlomc(NULL), m_sum(0.0), m_globalnlomode(0),
   m_ranidx(0), p_ranin(NULL), p_ranout(NULL)
 {
   Data_Reader read(" ",";","!","=");
@@ -88,15 +88,15 @@ Matrix_Element_Handler::Matrix_Element_Handler
               <<read.GetValue("EVENT_SEED_INCREMENT",1)<<std::endl;
   }
   std::string nlomodestring("");
-  if (!read.ReadFromFile(nlomodestring,"NLO_Mode")) m_nlomode=1;
+  if (!read.ReadFromFile(nlomodestring,"NLO_Mode")) m_globalnlomode=0;
   else {
     if (nlomodestring=="MC@NLO" || nlomodestring=="MENLOPS" ||
-        nlomodestring=="MEPS@NLO" || nlomodestring=="3") m_nlomode=3;
-    else if (nlomodestring=="Fixed_Order") m_nlomode=1;
-    else m_nlomode=ToType<size_t>(nlomodestring);
+        nlomodestring=="MEPS@NLO") m_globalnlomode=3;
+    else if (nlomodestring=="Fixed_Order") m_globalnlomode=1;
+    else m_globalnlomode=ToType<size_t>(nlomodestring);
   }
-  msg_Debugging()<<METHOD<<"(): NLO_Mode = "<<m_nlomode<<std::endl;
-  if (m_nlomode!=1 && m_nlomode !=3)
+  msg_Debugging()<<METHOD<<"(): NLO_Mode = "<<m_globalnlomode<<std::endl;
+  if (m_globalnlomode!=0 && m_globalnlomode!=1 && m_globalnlomode !=3)
     THROW(fatal_error,"Unknown NLO_Mode="+nlomodestring);
 }
 
@@ -121,7 +121,7 @@ void Matrix_Element_Handler::InitNLOMC()
   read.AddComment("#");
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
-  std::string nlomc((m_nlomode&2)?"MC@NLO":"");
+  std::string nlomc((m_globalnlomode&2)?"MC@NLO":"");
   nlomc+="_"+read.GetValue<std::string>("NLOMC_GENERATOR","CSS");
   p_nlomc = NLOMC_Getter::GetObject(nlomc,NLOMC_Key(p_model,p_isr,&read));
 }
@@ -230,7 +230,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
     return procs;
   }
   else {
-    if (m_nlomode==3) {
+    if (m_globalnlomode==3) {
       m_hasnlo=3;
       if (p_nlomc==NULL) InitNLOMC();
       if (pmap==NULL) {
@@ -247,7 +247,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
       procs.push_back(proc);
       return procs;
     }
-    else if (m_nlomode==1) {
+    else if (m_globalnlomode==1) {
       m_hasnlo=1;
       if (pi.m_fi.NLOType()&(nlo_type::vsub|nlo_type::loop|nlo_type::born)) {
 	Process_Info rpi(pi);
@@ -498,13 +498,21 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_veobs,nf);
 	}
+	if (cur[0]=="NLO_QCD_Mode") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vnloqcdmode,nf);
+	}
 	if (cur[0]=="NLO_QCD_Part") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vnloqcd,nf);
+	  ExtractMPvalues(cb,pbi.m_vnloqcdpart,nf);
+	}
+	if (cur[0]=="NLO_EW_Mode") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vnloewmode,nf);
 	}
 	if (cur[0]=="NLO_EW_Part") {
 	  std::string cb(MakeString(cur,1));
-	  ExtractMPvalues(cb,pbi.m_vnloew,nf);
+	  ExtractMPvalues(cb,pbi.m_vnloewpart,nf);
 	}
 	if (cur[0]=="ME_Generator") {
 	  std::string cb(MakeString(cur,1));
@@ -628,8 +636,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	Process_Info cpi(pi);
 	cpi.m_ii=IS;
 	cpi.m_fi=CFS;
-        cpi.m_fi.m_nloqcdtype=pi.m_fi.m_nloqcdtype;
-        cpi.m_fi.m_nloewtype=pi.m_fi.m_nloewtype;
+	cpi.m_fi.m_nloqcdtype=pi.m_fi.m_nloqcdtype;
+	cpi.m_fi.m_nloewtype=pi.m_fi.m_nloewtype;
 	cpi.m_fi.SetNMax(pi.m_fi);
 	if (GetMPvalue(pbi.m_vscale,nfs,pnid,ds)) cpi.m_scale=ds;
 	if (GetMPvalue(pbi.m_vcoupl,nfs,pnid,ds)) cpi.m_coupling=ds;
@@ -640,17 +648,38 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	if (GetMPvalue(pbi.m_vamegicmhv,nfs,pnid,di)) cpi.m_amegicmhv=di;
 	if (GetMPvalue(pbi.m_vntchan,nfs,pnid,di)) cpi.m_ntchan=di;
 	if (GetMPvalue(pbi.m_vgpath,nfs,pnid,ds)) cpi.m_gpath=ds;
-	if (GetMPvalue(pbi.m_vnloqcd,nfs,pnid,ds)) {
-          cpi.m_fi.m_nloqcdtype=ToType<nlo_type::code>(ds);
-          cpi.m_nlomode=m_nlomode;
-        }
-	if (GetMPvalue(pbi.m_vnloew,nfs,pnid,ds)) {
-          cpi.m_fi.m_nloewtype=ToType<nlo_type::code>(ds);
-          cpi.m_nlomode=m_nlomode;
-        }
+	if (GetMPvalue(pbi.m_vnloqcdmode,nfs,pnid,ds)) {
+	  if      (ds=="Fixed_Order" || ds=="1") cpi.m_nlomode=1;
+	  else if (ds=="MC@NLO"      || ds=="3") cpi.m_nlomode=3;
+	  else THROW(fatal_error,"Unknown NLO_QCD_Mode "+ds+" {"+pnid+"}");
+	  cpi.m_fi.m_nloqcdtype=ToType<nlo_type::code>("BVIRS");
+	  if (!m_globalnlomode) m_globalnlomode=cpi.m_nlomode;
+	  if (cpi.m_nlomode!=m_globalnlomode)
+	    THROW(fatal_error,"Unable to process multiple NLO modes at the "
+			      "same time");
+	}
+	if (GetMPvalue(pbi.m_vnloqcdpart,nfs,pnid,ds)) {
+	  cpi.m_fi.m_nloqcdtype=ToType<nlo_type::code>(ds);
+	  if (cpi.m_nlomode==0) cpi.m_nlomode=m_globalnlomode;
+	}
+	if (GetMPvalue(pbi.m_vnloewmode,nfs,pnid,ds)) {
+	  if      (ds=="Fixed_Order" || ds=="1") cpi.m_nlomode=1;
+	  else if (ds=="MC@NLO"      || ds=="3") cpi.m_nlomode=3;
+	  else THROW(fatal_error,"Unknown NLO_EW_Mode "+ds+" {"+pnid+"}");
+	  cpi.m_fi.m_nloqcdtype=ToType<nlo_type::code>("BVIRS");
+	  if (!m_globalnlomode) m_globalnlomode=cpi.m_nlomode;
+	  if (cpi.m_nlomode!=m_globalnlomode)
+	    THROW(fatal_error,"Unable to process multiple NLO modes at the "
+			      "same time");
+	}
+	if (GetMPvalue(pbi.m_vnloewpart,nfs,pnid,ds)) {
+	  cpi.m_fi.m_nloewtype=ToType<nlo_type::code>(ds);
+	  if (cpi.m_nlomode==0) cpi.m_nlomode=m_globalnlomode;
+	}
 	if (GetMPvalue(pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
 	if (GetMPvalue(pbi.m_vloopgen,nfs,pnid,ds)) cpi.m_loopgenerator=ds;
 	std::vector<Process_Base*> proc=InitializeProcess(cpi,pmap);
+	msg_Out()<<METHOD<<std::endl<<cpi<<std::endl;
 	for (size_t i(0);i<proc.size();i++) {
 	  if (proc[i]==NULL)
 	    msg_Error()<<METHOD<<"(): No process for {\n"

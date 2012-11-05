@@ -69,11 +69,14 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   PHASIC::Process_Base *proc(p_mehandler->Process());
   blob->SetPosition(Vec4D(0.,0.,0.,0.));
   blob->SetTypeSpec(proc->Parent()->Name());
-  if (p_mehandler->NLOMode()==3 && proc->Parent()->Info().m_fi.NLOType()!=nlo_type::lo) {
-    MCatNLO_Process* powproc=dynamic_cast<MCatNLO_Process*>(proc->Parent());
-    if (powproc) {
-      if (powproc->WasSEvent()) blob->SetTypeSpec(proc->Parent()->Name()+"+S");
-      else blob->SetTypeSpec(proc->Parent()->Name()+"+H");
+  if (p_mehandler->HasNLO()==3 &&
+      proc->Parent()->Info().m_fi.NLOType()!=nlo_type::lo) {
+    MCatNLO_Process* mcatnloproc=dynamic_cast<MCatNLO_Process*>(proc->Parent());
+    if (mcatnloproc) {
+      if (mcatnloproc->WasSEvent())
+        blob->SetTypeSpec(proc->Parent()->Name()+"+S");
+      else
+        blob->SetTypeSpec(proc->Parent()->Name()+"+H");
     }
   }
   Vec4D cms = Vec4D(0.,0.,0.,0.);

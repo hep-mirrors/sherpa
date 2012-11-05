@@ -46,7 +46,8 @@ namespace SHERPA {
     struct Processblock_Info {
       MPDV_Map m_vmaxerr, m_vmaxeps, m_vefac, m_vrsefac;
       MPSV_Map m_veobs, m_vefunc, m_vycut, m_vscale, m_vcoupl, m_vkfac,
-	m_vsfile, m_vnloqcd, m_vnloew, m_vmegen, m_vloopgen, m_vgpath;
+	m_vsfile, m_vnloqcdmode, m_vnloqcdpart, m_vnloewmode, m_vnloewpart,
+	m_vmegen, m_vloopgen, m_vgpath;
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv, m_vntchan;
 
       std::string m_gycut;
@@ -74,7 +75,7 @@ namespace SHERPA {
     PDF::NLOMC_Base  *p_nlomc;
 
     double m_sum, m_ovwth, m_weightfactor;
-    size_t m_nlomode, m_ranidx;
+    size_t m_globalnlomode, m_ranidx;
 
 #ifdef USING__GZIP
     ATOOLS::igzstream *p_ranin;
@@ -155,7 +156,6 @@ namespace SHERPA {
     inline const std::string &Path() const { return m_path; }
     inline const std::string &File() const { return m_file; }
     
-    inline int NLOMode() const { return m_nlomode; }
     inline int HasNLO() const  { return m_hasnlo;  }
 
   };// end of class Matrix_Element_Handler
