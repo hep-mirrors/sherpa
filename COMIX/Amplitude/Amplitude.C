@@ -32,6 +32,7 @@ Amplitude::Amplitude():
   m_pmode('D'), p_dinfo(new Dipole_Info()), p_colint(NULL), p_helint(NULL),
   m_trig(true), p_loop(NULL)
 {
+  p_dinfo->SetMassive(0);
   Data_Reader read(" ",";","!","=");
   std::string prec;
   if (!read.ReadFromFile(prec,"COMIX_PMODE")) prec="D";

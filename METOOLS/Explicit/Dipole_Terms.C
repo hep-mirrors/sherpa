@@ -55,7 +55,7 @@ NLO_Value METOOLS::FFVS(const I_Args &a,const Dipole_Info *info)
 
 double METOOLS::FFAE(const I_Args &ia,const Dipole_Info *info)
 {
-  if (ia.is || info->AMax()==1.0) return 0.0;
+  if ((ia.is&&info->Massive()) || info->AMax()==1.0) return 0.0;
   if (ia.mij==0.0 && ia.mk==0.0) return -0.5*sqr(log(info->AMax()));
   if (ia.mij==0.0) {
     double al(info->AMax()), yp((ia.Q-ia.mk)/(ia.Q+ia.mk));
@@ -128,7 +128,7 @@ double METOOLS::FFVNSQQ(const I_Args &a,const Dipole_Info *info)
 
 double METOOLS::FFACQQ(const I_Args &a,const Dipole_Info *info)
 {
-  if (a.is || info->AMax()==1.0) return 0.0;
+  if ((a.is&&info->Massive()) || info->AMax()==1.0) return 0.0;
   if (a.mij==0.0 && a.mk==0.0)
     return 3.0/2.0*(info->AMax()-1.0-log(info->AMax()));
   if (a.mij==0.0) {
@@ -181,7 +181,7 @@ double METOOLS::FFVNSGQ(const I_Args &a,const Dipole_Info *info,const double &m)
 
 double METOOLS::FFACGQ(const I_Args &ia,const Dipole_Info *info,const double &m)
 {
-  if (ia.is || info->AMax()==1.0) return 0.0;
+  if ((ia.is&&info->Massive()) || info->AMax()==1.0) return 0.0;
   if (m==0.0) {
     if (ia.mk==0.0)
       return -2.0/3.0*(info->AMax()-1.0-log(info->AMax()));
@@ -240,7 +240,7 @@ double METOOLS::FFVNSGG(const I_Args &a,const Dipole_Info *info)
 
 double METOOLS::FFACGG(const I_Args &a,const Dipole_Info *info)
 {
-  if (a.is || info->AMax()==1.0) return 0.0;
+  if ((a.is&&info->Massive()) || info->AMax()==1.0) return 0.0;
   if (a.mk==0.0)
     return 11.0/6.0*(info->AMax()-1.0-log(info->AMax()));
   double muk(a.mk/a.Q), al(info->AMax()*(1.0-muk)/(1.0+muk));

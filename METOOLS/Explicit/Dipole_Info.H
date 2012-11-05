@@ -6,7 +6,7 @@ namespace METOOLS {
   class Dipole_Info {
   private:
 
-    int m_mode, m_stat, m_drmode, m_nf;
+    int m_mode, m_stat, m_drmode, m_nf, m_msv;
 
     double m_amin, m_kappa, m_amax, m_kt2max, m_mu2;
 
@@ -18,6 +18,8 @@ namespace METOOLS {
     inline void SetStat(const int stat) { m_stat=stat; }
 
     inline void SetNf(const int nf) { m_nf=nf; }
+
+    inline void SetMassive(const int msv) { m_msv=msv; }
 
     inline void SetAMin(const double &amin) { m_amin=amin; }
     inline void SetKappa(const double &kap) { m_kappa=kap; }
@@ -34,6 +36,8 @@ namespace METOOLS {
     inline int Stat() const { return m_stat; }
 
     inline int Nf() const { return m_nf; }
+
+    inline int Massive() const { return m_msv; }
 
     inline double AMin() const  { return m_amin;  }
     inline double Kappa() const { return m_kappa; }

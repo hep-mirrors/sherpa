@@ -138,7 +138,10 @@ bool COMIX::Single_Process::Initialize
       p_kpterms = new KP_Terms(this,massive);
       double a(p_bg->DInfo()->AMax());
       if (!p_kpterms->MassKern()) p_kpterms->SetAlpha(a);
-      else p_kpterms->SetAlpha(a,a,a,a);
+      else {
+	p_bg->DInfo()->SetMassive(1);
+	p_kpterms->SetAlpha(a,a,a,a);
+      }
       m_wgtinfo.AddMEweights(18);
     }
     if (smode&16) {
