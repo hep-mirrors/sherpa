@@ -3,6 +3,7 @@
 @cindex LHOLE_ORDERFILE
 @cindex LHOLE_CONTRACTFILE
 @cindex LHOLE_CMSBOOST
+@cindex LHOLE_OLP
 
 Sherpa includes only a very limited selection of one-loop matrix elements.
 To make full use of the implemented automated dipole subtraction it is
@@ -92,4 +93,9 @@ Sherpa is configured, see @ref{ANALYSIS}.
 If @code{LHOLE_CMSBOOST=1} is set, these phase space points are boosted to 
 the centre of mass system before they are passed to the OLE.
 
+@item The original BLHA interface does not allow for run-time parameter 
+passing. While this is discussed for an updated of the accord a workable 
+solution is implemented for the use of GoSam and enabled through 
+@code{LHOLE_OLP=GoSam}. This, of course, can be adapted for other one-loop 
+programs if need be.
 @end itemize
