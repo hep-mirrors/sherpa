@@ -28,7 +28,7 @@ namespace METOOLS {
   struct I_Args {
     double Q, Q2, s, mij, mij2, mk, mk2;
     double v, r, r2, rj2, rk2, Qa2;
-    bool is;
+    int type;
     I_Args(const ATOOLS::Vec4D &pij,const ATOOLS::Vec4D &pk,
 	   const double &_mij, const double &_mk);
     void Swap();

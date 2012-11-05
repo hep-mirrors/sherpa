@@ -136,12 +136,11 @@ bool COMIX::Single_Process::Initialize
       for (size_t i(m_nin);i<m_nin+m_nout;++i)
 	if (flavs[i].Mass()) massive=1;
       p_kpterms = new KP_Terms(this,massive);
-      double a(p_bg->DInfo()->AMax());
-      if (!p_kpterms->MassKern()) p_kpterms->SetAlpha(a);
-      else {
-	p_bg->DInfo()->SetMassive(1);
-	p_kpterms->SetAlpha(a,a,a,a);
-      }
+      p_bg->DInfo()->SetMassive(massive);
+      p_kpterms->SetAlpha(p_bg->DInfo()->AMax(0),
+			  p_bg->DInfo()->AMax(2),
+			  p_bg->DInfo()->AMax(1),
+			  p_bg->DInfo()->AMax(3));
       m_wgtinfo.AddMEweights(18);
     }
     if (smode&16) {
@@ -222,9 +221,10 @@ bool COMIX::Single_Process::MapProcess()
 	if (p_map->p_kpterms) {
 	  p_kpterms = new KP_Terms
 	    (p_map,p_map->p_kpterms->MassKern()?1:0);
-	  double a(p_map->p_bg->DInfo()->AMax());
-	  if (!p_kpterms->MassKern()) p_kpterms->SetAlpha(a);
-	  else p_kpterms->SetAlpha(a,a,a,a);
+	  p_kpterms->SetAlpha(p_map->p_bg->DInfo()->AMax(0),
+			      p_map->p_bg->DInfo()->AMax(2),
+			      p_map->p_bg->DInfo()->AMax(1),
+			      p_map->p_bg->DInfo()->AMax(3));
 	  m_wgtinfo.AddMEweights(18);
 	}
 	msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"<<mapname<<"'.\n";
@@ -266,9 +266,10 @@ bool COMIX::Single_Process::MapProcess()
 	delete p_kpterms;
 	p_kpterms = new KP_Terms
 	  (p_map,p_map->p_kpterms->MassKern()?1:0);
-	double a(p_map->p_bg->DInfo()->AMax());
-	if (!p_kpterms->MassKern()) p_kpterms->SetAlpha(a);
-	else p_kpterms->SetAlpha(a,a,a,a);
+	p_kpterms->SetAlpha(p_map->p_bg->DInfo()->AMax(0),
+			    p_map->p_bg->DInfo()->AMax(2),
+			    p_map->p_bg->DInfo()->AMax(1),
+			    p_map->p_bg->DInfo()->AMax(3));
       }
       mapname=p_map->Name();
       msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"

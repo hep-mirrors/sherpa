@@ -8,7 +8,7 @@ namespace METOOLS {
 
     int m_mode, m_stat, m_drmode, m_nf, m_msv;
 
-    double m_amin, m_kappa, m_amax, m_kt2max, m_mu2;
+    double m_amin, m_kappa, m_amax[4], m_kt2max, m_mu2;
 
   public:
 
@@ -24,7 +24,7 @@ namespace METOOLS {
     inline void SetAMin(const double &amin) { m_amin=amin; }
     inline void SetKappa(const double &kap) { m_kappa=kap; }
 
-    inline void SetAMax(const double &amax) { m_amax=amax; }
+    inline void SetAMax(const int t,const double &amax) { m_amax[t]=amax; }
 
     inline void SetKT2Max(const double &kt2max) { m_kt2max=kt2max; }
 
@@ -42,7 +42,7 @@ namespace METOOLS {
     inline double AMin() const  { return m_amin;  }
     inline double Kappa() const { return m_kappa; }
 
-    inline double AMax() const { return m_amax; }
+    inline double AMax(const int t) const { return m_amax[t]; }
 
     inline double KT2Max() const { return m_kt2max; }
 

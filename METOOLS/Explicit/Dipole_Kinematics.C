@@ -129,7 +129,7 @@ void Dipole_Kinematics::Evaluate()
   else {
     THROW(fatal_error,"Invalid dipole type");
   }
-  m_trig=m_y/m_yp<p_info->AMax();
+  m_trig=m_y/m_yp<p_info->AMax(m_type);
   if (m_trig) m_trig=m_kt2<p_info->KT2Max();
   if (m_y<Max(m_ym,p_info->AMin())) p_info->SetStat(0);
   if (p_info->Stat() &&

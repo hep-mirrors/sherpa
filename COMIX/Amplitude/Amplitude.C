@@ -55,7 +55,19 @@ Amplitude::Amplitude():
   p_dinfo->SetAMin(helpd);
   if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA")) helpd=1.0;
   else msg_Tracking()<<METHOD<<"(): Set dipole \\alpha_{max} "<<helpd<<".\n";
-  p_dinfo->SetAMax(helpd);
+  double amax(helpd);
+  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FF")) helpd=amax;
+  else msg_Tracking()<<METHOD<<"(): Set FF dipole \\alpha_{max} "<<helpd<<".\n";
+  p_dinfo->SetAMax(0,helpd);
+  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FI")) helpd=amax;
+  else msg_Tracking()<<METHOD<<"(): Set FI dipole \\alpha_{max} "<<helpd<<".\n";
+  p_dinfo->SetAMax(2,helpd);
+  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_IF")) helpd=amax;
+  else msg_Tracking()<<METHOD<<"(): Set IF dipole \\alpha_{max} "<<helpd<<".\n";
+  p_dinfo->SetAMax(1,helpd);
+  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_II")) helpd=amax;
+  else msg_Tracking()<<METHOD<<"(): Set II dipole \\alpha_{max} "<<helpd<<".\n";
+  p_dinfo->SetAMax(3,helpd);
   if (!read.ReadFromFile(helpd,"DIPOLE_KAPPA")) helpd=2.0/3.0;
   else msg_Tracking()<<METHOD<<"(): Set dipole \\kappa="<<helpd<<"\n.";
   p_dinfo->SetKappa(helpd);
@@ -1234,7 +1246,7 @@ bool Amplitude::JetTrigger
     kin->AddTrig(ltrig);
     if (mode==1) {
       int da(kin->KT2()<m_subs[i]->m_mu2[stp::res]);
-      int ds(kin->Y()<p_dinfo->AMax());
+      int ds(kin->Y()<p_dinfo->AMax(kin->Type()));
       kin->SetTrig(ltrig&abs(ds-da));
     }
     else if (mode==2) {
@@ -1253,7 +1265,7 @@ double Amplitude::KT2Trigger(NLO_subevt *const sub,const int mode)
     (m_scur[sub->m_idx]->Sub()->In().front()->Kin());
   if (mode==1) {
     int da(kin->KT2()<sub->m_mu2[stp::res]);
-    int ds(kin->Y()<p_dinfo->AMax());
+    int ds(kin->Y()<p_dinfo->AMax(kin->Type()));
     kin->SetTrig(abs(ds-da));
     return ds-da;
   }
