@@ -133,11 +133,6 @@ PrintInfo(ostream &str,const size_t width) const
      <<setw(width+7)<<" "<<"- THETA_L34   (lepton mixing angle theta_L,34)\n"
      <<setw(width+7)<<" "<<"- PHI_L2    (lepton mixing angle phi_L,2)\n"
      <<setw(width+7)<<" "<<"- PHI_L3    (lepton mixing angle phi_L,3)\n"
-     <<setw(width+7)<<" "<<"possibly different Yukawa couplings for 4th generation:\n"
-     <<setw(width+7)<<" "<<"- YUKAWA_U4   (Yukawa coupling of 4th generation up-type quark)\n"
-     <<setw(width+7)<<" "<<"- YUKAWA_D4   (Yukawa coupling of 4th generation down-type quark)\n"
-     <<setw(width+7)<<" "<<"- YUKAWA_L4   (Yukawa coupling of 4th generation lepton)\n"
-     <<setw(width+7)<<" "<<"- YUKAWA_Nu4  (Yukawa coupling of 4th generation neutrino)\n"
      <<setw(width+7)<<" "<<"output of mixing matrices [1=on,0=off(default)]:\n"
      <<setw(width+7)<<" "<<"- OUTPUT_MIXING  (Print the matrices for lepton and quark mixing)\n"
      <<setw(width+4)<<" "<<"}";
@@ -279,33 +274,6 @@ void Standard_Model::FillSpectrum(const PDF::ISR_Handler_Map& isr)
   p_dataread->RereadInFile();
   FixEWParameters();  
   FixCKM();
-  p_constants->insert(make_pair(string("Yukawa_e"), 
-				p_dataread->GetValue<double>("YUKAWA_E",0.)));
-  p_constants->insert(make_pair(string("Yukawa_mu"), 
-				p_dataread->GetValue<double>("YUKAWA_MU",0.)));
-  p_constants->insert(make_pair(string("Yukawa_tau"), 
-				p_dataread->GetValue<double>("YUKAWA_TAU",Flavour(kf_tau).Mass(true))));
-  p_constants->insert(make_pair(string("Yukawa_d"), 
-				p_dataread->GetValue<double>("YUKAWA_D",0.)));
-  p_constants->insert(make_pair(string("Yukawa_u"), 
-				p_dataread->GetValue<double>("YUKAWA_U",0.)));
-  p_constants->insert(make_pair(string("Yukawa_s"), 
-				p_dataread->GetValue<double>("YUKAWA_S",0.)));
-  p_constants->insert(make_pair(string("Yukawa_c"), 
-				p_dataread->GetValue<double>("YUKAWA_C",0.)));
-  p_constants->insert(make_pair(string("Yukawa_b"), 
-				p_dataread->GetValue<double>("YUKAWA_B",Flavour(kf_b).Mass(true))));
-  p_constants->insert(make_pair(string("Yukawa_t"), 
-				p_dataread->GetValue<double>("YUKAWA_T",Flavour(kf_t).Mass(true))));
-  ATOOLS::Flavour(kf_e).SetYuk(ScalarConstant("Yukawa_e"));
-  ATOOLS::Flavour(kf_mu).SetYuk(ScalarConstant("Yukawa_mu"));
-  ATOOLS::Flavour(kf_tau).SetYuk(ScalarConstant("Yukawa_tau"));
-  ATOOLS::Flavour(kf_u).SetYuk(ScalarConstant("Yukawa_u"));
-  ATOOLS::Flavour(kf_d).SetYuk(ScalarConstant("Yukawa_d"));
-  ATOOLS::Flavour(kf_c).SetYuk(ScalarConstant("Yukawa_c"));
-  ATOOLS::Flavour(kf_s).SetYuk(ScalarConstant("Yukawa_s"));
-  ATOOLS::Flavour(kf_t).SetYuk(ScalarConstant("Yukawa_t"));
-  ATOOLS::Flavour(kf_b).SetYuk(ScalarConstant("Yukawa_b"));
 
   // Extra coupling parameters for non-Standard tbW coupling
   if (m_trivialextension==1) {
@@ -315,16 +283,6 @@ void Standard_Model::FillSpectrum(const PDF::ISR_Handler_Map& isr)
     p_constants->insert(make_pair(string("tbW_Angle"),
 				  m_trivialextension==1?
 				  p_dataread->GetValue<double>("THETA_{TBW}",0.):0.));
-  }
-  if (m_trivialextension==2) { 
-    p_constants->insert(make_pair(string("Yukawa_D4"), 
-				  p_dataread->GetValue<double>("YUKAWA_D4",Flavour(kf_D4).Mass(true))));
-    p_constants->insert(make_pair(string("Yukawa_U4"), 
-				  p_dataread->GetValue<double>("YUKAWA_U4",Flavour(kf_U4).Mass(true))));
-    p_constants->insert(make_pair(string("Yukawa_L4"), 
-				  p_dataread->GetValue<double>("YUKAWA_L4",Flavour(kf_L4).Mass(true))));
-    p_constants->insert(make_pair(string("Yukawa_Nu4"), 
-				  p_dataread->GetValue<double>("YUKAWA_Nu4",Flavour(kf_Nu4).Mass(true))));
   }
 
   int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",1);
@@ -351,73 +309,18 @@ void Standard_Model::FillSpectrum(const PDF::ISR_Handler_Map& isr)
   Strong_Coupling * strong_cpl(new Strong_Coupling(as,as_form,Q2aS));
   p_functions->insert(make_pair(string("strong_cpl"),strong_cpl));
 
-  Running_Fermion_Mass * md   = 
-    new Running_Fermion_Mass(Flavour(kf_d),
-			     ScalarConstant(string("Yukawa_d")),as);
-  Running_Fermion_Mass * mu   = 
-    new Running_Fermion_Mass(Flavour(kf_u),
-			     ScalarConstant(string("Yukawa_u")),as);
-  Running_Fermion_Mass * ms   = 
-    new Running_Fermion_Mass(Flavour(kf_s),
-			     ScalarConstant(string("Yukawa_s")),as);
-  Running_Fermion_Mass * mc   = 
-    new Running_Fermion_Mass(Flavour(kf_c),
-			     ScalarConstant(string("Yukawa_c")),as);
-  Running_Fermion_Mass * mb   = 
-    new Running_Fermion_Mass(Flavour(kf_b),
-			     ScalarConstant(string("Yukawa_b")),as);
-  Running_Fermion_Mass * mt   = 
-    new Running_Fermion_Mass(Flavour(kf_t),
-			     ScalarConstant(string("Yukawa_t")),as);
-  Running_Fermion_Mass * me   = 
-    new Running_Fermion_Mass(Flavour(kf_e),
-			     ScalarConstant(string("Yukawa_e")),as);
-  Running_Fermion_Mass * mmu  = 
-    new Running_Fermion_Mass(Flavour(kf_mu),
-			     ScalarConstant(string("Yukawa_mu")),as);
-  Running_Fermion_Mass * mtau = 
-    new Running_Fermion_Mass(Flavour(kf_tau),
-			     ScalarConstant(string("Yukawa_tau")),as);
-  p_functions->insert(make_pair(string("m")+
-				string(Flavour(kf_d).IDName()),md));
-  p_functions->insert(make_pair(string("m")+
-				string(Flavour(kf_u).IDName()),mu));
-  p_functions->insert(make_pair(string("m")+
-				string(Flavour(kf_s).IDName()),ms));
-  p_functions->insert(make_pair(string("m")+
-				string(Flavour(kf_c).IDName()),mc));
-  p_functions->insert(make_pair(string("m")+
-				string(Flavour(kf_b).IDName()),mb));
-  p_functions->insert(make_pair(string("m")+
-				string(Flavour(kf_t).IDName()),mt));
-  p_functions->insert(make_pair(string("m")+
-				string(Flavour(kf_e).IDName()),me));
-  p_functions->insert(make_pair(string("m")+
-				string(Flavour(kf_mu).IDName()),mmu));
-  p_functions->insert(make_pair(string("m")+
-				string(Flavour(kf_tau).IDName()),mtau));
-
+  Flavour_Vector yfl;
+  yfl.push_back(kf_d); yfl.push_back(kf_u); yfl.push_back(kf_s);
+  yfl.push_back(kf_c); yfl.push_back(kf_b); yfl.push_back(kf_t);
+  yfl.push_back(kf_e); yfl.push_back(kf_mu); yfl.push_back(kf_tau);
   if (m_trivialextension==2) {
-    Running_Fermion_Mass * mD4  = 
-      new Running_Fermion_Mass(Flavour(kf_D4),
-			       ScalarConstant(string("Yukawa_D4")),as);
-    Running_Fermion_Mass * mU4  = 
-      new Running_Fermion_Mass(Flavour(kf_U4),
-			       ScalarConstant(string("Yukawa_U4")),as);
-    Running_Fermion_Mass * mL4  = 
-      new Running_Fermion_Mass(Flavour(kf_L4),
-			       ScalarConstant(string("Yukawa_L4")),as);
-    Running_Fermion_Mass * mNu4  = 
-      new Running_Fermion_Mass(Flavour(kf_Nu4),
-			       ScalarConstant(string("Yukawa_Nu4")),as);
-    p_functions->insert(make_pair(string("m")+
-				  string(Flavour(kf_D4).IDName()),mD4));
-    p_functions->insert(make_pair(string("m")+
-				  string(Flavour(kf_U4).IDName()),mU4));
-    p_functions->insert(make_pair(string("m")+
-				  string(Flavour(kf_L4).IDName()),mL4));
-    p_functions->insert(make_pair(string("m")+
-				  string(Flavour(kf_Nu4).IDName()),mNu4));
+    yfl.push_back(kf_D4); yfl.push_back(kf_U4);
+    yfl.push_back(kf_L4); yfl.push_back(kf_Nu4);
+  }
+  for (size_t i=0; i<yfl.size(); ++i) {
+    Running_Fermion_Mass * rfm =
+      new Running_Fermion_Mass(yfl[i], yfl[i].Yuk(), as);
+    p_functions->insert(make_pair(string("m")+yfl[i].IDName(),rfm));
   }
 }
 

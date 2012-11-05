@@ -136,12 +136,12 @@ Virtual_ME2_Base *MCFM_qqb_vh_Getter::operator()(const Process_Info &pi) const
 	ATOOLS::Flavour fl2(pi.m_fi.m_ps[0].m_ps[1].m_fl[0]);
 	if ((fl1==Flavour(kf_Wplus) && fl2==Flavour(kf_Wplus).Bar()) ||
 	    (fl2==Flavour(kf_Wplus) && fl1==Flavour(kf_Wplus).Bar())) {
-	  if (MODEL::s_model->ScalarConstant("Yukawa_b")>0. ||
+	  if (Flavour(kf_b).Yuk()>0. ||
 	      MODEL::s_model->Name()!=std::string("SM")) {
 	    msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
 		       <<"   Try to initialise process qqb->VH in MCFM.\n"
 		       <<"   Inconsistent setting with Sherpa: \n"
-		       <<"YUKAWA_B = "<<MODEL::s_model->ScalarConstant("Yukawa_b")
+		       <<"YUKAWA[5] = "<<Flavour(kf_b).Yuk()
 		       <<" (should be 0), and "
 		       <<"MODEL = "<<MODEL::s_model->Name()
 		       <<"(should be 'SM'.\n"

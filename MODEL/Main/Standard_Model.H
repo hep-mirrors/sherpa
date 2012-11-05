@@ -70,9 +70,8 @@ namespace MODEL {
   /*!
     \fn void Standard_Model::FillSpectrum()
     This method is called by the constructor and, through FixEWParameters and FixCKM defines
-    all parameters in the electroweak sector before the Yukawa couplings of the fermions
-    are read in and set in the corresponding flavour data. The running coupling \f$\alpha_s\f$
-    is also initialized in this method.
+    all parameters in the electroweak sector. The running coupling \f$\alpha_s\f$
+    and running fermion masses are also initialized in this method.
   */
   /*!
     \fn void Standard_Model::FixEWParameters()

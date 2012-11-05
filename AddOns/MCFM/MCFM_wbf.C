@@ -154,13 +154,13 @@ Virtual_ME2_Base *MCFM_wbf_Getter::operator()(const Process_Info &pi) const
     if (pi.m_fi.m_ps.size()==2 && 
 	!pi.m_fi.m_ps[1].m_fl[0].Strong())              return NULL;
 
-    if (MODEL::s_model->ScalarConstant("Yukawa_b")>0. ||
+    if (Flavour(kf_b).Yuk()>0. ||
 	MODEL::s_model->Name()!=std::string("SM") ||
 	!Flavour(kf_h0).IsOn()) {
       msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
 		 <<"   Try to initialise process WBF->H in MCFM.\n"
 		 <<"   Inconsistent setting with Sherpa: \n"
-		 <<"YUKAWA_B = "<<MODEL::s_model->ScalarConstant("Yukawa_b")<<" (should be 0), "
+		 <<"YUKAWA[5] = "<<Flavour(kf_b).Yuk()<<" (should be 0), "
 		 <<"MODEL = "<<MODEL::s_model->Name()
 		 <<"(should be 'SM'), and "
 		 <<"ACTIVE[25] = "<<Flavour(kf_h0).IsOn()<<"(should be 1)."

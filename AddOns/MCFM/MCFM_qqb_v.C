@@ -167,19 +167,15 @@ Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
 
       }
       if (fl[2]==fl[3].Bar()) {
-	if (((fl[2].Kfcode()==11 && 
-	      MODEL::s_model->ScalarConstant("Yukawa_e")>0.) ||
-	     (fl[2].Kfcode()==13 && 
-	      MODEL::s_model->ScalarConstant("Yukawa_mu")>0.) ||
-	     (fl[2].Kfcode()==15 && 
-	      MODEL::s_model->ScalarConstant("Yukawa_tau")>0.)) &&
-	    (fl[0].Kfcode()==5 &&
-	     MODEL::s_model->ScalarConstant("Yukawa_b")>0. &&
+	if (((fl[2].Kfcode()==11 && fl[2].Yuk()>0.) ||
+	     (fl[2].Kfcode()==13 && fl[2].Yuk()>0.) ||
+	     (fl[2].Kfcode()==15 && fl[2].Yuk()>0.)) &&
+	    (fl[0].Kfcode()==5 && Flavour(kf_b).Yuk()>0. &&
 	     ATOOLS::Flavour(kf_b).IsMassive()==0)) {
 	  msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
 		     <<"   Try to initialise process qqb->llbar in MCFM.\n"
 		     <<"   Inconsistent setting with Sherpa: "<<std::endl
-		     <<"YUKAWA_B = "<<MODEL::s_model->ScalarConstant("Yukawa_b")
+		     <<"YUKAWA[5] = "<<Flavour(kf_b).Yuk()
 		     <<" (should be 0 for llbar, to play it safe), and "
 		     <<"MODEL = "<<MODEL::s_model->Name()<<" (should be 'SM')."
 		     <<std::endl<<"   Will exit the run."<<std::endl;

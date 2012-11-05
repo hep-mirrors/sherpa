@@ -41,7 +41,7 @@ namespace ATOOLS {
 
     // default constructor
     inline Particle_Info(): 
-      m_kfc(kf_none), m_mass(0.0), m_hmass(0.0), m_yuk(0.0), m_width(0.0),
+      m_kfc(kf_none), m_mass(0.0), m_hmass(0.0), m_yuk(-1.0), m_width(0.0),
       m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(0), m_isoweak(0),
       m_strong(0), m_resummed(0), m_spin(0), m_stable(1), m_masssign(0), 
       m_dummy(1), m_majorana(0), m_formfactor(0), m_on(0), m_massive(0),
@@ -220,8 +220,6 @@ namespace ATOOLS {
     { p_info->m_mass=mass;  }
     inline void SetHadMass(const double &hmass) const 
     { p_info->m_hmass=hmass;  }
-    inline void SetYuk(const double &yuk) const   
-    { p_info->m_yuk=yuk;    }
 
     inline void SetMassSign(const int ms) const 
     { p_info->m_masssign=ms; }
@@ -236,7 +234,7 @@ namespace ATOOLS {
     inline double HadMass() const  
     { return p_info->m_hmass; }
     inline double Yuk() const     
-    { return p_info->m_yuk; }
+    { return p_info->m_yuk>=0.0 ? p_info->m_yuk : (p_info->m_massive ? p_info->m_mass : 0.0); }
     inline double DeltaGamma() const
     { return p_info->m_dg; }
     inline void SetDeltaGamma(double dgamma) const

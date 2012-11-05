@@ -76,7 +76,7 @@ void Model_Base::ShowSyntax(const size_t i)
 }
 
 void Model_Base::ReadParticleData() {
-  std::map<int,double> cdm, cdw;
+  std::map<int,double> cdm, cdw, cdy;
   std::map<int,int> cia, cis, cim, cic, csc;
   Data_Reader dr(" ",";","!","=");
   dr.AddComment("#");
@@ -108,13 +108,15 @@ void Model_Base::ReadParticleData() {
   if (dr.MatrixFromFile(helpdvv,"STRONGCHARGE"))
     for (size_t i(0);i<helpdvv.size();++i)
       if (helpdvv[i].size()==2) csc[int(helpdvv[i][0])]=int(helpdvv[i][1]);
+  if (dr.MatrixFromFile(helpdvv,"YUKAWA"))
+    for (size_t i(0);i<helpdvv.size();++i)
+      if (helpdvv[i].size()==2) cdy[int(helpdvv[i][0])]=helpdvv[i][1];
 
   //set masses
   std::map<int,double>::const_iterator dit=cdm.begin();
   for (;dit!=cdm.end();dit++) {
     if (s_kftable.find(dit->first)!=s_kftable.end()) {
       s_kftable[dit->first]->m_mass = dit->second;
-      s_kftable[dit->first]->m_yuk = dit->second;
       msg_Tracking()<<" set mass of "<<Flavour(dit->first)<<" to "<<dit->second<<" GeV"<<std::endl; 
     }
   }
@@ -181,6 +183,14 @@ void Model_Base::ReadParticleData() {
       s_kftable[iit->first]->m_strong = iit->second;
       msg_Tracking()<<" set strong charge of "<<Flavour(iit->first)<<" to "
 		    <<Flavour(iit->first).StrongCharge()<<std::endl; 
+    }
+  }
+  // set yukawas (i.e. overwrite the one from mass, if requested by user)
+  dit=cdy.begin();
+  for (;dit!=cdy.end();dit++) {
+    if (s_kftable.find(dit->first)!=s_kftable.end()) {
+      s_kftable[dit->first]->m_yuk = dit->second;
+      msg_Tracking()<<" set yukawa of "<<Flavour(dit->first)<<" to "<<dit->second<<" GeV"<<std::endl; 
     }
   }
 }

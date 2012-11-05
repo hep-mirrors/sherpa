@@ -168,13 +168,13 @@ Virtual_ME2_Base *MCFM_gb_hb_Getter::operator()(const Process_Info &pi) const
     if (pi.m_fi.m_ps.size()==2 && 
 	!pi.m_fi.m_ps[1].m_fl[0].Strong())              return NULL;
 
-    if (s_model->ScalarConstant("Yukawa_b")<=0. ||
+    if (Flavour(kf_b).Yuk()<=0. ||
 	s_model->Name()!=std::string("THDM") ||
 	!Flavour(kf_h0).IsOn()) {
       msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
 		 <<"   Try to initialise process gb->Hb in MCFM.\n"
 		 <<"   Inconsistent setting with Sherpa: \n"
-		 <<"YUKAWA_B = "<<s_model->ScalarConstant("Yukawa_b")
+		 <<"YUKAWA[5] = "<<Flavour(kf_b).Yuk()
 		 <<" (should be >0), "
 		 <<"MODEL = "<<s_model->Name()<<"(should be 'THDM', and "
 		 <<"ACTIVE[25] = "<<Flavour(kf_h0).IsOn()<<" (should be 1).\n"

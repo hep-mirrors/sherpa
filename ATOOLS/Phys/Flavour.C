@@ -38,7 +38,7 @@ Particle_Info::Particle_Info
  const int spin, const int majorana, const bool on,
  const int stable, bool massive, const std::string &idname,
  const std::string &texname, const bool dummy, const bool isgroup):
-  m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(mass), m_width(width),
+  m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(-1.0), m_width(width),
   m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(icharge),
   m_isoweak(isoweak), m_strong(strong), m_resummed(0), m_spin(spin), 
   m_stable(stable), m_masssign(1), m_dummy(dummy), m_majorana(majorana), 
@@ -52,7 +52,7 @@ Particle_Info::Particle_Info
 (const kf_code &kfc,const double &mass,const double &width,
  const int icharge,const int isoweak,const int spin,const bool on,
  const int stable,const std::string &idname,const std::string &texname):
-  m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(0.0), m_width(width),
+  m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(-1.0), m_width(width),
   m_icharge(icharge), m_isoweak(isoweak), m_strong(0), m_resummed(0), 
   m_spin(spin), m_stable(stable), m_masssign(1), m_dummy(0), m_majorana(0), 
   m_formfactor(0), m_on(on), m_massive(1), m_hadron(1), m_isgroup(0), 
@@ -64,7 +64,7 @@ Particle_Info::Particle_Info
 Particle_Info::Particle_Info
 (const kf_code &kfc,const double &mass, const int icharge, const int spin,
  const int formfactor, const std::string &idname, const std::string &texname):
-  m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(0.0), m_width(0), 
+  m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(-1.0), m_width(0), 
   m_icharge(icharge), m_isoweak(0), m_strong(0), m_resummed(0), m_spin(0), 
   m_stable(1), m_masssign(1), m_dummy(0), m_majorana(0), 
   m_formfactor(formfactor), m_on(1), m_massive(1), m_hadron(1), m_isgroup(0), 

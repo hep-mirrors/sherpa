@@ -48,7 +48,7 @@ bool MSSM::ModelInit(const PDF::ISR_Handler_Map& isr)
 
   delete p_sm;
 
-  p_constants->insert(std::make_pair(std::string("mT"),ScalarConstant("Yukawa_t")));
+  p_constants->insert(std::make_pair(std::string("mT"),Flavour(kf_t).Yuk()));
 
   FillSpectrum(isr);
   

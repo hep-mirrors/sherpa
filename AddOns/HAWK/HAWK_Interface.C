@@ -348,7 +348,7 @@ Virtual_ME2_Base * HAWK_ME_Getter::operator()(const Process_Info &pi) const
 	   <<"**** model          = "<<MODEL::s_model->Name()<<"\n";
   if (pi.m_loopgenerator!="HAWK")                       return NULL;
   if (MODEL::s_model->Name()!=std::string("SM") ||
-      MODEL::s_model->ScalarConstant("Yukawa_b")>0. ||
+      Flavour(kf_b).Yuk()>0. ||
       !Flavour(kf_h0).IsOn())                           return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;
   if (!(pi.m_fi.m_nloqcdtype&nlo_type::loop))           return NULL;

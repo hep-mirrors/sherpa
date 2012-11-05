@@ -139,7 +139,7 @@ Virtual_ME2_Base *MCFM_qqb_WW_Getter::operator()(const Process_Info &pi) const
   bool four_lepton(false);
   if (pi.m_fi.m_ps.size()==2 &&
       pi.m_fi.m_ps[0].m_fl[0].Kfcode()==24 && pi.m_fi.m_ps[0].m_fl[1].Kfcode()==24) {
-    if (MODEL::s_model->ScalarConstant("Yukawa_b")>0.) {
+    if (Flavour(kf_b).Yuk()>0.) {
       msg_Error()<<"Error in "<<METHOD<<":\n"
 		 <<"   Must switch off Yukawa couplings of b quarks.\n";
       THROW(fatal_error,"Wrong model assupmtions."); 
@@ -158,7 +158,7 @@ Virtual_ME2_Base *MCFM_qqb_WW_Getter::operator()(const Process_Info &pi) const
 		 <<"   Must have explicit boson decays for anomalous couplings.\n";
       THROW(fatal_error,"Not working."); 
     }
-    if (MODEL::s_model->ScalarConstant("Yukawa_b")>0.) {
+    if (Flavour(kf_b).Yuk()>0.) {
       msg_Error()<<"Error in "<<METHOD<<":\n"
 		 <<"   Must switch off Yukawa couplings of b quarks.\n";
       THROW(fatal_error,"Wrong model assupmtions."); 
