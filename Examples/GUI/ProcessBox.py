@@ -30,6 +30,7 @@ class ProcessBox:
         self.muFfactor   = 1.
         self.muRfactor   = 1.
         self.muQfactor   = 1.
+        self.LOgen       = "Internal"
         self.loopgenerators = []
         for i in range(0,self.nlomax+1): 
             self.loopgenerators.append("None")
@@ -117,6 +118,12 @@ class ProcessBox:
     def setCKKW(self,ckkw_param):
         self.ckkw_param = ckkw_param
 
+    def setLOgen(self,gen):
+        self.LOgen = gen
+
+    def getLOGen(self):
+        return self.LOgen
+
     def setLoopGen(self,n,loopgen):
         if n<len(self.loopgenerators):
             self.loopgenerators[n] = loopgen
@@ -146,7 +153,7 @@ class ProcessBox:
         if self.process.totjets>0:
             runfile.write("    CKKW sqr(%0.2f/E_CMS);\n" %(self.ckkw_param))
         if self.process.nlojets>=0:
-            runfile.write("    NLO_QCD_PART BVIRS{")
+            runfile.write("    NLO_QCD_Mode = MC@NLO {")
             ljmin = self.process.fsparts
             ljmax = ljmin+self.process.nlojets
             for ljet in range (ljmin,ljmax):
@@ -159,12 +166,6 @@ class ProcessBox:
                                   %(str(n),str(n+self.process.fsparts)))
         runfile.write("}(processes)\n\n")
         
-        runfile.write("(model){\n")
-        for line in self.process.modellines:
-            runfile.write("  "+line)
-            runfile.write("\n")
-        runfile.write("}(model)\n")
-
     def fillMaps(self):
         # Format for input:
         # [[<process_tag>,<decay_tags>],maxjets,nlojets,extra_FS_particles]
@@ -279,3 +280,5 @@ class PI():
         return [self.declarationlines,self.modellines,
                 self.totjets,self.nlojets,self.fsparts]
 
+    def getModelLines(self):
+        return self.modellines

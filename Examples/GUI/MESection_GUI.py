@@ -21,38 +21,42 @@ class MEsection_gui(guibase.gui_object):
         self.genbox.set_border_width(10) 
         box    = gtk.HBox(False,10)
         box.set_border_width(10) 
-        self.genbutton = None
+        genbutton = None
         for gen in gens:
-            self.genbutton = gtk.RadioButton(self.genbutton,gen)
-            box.pack_start(self.genbutton,False,False,2)
+            genbutton = gtk.RadioButton(genbutton,gen)
+            genbutton.connect("toggled",self.genChanged,gen)
+            box.pack_start(genbutton,False,False,2)
             if (gen=="Comix"):
-                self.genbutton.set_active(True)
+                genbutton.set_active(True)
         self.genbox.pack_start(box)
 
         self.loopgenbox   = gtk.VBox(False,10)
         self.loopgenfield = []
         self.loopgenbox.pack_start(gtk.Label("Loop generators"))
         self.loopgenbox.set_border_width(10) 
-        self.loopgenbutton = []
+        loopgenbutton = []
         for i in range (0,nbuttons+1):
             box    = gtk.HBox(False,10)
             box.set_border_width(10) 
             button = gtk.RadioButton(None,"None")
-            button.connect("toggled", self.loopgenChanged, ["None",i])
+            button.connect("toggled", self.genChanged, ["None",i])
             box.pack_start(gtk.Label("%s extra jets:" %str(i)))
             box.pack_start(button,False,False,2)
             for gen in loopgens:
                 button = gtk.RadioButton(button,gen)
-                button.connect("toggled", self.loopgenChanged, [gen,i])
+                button.connect("toggled", self.genChanged, [gen,i])
                 box.pack_start(button,False,False,2)
             box.set_sensitive(False)
             self.loopgenfield.append(box)
-            self.loopgenbutton.append(button)
+            loopgenbutton.append(button)
             self.loopgenbox.pack_start(box)
     
-    def loopgenChanged(self,button,data):
-        print "Set loopgen[",data[1],"] = ",data[0]
-        self.procbox.setLoopGen(data[1],data[0])
+    def genChanged(self,button,data):
+        if len(data)==1:
+            self.procbox.setLOGen(data)
+        else:
+            print "Set loopgen[",data[1],"] = ",data[0]
+            self.procbox.setLoopGen(data[1],data[0])
 
     def getContent(self):
         table     = gtk.Table(2,1,False)

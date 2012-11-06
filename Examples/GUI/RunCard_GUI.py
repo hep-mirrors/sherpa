@@ -6,6 +6,7 @@ import gtk
 
 
 import ParameterBox    as parameterbox
+import GenSection_GUI  as gen_gui
 import BeamSection_GUI as beams_gui
 import PDFSection_GUI  as pdfs_gui
 import ProcSection_GUI as procs_gui
@@ -24,6 +25,8 @@ class runcard_gui_gtk():
     def initialize(self):
         self.parameters = parameterbox.ParameterBox()
         self.parameters.initialiseDefaults()
+        self.gens  = gen_gui.generalsettings_gui(self.parameters,
+                                                 "Run","Run",0)
         self.beams = beams_gui.beamsection_gui(self.parameters,
                                                "Beams","Beams",1)
         self.pdfs  = pdfs_gui.PDFsection_gui(self.parameters,
@@ -43,7 +46,7 @@ class runcard_gui_gtk():
                                             "Analysis",
                                             "Analysis",7)
 
-        self.guiparts = [self.beams,self.pdfs,
+        self.guiparts = [self.gens,self.beams,self.pdfs,
                          self.procs,self.mes,self.sels,
                          self.soft,self.ana]
 
