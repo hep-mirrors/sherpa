@@ -679,7 +679,6 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	if (GetMPvalue(pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
 	if (GetMPvalue(pbi.m_vloopgen,nfs,pnid,ds)) cpi.m_loopgenerator=ds;
 	std::vector<Process_Base*> proc=InitializeProcess(cpi,pmap);
-	msg_Out()<<METHOD<<std::endl<<cpi<<std::endl;
 	for (size_t i(0);i<proc.size();i++) {
 	  if (proc[i]==NULL)
 	    msg_Error()<<METHOD<<"(): No process for {\n"
