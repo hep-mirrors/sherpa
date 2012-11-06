@@ -60,8 +60,9 @@ void KP_Terms::SetCoupling(const MODEL::Coupling_Map *cpls)
 void KP_Terms::SetAlpha(const double &aff,const double &afi,
 			const double &aif,const double &aii)
 {
-  p_flkern->SetAlpha(aff);
-  if (p_masskern) p_masskern->SetAlpha(aff,afi,aif,aii);
+  if (!p_masskern) p_flkern->SetAlpha(aff);
+  else             p_flkern->SetAlpha(1.);
+  if (p_masskern)  p_masskern->SetAlpha(aff,afi,aif,aii);
 }
 
 void KP_Terms::Calculate
