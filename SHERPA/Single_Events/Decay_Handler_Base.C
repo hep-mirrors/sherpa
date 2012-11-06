@@ -318,7 +318,7 @@ Amplitude2_Tensor* Decay_Handler_Base::FillOnshellDecay(Blob *blob,
     flav=dc->Flavs()[i];
     if (inpart->Flav().IsAnti()) flav = flav.Bar();
     particle = new Particle(0, flav);
-    particle->SetFinalMass();
+    particle->SetFinalMass(Mass(flav));
     particle->SetStatus(part_status::active);
     particle->SetNumber();
     particle->SetInfo('D');
