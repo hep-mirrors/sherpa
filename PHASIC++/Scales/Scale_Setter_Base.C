@@ -3,6 +3,8 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "PDF/Main/Cluster_Definitions_Base.H"
+#include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
@@ -94,6 +96,8 @@ Scale_Setter_Base::~Scale_Setter_Base()
 
 PDF::CParam Scale_Setter_Base::CoreScale(Cluster_Amplitude *const ampl) const
 {
+  if (p_proc->Shower())
+    return p_proc->Shower()->GetClusterDefinitions()->CoreScale(ampl);
   return PDF::CParam(0.0);
 }
 
