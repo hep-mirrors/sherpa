@@ -152,11 +152,13 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
       string mW_string("mW="+ToString(Flavour(kf_Wplus).Mass()));
       string wW_string("wW="+ToString(Flavour(kf_Wplus).Width()));
       string mH_string("mH="+ToString(Flavour(kf_h0).Mass()));
+      string wH_string("wH="+ToString(Flavour(kf_h0).Width()));
       OLE::OLP_Option(mZ_string.c_str(),&check);
       OLE::OLP_Option(wZ_string.c_str(),&check);
       OLE::OLP_Option(mW_string.c_str(),&check);
       OLE::OLP_Option(wW_string.c_str(),&check);
       OLE::OLP_Option(mH_string.c_str(),&check);
+      OLE::OLP_Option(wH_string.c_str(),&check);
       // Quarks
       string mB_string("mB="+ToString(Flavour(kf_b).Mass()));
       string wB_string("wB="+ToString(Flavour(kf_b).Width()));
