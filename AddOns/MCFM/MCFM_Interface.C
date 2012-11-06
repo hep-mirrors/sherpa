@@ -22,6 +22,7 @@ namespace MCFM {
 		    PDF::ISR_Handler *const isr);
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add);
     bool PerformTests();
+    bool NewLibraries();
 
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
 
@@ -159,7 +160,12 @@ bool MCFM_Interface::PerformTests()
 {
   return true;
 }
-  
+
+bool MCFM_Interface::NewLibraries()
+{
+  return false;
+}
+
 void MCFM_Interface::SetClusterDefinitions
 (PDF::Cluster_Definitions_Base *const defs)
 {

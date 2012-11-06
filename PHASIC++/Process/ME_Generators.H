@@ -29,6 +29,7 @@ namespace PHASIC   {
                               BEAM::Beam_Spectra_Handler *beam,
                               PDF::ISR_Handler *isr);
     bool PerformTests();
+    bool NewLibraries();
     Process_Base* InitializeProcess(const Process_Info &pi, bool add);
 
     inline MODEL::Model_Base *Model() const { return p_model; }

@@ -49,6 +49,7 @@ namespace COMIX {
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi,
                                             bool add);
     bool PerformTests();
+    bool NewLibraries();
 
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
 
@@ -240,6 +241,10 @@ bool Comix::PerformTests()
     THROW(normal_exit,"Mapping files created. Stop upon request.");
   }
   return true;
+}
+
+bool Comix::NewLibraries() {
+  return false;
 }
 
 void Comix::SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs)

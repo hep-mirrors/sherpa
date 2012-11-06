@@ -47,6 +47,7 @@ namespace OpenLoops {
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     { return NULL; }
     bool PerformTests() { return true; }
+    bool NewLibraries() { return false; }
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs) {}
     ATOOLS::Cluster_Amplitude *ClusterConfiguration
     (PHASIC::Process_Base *const proc,const size_t &mode,const double &kt2) { return NULL; }

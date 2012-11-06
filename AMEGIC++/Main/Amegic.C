@@ -38,6 +38,7 @@ namespace AMEGIC {
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi,
                                             bool add);
     bool PerformTests();
+    bool NewLibraries();
 
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
 
@@ -202,6 +203,14 @@ bool Amegic::PerformTests()
       THROW(normal_exit,"New libraries created. Please compile.");
   Minimize();
   return tests;
+}
+
+bool Amegic::NewLibraries()
+{
+  if (NewLibs()) return true;
+  for (size_t i(0);i<m_rsprocs.size();++i)
+    if (m_rsprocs[i]->Get<AMEGIC::Amegic_Base>()->NewLibs()) return true;
+  return false;
 }
 
 void Amegic::SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs)

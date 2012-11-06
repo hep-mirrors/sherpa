@@ -70,6 +70,14 @@ bool ME_Generators::PerformTests()
   return true;
 }
 
+bool ME_Generators::NewLibraries()
+{
+  for (ME_Generators::const_iterator mit=begin(); mit!=end(); ++mit) {
+    if ((*mit)->NewLibraries()) return true;
+  }
+  return false;
+}
+
 Process_Base* ME_Generators::InitializeProcess(const Process_Info &pi, bool add)
 {
   DEBUG_FUNC(&pi);

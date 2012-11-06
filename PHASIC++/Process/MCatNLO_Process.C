@@ -57,6 +57,8 @@ void MCatNLO_Process::Init(const Process_Info &pi,
 			  BEAM::Beam_Spectra_Handler *const beam,
 			  PDF::ISR_Handler *const isr)
 {
+  if (m_gens.NewLibraries())
+    THROW(normal_exit,"New libraries created. Please compile.");
   Process_Info cpi(pi);
   cpi.m_fi.SetNLOType(nlo_type::born|nlo_type::loop|
 		      nlo_type::vsub|nlo_type::real|nlo_type::rsub);

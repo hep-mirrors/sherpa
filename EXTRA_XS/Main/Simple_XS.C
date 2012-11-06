@@ -37,6 +37,7 @@ namespace EXTRAXS {
 		    PDF::ISR_Handler *const isr);
     Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add);
     bool PerformTests();
+    bool NewLibraries();
 
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
 
@@ -138,6 +139,11 @@ bool Simple_XS::PerformTests()
   return true;
 }
   
+bool Simple_XS::NewLibraries()
+{
+  return false;
+}
+
 void Simple_XS::SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs)
 {
   if (p_cluster==NULL) p_cluster = new Cluster_Algorithm();

@@ -30,6 +30,7 @@ namespace WHITEHAT {
 		    PDF::ISR_Handler *const isr);
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add);
     bool PerformTests();
+    bool NewLibraries();
 
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
 
@@ -99,6 +100,11 @@ bool BlackHat_Interface::PerformTests()
   return true;
 }
   
+bool BlackHat_Interface::NewLibraries()
+{
+  return false;
+}
+
 void BlackHat_Interface::SetClusterDefinitions
 (PDF::Cluster_Definitions_Base *const defs)
 {

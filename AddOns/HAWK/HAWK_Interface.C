@@ -31,6 +31,7 @@ namespace HAWK {
     PHASIC::Process_Base * InitializeProcess
     (const PHASIC::Process_Info &pi, bool add);
     bool PerformTests();
+    bool NewLibraries();
 
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
 
@@ -214,6 +215,11 @@ bool HAWK_Interface::PerformTests()
   return true;
 }
   
+bool HAWK_Interface::NewLibraries()
+{
+  return false;
+}
+
 void HAWK_Interface::SetClusterDefinitions
 (PDF::Cluster_Definitions_Base *const defs)
 {
