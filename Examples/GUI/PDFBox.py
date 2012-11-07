@@ -6,7 +6,7 @@ import gtk
 
 class PDFBox:
     def __init__(self):
-        self.pdf_options = [None,None]
+        self.pdf_options = ["None","None"]
         self.pdf_type    = ["",""]
         self.pdf         = [None,None]
         self.pdf_tag     = ["",""]

@@ -22,8 +22,8 @@ class ProcessBox:
         self.process_tag = ""
         self.process     = None
         self.processes   = self.NC
-        self.minjets     = None
-        self.totjets     = None
+        self.minjets     = 0
+        self.totjets     = 0
         self.nlojets     = -1
         self.nlomax      = 3 
         self.ckkw_param  = 0.
@@ -145,17 +145,25 @@ class ProcessBox:
         lineno = 0
         for line in self.process.declarationlines:
             if lineno==0:
+                if self.minjets>0:
+                    pos     = line.find("{NJETS}")
+                    linel   = list(line)
+                    print "**************************",pos,line
+                    for i in range(0,self.minjets):
+                        linel.insert(pos," 93")
+                    line    = "".join(linel) 
+                    print "**************************",pos,line
                 runfile.write("  Process "+line)
             else: 
                 runfile.write("    Decay "+line)
             runfile.write("\n")
             lineno += 1
-        if self.process.totjets>0:
+        if self.totjets>0:
             runfile.write("    CKKW sqr(%0.2f/E_CMS);\n" %(self.ckkw_param))
-        if self.process.nlojets>=0:
+        if self.nlojets>=0:
             runfile.write("    NLO_QCD_Mode = MC@NLO {")
             ljmin = self.process.fsparts
-            ljmax = ljmin+self.process.nlojets
+            ljmax = ljmin+self.nlojets
             for ljet in range (ljmin,ljmax):
                 runfile.write("%i," %(ljet))
             runfile.write("%i};\n" %(ljmax))

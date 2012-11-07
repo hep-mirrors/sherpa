@@ -17,11 +17,21 @@ class PDFsection_gui(guibase.gui_object):
             self.menu[i].show()
             self.opt[i].show()
         self.label  = [gtk.Label('PDFs'),gtk.Label('PDF for Beam 2')]
+        self.label[0].set_size_request(60,30)
+        self.label[1].set_size_request(100,30)
         self.adj   = [gtk.Adjustment(0,0,0,1,0),
                       gtk.Adjustment(0,0,0,1,0)]
         self.set   = [gtk.SpinButton(self.adj[0],1,0),
                       gtk.SpinButton(self.adj[1],1,0)]
+        self.set[0].set_size_request(50,30)
+        self.set[1].set_size_request(50,30)
         self.setstr = [gtk.Label('Set'),gtk.Label('Set')]
+        self.setstr[0].set_size_request(40,30)
+        self.setstr[1].set_size_request(40,30)
+        self.menu[0].set_sensitive(True)
+        self.set[0].set_sensitive(True)
+        self.menu[1].set_sensitive(False)
+        self.set[1].set_sensitive(False)
         self.updateOptions()
 
     def getContent(self):
@@ -50,12 +60,10 @@ class PDFsection_gui(guibase.gui_object):
 
     def updateOptions(self):
         pdfs = self.pdfs.getOptions()
-        print "PDFGUI::In updateOptions(",len(pdfs),len(pdfs[0]),")"
         for beam in range(0,len(pdfs)):
             for i in self.menu[beam].get_children():
                 self.menu[beam].remove(i)
             for pdf in pdfs[beam]:
-                print "   ",pdf[0],"|",pdf[1],"[",pdf[2],pdf[3],pdf[4],"]"
                 item = self.make_menu_item(pdf[1],
                                            self.selectPDF,[pdf[1],beam])
                 self.menu[beam].append(item)
