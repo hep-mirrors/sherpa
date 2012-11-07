@@ -21,6 +21,7 @@ namespace Rivet {
     AIDA::IHistogram1D *_h_bb_dR, *_h_bb_deta, *_h_bb_dphi;
     AIDA::IHistogram1D *_h_ll_dR, *_h_ll_deta, *_h_ll_dphi;
     AIDA::IHistogram1D *_h_bl_dR, *_h_bl_deta, *_h_bl_dphi;
+    AIDA::IHistogram1D *_h_ll_dR50, *_h_ll_deta50, *_h_ll_dphi50;
 
     void inithistos() {
       _h_njets    = bookHistogram1D("jet_mult", 11, -0.5, 10.5);
@@ -44,6 +45,9 @@ namespace Rivet {
       _h_bl_dR    = bookHistogram1D("bl_dR",28, 0.0, 7.0);
       _h_bl_deta  = bookHistogram1D("bl_deta",28, 0.0, 7.0);
       _h_bl_dphi  = bookHistogram1D("bl_dphi",32, 0.0, 6.2);
+      _h_ll_dR50  = bookHistogram1D("ll_dR50",28, 0.0, 7.0);
+      _h_ll_deta50= bookHistogram1D("ll_deta50",28, 0.0, 7.0);
+      _h_ll_dphi50= bookHistogram1D("ll_dphi50",32, 0.0, M_PI);
       std::cerr<<"out\n";
     }
   public:
@@ -170,6 +174,11 @@ namespace Rivet {
 	_h_ll_dR->fill(deltaR(l1, l2),weight);
 	_h_ll_deta->fill(fabs(l1.eta()-l2.eta()),weight);
 	_h_ll_dphi->fill(deltaPhi(l1,l2),weight);
+	if (l1.pT()<50*GeV and l2.pT()<50*GeV and l1.pT()>-50*GeV and l2.pT()>-50*GeV){
+	  _h_ll_dR50->fill(deltaR(l1, l2),weight);
+	  _h_ll_deta50->fill(fabs(l1.eta()-l2.eta()),weight);
+	  _h_ll_dphi50->fill(deltaPhi(l1,l2),weight);
+	}
       }
     }
 
@@ -194,6 +203,9 @@ namespace Rivet {
       normalize(_h_ll_dR);
       normalize(_h_ll_deta);
       normalize(_h_ll_dphi);
+      normalize(_h_ll_dR50);
+      normalize(_h_ll_deta50);
+      normalize(_h_ll_dphi50);
     }
   };
 
