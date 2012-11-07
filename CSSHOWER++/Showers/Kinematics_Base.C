@@ -53,7 +53,7 @@ double Kinematics_FF::GetY(const double &Q2,const double &kt2,const double &z,
 			   const bool force) const
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2<=mi2+mj2+mk2)) return -1.0;
-  return (kt2/(z*(1.0-z)))/(Q2-mi2-mj2-mk2);
+  return (kt2/(z*(1.0-z))+(1.0-z)/z*mi2+z/(1.0-z)*mj2)/(Q2-mi2-mj2-mk2);
 }
 
 int Kinematics_FF::MakeKinematics
@@ -104,7 +104,7 @@ double Kinematics_FI::GetY(const double &Q2,const double &kt2,const double &z,
 			   const bool force) const
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2>=mi2+mj2+ma2)) return -1.0;
-  return 1.0/(1.0-(kt2/(z*(1.0-z)))/(Q2-ma2-mi2-mj2));
+  return 1.0/(1.0-(kt2/(z*(1.0-z))+mi2*(1.0-z)/z+mj2*z/(1.0-z))/(Q2-ma2-mi2-mj2));
 }
 
 int Kinematics_FI::MakeKinematics
@@ -156,7 +156,7 @@ double Kinematics_IF::GetY(const double &Q2,const double &kt2,const double &z,
 			   const bool force) const
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2>=ma2+mi2+mk2)) return -1.0;
-  return -z/(Q2-ma2-mi2-mk2)*((kt2)/(1.0-z));
+  return -z/(Q2-ma2-mi2-mk2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
 }
 
 int Kinematics_IF::MakeKinematics
@@ -219,7 +219,7 @@ double Kinematics_II::GetY(const double &Q2,const double &kt2,const double &z,
 			   const bool force) const
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2<=ma2+mi2+mb2)) return -1.0;
-  return z/(Q2-ma2-mb2-mi2)*((kt2)/(1.0-z));
+  return z/(Q2-ma2-mb2-mi2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
 }
 
 int Kinematics_II::MakeKinematics
