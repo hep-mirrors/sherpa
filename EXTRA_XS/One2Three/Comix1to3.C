@@ -22,7 +22,7 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
   Vec4D k(1.0,0.0,1.0,0.0);
 
   for (size_t i(0);i<4;++i) {
-    Current_Key ckey(i==0?flavs[i].Bar():flavs[i],MODEL::s_model);
+    Current_Key ckey(i==0?flavs[i].Bar():flavs[i],MODEL::s_model,1);
     m_cur[i] = Current_Getter::GetObject("D"+ckey.Type(),ckey);
     if (m_cur[i]==NULL) THROW(fatal_error, "current not found");
     m_cur[i]->SetDirection(i==0?1:-1);
@@ -33,7 +33,7 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
     m_nhel[i]=NHel(flavs[i]);
   }
   // s-channel for prop (i,j)
-  Current_Key ckey(prop,MODEL::s_model);
+  Current_Key ckey(prop,MODEL::s_model,2);
   m_scur = Current_Getter::GetObject("D"+ckey.Type(),ckey);
   Int_Vector isfs(2), ids(2), pols(2);
   isfs[0]=flavs[propi].IsFermion();
@@ -44,7 +44,7 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
   m_scur->SetFId(isfs);
   m_scur->FindPermutations();
   // final current (1,2,3)
-  ckey=Current_Key(flavs[0],MODEL::s_model);
+  ckey=Current_Key(flavs[0],MODEL::s_model,1);
   m_fcur = Current_Getter::GetObject("D"+ckey.Type(),ckey);
   Int_Vector isfs2(3), ids2(3), pols2(3);
   isfs2[0]=flavs[1].IsFermion();
@@ -70,7 +70,7 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
   for (size_t i(0);i<m_n;++i) m_fcur->HM()[i]=i;
 
   for (size_t i(0);i<4;++i) {
-    ckey=Current_Key(i==0?flavs[i]:flavs[i].Bar(),MODEL::s_model);
+    ckey=Current_Key(i==0?flavs[i]:flavs[i].Bar(),MODEL::s_model,1);
     m_anticur[i] = Current_Getter::GetObject("D"+ckey.Type(),ckey);
     if (m_anticur[i]==NULL) THROW(fatal_error, "current not found");
     m_anticur[i]->SetDirection(i==0?1:-1);
@@ -80,13 +80,13 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
     m_anticur[i]->SetGauge(k);
   }
   // s-channel for prop (2,3)
-  ckey=Current_Key(prop.Bar(),MODEL::s_model);
+  ckey=Current_Key(prop.Bar(),MODEL::s_model,2);
   m_antiscur = Current_Getter::GetObject("D"+ckey.Type(),ckey);
   m_antiscur->SetId(ids);
   m_antiscur->SetFId(isfs);
   m_antiscur->FindPermutations();
   // final current (1,2,3)
-  ckey=Current_Key(flavs[0].Bar(),MODEL::s_model);
+  ckey=Current_Key(flavs[0].Bar(),MODEL::s_model,1);
   m_antifcur = Current_Getter::GetObject("D"+ckey.Type(),ckey);
   m_antifcur->SetId(ids2);
   m_antifcur->SetFId(isfs2);

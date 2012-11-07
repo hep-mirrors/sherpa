@@ -60,7 +60,11 @@ template <typename SType>
 CF<SType>::CF(const Current_Key &key): 
   Current(key),
   m_cmass2(Complex(sqr(this->m_mass),-this->m_mass*this->m_width)), 
-  m_cmass(sqrt(m_cmass2)) {}
+  m_cmass(sqrt(m_cmass2))
+{
+  if (key.m_n==1 && key.p_model->ScalarNumber("WidthScheme")!=1) 
+    m_cmass=sqrt(m_cmass2=Complex(sqr(this->m_mass),0.0));
+}
 
 template <typename SType>
 void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,

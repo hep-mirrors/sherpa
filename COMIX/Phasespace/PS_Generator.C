@@ -228,7 +228,7 @@ bool PS_Generator::AddCurrent
  const size_t &n,const int mode,
  const double &m,const double &w,Current *const scc)
 {
-  Current_Key ckey(fl,NULL);
+  Current_Key ckey(fl,NULL,0);
   PS_Current *cur(new PS_Current(ckey));
   if (mode&1) {
     cur->SetMass(m);

@@ -32,9 +32,11 @@ namespace METOOLS {
   struct Current_Key {
     ATOOLS::Flavour m_fl;
     MODEL::Model_Base *p_model;
+    size_t m_n;
     inline Current_Key(const ATOOLS::Flavour &fl,
-		       MODEL::Model_Base *const model): 
-      m_fl(fl), p_model(model) {}
+		       MODEL::Model_Base *const model,
+		       const size_t &n): 
+      m_fl(fl), p_model(model), m_n(n) {}
     std::string Type() const;
   };// end of struct Current_Key
 

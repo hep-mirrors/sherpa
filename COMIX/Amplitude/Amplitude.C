@@ -180,7 +180,7 @@ void Amplitude::CleanUp()
 
 Current *Amplitude::CopyCurrent(Current *const c)
 {
-  Current_Key ckey(c->Flav(),p_model);
+  Current_Key ckey(c->Flav(),p_model,c->Id().size());
   Current *cur(Current_Getter::GetObject
 	       (std::string(1,m_pmode)+ckey.Type(),ckey));
   if (cur==NULL) return NULL;
@@ -543,7 +543,7 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
   int dec(CheckDecay(fl,ids));
   if (dec<0) return;
   std::map<std::string,Current*> curs;
-  Current_Key ckey(dir>0?fl.Bar():fl,p_model);
+  Current_Key ckey(dir>0?fl.Bar():fl,p_model,ids.size());
   Current *cur(Current_Getter::GetObject
 	       (std::string(1,m_pmode)+ckey.Type(),ckey));
   if (cur==NULL) return;

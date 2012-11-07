@@ -79,6 +79,8 @@ CV<SType>::CV(const Current_Key &key):
   Current(key), m_cmass2(0.0), m_cmass(0.0)
 {
   m_cmass=sqrt(m_cmass2=SComplex(sqr(this->m_mass),-this->m_mass*this->m_width));
+  if (key.m_n==1 && key.p_model->ScalarNumber("WidthScheme")!=1) 
+    m_cmass=sqrt(m_cmass2=Complex(sqr(this->m_mass),0.0));
 }
 
 template <typename SType> CVec4<SType> 
