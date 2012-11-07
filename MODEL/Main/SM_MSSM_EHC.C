@@ -48,12 +48,14 @@ bool SM_EHC::ModelInit(const PDF::ISR_Handler_Map& isr)
   m_name      = std::string("SM+EHC");
   p_numbers   = new ScalarNumbersMap();
   p_constants = new ScalarConstantsMap();
+  p_complexconstants = new ComplexConstantsMap();
   p_functions = new ScalarFunctionsMap();
   p_matrices  = new ComplexMatricesMap();
 
   p_sm->ModelInit(isr);
   p_numbers   = p_sm->ExtractScalarNumbers();
   p_constants = p_sm->ExtractScalarConstants();
+  p_complexconstants = p_sm->ExtractComplexConstants();
   p_functions = p_sm->ExtractScalarFunctions();
   p_matrices  = p_sm->ExtractComplexMatrices();
 
@@ -136,12 +138,14 @@ bool MSSM_EHC::ModelInit(const PDF::ISR_Handler_Map& isr)
   m_name      = std::string("MSSM+EHC");
   p_numbers   = new ScalarNumbersMap();
   p_constants = new ScalarConstantsMap();
+  p_complexconstants = new ComplexConstantsMap();
   p_functions = new ScalarFunctionsMap();
   p_matrices  = new ComplexMatricesMap();
  
   p_mssm->ModelInit(isr);
   p_numbers   = p_mssm->ExtractScalarNumbers();
   p_constants = p_mssm->ExtractScalarConstants();
+  p_complexconstants = p_mssm->ExtractComplexConstants();
   p_functions = p_mssm->ExtractScalarFunctions();
   p_matrices  = p_mssm->ExtractComplexMatrices();
 

@@ -52,12 +52,14 @@ bool SM_AGC::ModelInit(const PDF::ISR_Handler_Map& isr)
   m_name      = std::string("SM+AGC");
   p_numbers   = new ScalarNumbersMap();
   p_constants = new ScalarConstantsMap();
+  p_complexconstants = new ComplexConstantsMap();
   p_functions = new ScalarFunctionsMap();
   p_matrices  = new ComplexMatricesMap();
  
   p_sm->ModelInit(isr);
   p_numbers   = p_sm->ExtractScalarNumbers();
   p_constants = p_sm->ExtractScalarConstants();
+  p_complexconstants = p_sm->ExtractComplexConstants();
   p_functions = p_sm->ExtractScalarFunctions();
   p_matrices  = p_sm->ExtractComplexMatrices();
 
