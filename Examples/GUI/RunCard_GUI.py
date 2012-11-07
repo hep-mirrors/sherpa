@@ -6,6 +6,7 @@ import gtk
 
 
 import ParameterBox    as parameterbox
+import Group           as group
 import GenSection_GUI  as gen_gui
 import BeamSection_GUI as beams_gui
 import PDFSection_GUI  as pdfs_gui
@@ -68,6 +69,14 @@ class runcard_gui_gtk():
         notebook.set_tab_pos((notebook.get_tab_pos()+2) %4)
         table.attach(notebook,0,6,0,1)
         notebook.show()
+        sherpa      = group.groupsection()
+        bufferframe = sherpa.getFrame(self.frameborder,
+                                     self.framexsize,self.frameysize,
+                                     self.update)
+        bufferframe.show()
+        bufferlabel = sherpa.getLabel()
+        notebook.append_page(bufferframe,bufferlabel)
+
         for guipart in self.guiparts:
             bufferframe    = guipart.getFrame(self.frameborder,
                                               self.framexsize,self.frameysize,
@@ -81,15 +90,15 @@ class runcard_gui_gtk():
 
         writeSbutton = gtk.Button(label="Write to Sherpa file")
         writeSbutton.connect("clicked", self.writebutton_clicked,"Sherpa")
-        writeHbutton = gtk.Button(label="Write to Herwig file")
-        writeHbutton.connect("clicked", self.writebutton_clicked,"Herwig")
+        #writeHbutton = gtk.Button(label="Write to Herwig file")
+        #writeHbutton.connect("clicked", self.writebutton_clicked,"Herwig")
         exitbutton = gtk.Button(label="Exit GUI without writing")
         exitbutton.connect("clicked", self.exitbutton_clicked)
         table.attach(writeSbutton, 1,2,1,2)
-        table.attach(writeHbutton, 2,3,1,2)
-        table.attach(exitbutton, 3,4,1,2)
+        #table.attach(writeHbutton, 2,3,1,2)
+        table.attach(exitbutton, 2,3,1,2)
         writeSbutton.show()
-        writeHbutton.show()
+        #writeHbutton.show()
         exitbutton.show()
 
     def update(self,mode):
