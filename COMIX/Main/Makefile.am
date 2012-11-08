@@ -16,3 +16,5 @@ localinc_HEADERS      =	\
 			Process_Group.H \
 			Single_Process.H \
 			Single_Dipole_Term.H
+
+dist_pkgdata_SCRIPTS  =	init_nlo.sh

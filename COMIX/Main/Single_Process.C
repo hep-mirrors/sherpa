@@ -147,6 +147,10 @@ bool COMIX::Single_Process::Initialize
       smode&=~16;
       Process_Info cinfo(m_pinfo);
       cinfo.m_fi.m_nloqcdtype=nlo_type::loop;
+      cinfo.m_oew=p_bg->MaxOrderEW()+
+	((cinfo.m_fi.m_nloewtype&nlo_type::loop)?1:0);
+      cinfo.m_oqcd=p_bg->MaxOrderQCD()+
+	((cinfo.m_fi.m_nloqcdtype&nlo_type::loop)?1:0);
       p_loop = PHASIC::Virtual_ME2_Base::GetME2(cinfo);
       if (p_loop==NULL) {
 	msg_Error()<<METHOD<<"(): "<<cinfo<<"\n";
