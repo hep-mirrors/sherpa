@@ -120,12 +120,6 @@ namespace SHRIMPS {
       off = 0
     };
   };
-  struct spat_mode {
-    enum code {
-      expo = 1,
-      off  = 0
-    };
-  };
   struct reconn_mode {
     enum code {
       run = 2,
@@ -151,7 +145,6 @@ namespace SHRIMPS {
     resc_nosing::code    m_resc_nosing;
     resc_over_sing::code m_resc_over_sing;
     resc_mode::code      m_rescmode;
-    spat_mode::code      m_spacemode;
     reconn_mode::code    m_reconnmode;
     StringDoubleMap      m_params;
     MODEL::asform::code  m_as_form;
@@ -177,7 +170,6 @@ namespace SHRIMPS {
     ktform::code         KTForm()       const { return m_ktform; }
     ordering::code       Ordering()     const { return m_ordering; }
     resc_mode::code      RescMode()     const { return m_rescmode; }
-    spat_mode::code      SpaceMode()    const { return m_spacemode; }
     resc_ktmin::code     RescKTMin()    const { return m_resc_ktmin; }
     resc_nosing::code    RescNoSing()   const { return m_resc_nosing; }
     resc_over_sing::code RescOverSing() const { return m_resc_over_sing; }

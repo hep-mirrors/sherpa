@@ -53,9 +53,6 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   // rescatterings
   m_params["RescProb"]    = dr->GetValue<double>("RescProb",1.);
   m_params["RescProb1"]   = dr->GetValue<double>("RescProb1",1.);
-  m_params["SpatProb"]    = dr->GetValue<double>("SpatProb",0.);
-  m_params["SpatWidth"]   = dr->GetValue<double>("SpatWidth",
-						 m_params["Lambda2"]);
   m_params["QRC2"]        = dr->GetValue<double>("Q_RC^2",4.*m_params["Q02"]);
   m_params["ReconnProb"]  = dr->GetValue<double>("ReconnProb",1.);
   m_params["Misha"]       = dr->GetValue<int>("Misha",1);
@@ -163,13 +160,8 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   if (rescmode==std::string("off")) {
     m_rescmode = resc_mode::off;
   }
-  else if (rescmode==std::string("space")) {
-    m_rescmode  = resc_mode::on;
-    m_spacemode = spat_mode::expo;
-  }
   else {
     m_rescmode  = resc_mode::on;
-    m_spacemode = spat_mode::off;
   }
 
   std::string reconnmode =
