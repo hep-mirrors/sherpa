@@ -115,7 +115,7 @@ bool Fastjet_Finder::Trigger(const Vec4D_Vector &p)
 
   std::vector<fastjet::PseudoJet> input,jets;
   for (size_t i(m_nin);i<p.size();++i) {
-    if (m_fl[i].Strong()) {
+    if (Flavour(kf_jet).Includes(m_fl[i])) {
       fastjet::PseudoJet tmp(p[i][1],p[i][2],p[i][3],p[i][0]);
       tmp.set_user_index(m_fl[i].HepEvt());
       input.push_back(tmp);
@@ -157,7 +157,7 @@ bool Fastjet_Finder::JetTrigger(const Vec4D_Vector &p,
 
   std::vector<fastjet::PseudoJet> input,jets;
   for (size_t i(m_nin);i<subs->back()->m_n;++i) {
-    if (subs->back()->p_fl[i].Strong()) {
+    if (Flavour(kf_jet).Includes(subs->back()->p_fl[i])) {
         fastjet::PseudoJet tmp(p[i][1],p[i][2],p[i][3],p[i][0]);
         tmp.set_user_index(m_fl[i].HepEvt());
         input.push_back(tmp);
