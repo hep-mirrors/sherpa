@@ -1,5 +1,11 @@
 #include "Rivet/Analysis.hh"
+#include "Rivet/Math/LorentzTrans.hh"
+#include "Rivet/Math/Constants.hh"
+#include "Rivet/Tools/ParticleIdUtils.hh"
+#include "Rivet/Projections/Beam.hh"
+#include "Rivet/Projections/UnstableFinalState.hh"
 #include "Rivet/Projections/FinalState.hh"
+#include "Rivet/Projections/IdentifiedFinalState.hh"
 #include "Rivet/Projections/VetoedFinalState.hh"
 #include "Rivet/Projections/ChargedLeptons.hh"
 #include "Rivet/Projections/MissingMomentum.hh"
@@ -22,32 +28,38 @@ namespace Rivet {
     AIDA::IHistogram1D *_h_ll_dR, *_h_ll_deta, *_h_ll_dphi;
     AIDA::IHistogram1D *_h_bl_dR, *_h_bl_deta, *_h_bl_dphi;
     AIDA::IHistogram1D *_h_ll_dR50, *_h_ll_deta50, *_h_ll_dphi50;
+    AIDA::IHistogram1D *_h_lt_cos, * _h_lt_cos50;
 
     void inithistos() {
+      std::cout<<"1\n";
       _h_njets    = bookHistogram1D("jet_mult", 11, -0.5, 10.5);
-      _h_jet_1_pT = bookHistogram1D("jet_1_pT", logspace(20.0, 500.0, 50));
-      _h_jet_2_pT = bookHistogram1D("jet_2_pT", logspace(20.0, 400.0, 50));
-      _h_jet_3_pT = bookHistogram1D("jet_3_pT", logspace(20.0, 300.0, 50));
-      _h_jet_4_pT = bookHistogram1D("jet_4_pT", logspace(20.0, 200.0, 50));
-      _h_jet_HT   = bookHistogram1D("jet_HT", logspace(100.0, 2000.0, 50));
+      _h_jet_1_pT = bookHistogram1D("jet_1_pT", logspace(20.0, 500.0, 20));
+      _h_jet_2_pT = bookHistogram1D("jet_2_pT", logspace(20.0, 400.0, 20));
+      _h_jet_3_pT = bookHistogram1D("jet_3_pT", logspace(20.0, 300.0, 20));
+      _h_jet_4_pT = bookHistogram1D("jet_4_pT", logspace(20.0, 200.0, 20));
+      _h_jet_HT   = bookHistogram1D("jet_HT", logspace(100.0, 2000.0, 20));
       //
-      _h_bjet_1_pT = bookHistogram1D("jetb_1_pT", logspace(20.0, 400.0, 50));
-      _h_bjet_2_pT = bookHistogram1D("jetb_2_pT", logspace(20.0, 300.0, 50));
-      _h_ljet_1_pT = bookHistogram1D("jetl_1_pT", logspace(20.0, 400.0, 50));
-      _h_ljet_2_pT = bookHistogram1D("jetl_2_pT", logspace(20.0, 300.0, 50));
+      std::cout<<"2\n";
+      _h_bjet_1_pT = bookHistogram1D("jetb_1_pT", logspace(20.0, 400.0, 20));
+      _h_bjet_2_pT = bookHistogram1D("jetb_2_pT", logspace(20.0, 300.0, 20));
+      _h_ljet_1_pT = bookHistogram1D("jetl_1_pT", logspace(20.0, 400.0, 20));
+      _h_ljet_2_pT = bookHistogram1D("jetl_2_pT", logspace(20.0, 300.0, 20));
       //
-      _h_bb_dR    = bookHistogram1D("bb_dR",28, 0.0, 7.0);
-      _h_bb_deta  = bookHistogram1D("bb_deta",28, 0.0, 7.0);
-      _h_bb_dphi  = bookHistogram1D("bb_dphi",32, 0.0, 6.2);
-      _h_ll_dR    = bookHistogram1D("ll_dR",28, 0.0, 7.0);
-      _h_ll_deta  = bookHistogram1D("ll_deta",28, 0.0, 7.0);
-      _h_ll_dphi  = bookHistogram1D("ll_dphi",32, 0.0, M_PI);
-      _h_bl_dR    = bookHistogram1D("bl_dR",28, 0.0, 7.0);
-      _h_bl_deta  = bookHistogram1D("bl_deta",28, 0.0, 7.0);
-      _h_bl_dphi  = bookHistogram1D("bl_dphi",32, 0.0, 6.2);
-      _h_ll_dR50  = bookHistogram1D("ll_dR50",28, 0.0, 7.0);
-      _h_ll_deta50= bookHistogram1D("ll_deta50",28, 0.0, 7.0);
-      _h_ll_dphi50= bookHistogram1D("ll_dphi50",32, 0.0, M_PI);
+      std::cout<<"3\n";
+      _h_bb_dR    = bookHistogram1D("bb_dR",14, 0.0, 7.0);
+      _h_bb_deta  = bookHistogram1D("bb_deta",14, 0.0, 7.0);
+      _h_bb_dphi  = bookHistogram1D("bb_dphi",16, 0.0, 6.2);
+      _h_ll_dR    = bookHistogram1D("ll_dR",14, 0.0, 7.0);
+      _h_ll_deta  = bookHistogram1D("ll_deta",14, 0.0, 7.0);
+      _h_ll_dphi  = bookHistogram1D("ll_dphi",16, 0.0, M_PI);
+      _h_bl_dR    = bookHistogram1D("bl_dR",14, 0.0, 7.0);
+      _h_bl_deta  = bookHistogram1D("bl_deta",14, 0.0, 7.0);
+      _h_bl_dphi  = bookHistogram1D("bl_dphi",16, 0.0, 6.2);
+      _h_ll_dR50  = bookHistogram1D("ll_dR50",14, 0.0, 7.0);
+      _h_ll_deta50= bookHistogram1D("ll_deta50",14, 0.0, 7.0);
+      _h_ll_dphi50= bookHistogram1D("ll_dphi50",16, 0.0, M_PI);
+      _h_lt_cos   = bookHistogram1D("lt_cos",20, -1.0, 1.0);
+      _h_lt_cos50 = bookHistogram1D("lt_cos50",20, -1.0, 1.0);
       std::cerr<<"out\n";
     }
   public:
@@ -63,6 +75,9 @@ namespace Rivet {
       fs.addVetoOnThisFinalState(lfs);
       addProjection(FastJets(fs, FastJets::ANTIKT, 0.6), "Jets");
       addProjection(MissingMomentum(fs), "MissingET");
+      IdentifiedFinalState neutrino_fs(-50., 50., 0.0*GeV);
+      neutrino_fs.acceptNeutrinos();
+      addProjection(neutrino_fs, "NEUTRINO_FS");
       
       inithistos();
     }
@@ -82,7 +97,13 @@ namespace Rivet {
         MSG_DEBUG("Event failed lepton multiplicity cut");
         vetoEvent;
       }
-      
+      const ParticleVector& neutrinoFS = 
+	applyProjection<IdentifiedFinalState>(event, "NEUTRINO_FS").
+	particlesByPt();
+      if (neutrinoFS.size()!=2) vetoEvent;
+      FourMomentum neut1 = neutrinoFS[0].momentum();
+      FourMomentum neut2 = neutrinoFS[1].momentum();
+
       // Use a missing ET cut to bias toward events with a hard neutrino 
       // from the leptonically decaying W. This helps to reduce pure QCD 
       // backgrounds.
@@ -100,10 +121,6 @@ namespace Rivet {
       // because we want to plot all jet pTs to help optimise our jet pT cut.
       const FastJets& jetpro = applyProjection<FastJets>(event, "Jets");
       const Jets alljets = jetpro.jetsByPt();
-      //if (alljets.size() < 2) {
-      //  MSG_DEBUG("Event failed jet multiplicity cut");
-      //  vetoEvent;
-      //}
       
       // Update passed-cuts counter and fill all-jets histograms
       int njets(alljets.size());
@@ -143,6 +160,13 @@ namespace Rivet {
 
       // Plot the pTs of the identified jets.
       int nbjets(bjets.size()), nljets(ljets.size());
+      if (nbjets==2) {
+	if (bjets[0].momentum().pT()<bjets[1].momentum().pT()) {
+	  const Jet& swap = bjets[0];
+	  bjets[0] = bjets[1];
+	  bjets[1] = swap;
+	}
+      }
       if (nbjets>0) 
 	_h_bjet_1_pT->fill(bjets[0].momentum().pT(), weight);
       if (nbjets>1) 
@@ -162,19 +186,44 @@ namespace Rivet {
       }
 
 
-      if (lfs.chargedLeptons().size()>0 && nbjets>0) {
+      if (lfs.chargedLeptons().size()>0 && nbjets>1) {
 	FourMomentum l=lfs.chargedLeptons()[0].momentum();
 	_h_bl_dR->fill(deltaR(bjets[0].momentum(), l),weight);
 	_h_bl_deta->fill(fabs(bjets[0].momentum().eta()-l.eta()),weight);
 	_h_bl_dphi->fill(deltaPhi(bjets[0].momentum(),l),weight);
+
+	FourMomentum neut, tmom;
+	double testMassW1((l+neut1).mass()),testMassW2((l+neut2).mass());
+	if (fabs(80.4-testMassW1)<fabs(80.4-testMassW2)) neut = neut1;
+	else neut = neut2;
+	FourMomentum Wmom(l+neut);
+	double testMasst1((bjets[0].momentum()+Wmom).mass());
+	double testMasst2((bjets[1].momentum()+Wmom).mass());
+	if (fabs(175.-testMasst1)<fabs(175.-testMasst2)) 
+	  tmom = bjets[0].momentum()+Wmom;
+	else
+	  tmom = bjets[1].momentum()+Wmom;
+	  
+	LorentzTransform cms_boost(-Wmom.boostVector());
+	FourMomentum tcms(cms_boost.transform(tmom));
+	FourMomentum lcms(cms_boost.transform(l));
+	double cosangle(cos(lcms.angle(tcms)));
+	_h_lt_cos->fill(cosangle,weight);
+	if (l.pT()<50.) _h_lt_cos50->fill(cosangle,weight);
       }
       if (lfs.chargedLeptons().size()>1 && nbjets>0) {
 	FourMomentum l1=lfs.chargedLeptons()[0].momentum();
 	FourMomentum l2=lfs.chargedLeptons()[1].momentum();
+	if (l1.pT()<l2.pT()) {
+	  FourMomentum swap = l1;
+	  l1 = l2;
+	  l2 = swap;
+	}
+
 	_h_ll_dR->fill(deltaR(l1, l2),weight);
 	_h_ll_deta->fill(fabs(l1.eta()-l2.eta()),weight);
 	_h_ll_dphi->fill(deltaPhi(l1,l2),weight);
-	if (l1.pT()<50*GeV and l2.pT()<50*GeV and l1.pT()>-50*GeV and l2.pT()>-50*GeV){
+	if (l1.pT()<50*GeV && l2.pT()<50*GeV){
 	  _h_ll_dR50->fill(deltaR(l1, l2),weight);
 	  _h_ll_deta50->fill(fabs(l1.eta()-l2.eta()),weight);
 	  _h_ll_dphi50->fill(deltaPhi(l1,l2),weight);
@@ -206,6 +255,8 @@ namespace Rivet {
       normalize(_h_ll_dR50);
       normalize(_h_ll_deta50);
       normalize(_h_ll_dphi50);
+      normalize(_h_lt_cos);
+      normalize(_h_lt_cos50);
     }
   };
 
