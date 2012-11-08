@@ -171,10 +171,6 @@ double LF_VVV1_FF::operator()
     double zm = 0.5*(1.- vijk);  
     double zp = 0.5*(1.+ vijk);
     double massive = 2. * ( 1./(1.-z+z*y) + (z*(1.-z)/2. - zp*zm/2. - 1.)/vijk );
-    if (massive < 0.) {
-      //std::cout<<" g -> gg FF mass correction : "<<massive/massless<<"\n"; 
-      return 0.;
-    }
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive;
     return value * JFF(y,0.0,0.0,muk2,0.0);
   }
@@ -220,10 +216,6 @@ double LF_VVV2_FF::operator()
     double zm = 0.5*(1.- vijk);  
     double zp = 0.5*(1.+ vijk);
     double massive = 2. * ( 1./(z+y-z*y) + (z*(1.-z)/2. - zp*zm/2. - 1.)/vijk );
-    if (massive < 0.) {
-      //std::cout<<" g -> gg FF mass correction : "<<massive/massless<<"\n"; 
-      return 0.;
-    }
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive;
     return value * JFF(y,0.0,0.0,muk2,0.0);
   }
@@ -330,9 +322,6 @@ double LF_VVV1_IF::operator()
   else {
     //the massive case
     double massive = massless - muk2*y/(z*(1.-y));
-    if (massive < 0.) {
-      return 0.;
-  }
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive;
     return value * JIF(z,y,eta,scale,sub);
   }
@@ -377,9 +366,6 @@ double LF_VVV2_IF::operator()
   else {
     //the massive case
     double massive = massless - muk2*y/(z*(1.-y));
-    if (massive < 0.) {
-      return 0.;
-  }
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive;
     return value * JIF(z,y,eta,scale,sub);
   }
