@@ -16,7 +16,7 @@ namespace Rivet {
   class MC_WplusWplus : public Analysis {
   private:
     double _pt_lepton1, _pt_lepton2, _eta_lepton, _ETmiss;
-    double _pt_J, _eta_J, _Delta_R;
+    double _pt_Jlow, _pt_Jhigh, _eta_J, _Delta_R;
     double _Delta_Iso, _ptfrac_Iso, _pt_softlepton;
     double _m_JJ, _Delta_eta_JJ;
     double _pt_Jveto, _eta_offset_Jveto;
@@ -27,7 +27,7 @@ namespace Rivet {
     MC_WplusWplus() : 
       Analysis("MC_WplusWplus"),
       _pt_lepton1(20.), _pt_lepton2(20.), _eta_lepton(2.5), _ETmiss(20.),
-      _pt_J(30.), _eta_J(4.7), _Delta_R(0.4),
+      _pt_Jlow(25.), _pt_Jhigh(40.), _eta_J(4.7), _Delta_R(0.4),
       _Delta_Iso(0.3), _ptfrac_Iso(0.15), _pt_softlepton(1.),
       _m_JJ(600.), _Delta_eta_JJ(4.), 
       _pt_Jveto(30.), _eta_offset_Jveto(1.),
@@ -64,22 +64,29 @@ namespace Rivet {
       _weights.push_back(0.);
       _weights.push_back(0.);
       _weights.push_back(0.);
+      _weights.push_back(0.);
     }
     
     /// Perform the per-event analysis
     void analyze(const Event& evt) {
       const double weight = evt.weight(); 
       _weights[0] += weight;
+      _histos["weights"]->fill(0,weight);
 
       const FinalState incl_fs = applyProjection<FinalState>(evt, "FS");
-      const Jets          jets = 
-	applyProjection<FastJets>(evt, "Jets").
-	jetsByPt(_pt_J*GeV,14000.*GeV,-_eta_J,_eta_J); 
-
       // two leptons at least.
       const ParticleVector lepton_candidates = 
 	applyProjection<FinalState>(evt, "Leptons").particles();
       if (lepton_candidates.size()<2) vetoEvent;
+      _weights[1] += weight;
+      _histos["weights"]->fill(1,weight);
+
+      // ensure leptons are in eta/pt range and sufficiently isolated,
+      // no soft isolated lepton allowed.
+      std::vector<FourMomentum> p_leptons;
+      if (!ExtractLeptons(incl_fs,lepton_candidates,p_leptons)) vetoEvent;
+      _weights[2] += weight;
+      _histos["weights"]->fill(2,weight);
 
       // define missing ET and demand it to be above the cut
       ParticleVector vfs_particles = 
@@ -88,34 +95,86 @@ namespace Rivet {
       foreach ( const Particle & p, vfs_particles ) pTmiss -= p.momentum();
       double missET = pTmiss.pT();
       if (missET<_ETmiss) vetoEvent;
+      _weights[3] += weight;
+      _histos["weights"]->fill(3,weight);
 
-      // ensure leptons are in eta/pt range and sufficiently isolated,
-      // no soft isolated lepton allowed.
-      std::vector<FourMomentum> p_leptons;
-      if (!ExtractLeptons(incl_fs,lepton_candidates,p_leptons)) vetoEvent;
-      
-      
-      // filter leptons out of jets, must have at least two jets
+      const Jets      jets_low = 
+	applyProjection<FastJets>(evt, "Jets").
+	jetsByPt(_pt_Jlow*GeV,8000.*GeV,-_eta_J,_eta_J);       
+      const Jets     jets_high = 
+	applyProjection<FastJets>(evt, "Jets").
+	jetsByPt(_pt_Jlow*GeV,8000.*GeV,-_eta_J,_eta_J); 
+
+      // filter leptons out of jets
+      std::vector<FourMomentum> p_jets_low;
+      int njets_low = FilterJets(jets_low,p_leptons,p_jets_low);
       std::vector<FourMomentum> p_jets;
-      if (!FilterJets(jets,p_leptons,p_jets)) vetoEvent;
+      int njets_high = FilterJets(jets_high,p_leptons,p_jets);
+      _histos["Njets_low"]->fill(njets_low,weight);
+      _histos["Njets_high"]->fill(njets_high,weight);
       
-      // search for two tagging jets.  Will have to check for proper cuts ....
-      _weights[1] += weight; 
+      _histos["missET_all"]->fill(missET,weight);
+      _histos["ptL1_all"]->fill(p_leptons[0].pT(),weight);
+      _histos["ptL2_all"]->fill(p_leptons[1].pT(),weight);
+      _histos["dphiLL_all"]->fill(deltaPhi(p_leptons[0],
+					   p_leptons[1]),weight);
+      _histos["detaLL_all"]->fill(fabs(p_leptons[0].eta()-
+				       p_leptons[1].eta()),weight);
+
+      if (njets_high==0) {
+	_histos["missET_0_high"]->fill(missET,weight);
+	_histos["ptL1_0_high"]->fill(p_leptons[0].pT(),weight);
+	_histos["ptL2_0_high"]->fill(p_leptons[1].pT(),weight);
+	_histos["dphiLL_0_high"]->fill(deltaPhi(p_leptons[0],
+						       p_leptons[1]),weight);
+	_histos["detaLL_0_high"]->fill(fabs(p_leptons[0].eta()-
+						   p_leptons[1].eta()),weight);
+	_weights[4] += weight; 
+	_histos["weights"]->fill(4,weight);
+      }
+      if (njets_low==0) {
+	_histos["missET_0_low"]->fill(missET,weight);
+	_histos["ptL1_0_low"]->fill(p_leptons[0].pT(),weight);
+	_histos["ptL2_0_low"]->fill(p_leptons[1].pT(),weight);
+	_histos["dphiLL_0_low"]->fill(deltaPhi(p_leptons[0],
+						      p_leptons[1]),weight);
+	_histos["detaLL_0_low"]->fill(fabs(p_leptons[0].eta()-
+						  p_leptons[1].eta()),weight);
+	_weights[5] += weight; 
+	_histos["weights"]->fill(5,weight);
+      }
+      else if (njets_low==1) {
+	_histos["missET_1_low"]->fill(missET,weight);
+	_histos["ptL1_1_low"]->fill(p_leptons[0].pT(),weight);
+	_histos["ptL2_1_low"]->fill(p_leptons[1].pT(),weight);
+	_histos["dphiLL_1_low"]->fill(deltaPhi(p_leptons[0],
+						      p_leptons[1]),weight);
+	_histos["detaLL_1_low"]->fill(fabs(p_leptons[0].eta()-
+						  p_leptons[1].eta()),weight);
+      }
+	
+
+      // Now go for VBF-like signatures
+      // the two tagging jets.  Will have to check for proper cuts ....
       double ptjp(0.), ptjm(0.),yjp(0.),yjm(0.);
       int jp(-1),jm(-1);
       const std::string mode(std::string("trivial"));
       if (!FindTwoTaggingJets(p_jets,jp,ptjp,yjp,jm,ptjm,yjm,mode)) vetoEvent;
+      _weights[6] += weight; 
+      _histos["weights"]->fill(6,weight);
 
-      // apply jet veto
-      _weights[2] += weight; 
-
-      bool veto(false);
+      // apply mass and jet vetoes 
       double massjj((p_jets[jp]+p_jets[jm]).mass());
       double HT(p_jets[jp].pT()+p_jets[jm].pT());
       double yjj(abs(yjp-yjm)), ymean((yjp+yjm)/2.);
-      _normed_histos["M_jetpm_bc"]->fill(massjj,weight);
-      _normed_histos["dy_jetpm_bc"]->fill(yjj,weight);
-      if (massjj<_m_JJ || yjj<_Delta_eta_JJ) veto = true;
+      _histos["M_jetpm"]->fill(massjj,weight);
+      _histos["dy_jetpm"]->fill(yjj,weight);
+
+      if (massjj<_m_JJ || yjj<_Delta_eta_JJ)  vetoEvent;
+      _weights[7] += weight; 
+      _histos["weights"]->fill(7,weight);
+
+      bool veto(false);
       double yj(0), ptj, yjstar;
       for (int j=0;j<int(p_jets.size());j++) {
 	if (j==jp || j==jm) continue;
@@ -124,10 +183,15 @@ namespace Rivet {
 	if (ptj>_pt_Jveto &&
 	    yj>yjm+_eta_offset_Jveto && 
 	    yj<yjp-_eta_offset_Jveto) {
+	  _histos["pT_jet_veto"]->fill(ptj,weight);
+	  _histos["y_jet_veto"]->fill(fabs(yj),weight);
+	  _histos["y*_jet_veto"]->fill(fabs(yj-ymean),weight);
 	  veto = true;
-	  break;
 	}
       }
+      if (veto) vetoEvent;
+      _weights[8] += weight; 
+      _histos["weights"]->fill(8,weight);
 
       int n(0);
       for (int j=0;j<int(p_jets.size());j++) {
@@ -135,112 +199,124 @@ namespace Rivet {
 	yjstar = yj-ymean;
 	ptj    = p_jets[j].pT();
 	if (j==jp) {
-	  _normed_histos["pT_jetp_bc"]->fill(ptj,weight);
-	  _normed_histos["y_jetp_bc"]->fill(yj,weight);
-	  _normed_histos["y*_jetp_bc"]->fill(yjstar,weight);
-	  if (!veto) {
-	    _normed_histos["pT_jetp"]->fill(ptj,weight);
-	    _normed_histos["y_jetp"]->fill(yj,weight);
-	    _normed_histos["y*_jetp"]->fill(yjstar,weight);
-	  }
+	  _histos["pT_jetp"]->fill(ptj,weight);
+	  _histos["y_jetp"]->fill(fabs(yj),weight);
+	  _histos["y*_jetp"]->fill(fabs(yjstar),weight);
 	}
 	else if (j==jm) {
-	  _normed_histos["pT_jetm_bc"]->fill(ptj,weight);
-	  _normed_histos["y_jetm_bc"]->fill(yj,weight);
-	  _normed_histos["y*_jetm_bc"]->fill(yjstar,weight);
-	  if (!veto) {
-	    _normed_histos["pT_jetm"]->fill(ptj,weight);
-	    _normed_histos["y_jetm"]->fill(yj,weight);
-	    _normed_histos["y*_jetm"]->fill(yjstar,weight);
-	  }
+	  _histos["pT_jetm"]->fill(ptj,weight);
+	  _histos["y_jetm"]->fill(fabs(yj),weight);
+	  _histos["y*_jetm"]->fill(fabs(yjstar),weight);
 	}
 	else {
 	  n++;
 	  switch (n) {
 	  case 1: 
-	    _normed_histos["pT_jet1_bc"]->fill(ptj,weight);
-	    _normed_histos["y_jet1_bc"]->fill(yj,weight);
-	    _normed_histos["y*_jet1_bc"]->fill(yjstar,weight);
-	    if (!veto) {
-	      _normed_histos["pT_jet1"]->fill(ptj,weight);
-	      _normed_histos["y_jet1"]->fill(yj,weight);
-	      _normed_histos["y*_jet1"]->fill(yjstar,weight);
-	    }
+	    _histos["pT_jet1"]->fill(ptj,weight);
+	    _histos["y_jet1"]->fill(fabs(yj),weight);
+	    _histos["y*_jet1"]->fill(fabs(yjstar),weight);
 	    break;
 	  case 2: 
-	    _normed_histos["pT_jet2_bc"]->fill(ptj,weight);
-	    _normed_histos["y_jet2_bc"]->fill(yj,weight);
-	    _normed_histos["y*_jet2_bc"]->fill(yjstar,weight);
-	    if (!veto) {
-	      _normed_histos["pT_jet2"]->fill(ptj,weight);
-	      _normed_histos["y_jet1"]->fill(yj,weight);
-	      _normed_histos["y*_jet2"]->fill(yjstar,weight);
-	    }
+	    _histos["pT_jet2"]->fill(ptj,weight);
+	    _histos["y_jet1"]->fill(fabs(yj),weight);
+	    _histos["y*_jet2"]->fill(fabs(yjstar),weight);
 	    break;
 	  }
 	}
       }
-      if (veto) vetoEvent;
-      _weights[3] += weight;
-      _normed_histos["M_jetpm"]->fill(massjj,weight);
-      _normed_histos["dy_jetpm"]->fill(yjj,weight);
-      _normed_histos["HT_jets"]->fill(HT,weight);
-      _normed_histos["missET"]->fill(missET,weight);
+      _histos["HT_jets"]->fill(HT,weight);
       HT += p_leptons[0].pT()+p_leptons[1].pT()+missET;
-      _normed_histos["HT"]->fill(HT,weight);
+      _histos["HT"]->fill(HT,weight);
       double phijj = abs(p_jets[jp].phi()-p_jets[jm].phi());
       if (phijj>PI) phijj = abs(phijj-PI);
-      _normed_histos["dphi_jetpm"]->fill(phijj,weight);
+      _histos["dphi_jetpm"]->fill(phijj,weight);
+      _histos["missET_VBF"]->fill(missET,weight);
+      _histos["ptL1_VBF"]->fill(p_leptons[0].pT(),weight);
+      _histos["ptL2_VBF"]->fill(p_leptons[1].pT(),weight);
+      _histos["dphiLL_VBF"]->fill(deltaPhi(p_leptons[0],
+					   p_leptons[1]),weight);
+      _histos["detaLL_VBF"]->fill(fabs(p_leptons[0].eta()-
+				       p_leptons[1].eta()),weight);
     }
   private:
-    std::map<std::string,AIDA::IHistogram1D*> _normed_histos;
+    std::map<std::string,AIDA::IHistogram1D*> _histos;
     
     void init_histos() { 
-      _normed_histos["pT_jetp"]     = bookHistogram1D("pT_jetp",100,_pt_J,
-						      5.*100.+_pt_J);
-      _normed_histos["pT_jetm"]     = bookHistogram1D("pT_jetm",100,_pt_J,
-						      5.*100.+_pt_J);
-      _normed_histos["pT_jet1"]     = bookHistogram1D("pT_jet1",100,_pt_J,
-						      5.*100.+_pt_J);
-      _normed_histos["pT_jet2"]     = bookHistogram1D("pT_jet2",100,_pt_J,
-						      5.*100.+_pt_J);
-      _normed_histos["y_jetp"]      = bookHistogram1D("y_jetp",20,-5.,5.0);
-      _normed_histos["y_jetm"]      = bookHistogram1D("y_jetm",20,-5.,5.0);
-      _normed_histos["y_jet1"]      = bookHistogram1D("y_jet1",20,-5.,5.0);
-      _normed_histos["y_jet2"]      = bookHistogram1D("y_jet2",20,-5.,5.0);
-      _normed_histos["y*_jetp"]     = bookHistogram1D("y*_jetp",20,-5.,5.0);
-      _normed_histos["y*_jetm"]     = bookHistogram1D("y*_jetm",20,-5.,5.0);
-      _normed_histos["y*_jet1"]     = bookHistogram1D("y*_jet1",20,-5.,5.0);
-      _normed_histos["y*_jet2"]     = bookHistogram1D("y*_jet2",20,-5.,5.0);
-      _normed_histos["HT_jets"]     = bookHistogram1D("HT_jets",100,100.,1100.);
-      _normed_histos["HT"]          = bookHistogram1D("HT",100,100.,1100.);
-      _normed_histos["missET"]      = bookHistogram1D("missET",100,_ETmiss,
-						      _ETmiss+100+10.);
-      _normed_histos["M_jetpm"]     = bookHistogram1D("M_jetpm",50,2.*_pt_J,
-						      1000.0+2.*_pt_J);
-      _normed_histos["dy_jetpm"]    = bookHistogram1D("dy_jetpm",20,0.,10.0);
-      _normed_histos["dphi_jetpm"]  = bookHistogram1D("dphi_jetpm",63,0.,PI);
+      _histos["Njets_low"]      = bookHistogram1D("Njets_low", 11, -0.5, 10.5);
+      _histos["Njets_high"]     = bookHistogram1D("Njets_high", 11, -0.5, 10.5);
       
-      
-      _normed_histos["pT_jetp_bc"]  = bookHistogram1D("pT_jetp_bc",100,_pt_J,
-						      5.*100.+_pt_J);
-      _normed_histos["pT_jetm_bc"]  = bookHistogram1D("pT_jetm_bc",100,_pt_J,
-						      5.*100.+_pt_J);
-      _normed_histos["pT_jet1_bc"]  = bookHistogram1D("pT_jet1_bc",100,_pt_J,
-						      5.*100.+_pt_J);
-      _normed_histos["pT_jet2_bc"]  = bookHistogram1D("pT_jet2_bc",100,_pt_J,
-						      5.*100.+_pt_J);
-      _normed_histos["y_jetp_bc"]   = bookHistogram1D("y_jetp_bc",20,-5.,5.0);
-      _normed_histos["y_jetm_bc"]   = bookHistogram1D("y_jetm_bc",20,-5.,5.0);
-      _normed_histos["y_jet1_bc"]   = bookHistogram1D("y_jet1_bc",20,-5.,5.0);
-      _normed_histos["y_jet2_bc"]   = bookHistogram1D("y_jet2_bc",20,-5.,5.0);
-      _normed_histos["y*_jetp_bc"]  = bookHistogram1D("y*_jetp_bc",20,-5.,5.0);
-      _normed_histos["y*_jetm_bc"]  = bookHistogram1D("y*_jetm_bc",20,-5.,5.0);
-      _normed_histos["y*_jet1_bc"]  = bookHistogram1D("y*_jet1_bc",20,-5.,5.0);
-      _normed_histos["y*_jet2_bc"]  = bookHistogram1D("y*_jet2_bc",20,-5.,5.0);
-      _normed_histos["M_jetpm_bc"]  = bookHistogram1D("M_jetpm_bc",50,2.*_pt_J,
-						      1000.0+2.*_pt_J);
-      _normed_histos["dy_jetpm_bc"] = bookHistogram1D("dy_jetpm_bc",20,0.,10.0);
+      _histos["missET_all"]     = 
+	bookHistogram1D("missET_all",logspace(20.,500.0,10));
+      _histos["ptL1_all"]       = 
+	bookHistogram1D("ptL1_all",logspace(20.,500.0,10));
+      _histos["ptL2_all"]       = 
+	bookHistogram1D("ptL2_all",logspace(20.,500.0,10));
+      _histos["dphiLL_all"]     = bookHistogram1D("dphiLL_all",8,0.,PI);
+      _histos["detaLL_all"]     = bookHistogram1D("detaLL_all",6,0.,6.);
+      _histos["missET_0_low"]   = 
+	bookHistogram1D("missET_0_low",logspace(20.,500.0,10));
+      _histos["ptL1_0_low"]     = 
+	bookHistogram1D("ptL1_0_low",logspace(20.,500.0,10));
+      _histos["ptL2_0_low"]     = 
+	bookHistogram1D("ptL2_0_low",logspace(20.,500.0,10));
+      _histos["dphiLL_0_low"]   = bookHistogram1D("dphiLL_0_low",8,0.,PI);
+      _histos["detaLL_0_low"]   = bookHistogram1D("detaLL_0_low",6,0.,6.);
+      _histos["missET_1_low"]   = 
+	bookHistogram1D("missET_1_low",logspace(20.,500.0,10));
+      _histos["ptL1_1_low"]     = 
+	bookHistogram1D("ptL1_1_low",logspace(20.,500.0,10));
+      _histos["ptL2_1_low"]     = 
+	bookHistogram1D("ptL2_1_low",logspace(20.,500.0,10));
+      _histos["dphiLL_1_low"]   = bookHistogram1D("dphiLL_1_low",8,0.,PI);
+      _histos["detaLL_1_low"]   = bookHistogram1D("detaLL_1_low",6,0.,6.);
+      _histos["missET_0_high"]  = 
+	bookHistogram1D("missET_0_high",logspace(20.,500.0,10));
+      _histos["ptL1_0_high"]    = 
+	bookHistogram1D("ptL1_0_high",logspace(20.,500.0,10));
+      _histos["ptL2_0_high"]    = 
+	bookHistogram1D("ptL2_0_high",logspace(20.,500.0,10));
+      _histos["dphiLL_0_high"]  = bookHistogram1D("dphiLL_0_high",8,0.,PI);
+      _histos["detaLL_0_high"]  = bookHistogram1D("detaLL_0_high",6,0.,6.);
+      _histos["missET_VBF"]     = 
+	bookHistogram1D("missET_VBF",logspace(20.,500.0,10));
+      _histos["ptL1_VBF"]       = 
+	bookHistogram1D("ptL1_VBF",logspace(20.,500.0,10));
+      _histos["ptL2_VBF"]       = 
+	bookHistogram1D("ptL2_VBF",logspace(20.,500.0,10));
+      _histos["dphiLL_VBF"]     = bookHistogram1D("dphiLL_VBF",8,0.,PI);
+      _histos["detaLL_VBF"]     = bookHistogram1D("detaLL_VBF",6,0.,6.);
+
+      _histos["pT_jetp"]        = 
+	bookHistogram1D("pT_jetp",logspace(20.,500.,10));
+      _histos["pT_jetm"]        = 
+	bookHistogram1D("pT_jetm",logspace(20.,500.,10));
+      _histos["pT_jet1"]        = 
+	bookHistogram1D("pT_jet1",logspace(20.,500.,10));
+      _histos["pT_jet2"]        = 
+	bookHistogram1D("pT_jet2",logspace(20.,500.,10));
+      _histos["y_jetp"]         = bookHistogram1D("y_jetp",5,0.,5.0);
+      _histos["y_jetm"]         = bookHistogram1D("y_jetm",5,0.,5.0);
+      _histos["y_jet1"]         = bookHistogram1D("y_jet1",5,0.,5.0);
+      _histos["y_jet2"]         = bookHistogram1D("y_jet2",5,0.,5.0);
+      _histos["y*_jetp"]        = bookHistogram1D("y*_jetp",5,0.,5.0);
+      _histos["y*_jetm"]        = bookHistogram1D("y*_jetm",5,0.,5.0);
+      _histos["y*_jet1"]        = bookHistogram1D("y*_jet1",5,0.,5.0);
+      _histos["y*_jet2"]        = bookHistogram1D("y*_jet2",5,0.,5.0);
+      _histos["pT_jet_veto"]    = 
+	bookHistogram1D("pT_jet_veto",logspace(20.,500.,10));
+      _histos["y_jet_veto"]     = bookHistogram1D("y_jet_veto",5,0.,5.0);
+      _histos["y*_jet_veto"]    = bookHistogram1D("y*_jet_veto",5,0.,5.0);
+
+
+      _histos["HT_jets"]        = 
+	bookHistogram1D("HT_jets",logspace(50,2000.,20));
+      _histos["HT"]             = 
+	bookHistogram1D("HT",logspace(50,2000.,20));
+      _histos["M_jetpm"]        = 
+	bookHistogram1D("M_jetpm",logspace(100.,2000.,50));
+      _histos["dy_jetpm"]       = bookHistogram1D("dy_jetpm",10,0.,10.0);
+      _histos["dphi_jetpm"]     = bookHistogram1D("dphi_jetpm",8,0.,PI);
+      _histos["weights"]        = bookHistogram1D("weights",10,-0.5,9.5);
     }  
 
     bool ExtractLeptons(const FinalState& incl_fs,
@@ -276,9 +352,10 @@ namespace Rivet {
 	  p_leptons[1].pT()<_pt_lepton2)  return false;
       return true;
     }
-    bool FilterJets(const Jets& jets,
-		    std::vector<FourMomentum> &p_leptons,
-		    std::vector<FourMomentum> &p_jets)
+
+    int FilterJets(const Jets& jets,
+		   std::vector<FourMomentum> &p_leptons,
+		   std::vector<FourMomentum> &p_jets)
     { 
       FourMomentum p_J;
       foreach (const Jet& jet,jets) {
@@ -293,9 +370,9 @@ namespace Rivet {
 	if (vetoJ) continue;
 	p_jets.push_back(p_J);
       }
-      if (p_jets.size()<2) return false;
-      return true;
+      return p_jets.size();
     }
+
     bool FindTwoTaggingJets(std::vector<FourMomentum> &p_jets,
 			    int & jp,double & ptjp,double & yjp,
 			    int & jm,double & ptjm,double & yjm,
@@ -324,8 +401,8 @@ namespace Rivet {
     /// Normalise histograms etc., after the run
     void finalize() {
       for (std::map<std::string,AIDA::IHistogram1D*>::iterator 
-	     hit=_normed_histos.begin();
-	   hit!=_normed_histos.end();hit++) {
+	     hit=_histos.begin();
+	   hit!=_histos.end();hit++) {
 	scale(hit->second, crossSection()/sumOfWeights());
       }
     }

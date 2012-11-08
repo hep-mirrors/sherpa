@@ -1,55 +1,53 @@
 (run){
-  EVENTS 100;
+  EVENTS 1000000;
   FAC_SCALE2:=sqr(80.419);
   REN_SCALE2:=sqr(80.419);
+  ERROR 0.25
+  RESULT_DIRECTORY = Results_EW
+  ME_SIGNAL_GENERATOR Comix;
+  EVENT_GENERATION_MODE Weighted;
+  SCF:=1.0; QF:=1.0;
+  SCALES METS{SCF*MU_F2}{SCF*MU_R2}{QF*MU_Q2};
+
   ANALYSIS = Rivet
-  ANALYSIS_OUTPUT=Analysis.def
-  # parton level only
-  #SHOWER_GENERATOR None;
-  #FRAGMENTATION    Off;
-  # with underlying event
-  #MI_Handler       Amisic;
+  ANALYSIS_OUTPUT=WpWp_nocuts_EW
 }(run);
+
 (processes){
   ## ==================================
   ## W+W+ + 2 jets (B)
   ## ==================================
-  Process 93 93 -> -11 12 -13 14 93 93;
+  Process 93 93 -> 24[a] 24[b] 93 93;
+  Decay 24[a] -> -11 12;
+  Decay 24[b] -> -13 14;
   Order_EW 6;
   End process;
 }(processes);
+
 (selector){
-  NJetFinder 2 20. 0. 0.2 1 6.
-  Mass   -11  12    10.  E_CMS
-  Mass   -13  14    10.  E_CMS
+  Mass    93  93      10. E_CMS    
+  Mass   -11  12      10. E_CMS    
+  Mass   -13  14      10. E_CMS
 }(selector);
-(me){
-  RESULT_DIRECTORY = Results
-  ME_SIGNAL_GENERATOR Comix;
-  EVENT_GENERATION_MODE Weighted;
-  SCALES VAR{FAC_SCALE2}{REN_SCALE2};
-}(me);
+
 (model){
   MODEL = SM;
+  MASS[25]=125.5;
   MASS[24]=80.419;
-  MASS[25]=125;
   WIDTH[24]=2.140;
   1/ALPHAQED(MZ)=128.802;
   SIN2THETAW=0.2222;
 }(model);
+
 (beam){
-  BEAM_1  2212; BEAM_ENERGY_1 7000;
-  BEAM_2  2212; BEAM_ENERGY_2 7000;
+  BEAM_1  2212; BEAM_ENERGY_1 4000;
+  BEAM_2  2212; BEAM_ENERGY_2 4000;
   K_PERP_MEAN_1 0.; K_PERP_SIGMA_1 0.;
   K_PERP_MEAN_2 0.; K_PERP_SIGMA_2 0.;
 }(beam);
-(integration){
-  FINISH_OPTIMIZATION On;
-  ERROR 0.05
-}(integration);
+
 (analysis){
   BEGIN_RIVET {
     -a MC_WplusWplus MC_XS
-    JETCONTS=1 
   } END_RIVET;
 }(analysis)
