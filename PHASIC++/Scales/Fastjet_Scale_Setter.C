@@ -138,7 +138,7 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
     ctags.push_back(ctag);
   }
   for (size_t i(p_proc->NIn());i<m_f.size();++i)
-    if (m_f[i].Strong()) m_scale.push_back(0.0);
+    if (!Flavour(kf_jet).Includes(m_f[i])) m_scale.push_back(0.0);
   m_scale.resize(Max(m_scale.size(),m_calcs.size()+stp::size));
   for (size_t i(0);i<m_calcs.size();++i)
     SetScale(ctags[i],*m_calcs[i]);
@@ -165,7 +165,7 @@ double Fastjet_Scale_Setter::Calculate
   m_p[1]=-momenta[1];
   std::vector<fastjet::PseudoJet> input;
   for (size_t i(p_proc->NIn());i<momenta.size();++i)
-    if (!m_f[i].Strong()) m_p.push_back(momenta[i]);
+    if (!Flavour(kf_jet).Includes(m_f[i])) m_p.push_back(momenta[i]);
     else input.push_back
       (fastjet::PseudoJet(momenta[i][1],momenta[i][2],
 			  momenta[i][3],momenta[i][0]));
