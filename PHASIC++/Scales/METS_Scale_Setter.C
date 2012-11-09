@@ -179,6 +179,7 @@ METS_Scale_Setter::METS_Scale_Setter
   Scale_Setter_Base(args), m_tagset(this),
   m_cnt(0), m_rej(0), m_mode(mode), m_lfrac(0.0)
 {
+  m_scale.resize(stp::size+3);
   std::string tag(args.m_scale);
   while (true) {
     size_t pos(tag.find('{'));
@@ -199,7 +200,6 @@ METS_Scale_Setter::METS_Scale_Setter
     SetScale(ctag,*m_calcs.back());
   }
   m_scale.resize(Max(m_scale.size(),m_calcs.size()));
-  m_scale.resize(Max(m_scale.size(),size_t(stp::size+2)));
   SetCouplings();
   m_f=p_proc->Flavours();
   m_decids=p_proc->DecayInfos();
@@ -533,6 +533,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 {
   double mur2(muf2), mup2(muf2);
   m_scale[stp::res]=muf2;
+  m_scale[stp::size+2]=muf2;
   if (ampl) {
     std::vector<double> scale(p_proc->NOut());
     msg_Debugging()<<"Setting scales {\n";
@@ -614,7 +615,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 		 <<"  Q^2   = "<<sqrt(m_scale[stp::res])<<"\n"
 		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
 		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n";
-  for (size_t i(stp::size);i<m_calcs.size();++i)
+  for (size_t i(stp::size);i<m_scale.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
   msg_Debugging()<<"} <- "<<(p_caller?p_caller->Name():"")<<"\n";
   if (ampl) {
