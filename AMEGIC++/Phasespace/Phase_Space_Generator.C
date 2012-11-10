@@ -54,6 +54,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   if (proc->Info().Has(nlo_type::real)) {
     inttype  = dr.GetValue<int>("RS_INTEGRATOR",7);
   }
+  if (nout==1) return 0;
   if (nin==1&&nout==2) return 0;
   if (inttype<4 && !(inttype>1 && nout==2)) return 0;
   if (inttype==2) inttype=6;
