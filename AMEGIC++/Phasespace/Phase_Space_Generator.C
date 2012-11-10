@@ -104,11 +104,11 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 
   for (int i=0;i<ngraph;i++) {
     if (proc->IsFreeOfFourVertex(proc->Diagram(i))) {
-      for(int j=0;j<ng;j++){
+      for(int j=0;j<ng;j++) {
 	Channel_Generator_Base *cg;
 	if (nin==1 && nout>2) cg = new Channel_Generator_Decays(nin,nout,proc->Diagram(i),0);
 	else {
-	  if (kk_fs){
+	  if (kk_fs) {
 	    cg = new Channel_Generator_KK(nin,nout,proc->Diagram(i),0);
 	  }
 	  else {
@@ -155,6 +155,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 	    int  rannumber;
 	    //cg->SetName(string(procname));
 	    rannumber    = cg->MakeChannel(k,cnt,fsrp,pID);
+	    if (nout==1) rannumber=1;
 	    if (rannumber>0) {
 	      string makefilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string("/Makefile.am");
 	      AddToMakefileAM(makefilename,fsrp,procname);
