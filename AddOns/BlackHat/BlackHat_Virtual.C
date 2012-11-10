@@ -3,7 +3,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
-#include "blackhat-lib/BH_error.h"
+#include "blackhat/BH_error.h"
 
 using namespace WHITEHAT;
 using namespace PHASIC;

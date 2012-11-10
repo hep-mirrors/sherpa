@@ -2,8 +2,8 @@
 #define AddOns_BlackHat_BlackHat_Virtual_H
 
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
-#include "blackhat-lib/BH_interface.h"
-#include "blackhat-lib/BH_Ampl.h"
+#include "blackhat/BH_interface.h"
+#include "blackhat/BH_Ampl.h"
 
 namespace MODEL { class Model_Base; }
 
