@@ -15,7 +15,7 @@ using namespace std;
 
 Multi_Channel::Multi_Channel(string _name,int id) : 
   fl(NULL), m_id(id), s1(NULL), s2(NULL), m_readin(false), m_fixalpha(false),
-  m_minalpha(0.0)
+  m_minalpha(0.0), m_weight(1.0)
 {
   string help;
   int    pos;
@@ -317,6 +317,7 @@ void Multi_Channel::AddPoint(double value)
 
 void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 {
+  if (channels.empty()) return;
   Vec4D_Vector pp(p,&p[nin+nout]);
   if (nin==2) {
     Poincare cms(pp[0]+pp[1]);
@@ -346,6 +347,10 @@ void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 
 void Multi_Channel::GeneratePoint(Vec4D *p,Cut_Data * cuts)
 {
+  if (channels.empty()) {
+    p[2]=p[0]+p[1];
+    return;
+  }
   Poincare cms(p[0]+p[1]);
   if (nin==2) for (int i(0);i<nin;++i) cms.Boost(p[i]);
   for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);

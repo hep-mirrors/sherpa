@@ -69,7 +69,7 @@ void Simple_Chain::Init()
   m_stop[4]=m_stop[0]=0.0;
   m_start[3]=m_start[2]=m_ecms/2;
   m_stop[3]=m_stop[2]=0.0;
-  m_spkey.Assign("s' isr",4,0,PHASIC::Phase_Space_Handler::GetInfo());
+  m_spkey.Assign("s' isr",5,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_ykey.Assign("y isr",3,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_xkey.Assign("x isr",5,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_isrspkey.Assign("s' isr mi",3,0,PHASIC::Phase_Space_Handler::GetInfo());

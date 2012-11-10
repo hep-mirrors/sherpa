@@ -209,7 +209,7 @@ double Single_Process::BeamISRWeight
   if (m_nin!=2) return 0.5/p_int->Momenta()[0].Mass();
   if (p_int->ISR()) {
     wgt*=p_int->ISR()->Weight
-      (mode,p_int->Momenta()[0],p_int->Momenta()[1],
+      (mode|(m_nout>1?0:8),p_int->Momenta()[0],p_int->Momenta()[1],
        Q2,Q2,m_flavs[0],m_flavs[1]);
     int set(false);
     double LQ2(Q2);

@@ -262,7 +262,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	int oiter=iter;
 	if (psh->UpdateIntegrators()) iter=iter0;
 	else iter*=2;
-	optiter*=iter/oiter;
+	optiter*=iter/(double)oiter;
 	maxopt += 4*iter;
 	endopt++;
 	(psh->Process())->ResetMax(1);

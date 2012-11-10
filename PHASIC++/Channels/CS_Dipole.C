@@ -25,7 +25,7 @@ CS_Dipole::CS_Dipole(NLO_subevt *const sub,
 {
   p_fsmc=psh->FSRIntegrator();
   p_ismc=psh->ISRIntegrator();
-  m_isrspkey.Assign("s' isr",4,0,psh->GetInfo());
+  m_isrspkey.Assign("s' isr",5,0,psh->GetInfo());
   m_isrykey.Assign("y isr",3,0,psh->GetInfo());
   m_isrmode=psh->Process()->ISR()->On();
   for (size_t i(0);i<m_sub.m_n;++i) {
