@@ -82,8 +82,6 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
     m_beamspkey.Assign("s' beam",4,0,p_info);
     m_beamykey.Assign("y beam",3,0,p_info);
     p_beamhandler->AssignKeys(p_info);
-    m_isrspkey[4]=-1.0;
-    if (m_nout==1) m_isrspkey[4]=sqr(p_flavours[2].Mass());
   }
 #ifdef USING__Threading
   m_uset=0;
@@ -351,6 +349,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
 	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
       }
     }
+    m_isrspkey[4]=m_nout>1?-1.0:sqr(p_flavours[2].Mass());
     if (!p_isrhandler->MakeISR(m_nout==1?m_isrspkey[4]:m_isrspkey[3],
 			       m_beamykey[2]+m_isrykey[2],
 			     p_lab,process->Process()->
