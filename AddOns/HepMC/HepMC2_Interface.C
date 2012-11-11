@@ -83,7 +83,13 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   if (beamparticles.size()==2) {
     event.set_beam_particles(beamparticles[0],beamparticles[1]);
   }
-  std::vector<double> weights; weights.push_back(weight);
+  Blob *sp(blobs->FindFirst(btp::Signal_Process));
+  Blob_Data_Base *info((*sp)["MEWeight"]);
+  if (!info) THROW(fatal_error,"Missing weight info");
+  double meweight(info->Get<double>());
+  std::vector<double> weights; 
+  weights.push_back(weight);
+  weights.push_back(meweight);
   event.weights()=weights;
   return true;
 }
