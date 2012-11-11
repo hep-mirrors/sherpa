@@ -20,8 +20,6 @@ namespace EXTRAXS {
     ATOOLS::Flavour m_prop;
 
     size_t NHel(const ATOOLS::Flavour& fl);
-    long unsigned int IHM(const std::vector<int>& l);
-    long unsigned int IHP(const std::vector<int>& l);
     METOOLS::Vertex* GetVertex(METOOLS::Current* cur1,
                                   METOOLS::Current* cur2,
                                   METOOLS::Current* prop);      
