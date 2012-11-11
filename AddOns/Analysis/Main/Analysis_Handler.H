@@ -62,6 +62,8 @@ namespace ANALYSIS {
     
     inline int Weighted() const { return m_weighted; }
 
+    inline const SHERPA::Event_Handler *EventHandler() { return p_eventhandler; }
+
   };// end of class Analysis_Handler   
 
 }// end of namespace ANALYSIS

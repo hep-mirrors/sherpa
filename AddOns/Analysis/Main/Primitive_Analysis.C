@@ -15,9 +15,11 @@
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
-Primitive_Analysis::Primitive_Analysis(const std::string _name, const int mode) :
+Primitive_Analysis::Primitive_Analysis
+(Analysis_Handler *const ana,const std::string _name, const int mode) :
   m_active(true), m_splitjetconts(true)
 {
+  p_ana=ana;
   m_nevt = 0;
   p_partner = this;
   m_mode = mode;
@@ -26,9 +28,10 @@ Primitive_Analysis::Primitive_Analysis(const std::string _name, const int mode) 
   msg_Tracking()<<" Initializing Primitive_Analysis : "<<m_name<<std::endl;
 }
 
-Primitive_Analysis::Primitive_Analysis(const int mode) :
+Primitive_Analysis::Primitive_Analysis(Analysis_Handler *const ana,const int mode) :
   m_nevt(0), p_partner(this), m_active(true), m_splitjetconts(true)
 {
+  p_ana=ana;
   m_mode = mode;
 
   m_name = std::string("Analysis : noname");
@@ -97,7 +100,7 @@ Primitive_Analysis * Primitive_Analysis::GetSubAnalysis
     if (key!="Hadron" && mode&ANALYSIS::do_hadron) mode=mode^ANALYSIS::do_hadron;
   }
 
-  Primitive_Analysis * ana = new Primitive_Analysis(m_name.substr(11)+key,mode);
+  Primitive_Analysis * ana = new Primitive_Analysis(p_ana,m_name.substr(11)+key,mode);
   if (master) ana->SetPartner(p_partner);
   ana->SetMaxJetTag(m_maxjettag);
 

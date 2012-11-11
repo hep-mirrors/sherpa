@@ -39,6 +39,7 @@ namespace ANALYSIS {
   };
 
   class Analysis_Object;
+  class Analysis_Handler;
   class Primitive_Analysis;
 
   typedef std::vector<Analysis_Object*>                 Object_List;
@@ -67,6 +68,8 @@ namespace ANALYSIS {
 
     bool  m_active, m_splitjetconts;
 
+    Analysis_Handler *p_ana;
+
     std::string JetID(std::string name,std::string max) const;
     
     void Init();
@@ -81,8 +84,8 @@ namespace ANALYSIS {
 
   public :
 
-    Primitive_Analysis(const int);
-    Primitive_Analysis(const std::string, const int);
+    Primitive_Analysis(Analysis_Handler *const ana,const int);
+    Primitive_Analysis(Analysis_Handler *const ana,const std::string, const int);
 
     ~Primitive_Analysis();
     
@@ -119,6 +122,8 @@ namespace ANALYSIS {
 
     inline const ATOOLS::String_BlobDataBase_Map &GetData()
     { return m_datacontainer; }
+
+    inline Analysis_Handler *AnalysisHandler() const { return p_ana; }
 
   };// end of class Primitive_Analysis
 

@@ -180,7 +180,7 @@ bool Analysis_Handler::Init()
     msg_Info()<<"\n";
     msg_Tracking()<<"   new Primitive_Analysis(..) {\n";
     mode=mode|m_weighted;
-    m_analyses.push_back(new Primitive_Analysis(ToString(i),mode));
+    m_analyses.push_back(new Primitive_Analysis(this,ToString(i),mode));
     m_analyses.back()->SetOutputPath(outpath);
     std::string maxjettag;
     if (!reader.ReadFromFile(maxjettag,"NMAX_JETS")) maxjettag="";
