@@ -1,0 +1,19 @@
+
+HEPMC_SOURCES =	HepMC2_Interface.C Output_HepMC2_Genevent.C Output_HepMC2_Short.C
+HEPMC_ADDS    =	HepMC2_Interface.H Output_HepMC2_Genevent.H Output_HepMC2_Short.H
+
+if HEPMC2_SUPPORT
+pkglib_LTLIBRARIES    =	libSherpaHepMCOutput.la
+
+libSherpaHepMCOutput_la_SOURCES       =	$(HEPMC_SOURCES)
+
+libSherpaHepMCOutput_la_LIBADD        =	@CONDITIONAL_HEPMC2LIBS@
+
+libSherpaHepMCOutput_la_CPPFLAGS      =	$(AM_CPPFLAGS) @CONDITIONAL_HEPMC2INCS@
+
+HEPMC_EXTRA_DIST = @SVNINCLUDE@
+else
+HEPMC_EXTRA_DIST = $(HEPMC_SOURCES) $(HEPMC_ADDS)
+endif
+
+EXTRA_DIST = @SVNINCLUDE@ $(HEPMC_EXTRA_DIST)
