@@ -7,12 +7,12 @@ else
 fi
 
 if test -z $1; then
-  PROCESSES="z_tautau w_taunu wp_taunu h_tautau hm_tautau z_toptop"
+  PROCESSES="z_tautau w_taunu wp_taunu h_tautau hm_tautau z_toptop ww"
 else
   PROCESSES=$1
 fi
 
-EVENTS=100000
+EVENTS=20000
 
 rivetplotstr=""
 for process in $PROCESSES; do
