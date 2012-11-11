@@ -1,6 +1,9 @@
-#include "SHERPA/Tools/Output_HepMC2_Genevent.H"
+#include "AddOns/HepMC/Output_HepMC2_Genevent.H"
 #include "HepMC/GenEvent.h"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 
 #ifdef USING__HEPMC2__IOGENEVENT
@@ -18,10 +21,12 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-Output_HepMC2_Genevent::Output_HepMC2_Genevent(std::string basename,
-                                               std::string ext,int precision) :
-  Output_Base(basename, ext, precision)
+Output_HepMC2_Genevent::Output_HepMC2_Genevent(const Output_Arguments &args) :
+  Output_Base("HepMC2")
 {
+  m_basename=args.m_outpath+"/"+args.m_outfile;
+  m_ext=".hepmc2g";
+  int precision       = args.p_reader->GetValue<int>("OUTPUT_PRECISION",12);
 #ifdef USING__HEPMC2__IOGENEVENT
   p_iogenevent = new HepMC::IO_GenEvent(m_outstream);
 #ifdef HEPMC_HAS_CROSS_SECTION
@@ -33,10 +38,18 @@ Output_HepMC2_Genevent::Output_HepMC2_Genevent(std::string basename,
 #ifdef HEPMC_HAS_CROSS_SECTION
   p_xs=new HepMC::GenCrossSection();
 #endif
+#ifdef USING__GZIP
+  m_ext += ".gz";
+#endif
+  m_outstream.open((m_basename+m_ext).c_str());
+  if (!m_outstream.good())
+    THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
+  m_outstream.precision(precision);
 }
 
 Output_HepMC2_Genevent::~Output_HepMC2_Genevent()
 {
+  m_outstream.close();
 #ifdef USING__HEPMC2__IOGENEVENT
   delete p_iogenevent;
 #endif
@@ -63,11 +76,33 @@ void Output_HepMC2_Genevent::Output(Blob_List* blobs, const double weight)
 #endif
 }
 
-void Output_HepMC2_Genevent::ChangeFile(string number)
+void Output_HepMC2_Genevent::ChangeFile()
 {
 #ifdef USING__HEPMC2__IOGENEVENT
   delete p_iogenevent;
-  Output_Base::ChangeFile(number);
+  m_outstream.close();
+  std::string newname(m_basename+m_ext);
+  for (size_t i(0);FileExists(newname);
+       newname=m_basename+"."+ToString(++i)+m_ext);
+  m_outstream.open(newname.c_str());
+  if (!m_outstream.good())
+    THROW(fatal_error, "Could not open event file "+newname+".")
   p_iogenevent = new HepMC::IO_GenEvent(m_outstream);
 #endif
 }
+
+DECLARE_GETTER(HepMC_GenEvent_Output_Getter,"HepMC_GenEvent",
+	       Output_Base,Output_Arguments);
+
+Output_Base *HepMC_GenEvent_Output_Getter::operator()
+(const Output_Arguments &args) const
+{
+  return new Output_HepMC2_Genevent(args);
+}
+
+void HepMC_GenEvent_Output_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{
+  str<<"HepMC GenEvent output";
+}
+

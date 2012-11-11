@@ -1,6 +1,7 @@
 #ifndef SHERPA_Tools_RootNtuple_Reader_H
 #define SHERPA_Tools_RootNtuple_Reader_H
 
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "SHERPA/Tools/Event_Reader_Base.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
@@ -33,8 +34,7 @@ namespace SHERPA {
     bool               ReadInSubEvent(ATOOLS::Blob_List *);
     double CalculateWeight(const double &mur2,const double &muf2,const int mode) const;
   public:
-    RootNtuple_Reader(const std::string &,const std::string &,int mode,
-		      MODEL::Model_Base *const model,PDF::ISR_Handler *const isr);
+    RootNtuple_Reader(const Input_Arguments &args);
     ~RootNtuple_Reader();
     bool        FillBlobs(ATOOLS::Blob_List *);
   };

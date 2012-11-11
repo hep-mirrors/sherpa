@@ -8,8 +8,6 @@ namespace SHERPA {
       StandardPerturbative,
       MinimumBias,
       HadronDecay,
-      FullPartonLevelRootNtuple,
-      PartialPartonLevelRootNtuple,
       EventReader
     };
   };

@@ -1,32 +1,34 @@
 #include "SHERPA/Tools/Output_Base.H"
 #include "ATOOLS/Org/Exception.H"
 
-using namespace SHERPA;
-using namespace ATOOLS;
-using namespace std;
+#define COMPILE__Getter_Function
+#define OBJECT_TYPE SHERPA::Output_Base
+#define PARAMETER_TYPE SHERPA::Output_Arguments
+#include "ATOOLS/Org/Getter_Function.C"
 
-Output_Base::Output_Base(string basename,string ext,int precision) :
-  m_basename(basename), m_ext(ext)
+using namespace SHERPA;
+
+Output_Base::Output_Base(const std::string &name):
+  m_name(name), p_eventhandler(NULL)
 {
-#ifdef USING__GZIP
-  m_ext += ".gz";
-#endif
-  m_outstream.open((m_basename+m_ext).c_str());
-  if (!m_outstream.good())
-    THROW(fatal_error, "Could not open event file "+m_basename+m_ext+".");
-  m_outstream.precision(precision);
 }
 
 Output_Base::~Output_Base()
 {
-  m_outstream.close();
 }
 
-void Output_Base::ChangeFile(string number)
+void Output_Base::Header()
 {
-  string newfilename=m_basename+"."+number+m_ext;
-  m_outstream.close();
-  m_outstream.open(newfilename.c_str());
-  if (!m_outstream.good())
-    THROW(fatal_error, "Could not open event file "+newfilename+".")
+}
+
+void Output_Base::Footer()
+{
+}
+
+void Output_Base::ChangeFile()
+{
+}
+
+void Output_Base::SetXS(const double&, const double&)
+{
 }

@@ -185,35 +185,36 @@ C++ source code, cf. @ref{SHERPA_CPP_PATH}.
 
 @node Event output formats
 @subsection Event output formats
-@cindex SHERPA_OUTPUT
-@cindex HEPMC2_GENEVENT_OUTPUT
-@cindex HEPEVT_OUTPUT
-@cindex LHEF_OUTPUT
-@cindex ROOTNTUPLE_OUTPUT
+@cindex HepMC_GenEvent
+@cindex HepMC_Short
+@cindex HEPEVT
+@cindex LHEF
+@cindex Root
 @cindex FILE_SIZE
 @cindex EVT_FILE_PATH
 @cindex OUTPUT_PRECISION
-@cindex EVENT_MODE
+@cindex EVENT_FORMAT
 
-Sherpa provides the possibility to output events in its native and various other output formats, e.g. the HepEVT common block structure or the HepMC format.
+Sherpa provides the possibility to output events in various formats, 
+e.g. the HepEVT common block structure or the HepMC format.
 The authors of Sherpa assume that the user is sufficiently acquainted with 
 these formats when selecting them.
 
-If the events are to be written to file, the following parameters have to be
-specified:
+If the events are to be written to file, the parameter @var{EVENT_FORMAT}
+must be specified together with a file name. An example would be
+@code{EVENT_FORMAT=HepMC_GenEvent[MyFile]}, where @code{MyFile} stands
+for the desired file base name. The following formats are currently available:
 
 @table @option
-@item SHERPA_OUTPUT=<filename>
-Filename for output in Sherpa format
-@item HEPMC2_GENEVENT_OUTPUT=<filename>
+@item HepMC_GenEvent
 Filename for output in HepMC::IO_GenEvent format.
-@item HEPMC2_SHORT_OUTPUT=<filename>
+@item HepMC_Short
 Filename for output in HepMC::IO_GenEvent format. Only incoming beams and 
 outgoing particles are stored. Intermediate and decayed particles are not 
 listed.
-@item HEPEVT_OUTPUT=<filename>
+@item HEPEVT
 Filename for output in HepEvt format.
-@item LHEF_OUTPUT=<filename>
+@item LHEF
 Filename for output in Les Houches Event File format. This output format is 
 intended for output of @strong{matrix element configurations only}. Since the 
 format requires PDF information to be written out in the outdated 
@@ -225,22 +226,20 @@ This format currently outputs matrix element information only, no information
 about the large-Nc colour flow is given as the LHEF output format is not 
 suited to communicate enough information for meaningful parton showering 
 on top of multiparton final states.
-@item ROOTNTUPLE_OUTPUT=<filename>
+@item Root
 Filename for output in ROOT ntuple format @strong{for NLO event generation only}. 
 For details on ntuple format, see @ref{Structure of ROOT NTuple Output}.
 This output option is only available if Sherpa was linked to ROOT during 
 installation by using the configure option @code{--enable-root=/path/to/root}.
 @end table
 
-With these keywords the filename's root can be
-specified, i.e. @code{HEPEVT_OUTPUT=<filename>} will create files named
-@code{<filename>.#.hepevt}, where the hash mark numerates the files if events are
-split into multiple files.
-The output can be further steered with the following options:
+The output can be further customized using the following options:
 
 @table @option
 @item FILE_SIZE
 Number of events per file (default: 1000).
+@item NTUPLE_SIZE
+File size per NTuple file (default: unlimited).
 @item EVT_FILE_PATH
 Directory where the files will be stored.
 @item OUTPUT_PRECISION
@@ -249,20 +248,6 @@ Steers the precision of all numbers written to file.
 
 To write events directly to gzipped files instead of plain text, the
 option @option{--enable-gzip} has to be specified during the installation.
-
-There is also the option to change the format of the event output printed to
-screen (if any) with the switch @code{EVENT_MODE}:
-
-@table @option
-@item EVENT_MODE=Sherpa
-Blob list output (default)
-@item EVENT_MODE=HepMC
-GenEvent print method
-@item EVENT_MODE=HepMC_Short
-GenEvent print method of shortend event record
-@item EVENT_MODE=HepEvt
-HepEvt common block
-@end table
 
 @node MPI parallelization
 @subsection MPI parallelization

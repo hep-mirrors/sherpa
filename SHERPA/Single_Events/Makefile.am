@@ -17,6 +17,7 @@ libSherpaSingleEvents_la_SOURCES      =	\
 					Hadronization.C \
 					Hadron_Decays.C \
 					Analysis_Phase.C \
+					Output_Phase.C \
 					EvtReadin_Phase.C \
 					Decay_Handler_Base.C
 
@@ -33,5 +34,6 @@ localinc_HEADERS      =	\
 		 	Hadronization.H \
 			Hadron_Decays.H \
 			Analysis_Phase.H \
+			Output_Phase.H \
 			EvtReadin_Phase.H \
 			Decay_Handler_Base.H

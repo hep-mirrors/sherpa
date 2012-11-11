@@ -15,7 +15,6 @@ namespace SHERPA {
 
     Initialization_Handler * p_inithandler;
     Event_Handler          * p_eventhandler;
-    Input_Output_Handler   * p_iohandler;
 
     void DrawLogo(const int mode);  
     void PrintDisclaimer();  
@@ -38,8 +37,6 @@ namespace SHERPA {
     { return p_inithandler; }
     inline Event_Handler * GetEventHandler() const 
     { return p_eventhandler; }
-    inline Input_Output_Handler * GetIOHandler() const 
-    { return p_iohandler; }
     
   };
 

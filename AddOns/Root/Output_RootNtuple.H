@@ -1,6 +1,8 @@
 #ifndef SHERPA_Tools_Output_RootNtuple_H
 #define SHERPA_Tools_Output_RootNtuple_H
 
+#include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "SHERPA/Tools/Output_Base.H"
 #include "ATOOLS/Org/Exception.H"
 #ifdef USING__ROOT
@@ -44,6 +46,7 @@ namespace SHERPA {
     TFile* p_f;
     TTree* p_t3;
 #endif
+    std::string m_basename, m_ext;
     size_t m_cnt2,m_cnt3,m_fcnt,m_evt,m_idcnt;
     size_t m_avsize,m_total,m_mode;
     double m_sum,m_s2,m_s3,m_c1,m_c2;
@@ -55,8 +58,7 @@ namespace SHERPA {
     void StoreEvt();
     void MPISync();
   public:
-    Output_RootNtuple(std::string basename,std::string ext,
-		      int precision,long int filesize);
+    Output_RootNtuple(const Output_Arguments &args);
     ~Output_RootNtuple();
     void ChangeFile(std::string nr);
     void Output(ATOOLS::Blob_List* blobs, double weight);

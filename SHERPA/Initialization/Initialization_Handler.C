@@ -11,7 +11,6 @@
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
 #include "SHERPA/LundTools/Lund_Interface.H"
 #include "SHERPA/Tools/Event_Reader_Base.H"
-#include "SHERPA/Tools/Input_Output_Handler.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/Structure_Function.H"
@@ -38,9 +37,6 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
 
-#include "SHERPA/Tools/Event_Reader.H"
-#include "SHERPA/Tools/RootNtuple_Reader.H"
-
 #include <sys/stat.h>
 #include <time.h>
 
@@ -59,8 +55,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_savestatus(false), p_model(NULL), p_beamspectra(NULL), 
   p_mehandler(NULL), p_harddecays(NULL), p_beamremnants(NULL),
   p_fragmentation(NULL), p_softcollisions(NULL), p_hdhandler(NULL), p_mihandler(NULL),
-  p_softphotons(NULL),
-  p_iohandler(NULL), p_evtreader(NULL)
+  p_softphotons(NULL), p_evtreader(NULL)
 {
   m_path=std::string("./");
   m_file=std::string("Run.dat");
@@ -71,21 +66,6 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   My_In_File::SetNoComplains(names);
 
   ExtractCommandLineParameters(argc, argv);
-
-  if (m_mode==eventtype::EventReader) {
-    ShowParameterSyntax();
-    p_evtreader   = new Event_Reader(m_path,m_evtfile);
-    p_dataread    = new Data_Reader(" ",";","!","=");
-    p_dataread->AddComment("#");
-    p_dataread->AddWordSeparator("\t");
-    p_dataread->SetInputPath(m_path);
-    p_dataread->SetInputFile(m_file);
-    m_analysisdat = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
-    rpa->Init(m_path,m_file,argc,argv);
-    LoadLibraries();
-    InitializeTheIO();
-    return;
-  }  
 
   SetFileNames();
 
@@ -186,7 +166,6 @@ Initialization_Handler::~Initialization_Handler()
     exh->PrepareTerminate();
   }
   if (p_evtreader)     { delete p_evtreader;     p_evtreader     = NULL; }
-  if (p_iohandler)     { delete p_iohandler;     p_iohandler     = NULL; }
   if (p_mehandler)     { delete p_mehandler;     p_mehandler     = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
@@ -201,6 +180,10 @@ Initialization_Handler::~Initialization_Handler()
   while (m_analyses.size()>0) {
     delete m_analyses.back();
     m_analyses.pop_back();
+  }
+  while (m_outputs.size()>0) {
+    delete m_outputs.back();
+    m_outputs.pop_back();
   }
   while (m_isrhandlers.size()>0) {
     delete m_isrhandlers.begin()->second;
@@ -350,13 +333,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     m_mode=eventtype::MinimumBias;
   else if (eventtype=="HadronDecay") 
     m_mode=eventtype::HadronDecay;
-  else if (eventtype=="EventReader") {
-    m_mode=eventtype::EventReader;
-    msg_Events()<<"SHERPA will read in the events."<<std::endl
-		<<"   The full framework is not needed."<<std::endl;
-    InitializeTheAnalyses();
-    return true;
-  }
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
   if (!p_model->ModelInit(m_isrhandlers))
@@ -365,13 +341,23 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   p_model->InitializeInteractionModel();
   okay = okay && InitializeTheAnalyses();
   if (!CheckBeamISRConsistency()) return 0.;
-  if (m_mode==eventtype::PartialPartonLevelRootNtuple ||
-      m_mode==eventtype::FullPartonLevelRootNtuple) {
-    p_evtreader = new RootNtuple_Reader
-      (m_path,m_evtfile,m_mode==eventtype::FullPartonLevelRootNtuple?1:0,
-       p_model,m_isrhandlers[isr::hard_process]);
+  if (m_mode==eventtype::EventReader) {
+    std::string infile;
+    size_t bpos(m_evtform.find('[')), epos(m_evtform.rfind(']'));
+    if (bpos!=std::string::npos && epos!=std::string::npos) {
+      infile=m_evtform.substr(bpos+1,epos-bpos-1);
+      m_evtform=m_evtform.substr(0,bpos);
+    }
+    std::string libname(m_evtform);
+    if (libname.find('_')) libname=libname.substr(0,libname.find('_'));
+    if (!s_loader->LoadLibrary("Sherpa"+libname+"Input")) 
+      THROW(missing_module,"Cannot load output library Sherpa"+libname+"Input.");
+    p_evtreader = Event_Reader_Base::Getter_Function::GetObject
+      (m_evtform,Input_Arguments(m_path,infile,p_dataread,
+				 p_model,m_isrhandlers[isr::hard_process]));
+    if (p_evtreader==NULL) THROW(fatal_error,"Event reader not found");
     msg_Events()<<"SHERPA will read in the events."<<std::endl
-		<<"   The full framework is not needed."<<std::endl;
+  		<<"   The full framework is not needed."<<std::endl;
     InitializeTheIO();
     return true;
   }
@@ -446,8 +432,33 @@ bool Initialization_Handler::CheckBeamISRConsistency()
 
 bool Initialization_Handler::InitializeTheIO()
 {
-  p_iohandler = new Input_Output_Handler(p_dataread);
-  p_iohandler->SetMEHandler(p_mehandler);
+  std::string outpath=p_dataread->GetValue<std::string>("EVT_FILE_PATH",".");
+  std::string format=p_dataread->GetValue<std::string>("EVENT_FORMAT","None");
+  std::vector<std::string> outputs;
+  Data_Reader readline(",",";","#","");
+  readline.SetString(format);
+  readline.VectorFromString(outputs);
+  for (size_t i=0; i<outputs.size(); ++i) {
+    if (outputs[i]=="None") continue;
+    std::string outfile;
+    size_t bpos(outputs[i].find('[')), epos(outputs[i].rfind(']'));
+    if (bpos!=std::string::npos && epos!=std::string::npos) {
+      outfile=outputs[i].substr(bpos+1,epos-bpos-1);
+      outputs[i]=outputs[i].substr(0,bpos);
+    }
+    std::string libname(outputs[i]);
+    if (libname.find('_')) libname=libname.substr(0,libname.find('_'));
+    Output_Base* out=Output_Base::Getter_Function::GetObject
+      (outputs[i],Output_Arguments(outpath,outfile,p_dataread));
+    if (out==NULL) {
+      if (!s_loader->LoadLibrary("Sherpa"+libname+"Output")) 
+	THROW(missing_module,"Cannot load output library Sherpa"+libname+"Output.");
+      out=Output_Base::Getter_Function::GetObject
+	(outputs[i],Output_Arguments(outpath,outfile,p_dataread));
+    }
+    if (out==NULL) THROW(fatal_error,"Cannot initialize "+outputs[i]+" output");
+    m_outputs.push_back(out);
+  }
   return true;
 }
 
@@ -759,8 +770,9 @@ bool Initialization_Handler::InitializeTheAnalyses()
       if (!s_loader->LoadLibrary("SherpaAnalysis")) 
         THROW(missing_module,"Cannot load Analysis library (--enable-analysis).");
     if (analyses[i]=="Rivet" || analyses[i]=="RivetME" || analyses[i]=="RivetShower")
-      if (!s_loader->LoadLibrary("SherpaRivetAnalysis")) 
-        THROW(missing_module,"Cannot load RivetAnalysis library (--enable-rivet).");
+      if (!s_loader->LoadLibrary("SherpaRivetAnalysis") ||
+	  !s_loader->LoadLibrary("SherpaHepMCOutput")) 
+        THROW(missing_module,"Cannot load RivetAnalysis library (--enable-rivet --enable-hepmc2).");
     Analysis_Interface* ana=Analysis_Interface::Analysis_Getter_Function::GetObject
                             (analyses[i],Analysis_Arguments(m_path,m_analysisdat,outpath));
     if (ana==NULL) THROW(fatal_error,"Cannot initialize Analysis "+analyses[i]);
@@ -888,22 +900,8 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
       }
       else if (key=="EVTDATA") {
 	m_mode       = eventtype::EventReader;
-	m_evtfile    = value;
+	m_evtform    = value;
 	msg_Out()<<" Sherpa will read in events from : "<<value<<endl;
-        oit=helpsv.erase(oit);
-      }
-      else if (key=="EVTDATA_ROOTNTUPLE") {
-	m_mode       = eventtype::PartialPartonLevelRootNtuple;
-	m_evtfile    = value;
-	msg_Out()<<" Sherpa will read in root ntuple events from : "<<value<<endl;
-        Read_Write_Base::AddCommandLine("ROOTNTUPLE_OUTPUT=");
-        oit=helpsv.erase(oit);
-      }
-      else if (key=="EVTDATA_ROOTNTUPLE_RC") {
-	m_mode       = eventtype::FullPartonLevelRootNtuple;
-	m_evtfile    = value;
-	msg_Out()<<" Sherpa will read in root ntuple events from : "<<value<<endl;
-        Read_Write_Base::AddCommandLine("ROOTNTUPLE_OUTPUT=");
         oit=helpsv.erase(oit);
       }
       else {

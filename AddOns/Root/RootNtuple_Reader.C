@@ -1,5 +1,4 @@
-#include "ATOOLS/Org/CXXFLAGS.H"
-#include "SHERPA/Tools/RootNtuple_Reader.H"
+#include "AddOns/Root/RootNtuple_Reader.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
@@ -63,32 +62,28 @@ namespace SHERPA {
   };
 }
 
-RootNtuple_Reader::RootNtuple_Reader(const std::string & path,const std::string & file,int mode,
-				     MODEL::Model_Base *const model,PDF::ISR_Handler *const isr) :
-  Event_Reader_Base(path,file), 
-  m_eventmode(mode), m_evtid(0), m_subevtid(0), m_evtcnt(0), m_entries(0), m_evtpos(0),
-  p_isr(isr), m_sargs(NULL,"","")
+RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args) :
+  Event_Reader_Base(args), 
+  m_eventmode(1), m_evtid(0), m_subevtid(0), m_evtcnt(0), m_entries(0), m_evtpos(0),
+  p_isr(args.p_isr), m_sargs(NULL,"","")
 {
   std::string filename=m_path+m_file;
   msg_Out()<<" Reading from "<<filename<<"\n";
-  Data_Reader dataread(" ",";","!","=");
-  dataread.AddComment("#");
-  dataread.AddWordSeparator("\t");
-  m_calc=dataread.GetValue<int>("ROOTNTUPLE_CALC",0);
+  m_calc=args.p_reader->GetValue<int>("ROOTNTUPLE_CALC",0);
   if (m_calc) msg_Info()<<METHOD<<"(): Ntuple calc mode set to "<<m_calc<<"."<<std::endl;
-  m_check=dataread.GetValue<int>("ROOTNTUPLE_CHECK",m_calc&2?1:0);
+  m_check=args.p_reader->GetValue<int>("ROOTNTUPLE_CHECK",m_calc&2?1:0);
   if (m_check) msg_Info()<<METHOD<<"(): Ntuple check mode set to "<<m_check<<"."<<std::endl;
-  m_oqcd=dataread.GetValue<int>("ROOTNTUPLE_OQCD",0);
+  m_oqcd=args.p_reader->GetValue<int>("ROOTNTUPLE_OQCD",0);
   if (m_oqcd) msg_Info()<<METHOD<<"(): Ntuple O(QCD) set to "<<m_oqcd<<"."<<std::endl;
-  dataread.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  dataread.RereadInFile();
-  std::string scale=dataread.GetValue<std::string>
+  args.p_reader->SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+  args.p_reader->RereadInFile();
+  std::string scale=args.p_reader->GetValue<std::string>
     ("SCALES","VAR{sqr("+ToString(rpa->gen.Ecms())+")}");
   std::vector<std::string> helpsv;
-  if (!dataread.VectorFromFile(helpsv,"COUPLINGS")) helpsv.push_back("Alpha_QCD 1");
+  if (!args.p_reader->VectorFromFile(helpsv,"COUPLINGS")) helpsv.push_back("Alpha_QCD 1");
   std::string coupling(helpsv.size()?helpsv[0]:"");
   for (size_t i(1);i<helpsv.size();++i) coupling+=" "+helpsv[i];
-  m_sargs=Scale_Setter_Arguments(model,scale,coupling);
+  m_sargs=Scale_Setter_Arguments(args.p_model,scale,coupling);
   m_sargs.m_nin=2;
 #ifdef USING__ROOT
   p_vars = new RootNTupleReader_Variables();
@@ -476,3 +471,19 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   m_evtcnt++;  
   return 1;
 }
+
+DECLARE_GETTER(Root_Event_Reader_Getter,"Root",
+	       Event_Reader_Base,Input_Arguments);
+
+Event_Reader_Base *Root_Event_Reader_Getter::operator()
+(const Input_Arguments &args) const
+{
+  return new RootNtuple_Reader(args);
+}
+
+void Root_Event_Reader_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{
+  str<<"Root NTuple input";
+}
+

@@ -8,8 +8,6 @@ std::ostream& SHERPA::operator<<(std::ostream& ostr, const eph::code ephc) {
   case eph::Perturbative:       return ostr<<"Perturbative      ";
   case eph::Hadronization:      return ostr<<"Hadronization     ";
   case eph::Analysis:           return ostr<<"Analysis          ";
-  case eph::Pert_Analysis:      return ostr<<"Pert_Analysis     ";
-  case eph::Hadr_Analysis:      return ostr<<"Hadr_Analysis     ";
   case eph::Read_In:            return ostr<<"Read_In           ";
   default:                      return ostr<<"Unknown           ";
   }

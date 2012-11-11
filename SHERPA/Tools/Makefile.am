@@ -14,41 +14,28 @@ include ../../svn.make
 
 libSherpaTools_la_SOURCES     =	\
 				SVN_Info.C \
-				Input_Output_Handler.C \
 				Output_Base.C \
-				Output_Sherpa.C \
-				Output_HepEvt.C \
-				Output_RootNtuple.C \
-				Output_D0_HepEvt.C \
-				Output_LHEF.C \
-			    	$(HEPMC2SOURCES) \
-			    	HepEvt_Interface.C \
+				Event_Reader_Base.C \
+				HepEvt_Interface.C \
 				Pythia_HepEvt_Translator.C \
-                                Event_Reader.C \
-				Analysis_Interface.C \
-				RootNtuple_Reader.C
+				Output_HepEvt.C \
+				Output_LHEF.C \
+				Analysis_Interface.C
 
 localinc_HEADERS      =	\
 			Definitions.H \
-			Input_Output_Handler.H \
 			Output_Base.H \
-			Output_Sherpa.H \
-			Output_HepEvt.H \
-			Output_D0_HepEvt.H \
-			Output_RootNtuple.H \
-			Output_LHEF.H \
-		 	$(HEPMC2HEADERS) \
+			Event_Reader_Base.H \
 			HepEvt_Interface.H \
 			Pythia_HepEvt_Translator.H \
-			Event_Reader_Base.H \
-			Event_Reader.H \
-			Analysis_Interface.H \
-			RootNtuple_Reader.H
+			Output_HepEvt.H \
+			Output_LHEF.H \
+			Analysis_Interface.H
 
-libSherpaTools_la_LIBADD = @CONDITIONAL_ROOTLIBS@ @CONDITIONAL_HEPMC2LIBS@
+libSherpaTools_la_LIBADD = @CONDITIONAL_HEPMC2LIBS@
 
-libSherpaTools_la_CXXFLAGS = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
+libSherpaTools_la_CXXFLAGS = $(AM_CXXFLAGS)
 
-libSherpaTools_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@ @CONDITIONAL_HEPMC2INCS@
+libSherpaTools_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_HEPMC2INCS@
 
 EXTRA_DIST    = @SVNINCLUDE@ $(HEPMC2EXTRADIST)

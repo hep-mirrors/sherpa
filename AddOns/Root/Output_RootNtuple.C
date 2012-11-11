@@ -1,5 +1,4 @@
-#include "SHERPA/Tools/Output_RootNtuple.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
+#include "AddOns/Root/Output_RootNtuple.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "PHASIC++/Process/Process_Base.H"
@@ -7,6 +6,8 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
 #include "MODEL/Main/Model_Base.H"
+
+#include <limits>
 
 #ifdef USING__ROOT
 #include "TPluginManager.h"
@@ -26,15 +27,16 @@ MPI_Datatype MPI_rntuple_evt2;
 MPI_Datatype MPI_Vec4D;
 #endif
 
-Output_RootNtuple::Output_RootNtuple(std::string basename,std::string ext,
-				     int precision,long int filesize)
+Output_RootNtuple::Output_RootNtuple(const Output_Arguments &args):
+  Output_Base("Root")
 {
-  Data_Reader dr(" ",";","!","=");
-  dr.AddComment("#");
-  dr.AddWordSeparator("\t");
-  m_mode=dr.GetValue<int>("ROOTNTUPLE_MODE",0);
-  m_basename =basename;
-  m_ext = ext;
+  args.p_reader->SetAllowUnits(true);
+  long int filesize = args.p_reader->GetValue<long int>
+    ("NTUPLE_SIZE",std::numeric_limits<long int>::max());
+  args.p_reader->SetAllowUnits(false);
+  m_mode=args.p_reader->GetValue<int>("ROOTNTUPLE_MODE",0);
+  m_basename =args.m_outpath+"/"+args.m_outfile;
+  m_ext = ".root";
   m_cnt2=m_cnt3=m_fcnt=m_evt=0;
   m_idcnt=0;
   m_avsize=10000;
@@ -121,6 +123,7 @@ Output_RootNtuple::Output_RootNtuple(std::string basename,std::string ext,
 					"TStreamerInfo","RIO","TStreamerInfo()"); 
 #else
   msg_Error()<<"Sherpa must be linked with root to enable ROOTNTUPLE output!"<<endl;
+  THROW(fatal_error,"Disable root output or recompile with --enable-root");
 #endif
 }
 
@@ -394,3 +397,19 @@ void Output_RootNtuple::StoreEvt()
   m_cnt2=m_cnt3=m_fcnt=m_evt=0;
   m_fsq=0.;
 }
+
+DECLARE_GETTER(Root_Output_Getter,"Root",
+	       Output_Base,Output_Arguments);
+
+Output_Base *Root_Output_Getter::operator()
+(const Output_Arguments &args) const
+{
+  return new Output_RootNtuple(args);
+}
+
+void Root_Output_Getter::PrintInfo
+(std::ostream &str,const size_t width) const
+{
+  str<<"Root NTuple output";
+}
+

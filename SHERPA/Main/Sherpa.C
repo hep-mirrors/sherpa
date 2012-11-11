@@ -2,7 +2,7 @@
 #include "SHERPA/Initialization/Initialization_Handler.H"
 #include "SHERPA/Single_Events/Event_Handler.H"
 #include "SHERPA/Single_Events/Analysis_Phase.H"
-#include "SHERPA/Tools/Input_Output_Handler.H"
+#include "SHERPA/Single_Events/Output_Phase.H"
 #include "SHERPA/Single_Events/EvtReadin_Phase.H"
 #include "SHERPA/Single_Events/Signal_Processes.H"
 #include "SHERPA/Single_Events/Hard_Decays.H"
@@ -32,7 +32,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Sherpa::Sherpa() :
-  p_inithandler(NULL), p_eventhandler(NULL), p_iohandler(NULL)
+  p_inithandler(NULL), p_eventhandler(NULL)
 {
   ATOOLS::exh = new Exception_Handler();
   ATOOLS::msg = new Message();
@@ -203,17 +203,15 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 
 bool Sherpa::InitializeTheEventHandler() 
 {
-  p_iohandler     = p_inithandler->GetIOHandler();
   eventtype::code mode = p_inithandler->Mode();
   p_eventhandler  = new Event_Handler();
-  p_iohandler->SetEventHandler(p_eventhandler);
+  Output_Vector *outs(p_inithandler->GetOutputs());
   Analysis_Vector *anas(p_inithandler->GetAnalyses());
   for (Analysis_Vector::iterator it=anas->begin(); it!=anas->end(); ++it) {
     (*it)->SetEventHandler(p_eventhandler);
   }
   
-  if (mode==eventtype::EventReader ||
-      mode==eventtype::FullPartonLevelRootNtuple || mode==eventtype::PartialPartonLevelRootNtuple) {
+  if (mode==eventtype::EventReader) {
     p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader())); 
   }
   else {
@@ -235,6 +233,7 @@ bool Sherpa::InitializeTheEventHandler()
 
   }
   if (!anas->empty()) p_eventhandler->AddEventPhase(new Analysis_Phase(anas));
+  if (!outs->empty()) p_eventhandler->AddEventPhase(new Output_Phase(outs,p_eventhandler));
   p_eventhandler->PrintGenericEventStructure();
   return 1;
 }
@@ -264,8 +263,16 @@ bool Sherpa::GenerateOneEvent(bool reset)
         event.close();
         THROW(normal_exit,"Debug event written.");
       }
-      p_iohandler->OutputToFormat(p_eventhandler->GetBlobs());
-      p_iohandler->PrintEvent(p_eventhandler->GetBlobs());
+      if (msg_LevelIsEvents()) {
+	Blob_List *blobs(p_eventhandler->GetBlobs());
+	if (!blobs->empty()) {
+	  msg_Out()<<"  -------------------------------------------------  "<<std::endl;
+	  for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) 
+	    msg_Out()<<*(*blit)<<std::endl;
+	  msg_Out()<<"  -------------------------------------------------  "<<std::endl;
+	}
+	else msg_Out()<<"  ******** Empty event ********  "<<std::endl;
+      }
       return 1;
     }
     return 0;

@@ -4,7 +4,7 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "SHERPA/Single_Events/Event_Handler.H"
-#include "SHERPA/Tools/HepMC2_Interface.H"
+#include "AddOns/HepMC/HepMC2_Interface.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"

@@ -183,6 +183,8 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  AddOns/HZTool/Makefile \
 	  AddOns/PGS/Makefile \
 	  AddOns/Rivet/Makefile \
+	  AddOns/HepMC/Makefile \
+	  AddOns/Root/Makefile \
 	  AddOns/Makefile \
 	  Makefile )
 

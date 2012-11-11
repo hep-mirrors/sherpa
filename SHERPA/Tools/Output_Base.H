@@ -2,39 +2,58 @@
 #define SHERPA_Tools_Output_Base_H
 
 #include "ATOOLS/Phys/Blob_List.H"
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/Getter_Function.H"
 #include <string>
-#include <fstream>
-#ifdef USING__GZIP
-#include "ATOOLS/Org/Gzip_Stream.H"
-#endif
+
+namespace ATOOLS { class Data_Reader; }
 
 namespace SHERPA {
 
+  struct Output_Arguments {
+    std::string m_outpath, m_outfile;
+    ATOOLS::Data_Reader *p_reader;
+    Output_Arguments(const std::string outpath,
+		     const std::string outfile,
+		     ATOOLS::Data_Reader *const read):
+      m_outpath(outpath), m_outfile(outfile), p_reader(read) {}
+  };// end of struct Output_Arguments
+
+  class Event_Handler;
+
   class Output_Base {
   protected:
-    std::string m_basename, m_ext;
-#ifdef USING__GZIP
-    ATOOLS::ogzstream m_outstream;
-#else
-    std::ofstream     m_outstream;
-#endif
+
+    std::string m_name;
+
+    const Event_Handler* p_eventhandler;
 
   public:
-    Output_Base() {}
-    Output_Base(std::string basename,std::string ext,int precision);
+
+    typedef ATOOLS::Getter_Function
+    <Output_Base,Output_Arguments> Getter_Function;
+
+  public:
+
+    Output_Base(const std::string &name);
+
     virtual ~Output_Base();
 
-    virtual void ChangeFile(std::string nr);
+    virtual void Header();
+    virtual void Footer();
 
-    inline const std::string& BaseName() const { return m_basename; }
-    inline const std::string& Ext() const { return m_ext; }
+    virtual void ChangeFile();
 
-    virtual void Header() {}
-    virtual void Footer(std::string) {}
-    virtual void SetXS(const double&, const double&) {}
+    virtual void SetXS(const double&, const double&);
     virtual void Output(ATOOLS::Blob_List* blobs, double weight) = 0;
+
+    inline const std::string Name() { return m_name; }
+
+    void SetEventHandler(const Event_Handler* eh) { p_eventhandler = eh; }
+
   };
+
+  typedef std::vector<Output_Base*> Output_Vector;
+
 }
 
 #endif

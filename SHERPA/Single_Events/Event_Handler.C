@@ -125,8 +125,7 @@ bool Event_Handler::GenerateEvent(eventtype::code mode)
   }
   switch (mode) {
   case eventtype::StandardPerturbative:
-  case eventtype::FullPartonLevelRootNtuple:
-  case eventtype::PartialPartonLevelRootNtuple:
+  case eventtype::EventReader:
     //msg_Out()<<METHOD<<" for StandardPerturbative.\n";
     return GenerateStandardPerturbativeEvent(mode);
   case eventtype::MinimumBias:
@@ -262,8 +261,7 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
     }
   } while (run);
 
-  if (mode==eventtype::FullPartonLevelRootNtuple ||
-      mode==eventtype::PartialPartonLevelRootNtuple) {
+  if (mode==eventtype::EventReader) {
     if (p_signal->NOutP()==0) return false;
   }
   else {

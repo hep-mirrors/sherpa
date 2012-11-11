@@ -6,16 +6,13 @@
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 
 namespace SHERPA {
-  class Input_Output_Handler;
 
   class EvtReadin_Phase : public Event_Phase_Handler {
-    Input_Output_Handler * p_iohandler;
     Event_Reader_Base    * p_evtreader;
     std::string            m_path;
     bool                   m_read;
   public:
     EvtReadin_Phase(Event_Reader_Base *);
-    EvtReadin_Phase(Input_Output_Handler *);
     ATOOLS::Return_Value::code Treat(ATOOLS::Blob_List *, double &);
     void                       CleanUp(const size_t & mode=0);
     void                       Finish(const std::string &);

@@ -10,6 +10,7 @@
 #include "SHERPA/PerturbativePhysics/Shower_Handler.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 #include "SHERPA/Tools/Analysis_Interface.H"
+#include "SHERPA/Tools/Output_Base.H"
 #include "SHERPA/Tools/Definitions.H"
 
 #include <map>
@@ -22,7 +23,6 @@ namespace ATOOLS {
 
 namespace SHERPA {
 
-  class Input_Output_Handler;
   class Matrix_Element_Handler;
   class Hard_Decay_Handler;
   class Beam_Remnant_Handler;
@@ -37,7 +37,7 @@ namespace SHERPA {
 
   class Initialization_Handler: public ATOOLS::Terminator_Object {
   private :
-    std::string m_path,m_file,m_evtfile;
+    std::string m_path,m_file, m_evtform;
     std::set<std::string> m_pdflibs;
     std::string m_modeldat, m_beamdat, m_isrdat[2], m_medat, m_midat, m_showerdat;
     std::string m_beamremnantdat, m_fragmentationdat, m_hadrondecaysdat, m_analysisdat;
@@ -65,9 +65,9 @@ namespace SHERPA {
     Decay_Handler_Base         * p_hdhandler;
     MI_Handler                 * p_mihandler; 
     Soft_Photon_Handler        * p_softphotons;
-    Input_Output_Handler       * p_iohandler;
     Event_Reader_Base          * p_evtreader;
     Analysis_Vector              m_analyses;
+    Output_Vector                m_outputs;
     void ShowParameterSyntax();
     void LoadLibraries() const;
   private :
@@ -108,12 +108,12 @@ namespace SHERPA {
 
     const std::string & Path()    const { return m_path; }
     const std::string & File()    const { return m_file; }
-    const std::string & EvtFile() const { return m_evtfile; }
 
     Matrix_Element_Handler       * GetMatrixElementHandler()  const { return p_mehandler; }
     Decay_Handler_Base           * GetHDHandler() { return p_hdhandler; }
     inline PDF::ISR_Handler      * GetISRHandler(const PDF::isr::id id) { return m_isrhandlers[id]; }
     Analysis_Vector              * GetAnalyses()                    { return &m_analyses;       }
+    Output_Vector                * GetOutputs()                     { return &m_outputs;        }
     MODEL::Model_Base            * GetModel()                 const { return p_model;           }
     PDF::ISR_Handler_Map              * GetISRHandlers()                 { return &m_isrhandlers;    }
     BEAM::Beam_Spectra_Handler   * GetBeamSpectraHandler()    const { return p_beamspectra;     }
@@ -125,7 +125,6 @@ namespace SHERPA {
     ATOOLS::Flavour              * GetBunches()                     { return m_bunch_particles; }
     MI_Handler                   * GetMIHandler()             const { return p_mihandler;       }
     Soft_Photon_Handler          * GetSoftPhotonHandler()     const { return p_softphotons;     }
-    Input_Output_Handler         * GetIOHandler()             const { return p_iohandler;       }
     Event_Reader_Base            * GetEventReader()           const { return p_evtreader;       }
 
     eventtype::code Mode() const { return m_mode; };
