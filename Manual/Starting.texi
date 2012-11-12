@@ -561,7 +561,50 @@ Sherpa
 showering, and, @code{FRAGMENTATION=Off}, to do so for the
 hadronization effects.
 
+@subsection Running Sherpa with AMEGIC++
+@anchor{Running Sherpa with AMEGIC++}
 
+When Sherpa is run using the matrix element generator
+AMEGIC++, it is necessary to run it twice. During the first run 
+(the initialization run) Feynman diagrams for the hard processes are constructed
+and translated into helicity amplitudes. Furthermore suitable phase-space mappings are
+produced. The amplitudes and corresponding integration channels are written to disk as
+C++ sourcecode, placed in a subdirectory of @code{LHC_4thGen},
+which is called @code{Process}. The initialization run is started
+using the standard Sherpa executable, as decribed in @ref{Running Sherpa}. 
+The relevant command is
+
+@example
+@code{<prefix>/bin/Sherpa} 
+@end example
+
+The initialization run stops with the message "New libraries created. Please 
+compile.", which is nothing but the request to carry
+out the compilation and linking procedure for the generated
+matrix-element libraries. The @code{makelibs} script, provided for this
+purpose and created in the working directory, must be invoked by the user
+(see @code{./makelibs -h} for help):
+
+@example
+./makelibs
+@end example
+
+Afterwards Sherpa can be restarted using the same command as
+before. In this run (the generation run) the cross sections of the hard
+processes are evaluated. Simultaneously the
+integration over phase space is optimized to arrive at an
+efficient event generation.
+
+@b{Using AMEGIC++ for MEPS@@NLO}
+
+When using using AMEGIC++ for an MEPS@@NLO setup, e.g. 
+@ref{LHC_WJets_MEPSatNLO}, the code for each multiplicity is created 
+sequentially, one NLO-multiplicity at a time. Thus, when merging e.g. 
+W, W+jet and W+2jet at NLO, AMEGIC++ will first create the code for W 
+production and ask for it being compiled, then create the code for 
+W+jet production and again ask for it being compiled and so on. When 
+all code is created and compiled integration and event generation
+proceed as usual.
 
 
 

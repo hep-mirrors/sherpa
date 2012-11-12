@@ -18,7 +18,8 @@ SUBDIRS       = \
 		PHOTONS++ \
 		SHRiMPS \
 		AddOns \
-		SHERPA
+		SHERPA \
+		Manual
 
 EXTRA_DIST = @SVNINCLUDE@ GUIDELINES
 

@@ -69,38 +69,6 @@ package syntax, run Sherpa with
 @end itemize
 
 
-@anchor{Running Sherpa with AMEGIC++}
-@subsection Running Sherpa with AMEGIC++
-
-When Sherpa is run using the matrix element generator
-AMEGIC++, it is necessary to run it twice. During the first run 
-(the initialization run) Feynman diagrams for the hard processes are constructed
-and translated into helicity amplitudes. Furthermore suitable phase-space mappings are
-produced. The amplitudes and corresponding integration channels are written to disk as
-C++ sourcecode, placed in a subdirectory of @code{LHC_4thGen},
-which is called @code{Process}. The initialization run is started
-using the standard Sherpa executable, as decribed in @ref{Running Sherpa}. 
-The relevant command is
-
-@example
-@code{<prefix>/bin/Sherpa} 
-@end example
-
-The initialization run apparently
-stops with an error message, which is nothing but the request to carry
-out the compilation and linking procedure for the generated
-matrix-element libraries. The @code{makelibs} script, provided for this
-purpose and created in the working directory, must be invoked by the user:
-
-@example
-./makelibs
-@end example
-
-Afterwards Sherpa can be restarted using the same command as
-before. In this run (the generation run) the cross sections of the hard
-processes are evaluated. Simultaneously the
-integration over phase space is optimized to arrive at an
-efficient event generation.
 
 
 

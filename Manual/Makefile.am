@@ -32,9 +32,6 @@ Sherpa_TEXINFOS = \
 	LHC_ADD.texi \
 	LHC_AGC.texi \
 	LHC_EPA.texi \
-        LHC_HPP_POWHEG.texi \
-        LHC_HWW_POWHEG.texi \
-        LHC_HZZ_POWHEG.texi \
 	LHC_SingleTop.texi \
 	LHC_SUSY.texi \
 	LHC_TTH.texi \

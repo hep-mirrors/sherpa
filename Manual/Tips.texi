@@ -162,8 +162,8 @@ To use the interface, specify
   Loop_Generator MCFM;
 @end verbatim
 in the process section of the run card and add it to the list of generators 
-in @ref{ME_SIGNAL_GENERATOR}. For an example, see @ref{LHC_HWW_POWHEG}. Of 
-course, MCFM's process.DAT file has to be copied to the current run directory.
+in @ref{ME_SIGNAL_GENERATOR}. Of course, MCFM's process.DAT file has to be 
+copied to the current run directory.
 
 
 @node Debugging a crashing/stalled event
