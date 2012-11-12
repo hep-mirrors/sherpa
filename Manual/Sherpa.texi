@@ -119,7 +119,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty
 of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.   
 See the GNU General Public License for more details.
 
-Sherpa was created during the Marie Curie RTN's HEPTOOLS and MCnet.
+Sherpa was created during the Marie Curie RTN's HEPTOOLS, MCnet and LHCphenonet.
 The MCnet Guidelines apply, see the file GUIDELINES and
 @uref{http://www.montecarlonet.org/index.php?p=Publications/Guidelines,,
 http://www.montecarlonet.org/index.php?p=Publications/Guidelines}.

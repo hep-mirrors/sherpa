@@ -8,27 +8,31 @@ own Sherpa run-cards. In this section, we will look at some
 of the main features of these examples.
 
 @menu
-* VJets::                    Vector boson production in association with jets
-* Jets::                     Jet production
-* FONLO::                    Fixed-order NLO event calculations
+* VJets::
+* Jets::
+* FONLO::
 @end menu
+
 
 @node VJets
-@section VJets
+@section Vector boson production in association with jets
 
 @menu
-* LHC_WJets_MEPSatNLO::      W+jets production at the LHC (MEPS@@NLO setup)
+* LHC_WJets::
+@comment * LHC_ZJets::                Z+jets production at the LHC
 @end menu
 
-@node LHC_WJets_MEPSatNLO
-@subsection LHC_WJets_MEPSatNLO
+@include LHC_WJets.texi
+@comment @include LHC_ZJets.texi
+
 
 @node Jets
-@section Jets
+@section Jet production
 
 @menu
 * Tevatron_QCD::             Jet production at Tevatron
 * HERA_DIS::                 Jet production in DIS at HERA
+* LEP_Jets::                 Jet production at LEP I
 @end menu
 
 @node Tevatron_QCD
@@ -37,9 +41,12 @@ of the main features of these examples.
 @node HERA_DIS
 @subsection HERA_DIS
 
+@node LEP_Jets
+@subsection LEP_Jets
+
 
 @node FONLO
-@section FONLO
+@section Fixed-order next-to-leading order calculations
 
 @menu
 * NLO_W::                    W production at the LHC

@@ -1,5 +1,5 @@
 @node LHC_ZJets
-@section LHC_ZJets
+@subsection LHC_ZJets
 
 This example is for an LHC set-up, with a proton--proton collision at 
 centre of mass energy 14TeV. The final state is an electron--positron 
@@ -7,7 +7,7 @@ pair and up to 4 partons from the matrix element.
 
 @example
 @smallformat
-@verbatiminclude Examples/LHC_ZJets/Run.dat
+@comment @verbatiminclude Examples/V_plus_Jets/LHC_ZJets_MENLOPS/Run.dat
 @end smallformat
 @end example
  
