@@ -2,6 +2,9 @@
 @subsection W+jets production at the LHC
 
 @menu
+* LHC_W_MCatNLO::
+* LHC_W1jet_MCatNLO::
+* LHC_W2jets_MCatNLO::
 * LHC_WJets_MEPS::
 * LHC_WJets_MEPS_forNLO::
 * LHC_WJets_MENLOPS::
@@ -9,8 +12,43 @@
 * LHC_WJets_MEPSatNLO::
 @end menu
 
+To change any of the following examples to production at the Tevatron 
+simply change the beam settings to
+@verbatim
+  BEAM_1  2212; BEAM_ENERGY_1 980;
+  BEAM_2 -2212; BEAM_ENERGY_2 980;
+@end verbatim
+
+
+@node LHC_W_MCatNLO
+@subsubsection MC@@NLO setup for pp->W+X
+
+@example
+@smallformat
+@verbatiminclude Examples/V_plus_Jets/LHC_W_MCatNLO/Run.dat
+@end smallformat
+@end example
+
+@node LHC_W1jet_MCatNLO
+@subsubsection MC@@NLO setup for pp->W+jet+X
+
+@example
+@smallformat
+@verbatiminclude Examples/V_plus_Jets/LHC_W1jet_MCatNLO/Run.dat
+@end smallformat
+@end example
+
+@node LHC_W2jets_MCatNLO
+@subsubsection MC@@NLO setup for pp->W+2jets+X
+
+@example
+@smallformat
+@verbatiminclude Examples/V_plus_Jets/LHC_W2jets_MCatNLO/Run.dat
+@end smallformat
+@end example
+
 @node LHC_WJets_MEPS
-@subsubsection MEPS setup
+@subsubsection MEPS setup for pp->W+jets
 
 @example
 @smallformat
@@ -29,7 +67,7 @@
 
 
 @node LHC_WJets_MENLOPS
-@subsubsection MENLOPS setup
+@subsubsection MENLOPS setup for pp->W+jets
 
 This setup implements the MENLOPS method, combining both MC@@NLO-style 
 NLO matrix element parton shower matching and CKKW-style multijet merging, 
@@ -72,7 +110,7 @@ accordingly.
 @end example
 
 @node LHC_WJets_MEPSatNLO
-@subsubsection MEPS@@NLO setup
+@subsubsection MEPS@@NLO setup for pp->W+jets
 
 @example
 @smallformat

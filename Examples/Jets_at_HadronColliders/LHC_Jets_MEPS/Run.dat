@@ -1,7 +1,5 @@
 (run){
   EVENTS = 1000000
-  #ANALYSIS = Rivet;
-  #ANALYSIS_OUTPUT=Analysis
 }(run)
 
 (beam){
@@ -28,9 +26,3 @@
 (mi){
   MI_HANDLER = Amisic
 }(mi)
-
-#(analysis){
-#  BEGIN_RIVET {
-#    -a ATLAS_2011_S8924791
-#  } END_RIVET
-#}(analysis)

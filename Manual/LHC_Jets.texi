@@ -1,15 +1,42 @@
-@node Tevatron_QCD
-@section Tevatron_QCD
+@node LHC_Jets
+@subsection Jet production at Hadron Colliders
+
+@menu
+* LHC_2jets_MCatNLO::
+* LHC_Jets_MEPS::
+* Tevatron_Jets_MEPS::
+@end menu
+
+@node LHC_2jets_MCatNLO
+@subsubsection MC@@NLO setup for dijet and inclusive jet production at the LHC
+
+@example
+@smallformat
+@verbatiminclude Examples/Jets_at_HadronColliders/LHC_2jets_MCatNLO/Run.dat
+@end smallformat
+@end example
+
+
+@node LHC_Jets_MEPS
+@subsubsection MEPS setup for jet production at LHC
+
+@example
+@smallformat
+@verbatiminclude Examples/Jets_at_HadronColliders/LHC_Jets_MEPS/Run.dat
+@end smallformat
+@end example
+
+
+@node Tevatron_Jets_MEPS
+@subsubsection MEPS setup for jet production at Tevatron
 
 This example generates QCD events at the Tevatron,
 with 2, 3 or 4 final state partons in the matrix
 element.
 
-@comment  @subsection Run.dat
-
 @example
 @smallformat
-@verbatiminclude Examples/Tevatron_QCD/Run.dat
+@verbatiminclude Examples/Jets_at_HadronColliders/Tevatron_Jets_MEPS/Run.dat
 @end smallformat
 @end example
 

@@ -1,26 +1,28 @@
 (run){
   EVENTS 2.5M;
   SCF:=1.0; QF:=1.0;
-  SCALES VAR{SCF*MPerp2(p[2]+p[3])}{SCF*MPerp2(p[2]+p[3])}{QF*Abs2(p[2]+p[3])};
+  LOOPGEN:=<my-loop-gen>;
   MASSIVE[15] 1;
   FRAGMENTATION Off;
   MI_HANDLER None;
 }(run);
 
 (processes){
-  Process 93 93 -> 90 91;
+  Process 93 93 -> 90 91 93 93;
   Order_EW 2;
-  NLO_QCD_Mode MC@NLO {2};
-  Loop_Generator Internal {2};
+  NLO_QCD_Mode MC@NLO {4};
+  Loop_Generator LOOPGEN {4};
+  Scales FASTJET[A=antikt,PT=20,ET=0,R=0.4,M=0]{FSF*}{RSF*}{QSF*PPerp2(p[5])}
   End process;
 }(processes);
 
 (selector){
   Mass 90 91 2. E_CMS;
+  NJetFinder 2 20. 0. 0.4 -1
 }(selector);
 
 (me){
-  ME_SIGNAL_GENERATOR Amegic Internal;
+  ME_SIGNAL_GENERATOR Amegic LOOPGEN;
   EVENT_GENERATION_MODE Weighted;
 }(me);
 

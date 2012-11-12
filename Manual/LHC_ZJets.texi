@@ -1,5 +1,54 @@
 @node LHC_ZJets
-@subsection LHC_ZJets
+@subsection Z+jets production at the LHC
+
+@menu
+* LHC_Z_MCatNLO::
+* LHC_Z1jet_MCatNLO::
+* LHC_Z2jets_MCatNLO::
+* LHC_ZJets_MEPS::
+* LHC_ZJets_MEPS_forNLO::
+* LHC_ZJets_MENLOPS::
+* LHC_ZJets_MENLOPS_forNLO::
+* LHC_ZJets_MEPSatNLO::
+@end menu
+
+To change any of the following examples to production at the Tevatron 
+simply change the beam settings to
+@verbatim
+  BEAM_1  2212; BEAM_ENERGY_1 980;
+  BEAM_2 -2212; BEAM_ENERGY_2 980;
+@end verbatim
+
+
+@node LHC_Z_MCatNLO
+@subsubsection MC@@NLO setup for pp->Z+X
+
+@example
+@smallformat
+@comment @verbatiminclude Examples/V_plus_Jets/LHC_Z_MCatNLO/Run.dat
+@end smallformat
+@end example
+
+@node LHC_Z1jet_MCatNLO
+@subsubsection MC@@NLO setup for pp->Z+jet+X
+
+@example
+@smallformat
+@comment @verbatiminclude Examples/V_plus_Jets/LHC_Z1jet_MCatNLO/Run.dat
+@end smallformat
+@end example
+
+@node LHC_Z2jets_MCatNLO
+@subsubsection MC@@NLO setup for pp->Z+2jets+X
+
+@example
+@smallformat
+@comment @verbatiminclude Examples/V_plus_Jets/LHC_Z2jets_MCatNLO/Run.dat
+@end smallformat
+@end example
+
+@node LHC_ZJets_MEPS
+@subsubsection MEPS setup for pp->Z+jets
 
 This example is for an LHC set-up, with a proton--proton collision at 
 centre of mass energy 14TeV. The final state is an electron--positron 
@@ -7,7 +56,7 @@ pair and up to 4 partons from the matrix element.
 
 @example
 @smallformat
-@comment @verbatiminclude Examples/V_plus_Jets/LHC_ZJets_MENLOPS/Run.dat
+@verbatiminclude Examples/V_plus_Jets/LHC_ZJets_MEPS/Run.dat
 @end smallformat
 @end example
  
@@ -47,7 +96,41 @@ hard coded ones in module EXTRA_XS, and Comix.
 @item multiple interactions have been switched off. 
 @end itemize
 
+@node LHC_ZJets_MEPS_forNLO
+@subsubsection MEPS setup for comparison to MEPS@@NLO
 
+@example
+@smallformat
+@comment @verbatiminclude Examples/V_plus_Jets/LHC_ZJets_MEPS/Run.NLOcomparison.dat
+@end smallformat
+@end example
+
+@node LHC_ZJets_MENLOPS
+@subsubsection MENLOPS setup for pp->Z+jets
+
+@example
+@smallformat
+@comment @verbatiminclude Examples/V_plus_Jets/LHC_ZJets_MENLOPS/Run.dat
+@end smallformat
+@end example
+
+@node LHC_ZJets_MENLOPS_forNLO
+@subsubsection MENLOPS setup for comparison to MEPS@@NLO
+
+@example
+@smallformat
+@comment @verbatiminclude Examples/V_plus_Jets/LHC_ZJets_MENLOPS/Run.NLOcomparison.dat
+@end smallformat
+@end example
+
+@node LHC_ZJets_MEPSatNLO
+@subsubsection MEPS@@NLO setup for pp->W+jets
+
+@example
+@smallformat
+@comment @verbatiminclude Examples/V_plus_Jets/LHC_ZJets_MEPSatNLO/Run.dat
+@end smallformat
+@end example
 
 
 

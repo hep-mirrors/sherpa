@@ -19,30 +19,29 @@ of the main features of these examples.
 
 @menu
 * LHC_WJets::
-@comment * LHC_ZJets::                Z+jets production at the LHC
+* LHC_ZJets::
 @end menu
 
 @include LHC_WJets.texi
-@comment @include LHC_ZJets.texi
+@include LHC_ZJets.texi
 
 
 @node Jets
 @section Jet production
 
 @menu
-* Tevatron_QCD::             Jet production at Tevatron
-* HERA_DIS::                 Jet production in DIS at HERA
-* LEP_Jets::                 Jet production at LEP I
+* LHC_Jets::
+* HERA_DIS::
+* LEP_Jets::
 @end menu
 
-@node Tevatron_QCD
-@subsection Tevatron_QCD
+@include LHC_Jets.texi
 
 @node HERA_DIS
-@subsection HERA_DIS
+@subsection Jet production in DIS at HERA
 
 @node LEP_Jets
-@subsection LEP_Jets
+@subsection Jet production at LEP I
 
 
 @node FONLO

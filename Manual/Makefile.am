@@ -35,8 +35,9 @@ Sherpa_TEXINFOS = \
 	LHC_SingleTop.texi \
 	LHC_SUSY.texi \
 	LHC_TTH.texi \
-        LHC_WJets.texi \
-        LHC_WJet_LHOLE.texi \
+	LHC_Jets.texi \
+	LHC_WJets.texi \
+	LHC_WJet_LHOLE.texi \
 	LHC_ZJets.texi \
 	Macros.texi \
 	Merging.texi \
@@ -61,7 +62,6 @@ Sherpa_TEXINFOS = \
 	SoftQED.texi \
 	Starting.texi \
 	Tevatron_DiBoson.texi \
-	Tevatron_QCD.texi \
 	Tevatron_Photons.texi \
 	Tevatron_TopPair.texi \
 	Tevatron_UE.texi \
