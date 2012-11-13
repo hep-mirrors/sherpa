@@ -207,15 +207,15 @@ for the desired file base name. The following formats are currently available:
 
 @table @option
 @item HepMC_GenEvent
-Filename for output in HepMC::IO_GenEvent format.
+Generates output in HepMC::IO_GenEvent format.
 @item HepMC_Short
-Filename for output in HepMC::IO_GenEvent format. Only incoming beams and 
+Generates output in HepMC::IO_GenEvent format, however, only incoming beams and 
 outgoing particles are stored. Intermediate and decayed particles are not 
 listed.
 @item HEPEVT
-Filename for output in HepEvt format.
+Generates output in HepEvt format.
 @item LHEF
-Filename for output in Les Houches Event File format. This output format is 
+Generates output in Les Houches Event File format. This output format is 
 intended for output of @strong{matrix element configurations only}. Since the 
 format requires PDF information to be written out in the outdated 
 PDFLIB/LHAGLUE enumeration format this is only available automatically if 
@@ -227,8 +227,8 @@ about the large-Nc colour flow is given as the LHEF output format is not
 suited to communicate enough information for meaningful parton showering 
 on top of multiparton final states.
 @item Root
-Filename for output in ROOT ntuple format @strong{for NLO event generation only}. 
-For details on ntuple format, see @ref{Structure of ROOT NTuple Output}.
+Generates output in ROOT ntuple format @strong{for NLO event generation only}. 
+For details on the ntuple format, see @ref{Structure of ROOT NTuple Output}.
 This output option is only available if Sherpa was linked to ROOT during 
 installation by using the configure option @code{--enable-root=/path/to/root}.
 @end table
