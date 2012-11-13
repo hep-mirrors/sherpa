@@ -1,0 +1,5 @@
+@node HardDecays
+@section Hard Decays
+
+(Hard decays yet to be documented)
+

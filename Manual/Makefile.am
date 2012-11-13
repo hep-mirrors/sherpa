@@ -22,6 +22,7 @@ Sherpa_TEXINFOS = \
 	Examples.texi \
 	FeynRules.texi \
 	Fragmentation.texi \
+	HardDecays.texi \
 	HERA_DIS.texi \
 	Input.texi \
 	Integration.texi \
