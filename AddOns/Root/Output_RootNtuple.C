@@ -94,7 +94,8 @@ Output_RootNtuple::Output_RootNtuple(const Output_Arguments &args):
 #endif
   p_f=new TFile((m_basename+m_ext).c_str(),"recreate");
   p_t3 = new TTree("t3","Reconst ntuple");
-  p_t3->SetMaxTreeSize(Min(filesize,100000000000));
+  long int max = 100000000000;
+  p_t3->SetMaxTreeSize(Min(filesize,max));
   p_t3->Branch("id",&m_id,"id/I");
   p_t3->Branch("nparticle",&m_nparticle,"nparticle/I");
   p_t3->Branch("px",p_px,"px[nparticle]/F");
