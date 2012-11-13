@@ -71,7 +71,7 @@ simply change the beam settings to
 
 This setup implements the MENLOPS method, combining both MC@@NLO-style 
 NLO matrix element parton shower matching and CKKW-style multijet merging, 
-cf. @mycite{Hoche2012yf}, @mycite{Hoche2012yg}. Its result, after switching 
+cf. @mycite{Hoeche2012yf}, @mycite{Gehrmann2012yg}. Its result, after switching 
 on both the hadronisation and underlying event modules, can then be directly 
 compared to experimental data.
 
