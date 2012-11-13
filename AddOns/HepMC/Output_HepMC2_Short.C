@@ -1,6 +1,5 @@
 #include "AddOns/HepMC/Output_HepMC2_Short.H"
 #include "HepMC/GenEvent.h"
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
