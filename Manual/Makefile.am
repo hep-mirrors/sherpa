@@ -43,6 +43,7 @@ Sherpa_TEXINFOS = \
 	Merging.texi \
 	ME.texi \
 	MI.texi \
+	MinBias.texi \
 	Model.texi \
 	MSSM.texi \
 	MyInterface.texi \

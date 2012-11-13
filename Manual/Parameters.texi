@@ -24,7 +24,8 @@ performed in all inputs, see @ref{Tags}.
 * Shower Parameters:: List of shower parameters
 * MPI Parameters::    List of multiple parton interaction parameters
 * Fragmentation::     List of hadronization parameters
-* QED Corrections::   List of Q	ED correction parameters
+* QED Corrections::   List of QED correction parameters
+* MinBias::           List of MinBias simulation parameters
 @end menu
 
 @include Run.texi
@@ -39,4 +40,5 @@ performed in all inputs, see @ref{Tags}.
 @include MI.texi
 @include Fragmentation.texi
 @include SoftQED.texi
+@include MinBias.texi
 

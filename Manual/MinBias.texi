@@ -1,0 +1,5 @@
+@node MinBias
+@section Minimum Bias Simulation
+
+(SHRiMPS is yet to be documented)
+ 
