@@ -1,6 +1,7 @@
 #ifndef SHERPA_Tools_Output_LHEF_H
 #define SHERPA_Tools_Output_LHEF_H
 
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "SHERPA/Tools/Output_Base.H"
 #include <fstream>
 #ifdef USING__GZIP

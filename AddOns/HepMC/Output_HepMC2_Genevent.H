@@ -1,6 +1,7 @@
 #ifndef SHERPA_Tools_Output_HepMC2_Genevent_H
 #define SHERPA_Tools_Output_HepMC2_Genevent_H
 
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "SHERPA/Tools/Output_Base.H"
 #include "AddOns/HepMC/HepMC2_Interface.H"
 #include <fstream>
