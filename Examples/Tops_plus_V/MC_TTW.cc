@@ -21,7 +21,7 @@ namespace Rivet {
   private:
     double _leta, _mupt, _ept, _lpt, _missET;
     double _isoE_lj, _isoR_lj, _jeta, _jR, _jpt; 
-    double _mW, _mt, _mZ;
+    double _mW, _mt, _mZ, _sigMT, _sigMW, _sigMZ;
     
     AIDA::IHistogram1D *_h_njets; //HT?
     AIDA::IHistogram1D *_h_mass_ll_ss,*_h_mass_ll_os,*_h_mass_lll;
@@ -59,18 +59,19 @@ namespace Rivet {
       _h_rap_ttW    = bookHistogram1D("rap_ttW", 20, -5., 5.);
       _h_pT_b1      = bookHistogram1D("pT_b1", logspace(10.0, 500.0, 50));
       _h_pT_b2      = bookHistogram1D("pT_b2", logspace(10.0, 500.0, 50));
-      //_h_pT_lj      = bookHistogram1D("pT_b2", logspace(10.0, 500.0, 50));
-      //_h_eta_b1     = bookHistogram1D("eta_b1", 20, -_jeta, _jeta);
-      //_h_eta_b2     = bookHistogram1D("eta_b2", 20, -_jeta, _jeta); 
-      //_h_eta_lj     = bookHistogram1D("eta_b2", 20, -_jeta, _jeta); 
+      _h_pT_lj      = bookHistogram1D("pT_lj", logspace(10.0, 500.0, 50));
+      _h_eta_b1     = bookHistogram1D("eta_b1", 20, -_jeta, _jeta);
+      _h_eta_b2     = bookHistogram1D("eta_b2", 20, -_jeta, _jeta); 
+      _h_eta_lj     = bookHistogram1D("eta_lj", 20, -_jeta, _jeta); 
     }
   public:
     MC_TTW() : 
       Analysis("MC_TTW"),
       _leta(2.5), _mupt(10.), _ept(10.), _lpt(min(_ept,_mupt)),
       _missET(50.), _isoE_lj(0.05), _isoR_lj(0.2), 
-      _jeta(5.), _jR(0.4), _jpt(20.), _mW(80.419), _mt(172.5), 
-      _mZ(90.188)
+      _jeta(5.), _jR(0.4), _jpt(20.), 
+      _mW(80.419), _mt(172.5), _mZ(90.188),
+      _sigMT(17.), _sigMW(10.), _sigMZ(10.)
     {}
     
     void init() {
@@ -148,35 +149,32 @@ namespace Rivet {
       float chi_W2;
       float chi_W3;
       
-      float chisq=10000000000.;
+      float chisq=1.e12;
       float chisq_test;
-       for (size_t ltag1=0;ltag1<3;ltag1++){
-      	for (size_t nutag1=0;nutag1<3;nutag1++){
-      	  for (size_t btag=0;btag<2;btag++){
-      	    W1_test=lepmoms[ltag1]+neumoms[nutag1];
-      	    t1_test=lepmoms[ltag1]+neumoms[nutag1]+bmoms[btag];
-      	    for (size_t ltag2=0;ltag2<2;ltag2++){
-      	      if (ltag1==ltag2)
-		continue;
+      for (size_t ltag1=0;ltag1<3;ltag1++) {
+      	for (size_t nutag1=0;nutag1<3;nutag1++) {
+      	  for (size_t btag=0;btag<2;btag++) {
+      	    W1_test = lepmoms[ltag1]+neumoms[nutag1];
+      	    t1_test = lepmoms[ltag1]+neumoms[nutag1]+bmoms[btag];
+      	    for (size_t ltag2=0;ltag2<2;ltag2++) {
+      	      if (ltag1==ltag2) continue;
 	      if (PID::charge(leptons[ltag1].pdgId()==PID::charge(leptons[ltag2].pdgId()))){
-		lepton_ss1=lepmoms[ltag1];
-		lepton_ss2=lepmoms[ltag2];
-		lepton_os=lepmoms[3-ltag1-ltag2];
+		lepton_ss1 = lepmoms[ltag1];
+		lepton_ss2 = lepmoms[ltag2];
+		lepton_os  = lepmoms[3-ltag1-ltag2];
 		continue;
-	      }
-	      
-      	      else{
+	      } else {
       		for (size_t nutag2=0;nutag2<3;nutag2++){
       		  if (nutag1==nutag2) continue;
-      		  else{
+      		  else {
       		    W2_test=lepmoms[ltag2]+neumoms[nutag2];
       		    t2_test=lepmoms[ltag2]+neumoms[nutag2]+bmoms[1-btag];
       		    W3_test=lepmoms[3-ltag1-ltag2]+neumoms[3-nutag1-nutag2];
-      		    chi_t1= pow((sqrt(fabs(t1*t1))-_mt),2)/(17.*17.);
-      		    chi_t2= pow((sqrt(fabs(t2*t2))-_mt),2)/(17.*17.);
-      		    chi_W1= pow((sqrt(fabs(W1*W1))-_mW),2)/(10.*10.);
-      		    chi_W2= pow((sqrt(fabs(W2*W2))-_mW),2)/(10.*10.);
-      		    chi_W3= pow((sqrt(fabs(W3*W3))-_mW),2)/(10.*10.);
+      		    chi_t1 = sqr((t1_test.mass()-_mt)/_sigMT);
+      		    chi_t2 = sqr((t2_test.mass()-_mt)/_sigMT);
+      		    chi_W1 = sqr((W1_test.mass()-_mW)/_sigMW);
+      		    chi_W2 = sqr((W2_test.mass()-_mW)/_sigMW);
+      		    chi_W3 = sqr((W3_test.mass()-_mW)/_sigMW);
       		    chisq_test=chi_t1+chi_t2+chi_W1+chi_W2+chi_W3;
       		    if (chisq_test<chisq){
       		      chisq=chisq_test;
