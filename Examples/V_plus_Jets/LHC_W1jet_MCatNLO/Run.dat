@@ -23,7 +23,7 @@
 
 (me){
   ME_SIGNAL_GENERATOR Amegic LOOPGEN;
-  EVENT_GENERATION_MODE Weighter;
+  EVENT_GENERATION_MODE Weighted;
 }(me);
 
 (beam){

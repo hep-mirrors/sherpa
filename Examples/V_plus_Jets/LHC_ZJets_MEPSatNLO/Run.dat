@@ -1,33 +1,41 @@
 (run){
   EVENTS 2.5M; ERROR=0.1;
-  SCF:=1.0; QF:=1.0;
+  SP_NLOCT=1; SCF:=1.0; QF:=1.0;
   SCALES METS{SCF*MU_F2}{SCF*MU_R2}{QF*MU_Q2};
-  LJET:=2; NJET:=4; QCUT:=20;
+  LJET:=2,3,4; NJET:=4; QCUT:=30;
   EXCLUSIVE_CLUSTER_MODE 1;
+  CSS_FS_PT2MIN 2; CSS_IS_PT2MIN 2;
+  CSS_FS_AS_FAC 1; CSS_IS_AS_FAC 1;
+  CSS_KIN_SCHEME 1;
   LOOPGEN0:=Internal;
+  LOOPGEN1:=<my-loop-gen-for-Z1j>;
+  LOOPGEN2:=<my-loop-gen-for-Z2j>;
   RESULT_DIRECTORY=res.QCUT.SCF.QF;
   MASSIVE[15] 1;
 }(run);
 
 (processes){
-  Process 93 93 -> 90 91 93{NJET};
+  Process 93 93 -> 90 90 93{NJET};
   Order_EW 2; CKKW sqr(QCUT/E_CMS);
-  NLO_QCD_Part BVIRS {LJET};
+  NLO_QCD_Mode MC@NLO {LJET};
   Loop_Generator LOOPGEN0 {2};
+  Loop_Generator LOOPGEN1 {3};
+  Loop_Generator LOOPGEN2 {4};
   ME_Generator Amegic {LJET};
   Enhance_Factor 16 {3}; 
   Enhance_Factor 128 {4,5};
+  RS_Enhance_Factor 10 {3};
+  RS_Enhance_Factor 20 {4};
   End process;
 }(processes);
 
 (selector){
-  Mass 90 91 2. E_CMS;
+  Mass 90 90 60. 120.;
 }(selector);
 
 (me){
-  ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN0;
+  ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN0 LOOPGEN1 LOOPGEN2;
   EVENT_GENERATION_MODE Weighted;
-  NLO_Mode MENLOPS;
 }(me);
 
 (beam){
