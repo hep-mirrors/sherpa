@@ -29,9 +29,6 @@ namespace WHITEHAT {
     double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
     double ScaleDependenceCoefficient(const int i);
 
-    static void InitInterface(MODEL::Model_Base *model);
-    static void DeleteInterface();
-
     inline static void SetInterface(BH::BH_interface *const bh) { s_interface=bh; }
     inline static void SetModel(MODEL::Model_Base *const md) { s_model=md; }
 

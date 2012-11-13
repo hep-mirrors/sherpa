@@ -25,33 +25,6 @@ BlackHat_Virtual::~BlackHat_Virtual()
   // if (p_ampl) delete p_ampl;
 }
 
-void BlackHat_Virtual::InitInterface(Model_Base *model)
-{
-  BlackHat_Virtual::s_model=model;
-  if (s_interface==NULL) {
-    msg_Info()<<"Initialising BlackHat interface {"<<std::endl;
-    Data_Reader reader(" ",";","!","=");
-    s_interface=new BH::BH_interface
-      (reader.GetValue<std::string>("BH_SETTINGS_FILE",std::string("")));
-    s_interface->set("Z_mass",Flavour(kf_Z).Mass());
-    s_interface->set("Z_width",Flavour(kf_Z).Width());
-    s_interface->set("W_mass",Flavour(kf_Wplus).Mass());
-    s_interface->set("W_width",Flavour(kf_Wplus).Width());
-    double sin_th_2=model->ScalarConstant(std::string("sin2_thetaW"));
-    s_interface->set("sin_th_2",sin_th_2);
-    s_interface->set("sin_2th",sin(2.*asin(sqrt(sin_th_2))));
-    s_interface->set("alpha_S",model->ScalarFunction(std::string("alpha_S")));
-    s_interface->set("alpha_QED",model->ScalarFunction(std::string("alpha_QED")));
-    msg_Info()<<"}"<<std::endl;
-  }
-}
-
-void BlackHat_Virtual::DeleteInterface()
-{
-  if (s_interface) delete s_interface;
-  s_interface=NULL;
-}
-
 void BlackHat_Virtual::Calc(const Vec4D_Vector& momenta) {
   std::vector<std::vector<double> > moms(momenta.size(), std::vector<double>(4, 0.0));
   for (size_t i=0; i<momenta.size(); ++i) {
