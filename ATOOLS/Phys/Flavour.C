@@ -362,11 +362,11 @@ double Flavour::GenerateLifeTime() const
   return -proper_time*log(1.-ran->Get());
 }
 
-double Flavour::RelBWMass(const Mass_Selector* ms,
-                          const double& min, const double& max) const
+double Flavour::RelBWMass(const double& min, const double& max,
+                          double peak, double width) const
 {
-  double peak=ms->Mass(*this);
-  double width=Width();
+  if (peak<0.0) peak=Mass(true);
+  if (width<0.0) width=Width();
   if( peak<1.e-6 || width/peak < 1.e-8) return peak;
   double random = ran->Get();
   double peak2 = peak*peak;

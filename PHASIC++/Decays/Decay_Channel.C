@@ -172,13 +172,15 @@ double Decay_Channel::MassWeight(const double& s,
   return Lambda(sp,b,c)/Lambda(s,b,c)*s/sp;
 }
 
-double Decay_Channel::GenerateMass(const double& max) const
+double Decay_Channel::GenerateMass(const double& max, const double& width) const
 {
   double mass=-1.0;
   double decaymin = MinimalMass();
   DEBUG_FUNC(decaymin<<" < m["<<GetDecaying()<<"] < "<<max);
   if(decaymin>max) mass=-1.0;
-  else if (decaymin==0.0) mass=m_flavours[0].RelBWMass(p_ms, decaymin, max);
+  else if (decaymin==0.0) {
+    mass=m_flavours[0].RelBWMass(decaymin, max, p_ms->Mass(m_flavours[0]), width);
+  }
   else {
     double s=sqr(p_ms->Mass(GetDecaying()));
     double mb(0.0), mc(0.0);
@@ -195,7 +197,7 @@ double Decay_Channel::GenerateMass(const double& max) const
     double w=0.0;
     int trials(0);
     do {
-      mass=m_flavours[0].RelBWMass(p_ms, decaymin, max);
+      mass=m_flavours[0].RelBWMass(decaymin, max, p_ms->Mass(m_flavours[0]), width);
       double sp=sqr(mass);
       w=MassWeight(s,sp,b,c);
       ++trials;

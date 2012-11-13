@@ -30,8 +30,6 @@ namespace SHERPA {
     ATOOLS::Cluster_Amplitude* p_ampl;
     bool m_extraqed, m_spincorr;
     int m_mass_smearing;
-
-    static bool SortByWidth(ATOOLS::Particle* p1, ATOOLS::Particle* p2);
   public:
     Decay_Handler_Base();
     ~Decay_Handler_Base();

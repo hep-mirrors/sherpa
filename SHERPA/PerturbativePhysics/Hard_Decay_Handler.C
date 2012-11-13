@@ -51,6 +51,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file)
     */
   m_store_results=dr.GetValue<int>("STORE_DECAY_RESULTS",0);
   m_decay_tau=dr.GetValue<int>("DECAY_TAU_HARD",0);
+  m_set_widths=dr.GetValue<int>("HDH_SET_WIDTHS",0);
   m_resultdir=dr.GetValue<std::string>("RESULT_DIRECTORY","Results");
   if (m_store_results) {
     MakeDir("Results/Decays/", true);
@@ -102,7 +103,8 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file)
       THROW(fatal_error, "Parameter RESOLVE_DECAYS set to wrong value.")
     }
     dmit->second.at(0)->UpdateWidth();
-    dmit->second.at(0)->Flav().SetWidth(dmit->second.at(0)->TotalWidth());
+    if (m_set_widths)
+      dmit->second.at(0)->Flav().SetWidth(dmit->second.at(0)->TotalWidth());
   }
   if (p_decaymap->size()) msg_Info()<<endl<<*p_decaymap<<endl;
   WriteDecayTables();
@@ -141,7 +143,7 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
     else delete dc;
   }
   dt->UpdateWidth();
-  dt->Flav().SetWidth(dt->TotalWidth());
+  if (m_set_widths) dt->Flav().SetWidth(dt->TotalWidth());
 }
 
 void Hard_Decay_Handler::RefineDecaysThreshold(Decay_Table* dt) {

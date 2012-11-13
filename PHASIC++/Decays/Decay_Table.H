@@ -34,7 +34,6 @@ namespace PHASIC {
     void Output();
     void UpdateWidth();
     void UpdateWidth(Decay_Channel * dc,const double &width);
-    void ScaleToWidth();
 
     const ATOOLS::Flavour& Flav() const      { return m_flin;      }
     const double &  TotalWidth() const       { return m_totalwidth; }

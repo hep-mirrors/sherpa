@@ -134,8 +134,8 @@ namespace ATOOLS {
     bool IsC_Hadron() const;
 
     double GenerateLifeTime() const;
-    double RelBWMass(const Mass_Selector* ms,
-                     const double& min, const double& max) const;
+    double RelBWMass(const double& min, const double& max,
+                     double peak=-1.0, double width=-1.0) const;
 
     // inline functions
     inline Flavour Bar() const { return Flavour(*p_info,!m_anti); }

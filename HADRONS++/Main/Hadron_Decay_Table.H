@@ -43,6 +43,8 @@ namespace HADRONS {
     void ExtractBRInfo(std::string entry, double & sbr, double & sdbr,
                        std::string & sorigin );
 
+    void ScaleToWidth();
+
   public:
     /** 
      * Sets up the decay table structure, but doesn't fill it yet.

@@ -111,7 +111,7 @@ namespace PHASIC {
     inline int Active() const { return m_active; }
     inline void SetActive(int active) { m_active=active; }
 
-    double GenerateMass(const double& max) const;
+    double GenerateMass(const double& max, const double &width) const;
     double SymmetryFactor();
     inline const std::vector<std::vector<Complex> >& ColorMatrix() {
       return m_colormatrix;

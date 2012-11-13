@@ -210,7 +210,7 @@ double Lund_Interface::GenerateMass(Flavour flav, double min, double max)
     double finalmin = min>(peak-w_cut)? min : peak-w_cut;
     double finalmax = max<(peak+w_cut)? max : peak+w_cut;
     if(finalmin>finalmax) return -1.0;
-    else return flav.RelBWMass(this, finalmin, finalmax);
+    else return flav.RelBWMass(finalmin, finalmax, this->Mass(flav));
   }
 }
 

@@ -33,16 +33,26 @@ Decay_Handler_Base::~Decay_Handler_Base()
   if (p_decaymap) delete p_decaymap; p_decaymap=NULL;
 }
 
-bool Decay_Handler_Base::SortByWidth(Particle* p1, Particle* p2) {
-  return p1->Flav().Width() < p2->Flav().Width();
-}
+class Decay_Width_Sorter {
+  PHASIC::Decay_Map* p_decaymap;
+public:
+  Decay_Width_Sorter(PHASIC::Decay_Map* decaymap) : p_decaymap(decaymap) {}
+
+  bool operator()(Particle* p1, Particle* p2) {
+    Decay_Table* table1=p_decaymap->FindDecay(p1->Flav());
+    if (table1==NULL) return true;
+    Decay_Table* table2=p_decaymap->FindDecay(p2->Flav());
+    if (table2==NULL) return false;
+    return table1->TotalWidth() < table2->TotalWidth();
+  }
+};
 
 void Decay_Handler_Base::SetMasses(ATOOLS::Blob* blob, bool usefinalmass)
 {
   DEBUG_FUNC(blob->GetOutParticles().size());
   Particle_Vector daughters = blob->GetOutParticles();
   if (m_mass_smearing==0 || daughters.size()==1) return;
-  sort(daughters.begin(), daughters.end(), Decay_Handler_Base::SortByWidth);
+  sort(daughters.begin(), daughters.end(), Decay_Width_Sorter(p_decaymap));
 
   Vec4D total(0.0,0.0,0.0,0.0);
   size_t nr_daughters(0);
@@ -75,7 +85,7 @@ void Decay_Handler_Base::SetMasses(ATOOLS::Blob* blob, bool usefinalmass)
         }
       }
       else {
-        double mass = (*it)->RefFlav().RelBWMass(this, 0.0, max);
+        double mass = (*it)->RefFlav().RelBWMass(0.0, max, this->Mass((*it)->RefFlav()));
         (*it)->SetFinalMass(mass);
         DEBUG_INFO(max<<" > "<<"m["<<(*it)->RefFlav()<<"]="<<mass);
       }
@@ -90,7 +100,8 @@ bool Decay_Handler_Base::DiceMass(ATOOLS::Particle* p, double max)
   Blob_Data_Base* data = (*decayblob)["dc"];
   if (data) {
     Decay_Channel* dc = data->Get<Decay_Channel*>();
-    double mass=dc->GenerateMass(max);
+    double width = p_decaymap->FindDecay(p->Flav())->TotalWidth();
+    double mass=dc->GenerateMass(max, width);
     if (mass>0.0) p->SetFinalMass(mass);
     else return false;
   }

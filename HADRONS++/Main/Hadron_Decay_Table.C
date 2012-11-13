@@ -236,6 +236,25 @@ void Hadron_Decay_Table::LatexOutput(std::ostream& f)
   f<<"\\end{longtable}"<<endl;
 }
 
+void Hadron_Decay_Table::ScaleToWidth() {
+  if(m_flin.Width()/m_totalwidth!=1.0) {
+    double delta_tot(0.0);
+    for (size_t i=0;i<size();i++)
+      if (at(i)->Active()>=0)
+        delta_tot+=at(i)->DeltaWidth();
+    if (delta_tot>0.0) {
+      for (size_t i=0;i<size();i++) {
+        if (at(i)->Active()>=0) {
+          double scale_fac=at(i)->DeltaWidth()/delta_tot;
+          at(i)->SetWidth(at(i)->Width()+
+                          scale_fac*(m_flin.Width()-m_totalwidth));
+        }
+      }
+      UpdateWidth();
+    }
+  }
+}
+
 Decay_Channel * Hadron_Decay_Table::Select(Blob* blob) const
 {
   Blob_Data_Base* data = (*blob)["dc"];
