@@ -598,7 +598,7 @@ efficient event generation.
 @b{Using AMEGIC++ for MEPS@@NLO}
 
 When using using AMEGIC++ for an MEPS@@NLO setup, e.g. 
-@ref{LHC_WJets_MEPSatNLO}, the code for each multiplicity is created 
+@ref{LHC_WJets_NLOmerging}, the code for each multiplicity is created 
 sequentially, one NLO-multiplicity at a time. Thus, when merging e.g. 
 W, W+jet and W+2jet at NLO, AMEGIC++ will first create the code for W 
 production and ask for it being compiled, then create the code for 

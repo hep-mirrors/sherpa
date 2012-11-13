@@ -2,14 +2,9 @@
 @subsection W+jets production at the LHC
 
 @menu
-* LHC_W_MCatNLO::
 * LHC_W1jet_MCatNLO::
-* LHC_W2jets_MCatNLO::
-* LHC_WJets_MEPS::
-* LHC_WJets_MEPS_forNLO::
-* LHC_WJets_MENLOPS::
-* LHC_WJets_MENLOPS_forNLO::
-* LHC_WJets_MEPSatNLO::
+* LHC_WJets_LOmerging::
+* LHC_WJets_NLOmerging::
 @end menu
 
 To change any of the following examples to production at the Tevatron 
@@ -20,15 +15,6 @@ simply change the beam settings to
 @end verbatim
 
 
-@node LHC_W_MCatNLO
-@subsubsection MC@@NLO setup for pp->W+X
-
-@example
-@smallformat
-@verbatiminclude Examples/V_plus_Jets/LHC_W_MCatNLO/Run.dat
-@end smallformat
-@end example
-
 @node LHC_W1jet_MCatNLO
 @subsubsection MC@@NLO setup for pp->W+jet+X
 
@@ -38,83 +24,21 @@ simply change the beam settings to
 @end smallformat
 @end example
 
-@node LHC_W2jets_MCatNLO
-@subsubsection MC@@NLO setup for pp->W+2jets+X
+@node LHC_WJets_LOmerging
+@subsubsection MEPS and MENLOPS setup for pp->W+jets
 
 @example
 @smallformat
-@verbatiminclude Examples/V_plus_Jets/LHC_W2jets_MCatNLO/Run.dat
+@verbatiminclude Examples/V_plus_Jets/LHC_WJets/Run.dat
 @end smallformat
 @end example
 
-@node LHC_WJets_MEPS
-@subsubsection MEPS setup for pp->W+jets
-
-@example
-@smallformat
-@verbatiminclude Examples/V_plus_Jets/LHC_WJets_MEPS/Run.dat
-@end smallformat
-@end example
-
-@node LHC_WJets_MEPS_forNLO
-@subsubsection MEPS setup for comparison to MEPS@@NLO
-
-@example
-@smallformat
-@verbatiminclude Examples/V_plus_Jets/LHC_WJets_MEPS/Run.NLOcomparison.dat
-@end smallformat
-@end example
-
-
-@node LHC_WJets_MENLOPS
-@subsubsection MENLOPS setup for pp->W+jets
-
-This setup implements the MENLOPS method, combining both MC@@NLO-style 
-NLO matrix element parton shower matching and CKKW-style multijet merging, 
-cf. @mycite{Hoeche2012yf}, @mycite{Gehrmann2012yg}. Its result, after switching 
-on both the hadronisation and underlying event modules, can then be directly 
-compared to experimental data.
-
-@example
-@smallformat
-@verbatiminclude Examples/V_plus_Jets/LHC_WJets_MENLOPS/Run.dat
-@end smallformat
-@end example
-
-Things to notice:
-@itemize @bullet
-@item This is a LHC setup for inclusive W boson production, using the MENLOPS 
-method.
-@item The automated dipole subtraction implemented in the matrix element 
-generator Amegic @mycite{Gleisberg2007md} is used.
-@item An internal hard-coded matrix element is used for the virtual term. For 
-more information on how to interface @ref{External one-loop ME}s see the 
-linked section.
-@item Further, Amegic is invoked for all matrix elements with final state 
-multiplicities 2 and 3, while Comix is used for all other.
-@item The kt-resolution parameter determining the splitting between singular 
-and regular real contributions is set to 8.
-@item Neither hadronisation nor underlying event corrections are taken into 
-account. Both can be switched on by setting the relevant @ref{Parameters} 
-accordingly.
-
-@end itemize
-
-@node LHC_WJets_MENLOPS_forNLO
-@subsubsection MENLOPS setup for comparison to MEPS@@NLO
-
-@example
-@smallformat
-@verbatiminclude Examples/V_plus_Jets/LHC_WJets_MENLOPS/Run.NLOcomparison.dat
-@end smallformat
-@end example
-
-@node LHC_WJets_MEPSatNLO
+@node LHC_WJets_NLOmerging
 @subsubsection MEPS@@NLO setup for pp->W+jets
 
 @example
 @smallformat
-@verbatiminclude Examples/V_plus_Jets/LHC_WJets_MEPSatNLO/Run.dat
+@verbatiminclude Examples/V_plus_Jets/LHC_WJets/Run.NLO.dat
 @end smallformat
 @end example
 
