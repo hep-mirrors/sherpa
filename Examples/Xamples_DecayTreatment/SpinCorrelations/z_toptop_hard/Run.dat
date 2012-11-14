@@ -16,6 +16,7 @@
   AMEGIC_DEFAULT_GAUGE = 10
   COMIX_ALLOW_BSM = 1
   HARD_DECAYS=On
+  HARD_MASS_SMEARING=0
 }(run)
 (me){
   SCALES          = VAR{sqr(90)}
@@ -31,6 +32,7 @@
   STABLE[15] = 1
   STABLE[24] = 1
   WIDTH[24] = 0
+  WIDTH[6]=0.0
   SIN2THETAW=0.23147
 }(model)
 (beam){

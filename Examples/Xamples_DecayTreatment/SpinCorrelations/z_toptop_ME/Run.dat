@@ -32,8 +32,8 @@
 (processes){
   Process : 11 -11 -> 23[a]
   Decay : 23[a] -> 6[b] -6[c]
-  Decay : 6[b] -> 24 5
-  Decay : -6[c] -> -24 -5
+  DecayOS : 6[b] -> 24 5
+  DecayOS : -6[c] -> -24 -5
   End process
 }(processes)
 
