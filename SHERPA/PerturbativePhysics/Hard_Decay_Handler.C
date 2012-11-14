@@ -56,7 +56,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file)
   if (m_store_results) {
     MakeDir("Results/Decays/", true);
   }
-  m_offshell=dr.GetValue<std::string>("RESOLVE_DECAYS", "ByWidth");
+  m_offshell=dr.GetValue<std::string>("RESOLVE_DECAYS", "Threshold");
 
   DEBUG_FUNC("");
   p_decaymap = new Decay_Map(this);
