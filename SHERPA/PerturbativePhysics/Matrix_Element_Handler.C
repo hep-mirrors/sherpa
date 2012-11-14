@@ -416,8 +416,7 @@ void Matrix_Element_Handler::BuildProcesses()
 	std::vector<std::string> &cur(procdata[ng]);
 	if (cur.size()<2) continue;
 	if (cur[0]=="Decay") dectags.push_back(MakeString(cur,1));
-	if (cur[0]=="Onshell_Decay" ||
-	    cur[0]=="DecayOS") dectags.push_back("Z"+MakeString(cur,1));
+	if (cur[0]=="DecayOS") dectags.push_back("Z"+MakeString(cur,1));
 	if (cur[0]=="No_Decay")
 	  for (size_t i(1);i<cur.size();++i) {
 	    long int kfc(ToType<long int>(cur[i]));
