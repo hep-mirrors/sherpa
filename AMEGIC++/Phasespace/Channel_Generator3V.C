@@ -39,8 +39,9 @@ void Channel_Generator3V::GenerateTopos(Point* p)
     if (ph->left==0 && p->middle) ph = p->middle;
   }
   if (ph == 0) {
-    msg_Error()<<"This seems to be a 2->1 process !!!"<<endl
-	       <<"  "<<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }"<<endl;
+    msg_Error()<<METHOD<<"(): This seems to be a 2->1 process. "
+	       <<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }."
+	       <<" Aborting."<<std::endl;
     abort();
   }
   switch (tcount) {
@@ -301,8 +302,9 @@ void Channel_Generator3V::Step0(int flag,Point* p,int& rannum,ofstream& sf)
     if (ph->left==0 && p->middle) ph = p->middle;
   }
   if (ph == 0) {
-    msg_Error()<<"This seems to be a 2->1 process !!!"<<endl
-	       <<"  "<<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }"<<endl;
+    msg_Error()<<METHOD<<"(): This seems to be a 2->1 process. "
+	       <<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }."
+	       <<" Aborting."<<std::endl;
     abort();
   }
 
