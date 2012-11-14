@@ -6,6 +6,7 @@
   FRAGMENTATION=Off
   AMEGIC_DEFAULT_GAUGE = 10
   COMIX_ALLOW_BSM = 1
+  ME_QED=Off
 }(run)
 (me){
   SCALES          = VAR{sqr(90)}

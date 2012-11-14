@@ -12,7 +12,7 @@ else
   PROCESSES=$1
 fi
 
-EVENTS=20000
+EVENTS=100000
 
 rivetplotstr=""
 for process in $PROCESSES; do
@@ -60,4 +60,4 @@ for process in $PROCESSES; do
     cd -;
 done
 
-rivet-mkhtml -s -c make-plots.conf $rivetplotstr
+rivet-mkhtml --ignore-missing -s -c make-plots.conf $rivetplotstr
