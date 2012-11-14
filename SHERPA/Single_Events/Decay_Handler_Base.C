@@ -40,10 +40,11 @@ public:
 
   bool operator()(Particle* p1, Particle* p2) {
     Decay_Table* table1=p_decaymap->FindDecay(p1->Flav());
-    if (table1==NULL) return true;
     Decay_Table* table2=p_decaymap->FindDecay(p2->Flav());
-    if (table2==NULL) return false;
-    return table1->TotalWidth() < table2->TotalWidth();
+    double width1(0.0), width2(0.0);
+    if (table1) width1=table1->TotalWidth();
+    if (table2) width2=table2->TotalWidth();
+    return width1 < width2;
   }
 };
 
