@@ -268,7 +268,7 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
   m_p=momenta;
   p_ci=p_proc->Integrator()->ColorIntegrator();
   for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];
-  if (m_nout==1) {
+  if (m_nout==m_rproc?2:1) {
     m_scale[stp::res]=m_scale[stp::fac]=m_scale[stp::ren]=m_p[2].Abs2();
     msg_Debugging()<<METHOD<<"(): Set {\n"
 		   <<"  Q^2   = "<<sqrt(m_scale[stp::res])<<"\n"
