@@ -17,7 +17,7 @@ EVENTS=20000
 rivetplotstr=""
 for process in $PROCESSES; do
     echo "Testing $process";
-    cd $process && for gen in Amegic Comix; do
+    if test -d $process; then cd $process && for gen in Amegic Comix; do
         echo "  with production in $gen and tau decays in HADRONS";
         for sc in 1 0; do
             echo "    for SPINCORRTAG:=$sc";
@@ -31,9 +31,9 @@ for process in $PROCESSES; do
             ../../../../AddOns/Rivet/sherpa2aida -a MC_$process Analysis${gen}SC${sc} > /dev/null || exit 1
             rivetplotstr="$rivetplotstr ${process}/Analysis${gen}SC${sc}.aida:Title=${gen}SSC${sc}:LineWidth=0.1pt"
         done
-    done && cd -;
+    done && cd -; fi
 
-    cd ${process}_hard && for gen in Amegic Comix; do
+    if test -d ${process}_hard; then cd ${process}_hard && for gen in Amegic Comix; do
         echo "  with production in $gen and hard tau decays";
         for sc in 1 0; do
             echo "    for SPINCORRTAG:=$sc";
@@ -47,7 +47,7 @@ for process in $PROCESSES; do
             ../../../../AddOns/Rivet/sherpa2aida -a MC_$process Analysis${gen}SC${sc} > /dev/null || exit 1
             rivetplotstr="$rivetplotstr ${process}_hard/Analysis${gen}SC${sc}.aida:Title=${gen}HSC${sc}:LineWidth=0.1pt"
         done
-    done && cd -;
+    done && cd -; fi
 
     cd ${process}_ME;
     echo "  with production and decay in ME";

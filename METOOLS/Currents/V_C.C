@@ -100,7 +100,7 @@ CV<SType>::EM(const Vec4D &p,const int cr,const int ca)
   SpinorType pp(1,p);
   CVec4Type e(VT(pp,m_km));
   e(0)=cr; e(1)=ca;
-  e.SetH(this->m_dir<0?1:0);
+  e.SetH(1);
   static SType sqrttwo(sqrt(SType(2.0)));
   return e/(sqrttwo*std::conj(m_kp*pp));
 }
@@ -111,7 +111,7 @@ CV<SType>::EP(const Vec4D &p,const int cr,const int ca)
   SpinorType pm(-1,p);
   CVec4Type e(VT(m_kp,pm));
   e(0)=cr; e(1)=ca;
-  e.SetH(this->m_dir<0?0:1);
+  e.SetH(0);
   static SType sqrttwo(sqrt(SType(2.0)));
   return e/(sqrttwo*std::conj(m_km*pm));
 }
@@ -152,7 +152,7 @@ void CV<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
   if (ch>=0) {
     if (this->m_msv && (ch==0 || ch==3)) {
       CVec4Type j(EML(this->m_p,cr,ca));
-      AddJ(CVec4Type::New(this->m_dir>0?j:j.Conj()));
+      AddJ(CVec4Type::New(this->m_dir>0?-j:j.Conj()));
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
 		     <<"0 "<<this->m_id<<" "<<j
@@ -205,7 +205,7 @@ template <typename SType>
 void CV<SType>::AddPropagator()
 {
   // add propagator for off-shell leg
-  SComplex prop(-M_I/(SType(this->m_p.Abs2())-m_cmass2));
+  SComplex p2(SType(this->m_p.Abs2())), prop(-M_I/(p2-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop<<"\n";
@@ -216,7 +216,7 @@ void CV<SType>::AddPropagator()
     if (!this->m_msv)
       for (typename CVec4Type_Vector::iterator 
 	     jit(j->begin());jit!=j->end();++jit)
-	**jit-=(**jit*Vec4Type(this->m_p))*CVec4Type(this->m_p)*prop;
+	**jit-=(**jit*Vec4Type(this->m_p))*CVec4Type(this->m_p)/p2;
     else
       for (typename CVec4Type_Vector::iterator 
 	     jit(j->begin());jit!=j->end();++jit)

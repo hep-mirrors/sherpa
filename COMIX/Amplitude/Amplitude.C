@@ -1659,12 +1659,12 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
     int sd(Spinor<double>::DefaultGauge());
     Spinor<double>::SetGauge(sd>0?sd-1:sd+1);
   }
-  SetGauge(2);
+  SetGauge(1);
   SetMomenta(moms);
   if (!EvaluateAll()) return false;
   Spin_Structure<DComplex> ress(m_ress);
   if (m_pmode=='D') Spinor<double>::ResetGauge();
-  SetGauge(1);
+  SetGauge(0);
   SetMomenta(moms);
   if (!EvaluateAll()) return false;
   double mean(0.0);
