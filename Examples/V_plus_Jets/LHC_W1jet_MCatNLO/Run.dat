@@ -10,6 +10,7 @@
   LOOPGEN:=<my-loop-gen>;
   ME_SIGNAL_GENERATOR Amegic LOOPGEN;
   EVENT_GENERATION_MODE Weighted;
+  RESULT_DIRECTORY Results.FSF.RSF.QSF
 
   % model parameters
   MASSIVE[15] 1;
@@ -22,8 +23,8 @@
 (processes){
   Process 93 93 -> 90 91 93;
   Order_EW 2;
-  NLO_QCD_Mode MC@NLO {3};
-  Loop_Generator LOOPGEN {3};
+  NLO_QCD_Mode MC@NLO;
+  Loop_Generator LOOPGEN;
   End process;
 }(processes);
 

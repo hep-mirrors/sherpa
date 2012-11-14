@@ -18,11 +18,45 @@ simply change the beam settings to
 @node LHC_W1jet_MCatNLO
 @subsubsection MC@@NLO setup for pp->W+jet+X
 
+This is an example setup for W+jet production at hadron colliders at 
+next-to-leading order precission matched to the parton shower using the 
+MC@@NLO prescription detailed in @mycite{Hoeche2011fd}. A few things to 
+note are detailed below the example. It can be straight forwardly 
+modified to the production of a W in association with any number of jets 
+by simply adjusting the process and scale definitions as well as the 
+matrix element cuts in the selector.
+
 @example
 @smallformat
 @verbatiminclude Examples/V_plus_Jets/LHC_W1jet_MCatNLO/Run.dat
 @end smallformat
 @end example
+
+Things to notice:
+@itemize
+@item Any setting with the exception of the process and selector definitions 
+can be given in the @code{(run)@{...@}(run)} section of the run card.
+@item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for 
+easy scale variations. Tags are replaced troughout the entire run card by 
+their defined value, see @ref{Tags}.
+@item Both the factorisation and renormalisation scales are set to the above 
+defined scale factors times the transverse mass of the lepton-neutrino pair, 
+see @ref{SCALES} for details on scale setters.
+@item The resummation scale, which sets the maximum scale of the additional 
+emission to be resummed by the parton shower, is set to the above defined 
+resummation scale factor times the transverse momentum of the jet present 
+at Born level.
+@item The generator to provide the one-loop matrix element can be set through 
+@code{LOOPGEN} tag. For possible choices see TODO.
+@item tau leptons are set massive in order to exclude them from the lepton 
+container (@code{20}).
+@item The @code{NLO_QCD_Mode} is set to @code{MC@@NLO}.
+@item The selector, implementing ME-level cuts, requires at least one jet 
+and prevents possible numerical instabilities in the PDFs when the 
+lepton-neutrino mass goes to zero.
+@end itemize
+
+
 
 @node LHC_WJets_LOmerging
 @subsubsection MEPS and MENLOPS setup for pp->W+jets
