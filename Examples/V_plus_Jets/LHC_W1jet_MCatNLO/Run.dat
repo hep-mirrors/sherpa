@@ -13,6 +13,7 @@
   RESULT_DIRECTORY Results.FSF.RSF.QSF
 
   % model parameters
+  MODEL SM;
   MASSIVE[15] 1;
 
   % collider setup

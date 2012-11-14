@@ -2,14 +2,9 @@
 @subsection Z+jets production at the LHC
 
 @menu
-* LHC_Z_MCatNLO::
-* LHC_Z1jet_MCatNLO::
-* LHC_Z2jets_MCatNLO::
-* LHC_ZJets_MEPS::
-* LHC_ZJets_MEPS_forNLO::
-* LHC_ZJets_MENLOPS::
-* LHC_ZJets_MENLOPS_forNLO::
-* LHC_ZJets_MEPSatNLO::
+* LHC_Z1jet_MCatNLO_LHOLE::
+* LHC_ZJets_LOmerging::
+* LHC_ZJets_NLOmerging::
 @end menu
 
 To change any of the following examples to production at the Tevatron 
@@ -20,128 +15,31 @@ simply change the beam settings to
 @end verbatim
 
 
-@node LHC_Z_MCatNLO
-@subsubsection MC@@NLO setup for pp->Z+X
+@node LHC_Z1jet_MCatNLO_LHOLE
+@subsubsection MC@@NLO setup for pp->Z+jet using the BLHA interface
 
 @example
 @smallformat
-@comment @verbatiminclude Examples/V_plus_Jets/LHC_Z_MCatNLO/Run.dat
+@comment @verbatiminclude Examples/V_plus_Jets/LHC_Z1jet_LHOLE/Run.dat
 @end smallformat
 @end example
 
-@node LHC_Z1jet_MCatNLO
-@subsubsection MC@@NLO setup for pp->Z+jet+X
+@node LHC_ZJets_LOmerging
+@subsubsection MEPS and MENLOPS setup for pp->W+jets
 
 @example
 @smallformat
-@comment @verbatiminclude Examples/V_plus_Jets/LHC_Z1jet_MCatNLO/Run.dat
+@comment @verbatiminclude Examples/V_plus_Jets/LHC_ZJets/Run.dat
 @end smallformat
 @end example
 
-@node LHC_Z2jets_MCatNLO
-@subsubsection MC@@NLO setup for pp->Z+2jets+X
-
-@example
-@smallformat
-@comment @verbatiminclude Examples/V_plus_Jets/LHC_Z2jets_MCatNLO/Run.dat
-@end smallformat
-@end example
-
-@node LHC_ZJets_MEPS
-@subsubsection MEPS setup for pp->Z+jets
-
-This example is for an LHC set-up, with a proton--proton collision at 
-centre of mass energy 14TeV. The final state is an electron--positron 
-pair and up to 4 partons from the matrix element.
-
-@example
-@smallformat
-@verbatiminclude Examples/V_plus_Jets/LHC_ZJets_MEPS/Run.dat
-@end smallformat
-@end example
- 
-Things to notice:
-@itemize @bullet
-@item the number of events generated is set in the @code{(run)} section.
-If this parameter is not set, 100 events will be generated.
-
-@item the beam particles are specified in the @code{(beam)} section, using 
-PDG codes, see @ref{PDG codes}. The beam energy must also be specified in GeV.
-
-@item the process is specified in the @code{(processes)} section, using PDG codes
-again. @option{93} is a particle container for light quarks and gluons, see 
-@ref{Particle containers}. The @option{4} in curly brackets after the final state 
-@option{93} means that the matrix element will be generated with up to 4 extra partons
-in the final state, see @ref{Curly brackets}.
-
-@item the multi-jet merging parameter @ref{CKKW} is set
-using an algebraic expression. For more information on
-algrebraic expressions recognised by Sherpa, see 
-@ref{Interpreter}. For more information on the CKKW 
-parameter and the Sherpa method for merging matrix elements
-and parton showers, see @ref{Merging ME and PS}.
-
-@item the @ref{Integration_Error} is set separately for some of the final state 
-multiplicities. The higher multiplicity cross sections are smaller, so
-to get the same order of magnitude for the absolute error in the 
-cross section integrations, the relative error can be higher. 
-
-@item there is a selector cut on the invariant mass of the lepton pair. This cut 
-shields the IR singularity as the invariant mass tends to zero, and
-focuses on the area around the Z-peak, from 66Gev to 116GeV.
-
-@item the matrix element signal generators have been chosen to be the Internal
-hard coded ones in module EXTRA_XS, and Comix.
-
-@item multiple interactions have been switched off. 
-@end itemize
-
-@node LHC_ZJets_MEPS_forNLO
-@subsubsection MEPS setup for comparison to MEPS@@NLO
-
-@example
-@smallformat
-@comment @verbatiminclude Examples/V_plus_Jets/LHC_ZJets_MEPS/Run.NLOcomparison.dat
-@end smallformat
-@end example
-
-@node LHC_ZJets_MENLOPS
-@subsubsection MENLOPS setup for pp->Z+jets
-
-@example
-@smallformat
-@comment @verbatiminclude Examples/V_plus_Jets/LHC_ZJets_MENLOPS/Run.dat
-@end smallformat
-@end example
-
-@node LHC_ZJets_MENLOPS_forNLO
-@subsubsection MENLOPS setup for comparison to MEPS@@NLO
-
-@example
-@smallformat
-@comment @verbatiminclude Examples/V_plus_Jets/LHC_ZJets_MENLOPS/Run.NLOcomparison.dat
-@end smallformat
-@end example
-
-@node LHC_ZJets_MEPSatNLO
+@node LHC_ZJets_NLOmerging
 @subsubsection MEPS@@NLO setup for pp->W+jets
 
 @example
 @smallformat
-@comment @verbatiminclude Examples/V_plus_Jets/LHC_ZJets_MEPSatNLO/Run.dat
+@comment @verbatiminclude Examples/V_plus_Jets/LHC_ZJets/Run.NLO.dat
 @end smallformat
 @end example
-
-
-
-
-
-
-
-
-
-
-
-
 
 

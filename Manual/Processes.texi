@@ -26,10 +26,14 @@ The following parameters are used to steer the process setup.
 * Integration_Error::       Tag to set a specific integration error.
 * Max_Epsilon::             Tag to set a specific epsilon for overweighting.
 * Enhance_Factor::          Tag to set an enhance factor.
+* RS_Enhance_Factor::       Tag to set an enhance factor for the RS-piece of 
+                            an MC@@NLO process.
 * Enhance_Function::        Tag to set an enhance function.
 * Enhance_Observable::      Tag to set an enhance observable.
-* NLO_QCD_Part::            Tag to setup QCD NLO processes.
-* NLO_EW_Part::             Tag to setup electroweak NLO processes.
+* NLO_QCD_Mode::            Tag to setup QCD NLO processes.
+* NLO_QCD_Part::            Tag to refine the setup QCD NLO processes.
+* NLO_EW_Mode::             Tag to setup electroweak NLO processes.
+* NLO_EW_Part::             Tag to refine the setup electroweak NLO processes.
 * ME_Generator::            Tag to specifiy the tree ME generator.
 * Loop_Generator::          Tag to specifiy the loop ME generator.
 * End process::             The process setup end tag.
@@ -320,6 +324,23 @@ Enhance_Factor 16 {4}
 Here, 3-jet processes are enhanced by a factor of 4,
 4-jet processes by a factor of 16.
 
+@node RS_Enhance_Factor
+@subsection RS_Enhance_Factor
+Sets an enhance factor for the RS-piece of an MC@@NLO process.
+
+For multijet processes, this parameter can be specified
+per final state multiplicity. An example would be
+@verbatim
+Process 93 93 -> 90 91 93{3};
+NLO_QCD_Mode MC@NLO {2,3};
+RS_Enhance_Factor 10 {2};
+RS_Enhance_Factor 20 {3};
+@end verbatim
+
+Here, the RS-pieces of the MC@@NLO subprocesses of the 2 particle final 
+state processes are enhanced by a factor of 10, while those of the 3 
+particle final state processes are enhanced by a factor of 20.
+
 @node Enhance_Function
 @subsection Enhance_Function
 Sets a process specific enhance function.
@@ -383,30 +404,73 @@ function and the final state multiplicity, can be an intricate task.
  error target}, see @ref{Integration_Error}.
 
 
+@node NLO_QCD_Mode
+@subsection NLO_QCD_Mode
+
+This setting specifies whether and in which mode an QCD NLO calculation 
+should be performed. Possible values are:
+
+@itemize
+@item @code{Fixed_Order} ... perform a fixed-order next-to-leading order 
+                             calculation
+@item @code{MC@@NLO} ... perform an MC@@NLO-type matching of a fixed-order 
+                         next-to-leading order calculation to the resummation 
+                         of the parton shower
+@end itemize
+
+The usual multiplicity identifier apply to this switch as well.
+Note that this setting implies @code{NLO_QCD_Part BVIRS} for the relevant 
+multiplicities. This can be overridden by setting @code{NLO_QCD_Part} 
+explicitly in case of fixed-order calculations.
+
+Note that Sherpa includes only a very limited selection of one-loop 
+corrections. For processes not included external codes can be interfaced, 
+see @ref{External one-loop ME}
+
 @node NLO_QCD_Part
 @subsection NLO_QCD_Part
 
-Specifies which pieces of a QCD NLO calculation are computed.
-Possible choices are
+In case of fixed-order NLO calculations this switch specifies which pieces 
+of a QCD NLO calculation are computed. Possible choices are
 
 @itemize
 @item B  ... born term
-@item RS ... real correction, regularized using Catani-Seymour subtraction terms
-@item I  ... integrated subtraction terms
 @item V  ... virtual (one-loop) correction
-@item P  ... check cancelation of epsilon poles between 'I' and 'V' 
+@item I  ... integrated subtraction terms
+@item RS ... real correction, regularized using Catani-Seymour subtraction terms
 @end itemize
 
-Different pieces can be combined in the processes setup. Only pieces with the same number
-of final state particles and the same order in alpha_S can be treated as one process, otherwise
-they will be automatically split up.
+Different pieces can be combined in one processes setup. Only pieces with the 
+same number of final state particles and the same order in alpha_S can be 
+treated as one process, otherwise they will be automatically split up.
 
-Note that Sherpa includes only a very limited selection of one-loop corrections. For processes
-not included external codes can be interfaced, see @ref{External one-loop ME}
+@node NLO_EW_Mode
+@subsection NLO_EW_Mode
+
+This setting specifies whether and in which mode an electroweak NLO calculation 
+should be performed. Possible values are:
+
+@itemize
+@item @code{Fixed_Order} ... perform a fixed-order next-to-leading order 
+                             calculation
+@end itemize
 
 @node NLO_EW_Part
 @subsection NLO_EW_Part
 
+In case of fixed-order NLO calculations this switch specifies which pieces 
+of a electroweak NLO calculation are computed. Possible choices are
+
+@itemize
+@item B  ... born term
+@item V  ... virtual (one-loop) correction
+@item I  ... integrated subtraction terms
+@item RS ... real correction, regularized using Catani-Seymour subtraction terms
+@end itemize
+
+Different pieces can be combined in one processes setup. Only pieces with the 
+same number of final state particles and the same order in alpha_QED can be 
+treated as one process, otherwise they will be automatically split up.
 
 @node ME_Generator
 @subsection ME_Generator
