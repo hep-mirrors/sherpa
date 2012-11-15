@@ -91,11 +91,15 @@ Single_Channel * HD_Channel_Selector::GetChannel(
       if( ci.res1==string("J/psi(1S)") ) kfres = kf_J_psi_1S;
       if( ci.res1==string("psi(2S)") ) kfres = kf_psi_2S;
       if( ci.res1==string("psi(4040)") ) kfres = kf_psi_4040;
-      if( ci.res1==string("W") ) kfres = kf_Wplus;
+      double width =  Flavour(kfres).Width();
+      if( ci.res1==string("W") ) {
+        kfres = kf_Wplus;
+        width = 2.06;
+      }
       SimpleResonanceFlavour res(
           Flavour(kfres).IDName(),
           md("Mass_"+Flavour(kfres).IDName(), Flavour(kfres).HadMass() ),
-          md("Width_"+Flavour(kfres).IDName(), Flavour(kfres).Width() ) );
+          md("Width_"+Flavour(kfres).IDName(), width ) );
       return new Dalitz(flavs,res,ci.a,ci.b);
     }
   }
