@@ -3,10 +3,10 @@
   SPINCORRTAG:=1
   GENTAG:=Comix
   ANALYSIS = 1
-  ANALYSIS_OUTPUT = AnalysisComixSCSPINCORRTAG
+  ANALYSIS_OUTPUT = AnalysisGENTAGSCSPINCORRTAG
   HARD_SPIN_CORRELATIONS = SPINCORRTAG
   RESOLVE_DECAYS = Threshold
-  ME_SIGNAL_GENERATOR   = Comix # Amegic does not seem to work here?!?
+  ME_SIGNAL_GENERATOR   = GENTAG # Amegic does not seem to work here?!?
   MODEL=SM
   FRAGMENTATION=Off
   DECAY_TAU_HARD=1
@@ -17,6 +17,12 @@
   COMIX_ALLOW_BSM = 1
   HARD_DECAYS=On
   HARD_MASS_SMEARING=0
+
+  BEAM_1          = 11
+  BEAM_ENERGY_1   = 200.0
+  BEAM_2          = -11
+  BEAM_ENERGY_2   = 200.0
+  MASS[23]=400.0;
 }(run)
 (me){
   SCALES          = VAR{sqr(90)}
@@ -35,12 +41,6 @@
   WIDTH[6]=0.0
   SIN2THETAW=0.23147
 }(model)
-(beam){
-  BEAM_1          = 11
-  BEAM_ENERGY_1   = 200.0
-  BEAM_2          = -11
-  BEAM_ENERGY_2   = 200.0
-}(beam)
 (processes){
   Process : 11 -11 -> 23[a]
   Decay : 23[a] -> 6 -6

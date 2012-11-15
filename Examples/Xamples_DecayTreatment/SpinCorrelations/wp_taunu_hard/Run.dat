@@ -16,6 +16,7 @@
   AMEGIC_DEFAULT_GAUGE = 10
   COMIX_ALLOW_BSM = 1
   HARD_DECAYS=On
+  HDH_NO_DECAY = {15,16,-2,1}|{15,16,-4,3}|{15,16,-12,11}|{15,16,-14,13}
 }(run)
 (me){
   SCALES          = VAR{sqr(80)}

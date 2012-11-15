@@ -1,40 +1,31 @@
 (run){
-  SPINCORRTAG:=1
-  GENTAG:=Comix
-
   OUTPUT = 2
   ANALYSIS = 1
-  ANALYSIS_OUTPUT = AnalysisComixSCSPINCORRTAG
 
   BEAM_1 =  11; BEAM_ENERGY_1 = 200.0;
   BEAM_2 = -11; BEAM_ENERGY_2 = 200.0;
+  MASS[23]=400.0;
 
-  ME_SIGNAL_GENERATOR   = Comix
+  ME_SIGNAL_GENERATOR = Comix
   AMEGIC_DEFAULT_GAUGE = 10
   SCALES          = VAR{sqr(90)}
   STABLE[15] = 1
-  STABLE[6] = 0
-  STABLE[24] = 0
-  WIDTH[6] = 0.0
-  WIDTH[24] = 0.0
+  WIDTH[6]=1.58999
+  WIDTH[24]=2.09204
 
   SHOWER_GENERATOR=None
   ME_QED=Off
   FRAGMENTATION=Off
   BEAM_REMNANTS=Off
   PDF_SET=None
-
-  HARD_DECAYS=On
-  HDH_NO_DECAY = {24,2,-1}|{24,4,-3}|{24,16,-15}
-  HARD_SPIN_CORRELATIONS = SPINCORRTAG
-  HARD_MASS_SMEARING=0
-  RESOLVE_DECAYS = Threshold
-  DECAY_TAU_HARD=1
-  STORE_DECAY_RESULTS=1
 }(run)
 (processes){
   Process 11 -11 -> 23[a]
-  Decay 23[a] -> 6 -6
+  Decay 23[a] -> 6[b] -6[c]
+  DecayOS 6[b] -> 24[d] 5
+  DecayOS -6[c] -> -24[e] -5
+  DecayOS 24[d] -> -11 12
+  DecayOS -24[e] -> 13 -14
   End process
 }(processes)
 

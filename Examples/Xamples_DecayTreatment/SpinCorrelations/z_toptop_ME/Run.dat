@@ -7,6 +7,12 @@
   AMEGIC_DEFAULT_GAUGE = 10
   COMIX_ALLOW_BSM = 1
   ME_QED=Off
+
+  BEAM_1          = 11
+  BEAM_ENERGY_1   = 200.0
+  BEAM_2          = -11
+  BEAM_ENERGY_2   = 200.0
+  MASS[23]=400.0;
 }(run)
 (me){
   SCALES          = VAR{sqr(90)}
@@ -24,12 +30,6 @@
   WIDTH[24]=0.0
   SIN2THETAW=0.23147
 }(model)
-(beam){
-  BEAM_1          = 11
-  BEAM_ENERGY_1   = 200.0
-  BEAM_2          = -11
-  BEAM_ENERGY_2   = 200.0
-}(beam)
 (processes){
   Process : 11 -11 -> 23[a]
   Decay : 23[a] -> 6[b] -6[c]

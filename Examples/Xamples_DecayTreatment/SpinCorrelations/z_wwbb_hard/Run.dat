@@ -4,18 +4,19 @@
 
   OUTPUT = 2
   ANALYSIS = 1
-  ANALYSIS_OUTPUT = AnalysisComixSCSPINCORRTAG
+  ANALYSIS_OUTPUT = AnalysisGENTAGSCSPINCORRTAG
 
   BEAM_1 =  11; BEAM_ENERGY_1 = 200.0;
   BEAM_2 = -11; BEAM_ENERGY_2 = 200.0;
+  MASS[23]=400.0;
 
-  ME_SIGNAL_GENERATOR   = Comix
+  ME_SIGNAL_GENERATOR   = GENTAG
   AMEGIC_DEFAULT_GAUGE = 10
   SCALES          = VAR{sqr(90)}
   STABLE[15] = 1
-  STABLE[6] = 0
+  STABLE[6] = 1
   STABLE[24] = 0
-  WIDTH[6] = 0.0
+  WIDTH[6]=1.58999
   WIDTH[24] = 0.0
 
   SHOWER_GENERATOR=None
@@ -34,7 +35,9 @@
 }(run)
 (processes){
   Process 11 -11 -> 23[a]
-  Decay 23[a] -> 6 -6
+  Decay 23[a] -> 6[b] -6[c]
+  DecayOS 6[b] -> 24 5
+  DecayOS -6[c] -> -24 -5
   End process
 }(processes)
 
