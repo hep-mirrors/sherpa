@@ -79,6 +79,8 @@ bool BlackHat_Interface::Initialize
     p_interface->set("W_mass",Flavour(kf_Wplus).Mass());
     p_interface->set("W_width",Flavour(kf_Wplus).Width());
     double sin_th_2=model->ScalarConstant(std::string("sin2_thetaW"));
+    if (model->ScalarConstant(std::string("WidthScheme"))==1)
+      sin_th_2=std::abs(model->ComplexConstant(std::string("csin2_thetaW")));
     p_interface->set("sin_th_2",sin_th_2);
     p_interface->set("sin_2th",sin(2.*asin(sqrt(sin_th_2))));
     p_interface->set("alpha_S",model->ScalarFunction(std::string("alpha_S")));
