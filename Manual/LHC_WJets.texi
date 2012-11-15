@@ -19,7 +19,7 @@ simply change the beam settings to
 @subsubsection MC@@NLO setup for pp->W+jet+X
 
 This is an example setup for W+jet production at hadron colliders at 
-next-to-leading order precission matched to the parton shower using the 
+next-to-leading order precision matched to the parton shower using the 
 MC@@NLO prescription detailed in @mycite{Hoeche2011fd}. A few things to 
 note are detailed below the example. It can be straight forwardly 
 modified to the production of a W in association with any number of jets 
@@ -37,7 +37,7 @@ Things to notice:
 @item Any setting with the exception of the process and selector definitions 
 can be given in the @code{(run)@{...@}(run)} section of the run card.
 @item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for 
-easy scale variations. Tags are replaced troughout the entire run card by 
+easy scale variations. Tags are replaced throughout the entire run card by 
 their defined value, see @ref{Tags}.
 @item Both the factorisation and renormalisation scales are set to the above 
 defined scale factors times the transverse mass of the lepton-neutrino pair, 
@@ -83,10 +83,10 @@ Things to notice:
 @item Any setting with the exception of the process and selector definitions 
 can be given in the @code{(run)@{...@}(run)} section of the run card.
 @item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for 
-easy scale variations. Tags are replaced troughout the entire run card by 
+easy scale variations. Tags are replaced throughout the entire run card by 
 their defined value, see @ref{Tags}.
 @item All scales, i.e. the factorisation, renormalisation and resummation 
-scales are set to the above defined scale factors times the value detemined 
+scales are set to the above defined scale factors times the value determined 
 by the METS-clustering algorithm.
 @item Tags (@code{LJET}, @code{NJET} and @code{QCUT}) have been introduced 
 to be used in the process setup, defining the multiplicity of the MC@@NLO 
@@ -131,10 +131,10 @@ Things to notice:
 @item Any setting with the exception of the process and selector definitions 
 can be given in the @code{(run)@{...@}(run)} section of the run card.
 @item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for 
-easy scale variations. Tags are replaced troughout the entire run card by 
+easy scale variations. Tags are replaced throughout the entire run card by 
 their defined value, see @ref{Tags}.
 @item All scales, i.e. the factorisation, renormalisation and resummation 
-scales are set to the above defined scale factors times the value detemined 
+scales are set to the above defined scale factors times the value determined 
 by the METS-clustering algorithm.
 @item Tags (@code{LJET}, @code{NJET} and @code{QCUT}) have been introduced 
 to be used in the process setup, defining the multiplicity of the MC@@NLO 

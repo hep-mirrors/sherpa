@@ -18,11 +18,32 @@ simply change the beam settings to
 @node LHC_Z1jet_MCatNLO_LHOLE
 @subsubsection MC@@NLO setup for pp->Z+jet using the BLHA interface
 
+This is an example setup for Z+1jet production at hadron colliders at 
+next-to-leading order precision matched to the parton shower using the 
+MC@@NLO prescription detailed in @mycite{Hoeche2011fd}. In the example 
+given below the BLHA interface to the GoSam generator is used for the
+virtual matrix elements.
+
 @example
 @smallformat
-@comment @verbatiminclude Examples/V_plus_Jets/LHC_Z1jet_LHOLE/Run.dat
+@verbatiminclude Examples/V_plus_Jets/LHC_Z1jet_MCatNLO_LHOLE/Run.dat
 @end smallformat
 @end example
+
+Things to notice:
+@itemize
+@item Any setting with the exception of the process and selector definitions 
+can be given in the @code{(run)@{...@}(run)} section of the run card.
+@item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for 
+easy scale variations. Tags are replaced throughout the entire run card by 
+their defined value, see @ref{Tags}.
+@item The factorsation and renormalisation scales are set to H_T times the
+respective scale factors. The resummation scale is set to the transverse 
+momentum of the core process jet time the scale factor @code{QSF}.
+@item An @code{RS_Enhance_Factor} is used to increase the statistical 
+quality for the real-subtracted process, cf. @ref{RS_Enhance_Factor}.
+@end itemize
+
 
 @node LHC_ZJets_LOmerging
 @subsubsection MEPS and MENLOPS setup for pp->W+jets
