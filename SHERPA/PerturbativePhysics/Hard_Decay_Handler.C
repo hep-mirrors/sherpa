@@ -615,10 +615,10 @@ void Hard_Decay_Handler::ReadDecayTable(Flavour decayer)
   vector<vector<string> > file;
   if(reader.MatrixFromFile(file)) {
     for (size_t iline=0; iline<file.size(); ++iline) {
-      if (file[iline].size()==5) {
+      if (file[iline].size()==4) {
         string decaychannel=file[iline][0];
-        vector<double> results(4);
-        for (size_t i=0; i<4; ++i) results[i]=ToType<double>(file[iline][i+1]);
+        vector<double> results(3);
+        for (size_t i=0; i<3; ++i) results[i]=ToType<double>(file[iline][i+1]);
         m_read[decayer].insert(make_pair(decaychannel, results));
       }
       else {
