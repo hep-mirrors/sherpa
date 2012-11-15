@@ -118,16 +118,20 @@ void Decay_Channel::Output() const
 namespace PHASIC {
   std::ostream &operator<<(std::ostream &os,const Decay_Channel &dc)
   {
-    os<<left<<setw(30)<<dc.Name();
-    os<<setw(13)<<dc.m_width;
-    if (dc.m_deltawidth>=0.) os<<" (+/- "<<setw(13)<<dc.m_deltawidth<<")";
-    os<<" GeV. ["<<dc.m_active<<"]";
-    for (size_t i(0); i<dc.GetDiagrams().size(); ++i) {
-      os<<" "<<setw(10)<<*dc.GetDiagrams()[i].second;
-    }
+    os<<left<<setw(18)<<dc.IDCode();
+    os<<setw(25)<<dc.Name();
+    os<<setw(10)<<dc.m_width;
+    if (dc.m_deltawidth>0.) os<<"("<<setw(10)<<dc.m_deltawidth<<")";
+    os<<" GeV";
     if (dc.Active()!=1) {
-      os<<" active="<<dc.Active();
+      os<<" [disabled]";
     }
+    if (msg_LevelIsTracking()) {
+      for (size_t i(0); i<dc.GetDiagrams().size(); ++i) {
+        os<<" "<<setw(10)<<*dc.GetDiagrams()[i].second;
+      }
+    }
+    os<<endl;
     return os;
   }
 }

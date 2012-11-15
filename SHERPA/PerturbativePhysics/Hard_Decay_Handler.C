@@ -58,6 +58,13 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file)
   }
   m_offshell=dr.GetValue<std::string>("RESOLVE_DECAYS", "Threshold");
 
+  Data_Reader nodecayreader("|", ";", "#");
+  nodecayreader.SetString(dr.GetValue<std::string>("HDH_NO_DECAY", ""));
+  vector<string> disabled_channels;
+  nodecayreader.VectorFromString(disabled_channels);
+  for (size_t i=0; i<disabled_channels.size(); ++i)
+    m_disabled_channels.insert(disabled_channels[i]);
+
   DEBUG_FUNC("");
   p_decaymap = new Decay_Map(this);
   KFCode_ParticleInfo_Map::const_iterator it;
@@ -308,7 +315,6 @@ bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
         dc->SetIWidth(results[0]);
         dc->SetIDeltaWidth(results[1]);
         dc->SetMax(results[2]);
-        dc->SetActive(int(results[3]+0.5));
       }
       else {
         msg_Info()<<"    Integrating "<<dc->Name()<<endl;
@@ -321,12 +327,14 @@ bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
     }
   }
   else {
+    dc->SetActive(-1);
     dc->SetIWidth(0.0);
     dc->SetIDeltaWidth(0.0);
     dc->SetMax(0.0);
   }
   dc->SetWidth(dc->IWidth());
   dc->SetDeltaWidth(dc->IDeltaWidth());
+  if (m_disabled_channels.count(dc->IDCode())) dc->SetActive(0);
   return true;
 }
 
@@ -631,8 +639,7 @@ void Hard_Decay_Handler::WriteDecayTables()
     Decay_Table::iterator dtit;
     for (dtit=dmit->second[0]->begin(); dtit!=dmit->second[0]->end(); ++dtit) {
       ostr<<(*dtit)->IDCode()<<"\t"<<(*dtit)->IWidth()<<"\t"
-          <<(*dtit)->IDeltaWidth()<<"\t"<<(*dtit)->Max()<<"\t"
-          <<(*dtit)->Active()<<endl;
+          <<(*dtit)->IDeltaWidth()<<"\t"<<(*dtit)->Max()<<endl;
     }
     ostr.close();
   }
