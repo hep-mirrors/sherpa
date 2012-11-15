@@ -1,16 +1,31 @@
 (run){
+  % general settings
   EVENTS 1M;
   MI_HANDLER Amisic;
+
+  % tags and settings for scale definitions
   FSF:=1.; RSF:=1.; QSF:=1.;
+
+  % tags and settings for ME-level cuts
   J1CUT:=20.; J2CUT:=10.;
+
+  % tags and settings for ME generators
   LOOPGEN:=<my-loop-gen>;
+  ME_SIGNAL_GENERATOR Amegic LOOPGEN;
+  EVENT_GENERATION_MODE Weighted;
   RESULT_DIRECTORY res_jJ1CUT_jJ2CUT_ffFSF_rfRSF_qfQSF;
-  BATCH_MODE 6;
+
+  % model parameters
+  MODEL SM;
+
+  % collider setup
+  BEAM_1  2212; BEAM_ENERGY_1 3500.0;
+  BEAM_2  2212; BEAM_ENERGY_2 3500.0;
 }(run)
 
 (processes){
   Process 93 93 -> 93 93;
-  NLO_QCD_Mode MC@NLO {2};
+  NLO_QCD_Mode MC@NLO;
   Loop_Generator LOOPGEN;
   Order_EW 0;
   Scales FASTJET[A=antikt,PT=J1CUT,ET=0,R=0.4,M=0]{FSF*0.0625*H_T2}{RSF*0.0625*H_T2}{QSF*0.25*PPerp2(p[3])}
@@ -22,12 +37,3 @@
   FastjetFinder  antikt 1  J1CUT  0.0  0.4
 }(selector)
 
-(me){
-  ME_SIGNAL_GENERATOR Amegic LOOPGEN;
-  EVENT_GENERATION_MODE Weighted;
-}(me)
-
-(beam){
-  BEAM_1  2212; BEAM_ENERGY_1 3500.0;
-  BEAM_2  2212; BEAM_ENERGY_2 3500.0;
-}(beam)
