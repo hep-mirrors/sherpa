@@ -1,6 +1,7 @@
 #include "CSSHOWER++/Tools/Singlet.H"
 #include "CSSHOWER++/Tools/Parton.H"
 #include "CSSHOWER++/Showers/Sudakov.H"
+#include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
 #include "PHASIC++/Channels/CSS_Kinematics.H"
 #include "PDF/Main/Jet_Criterion.H"
@@ -72,6 +73,7 @@ Singlet *Singlet::RefCopy(All_Singlets *const all,std::map<Parton*,Parton*> &pma
   all->push_back(p_ref);
   p_ref->p_all=all;
   p_ref->p_ms=p_ms;
+  p_ref->p_proc=p_proc;
   p_ref->p_jf=p_jf;
   p_ref->m_nlo=m_nlo;
   p_ref->m_decs=m_decs;
@@ -100,7 +102,8 @@ Parton *Singlet::IdParton(const size_t &id) const
 
 bool Singlet::JetVeto(Sudakov *const sud) const
 {
-  DEBUG_FUNC("");
+  int nlo(p_proc?((Process_Base*)p_proc)->Info().m_nlomode&2:-1);
+  DEBUG_FUNC("nlo = "<<nlo);
   msg_Debugging()<<*(Singlet*)this<<"\n";
   bool his(false), check(false);
   size_t noem(0), nospec(0);
@@ -124,7 +127,9 @@ bool Singlet::JetVeto(Sudakov *const sud) const
 	if ((*kit)->Id()&nospec) continue;
 	bool ki((*kit)->GetType()==pst::IS);
 	cstp::code et((ii||ji)?(ki?cstp::II:cstp::IF):(ki?cstp::FI:cstp::FF));
-	if (sud->HasKernel(fi,fj,(*kit)->GetFlavour(),et)) {
+	if ((nlo>0 && (*kit)->GetFlavour().Strong() &&
+	     (*iit)->GetFlavour().Strong() && (*jit)->GetFlavour().Strong()) ||
+	    sud->HasKernel(fi,fj,(*kit)->GetFlavour(),et)) {
 	  double q2ijk(PDF::Qij2(ii?-(*iit)->Momentum():(*iit)->Momentum(),
 				 ji?-(*jit)->Momentum():(*jit)->Momentum(),
 				 ki?-(*kit)->Momentum():(*kit)->Momentum(),

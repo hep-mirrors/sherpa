@@ -217,7 +217,7 @@ double Single_Process::BeamISRWeight
       DEBUG_FUNC(m_name<<", mode = "<<mode);
       Cluster_Amplitude *ampl(ampls.front());
       const Single_Process *proc
-	((imode&4)?ampl->Procs<Single_Process>():this);
+	((imode&4)?ampl->Proc<Single_Process>():this);
       if (imode&2) ampl=ampl->Next();
       for (;ampl;ampl=ampl->Next()) {
 	if (IsEqual(LQ2,ampl->KT2())) continue;
@@ -287,7 +287,7 @@ void Single_Process::BeamISRWeight
 	ClusterAmplitude_Vector &ampls
 	  (((Single_Process*)sub->p_proc)->
 	   ScaleSetter(1)->Amplitudes());
-	if (ampls.size()) ampls.front()->SetProcs(sub->p_proc);
+	if (ampls.size()) ampls.front()->SetProc(sub->p_proc);
         sub->m_result=sub->m_me*
 	  BeamISRWeight(sub->m_mu2[stp::fac],mode|
 			4|(i==subs->size()-1?2:0),ampls);
@@ -309,7 +309,7 @@ void Single_Process::BeamISRWeight
       ClusterAmplitude_Vector &ampls
 	(((Single_Process*)(*subs)[i]->p_proc)->
 	 ScaleSetter(1)->Amplitudes());
-      if (ampls.size()) ampls.front()->SetProcs((*subs)[i]->p_proc);
+      if (ampls.size()) ampls.front()->SetProc((*subs)[i]->p_proc);
       (*subs)[i]->m_result=(*subs)[i]->m_me*
 	BeamISRWeight((*subs)[i]->m_mu2[stp::fac],mode,ampls);
     }

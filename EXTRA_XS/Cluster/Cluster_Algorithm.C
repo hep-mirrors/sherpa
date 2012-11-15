@@ -53,7 +53,7 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   p_ampl->SetNIn(xs->NIn());
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
-  p_ampl->SetProcs(xs);
+  p_ampl->SetProc(xs);
   PDF::CParam kt2(xs->ScaleSetter()->CoreScale(p_ampl));
   p_ampl->SetKT2(kt2.m_kt2);
   p_ampl->SetMu2(kt2.m_mu2);

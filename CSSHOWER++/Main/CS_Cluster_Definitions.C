@@ -292,7 +292,7 @@ CParam CS_Cluster_Definitions::CoreScale
     msg_Tracking()<<METHOD<<"(): Momentum not conserved.\n"
 	       <<"\\sum p = "<<psum<<" in\n"<<*ampl<<std::endl;
   }
-  PHASIC::Single_Process *proc(ampl->Procs<PHASIC::Single_Process>());
+  PHASIC::Single_Process *proc(ampl->Proc<PHASIC::Single_Process>());
   double kt2cmin((p[0]+p[1]).Abs2()), mu2min(kt2cmin);
   for (size_t i(0);i<4;++i) {
     Cluster_Leg *li(ampl->Leg(i));

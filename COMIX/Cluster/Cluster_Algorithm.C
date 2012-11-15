@@ -112,7 +112,7 @@ CParam Cluster_Algorithm::GetMeasure
 		     (cut||!mmofl.Strong())?1:0);
   }
   else {
-    p_ampl->SetProcs(p_xs);
+    p_ampl->SetProc(p_xs);
     kt2[idi][idj][idk][mofl]=
       (p_xs->IsMapped()?p_xs->MapProc():p_xs)
       ->ScaleSetter()->CoreScale(p_ampl);

@@ -648,8 +648,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	if (GetMPvalue(pbi.m_vntchan,nfs,pnid,di)) cpi.m_ntchan=di;
 	if (GetMPvalue(pbi.m_vgpath,nfs,pnid,ds)) cpi.m_gpath=ds;
 	if (GetMPvalue(pbi.m_vnloqcdmode,nfs,pnid,ds)) {
-	  if      (ds=="Fixed_Order" || ds=="1") cpi.m_nlomode=1;
-	  else if (ds=="MC@NLO"      || ds=="3") cpi.m_nlomode=3;
+	  if      (ds=="Fixed_Order" || ds=="1") pi.m_nlomode=cpi.m_nlomode=1;
+	  else if (ds=="MC@NLO"      || ds=="3") pi.m_nlomode=cpi.m_nlomode=3;
 	  else THROW(fatal_error,"Unknown NLO_QCD_Mode "+ds+" {"+pnid+"}");
 	  cpi.m_fi.m_nloqcdtype=ToType<nlo_type::code>("BVIRS");
 	  if (!m_globalnlomode) m_globalnlomode=cpi.m_nlomode;
@@ -659,11 +659,11 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	}
 	if (GetMPvalue(pbi.m_vnloqcdpart,nfs,pnid,ds)) {
 	  cpi.m_fi.m_nloqcdtype=ToType<nlo_type::code>(ds);
-	  if (cpi.m_nlomode==0) cpi.m_nlomode=m_globalnlomode;
+	  if (cpi.m_nlomode==0) pi.m_nlomode=cpi.m_nlomode=m_globalnlomode;
 	}
 	if (GetMPvalue(pbi.m_vnloewmode,nfs,pnid,ds)) {
-	  if      (ds=="Fixed_Order" || ds=="1") cpi.m_nlomode=1;
-	  else if (ds=="MC@NLO"      || ds=="3") cpi.m_nlomode=3;
+	  if      (ds=="Fixed_Order" || ds=="1") pi.m_nlomode=cpi.m_nlomode=1;
+	  else if (ds=="MC@NLO"      || ds=="3") pi.m_nlomode=cpi.m_nlomode=3;
 	  else THROW(fatal_error,"Unknown NLO_EW_Mode "+ds+" {"+pnid+"}");
 	  cpi.m_fi.m_nloqcdtype=ToType<nlo_type::code>("BVIRS");
 	  if (!m_globalnlomode) m_globalnlomode=cpi.m_nlomode;
@@ -673,7 +673,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	}
 	if (GetMPvalue(pbi.m_vnloewpart,nfs,pnid,ds)) {
 	  cpi.m_fi.m_nloewtype=ToType<nlo_type::code>(ds);
-	  if (cpi.m_nlomode==0) cpi.m_nlomode=m_globalnlomode;
+	  if (cpi.m_nlomode==0) pi.m_nlomode=cpi.m_nlomode=m_globalnlomode;
 	}
 	if (GetMPvalue(pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
 	if (GetMPvalue(pbi.m_vloopgen,nfs,pnid,ds)) cpi.m_loopgenerator=ds;

@@ -85,7 +85,7 @@ bool Cluster_Algorithm::Cluster
     p_ampl->SetMuR2(mur2);
     p_ampl->SetMuF2(muf2);
     p_ampl->SetQ2(Q2);
-    p_ampl->SetProcs(p_proc);
+    p_ampl->SetProc(p_proc);
     p_ampl->SetKT2((p_ampl->Leg(0)->Mom()+
 		    p_ampl->Leg(1)->Mom()).Abs2());
     p_ampl->SetMu2(p_ampl->KT2());
@@ -551,7 +551,7 @@ void Cluster_Algorithm::Convert()
     p_ampl->SetOrderQCD(ampl->OrderQCD()-win.OrderQCD());
     p_ampl->SetKin(win.Kin());
   }
-  p_ampl->SetProcs(p_proc);
+  p_ampl->SetProc(p_proc);
   PDF::CParam scale((p_proc->IsMapped()?p_proc->MapProc():p_proc)
 		    ->ScaleSetter()->CoreScale(p_ampl));
   p_ampl->SetKT2(scale.m_kt2);

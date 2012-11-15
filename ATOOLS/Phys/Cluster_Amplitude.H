@@ -53,7 +53,7 @@ namespace ATOOLS {
     double m_mur2, m_muf2, m_Q2, m_mu2, m_kt2, m_z, m_phi, m_lkf;
     CI_Map m_cmap;
 
-    void *p_jf, *p_procs, *p_iinfo, *p_dinfo;
+    void *p_jf, *p_proc, *p_procs, *p_iinfo, *p_dinfo;
 
     Mass_Selector *p_ms;
 
@@ -140,6 +140,7 @@ namespace ATOOLS {
     inline void SetPhi(const double &phi) { m_phi=phi; }
 
     inline void SetJF(void *const jf)   { p_jf=jf;   }
+    inline void SetProc(void *const p)  { p_proc=p;  }
     inline void SetProcs(void *const p) { p_procs=p; }
     inline void SetIInfo(void *const i) { p_iinfo=i; }
     inline void SetDInfo(void *const d) { p_dinfo=d; }
@@ -181,6 +182,8 @@ namespace ATOOLS {
     static void SetColours(Cluster_Leg *const lij,
                            Cluster_Leg *const li,
                            Cluster_Leg *const lj);
+    template <class Type> inline Type *Proc() const 
+    { return static_cast<Type*>(p_proc); }
     template <class Type> inline Type *Procs() const 
     { return static_cast<Type*>(p_procs); }
     template <class Type> inline Type *IInfo() const 

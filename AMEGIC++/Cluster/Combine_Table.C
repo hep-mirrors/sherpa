@@ -586,7 +586,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
 	      m_graph_winner=i;
 	    }
 	  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
-	  ampl->SetProcs(p_proc);
+	  ampl->SetProc(p_proc);
 	  ampl->SetMS(p_ms);
 	  for (int i=0;i<m_nlegs;++i)
 	    ampl->CreateLeg(i<2?-p_moms[i]:p_moms[i],

@@ -2,6 +2,7 @@
 
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
+#include "PHASIC++/Process/Process_Base.H"
 #include "PDF/Main/Jet_Criterion.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
@@ -410,6 +411,7 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
   Cluster_Leg * leg;
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
+  singlet->SetProc(ampl->Proc<void>());
   for (size_t i(0);i<ampl->Legs().size();++i) {
     leg = ampl->Leg(i);
     if (leg->Flav().IsHadron() && 
@@ -660,6 +662,7 @@ Singlet *CS_Shower::TranslateAmplitude
 		 sqrt(std::numeric_limits<double>::max()));
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
+  singlet->SetProc(ampl->Proc<void>());
   singlet->SetNLO(ampl->NLO()&~1);
   if (jf==NULL && (ampl->NLO()&2)) singlet->SetNLO(4);
   singlet->SetLKF(ampl->LKF());
@@ -751,7 +754,9 @@ double CS_Shower::CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
 bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
 			const int mode)
 {
-  DEBUG_FUNC("");
+  int nlo(ampl->Proc<PHASIC::Process_Base>()==NULL?-1:
+	  ampl->Proc<PHASIC::Process_Base>()->Info().m_nlomode&2);
+  DEBUG_FUNC("nlo = "<<nlo);
   msg_Debugging()<<*ampl<<"\n";
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
   double q2cut(jf->Ycut()*sqr(rpa->gen.Ecms()));
@@ -783,7 +788,9 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
 	cstp::code et((i<ampl->NIn()||j<ampl->NIn())?
 		      (k<ampl->NIn()?cstp::II:cstp::IF):
 		      (k<ampl->NIn()?cstp::FI:cstp::FF));
-	if (p_shower->GetSudakov()->HasKernel(fi,fj,fk,et)) {
+	if ((nlo>0 && lk->Flav().Strong() &&
+	     li->Flav().Strong() && lj->Flav().Strong()) ||
+	    p_shower->GetSudakov()->HasKernel(fi,fj,fk,et)) {
 	  double q2ijk(PDF::Qij2(li->Mom(),lj->Mom(),lk->Mom(),
 				 li->Flav(),lj->Flav(),jf->DR()));
  	  msg_Debugging()<<"Q_{"<<ID(li->Id())<<ID(lj->Id())

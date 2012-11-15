@@ -536,7 +536,7 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
 
 PDF::CParam METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl) const
 {
-  ampl->SetProcs(p_proc);
+  ampl->SetProc(p_proc);
   PDF::CParam kt2(p_core->Calculate(ampl));
   ampl->SetKT2(kt2.m_kt2);
   ampl->SetMu2(kt2.m_mu2);

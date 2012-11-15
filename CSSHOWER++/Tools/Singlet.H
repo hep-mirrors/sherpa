@@ -26,6 +26,7 @@ namespace CSSHOWER {
     double m_kt2_prev, m_kt2_next, m_lkf;
     int m_nlo;
     ATOOLS::DecayInfo_Vector m_decs;
+    void *p_proc;
     void SetColours(Singlet *const sing,Parton *const np,
 		    const int oldc[2],const int newc[2]);
     void SetColours(Parton *const pa,Parton *const p,
@@ -36,7 +37,7 @@ namespace CSSHOWER {
     Singlet() : 
       p_split(NULL), p_left(NULL), p_right(NULL), p_spec(NULL),
       p_jf(NULL), p_all(NULL), p_ref(NULL),
-      m_kt2_prev(1.0e37), m_kt2_next(0.0), m_lkf(0.0), m_nlo(0) {}
+      m_kt2_prev(1.0e37), m_kt2_next(0.0), m_lkf(0.0), m_nlo(0), p_proc(NULL) {}
     ~Singlet();
 
     Singlet *RefCopy(All_Singlets *const all,std::map<Parton*,Parton*> &pmap);
@@ -95,6 +96,8 @@ namespace CSSHOWER {
 
     inline double KtPrev() const { return m_kt2_prev; }
     inline double KtNext() const { return m_kt2_next; }
+
+    inline void SetProc(void *const proc) { p_proc=proc; }
 
   };
 

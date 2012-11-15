@@ -55,6 +55,7 @@ Jet_Finder::~Jet_Finder()
 
 bool Jet_Finder::Trigger(const Vec4D_Vector &p)
 {
+  p_ampl->SetProc(p_proc->Process());
   for (size_t i(0);i<p.size();++i)
     p_ampl->Leg(i)->SetMom((int)i<m_nin?-p[i]:p[i]);
   m_ycut=p_yccalc->Calculate()->Get<double>();
@@ -70,6 +71,7 @@ bool Jet_Finder::Trigger(const Vec4D_Vector &p)
 bool Jet_Finder::JetTrigger(const ATOOLS::Vec4D_Vector &p,
                             NLO_subevtlist *const subs)
 {
+  p_ampl->SetProc(p_proc->Process());
   for (size_t i(0);i<p.size();++i)
     p_ampl->Leg(i)->SetMom((int)i<m_nin?-p[i]:p[i]);
   p_ampl->SetMS((Mass_Selector*)p_proc->Process()->Generator());
