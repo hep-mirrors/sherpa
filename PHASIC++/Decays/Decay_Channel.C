@@ -131,7 +131,6 @@ namespace PHASIC {
         os<<" "<<setw(10)<<*dc.GetDiagrams()[i].second;
       }
     }
-    os<<endl;
     return os;
   }
 }
