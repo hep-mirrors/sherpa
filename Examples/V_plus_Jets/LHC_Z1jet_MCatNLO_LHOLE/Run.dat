@@ -7,9 +7,9 @@
   
   % tags and settings for ME generators
   ME_SIGNAL_GENERATOR Amegic LHOLE;
-  SHERPA_LDADD = golem_olp;
-  LHOLE_CONTRACTFILE=OLE_order.olc;
-  LHOLE_CMSBOOST = 1;
+  LHOLE_OLP GoSam
+  SHERPA_LDADD golem_olp;
+  LHOLE_CONTRACTFILE OLE_order.olc;
   EVENT_GENERATION_MODE Weighted;
   RESULT_DIRECTORY Results.FSF.RSF.QSF
 
