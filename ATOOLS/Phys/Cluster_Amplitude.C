@@ -33,7 +33,7 @@ Cluster_Amplitude::Cluster_Amplitude(Cluster_Amplitude *const prev):
   m_oew(0), m_oqcd(0), m_nin(0), m_new(0), m_ncl(0), m_kin(0), m_nlo(0),
   m_mur2(0.0), m_muf2(0.0), m_Q2(0.0), m_mu2(0.0),
   m_kt2(0.0), m_z(0.0), m_phi(0.0), m_lkf(0.0),
-  p_jf(NULL), p_procs(NULL), p_dinfo(NULL), p_ms(NULL)
+  p_jf(NULL), p_proc(NULL), p_procs(NULL), p_dinfo(NULL), p_ms(NULL)
 {
   if (p_prev!=NULL) p_prev->p_next=this;
 }
@@ -62,7 +62,7 @@ Cluster_Amplitude *Cluster_Amplitude::New
   ca->m_nin=ca->m_new=ca->m_ncl=ca->m_kin=ca->m_nlo=0;
   ca->m_mur2=ca->m_muf2=ca->m_Q2=ca->m_mu2=0.0;
   ca->m_kt2=ca->m_z=ca->m_phi=ca->m_lkf=0.0;
-  ca->p_jf=ca->p_procs=ca->p_dinfo=NULL;
+  ca->p_jf=ca->p_proc=ca->p_procs=ca->p_dinfo=NULL;
   ca->p_ms=NULL;
   if (ca->p_prev!=NULL) ca->p_prev->p_next=ca;
   return ca;
