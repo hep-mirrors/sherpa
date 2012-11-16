@@ -114,8 +114,9 @@ More than two scales can be set as well to be subsequently used, e.g.
 by different couplings, see @ref{COUPLINGS}.
 
 @item FASTJET
-If @uref{http://www.fastjet.fr,,FastJet} is enabled, this tag can be 
-used to set a scale based on jet, rather than parton momenta. 
+If @uref{http://www.fastjet.fr,,FastJet} is enabled by including 
+@code{--enable-fastjet=/path/to/fastjet} in the @code{configure} options, this tag can be 
+used to set a scale based on jet-, rather than parton-momenta. 
 @strong{Such a scale must be specified in the process block}, see 
 @ref{Scales}. The jets can be defined in all possible ways allowed by 
 FastJet with the arguments given as follows
