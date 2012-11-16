@@ -44,6 +44,7 @@ class SherpaHistogram:
                                   'Error':   float(linearray[2])})
             else:
                 print "Can't handle 1D histo with line of length %s:\n %s" % (len(linearray), linearray)
+        self.data.pop() # removes overflow bin
         f.close()
 
     def write_datapoint(self, f, xval, xerr, yval, yerr):
