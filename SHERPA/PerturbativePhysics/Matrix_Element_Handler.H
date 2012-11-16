@@ -75,7 +75,7 @@ namespace SHERPA {
     PDF::NLOMC_Base  *p_nlomc;
 
     double m_sum, m_ovwth, m_weightfactor;
-    size_t m_globalnlomode, m_ranidx;
+    size_t m_globalnlomode, m_ranidx, m_fosettings;
 
 #ifdef USING__GZIP
     ATOOLS::igzstream *p_ranin;

@@ -36,7 +36,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
   m_path(dir), m_file(file), m_processfile(processfile),
   m_selectorfile(selectorfile), m_eventmode(0), m_hasnlo(0),
   p_shower(NULL), p_nlomc(NULL), m_sum(0.0), m_globalnlomode(0),
-  m_ranidx(0), p_ranin(NULL), p_ranout(NULL)
+  m_ranidx(0), m_fosettings(0), p_ranin(NULL), p_ranout(NULL)
 {
   Data_Reader read(" ",";","!","=");
   read.AddComment("#");
@@ -286,14 +286,19 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
 	m_procs.push_back(procs[i]);
 	m_procs.back()->FillProcessMap(pmap);
       }
-      if (p_shower->GetShower()->On()) {
-	msg_Info()<<METHOD<<"(): Disabling the shower "
-		  <<"for fixed-order calculation.\n";
-	p_shower->GetShower()->SetOn(false);
+      if (m_fosettings==0) {
+	m_fosettings=1;
+	if (p_shower) p_shower->GetShower()->SetOn(false);
+	Read_Write_Base::AddCommandLine("FRAGMENTATION Off;");
+	Read_Write_Base::AddCommandLine("ME_QED Off;");
+	Data_Reader read(" ",";","!","=");
+	read.AddComment("#");
+	read.AddWordSeparator("\t");
+	read.SetInputPath(m_path);
+	read.SetInputFile(m_file);
+	if (read.GetValue<int>("BEAM_REMNANTS",-1)==-1)
+	  Read_Write_Base::AddCommandLine("BEAM_REMNANTS 0;");
       }
-      Read_Write_Base::AddCommandLine("FRAGMENTATION Off;");
-      Read_Write_Base::AddCommandLine("ME_QED Off;");
-      Read_Write_Base::AddCommandLine("BEAM_REMNANTS 0;");
     }
   }
   return procs;
