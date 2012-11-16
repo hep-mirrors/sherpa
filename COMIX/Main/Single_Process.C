@@ -160,8 +160,9 @@ bool COMIX::Single_Process::Initialize
       if (m_wgtinfo.m_nx==0) m_wgtinfo.AddMEweights(2);
     }
     p_bg->SetLoopME(p_loop);
-    m_oew=p_bg->MaxOrderEW();
-    m_oqcd=p_bg->MaxOrderQCD();
+    nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);
+    m_oew=p_bg->MaxOrderEW()+((m_pinfo.m_fi.m_nloewtype&nlot)?1:0);
+    m_oqcd=p_bg->MaxOrderQCD()+((m_pinfo.m_fi.m_nloqcdtype&nlot)?1:0);
     (*pmap)[m_name]=m_name;
     return true;
   }
