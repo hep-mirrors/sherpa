@@ -67,7 +67,7 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args) :
   m_eventmode(1), m_evtid(0), m_subevtid(0), m_evtcnt(0), m_entries(0), m_evtpos(0),
   p_isr(args.p_isr), m_sargs(NULL,"","")
 {
-  std::string filename=m_path+m_file;
+  std::string filename=m_path+m_file+".root";
   msg_Out()<<" Reading from "<<filename<<"\n";
   m_calc=args.p_reader->GetValue<int>("ROOTNTUPLE_CALC",0);
   if (m_calc) msg_Info()<<METHOD<<"(): Ntuple calc mode set to "<<m_calc<<"."<<std::endl;
