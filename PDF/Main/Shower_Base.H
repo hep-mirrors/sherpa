@@ -28,6 +28,7 @@ namespace PDF {
     
     std::string m_name;
     double      m_weight;
+    int         m_on;
 
   public:
 
@@ -57,6 +58,10 @@ namespace PDF {
 			  const int cpl,const double &mu2) const = 0;
 
     inline double Weight() const { return m_weight; }
+
+    inline int On() { return m_on; }
+
+    inline void SetOn(const int on) { m_on=on; }
 
   };// end of class Shower_Base
 

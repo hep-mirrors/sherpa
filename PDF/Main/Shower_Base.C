@@ -12,7 +12,7 @@ using namespace PDF;
 using namespace ATOOLS;
 
 Shower_Base::Shower_Base(const std::string &name):
-  p_cluster(NULL), m_name(name), m_weight(1.0) {}
+  p_cluster(NULL), m_name(name), m_weight(1.0), m_on(1) {}
 
 Shower_Base::~Shower_Base() 
 {

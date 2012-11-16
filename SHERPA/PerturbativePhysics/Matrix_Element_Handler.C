@@ -286,6 +286,13 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
 	m_procs.push_back(procs[i]);
 	m_procs.back()->FillProcessMap(pmap);
       }
+      if (p_shower->GetShower()->On()) {
+	msg_Info()<<METHOD<<"(): Disabling the shower "
+		  <<"for fixed-order calculation.\n";
+	p_shower->GetShower()->SetOn(false);
+      }
+      Read_Write_Base::AddCommandLine("FRAGMENTATION Off;");
+      Read_Write_Base::AddCommandLine("BEAM_REMNANTS 0;");
     }
   }
   return procs;

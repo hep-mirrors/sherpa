@@ -108,7 +108,7 @@ void CS_Shower::RefCopy()
 
 int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 {
-  if (!p_shower) return 1;
+  if (!p_shower || !m_on) return 1;
   m_weight=1.0;
   RefCopy();
   // p_as is alphaS in case we do a shower variation it is != NULL.
