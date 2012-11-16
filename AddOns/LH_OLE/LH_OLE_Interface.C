@@ -70,6 +70,11 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
   if (reader.ReadFromFile(fname,"LHOLE_CONTRACTFILE")) {
     contractfn=fname;
   }
+  std::string irr(reader.GetValue<std::string>
+		  ("LHOLE_IR_REGULARISATION","DRED"));
+  if (irr=="DRED") m_drmode=1;
+  else if (irr=="CDR") m_drmode=0;
+  else THROW(fatal_error,"Unknown regularisation scheme");
   m_needcmsboost=reader.GetValue<int>("LHOLE_BOOST_TO_CMS",0);
   std::string lholegen(reader.GetValue<std::string>("LHOLE_OLP",""));
   if (lholegen=="GoSam") {
@@ -90,7 +95,8 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
     if (lhfile.FileStatus()==0) {
       lhfile.AddParameter("MatrixElementSquareType  CHsummed");
       lhfile.AddParameter("CorrectionType           QCD");
-      lhfile.AddParameter("IRregularisation         DRED");
+      if (m_drmode==1) lhfile.AddParameter("IRregularisation         DRED");
+      else lhfile.AddParameter("IRregularisation         CDR");
       lhfile.AddParameter("AlphasPower              "+ToString(pi.m_oqcd-1));
       lhfile.AddParameter("AlphaPower               "+ToString(pi.m_oew));
       lhfile.AddParameter("OperationMode            CouplingsStrippedOff");
