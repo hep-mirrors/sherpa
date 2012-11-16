@@ -3,8 +3,8 @@
 }(run)
 
 (beam){
-  BEAM_1 = 2212; BEAM_ENERGY_1 = 7000;
-  BEAM_2 = 2212; BEAM_ENERGY_2 = 7000;
+  BEAM_1 = 2212; BEAM_ENERGY_1 = 3500;
+  BEAM_2 = 2212; BEAM_ENERGY_2 = 3500;
 }(beam)
 
 (processes){

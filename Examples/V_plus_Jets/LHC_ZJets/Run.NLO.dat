@@ -17,8 +17,8 @@
 
   % tags and settings for ME generators
   LOOPGEN0:=Internal;
-  LOOPGEN1:=<my-loop-gen-for-W1j>;
-  LOOPGEN2:=<my-loop-gen-for-W2j>;
+  LOOPGEN1:=<my-loop-gen-for-Z1j>;
+  LOOPGEN2:=<my-loop-gen-for-Z2j>;
   ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN0 LOOPGEN1 LOOPGEN2;
   EVENT_GENERATION_MODE Weighted;
   RESULT_DIRECTORY=res.NLO.QCUT.FSF.RSF.QSF;
@@ -33,7 +33,7 @@
 }(run);
 
 (processes){
-  Process 93 93 -> 90 91 93{NJET};
+  Process 93 93 -> 11 -11 93{NJET};
   Order_EW 2; CKKW sqr(QCUT/E_CMS);
   NLO_QCD_Mode MC@NLO {LJET};
   Loop_Generator LOOPGEN0 {2};
@@ -50,5 +50,5 @@
 }(processes);
 
 (selector){
-  Mass 90 91 2. E_CMS;
+  Mass 11 -11 66 116
 }(selector);
