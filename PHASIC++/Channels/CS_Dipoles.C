@@ -292,6 +292,10 @@ IF_Dipole::~IF_Dipole() {}
 bool IF_Dipole::ValidPoint(const ATOOLS::Vec4D_Vector &p)
 {
   if (p[m_kt].PPerp2()<m_amin*m_q2min) return m_on=false;
+  double xmin(0.0);
+  if (m_ijt==0) xmin=p[m_ijt].PPlus()/rpa->gen.PBeam(0).PPlus();
+  else xmin=p[m_ijt].PMinus()/rpa->gen.PBeam(1).PMinus();
+  if (1.0-xmin<m_amin) return m_on=false;
   return m_on=2.0*p[m_ijt]*p[m_kt]>m_q2min;
 }
 
