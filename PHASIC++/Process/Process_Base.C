@@ -346,9 +346,9 @@ std::string Process_Base::GenerateName(const Subprocess_Info &info)
   for (size_t i(1);i<info.m_ps.size();++i) 
     name+="__"+GenerateName(info.m_ps[i]);
   if (info.m_nloqcdtype!=nlo_type::lo) 
-    name+="__QCD("+ToString(info.m_nloqcdtype)+")";
+    name+="__QCD("+ToString(info.m_nloqcdtype)+info.m_sv+")";
   if (info.m_nloewtype!=nlo_type::lo) 
-    name+="__EW("+ToString(info.m_nloewtype)+")";
+    name+="__EW("+ToString(info.m_nloewtype)+info.m_sv+")";
   return name+="]";
 }
 
@@ -364,9 +364,9 @@ std::string Process_Base::GenerateName
   for (size_t i(0);i<ii.m_ps.size();++i) name+="__"+GenerateName(ii.m_ps[i]);
   for (size_t i(0);i<fi.m_ps.size();++i) name+="__"+GenerateName(fi.m_ps[i]);
   if (fi.m_nloqcdtype!=nlo_type::lo) 
-    name+="__QCD("+ToString(fi.m_nloqcdtype)+")";
+    name+="__QCD("+ToString(fi.m_nloqcdtype)+fi.m_sv+")";
   if (fi.m_nloewtype!=nlo_type::lo) 
-    name+="__EW("+ToString(fi.m_nloewtype)+")";
+    name+="__EW("+ToString(fi.m_nloewtype)+fi.m_sv+")";
   return name;
 }
 

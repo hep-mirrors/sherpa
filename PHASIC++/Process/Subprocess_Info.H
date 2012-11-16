@@ -34,7 +34,7 @@ namespace PHASIC {
   public:
 
     ATOOLS::Flavour m_fl;
-    std::string     m_id, m_pol;
+    std::string     m_id, m_pol, m_sv;
 
     std::vector<Subprocess_Info> m_ps;
     ATOOLS::DecayInfo_Vector m_decins;

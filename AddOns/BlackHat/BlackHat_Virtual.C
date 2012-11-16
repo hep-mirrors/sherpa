@@ -58,6 +58,13 @@ Virtual_ME2_Base *BlackHat_Virtual_Getter::operator()(const Process_Info &pi) co
       pi.m_loopgenerator!="WhiteHat") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
+    if (pi.m_fi.m_sv=="" || pi.m_fi.m_sv=="FullColor")
+      BlackHat_Virtual::Interface()->set("COLOR_MODE",std::string("full_color"));
+    else if (pi.m_fi.m_sv=="LeadingColor")
+      BlackHat_Virtual::Interface()->set("COLOR_MODE",std::string("leading_color"));
+    else if (pi.m_fi.m_sv=="FullMinusLeadingColor")
+      BlackHat_Virtual::Interface()->set("COLOR_MODE",std::string("full_minus_leading_color"));
+    else THROW(critical_error,"Invalid option '"+pi.m_fi.m_sv+"'");
     Flavour_Vector fl=pi.ExtractFlavours();
     std::vector<int> kfvector;
     for (size_t i=0; i<fl.size(); ++i) kfvector.push_back(fl[i].HepEvt());

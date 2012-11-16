@@ -521,6 +521,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vnloewpart,nf);
 	}
+	if (cur[0]=="Subdivide_Virtual") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vnlosubv,nf);
+	}
 	if (cur[0]=="ME_Generator") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vmegen,nf);
@@ -683,6 +687,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  cpi.m_fi.m_nloewtype=ToType<nlo_type::code>(ds);
 	  if (cpi.m_nlomode==0) pi.m_nlomode=cpi.m_nlomode=m_globalnlomode;
 	}
+	if (GetMPvalue(pbi.m_vnlosubv,nfs,pnid,ds)) cpi.m_fi.m_sv=ds;
 	if (GetMPvalue(pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
 	if (GetMPvalue(pbi.m_vloopgen,nfs,pnid,ds)) cpi.m_loopgenerator=ds;
 	std::vector<Process_Base*> proc=InitializeProcess(cpi,pmap);
