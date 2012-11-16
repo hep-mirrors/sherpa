@@ -131,13 +131,13 @@ CV<SType>::EMP(const Vec4D &p,const int cr,const int ca)
 template <typename SType> CVec4<SType>
 CV<SType>::EML(const Vec4D &p,const int cr,const int ca)
 {
-  double a(p.Abs2()/(2.0*m_k*p));
+  double p2(p.Abs2()), a(p2/(2.0*m_k*p));
   Vec4D b(p-a*m_k);
   SpinorType bm(-1,b), bp(1,b), am(-1,m_k), ap(1,m_k);
   CVec4Type e(VT(bp,bm)-SType(a)*VT(ap,am));
   e(0)=cr; e(1)=ca;
   e.SetH(2);
-  return e/(SType(2.0)*m_cmass);
+  return e/sqrt(SComplex(4.0*p2));
 }
 
 template <typename SType>
@@ -152,7 +152,8 @@ void CV<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
   if (ch>=0) {
     if (this->m_msv && (ch==0 || ch==3)) {
       CVec4Type j(EML(this->m_p,cr,ca));
-      AddJ(CVec4Type::New(this->m_dir>0?-j:j.Conj()));
+      j=this->m_dir>0?-j:j.Conj();
+      AddJ(CVec4Type::New(j));
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
 		     <<"0 "<<this->m_id<<" "<<j
@@ -163,7 +164,8 @@ void CV<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
       CVec4Type j(this->m_msv?this->m_dir>0?
 		  EMM(this->m_p,cr,ca):EMP(this->m_p,cr,ca):
 		  this->m_dir>0?EM(this->m_p,cr,ca):EP(this->m_p,cr,ca));
-      CVec4Type *c(CVec4Type::New(this->m_dir>0?j:j.Conj()));
+      j=this->m_dir>0?j:j.Conj();
+      CVec4Type *c(CVec4Type::New(j));
       AddJ(c);
 #ifdef DEBUG__BG
       msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
@@ -178,7 +180,8 @@ void CV<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
     CVec4Type j(this->m_msv?this->m_dir>0?
 		EMP(this->m_p,cr,ca):EMM(this->m_p,cr,ca):
 		this->m_dir>0?EP(this->m_p,cr,ca):EM(this->m_p,cr,ca));
-    CVec4Type *c(CVec4Type::New(this->m_dir>0?j:j.Conj()));
+    j=this->m_dir>0?j:j.Conj();
+    CVec4Type *c(CVec4Type::New(j));
     AddJ(c);
 #ifdef DEBUG__BG
     msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')
