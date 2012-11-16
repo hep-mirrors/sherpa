@@ -33,8 +33,8 @@
 
   % model parameters
   MODEL SM+EHC
-  YUKAWA[5] 0; YUKAWA
-  MASS[25] 125.; WIDTH[25] 0.;
+  YUKAWA[5] 0; YUKAWA[15] 0;
+  MASS[25] 125.; WIDTH[25] 0.; STABLE[25] 0;
 
   % collider setup
   BEAM_1 2212; BEAM_ENERGY_1 4000;
