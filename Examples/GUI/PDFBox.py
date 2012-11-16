@@ -94,22 +94,22 @@ class PDFBox:
 
     def write(self,runfile,collider):
         runfile.write('\n')
-        runfile.write('%%% PDF setup \n\n')
+        runfile.write('  %%% PDF setup \n\n')
 
         print "Check consistency for beams: ",collider[2],collider[4]
         if (collider[2]==collider[4] or
             collider[2]==-collider[4]):
-            runfile.write('PDF_SET = %20s; ' 
+            runfile.write("  PDF_SET = %20s; " 
                           % str(self.pdf_tag[0]))
             if self.pdf_set[0]!=0:
-                runfile.write('PDF_SET_VERSION = %3s; ' 
+                runfile.write("  PDF_SET_VERSION = %3s; "
                               % str(self.pdf_set[0]))
         else:
             for beam in range(0,2):
-                runfile.write('PDF_SET_%i = %20s ; ' 
+                runfile.write("  PDF_SET_%i = %20s ; "
                               % (beam,str(self.pdf_tag[beam])))
                 if self.pdf_set[beam]!=0:
-                    runfile.write('PDF_SET_%i = %20s ; ' 
+                    runfile.write("PDF_SET_%i = %20s;\n" 
                                   % (beam,str(self.pdf_set[beam])))
 
         runfile.write('\n')

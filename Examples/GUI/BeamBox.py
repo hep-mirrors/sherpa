@@ -50,10 +50,10 @@ class BeamBox:
         beam_id2 = self.collider[4]
         beam_en2 = self.collider[5]
         runfile.write('\n')
-        runfile.write('%%% Beam setup according to: '+tag+'\n\n')
-        runfile.write('BEAM_1 = %8s ; ' % str(beam_id1))
+        runfile.write('  %%% Beam setup according to: '+tag+'\n\n')
+        runfile.write('  BEAM_1 = %8s ; ' % str(beam_id1))
         runfile.write('BEAM_ENERGY_2 = %0.2f ;\n' % (beam_en1))
-        runfile.write('BEAM_2 = %8s ; ' % str(beam_id2))
+        runfile.write('  BEAM_2 = %8s ; ' % str(beam_id2))
         runfile.write('BEAM_ENERGY_2 = %0.2f ;\n' % (beam_en2))
 
     def printDefaults(self):

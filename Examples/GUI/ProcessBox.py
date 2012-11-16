@@ -34,6 +34,7 @@ class ProcessBox:
         self.loopgenerators = []
         for i in range(0,self.nlomax+1): 
             self.loopgenerators.append("None")
+        self.extrainfo = []
 
     def initialiseDefaults(self,collider):
         print "Proc::initialiseDefaults",collider[2],collider[4]
@@ -85,13 +86,14 @@ class ProcessBox:
             return minj,totj,nloj
         return None,None,None
 
-    def setJetMultis(self,minjets=0,totjets=0,nlojets=0):
+    def setJetMultis(self,minjets=0,totjets=0,nlojets=-1):
+        print "SetJetMultis(",minjets,totjets,nlojets,")"
         if self.process!=None:
             if totjets>=self.process.minjets and totjets<=self.process.totjets:
                 self.totjets = totjets
             if minjets>=self.process.minjets and minjets<=self.totjets:
                 self.minjets = minjets
-            if nlojets>=self.minjets and nlojets<=self.totjets:
+            if nlojets<=self.totjets:
                 self.nlojets = nlojets
 
     def getMinJets(self):
@@ -113,10 +115,13 @@ class ProcessBox:
         return self.muFfactor,self.muRfactor,self.muQfactor
 
     def isNLO(self):
-        return (self.process.nlojets>-1)
+        return (self.nlojets>-1)
 
     def setCKKW(self,ckkw_param):
         self.ckkw_param = ckkw_param
+
+    def getCKKWScale(self):
+        return self.ckkw_param
 
     def setLOgen(self,gen):
         self.LOgen = gen
@@ -126,12 +131,17 @@ class ProcessBox:
 
     def setLoopGen(self,n,loopgen):
         if n<len(self.loopgenerators):
+            if loopgen=="GoSam":
+                loopgen="LH_OLE"
             self.loopgenerators[n] = loopgen
             print "Set loopgen[",n,"] = ",loopgen
 
     def getLoopGens(self):
         print "Have ",len(self.loopgenerators)," LoopGens."
         return self.loopgenerators
+
+    def getExtraInfo(self):
+        return self.extrainfo
 
     def write(self,runfile):
         if self.process==None:
@@ -159,7 +169,7 @@ class ProcessBox:
             runfile.write("\n")
             lineno += 1
         if self.totjets>0:
-            runfile.write("    CKKW sqr(%0.2f/E_CMS);\n" %(self.ckkw_param))
+            runfile.write("    CKKW sqr(QCUT/E_CMS);\n")
         if self.nlojets>=0:
             runfile.write("    NLO_QCD_Mode = MC@NLO {")
             ljmin = self.process.fsparts

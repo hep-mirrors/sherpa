@@ -48,7 +48,8 @@ class Procsection_gui(guibase.gui_object):
             self.minjetsbutton.set_sensitive(True)
             self.totjetsbutton.set_sensitive(True)
             self.nlojetsbutton.set_sensitive(True)
-            self.ckkwbutton.set_sensitive(True)
+            self.ckkwbutton.set_sensitive(self.totjetsbutton.get_value()>
+                                          self.minjetsbutton.get_value())
             self.mufbox.set_sensitive(True)
             self.murbox.set_sensitive(True)
             self.muqbox.set_sensitive(True)
@@ -60,13 +61,11 @@ class Procsection_gui(guibase.gui_object):
                 self.ckkwbutton.get_adjustment().set_lower(2.)
                 self.ckkwbutton.get_adjustment().set_upper(100.)
                 self.ckkwbutton.get_adjustment().set_step_increment(2.)
-                self.ckkwbutton.set_sensitive(True)
             if self.procbox.getType()=="HC":
                 self.ckkwbutton.get_adjustment().set_value(20.)
                 self.ckkwbutton.get_adjustment().set_lower(10.)
                 self.ckkwbutton.get_adjustment().set_upper(200.)
                 self.ckkwbutton.get_adjustment().set_step_increment(5.)
-                self.ckkwbutton.set_sensitive(True)
             if self.procbox.getType()=="None":
                 self.ckkwbutton.get_adjustment().set_value(0.)
                 self.ckkwbutton.get_adjustment().set_lower(0.)
@@ -88,6 +87,7 @@ class Procsection_gui(guibase.gui_object):
             self.muQ = data[1]
 
     def buttonChanged(self,button,mode):
+        print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
         self.minjets = self.minjetsbutton.get_value_as_int()
         print "new lower limits for jets:",self.minjets
         self.totjetsbutton.get_adjustment().set_lower(self.minjets)
@@ -96,20 +96,19 @@ class Procsection_gui(guibase.gui_object):
         self.totjets = self.totjetsbutton.get_value_as_int()
         if (self.nlojetsbutton.get_adjustment().get_value()>self.totjets):
             self.nlojetsbutton.get_adjustment().set_value(self.totjets)
-        self.totjets = self.totjetsbutton.get_value_as_int()
-        self.minjets = self.minjetsbutton.get_value_as_int()
-        self.nlojets = self.nlojetsbutton.get_value_as_int()
-        self.procbox.setJetMultis(self.minjets,self.totjets,self.nlojets)
+        totjets = self.totjetsbutton.get_value_as_int()
+        minjets = self.minjetsbutton.get_value_as_int()
+        nlojets = self.nlojetsbutton.get_value_as_int()
+        self.procbox.setJetMultis(minjets,totjets,nlojets)
         print "New multis in proc box:",self.procbox.getNJets()
-        if (self.nlojets>-1):
+        if (nlojets>-1):
             self.muqbox.set_sensitive(True)
         else:
             self.muqbox.set_sensitive(False)
-        if self.totjets>self.minjets:
+        if totjets>self.minjets:
             self.ckkwbutton.set_sensitive(True)
         else:
             self.ckkwbutton.set_sensitive(False)            
-        self.procbox.setJetMultis(self.minjets,self.totjets,self.nlojets)
         self.update("Proc")
 
     def extractParameters(self):
@@ -131,24 +130,20 @@ class Procsection_gui(guibase.gui_object):
         self.proc_sel.connect("changed", self.procSelected)
 
     def initButtons(self):
-        self.minjetsbutton = gtk.SpinButton()
-        self.minjetsbutton.set_adjustment(gtk.Adjustment(0,0,0,1,1))
+        self.minjetsbutton = gtk.SpinButton(gtk.Adjustment(0,0,0,1,1))
+        self.minjetsbutton.connect("value_changed",self.buttonChanged,"Min")
         self.minjetsbutton.set_numeric(True)
-        self.minjetsbutton.connect("changed",self.buttonChanged,"Min")
 
-        self.totjetsbutton = gtk.SpinButton()
-        self.totjetsbutton.set_adjustment(gtk.Adjustment(0,0,0,1,1))
+        self.totjetsbutton = gtk.SpinButton(gtk.Adjustment(0,0,0,1,1))
+        self.totjetsbutton.connect("value_changed",self.buttonChanged,"Tot")
         self.totjetsbutton.set_numeric(True)
-        self.totjetsbutton.connect("changed",self.buttonChanged,"Tot")
 
-        self.nlojetsbutton = gtk.SpinButton()
-        self.nlojetsbutton.set_adjustment(gtk.Adjustment(-1,-1,-1,1,1))
+        self.nlojetsbutton = gtk.SpinButton(gtk.Adjustment(-1,-1,-1,1,1))
+        self.nlojetsbutton.connect("value_changed",self.buttonChanged,"NLO")
         self.nlojetsbutton.set_numeric(True)
-        self.nlojetsbutton.connect("changed",self.buttonChanged,"NLO")
 
-        self.ckkwbutton = gtk.SpinButton()
-        self.ckkwbutton.set_adjustment(gtk.Adjustment(20.,0.,100.,5.,1))
-        self.ckkwbutton.connect("changed",self.ckkwChanged)
+        self.ckkwbutton = gtk.SpinButton(gtk.Adjustment(20.,0.,100.,5.,1))
+        self.ckkwbutton.connect("value_changed",self.ckkwChanged)
         self.ckkwbutton.set_sensitive(False)
 
         self.mufbox = gtk.HBox(False,10)

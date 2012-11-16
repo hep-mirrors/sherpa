@@ -10,6 +10,10 @@ import SoftBox
 class Softsection_gui(guibase.gui_object):
     def initialise(self):
         self.softbox = self.parameters.getSoftBox()
+        self.hadbox = gtk.VBox(False,10)
+        self.hadbox.set_border_width(10) 
+        self.mpibox = gtk.VBox(False,10)
+        self.mpibox.set_border_width(10) 
         self.initButtons()
         pass
 
@@ -52,8 +56,6 @@ class Softsection_gui(guibase.gui_object):
         hadmodes   = self.softbox.getHadModes()
         haddefault = self.softbox.getHadModel()
         hadon      = self.softbox.getHadOn()
-        self.hadbox = gtk.VBox(False,10)
-        self.hadbox.set_border_width(10) 
         self.hadbox.pack_start(gtk.Label("Hadronisation"),False,False,2)
         self.hadmodelbox = gtk.HBox(False,10)
         self.hadmodelbox.set_border_width(10) 
@@ -85,8 +87,6 @@ class Softsection_gui(guibase.gui_object):
         mpimodes   = self.softbox.getMPIModes()
         mpidefault = self.softbox.getMPIModel()
         mpion      = self.softbox.getMPIOn()
-        self.mpibox = gtk.VBox(False,10)
-        self.mpibox.set_border_width(10) 
         self.mpibox.pack_start(gtk.Label("Multiple Interactions"),False,False,2)
         self.mpimodelbox = gtk.HBox(False,10)
         self.mpimodelbox.set_border_width(10) 

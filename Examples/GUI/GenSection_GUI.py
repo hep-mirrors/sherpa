@@ -38,7 +38,7 @@ class generalsettings_gui(guibase.gui_object):
         ebox.set_border_width(10)
         ebox.pack_start(gtk.Label("Number of events:"),False,False,10)
         button  = gtk.SpinButton(gtk.Adjustment(self.params.getNEvents(),
-                                                1,10000000,10000),1,0)
+                                                0,1000000000,10000),1,0)
         button.connect("value_changed",self.paramChanged,"Events")
         ebox.pack_start(button,False,False,10)
         ebox.show_all()

@@ -83,15 +83,15 @@ class SoftBox:
 
     def write(self,runfile):
         runfile.write("\n")
-        runfile.write("%%% Soft setup \n\n")
+        runfile.write("  %%% Soft setup \n\n")
         if self.hadmodel!="None" and self.had:
-            runfile.write("FRAGMENTATION      = %s\n" %str(self.hadmodel))
-            runfile.write("FRAGMENTATION_TUNE = %s\n" %str(self.hadmode))
+            runfile.write("  FRAGMENTATION      = %s\n" %str(self.hadmodel))
+            runfile.write("  FRAGMENTATION_TUNE = %s\n" %str(self.hadmode))
         else:
-            runfile.write("FRAGMENTATION      = Off\n" %str(self.hadmodel))
-        runfile.write("MI_HANDLER    = %s\n" %str(self.mpimodel)) 
+            runfile.write("  FRAGMENTATION      = Off\n" %str(self.hadmodel))
+        runfile.write("  MI_HANDLER    = %s\n" %str(self.mpimodel)) 
         if self.mpimodel!="None" and self.mpi:
-            runfile.write("MI_TUNE       = %s\n" %str(self.mpimode))  
+            runfile.write("  MI_TUNE       = %s\n" %str(self.mpimode))  
         runfile.write("\n")
         
     def initHadModels(self):
