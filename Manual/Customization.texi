@@ -1,12 +1,21 @@
 @node Customization
 @chapter Customization
+@cindex SHERPA_LDADD
 
 Customizing Sherpa according to your needs.
 
 Sherpa can be easily extended with certain user defined tools.
 To this extent, a corresponding class must be written,
 equipped with a corresponding getter function and compiled into
-an external library which can be linked to Sherpa at runtime.
+an external library which can be linked to Sherpa at runtime. 
+To this end the switch @code{SHERPA_LDADD} has to be given the 
+name of the library to be loaded, ie.
+
+@verbatim
+  SHERPA_LDADD <libname>
+@end verbatim
+
+to load @code{lib<libname>.so}. 
 Several specific examples are listed in the following sections.
 
 @menu
