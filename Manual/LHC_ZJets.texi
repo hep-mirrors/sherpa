@@ -41,7 +41,9 @@ their defined value, see @ref{Tags}.
 respective scale factors. The resummation scale is set to the transverse 
 momentum of the core process jet time the scale factor @code{QSF}.
 @item For the calculation of the dynamical scales 
-@uref{http://www.fastjet.fr,,FastJet} is employed. Accordingly, when running @code{configure} the option @code{--enable-fastjet=/path/to/fastjet} needs to be specified. For more details cf. @ref{SCALES}.
+@uref{http://www.fastjet.fr,,FastJet} is employed. Accordingly, when 
+running @code{configure} the option @code{--enable-fastjet=/path/to/fastjet} 
+needs to be specified. For more details cf. @ref{SCALES}.
 @item An @code{RS_Enhance_Factor} is used to increase the statistical 
 quality for the real-subtracted process, cf. @ref{RS_Enhance_Factor}.
 @end itemize
@@ -51,9 +53,10 @@ quality for the real-subtracted process, cf. @ref{RS_Enhance_Factor}.
 @subsubsection MEPS and MENLOPS setup for pp->Z+jets
 
 This is an example setup for tree-level matrix elements merged with the 
-parton shower @mycite{Hoeche2009rj}. The process includes real emission matrix 
-elements with up to 4 final-state QCD partons. Via @code{CKKW sqr(30/E_CMS)} 
-the merging scale is fixed to 30 GeV.
+parton shower @mycite{Hoeche2009rj} in a minimal setup. The process 
+includes real emission matrix elements with up to 4 final-state QCD 
+partons. Via @code{CKKW sqr(30/E_CMS)} the merging scale is fixed to 
+30 GeV.
 
 @example
 @smallformat
@@ -103,7 +106,7 @@ here Sherpa can provide it internally.
 algorithm ensures that only QCD-splittings are inverted, such that the 
 production of a di-lepton pair is always identified as the core 
 process.
-@item Contrary to the best shower setup, for NLO merging the shower is 
+@item Contrary to the best LO shower setup, for NLO merging the shower is 
 setup in a crossing invariant way, employing the very same recoil scheme as 
 the MC@@NLO emission.
 @item tau leptons are set massive in order to exclude them from the massless 

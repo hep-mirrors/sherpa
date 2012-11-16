@@ -4,6 +4,7 @@
 @cindex FINITE_W_MASS
 @cindex DEACTIVATE_PPH
 @cindex DEACTIVATE_GGH
+@cindex EHC_SCALE2
 
 The EHC describes the effective coupling of gluons and photons to Higgs bosons
 via a top-quark loop, and a W-boson loop in case of photons. This supplement 
@@ -17,8 +18,10 @@ an infinitely heavy top using the switch @code{FINITE_TOP_MASS=[1,0]}.
 Similarily, the photon-photon-Higgs coupling, g_ppH, can be calculated both 
 for finite top and/or W masses or in the infinite mass limit using the 
 switches @code{FINITE_TOP_MASS=[1,0]} and @code{FINITE_W_MASS=[1,0]}.
-The default choice for both is the infinite mass limit in either case.
+The default choice for both is the infinite mass limit in either case. It
+can be varied through setting @code{EHC_SCALE2} to a different value;
 
 Either one of these couplings can be switched off using the 
 @code{DEACTIVATE_GGH=[1,0]} and @code{DEACTIVATE_PPH=[1,0]} switches. 
 Both default to 0.
+

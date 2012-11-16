@@ -10,6 +10,7 @@ of the main features of these examples.
 @menu
 * VJets::
 * Jets::
+* HJets::
 * FONLO::
 @end menu
 
@@ -44,6 +45,15 @@ of the main features of these examples.
 @subsection Jet production at LEP I
 
 
+@node HJets
+@section Higgs boson production in association with jets
+
+@menu
+* LHC_HJets::
+@end menu
+
+@include LHC_HJets.texi
+
 @node FONLO
 @section Fixed-order next-to-leading order calculations
 
@@ -58,60 +68,3 @@ of the main features of these examples.
 @node LHC_WJet_LHOLE
 @subsection LHC_WJet_LHOLE
 
-
-
-@comment @menu
-@comment * LHC_ZJets::                 
-@comment * Tevatron_ZJets::            
-@comment * Tevatron_WJets::            
-@comment * Tevatron_QCD::              
-@comment * Tevatron_Photons::
-@comment * LEP91::                     
-@comment * HERA_DIS::
-@comment * LHC_SingleTop::               
-@comment * LHC_TTH::               
-@comment * Tevatron_TopPair::          
-@comment * Tevatron_UE::               
-@comment * Tevatron_DiBoson::          
-@comment * EGamma::                    
-@comment * PEPII_BaBar::               
-@comment * LHC_4thGen::                
-@comment * LHC_AGC::                   
-@comment * LHC_EPA::                   
-@comment * LHC_ADD::
-@comment * LHC_SUSY::
-@comment * NLO_W::
-@comment * LHC_WJet_LHOLE::
-@comment * Tevatron_ZJets_MENLOPS::
-@comment * LHC_WJets_MENLOPS::
-@comment * LHC_HWW_POWHEG::
-@comment * LHC_HZZ_POWHEG::
-@comment * LHC_HPP_POWHEG::
-@comment @end menu
-
-@comment @include LHC_ZJets.texi
-@comment @include Tevatron_ZJets.texi
-@comment @include Tevatron_WJets.texi
-@comment @include Tevatron_QCD.texi
-@comment @include Tevatron_Photons.texi
-@comment @include LEP91.texi
-@comment @include HERA_DIS.texi
-@comment @include LHC_SingleTop.texi
-@comment @include LHC_TTH.texi
-@comment @include Tevatron_TopPair.texi
-@comment @include Tevatron_UE.texi
-@comment @include Tevatron_DiBoson.texi
-@comment @include EGamma.texi
-@comment @include PEPII_BaBar.texi
-@comment @include LHC_4thGen.texi
-@comment @include LHC_AGC.texi
-@comment @include LHC_EPA.texi
-@comment @include LHC_ADD.texi
-@comment @include LHC_SUSY.texi
-@comment @include W_NLO.texi
-@comment @include LHC_WJet_LHOLE.texi
-@comment @include Tevatron_ZJets_MENLOPS.texi
-@comment @include LHC_WJets_MENLOPS.texi
-@comment @include LHC_HWW_POWHEG.texi
-@comment @include LHC_HZZ_POWHEG.texi
-@comment @include LHC_HPP_POWHEG

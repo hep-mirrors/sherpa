@@ -2,7 +2,8 @@
 @section External one-loop ME
 @cindex LHOLE_ORDERFILE
 @cindex LHOLE_CONTRACTFILE
-@cindex LHOLE_CMSBOOST
+@cindex LHOLE_IR_REGULARISATION
+@cindex LHOLE_BOOST_TO_CMS
 @cindex LHOLE_OLP
 
 Sherpa includes only a very limited selection of one-loop matrix elements.
@@ -69,33 +70,32 @@ The function @code{OLP_EvalSubProcess(...)} will be called many times
 for different subprocesses and momentum configurations.
 @end itemize
 
-The setup:
+The setup (cf. examples @ref{LHC_Z1jet_MCatNLO_LHOLE} and @ref{LHC_WJet_LHOLE}):
 @itemize @bullet
-@item The setup example includes three different files for
-the born @code{Run_B.dat}, the virtual @code{Run_I.dat}
-and the real correction piece @code{Run_R.dat}. While for a
-full NLO calculation all three must be employed (and their results
-combined) only the virtual piece requires the interface.
-
 @item The line @code{Loop_Generator LHOLE} tells the code to use
 the interface for computing one-loop matrix elements.
 
-@item The switch @code{SHERPA_LDADD} present in @code{Run_I.dat} has to 
-be set to the appropriate library name (and path) of the one-loop generator, 
-see @ref{LHC_WJet_LHOLE}.
+@item The switch @code{SHERPA_LDADD} has to be set to the appropriate 
+library name (and path) of the one-loop generator.
+
+@item The IR regularisation scheme can be set via 
+@code{LHOLE_IR_REGULARISATION}. Possible values are @code{DRED} (default) 
+and @code{CDR}.
+
+@item Per default, Sherpa generates phase space points in the lab frame. 
+If @code{LHOLE_BOOST_TO_CMS=1} is set, these phase space points are boosted to 
+the centre of mass system before they are passed to the OLE.
+
+@item The original BLHA interface does not allow for run-time parameter 
+passing. While this is discussed for an updated of the accord a workable 
+solution is implemented for the use of GoSam and enabled through 
+@code{LHOLE_OLP=GoSam}. The @code{LHOLE_BOOST_TO_CMS} is also automatically 
+active with this setup. This, of course, can be adapted for other one-loop 
+programs if need be.
 
 @item Sherpa's internal analysis package can be used to generate a few 
 histograms. Thus, then when installing Sherpa the option
 @code{--enable-analysis} must be include on the command line when
 Sherpa is configured, see @ref{ANALYSIS}.
 
-@item Per default, Sherpa generates phase space points in the lab frame. 
-If @code{LHOLE_CMSBOOST=1} is set, these phase space points are boosted to 
-the centre of mass system before they are passed to the OLE.
-
-@item The original BLHA interface does not allow for run-time parameter 
-passing. While this is discussed for an updated of the accord a workable 
-solution is implemented for the use of GoSam and enabled through 
-@code{LHOLE_OLP=GoSam}. This, of course, can be adapted for other one-loop 
-programs if need be.
 @end itemize
