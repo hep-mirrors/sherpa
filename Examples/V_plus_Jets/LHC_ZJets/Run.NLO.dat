@@ -42,8 +42,7 @@
   ME_Generator Amegic {LJET};
   Enhance_Factor 16 {3}; 
   Enhance_Factor 64 {4};
-  Enhance_Factor 128 {5};
-  Enhance_Factor 256 {6};
+  Enhance_Factor 128 {5,6};
   RS_Enhance_Factor 10 {3};
   RS_Enhance_Factor 20 {4};
   End process;
