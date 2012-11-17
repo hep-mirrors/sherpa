@@ -82,7 +82,6 @@ bool BlackHat_Interface::Initialize
     if (model->ScalarNumber(std::string("WidthScheme"))==1)
       sin_th_2=std::abs(model->ComplexConstant(std::string("csin2_thetaW")));
     p_interface->set("sin_th_2",sin_th_2);
-    p_interface->set("sin_2th",sin(2.*asin(sqrt(sin_th_2))));
     p_interface->set("alpha_S",model->ScalarFunction(std::string("alpha_S")));
     p_interface->set("alpha_QED",model->ScalarFunction(std::string("alpha_QED")));
     msg_Info()<<"}"<<std::endl;
