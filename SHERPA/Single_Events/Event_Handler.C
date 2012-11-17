@@ -275,13 +275,14 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
   double trials((*p_signal)["Trials"]->Get<double>());
   p_signal->AddData("Trials",new Blob_Data<double>(trials+m_addn));
   double cxs((*p_signal)["Weight"]->Get<double>());
-  m_n      += trials+m_addn;
-  m_sum    += cxs;
-  m_sumsqr += sqr(cxs);
 #ifdef USING__MPI
   m_mn      += trials+m_addn;
   m_msum    += cxs;
   m_msumsqr += sqr(cxs);
+#else
+  m_n      += trials+m_addn;
+  m_sum    += cxs;
+  m_sumsqr += sqr(cxs);
 #endif
   m_addn    = 0.0;
 
@@ -325,13 +326,14 @@ bool Event_Handler::GenerateMinimumBiasEvent() {
 
   //msg_Out()<<METHOD<<" done with event:\n"<<m_blobs<<"\n";
   double xs((*p_signal)["Weight"]->Get<double>());
-  m_n++;
-  m_sum    += xs;
-  m_sumsqr += sqr(xs);
 #ifdef USING__MPI
   m_mn++;
   m_msum    += xs;
   m_msumsqr += sqr(xs);
+#else
+  m_n++;
+  m_sum    += xs;
+  m_sumsqr += sqr(xs);
 #endif
   msg_Tracking()<<METHOD<<" for event with xs = "<<(xs/1.e9)<<" mbarn.\n";
   return AnalyseEvent(weight);
@@ -414,7 +416,7 @@ void Event_Handler::Finish() {
     m_lastblobcounter=Blob::Counter();
   }
   Blob::Reset();
-  double xs(TotalStatsMPI()[0]), err(TotalStatsMPI()[2]);
+  double xs(TotalXS()), err(TotalErr());
   std::string res;
   MyStrStream conv;
   conv<<om::bold<<"Total XS"<<om::reset<<" is "
@@ -460,49 +462,39 @@ void Event_Handler::MPISync()
       values[2]=m_msumsqr;
       MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,0,rank);
       MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,0,size+rank);
-      m_mn=0.0;
-      m_msum=0.0;
-      m_msumsqr=0.0;
+      m_mn=values[0];
+      m_msum=values[1];
+      m_msumsqr=values[2];
     }
     delete [] values;
   }
+  m_n+=m_mn;
+  m_sum+=m_msum;
+  m_sumsqr+=m_msumsqr;
+  m_mn=0;
+  m_msum=m_msumsqr=0.0;
 #endif
 }
 
-double Event_Handler::TotalXS() const
+double Event_Handler::TotalXS()
 {
+  MPISync();
   return m_sum/m_n;
 }
 
 
-double Event_Handler::TotalVar() const
+double Event_Handler::TotalVar()
 {
+  MPISync();
   return (m_sumsqr-m_sum*m_sum/m_n)/(m_n-1);
 }
 
 
-double Event_Handler::TotalErr() const
+double Event_Handler::TotalErr()
 {
-  if (m_n<=1) return TotalXS();
-  else if (ATOOLS::IsEqual
-           (m_sumsqr*m_n,m_sum*m_sum,1.0e-6)) return 0.0;
-  else return sqrt(TotalVar()/m_n);
-}
-
-std::vector<double> Event_Handler::TotalStatsMPI()
-{
-  std::vector<double> stats(3, 0.0);
-#ifdef USING__MPI
   MPISync();
-  stats[0] = m_msum/m_mn;
-  stats[1] = (m_msumsqr-m_msum*m_msum/m_mn)/(m_mn-1);
-  if (m_mn<=1) stats[2] = stats[0];
-  else if (IsEqual(m_msumsqr*m_mn,m_msum*m_msum,1.0e-6)) stats[2] = 0.0;
-  else stats[2] = sqrt(stats[1]/m_mn);
-#else
-  stats[0] = TotalXS();
-  stats[1] = TotalVar();
-  stats[2] = TotalErr();
-#endif
-  return stats;
+  if (m_n<=1) return TotalXS();
+  if (ATOOLS::IsEqual
+      (m_sumsqr*m_n,m_sum*m_sum,1.0e-6)) return 0.0;
+  return sqrt((m_sumsqr-m_sum*m_sum/m_n)/(m_n-1)/m_n);
 }

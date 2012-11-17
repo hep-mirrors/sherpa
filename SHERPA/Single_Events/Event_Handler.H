@@ -51,10 +51,9 @@ namespace SHERPA {
 
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }
 
-    double TotalXS() const;
-    double TotalVar() const;
-    double TotalErr() const;
-    std::vector<double> TotalStatsMPI();
+    double TotalXS();
+    double TotalVar();
+    double TotalErr();
 
   };
 
