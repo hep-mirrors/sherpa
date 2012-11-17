@@ -20,7 +20,7 @@ namespace SHERPA {
   class Analysis_Interface {
   protected:
     std::string m_name;
-    const Event_Handler* p_eventhandler;
+    Event_Handler *p_eventhandler;
   public:
 
     typedef ATOOLS::Getter_Function
@@ -43,7 +43,7 @@ namespace SHERPA {
 
     virtual void ShowSyntax(const int mode);
     
-    void SetEventHandler(const Event_Handler* eh) { p_eventhandler = eh; }
+    void SetEventHandler(Event_Handler *const eh) { p_eventhandler = eh; }
 
     inline std::string Name() const { return m_name; }
 

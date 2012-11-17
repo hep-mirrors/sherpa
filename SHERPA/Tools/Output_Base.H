@@ -25,7 +25,7 @@ namespace SHERPA {
 
     std::string m_name;
 
-    const Event_Handler* p_eventhandler;
+    Event_Handler *p_eventhandler;
 
   public:
 
@@ -48,7 +48,7 @@ namespace SHERPA {
 
     inline const std::string Name() { return m_name; }
 
-    void SetEventHandler(const Event_Handler* eh) { p_eventhandler = eh; }
+    void SetEventHandler(Event_Handler *const eh) { p_eventhandler = eh; }
 
   };
 
