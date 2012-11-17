@@ -74,7 +74,7 @@ namespace PHASIC {
 
     size_t m_cnt, m_rej, m_mode, m_cmode;
     double m_lfrac, m_aqed, m_wthres;
-    int    m_rproc, m_vproc, m_nproc;
+    int    m_rproc, m_vproc, m_nproc, m_nfgsplit;
 
     ATOOLS::DecayInfo_Vector m_decids;
 
@@ -215,6 +215,9 @@ METS_Scale_Setter::METS_Scale_Setter
   if (!read.ReadFromFile(core,"CORE_SCALE")) core="SHOWER";
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
+  if (!read.ReadFromFile(m_nfgsplit,"DIPOLE_NF_GSPLIT"))
+    m_nfgsplit=Flavour(kf_jet).Size()/2;
+  else msg_Tracking()<<METHOD<<"(): Set dipole N_f="<<m_nfgsplit<<"\n.";
 }
 
 METS_Scale_Setter::~METS_Scale_Setter()
@@ -357,6 +360,15 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
 		trials.insert(cs);
 		continue;
 	      }
+	      if (cf[f].IsGluon() &&
+		  li->Flav().Kfcode()>m_nfgsplit &&
+		  lj->Flav().Kfcode()>m_nfgsplit) {
+		msg_Debugging()<<"Veto flavour: "<<cf[f]<<" = "
+			       <<ID(cs.m_idi)<<" & "<<ID(cs.m_idj)
+			       <<" <-> "<<ID(cs.m_idk)<<"\n";
+		trials.insert(cs);
+		continue;
+	      }
 	      msg_Debugging()<<ID(cs.m_idi)<<" & "<<ID(cs.m_idj)
 			     <<" <-> "<<ID(cs.m_idk)<<" ["<<cf[f]
 			     <<"]: "<<cs.m_op2<<" -> ";
@@ -385,16 +397,13 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
 		    // if resonance, reweight with breit-wigner
 		    double s((li->Mom()+lj->Mom()).Abs2());
 		    double m2(sqr(cf[f].Mass()));
-		    cs.m_op2*=cs.m_kt2/
+		    cs.m_op2*=dabs(s-m2)/
 		      sqrt(sqr(s-m2)+m2*sqr(cf[f].Width()));
-		  }
-		  else {
-		    // if non-resonant, reweight with massive prop
-		    cs.m_op2*=cs.m_kt2/(cs.m_kt2+sqr(cf[f].Mass()));
 		  }
 		}
 	      }
-	      msg_Debugging()<<cs.m_op2<<"\n";
+	      msg_Debugging()<<cs.m_op2<<" ("
+			     <<sqrt(cs.m_kt2)<<")\n";
 	      if (cs.m_op2>ckw.m_op2) {
 		ckw=cs;
 		iw=i;
@@ -767,8 +776,7 @@ bool METS_Scale_Setter::CheckColors
     if (!lk->Flav().Strong()) return false;
   }
   else if (mo.Strong()) {
-    if (!(lk->Flav().StrongCharge()==8 ||
-	  lk->Flav().StrongCharge()==-mo.StrongCharge())) return false;
+    if (!lk->Flav().Strong()) return false;
   }
   else {
     if (lk->Flav().StrongCharge()==8) return false;
