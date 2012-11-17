@@ -78,6 +78,8 @@ Virtual_ME2_Base *BlackHat_Virtual_Getter::operator()(const Process_Info &pi) co
       return NULL;
     }
     if (ampl) {
+      if (ampl->get_order_qed()!=pi.m_oew) return NULL;
+      if (ampl->get_order_qcd()+1!=pi.m_oqcd) return NULL;
       msg_Info()<<"found."<<std::endl;
       return new BlackHat_Virtual(pi, fl, ampl);
     }
