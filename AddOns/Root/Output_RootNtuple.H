@@ -24,6 +24,8 @@ namespace SHERPA {
     int kf1,kf2;
     int nuwgt;
     double uwgt[18]; 
+    int oqcd;
+    char type[2];
   };
 
   class Output_RootNtuple : public Output_Base,
@@ -41,6 +43,8 @@ namespace SHERPA {
     Double_t m_wgt,m_wgt2,m_mewgt,m_mewgt2;
     Int_t m_nuwgt;
     Double_t p_uwgt[18];
+    Short_t m_oqcd;
+    Char_t m_type[2];
     Double_t m_x1,m_x2,m_y1,m_y2,m_fscale,m_rscale;
     Int_t m_id1, m_id2;
     TFile* p_f;

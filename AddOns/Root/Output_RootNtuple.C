@@ -8,6 +8,7 @@
 #include "MODEL/Main/Model_Base.H"
 
 #include <limits>
+#include <string.h>
 
 #ifdef USING__ROOT
 #include "TPluginManager.h"
@@ -55,13 +56,13 @@ Output_RootNtuple::Output_RootNtuple(const Output_Arguments &args):
   p_f=NULL;
 #ifdef USING__MPI
   rntuple_evt2 dummye[1];
-  MPI_Datatype typee[15]={MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,
+  MPI_Datatype typee[17]={MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,
 			  MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,
 			  MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,
 			  MPI_LONG,MPI_INT,MPI_INT,MPI_INT,
-			  MPI_INT,MPI_DOUBLE};
-  int blocklene[15]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,18};
-  MPI_Aint basee, dispe[15];
+			  MPI_INT,MPI_DOUBLE,MPI_INT,MPI_CHAR};
+  int blocklene[17]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,18,1,2};
+  MPI_Aint basee, dispe[17];
   MPI_Get_address(&dummye[0],&basee);
   MPI_Get_address(&dummye[0].weight,dispe+0);
   MPI_Get_address(&dummye[0].wgt0,dispe+1);
@@ -78,8 +79,10 @@ Output_RootNtuple::Output_RootNtuple(const Output_Arguments &args):
   MPI_Get_address(&dummye[0].kf2,dispe+12);
   MPI_Get_address(&dummye[0].nuwgt,dispe+13);
   MPI_Get_address(dummye[0].uwgt,dispe+14);
-  for (size_t i=0;i<15;++i) dispe[i]-=basee;
-  MPI_Type_create_struct(15,blocklene,dispe,typee,&MPI_rntuple_evt2);
+  MPI_Get_address(&dummye[0].oqcd,dispe+15);
+  MPI_Get_address(dummye[0].type,dispe+16);
+  for (size_t i=0;i<17;++i) dispe[i]-=basee;
+  MPI_Type_create_struct(17,blocklene,dispe,typee,&MPI_rntuple_evt2);
   MPI_Type_commit(&MPI_rntuple_evt2);
   Vec4D dummyv[1];
   MPI_Datatype typev[1]={MPI_DOUBLE};
@@ -116,9 +119,10 @@ Output_RootNtuple::Output_RootNtuple(const Output_Arguments &args):
   p_t3->Branch("id2",&m_id2,"id2/I");
   p_t3->Branch("fac_scale",&m_fscale,"fac_scale/D");
   p_t3->Branch("ren_scale",&m_rscale,"ren_scale/D");
-
   p_t3->Branch("nuwgt",&m_nuwgt,"nuwgt/I");
   p_t3->Branch("usr_wgts",p_uwgt,"usr_wgts[nuwgt]/D");
+  p_t3->Branch("alphasPower",&m_oqcd,"alphasPower/B");
+  p_t3->Branch("part",m_type,"part[2]/C");
   ATOOLS::exh->AddTerminatorObject(this);
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo","*",
 					"TStreamerInfo","RIO","TStreamerInfo()"); 
@@ -177,6 +181,7 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
   ME_wgtinfo* wgtinfo(0);
   if (seinfo) wgtinfo=seinfo->Get<ME_wgtinfo*>();
   seinfo=(*signal)["NLO_subeventlist"];
+  std::string type((*signal)["NLOQCDType"]->Get<std::string>());
   
   if (!seinfo) {
     m_evtlist[m_cnt2].weight=(*signal)["Weight"]->Get<double>();
@@ -186,6 +191,11 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
     m_evtlist[m_cnt2].fscale=sqrt((*signal)["Factorisation_Scale"]->Get<double>());
     m_evtlist[m_cnt2].rscale=sqrt((*signal)["Renormalization_Scale"]->Get<double>());
     m_evtlist[m_cnt2].alphas=MODEL::s_model->ScalarFunction("alpha_S",m_evtlist[m_cnt2].rscale*m_evtlist[m_cnt2].rscale);
+    m_evtlist[m_cnt2].oqcd=(*signal)["OQCD"]->Get<int>();
+    if (type=="B") strcpy(m_evtlist[m_cnt2].type,"B");
+    else if (type=="V") strcpy(m_evtlist[m_cnt2].type,"V");
+    else if (type=="I") strcpy(m_evtlist[m_cnt2].type,"I");
+    else THROW(fatal_error,"Error in NLO type '"+type+"'");
     if (wgtinfo) {
       m_evtlist[m_cnt2].wgt0=wgtinfo->m_w0;
       m_evtlist[m_cnt2].x1=wgtinfo->m_x1;
@@ -237,6 +247,9 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
       m_evtlist[m_cnt2].fscale=sqrt((*nlos)[j]->m_mu2[stp::fac]);
       m_evtlist[m_cnt2].rscale=sqrt((*nlos)[j]->m_mu2[stp::ren]);
       m_evtlist[m_cnt2].alphas=MODEL::s_model->ScalarFunction("alpha_S", m_evtlist[m_cnt2].rscale*m_evtlist[m_cnt2].rscale);
+      m_evtlist[m_cnt2].oqcd=(*signal)["OQCD"]->Get<int>();
+      if (type!="RS") THROW(fatal_error,"Error in NLO type");
+      strcpy(m_evtlist[m_cnt2].type,"R"); 
 
       if (wgtinfo) {
 	m_evtlist[m_cnt2].x1=wgtinfo->m_x1;
@@ -378,6 +391,8 @@ void Output_RootNtuple::StoreEvt()
   
     m_nparticle=m_evtlist[i].nparticle;
     m_alphas=m_evtlist[i].alphas;
+    m_oqcd=m_evtlist[i].oqcd;
+    strcpy(m_type,m_evtlist[i].type);
     for (size_t j=0;j<m_evtlist[i].nparticle;j++) {
       p_kf[j] = m_flavlist[fc];
       p_E[j]  = m_momlist[fc][0];

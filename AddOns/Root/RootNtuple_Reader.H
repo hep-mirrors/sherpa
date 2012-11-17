@@ -20,7 +20,7 @@ namespace SHERPA {
 
   class RootNtuple_Reader : public Event_Reader_Base {
     RootNTupleReader_Variables *p_vars;
-    int                m_eventmode,m_check,m_calc,m_oqcd;
+    int                m_eventmode,m_check,m_calc;
     size_t             m_evtid,m_subevtid,m_evtcnt,m_entries,m_evtpos;
     ATOOLS::NLO_subevtlist m_nlos;
     PHASIC::Scale_Setter_Arguments m_sargs;

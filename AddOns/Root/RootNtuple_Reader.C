@@ -57,6 +57,8 @@ namespace SHERPA {
     Double_t m_x1,m_x2,m_x1p,m_x2p,m_mur,m_muf,m_as;
     Int_t m_id1,m_id2,m_nuwgt;
     Double_t p_uwgt[18];
+    Short_t m_oqcd;
+    Char_t m_type[2];
     TChain* p_f;
 #endif
   };
@@ -73,8 +75,6 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args) :
   if (m_calc) msg_Info()<<METHOD<<"(): Ntuple calc mode set to "<<m_calc<<"."<<std::endl;
   m_check=args.p_reader->GetValue<int>("ROOTNTUPLE_CHECK",m_calc&2?1:0);
   if (m_check) msg_Info()<<METHOD<<"(): Ntuple check mode set to "<<m_check<<"."<<std::endl;
-  m_oqcd=args.p_reader->GetValue<int>("ROOTNTUPLE_OQCD",0);
-  if (m_oqcd) msg_Info()<<METHOD<<"(): Ntuple O(QCD) set to "<<m_oqcd<<"."<<std::endl;
   args.p_reader->SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
   args.p_reader->RereadInFile();
   std::string scale=args.p_reader->GetValue<std::string>
@@ -167,6 +167,8 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args) :
   p_vars->p_f->SetBranchAddress("id2",&p_vars->m_id2);
   p_vars->p_f->SetBranchAddress("nuwgt",&p_vars->m_nuwgt);
   p_vars->p_f->SetBranchAddress("usr_wgts",p_vars->p_uwgt);
+  p_vars->p_f->SetBranchAddress("alphasPower",&p_vars->m_oqcd);
+  p_vars->p_f->SetBranchAddress("part",p_vars->m_type);
 
   msg_Out()<<"Event mode = "<<m_eventmode<<std::endl;
 #else
@@ -230,7 +232,7 @@ double RootNtuple_Reader::CalculateWeight
   p_isr->PDF(1)->Calculate(p_vars->m_x2,muf2);
   double fa=p_isr->PDF(0)->GetXPDF(fl1)/p_vars->m_x1;
   double fb=p_isr->PDF(1)->GetXPDF(fl2)/p_vars->m_x2;
-  double asf=pow((*MODEL::as)(mur2)/p_vars->m_as,m_oqcd);
+  double asf=pow((*MODEL::as)(mur2)/p_vars->m_as,p_vars->m_oqcd);
   if (mode==0) {
     return p_vars->m_mewgt*asf*fa*fb;
   }
@@ -311,6 +313,7 @@ bool RootNtuple_Reader::ReadInSubEvent(Blob_List * blobs)
       Flavour fl2((kf_code)abs(p_vars->m_id2),p_vars->m_id2<0);
       pi.m_ii.m_ps.push_back(Subprocess_Info(fl1));
       pi.m_ii.m_ps.push_back(Subprocess_Info(fl2));
+      pi.m_oqcd=p_vars->m_oqcd;
       for (int i=0;i<p_vars->m_nparticle;++i)
 	pi.m_fi.m_ps.push_back
 	  (Subprocess_Info(Flavour(abs(p_vars->p_kf[i]),
@@ -330,11 +333,11 @@ bool RootNtuple_Reader::ReadInSubEvent(Blob_List * blobs)
       (scale->Scale(stp::ren),scale->Scale(stp::fac),
        p_vars->m_nuwgt?1:0);
     if (m_check) {
-      msg_Debugging()<<METHOD<<"(): computed "<<weight
-		     <<", stored "<<p_vars->m_wgt
+      msg_Debugging()<<METHOD<<"(): "<<p_vars->m_type<<" computed "
+		     <<weight<<", stored "<<p_vars->m_wgt
 		     <<", rel. diff. "<<weight/p_vars->m_wgt-1.0<<".\n";
       if (!IsEqual(weight,p_vars->m_wgt,rpa->gen.Accu()))
-	msg_Error()<<METHOD<<"(): Weights differ by "
+	msg_Error()<<METHOD<<"(): "<<p_vars->m_type<<" weights differ by "
 		   <<(weight/p_vars->m_wgt-1.0)<<".\n  computed "
 		   <<weight<<", stored "<<p_vars->m_wgt<<"."<<std::endl;
     }
@@ -343,11 +346,11 @@ bool RootNtuple_Reader::ReadInSubEvent(Blob_List * blobs)
   if (m_check && !m_calc) {
     double weight=CalculateWeight
       (sqr(p_vars->m_mur),sqr(p_vars->m_muf),p_vars->m_nuwgt?1:0);
-    msg_Debugging()<<METHOD<<"(): computed "<<weight
-		   <<", stored "<<m_weight
+    msg_Debugging()<<METHOD<<"(): "<<p_vars->m_type<<" computed "
+		   <<weight<<", stored "<<m_weight
 		   <<", rel. diff. "<<weight/m_weight-1.0<<".\n";
     if (!IsEqual(weight,m_weight,rpa->gen.Accu()))
-      msg_Error()<<METHOD<<"(): Weights differ by "
+      msg_Error()<<METHOD<<"(): "<<p_vars->m_type<<" weights differ by "
 		 <<(weight/m_weight-1.0)<<".\n  computed "
 		 <<weight<<", stored "<<m_weight<<"."<<std::endl;
   }
@@ -413,6 +416,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
 	Flavour fl2((kf_code)abs(p_vars->m_id2),p_vars->m_id2<0);
 	pi.m_ii.m_ps.push_back(Subprocess_Info(fl1));
 	pi.m_ii.m_ps.push_back(Subprocess_Info(fl2));
+	pi.m_oqcd=p_vars->m_oqcd;
 	for (int i=0;i<p_vars->m_nparticle;++i)
 	  pi.m_fi.m_ps.push_back(Subprocess_Info(flav[i+2]));
 	m_sargs.p_proc=m_procs[p_vars->m_nparticle] = new Dummy_Process();
@@ -432,11 +436,11 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       m_nlos.back()->m_result=weight;
       m_weight+=weight;
       if (m_check) {
-	msg_Debugging()<<METHOD<<"(): computed "<<weight
-		       <<", stored "<<p_vars->m_wgt2
+	msg_Debugging()<<METHOD<<"(): "<<p_vars->m_type<<" computed "
+		       <<weight<<", stored "<<p_vars->m_wgt2
 		       <<", rel. diff. "<<weight/p_vars->m_wgt2-1.0<<".\n";
 	if (!IsEqual(weight,p_vars->m_wgt2,rpa->gen.Accu()))
-	  msg_Error()<<METHOD<<"(): Weights differ by "
+	  msg_Error()<<METHOD<<"(): "<<p_vars->m_type<<" weights differ by "
 		     <<(weight/p_vars->m_wgt2-1.0)<<".\n  computed "
 		     <<weight<<", stored "<<p_vars->m_wgt2<<"."<<std::endl;
       }
@@ -445,11 +449,11 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       double weight=CalculateWeight
 	(sqr(p_vars->m_mur),sqr(p_vars->m_muf),p_vars->m_nuwgt?1:2);
       m_weight+=weight;
-      msg_Debugging()<<METHOD<<"(): computed "<<weight
-		     <<", stored "<<p_vars->m_wgt2
+      msg_Debugging()<<METHOD<<"(): "<<p_vars->m_type<<" computed "
+		     <<weight<<", stored "<<p_vars->m_wgt2
 		     <<", rel. diff. "<<weight/p_vars->m_wgt2-1.0<<".\n";
       if (!IsEqual(weight,p_vars->m_wgt2,rpa->gen.Accu()))
-	msg_Error()<<METHOD<<"(): Weights differ by "
+	msg_Error()<<METHOD<<"(): "<<p_vars->m_type<<" weights differ by "
 		   <<(weight/p_vars->m_wgt2-1.0)<<".\n  computed "
 		   <<weight<<", stored "<<p_vars->m_wgt2<<"."<<std::endl;
     }

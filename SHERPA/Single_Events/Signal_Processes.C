@@ -8,6 +8,7 @@
 #include "METOOLS/SpinCorrelations/Decay_Matrix.H"
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
@@ -131,6 +132,14 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
 		(sqrt(winfo.m_muf12*winfo.m_muf22)));
   blob->AddData("XF1",new Blob_Data<double>(winfo.m_xf1));
   blob->AddData("XF2",new Blob_Data<double>(winfo.m_xf2));
+  blob->AddData("OQCD",new Blob_Data<int>
+		(p_mehandler->Process()->OrderQCD()));
+  blob->AddData("OEW",new Blob_Data<int>
+		(p_mehandler->Process()->OrderEW()));
+  blob->AddData("NLOQCDType",new Blob_Data<std::string>
+		(ToString(p_mehandler->Process()->Info().m_fi.m_nloqcdtype)));
+  blob->AddData("NLOEWType",new Blob_Data<std::string>
+		(ToString(p_mehandler->Process()->Info().m_fi.m_nloewtype)));
 
   ME_wgtinfo* wgtinfo=proc->GetMEwgtinfo();
   if (wgtinfo) {
