@@ -221,8 +221,8 @@ bool COMIX::Single_Process::MapProcess()
     for (size_t i(0);i<p_umprocs->size();++i)
       if ((*p_umprocs)[i]->Name()==mapname) {
 	p_mapproc=p_map=(*p_umprocs)[i];
-	m_oew=p_map->p_bg->MaxOrderEW();
-	m_oqcd=p_map->p_bg->MaxOrderQCD();
+	m_oew=p_map->m_oew;
+	m_oqcd=p_map->m_oqcd;
 	if (p_map->p_kpterms) {
 	  p_kpterms = new KP_Terms
 	    (p_map,p_map->p_kpterms->MassKern()?1:0);
