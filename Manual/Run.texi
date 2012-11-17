@@ -200,7 +200,7 @@ e.g. the HepEVT common block structure or the HepMC format.
 The authors of Sherpa assume that the user is sufficiently acquainted with 
 these formats when selecting them.
 
-If the events are to be written to file, the parameter @var{EVENT_FORMAT}
+If the events are to be written to file, the parameter @option{EVENT_FORMAT}
 must be specified together with a file name. An example would be
 @code{EVENT_FORMAT=HepMC_GenEvent[MyFile]}, where @code{MyFile} stands
 for the desired file base name. The following formats are currently available:

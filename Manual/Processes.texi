@@ -31,9 +31,10 @@ The following parameters are used to steer the process setup.
 * Enhance_Function::        Tag to set an enhance function.
 * Enhance_Observable::      Tag to set an enhance observable.
 * NLO_QCD_Mode::            Tag to setup QCD NLO processes.
-* NLO_QCD_Part::            Tag to refine the setup QCD NLO processes.
+* NLO_QCD_Part::            Tag to refine the setup of QCD NLO processes.
 * NLO_EW_Mode::             Tag to setup electroweak NLO processes.
-* NLO_EW_Part::             Tag to refine the setup electroweak NLO processes.
+* NLO_EW_Part::             Tag to refine the setup of electroweak NLO processes.
+* Subdivide_Virtual::       Tag to split virtual contribution into pieces.
 * ME_Generator::            Tag to specifiy the tree ME generator.
 * Loop_Generator::          Tag to specifiy the loop ME generator.
 * End process::             The process setup end tag.
@@ -470,6 +471,15 @@ of a electroweak NLO calculation are computed. Possible choices are
 Different pieces can be combined in one processes setup. Only pieces with the 
 same number of final state particles and the same order in alpha_QED can be 
 treated as one process, otherwise they will be automatically split up.
+
+@node Subdivide_Virtual
+@subsection Subdivide_Virtual
+
+Allows to split the virtual contribution to the total cross section into pieces.
+Currently supported options when run with @url{http://projects.hepforge.org/blackhat,BlackHat}
+are @option{LeadingColor} and @option{FullMinusLeadingColor}. For high-multiplicity
+calculations these settings allow to adjust the relative number of points in the
+sampling to reduce the overall computation time.
 
 @node ME_Generator
 @subsection ME_Generator
