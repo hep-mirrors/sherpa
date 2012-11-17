@@ -288,7 +288,8 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
       }
       if (m_fosettings==0) {
 	m_fosettings=1;
-	if (p_shower) p_shower->GetShower()->SetOn(false);
+	if (p_shower->GetShower())
+	  p_shower->GetShower()->SetOn(false);
 	Read_Write_Base::AddCommandLine("FRAGMENTATION Off;");
 	Read_Write_Base::AddCommandLine("ME_QED Off;");
 	Data_Reader read(" ",";","!","=");
