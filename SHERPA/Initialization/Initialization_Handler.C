@@ -69,6 +69,11 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   SetFileNames();
 
+  if (p_dataread->ReadFromFile(m_evtform,"EVTDATA")) {
+    m_mode=eventtype::EventReader;
+    msg_Out()<<" Sherpa will read in events as "<<m_evtform<<endl;
+  }
+
   ATOOLS::s_loader->SetCheck(p_dataread->GetValue<int>("CHECK_LIBLOCK",0));
 
   rpa->Init(m_path,m_file,argc,argv);
@@ -896,12 +901,6 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
 	rpa->gen.SetVariable
 	  ("SHERPA_STATUS_PATH",rpa->gen.Variable("SHERPA_RUN_PATH")+"/"+value);
 	m_savestatus=true;
-        oit=helpsv.erase(oit);
-      }
-      else if (key=="EVTDATA") {
-	m_mode       = eventtype::EventReader;
-	m_evtform    = value;
-	msg_Out()<<" Sherpa will read in events from : "<<value<<endl;
         oit=helpsv.erase(oit);
       }
       else {
