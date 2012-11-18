@@ -16,6 +16,7 @@ namespace PHASIC {
   {
     std::vector<int> m_internal;
     int m_max;
+    static size_t m_nid;
   public:
     Color_Function_Decay();
     

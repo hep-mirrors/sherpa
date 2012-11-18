@@ -10,6 +10,8 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
+size_t Color_Function_Decay::m_nid(100);
+
 Color_Function_Decay::Color_Function_Decay() : m_max(-1)
 {
   push_back(make_pair("1",vector<int>()));
@@ -34,6 +36,11 @@ Color_Function_Decay::Color_Function_Decay(const MODEL::Color_Function& c1) :
     break;
   case MODEL::cf::D:
     name="D";
+    for (size_t i(0); i<2; ++i)
+      inds.push_back(c1.ParticleArg(i));
+    break;
+  case MODEL::cf::G:
+    name="G";
     for (size_t i(0); i<2; ++i)
       inds.push_back(c1.ParticleArg(i));
     break;
@@ -62,6 +69,11 @@ void Color_Function_Decay::Conjugate()
       at(i).second[0]=at(i).second[1];
       at(i).second[1]=help;
     }
+    else if (at(i).first=="G") {
+      int help=at(i).second[0];
+      at(i).second[0]=at(i).second[1];
+      at(i).second[1]=help;
+    }
   }
 }
 
@@ -70,12 +82,21 @@ std::string Color_Function_Decay::String() const
   std::string ret;
   for (size_t i(0); i<size(); ++i) {
     if (i>0) ret+="*";
+    if (at(i).first=="G") {
+      ret+="2*T["+ToString(at(i).second[0])+","
+	+ToString(m_nid)+","+ToString(m_nid+1)+"]"
+	+"*T["+ToString(at(i).second[1])+","
+	+ToString(m_nid+1)+","+ToString(m_nid)+"]";
+      m_nid+=2;
+    }
+    else {
     ret+=at(i).first;
     for (size_t j(0); j<at(i).second.size(); ++j) {
       if (j==0) ret+="["+ToString(at(i).second[j]);
       else ret+=","+ToString(at(i).second[j]);
 
       if (j==at(i).second.size()-1) ret+="]";
+    }
     }
   }
   return ret;
