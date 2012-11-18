@@ -71,3 +71,15 @@ void D_C_Getter::PrintInfo(std::ostream &str,const size_t width) const
   str<<"delta";
 }
 
+DECLARE_GETTER(G_C_Getter,"G",Color_Calculator,Vertex_Key);
+
+Color_Calculator *G_C_Getter::operator()(const Vertex_Key &key) const
+{
+  return new D_Calculator(key);
+}
+
+void G_C_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"delta";
+}
+
