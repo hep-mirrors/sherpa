@@ -193,16 +193,16 @@ C++ source code, cf. @ref{SHERPA_CPP_PATH}.
 @cindex FILE_SIZE
 @cindex EVT_FILE_PATH
 @cindex OUTPUT_PRECISION
-@cindex EVENT_FORMAT
+@cindex EVENT_OUTPUT
 
 Sherpa provides the possibility to output events in various formats, 
 e.g. the HepEVT common block structure or the HepMC format.
 The authors of Sherpa assume that the user is sufficiently acquainted with 
 these formats when selecting them.
 
-If the events are to be written to file, the parameter @option{EVENT_FORMAT}
+If the events are to be written to file, the parameter @option{EVENT_OUTPUT}
 must be specified together with a file name. An example would be
-@code{EVENT_FORMAT=HepMC_GenEvent[MyFile]}, where @code{MyFile} stands
+@code{EVENT_OUTPUT=HepMC_GenEvent[MyFile]}, where @code{MyFile} stands
 for the desired file base name. The following formats are currently available:
 
 @table @option

@@ -69,7 +69,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   SetFileNames();
 
-  if (p_dataread->ReadFromFile(m_evtform,"EVTDATA")) {
+  if (p_dataread->ReadFromFile(m_evtform,"EVENT_INPUT")) {
     m_mode=eventtype::EventReader;
     msg_Out()<<" Sherpa will read in events as "<<m_evtform<<endl;
   }
@@ -438,7 +438,7 @@ bool Initialization_Handler::CheckBeamISRConsistency()
 bool Initialization_Handler::InitializeTheIO()
 {
   std::string outpath=p_dataread->GetValue<std::string>("EVT_FILE_PATH",".");
-  std::string format=p_dataread->GetValue<std::string>("EVENT_FORMAT","None");
+  std::string format=p_dataread->GetValue<std::string>("EVENT_OUTPUT","None");
   std::vector<std::string> outputs;
   Data_Reader readline(",",";","#","");
   readline.SetString(format);

@@ -71,7 +71,7 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args) :
 {
   std::string filename=m_path+m_file+".root";
   msg_Out()<<" Reading from "<<filename<<"\n";
-  m_calc=args.p_reader->GetValue<int>("ROOTNTUPLE_CALC",0);
+  m_calc=args.p_reader->GetValue<int>("ROOTNTUPLE_CALC",1);
   if (m_calc) msg_Info()<<METHOD<<"(): Ntuple calc mode set to "<<m_calc<<"."<<std::endl;
   m_check=args.p_reader->GetValue<int>("ROOTNTUPLE_CHECK",m_calc&2?1:0);
   if (m_check) msg_Info()<<METHOD<<"(): Ntuple check mode set to "<<m_check<<"."<<std::endl;
