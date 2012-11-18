@@ -24,7 +24,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,const double & ktfac,
   m_is_as_fac = ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   msg_Out()<<METHOD<<"(asfacs: IS = "<<m_is_as_fac<<", FS = "<<m_fs_as_fac<<")"
 	   <<" from |"<<this<<"|\n"; 
-  m_kscheme   = dataread->GetValue<int>("CSS_KIN_SCHEME",0);
+  m_kscheme   = dataread->GetValue<int>("CSS_KIN_SCHEME",1);
   m_noem      = dataread->GetValue<int>("CSS_NOEM",0);
   std::vector<std::vector<std::string> > helpsvv;
   dataread->MatrixFromFile(helpsvv,"CSS_ENHANCE");
