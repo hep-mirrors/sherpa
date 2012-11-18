@@ -10,7 +10,7 @@ namespace MODEL {
   class Coupling_Data;
 }
 
-namespace WHITEHAT {
+namespace BLACKHAT {
 
   class BlackHat_Tree: public PHASIC::Tree_ME2_Base {
   private:

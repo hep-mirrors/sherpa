@@ -5,9 +5,10 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "AddOns/BlackHat/BlackHat_Virtual.H"
 #include "AddOns/BlackHat/BlackHat_Tree.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 
-namespace WHITEHAT {
+namespace BLACKHAT {
 
   class BlackHat_Interface: public PHASIC::ME_Generator_Base {
   private:
@@ -48,7 +49,7 @@ namespace WHITEHAT {
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
 
-using namespace WHITEHAT;
+using namespace BLACKHAT;
 using namespace PHASIC;
 using namespace ATOOLS;
 
@@ -67,6 +68,7 @@ bool BlackHat_Interface::Initialize
  BEAM::Beam_Spectra_Handler *const beam,PDF::ISR_Handler *const isrhandler)
 {
   if (p_interface==NULL) {
+    rpa->gen.AddCitation(1,"The BlackHat library is described in \\cite{Berger:2008sj}.");
     msg_Info()<<"Initialising BlackHat interface {"<<std::endl;
     p_model=model;
     BlackHat_Tree::SetModel(p_model);
@@ -129,18 +131,6 @@ namespace PHASIC {
   void BlackHat_Interface_Getter::PrintInfo(std::ostream &str,const size_t width) const
   { 
     str<<"Interface to the BlackHat loop ME generator"; 
-  }
-
-  DECLARE_GETTER(WhiteHat_Interface_Getter,"WhiteHat",ME_Generator_Base,ME_Generator_Key);
-
-  ME_Generator_Base *WhiteHat_Interface_Getter::operator()(const ME_Generator_Key &key) const
-  {
-    return new BlackHat_Interface();
-  }
-
-  void WhiteHat_Interface_Getter::PrintInfo(std::ostream &str,const size_t width) const
-  { 
-    str<<"Interface to the WhiteHat loop ME generator"; 
   }
 
 }

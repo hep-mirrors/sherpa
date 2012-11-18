@@ -5,13 +5,13 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "blackhat/BH_error.h"
 
-using namespace WHITEHAT;
+using namespace BLACKHAT;
 using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 
-BH::BH_interface *WHITEHAT::BlackHat_Virtual::s_interface=NULL;
-MODEL::Model_Base *WHITEHAT::BlackHat_Virtual::s_model=NULL;
+BH::BH_interface *BLACKHAT::BlackHat_Virtual::s_interface=NULL;
+MODEL::Model_Base *BLACKHAT::BlackHat_Virtual::s_model=NULL;
 
 BlackHat_Virtual::BlackHat_Virtual(const Process_Info& pi,
 				   const Flavour_Vector& flavs,

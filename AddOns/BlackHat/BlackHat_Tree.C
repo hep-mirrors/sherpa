@@ -7,14 +7,14 @@
 #include "ATOOLS/Org/Message.H"
 #include "blackhat/BH_error.h"
 
-using namespace WHITEHAT;
+using namespace BLACKHAT;
 using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 
-BH::BH_interface *WHITEHAT::BlackHat_Tree::s_interface=NULL;
-MODEL::Model_Base *WHITEHAT::BlackHat_Tree::s_model=NULL;
-namespace WHITEHAT {
+BH::BH_interface *BLACKHAT::BlackHat_Tree::s_interface=NULL;
+MODEL::Model_Base *BLACKHAT::BlackHat_Tree::s_model=NULL;
+namespace BLACKHAT {
 #ifdef USING__Threading
   static pthread_mutex_t s_mtx;
 #endif

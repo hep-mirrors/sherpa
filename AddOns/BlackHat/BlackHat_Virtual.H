@@ -7,7 +7,7 @@
 
 namespace MODEL { class Model_Base; }
 
-namespace WHITEHAT {
+namespace BLACKHAT {
 
   class BlackHat_Virtual: public PHASIC::Virtual_ME2_Base {
   private:
