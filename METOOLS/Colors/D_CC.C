@@ -49,6 +49,19 @@ namespace METOOLS {
 	(*j)(1)=(*p_a)(1);
 	break;
       }
+      if ((*j)(0) && (*j)(0)==(*j)(1)) {
+	CObject *c(j->Copy()), *d(NULL);
+	c->Divide(-3.0);
+	int cr((*(m_type==1?p_a:p_b))(0));
+	for (size_t i(s_cimin);i<=s_cimax;++i) {
+	  if ((int)i==cr) continue;
+	  (*c)(0)=(*c)(1)=i;
+	  if (i<s_cimax-(cr==(int)s_cimax)) d=c->Copy();
+	  p_v->AddJ(c);
+	  c=d;
+	}
+	j->Divide(3.0/2.0);
+      }
       p_v->AddJ(j);
     }
 
