@@ -19,9 +19,9 @@ SUBDIRS       =	\
 	V_plus_Jets \
 	VV_plus_Jets \
 	VVV_plus_Jets \
+	FixedOrder_NLO \
 	Xamples_BSM \
 	Xamples_DecayTreatment \
 	Xamples_ElectroWeak_in_EE \
 	Xamples_HadronDecays \
-	Xamples_NLOCalculations \
 	Xamples_PhotonSpectra 
