@@ -40,7 +40,7 @@ Output_RootNtuple::Output_RootNtuple(const Output_Arguments &args):
   m_ext = ".root";
   m_cnt2=m_cnt3=m_fcnt=m_evt=0;
   m_idcnt=0;
-  m_avsize=10000;
+  m_avsize=args.p_reader->GetValue<int>("ROOTNTUPLE_AVSIZE",10000);
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   int rank=MPI::COMM_WORLD.Get_rank();
