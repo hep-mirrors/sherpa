@@ -292,6 +292,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
 	  p_shower->GetShower()->SetOn(false);
 	Read_Write_Base::AddCommandLine("FRAGMENTATION Off;");
 	Read_Write_Base::AddCommandLine("ME_QED Off;");
+	Read_Write_Base::AddCommandLine("MI_HANDLER None;");
 	Data_Reader read(" ",";","!","=");
 	read.AddComment("#");
 	read.AddWordSeparator("\t");
