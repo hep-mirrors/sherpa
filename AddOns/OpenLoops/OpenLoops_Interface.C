@@ -65,6 +65,10 @@ namespace OpenLoops {
 
     OpenLoops_Virtual::SetInterface(this);
 
+    int lenws=1200;
+    char welcomestr[lenws];
+    openloops_welcome_(welcomestr, &lenws);
+    msg_Out()<<std::string(welcomestr,lenws)<<std::endl;
     PRINT_INFO("Initialised OpenLoops generator:");
     PRINT_VAR(s_proclib_path);
     PRINT_VAR(s_procdata_path);

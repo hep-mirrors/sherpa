@@ -86,6 +86,8 @@ extern "C" {
                              double* opp_rootsvalue, double* opp_limitvalue, double* opp_thrs, int* opp_idig, int* opp_scaloop,
                              int* sam_isca, int* sam_verbosity, int* sam_itest, int* fermion_loops, int* nonfermion_loops,
                              int* CT_on, int* R2_on, int* IR_on, int* polecheck, double* set_C_PV_threshold, double* set_D_PV_threshold, int* set_DD_red_mode);
+  void openloops_welcome_(char* str, int* len_str);
+  
 }
 
 #endif
