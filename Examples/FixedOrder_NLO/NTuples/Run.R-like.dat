@@ -1,5 +1,5 @@
 (run){
-  EVENTS 1M;
+  EVENTS 500k;
   EVENT_GENERATION_MODE W;
   ME_SIGNAL_GENERATOR Comix;
   ### Analysis (please configure with --enable-rivet & --enable-hepmc2)
@@ -12,14 +12,14 @@
   SCF:=1; ### default scale factor
   SCALES VAR{SCF*sqr(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3])+MPerp(p[2]+p[3]))};
   EW_SCHEME 0; WIDTH_SCHEME Fixed; # sin\theta_w -> 0.23
-  DIPOLE_ALPHA 0.03;
+  DIPOLE_ALPHA 0.03; FINISH_OPTIMIZATION Off;
   MASSIVE[15] 1;
 }(run);
 (processes){
   ### The subtracted real emission piece
   Process 93 93 -> 90 91 93;
   NLO_QCD_Mode 1; NLO_QCD_Part RS;
-  Integration_Error 0.03;
+  Integration_Error 0.0275;
   Order_EW 2;
   End process;
 }(processes);
@@ -31,5 +31,6 @@
   BEGIN_RIVET {
     -a ATLAS_2012_I1083318;
     USE_HEPMC_SHORT 1;
+    IGNOREBEAMS 1;
   } END_RIVET;
 }(analysis);
