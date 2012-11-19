@@ -66,7 +66,7 @@ namespace SHERPA {
 
 RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args) :
   Event_Reader_Base(args), 
-  m_eventmode(1), m_evtid(0), m_subevtid(0), m_evtcnt(0), m_entries(0), m_evtpos(0),
+  m_evtid(0), m_subevtid(0), m_evtcnt(0), m_entries(0), m_evtpos(0),
   p_isr(args.p_isr), m_sargs(NULL,"","")
 {
   std::string filename=m_path+m_file+".root";
@@ -169,11 +169,13 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args) :
   p_vars->p_f->SetBranchAddress("usr_wgts",p_vars->p_uwgt);
   p_vars->p_f->SetBranchAddress("alphasPower",&p_vars->m_oqcd);
   p_vars->p_f->SetBranchAddress("part",p_vars->m_type);
-
-  msg_Out()<<"Event mode = "<<m_eventmode<<std::endl;
 #else
   msg_Error()<<"Sherpa must be linked with root to read in root files!"<<endl;
 #endif
+  Read_Write_Base::AddCommandLine("K_PERP_MEAN_1 0;");
+  Read_Write_Base::AddCommandLine("K_PERP_MEAN_2 0;");
+  Read_Write_Base::AddCommandLine("K_PERP_SIGMA_1 0;");
+  Read_Write_Base::AddCommandLine("K_PERP_SIGMA_2 0;");
 }
 
 RootNtuple_Reader::~RootNtuple_Reader()
@@ -198,12 +200,7 @@ void RootNtuple_Reader::CloseFile() {
 
 bool RootNtuple_Reader::FillBlobs(Blob_List * blobs) 
 {
-  bool result;
-  switch (m_eventmode) {
-  case 1: result=ReadInFullEvent(blobs);
-    break;
-  default: result=ReadInSubEvent(blobs);
-  }
+  bool result=ReadInFullEvent(blobs);
   if (result==0) rpa->gen.SetNumberOfEvents(rpa->gen.NumberOfGeneratedEvents());
   
   long nev=rpa->gen.NumberOfEvents();
@@ -292,88 +289,6 @@ double RootNtuple_Reader::CalculateWeight
 #endif
 }
 
-bool RootNtuple_Reader::ReadInSubEvent(Blob_List * blobs) 
-{
-  if (!ReadInEntry()) return 0;
-  Blob         *signalblob=blobs->FindFirst(btp::Signal_Process);
-  signalblob->SetTypeSpec("NLOsubevt");
-  signalblob->SetId();
-  signalblob->SetPosition(Vec4D(0.,0.,0.,0.));
-  signalblob->SetStatus(blob_status::code(30));
-#ifdef USING__ROOT
-  if (!m_calc) m_weight=p_vars->m_wgt;
-  else {
-    Vec4D_Vector p(2+p_vars->m_nparticle);
-    for (int i=0;i<p_vars->m_nparticle;++i)
-      p[2+i]=Vec4D(p_vars->p_E[i],p_vars->p_px[i],
-		   p_vars->p_py[i],p_vars->p_pz[i]);
-    if (m_scales.find(p_vars->m_nparticle)==m_scales.end()) {
-      Process_Info pi;
-      Flavour fl1((kf_code)abs(p_vars->m_id1),p_vars->m_id1<0);
-      Flavour fl2((kf_code)abs(p_vars->m_id2),p_vars->m_id2<0);
-      pi.m_ii.m_ps.push_back(Subprocess_Info(fl1));
-      pi.m_ii.m_ps.push_back(Subprocess_Info(fl2));
-      pi.m_oqcd=p_vars->m_oqcd;
-      for (int i=0;i<p_vars->m_nparticle;++i)
-	pi.m_fi.m_ps.push_back
-	  (Subprocess_Info(Flavour(abs(p_vars->p_kf[i]),
-				   p_vars->p_kf[i]<0)));
-      m_sargs.p_proc=m_procs[p_vars->m_nparticle] = new Dummy_Process();
-      m_sargs.p_proc->Init(pi,NULL,NULL);
-      m_sargs.m_nout=p_vars->m_nparticle;
-      m_scales[p_vars->m_nparticle] =
-	Scale_Setter_Base::Scale_Getter_Function::
-	GetObject(m_sargs.m_scale,m_sargs);
-      if (m_scales[p_vars->m_nparticle]==NULL)
-	THROW(fatal_error,"Invalid scale scheme");
-    }
-    Scale_Setter_Base *scale(m_scales[p_vars->m_nparticle]);
-    scale->CalculateScale(p);
-    double weight=CalculateWeight
-      (scale->Scale(stp::ren),scale->Scale(stp::fac),
-       p_vars->m_nuwgt?1:0);
-    if (m_check) {
-      msg_Debugging()<<METHOD<<"(): "<<p_vars->m_type<<" computed "
-		     <<weight<<", stored "<<p_vars->m_wgt
-		     <<", rel. diff. "<<weight/p_vars->m_wgt-1.0<<".\n";
-      if (!IsEqual(weight,p_vars->m_wgt,rpa->gen.Accu()))
-	msg_Error()<<METHOD<<"(): "<<p_vars->m_type<<" weights differ by "
-		   <<(weight/p_vars->m_wgt-1.0)<<".\n  computed "
-		   <<weight<<", stored "<<p_vars->m_wgt<<"."<<std::endl;
-    }
-    m_weight=weight;
-  }
-  if (m_check && !m_calc) {
-    double weight=CalculateWeight
-      (sqr(p_vars->m_mur),sqr(p_vars->m_muf),p_vars->m_nuwgt?1:0);
-    msg_Debugging()<<METHOD<<"(): "<<p_vars->m_type<<" computed "
-		   <<weight<<", stored "<<m_weight
-		   <<", rel. diff. "<<weight/m_weight-1.0<<".\n";
-    if (!IsEqual(weight,m_weight,rpa->gen.Accu()))
-      msg_Error()<<METHOD<<"(): "<<p_vars->m_type<<" weights differ by "
-		 <<(weight/m_weight-1.0)<<".\n  computed "
-		 <<weight<<", stored "<<m_weight<<"."<<std::endl;
-  }
-  signalblob->SetWeight(m_weight);
-  for (int i=0;i<p_vars->m_nparticle;i++) {
-    Particle *part=new Particle(i,Flavour(abs(p_vars->p_kf[i]),
-					  p_vars->p_kf[i]<0),
-				Vec4D(p_vars->p_E[i],
-				      p_vars->p_px[i],
-				      p_vars->p_py[i],
-				      p_vars->p_pz[i]));
-    signalblob->AddToOutParticles(part);
-  }
-  signalblob->AddData("Weight",new Blob_Data<double>(m_weight));
-  signalblob->AddData("Trials",new Blob_Data<double>(1.));
-#endif
-
-
-  m_evtcnt++;
-  return 1;
-}
-
-
 bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs) 
 {
   if (!m_nlos.empty()) {
@@ -394,6 +309,8 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   
 #ifdef USING__ROOT
   size_t currentid=m_evtid;
+  int id1, id2;
+  double x1, x2;
   while (currentid==m_evtid) {
     Vec4D *moms = new Vec4D[2+p_vars->m_nparticle];
     Flavour *flav = new Flavour[2+p_vars->m_nparticle];
@@ -404,6 +321,10 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     }
     m_nlos.push_back(new NLO_subevt(p_vars->m_nparticle+2,NULL,flav,moms));
     m_nlos.back()->m_result=p_vars->m_wgt2;
+    id1=p_vars->m_id1;
+    id2=p_vars->m_id2;
+    x1=p_vars->m_x1;
+    x2=p_vars->m_x2;
     if (m_calc) {
       Vec4D_Vector p(2+p_vars->m_nparticle);
       for (int i=0;i<p_vars->m_nparticle;++i) {
@@ -462,12 +383,19 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     }
     if (!ReadInEntry()) m_evtid=0;
   }  
+  Flavour fl1((kf_code)abs(id1),id1<0);
+  Flavour fl2((kf_code)abs(id2),id2<0);
+  Particle *part1=new Particle(0,fl1,x1*rpa->gen.PBeam(0));
+  Particle *part2=new Particle(1,fl2,x2*rpa->gen.PBeam(1));
+  signalblob->AddToInParticles(part1);
+  signalblob->AddToInParticles(part2);
   for (size_t i=2;i<m_nlos.back()->m_n;++i) {
     Particle *part=new Particle
       (i,m_nlos.back()->p_fl[i],m_nlos.back()->p_mom[i]);
     signalblob->AddToOutParticles(part);
   }
 #endif
+  signalblob->SetStatus(blob_status::needs_beams);
   signalblob->SetWeight(m_weight);
   signalblob->AddData("Weight",new Blob_Data<double>(m_weight));
   signalblob->AddData("Trials",new Blob_Data<double>(1.));

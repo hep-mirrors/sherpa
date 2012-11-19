@@ -20,7 +20,7 @@ namespace SHERPA {
 
   class RootNtuple_Reader : public Event_Reader_Base {
     RootNTupleReader_Variables *p_vars;
-    int                m_eventmode,m_check,m_calc;
+    int                m_check,m_calc;
     size_t             m_evtid,m_subevtid,m_evtcnt,m_entries,m_evtpos;
     ATOOLS::NLO_subevtlist m_nlos;
     PHASIC::Scale_Setter_Arguments m_sargs;
@@ -31,7 +31,6 @@ namespace SHERPA {
     void               CloseFile();
     bool               ReadInEntry();
     bool               ReadInFullEvent(ATOOLS::Blob_List *);
-    bool               ReadInSubEvent(ATOOLS::Blob_List *);
     double CalculateWeight(const double &mur2,const double &muf2,const int mode) const;
   public:
     RootNtuple_Reader(const Input_Arguments &args);
