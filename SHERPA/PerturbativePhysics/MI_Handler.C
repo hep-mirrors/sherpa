@@ -31,7 +31,7 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
   read.AddWordSeparator("\t");
   read.SetInputPath(path);
   read.SetInputFile(file);
-  mihandler=read.GetValue<std::string>("MI_HANDLER","None");
+  mihandler=read.GetValue<std::string>("MI_HANDLER","Amisic");
   path+=read.GetValue<std::string>("INPUT_PATH","");
   file=read.GetValue<std::string>("INPUT_FILE",file);
   if (!ATOOLS::rpa->gen.Beam1().IsHadron() ||
