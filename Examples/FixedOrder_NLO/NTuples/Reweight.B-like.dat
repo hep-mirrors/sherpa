@@ -13,21 +13,22 @@
   SCALES VAR{SCF*sqr(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3])+MPerp(p[2]+p[3]))};
   EW_SCHEME 0; WIDTH_SCHEME Fixed; # sin\theta_w -> 0.23
   DIPOLE_ALPHA 0.03;
+  MASSIVE[15] 1;
 }(run);
 (processes){
   ### The Born piece
-  Process 93 93 -> 11 -12 93;
+  Process 93 93 -> 90 91 93;
   NLO_QCD_Mode 1; NLO_QCD_Part B;
   Order_EW 2;
   End process;
   ### The virtual piece
-  Process 93 93 -> 11 -12 93;
+  Process 93 93 -> 90 91 93;
   NLO_QCD_Mode 1; NLO_QCD_Part V;
   Loop_Generator LGEN;
   Order_EW 2;
   End process;
   ### The integrated subtraction piece
-  Process 93 93 -> 11 -12 93;
+  Process 93 93 -> 90 91 93;
   NLO_QCD_Mode 1; NLO_QCD_Part I;
   Order_EW 2;
   End process;
