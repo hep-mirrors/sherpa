@@ -363,6 +363,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     if (p_evtreader==NULL) THROW(fatal_error,"Event reader not found");
     msg_Events()<<"SHERPA will read in the events."<<std::endl
   		<<"   The full framework is not needed."<<std::endl;
+    InitializeTheBeamRemnants();
     InitializeTheIO();
     return true;
   }
@@ -774,10 +775,12 @@ bool Initialization_Handler::InitializeTheAnalyses()
     if (analyses[i]=="Internal")
       if (!s_loader->LoadLibrary("SherpaAnalysis")) 
         THROW(missing_module,"Cannot load Analysis library (--enable-analysis).");
-    if (analyses[i]=="Rivet" || analyses[i]=="RivetME" || analyses[i]=="RivetShower")
+    if (analyses[i]=="Rivet" || analyses[i]=="RivetME" || analyses[i]=="RivetShower") {
       if (!s_loader->LoadLibrary("SherpaRivetAnalysis") ||
 	  !s_loader->LoadLibrary("SherpaHepMCOutput")) 
         THROW(missing_module,"Cannot load RivetAnalysis library (--enable-rivet --enable-hepmc2).");
+      Read_Write_Base::AddCommandLine("BEAM_REMNANTS 1;");
+    }
     Analysis_Interface* ana=Analysis_Interface::Analysis_Getter_Function::GetObject
                             (analyses[i],Analysis_Arguments(m_path,m_analysisdat,outpath));
     if (ana==NULL) THROW(fatal_error,"Cannot initialize Analysis "+analyses[i]);

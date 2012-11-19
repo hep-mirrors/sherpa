@@ -299,6 +299,12 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
 	read.SetInputFile(m_file);
 	if (read.GetValue<int>("BEAM_REMNANTS",-1)==-1)
 	  Read_Write_Base::AddCommandLine("BEAM_REMNANTS 0;");
+	else {
+	  Read_Write_Base::AddCommandLine("K_PERP_MEAN_1 0;");
+	  Read_Write_Base::AddCommandLine("K_PERP_MEAN_2 0;");
+	  Read_Write_Base::AddCommandLine("K_PERP_SIGMA_1 0;");
+	  Read_Write_Base::AddCommandLine("K_PERP_SIGMA_2 0;");
+	}
       }
     }
   }
