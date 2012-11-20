@@ -1,27 +1,13 @@
-SUBDIRS       =	\
-	GammaGamma_plus_Jets \
-	Gamma_plus_Bs \
-	Gamma_plus_Jets \
-	H_in_GluonFusion \
-	H_in_HiggsStrahlung \
-	H_in_TTH \
-	H_in_WBF \
-	Jets_at_DIS_ElectroProduction \
-	Jets_at_HadronColliders \
-	Jets_at_LeptonColliders \
-	SingleTop_plus_Jets \
-	SoftQCD \
-	Tops_plus_Gamma \
-	Tops_plus_Jets \
-	Tops_plus_V \
-	VGamma_plus_Jets \
-	V_plus_Bs \
-	V_plus_Jets \
-	VV_plus_Jets \
-	VVV_plus_Jets \
-	FixedOrder_NLO \
-	Xamples_BSM \
-	Xamples_DecayTreatment \
-	Xamples_ElectroWeak_in_EE \
-	Xamples_HadronDecays \
-	Xamples_PhotonSpectra 
+examplesdir        = $(pkgdatadir)/Examples
+
+nobase_dist_examples_DATA         =	\
+		V_plus_Jets/LHC_W1jet_MCatNLO/Run.dat \
+		V_plus_Jets/LHC_WJets/Run.dat \
+		V_plus_Jets/LHC_WJets/Run.NLO.dat \
+		V_plus_Jets/LHC_Z1jet_MCatNLO_LHOLE/Run.dat \
+		V_plus_Jets/LHC_ZJets/Run.dat \
+		V_plus_Jets/LHC_ZJets/Run.NLO.dat \
+		Jets_at_HadronColliders/LHC_2jets_MCatNLO/Run.dat \
+		Jets_at_HadronColliders/LHC_Jets_MEPS/Run.dat \
+		H_in_GluonFusion/LHC_HJets_Inclusive/Run.dat 
+				

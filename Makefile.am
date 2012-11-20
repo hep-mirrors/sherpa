@@ -19,6 +19,7 @@ SUBDIRS       = \
 		SHRiMPS \
 		AddOns \
 		SHERPA \
+		Examples \
 		Manual
 
 EXTRA_DIST = @SVNINCLUDE@ GUIDELINES
