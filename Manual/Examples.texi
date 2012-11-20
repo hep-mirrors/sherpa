@@ -72,6 +72,7 @@ of the main features of these examples.
 @menu
 * NLO_W::                    W production at the LHC
 * LHC_WJet_LHOLE::           W+jet production at the LHC using the BLHA interface
+* NTuple production::        Production of Root NTuples with Sherpa
 @end menu
 
 @node NLO_W
@@ -80,3 +81,4 @@ of the main features of these examples.
 @node LHC_WJet_LHOLE
 @subsection LHC_WJet_LHOLE
 
+@include NLO_NTuples.texi

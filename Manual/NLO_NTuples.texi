@@ -1,0 +1,96 @@
+@node NTuple production
+@subsection Production of NTuples
+Root NTuples are a convenient way to store the result of cumbersome 
+fixed-order calculations in order to perform multiple analyses. 
+This example shows how to generate such NTuples and reweighted them 
+in order to change factorisation and renormalisation scales. 
+Note that in order to use this setup, Sherpa must be configured 
+with option @code{--enable-root=/path/to/root}, see @ref{Event output formats}. 
+If Sherpa has not been configured with Rivet analysis support, 
+please disable the analysis using @option{-a0} on the command line, 
+see @ref{Command line}.
+
+When using NTuples, one needs to bear in mind that every calculation
+involving jets in the final state is exclusive in the sense that a lower
+cutoff on the jet transverse momenta must be imposed.
+It is therefore necessary to check whether the event sample stored in the
+NTuple is sufficiently inclusive before using it. Similar remarks apply
+when photons are present in the NLO calculation or when cuts on
+leptons have been applied at generation level to increase efficiency.
+Every NTuple should therefore be accompanied by an appropriate documentation.
+
+This example will generate NTuples for the process pp->lvj,
+where l is an electron or positron, and v is an electron (anti-)neutrino.
+We identify parton-level jets using the anti-k_T algorithm with R=0.4 
+@mycite{Cacciari2008gp}. We require the transverse momentum of these jets 
+to be larger than 20 GeV. No other cuts are applied at generation level.
+
+@example
+@smallformat
+@verbatiminclude Examples/FixedOrder_NLO/NTuples/Run.B-like.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item NTuple production is enabled by @option{EVENT_OUTPUT Root[NTuple_B-like]},
+  see @ref{Event output formats}.
+@item The scale used is defined as in @mycite{Berger2009ep}.
+@item @option{EW_SCHEME 0; WIDTH_SCHEME Fixed;} are used to set
+  the value of the weak mixing angle to 0.23, 
+  consistent with EW precision measurements.
+@item @option{DIPOLE_ALPHA 0.03} is used to limit the active phase space of
+  dipole subtractions.
+@item @option{MASSIVE[13] 1; MASSIVE[15] 1;} are used to limit the number of
+  active lepton flavours to electron and positron.
+@item The option @option{USE_HEPMC_SHORT 1} is used in the Rivet analysis
+  section as the events produced by Sherpa are not at particle level.
+@end itemize
+
+@subsubsection NTuple production
+Start Sherpa using the command line
+@verbatim
+  Sherpa -f Run.B-like.dat
+@end verbatim
+Sherpa will first create source code for its matrix-element calculations.
+This process will stop with a message instructing you to compile. 
+Do so by running
+@verbatim
+  ./makelibs -j4
+@end verbatim
+Launch Sherpa again, using
+@verbatim
+  Sherpa -f Run.B-like.dat
+@end verbatim
+Sherpa will then compute the Born, virtual and integrated subtraction contribution
+to the NLO cross section and generate events. These events are analyzed using the 
+Rivet library and stored in a Root NTuple file called @kbd{NTuple_B-like.root}. 
+We will use this NTuple later to compute an NLO uncertainty band.
+
+The real-emission contribution, including subtraction terms, to the NLO cross section
+is computed using
+@verbatim
+  Sherpa -f Run.R-like.dat
+@end verbatim
+Events are generated, analyzed by Rivet and stored in the Root NTuple file
+@kbd{NTuple_R-like.root}.
+
+The two analyses of events with Born-like and real-emission-like kinematics
+need to be merged, which can be achieved using scripts like @kbd{aidaadd}.
+The result can then be plotted and displayed.
+
+@subsubsection Usage of NTuples in Sherpa
+Next we will compute the NLO uncertainty band using Sherpa.
+To this end, we make use of the Root NTuples generated in the previous steps.
+
+First we re-evaluate the events with the scale increased by a factor 2:
+@verbatim
+  Sherpa -f Reweight.B-like.dat
+  Sherpa -f Reweight.R-like.dat
+@end verbatim
+Then we re-evaluate the events with the scale decreased by a factor 2:
+@verbatim
+  Sherpa -f Reweight.B-like.dat SCF:=0.25 -A Analysis/025HTp/BVI
+  Sherpa -f Reweight.R-like.dat SCF:=0.25 -A Analysis/025HTp/RS
+@end verbatim
+The two contributions can again be combined using @kbd{aidaadd}.
