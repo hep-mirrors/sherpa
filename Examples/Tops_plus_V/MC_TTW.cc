@@ -38,19 +38,19 @@ namespace Rivet {
       _h_njets      = bookHistogram1D("jet_mult", 11, -0.5, 10.5);
       _h_mass_ll_ss = bookHistogram1D("mass_ll_ss", 50, 10.0, 250.0);
       _h_mass_ll_os = bookHistogram1D("mass_ll_os", 50, 10.0, 250.0);
-      _h_mass_lll   = bookHistogram1D("mass_lll", logspace(50.0, 500.0, 50));
-      _h_pT_l1      = bookHistogram1D("pT_l1", logspace(10.0, 500.0, 50));
-      _h_pT_l2      = bookHistogram1D("pT_l2", logspace(10.0, 500.0, 50));
-      _h_pT_l3      = bookHistogram1D("pT_l3", logspace(10.0, 500.0, 50));
+      _h_mass_lll   = bookHistogram1D("mass_lll", 50, 50.0, 500.0);
+      _h_pT_l1      = bookHistogram1D("pT_l1", 50, 10.0, 500.0);
+      _h_pT_l2      = bookHistogram1D("pT_l2", 50, 10.0, 500.0);
+      _h_pT_l3      = bookHistogram1D("pT_l3", 50, 10.0, 500.0);
       _h_eta_l1     = bookHistogram1D("eta_l1", 10, -_leta, _leta);
       _h_eta_l2     = bookHistogram1D("eta_l2", 10, -_leta, _leta); 
       _h_eta_l3     = bookHistogram1D("eta_l3", 10, -_leta, _leta); 
-      _h_missET     = bookHistogram1D("missET", logspace(10.0, 500.0, 50));
-      _h_pT_t1      = bookHistogram1D("pT_t1",logspace(1.0, 500.0, 50));
-      _h_pT_t2      = bookHistogram1D("pT_t2", logspace(1.0, 500.0, 50));
-      _h_pT_W       = bookHistogram1D("pT_W", logspace(1.0, 500.0, 50));
-      _h_pT_tt      = bookHistogram1D("pT_tt", logspace(1.0, 500.0, 50));
-      _h_pT_ttW     = bookHistogram1D("pT_ttW", logspace(1.0, 500.0, 50));
+      _h_missET     = bookHistogram1D("missET", 50, 10.0, 500.0);
+      _h_pT_t1      = bookHistogram1D("pT_t1", 50, 1.0, 500.0);
+      _h_pT_t2      = bookHistogram1D("pT_t2", 50, 1.0, 500.0);
+      _h_pT_W       = bookHistogram1D("pT_W", 50, 1.0, 500.0);
+      _h_pT_tt      = bookHistogram1D("pT_tt", 50, 1.0, 500.0);
+      _h_pT_ttW     = bookHistogram1D("pT_ttW", 50, 1.0, 500.0);
       _h_mass_tt    = bookHistogram1D("mass_tt", 50, 350.0, 1850.0);
       _h_mass_ttW   = bookHistogram1D("mass_ttW", 50, 450.0, 2450.0);
       _h_rap_t1     = bookHistogram1D("rap_t1", 20, -5., 5.);
@@ -58,9 +58,9 @@ namespace Rivet {
       _h_rap_W      = bookHistogram1D("rap_W", 20, -5., 5.); 
       _h_rap_tt     = bookHistogram1D("rap_tt", 20, -5., 5.);
       _h_rap_ttW    = bookHistogram1D("rap_ttW", 20, -5., 5.);
-      _h_pT_b1      = bookHistogram1D("pT_b1", logspace(10.0, 500.0, 50));
-      _h_pT_b2      = bookHistogram1D("pT_b2", logspace(10.0, 500.0, 50));
-      _h_pT_lj      = bookHistogram1D("pT_lj", logspace(10.0, 500.0, 50));
+      _h_pT_b1      = bookHistogram1D("pT_b1", 50, 10.0, 500.0);
+      _h_pT_b2      = bookHistogram1D("pT_b2", 50, 10.0, 500.0);
+      _h_pT_lj      = bookHistogram1D("pT_lj", 50, 10.0, 500.0);
       _h_eta_b1     = bookHistogram1D("eta_b1", 20, -_jeta, _jeta);
       _h_eta_b2     = bookHistogram1D("eta_b2", 20, -_jeta, _jeta); 
       _h_eta_lj     = bookHistogram1D("eta_lj", 20, -_jeta, _jeta); 
@@ -104,7 +104,7 @@ namespace Rivet {
       const MissingMomentum& met = 
 	applyProjection<MissingMomentum>(event, "MissingET");
       const Jets alljets = 
-	applyProjection<FastJets>(event, "Jets").jetsByPt();
+	applyProjection<FastJets>(event, "Jets").jetsByPt(_jpt);
       
       _h_weights->fill(0,weight);
       double misset = met.vectorEt().mod();
@@ -132,9 +132,7 @@ namespace Rivet {
       Jets bjets, ljets;
       foreach (const Jet& jet, alljets) {
         if (jet.containsBottom()) bjets.push_back(jet);
-        else {
-	  if (jet.momentum().pT()>_jpt) ljets.push_back(jet);
-	}
+        else ljets.push_back(jet);
       }
       if (bjets.size()<2) vetoEvent;
       _h_weights->fill(3,weight);
@@ -202,7 +200,6 @@ namespace Rivet {
       	}
       }
       
-      //std::cout<<"Jet multi: "<<(bjets.size()+ljets.size())<<".    \n";
       _h_njets->fill(bjets.size()+ljets.size(),weight);
       _h_mass_ll_ss->fill((lepton_ss1+lepton_ss2).mass()/GeV,weight);
       _h_mass_ll_os->fill(max((lepton_ss1+lepton_os).mass(),
