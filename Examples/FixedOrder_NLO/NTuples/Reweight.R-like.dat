@@ -13,7 +13,7 @@
   SCALES VAR{SCF*sqr(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3])+MPerp(p[2]+p[3]))};
   EW_SCHEME 0; WIDTH_SCHEME Fixed; # sin\theta_w -> 0.23
   DIPOLE_ALPHA 0.03; FINISH_OPTIMIZATION Off;
-  MASSIVE[15] 1;
+  MASSIVE[13] 1; MASSIVE[15] 1;
 }(run);
 (processes){
   ### The subtracted real emission piece
@@ -31,6 +31,5 @@
   BEGIN_RIVET {
     -a ATLAS_2012_I1083318;
     USE_HEPMC_SHORT 1;
-    IGNOREBEAMS 1;
   } END_RIVET;
 }(analysis);
