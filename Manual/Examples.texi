@@ -11,12 +11,13 @@ of the main features of these examples.
 * VJets::
 * Jets::
 * HJets::
+* TopsJets::
 * FONLO::
 @end menu
 
 
 @node VJets
-@section Vector boson production in association with jets
+@section Vector boson + jets production
 
 @menu
 * LHC_WJets::
@@ -46,13 +47,24 @@ of the main features of these examples.
 
 
 @node HJets
-@section Higgs boson production in association with jets
+@section Higgs boson + jets production
 
 @menu
 * LHC_HJets::
 @end menu
 
 @include LHC_HJets.texi
+
+
+@node TopsJets
+@section Top quark (pair) + jets production
+
+@menu
+* LHC_TTW::
+@end menu
+
+@include LHC_TTW.texi
+
 
 @node FONLO
 @section Fixed-order next-to-leading order calculations

@@ -212,7 +212,7 @@ the most prominent mistakes are listed here:
   further phase-space cuts on the additional QCD parton emissions
   need/should be applied while generating the samples.
 @item  When jets are included in the core process, like in the 
-  @ref{Tevatron_Jets_MEPS} example, a jet criterion must be specified 
+  @ref{LHC_Jets_MEPS} example, a jet criterion must be specified 
   for the core jets. This can be done using the @code{NJetFinder}
   parameter, which applies it's jet criterion to only the specified 
   number of jets. See the @ref{Examples} section for an example of the usage.

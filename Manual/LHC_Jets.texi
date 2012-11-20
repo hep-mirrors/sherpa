@@ -1,13 +1,12 @@
 @node LHC_Jets
-@subsection Jet production at Hadron Colliders
+@subsection Jet production
 
 @menu
 * LHC_2jets_MCatNLO::
 * LHC_Jets_MEPS::
-* Tevatron_Jets_MEPS::
 @end menu
 
-To change any of the following examples to production at the Tevatron 
+To change any of the following LHC examples to production at the Tevatron 
 simply change the beam settings to
 @verbatim
   BEAM_1  2212; BEAM_ENERGY_1 980;
@@ -15,7 +14,7 @@ simply change the beam settings to
 @end verbatim
 
 @node LHC_2jets_MCatNLO
-@subsubsection MC@@NLO setup for dijet and inclusive jet production at the LHC
+@subsubsection MC@@NLO setup for dijet and inclusive jet production
 
 This is an example setup for dijet and inclusive jet production at hadron 
 colliders at next-to-leading order precission matched to the parton shower 
@@ -55,25 +54,11 @@ of the two jets present at Born level.
 
 
 @node LHC_Jets_MEPS
-@subsubsection MEPS setup for jet production at LHC
+@subsubsection MEPS setup for jet production
 
 @example
 @smallformat
 @verbatiminclude Examples/Jets_at_HadronColliders/LHC_Jets_MEPS/Run.dat
-@end smallformat
-@end example
-
-
-@node Tevatron_Jets_MEPS
-@subsubsection MEPS setup for jet production at Tevatron
-
-This example generates QCD events at the Tevatron,
-with 2, 3 or 4 final state partons in the matrix
-element.
-
-@example
-@smallformat
-@verbatiminclude Examples/Jets_at_HadronColliders/Tevatron_Jets_MEPS/Run.dat
 @end smallformat
 @end example
 

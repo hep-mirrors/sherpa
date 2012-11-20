@@ -1,5 +1,5 @@
 @node LHC_WJets
-@subsection W+jets production at the LHC
+@subsection W+jets production
 
 @menu
 * LHC_W1jet_MCatNLO::
@@ -7,7 +7,7 @@
 * LHC_WJets_NLOmerging::
 @end menu
 
-To change any of the following examples to production at the Tevatron 
+To change any of the following LHC examples to production at the Tevatron 
 simply change the beam settings to
 @verbatim
   BEAM_1  2212; BEAM_ENERGY_1 980;
