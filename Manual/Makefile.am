@@ -23,23 +23,13 @@ Sherpa_TEXINFOS = \
 	FeynRules.texi \
 	Fragmentation.texi \
 	HardDecays.texi \
-	HERA_DIS.texi \
 	Input.texi \
 	Integration.texi \
 	Introduction.texi \
 	ISR.texi \
-	LEP91.texi \
-	LHC_4thGen.texi \
-	LHC_ADD.texi \
-	LHC_AGC.texi \
-	LHC_EPA.texi \
-	LHC_SingleTop.texi \
-	LHC_SUSY.texi \
-	LHC_TTH.texi \
 	LHC_HJets.texi \
 	LHC_Jets.texi \
 	LHC_WJets.texi \
-	LHC_WJet_LHOLE.texi \
 	LHC_ZJets.texi \
 	Macros.texi \
 	Merging.texi \
@@ -54,7 +44,6 @@ Sherpa_TEXINFOS = \
 	OLE.texi \
 	Parameters.texi \
 	PDF.texi \
-	PEPII_BaBar.texi \
 	Processes.texi \
 	RNG.texi \
 	Run.texi \
@@ -64,17 +53,9 @@ Sherpa_TEXINFOS = \
 	SM.texi \
 	SoftQED.texi \
 	Starting.texi \
-	Tevatron_DiBoson.texi \
-	Tevatron_Photons.texi \
-	Tevatron_TopPair.texi \
-	Tevatron_UE.texi \
-	Tevatron_WJets.texi \
-	Tevatron_ZJets_MENLOPS.texi \
-	Tevatron_ZJets.texi \
 	THDM.texi \
 	Tips.texi \
-	version.texi \
-	W_NLO.texi
+	version.texi
 
 man1_MANS = Sherpa.1
 
