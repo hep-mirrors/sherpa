@@ -1,14 +1,5 @@
 pkglib_LTLIBRARIES       =	libSherpaTools.la
 
-if HEPMC2_SUPPORT
-HEPMC2SOURCES=HepMC2_Interface.C Output_HepMC2_Genevent.C Output_HepMC2_Short.C
-HEPMC2HEADERS=HepMC2_Interface.H Output_HepMC2_Genevent.H Output_HepMC2_Short.H
-else
-HEPMC2EXTRADIST=HepMC2_Interface.H HepMC2_Interface.C \
-Output_HepMC2_Genevent.H Output_HepMC2_Genevent.C \
-Output_HepMC2_Short.H Output_HepMC2_Short.C
-endif
-
 SVNTAG = SHERPA/Tools
 include ../../svn.make
 
@@ -32,10 +23,8 @@ localinc_HEADERS      =	\
 			Output_LHEF.H \
 			Analysis_Interface.H
 
-libSherpaTools_la_LIBADD = @CONDITIONAL_HEPMC2LIBS@
-
 libSherpaTools_la_CXXFLAGS = $(AM_CXXFLAGS)
 
-libSherpaTools_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_HEPMC2INCS@
+libSherpaTools_la_CPPFLAGS = $(AM_CPPFLAGS)
 
-EXTRA_DIST    = @SVNINCLUDE@ $(HEPMC2EXTRADIST)
+EXTRA_DIST    = @SVNINCLUDE@
