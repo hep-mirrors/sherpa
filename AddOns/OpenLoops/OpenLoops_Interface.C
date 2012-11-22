@@ -78,6 +78,16 @@ namespace OpenLoops {
     PRINT_VAR(s_nf);
     PRINT_VAR(s_allowed_libs);
 
+    MyStrStream cite;
+    cite<<"The OpenLoops library~\\cite{Cascioli:2011va} of virtual"<<endl
+        <<"matrix elements has been used. "<<endl;
+    if (s_amp_switch==1 || s_amp_switch_rescue==1 ||
+        s_amp_switch==7 || s_amp_switch_rescue==7) {
+      cite<<"It is partly based on the tensor integral reduction described "<<endl
+          <<"in~\\cite{Denner:2002ii,Denner:2005nn,Denner:2010tr}."<<endl;
+    }
+    rpa->gen.AddCitation(1,cite.str());
+
     return true;
   }
 
