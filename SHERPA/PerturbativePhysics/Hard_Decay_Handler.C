@@ -437,11 +437,14 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
       else {
         // Ad hoc EW partner
         size_t ampl_nout=ampl->Legs().size()-ampl->NIn();
+	if (ampl_nout==1) idk=ampl->Leg(0)->Id();
+	else {
         size_t select=ampl->Legs().size();
         do {
           select=ampl->NIn()+floor(ran->Get()*ampl_nout);
         } while (ampl->Leg(select)->Id()&idmother || select>ampl->Legs().size()-1);
         idk=ampl->Leg(select)->Id();
+	}
       }
     }
     if (idk==0) THROW(fatal_error,"Colour partner not found");
