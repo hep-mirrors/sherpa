@@ -73,7 +73,7 @@ Vec4D_Vector FF_Dipole::GeneratePoint
   for (size_t i(0);i<p.size();++i) pp[m_brmap[i]]=p[i];
   Kin_Args ff(m_rn[0],m_rn[1],m_rn[2]);
   if (ConstructFFDipole(m_mi2,m_mj2,m_mij2,m_mk2,p[m_ijt],p[m_kt],ff)<0)
-    THROW(fatal_error,"Invalid kinematics");
+    msg_Error()<<METHOD<<"(): Invalid kinematics."<<std::endl;
   pp[m_sub.m_i]=ff.m_pi;
   pp[m_sub.m_j]=ff.m_pj;
   pp[m_sub.m_k]=ff.m_pk;
@@ -86,7 +86,7 @@ double FF_Dipole::GenerateWeight(const Vec4D_Vector &p,Cut_Data *const cuts)
   for (size_t i(0);i<p.size();++i) pp[m_rbmap[i]]=p[i];
   Kin_Args ff(ClusterFFDipole(m_mi2,m_mj2,m_mij2,m_mk2,
 			      p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],1));
-  if (ff.m_stat!=1) THROW(fatal_error,"Invalid kinematics");
+  if (ff.m_stat!=1) msg_Error()<<METHOD<<"(): Invalid kinematics"<<std::endl;
   m_rn[0]=ff.m_y;
   m_rn[1]=ff.m_z;
   m_rn[2]=ff.m_phi;
@@ -206,7 +206,7 @@ ATOOLS::Vec4D_Vector FI_Dipole::GeneratePoint
   for (size_t i(0);i<p.size();++i) pp[m_brmap[i]]=p[i];
   Kin_Args fi(1.0-m_rn[0],m_rn[1],m_rn[2]);
   if (ConstructFIDipole(m_mi2,m_mj2,m_mij2,0.0,p[m_ijt],p[m_kt],fi)<0)
-    THROW(fatal_error,"Invalid kinematics");
+    msg_Error()<<METHOD<<"(): Invalid kinematics"<<std::endl;
   pp[m_sub.m_i]=fi.m_pi;
   pp[m_sub.m_j]=fi.m_pj;
   pp[m_sub.m_k]=fi.m_pk;
@@ -220,7 +220,7 @@ double FI_Dipole::GenerateWeight
   for (size_t i(0);i<p.size();++i) pp[m_rbmap[i]]=p[i];
   Kin_Args fi(ClusterFIDipole(m_mi2,m_mj2,m_mij2,0.0,
 			      p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],1));
-  if (fi.m_stat!=1) THROW(fatal_error,"Invalid kinematics");
+  if (fi.m_stat!=1) msg_Error()<<METHOD<<"(): Invalid kinematics"<<std::endl;
   m_rn[0]=1.0-fi.m_y;
   m_rn[1]=fi.m_z;
   m_rn[2]=fi.m_phi;
@@ -321,7 +321,7 @@ ATOOLS::Vec4D_Vector IF_Dipole::GeneratePoint
   Kin_Args ifp(m_rn[1],m_rn[0],m_rn[2],1);
   if (ConstructIFDipole(0.0,0.0,0.0,m_mk2,0.0,
 			p[m_ijt],p[m_kt],Vec4D(),ifp)<0)
-    THROW(fatal_error,"Invalid kinematics");
+    msg_Error()<<METHOD<<"(): Invalid kinematics"<<std::endl;
   pp[m_sub.m_i]=ifp.m_pi;
   pp[m_sub.m_j]=ifp.m_pj;
   pp[m_sub.m_k]=ifp.m_pk;
@@ -340,7 +340,7 @@ double IF_Dipole::GenerateWeight
     Kin_Args ifp(ClusterIFDipole
 		(0.0,0.0,0.0,m_mk2,0.0,
 		 p[m_sub.m_i],p[m_sub.m_j],p[m_sub.m_k],Vec4D(),1|4));
-    if (ifp.m_stat!=1) THROW(fatal_error,"Invalid kinematics");
+    if (ifp.m_stat!=1) msg_Error()<<METHOD<<"(): Invalid kinematics"<<std::endl;
     m_rn[0]=ifp.m_z;
     m_rn[1]=ifp.m_y;
     m_rn[2]=ifp.m_phi;
@@ -353,7 +353,7 @@ double IF_Dipole::GenerateWeight
 		(0.0,0.0,0.0,m_mk2,0.0,
 		 Rotate(p[m_sub.m_i]),Rotate(p[m_sub.m_j]),
 		 Rotate(p[m_sub.m_k]),Vec4D(),1|4));
-    if (ifp.m_stat!=1) THROW(fatal_error,"Invalid kinematics");
+    if (ifp.m_stat!=1) msg_Error()<<METHOD<<"(): Invalid kinematics"<<std::endl;
     m_rn[0]=ifp.m_z;
     m_rn[1]=ifp.m_y;
     m_rn[2]=ifp.m_phi;

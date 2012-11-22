@@ -136,7 +136,7 @@ bool Singlet::JetVeto(Sudakov *const sud) const
 				 ii?fi.Bar():fi,ji?fj.Bar():fj,p_jf->DR()));
  	  msg_Debugging()<<"Q_{"<<ID((*iit)->Id())<<ID((*jit)->Id())
 			 <<","<<ID((*kit)->Id())<<"} = "<<sqrt(q2ijk)
-			 <<" vs "<<(*kit)->KtVeto()<<"\n";
+			 <<" vs "<<sqrt((*kit)->KtVeto())<<"\n";
 	  if (q2ijk<(*kit)->KtVeto()) return false;
 	  check=true;
 	}
