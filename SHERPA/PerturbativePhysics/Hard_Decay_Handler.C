@@ -411,7 +411,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     Cluster_Amplitude* copy=ampl->InitPrev();
     copy->CopyFrom(ampl);
     Cluster_Leg *lij(ampl->IdLeg(idmother));
-    lij->SetStat(3);
+    lij->SetStat(1|2|4);
     size_t idk(0);
     for (size_t i=0; i<copy->Legs().size(); ++i) {
       copy->Leg(i)->SetK(0);
@@ -485,7 +485,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     Cluster_Amplitude* step1=ampl->InitPrev();
     step1->CopyFrom(ampl);
     Cluster_Leg *lij(ampl->IdLeg(idmother));
-    lij->SetStat(3);
+    lij->SetStat(1|2|4);
     size_t idk(0);
     for (size_t i=0; i<step1->Legs().size(); ++i) {
       step1->Leg(i)->SetK(0);
