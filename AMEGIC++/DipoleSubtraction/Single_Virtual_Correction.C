@@ -67,7 +67,7 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   }
   m_checkpolesthreshold = 0.;
   if (reader.ReadFromFile(helpd,"CHECK_POLES_THRESHOLD")) {
-    m_checkpoles = helpd;
+    m_checkpolesthreshold = helpd;
     msg_Tracking()<<"Set infrared poles check threshold to "<<m_checkpolesthreshold<<" . "<<std::endl;
   }
   m_checkfinite = false;
@@ -474,17 +474,22 @@ double Single_Virtual_Correction::Calc_Imassive(const ATOOLS::Vec4D *mom)
     for (size_t k=i+1;k<p_LO_process->PartonList().size();k++) {
       int typei = m_flavs[p_LO_process->PartonList()[i]].IntSpin();
       int typek = m_flavs[p_LO_process->PartonList()[k]].IntSpin();
-      double sik=2.*mom[p_LO_process->PartonList()[i]]*mom[p_LO_process->PartonList()[k]];
+      double sik=2.*mom[p_LO_process->PartonList()[i]]
+                   *mom[p_LO_process->PartonList()[k]];
       double mi=m_flavs[p_LO_process->PartonList()[i]].Mass();
       double mk=m_flavs[p_LO_process->PartonList()[k]].Mass();
       bool susyi = m_flavs[p_LO_process->PartonList()[i]].IsSusy();
       bool susyk = m_flavs[p_LO_process->PartonList()[k]].IsSusy();
 
-      p_masskern->Calculate(typei,mur,sik,mi,mk,p_LO_process->PartonList()[i]<m_nin,p_LO_process->PartonList()[k]<m_nin,susyi,lm);
+      p_masskern->Calculate(typei,mur,sik,mi,mk,
+                            p_LO_process->PartonList()[i]<m_nin,
+                            p_LO_process->PartonList()[k]<m_nin,susyi,lm);
       double splf  = p_masskern->I_Fin();
       double splf1 = p_masskern->I_E1();
       double splf2 = p_masskern->I_E2();
-      p_masskern->Calculate(typek,mur,sik,mk,mi,p_LO_process->PartonList()[k]<m_nin,p_LO_process->PartonList()[i]<m_nin,susyk,lm);
+      p_masskern->Calculate(typek,mur,sik,mk,mi,
+                            p_LO_process->PartonList()[k]<m_nin,
+                            p_LO_process->PartonList()[i]<m_nin,susyk,lm);
       splf  += p_masskern->I_Fin();
       splf1 += p_masskern->I_E1();
       splf2 += p_masskern->I_E2();
