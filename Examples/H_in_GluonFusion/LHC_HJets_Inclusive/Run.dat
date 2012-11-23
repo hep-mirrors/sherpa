@@ -1,7 +1,6 @@
 (run){
   % general settings
   EVENTS 5M; ERROR 0.1;
-  MI_HANDLER Amisic;
 
   % tags and settings for scale definitions
   SP_NLOCT=1; FSF:=1.0; RSF:=1.0; QSF:=1.0;
@@ -41,9 +40,9 @@
   NLO_QCD_Mode MC@NLO {LJET}; 
   Loop_Generator LOOPGEN;
   ME_Generator Amegic {LJET};
-  Enhance_Factor 16 {3}; 
-  Enhance_Factor 128 {4,5};
-  RS_Enhance_Factor 10 {3};
-  RS_Enhance_Factor 20 {4};
+  Enhance_Factor 16 {2}; 
+  Enhance_Factor 128 {3,4};
+  RS_Enhance_Factor 10 {2};
+  RS_Enhance_Factor 20 {3};
   End process;
 }(processes);

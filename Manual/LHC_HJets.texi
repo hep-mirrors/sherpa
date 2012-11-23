@@ -46,8 +46,8 @@ is interfaced throught the BLHA interface for the H+2jet process.
 setup in a crossing invariant way, employing the very same recoil scheme as 
 the MC@@NLO emission.
 @item The hard decays are switched on to decay all unstable final states 
-of the ME calculation. Individual decay channels can be switched of 
-through @code{HDH_NO_DECAY <channel1>|<channel2>|...} or by editing the 
+of the ME calculation. Decay channels can be restricted to a limited set 
+through @code{HDH_ONLY_DECAY <channel1>|<channel2>|...} or by editing the 
 relevant decay channel file, cf. @ref{HardDecays}.
 @item As both Comix and Amegic are specified as matrix element generators 
 to be used, Amegic has to be specified to be used for all MC@@NLO 
