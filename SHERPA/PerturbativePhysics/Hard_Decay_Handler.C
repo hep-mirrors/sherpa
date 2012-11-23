@@ -115,9 +115,6 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file)
     else {
       THROW(fatal_error, "Parameter RESOLVE_DECAYS set to wrong value.")
     }
-    dmit->second.at(0)->UpdateWidth();
-    if (m_set_widths)
-      dmit->second.at(0)->Flav().SetWidth(dmit->second.at(0)->TotalWidth());
 
     // force/disable specified decay channels
     for (size_t i=0;i<dmit->second.at(0)->size();++i) {
@@ -127,6 +124,10 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file)
           (m_forced_channels.size() && !m_forced_channels.count(dc->IDCode())))
         dc->SetActive(0);
     }
+
+    dmit->second.at(0)->UpdateWidth();
+    if (m_set_widths)
+      dmit->second.at(0)->Flav().SetWidth(dmit->second.at(0)->TotalWidth());
   }
 
   if (p_decaymap->size()) msg_Info()<<endl<<*p_decaymap<<endl;
