@@ -767,7 +767,6 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
   msg_Debugging()<<*ampl<<"\n";
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
   double q2cut(jf->Ycut()*sqr(rpa->gen.Ecms()));
-  bool his(false);
   size_t noem(0), nospec(0);
   for (size_t i(0);i<ampl->Decays().size();++i) {
     noem|=ampl->Decays()[i]->m_id;
@@ -782,7 +781,6 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
     Cluster_Leg *li(ampl->Leg(i));
     if (li->Id()&noem) continue;
     Flavour fi(i<ampl->NIn()?li->Flav().Bar():li->Flav());
-    if (i<ampl->NIn() && fi.Resummed()) his=true;
     for (size_t j(Max(i+1,ampl->NIn()));j<ampl->Legs().size();++j) {
       Cluster_Leg *lj(ampl->Leg(j));
       if (lj->Id()&noem) continue;
@@ -845,16 +843,6 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
     bool res=JetVeto(bampl,0);
     bampl->Delete();
     return res;
-  }
-  if (his) {
-    for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
-      if (ampl->Leg(i)->Flav().Resummed())
-	if (ampl->Leg(i)->Mom().PPerp2()<
-	    p_shower->GetSudakov()->ISPT2Min()) {
- 	  msg_Debugging()<<"p_T_{"<<ID(ampl->Leg(i)->Id())<<"} = "
-			 <<ampl->Leg(i)->Mom().PPerp()<<"\n";
-	  return false;
-	}
   }
   msg_Debugging()<<"--- Jet veto ---\n";
   return true;

@@ -105,7 +105,7 @@ bool Singlet::JetVeto(Sudakov *const sud) const
   int nlo(p_proc?((Process_Base*)p_proc)->Info().m_nlomode&2:-1);
   DEBUG_FUNC("nlo = "<<nlo);
   msg_Debugging()<<*(Singlet*)this<<"\n";
-  bool his(false), check(false);
+  bool check(false);
   size_t noem(0), nospec(0);
   for (size_t i(0);i<m_decs.size();++i) {
     noem|=m_decs[i]->m_id;
@@ -116,7 +116,6 @@ bool Singlet::JetVeto(Sudakov *const sud) const
     if ((*iit)->Id()&noem) continue;
     bool ii((*iit)->GetType()==pst::IS);
     Flavour fi((*iit)->GetFlavour());
-    if (ii && fi.Resummed()) his=true;
     for (const_iterator jit(iit);jit!=end();++jit) {
       if ((*jit)->Id()&noem) continue;
       bool ji((*jit)->GetType()==pst::IS);
@@ -145,17 +144,6 @@ bool Singlet::JetVeto(Sudakov *const sud) const
 			 <<(*kit)->GetFlavour()<<" ("<<et<<")\n";
 	}
       }
-    }
-  }
-  if (his) {
-    for (const_iterator iit(begin());iit!=end();++iit) {
-      if ((*iit)->GetType()==pst::IS) continue;
-      if ((*iit)->GetFlavour().Resummed())
-	if ((*iit)->Momentum().PPerp2()<sud->ISPT2Min()) {
- 	  msg_Debugging()<<"p_T_{"<<ID((*iit)->Id())<<"} = "
-			 <<(*iit)->Momentum().PPerp()<<"\n";
-	  return false;
-	}
     }
   }
   if (check) msg_Debugging()<<"--- Jet veto ---\n";
