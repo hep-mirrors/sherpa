@@ -367,6 +367,7 @@ void Sherpa::PrintDisclaimer()
            <<"**   - pp->lnu+jets  (MEPS,MC@NLO,MENLOPS,MEPS@NLO,NLO)     **"<<std::endl
            <<"**   - pp->h+jets (ggF)  (MEPS,MC@NLO,MENLOPS,MEPS@NLO,NLO) **"<<std::endl
            <<"**   - pp->jets  (MEPS,MC@NLO,MENLOPS,NLO)                  **"<<std::endl
+           <<"**   - pp->ttW  (MEPS,MC@NLO,NLO)                           **"<<std::endl
            <<"**                                                          **"<<std::endl
            <<"**  FOR ANY OTHER PROCESS IT IS STRONGLY RECOMMENDED TO     **"<<std::endl
            <<"**  USE SHERPA-1-4-2 FOR THE TIME BEING.                    **"<<std::endl
