@@ -218,9 +218,12 @@ void Initialization_Handler::LoadLibraries() const
   read.SetInputFile(m_path+m_file);
   std::vector<std::string> ldadd;
   if (!read.VectorFromFile(ldadd,"SHERPA_LDADD")) return;
-  for (size_t i(0);i<ldadd.size();++i) 
-    if (!s_loader->LoadLibrary(ldadd[i])) 
+  for (size_t i(0);i<ldadd.size();++i) {
+    if (!s_loader->LoadLibrary(ldadd[i])) {
       THROW(fatal_error,"Cannot load extra library.");
+    }
+    else msg_Info()<<METHOD<<"(): Library lib"<<ldadd[i]<<".so loaded.\n";
+  }
 }
 
 void Initialization_Handler::ShowParameterSyntax()
