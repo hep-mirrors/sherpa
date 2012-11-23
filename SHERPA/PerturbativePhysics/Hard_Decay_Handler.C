@@ -64,6 +64,12 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file)
   nodecayreader.VectorFromString(disabled_channels);
   for (size_t i=0; i<disabled_channels.size(); ++i)
     m_disabled_channels.insert(disabled_channels[i]);
+  nodecayreader.SetString(dr.GetValue<std::string>("HDH_ONLY_DECAY", ""));
+  vector<string> forced_channels;
+  nodecayreader.VectorFromString(forced_channels);
+  for (size_t i=0; i<forced_channels.size(); ++i)
+    m_forced_channels.insert(forced_channels[i]);
+
 
   DEBUG_FUNC("");
   p_decaymap = new Decay_Map(this);
@@ -112,7 +118,17 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file)
     dmit->second.at(0)->UpdateWidth();
     if (m_set_widths)
       dmit->second.at(0)->Flav().SetWidth(dmit->second.at(0)->TotalWidth());
+
+    // force/disable specified decay channels
+    for (size_t i=0;i<dmit->second.at(0)->size();++i) {
+      Decay_Channel* dc=dmit->second.at(0)->at(i);
+      if (dc->Active()<1) continue;
+      if (m_disabled_channels.count(dc->IDCode()) ||
+          (m_forced_channels.size() && !m_forced_channels.count(dc->IDCode())))
+        dc->SetActive(0);
+    }
   }
+
   if (p_decaymap->size()) msg_Info()<<endl<<*p_decaymap<<endl;
   WriteDecayTables();
 }
@@ -334,7 +350,6 @@ bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
   }
   dc->SetWidth(dc->IWidth());
   dc->SetDeltaWidth(dc->IDeltaWidth());
-  if (m_disabled_channels.count(dc->IDCode())) dc->SetActive(0);
   return true;
 }
 
