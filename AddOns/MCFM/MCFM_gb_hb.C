@@ -150,7 +150,6 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_gb_hb_Getter,"MCFM_gb_hb")
 Virtual_ME2_Base *MCFM_gb_hb_Getter::operator()(const Process_Info &pi) const
 {
-  msg_Out()<<"In "<<METHOD<<":\n";
   return NULL;
   DEBUG_FUNC("");
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
@@ -179,7 +178,7 @@ Virtual_ME2_Base *MCFM_gb_hb_Getter::operator()(const Process_Info &pi) const
 		 <<"MODEL = "<<s_model->Name()<<"(should be 'THDM', and "
 		 <<"ACTIVE[25] = "<<Flavour(kf_h0).IsOn()<<" (should be 1).\n"
 		 <<"   Will exit the run."<<std::endl;
-      exit(1);
+      THROW(not_implemented,"Incompatible setting with MCFM.");
       return NULL;
     }
     // tau tau final state
@@ -188,7 +187,7 @@ Virtual_ME2_Base *MCFM_gb_hb_Getter::operator()(const Process_Info &pi) const
       if (Flavour(kf_tau).Yuk()<=0.) {
 	msg_Error()<<"Error in "<<METHOD<<":\n"
 		   <<"   Setup for gb->[h->tau tau] b, but tau Yukawa = 0.\n";
-	exit(1);
+	THROW(not_implemented,"Incompatible setting with MCFM.");
       }
       pID = 141;
     }

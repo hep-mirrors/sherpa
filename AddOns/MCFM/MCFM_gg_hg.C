@@ -185,12 +185,7 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_gg_hg_Getter,"MCFM_gg_hg")
 Virtual_ME2_Base *MCFM_gg_hg_Getter::operator()(const Process_Info &pi) const
 {
-  msg_Out()<<"In "<<METHOD<<": ";
-  if (pi.m_loopgenerator!="MCFM") {
-    msg_Out()<<"not relevant for MCFM: "
-	     <<"use "<<pi.m_loopgenerator<<" instead.\n";
-    return NULL;
-  }
+  if (pi.m_loopgenerator!="MCFM") return NULL;
   else msg_Out()<<".\n";
   if (MODEL::s_model->Name()!=std::string("SM+EHC") ||
       Flavour(kf_b).Yuk()>0. ||
@@ -315,8 +310,6 @@ Virtual_ME2_Base *MCFM_gg_hg_Getter::operator()(const Process_Info &pi) const
                        <<"flavours for this process"<<std::endl;
     THROW(fatal_error, "Five-flavour calculations with MCFM only.")
   }
-  
-  PRINT_VAR(pID);
   if (pID>0) {
     zerowidth_.zerowidth=true;
     if (nproc_.nproc>=0) {

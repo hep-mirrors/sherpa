@@ -171,7 +171,7 @@ Virtual_ME2_Base *MCFM_qqb_wgam_Getter::operator()(const Process_Info &pi) const
 		   <<" and g5_gamma = 0"<<std::endl
 		   <<"for MCFM."<<std::endl
 		   <<"   Will exit the run."<<std::endl;
-	exit(1);
+	THROW(not_implemented,"Incompatible setting with MCFM.");
 	return NULL;
       }
     }
@@ -194,7 +194,7 @@ Virtual_ME2_Base *MCFM_qqb_wgam_Getter::operator()(const Process_Info &pi) const
 		     <<"model = "<<MODEL::s_model->Name()
 		     <<"(should be 'SM'or 'SM+AGC')."
 		     <<std::endl<<"   Will exit the run."<<std::endl;
-	  exit(1);
+	  THROW(not_implemented,"Incompatible setting with MCFM.");
 	  return NULL;
 	}
       }
@@ -210,7 +210,7 @@ Virtual_ME2_Base *MCFM_qqb_wgam_Getter::operator()(const Process_Info &pi) const
 		     <<"   Inconsistent setting with Sherpa: "<<std::endl
 		     <<"model = "<<MODEL::s_model->Name()<<"(should be 'SM')."
 		     <<std::endl<<"   Will exit the run."<<std::endl;
-	  exit(1);
+	  THROW(not_implemented,"Incompatible setting with MCFM.");
 	  return NULL;
 	}
 	if ((fl[2].IsUptype() && fl[3].IsDowntype()) ||
@@ -252,7 +252,7 @@ Virtual_ME2_Base *MCFM_qqb_wgam_Getter::operator()(const Process_Info &pi) const
 		   <<" and UNITARIZATION_N3 = "
 		   <<MODEL::s_model->ScalarConstant(string("UNITARIZATION_N3"))
 		   <<std::endl<<"   Will exit the run."<<std::endl;
-	exit(1);
+	THROW(not_implemented,"Incompatible setting with MCFM.");
 	return NULL;
       }
     

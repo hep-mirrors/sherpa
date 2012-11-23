@@ -327,7 +327,6 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_gg_hgg_Getter,"MCFM_gg_hgg")
 Virtual_ME2_Base *MCFM_gg_hgg_Getter::operator()(const Process_Info &pi) const
 {
-  msg_Out()<<"In "<<METHOD<<":\n";
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
   if (MODEL::s_model->Name()!=std::string("SM+EHC") ||
       Flavour(kf_b).Yuk()>0. ||
@@ -450,8 +449,6 @@ Virtual_ME2_Base *MCFM_gg_hgg_Getter::operator()(const Process_Info &pi) const
 	((W21.Kfcode()==kf_nue  && W22.Kfcode()==kf_e) || 
 	 (W21.Kfcode()==kf_numu && W22.Kfcode()==kf_mu)))        pID = 273;
   }
-
-  PRINT_VAR(pID);
   if (pID>0) {
     zerowidth_.zerowidth=true;
     removebr_.removebr=stable;

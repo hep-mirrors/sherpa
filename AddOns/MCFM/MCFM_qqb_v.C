@@ -135,7 +135,6 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_qqb_v_Getter,"MCFM_qqb_v")
 Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
 {
-  msg_Out()<<"In "<<METHOD<<" with "<<pi.m_fi.m_ps.size()<<"... .\n";
   DEBUG_FUNC("");
   if (pi.m_loopgenerator!="MCFM")                    return NULL;
   if (MODEL::s_model->Name()!=std::string("SM") &&
@@ -179,7 +178,7 @@ Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
 		     <<" (should be 0 for llbar, to play it safe), and "
 		     <<"MODEL = "<<MODEL::s_model->Name()<<" (should be 'SM')."
 		     <<std::endl<<"   Will exit the run."<<std::endl;
-	  exit(1);
+	  THROW(not_implemented,"Incompatible setting with MCFM.");
 	  return NULL;
 	}
 	if ((pi.m_fi.m_ps[0].m_fl[0]==ATOOLS::Flavour(kf_Z) ||
@@ -209,7 +208,7 @@ Virtual_ME2_Base *MCFM_qqb_v_Getter::operator()(const Process_Info &pi) const
 		     <<"   Pole check does not work - no poles from virtual "
 		     <<"contribution yet unearthed.\n"
 		     <<"  Continue & hope for the best.\n";
-	  exit(1);
+	  THROW(not_implemented,"Not implemented for MCFM yet.");
 	  pID = flag?22:27;
 	}
       }

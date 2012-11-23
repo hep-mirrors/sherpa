@@ -165,7 +165,7 @@ Virtual_ME2_Base *MCFM_wbf_Getter::operator()(const Process_Info &pi) const
 		 <<"(should be 'SM'), and "
 		 <<"ACTIVE[25] = "<<Flavour(kf_h0).IsOn()<<"(should be 1)."
 		 <<std::endl<<"   Will exit the run.\n";
-      exit(1);
+      THROW(not_implemented,"Incompatible setting with MCFM.");
       return NULL;
     }
     // tau tau final state
@@ -174,7 +174,7 @@ Virtual_ME2_Base *MCFM_wbf_Getter::operator()(const Process_Info &pi) const
       if (ATOOLS::Flavour(kf_tau).Yuk()<=0.) {
 	msg_Error()<<"Error in "<<METHOD<<":\n"
 		   <<"   Setup for WBF->[h->tau tau], but tau Yukawa = 0.\n";
-	exit(1);
+	THROW(not_implemented,"Incompatible setting with MCFM.");
       }
       if (fl.size()==6 && pi.m_fi.m_ps.size()==3 && 
 	  fl[0].IsQuark() && fl[1].IsQuark() && 
@@ -199,7 +199,7 @@ Virtual_ME2_Base *MCFM_wbf_Getter::operator()(const Process_Info &pi) const
 	  msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
 		     <<"   Setup for gg->[h->WW] (+jet), but W Yukawa = 0."
 		     <<std::endl;
-	  exit(1);
+	  THROW(not_implemented,"Incompatible setting with MCFM.");
 	}
 	if (pi.m_fi.m_ps.size()==3 && 
 	    fl[0].IsQuark() && fl[1].IsQuark() && 

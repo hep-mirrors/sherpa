@@ -111,7 +111,6 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_qqb_ZZ_Getter,"MCFM_qqb_ZZ")
 Virtual_ME2_Base *MCFM_qqb_ZZ_Getter::operator()(const Process_Info &pi) const
 {
-  double mz = Flavour(kf_Z).Mass();
   DEBUG_FUNC("");
   if (MODEL::s_model->Name()!=std::string("SM")) return NULL;
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
@@ -126,9 +125,6 @@ Virtual_ME2_Base *MCFM_qqb_ZZ_Getter::operator()(const Process_Info &pi) const
   if (fl.size()!=6)                                     return NULL;
   if (!(fl[2]==fl[3].Bar() && fl[4]==fl[5].Bar())
       && !(fl[2]==fl[4].Bar() && fl[3]==fl[5].Bar()))   return NULL;
-  msg_Out()<<METHOD<<":";
-  for (size_t i=0;i<6;i++) msg_Out()<<" "<<fl[i];
-  msg_Out()<<"\n";
   if (!(fl[2].IsLepton() && fl[3].IsLepton() &&
 	fl[4].IsLepton() && fl[5].IsLepton())) {
     msg_Error()<<"Error in "<<METHOD<<":\n"

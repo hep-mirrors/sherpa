@@ -146,7 +146,7 @@ Virtual_ME2_Base *MCFM_qqb_vh_Getter::operator()(const Process_Info &pi) const
 		       <<"MODEL = "<<MODEL::s_model->Name()
 		       <<"(should be 'SM'.\n"
 		       <<"   Will exit the run."<<std::endl;
-	    exit(1);
+	    THROW(not_implemented,"Incompatible setting with MCFM.");
 	    return NULL;
 	  }
 	  if (flV==ATOOLS::Flavour(kf_Wplus))                       pID = 92;

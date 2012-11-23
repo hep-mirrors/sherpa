@@ -125,9 +125,6 @@ Virtual_ME2_Base *MCFM_qqb_WW_Getter::operator()(const Process_Info &pi) const
   // - have W/Z
   if (!(fl[0].IsQuark() && fl[1].IsQuark()))            return NULL;
   if (fl.size()!=6)                                     return NULL;
-  msg_Out()<<METHOD<<":";
-  for (size_t i=0;i<6;i++) msg_Out()<<" "<<fl[i];
-  msg_Out()<<"\n";
   if (!(fl[2].IsLepton() && fl[3].IsLepton() &&
 	fl[4].IsLepton() && fl[5].IsLepton())) {
     msg_Error()<<"Error in "<<METHOD<<":\n"
@@ -173,7 +170,6 @@ Virtual_ME2_Base *MCFM_qqb_WW_Getter::operator()(const Process_Info &pi) const
     four_lepton=true;
   }
   if (fl[2].IsDowntype() && !(four_lepton)) change_order=true;
-    
   if (pID!=0) {
     if (nproc_.nproc>=0) {
       if (nproc_.nproc!=pID)

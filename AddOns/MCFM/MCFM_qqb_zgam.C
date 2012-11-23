@@ -172,7 +172,7 @@ Virtual_ME2_Base *MCFM_qqb_zgam_Getter::operator()(const Process_Info &pi) const
 		     <<"model = "<<MODEL::s_model->Name()
 		     <<"(should be 'SM' or 'SM+AGC')."
 		     <<std::endl<<"   Will exit the run."<<std::endl;
-	  exit(1);
+	  THROW(not_implemented,"Incompatible setting with MCFM.");
 	  return NULL;
 	}
 	
@@ -193,7 +193,7 @@ Virtual_ME2_Base *MCFM_qqb_zgam_Getter::operator()(const Process_Info &pi) const
 		   <<" and UNITARIZATION_N3 = "
 		   <<MODEL::s_model->ScalarConstant(string("UNITARIZATION_N3"))
 		   <<std::endl<<"   Will exit the run."<<std::endl;
-	exit(1);
+	THROW(not_implemented,"Incompatible setting with MCFM.");
 	return NULL;
       }
 

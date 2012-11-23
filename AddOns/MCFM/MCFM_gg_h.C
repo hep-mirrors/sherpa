@@ -189,7 +189,6 @@ extern "C" { void chooser_(); }
 DECLARE_VIRTUALME2_GETTER(MCFM_gg_h_Getter,"MCFM_gg_h")
 Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
 {
-  msg_Out()<<"In "<<METHOD<<":\n";
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
   if (MODEL::s_model->Name()!=std::string("SM+EHC") ||
       Flavour(kf_b).Yuk()>0. ||
@@ -299,8 +298,6 @@ Virtual_ME2_Base *MCFM_gg_h_Getter::operator()(const Process_Info &pi) const
       msg_Out()<<"   potential problem: MCFM needs sequence W-W+.\n";
     }
   }
-
-  PRINT_VAR(pID);
   if (pID>0) {
     zerowidth_.zerowidth=true;
     if (nproc_.nproc>=0) {

@@ -132,11 +132,6 @@ Virtual_ME2_Base *MCFM_qqb_WZ_Getter::operator()(const Process_Info &pi) const
 	       <<"   WZ production for lepton/neutrino final states only.\n";
     THROW(fatal_error,"Not yet working."); 
   }
-
-  msg_Out()<<METHOD<<":";
-  for (size_t i=0;i<6;i++) msg_Out()<<" "<<fl[i];
-  msg_Out()<<"\n";
-  
   if (((fl[2]!=fl[3].Bar()) || abs(fl[4].Kfcode()-fl[5].Kfcode())!=1) 
       && (fl[2]!=fl[4].Bar() || abs(fl[3].Kfcode()-fl[5].Kfcode())!=1)){
     msg_Error()<<"Error in "<<METHOD<<":\n"
