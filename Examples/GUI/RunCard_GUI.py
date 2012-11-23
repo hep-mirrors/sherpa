@@ -5,17 +5,17 @@ import gtk
 
 
 
-import GUI/ParameterBox.py      as parameterbox
-import "GUI/Group.py"             as group
-import "GUI/GenSection_GUI.py"    as gen_gui
-import "GUI/BeamSection_GUI.py"   as beams_gui
-import "GUI/PDFSection_GUI.py"    as pdfs_gui
-import "GUI/ProcSection_GUI.py"   as procs_gui
-import "GUI/MESection_GUI.py"     as mes_gui
-import "GUI/ShowerSection_GUI.py" as shower_gui
-import "GUI/SelSection_GUI.py"    as sels_gui
-import "GUI/SoftSection_GUI.py"   as soft_gui
-import "GUI/AnaSection_GUI.py"    as ana_gui
+import ParameterBox      as parameterbox
+import Group             as group
+import GenSection_GUI    as gen_gui
+import BeamSection_GUI   as beams_gui
+import PDFSection_GUI    as pdfs_gui
+import ProcSection_GUI   as procs_gui
+import MESection_GUI     as mes_gui
+import ShowerSection_GUI as shower_gui
+import SelSection_GUI    as sels_gui
+import SoftSection_GUI   as soft_gui
+import AnaSection_GUI    as ana_gui
 
 class runcard_gui_gtk():
     def __init__(self):

@@ -1,16 +1,16 @@
 (run){
   EVENTS 1000000;
-  FAC_SCALE2:=sqr(80.419);
-  REN_SCALE2:=sqr(80.419);
+  MU_F2:=sqr(80.419);
+  MU_R2:=sqr(80.419);
   ERROR 0.25
-  RESULT_DIRECTORY = Results_EW
+  RESULT_DIRECTORY = Results_QCD
   ME_SIGNAL_GENERATOR Comix;
   EVENT_GENERATION_MODE Weighted;
   SCF:=1.0; QF:=1.0;
   SCALES METS{SCF*MU_F2}{SCF*MU_R2}{QF*MU_Q2};
 
   ANALYSIS = Rivet
-  ANALYSIS_OUTPUT=WpWp_nocuts_EW
+  ANALYSIS_OUTPUT=WpWp_nocuts_QCD
 }(run);
 
 (processes){
@@ -20,7 +20,7 @@
   Process 93 93 -> 24[a] 24[b] 93 93;
   Decay 24[a] -> -11 12;
   Decay 24[b] -> -13 14;
-  Order_EW 6;
+  Order_EW 4;
   End process;
 }(processes);
 
@@ -35,7 +35,7 @@
   MASS[25]=125.5;
   MASS[24]=80.419;
   WIDTH[24]=2.140;
-  1/ALPHAQED(MZ)=128.802;
+  #ALPHAQED(MZ)=128.802;
   SIN2THETAW=0.2222;
 }(model);
 

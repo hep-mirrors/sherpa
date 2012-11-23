@@ -1,0 +1,49 @@
+(run){
+  EVENTS 10000;
+
+  # ME settings
+  LJET:=0; #LO=0, NLO=3
+
+  SP_NLOCT=1; SCF:=1.0; SQF:=1.0;
+  SCALES METS{SCF*MU_F2}{SCF*MU_R2}{SQF*MU_Q2};
+  EXCLUSIVE_CLUSTER_MODE 1;
+
+  # Generator parameters
+  LGEN:=OpenLoops;
+  ME_SIGNAL_GENERATOR Amegic; 
+  AMEGIC_DEFAULT_GAUGE=10
+  HARD_SPIN_CORRELATIONS=1
+  HARD_MASS_SMEARING=0
+  INTEGRATOR 7;
+  HDH_NO_DECAY {24,-1,2}|{24,-3,4}|{24,-15,16}
+  # HDH_NO_DECAY {23,-1,1}|{23,-2,2}
+
+
+  # Physics parameters
+  BEAM_1  2212; BEAM_ENERGY_1 4000;
+  BEAM_2  2212; BEAM_ENERGY_2 4000;
+  HARD_DECAYS=On
+  STORE_DECAY_RESULTS 1;
+  WIDTH[6] 0;
+  WIDTH[24]=0;
+  STABLE[6]=0
+  STABLE[24]=0
+  ANALYSIS = Rivet
+  ANALYSIS_OUTPUT = TopsNoDec.Nocorrels.NLO
+}(run);
+
+(processes){
+  Process 93 93 -> 6 -6 24 
+  NLO_QCD_Part BVIRS {LJET};
+  ME_Generator Amegic {LJET};
+  Loop_Generator LGEN;
+  NLO_QCD_Mode MC@NLO;
+  Order_EW 1;
+  End process;
+}(processes);
+
+(analysis){
+  BEGIN_RIVET {
+  -a MC_TTW
+  } END_RIVET
+}(analysis)
