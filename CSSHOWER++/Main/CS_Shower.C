@@ -219,7 +219,7 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,const size_t &id,
     Cluster_Leg *cl(ampl->Leg(i));
     if ((cl->Id()&id)==0) continue;
     if (ampl->Prev()) GetKT2Min(ampl->Prev(),cl->Id(),kt2xmap,aset);
-    if (cl->Stat()&3) {
+    if (cl->Stat()&2) {
       double ckt2(dabs(cl->Mom().Abs2()));
       kt2xmap[cl->Id()].first=kt2xmap[cl->Id()].second=HardScale(ampl);
       for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
@@ -554,7 +554,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
       almap[s]->SetMom(almap[s]->Id()&3?-s->Momentum():s->Momentum());
       split->SetKin(campl->Kin());
-      split->SetKScheme(almap[split]->Stat()&3);
+      split->SetKScheme(almap[split]->Stat()&2);
       if (split->KScheme()) split->SetMass2(split->Momentum().Abs2());
       CS_Parameters cp(p_cluster->KT2
 		       (campl->Prev(),almap[l],almap[r],almap[s],
