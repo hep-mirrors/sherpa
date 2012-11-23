@@ -16,6 +16,7 @@ namespace MCFM {
 
   class MCFM_gg_hgg: public PHASIC::Virtual_ME2_Base {
   private:
+    bool                    m_stable;
     int                     m_pID,m_me;
     int                     m_j1,m_j2,m_j3,m_j4,m_k1,m_k2,m_k3,m_k4;
     double                * p_p, *p_msqv;
@@ -55,7 +56,7 @@ using namespace std;
 
 MCFM_gg_hgg::MCFM_gg_hgg(const int & pID,const Process_Info& pi,
 			 const Flavour_Vector& flavs) :
-  Virtual_ME2_Base(pi,flavs), m_pID(pID),
+  Virtual_ME2_Base(pi,flavs), m_stable(flavs.size()==5?true:false), m_pID(pID),
   p_as((MODEL::Running_AlphaS *)
        MODEL::s_model->GetScalarFunction(std::string("alpha_S"))),
   m_vev(MODEL::s_model->ScalarConstant(std::string("vev"))),
@@ -72,38 +73,42 @@ MCFM_gg_hgg::MCFM_gg_hgg(const int & pID,const Process_Info& pi,
   m_normcorr(4.*9.)
 {
   rpa->gen.AddCitation
-    (1,"The NLO matrix elements have been taken from MCFM \\cite{}.");
-  switch (m_pID) {
-  case 270:
-    m_cplcorr *= 0.042670320138; // works for mh=125.5
-    break;
-  case 272:
-    m_cplcorr *= 
-      sqr(Flavour(kf_tau).Yuk()/m_vev);
-    break;
-  case 273:
-    m_cplcorr *= 
-      m_mW2*
-      pow(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_QED"))/
-	  MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")),3.);
-    break;
-  case 274:
-    double charge1(m_flavs[2].Charge()),charge2(m_flavs[4].Charge());
-    double isow1(m_flavs[2].IsoWeak()),isow2(m_flavs[4].IsoWeak());
-    double sinsqW(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")));
-    couplz_(sinsqW);
-    double sin2W(2.*sqrt(sinsqW*(1.-sinsqW)));
-    double l1(2.*(isow1-charge1*sinsqW)/sin2W);
-    double l2(2.*(isow2-charge2*sinsqW)/sin2W);
-    double r1(-2.*charge1*sinsqW/sin2W);
-    double r2(-2.*charge2*sinsqW/sin2W);
-    m_cpl_llrr = sqr(l1*l2)+sqr(r1*r2);
-    m_cpl_lrrl = sqr(l1*r2)+sqr(r1*l2);
-    m_cplcorr *= 
-      4.*m_mZ2*sinsqW*sinsqW/(1.-sinsqW)*
-      pow(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_QED"))/
-	  sinsqW,3.);
-    break;
+    (1,"The NLO matrix elements have been taken from MCFM \\cite{Campbell:2006xx}.");
+  // no idea where this number comes from
+  if (m_stable) m_cplcorr *= 0.999493288506;
+  else {
+    switch (m_pID) {
+    case 270:
+      m_cplcorr *= 0.042670320138; // works for mh=125.5
+      break;
+    case 272:
+      m_cplcorr *= 
+        sqr(Flavour(kf_tau).Yuk()/m_vev);
+      break;
+    case 273:
+      m_cplcorr *= 
+        m_mW2*
+        pow(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_QED"))/
+            MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")),3.);
+      break;
+    case 274:
+      double charge1(m_flavs[2].Charge()),charge2(m_flavs[4].Charge());
+      double isow1(m_flavs[2].IsoWeak()),isow2(m_flavs[4].IsoWeak());
+      double sinsqW(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")));
+      couplz_(sinsqW);
+      double sin2W(2.*sqrt(sinsqW*(1.-sinsqW)));
+      double l1(2.*(isow1-charge1*sinsqW)/sin2W);
+      double l2(2.*(isow2-charge2*sinsqW)/sin2W);
+      double r1(-2.*charge1*sinsqW/sin2W);
+      double r2(-2.*charge2*sinsqW/sin2W);
+      m_cpl_llrr = sqr(l1*l2)+sqr(r1*r2);
+      m_cpl_lrrl = sqr(l1*r2)+sqr(r1*l2);
+      m_cplcorr *= 
+        4.*m_mZ2*sinsqW*sinsqW/(1.-sinsqW)*
+        pow(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_QED"))/
+            sinsqW,3.);
+      break;
+    }
   }
 
   p_p = new double[4*MCFM_NMX];
@@ -229,29 +234,31 @@ void MCFM_gg_hgg::Calc(const Vec4D_Vector &p)
   double corrfactor(m_cplcorr*m_normcorr);
   corrfactor *= sqr((*p_as)(m_mur2));
   // propagator corrections
-  double sh((m_pID==270||m_pID==272)?
-	    (p[2]+p[3]).Abs2() :
-	    (p[2]+p[3]+p[4]+p[5]).Abs2());
-  corrfactor *= 1./(sqr(sh-m_mh2)+m_mh2*m_Gh2);
-  double s23((p[2]+p[3]).Abs2()), s45((p[4]+p[5]).Abs2());
-  double s24((p[2]+p[4]).Abs2()), s35((p[3]+p[5]).Abs2());
-  double s25((p[2]+p[5]).Abs2()), s34((p[3]+p[4]).Abs2());
-  switch (m_pID) {
-  case 270:
-    // decay h->pp ~ g^\mu\nu \eps*_\mu \eps*_\nu
-    break;
-  case 272:
-    corrfactor *= 2.*sh;
-    break;
-  case 273:
-    corrfactor *= 
-      s24*s35/((sqr(s23-m_mW2)+m_mW2*m_GW2)*(sqr(s45-m_mW2)+m_mW2*m_GW2));
-    break;
-  case 274:
-    corrfactor *= 
-      (m_cpl_llrr*s24*s35 + m_cpl_lrrl*s25*s34)/
-      ((sqr(s23-m_mZ2)+m_mZ2*m_GZ2)*(sqr(s45-m_mZ2)+m_mZ2*m_GZ2));
-    break;
+  if (!m_stable) {
+    double sh((m_pID==270||m_pID==272)?
+              (p[2]+p[3]).Abs2() :
+              (p[2]+p[3]+p[4]+p[5]).Abs2());
+    corrfactor *= 1./(sqr(sh-m_mh2)+m_mh2*m_Gh2);
+    double s23((p[2]+p[3]).Abs2()), s45((p[4]+p[5]).Abs2());
+    double s24((p[2]+p[4]).Abs2()), s35((p[3]+p[5]).Abs2());
+    double s25((p[2]+p[5]).Abs2()), s34((p[3]+p[4]).Abs2());
+    switch (m_pID) {
+    case 270:
+      // decay h->pp ~ g^\mu\nu \eps*_\mu \eps*_\nu
+      break;
+    case 272:
+      corrfactor *= 2.*sh;
+      break;
+    case 273:
+      corrfactor *= 
+        s24*s35/((sqr(s23-m_mW2)+m_mW2*m_GW2)*(sqr(s45-m_mW2)+m_mW2*m_GW2));
+      break;
+    case 274:
+      corrfactor *= 
+        (m_cpl_llrr*s24*s35 + m_cpl_lrrl*s25*s34)/
+        ((sqr(s23-m_mZ2)+m_mZ2*m_GZ2)*(sqr(s45-m_mZ2)+m_mZ2*m_GZ2));
+      break;
+    }
   }
 
   for (int n(0);n<2;++n)           GetMom(p_p,n,-p[n]);
@@ -352,12 +359,21 @@ Virtual_ME2_Base *MCFM_gg_hgg_Getter::operator()(const Process_Info &pi) const
   }
 
   int pID(0);
+  bool stable(false);
+  //////////////////////////////////////////////////////////////////
+  // stable Higgs final state
+  //////////////////////////////////////////////////////////////////
+  if (fl.size()==5 && pi.m_fi.m_ps.size()==3 && 
+      fl[2].Kfcode()==kf_h0 && fl[3].Strong() && fl[4].Strong()) {
+    pID = 272;
+    stable = true;
+  }
   //////////////////////////////////////////////////////////////////
   // tau tau final states
   //////////////////////////////////////////////////////////////////
   if (fl.size()==6 && pi.m_fi.m_ps.size()==3 && 
       fl[4].Strong() && fl[5].Strong() &&
-      fl[2]==fl[3].Bar() && fl[2].Kfcode()==15) {
+      fl[2]==fl[3].Bar() && fl[2].Kfcode()==kf_tau) {
     if (Flavour(kf_tau).Yuk()<=0.) {
       msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
 		 <<"   Setup for gg->[h->tau tau] (+jet), but tau Yukawa = 0."
@@ -371,7 +387,7 @@ Virtual_ME2_Base *MCFM_gg_hgg_Getter::operator()(const Process_Info &pi) const
   //////////////////////////////////////////////////////////////////
   else if (fl.size()==6 && pi.m_fi.m_ps.size()==3 && 
 	   fl[4].Strong() && fl[5].Strong() &&
-	   fl[2]==fl[3] && fl[2].Kfcode()==22) {
+	   fl[2]==fl[3] && fl[2].Kfcode()==kf_photon) {
     pID = 270;
   }
   //////////////////////////////////////////////////////////////////
@@ -379,9 +395,9 @@ Virtual_ME2_Base *MCFM_gg_hgg_Getter::operator()(const Process_Info &pi) const
   //////////////////////////////////////////////////////////////////
   else if (fl.size()==8 && pi.m_fi.m_ps.size()==3 && 
 	   fl[6].Strong() && fl[7].Strong() &&
-	   pi.m_fi.m_ps[0].m_ps[0].m_fl[0].Kfcode()==23 &&
+	   pi.m_fi.m_ps[0].m_ps[0].m_fl[0].Kfcode()==kf_Z &&
 	   pi.m_fi.m_ps[0].m_ps[0].m_ps.size()==2 &&
-	   pi.m_fi.m_ps[0].m_ps[1].m_fl[0].Kfcode()==23 &&
+	   pi.m_fi.m_ps[0].m_ps[1].m_fl[0].Kfcode()==kf_Z &&
 	   pi.m_fi.m_ps[0].m_ps[1].m_ps.size()==2) {
     Flavour Z11,Z12,Z21,Z22;
     Z11 = pi.m_fi.m_ps[0].m_ps[0].m_ps[0].m_fl[0];
@@ -397,7 +413,7 @@ Virtual_ME2_Base *MCFM_gg_hgg_Getter::operator()(const Process_Info &pi) const
       THROW(fatal_error,"wrong process.");
       return NULL;
     }
-    if (Z11.Kfcode()==15 || Z21.Kfcode()==15) {
+    if (Z11.Kfcode()==kf_tau || Z21.Kfcode()==kf_tau) {
       msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
 		 <<"   process should not involve taus: "
 		 <<Z11<<" & "<<Z12<<", "<<Z21<<" & "<<Z22<<".\n"; 
@@ -417,9 +433,9 @@ Virtual_ME2_Base *MCFM_gg_hgg_Getter::operator()(const Process_Info &pi) const
   //////////////////////////////////////////////////////////////////
   else if (fl.size()==8 && pi.m_fi.m_ps.size()==3 && 
 	   fl[6].Strong() && fl[7].Strong() &&
-	   pi.m_fi.m_ps[0].m_ps[0].m_fl[0].Kfcode()==24 &&
+	   pi.m_fi.m_ps[0].m_ps[0].m_fl[0].Kfcode()==kf_Wplus &&
 	   pi.m_fi.m_ps[0].m_ps[0].m_ps.size()==2 &&
-	   pi.m_fi.m_ps[0].m_ps[1].m_fl[0].Kfcode()==24 &&
+	   pi.m_fi.m_ps[0].m_ps[1].m_fl[0].Kfcode()==kf_Wplus &&
 	   pi.m_fi.m_ps[0].m_ps[1].m_ps.size()==2) {
     Flavour W11,W12,W21,W22;
     W11 = pi.m_fi.m_ps[0].m_ps[0].m_ps[0].m_fl[0];
@@ -429,15 +445,16 @@ Virtual_ME2_Base *MCFM_gg_hgg_Getter::operator()(const Process_Info &pi) const
     msg_Out()<<"   test for WW: \n"
 	     <<"   {"<<W11<<", "<<W12<<"} {"<<W21<<", "<<W22<<"}.\n";
     if (!W11.IsAnti() && W12.IsAnti() && !W21.IsAnti() && W22.IsAnti() &&
-	((W11.Kfcode()==11 && W12.Kfcode()==12) || 
-	 (W11.Kfcode()==13 && W12.Kfcode()==14)) && 
-	((W21.Kfcode()==12 && W22.Kfcode()==11) || 
-	 (W21.Kfcode()==14 && W22.Kfcode()==13)))        pID = 273;
+	((W11.Kfcode()==kf_e    && W12.Kfcode()==kf_nue) || 
+	 (W11.Kfcode()==kf_mu   && W12.Kfcode()==kf_numu)) && 
+	((W21.Kfcode()==kf_nue  && W22.Kfcode()==kf_e) || 
+	 (W21.Kfcode()==kf_numu && W22.Kfcode()==kf_mu)))        pID = 273;
   }
 
   PRINT_VAR(pID);
   if (pID>0) {
     zerowidth_.zerowidth=true;
+    removebr_.removebr=stable;
     if (nproc_.nproc>=0) {
       if (nproc_.nproc!=pID)
 	THROW(not_implemented,
