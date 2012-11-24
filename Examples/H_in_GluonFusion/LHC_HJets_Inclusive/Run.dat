@@ -5,11 +5,13 @@
   FRAGMENTATION Off;   %%Ahadic
 
   % tags and settings for scale definitions
+  %% Use scale: VAR{sqr(sqrt(H_T2)+125)}
   SP_NLOCT=1; FSF:=1.0; RSF:=1.0; QSF:=1.0;
-  SCALES STRICT_METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
+  SCALES VAR{sqr(sqrt(H_T2)+125)} 
+  %%STRICT_METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
 
   % tags for process setup
-  LJET:=1,2; NJET:=2; QCUT:=20.;
+  LJET:=1,2,3; NJET:=3; QCUT:=20.;
   EXCLUSIVE_CLUSTER_MODE 1;
 
   % shower settings for NLO
@@ -19,7 +21,7 @@
 
   % tags and settings for ME generators
   LOOPGEN0:=Internal;
-  LOOPGEN1:=LHOLE;
+  LOOPGEN1:=MCFM;
   %%SHERPA_LDADD golem_olp;
   %%LHOLE_CONTRACTFILE OLE_order.olc;
   %%LHOLE_OLP GoSam;
@@ -51,7 +53,7 @@
   Order_EW 1; CKKW sqr(QCUT/E_CMS);
   NLO_QCD_Mode MC@NLO {LJET}; 
   Loop_Generator LOOPGEN0 {1,2};
-  %%Loop_Generator LOOPGEN1 {3};
+  Loop_Generator LOOPGEN1 {3};
   ME_Generator Amegic {LJET};
   %Enhance_Factor 16 {2}; 
   %Enhance_Factor 128 {3,4};
