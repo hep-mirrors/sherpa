@@ -128,7 +128,7 @@ namespace PHASIC {
   void Variable_Core_Scale_Getter::PrintInfo
   (std::ostream &str,const size_t width) const
   { 
-    str<<"shower core scale"; 
+    str<<"variable core scale"; 
   }
 
 }// end of namespace PHASIC
