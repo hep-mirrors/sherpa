@@ -332,12 +332,8 @@ bool CS_Gamma::CheckColors
 (const ATOOLS::Cluster_Leg *li,const ATOOLS::Cluster_Leg *lj,
  const ATOOLS::Cluster_Leg *lk,const ATOOLS::Flavour &mo) const
 {
-  if (mo.StrongCharge()==8) {
+  if (mo.Strong()) {
     if (!lk->Flav().Strong()) return false;
-  }
-  else if (mo.Strong()) {
-    if (!(lk->Flav().StrongCharge()==8 ||
-	  lk->Flav().StrongCharge()==-mo.StrongCharge())) return false;
   }
   else {
     if (lk->Flav().StrongCharge()==8) return false;

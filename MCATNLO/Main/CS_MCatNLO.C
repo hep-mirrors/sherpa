@@ -105,7 +105,6 @@ int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem)
 		 (*cit)->GetFlavour()).StrongCharge());
 	int scp(((*pit)->Idx()<p_rampl->NIn()?(*pit)->GetFlavour().Bar():
 		 (*pit)->GetFlavour()).StrongCharge());
-	if (abs(scc)==3 && abs(scp)==3 && scc!=-scp) continue;
 	msg_Debugging()<<(*pit)->GetFlavour()<<ID((*pit)->Id())<<" ";
 	(*cit)->Specs().push_back(*pit);
       }
