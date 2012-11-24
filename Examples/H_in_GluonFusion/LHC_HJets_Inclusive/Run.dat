@@ -5,13 +5,12 @@
   FRAGMENTATION Off;   %%Ahadic
 
   % tags and settings for scale definitions
-  %% Use scale: VAR{sqr(sqrt(H_T2)+125)}
   SP_NLOCT=1; FSF:=1.0; RSF:=1.0; QSF:=1.0;
-  SCALES VAR{sqr(sqrt(H_T2)+125)} 
-  %%STRICT_METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
+  %%SCALES VAR{sqr(sqrt(H_T2)+125)} 
+  STRICT_METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
 
   % tags for process setup
-  LJET:=1,2,3; NJET:=3; QCUT:=20.;
+  LJET:=1,2; NJET:=2; QCUT:=30.;
   EXCLUSIVE_CLUSTER_MODE 1;
 
   % shower settings for NLO
@@ -21,7 +20,7 @@
 
   % tags and settings for ME generators
   LOOPGEN0:=Internal;
-  LOOPGEN1:=MCFM;
+  LOOPGEN1:=LHOLE;
   %%SHERPA_LDADD golem_olp;
   %%LHOLE_CONTRACTFILE OLE_order.olc;
   %%LHOLE_OLP GoSam;
@@ -42,10 +41,6 @@
   % collider setup
   BEAM_1 2212; BEAM_ENERGY_1 4000;
   BEAM_2 2212; BEAM_ENERGY_2 4000;  
-
-  % Analysis
-  ANALYSIS = Rivet
-  ANALYSIS_OUTPUT = H_MEPSNLO01_20
 }(run);
 
 (processes){
@@ -55,15 +50,9 @@
   Loop_Generator LOOPGEN0 {1,2};
   Loop_Generator LOOPGEN1 {3};
   ME_Generator Amegic {LJET};
-  %Enhance_Factor 16 {2}; 
-  %Enhance_Factor 128 {3,4};
+  Enhance_Factor 16 {2}; 
+  Enhance_Factor 128 {3,4};
   RS_Enhance_Factor 10 {2};
   RS_Enhance_Factor 20 {3};
   End process;
 }(processes);
-
-(analysis){
-  BEGIN_RIVET {
-  -a MC_HJETS_STABLE_CUTS
-  } END_RIVET
-}(analysis)
