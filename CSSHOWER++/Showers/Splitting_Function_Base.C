@@ -28,6 +28,7 @@ using namespace MODEL;
 using namespace ATOOLS;
 
 double SF_Lorentz::s_pdfcut=1.0e-6;
+double SF_Lorentz::s_kappa=2.0/3.0;
 
 SF_Lorentz::SF_Lorentz(const SF_Key &key):
   p_ms(key.p_ms), p_cf(key.p_cf), m_col(0)

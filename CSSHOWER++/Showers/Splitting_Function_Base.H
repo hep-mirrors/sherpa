@@ -64,7 +64,7 @@ namespace CSSHOWER {
     double m_zmin, m_zmax;
     int m_beam, m_col;
 
-    static double s_pdfcut;
+    static double s_pdfcut, s_kappa;
 
     double Lambda(const double &a,const double &b,const double &c);
 
@@ -113,6 +113,8 @@ namespace CSSHOWER {
     inline const ATOOLS::Mass_Selector *MS() const { return p_ms; }
 
     inline int Col() const { return m_col; }
+
+    inline static void SetKappa(const double &kap) { s_kappa=kap; }
 
   };
 

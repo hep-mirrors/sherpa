@@ -30,6 +30,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
     m_maxem=maxem;
     msg_Info()<<METHOD<<"(): Set max emissions "<<m_maxem<<"\n";
   }
+  SF_Lorentz::SetKappa(_dataread->GetValue<double>("DIPOLE_KAPPA",2.0/3.0));
   int mtmode=_dataread->GetValue<int>("CSS_CORE_MTMODE",0);
   if (mtmode!=1) msg_Info()<<METHOD<<"(): Set core m_T mode "<<mtmode<<"\n";
   m_kmode=_dataread->GetValue<int>("CSS_KMODE",1);
