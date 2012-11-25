@@ -11,21 +11,6 @@ double PDF::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
 		 const double &dparam,const int imode)
 {
   int mode(imode|2);
-  if (mode&4) {
-    Vec4D npi(pi), npj(pj);
-    double mi2(sqr(fi.Mass())), mj2(sqr(fj.Mass()));
-    if (npj[0]<0.0 && npi[0]>0.0) std::swap<Vec4D>(npi,npj); 
-    if (npi[0]>0.0) {
-      double pipj(npi*npj), pipk(npi*pk), pjpk(npj*pk);
-      double zi(pipk/(pipk+pjpk));
-      return 2.0*pipj*zi*(1.0-zi)-sqr(1.0-zi)*mi2-sqr(zi)*mj2;
-    }
-    else {
-      double papj(npi*npj), papk(npi*pk), pjpk(npj*pk);
-      double zj(pk[0]<0.0?-papj/papk:papj/(papj+papk));
-      return -2.0*papj*(1.0-zj)-mj2-sqr(1.0-zj)*mi2;
-    }
-  }
   Vec4D npi(pi), npj(pj);
   Flavour nfi((mode&2)?Flavour(kf_gluon):fi);
   Flavour nfj((mode&2)?Flavour(kf_gluon):fj);
@@ -37,7 +22,6 @@ double PDF::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
     npj=-pj-pi;
     if (!(mode&1)) nfj=fj==fi.Bar()?Flavour(kf_gluon):(fj.IsVector()?fi.Bar():fj);
   }
-  if (nfi.IsQuark() && nfj.IsQuark() && nfi!=nfj.Bar()) return -1.0;
   if ((fi.IsPhoton() && fj.IntCharge()==0) ||
       (fj.IsPhoton() && fi.IntCharge()==0)) return -1.0;
   double D(1.0);
