@@ -290,7 +290,7 @@ double LF_VVV1_IF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double muk2 = sqr(p_ms->Mass(m_flspec))/Q2;
+  double mk2 = p_ms->Mass2(m_flspec), muk2 = mk2/(Q2+mk2);
   double massless = 2. * ( (z-y)/(1.-z+y) + (1.-z)/z/2.0);
   if (muk2==0.) {
     //the massless case
@@ -299,7 +299,7 @@ double LF_VVV1_IF::operator()
   }
   else {
     //the massive case
-    double massive = massless - muk2*y/(z*(1.-y));
+    double massive = massless - muk2*y/(1.-y);
     if (massive < 0.) {
       return 0.;
   }
@@ -331,7 +331,7 @@ double LF_VVV2_IF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double muk2 = sqr(p_ms->Mass(m_flspec))/Q2;
+  double mk2 = p_ms->Mass2(m_flspec), muk2 = mk2/(Q2+mk2);
   double massless = 2. * ( z*(1.-z) + (1.-z)/z/2.0);
   if (muk2==0.) {
     //the massless case
@@ -340,7 +340,7 @@ double LF_VVV2_IF::operator()
   }
   else {
     //the massive case
-    double massive = massless - muk2*y/(z*(1.-y));
+    double massive = massless - muk2*y/(1.-y);
     if (massive < 0.) {
       return 0.;
   }
