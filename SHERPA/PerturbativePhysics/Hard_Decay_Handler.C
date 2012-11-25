@@ -431,26 +431,12 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     size_t idk(0);
     for (size_t i=0; i<copy->Legs().size(); ++i) {
       copy->Leg(i)->SetK(0);
+      if (copy->Leg(i)->Id()!=idmother)
       if (copy->Leg(i)->Col().m_i==lij->Col().m_j ||
           copy->Leg(i)->Col().m_j==lij->Col().m_i) 
         idk=copy->Leg(i)->Id();
     }
     if (lij->Col().m_i==0 && lij->Col().m_j==0) {
-      if (ampl->Next()) {
-        Cluster_Amplitude *next(ampl->Next());
-        for (size_t i=0;i<next->Legs().size();++i) {
-          if (next->Leg(i)->Id()&lij->Id()) {
-            size_t id(next->Leg(i)->Id()^lij->Id());
-            for (size_t j=0;j<ampl->Legs().size();++j)
-              if (ampl->Leg(j)->Id()&id) {
-              idk=ampl->Leg(j)->Id();
-              break;
-            }
-            break;
-          }
-        }
-      }
-      else {
         // Ad hoc EW partner
         size_t ampl_nout=ampl->Legs().size()-ampl->NIn();
 	if (ampl_nout==1) idk=ampl->Leg(0)->Id();
@@ -461,7 +447,6 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
         } while (ampl->Leg(select)->Id()&idmother || select>ampl->Legs().size()-1);
         idk=ampl->Leg(select)->Id();
 	}
-      }
     }
     if (idk==0) THROW(fatal_error,"Colour partner not found");
     lij->SetK(idk);
