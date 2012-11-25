@@ -142,9 +142,9 @@ double Splitting_Function_Base::MEPSWeight
   case cstp::FF:
     return (8.0*M_PI)/(Q2*y)/p_lf->JFF(y,mub2,muc2,muk2,mua2);
   case cstp::FI:
-    return (8.0*M_PI)/(-Q2*y)/p_lf->JFI(y,eta,scale,sub);
+    return (8.0*M_PI)/(Q2*y)/p_lf->JFI(y,eta,scale,sub);
   case cstp::IF:
-    return (8.0*M_PI)/(-Q2*y)/p_lf->JIF(z,y,eta,scale,sub);
+    return (8.0*M_PI)/(Q2*y)/p_lf->JIF(z,y,eta,scale,sub);
   case cstp::II:
     return (8.0*M_PI)/(Q2*y)/p_lf->JII(z,y,eta,scale,sub);
   case cstp::none: break;

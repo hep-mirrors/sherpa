@@ -156,20 +156,20 @@ int CS_Gamma::SingleWeight
 #endif
   cdip->SetFlavourSpec((lk->Id()&((1<<ampl->NIn())-1))?
 		       lk->Flav().Bar():lk->Flav());
-  double eta=1.0;
+  double eta=1.0, Q2=(cs.m_mode==1||cs.m_mode==2)?-cs.m_q2:cs.m_q2;
   if (cs.m_mode==1) eta=p_cluster->GetX(li,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=p_cluster->GetX(lk,cdip)*(1.0-cs.m_y);
   else if (cs.m_mode==3) eta=p_cluster->GetX(li,cdip)*cs.m_z;
   Weight_Value meps(Differential(ampl));
   meps.p_sf=cdip;
   meps.m_me*=cdip->SymFac()/
-    cdip->AsymmetryFactor(cs.m_z,cs.m_y,cs.m_q2);
+    cdip->AsymmetryFactor(cs.m_z,cs.m_y,Q2);
 #ifdef DEBUG__Trial_Weight
   double me=meps.m_me;
 #endif
   Color_Info ci(li->Col(),lj->Col(),lk->Col(),0);
-  meps.m_me*=(*cdip)(cs.m_z,cs.m_y,eta,cs.m_kt2,cs.m_q2,ci,ampl)*
-    cdip->MEPSWeight(cs.m_z,cs.m_y,eta,cs.m_kt2,cs.m_q2,ampl);
+  meps.m_me*=(*cdip)(cs.m_z,cs.m_y,eta,cs.m_kt2,Q2,ci,ampl)*
+    cdip->MEPSWeight(cs.m_z,cs.m_y,eta,cs.m_kt2,Q2,ampl);
   if (meps.m_me==0.0) {
 #ifdef DEBUG__Trial_Weight
     msg_Debugging()<<"zero matrix element\n";
@@ -181,7 +181,7 @@ int CS_Gamma::SingleWeight
 		 <<", kt = "<<sqrt(cs.m_kt2)<<" ) {\n  "<<*li
 		 <<"\n  "<<*lj<<"\n  "<<*lk<<"\n} -> w = "
 		 <<me<<" * "<<meps.m_me/me<<" -> "<<meps.m_me
-		 <<" ( S = "<<cdip->AsymmetryFactor(cs.m_z,cs.m_y,cs.m_q2)<<" )\n";
+		 <<" ( S = "<<cdip->AsymmetryFactor(cs.m_z,cs.m_y,Q2)<<" )\n";
 #endif
   ws[Weight_Key(idmap.find(li->Id())->second|idmap.find(lj->Id())->second,
 		idmap.find(lk->Id())->second,cdip->GetFlavourA(),
