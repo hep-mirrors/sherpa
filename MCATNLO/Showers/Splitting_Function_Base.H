@@ -66,7 +66,7 @@ namespace MCATNLO {
     double m_zmin, m_zmax;
     int m_beam, m_col;
 
-    static double s_pdfcut;
+    static double s_pdfcut, s_kappa;
 
     double Lambda(const double &a,const double &b,const double &c) const;
 
@@ -80,7 +80,8 @@ namespace MCATNLO {
       (const double z,const double y,const double eta,
        const double scale,const double Q2,
        ATOOLS::Cluster_Amplitude *const sub=NULL) = 0;
-    virtual double AsymmetryFactor(const double z,const double y);
+    virtual double AsymmetryFactor(const double z,const double y,
+				   const double Q2);
     /**
       * Overestimate integrated over [zmin, zmax]
       */
@@ -121,6 +122,8 @@ namespace MCATNLO {
     inline const ATOOLS::Mass_Selector *MS() const { return p_ms; }
 
     inline int Col() const { return m_col; }
+
+    inline static void SetKappa(const double &kap) { s_kappa=kap; }
 
   };
 
@@ -228,7 +231,8 @@ namespace MCATNLO {
     virtual void ResetLastInt();
     virtual void ClearSpecs();
 
-    double AsymmetryFactor(const double z,const double y);
+    double AsymmetryFactor(const double z,const double y,
+			   const double Q2);
 
     double MEPSWeight(const double &z,const double &y,const double &eta,
 		      const double &scale,const double &Q2,

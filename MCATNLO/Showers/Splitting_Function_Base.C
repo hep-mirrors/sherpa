@@ -28,6 +28,7 @@ using namespace MODEL;
 using namespace ATOOLS;
 
 double SF_Lorentz::s_pdfcut=1.0e-6;
+double SF_Lorentz::s_kappa=2.0/3.0;
 
 SF_Lorentz::SF_Lorentz(const SF_Key &key):
   p_ms(key.p_ms), p_cf(key.p_cf), m_col(0)
@@ -51,7 +52,8 @@ double SF_Lorentz::Lambda
   return a*a+b*b+c*c-2.*(a*b+a*c+b*c);
 }
 
-double SF_Lorentz::AsymmetryFactor(const double z,const double y)
+double SF_Lorentz::AsymmetryFactor
+(const double z,const double y,const double Q2)
 {
   return 1.0;
 }
@@ -159,9 +161,10 @@ double Splitting_Function_Base::operator()
     *(ci.m_new<0?1.0:p_cf->ColorWeight(ci))/m_symf/m_polfac;
 }
 
-double Splitting_Function_Base::AsymmetryFactor(const double z,const double y)
+double Splitting_Function_Base::AsymmetryFactor
+(const double z,const double y,const double Q2)
 {
-  return p_lf->AsymmetryFactor(z,y);
+  return p_lf->AsymmetryFactor(z,y,Q2);
 }
 
 double Splitting_Function_Base::OverIntegrated

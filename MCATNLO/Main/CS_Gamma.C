@@ -163,7 +163,7 @@ int CS_Gamma::SingleWeight
   Weight_Value meps(Differential(ampl));
   meps.p_sf=cdip;
   meps.m_me*=cdip->SymFac()/
-    cdip->AsymmetryFactor(cs.m_z,cs.m_y);
+    cdip->AsymmetryFactor(cs.m_z,cs.m_y,cs.m_q2);
 #ifdef DEBUG__Trial_Weight
   double me=meps.m_me;
 #endif
@@ -181,7 +181,7 @@ int CS_Gamma::SingleWeight
 		 <<", kt = "<<sqrt(cs.m_kt2)<<" ) {\n  "<<*li
 		 <<"\n  "<<*lj<<"\n  "<<*lk<<"\n} -> w = "
 		 <<me<<" * "<<meps.m_me/me<<" -> "<<meps.m_me
-		 <<" ( S = "<<cdip->AsymmetryFactor(cs.m_z,cs.m_y)<<" )\n";
+		 <<" ( S = "<<cdip->AsymmetryFactor(cs.m_z,cs.m_y,cs.m_q2)<<" )\n";
 #endif
   ws[Weight_Key(idmap.find(li->Id())->second|idmap.find(lj->Id())->second,
 		idmap.find(lk->Id())->second,cdip->GetFlavourA(),

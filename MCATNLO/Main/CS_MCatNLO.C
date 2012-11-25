@@ -28,6 +28,7 @@ CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,
   if (m_scale2fac>0. && m_scale2fac!=1.) {
     p_as = (MODEL::Running_AlphaS*)model->GetScalarFunction("alpha_S");
   }
+  SF_Lorentz::SetKappa(_dataread->GetValue<double>("DIPOLE_KAPPA",2.0/3.0));
 
   p_powheg = new Shower(_isr,0,_dataread);
   p_next = new All_Singlets();
