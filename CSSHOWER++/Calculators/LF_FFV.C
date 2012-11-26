@@ -540,7 +540,7 @@ double LF_FVF_IF::operator()
    const double scale,const double Q2)
 {
   double mk2  = sqr(p_ms->Mass(m_flspec));
-  double muk2 = mk2*z/(Q2-mk2); 
+  double muk2 = mk2*z/(Q2+mk2); 
   double massless = ( 2./z - 2. +z + CDIS(1.-z,y));
   if (muk2==0.) {
     //the massless case
