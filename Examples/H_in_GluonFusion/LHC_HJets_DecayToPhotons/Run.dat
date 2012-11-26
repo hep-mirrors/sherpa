@@ -8,13 +8,12 @@
   SCALES STRICT_METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
 
   % tags for process setup
-  LJET:=2,3; NJET:=3; QCUT:=30.;
+  LJET:=1,2,3; NJET:=3; QCUT:=30.;
   EXCLUSIVE_CLUSTER_MODE 1;
 
   % shower settings for NLO
   CSS_FS_PT2MIN 2; CSS_IS_PT2MIN 2;
   CSS_FS_AS_FAC 1; CSS_IS_AS_FAC 1;
-  CSS_KIN_SCHEME 1;
 
   % tags and settings for ME generators
   LOOPGEN0:=Internal;
@@ -25,6 +24,11 @@
   ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN0 LOOPGEN1;
   EVENT_GENERATION_MODE Weighted;
   RESULT_DIRECTORY Results.QCUT;
+
+  % settings for hard decays
+  HARD_DECAYS On;
+  STORE_DECAY_RESULTS 1;
+  HDH_ONLY_DECAY {25,21,21}
 
   % model parameters
   MODEL SM+EHC
@@ -38,17 +42,14 @@
 
 (processes){
   Process 93 93 -> 25 93{NJET};
-  Decay 25[a] -> 22 22;
   Order_EW 1; CKKW sqr(QCUT/E_CMS);
   NLO_QCD_Mode MC@NLO {LJET}; 
-  Loop_Generator LOOPGEN0 {2,3};
+  Loop_Generator LOOPGEN0 {1,2};
+  Loop_Generator LOOPGEN1 {3};
   ME_Generator Amegic {LJET};
-  Enhance_Factor 16 {3}; 
-  Enhance_Factor 128 {4,5};
-  RS_Enhance_Factor 10 {3};
+  Enhance_Factor 16 {2}; 
+  Enhance_Factor 128 {3,4};
+  RS_Enhance_Factor 10 {2};
+  RS_Enhance_Factor 20 {3};
   End process;
 }(processes);
-
-(selector){
-  Mass 22 22 20. E_CMS;
-}(selector)

@@ -1,37 +1,29 @@
 (run){
   % general settings
   EVENTS 5M; ERROR 0.1;
-  MI_HANDLER    None;  %%Amisic;
-  FRAGMENTATION Off;   %%Ahadic
+  MI_HANDLER Amisic;
 
   % tags and settings for scale definitions
   SP_NLOCT=1; FSF:=1.0; RSF:=1.0; QSF:=1.0;
-  %%SCALES VAR{sqr(sqrt(H_T2)+125)} 
-  STRICT_METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
+  SCALES STRICT_METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
 
   % tags for process setup
-  LJET:=1,2; NJET:=2; QCUT:=30.;
+  LJET:=1,2,3; NJET:=3; QCUT:=30.;
   EXCLUSIVE_CLUSTER_MODE 1;
 
   % shower settings for NLO
   CSS_FS_PT2MIN 2; CSS_IS_PT2MIN 2;
   CSS_FS_AS_FAC 1; CSS_IS_AS_FAC 1;
-  CSS_KIN_SCHEME 1;
 
   % tags and settings for ME generators
   LOOPGEN0:=Internal;
   LOOPGEN1:=LHOLE;
-  %%SHERPA_LDADD golem_olp;
-  %%LHOLE_CONTRACTFILE OLE_order.olc;
-  %%LHOLE_OLP GoSam;
+  SHERPA_LDADD golem_olp;
+  LHOLE_CONTRACTFILE OLE_order.olc;
+  LHOLE_OLP GoSam;
   ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN0 LOOPGEN1;
   EVENT_GENERATION_MODE Weighted;
   RESULT_DIRECTORY Results.QCUT;
-
-  % settings for hard decays
-  %%HARD_DECAYS Off;
-  %%STORE_DECAY_RESULTS 1;
-  %%HDH_NO_DECAY {25,21,21}
 
   % model parameters
   MODEL SM+EHC
