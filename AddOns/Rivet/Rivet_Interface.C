@@ -113,6 +113,10 @@ public:
       Log::setLevel("Rivet", reader.GetValue<int>("-l", 20));
       reader.SetUseGlobalTags(false);
       reader.VectorFromFile(m_analyses,"-a");
+      for (size_t i(0);i<m_analyses.size();++i) {
+        if (m_analyses[i]==std::string("MC_XS")) break;
+        if (i==m_analyses.size()-1) m_analyses.push_back(std::string("MC_XS"));
+      }
       m_sum_of_weights=0.0;
       
       for (size_t i=0; i<m_ignoreblobs.size(); ++i) {
