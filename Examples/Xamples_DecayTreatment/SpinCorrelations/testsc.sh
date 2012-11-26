@@ -1,12 +1,19 @@
 #!/bin/bash
 
-if test -z $2; then
+if test -z "$2"; then
   SHERPAPATH=$PWD/../../../bin
 else
-  SHERPAPATH=$2
+  if test "$2" = "clean"; then
+    rm -rf "${1}/Process" "${1}/Results" "${1}/*.log" "${1}/errors" "${1}/Analysis*"
+    rm -rf "${1}_hard/Process" "${1}_hard/Results" "${1}_hard/*.log" "${1}_hard/errors" "${1}_hard/Analysis*"
+    rm -rf "${1}_ME/Process" "${1}_ME/Results" "${1}_ME/*.log" "${1}_ME/errors" "${1}_ME/Analysis*"
+    exit 0;
+  else
+    SHERPAPATH=$2
+  fi
 fi
 
-if test -z $1; then
+if test -z "$1"; then
   PROCESSES="z_tautau w_taunu wp_taunu h_tautau hm_tautau z_toptop ww z_llvvbb"
 else
   PROCESSES=$1
