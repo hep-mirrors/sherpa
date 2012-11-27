@@ -34,6 +34,7 @@ CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,
   p_next = new All_Singlets();
   p_cluster = new CS_Cluster_Definitions(p_powheg,1);
   p_gamma = new CS_Gamma(this,p_powheg,p_cluster);
+  p_gamma->SetOEF(_dataread->GetValue<double>("CSS_OEF",9.0));
   p_powheg->SetGamma(p_gamma);
   m_kt2min=p_powheg->GetSudakov()->ISPT2Min();
 }

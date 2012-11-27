@@ -31,7 +31,7 @@ Weight_Key::Weight_Key(const size_t &ij,const size_t &k,
 CS_Gamma::CS_Gamma(CS_MCatNLO *const css,Shower *const shower,
 		   CS_Cluster_Definitions *const cluster):
   p_css(css), p_shower(shower), p_cluster(cluster),
-  p_rproc(NULL), m_on(0)
+  p_rproc(NULL), m_on(0), m_oef(9.0)
 {
 }
 
@@ -259,7 +259,7 @@ Trial_Weight CS_Gamma::TrialWeight(Cluster_Amplitude *const ampl)
   double rme(Differential(ampl,nlo_type::rsub,nadd).m_me);
   msg_Debugging()<<"me / ecss = "<<rme<<" / "<<wact.m_me
 		 <<" = "<<rme/wact.m_me<<"\n";
-  double h(wact.m_me), g(3.0*rme);
+  double h(wact.m_me), g(m_oef*rme);
   if (IsEqual(rme,h) || rme==0.0) g=h;
   return Trial_Weight(rme,g,h);
 }

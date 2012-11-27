@@ -64,7 +64,7 @@ namespace MCATNLO {
     PHASIC::Single_Process *p_rproc;
 
     int    m_on;
-    double m_weight;
+    double m_weight, m_oef;
 
     bool CheckColors(const ATOOLS::Cluster_Leg *li,
 		     const ATOOLS::Cluster_Leg *lj,
@@ -107,6 +107,8 @@ namespace MCATNLO {
     inline int On() const { return m_on; }
 
     inline double Weight() const { return m_weight; }
+
+    inline void SetOEF(const double &oef) { m_oef=oef; }
 
   };// end of class CS_Gamma
 
