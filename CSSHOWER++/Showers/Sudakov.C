@@ -327,7 +327,8 @@ bool Sudakov::Generate(Parton * split)
   while (m_kperp2>=m_k0sqf) {
     ProduceT();
     SelectOne();
-    split->SetSpect(p_selected->SelectSpec());
+    split->SetSpect(p_spect=p_selected->SelectSpec());
+    m_flspec = p_spect->GetFlavour();
     m_z = Z();
     double k0sq(p_split->GetType()==pst::IS?m_k0sqi:m_k0sqf);
     if (m_kperp2<k0sq)  return false;
