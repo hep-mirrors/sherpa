@@ -254,7 +254,7 @@ double LF_FFV_FF::operator()
     //std::cout<<"                                          z "<<z<<" y "<<y<<" "<<" kt2 "<<scale<<" muk2 "<<muk2<< std::endl; 
     double vtijk = sqrt(Lambda(1.,muij2,muk2))/(1.-muij2-muk2);
     double vijk  = sqrt(sqr(2.*muk2+(1.-mui2-muk2)*(1.-y))-4.*muk2)/((1.-mui2-muk2)*(1.-y));
-    double pipj  = scale/(2.*z*(1.-z)) + (1.-z)*mi2/(2.*z);
+    double pipj  = Q2*(1.0-mui2-muk2)*y/2.0;
     double massive = ( 2./(1.-z+z*y) - vtijk/vijk * (1.+z + mi2/pipj) );
     massive *= 1./((1.-mui2-muk2)+1./y*(mui2-muij2));
     double longpol = 0.5 * ( 1. - z );
@@ -308,7 +308,7 @@ double LF_FFV_FI::operator()
   }
   else {
     //the massive case
-    double pipj    = scale/(2.*z*(1.-z)) + (1.-z)*mi2/(2.*z);
+    double yt = y/(1.0-y), pipj = yt*(Q2+mi2)/2.0;
     double massive = massless - mi2/pipj;
     double longpol = 0.5 * ( 1. - z );
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,1,sub) * longpol;
@@ -421,7 +421,7 @@ double LF_FVF_FF::operator()
     //the massive case
     double vtijk = sqrt(Lambda(1.,muij2,muk2))/(1.-muij2-muk2);
     double vijk  = sqrt(sqr(2.*muk2+(1.-muj2-muk2)*(1.-y))-4.*muk2)/((1.-muj2-muk2)*(1.-y));
-    double pipj  = scale/(2.*z*(1.-z)) + z*mj2/(2.*(1.-z));
+    double pipj  = Q2*(1.0-muj2-muk2)*y/2.0;
     double massive = ( 2./(z+y-z*y) - vtijk/vijk * (2.+z + mj2/pipj) );
     massive *= 1./((1.-muj2-muk2)+1./y*(muj2-muij2));
     double longpol = 0.5 * z;
@@ -473,7 +473,7 @@ double LF_FVF_FI::operator() (const double z,const double y,
   }
   else {
     //the massive case
-    double pipj    = scale/(2.*z*(1.-z)) + z*mj2/(2.*(1.-z));
+    double yt = y/(1.0-y), pipj = yt*(Q2+mj2)/2.0;
     double massive = massless - mj2/pipj;
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massive + p_cf->Coupling(scale,1,sub) * longpol;
