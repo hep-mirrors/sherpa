@@ -81,7 +81,7 @@ for J in $DIRS ; do
   cd $J 
   if test -f configure.in; then
   autoreconf -fi
-  ./configure
+  ./configure --libdir='${prefix}/lib'
   if `test "$CLEAN" = "TRUE"` ; then make clean ; fi
   if ! make install -j $JOBS; then
     echo "makeinstall: error: \"make install\" in $I failed"
