@@ -255,10 +255,6 @@ double LF_FFV_FF::operator()
     double vijk  = sqrt(sqr(2.*muk2+(1.-mui2-muk2)*(1.-y))-4.*muk2)/((1.-mui2-muk2)*(1.-y));
     double pipj  = Q2*(1.0-mui2-muk2)*y/2.0;
     double massive = ( 2./(1.-z+z*y) - vtijk/vijk * (1.+z + mi2/pipj) );
-    if (massive < 0.) {
-      //std::cout<<" Q -> Qg FF mass correction : "<<massive/massless<<" )\n"; 
-      return 0.;
-    }
     massive *= 1./((1.-mui2-muk2)+1./y*(mui2-muij2))*sqr(1.-mui2-muk2)/sqrt(Lambda(1.,muij2,muk2));
     double longpol = 0.5 * ( 1. - z );
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
@@ -313,10 +309,6 @@ double LF_FFV_FI::operator()
     //the massive case
     double yt = y/(1.0-y), pipj = yt*(Q2+mi2)/2.0;
     double massive = massless - mi2/pipj;
-    if (massive < 0.) {
-      //std::cout<<" Q -> Qg FI mass correction : "<<massive<<" / "<<massless<<"\n";
-      return 0.;
-    }
     double longpol = 0.5 * ( 1. - z );
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
@@ -430,10 +422,6 @@ double LF_FVF_FF::operator()
     double vijk  = sqrt(sqr(2.*muk2+(1.-muj2-muk2)*(1.-y))-4.*muk2)/((1.-muj2-muk2)*(1.-y));
     double pipj  = Q2*(1.0-muj2-muk2)*y/2.0;
     double massive = ( 2./(z+y-z*y) - vtijk/vijk * (2.+z + mj2/pipj) );
-    if (massive < 0.) {
-      //std::cout<<" Q -> gQ FF mass correction : "<<massive/massless<<"\n"; 
-      return 0.;
-    }
     massive *= 1./((1.-muj2-muk2)+1./y*(muj2-muij2))*sqr(1.-muj2-muk2)/sqrt(Lambda(1.,muij2,muk2));
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
@@ -486,10 +474,6 @@ double LF_FVF_FI::operator() (const double z,const double y,
     //the massive case
     double yt = y/(1.0-y), pipj = yt*(Q2+mj2)/2.0;
     double massive = massless - mj2/pipj;
-    if (massive < 0.) {
-      //std::cout<<" Q -> gQ FI mass correction : "<<massive/massless<<"\n";
-      return 0.;
-    }
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
@@ -543,10 +527,6 @@ double LF_FVF_IF::operator()
   else {
     //the massive case
     double massive = massless - 2.*muk2*y/(z*(1.-y));
-    if (massive < 0.) {
-      //std::cout<<" q -> gq IF mass correction : "<<massive/massless<<" ( massive : "<<massive<<" massless : "<<massless<< " )\n"; 
-      return 0.;
-    }
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
     return value * JIF(z,y,eta,scale);

@@ -129,7 +129,9 @@ double Splitting_Function_Base::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  return (*p_lf)(z,y,eta,scale,Q2)/m_symf/m_polfac;
+  double sf((*p_lf)(z,y,eta,scale,Q2)/m_symf/m_polfac);
+  if (IsBad(sf)) THROW(fatal_error,"Invalid weight");
+  return Max(0.0,sf);
 }
 
 double Splitting_Function_Base::OverIntegrated
