@@ -13,10 +13,11 @@
 using namespace SHERPA;
 using namespace ATOOLS;
 
-MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *model,
-		       BEAM::Beam_Spectra_Handler *beam,PDF::ISR_Handler *isr) :
-  p_beam(beam),
-  p_isr(isr),
+MI_Handler::MI_Handler(std::string path,std::string file,
+		       MODEL::Model_Base *model,
+		       BEAM::Beam_Spectra_Handler *beam,
+		       PDF::ISR_Handler *isr) :
+  p_beam(beam), p_isr(isr),
 #ifdef USING__Amisic
   p_amisic(NULL),
 #endif

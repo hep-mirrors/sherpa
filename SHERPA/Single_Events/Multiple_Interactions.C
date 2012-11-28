@@ -41,7 +41,8 @@ Multiple_Interactions::~Multiple_Interactions()
   if (p_jetfinder==NULL) delete p_jetfinder;
 }
 
-Return_Value::code Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist) 
+Return_Value::code Multiple_Interactions::
+CheckBlobList(ATOOLS::Blob_List *const bloblist) 
 {
   p_bloblist=bloblist;
   if (m_vetoed) return Return_Value::Nothing;

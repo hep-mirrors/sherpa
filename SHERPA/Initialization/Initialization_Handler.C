@@ -337,10 +337,14 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   read.ReadFromFile(eventtype,"EVENT_TYPE");
   if (eventtype=="StandardPerturbative") 
     m_mode=eventtype::StandardPerturbative;
-  else if (eventtype=="MinimumBias") 
+  else if (eventtype=="MinimumBias") {
     m_mode=eventtype::MinimumBias;
-  else if (eventtype=="HadronDecay") 
+    Read_Write_Base::AddCommandLine("MI_HANDLER None;");
+  }
+  else if (eventtype=="HadronDecay") {
     m_mode=eventtype::HadronDecay;
+    Read_Write_Base::AddCommandLine("MI_HANDLER None;");
+  }
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
   if (!p_model->ModelInit(m_isrhandlers))
