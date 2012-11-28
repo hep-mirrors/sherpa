@@ -65,19 +65,17 @@ Interaction_Model_SM_EHC::Interaction_Model_SM_EHC(MODEL::Model_Base * _model,
   ghpp  = Kabbala(std::string("ghpp"),ScalarConstant(string("h0_pp_fac"))*
                   aqedpph/(2.*M_PI*vev.Value()));
   // h g g coupling
-  //msg_Out()<<"Evaluate asggh now with |"
-  //	   <<ScalarFunction(string("alpha_S"),ehc_scale2)<<"|.\n";
   double asggh=read.GetValue<double>("ALPHAS_GGH",
 				     ScalarFunction(string("alpha_S"),
 						    ehc_scale2));
-  //msg_Out()<<" ... yields asggH = "<<asggh<<".\n";
   ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(string("h0_gg_fac"))*
 		  asggh/(2.*M_PI*vev.Value()));
-  //msg_Info()<<METHOD<<"() {\n"
-  //    <<"  ggh coupling is "<<ghgg.Value()<<" ( \\alpha_s = "<<asggh<<" )\n"
-  //    <<"  pph coupling is "<<ghpp.Value()<<" ( 1/\\alpha_qed = "
-  //<<1./aqedpph<<" )\n"
-  //    <<"  taken at \\mu = "<<sqrt(ehc_scale2)<<"\n}\n";
+  msg_Info()<<METHOD<<"() {\n"
+            <<"  ggh coupling is "<<ghgg.Value()
+            <<" [ \\alpha_s(\\mu="<<sqrt(ehc_scale2)<<") = "<<asggh<<" )\n"
+            <<"  pph coupling is "<<ghpp.Value()
+            <<" [ 1/\\alpha_qed(\\mu="<<sqrt(ehc_scale2)<<") = "<<1./aqedpph
+            <<" )\n}\n";
   g3  = Kabbala(string("g_3"),
 		sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),scale)));
   PL    = Kabbala(string("P_L"),1.);
