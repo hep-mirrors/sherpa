@@ -157,8 +157,10 @@ double Splitting_Function_Base::operator()
    const double scale,const double Q2,const Color_Info &ci,
    Cluster_Amplitude *const sub)
 {
-  return dabs((*p_lf)(z,y,eta,scale,Q2,sub))
-    *(ci.m_new<0?1.0:p_cf->ColorWeight(ci))/m_symf/m_polfac;
+  double sf((*p_lf)(z,y,eta,scale,Q2,sub));
+  if (sf/p_lf->AsymmetryFactor(z,y,Q2)<0.0) return 0.0;
+  if (IsBad(sf)) THROW(fatal_error,"Invalid weight");
+  return sf*(ci.m_new<0?1.0:p_cf->ColorWeight(ci))/m_symf/m_polfac;
 }
 
 double Splitting_Function_Base::AsymmetryFactor
