@@ -381,6 +381,7 @@ void Standard_Model::FixEWParameters() {
   case 2:
     // SM parameters given by alphaQED0, sinthetaW, v, M_H
     alphaQED0   = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
+    aqed       = new Running_AlphaQED(alphaQED0);
     vev        = p_dataread->GetValue<double>("VEV",246.);
     sin2thetaW = p_dataread->GetValue<double>("SIN2THETAW",0.23);
     cos2thetaW = 1.-sin2thetaW;
@@ -391,7 +392,6 @@ void Standard_Model::FixEWParameters() {
     GZ         = Flavour(kf_Z).Width();
     GH         = Flavour(kf_h0).Width();
     lambdaH    = 2.*sqr(MH/vev);
-    aqed       = new Running_AlphaQED(alphaQED0);
     aqed->SetDefault(1./p_dataread->GetValue<double>("1/ALPHAQED(default)",
                                                      1./(*aqed)(sqr(MZ))));
     GF         = p_dataread->GetValue<double>("GF",1.16639e-5);
