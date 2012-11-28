@@ -421,7 +421,7 @@ double LF_FVF_FF::operator()
     double vtijk = sqrt(Lambda(1.,muij2,muk2))/(1.-muij2-muk2);
     double vijk  = sqrt(sqr(2.*muk2+(1.-muj2-muk2)*(1.-y))-4.*muk2)/((1.-muj2-muk2)*(1.-y));
     double pipj  = Q2*(1.0-muj2-muk2)*y/2.0;
-    double massive = ( 2./(z+y-z*y) - vtijk/vijk * (2.+z + mj2/pipj) );
+    double massive = ( 2./(z+y-z*y) - vtijk/vijk * (2.-z + mj2/pipj) );
     massive *= 1./((1.-muj2-muk2)+1./y*(muj2-muij2))*sqr(1.-muj2-muk2)/sqrt(Lambda(1.,muij2,muk2));
     double longpol = 0.5 * z;
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
