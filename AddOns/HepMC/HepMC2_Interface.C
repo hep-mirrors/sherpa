@@ -83,13 +83,23 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   if (beamparticles.size()==2) {
     event.set_beam_particles(beamparticles[0],beamparticles[1]);
   }
-  Blob *sp(blobs->FindFirst(btp::Signal_Process));
-  Blob_Data_Base *info((*sp)["MEWeight"]);
-  if (!info) THROW(fatal_error,"Missing weight info");
-  double meweight(info->Get<double>());
-  std::vector<double> weights; 
+  std::vector<double> weights;
+  //msg_Out()<<"Check: weight = "<<weight<<".\n";
   weights.push_back(weight);
-  weights.push_back(meweight);
+  Blob *sp(blobs->FindFirst(btp::Signal_Process));
+  if (sp) {
+    Blob_Data_Base *info((*sp)["MEWeight"]);
+    if (!info) THROW(fatal_error,"Missing weight info");
+    double meweight(info->Get<double>());
+    weights.push_back(meweight);
+  }
+  //if (!sp) {
+  //  sp=blobs->FindFirst(btp::Hard_Collision);
+  //  Blob_Data_Base *info((*sp)["Weight"]);
+  //  double weight(info->Get<double>());
+  //  msg_Out()<<"Weight = "<<weight<<" for\n"<<(*sp)<<".\n";
+  //  exit(1);
+  //}
   event.weights()=weights;
   return true;
 }
