@@ -47,7 +47,7 @@ namespace AMEGIC {
   class DipoleSplitting_Base {
   protected:
     double m_alpha,m_kt2max,m_amin,m_kappa;
-    double m_Q2,m_kt2;
+    double m_Q2,m_kt2,m_av;
     int m_nf, m_mcmode, m_mcsign;
     ATOOLS::Vec4D m_pt1,m_pt2;
 

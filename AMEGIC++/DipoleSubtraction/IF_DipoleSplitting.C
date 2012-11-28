@@ -34,15 +34,19 @@ void IF_DipoleSplitting::SetMomenta(const Vec4D *mom)
   switch (m_ft) {
   case 1:
     m_sff = 2./(1.-m_xijk+m_uj)-(1.+m_xijk);
+    m_av  = m_sff;
     break;
   case 2:
     m_sff = (1.-2.*m_xijk*(1.-m_xijk));
+    m_av  = m_sff;
     break;
   case 3:
     m_sff = m_xijk;
+    m_av  = m_sff + 2.0*(1.0-m_xijk)/m_xijk;
     break;
   case 4:
     m_sff = 1./(1.-m_xijk+m_uj)-1.+m_xijk*(1.-m_xijk);
+    m_av  = m_sff + (1.0-m_xijk)/m_xijk;
   }
 }
 
@@ -109,15 +113,19 @@ void IF_MassiveDipoleSplitting::SetMomenta(const Vec4D *mom)
   switch (m_ft) {
   case 1:
     m_sff = 2./(1.-m_xijk+m_uj)-(1.+m_xijk);
+    m_av  = m_sff;
     break;
   case 2:
     m_sff = (1.-2.*m_xijk*(1.-m_xijk));
+    m_av  = m_sff;
     break;
   case 3:
     m_sff = m_xijk;
+    m_av  = m_sff + 2.0*(1.0-m_xijk)/m_xijk - m_pk.Abs2()/(m_ptk*m_ptij)*m_uj/m_uk;
     break;
   case 4:
     m_sff = 1./(1.-m_xijk+m_uj)-1.+m_xijk*(1.-m_xijk);
+    m_av  = m_sff + (1.0-m_xijk)/m_xijk - m_pk.Abs2()/(2.0*m_ptk*m_ptij)*m_uj/m_uk;
   }
 }
 

@@ -33,15 +33,19 @@ void FI_DipoleSplitting::SetMomenta(const Vec4D* mom )
   switch (m_ft) {
   case 1:
     m_sff = 2./(1.-m_zi+(1.-m_xijk))-(1.+m_zi);
+    m_av  = m_sff;
     break;
   case 2:
     m_sff = 2./(1.-m_zj+(1.-m_xijk))-(1.+m_zj);
+    m_av  = m_sff;
     break;
   case 3:
     m_sff = 1.;
+    m_av  = m_sff - 2.0*m_zi*m_zj;
     break;
   case 4:
     m_sff = 1./(1.-m_zi+(1.-m_xijk))+1./(1.-m_zj+(1.-m_xijk))-2.;
+    m_av  = m_sff + m_zi*m_zj;
   }
 }
 
@@ -111,27 +115,38 @@ void FI_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom )
   switch (m_ft) {
   case 1:
     m_sff = 2./(2.-m_zi-m_xijk)-(1.+m_zi)-m_mij/(m_pi*m_pj);
+    m_av  = m_sff;
     break;
   case 2:
     m_sff = 2./(2.-m_zj-m_xijk)-(1.+m_zj)-m_mij/(m_pi*m_pj);
+    m_av  = m_sff;
     break;
-  case 3:
+  case 3: {
     m_sff = 1.;
+    double Q2=2.0*m_ptij*m_pk, mui2=m_mi/Q2;
+    double eps=sqrt(sqr(1.0-m_xijk-2.0*mui2)-4.0*mui2*mui2)/(1.0-m_xijk);
+    m_av  = m_sff - 2.0*(0.5*(1.0+eps)-m_zi)*(m_zi-0.5*(1.0-eps));
     break;
+  }
   case 4:
     m_sff = 1./(1.-m_zi+(1.-m_xijk))+1./(1.-m_zj+(1.-m_xijk))-2.;
+    m_av  = m_sff + m_zi*m_zj;
     break;
   case 5:
     m_sff = 2./(2.-m_zi-m_xijk)-(1.+m_zi)-m_mij/(m_pi*m_pj);
+    m_av  = m_sff;
     break;
   case 6:
     m_sff = 2./(2.-m_zj-m_xijk)-(1.+m_zj)-m_mij/(m_pi*m_pj);
+    m_av  = m_sff;
     break;
   case 7:
     m_sff = 2./(2.-m_zi-m_xijk)-2.-m_mij/(m_pi*m_pj);
+    m_av  = m_sff;
     break;
   case 8:
     m_sff = 2./(2.-m_zj-m_xijk)-2.-m_mij/(m_pi*m_pj);
+    m_av  = m_sff;
     break;
   }
 }

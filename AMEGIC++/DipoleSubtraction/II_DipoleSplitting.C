@@ -38,15 +38,19 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
   switch (m_ft) {
   case 1:
     m_sff = 2./(1.-m_xijk)-(1.+m_xijk);
+    m_av  = m_sff;
     break;
   case 2:
     m_sff = 1.-2.*m_xijk*(1.-m_xijk);
+    m_av  = m_sff;
     break;
   case 3:
     m_sff = m_xijk;
+    m_av  = m_sff + 2.0*(1.0-m_xijk)/m_xijk;
     break;
   case 4:
     m_sff = m_xijk/(1.-m_xijk)+m_xijk*(1.-m_xijk);
+    m_av  = m_sff + (1.0-m_xijk)/m_xijk;
   }
 }
 

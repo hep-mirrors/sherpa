@@ -18,6 +18,7 @@ DipoleSplitting_Base::DipoleSplitting_Base()
   m_type  = dpt::none;
   m_spfdef = 0.0;
   p_cpl = NULL;
+  m_av=sqrt(-1.0);
   
   Flavour hfl(kf_quark);
   m_nf = hfl.Size()/2;
@@ -183,13 +184,14 @@ double DipoleSplitting_Base::Vie2(int type)
 
 bool DipoleSplitting_Base::Reject(const double &alpha)
 {
+  if (IsBad(m_av)) msg_Error()<<METHOD<<"(): Average is "<<m_av<<std::endl;
   if (m_mcmode==1) {
-    int da(m_kt2<m_kt2max), ds(alpha<m_alpha);
+    int da(m_av>0.0 && m_kt2<m_kt2max), ds(alpha<m_alpha);
     m_mcsign=ds-da;
     return m_mcsign==0;
   }
   if (m_mcmode==2) {
-    m_mcsign=m_kt2<m_kt2max;
+    m_mcsign=m_av>0.0 && m_kt2<m_kt2max;
     return m_mcsign==0;
   }
   if (m_mcmode==3) {
@@ -197,5 +199,5 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
     m_mcsign=ds-1;
     return m_mcsign==0;
   }
-  return alpha>m_alpha || m_kt2>m_kt2max;
+  return alpha>m_alpha || (m_av>0.0 && m_kt2>m_kt2max);
 }
