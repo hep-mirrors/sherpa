@@ -153,10 +153,10 @@ void FI_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom )
 
 double FI_MassiveDipoleSplitting::GetF()
 {
-  if (Reject(1.0-m_xijk)) return 0.;
    if ((1.-m_xijk)<=m_amin) {
      return nan;
    }
+  if (Reject(1.0-m_xijk)) return 0.;
   double h=1.0/((m_pi+m_pj).Abs2()-m_mij)/m_xijk;
   switch (m_ft) {
   case 1:

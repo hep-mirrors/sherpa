@@ -131,10 +131,10 @@ void IF_MassiveDipoleSplitting::SetMomenta(const Vec4D *mom)
 
 double IF_MassiveDipoleSplitting::GetF()
 {
-  if (Reject(m_uj)) return 0.;
   if (m_uj<=m_amin) {
     return nan;
   }
+  if (Reject(m_uj)) return 0.;
   double h=1.0/(2.*m_pi*m_pj)/m_xijk;  
   switch (m_ft) {
   case 1:

@@ -56,10 +56,10 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
 
 double II_DipoleSplitting::GetF()
 {
-  if (Reject(m_vi)) return 0.;
    if (m_vi<=m_amin) {
      return nan;
    }
+  if (Reject(m_vi)) return 0.;
    double h=1.0/(2.*m_pi*m_pj)/m_xijk;  
   switch (m_ft) {
   case 1:

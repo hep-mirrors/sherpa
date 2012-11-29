@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
 using namespace ATOOLS;
@@ -184,7 +185,10 @@ double DipoleSplitting_Base::Vie2(int type)
 
 bool DipoleSplitting_Base::Reject(const double &alpha)
 {
-  if (IsBad(m_av)) msg_Error()<<METHOD<<"(): Average is "<<m_av<<std::endl;
+  if (IsBad(m_av))
+    msg_Error()<<METHOD<<"(): Average is "<<m_av<<" in "
+	       <<Demangle(typeid(*this).name())
+	       <<"[type="<<m_type<<"]"<<std::endl;
   if (m_mcmode==1) {
     int da(m_av>0.0 && m_kt2<m_kt2max), ds(alpha<m_alpha);
     m_mcsign=ds-da;
