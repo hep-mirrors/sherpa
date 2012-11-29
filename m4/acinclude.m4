@@ -535,10 +535,11 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       case "${enableval}" in
         no)  AC_MSG_RESULT(OpenLoops not enabled); openloops=false ;;
         *)   OPENLOOPS_PREFIX="$(echo ${enableval} | sed -e 's/\/$//g')"
+             openloops=true;
              if test -d "${OPENLOOPS_PREFIX}"; then
-                AC_MSG_RESULT([${OPENLOOPS_PREFIX}]); openloops=true;
+                AC_MSG_RESULT([${OPENLOOPS_PREFIX}]);
              else
-                AC_MSG_ERROR(${OPENLOOPS_PREFIX} is not a valid path.);
+                AC_MSG_WARN(${OPENLOOPS_PREFIX} is not a valid path.);
              fi;;
       esac
       ],

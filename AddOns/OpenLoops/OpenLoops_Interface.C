@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include <algorithm>
+#include <sys/stat.h>
 
 #include "OpenLoops_Interface.H"
 #include "OpenLoops_Virtual.H"
@@ -16,14 +17,10 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-/* TODOs:
-   - enforce EW_SCHEME=1
-*/
-
 namespace OpenLoops {
 
   std::map<int, OpenLoops_Particle> OpenLoops_Interface::s_particles;
-  std::string OpenLoops_Interface::s_proclib_path, OpenLoops_Interface::s_procdata_path;
+  std::string OpenLoops_Interface::s_olprefix;
   std::vector<std::string> OpenLoops_Interface::s_allowed_libs;
   int OpenLoops_Interface::s_pole_mode;
   int OpenLoops_Interface::s_amp_switch;
@@ -39,21 +36,26 @@ namespace OpenLoops {
   {
     InitializeParticles();
 
+    struct stat st;
     Data_Reader reader(" ",";","#","=");
-    string olprefix = reader.GetValue<string>("OL_PREFIX", OPENLOOPS_PREFIX);
-    s_proclib_path=reader.GetValue<string>("OL_PROCLIB_PATH",
-                                           olprefix+"/proclib");
-    s_procdata_path=reader.GetValue<string>("OL_PROCDATA_PATH",
-                                           olprefix+"/proclib");
+    s_olprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/OpenLoops";
+    if(stat(s_olprefix.c_str(),&st) != 0) s_olprefix = OPENLOOPS_PREFIX;
+    s_olprefix = reader.GetValue<string>("OL_PREFIX", s_olprefix);
 
     Data_Reader liblist(" ",";","#","=");
     liblist.SetAddCommandLine(false);
-    liblist.SetInputFile(olprefix+"/lib/librarylist.info");
-    s_loader->AddPath(olprefix+"/lib");
+    liblist.SetInputFile(s_olprefix+"/lib/librarylist.info");
     vector<vector<string> > ollibs;
     liblist.MatrixFromFile(ollibs);
+    if (ollibs.size()==0) {
+      THROW(fatal_error, "Did not find "+s_olprefix+"/lib/librarylist.info");
+    }
+    s_loader->AddPath(s_olprefix+"/lib");
+    s_loader->AddPath(s_olprefix+"/proclib");
     for (size_t i=0; i<ollibs.size(); ++i) {
-      s_loader->LoadLibrary(ollibs[i][0]);
+      if (!s_loader->LoadLibrary(ollibs[i][0])) {
+        THROW(fatal_error, "Failed to load OpenLoops library "+ollibs[i][0]);
+      }
     }
 
     reader.VectorFromFile(s_allowed_libs, "OL_ALLOWED_LIBS");
@@ -70,8 +72,7 @@ namespace OpenLoops {
     openloops_welcome_(welcomestr, &lenws);
     msg_Out()<<std::string(welcomestr,lenws)<<std::endl;
     PRINT_INFO("Initialised OpenLoops generator:");
-    PRINT_VAR(s_proclib_path);
-    PRINT_VAR(s_procdata_path);
+    PRINT_VAR(s_olprefix);
     PRINT_VAR(s_amp_switch);
     PRINT_VAR(s_amp_switch_rescue);
     PRINT_VAR(s_pole_mode);
@@ -190,46 +191,47 @@ namespace OpenLoops {
                           &set_C_PV_threshold, &set_D_PV_threshold, &set_DD_red_mode);
   }
 
-  bool OpenLoops_Interface::MatchOptions(vector<string> options, int oew, int oqcd) {
+  std::string OpenLoops_Interface::MatchOptions(vector<string> options, int oew, int oqcd) {
     for (size_t i=2; i<options.size(); ++i) {
       string option=options[i].substr(0, options[i].find("="));
       string value=options[i].substr(options[i].find("=")+1);
 
-      if (option=="EW" && value!=ToString(oew)+",0") return false;
-      if (option=="QCD" && value!=ToString(oqcd-1)+",1") return false;
+      if (option=="MAP") return value;
+      if (option=="EW" && value!=ToString(oew)+",0") return "false";
+      if (option=="QCD" && value!=ToString(oqcd-1)+",1") return "false";
       if (option=="CKMORDER") {
         int ckmorder=ToType<int>(value);
         if (ckmorder<3) {
           if (s_model->ComplexMatrixElement("CKM", 0,2)!=Complex(0.0,0.0) ||
               s_model->ComplexMatrixElement("CKM", 2,0)!=Complex(0.0,0.0)) {
-            return false;
+            return "false";
           }
         }
         if (ckmorder<2) {
           if (s_model->ComplexMatrixElement("CKM", 1,2)!=Complex(0.0,0.0) ||
               s_model->ComplexMatrixElement("CKM", 2,1)!=Complex(0.0,0.0)) {
-            return false;
+            return "false";
           }
         }
         if (ckmorder<1) {
           if (s_model->ComplexMatrixElement("CKM", 0,1)!=Complex(0.0,0.0) ||
               s_model->ComplexMatrixElement("CKM", 1,0)!=Complex(0.0,0.0)) {
-            return false;
+            return "false";
           }
         }
       }
-      if (option=="nf" && ToType<int>(value)!=s_nf) return false;
-      if (option=="MD" && Flavour(kf_d).Mass()>0.0) return false;
-      if (option=="MU" && Flavour(kf_u).Mass()>0.0) return false;
-      if (option=="MS" && Flavour(kf_s).Mass()>0.0) return false;
-      if (option=="MC" && Flavour(kf_c).Mass()>0.0) return false;
-      if (option=="MB" && Flavour(kf_b).Mass()>0.0) return false;
-      if (option=="MT" && Flavour(kf_t).Mass()>0.0) return false;
-      if (option=="ME" && Flavour(kf_e).Mass()>0.0) return false;
-      if (option=="MM" && Flavour(kf_mu).Mass()>0.0) return false;
-      if (option=="MT" && Flavour(kf_tau).Mass()>0.0) return false;
+      if (option=="nf" && ToType<int>(value)!=s_nf) return "false";
+      if (option=="MD" && Flavour(kf_d).Mass()>0.0) return "false";
+      if (option=="MU" && Flavour(kf_u).Mass()>0.0) return "false";
+      if (option=="MS" && Flavour(kf_s).Mass()>0.0) return "false";
+      if (option=="MC" && Flavour(kf_c).Mass()>0.0) return "false";
+      if (option=="MB" && Flavour(kf_b).Mass()>0.0) return "false";
+      if (option=="MT" && Flavour(kf_t).Mass()>0.0) return "false";
+      if (option=="ME" && Flavour(kf_e).Mass()>0.0) return "false";
+      if (option=="MM" && Flavour(kf_mu).Mass()>0.0) return "false";
+      if (option=="MT" && Flavour(kf_tau).Mass()>0.0) return "false";
     }
-    return true;
+    return "true";
   }
 
 
@@ -242,10 +244,10 @@ namespace OpenLoops {
     else return false;
   }
 
-  pair<string, string> OpenLoops_Interface::ScanFiles(const string& process, int oew, int oqcd)
+  pair<string, string> OpenLoops_Interface::ScanFiles(string& process, int oew, int oqcd)
   {
     struct dirent **entries;
-    string procdatapath=s_procdata_path;
+    string procdatapath=s_olprefix+"/proclib";
     int n(scandir(procdatapath.c_str(),&entries,&SelectInfo,alphasort));
     if (n<0) THROW(fatal_error, "OpenLoops process dir "+procdatapath+" not found.");
     for (int ifile=0; ifile<n; ++ifile) {
@@ -256,12 +258,17 @@ namespace OpenLoops {
       reader.SetMatrixType(mtc::transposed);
       vector<vector<string> > content;
       reader.MatrixFromFile(content);
-        for (size_t i=0; i<content.size(); ++i) {
-          if (content[i][1]==process) {
-            if (!MatchOptions(content[i], oew, oqcd)) {
-              PRINT_INFO("Ignoring process with incompatible options.");
-              continue;
-            }
+      for (int i=0; i<content.size(); ++i) {
+        DEBUG_VAR(i);
+        DEBUG_VAR(content[i][1]);
+        DEBUG_VAR(process);
+        if (content[i][1]==process) {
+          string match=MatchOptions(content[i], oew, oqcd);
+          if (match=="false") {
+            DEBUG_INFO("Ignoring process with incompatible options.");
+            continue;
+          }
+          else if (match=="true") {
             string grouptag=content[i][0];
             string process_subid=content[i][2];
             if (s_allowed_libs.size()>0) {
@@ -273,13 +280,20 @@ namespace OpenLoops {
             }
             return make_pair(grouptag, process_subid);
           }
+          else {
+            // if mapped process, start to look for that from the beginning
+            DEBUG_INFO("Mapping "<<process<<" to "<<match);
+            process=match;
+            i=-1;
+          }
         }
+      }
       free(entries[ifile]);
     }
     PRINT_INFO("Didn't find info file matching process "<<process);
     free(entries);
     return make_pair("", "0");
-  }
+    }
 
 
   bool OpenLoops_Interface::Order(const pair<size_t, Flavour> &a,const pair<size_t, Flavour> &b)
@@ -359,8 +373,6 @@ namespace OpenLoops {
     string grouptag=groupsub.first;
     string subid=groupsub.second;
     if (grouptag!="") {
-      s_loader->AddPath(OpenLoops_Interface::s_proclib_path);
-
       // symbols in fortran are always defined as lower case
       string lc_functag(grouptag+"_"+process+"_"+subid+"_");
       for (size_t i(0);i<lc_functag.length();++i)
