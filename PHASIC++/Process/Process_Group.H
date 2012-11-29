@@ -16,7 +16,7 @@ namespace PHASIC {
   struct PG_TID {
     pthread_t m_id;
     Process_Group *p_proc;
-    double m_d, m_b;
+    double m_d, m_bd;
     const ATOOLS::Vec4D_Vector *p_p;
     size_t m_s, m_m, m_b, m_e, m_i;
     pthread_mutex_t m_s_mtx, m_t_mtx;

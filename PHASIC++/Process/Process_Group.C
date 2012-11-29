@@ -63,19 +63,19 @@ void *Process_Group::TDifferential(void *arg)
     pthread_cond_signal(&tid->m_s_cnd);
     if (tid->m_s==0) return NULL;
     // worker routine
-    tid->m_b=tid->m_d=0.0;
+    tid->m_bd=tid->m_d=0.0;
     if (tid->m_m&4) {
 	for (tid->m_i=tid->m_b;tid->m_i<tid->m_e;++tid->m_i) {
 	  tid->m_d+=tid->p_proc->
 	    m_mprocs[tid->m_i]->Differential(*tid->p_p);
-	  tid->m_b+=tid->p_proc->m_mprocs[tid->m_i]->LastB();
+	  tid->m_bd+=tid->p_proc->m_mprocs[tid->m_i]->LastB();
 	}
     }
     else {
 	for (tid->m_i=tid->m_b;tid->m_i<tid->m_e;++tid->m_i) {
 	  tid->m_d+=tid->p_proc->
 	    m_umprocs[tid->m_i]->Differential(*tid->p_p);
-	  tid->m_b+=tid->p_proc->m_umprocs[tid->m_i]->LastB();
+	  tid->m_bd+=tid->p_proc->m_umprocs[tid->m_i]->LastB();
 	}
     }
     // signal group to continue
@@ -115,7 +115,7 @@ double Process_Group::Differential(const Vec4D_Vector &p)
       pthread_mutex_unlock(&tid->m_t_mtx);
       pthread_cond_signal(&tid->m_t_cnd);
       m_last+=tid->m_d;
-      m_lastb+=tid->m_b;
+      m_lastb+=tid->m_bd;
     }
     // start calculator threads
     d=m_mprocs.size()/m_cts.size();
@@ -136,7 +136,7 @@ double Process_Group::Differential(const Vec4D_Vector &p)
       pthread_mutex_unlock(&tid->m_t_mtx);
       pthread_cond_signal(&tid->m_t_cnd);
       m_last+=tid->m_d;
-      m_lastb+=tid->m_b;
+      m_lastb+=tid->m_bd;
     }
   }
 #else
@@ -258,9 +258,9 @@ bool Process_Group::CalculateTotalXSec(const std::string &resultpath,
   Data_Reader read(" ",";","!","=");
   if (!read.ReadFromFile(helpi,"PG_THREADS")) helpi=4;
   else msg_Info()<<METHOD<<"(): Set number of threads "<<helpi<<".\n";
-  if (m_nout<=4) helpi=0;
-  else if (m_nout==5) helpi=Min(helpi,2);
-  else if (m_nout==6) helpi=Min(helpi,3);
+  if (m_nout<=2) helpi=0;
+  else if (m_nout==3) helpi=Min(helpi,2);
+  else if (m_nout==4) helpi=Min(helpi,3);
   if (m_mprocs.size()) m_cts.resize(helpi);
   for (size_t i(0);i<m_cts.size();++i) {
     PG_TID *tid(new PG_TID(this));
