@@ -47,7 +47,7 @@ namespace AMEGIC {
   class DipoleSplitting_Base {
   protected:
     double m_alpha,m_kt2max,m_amin,m_kappa;
-    double m_Q2,m_kt2,m_av;
+    double m_Q2,m_kt2,m_av,m_a;
     int m_nf, m_mcmode, m_mcsign;
     ATOOLS::Vec4D m_pt1,m_pt2;
 
@@ -91,6 +91,7 @@ namespace AMEGIC {
     double SPFac() { return m_spfdef*p_cpl->Factor(); }
     double G2() { return m_g2; }
     int MCSign() { return m_mcsign; }
+    inline bool KinCheck() const { return m_a>m_amin; }
   };
 }
 #endif

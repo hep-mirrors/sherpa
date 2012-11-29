@@ -539,9 +539,8 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
 
   p_scale->SetCaller(p_LO_process);
 
-  double df = p_dipole->GetF();
   bool trg(!p_LO_process->Selector()->On());
-  if (!trg) trg=IsNan(df)?0:p_LO_process->Trigger(p_LO_labmom);
+  if (!trg) trg=p_dipole->KinCheck()?p_LO_process->Trigger(p_LO_labmom):0;
   p_LO_process->Integrator()->SetMomenta(p_LO_labmom);
 
   double M2 =trg ? p_LO_process->operator()
@@ -551,6 +550,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   p_dipole->SetMCMode(m_mcmode);
   if (trg && m_mcmode) p_dipole->SetKt2Max(p_scale->Scale(stp::res));
 
+  double df = p_dipole->KinCheck()?p_dipole->GetF():nan;
   m_subevt.m_me = m_subevt.m_mewgt = m_subevt.m_result = 0.;
 
   if (!(df>0.)&& !(df<0.)) return m_lastxs=m_mcmode==1?0.0:df;

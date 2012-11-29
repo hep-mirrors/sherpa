@@ -22,6 +22,7 @@ void IF_DipoleSplitting::SetMomenta(const Vec4D *mom)
 
   m_uj   = (m_pi*m_pj)/(m_pi*m_pj+m_pk*m_pi);
   m_uk   = 1.-m_uj;
+  m_a = m_uj;
 
   m_Q2 = (-m_pi+m_pj+m_pk).Abs2();
   m_kt2 = -m_Q2*(1.-m_xijk)/m_xijk*m_uj;
@@ -53,9 +54,6 @@ void IF_DipoleSplitting::SetMomenta(const Vec4D *mom)
 double IF_DipoleSplitting::GetF()
 {
   if (Reject(m_uj)) return 0.;
-  if (m_uj<=m_amin) {
-    return nan;
-  }
   double h=1.0/(2.*m_pi*m_pj)/m_xijk;  
   switch (m_ft) {
   case 1:
@@ -103,6 +101,7 @@ void IF_MassiveDipoleSplitting::SetMomenta(const Vec4D *mom)
 
   m_uj   = (m_pi*m_pj)/(m_pi*m_pj+m_pk*m_pi);
   m_uk   = 1.-m_uj;
+  m_a = m_uj;
 
   m_kt2 = 2.0*m_pj*m_pk*m_uj;
 
@@ -131,9 +130,6 @@ void IF_MassiveDipoleSplitting::SetMomenta(const Vec4D *mom)
 
 double IF_MassiveDipoleSplitting::GetF()
 {
-  if (m_uj<=m_amin) {
-    return nan;
-  }
   if (Reject(m_uj)) return 0.;
   double h=1.0/(2.*m_pi*m_pj)/m_xijk;  
   switch (m_ft) {

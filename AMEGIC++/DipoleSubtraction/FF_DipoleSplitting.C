@@ -2,6 +2,7 @@
 #include "AMEGIC++/Main/ColorSC.H"
 
 #include "ATOOLS/Org/My_Limits.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -30,6 +31,7 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   m_pk = mom[m_k];
 
   m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
+  m_a = m_yijk;
 
   m_ptk  = 1./(1.-m_yijk)*m_pk;
   m_ptij = m_pi+m_pj-m_yijk/(1.-m_yijk)*m_pk;
@@ -67,10 +69,6 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
 double FF_DipoleSplitting::GetF()
 {
   if (Reject(m_yijk)) return 0.;
-
-   if (m_yijk<=m_amin) {
-      return nan;
-   }
 
   double h=1.0/(2.*m_pi*m_pj);  
   switch (m_ft) {
@@ -122,7 +120,15 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
   m_ptij = m_Q-m_ptk;
 
   m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
-  if (IsBad(m_ptk[0])) m_yijk=0.0;
+  m_a = m_yijk;
+  if ((m_mij && !IsEqual(m_ptij.Abs2(),m_mij,1.0e-3)) ||
+      (m_mk && !IsEqual(m_ptk.Abs2(),m_mk,1.0e-3))) {
+    msg_Tracking()<<METHOD<<"(): Kinematics unstable in {\n"
+		  <<"  p_i = "<<m_pi<<" "<<sqrt(dabs(m_pi.Abs2()))<<"\n"
+		  <<"  p_j = "<<m_pj<<" "<<sqrt(dabs(m_pj.Abs2()))<<"\n"
+		  <<"  p_k = "<<m_pk<<" "<<sqrt(dabs(m_pk.Abs2()))<<"\n}"<<std::endl;
+    m_a=0.0;
+  }
   m_yp = 1. - 2.*(sqrt(m_mk*m_Q2) - m_mk)/(m_Q2 - m_mi - m_mj - m_mk);
 
   m_zi   = (m_pi*m_pk)/(m_pi*m_pk+m_pj*m_pk);
@@ -180,11 +186,6 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
 
 double FF_MassiveDipoleSplitting::GetF()
 {
-
-   if (m_yijk<=m_amin) {
-      return nan;
-   }
-
   if (Reject(m_yijk/m_yp)) return 0.;
 
   double h=1.0/((m_pi+m_pj).Abs2()-m_mij);  

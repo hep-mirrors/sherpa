@@ -27,6 +27,7 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
   for(int i=2;i<=m_m;i++) m_mom[i]-=2.*(m_mom[i]*KKt/KKt.Abs2()*KKt-m_mom[i]*K/K.Abs2()*Kt);
 
   m_vi   = (m_pi*m_pj)/(m_pi*m_pk);
+  m_a = m_vi;
 
   m_Q2 = (-m_pi+m_pj-m_pk).Abs2();
   m_kt2 = m_Q2*(1.-m_xijk)/m_xijk*m_vi;
@@ -56,9 +57,6 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
 
 double II_DipoleSplitting::GetF()
 {
-   if (m_vi<=m_amin) {
-     return nan;
-   }
   if (Reject(m_vi)) return 0.;
    double h=1.0/(2.*m_pi*m_pj)/m_xijk;  
   switch (m_ft) {

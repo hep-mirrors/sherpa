@@ -188,7 +188,7 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
   if (IsBad(m_av))
     msg_Error()<<METHOD<<"(): Average is "<<m_av<<" in "
 	       <<Demangle(typeid(*this).name())
-	       <<"[type="<<m_type<<"]"<<std::endl;
+	       <<"[type="<<m_ft<<"]"<<std::endl;
   if (m_mcmode==1) {
     int da(m_av>0.0 && m_kt2<m_kt2max), ds(alpha<m_alpha);
     m_mcsign=ds-da;
