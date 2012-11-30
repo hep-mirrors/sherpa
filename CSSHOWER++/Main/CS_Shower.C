@@ -451,7 +451,7 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
       }
     }
     double kt2max(leg->KTMax()),kt2veto(leg->KTVeto()),kt2start(leg->KTStart());
-    parton->SetStart(kt2start);   // start scale of shower
+    parton->SetStart(Min(kt2veto,kt2start));   // start scale of shower
     parton->SetKtMax(kt2max);    // no jet veto below ktmax
     parton->SetVeto(kt2veto);     // irrelevant 
     parton->SetConnected(leg->Connected());
