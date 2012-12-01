@@ -33,7 +33,7 @@ std::ostream &PHASIC::operator<<(std::ostream &ostr,const Subprocess_Info &info)
 
 Subprocess_Info::Subprocess_Info
 (const ATOOLS::Flavour &fl,const std::string &id,const std::string &pol):
-  m_fl(fl), m_id(id), m_pol(pol), m_nmax(0), m_tag(0), m_osf(0),
+  m_fl(fl), m_id(id), m_pol(pol), m_nmax(0), m_nmin(100), m_tag(0), m_osf(0),
   m_nloqcdtype(nlo_type::lo), m_nloewtype(nlo_type::lo) {}
 
 Subprocess_Info::~Subprocess_Info()
@@ -262,6 +262,7 @@ bool Subprocess_Info::IsGroup() const
 
 void Subprocess_Info::SetNMax(const Subprocess_Info &ref)
 {
+  m_nmin=Min(m_ps.size(),ref.m_nmin);
   m_nmax=Max(m_ps.size(),ref.m_nmax);
   size_t lim(Min(m_ps.size(),ref.m_ps.size()));
   for (size_t j(0);j<lim;++j) m_ps[j].SetNMax(ref.m_ps[j]);
@@ -269,7 +270,8 @@ void Subprocess_Info::SetNMax(const Subprocess_Info &ref)
 
 void Subprocess_Info::GetNMax(const Subprocess_Info &ref)
 {
-  m_nmax=ref.m_ps.size();
+  m_nmin=Min(m_nmin,ref.m_ps.size());
+  m_nmax=Max(m_nmax,ref.m_ps.size());
   size_t lim(Min(m_ps.size(),ref.m_ps.size()));
   for (size_t j(lim);j<ref.m_ps.size();++j) 
     m_ps.push_back(Subprocess_Info(ref.m_ps[j].m_fl,ref.m_ps[j].m_id));
@@ -337,7 +339,7 @@ void Subprocess_Info::Print(std::ostream &ostr,const size_t &ni) const
   if (m_ps.size()>0) {
     ostr<<" ("<<m_ps.size()<<")";
     ostr<<", NLO{"<<m_nloqcdtype<<","<<m_nloewtype<<"}";
-    if (m_nmax>0) ostr<<"{"<<m_nmax<<"}";
+    if (m_nmax>0) ostr<<"{"<<m_nmin<<","<<m_nmax<<"}";
     ostr <<": {\n";
     for (size_t i(0);i<m_ps.size();++i) m_ps[i].Print(ostr,ni+2);
     ostr<<std::string(ni,' ')<<"}";

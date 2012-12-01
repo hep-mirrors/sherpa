@@ -39,7 +39,7 @@ namespace PHASIC {
     std::vector<Subprocess_Info> m_ps;
     ATOOLS::DecayInfo_Vector m_decins;
     
-    size_t m_nmax;
+    size_t m_nmax, m_nmin;
     int    m_tag,m_osf;
 
     nlo_type::code m_nloqcdtype, m_nloewtype;

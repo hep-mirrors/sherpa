@@ -475,7 +475,7 @@ void Combine_Table::FillTable(Leg **legs,const int nlegs,const int nampl)
   m_nampl=nampl;
   Flavour mo;
   // determine possible combinations and corresponding y_ij  if nlegs>4
-  if (m_nlegs>4) {
+  if (m_nlegs>2+p_proc->Info().m_fi.m_nmin) {
     int start=0;
     // cluster initial state only if isrshower and isr_x is on. 
     if (!legs[0][0].Flav().Strong() && !legs[0][1].Flav().Strong()) start=2;
@@ -548,7 +548,7 @@ KT2Info_Vector Combine_Table::UpdateKT2(const CD_List::iterator &cdit) const
   }
   if ((cdit->second.m_dec<10 &&
        cdit->first.m_flav.Strong()) ||
-      m_nlegs==4) {
+      m_nlegs==2+p_proc->Info().m_fi.m_nmin) {
     nkt2ord[li].second=cdit->second.m_pt2ij.m_kt2;
     msg_Debugging()<<"set last k_T = "<<sqrt(nkt2ord[li].second)
 		   <<" for "<<ID(nkt2ord[li].first)
@@ -561,13 +561,15 @@ Combine_Table *Combine_Table::
 CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2) 
 {
   DEBUG_FUNC(mode<<" "<<nl<<" "<<sqrt(kt2));
+  if (nl==3) return this;
   m_rejected.clear();
   bool invonly(true), valid(mode&512);
   while (true) {
     m_nl=nl;
     if (moms) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
     if (!SelectWinner(mode)) {
-      if (nl==4 && (IdentifyHardProcess() || p_up==NULL)) {
+      if (nl==4 && p_proc->Info().m_fi.m_nmin>1 &&
+	  (IdentifyHardProcess() || p_up==NULL)) {
 	DecayInfo_Vector decids(m_decids);
 	for (int j(0);j<m_nampl;++j) {
 	  size_t pid(p_hard[j][1].ID());
@@ -637,7 +639,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     if (!ord) {
       if (!(mode&16)) continue;
     }
-    if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
+    if (nl<2+p_proc->Info().m_fi.m_nmin) THROW(fatal_error,"nlegs < min. Abort.");
     Combine_Table *tab(CreateNext());
     if (tab!=NULL) {
       Combine_Table *next(NextTable(tab,mode,m_cdata_winner->

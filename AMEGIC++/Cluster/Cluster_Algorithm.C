@@ -96,6 +96,7 @@ bool Cluster_Algorithm::Cluster
     msg_Debugging()<<"}\n";
     return true;
   }
+  if (p_ct->NLegs()==4) {
   Vec4D_Vector moms(4);
   ATOOLS::Flavour_Vector fl(4);
   for (int i(0);i<4;++i) {
@@ -104,6 +105,15 @@ bool Cluster_Algorithm::Cluster
   }
   p_xs=GetXS(fl);
   SetColours(p_xs,moms,&fl.front());
+  }
+  else {
+    if (!(p_ct->Flav(0).IsGluon() &&
+	  p_ct->Flav(1).IsGluon() &&
+	  p_ct->Flav(2).Kfcode()==kf_h0)) abort();
+    m_colors[0][1] = m_colors[1][0] = 500;
+    m_colors[1][1] = m_colors[0][0] = 501;
+    m_colors[2][1] = m_colors[2][0] = 0;
+  }
   Convert();
   return true;
 }
@@ -561,7 +571,7 @@ void Cluster_Algorithm::Convert()
   SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,nmax);
   for (size_t i(0);i<2;++i)
     p_ampl->Leg(i)->SetCol(ColorID(m_colors[i][1],m_colors[i][0]));
-  for (size_t i(2);i<4;++i)
+  for (size_t i(2);i<2+p_proc->Info().m_fi.m_nmin;++i)
     p_ampl->Leg(i)->SetCol(ColorID(m_colors[i][0],m_colors[i][1]));
   while (p_ampl->Prev()) {
     Cluster_Amplitude *ampl(p_ampl->Prev());
