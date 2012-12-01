@@ -558,7 +558,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
   m_scale[stp::res]=muf2;
   m_scale[stp::size+2]=muf2;
   if (ampl) {
-    std::vector<double> scale(p_proc->NOut());
+    std::vector<double> scale(p_proc->NOut()+1);
     msg_Debugging()<<"Setting scales {\n";
     mur2=1.0;
     int smup(false);

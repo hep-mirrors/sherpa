@@ -269,6 +269,8 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
 CParam CS_Cluster_Definitions::CoreScale
 (ATOOLS::Cluster_Amplitude *const ampl)
 {
+  if (ampl->Legs().size()==3 && ampl->NIn()==2)
+    return ampl->Leg(2)->Mom().Abs2();
   if (ampl->Legs().size()!=4) THROW(fatal_error,"Invalid function call");
   Vec4D psum;
   Vec4D_Vector p(4);
