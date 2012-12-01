@@ -273,9 +273,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
 
 Cluster_Amplitude *MCatNLO_Process::GetAmplitude()
 {
-  Cluster_Amplitude *ampl(p_ampl);
-  p_ampl=NULL;
-  return ampl;
+  return p_ampl?p_ampl->CopyAll():NULL;
 }
 
 double MCatNLO_Process::OneHEvent(const int wmode)
