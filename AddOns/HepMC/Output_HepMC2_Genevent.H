@@ -3,7 +3,7 @@
 
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "SHERPA/Tools/Output_Base.H"
-#include "AddOns/HepMC/HepMC2_Interface.H"
+#include "SHERPA/Tools/HepMC2_Interface.H"
 #include <fstream>
 #ifdef USING__GZIP
 #include "ATOOLS/Org/Gzip_Stream.H"

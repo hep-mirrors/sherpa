@@ -1,4 +1,4 @@
-#include "AddOns/HepMC/HepMC2_Interface.H"
+#include "SHERPA/Tools/HepMC2_Interface.H"
 
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle.H"

@@ -1,6 +1,6 @@
 
-HEPMC_SOURCES =	HepMC2_Interface.C Output_HepMC2_Genevent.C Output_HepMC2_Short.C
-HEPMC_ADDS    =	HepMC2_Interface.H Output_HepMC2_Genevent.H Output_HepMC2_Short.H
+HEPMC_SOURCES =	Output_HepMC2_Genevent.C Output_HepMC2_Short.C
+HEPMC_ADDS    =	Output_HepMC2_Genevent.H Output_HepMC2_Short.H
 
 if HEPMC2_SUPPORT
 pkglib_LTLIBRARIES    =	libSherpaHepMCOutput.la
