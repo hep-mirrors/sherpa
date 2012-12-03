@@ -159,7 +159,10 @@ double Splitting_Function_Base::operator()
 {
   double sf((*p_lf)(z,y,eta,scale,Q2,sub));
   if (sf/p_lf->AsymmetryFactor(z,y,Q2)<0.0) return 0.0;
-  if (IsBad(sf)) THROW(fatal_error,"Invalid weight");
+  if (IsBad(sf))
+    THROW(fatal_error,"Invalid weight in MC@NLO "+
+	  Demangle(std::string(typeid(*p_lf).name()).substr(9))+"|"+
+	  Demangle(std::string(typeid(*p_cf).name()).substr(9)));
   return sf*(ci.m_new<0?1.0:p_cf->ColorWeight(ci))/m_symf/m_polfac;
 }
 
