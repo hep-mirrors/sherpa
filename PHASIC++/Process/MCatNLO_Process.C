@@ -90,6 +90,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rproc->SetParent(this);
   p_bproc->FillProcessMap(p_apmap);
   p_rproc->FillProcessMap(p_apmap);
+  (*(*p_apmap)[nlo_type::lo])[ToString(m_nin)+"_"+ToString(m_nout-1)]=this;
   Data_Reader read(" ",";","!","=");
   read.SetInputPath(rpa->GetPath());
   read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
@@ -344,6 +345,21 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   p_ampl->SetIInfo(&m_iinfo);
   p_ampl->SetDInfo(&m_dinfo);
   p_ampl->Decays()=m_decins;
+  for (Cluster_Amplitude *campl(p_ampl->Next());
+       campl;campl=campl->Next()) {
+    MCatNLO_Process *cproc
+      (dynamic_cast<MCatNLO_Process*>
+       ((*(*p_apmap)[nlo_type::lo])
+	[ToString(m_nin)+"_"+ToString(campl->Legs().size()-m_nin)]));
+    if (cproc==NULL)
+      THROW(fatal_error,"Missing process '"+ToString(m_nin)+
+	    "_"+ToString(campl->Legs().size()-m_nin)+"'");
+    SortFlavours(campl);
+    campl->SetProcs(p_apmap);
+    campl->SetIInfo(&cproc->m_iinfo);
+    campl->SetDInfo(&cproc->m_dinfo);
+    campl->Decays()=cproc->m_decins;
+  }
   p_nlomc->SetShower(p_shower);
   int stat(p_nlomc->GeneratePoint(p_ampl));
   Cluster_Amplitude *next(p_ampl), *ampl(p_ampl->Prev());

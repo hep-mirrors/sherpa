@@ -59,9 +59,28 @@ void CS_MCatNLO::CleanUp()
 
 int CS_MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl) 
 {
+  DEBUG_FUNC("");
+  m_nem=0;
+  m_weight=1.0;
+  for (Cluster_Amplitude *campl(ampl->Next());
+       campl;campl=campl->Next()) {
+    CleanUp();
+    Cluster_Amplitude *nampl(campl->Copy());
+    Process_Base::SortFlavours(nampl);
+    for (size_t i(0);i<nampl->Legs().size();++i)
+      nampl->Leg(i)->SetId(1<<i);
+    PrepareMCatNLO(nampl,1);
+    for (All_Singlets::const_iterator 
+	   sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit)
+      for (Singlet::const_iterator 
+	     pit((*sit)->begin());pit!=(*sit)->end();++pit)
+	(*pit)->SetKtMax(campl->Prev()->KT2());
+    int stat(PerformMCatNLO(m_maxem,m_nem,3));
+    nampl->Delete();
+    if (stat==0) return stat;
+  }
   CleanUp();
   PrepareMCatNLO(ampl);
-  m_nem=0;
   int stat(PerformMCatNLO(m_maxem,m_nem));
   if (m_nem) {
     Cluster_Amplitude *rampl(GetRealEmissionAmplitude());
@@ -91,9 +110,8 @@ int CS_MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
   return stat;
 }
 
-int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem)
+int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem,const int mode)
 {
-  m_weight=1.0;
   std::set<Parton*> nxs;
   Singlet *last(*(m_allsinglets.end()-1));
   std::string pname(Process_Base::GenerateName(p_rampl));
@@ -119,7 +137,7 @@ int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem)
     msg_Debugging()<<"before powheg step\n";
     msg_Debugging()<<**sit;
     size_t pem(nem);
-    if (!p_powheg->EvolveShower(*sit,maxem,nem)) return 0;
+    if (!p_powheg->EvolveShower(*sit,maxem,nem,mode)) return 0;
     m_weight*=p_powheg->Weight();
     msg_Debugging()<<"after powheg step with "<<nem-pem
 		   <<" emission(s), w = "<<m_weight<<"\n";
@@ -129,7 +147,7 @@ int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem)
   return 1;
 }
 
-bool CS_MCatNLO::PrepareMCatNLO(Cluster_Amplitude *const ampl)
+bool CS_MCatNLO::PrepareMCatNLO(Cluster_Amplitude *const ampl,const int mode)
 {
   CleanUp();
   msg_Debugging()<<METHOD<<"(): {\n";
@@ -142,7 +160,7 @@ bool CS_MCatNLO::PrepareMCatNLO(Cluster_Amplitude *const ampl)
   msg_Debugging()<<*campl<<"\n";
   std::map<Parton*,Cluster_Leg*> lmap;
   std::map<Cluster_Leg*,Parton*> pmap;
-  Singlet *sing(TranslateAmplitude(campl,pmap,lmap));
+  Singlet *sing(TranslateAmplitude(campl,pmap,lmap,mode));
   m_allsinglets.push_back(sing);
   p_next->push_back(sing);
   msg_Debugging()<<"\nSinglet lists:\n\n";
@@ -177,8 +195,8 @@ bool CS_MCatNLO::PrepareMCatNLO(Cluster_Amplitude *const ampl)
 }
 
 Singlet *CS_MCatNLO::TranslateAmplitude
-(Cluster_Amplitude *const ampl,
- std::map<Cluster_Leg*,Parton*> &pmap,std::map<Parton*,Cluster_Leg*> &lmap)
+(Cluster_Amplitude *const ampl,std::map<Cluster_Leg*,Parton*> &pmap,
+ std::map<Parton*,Cluster_Leg*> &lmap,const int mode)
 {
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
   Singlet *singlet(new Singlet());
@@ -224,7 +242,7 @@ Singlet *CS_MCatNLO::TranslateAmplitude
 	parton->SetBeam(1);
       }
     }
-    parton->SetStart(ampl->Q2());
+    parton->SetStart(mode?ampl->KT2():ampl->Q2());
     double ktveto2(jf?jf->Ycut()*sqr(rpa->gen.Ecms()):parton->KtStart());
     double ktmax2(ampl->Legs().size()-ampl->NIn()+1==
 		  ampl->Leg(2)->NMax()?parton->KtStart():0.0);

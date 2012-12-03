@@ -177,7 +177,7 @@ int Shower::MakeKinematics
   pj->SetKin(m_kscheme);
   pi->SetLT(split->LT());
   if (stype&1) pi->SetBeam(split->Beam());
-  if (mode==0) SetSplitInfo(peo,pso,split,pi,pj,stype);
+  SetSplitInfo(peo,pso,split,pi,pj,stype);
   split->GetSing()->push_back(pj);
   if (stype) split->GetSing()->BoostAllFS
     (pi,pj,spect,split,split->GetFlavour(),stype);
@@ -200,7 +200,7 @@ int Shower::MakeKinematics
   return 1;
 }
 
-bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
+bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem,int mode)
 {
   m_weight=1.0;
   p_actual=act;
@@ -217,15 +217,31 @@ bool Shower::EvolveShower(Singlet *act,const size_t &maxem,size_t &nem)
     }
     else {
       msg_Debugging()<<"Emission "<<m_flavA<<" -> "<<m_flavB<<" "<<m_flavC
-		     <<" at kt = "<<sqrt(split->KtTest())
-		     <<", z = "<<split->ZTest()<<", y = "
+		     <<" at kt = "<<sqrt(split->KtTest())<<"("<<sqrt(split->KtMax())
+		     <<"), z = "<<split->ZTest()<<", y = "
 		     <<split->YTest()<<" for\n"<<*split
 		     <<*split->GetSpect()<<"\n";
       m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
+      if ((mode&2) && kt2win<split->KtMax()) {
+	msg_Debugging()<<"defer split ...\n\n";
+	return true;
+      }
       ResetScales(split);
-      int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,0));
+      int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,mode&2));
       if (kstat<0) continue;
-      if (kstat==0) return false;
+      if (kstat==0) {
+	if (mode==3) {
+	  msg_Debugging()<<"Skip first truncated emission\n";
+	  mode=2;
+	  continue;
+	}
+	msg_Debugging()<<"jet veto\n";
+	return false;
+      }
+      if (mode&2) {
+	msg_Debugging()<<"emission veto\n";
+	return false;
+      }
       msg_Debugging()<<"nem = "<<nem+1<<" vs. maxem = "<<maxem<<"\n";
       if (++nem>=maxem) return true;
     }

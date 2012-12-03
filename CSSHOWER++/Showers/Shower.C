@@ -383,7 +383,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
   p_actual=act;
   Vec4D mom;
   double kt2win;
-  if (p_actual->NLO()&4) {
+  if (p_actual->NLO()&6) {
     msg_Debugging()<<"Skip MC@NLO emission\nSet p_T = "
 		   <<sqrt(p_actual->KtNext())<<"\n";
     ResetScales(p_actual->KtNext());

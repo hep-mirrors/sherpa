@@ -33,11 +33,12 @@ namespace MCATNLO {
 
     Singlet *TranslateAmplitude(ATOOLS::Cluster_Amplitude *const ampl,
 				std::map<ATOOLS::Cluster_Leg*,Parton*> &pmap,
-				std::map<Parton*,ATOOLS::Cluster_Leg*> &lmap);
+				std::map<Parton*,ATOOLS::Cluster_Leg*> &lmap,
+				const int mode);
 
-    int PerformMCatNLO(const size_t &maxem,size_t &nem);
+    int PerformMCatNLO(const size_t &maxem,size_t &nem,const int mode=0);
 
-    bool PrepareMCatNLO(ATOOLS::Cluster_Amplitude *const ampl);
+    bool PrepareMCatNLO(ATOOLS::Cluster_Amplitude *const ampl,const int mode=0);
 
     void CleanUp();
 
