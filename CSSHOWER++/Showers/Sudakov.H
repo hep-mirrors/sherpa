@@ -31,7 +31,6 @@ namespace CSSHOWER {
     static bool s_init;
     void ProduceT();
     bool Veto(double,double);
-    bool KinCheck(double,double);
     bool Splitting(double,double);
     bool DefineFFBoundaries(double,double);
     bool DefineFIBoundaries(double,double,int);

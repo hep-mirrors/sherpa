@@ -344,7 +344,7 @@ bool Sudakov::Generate(Parton * split)
       Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
       if (Q2<=mi2+mj2+mk2) return false;
       m_y = p_shower->KinFF()->GetY(Q2,m_kperp2,m_z,mi2,mj2,mk2);
-      if (m_y<0.0) continue;
+      if (m_y<0.0 || m_y>1.0) continue;
       x   = 0.;
     }    
       break; 
@@ -354,8 +354,8 @@ bool Sudakov::Generate(Parton * split)
       double ma2 = sqr(p_rms->Mass(m_flspec));
       Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
       m_y = 1.0-p_shower->KinFI()->GetY(-Q2,m_kperp2,m_z,mi2,mj2,ma2);
-      if (m_y>1.0) continue;
       x   = split->GetSpect()->Xbj();
+      if (m_y<0.0 || m_y>1.0-x) continue;
     }
       break; 
     case (cstp::IF) : {
@@ -364,8 +364,8 @@ bool Sudakov::Generate(Parton * split)
       double mk2 = sqr(p_rms->Mass(m_flspec));
       Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
       m_y = p_shower->KinIF()->GetY(-Q2,m_kperp2,m_z,ma2,mi2,mk2);
-      if (m_y<0.0) continue;
       x   = split->Xbj();
+      if (m_y<0.0 || m_y>1.0 || m_z<x) continue;
     }
       break;
     case (cstp::II) : {
@@ -374,8 +374,8 @@ bool Sudakov::Generate(Parton * split)
       double mb2 = sqr(p_rms->Mass(m_flspec));
       Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
       m_y = p_shower->KinII()->GetY(Q2,m_kperp2,m_z,ma2,mi2,mb2);
-      if (m_y<0.0) continue;
       x   = split->Xbj();
+      if (m_y<0.0 || m_y>1.0-m_z || m_z<x) continue;
     }
       break;
   default:
@@ -534,73 +534,7 @@ void Sudakov::ProduceT()
 }
 
 bool Sudakov::Veto(double Q2,double x) {
-  if (!KinCheck(Q2,x)) return false;
   if (!Splitting(Q2,x))          return false;
-  return true;
-}
-
-bool Sudakov::KinCheck(double Q2,double x) {
-  switch (m_type) {
-  case cstp::FF: {
-    if (m_y<0. || m_y>1.)      return false;
-    double mui2 = sqr(p_rms->Mass((*m_splitter)->GetFlavourB()))/Q2;
-    double muj2 = sqr(p_rms->Mass((*m_splitter)->GetFlavourC()))/Q2;;
-    double muk2 = sqr(p_rms->Mass((*m_splitter)->GetFlavourSpec()))/Q2; 
-    double muk  = sqrt(muk2);
-    if (mui2!=0. || muj2!=0. || muk2!=0.) {
-      //massive kinematics
-      double fac  = 1.-mui2-muj2-muk2;
-      double ym   = 2.*sqrt(mui2*muj2)/fac;
-      double yp   = 1.- 2.*muk*(1.-muk)/fac;
-      
-      if (m_y<ym || m_y>yp) return false;
-      
-      double viji  = sqrt(sqr(fac*m_y)-4.*mui2*muj2)/(fac*m_y+2.*mui2);
-      double vijk  = sqrt(sqr(2.*muk2+fac*(1.-m_y))-4.*muk2)/(fac*(1.-m_y));
-      double frac  = (2.*mui2+fac*m_y)/(2.*(mui2+muj2+fac*m_y));
-      double delta = frac*viji*vijk;
-      double zm    = frac - delta;  
-      double zp    = frac + delta;
-      if (m_z<zm || m_z>zp) return false;
-    }
-  }
-    break;
-  case cstp::FI: {
-    if (m_y<0. || m_y>1.-x) return false;
-    double Qt2 = (Q2-sqr(p_rms->Mass((*m_splitter)->GetFlavourA())))/(1.-m_y);
-    double muij2 = sqr(p_rms->Mass((*m_splitter)->GetFlavourA()))/Qt2;
-    double mui2  = sqr(p_rms->Mass((*m_splitter)->GetFlavourB()))/Qt2;
-    double muj2  = sqr(p_rms->Mass((*m_splitter)->GetFlavourC()))/Qt2;;
-    if (m_y < sqr(mui2+muj2)-muij2) return false;
-    if (muij2!=0. || mui2!=0. || muj2!=0.) {
-      //massive kinematics
-      double div   = m_y+muij2;
-      double term1 = div+mui2-muj2; 
-      double term2 = sqrt(sqr(div-mui2-muj2)-4.*mui2*muj2); 
-      double zp = (term1 + term2)/(2.*div);
-      double zm = (term1 - term2)/(2.*div);
-      if (m_z<zm || m_z>zp) return false;
-    }
-  }
-    break;
-  case cstp::IF: { 
-    if (m_y<0. || m_y>1.)      return false;
-    if (x>m_z  || 0.>x)        return false;
-    double mk2 = sqr(p_rms->Mass(m_flspec));
-    if (mk2!=0) {
-      //massive spectator
-      double muk2 = mk2*m_z/(Q2+mk2);
-      double yp = (1.-m_z)/(1.-m_z+muk2);
-      if (m_y>yp)               return false;
-    }
-  }
-    break;
-  case cstp::II: 
-    if (m_y<0.       || m_y>1.)  return false;
-    if (m_y>(1.-m_z) || x>m_z)   return false;
-    break;
-  case cstp::none:             return false;
-  }
   return true;
 }
 
