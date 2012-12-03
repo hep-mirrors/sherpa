@@ -233,8 +233,10 @@ double LF_SSV_FF::operator()
   }
   else {
     //the massive case
-    double vtijk = sqrt(Lambda(1.,muij2,muk2))/(1.-muij2-muk2);
-    double vijk  = sqrt(sqr(2.*muk2+(1.-mui2-muk2)*(1.-y))-4.*muk2)/((1.-mui2-muk2)*(1.-y));
+    double vtijk = Lambda(1.,muij2,muk2), vijk = sqr(2.*muk2+(1.-mui2-muk2)*(1.-y))-4.*muk2;
+    if (vtijk<-.0 || vijk<0.0) return 0.0;
+    vtijk = sqrt(vtijk)/(1.-muij2-muk2);
+    vijk  = sqrt(vijk)/((1.-mui2-muk2)*(1.-y));
     double sij   = y*Q2*(1.0-muk2)+(1.0-y)*mi2;
     double pipj  = (sij*z*(1.0-z)-(1.0-z)*mi2)/(2.*z*(1.-z)) + (1.-z)*mi2/(2.*z);
     double massive = ( 2./(1.-z+z*y) - vtijk/vijk * (2. + mi2/pipj) );
@@ -384,8 +386,10 @@ double LF_SVS_FF::operator()
   }
   else {
     //the massive case
-    double vtijk = sqrt(Lambda(1.,muij2,muk2))/(1.-muij2-muk2);
-    double vijk  = sqrt(sqr(2.*muk2+(1.-muj2-muk2)*(1.-y))-4.*muk2)/((1.-muj2-muk2)*(1.-y));
+    double vtijk = Lambda(1.,muij2,muk2), vijk = sqr(2.*muk2+(1.-muj2-muk2)*(1.-y))-4.*muk2;
+    if (vtijk<0.0 || vijk<0.0) return 0.0;
+    vtijk = sqrt(vtijk)/(1.-muij2-muk2);
+    vijk  = sqrt(vijk)/((1.-muj2-muk2)*(1.-y));
     double sij   = y*Q2*(1.0-muk2)+(1.0-y)*mj2;
     double pipj  = (sij*z*(1.0-z)-z*mj2)/(2.*z*(1.-z)) + (1.-z)*mj2/(2.*z);
     double massive = ( 2./(z+y-z*y) - vtijk/vijk * (2. + mj2/pipj) );
@@ -556,8 +560,10 @@ double LF_VSS_FF::operator()
   else {
     //the massive case
     double fac  = 1.-mui2-muj2-muk2;
-    double viji = sqrt(sqr(fac*y)-4.*mui2*muj2)/(fac*y+2.*mui2);
-    double vijk = sqrt(sqr(2.*muk2+fac*(1.-y))-4.*muk2)/(fac*(1.-y));
+    double viji = sqr(fac*y)-4.*mui2*muj2, vijk = sqr(2.*muk2+fac*(1.-y))-4.*muk2;
+    if (viji<0.0 || vijk<0.0) return 0.0;
+    viji = sqrt(viji)/(fac*y+2.*mui2);
+    vijk = sqrt(vijk)/(fac*(1.-y));
     double frac = (2.*mui2+fac*y)/(2.*(mui2+muj2+fac*y));
     double zm = frac*(1.- viji*vijk);  
     double zp = frac*(1.+ viji*vijk);
@@ -602,7 +608,9 @@ double LF_VSS_FI::operator()
   }
   else {
     //the massive case
-    double delta   = sqrt(sqr(y-2.*muQ2)-4.*muQ2*muQ2)/y; 
+    double delta = sqr(y-2.*muQ2)-4.*muQ2*muQ2;
+    if (delta<0.0) return 0.0;
+    delta = sqrt(delta)/y; 
     double zp      = 0.5 * (1. + delta);
     double zm      = 0.5 * (1  - delta); 
     double massive = (1.-2.*(zp-z)*(z-zm));

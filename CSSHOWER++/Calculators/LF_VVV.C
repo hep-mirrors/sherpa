@@ -159,7 +159,9 @@ double LF_VVV1_FF::operator()
   }
   else {
     //the massive case
-    double vijk  = sqrt(sqr(2.*muk2+(1.-muk2)*(1.-y))-4.*muk2)/((1.-muk2)*(1.-y));
+    double vijk = sqr(2.*muk2+(1.-muk2)*(1.-y))-4.*muk2;
+    if (vijk<0.0) return 0.0;
+    vijk = sqrt(vijk)/((1.-muk2)*(1.-y));
     double zm = 0.5*(1.- vijk);  
     double zp = 0.5*(1.+ vijk);
     double massive = 2. * ( 1./(1.-z+z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
@@ -199,7 +201,9 @@ double LF_VVV2_FF::operator()
   }
   else {
     //the massive case
-    double vijk  = sqrt(sqr(2.*muk2+(1.-muk2)*(1.-y))-4.*muk2)/((1.-muk2)*(1.-y));
+    double vijk = sqr(2.*muk2+(1.-muk2)*(1.-y))-4.*muk2;
+    if (vijk<0.0) return 0.0;
+    vijk = sqrt(vijk)/((1.-muk2)*(1.-y));
     double zm = 0.5*(1.- vijk);  
     double zp = 0.5*(1.+ vijk);
     double massive = 2. * ( 1./(z+y-z*y) + (z*(1.-z)/2. - (1.0-s_kappa)*zp*zm/2. - 1.)/vijk );
