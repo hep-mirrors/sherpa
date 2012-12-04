@@ -15,4 +15,5 @@ localinc_HEADERS      = \
 nobase_dist_pkgdata_DATA         =	\
 			MSTW08Grid/mstw2008lo.00.dat \
 			MSTW08Grid/mstw2008nlo.00.dat \
-			MSTW08Grid/mstw2008nnlo.00.dat
+			MSTW08Grid/mstw2008nnlo.00.dat \
+			MSTW08Grid/mstw2008nlo_nf4.00.dat

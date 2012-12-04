@@ -9,6 +9,8 @@
   BEAM_1 2212; BEAM_ENERGY_1 7000;
   BEAM_2 2212; BEAM_ENERGY_2 7000;
   SCALES VAR{H_T2+sqr(80.419)};
+  PDF_LIBRARY MSTW08Sherpa; PDF_SET mstw2008nlo_nf4;
+  MASS[5] 4.75;# consistent with MSTW 2008 nf 4 set
 }(run);
 
 (processes){

@@ -10,7 +10,7 @@
 Things to notice:
 @itemize
 @item The matrix elements are interfaced from @mycite{FebresCordero2006sj}.
-  The shared library necessary for running this setup is build using
+  The shared library necessary for running this setup is built using
   @uref{http://www.scons.org/,,scons}.
 @item The W-boson is stable in the hard matrix elements.
   It is decayed using the internal decay module, indicated by
@@ -19,5 +19,6 @@ Things to notice:
   Note that Sherpa must be configured with option @option{--enable-fastjet}, see
   @ref{Fastjet selector}. We require two b-jets, indicated by the @option{2} 
   at the end of the @option{FastjetFinder} options.
+@item Four-flavour PDF's are used to comply with the calculational setup.
 @end itemize
  
