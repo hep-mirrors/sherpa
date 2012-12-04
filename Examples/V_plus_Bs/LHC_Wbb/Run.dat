@@ -1,0 +1,24 @@
+(run){
+  # generator parameters
+  EVENTS 0; LGEN:=Wbb;
+  ME_SIGNAL_GENERATOR Amegic LGEN;
+  HARD_DECAYS 1; HARD_MASS_SMEARING 0;
+  MASSIVE[5] 1; WIDTH[24] 0; STABLE[24] 0;
+  MI_HANDLER None;
+  # physics parameters
+  BEAM_1 2212; BEAM_ENERGY_1 7000;
+  BEAM_2 2212; BEAM_ENERGY_2 7000;
+  SCALES VAR{H_T2+sqr(80.419)};
+}(run);
+
+(processes){
+  Process 93 93 -> 24 5 -5;
+  NLO_QCD_Mode 3; NLO_QCD_Part BVIRS;
+  Loop_Generator LGEN;
+  Order_EW 1;
+  End process;
+}(processes);
+
+(selector){
+  FastjetFinder antikt 2 15 0 0.5 0.75 3 100 2;
+}(selector);

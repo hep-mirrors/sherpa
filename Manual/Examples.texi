@@ -22,10 +22,12 @@ of the main features of these examples.
 @menu
 * LHC_WJets::
 * LHC_ZJets::
+* LHC_Wbb::
 @end menu
 
 @include LHC_WJets.texi
 @include LHC_ZJets.texi
+@include LHC_Wbb.texi
 
 
 @node Jets
