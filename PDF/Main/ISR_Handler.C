@@ -29,62 +29,6 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
   m_info_lab(8),
   m_info_cms(8)
 {
-  int nflav_pdf=0;
-  for (int i=0;i<2;i++){
-    if ((abs(p_isrbase[i]->Flavour())==2212) && 
-	(std::string(p_isrbase[i]->PDF()->Type().begin(),
-		     p_isrbase[i]->PDF()->Type().begin()+3)=="LHA")){
-      std::string pdf_type=p_isrbase[i]->PDF()->Type();
-      std::string pdf = std::string(pdf_type.begin()+4,pdf_type.end()-1);
-      std::string pdf_string = std::string(pdf.begin(),pdf.begin()+4);
-      
-      nflav_pdf=5;
-      
-      if ( pdf_string == "cteq" || pdf_string == "CT10"){
-	int n = pdf.find('.');
-	if (std::string(pdf.begin()+n-2,pdf.begin()+n)=="f3") nflav_pdf=3;
-	else if (std::string(pdf.begin()+n-2,pdf.begin()+n)=="f4") nflav_pdf=4;
-      }
-      else if (pdf_string == "MSTW"){
-	int n = pdf.find('.');
-	if (std::string(pdf.begin()+n-3,pdf.begin()+n)=="nf3") nflav_pdf=3;   
-	else if (std::string(pdf.begin()+n-3,pdf.begin()+n)=="nf4") nflav_pdf=4;
-      }
-      else if (pdf_string == "NNPD"){
-	int n = pdf.find('_');
-	std::string str(pdf.begin()+n+1,pdf.end());
-	int m = n + 1 + str.find('_');
-	if (std::string(pdf.begin()+m+1,pdf.begin()+m+4)=="nf3"
-	    || std::string(pdf.begin()+m+1,pdf.begin()+m+4)=="NF3" ) nflav_pdf=3;
-	
-	else if (std::string(pdf.begin()+m+1,pdf.begin()+m+4)=="nf4"
-		 || std::string(pdf.begin()+m+1,pdf.begin()+m+4)=="NF4" ) nflav_pdf=4;
-      }
-      else if (pdf_string == "MRST"){
-	if (std::string(pdf.begin()+8,pdf.begin()+11)=="FF3") nflav_pdf=3;
-	if (std::string(pdf.begin()+8,pdf.begin()+11)=="FF4") nflav_pdf=4;
-      }
-      else if ( (pdf_string == "abm1") || (pdf_string=="abkm")){
-	int n = pdf.find('_');
-	std::string number(std::string(pdf.begin()+n+1,pdf.begin()+n+2));
-	if (number=="3") nflav_pdf=3;
-	if (number=="4") nflav_pdf=4;
-      }
-      else nflav_pdf=0;
-    }
-    else if (abs(p_isrbase[i]->Flavour())==11) nflav_pdf=-1;
-    else if (p_isrbase[i]->Flavour()==22)      nflav_pdf=5; 
-    m_pdf_flavs.push_back(nflav_pdf);
-  }
-
-  for (int i=0; i<2; i++){
-    if (m_pdf_flavs[i]==0){
-      msg_Info() << "Unsure of how many light partons in pdf for beam "
-		 << i+1<<" - will default to 5" << std::endl;
-      m_pdf_flavs[i]=5;
-    }
-  }
-  
   if (s_nozeropdf<0) {
     Data_Reader dr(" ",";","!","=");
     dr.AddComment("#");
@@ -93,7 +37,6 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
     dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
     s_nozeropdf=dr.GetValue<int>("NO_ZERO_PDF",0);
   }
-
   m_mu2[0]=m_mu2[1]=0.0;
   m_xf1[0]=m_xf2[0]=m_xf1[1]=m_xf2[1]=1.0;
   p_remnants[1]=p_remnants[0]=NULL;
@@ -222,17 +165,6 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *par
 
 bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *partons) 
 {
-  if (m_pdf_flavs[0]>0 && m_pdf_flavs[1]>0){
-    if (m_pdf_flavs[0]!=m_pdf_flavs[1]){
-        msg_Error()<<"Warning in "<<METHOD<<":"<<std::endl
-		   <<"   The number of flavours in beam 1 is "
-		   << m_pdf_flavs[0] << std::endl
-		   <<"  while the number of flavours in beam 2 is "
-		   << m_pdf_flavs[1] << std::endl;
-      THROW(fatal_error,"Inconsistent flavours");
-    }
-  }
-  
   bool fit = 1;
   for (int i=0;i<2;i++) {
     if (p_isrbase[i]->On()) {
