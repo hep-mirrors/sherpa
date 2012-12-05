@@ -72,10 +72,10 @@ Interaction_Model_SM_EHC::Interaction_Model_SM_EHC(MODEL::Model_Base * _model,
 		  asggh/(2.*M_PI*vev.Value()));
   msg_Info()<<METHOD<<"() {\n"
             <<"  ggh coupling is "<<ghgg.Value()
-            <<" [ \\alpha_s(\\mu="<<sqrt(ehc_scale2)<<") = "<<asggh<<" )\n"
+            <<" [ \\alpha_s(\\mu="<<sqrt(ehc_scale2)<<") = "<<asggh<<" ]\n"
             <<"  pph coupling is "<<ghpp.Value()
             <<" [ 1/\\alpha_qed(\\mu="<<sqrt(ehc_scale2)<<") = "<<1./aqedpph
-            <<" )\n}\n";
+            <<" ]\n}\n";
   g3  = Kabbala(string("g_3"),
 		sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),scale)));
   PL    = Kabbala(string("P_L"),1.);
