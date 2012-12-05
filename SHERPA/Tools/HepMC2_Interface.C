@@ -89,9 +89,13 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (sp) {
     Blob_Data_Base *info((*sp)["MEWeight"]);
-    if (!info) THROW(fatal_error,"Missing weight info");
+    if (!info) THROW(fatal_error,"Missing weight info.");
     double meweight(info->Get<double>());
     weights.push_back(meweight);
+    Blob_Data_Base *ofni((*sp)["Weight_Norm"]);
+    if (!ofni) THROW(fatal_error,"Missing weight normalisation.");
+    double weightnorm(ofni->Get<double>());
+    weights.push_back(weightnorm);
   }
   //if (!sp) {
   //  sp=blobs->FindFirst(btp::Hard_Collision);
