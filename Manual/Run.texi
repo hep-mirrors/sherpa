@@ -207,11 +207,16 @@ for the desired file base name. The following formats are currently available:
 
 @table @option
 @item HepMC_GenEvent
-Generates output in HepMC::IO_GenEvent format.
+Generates output in HepMC::IO_GenEvent format. The HepMC::GenEvent::m_weights 
+weight vector stores the following items: @code{[0]} event weight, @code{[1]} 
+combined matrix element and phase space weight (missing only PDF information, 
+thus directly suitable for PDF reweighting), @code{[2]} event weight 
+normalisation (in case of unweighted events event weights of ~ +/-1 
+can be obtained by (event weight)/(event weight normalisation)).
 @item HepMC_Short
 Generates output in HepMC::IO_GenEvent format, however, only incoming beams and 
 outgoing particles are stored. Intermediate and decayed particles are not 
-listed.
+listed. The event weihgts stored as the same as above.
 @item HEPEVT
 Generates output in HepEvt format.
 @item LHEF
