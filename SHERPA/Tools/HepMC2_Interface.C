@@ -180,6 +180,16 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
     event.set_beam_particles(beamparticles[0],beamparticles[1]);
   }
   std::vector<double> weights; weights.push_back(weight);
+  if (sp && !subevtlist) {
+    Blob_Data_Base *info((*sp)["MEWeight"]);
+    if (!info) THROW(fatal_error,"Missing weight info.");
+    double meweight(info->Get<double>());
+    weights.push_back(meweight);
+    Blob_Data_Base *ofni((*sp)["Weight_Norm"]);
+    if (!ofni) THROW(fatal_error,"Missing weight normalisation.");
+    double weightnorm(ofni->Get<double>());
+    weights.push_back(weightnorm);
+  }
   event.weights()=weights;
 
   if (subevtlist) {
