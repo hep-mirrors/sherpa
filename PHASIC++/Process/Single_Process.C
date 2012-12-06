@@ -245,6 +245,7 @@ double Single_Process::BeamISRWeight
 	  f1=proc->ReMap(f1,ampl->Leg(0)->Id());
 	  f2=proc->ReMap(f2,ampl->Leg(1)->Id());
 	}
+	if (LQ2<sqr(2.0*f1.Mass(true)) || LQ2<sqr(2.0*f2.Mass(true))) continue;
 	msg_Debugging()<<"PDF ratio "<<f1<<"("<<ampl->Leg(0)->Flav().Bar()
 		       <<"),"<<f2<<"("<<ampl->Leg(1)->Flav().Bar()
 		       <<") at "<<sqrt(LQ2);
