@@ -208,6 +208,7 @@ METS_Scale_Setter::METS_Scale_Setter
   m_rproc=p_proc->Info().Has(nlo_type::real);
   m_vproc=p_proc->Info().Has(nlo_type::vsub);
   m_nproc=!p_proc->Parent()->Info().m_fi.NLOType()==nlo_type::lo;
+  if (m_nproc) m_mode=2;
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
   Data_Reader read(" ",";","!","=");
   if (!read.ReadFromFile(m_wthres,"METS_WARNING_THRESHOLD")) m_wthres=0.1;
