@@ -601,13 +601,14 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 	oqcd+=coqcd;
       }
     }
-    if (ampl->OrderQCD()-(m_vproc?1:0)) {
+    if (ampl->OrderQCD()-(m_vproc?1:0) || m_nproc) {
       double mu2(Max(ampl->Mu2(),MODEL::as->CutQ2()));
       mum2=Min(mum2,mu2);
       int coqcd(ampl->OrderQCD()-(m_vproc?1:0));
       double cas(MODEL::as->BoundedAlphaS(mu2));
       msg_Debugging()<<"  \\mu_{0} = "<<sqrt(mu2)<<", as = "<<cas
-		     <<", O(QCD) = "<<coqcd<<"\n";
+		     <<", O(QCD) = "<<coqcd<<(m_nproc?"(+1)\n":"\n");
+      if (m_nproc) ++coqcd;
       mur2*=pow(mu2,coqcd);
       as*=pow(cas,coqcd);
       oqcd+=coqcd;
