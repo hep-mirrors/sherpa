@@ -20,7 +20,7 @@ private:
 
   fastjet::JetDefinition::Plugin *p_plug;
 
-  size_t m_njets;
+  size_t m_njets, m_btag;
   double m_ptmin;
 
 public:
@@ -30,9 +30,10 @@ public:
 		    const std::string &outlist,
 		    const fastjet::JetDefinition &jdef,
  		    fastjet::JetDefinition::Plugin *const plug,
-		    const size_t &njets,const double &ptmin):
+		    const size_t &njets,const double &ptmin,
+		    const size_t btag):
     Trigger_Base(inlist,outlist), m_jdef(jdef), p_plug(plug),
-    m_njets(njets), m_ptmin(ptmin) {}
+    m_njets(njets), m_ptmin(ptmin), m_btag(btag) {}
 
   ~Fastjet_Interface()
   {
@@ -43,7 +44,20 @@ public:
   Analysis_Object *GetCopy() const 
   {
     return new Fastjet_Interface
-      (m_inlist,m_outlist,m_jdef,NULL,m_njets,m_ptmin);
+      (m_inlist,m_outlist,m_jdef,NULL,m_njets,m_ptmin,m_btag);
+  }
+
+  int BTag(ATOOLS::Particle *const p)
+  {
+    msg_Indent();
+    if (p->ProductionBlob()==NULL ||
+	p->ProductionBlob()->NInP()!=1 ||
+	p->ProductionBlob()->Type()==btp::Beam) {
+      if (p->Flav().IsB_Hadron() ||
+	  p->Flav().Kfcode()==5) return p->Flav().IsAnti()?-5:5;
+      return 0;
+    }
+    return BTag(p->ProductionBlob()->InParticle(0));
   }
 
   void Evaluate(const ATOOLS::Particle_List &plist,
@@ -54,6 +68,7 @@ public:
     for (size_t i(0);i<input.size();++i) {
       Vec4D p(plist[i]->Momentum());
       input[i]=fastjet::PseudoJet(p[1],p[2],p[3],p[0]);
+      input[i].set_user_index(BTag(plist[i]));
     }
     fastjet::ClusterSequence cs(input,m_jdef);
     if (m_njets>0) {
@@ -69,8 +84,23 @@ public:
     p_ana->AddData(key,new Blob_Data<std::vector<double> *>(ktdrs));
     outlist.resize(jets.size());
     for (size_t i(0);i<outlist.size();++i) {
+      kf_code flav(kf_jet);
+      if (m_btag) {
+#ifdef USING__FASTJET__3
+	int nb(0);
+	const std::vector<fastjet::PseudoJet>
+	  &cons(jets[i].constituents());
+	for (size_t j=0;j<cons.size();++j) {
+	  if (cons[j].user_index()==5) ++nb;
+	  if (cons[j].user_index()==-5) --nb;
+	}
+	if (nb!=0) flav=kf_bjet;
+#else
+	THROW(fatal_error,"FastJet >= v3 required for b tags");
+#endif
+      }
       outlist[i] = new Particle
-	(1,Flavour(kf_jet),Vec4D
+	(1,Flavour(flav),Vec4D
 	 (jets[i][3],jets[i][0],jets[i][1],jets[i][2]));
     }
     std::sort(outlist.begin(),outlist.end(),Order_PT());
@@ -89,7 +119,7 @@ operator()(const Argument_Matrix &parameters) const
   fastjet::RecombinationScheme recom(fastjet::E_scheme);
   fastjet::Strategy strategy(fastjet::Best);
   double R=0.4, f=0.75, p=1.0, ptmin=0.0;
-  size_t njets=0, siscone=0;
+  size_t njets=0, siscone=0, btag=0;
   std::string inlist="FinalState", outlist="FastJets";
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
@@ -123,14 +153,15 @@ operator()(const Argument_Matrix &parameters) const
     }
     else if (parameters[i][0]=="NJets") njets=ATOOLS::ToType<int>(parameters[i][1]);
     else if (parameters[i][0]=="PTMin") ptmin=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="BTag") btag=ATOOLS::ToType<int>(parameters[i][1]);
   }
   if (siscone) {
     fastjet::JetDefinition::Plugin *plug(new fastjet::SISConePlugin(R,f));
     fastjet::JetDefinition jdef(plug);
-    return new Fastjet_Interface(inlist,outlist,jdef,plug,njets,ptmin);
+    return new Fastjet_Interface(inlist,outlist,jdef,plug,njets,ptmin,btag);
   }
   fastjet::JetDefinition jdef(algo,R,recom,strategy);
-  return new Fastjet_Interface(inlist,outlist,jdef,NULL,njets,ptmin);
+  return new Fastjet_Interface(inlist,outlist,jdef,NULL,njets,ptmin,btag);
 }									
 
 void FastJet_Getter::PrintInfo(std::ostream &str,const size_t width) const
@@ -146,6 +177,7 @@ void FastJet_Getter::PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+7)<<" "<<"p         p (default 1.0)\n"
      <<std::setw(width+7)<<" "<<"f         f (siscone only, default 0.75)\n"
      <<std::setw(width+7)<<" "<<"Strategy  strategy [N2Plain|N2Tiled|N2MinHeapTiled|NlnN|NlnNCam|Best] (default Best)\n"
+     <<std::setw(width+7)<<" "<<"BTag      0|1 (default 0 -> no b-tag)\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 

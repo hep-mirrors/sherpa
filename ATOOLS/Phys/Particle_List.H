@@ -2,7 +2,6 @@
 #define ATOOLS_Phys_Particle_List_H
 
 #include "ATOOLS/Phys/Particle.H"
-#include "ATOOLS/Org/List_Algorithms.H"
 #include <deque>
 #include <iostream>
 
@@ -51,12 +50,6 @@ namespace ATOOLS {
   };// end of class Particle_List
 
   std::ostream &operator<<(std::ostream &str,const Particle_List &list);
-
-  template <class Predicate> 
-  void copy_if(Particle_List::iterator first,Particle_List::iterator last,
-	       std::back_insert_iterator<Particle_List> out,
-	       const Predicate & pred) 
-  { for (;first!=last;++first) if (pred(*first)) out = new Particle(**first); }
 
 }// end of namespace ATOOLS
 

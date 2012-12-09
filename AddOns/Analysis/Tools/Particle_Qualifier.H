@@ -6,6 +6,18 @@
 
 namespace ATOOLS {
 
+  template <class InIter, class OutIter, class Predicate>
+  void copy_if( InIter first, InIter last, OutIter out,
+		Predicate pred ) {
+    for ( ; first != last; ++first ) { if ( pred(*first) ) out = *first; }
+  }
+
+  template <class Predicate> 
+  void copy_if(Particle_List::iterator first,Particle_List::iterator last,
+	       std::back_insert_iterator<Particle_List> out,
+	       const Predicate & pred) 
+  { for (;first!=last;++first) if (pred(*first)) out = *first; }
+
   class Particle_Qualifier_Base {
   public:
     virtual ~Particle_Qualifier_Base();

@@ -55,7 +55,6 @@ localinc_HEADERS         =	\
 			My_Limits.H \
 			Run_Parameter.H \
 			Message.H \
-			List_Algorithms.H \
 			MyTiming.H \
 			IO_Handler.H \
 			MyStrStream.H \
