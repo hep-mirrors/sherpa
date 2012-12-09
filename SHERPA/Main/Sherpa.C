@@ -288,7 +288,7 @@ void Sherpa::PrepareTerminate()
 bool Sherpa::SummarizeRun() 
 { 
   p_eventhandler->Finish(); 
-  PrintDisclaimer();
+  if (p_inithandler->DataReader()->GetValue("PRINT_DISCLAIMER",1)) PrintDisclaimer();
   return true; 
 }
 
@@ -348,7 +348,7 @@ void Sherpa::DrawLogo(const int mode)
 	    <<"                                                                             "<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
 	    <<std::endl;
-  PrintDisclaimer();
+  if (p_inithandler->DataReader()->GetValue("PRINT_DISCLAIMER",1)) PrintDisclaimer();
   rpa->gen.PrintSVNVersion(msg->Info(),mode);
   rpa->gen.AddCitation
     (0,"The complete Sherpa package is published under \\cite{Gleisberg:2008ta}.");
