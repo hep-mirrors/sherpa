@@ -1,0 +1,43 @@
+(analysis){
+
+  BEGIN_ANALYSIS {
+
+    LEVEL Shower Hadron;
+    PATH_PIECE Wbb/;
+
+    PartSel { InList FinalState; OutList Leptons; Qual !NotLepton; }
+    PartSel { InList FinalState; OutList Hadronic; Qual NotLepton; }
+
+    FastJets { InList Hadronic; OutList Jets; Algorithm antikt; R 0.4; BTag 1; }
+
+    MergeLists Jets Leptons All;
+
+    MomSel { InList All; OutList AllCut;
+      Tags 97 0 PT 15 1e12;
+      Tags 97 1 PT 15 1e12;
+      Tags 97 0 Eta -3 3;
+      Tags 97 1 Eta -3 3;
+      Tags 91 0 PT 15 1e12;
+      Tags 90 0 PT 15 1e12;
+      Tags 90 0 Eta -3 3;
+      Tags 93 -1 PT 15 1e12;
+      Tags 93 -1 y -3 3;
+    }
+
+    VarObs { InList AllCut;
+      Tags 90,91 0,0 PT 0 400 40 LinErr;
+      Tags 97 0 PT 0 400 40 LinErr;
+      Tags 97 0 Eta -3 3 30 LinErr;
+      Tags 97 1 PT 0 400 40 LinErr;
+      Tags 97 1 Eta -3 3 30 LinErr;
+      Tags 93 0 PT 0 400 40 LinErr;
+      Tags 93 0 y -3 3 30 LinErr;
+      Tags 97,97 0,1 m 0 200 20 LinErr;
+      Tags 97,97 0,1 DR 0 5 20 LinErr;
+      Tags 97,97 0,1 DPhi 0 3.2 32 LinErr;
+      Tags 97,97,93 0,1,0 Calc(Y(p[0]+p[1])-Y(p[2])) -5 5 50 LinErr;
+    }
+
+  } END_ANALYSIS;
+
+}(analysis);

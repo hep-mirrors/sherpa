@@ -54,8 +54,7 @@ namespace WBB {
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr)
     {
-      msg_Info()<<METHOD<<"(): {\n"
-		<<"#################################################\n"
+      msg_Info()<<"#################################################\n"
 		<<"##                                             ##\n"
 		<<"##  Wbb~  virtual  corrections   computed  by  ##\n"
 		<<"##  F. Febres Cordero, L. Reina, D. Wackeroth  ##\n"
