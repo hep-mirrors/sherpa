@@ -171,7 +171,7 @@ Cluster_Amplitude *Cluster_Amplitude::InitNext()
 Cluster_Amplitude *Cluster_Amplitude::InitPrev()
 {
   if (p_prev!=NULL) return NULL;
-  p_prev = new Cluster_Amplitude();
+  p_prev = Cluster_Amplitude::New();
   p_prev->p_next=this;
   return p_prev;
 }
