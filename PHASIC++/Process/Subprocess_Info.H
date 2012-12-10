@@ -68,6 +68,7 @@ namespace PHASIC {
 
     size_t NExternal() const;
     size_t NTotalExternal() const;
+    size_t NMinExternal() const;
     size_t NMaxExternal() const;
     bool   IsGroup() const;
 

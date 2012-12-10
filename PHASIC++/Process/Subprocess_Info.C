@@ -244,6 +244,14 @@ double Subprocess_Info::FSSymmetryFactor() const
   return sf;
 }
 
+size_t Subprocess_Info::NMinExternal() const
+{
+  if (m_ps.empty()) return 1;
+  size_t n(m_nmin-m_ps.size());
+  for (size_t i(0);i<m_ps.size();++i) n+=m_ps[i].NMinExternal();
+  return n;
+}
+
 size_t Subprocess_Info::NMaxExternal() const
 {
   if (m_ps.empty()) return 1;

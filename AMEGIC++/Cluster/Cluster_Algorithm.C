@@ -571,7 +571,7 @@ void Cluster_Algorithm::Convert()
   SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,nmax);
   for (size_t i(0);i<2;++i)
     p_ampl->Leg(i)->SetCol(ColorID(m_colors[i][1],m_colors[i][0]));
-  for (size_t i(2);i<2+p_proc->Info().m_fi.m_nmin;++i)
+  for (size_t i(2);i<2+p_proc->Info().m_fi.NMinExternal();++i)
     p_ampl->Leg(i)->SetCol(ColorID(m_colors[i][0],m_colors[i][1]));
   while (p_ampl->Prev()) {
     Cluster_Amplitude *ampl(p_ampl->Prev());
