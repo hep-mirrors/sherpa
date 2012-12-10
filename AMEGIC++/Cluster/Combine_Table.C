@@ -172,7 +172,7 @@ Combine_Table::Combine_Table(AMEGIC::Process_Base *const proc,
   p_ms(ms), m_nstrong(0), m_nlegs(0), m_nampl(0),
   m_graph_winner(0), 
   p_up(up), p_legs(0), p_clus(clus), p_moms(moms),
-  p_hard(NULL), p_hardc(NULL), p_channel(NULL), p_scale(NULL),
+  p_hard(NULL), p_hardc(NULL), p_channel(NULL), p_scale(NULL), m_rscale(-1.0),
   p_decids(decids)
 {
   p_proc=proc;
@@ -640,15 +640,19 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
       if (!(mode&16)) continue;
     }
     if (nl<2+p_proc->Info().m_fi.NMinExternal()) THROW(fatal_error,"nlegs < min. Abort.");
+    double scale(-1.0);
     Combine_Table *tab(CreateNext());
     if (tab!=NULL) {
+      scale=(tab->Momentum(0)+tab->Momentum(1)).Abs2();
       Combine_Table *next(NextTable(tab,mode,m_cdata_winner->
 				    second.m_pt2ij.m_kt2));
       if (next!=NULL) return next;
     }
     if (p_up==NULL && (mode&4096)) {
-      delete this;
-      return NULL;
+      if (scale<0.0) THROW(fatal_error,"No rescue scale");
+      msg_Debugging()<<"rescue scale is "<<sqrt(scale)<<"\n";
+      m_rscale=scale;
+      return this;
     }
     msg_Debugging()<<METHOD<<"(): Table "<<m_no<<": reject winner "
 		   <<m_cdata_winner->first<<"\n";

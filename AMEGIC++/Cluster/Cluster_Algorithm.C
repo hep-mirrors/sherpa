@@ -38,7 +38,15 @@ bool Cluster_Algorithm::Cluster
   Leg **legs(CreateLegs(nampl,nlegs));
   CreateTables(legs,nampl,mode,kt2);
   ++m_cnt;
-  if (p_ct==NULL) {
+  if (p_ct==NULL || p_ct->RScale()>0.0) {
+    PHASIC::Process_Base *pb(p_proc->IsMapped()?
+			     p_proc->MapProc():p_proc);
+    double rscale((pb->Integrator()->Momenta()[0]+
+		   pb->Integrator()->Momenta()[1]).Abs2());
+    if (p_ct) {
+      rscale=p_ct->RScale();
+      delete p_ct;
+    }
     p_combi=NULL;
     msg_Debugging()<<METHOD<<"(): {\n";
     p_ampl = Cluster_Amplitude::New();
@@ -47,8 +55,6 @@ bool Cluster_Algorithm::Cluster
     p_ampl->SetNIn(p_proc->NIn());
     p_ampl->SetOrderEW(p_proc->OrderEW());
     p_ampl->SetOrderQCD(p_proc->OrderQCD());
-    PHASIC::Process_Base *pb(p_proc->IsMapped()?
-			     p_proc->MapProc():p_proc);
     double muf2(pb->ScaleSetter()->Scale(stp::fac));
     double mur2(pb->ScaleSetter()->Scale(stp::ren));
     double Q2(pb->ScaleSetter()->Scale(stp::res));
@@ -86,8 +92,7 @@ bool Cluster_Algorithm::Cluster
     p_ampl->SetMuF2(muf2);
     p_ampl->SetQ2(Q2);
     p_ampl->SetProc(p_proc);
-    p_ampl->SetKT2((p_ampl->Leg(0)->Mom()+
-		    p_ampl->Leg(1)->Mom()).Abs2());
+    p_ampl->SetKT2(rscale);
     p_ampl->SetMu2(p_ampl->KT2());
     size_t nmax(p_proc->Info().m_fi.NMaxExternal());
     p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();

@@ -121,7 +121,7 @@ namespace AMEGIC {
 
     Leg **p_hard;
     int **p_hardc, *p_channel;
-    double *p_scale;
+    double *p_scale, m_rscale;
 
     ATOOLS::Vec4D *p_save_moms;
     size_t         m_nl;
@@ -190,6 +190,7 @@ namespace AMEGIC {
     inline int               ** GetHardInfo()                        const { return p_hardc; }
     inline static void                ResetCounter()                             { s_all=0; }
     inline const ATOOLS::DecayInfo_Vector &Decays() const { return m_decids; }
+    inline double RScale() const { return m_rscale; }
 
   };// end of class Combine_Table
 
