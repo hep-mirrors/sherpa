@@ -649,7 +649,8 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     msg_Debugging()<<METHOD<<"(): Table "<<m_no<<": reject winner "
 		   <<m_cdata_winner->first<<"\n";
   }
-  if (valid && invonly && kt2>0.0) {
+  if (valid && invonly && kt2>0.0 &&
+      ((p_up && p_up->p_up) || !(mode&4096))) {
     msg_Debugging()<<"no valid configuration, retry previous\n";
     delete this;
     return NULL;    
