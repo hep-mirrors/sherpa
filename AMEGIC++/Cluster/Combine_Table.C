@@ -756,7 +756,7 @@ bool Combine_Table::SelectWinner(const size_t &mode)
       }
     }
   }
-  if (!(mode&1) && !(mode&4096)) {
+  if (!(mode&1) && !(mode&8192)) {
     double disc(sum*ran->Get()), psum(0.0);
     for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
       double pt2ij(cit->second.m_pt2ij.m_op2);
