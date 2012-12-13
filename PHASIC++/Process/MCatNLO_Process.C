@@ -467,7 +467,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
   }
   else {
     p_selected=p_rsproc;
-    p_rsproc->SetClusterMode(1|1024);
+    p_rsproc->SetClusterMode(1024);
     winfo=p_rsproc->OneEvent(wmode,mode);
     p_rsproc->SetClusterMode(0);
     if (winfo && m_fomode==0) {

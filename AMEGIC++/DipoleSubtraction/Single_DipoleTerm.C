@@ -431,32 +431,6 @@ int Single_DipoleTerm::InitAmplitude(Model_Base *model,Topology* top,
   p_dipole->SetAlpha(m_dalpha);
   p_dipole->SetKt2Max(m_dkt2max);
 
-  map<string,Complex> dummy;
-  for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-    Single_DipoleTerm* check = (Single_DipoleTerm*)links[j];
-    bool canmap=0;
-    m_sfactor=1.;
-    if (GetSplitConfID()==check->GetSplitConfID() && CompareLOmom(check->GetLOmom())) {
-      if (p_LO_process->Name()==check->GetLOProcess()->Name()) {
-	canmap=1;
-	m_sfactor=check->GetSFactor();
-      }
-      else {
-	if (p_LO_process->LibName()==check->GetLOProcess()->LibName()) {
-	  if (GetAmplitudeHandler()->CompareAmplitudes(check->GetAmplitudeHandler(),m_sfactor,dummy)) canmap=1;
-	  m_sfactor=sqr(m_sfactor);
-	}
-      }
-    }
-    if (canmap) {
-      msg_Tracking()<<"Can map Dipole Term: "<<Name()<<" -> "<<check->Name()<<" Factor: "<<m_sfactor<<endl;
-      p_mapproc = p_partner = check;
-      Minimize();  //can be switched on if actually mapped!
-      return 1;
-    }
-  }
-  links.push_back(this);
-
   return 1;
 }
 
@@ -518,23 +492,7 @@ double Single_DipoleTerm::Partonic(const Vec4D_Vector &_moms,const int mode)
 double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poincare &cms,const int mode)
 {
   if (mode==1) return m_lastxs;
-  if (p_partner!=this) {
-    size_t mcmode(p_partner->MCMode());
-    p_partner->SetMCMode(m_mcmode);
-    p_partner->Integrator()->SetMomenta(Integrator()->Momenta());
-    if (m_lookup) m_lastxs = p_partner->LastXS()*m_sfactor*Norm()/p_partner->Norm();
-    else m_lastxs = p_partner->operator()(mom,cms,mode)*m_sfactor*Norm()/p_partner->Norm();
-    m_subevt.m_result = 0.;
-    m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
-    m_subevt.m_mu2[stp::fac] = p_partner->GetSubevt()->m_mu2[stp::fac];
-    m_subevt.m_mu2[stp::ren] = p_partner->GetSubevt()->m_mu2[stp::ren];
-    if (m_subevt.p_ampl) m_subevt.p_ampl->Delete();
-    m_subevt.p_ampl=NULL;
-    if (p_partner->m_subevt.p_ampl)
-      m_subevt.p_ampl = p_partner->m_subevt.p_ampl->CopyAll();
-    p_partner->SetMCMode(mcmode);
-    return m_lastxs;
-  }
+  if (p_partner!=this) THROW(not_implemented,"No!!!");
 
   ResetLastXS();
   p_LO_process->ResetLastXS();

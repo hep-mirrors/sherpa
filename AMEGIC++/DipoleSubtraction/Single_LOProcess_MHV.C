@@ -435,10 +435,6 @@ double Single_LOProcess_MHV::operator()(const ATOOLS::Vec4D_Vector &labmom,const
 					std::vector<double> * pfactors,std::vector<ATOOLS::Vec4D>* epol,const int mode)
 {
   if (p_partner!=this) {
-    if (m_lookup) {
-      m_lastxs = p_partner->LastXS()*m_sfactor;
-      if (m_lastxs!=0.) return m_lastxs;
-    }
     return m_lastxs = p_partner->operator()(labmom,mom,pfactors,epol,mode)*m_sfactor;
   }
   p_int->SetMomenta(labmom);
