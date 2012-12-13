@@ -59,6 +59,7 @@ namespace WBB {
 		<<"##  Wbb~  virtual  corrections   computed  by  ##\n"
 		<<"##  F. Febres Cordero, L. Reina, D. Wackeroth  ##\n"
 		<<"##  Please cite  Phys. Rev. D74 (2006) 034007  ##\n"
+		<<"##               Phys. Rev. D80 (2009) 034015  ##\n"
 		<<"##                                             ##\n"
 		<<"#################################################\n";
       masses_.mb=Flavour(kf_b).Mass();
@@ -102,9 +103,8 @@ namespace WBB {
     {
       p_p = new double[4*(WBB_NMX+1)];
       p_res = new double[4];
-      // m_mode=1;
       rpa->gen.AddCitation
-	(1,"NLO ME for Wbb from \\cite{FebresCordero:2006sj}.");
+	(1,"NLO ME for Wbb from \\cite{Cordero:2006sj}, \\cite{Cordero:2009kv}.");
     }
 
     ~Wbb_Process()

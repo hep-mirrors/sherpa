@@ -58,7 +58,7 @@ fi;
 qst=$sad'f'; cnt=0;
 for i in $cts; do 
   if (( $cnt > 0 )); then qst=$qst'+or'; fi
-  qst=$qst'+texkey+'$i;
+  qst=$qst'+'$i;
   (( ++cnt ));
 done;
 if (( $dnl )); then wget -O $fnm'.wget' $qst; fi;
