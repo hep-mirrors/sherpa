@@ -100,8 +100,10 @@ namespace AMEGIC {
     double         SBSymmetryFactor(ATOOLS::Flavour* flout,size_t nout);
     
     bool           CheckMapping(const Process_Base * proc);
+    bool           FlavCompare(PHASIC::Process_Base *const proc);
     void           InitFlavmap(const Process_Base * proc);
     void           AddtoFlavmap(const std::string&,const ATOOLS::Flavour&);
+    ATOOLS::NLO_subevtlist *GetRSSubevtList() { return p_subevtlist; }
 
   };
 

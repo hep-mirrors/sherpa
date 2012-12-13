@@ -521,12 +521,17 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   if (p_partner!=this) {
     size_t mcmode(p_partner->MCMode());
     p_partner->SetMCMode(m_mcmode);
+    p_partner->Integrator()->SetMomenta(Integrator()->Momenta());
     if (m_lookup) m_lastxs = p_partner->LastXS()*m_sfactor*Norm()/p_partner->Norm();
     else m_lastxs = p_partner->operator()(mom,cms,mode)*m_sfactor*Norm()/p_partner->Norm();
     m_subevt.m_result = 0.;
     m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
     m_subevt.m_mu2[stp::fac] = p_partner->GetSubevt()->m_mu2[stp::fac];
     m_subevt.m_mu2[stp::ren] = p_partner->GetSubevt()->m_mu2[stp::ren];
+    if (m_subevt.p_ampl) m_subevt.p_ampl->Delete();
+    m_subevt.p_ampl=NULL;
+    if (p_partner->m_subevt.p_ampl)
+      m_subevt.p_ampl = p_partner->m_subevt.p_ampl->CopyAll();
     p_partner->SetMCMode(mcmode);
     return m_lastxs;
   }
@@ -546,6 +551,65 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   double M2 =trg ? p_LO_process->operator()
     (p_LO_labmom,p_LO_mom,p_dipole->GetFactors(),
      p_dipole->GetDiPolarizations(),mode) : 0.0;
+
+  if (m_subevt.p_ampl) m_subevt.p_ampl->Delete();
+  m_subevt.p_ampl=NULL;
+
+  if (trg) {
+    ClusterAmplitude_Vector &ampls
+      (ScaleSetter(1)->Amplitudes());
+    if (ampls.size()) {
+      m_subevt.p_ampl = Cluster_Amplitude::New();
+      m_subevt.p_ampl->SetNext(ampls.front()->CopyAll());
+      m_subevt.p_ampl->SetMS(m_subevt.p_ampl->Next()->MS());
+      m_subevt.p_ampl->Next()->SetKin(1);
+      m_subevt.p_ampl->SetNIn(m_nin);
+      for (size_t i(0);i<m_nin;++i)
+	m_subevt.p_ampl->CreateLeg(-p_int->Momenta()[i],Flavours()[i].Bar(),ColorID(),1<<i);
+      for (size_t i(m_nin);i<m_nin+m_nout;++i)
+	m_subevt.p_ampl->CreateLeg(p_int->Momenta()[i],Flavours()[i],ColorID(),1<<i);
+      m_subevt.p_ampl->SetMuR2(m_subevt.p_ampl->Next()->MuR2());
+      m_subevt.p_ampl->SetMuF2(m_subevt.p_ampl->Next()->MuF2());
+      m_subevt.p_ampl->SetQ2(m_subevt.p_ampl->Next()->Q2());
+      m_subevt.p_ampl->SetKT2(p_dipole->KT2());
+      m_subevt.p_ampl->SetMu2(p_dipole->KT2());
+      m_subevt.p_ampl->SetOrderEW(m_subevt.p_ampl->Next()->OrderEW());
+      m_subevt.p_ampl->SetOrderQCD(m_subevt.p_ampl->Next()->OrderQCD()+1);
+      std::vector<int> rsm(m_nin+m_nout-1);
+      for (size_t i(0);i<rsm.size();++i) {
+        int cnt=p_LO_process->RSMap()[i];
+	if (cnt==-1) cnt=(1<<m_pi)|(1<<m_pj);
+	else if (cnt==-2) cnt=1<<m_pk;
+	else {
+	  m_subevt.p_ampl->Leg(cnt)->SetCol
+	    (m_subevt.p_ampl->Next()->Leg(i)->Col());
+	  cnt=1<<cnt;
+	}
+	rsm[i]=cnt;
+      }
+      m_subevt.p_ampl->Leg(m_subevt.m_k)->SetCol
+	     (m_subevt.p_ampl->Next()->Leg(m_subevt.m_kt)->Col());
+      m_subevt.p_ampl->Next()->Leg(m_subevt.m_ijt)->SetK(1<<m_subevt.m_kt);
+      Cluster_Amplitude::SetColours
+	(m_subevt.p_ampl->Next()->Leg(m_subevt.m_ijt),
+	 m_subevt.p_ampl->Leg(m_pi),
+	 m_subevt.p_ampl->Leg(m_pj));
+      for (Cluster_Amplitude *campl(m_subevt.p_ampl->Next());campl;campl=campl->Next()) {
+	for (size_t i(0);i<campl->Legs().size();++i) {
+	  std::vector<int> ids(ID(campl->Leg(i)->Id()));
+	  size_t id(0);
+	  for (size_t j(0);j<ids.size();++j) id|=rsm[ids[j]];
+          campl->Leg(i)->SetId(id);
+	       if (campl->Leg(i)->K()) {
+		 std::vector<int> ids(ID(campl->Leg(i)->K()));
+		 size_t id(0);
+		 for (size_t j(0);j<ids.size();++j) id|=rsm[ids[j]];
+		      campl->Leg(i)->SetK(id);
+	       }
+	}
+      }     
+    }
+  }
 
   p_dipole->SetMCMode(m_mcmode);
   if (trg && m_mcmode) p_dipole->SetKt2Max(p_scale->Scale(stp::res));

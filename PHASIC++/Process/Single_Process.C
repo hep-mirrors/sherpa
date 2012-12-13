@@ -216,8 +216,6 @@ double Single_Process::BeamISRWeight
     if (ampls.size()) {
       DEBUG_FUNC(m_name<<", mode = "<<mode);
       Cluster_Amplitude *ampl(ampls.front());
-      const Single_Process *proc
-	((imode&4)?ampl->Proc<Single_Process>():this);
       if (imode&2) ampl=ampl->Next();
       for (;ampl;ampl=ampl->Next()) {
 	if (IsEqual(LQ2,ampl->KT2())) continue;
@@ -241,9 +239,9 @@ double Single_Process::BeamISRWeight
 	}
 	Flavour f1(ampl->Leg(0)->Flav().Bar());
 	Flavour f2(ampl->Leg(1)->Flav().Bar());
-	if ((MapProc() && LookUp()) || (imode&4)) {
-	  f1=proc->ReMap(f1,ampl->Leg(0)->Id());
-	  f2=proc->ReMap(f2,ampl->Leg(1)->Id());
+	if (MapProc() && LookUp() && !(imode&2)) {
+	  f1=ReMap(f1,ampl->Leg(0)->Id());
+	  f2=ReMap(f2,ampl->Leg(1)->Id());
 	}
 	if (LQ2<sqr(2.0*f1.Mass(true)) || LQ2<sqr(2.0*f2.Mass(true))) continue;
 	msg_Debugging()<<"PDF ratio "<<f1<<"("<<ampl->Leg(0)->Flav().Bar()
@@ -285,13 +283,10 @@ void Single_Process::BeamISRWeight
       NLO_subevt *sub((*subs)[i]);
       if ((!IsEqual(sub->m_mu2[stp::fac],muf2) ||
 	   m_pinfo.m_nlomode!=1) && sub->m_me!=0.0) {
-	ClusterAmplitude_Vector &ampls
-	  (((Single_Process*)sub->p_proc)->
-	   ScaleSetter(1)->Amplitudes());
+	ClusterAmplitude_Vector ampls(sub->p_ampl?1:0,sub->p_ampl);
 	if (ampls.size()) ampls.front()->SetProc(sub->p_proc);
         sub->m_result=sub->m_me*
-	  BeamISRWeight(sub->m_mu2[stp::fac],mode|
-			4|(i==subs->size()-1?2:0),ampls);
+	  BeamISRWeight(sub->m_mu2[stp::fac],mode|2,ampls);
 	++nscales;
       }
     }
@@ -307,9 +302,7 @@ void Single_Process::BeamISRWeight
   }
   else {
     for (size_t i(0);i<subs->size();++i) {
-      ClusterAmplitude_Vector &ampls
-	(((Single_Process*)(*subs)[i]->p_proc)->
-	 ScaleSetter(1)->Amplitudes());
+      ClusterAmplitude_Vector ampls(1,(*subs)[i]->p_ampl);
       if (ampls.size()) ampls.front()->SetProc((*subs)[i]->p_proc);
       (*subs)[i]->m_result=(*subs)[i]->m_me*
 	BeamISRWeight((*subs)[i]->m_mu2[stp::fac],mode,ampls);

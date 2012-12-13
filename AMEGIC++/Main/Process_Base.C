@@ -198,6 +198,7 @@ ATOOLS::Flavour AMEGIC::Process_Base::ReMap(const ATOOLS::Flavour& f0,const std:
   if (f0.IsBoson()) return f0;
 
   else {
+    DO_STACK_TRACE;
     THROW(critical_error,"Flavour map incomplete!");
   }
   return f0;
@@ -212,4 +213,12 @@ ATOOLS::Flavour AMEGIC::Process_Base::ReMap
 AMEGIC::Process_Base *AMEGIC::Process_Base::GetReal()
 {
   return this;
+}
+
+bool AMEGIC::Process_Base::FlavCompare(PHASIC::Process_Base *const proc)
+{
+  bool flavsok(true);
+  for (size_t i(0);i<m_nin+m_nout;++i)
+    if (m_flavs[i].IsAnti()!=proc->Flavours()[i].IsAnti()) flavsok=false;
+  return flavsok;
 }

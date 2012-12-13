@@ -322,8 +322,18 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const i
     else m_lastdxs = p_partner->operator()(moms,mode)*m_sfactor;
     std::vector<NLO_subevt*>* partnerlist=p_partner->GetSubevtList();
     if (partnerlist->size()!=m_subevtlist.size()) THROW(fatal_error,"Internal error");
-    for (size_t i=0;i<partnerlist->size();++i)
+    for (size_t i=0;i<partnerlist->size();++i) {
       m_subevtlist[i]->CopyXSData((*partnerlist)[i]);
+      if (m_subevtlist[i]->p_ampl) m_subevtlist[i]->p_ampl->Delete();
+      m_subevtlist[i]->p_ampl=NULL;
+      if ((*partnerlist)[i]->p_ampl) {
+	m_subevtlist[i]->p_ampl = (*partnerlist)[i]->p_ampl->CopyAll();
+	for (Cluster_Amplitude *campl(m_subevtlist[i]->p_ampl);campl;campl=campl->Next()) {
+	  for (size_t i(0);i<campl->Legs().size();++i)
+	    campl->Leg(i)->SetFlav(ReMap(campl->Leg(i)->Flav(),campl->Leg(i)->Id()));
+	}
+      }
+    }
     m_subevtlist.Mult(m_sfactor);
   }
   return m_lastxs=m_lastdxs;
@@ -344,6 +354,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
 
   bool res=true;
   for (size_t i=0;i<m_subtermlist.size();i++) if (m_subtermlist[i]->IsValid()){
+    m_subtermlist[i]->Integrator()->SetMomenta(_mom);
     double test = (*m_subtermlist[i])(&mom.front(),cms,mode);
     if (IsBad(test)) res=false;
     m_subevtlist.push_back(m_subtermlist[i]->GetSubevt());
@@ -367,6 +378,10 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->CalculateScale(_mom,m_cmode);
   m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
   m_realevt.m_mu2[stp::res]=p_tree_process->ScaleSetter()->Scale(stp::res);
+  if (m_realevt.p_ampl) m_realevt.p_ampl->Delete();
+  m_realevt.p_ampl=NULL;
+  if (p_tree_process->ScaleSetter(1)->Amplitudes().size())
+    m_realevt.p_ampl = p_tree_process->ScaleSetter(1)->Amplitudes().front()->CopyAll();
   trg=p_tree_process->Selector()->JetTrigger(_mom,&m_subevtlist);
   trg|=!p_tree_process->Selector()->On();
   if (trg) {

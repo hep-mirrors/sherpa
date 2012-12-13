@@ -120,7 +120,7 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
   map<string,Complex> cplmap;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
     cplmap.clear();
-    if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor,cplmap)) {
+    if (FlavCompare(links[j]) && p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor,cplmap)) {
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
 	m_sfactor = sqr(m_sfactor);
 	msg_Tracking()<<"AMEGIC::Single_Process_MHV::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
@@ -140,7 +140,7 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
   switch (Tests()) {
   case 1 :
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-      if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
+      if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
 	if (CheckMapping(links[j])) {
 	  msg_Tracking()<<"Single_LOProcess_MHV::InitAmplitude : "<<std::endl
 			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
@@ -264,7 +264,7 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
   switch (tr) {
   case 1 :
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-      if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
+      if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
 	if (CompareTestMoms(links[j]->GetTestMoms())) {
 	  msg_Tracking()<<"Single_LOProcess_MHV::InitAmplitude : "<<std::endl
 			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;

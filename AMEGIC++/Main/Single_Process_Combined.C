@@ -172,7 +172,7 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Model_Base * model,Topology* 
   map<string,Complex> cplmap;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
     cplmap.clear();
-    if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor,cplmap)) {
+    if (FlavCompare(links[j]) && p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor,cplmap)) {
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
 	m_sfactor = sqr(m_sfactor);
 	msg_Tracking()<<"AMEGIC::Single_Process_Combined::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
@@ -219,7 +219,7 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Model_Base * model,Topology* 
   switch (result) {
     case 2 : 
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-      if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
+      if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
 	if (CheckMapping(links[j])&&p_ampl->CheckEFMap()) {
 	  msg_Tracking()<<"AMEGIC::Single_Process_Combined::InitAmplitude : "<<std::endl
 			<<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
@@ -236,7 +236,7 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Model_Base * model,Topology* 
     return 1;
   case 1 :
     for (size_t j=0;j<links.size();j++) {
-      if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
+      if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
 	if (CheckMapping(links[j])&&p_ampl->CheckEFMap()) {
 	  msg_Tracking()<<"AMEGIC::Single_Process_Combined::InitAmplitude : "<<std::endl
 			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;

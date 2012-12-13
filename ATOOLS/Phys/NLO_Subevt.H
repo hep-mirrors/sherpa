@@ -69,6 +69,8 @@ namespace ATOOLS {
     };
   };// end of struct stp
 
+  class Cluster_Amplitude;
+
   class NLO_subevt: public Dip_ID {
   public:
 
@@ -88,6 +90,8 @@ namespace ATOOLS {
 
     std::string m_pname;
 
+    Cluster_Amplitude *p_ampl;
+
   public:
 
     inline NLO_subevt(const size_t &n=0,const size_t *id=NULL,
@@ -96,7 +100,7 @@ namespace ATOOLS {
       Dip_ID(0,0,i,j,k), p_fl(fl), p_mom(mom), p_id(id), p_dec(NULL),
       p_real(NULL), p_proc(NULL), m_n(n), m_idx(0),
       m_result(0.0), m_me(0.0), m_mewgt(0.0), m_kt2(0.0),
-      m_mu2(stp::size,0.0) {}
+      m_mu2(stp::size,0.0), p_ampl(NULL) {}
 
     void CopyXSData(const NLO_subevt *sub);
 

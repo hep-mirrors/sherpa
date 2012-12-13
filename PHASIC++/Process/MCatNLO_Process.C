@@ -299,8 +299,7 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     p_rsproc->Selected()->GetMEwgtinfo()->m_mur2;
   rproc->Trigger(p);
   rproc->Integrator()->SetMomenta(p);
-  p_ampl = dynamic_cast<Single_Process*>
-	 (p_rsproc->Selected())->Cluster(512|2048|4096);
+  p_ampl = p_rsproc->Selected()->GetSubevtList()->back()->p_ampl->CopyAll();
   if (p_ampl==NULL) {
     rproc->Differential(p);
     p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(256|512|4096);
@@ -318,6 +317,8 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   Selector_Base *jf=(*p_bviproc)[0]->
     Selector()->GetSelector("Jetfinder");
   if (jf && m_nout-1<m_pinfo.m_fi.NMaxExternal()) {
+    for (Cluster_Amplitude *ampl(p_ampl);
+	 ampl;ampl=ampl->Next()) ampl->SetJF(jf);
     bool res(p_shower->JetVeto(p_ampl));
     if (res) return 0.0;
   }

@@ -70,7 +70,7 @@ int AMEGIC::Single_Process_External::InitAmplitude(Model_Base * model,Topology* 
   m_iresult=p_me2->Calc(tmoms);
   if (m_iresult==0.) return 0;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-    if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
+    if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
       msg_Tracking()<<"AMEGIC::Single_Process_External::InitAmplitude : "<<std::endl
 		    <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
       p_mapproc = p_partner   = (Single_Process_External*)links[j];
