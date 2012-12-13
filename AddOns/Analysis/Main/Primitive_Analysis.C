@@ -550,13 +550,17 @@ void Primitive_Analysis::AddData(const std::string name, Blob_Data_Base * data)
 
 void Primitive_Analysis::ClearAllData() 
 {
+  std::set<Particle*> deleted;
   for (PL_Container::iterator it=m_pls.begin();
        it!=m_pls.end(); ++it) {
     if (!it->second->empty()) {
       for (Particle_List::iterator pit=it->second->begin(); 
       	   pit!=it->second->end();++pit) 
-      if ((*pit)->ProductionBlob()==NULL && (*pit)->DecayBlob()==NULL) 
-	delete *pit;
+	if (deleted.find(*pit)==deleted.end()) 
+	  if ((*pit)->ProductionBlob()==NULL && (*pit)->DecayBlob()==NULL) {
+	    deleted.insert(*pit);
+	    delete *pit;
+	  }
     }
     delete it->second;
   }
