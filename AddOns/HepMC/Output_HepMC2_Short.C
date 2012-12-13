@@ -71,10 +71,21 @@ void Output_HepMC2_Short::Output(Blob_List* blobs, const double weight)
 #ifdef USING__HEPMC2__IOGENEVENT
   p_event->clear();
   m_hepmc2.Sherpa2ShortHepMC(blobs, *p_event, weight);
+  std::vector<HepMC::GenEvent*> subevents(m_hepmc2.GenSubEventList());
 #ifdef HEPMC_HAS_CROSS_SECTION
   p_event->set_cross_section(*p_xs);
+  for (size_t i(0); i<subevents.size(); ++i) {
+    subevents[i]->set_cross_section(*p_xs);
+  }
 #endif
-  p_iogenevent->write_event(p_event);
+  if (subevents.size()) {
+    for (size_t i(0); i<subevents.size(); ++i) {
+      p_iogenevent->write_event(subevents[i]);
+    }
+    m_hepmc2.DeleteGenSubEventList();
+  } else {
+    p_iogenevent->write_event(p_event);
+  }
 #endif
 }
 
