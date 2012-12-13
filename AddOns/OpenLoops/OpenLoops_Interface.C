@@ -394,7 +394,7 @@ namespace OpenLoops {
         return NULL;
       }
 
-      std::cout<<endl;
+      msg_Info()<<endl;
       PRINT_INFO("Initialising OpenLoops Virtual for "<<flavs<<": "<<lc_functag);
       return new OpenLoops_Virtual(pi, flavs, (Amp2Func) ampfunc,
                                    (PermutationFunc) permfunc, permutation, lc_functag);
