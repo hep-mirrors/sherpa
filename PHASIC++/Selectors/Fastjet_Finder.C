@@ -124,7 +124,7 @@ bool Fastjet_Finder::Trigger(const Vec4D_Vector &p)
   }
   
   fastjet::ClusterSequence cs(input,*p_jdef);
-  jets=cs.inclusive_jets();
+  jets=fastjet::sorted_by_pt(cs.inclusive_jets());
 
   if (m_eekt) {
     int n(0);
@@ -168,7 +168,7 @@ bool Fastjet_Finder::JetTrigger(const Vec4D_Vector &p,
   }
   
   fastjet::ClusterSequence cs(input,*p_jdef);
-  jets=cs.inclusive_jets();
+  jets=fastjet::sorted_by_pt(cs.inclusive_jets());
 
   if (m_eekt) {
     int n(0);

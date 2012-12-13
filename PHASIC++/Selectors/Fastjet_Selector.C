@@ -177,7 +177,7 @@ bool Fastjet_Selector::Trigger(const Vec4D_Vector &p)
   int nj=m_p.size();
   
   fastjet::ClusterSequence cs(input,*p_jdef);
-  jets=cs.inclusive_jets();
+  jets=fastjet::sorted_by_pt(cs.inclusive_jets());
   for (size_t i(0);i<jets.size();++i) {
     Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
     if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
@@ -209,7 +209,7 @@ bool Fastjet_Selector::JetTrigger(const Vec4D_Vector &p,
   int nj=m_p.size();
   
   fastjet::ClusterSequence cs(input,*p_jdef);
-  jets=cs.inclusive_jets();
+  jets=fastjet::sorted_by_pt(cs.inclusive_jets());
 
   for (size_t i(0);i<jets.size();++i) {
     Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());

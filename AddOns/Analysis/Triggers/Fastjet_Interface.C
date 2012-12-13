@@ -72,10 +72,10 @@ public:
     }
     fastjet::ClusterSequence cs(input,m_jdef);
     if (m_njets>0) {
-      jets=cs.exclusive_jets((int)m_njets);
+      jets=fastjet::sorted_by_pt(cs.exclusive_jets((int)m_njets));
     }
     else {
-      jets=cs.inclusive_jets(m_ptmin);
+      jets=fastjet::sorted_by_pt(cs.inclusive_jets());
     }
     std::vector<double> *ktdrs(new std::vector<double>());
     for (size_t i(input.size());i>0;--i)
