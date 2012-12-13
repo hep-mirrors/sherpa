@@ -308,8 +308,14 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
       }
       subevent->add_vertex(subvertex);
       // not enough info in subevents to set PDFInfo properly,
-      // so leave it blank
-      HepMC::PdfInfo subpdfinfo;
+      // so set only flavours, x1, x2, and q from the Signal_Process
+      HepMC::PdfInfo subpdfinfo(*event.pdf_info());
+      double q = sqrt(sub->m_mu2[stp::fac]);
+      if (q != subpdfinfo.scalePDF()) {
+        subpdfinfo.set_scalePDF(q);
+        subpdfinfo.set_pdf1(0.);
+        subpdfinfo.set_pdf2(0.);
+      }
       subevent->set_pdf_info(subpdfinfo);
       // add weight
       std::vector<double> subweight; subweight.push_back(sub->m_result);
