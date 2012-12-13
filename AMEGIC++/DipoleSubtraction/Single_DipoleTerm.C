@@ -500,7 +500,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   p_dipole->CalcDiPolarizations();
   SetLOMomenta(mom,cms);
 
-  p_scale->SetCaller(p_LO_process);
+  p_scale->SetCaller(p_LO_process->Partner());
 
   bool trg(!p_LO_process->Selector()->On());
   if (!trg) trg=p_dipole->KinCheck()?p_LO_process->Trigger(p_LO_labmom):0;
@@ -554,6 +554,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
 	 m_subevt.p_ampl->Leg(m_pj));
       for (Cluster_Amplitude *campl(m_subevt.p_ampl->Next());campl;campl=campl->Next()) {
 	for (size_t i(0);i<campl->Legs().size();++i) {
+	  campl->Leg(i)->SetFlav(ReMap(campl->Leg(i)->Flav(),campl->Leg(i)->Id()));
 	  std::vector<int> ids(ID(campl->Leg(i)->Id()));
 	  size_t id(0);
 	  for (size_t j(0);j<ids.size();++j) id|=rsm[ids[j]];
