@@ -66,7 +66,7 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_partons.insert(Flavour(kf_quark));
   m_partons.insert(Flavour(kf_quark).Bar());
 
-  m_lhef_number = LHAPDF::getPDFSetInfo(m_set,m_member).id;
+//  m_lhef_number = LHAPDF::getPDFSetInfo(m_set,m_member).id;
 }
 
 PDF_Base * LHAPDF_Fortran_Interface::GetCopy() 
