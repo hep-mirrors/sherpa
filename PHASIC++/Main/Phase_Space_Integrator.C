@@ -339,8 +339,9 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       if (ncontrib/iter0==5) iter=iter1;
       bool allowbreak = true;
       if (fin_opt==1 && (endopt<2||ncontrib<maxopt)) allowbreak = false;
-      if (allowbreak && dabs(error)<maxerror &&
-          dabs(psh->Process()->TotalVar()*rpa->Picobarn())<maxabserror) return true;
+      if (allowbreak && 
+	  (dabs(error)<maxerror ||
+	   dabs(psh->Process()->TotalVar()*rpa->Picobarn())<maxabserror)) return true;
     }
     return false;
 }

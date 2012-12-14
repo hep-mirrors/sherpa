@@ -199,6 +199,8 @@ namespace PHASIC {
 
     inline void SetError(const double error) 
     { m_error=error; }
+    inline void SetAbsError(const double error) 
+    { m_abserror=error; }
     inline void SetMaxTrials(const long int maxtrials)
     { m_maxtrials=maxtrials; }
     void SetEnhanceObservable(const std::string &enhanceobs);
