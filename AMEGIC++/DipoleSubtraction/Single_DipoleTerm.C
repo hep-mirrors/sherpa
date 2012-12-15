@@ -489,8 +489,9 @@ double Single_DipoleTerm::Partonic(const Vec4D_Vector &_moms,const int mode)
   return operator()(&pp.front(),cms,mode);
 }
 
-double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poincare &cms,const int mode)
+double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poincare &cms,const int _mode)
 {
+  int mode(_mode&~2);
   if (mode==1) return m_lastxs;
   if (p_partner!=this) THROW(not_implemented,"No!!!");
 
@@ -500,7 +501,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   p_dipole->CalcDiPolarizations();
   SetLOMomenta(mom,cms);
 
-  p_scale->SetCaller(p_LO_process->Partner());
+  p_scale->SetCaller((_mode&2)?p_LO_process->Partner():p_LO_process);
 
   bool trg(!p_LO_process->Selector()->On());
   if (!trg) trg=p_dipole->KinCheck()?p_LO_process->Trigger(p_LO_labmom):0;
@@ -513,7 +514,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   if (m_subevt.p_ampl) m_subevt.p_ampl->Delete();
   m_subevt.p_ampl=NULL;
 
-  if (trg) {
+  if (trg && p_scale->FixedScales().empty() && (_mode&2)) {
     ClusterAmplitude_Vector &ampls
       (ScaleSetter(1)->Amplitudes());
     if (ampls.size()) {
