@@ -299,8 +299,9 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     p_rsproc->Selected()->GetMEwgtinfo()->m_mur2;
   rproc->Trigger(p);
   rproc->Integrator()->SetMomenta(p);
-  p_ampl = p_rsproc->Selected()->GetSubevtList()->back()->p_ampl->CopyAll();
-  if (p_ampl==NULL) {
+  p_ampl=p_rsproc->Selected()->GetSubevtList()->back()->p_ampl;
+  if (p_ampl) p_ampl = p_ampl->CopyAll();
+  else {
     rproc->Differential(p);
     p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(256|512|4096);
   }
