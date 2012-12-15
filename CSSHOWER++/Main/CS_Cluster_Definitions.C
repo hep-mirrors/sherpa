@@ -54,6 +54,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
   double mij2=p_ms->Mass2(mo);
   if (kmode&1) {
     mij2=(pi+pj).Abs2();
+    pk*=(pi+pj).PSpat()/pk.PSpat();
     pk[0]=pk[0]<0.0?-pk.PSpat():pk.PSpat();
     if (IsZero(Q2,1.0e-3)) pk=pk*4.0;
     mk2=0.0;
