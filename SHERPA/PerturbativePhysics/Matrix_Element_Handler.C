@@ -197,6 +197,8 @@ bool Matrix_Element_Handler::GenerateOneEvent()
 	  msg_Info()<<METHOD<<"(): Point for '"<<p_proc->Name()
 		    <<"' exceeds maximum by "
 		    <<dabs(m_evtinfo.m_weight)/max-1.0<<"."<<std::endl;
+      if (m_eventmode==1 && dabs(m_evtinfo.m_weight)>max*(100.0))
+        m_evtinfo.m_weight=100.0*max;
       m_weightfactor=dabs(m_evtinfo.m_weight)/max;
       wf/=Min(1.0,m_weightfactor);
     }
