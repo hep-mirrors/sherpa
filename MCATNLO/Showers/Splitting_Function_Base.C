@@ -136,15 +136,15 @@ double Splitting_Function_Base::MEPSWeight
 (const double &z,const double &y,const double &eta,
  const double &scale,const double &Q2,const Cluster_Amplitude *const sub) const
 {
-  double mua2(p_lf->MS()->Mass2(p_lf->FlA())/Q2), mub2(p_lf->MS()->Mass2(p_lf->FlB())/Q2);
-  double muk2(p_lf->MS()->Mass2(p_lf->FlSpec())/Q2), muc2(p_lf->MS()->Mass2(p_lf->FlC())/Q2);
+  double ma2(p_lf->MS()->Mass2(p_lf->FlA())), mb2(p_lf->MS()->Mass2(p_lf->FlB()));
+  double mk2(p_lf->MS()->Mass2(p_lf->FlSpec())), mc2(p_lf->MS()->Mass2(p_lf->FlC()));
   switch (m_type) {
   case cstp::FF:
-    return (8.0*M_PI)/(Q2*y)/p_lf->JFF(y,mub2,muc2,muk2,mua2);
+    return (8.0*M_PI)/(Q2*y)/p_lf->JFF(y,mb2/Q2,mc2/Q2,mk2/Q2,ma2/Q2);
   case cstp::FI:
-    return (8.0*M_PI)/(Q2*y)/p_lf->JFI(y,eta,scale,sub);
+    return (8.0*M_PI)/((Q2+mb2+mc2)*y)/p_lf->JFI(y,eta,scale,sub);
   case cstp::IF:
-    return (8.0*M_PI)/(Q2*y)/p_lf->JIF(z,y,eta,scale,sub);
+    return (8.0*M_PI)/((Q2+mk2)*y)/p_lf->JIF(z,y,eta,scale,sub);
   case cstp::II:
     return (8.0*M_PI)/(Q2*y)/p_lf->JII(z,y,eta,scale,sub);
   case cstp::none: break;
