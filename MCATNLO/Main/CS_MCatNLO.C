@@ -23,6 +23,7 @@ CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,
   NLOMC_Base("MC@NLO_CSS"), p_isr(_isr), 
   p_powheg(NULL), p_as(NULL), p_cluster(NULL), p_gamma(NULL)
 {
+  m_psmode=_dataread->GetValue<int>("NLO_CSS_PSMODE",0);
   m_maxem=_dataread->GetValue<int>("NLO_CSS_MAXEM",1);
   m_scale2fac  = _dataread->GetValue<double>("CSS_SHOWER_SCALE2_FACTOR",-1.);
   if (m_scale2fac>0. && m_scale2fac!=1.) {
@@ -125,6 +126,11 @@ int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem,const int mode)
 		 (*cit)->GetFlavour()).StrongCharge());
 	int scp(((*pit)->Idx()<p_rampl->NIn()?(*pit)->GetFlavour().Bar():
 		 (*pit)->GetFlavour()).StrongCharge());
+	if (m_psmode &&
+	    !(((*cit)->GetFlow(1) &&
+	       (*cit)->GetFlow(1)==(*pit)->GetFlow(2)) ||
+	      ((*cit)->GetFlow(2) &&
+	       (*cit)->GetFlow(2)==(*pit)->GetFlow(1)))) continue;
 	msg_Debugging()<<(*pit)->GetFlavour()<<ID((*pit)->Id())<<" ";
 	(*cit)->Specs().push_back(*pit);
       }

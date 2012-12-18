@@ -18,7 +18,7 @@ namespace MCATNLO {
   private:
  
     PDF::ISR_Handler * p_isr;
-    size_t m_maxem, m_nem;
+    size_t m_maxem, m_nem, m_psmode;
     double m_scale2fac;
     
     Shower          * p_powheg;
@@ -57,6 +57,8 @@ namespace MCATNLO {
     void AddRBPoint(ATOOLS::Cluster_Amplitude *const ampl);
 
     ATOOLS::Cluster_Amplitude *GetRealEmissionAmplitude(const int mode=0);
+
+    inline size_t PSMode() const { return m_psmode; }
 
   };
 

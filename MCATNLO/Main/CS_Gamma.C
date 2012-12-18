@@ -191,6 +191,10 @@ int CS_Gamma::SingleWeight
 
 bool CS_Gamma::Reject()
 {
+  if (p_css->PSMode()) {
+    m_weight=1.0;
+    return false;
+  }
   if (m_on==0) return false;
   Cluster_Amplitude *rampl=p_css->GetRealEmissionAmplitude(1);
   Trial_Weight wgt(TrialWeight(rampl));
