@@ -125,10 +125,6 @@ MSSM_EHC::MSSM_EHC(std::string _dir,std::string _file,bool _elementary) :
 {
   p_mssm = new MSSM(m_dir,m_file,false);
   ParticleInit();
-  if (m_elementary) {
-    ATOOLS::OutputParticles(msg->Info());
-    ATOOLS::OutputContainers(msg->Info());
-  }
 }
 
 bool MSSM_EHC::ModelInit(const PDF::ISR_Handler_Map& isr)
@@ -152,6 +148,11 @@ bool MSSM_EHC::ModelInit(const PDF::ISR_Handler_Map& isr)
   delete p_mssm;
   
   FillSpectrum(isr);
+
+  if (m_elementary) {
+    ATOOLS::OutputParticles(msg->Info());
+    ATOOLS::OutputContainers(msg->Info());
+  }
 
   return true;
 }
