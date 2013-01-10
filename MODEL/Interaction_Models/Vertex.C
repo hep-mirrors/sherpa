@@ -26,8 +26,7 @@ Vertex::Vertex(Interaction_Model_Base * _model)
 
   int vanz  = 0;
   int vanz4 = 0;  
-
-
+  
   msg_Debugging()<<"   Setting vertices..."<<endl;
   _model->c_FFV(m_v,vanz);
   msg_Debugging()<<"   FFV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;

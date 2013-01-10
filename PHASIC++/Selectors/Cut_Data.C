@@ -1,6 +1,7 @@
 #include "PHASIC++/Selectors/Cut_Data.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "ATOOLS/Org/Message.H"
@@ -81,19 +82,14 @@ void Cut_Data::Init(int _nin,const Flavour_Vector &_fl) {
   }
   smin = sqr(smin);
 
+  Data_Reader read(" ",";","!","=");
+  double sijminfac = read.GetValue<double>("INT_MINSIJ_FACTOR", 1.e-12);
   for (int i=0;i<ncut;i++) {
     for (int j=i;j<ncut;j++) {
       cosmin[i][j] = cosmin[j][i] = cosmin_save[i][j] = -1.;
       cosmax[i][j] = cosmax[j][i] = cosmax_save[i][j] = 1.;
-      /*      double sc =
-	+sqr(fl[i].SelMass())+sqr(fl[j].SelMass())
-	+2.*energymin[i]*energymin[j]
-	-2.*sqrt(dabs(sqr(energymin[i])-sqr(fl[i].SelMass())))
-	*sqrt(dabs(sqr(energymin[j])-sqr(fl[j].SelMass())))
-	*cosmax[i][j];*/
       scut[i][j] = scut[j][i] = scut_save[i][j] =
-	(i<nin)^(j<nin)?0.0:1.e-12*sqr(rpa->gen.Ecms());
-	//Max(sc,1.e-12*sqr(rpa->gen.Ecms()));
+              (i<nin)^(j<nin)?0.0:sijminfac*sqr(rpa->gen.Ecms());
     }
   }  
 }

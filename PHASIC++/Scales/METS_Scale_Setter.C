@@ -266,13 +266,6 @@ double METS_Scale_Setter::Calculate
 		       -momenta[i][2],-momenta[i][3]);
   }
   if (mode==0) return CalculateMyScale(momenta,mode);
-  if (m_mode==2 || (m_mode==1 && !p_caller->LookUp())) {
-    p_caller->Integrator()->SetMomenta(momenta);
-    p_caller->Integrator()->SwapInOrder();
-    double muf2(CalculateMyScale(p_caller->Integrator()->Momenta(),1));
-    p_caller->Integrator()->RestoreInOrder();
-    return muf2;
-  }
   return m_scale[stp::fac];
 }
 

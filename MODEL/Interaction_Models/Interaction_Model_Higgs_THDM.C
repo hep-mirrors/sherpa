@@ -65,7 +65,7 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
       for(short int j=1;j<17;j++) {
 	if (j==7) j=11;
 	Flavour fl1 = Flavour((kf_code)(j)); 
-       	if(fl1.IsOn() && fl1.IsFermion() && fl1.IsDowntype() && (fl1.Yuk() > 1.)) {
+       	if(fl1.IsOn() && fl1.IsFermion() && fl1.IsDowntype() && (fl1.Yuk() > 0.)) {
 	  
 	  vertex[vanz].in[0] = fl1; 
 	  vertex[vanz].in[1] = flav;
@@ -101,7 +101,7 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
       for(short int t=1;t<17;t++) {
 	if (t==7) t=11;
 	Flavour fl1 = Flavour((kf_code)(t)); 
-	if(fl1.IsOn() && fl1.IsQuark() && fl1.IsUptype() && (fl1.Yuk() > 1.)) {
+	if(fl1.IsOn() && fl1.IsQuark() && fl1.IsUptype() && (fl1.Yuk() > 0.)) {
 	  
 	  vertex[vanz].in[0] = fl1; 
 	  vertex[vanz].in[1] = flav;
@@ -140,7 +140,7 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
     for(short int k=1;k<17;k++) {
       if (k==7) k=11;
       Flavour fl1 = Flavour((kf_code)(k)); 
-      if(fl1.IsOn() && fl1.IsFermion() && fl1.IsDowntype() && (fl1.Yuk() > 1.)) {
+      if(fl1.IsOn() && fl1.IsFermion() && fl1.IsDowntype() && (fl1.Yuk() > 0.)) {
 		
 	vertex[vanz].in[0] = fl1; 
 	vertex[vanz].in[1] = flA0;
@@ -177,7 +177,7 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
     
     for(short int z=1;z<7;z++) { 
       Flavour fl1 = Flavour((kf_code)(z)); 
-      if(fl1.IsOn() && fl1.IsQuark() && fl1.IsUptype() && (fl1.Yuk() > 1.)) {
+      if(fl1.IsOn() && fl1.IsQuark() && fl1.IsUptype() && (fl1.Yuk() > 0.)) {
 	
 	vertex[vanz].in[0] = fl1; 
 	vertex[vanz].in[1] = flA0;
@@ -214,7 +214,7 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
 
     for(short int i=11;i<17;i++) {
       Flavour fl1 = Flavour((kf_code)(i)); 
-      if(fl1.IsOn() && fl1.IsLepton() && fl1.IsDowntype() && (fl1.Yuk() > 1.)) {
+      if(fl1.IsOn() && fl1.IsLepton() && fl1.IsDowntype() && (fl1.Yuk() > 0.)) {
 	Flavour fl2 = Flavour((kf_code)(i=i+1));
 	if(fl2.IsOn() && fl2.IsLepton() && fl2.IsUptype() ) {
 	  
@@ -252,7 +252,7 @@ void Interaction_Model_Higgs_THDM::c_FFS(std::vector<Single_Vertex>& vertex,int&
 	for(short int k=1;k<7;k++) {
 	  Flavour fl2 = Flavour((kf_code)(k));
 	  if(fl2.IsOn() && fl2.IsQuark() && fl2.IsUptype() && 
-	     ((fl1.Yuk() > 1.) || (fl2.Yuk() > 1.)) ) {
+	     ((fl1.Yuk() > 0.) || (fl2.Yuk() > 0.)) ) {
 	    
             int geni=(fl1.Kfcode()-1)/2; //downtype
 	    int genj=(fl2.Kfcode()-2)/2; //uptype

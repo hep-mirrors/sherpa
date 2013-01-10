@@ -43,6 +43,7 @@ bool MSSM::ModelInit(const PDF::ISR_Handler_Map& isr)
   p_sm->ModelInit(isr);
   p_numbers   = p_sm->ExtractScalarNumbers();
   p_constants = p_sm->ExtractScalarConstants();
+  p_complexconstants = p_sm->ExtractComplexConstants();
   p_functions = p_sm->ExtractScalarFunctions();
   p_matrices  = p_sm->ExtractComplexMatrices();
 
