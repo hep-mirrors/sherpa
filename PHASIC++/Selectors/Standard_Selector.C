@@ -1139,7 +1139,7 @@ bool IMass_Selector::Trigger(const Vec4D_Vector & mom)
     for (int j=i+1;j<m_n;j++) {
       massij = value[i*m_n+j] = sqrt((mom[i]+mom[j]).Abs2());
       if (m_sel_log->Hit( ((massij < massmin[i][j]) || 
-			 (massij > massmax[i][j])) )) return 0;
+			   (massij > massmax[i][j])) )) return 0;
     }
   }
   return 1;
@@ -1270,7 +1270,7 @@ bool IQ2_Selector::Trigger(const Vec4D_Vector & mom)
     for (int j=m_nin;j<m_n;j++) {
       massij = value[i*m_n+j] = -(mom[i]-mom[j]).Abs2();
       if (m_sel_log->Hit( ((massij < massmin[i][j]) || 
-			 (massij > massmax[i][j])) )) return 0;
+			   (massij > massmax[i][j])) )) return 0;
     }
   }
   return 1;
@@ -1397,9 +1397,7 @@ bool Delta_Eta_Selector::Trigger(const Vec4D_Vector & mom)
   double detaij;
   for (int i=m_nin;i<m_n;i++) {
     for (int j=i+1;j<m_n;j++) {
-      detaij = value[i*m_n+j] = mom[i].DEta(mom[j]);
-//       PRINT_INFO("("<<m_fl[i]<<" "<<m_fl[j]<<") : "<<detaij
-// 		 <<" in {"<<detamin[i][j]<<", "<<detamax[i][j]<<"}");
+      detaij = abs(value[i*m_n+j] = mom[i].DEta(mom[j]));
       if (m_sel_log->Hit( ((detaij < detamin[i][j]) || 
 			   (detaij > detamax[i][j])) )) return 0;
     }
@@ -1507,8 +1505,6 @@ bool Delta_Phi_Selector::Trigger(const Vec4D_Vector & mom)
   for (int i=m_nin;i<m_n;i++) {
     for (int j=i+1;j<m_n;j++) {
       dphiij = value[i*m_n+j] = mom[i].DPhi(mom[j]);
-//       PRINT_INFO("("<<m_fl[i]<<" "<<m_fl[j]<<") : "<<dphiij
-// 		 <<" in {"<<dphimin[i][j]<<", "<<dphimax[i][j]<<"}");
       if (m_sel_log->Hit( ((dphiij < dphimin[i][j]) || 
 			   (dphiij > dphimax[i][j])) )) return 0;
     }
