@@ -13,8 +13,9 @@ Ladder_Generator::
 Ladder_Generator(Parton_Luminosity * lumi,const int & test) :
   m_IS(Initial_State(lumi)), m_FS(Final_State(test)),
   m_originalY(MBpars("originalY")), m_cutoffY(MBpars("deltaY")), 
-  p_ladder(0), m_output(true)
-{    
+  p_ladder(0), m_output(true),
+  m_Nprim(0),m_Nsec(0),m_Ndd_p(0),m_Ndd_s(0),m_Nsd_p(0),m_Nsd_s(0),m_Ncep_p(0),m_Ncep_s(0)
+  {    
   Vec4D cms(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
   m_pplus   = cms.PPlus();
   m_pminus  = cms.PMinus();
@@ -23,22 +24,28 @@ Ladder_Generator(Parton_Luminosity * lumi,const int & test) :
     m_N1h = m_N1 = m_N8 = m_resc0 = m_resc1 = 0;
     m_wtover1 = m_wtover2 = 0.;  
     m_wt = 0;
-    m_histograms[string("N_inel")]   = new Histogram(0,0.0,20.0,20);
-    m_histograms[string("N_diff")]   = new Histogram(0,0.0,20.0,20);
-    m_histograms[string("N_hdiff")]  = new Histogram(0,0.0,20.0,20);
-    m_histograms[string("Nemit1")]   = new Histogram(0,0.0,10.0,10);
-    m_histograms[string("Nemit2")]   = new Histogram(0,0.0,10.0,10);
-    m_histograms[string("Delta1")]   = new Histogram(0,0.0,5.0,50);
-    m_histograms[string("Delta2")]   = new Histogram(0,0.0,5.0,50);
-    m_histograms[string("D_y1")]     = new Histogram(0,-10.0,10.0,100);
-    m_histograms[string("D_y2")]     = new Histogram(0,-10.0,10.0,100);
-    m_histograms[string("KT1")]      = new Histogram(0, 0.0,50.0,200);
-    m_histograms[string("KT1mid")]   = new Histogram(0, 0.0,50.0,200);
-    m_histograms[string("KT2")]      = new Histogram(0, 0.0,50.0,200);
-    m_histograms[string("KT2mid")]   = new Histogram(0, 0.0,50.0,200);
-    m_histograms[string("y1")]       = new Histogram(0,-10.0,10.0,100);
-    m_histograms[string("LadderWt")] = new Histogram(0,0.0,2.0,200);
-    m_histograms[string("QT")]       = new Histogram(0, 0.0,10.0,200);
+    m_histograms[string("N_inel")]    = new Histogram(0,0.0,20.0,20);
+    m_histograms[string("N_diff")]    = new Histogram(0,0.0,20.0,20);
+    m_histograms[string("N_hdiff")]   = new Histogram(0,0.0,20.0,20);
+    m_histograms[string("Nemit1")]    = new Histogram(0,0.0,10.0,10);
+    m_histograms[string("Nemit2")]    = new Histogram(0,0.0,10.0,10);
+    m_histograms[string("Delta1")]    = new Histogram(0,0.0,5.0,50);
+    m_histograms[string("Delta2")]    = new Histogram(0,0.0,5.0,50);
+    m_histograms[string("D_y1")]      = new Histogram(0,-10.0,10.0,100);
+    m_histograms[string("D_y2")]      = new Histogram(0,-10.0,10.0,100);
+    m_histograms[string("KT1")]       = new Histogram(0, 0.0,50.0,200);
+    m_histograms[string("KT1mid")]    = new Histogram(0, 0.0,50.0,200);
+    m_histograms[string("KT2")]       = new Histogram(0, 0.0,50.0,200);
+    m_histograms[string("KT2mid")]    = new Histogram(0, 0.0,50.0,200);
+    m_histograms[string("y1")]        = new Histogram(0,-10.0,10.0,100);
+    m_histograms[string("LadderWt")]  = new Histogram(0,0.0,2.0,200);
+    m_histograms[string("QT")]        = new Histogram(0, 0.0,10.0,200);
+    m_histograms[string("DDmass_p")]  = new Histogram(0, 0.0,1000.0,100);
+    m_histograms[string("SDmass_p")]  = new Histogram(0, 0.0,10.0,100);
+    m_histograms[string("CEPmass_p")] = new Histogram(0, 0.0,10.0,100);
+    m_histograms[string("DDmass_s")]  = new Histogram(0, 0.0,1000.0,100);
+    m_histograms[string("SDmass_s")]  = new Histogram(0, 0.0,10.0,100);
+    m_histograms[string("CEPmass_s")] = new Histogram(0, 0.0,10.0,100);
     
     m_histogram2ds[string("pt2vspt2othat")] = new Histogram_2D(0, 0.0, 100, 100, 0.0, 2.0, 20);
   }
@@ -374,11 +381,13 @@ void Ladder_Generator::Analyse(const bool & isprimary) {
   double Deltay(dabs(y2-y1));
   int Nemit(p_ladder->Size());
   if (!isprimary) {
+    m_Nsec++;
     m_histograms[string("D_y2")]->Insert(Deltay);
     m_histograms[string("Nemit2")]->Insert(Nemit);
     m_histograms[string("Delta2")]->Insert(double(Nemit-1)/Deltay);
   }
   if (isprimary) {
+    m_Nprim++;
     m_histograms[string("D_y1")]->Insert(Deltay);
     m_histograms[string("Nemit1")]->Insert(Nemit);
     m_histograms[string("Delta1")]->Insert(double(Nemit-1)/Deltay);
@@ -401,6 +410,7 @@ void Ladder_Generator::Analyse(const bool & isprimary) {
 				      string("KT2mid")]);
   Histogram * histoy(m_histograms[string("y1")]);
   double kt,y;
+  Vec4D momtot(0.,0.,0.,0.);
   for (LadderMap::iterator piter=p_ladder->GetEmissionsBegin();
        piter!=p_ladder->GetEmissionsEnd();piter++) {
     kt = piter->second.m_mom.PPerp();
@@ -408,6 +418,59 @@ void Ladder_Generator::Analyse(const bool & isprimary) {
     histokt->Insert(kt);
     histoy->Insert(y);
     if (dabs(y)<4.) histoktmid->Insert(kt);
+    momtot+=piter->second.m_mom;
+  }
+  if (p_ladder->GetEmissions()->size()==2 
+      && p_ladder->GetPropsBegin()->m_col==colour_type::singlet) {
+    if (isprimary) {
+      m_Ndd_p++;
+      m_histograms[string("DDmass_p")]->Insert(momtot.Abs());  
+    }
+    else {
+      m_Ndd_s++;
+      m_histograms[string("DDmass_s")]->Insert(momtot.Abs());  
+    }
+//     msg_Out()<<"identified as DD ladder (M = "<<momtot.Abs()<<")."<<std::endl;
+  }
+  else {
+    if (p_ladder->GetPropsBegin()->m_col==colour_type::singlet &&
+        p_ladder->GetPropsRBegin()->m_col==colour_type::singlet) {
+      momtot-=p_ladder->GetEmissionsBegin()->second.m_mom;
+      momtot-=p_ladder->GetEmissionsRBegin()->second.m_mom;
+      if (isprimary) {
+        m_Ncep_p++;
+        m_histograms[string("CEPmass_p")]->Insert(momtot.Abs());  
+      }
+      else {
+        m_Ncep_s++;
+        m_histograms[string("CEPmass_s")]->Insert(momtot.Abs());  
+      }
+//       msg_Out()<<"identified as CEP ladder (M = "<<momtot.Abs()<<")."<<std::endl;
+    }
+    else if (p_ladder->GetPropsBegin()->m_col==colour_type::singlet) {
+      momtot-=p_ladder->GetEmissionsBegin()->second.m_mom;
+      if (isprimary) {
+        m_Nsd_p++;
+        m_histograms[string("SDmass_p")]->Insert(momtot.Abs());  
+      }
+      else {
+        m_Nsd_s++;
+        m_histograms[string("SDmass_s")]->Insert(momtot.Abs());  
+      }
+//       msg_Out()<<"identified as SD ladder (M = "<<momtot.Abs()<<")."<<std::endl;
+    }
+    else if (p_ladder->GetPropsRBegin()->m_col==colour_type::singlet) {
+      momtot-=p_ladder->GetEmissionsRBegin()->second.m_mom;
+      if (isprimary) {
+        m_Nsd_p++;
+        m_histograms[string("SDmass_p")]->Insert(momtot.Abs());  
+      }
+      else {
+        m_Nsd_s++;
+        m_histograms[string("SDmass_s")]->Insert(momtot.Abs());  
+      }
+//       msg_Out()<<"identified as SD ladder (M = "<<momtot.Abs()<<")."<<std::endl;
+    }      
   }
 }
 

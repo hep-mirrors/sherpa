@@ -79,6 +79,7 @@ CalculateTotalXSec(double & maxdl) {
   Gauss_Integrator integrator((&m_kernel));
   double intl(0.);
   m_deltalog = log(m_smax/m_smin-1.)/double(m_shatsteps+1);
+//   m_deltalog = log(m_smax/m_smin)/double(m_shatsteps+1);
   maxdl = 0.;
   double shat(0.),shat1(0.),ymax(0.),dl(0.),dl1(0.);
   for (int i=0;i<=m_shatsteps;i++) {
@@ -89,6 +90,7 @@ CalculateTotalXSec(double & maxdl) {
     dl   = integrator.Integrate(-ymax,ymax,0.01,1)/shat;
     if (maxdl<m_kernel.MaxDL()) maxdl = m_kernel.MaxDL();
     if (i>0) intl += (shat-shat1)/(2.*shat)*(dl+dl1)/2.;
+//     if (i>0) intl += (shat-shat1)/(2.*m_smin)*(dl+dl1)/2.;//*m_smax/shat;
     shat1 = shat;
     dl1   = dl;
   }

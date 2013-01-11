@@ -296,6 +296,8 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       else {
         kt2min = m_tmax;
       }
+// 	kt2FS *= m_nlad;
+// 	kt2min *= m_nlad;
 /*      kt2FS = Min(PTij2(split->Mom(),spect->Mom()),
 		  Min(PTi2(split->Mom(),pbeam0),
 		      PTi2(split->Mom(),pbeam1)));*/
@@ -303,7 +305,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       //       <<" from ptij2 = "<<PTij2(split->Mom(),spect->Mom())<<", "
       //       <<"pti2 = "<<PTi2(split->Mom(),pbeam0)
       //       <<" "<<PTi2(split->Mom(),pbeam1)<<".\n";
-      if (kt2FS<kt2min) kt2min=kt2FS;
+      if (kt2FS<kt2min) kt2min = kt2FS;
       if (kt2FS>kt2max) kt2max = kt2FS;
 //       if (kt2FS<kt2max) kt2max = kt2FS;
       if (j>2) {
@@ -331,6 +333,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
         kt2max = scale;
 // 	kt2min = scale/16.;
 	kt2min = m_tmax;
+// 	kt2min *= m_nlad;
 /*	kt2max = Min(PTij2(split->Mom(),legs[j]->Mom())/m_showerfac,
 		     Min(PTi2(split->Mom(),pbeam0),
 			 PTi2(split->Mom(),pbeam1)));*/

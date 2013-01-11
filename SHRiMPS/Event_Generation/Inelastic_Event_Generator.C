@@ -157,7 +157,7 @@ InitInelasticEvent(const bool & isUE,const bool & weighted) {
       if (m_analyse) m_histograms[string("N_ladder_naive")]->Insert(m_Nladders);
       if (m_Nladders<1) continue;
       if (m_analyse) m_histograms[string("N_ladder_start")]->Insert(m_Nladders);
-      if (p_beams->InitialiseCollision(m_Nladders,p_eikonal)) success = true;
+      if (p_beams->InitialiseCollision(m_Nladders,m_B,p_eikonal)) success = true;
       trials++;
     } while (trials<100 && !success);
   } while (!success);
@@ -341,7 +341,7 @@ CreateBlob(Blob_List * blobs,const double & xsec) {
 
 
 double Inelastic_Event_Generator::Smin() const {
-  double smin(m_luminosity.Smin());
+  double smin(m_luminosity.Smin()/4.*m_Nladders);
   if (!p_ladder) return smin;
   //   smin *= m_kt2fac;
   if (p_ladder->IsHardDiffractive() && p_ladder->Size()==2) smin *= m_difffac;

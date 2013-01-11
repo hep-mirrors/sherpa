@@ -32,6 +32,8 @@ namespace SHRIMPS {
 
     long int          m_N1h,m_N1,m_N8,m_resc0,m_resc1,m_wtover1,m_wtover2,m_wt;
     bool              m_output;
+    
+    int               m_Nprim,m_Nsec,m_Ndd_p,m_Ndd_s,m_Nsd_p,m_Nsd_s,m_Ncep_p,m_Ncep_s;
 
     std::map<std::string, ATOOLS::Histogram * > m_histograms;
     std::map<std::string, ATOOLS::Histogram_2D * > m_histogram2ds;

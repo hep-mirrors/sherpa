@@ -14,6 +14,7 @@ namespace SHRIMPS {
     virtual double Smin()           const { return m_smin;}
     virtual bool IsLastRescatter()  const { return false; }
     virtual const double TMax()     const { return 0.; }
+    virtual const int NLadders()    const { return 1; }
   };
 }
 #endif

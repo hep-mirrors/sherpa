@@ -58,7 +58,7 @@ Beam_Remnant_Handler::~Beam_Remnant_Handler() {
 }
 
 bool Beam_Remnant_Handler::
-InitialiseCollision(const int & N,Omega_ik * eikonal) {
+InitialiseCollision(const int & N, double B, Omega_ik * eikonal) {
   Reset();
   if (eikonal==NULL && N==0) {
     for (size_t beam=0;beam<2;beam++) {
@@ -67,8 +67,8 @@ InitialiseCollision(const int & N,Omega_ik * eikonal) {
     return true;
   }
   double eta(eikonal->EffectiveIntercept());
-  if (!m_hadrons[0]->DefineDissociation(N,0.0001,eta,eikonal->FF1()) ||
-      !m_hadrons[1]->DefineDissociation(N,0.0001,eta,eikonal->FF2())) {
+  if (!m_hadrons[0]->DefineDissociation(N,B,0.0001,eta,eikonal->FF1()) ||
+      !m_hadrons[1]->DefineDissociation(N,B,0.0001,eta,eikonal->FF2())) {
     for (size_t beam=0;beam<2;beam++) m_hadrons[beam]->DeleteParticles();
     return false;
   }

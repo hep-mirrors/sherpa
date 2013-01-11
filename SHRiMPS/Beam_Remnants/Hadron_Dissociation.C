@@ -119,7 +119,7 @@ void Hadron_Dissociation::FillParticleList(const int & N) {
 }
 
 bool Hadron_Dissociation::
-DefineDissociation(const int & Nladders,const double & xcut,const double & eta,
+DefineDissociation(const int & Nladders,const double B, const double & xcut,const double & eta,
 		   Form_Factor * ff)
 {
   //msg_Out()<<METHOD<<"("<<Nladders<<", xcut="<<xcut<<", eta="<<eta<<"):\n";
@@ -128,6 +128,20 @@ DefineDissociation(const int & Nladders,const double & xcut,const double & eta,
 
   double  xmin(p_pdf->XMin()*double(Nladders+2)),xave(1./double(Nladders+2));
   double  startweight(pow(1.25,Nladders)*pow(xave,-(2+Nladders)*eta));
+  
+  double xmean(0.1*exp(-B/1.)),xlow;
+  double xtlow(1.e-10),xthigh(1.),xtmid,xmlow,xmhigh,xmmid;
+  do {
+    xtmid = (xthigh+xtlow)/2.;
+    xmlow = (1.-xtlow)/log(1./xtlow);
+    xmhigh = (1.-xthigh)/log(1./xthigh);
+    xmmid = (1.-xtmid)/log(1./xtmid);
+    if (xmean < xmlow) break; 
+    if (xmean < xmmid) xthigh = xtmid;
+    else xtlow = xtmid;
+  } while ((xmhigh-xmlow) > 0.0001);
+  xlow = xtlow;
+  
   if (xmin<xcut) {
     int     trials(0);
     double  weight,wt,x,xsum,maxwt(0.);
@@ -135,7 +149,37 @@ DefineDissociation(const int & Nladders,const double & xcut,const double & eta,
     while (trials++<pow(10.,ATOOLS::Min(4,Nladders+3))) {
       m_xs.clear();
       weight = startweight;
+//       weight = 0.;
       xsum   = 0.;
+      int idiquark;
+//       for (int i=0;i<Nladders+2;i++) {
+// 	flav = m_particles[i]->Flav();
+// 	if (flav.IsDiQuark()) {
+// 	  idiquark=i;
+// 	  m_xs.push_back(1.);
+// 	}
+// 	else {
+// 	  xsum += x = xlow*pow(1./xlow,ran->Get());
+// 	  m_xs.push_back(x);
+// 	}
+//       }
+//       if (xsum < 1.){ 
+// 	m_xs[idiquark]=1.-xsum;
+// 	weight=1.;
+//       }
+//       else {
+// 	xsum += x = xcut + (1.-xcut)*ran->Get();
+// 	m_xs[idiquark] = x;
+//         for (int i=0;i<Nladders+2;i++) {
+// 	  x    = m_xs[i] /= xsum;
+// 	}
+// 	weight = pow(1.+xlow-m_xs[idiquark],-Nladders);
+//       }
+//       if (weight>maxwt) maxwt=weight;
+//       for (int i=0;i<Nladders+2;i++) {
+// 	if (i!=Nladders+1 && !IsZero(eta)) weight *= pow(x,eta);
+//       }
+
       for (int i=0;i<Nladders+2;i++) {
 	xsum += x = xcut + (1.-xcut)*ran->Get();
 	m_xs.push_back(x);
@@ -145,13 +189,16 @@ DefineDissociation(const int & Nladders,const double & xcut,const double & eta,
 	flav = m_particles[i]->Flav();
 	if (flav.IsDiQuark()) {
 	  if (x/2<p_pdf->XMin()) { weight = 0.; break; }
-	  p_pdf->Calculate(x/2.,0.);
-	  weight *= wt = 2.*p_pdf->XPDF(flav)/p_pdf->XPDFMax(flav);
+//	  p_pdf->Calculate(x/2.,0.);
+//	  weight *= wt = 2.*p_pdf->XPDF(flav)/p_pdf->XPDFMax(flav);
+          weight *= wt = pow(1.+xcut-x,-Nladders);//exp((x-1.)/Nladders); 
 	}
-	else {
+// 	else {
+        else if (flav.IsQuark()) {
 	  if (x<p_pdf->XMin()) { weight = 0.; break; }
 	  p_pdf->Calculate(x,0.);
-	  weight *= wt = p_pdf->XPDF(flav)/p_pdf->XPDFMax(flav);
+// 	  weight *= wt = p_pdf->XPDF(flav)/p_pdf->XPDFMax(flav);
+	  weight *= wt = p_pdf->XPDF(flav)/p_pdf->XPDFMax(flav)/x;
 	}
 	// the extra x in xpdf compensates for the incoming flux.
 	if (i!=Nladders+1 && !IsZero(eta)) weight *= pow(x,eta);
@@ -190,9 +237,9 @@ DefineDissociation(const int & Nladders,const double & xcut,const double & eta,
       }
     }
     msg_Tracking()<<"\n";
-    //msg_Error()<<METHOD<<": After "<<trials<<" trials no dissociation for "
-    //	       <<Nladders<<" ladders, maxwt = "<<maxwt<<".\n";
-    //PrintParticles();
+    msg_Error()<<METHOD<<": After "<<trials<<" trials no dissociation for "
+    	       <<Nladders<<" ladders, maxwt = "<<maxwt<<".\n";
+//     PrintParticles();
   }
   return false;
 }

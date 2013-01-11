@@ -35,7 +35,7 @@ namespace SHERPA {
       inline double DR()   const { return 1.; }
     };
   private:
-    int    m_mode;
+    int    m_mode,m_nlad;
     bool   m_resc;
     double m_minkt2,m_showerfac,m_tmax;
 
@@ -75,6 +75,7 @@ namespace SHERPA {
     inline void SetMinKT2(const double & minkt2) { m_minkt2 = minkt2; }
     inline void SetRescatt(const double & resc)  { m_resc = resc; }
     inline void SetTMax(const double & tmax)  { m_tmax = tmax; }
+    inline void SetNLad(const int & nlad)  { m_nlad = nlad; }
 
     double Mass(const ATOOLS::Flavour &fl) const;
   };// end of class Cluster_Algorithm

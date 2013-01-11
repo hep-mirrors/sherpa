@@ -65,6 +65,7 @@ namespace SHRIMPS {
     Omega_ik * GetEikonal() const { return p_eikonal; }
     inline const double & XSec()   const { return p_sigma->XSec(); }
     inline const double TMax() const {return p_ladder->That(); }
+    inline const int    NLadders() const {return (m_Nladders+m_Nsec); }
   };
 }
 #endif

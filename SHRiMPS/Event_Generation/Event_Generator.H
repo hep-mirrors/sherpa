@@ -59,6 +59,10 @@ namespace SHRIMPS {
       if (p_active) return p_active->TMax();
       return 0.;
     }
+    inline const int NLadders() const {
+      if (p_active) return p_active->NLadders();
+      return 1;
+    }
   };
 }
 #endif
