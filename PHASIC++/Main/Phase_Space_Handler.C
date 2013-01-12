@@ -463,8 +463,13 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
     dxs=m_result_2/m_psweight;
     xf1=p_isrhandler->XF1(1);
     xf2=p_isrhandler->XF2(1);
-    mu12=p_isrhandler->MuF2(1);
-    mu22=p_isrhandler->MuF2(0);
+    if (proc->ScaleSetter() && !proc->ScaleSetter()->Amplitudes().empty()) {
+      mu12=mu22=proc->ScaleSetter()->Amplitudes()[1]->MuF2();
+    }
+    else {
+      mu12=p_isrhandler->MuF2(1);
+      mu22=p_isrhandler->MuF2(0);
+    }
     NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
     if (nlos) {
       (*nlos).MultMEwgt(1./(1.-pnf));
@@ -482,8 +487,13 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
     dxs=m_result_1/m_psweight;
     xf1=p_isrhandler->XF1(0);
     xf2=p_isrhandler->XF2(0);
-    mu12=p_isrhandler->MuF2(0);
-    mu22=p_isrhandler->MuF2(1);
+    if (proc->ScaleSetter() && !proc->ScaleSetter()->Amplitudes().empty()) {
+      mu12=mu22=proc->ScaleSetter()->Amplitudes()[0]->MuF2();
+    }
+    else {
+      mu12=p_isrhandler->MuF2(0);
+      mu22=p_isrhandler->MuF2(1);
+    }
     NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
     if (nlos) (*nlos).MultMEwgt(1./pnf);
     if (wgtinfo) {
