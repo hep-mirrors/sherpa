@@ -227,12 +227,20 @@ std::ostream &Message::Out() const
 
 std::ostream &Message::Error() const     
 { 
+#ifdef USING__MPI
+  if (!m_mpimode && 
+      MPI::COMM_WORLD.Get_rank()) return *p_no;
+#endif
   if (m_level >= 0) return *p_output; 
   return *p_no; 
 }
 
 std::ostream &Message::Events() const    
 { 
+#ifdef USING__MPI
+  if (!m_mpimode && 
+      MPI::COMM_WORLD.Get_rank()) return *p_no;
+#endif
   if (m_level & 1) return *p_output; 
   return *p_no;  
 }
@@ -259,12 +267,20 @@ std::ostream &Message::Tracking() const
 
 std::ostream &Message::Debugging() const 
 { 
+#ifdef USING__MPI
+  if (!m_mpimode && 
+      MPI::COMM_WORLD.Get_rank()) return *p_no;
+#endif
   if (m_level & 8) return *p_output; 
   return *p_no;  
 }
 
 std::ostream &Message::IODebugging() const
 {
+#ifdef USING__MPI
+  if (!m_mpimode && 
+      MPI::COMM_WORLD.Get_rank()) return *p_no;
+#endif
   if (m_level & 32) return *p_output;
   return *p_no;
 }
