@@ -430,15 +430,13 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	if (split->GetType()==pst::IS) {
 	  if (m_flavA!=split->GetFlavour()) {
 	    msg_Debugging()<<"... Veto flavour change ...\n\n";
-	    if (split->KtVeto()==maxt) continue;
-	    return false;
+	    continue;
 	  }
 	}
 	else {
 	  if (m_flavB!=split->GetFlavour()) {
 	    msg_Debugging()<<"... Veto flavour change ...\n\n";
-	    if (split->KtVeto()==maxt) continue;
-	    return false;
+	    continue;
 	  }
 	}
       }
