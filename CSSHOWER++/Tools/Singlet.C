@@ -63,34 +63,6 @@ Singlet::~Singlet() {
     } while (plit!=end());
     clear();
   }
-  if (p_ref) delete p_ref;
-}
-
-Singlet *Singlet::RefCopy(All_Singlets *const all,std::map<Parton*,Parton*> &pmap)
-{
-  if (p_ref) delete p_ref;  
-  p_ref = new Singlet();
-  all->push_back(p_ref);
-  p_ref->p_all=all;
-  p_ref->p_ms=p_ms;
-  p_ref->p_proc=p_proc;
-  p_ref->p_jf=p_jf;
-  p_ref->m_nlo=m_nlo;
-  p_ref->m_decs=m_decs;
-  for (const_iterator it(begin());it!=end();++it) {
-    Parton *c(new Parton(**it));
-    p_ref->push_back(c);
-    c->SetSing(p_ref);
-    pmap[*it]=c;
-  }
-  for (const_iterator it(begin());it!=end();++it) {
-    Parton *c(pmap[*it]);
-    std::map<Parton*,Parton*>::iterator lit(pmap.find((*it)->GetLeft()));
-    if (lit!=pmap.end()) c->SetLeft(lit->second);
-    std::map<Parton*,Parton*>::iterator rit(pmap.find((*it)->GetRight()));
-    if (rit!=pmap.end()) c->SetRight(rit->second);
-  }
-  return p_ref;
 }
 
 Parton *Singlet::IdParton(const size_t &id) const

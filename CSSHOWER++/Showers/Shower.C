@@ -440,84 +440,9 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  }
 	}
       }
-      Singlet *ref(split->GetSing()->GetRef());
       if (split->KtTest()>split->KtMax() &&
-	  ref && ref->JF()) {
-	std::vector<Parton*> aems, pems, psps;
-	size_t aid(0), eid(0);
-	for (Singlet::const_iterator
-	       sit(ref->begin());sit!=ref->end();++sit) {
-	  if ((*sit)->Id()&split->Id()) {
-	    aems.push_back(*sit);
-	    aid|=(*sit)->Id();
-	    if (split->GetFlavour().Strong()) {
-	      if ((*sit)->GetFlavour().Strong()) {
-		pems.push_back(*sit);
-		eid|=(*sit)->Id();
-	      }
-	    }
-	    else if (split->GetFlavour().IntCharge()) {
-	      if ((*sit)->GetFlavour().IntCharge()) {
-		pems.push_back(*sit);
-		eid|=(*sit)->Id();
-	      }
-	    }
-	    else {
-	      pems.push_back(*sit);
-	      eid|=(*sit)->Id();
-	    }
-	  }
-	}
-	if (pems.empty()) {
-	  pems=aems;
-	  eid=aid;
-	}
-	if (pems.empty()) THROW(fatal_error,"Internal error");
-	Parton *rp(pems[Min(pems.size()-1,size_t(ran->Get()*pems.size()))]);
-	size_t sid(split->GetSpect()->Id()&~eid);
-	if (sid) {
-	  for (Singlet::const_iterator
-		 sit(ref->begin());sit!=ref->end();++sit)
-	    if ((*sit)->Id()&sid) psps.push_back(*sit);
-	}
-	else {
-	  int sc=rp->GetFlavour().IntCharge();
-	  if (rp->GetType()==pst::IS) sc=-sc;
-	  if (rp->GetFlavour().Strong()) {
-	    if (rp->GetLeft()) psps.push_back(rp->GetLeft());
-	    if (rp->GetRight()) psps.push_back(rp->GetRight());
-	  }
-	  else if (sc) {
-	    for (Singlet::const_iterator
-		   sit(ref->begin());sit!=ref->end();++sit) {
-	      int cc=(*sit)->GetFlavour().IntCharge();
-	      if ((*sit)->GetType()==pst::IS) cc=-cc;
-	      if (sc*cc<0) psps.push_back(*sit);
-	    }
-	  }
-	  else {
-	    for (Singlet::const_iterator
-		   sit(ref->begin());sit!=ref->end();++sit)
-	      if (*sit!=rp && (*sit)->GetFlavour().IntCharge())
-		psps.push_back(*sit);
-	  }
-	}
-	if (psps.empty()) THROW(fatal_error,"Internal error");
-	rp->SetSpect(psps[Min(psps.size()-1,size_t(ran->Get()*psps.size()))]);
-	rp->SetTest(split->KtTest(),split->ZTest(),
-		    split->YTest(),split->Phi());
-	Flavour fla(m_flavA), flb(m_flavB), flc(m_flavC);
-	if (IdCount(rp->Id())>1) {
-	  fla=flb=rp->GetFlavour();
-	  flc=Flavour(kf_gluon);
-	}
-	else if ((rp->GetType()==pst::FS && fla!=rp->GetFlavour()) ||
-		 (rp->GetType()==pst::IS && flb!=rp->GetFlavour())) {
-	  fla=flb=rp->GetFlavour();
-	  flc=Flavour(kf_gluon);
-	}
-	rp->SetCol(split->Col());
-	int vstat(MakeKinematics(rp,fla,flb,flc,2));
+	  p_actual->JF()) {
+	int vstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,2));
 	if (vstat==0) {
 	  if (p_actual->NLO()&2) {
 	    msg_Debugging()<<"Skip first truncated emission, K = "
@@ -526,19 +451,19 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	    p_actual->SetNLO(0);
 	    continue;
 	  }
-	  msg_Debugging()<<"veto\n";
+	  msg_Debugging()<<"Jet veto\n";
 	  return false;
 	}
       }
       int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,m_noem?2:0));
       if (kstat<0) continue;
-      if (ref && ref->JF()) {
+      if (p_actual->JF()) {
 	if (p_actual->GetSplit()) {
 	  msg_Debugging()<<"Truncated shower veto\n";
 	  return false;
 	}
 	msg_Debugging()<<"Disable jet veto\n";
-	Singlet *sing(ref);
+	Singlet *sing(p_actual);
 	sing->SetJF(NULL);
 	while (sing->GetSplit()) {
 	  sing=sing->GetSplit()->GetSing();

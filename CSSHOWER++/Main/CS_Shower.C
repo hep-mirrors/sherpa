@@ -58,7 +58,6 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   p_shower = new Shower(_isr,_qed,m_kt2fac,_dataread);
   
   p_next = new All_Singlets();
-  p_refs = new All_Singlets();
 
   p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode);
   p_cluster->SetAMode(amode);
@@ -72,45 +71,12 @@ CS_Shower::~CS_Shower()
   if (p_cluster)     { delete p_cluster; p_cluster = NULL; }
   if (p_ampl) p_ampl->Delete();
   delete p_next;
-  delete p_refs;
-}
-
-void CS_Shower::RefCopy()
-{
-  p_refs->clear();
-  std::map<Parton*,Parton*> pmap;
-  std::map<Parton*,Parton*>::iterator pit;
-  for (All_Singlets::const_iterator sit(m_allsinglets.begin());
-       sit!=m_allsinglets.end();++sit) (*sit)->RefCopy(p_refs,pmap);
-  for (size_t i(0);i<m_allsinglets.size();++i) {
-    pit=pmap.find(m_allsinglets[i]->GetLeft());
-    if (pit!=pmap.end()) (*p_refs)[i]->SetLeft(pit->second);
-    pit=pmap.find(m_allsinglets[i]->GetRight());
-    if (pit!=pmap.end()) (*p_refs)[i]->SetRight(pit->second);
-    pit=pmap.find(m_allsinglets[i]->GetSplit());
-    if (pit!=pmap.end()) (*p_refs)[i]->SetSplit(pit->second);
-    pit=pmap.find(m_allsinglets[i]->GetSpec());
-    if (pit!=pmap.end()) (*p_refs)[i]->SetSpec(pit->second);
-    for (Singlet::const_iterator it(m_allsinglets[i]->begin());
-	 it!=m_allsinglets[i]->end();++it) {
-      Parton *c(pmap[*it]);
-      pit=pmap.find((*it)->GetLeft());
-      if (pit!=pmap.end()) c->SetLeft(pit->second);
-      pit=pmap.find((*it)->GetRight());
-      if (pit!=pmap.end()) c->SetRight(pit->second);
-      pit=pmap.find((*it)->GetPrev());
-      if (pit!=pmap.end()) c->SetPrev(pit->second);
-      pit=pmap.find((*it)->GetNext());
-      if (pit!=pmap.end()) c->SetNext(pit->second);
-    }
-  }
 }
 
 int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 {
   if (!p_shower || !m_on) return 1;
   m_weight=1.0;
-  RefCopy();
   // p_as is alphaS in case we do a shower variation it is != NULL.
   if (p_as && m_as_showerflag &&
       m_scale2fac!=-1. && m_scale2fac!=1.) {
@@ -119,8 +85,8 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
     // fixes an operator (*p_as)(qt^2,true) to be with new Lambda2
     p_as->FixShowerLambda2(mu2,newasmu2,p_as->Nf(mu2),p_as->Order());
     p_shower->SetCouplingMax();
-    for (All_Singlets::const_iterator rit(p_refs->begin()),
-	   sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit,++rit) {
+    for (All_Singlets::const_iterator sit(m_allsinglets.begin());
+	 sit!=m_allsinglets.end();++sit) {
       for (Singlet::const_iterator it((*sit)->begin());
 	   it!=(*sit)->end();++it) {
 	// update shower scales.
@@ -138,8 +104,8 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
     // 	     <<"100. "<<(*p_as)(10000.)<<"  "<<p_as->AlphaS(10000.,true)<<"\n";
   }
 
-  for (All_Singlets::const_iterator rit(p_refs->begin()),
-	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit,++rit) {
+  for (All_Singlets::const_iterator sit(m_allsinglets.begin());
+       sit!=m_allsinglets.end();++sit) {
     msg_Debugging()<<"before shower step\n";
     for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it)
       if ((*it)->GetPrev() && (*it)->GetPrev()->KScheme()!=1)
@@ -150,7 +116,6 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
     m_weight*=p_shower->Weight();
     if ((*sit)->GetLeft()) {
       p_shower->ReconstructDaughters(*sit,1);
-      p_shower->ReconstructDaughters(*rit,1);
     }
     msg_Debugging()<<"after shower step with "<<nem-pem
 		   <<" of "<<nem<<" emission(s)\n";
@@ -203,7 +168,6 @@ void CS_Shower::CleanUp()
     if (*sit) delete *sit;
   }
   m_allsinglets.clear();
-  p_refs->clear();
 }
 
 PDF::Cluster_Definitions_Base * CS_Shower::GetClusterDefinitions() 
