@@ -52,7 +52,7 @@ namespace MCATNLO {
     Shower(PDF::ISR_Handler * isr,const int qed,
 	   ATOOLS::Data_Reader *const dataread);
     ~Shower();
-    bool   EvolveShower(Singlet *,const size_t &,size_t &,int);
+    bool   EvolveShower(Singlet *,const size_t &,size_t &);
     void SetMS(ATOOLS::Mass_Selector *const ms);
     inline Sudakov *GetSudakov() { return &m_sudakov; }
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }

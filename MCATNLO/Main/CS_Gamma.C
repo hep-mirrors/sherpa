@@ -251,7 +251,6 @@ Trial_Weight CS_Gamma::TrialWeight(Cluster_Amplitude *const ampl)
     THROW(fatal_error,"No active splitting weight");
   ampl->SetMuF2(wact.m_muf2);
   ampl->SetMuR2(wact.m_mur2);
-  ampl->SetQ2(std::numeric_limits<double>::max());
   int i(-1), j(-1), k(-1);
   for (size_t l(0);l<ampl->Legs().size();++l)
     if (ampl->Leg(l)->Id()&idk) k=l;
