@@ -255,16 +255,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   size_t mcmode(bviproc->SetMCMode(3));
   double bvi(bviproc->Differential(ampl,rm));
   bviproc->SetMCMode(mcmode);
-  double asr(1.0);
-  if (bproc->OrderQCD()) {
-    msg_Debugging()<<"\\alpha_s renormalization {\n";
-    msg_Debugging()<<"  \\mu_r = "<<sqrt(mur2)
-  		   <<", \\mu_c = "<<sqrt(muc2)<<"\n";
-    asr+=bproc->OrderQCD()*(*MODEL::as)(mur2)*
-      (11.0-2.0/3.0*MODEL::as->Nf(mur2))/(4.0*M_PI)*log(muc2/mur2);
-    msg_Debugging()<<"} -> "<<asr<<"\n";
-  }
-  double k(bvi/(b*asr)*(1.0-rs/r)+rs/r);
+  double k(bvi/b*(1.0-rs/r)+rs/r);
   msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
 		 <<" -> K = "<<k<<"\n";
   // if (dabs(k)-1.0>r/b*ampl.Prev()->KT2()/ampl.KT2()) return 1.0;
