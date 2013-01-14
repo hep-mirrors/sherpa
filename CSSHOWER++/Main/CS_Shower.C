@@ -37,7 +37,6 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   if (m_kmode!=1) msg_Info()<<METHOD<<"(): Set kernel mode "<<m_kmode<<"\n";
   m_recocheck=_dataread->GetValue<int>("CSS_RECO_CHECK",0);
   if (m_recocheck!=0) msg_Info()<<METHOD<<"(): Set reco check mode "<<m_recocheck<<"\n";
-  m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
   int amode(_dataread->GetValue<int>("EXCLUSIVE_CLUSTER_MODE",0));
   if (amode!=0) msg_Info()<<METHOD<<"(): Set exclusive cluster mode "<<amode<<".\n";
   
