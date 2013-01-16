@@ -229,6 +229,8 @@ Tree_ME2_Base *CDY_Getter::operator()(const Process_Info &pi) const
   if (fl.size()!=4) return NULL;
   for (size_t i(0);i<fl.size();++i) if (fl[i].Mass()!=0.) return NULL;
   if (!ATOOLS::Flavour(kf_Wplus).IsOn()) return NULL;
+  if (MODEL::s_model->ComplexMatrixElement(string("CKM"),0,0)!=Complex(1.0,0.0))
+    return NULL;
   if ((fl[2].IsLepton() && fl[2]!=fl[3].Bar() &&
        fl[2].LeptonFamily()==fl[3].LeptonFamily() &&
        !fl[2].IsAnti() && fl[3].IsAnti() &&
