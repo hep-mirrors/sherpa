@@ -920,9 +920,9 @@ namespace SHERPA {
     while (position>0 && str[position-1]!=' ' && str[position-1]!='\t')
       position=str.find('{',position+1);
     if (position==-1) {
-      msg_Debugging()<<METHOD<<"(): adding '"<<str
-		     <<"' {-}("<<priority<<")\n";
       dv["-"]=std::pair<int,Type>(priority,ExtractMPvalue<Type>(str));
+      msg_Debugging()<<METHOD<<"(): adding '"<<str<<"'("<<dv["-"].second
+		     <<") {-}("<<priority<<")\n";
       return;
     }
     std::string hstr = str.substr(0,position);
@@ -939,9 +939,9 @@ namespace SHERPA {
       }
       else hstr=str;
       if (hstr.length()>0) {
-	msg_Debugging()<<METHOD<<"(): adding '"<<value
-		       <<"' {"<<hstr<<"}("<<priority<<")\n";
 	dv[hstr]=std::pair<int,Type>(priority,value);
+	msg_Debugging()<<METHOD<<"(): adding '"<<value<<"'("<<dv[hstr].second
+		       <<") {"<<hstr<<"}("<<priority<<")\n";
       }
     } while (position>-1);
   }
