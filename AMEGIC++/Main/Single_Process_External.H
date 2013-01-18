@@ -70,7 +70,6 @@ namespace AMEGIC {
     double         Partonic(const ATOOLS::Vec4D_Vector &,const int);
     double         DSigma(const ATOOLS::Vec4D_Vector &,bool);
     double         operator()(const ATOOLS::Vec4D *);
-    void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.) {}
     bool PerformTests();
 
   };

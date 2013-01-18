@@ -165,36 +165,6 @@ namespace METOOLS
     virtual void Calculate(const ATOOLS::Vec4D_Vector& momenta,bool anti=false);
   };
 
-  class Amplitude_Tensor : public Spin_Structure<std::vector<Complex> > {
-    ATOOLS::Particle_Vector                     m_particles;
-    const ATOOLS::CMatrix                     * p_colormatrix;
-    Amplitude_Tensor                  * p_contracted;
-    
-  public:
-    Amplitude_Tensor(ATOOLS::Particle_Vector particles);
-    ~Amplitude_Tensor();
-    
-    friend Amplitude_Tensor Contraction(
-                                        ATOOLS::Particle* part1, ATOOLS::Particle* part2,
-                                        Amplitude_Tensor* const amps1,
-                                        Amplitude_Tensor* const amps2
-                                       );
-
-    void    Contract( ATOOLS::Particle* part1, Amplitude_Tensor* const amps, ATOOLS::Particle* part2 );
-    double  SoftContract( ATOOLS::Particle* part1, Amplitude_Tensor* const amps, ATOOLS::Particle* part2 );
-    
-    double  SumSquare() const;
-
-    size_t  ColorSize() const;
-    const ATOOLS::CMatrix* GetColorMatrix() const;
-    void    SetColorMatrix(const ATOOLS::CMatrix* colormatrix);
-
-    bool    Contains(const ATOOLS::Particle* part) const;
-    const ATOOLS::Particle_Vector& Particles() const;
-
-    friend std::ostream& operator<<( std::ostream&, const Amplitude_Tensor &);
-  };
-
   /*! 
     \class Spin_Structure
     \brief Storing objects by spin combination.
@@ -304,77 +274,6 @@ namespace METOOLS
     \fn void Spin_Structure::CreateTrivial(Value value)
     \brief Inserts the given object for all spin combinations.
   */
-
-
-  /*! 
-    \class Amplitude_Tensor
-    \brief Storing amplitudes for all spin and color combinations of one process.
-    
-    This class inherits from Spin_Structure to provide methods for accessing
-    and manipulating amplitudes, by specifying the corresponding spin
-    combination. For each spin combination it contains a vector(!) of complex
-    numbers, each representing one color combination.
-    It also keeps track of the particles involved with these amplitudes, so that
-    you can easily contract two amplitude tensors over the spin index of one
-    particle.
-    To allow for sum-squaring over those amplitudes with the correct color
-    factors, it also contains a color matrix, which should have the same rank
-    as the number of amplitudes per spin combination.
-  */
-
-  /*!
-    \var ATOOLS::Particle_Vector Amplitude_Tensor::m_particles;
-    \brief particles which are involved with the amplitude
-  */
-
-  /*!
-    \var const ATOOLS::CMatrix* Amplitude_Tensor::p_colormatrix;
-    \brief pointer to the matrix which contains the color factors for
-           sum-squaring the amplitude
-  */
-
-  /*!
-    \fn Amplitude_Tensor::Amplitude_Tensor(ATOOLS::Particle_Vector particles)
-    \brief Constructor
-
-    You have to specify the particle pointers, because that way we can later
-    find the amplitude of a certain spin combination, and furthermore even
-    contract over a particle pointer, which is present in two Amplitude_Tensor's
-  */
-
-  /*!
-    \fn Amplitude_Tensor::~Amplitude_Tensor()
-    \brief Destructor
-
-    Doesn't do anything, because the only pointer member is the colormatrix,
-    which is set from outside, and not new'ed within Amplitude_Tensor.
-  */
-
-  /*!
-    \fn double Amplitude_Tensor::SumSquare() const
-    \brief Calculates the spin sum of all squared amplitudes (or of their summed
-           color contraction, if necessary)
-  */
-
-  /*!
-    \fn bool Amplitude_Tensor::Contains(const ATOOLS::Particle* part) const
-    \brief Method to check if a particle appears in this Amplitude_Tensor.
-  */
-
-  /*!
-    \fn friend Amplitude_Tensor Contraction(
-                                     ATOOLS::Particle* part1, ATOOLS::Particle* part2,
-                                     Amplitude_Tensor* const amps1,
-                                     Amplitude_Tensor* const amps2
-                                   );
-    \brief Contracts amps1 and amps2 over the spin indices of part1 and part2.
-
-    part1 and part2 may be the same, but due to particles sometimes just passing
-    through a blob (like Shower or Fragmentation of tau), they don't have to.
-    Of course, in a physical meaning, they have to represent the same particle.
-  */
-
-
 
 }
 

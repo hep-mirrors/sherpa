@@ -6,7 +6,6 @@
 #include "PHASIC++/Process/Single_Process.H"
 
 namespace MODEL { class Model_Base; }
-namespace METOOLS { class Amplitude_Tensor; }
 
 namespace AMEGIC {
 

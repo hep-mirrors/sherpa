@@ -115,7 +115,6 @@ namespace AMEGIC {
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
     void SetKFactor(const PHASIC::KFactor_Setter_Arguments &args);
 
-    void           FillAmplitudes(METOOLS::Amplitude_Tensor*, double =1.);
     int            NumberOfDiagrams();
     Point        * Diagram(int i);
 
