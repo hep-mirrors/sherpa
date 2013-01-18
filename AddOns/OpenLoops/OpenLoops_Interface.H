@@ -22,7 +22,7 @@ namespace OpenLoops {
 
     void InitializeParticles();
 
-    static std::string MatchOptions(std::vector<std::string> options,
+    static bool MatchOptions(std::vector<std::string> options,
                              int oew, int oqcd);
     static int SelectInfo(const dirent *entry);
     static bool Order(const std::pair<size_t, ATOOLS::Flavour> &a,
@@ -41,7 +41,7 @@ namespace OpenLoops {
 
     static std::string GetProcessPermutation(const ATOOLS::Flavour_Vector& flavs_orig,
                                              std::vector<int>& permutation);
-    static std::pair<std::string, std::string> ScanFiles(std::string& process,
+    static std::pair<std::string, std::string> ScanFiles(const std::string& process,
                                                          int oew, int oqcd);
 
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add)
