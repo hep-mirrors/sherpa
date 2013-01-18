@@ -24,6 +24,7 @@ CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,
   p_powheg(NULL), p_as(NULL), p_cluster(NULL), p_gamma(NULL)
 {
   m_psmode=_dataread->GetValue<int>("NLO_CSS_PSMODE",0);
+  if (m_psmode) msg_Info()<<METHOD<<"(): Set PS mode "<<m_psmode<<".\n";
   m_maxem=_dataread->GetValue<int>("NLO_CSS_MAXEM",1);
   m_scale2fac  = _dataread->GetValue<double>("CSS_SHOWER_SCALE2_FACTOR",-1.);
   if (m_scale2fac>0. && m_scale2fac!=1.) {
@@ -35,7 +36,7 @@ CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,
   p_next = new All_Singlets();
   p_cluster = new CS_Cluster_Definitions(p_powheg,1);
   p_gamma = new CS_Gamma(this,p_powheg,p_cluster);
-  p_gamma->SetOEF(_dataread->GetValue<double>("CSS_OEF",9.0));
+  p_gamma->SetOEF(_dataread->GetValue<double>("CSS_OEF",3.0));
   p_powheg->SetGamma(p_gamma);
   m_kt2min=p_powheg->GetSudakov()->ISPT2Min();
 }
