@@ -1050,7 +1050,6 @@ void Amplitude_Generator::Kill5VertexArtefacts(Single_Amplitude* first)
     if (Is5VertexArtefact(amp->GetPointlist(),tcnt)) amp->on=0;      
     amp=amp->Next;
   }
-  Kill_Off(first);
 }
 
 int Amplitude_Generator::Is5VertexArtefact(Point* p, int &tcnt)
@@ -1244,6 +1243,7 @@ Single_Amplitude* Amplitude_Generator::Matching()
   
   if (m_create_4V) CheckFor4Vertices(first_amp);
   Kill5VertexArtefacts(first_amp);
+  Kill_Off(first_amp);
   Compare(first_amp);
 
   Single_Amplitude*  f1 = first_amp;
