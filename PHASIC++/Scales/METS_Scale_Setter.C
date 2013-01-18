@@ -19,7 +19,6 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "MODEL/Main/Model_Base.H"
-#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/ZAlign.H"
@@ -235,35 +234,15 @@ double METS_Scale_Setter::CalculateStrict
   DEBUG_FUNC(p_proc->Name()<<" from "<<p_caller->Name());
   Process_Base *proc((mode&1)?p_proc:p_caller);
   proc->Integrator()->SetMomenta(momenta);
-  Cluster_Amplitude *ampl(NULL);
-  if (m_rproc) {
-    NLO_subevtlist *subs(proc->GetRSSubevtList());
-    double xssum(0.0);
-    for (size_t i(0);i<subs->size()-1;++i) {
-      double xs(((Single_Process*)(*subs)[i]->p_proc)->LastXS());
-      xssum+=dabs(xs);
-    }
-    if (xssum && !IsBad(xssum)) {
-      size_t i(0);
-      double psum(0.0), disc(xssum*ran->Get());
-      for (;i<subs->size()-1;++i) {
-	double xs(((Single_Process*)(*subs)[i]->p_proc)->LastXS());
-	if ((psum+=dabs(xs))>=disc) break;
-      }
-      if (i==subs->size()-1 || (*subs)[i]->p_ampl==NULL)
-	msg_Error()<<METHOD<<"(): No amplitude for "
-		   <<xssum<<"."<<std::endl;
-      else ampl=(*subs)[i]->p_ampl->CopyAll();
-    }
-  }
-  if (ampl==NULL) {
   PDF::Cluster_Definitions_Base* cd=
     proc->Shower()->GetClusterDefinitions();
   proc->Generator()->SetClusterDefinitions(cd);
   int amode(cd->AMode()), camode((m_nproc|amode)?512:0);
   cd->SetAMode((camode&512)?1:0);
-  ampl=proc->Generator()->
-    ClusterConfiguration(proc,m_cmode|camode|mode);
+  if (m_rproc) camode|=4096;
+  Cluster_Amplitude *ampl
+    (proc->Generator()->
+     ClusterConfiguration(proc,m_cmode|camode|mode));
   cd->SetAMode(amode);
   if (ampl==NULL) {
     msg_Debugging()<<METHOD<<"(): No CSS history for '"
@@ -279,7 +258,6 @@ double METS_Scale_Setter::CalculateStrict
 		 <<"% of calls. Set \\hat{s}."<<std::endl;
     }
     return SetScales((m_p[0]+m_p[1]).Abs2(),NULL);
-  }
   }
   Cluster_Amplitude *rampl(ampl);
   while (rampl->Next()) rampl=rampl->Next();
