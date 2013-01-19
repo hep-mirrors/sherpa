@@ -9,14 +9,18 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
   case "$build_os:$build_cpu:$build_vendor" in
     *darwin*:*:*)
       echo "checking for architecture... Darwin MacOS"
-      AM_LDFLAGS="-dynamic -flat_namespace"
+      if test "x$LDFLAGS" = "x"; then
+        AM_LDFLAGS="-dynamic -flat_namespace"
+      fi
       SEDCOMMAND="sed -i.bak -E"
       AC_DEFINE([ARCH_DARWIN], "1", [Architecture identified as Darwin MacOS])
       AC_DEFINE([LIB_SUFFIX], ".dylib", [library suffix set to .dylib]) 
       AC_DEFINE([LD_PATH_NAME], "DYLD_LIBRARY_PATH", [ld path name set to DYLD_LIBRARY_PATH]) ;;
     *linux*:*:*)
       echo "checking for architecture...  Linux"
-      AM_LDFLAGS="-rdynamic -Wl,--no-as-needed"
+      if test "x$LDFLAGS" = "x"; then
+        AM_LDFLAGS="-rdynamic -Wl,--no-as-needed"
+      fi
       SEDCOMMAND="sed -i -r"
       AC_DEFINE([ARCH_LINUX], "1", [Architecture identified as Linux])
       AC_DEFINE([LIB_SUFFIX], ".so", [library suffix set to .so]) 
@@ -28,7 +32,9 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
       echo "please inform us about build results at info@sherpa-mc.de"
       echo "(will continue in 10 seconds)"
       sleep 10
-      AM_LDFLAGS="-rdynamic -Wl,--no-as-needed"
+      if test "x$LDFLAGS" = "x"; then
+        AM_LDFLAGS="-rdynamic -Wl,--no-as-needed"
+      fi
       SEDCOMMAND="sed -i -r"
       AC_DEFINE([ARCH_UNIX], "1", [Architecture identified as Unix])
       AC_DEFINE([LIB_SUFFIX], ".so", [library suffix set to .so]) 
