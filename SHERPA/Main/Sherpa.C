@@ -118,7 +118,8 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
       cprocs[host]=procs[host]=1;
       for (int tag=1;tag<size;++tag) {
 	MPI::COMM_WORLD.Recv(&pid,1,MPI::INT,MPI::ANY_SOURCE,tag);
-	MPI::COMM_WORLD.Recv(host,256,MPI::CHAR,MPI::ANY_SOURCE,tag);
+	MPI::COMM_WORLD.Recv(host,MPI_MAX_PROCESSOR_NAME,
+			     MPI::CHAR,MPI::ANY_SOURCE,tag);
 	msg_Info()<<"  Rank "<<tag<<", pid "<<pid
 		  <<" running on "<<host<<"."<<std::endl;
 	hosts[tag]=host;
@@ -151,7 +152,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
     }
     else {
       MPI::COMM_WORLD.Send(&pid,1,MPI::INT,0,rank);
-      MPI::COMM_WORLD.Send(host,256,MPI::CHAR,0,rank);
+      MPI::COMM_WORLD.Send(host,MPI_MAX_PROCESSOR_NAME,MPI::CHAR,0,rank);
 #ifdef USING__Threading
       MPI::COMM_WORLD.Recv(&pid,1,MPI::INT,0,size+rank);
       if (pid==0) {
