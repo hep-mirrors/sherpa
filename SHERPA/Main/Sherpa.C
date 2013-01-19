@@ -107,10 +107,9 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   if (size>1) {
     msg_Info()<<METHOD<<"(): Analyzing MPI environment {\n";
     int ppn=p_inithandler->DataReader()->GetValue("MPI_COMBINE_PROCS",8);
-    int rank=MPI::COMM_WORLD.Get_rank(), pid(getpid());
-    char host[256];
-    strncpy(host,rpa->gen.Variable("HOSTNAME").c_str(),255);
-    if (rpa->gen.Variable("HOSTNAME").length()>255) host[255]='\0';
+    int rank=MPI::COMM_WORLD.Get_rank(), pid(getpid()), hlen;
+    char host[MPI_MAX_PROCESSOR_NAME];
+    MPI_Get_processor_name(host,&hlen);
     if (rank==0) {
       msg_Info()<<"  Rank "<<rank<<", pid "<<pid
 		<<" running on "<<host<<".\n";
