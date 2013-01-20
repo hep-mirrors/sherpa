@@ -455,7 +455,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  return false;
 	}
       }
-      int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,m_noem?2:0));
+      if (m_noem) continue;
+      int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,0));
       if (kstat<0) continue;
       if (p_actual->JF()) {
 	if (p_actual->GetSplit()) {
@@ -465,8 +466,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	msg_Debugging()<<"Disable jet veto\n";
 	Singlet *sing(p_actual);
 	sing->SetJF(NULL);
-	while (sing->GetSplit()) {
-	  sing=sing->GetSplit()->GetSing();
+	while (sing->GetLeft()) {
+	  sing=sing->GetLeft()->GetSing();
 	  sing->SetJF(NULL);
 	}
       }
