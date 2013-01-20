@@ -440,8 +440,17 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  }
 	}
       }
-      if (split->KtTest()>split->KtMax() &&
-	  p_actual->JF()) {
+      if (p_actual->JF() && split->KtMax() &&
+	  p_actual->GetSplit()==NULL) {
+	msg_Debugging()<<"Highest Multi -> Disable jet veto\n";
+	Singlet *sing(p_actual);
+	sing->SetJF(NULL);
+	while (sing->GetLeft()) {
+	  sing=sing->GetLeft()->GetSing();
+	  sing->SetJF(NULL);
+	}
+      }
+      if (p_actual->JF()) {
 	int vstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,2));
 	if (vstat==0) {
 	  if (p_actual->NLO()&2) {
@@ -451,7 +460,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	    p_actual->SetNLO(0);
 	    continue;
 	  }
-	  msg_Debugging()<<"Jet veto\n";
+	  msg_Debugging()<<"Shower jet veto\n";
 	  return false;
 	}
       }
