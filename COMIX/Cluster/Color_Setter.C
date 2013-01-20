@@ -21,7 +21,7 @@ Color_Setter::Color_Setter(Cluster_Algorithm *const ca):
   p_ca(ca) 
 {
   Data_Reader read(" ",";","!","=");
-  if (!read.ReadFromFile(m_cmode,"COMIX_CCMODE")) m_cmode=1;
+  if (!read.ReadFromFile(m_cmode,"COMIX_CCMODE")) m_cmode=2;
 }
 
 bool Color_Setter::SetRandomColors
