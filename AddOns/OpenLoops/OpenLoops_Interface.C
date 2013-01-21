@@ -70,7 +70,7 @@ namespace OpenLoops {
     int lenws=1200;
     char welcomestr[lenws];
     openloops_welcome_(welcomestr, &lenws);
-    msg_Out()<<std::string(welcomestr,lenws)<<std::endl;
+    msg_Info()<<std::string(welcomestr,lenws)<<std::endl;
     PRINT_INFO("Initialised OpenLoops generator:");
     PRINT_VAR(s_olprefix);
     PRINT_VAR(s_amp_switch);
@@ -323,6 +323,67 @@ namespace OpenLoops {
     return process;
   }
 
+  bool SortByFirstDec(pair<size_t, size_t> p1, pair<size_t, size_t> p2) {
+    return p1.first>p2.first;
+  }
+
+  Flavour_Vector OpenLoops_Interface::MapFlavours(const Flavour_Vector& orig)
+  {
+    /* Concept:
+      For each family i=0,...,2:
+      (1) Given a final state, determine the four (anti)lepton/neutrino
+          multiplicities in the given process:
+          a_nubar, a_nu, a_lbar, a_l
+
+      (2) Compute the discriminant N[i] as
+          N[i] = Ngen - (i+1) + Ngen*(a_nubar + a_nu*Nmax + a_lbar*Nmax^2 + a_l*Nmax^3)
+          where Nmax should be chosen such that a_...<=Nmax.
+          In practice one can safely set Nmax=10 and it will work for any
+          process with <= 20 final-state leptons.
+          It is also convenient to set Ngen=10, although i runs only from 1 to 3.
+
+      (3) Reassign the lepton generations with a permutation
+          p1 -> 1, p2 -> 2, p3 -> 3  such that  N[p1] > N[p2] > N[p3] */
+
+    multiset<int> hepevt;
+    for (size_t i=0; i<orig.size(); ++i) { hepevt.insert(orig[i].HepEvt()); }
+
+    size_t Ngen(10), Nmax(10);
+    vector<pair<size_t, size_t> > N(3);
+    for (size_t i=0; i<3; ++i) {
+      int nu_gen=10+2*(i+1);
+      int l_gen=9+2*(i+1);
+
+      size_t a_nu=hepevt.count(nu_gen);
+      size_t a_nubar=hepevt.count(-nu_gen);
+      size_t a_l=hepevt.count(l_gen);
+      size_t a_lbar=hepevt.count(-l_gen);
+
+      N[i]=make_pair(Ngen-(i+1) + Ngen*
+                     (a_nubar+a_nu*Nmax+a_lbar*Nmax*Nmax+a_l*Nmax*Nmax*Nmax),
+                     i);
+    }
+
+    sort(N.begin(), N.end(), SortByFirstDec);
+
+    Flavour_Vector ret(orig);
+    for (size_t i=0; i<3; ++i) {
+      int nu_gen=10+2*(N[i].second+1);
+      int nu_gen_new=10+2*(i+1);
+      int l_gen=9+2*(N[i].second+1);
+      int l_gen_new=9+2*(i+1);
+
+      for (size_t j=0; j<orig.size(); ++j) {
+        if (orig[j].Kfcode()==nu_gen) {
+          ret[j]=Flavour(nu_gen_new, orig[j].IsAnti());
+        }
+        if (orig[j].Kfcode()==l_gen) {
+          ret[j]=Flavour(l_gen_new, orig[j].IsAnti());
+        }
+      }
+    }
+    return ret;
+  }
 
   void dummyamp2func(double* moms,
                      double* B,
@@ -335,7 +396,7 @@ namespace OpenLoops {
   void dummypermfunc(int* permutation)
   {
     THROW(normal_exit, "Shopping list generated.");
-  } 
+  }
 
 
   DECLARE_VIRTUALME2_GETTER(OpenLoops_Virtual_Getter,"OpenLoops_Virtual")
@@ -354,8 +415,12 @@ namespace OpenLoops {
       }
     }
     DEBUG_VAR(flavs);
+
+    Flavour_Vector map_flavs=OpenLoops_Interface::MapFlavours(flavs);
+    msg_Out()<<endl<<flavs<<" --> "<<map_flavs<<endl;
+
     vector<int> permutation;
-    string process=OpenLoops_Interface::GetProcessPermutation(flavs, permutation);
+    string process=OpenLoops_Interface::GetProcessPermutation(map_flavs, permutation);
     pair<string, string> groupsub=OpenLoops_Interface::ScanFiles(process, pi.m_oew, pi.m_oqcd);
     string grouptag=groupsub.first;
     string subid=groupsub.second;

@@ -43,6 +43,7 @@ namespace OpenLoops {
                                              std::vector<int>& permutation);
     static std::pair<std::string, std::string> ScanFiles(const std::string& process,
                                                          int oew, int oqcd);
+    static ATOOLS::Flavour_Vector MapFlavours(const ATOOLS::Flavour_Vector& orig);
 
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     { return NULL; }
