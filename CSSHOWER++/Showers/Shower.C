@@ -440,8 +440,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  }
 	}
       }
-      if (p_actual->JF() && split->KtMax() &&
-	  p_actual->GetSplit()==NULL) {
+      if (p_actual->JF() &&
+	  split->KtTest()<split->KtMax()) {
 	msg_Debugging()<<"Highest Multi -> Disable jet veto\n";
 	Singlet *sing(p_actual);
 	sing->SetJF(NULL);
