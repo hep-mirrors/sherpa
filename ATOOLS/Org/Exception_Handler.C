@@ -152,6 +152,7 @@ void Exception_Handler::MPISuspend(int mode)
   else {
     if (mode) {
       msg_Error()<<METHOD<<"(): MPI master is killed. Abort."<<std::endl;
+      MPI_Abort(MPI::COMM_WORLD,m_exitcode);
     }
   }
 #endif
