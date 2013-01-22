@@ -230,6 +230,15 @@ public:
   
   bool Run(ATOOLS::Blob_List *const bl)
   {
+    Particle_List pl=bl->ExtractParticles(1);
+    for (Particle_List::iterator it=pl.begin(); it!=pl.end(); ++it) {
+      if ((*it)->Momentum().Nan()) {
+        msg_Error()<<METHOD<<" encountered NaN in momentum. Ignoring event:"
+                   <<endl<<*bl<<endl;
+        return false;
+      }
+    }
+
     double weight(bl->Weight());
     HepMC::GenEvent event;
     if (m_usehepmcshort)  m_hepmc2.Sherpa2ShortHepMC(bl, event, weight);
