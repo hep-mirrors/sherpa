@@ -167,7 +167,7 @@ namespace OpenLoops {
     double pole1_IR=0.0;
     double pole2_IR=0.0;
     int polenorm_swi=0;
-    int nq_nondecoupled =5;
+    int nq_nondecoupled=Flavour(kf_quark).Size()/2;
     double opp_rootsvalue=1000.0;
     double opp_limitvalue=0.01;
     double opp_thrs=0.000001;
