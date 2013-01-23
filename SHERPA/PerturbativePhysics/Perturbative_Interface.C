@@ -192,21 +192,13 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
   while (ampl->Next()!=NULL) {
     ampl=ampl->Next();
     Process_Base::SortFlavours(ampl);
-    Flavour_Vector amplflavs;
-    Vec4D_Vector pb;
-    for (size_t i=0; i<ampl->Legs().size(); ++i) {
-      amplflavs.push_back(i<ampl->NIn() ?
-                          ampl->Leg(i)->Flav().Bar():ampl->Leg(i)->Flav());
-      pb.push_back(i<ampl->NIn()?-ampl->Leg(i)->Mom():ampl->Leg(i)->Mom());
-    }
-    DEBUG_VAR(amplflavs);
     for (size_t i=0; i<procs.size(); ++i) {
       MCatNLO_Process* mcnloproc=dynamic_cast<MCatNLO_Process*>(procs[i]);
       if (mcnloproc) {
 	ampl->SetQ2(ampl->KT2());
 	ampl->Prev()->SetQ2(ampl->KT2());
 	double K(mcnloproc->LocalKFactor(*ampl));
-	if (K==0.0 || K>m_maxkfac) continue;
+	if (K==0.0 || dabs(K)>m_maxkfac) continue;
 	m_weight*=K;
 	return true;
       }
