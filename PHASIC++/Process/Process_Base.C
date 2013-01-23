@@ -186,11 +186,9 @@ public:
 class Order_Anti {
 public:
   bool operator()(const Subprocess_Info &a,const Subprocess_Info &b)
-  { return a.m_fl.IsFermion() && b.m_fl.IsFermion()
-      && (!a.m_fl.IsAnti() && b.m_fl.IsAnti()); }
+  { return !a.m_fl.IsAnti() && b.m_fl.IsAnti(); }
   bool operator()(const Cluster_Leg *a,const Cluster_Leg *b)
-  { return a->Flav().IsFermion() && b->Flav().IsFermion()
-      && (!a->Flav().IsAnti() && b->Flav().IsAnti()); }
+  { return !a->Flav().IsAnti() && b->Flav().IsAnti(); }
 };// end of class Order_Anti
 
 class Order_SVFT {
