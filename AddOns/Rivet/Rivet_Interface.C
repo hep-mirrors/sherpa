@@ -279,16 +279,17 @@ public:
         }
       }
       if (m_splitSH && sp) {
-        std::string type="O";
         std::string typespec=sp->TypeSpec();
         typespec=typespec.substr(typespec.length()-2, 2);
+        std::string type="";
         if (typespec=="+S") type="S";
         else if (typespec=="+H") type="H";
-        else type="O";
 
-        GetRivet(type, 0)->analyze(event);
-        if (m_splitjetconts) {
-          GetRivet(type, parts)->analyze(event);
+        if (type!="") {
+          GetRivet(type, 0)->analyze(event);
+          if (m_splitjetconts) {
+            GetRivet(type, parts)->analyze(event);
+          }
         }
       }
     }
