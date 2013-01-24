@@ -31,7 +31,7 @@ Perturbative_Interface::Perturbative_Interface
   read.SetInputPath(p_me->Path());
   read.SetInputFile(p_me->File());
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
-  m_bbarmode=read.GetValue<int>("METS_BBAR_MODE",1);
+  m_bbarmode=read.GetValue<int>("METS_BBAR_MODE",3);
   m_globalkfac=read.GetValue<double>("GLOBAL_KFAC",0.);
   m_maxkfac=read.GetValue<double>("MENLOPS_MAX_KFAC",10.0);
 }
@@ -153,7 +153,7 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   //if (!p_dec->SetColours(p_ampl,blob)) return Return_Value::New_Event;
   m_weight=1.0;
   if (p_me->Process()->Info().m_ckkw&1) {
-    if (m_bbarmode && p_me->HasNLO() &&
+    if ((m_bbarmode&1) && p_me->HasNLO() &&
         p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
         Cluster_Amplitude *excl_ampl=
             p_me->Process()->Get<Single_Process>()->Cluster(m_cmode|256|512|1024);
@@ -191,6 +191,7 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
   Process_Base::SortFlavours(ampl);
   while (ampl->Next()!=NULL) {
     ampl=ampl->Next();
+    if (ampl->Next() && (m_bbarmode&2)) continue;
     Process_Base::SortFlavours(ampl);
     for (size_t i=0; i<procs.size(); ++i) {
       MCatNLO_Process* mcnloproc=dynamic_cast<MCatNLO_Process*>(procs[i]);
