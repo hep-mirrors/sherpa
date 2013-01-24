@@ -338,7 +338,11 @@ double Single_Process::Differential(const Vec4D_Vector &p)
       size_t mcmode(cp->SetMCMode(m_mcmode));
       bool lookup(cp->LookUp());
       cp->SetLookUp(false);
+      cp->SetUseBIWeight(m_use_biweight);
+      cp->SetFixedScale(scs->FixedScales());
       m_last-=cp->Differential(dps.m_p)*dps.m_weight;
+      cp->SetFixedScale(std::vector<double>());
+      cp->SetUseBIWeight(true);
       cp->SetLookUp(lookup);
       cp->SetMCMode(mcmode);
     }

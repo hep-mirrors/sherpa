@@ -198,10 +198,5 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
     m_mcsign=m_av>0.0 && m_kt2<m_kt2max;
     return m_mcsign==0;
   }
-  if (m_mcmode==3) {
-    int da(m_av>0.0), ds(alpha<m_alpha);
-    m_mcsign=ds-da;
-    return m_mcsign==0;
-  }
   return alpha>m_alpha || (m_av>0.0 && m_kt2>m_kt2max);
 }

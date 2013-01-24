@@ -205,7 +205,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
 {
   DEBUG_FUNC(Name());
   msg_Debugging()<<"Setting Born scale {\n";
-  double oqc(0.0), asc(1.0), mur2(ampl.MuR2());
+  double oqc(0.0), asc(1.0), muf2(ampl.KT2()), mur2(ampl.MuR2());
   const Cluster_Amplitude *campl(&ampl);
   for (;campl->Next();campl=campl->Next()) {
     double cas(MODEL::as->BoundedAlphaS(campl->KT2()));
@@ -215,9 +215,10 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
     msg_Debugging()<<"  \\mu = "<<sqrt(campl->KT2())
 		   <<", O(QCD) = "<<coqcd<<"\n";
   }
-  if (campl->OrderQCD()) {
+  if (oqc==0 || campl->OrderQCD()) {
     double cas(MODEL::as->BoundedAlphaS(campl->KT2()));
     double coqcd(campl->OrderQCD());
+    if (oqc+coqcd==0) coqcd=1;
     asc*=pow(cas,coqcd);
     oqc+=coqcd;
     msg_Debugging()<<"  \\mu = "<<sqrt(campl->KT2())
@@ -232,6 +233,8 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   Cluster_Amplitude *rampl(ampl.Prev());
   if (rampl->Legs().size()!=m_nin+m_nout) return 0.0;
   rampl->SetMuR2(muc2);
+  rampl->SetMuF2(muf2);
+  rampl->SetQ2(muf2);
   msg_Debugging()<<*rampl<<"\n";
   int rm(rampl->Leg(0)->Mom()[3]>0.0?1024:0);
   Process_Base *rsproc(FindProcess(rampl,nlo_type::rsub,false));
@@ -242,23 +245,21 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   msg_Debugging()<<"H = "<<rs<<", R = "<<r<<" -> "<<rs/r<<"\n";
   if (IsEqual(rs,r,1.0e-6) || r==0.0) return 1.0;
   ampl.Prev()->Next()->SetMuR2(muc2);
+  ampl.Prev()->Next()->SetMuF2(muf2);
+  ampl.Prev()->Next()->SetQ2(muf2);
   msg_Debugging()<<ampl<<"\n";
   rm=ampl.Leg(0)->Mom()[3]>0.0?1024:0;
   Process_Base *bviproc(FindProcess(&ampl,nlo_type::vsub,false));
   if (bviproc==NULL) return 0.0;
   msg_Debugging()<<"Found '"<<bviproc->Name()<<"'\n";
   Process_Base *bproc(FindProcess(&ampl));
-  if (oqc!=bproc->OrderQCD()) THROW(fatal_error,"Invalid amplitude");
-  double b(bproc->Differential(ampl,rm));
+  double b(bproc->Differential(ampl,2|rm));
   if (b==0.0) return 0.0;
   bviproc->BBarMC()->GenerateEmissionPoint(ampl,rm);
-  size_t mcmode(bviproc->SetMCMode(3));
-  double bvi(bviproc->Differential(ampl,rm));
-  bviproc->SetMCMode(mcmode);
+  double bvi(bviproc->Differential(ampl,2|rm));
   double k(bvi/b*(1.0-rs/r)+rs/r);
   msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
 		 <<" -> K = "<<k<<"\n";
-  // if (dabs(k)-1.0>r/b*ampl.Prev()->KT2()/ampl.KT2()) return 1.0;
   return k;
 }
 
