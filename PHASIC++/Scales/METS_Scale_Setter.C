@@ -72,7 +72,7 @@ namespace PHASIC {
 
     SP(Color_Integrator) p_ci;
 
-    size_t m_cnt, m_rej, m_mode, m_cmode;
+    size_t m_cnt, m_rej, m_mode, m_cmode, m_cmoders;
     double m_lfrac, m_aqed, m_wthres;
     int    m_rproc, m_vproc, m_nproc, m_nfgsplit;
 
@@ -210,6 +210,7 @@ METS_Scale_Setter::METS_Scale_Setter
   m_nproc=!p_proc->Parent()->Info().m_fi.NLOType()==nlo_type::lo;
   if (m_nproc) m_mode=2;
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
+  m_cmoders=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE_RS"));
   Data_Reader read(" ",";","!","=");
   if (!read.ReadFromFile(m_wthres,"METS_WARNING_THRESHOLD")) m_wthres=0.1;
   std::string core;
@@ -239,7 +240,7 @@ double METS_Scale_Setter::CalculateStrict
   proc->Generator()->SetClusterDefinitions(cd);
   int amode(cd->AMode()), camode((m_nproc|amode)?512:0);
   cd->SetAMode((camode&512)?1:0);
-  if (m_rproc) camode|=4096;
+  if (m_rproc) camode|=m_cmoders|4096;
   Cluster_Amplitude *ampl
     (proc->Generator()->
      ClusterConfiguration(proc,m_cmode|camode|mode));
