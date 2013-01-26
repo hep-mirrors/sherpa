@@ -108,7 +108,8 @@ Combine_Data::~Combine_Data()
 std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct) 
 {
   if (&ct) {
-    s<<std::endl<<" Combine_Table ("<<&ct<<") "<<ct.m_no<<" (up=";
+    s<<std::endl<<" Combine_Table ("<<&ct<<") "<<ct.m_no
+     <<" [OQCD="<<ct.m_nstrong<<"] (up=";
     if (ct.p_up) s<<ct.p_up->m_no<<")"<<std::endl; else s<<"#)"<<std::endl;
     if (ct.m_decids.size()) {
       std::string ds;
@@ -145,6 +146,7 @@ std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct)
       s<<" graph"<<std::setw(8)
        <<"flav"<<std::setw(5)<<" cut qcd qed"<<std::setw(12)
        <<"q_{min qcd}"<<std::setw(12)<<"q_{min qed}"<<std::setw(12)<<std::endl;
+      if (ct.m_nlegs==4)
       for (int k=0;k<ct.m_nampl;++k) {
 	for (int l=0;l<2;++l) {
 	  s<<std::setw(3)<<k<<"("<<l<<")"<<std::setw(8)
@@ -169,7 +171,7 @@ Combine_Table::Combine_Table(AMEGIC::Process_Base *const proc,
 			     PDF::Cluster_Definitions_Base *clus,
 			     Vec4D *moms, Combine_Table *up,
 			     ATOOLS::DecayInfo_Vector *const decids):
-  p_ms(ms), m_nstrong(0), m_nlegs(0), m_nampl(0),
+  p_ms(ms), m_nstrong(proc->OrderQCD()), m_nlegs(0), m_nampl(0),
   m_graph_winner(0), 
   p_up(up), p_legs(0), p_clus(clus), p_moms(moms),
   p_hard(NULL), p_hardc(NULL), p_channel(NULL), p_scale(NULL), m_rscale(-1.0),
@@ -561,6 +563,7 @@ Combine_Table *Combine_Table::
 CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2) 
 {
   DEBUG_FUNC(mode<<" "<<nl<<" "<<sqrt(kt2));
+  msg_Debugging()<<*this<<"\n";
   if (nl==3) return this;
   m_rejected.clear();
   bool invonly(true), valid(mode&512);
@@ -568,6 +571,19 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     m_nl=nl;
     if (moms) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
     if (!SelectWinner(mode)) {
+      if ((mode&512) && m_nstrong==0) {
+	  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
+	  ampl->SetProc(p_proc);
+	  ampl->SetMS(p_ms);
+	  for (int i=0;i<m_nlegs;++i)
+	    ampl->CreateLeg(i<2?-p_moms[i]:p_moms[i],
+			    i<2?p_legs[0][i].Flav().Bar():p_legs[0][i].Flav(),
+			    ColorID(),p_legs[0][i].ID());
+	  PDF::CParam scale((p_proc->IsMapped()?p_proc->MapProc():p_proc)
+			    ->ScaleSetter()->CoreScale(ampl));
+	  ampl->Delete();
+	  return this;
+      }
       if (nl==4 && p_proc->Info().m_fi.NMinExternal()>1 &&
 	  (IdentifyHardProcess() || p_up==NULL)) {
 	DecayInfo_Vector decids(m_decids);
@@ -793,6 +809,8 @@ Combine_Table *Combine_Table::CreateNext()
     }
     m_cdata_winner->second.p_down = 
       new Combine_Table(p_proc,p_ms,p_clus,amoms,this,p_decids);
+    m_cdata_winner->second.p_down->m_nstrong =
+      m_nstrong-m_cdata_winner->second.m_strong;
     {
       Combine_Table *tab((Combine_Table*)m_cdata_winner->second.p_down);
       tab->m_kt2ord=UpdateKT2(m_cdata_winner);

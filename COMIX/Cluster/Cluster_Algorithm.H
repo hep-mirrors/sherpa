@@ -97,7 +97,8 @@ namespace COMIX {
 		 const size_t &id,const size_t &nmax) const;
 
     KT2Info_Vector UpdateKT2(const KT2Info_Vector &kt2ord,
-			     const Cluster_Amplitude *ampl) const;
+			     const Cluster_Amplitude *ampl,
+			     const int mode=0) const;
 
   public:
 

@@ -31,6 +31,7 @@ Cluster_Algorithm::~Cluster_Algorithm()
 bool Cluster_Algorithm::Cluster
 (Process_Base *const xs,const size_t mode,const double &kt2)
 {
+  DEBUG_FUNC("");
   p_proc=xs->GetReal();
   p_ampl=NULL;
   int nampl=p_proc->NumberOfDiagrams();
@@ -110,14 +111,6 @@ bool Cluster_Algorithm::Cluster
   }
   p_xs=GetXS(fl);
   SetColours(p_xs,moms,&fl.front());
-  }
-  else {
-    if (!(p_ct->Flav(0).IsGluon() &&
-	  p_ct->Flav(1).IsGluon() &&
-	  p_ct->Flav(2).Kfcode()==kf_h0)) abort();
-    m_colors[0][1] = m_colors[1][0] = 500;
-    m_colors[1][1] = m_colors[0][0] = 501;
-    m_colors[2][1] = m_colors[2][0] = 0;
   }
   Convert();
   return true;
@@ -517,7 +510,7 @@ void Cluster_Algorithm::Convert()
     size_t id(ct_tmp->GetLeg(i).ID());
     Flavour flav(i<2?ct_tmp->Flav(i).Bar():ct_tmp->Flav(i));
     Vec4D mom(i<2?-ct_tmp->Momentum(i):ct_tmp->Momentum(i));
-    p_ampl->CreateLeg(mom,flav,ColorID(),id);
+    p_ampl->CreateLeg(mom,flav,ColorID(0,0),id);
     p_ampl->Legs().back()->SetStat(1);
   }
   p_ampl->SetQ2(Q2);
@@ -543,7 +536,7 @@ void Cluster_Algorithm::Convert()
       Flavour flav(i<2?ct_tmp->Flav(i).Bar():ct_tmp->Flav(i));
       Vec4D mom(i<2?-ct_tmp->Momentum(i):ct_tmp->Momentum(i));
       if (i==iwin) id+=ampl->Leg(jwin)->Id();
-      p_ampl->CreateLeg(mom,flav,ColorID(),id);
+      p_ampl->CreateLeg(mom,flav,ColorID(0,0),id);
       if (IdCount(id)==1) {
 	p_ampl->Legs().back()->SetStat(1);
       }
@@ -574,10 +567,35 @@ void Cluster_Algorithm::Convert()
   size_t nmax(p_proc->Info().m_fi.NMaxExternal());
   p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
   SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,nmax);
+  if (p_ampl->Legs().size()==4) {
   for (size_t i(0);i<2;++i)
     p_ampl->Leg(i)->SetCol(ColorID(m_colors[i][1],m_colors[i][0]));
   for (size_t i(2);i<2+p_proc->Info().m_fi.NMinExternal();++i)
     p_ampl->Leg(i)->SetCol(ColorID(m_colors[i][0],m_colors[i][1]));
+  }
+  else {
+    std::vector<int> tids, atids;
+    for (size_t i(0);i<p_ampl->Legs().size();++i)
+      if (p_ampl->Leg(i)->Flav().StrongCharge()>0) {
+	tids.push_back(i);
+	if (p_ampl->Leg(i)->Flav().StrongCharge()==8)
+	  atids.push_back(i);
+      }
+      else if (p_ampl->Leg(i)->Flav().StrongCharge()<0) {
+	atids.push_back(i);
+      }
+    while (true) {
+      std::random_shuffle(atids.begin(),atids.end());
+      size_t i(0);
+      for (;i<atids.size();++i) if (atids[i]==tids[i]) break;
+      if (i==atids.size()) break;
+    }
+    for (size_t i(0);i<tids.size();++i) {
+      int cl(Flow::Counter());
+      p_ampl->Leg(tids[i])->SetCol(ColorID(cl,p_ampl->Leg(tids[i])->Col().m_j));
+      p_ampl->Leg(atids[i])->SetCol(ColorID(p_ampl->Leg(atids[i])->Col().m_i,cl));
+    }
+  }
   while (p_ampl->Prev()) {
     Cluster_Amplitude *ampl(p_ampl->Prev());
     ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();

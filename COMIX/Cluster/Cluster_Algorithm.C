@@ -523,7 +523,8 @@ bool Cluster_Algorithm::Cluster
 }
 
 KT2Info_Vector Cluster_Algorithm::UpdateKT2
-(const KT2Info_Vector &kt2ord,const Cluster_Amplitude *ampl) const
+(const KT2Info_Vector &kt2ord,const Cluster_Amplitude *ampl,
+ const int mode) const
 {
   KT2Info_Vector nkt2ord(kt2ord);
   Cluster_Leg *split(ampl->Next()->Splitter());
@@ -538,7 +539,7 @@ KT2Info_Vector Cluster_Algorithm::UpdateKT2
   if ((split->Stat()!=3 &&
        split->Flav().Strong()) ||
       ampl->Legs().size()==4) {
-    nkt2ord[li].second=ampl->KT2();
+    nkt2ord[li].second=(mode?ampl->Next():ampl)->KT2();
     msg_Debugging()<<"set last k_T = "<<sqrt(nkt2ord[li].second)
 		   <<" for "<<ID(nkt2ord[li].first)
 		   <<" from "<<ID(sid)<<"\n";
@@ -554,6 +555,12 @@ bool Cluster_Algorithm::Cluster
     p_ampl=p_ampl->Prev();
     p_ampl->Decays()=p_ampl->Next()->Decays();
     p_ampl->DeleteNext();
+    return true;
+  }
+  if ((m_wmode&512) && p_ampl->OrderQCD()==0) {
+    p_ampl->SetKT2((p_xs->IsMapped()?p_xs->MapProc():p_xs)
+		   ->ScaleSetter()->CoreScale(p_ampl).m_mu2);
+    if (p_ampl->Prev()) kt2ord=UpdateKT2(kt2ord,p_ampl->Prev(),1);
     return true;
   }
   size_t oldsize(0);
