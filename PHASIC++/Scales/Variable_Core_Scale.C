@@ -1,5 +1,6 @@
 #include "PHASIC++/Scales/Core_Scale_Setter.H"
 
+#include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -25,7 +26,8 @@ namespace PHASIC {
     PDF::CParam Calculate(ATOOLS::Cluster_Amplitude *const ampl);
 
     void SetScale(const std::string &mu2tag,
-		  ATOOLS::Algebra_Interpreter &mu2calc);
+		  ATOOLS::Algebra_Interpreter &mu2calc,
+		  const size_t &n);
 
     std::string   ReplaceTags(std::string &expr) const;    
     ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;    
@@ -42,8 +44,9 @@ using namespace ATOOLS;
 Variable_Core_Scale::Variable_Core_Scale
 (const Core_Scale_Arguments &args): Core_Scale_Setter(args)
 {
+  size_t n(args.p_proc->NIn()+args.p_proc->NOut());
   p_ampl=Cluster_Amplitude::New();
-  for (size_t i(0);i<4;++i)
+  for (size_t i(0);i<n;++i)
     p_ampl->CreateLeg(Vec4D(),Flavour(kf_jet),ColorID());
   std::string tag(args.m_scale);
   while (true) {
@@ -61,7 +64,7 @@ Variable_Core_Scale::Variable_Core_Scale
     m_calcs.push_back(new Algebra_Interpreter());
     m_calcs.back()->AddFunction(MODEL::as->GetAIGMeanFunction());
     m_calcs.back()->SetTagReplacer(this);
-    SetScale(ctag,*m_calcs.back());
+    SetScale(ctag,*m_calcs.back(),n);
   }
   p_ampl->Delete();
 }
@@ -84,12 +87,12 @@ PDF::CParam Variable_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 }
 
 void Variable_Core_Scale::SetScale
-(const std::string &mu2tag,Algebra_Interpreter &mu2calc)
+(const std::string &mu2tag,Algebra_Interpreter &mu2calc,const size_t &n)
 { 
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): Core scale '"<<mu2tag<<"' {\n";
   msg_Indent();
-  for (size_t i=0;i<4;++i) 
+  for (size_t i=0;i<n;++i) 
     mu2calc.AddTag("p["+ToString(i)+"]",ToString(Vec4D()));
   mu2calc.Interprete(mu2tag);
   if (msg_LevelIsDebugging()) mu2calc.PrintEquation();
