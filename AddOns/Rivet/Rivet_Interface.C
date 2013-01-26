@@ -66,9 +66,7 @@ public:
 #ifdef USING__MPI
     }
     if (MPI::COMM_WORLD.Get_size()>1) {
-      size_t pos(m_outpath.find('.'));
-      if (pos==std::string::npos) pos=m_outpath.length();
-      m_outpath.insert(pos,"_"+rpa->gen.Variable("RNG_SEED"));
+      m_outpath.insert(m_outpath.length(),"_"+rpa->gen.Variable("RNG_SEED"));
     }
 #endif
   }
