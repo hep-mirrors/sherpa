@@ -179,7 +179,8 @@ namespace AMEGIC {
     inline int                  OrderStrong()                        const { return m_nstrong; }
     inline int                  NAmplitudes()                        const { return m_nampl; }
     inline Combine_Table * Up()                                 const { return p_up; }
-    inline Combine_Table * Down()                               const { return m_combinations.empty()?NULL:m_cdata_winner->second.p_down; }
+    inline Combine_Table * Down()                               const
+    { return m_combinations.empty()?NULL:(m_cdata_winner==m_combinations.end()?NULL:m_cdata_winner->second.p_down); }
     inline ATOOLS::Vec4D              Momentum(const int i)                const { return p_moms[i]; }
     inline ATOOLS::Flavour            Flav(const int i)                    const { return p_legs[m_graph_winner][i].Flav(); }
     inline const Leg                & GetLeg(const int ngraph,const int l) const { return p_legs[ngraph][l]; }
