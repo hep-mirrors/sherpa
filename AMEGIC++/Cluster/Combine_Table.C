@@ -142,11 +142,10 @@ std::ostream& AMEGIC::operator<<(std::ostream& s ,const Combine_Table & ct)
 	}
       }
     }
-    else {
+    else if (ct.p_hard) {
       s<<" graph"<<std::setw(8)
        <<"flav"<<std::setw(5)<<" cut qcd qed"<<std::setw(12)
        <<"q_{min qcd}"<<std::setw(12)<<"q_{min qed}"<<std::setw(12)<<std::endl;
-      if (ct.m_nlegs==4)
       for (int k=0;k<ct.m_nampl;++k) {
 	for (int l=0;l<2;++l) {
 	  s<<std::setw(3)<<k<<"("<<l<<")"<<std::setw(8)
@@ -582,6 +581,22 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
 	  PDF::CParam scale((p_proc->IsMapped()?p_proc->MapProc():p_proc)
 			    ->ScaleSetter()->CoreScale(ampl));
 	  ampl->Delete();
+	  bool ord(true);
+	  for (size_t i(0);i<m_kt2ord.size();++i) {
+	    if (scale.m_kt2<m_kt2ord[i].second) {
+	      msg_Debugging()<<"unordered configuration: "<<sqrt(scale.m_kt2)
+			     <<" vs. "<<sqrt(m_kt2ord[i].second)<<" "
+			     <<ID(m_kt2ord[i].first)<<" (mode="<<mode<<")\n";
+	      if ((p_up && p_up->p_up) || !(mode&4096)) ord=false;
+	      break;
+	    }
+	  }
+	  if (!ord) {
+	    if (!(mode&16)) {
+	      delete this;
+	      return NULL;
+	    }
+	  }
 	  return this;
       }
       if (nl==4 && p_proc->Info().m_fi.NMinExternal()>1 &&
