@@ -757,10 +757,8 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
 	cstp::code et((i<ampl->NIn()||j<ampl->NIn())?
 		      (k<ampl->NIn()?cstp::II:cstp::IF):
 		      (k<ampl->NIn()?cstp::FI:cstp::FF));
-	if ((nlo>0 && 
-	     (lk->Flav().Strong() && lk->Flav().Mass()==0.0) &&
-	     (li->Flav().Strong() && li->Flav().Mass()==0.0) &&
-	     (lj->Flav().Strong() && lj->Flav().Mass()==0.0)) ||
+	if ((mode==0 && nlo>0 && lk->Flav().Strong() &&
+	     li->Flav().Strong() && lj->Flav().Strong()) ||
 	    p_shower->GetSudakov()->HasKernel(fi,fj,fk,et)) {
 	  double q2ijk(PDF::Qij2(li->Mom(),lj->Mom(),lk->Mom(),
 				 li->Flav(),lj->Flav(),jf->DR()));
