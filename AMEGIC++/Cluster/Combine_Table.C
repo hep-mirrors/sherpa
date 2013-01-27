@@ -176,6 +176,9 @@ Combine_Table::Combine_Table(AMEGIC::Process_Base *const proc,
   p_hard(NULL), p_hardc(NULL), p_channel(NULL), p_scale(NULL), m_rscale(-1.0),
   p_decids(decids)
 {
+  if (proc->Info().m_fi.NLOType()&PHASIC::nlo_type::loop ||
+      proc->Info().m_fi.NLOType()&PHASIC::nlo_type::vsub)
+    m_nstrong--;
   p_proc=proc;
   m_no=++s_all;
   m_kt2ord=KT2Info_Vector(1,KT2_Info((1<<proc->NIn()+proc->NOut())-1,0.0));
