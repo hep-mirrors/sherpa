@@ -232,15 +232,17 @@ double METS_Scale_Setter::CalculateStrict
 (const Vec4D_Vector &momenta,const size_t &mode)
 {
   if (p_caller->Shower()==NULL) THROW(fatal_error,"No shower generator");
-  DEBUG_FUNC(p_proc->Name()<<" from "<<p_caller->Name());
   Process_Base *proc((mode&1)?p_proc:p_caller);
+  DEBUG_FUNC(p_proc->Name()<<" from "<<p_caller->Name()
+	     <<", mcmode = "<<proc->MCMode());
   proc->Integrator()->SetMomenta(momenta);
   PDF::Cluster_Definitions_Base* cd=
     proc->Shower()->GetClusterDefinitions();
   proc->Generator()->SetClusterDefinitions(cd);
   int amode(cd->AMode()), camode((m_nproc|amode)?512:0);
   cd->SetAMode((camode&512)?1:0);
-  if (m_rproc) camode|=m_cmoders|4096;
+  if (m_rproc) camode|=4096;
+  if (proc->MCMode()==2) camode|=m_cmoders;
   Cluster_Amplitude *ampl
     (proc->Generator()->
      ClusterConfiguration(proc,m_cmode|camode|mode));
