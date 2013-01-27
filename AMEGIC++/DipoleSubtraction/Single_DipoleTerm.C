@@ -651,6 +651,13 @@ void Single_DipoleTerm::SetKFactor(const KFactor_Setter_Arguments &args)
   p_kfactor=p_LO_process->Partner()->KFactorSetter();
 }
 
+size_t Single_DipoleTerm::SetMCMode(const size_t mcmode)
+{
+  size_t cmcmode(p_LO_process->SetMCMode(mcmode));
+  m_mcmode=mcmode;
+  return cmcmode;
+}
+
 size_t Single_DipoleTerm::SetClusterMode(const size_t cmode)
 {
   size_t ccmode(p_LO_process->SetClusterMode(cmode));
