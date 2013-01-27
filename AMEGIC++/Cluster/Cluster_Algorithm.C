@@ -570,7 +570,7 @@ void Cluster_Algorithm::Convert()
   if (p_ampl->Legs().size()==4) {
   for (size_t i(0);i<2;++i)
     p_ampl->Leg(i)->SetCol(ColorID(m_colors[i][1],m_colors[i][0]));
-  for (size_t i(2);i<2+p_proc->Info().m_fi.NMinExternal();++i)
+  for (size_t i(2);i<4;++i)
     p_ampl->Leg(i)->SetCol(ColorID(m_colors[i][0],m_colors[i][1]));
   }
   else {
