@@ -133,7 +133,7 @@ double Splitting_Function_Base::operator()
   if (IsBad(sf))
     THROW(fatal_error,"Invalid weight in CSS "+
 	  Demangle(std::string(typeid(*p_lf).name()).substr(12))+"|"+
-	  Demangle(std::string(typeid(*p_cf).name()).substr(12)));
+	  Demangle(std::string(typeid(*p_cf).name()).substr(11)));
   return Max(0.0,sf);
 }
 

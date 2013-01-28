@@ -173,7 +173,7 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
     m_addsplittings.push_back(split);
     msg_Debugging()<<"\n";
   }
-  if (split->GetCol()<0) {
+  if (split->GetCol()<0 || split->GetCol()==0) {
     switch(split->GetType()) {
     case cstp::IF:
       m_fifmap[split->GetFlavourA().Bar()]
@@ -187,7 +187,7 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
       break;
     default: break;
     }
-    return;
+    if (split->GetCol()<0) return;
   }
   switch(split->GetType()) {
   case cstp::FF:
