@@ -204,59 +204,27 @@ double MCatNLO_Process::Differential(const Vec4D_Vector &p)
 double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
 {
   DEBUG_FUNC(Name());
-  msg_Debugging()<<"Setting Born scale {\n";
-  double oqc(0.0), asc(1.0), muf2(ampl.KT2()), mur2(ampl.MuR2());
-  const Cluster_Amplitude *campl(&ampl);
-  for (;campl->Next();campl=campl->Next()) {
-    double cas(MODEL::as->BoundedAlphaS(campl->KT2()));
-    double coqcd(campl->OrderQCD()-campl->Next()->OrderQCD());
-    asc*=pow(cas,coqcd);
-    oqc+=coqcd;
-    msg_Debugging()<<"  \\mu = "<<sqrt(campl->KT2())
-		   <<", O(QCD) = "<<coqcd<<"\n";
-  }
-  if (oqc==0 || campl->OrderQCD()) {
-    double cas(MODEL::as->BoundedAlphaS(campl->KT2()));
-    double coqcd(campl->OrderQCD());
-    if (oqc+coqcd==0) coqcd=1;
-    asc*=pow(cas,coqcd);
-    oqc+=coqcd;
-    msg_Debugging()<<"  \\mu = "<<sqrt(campl->KT2())
-		   <<", O(QCD) = "<<coqcd<<"\n";
-  }
-  asc=pow(asc,1.0/oqc);
-  double muc2(MODEL::as->WDBSolve
-	      (asc,MODEL::as->CutQ2(),1.01*rpa->gen.CplScale()));
-  if (!IsEqual((*MODEL::as)(muc2),asc))
-    msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl; 
-  msg_Debugging()<<"} -> "<<sqrt(muc2)<<"\n";
   Cluster_Amplitude *rampl(ampl.Prev());
   if (rampl->Legs().size()!=m_nin+m_nout) return 0.0;
-  rampl->SetMuR2(muc2);
-  rampl->SetMuF2(muf2);
-  rampl->SetQ2(muf2);
   msg_Debugging()<<*rampl<<"\n";
   int rm(rampl->Leg(0)->Mom()[3]>0.0?1024:0);
   Process_Base *rsproc(FindProcess(rampl,nlo_type::rsub,false));
   if (rsproc==NULL) return 0.0;
   msg_Debugging()<<"Found '"<<rsproc->Name()<<"'\n";
-  double rs(rsproc->Differential(*rampl,2|4|rm));
+  double rs(rsproc->Differential(*rampl,rm));
   double r(rsproc->GetSubevtList()->back()->m_result);
   msg_Debugging()<<"H = "<<rs<<", R = "<<r<<" -> "<<rs/r<<"\n";
   if (IsEqual(rs,r,1.0e-6) || r==0.0) return 1.0;
-  ampl.Prev()->Next()->SetMuR2(muc2);
-  ampl.Prev()->Next()->SetMuF2(muf2);
-  ampl.Prev()->Next()->SetQ2(muf2);
   msg_Debugging()<<ampl<<"\n";
   rm=ampl.Leg(0)->Mom()[3]>0.0?1024:0;
   Process_Base *bviproc(FindProcess(&ampl,nlo_type::vsub,false));
   if (bviproc==NULL) return 0.0;
   msg_Debugging()<<"Found '"<<bviproc->Name()<<"'\n";
   Process_Base *bproc(FindProcess(&ampl));
-  double b(bproc->Differential(ampl,2|rm));
+  double b(bproc->Differential(ampl,rm));
   if (b==0.0) return 0.0;
   bviproc->BBarMC()->GenerateEmissionPoint(ampl,rm);
-  double bvi(bviproc->Differential(ampl,2|rm));
+  double bvi(bviproc->Differential(ampl,rm));
   double k(bvi/b*(1.0-rs/r)+rs/r);
   msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
 		 <<" -> K = "<<k<<"\n";
