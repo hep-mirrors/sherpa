@@ -1,7 +1,6 @@
 (run){
   % general settings
   EVENTS 10000;
-  MI_HANDLER Amisic;
 
   % collider setup
   BEAM_1 = 2212; BEAM_ENERGY_1 = 3500;
