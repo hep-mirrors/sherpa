@@ -68,9 +68,7 @@ namespace COMIX {
     ATOOLS::ColorID GetColor(Current *const j,
 			     Current *const fcur) const;
 
-    bool EWConnected(const ATOOLS::Flavour &c,const ATOOLS::Flavour &s) const;
-    int  ColorConnected(const ATOOLS::ColorID &i,const ATOOLS::ColorID &j,
-			const ATOOLS::ColorID &k) const;
+    int Connected(const Vertex_Vector &dvs,const size_t &idk) const;
     
     PDF::CParam GetMeasure(const size_t &idi,const size_t &idj,
 			   const size_t &idk,const ATOOLS::Flavour &mofl,

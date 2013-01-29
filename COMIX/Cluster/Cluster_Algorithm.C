@@ -45,40 +45,17 @@ ColorID Cluster_Algorithm::GetColor(Current *const j,
   return ColorID();
 }
 
-bool Cluster_Algorithm::EWConnected
-(const ATOOLS::Flavour &c,const ATOOLS::Flavour &s) const
+int Cluster_Algorithm::Connected
+(const Vertex_Vector &dvs,const size_t &idk) const
 {
-  if (c.IntCharge()==0) return s.IntCharge()!=0;
-  return c.IntCharge()*s.IntCharge()<0;
-}
-
-int Cluster_Algorithm::
-ColorConnected(const ColorID &i,const ColorID &j,const ColorID &k) const
-{
-  if (i.m_i && i.m_j && j.m_i && j.m_j) {
-    if (k.m_j==i.m_i) return -1;
-    if (k.m_i==i.m_j) return -1;
-    if (k.m_j==j.m_i) return 1;
-    if (k.m_i==j.m_j) return 1;
+  for (size_t i(0);i<dvs.size();++i) {
+    if (dvs[i]->JC()->Zero()) continue;
+    if (m_id.find(dvs[i]->JA()->CId())->second==idk ||
+	m_id.find(dvs[i]->JB()->CId())->second==idk ||
+	m_id.find(dvs[i]->JC()->CId())->second==idk) {
+      return 1;
+    }
   }
-  else {
-    if (i.m_i>0 && k.m_j==i.m_i) return 2;
-    if (i.m_j>0 && k.m_i==i.m_j) return 2;
-    if (j.m_i>0 && k.m_j==j.m_i) return 2;
-    if (j.m_j>0 && k.m_i==j.m_j) return 2;
-  }
-  if ((k.m_i>0)^(k.m_j>0)) {
-    // coloured singlet
-    if (i.m_i>0 && i.m_i==j.m_j && 
-	i.m_j>0 && i.m_j==j.m_i) return 3;
-    // colourless singlet
-    if (i.m_i==0 && i.m_j==0 &&
-	j.m_i==0 && j.m_j==0) return 3;
-  }
-  // all colourless
-  if (k.m_i==0 && k.m_j==0 &&
-      i.m_i==0 && i.m_j==0 &&
-      j.m_i==0 && j.m_j==0) return 3;
   return 0;
 }
 
@@ -137,6 +114,7 @@ void Cluster_Algorithm::CalculateMeasures
 {
   msg_Debugging()<<METHOD<<"(): {\n";
   msg_Indent();
+  msg_Debugging()<<*p_ampl<<"\n";
   ClusterInfo_Map ccinfo(cinfo);
   cinfo.clear();
   for (size_t nc(2);nc<=step;++nc) {
@@ -162,19 +140,21 @@ void Cluster_Algorithm::CalculateMeasures
 	  if (idk==m_id[idi] || idk==m_id[idj]) continue;
 	  if (nocl.find(Cluster_Info(in[j],idk))!=nocl.end()) continue;
 	  ColorID colk(p_ampl->Leg(k)->Col());
-	  int cc(ColorConnected(coli,colj,colk));
-	  if (cc==2 && (idi&3)<(idj&3)) cc=-1;
-	  if (p_ampl->Legs().size()==4 ||
-	      (in[j]->OrderQCD()==0?
-	       EWConnected(in[j]->JC()->Flav(),p_ampl->Leg(k)->Flav()):cc)) {
-	    if (cc==0) cc=1;
-	    CParam ckt2(GetMeasure(m_id[cc>0?idi:idj],m_id[cc>0?idj:idi],idk,
-				   in[j]->JC()->Flav(),kt2,cid,
-				   in[j]->JC()->Cut()));
-	    cinfo.insert(ClusterInfo_Pair
-			 (Cluster_Key(cc>0?idi:idj,cc>0?idj:idi),
-			  Cluster_Info(in[j],idk,ckt2,in[j]->OrderEW(),
-				       in[j]->OrderQCD(),in[j]->JC()->Flav())));
+	  int cc[2]={0,0};
+	  for (int l(0);l<=1;++l) {
+	    if (cc[0] && in[j]->JA()->Flav()!=in[j]->JB()->Flav()) break;
+	    cc[l]=l?(Connected(in[j]->JB()->Out(),idk)||
+		     Connected(in[j]->JC()->Out(),idk)):
+	      Connected(in[j]->JA()->Out(),idk);
+	    if (p_ampl->Legs().size()==4 || cc[l]) {
+	      CParam ckt2(GetMeasure(m_id[l?idi:idj],m_id[l?idj:idi],idk,
+				     in[j]->JC()->Flav(),kt2,cid,
+				     in[j]->JC()->Cut()));
+	      cinfo.insert(ClusterInfo_Pair
+			   (Cluster_Key(l?idi:idj,l?idj:idi),
+			    Cluster_Info(in[j],idk,ckt2,in[j]->OrderEW(),
+					 in[j]->OrderQCD(),in[j]->JC()->Flav())));
+	    }
 	  }
 	}
 	}
@@ -188,15 +168,14 @@ void Cluster_Algorithm::CalculateMeasures
     for (size_t i(1);i<ccurs.size();++i) {
       if (in[j]->JA()==ccurs[i] || in[j]->JB()==ccurs[i]) {
 	if (ccurs[i]->CId()&2) continue;
-	Flavour mofl((in[j]->JA()==ccurs[i]?
-		      in[j]->JB():in[j]->JA())->Flav().Bar());
+	Current *mocur(in[j]->JA()==ccurs[i]?in[j]->JB():in[j]->JA());
+	Flavour mofl(mocur->Flav().Bar());
 	if (mofl.IsDummy()) continue;
 	size_t idi(fcur->CId()), idj(ccurs[i]->CId());
 	msg_Debugging()<<ID(m_id[idi])<<"&"<<ID(m_id[idj])<<": "
 		       <<fcur->Flav()<<","<<ccurs[i]->Flav()<<" -> "
-		       <<(in[j]->JA()==ccurs[i]?in[j]->JB()->Flav():
-			  in[j]->JA()->Flav())<<" ["
-		       <<in[j]->OrderEW()<<","<<in[j]->OrderQCD()<<"] {\n";
+		       <<mocur->Flav()<<" ["<<in[j]->OrderEW()
+		       <<","<<in[j]->OrderQCD()<<"] {\n";
 	{
 	  msg_Indent();
 	  ColorID coli(p_ampl->Leg(cid.find(m_id[idi])->second)->Col());
@@ -206,17 +185,20 @@ void Cluster_Algorithm::CalculateMeasures
 	    if (idk==m_id[idi] || idk==m_id[idj]) continue;
 	    if (nocl.find(Cluster_Info(in[j],idk))!=nocl.end()) continue;
 	    ColorID colk(p_ampl->Leg(k)->Col());
-	    int cc(ColorConnected(coli,colj,colk));
-	    if (p_ampl->Legs().size()==4 ||
-		(in[j]->OrderQCD()==0?
-		 EWConnected(mofl,p_ampl->Leg(k)->Flav()):cc)) {
-	      if (cc==0) cc=1;
-	      CParam ckt2(GetMeasure(m_id[cc>0?idi:idj],m_id[cc>0?idj:idi],
-				     idk,mofl,kt2,cid,0));
-	      cinfo.insert(ClusterInfo_Pair
-			   (Cluster_Key(cc>0?idi:idj,cc>0?idj:idi),
-			    Cluster_Info(in[j],idk,ckt2,in[j]->OrderEW(),
-					 in[j]->OrderQCD(),mofl)));
+	    int cc[2]={0,0};
+	    for (int l(0);l<=1;++l) {
+	      if (cc[0] && ccurs[i]->Flav()!=fcur->Flav().Bar()) break;
+	      cc[l]=l?(Connected(ccurs[i]->Out(),idk) ||
+		       Connected(mocur->In(),idk)):
+		Connected(fcur->In(),idk);
+	      if (p_ampl->Legs().size()==4 || cc[l]) {
+		CParam ckt2(GetMeasure(m_id[l?idi:idj],m_id[l?idj:idi],
+				       idk,mofl,kt2,cid,0));
+		cinfo.insert(ClusterInfo_Pair
+			     (Cluster_Key(l?idi:idj,l?idj:idi),
+			      Cluster_Info(in[j],idk,ckt2,in[j]->OrderEW(),
+					   in[j]->OrderQCD(),mofl)));
+	      }
 	    }
 	  }
 	}
