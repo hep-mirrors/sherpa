@@ -610,7 +610,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 	    (*pit)->SetStart((*pit)->GetPrev()->KtStart());
 	}
       }
-      (*sit)->SetJF(ampl->JF<PHASIC::Jet_Finder>());
       (*sit)->SetDecays(campl->Decays());
       (*sit)->SetAll(p_next);
       msg_Debugging()<<**sit;
@@ -633,6 +632,7 @@ Singlet *CS_Shower::TranslateAmplitude
 		 sqrt(std::numeric_limits<double>::max()));
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
+  singlet->SetJF(jf);
   singlet->SetProc(ampl->Proc<void>());
   singlet->SetNLO(ampl->NLO()&~1);
   if (jf==NULL && (ampl->NLO()&2)) singlet->SetNLO(4);

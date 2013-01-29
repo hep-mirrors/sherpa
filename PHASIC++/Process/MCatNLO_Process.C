@@ -274,13 +274,15 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     ampl->SetMuF2(scs->Scale(stp::fac));
     ampl->SetQ2(scs->Scale(stp::res));
   }
-  Selector_Base *jf=(*p_bviproc)[0]->
+  if (p_ampl->Next()) p_ampl->Next()->SetNLO(4);
+  Selector_Base *jf=p_rsproc->Selected()->
     Selector()->GetSelector("Jetfinder");
   if (jf && m_nout-1<m_pinfo.m_fi.NMaxExternal()) {
     for (Cluster_Amplitude *ampl(p_ampl);
 	 ampl;ampl=ampl->Next()) ampl->SetJF(jf);
     bool res(p_shower->JetVeto(p_ampl));
     if (res) return 0.0;
+    p_ampl->SetJF(NULL);
   }
   return 1.0;
 }
@@ -344,6 +346,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     ampl->SetQ2(kt2.m_kt2);
     ampl->SetOrderQCD(next->OrderQCD()+1);
     ampl->Next()->SetNLO(4);
+    ampl->SetJF(NULL);
     next->SetKin(kt2.m_kin);
     while (ampl->Next()) {
       ampl=ampl->Next();
