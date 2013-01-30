@@ -274,7 +274,6 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     ampl->SetMuF2(scs->Scale(stp::fac));
     ampl->SetQ2(scs->Scale(stp::res));
   }
-  if (p_ampl->Next()) p_ampl->Next()->SetNLO(4);
   Selector_Base *jf=p_rsproc->Selected()->
     Selector()->GetSelector("Jetfinder");
   if (jf && m_nout-1<m_pinfo.m_fi.NMaxExternal()) {
@@ -282,7 +281,6 @@ double MCatNLO_Process::OneHEvent(const int wmode)
 	 ampl;ampl=ampl->Next()) ampl->SetJF(jf);
     bool res(p_shower->JetVeto(p_ampl));
     if (res) return 0.0;
-    p_ampl->SetJF(NULL);
   }
   return 1.0;
 }
