@@ -42,7 +42,11 @@ bool FSR_Channels::Initialize()
     }
     if (m_inttype<4||m_inttype>20) DropAllChannels();
   }
-  if (p_psh->Process()->NOut()==1) return false;
+  if (p_psh->Process()->NOut()==1) {
+    if (!p_psh->Process()->Process()->InitIntegrator(p_psh))
+      THROW(critical_error,"InitIntegrator failed");
+    return false;
+  }
   bool sintegrator(false);
   switch (m_inttype) {
   case 0:
