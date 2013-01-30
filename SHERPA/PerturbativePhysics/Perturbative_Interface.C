@@ -156,7 +156,7 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     if ((m_bbarmode&1) && p_me->HasNLO() &&
         p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
         Cluster_Amplitude *excl_ampl=
-            p_me->Process()->Get<Single_Process>()->Cluster(m_cmode|256|512|1024);
+            p_me->Process()->Get<Single_Process>()->Cluster();
 	if (excl_ampl) {
         if (!LocalKFactor(excl_ampl)) {
           DEBUG_INFO("didn't find PowProc in exclusively clustered amplitude");
