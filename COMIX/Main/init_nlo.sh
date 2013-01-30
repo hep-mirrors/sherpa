@@ -19,7 +19,8 @@ $1 -f$2.B SHERPA_CPP_PATH=$nt;
 for i in $nt/Process/Comix/*[^\)].map; do
   if grep -q x $i; then
     sed -e's/ /__QCD('$tp') /g' $i > $i.tmp;
-    mv $i.tmp $(echo $i | sed -e's/.map/__QCD('$tp').map/g');
+    mv $i.tmp $(echo $i | sed -e's/\(__NQ_.*\)[.]map/.map\1/g' \
+      -e's/.map/__QCD('$tp').map/g' -e's/.map\(.*\)/\1.map/g');
   else
     sed -e'1 s/ /__QCD('$tp') /g' -e'1 s/$/__QCD('$tp')/g' $i > $i.tmp;
     if awk '{ if ($1!=$2) exit 1; exit 0; }' < $i; then rm $i.tmp;
