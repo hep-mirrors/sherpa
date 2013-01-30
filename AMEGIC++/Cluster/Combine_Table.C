@@ -479,7 +479,7 @@ void Combine_Table::FillTable(Leg **legs,const int nlegs,const int nampl)
   m_nampl=nampl;
   Flavour mo;
   // determine possible combinations and corresponding y_ij  if nlegs>4
-  if (m_nlegs>p_proc->NIn()+2) {
+  if (m_nlegs>p_proc->NIn()+Min(2,(int)p_proc->Info().m_fi.NMinExternal())) {
     int start=0;
     // cluster initial state only if isrshower and isr_x is on. 
     if (!legs[0][0].Flav().Strong() && !legs[0][1].Flav().Strong()) start=2;
