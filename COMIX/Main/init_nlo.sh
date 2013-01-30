@@ -16,7 +16,8 @@ sed -e's/}(run)/  ONLY_MAPPING_FILE 1;\n}(run)/g' < $2 > $2.$tp;
 sed -e'/NLO_QCD/ d' < $2.$tp > $2.B;
 test -z "$3" && cp -r $PWD/Process/ $nt/ 2>&1;
 $1 -f$2.B SHERPA_CPP_PATH=$nt;
-for i in $nt/Process/Comix/*[^\)].map; do
+for i in $nt/Process/Comix/*.map; do
+  if echo $i | grep -q 'QCD('$tp')'; then continue; fi
   if grep -q x $i; then
     sed -e's/ /__QCD('$tp') /g' $i > $i.tmp;
     mv $i.tmp $(echo $i | sed -e's/\(__NQ_.*\)[.]map/.map\1/g' \
