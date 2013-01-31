@@ -216,10 +216,14 @@ double Single_Process::BeamISRWeight
     if (ampls.size()) {
       DEBUG_FUNC(m_name<<", mode = "<<mode);
       Cluster_Amplitude *ampl(ampls.front());
-      msg_Debugging()<<*ampl<<"\n";
-      if (imode&2) ampl=ampl->Next();
+      msg_IODebugging()<<*ampl<<"\n";
+      if (imode&2) {
+	ampl=ampl->Next();
+	msg_IODebugging()<<*ampl<<"\n";
+      }
       for (;ampl;ampl=ampl->Next()) {
 	if (IsEqual(LQ2,ampl->KT2())) continue;
+	msg_IODebugging()<<*ampl<<"\n";
 	if (ampl->Next()) {
 	  if (ampl->Next()->Splitter()->Stat()==3) {
 	    msg_Debugging()<<"Skip decay "<<
