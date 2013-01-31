@@ -274,6 +274,7 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     ampl->SetMuF2(scs->Scale(stp::fac));
     ampl->SetQ2(scs->Scale(stp::res));
   }
+  if (p_ampl->Next()) p_ampl->Next()->SetNLO(8);
   Selector_Base *jf=p_rsproc->Selected()->
     Selector()->GetSelector("Jetfinder");
   if (jf && m_nout-1<m_pinfo.m_fi.NMaxExternal()) {

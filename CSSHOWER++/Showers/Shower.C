@@ -391,7 +391,6 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
   }
   if (p_actual->GetSplit() &&
       p_actual->GetSplit()->KScheme()==1) {
-    p_actual->GetLeft()->GetSing()->SetKtPrev(p_actual->KtPrev());
     return true;
   }
   if (nem>=maxem) return true;
@@ -402,6 +401,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     Parton *split=SelectSplitting(kt2win);
     //no shower anymore 
     if (split==NULL) {
+      ResetScales(p_actual->KtNext());
       for (Singlet::const_iterator it=p_actual->begin(); it!=p_actual->end();
            ++it) {
         if ((*it)->Weight()!=1.0)
@@ -424,7 +424,6 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	return true;
       }
       ResetScales(kt2win);
-      if (kt2win>split->GetSing()->KtPrev()) continue;
       if (split->GetSing()->GetLeft()) {
 	static double maxt(sqrt(std::numeric_limits<double>::max()));
 	if (split->GetType()==pst::IS) {
@@ -470,7 +469,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       if (p_actual->JF()) {
 	if (p_actual->GetSplit()) {
 	  msg_Debugging()<<"Truncated shower veto\n";
-	  return false;
+	  if (!(p_actual->NLO()&8)) return false;
+	  else msg_Debugging()<<"Skip truncated shower veto\n";
 	}
 	msg_Debugging()<<"Disable jet veto\n";
 	Singlet *sing(p_actual);

@@ -585,9 +585,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       s->SetOldMomentum(olds);
       sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode|4|8);
     }
-    double kt2prev((campl->Next()?campl->KT2():kt2xmap[1].second)*m_kt2fac);
     double kt2next((campl->Prev()?campl->Prev()->KT2():0.0)*m_kt2fac);
-    sing->SetKtPrev(kt2prev);
     sing->SetKtNext(kt2next);
     if (ampl->NIn()==1 && ampl->Leg(0)->Flav().IsHadron()) break;
     p_next->push_back(sing);
