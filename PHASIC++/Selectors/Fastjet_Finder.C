@@ -155,13 +155,12 @@ bool Fastjet_Finder::JetTrigger(const Vec4D_Vector &p,
 				ATOOLS::NLO_subevtlist *const subs)
 {
   if (m_n<1) return true;
-
   std::vector<fastjet::PseudoJet> input,jets;
   for (size_t i(m_nin);i<subs->back()->m_n;++i) {
     if (Flavour(kf_jet).Includes(subs->back()->p_fl[i]) ||
-	(m_nb>0 && m_fl[i].Kfcode()==kf_b)) {
+	(m_nb>0 && subs->back()->p_fl[i].Kfcode()==kf_b)) {
         fastjet::PseudoJet tmp(p[i][1],p[i][2],p[i][3],p[i][0]);
-        tmp.set_user_index(m_fl[i].HepEvt());
+        tmp.set_user_index(subs->back()->p_fl[i].HepEvt());
         input.push_back(tmp);
     }
 
