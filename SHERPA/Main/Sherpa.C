@@ -105,6 +105,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
+    double starttime=rpa->gen.Timer().RealTime();
     msg_Info()<<METHOD<<"(): Analyzing MPI environment {\n";
     int ppn=p_inithandler->DataReader()->GetValue("MPI_COMBINE_PROCS",8);
     int rank=MPI::COMM_WORLD.Get_rank(), pid(getpid()), hlen;
@@ -148,7 +149,8 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
       }
       if (sranks.length()) msg_Info()<<"  Suspending ranks"<<sranks<<".\n";
 #endif
-      msg_Info()<<"}"<<std::endl;
+      double diff=rpa->gen.Timer().RealTime()-starttime;
+      msg_Info()<<"} -> "<<FormatTime(size_t(diff))<<" elapsed"<<std::endl;
     }
     else {
       MPI::COMM_WORLD.Send(&pid,1,MPI::INT,0,rank);
