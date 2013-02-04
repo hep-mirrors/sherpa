@@ -199,6 +199,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   if (msg->LevelIsInfo()) 
     msg_Out()<<"Welcome to "<<exh->ProgramName()<<", "<<gen.m_username
 	     <<". Initialization of framework underway."<<std::endl;
+  msg_Info()<<"The local time is "<<rpa->gen.Timer().TimeString(0)<<"."<<std::endl;
   // make path nice
   if (path.length()>0) {
     if (path[0]!='/') path=gen.m_variables["SHERPA_RUN_PATH"]+"/"+path;
