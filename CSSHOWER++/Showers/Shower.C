@@ -456,6 +456,11 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	    msg_Debugging()<<"Skip first truncated emission, K = "
 			   <<p_actual->LKF()<<"\n";
 	    m_weight*=1.0/p_actual->LKF();
+	    if (IsBad(m_weight) || m_weight==0.0) {
+	      msg_Error()<<METHOD<<"(): Bad weight '"<<m_weight
+			 <<"'. Set it to one."<<std::endl;
+	      m_weight=1.0;
+	    }
 	    p_actual->SetNLO(0);
 	    continue;
 	  }
