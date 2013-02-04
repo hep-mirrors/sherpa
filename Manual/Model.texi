@@ -29,9 +29,11 @@ Sets the mass (in GeV) of the particle with PDG id @option{<id>}.
 @*
 Masses of particles and corresponding anti-particles are always set
 simultaneously.
-For particles with Yukawa couplings, those are set consistent with the
-mass (taking into account the MASSIVE flag) by default, but can be modified
-using the @option{YUKAWA[<id>]} parameter.
+@*
+For particles with Yukawa couplings, those are enabled/disabled consistent with the
+mass (taking into account the MASSIVE flag) by default, but that can be modified
+using the @option{YUKAWA[<id>]} parameter. Note that by default the Yukawa
+couplings are treated as running, cf. @ref{YUKAWA_MASSES}.
 
 @item MASSIVE[<id>]
 Specifies whether the finite mass of particle with PDG id @option{<id>}
