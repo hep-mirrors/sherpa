@@ -220,11 +220,10 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   Process_Base *bviproc(FindProcess(&ampl,nlo_type::vsub,false));
   if (bviproc==NULL) return 0.0;
   msg_Debugging()<<"Found '"<<bviproc->Name()<<"'\n";
-  Process_Base *bproc(FindProcess(&ampl));
-  double b(bproc->Differential(ampl,rm));
-  if (b==0.0) return 0.0;
   bviproc->BBarMC()->GenerateEmissionPoint(ampl,rm);
-  double bvi(bviproc->Differential(ampl,rm));
+  bviproc->Differential(ampl,rm);
+  double bvi(bviproc->Last()), b(bviproc->LastB());
+  if (b==0.0) return 0.0;
   double k(bvi/b*(1.0-rs/r)+rs/r);
   msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
 		 <<" -> K = "<<k<<"\n";
