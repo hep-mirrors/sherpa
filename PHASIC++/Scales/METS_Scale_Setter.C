@@ -181,6 +181,7 @@ METS_Scale_Setter::METS_Scale_Setter
 {
   m_scale.resize(stp::size+3);
   std::string tag(args.m_scale);
+  m_nproc=!p_proc->Parent()->Info().m_fi.NLOType()==nlo_type::lo;
   while (true) {
     size_t pos(tag.find('{'));
     if (pos==std::string::npos) {
@@ -193,6 +194,9 @@ METS_Scale_Setter::METS_Scale_Setter
       THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
     std::string ctag(tag.substr(0,pos));
     tag=tag.substr(pos+1);
+    pos=ctag.find('|');
+    if (pos!=std::string::npos)
+      ctag=m_nproc?ctag.substr(0,pos):ctag.substr(pos+1);
     m_calcs.push_back(new Algebra_Interpreter());
     m_calcs.back()->AddFunction(MODEL::as->GetAIGMeanFunction());
     m_calcs.back()->SetTagReplacer(&m_tagset);
@@ -207,7 +211,6 @@ METS_Scale_Setter::METS_Scale_Setter
   for (size_t i(0);i<p_proc->NIn();++i) m_f[i]=m_f[i].Bar();
   m_rproc=p_proc->Info().Has(nlo_type::real);
   m_vproc=p_proc->Info().Has(nlo_type::vsub);
-  m_nproc=!p_proc->Parent()->Info().m_fi.NLOType()==nlo_type::lo;
   if (m_nproc) m_mode=2;
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
   m_cmoders=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE_RS"));
