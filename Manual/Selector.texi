@@ -282,7 +282,7 @@ values of the jets found and @code{p[i]} are their momenta. For details see
 association with jets
 
 @verbatim
-FastjetSelector p[4]+p[5]>100. antikt 2 40. 0. 0.5
+FastjetSelector Mass(p[4]+p[5])>100. antikt 2 40. 0. 0.5
 @end verbatim
 
 selects all phase space points where two anti-kt jets with at least 40 GeV of
