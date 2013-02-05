@@ -333,8 +333,10 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     m_last=m_lastxs;
     if (m_nloct && m_pinfo.Has(nlo_type::born))
       m_last+=m_lastbxs*NLOCounterTerms();
-    m_lastb=m_last*=BeamISRWeight
+    double bviw=BeamISRWeight
       (scs->Scale(stp::fac),0,scs->Amplitudes());
+    m_last*=bviw;
+    m_lastb=m_lastbxs*bviw;
     if (p_mc==NULL) return m_last;
     Dipole_Params dps(p_mc->Active(this));
     for (size_t i(0);i<dps.m_procs.size();++i) {
