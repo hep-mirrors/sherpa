@@ -300,8 +300,11 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     }
   Vec4D_Vector &p(p_bviproc->Selected()->Integrator()->Momenta());
   bproc->Trigger(p);
-  bproc->Differential(p);
-  p_ampl = dynamic_cast<Single_Process*>(bproc)->Cluster(256|512|4096);
+  p_ampl = dynamic_cast<Single_Process*>
+    (p_bviproc->Selected())->Cluster(512|1024);
+  Scale_Setter_Base *scs(p_bviproc->Selected()->ScaleSetter(1));
+  for (Cluster_Amplitude *ampl(p_ampl);ampl;ampl=ampl->Next())
+    ampl->SetQ2(scs->Scale(stp::res));
   SortFlavours(p_ampl);
   p_ampl->SetProcs(p_apmap);
   p_ampl->SetIInfo(&m_iinfo);
@@ -398,7 +401,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
 	p_bviproc->Selected()->Integrator()
 	->SelectionWeight(wmode);
       double lkf(p_bviproc->Selected()->Last()/
-		 p_bproc->Selected()->Last());
+		 p_bviproc->Selected()->LastB());
       for (Cluster_Amplitude *ampl(p_ampl);
 	   ampl;ampl=ampl->Next()) ampl->SetLKF(lkf);
       Cluster_Amplitude *ampl(p_ampl->Next());
