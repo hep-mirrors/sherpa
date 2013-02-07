@@ -205,9 +205,29 @@ ATOOLS::Flavour AMEGIC::Process_Base::ReMap(const ATOOLS::Flavour& f0,const std:
 }
 
 ATOOLS::Flavour AMEGIC::Process_Base::ReMap
-(const ATOOLS::Flavour &fl,const size_t &id) const
+(const ATOOLS::Flavour &ifl,const size_t &cid) const
 {
-  return ReMap(fl,ToString(PSId(id)));
+  Flavour fl((cid&((1<<m_nin)-1))?ifl.Bar():ifl);
+  std::string id(ToString(fl)+ToString(cid));
+  if ((Partner()==NULL)||(Partner()==this)) return fl;
+  std::map<std::string,ATOOLS::Flavour>::const_iterator fit(m_fmap.find(id));
+  if (fit!=m_fmap.end()) return fit->second;
+  Flavour_Map::const_iterator efit(m_eflmap.find(fl));
+  if (efit!=m_eflmap.end()) return efit->second;
+  else {
+    id=ToString(fl.Bar())+ToString(((1<<(m_nin+m_nout))-1)-cid);
+    if ((Partner()==NULL)||(Partner()==this)) return fl;
+    std::map<std::string,ATOOLS::Flavour>::const_iterator fit(m_fmap.find(id));
+    if (fit!=m_fmap.end()) return fit->second;
+    Flavour_Map::const_iterator efit(m_eflmap.find(fl));
+    if (efit!=m_eflmap.end()) return efit->second;
+    if (fl.IsBoson()) return fl;
+    else {
+      DO_STACK_TRACE;
+      THROW(critical_error,"Flavour map incomplete!");
+    }
+  }
+  return fl;
 }
 
 AMEGIC::Process_Base *AMEGIC::Process_Base::GetReal()

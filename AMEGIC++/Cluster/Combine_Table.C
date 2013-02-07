@@ -552,7 +552,7 @@ KT2Info_Vector Combine_Table::UpdateKT2(const CD_List::iterator &cdit) const
   }
   if ((cdit->second.m_dec<10 &&
        cdit->first.m_flav.Strong()) ||
-      m_nlegs==2+p_proc->Info().m_fi.NMinExternal()) {
+      m_nlegs==p_proc->NIn()+Min(2,(int)p_proc->Info().m_fi.NMinExternal())) {
     nkt2ord[li].second=cdit->second.m_pt2ij.m_kt2;
     msg_Debugging()<<"set last k_T = "<<sqrt(nkt2ord[li].second)
 		   <<" for "<<ID(nkt2ord[li].first)
@@ -673,7 +673,8 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     if (!ord) {
       if (!(mode&16)) continue;
     }
-    if (nl<2+p_proc->Info().m_fi.NMinExternal()) THROW(fatal_error,"nlegs < min. Abort.");
+    if (nl<p_proc->NIn()+Min(2,(int)p_proc->Info().m_fi.NMinExternal()))
+      THROW(fatal_error,"nlegs < min. Abort.");
     double scale(-1.0);
     Combine_Table *tab(CreateNext());
     if (tab!=NULL) {
