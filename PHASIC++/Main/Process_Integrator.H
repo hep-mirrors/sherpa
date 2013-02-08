@@ -35,7 +35,7 @@ namespace PHASIC {
     PDF::ISR_Handler           *p_isrhandler;
 
     std::string m_resultpath;
-    size_t      m_nin, m_nout, m_smode, m_swmode;
+    size_t      m_nin, m_nout, m_swmode;
 
     ATOOLS::Vec4D_Vector p_momenta;
 

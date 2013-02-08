@@ -29,7 +29,7 @@ static int s_omitnlosuffix(0), s_genresdir(0);
 Process_Integrator::Process_Integrator(Process_Base *const proc):
   p_proc(proc), p_pshandler(NULL),
   p_beamhandler(NULL), p_isrhandler(NULL),
-  m_nin(0), m_nout(0), m_smode(1), m_swmode(0),
+  m_nin(0), m_nout(0), m_swmode(0),
   m_threshold(0.), m_enhancefac(1.0), m_maxeps(0.0), m_rsfac(1.0),
   m_n(0), m_itmin(0), m_max(0.), m_totalxs(0.), 
   m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), 
@@ -55,11 +55,6 @@ bool Process_Integrator::Initialize
   m_swmode=read.GetValue<int>("SELECTION_WEIGHT_MODE", 0);
   static bool minit(false);
   if (!minit) {
-    int smode;
-    if (read.ReadFromFile(smode,"IB_SMODE")) {
-      m_smode=smode;
-      msg_Info()<<METHOD<<"(): Set sum mode = "<<m_smode<<".\n";
-    }
     if (!read.ReadFromFile(s_whbins,"IB_WHBINS")) s_whbins=1000;
     else msg_Info()<<METHOD<<"(): Set weight histo bin number = "<<s_whbins<<".\n";
     if (read.ReadFromFile(s_omitnlosuffix,"RESULT_OMIT_NLO_SUFFIX")) {
@@ -119,67 +114,32 @@ double Process_Integrator::TotalSigma2() const
 double Process_Integrator::TotalResult() const
 { 
   if (m_ssigma2==0.0) return m_ssum/m_sn; 
-  switch (m_smode) {
-  case 2: {
-    if (m_sn<2) return 1.0/(m_totalsum/m_ssigma2); 
-    double s2(Sigma2());
-    return 1.0/((m_totalsum+s2/m_ssum*m_sn)/(m_ssigma2+s2));
-  }
-  default: {
-    if (m_sn<2) return m_totalsum/m_ssigma2; 
-    double s2(Sigma2());
-    return (m_totalsum+s2*m_ssum/m_sn)/(m_ssigma2+s2);
-  }
-  }
-  THROW(fatal_error,"Invalid summation mode");
-  return 0.0;
+  if (m_sn<2) return m_totalsum/m_ssigma2; 
+  double s2(Sigma2());
+  return (m_totalsum+s2*m_ssum/m_sn)/(m_ssigma2+s2);
 }
 
 double Process_Integrator::TotalVar() const
 {
   if (m_nin==1 && m_nout==2) return 0.;
-  switch (m_smode) {
-  case 2: {
-    double s2(m_totalsumsqr);
-    if (m_sn>1) {
-      double vij2(sqr(m_ssum/m_sn)*(m_sn-1)/
-		  (m_ssumsqr/m_sn-sqr(m_ssum/m_sn)));
-      s2+=sqr(Sigma2())/vij2*sqr(m_sn/m_ssum);
-    }
-    if (s2<0.0) return 0.0;
-    return sqr(TotalResult())*sqrt(s2)/TotalSigma2();
+  double s2(m_totalsumsqr);
+  if (m_sn>1) {
+    double vij2(sqr(m_ssum/m_sn)*(m_sn-1)/
+		(m_ssumsqr/m_sn-sqr(m_ssum/m_sn)));
+    s2+=sqr(Sigma2())/vij2*sqr(m_ssum/m_sn);
   }
-  default: {
-    double s2(m_totalsumsqr);
-    if (m_sn>1) {
-      double vij2(sqr(m_ssum/m_sn)*(m_sn-1)/
-		  (m_ssumsqr/m_sn-sqr(m_ssum/m_sn)));
-      s2+=sqr(Sigma2())/vij2*sqr(m_ssum/m_sn);
-    }
-    if (s2<0.0) return 0.0;
-    return sqrt(s2)/TotalSigma2();
-  }
-  }
-  THROW(fatal_error,"Invalid summation mode");
-  return 0.0;
+  if (s2<0.0) return 0.0;
+  return sqrt(s2)/TotalSigma2();
 }
 
 void Process_Integrator::OptimizeSubResult(const double &s2)
 {
-  if (m_smode>0 && s2>m_wmin) {
+  if (s2>m_wmin) {
     double vij2(sqr(m_ssum/m_sn)*(m_sn-1)/
 		(m_ssumsqr/m_sn-sqr(m_ssum/m_sn)));
     m_ssigma2+=s2; 
-    switch (m_smode) {
-    case 1:
-      m_totalsum+=s2*m_ssum/m_sn;
-      m_totalsumsqr+=sqr(s2)/vij2*sqr(m_ssum/m_sn);
-      break;
-    case 2:
-      m_totalsum+=s2*m_sn/m_ssum;
-      m_totalsumsqr+=sqr(s2)/vij2*sqr(m_sn/m_ssum);
-      break;
-    }
+    m_totalsum+=s2*m_ssum/m_sn;
+    m_totalsumsqr+=sqr(s2)/vij2*sqr(m_ssum/m_sn);
     if (s2/m_son>m_wmin) m_wmin=s2/m_son;
     m_ssum=m_ssumsqr=0.0;
     m_son=m_svn=m_sn=0;
