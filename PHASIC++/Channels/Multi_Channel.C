@@ -218,7 +218,7 @@ void Multi_Channel::Optimize(double error)
 
     if((m_optcnt>4 || channels.size()==1)&& m_optcnt<20)    
       for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.01) channels[i]->Optimize();
-    if (m_optcnt==20){
+    if (m_optcnt==20 && channels.size()>1){
       for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.) channels[i]->EndOptimize();
       s1xmin     = 1.e32;
     }
