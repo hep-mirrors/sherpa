@@ -216,7 +216,7 @@ void Multi_Channel::Optimize(double error)
   for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
   for (i=0;i<channels.size();i++) channels[i]->SetAlpha(channels[i]->Alpha() / norm);
 
-    if((m_optcnt>4 || channels.size()==1)&& m_optcnt<20)    
+  if((m_optcnt>4 && m_optcnt<20) || channels.size()==1)    
       for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.01) channels[i]->Optimize();
     if (m_optcnt==20 && channels.size()>1){
       for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.) channels[i]->EndOptimize();
