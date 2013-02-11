@@ -207,27 +207,25 @@ ATOOLS::Flavour AMEGIC::Process_Base::ReMap(const ATOOLS::Flavour& f0,const std:
 ATOOLS::Flavour AMEGIC::Process_Base::ReMap
 (const ATOOLS::Flavour &ifl,const size_t &cid) const
 {
-  Flavour fl((cid&((1<<m_nin)-1))?ifl.Bar():ifl);
+  if (Partner()==NULL || Partner()==this) return ifl;
+  bool swap(cid&((1<<m_nin)-1));
+  Flavour fl(swap?ifl.Bar():ifl);
   std::string id(ToString(fl)+ToString(cid));
-  if ((Partner()==NULL)||(Partner()==this)) return fl;
   std::map<std::string,ATOOLS::Flavour>::const_iterator fit(m_fmap.find(id));
-  if (fit!=m_fmap.end()) return fit->second;
-  Flavour_Map::const_iterator efit(m_eflmap.find(fl));
-  if (efit!=m_eflmap.end()) return efit->second;
+  if (fit!=m_fmap.end()) return swap?fit->second.Bar():fit->second;
   else {
     id=ToString(fl.Bar())+ToString(((1<<(m_nin+m_nout))-1)-cid);
-    if ((Partner()==NULL)||(Partner()==this)) return fl;
     std::map<std::string,ATOOLS::Flavour>::const_iterator fit(m_fmap.find(id));
-    if (fit!=m_fmap.end()) return fit->second;
-    Flavour_Map::const_iterator efit(m_eflmap.find(fl));
+    if (fit!=m_fmap.end()) return swap?fit->second:fit->second.Bar();
+    Flavour_Map::const_iterator efit(m_eflmap.find(ifl));
     if (efit!=m_eflmap.end()) return efit->second;
-    if (fl.IsBoson()) return fl;
+    if (ifl.IsBoson()) return ifl;
     else {
       DO_STACK_TRACE;
       THROW(critical_error,"Flavour map incomplete!");
     }
   }
-  return fl;
+  return ifl;
 }
 
 AMEGIC::Process_Base *AMEGIC::Process_Base::GetReal()
