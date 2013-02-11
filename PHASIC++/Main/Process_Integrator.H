@@ -47,13 +47,13 @@ namespace PHASIC {
     long unsigned int m_n, m_itmin;
 
     double m_max, m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
-    double m_ssum, m_ssumsqr, m_smax, m_ssigma2, m_wmin, m_vmean;
-    double m_mssum, m_mssumsqr, m_msn, m_msvn;
+    double m_ssum, m_ssumsqr, m_smax, m_ssigma2, m_wmin;
+    double m_mssum, m_mssumsqr, m_msn;
 
     std::vector<double> m_vsmax, m_vsum;
-    std::vector<long unsigned int> m_vsn, m_vsvn;
+    std::vector<long unsigned int> m_vsn;
 
-    long unsigned int m_sn, m_svn, m_son;
+    long unsigned int m_sn, m_son;
 
     bool m_writeout;
 
@@ -144,7 +144,6 @@ namespace PHASIC {
 
     inline double TotalXS() const    { return m_totalxs;  }
     inline double TotalError() const { return m_totalerr; }
-    inline double VMean() const      { return m_vmean;    }
     inline double Max() const        { return m_max;      }
 
     inline double ISRThreshold() const      { return m_threshold;   }
