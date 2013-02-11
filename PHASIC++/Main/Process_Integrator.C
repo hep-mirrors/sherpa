@@ -102,7 +102,7 @@ double Process_Integrator::Sigma2() const
     if (msg_LevelIsTracking()) exh->GenerateStackTrace(std::cout);
   }
   if (m_sn<2) return 0.0;
-  return sqr(p->m_ssum/m_sn)/
+  return 1.0/
     ((p->m_ssumsqr/m_sn-sqr(p->m_ssum/m_sn))/(m_sn-1));
 }
 
@@ -124,9 +124,9 @@ double Process_Integrator::TotalVar() const
   if (m_nin==1 && m_nout==2) return 0.;
   double s2(m_totalsumsqr);
   if (m_sn>1) {
-    double vij2(sqr(m_ssum/m_sn)*(m_sn-1)/
+    double vij2((m_sn-1)/
 		(m_ssumsqr/m_sn-sqr(m_ssum/m_sn)));
-    s2+=sqr(Sigma2())/vij2*sqr(m_ssum/m_sn);
+    s2+=sqr(Sigma2())/vij2;
   }
   if (s2<0.0) return 0.0;
   return sqrt(s2)/TotalSigma2();
@@ -135,11 +135,11 @@ double Process_Integrator::TotalVar() const
 void Process_Integrator::OptimizeSubResult(const double &s2)
 {
   if (s2>m_wmin) {
-    double vij2(sqr(m_ssum/m_sn)*(m_sn-1)/
+    double vij2((m_sn-1)/
 		(m_ssumsqr/m_sn-sqr(m_ssum/m_sn)));
     m_ssigma2+=s2; 
     m_totalsum+=s2*m_ssum/m_sn;
-    m_totalsumsqr+=sqr(s2)/vij2*sqr(m_ssum/m_sn);
+    m_totalsumsqr+=sqr(s2)/vij2;
     if (s2/m_son>m_wmin) m_wmin=s2/m_son;
     m_ssum=m_ssumsqr=0.0;
     m_son=m_svn=m_sn=0;
