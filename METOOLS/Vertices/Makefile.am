@@ -6,6 +6,7 @@ include ../../svn.make
 libMEToolsVertices_la_SOURCES         =	\
 					SVN_Info.C \
 					SSS_LC.C \
+					SSV_LC.C \
 					SFF_LC.C \
 					SVV_LC.C \
 					FFV_LC.C \
