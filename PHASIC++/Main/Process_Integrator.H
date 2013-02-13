@@ -35,7 +35,7 @@ namespace PHASIC {
     PDF::ISR_Handler           *p_isrhandler;
 
     std::string m_resultpath;
-    size_t      m_nin, m_nout, m_swmode;
+    size_t      m_nin, m_nout, m_smode, m_swmode;
 
     ATOOLS::Vec4D_Vector p_momenta;
 
@@ -139,7 +139,7 @@ namespace PHASIC {
 
     inline double   Sum() const     { return m_totalsum;    }
     inline double   SumSqr() const  { return m_totalsumsqr; }
-    inline long int Points() const  { return m_n;           }
+    inline long int Points() const  { return m_n+m_sn;      }
     inline long int SPoints() const { return m_sn;          }
 
     inline double TotalXS() const    { return m_totalxs;  }
