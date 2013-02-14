@@ -34,7 +34,6 @@ namespace SHERPA {
     bool AnalyseEvent(double & weight);
     int  IterateEventPhases(double & weight);
 
-    void MPISync();
   public:
 
     Event_Handler();
@@ -51,6 +50,7 @@ namespace SHERPA {
 
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }
 
+    void MPISync();
     double TotalXS();
     double TotalVar();
     double TotalErr();

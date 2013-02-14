@@ -478,21 +478,18 @@ void Event_Handler::MPISync()
 
 double Event_Handler::TotalXS()
 {
-  MPISync();
   return m_sum/m_n;
 }
 
 
 double Event_Handler::TotalVar()
 {
-  MPISync();
   return (m_sumsqr-m_sum*m_sum/m_n)/(m_n-1);
 }
 
 
 double Event_Handler::TotalErr()
 {
-  MPISync();
   if (m_n<=1) return TotalXS();
   if (ATOOLS::IsEqual
       (m_sumsqr*m_n,m_sum*m_sum,1.0e-6)) return 0.0;
