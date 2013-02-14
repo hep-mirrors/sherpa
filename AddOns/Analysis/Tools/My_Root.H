@@ -1,5 +1,3 @@
-#ifndef ATOOLS_Org_My_Root_H
-#define ATOOLS_Org_My_Root_H
 
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 

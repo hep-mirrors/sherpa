@@ -48,6 +48,6 @@ noinst_HEADERS        	=	\
 					Simple_Cone.H \
 					BTagging.H 
 
-libAnalysisDetector_la_CXXFLAGS = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
+libAnalysisDetector_la_CXXFLAGS = $(AM_CXXFLAGS)
 
-libAnalysisDetector_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
+libAnalysisDetector_la_CPPFLAGS = $(AM_CPPFLAGS)

@@ -9,7 +9,6 @@
 #include "ATOOLS/Math/Scaling.H"
 #include "TH1D.h"
 #include "TH2D.h"
-#include "ATOOLS/Org/My_Root.H"
 #endif 
 
 using namespace ANALYSIS;

@@ -9,7 +9,6 @@
 #ifdef USING__ROOT
 #include "ATOOLS/Math/Scaling.H"
 #include "TH2D.h"
-#include "ATOOLS/Org/My_Root.H"
 #endif 
 
 

@@ -1,13 +1,7 @@
-if ROOT_SUPPORT
-EXTRAOBS      =	Dalitz_Observables.C
-else
-OBSEXTRADIST = Dalitz_Observables.C
-endif
 
 ANAOBS_SOURCES        =	\
 			Event_Output.C \
 			Blobdata.C \
-			$(EXTRAOBS) \
 			Global_Calculator.C \
 			Primitive_Observable_Base.C \
 			Normalized_Observable.C \
@@ -79,13 +73,13 @@ pkglib_LTLIBRARIES       =	libSherpaObservables.la
 
 libSherpaObservables_la_SOURCES       =	$(ANAOBS_SOURCES)
 
-libSherpaObservables_la_CXXFLAGS = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
+libSherpaObservables_la_CXXFLAGS = $(AM_CXXFLAGS)
 
-libSherpaObservables_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
+libSherpaObservables_la_CPPFLAGS = $(AM_CPPFLAGS)
 
 ANAOBS_EXTRA_DIST = $(ANAOBS_ADDS)
 else
 ANAOBS_EXTRA_DIST = $(ANAOBS_SOURCES) $(ANAOBS_ADDS)
 endif
 
-EXTRA_DIST = @SVNINCLUDE@ $(OBSEXTRADIST) $(ANAOBS_EXTRA_DIST)
+EXTRA_DIST = @SVNINCLUDE@ $(ANAOBS_EXTRA_DIST)

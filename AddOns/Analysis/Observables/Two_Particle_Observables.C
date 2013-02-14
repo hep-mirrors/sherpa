@@ -61,12 +61,6 @@ Primitive_Observable_Base *GetObservable(const Argument_Matrix &parameters)
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
   DEFINE_PRINT_METHOD(NAME)
 
-#ifdef USING__ROOT
-#include "ATOOLS/Math/Scaling.H"
-#include "AddOns/Analysis/Tools/My_Root.H"
-#include "TH2D.h"
-#endif 
-
 using namespace ATOOLS;
 using namespace std;
 
@@ -242,42 +236,6 @@ Primitive_Observable_Base * Two_Particle_Scalar_PT::Copy() const
 {
   return new Two_Particle_Scalar_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
-
-#ifdef USING__ROOT
-DEFINE_OBSERVABLE_GETTER(Two_Particle_Angles,
-			 Two_Particle_Angles_Getter,"Theta_2D")
-
-Two_Particle_Angles::Two_Particle_Angles(const Flavour & _flav1,const Flavour & _flav2,
-					 int _type,double _xmin,double _xmax,int _nbins,
-					 const std::string & _name, const std::string & _lname) :
-  Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,_lname,"Angles") 
-{ 
-  (*MYROOT::myroot)(new TH2D(ATOOLS::ToString(this).c_str(),
-			     (m_flav1.IDName()+std::string("_")+m_flav2.IDName()
-                              +std::string("_Angles")).c_str(),
-			     64,0.,M_PI,64,0.,M_PI),
-		    m_flav1.IDName()+std::string("_")+m_flav2.IDName()+
-		    std::string("_Angles"));
-}
-
-void Two_Particle_Angles::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, double ncount)
-{
-  ((TH2D*)(*MYROOT::myroot)[m_flav1.IDName()+std::string("_")+m_flav2.IDName()+
-          std::string("_Angles")])->Fill(mom1.Theta(),mom2.Theta(),weight);
-}
-
-void Two_Particle_Angles::EvaluateNLOcontrib(const Vec4D & mom1,const Vec4D & mom2,double weight, double ncount)
-{
-  msg_Out()<<METHOD<<": not defined yet, evaluating nothing ...\n";
-//   ((TH2D*)(*MYROOT::myroot)[m_flav1.IDName()+std::string("_")+m_flav2.IDName()+
-//           std::string("_Angles")])->Fill(mom1.Theta(),mom2.Theta(),weight);
-}
-
-Primitive_Observable_Base * Two_Particle_Angles::Copy() const
-{
-  return new Two_Particle_Angles(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name,m_listname);
-}
-#endif
 
 DEFINE_OBSERVABLE_GETTER(Two_Particle_Eta,Two_Particle_Eta_Getter,"Eta2")
 

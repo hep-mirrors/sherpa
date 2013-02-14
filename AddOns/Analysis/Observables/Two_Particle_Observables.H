@@ -75,18 +75,6 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const;
   };
 
-#ifdef USING__ROOT
-  class Two_Particle_Angles : public Two_Particle_Observable_Base {  
-    void Evaluate(const ATOOLS::Vec4D &,const ATOOLS::Vec4D &,double=1., double=1.); 
-    void EvaluateNLOcontrib(const ATOOLS::Vec4D &, const ATOOLS::Vec4D &,
-      double=1., double=1.);
-  public:
-    Two_Particle_Angles(const ATOOLS::Flavour &,const ATOOLS::Flavour &,
-			int,double,double,int,const std::string & =std::string("SP_T:"),const std::string & =std::string("FinalState"));
-    Primitive_Observable_Base * Copy() const;
-  };
-#endif
-
   class Two_Particle_Eta : public Two_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
 		  double weight, double ncount); 
