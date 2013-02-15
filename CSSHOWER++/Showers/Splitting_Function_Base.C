@@ -130,10 +130,11 @@ double Splitting_Function_Base::operator()
    const double scale,const double Q2)
 {
   double sf((*p_lf)(z,y,eta,scale,Q2)/m_symf/m_polfac);
-  if (IsBad(sf))
-    THROW(fatal_error,"Invalid weight in CSS "+
-	  Demangle(std::string(typeid(*p_lf).name()).substr(12))+"|"+
-	  Demangle(std::string(typeid(*p_cf).name()).substr(11)));
+  if (IsBad(sf)) {
+    PRINT_INFO("Invalid weight in CSS "+
+               Demangle(std::string(typeid(*p_lf).name()).substr(12))+"|"+
+               Demangle(std::string(typeid(*p_cf).name()).substr(11)));
+  }
   return Max(0.0,sf);
 }
 

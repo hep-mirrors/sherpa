@@ -275,6 +275,10 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
   double trials((*p_signal)["Trials"]->Get<double>());
   p_signal->AddData("Trials",new Blob_Data<double>(trials+m_addn));
   double cxs((*p_signal)["Weight"]->Get<double>());
+  if (IsBad(cxs)) {
+    PRINT_INFO("Invalid weight w="<<cxs<<". Rejecting event.");
+    return false;
+  }
 #ifdef USING__MPI
   m_mn      += trials+m_addn;
   m_msum    += cxs;
