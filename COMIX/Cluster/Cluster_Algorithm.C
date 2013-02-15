@@ -50,9 +50,12 @@ int Cluster_Algorithm::Connected
 {
   for (size_t i(0);i<dvs.size();++i) {
     if (dvs[i]->JC()->Zero()) continue;
-    if (m_id.find(dvs[i]->JA()->CId())->second==idk ||
-	m_id.find(dvs[i]->JB()->CId())->second==idk ||
-	m_id.find(dvs[i]->JC()->CId())->second==idk) {
+    SizeT_Map::const_iterator ait(m_id.find(dvs[i]->JA()->CId()));
+    SizeT_Map::const_iterator bit(m_id.find(dvs[i]->JB()->CId()));
+    SizeT_Map::const_iterator cit(m_id.find(dvs[i]->JC()->CId()));
+    if ((ait==m_id.end() || ait->second==idk) ||
+	(bit==m_id.end() || bit->second==idk) ||
+	(cit==m_id.end() || cit->second==idk)) {
       return 1;
     }
   }
