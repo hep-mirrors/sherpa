@@ -45,6 +45,7 @@ namespace CSSHOWER {
     void DeleteAll();
 
     Parton *FollowUp();
+    bool    Splits();
     void    UpdateDaughters();
     void    UpdateNewDaughters(Parton *ref);
     void    UpdateColours();

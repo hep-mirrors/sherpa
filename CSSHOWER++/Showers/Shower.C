@@ -424,21 +424,13 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	return true;
       }
       ResetScales(kt2win);
-      if (split->GetSing()->GetLeft()) {
-	static double maxt(sqrt(std::numeric_limits<double>::max()));
-	if (split->GetType()==pst::IS) {
-	  if (m_flavA!=split->GetFlavour()) {
-	    msg_Debugging()<<"... Veto flavour change ...\n\n";
-	    if (split->KtVeto()==maxt) continue;
-	    return false;
-	  }
-	}
-	else {
-	  if (m_flavB!=split->GetFlavour()) {
-	    msg_Debugging()<<"... Veto flavour change ...\n\n";
-	    if (split->KtVeto()==maxt) continue;
-	    return false;
-	  }
+      if (split->Splits()) {
+	if ((split->GetType()==pst::IS &&
+	     m_flavA!=split->GetFlavour()) ||
+	    (split->GetType()==pst::FS &&
+	     m_flavB!=split->GetFlavour())) {
+	  msg_Debugging()<<"... Skip flavour change ...\n\n";
+	  continue;
 	}
       }
       if (p_actual->JF() &&

@@ -49,12 +49,20 @@ Parton *Parton::FollowUp()
   return this;
 }
 
+bool Parton::Splits()
+{
+  if (this==NULL) return false;
+  if (this==p_sing->GetSplit()) return true;
+  return p_next->Splits();
+}
+
 void Parton::UpdateDaughters()
 {
   if (this==NULL || p_next==NULL) return;
   msg_Indent();
   msg_IODebugging()<<METHOD<<"("<<this<<") {\n";
   p_next->SetMomentum(m_mom);
+  p_next->SetFlavour(m_flav);
   msg_IODebugging()<<*p_next;
   p_next->UpdateDaughters();
   msg_IODebugging()<<"}\n";
