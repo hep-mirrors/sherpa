@@ -214,7 +214,11 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   double rs(rsproc->Differential(*rampl,rm));
   double r(rsproc->GetSubevtList()->back()->m_result);
   msg_Debugging()<<"H = "<<rs<<", R = "<<r<<" -> "<<rs/r<<"\n";
-  if (IsEqual(rs,r,1.0e-6) || r==0.0) return 1.0;
+  if (IsEqual(rs,r,1.0e-6) || r==0.0) {
+    for (Cluster_Amplitude *campl(rampl->Next());
+	 campl;campl=campl->Next()) campl->SetNLO(4);
+    return 1.0;
+  }
   msg_Debugging()<<ampl<<"\n";
   rm=ampl.Leg(0)->Mom()[3]>0.0?1024:0;
   Process_Base *bviproc(FindProcess(&ampl,nlo_type::vsub,false));
@@ -224,10 +228,14 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   bviproc->Differential(ampl,rm);
   double bvi(bviproc->Last()), b(bviproc->LastB());
   if (b==0.0) return 0.0;
-  double k(bvi/b*(1.0-rs/r)+rs/r);
+  double s(bvi/b*(1.0-rs/r)), h(rs/r);
   msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
-		 <<" -> K = "<<k<<"\n";
-  return k;
+		 <<" -> S = "<<s<<", H = "<<h<<"\n";
+  double sw(1.0/(1.0+dabs(h/s)));
+  if (sw>ran->Get()) return s/sw;
+  for (Cluster_Amplitude *campl(rampl->Next());
+       campl;campl=campl->Next()) campl->SetNLO(4);
+  return h/(1.0-sw);
 }
 
 Cluster_Amplitude *MCatNLO_Process::GetAmplitude()
