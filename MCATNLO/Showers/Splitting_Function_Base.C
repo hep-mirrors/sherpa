@@ -171,6 +171,7 @@ double Splitting_Function_Base::operator()
     PRINT_INFO("Invalid weight in MC@NLO "+
                Demangle(std::string(typeid(*p_lf).name()).substr(9))+"|"+
                Demangle(std::string(typeid(*p_cf).name()).substr(9)));
+    return 0.0;
   }
   return sf*(ci.m_new<0?1.0:p_cf->ColorWeight(ci))/m_symf/m_polfac;
 }
