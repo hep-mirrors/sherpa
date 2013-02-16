@@ -151,6 +151,8 @@ namespace SHERPA {
 
     inline void SetShowerHandler(Shower_Handler *const sh) { p_shower=sh; }
 
+    inline Shower_Handler *Shower() const { return p_shower; }
+
     inline double WeightFactor() const { return m_weightfactor; }
 
     inline double Sum() const { return m_sum; }
