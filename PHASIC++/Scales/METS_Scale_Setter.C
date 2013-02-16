@@ -191,6 +191,8 @@ METS_Scale_Setter::METS_Scale_Setter
     core=tag.substr(0,pos);
     tag=tag.substr(pos+1);
   }
+  if (tag.find('{')==std::string::npos &&
+      tag.find('}')==std::string::npos) tag+="{MU_F2}{MU_R2}{MU_Q2}";
   while (true) {
     size_t pos(tag.find('{'));
     if (pos==std::string::npos) {
