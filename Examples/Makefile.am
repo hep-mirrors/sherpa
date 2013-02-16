@@ -1,6 +1,10 @@
 examplesdir        = $(pkgdatadir)/Examples
 
 nobase_dist_examples_DATA         =	\
+		FixedOrder_NLO/NTuples/Run.B-like.dat \
+		FixedOrder_NLO/NTuples/Reweight.B-like.dat \
+		FixedOrder_NLO/NTuples/Run.R-like.dat \
+		FixedOrder_NLO/NTuples/Reweight.R-like.dat \
 		V_plus_Jets/LHC_W1jet_MCatNLO/Run.dat \
 		V_plus_Jets/LHC_WJets/Run.dat \
 		V_plus_Jets/LHC_WJets/Run.NLO.dat \
