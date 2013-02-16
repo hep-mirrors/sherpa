@@ -180,8 +180,17 @@ METS_Scale_Setter::METS_Scale_Setter
   m_cnt(0), m_rej(0), m_mode(mode), m_lfrac(0.0)
 {
   m_scale.resize(stp::size+3);
-  std::string tag(args.m_scale);
+  std::string tag(args.m_scale), core;
   m_nproc=!p_proc->Parent()->Info().m_fi.NLOType()==nlo_type::lo;
+  size_t pos(tag.find('['));
+  if (pos!=std::string::npos) {
+    tag=tag.substr(pos+1);
+    pos=tag.find(']');
+    if (pos==std::string::npos) 
+      THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
+    core=tag.substr(0,pos);
+    tag=tag.substr(pos+1);
+  }
   while (true) {
     size_t pos(tag.find('{'));
     if (pos==std::string::npos) {
@@ -216,8 +225,7 @@ METS_Scale_Setter::METS_Scale_Setter
   m_cmoders=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE_RS"));
   Data_Reader read(" ",";","!","=");
   if (!read.ReadFromFile(m_wthres,"METS_WARNING_THRESHOLD")) m_wthres=0.1;
-  std::string core;
-  if (!read.ReadFromFile(core,"CORE_SCALE")) core="SHOWER";
+  if (core=="" && !read.ReadFromFile(core,"CORE_SCALE")) core="SHOWER";
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
   if (!read.ReadFromFile(m_nfgsplit,"DIPOLE_NF_GSPLIT"))
