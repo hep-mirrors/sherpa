@@ -12,7 +12,7 @@ ANATRIGGER_SOURCES    =	\
 			momentum.cpp hash.cpp quadtree.cpp vicinity.cpp \
 			protocones.cpp split_merge.cpp siscone.cpp \
 			siscone_error.cpp area.cpp \
-			SISCone.C \
+			MySISCone.C \
 			ConeMCFM.C \
 			MCFMCone.C \
 			HT_Selector.C \
@@ -53,7 +53,7 @@ ANATRIGGER_ADDS       =	\
 			siscone.h\
 			split_merge.h\
 			vicinity.h\
-			SISCone.H \
+			MySISCone.H \
 			ConeMCFM.H \
 			MCFMCone.H \
 			Kt_Algorithm.H \

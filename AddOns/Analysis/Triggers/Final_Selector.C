@@ -7,7 +7,7 @@ using namespace ANALYSIS;
 #include "AddOns/Analysis/Tools/Particle_Qualifier.H"
 #include "AddOns/Analysis/Triggers/Midpoint_Cone.H"
 #include "AddOns/Analysis/Triggers/DIS_Algorithm.H"
-#include "AddOns/Analysis/Triggers/SISCone.H"
+#include "AddOns/Analysis/Triggers/MySISCone.H"
 #include "AddOns/Analysis/Triggers/MCFMCone.H"
 #include <iomanip>
 

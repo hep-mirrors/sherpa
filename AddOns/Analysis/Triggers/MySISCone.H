@@ -1,5 +1,5 @@
-#ifndef ANALYSIS_Triggers_SISCone_H
-#define ANALYSIS_Triggers_SISCone_H
+#ifndef ANALYSIS_Triggers_MySISCone_H
+#define ANALYSIS_Triggers_MySISCone_H
 
 #include "AddOns/Analysis/Triggers/Kt_Algorithm.H"
 #include "ATOOLS/Phys/Particle_List.H"

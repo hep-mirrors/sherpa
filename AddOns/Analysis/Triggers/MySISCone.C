@@ -1,4 +1,4 @@
-#include "AddOns/Analysis/Triggers/SISCone.H"
+#include "AddOns/Analysis/Triggers/MySISCone.H"
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
 #include "ATOOLS/Phys/Particle_List.H"
 #include "AddOns/Analysis/Triggers/momentum.h"
