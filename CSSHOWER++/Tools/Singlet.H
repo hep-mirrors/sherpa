@@ -26,10 +26,6 @@ namespace CSSHOWER {
     int m_nlo;
     ATOOLS::DecayInfo_Vector m_decs;
     void *p_proc;
-    void SetColours(Singlet *const sing,Parton *const np,
-		    const int oldc[2],const int newc[2]);
-    void SetColours(Parton *const pa,Parton *const p,
-		    const int oldc[2],const int newc[2]);
     void ReestablishConnections(Parton * mother, 
 				Parton * daughter1, Parton * daughter2);
   public :

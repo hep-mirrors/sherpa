@@ -99,29 +99,6 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
   Parton *l(split->GetLeft()), *r(split->GetRight());
   Parton *c(split->GetSplit()->FollowUp()), *s(split->GetSpec());
   int kin(l->Kin()), ckin(c->Kin());
-  if (c->GetFlavour().Strong() &&
-      l->GetFlavour().Strong() && r->GetFlavour().Strong()) {
-    Parton *lr[2]={l,r};
-    for (int n(1);n<=2;++n) {
-      int sf(s->GetFlow(3-n)), smf(s->GetMEFlow(3-n));
-      for (int m(0);m<2;++m) {
-	int cf(lr[m]->GetFlow(n)), cmf(lr[m]->GetMEFlow(n));
-	if (cmf && cmf==smf && (cf!=cmf || sf!=smf)) {
-	  for (Singlet::const_iterator sit(l->GetSing()->begin());
-	       sit!=l->GetSing()->end();++sit)
-	    if ((*sit)->Id()!=s->Id() &&
-		(*sit)->GetFlow(3-n)==cf) {
-	      s->SetMomentum(s->GetPrev()->Momentum());
-	      s->UpdateDaughters();
-	      s=*sit;
-	      msg_Debugging()<<"new spec for "<<cf<<" "<<*s<<"\n";
-	      break;
-	    }
-	  break;
-	}
-      }
-    }
-  }
   double mi2(l->Mass2()), mj2(r->Mass2());
   Vec4D spi(l->FixSpec()), spj(r->FixSpec()), spk(s->FixSpec());
   Vec4D opi(l->OldMomentum()), opj(r->OldMomentum()), opk(s->OldMomentum());
@@ -230,12 +207,6 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   newpC->UpdateNewDaughters(newpB);
   split->GetSpect()->UpdateDaughters();
   if (mode==0) split->GetSing()->ArrangeColours(split,newpB,newpC);
-  else {
-    newpB->SetFlow(1,split->GetFlow(1));
-    newpB->SetFlow(2,split->GetFlow(2));
-  }
-  split->SetFlow(1,newpB->GetFlow(1));
-  split->SetFlow(2,newpB->GetFlow(2));
   newpB->SetPrev(split->GetPrev());
   newpC->SetPrev(split->GetPrev());
   newpB->SetFixSpec(split->FixSpec());

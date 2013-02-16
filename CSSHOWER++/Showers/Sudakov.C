@@ -235,6 +235,12 @@ bool Sudakov::Generate(Parton * split)
   m_weight=1.0;
   ClearSpecs();
   ResetLastInt();
+  int cc(split->GetFlavour().StrongCharge());
+  if (((cc==8 || (split->GetType()==pst::FS?cc:-cc)==3) &&
+       split->GetLeft()==NULL) ||
+      ((cc==8 || (split->GetType()==pst::FS?cc:-cc)==-3) &&
+       split->GetRight()==NULL))
+    THROW(fatal_error,"Invalid color flow.");
   m_cfl  = split->GetFlavour();
   m_type = cstp::none;
   std::vector<Parton*> slist;

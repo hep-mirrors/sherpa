@@ -76,6 +76,7 @@ void Parton::UpdateNewDaughters(Parton *ref)
   msg_Indent();
   msg_IODebugging()<<METHOD<<"("<<this<<") {\n";
   p_next->SetMomentum(m_mom);
+  p_next->SetFlavour(m_flav);
   for (int n(1);n<=2;++n) {
     p_next->SetFlow(n,GetFlow(n));
     p_next->SetMEFlow(n,GetMEFlow(n));
@@ -91,15 +92,36 @@ void Parton::UpdateNewDaughters(Parton *ref)
 
 void Parton::UpdateColours()
 {
-  if (this==NULL || p_next==NULL) return;
-  msg_Indent();
-  msg_IODebugging()<<METHOD<<"("<<this<<") {\n";
-  for (int n(1);n<=2;++n) {
-    p_next->SetFlow(n,GetFlow(n));
-    p_next->SetMEFlow(n,GetMEFlow(n));
+  if (this==NULL) return;
+  msg_IODebugging()<<METHOD<<"("<<this<<"): ("
+		   <<GetMEFlow(1)<<","<<GetMEFlow(2)<<") -> ("
+		   <<GetFlow(1)<<","<<GetFlow(2)<<") {\n";
+  {
+    msg_Indent();
+    if (p_sing==NULL) THROW(fatal_error,"Cannot update flow");
+    p_left=p_right=NULL;
+    int f1(GetFlow(1)), f2(GetFlow(2));
+    for (PLiter pit(p_sing->begin());pit!=p_sing->end();++pit) {
+      if (f1 && f1==(*pit)->GetFlow(2)) (p_left=*pit)->SetRight(this);
+      if (f2 && f2==(*pit)->GetFlow(1)) (p_right=*pit)->SetLeft(this);
+    }
+    msg_IODebugging()<<*this;
+    if (this==p_sing->GetSplit() ||
+	(p_prev && p_prev==p_sing->GetSplit())) {
+      Parton *ds[2]={p_sing->GetLeft(),p_sing->GetRight()};
+      for (int i(0);i<2;++i)
+	for (int n(1);n<=2;++n)
+	  if (ds[i]->GetFlow(n)==GetMEFlow(n)) {
+	    ds[i]->SetFlow(n,GetFlow(n));
+	    ds[i]->UpdateColours();
+	  }
+    }
+    else if (p_next) {
+      for (int n(1);n<=2;++n) p_next->SetFlow(n,GetFlow(n));
+      p_next->UpdateColours();
+    }
+    for (int n(1);n<=2;++n) SetMEFlow(n,GetFlow(n));
   }
-  msg_IODebugging()<<*p_next;
-  p_next->UpdateColours();
   msg_IODebugging()<<"}\n";
 }
 
