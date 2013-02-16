@@ -165,7 +165,7 @@ void Process_Integrator::OptimizeSubResult(const double &s2)
 double Process_Integrator::RemainTimeFactor(double maxerr) 
 {
   if (m_sn<1000) return 0.;
-  return (sqr(1./maxerr)-m_ssigma2)/Sigma2();
+  return (sqr(1./(maxerr*TotalResult()))-m_ssigma2)/Sigma2();
 }
 
 void Process_Integrator::SetMomenta(const Vec4D_Vector &p)
