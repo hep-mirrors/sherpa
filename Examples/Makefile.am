@@ -19,6 +19,8 @@ nobase_dist_examples_DATA         =	\
 		Jets_at_HadronColliders/LHC_2jets_MCatNLO/Run.dat \
 		Jets_at_HadronColliders/LHC_Jets_MEPS/Run.dat \
 		H_in_GluonFusion/LHC_HJets_Inclusive/Run.dat \
+		Tops_plus_Jets/Tevatron_Tops_MEPS/Run.dat \
+		Tops_plus_Jets/LHC_Tops_MEPS/Run.dat \
 		Tops_plus_Jets/Tevatron_Tops_MCatNLO/Run.dat \
 		Tops_plus_Jets/LHC_Tops_MCatNLO/Run.dat \
 		Tops_plus_V/LHC_TTW/Run.dat

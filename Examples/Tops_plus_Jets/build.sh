@@ -1,1 +1,0 @@
-rivet-buildplugin RivetMC_TTSpins.so MC_TTSpins.cc
