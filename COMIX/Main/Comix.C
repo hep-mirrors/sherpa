@@ -164,6 +164,7 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   read.AddWordSeparator("\t");
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
+  SetPSMasses(&read);
   m_break=read.GetValue<int>("ONLY_MAPPING_FILE",0);
   if (!read.GetValue<int>("COMIX_ALLOW_BSM",0))
     if (model->Name()!="SM") m_act=false;

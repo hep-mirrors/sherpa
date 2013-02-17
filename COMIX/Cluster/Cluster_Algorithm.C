@@ -4,6 +4,7 @@
 #include "COMIX/Main/Single_Process.H"
 #include "COMIX/Amplitude/Amplitude.H"
 #include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "COMIX/Phasespace/PS_Channel.H"
@@ -477,6 +478,7 @@ bool Cluster_Algorithm::Cluster
     p_ampl->CreateLeg(mom,flav,ColorID(),cid);
     p_ampl->Legs().back()->SetStat(1);
   }
+  p_xs->Generator()->ShiftMasses(p_ampl);
   p_ampl->SetQ2(Q2);
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);

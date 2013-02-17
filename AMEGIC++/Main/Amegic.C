@@ -107,6 +107,7 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   read.AddWordSeparator("\t");
   read.SetInputPath(m_path+"/");
   read.SetInputFile(m_file);
+  SetPSMasses(&read);
   double alpha=read.GetValue<double>("AMEGIC_CHANNEL_ALPHA",0.4);
   rpa->gen.SetVariable("AMEGIC_CHANNEL_ALPHA",ToString(alpha));
   double eps=read.GetValue<double>("AMEGIC_CHANNEL_EPSILON",0.0);

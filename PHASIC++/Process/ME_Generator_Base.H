@@ -19,6 +19,12 @@ namespace PHASIC {
 
     std::string m_name;
 
+    std::set<ATOOLS::Flavour> m_psmass;
+
+  protected:
+
+    void SetPSMasses(ATOOLS::Data_Reader *const dr);
+
   public :
 
     // constructor
@@ -42,6 +48,8 @@ namespace PHASIC {
     virtual ATOOLS::Cluster_Amplitude *
     ClusterConfiguration(Process_Base *const proc,
 			 const size_t &mode=0,const double &kt2=0.0) = 0;
+
+    bool ShiftMasses(ATOOLS::Cluster_Amplitude *const ampl);
 
     double Mass(const ATOOLS::Flavour &fl) const;
 
