@@ -147,8 +147,10 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     cmax=Max(cmax,(size_t)p_ampl->Leg(i)->Col().m_i);
   while (Flow::Counter()<cmax);
   p_me->Process()->Parent()->SetRBMap(p_ampl);
-  p_dec->SetCluster(p_me->Shower()->GetShower()->GetClusterDefinitions());
-  p_dec->DefineInitialConditions(p_ampl, blob);
+  if (p_dec) {
+    p_dec->SetCluster(p_me->Shower()->GetShower()->GetClusterDefinitions());
+    p_dec->DefineInitialConditions(p_ampl, blob);
+  }
   while (p_ampl->Prev()) p_ampl=p_ampl->Prev();
   //if (!SetColours(p_ampl,blob)) return Return_Value::New_Event;
   //if (!p_dec->SetColours(p_ampl,blob)) return Return_Value::New_Event;
