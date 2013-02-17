@@ -59,7 +59,7 @@ of the main features of these examples.
 * Tops plus W in MC@@NLO:: Production of a top quark pair in association with a W
 @end menu
 
-@include Tevatron_Tops_MCatNLO.texi
+@include Tevatron_TT.texi
 @include LHC_TTW.texi
 
 

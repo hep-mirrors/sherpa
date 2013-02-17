@@ -1,0 +1,14 @@
+@node Tops in MC@@NLO
+@subsection Simulation of top quark pair production using MC@@NLO methods
+
+@example
+@smallformat
+@verbatiminclude Examples/Tops_plus_Jets/LHC_Tops_MCatNLO/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item ...
+@end itemize
+ 

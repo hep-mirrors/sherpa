@@ -28,6 +28,7 @@ Sherpa_TEXINFOS = \
 	Introduction.texi \
 	ISR.texi \
 	LHC_HJets.texi \
+	Tevatron_TT.texi \
 	LHC_TTW.texi \
 	LHC_Jets.texi \
 	LEP_Jets.texi \
