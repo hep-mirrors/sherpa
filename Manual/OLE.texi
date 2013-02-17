@@ -70,7 +70,7 @@ The function @code{OLP_EvalSubProcess(...)} will be called many times
 for different subprocesses and momentum configurations.
 @end itemize
 
-The setup (cf. examples @ref{LHC_Z1jet_MCatNLO_LHOLE} and @ref{LHC_WJet_LHOLE}):
+The setup (cf. example @ref{LHC_Z1jet_MCatNLO_LHOLE}):
 @itemize @bullet
 @item The line @code{Loop_Generator LHOLE} tells the code to use
 the interface for computing one-loop matrix elements.

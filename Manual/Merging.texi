@@ -184,9 +184,7 @@ pointed out.
     CKKW sqr(20/E_CMS)
 @end verbatim
   and must be included in the process specification, before the 
-  @code{End process} line. More sophisticated and more flexible 
-  settings of Q_cut are possible, as is exemplified in @ref{HERA_DIS}.
-  As mentioned before,
+  @code{End process} line. As mentioned before,
   all extra QCD parton radiation is regularised by satisfying the
   jet criterion. However, divergences of the basic core process, such as
   vanishing invariant masses of lepton pairs, need to be regularised

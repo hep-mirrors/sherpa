@@ -1,4 +1,4 @@
-@node LHC_TTW
+@node Tops plus W in MC@@NLO
 @subsection Production of a top quark pair in association with a W-boson
 
 @example

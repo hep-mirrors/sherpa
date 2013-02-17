@@ -35,18 +35,11 @@ of the main features of these examples.
 
 @menu
 * LHC_Jets::
-* HERA_DIS::
 * LEP_Jets::
 @end menu
 
 @include LHC_Jets.texi
-
-@node HERA_DIS
-@subsection Jet production in DIS at HERA
-
-@node LEP_Jets
-@subsection Jet production at LEP I
-
+@include LEP_Jets.texi
 
 @node HJets
 @section Higgs boson + jets production
@@ -62,9 +55,11 @@ of the main features of these examples.
 @section Top quark (pair) + jets production
 
 @menu
-* LHC_TTW::
+* Tops in MC@@NLO:: Production of a top quark pair
+* Tops plus W in MC@@NLO:: Production of a top quark pair in association with a W
 @end menu
 
+@include Tevatron_Tops_MCatNLO.texi
 @include LHC_TTW.texi
 
 
@@ -72,15 +67,7 @@ of the main features of these examples.
 @section Fixed-order next-to-leading order calculations
 
 @menu
-* NLO_W::                    W production at the LHC
-* LHC_WJet_LHOLE::           W+jet production at the LHC using the BLHA interface
 * NTuple production::        Production of Root NTuples with Sherpa
 @end menu
-
-@node NLO_W
-@subsection NLO_W
-
-@node LHC_WJet_LHOLE
-@subsection LHC_WJet_LHOLE
 
 @include NLO_NTuples.texi

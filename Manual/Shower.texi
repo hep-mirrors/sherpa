@@ -52,8 +52,6 @@ with initial-state emitter and final-state spectator can be changed
 for systematics studies. Setting @option{CSS_KIN_SCHEME=0} (default) 
 corresponds to using the recoil scheme proposed in @mycite{Hoeche2009xc}, 
 while @option{CSS_KIN_SCHEME=1} enables the original recoil strategy.
-Note that the latter is more suitable for parton evolution in deep-inelastic
-lepton nucleon scattering, see @ref{HERA_DIS} @mycite{Carli2009cg}. 
 The lower cutoff of the shower evolution can be set via @option{CSS_PT2MIN}. 
 Note that this value is specified in GeV^2.
 

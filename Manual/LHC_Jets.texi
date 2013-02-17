@@ -2,7 +2,7 @@
 @subsection Jet production
 
 @menu
-* LHC_2jets_MCatNLO::
+* LHC_Jets_MCatNLO::
 * LHC_Jets_MEPS::
 @end menu
 
@@ -13,7 +13,7 @@ simply change the beam settings to
   BEAM_2 -2212; BEAM_ENERGY_2 980;
 @end verbatim
 
-@node LHC_2jets_MCatNLO
+@node LHC_Jets_MCatNLO
 @subsubsection MC@@NLO setup for dijet and inclusive jet production
 
 This is an example setup for dijet and inclusive jet production at hadron 
@@ -24,7 +24,7 @@ using the MC@@NLO prescription detailed in @mycite{Hoeche2011fd} and
 
 @example
 @smallformat
-@verbatiminclude Examples/Jets_at_HadronColliders/LHC_2jets_MCatNLO/Run.dat
+@verbatiminclude Examples/Jets_at_HadronColliders/LHC_Jets_MCatNLO/Run.dat
 @end smallformat
 @end example
 
