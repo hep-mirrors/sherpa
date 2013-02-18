@@ -19,6 +19,8 @@ namespace PHASIC {
 
     std::string m_name;
 
+    int m_massmode;
+
     std::set<ATOOLS::Flavour> m_psmass;
 
   protected:
@@ -28,7 +30,8 @@ namespace PHASIC {
   public :
 
     // constructor
-    inline ME_Generator_Base(const std::string &name): m_name(name) {}
+    inline ME_Generator_Base(const std::string &name):
+      m_name(name), m_massmode(0) {}
 
     // destructor
     virtual ~ME_Generator_Base();
@@ -49,7 +52,7 @@ namespace PHASIC {
     ClusterConfiguration(Process_Base *const proc,
 			 const size_t &mode=0,const double &kt2=0.0) = 0;
 
-    bool ShiftMasses(ATOOLS::Cluster_Amplitude *const ampl);
+    int ShiftMasses(ATOOLS::Cluster_Amplitude *const ampl);
 
     double Mass(const ATOOLS::Flavour &fl) const;
 
@@ -57,6 +60,10 @@ namespace PHASIC {
 
     // inline functions
     inline std::string Name() const { return m_name; }
+
+    inline void SetMassMode(const int mode) { m_massmode=mode; }
+
+    inline int MassMode() { return m_massmode; }
 
   };// end of class ME_Generator_Base
 

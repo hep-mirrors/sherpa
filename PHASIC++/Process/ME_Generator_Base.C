@@ -28,9 +28,9 @@ void ME_Generator_Base::SetPSMasses(Data_Reader *const dr)
   }
 }
 
-bool ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
+int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
 {
-  if (m_psmass.empty()) return true;
+  if (m_psmass.empty()) return 0;
   DEBUG_FUNC(m_name);
   msg_Debugging()<<"Before shift: "<<*ampl<<"\n";
   for (size_t i(0);i<ampl->Legs().size();++i) {
@@ -47,7 +47,7 @@ bool ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
     double mi2(Mass2(li->Flav())), Q2(Q.Abs2());
     double po(sqr(Q2-si-sk)-4.0*si*sk);
     double pn(sqr(Q2-mi2-sk)-4.0*mi2*sk);
-    if (pn<0.0 ^ po<0.0) return false;
+    if (pn<0.0 ^ po<0.0) return -1;
     Vec4D npk(sqrt(pn/po)*(pk-(Q*pk)/Q2*Q)+(Q2+sk-mi2)/(2.0*Q2)*Q);
     li->SetMom(Q-npk);
     if (i<ampl->NIn()) ampl->Leg(1-i)->SetMom(npk);
@@ -66,11 +66,12 @@ bool ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
     }
     msg_Debugging()<<"After shifting "<<i<<": "<<*ampl<<"\n";
   }
-  return true;
+  return 1;
 }
 
 double ME_Generator_Base::Mass(const ATOOLS::Flavour &fl) const
 {
+  if (m_massmode==0) return fl.Mass();
   if (m_psmass.find(fl)!=m_psmass.end()) return fl.Mass(true);
   return fl.Mass();
 }

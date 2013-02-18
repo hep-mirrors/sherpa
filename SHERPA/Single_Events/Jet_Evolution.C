@@ -168,8 +168,7 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
       return Return_Value::Success;
     case 0:
       Reset();
-      interface->Shower()->CleanUp();
-      interface->CleanUp();
+      CleanUp();
       return Return_Value::New_Event;
     default:
       THROW(fatal_error,"Invalid return value from shower");
@@ -182,15 +181,14 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
 	       <<"   DefineInitialConditions yields an error for "<<std::endl<<(*blob)
 	       <<"   Return 'Error' and hope for the best."<<std::endl;
     blob->SetStatus(blob_status::inactive);
-    interface->Shower()->CleanUp();
-    interface->CleanUp();
+    CleanUp();
     return Return_Value::Error;
   default :
     msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
 	       <<"   Unexpected status of DefineInitialConditions for "<<std::endl<<(*blob)
 	       <<"   Return 'Error' and hope for the best."<<std::endl;
     blob->SetStatus(blob_status::inactive);
-    interface->Shower()->CleanUp();
+    CleanUp();
     return Return_Value::Error;    
   }
   return Return_Value::Error;    
@@ -272,7 +270,7 @@ void Jet_Evolution::CleanUp(const size_t & mode)
 { 
   for (PertInterfaceIter piIter=m_interfaces.begin();
        piIter!=m_interfaces.end(); ++piIter) {
-    piIter->second->Shower()->CleanUp();
+    piIter->second->CleanUp();
   }
 }
 
