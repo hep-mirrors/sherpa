@@ -45,7 +45,7 @@ namespace SHERPA {
     void PrintGenericEventStructure();
 
     bool GenerateEvent(eventtype::code mode=eventtype::StandardPerturbative);
-    void Reset(const size_t & mode=1);
+    void Reset();
     void Finish();
 
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }
