@@ -82,19 +82,12 @@ void Event_Handler::PrintGenericEventStructure()
   msg_Out()<<"---------------------------------------------------------"<<std::endl;
 }
 
-void Event_Handler::Reset(const size_t & mode)
+void Event_Handler::Reset()
 {
   m_sblobs.Clear();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit)
     (*pit)->CleanUp();
   m_blobs.Clear();
-  if (mode==1) {
-    for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      if ((*pit)->Name()==std::string("Beam_Remnants")) {
-	(*pit)->CleanUp(1);    
-      }
-    }
-  }
   if (Particle::Counter()>m_lastparticlecounter || 
       Blob::Counter()>m_lastblobcounter) {
     msg_Error()<<METHOD<<"(): "<<Particle::Counter()
@@ -175,6 +168,7 @@ bool Event_Handler::AnalyseEvent(double & weight) {
 int Event_Handler::IterateEventPhases(double & weight) {
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
+  bool hardps = true;
   do {
 /*    msg_Out()<<"\n";
     PRINT_VAR((*pit)->Type());
@@ -191,6 +185,11 @@ int Event_Handler::IterateEventPhases(double & weight) {
       msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "<<rv<<std::endl;
     switch (rv) {
     case Return_Value::Success : 
+      if ((*pit)->Name().find("Jet_Evolution")==0 && hardps) {
+	m_sblobs.Clear();
+	m_sblobs=m_blobs.Copy();
+	hardps=false;
+      }
       Return_Value::IncCall((*pit)->Name());
       msg_Debugging()<<m_blobs;
       pit=p_phases->begin();
@@ -207,20 +206,21 @@ int Event_Handler::IterateEventPhases(double & weight) {
         retry++;
         Return_Value::IncCall((*pit)->Name());
         Return_Value::IncRetryEvent((*pit)->Name());
-        Blob::Reset();
-        Particle::Reset();
-        Flow::ResetCounter();
-        return 1;
+	m_blobs.Clear();
+	m_blobs=m_sblobs.Copy();
+	p_signal=m_blobs.FindFirst(btp::Signal_Process);
+	pit=p_phases->begin();
+	break;
       }
       else {
-        msg_Error()<<"Too many retrials for event, generating new one.\n";
+	msg_Error()<<METHOD<<"(): No success after "<<s_retrymax
+		   <<" trials. Request new event."<<std::endl;
       }
     case Return_Value::New_Event : 
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncNewEvent((*pit)->Name());
       if (p_signal) m_addn+=(*p_signal)["Trials"]->Get<double>();
-//       msg_Out()<<"Got New_Event, is this causing the problem?"<<std::endl;
-      Reset(1);
+      Reset();
       return 2;
     case Return_Value::Error :
       Return_Value::IncCall((*pit)->Name());
