@@ -162,7 +162,6 @@ bool CS_Shower::ExtractPartons(Blob_List *const blist) {
 void CS_Shower::CleanUp()
 {
   m_nem=0;
-  m_kt2prev=std::numeric_limits<double>::max();
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
     if (*sit) delete *sit;
