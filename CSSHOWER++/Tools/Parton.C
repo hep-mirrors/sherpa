@@ -63,6 +63,7 @@ void Parton::UpdateDaughters()
   msg_IODebugging()<<METHOD<<"("<<this<<") {\n";
   p_next->SetMomentum(m_mom);
   p_next->SetFlavour(m_flav);
+  p_next->SetMass2(m_t);
   msg_IODebugging()<<*p_next;
   p_next->UpdateDaughters();
   msg_IODebugging()<<"}\n";
@@ -77,6 +78,7 @@ void Parton::UpdateNewDaughters(Parton *ref)
   msg_IODebugging()<<METHOD<<"("<<this<<") {\n";
   p_next->SetMomentum(m_mom);
   p_next->SetFlavour(m_flav);
+  p_next->SetMass2(m_t);
   for (int n(1);n<=2;++n) {
     p_next->SetFlow(n,GetFlow(n));
     p_next->SetMEFlow(n,GetMEFlow(n));
