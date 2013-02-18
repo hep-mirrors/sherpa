@@ -41,6 +41,8 @@ namespace PDF {
 
     virtual CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl);
 
+    int ReCluster(ATOOLS::Cluster_Amplitude *const ampl);
+
     inline void SetAMode(const size_t mode) { m_amode=mode; }
     inline int AMode() const { return m_amode; }
 

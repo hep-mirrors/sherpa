@@ -2,7 +2,6 @@
 
 #include "PDF/Main/Cluster_Definitions_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
-#include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
@@ -172,25 +171,12 @@ Leg **Cluster_Algorithm::CreateLegs(int &nampl,const int nlegs)
 void Cluster_Algorithm::CreateTables
 (Leg ** legs,const int nampl,const size_t mode,const double &kt2) 
 {
-  PHASIC::Process_Base *pb(p_proc->IsMapped()?
-			   p_proc->MapProc():p_proc);
-  Cluster_Amplitude *ampl = Cluster_Amplitude::New();
-  ampl->SetNIn(p_proc->NIn());
-  for (int i(0);i<pb->NIn()+pb->NOut();++i) {
-    Flavour flav(i<pb->NIn()?p_proc->Flavours()[i].Bar():
-		 p_proc->Flavours()[i]);
-    Vec4D mom(i<pb->NIn()?-pb->Integrator()->Momenta()[i]:
-	      pb->Integrator()->Momenta()[i]);
-    ampl->CreateLeg(mom,flav,ColorID(),1<<i);
-  }
-  pb->Generator()->ShiftMasses(ampl);
   p_ct = 0;
   // if no combination table exist, create it
   int nin(p_proc->NIn()), nout(p_proc->NOut()), nlegs(nin+nout);
   Vec4D * amoms = new Vec4D[nlegs];
   for (int i=0;i<nin+nout;++i)  
-    amoms[i]     = (i<pb->NIn())?-ampl->Leg(i)->Mom():ampl->Leg(i)->Mom();
-  ampl->Delete();
+    amoms[i]     = p_proc->Integrator()->Momenta()[i];
   if (!p_combi) {
     /*
       - copy moms to insert into Combine_Table (will be delete there)

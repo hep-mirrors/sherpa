@@ -407,32 +407,7 @@ void Hard_Decay_Handler::DefineInitialConditions(Cluster_Amplitude* ampl,
     ampl->Leg(initial_blob->NInP()+i)->SetMom
       (initial_blob->OutParticle(i)->Momentum());
   }
-  DEBUG_VAR(*ampl);
-  for (Cluster_Amplitude *campl(ampl->Next());campl;campl=campl->Next()) {
-    DEBUG_VAR(*campl);
-    Cluster_Leg *lij(NULL);
-    for (size_t ij(0);ij<campl->Legs().size();++ij)
-      if (campl->Leg(ij)->K()) {
-	lij=campl->Leg(ij);
-	break;
-      }
-    if (lij==NULL) THROW(fatal_error,"Invalid amplitude");
-    int i(-1), j(-1), k(-1);
-    for (size_t l(0);l<campl->Prev()->Legs().size();++l) {
-      Cluster_Leg *cl(campl->Prev()->Leg(l));
-      if (cl->Id()&lij->Id()) {
-	if (i>=0) j=l;
-	else i=l;
-      }
-      if (cl->Id()==lij->K()) k=l;
-    }
-    Vec4D_Vector p=p_clus->Combine
-      (*campl->Prev(),i,j,k,lij->Flav(),campl->MS(),
-       campl->Kin(),(lij->Stat()&2)?1:0);
-    for (size_t l(0);l<campl->Legs().size();++l)
-      campl->Leg(l)->SetMom(p[l]);
-    DEBUG_VAR(*campl);
-  }
+  p_clus->ReCluster(ampl);
   size_t imax=ampl->Legs().size()-1;
   for (int i=0; i<initial_blob->NOutP(); ++i) {
     if (initial_blob->OutParticle(i)->DecayBlob()) {

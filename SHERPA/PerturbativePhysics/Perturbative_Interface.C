@@ -142,6 +142,16 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   }
   p_ampl=p_me->Process()->Get<Single_Process>()->Cluster(m_cmode);
   if (p_ampl==NULL) return Return_Value::New_Event;
+  int stat(p_me->Process()->Generator()->ShiftMasses(p_ampl));
+  if (stat!=1) {
+    msg_Error()<<METHOD<<"(): Mass shift failed. Reject event."<<std::endl;
+    return Return_Value::New_Event;
+  }
+  stat=p_me->Shower()->GetShower()->GetClusterDefinitions()->ReCluster(p_ampl);
+  if (stat!=1) {
+    msg_Error()<<METHOD<<"(): Reclustering failed. Reject event."<<std::endl;
+    return Return_Value::New_Event;
+  }
   size_t cmax(0);
   for (size_t i(0);i<p_ampl->Legs().size();++i)
     cmax=Max(cmax,(size_t)p_ampl->Leg(i)->Col().m_i);
