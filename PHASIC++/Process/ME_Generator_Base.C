@@ -1,6 +1,8 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Math/Poincare.H"
 
 #define COMPILE__Getter_Function
@@ -28,44 +30,76 @@ void ME_Generator_Base::SetPSMasses(Data_Reader *const dr)
   }
 }
 
+namespace PHASIC {
+
+  class ShiftMasses_Energy: public Function_Base {
+  private:
+    std::vector<double> m_m2, m_p2;
+  public:
+    ShiftMasses_Energy(Mass_Selector *const ms,
+		    Cluster_Amplitude *const ampl,int mode)
+    {
+      if (mode<0) {
+	for (size_t i(0);i<ampl->NIn();++i) {
+	  m_p2.push_back(ampl->Leg(i)->Mom().PSpat2());
+	  m_m2.push_back(ms->Mass2(ampl->Leg(i)->Flav()));
+	}
+      }
+      else {
+	for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+	  m_p2.push_back(ampl->Leg(i)->Mom().PSpat2());
+	  m_m2.push_back(ms->Mass2(ampl->Leg(i)->Flav()));
+	}
+      }
+    }
+    virtual double operator()(double x)
+    {
+      double E=0.0;
+      for (size_t i(0);i<m_m2.size();++i)
+	E+=sqrt(m_m2[i]+x*x*m_p2[i]);
+      return E;
+    }
+  };// end of class ShiftMasses_Energy
+
+}// end of namespace PHASIC
+
 int ME_Generator_Base::ShiftMasses(Cluster_Amplitude *const ampl)
 {
   if (m_psmass.empty()) return 0;
+  bool run=false;
+  Vec4D cms;
+  for (size_t i(0);i<ampl->Legs().size();++i) {
+    if (i<ampl->NIn()) cms-=ampl->Leg(i)->Mom();
+    if (m_psmass.find(ampl->Leg(i)->Flav())!=
+	m_psmass.end()) run=true;
+  }
+  if (!run) return 1;
   DEBUG_FUNC(m_name);
   msg_Debugging()<<"Before shift: "<<*ampl<<"\n";
-  for (size_t i(0);i<ampl->Legs().size();++i) {
-    Cluster_Leg *li(ampl->Leg(i));
-    if (m_psmass.find(li->Flav())==m_psmass.end()) continue;
-    Vec4D pk, pi(li->Mom());
-    if (i<ampl->NIn()) pk=ampl->Leg(1-i)->Mom();
-    else {
-      for (size_t j(ampl->NIn());j<ampl->Legs().size();++j)
-	if (i!=j) pk+=ampl->Leg(j)->Mom();
+  Poincare boost(cms);
+  boost.Boost(cms);
+  for (size_t i(0);i<ampl->Legs().size();++i)
+    ampl->Leg(i)->SetMom(boost*ampl->Leg(i)->Mom());
+  boost.Invert();
+  if (ampl->NIn()>1) {
+    ShiftMasses_Energy etot(this,ampl,-1);
+    double xi(etot.WDBSolve(cms[0],0.0,1.0));
+    if (!IsEqual(etot(xi),cms[0],rpa->gen.Accu())) return -1;
+    for (size_t i(0);i<ampl->NIn();++i) {
+      Vec4D p(xi*ampl->Leg(i)->Mom());
+      p[0]=-sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
+      ampl->Leg(i)->SetMom(boost*p);
     }
-    Vec4D Q(pk+pi);
-    double sk(pk.Abs2()), si(li->Mom().Abs2());
-    double mi2(Mass2(li->Flav())), Q2(Q.Abs2());
-    double po(sqr(Q2-si-sk)-4.0*si*sk);
-    double pn(sqr(Q2-mi2-sk)-4.0*mi2*sk);
-    if (pn<0.0 ^ po<0.0) return -1;
-    Vec4D npk(sqrt(pn/po)*(pk-(Q*pk)/Q2*Q)+(Q2+sk-mi2)/(2.0*Q2)*Q);
-    li->SetMom(Q-npk);
-    if (i<ampl->NIn()) ampl->Leg(1-i)->SetMom(npk);
-    else {
-      if (ampl->Legs().size()==ampl->NIn()+2) {
-	for (size_t j(ampl->NIn());j<ampl->Legs().size();++j)
-	  if (i!=j) ampl->Leg(j)->SetMom(npk);
-      }
-      else {
-	Poincare ocms(pk), ncms(npk);
-	ncms.Invert();
-	for (size_t j(ampl->NIn());j<ampl->Legs().size();++j)
-	  if (i!=j) ampl->Leg(j)->SetMom
-		      (ncms*(ocms*ampl->Leg(j)->Mom()));
-      }
-    }
-    msg_Debugging()<<"After shifting "<<i<<": "<<*ampl<<"\n";
   }
+  ShiftMasses_Energy etot(this,ampl,1);
+  double xi(etot.WDBSolve(cms[0],0.0,1.0));
+  if (!IsEqual(etot(xi),cms[0],rpa->gen.Accu())) return -1;
+  for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+    Vec4D p(xi*ampl->Leg(i)->Mom());
+    p[0]=sqrt(Mass2(ampl->Leg(i)->Flav())+p.PSpat2());
+    ampl->Leg(i)->SetMom(boost*p);
+  }
+  msg_Debugging()<<"After shift: "<<*ampl<<"\n";
   return 1;
 }
 

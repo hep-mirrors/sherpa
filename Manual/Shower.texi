@@ -10,6 +10,7 @@ The following parameters are used to steer the shower setup.
 
 @menu
 * SHOWER_GENERATOR::      Tag to set Sherpa's shower generator.
+* MASSIVE_PS::            Tag to treat partons as massive in the shower.
 
 * CS Shower options::     Options for Sherpa's default shower.         
 @end menu
@@ -34,6 +35,14 @@ However, even in the case of strict fixed order calculations, this might
 not be the desired behaviour as, for example, then neither the METS scale
 setter, cf. @ref{SCALES}, nor Sudakov rejection weights can be employed.
 To circumvent when using the CS Shower see @ref{CS Shower options}.
+
+@node MASSIVE_PS
+@subsection MASSIVE_PS
+
+This option instructs Sherpa to treat certain partons as massive 
+in the shower, which have been considered massless by the matrix element.
+The argument is a list of parton flavours, for example @option{MASSIVE_PS 4 5},
+if both c- and b-quarks are to be treated as massive.
 
 @node CS Shower options
 @subsection CS Shower options
