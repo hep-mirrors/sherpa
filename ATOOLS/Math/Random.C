@@ -547,7 +547,7 @@ double ATOOLS::Random::Get()
 }
 
 ptrdiff_t ATOOLS::Random::operator() (ptrdiff_t max) {
-  return static_cast<ptrdiff_t>(Get() * max);
+  return Min(static_cast<ptrdiff_t>(Get() * max),max-1);
 }
 
 void ATOOLS::Random::Gaussian(double & x,double & y)   
