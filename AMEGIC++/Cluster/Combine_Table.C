@@ -595,6 +595,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
 	    }
 	  }
 	  if (!ord) {
+	    if (kt2==0.0) return this;
 	    if (!(mode&16)) {
 	      delete this;
 	      return NULL;
@@ -699,7 +700,6 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     return NULL;    
   }
   msg_Debugging()<<"trying unordered configuration\n";
-  bool zero(false);
   CD_List norejected;
   while (true) {
     double nmin(std::numeric_limits<double>::max()), pmin(nmin);
@@ -724,16 +724,9 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     }
     if (nwin==m_rejected.end()) nwin=pwin;
     if (nwin==m_rejected.end()) {
-      if (!zero) {
-	zero=true;
-	norejected.clear();
-	continue;
-      }
-      else {
 	// if (valid && p_up==NULL) return CalcJet(nl,moms,mode,kt2);
 	delete this;
 	return NULL;
-      }
     }
     norejected[nwin->first]=nwin->second;
     if (valid && nwin->second.m_pt2ij.m_op2<0.0) continue;
@@ -745,8 +738,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
     Combine_Table *tab(CreateNext());
     if (tab!=NULL) {
-      Combine_Table *next(NextTable(tab,mode,zero?0.0:m_cdata_winner->
-				    second.m_pt2ij.m_kt2));
+      Combine_Table *next(NextTable(tab,mode,0.0));
       if (next!=NULL) return next;
     }
     msg_Debugging()<<METHOD<<"(): Table "<<m_no<<": reject winner "
