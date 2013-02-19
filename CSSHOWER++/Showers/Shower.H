@@ -24,7 +24,7 @@ namespace CSSHOWER {
     PDF::ISR_Handler * p_isr;
     Parton           * m_last[4];
     double             m_k0sqf,m_k0sqi,m_fs_as_fac,m_is_as_fac;
-    int                m_kscheme, m_noem;
+    int                m_kscheme, m_noem, m_use_bbw;
 
     ATOOLS::Cluster_Leg *p_old[2];
 

@@ -22,8 +22,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,const double & ktfac,
   m_k0sqi     = ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"))*sqr(ktfac);
   m_fs_as_fac = ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   m_is_as_fac = ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
-  msg_Out()<<METHOD<<"(asfacs: IS = "<<m_is_as_fac<<", FS = "<<m_fs_as_fac<<")"
-	   <<" from |"<<this<<"|\n"; 
+  m_use_bbw   = dataread->GetValue<int>("CSS_USE_BBW",1);
   m_kscheme   = dataread->GetValue<int>("CSS_KIN_SCHEME",1);
   m_noem      = dataread->GetValue<int>("CSS_NOEM",0);
   std::vector<std::vector<std::string> > helpsvv;
@@ -420,7 +419,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  if (p_actual->NLO()&2) {
 	    msg_Debugging()<<"Skip first truncated emission, K = "
 			   <<p_actual->LKF()<<"\n";
-	    m_weight*=1.0/p_actual->LKF();
+	    if (m_use_bbw) m_weight*=1.0/p_actual->LKF();
 	    if (IsBad(m_weight) || m_weight==0.0) {
 	      msg_Error()<<METHOD<<"(): Bad weight '"<<m_weight
 			 <<"'. Set it to one."<<std::endl;
