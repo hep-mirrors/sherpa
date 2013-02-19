@@ -3,12 +3,48 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
 
+#define COMPILE__Getter_Function
+#define OBJECT_TYPE PDF::Jet_Criterion
+#define PARAMETER_TYPE PDF::JetCriterion_Key
+#include "ATOOLS/Org/Getter_Function.C"
+
 using namespace PDF;
 using namespace ATOOLS;
 
-double PDF::Qij2(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
-		 const Flavour &fi,const Flavour &fj,
-		 const double &dparam,const int imode)
+Jet_Criterion::~Jet_Criterion() {}
+
+namespace PDF {
+
+  class Default_Jet_Criterion: public Jet_Criterion {
+  double Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
+	      const ATOOLS::Vec4D &pk,
+	      const ATOOLS::Flavour &fi=ATOOLS::Flavour(kf_none),
+	      const ATOOLS::Flavour &fj=ATOOLS::Flavour(kf_none),
+	      const double& dparam=-1.0,const int mode=0);
+
+  };// end of class Default_Jet_Criterion
+
+  DECLARE_GETTER(Default_Jet_Criterion_Getter,"DEFAULT",
+		 Jet_Criterion,JetCriterion_Key);
+
+  Jet_Criterion *Default_Jet_Criterion_Getter::
+  operator()(const JetCriterion_Key &args) const
+  {
+    return new Default_Jet_Criterion();
+  }
+
+  void Default_Jet_Criterion_Getter::
+  PrintInfo(std::ostream &str,const size_t width) const
+  { 
+    str<<"default jet criterion";
+  }
+
+}// end of namespace PHASIC
+
+double Default_Jet_Criterion::Qij2
+(const Vec4D &pi,const Vec4D &pj,const Vec4D &pk,
+ const Flavour &fi,const Flavour &fj,
+ const double &dparam,const int imode)
 {
   int mode(imode|2);
   Vec4D npi(pi), npj(pj);
@@ -65,7 +101,8 @@ namespace PDF {
 
 }
 
-double PDF::Qij2Min(const ATOOLS::Vec4D_Vector &p,NLO_subevtlist *const subs)
+double Jet_Criterion::Qij2Min(const ATOOLS::Vec4D_Vector &p,
+			      NLO_subevtlist *const subs)
 {
   DEBUG_FUNC(subs->back()->m_pname);
   Qij2_Key qij2;

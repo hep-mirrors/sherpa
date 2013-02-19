@@ -758,7 +758,7 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
 	if ((mode==0 && nlo>0 && lk->Flav().Strong() &&
 	     li->Flav().Strong() && lj->Flav().Strong()) ||
 	    p_shower->GetSudakov()->HasKernel(fi,fj,fk,et)) {
-	  double q2ijk(PDF::Qij2(li->Mom(),lj->Mom(),lk->Mom(),
+	  double q2ijk(jf->JC()->Qij2(li->Mom(),lj->Mom(),lk->Mom(),
 				 li->Flav(),lj->Flav(),jf->DR()));
  	  msg_Debugging()<<"Q_{"<<ID(li->Id())<<ID(lj->Id())
 			 <<","<<ID(lk->Id())<<"} = "<<sqrt(q2ijk)<<"\n";

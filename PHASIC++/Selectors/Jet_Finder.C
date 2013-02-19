@@ -3,6 +3,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PDF/Main/Shower_Base.H"
+#include "PDF/Main/Jet_Criterion.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -10,6 +11,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 
 using namespace PHASIC;
+using namespace PDF;
 using namespace ATOOLS;
 
 Jet_Finder::Jet_Finder
@@ -45,12 +47,16 @@ Jet_Finder::Jet_Finder
   for (int i=0;i<m_n;++i) p_yccalc->AddTag
     ("p["+ToString(i)+"]",ToString(Vec4D()));
   p_yccalc->Interprete(m_cuttag);
+  p_jc = JetCriterion_Getter::GetObject
+    (rpa->gen.Variable("JET_CRITERION"),JetCriterion_Key());
+  if (p_jc==NULL) THROW(not_implemented,"Invalid jet criterion");
 }
 
 Jet_Finder::~Jet_Finder() 
 {
   p_ampl->Delete();
   delete p_yccalc;
+  delete p_jc;
 }
 
 bool Jet_Finder::Trigger(const Vec4D_Vector &p)

@@ -6,6 +6,8 @@
 #include "ATOOLS/Math/Algebra_Interpreter.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 
+namespace PDF { class Jet_Criterion; }
+
 namespace PHASIC {
 
   class Jet_Finder: public Selector_Base,
@@ -18,6 +20,8 @@ namespace PHASIC {
     ATOOLS::Algebra_Interpreter *p_yccalc;
 
     ATOOLS::Cluster_Amplitude *p_ampl;
+
+    PDF::Jet_Criterion *p_jc;
 
     ATOOLS::Flavour GetFlavour(std::string fl);
 
@@ -44,6 +48,8 @@ namespace PHASIC {
     inline double DR() const             { return m_dparam; }
 
     inline void SetOn(const bool on) { m_on=on; }
+
+    inline PDF::Jet_Criterion *JC() const { return p_jc; }
 
   };
 

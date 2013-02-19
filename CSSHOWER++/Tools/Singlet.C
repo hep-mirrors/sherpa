@@ -101,7 +101,7 @@ bool Singlet::JetVeto(Sudakov *const sud) const
 	if ((nlo>0 && (*kit)->GetFlavour().Strong() &&
 	     (*iit)->GetFlavour().Strong() && (*jit)->GetFlavour().Strong()) ||
 	    sud->HasKernel(fi,fj,(*kit)->GetFlavour(),et)) {
-	  double q2ijk(PDF::Qij2(ii?-(*iit)->Momentum():(*iit)->Momentum(),
+	  double q2ijk(p_jf->JC()->Qij2(ii?-(*iit)->Momentum():(*iit)->Momentum(),
 				 ji?-(*jit)->Momentum():(*jit)->Momentum(),
 				 ki?-(*kit)->Momentum():(*kit)->Momentum(),
 				 ii?fi.Bar():fi,ji?fj.Bar():fj,p_jf->DR()));

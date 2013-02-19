@@ -854,6 +854,7 @@ void Initialization_Handler::SetGlobalVariables()
   rpa->gen.SetVariable("CSS_IS_PT2MIN",ToString(k0sqi));
   rpa->gen.SetVariable("CSS_FS_AS_FAC",ToString(fs_as_fac));
   rpa->gen.SetVariable("CSS_IS_AS_FAC",ToString(is_as_fac));
+  rpa->gen.SetVariable("JET_CRITERION",sdr.GetValue<std::string>("JET_CRITERION","DEFAULT"));
 }
 
 bool Initialization_Handler::ExtractValArg
