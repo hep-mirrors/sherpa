@@ -111,7 +111,7 @@ void Hadron_Dissociation::FillParticleList(const int & N) {
     particle->SetNumber(0);
     m_particles.push_back(particle);
   }
-  random_shuffle(m_particles.begin(),m_particles.end());
+  random_shuffle(m_particles.begin(),m_particles.end(),*ran);
 
   particle = new Particle(0,m_remnant,defmom,'B');
   particle->SetNumber(0);

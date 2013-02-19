@@ -80,7 +80,7 @@ bool Cluster_Algorithm::Cluster
       }
     }
     while (true) {
-      std::random_shuffle(tids.begin(),tids.end());
+      std::random_shuffle(tids.begin(),tids.end(),*ran);
       size_t i(0);
       for (;i<tids.size();++i) if (tids[i]==atids[i]) break;
       if (i==tids.size()) break;
@@ -585,7 +585,7 @@ void Cluster_Algorithm::Convert()
 	atids.push_back(i);
       }
     while (true) {
-      std::random_shuffle(atids.begin(),atids.end());
+      std::random_shuffle(atids.begin(),atids.end(),*ran);
       size_t i(0);
       for (;i<atids.size();++i) if (atids[i]==tids[i]) break;
       if (i==atids.size()) break;
