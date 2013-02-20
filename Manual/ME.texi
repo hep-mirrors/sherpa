@@ -79,6 +79,7 @@ This parameter specifies how to compute the renormalization and
 factorization scale and potential additional scales.
 
 @menu
+* Predefined scale tags::                    Predefined scale tags
 * Scale schemes for NLO calculations::       Scale schemes for NLO calculations
 * Scale setting using jets::                 Scale setting using jets
 * Simple scale variations::                  Simple scale variations
@@ -165,6 +166,32 @@ of the partonic process.
 It is possible to implement a dedicated scale
 scheme within Sherpa. For advice on this topic
 please contact the authors, @ref{Authors}.
+
+
+@node Predefined scale tags
+@subsubsection Predefined scale tags
+
+There exist a number of predefined tags to facilitate commonly used scale 
+choices or easily implement a user defined scale.
+@table @option
+@item P_SUM
+Vector sum of the final state.
+
+@item H_T2
+Square of the scalar sum of the transverse momenta of all final state particles.
+
+@item H_TY2[fac=<factor>,exp=<exponent>]
+Square of the scalar sum of the transverse momenta of all final state particles 
+weighted by their rapidity distance from the final state boost vector. Thus, 
+takes the form
+@verbatim
+  H_T^{(Y)} = sum_i pT_i exp [ fac |y-yboost|^exp ]
+@end verbatim
+Typical values to use would by @code{fac=0.3} and @code{exp=1}.
+
+@item TAU_B2
+Square of the beam thrust.
+@end table
 
 
 @node Scale schemes for NLO calculations
