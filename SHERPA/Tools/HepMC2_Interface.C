@@ -51,7 +51,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
           THROW(fatal_error,"Events containing correlated subtraction events"
                 +std::string(" cannot be translated into the full HepMC event")
                 +std::string(" format.\n")
-                +std::string("   Try 'EVENT_MODE=HepMC_Short' instead."));
+                +std::string("   Try 'EVENT_OUTPUT=HepMC_Short' instead."));
         }
         event.set_signal_process_vertex(vertex);
         if((*blit)->NInP()==2) {
@@ -100,6 +100,8 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
     if (!ofni) THROW(fatal_error,"Missing nof trials.");
     double trials(ofni->Get<double>());
     weights.push_back(trials);
+    msg_Out()<<"Weights: "<<weights[0]<<" "<<weights[1]<<" "<<weights[2]<<" "<<
+               weights[3]<<std::endl;
   }
   //if (!sp) {
   //  sp=blobs->FindFirst(btp::Hard_Collision);
@@ -185,17 +187,18 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   }
   std::vector<double> weights; weights.push_back(weight);
   if (sp && !subevtlist) {
-    Blob_Data_Base *info((*sp)["MEWeight"]);
+    Blob_Data_Base *info;
+    info=((*sp)["MEWeight"]);
     if (!info) THROW(fatal_error,"Missing weight info.");
     double meweight(info->Get<double>());
     weights.push_back(meweight);
-    Blob_Data_Base *ofni((*sp)["Weight_Norm"]);
-    if (!ofni) THROW(fatal_error,"Missing weight normalisation.");
-    double weightnorm(ofni->Get<double>());
+    info=((*sp)["Weight_Norm"]);
+    if (!info) THROW(fatal_error,"Missing weight normalisation.");
+    double weightnorm(info->Get<double>());
     weights.push_back(weightnorm);
-    ofni=(*sp)["Trials"];
-    if (!ofni) THROW(fatal_error,"Missing nof trials.");
-    double trials(ofni->Get<double>());
+    info=(*sp)["Trials"];
+    if (!info) THROW(fatal_error,"Missing nof trials.");
+    double trials(info->Get<double>());
     weights.push_back(trials);
   }
   event.weights()=weights;
@@ -327,17 +330,18 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
       subevent->set_pdf_info(subpdfinfo);
       // add weight
       std::vector<double> subweight; subweight.push_back(sub->m_result);
-      Blob_Data_Base *info((*sp)["MEWeight"]);
+      Blob_Data_Base *info;
+      info=((*sp)["MEWeight"]);
       if (!info) THROW(fatal_error,"Missing weight info.");
       double meweight(info->Get<double>());
       subweight.push_back(meweight);
-      Blob_Data_Base *ofni((*sp)["Weight_Norm"]);
-      if (!ofni) THROW(fatal_error,"Missing weight normalisation.");
-      double weightnorm(ofni->Get<double>());
+      info=((*sp)["Weight_Norm"]);
+      if (!info) THROW(fatal_error,"Missing weight normalisation.");
+      double weightnorm(info->Get<double>());
       subweight.push_back(weightnorm);
-      ofni=(*sp)["Trials"];
-      if (!ofni) THROW(fatal_error,"Missing nof trials.");
-      double trials(ofni->Get<double>());
+      info=(*sp)["Trials"];
+      if (!info) THROW(fatal_error,"Missing nof trials.");
+      double trials(info->Get<double>());
       subweight.push_back(trials);
       subevent->weights()=subweight;
       // set the event number (could be used to identify correlated events)
