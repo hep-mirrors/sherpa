@@ -10,6 +10,7 @@ The following parameters are used to steer the shower setup.
 
 @menu
 * SHOWER_GENERATOR::      Tag to set Sherpa's shower generator.
+* JET_CRITERION::         Tag to set Sherpa's jet criterion.
 * MASSIVE_PS::            Tag to treat partons as massive in the shower.
 
 * CS Shower options::     Options for Sherpa's default shower.         
@@ -35,6 +36,14 @@ However, even in the case of strict fixed order calculations, this might
 not be the desired behaviour as, for example, then neither the METS scale
 setter, cf. @ref{SCALES}, nor Sudakov rejection weights can be employed.
 To circumvent when using the CS Shower see @ref{CS Shower options}.
+
+@node JET_CRITERION
+@subsection JET_CRITERION
+
+The only natively supported option in Sherpa is @option{CSS}, 
+and this is also the default. The corresponding jet criterion is described 
+in @mycite{Hoeche2009rj}. A custom jet criterion, tailored to a specific
+experimental analysis, can be supplied using Sherpa's plugin mechanism.
 
 @node MASSIVE_PS
 @subsection MASSIVE_PS
