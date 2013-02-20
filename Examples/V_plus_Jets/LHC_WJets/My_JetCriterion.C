@@ -82,7 +82,7 @@ namespace MYSTUFF {
 	Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
 	if (pj.PPerp2()>pt2 && (m_y==100 || dabs(pj.Y())<m_y)) ++nj;
       }
-      return nj==ampl->Legs().size();
+      return nj+mode>=ampl->Legs().size();
     }
 
   };// end of class FastJet_Jet_Criterion
