@@ -29,6 +29,7 @@ namespace ATOOLS {
   template<> double Vec4D::CosDPhi(const Vec4D& ref) const;
   template<> double Vec4D::DPhi(const Vec4D& ref) const;
   template<> double Vec4D::DEta(const Vec4D& ref) const;
+  template<> double Vec4D::DY(const Vec4D& ref) const;
   template<> double Vec4D::DR(const Vec4D& ref) const;
 
   std::istream& operator>>(std::istream& s,Vec4D& vec);

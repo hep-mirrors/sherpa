@@ -179,6 +179,7 @@ namespace ATOOLS {
     Scalar CosDPhi(const Vec4<Scalar>& ref) const;
     Scalar DPhi(const Vec4<Scalar>& ref) const;
     Scalar DEta(const Vec4<Scalar>& ref) const;
+    Scalar DY(const Vec4<Scalar>& ref) const;
     Scalar DR(const Vec4<Scalar>& ref) const;
 
     // standard vectors:

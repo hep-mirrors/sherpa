@@ -85,6 +85,7 @@ namespace ATOOLS {
     Term *PPerp(const Term &ref) const;
     Term *Theta(const Term &ref) const;
     Term *DEta(const Term &ref) const;
+    Term *DY(const Term &ref) const;
     Term *DPhi(const Term &ref) const;
     Term *DR(const Term &ref) const;
 

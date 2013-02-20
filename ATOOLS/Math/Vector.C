@@ -64,6 +64,9 @@ template<> double Vec4D::DPhi(const Vec4D& ref) const {
 template<> double Vec4D::DEta(const Vec4D& ref) const {
   return Eta()-ref.Eta();
 }
+template<> double Vec4D::DY(const Vec4D& ref) const {
+  return Y()-ref.Y();
+}
 template<> double Vec4D::DR(const Vec4D& ref) const {
   return sqrt(sqr(DPhi(ref))+sqr(DEta(ref)));
 }

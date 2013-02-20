@@ -436,6 +436,19 @@ DEta<ValueType>::DEta(): Variable_Base<ValueType>
 ("\\Delta\\eta_{ij}","DEta") {}
 
 template <class ValueType>
+class DY: public Variable_Base<ValueType> {
+public:
+  DY();
+  ValueType Value(const Vec3D *vectors) const 
+  { return Vec4D(0.0,vectors[1]).DY(Vec4D(0.0,vectors[0])); }
+  ValueType Value(const Vec4D *vectors,const int &n) const 
+  { return vectors[1].DY(vectors[0]); }
+};// end of class DY
+template <class ValueType>
+DY<ValueType>::DY(): Variable_Base<ValueType>
+("\\Delta y_{ij}","DY") {}
+
+template <class ValueType>
 class DPhi: public Variable_Base<ValueType> {
 public:
   DPhi();
@@ -576,6 +589,11 @@ DEFINE_VARIABLE_GETTER(DEta<double>,DEta_Getter,
 		       "\\Delta\\eta_{ij}","\\Delta\\eta_{ij}",0)
 DEFINE_VARIABLE_GETTER(DEta<double>,DEta_Getter_2,
 		       "DEta","\\Delta\\eta_{ij}",1)
+template class DY<double>;
+DEFINE_VARIABLE_GETTER(DY<double>,DY_Getter,
+		       "\\Delta y_{ij}","\\Delta y_{ij}",0)
+DEFINE_VARIABLE_GETTER(DY<double>,DY_Getter_2,
+		       "DY","\\Delta y_{ij}",1)
 template class DPhi<double>;
 DEFINE_VARIABLE_GETTER(DPhi<double>,DPhi_Getter,
 		       "\\Delta\\phi_{ij}","\\Delta\\phi_{ij}",0)

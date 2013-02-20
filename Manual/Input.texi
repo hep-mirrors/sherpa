@@ -139,6 +139,8 @@ The relative transverse momentum between @var{v1} and @var{v2} in GeV.
 @item ThetaR(@var{v1},@var{v2})
 The relative angle between @var{v1} and @var{v2} in radians.
 @item DEta(@var{v1},@var{v2})
+The pseudo-rapidity difference between @var{v1} and @var{v2}.
+@item DY(@var{v1},@var{v2})
 The rapidity difference between @var{v1} and @var{v2}.
 @item DPhi(@var{v1},@var{v2})
 The relative polar angle between @var{v1} and @var{v2} in radians.
