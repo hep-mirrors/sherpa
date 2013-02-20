@@ -25,14 +25,13 @@ namespace CSSHOWER {
     double m_kt2_next, m_lkf;
     int m_nlo;
     ATOOLS::DecayInfo_Vector m_decs;
-    void *p_proc;
     void ReestablishConnections(Parton * mother, 
 				Parton * daughter1, Parton * daughter2);
   public :
     Singlet() : 
       p_split(NULL), p_left(NULL), p_right(NULL), p_spec(NULL),
       p_jf(NULL), p_all(NULL),
-      m_kt2_next(0.0), m_lkf(0.0), m_nlo(0), p_proc(NULL) {}
+      m_kt2_next(0.0), m_lkf(0.0), m_nlo(0) {}
     ~Singlet();
 
     void AddParton(Parton *const p);
@@ -85,8 +84,6 @@ namespace CSSHOWER {
     inline void SetKtNext(const double &kt2) { m_kt2_next=kt2; } 
 
     inline double KtNext() const { return m_kt2_next; }
-
-    inline void SetProc(void *const proc) { p_proc=proc; }
 
   };
 

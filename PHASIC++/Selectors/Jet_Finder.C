@@ -15,21 +15,19 @@ using namespace PDF;
 using namespace ATOOLS;
 
 Jet_Finder::Jet_Finder
-(const int nin,const int nout,Flavour *fl,
+(Process_Integrator *const proc,
+ const int nin,const int nout,Flavour *fl,
  const std::string &ycut):
-  Selector_Base("Jetfinder"), m_dparam(0.3), m_cuttag(ycut),
+  Selector_Base("Jetfinder"), m_cuttag(ycut),
   m_on(true), p_yccalc(NULL)
 {
+  p_proc=proc;
   m_ycut=2.0;
   m_fl=fl;
   m_nin=nin;
   m_nout=nout;
   m_n=m_nin+m_nout;
   m_smax=m_s=sqr(rpa->gen.Ecms());
-  if (ycut.find("|")!=std::string::npos) {
-    m_dparam=ToType<double>(ycut.substr(ycut.find("|")+1));
-    m_cuttag=ycut.substr(0, ycut.find("|"));
-  }
   m_sel_log = new Selector_Log(m_name);
   static bool mets(false);
   if (!mets) {
@@ -48,7 +46,8 @@ Jet_Finder::Jet_Finder
     ("p["+ToString(i)+"]",ToString(Vec4D()));
   p_yccalc->Interprete(m_cuttag);
   p_jc = JetCriterion_Getter::GetObject
-    (rpa->gen.Variable("JET_CRITERION"),JetCriterion_Key());
+    (rpa->gen.Variable("JET_CRITERION"),
+     JetCriterion_Key(p_proc->Process()->Shower()));
   if (p_jc==NULL) THROW(not_implemented,"Invalid jet criterion");
 }
 
@@ -69,7 +68,7 @@ bool Jet_Finder::Trigger(const Vec4D_Vector &p)
   msg_Debugging()<<METHOD<<"(): '"<<p_proc->Process()->Name()
 		 <<"' Q_cut = "<<sqrt(m_ycut*m_s)<<(m_on?" {":", off")<<"\n";
   p_ampl->Decays()=p_proc->Process()->Info().m_fi.GetDecayInfos();
-  bool res=p_proc->Process()->Shower()->JetVeto(p_ampl);
+  bool res=p_jc->Jets(p_ampl);
   msg_Debugging()<<"} -> "<<res<<"\n";
   return 1-m_sel_log->Hit(!res);
 }
@@ -86,7 +85,7 @@ bool Jet_Finder::JetTrigger(const ATOOLS::Vec4D_Vector &p,
   msg_Debugging()<<METHOD<<"(): '"<<p_proc->Process()->Name()
 		 <<"' Q_cut = "<<sqrt(m_ycut*m_s)<<(m_on?" {":", off")<<"\n";
   p_ampl->Decays()=p_proc->Process()->Info().m_fi.GetDecayInfos();
-  bool res=p_proc->Process()->Shower()->JetVeto(p_ampl,1);
+  bool res=p_jc->Jets(p_ampl,1);
   msg_Debugging()<<"} -> "<<res<<"\n";
   return 1-m_sel_log->Hit(!res);
 }
@@ -125,10 +124,9 @@ namespace PHASIC{
   Selector_Base *Jet_Finder_Getter::operator()(const Selector_Key &key) const
   {
     if (key.empty() || key.front().size()<1) THROW(critical_error,"Invalid syntax");
-    Jet_Finder *jf(new Jet_Finder(key.p_proc->NIn(),key.p_proc->NOut(),
+    Jet_Finder *jf(new Jet_Finder(key.p_proc,key.p_proc->NIn(),key.p_proc->NOut(),
 				  (Flavour*)&key.p_proc->Process()->
 				  Flavours().front(),key[0][0]));
-    jf->SetProcess(key.p_proc);
     static bool menlots(false);
     if (!menlots && key.p_proc->Process()->Info().Has(nlo_type::real)) {
       menlots=true;

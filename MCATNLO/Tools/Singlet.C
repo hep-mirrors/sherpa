@@ -1,6 +1,8 @@
 #include "MCATNLO/Tools/Singlet.H"
 #include "MCATNLO/Tools/Parton.H"
 #include "PDF/Main/Shower_Base.H"
+#include "PDF/Main/Jet_Criterion.H"
+#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "ATOOLS/Math/ZAlign.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -68,7 +70,7 @@ bool Singlet::JetVeto(Sudakov *const sud) const
     if ((*iit)->GetType()==pst::FS)
       ampl->CreateLeg((*iit)->Momentum(),
 		      (*iit)->GetFlavour(),ColorID());
-  bool veto(p_jf?p_shower->JetVeto(ampl):false);
+  bool veto(p_jf?p_jf->JC()->Jets(ampl):false);
   ampl->Delete();
   return veto;
 }

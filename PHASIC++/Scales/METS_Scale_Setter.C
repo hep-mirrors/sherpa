@@ -78,8 +78,6 @@ namespace PHASIC {
 
     ATOOLS::DecayInfo_Vector m_decids;
 
-    PDF::Jet_Criterion *p_jc;
-
     static double s_eps, s_kt2max;
 
     PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
@@ -125,7 +123,6 @@ namespace PHASIC {
 }// end of namespace PHASIC
 
 using namespace PHASIC;
-using namespace PDF;
 using namespace ATOOLS;
 
 DECLARE_GETTER(Loose_METS_Scale_Setter_Getter,"LOOSE_METS",
@@ -236,16 +233,12 @@ METS_Scale_Setter::METS_Scale_Setter
   if (!read.ReadFromFile(m_nfgsplit,"DIPOLE_NF_GSPLIT"))
     m_nfgsplit=Flavour(kf_jet).Size()/2;
   else msg_Tracking()<<METHOD<<"(): Set dipole N_f="<<m_nfgsplit<<"\n.";
-  p_jc = JetCriterion_Getter::GetObject
-    (rpa->gen.Variable("JET_CRITERION"),JetCriterion_Key());
-  if (p_jc==NULL) THROW(not_implemented,"Invalid jet criterion");
 }
 
 METS_Scale_Setter::~METS_Scale_Setter()
 {
   for (size_t i(0);i<m_ampls.size();++i) m_ampls[i]->Delete();
   delete p_core;
-  delete p_jc;
 }
 
 double METS_Scale_Setter::CalculateStrict
@@ -710,7 +703,7 @@ void METS_Scale_Setter::KT2
   if (cs.p_dec) mij2=(pi+pj).Abs2();
   if (li->Flav().Strong() && lj->Flav().Strong() &&
       cs.m_fl.Strong()) cs.m_oqcd=1;
-  cs.m_op2=1.0/p_jc->Qij2(pi,pj,pk,li->Flav(),lj->Flav());
+  cs.m_op2=cs.m_kt2;
   if ((li->Id()&3)==0) {
     if ((lj->Id()&3)==0) {
       if ((lk->Id()&3)==0) {

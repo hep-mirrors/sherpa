@@ -13,7 +13,7 @@ namespace PHASIC {
   class Jet_Finder: public Selector_Base,
 		    public ATOOLS::Tag_Replacer {
 
-    double m_ycut, m_s, m_dparam;
+    double m_ycut, m_s;
     std::string m_cuttag;
     bool m_on;
 
@@ -27,7 +27,8 @@ namespace PHASIC {
 
   public:
 
-    Jet_Finder(const int nin=0,const int nout=0,
+    Jet_Finder(Process_Integrator *const proc,
+	       const int nin=0,const int nout=0,
 	       ATOOLS::Flavour *const fl=NULL,
 	       const std::string &ycut="1");
 
@@ -45,7 +46,6 @@ namespace PHASIC {
     void   BuildCuts(Cut_Data *cuts);
 
     inline double Ycut() const           { return m_ycut;   }
-    inline double DR() const             { return m_dparam; }
 
     inline void SetOn(const bool on) { m_on=on; }
 

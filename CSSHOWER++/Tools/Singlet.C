@@ -74,52 +74,28 @@ Parton *Singlet::IdParton(const size_t &id) const
 
 bool Singlet::JetVeto(Sudakov *const sud) const
 {
-  int nlo(p_proc?((Process_Base*)p_proc)->Info().m_nlomode&2:-1);
-  DEBUG_FUNC("nlo = "<<nlo);
+  DEBUG_FUNC("");
   msg_Debugging()<<*(Singlet*)this<<"\n";
-  bool check(false);
-  size_t noem(0), nospec(0);
-  for (size_t i(0);i<m_decs.size();++i) {
-    noem|=m_decs[i]->m_id;
-    if (!m_decs[i]->m_fl.Strong()) nospec|=m_decs[i]->m_id;
-  }
-  msg_Debugging()<<"noem = "<<ID(noem)<<", nospec = "<<ID(nospec)<<"\n";
+  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   for (const_iterator iit(begin());iit!=end();++iit) {
-    if ((*iit)->Id()&noem) continue;
-    bool ii((*iit)->GetType()==pst::IS);
-    Flavour fi((*iit)->GetFlavour());
-    for (const_iterator jit(iit);jit!=end();++jit) {
-      if ((*jit)->Id()&noem) continue;
-      bool ji((*jit)->GetType()==pst::IS);
-      Flavour fj((*jit)->GetFlavour());
-      if (jit==iit || ji) continue;
-      for (const_iterator kit(begin());kit!=end();++kit) {
-	if (kit==iit || kit==jit) continue;
-	if ((*kit)->Id()&nospec) continue;
-	bool ki((*kit)->GetType()==pst::IS);
-	cstp::code et((ii||ji)?(ki?cstp::II:cstp::IF):(ki?cstp::FI:cstp::FF));
-	if ((nlo>0 && (*kit)->GetFlavour().Strong() &&
-	     (*iit)->GetFlavour().Strong() && (*jit)->GetFlavour().Strong()) ||
-	    sud->HasKernel(fi,fj,(*kit)->GetFlavour(),et)) {
-	  double q2ijk(p_jf->JC()->Qij2(ii?-(*iit)->Momentum():(*iit)->Momentum(),
-				 ji?-(*jit)->Momentum():(*jit)->Momentum(),
-				 ki?-(*kit)->Momentum():(*kit)->Momentum(),
-				 ii?fi.Bar():fi,ji?fj.Bar():fj,p_jf->DR()));
- 	  msg_Debugging()<<"Q_{"<<ID((*iit)->Id())<<ID((*jit)->Id())
-			 <<","<<ID((*kit)->Id())<<"} = "<<sqrt(q2ijk)
-			 <<" vs "<<sqrt((*kit)->KtVeto())<<"\n";
-	  if (q2ijk<(*kit)->KtVeto()) return false;
-	  check=true;
-	}
-	else {
-	  msg_Debugging()<<"No kernel for "<<fi<<" "<<fj<<" <-> "
-			 <<(*kit)->GetFlavour()<<" ("<<et<<")\n";
-	}
-      }
-    }
+    if ((*iit)->GetType()==pst::FS) continue;
+    ampl->CreateLeg(-(*iit)->Momentum(),(*iit)->GetFlavour().Bar(),
+		    ColorID((*iit)->GetFlow(1),(*iit)->GetFlow(2)),
+		    1<<ampl->Legs().size());
   }
-  if (check) msg_Debugging()<<"--- Jet veto ---\n";
-  return check;
+  ampl->SetNIn(ampl->Legs().size());
+  for (const_iterator iit(begin());iit!=end();++iit) {
+    if ((*iit)->GetType()==pst::IS) continue;
+    ampl->CreateLeg((*iit)->Momentum(),(*iit)->GetFlavour(),
+		    ColorID((*iit)->GetFlow(1),(*iit)->GetFlow(2)),
+		    1<<ampl->Legs().size());
+  }
+  ampl->SetJF(p_jf);
+  ampl->Decays()=m_decs;
+  bool res(p_jf->JC()->Jets(ampl));
+  ampl->Delete();
+  if (res) msg_Debugging()<<"--- Jet veto ---\n";
+  return res;
 }
 
 int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2) 

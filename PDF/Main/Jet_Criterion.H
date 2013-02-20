@@ -1,12 +1,17 @@
 #ifndef PDF_Main_Jet_Criterion_H
 #define PDF_Main_Jet_Criterion_H
 
-#include "ATOOLS/Phys/NLO_Subevt.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Getter_Function.H"
 
 namespace PDF {
 
+  class Shower_Base;
+
   struct JetCriterion_Key {
+    Shower_Base *p_shower;
+    JetCriterion_Key(Shower_Base *const shower):
+      p_shower(shower) {}
   };// end of struct JetCriterion_Key
 
   class Jet_Criterion {
@@ -14,15 +19,7 @@ namespace PDF {
 
     virtual ~Jet_Criterion();
 
-    virtual double Qij2
-    (const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
-     const ATOOLS::Vec4D &pk,
-     const ATOOLS::Flavour &fi=ATOOLS::Flavour(kf_none),
-     const ATOOLS::Flavour &fj=ATOOLS::Flavour(kf_none),
-     const double& dparam=-1.0,const int mode=0) = 0;
-
-    double Qij2Min(const ATOOLS::Vec4D_Vector &p,
-		   ATOOLS::NLO_subevtlist *const subs);
+    virtual bool Jets(ATOOLS::Cluster_Amplitude *ampl,int mode=0) = 0;
 
   };// end of class Jet_Criterion
 

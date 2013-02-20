@@ -730,6 +730,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  if (GetMPvalue(pbi.m_veobs,nfs,pnid,ds)) eobs=ds;
 	  if (GetMPvalue(pbi.m_vefunc,nfs,pnid,ds)) efunc=ds;
 	  proc[i]->InitPSHandler(maxerr,eobs,efunc);
+	  proc[i]->SetShower(p_shower->GetShower());
 	}
       }
     }
@@ -762,7 +763,6 @@ void Matrix_Element_Handler::BuildSingleProcessList
       (Scale_Setter_Arguments(p_model,cpi.m_scale,cpi.m_coupling));
     procs[i]->SetKFactor
       (KFactor_Setter_Arguments(cpi.m_kfactor));
-    procs[i]->SetShower(p_shower->GetShower());
   }
 }
 

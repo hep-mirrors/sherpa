@@ -13,8 +13,8 @@
 
 using namespace CSSHOWER;
 using namespace PHASIC;
+using namespace PDF;
 using namespace ATOOLS;
-using namespace std;
 
 CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
 		     MODEL::Model_Base *const model,
@@ -381,7 +381,6 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
   Cluster_Leg * leg;
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
-  singlet->SetProc(ampl->Proc<void>());
   for (size_t i(0);i<ampl->Legs().size();++i) {
     leg = ampl->Leg(i);
     if (leg->Flav().IsHadron() && 
@@ -630,7 +629,6 @@ Singlet *CS_Shower::TranslateAmplitude
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
   singlet->SetJF(jf);
-  singlet->SetProc(ampl->Proc<void>());
   singlet->SetNLO(ampl->NLO()&~1);
   if (jf==NULL && (ampl->NLO()&2)) singlet->SetNLO(4);
   singlet->SetLKF(ampl->LKF());
@@ -720,12 +718,23 @@ double CS_Shower::CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
   return p_shower->GetSudakov()->CplFac(fli, flj, flk,stp,cpl,mu2);
 }
 
+double CS_Shower::Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
+		       const ATOOLS::Vec4D &pk,const ATOOLS::Flavour &fi,
+		       const ATOOLS::Flavour &fj) const
+{
+  Vec4D npi(pi), npj(pj);
+  if (npi[0]<0.0) npi=-pi-pj;
+  if (npj[0]<0.0) npj=-pj-pi;
+  double pipj(dabs(npi*npj)), pipk(dabs(npi*pk)), pjpk(dabs(npj*pk));
+  double Cij(pipk/(pipj+pjpk));
+  double Cji(pjpk/(pipj+pipk));
+  return 2.0*dabs(pi*pj)/(Cij+Cji);
+}
+
 bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
 			const int mode)
 {
-  int nlo(ampl->Proc<PHASIC::Process_Base>()==NULL?-1:
-	  ampl->Proc<PHASIC::Process_Base>()->Info().m_nlomode&2);
-  DEBUG_FUNC("nlo = "<<nlo);
+  DEBUG_FUNC("mode = "<<mode);
   msg_Debugging()<<*ampl<<"\n";
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
   double q2cut(jf->Ycut()*sqr(rpa->gen.Ecms()));
@@ -755,11 +764,11 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
 	cstp::code et((i<ampl->NIn()||j<ampl->NIn())?
 		      (k<ampl->NIn()?cstp::II:cstp::IF):
 		      (k<ampl->NIn()?cstp::FI:cstp::FF));
-	if ((mode==0 && nlo>0 && lk->Flav().Strong() &&
+	if ((mode==0 && lk->Flav().Strong() &&
 	     li->Flav().Strong() && lj->Flav().Strong()) ||
 	    p_shower->GetSudakov()->HasKernel(fi,fj,fk,et)) {
-	  double q2ijk(jf->JC()->Qij2(li->Mom(),lj->Mom(),lk->Mom(),
-				 li->Flav(),lj->Flav(),jf->DR()));
+	  double q2ijk(Qij2(li->Mom(),lj->Mom(),lk->Mom(),
+			    li->Flav(),lj->Flav()));
  	  msg_Debugging()<<"Q_{"<<ID(li->Id())<<ID(lj->Id())
 			 <<","<<ID(lk->Id())<<"} = "<<sqrt(q2ijk)<<"\n";
 	  if (mode==0) {
@@ -810,7 +819,7 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
   return true;
 }
 
-namespace PDF {
+namespace CSSHOWER {
 
   DECLARE_GETTER(CSS_Getter,"CSS",Shower_Base,Shower_Key);
 
@@ -822,6 +831,36 @@ namespace PDF {
   void CSS_Getter::PrintInfo(std::ostream &str,const size_t width) const
   { 
     str<<"The CSS shower"; 
+  }
+
+  class CSS_Jet_Criterion: public Jet_Criterion {
+  private:
+    CS_Shower *p_css;
+  public:
+    CSS_Jet_Criterion(Shower_Base *const css)
+    {
+      p_css=dynamic_cast<CS_Shower*>(css);
+      if (p_css==NULL) THROW(fatal_error,"CS shower needed but not used");
+    }
+    bool Jets(Cluster_Amplitude *ampl,int mode)
+    {
+      return p_css->JetVeto(ampl,mode);
+    }
+  };// end of class CSS_Jet_Criterion
+
+  DECLARE_GETTER(CSS_Jet_Criterion_Getter,"CSS",
+		 Jet_Criterion,JetCriterion_Key);
+
+  Jet_Criterion *CSS_Jet_Criterion_Getter::
+  operator()(const JetCriterion_Key &args) const
+  {
+    return new CSS_Jet_Criterion(args.p_shower);
+  }
+
+  void CSS_Jet_Criterion_Getter::
+  PrintInfo(std::ostream &str,const size_t width) const
+  { 
+    str<<"The CSS jet criterion";
   }
 
 }

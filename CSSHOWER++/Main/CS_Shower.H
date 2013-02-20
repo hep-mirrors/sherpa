@@ -58,7 +58,9 @@ namespace CSSHOWER {
     void EstablishRelations(Parton * parton,ATOOLS::Cluster_Leg * leg,
 			    std::map<ATOOLS::Cluster_Leg*,Parton*> & pmap);
 
-    void RefCopy();
+    double Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
+		const ATOOLS::Vec4D &pk,const ATOOLS::Flavour &fi,
+		const ATOOLS::Flavour &fj) const;
 
   public:
 

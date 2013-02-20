@@ -1,7 +1,7 @@
 #include "PHASIC++/Process/MCatNLO_Process.H"
 
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "PHASIC++/Selectors/Selector.H"
+#include "PHASIC++/Selectors/Jet_Finder.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
@@ -288,7 +288,7 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   if (jf && m_nout-1<m_pinfo.m_fi.NMaxExternal()) {
     for (Cluster_Amplitude *ampl(p_ampl);
 	 ampl;ampl=ampl->Next()) ampl->SetJF(jf);
-    bool res(p_shower->JetVeto(p_ampl));
+    bool res(static_cast<Jet_Finder*>(jf)->JC()->Jets(p_ampl));
     if (res) return 0.0;
   }
   return 1.0;
