@@ -70,7 +70,11 @@ in @mycite{Gehrmann2012yg}, @mycite{Hoeche2010kg} and @mycite{Hoeche2009rj}.
 A few things to note are detailed below the example. The example can be 
 converted into a simple MEPS-type leading order merging (CKKW 
 @mycite{Catani2001cc}, @mycite{Krauss2002up} and @mycite{Hoeche2009rj}) 
-example by setting @code{LJET:=0}.
+example by setting @code{LJET:=0}. This setup provides the option to
+use a custom jet criterion (see @ref{JET_CRITERION}), which is defined 
+in @code{My_JetCriterion.C}, and which is based on jets identified by 
+@uref{http://www.fastjet.fr,,FastJet}. The corresponding plugin is 
+compiled using @uref{http://www.scons.org/,,scons}.
 
 @example
 @smallformat

@@ -9,9 +9,11 @@ namespace PDF {
   class Shower_Base;
 
   struct JetCriterion_Key {
+    std::string m_key;
     Shower_Base *p_shower;
-    JetCriterion_Key(Shower_Base *const shower):
-      p_shower(shower) {}
+    JetCriterion_Key(const std::string &key,
+		     Shower_Base *const shower):
+      m_key(key), p_shower(shower) {}
   };// end of struct JetCriterion_Key
 
   class Jet_Criterion {

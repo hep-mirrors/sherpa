@@ -10,7 +10,6 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Channels/CSS_Kinematics.H"
-#include "PDF/Main/Jet_Criterion.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"

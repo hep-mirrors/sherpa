@@ -47,7 +47,8 @@ Jet_Finder::Jet_Finder
   p_yccalc->Interprete(m_cuttag);
   p_jc = JetCriterion_Getter::GetObject
     (rpa->gen.Variable("JET_CRITERION"),
-     JetCriterion_Key(p_proc->Process()->Shower()));
+     JetCriterion_Key(rpa->gen.Variable("JET_CRITERION"),
+		      p_proc->Process()->Shower()));
   if (p_jc==NULL) THROW(not_implemented,"Invalid jet criterion");
 }
 

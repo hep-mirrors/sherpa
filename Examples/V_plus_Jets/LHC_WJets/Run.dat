@@ -10,6 +10,10 @@
   % tags for process setup
   LJET:=2; NJET:=4; QCUT:=20;
 
+  ## % extra tags for custom jet criterion
+  ## SHERPA_LDADD MyStuff;
+  ## JET_CRITERION FASTJET[A:antikt,R:0.4,y:5];
+
   % tags and settings for ME generators
   LOOPGEN:=Internal;
   ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN;

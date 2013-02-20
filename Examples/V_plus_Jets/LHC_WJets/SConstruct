@@ -1,0 +1,8 @@
+
+vars = Variables('.SConstruct')
+vars.Add(PathVariable('sherpa','path to sherpa','../../..',PathVariable.PathIsDir))
+vars.Add(PathVariable('fastjet','path to fastjet','../../..',PathVariable.PathIsDir))
+env = Environment(variables=vars,CPPPATH=['${sherpa}','${fastjet}'])
+vars.Save('.SConstruct',env)
+
+env.SharedLibrary('MyStuff', ['My_JetCriterion.C'])
