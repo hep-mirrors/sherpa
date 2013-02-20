@@ -40,7 +40,7 @@ namespace MODEL {
     inline double Default() const { return m_def; }
     inline double Factor() const  { return m_fac; }
 
-    inline double Scale() const { return *p_scl; }
+    inline double Scale() const { return p_scl?*p_scl:-1.0; }
 
     inline ATOOLS::NLO_subevt *Sub() const { return p_sub; }
 
