@@ -403,6 +403,7 @@ bool Event_Handler::GenerateHadronDecayEvent() {
 
 void Event_Handler::Finish() {
   if (this==NULL) return;
+  MPISync();
   msg_Info()<<"In Event_Handler::Finish : Summarizing the run may take some time."<<std::endl;
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     (*pit)->Finish(std::string("Results"));
