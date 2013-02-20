@@ -483,12 +483,14 @@ void Event_Handler::MPISync()
 
 double Event_Handler::TotalXS()
 {
+  if (m_n==0.0) return 0.0;
   return m_sum/m_n;
 }
 
 
 double Event_Handler::TotalVar()
 {
+  if (m_n<=1) return sqr(TotalXS());
   return (m_sumsqr-m_sum*m_sum/m_n)/(m_n-1);
 }
 
