@@ -24,6 +24,7 @@ Several specific examples are listed in the following sections.
 * Exotic physics::   How to introduce your own models to Sherpa. Example: Z-prime.
 * External one-loop ME:: How to interface external one-loop codes.
 * My own interface:: How to make Sherpa send output to your framework.
+* API::              How to make Sherpa talk to your Python script.
 @end menu
 
 @include RNG.texi
@@ -31,3 +32,4 @@ Several specific examples are listed in the following sections.
 @include NewModel.texi
 @include OLE.texi
 @include MyInterface.texi
+@include API.texi

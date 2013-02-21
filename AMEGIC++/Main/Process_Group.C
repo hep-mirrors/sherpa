@@ -165,11 +165,11 @@ void AMEGIC::Process_Group::SetPrintGraphs(std::string gpath)
 }
 
 
-bool AMEGIC::Process_Group::PerformTests()
+int AMEGIC::Process_Group::PerformTests()
 {
-  bool res(true);
+  int res(1);
   for (size_t i=0;i<m_procs.size();i++) 
-    if (!m_procs[i]->Get<AMEGIC::Amegic_Base>()->PerformTests()) res=false;
+    if (!m_procs[i]->Get<AMEGIC::Amegic_Base>()->PerformTests()) res=0;
   return res;
 }
 

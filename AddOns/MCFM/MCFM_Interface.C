@@ -21,7 +21,7 @@ namespace MCFM {
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr);
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add);
-    bool PerformTests();
+    int  PerformTests();
     bool NewLibraries();
 
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
@@ -156,9 +156,9 @@ Process_Base *MCFM_Interface::InitializeProcess(const Process_Info &pi, bool add
   return NULL;
 }
 
-bool MCFM_Interface::PerformTests()
+int MCFM_Interface::PerformTests()
 {
-  return true;
+  return 1;
 }
 
 bool MCFM_Interface::NewLibraries()

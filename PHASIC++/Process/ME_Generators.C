@@ -62,12 +62,16 @@ bool ME_Generators::InitializeGenerators(MODEL::Model_Base *model,
   return true;
 }
 
-bool ME_Generators::PerformTests()
-{
+int ME_Generators::PerformTests()
+{ 
+  int result(1);
   for (ME_Generators::const_iterator mit=begin(); mit!=end(); ++mit) {
-    if (!(*mit)->PerformTests()) return false;
+    int ret((*mit)->PerformTests());
+    if (ret==0) return 0;
+    else if (ret==-1)
+      result = -1;
   }
-  return true;
+  return result;
 }
 
 bool ME_Generators::NewLibraries()

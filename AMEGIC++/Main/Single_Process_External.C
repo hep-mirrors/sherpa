@@ -88,7 +88,7 @@ int AMEGIC::Single_Process_External::InitAmplitude(Model_Base * model,Topology* 
 
 
 
-bool AMEGIC::Single_Process_External::PerformTests()
+int AMEGIC::Single_Process_External::PerformTests()
 {
   return 1;
 }

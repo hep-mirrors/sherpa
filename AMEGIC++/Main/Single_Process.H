@@ -116,7 +116,7 @@ namespace AMEGIC {
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                         std::vector<std::vector<Complex> >& cols,
                         double sfactor);
-    bool PerformTests();
+    int PerformTests();
     ATOOLS::NLO_subevtlist*             GetRSSubevtList()
     { return p_subevtlist; }
 

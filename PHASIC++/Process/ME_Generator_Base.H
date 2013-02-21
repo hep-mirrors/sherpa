@@ -42,7 +42,7 @@ namespace PHASIC {
 			    BEAM::Beam_Spectra_Handler *const beam,
 			    PDF::ISR_Handler *const isr) = 0;
     virtual Process_Base *InitializeProcess(const Process_Info &pi, bool add)=0;
-    virtual bool PerformTests() = 0;
+    virtual int PerformTests() = 0;
     virtual bool NewLibraries() = 0;
 
     virtual void SetClusterDefinitions

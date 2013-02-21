@@ -318,7 +318,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
   return procs;
 }
 
-bool Matrix_Element_Handler::InitializeProcesses
+int Matrix_Element_Handler::InitializeProcesses
 (MODEL::Model_Base *model,
  BEAM::Beam_Spectra_Handler *beam,PDF::ISR_Handler *isr)
 {
@@ -362,7 +362,7 @@ bool Matrix_Element_Handler::InitializeProcesses
   rbtime=retime;
 #endif
   btime=etime;
-  bool res(m_gens.PerformTests());
+  int res(m_gens.PerformTests());
 #ifdef USING__Threading
   retime=ATOOLS::rpa->gen.Timer().RealTime();
 #endif

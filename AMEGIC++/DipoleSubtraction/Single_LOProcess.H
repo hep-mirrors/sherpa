@@ -105,7 +105,7 @@ namespace AMEGIC {
 
     inline size_t       GetEmit()  { return m_emit; }
     inline size_t       GetSpect() { return m_spect; }
-    bool                PerformTests();
+    int                 PerformTests();
     /*------------------------------------------------------------------------------
 
       Process management

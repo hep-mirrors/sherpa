@@ -717,7 +717,7 @@ void AMEGIC::Single_Process_Combined::UpdateMappingFile(std::string name, map<st
   p_shand->Get_Generator()->UpdateCouplings(cmap);
 }
 
-bool AMEGIC::Single_Process_Combined::PerformTests()
+int AMEGIC::Single_Process_Combined::PerformTests()
 {
   return 1;
 }

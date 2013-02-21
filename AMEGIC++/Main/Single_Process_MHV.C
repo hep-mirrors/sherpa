@@ -267,7 +267,7 @@ int AMEGIC::Single_Process_MHV::Tests()
   return 1;
 }
 
-bool AMEGIC::Single_Process_MHV::PerformTests()
+int AMEGIC::Single_Process_MHV::PerformTests()
 {
   return 1;
 }

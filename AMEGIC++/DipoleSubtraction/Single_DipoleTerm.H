@@ -128,7 +128,7 @@ namespace AMEGIC {
     double         operator()(const ATOOLS::Vec4D *,const ATOOLS::Poincare &cms,const int);
 
     int            Type() { return 15; }
-    bool PerformTests() { return true; }
+    int PerformTests() { return 1; }
     void PrintLOmom();
   };
 }

@@ -13,6 +13,7 @@ of the main features of these examples.
 * HJets::
 * TopsJets::
 * FONLO::
+* MEWeight::
 @end menu
 
 
@@ -71,3 +72,8 @@ of the main features of these examples.
 @end menu
 
 @include NLO_NTuples.texi
+
+@node MEWeight
+@section Computing matrix element weights with the Python API
+
+@include MEWeight.texi

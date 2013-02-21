@@ -120,7 +120,7 @@ namespace AMEGIC {
 
     ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl,const size_t &id) const;
 
-    bool PerformTests() { return true; }
+    int PerformTests() { return 1; }
 
    /*------------------------------------------------------------------------------
 

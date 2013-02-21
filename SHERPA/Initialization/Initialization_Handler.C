@@ -647,10 +647,10 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   if (p_mehandler) delete p_mehandler;
   p_mehandler = new Matrix_Element_Handler(m_path,m_medat,m_processesdat,m_selectordat);
   p_mehandler->SetShowerHandler(m_showerhandlers[isr::hard_process]);
-  p_mehandler->InitializeProcesses(p_model,p_beamspectra,m_isrhandlers[isr::hard_process]);
+  int ret(p_mehandler->InitializeProcesses(p_model,p_beamspectra,m_isrhandlers[isr::hard_process]));
   msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes."
             <<endl;
-  return 1;
+  return ret==1;
 }
 
 bool Initialization_Handler::InitializeTheUnderlyingEvents()

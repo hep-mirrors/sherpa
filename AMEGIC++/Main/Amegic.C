@@ -37,7 +37,7 @@ namespace AMEGIC {
 		    PDF::ISR_Handler *const isrhandler);
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi,
                                             bool add);
-    bool PerformTests();
+    int PerformTests();
     bool NewLibraries();
 
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
@@ -195,9 +195,9 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
   return newxs;
 }
 
-bool Amegic::PerformTests()
+int Amegic::PerformTests()
 {
-  bool tests(Process_Group::PerformTests());
+  int tests(Process_Group::PerformTests());
   if (NewLibs()) THROW(normal_exit,"New libraries created. Please compile.");
   for (size_t i(0);i<m_rsprocs.size();++i) 
     if (m_rsprocs[i]->Get<AMEGIC::Amegic_Base>()->NewLibs())

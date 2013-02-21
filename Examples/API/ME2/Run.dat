@@ -1,0 +1,17 @@
+(run){
+  EVENTS 0
+}(run)
+
+(beam){
+  BEAM_1  11; BEAM_ENERGY_1 45.6;
+  BEAM_2 -11; BEAM_ENERGY_2 45.6;
+}(beam)
+
+(isr){
+  PDF_LIBRARY None;
+}(isr)
+
+(processes){
+  Process 11 -11 -> 93 93;
+  End process;
+}(processes)

@@ -85,7 +85,7 @@ int AMEGIC::Single_LOProcess_External::InitAmplitude(Model_Base * model,Topology
   return 1;
 }
 
-bool AMEGIC::Single_LOProcess_External::PerformTests()
+int AMEGIC::Single_LOProcess_External::PerformTests()
 {
   return 1;
 }

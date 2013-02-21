@@ -1,0 +1,22 @@
+#!/usr/bin/python2
+import sys
+sys.path.append('@PYLIBDIR@')
+import Sherpa
+
+Generator=Sherpa.Sherpa()
+try:
+    Generator.InitializeTheRun(len(sys.argv),sys.argv)
+    
+    Amp=Sherpa.Cluster_Amplitude.New()
+    Amp.SetNIn(2)
+    Amp.CreateLegFromPyVec4D(-Sherpa.Vec4D(45.6,0,0,45.6),Sherpa.Flavour(11,1))
+    Amp.CreateLegFromPyVec4D(-Sherpa.Vec4D(45.6,0,0,-45.6),Sherpa.Flavour(11,0))
+    Amp.CreateLegFromPyVec4D(Sherpa.Vec4D(45.6,0,45.6,0),Sherpa.Flavour(1,0))
+    Amp.CreateLegFromPyVec4D(Sherpa.Vec4D(45.6,0,-45.6,0),Sherpa.Flavour(1,1))
+    Proc=Generator.GetInitHandler().GetMatrixElementHandler().GetProcess(Amp)
+    print "*****************************"
+    print "ME^2: ",Proc.Differential(Amp)
+    print "*****************************"
+        
+except Sherpa.Exception as exc:
+    exit(1)

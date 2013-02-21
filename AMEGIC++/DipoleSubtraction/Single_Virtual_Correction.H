@@ -126,7 +126,7 @@ namespace AMEGIC {
     int            NumberOfDiagrams();
     Point        * Diagram(int i);
 
-    bool PerformTests() { return true; }
+    int PerformTests() { return 1; }
 
     bool Combinable(const size_t &idi,const size_t &idj);
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);

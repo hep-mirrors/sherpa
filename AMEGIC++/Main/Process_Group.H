@@ -53,7 +53,7 @@ namespace AMEGIC {
     std::string PSLibName();
     void SetPrintGraphs(std::string gpath);
 
-    bool PerformTests();
+    int PerformTests();
 
     void WriteMappingFile();
     void Minimize();

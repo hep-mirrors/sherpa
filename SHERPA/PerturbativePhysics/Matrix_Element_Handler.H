@@ -128,7 +128,7 @@ namespace SHERPA {
 
     ~Matrix_Element_Handler();
 
-    bool InitializeProcesses(MODEL::Model_Base *model,
+    int InitializeProcesses(MODEL::Model_Base *model,
 			     BEAM::Beam_Spectra_Handler *beam,
 			     PDF::ISR_Handler *isr);
 

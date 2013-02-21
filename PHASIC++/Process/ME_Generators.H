@@ -28,7 +28,7 @@ namespace PHASIC   {
     bool InitializeGenerators(MODEL::Model_Base *model,
                               BEAM::Beam_Spectra_Handler *beam,
                               PDF::ISR_Handler *isr);
-    bool PerformTests();
+    int PerformTests();
     bool NewLibraries();
     Process_Base* InitializeProcess(const Process_Info &pi, bool add);
 

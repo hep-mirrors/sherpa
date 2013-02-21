@@ -48,7 +48,7 @@ namespace COMIX {
                     PDF::ISR_Handler *const isrhandler);
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi,
                                             bool add);
-    bool PerformTests();
+    int PerformTests();
     bool NewLibraries();
 
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
@@ -232,16 +232,17 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
   return newxs;
 }
 
-bool Comix::PerformTests()
+int Comix::PerformTests()
 {
-  if (!Tests()) return false;
+  if (!Tests()) return 0;
   for (size_t i=0;i<m_rsprocs.size();++i)
     if (!m_rsprocs[i]->Get<COMIX::Process_Base>()->Tests()) return false;
   if (m_break) {
-    msg_Out()<<std::endl;
-    THROW(normal_exit,"Mapping files created. Stop upon request.");
+    msg_Out()<<METHOD<<"(): "<<om::red<<"Mapping files created. "
+	     <<"Stop upon request."<<om::reset<< std::endl;
+    return -1;
   }
-  return true;
+  return 1;
 }
 
 bool Comix::NewLibraries() {

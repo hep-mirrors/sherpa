@@ -36,7 +36,7 @@ namespace EXTRAXS {
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr);
     Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add);
-    bool PerformTests();
+    int PerformTests();
     bool NewLibraries();
 
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
@@ -139,9 +139,9 @@ Process_Base *Simple_XS::InitializeProcess(const Process_Info &pi, bool add)
   }
 }
 
-bool Simple_XS::PerformTests()
+int Simple_XS::PerformTests()
 {
-  return true;
+  return 1;
 }
   
 bool Simple_XS::NewLibraries()

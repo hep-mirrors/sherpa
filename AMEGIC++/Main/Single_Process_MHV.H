@@ -112,7 +112,7 @@ namespace AMEGIC {
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                         std::vector<std::vector<Complex> >& cols,
                         double sfactor);
-    bool PerformTests();
+    int PerformTests();
 
     int  Type() { return 1; }
   };

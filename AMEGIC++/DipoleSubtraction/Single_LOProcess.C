@@ -1062,7 +1062,7 @@ bool AMEGIC::Single_LOProcess::CompareTestMoms(const ATOOLS::Vec4D* p)
 }
 
 
-bool AMEGIC::Single_LOProcess::PerformTests()
+int AMEGIC::Single_LOProcess::PerformTests()
 {
   return 1;
 }
