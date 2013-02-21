@@ -79,78 +79,126 @@ This parameter specifies how to compute the renormalization and
 factorization scale and potential additional scales.
 
 @menu
-* Predefined scale tags::                    Predefined scale tags
-* Scale schemes for NLO calculations::       Scale schemes for NLO calculations
-* Scale setting using jets::                 Scale setting using jets
-* Simple scale variations::                  Simple scale variations
-* Scale variations in parton showered and merged samples::       Scale variations in merged samples
+* Scale setters::
+* Predefined scale tags::
+* Scale schemes for NLO calculations::
+* Scale setting using jets::
+* Simple scale variations::
+* Scale variations in parton showered and merged samples::
+* METS scale setting with multiparton core processes::
 @end menu
 
+Sherpa provides several built-in scale setting schemes. For each scheme 
+the scales are then set using expressions understood by the @ref{Interpreter}. 
+Each scale setter's syntax is 
+@verbatim
+SCALES <scale-setter>{<scale-definition>}
+@end verbatim
+to define a single scale for both the factorisation and renormalisation scale. 
+They can be set to different values using
+@verbatim
+SCALES <scale-setter>{<fac-scale-definition>}{<ren-scale-definition>}
+@end verbatim
+In next-to-leading order parton shower matched calculations a third 
+perturbative scale is present, the resummation or parton shower starting scale. 
+It is set using the third argument
+@verbatim
+SCALES <scale-setter>{<fac-scale-definition>}{<ren-scale-definition>}{<res-scale-definition>}
+@end verbatim
+@b{Note: for all scales their squares have to be given.} See 
+@ref{Predefined scale tags} for some predefined scale tags.
 
-Sherpa provides several built-in scale schemes.
-The options which are currently available are
+More than three scales can be set as well to be subsequently used, e.g.
+by different couplings, see @ref{COUPLINGS}.
 
+
+
+@node Scale setters
+@subsubsection Scale setters
+
+The scale setter options which are currently available are
 @table @option
 @item VAR
-Scales are specified by additional parameters in a form which is understood
+
+The variable scale setter is the simplest scale setter available. Scales
+are simply specified by additional parameters in a form which is understood
 by the internal interpreter, see @ref{Interpreter}. If, for example the invariant 
 mass of the lepton pair in Drell-Yan production is the desired scale,
 the corresponding setup reads
-
 @verbatim
 SCALES VAR{Abs2(p[2]+p[3])}
 @end verbatim
-
-Note: the square of the desired scale must be given.
- 
 Renormalization and factorization scales can be chosen differently.
 For example in Drell-Yan + jet production one could set
-
 @verbatim
 SCALES VAR{Abs2(p[2]+p[3])}{MPerp2(p[2]+p[3])}
 @end verbatim
 
-In this case the factorization scale must be specified first.
-More than two scales can be set as well to be subsequently used, e.g.
-by different couplings, see @ref{COUPLINGS}.
-
 @item FASTJET
 If @uref{http://www.fastjet.fr,,FastJet} is enabled by including 
-@code{--enable-fastjet=/path/to/fastjet} in the @code{configure} options, this tag can be 
-used to set a scale based on jet-, rather than parton-momenta. 
-@strong{Such a scale must be specified in the process block}, see 
-@ref{Scales}. The jets can be defined in all possible ways allowed by 
+@code{--enable-fastjet=/path/to/fastjet} in the @code{configure} options, 
+this scale setter can be used to set a scale based on jet-, rather than 
+parton-momenta. The jets can be defined in all possible ways allowed by 
 FastJet with the arguments given as follows
-
 @verbatim
-Scales FASTJET[A=antikt,PT=10,ET=0,R=0.4,M=1]{...}
+SCALES FASTJET[A:antikt,PT:20,ET:0,R:0.4,M:1]{...}
 @end verbatim
+This scale setter first identifies jets in the final state which then form 
+the objects to be used by the scale definition. For a detailed description 
+see @ref{Scale setting using jets}.
 
-For a detailed description see @ref{Scale setting using jets}.
-
-@item QCD
-The matrix element is clustered onto a core 2->2 configuration using a
-k_T-type algorithm with recombination into on-shell partons.
-Scales are defined as the minimum of the largest transverse momentum
-during clustering and the lowest invariant mass in the core process.
+@comment @item QCD
+@comment The matrix element is clustered onto a core 2->2 configuration using a
+@comment k_T-type algorithm with recombination into on-shell partons.
+@comment Scales are defined as the minimum of the largest transverse momentum
+@comment during clustering and the lowest invariant mass in the core process.
 
 @item METS
-The matrix element is clustered onto a core 2->2 configuration using a
-k_T-type algorithm with recombination into on-shell particles. Their 
-corresponding flavours are determined using run-time information from 
-the matrix element generator.
-Scales are defined as the lowest invariant mass or negative virtuality 
-in the core process. For core interactions which are pure QCD processes 
-scales are set to the maximum transverse mass squared of the outgoing
-particles.
-@sp 1
-This is the default scale scheme in Sherpa, since it is employed
-for truncated shower merging, see @ref{Merging ME and PS}.
-However, it might be subject to changes to enable further classes
-of processes for merging in the future and should therefore be seen with care.
-Integration results might change slightly between different Sherpa
-versions.
-@sp 1
+The matrix element is clustered onto a core 2->2 configuration using an 
+inversion of current parton shower, cf. @ref{SHOWER_GENERATOR}, recombining 
+(n+1) particles into n on-shell particles. Their corresponding flavours are 
+determined using run-time information from the matrix element generator. 
+It defines the three tags @code{MU_F2}, @code{MU_R2} and @code{MU_Q2} 
+whose values are assigned through this clustering procedure. While 
+@code{MU_F2} and @code{MU_Q2} are defined as the lowest invariant mass or 
+negative virtuality in the core process (for core interactions 
+which are pure QCD processes scales are set to the maximum transverse 
+mass squared of the outgoing particles), @code{MU_R2} is determined using 
+this core scale and the individual clustering scales such that
+@verbatim
+  alpha_s(MU_R2)^{n+k} = alpha_s(core-scale)^k alpha_s(kt_1) ... alpha_s(kt_n)
+@end verbatim
+where k is the order in strong coupling of the core process and k is 
+the number of clusterings, kt_i are the relative transverse momenta 
+at each clustering.
+The tags @code{MU_F2}, @code{MU_R2} and @code{MU_Q2} can then be used 
+on equal footing with the tags of @ref{Predefined scale tags} to define 
+the final scale.
+
+@code{METS} is the default scale scheme in Sherpa, since it is employed
+for truncated shower merging, see @ref{Merging ME and PS}, both at 
+leading and next-to-leading order. Thus, Sherpa's default is
+@verbatim
+SCALES METS{MU_F2}{MU_R2}{MU_Q2}
+@end verbatim
+The @code{METS} scale setter comes in two variants: @code{STRICT_METS} and 
+@code{LOOSE_METS}. While the former employs the exact inverse of the 
+parton shower for the clustering procedure, and therefore is rather time 
+consuming for multiparton final state, the latter is a simplified version 
+and much faster. Giving @code{METS} as the scale setter results in using 
+@code{LOOSE_METS} for the integration and @code{STRICT_METS} during event 
+generation. Giving either @code{STRICT_METS} or @code{LOOSE_METS} as the 
+scale setter results in using the respective one during both integration 
+and event generation.
+
+Clusterings onto 2->n (n>2) configurations is possible, see 
+@ref{METS scale setting with multiparton core processes}.
+
+This scheme might be subject to 
+changes to enable further classes of processes for merging in the 
+future and should therefore be seen with care. Integration results 
+might change slightly between different Sherpa versions.
+
 Occasionally, users might encounter the warning message
 @verbatim
 METS_Scale_Setter::CalculateScale(): No CSS history for '<process name>' in <percentage>% of calls. Set \hat{s}.
@@ -171,27 +219,50 @@ please contact the authors, @ref{Authors}.
 @node Predefined scale tags
 @subsubsection Predefined scale tags
 
-There exist a number of predefined tags to facilitate commonly used scale 
+There exist a few predefined tags to facilitate commonly used scale 
 choices or easily implement a user defined scale.
 @table @option
-@item P_SUM
-Vector sum of the final state.
+@item p[n]
+Access to the four momentum of the nth particle. The initial state particles 
+carry n=0 and n=1, the final state momenta start from n=2. Their ordering 
+is determined by Sherpa's internal particle ordering and can be read e.g. 
+from the process names displayed at run time. Please note, that when building 
+jets out of the final state partons first, e.g. through the @code{FASTJET} 
+scale setter, these parton momenta will be replaced by the jet momenta 
+ordered in transverse momenta. For example the process u ub -> e- e+ G G 
+will have the electron and the positron at positions @code{p[2]} and 
+@code{p[3]} and the gluons on postions @code{p[4]} and @code{p[5]}. However, 
+when finding jets first, the electrons will still be at @code{p[2]} and 
+@code{p[3]} while the harder jet will be at @code{p[4]} and the softer one 
+at @code{p[6]}.
 
 @item H_T2
 Square of the scalar sum of the transverse momenta of all final state particles.
 
-@item H_TY2[fac=<factor>,exp=<exponent>]
+@item H_TY2[fac:<factor>,exp:<exponent>]
 Square of the scalar sum of the transverse momenta of all final state particles 
 weighted by their rapidity distance from the final state boost vector. Thus, 
 takes the form
 @verbatim
   H_T^{(Y)} = sum_i pT_i exp [ fac |y-yboost|^exp ]
 @end verbatim
-Typical values to use would by @code{fac=0.3} and @code{exp=1}.
+Typical values to use would by @code{fac:0.3} and @code{exp:1}.
 
-@item TAU_B2
-Square of the beam thrust.
+@comment @item TAU_B2
+@comment Square of the beam thrust.
+
+@item MU_F2, MU_R2, MU_Q2
+Tags holding the values of the factorisation, renormalisation scale and 
+resummation scale determined through backwards clustering in the 
+@code{METS} scale setter.
+
+@item MU_22, MU_32, ..., MU_n2
+Tags holding the nodal values of the jet clustering in the @code{FASTJET} 
+scale setter, cf. @ref{Scale setting using jets}.
 @end table
+
+All of those objects can be operated upon by any operator/function known 
+to the @ref{Interpreter}.
 
 
 @node Scale schemes for NLO calculations
@@ -236,50 +307,50 @@ interacting particles. The numbering of momenta therefore stays effectively
 the same as in standard Sherpa, except that final state partons are replaced 
 with jets, if applicable (a parton might not pass the jet criteria and get 
 "lost"). In particular, the indices of the initial state partons and all EW 
-particles are uneffected. Jet momenta can then be accessed just like parton 
-momenta in the @code{VAR} scale setter through the identifiers @code{p[i]}, 
+particles are uneffected. Jet momenta can then be accessed as described in 
+@ref{Predefined scale tags} through the identifiers @code{p[i]}, 
 and their nodal values can be used through @code{MU_n2}. The syntax is
 
 @verbatim
-Scales FASTJET[<jet-algo-paramter>]{<scale-definition>}
+SCALES FASTJET[<jet-algo-paramter>]{<scale-definition>}
 @end verbatim
 
 Therein the parameters of the jet algorithm to be used to define the jets 
 are given as a comma separated of 
 
 @itemize
-@item the jet algorithm @code{A=kt,antikt,cambridge,siscone} 
+@item the jet algorithm @code{A:kt,antikt,cambridge,siscone} 
       (default @code{antikt})
-@item phase space restrictions, i.e. @code{PT=<min-pt>}, @code{ET=<min-et>}, 
-      @code{Eta=<max-eta>}, @code{Y=<max-rap>} (otherwise unrestricted)
-@item radial parameter @code{R=<rad-param>} (default @code{0.4})
-@item f-parameter for Siscone @code{f=<f-param>} (default @code{0.75})
-@item recombination scheme @code{C=E,pt,pt2,Et,Et2,BIpt,BIpt2} 
+@item phase space restrictions, i.e. @code{PT:<min-pt>}, @code{ET:<min-et>}, 
+      @code{Eta:<max-eta>}, @code{Y:<max-rap>} (otherwise unrestricted)
+@item radial parameter @code{R:<rad-param>} (default @code{0.4})
+@item f-parameter for Siscone @code{f:<f-param>} (default @code{0.75})
+@item recombination scheme @code{C:E,pt,pt2,Et,Et2,BIpt,BIpt2} 
       (default @code{E})
-@item scale setting mode @code{M=0,1} (default @code{1})
+@item scale setting mode @code{M:0,1} (default @code{1})
 @end itemize
 
 Consider the example of lepton pair production in association with jets. The 
 following scale setter 
 
 @verbatim
-Scales FASTJET[A=kt,PT=10,R=0.4,M=0]{sqrt(PPerp2(p[4])*PPerp2(p[5]))}
+SCALES FASTJET[A:kt,PT:10,R:0.4,M:0]{sqrt(PPerp2(p[4])*PPerp2(p[5]))}
 @end verbatim
 
 reconstructs jets using the kt-algorithm with R=0.4 and a minimum transverse 
 momentum of 10 GeV. The scale of all strong couplings is then set to the 
-geometric mean of the hardest and second hardest jet. Note @code{M=0}.
+geometric mean of the hardest and second hardest jet. Note @code{M:0}.
 
 Similarly, in processes with multiple strong couplings, their renormalisation 
 scales ca be set to different values, e.g.
 
 @verbatim
-Scales FASTJET[A=kt,PT=10,R=0.4,M=1]{PPerp2(p[4])}{PPerp2(p[5])}
+SCALES FASTJET[A:kt,PT:10,R:0.4,M:1]{PPerp2(p[4])}{PPerp2(p[5])}
 @end verbatim
 
 sets the scale of one strong coupling to the transverse momentum of the 
 hardest jet, and the scale of the second strong coupling to the transverse 
-momentum of second hardest jet. Note @code{M=1} in this case.
+momentum of second hardest jet. Note @code{M:1} in this case.
 
 The additional tags @var{MU_22} .. @var{MU_n2}  (n=2..njet+1), hold the nodal 
 values of the jet clustering in descending order.
@@ -347,6 +418,13 @@ the resummation scale can be varied
 @verbatim
 SCALES METS{<muF-var-factor>*MU_F2}{<muR-var-factor>*MU_R2}{<muQ-var-factor>*MU_Q2}
 @end verbatim
+
+
+
+@node METS scale setting with multiparton core processes
+@subsubsection METS scale setting with multiparton core processes
+@cindex CORE_SCALE
+
 
 @node COUPLINGS
 @subsection COUPLINGS
