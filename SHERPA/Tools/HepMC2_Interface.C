@@ -100,8 +100,6 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
     if (!ofni) THROW(fatal_error,"Missing nof trials.");
     double trials(ofni->Get<double>());
     weights.push_back(trials);
-    msg_Out()<<"Weights: "<<weights[0]<<" "<<weights[1]<<" "<<weights[2]<<" "<<
-               weights[3]<<std::endl;
   }
   //if (!sp) {
   //  sp=blobs->FindFirst(btp::Hard_Collision);
