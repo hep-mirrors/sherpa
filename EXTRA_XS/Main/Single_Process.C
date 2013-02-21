@@ -75,7 +75,7 @@ bool Single_Process::Initialize()
       (PHASIC::Tree_ME2_Base::GetME2(m_pinfo));
     if (p_born_me2!=NULL) {
       DEBUG_INFO("found");
-      p_born_me2->SetCouplings(&m_cpls);
+      p_born_me2->SetCouplings(m_cpls);
       m_oqcd=p_born_me2->OrderQCD();
       m_oew=p_born_me2->OrderEW();
       return true;

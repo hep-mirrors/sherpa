@@ -3,6 +3,7 @@
 
 #include "PHASIC++/Process/Process_Info.H"
 #include "ATOOLS/Math/Vector.H"
+#include "MODEL/Main/Model_Base.H"
 
 namespace MODEL { struct Coupling_Map; }
 
@@ -13,6 +14,7 @@ namespace PHASIC {
 
     const Process_Info &m_pinfo;
     const ATOOLS::Flavour_Vector m_flavs;
+    MODEL::Coupling_Data* p_aqcd, * p_aqed;
 
   public:
 
@@ -23,7 +25,9 @@ namespace PHASIC {
 
     virtual double Calc(const ATOOLS::Vec4D_Vector &p) = 0;
 
-    virtual void SetCouplings(MODEL::Coupling_Map *const cpls) = 0;
+    virtual void SetCouplings(const MODEL::Coupling_Map& cpls);
+    virtual double AlphaQCD() const;
+    virtual double AlphaQED() const;
 
     static Tree_ME2_Base *GetME2(const PHASIC::Process_Info& pi);
     static Tree_ME2_Base *GetME2(const std::string& tag,

@@ -62,7 +62,7 @@ int AMEGIC::Single_Process_External::InitAmplitude(Model_Base * model,Topology* 
   if (oqcd==99) oqcd=m_pn-m_oew-2;  
   p_me2 = Tree_ME2_Base::GetME2(m_pinfo);
   if (!p_me2) return 0;
-  p_me2->SetCouplings(&m_cpls);
+  p_me2->SetCouplings(m_cpls);
   
   m_oew=oew;
   m_oqcd=oqcd;

@@ -58,7 +58,7 @@ int AMEGIC::Single_LOProcess_External::InitAmplitude(Model_Base * model,Topology
   m_pinfo.m_fi.m_nloqcdtype=nlo_type::lo;  
   p_me2 = Tree_ME2_Base::GetME2(m_pinfo);
   if (!p_me2) return 0;
-  p_me2->SetCouplings(&m_cpls);
+  p_me2->SetCouplings(m_cpls);
   
   m_oew=oew;
   m_oqcd=oqcd;

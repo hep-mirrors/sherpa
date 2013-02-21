@@ -11,8 +11,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 ME2_Base::ME2_Base(const Process_Info& pi, const Flavour_Vector& flavs) : 
-  Tree_ME2_Base(pi,flavs), m_oew(99), m_oqcd(99), m_sintt(7),
-  p_aqcd(NULL), p_aqed(NULL)
+  Tree_ME2_Base(pi,flavs), m_oew(99), m_oqcd(99), m_sintt(7)
 {
   m_symfac=pi.m_fi.FSSymmetryFactor();
   m_symfac*=pi.m_ii.ISSymmetryFactor();
@@ -38,12 +37,6 @@ bool ME2_Base::SetColours(const Vec4D_Vector& mom)
 {
 //   THROW(fatal_error, "Virtual function called.");
   return false;
-}
-
-void ME2_Base::SetCouplings(MODEL::Coupling_Map *const cpls)
-{
-  p_aqcd=cpls->Get("Alpha_QCD");
-  p_aqed=cpls->Get("Alpha_QED");
 }
 
 double ME2_Base::CouplingFactor(const int oqcd,const int oew) const

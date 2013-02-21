@@ -23,8 +23,7 @@ namespace BLACKHAT {
 BlackHat_Tree::BlackHat_Tree(const Process_Info& pi,
 			     const Flavour_Vector& flavs,
 			     BH::BH_Ampl* ampl) :
-  Tree_ME2_Base(pi, flavs), p_ampl(ampl),
-  p_aqcd(NULL), p_aqed(NULL)
+  Tree_ME2_Base(pi, flavs), p_ampl(ampl)
 {
   size_t nqcd(0);
   for (size_t i(0);i<flavs.size();++i)
@@ -43,16 +42,11 @@ BlackHat_Tree::~BlackHat_Tree()
   // if (p_ampl) delete p_ampl;
 }
 
-void BlackHat_Tree::SetCouplings(MODEL::Coupling_Map *const cpls)
+void BlackHat_Tree::SetCouplings(const MODEL::Coupling_Map& cpls)
 {
-  if (cpls->find("Alpha_QCD")!=cpls->end()) {
-    p_aqcd=cpls->Get("Alpha_QCD");
-    m_asfac=p_aqcd->Default()/s_model->ScalarFunction("alpha_S");
-  }
-  if (cpls->find("Alpha_QED")!=cpls->end()) {
-    p_aqed=cpls->Get("Alpha_QED");
-    m_afac=p_aqed->Default()/s_model->ScalarFunction("alpha_QED");
-  }
+  Tree_ME2_Base::SetCouplings(cpls);
+  if (p_aqcd) m_asfac=p_aqcd->Default()/s_model->ScalarFunction("alpha_S");
+  if (p_aqed) m_afac=p_aqed->Default()/s_model->ScalarFunction("alpha_QED");
 }
 
 double BlackHat_Tree::CouplingFactor(const int oqcd,const int oew) const

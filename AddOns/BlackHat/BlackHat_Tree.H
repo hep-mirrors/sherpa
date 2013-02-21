@@ -20,8 +20,6 @@ namespace BLACKHAT {
     static BH::BH_interface  *s_interface;
     static MODEL::Model_Base *s_model;
 
-    MODEL::Coupling_Data *p_aqcd, *p_aqed;
-
     size_t m_oqcd, m_oew;
     double m_asfac, m_afac;
 
@@ -37,7 +35,7 @@ namespace BLACKHAT {
 
     double Calc(const ATOOLS::Vec4D_Vector& momenta);
 
-    void SetCouplings(MODEL::Coupling_Map *const cpls);
+    void SetCouplings(const MODEL::Coupling_Map& cpls);
 
     inline static void SetInterface(BH::BH_interface *const bh) { s_interface=bh; }
     inline static void SetModel(MODEL::Model_Base *const md) { s_model=md; }

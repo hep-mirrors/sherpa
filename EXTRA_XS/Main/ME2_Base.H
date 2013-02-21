@@ -11,15 +11,12 @@ namespace EXTRAXS {
   protected:
     int **p_colours;
     size_t m_oew, m_oqcd, m_sintt;
-    MODEL::Coupling_Data *p_aqcd, *p_aqed;
     double m_symfac;
     std::map<size_t,ATOOLS::Flavour_Vector> m_cfls;
   public:
     ME2_Base(const PHASIC::Process_Info& pi,
              const ATOOLS::Flavour_Vector& flavs);
     virtual ~ME2_Base();
-
-    void SetCouplings(MODEL::Coupling_Map *const cpls);
 
     double CouplingFactor(const int oqcd,const int oew) const;
 

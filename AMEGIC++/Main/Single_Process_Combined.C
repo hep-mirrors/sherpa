@@ -126,7 +126,7 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Model_Base * model,Topology* 
 
   p_me2 = Tree_ME2_Base::GetME2(m_pinfo);
   if (!p_me2) return 0;
-  p_me2->SetCouplings(&m_cpls);
+  p_me2->SetCouplings(m_cpls);
 
   if (m_gen_str>1) {
     ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
