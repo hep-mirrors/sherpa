@@ -85,8 +85,6 @@ namespace ATOOLS {
     inline const std::string &Info() const { return m_info; }
     inline ex::type           Type() const { return m_type; }
 
-    /* friend std::ostream &operator<<(std::ostream &str, */
-    /* 				    const Exception &exception); */
   };// end of class Exception
   
   // SWIG needs to rename the following operator to succesfully wrap the functionality

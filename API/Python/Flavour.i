@@ -27,96 +27,8 @@ namespace ATOOLS {
   class Flavour;
   class Mass_Selector;
   
-  /* void OutputHadrons(std::ostream&); */
-  /* void OutputParticles(std::ostream&); */
-  /* void OutputContainers(std::ostream&); */
-  
-  //typedef std::vector<Flavour*> PFlavour_Vector;
-
-  /* struct Particle_Info { */
-  /* public: */
-
-  /*   kf_code m_kfc; */
-  /*   double  m_mass, m_hmass, m_yuk, m_width, m_dg, m_dm, m_qoverp2; */
-  /*   int     m_icharge, m_isoweak, m_strong, m_resummed; */
-  /*   int     m_spin, m_stable, m_masssign, m_dummy, m_majorana, m_formfactor; */
-  /*   bool    m_on, m_massive, m_hadron; */
-
-  /*   std::string m_idname, m_texname; */
-
-  /*   PFlavour_Vector m_content; */
-
-  /* public: */
-
-  /*   // default constructor */
-  /*   inline Particle_Info():  */
-  /*     m_kfc(kf_none), m_mass(0.0), m_hmass(0.0), m_yuk(0.0), m_width(0.0), */
-  /*     m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(0), m_isoweak(0), */
-  /*     m_strong(0), m_resummed(0), m_spin(0), m_stable(1), m_masssign(0),  */
-  /*     m_dummy(1), m_majorana(0), m_formfactor(0), m_on(0), m_massive(0), */
-  /*     m_hadron(0) {} */
-  /*   Particle_Info(const Particle_Info &info); */
-  /*   Particle_Info(const kf_code &kfc,const double &mass,const double &width, */
-  /* 		  const int icharge,const int isoweak,const int strong, */
-  /* 		  const int spin,const int majorana,const bool on, */
-  /* 		  const int stable,bool massive,const std::string &idname, */
-  /* 		  const std::string &texname,const bool dummy=0); */
-  /*   Particle_Info(const kf_code &kfc,const double &mass,const double &width,  */
-  /* 		  const int icharge,const int isoweak,const int spin, */
-  /* 		  const bool on,const int stable,const std::string &idname, */
-  /* 		  const std::string &texname); */
-  /*   Particle_Info(const kf_code &kfc,const double &mass,const int icharge, */
-  /*                 const int spin,const int formfactor,const std::string &idname, */
-  /*                 const std::string &texname); */
-
-  /*   ~Particle_Info(); */
-
-  /*   // member functions */
-  /*   bool Includes(const Flavour &fl) const; */
-    
-  /*   void Add(const Flavour &fl); */
-  /*   void Clear(); */
-
-  /*   Flavour operator[](const size_t &i) const; */
-    
-  /*   inline size_t Size() const  { return m_content.size();   } */
-  /*   inline bool   Group() const { return m_content.size()>1; } */
-
-  /*   void SetResummed(); */
-
-  /* };// end of class Particle_Info */
-
-  //typedef std::map<kf_code,Particle_Info*> KFCode_ParticleInfo_Map;
-
-  /* class KF_Table: public KFCode_ParticleInfo_Map { */
-  /* public: */
-
-  /*   ~KF_Table(); */
-
-  /*   kf_code KFFromIDName(const std::string &idname) const; */
-  /*   kf_code KFFromTexName(const std::string &texname) const; */
-
-  /* };// end of class KF_Table */
-
-  /* extern KF_Table s_kftable; */
-
   class Flavour {
-  /* protected: */
-
-  /*   Particle_Info *p_info; */
-
-  /*   int m_anti; */
-
-  /*   friend std::ostream &operator<<(std::ostream &os, const Flavour &fl); */
-
   public:
-
-    // There is deliberately only one constructor wrapped since
-    // in python the wrong constructor was called 
-
-    /* inline Flavour(Particle_Info &info,const bool &anti=0):  */
-    /*   p_info(&info), m_anti(0) */
-    /* { if (anti && p_info->m_majorana==0) m_anti=anti; } */
 
     inline Flavour(const kf_code &kfc=kf_none,const bool &anti=0): 
       p_info(NULL), m_anti(0)
@@ -124,17 +36,12 @@ namespace ATOOLS {
       if (it!=s_kftable.end()) p_info=it->second; else return;
       if (anti && p_info->m_majorana==0) m_anti=anti; }
 
-    /* inline Flavour(const Flavour &fl):  */
-    /*   p_info(fl.p_info), m_anti(fl.m_anti) {} */
-
     // member functions
     int  Ctq() const;
     void FromCtq(const int code);
 
     int HepEvt() const;
     void FromHepEvt(long int code);
-    // The following function doesn't seem to be implemented anywhere
-    //void FromHadron(long int code);
 
     std::string IDName() const;
     std::string ShellName() const;
@@ -164,20 +71,8 @@ namespace ATOOLS {
       return p_info==fl.p_info && m_anti==fl.m_anti;
     }
 
-    /* inline Flavour operator[](const size_t &i) const   */
-    /* {  */
-    /*   if (!p_info->Group()) return *this; */
-    /*   return m_anti?(*p_info)[i].Bar():(*p_info)[i]; */
-    /* } */
-
     inline bool operator==(const Flavour &fl)
     { return p_info==fl.p_info && m_anti==fl.m_anti; }
-
-    /* inline operator long int() const  */
-    /* { return m_anti?-(long int)Kfcode():(long int)Kfcode(); } */
-
-    /* inline Flavour &operator=(const Flavour& fl)  */
-    /* { if (this!=&fl) { p_info=fl.p_info; m_anti=fl.m_anti; } return *this; } */
 
     inline bool IsAnti() const { return m_anti; }
 
@@ -344,37 +239,5 @@ namespace ATOOLS {
 
   };// end of class Flavour
 
-  /* class Flavour_Sorting_Criterion { */
-  /* public : */
-  /*   // something is wrong with this criterion */
-  /*   // if you need a flavour set, use Flavour_Set, not FlavourMultiSet !!! */
-  /*   inline bool operator()(const Flavour &fl1,const Flavour &fl2) const */
-  /*   { */
-  /*     kf_code kf1(fl1.Kfcode()), kf2(fl2.Kfcode()); */
-  /*     if (kf1>kf2) return true; */
-  /*     if (kf1<kf2) return false; */
-  /*     return !(fl1.IsAnti()&&!fl2.IsAnti()); */
-  /*   } */
-  /* };// end of class Flavour_Sorting_Criterion */
-
-  /* typedef std::set<Flavour,Flavour_Sorting_Criterion> FlavourMultiSet; */
-  /* typedef FlavourMultiSet::iterator FlSetIter; */
-  /* typedef FlavourMultiSet::const_iterator FlSetConstIter; */
-  /* typedef std::vector<Flavour> Flavour_Vector; */
-  /* typedef std::map<Flavour,Flavour> Flavour_Map; */
-  /* typedef std::set<Flavour> Flavour_Set; */
-
-  /* class Mass_Selector { */
-  /* public: */
-
-  /*   virtual ~Mass_Selector(); */
-
-  /*   virtual double Mass(const Flavour &fl) const = 0; */
-
-  /*   inline double Mass2(const Flavour &fl) const */
-  /*   { double m(Mass(fl)); return m*m; } */
-
-  /* };// end of class Mass_Selector */
-  
  }// end of namespace ATOOLS
 
