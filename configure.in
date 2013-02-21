@@ -189,7 +189,6 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
           Manual/sherpa-completion \
 	  Examples/Makefile \
 	  Examples/API/ME2/test.py \
-	  Examples/API/MEWeight/test.py \
 	  AddOns/Analysis/Tools/Makefile \
 	  AddOns/Analysis/Main/Makefile \
 	  AddOns/Analysis/Triggers/Makefile \

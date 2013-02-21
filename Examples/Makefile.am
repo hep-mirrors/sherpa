@@ -3,12 +3,6 @@ examplesdir        = $(pkgdatadir)/Examples
 nobase_dist_examples_DATA         =	\
 		API/ME2/Run.dat \
 		API/ME2/test.py \
-		API/MEWeight/EventFile.py \
-		API/MEWeight/Event.py \
-		API/MEWeight/Particle.py \
-		API/MEWeight/Vertex.py \
-		API/MEWeight/HardProcess.py \
-		API/MEWeight/test.py \
 		FixedOrder_NLO/NTuples/Run.B-like.dat \
 		FixedOrder_NLO/NTuples/Reweight.B-like.dat \
 		FixedOrder_NLO/NTuples/Run.R-like.dat \
