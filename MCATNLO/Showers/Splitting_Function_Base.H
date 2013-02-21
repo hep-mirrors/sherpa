@@ -144,6 +144,8 @@ namespace MCATNLO {
       */
     std::vector<double> m_cplmax;
 
+    static double s_qfac;
+
   public:
 
     SF_Coupling(const SF_Key &key);
@@ -165,13 +167,15 @@ namespace MCATNLO {
 
     virtual double ColorWeight(const Color_Info &ci) const;
 
-    inline double MaxCoupling(const int mode) const { return m_cplmax[mode]; }
+    inline double MaxCoupling(const int mode) const { return s_qfac*m_cplmax[mode]; }
 
     inline void SetLF(SF_Lorentz *const lf) { p_lf=lf; }
 
     inline int KFMode() { return m_kfmode; }
 
     inline void SetKFMode(const int kfmode) { m_kfmode=kfmode; }
+
+    inline static void SetQFac(const double &qfac) { s_qfac=qfac; }
 
   };
 

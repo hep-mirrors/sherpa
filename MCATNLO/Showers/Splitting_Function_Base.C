@@ -58,6 +58,8 @@ double SF_Lorentz::AsymmetryFactor
   return 1.0;
 }
 
+double SF_Coupling::s_qfac=1.0;
+
 SF_Coupling::SF_Coupling(const SF_Key &key):
   p_lf(NULL), m_type(key.m_type),
   m_cplfac(1.0), m_kfmode(key.m_kfmode) 

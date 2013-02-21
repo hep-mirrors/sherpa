@@ -95,14 +95,14 @@ double CF_QCD::Coupling(const double &scale,const int pol,
 {
   if (pol!=0) return 0.0;
   double scl(sub?sub->MuR2():CplFac(scale)*scale);
-  //double cpl=(*p_cpl)(scl)*m_q;
-  double cpl=p_cpl->AlphaS(scl,true)*m_q;
-  if (cpl>m_cplmax.front()) return m_cplmax.front();
+  //double cpl=(*p_cpl)(scl)*m_q*s_qfac;
+  double cpl=p_cpl->AlphaS(scl,true)*m_q*s_qfac;
+  if (cpl>s_qfac*m_cplmax.front()) return s_qfac*m_cplmax.front();
 #ifdef DEBUG__Trial_Weight
   msg_Debugging()<<"as weight kt = "<<(sub?1.0:sqrt(CplFac(scale)))
 		 <<" * "<<(sub?sqrt(scl):sqrt(scale))<<", \\alpha_s("
-		 <<sqrt(scl)<<") = "
-		 <<p_cpl->AlphaS(scl)<<", m_q = "<<m_q<<"\n";
+		 <<sqrt(scl)<<") = "<<p_cpl->AlphaS(scl)
+		 <<", m_q = "<<s_qfac<<" * "<<m_q<<"\n";
     //<<(*p_cpl)(scl)<<", m_q = "<<m_q<<"\n";
 #endif
   return cpl;

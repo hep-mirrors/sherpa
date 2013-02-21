@@ -97,6 +97,7 @@ int CS_MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
 
 int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem)
 {
+  SF_Coupling::SetQFac(1.0);
   std::set<Parton*> nxs;
   Singlet *last(*(m_allsinglets.end()-1));
   std::string pname(Process_Base::GenerateName(p_rampl));
@@ -119,6 +120,8 @@ int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem)
 	(*cit)->Specs().push_back(*pit);
       }
     }
+    if ((*cit)->GetFlavour().StrongCharge()==8 &&
+	(*cit)->Specs().size()<2) SF_Coupling::SetQFac(2.0);
     msg_Debugging()<<"-> "<<(*cit)->Specs().size()<<" dipole(s)\n";
   }
   p_gamma->SetOn(1);
