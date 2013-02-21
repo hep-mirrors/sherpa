@@ -43,8 +43,8 @@ Tree_ME2_Base *Tree_ME2_Base::GetME2(const std::string& tag,
 
 void Tree_ME2_Base::SetCouplings(const MODEL::Coupling_Map& cpls)
 {
-  p_aqcd=cpls->Get("Alpha_QCD");
-  p_aqed=cpls->Get("Alpha_QED");
+  p_aqcd=cpls.Get("Alpha_QCD");
+  p_aqed=cpls.Get("Alpha_QED");
 }
 
 double Tree_ME2_Base::AlphaQCD() const
