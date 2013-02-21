@@ -1,7 +1,7 @@
 #ifndef OpenLoops_Virtual_H
 #define OpenLoops_Virtual_H
 
-#include "OpenLoops_Interface.H"
+#include "AddOns/OpenLoops/OpenLoops_Interface.H"
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <iostream>

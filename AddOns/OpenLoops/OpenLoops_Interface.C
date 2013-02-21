@@ -11,6 +11,7 @@
 
 #include "OpenLoops_Interface.H"
 #include "OpenLoops_Virtual.H"
+#include "OpenLoops_Born.H"
 
 using namespace PHASIC;
 using namespace MODEL;
@@ -66,6 +67,7 @@ namespace OpenLoops {
     s_generate_list=reader.GetValue<size_t>("OL_GENERATE_LIST", false);
 
     OpenLoops_Virtual::SetInterface(this);
+    OpenLoops_Born::SetInterface(this);
 
     int lenws=1200;
     char welcomestr[lenws];
@@ -191,13 +193,13 @@ namespace OpenLoops {
                           &set_C_PV_threshold, &set_D_PV_threshold, &set_DD_red_mode);
   }
 
-  bool OpenLoops_Interface::MatchOptions(vector<string> options, int oew, int oqcd) {
+  bool OpenLoops_Interface::MatchOptions(vector<string> options, int oew, int oqcd, int nloop) {
     for (size_t i=2; i<options.size(); ++i) {
       string option=options[i].substr(0, options[i].find("="));
       string value=options[i].substr(options[i].find("=")+1);
 
       if (option=="EW" && value!=ToString(oew)+",0") return false;
-      if (option=="QCD" && value!=ToString(oqcd-1)+",1") return false;
+      if (option=="QCD" && value!=ToString(oqcd)+","+ToString(nloop)) return false;
       if (option=="CKMORDER") {
         int ckmorder=ToType<int>(value);
         if (ckmorder<3) {
@@ -243,7 +245,7 @@ namespace OpenLoops {
     else return false;
   }
 
-  pair<string, string> OpenLoops_Interface::ScanFiles(const string& process, int oew, int oqcd)
+  pair<string, string> OpenLoops_Interface::ScanFiles(const string& process, int oew, int oqcd, int nloop)
   {
     struct dirent **entries;
     string procdatapath=s_olprefix+"/proclib";
@@ -259,7 +261,7 @@ namespace OpenLoops {
       reader.MatrixFromFile(content);
       for (size_t i=0; i<content.size(); ++i) {
         if (content[i][1]==process) {
-          if (!MatchOptions(content[i], oew, oqcd)) {
+          if (!MatchOptions(content[i], oew, oqcd, nloop)) {
             PRINT_INFO("Ignoring process with incompatible options.");
             continue;
           }
@@ -329,6 +331,12 @@ namespace OpenLoops {
 
   Flavour_Vector OpenLoops_Interface::MapFlavours(const Flavour_Vector& orig)
   {
+    for (size_t i=2; i<orig.size(); ++i) {
+      if (orig[i].Width()!=0.0) {
+        THROW(fatal_error, "Non-zero width of final state particle.");
+      }
+    }
+
     /* Concept:
       For each family i=0,...,2:
       (1) Given a final state, determine the four (anti)lepton/neutrino
@@ -409,19 +417,12 @@ namespace OpenLoops {
     if (MODEL::s_model->Name()!="SM") return NULL;
 
     Flavour_Vector flavs=pi.ExtractFlavours();
-    for (size_t i=2; i<flavs.size(); ++i) {
-      if (flavs[i].Width()!=0.0) {
-        THROW(fatal_error, "Non-zero width of final state particle.");
-      }
-    }
-    DEBUG_VAR(flavs);
-
     Flavour_Vector map_flavs=OpenLoops_Interface::MapFlavours(flavs);
-    msg_Out()<<endl<<flavs<<" --> "<<map_flavs<<endl;
+    msg_Info()<<endl<<flavs<<" --> "<<map_flavs<<endl;
 
     vector<int> permutation;
     string process=OpenLoops_Interface::GetProcessPermutation(map_flavs, permutation);
-    pair<string, string> groupsub=OpenLoops_Interface::ScanFiles(process, pi.m_oew, pi.m_oqcd);
+    pair<string, string> groupsub=OpenLoops_Interface::ScanFiles(process, pi.m_oew, pi.m_oqcd-1, 1);
     string grouptag=groupsub.first;
     string subid=groupsub.second;
     if (grouptag!="") {
@@ -482,6 +483,60 @@ namespace OpenLoops {
 
     return NULL;
   }
+
+
+
+
+
+  DECLARE_TREEME2_GETTER(OpenLoops_Born_Getter,"OpenLoops_Born")
+  Tree_ME2_Base *OpenLoops_Born_Getter::operator()(const Process_Info &pi) const
+  {
+    DEBUG_FUNC(pi);
+    if (pi.m_loopgenerator!="OpenLoops") return NULL;
+    if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
+    if (pi.m_fi.m_nloqcdtype!=nlo_type::lo &&
+        pi.m_fi.m_nloqcdtype!=nlo_type::born &&
+        pi.m_fi.m_nloqcdtype!=nlo_type::real) return NULL;
+    if (MODEL::s_model->Name()!="SM") return NULL;
+
+    Flavour_Vector flavs=pi.ExtractFlavours();
+    Flavour_Vector map_flavs=OpenLoops_Interface::MapFlavours(flavs);
+    msg_Info()<<endl<<flavs<<" --> "<<map_flavs<<endl;
+
+    vector<int> permutation;
+    string process=OpenLoops_Interface::GetProcessPermutation(map_flavs, permutation);
+    pair<string, string> groupsub=OpenLoops_Interface::ScanFiles(process, pi.m_oew, pi.m_oqcd, 0);
+    string grouptag=groupsub.first;
+    string subid=groupsub.second;
+    if (grouptag!="") {
+      // symbols in fortran are always defined as lower case
+      string lc_functag(grouptag+"_"+process+"_"+subid+"_");
+      for (size_t i(0);i<lc_functag.length();++i)
+        lc_functag[i]=tolower(lc_functag[i]);
+      vector<string> suffixes;
+      suffixes.push_back("1s");
+      void *ampfunc, *permfunc;
+      for (size_t i=0; i<suffixes.size(); ++i) {
+        string libraryfile="openloops_"+grouptag+"_"+suffixes[i]+"L";
+        ampfunc=s_loader->GetLibraryFunction(libraryfile,"vamp2chk_"+lc_functag);
+        permfunc=s_loader->GetLibraryFunction(libraryfile,"set_permutation_"+lc_functag);
+        if (ampfunc!=NULL && permfunc!=NULL) break;
+      }
+      if (ampfunc==NULL || permfunc==NULL) {
+        PRINT_INFO("Didn't find functions");
+        return NULL;
+      }
+
+      msg_Info()<<endl;
+      PRINT_INFO("Initialising OpenLoops Born for "<<flavs<<": "<<lc_functag);
+      return new OpenLoops_Born(pi, flavs, (Amp2Func) ampfunc,
+                                (PermutationFunc) permfunc, permutation, lc_functag);
+    }
+    else {
+      return NULL;
+    }
+  }
+
 
 }
 
