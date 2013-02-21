@@ -213,8 +213,11 @@ combined matrix element and phase space weight (missing only PDF information,
 thus directly suitable for PDF reweighting), @code{[2]} event weight 
 normalisation (in case of unweighted events event weights of ~ +/-1 
 can be obtained by (event weight)/(event weight normalisation)), and 
-@code{[3]} number of trials (needed if cross sections are to be computed 
-by the event weight output only).
+@code{[3]} number of trials. The total cross section of the simulated event sample
+can be computed as the sum of event weights divided by the sum of the number of trials.
+This value must agree with the total cross section quoted by Sherpa at the end of
+the event generation run, and it can serve as a cross-check on the consistency
+of the HepMC event file.
 @item HepMC_Short
 Generates output in HepMC::IO_GenEvent format, however, only incoming beams and 
 outgoing particles are stored. Intermediate and decayed particles are not 
