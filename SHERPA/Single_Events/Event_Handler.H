@@ -17,10 +17,11 @@ namespace SHERPA {
   private:
 
     long int m_lastparticlecounter, m_lastblobcounter;
-    double m_n, m_addn, m_sum, m_sumsqr;
+    double m_n, m_addn, m_sum, m_sumsqr, m_maxweight;
 #ifdef USING__MPI
     double m_mn, m_msum, m_msumsqr;
 #endif
+    bool m_checkweight;
 
     Phase_List        * p_phases;
     ATOOLS::Blob_List   m_blobs, m_sblobs;
@@ -32,6 +33,7 @@ namespace SHERPA {
     void InitialiseSeedBlob(ATOOLS::btp::code type,
 			    ATOOLS::blob_status::code status);
     bool AnalyseEvent(double & weight);
+    bool WeightIsGood(const double& weight);
     int  IterateEventPhases(double & weight);
 
   public:

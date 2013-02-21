@@ -24,12 +24,14 @@ static int s_retrymax(100);
 
 Event_Handler::Event_Handler():
   m_lastparticlecounter(0), m_lastblobcounter(0), 
-  m_n(0), m_addn(0), m_sum(0.0), m_sumsqr(0.0)
+  m_n(0), m_addn(0), m_sum(0.0), m_sumsqr(0.0), m_maxweight(0.0)
 #ifdef USING__MPI
   , m_mn(0), m_msum(0.0), m_msumsqr(0.0)
 #endif
 {
   p_phases  = new Phase_List;
+  Data_Reader reader(" ",";","!","=");
+  m_checkweight = reader.GetValue<int>("CHECK_WEIGHT", 0);
 }
 
 Event_Handler::~Event_Handler() 
@@ -275,7 +277,7 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
   double trials((*p_signal)["Trials"]->Get<double>());
   p_signal->AddData("Trials",new Blob_Data<double>(trials+m_addn));
   double cxs((*p_signal)["Weight"]->Get<double>());
-  if (IsBad(cxs)) {
+  if (!WeightIsGood(cxs)) {
     PRINT_INFO("Invalid weight w="<<cxs<<". Rejecting event.");
     return false;
   }
@@ -501,4 +503,26 @@ double Event_Handler::TotalErr()
   if (ATOOLS::IsEqual
       (m_sumsqr*m_n,m_sum*m_sum,1.0e-6)) return 0.0;
   return sqrt((m_sumsqr-m_sum*m_sum/m_n)/(m_n-1)/m_n);
+}
+
+bool Event_Handler::WeightIsGood(const double& weight)
+{
+  if (IsBad(weight)) return false;
+
+  if (m_checkweight && fabs(weight)>m_maxweight) {
+    m_maxweight=fabs(weight);
+    std::string ranfilename="random";
+#ifdef USING__MPI
+    ranfilename+="."+ToString(MPI::COMM_WORLD.Get_rank());
+#endif
+    if (ATOOLS::msg->LogFile()!="") ranfilename+="."+ATOOLS::msg->LogFile();
+    else ranfilename+=".dat";
+    ATOOLS::ran->WriteOutSavedStatus(ranfilename.c_str());
+    std::ofstream outstream(ranfilename.c_str(), std::fstream::app);
+    outstream<<std::endl;
+    outstream<<"# Wrote status for weight="<<weight<<std::endl;
+    outstream.close();
+  }
+
+  return true;
 }

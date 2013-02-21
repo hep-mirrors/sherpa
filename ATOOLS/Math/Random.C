@@ -219,6 +219,24 @@ int ATOOLS::Random::WriteOutStatus(const char * filename)
   return 1;
 }
 
+int ATOOLS::Random::WriteOutSavedStatus(const char * filename)
+{
+  if (p_external!=NULL) return 1;
+  // if Ran4 is the active Random Generator, then use its method
+  if (activeGenerator==4) {return WriteOutSavedStatus4(filename);}
+  // write out every Statusregister of Random Number generator
+
+  // remove old random file
+  if (FileExists(filename)) remove(filename);
+  std::ofstream outstream(filename);
+  outstream<<0<<"\t"<<m_sid<<"\t"<<m_sinext<<"\t"<<m_sinextp<<"\t";
+  for (int i=0;i<56;++i) outstream<<m_sma[i]<<"\t";
+  outstream<<siy<<"\t"<<sidum2<<"\t";
+  for (int i=0;i<NTAB;++i) outstream<<siv[i]<<"\t";
+  outstream<<endl;
+  return 1;
+}
+
 int ATOOLS::Random::WriteOutStatus
 (std::ostream &outstream,const size_t &idx)
 {
@@ -481,6 +499,17 @@ int ATOOLS::Random::WriteOutStatus4(const char * filename)
   std::ofstream file(filename,ios::binary);
   // if file is ok, append data at EoF and return
   file.write((char*) (&status), sizeof(Ran4Status));
+  return file.tellp()/sizeof(Ran4Status); 
+}
+
+int ATOOLS::Random::WriteOutSavedStatus4(const char * filename)
+{
+  // remove old random file
+  if (FileExists(filename)) remove(filename);
+  // open file and append status of Random Generator at the end if possible
+  std::ofstream file(filename,ios::binary);
+  // if file is ok, append data at EoF and return
+  file.write((char*) (&backupStat), sizeof(Ran4Status));
   return file.tellp()/sizeof(Ran4Status); 
 }
 

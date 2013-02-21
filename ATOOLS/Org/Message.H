@@ -118,6 +118,7 @@ namespace ATOOLS {
     indentbuf m_buf;
 
     int m_file, m_level;
+    std::string m_logfile;
 
     std::set<std::string,String_Sort> m_contextevents;
     std::set<std::string,String_Sort> m_contextinfo;
@@ -164,6 +165,8 @@ namespace ATOOLS {
     inline void SetNoStream(std::ostream *const no)      { p_no=(std::ofstream*)no; }
     inline void SetOutStream(std::ostream *const output) { p_output=output;         }
     inline void SetErrStream(std::ostream *const error)  { p_error=error;           }
+
+    inline const std::string& LogFile() const { return m_logfile; }
 
     inline bool LevelIsError() const     { return (m_level >= 0); }
     inline bool LevelIsEvents() const    { return (m_level & 1);  }

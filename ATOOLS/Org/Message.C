@@ -155,6 +155,7 @@ Message::Message() : m_buf(std::cout.rdbuf()), p_log(NULL)
   p_output = &std::cout;
   p_error = &std::cerr;
   p_no = new std::ofstream("/dev/null",std::ios::app);
+  m_logfile = "";
   m_file = 0;
   m_level = 0;
   m_modifiable = true;
@@ -171,6 +172,7 @@ Message::~Message()
 void Message::Init(const std::string& level,const std::string &logfile) 
 { 
   if (logfile!="") {
+    m_logfile = logfile;
     p_log = new std::ofstream(logfile.c_str(),std::ios::app);
     p_output=p_log;
   }

@@ -58,6 +58,7 @@ namespace ATOOLS {
     // temporary methods for Ran4()
     int  WriteOutStatus4(const char *outfile); 
     int  WriteOutStatus4(std::ostream &os,const size_t &idx);
+    int  WriteOutSavedStatus4(const char *outfile); 
     void ReadInStatus4(const char * filename);
     size_t ReadInStatus4(std::istream &is,const size_t &idx);
     void SaveStatus4();
@@ -80,6 +81,7 @@ namespace ATOOLS {
 
     int  WriteOutStatus(const char *outfile);
     int  WriteOutStatus(std::ostream &os,const size_t &idx);
+    int  WriteOutSavedStatus(const char *outfile);
     void ReadInStatus(const char *infile);
     size_t ReadInStatus(std::istream &is,const size_t &idx);
     void SaveStatus();
