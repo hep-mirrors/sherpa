@@ -1,4 +1,15 @@
-SUBDIRS       =	Python Analysis BlackHat MCFM LH_OLE HZTool OpenLoops PGS Phox Rivet HepMC Root
+SUBDIRS       =	\
+		Python \
+		Analysis \
+		BlackHat \
+		MCFM \
+		LH_OLE \
+		HZTool \
+		OpenLoops \
+		PGS \
+		Rivet \
+		HepMC \
+		Root
 
 nobase_dist_pkgdata_DATA = ExampleModel/Interaction_Model_SM_Zprime.C \
 			ExampleModel/SM_Zprime.C \
