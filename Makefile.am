@@ -19,7 +19,6 @@ SUBDIRS       = \
 		SHRiMPS \
 		AddOns \
 		SHERPA \
-		API \
 		Manual \
 		Examples
 

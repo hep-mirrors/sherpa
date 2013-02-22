@@ -183,12 +183,11 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  SHERPA/Run/Makefile \
           SHERPA/Run/Sherpa-config \
 	  SHERPA/Makefile \
-	  API/Python/Makefile \
-	  API/Makefile \
 	  Manual/Makefile \
           Manual/sherpa-completion \
 	  Examples/Makefile \
 	  Examples/API/ME2/test.py \
+	  AddOns/Python/Makefile \
 	  AddOns/Analysis/Tools/Makefile \
 	  AddOns/Analysis/Main/Makefile \
 	  AddOns/Analysis/Triggers/Makefile \
