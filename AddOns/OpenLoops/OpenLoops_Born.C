@@ -36,16 +36,17 @@ double OpenLoops_Born::operator()(const Vec4D_Vector& momenta)
 
   double alpha_QED=AlphaQED();
   double alpha_S=AlphaQCD();
-  s_interface->OpenLoopsInit(10000.0, alpha_QED, alpha_S);
+  double mur2(10000.0);
+  s_interface->OpenLoopsInit(mur2, alpha_QED, alpha_S);
 
-  double B, V_finite, V_eps, V_eps2, I_finite, I_eps, I_eps2;
+  double B(0.0), V_finite(0.0), V_eps(0.0), V_eps2(0.0), I_finite(0.0), I_eps(0.0), I_eps2(0.0);
 
   m_permutationfunc(&m_permutation[0]);
   m_amp2(&m_moms[0][0], &B, &V_finite, &V_eps, &V_eps2, &I_finite, &I_eps, &I_eps2);
 
-  if (V_eps==0.0 && V_eps2==0.0 && I_eps==0.0 && I_eps2==0.0) {
-    if (B==0.0) return I_finite;
-    if (I_finite==0.0) return B;
+  if (IsZero(V_eps) && IsZero(V_eps2) && IsZero(I_eps) && IsZero(I_eps2)) {
+    if (IsZero(B)) return I_finite;
+    if (IsZero(I_finite)) return B;
     PRINT_INFO("B!=0 and I_finite!=0. Returning 0.");
     PRINT_VAR(B);
     PRINT_VAR(I_finite);
