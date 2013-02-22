@@ -14,6 +14,7 @@
 #include "SHERPA/Single_Events/Hadronization.H"
 #include "SHERPA/Single_Events/Hadron_Decays.H"
 #include "SHERPA/PerturbativePhysics/Hard_Decay_Handler.H"
+#include "SHERPA/Tools/HepMC2_Interface.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -32,7 +33,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Sherpa::Sherpa() :
-  p_inithandler(NULL), p_eventhandler(NULL)
+  p_inithandler(NULL), p_eventhandler(NULL), p_hepmc2(NULL)
 {
   ATOOLS::exh = new Exception_Handler();
   ATOOLS::msg = new Message();
@@ -279,6 +280,17 @@ bool Sherpa::GenerateOneEvent(bool reset)
       return 1;
     }
     return 0;
+}
+
+void Sherpa::FillHepMCEvent(HepMC::GenEvent& event)
+{
+#ifdef USING__HEPMC2
+  if (p_hepmc2==NULL) p_hepmc2 = new SHERPA::HepMC2_Interface();
+  ATOOLS::Blob_List* blobs=GetEventHandler()->GetBlobs();
+  p_hepmc2->Sherpa2HepMC(blobs, event, blobs->Weight());
+#else
+  THROW(fatal_error, "HepMC not linked.");
+#endif
 }
 
 void Sherpa::PrepareTerminate()

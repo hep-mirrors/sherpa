@@ -3,10 +3,15 @@
 
 #include "ATOOLS/Org/Exception.H"
 
+namespace HepMC{
+  class GenEvent;
+}
+
 namespace SHERPA {
   class Initialization_Handler;
   class Event_Handler;
   class Input_Output_Handler;
+  class HepMC2_Interface;
 
   class Sherpa: public ATOOLS::Terminator_Object {
   private:
@@ -15,6 +20,7 @@ namespace SHERPA {
 
     Initialization_Handler * p_inithandler;
     Event_Handler          * p_eventhandler;
+    HepMC2_Interface       * p_hepmc2;
 
     void DrawLogo(const int mode);  
     void PrintDisclaimer();  
@@ -27,11 +33,13 @@ namespace SHERPA {
     ~Sherpa();
 
     bool InitializeTheRun(int argc,char * argv[]);
+    bool InitializeTheEventHandler();
 
-    bool     InitializeTheEventHandler();
-    bool     GenerateOneEvent(bool reset=true);
-    bool     SummarizeRun();
-    inline void SetTrials(const long& trials) { m_trials = trials; }
+    bool GenerateOneEvent(bool reset=true);
+    void FillHepMCEvent(HepMC::GenEvent& event);
+
+    bool SummarizeRun();
+
     
     inline Initialization_Handler * GetInitHandler() const 
     { return p_inithandler; }
@@ -58,8 +66,6 @@ namespace SHERPA {
     - initializes and evaluates matrix elements for the hard processes, 
     - sets up the parton showers, 
     - the fragmentation including the beam remnant handling
-    Missing so far are an independent hadron decay model, and options for multiple interactions
-    (both underlying event and pile-up). These items are on the agenda for the near future.
 
     The single events are organized through the Event_Handler. This object owns a list of
     Event_Phase_Handlers (e.g. Signal_Process, JetEvolution, etc.) that take care of the 

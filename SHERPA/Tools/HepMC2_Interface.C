@@ -1,4 +1,5 @@
 #include "SHERPA/Tools/HepMC2_Interface.H"
+#ifdef USING__HEPMC2
 
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle.H"
@@ -12,7 +13,6 @@
 #include "HepMC/GenParticle.h"
 #include "HepMC/SimpleVector.h"
 #include "HepMC/PdfInfo.h"
-#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #ifdef USING__HEPMC2__UNITS
 #include "HepMC/Units.h"
 #endif
@@ -21,7 +21,7 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 HepMC2_Interface::HepMC2_Interface():
-  p_event(new HepMC::GenEvent())
+  p_event(NULL)
 {
 }
 
@@ -480,3 +480,5 @@ void HepMC2_Interface::DeleteGenSubEventList()
     delete m_subeventlist[i];
   m_subeventlist.clear();
 }
+
+#endif

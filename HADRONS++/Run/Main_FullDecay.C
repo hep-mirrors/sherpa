@@ -19,7 +19,6 @@ void InitialiseGenerator(int argc, char *argv[])
   p_sherpa = new Sherpa();
   p_sherpa->InitializeTheRun(argc,argv);
   p_sherpa->InitializeTheEventHandler();
-  p_sherpa->SetTrials(1);
 
   Data_Reader read(" ",";","!","=");
   int mother_kf(0);

@@ -1,5 +1,8 @@
 #ifndef SHERPA_Tools_HepMC2_Interface_H
 #define SHERPA_Tools_HepMC2_Interface_H
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+
+#ifdef USING__HEPMC2
 
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
@@ -67,4 +70,5 @@ namespace SHERPA {
 
 }// end of namespace SHERPA
 
+#endif
 #endif
