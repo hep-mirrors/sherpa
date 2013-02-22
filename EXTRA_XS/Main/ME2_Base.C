@@ -30,6 +30,9 @@ ME2_Base::~ME2_Base()
 
 double ME2_Base::Calc(const ATOOLS::Vec4D_Vector &p)
 {
+  // the symfac is multiplied here to cancel the symfac in the ME2's
+  // since the Tree_ME2_Base::Calc function is supposed to return
+  // the pure ME2, without sym fac
   return (*this)(p)*m_symfac;
 }
 

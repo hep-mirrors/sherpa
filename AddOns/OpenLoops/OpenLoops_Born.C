@@ -17,20 +17,19 @@ OpenLoops_Born::OpenLoops_Born(const Process_Info& pi,
                                PermutationFunc permutationfunc,
                                std::vector<int> permutation,
                                std::string functag) :
-  ME2_Base(pi, flavs),
+  Tree_ME2_Base(pi, flavs),
   m_amp2(amp2), m_permutationfunc(permutationfunc),
   m_permutation(permutation)
 {
   m_oew=pi.m_oew;
   m_oqcd=pi.m_oqcd;
 }
-  
+
 OpenLoops_Born::~OpenLoops_Born()
 {
 }
 
-//double OpenLoops_Born::Calc(const Vec4D_Vector& momenta)
-double OpenLoops_Born::operator()(const Vec4D_Vector& momenta)
+double OpenLoops_Born::Calc(const Vec4D_Vector& momenta)
 {
   Vec4D_Vector m_moms(momenta);
 

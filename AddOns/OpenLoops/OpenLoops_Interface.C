@@ -418,7 +418,7 @@ namespace OpenLoops {
 
     Flavour_Vector flavs=pi.ExtractFlavours();
     Flavour_Vector map_flavs=OpenLoops_Interface::MapFlavours(flavs);
-    msg_Info()<<endl<<flavs<<" --> "<<map_flavs<<endl;
+    msg_Tracking()<<endl<<flavs<<" --> "<<map_flavs<<endl;
 
     vector<int> permutation;
     string process=OpenLoops_Interface::GetProcessPermutation(map_flavs, permutation);
@@ -501,7 +501,7 @@ namespace OpenLoops {
 
     Flavour_Vector flavs=pi.ExtractFlavours();
     Flavour_Vector map_flavs=OpenLoops_Interface::MapFlavours(flavs);
-    msg_Info()<<endl<<flavs<<" --> "<<map_flavs<<endl;
+    msg_Tracking()<<endl<<flavs<<" --> "<<map_flavs<<endl;
 
     vector<int> permutation;
     string process=OpenLoops_Interface::GetProcessPermutation(map_flavs, permutation);
