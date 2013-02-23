@@ -928,6 +928,7 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
     else if (ExtractValArg(helpsv,oit,"-L","SHERPA_CPP_PATH"));
     else if (ExtractValArg(helpsv,oit,"-R","RANDOM_SEED"));
     else if (ExtractValArg(helpsv,oit,"-m","ME_SIGNAL_GENERATOR"));
+    else if (ExtractValArg(helpsv,oit,"-M","MI_HANDLER"));
     else if (ExtractValArg(helpsv,oit,"-w","EVENT_GENERATION_MODE"));
     else if (ExtractValArg(helpsv,oit,"-s","SHOWER_GENERATOR"));
     else if (ExtractValArg(helpsv,oit,"-F","FRAGMENTATION"));
@@ -955,6 +956,7 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
       msg_Out()<<"\t\t-e <events>       set number of events <events>"<<endl;
       msg_Out()<<"\t\t-r <results>      set result directory <results>"<<endl;
       msg_Out()<<"\t\t-m <generator>    set me generator <generator>"<<endl;
+      msg_Out()<<"\t\t-M <generator>    set mpi generator <generator>"<<endl;
       msg_Out()<<"\t\t-w <mode>         set event generation mode <mode>"<<endl;
       msg_Out()<<"\t\t-s <generator>    set ps generator <generator>"<<endl;
       msg_Out()<<"\t\t-F <module>       set fragmentation module <module>"<<endl;
