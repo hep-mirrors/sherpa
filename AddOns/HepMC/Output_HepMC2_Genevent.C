@@ -48,13 +48,13 @@ Output_HepMC2_Genevent::Output_HepMC2_Genevent(const Output_Arguments &args) :
 
 Output_HepMC2_Genevent::~Output_HepMC2_Genevent()
 {
-  m_outstream.close();
 #ifdef USING__HEPMC2__IOGENEVENT
   delete p_iogenevent;
 #endif
 #ifdef HEPMC_HAS_CROSS_SECTION
   delete p_xs;
 #endif
+  m_outstream.close();
 }
 
 void Output_HepMC2_Genevent::SetXS(const double& xs, const double& xserr)

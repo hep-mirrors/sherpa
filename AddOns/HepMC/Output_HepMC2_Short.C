@@ -49,13 +49,13 @@ Output_HepMC2_Short::Output_HepMC2_Short(const Output_Arguments &args) :
 
 Output_HepMC2_Short::~Output_HepMC2_Short()
 {
-  m_outstream.close();
 #ifdef USING__HEPMC2__IOGENEVENT
   delete p_iogenevent;
 #endif
 #ifdef HEPMC_HAS_CROSS_SECTION
   delete p_xs;
 #endif
+  m_outstream.close();
   delete p_event;
 }
 
