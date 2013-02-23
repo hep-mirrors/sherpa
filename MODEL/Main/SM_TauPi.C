@@ -25,14 +25,16 @@ namespace MODEL {
 }
 
 
-DECLARE_GETTER(SM_TauPi_Getter,"SM+TauPi",Model_Base,Model_Arguments);
+DECLARE_GETTER(SM_TauPi,"SM+TauPi",Model_Base,Model_Arguments);
 
-Model_Base *SM_TauPi_Getter::operator()(const Model_Arguments &args) const
+Model_Base *Getter<Model_Base,Model_Arguments,SM_TauPi>::
+operator()(const Model_Arguments &args) const
 {
   return new SM_TauPi(args.m_path,args.m_file,args.m_elementary);
 }
 
-void SM_TauPi_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void Getter<Model_Base,Model_Arguments,SM_TauPi>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The Standard Model + tau->pi nu vertex\n"
      <<std::setw(width+4)<<" "<<"{\n"

@@ -34,8 +34,10 @@ void Dummy_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
   m_res.Finite()=0.3;
 }
 
-DECLARE_VIRTUALME2_GETTER(Dummy_QCD_Virtual_Getter,"Dummy_QCD_Virtual")
-Virtual_ME2_Base *Dummy_QCD_Virtual_Getter::operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(Dummy_QCD_Virtual,"Dummy_QCD_Virtual")
+Virtual_ME2_Base *ATOOLS::Getter
+<Virtual_ME2_Base,Process_Info,Dummy_QCD_Virtual>::
+operator()(const Process_Info &pi) const
 {
   Data_Reader read(" ",";","!","=");
   if (read.GetValue<int>("USE_DUMMY_VIRTUAL",0)==0) return NULL;

@@ -180,21 +180,17 @@ std::string CS<SType>::CLabel() const
     (this->m_out.empty()?this->m_fl.Bar():this->m_fl).TexName()+"$";
 }
 
-DECLARE_TEMPLATE_GETTER(CS_Getter,"S",Current,Current_Key);
+DECLARE_GETTER(CS<double>,"DS",Current,Current_Key);
 
-template <typename SType,char STag> Current *
-CS_Getter<SType,STag>::operator()(const Current_Key &key) const
+Current *ATOOLS::Getter<Current,Current_Key,CS<double> >::
+operator()(const Current_Key &key) const
 {
-  if (key.m_fl.IsScalar()) return new CS<SType>(key);
+  if (key.m_fl.IsScalar()) return new CS<double>(key);
   return NULL;
 }
 
-template <typename SType,char STag>
-void CS_Getter<SType,STag>::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Current,Current_Key,CS<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"scalar current "<<STag;
+  str<<"scalar current (double)";
 }
-
-template class CS_Getter<double,'D'>;
-template class CS_Getter<long double,'Q'>;

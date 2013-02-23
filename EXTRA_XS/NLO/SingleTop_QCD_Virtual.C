@@ -81,8 +81,10 @@ double SingleTop_QCD_Virtual::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
   return 4.*M_PI;
 }
 
-DECLARE_VIRTUALME2_GETTER(SingleTop_QCD_Virtual_Getter,"SingleTop_QCD_Virtual")
-Virtual_ME2_Base *SingleTop_QCD_Virtual_Getter::operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(SingleTop_QCD_Virtual,"SingleTop_QCD_Virtual")
+Virtual_ME2_Base *ATOOLS::Getter
+<Virtual_ME2_Base,Process_Info,SingleTop_QCD_Virtual>::
+operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="Internal") return NULL;

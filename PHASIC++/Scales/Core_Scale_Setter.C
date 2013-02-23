@@ -37,19 +37,20 @@ namespace PHASIC {
 
   };// end of class Shower_Core_Scale
 
-  DECLARE_ND_GETTER(Shower_Core_Scale_Getter,"SHOWER",
-		    Core_Scale_Setter,Core_Scale_Arguments,true);
-
-  Core_Scale_Setter *Shower_Core_Scale_Getter::operator()
-    (const Core_Scale_Arguments &args) const
-  {
-    return new Shower_Core_Scale(args);
-  }
-
-  void Shower_Core_Scale_Getter::PrintInfo
-  (std::ostream &str,const size_t width) const
-  { 
-    str<<"shower core scale"; 
-  }
-
 }// end of namespace PHASIC
+
+DECLARE_ND_GETTER(Shower_Core_Scale,"SHOWER",
+		  Core_Scale_Setter,Core_Scale_Arguments,true);
+
+Core_Scale_Setter *ATOOLS::Getter
+<Core_Scale_Setter,Core_Scale_Arguments,Shower_Core_Scale>::
+operator()(const Core_Scale_Arguments &args) const
+{
+  return new Shower_Core_Scale(args);
+}
+
+void ATOOLS::Getter<Core_Scale_Setter,Core_Scale_Arguments,Shower_Core_Scale>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"shower core scale"; 
+}

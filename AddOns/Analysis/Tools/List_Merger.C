@@ -31,11 +31,11 @@ namespace ANALYSIS {
 
 using namespace ANALYSIS;
 
-DECLARE_GETTER(List_Merger_Getter,"MergeLists",
+DECLARE_GETTER(List_Merger,"MergeLists",
 	       Analysis_Object,Argument_Matrix);
 
-Analysis_Object *List_Merger_Getter::operator()
-  (const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,List_Merger>::
+operator()(const Argument_Matrix &parameters) const
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -47,8 +47,8 @@ Analysis_Object *List_Merger_Getter::operator()
   return NULL;
 }									
 
-void List_Merger_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Object,Argument_Matrix,List_Merger>::
+PrintInfo(std::ostream &str,const size_t width) const
 { str<<"inlist1 .. inlistN outlist"; }
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"

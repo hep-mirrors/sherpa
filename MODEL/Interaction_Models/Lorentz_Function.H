@@ -322,12 +322,12 @@ namespace MODEL {
    */
 }
 
-#define DEFINE_LF_GETTER(CLASS,NAME,TAG,INFO)				\
-  DECLARE_GETTER(NAME,TAG,Lorentz_Function,LF_Key);			\
-  Lorentz_Function *NAME::operator()(const LF_Key &key) const		\
-  { return new CLASS(); }						\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
-  { str<<INFO; }
+#define DEFINE_LF_GETTER(CLASS,TAG,INFO)				\
+  DECLARE_GETTER(CLASS,TAG,Lorentz_Function,LF_Key);			\
+  Lorentz_Function *ATOOLS::Getter<Lorentz_Function,LF_Key,CLASS>::	\
+  operator()(const LF_Key &key) const { return new CLASS(); }		\
+  void ATOOLS::Getter<Lorentz_Function,LF_Key,CLASS>::			\
+  PrintInfo(std::ostream &str,const size_t width) const { str<<INFO; }
 
 #endif
 

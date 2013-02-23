@@ -130,11 +130,10 @@ double Cone_Finder::DPhi12(const Vec4D & p1,const Vec4D & p2)
   return acos((p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2));
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(Cone_Finder,"ConeFinder",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(Cone_Finder_Getter,"ConeFinder",Selector_Base,Selector_Key,true);
-
-Selector_Base *Cone_Finder_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Cone_Finder>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<1) THROW(critical_error,"Invalid syntax");
   Cone_Finder *jf(new Cone_Finder(key.p_proc->NIn()+key.p_proc->NOut(),
@@ -145,10 +144,8 @@ Selector_Base *Cone_Finder_Getter::operator()(const Selector_Key &key) const
   return jf;
 }
 
-void Cone_Finder_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Cone_Finder>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"cone jet finder"; 
 }
-
-}
-

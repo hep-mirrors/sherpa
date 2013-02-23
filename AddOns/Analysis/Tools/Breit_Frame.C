@@ -23,10 +23,11 @@ namespace ANALYSIS {
 
 using namespace ANALYSIS;
 
-DECLARE_GETTER(Breit_Frame_Getter,"BreitFrame",
+DECLARE_GETTER(Breit_Frame,"BreitFrame",
  	       Analysis_Object,Argument_Matrix);
 
-void Breit_Frame_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Object,Argument_Matrix,Breit_Frame>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  list\n"
@@ -34,8 +35,8 @@ void Breit_Frame_Getter::PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *
-Breit_Frame_Getter::operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,Breit_Frame>::
+operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist("FinalState"), outlist("Selected");
   for (size_t i=0;i<parameters.size();++i) {

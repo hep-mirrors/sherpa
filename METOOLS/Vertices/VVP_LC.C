@@ -143,24 +143,17 @@ std::string VVP_Calculator<SType>::Label() const
 namespace METOOLS {
 
   template class VVP_Calculator<double>;
-  template class VVP_Calculator<long double>;
 
 }
 
-DECLARE_TEMPLATE_GETTER(VVP_Getter,"GaugeP4",Lorentz_Calculator,Vertex_Key);
+DECLARE_GETTER(VVP_Calculator<double>,"DGaugeP4",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,VVP_Calculator<double> >::
+operator()(const Vertex_Key &key) const
+{ return new VVP_Calculator<double>(key); }
 
-template <typename SType,char STag> Lorentz_Calculator *
-VVP_Getter<SType,STag>::operator()(const Vertex_Key &key) const
-{
-  return new VVP_Calculator<SType>(key);
-}
-
-template <typename SType,char STag>
-void VVP_Getter<SType,STag>::PrintInfo
-(std::ostream &str,const size_t width) const
-{
-  str<<"VVP vertex";
-}
-
-template class VVP_Getter<double,'D'>;
-template class VVP_Getter<long double,'Q'>;
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    VVP_Calculator<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"VVP vertex"; }

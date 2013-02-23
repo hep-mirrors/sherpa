@@ -699,10 +699,10 @@ double LF_VSS_II::Z()
   return m_zmin + (m_zmax-m_zmin)*ATOOLS::ran->Get();
 }
 
-DECLARE_GETTER(LF_SSV_Getter,"SSV",SF_Lorentz,SF_Key);
+DECLARE_GETTER(LF_SSV_FF,"SSV",SF_Lorentz,SF_Key);
 
-SF_Lorentz *LF_SSV_Getter::operator()
-  (const Parameter_Type &args) const
+SF_Lorentz *ATOOLS::Getter<SF_Lorentz,SF_Key,LF_SSV_FF>::
+operator()(const Parameter_Type &args) const
 {
   if (args.m_col<0) return NULL;
   if ((args.m_mode==0 &&
@@ -751,8 +751,8 @@ SF_Lorentz *LF_SSV_Getter::operator()
   return NULL;
 }
 
-void LF_SSV_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<SF_Lorentz,SF_Key,LF_SSV_FF>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"ssv lorentz functions";
 }

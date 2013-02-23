@@ -314,21 +314,17 @@ std::string CV<SType>::CLabel() const
     +(this->m_out.empty()?this->m_fl.Bar():this->m_fl).TexName()+"$";
 }
 
-DECLARE_TEMPLATE_GETTER(CV_Getter,"V",Current,Current_Key);
+DECLARE_GETTER(CV<double>,"DV",Current,Current_Key);
 
-template <typename SType,char STag> Current *
-CV_Getter<SType,STag>::operator()(const Current_Key &key) const
+Current *ATOOLS::Getter<Current,Current_Key,CV<double> >::
+operator()(const Current_Key &key) const
 {
-  if (key.m_fl.IsVector()) return new CV<SType>(key);
+  if (key.m_fl.IsVector()) return new CV<double>(key);
   return NULL;
 }
 
-template <typename SType,char STag>
-void CV_Getter<SType,STag>::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Current,Current_Key,CV<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"vector current "<<STag;
+  str<<"vector current (double)";
 }
-
-template class CV_Getter<double,'D'>;
-template class CV_Getter<long double,'Q'>;

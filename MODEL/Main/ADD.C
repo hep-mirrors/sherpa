@@ -7,14 +7,16 @@
 using namespace MODEL;
 using namespace ATOOLS;
 
-DECLARE_GETTER(ADD_Getter,"ADD",Model_Base,Model_Arguments);
+DECLARE_GETTER(ADD,"ADD",Model_Base,Model_Arguments);
 
-Model_Base *ADD_Getter::operator()(const Model_Arguments &args) const
+Model_Base *Getter<Model_Base,Model_Arguments,ADD>::
+operator()(const Model_Arguments &args) const
 {
   return new ADD(args.m_path,args.m_file,args.m_elementary);
 }
 
-void ADD_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void Getter<Model_Base,Model_Arguments,ADD>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The ADD model of large extra dimensions\n";
   str<<std::setw(width+4)<<" "<<"{\n"

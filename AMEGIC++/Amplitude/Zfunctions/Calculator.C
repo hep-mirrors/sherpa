@@ -6,7 +6,7 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
-DEFINE_ZFCALC_GETTER(Y_Calc,YCalc_Getter,"Y","y calculator")
+DEFINE_ZFCALC_GETTER(Y_Calc,"Y","y calculator")
 
 Y_Calc::Y_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) 
   : Basic_Func(_sgen,_BS), Zfunc_Calc(_sgen,_BS), Basic_Yfunc(_sgen,_BS) { 
@@ -18,7 +18,7 @@ Y_Calc::Y_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS)
   lorentzlist.push_back(LF_Getter::GetObject("FFS",LF_Key()));
 }
 
-DEFINE_ZFCALC_GETTER(Z_Calc,ZCalc_Getter,"Z","z calculator")
+DEFINE_ZFCALC_GETTER(Z_Calc,"Z","z calculator")
 
 Z_Calc::Z_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -36,7 +36,7 @@ Z_Calc::Z_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist[1]->SetParticleArg(0);
 }
 
-DEFINE_ZFCALC_GETTER(VVS_Calc,VVSCalc_Getter,"VVS","vvs calculator")
+DEFINE_ZFCALC_GETTER(VVS_Calc,"VVS","vvs calculator")
 
 VVS_Calc::VVS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -59,7 +59,7 @@ VVS_Calc::VVS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist[2]->SetParticleArg(0,1);
 }
 
-DEFINE_ZFCALC_GETTER(VVSS4_Calc,VVSS4Calc_Getter,"VVSS4","vvss4 calculator")
+DEFINE_ZFCALC_GETTER(VVSS4_Calc,"VVSS4","vvss4 calculator")
 
 VVSS4_Calc::VVSS4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -82,7 +82,7 @@ VVSS4_Calc::VVSS4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist[2]->SetParticleArg(0,1);
 }
 
-DEFINE_ZFCALC_GETTER(SSV_Calc,SSVCalc_Getter,"SSV","ssv calculator")
+DEFINE_ZFCALC_GETTER(SSV_Calc,"SSV","ssv calculator")
 
 SSV_Calc::SSV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -99,7 +99,7 @@ SSV_Calc::SSV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist[1]->SetParticleArg(0,1,2);
 }
 
-DEFINE_ZFCALC_GETTER(SSS_Calc,SSSCalc_Getter,"SSS","sss calculator")
+DEFINE_ZFCALC_GETTER(SSS_Calc,"SSS","sss calculator")
 
 SSS_Calc::SSS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS),
@@ -113,7 +113,7 @@ SSS_Calc::SSS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist.push_back(LF_Getter::GetObject("SSS",LF_Key()));
 }
 
-DEFINE_ZFCALC_GETTER(SSSS_Calc,SSSSCalc_Getter,"SSSS","ssss calculator")
+DEFINE_ZFCALC_GETTER(SSSS_Calc,"SSSS","ssss calculator")
 
 SSSS_Calc::SSSS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS),
@@ -127,7 +127,7 @@ SSSS_Calc::SSSS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist.push_back(LF_Getter::GetObject("SSSS",LF_Key()));
 }
 
-DEFINE_ZFCALC_GETTER(VVSS_Calc,VVSSCalc_Getter,"VVSS","vvss calculator")
+DEFINE_ZFCALC_GETTER(VVSS_Calc,"VVSS","vvss calculator")
 
 VVSS_Calc::VVSS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -152,7 +152,7 @@ VVSS_Calc::VVSS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist[3]->SetParticleArg(2,1);
 }
 
-DEFINE_ZFCALC_GETTER(SSVgen_Calc,SSVgenCalc_Getter,"SSVgen","LHTM SSV calculator")
+DEFINE_ZFCALC_GETTER(SSVgen_Calc,"SSVgen","LHTM SSV calculator")
 
   SSVgen_Calc::SSVgen_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
     Basic_Func(_sgen,_BS),

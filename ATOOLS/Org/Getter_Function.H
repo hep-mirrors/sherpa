@@ -67,83 +67,51 @@ namespace ATOOLS {
   
   };// end of class Getter_Function
 
+  template <class ObjectType,class ParameterType,class TagType,
+	    class SortCriterion=std::less<std::string> >
+  class Getter {};
+
 }// end of namespace ATOOLS
 
 #define DECLARE_GETTER_BASE(NAME,TAG,OBJECT,PARAMETER,SORT)		\
   									\
-  class NAME: public ATOOLS::Getter_Function<OBJECT,PARAMETER,SORT> {	\
-  private:								\
-    static NAME s_initializer;						\
-  protected:								\
-    void PrintInfo(std::ostream &str,const size_t width) const;		\
-    Object_Type *							\
-    operator()(const Parameter_Type &parameters) const;	                \
-  public:								\
-    NAME(const bool &d=true): ATOOLS::Getter_Function			\
-      <OBJECT,PARAMETER,SORT>(TAG) { SetDisplay(d); }			\
-  };									
-
-#define DECLARE_GETTER(NAME,TAG,OBJECT,PARAMETER)			\
-  DECLARE_GETTER_BASE(NAME,TAG,OBJECT,PARAMETER,std::less<std::string>)	\
-  NAME NAME::s_initializer				 
+  namespace ATOOLS {							\
+    template <> class Getter<OBJECT,PARAMETER,NAME,SORT>:		\
+      public Getter_Function<OBJECT,PARAMETER,SORT> {			\
+    private:								\
+      static Getter<OBJECT,PARAMETER,NAME,SORT> s_initializer;		\
+    protected:								\
+      void PrintInfo(std::ostream &str,const size_t width) const;	\
+      Object_Type *operator()(const Parameter_Type &parameters) const;	\
+    public:								\
+      Getter<OBJECT,PARAMETER,NAME,SORT>(const bool &d=true):		\
+	Getter_Function<OBJECT,PARAMETER,SORT>(TAG)			\
+	{ SetDisplay(d); }						\
+    };									\
+  }
 
 #define DECLARE_ND_GETTER(NAME,TAG,OBJECT,PARAMETER,DISP)		\
   DECLARE_GETTER_BASE(NAME,TAG,OBJECT,PARAMETER,std::less<std::string>)	\
-    NAME NAME::s_initializer(DISP)				 
+  ATOOLS::Getter<OBJECT,PARAMETER,NAME>					\
+  ATOOLS::Getter<OBJECT,PARAMETER,NAME>::s_initializer(DISP)				 
+
+#define DECLARE_GETTER(NAME,TAG,OBJECT,PARAMETER)			\
+  DECLARE_ND_GETTER(NAME,TAG,OBJECT,PARAMETER,true)
 
 #define DECLARE_NI_GETTER(NAME,OBJECT,PARAMETER,SORT)			\
   									\
-  class NAME: public ATOOLS::Getter_Function<OBJECT,PARAMETER,SORT> {	\
-  protected:								\
-    void PrintInfo(std::ostream &str,const size_t width) const;		\
-    Object_Type *							\
-    operator()(const Parameter_Type &parameters) const;	                \
-  public:								\
-    NAME(const std::string &name,const bool d=true):			\
-      ATOOLS::Getter_Function<OBJECT,PARAMETER,SORT>(name)		\
-      { SetDisplay(d); }						\
-  }
-
-#define DECLARE_TEMPLATE_GETTER_BASE(NAME,TAG,OBJECT,PARAMETER,SORT)	\
-  									\
-  template <typename TP,char TN>					\
-  class NAME: public ATOOLS::Getter_Function<OBJECT,PARAMETER,SORT> {	\
-  private:								\
-    static NAME s_initializer;						\
-  protected:								\
-    void PrintInfo(std::ostream &str,const size_t width) const;		\
-    Object_Type *							\
-    operator()(const Parameter_Type &parameters) const;	                \
-  public:								\
-    NAME(const bool &d=true): ATOOLS::Getter_Function			\
-      <OBJECT,PARAMETER,SORT>(std::string(1,TN)+std::string(TAG))	\
-      { SetDisplay(d); }						\
-  };									
-
-#define DECLARE_TEMPLATE_GETTER(NAME,TAG,OBJECT,PARAMETER)		\
-  DECLARE_TEMPLATE_GETTER_BASE(NAME,TAG,OBJECT,PARAMETER,		\
-			       std::less<std::string>)			\
-    template <typename TP,char TN>					\
-  NAME<TP,TN> NAME<TP,TN>::s_initializer				 
-
-#define DECLARE_TEMPLATE_ND_GETTER(NAME,TAG,OBJECT,PARAMETER,DISP)	\
-  DECLARE_TEMPLATE_GETTER_BASE(NAME,TAG,OBJECT,PARAMETER,		\
-			       std::less<std::string>)			\
-    template<typename TP,char TN>					\
-  NAME<TP,TN> NAME<TP,TN>::s_initializer(DISP)				 
-
-#define DECLARE_TEMPLATE_NI_GETTER(NAME,OBJECT,PARAMETER,SORT)		\
-  									\
-  template <typename TP,char TN>					\
-  class NAME: public ATOOLS::Getter_Function<OBJECT,PARAMETER,SORT> {	\
-  protected:								\
-    void PrintInfo(std::ostream &str,const size_t width) const;		\
-    Object_Type *							\
-    operator()(const Parameter_Type &parameters) const;	                \
-  public:								\
-    NAME(const std::string &name,const bool d=true):			\
-      ATOOLS::Getter_Function<OBJECT,PARAMETER,SORT>			\
-      (std::string(1,TN)+name) { SetDisplay(d); }			\
+  namespace ATOOLS {							\
+    template <> class Getter<OBJECT,PARAMETER,NAME,SORT>:		\
+      public ATOOLS::Getter_Function<OBJECT,PARAMETER,SORT> {		\
+    protected:								\
+      void PrintInfo(std::ostream &str,const size_t width) const;	\
+      Object_Type *operator()(const Parameter_Type &parameters) const;	\
+    public:								\
+      Getter<OBJECT,PARAMETER,NAME,SORT>				\
+	(const std::string &name,const bool d=true):			\
+	Getter_Function<OBJECT,PARAMETER,SORT>(name)			\
+	{ SetDisplay(d); }						\
+    };									\
   }
 
 #endif

@@ -9,17 +9,19 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(Interaction_Model_HiddenValley_Getter,"SM+HiddenValley",
+DECLARE_GETTER(Interaction_Model_HiddenValley,"SM+HiddenValley",
 	       Interaction_Model_Base,Interaction_Model_Arguments);
 
-Interaction_Model_Base *Interaction_Model_HiddenValley_Getter::
+Interaction_Model_Base *ATOOLS::Getter
+<Interaction_Model_Base,Interaction_Model_Arguments,Interaction_Model_HiddenValley>::
 operator()(const Interaction_Model_Arguments &args) const
 {
   return new Interaction_Model_HiddenValley
     (args.p_model,args.m_cplscheme,args.m_yukscheme);
 }
 
-void Interaction_Model_HiddenValley_Getter::PrintInfo
+void ATOOLS::Getter<Interaction_Model_Base,Interaction_Model_Arguments,
+		    Interaction_Model_HiddenValley>::PrintInfo
 (std::ostream &str,const size_t width) const
 { 
   str<<"The Standard Model plus hidden sector"; 

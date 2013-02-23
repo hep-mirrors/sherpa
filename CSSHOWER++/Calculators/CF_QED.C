@@ -93,11 +93,13 @@ void CF_QED_Getter::PrintInfo
   str<<"electromagnetic coupling";
 }
 
-DECLARE_GETTER(CF_QED_Filler,"SF_QED_Fill",
+}
+
+DECLARE_GETTER(CF_QED_Getter,"SF_QED_Fill",
 	       void,SFC_Filler_Key);
 
-void *CF_QED_Filler::operator()
-  (const SFC_Filler_Key &key) const
+void *ATOOLS::Getter<void,SFC_Filler_Key,CF_QED_Getter>::
+operator()(const SFC_Filler_Key &key) const
 {
   if (!Flavour(kf_photon).IsOn()) return NULL;
   std::string ptag("{"+Flavour(kf_photon).IDName()+"}");
@@ -114,11 +116,10 @@ void *CF_QED_Filler::operator()
   return NULL;
 }
 
-void CF_QED_Filler::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<void,SFC_Filler_Key,CF_QED_Getter>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"qed coupling filler";
 }
 
-}
 

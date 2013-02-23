@@ -139,14 +139,16 @@ namespace PHASIC {
 
 }
 
-DECLARE_ND_GETTER(No_Selector_Getter,"None",Selector_Base,Selector_Key,false);
+DECLARE_ND_GETTER(No_Selector,"None",Selector_Base,Selector_Key,false);
 
-Selector_Base *No_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,No_Selector>::
+operator()(const Selector_Key &key) const
 {
   return new No_Selector();
 }
 
-void No_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,No_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"dummy selector"; 
 }

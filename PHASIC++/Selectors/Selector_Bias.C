@@ -176,11 +176,10 @@ bool ET_Bias::Trigger(const Vec4D_Vector & p)
   return true;
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(ET_Bias,"ET_Bias",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(ET_Bias_Getter,"ET_Bias",Selector_Base,Selector_Key,true);
-
-Selector_Base *ET_Bias_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,ET_Bias>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -209,11 +208,10 @@ Selector_Base *ET_Bias_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void ET_Bias_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,ET_Bias>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"transverse energy selector"; 
-}
-
 }
 
 PT_Bias::PT_Bias(int nin,int nout,Flavour * flavs,std::string mode):
@@ -270,11 +268,10 @@ bool PT_Bias::Trigger(const Vec4D_Vector & p)
   return true;
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(PT_Bias,"PT_Bias",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(PT_Bias_Getter,"PT_Bias",Selector_Base,Selector_Key,true);
-
-Selector_Base *PT_Bias_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PT_Bias>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -303,11 +300,10 @@ Selector_Base *PT_Bias_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void PT_Bias_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,PT_Bias>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"transverse momentum selector"; 
-}
-
 }
 
 Eta_Bias::Eta_Bias(int nin,int nout,Flavour * flavs,std::string mode):
@@ -365,11 +361,10 @@ bool Eta_Bias::Trigger(const Vec4D_Vector & p)
   return true;
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(Eta_Bias,"Eta_Bias",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(Eta_Bias_Getter,"Eta_Bias",Selector_Base,Selector_Key,true);
-
-Selector_Base *Eta_Bias_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Eta_Bias>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -398,11 +393,10 @@ Selector_Base *Eta_Bias_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void Eta_Bias_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Eta_Bias>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"rapidity selector"; 
-}
-
 }
 
 Mass_Bias::Mass_Bias
@@ -473,11 +467,10 @@ bool Mass_Bias::Trigger(const Vec4D_Vector & p)
   return true;
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(Mass_Bias,"Mass_Bias",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(Mass_Bias_Getter,"Mass_Bias",Selector_Base,Selector_Key,true);
-
-Selector_Base *Mass_Bias_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Mass_Bias>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -511,11 +504,10 @@ Selector_Base *Mass_Bias_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void Mass_Bias_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Mass_Bias>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"mass selector"; 
-}
-
 }
 
 Delta_Eta_Bias::Delta_Eta_Bias
@@ -586,11 +578,10 @@ bool Delta_Eta_Bias::Trigger(const Vec4D_Vector & p)
   return true;
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(Delta_Eta_Bias,"Delta_Eta_Bias",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(Delta_Eta_Bias_Getter,"Delta_Eta_Bias",Selector_Base,Selector_Key,true);
-
-Selector_Base *Delta_Eta_Bias_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Delta_Eta_Bias>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -624,11 +615,10 @@ Selector_Base *Delta_Eta_Bias_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void Delta_Eta_Bias_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Delta_Eta_Bias>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"\\Delta\\eta selector"; 
-}
-
 }
 
 Delta_Phi_Bias::Delta_Phi_Bias
@@ -699,11 +689,10 @@ bool Delta_Phi_Bias::Trigger(const Vec4D_Vector & p)
   return true;
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(Delta_Phi_Bias,"Delta_Phi_Bias",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(Delta_Phi_Bias_Getter,"Delta_Phi_Bias",Selector_Base,Selector_Key,true);
-
-Selector_Base *Delta_Phi_Bias_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Delta_Phi_Bias>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -737,11 +726,10 @@ Selector_Base *Delta_Phi_Bias_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void Delta_Phi_Bias_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Delta_Phi_Bias>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"\\Delta\\phi selector"; 
-}
-
 }
 
 Delta_R_Bias::Delta_R_Bias
@@ -812,11 +800,10 @@ bool Delta_R_Bias::Trigger(const Vec4D_Vector & p)
   return true;
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(Delta_R_Bias,"Delta_R_Bias",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(Delta_R_Bias_Getter,"Delta_R_Bias",Selector_Base,Selector_Key,true);
-
-Selector_Base *Delta_R_Bias_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Delta_R_Bias>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -850,9 +837,8 @@ Selector_Base *Delta_R_Bias_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void Delta_R_Bias_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Delta_R_Bias>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"\\Delta R selector"; 
-}
-
 }

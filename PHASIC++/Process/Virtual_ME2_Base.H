@@ -58,9 +58,10 @@ namespace PHASIC {
   };
 }
 
-#define DECLARE_VIRTUALME2_GETTER(NAME,TAG) \
-  DECLARE_GETTER(NAME,TAG,Virtual_ME2_Base,Process_Info); \
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const \
+#define DECLARE_VIRTUALME2_GETTER(NAME,TAG)			   \
+  DECLARE_GETTER(NAME,TAG,Virtual_ME2_Base,Process_Info);	   \
+  void ATOOLS::Getter<Virtual_ME2_Base,Process_Info,NAME>::	   \
+  PrintInfo(std::ostream &str,const size_t width) const		   \
   {                                                                \
     str<<#TAG;                                                     \
   }

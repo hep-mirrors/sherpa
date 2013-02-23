@@ -129,24 +129,20 @@ void Decay_Selector::AssignId(Term *term)
 	       (2,term->Tag().length()-3)));
 }
 
-namespace PHASIC {
-
-DECLARE_ND_GETTER(Decay_Selector_Getter,"Decay",
+DECLARE_ND_GETTER(Decay_Selector,"Decay",
 		  Selector_Base,Selector_Key,true);
 
-Selector_Base *Decay_Selector_Getter::operator()
-  (const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Decay_Selector>::
+operator()(const Selector_Key &key) const
 {
   Decay_Selector *msel(new Decay_Selector(key));
   return msel;
 }
 
-void Decay_Selector_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Decay_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"Decay kf min max"; 
-}
-
 }
 
 DecayMass_Selector::DecayMass_Selector(const Selector_Key &key):
@@ -201,22 +197,19 @@ void DecayMass_Selector::BuildCuts(Cut_Data *cuts)
   }
 }
 
-namespace PHASIC {
-
-DECLARE_ND_GETTER(DecayMass_Selector_Getter,"DecayMass",
+DECLARE_ND_GETTER(DecayMass_Selector,"DecayMass",
 		  Selector_Base,Selector_Key,true);
 
-Selector_Base *DecayMass_Selector_Getter::operator()
-  (const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DecayMass_Selector>::
+operator()(const Selector_Key &key) const
 {
   DecayMass_Selector *msel(new DecayMass_Selector(key));
   return msel;
 }
 
-void DecayMass_Selector_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,DecayMass_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"DecayMass kf min max"; 
 }
 
-}

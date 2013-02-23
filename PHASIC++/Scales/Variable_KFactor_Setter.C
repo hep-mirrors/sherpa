@@ -44,16 +44,18 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-DECLARE_GETTER(Variable_KFactor_Setter_Getter,"VAR",
+DECLARE_GETTER(Variable_KFactor_Setter,"VAR",
 	       KFactor_Setter_Base,KFactor_Setter_Arguments);
 
-KFactor_Setter_Base *Variable_KFactor_Setter_Getter::
+KFactor_Setter_Base *ATOOLS::Getter
+<KFactor_Setter_Base,KFactor_Setter_Arguments,Variable_KFactor_Setter>::
 operator()(const KFactor_Setter_Arguments &args) const
 {
   return new Variable_KFactor_Setter(args);
 }
 
-void Variable_KFactor_Setter_Getter::
+void ATOOLS::Getter<KFactor_Setter_Base,KFactor_Setter_Arguments,
+		    Variable_KFactor_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"Variable kfactor scheme\n";

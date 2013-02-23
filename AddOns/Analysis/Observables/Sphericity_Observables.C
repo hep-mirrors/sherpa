@@ -13,18 +13,18 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
-DECLARE_GETTER(Sphericity_Calculator_Getter,"SphCalc",
+DECLARE_GETTER(Sphericity_Calculator,"SphCalc",
 	       Analysis_Object,Argument_Matrix);
 
-Analysis_Object * 
-Sphericity_Calculator_Getter::operator()(const Argument_Matrix &parameters) const
+Analysis_Object * ATOOLS::Getter<Analysis_Object,Argument_Matrix,
+				 Sphericity_Calculator>::operator()(const Argument_Matrix &parameters) const
 {
   std::string listname=finalstate_list;
   if (parameters.size()>0 && parameters[0].size()>0) listname=parameters[0][0];
   return new Sphericity_Calculator(listname);
 }
 
-void Sphericity_Calculator_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Object,Argument_Matrix,Sphericity_Calculator>::PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"[list]"; 
 }
@@ -58,17 +58,17 @@ Primitive_Observable_Base *GetObservable(const Argument_Matrix &parameters)
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *					\
-  NAME::operator()(const Argument_Matrix &parameters) const		\
+  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
   { return GetObservable<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
   { str<<"min max bins Lin|LinErr|Log|LogErr [list] -> SphCalc"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
-  DEFINE_PRINT_METHOD(NAME)
+  DEFINE_PRINT_METHOD(CLASS)
 
 
 Sphericity_Calculator::Sphericity_Calculator(const std::string & listname)

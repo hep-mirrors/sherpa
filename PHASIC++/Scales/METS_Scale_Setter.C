@@ -119,51 +119,60 @@ namespace PHASIC {
 
   };// end of class METS_Scale_Setter
 
+  class Loose_METS_Scale_Setter: public METS_Scale_Setter {};
+  class Strict_METS_Scale_Setter: public METS_Scale_Setter {};
+
 }// end of namespace PHASIC
 
 using namespace PHASIC;
 using namespace ATOOLS;
 
-DECLARE_GETTER(Loose_METS_Scale_Setter_Getter,"LOOSE_METS",
+DECLARE_GETTER(Loose_METS_Scale_Setter,"LOOSE_METS",
 	       Scale_Setter_Base,Scale_Setter_Arguments);
 
-Scale_Setter_Base *Loose_METS_Scale_Setter_Getter::
+Scale_Setter_Base *ATOOLS::Getter
+<Scale_Setter_Base,Scale_Setter_Arguments,Loose_METS_Scale_Setter>::
 operator()(const Scale_Setter_Arguments &args) const
 {
   return new METS_Scale_Setter(args,0);
 }
 
-void Loose_METS_Scale_Setter_Getter::
+void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
+		    Loose_METS_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"loose mets scale scheme";
 }
 
-DECLARE_GETTER(METS_Scale_Setter_Getter,"METS",
+DECLARE_GETTER(METS_Scale_Setter,"METS",
 	       Scale_Setter_Base,Scale_Setter_Arguments);
 
-Scale_Setter_Base *METS_Scale_Setter_Getter::
+Scale_Setter_Base *ATOOLS::Getter
+<Scale_Setter_Base,Scale_Setter_Arguments,METS_Scale_Setter>::
 operator()(const Scale_Setter_Arguments &args) const
 {
   return new METS_Scale_Setter(args,1);
 }
 
-void METS_Scale_Setter_Getter::
+void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
+		    METS_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"mets scale scheme";
 }
 
-DECLARE_GETTER(Strict_METS_Scale_Setter_Getter,"STRICT_METS",
+DECLARE_GETTER(Strict_METS_Scale_Setter,"STRICT_METS",
 	       Scale_Setter_Base,Scale_Setter_Arguments);
 
-Scale_Setter_Base *Strict_METS_Scale_Setter_Getter::
+Scale_Setter_Base *ATOOLS::Getter
+<Scale_Setter_Base,Scale_Setter_Arguments,Strict_METS_Scale_Setter>::
 operator()(const Scale_Setter_Arguments &args) const
 {
   return new METS_Scale_Setter(args,2);
 }
 
-void Strict_METS_Scale_Setter_Getter::
+void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
+		    Strict_METS_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"strict mets scale scheme";

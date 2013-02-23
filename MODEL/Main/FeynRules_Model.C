@@ -13,14 +13,16 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(FeynRules_Model_Getter,"FeynRules",Model_Base,Model_Arguments);
+DECLARE_GETTER(FeynRules_Model,"FeynRules",Model_Base,Model_Arguments);
 
-Model_Base *FeynRules_Model_Getter::operator()(const Model_Arguments &args) const
+Model_Base *Getter<Model_Base,Model_Arguments,FeynRules_Model>::
+operator()(const Model_Arguments &args) const
 {
   return new FeynRules_Model(args.m_path,args.m_file,args.m_elementary);
 }
 
-void FeynRules_Model_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void Getter<Model_Base,Model_Arguments,FeynRules_Model>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"Physical Model defined through FeynRules inputs\n";
   str<<std::setw(width+4)<<" "<<"{\n"

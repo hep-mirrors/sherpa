@@ -6,7 +6,7 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
-DEFINE_ZFLOOPCALC_GETTER(Triangle_Calc,TriangleCalc_Getter,"Triangle","triangle calculator")
+DEFINE_ZFLOOPCALC_GETTER(Triangle_Calc,"Triangle","triangle calculator")
 
 Triangle_Calc::Triangle_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -35,7 +35,7 @@ Kabbala Triangle_Calc::Do()
 //   return prefactor*(X(0,0)*X(1,1)+X(0,1)*X(1,0)-V(0,1)*Z(1,0));
 }
 
-DEFINE_ZFLOOPCALC_GETTER(Box_Calc,BoxCalc_Getter,"Box","box calculator")
+DEFINE_ZFLOOPCALC_GETTER(Box_Calc,"Box","box calculator")
 
 Box_Calc::Box_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -66,7 +66,7 @@ Kabbala Box_Calc::Do()
   return prefactor*(Z(1,0)*(X(2,0)-X(2,1))+Z(2,0)*(X(1,2)-X(1,0))+Z(2,1)*(X(0,1)-X(0,2)));
 }
 
-DEFINE_ZFLOOPCALC_GETTER(Pentagon_Calc,PentagonCalc_Getter,"Pentagon","pentagon calculator")
+DEFINE_ZFLOOPCALC_GETTER(Pentagon_Calc,"Pentagon","pentagon calculator")
 
 Pentagon_Calc::Pentagon_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -98,7 +98,7 @@ Kabbala Pentagon_Calc::Do()
 }
 
 
-DEFINE_ZFLOOPCALC_GETTER(PseudoTriangle_Calc,PseudoTriangleCalc_Getter,"PseudoTriangle","pseudo triangle calculator")
+DEFINE_ZFLOOPCALC_GETTER(PseudoTriangle_Calc,"PseudoTriangle","pseudo triangle calculator")
 
 PseudoTriangle_Calc::PseudoTriangle_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -137,7 +137,7 @@ Kabbala PseudoTriangle_Calc::Do()
   return prefactor*Epsilon(sarg[0],sarg[2],sarg[1],sarg[3],1);
 }
 
-DEFINE_ZFLOOPCALC_GETTER(PseudoBox_Calc,PseudoBoxCalc_Getter,"PseudoBox","pseudo box calculator")
+DEFINE_ZFLOOPCALC_GETTER(PseudoBox_Calc,"PseudoBox","pseudo box calculator")
 
 PseudoBox_Calc::PseudoBox_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 

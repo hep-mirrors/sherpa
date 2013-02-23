@@ -262,18 +262,17 @@ Cluster_Amplitude *Comix::ClusterConfiguration
   return p_cluster->GetAmplitude();
 }
 
-namespace PHASIC {
+DECLARE_GETTER(Comix,"Comix",ME_Generator_Base,ME_Generator_Key);
 
-  DECLARE_GETTER(Comix_Getter,"Comix",ME_Generator_Base,ME_Generator_Key);
+ME_Generator_Base *ATOOLS::Getter
+<ME_Generator_Base,ME_Generator_Key,Comix>::
+operator()(const ME_Generator_Key &key) const
+{
+  return new Comix();
+}
 
-  ME_Generator_Base *Comix_Getter::operator()(const ME_Generator_Key &key) const
-  {
-    return new Comix();
-  }
-
-  void Comix_Getter::PrintInfo(std::ostream &str,const size_t width) const
-  { 
-    str<<"The Comix ME generator"; 
-  }
-
+void ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,Comix>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"The Comix ME generator"; 
 }

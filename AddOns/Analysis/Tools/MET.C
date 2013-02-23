@@ -25,10 +25,11 @@ namespace ANALYSIS {
 
 using namespace ANALYSIS;
 
-DECLARE_GETTER(MET_Define_Getter,"METDefine",
+DECLARE_GETTER(MET_Define,"METDefine",
  	       Analysis_Object,Argument_Matrix);
 
-void MET_Define_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Object,Argument_Matrix,MET_Define>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  list\n"
@@ -37,8 +38,8 @@ void MET_Define_Getter::PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *
-MET_Define_Getter::operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,MET_Define>::
+operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist("FinalState"), outlist("Selected");
   std::vector<Flavour> flavs;

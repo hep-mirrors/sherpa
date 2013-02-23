@@ -140,11 +140,10 @@ namespace ANALYSIS {
 
 
 
-DECLARE_GETTER(Event_Output_Getter,"Event_Output",
+DECLARE_GETTER(Event_Output,"Event_Output",
 	       Primitive_Observable_Base,Argument_Matrix);
 
-Primitive_Observable_Base *
-Event_Output_Getter::operator()(const Argument_Matrix &parameters) const
+Primitive_Observable_Base *ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Event_Output>::operator()(const Argument_Matrix &parameters) const
 {
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
@@ -165,7 +164,7 @@ Event_Output_Getter::operator()(const Argument_Matrix &parameters) const
   return new Event_Output(&reader, inlist);
 }
 
-void Event_Output_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Event_Output>::PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  <triggeroutlist>\n"

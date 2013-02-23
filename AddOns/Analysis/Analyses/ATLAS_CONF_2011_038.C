@@ -175,17 +175,20 @@ Primitive_Observable_Base *ATLAS_CONF_2011_038_Analysis::Copy() const
   return new ATLAS_CONF_2011_038_Analysis(m_listname);
 }
 
-DECLARE_ND_GETTER(ATLAS_CONF_2011_038_Analysis_Getter,"ATLAS-CONF-2011-038",
+DECLARE_ND_GETTER(ATLAS_CONF_2011_038_Analysis,"ATLAS-CONF-2011-038",
 		  Primitive_Observable_Base,Argument_Matrix,true);
 
-Primitive_Observable_Base *
-ATLAS_CONF_2011_038_Analysis_Getter::operator()(const Argument_Matrix &parameters) const
+Primitive_Observable_Base *ATOOLS::Getter
+<Primitive_Observable_Base,Argument_Matrix,ATLAS_CONF_2011_038_Analysis>::
+operator()(const Argument_Matrix &parameters) const
 {
   if (parameters.size()==0 || parameters[0].size()<1) return NULL;
   return new ATLAS_CONF_2011_038_Analysis(parameters[0][0]);
 }
 
-void ATLAS_CONF_2011_038_Analysis_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter
+<Primitive_Observable_Base,Argument_Matrix,ATLAS_CONF_2011_038_Analysis>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"list";
 }

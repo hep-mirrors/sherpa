@@ -8,17 +8,19 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(Interaction_Model_SM_EHC_Getter,"SM+EHC",
+DECLARE_GETTER(Interaction_Model_SM_EHC,"SM+EHC",
 	       Interaction_Model_Base,Interaction_Model_Arguments);
 
-Interaction_Model_Base *Interaction_Model_SM_EHC_Getter::
+Interaction_Model_Base *ATOOLS::Getter
+<Interaction_Model_Base,Interaction_Model_Arguments,Interaction_Model_SM_EHC>::
 operator()(const Interaction_Model_Arguments &args) const
 {
   return new Interaction_Model_SM_EHC
     (args.p_model,args.m_cplscheme,args.m_yukscheme);
 }
 
-void Interaction_Model_SM_EHC_Getter::PrintInfo
+void ATOOLS::Getter<Interaction_Model_Base,Interaction_Model_Arguments,
+		    Interaction_Model_SM_EHC>::PrintInfo
 (std::ostream &str,const size_t width) const
 { 
   str<<"The Standard Model + Effective Higgs Coupling"; 

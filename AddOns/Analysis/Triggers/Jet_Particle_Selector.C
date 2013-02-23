@@ -140,19 +140,21 @@ GetJetParticleDeltaSelector(const Argument_Matrix &parameters)
   return new Class(flav,item,min,max,inlist,outlist);
 }									
 
-#define DEFINE_JET_SELECTOR_DELTA_GETTER_METHOD(CLASS,NAME)		\
-  Analysis_Object *					\
-  NAME::operator()(const Argument_Matrix &parameters) const		\
+#define DEFINE_SELECTOR_GETTER_METHOD(CLASS)			\
+  Analysis_Object *ATOOLS::Getter				\
+  <Analysis_Object,Argument_Matrix,CLASS>::			\
+  operator()(const Argument_Matrix &parameters) const		\
   { return GetJetParticleDeltaSelector<CLASS>(parameters); }
 
-#define DEFINE_JET_SELECTOR_DELTA_PRINT_METHOD(NAME)		\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+#define DEFINE_SELECTOR_PRINT_METHOD(CLASS)			\
+  void ATOOLS::Getter<Analysis_Object,Argument_Matrix,CLASS>::	\
+  PrintInfo(std::ostream &str,const size_t width) const		\
   { str<<"flav item min max inlist outlist"; }
 
-#define DEFINE_JET_SELECTOR_DELTA_GETTER(CLASS,NAME,TAG)		\
-  DECLARE_GETTER(NAME,TAG,Analysis_Object,Argument_Matrix);	\
-  DEFINE_JET_SELECTOR_DELTA_GETTER_METHOD(CLASS,NAME)		\
-  DEFINE_JET_SELECTOR_DELTA_PRINT_METHOD(NAME)
+#define DEFINE_JET_SELECTOR_DELTA_GETTER(CLASS,TAG)		\
+  DECLARE_GETTER(CLASS,TAG,Analysis_Object,Argument_Matrix);	\
+  DEFINE_SELECTOR_GETTER_METHOD(CLASS)				\
+  DEFINE_SELECTOR_PRINT_METHOD(CLASS)
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
 
@@ -197,8 +199,7 @@ void Jet_Particle_Selector_Base::Evaluate
     outlist[i] = new ATOOLS::Particle(*inlist[i]);
 }
 
-DEFINE_JET_SELECTOR_DELTA_GETTER(Jet_Particle_DPhi_Selector,
-				 Jet_Particle_DPhi_Selector_Getter,"JetDPhiSel")
+DEFINE_JET_SELECTOR_DELTA_GETTER(Jet_Particle_DPhi_Selector,"JetDPhiSel")
 
 Jet_Particle_DPhi_Selector::
 Jet_Particle_DPhi_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -219,8 +220,7 @@ Analysis_Object *Jet_Particle_DPhi_Selector::GetCopy() const
 					m_xmin,m_xmax,m_inlist,m_outlist);
 }
 
-DEFINE_JET_SELECTOR_DELTA_GETTER(Jet_Particle_DEta_Selector,
-				 Jet_Particle_DEta_Selector_Getter,"JetDEtaSel")
+DEFINE_JET_SELECTOR_DELTA_GETTER(Jet_Particle_DEta_Selector,"JetDEtaSel")
 
 Jet_Particle_DEta_Selector::
 Jet_Particle_DEta_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -241,8 +241,7 @@ Analysis_Object *Jet_Particle_DEta_Selector::GetCopy() const
 					m_xmin,m_xmax,m_inlist,m_outlist);
 }
 
-DEFINE_JET_SELECTOR_DELTA_GETTER(Jet_Particle_DY_Selector,
-				 Jet_Particle_DY_Selector_Getter,"JetDYSel")
+DEFINE_JET_SELECTOR_DELTA_GETTER(Jet_Particle_DY_Selector,"JetDYSel")
 
 Jet_Particle_DY_Selector::
 Jet_Particle_DY_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -264,8 +263,7 @@ Analysis_Object *Jet_Particle_DY_Selector::GetCopy() const
 }
 
 
-DEFINE_JET_SELECTOR_DELTA_GETTER(Jet_Particle_DR_Selector,
-				 Jet_Particle_DR_Selector_Getter,"JetDRSel")
+DEFINE_JET_SELECTOR_DELTA_GETTER(Jet_Particle_DR_Selector,"JetDRSel")
 
 Jet_Particle_DR_Selector::
 Jet_Particle_DR_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -289,8 +287,7 @@ Analysis_Object *Jet_Particle_DR_Selector::GetCopy() const
 
 
 
-DEFINE_JET_SELECTOR_DELTA_GETTER(Jet_Particle_DRY_Selector,
-				 Jet_Particle_DRY_Selector_Getter,"JetDRYSel")
+DEFINE_JET_SELECTOR_DELTA_GETTER(Jet_Particle_DRY_Selector,"JetDRYSel")
 
 Jet_Particle_DRY_Selector::
 Jet_Particle_DRY_Selector(const ATOOLS::Flavour flav,const size_t item,

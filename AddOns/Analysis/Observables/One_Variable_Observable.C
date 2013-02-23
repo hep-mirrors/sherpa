@@ -57,10 +57,10 @@ namespace ANALYSIS {
 
 using namespace ANALYSIS;
 
-DECLARE_GETTER(One_Variable_Observable_Getter,"VarObs",
+DECLARE_GETTER(One_Variable_Observable,"VarObs",
  	       Primitive_Observable_Base,Argument_Matrix);
 
-void One_Variable_Observable_Getter::PrintInfo
+void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,One_Variable_Observable>::PrintInfo
 (std::ostream &str,const size_t width) const
 {
   str<<"{\n"
@@ -78,7 +78,7 @@ void One_Variable_Observable_Getter::PrintInfo
 }
 
 Primitive_Observable_Base *
-One_Variable_Observable_Getter::operator()
+ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,One_Variable_Observable>::operator()
   (const Argument_Matrix &parameters) const
 {
   std::string inlist("FinalState");

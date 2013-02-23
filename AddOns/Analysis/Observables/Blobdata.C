@@ -51,11 +51,11 @@ namespace ANALYSIS {
 
 
 
-DECLARE_GETTER(Blobdata_Getter,"Blobdata",
+DECLARE_GETTER(Blobdata,"Blobdata",
 	       Primitive_Observable_Base,Argument_Matrix);
 
 Primitive_Observable_Base *
-Blobdata_Getter::operator()(const Argument_Matrix &parameters) const
+ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Blobdata>::operator()(const Argument_Matrix &parameters) const
 {
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -71,7 +71,7 @@ Blobdata_Getter::operator()(const Argument_Matrix &parameters) const
   }
 }
 
-void Blobdata_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Blobdata>::PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"e.g. Blobdata  0.0  500.0  50  LinErr  Factorisation_Scale";
 }

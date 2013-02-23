@@ -74,11 +74,12 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
-DECLARE_GETTER(IsolationSelector_Getter,"PhotonIsolation",
+DECLARE_GETTER(Isolation_Selector,"PhotonIsolation",
 	       Analysis_Object,Argument_Matrix);
 
-Analysis_Object *IsolationSelector_Getter::operator()
-(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter
+<Analysis_Object,Argument_Matrix,Isolation_Selector>::
+operator()(const Argument_Matrix &parameters) const
 {
   if (parameters.size()<1 || parameters[0].size()<5) return NULL;
   return new Isolation_Selector
@@ -87,7 +88,8 @@ Analysis_Object *IsolationSelector_Getter::operator()
      parameters[0][2],parameters[0][3],parameters[0][4]);
 }									
 
-void IsolationSelector_Getter::
+void ATOOLS::Getter
+<Analysis_Object,Argument_Matrix,Isolation_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"DR E_max inlist reflist outlist";

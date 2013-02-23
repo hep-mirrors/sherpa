@@ -484,12 +484,10 @@ double LF_VVV2_II::Z()
   return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran->Get());
 }
 
-namespace MCATNLO {
+DECLARE_GETTER(LF_VVV1_FF,"Gauge3",SF_Lorentz,SF_Key);
 
-DECLARE_GETTER(LF_VVV_Getter,"Gauge3",SF_Lorentz,SF_Key);
-
-SF_Lorentz *LF_VVV_Getter::operator()
-  (const Parameter_Type &args) const
+SF_Lorentz *ATOOLS::Getter<SF_Lorentz,SF_Key,LF_VVV1_FF>::
+operator()(const Parameter_Type &args) const
 {
   if (args.m_col==1) {
   switch (args.m_type) {
@@ -512,10 +510,8 @@ SF_Lorentz *LF_VVV_Getter::operator()
   return NULL;
 }
 
-void LF_VVV_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<SF_Lorentz,SF_Key,LF_VVV1_FF>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"vvv lorentz functions";
-}
-
 }

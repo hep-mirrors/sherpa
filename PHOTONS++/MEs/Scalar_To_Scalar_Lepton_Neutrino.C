@@ -407,11 +407,12 @@ double Scalar_To_Scalar_Lepton_Neutrino::Fminus(double t) {
   return 0.;
 }
 
-DECLARE_PHOTONS_ME_GETTER(Scalar_To_Scalar_Lepton_Neutrino_Getter,
+DECLARE_PHOTONS_ME_GETTER(Scalar_To_Scalar_Lepton_Neutrino,
                           "Scalar_To_Scalar_Lepton_Neutrino")
 
-PHOTONS_ME_Base * Scalar_To_Scalar_Lepton_Neutrino_Getter::operator()
-(const Particle_Vector_Vector &pvv) const
+PHOTONS_ME_Base *ATOOLS::Getter<PHOTONS_ME_Base,Particle_Vector_Vector,
+				Scalar_To_Scalar_Lepton_Neutrino>::
+operator()(const Particle_Vector_Vector &pvv) const
 {
   if ( (pvv.size() == 4) &&
        (pvv[0].size() == 0) &&

@@ -112,9 +112,10 @@ bool QQ_QQQQ_Spectator::SetColorFlow(std::vector<ATOOLS::Particle*> outparts,int
   return true;
 }
 
-DEFINE_ME_GETTER(QQ_QQQQ_Spectator,QQ_QQQQ_Spectator_Getter,"QQ_QQQQ_Spectator")
+DEFINE_ME_GETTER(QQ_QQQQ_Spectator,"QQ_QQQQ_Spectator")
 
-void QQ_QQQQ_Spectator_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,QQ_QQQQ_Spectator>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ B^{+} \\rightarrow \\bar{c} u u \\bar{d} $ \n\n"
     <<"Order: 0 = Scalar ($B^{+}$), 1 = quark from decay line ($\\bar{c}$), "
     <<"2 = anti quark from W ($\\bar{d}$), 3 = quark from W ($u$), "
@@ -165,9 +166,10 @@ bool Baryon_Diquark_3Quarks::SetColorFlow(vector<ATOOLS::Particle*> outparts,
   return true;
 }
 
-DEFINE_ME_GETTER(Baryon_Diquark_3Quarks,Baryon_Diquark_3Quarks_Getter,"Baryon_Diquark_3Quarks")
+DEFINE_ME_GETTER(Baryon_Diquark_3Quarks,"Baryon_Diquark_3Quarks")
 
-void Baryon_Diquark_3Quarks_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,Baryon_Diquark_3Quarks>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
 
@@ -240,8 +242,9 @@ void B_tautau_pinupinu::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B_tautau_pinupinu,B_tautau_pinupinu_Getter,"B_tautau_pinupinu")
+DEFINE_ME_GETTER(B_tautau_pinupinu,"B_tautau_pinupinu")
 
-void B_tautau_pinupinu_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B_tautau_pinupinu>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }

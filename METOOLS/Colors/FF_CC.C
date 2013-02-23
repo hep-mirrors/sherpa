@@ -69,22 +69,24 @@ namespace METOOLS {
       p_v->AddJ(j);
     }
 
-  };// end of class Color_Calculator
+  };// end of class FF_Calculator
 
 }// end of namespace METOOLS
 
 using namespace METOOLS;
 using namespace ATOOLS;
 
-DECLARE_GETTER(FF_C_Getter,"F*F",Color_Calculator,Vertex_Key);
+DECLARE_GETTER(FF_Calculator,"F*F",Color_Calculator,Vertex_Key);
 
-Color_Calculator *FF_C_Getter::operator()(const Vertex_Key &key) const
+Color_Calculator *ATOOLS::Getter
+<Color_Calculator,Vertex_Key,FF_Calculator>::
+operator()(const Vertex_Key &key) const
 {
   return new FF_Calculator(key);
 }
 
-void FF_C_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Color_Calculator,Vertex_Key,FF_Calculator>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"adjoint*adjoint";
+  str<<"adjoint";
 }
-

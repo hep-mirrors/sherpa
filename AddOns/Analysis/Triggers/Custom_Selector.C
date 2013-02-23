@@ -79,19 +79,22 @@ GetCustomSelector(const Argument_Matrix &parameters)
   return new Class(min,max,inlist,outlist);
 }									
 
-#define DEFINE_CUSTOM_GETTER_METHOD(CLASS,NAME)	\
-  Analysis_Object *				\
-  NAME::operator()(const Argument_Matrix &parameters) const	\
+#define DEFINE_CUSTOM_GETTER_METHOD(CLASS)		\
+  Analysis_Object *ATOOLS::Getter			\
+  <Analysis_Object,Argument_Matrix,CLASS>::		\
+  operator()(const Argument_Matrix &parameters) const	\
   { return GetCustomSelector<CLASS>(parameters); }
 
-#define DEFINE_CUSTOM_PRINT_METHOD(NAME)			\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+#define DEFINE_CUSTOM_PRINT_METHOD(CLASS)			\
+  void ATOOLS::Getter						\
+  <Analysis_Object,Argument_Matrix,CLASS>::		\
+  PrintInfo(std::ostream &str,const size_t width) const \
   { str<<"min max inlist outlist"; }
 
-#define DEFINE_CUSTOM_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Analysis_Object,Argument_Matrix);	\
-  DEFINE_CUSTOM_GETTER_METHOD(CLASS,NAME)			\
-  DEFINE_CUSTOM_PRINT_METHOD(NAME)
+#define DEFINE_CUSTOM_GETTER(CLASS,TAG)			\
+  DECLARE_GETTER(CLASS,TAG,Analysis_Object,Argument_Matrix);	\
+  DEFINE_CUSTOM_GETTER_METHOD(CLASS)			\
+  DEFINE_CUSTOM_PRINT_METHOD(CLASS)
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
 
@@ -114,8 +117,7 @@ void Custom_Selector_Base::Evaluate(const ATOOLS::Particle_List &inlist,
     outlist[i] = new ATOOLS::Particle(*inlist[i]);
 }
 
-DEFINE_CUSTOM_GETTER(SHT_Selector,
-		     SHT_Selector_Getter,"SHTSel")
+DEFINE_CUSTOM_GETTER(SHT_Selector,"SHTSel")
 
 SHT_Selector::SHT_Selector
 (const double min,const double max,
@@ -145,8 +147,7 @@ Analysis_Object *SHT_Selector::GetCopy() const
   return new SHT_Selector(m_xmin,m_xmax,m_inlist,m_outlist);
 }
 
-DEFINE_CUSTOM_GETTER(hHTF_Selector,
-		     hHTF_Selector_Getter,"hHTFSel")
+DEFINE_CUSTOM_GETTER(hHTF_Selector,"hHTFSel")
 
 hHTF_Selector::hHTF_Selector
 (const double min,const double max,

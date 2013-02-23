@@ -288,18 +288,16 @@ void CS_MCatNLO::AddRBPoint(ATOOLS::Cluster_Amplitude *const ampl)
   p_gamma->AddRBPoint(ampl);
 }
 
-namespace PDF {
+DECLARE_GETTER(CS_MCatNLO,"MC@NLO_CSS",NLOMC_Base,NLOMC_Key);
 
-  DECLARE_GETTER(CSS_MCatNLO_Getter,"MC@NLO_CSS",NLOMC_Base,NLOMC_Key);
+NLOMC_Base *ATOOLS::Getter<NLOMC_Base,NLOMC_Key,CS_MCatNLO>::
+operator()(const NLOMC_Key &key) const
+{
+  return new CS_MCatNLO(key.p_isr,key.p_model,key.p_read);
+}
 
-  NLOMC_Base *CSS_MCatNLO_Getter::operator()(const NLOMC_Key &key) const
-  {
-    return new CS_MCatNLO(key.p_isr,key.p_model,key.p_read);
-  }
-
-  void CSS_MCatNLO_Getter::PrintInfo(std::ostream &str,const size_t width) const
-  { 
-    str<<"The CSS MC@NLO generator"; 
-  }
-
+void ATOOLS::Getter<NLOMC_Base,NLOMC_Key,CS_MCatNLO>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"The CSS MC@NLO generator"; 
 }

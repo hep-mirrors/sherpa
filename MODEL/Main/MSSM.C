@@ -8,14 +8,16 @@
 using namespace MODEL;
 using namespace ATOOLS;
 
-DECLARE_GETTER(MSSM_Getter,"MSSM",Model_Base,Model_Arguments);
+DECLARE_GETTER(MSSM,"MSSM",Model_Base,Model_Arguments);
 
-Model_Base *MSSM_Getter::operator()(const Model_Arguments &args) const
+Model_Base *Getter<Model_Base,Model_Arguments,MSSM>::
+operator()(const Model_Arguments &args) const
 {
   return new MSSM(args.m_path,args.m_file,args.m_elementary);
 }
 
-void MSSM_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void Getter<Model_Base,Model_Arguments,MSSM>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The Minimal Supersymmetric Standard Model\n"
      <<std::setw(width+4)<<" "<<"{\n"

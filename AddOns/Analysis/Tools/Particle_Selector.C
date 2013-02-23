@@ -27,10 +27,11 @@ namespace ANALYSIS {
 
 using namespace ANALYSIS;
 
-DECLARE_GETTER(Particle_Selector_Getter,"PartSel",
+DECLARE_GETTER(Particle_Selector,"PartSel",
  	       Analysis_Object,Argument_Matrix);
 
-void Particle_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Object,Argument_Matrix,Particle_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  list\n"
@@ -39,8 +40,8 @@ void Particle_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) c
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *
-Particle_Selector_Getter::operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,Particle_Selector>::
+operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist="FinalState", outlist="Selected", qual("NotLepton");
   for (size_t i=0;i<parameters.size();++i) {

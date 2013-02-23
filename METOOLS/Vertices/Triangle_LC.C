@@ -155,24 +155,17 @@ std::string Triangle_Calculator<SType>::Label() const
 namespace METOOLS {
 
   template class Triangle_Calculator<double>;
-  template class Triangle_Calculator<long double>;
 
 }
 
-DECLARE_TEMPLATE_GETTER(Triangle_Getter,"Triangle",Lorentz_Calculator,Vertex_Key);
+DECLARE_GETTER(Triangle_Calculator<double>,"DTriangle",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,Triangle_Calculator<double> >::
+operator()(const Vertex_Key &key) const
+{ return new Triangle_Calculator<double>(key); }
 
-template <typename SType,char STag> Lorentz_Calculator *
-Triangle_Getter<SType,STag>::operator()(const Vertex_Key &key) const
-{
-  return new Triangle_Calculator<SType>(key);
-}
-
-template <typename SType,char STag>
-void Triangle_Getter<SType,STag>::PrintInfo
-(std::ostream &str,const size_t width) const
-{
-  str<<"Triangle vertex";
-}
-
-template class Triangle_Getter<double,'D'>;
-template class Triangle_Getter<long double,'Q'>;
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    Triangle_Calculator<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"Triangle vertex"; }

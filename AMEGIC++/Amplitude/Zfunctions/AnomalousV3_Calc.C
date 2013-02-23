@@ -25,7 +25,7 @@ public:
 	       int *lfnumb,int *canumb);
 };
 
-DEFINE_ZFAGCCALC_GETTER(AnomalousV3_Calc,AnomalousV3Calc_Getter,"AV3","anomalous v3 calculator")
+DEFINE_ZFAGCCALC_GETTER(AnomalousV3_Calc,"AV3","anomalous v3 calculator")
 
 AnomalousV3_Calc::AnomalousV3_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -133,7 +133,7 @@ public:
 	       int *lfnumb,int *canumb);
 };
 
-DEFINE_ZFAGCCALC_GETTER(AnomalousZZZ_Calc,AnomalousZZZCalc_Getter,"AZZZ","anomalous ZZZ calculator")
+DEFINE_ZFAGCCALC_GETTER(AnomalousZZZ_Calc,"AZZZ","anomalous ZZZ calculator")
 
 AnomalousZZZ_Calc::AnomalousZZZ_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -222,7 +222,7 @@ public:
 	       int *lfnumb,int *canumb);
 };
 
-DEFINE_ZFAGCCALC_GETTER(AnomalousZZG_Calc,AnomalousZZGCalc_Getter,"AZZG","anomalous ZZG calculator")
+DEFINE_ZFAGCCALC_GETTER(AnomalousZZG_Calc,"AZZG","anomalous ZZG calculator")
 
 AnomalousZZG_Calc::AnomalousZZG_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -324,7 +324,7 @@ public:
 	       int *lfnumb,int *canumb);
 };
 
-DEFINE_ZFAGCCALC_GETTER(AnomalousZGG_Calc,AnomalousZGGCalc_Getter,"AZGG","anomalous ZGG calculator")
+DEFINE_ZFAGCCALC_GETTER(AnomalousZGG_Calc,"AZGG","anomalous ZGG calculator")
 
 AnomalousZGG_Calc::AnomalousZGG_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 

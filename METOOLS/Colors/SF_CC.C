@@ -216,15 +216,18 @@ namespace METOOLS {
 using namespace METOOLS;
 using namespace ATOOLS;
 
-DECLARE_GETTER(SF_C_Getter,"S-F",Color_Calculator,Vertex_Key);
+DECLARE_GETTER(SF_Calculator,"S-F",
+	       Color_Calculator,Vertex_Key);
 
-Color_Calculator *SF_C_Getter::operator()(const Vertex_Key &key) const
+Color_Calculator *ATOOLS::Getter
+<Color_Calculator,Vertex_Key,SF_Calculator>::
+operator()(const Vertex_Key &key) const
 {
   return new SF_Calculator(key);
 }
 
-void SF_C_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Color_Calculator,Vertex_Key,SF_Calculator>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"adjoint (subtraction)";
 }
-

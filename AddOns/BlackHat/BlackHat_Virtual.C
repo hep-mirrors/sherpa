@@ -50,8 +50,9 @@ double BlackHat_Virtual::ScaleDependenceCoefficient(const int i)
   return p_ampl->getScaleVariationCoefficient(i);
 }
 
-DECLARE_VIRTUALME2_GETTER(BlackHat_Virtual_Getter,"BlackHat_Virtual")
-Virtual_ME2_Base *BlackHat_Virtual_Getter::operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(BlackHat_Virtual,"BlackHat_Virtual")
+Virtual_ME2_Base *ATOOLS::Getter<Virtual_ME2_Base,Process_Info,BlackHat_Virtual>::
+operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="BlackHat" &&

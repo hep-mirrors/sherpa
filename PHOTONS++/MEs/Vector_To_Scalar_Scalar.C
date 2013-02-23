@@ -244,11 +244,12 @@ double Vector_To_Scalar_Scalar::GetBeta_2_2(unsigned int i, unsigned int j) {
   return 0.;
 }
 
-DECLARE_PHOTONS_ME_GETTER(Vector_To_Scalar_Scalar_Getter,
+DECLARE_PHOTONS_ME_GETTER(Vector_To_Scalar_Scalar,
                           "Vector_To_Scalar_Scalar")
 
-PHOTONS_ME_Base * Vector_To_Scalar_Scalar_Getter::operator()
-(const Particle_Vector_Vector &pvv) const
+PHOTONS_ME_Base *ATOOLS::Getter<PHOTONS_ME_Base,Particle_Vector_Vector,
+				Vector_To_Scalar_Scalar>::
+operator()(const Particle_Vector_Vector &pvv) const
 {
   // same mass restriction can be lifted if M_0_1 is computed for general case
   if ( (pvv.size() == 4) &&

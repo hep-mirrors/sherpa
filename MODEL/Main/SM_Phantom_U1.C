@@ -9,14 +9,16 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(SM_Phantom_U1_Getter,"SM+Phantom_U1",Model_Base,Model_Arguments);
+DECLARE_GETTER(SM_Phantom_U1,"SM+Phantom_U1",Model_Base,Model_Arguments);
 
-Model_Base *SM_Phantom_U1_Getter::operator()(const Model_Arguments &args) const
+Model_Base *Getter<Model_Base,Model_Arguments,SM_Phantom_U1>::
+operator()(const Model_Arguments &args) const
 {
   return new SM_Phantom_U1(args.m_path,args.m_file,args.m_elementary);
 }
 
-void SM_Phantom_U1_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void Getter<Model_Base,Model_Arguments,SM_Phantom_U1>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The Standard Model + U(1) phantom Higgs\n"
      <<std::setw(width+4)<<" "<<"{\n"

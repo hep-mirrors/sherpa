@@ -11,10 +11,12 @@ using namespace ANALYSIS;
 #include "AddOns/Analysis/Triggers/MCFMCone.H"
 #include <iomanip>
 
-DECLARE_GETTER(Final_Selector_Getter,"Trigger",
+DECLARE_GETTER(Final_Selector,"Trigger",
  	       Analysis_Object,Argument_Matrix);
 
-void Final_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter
+<Analysis_Object,Argument_Matrix,Final_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  list\n"
@@ -28,8 +30,9 @@ void Final_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) cons
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object * 
-Final_Selector_Getter::operator()(const Argument_Matrix &parameters) const
+Analysis_Object * ATOOLS::Getter
+<Analysis_Object,Argument_Matrix,Final_Selector>::
+operator()(const Argument_Matrix &parameters) const
 {
   Final_Selector_Data data;
   int jetmode=0;
@@ -100,10 +103,12 @@ Final_Selector_Getter::operator()(const Argument_Matrix &parameters) const
   return selector;
 }
 
-DECLARE_GETTER(Leading_Particle_Getter,"LeadingParticle",
+DECLARE_GETTER(Leading_Particle,"LeadingParticle",
  	       Analysis_Object,Argument_Matrix);
 
-void Leading_Particle_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter
+<Analysis_Object,Argument_Matrix,Leading_Particle>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  list\n"
@@ -113,8 +118,9 @@ void Leading_Particle_Getter::PrintInfo(std::ostream &str,const size_t width) co
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object * 
-Leading_Particle_Getter::operator()(const Argument_Matrix &parameters) const
+Analysis_Object * ATOOLS::Getter
+<Analysis_Object,Argument_Matrix,Leading_Particle>::
+operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist("FinalState"), outlist("Analysed");
   int mode(0);

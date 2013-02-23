@@ -324,8 +324,10 @@ double MCFM_gg_hgg::Eps_Scheme_Factor(const Vec4D_Vector& mom)
 
 extern "C" { void chooser_(); }
 
-DECLARE_VIRTUALME2_GETTER(MCFM_gg_hgg_Getter,"MCFM_gg_hgg")
-Virtual_ME2_Base *MCFM_gg_hgg_Getter::operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(MCFM_gg_hgg,"MCFM_gg_hgg")
+Virtual_ME2_Base *ATOOLS::Getter
+<Virtual_ME2_Base,Process_Info,MCFM_gg_hgg>::
+operator()(const Process_Info &pi) const
 {
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
   if (MODEL::s_model->Name()!=std::string("SM+EHC") ||

@@ -93,9 +93,10 @@ Complex Eta_PPV::Omnes_Formfactor(const double s,const double runwidth) {
   return 1.-c+c*(1.+s/(2.*(m_mrho2-i*m_VDM_mass*m_VDM_width)))/D;
 }
 
-DEFINE_ME_GETTER(Eta_PPV,Eta_PPV_Getter,"Eta_PPV")
+DEFINE_ME_GETTER(Eta_PPV,"Eta_PPV")
 
-void Eta_PPV_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,Eta_PPV>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $\\eta \\rightarrow \\pi\\pi\\gamma$ \n\n"
     <<"Order: 0 = $\\eta$, 1, 2 = $\\pi$, 3 = $\\gamma$ \n\n"
     <<"\\[ \\mathcal{M}=gB(s,t,u)\\epsilon_{\\mu\\nu\\rho\\sigma}"
@@ -220,9 +221,10 @@ Complex Eta_PVV::E(const Vec4D * p) {
   return help;
 }
 
-DEFINE_ME_GETTER(Eta_PVV,Eta_PVV_Getter,"Eta_PVV")
+DEFINE_ME_GETTER(Eta_PVV,"Eta_PVV")
 
-void Eta_PVV_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,Eta_PVV>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $\\eta \\rightarrow \\pi\\pi\\gamma$ \n\n"
     <<"Order: 0 = $\\eta$, 1, 2 = $\\pi$, 3 = $\\gamma$ \n\n"
     <<"\\[ \\mathcal{M}=gB(s,t,u)\\epsilon_{\\mu\\nu\\rho\\sigma}"
@@ -243,9 +245,10 @@ void Eta_PPP::Calculate(const Vec4D_Vector& p, bool m_anti)
 {
 }
 
-DEFINE_ME_GETTER(Eta_PPP,Eta_PPP_Getter,"Eta_PPP")
+DEFINE_ME_GETTER(Eta_PPP,"Eta_PPP")
 
-void Eta_PPP_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,Eta_PPP>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $\\eta \\rightarrow \\pi\\pi\\pi$ \n\n"
     <<"Order: 0 = $\\eta$, 1, 2, 3 = $\\pi^{+,-,0}$\n\n"
     <<std::endl;

@@ -24,7 +24,7 @@ public:
 	       int *lfnumb,int *canumb);
 };
 
-DEFINE_ZFAGCCALC_GETTER(AnomalousV4_Calc,AnomalousV4Calc_Getter,"AV4","anomalous v4 calculator")
+DEFINE_ZFAGCCALC_GETTER(AnomalousV4_Calc,"AV4","anomalous v4 calculator")
 
 AnomalousV4_Calc::AnomalousV4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 

@@ -178,17 +178,17 @@ void Output_LHEF::SetXS(const double& xs, const double& xserr) {
   m_max =1.;
 }
 
-DECLARE_GETTER(LHEF_Output_Getter,"LHEF",
+DECLARE_GETTER(Output_LHEF,"LHEF",
 	       Output_Base,Output_Arguments);
 
-Output_Base *LHEF_Output_Getter::operator()
-(const Output_Arguments &args) const
+Output_Base *ATOOLS::Getter<Output_Base,Output_Arguments,Output_LHEF>::
+operator()(const Output_Arguments &args) const
 {
   return new Output_LHEF(args);
 }
 
-void LHEF_Output_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Output_Base,Output_Arguments,Output_LHEF>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"LHEF output";
 }

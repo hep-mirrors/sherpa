@@ -106,22 +106,18 @@ std::string CP<SType>::CLabel() const
     (this->m_out.empty()?this->m_fl.Bar():this->m_fl).TexName()+"$";
 }
 
-DECLARE_TEMPLATE_GETTER(CP_Getter,"P",Current,Current_Key);
+DECLARE_GETTER(CP<double>,"DP",Current,Current_Key);
 
-template <typename SType,char STag> Current *
-CP_Getter<SType,STag>::operator()(const Current_Key &key) const
+Current *ATOOLS::Getter<Current,Current_Key,CP<double> >::
+operator()(const Current_Key &key) const
 {
   if (key.m_fl.IsTensor() && key.m_fl.IsDummy()) 
-    return new CP<SType>(key);
+    return new CP<double>(key);
   return NULL;
 }
 
-template <typename SType,char STag>
-void CP_Getter<SType,STag>::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Current,Current_Key,CP<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"tensor current "<<STag;
+  str<<"tensor current (double)";
 }
-
-template class CP_Getter<double,'D'>;
-template class CP_Getter<long double,'Q'>;

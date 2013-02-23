@@ -54,8 +54,10 @@ void Higgs_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
   m_res.Finite()=(m_finiteconst - 4.0*M_PI*m_b0/CA*log(p2/m_mur2))*m_fac;
 }
 
-DECLARE_VIRTUALME2_GETTER(Higgs_QCD_Virtual_Getter,"Higgs_QCD_Virtual")
-Virtual_ME2_Base *Higgs_QCD_Virtual_Getter::operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(Higgs_QCD_Virtual,"Higgs_QCD_Virtual")
+Virtual_ME2_Base *ATOOLS::Getter
+<Virtual_ME2_Base,Process_Info,Higgs_QCD_Virtual>::
+operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="Internal") return NULL;

@@ -108,24 +108,21 @@ void MinSelector::BuildCuts(Cut_Data * cuts)
   return;
 }
 
+DECLARE_ND_GETTER(MinSelector,"MinSelector",Selector_Base,Selector_Key,true);
 
-namespace PHASIC{
-
-DECLARE_ND_GETTER(MinSelector_Getter,"MinSelector",Selector_Base,Selector_Key,true);
-
-Selector_Base *MinSelector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,MinSelector>::
+operator()(const Selector_Key &key) const
 {
   MinSelector *msel(new MinSelector(key));
   return msel;
 }
 
-void MinSelector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,MinSelector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"MinSelector {\n"
      <<"                          Selector 1\n"
      <<"                          Selector 2\n"
      <<"                          ...\n"
      <<"                        }"; 
-}
-
 }

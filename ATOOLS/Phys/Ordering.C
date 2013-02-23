@@ -27,18 +27,19 @@ Order_Base *GetOrder(const std::string &parameter)
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
-  Order_Base *								\
-  NAME::operator()(const std::string &parameter) const			\
+  Order_Base *ATOOLS::Getter<Order_Base,std::string,CLASS>::		\
+  operator()(const std::string &parameter) const			\
   { return GetOrder<CLASS>(parameter); }
 
-#define DEFINE_PRINT_METHOD(NAME,PRINT)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+#define DEFINE_PRINT_METHOD(CLASS,PRINT)				\
+  void ATOOLS::Getter<Order_Base,std::string,CLASS>::			\
+  PrintInfo(std::ostream &str,const size_t width) const			\
   { str<<PRINT; }
 
-#define DEFINE_ORDER_GETTER(CLASS,NAME,TAG,PRINT)			\
-  DECLARE_GETTER(NAME,TAG,Order_Base,std::string);			\
-  DEFINE_GETTER_METHOD(CLASS,NAME)					\
-  DEFINE_PRINT_METHOD(NAME,PRINT)
+#define DEFINE_ORDER_GETTER(CLASS,TAG,PRINT)				\
+  DECLARE_GETTER(CLASS,TAG,Order_Base,std::string);			\
+  DEFINE_GETTER_METHOD(CLASS,)						\
+  DEFINE_PRINT_METHOD(CLASS,PRINT)
 
 //-------------------------------------------------------------------------------
 
@@ -53,7 +54,7 @@ public:
   Order_Up_E(): Order_Base(OrderV,OrderP,OrderPP) {}
 };
 
-DEFINE_ORDER_GETTER(Order_Up_E,Order_Up_E_Getter,"E_UP","order E ascending")
+DEFINE_ORDER_GETTER(Order_Up_E,"E_UP","order E ascending")
 
 //-------------------------------------------------------------------------------
 
@@ -68,7 +69,7 @@ public:
   Order_Up_ET(): Order_Base(OrderV,OrderP,OrderPP) {}
 };
 
-DEFINE_ORDER_GETTER(Order_Up_ET,Order_Up_ET_Getter,"ET_UP","order ET ascending")
+DEFINE_ORDER_GETTER(Order_Up_ET,"ET_UP","order ET ascending")
 
 //-------------------------------------------------------------------------------
 
@@ -83,7 +84,7 @@ public:
   Order_Up_PT(): Order_Base(OrderV,OrderP,OrderPP) {}
 };
 
-DEFINE_ORDER_GETTER(Order_Up_PT,Order_Up_PT_Getter,"PT_UP","order PT ascending")
+DEFINE_ORDER_GETTER(Order_Up_PT,"PT_UP","order PT ascending")
 
 //-------------------------------------------------------------------------------
 
@@ -98,4 +99,4 @@ public:
   Order_Up_Eta(): Order_Base(OrderV,OrderP,OrderPP) {}
 };
 
-DEFINE_ORDER_GETTER(Order_Up_Eta,Order_Up_Eta_Getter,"ETA_UP","order eta ascending")
+DEFINE_ORDER_GETTER(Order_Up_Eta,"ETA_UP","order eta ascending")

@@ -60,16 +60,18 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-DECLARE_GETTER(Fastjet_Scale_Setter_Getter,"FASTJET",
+DECLARE_GETTER(Fastjet_Scale_Setter,"FASTJET",
 	       Scale_Setter_Base,Scale_Setter_Arguments);
 
-Scale_Setter_Base *Fastjet_Scale_Setter_Getter::
+Scale_Setter_Base *ATOOLS::Getter
+<Scale_Setter_Base,Scale_Setter_Arguments,Fastjet_Scale_Setter>::
 operator()(const Scale_Setter_Arguments &args) const
 {
   return new Fastjet_Scale_Setter(args);
 }
 
-void Fastjet_Scale_Setter_Getter::
+void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
+		    Fastjet_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"variable scale scheme using fast jets";

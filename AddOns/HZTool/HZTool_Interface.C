@@ -371,20 +371,25 @@ bool HZTool_Interface::Finish()
   return m_finished=true;
 }
 
-DECLARE_GETTER(HZTool_Interface_Getter,"HZTool",
+}// end of namespace HZTOOL
+
+using namespace HZTOOL;
+using namespace SHERPA;
+
+DECLARE_GETTER(HZTool_Interface,"HZTool",
 	       Analysis_Interface,Analysis_Arguments);
 
-Analysis_Interface *HZTool_Interface_Getter::operator()
-(const Analysis_Arguments &args) const
+Analysis_Interface *ATOOLS::Getter
+<Analysis_Interface,Analysis_Arguments,HZTool_Interface>::
+operator()(const Analysis_Arguments &args) const
 {
   return new HZTool_Interface
     (args.m_inpath,args.m_infile,args.m_outpath);
 }
 
-void HZTool_Interface_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,
+		    HZTool_Interface>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"HZTool interface";
 }
-
-}// end of namespace HZTOOL

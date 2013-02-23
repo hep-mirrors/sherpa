@@ -53,19 +53,19 @@ Primitive_Observable_Base *GetObservable(const Argument_Matrix &parameters)
   return new Class(f[0],f[1],HistogramType(scale),min,max,bins,list,reflist);
 } 
 
-#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
+#define DEFINE_GETTER_METHOD(CLASS)				\
   Primitive_Observable_Base *					\
-  NAME::operator()(const Argument_Matrix &parameters) const		\
+  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
   { return GetObservable<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
   { str<<"kf1 kf2 min max bins Lin|LinErr|Log|LogErr list reflist"; }
 
-#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME)					\
-  DEFINE_PRINT_METHOD(NAME)
+#define DEFINE_OBSERVABLE_GETTER(CLASS,TAG)			\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DEFINE_GETTER_METHOD(CLASS)					\
+  DEFINE_PRINT_METHOD(CLASS)
 
 using namespace ATOOLS;
 
@@ -170,7 +170,7 @@ void EV_C_Observables::EvaluateNLOevt()
    double Calc(const Vec4D &m1);
  };
 
-DEFINE_OBSERVABLE_GETTER(EV_C_ET,EV_C_ET_Getter,"EVC_ET")
+DEFINE_OBSERVABLE_GETTER(EV_C_ET,"EVC_ET")
 
   EV_C_ET::EV_C_ET(const Flavour & flav1,const Flavour & flav2,
 		   unsigned int type,double xmin,double xmax,int nbins,
@@ -207,7 +207,7 @@ double EV_C_ET::Calc(const Vec4D &mom)
     double Calc(const Vec4D &m1);
   };
 
-DEFINE_OBSERVABLE_GETTER(EV_C_PT,EV_C_PT_Getter,"EVC_PT")
+DEFINE_OBSERVABLE_GETTER(EV_C_PT,"EVC_PT")
 
   EV_C_PT::EV_C_PT(const Flavour & flav1,const Flavour & flav2,
 		   unsigned int type,double xmin,double xmax,int nbins,
@@ -245,7 +245,7 @@ double EV_C_PT::Calc(const Vec4D &mom)
     double Calc(const Vec4D &m1);
   };
 
-DEFINE_OBSERVABLE_GETTER(EV_C_Eta,EV_C_Eta_Getter,"EVC_Eta")
+DEFINE_OBSERVABLE_GETTER(EV_C_Eta,"EVC_Eta")
 
   EV_C_Eta::EV_C_Eta(const Flavour & flav1,const Flavour & flav2,
 		     unsigned int type,double xmin,double xmax,int nbins,
@@ -283,7 +283,7 @@ double EV_C_Eta::Calc(const Vec4D &mom)
     double Calc(const Vec4D &m1);
   };
  
-DEFINE_OBSERVABLE_GETTER(EV_C_Y,EV_C_Y_Getter,"EVC_Y")
+DEFINE_OBSERVABLE_GETTER(EV_C_Y,"EVC_Y")
   
   EV_C_Y::EV_C_Y(const Flavour & flav1,const Flavour & flav2,
 		 unsigned int type,double xmin,double xmax,int nbins,

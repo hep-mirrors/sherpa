@@ -11,10 +11,11 @@
 #include "HADRONS++/Main/Tools.H"
 #include "METOOLS/Main/Spin_Structure.H"
 
-#define DEFINE_CURRENT_GETTER(CLASS,NAME,TAG)                                  \
-DECLARE_GETTER(NAME,TAG,Current_Base,ME_Parameters);                           \
-Current_Base* NAME::operator()(const ME_Parameters &parameters) const          \
-{ return new CLASS(parameters.flavs, parameters.indices, TAG); }
+#define DEFINE_CURRENT_GETTER(CLASS,TAG)				\
+  DECLARE_GETTER(CLASS,TAG,Current_Base,ME_Parameters);			\
+  Current_Base *ATOOLS::Getter<Current_Base,ME_Parameters,CLASS>::	\
+  operator()(const ME_Parameters &parameters) const			\
+  { return new CLASS(parameters.flavs, parameters.indices, TAG); }
 
 namespace HADRONS {
 

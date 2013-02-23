@@ -90,8 +90,9 @@ namespace EXTRAXS {
   }
 }
 
-DECLARE_TREEME2_GETTER(gg_yy_Getter,"gg_yy")
-Tree_ME2_Base *gg_yy_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(gg_yy,"gg_yy")
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,gg_yy>::
+operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.NLOType()!=nlo_type::lo && pi.m_fi.NLOType()!=nlo_type::born)
     return NULL;

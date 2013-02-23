@@ -26,16 +26,18 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-DECLARE_GETTER(MPI_Scale_Setter_Getter,"MPI",
+DECLARE_GETTER(MPI_Scale_Setter,"MPI",
 	       Scale_Setter_Base,Scale_Setter_Arguments);
 
-Scale_Setter_Base *MPI_Scale_Setter_Getter::
+Scale_Setter_Base *ATOOLS::Getter
+<Scale_Setter_Base,Scale_Setter_Arguments,MPI_Scale_Setter>::
 operator()(const Scale_Setter_Arguments &args) const
 {
   return new MPI_Scale_Setter(args);
 }
 
-void MPI_Scale_Setter_Getter::
+void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
+		    MPI_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"mpi scale scheme";

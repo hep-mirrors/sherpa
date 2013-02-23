@@ -184,9 +184,10 @@ void VA_B_DstarPi::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   }
 }
 
-DEFINE_CURRENT_GETTER(VA_B_DstarPi,VA_B_DstarPi_Getter,"VA_B_DstarPi")
+DEFINE_CURRENT_GETTER(VA_B_DstarPi,"VA_B_DstarPi")
 
-void VA_B_DstarPi_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<Current_Base,ME_Parameters,VA_B_DstarPi>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<"\\paragraph{Parametrization} \n"
     <<"  \\[ \\mathcal{J^{B\\to D \\pi}_\\mu} = V_{cb} \\sqrt{M_B M_D} \\left( \n"
     <<"      \\frac{i}{2} \\epsilon_{\\mu\\nu\\rho\\sigma} \\varepsilon_{D\\nu} \\left[ \n"

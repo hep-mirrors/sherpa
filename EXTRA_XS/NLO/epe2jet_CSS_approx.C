@@ -115,9 +115,10 @@ double XS_egeqq_CSS_approx::LOME2(const Vec4D& pi, const Vec4D& pj,
   return born*split*m_alphasdef;
 }
 
-DECLARE_TREEME2_GETTER(XS_egeqq_CSS_approx_Getter,"XS_egeqq_CSS_approx")
-Tree_ME2_Base *XS_egeqq_CSS_approx_Getter::operator()
-(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_egeqq_CSS_approx,"XS_egeqq_CSS_approx")
+Tree_ME2_Base *ATOOLS::Getter
+<Tree_ME2_Base,Process_Info,XS_egeqq_CSS_approx>::
+operator()(const Process_Info &pi) const
 {
   Data_Reader read(" ",";","!","=");
   if (read.GetValue<int>("EXTRAXS_CSS_APPROX_ME",0)==0) return NULL;
@@ -268,9 +269,10 @@ double XS_eqegq_CSS_approx::LOME2IF(const Vec4D& pi, const Vec4D& pj,
   return born*split*m_alphasdef;
 }
 
-DECLARE_TREEME2_GETTER(XS_eqegq_CSS_approx_Getter,"XS_eqegq_CSS_approx")
-Tree_ME2_Base *XS_eqegq_CSS_approx_Getter::operator()
-(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_eqegq_CSS_approx,"XS_eqegq_CSS_approx")
+Tree_ME2_Base *ATOOLS::Getter
+<Tree_ME2_Base,Process_Info,XS_eqegq_CSS_approx>::
+operator()(const Process_Info &pi) const
 {
   Data_Reader read(" ",";","!","=");
   if (read.GetValue<int>("EXTRAXS_CSS_APPROX_ME",0)==0) return NULL;

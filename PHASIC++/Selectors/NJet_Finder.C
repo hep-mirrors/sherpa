@@ -351,11 +351,10 @@ double NJet_Finder::DCos12(const Vec4D & p1,const Vec4D & p2) const
   //  return Vec3D(p1)*Vec3D(p2)/(Vec3D(p1).Abs()*Vec3D(p2).Abs());
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(NJet_Finder,"NJetFinder",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(NJet_Finder_Getter,"NJetFinder",Selector_Base,Selector_Key,true);
-
-Selector_Base *NJet_Finder_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,NJet_Finder>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   
@@ -376,9 +375,8 @@ Selector_Base *NJet_Finder_Getter::operator()(const Selector_Key &key) const
   return jf;
 }
 
-void NJet_Finder_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,NJet_Finder>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"NJetFinder n ptmin etmin dr [exp=1] [etamax=100] [maxmass=0]"; 
-}
-
 }

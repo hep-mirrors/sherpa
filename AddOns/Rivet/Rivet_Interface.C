@@ -331,12 +331,15 @@ public:
   
 };// end of class Rivet_Interface
 
+class RivetShower_Interface: public Rivet_Interface {};
+class RivetME_Interface: public Rivet_Interface {};
 
-DECLARE_GETTER(Rivet_Interface_Getter,"Rivet",
+DECLARE_GETTER(Rivet_Interface,"Rivet",
 	       Analysis_Interface,Analysis_Arguments);
 
-Analysis_Interface *Rivet_Interface_Getter::operator()
-(const Analysis_Arguments &args) const
+Analysis_Interface *ATOOLS::Getter
+<Analysis_Interface,Analysis_Arguments,Rivet_Interface>::
+operator()(const Analysis_Arguments &args) const
 {
   std::string outpath=args.m_outpath;
   if (outpath[outpath.length()-1]=='/') {
@@ -346,18 +349,19 @@ Analysis_Interface *Rivet_Interface_Getter::operator()
     (args.m_inpath,args.m_infile,outpath, std::vector<btp::code>(), "RIVET");
 }
 
-void Rivet_Interface_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,Rivet_Interface>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"Rivet interface";
 }
 
 
-DECLARE_GETTER(RivetShower_Interface_Getter,"RivetShower",
+DECLARE_GETTER(RivetShower_Interface,"RivetShower",
 	       Analysis_Interface,Analysis_Arguments);
 
-Analysis_Interface *RivetShower_Interface_Getter::operator()
-(const Analysis_Arguments &args) const
+Analysis_Interface *ATOOLS::Getter
+<Analysis_Interface,Analysis_Arguments,RivetShower_Interface>::
+operator()(const Analysis_Arguments &args) const
 {
   std::string outpath=args.m_outpath;
   if (outpath[outpath.length()-1]=='/') {
@@ -371,18 +375,19 @@ Analysis_Interface *RivetShower_Interface_Getter::operator()
     (args.m_inpath,args.m_infile,outpath+".SL", ignoreblobs, "RIVETSHOWER");
 }
 
-void RivetShower_Interface_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,RivetShower_Interface>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"Rivet interface on top of shower level events.";
 }
 
 
-DECLARE_GETTER(RivetME_Interface_Getter,"RivetME",
+DECLARE_GETTER(RivetME_Interface,"RivetME",
 	       Analysis_Interface,Analysis_Arguments);
 
-Analysis_Interface *RivetME_Interface_Getter::operator()
-(const Analysis_Arguments &args) const
+Analysis_Interface *ATOOLS::Getter
+<Analysis_Interface,Analysis_Arguments,RivetME_Interface>::
+operator()(const Analysis_Arguments &args) const
 {
   std::string outpath=args.m_outpath;
   if (outpath[outpath.length()-1]=='/') {
@@ -401,8 +406,8 @@ Analysis_Interface *RivetME_Interface_Getter::operator()
     (args.m_inpath,args.m_infile,outpath+".ME", ignoreblobs, "RIVETME");
 }
 
-void RivetME_Interface_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,RivetME_Interface>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"Rivet interface on top of ME level events.";
 }

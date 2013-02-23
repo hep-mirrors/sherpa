@@ -43,23 +43,23 @@ Primitive_Observable_Base *GetObservable(const Argument_Matrix &parameters)
   return new Class(HistogramType(scale),min,max,bins,p0,p1,p2,p3,list);
 }									
 
-#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
+#define DEFINE_GETTER_METHOD(CLASS)				\
   Primitive_Observable_Base *					\
-  NAME::operator()(const Argument_Matrix &parameters) const		\
+  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
   { return GetObservable<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
   { str<<"min max bins pn0 pn1 pn2 pn3 Lin|LinErr|Log|LogErr [list]"; }
 
-#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME)					\
-  DEFINE_PRINT_METHOD(NAME)
+#define DEFINE_OBSERVABLE_GETTER(CLASS,TAG)			\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DEFINE_GETTER_METHOD(CLASS)					\
+  DEFINE_PRINT_METHOD(CLASS)
 
 using namespace ATOOLS;
 
-DEFINE_OBSERVABLE_GETTER(PSM_Observable,PSM_Observable_Getter,"PSM")
+DEFINE_OBSERVABLE_GETTER(PSM_Observable,"PSM")
 
 PSM_Observable::PSM_Observable(unsigned int type,double xmin,double xmax,int nbins,
 						 int p0,int p1,int p2, int p3,

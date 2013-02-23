@@ -103,8 +103,10 @@ double MCFM_qqb_QQb::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
 
 extern "C" { void chooser_(); }
 
-DECLARE_VIRTUALME2_GETTER(MCFM_qqb_QQb_Getter,"MCFM_qqb_QQb")
-Virtual_ME2_Base *MCFM_qqb_QQb_Getter::operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(MCFM_qqb_QQb,"MCFM_qqb_QQb")
+Virtual_ME2_Base *ATOOLS::Getter
+<Virtual_ME2_Base,Process_Info,MCFM_qqb_QQb>::
+operator()(const Process_Info &pi) const
 {
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;

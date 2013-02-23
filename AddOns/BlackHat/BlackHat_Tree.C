@@ -79,8 +79,9 @@ double BlackHat_Tree::Calc(const Vec4D_Vector& momenta)
   return res;
 }
 
-DECLARE_TREEME2_GETTER(BlackHat_Tree_Getter,"BlackHat_Tree")
-Tree_ME2_Base *BlackHat_Tree_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(BlackHat_Tree,"BlackHat_Tree")
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,BlackHat_Tree>::
+operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="BlackHat" &&

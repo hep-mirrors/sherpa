@@ -180,47 +180,44 @@ Scaling_Base<double> *GetVariable(const std::string &parameter)
   return new Class(parameter);
 }
 
-#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
+#define DEFINE_GETTER_METHOD(CLASS)					\
   Scaling_Base<double> *						\
-  NAME::operator()(const std::string &parameter) const			\
+  ATOOLS::Getter<Scaling_Base<double>,std::string,CLASS>::		\
+  operator()(const std::string &parameter) const			\
   { return GetVariable<CLASS>(parameter); }
 
-#define DEFINE_PRINT_METHOD(NAME,PRINT)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+#define DEFINE_PRINT_METHOD(CLASS,PRINT)				\
+  void ATOOLS::Getter<Scaling_Base<double>,std::string,CLASS>::		\
+  PrintInfo(std::ostream &str,const size_t width) const			\
   { str<<PRINT; }
 
-#define DEFINE_SCALING_GETTER(CLASS,NAME,TAG,PRINT)			\
+#define DEFINE_SCALING_GETTER(CLASS,TAG,PRINT)				\
   template class CLASS;							\
-  DECLARE_GETTER(NAME,TAG,Scaling_Base<double>,std::string);		\
-  DEFINE_GETTER_METHOD(CLASS,NAME)					\
-  DEFINE_PRINT_METHOD(NAME,PRINT) 
+  DECLARE_GETTER(CLASS,TAG,Scaling_Base<double>,std::string);		\
+  DEFINE_GETTER_METHOD(CLASS)						\
+  DEFINE_PRINT_METHOD(CLASS,PRINT) 
 
-DECLARE_GETTER(Id_Scaling_Default_Getter,"",
-	       Scaling_Base<double>,std::string);			
-DEFINE_GETTER_METHOD(Id_Scaling<double>,Id_Scaling_Default_Getter)
-DEFINE_PRINT_METHOD(Id_Scaling_Default_Getter,"")
-
-DEFINE_SCALING_GETTER(Id_Scaling<double>,Id_Scaling_Getter,
+DEFINE_SCALING_GETTER(Id_Scaling<double>,
 		      "Id","identical")
 
-DEFINE_SCALING_GETTER(Log_Scaling<double>,Log_Scaling_Getter,
+DEFINE_SCALING_GETTER(Log_Scaling<double>,
 		      "Log","logarithmical")
 
-DEFINE_SCALING_GETTER(Exp_Scaling<double>,Exp_Scaling_Getter,
+DEFINE_SCALING_GETTER(Exp_Scaling<double>,
 		      "Exp","exponential")
 
-DEFINE_SCALING_GETTER(Sqr_Scaling<double>,Sqr_Scaling_Getter,
+DEFINE_SCALING_GETTER(Sqr_Scaling<double>,
 		      "Sqr","square")
 
-DEFINE_SCALING_GETTER(Sqrt_Scaling<double>,Sqrt_Scaling_Getter,
+DEFINE_SCALING_GETTER(Sqrt_Scaling<double>,
 		      "Sqrt","square root")
 
-DEFINE_SCALING_GETTER(Log_B_Scaling<double>,Log_B_Scaling_Getter,
+DEFINE_SCALING_GETTER(Log_B_Scaling<double>,
 		      "Log_B_","logarithmical")
 
-DEFINE_SCALING_GETTER(B_To_X_Scaling<double>,B_To_X_Scaling_Getter,
+DEFINE_SCALING_GETTER(B_To_X_Scaling<double>,
 		      "B_To_X_","exponential")
 
-DEFINE_SCALING_GETTER(X_To_P_Scaling<double>,X_To_P_Scaling_Getter,
+DEFINE_SCALING_GETTER(X_To_P_Scaling<double>,
 		      "X_To_P_","power")
 

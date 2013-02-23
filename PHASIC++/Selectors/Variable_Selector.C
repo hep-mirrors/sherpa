@@ -250,11 +250,10 @@ bool Variable_Selector::Trigger(const Vec4D_Vector &p)
   return hit;
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(Variable_Selector,"\"",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(Variable_Selector_Getter,"\"",Selector_Base,Selector_Key,true);
-
-Selector_Base *Variable_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Variable_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<2) THROW(critical_error,"Invalid syntax");
   Data_Reader reader(",",":","!","=");
@@ -304,10 +303,8 @@ bool Variable_Selector::JetTrigger
   return Trigger(p);
 }
 
-void Variable_Selector_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Variable_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"variable selector"; 
-}
-
 }

@@ -37,23 +37,25 @@ Analysis_Object *GetOrdering(const Argument_Matrix &parameters)
   return new Class(inlist,outlist);
 }									
 
-#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
-  Analysis_Object *							\
-  NAME::operator()(const Argument_Matrix &parameters) const		\
+#define DEFINE_GETTER_METHOD(CLASS)				\
+  Analysis_Object *ATOOLS::Getter				\
+  <Analysis_Object,Argument_Matrix,CLASS>::			\
+  operator()(const Argument_Matrix &parameters) const		\
   { return GetOrdering<CLASS>(parameters); }
 
-#define DEFINE_PRINT_METHOD(NAME)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+#define DEFINE_PRINT_METHOD(CLASS)					\
+  void ATOOLS::Getter<Analysis_Object,Argument_Matrix,CLASS>::		\
+  PrintInfo(std::ostream &str,const size_t width) const			\
   { str<<"inlist outlist"; }
 
-#define DEFINE_ORDERING_GETTER(CLASS,NAME,TAG)				\
-  DECLARE_GETTER(NAME,TAG,Analysis_Object,Argument_Matrix);		\
-  DEFINE_GETTER_METHOD(CLASS,NAME)					\
-  DEFINE_PRINT_METHOD(NAME)
+#define DEFINE_ORDERING_GETTER(CLASS,TAG)				\
+  DECLARE_GETTER(CLASS,TAG,Analysis_Object,Argument_Matrix);		\
+  DEFINE_GETTER_METHOD(CLASS)					\
+  DEFINE_PRINT_METHOD(CLASS)
 
 using namespace ATOOLS;
 
-#define DEFINE_PARTICLE_ORDERING(NAME,GNAME,CNAME,VAR,TAG)		\
+#define DEFINE_PARTICLE_ORDERING(NAME,CNAME,VAR,TAG)		\
   class CNAME {								\
   public:								\
     bool operator()(const Particle *a,const Particle *b)		\
@@ -70,7 +72,7 @@ using namespace ATOOLS;
 		  double weight,double ncount);				\
     Analysis_Object *GetCopy() const;					\
   };									\
-  DEFINE_ORDERING_GETTER(NAME,GNAME,TAG)				\
+  DEFINE_ORDERING_GETTER(NAME,TAG)				\
   NAME::NAME(const std::string &inlist,const std::string &outlist):	\
     m_inlist(inlist), m_outlist(outlist) {}				\
   void NAME::Evaluate(const ATOOLS::Blob_List &bl,			\
@@ -96,16 +98,13 @@ using namespace ATOOLS;
   }								       
   
 
-namespace ANALYSIS {
-
-  DEFINE_PARTICLE_ORDERING(Order_PT,Order_PT_Getter,Sort_PT,PPerp2,"PTOrder")
-  DEFINE_PARTICLE_ORDERING(Order_ET,Order_ET_Getter,Sort_ET,EPerp,"ETOrder")
-  DEFINE_PARTICLE_ORDERING(Order_Y,Order_Y_Getter,Sort_Y,Y,"YOrder")
-  DEFINE_PARTICLE_ORDERING(Order_Eta,Order_Eta_Getter,Sort_Eta,Eta,"EtaOrder")
-  DEFINE_PARTICLE_ORDERING(Order_Phi,Order_Phi_Getter,Sort_Phi,Phi,"PhiOrder")
+  DEFINE_PARTICLE_ORDERING(Order_PT,Sort_PT,PPerp2,"PTOrder")
+  DEFINE_PARTICLE_ORDERING(Order_ET,Sort_ET,EPerp,"ETOrder")
+  DEFINE_PARTICLE_ORDERING(Order_Y,Sort_Y,Y,"YOrder")
+  DEFINE_PARTICLE_ORDERING(Order_Eta,Sort_Eta,Eta,"EtaOrder")
+  DEFINE_PARTICLE_ORDERING(Order_Phi,Sort_Phi,Phi,"PhiOrder")
   
-
-  DEFINE_ORDERING_GETTER(ReverseOrder,ReverseOrder_Getter,"ReverseOrder")
+  DEFINE_ORDERING_GETTER(ReverseOrder,"ReverseOrder")
 
   ReverseOrder::ReverseOrder(const std::string &inlist,const std::string &outlist):
     m_inlist(inlist), m_outlist(outlist) {}
@@ -130,5 +129,3 @@ namespace ANALYSIS {
   {
     return new ReverseOrder(m_inlist,m_outlist);
   }								       
-
-}

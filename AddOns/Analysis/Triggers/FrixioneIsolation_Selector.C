@@ -103,11 +103,12 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
-DECLARE_GETTER(FrixioneIsolationSelector_Getter,"IsolationCutSel",
+DECLARE_GETTER(FrixioneIsolation_Selector,"IsolationCutSel",
 	       Analysis_Object,Argument_Matrix);
 
-Analysis_Object *FrixioneIsolationSelector_Getter::operator()
-(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter
+<Analysis_Object,Argument_Matrix,FrixioneIsolation_Selector>::
+operator()(const Argument_Matrix &parameters) const
 {
   if (parameters.size()<1 || parameters[0].size()<6) return NULL;
   int eps(parameters[0].size()>6?ATOOLS::ToType<double>(parameters[0][6]):1.0);
@@ -120,7 +121,8 @@ Analysis_Object *FrixioneIsolationSelector_Getter::operator()
      parameters[0][3],parameters[0][4],parameters[0][5]);
 }									
 
-void FrixioneIsolationSelector_Getter::
+void ATOOLS::Getter
+<Analysis_Object,Argument_Matrix,FrixioneIsolation_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"kf delta_0 n inlist reflist outlist [epsilon]";

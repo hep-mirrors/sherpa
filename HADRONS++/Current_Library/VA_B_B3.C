@@ -118,8 +118,9 @@ void VA_B_B3::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   }
 }
 
-DEFINE_CURRENT_GETTER(VA_B_B3,VA_B_B3_Getter,"VA_B_B3")
+DEFINE_CURRENT_GETTER(VA_B_B3,"VA_B_B3")
 
-void VA_B_B3_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<Current_Base,ME_Parameters,VA_B_B3>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<std::endl;
 }

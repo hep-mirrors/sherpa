@@ -257,20 +257,25 @@ bool PGS_Interface::Finish()
   return true;
 }
 
-DECLARE_GETTER(PGS_Interface_Getter,"PGS",
+}// end of namespace PGS
+
+using namespace PGS;
+using namespace SHERPA;
+
+DECLARE_GETTER(PGS_Interface,"PGS",
 	       Analysis_Interface,Analysis_Arguments);
 
-Analysis_Interface *PGS_Interface_Getter::operator()
-(const Analysis_Arguments &args) const
+Analysis_Interface *ATOOLS::Getter
+<Analysis_Interface,Analysis_Arguments,PGS_Interface>::
+operator()(const Analysis_Arguments &args) const
 {
   return new PGS_Interface
     (args.m_inpath,args.m_infile,args.m_outpath);
 }
 
-void PGS_Interface_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,
+		    PGS_Interface>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"PGS interface";
 }
-
-}// end of namespace PGS

@@ -147,8 +147,10 @@ double MCFM_gb_hb::Eps_Scheme_Factor(const Vec4D_Vector& mom)
 
 extern "C" { void chooser_(); }
 
-DECLARE_VIRTUALME2_GETTER(MCFM_gb_hb_Getter,"MCFM_gb_hb")
-Virtual_ME2_Base *MCFM_gb_hb_Getter::operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(MCFM_gb_hb,"MCFM_gb_hb")
+Virtual_ME2_Base *ATOOLS::Getter
+<Virtual_ME2_Base,Process_Info,MCFM_gb_hb>::
+operator()(const Process_Info &pi) const
 {
   return NULL;
   DEBUG_FUNC("");

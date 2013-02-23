@@ -298,17 +298,17 @@ GetSTwoParticleObservable(const Argument_Matrix &parameters)
 
 #define DEFINE_TWO_OBSERVABLE_GETTER_METHOD(CLASS,NAME)		\
   Primitive_Observable_Base *					\
-  NAME::operator()(const Argument_Matrix &parameters) const		\
+  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
   { return GetSTwoParticleObservable<CLASS>(parameters); }
 
 #define DEFINE_TWO_OBSERVABLE_PRINT_METHOD(NAME)		\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
   { str<<"flav1 item1 flav2 item2 min max bins Lin|LinErr|Log|LogErr [inlist [reflist]]"; }
 
 #define DEFINE_TWO_OBSERVABLE_GETTER(CLASS,NAME,TAG)		\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_TWO_OBSERVABLE_GETTER_METHOD(CLASS,NAME)		\
-  DEFINE_TWO_OBSERVABLE_PRINT_METHOD(NAME)
+  DEFINE_TWO_OBSERVABLE_PRINT_METHOD(CLASS)
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
 #include "ATOOLS/Org/Shell_Tools.H"

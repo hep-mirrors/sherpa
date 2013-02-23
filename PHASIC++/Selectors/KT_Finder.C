@@ -881,11 +881,10 @@ void KT_Finder::SetDeltaR(double dr)
   m_delta_r=dr; 
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(KT_Finder,"JetFinder",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(KT_Finder_Getter,"JetFinder",Selector_Base,Selector_Key,true);
-
-Selector_Base *KT_Finder_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,KT_Finder>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<2) THROW(critical_error,"Invalid syntax");
   int type(0);
@@ -907,9 +906,8 @@ Selector_Base *KT_Finder_Getter::operator()(const Selector_Key &key) const
   return jf;
 }
 
-void KT_Finder_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,KT_Finder>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"kt jet finder"; 
-}
-
 }

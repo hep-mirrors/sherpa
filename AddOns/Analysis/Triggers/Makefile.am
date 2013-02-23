@@ -5,7 +5,6 @@ ANATRIGGER_SOURCES    =	\
 			Two_Particle_Selector.C \
 			All_Particle_Selector.C \
 			Jet_Particle_Selector.C \
-			Four_Particle_Calculator.C \
 			Two_Particle_X_Selector.C\
 			Custom_Selector.C \
 			ranlux.cpp reference.cpp geom_2d.cpp \
@@ -16,8 +15,6 @@ ANATRIGGER_SOURCES    =	\
 			ConeMCFM.C \
 			MCFMCone.C \
 			HT_Selector.C \
-			AlphaT_Selector.C \
-			Uni_Selector.C\
 			Durham_Algorithm.C \
 			Cambridge_Algorithm.C \
 			Kt_Algorithm.C \
@@ -25,15 +22,11 @@ ANATRIGGER_SOURCES    =	\
 			Final_Selector.C \
 			Midpoint_Cone.C \
 			Calorimeter_Cone.C \
-			Field_Stuart_Cone_Finder.C \
-	 		D0_BFKL_Cone_Finder.C \
 			FrixioneIsolation_Selector.C \
 			Isolation_Selector.C \
 			Fastjet_Interface.C \
-			One_Particle_Extractor.C \
 			Primitive_Detector.C \
-			Primitive_Calorimeter.C \
-			Tau_Reconstruction.C 
+			Primitive_Calorimeter.C
 
 ANATRIGGER_ADDS       =	\
 			Trigger_Base.H \

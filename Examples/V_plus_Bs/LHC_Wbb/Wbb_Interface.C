@@ -72,7 +72,7 @@ namespace WBB {
 
     PHASIC::Process_Base *InitializeProcess
     (const PHASIC::Process_Info &pi, bool add) { return NULL; }
-    bool PerformTests() { return true; }
+    int  PerformTests() { return 1; }
     bool NewLibraries() { return false; }
 
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs) {}
@@ -83,16 +83,6 @@ namespace WBB {
 
   }; // end of class Wbb_Interface
  
-  DECLARE_GETTER(Wbb_Interface_Getter,"Wbb",ME_Generator_Base,ME_Generator_Key);
-  ME_Generator_Base *Wbb_Interface_Getter::operator()(const ME_Generator_Key &key) const
-  {
-    return new Wbb_Interface();
-  }
-  void Wbb_Interface_Getter::PrintInfo(std::ostream &str,const size_t width) const
-  { 
-    str<<"Interface to the Wbb loop ME generator"; 
-  }
-
   class Wbb_Process: public PHASIC::Virtual_ME2_Base {
   protected:
     double *p_p, *p_res;
@@ -132,23 +122,39 @@ namespace WBB {
 
   };// end of class Wbb_Process
 
-  DECLARE_VIRTUALME2_GETTER(Wbb_Process_Getter,"Wbb_Process")
-  Virtual_ME2_Base *Wbb_Process_Getter::operator()(const Process_Info &pi) const
-  {
-    if (pi.m_loopgenerator!="Wbb") return NULL;
-    if (MODEL::s_model->Name()!=std::string("SM")) return NULL;
-    if (pi.m_oew!=1 || pi.m_fi.m_nloewtype!=nlo_type::lo)return NULL;
-    if (!(pi.m_fi.m_nloqcdtype&nlo_type::loop)) return NULL;
-    Flavour_Vector fl(pi.ExtractFlavours());
-    DEBUG_VAR(fl);
-    if (fl[0].Strong() && fl[1].Strong() &&
-	fl[2].Kfcode()==kf_Wplus &&
-	fl[3].Kfcode()==kf_b && fl[4]==fl[3].Bar() &&
-	Flavour(kf_b).Mass()) {
-      msg_Info()<<"!";
-      return new Wbb_Process(pi,fl);
-    }
-    return NULL;
-  }
-
 }// end of namespace WBB
+
+using namespace WBB;
+
+DECLARE_GETTER(Wbb_Interface,"Wbb",ME_Generator_Base,ME_Generator_Key);
+ME_Generator_Base *ATOOLS::Getter
+<ME_Generator_Base,ME_Generator_Key,Wbb_Interface>::
+operator()(const ME_Generator_Key &key) const
+{
+  return new Wbb_Interface();
+}
+void ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,Wbb_Interface>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"Interface to the Wbb loop ME generator"; 
+}
+
+DECLARE_VIRTUALME2_GETTER(Wbb_Process,"Wbb_Process")
+Virtual_ME2_Base *ATOOLS::Getter
+<Virtual_ME2_Base,Process_Info,Wbb_Process>::
+operator()(const Process_Info &pi) const
+{
+  if (pi.m_loopgenerator!="Wbb") return NULL;
+  if (MODEL::s_model->Name()!=std::string("SM")) return NULL;
+  if (pi.m_oew!=1 || pi.m_fi.m_nloewtype!=nlo_type::lo)return NULL;
+  if (!(pi.m_fi.m_nloqcdtype&nlo_type::loop)) return NULL;
+  Flavour_Vector fl(pi.ExtractFlavours());
+  if (fl[0].Strong() && fl[1].Strong() &&
+      fl[2].Kfcode()==kf_Wplus &&
+      fl[3].Kfcode()==kf_b && fl[4]==fl[3].Bar() &&
+      Flavour(kf_b).Mass()) {
+    msg_Info()<<"!";
+    return new Wbb_Process(pi,fl);
+    }
+  return NULL;
+}

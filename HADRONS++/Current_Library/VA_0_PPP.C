@@ -838,9 +838,10 @@ Complex VA_0_PPP::KS95::FormFactor( int j, double Q2, double s, double t )
   return FF;
 }
 
-DEFINE_CURRENT_GETTER(VA_0_PPP,VA_0_PPP_Getter,"VA_0_PPP")
+DEFINE_CURRENT_GETTER(VA_0_PPP,"VA_0_PPP")
 
-void VA_0_PPP_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<Current_Base,ME_Parameters,VA_0_PPP>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ 0 \\rightarrow \\pi \\pi K $ \n\n"
     <<"Order: special, see tau decays. \n\n"
     <<"Available form factors: \n "

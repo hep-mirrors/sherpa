@@ -33,28 +33,28 @@ Primitive_Observable_Base *GetObservable(const Argument_Matrix &parameters)
   return new Class(HistogramType(scale),min,max,bins,list);
 }									
 
-#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
+#define DEFINE_GETTER_METHOD(CLASS)				\
   Primitive_Observable_Base *					\
-  NAME::operator()(const Argument_Matrix &parameters) const		\
+  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
   { return GetObservable<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
   { str<<"min max bins Lin|LinErr|Log|LogErr [list [reflist]]"; }
 
-#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME)					\
-  DEFINE_PRINT_METHOD(NAME)
+#define DEFINE_OBSERVABLE_GETTER(CLASS,TAG)			\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DEFINE_GETTER_METHOD(CLASS)					\
+  DEFINE_PRINT_METHOD(CLASS)
 
 #include "ATOOLS/Math/MathTools.H"
 #include "AddOns/Analysis/Tools/Particle_Qualifier.H"
 
 using namespace ATOOLS;
 
-DEFINE_OBSERVABLE_GETTER(Multiplicity,Multiplicity_Getter,"Multi")
-DEFINE_OBSERVABLE_GETTER(InclMultiplicity,InclMultiplicity_Getter,"InclMulti")
-DEFINE_OBSERVABLE_GETTER(Hadron_Multiplicities,Hadron_Multiplicities_Getter,"Hadron_Multis")
+DEFINE_OBSERVABLE_GETTER(Multiplicity,"Multi")
+DEFINE_OBSERVABLE_GETTER(InclMultiplicity,"InclMulti")
+DEFINE_OBSERVABLE_GETTER(Hadron_Multiplicities,"Hadron_Multis")
 
 
 

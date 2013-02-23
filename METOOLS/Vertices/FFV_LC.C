@@ -673,24 +673,17 @@ std::string FFV_Calculator<SType>::Label() const
 namespace METOOLS {
 
   template class FFV_Calculator<double>;
-  template class FFV_Calculator<long double>;
 
 }
 
-DECLARE_TEMPLATE_GETTER(FFV_Getter,"Gamma",Lorentz_Calculator,Vertex_Key);
+DECLARE_GETTER(FFV_Calculator<double>,"DGamma",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,FFV_Calculator<double> >::
+operator()(const Vertex_Key &key) const
+{ return new FFV_Calculator<double>(key); }
 
-template <typename SType,char STag> Lorentz_Calculator *
-FFV_Getter<SType,STag>::operator()(const Vertex_Key &key) const
-{
-  return new FFV_Calculator<SType>(key);
-}
-
-template <typename SType,char STag>
-void FFV_Getter<SType,STag>::PrintInfo
-(std::ostream &str,const size_t width) const
-{
-  str<<"FFV vertex";
-}
-
-template class FFV_Getter<double,'D'>;
-template class FFV_Getter<long double,'Q'>;
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    FFV_Calculator<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"FFV vertex"; }

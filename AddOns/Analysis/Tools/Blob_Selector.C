@@ -59,11 +59,11 @@ public:
 
 };
 
-DECLARE_GETTER(Blob_Selector_Getter,"BlobSel",
+DECLARE_GETTER(Blob_Selector,"BlobSel",
 	       Analysis_Object,Argument_Matrix);
 
-Analysis_Object *
-Blob_Selector_Getter::operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,Blob_Selector>::
+operator()(const Argument_Matrix &parameters) const
 { 
   if (parameters.size()<1) return NULL;
   if (parameters[0].size()<2) return NULL;
@@ -72,7 +72,7 @@ Blob_Selector_Getter::operator()(const Argument_Matrix &parameters) const
 			   ATOOLS::ToType<int>(parameters[0][1]),outlist); 
 }
 
-void Blob_Selector_Getter::
+void ATOOLS::Getter<Analysis_Object,Argument_Matrix,Blob_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"type mode [outlist]"; 

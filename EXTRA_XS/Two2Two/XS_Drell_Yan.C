@@ -126,8 +126,9 @@ bool XS_ee_ffbar::SetColours(double s,double t,double u)
 }
 
 
-DECLARE_TREEME2_GETTER(XS_ee_ffbar_Getter,"XS_ee_ffbar")
-Tree_ME2_Base *XS_ee_ffbar_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_ee_ffbar,"XS_ee_ffbar")
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_ee_ffbar>::
+operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.NLOType()!=nlo_type::lo && pi.m_fi.NLOType()!=nlo_type::born) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -221,8 +222,9 @@ bool XS_Charged_Drell_Yan::SetColours(double s,double t,double u)
 }
 
 
-DECLARE_TREEME2_GETTER(XS_Charged_Drell_Yan_Getter,"XS_Charged_Drell_Yan") // Charged Drell-Yan
-Tree_ME2_Base *XS_Charged_Drell_Yan_Getter::operator()(const Process_Info &pi) const
+DECLARE_TREEME2_GETTER(XS_Charged_Drell_Yan,"XS_Charged_Drell_Yan") // Charged Drell-Yan
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_Charged_Drell_Yan>::
+operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.NLOType()!=nlo_type::lo && pi.m_fi.NLOType()!=nlo_type::born) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();

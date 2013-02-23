@@ -40,23 +40,23 @@ GetGlobalCalculator(const Argument_Matrix &parameters)
   return NULL;
 }									
 
-#define DEFINE_GLOBAL_CALCULATOR_GETTER_METHOD(CLASS,NAME)		\
+#define DEFINE_GLOBAL_CALCULATOR_GETTER_METHOD(CLASS)		\
   Primitive_Observable_Base *					\
-  NAME::operator()(const Argument_Matrix &parameters) const		\
+  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
   { return GetGlobalCalculator<CLASS>(parameters); }
 
 #define DEFINE_GLOBAL_CALCULATOR_PRINT_METHOD(NAME)		\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
   { str<<"inlist resulttag"; }
 
-#define DEFINE_GLOBAL_CALCULATOR_GETTER(CLASS,NAME,TAG)		\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
-  DEFINE_GLOBAL_CALCULATOR_GETTER_METHOD(CLASS,NAME)		\
-  DEFINE_GLOBAL_CALCULATOR_PRINT_METHOD(NAME)
+#define DEFINE_GLOBAL_CALCULATOR_GETTER(CLASS,TAG)		\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DEFINE_GLOBAL_CALCULATOR_GETTER_METHOD(CLASS)		\
+  DEFINE_GLOBAL_CALCULATOR_PRINT_METHOD(CLASS)
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
 
-DEFINE_GLOBAL_CALCULATOR_GETTER(Total_Momentum,Total_Momentum_Getter,"MomSum")
+DEFINE_GLOBAL_CALCULATOR_GETTER(Total_Momentum,"MomSum")
 
 Total_Momentum::Total_Momentum(const std::string &inlist,
 			       const std::string &outlist):

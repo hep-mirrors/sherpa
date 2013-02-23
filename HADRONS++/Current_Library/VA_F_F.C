@@ -46,9 +46,10 @@ void VA_F_F::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   }
 }
 
-DEFINE_CURRENT_GETTER(VA_F_F,VA_F_F_Getter,"VA_F_F")
+DEFINE_CURRENT_GETTER(VA_F_F,"VA_F_F")
 
-void VA_F_F_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<Current_Base,ME_Parameters,VA_F_F>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ (B) \\rightarrow (D) l \\nu_l $ \n\n"
     <<"Order: 0 = bar'ed spinor, 1 = non-bar'ed spinor \n\n"
     <<"\\[\\bar{u}(p_0) \\gamma_\\mu [ v-a\\gamma_5 ] u(p_1) \\] \n\n"

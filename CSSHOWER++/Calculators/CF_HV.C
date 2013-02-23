@@ -98,11 +98,13 @@ void CF_HV_Getter::PrintInfo
   str<<"HV gauge coupling";
 }
 
-DECLARE_GETTER(CF_HV_Filler,"SF_HV_Fill",
+}
+
+DECLARE_GETTER(CF_HV_Getter,"SF_HV_Fill",
 	       void,SFC_Filler_Key);
 
-void *CF_HV_Filler::operator()
-  (const SFC_Filler_Key &key) const
+void *ATOOLS::Getter<void,SFC_Filler_Key,CF_HV_Getter>::
+operator()(const SFC_Filler_Key &key) const
 {
   if (key.p_md->Name()!=std::string("SM+HiddenValley")) return NULL;
   if (!Flavour(9900021).IsOn()) return NULL;
@@ -120,10 +122,8 @@ void *CF_HV_Filler::operator()
   return NULL;
 }
 
-void CF_HV_Filler::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<void,SFC_Filler_Key,CF_HV_Getter>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"HV coupling filler";
-}
-
 }

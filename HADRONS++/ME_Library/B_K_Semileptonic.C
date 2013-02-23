@@ -182,9 +182,10 @@ Complex B_K_Semileptonic::gSD(double mhat, double shat)
           2./9.*(2.+y)*sqrt(fabs(1.-y))*theta;
 }
 
-DEFINE_ME_GETTER(B_K_Semileptonic,B_K_Semileptonic_Getter,"B_K_Semileptonic")
+DEFINE_ME_GETTER(B_K_Semileptonic,"B_K_Semileptonic")
 
-void B_K_Semileptonic_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B_K_Semileptonic>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ B \\rightarrow K \\; l^- \\; l^+ $ \n \n"
     <<"Order: 0 = $B$, 1 = $K$, 2 = $l^-$, 3 = $l^+$ \n\n"
     <<"For matrix element and form factors: hep-ph/9910221 \n"

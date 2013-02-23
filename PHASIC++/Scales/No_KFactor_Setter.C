@@ -25,16 +25,18 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-DECLARE_GETTER(No_KFactor_Setter_Getter,"NO",
+DECLARE_GETTER(No_KFactor_Setter,"NO",
 	       KFactor_Setter_Base,KFactor_Setter_Arguments);
 
-KFactor_Setter_Base *No_KFactor_Setter_Getter::
+KFactor_Setter_Base *ATOOLS::Getter
+<KFactor_Setter_Base,KFactor_Setter_Arguments,No_KFactor_Setter>::
 operator()(const KFactor_Setter_Arguments &args) const
 {
   return new No_KFactor_Setter(args);
 }
 
-void No_KFactor_Setter_Getter::
+void ATOOLS::Getter<KFactor_Setter_Base,KFactor_Setter_Arguments,
+		    No_KFactor_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"variable scale scheme\n";

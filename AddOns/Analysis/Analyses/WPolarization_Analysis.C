@@ -121,22 +121,20 @@ Primitive_Observable_Base *WPolarization_Analysis::Copy() const
   return new WPolarization_Analysis(m_params);
 }
 
-namespace ANALYSIS {
-
-DECLARE_GETTER(WPolarization_Getter,"WPolarization",
+DECLARE_GETTER(WPolarization_Analysis,"WPolarization",
 	       Primitive_Observable_Base,Argument_Matrix);
 
-Primitive_Observable_Base *
-WPolarization_Getter::operator()(const Argument_Matrix &parameters) const
+Primitive_Observable_Base *ATOOLS::Getter
+<Primitive_Observable_Base,Argument_Matrix,WPolarization_Analysis>::
+operator()(const Argument_Matrix &parameters) const
 {
   if (parameters.size()==0 || parameters[0].size()<1) return NULL;
   return new WPolarization_Analysis(parameters);
 }
 
-void WPolarization_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter
+<Primitive_Observable_Base,Argument_Matrix,WPolarization_Analysis>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"list"; 
-}
-
 }

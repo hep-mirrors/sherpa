@@ -87,13 +87,17 @@ namespace MYSTUFF {
 
   };// end of class FastJet_Jet_Criterion
 
-  DECLARE_GETTER(FastJet_Jet_Criterion_Getter,"FASTJET",
-		 Jet_Criterion,JetCriterion_Key);
-  Jet_Criterion *FastJet_Jet_Criterion_Getter::
-  operator()(const JetCriterion_Key &args) const
-  { return new FastJet_Jet_Criterion(args.m_key); }
-  void FastJet_Jet_Criterion_Getter::
-  PrintInfo(std::ostream &str,const size_t width) const
-  { str<<"The FastJet jet criterion"; }
-
 }
+
+using namespace MYSTUFF;
+
+DECLARE_GETTER(FastJet_Jet_Criterion,"FASTJET",
+	       Jet_Criterion,JetCriterion_Key);
+Jet_Criterion *ATOOLS::Getter
+<Jet_Criterion,JetCriterion_Key,FastJet_Jet_Criterion>::
+operator()(const JetCriterion_Key &args) const
+{ return new FastJet_Jet_Criterion(args.m_key); }
+void ATOOLS::Getter
+<Jet_Criterion,JetCriterion_Key,FastJet_Jet_Criterion>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"The FastJet jet criterion"; }

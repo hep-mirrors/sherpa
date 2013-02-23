@@ -92,8 +92,10 @@ double ee3jet_QCD_Virtual::Ff(double y12,double y13,double y23)
 
 
 
-DECLARE_VIRTUALME2_GETTER(ee3jet_QCD_Virtual_Getter,"ee3jet_QCD_Virtual")
-Virtual_ME2_Base *ee3jet_QCD_Virtual_Getter::operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(ee3jet_QCD_Virtual,"ee3jet_QCD_Virtual")
+Virtual_ME2_Base *ATOOLS::Getter
+<Virtual_ME2_Base,Process_Info,ee3jet_QCD_Virtual>::
+operator()(const Process_Info &pi) const
 {
   if (pi.m_loopgenerator!="Internal") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;

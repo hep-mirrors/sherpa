@@ -108,10 +108,11 @@ public:
 
 };
 
-DECLARE_GETTER(FastJet_Getter,"FastJets",
+DECLARE_GETTER(Fastjet_Interface,"FastJets",
 	       Analysis_Object,Argument_Matrix);	
 
-Analysis_Object *FastJet_Getter::
+Analysis_Object *ATOOLS::Getter
+<Analysis_Object,Argument_Matrix,Fastjet_Interface>::
 operator()(const Argument_Matrix &parameters) const	
 {
   if (parameters.size()<1) return NULL;
@@ -164,7 +165,9 @@ operator()(const Argument_Matrix &parameters) const
   return new Fastjet_Interface(inlist,outlist,jdef,NULL,njets,ptmin,btag);
 }									
 
-void FastJet_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter
+<Analysis_Object,Argument_Matrix,Fastjet_Interface>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList    list\n"

@@ -164,19 +164,21 @@ GetParticleSelector(const Argument_Matrix &parameters)
   return new Class(min,max,inlist,outlist);
 }									
 
-#define DEFINE_SELECTOR_GETTER_METHOD(CLASS,NAME)		\
-  Analysis_Object *				\
-  NAME::operator()(const Argument_Matrix &parameters) const	\
+#define DEFINE_SELECTOR_GETTER_METHOD(CLASS)			\
+  Analysis_Object *ATOOLS::Getter				\
+  <Analysis_Object,Argument_Matrix,CLASS>::			\
+  operator()(const Argument_Matrix &parameters) const		\
   { return GetParticleSelector<CLASS>(parameters); }
 
-#define DEFINE_SELECTOR_PRINT_METHOD(NAME)				\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+#define DEFINE_SELECTOR_PRINT_METHOD(CLASS)			\
+  void ATOOLS::Getter<Analysis_Object,Argument_Matrix,CLASS>::	\
+  PrintInfo(std::ostream &str,const size_t width) const		\
   { str<<"min max inlist outlist"; }
 
-#define DEFINE_SELECTOR_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Analysis_Object,Argument_Matrix);	\
-  DEFINE_SELECTOR_GETTER_METHOD(CLASS,NAME)			\
-  DEFINE_SELECTOR_PRINT_METHOD(NAME)
+#define DEFINE_SELECTOR_GETTER(CLASS,TAG)			\
+  DECLARE_GETTER(CLASS,TAG,Analysis_Object,Argument_Matrix);	\
+  DEFINE_SELECTOR_GETTER_METHOD(CLASS)				\
+  DEFINE_SELECTOR_PRINT_METHOD(CLASS)
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
 
@@ -217,19 +219,21 @@ GetParticleDSelector(const Argument_Matrix &parameters)
   return new Class(min,max,flav,item,reflist,inlist,outlist);
 }									
 
-#define DEFINE_SELECTOR_D_GETTER_METHOD(CLASS,NAME)		\
-  Analysis_Object *				\
-  NAME::operator()(const Argument_Matrix &parameters) const	\
+#define DEFINE_SELECTOR_D_GETTER_METHOD(CLASS)			\
+  Analysis_Object *ATOOLS::Getter				\
+  <Analysis_Object,Argument_Matrix,CLASS>::			\
+  operator()(const Argument_Matrix &parameters) const		\
   { return GetParticleDSelector<CLASS>(parameters); }
 
-#define DEFINE_SELECTOR_D_PRINT_METHOD(NAME)				\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+#define DEFINE_SELECTOR_D_PRINT_METHOD(CLASS)			\
+  void ATOOLS::Getter<Analysis_Object,Argument_Matrix,CLASS>::	\
+  PrintInfo(std::ostream &str,const size_t width) const		\
   { str<<"min max flav item inlist reflist outlist"; }
 
-#define DEFINE_SELECTOR_D_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Analysis_Object,Argument_Matrix);	\
-  DEFINE_SELECTOR_D_GETTER_METHOD(CLASS,NAME)			\
-  DEFINE_SELECTOR_D_PRINT_METHOD(NAME)
+#define DEFINE_SELECTOR_D_GETTER(CLASS,TAG)			\
+  DECLARE_GETTER(CLASS,TAG,Analysis_Object,Argument_Matrix);	\
+  DEFINE_SELECTOR_D_GETTER_METHOD(CLASS)			\
+  DEFINE_SELECTOR_D_PRINT_METHOD(CLASS)
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
 
@@ -252,7 +256,7 @@ void Particle_Selector_Base::Evaluate(const ATOOLS::Particle_List &inlist,
   }
 }
 
-DEFINE_SELECTOR_GETTER(PT_Selector,PT_Selector_Getter,"PTSel")
+DEFINE_SELECTOR_GETTER(PT_Selector,"PTSel")
 
 PT_Selector::PT_Selector
 (const double min,const double max,
@@ -270,7 +274,7 @@ Analysis_Object *PT_Selector::GetCopy() const
   return new PT_Selector(m_xmin,m_xmax,m_inlist,m_outlist);
 }
 
-DEFINE_SELECTOR_GETTER(ET_Selector,ET_Selector_Getter,"ETSel")
+DEFINE_SELECTOR_GETTER(ET_Selector,"ETSel")
 
 ET_Selector::ET_Selector
 (const double min,const double max,
@@ -288,7 +292,7 @@ Analysis_Object *ET_Selector::GetCopy() const
   return new ET_Selector(m_xmin,m_xmax,m_inlist,m_outlist);
 }
 
-DEFINE_SELECTOR_GETTER(Eta_Selector,Eta_Selector_Getter,"EtaSel")
+DEFINE_SELECTOR_GETTER(Eta_Selector,"EtaSel")
 
 Eta_Selector::Eta_Selector
 (const double min,const double max,
@@ -306,7 +310,7 @@ Analysis_Object *Eta_Selector::GetCopy() const
   return new Eta_Selector(m_xmin,m_xmax,m_inlist,m_outlist);
 }
 
-DEFINE_SELECTOR_GETTER(Abs_Eta_Selector,Abs_Eta_Selector_Getter,"AbsEtaSel")
+DEFINE_SELECTOR_GETTER(Abs_Eta_Selector,"AbsEtaSel")
 
 Abs_Eta_Selector::Abs_Eta_Selector
 (const double min,const double max,
@@ -324,7 +328,7 @@ Analysis_Object *Abs_Eta_Selector::GetCopy() const
   return new Abs_Eta_Selector(m_xmin,m_xmax,m_inlist,m_outlist);
 }
 
-DEFINE_SELECTOR_GETTER(Y_Selector,Y_Selector_Getter,"YSel")
+DEFINE_SELECTOR_GETTER(Y_Selector,"YSel")
 
 Y_Selector::Y_Selector
 (const double min,const double max,
@@ -342,7 +346,7 @@ Analysis_Object *Y_Selector::GetCopy() const
   return new Y_Selector(m_xmin,m_xmax,m_inlist,m_outlist);
 }
 
-DEFINE_SELECTOR_GETTER(Abs_Y_Selector,Abs_Y_Selector_Getter,"AbsYSel")
+DEFINE_SELECTOR_GETTER(Abs_Y_Selector,"AbsYSel")
 
 Abs_Y_Selector::Abs_Y_Selector
 (const double min,const double max,
@@ -360,7 +364,7 @@ Analysis_Object *Abs_Y_Selector::GetCopy() const
   return new Abs_Y_Selector(m_xmin,m_xmax,m_inlist,m_outlist);
 }
 
-DEFINE_SELECTOR_GETTER(Phi_Selector,Phi_Selector_Getter,"PhiSel")
+DEFINE_SELECTOR_GETTER(Phi_Selector,"PhiSel")
 
 Phi_Selector::Phi_Selector
 (const double min,const double max,
@@ -378,7 +382,7 @@ Analysis_Object *Phi_Selector::GetCopy() const
   return new Phi_Selector(m_xmin,m_xmax,m_inlist,m_outlist);
 }
 
-DEFINE_SELECTOR_D_GETTER(DPhi_Selector,DPhi_Selector_Getter,"DPhiSel")
+DEFINE_SELECTOR_D_GETTER(DPhi_Selector,"DPhiSel")
 
 DPhi_Selector::
 DPhi_Selector(const double min,const double max,

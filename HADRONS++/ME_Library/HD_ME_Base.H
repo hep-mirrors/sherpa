@@ -9,10 +9,11 @@
 #include "HADRONS++/Main/Tools.H"
 #include "ATOOLS/Org/Getter_Function.H"
 
-#define DEFINE_ME_GETTER(CLASS,NAME,TAG)                              \
-DECLARE_GETTER(NAME,TAG,HD_ME_Base,ME_Parameters);                     \
-HD_ME_Base* NAME::operator()(const ME_Parameters &parameters) const    \
-{ return new CLASS(parameters.flavs, parameters.indices,TAG); }
+#define DEFINE_ME_GETTER(CLASS,TAG)				       \
+  DECLARE_GETTER(CLASS,TAG,HD_ME_Base,ME_Parameters);		       \
+  HD_ME_Base* ATOOLS::Getter<HD_ME_Base,ME_Parameters,CLASS>::	       \
+  operator()(const ME_Parameters &parameters) const		       \
+  { return new CLASS(parameters.flavs, parameters.indices,TAG); }
 
 namespace HADRONS {
 

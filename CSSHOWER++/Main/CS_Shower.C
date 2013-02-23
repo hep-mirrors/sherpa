@@ -819,19 +819,21 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
   return true;
 }
 
+DECLARE_GETTER(CS_Shower,"CSS",Shower_Base,Shower_Key);
+
+Shower_Base *Getter<Shower_Base,Shower_Key,CS_Shower>::
+operator()(const Shower_Key &key) const
+{
+  return new CS_Shower(key.p_isr,key.p_model,key.p_read);
+}
+
+void Getter<Shower_Base,Shower_Key,CS_Shower>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"The CSS shower"; 
+}
+
 namespace CSSHOWER {
-
-  DECLARE_GETTER(CSS_Getter,"CSS",Shower_Base,Shower_Key);
-
-  Shower_Base *CSS_Getter::operator()(const Shower_Key &key) const
-  {
-    return new CS_Shower(key.p_isr,key.p_model,key.p_read);
-  }
-
-  void CSS_Getter::PrintInfo(std::ostream &str,const size_t width) const
-  { 
-    str<<"The CSS shower"; 
-  }
 
   class CSS_Jet_Criterion: public Jet_Criterion {
   private:
@@ -848,19 +850,18 @@ namespace CSSHOWER {
     }
   };// end of class CSS_Jet_Criterion
 
-  DECLARE_GETTER(CSS_Jet_Criterion_Getter,"CSS",
-		 Jet_Criterion,JetCriterion_Key);
+}// end of namespace CSSHOWER
 
-  Jet_Criterion *CSS_Jet_Criterion_Getter::
-  operator()(const JetCriterion_Key &args) const
-  {
-    return new CSS_Jet_Criterion(args.p_shower);
-  }
+DECLARE_GETTER(CSS_Jet_Criterion,"CSS",Jet_Criterion,JetCriterion_Key);
 
-  void CSS_Jet_Criterion_Getter::
-  PrintInfo(std::ostream &str,const size_t width) const
-  { 
-    str<<"The CSS jet criterion";
-  }
+Jet_Criterion *Getter<Jet_Criterion,JetCriterion_Key,CSS_Jet_Criterion>::
+operator()(const JetCriterion_Key &args) const
+{
+  return new CSS_Jet_Criterion(args.p_shower);
+}
 
+void Getter<Jet_Criterion,JetCriterion_Key,CSS_Jet_Criterion>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"The CSS jet criterion";
 }

@@ -30,9 +30,10 @@ void B_Bpi_pwave::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B_Bpi_pwave,B_Bpi_pwave_Getter,"B_Bpi_pwave")
+DEFINE_ME_GETTER(B_Bpi_pwave,"B_Bpi_pwave")
 
-void B_Bpi_pwave_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B_Bpi_pwave>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
 
@@ -60,9 +61,10 @@ void B3_Bpi_pwave::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B3_Bpi_pwave,B3_Bpi_pwave_Getter,"B3_Bpi_pwave")
+DEFINE_ME_GETTER(B3_Bpi_pwave,"B3_Bpi_pwave")
 
-void B3_Bpi_pwave_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B3_Bpi_pwave>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
 
@@ -90,9 +92,10 @@ void B_Bpi_swave::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B_Bpi_swave,B_Bpi_swave_Getter,"B_Bpi_swave")
+DEFINE_ME_GETTER(B_Bpi_swave,"B_Bpi_swave")
 
-void B_Bpi_swave_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B_Bpi_swave>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
 
@@ -122,9 +125,10 @@ void B3_Bpi_dwave::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B3_Bpi_dwave,B3_Bpi_dwave_Getter,"B3_Bpi_dwave")
+DEFINE_ME_GETTER(B3_Bpi_dwave,"B3_Bpi_dwave")
 
-void B3_Bpi_dwave_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B3_Bpi_dwave>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
 
@@ -158,9 +162,10 @@ void B_Bphoton_M1::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B_Bphoton_M1,B_Bphoton_M1_Getter,"B_Bphoton_M1")
+DEFINE_ME_GETTER(B_Bphoton_M1,"B_Bphoton_M1")
 
-void B_Bphoton_M1_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B_Bphoton_M1>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
 
@@ -194,9 +199,10 @@ void B3_Bphoton_M1::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B3_Bphoton_M1,B3_Bphoton_M1_Getter,"B3_Bphoton_M1")
+DEFINE_ME_GETTER(B3_Bphoton_M1,"B3_Bphoton_M1")
 
-void B3_Bphoton_M1_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B3_Bphoton_M1>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
 
@@ -231,9 +237,10 @@ void B3_Bphoton_M1_2::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B3_Bphoton_M1_2,B3_Bphoton_M1_2_Getter,"B3_Bphoton_M1_2")
+DEFINE_ME_GETTER(B3_Bphoton_M1_2,"B3_Bphoton_M1_2")
 
-void B3_Bphoton_M1_2_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B3_Bphoton_M1_2>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
 
@@ -272,9 +279,10 @@ void B_Bphoton_E1::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B_Bphoton_E1,B_Bphoton_E1_Getter,"B_Bphoton_E1")
+DEFINE_ME_GETTER(B_Bphoton_E1,"B_Bphoton_E1")
 
-void B_Bphoton_E1_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B_Bphoton_E1>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
 
@@ -313,9 +321,10 @@ void B3_Bphoton_E1::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(B3_Bphoton_E1,B3_Bphoton_E1_Getter,"B3_Bphoton_E1")
+DEFINE_ME_GETTER(B3_Bphoton_E1,"B3_Bphoton_E1")
 
-void B3_Bphoton_E1_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,B3_Bphoton_E1>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
 
@@ -338,9 +347,10 @@ void QQ_PGG::Calculate(const Vec4D_Vector& p, bool m_anti)
     CreateTrivial(Complex(1.0,0.0));
 }
 
-DEFINE_ME_GETTER(QQ_PGG,QQ_PGG_Getter,"QQ_PGG")
+DEFINE_ME_GETTER(QQ_PGG,"QQ_PGG")
 
-void QQ_PGG_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,QQ_PGG>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }
 
@@ -592,8 +602,9 @@ double P_3P_Dalitz::operator()( const Vec4D * _p )
 //   return 1.;
 // }
 
-DEFINE_ME_GETTER(P_3P_Dalitz,P_3P_Dalitz_Getter,"P_3P_Dalitz")
+DEFINE_ME_GETTER(P_3P_Dalitz,"P_3P_Dalitz")
 
-void P_3P_Dalitz_Getter::PrintInfo(std::ostream &str,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,P_3P_Dalitz>::
+PrintInfo(std::ostream &str,const size_t width) const {
   str<<"No Information";
 }

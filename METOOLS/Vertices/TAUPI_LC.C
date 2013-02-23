@@ -215,24 +215,17 @@ std::string TAUPI_Calculator<SType>::Label() const
 namespace METOOLS {
 
   template class TAUPI_Calculator<double>;
-  template class TAUPI_Calculator<long double>;
 
 }
 
-DECLARE_TEMPLATE_GETTER(TAUPI_Getter,"TAUPI",Lorentz_Calculator,Vertex_Key);
+DECLARE_GETTER(TAUPI_Calculator<double>,"DTAUPI",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,TAUPI_Calculator<double> >::
+operator()(const Vertex_Key &key) const
+{ return new TAUPI_Calculator<double>(key); }
 
-template <typename SType,char STag> Lorentz_Calculator *
-TAUPI_Getter<SType,STag>::operator()(const Vertex_Key &key) const
-{
-  return new TAUPI_Calculator<SType>(key);
-}
-
-template <typename SType,char STag>
-void TAUPI_Getter<SType,STag>::PrintInfo
-(std::ostream &str,const size_t width) const
-{
-  str<<"TAUPI vertex";
-}
-
-template class TAUPI_Getter<double,'D'>;
-template class TAUPI_Getter<long double,'Q'>;
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    TAUPI_Calculator<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"TAUPI vertex"; }

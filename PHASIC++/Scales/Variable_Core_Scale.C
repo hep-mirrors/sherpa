@@ -117,21 +117,19 @@ void Variable_Core_Scale::AssignId(Term *term)
 	       (2,term->Tag().length()-3)));
 }
 
-namespace PHASIC {
+DECLARE_ND_GETTER(Variable_Core_Scale,"VAR",
+		  Core_Scale_Setter,Core_Scale_Arguments,true);
 
-  DECLARE_ND_GETTER(Variable_Core_Scale_Getter,"VAR",
-		    Core_Scale_Setter,Core_Scale_Arguments,true);
+Core_Scale_Setter *ATOOLS::Getter
+<Core_Scale_Setter,Core_Scale_Arguments,Variable_Core_Scale>::
+operator()(const Core_Scale_Arguments &args) const
+{
+  return new Variable_Core_Scale(args);
+}
 
-  Core_Scale_Setter *Variable_Core_Scale_Getter::operator()
-    (const Core_Scale_Arguments &args) const
-  {
-    return new Variable_Core_Scale(args);
-  }
-
-  void Variable_Core_Scale_Getter::PrintInfo
-  (std::ostream &str,const size_t width) const
-  { 
-    str<<"variable core scale"; 
-  }
-
-}// end of namespace PHASIC
+void ATOOLS::Getter<Core_Scale_Setter,Core_Scale_Arguments,
+		    Variable_Core_Scale>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"variable core scale"; 
+}

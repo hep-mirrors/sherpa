@@ -244,24 +244,17 @@ std::string SFF_Calculator<SType>::Label() const
 namespace METOOLS {
 
   template class SFF_Calculator<double>;
-  template class SFF_Calculator<long double>;
 
 }
 
-DECLARE_TEMPLATE_GETTER(SFF_Getter,"FFS",Lorentz_Calculator,Vertex_Key);
+DECLARE_GETTER(SFF_Calculator<double>,"DFFS",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,SFF_Calculator<double> >::
+operator()(const Vertex_Key &key) const
+{ return new SFF_Calculator<double>(key); }
 
-template <typename SType,char STag> Lorentz_Calculator *
-SFF_Getter<SType,STag>::operator()(const Vertex_Key &key) const
-{
-  return new SFF_Calculator<SType>(key);
-}
-
-template <typename SType,char STag>
-void SFF_Getter<SType,STag>::PrintInfo
-(std::ostream &str,const size_t width) const
-{
-  str<<"SFF vertex";
-}
-
-template class SFF_Getter<double,'D'>;
-template class SFF_Getter<long double,'Q'>;
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    SFF_Calculator<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"SFF vertex"; }

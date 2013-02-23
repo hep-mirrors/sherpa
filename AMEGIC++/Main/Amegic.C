@@ -227,19 +227,18 @@ Cluster_Amplitude *Amegic::ClusterConfiguration
   return p_cluster->Amplitude();
 }
 
-namespace PHASIC {
+DECLARE_GETTER(Amegic,"Amegic",ME_Generator_Base,ME_Generator_Key);
 
-  DECLARE_GETTER(Amegic_Getter,"Amegic",ME_Generator_Base,ME_Generator_Key);
+ME_Generator_Base *ATOOLS::Getter
+<ME_Generator_Base,ME_Generator_Key,Amegic>::
+operator()(const ME_Generator_Key &key) const
+{
+  return new Amegic();
+}
 
-  ME_Generator_Base *Amegic_Getter::operator()(const ME_Generator_Key &key) const
-  {
-    return new Amegic();
-  }
-
-  void Amegic_Getter::PrintInfo(std::ostream &str,const size_t width) const
-  { 
-    str<<"The AMEGIC++ ME generator"; 
-  }
-
+void ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,Amegic>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"The AMEGIC++ ME generator"; 
 }
 

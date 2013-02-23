@@ -178,11 +178,13 @@ void CF_EW_FFW_Getter::PrintInfo
   str<<"ffw coupling";
 }
 
-DECLARE_GETTER(CF_EW_FFV_Filler,"SF_EW_FFV_Fill",
+}
+
+DECLARE_GETTER(CF_EW_FFW_Getter,"SF_EW_FFV_Fill",
 	       void,SFC_Filler_Key);
 
-void *CF_EW_FFV_Filler::operator()
-  (const SFC_Filler_Key &key) const
+void *ATOOLS::Getter<void,SFC_Filler_Key,CF_EW_FFW_Getter>::
+operator()(const SFC_Filler_Key &key) const
 {
   if (!Flavour(kf_Z).IsOn()) return NULL;
   std::string ptag("{"+Flavour(kf_Z).IDName()+"}");
@@ -238,10 +240,8 @@ void *CF_EW_FFV_Filler::operator()
   return NULL;
 }
 
-void CF_EW_FFV_Filler::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<void,SFC_Filler_Key,CF_EW_FFW_Getter>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"ew ffv coupling filler";
-}
-
 }

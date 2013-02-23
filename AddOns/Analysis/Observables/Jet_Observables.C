@@ -81,17 +81,17 @@ Primitive_Observable_Base *GetObservable<Jet_Differential_Rates>(const Argument_
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *					\
-  NAME::operator()(const Argument_Matrix &parameters) const		\
+  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
   { return GetObservable<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
   { str<<"min max bins mode nmin nmax Lin|LinErr|Log|LogErr [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
   DEFINE_GETTER_METHOD(CLASS,NAME)					\
-  DEFINE_PRINT_METHOD(NAME)
+  DEFINE_PRINT_METHOD(CLASS)
 
 using namespace ATOOLS;
 
@@ -597,12 +597,12 @@ Primitive_Observable_Base * Jet_E_Distribution::Copy() const
   return new Jet_E_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
 }
 
-DECLARE_GETTER(Jet_Differential_Rates_Getter,"JetDRate",
+DECLARE_GETTER(Jet_Differential_Rates,"JetDRate",
 	       Primitive_Observable_Base,Argument_Matrix);	
 
 DEFINE_GETTER_METHOD(Jet_Differential_Rates,Jet_Differential_Rates_Getter)
 
-void Jet_Differential_Rates_Getter::PrintInfo(std::ostream &str,const size_t width) const	
+void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Jet_Differential_Rates>::PrintInfo(std::ostream &str,const size_t width) const	
 { 
   str<<"min max bins mode nmin nmax Lin|LinErr|Log|LogErr [list] -> Finder 93 .."; 
 }

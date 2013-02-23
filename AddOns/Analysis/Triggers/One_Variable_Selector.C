@@ -74,11 +74,12 @@ namespace ANALYSIS {
 
 using namespace ANALYSIS;
 
-DECLARE_GETTER(One_Variable_Selector_Getter,"MomSel",
+DECLARE_GETTER(One_Variable_Selector,"MomSel",
  	       Analysis_Object,Argument_Matrix);
 
-void One_Variable_Selector_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter
+<Analysis_Object,Argument_Matrix,One_Variable_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  list\n"
@@ -123,9 +124,9 @@ std::string MakeString(const std::vector<__T> &v)
   return s;
 }
 
-Analysis_Object *
-One_Variable_Selector_Getter::operator()
-  (const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,
+				One_Variable_Selector>::
+operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist("FinalState"), outlist("Selected");
   int isobs(0);

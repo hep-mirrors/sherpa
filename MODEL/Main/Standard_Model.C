@@ -14,16 +14,15 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(Standard_Model_Getter,
-	       "SM",Model_Base,Model_Arguments);
+DECLARE_GETTER(Standard_Model,"SM",Model_Base,Model_Arguments);
 
-Model_Base *Standard_Model_Getter::
+Model_Base *Getter<Model_Base,Model_Arguments,Standard_Model>::
 operator()(const Model_Arguments &args) const
 {
   return new Standard_Model(args.m_path,args.m_file,args.m_elementary);
 }
 
-void Standard_Model_Getter::
+void Getter<Model_Base,Model_Arguments,Standard_Model>::
 PrintInfo(ostream &str,const size_t width) const
 { 
   str<<"The Standard Model\n";
@@ -52,16 +51,25 @@ PrintInfo(ostream &str,const size_t width) const
      <<setw(width+4)<<" "<<"}";
 }
 
-DECLARE_GETTER(Standard_Model_Top_Getter,
-	       "SM+Top",Model_Base,Model_Arguments);
+namespace MODEL {
 
-Model_Base *Standard_Model_Top_Getter::
-operator()(const Model_Arguments &args) const
-{
-  return new Standard_Model(args.m_path,args.m_file,args.m_elementary,1);
+  class Standard_Model_Top: public Standard_Model {
+  public:
+    Standard_Model_Top(std::string path,std::string file,bool el):
+      Standard_Model(path,file,el,1) {}
+  };
+
 }
 
-void Standard_Model_Top_Getter::
+DECLARE_GETTER(Standard_Model_Top,"SM+Top",Model_Base,Model_Arguments);
+
+Model_Base *Getter<Model_Base,Model_Arguments,Standard_Model_Top>::
+operator()(const Model_Arguments &args) const
+{
+  return new Standard_Model_Top(args.m_path,args.m_file,args.m_elementary);
+}
+
+void Getter<Model_Base,Model_Arguments,Standard_Model_Top>::
 PrintInfo(ostream &str,const size_t width) const
 { 
   str<<"The Standard Model + non-standard top couplings\n";
@@ -87,17 +95,25 @@ PrintInfo(ostream &str,const size_t width) const
      <<setw(width+4)<<" "<<"}";
 }
 
+namespace MODEL {
 
-DECLARE_GETTER(Standard_Model_Gen4_Getter,"SM+4thGen",
-	       Model_Base,Model_Arguments);
+  class Standard_Model_Gen4: public Standard_Model {
+  public:
+    Standard_Model_Gen4(std::string path,std::string file,bool el):
+      Standard_Model(path,file,el,2) {}
+  };
 
-Model_Base *Standard_Model_Gen4_Getter::
-operator()(const Model_Arguments &args) const
-{
-  return new Standard_Model(args.m_path,args.m_file,args.m_elementary,2);
 }
 
-void Standard_Model_Gen4_Getter::
+DECLARE_GETTER(Standard_Model_Gen4,"SM+4thGen",Model_Base,Model_Arguments);
+
+Model_Base *Getter<Model_Base,Model_Arguments,Standard_Model_Gen4>::
+operator()(const Model_Arguments &args) const
+{
+  return new Standard_Model_Gen4(args.m_path,args.m_file,args.m_elementary);
+}
+
+void Getter<Model_Base,Model_Arguments,Standard_Model_Gen4>::
 PrintInfo(ostream &str,const size_t width) const
 { 
   str<<"The Standard Model + 4th generation\n";

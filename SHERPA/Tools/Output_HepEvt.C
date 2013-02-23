@@ -45,16 +45,16 @@ void Output_HepEvt::Output(Blob_List* blobs, const double weight)
   m_hepevt.WriteFullHepEvt(m_outstream,m_hepevt.Nhep());
 }
 
-DECLARE_GETTER(HEPEVT_Output_Getter,"HEPEVT",
+DECLARE_GETTER(Output_HepEvt,"HEPEVT",
 	       Output_Base,Output_Arguments);
 
-Output_Base *HEPEVT_Output_Getter::operator()
-(const Output_Arguments &args) const
+Output_Base *ATOOLS::Getter<Output_Base,Output_Arguments,Output_HepEvt>::
+operator()(const Output_Arguments &args) const
 {
   return new Output_HepEvt(args);
 }
 
-void HEPEVT_Output_Getter::PrintInfo
+void ATOOLS::Getter<Output_Base,Output_Arguments,Output_HepEvt>::PrintInfo
 (std::ostream &str,const size_t width) const
 {
   str<<"HEPEVT output";

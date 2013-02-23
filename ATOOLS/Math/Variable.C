@@ -488,22 +488,6 @@ Theta2<ValueType>::Theta2(): Variable_Base<ValueType>("\\theta_{ij}","Theta2")
 {
   this->m_selectorid="Angle"; 
 }
-
-template <class ValueType>
-class T: public Variable_Base<ValueType> {
-public:
-  T();
-};// end of class T
-template <class ValueType>
-T<ValueType>::T(): Variable_Base<ValueType>("t") {}
-  
-template <class ValueType>
-class Delta: public Variable_Base<ValueType> {
-public:
-  Delta();
-};// end of class Delta
-template <class ValueType>
-Delta<ValueType>::Delta(): Variable_Base<ValueType>("\\Delta(t,t_0)") {}
   
 template class Variable_Base<double>;
 
@@ -519,93 +503,67 @@ Variable_Base<double> *GetVariable(const std::string &parameter)
   return new Class();
 }
 
-#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
+#define DEFINE_GETTER_METHOD(CLASS)					\
   Variable_Base<double> *						\
-  NAME::operator()(const std::string &parameter) const			\
+  ATOOLS::Getter<Variable_Base<double>,std::string,CLASS>::		\
+  operator()(const std::string &parameter) const			\
   { return GetVariable<CLASS>(parameter); }
 
-#define DEFINE_PRINT_METHOD(NAME,PRINT)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+#define DEFINE_PRINT_METHOD(CLASS,PRINT)				\
+  void ATOOLS::Getter<Variable_Base<double>,std::string,CLASS>::	\
+  PrintInfo(std::ostream &str,const size_t width) const			\
   { str<<PRINT; }
 
-#define DEFINE_VARIABLE_GETTER(CLASS,NAME,TAG,PRINT,DISP)		\
-  DECLARE_ND_GETTER(NAME,TAG,Variable_Base<double>,std::string,DISP);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME)					\
-  DEFINE_PRINT_METHOD(NAME,PRINT)
+#define DEFINE_VARIABLE_GETTER(CLASS,TAG,PRINT,DISP)			\
+  DECLARE_ND_GETTER(CLASS,TAG,Variable_Base<double>,std::string,DISP);	\
+  DEFINE_GETTER_METHOD(CLASS)						\
+  DEFINE_PRINT_METHOD(CLASS,PRINT)
 
 template class No_Variable<double>;
-DEFINE_VARIABLE_GETTER(No_Variable<double>,No_Variable_Getter,"","",0)
+DEFINE_VARIABLE_GETTER(No_Variable<double>,"","",0)
 
 template class Calc_Variable<double>;
-DECLARE_ND_GETTER(Calc_Variable_Getter,"Calc",
+DECLARE_ND_GETTER(Calc_Variable<double>,"Calc",
 		  Variable_Base<double>,std::string,1);
-Variable_Base<double> *Calc_Variable_Getter::operator()
-(const std::string &parameter) const			
+Variable_Base<double> *
+ATOOLS::Getter<Variable_Base<double>,std::string,Calc_Variable<double> >::
+operator()(const std::string &parameter) const			
 { return new Calc_Variable<double>(parameter); }
-void Calc_Variable_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Variable_Base<double>,std::string,Calc_Variable<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
 { str<<"calculator, usage: Calc(<formula>)"; }
 
 template class PPerp<double>;
-DEFINE_VARIABLE_GETTER(PPerp<double>,PPerp_Getter,"p_\\perp","p_\\perp",0)
-DEFINE_VARIABLE_GETTER(PPerp<double>,PPerp_Getter_2,"PT","p_\\perp",1)
+DEFINE_VARIABLE_GETTER(PPerp<double>,"PT","p_\\perp",1)
 template class EPerp<double>;
-DEFINE_VARIABLE_GETTER(EPerp<double>,EPerp_Getter,"E_\\perp","E_\\perp",0)
-DEFINE_VARIABLE_GETTER(EPerp<double>,EPerp_Getter_2,"ET","E_\\perp",1)
+DEFINE_VARIABLE_GETTER(EPerp<double>,"ET","E_\\perp",1)
 template class MPerp<double>;
-DEFINE_VARIABLE_GETTER(MPerp<double>,MPerp_Getter,"m_\\perp","m_\\perp",0)
-DEFINE_VARIABLE_GETTER(MPerp<double>,MPerp_Getter_2,"mT","m_\\perp",1)
+DEFINE_VARIABLE_GETTER(MPerp<double>,"mT","m_\\perp",1)
 template class MTWW<double>;
-DEFINE_VARIABLE_GETTER(MTWW<double>,MTWW_Getter,"m_\\perp(WW)","m_\\perp(WW)",0)
-DEFINE_VARIABLE_GETTER(MTWW<double>,MTWW_Getter_2,"mTWW","m_\\perp(WW)",1)
+DEFINE_VARIABLE_GETTER(MTWW<double>,"mTWW","m_\\perp(WW)",1)
 template class HT<double>;
-DEFINE_VARIABLE_GETTER(HT<double>,HT_Getter_2,"H_T","H_T",0)
-DEFINE_VARIABLE_GETTER(HT<double>,HT_Getter_3,"HT","H_T",1)
+DEFINE_VARIABLE_GETTER(HT<double>,"HT","H_T",1)
 template class Count<double>;
-DEFINE_VARIABLE_GETTER(Count<double>,Count_Getter,"Count","Count",0)
-DEFINE_VARIABLE_GETTER(Count<double>,Count_Getter_2,"N","number",1)
+DEFINE_VARIABLE_GETTER(Count<double>,"N","number",1)
 template class Energy<double>;
-DEFINE_VARIABLE_GETTER(Energy<double>,Energy_Getter,"E","E",1)
+DEFINE_VARIABLE_GETTER(Energy<double>,"E","E",1)
 template class Mass<double>;
-DEFINE_VARIABLE_GETTER(Mass<double>,Mass_Getter,"m","m",1)
+DEFINE_VARIABLE_GETTER(Mass<double>,"m","m",1)
 template class Rapidity<double>;
-DEFINE_VARIABLE_GETTER(Rapidity<double>,Rapidity_Getter,"y","y",1)
+DEFINE_VARIABLE_GETTER(Rapidity<double>,"y","y",1)
 template class Eta<double>;
-DEFINE_VARIABLE_GETTER(Eta<double>,Eta_Getter,"\\eta","\\eta",0)
-DEFINE_VARIABLE_GETTER(Eta<double>,Eta_Getter_2,"Eta","\\eta",1)
+DEFINE_VARIABLE_GETTER(Eta<double>,"Eta","\\eta",1)
 template class BTheta<double>;
-DEFINE_VARIABLE_GETTER(BTheta<double>,BTheta_Getter,"\\theta","\\theta",0)
-DEFINE_VARIABLE_GETTER(BTheta<double>,BTheta_Getter_2,"Theta","\\theta",1)
+DEFINE_VARIABLE_GETTER(BTheta<double>,"Theta","\\theta",1)
 template class Phi<double>;
-DEFINE_VARIABLE_GETTER(Phi<double>,Phi_Getter,"\\phi","\\phi",0)
-DEFINE_VARIABLE_GETTER(Phi<double>,Phi_Getter_2,"Phi","\\phi",1)
+DEFINE_VARIABLE_GETTER(Phi<double>,"Phi","\\phi",1)
 template class Theta2<double>;
-DEFINE_VARIABLE_GETTER(Theta2<double>,Theta2_Getter,
-		       "\\theta_{ij}","\\theta_{ij}",0)
-DEFINE_VARIABLE_GETTER(Theta2<double>,Theta2_Getter_2,
-		       "Theta2","\\theta_{ij}",1)
+DEFINE_VARIABLE_GETTER(Theta2<double>,"Theta2","\\theta_{ij}",1)
 template class DEta<double>;
-DEFINE_VARIABLE_GETTER(DEta<double>,DEta_Getter,
-		       "\\Delta\\eta_{ij}","\\Delta\\eta_{ij}",0)
-DEFINE_VARIABLE_GETTER(DEta<double>,DEta_Getter_2,
-		       "DEta","\\Delta\\eta_{ij}",1)
+DEFINE_VARIABLE_GETTER(DEta<double>,"DEta","\\Delta\\eta_{ij}",1)
 template class DY<double>;
-DEFINE_VARIABLE_GETTER(DY<double>,DY_Getter,
-		       "\\Delta y_{ij}","\\Delta y_{ij}",0)
-DEFINE_VARIABLE_GETTER(DY<double>,DY_Getter_2,
-		       "DY","\\Delta y_{ij}",1)
+DEFINE_VARIABLE_GETTER(DY<double>,"DY","\\Delta y_{ij}",1)
 template class DPhi<double>;
-DEFINE_VARIABLE_GETTER(DPhi<double>,DPhi_Getter,
-		       "\\Delta\\phi_{ij}","\\Delta\\phi_{ij}",0)
-DEFINE_VARIABLE_GETTER(DPhi<double>,DPhi_Getter_2,
-		       "DPhi","\\Delta\\phi_{ij}",1)
+DEFINE_VARIABLE_GETTER(DPhi<double>,"DPhi","\\Delta\\phi_{ij}",1)
 template class DR<double>;
-DEFINE_VARIABLE_GETTER(DR<double>,DR_Getter,
-		       "\\Delta R_{ij}","\\Delta R_{ij}",0)
-DEFINE_VARIABLE_GETTER(DR<double>,DR_Getter_2,"DR","\\Delta R_{ij}",1)
-
-template class T<double>;
-DEFINE_VARIABLE_GETTER(T<double>,T_Getter,"t","t",0)
-template class Delta<double>;
-DEFINE_VARIABLE_GETTER(Delta<double>,Delta_Getter,
-		       "\\Delta(t,t_0)","\\Delta(t,t_0)",0)
+DEFINE_VARIABLE_GETTER(DR<double>,"DR","\\Delta R_{ij}",1)

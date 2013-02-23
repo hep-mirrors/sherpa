@@ -171,8 +171,10 @@ void GQHQ_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
                  +11.;
 }
 
-DECLARE_VIRTUALME2_GETTER(Higgs_Jet_QCD_Virtual_Getter,"Higgs_Jet_QCD_Virtual")
-Virtual_ME2_Base *Higgs_Jet_QCD_Virtual_Getter::operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(GGHG_QCD_Virtual,"Higgs_Jet_QCD_Virtual")
+Virtual_ME2_Base *ATOOLS::Getter
+<Virtual_ME2_Base,Process_Info,GGHG_QCD_Virtual>::
+operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="Internal") return NULL;

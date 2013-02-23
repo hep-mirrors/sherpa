@@ -232,8 +232,10 @@ double LH_OLE_Interface::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
   return 4.*M_PI;
 }
 
-DECLARE_VIRTUALME2_GETTER(LH_OLE_Interface_Getter,"LH_OLE_Interface")
-Virtual_ME2_Base *LH_OLE_Interface_Getter::operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(LH_OLE_Interface,"LH_OLE_Interface")
+Virtual_ME2_Base *ATOOLS::Getter<Virtual_ME2_Base,Process_Info,
+				 LH_OLE_Interface>::
+operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="LHOLE") return NULL;

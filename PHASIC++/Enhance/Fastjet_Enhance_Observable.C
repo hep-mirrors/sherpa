@@ -50,16 +50,18 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-DECLARE_GETTER(Fastjet_Enhance_Observable_Getter,"FASTJET",
+DECLARE_GETTER(Fastjet_Enhance_Observable,"FASTJET",
 	       Enhance_Observable_Base,Enhance_Arguments);
 
-Enhance_Observable_Base *Fastjet_Enhance_Observable_Getter::
+Enhance_Observable_Base *ATOOLS::Getter
+<Enhance_Observable_Base,Enhance_Arguments,Fastjet_Enhance_Observable>::
 operator()(const Enhance_Arguments &args) const
 {
   return new Fastjet_Enhance_Observable(args);
 }
 
-void Fastjet_Enhance_Observable_Getter::
+void ATOOLS::Getter<Enhance_Observable_Base,Enhance_Arguments,
+		    Fastjet_Enhance_Observable>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"fastjet enhance observable";

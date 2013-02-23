@@ -43,9 +43,10 @@ using namespace ANALYSIS;
 
 #include "ATOOLS/Org/MyStrStream.H"
 
-DECLARE_GETTER(HTSelector_Getter,"HTSel",Analysis_Object,Argument_Matrix);
+DECLARE_GETTER(HT_Selector,"HTSel",Analysis_Object,Argument_Matrix);
 
-Analysis_Object *HTSelector_Getter::operator()
+Analysis_Object *ATOOLS::Getter
+<Analysis_Object,Argument_Matrix,HT_Selector>::operator()
 (const Argument_Matrix &parameters) const
 {
   if (parameters.size()<1 || parameters[0].size()<4) return NULL;
@@ -55,7 +56,9 @@ Analysis_Object *HTSelector_Getter::operator()
 			 parameters[0][2],parameters[0][3]);
 }									
 
-void HTSelector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter
+<Analysis_Object,Argument_Matrix,HT_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"min max inlist outlist [mode]";
 }

@@ -9,14 +9,16 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(HiddenValley_Getter,"SM+HiddenValley",Model_Base,Model_Arguments);
+DECLARE_GETTER(HiddenValley,"SM+HiddenValley",Model_Base,Model_Arguments);
 
-Model_Base *HiddenValley_Getter::operator()(const Model_Arguments &args) const
+Model_Base *Getter<Model_Base,Model_Arguments,HiddenValley>::
+operator()(const Model_Arguments &args) const
 {
   return new HiddenValley(args.m_path,args.m_file,args.m_elementary);
 }
 
-void HiddenValley_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void Getter<Model_Base,Model_Arguments,HiddenValley>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The Standard Model + Hidden Sector\n"
      <<std::setw(width+4)<<" "<<"{\n"

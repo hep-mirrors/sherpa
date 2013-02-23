@@ -252,11 +252,12 @@ double Z_To_Fermion_Fermion::GetBeta_2_2(unsigned int i, unsigned int j) {
   return 0.;
 }
 
-DECLARE_PHOTONS_ME_GETTER(Z_To_Fermion_Fermion_Getter,
+DECLARE_PHOTONS_ME_GETTER(Z_To_Fermion_Fermion,
                           "Z_To_Fermion_Fermion")
 
-PHOTONS_ME_Base * Z_To_Fermion_Fermion_Getter::operator()
-(const Particle_Vector_Vector &pvv) const
+PHOTONS_ME_Base *ATOOLS::Getter<PHOTONS_ME_Base,Particle_Vector_Vector,
+				Z_To_Fermion_Fermion>::
+operator()(const Particle_Vector_Vector &pvv) const
 {
   if ( (pvv.size() == 4) &&
        (pvv[0].size() == 0) &&

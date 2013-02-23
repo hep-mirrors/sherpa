@@ -86,6 +86,8 @@ namespace PHASIC {
     void     BuildCuts(Cut_Data *);
   };
 
+  class BeamAngle_Selector: public Angle_Selector {};
+
   class PT2_Selector : public Selector_Base {
     double ** pt2min, ** pt2max, * value;
     bool     m_strong;
@@ -267,11 +269,10 @@ void Energy_Selector::SetRange(std::vector<Flavour> crit,double _min,
   m_smin = Max(MaxEmin*MaxEmin,m_smin);
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(Energy_Selector,"Energy",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(Energy_Selector_Getter,"Energy",Selector_Base,Selector_Key,true);
-
-Selector_Base *Energy_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Energy_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -287,11 +288,10 @@ Selector_Base *Energy_Selector_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void Energy_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Energy_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"energy selector"; 
-}
-
 }
 
 /*--------------------------------------------------------------------
@@ -380,11 +380,10 @@ void ET_Selector::SetRange(std::vector<Flavour> crit,double _min,double _max)
   m_smin = Max(MaxEtmin*MaxEtmin,m_smin);
 }
 
-namespace PHASIC {
+DECLARE_ND_GETTER(ET_Selector,"ET",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(ET_Selector_Getter,"ET",Selector_Base,Selector_Key,true);
-
-Selector_Base *ET_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,ET_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -400,11 +399,10 @@ Selector_Base *ET_Selector_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void ET_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,ET_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"transverse energy selector"; 
-}
-
 }
 
 /*--------------------------------------------------------------------
@@ -502,11 +500,10 @@ void PT_Selector::SetRange(std::vector<Flavour> crit,double _min,double _max)
   m_smin = Max(m_smin,4.*MaxPTmin*MaxPTmin);
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(PT_Selector,"PT",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(PT_Selector_Getter,"PT",Selector_Base,Selector_Key,true);
-
-Selector_Base *PT_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PT_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -522,11 +519,10 @@ Selector_Base *PT_Selector_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void PT_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,PT_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"transverse momentum selector"; 
-}
-
 }
 
 /*--------------------------------------------------------------------
@@ -629,11 +625,10 @@ void Rapidity_Selector::SetRange(std::vector<Flavour> crit,double _min,
   }
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(Rapidity_Selector,"Rapidity",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(Rapidity_Selector_Getter,"Rapidity",Selector_Base,Selector_Key,true);
-
-Selector_Base *Rapidity_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Rapidity_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -649,11 +644,10 @@ Selector_Base *Rapidity_Selector_Getter::operator()(const Selector_Key &key) con
   return sel;
 }
 
-void Rapidity_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Rapidity_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"rapidity selector"; 
-}
-
 }
 
 /*--------------------------------------------------------------------
@@ -746,11 +740,10 @@ void PseudoRapidity_Selector::SetRange(std::vector<Flavour> crit,double _min,
   }
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(PseudoRapidity_Selector,"PseudoRapidity",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(PseudoRapidity_Selector_Getter,"PseudoRapidity",Selector_Base,Selector_Key,true);
-
-Selector_Base *PseudoRapidity_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PseudoRapidity_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -766,11 +759,10 @@ Selector_Base *PseudoRapidity_Selector_Getter::operator()(const Selector_Key &ke
   return sel;
 }
 
-void PseudoRapidity_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,PseudoRapidity_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"pseudorapidity selector"; 
-}
-
 }
 
 /*--------------------------------------------------------------------
@@ -908,11 +900,10 @@ void Angle_Selector::SetRange(std::vector<Flavour> crit,int beam,
   }
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(Angle_Selector,"Angle",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(Angle_Selector_Getter,"Angle",Selector_Base,Selector_Key,true);
-
-Selector_Base *Angle_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Angle_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -932,14 +923,16 @@ Selector_Base *Angle_Selector_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void Angle_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Angle_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"angle selector"; 
 }
 
-DECLARE_ND_GETTER(BeamAngle_Selector_Getter,"BeamAngle",Selector_Base,Selector_Key,true);
+DECLARE_ND_GETTER(BeamAngle_Selector,"BeamAngle",Selector_Base,Selector_Key,true);
 
-Selector_Base *BeamAngle_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,BeamAngle_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -958,12 +951,12 @@ Selector_Base *BeamAngle_Selector_Getter::operator()(const Selector_Key &key) co
   return sel;
 }
 
-void BeamAngle_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,BeamAngle_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"beam angle selector"; 
 }
 
-}
  /*--------------------------------------------------------------------
  
   PT2 Selector
@@ -1058,11 +1051,10 @@ void PT2_Selector::SetRange(std::vector<Flavour> crit,
   }
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(PT2_Selector,"PT2",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(PT2_Selector_Getter,"PT2",Selector_Base,Selector_Key,true);
-
-Selector_Base *PT2_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PT2_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -1082,11 +1074,10 @@ Selector_Base *PT2_Selector_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void PT2_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,PT2_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"PT2 selector"; 
-}
-
 }
 
 /*--------------------------------------------------------------------
@@ -1189,11 +1180,10 @@ void IMass_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max
   }
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(IMass_Selector,"Mass",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(IMass_Selector_Getter,"Mass",Selector_Base,Selector_Key,true);
-
-Selector_Base *IMass_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,IMass_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -1213,11 +1203,10 @@ Selector_Base *IMass_Selector_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void IMass_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,IMass_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"mass selector"; 
-}
-
 }
 
 /*--------------------------------------------------------------------
@@ -1319,11 +1308,10 @@ void IQ2_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
   }
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(IQ2_Selector,"Q2",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(IQ2_Selector_Getter,"Q2",Selector_Base,Selector_Key,true);
-
-Selector_Base *IQ2_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,IQ2_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -1343,11 +1331,10 @@ Selector_Base *IQ2_Selector_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void IQ2_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,IQ2_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"mass selector"; 
-}
-
 }
 
 /*--------------------------------------------------------------------
@@ -1426,11 +1413,10 @@ void Delta_Eta_Selector::SetRange(std::vector<Flavour> crit,double _min, double 
   }
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(Delta_Eta_Selector,"DeltaEta",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(Delta_Eta_Selector_Getter,"DeltaEta",Selector_Base,Selector_Key,true);
-
-Selector_Base *Delta_Eta_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Delta_Eta_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -1450,11 +1436,10 @@ Selector_Base *Delta_Eta_Selector_Getter::operator()(const Selector_Key &key) co
   return sel;
 }
 
-void Delta_Eta_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Delta_Eta_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"\\Delta\\eta selector"; 
-}
-
 }
 
 /*--------------------------------------------------------------------
@@ -1533,11 +1518,10 @@ void Delta_Phi_Selector::SetRange(std::vector<Flavour> crit,double _min, double 
   }
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(Delta_Phi_Selector,"DeltaPhi",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(Delta_Phi_Selector_Getter,"DeltaPhi",Selector_Base,Selector_Key,true);
-
-Selector_Base *Delta_Phi_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Delta_Phi_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -1557,11 +1541,10 @@ Selector_Base *Delta_Phi_Selector_Getter::operator()(const Selector_Key &key) co
   return sel;
 }
 
-void Delta_Phi_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Delta_Phi_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"\\Delta\\phi selector"; 
-}
-
 }
 
 /*--------------------------------------------------------------------
@@ -1642,11 +1625,10 @@ void Delta_R_Selector::SetRange(std::vector<Flavour> crit,double _min, double _m
   }
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(Delta_R_Selector,"DeltaR",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(Delta_R_Selector_Getter,"DeltaR",Selector_Base,Selector_Key,true);
-
-Selector_Base *Delta_R_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Delta_R_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -1666,9 +1648,8 @@ Selector_Base *Delta_R_Selector_Getter::operator()(const Selector_Key &key) cons
   return sel;
 }
 
-void Delta_R_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Delta_R_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"\\Delta R selector"; 
-}
-
 }

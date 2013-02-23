@@ -414,17 +414,17 @@ void Output_RootNtuple::StoreEvt()
   m_fsq=0.;
 }
 
-DECLARE_GETTER(Root_Output_Getter,"Root",
+DECLARE_GETTER(Output_RootNtuple,"Root",
 	       Output_Base,Output_Arguments);
 
-Output_Base *Root_Output_Getter::operator()
-(const Output_Arguments &args) const
+Output_Base *ATOOLS::Getter<Output_Base,Output_Arguments,Output_RootNtuple>::
+operator()(const Output_Arguments &args) const
 {
   return new Output_RootNtuple(args);
 }
 
-void Root_Output_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Output_Base,Output_Arguments,Output_RootNtuple>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"Root NTuple output";
 }

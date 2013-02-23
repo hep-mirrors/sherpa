@@ -305,11 +305,12 @@ double Vector_To_Fermion_Fermion::GetBeta_2_2(unsigned int i, unsigned int j) {
   return 0.;
 }
 
-DECLARE_PHOTONS_ME_GETTER(Vector_To_Fermion_Fermion_Getter,
+DECLARE_PHOTONS_ME_GETTER(Vector_To_Fermion_Fermion,
                           "Vector_To_Fermion_Fermion")
 
-PHOTONS_ME_Base * Vector_To_Fermion_Fermion_Getter::operator()
-(const Particle_Vector_Vector &pvv) const
+PHOTONS_ME_Base *ATOOLS::Getter<PHOTONS_ME_Base,Particle_Vector_Vector,
+				Vector_To_Fermion_Fermion>::
+operator()(const Particle_Vector_Vector &pvv) const
 {
   // same mass restriction can be lifted if M_0_1 is computed for general case
   // Z needs to be excluded due to its different L/R properties

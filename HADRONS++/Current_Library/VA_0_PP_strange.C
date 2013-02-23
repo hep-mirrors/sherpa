@@ -194,9 +194,10 @@ Complex VA_0_PP_strange::KS::ScalarFormFactor( double s )
   return m_R0.BreitWigner(s);
 }
 
-DEFINE_CURRENT_GETTER(VA_0_PP_strange,VA_0_PP_strange_Getter,"VA_0_PP_strange")
+DEFINE_CURRENT_GETTER(VA_0_PP_strange,"VA_0_PP_strange")
 
-void VA_0_PP_strange_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<Current_Base,ME_Parameters,VA_0_PP_strange>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ 0 \\rightarrow \\pi K $ \n\n"
     <<"Order: 0 = $\\pi$, 1 = K \n\n"
     <<"Available form factors: \n "

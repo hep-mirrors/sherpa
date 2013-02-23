@@ -143,9 +143,10 @@ void VA_P_V::Calc(const ATOOLS::Vec4D_Vector& moms, bool m_anti)
   }
 }
 
-DEFINE_CURRENT_GETTER(VA_P_V,VA_P_V_Getter,"VA_P_V")
+DEFINE_CURRENT_GETTER(VA_P_V,"VA_P_V")
 
-void VA_P_V_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<Current_Base,ME_Parameters,VA_P_V>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ B \\rightarrow D^* (l \\nu_l) $ \n\n"
     <<"Order: 0 = (Pseudo)Scalar, 1 = Vector \n\n"
     <<"\\begin{eqnarray*} \\langle V(p_1,\\epsilon) | (V-A)_\\mu | P(p_0) \\rangle & = \n"

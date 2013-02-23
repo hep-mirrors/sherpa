@@ -35,8 +35,10 @@ void DIS1jet_QCD_Virtual::Calc(const Vec4D_Vector& mom) {
 }
 
 
-DECLARE_VIRTUALME2_GETTER(DIS1jet_QCD_Virtual_Getter,"DIS1jet_QCD_Virtual")
-Virtual_ME2_Base *DIS1jet_QCD_Virtual_Getter::operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(DIS1jet_QCD_Virtual,"DIS1jet_QCD_Virtual")
+Virtual_ME2_Base *ATOOLS::Getter
+<Virtual_ME2_Base,Process_Info,DIS1jet_QCD_Virtual>::
+operator()(const Process_Info &pi) const
 {
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype==nlo_type::loop) {

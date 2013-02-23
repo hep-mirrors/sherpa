@@ -229,21 +229,17 @@ std::string CF<SType>::CLabel() const
     (this->m_out.empty()?this->m_fl.Bar():this->m_fl).TexName()+"$";
 }
 
-DECLARE_TEMPLATE_GETTER(CF_Getter,"F",Current,Current_Key);
+DECLARE_GETTER(CF<double>,"DF",Current,Current_Key);
 
-template <typename SType,char STag> Current *
-CF_Getter<SType,STag>::operator()(const Current_Key &key) const
+Current *ATOOLS::Getter<Current,Current_Key,CF<double> >::
+operator()(const Current_Key &key) const
 {
-  if (key.m_fl.IsFermion()) return new CF<SType>(key);
+  if (key.m_fl.IsFermion()) return new CF<double>(key);
   return NULL;
 }
 
-template <typename SType,char STag>
-void CF_Getter<SType,STag>::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Current,Current_Key,CF<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"fermion current "<<STag;
+  str<<"fermion current (double)";
 }
-
-template class CF_Getter<double,'D'>;
-template class CF_Getter<long double,'Q'>;

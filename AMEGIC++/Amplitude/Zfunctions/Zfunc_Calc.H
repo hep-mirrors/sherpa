@@ -89,32 +89,40 @@ namespace AMEGIC {
   */
 }
 
-#define DEFINE_ZFCALC_GETTER(CLASS,NAME,TAG,INFO)			\
-  DECLARE_GETTER(NAME,TAG,Zfunc_Calc,ZFCalc_Key);			\
-  Zfunc_Calc *NAME::operator()(const ZFCalc_Key &key) const		\
+#define DEFINE_ZFCALC_GETTER(CLASS,TAG,INFO)				\
+  DECLARE_GETTER(CLASS,TAG,Zfunc_Calc,ZFCalc_Key);			\
+  Zfunc_Calc *ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::		\
+  operator()(const ZFCalc_Key &key) const				\
   { return new CLASS(key.p_sgen,key.p_bs); }				\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  void ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::			\
+  PrintInfo(std::ostream &str,const size_t width) const			\
   { str<<INFO; }
-#define DEFINE_ZFLOOPCALC_GETTER(CLASS,NAME,TAG,INFO)			\
-  DECLARE_GETTER(NAME,TAG,Zfunc_Calc,ZFCalc_Key);			\
-  Zfunc_Calc *NAME::operator()(const ZFCalc_Key &key) const		\
+#define DEFINE_ZFLOOPCALC_GETTER(CLASS,TAG,INFO)			\
+  DECLARE_GETTER(CLASS,TAG,Zfunc_Calc,ZFCalc_Key);			\
+  Zfunc_Calc *ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::		\
+  operator()(const ZFCalc_Key &key) const				\
   { if (key.p_model && !key.p_model->HasLoops()) return NULL;		\
     return new CLASS(key.p_sgen,key.p_bs); }				\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  void ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::			\
+  PrintInfo(std::ostream &str,const size_t width) const			\
   { str<<INFO; }
-#define DEFINE_ZFTENSORCALC_GETTER(CLASS,NAME,TAG,INFO)			\
-  DECLARE_GETTER(NAME,TAG,Zfunc_Calc,ZFCalc_Key);			\
-  Zfunc_Calc *NAME::operator()(const ZFCalc_Key &key) const		\
+#define DEFINE_ZFTENSORCALC_GETTER(CLASS,TAG,INFO)			\
+  DECLARE_GETTER(CLASS,TAG,Zfunc_Calc,ZFCalc_Key);			\
+  Zfunc_Calc *ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::		\
+  operator()(const ZFCalc_Key &key) const				\
   { if (key.p_model && !key.p_model->HasTensors()) return NULL;		\
     return new CLASS(key.p_sgen,key.p_bs); }				\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  void ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::			\
+  PrintInfo(std::ostream &str,const size_t width) const			\
   { str<<INFO; }
-#define DEFINE_ZFAGCCALC_GETTER(CLASS,NAME,TAG,INFO)			\
-  DECLARE_GETTER(NAME,TAG,Zfunc_Calc,ZFCalc_Key);			\
-  Zfunc_Calc *NAME::operator()(const ZFCalc_Key &key) const		\
+#define DEFINE_ZFAGCCALC_GETTER(CLASS,TAG,INFO)				\
+  DECLARE_GETTER(CLASS,TAG,Zfunc_Calc,ZFCalc_Key);			\
+  Zfunc_Calc *ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::		\
+  operator()(const ZFCalc_Key &key) const				\
   { if (key.p_model && !key.p_model->HasAGCs()) return NULL;		\
     return new CLASS(key.p_sgen,key.p_bs); }				\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  void ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::			\
+  PrintInfo(std::ostream &str,const size_t width) const			\
   { str<<INFO; }
 
 #endif

@@ -293,11 +293,12 @@ bool Analysis_Handler::Run(ATOOLS::Blob_List *const bl)
   return true;
 }
 
-DECLARE_GETTER(Analysis_Interface_Getter,"Internal",
+DECLARE_GETTER(Analysis_Handler,"Internal",
 	       Analysis_Interface,Analysis_Arguments);
 
-Analysis_Interface *Analysis_Interface_Getter::operator()
-(const Analysis_Arguments &args) const
+Analysis_Interface *ATOOLS::Getter
+<Analysis_Interface,Analysis_Arguments,Analysis_Handler>::
+operator()(const Analysis_Arguments &args) const
 {
   Analysis_Handler *analysis(new ANALYSIS::Analysis_Handler());
   analysis->SetInputPath(args.m_inpath);
@@ -306,8 +307,9 @@ Analysis_Interface *Analysis_Interface_Getter::operator()
   return analysis;
 }
 
-void Analysis_Interface_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,
+		    Analysis_Handler>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"internal analysis interface";
 }

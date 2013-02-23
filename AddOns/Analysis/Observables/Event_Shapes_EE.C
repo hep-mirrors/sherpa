@@ -8,10 +8,10 @@ using namespace ANALYSIS;
 #include <iomanip>
 
 
-DECLARE_GETTER(Event_Shapes_EE_Getter,"EEShapes",
+DECLARE_GETTER(Event_Shapes_EE,"EEShapes",
 	       Analysis_Object,Argument_Matrix);
 
-void Event_Shapes_EE_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Object,Argument_Matrix,Event_Shapes_EE>::PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  list\n"
@@ -20,8 +20,8 @@ void Event_Shapes_EE_Getter::PrintInfo(std::ostream &str,const size_t width) con
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object * 
-Event_Shapes_EE_Getter::operator()(const Argument_Matrix &parameters) const
+Analysis_Object * ATOOLS::Getter<Analysis_Object,Argument_Matrix,
+				 Event_Shapes_EE>::operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist="FinalState", outlist="EEShapes";
   ATOOLS::Particle_Qualifier_Base *qualifier=NULL;

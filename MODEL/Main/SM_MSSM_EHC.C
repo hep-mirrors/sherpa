@@ -10,14 +10,16 @@
 using namespace MODEL;
 using namespace ATOOLS;
 
-DECLARE_GETTER(SM_EHC_Getter,"SM+EHC",Model_Base,Model_Arguments);
+DECLARE_GETTER(SM_EHC,"SM+EHC",Model_Base,Model_Arguments);
 
-Model_Base *SM_EHC_Getter::operator()(const Model_Arguments &args) const
+Model_Base *Getter<Model_Base,Model_Arguments,SM_EHC>::
+operator()(const Model_Arguments &args) const
 {
   return new SM_EHC(args.m_path,args.m_file,args.m_elementary);
 }
 
-void SM_EHC_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void Getter<Model_Base,Model_Arguments,SM_EHC>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The Standard Model + Effective Higgs Couplings to Photons/Gluons\n"
      <<std::setw(width+4)<<" "<<"{\n"
@@ -103,14 +105,16 @@ void SM_EHC::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
 }
 
 
-DECLARE_GETTER(MSSM_EHC_Getter,"MSSM+EHC",Model_Base,Model_Arguments);
+DECLARE_GETTER(MSSM_EHC,"MSSM+EHC",Model_Base,Model_Arguments);
 
-Model_Base *MSSM_EHC_Getter::operator()(const Model_Arguments &args) const
+Model_Base *Getter<Model_Base,Model_Arguments,MSSM_EHC>::
+operator()(const Model_Arguments &args) const
 {
   return new MSSM_EHC(args.m_path,args.m_file,args.m_elementary);
 }
 
-void MSSM_EHC_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void Getter<Model_Base,Model_Arguments,MSSM_EHC>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"MSSM + Effective Higgs Coupling to Gluons\n"
     <<std::setw(width+4)<<" "<<"{\n"

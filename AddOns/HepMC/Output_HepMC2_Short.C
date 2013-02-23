@@ -104,17 +104,17 @@ void Output_HepMC2_Short::ChangeFile()
 #endif
 }
 
-DECLARE_GETTER(HepMC_Short_Output_Getter,"HepMC_Short",
+DECLARE_GETTER(Output_HepMC2_Short,"HepMC_Short",
 	       Output_Base,Output_Arguments);
 
-Output_Base *HepMC_Short_Output_Getter::operator()
-(const Output_Arguments &args) const
+Output_Base *ATOOLS::Getter<Output_Base,Output_Arguments,Output_HepMC2_Short>::
+operator()(const Output_Arguments &args) const
 {
   return new Output_HepMC2_Short(args);
 }
 
-void HepMC_Short_Output_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Output_Base,Output_Arguments,Output_HepMC2_Short>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"HepMC short output";
 }

@@ -68,10 +68,11 @@ namespace ANALYSIS {
 
 using namespace ANALYSIS;
 
-DECLARE_GETTER(Booster_Getter,"CMSBoost",
+DECLARE_GETTER(Booster,"CMSBoost",
  	       Analysis_Object,Argument_Matrix);
 
-void Booster_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Object,Argument_Matrix,Booster>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  list\n"
@@ -82,8 +83,8 @@ void Booster_Getter::PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *
-Booster_Getter::operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,Booster>::
+operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist("FinalState"), outlist("Selected"), reflist("FinalState");
   std::vector<Flavour> flavs;
@@ -110,10 +111,11 @@ Booster_Getter::operator()(const Argument_Matrix &parameters) const
   return new Booster(inlist,reflist,outlist,flavs,items);
 }
 
-DECLARE_GETTER(Rotator_Getter,"ZRotate",
+DECLARE_GETTER(Rotator,"ZRotate",
  	       Analysis_Object,Argument_Matrix);
 
-void Rotator_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Object,Argument_Matrix,Rotator>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  list\n"
@@ -124,8 +126,8 @@ void Rotator_Getter::PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *
-Rotator_Getter::operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,Rotator>::
+operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist("FinalState"), outlist("Selected"), reflist("FinalState");
   std::vector<Flavour> flavs;
@@ -266,10 +268,11 @@ Analysis_Object *Rotator::GetCopy() const
   return new Rotator(m_inlist,m_reflist,m_outlist,m_flavs,m_items);
 }
 
-DECLARE_GETTER(RBooster_Getter,"CMSRBoost",
+DECLARE_GETTER(RBooster,"CMSRBoost",
  	       Analysis_Object,Argument_Matrix);
 
-void RBooster_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Object,Argument_Matrix,RBooster>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  list\n"
@@ -278,8 +281,8 @@ void RBooster_Getter::PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *
-RBooster_Getter::operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,RBooster>::
+operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist("FinalState"), outlist("Selected"), reflist("FinalState");
   std::vector<Flavour> flavs;
@@ -294,10 +297,11 @@ RBooster_Getter::operator()(const Argument_Matrix &parameters) const
   return new RBooster(inlist,reflist,outlist);
 }
 
-DECLARE_GETTER(RRotator_Getter,"ZRRotate",
+DECLARE_GETTER(RRotator,"ZRRotate",
  	       Analysis_Object,Argument_Matrix);
 
-void RRotator_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Object,Argument_Matrix,RRotator>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  list\n"
@@ -306,8 +310,8 @@ void RRotator_Getter::PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *
-RRotator_Getter::operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,RRotator>::
+operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist("FinalState"), outlist("Selected"), reflist("FinalState");
   std::vector<Flavour> flavs;

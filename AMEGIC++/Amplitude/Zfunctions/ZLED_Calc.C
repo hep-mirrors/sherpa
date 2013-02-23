@@ -9,7 +9,7 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
-DEFINE_ZFTENSORCALC_GETTER(FFT_Calc,FFTCalc_Getter,"FFT","fft calculator")
+DEFINE_ZFTENSORCALC_GETTER(FFT_Calc,"FFT","fft calculator")
 
 FFT_Calc::FFT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -24,7 +24,7 @@ FFT_Calc::FFT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist[0]->SetParticleArg(0);
 }
 
-DEFINE_ZFTENSORCALC_GETTER(VVT_Calc,VVTCalc_Getter,"VVT","vvt calculator")
+DEFINE_ZFTENSORCALC_GETTER(VVT_Calc,"VVT","vvt calculator")
 
 VVT_Calc::VVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -43,7 +43,7 @@ VVT_Calc::VVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist[2]->SetParticleArg(0,1,2);
 }
 
-DEFINE_ZFTENSORCALC_GETTER(SST_Calc,SSTCalc_Getter,"SST","sst calculator")
+DEFINE_ZFTENSORCALC_GETTER(SST_Calc,"SST","sst calculator")
 
 SST_Calc::SST_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -56,7 +56,7 @@ SST_Calc::SST_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist[0]->SetParticleArg(0,1,2);
 }
 
-DEFINE_ZFTENSORCALC_GETTER(FFVT_Calc,FFVTCalc_Getter,"FFVT","ffvt calculator")
+DEFINE_ZFTENSORCALC_GETTER(FFVT_Calc,"FFVT","ffvt calculator")
 
 FFVT_Calc::FFVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -74,7 +74,7 @@ FFVT_Calc::FFVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist[1]->SetParticleArg(0);
 }
 
-DEFINE_ZFTENSORCALC_GETTER(VVVT_Calc,VVVTCalc_Getter,"VVVT","vvvt calculator")
+DEFINE_ZFTENSORCALC_GETTER(VVVT_Calc,"VVVT","vvvt calculator")
 
 VVVT_Calc::VVVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -93,7 +93,7 @@ VVVT_Calc::VVVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist[3]->SetParticleArg(0,1,2,3);     
 }
 
-DEFINE_ZFTENSORCALC_GETTER(SSST_Calc,SSSTCalc_Getter,"SSST","ssst calculator")
+DEFINE_ZFTENSORCALC_GETTER(SSST_Calc,"SSST","ssst calculator")
 
 SSST_Calc::SSST_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -109,7 +109,7 @@ SSST_Calc::SSST_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist[0]->SetParticleArg(0);     
 }
 
-DEFINE_ZFTENSORCALC_GETTER(FFGS_Calc,FFGSCalc_Getter,"FFGS","ffgs calculator")
+DEFINE_ZFTENSORCALC_GETTER(FFGS_Calc,"FFGS","ffgs calculator")
 
 FFGS_Calc::FFGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -125,7 +125,7 @@ FFGS_Calc::FFGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist.push_back(LF_Getter::GetObject("FFGS",LF_Key()));
 }
 
-DEFINE_ZFTENSORCALC_GETTER(VVGS_Calc,VVGSCalc_Getter,"VVGS","vvgs calculator")
+DEFINE_ZFTENSORCALC_GETTER(VVGS_Calc,"VVGS","vvgs calculator")
 
 VVGS_Calc::VVGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -144,7 +144,7 @@ VVGS_Calc::VVGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist[2]->SetParticleArg(0,1,2);
 }
 
-DEFINE_ZFTENSORCALC_GETTER(SSGS_Calc,SSGSCalc_Getter,"SSGS","ssgs calculator")
+DEFINE_ZFTENSORCALC_GETTER(SSGS_Calc,"SSGS","ssgs calculator")
 
 SSGS_Calc::SSGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -160,7 +160,7 @@ SSGS_Calc::SSGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist[0]->SetParticleArg(0,1);
 }
 
-DEFINE_ZFTENSORCALC_GETTER(FFVGS_Calc,FFVGSCalc_Getter,"FFVGS","ffvgs calculator")
+DEFINE_ZFTENSORCALC_GETTER(FFVGS_Calc,"FFVGS","ffvgs calculator")
 
 FFVGS_Calc::FFVGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 

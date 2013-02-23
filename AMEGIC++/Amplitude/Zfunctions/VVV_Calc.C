@@ -5,7 +5,7 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
-DEFINE_ZFCALC_GETTER(VVV_Calc,VVVCalc_Getter,"VVV","vvv calculator")
+DEFINE_ZFCALC_GETTER(VVV_Calc,"VVV","vvv calculator")
 
 VVV_Calc::VVV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 

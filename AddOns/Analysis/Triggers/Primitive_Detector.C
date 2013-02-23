@@ -12,10 +12,11 @@ using namespace ATOOLS;
 
 #include <iomanip>
 
-DECLARE_GETTER(Primitive_Detector_Getter,"Detector",
+DECLARE_GETTER(Primitive_Detector,"Detector",
 	       Analysis_Object,Argument_Matrix);
 
-void Primitive_Detector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Object,Argument_Matrix,Primitive_Detector>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  list\n"
@@ -24,8 +25,9 @@ void Primitive_Detector_Getter::PrintInfo(std::ostream &str,const size_t width) 
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Analysis_Object *
-Primitive_Detector_Getter::operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter
+<Analysis_Object,Argument_Matrix,Primitive_Detector>::
+operator()(const Argument_Matrix &parameters) const
 {
   std::string inlist="FinalState", outlist="Detected";
   for (size_t i=0;i<parameters.size();++i) {

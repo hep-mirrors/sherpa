@@ -115,43 +115,34 @@ void VVVV_Calculator<SType>::Evaluate()
 namespace METOOLS {
 
   template class VVVV_Calculator<double>;
-  template class VVVV_Calculator<long double>;
+
+  template <typename SType>
+  class Gluon4_Calculator: public VVVV_Calculator<SType> {};
+
+  template class Gluon4_Calculator<double>;
 
 }
 
-DECLARE_TEMPLATE_GETTER(Gauge4_Getter,"Gauge4",Lorentz_Calculator,Vertex_Key);
+DECLARE_GETTER(VVVV_Calculator<double>,"DGauge4",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,VVVV_Calculator<double> >::
+operator()(const Vertex_Key &key) const
+{ return new VVVV_Calculator<double>(key); }
 
-template <typename SType,char STag> Lorentz_Calculator *
-Gauge4_Getter<SType,STag>::operator()(const Vertex_Key &key) const
-{
-  return new VVVV_Calculator<SType>(key);
-}
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    VVVV_Calculator<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"VVVV vertex"; }
 
-template <typename SType,char STag>
-void Gauge4_Getter<SType,STag>::PrintInfo
-(std::ostream &str,const size_t width) const
-{
-  str<<"VVVV vertex";
-}
+DECLARE_GETTER(Gluon4_Calculator<double>,"DGluon4",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,Gluon4_Calculator<double> >::
+operator()(const Vertex_Key &key) const
+{ return new VVVV_Calculator<double>(key); }
 
-template class Gauge4_Getter<double,'D'>;
-template class Gauge4_Getter<long double,'Q'>;
-
-DECLARE_TEMPLATE_GETTER(Gluon4_Getter,"Gluon4",Lorentz_Calculator,Vertex_Key);
-
-template <typename SType,char STag> Lorentz_Calculator *
-Gluon4_Getter<SType,STag>::operator()(const Vertex_Key &key) const
-{
-  return new VVVV_Calculator<SType>(key);
-}
-
-template <typename SType,char STag>
-void Gluon4_Getter<SType,STag>::PrintInfo
-(std::ostream &str,const size_t width) const
-{
-  str<<"VVVV vertex";
-}
-
-template class Gluon4_Getter<double,'D'>;
-template class Gluon4_Getter<long double,'Q'>;
-
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    Gluon4_Calculator<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"VVVV vertex"; }

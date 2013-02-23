@@ -119,18 +119,17 @@ Cluster_Amplitude *BlackHat_Interface::ClusterConfiguration
   return NULL;
 }
 
-namespace PHASIC {
+DECLARE_GETTER(BlackHat_Interface,"BlackHat",ME_Generator_Base,ME_Generator_Key);
 
-  DECLARE_GETTER(BlackHat_Interface_Getter,"BlackHat",ME_Generator_Base,ME_Generator_Key);
+ME_Generator_Base *ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,
+				  BlackHat_Interface>::
+operator()(const ME_Generator_Key &key) const
+{
+  return new BlackHat_Interface();
+}
 
-  ME_Generator_Base *BlackHat_Interface_Getter::operator()(const ME_Generator_Key &key) const
-  {
-    return new BlackHat_Interface();
-  }
-
-  void BlackHat_Interface_Getter::PrintInfo(std::ostream &str,const size_t width) const
-  { 
-    str<<"Interface to the BlackHat loop ME generator"; 
-  }
-
+void ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,BlackHat_Interface>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"Interface to the BlackHat loop ME generator"; 
 }

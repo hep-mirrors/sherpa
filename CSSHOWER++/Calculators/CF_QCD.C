@@ -147,11 +147,13 @@ void CF_QCD_Getter::PrintInfo
   str<<"strong coupling";
 }
 
-DECLARE_GETTER(CF_QCD_Filler,"SF_QCD_Fill",
+}
+
+DECLARE_GETTER(CF_QCD_Getter,"SF_QCD_Fill",
 	       void,SFC_Filler_Key);
 
-void *CF_QCD_Filler::operator()
-  (const SFC_Filler_Key &key) const
+void *ATOOLS::Getter<void,SFC_Filler_Key,CF_QCD_Getter>::
+operator()(const SFC_Filler_Key &key) const
 {
   if (!Flavour(kf_gluon).IsOn()) return NULL;
   std::string gtag("{"+Flavour(kf_gluon).IDName()+"}");
@@ -191,10 +193,9 @@ void *CF_QCD_Filler::operator()
   return NULL;
 }
 
-void CF_QCD_Filler::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<void,SFC_Filler_Key,CF_QCD_Getter>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"qcd coupling filler";
 }
 
-}

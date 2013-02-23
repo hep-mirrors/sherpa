@@ -314,24 +314,17 @@ VVV_Calculator<SType>::Lorentz(const CVec4Type &a,
 namespace METOOLS {
 
   template class VVV_Calculator<double>;
-  template class VVV_Calculator<long double>;
 
 }
 
-DECLARE_TEMPLATE_GETTER(VVV_Getter,"Gauge3",Lorentz_Calculator,Vertex_Key);
+DECLARE_GETTER(VVV_Calculator<double>,"DGauge3",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,VVV_Calculator<double> >::
+operator()(const Vertex_Key &key) const
+{ return new VVV_Calculator<double>(key); }
 
-template <typename SType,char STag> Lorentz_Calculator *
-VVV_Getter<SType,STag>::operator()(const Vertex_Key &key) const
-{
-  return new VVV_Calculator<SType>(key);
-}
-
-template <typename SType,char STag>
-void VVV_Getter<SType,STag>::PrintInfo
-(std::ostream &str,const size_t width) const
-{
-  str<<"VVV vertex";
-}
-
-template class VVV_Getter<double,'D'>;
-template class VVV_Getter<long double,'Q'>;
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    VVV_Calculator<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"FFV vertex"; }

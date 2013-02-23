@@ -46,9 +46,10 @@ namespace PHASIC {
   };
 }
 
-#define DECLARE_TREEME2_GETTER(NAME,TAG) \
-  DECLARE_GETTER(NAME,TAG,Tree_ME2_Base,Process_Info); \
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const \
+#define DECLARE_TREEME2_GETTER(NAME,TAG)			   \
+  DECLARE_GETTER(NAME,TAG,Tree_ME2_Base,Process_Info);		   \
+  void ATOOLS::Getter<Tree_ME2_Base,Process_Info,NAME>::	   \
+  PrintInfo(std::ostream &str,const size_t width) const		   \
   {                                                                \
     str<<#TAG;                                                     \
   }

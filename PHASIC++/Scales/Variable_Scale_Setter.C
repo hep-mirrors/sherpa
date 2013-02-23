@@ -36,16 +36,18 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-DECLARE_GETTER(Variable_Scale_Setter_Getter,"VAR",
+DECLARE_GETTER(Variable_Scale_Setter,"VAR",
 	       Scale_Setter_Base,Scale_Setter_Arguments);
 
-Scale_Setter_Base *Variable_Scale_Setter_Getter::
+Scale_Setter_Base *ATOOLS::Getter
+<Scale_Setter_Base,Scale_Setter_Arguments,Variable_Scale_Setter>::
 operator()(const Scale_Setter_Arguments &args) const
 {
   return new Variable_Scale_Setter(args);
 }
 
-void Variable_Scale_Setter_Getter::
+void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
+		    Variable_Scale_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"variable scale scheme";

@@ -67,7 +67,7 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
   reader->AddWordSeparator("\t");
   reader->SetInputFile(InputPath()+InputFile());
   std::vector<std::string> helps;
-  if (!reader->VectorFromFile(helps,"X_VARIABLE")) m_gridxvariable="p_\\perp";
+  if (!reader->VectorFromFile(helps,"X_VARIABLE")) m_gridxvariable="PT";
   else m_gridxvariable=MakeString(helps);
   if (!reader->VectorFromFile(helps,"Y_VARIABLE")) m_gridyvariable="";
   else m_gridyvariable=MakeString(helps);

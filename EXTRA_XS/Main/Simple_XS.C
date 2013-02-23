@@ -164,18 +164,18 @@ Cluster_Amplitude *Simple_XS::ClusterConfiguration
   return ampl;
 }
 
-namespace PHASIC {
+DECLARE_GETTER(Simple_XS,"Internal",
+	       ME_Generator_Base,ME_Generator_Key);
 
-  DECLARE_GETTER(Simple_XS_Getter,"Internal",ME_Generator_Base,ME_Generator_Key);
+ME_Generator_Base *ATOOLS::Getter
+<ME_Generator_Base,ME_Generator_Key,Simple_XS>::
+operator()(const ME_Generator_Key &key) const
+{
+  return new Simple_XS();
+}
 
-  ME_Generator_Base *Simple_XS_Getter::operator()(const ME_Generator_Key &key) const
-  {
-    return new Simple_XS();
-  }
-
-  void Simple_XS_Getter::PrintInfo(std::ostream &str,const size_t width) const
-  { 
-    str<<"The internal ME generator"; 
-  }
-
+void ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,Simple_XS>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"The internal ME generator"; 
 }

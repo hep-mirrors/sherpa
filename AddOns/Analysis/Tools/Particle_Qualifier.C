@@ -94,19 +94,21 @@ Particle_Qualifier_Base *GetQualifier(const std::string &parameter)
   return new Class();
 }									
 
-#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
-  Particle_Qualifier_Base *						\
-  NAME::operator()(const std::string &parameter) const			\
+#define DEFINE_GETTER_METHOD(CLASS)				\
+  Particle_Qualifier_Base *					\
+  ATOOLS::Getter<Particle_Qualifier_Base,std::string,CLASS>::	\
+  operator()(const std::string &parameter) const		\
   { return GetQualifier<CLASS>(parameter); }
 
 #define DEFINE_PRINT_METHOD(NAME,PRINT)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  void ATOOLS::Getter<Particle_Qualifier_Base,std::string,NAME>::	\
+  PrintInfo(std::ostream &str,const size_t width) const			\
   { str<<PRINT; }
 
-#define DEFINE_QUALIFIER_GETTER(CLASS,NAME,TAG,PRINT,DISP)		\
-  DECLARE_ND_GETTER(NAME,TAG,Particle_Qualifier_Base,std::string,DISP);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME)					\
-  DEFINE_PRINT_METHOD(NAME,PRINT)
+#define DEFINE_QUALIFIER_GETTER(CLASS,TAG,PRINT,DISP)		\
+  DECLARE_ND_GETTER(CLASS,TAG,Particle_Qualifier_Base,std::string,DISP);	\
+  DEFINE_GETTER_METHOD(CLASS)					\
+  DEFINE_PRINT_METHOD(CLASS,PRINT)
 
 #include "ATOOLS/Org/Message.H"
 
@@ -129,111 +131,63 @@ public:                                                           \
 
 
 DEFINE_QUALIFIER_CLASS(Is_BHadron_Decay_Product);
-DEFINE_QUALIFIER_GETTER(Is_BHadron_Decay_Product,Is_BHadron_Decay_Product_Getter,
+DEFINE_QUALIFIER_GETTER(Is_BHadron_Decay_Product,
 			"DecayedBHadron","decay product of bhadron",1)
 
 DEFINE_QUALIFIER_CLASS(Is_BQuark_Decay_Product);
-DEFINE_QUALIFIER_GETTER(Is_BQuark_Decay_Product,Is_BQuark_Decay_Product_Getter,
+DEFINE_QUALIFIER_GETTER(Is_BQuark_Decay_Product,
 			"DecayedBQuark","decayed b quark",1)
 
-DEFINE_QUALIFIER_GETTER(Is_ME_Particle,Is_ME_Particle_Getter,
+DEFINE_QUALIFIER_GETTER(Is_ME_Particle,
 			"ME","ME particle",1)
 
-DEFINE_QUALIFIER_GETTER(Is_Charged_Hadron,Is_Charged_Hadron_Getter,
-			"1","charged hadron",0)
-DEFINE_QUALIFIER_GETTER(Is_Charged_Hadron,Is_Charged_Hadron_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Charged_Hadron,
 			"ChargedHadron","charged hadron",1)
-DEFINE_QUALIFIER_GETTER(Is_Neutral_Hadron,Is_Neutral_Hadron_Getter,
-			"2","neutral hadron",0)
-DEFINE_QUALIFIER_GETTER(Is_Neutral_Hadron,Is_Neutral_Hadron_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Neutral_Hadron,
 			"NeutralHadron","neutral hadron",1)
-DEFINE_QUALIFIER_GETTER(Is_Hadron,Is_Hadron_Getter,
-			"3","hadron",0)
-DEFINE_QUALIFIER_GETTER(Is_Hadron,Is_Hadron_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Hadron,
 			"Hadron","hadron",1)
-DEFINE_QUALIFIER_GETTER(Is_Charged,Is_Charged_Getter,
-			"4","charged",0)
-DEFINE_QUALIFIER_GETTER(Is_Charged,Is_Charged_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Charged,
 			"Charged","charged",1)
-DEFINE_QUALIFIER_GETTER(Is_Neutral,Is_Neutral_Getter,
-			"5","neutral",0)
-DEFINE_QUALIFIER_GETTER(Is_Neutral,Is_Neutral_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Neutral,
 			"Neutral","neutral",1)
-DEFINE_QUALIFIER_GETTER(Is_Charged_Pion,Is_Charged_Pion_Getter,
-			"11","charged pion",0)
-DEFINE_QUALIFIER_GETTER(Is_Charged_Pion,Is_Charged_Pion_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Charged_Pion,
 			"ChargedPion","charged pion",0)
-DEFINE_QUALIFIER_GETTER(Is_Charged_Kaon,Is_Charged_Kaon_Getter,
-			"12","charged kaon",0)
-DEFINE_QUALIFIER_GETTER(Is_Charged_Kaon,Is_Charged_Kaon_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Charged_Kaon,
 			"ChargedKaon","charged kaon",0)
-DEFINE_QUALIFIER_GETTER(Is_Proton_Antiproton,Is_Proton_Antiproton_Getter,
-			"13","proton antiproton",0)
-DEFINE_QUALIFIER_GETTER(Is_Proton_Antiproton,Is_Proton_Antiproton_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Proton_Antiproton,
 			"ProtonAntiproton","proton antiproton",0)
-DEFINE_QUALIFIER_GETTER(Is_Parton,Is_Parton_Getter,
-			"21","parton",0)
-DEFINE_QUALIFIER_GETTER(Is_Parton,Is_Parton_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Parton,
 			"Parton","parton",1)
-DEFINE_QUALIFIER_GETTER(Is_There,Is_There_Getter,
-			"99","there",0)
-DEFINE_QUALIFIER_GETTER(Is_Charged_Lepton,Is_Charged_Lepton_Getter,
-			"90","charged lepton",0)
-DEFINE_QUALIFIER_GETTER(Is_There,Is_There_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_There,
 			"There","there",1)
-DEFINE_QUALIFIER_GETTER(Is_Neutral_Pion,Is_Neutral_Pion_Getter,
-			"101","neutral pion",0)
-DEFINE_QUALIFIER_GETTER(Is_Neutral_Pion,Is_Neutral_Pion_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Neutral_Pion,
 			"NeutralPion","neutral pion",0)
-DEFINE_QUALIFIER_GETTER(Is_Neutral_Kaon,Is_Neutral_Kaon_Getter,
-			"102","neutral kaon",0)
-DEFINE_QUALIFIER_GETTER(Is_Neutral_Kaon,Is_Neutral_Kaon_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Neutral_Kaon,
 			"NeutralKaon","neutral kaon",0)
-DEFINE_QUALIFIER_GETTER(Is_Charged_KStar,Is_Charged_KStar_Getter,
-			"103","charged kstar",0)
-DEFINE_QUALIFIER_GETTER(Is_Charged_KStar,Is_Charged_KStar_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Charged_KStar,
 			"ChargedKStar","charged kstar",0)
-DEFINE_QUALIFIER_GETTER(Is_Neutral_KStar,Is_Neutral_KStar_Getter,
-			"104","charged kstar",0)
-DEFINE_QUALIFIER_GETTER(Is_Neutral_KStar,Is_Neutral_KStar_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Neutral_KStar,
 			"NeutralKStar","neutral kstar",0)
-DEFINE_QUALIFIER_GETTER(Is_Eta,Is_Eta_Getter,
-			"105","eta",0)
-DEFINE_QUALIFIER_GETTER(Is_Eta,Is_Eta_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Eta,
 			"Eta","eta",0)
-DEFINE_QUALIFIER_GETTER(Is_Rho0,Is_Rho0_Getter,
-			"106","rho0",0)
-DEFINE_QUALIFIER_GETTER(Is_Rho0,Is_Rho0_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Rho0,
 			"Rho0","rho0",0)
-DEFINE_QUALIFIER_GETTER(Is_Omega,Is_Omega_Getter,
-			"107","omega",0)
-DEFINE_QUALIFIER_GETTER(Is_Omega,Is_Omega_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Omega,
 			"Omega","omega",0)
-DEFINE_QUALIFIER_GETTER(Is_EtaPrime,Is_EtaPrime_Getter,
-			"108","eta prime",0)
-DEFINE_QUALIFIER_GETTER(Is_EtaPrime,Is_EtaPrime_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_EtaPrime,
 			"EtaPrime","eta prime",0)
-DEFINE_QUALIFIER_GETTER(Is_Phi,Is_Phi_Getter,
-			"109","phi",0)
-DEFINE_QUALIFIER_GETTER(Is_Phi,Is_Phi_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Phi,
 			"Phi","phi",0)
-DEFINE_QUALIFIER_GETTER(Is_Lambda,Is_Lambda_Getter,
-			"110","lambda",0)
-DEFINE_QUALIFIER_GETTER(Is_Lambda,Is_Lambda_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Lambda,
 			"Lambda","lambda",0)
-DEFINE_QUALIFIER_GETTER(Is_Charged_Sigma,Is_Charged_Sigma_Getter,
-			"111","charged sigma",0)
-DEFINE_QUALIFIER_GETTER(Is_Charged_Sigma,Is_Charged_Sigma_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Charged_Sigma,
 			"ChargedSigma","charged sigma",0)
-DEFINE_QUALIFIER_GETTER(Is_Charged_Xi,Is_Charged_Xi_Getter,
-			"112","charged xi",0)
-DEFINE_QUALIFIER_GETTER(Is_Charged_Xi,Is_Charged_Xi_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Charged_Xi,
 			"ChargedXi","charged xi",0)
-DEFINE_QUALIFIER_GETTER(Is_Neutral_Xi,Is_Neutral_Xi_Getter,
-			"113","neutral xi",0)
-DEFINE_QUALIFIER_GETTER(Is_Neutral_Xi,Is_Neutral_Xi_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Neutral_Xi,
 			"NeutralXi","neutral xi",0)
-DEFINE_QUALIFIER_GETTER(Is_Not_Lepton,Is_Not_Lepton_Getter_,
+DEFINE_QUALIFIER_GETTER(Is_Not_Lepton,
 			"NotLepton","not lepton",1)
 
 bool Or_Particle_Qualifier::operator() (const Particle * p) const {
@@ -268,11 +222,12 @@ bool Is_BQuark_Decay_Product::operator() (const Particle * p) const {
   return operator()(b->InParticle(0));
 }
 
-DECLARE_GETTER(Is_KF_Getter,"KF",Particle_Qualifier_Base,std::string);
-Particle_Qualifier_Base *					
-Is_KF_Getter::operator()(const std::string &parameter) const  
+DECLARE_GETTER(Is_KF,"KF",Particle_Qualifier_Base,std::string);
+Particle_Qualifier_Base *ATOOLS::Getter<Particle_Qualifier_Base,std::string,Is_KF>::
+operator()(const std::string &parameter) const  
 { return new Is_KF(parameter); }
-void Is_KF_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Particle_Qualifier_Base,std::string,Is_KF>::
+PrintInfo(std::ostream &str,const size_t width) const
 { str<<"kf code, usage: KF(<kf code>)"; }
 
 Is_KF::Is_KF(const std::string &kfcode):
@@ -283,11 +238,12 @@ bool Is_KF::operator() (const Particle * p) const {
   return 0;
 }
 
-DECLARE_GETTER(Is_Flav_Getter,"Flav",Particle_Qualifier_Base,std::string);
-Particle_Qualifier_Base *					
-Is_Flav_Getter::operator()(const std::string &parameter) const  
+DECLARE_GETTER(Is_Flav,"Flav",Particle_Qualifier_Base,std::string);
+Particle_Qualifier_Base *ATOOLS::Getter<Particle_Qualifier_Base,std::string,Is_Flav>::
+operator()(const std::string &parameter) const  
 { return new Is_Flav(parameter); }
-void Is_Flav_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Particle_Qualifier_Base,std::string,Is_Flav>::
+PrintInfo(std::ostream &str,const size_t width) const
 { str<<"flavour, usage: Flav(<+- kf code>)"; }
 
 Is_Flav::Is_Flav(const std::string &kfcode)
@@ -449,5 +405,5 @@ bool Is_Strong::operator() (const Particle * p) const {
   return 0;
 }
 
-DEFINE_QUALIFIER_GETTER(Is_Strong,Is_Strong_Getter,
+DEFINE_QUALIFIER_GETTER(Is_Strong,
 			"Strong","strong",1)

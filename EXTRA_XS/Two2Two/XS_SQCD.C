@@ -198,8 +198,9 @@ using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 
-  DECLARE_TREEME2_GETTER(XS_q1q2_sQ1sQ2_Getter,"XS_q1q2_sQ1sQ2")
-    Tree_ME2_Base *XS_q1q2_sQ1sQ2_Getter::operator()(const Process_Info &pi) const
+  DECLARE_TREEME2_GETTER(XS_q1q2_sQ1sQ2,"XS_q1q2_sQ1sQ2")
+    Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1q2_sQ1sQ2>::
+  operator()(const Process_Info &pi) const
   {
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
     Flavour_Vector flavours=pi.ExtractFlavours();
@@ -272,8 +273,9 @@ bool XS_q1q2_sQ1sQ2::SetColours(const ATOOLS::Vec4D_Vector &p)
   return 1; 
 }
 
-  DECLARE_TREEME2_GETTER(XS_q1q2_sQ1LsQ2R_Getter,"XS_q1q2_sQ1LsQ2R")
-    Tree_ME2_Base *XS_q1q2_sQ1LsQ2R_Getter::operator()(const Process_Info &pi) const
+  DECLARE_TREEME2_GETTER(XS_q1q2_sQ1LsQ2R,"XS_q1q2_sQ1LsQ2R")
+    Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1q2_sQ1LsQ2R>::
+  operator()(const Process_Info &pi) const
   {
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
     Flavour_Vector flavours=pi.ExtractFlavours();
@@ -349,8 +351,9 @@ bool XS_q1q2_sQ1LsQ2R::SetColours(const ATOOLS::Vec4D_Vector &p)
 
 //
 
-  DECLARE_TREEME2_GETTER(XS_q1qbar2_sQ1sQbar2_Getter,"XS_q1qbar2_sQ1sQbar2")
-    Tree_ME2_Base *XS_q1qbar2_sQ1sQbar2_Getter::operator()(const Process_Info &pi) const
+  DECLARE_TREEME2_GETTER(XS_q1qbar2_sQ1sQbar2,"XS_q1qbar2_sQ1sQbar2")
+    Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1qbar2_sQ1sQbar2>::
+  operator()(const Process_Info &pi) const
   {
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
     Flavour_Vector flavours=pi.ExtractFlavours();
@@ -414,8 +417,9 @@ bool XS_q1qbar2_sQ1sQbar2::SetColours(const ATOOLS::Vec4D_Vector &p)
 
 //
 
-  DECLARE_TREEME2_GETTER(XS_q1qbar1_sQ2sQbar2_Getter,"XS_q1qbar1_sQ2sQbar2")
-    Tree_ME2_Base *XS_q1qbar1_sQ2sQbar2_Getter::operator()(const Process_Info &pi) const
+  DECLARE_TREEME2_GETTER(XS_q1qbar1_sQ2sQbar2,"XS_q1qbar1_sQ2sQbar2")
+    Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1qbar1_sQ2sQbar2>::
+  operator()(const Process_Info &pi) const
   {
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
     Flavour_Vector flavours=pi.ExtractFlavours();
@@ -466,8 +470,9 @@ bool XS_q1qbar1_sQ2sQbar2::SetColours(const ATOOLS::Vec4D_Vector &p)
   return 1; 
 }
 
-  DECLARE_TREEME2_GETTER(XS_q1q1_sQ1sQ1_Getter,"XS_q1q1_sQ1sQ1")
-    Tree_ME2_Base *XS_q1q1_sQ1sQ1_Getter::operator()(const Process_Info &pi) const
+  DECLARE_TREEME2_GETTER(XS_q1q1_sQ1sQ1,"XS_q1q1_sQ1sQ1")
+    Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1q1_sQ1sQ1>::
+  operator()(const Process_Info &pi) const
   {
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
     Flavour_Vector flavours=pi.ExtractFlavours();
@@ -537,8 +542,9 @@ bool XS_q1q1_sQ1sQ1::SetColours(const ATOOLS::Vec4D_Vector &p)
   return true;
 }
 
-  DECLARE_TREEME2_GETTER(XS_q1q1_sQ1LsQ1R_Getter,"XS_q1q1_sQ1LsQ1R")
-    Tree_ME2_Base *XS_q1q1_sQ1LsQ1R_Getter::operator()(const Process_Info &pi) const
+  DECLARE_TREEME2_GETTER(XS_q1q1_sQ1LsQ1R,"XS_q1q1_sQ1LsQ1R")
+    Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1q1_sQ1LsQ1R>::
+  operator()(const Process_Info &pi) const
   {
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
     Flavour_Vector flavours=pi.ExtractFlavours();
@@ -614,8 +620,9 @@ bool XS_q1q1_sQ1LsQ1R::SetColours(const ATOOLS::Vec4D_Vector &p)
   return true;
 }
 
-  DECLARE_TREEME2_GETTER(XS_q1qbar1_sQ1sQbar1_Getter,"XS_q1qbar1_sQ1sQbar1")
-    Tree_ME2_Base *XS_q1qbar1_sQ1sQbar1_Getter::operator()(const Process_Info &pi) const
+  DECLARE_TREEME2_GETTER(XS_q1qbar1_sQ1sQbar1,"XS_q1qbar1_sQ1sQbar1")
+    Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1qbar1_sQ1sQbar1>::
+  operator()(const Process_Info &pi) const
   {
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
     Flavour_Vector flavours=pi.ExtractFlavours();
@@ -691,8 +698,9 @@ bool XS_q1qbar1_sQ1sQbar1::SetColours(const ATOOLS::Vec4D_Vector &p)
   return true;
 }
 
-  DECLARE_TREEME2_GETTER(XS_q1qbar1_GluinoGluino_Getter,"XS_q1qbar1_GluinoGluino")
-    Tree_ME2_Base *XS_q1qbar1_GluinoGluino_Getter::operator()(const Process_Info &pi) const
+  DECLARE_TREEME2_GETTER(XS_q1qbar1_GluinoGluino,"XS_q1qbar1_GluinoGluino")
+    Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1qbar1_GluinoGluino>::
+  operator()(const Process_Info &pi) const
   {
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
     Flavour_Vector flavours=pi.ExtractFlavours();
@@ -782,8 +790,9 @@ bool XS_q1qbar1_GluinoGluino::SetColours(const ATOOLS::Vec4D_Vector &p)
   return true;
 }
 
-  DECLARE_TREEME2_GETTER(XS_gg_sQ1sQbar1_Getter,"XS_gg_sQ1sQbar1")
-    Tree_ME2_Base *XS_gg_sQ1sQbar1_Getter::operator()(const Process_Info &pi) const
+  DECLARE_TREEME2_GETTER(XS_gg_sQ1sQbar1,"XS_gg_sQ1sQbar1")
+    Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_gg_sQ1sQbar1>::
+  operator()(const Process_Info &pi) const
   {
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
     Flavour_Vector flavours=pi.ExtractFlavours();
@@ -860,8 +869,9 @@ bool XS_gg_sQ1sQbar1::SetColours(const ATOOLS::Vec4D_Vector &p)
   return true;
 }
 
-  DECLARE_TREEME2_GETTER(XS_q1g_sQ1Gluino_Getter,"XS_q1g_sQ1Gluino")
-    Tree_ME2_Base *XS_q1g_sQ1Gluino_Getter::operator()(const Process_Info &pi) const
+  DECLARE_TREEME2_GETTER(XS_q1g_sQ1Gluino,"XS_q1g_sQ1Gluino")
+    Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1g_sQ1Gluino>::
+  operator()(const Process_Info &pi) const
   {
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
     Flavour_Vector flavours=pi.ExtractFlavours();
@@ -955,8 +965,9 @@ bool XS_q1g_sQ1Gluino::SetColours(const ATOOLS::Vec4D_Vector &p)
   return true;
 }
       
-  DECLARE_TREEME2_GETTER(XS_gg_GluinoGluino_Getter,"XS_gg_GluinoGluino")
-    Tree_ME2_Base *XS_gg_GluinoGluino_Getter::operator()(const Process_Info &pi) const
+  DECLARE_TREEME2_GETTER(XS_gg_GluinoGluino,"XS_gg_GluinoGluino")
+    Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_gg_GluinoGluino>::
+  operator()(const Process_Info &pi) const
   {
     if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
     Flavour_Vector flavours=pi.ExtractFlavours();

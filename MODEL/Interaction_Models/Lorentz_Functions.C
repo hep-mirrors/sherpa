@@ -16,7 +16,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_None,LFNone_Getter,"None","")
+DEFINE_LF_GETTER(LF_None,"None","")
 
 class LF_Gamma: public Lorentz_Function {
 public:  
@@ -34,7 +34,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_Gamma,LFGamma_Getter,"Gamma","")
+DEFINE_LF_GETTER(LF_Gamma,"Gamma","")
 class LF_Gab: public Lorentz_Function {
 public:  
   LF_Gab(): Lorentz_Function("Gab") {}
@@ -57,7 +57,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_Gab,LFGab_Getter,"Gab","")
+DEFINE_LF_GETTER(LF_Gab,"Gab","")
 class LF_Gauge3: public Lorentz_Function {
 public:  
   LF_Gauge3(): Lorentz_Function("Gauge3") {}
@@ -83,7 +83,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_Gauge3,LFGauge3_Getter,"Gauge3","")
+DEFINE_LF_GETTER(LF_Gauge3,"Gauge3","")
 class LF_GaugeP4: public Lorentz_Function {
 public:  
   LF_GaugeP4(): Lorentz_Function("GaugeP4") {}
@@ -109,7 +109,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_GaugeP4,LFGaugeP4_Getter,"GaugeP4","")
+DEFINE_LF_GETTER(LF_GaugeP4,"GaugeP4","")
 class LF_Gauge4: public Lorentz_Function {
 public:  
   LF_Gauge4(): Lorentz_Function("Gauge4") {}
@@ -145,7 +145,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_Gauge4,LFGauge4_Getter,"Gauge4","")
+DEFINE_LF_GETTER(LF_Gauge4,"Gauge4","")
 class LF_Gluon4: public Lorentz_Function {
 public:  
   LF_Gluon4(): Lorentz_Function("Gluon4") {}
@@ -187,7 +187,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_Gluon4,LFGluon4_Getter,"Gluon4","")
+DEFINE_LF_GETTER(LF_Gluon4,"Gluon4","")
 class LF_SSV: public Lorentz_Function {
 public:  
   LF_SSV(): Lorentz_Function("SSV") {}
@@ -211,7 +211,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_SSV,LFSSV_Getter,"SSV","")
+DEFINE_LF_GETTER(LF_SSV,"SSV","")
 
 class LF_SSS: public Lorentz_Function {
 public:  
@@ -228,7 +228,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_SSS,LFSSS_Getter,"SSS","")
+DEFINE_LF_GETTER(LF_SSS,"SSS","")
 class LF_FFS: public Lorentz_Function {
 public:  
   LF_FFS(): Lorentz_Function("FFS") {}
@@ -244,7 +244,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_FFS,LFFFS_Getter,"FFS","")
+DEFINE_LF_GETTER(LF_FFS,"FFS","")
 class LF_Pol: public Lorentz_Function {
 public:  
   LF_Pol(): Lorentz_Function("Pol") {}
@@ -261,7 +261,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_Pol,LFPol_Getter,"Pol","")
+DEFINE_LF_GETTER(LF_Pol,"Pol","")
 class LF_VVSS: public Lorentz_Function {
 public:  
   LF_VVSS(): Lorentz_Function("VVSS") {}
@@ -284,7 +284,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_VVSS,LFVVSS_Getter,"VVSS","")
+DEFINE_LF_GETTER(LF_VVSS,"VVSS","")
 class LF_SSSS: public Lorentz_Function {
 public:  
   LF_SSSS(): Lorentz_Function("SSSS") {}
@@ -300,7 +300,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_SSSS,LFSSSS_Getter,"SSSS","")
+DEFINE_LF_GETTER(LF_SSSS,"SSSS","")
 class LF_AGauge4: public Lorentz_Function {
 public: 
   LF_AGauge4(): Lorentz_Function("AGauge4") {}
@@ -328,7 +328,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_AGauge4,LFAGauge4_Getter,"AGauge4","")
+DEFINE_LF_GETTER(LF_AGauge4,"AGauge4","")
 class LF_AGauge3: public Lorentz_Function {
 public:  
   LF_AGauge3(): Lorentz_Function("AGauge3") {}
@@ -379,7 +379,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_AGauge3,LFAGauge3_Getter,"AGauge3","")
+DEFINE_LF_GETTER(LF_AGauge3,"AGauge3","")
 
 class LF_AZZZ: public Lorentz_Function {
 public:  
@@ -411,7 +411,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_AZZZ,LFAZZZ_Getter,"AZZZ","")
+DEFINE_LF_GETTER(LF_AZZZ,"AZZZ","")
 
 
 class LF_AZZG: public Lorentz_Function {
@@ -440,7 +440,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_AZZG,LFAZZG_Getter,"AZZG","")
+DEFINE_LF_GETTER(LF_AZZG,"AZZG","")
 
 
 class LF_AZGG: public Lorentz_Function {
@@ -469,7 +469,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_AZGG,LFAZGG_Getter,"AZGG","")
+DEFINE_LF_GETTER(LF_AZGG,"AZGG","")
 
 class LF_FFT: public Lorentz_Function {
 public: 
@@ -486,7 +486,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_FFT,LFFFT_Getter,"FFT","")
+DEFINE_LF_GETTER(LF_FFT,"FFT","")
 class LF_VVT: public Lorentz_Function {
 public:  
   LF_VVT(): Lorentz_Function("VVT") {}
@@ -508,7 +508,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_VVT,LFVVT_Getter,"VVT","")
+DEFINE_LF_GETTER(LF_VVT,"VVT","")
 class LF_SST: public Lorentz_Function {
 public: 
   LF_SST(): Lorentz_Function("SST") {}
@@ -530,7 +530,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_SST,LFSST_Getter,"SST","")
+DEFINE_LF_GETTER(LF_SST,"SST","")
 class LF_FFVT: public Lorentz_Function {
 public:  
   LF_FFVT(): Lorentz_Function("FFVT") {}
@@ -546,7 +546,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_FFVT,LFFFVT_Getter,"FFVT","")
+DEFINE_LF_GETTER(LF_FFVT,"FFVT","")
 class LF_VVVT: public Lorentz_Function {
 public: 
   LF_VVVT(): Lorentz_Function("VVVT") {}
@@ -572,7 +572,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_VVVT,LFVVVT_Getter,"VVVT","")
+DEFINE_LF_GETTER(LF_VVVT,"VVVT","")
 class LF_SSST: public Lorentz_Function {
 public:
   LF_SSST(): Lorentz_Function("SSST") {}
@@ -588,7 +588,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_SSST,LFSSST_Getter,"SSST","")
+DEFINE_LF_GETTER(LF_SSST,"SSST","")
 class LF_FFGS: public Lorentz_Function {
 public:
   LF_FFGS(): Lorentz_Function("FFGS") {}
@@ -604,7 +604,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_FFGS,LFFFGS_Getter,"FFGS","")
+DEFINE_LF_GETTER(LF_FFGS,"FFGS","")
 class LF_VVGS: public Lorentz_Function {
 public:
   LF_VVGS(): Lorentz_Function("VVGS") {}
@@ -626,7 +626,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_VVGS,LFVVGS_Getter,"VVGS","")
+DEFINE_LF_GETTER(LF_VVGS,"VVGS","")
 class LF_SSGS: public Lorentz_Function {
 public: 
   LF_SSGS(): Lorentz_Function("SSGS") {}
@@ -648,7 +648,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_SSGS,LFSSGS_Getter,"SSGS","")
+DEFINE_LF_GETTER(LF_SSGS,"SSGS","")
 class LF_FFVGS: public Lorentz_Function {
 public:
   LF_FFVGS(): Lorentz_Function("FFVGS") {}
@@ -664,7 +664,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_FFVGS,LFFFVGS_Getter,"FFVGS","")
+DEFINE_LF_GETTER(LF_FFVGS,"FFVGS","")
 class LF_Triangle: public Lorentz_Function {
 public:
   LF_Triangle(): Lorentz_Function("Triangle") {}
@@ -687,7 +687,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_Triangle,LFTriangle_Getter,"Triangle","")
+DEFINE_LF_GETTER(LF_Triangle,"Triangle","")
 class LF_Box: public Lorentz_Function {
 public:
   LF_Box(): Lorentz_Function("Box") {}
@@ -714,7 +714,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_Box,LFBox_Getter,"Box","")
+DEFINE_LF_GETTER(LF_Box,"Box","")
 class LF_C4GS: public Lorentz_Function {
 public:
   LF_C4GS(): Lorentz_Function("C4GS") {}
@@ -737,7 +737,7 @@ public:
     return copy;
   }
 }; 
-DEFINE_LF_GETTER(LF_C4GS,LFC4GS_Getter,"C4GS","")
+DEFINE_LF_GETTER(LF_C4GS,"C4GS","")
 
 class LF_PseudoTriangle: public Lorentz_Function {
 public:
@@ -762,7 +762,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_PseudoTriangle,LFPseudoTriangle_Getter,"PseudoTriangle","")
+DEFINE_LF_GETTER(LF_PseudoTriangle,"PseudoTriangle","")
 class LF_PseudoBox: public Lorentz_Function {
 public:
   LF_PseudoBox(): Lorentz_Function("PseudoBox") {}
@@ -790,7 +790,7 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_PseudoBox,LFPseudoBox_Getter,"PseudoBox","")
+DEFINE_LF_GETTER(LF_PseudoBox,"PseudoBox","")
 
 class LF_SSVgen: public Lorentz_Function {
 public:
@@ -820,7 +820,7 @@ public:
   }
 
 };
-DEFINE_LF_GETTER(LF_SSVgen,SSVgen_Getter,"SSVgen","")
+DEFINE_LF_GETTER(LF_SSVgen,"SSVgen","")
 
 class LF_TAUPI: public Lorentz_Function {
 public:
@@ -837,5 +837,5 @@ public:
     return copy;
   }
 };
-DEFINE_LF_GETTER(LF_TAUPI,LFTAUPI_Getter,"TAUPI","")
+DEFINE_LF_GETTER(LF_TAUPI,"TAUPI","")
 

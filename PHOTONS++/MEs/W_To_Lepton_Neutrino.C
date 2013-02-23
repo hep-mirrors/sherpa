@@ -250,11 +250,12 @@ double W_To_Lepton_Neutrino::GetBeta_2_2(unsigned int i, unsigned int j) {
   return 0.;
 }
 
-DECLARE_PHOTONS_ME_GETTER(W_To_Lepton_Neutrino_Getter,
+DECLARE_PHOTONS_ME_GETTER(W_To_Lepton_Neutrino,
                           "W_To_Lepton_Neutrino")
 
-PHOTONS_ME_Base * W_To_Lepton_Neutrino_Getter::operator()
-(const Particle_Vector_Vector &pvv) const
+PHOTONS_ME_Base *ATOOLS::Getter<PHOTONS_ME_Base,Particle_Vector_Vector,
+				W_To_Lepton_Neutrino>::
+operator()(const Particle_Vector_Vector &pvv) const
 {
   if ( (pvv.size() == 4) &&
        (pvv[0].size() == 1) && (pvv[0][0]->Flav().Kfcode() == kf_Wplus) &&

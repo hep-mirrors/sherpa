@@ -5,10 +5,8 @@ ANATOOLS_SOURCES      =	\
 			Blob_Selector.C \
 			List_Creator.C \
 			List_Merger.C \
-			List_Modifier.C \
 			Particle_Ordering.C \
 			Particle_Qualifier.C \
-			Universal_Selector.C \
 			Particle_Selector.C 
 
 ANATOOLS_ADDS         =	\

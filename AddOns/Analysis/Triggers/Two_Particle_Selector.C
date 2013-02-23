@@ -265,19 +265,21 @@ GetTwoParticleDeltaSelector(const Argument_Matrix &parameters)
   return new Class(flav,item,refflav,refitem,min,max,inlist,reflist,outlist);
 }									
 
-#define DEFINE_TWO_SELECTOR_DELTA_GETTER_METHOD(CLASS,NAME)		\
-  Analysis_Object *					\
-  NAME::operator()(const Argument_Matrix &parameters) const		\
+#define DEFINE_TWO_SELECTOR_DELTA_GETTER_METHOD(CLASS)			\
+  Analysis_Object *ATOOLS::Getter					\
+  <Analysis_Object,Argument_Matrix,CLASS>:: 				\
+  operator()(const Argument_Matrix &parameters) const			\
   { return GetTwoParticleDeltaSelector<CLASS>(parameters); }
 
-#define DEFINE_TWO_SELECTOR_DELTA_PRINT_METHOD(NAME)		\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+#define DEFINE_TWO_SELECTOR_DELTA_PRINT_METHOD(CLASS)			\
+  void ATOOLS::Getter<Analysis_Object,Argument_Matrix,CLASS>::		\
+  PrintInfo(std::ostream &str,const size_t width) const			\
   { str<<"flav1 item1 flav2 item2 min max inlist reflist outlist"; }
 
-#define DEFINE_TWO_SELECTOR_DELTA_GETTER(CLASS,NAME,TAG)		\
-  DECLARE_GETTER(NAME,TAG,Analysis_Object,Argument_Matrix);	\
-  DEFINE_TWO_SELECTOR_DELTA_GETTER_METHOD(CLASS,NAME)		\
-  DEFINE_TWO_SELECTOR_DELTA_PRINT_METHOD(NAME)
+#define DEFINE_TWO_SELECTOR_DELTA_GETTER(CLASS,TAG)		\
+  DECLARE_GETTER(CLASS,TAG,Analysis_Object,Argument_Matrix);	\
+  DEFINE_TWO_SELECTOR_DELTA_GETTER_METHOD(CLASS)		\
+  DEFINE_TWO_SELECTOR_DELTA_PRINT_METHOD(CLASS)
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
 
@@ -327,8 +329,7 @@ void Two_Particle_Selector_Base::Evaluate
   }
 }
 
-DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_DPhi_Selector,
-				 Two_DPhi_Selector_Getter,"TwoDPhiSel")
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_DPhi_Selector,"TwoDPhiSel")
 
 Two_DPhi_Selector::
 Two_DPhi_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -352,8 +353,7 @@ Analysis_Object *Two_DPhi_Selector::GetCopy() const
 			       m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
 }
 
-DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_DEta_Selector,
-				 Two_DEta_Selector_Getter,"TwoDEtaSel")
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_DEta_Selector,"TwoDEtaSel")
 
 Two_DEta_Selector::
 Two_DEta_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -377,8 +377,7 @@ Analysis_Object *Two_DEta_Selector::GetCopy() const
 				   m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
 }
 
-DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_PEta_Selector,
-				 Two_PEta_Selector_Getter,"TwoPEtaSel")
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_PEta_Selector,"TwoPEtaSel")
 
 Two_PEta_Selector::
 Two_PEta_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -402,8 +401,7 @@ Analysis_Object *Two_PEta_Selector::GetCopy() const
 				   m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
 }
 
-DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_DY_Selector,
-				 Two_DY_Selector_Getter,"TwoDYSel")
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_DY_Selector,"TwoDYSel")
 
 Two_DY_Selector::
 Two_DY_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -427,8 +425,7 @@ Analysis_Object *Two_DY_Selector::GetCopy() const
 				   m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
 }
 
-DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_PY_Selector,
-				 Two_PY_Selector_Getter,"TwoPYSel")
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_PY_Selector,"TwoPYSel")
 
 Two_PY_Selector::
 Two_PY_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -452,8 +449,7 @@ Analysis_Object *Two_PY_Selector::GetCopy() const
 				   m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
 }
 
-DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_CY_Selector,
-				 Two_CY_Selector_Getter,"TwoCYSel")
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_CY_Selector,"TwoCYSel")
 
 Two_CY_Selector::
 Two_CY_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -477,8 +473,7 @@ Analysis_Object *Two_CY_Selector::GetCopy() const
 				   m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
 }
 
-DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_Mass_Selector,
-				 Two_Mass_Selector_Getter,"TwoMassSel")
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_Mass_Selector,"TwoMassSel")
 
 Two_Mass_Selector::
 Two_Mass_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -502,8 +497,7 @@ Analysis_Object *Two_Mass_Selector::GetCopy() const
 				   m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
 }
 
-DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_MT_Selector,
-				 Two_MT_Selector_Getter,"TwoMTSel")
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_MT_Selector,"TwoMTSel")
 
 Two_MT_Selector::
 Two_MT_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -527,8 +521,7 @@ Analysis_Object *Two_MT_Selector::GetCopy() const
 			     m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
 }
 
-DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_MT2_Selector,
-				 Two_MT2_Selector_Getter,"TwoMT2Sel")
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_MT2_Selector,"TwoMT2Sel")
 
 Two_MT2_Selector::
 Two_MT2_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -553,8 +546,7 @@ Analysis_Object *Two_MT2_Selector::GetCopy() const
 			      m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
 }
 
-DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_PT_Selector,
-				 Two_PT_Selector_Getter,"TwoPTSel")
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_PT_Selector,"TwoPTSel")
 
 Two_PT_Selector::
 Two_PT_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -578,8 +570,7 @@ Analysis_Object *Two_PT_Selector::GetCopy() const
 			     m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
 }
 
-DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_DR_Selector,
-				 Two_DR_Selector_Getter,"TwoDRSel")
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_DR_Selector,"TwoDRSel")
 
 Two_DR_Selector::
 Two_DR_Selector(const ATOOLS::Flavour flav,const size_t item,
@@ -604,8 +595,7 @@ Analysis_Object *Two_DR_Selector::GetCopy() const
 				   m_xmin,m_xmax,m_inlist,m_reflist,m_outlist);
 }
 
-DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_ETFrac_Selector,
-				 Two_ETFrac_Selector_Getter,"TwoETFracSel")
+DEFINE_TWO_SELECTOR_DELTA_GETTER(Two_ETFrac_Selector,"TwoETFracSel")
 
 Two_ETFrac_Selector::
 Two_ETFrac_Selector(const ATOOLS::Flavour flav,const size_t item,

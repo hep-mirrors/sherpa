@@ -404,17 +404,19 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   return 1;
 }
 
-DECLARE_GETTER(Root_Event_Reader_Getter,"Root",
+DECLARE_GETTER(RootNtuple_Reader,"Root",
 	       Event_Reader_Base,Input_Arguments);
 
-Event_Reader_Base *Root_Event_Reader_Getter::operator()
-(const Input_Arguments &args) const
+Event_Reader_Base *ATOOLS::Getter
+<Event_Reader_Base,Input_Arguments,RootNtuple_Reader>::
+operator()(const Input_Arguments &args) const
 {
   return new RootNtuple_Reader(args);
 }
 
-void Root_Event_Reader_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter
+<Event_Reader_Base,Input_Arguments,RootNtuple_Reader>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"Root NTuple input";
 }

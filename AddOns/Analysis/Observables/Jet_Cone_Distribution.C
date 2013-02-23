@@ -8,11 +8,11 @@
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
-DECLARE_GETTER(Jet_Cone_Distribution_Getter,"JetConeDist",
+DECLARE_GETTER(Jet_Cone_Distribution,"JetConeDist",
 	       Primitive_Observable_Base,Argument_Matrix);
 
-Primitive_Observable_Base * 
-Jet_Cone_Distribution_Getter::operator()(const Argument_Matrix &parameters) const
+Primitive_Observable_Base * ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,
+					   Jet_Cone_Distribution>::operator()(const Argument_Matrix &parameters) const
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -43,7 +43,7 @@ Jet_Cone_Distribution_Getter::operator()(const Argument_Matrix &parameters) cons
   return new Jet_Cone_Distribution(HistogramType(scale),etcut,etamin,etamax,rmin,rmax,bins,parameters());
 }									
 
-void Jet_Cone_Distribution_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Jet_Cone_Distribution>::PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"etcut etamin etamax rmin rmax bins Lin|LinErr|Log|LogErr";
 }
@@ -144,11 +144,11 @@ void Jet_Cone_Distribution::Fill(double weight, double ncount)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-DECLARE_GETTER(Jet_Cone_Dependence_Getter,"JetConeDep",
+DECLARE_GETTER(Jet_Cone_Dependence,"JetConeDep",
 	       Primitive_Observable_Base,Argument_Matrix);
 
-Primitive_Observable_Base * 
-Jet_Cone_Dependence_Getter::operator()(const Argument_Matrix &parameters) const
+Primitive_Observable_Base * ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,
+					   Jet_Cone_Dependence>::operator()(const Argument_Matrix &parameters) const
 {									
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -184,7 +184,7 @@ Jet_Cone_Dependence_Getter::operator()(const Argument_Matrix &parameters) const
 				 nmin,nmax,bins,parameters());
 }									
 
-void Jet_Cone_Dependence_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Jet_Cone_Dependence>::PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"etcut etamin etamax rmin rmax nmin nmax bins Lin|LinErr|Log|LogErr";
 }
@@ -307,11 +307,11 @@ void Jet_Cone_Dependence::Fill(double weight, double ncount)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-DECLARE_GETTER(Jet_Cone_Shape_Getter,"JetConeShape",
+DECLARE_GETTER(Jet_Cone_Shape,"JetConeShape",
 	       Primitive_Observable_Base,Argument_Matrix);
 
-Primitive_Observable_Base * 
-Jet_Cone_Shape_Getter::operator()(const Argument_Matrix &parameters) const
+Primitive_Observable_Base * ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,
+					   Jet_Cone_Shape>::operator()(const Argument_Matrix &parameters) const
 {			
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
@@ -349,7 +349,7 @@ Jet_Cone_Shape_Getter::operator()(const Argument_Matrix &parameters) const
   return new Jet_Cone_Shape(HistogramType(scale),etcut,radius,etamin,etamax,rmin,rmax,nmin,nmax,bins,parameters());
 }									
 
-void Jet_Cone_Shape_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Jet_Cone_Shape>::PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"etcut radius etamin etamax rmin rmax nmin nmax bins Lin|LinErr|Log|LogErr";
 }

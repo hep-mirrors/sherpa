@@ -39,8 +39,9 @@ bool Baryon_Diquark_Quark::SetColorFlow(std::vector<ATOOLS::Particle*> outparts,
   return true;
 }
 
-DEFINE_ME_GETTER(Baryon_Diquark_Quark,Baryon_Diquark_Quark_Getter,"Baryon_Diquark_Quark")
+DEFINE_ME_GETTER(Baryon_Diquark_Quark,"Baryon_Diquark_Quark")
 
-void Baryon_Diquark_Quark_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,Baryon_Diquark_Quark>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<endl;
 }

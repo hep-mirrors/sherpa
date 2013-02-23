@@ -179,8 +179,9 @@ double VA_B_B_hepph9409272::Fit(double q2, double f0,
   return f0/(1-q2/Lambda12+sqr(q2)/Lambda24);
 }
 
-DEFINE_CURRENT_GETTER(VA_B_B_hepph9409272,VA_B_B_hepph9409272_Getter,"VA_B_B_hepph9409272")
+DEFINE_CURRENT_GETTER(VA_B_B_hepph9409272,"VA_B_B_hepph9409272")
 
-void VA_B_B_hepph9409272_Getter::PrintInfo(std::ostream &st,const size_t width) const {
+void ATOOLS::Getter<Current_Base,ME_Parameters,VA_B_B_hepph9409272>::
+PrintInfo(std::ostream &st,const size_t width) const {
   st<<std::endl;
 }

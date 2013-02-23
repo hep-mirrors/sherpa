@@ -31,8 +31,9 @@ void Generic::Calculate(const Vec4D_Vector& p, bool m_anti)
   }
 }
 
-DEFINE_ME_GETTER(Generic,Generic_Getter,"Generic")
+DEFINE_ME_GETTER(Generic,"Generic")
 
-void Generic_Getter::PrintInfo(std::ostream &str,const size_t width) const {
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,Generic>::
+PrintInfo(std::ostream &str,const size_t width) const {
   str<<"Chooses a generic matrix element according to the spin structure.";
 }

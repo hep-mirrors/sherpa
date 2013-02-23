@@ -39,8 +39,10 @@ void DY_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
   m_res.Finite()=(-8.+sqr(M_PI))*m_fac;
 }
 
-DECLARE_VIRTUALME2_GETTER(DY_QCD_Virtual_Getter,"DY_QCD_Virtual")
-Virtual_ME2_Base *DY_QCD_Virtual_Getter::operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(DY_QCD_Virtual,"DY_QCD_Virtual")
+Virtual_ME2_Base *ATOOLS::Getter
+<Virtual_ME2_Base,Process_Info,DY_QCD_Virtual>::
+operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="Internal") return NULL;

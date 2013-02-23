@@ -89,24 +89,17 @@ void SSS_Calculator<SType>::Evaluate()
 namespace METOOLS {
 
   template class SSS_Calculator<double>;
-  template class SSS_Calculator<long double>;
 
 }
 
-DECLARE_TEMPLATE_GETTER(SSS_Getter,"SSS",Lorentz_Calculator,Vertex_Key);
+DECLARE_GETTER(SSS_Calculator<double>,"DSSS",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,SSS_Calculator<double> >::
+operator()(const Vertex_Key &key) const
+{ return new SSS_Calculator<double>(key); }
 
-template <typename SType,char STag> Lorentz_Calculator *
-SSS_Getter<SType,STag>::operator()(const Vertex_Key &key) const
-{
-  return new SSS_Calculator<SType>(key);
-}
-
-template <typename SType,char STag>
-void SSS_Getter<SType,STag>::PrintInfo
-(std::ostream &str,const size_t width) const
-{
-  str<<"SSS vertex";
-}
-
-template class SSS_Getter<double,'D'>;
-template class SSS_Getter<long double,'Q'>;
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    SSS_Calculator<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"SSS vertex"; }

@@ -227,12 +227,10 @@ bool Fastjet_Selector::JetTrigger(const Vec4D_Vector &p,
   return (1-m_sel_log->Hit(1-trigger));
 }
 
+DECLARE_ND_GETTER(Fastjet_Selector,"FastjetSelector",Selector_Base,Selector_Key,true);
 
-namespace PHASIC{
-
-DECLARE_ND_GETTER(Fastjet_Selector_Getter,"FastjetSelector",Selector_Base,Selector_Key,true);
-
-Selector_Base *Fastjet_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<6) THROW(critical_error,"Invalid syntax");
  
@@ -252,12 +250,11 @@ Selector_Base *Fastjet_Selector_Getter::operator()(const Selector_Key &key) cons
   return jf;
 }
 
-void Fastjet_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"FastjetSelector expression algorithm n ptmin etmin dr [f(siscone)=0.75 [eta=100 [y=100]]]\n" 
      <<"                algorithm: kt,antikt,cambridge,siscone";
-}
-
 }
 
 #endif

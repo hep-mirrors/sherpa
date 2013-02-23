@@ -9,14 +9,16 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(SM_U1_B_Getter,"SM+U1_B",Model_Base,Model_Arguments);
+DECLARE_GETTER(SM_U1_B,"SM+U1_B",Model_Base,Model_Arguments);
 
-Model_Base *SM_U1_B_Getter::operator()(const Model_Arguments &args) const
+Model_Base *Getter<Model_Base,Model_Arguments,SM_U1_B>::
+operator()(const Model_Arguments &args) const
 {
   return new SM_U1_B(args.m_path,args.m_file,args.m_elementary);
 }
 
-void SM_U1_B_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void Getter<Model_Base,Model_Arguments,SM_U1_B>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The Standard Model + U(1)_B \n"
      <<std::setw(width+4)<<" "<<"{\n"

@@ -30,16 +30,17 @@ namespace ANALYSIS {
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
-DECLARE_GETTER(List_Creator_Getter,"CreateList",
+DECLARE_GETTER(List_Creator,"CreateList",
  	       Analysis_Object,Argument_Matrix);
 
-void List_Creator_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Object,Argument_Matrix,List_Creator>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"list";
 }
 
-Analysis_Object *
-List_Creator_Getter::operator()(const Argument_Matrix &parameters) const
+Analysis_Object *ATOOLS::Getter<Analysis_Object,Argument_Matrix,List_Creator>::
+operator()(const Argument_Matrix &parameters) const
 {
   std::string outlist("");
   if (parameters.size()!=1) return NULL;

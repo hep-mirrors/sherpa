@@ -8,17 +8,19 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(Interaction_Model_THDM_Getter,"THDM",
+DECLARE_GETTER(Interaction_Model_THDM,"THDM",
 	       Interaction_Model_Base,Interaction_Model_Arguments);
 
-Interaction_Model_Base *Interaction_Model_THDM_Getter::
+Interaction_Model_Base *ATOOLS::Getter
+<Interaction_Model_Base,Interaction_Model_Arguments,Interaction_Model_THDM>::
 operator()(const Interaction_Model_Arguments &args) const
 {
   return new Interaction_Model_THDM
     (args.p_model,args.m_cplscheme,args.m_yukscheme);
 }
 
-void Interaction_Model_THDM_Getter::PrintInfo
+void ATOOLS::Getter<Interaction_Model_Base,Interaction_Model_Arguments,
+		    Interaction_Model_THDM>::PrintInfo
 (std::ostream &str,const size_t width) const
 { 
   str<<"The Two Higgs Doublet Model"; 

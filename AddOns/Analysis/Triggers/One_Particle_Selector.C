@@ -130,19 +130,21 @@ GetOneParticleSelector(const Argument_Matrix &parameters)
   return new Class(flav,item,mode,min,max,inlist,outlist);
 }									
 
-#define DEFINE_ONE_SELECTOR_GETTER_METHOD(CLASS,NAME)	\
-  Analysis_Object *				\
-  NAME::operator()(const Argument_Matrix &parameters) const	\
+#define DEFINE_ONE_SELECTOR_GETTER_METHOD(CLASS)		\
+  Analysis_Object *ATOOLS::Getter				\
+  <Analysis_Object,Argument_Matrix,CLASS>::			\
+  operator()(const Argument_Matrix &parameters) const		\
   { return GetOneParticleSelector<CLASS>(parameters); }
 
-#define DEFINE_ONE_SELECTOR_PRINT_METHOD(NAME)			\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+#define DEFINE_ONE_SELECTOR_PRINT_METHOD(CLASS)			\
+  void ATOOLS::Getter<Analysis_Object,Argument_Matrix,CLASS>::	\
+  PrintInfo(std::ostream &str,const size_t width) const		\
   { str<<"flav item mode min max inlist outlist"; }
 
-#define DEFINE_ONE_SELECTOR_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Analysis_Object,Argument_Matrix);	\
-  DEFINE_ONE_SELECTOR_GETTER_METHOD(CLASS,NAME)			\
-  DEFINE_ONE_SELECTOR_PRINT_METHOD(NAME)
+#define DEFINE_ONE_SELECTOR_GETTER(CLASS,TAG)			\
+  DECLARE_GETTER(CLASS,TAG,Analysis_Object,Argument_Matrix);	\
+  DEFINE_ONE_SELECTOR_GETTER_METHOD(CLASS)			\
+  DEFINE_ONE_SELECTOR_PRINT_METHOD(CLASS)
 
 #include "AddOns/Analysis/Main/Primitive_Analysis.H"
 
@@ -197,8 +199,7 @@ void One_Particle_Selector_Base::Evaluate(const ATOOLS::Particle_List &inlist,
   }
 }
 
-DEFINE_ONE_SELECTOR_GETTER(One_PT_Selector,
-			   One_PT_Selector_Getter,"OnePTSel")
+DEFINE_ONE_SELECTOR_GETTER(One_PT_Selector,"OnePTSel")
 
 One_PT_Selector::One_PT_Selector
 (const ATOOLS::Flavour flav,const size_t item,const int mode,
@@ -218,8 +219,7 @@ Analysis_Object *One_PT_Selector::GetCopy() const
 			     m_inlist,m_outlist);
 }
 
-DEFINE_ONE_SELECTOR_GETTER(One_ET_Selector,
-			   One_ET_Selector_Getter,"OneETSel")
+DEFINE_ONE_SELECTOR_GETTER(One_ET_Selector,"OneETSel")
 
 One_ET_Selector::One_ET_Selector
 (const ATOOLS::Flavour flav,const size_t item,const int mode,
@@ -239,8 +239,7 @@ Analysis_Object *One_ET_Selector::GetCopy() const
 			     m_inlist,m_outlist);
 }
 
-DEFINE_ONE_SELECTOR_GETTER(One_Eta_Selector,
-			   One_Eta_Selector_Getter,"OneEtaSel")
+DEFINE_ONE_SELECTOR_GETTER(One_Eta_Selector,"OneEtaSel")
 
 One_Eta_Selector::One_Eta_Selector
 (const ATOOLS::Flavour flav,const size_t item,const int mode,
@@ -260,8 +259,7 @@ Analysis_Object *One_Eta_Selector::GetCopy() const
 			      m_inlist,m_outlist);
 }
 
-DEFINE_ONE_SELECTOR_GETTER(One_Y_Selector,
-			   One_Y_Selector_Getter,"OneYSel")
+DEFINE_ONE_SELECTOR_GETTER(One_Y_Selector,"OneYSel")
 
 One_Y_Selector::One_Y_Selector
 (const ATOOLS::Flavour flav,const size_t item,const int mode,

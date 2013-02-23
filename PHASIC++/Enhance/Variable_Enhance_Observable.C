@@ -39,16 +39,17 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-DECLARE_GETTER(Variable_Enhance_Observable_Getter,"VAR",
+DECLARE_GETTER(Variable_Enhance_Observable,"VAR",
 	       Enhance_Observable_Base,Enhance_Arguments);
 
-Enhance_Observable_Base *Variable_Enhance_Observable_Getter::
+Enhance_Observable_Base *ATOOLS::Getter
+<Enhance_Observable_Base,Enhance_Arguments,Variable_Enhance_Observable>::
 operator()(const Enhance_Arguments &args) const
 {
   return new Variable_Enhance_Observable(args);
 }
 
-void Variable_Enhance_Observable_Getter::
+void ATOOLS::Getter<Enhance_Observable_Base,Enhance_Arguments,Variable_Enhance_Observable>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"variable enhance observable";

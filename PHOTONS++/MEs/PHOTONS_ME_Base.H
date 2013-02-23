@@ -88,7 +88,8 @@ namespace PHOTONS {
 
 #define DECLARE_PHOTONS_ME_GETTER(NAME,TAG)                        \
   DECLARE_GETTER(NAME,TAG,PHOTONS::PHOTONS_ME_Base,PHOTONS::Particle_Vector_Vector); \
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const \
+  void ATOOLS::Getter<PHOTONS::PHOTONS_ME_Base,PHOTONS::Particle_Vector_Vector,NAME>:: \
+  PrintInfo(std::ostream &str,const size_t width) const		    \
   {                                                                \
     str<<#TAG;                                                     \
   }

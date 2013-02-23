@@ -177,18 +177,17 @@ Cluster_Amplitude *MCFM_Interface::ClusterConfiguration
   return NULL;
 }
 
-namespace PHASIC {
+DECLARE_GETTER(MCFM_Interface,"MCFM",ME_Generator_Base,ME_Generator_Key);
 
-  DECLARE_GETTER(MCFM_Interface_Getter,"MCFM",ME_Generator_Base,ME_Generator_Key);
+ME_Generator_Base *ATOOLS::Getter
+<ME_Generator_Base,ME_Generator_Key,MCFM_Interface>::
+operator()(const ME_Generator_Key &key) const
+{
+  return new MCFM_Interface();
+}
 
-  ME_Generator_Base *MCFM_Interface_Getter::operator()(const ME_Generator_Key &key) const
-  {
-    return new MCFM_Interface();
-  }
-
-  void MCFM_Interface_Getter::PrintInfo(std::ostream &str,const size_t width) const
-  { 
-    str<<"Interface to the MCFM loop ME generator"; 
-  }
-
+void ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,MCFM_Interface>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"Interface to the MCFM loop ME generator"; 
 }

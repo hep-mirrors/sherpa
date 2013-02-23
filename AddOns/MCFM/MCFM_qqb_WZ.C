@@ -95,8 +95,10 @@ double MCFM_qqb_WZ::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
 
 extern "C" { void chooser_(); }
 
-DECLARE_VIRTUALME2_GETTER(MCFM_qqb_WZ_Getter,"MCFM_qqb_WZ")
-Virtual_ME2_Base *MCFM_qqb_WZ_Getter::operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(MCFM_qqb_WZ,"MCFM_qqb_WZ")
+Virtual_ME2_Base *ATOOLS::Getter
+<Virtual_ME2_Base,Process_Info,MCFM_qqb_WZ>::
+operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC("");
   if (MODEL::s_model->Name()!=std::string("SM")

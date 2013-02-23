@@ -50,22 +50,22 @@ Primitive_Observable_Base *GetObservable(const Argument_Matrix &parameters)
   return new Class(HistogramType(scale),min,max,bins,list);
 }									
 
-#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
+#define DEFINE_GETTER_METHOD(CLASS)				\
   Primitive_Observable_Base *					\
-  NAME::operator()(const Argument_Matrix &parameters) const		\
+  ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,CLASS>::operator()(const Argument_Matrix &parameters) const \
   { return GetObservable<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
-  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,NAME>::PrintInfo(std::ostream &str,const size_t width) const \
   { str<<"min max bins Lin|LinErr|Log|LogErr [list]"; }
 
-#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,Argument_Matrix);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME)					\
-  DEFINE_PRINT_METHOD(NAME)
+#define DEFINE_OBSERVABLE_GETTER(CLASS,TAG)			\
+  DECLARE_GETTER(CLASS,TAG,Primitive_Observable_Base,Argument_Matrix);	\
+  DEFINE_GETTER_METHOD(CLASS)					\
+  DEFINE_PRINT_METHOD(CLASS)
 
 
-DEFINE_OBSERVABLE_GETTER(TotalMass,TotalMass_Getter,"TotalMass")
+DEFINE_OBSERVABLE_GETTER(TotalMass,"TotalMass")
  
 TotalMass::TotalMass(int type,double xmin,double xmax,int nbins,
        const std::string & listname) :

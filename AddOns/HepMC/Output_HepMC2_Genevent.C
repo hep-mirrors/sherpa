@@ -90,17 +90,17 @@ void Output_HepMC2_Genevent::ChangeFile()
 #endif
 }
 
-DECLARE_GETTER(HepMC_GenEvent_Output_Getter,"HepMC_GenEvent",
+DECLARE_GETTER(Output_HepMC2_Genevent,"HepMC_GenEvent",
 	       Output_Base,Output_Arguments);
 
-Output_Base *HepMC_GenEvent_Output_Getter::operator()
-(const Output_Arguments &args) const
+Output_Base *ATOOLS::Getter<Output_Base,Output_Arguments,Output_HepMC2_Genevent>::
+operator()(const Output_Arguments &args) const
 {
   return new Output_HepMC2_Genevent(args);
 }
 
-void HepMC_GenEvent_Output_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Output_Base,Output_Arguments,Output_HepMC2_Genevent>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"HepMC GenEvent output";
 }

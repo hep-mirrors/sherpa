@@ -37,21 +37,19 @@ PDF::CParam QCD_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   return PDF::CParam(muf2,muf2,0.0,mur2,-1);
 }
 
-namespace PHASIC {
+DECLARE_ND_GETTER(QCD_Core_Scale,"QCD",
+		  Core_Scale_Setter,Core_Scale_Arguments,true);
 
-  DECLARE_ND_GETTER(QCD_Core_Scale_Getter,"QCD",
-		    Core_Scale_Setter,Core_Scale_Arguments,true);
+Core_Scale_Setter *ATOOLS::Getter
+<Core_Scale_Setter,Core_Scale_Arguments,QCD_Core_Scale>::
+operator()(const Core_Scale_Arguments &args) const
+{
+  return new QCD_Core_Scale(args);
+}
 
-  Core_Scale_Setter *QCD_Core_Scale_Getter::operator()
-    (const Core_Scale_Arguments &args) const
-  {
-    return new QCD_Core_Scale(args);
-  }
-
-  void QCD_Core_Scale_Getter::PrintInfo
-  (std::ostream &str,const size_t width) const
-  { 
-    str<<"QCD core scale"; 
-  }
-
-}// end of namespace PHASIC
+void ATOOLS::Getter<Core_Scale_Setter,Core_Scale_Arguments,
+		    QCD_Core_Scale>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"QCD core scale"; 
+}

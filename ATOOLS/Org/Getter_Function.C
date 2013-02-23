@@ -46,7 +46,8 @@ Getter_Function(const std::string &name):
   }
 #ifdef DEBUG__Getter_Function
   std::cout<<"Getter_Function::Getter_Function(..): "
-	   <<"Added getter '"<<this<<"' -> \""<<name<<"\"."<<std::endl;
+	   <<"Added getter '"<<this<<"'("<<Demangle(typeid(*this).name())
+	   <<") -> \""<<name<<"\"."<<std::endl;
 #endif
   typename String_Getter_Map::iterator git(s_getters->find(name));
   if (git!=s_getters->end()) {
@@ -85,7 +86,7 @@ template<class ObjectType,class ParameterType,class SortCriterion>
 void Getter_Function<ObjectType,ParameterType,SortCriterion>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"No Information";
+  str<<Demangle(typeid(*this).name());
 }
 
 template<class ObjectType,class ParameterType,class SortCriterion>

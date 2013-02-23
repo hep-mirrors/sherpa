@@ -136,22 +136,18 @@ void Decay2_Selector::AssignId(Term *term)
   }
 }
 
-namespace PHASIC {
-
-DECLARE_ND_GETTER(Decay2_Selector_Getter,"Decay2",
+DECLARE_ND_GETTER(Decay2_Selector,"Decay2",
 		  Selector_Base,Selector_Key,true);
 
-Selector_Base *Decay2_Selector_Getter::operator()
-  (const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Decay2_Selector>::
+operator()(const Selector_Key &key) const
 {
   Decay2_Selector *msel(new Decay2_Selector(key));
   return msel;
 }
 
-void Decay2_Selector_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Decay2_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"Decay2 kf1 kf2 min max"; 
-}
-
 }

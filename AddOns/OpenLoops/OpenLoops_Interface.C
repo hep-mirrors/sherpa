@@ -406,9 +406,13 @@ namespace OpenLoops {
     THROW(normal_exit, "Shopping list generated.");
   }
 
+}
 
-  DECLARE_VIRTUALME2_GETTER(OpenLoops_Virtual_Getter,"OpenLoops_Virtual")
-  Virtual_ME2_Base *OpenLoops_Virtual_Getter::operator()(const Process_Info &pi) const
+using namespace OpenLoops;
+
+  DECLARE_VIRTUALME2_GETTER(OpenLoops_Virtual,"OpenLoops_Virtual")
+  Virtual_ME2_Base *ATOOLS::Getter<Virtual_ME2_Base,Process_Info,OpenLoops_Virtual>::
+  operator()(const Process_Info &pi) const
   {
     DEBUG_FUNC(pi);
     if (pi.m_loopgenerator!="OpenLoops") return NULL;
@@ -488,8 +492,9 @@ namespace OpenLoops {
 
 
 
-  DECLARE_TREEME2_GETTER(OpenLoops_Born_Getter,"OpenLoops_Born")
-  Tree_ME2_Base *OpenLoops_Born_Getter::operator()(const Process_Info &pi) const
+  DECLARE_TREEME2_GETTER(OpenLoops_Born,"OpenLoops_Born")
+  Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,OpenLoops_Born>::
+  operator()(const Process_Info &pi) const
   {
     DEBUG_FUNC(pi);
     if (pi.m_loopgenerator!="OpenLoops") return NULL;
@@ -537,22 +542,18 @@ namespace OpenLoops {
     }
   }
 
+  DECLARE_GETTER(OpenLoops_Interface,"OpenLoops",ME_Generator_Base,ME_Generator_Key);
 
-}
-
-
-namespace PHASIC {
-
-  DECLARE_GETTER(OpenLoops_Interface_Getter,"OpenLoops",ME_Generator_Base,ME_Generator_Key);
-
-  ME_Generator_Base *OpenLoops_Interface_Getter::operator()(const ME_Generator_Key &key) const
+  ME_Generator_Base *ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,
+				    OpenLoops_Interface>::
+  operator()(const ME_Generator_Key &key) const
   {
     return new OpenLoops::OpenLoops_Interface();
   }
 
-  void OpenLoops_Interface_Getter::PrintInfo(ostream &str,const size_t width) const
+  void ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,OpenLoops_Interface>::
+  PrintInfo(ostream &str,const size_t width) const
   { 
     str<<"Interface to the OpenLoops loop ME generator"; 
   }
 
-}

@@ -148,24 +148,17 @@ std::string SVV_Calculator<SType>::Label() const
 namespace METOOLS {
 
   template class SVV_Calculator<double>;
-  template class SVV_Calculator<long double>;
 
 }
 
-DECLARE_TEMPLATE_GETTER(SVV_Getter,"Gab",Lorentz_Calculator,Vertex_Key);
+DECLARE_GETTER(SVV_Calculator<double>,"DGab",
+	       Lorentz_Calculator,Vertex_Key);
+Lorentz_Calculator *ATOOLS::Getter
+<Lorentz_Calculator,Vertex_Key,SVV_Calculator<double> >::
+operator()(const Vertex_Key &key) const
+{ return new SVV_Calculator<double>(key); }
 
-template <typename SType,char STag> Lorentz_Calculator *
-SVV_Getter<SType,STag>::operator()(const Vertex_Key &key) const
-{
-  return new SVV_Calculator<SType>(key);
-}
-
-template <typename SType,char STag>
-void SVV_Getter<SType,STag>::PrintInfo
-(std::ostream &str,const size_t width) const
-{
-  str<<"SVV vertex";
-}
-
-template class SVV_Getter<double,'D'>;
-template class SVV_Getter<long double,'Q'>;
+void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
+		    SVV_Calculator<double> >::
+PrintInfo(std::ostream &str,const size_t width) const
+{ str<<"SVV vertex"; }

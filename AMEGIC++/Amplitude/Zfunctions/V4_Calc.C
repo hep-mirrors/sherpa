@@ -5,7 +5,7 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
-DEFINE_ZFCALC_GETTER(V4_Calc,V4Calc_Getter,"V4","v4 calculator")
+DEFINE_ZFCALC_GETTER(V4_Calc,"V4","v4 calculator")
 
 V4_Calc::V4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 

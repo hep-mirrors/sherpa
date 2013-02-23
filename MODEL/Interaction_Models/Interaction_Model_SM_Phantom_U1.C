@@ -9,17 +9,19 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-DECLARE_GETTER(Interaction_Model_SM_Phantom_U1_Getter,"SM+Phantom_U1",
+DECLARE_GETTER(Interaction_Model_SM_Phantom_U1,"SM+Phantom_U1",
 	       Interaction_Model_Base,Interaction_Model_Arguments);
 
-Interaction_Model_Base *Interaction_Model_SM_Phantom_U1_Getter::
+Interaction_Model_Base *ATOOLS::Getter
+<Interaction_Model_Base,Interaction_Model_Arguments,Interaction_Model_SM_Phantom_U1>::
 operator()(const Interaction_Model_Arguments &args) const
 {
   return new Interaction_Model_SM_Phantom_U1
     (args.p_model,args.m_cplscheme,args.m_yukscheme);
 }
 
-void Interaction_Model_SM_Phantom_U1_Getter::PrintInfo
+void ATOOLS::Getter<Interaction_Model_Base,Interaction_Model_Arguments,
+		    Interaction_Model_SM_Phantom_U1>::PrintInfo
 (std::ostream &str,const size_t width) const
 { 
   str<<"The Standard Model + phantom Higgs"; 

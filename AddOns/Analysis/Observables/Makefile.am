@@ -15,7 +15,6 @@ ANAOBS_SOURCES        =	\
 			EV_SC_Observables.C \
 			PSM_Observables.C \
 			Multiplicity.C \
-			MI_Observables.C \
 			One_Particle_Observables.C \
 			One_Particle_Observables_2.C \
 			Conditional_One_Particle_Observables.C \
@@ -30,7 +29,6 @@ ANAOBS_SOURCES        =	\
 			Jet_Observables.C \
 			Jet_NJet_Observables.C \
 			Jet_X_Observables.C \
-			Universal_Observable.C \
 			Momentum_Tensor.C \
 			CD_Parameters.C \
 			Sphericity_Observables.C \
@@ -39,8 +37,6 @@ ANAOBS_SOURCES        =	\
 			Jet_Mass_and_Broadening.C \
 			Scaled_Observables.C \
 			Four_Jet_Angles.C \
-			General_Observable.C \
-			BFKL_Observables.C \
 			ChargedDEta.C
 
 ANAOBS_ADDS           =	\

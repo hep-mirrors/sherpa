@@ -128,8 +128,10 @@ double MCFM_wbf::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
 
 extern "C" { void chooser_(); }
 
-DECLARE_VIRTUALME2_GETTER(MCFM_wbf_Getter,"MCFM_wbf")
-Virtual_ME2_Base *MCFM_wbf_Getter::operator()(const Process_Info &pi) const
+DECLARE_VIRTUALME2_GETTER(MCFM_wbf,"MCFM_wbf")
+Virtual_ME2_Base *ATOOLS::Getter
+<Virtual_ME2_Base,Process_Info,MCFM_wbf>::
+operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC("");
   if (pi.m_loopgenerator!="MCFM")                       return NULL;

@@ -225,12 +225,10 @@ void PTNLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   m_smin = Max(m_smin,4.*MaxPTmin*MaxPTmin);
 }
 
+DECLARE_ND_GETTER(PTNLO_Selector,"PTNLO",Selector_Base,Selector_Key,true);
 
-namespace PHASIC{
-
-DECLARE_ND_GETTER(PTNLO_Selector_Getter,"PTNLO",Selector_Base,Selector_Key,true);
-
-Selector_Base *PTNLO_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PTNLO_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -246,13 +244,11 @@ Selector_Base *PTNLO_Selector_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void PTNLO_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,PTNLO_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"transverse momentum selector for NLO"; 
 }
-
-}
-
 
 /*--------------------------------------------------------------------
 
@@ -351,11 +347,10 @@ void RapidityNLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   }
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(RapidityNLO_Selector,"RapidityNLO",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(RapidityNLO_Selector_Getter,"RapidityNLO",Selector_Base,Selector_Key,true);
-
-Selector_Base *RapidityNLO_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,RapidityNLO_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -371,12 +366,12 @@ Selector_Base *RapidityNLO_Selector_Getter::operator()(const Selector_Key &key) 
   return sel;
 }
 
-void RapidityNLO_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,RapidityNLO_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"rapidity selector for NLO"; 
 }
 
-}
 /*--------------------------------------------------------------------
 
   PseudoRapidityNLO Selector
@@ -474,11 +469,10 @@ void PseudoRapidityNLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   }
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(PseudoRapidityNLO_Selector,"PseudoRapidityNLO",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(PseudoRapidityNLO_Selector_Getter,"PseudoRapidityNLO",Selector_Base,Selector_Key,true);
-
-Selector_Base *PseudoRapidityNLO_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PseudoRapidityNLO_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -494,12 +488,12 @@ Selector_Base *PseudoRapidityNLO_Selector_Getter::operator()(const Selector_Key 
   return sel;
 }
 
-void PseudoRapidityNLO_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,PseudoRapidityNLO_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"pseudorapidity selector for NLO"; 
 }
 
-}
 /*--------------------------------------------------------------------
 
   PT2NLO Selector
@@ -609,12 +603,10 @@ void PT2NLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   m_smin = Max(m_smin,4.*MaxPTmin*MaxPTmin);
 }
 
+DECLARE_ND_GETTER(PT2NLO_Selector,"PT2NLO",Selector_Base,Selector_Key,true);
 
-namespace PHASIC{
-
-DECLARE_ND_GETTER(PT2NLO_Selector_Getter,"PT2NLO",Selector_Base,Selector_Key,true);
-
-Selector_Base *PT2NLO_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,PT2NLO_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -634,11 +626,10 @@ Selector_Base *PT2NLO_Selector_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void PT2NLO_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,PT2NLO_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"PT2NLO selector"; 
-}
-
 }
 
 /*--------------------------------------------------------------------
@@ -750,12 +741,10 @@ void MT2NLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   m_smin = Max(m_smin,4.*MaxPTmin*MaxPTmin);
 }
 
+DECLARE_ND_GETTER(MT2NLO_Selector,"MT2NLO",Selector_Base,Selector_Key,true);
 
-namespace PHASIC{
-
-DECLARE_ND_GETTER(MT2NLO_Selector_Getter,"MT2NLO",Selector_Base,Selector_Key,true);
-
-Selector_Base *MT2NLO_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,MT2NLO_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -775,11 +764,10 @@ Selector_Base *MT2NLO_Selector_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void MT2NLO_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,MT2NLO_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"MT2NLO selector"; 
-}
-
 }
 
 /*--------------------------------------------------------------------
@@ -915,11 +903,10 @@ double Isolation_Cut::DPhi12(const Vec4D & p1,const Vec4D & p2)
   return acos((p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2));
 }
 
-namespace PHASIC{
+DECLARE_ND_GETTER(Isolation_Cut,"IsolationCut",Selector_Base,Selector_Key,true);
 
-DECLARE_ND_GETTER(Isolation_Cut_Getter,"IsolationCut",Selector_Base,Selector_Key,true);
-
-Selector_Base *Isolation_Cut_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Isolation_Cut>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<3) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -938,13 +925,11 @@ Selector_Base *Isolation_Cut_Getter::operator()(const Selector_Key &key) const
   return sel;
 }
 
-void Isolation_Cut_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,Isolation_Cut>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"Isolation_Cut selector: hep-ph/9801442"; 
 }
-
-}
-
 
 /*--------------------------------------------------------------------
 
@@ -1072,12 +1057,10 @@ void DeltaRNLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   }
 }
 
+DECLARE_ND_GETTER(DeltaRNLO_Selector,"DeltaRNLO",Selector_Base,Selector_Key,true);
 
-namespace PHASIC{
-
-DECLARE_ND_GETTER(DeltaRNLO_Selector_Getter,"DeltaRNLO",Selector_Base,Selector_Key,true);
-
-Selector_Base *DeltaRNLO_Selector_Getter::operator()(const Selector_Key &key) const
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,DeltaRNLO_Selector>::
+operator()(const Selector_Key &key) const
 {
   if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
   int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
@@ -1097,10 +1080,8 @@ Selector_Base *DeltaRNLO_Selector_Getter::operator()(const Selector_Key &key) co
   return sel;
 }
 
-void DeltaRNLO_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Selector_Base,Selector_Key,DeltaRNLO_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"DeltaRNLO selector"; 
 }
-
-}
-
