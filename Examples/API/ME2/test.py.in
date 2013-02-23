@@ -1,4 +1,5 @@
 #!/usr/bin/python2
+## from mpi4py import MPI
 import sys
 sys.path.append('@PYLIBDIR@')
 import Sherpa
@@ -6,6 +7,8 @@ import Sherpa
 Generator=Sherpa.Sherpa()
 try:
     Generator.InitializeTheRun(len(sys.argv),sys.argv)
+    ## if MPI.COMM_WORLD.Get_rank()>0:
+    ##    exit(1)
     
     Amp=Sherpa.Cluster_Amplitude.New()
     Amp.SetNIn(2)

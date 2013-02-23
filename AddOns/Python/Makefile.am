@@ -1,5 +1,5 @@
 
-SVNTAG = API/Python
+SVNTAG = AddOns/Python
 include ../../svn.make
 
 noinst_HEADERS = \
