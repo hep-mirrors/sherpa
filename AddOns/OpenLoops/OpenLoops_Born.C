@@ -21,6 +21,8 @@ OpenLoops_Born::OpenLoops_Born(const Process_Info& pi,
   m_amp2(amp2), m_permutationfunc(permutationfunc),
   m_permutation(permutation)
 {
+  m_symfac=pi.m_fi.FSSymmetryFactor();
+  m_symfac*=pi.m_ii.ISSymmetryFactor();
   m_oew=pi.m_oew;
   m_oqcd=pi.m_oqcd;
 }
@@ -44,12 +46,10 @@ double OpenLoops_Born::Calc(const Vec4D_Vector& momenta)
   m_amp2(&m_moms[0][0], &B, &V_finite, &V_eps, &V_eps2, &I_finite, &I_eps, &I_eps2);
 
   if (IsZero(V_eps) && IsZero(V_eps2) && IsZero(I_eps) && IsZero(I_eps2)) {
-    if (IsZero(B)) return I_finite;
-    if (IsZero(I_finite)) return B;
-    PRINT_INFO("B!=0 and I_finite!=0. Returning 0.");
-    PRINT_VAR(B);
-    PRINT_VAR(I_finite);
-    return 0.0;
+    // OL returns ME2 including 1/symfac, but Calc is supposed to return it
+    // without 1/symfac, thus multiplying with symfac here
+    if (IsZero(B)) return m_symfac*I_finite;
+    else return m_symfac*B;
   }
   else {
     PRINT_INFO("Poles non-zero. Returning 0.");

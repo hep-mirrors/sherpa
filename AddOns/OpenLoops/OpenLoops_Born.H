@@ -18,6 +18,7 @@ namespace OpenLoops {
     static OpenLoops_Interface* s_interface;
 
     size_t m_oqcd, m_oew;
+    double m_symfac;
 
   public:
 
