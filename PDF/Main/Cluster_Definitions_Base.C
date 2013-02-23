@@ -54,9 +54,17 @@ int Cluster_Definitions_Base::ReCluster
       (*campl->Prev(),i,j,k,lij->Flav(),campl->MS(),
        campl->Kin(),(lij->Stat()&2)?1:0);
     if (p.empty()) return -1;
-    for (size_t l(0);l<campl->Legs().size();++l)
-      campl->Leg(l)->SetMom(p[l]);
-    msg_Debugging()<<*ampl<<"\n";
+    for (size_t m(0), n(0);n<campl->Legs().size();++m) {
+      if (m==j) continue;
+      if (m>n+1) THROW(fatal_error,"Invalid PS history");
+      for (size_t l(0);l<campl->Legs().size();++l)
+	if (campl->Leg(l)->Id()&
+	    campl->Prev()->Leg(m)->Id()) {
+	  campl->Leg(l)->SetMom(p[n++]);
+	  break;
+	}
+    }
+    msg_Debugging()<<*campl<<"\n";
   }
   return 1;
 }
