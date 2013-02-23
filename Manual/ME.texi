@@ -425,6 +425,7 @@ SCALES METS{<muF-var-factor>*MU_F2}{<muR-var-factor>*MU_R2}{<muQ-var-factor>*MU_
 @subsubsection METS scale setting with multiparton core processes
 @cindex CORE_SCALE
 
+An example for defining a custom core scale is given in @ref{LHC_HWBF}.
 
 @node COUPLINGS
 @subsection COUPLINGS

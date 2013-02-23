@@ -1,0 +1,22 @@
+(run){
+  EVENTS 10k;
+  NJET:=2; QCUT:=20;
+  # generator parameters
+  HARD_DECAYS 1; STABLE[25] 0;
+  STABLE[23] 0; STABLE[24] 0;
+  STORE_DECAY_RESULTS 1;
+  EXCLUSIVE_CLUSTER_MODE 1;
+  CORE_SCALE WBF; SHERPA_LDADD SherpaWBF;
+  # physics parameters
+  BEAM_1 2212; BEAM_ENERGY_1 7000;
+  BEAM_2 2212; BEAM_ENERGY_2 7000;
+}(run);
+
+(processes){
+  Process 93 93 -> 25 93 93 93{NJET};
+  Order_EW 3; CKKW sqr(QCUT/E_CMS);
+  End process;
+}(processes);
+(selector){
+  NJetFinder 2 2 0 1;
+}(selector);

@@ -47,9 +47,11 @@ of the main features of these examples.
 
 @menu
 * LHC_HJets::
+* LHC_HWBF::
 @end menu
 
 @include LHC_HJets.texi
+@include LHC_HWBF.texi
 
 
 @node TopsJets
