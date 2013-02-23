@@ -1,6 +1,5 @@
 #include "PHASIC++/Scales/Core_Scale_Setter.H"
 
-#include "ATOOLS/Math/Algebra_Interpreter.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
@@ -8,8 +7,7 @@
 
 namespace PHASIC {
 
-  class QCD_Core_Scale: public Core_Scale_Setter,
-			     public ATOOLS::Tag_Replacer {
+  class QCD_Core_Scale: public Core_Scale_Setter {
   public:
 
     QCD_Core_Scale(const Core_Scale_Arguments &args):
