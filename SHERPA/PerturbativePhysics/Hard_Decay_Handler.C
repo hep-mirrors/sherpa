@@ -552,7 +552,8 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     
     Cluster_Amplitude* step2=step1->InitPrev();
     step2->CopyFrom(step1);
-    step1->IdLeg(idnew1)->SetStat(0);
+    step1->IdLeg(idnew1)->SetStat(1|2|4);
+    step1->IdLeg(idnew1)->SetK(idk);
     for (size_t i=0; i<step2->Legs().size(); ++i) step2->Leg(i)->SetK(0);
     Cluster_Leg *d2(step2->IdLeg(idnew1));
     d2->SetMom(daughters[1]->Momentum());
