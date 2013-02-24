@@ -236,7 +236,7 @@ public:
   }
 };// end of class PPerp
 template <class ValueType>
-PPerp<ValueType>::PPerp(): Variable_Base<ValueType>("p_\\perp","PT") 
+PPerp<ValueType>::PPerp(): Variable_Base<ValueType>("PT") 
 {
   this->m_selectorid="PT"; 
 }
@@ -253,7 +253,7 @@ public:
   }
 };// end of class EPerp
 template <class ValueType>
-EPerp<ValueType>::EPerp(): Variable_Base<ValueType>("E_\\perp","ET") 
+EPerp<ValueType>::EPerp(): Variable_Base<ValueType>("ET") 
 {
   this->m_selectorid="ET"; 
 }
@@ -270,7 +270,7 @@ public:
   }
 };// end of class MPerp
 template <class ValueType>
-MPerp<ValueType>::MPerp(): Variable_Base<ValueType>("m_\\perp","mT") {}
+MPerp<ValueType>::MPerp(): Variable_Base<ValueType>("mT") {}
 
 template <class ValueType>
 class MTWW: public Variable_Base<ValueType> {
@@ -288,7 +288,7 @@ public:
   }
 };// end of class MTWW
 template <class ValueType>
-MTWW<ValueType>::MTWW(): Variable_Base<ValueType>("m_\\perp(WW)","mTWW") {}
+MTWW<ValueType>::MTWW(): Variable_Base<ValueType>("mTWW") {}
 
   
 template <class ValueType>
@@ -303,7 +303,7 @@ public:
   }
 };// end of class HT
 template <class ValueType>
-HT<ValueType>::HT(): Variable_Base<ValueType>("H_T","HT") {}
+HT<ValueType>::HT(): Variable_Base<ValueType>("HT") {}
   
 template <class ValueType>
 class Energy: public Variable_Base<ValueType> {
@@ -374,7 +374,7 @@ public:
   }
 };// end of class Eta
 template <class ValueType>
-Eta<ValueType>::Eta(): Variable_Base<ValueType>("\\eta","Eta") 
+Eta<ValueType>::Eta(): Variable_Base<ValueType>("Eta") 
 {
   this->m_selectorid="PseudoRapidity"; 
 }
@@ -397,7 +397,7 @@ public:
   }
 };// end of class Theta
 template <class ValueType>
-BTheta<ValueType>::BTheta(): Variable_Base<ValueType>("\\theta","Theta") 
+BTheta<ValueType>::BTheta(): Variable_Base<ValueType>("Theta") 
 {
   this->m_selectorid="BeamAngle"; 
 }
@@ -420,7 +420,7 @@ public:
   }
 };// end of class Phi
 template <class ValueType>
-Phi<ValueType>::Phi(): Variable_Base<ValueType>("\\phi","Phi") {}
+Phi<ValueType>::Phi(): Variable_Base<ValueType>("Phi") {}
   
 template <class ValueType>
 class DEta: public Variable_Base<ValueType> {
@@ -432,8 +432,7 @@ public:
   { return vectors[1].DEta(vectors[0]); }
 };// end of class DEta
 template <class ValueType>
-DEta<ValueType>::DEta(): Variable_Base<ValueType>
-("\\Delta\\eta_{ij}","DEta") {}
+DEta<ValueType>::DEta(): Variable_Base<ValueType>("DEta") {}
 
 template <class ValueType>
 class DY: public Variable_Base<ValueType> {
@@ -445,8 +444,7 @@ public:
   { return vectors[1].DY(vectors[0]); }
 };// end of class DY
 template <class ValueType>
-DY<ValueType>::DY(): Variable_Base<ValueType>
-("\\Delta y_{ij}","DY") {}
+DY<ValueType>::DY(): Variable_Base<ValueType>("DY") {}
 
 template <class ValueType>
 class DPhi: public Variable_Base<ValueType> {
@@ -458,8 +456,7 @@ public:
   { return vectors[1].DPhi(vectors[0]); }
 };// end of class DPhi
 template <class ValueType>
-DPhi<ValueType>::DPhi(): Variable_Base<ValueType>
-("\\Delta\\phi_{ij}","DPhi") {}
+DPhi<ValueType>::DPhi(): Variable_Base<ValueType>("DPhi") {}
 
 template <class ValueType>
 class DR: public Variable_Base<ValueType> {
@@ -471,8 +468,7 @@ public:
   { return vectors[1].DR(vectors[0]); }
 };// end of class DR
 template <class ValueType>
-DR<ValueType>::DR(): Variable_Base<ValueType>
-("\\Delta R_{ij}","DR") {}
+DR<ValueType>::DR(): Variable_Base<ValueType>("DR") {}
 
 template <class ValueType>
 class Theta2: public Variable_Base<ValueType> {
@@ -484,7 +480,7 @@ public:
   { return vectors[1].Theta(vectors[0]); }
 };// end of class Theta2
 template <class ValueType>
-Theta2<ValueType>::Theta2(): Variable_Base<ValueType>("\\theta_{ij}","Theta2") 
+Theta2<ValueType>::Theta2(): Variable_Base<ValueType>("Theta2") 
 {
   this->m_selectorid="Angle"; 
 }
