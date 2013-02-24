@@ -173,6 +173,8 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   DrawLogo(p_inithandler->DataReader()->GetValue("PRINT_VERSION_INFO",0));
 
   if (p_inithandler->InitializeTheFramework()) {
+    Data_Reader read(" ",";","!","=");
+    if (read.GetValue<int>("INIT_ONLY",0)==1) return true;
     if (!p_inithandler->CalculateTheHardProcesses()) return false;
     bool res(true);
     if (statuspath!="") {
@@ -183,7 +185,6 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
       }
     }
 
-    Data_Reader read(" ",";","!","=");
     long int debuginterval(0);
     if (read.ReadFromFile(debuginterval,"DEBUG_INTERVAL")) {
       m_debuginterval=debuginterval;

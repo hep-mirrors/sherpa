@@ -3,6 +3,7 @@
 import sys
 sys.path.append('@PYLIBDIR@')
 import Sherpa
+sys.argv.append('INIT_ONLY=1')
 
 Generator=Sherpa.Sherpa()
 try:
