@@ -20,9 +20,9 @@ ME_Generators::ME_Generators(const std::string &path,
   read.SetInputFile(m_file);
   std::vector<std::string> megens;
   if (!read.VectorFromFile(megens,"ME_SIGNAL_GENERATOR")) {
-    megens.push_back("Internal");
     megens.push_back("Comix");
     megens.push_back("Amegic");
+    megens.push_back("Internal");
   }
   for (size_t i(0);i<megens.size();++i) {
     if (megens[i]=="None") continue;
