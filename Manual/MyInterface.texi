@@ -3,7 +3,7 @@
 
 It is possible to pass Sherpa output to an external Fortran or C++ framework on-the-flight.
 To illustrate this option, a simple, yet functional example is included in the directory 
-@code{./AddOns/HEPEVTInterface}, showing how to fill the HEPEVT common from Sherpa output.
+@code{./AddOns/HEPEVT}, showing how to fill the HEPEVT common from Sherpa output.
 It also exemplifies how to retrieve the weight of weighted events and how to access information
 about the total cross section of the event sample at the end of the run. 
 

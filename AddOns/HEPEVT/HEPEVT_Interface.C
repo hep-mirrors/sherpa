@@ -364,18 +364,20 @@ bool HEPEVT_Interface::Finish()
   return true;
 }
 
-DECLARE_GETTER(HEPEVT_Interface_Getter,"HEPEVT",
+DECLARE_GETTER(HEPEVT_Interface,"HEPEVT",
 	       Analysis_Interface,Analysis_Arguments);
 
-Analysis_Interface *HEPEVT_Interface_Getter::operator()
-(const Analysis_Arguments &args) const
+Analysis_Interface *ATOOLS::Getter
+<Analysis_Interface,Analysis_Arguments,HEPEVT_Interface>::
+operator()(const Analysis_Arguments &args) const
 {
   return new HEPEVT_Interface
     (args.m_inpath,args.m_infile,args.m_outpath);
 }
 
-void HEPEVT_Interface_Getter::PrintInfo
-(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,
+		    HEPEVT_Interface>::
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"HEPEVT interface";
 }

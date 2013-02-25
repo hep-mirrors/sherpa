@@ -12,6 +12,6 @@ SUBDIRS       =	\
 		Root
 
 nobase_dist_pkgdata_DATA = \
-			HEPEVTInterface/HEPEVT_Interface.C \
-			HEPEVTInterface/Makefile
+			HEPEVT/HEPEVT_Interface.C \
+			HEPEVT/Makefile
 

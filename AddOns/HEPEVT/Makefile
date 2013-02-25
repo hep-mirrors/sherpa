@@ -1,6 +1,7 @@
 # Compile via 'make SHERPA_PREFIX=/path/to/sherpa'
 # If using the 'heracmn' alone, add option 'HERACMN=1'
 # If using the H1 interface, add option 'H1=1'
+SHERPA_PREFIX ?= ../../
 
 LIBNAME = libSherpaHEPEVT
 SOURCES = HEPEVT_Interface.C
