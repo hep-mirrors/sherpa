@@ -11,10 +11,7 @@ SUBDIRS       =	\
 		HepMC \
 		Root
 
-nobase_dist_pkgdata_DATA = ExampleModel/Interaction_Model_SM_Zprime.C \
-			ExampleModel/SM_Zprime.C \
-			ExampleModel/Run.dat \
-			ExampleModel/Makefile \
+nobase_dist_pkgdata_DATA = \
 			HEPEVTInterface/HEPEVT_Interface.C \
 			HEPEVTInterface/Makefile
 

@@ -1,6 +1,6 @@
 # If Sherpa-config is not in your $PATH, change this variable to point to your
 # Sherpa installation directory manually
-SHERPA_PREFIX=$(shell Sherpa-config --prefix)
+SHERPA_PREFIX ?= $(shell Sherpa-config --prefix)
 
 
 SOURCES=SM_Zprime.C Interaction_Model_SM_Zprime.C

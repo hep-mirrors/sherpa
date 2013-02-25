@@ -17,8 +17,8 @@ namespace MODEL {
     MODEL::Model_Base * p_sm;
 
     void ParticleInit();
-    void FillSpectrum();
-    bool ModelInit();
+    void FillSpectrum(const PDF::ISR_Handler_Map& isr);
+    bool ModelInit(const PDF::ISR_Handler_Map& isr);
 
   public :
     SM_Zprime(std::string,std::string,bool);
@@ -50,7 +50,7 @@ namespace MODEL {
   }
 
   
-  void SM_Zprime::FillSpectrum() {
+  void SM_Zprime::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
     // Constants needed for Z'
     p_dataread = new Data_Reader(" ",";","!","=");
     p_dataread->AddWordSeparator("\t");
@@ -63,7 +63,7 @@ namespace MODEL {
                                   p_dataread->GetValue<double>("Zp_cpl_R",1.)));
   }
 
-  bool SM_Zprime::ModelInit()
+  bool SM_Zprime::ModelInit(const PDF::ISR_Handler_Map& isr)
   {
     if (m_elementary) {
       msg_Info()<<"Initialize the Standard Model plus dummy Zprime from "
@@ -71,14 +71,14 @@ namespace MODEL {
     }
     m_name      = std::string("SM+Zprime");
 
-    p_sm->ModelInit();
+    p_sm->ModelInit(isr);
     p_numbers   = p_sm->ExtractScalarNumbers();
     p_constants = p_sm->ExtractScalarConstants();
     p_functions = p_sm->ExtractScalarFunctions();
     p_matrices  = p_sm->ExtractComplexMatrices();
     PRINT_INFO("inited SM::ModelInit");
 
-    FillSpectrum();
+    FillSpectrum(isr);
     PRINT_INFO("filled spectrum");
 
     return true;
@@ -90,14 +90,17 @@ namespace MODEL {
 
 using namespace MODEL;
 
-DECLARE_GETTER(SM_Zprime_Getter,"SM+Zprime",Model_Base,Model_Arguments);
+DECLARE_GETTER(SM_Zprime,"SM+Zprime",Model_Base,Model_Arguments);
 
-Model_Base *SM_Zprime_Getter::operator()(const Model_Arguments &args) const
+Model_Base *ATOOLS::Getter
+<Model_Base,Model_Arguments,SM_Zprime>::
+operator()(const Model_Arguments &args) const
 {
   return new SM_Zprime(args.m_path,args.m_file,args.m_elementary);
 }
 
-void SM_Zprime_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<Model_Base,Model_Arguments,SM_Zprime>::
+PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"The Standard Model + Zprime\n"
      <<std::setw(width+4)<<" "<<"{\n"

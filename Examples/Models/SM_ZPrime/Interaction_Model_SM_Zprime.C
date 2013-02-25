@@ -118,18 +118,21 @@ namespace MODEL {
 
 using namespace MODEL;
 
-DECLARE_GETTER(Interaction_Model_SM_Zprime_Getter,"SM+Zprime",
+DECLARE_GETTER(Interaction_Model_SM_Zprime,"SM+Zprime",
                Interaction_Model_Base,Interaction_Model_Arguments);
 
-Interaction_Model_Base *Interaction_Model_SM_Zprime_Getter::
-    operator()(const Interaction_Model_Arguments &args) const
+Interaction_Model_Base *ATOOLS::Getter
+<Interaction_Model_Base,Interaction_Model_Arguments,
+ Interaction_Model_SM_Zprime>::
+operator()(const Interaction_Model_Arguments &args) const
 {
   return new Interaction_Model_SM_Zprime
       (args.p_model,args.m_cplscheme,args.m_yukscheme);
 }
 
-void Interaction_Model_SM_Zprime_Getter::PrintInfo
-    (ostream &str,const size_t width) const
+void ATOOLS::Getter<Interaction_Model_Base,Interaction_Model_Arguments,
+		    Interaction_Model_SM_Zprime>::
+PrintInfo(ostream &str,const size_t width) const
 { 
   str<<"Standard Model + Z'"; 
 }

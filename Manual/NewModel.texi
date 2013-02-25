@@ -1,7 +1,7 @@
 @node Exotic physics
 @section Exotic physics
 
-It is possible to add your own models to Sherpa in a straightforward way. To illustrate, a simple example has been included in the directory @code{./AddOns/ExampleModel}, showing how to add a Z-prime boson to the Standard Model.
+It is possible to add your own models to Sherpa in a straightforward way. To illustrate, a simple example has been included in the directory @code{Examples/Models/SM_ZPrime}, showing how to add a Z-prime boson to the Standard Model.
 
 The important features of this example include:
 @itemize @bullet

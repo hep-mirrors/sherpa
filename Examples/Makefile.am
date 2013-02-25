@@ -3,6 +3,10 @@ examplesdir        = $(pkgdatadir)/Examples
 nobase_dist_examples_DATA         =	\
 		API/ME2/Run.dat \
 		API/ME2/test.py \
+		Models/SM_ZPrime/Interaction_Model_SM_Zprime.C \
+		Models/SM_ZPrime/SM_Zprime.C \
+		Models/SM_ZPrime/Run.dat \
+		Models/SM_ZPrime/Makefile \
 		FixedOrder_NLO/NTuples/Run.B-like.dat \
 		FixedOrder_NLO/NTuples/Reweight.B-like.dat \
 		FixedOrder_NLO/NTuples/Run.R-like.dat \
