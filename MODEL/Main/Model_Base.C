@@ -77,7 +77,7 @@ void Model_Base::ShowSyntax(const size_t i)
 
 void Model_Base::ReadParticleData() {
   std::map<int,double> cdm, cdw, cdy;
-  std::map<int,int> cia, cis, cim, cic, csc;
+  std::map<int,int> cia, cis, cim, cic, csc, cip;
   Data_Reader dr(" ",";","!","=");
   dr.AddComment("#");
   dr.AddWordSeparator("\t");
@@ -111,6 +111,9 @@ void Model_Base::ReadParticleData() {
   if (dr.MatrixFromFile(helpdvv,"YUKAWA"))
     for (size_t i(0);i<helpdvv.size();++i)
       if (helpdvv[i].size()==2) cdy[int(helpdvv[i][0])]=helpdvv[i][1];
+  if (dr.MatrixFromFile(helpdvv,"PRIORITY"))
+    for (size_t i(0);i<helpdvv.size();++i)
+      if (helpdvv[i].size()==2) cip[int(helpdvv[i][0])]=int(helpdvv[i][1]);
 
   //set masses
   std::map<int,double>::const_iterator dit=cdm.begin();
@@ -193,6 +196,15 @@ void Model_Base::ReadParticleData() {
       msg_Tracking()<<" set yukawa of "<<Flavour(dit->first)<<" to "<<dit->second<<" GeV"<<std::endl; 
     }
   }
+  // set sorting priority
+  iit=cip.begin();
+  for (;iit!=cip.end();iit++) {
+    if (s_kftable.find(iit->first)!=s_kftable.end()) {
+      s_kftable[iit->first]->m_priority = iit->second;
+      msg_Tracking()<<" set priority of "<<Flavour(iit->first)<<" to "
+		    <<Flavour(iit->first).Priority()<<std::endl; 
+    }
+  }
 }
 
 void Model_Base::CustomContainerInit()
@@ -224,6 +236,7 @@ void Model_Base::CustomContainerInit()
        ppread.StringValue<int>("S",0),//Spin
        ppread.StringValue<int>("M",0),//Majorana
        1,1,0,helpsvv[i][1],helpsvv[i][1]);
+    s_kftable[nkf]->m_priority=ppread.StringValue<int>("P",0);
     s_kftable[nkf]->Clear();
     for (size_t j(2);j<helpsvv[i].size();++j) {
       msg_Debugging()<<" "<<helpsvv[i][j];

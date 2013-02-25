@@ -29,7 +29,7 @@ namespace ATOOLS {
 
     kf_code m_kfc;
     double  m_mass, m_hmass, m_yuk, m_width, m_dg, m_dm, m_qoverp2;
-    int     m_icharge, m_isoweak, m_strong, m_resummed;
+    int     m_icharge, m_isoweak, m_strong, m_resummed, m_priority;
     int     m_spin, m_stable, m_masssign, m_dummy, m_majorana, m_formfactor;
     bool    m_on, m_massive, m_hadron, m_isgroup;
 
@@ -43,9 +43,9 @@ namespace ATOOLS {
     inline Particle_Info(): 
       m_kfc(kf_none), m_mass(0.0), m_hmass(0.0), m_yuk(-1.0), m_width(0.0),
       m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(0), m_isoweak(0),
-      m_strong(0), m_resummed(0), m_spin(0), m_stable(1), m_masssign(0), 
-      m_dummy(1), m_majorana(0), m_formfactor(0), m_on(0), m_massive(0),
-      m_hadron(0), m_isgroup(0) {}
+      m_strong(0), m_resummed(0), m_priority(0), m_spin(0), m_stable(1),
+      m_masssign(0), m_dummy(1), m_majorana(0), m_formfactor(0), m_on(0),
+      m_massive(0), m_hadron(0), m_isgroup(0) {}
     Particle_Info(const Particle_Info &info);
     Particle_Info(const kf_code &kfc,const double &mass,const double &width,
 		  const int icharge,const int isoweak,const int strong,
@@ -190,6 +190,9 @@ namespace ATOOLS {
 
     inline bool Resummed() const
     { return p_info->m_resummed; }
+
+    inline int Priority() const
+    { return p_info->m_priority; }
 
     inline int IntSpin() const { return p_info->m_spin;     }
     inline double Spin() const { return p_info->m_spin/2.0; }

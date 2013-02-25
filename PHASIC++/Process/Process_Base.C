@@ -237,6 +237,14 @@ public:
   { return !a->Flav().Strong() && b->Flav().Strong(); }
 };// end of class Order_Coupling
 
+class Order_Priority {
+public:
+  int operator()(const Subprocess_Info &a,const Subprocess_Info &b) 
+  { return a.m_fl.Priority() > b.m_fl.Priority(); }
+  int operator()(const Cluster_Leg *a,const Cluster_Leg *b) 
+  { return a->Flav().Priority() > b->Flav().Priority(); }
+};// end of class Order_Priority
+
 class Order_Multiplicity {
   FMMap* p_fmm;
 public:
@@ -278,6 +286,7 @@ void Process_Base::SortFlavours(Subprocess_Info &info,FMMap *const fmm)
     std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_InvMass());
   else std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Mass());
   std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Coupling());
+  std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Priority());
   for (size_t i(0);i<info.m_ps.size();++i) SortFlavours(info.m_ps[i]);
 }
 
@@ -394,6 +403,7 @@ void Process_Base::SortFlavours
     std::stable_sort(legs.begin(),legs.end(),Order_InvMass());
   else std::stable_sort(legs.begin(),legs.end(),Order_Mass());
   std::stable_sort(legs.begin(),legs.end(),Order_Coupling());
+  std::stable_sort(legs.begin(),legs.end(),Order_Priority());
 }
 
 void Process_Base::SortFlavours
