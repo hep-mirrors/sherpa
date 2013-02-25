@@ -1,14 +1,5 @@
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 
-#include "ATOOLS/Math/Algebra_Interpreter.H"
-#include "PHASIC++/Process/Process_Base.H"
-#include "PHASIC++/Main/Process_Integrator.H"
-#include "ATOOLS/Org/MyStrStream.H"
-#include "PHASIC++/Main/Phase_Space_Handler.H"
-#include "PHASIC++/Selectors/Combined_Selector.H"
-#include "MODEL/Main/Running_AlphaS.H"
-#include "ATOOLS/Org/Run_Parameter.H"
-
 namespace PHASIC {
 
   class No_KFactor_Setter: public KFactor_Setter_Base {
@@ -39,7 +30,7 @@ void ATOOLS::Getter<KFactor_Setter_Base,KFactor_Setter_Arguments,
 		    No_KFactor_Setter>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"variable scale scheme\n";
+  str<<"no K-factor scheme\n";
 }
 
 No_KFactor_Setter::No_KFactor_Setter
