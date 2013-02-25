@@ -520,7 +520,7 @@ bool Event_Handler::WeightIsGood(const double& weight)
     ATOOLS::ran->WriteOutSavedStatus(ranfilename.c_str());
     std::ofstream outstream(ranfilename.c_str(), std::fstream::app);
     outstream<<std::endl;
-    outstream<<"# Wrote status for weight="<<weight<<std::endl;
+    outstream<<"# Wrote status for weight="<<weight<<" in event "<<rpa->gen.NumberOfGeneratedEvents()+1<<std::endl;
     outstream.close();
   }
 
