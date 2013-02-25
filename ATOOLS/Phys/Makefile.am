@@ -23,6 +23,7 @@ libToolsPhys_la_SOURCES       =	\
 				Flow.C \
 				Color.C \
 				Spinor.C \
+				Fastjet_Helpers.C \
 				Momenta_Stretcher.C
 
 localinc_HEADERS      =	\
@@ -44,4 +45,9 @@ localinc_HEADERS      =	\
 			Momentum_Shifter.H \
 			Color.H \
 			Spinor.H \
+			Fastjet_Helpers.H \
 			Momenta_Stretcher.H
+
+libToolsPhys_la_LIBADD = @CONDITIONAL_FASTJETLIBS@
+
+libToolsPhys_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_FASTJETINCS@

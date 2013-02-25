@@ -141,7 +141,7 @@ this scale setter can be used to set a scale based on jet-, rather than
 parton-momenta. The jets can be defined in all possible ways allowed by 
 FastJet with the arguments given as follows
 @verbatim
-SCALES FASTJET[A:antikt,PT:20,ET:0,R:0.4,M:1]{...}
+SCALES FASTJET[A:antikt,PT:20,ET:0,R:0.4,M:1,B:0]{...}
 @end verbatim
 This scale setter first identifies jets in the final state which then form 
 the objects to be used by the scale definition. For a detailed description 
@@ -312,7 +312,7 @@ particles are uneffected. Jet momenta can then be accessed as described in
 and their nodal values can be used through @code{MU_n2}. The syntax is
 
 @verbatim
-SCALES FASTJET[<jet-algo-paramter>]{<scale-definition>}
+SCALES FASTJET[<jet-algo-parameter>]{<scale-definition>}
 @end verbatim
 
 Therein the parameters of the jet algorithm to be used to define the jets 
@@ -327,6 +327,7 @@ are given as a comma separated of
 @item f-parameter for Siscone @code{f:<f-param>} (default @code{0.75})
 @item recombination scheme @code{C:E,pt,pt2,Et,Et2,BIpt,BIpt2} 
       (default @code{E})
+@item b-tagging mode @code{B:0,1,2} (default @code{0})
 @item scale setting mode @code{M:0,1} (default @code{1})
 @end itemize
 
@@ -354,6 +355,12 @@ momentum of second hardest jet. Note @code{M:1} in this case.
 
 The additional tags @var{MU_22} .. @var{MU_n2}  (n=2..njet+1), hold the nodal 
 values of the jet clustering in descending order.
+
+The @code{B} parameter, if specified different from its default 0, allows
+to use b-tagged jets only, based on the parton-level constituents of the jets.
+There are two options: With @code{B:1} both b and anti-b quarks are
+counted equally towards b-jets, while for @code{B:2} they are added with a
+relative sign as constituents, i.e. a jet containing b and anti-b is not tagged.
 
 Please note that currently this type of scale setting can only be done within 
 the process block (@ref{Processes}) and not within the (me) section.

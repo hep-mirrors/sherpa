@@ -63,6 +63,9 @@ affects only the simulation of tau decays, dealt with by the HADRONS++ package.
 Decays of other particles have to be specified in the process setup
 (see @ref{Processes}) and are not treated automatically.
 
+@item PRIORITY[<id>]
+Allows to overwrite the default automatic flavour sorting in a process by specifying a priority for the given flavour. This way one can identify certain particles which are part of a container (e.g. massless b-quarks), such that their position can be used reliably in selectors and scale setters.
+
 @end table
 
 Note: To set properties of hadrons, you can use the same switches (except for

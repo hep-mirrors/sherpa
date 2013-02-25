@@ -6,10 +6,12 @@
 #include "fastjet/ClusterSequence.hh"
 #include "fastjet/SISConePlugin.hh"
 #include "ATOOLS/Math/Algebra_Interpreter.H"
+#include "ATOOLS/Phys/Fastjet_Helpers.H"
 
 namespace PHASIC {
   class Fastjet_Selector: public Selector_Base, public ATOOLS::Tag_Replacer {
     double m_ptmin,m_etmin,m_delta_r,m_f,m_eta,m_y;
+    int m_bmode;
     fastjet::JetDefinition * p_jdef;
     fastjet::SISConePlugin * p_siscplug;
     ATOOLS::Algebra_Interpreter m_calc;
@@ -24,7 +26,7 @@ namespace PHASIC {
 
   public:
     Fastjet_Selector(int nin, int nout,ATOOLS::Flavour * fl,std::string algo,
-		     double ptmin, double etmin, double dr, double f, double eta, double y,
+		     double ptmin, double etmin, double dr, double f, double eta, double y, int bmode,
 		     int nn,std::string expression);
 
     ~Fastjet_Selector();
@@ -60,9 +62,10 @@ using namespace ATOOLS;
 Fastjet_Selector::Fastjet_Selector
 (int nin, int nout,ATOOLS::Flavour * fl, std::string algo,
  double ptmin, double etmin, double dr, double f, double eta, double y,
- int nn,std::string expression) : 
+ int bmode, int nn,std::string expression) : 
   Selector_Base("Fastjetfinder"), m_ptmin(ptmin), m_etmin(etmin), 
-  m_delta_r(dr), m_f(f), m_eta(eta), m_y(y), p_jdef(0), p_siscplug(0)
+  m_delta_r(dr), m_f(f), m_eta(eta), m_y(y), m_bmode(bmode),
+  p_jdef(0), p_siscplug(0)
 {
   fastjet::JetAlgorithm ja(fastjet::kt_algorithm);
 
@@ -100,6 +103,10 @@ Fastjet_Selector::Fastjet_Selector
   msg_Indent();
   if (msg_LevelIsDebugging()) m_calc.PrintEquation();
   msg_Debugging()<<"}\n";
+
+#ifndef USING__FASTJET__3
+  if (m_bmode>0) THROW(fatal_error, "b-tagging needs FastJet >= 3.0.");
+#endif
 }
 
 
@@ -170,8 +177,7 @@ bool Fastjet_Selector::Trigger(const Vec4D_Vector &p)
   for (size_t i(0);i<m_nin;++i) m_p.push_back(p[i]);
   std::vector<fastjet::PseudoJet> input,jets;
   for (size_t i(m_nin);i<p.size();++i) {
-    if (Flavour(kf_jet).Includes(m_fl[i]))
-      input.push_back(fastjet::PseudoJet(p[i][1],p[i][2],p[i][3],p[i][0])); 
+    if (ToBeClustered(m_fl[i], m_bmode)) input.push_back(MakePseudoJet(m_fl[i],p[i]));
     else m_p.push_back(p[i]);
   }
   int nj=m_p.size();
@@ -179,10 +185,12 @@ bool Fastjet_Selector::Trigger(const Vec4D_Vector &p)
   fastjet::ClusterSequence cs(input,*p_jdef);
   jets=fastjet::sorted_by_pt(cs.inclusive_jets());
   for (size_t i(0);i<jets.size();++i) {
-    Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
-    if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
-	(m_eta==100 || dabs(pj.Eta())<m_eta) &&
-	(m_y==100 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
+    if (m_bmode==0 || BTag(jets[i], m_bmode)) {
+      Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
+      if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
+          (m_eta==100 || dabs(pj.Eta())<m_eta) &&
+          (m_y==100 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
+    }
   }
   for (size_t i(0);i<input.size();++i)
     m_mu2[i]=cs.exclusive_dmerge_max(i);
@@ -202,8 +210,8 @@ bool Fastjet_Selector::JetTrigger(const Vec4D_Vector &p,
   for (size_t i(0);i<m_nin;++i) m_p.push_back(p[i]);
   std::vector<fastjet::PseudoJet> input,jets;
   for (size_t i(m_nin);i<subs->back()->m_n;++i) {
-    if (Flavour(kf_jet).Includes(subs->back()->p_fl[i]))
-      input.push_back(fastjet::PseudoJet(p[i][1],p[i][2],p[i][3],p[i][0]));      
+    if (ToBeClustered(subs->back()->p_fl[i], m_bmode))
+      input.push_back(MakePseudoJet(subs->back()->p_fl[i],p[i]));
     else m_p.push_back(p[i]);
   }
   int nj=m_p.size();
@@ -212,10 +220,12 @@ bool Fastjet_Selector::JetTrigger(const Vec4D_Vector &p,
   jets=fastjet::sorted_by_pt(cs.inclusive_jets());
 
   for (size_t i(0);i<jets.size();++i) {
-    Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
-    if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
-	(m_eta==100 || dabs(pj.Eta())<m_eta) &&
-	(m_y==100 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
+    if (m_bmode==0 || BTag(jets[i], m_bmode)) {
+      Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
+      if (pj.PPerp()>m_ptmin&&pj.EPerp()>m_etmin &&
+          (m_eta==100 || dabs(pj.Eta())<m_eta) &&
+          (m_y==100 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
+    }
   }
 
   for (size_t i(0);i<input.size();++i)
@@ -237,15 +247,17 @@ operator()(const Selector_Key &key) const
   double f(.75);
   if (key.front().size()>6) f=ToType<double>(key[0][6]);
   double eta(100.), y(100.);
+  int bmode(0);
   if (key.front().size()>7) eta=ToType<double>(key[0][7]);
   if (key.front().size()>8) y=ToType<double>(key[0][8]);
+  if (key.front().size()>9) bmode=ToType<double>(key[0][9]);
 
   Fastjet_Selector *jf(new Fastjet_Selector
 		       (key.p_proc->NIn(),key.p_proc->NOut(),
 			(Flavour*)&key.p_proc->Process()->Flavours().front(),key[0][1],
 			ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3])),
 			ToType<double>(key.p_read->Interpreter()->Interprete(key[0][4])),
-			ToType<double>(key[0][5]),f,eta,y,ToType<double>(key[0][2]),key[0][0]));
+			ToType<double>(key[0][5]),f,eta,y,bmode,ToType<double>(key[0][2]),key[0][0]));
   jf->SetProcess(key.p_proc);
   return jf;
 }
@@ -253,7 +265,7 @@ operator()(const Selector_Key &key) const
 void ATOOLS::Getter<Selector_Base,Selector_Key,Fastjet_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"FastjetSelector expression algorithm n ptmin etmin dr [f(siscone)=0.75 [eta=100 [y=100]]]\n" 
+  str<<"FastjetSelector expression algorithm n ptmin etmin dr [f(siscone)=0.75 [eta=100 [y=100 [bmode=0]]]]\n" 
      <<"                algorithm: kt,antikt,cambridge,siscone";
 }
 

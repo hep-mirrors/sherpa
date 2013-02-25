@@ -14,6 +14,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/Fastjet_Helpers.H"
 #include "fastjet/PseudoJet.hh"
 #include "fastjet/ClusterSequence.hh"
 #include "fastjet/SISConePlugin.hh"
@@ -34,7 +35,7 @@ namespace PHASIC {
 
     ATOOLS::Flavour_Vector m_f;
 
-    int m_mode;
+    int m_mode, m_bmode;
 
     double ASMeanScale(const std::vector<double> &mu,
 		       const size_t &offset) const;
@@ -96,6 +97,10 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
   read.SetAddCommandLine(false);
   read.SetString(jtag);
   m_mode=read.StringValue<int>("M",1);
+  m_bmode=read.StringValue<int>("B",0);
+#ifndef USING__FASTJET__3
+  if (m_bmode>0) THROW(fatal_error, "b-tagging needs FastJet >= 3.0.");
+#endif
   m_ptmin=read.StringValue<double>("PT",0.0);
   m_etmin=read.StringValue<double>("ET",0.0);
   m_eta=read.StringValue<double>("Eta",100.0);
@@ -140,7 +145,7 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
     ctags.push_back(ctag);
   }
   for (size_t i(p_proc->NIn());i<m_f.size();++i)
-    if (!Flavour(kf_jet).Includes(m_f[i])) m_scale.push_back(0.0);
+    if (!ToBeClustered(m_f[i], m_bmode)) m_scale.push_back(0.0);
   m_scale.resize(Max(m_scale.size(),m_calcs.size()+stp::size));
   for (size_t i(0);i<m_calcs.size();++i)
     SetScale(ctags[i],*m_calcs[i]);
@@ -167,18 +172,20 @@ double Fastjet_Scale_Setter::Calculate
   m_p[1]=-momenta[1];
   std::vector<fastjet::PseudoJet> input;
   for (size_t i(p_proc->NIn());i<momenta.size();++i)
-    if (!Flavour(kf_jet).Includes(m_f[i])) m_p.push_back(momenta[i]);
-    else input.push_back
-      (fastjet::PseudoJet(momenta[i][1],momenta[i][2],
-			  momenta[i][3],momenta[i][0]));
+    if (!ToBeClustered(m_f[i], m_bmode)) m_p.push_back(momenta[i]);
+    else {
+      input.push_back(MakePseudoJet(m_f[i], momenta[i]));
+    }
   fastjet::ClusterSequence cs(input,*p_jdef);
   std::vector<fastjet::PseudoJet>
     jets(fastjet::sorted_by_pt(cs.inclusive_jets()));
   for (size_t i(0);i<jets.size();++i) {
-    Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
-    if (pj.PPerp()>m_ptmin && pj.EPerp()>m_etmin &&
-	(m_eta==100.0 || dabs(pj.Eta())<m_eta) &&
-	(m_y==100.0 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
+    if (m_bmode==0 || BTag(jets[i], m_bmode)) {
+      Vec4D pj(jets[i].E(),jets[i].px(),jets[i].py(),jets[i].pz());
+      if (pj.PPerp()>m_ptmin && pj.EPerp()>m_etmin &&
+          (m_eta==100.0 || dabs(pj.Eta())<m_eta) &&
+          (m_y==100.0 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
+    }
   }
   for (size_t idx(stp::size), i(0);i<input.size();++i)
     m_scale[idx++]=cs.exclusive_dmerge_max(i);

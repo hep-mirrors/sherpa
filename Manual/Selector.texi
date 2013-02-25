@@ -272,7 +272,7 @@ values of the jets found with Fastjet can be used to calculate more elaborate
 selector criteria. The syntax of this selector is
 
 @verbatim
-FastjetSelector <expression> <algorithm> <n> <ptmin> <etmin> <dr> [<f(siscone)>=0.75] [<eta-max>] [<y-max>]
+FastjetSelector <expression> <algorithm> <n> <ptmin> <etmin> <dr> [<f(siscone)>=0.75] [<eta-max>] [<y-max>] [<bmode>]
 @end verbatim
 
 wherein @code{algorithm} can take the values @code{kt,antikt,cambridge,siscone}. 
@@ -288,4 +288,8 @@ FastjetSelector Mass(p[4]+p[5])>100. antikt 2 40. 0. 0.5
 selects all phase space points where two anti-kt jets with at least 40 GeV of
 transverse momentum and an invariant mass of at least 100 GeV are found. The 
 expression must calculate a boolean value.
-
+The @code{bmode} parameter, if specified different from its default 0, allows
+to use b-tagged jets only, based on the parton-level constituents of the jets.
+There are two options: With @code{<bmode>=1} both b and anti-b quarks are
+counted equally towards b-jets, while for @code{<bmode>=2} they are added with a
+relative sign as constituents, i.e. a jet containing b and anti-b is not tagged.
