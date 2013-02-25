@@ -463,12 +463,12 @@ using namespace OpenLoops;
           list<<"(* "<<process<<" *)"<<endl;
           list<<"SubProcess["<<OpenLoops_Interface::s_shoppinglist.size()+1<<"] = {\n"
               <<" FeynArtsProcess -> {"
-              <<OpenLoops_Interface::s_particles[flavs[0].HepEvt()].m_faname<<", "
-              <<OpenLoops_Interface::s_particles[flavs[1].HepEvt()].m_faname<<"} -> {";
-          for (size_t i=2; i<flavs.size()-1; ++i) {
-            list<<OpenLoops_Interface::s_particles[flavs[i].HepEvt()].m_faname<<", ";
+              <<OpenLoops_Interface::s_particles[map_flavs[0].HepEvt()].m_faname<<", "
+              <<OpenLoops_Interface::s_particles[map_flavs[1].HepEvt()].m_faname<<"} -> {";
+          for (size_t i=2; i<map_flavs.size()-1; ++i) {
+            list<<OpenLoops_Interface::s_particles[map_flavs[i].HepEvt()].m_faname<<", ";
           }
-          list<<OpenLoops_Interface::s_particles[flavs[flavs.size()-1].HepEvt()].m_faname<<"},\n"
+          list<<OpenLoops_Interface::s_particles[map_flavs[map_flavs.size()-1].HepEvt()].m_faname<<"},\n"
               <<" SelectCoupling -> (Exponent[#, gQCD] >= "<<pi.m_oqcd-1<<"+2*#2 &),\n"
               <<" SortExternal -> True,\n"
               <<" InsertFieldsOptions -> {Restrictions -> {ExcludeParticles -> {S[2|3], SV}, NoQuarkMixing}}";
