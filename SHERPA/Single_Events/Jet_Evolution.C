@@ -142,7 +142,10 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
   }
   int shower(0);
   Return_Value::code stat(interface->DefineInitialConditions(blob));
-  if (stat==Return_Value::New_Event) return stat;
+  if (stat==Return_Value::New_Event) {
+    interface->CleanUp();
+    return stat;
+  }
   if (blob->Type()!=::btp::Hadron_Decay) {
     msg_Debugging()<<METHOD<<"(): Setting scale for MI {\n";
     double scale(0.0);
@@ -165,6 +168,7 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
     case 1: 
       Reset();
       AftermathOfSuccessfulShower(blob,bloblist,interface);    
+      interface->CleanUp();
       return Return_Value::Success;
     case 0:
       Reset();
@@ -175,6 +179,7 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
     }
   case Return_Value::Nothing:
     AftermathOfNoShower(blob,bloblist);
+    interface->CleanUp();
     return Return_Value::Success;
   case Return_Value::Error:
     msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl

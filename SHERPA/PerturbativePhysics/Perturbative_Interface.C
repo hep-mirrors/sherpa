@@ -112,6 +112,20 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   if (p_mi) {
     p_ampl=p_mi->ClusterConfiguration();
     if (!SetColours(p_ampl,blob)) return Return_Value::New_Event;
+    p_mi->Process()->Generator()->SetMassMode(1);
+    int stat(p_mi->Process()->Generator()->ShiftMasses(p_ampl));
+    if (stat<0) {
+      msg_Tracking()<<METHOD<<"(): Mass shift failed. Reject event."<<std::endl;
+      return Return_Value::New_Event;
+    }
+    if (stat==1) {
+      stat=p_mi->Shower()->GetShower()->
+	GetClusterDefinitions()->ReCluster(p_ampl);
+      if (stat!=1) {
+	msg_Tracking()<<METHOD<<"(): Reclustering failed. Reject event."<<std::endl;
+	return Return_Value::New_Event;
+      }
+    }
     if (!p_shower->GetShower()->PrepareShower(p_ampl))
       return Return_Value::New_Event;
     return Return_Value::Success;
@@ -145,14 +159,14 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   p_me->Process()->Generator()->SetMassMode(1);
   int stat(p_me->Process()->Generator()->ShiftMasses(p_ampl));
   if (stat<0) {
-    msg_Error()<<METHOD<<"(): Mass shift failed. Reject event."<<std::endl;
+    msg_Tracking()<<METHOD<<"(): Mass shift failed. Reject event."<<std::endl;
     return Return_Value::New_Event;
   }
   if (stat==1) {
     stat=p_me->Shower()->GetShower()->
       GetClusterDefinitions()->ReCluster(p_ampl);
     if (stat!=1) {
-      msg_Error()<<METHOD<<"(): Reclustering failed. Reject event."<<std::endl;
+      msg_Tracking()<<METHOD<<"(): Reclustering failed. Reject event."<<std::endl;
       return Return_Value::New_Event;
     }
   }
@@ -273,6 +287,8 @@ void Perturbative_Interface::CleanUp()
 {
   if (p_me && p_me->Process())
     p_me->Process()->Generator()->SetMassMode(0);
+  if (p_mi && p_mi->Process())
+    p_mi->Process()->Generator()->SetMassMode(0);
   p_shower->CleanUp();
 }
 

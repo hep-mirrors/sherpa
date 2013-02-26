@@ -658,6 +658,7 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
   as->SetActiveAs(isr::hard_subprocess);
   p_mihandler = new MI_Handler(m_path,m_midat,p_model,p_beamspectra,
 			       m_isrhandlers[isr::hard_subprocess]);
+  p_mihandler->SetShowerHandler(m_showerhandlers[isr::hard_process]);
   as->SetActiveAs(isr::hard_process);
   if (p_mihandler->Type()!=0)
     msg_Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;

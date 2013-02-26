@@ -7,10 +7,12 @@
 
 #include "EXTRA_XS/Main/Process_Group.H"
 #include "PHASIC++/Channels/Channel_Interface.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
 
 namespace AMISIC {
 
-  class Semihard_QCD: public EXTRAXS::Process_Group {
+  class Semihard_QCD: public EXTRAXS::Process_Group,
+		      public PHASIC::ME_Generator_Base {
   private:
 
     int m_fsrmode;
@@ -20,7 +22,7 @@ namespace AMISIC {
   public:
 
     // constructor
-    Semihard_QCD();
+    Semihard_QCD(ATOOLS::Data_Reader *const read);
 
     // destructor 
     ~Semihard_QCD();
@@ -29,6 +31,22 @@ namespace AMISIC {
     void CreateFSRChannels();
     void CreateISRChannels();
     void InitIntegrators();
+
+    bool Initialize(const std::string &path,const std::string &file,
+		    MODEL::Model_Base *const model,
+		    BEAM::Beam_Spectra_Handler *const beam,
+		    PDF::ISR_Handler *const isr) { return true; }
+    Process_Base *InitializeProcess
+    (const PHASIC::Process_Info &pi, bool add) { return NULL; }
+    int PerformTests() { return 1; }
+    bool NewLibraries() { return false; }
+
+    void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs) {}
+
+    ATOOLS::Cluster_Amplitude *
+    ClusterConfiguration(PHASIC::Process_Base *const proc,
+			 const size_t &mode=0,const double &kt2=0.0)
+    { return NULL; }
 
     // inline functions
     inline int FSRMode() const                { return m_fsrmode; }

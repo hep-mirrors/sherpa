@@ -5,6 +5,7 @@
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
 
 #ifdef USING__Amisic
 #include "AMISIC++/Main/Amisic.H"
@@ -22,6 +23,8 @@ MI_Handler::MI_Handler(std::string path,std::string file,
   p_amisic(NULL),
 #endif
   p_ampl(NULL),
+  p_proc(NULL),
+  p_shower(NULL),
   m_type(None),
   m_ycut(1.0e-7)
 {
@@ -206,8 +209,12 @@ PDF::ISR_Handler *MI_Handler::ISRHandler()
 ATOOLS::Cluster_Amplitude *MI_Handler::ClusterConfiguration()
 {
 #ifdef USING__Amisic
-  PHASIC::Process_Base *xs(p_amisic->HardBase()->XS());
+  PHASIC::Process_Base *xs(p_proc=p_amisic->HardBase()->XS());
   if (xs->Get<EXTRAXS::Single_Process>()==NULL) return NULL;
+  if (p_proc->Generator()==NULL)
+    THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");
+  if (p_proc->Generator()->MassMode()!=0)
+    THROW(fatal_error,"Invalid mass mode. Check your PS interface.");
   EXTRAXS::ME2_Base *me(xs->Get<EXTRAXS::Single_Process>()->GetME());
   if (me==NULL) THROW(fatal_error,"Cannot handle non-generic ME's.");
   msg_Debugging()<<METHOD<<"(): {\n";

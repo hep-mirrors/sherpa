@@ -82,6 +82,7 @@ void Simple_Chain::Init()
 Simple_Chain::~Simple_Chain()
 {
   CleanUp();
+  delete p_read;
 }
 
 void Simple_Chain::CleanUp() 
@@ -240,7 +241,7 @@ bool Simple_Chain::InitializeProcessList(const Flavour& in1,
   pi.m_coupling="Alpha_QCD 1";
   pi.m_kfactor="NO";
   pi.m_mpiprocess=true;
-  p_processes.push_back(new Semihard_QCD());
+  p_processes.push_back(new Semihard_QCD(p_read));
   p_processes.back()->Init(pi,p_beam,p_isr);
   msg_Info()<<METHOD<<"(): Init processes ";
   if (!p_processes.back()->Get<EXTRAXS::Process_Group>()->ConstructProcesses())
@@ -250,6 +251,7 @@ bool Simple_Chain::InitializeProcessList(const Flavour& in1,
                         (p_model,pi.m_scale,pi.m_coupling));
   p_processes.back()->SetKFactor(PHASIC::KFactor_Setter_Arguments(pi.m_kfactor));
   p_processes.back()->InitPSHandler(m_error,"","");
+  p_processes.back()->SetGenerator(p_processes.back());
   for (size_t i(0);i<p_processes.back()->Size();++i)
     m_processmap[(*p_processes.back())[i]->Name()]=(*p_processes.back())[i];
 }
@@ -390,20 +392,20 @@ bool Simple_Chain::Initialize()
   if (!rpa->gen.Beam1().IsHadron() ||
       !rpa->gen.Beam2().IsHadron()) return false;
   CleanUp();
-  Data_Reader *reader = new Data_Reader(" ",";","!","=");
-  reader->AddComment("#");
-  reader->AddWordSeparator("\t");
-  reader->SetInterprete(true);
-  reader->SetInputPath(InputPath());
-  reader->SetInputFile(InputFile());
+  p_read = new Data_Reader(" ",";","!","=");
+  p_read->AddComment("#");
+  p_read->AddWordSeparator("\t");
+  p_read->SetInterprete(true);
+  p_read->SetInputPath(InputPath());
+  p_read->SetInputFile(InputFile());
   if (!ReadInData()) return false;
   std::string xsfile=std::string("XS.dat");
-  reader->ReadFromFile(xsfile,"XS_FILE");
+  p_read->ReadFromFile(xsfile,"XS_FILE");
   SetInputFile(xsfile,1);
   double stop, exponent, scale;
-  if (!reader->ReadFromFile(stop,"SCALE_MIN")) stop=2.75;
-  if (!reader->ReadFromFile(exponent,"RESCALE_EXPONENT")) exponent=0.24;
-  if (!reader->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1800.0;
+  if (!p_read->ReadFromFile(stop,"SCALE_MIN")) stop=2.75;
+  if (!p_read->ReadFromFile(exponent,"RESCALE_EXPONENT")) exponent=0.24;
+  if (!p_read->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1800.0;
   stop*=pow(m_ecms/scale,exponent);
   SetStop(stop,0);
   SetStop(stop,4); 
@@ -412,27 +414,26 @@ bool Simple_Chain::Initialize()
     // // Uncomment for cross-check vs. PYHTIA
     // SetStop(0.08*stop,0);
   }
-  if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=0;
-  if (!reader->ReadFromFile(m_vegas,"VEGAS_MI")) m_vegas=0;
-  if (!reader->ReadFromFile(m_maxreduction,"MI_MAX_REDUCTION")) 
+  if (!p_read->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=0;
+  if (!p_read->ReadFromFile(m_vegas,"VEGAS_MI")) m_vegas=0;
+  if (!p_read->ReadFromFile(m_maxreduction,"MI_MAX_REDUCTION")) 
     m_maxreduction=10.0;
   std::string function;
   std::vector<double> parameters;
-  if (!reader->ReadFromFile(function,"PROFILE_FUNCTION")) {
+  if (!p_read->ReadFromFile(function,"PROFILE_FUNCTION")) {
     function="Double_Gaussian";
-    if (!reader->VectorFromFile(parameters,"PROFILE_PARAMETERS")) {
+    if (!p_read->VectorFromFile(parameters,"PROFILE_PARAMETERS")) {
       parameters.push_back(0.906);
       parameters.push_back(0.761);
     }
   }
   else {
-    reader->VectorFromFile(parameters,"PROFILE_PARAMETERS");
+    p_read->VectorFromFile(parameters,"PROFILE_PARAMETERS");
   }
   if (function!="None")
     p_profile = Profile_Function_Base::SelectProfile(function,parameters);
   int jetveto(1);
-  if (!reader->ReadFromFile(jetveto,"JET_VETO")) jetveto=1;
-  delete reader;
+  if (!p_read->ReadFromFile(jetveto,"JET_VETO")) jetveto=1;
   SetJetVeto(jetveto);
   if (!CreateGrid()) {
     CleanUp();

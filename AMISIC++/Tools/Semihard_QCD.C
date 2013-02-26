@@ -9,8 +9,10 @@
 
 using namespace AMISIC;
 
-Semihard_QCD::Semihard_QCD()
+Semihard_QCD::Semihard_QCD(ATOOLS::Data_Reader *const read):
+  ME_Generator_Base("Amisic")
 {
+  SetPSMasses(read);
   SetFSRInterface(NULL);
   SetFSRMode(0);
 }
