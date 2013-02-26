@@ -31,12 +31,13 @@ namespace EXTRAXS {
 using namespace EXTRAXS;
 
 void DY_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
+  double logmur2shat=log(m_mur2/(momenta[2]+momenta[3]).Abs2());
   // 1/epsIR
-  m_res.IR()=-3.*m_fac;
+  m_res.IR()=(-3.-2.*logmur2shat)*m_fac;
   // 1/epsIR2
   m_res.IR2()=-2.*m_fac;
   // finite
-  m_res.Finite()=(-8.+sqr(M_PI))*m_fac;
+  m_res.Finite()=(sqr(M_PI)-8.-3.*logmur2shat-sqr(logmur2shat))*m_fac;
 }
 
 DECLARE_VIRTUALME2_GETTER(DY_QCD_Virtual,"DY_QCD_Virtual")
