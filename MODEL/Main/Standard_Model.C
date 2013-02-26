@@ -205,7 +205,7 @@ void Standard_Model::ParticleInit() {
   s_kftable[22] = new Particle_Info(22,.0,.0,0,0,0,2,-1,1,1,0,"P","\\gamma");
   s_kftable[23] = new Particle_Info(23,91.188,2.49,0,0,0,2,-1,1,1,1,"Z","Z");
   s_kftable[24] = new Particle_Info(24,80.419,2.06,3,0,0,2,0,1,1,1,"W+","W^+");
-  s_kftable[25] = new Particle_Info(25,120.,0.0037,0,0,0,0,-1,1,1,1,"h0","h_0");
+  s_kftable[25] = new Particle_Info(25,125.,0.0037,0,0,0,0,-1,1,1,1,"h0","h_0");
   if (m_trivialextension==2) {
     s_kftable[7]  = new Particle_Info(7,500.,38.0,-1,-1,3,1,0,1,0,1,"D_4","D_4");
     s_kftable[8]  = new Particle_Info(8,500.,38.2,2,1,3,1,0,1,0,1,"U_4","U_4");
@@ -217,7 +217,7 @@ void Standard_Model::ParticleInit() {
   s_kftable[921] = new Particle_Info(921,0.0,0.0,0,0,8,4,-1,1,1,0,"G4","G_4",1);
   s_kftable[923] = new Particle_Info(923,91.188,2.49,0,0,0,4,-1,1,1,1,"Z4","Z_4",1);
   s_kftable[924] = new Particle_Info(924,80.419,2.06,3,0,0,4,0,1,1,1,"W+4","W^+_4",1);
-  s_kftable[925] = new Particle_Info(925,120.0,0.0037,0,0,0,0,0,1,1,1,"h04","h_{04}",1);
+  s_kftable[925] = new Particle_Info(925,125.0,0.0037,0,0,0,0,0,1,1,1,"h04","h_{04}",1);
 
   ReadParticleData();
 
