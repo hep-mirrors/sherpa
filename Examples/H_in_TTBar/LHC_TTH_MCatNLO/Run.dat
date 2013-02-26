@@ -1,0 +1,21 @@
+(run){
+  # generator parameters
+  EVENTS 0; LGEN:=TTH;
+  ME_SIGNAL_GENERATOR Amegic LGEN;
+  HARD_DECAYS 1; HARD_MASS_SMEARING 0;
+  WIDTH[6] 0; STABLE[6] 0; STABLE[24] 0;
+  MI_HANDLER None;
+  # physics parameters
+  BEAM_1 2212; BEAM_ENERGY_1 7000;
+  BEAM_2 2212; BEAM_ENERGY_2 7000;
+  SCALES VAR{sqr(175+125/2)};
+  PDF_LIBRARY MSTW08Sherpa; PDF_SET mstw2008nlo;
+}(run);
+
+(processes){
+  Process 93 93 -> 25 6 -6;
+  NLO_QCD_Mode 3; NLO_QCD_Part BVIRS;
+  Loop_Generator LGEN;
+  Order_EW 1;
+  End process;
+}(processes);

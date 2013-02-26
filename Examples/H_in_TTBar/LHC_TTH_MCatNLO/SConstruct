@@ -1,0 +1,23 @@
+
+vars = Variables('.SConstruct')
+vars.Add(PathVariable('sherpa','path to sherpa','../../..',PathVariable.PathIsDir))
+env = Environment(variables=vars,CPPPATH=['${sherpa}'])
+vars.Save('.SConstruct',env)
+
+env.SharedLibrary('SherpaTTH', [
+		'lib.f', 
+		'intlib.f', 
+		'libqq.f', 
+		'libglu.f', 
+		'matri.f', 
+		'boxlib.f', 
+		'boxlib_qq.f', 
+		'penta_qq.f', 
+		'p1new.f', 
+		'p2new.f', 
+		'p3new.f', 
+		'p4new.f', 
+		'p5new.f', 
+		'p6new.f',
+		'TTH_Virtual.f', 
+		'TTH_Interface.C'])

@@ -48,10 +48,12 @@ of the main features of these examples.
 @menu
 * LHC_HJets::
 * LHC_HWBF::
+* LHC_HTTBar::
 @end menu
 
 @include LHC_HJets.texi
 @include LHC_HWBF.texi
+@include LHC_HTTBar.texi
 
 
 @node TopsJets

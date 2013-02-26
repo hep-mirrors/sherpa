@@ -8,7 +8,10 @@
 @mybibitem{2011me,11a, S. Chatrchyan and others,Measurement of the Inclusive Jet Cross Section in pp Collisions at sqrts = 7 TeV,,,,,arXiv:1106.0208,arXiv:1106.0208}
 @mybibitem{2011qv,11b,,Measurement of the production cross section for Z/gamma* in association with jets in pp collisions at sqrt(s) = 7 TeV with the ATLAS detector,,,,,arXiv:1111.2690,arXiv:1111.2690}
 @mybibitem{2012gk,12, G. Aad and others,Observation of a new particle in the search for the Standard Model Higgs boson with the ATLAS detector at the LHC,,,,,arXiv:1207.7214,arXiv:1207.7214}
-@mybibitem{2012gu,12a, S. Chatrchyan and others,Observation of a new boson at a mass of 125 GeV with the CMS experiment at the LHC,Phys.Lett.B,,(2012),,[arXiv:1207.7235],arXiv:1207.7235}
+@mybibitem{2012bz,12a, S. Chatrchyan and others,Measurements of differential jet cross sections in proton-proton collisions at sqrt(s)=7 TeV with the CMS detector,,,,,arXiv:1212.6660,arXiv:1212.6660}
+@mybibitem{2012gu,12b, S. Chatrchyan and others,Observation of a new boson at a mass of 125 GeV with the CMS experiment at the LHC,Phys.Lett.B,,(2012),,[arXiv:1207.7235],arXiv:1207.7235}
+@mybibitem{2012qka,12c, S. Chatrchyan and others,Measurement of differential top-quark pair production cross sections in pp colisions at sqrts=7 TeV,,,,,arXiv:1211.2220,arXiv:1211.2220}
+@mybibitem{2013tr,13, ,Measurement of the differential cross sections for isolated direct photon pair production in p bar p collisions at sqrts = 1.96 TeV,,,,,arXiv:1301.4536,arXiv:1301.4536}
 @mybibitem{ATLAS2011ad,ATL11, G. Aad and others,Search for supersymmetry in final states with jets missing transverse momentum and one isolated lepton in sqrts = 7 TeV pp collisions using 1 fb^-1 of ATLAS data,Phys.Rev.,D85,(2012),012006,[arXiv:1109.6606],arXiv:1109.6606}
 @mybibitem{ATLAS2012au,ATL12, G. Aad and others,Measurement of the polarisation of W bosons produced with large transverse momentum in pp collisions at sqrt(s) = 7 TeV with the ATLAS experiment,Eur.Phys.J.,C72,(2012),2001,[arXiv:1203.2165],arXiv:1203.2165}
 @mybibitem{Aad2008zzm,Aad08, G. Aad and others,The ATLAS Experiment at the CERN Large Hadron Collider,JINST,3,(2008),S08003,,F+J+JINST%2C3%2CS08003}
@@ -33,11 +36,13 @@
 @mybibitem{Aad2012en,Aad12a, G. Aad and others,Study of jets produced in association with a W boson in pp collisions at sqrts = 7 TeV with the ATLAS detector,Phys.Rev.,D85,(2012),092002,[arXiv:1201.1276],arXiv:1201.1276}
 @mybibitem{Aad2012nn,Aad12b, G. Aad and others,Measurement of the polarisation of W bosons produced with large transverse momentum in pp collisions at sqrt(s) = 7 TeV with the ATLAS experiment,,,,,arXiv:1203.2165,arXiv:1203.2165}
 @mybibitem{Aaltonen2007ip,Aal07, T. Aaltonen and others,Measurement of the cross section for W-boson production in association with jets in pbarp collisions at sqrts=1.96 TeV,Phys. Rev.,D77,(2008),011108,[arXiv:0711.4044],arXiv:0711.4044}
+@mybibitem{Aaltonen2008hc,Aal08, T. Aaltonen and others,Forward-Backward Asymmetry in Top Quark Production in pbarp Collisions at sqrts=1.96 TeV,Phys.Rev.Lett.,101,(2008),202001,[arXiv:0806.2472],arXiv:0806.2472}
 @mybibitem{Aaltonen2009ty,Aal09, T. Aaltonen,Measurement of the inclusive isolated prompt photon cross section in pbarp collisions at sqrts = 1.96 TeV using the CDF detector,Phys. Rev.,D80,(2009),111106,[arXiv:0910.3623],arXiv:0910.3623}
 @mybibitem{Aaltonen2009ga,Aal09a, T. Aaltonen and others,Search for a Fermiophobic Higgs Boson Decaying into Diphotons in pbarp Collisions at sqrts = 1.96 TeV,Phys. Rev. Lett.,103,(2009),061803,[arXiv:0905.0413],arXiv:0905.0413}
 @mybibitem{Aaltonen2009ne,Aal09b, T. Aaltonen and others,Measurement of particle production and inclusive differential cross sections in pbarp collisions at sqrts=1.96 TeV,Phys. Rev.,D79,(2009),112005,[arXiv:0904.1098],arXiv:0904.1098}
 @mybibitem{Aaltonen2010zza,Aal10, T. A. Aaltonen and others,Measurement of dsigma/dy of Drell-Yan e^+e^- pairs in the Z Mass Region from pbarp Collisions at sqrts=1.96 TeV,Phys.Lett.,B692,(2010),232-239,[arXiv:0908.3914],arXiv:0908.3914}
-@mybibitem{Aaltonen2011mk,Aal11, T. Aaltonen and others,Invariant Mass Distribution of Jet Pairs Produced in Association with a W boson in ppbar Collisions at sqrts = 1.96 TeV,Phys. Rev. Lett.,106,(2011),171801,[arXiv:1104.0699],arXiv:1104.0699}
+@mybibitem{Aaltonen2011kc,Aal11, T. Aaltonen and others,Evidence for a Mass Dependent Forward-Backward Asymmetry in Top Quark Pair Production,Phys.Rev.,D83,(2011),112003,[arXiv:1101.0034],arXiv:1101.0034}
+@mybibitem{Aaltonen2011mk,Aal11a, T. Aaltonen and others,Invariant Mass Distribution of Jet Pairs Produced in Association with a W boson in ppbar Collisions at sqrts = 1.96 TeV,Phys. Rev. Lett.,106,(2011),171801,[arXiv:1104.0699],arXiv:1104.0699}
 @mybibitem{Aaltonen2012it,Aal12, T. Aaltonen and others,Measurement of the top quark forward-backward production asymmetry and its dependence on event kinematic properties,,,,,arXiv:1211.1003,arXiv:1211.1003}
 @mybibitem{Aaron2007xx,Aar07, F. D. Aaron and others,Three- and four-jet production at low x at HERA,Eur. Phys. J.,C54,(2008),389-409,[arXiv:0711.2606],arXiv:0711.2606}
 @mybibitem{Aaron2009vs,Aar09, F. D. Aaron and others,Jet production in ep collisions at high Q^2 and determination of alpha_s,Eur. Phys. J.,C65,(2009),363-383,[arXiv:0904.3870],arXiv:0904.3870}
@@ -47,8 +52,9 @@
 @mybibitem{Abazov2004hm,Aba04, V. M. Abazov and others,Measurement of Dijet Azimuthal Decorrelations at Central Rapidities in pbarp Collisions at sqrts = 1.96 TeV,Phys. Rev. Lett.,94,(2005),221801,[hep-ex/0409040],hep-ex/0409040}
 @mybibitem{Abazov2005wc,Aba05, V. M. Abazov and others,Measurement of the isolated photon cross section in p barp collisions at sqrts = 1.96 TeV,Phys. Lett.,B639,(2006),151-158,[hep-ex/0511054],hep-ex/0511054}
 @mybibitem{Abazov2006gs,Aba06, V. M. Abazov and others,Measurement of the ratios of the Z/gamma^* +ge n jet production cross sections to the total inclusive Z/gamma^* cross section in pbarp collisions at sqrts=1.96 TeV,Phys. Lett.,B658,(2008),112-119,[hep-ex/0608052],hep-ex/0608052}
-@mybibitem{Abazov2007nt,Aba07, V. M. Abazov and others,Measurement of the shape of the boson transverse momentum distribution in pbar pto Z/gamma^*to ee+X events produced at sqrts=1.96 TeV,Phys. Rev. Lett.,100,(2008),102002,[arXiv:0712.0803],arXiv:0712.0803}
-@mybibitem{Abazov2007jy,Aba07a, V. M. Abazov and others,Measurement of the shape of the boson rapidity distribution for p barp to Z/gamma^* to e^+ e^- + X events produced at sqrts of 1.96 TeV,Phys. Rev.,D76,(2007),012003,[hep-ex/0702025],hep-ex/0702025}
+@mybibitem{Abazov2007ab,Aba07, V.M. Abazov and others,First measurement of the forward-backward charge asymmetry in top quark pair production,Phys.Rev.Lett.,100,(2008),142002,[arXiv:0712.0851],arXiv:0712.0851}
+@mybibitem{Abazov2007nt,Aba07a, V. M. Abazov and others,Measurement of the shape of the boson transverse momentum distribution in pbar pto Z/gamma^*to ee+X events produced at sqrts=1.96 TeV,Phys. Rev. Lett.,100,(2008),102002,[arXiv:0712.0803],arXiv:0712.0803}
+@mybibitem{Abazov2007jy,Aba07b, V. M. Abazov and others,Measurement of the shape of the boson rapidity distribution for p barp to Z/gamma^* to e^+ e^- + X events produced at sqrts of 1.96 TeV,Phys. Rev.,D76,(2007),012003,[hep-ex/0702025],hep-ex/0702025}
 @mybibitem{Abazov2008yg,Aba08, : V. M. Abazov,Evidence of WW+WZ Production with lepton + jets Final States in pbarp Collisions at sqrts =1.96 TeV,Phys. Rev. Lett.,102,(2009),161801,[arXiv:0810.3873],arXiv:0810.3873}
 @mybibitem{Abazov2008er,Aba08a, V. M. Abazov and others,Measurement of the differential cross section for the production of an isolated photon with associated jet in p barp collisions at sqrts = 1.96 TeV,Phys. Lett.,B666,(2008),435-445,[arXiv:0804.1107],arXiv:0804.1107}
 @mybibitem{Abazov2008ez,Aba08b, V. M. Abazov and others,Measurement of differential Z / gamma^* + jet + X cross sections in p barp collisions at sqrts = 1.96 TeV,Phys. Lett.,B669,(2008),278-286,[arXiv:0808.1296],arXiv:0808.1296}
@@ -115,6 +121,7 @@
 @mybibitem{Affolder2001hn,Aff01, T. Affolder and others,Measurement of the strong coupling constant from inclusive jet production at the Tevatron barpp collider,Phys.Rev.Lett.,88,(2002),042001,[hep-ex/0108034],hep-ex/0108034}
 @mybibitem{Affolder2001xt,Aff01a, T. Affolder and others,Charged jet evolution and the underlying event in proton-antiproton collisions at 1.8 TeV,Phys. Rev.,D65,(2002),092002,,F+J+Phys. Rev.%2CD65%2C092002}
 @mybibitem{Agashe2006hk,Aga06, K. Agashe and A. Belyaev and T. Krupovnickas and G.  Perez and J. Virzi,LHC signals from warped extra dimensions,Phys. Rev.,D77,(2008),015003,[hep-ph/0612015],hep-ph/0612015}
+@mybibitem{Ahrens2011uf,Ahr11, V. Ahrens and A. Ferroglia and M. Neubert and B. D. Pecjak and L. L. Yang,The top-pair forward-backward asymmetry beyond NLO,Phys.Rev.,D84,(2011),074004,[arXiv:1106.6051],arXiv:1106.6051}
 @mybibitem{Aid1995we,Aid95, S. Aid and others,Transverse energy and forward jet production in the low x regime at HERA,Phys. Lett.,B356,(1995),118-128,[hep-ex/9506012],hep-ex/9506012}
 @mybibitem{Aid1996cb,Aid96, S. Aid and others,Charged particle multiplicities in deep inelastic scattering at HERA,Z. Phys.,C72,(1996),573-592,[hep-ex/9608011],hep-ex/9608011}
 @mybibitem{Aivazis1993pi,Aiv93, M. A. G. Aivazis and J. C. Collins and F. I. Olness and W. K.  Tung,Leptoproduction of heavy quarks. II. A unified QCD formulation of charged and neutral current processes from fixed-target to collider energies,Phys. Rev.,D50,(1994),3102-3118,[hep-ph/9312319],hep-ph/9312319}
@@ -126,7 +133,7 @@
 @mybibitem{Aktas2004px,Akt04a, A. Aktas and others,Measurement of dijet production at low Q^2 at HERA,Eur. Phys. J.,C37,(2004),141-159,[hep-ex/0401010],hep-ex/0401010}
 @mybibitem{Aktas2005up,Akt05, A. Aktas and others,Forward jet production in deep inelastic scattering at HERA,Eur. Phys. J.,C46,(2006),27-42,[hep-ex/0508055],hep-ex/0508055}
 @mybibitem{Aktas2007pb,Akt07, A. Aktas and others,Measurement of inclusive jet production in deep-inelastic scattering at high Q^2 and determination of the strong coupling,Phys. Lett.,B653,(2007),134-144,[arXiv:0706.3722],arXiv:0706.3722}
-@mybibitem{Albrow2008pn,Alb08, M.G. Albrow and others,The FP420 R&amp;D Project: Higgs and New Physics with forward protons at the LHC,JINST,4,(2009),T10001,[arXiv:0806.0302],arXiv:0806.0302}
+@mybibitem{Albrow2008pn,Alb08, M.G. Albrow and others,The FP420 R&D Project: Higgs and New Physics with forward protons at the LHC,JINST,4,(2009),T10001,[arXiv:0806.0302],arXiv:0806.0302}
 @mybibitem{Albrow2010yb,Alb10, M.G. Albrow and T.D. Coughlin and J.R. Forshaw,Central Exclusive Particle Production at High Energy Hadron Colliders,Prog.Part.Nucl.Phys.,65,(2010),149-184,[arXiv:1006.1289],arXiv:1006.1289}
 @mybibitem{Alekhin2002fv,Ale02, S. Alekhin,Parton distributions from deep-inelastic-scattering data,Phys. Rev.,D68,(2003),014002,[hep-ph/0211096],hep-ph/0211096}
 @mybibitem{Alekhin2005dx,Ale05, S. Alekhin and others,HERA and the LHC - A workshop on the implications of HERA for LHC physics: Proceedings Part A,,,,,hep-ph/0601012,hep-ph/0601012}
@@ -141,10 +148,12 @@
 @mybibitem{Alioli2011nr,Ali11, S. Alioli and K. Hamilton and E. Re,Practical improvements and merging of POWHEG simulations for vector boson production,JHEP,1109,(2011),104,[arXiv:1108.0909],arXiv:1108.0909}
 @mybibitem{Alioli2011as,Ali11a, S. Alioli and S. O. Moch and P. Uwer,Hadronic top-quark pair-production with one jet and parton showering,JHEP,1201,(2012),137,[arXiv:1110.5251],arXiv:1110.5251}
 @mybibitem{Alioli2012tp,Ali12, S. Alioli and J. R. Andersen and C. Oleari and E. Re and J. M. Smillie,Probing higher-order corrections in dijet production at the LHC,Phys.Rev.,D85,(2012),114034,[arXiv:1202.1475],arXiv:1202.1475}
+@mybibitem{Alioli2012,Ali12a, S. Alioli and S. O. Moch and P. Uwer,Hadronic top-quark pair-production with one jet and parton showering,JHEP,1201,(2012),137,[arXiv:1110.5251],arXiv:1110.5251}
 @mybibitem{Alitti1990cn,Ali90, J. Alitti and others,Measurement of the transverse momentum distributions of W and Z bosons at the CERN barpp collider,Z. Phys.,C47,(1990),523-532,,F+J+Z. Phys.%2CC47%2C523}
 @mybibitem{Allanach2001kg,All01, B. C. Allanach,SOFTSUSY: A program for calculating supersymmetric spectra,Comput. Phys. Commun.,143,(2002),305-331,[hep-ph/0104145],hep-ph/0104145}
 @mybibitem{Allanach2002nj,All02, B. C. Allanach and others,The Snowmass Points and Slopes: benchmarks for SUSY searches,Eur. Phys. J.,C25,(2002),113-123,[hep-ph/0202233],hep-ph/0202233}
 @mybibitem{Allanach2008qq,All08, B. Allanach and others,SUSY Les Houches Accord 2,Comp. Phys. Commun.,180,(2009),8-25,[arXiv:0801.0045],arXiv:0801.0045}
+@mybibitem{Almeida2008ug,Alm08, L. G. Almeida and G. F. Sterman and W. Vogelsang,Threshold Resummation for the Top Quark Charge Asymmetry,Phys.Rev.,D78,(2008),014008,[arXiv:0805.1885],arXiv:0805.1885}
 @mybibitem{Altunay2010zz,Alt10, M. Altunay and others,A Science driven production cyberinfrastructure: the Open Science Grid,J.Grid Comput.,9,(2011),201-218,,F+J+J.Grid Comput.%2C9%2C201}
 @mybibitem{Altheimer2012mn,Alt12, A. Altheimer and others,Jet Substructure at the Tevatron and LHC: New results new tools  new benchmarks,,,,,arXiv:1201.0008,arXiv:1201.0008}
 @mybibitem{Altarelli1977zs,Alt77,G. Altarelli and G. Parisi,Asymptotic freedom in parton language,Nucl. Phys.,B126,(1977),298-318,,F+J+Nucl. Phys.%2CB126%2C298}
@@ -218,7 +227,7 @@
 @mybibitem{Aurenche1989gv,Aur89, P. Aurenche and R. Baier and M. Fontannaz,Prompt photon production at colliders,Phys. Rev.,D42,(1990),1440-1449,,F+J+Phys. Rev.%2CD42%2C1440}
 @mybibitem{Badelek2001xb,Bad01, B. Badelek and others,TESLA Technical Design Report Part VI Chapter 1: Photon collider at TESLA,Int. J. Mod. Phys.,A19,(2004),5097-5186,[hep-ex/0108012],hep-ex/0108012}
 @mybibitem{Badger2005zh,Bad05, S. D. Badger and E. W. N. Glover and V. V. Khoze and  P. Svrvcek,Recursion relations for gauge theory amplitudes with massive particles,JHEP,07,(2005),025,[hep-th/0504159],hep-th/0504159}
-@mybibitem{Baernreuther2012ws,Bae12, P. Baernreuther and M. Czakon and A. Mitov,Percent level precision physics at the Tevatron: first genuine NNLO QCD corrections to q qbar -&gt; t tbar + X,,,,,arXiv:1204.5201,arXiv:1204.5201}
+@mybibitem{Baernreuther2012ws,Bae12, P. Baernreuther and M. Czakon and A. Mitov,Percent level precision physics at the Tevatron: first genuine NNLO QCD corrections to q qbar -&gt; t tbar + X,Phys.Rev.Lett.,109,(2012),132001,,F+J+Phys.Rev.Lett.%2C109%2C132001}
 @mybibitem{Baer1990ra,Bae90, H. Baer and J. Ohnemus and J. F. Owens,Next-to-leading-logarithm calculation of direct photon production,Phys. Rev.,D42,(1990),61-71,,F+J+Phys. Rev.%2CD42%2C61}
 @mybibitem{Bagger1987fz,Bag87, J. Bagger and C. Schmidt and S. King,Axigluon Production in Hadronic Collisions,Phys. Rev.,D37,(1988),1188,,F+J+Phys. Rev.%2CD37%2C1188}
 @mybibitem{Bahr2008wk,Bah08, M. Bahr and J. M. Butterworth and M. H. Seymour,The Underlying Event and the Total Cross Section from Tevatron to the LHC,JHEP,01,(2009),065,[arXiv:0806.2949],arXiv:0806.2949}
@@ -392,18 +401,22 @@
 @mybibitem{Byckling1969sx,Byc69, E. Byckling and K. Kajantie,N-particle phase space in terms of invariant momentum transfers,Nucl. Phys.,B9,(1969),568-576,,F+J+Nucl. Phys.%2CB9%2C568}
 @mybibitem{CDFZjet,CDF,,,,,,,,}
 @mybibitem{CMS-PAS-FWD-11-001,CMS,,Inelastic pp cross section at 7 TeV,,,,,,}
+@mybibitem{CMS2012aa,CMS12, S. Chatrchyan and others,Event shapes and azimuthal correlations in Z + jets events in pp collisions at sqrt(s) =7 TeV,,,,,arXiv:1301.1646,arXiv:1301.1646}
 @mybibitem{Cachazo2004kj,Cac04, F. Cachazo and P. Svrvcek and E. Witten,MHV vertices and tree amplitudes in gauge theory,JHEP,09,(2004),006,[hep-th/0403047],hep-th/0403047}
 @mybibitem{Cacciari2005hq,Cac05, M. Cacciari and G. P. Salam,Dispelling the N^3 myth for the k_t jet-finder,Phys. Lett.,B641,(2006),57-61,[hep-ph/0512210],hep-ph/0512210}
 @mybibitem{Cachazo2005ga,Cac05a, F. Cachazo and P. Svrvcek,Lectures on Twistor Strings and Perturbative Yang-Mills Theory,PoS,RTN2005,(2005),004,[hep-th/0504194],hep-th/0504194}
 @mybibitem{Cacciari2008gp,Cac08, M. Cacciari and G. P. Salam and G. Soyez,The Anti-k(t) jet clustering algorithm,JHEP,0804,(2008),063,[arXiv:0802.1189],arXiv:0802.1189}
-@mybibitem{Cacciari2011ma,Cac11, M. Cacciari and G. P. Salam and G. Soyez,FastJet user manual,Eur.Phys.J.,C72,(2012),1896,[arXiv:1111.6097],arXiv:1111.6097}
+@mybibitem{Cacciari2011hy,Cac11, M. Cacciari and M. Czakon and M. Mangano and A.  Mitov and P. Nason,Top-pair production at hadron colliders with next-to-next-to-leading logarithmic soft-gluon resummation,Phys.Lett.,B710,(2012),612-622,[arXiv:1111.5869],arXiv:1111.5869}
+@mybibitem{Cacciari2011ma,Cac11a, M. Cacciari and G. P. Salam and G. Soyez,FastJet user manual,Eur.Phys.J.,C72,(2012),1896,[arXiv:1111.6097],arXiv:1111.6097}
 @mybibitem{Cafarella2007pc,Caf07, A. Cafarella and C. G. Papadopoulos and M. Worek,Helac-Phegas: A generator for all parton level processes,Comput. Phys. Commun.,180,(2009),1941-1955,[arXiv:0710.2427],arXiv:0710.2427}
 @mybibitem{Cahn1986zv,Cah86, R. N. Cahn and S. D. Ellis and R. Kleiss and  W. J. Stirling,Transverse Momentum Signatures for Heavy Higgs Bosons,Phys.Rev.,D35,(1987),1626,,F+J+Phys.Rev.%2CD35%2C1626}
 @mybibitem{Campbell2002tg,Cam02, J. M. Campbell and R.K. Ellis,Next-to-leading order corrections to W^+ 2 jet and Z^+ 2 jet production at hadron colliders,Phys. Rev.,D65,(2002),113007,[hep-ph/0202176],hep-ph/0202176}
 @mybibitem{Campbell2003hd,Cam03, J. M. Campbell and R.K. Ellis and D. L. Rainwater,Next-to-leading order QCD predictions for W + 2 jet and Z + 2 jet production at the CERN LHC,Phys. Rev.,D68,(2003),094021,[hep-ph/0308195],hep-ph/0308195}
 @mybibitem{Campbell2006xx,Cam06, J. M. Campbell and R. K. Ellis and G. Zanderighi,Next-to-Leading order Higgs + 2 jet production via gluon fusion,JHEP,0610,(2006),028,[hep-ph/0608194],hep-ph/0608194}
+@mybibitem{Campbell2010ff,Cam10, J. M. Campbell and R.K. Ellis,MCFM for the Tevatron and the LHC,Nucl.Phys.Proc.Suppl.,205-206,(2010),10-15,[arXiv:1007.3492],arXiv:1007.3492}
 @mybibitem{Campbell2011cu,Cam11, J. M. Campbell and R. K. Ellis and C. Williams,Gluon-gluon contributions to W+ W- production and Higgs interference effects,,,,,arXiv:1107.5569,arXiv:1107.5569}
 @mybibitem{Campbell2012am,Cam12, J. M. Campbell and R.K. Ellis and R. Frederix and  P. Nason and C. Oleari and C. Williams,NLO Higgs boson production plus one and two jets using the POWHEG BOX MadGraph4 and MCFM,JHEP,1207,(2012),092,[arXiv:1202.5475],arXiv:1202.5475}
+@mybibitem{Campbell2012uf,Cam12a, J. M. Campbell and R. K. Ellis,Top-quark processes at NLO in production and decay,,,,,arXiv:1204.1513,arXiv:1204.1513}
 @mybibitem{Campbell1999ah,Cam99, J. M. Campbell and R. K. Ellis,Update on vector boson pair production at hadron colliders,Phys. Rev.,D60,(1999),113006,[hep-ph/9905386],hep-ph/9905386}
 @mybibitem{Caprini1997mu,Cap97, I. Caprini and L. Lellouch and M. Neubert,Dispersive bounds on the shape of barB to D^(*) l barnu form factors,Nucl. Phys.,B530,(1998),153-181,[hep-ph/9712417],hep-ph/9712417}
 @mybibitem{CarloniCalame2003ux,Car03, C.M. Carloni Calame and G. Montagna and O. Nicrosini and  M. Treccani,Higher order QED corrections to W boson mass determination at hadron colliders,Phys.Rev.,D69,(2004),037301,[hep-ph/0303102],hep-ph/0303102}
@@ -516,10 +529,11 @@
 @mybibitem{daCosta2011ni,Cos11, G. Aad and others,Measurement of Dijet Azimuthal Decorrelations in pp Collisions at sqrts=7 TeV,Phys. Rev. Lett.,106,(2011),172002,[arXiv:1102.2696],arXiv:1102.2696}
 @mybibitem{daCosta2011qk,Cos11a, G. Aad and others,Search for squarks and gluinos using final states with jets and missing transverse momentum with the ATLAS detector in sqrts = 7 TeV proton-proton collisions,Phys. Lett.,B701,(2011),186-203,[arXiv:1102.5290],arXiv:1102.5290}
 @mybibitem{Cox2000jt,Cox00, B. E. Cox and J. R. Forshaw,POMWIG: HERWIG for diffractive interactions,Comput.Phys.Commun.,144,(2002),104-110,[hep-ph/0010303],hep-ph/0010303}
-@mybibitem{Cullen2011xs,Cul11, G. Cullen and N. Greiner and G. Heinrich and G. Luisoni and  P. Mastrolia and others,GoSam: A program for automated one-loop Calculations,,,,,arXiv:1111.6534,arXiv:1111.6534}
-@mybibitem{Cullen2011ac,Cul11a, G. Cullen and others,Automated One-Loop Calculations with GoSam,Eur.Phys.J.,C72,(2012),1889,[arXiv:1111.2034],arXiv:1111.2034}
+@mybibitem{Cullen2011xs,Cul11, G. Cullen and N. Greiner and G. Heinrich and G. Luisoni and  P. Mastrolia and G. Ossola and T. Reiter,GoSam: A program for automated one-loop Calculations,,,,,arXiv:1111.6534,arXiv:1111.6534}
+@mybibitem{Cullen2011ac,Cul11a, G. Cullen and N. Greiner and G. Heinrich and  G. Luisoni and P. Mastrolia and G. Ossola and  T. Reiter and F. Tramontano,Automated One-Loop Calculations with GoSam,Eur.Phys.J.,C72,(2012),1889,[arXiv:1111.2034],arXiv:1111.2034}
 @mybibitem{Curci1980uw,Cur80, G. Curci and W. Furmanski and R. Petronzio,Evolution of parton densities beyond leading order: The non-singlet case,Nucl. Phys.,B175,(1980),27,,F+J+Nucl. Phys.%2CB175%2C27}
 @mybibitem{Czakon2009ss,Cza09, M. Czakon and C.G. Papadopoulos and M. Worek,Polarizing the dipoles,JHEP,08,(2009),085,[arXiv:0905.0883],arXiv:0905.0883}
+@mybibitem{Czakon2012zr,Cza12, M. Czakon and A. Mitov,NNLO corrections to top-pair production at hadron colliders: the all-fermionic scattering channels,JHEP,1212,(2012),054,[arXiv:1207.0236],arXiv:1207.0236}
 @mybibitem{DErrico2011sd,D'E11, L. D'Errico and P. Richardson,Next-to-Leading-Order Monte Carlo Simulation of Diphoton Production in Hadronic Collisions,,,,,arXiv:1106.3939,arXiv:1106.3939}
 @mybibitem{DErrico2011um,D'E11a, L. D'Errico and P. Richardson,A Positive-Weight Next-to-Leading-Order Monte Carlo Simulation of Deep Inelastic Scattering and Higgs Boson Production via Vector Boson Fusion in Herwig++,,,,,arXiv:1106.2983,arXiv:1106.2983}
 @mybibitem{DOnote5066,DOn66,,Z+jet production in the DO experiment: A comparison between data and the PYTHIA and Sherpa Monte Carlos,,,,,,}
@@ -532,6 +546,8 @@
 @mybibitem{Dasgupta2009tm,Das09a, M. Dasgupta and Y. Delenda,On the universality of hadronisation corrections to QCD jets,JHEP,07,(2009),004,[arXiv:0903.2187],arXiv:0903.2187}
 @mybibitem{Davoudiasl2000wi,Dav00, H. Davoudiasl and J. L. Hewett and T. G. Rizzo,Experimental probes of localized gravity: On and off the wall,Phys. Rev.,D63,(2001),075004,[hep-ph/0006041],hep-ph/0006041}
 @mybibitem{Davies1984sp,Dav84, C.T.H. Davies and B.R. Webber and W.J. Stirling,Drell-Yan cross sections at small transverse momentum,Nucl. Phys.,B256,(1985),413,,F+J+Nucl. Phys.%2CB256%2C413}
+@mybibitem{Dawson2002tg,Daw02, S. Dawson and L.H. Orr and L. Reina and D. Wackeroth,Associated top quark Higgs boson production at the LHC,Phys.Rev.,D67,(2003),071503,[hep-ph/0211438],hep-ph/0211438}
+@mybibitem{Dawson2003zu,Daw03, S. Dawson and C. Jackson and L.H. Orr and L. Reina and  D. Wackeroth,Associated Higgs production with top quarks at the large hadron collider: NLO QCD corrections,Phys.Rev.,D68,(2003),034022,[hep-ph/0305087],hep-ph/0305087}
 @mybibitem{Dawson1990zj,Daw90, S. Dawson,Radiative corrections to Higgs boson production,Nucl. Phys.,B359,(1991),283-300,,F+J+Nucl. Phys.%2CB359%2C283}
 @mybibitem{DeRoeck2002hk,DeR02, A. De Roeck and V.A. Khoze and A.D. Martin and R. Orava and  M.G. Ryskin,Ways to detect a light Higgs boson at the LHC,Eur.Phys.J.,C25,(2002),391-403,[hep-ph/0207042],hep-ph/0207042}
 @mybibitem{Deak2009xt,Dea09, M. Deak and F. Hautmann and H. Jung and K. Kutak,Forward Jet Production at the Large Hadron Collider,JHEP,0909,(2009),121,[arXiv:0908.0538],arXiv:0908.0538}
@@ -563,6 +579,8 @@
 @mybibitem{Dissertori2009ik,Dis09a, G. Dissertori and others,Determination of the strong coupling constant using matched NNLO+NLLA predictions for hadronic event shapes in e^+e^- annihilations,JHEP,08,(2009),036,[arXiv:0906.3436],arXiv:0906.3436}
 @mybibitem{Dittmaier2002ap,Dit02, S. Dittmaier and M. Roth,LUSIFER: A LUcid approach to SIx FERmion production,Nucl. Phys.,B642,(2002),307-343,[hep-ph/0206070],hep-ph/0206070}
 @mybibitem{Dittmaier2008md,Dit08, S. Dittmaier and A. Kabelschacht and T. Kasprzik,Polarized QED splittings of massive fermions and dipole subtraction for non-collinear-safe observables,Nucl. Phys.,B800,(2008),146-189,[arXiv:0802.1405],arXiv:0802.1405}
+@mybibitem{Dittmaier2008uj,Dit08a, S. Dittmaier and P. Uwer and S. Weinzierl,Hadronic top-quark pair production in association with a hard jet at next-to-leading order QCD: Phenomenological studies for the Tevatron and the LHC,Eur.Phys.J.,C59,(2009),625-646,[arXiv:0810.0452],arXiv:0810.0452}
+@mybibitem{Dittmaier2009jq,Dit09, S. Dittmaier and P. Uwer and S. Weinzierl,Phenomenological studies of top-pair production + jet at NLO,,,,,arXiv:0905.2299,arXiv:0905.2299}
 @mybibitem{Dittmaier2011ti,Dit11, S. Dittmaier and others,Handbook of LHC Higgs Cross Sections: 1. Inclusive Observables,,,,,arXiv:1101.0593,arXiv:1101.0593}
 @mybibitem{Dittmaier1998nn,Dit98, S. Dittmaier,Weyl-van der Waerden formalism for helicity amplitudes of massive particles,Phys. Rev.,D59,(1999),016007,[hep-ph/9805445],hep-ph/9805445}
 @mybibitem{Dittmaier1999mb,Dit99, S. Dittmaier,A general approach to photon radiation off fermions,Nucl. Phys.,B565,(2000),69-122,[hep-ph/9904440],hep-ph/9904440}
@@ -785,6 +803,7 @@
 @mybibitem{Hoeche2012ft,Hoe12, S. Hoche and F. Krauss and M. Schonherr and F.  Siegert,W+n-jet predictions with MC@NLO in Sherpa,,,,,arXiv:1201.5882,arXiv:1201.5882}
 @mybibitem{Hoeche2012yf,Hoe12a, S. Hoche and F. Krauss and M. Schonherr and F.  Siegert,QCD matrix elements + parton showers: The NLO case,,,,,arXiv:1207.5030,arXiv:1207.5030}
 @mybibitem{Hoeche2012fm,Hoe12b, S. Hoche and M. Schonherr,Uncertainties in NLO + parton shower matched simulations of inclusive jet and dijet production,,,,,arXiv:1208.2815,arXiv:1208.2815}
+@mybibitem{Hollik2011ps,Hol11, W. Hollik and D. Pagani,The electroweak contribution to the top quark forward-backward asymmetry at the Tevatron,Phys.Rev.,D84,(2011),093003,[arXiv:1107.2606],arXiv:1107.2606}
 @mybibitem{Hou1987ya,Hou87, G. W. S. Hou,Charmless Rare B Decays Heavy Quarks and a Fourth Generation,,,,,,}
 @mybibitem{Hou1987vd,Hou87a, W. S. Hou and A. Soni and H. Steger,Charmless Decays of Bottom Mesons and a Fourth Generation,Phys. Rev. Lett.,59,(1987),1521,,F+J+Phys. Rev. Lett.%2C59%2C1521}
 @mybibitem{Ioffe2010zz,Iof10, (ed.) Ioffe Boris Lazarevich and (ed.) Fadin Victor Sergeevich and (ed.) Lipatov Lev Nikolaevich,Quantum chromodynamics: Perturbative and nonperturbative aspects,,,,,,}
@@ -832,6 +851,7 @@
 @mybibitem{Khoze2008ib,Kho08, V. A. Khoze and A. D. Martin and M. G. Ryskin,Soft Diffraction at the LHC,,,,,arXiv:0810.3324,arXiv:0810.3324}
 @mybibitem{Khoze1997dr,Kho97, V. A. Khoze and A. D. Martin and M.G. Ryskin,The Rapidity gap Higgs signal at LHC,Phys.Lett.,B401,(1997),330-336,[hep-ph/9701419],hep-ph/9701419}
 @mybibitem{Kidonakis2000gi,Kid00, N. Kidonakis and J.F. Owens,Effects of higher order threshold corrections in high E(T) jet production,Phys.Rev.,D63,(2001),054019,[hep-ph/0007268],hep-ph/0007268}
+@mybibitem{Kidonakis2011zn,Kid11, N. Kidonakis,The top quark rapidity distribution and forward-backward asymmetry,Phys.Rev.,D84,(2011),011504,[arXiv:1105.5167],arXiv:1105.5167}
 @mybibitem{Kidonakis1996aq,Kid96, N. Kidonakis and G. F. Sterman,Subleading logarithms in QCD hard scattering,Phys.Lett.,B387,(1996),867-874,,F+J+Phys.Lett.%2CB387%2C867}
 @mybibitem{Kidonakis1997gm,Kid97, N. Kidonakis and G. F. Sterman,Resummation for QCD hard scattering,Nucl. Phys.,B505,(1997),321-348,[hep-ph/9705234],hep-ph/9705234}
 @mybibitem{Kidonakis1998nf,Kid98, N. Kidonakis and G. Oderda and G. F. Sterman,Evolution of color exchange in QCD hard scattering,Nucl.Phys.,B531,(1998),365-402,[hep-ph/9803241],hep-ph/9803241}
@@ -859,6 +879,7 @@
 @mybibitem{Kolevatov2011nf,Kol11, R. S. Kolevatov and K. G. Boreskov and L. V. Bravina,All-loop calculation of the Reggeon field theory amplitudes via stochastic model,,,,,arXiv:1105.3673,arXiv:1105.3673}
 @mybibitem{Konishi1978yx,Kon78, K. Konishi and A. Ukawa and G. Veneziano,A simple algorithm for QCD jets,Phys. Lett.,B78,(1978),243,,F+J+Phys. Lett.%2CB78%2C243}
 @mybibitem{Konishi1979cb,Kon79, K. Konishi and A. Ukawa and G. Veneziano,Jet calculus: A simple algorithm for resolving QCD jets,Nucl. Phys.,B157,(1979),45-107,,F+J+Nucl. Phys.%2CB157%2C45}
+@mybibitem{Korner2002hy,Kor02, J.G. Korner and Z. Merebashvili,One loop corrections to four point functions with two external massive fermions and two external massless partons,Phys.Rev.,D66,(2002),054023,[hep-ph/0207054],hep-ph/0207054}
 @mybibitem{Korner1980pv,Kor80, J. G. Korner and G. Schierholz and J. Willrodt,QCD predictions for four-jet final states in e^+ e^- annihilation (II). Angular correlations as a test of the triple-gluon coupling,Nucl. Phys.,B185,(1981),365,,F+J+Nucl. Phys.%2CB185%2C365}
 @mybibitem{Korchemsky1988hd,Kor88, G. P. Korchemsky,Sudakov form-factor in QCD,Phys. Lett.,B220,(1989),629,,F+J+Phys. Lett.%2CB220%2C629}
 @mybibitem{Kosower2003bh,Kos03, D. A. Kosower,Antenna factorization in strongly-ordered limits,Phys. Rev.,D71,(2005),045016,[hep-ph/0311272],hep-ph/0311272}
@@ -876,6 +897,7 @@
 @mybibitem{Kramer1998bc,Kra98, G. Kramer and B. Potter,Low Q^2 jet production at HERA in next-to-leading order QCD,Eur. Phys. J.,C5,(1998),665-679,[hep-ph/9804352],hep-ph/9804352}
 @mybibitem{Kramer1999jr,Kra99, G. Kramer and B. Potter,Forward jet production at small x in next-to-leading order QCD,Phys. Lett.,B453,(1999),295-301,[hep-ph/9901314],hep-ph/9901314}
 @mybibitem{Kuhn2000dk,Kuh00, R. Kuhn and F. Krauss and B. Ivanyi and G. Soff,APACIC++ 1.0: A PArton Cascade In C++,Comput. Phys. Commun.,134,(2001),223-266,[hep-ph/0004270],hep-ph/0004270}
+@mybibitem{Kuhn2011ri,Kuh11, J. H. Kuhn and G. Rodrigo,Charge asymmetries of top quarks at hadron colliders revisited,JHEP,1201,(2012),063,[arXiv:1109.6830],arXiv:1109.6830}
 @mybibitem{Kuhn1990ad,Kuh90, J. H. Kuhn and A. Santamar'ia,tau Decays to pions,Z. Phys.,C48,(1990),445-452,,F+J+Z. Phys.%2CC48%2C445}
 @mybibitem{Kuhlen1995yv,Kuh95, M. Kuhlen,Hadronic Final States in Deeply Inelastic Scattering,,,,,hep-ex/9508014,hep-ex/9508014}
 @mybibitem{Kuhlen1996et,Kuh96, M. Kuhlen,A new method to probe the low-x parton dynamics at HERA,Phys. Lett.,B382,(1996),441-446,[hep-ph/9606246],hep-ph/9606246}
@@ -933,6 +955,7 @@
 @mybibitem{Mangano2001xp,Man01, M. L. Mangano and M. Moretti and R. Pittau,Multijet matrix elements and shower evolution in hadronic collisions: W bbarb+n-jets as a case study,Nucl. Phys.,B632,(2002),343-362,[hep-ph/0108069],hep-ph/0108069}
 @mybibitem{Mangano2002ea,Man02, M. L. Mangano and M. Moretti and F. Piccinini and R. Pittau and A. D. Polosa,ALPGEN a generator for hard multiparton processes in hadronic collisions,JHEP,07,(2003),001,[hep-ph/0206293],hep-ph/0206293}
 @mybibitem{Mangano2006rw,Man06, M. L. Mangano and M. Moretti and F. Piccinini and M. Treccani,Matching matrix elements and shower evolution for top-pair production in hadronic collisions,JHEP,01,(2007),013,[hep-ph/0611129],hep-ph/0611129}
+@mybibitem{Manohar2012rs,Man12, A. V. Manohar and M. Trott,Electroweak Sudakov Corrections and the Top Quark Forward-Backward Asymmetry,Phys.Lett.,B711,(2012),313-316,[arXiv:1201.3926],arXiv:1201.3926}
 @mybibitem{Mangano1987kp,Man87, M. L. Mangano and S. J. Parke,Quark-gluon amplitudes in the dual expansion,Nucl. Phys.,B299,(1988),673,,F+J+Nucl. Phys.%2CB299%2C673}
 @mybibitem{Mangano1987xk,Man87a, M. L. Mangano and S. J. Parke and Z. Xu,Duality and multi-gluon scattering,Nucl. Phys.,B298,(1988),653,,F+J+Nucl. Phys.%2CB298%2C653}
 @mybibitem{Mangano1988kk,Man88, M. L. Mangano,The color structure of gluon emission,Nucl. Phys.,B309,(1988),461,,F+J+Nucl. Phys.%2CB309%2C461}
@@ -957,6 +980,7 @@
 @mybibitem{Melnikov2010iu,Mel10, K. Melnikov and M. Schulze,NLO QCD corrections to top quark pair production in association with one hard jet at hadron colliders,Nucl. Phys.,B840,(2010),129-159,[arXiv:1004.3284],arXiv:1004.3284}
 @mybibitem{Melia2011dw,Mel11, T. Melia and K. Melnikov and R. Rontsch and  G. Zanderighi,NLO QCD corrections for W^+W^- pair production in association with two jets at hadron colliders,Phys. Rev.,D83,(2011),114043,[arXiv:1104.2327],arXiv:1104.2327}
 @mybibitem{Melia2011tj,Mel11a, T. Melia and P. Nason and R. Rontsch and G. Zanderighi,W+W- WZ and ZZ production in the POWHEG BOX,JHEP,1111,(2011),078,[arXiv:1107.5051],arXiv:1107.5051}
+@mybibitem{Melnikov2011qx,Mel11b, K. Melnikov and A. Scharf and M. Schulze,Top quark pair production in association with a jet: QCD corrections and jet radiation in top quark decays,Phys.Rev.,D85,(2012),054002,[arXiv:1111.4991],arXiv:1111.4991}
 @mybibitem{Messina2006zz,Mes06, A. Messina,Measurement of the W + Jet Cross Section at CDF,Braz. J. Phys.,37,(2007),840-842,[arXiv:0708.1380],arXiv:0708.1380}
 @mybibitem{Metropolis1953am,Met53, N. Metropolis and A. W. Rosenbluth and M. N. Rosenbluth and  A. H. Teller and E. Teller,Equation of State Calculations by Fast Computing Machines,J. Chem. Phys.,21,(1953),1087-1092,,F+J+J. Chem. Phys.%2C21%2C1087}
 @mybibitem{Mihaila2012fm,Mih12, L. N. Mihaila and J. Salomon and M. Steinhauser,Gauge Coupling Beta Functions in the Standard Model to Three Loops,,,,,arXiv:1201.5868,arXiv:1201.5868}
@@ -1040,6 +1064,7 @@
 @mybibitem{Re2012zi,Re212, E. Re,NLO corrections merged with parton showers for Z+2 jets production using the POWHEG method,,,,,arXiv:1204.5433,arXiv:1204.5433}
 @mybibitem{Regge1959mz,Reg59, T. Regge,Introduction to complex orbital momenta,Nuovo Cim.,14,(1959),951,,F+J+Nuovo Cim.%2C14%2C951}
 @mybibitem{Regge1960zc,Reg60, T. Regge,Bound states shadow states and Mandelstam representation,Nuovo Cim.,18,(1960),947-956,,F+J+Nuovo Cim.%2C18%2C947}
+@mybibitem{Reina2001bc,Rei01, L. Reina and S. Dawson and D. Wackeroth,QCD corrections to associated t anti-t h production at the Tevatron,Phys.Rev.,D65,(2002),053017,[hep-ph/0109066],hep-ph/0109066}
 @mybibitem{Richardson2001df,Ric01, P. Richardson,Spin correlations in Monte Carlo simulations,JHEP,11,(2001),029,[hep-ph/0110108],hep-ph/0110108}
 @mybibitem{Richardson2010gz,Ric10, P. Richardson and R.R. Sadykov and A.A. Sapronov and  M.H. Seymour and P.Z. Skands,QCD parton showers and NLO EW corrections to Drell-Yan,,,,,arXiv:1011.5444,arXiv:1011.5444}
 @mybibitem{Richman1995wm,Ric95, J. D. Richman and P. R. Burchat,Leptonic and semileptonic decays of charm and bottom hadrons,Rev. Mod. Phys.,67,(1995),893-976,[hep-ph/9508250],hep-ph/9508250}
@@ -1092,6 +1117,7 @@
 @mybibitem{Skands2003cj,Ska03, P. Skands and others,SUSY Les Houches accord: interfacing SUSY spectrum calculators  decay packages and event generators,JHEP,07,(2004),036,[hep-ph/0311123],hep-ph/0311123}
 @mybibitem{Skands2005bj,Ska05, P. Skands and T. Plehn and D. Rainwater,QCD Radiation in the Production of High-hats Final States,ECONF,C0508141,(2005),ALCPG0417,[hep-ph/0511306],hep-ph/0511306}
 @mybibitem{Skands2009tb,Ska09, P. Skands and S. Weinzierl,Some remarks on dipole showers and the DGLAP equation,Phys. Rev.,D79,(2009),074021,[arXiv:0903.2150],arXiv:0903.2150}
+@mybibitem{Skands2012mm,Ska12, P. Skands and B. Webber and J. Winter,QCD Coherence and the Top Quark Asymmetry,JHEP,1207,(2012),151,[arXiv:1205.1466],arXiv:1205.1466}
 @mybibitem{Smilga1979uj,Smi79, A. V. Smilga,Next-to-leading logarithms in the high-energy asymptotics of the quark form-factor and the jet cross-section,Nucl. Phys.,B161,(1979),449-468,,F+J+Nucl. Phys.%2CB161%2C449}
 @mybibitem{Snigirev2003cq,Sni03,A. M. Snigirev,QCD status of factorization ansatz for double parton distributions,Phys. Rev.,D68,(2003),114012,[hep-ph/0304172],hep-ph/0304172}
 @mybibitem{Sobol2011zz,Sob11, K. Sobol,WINHAC++: The object-oriented Monte Carlo for the charged-current Drell-Yan process,Acta Phys.Polon.,B42,(2011),1605-1614,,F+J+Acta Phys.Polon.%2CB42%2C1605}

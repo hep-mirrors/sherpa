@@ -1,0 +1,20 @@
+@node LHC_HTTBar
+@subsection Associated t anti-t H production at the LHC
+
+@example
+@smallformat
+@verbatiminclude Examples/H_in_TTBar/LHC_TTH_MCatNLO/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item The matrix elements are interfaced from @mycite{Reina2001bc},
+  @mycite{Dawson2002tg}, @mycite{Dawson2003zu}.
+  The shared library necessary for running this setup is built using
+  @uref{http://www.scons.org/,,scons}.
+@item The top quark is stable in the hard matrix elements.
+  It is decayed using the internal decay module, indicated by
+  the settings @option{HARD_DECAYS 1} and @option{STABLE[6] 0; STABLE[24] 0}.
+@end itemize
+ 
