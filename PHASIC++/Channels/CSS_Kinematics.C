@@ -16,7 +16,7 @@ LN_Pair PHASIC::GetLN
 {
   double ecm(pi*pk), mi2(pi.Abs2());
   double gam(ecm*ecm-mi2*pk.Abs2());
-  if (gam<0.0) return Vec4D();
+  if (gam<0.0) return LN_Pair();
   gam=ecm+Sign(ecm)*sqrt(gam);
   Vec4D l(0.5/ecm*(gam*pi-mi2*pk));
   return LN_Pair(l,pi+pk-l,mode);
@@ -264,6 +264,10 @@ int PHASIC::ConstructIFDipole
 	     +(Q2+ma2-sjk)/(2.0*(Q2+kt2))*Ql);
     ifp.m_pk=ifp.m_pj=(ifp.m_pi=pa)-Q;
     LN_Pair ln(GetLN(ifp.m_pj,ifp.m_pi,1));
+    if (ln.m_l==Vec4D()) {
+      msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+      return -1;
+    }
     Vec4D n_perp(0.0,cross(Vec3D(ln.m_l),Vec3D(ln.m_n)));
     Poincare cms(ln.m_l+ln.m_n);
     cms.Boost(ln.m_l);
