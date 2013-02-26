@@ -188,36 +188,36 @@ bool Standard_Model::ModelInit(const PDF::ISR_Handler_Map& isr)
 
 void Standard_Model::ParticleInit() {
   //add SM particles
-  //kf_code,mass,width,charge,icharge,strong,spin,majorana,take,stable,massive,idname,tex_name
-  s_kftable[1] = new  Particle_Info(1,0.01,.0,-1,-1,3,1,0,1,1,0,"d","d");
-  s_kftable[2] = new  Particle_Info(2,0.005,.0,2,1,3,1,0,1,1,0,"u","u");
-  s_kftable[3] = new  Particle_Info(3,0.2,.0,-1,-1,3,1,0,1,1,0,"s","s");
-  s_kftable[4] = new  Particle_Info(4,1.42,.0,2,1,3,1,0,1,1,0,"c","c");
-  s_kftable[5] = new  Particle_Info(5,4.8,.0,-1,-1,3,1,0,1,1,0,"b","b");
-  s_kftable[6] = new  Particle_Info(6,175.,1.5,2,1,3,1,0,1,1,1,"t","t");
-  s_kftable[11] = new Particle_Info(11,0.000511,.0,-3,-1,0,1,0,1,1,0,"e-","e^-");
-  s_kftable[12] = new Particle_Info(12,.0,.0,0,1,0,1,0,1,1,0,"nu_e","\\nu_e");
-  s_kftable[13] = new Particle_Info(13,.105,.0,-3,-1,0,1,0,1,1,0,"mu-","\\mu^-");
-  s_kftable[14] = new Particle_Info(14,.0,.0,0,1,0,1,0,1,1,0,"nu_mu","\\nu_\\mu");
-  s_kftable[15] = new Particle_Info(15,1.777,2.36E-12,-3,-1,0,1,0,1,0,0,"tau-","\\tau^-");
-  s_kftable[16] = new Particle_Info(16,.0,.0,0,1,0,1,0,1,1,0,"nu_tau","\\nu_\\tau");
-  s_kftable[21] = new Particle_Info(21,.0,.0,0,0,8,2,-1,1,1,0,"G","g");
-  s_kftable[22] = new Particle_Info(22,.0,.0,0,0,0,2,-1,1,1,0,"P","\\gamma");
-  s_kftable[23] = new Particle_Info(23,91.188,2.49,0,0,0,2,-1,1,1,1,"Z","Z");
-  s_kftable[24] = new Particle_Info(24,80.419,2.06,3,0,0,2,0,1,1,1,"W+","W^+");
-  s_kftable[25] = new Particle_Info(25,125.,0.0037,0,0,0,0,-1,1,1,1,"h0","h_0");
+  //kf_code,mass,width,charge,isoweak,strong,spin,majorana,take,stable,massive,idname,tex_name
+  s_kftable[kf_d]      = new Particle_Info(kf_d,0.01,.0,-1,-1,3,1,0,1,1,0,"d","d");
+  s_kftable[kf_u]      = new Particle_Info(kf_u,0.005,.0,2,1,3,1,0,1,1,0,"u","u");
+  s_kftable[kf_s]      = new Particle_Info(kf_s,0.2,.0,-1,-1,3,1,0,1,1,0,"s","s");
+  s_kftable[kf_c]      = new Particle_Info(kf_c,1.42,.0,2,1,3,1,0,1,1,0,"c","c");
+  s_kftable[kf_b]      = new Particle_Info(kf_b,4.8,.0,-1,-1,3,1,0,1,1,0,"b","b");
+  s_kftable[kf_t]      = new Particle_Info(kf_t,175.,1.5,2,1,3,1,0,1,1,1,"t","t");
+  s_kftable[kf_e]      = new Particle_Info(kf_e,0.000511,.0,-3,-1,0,1,0,1,1,0,"e-","e^-");
+  s_kftable[kf_nue]    = new Particle_Info(kf_nue,.0,.0,0,1,0,1,0,1,1,0,"nu_e","\\nu_e");
+  s_kftable[kf_mu]     = new Particle_Info(kf_mu,.105,.0,-3,-1,0,1,0,1,1,0,"mu-","\\mu^-");
+  s_kftable[kf_numu]   = new Particle_Info(kf_numu,.0,.0,0,1,0,1,0,1,1,0,"nu_mu","\\nu_\\mu");
+  s_kftable[kf_tau]    = new Particle_Info(kf_tau,1.777,2.36E-12,-3,-1,0,1,0,1,0,0,"tau-","\\tau^-");
+  s_kftable[kf_nutau]  = new Particle_Info(kf_nutau,.0,.0,0,1,0,1,0,1,1,0,"nu_tau","\\nu_\\tau");
+  s_kftable[kf_gluon]  = new Particle_Info(kf_gluon,.0,.0,0,0,8,2,-1,1,1,0,"G","g");
+  s_kftable[kf_photon] = new Particle_Info(kf_photon,.0,.0,0,0,0,2,-1,1,1,0,"P","\\gamma");
+  s_kftable[kf_Z]      = new Particle_Info(kf_Z,91.188,2.49,0,0,0,2,-1,1,1,1,"Z","Z");
+  s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.419,2.06,3,0,0,2,0,1,1,1,"W+","W^+");
+  s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.,0.00407,0,0,0,0,-1,1,1,1,"h0","h_0");
   if (m_trivialextension==2) {
-    s_kftable[7]  = new Particle_Info(7,500.,38.0,-1,-1,3,1,0,1,0,1,"D_4","D_4");
-    s_kftable[8]  = new Particle_Info(8,500.,38.2,2,1,3,1,0,1,0,1,"U_4","U_4");
-    s_kftable[17] = new Particle_Info(17,500.,38.3,-3,-1,0,1,0,1,0,1,"L_4-","L_4^-");
-    s_kftable[18] = new Particle_Info(18,500.,38.3,0,1,0,1,0,1,0,1,"Nu_4","\\nu_4");
+    s_kftable[kf_D4]   = new Particle_Info(kf_D4,500.,38.0,-1,-1,3,1,0,1,0,1,"D_4","D_4");
+    s_kftable[kf_U4]   = new Particle_Info(kf_U4,500.,38.2,2,1,3,1,0,1,0,1,"U_4","U_4");
+    s_kftable[kf_L4]   = new Particle_Info(kf_L4,500.,38.3,-3,-1,0,1,0,1,0,1,"L_4-","L_4^-");
+    s_kftable[kf_Nu4]  = new Particle_Info(kf_Nu4,500.,38.3,0,1,0,1,0,1,0,1,"Nu_4","\\nu_4");
   }
 
   // pseudoparticles for comix
-  s_kftable[921] = new Particle_Info(921,0.0,0.0,0,0,8,4,-1,1,1,0,"G4","G_4",1);
-  s_kftable[923] = new Particle_Info(923,91.188,2.49,0,0,0,4,-1,1,1,1,"Z4","Z_4",1);
-  s_kftable[924] = new Particle_Info(924,80.419,2.06,3,0,0,4,0,1,1,1,"W+4","W^+_4",1);
-  s_kftable[925] = new Particle_Info(925,125.0,0.0037,0,0,0,0,0,1,1,1,"h04","h_{04}",1);
+  s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0,0,8,4,-1,1,1,0,"G4","G_4",1);
+  s_kftable[kf_Z_qgc]     = new Particle_Info(kf_Z_qgc,91.188,2.49,0,0,0,4,-1,1,1,1,"Z4","Z_4",1);
+  s_kftable[kf_Wplus_qgc] = new Particle_Info(kf_Wplus_qgc,80.419,2.06,3,0,0,4,0,1,1,1,"W+4","W^+_4",1);
+  s_kftable[kf_h0_qsc]    = new Particle_Info(kf_h0_qsc,120.0,0.0037,0,0,0,0,0,1,1,1,"h04","h_{04}",1);
 
   ReadParticleData();
 
