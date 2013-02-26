@@ -557,54 +557,65 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
   double singlepole=0.;
   double mur = p_scale->Scale(stp::ren,1);
   if (!p_masskern) {
-  for (size_t i=0;i<p_LO_process->PartonList().size();i++) {
-    for (size_t k=i+1;k<p_LO_process->PartonList().size();k++) {
-      int typei = 2*m_flavs[p_LO_process->PartonList()[i]].IntSpin();
-      int typek = 2*m_flavs[p_LO_process->PartonList()[k]].IntSpin();
-      Vec4D_Vector momv(mom, &mom[m_nin+m_nout]);
-      double lsc = log(4.*M_PI*mur/dabs(2.*mom[p_LO_process->PartonList()[i]]*mom[p_LO_process->PartonList()[k]])/Eps_Scheme_Factor(momv));
+    for (size_t i=0;i<p_LO_process->PartonList().size();i++) {
+      for (size_t k=i+1;k<p_LO_process->PartonList().size();k++) {
+        int typei = 2*m_flavs[p_LO_process->PartonList()[i]].IntSpin();
+        int typek = 2*m_flavs[p_LO_process->PartonList()[k]].IntSpin();
+        Vec4D_Vector momv(mom, &mom[m_nin+m_nout]);
+        double lsc = log(4.*M_PI*mur/dabs(2.*mom[p_LO_process->PartonList()[i]]
+                                            *mom[p_LO_process->PartonList()[k]])
+                         /Eps_Scheme_Factor(momv));
 
-      doublepole+=p_dsij[i][k]*(p_dipole->Vie2(typei)+p_dipole->Vie2(typek));
-      singlepole+=p_dsij[i][k]*(p_dipole->Vie1(typei)+p_dipole->Vie1(typek)+
-				(p_dipole->Vie2(typei)+p_dipole->Vie2(typek))*lsc);
+        doublepole+=p_dsij[i][k]*(p_dipole->Vie2(typei)+p_dipole->Vie2(typek));
+        singlepole+=p_dsij[i][k]*(p_dipole->Vie1(typei)+p_dipole->Vie1(typek)
+                                  +(p_dipole->Vie2(typei)+p_dipole->Vie2(typek))
+                                   *lsc);
+      }
     }
-  }
   }
   else {
-  int lm(p_loopme?p_loopme->DRMode():0);
-  for (size_t i=0;i<p_LO_process->PartonList().size();i++) {
-    for (size_t k=i+1;k<p_LO_process->PartonList().size();k++) {
-      int typei = m_flavs[p_LO_process->PartonList()[i]].IntSpin();
-      int typek = m_flavs[p_LO_process->PartonList()[k]].IntSpin();
-      double sik=2.*mom[p_LO_process->PartonList()[i]]*mom[p_LO_process->PartonList()[k]];
-      double mi=m_flavs[p_LO_process->PartonList()[i]].Mass();
-      double mk=m_flavs[p_LO_process->PartonList()[k]].Mass();
-      bool susyi = m_flavs[p_LO_process->PartonList()[i]].IsSusy();
-      bool susyk = m_flavs[p_LO_process->PartonList()[k]].IsSusy();
+    int lm(p_loopme?p_loopme->DRMode():0);
+    for (size_t i=0;i<p_LO_process->PartonList().size();i++) {
+      for (size_t k=i+1;k<p_LO_process->PartonList().size();k++) {
+        int typei = m_flavs[p_LO_process->PartonList()[i]].IntSpin();
+        int typek = m_flavs[p_LO_process->PartonList()[k]].IntSpin();
+        double sik=2.*mom[p_LO_process->PartonList()[i]]
+                     *mom[p_LO_process->PartonList()[k]];
+        double mi=m_flavs[p_LO_process->PartonList()[i]].Mass();
+        double mk=m_flavs[p_LO_process->PartonList()[k]].Mass();
+        bool susyi = m_flavs[p_LO_process->PartonList()[i]].IsSusy();
+        bool susyk = m_flavs[p_LO_process->PartonList()[k]].IsSusy();
 
-      p_masskern->Calculate(typei,mur,sik,mi,mk,p_LO_process->PartonList()[i]<m_nin,p_LO_process->PartonList()[k]<m_nin,susyi,lm);
-      double splf1 = p_masskern->I_E1();
-      double splf2 = p_masskern->I_E2();
-      p_masskern->Calculate(typek,mur,sik,mk,mi,p_LO_process->PartonList()[k]<m_nin,p_LO_process->PartonList()[i]<m_nin,susyk,lm);
-      splf1 += p_masskern->I_E1();
-      splf2 += p_masskern->I_E2();
+        p_masskern->Calculate(typei,mur,sik,mi,mk,
+                              p_LO_process->PartonList()[i]<m_nin,
+                              p_LO_process->PartonList()[k]<m_nin,
+                              susyi,lm);
+        double splf1 = p_masskern->I_E1();
+        double splf2 = p_masskern->I_E2();
+        p_masskern->Calculate(typek,mur,sik,mk,mi,
+                              p_LO_process->PartonList()[k]<m_nin,
+                              p_LO_process->PartonList()[i]<m_nin,
+                              susyk,lm);
+        splf1 += p_masskern->I_E1();
+        splf2 += p_masskern->I_E2();
 
-      Vec4D_Vector momv(mom, &mom[m_nin+m_nout]);
-      double lsc = log(4.*M_PI*mur/dabs(sik)/Eps_Scheme_Factor(momv));
+        Vec4D_Vector momv(mom, &mom[m_nin+m_nout]);
+        double lsc = log(4.*M_PI*mur/dabs(sik)/Eps_Scheme_Factor(momv));
 
-      splf1+=splf2*lsc;
-      doublepole+=p_dsij[i][k]*splf2;
-      singlepole+=p_dsij[i][k]*splf1;
+        splf1+=splf2*lsc;
+        doublepole+=p_dsij[i][k]*splf2;
+        singlepole+=p_dsij[i][k]*splf1;
+      }
     }
   }
-  }
-  double p1(p_loopme->ME_E1()), p2(p_loopme->ME_E2());
+  doublepole*=m_Norm*p_kpterms->Coupling();
+  singlepole*=m_Norm*p_kpterms->Coupling();
+  double p1(p_loopme->ME_E1()*p_kpterms->Coupling()),
+         p2(p_loopme->ME_E2()*p_kpterms->Coupling());
   if (p_loopme->Mode()==0) {
     p1*=m_Norm*p_dsij[0][0];
     p2*=m_Norm*p_dsij[0][0];
   }
-  doublepole*=m_Norm;
-  singlepole*=m_Norm;
   size_t precision(msg->Out().precision());
   msg->SetPrecision(16);
   if (!m_checkpolesthreshold ||
@@ -616,13 +627,13 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
   }
   if (!m_checkpolesthreshold ||
       !ATOOLS::IsEqual(doublepole,p2,m_checkpolesthreshold)) {
-    msg_Out()<<"Double poles do not cancel: "<<doublepole*p_kpterms->Coupling()<<" vs. "<<p2*p_kpterms->Coupling()
+    msg_Out()<<"Double poles do not cancel: "<<doublepole<<" vs. "<<p2
              <<", rel. diff.: "<<(doublepole-p2)/(doublepole+p2)
              <<", ratio: "<<doublepole/p2<<std::endl;
   }
   if (!m_checkpolesthreshold ||
       !ATOOLS::IsEqual(singlepole,p1,m_checkpolesthreshold)) {
-    msg_Out()<<"Single poles do not cancel: "<<singlepole*p_kpterms->Coupling()<<" vs. "<<p1*p_kpterms->Coupling()
+    msg_Out()<<"Single poles do not cancel: "<<singlepole<<" vs. "<<p1
              <<", rel. diff.: "<<(singlepole-p1)/(singlepole+p1)
              <<", ratio: "<<singlepole/p1<<std::endl;
   }
