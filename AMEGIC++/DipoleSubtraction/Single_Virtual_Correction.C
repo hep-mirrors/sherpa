@@ -616,13 +616,13 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
   }
   if (!m_checkpolesthreshold ||
       !ATOOLS::IsEqual(doublepole,p2,m_checkpolesthreshold)) {
-    msg_Out()<<"Double poles do not cancel: "<<doublepole<<" vs. "<<p2
+    msg_Out()<<"Double poles do not cancel: "<<doublepole*p_kpterms->Coupling()<<" vs. "<<p2*p_kpterms->Coupling()
              <<", rel. diff.: "<<(doublepole-p2)/(doublepole+p2)
              <<", ratio: "<<doublepole/p2<<std::endl;
   }
   if (!m_checkpolesthreshold ||
       !ATOOLS::IsEqual(singlepole,p1,m_checkpolesthreshold)) {
-    msg_Out()<<"Single poles do not cancel: "<<singlepole<<" vs. "<<p1
+    msg_Out()<<"Single poles do not cancel: "<<singlepole*p_kpterms->Coupling()<<" vs. "<<p1*p_kpterms->Coupling()
              <<", rel. diff.: "<<(singlepole-p1)/(singlepole+p1)
              <<", ratio: "<<singlepole/p1<<std::endl;
   }
@@ -712,7 +712,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     CheckPoleCancelation(&mom.front());
   if (m_checkfinite) {
     msg->SetPrecision(16);
-    msg_Out()<<"Finite_I = "<<I<<" vs. Finite_OLE = "<<-lme
+    msg_Out()<<"Finite_I = "<<m_Norm*I<<" vs. Finite_OLE = "<<-m_Norm*lme
              <<", rel. diff. "<<(I+lme)/(I-lme)<<std::endl;
     msg->SetPrecision(6);
   }
