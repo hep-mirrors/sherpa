@@ -399,6 +399,25 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
           m_subevtlist[i]->m_mewgt=0.0;
   }
   m_lastdxs = m_realevt.m_me;
+
+  if (msg_LevelIsTracking()) {
+    msg->SetPrecision(16);
+    msg_Out() << "// Single_Real_Correction for " << Name() << endl;
+    msg_Out() << "std::vector<Vec4D> p(" << mom.size() << ");" << endl;
+    for (size_t k=0;k<mom.size();++k) {
+      msg_Out() << "p[" << k << "] = Vec4D" << mom[k] << "; // " << m_flavs[k] << endl;
+    }
+    msg_Out() << "double realme = " << m_realevt.m_me << ";" << endl;
+    msg_Out() << "std::vector<double> dipoles(" << m_subtermlist.size() << ");" << endl;
+    for (size_t k=0;k<m_subtermlist.size();++k) {
+      msg_Out() << "dipoles[" << k << "] = " << m_subtermlist[k]->LastXS() << "; // ("
+                << m_flavs[m_subtermlist[k]->Li()] << ", "
+                << m_flavs[m_subtermlist[k]->Lj()] << "; "
+                << m_flavs[m_subtermlist[k]->Lk()] << ")" << endl;
+    }
+    msg->SetPrecision(6);
+  }
+
   return m_lastdxs;
 }
 
