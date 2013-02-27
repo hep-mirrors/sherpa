@@ -696,7 +696,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  if      (ds=="Fixed_Order" || ds=="1") pi.m_nlomode=cpi.m_nlomode=1;
 	  else if (ds=="MC@NLO"      || ds=="3") pi.m_nlomode=cpi.m_nlomode=3;
 	  else THROW(fatal_error,"Unknown NLO_EW_Mode "+ds+" {"+pnid+"}");
-	  cpi.m_fi.m_nloqcdtype=ToType<nlo_type::code>("BVIRS");
+	  cpi.m_fi.m_nloewtype=ToType<nlo_type::code>("BVIRS");
 	  if (!m_globalnlomode) m_globalnlomode=cpi.m_nlomode;
 	  if (cpi.m_nlomode!=m_globalnlomode)
 	    THROW(fatal_error,"Unable to process multiple NLO modes at the "

@@ -1,4 +1,5 @@
 #include "SHERPA/Single_Events/Event_Handler.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_Limits.H"
@@ -24,10 +25,8 @@ static int s_retrymax(100);
 
 Event_Handler::Event_Handler():
   m_lastparticlecounter(0), m_lastblobcounter(0), 
-  m_n(0), m_addn(0), m_sum(0.0), m_sumsqr(0.0), m_maxweight(0.0)
-#ifdef USING__MPI
-  , m_mn(0), m_msum(0.0), m_msumsqr(0.0)
-#endif
+  m_n(0), m_addn(0), m_sum(0.0), m_sumsqr(0.0), m_maxweight(0.0),
+  m_mn(0), m_msum(0.0), m_msumsqr(0.0)
 {
   p_phases  = new Phase_List;
   Data_Reader reader(" ",";","!","=");
@@ -281,15 +280,9 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
     PRINT_INFO("Invalid weight w="<<cxs<<". Rejecting event.");
     return false;
   }
-#ifdef USING__MPI
-  m_mn      += trials+m_addn;
-  m_msum    += cxs;
-  m_msumsqr += sqr(cxs);
-#else
   m_n      += trials+m_addn;
   m_sum    += cxs;
   m_sumsqr += sqr(cxs);
-#endif
   m_addn    = 0.0;
 
   return AnalyseEvent(weight);
@@ -332,15 +325,9 @@ bool Event_Handler::GenerateMinimumBiasEvent() {
 
   //msg_Out()<<METHOD<<" done with event:\n"<<m_blobs<<"\n";
   double xs((*p_signal)["Weight"]->Get<double>());
-#ifdef USING__MPI
-  m_mn++;
-  m_msum    += xs;
-  m_msumsqr += sqr(xs);
-#else
   m_n++;
   m_sum    += xs;
   m_sumsqr += sqr(xs);
-#endif
   msg_Tracking()<<METHOD<<" for event with xs = "<<(xs/1.e9)<<" mbarn.\n";
   return AnalyseEvent(weight);
 }
@@ -423,7 +410,7 @@ void Event_Handler::Finish() {
     m_lastblobcounter=Blob::Counter();
   }
   Blob::Reset();
-  double xs(TotalXS()), err(TotalErr());
+  double xs(TotalXSMPI()), err(TotalErrMPI());
   std::string res;
   MyStrStream conv;
   conv<<om::bold<<"Total XS"<<om::reset<<" is "
@@ -441,6 +428,9 @@ void Event_Handler::Finish() {
 
 void Event_Handler::MPISync()
 {
+  m_mn=m_n;
+  m_msum=m_sum;
+  m_msumsqr=m_sumsqr;
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
@@ -475,11 +465,6 @@ void Event_Handler::MPISync()
     }
     delete [] values;
   }
-  m_n+=m_mn;
-  m_sum+=m_msum;
-  m_sumsqr+=m_msumsqr;
-  m_mn=0;
-  m_msum=m_msumsqr=0.0;
 #endif
 }
 
@@ -503,6 +488,29 @@ double Event_Handler::TotalErr()
   if (ATOOLS::IsEqual
       (m_sumsqr*m_n,m_sum*m_sum,1.0e-6)) return 0.0;
   return sqrt((m_sumsqr-m_sum*m_sum/m_n)/(m_n-1)/m_n);
+}
+
+double Event_Handler::TotalXSMPI()
+{
+  MPISync();
+  if (m_mn==0.0) return 0.0;
+  return m_msum/m_mn;
+}
+
+
+double Event_Handler::TotalVarMPI()
+{
+  if (m_mn<=1) return sqr(TotalXSMPI());
+  return (m_msumsqr-m_msum*m_msum/m_mn)/(m_mn-1);
+}
+
+
+double Event_Handler::TotalErrMPI()
+{
+  if (m_mn<=1) return TotalXS();
+  if (ATOOLS::IsEqual
+      (m_msumsqr*m_mn,m_msum*m_msum,1.0e-6)) return 0.0;
+  return sqrt((m_msumsqr-m_msum*m_msum/m_mn)/(m_mn-1)/m_mn);
 }
 
 bool Event_Handler::WeightIsGood(const double& weight)

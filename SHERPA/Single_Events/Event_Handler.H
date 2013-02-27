@@ -6,7 +6,6 @@
 
 #include "SHERPA/Single_Events/Event_Phase_Handler.H"
 #include "SHERPA/Tools/Definitions.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
 
 namespace SHERPA {
 
@@ -18,9 +17,7 @@ namespace SHERPA {
 
     long int m_lastparticlecounter, m_lastblobcounter;
     double m_n, m_addn, m_sum, m_sumsqr, m_maxweight;
-#ifdef USING__MPI
     double m_mn, m_msum, m_msumsqr;
-#endif
     bool m_checkweight;
 
     Phase_List        * p_phases;
@@ -56,6 +53,9 @@ namespace SHERPA {
     double TotalXS();
     double TotalVar();
     double TotalErr();
+    double TotalXSMPI();
+    double TotalVarMPI();
+    double TotalErrMPI();
 
   };
 

@@ -48,9 +48,8 @@ int main(int argc,char* argv[])
                       <<FormatTime(size_t((nevt-i)/(double)i*diff))
                       <<" left ) -> ETA: "<<rpa->gen.Timer().
               StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
-            Generator->GetEventHandler()->MPISync();
-            double xs(Generator->GetEventHandler()->TotalXS());
-            double err(Generator->GetEventHandler()->TotalErr());
+            double xs(Generator->GetEventHandler()->TotalXSMPI());
+            double err(Generator->GetEventHandler()->TotalErrMPI());
             if (!(rpa->gen.BatchMode()&2)) msg_Info()<<"\n  ";
             msg_Info()<<"XS = "<<xs<<" pb +- ( "<<err<<" pb = "
                       <<((int(err/xs*10000))/100.0)<<" % )  ";
