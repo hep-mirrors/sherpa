@@ -221,8 +221,6 @@ bool Perturbative_Interface::LocalKFactor(ATOOLS::Cluster_Amplitude* ampl)
     for (size_t i=0; i<procs.size(); ++i) {
       MCatNLO_Process* mcnloproc=dynamic_cast<MCatNLO_Process*>(procs[i]);
       if (mcnloproc) {
-	ampl->SetQ2(ampl->KT2());
-	ampl->Prev()->SetQ2(ampl->KT2());
 	double K(mcnloproc->LocalKFactor(*ampl));
 	if (K==0.0 || dabs(K)>m_maxkfac) continue;
 	m_weight*=K;

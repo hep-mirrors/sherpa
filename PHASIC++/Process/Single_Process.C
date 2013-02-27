@@ -214,7 +214,7 @@ double Single_Process::BeamISRWeight
     int set(false);
     double LQ2(Q2);
     if (ampls.size()) {
-      DEBUG_FUNC(m_name<<", mode = "<<mode);
+      DEBUG_FUNC(m_name<<", \\mu_F = "<<sqrt(Q2)<<", mode = "<<mode);
       Cluster_Amplitude *ampl(ampls.front());
       msg_IODebugging()<<*ampl<<"\n";
       if (imode&2) {
@@ -237,11 +237,6 @@ double Single_Process::BeamISRWeight
 	  LQ2=sqrt(std::numeric_limits<double>::max());
 	  continue;
 	}
-	if (ampl->Prev()==NULL ||
-	    ((imode&2) && ampl->Prev()->Prev()==NULL)) {
-	  LQ2=ampl->KT2();
-	  continue;
-	}
 	Flavour f1(ampl->Leg(0)->Flav().Bar());
 	Flavour f2(ampl->Leg(1)->Flav().Bar());
 	if (MapProc() && LookUp() && !(imode&2)) {
@@ -257,6 +252,7 @@ double Single_Process::BeamISRWeight
 	double wd2=p_int->ISR()->Weight
 	  (mode|4,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
 	LQ2=ampl->KT2();
+	if (ampl->Next()==NULL) LQ2=ampl->MuF2();
 	set=true;
 	double wn1=p_int->ISR()->Weight
 	  (mode|2,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);

@@ -311,9 +311,6 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   bproc->Trigger(p);
   p_ampl = dynamic_cast<Single_Process*>
     (p_bviproc->Selected())->Cluster(512|1024);
-  Scale_Setter_Base *scs(p_bviproc->Selected()->ScaleSetter(1));
-  for (Cluster_Amplitude *ampl(p_ampl);ampl;ampl=ampl->Next())
-    ampl->SetQ2(scs->Scale(stp::res));
   SortFlavours(p_ampl);
   p_ampl->SetProcs(p_apmap);
   p_ampl->SetIInfo(&m_iinfo);
@@ -354,14 +351,12 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     p_ampl=ampl;
     ampl->SetMuF2(next->MuF2());
     ampl->SetMuR2(next->MuR2());
-    ampl->SetQ2(kt2.m_kt2);
     ampl->SetOrderQCD(next->OrderQCD()+1);
     ampl->Next()->SetNLO(4);
     ampl->SetJF(NULL);
     next->SetKin(kt2.m_kin);
     while (ampl->Next()) {
       ampl=ampl->Next();
-      ampl->SetQ2(kt2.m_kt2);
       if (!(ampl->Leg(0)->Id()&p_ampl->Leg(0)->Id()))
 	std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
       if (ampl->IdNew()&iid) ampl->SetIdNew(ampl->IdNew()|jid);

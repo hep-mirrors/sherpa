@@ -77,13 +77,15 @@ Variable_Core_Scale::~Variable_Core_Scale()
 PDF::CParam Variable_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 {
   p_ampl=ampl;
-  double muf2(m_calcs[0]->Calculate()->Get<double>()), mur2(muf2);
+  double muf2(m_calcs[0]->Calculate()->Get<double>()), mur2(muf2), q2(muf2);
   if (m_calcs.size()>1) mur2=m_calcs[1]->Calculate()->Get<double>();
+  if (m_calcs.size()>2) q2=m_calcs[2]->Calculate()->Get<double>();
   msg_Debugging()<<METHOD<<"(): Set {\n"
 		 <<"  \\mu_f = "<<sqrt(muf2)<<"\n"
-		 <<"  \\mu_r = "<<sqrt(mur2)<<"\n";
+		 <<"  \\mu_r = "<<sqrt(mur2)<<"\n"
+		 <<"  \\mu_q = "<<sqrt(q2)<<"\n";
   msg_Debugging()<<"}\n";
-  return PDF::CParam(muf2,muf2,0.0,mur2,-1);
+  return PDF::CParam(muf2,q2,0.0,mur2,-1);
 }
 
 void Variable_Core_Scale::SetScale

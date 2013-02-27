@@ -187,7 +187,7 @@ METS_Scale_Setter::METS_Scale_Setter
   Scale_Setter_Base(args), m_tagset(this),
   m_cnt(0), m_rej(0), m_mode(mode), m_lfrac(0.0)
 {
-  m_scale.resize(stp::size+3);
+  m_scale.resize(2*stp::size);
   std::string tag(args.m_scale), core;
   m_nproc=!p_proc->Info().m_fi.NLOType()==nlo_type::lo;
   size_t pos(tag.find('['));
@@ -574,22 +574,21 @@ PDF::CParam METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl) const
   PDF::CParam kt2(p_core->Calculate(ampl));
   ampl->SetKT2(kt2.m_kt2);
   ampl->SetMu2(kt2.m_mu2);
+  ampl->SetQ2(kt2.m_op2);
   return kt2;
 }
 
 double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 {
-  double mur2(muf2), mup2(muf2);
-  m_scale[stp::res]=muf2;
-  m_scale[stp::size+2]=muf2;
+  double mur2(muf2);
+  m_scale[stp::size+stp::res]=m_scale[stp::res]=muf2;
   if (ampl) {
+    m_scale[stp::size+stp::res]=ampl->KT2();
     std::vector<double> scale(p_proc->NOut()+1);
     msg_Debugging()<<"Setting scales {\n";
     mur2=1.0;
     int smup(false);
     double as(1.0), oqcd(0.0), mum2(1.0);
-    if (!m_nproc) m_scale[stp::res]=0.0;
-    else m_scale[stp::res]=std::numeric_limits<double>::max();
     for (size_t idx(2);ampl->Next();++idx,ampl=ampl->Next()) {
       scale[idx]=Max(ampl->Mu2(),MODEL::as->CutQ2());
       scale[idx]=Min(scale[idx],sqr(rpa->gen.Ecms()));
@@ -610,13 +609,12 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 	  }
       }
       if (skip) continue;
-      if (m_rproc && ampl->Prev()==NULL) continue;
-      if (m_nproc) m_scale[stp::res]=Min(m_scale[stp::res],ampl->KT2());
-      else m_scale[stp::res]=Max(m_scale[stp::res],ampl->KT2());
+      if (m_rproc && ampl->Prev()==NULL) {
+	m_scale[stp::size+stp::res]=ampl->Next()->KT2();
+	continue;
+      }
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
       if (coqcd>0.0) {
-	if (!smup) mup2=ampl->KT2();
-	smup=true;
 	double cas(MODEL::as->BoundedAlphaS(scale[idx]));
 	msg_Debugging()<<"  \\mu_{"<<idx<<"} = "<<sqrt(scale[idx])
 		       <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
@@ -625,6 +623,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 	oqcd+=coqcd;
       }
     }
+    m_scale[stp::res]=ampl->Q2();
     if (ampl->OrderQCD()-(m_vproc?1:0)) {
       double mu2(Max(ampl->Mu2(),MODEL::as->CutQ2()));
       mum2=Min(mum2,mu2);
@@ -645,14 +644,8 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 	msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl; 
     }
     msg_Debugging()<<"} -> as = "<<as<<" -> "<<sqrt(mur2)<<"\n";
-    if (ampl->OrderQCD()>(m_vproc?1:0)) {
-      if (m_nproc) m_scale[stp::res]=Min(m_scale[stp::res],ampl->KT2());
-      else m_scale[stp::res]=Max(m_scale[stp::res],ampl->KT2());
-    }
-    if (m_scale[stp::res]==std::numeric_limits<double>::max())
-      m_scale[stp::res]=muf2;
   }
-  m_scale[stp::size+stp::fac]=m_scale[stp::fac]=mup2;
+  m_scale[stp::size+stp::fac]=m_scale[stp::fac]=muf2;
   m_scale[stp::size+stp::ren]=m_scale[stp::ren]=mur2;
   msg_Debugging()<<"Core / QCD scale = "<<sqrt(m_scale[stp::fac])
 		 <<" / "<<sqrt(m_scale[stp::ren])<<"\n";
@@ -660,19 +653,21 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
     m_scale[i]=m_calcs[i]->Calculate()->Get<double>();
   for (size_t i(m_calcs.size());i<stp::size;++i) m_scale[i]=m_scale[0];
   msg_Debugging()<<METHOD<<"(): Set {\n"
-		 <<"  \\mu_q = "<<sqrt(m_scale[stp::res])<<"\n"
 		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
-		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n";
+		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n"
+		 <<"  \\mu_q = "<<sqrt(m_scale[stp::res])<<"\n";
   for (size_t i(stp::size);i<m_scale.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
   msg_Debugging()<<"} <- "<<(p_caller?p_caller->Name():"")<<"\n";
   if (ampl) {
     ampl->SetMuF2(m_scale[stp::fac]);
     ampl->SetMuR2(m_scale[stp::ren]);
+    ampl->SetQ2(m_scale[stp::res]);
     while (ampl->Prev()) {
       ampl=ampl->Prev();
       ampl->SetMuF2(m_scale[stp::fac]);
       ampl->SetMuR2(m_scale[stp::ren]);
+      ampl->SetQ2(m_scale[stp::res]);
     }
   }
   return m_scale[stp::fac];

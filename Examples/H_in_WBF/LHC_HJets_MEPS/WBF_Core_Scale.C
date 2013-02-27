@@ -26,12 +26,13 @@ using namespace ATOOLS;
 PDF::CParam WBF_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 {
   double mh2(ampl->Leg(2)->Mom().Abs2());
-  double muf2(mh2), mur2(muf2);
+  double muf2(mh2), mur2(muf2), q2(muf2);
   msg_Debugging()<<METHOD<<"(): Set {\n"
 		 <<"  \\mu_f = "<<sqrt(muf2)<<"\n"
-		 <<"  \\mu_r = "<<sqrt(mur2)<<"\n";
+		 <<"  \\mu_r = "<<sqrt(mur2)<<"\n"
+		 <<"  \\mu_q = "<<sqrt(q2)<<"\n";
   msg_Debugging()<<"}\n";
-  return PDF::CParam(muf2,muf2,0.0,mur2,-1);
+  return PDF::CParam(muf2,q2,0.0,mur2,-1);
 }
 
 DECLARE_ND_GETTER(WBF_Core_Scale,"WBF",

@@ -572,7 +572,12 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   }
 
   p_dipole->SetMCMode(m_mcmode);
-  if (trg && m_mcmode) p_dipole->SetKt2Max(p_scale->Scale(stp::res));
+  if (trg && m_mcmode) {
+    p_dipole->SetKt2Max(p_scale->Scale(stp::res));
+    if (p_scale->Scales().size()>(stp::size+stp::res)) {
+      p_dipole->SetKt2Max(p_scale->Scale(stp::id(stp::size+stp::res)));
+    }
+  }
 
   double df = p_dipole->KinCheck()?p_dipole->GetF():nan;
   m_subevt.m_me = m_subevt.m_mewgt = m_subevt.m_result = 0.;
