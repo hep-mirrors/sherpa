@@ -158,7 +158,7 @@ double Scale_Setter_Base::CalculateScale
 {
   DEBUG_FUNC((p_proc?p_proc->Name():""));
   if (!m_escale.empty()) {
-    for (size_t i(0);i<stp::size;++i) m_scale[i]=m_escale[i];
+    for (size_t i(0);i<m_escale.size();++i) m_scale[i]=m_escale[i];
     if (p_subs) {
       for (size_t i(0);i<p_subs->size();++i) {
 	NLO_subevt *sub((*p_subs)[i]);
