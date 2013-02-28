@@ -235,7 +235,7 @@ Singlet *CS_MCatNLO::TranslateAmplitude
 	parton->SetBeam(1);
       }
     }
-    parton->SetStart(ampl->Prev()?ampl->Prev()->KT2():ampl->Q2());
+    parton->SetStart(ampl->Next()?ampl->KT2():ampl->Q2());
     double ktveto2(jf?jf->Ycut()*sqr(rpa->gen.Ecms()):parton->KtStart());
     double ktmax2(ampl->Legs().size()-ampl->NIn()+1==
 		  ampl->Leg(2)->NMax()?parton->KtStart():0.0);
