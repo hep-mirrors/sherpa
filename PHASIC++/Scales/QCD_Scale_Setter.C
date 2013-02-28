@@ -284,6 +284,7 @@ double QCD_Scale_Setter::Calculate
   msg_Debugging()<<"QCD scale = "<<sqrt(m_scale[stp::ren])<<"\n";
   m_scale[stp::ren]=m_mur2calc.Calculate()->Get<double>();
   m_scale[stp::fac]=m_muf2calc.Calculate()->Get<double>();
+  m_scale[stp::res]=m_scale[stp::fac];
   msg_Debugging()<<"Set \\mu_r = "
 		 <<sqrt(m_scale[stp::ren])<<", \\mu_f = "
 		 <<sqrt(m_scale[stp::fac])<<"\n";
