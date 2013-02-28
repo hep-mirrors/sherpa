@@ -700,6 +700,7 @@ double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
 {
   if (ampl->Next()) {
     Cluster_Amplitude *next(ampl->Next());
+    if (next->NLO()&8) return next->KT2();
     if (next->OrderQCD()<ampl->OrderQCD()) return ampl->KT2();
     return HardScale(next);
   }
