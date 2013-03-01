@@ -201,7 +201,8 @@ Kin_Args PHASIC::ClusterIFDipole
   double papj(pa*pj), papk(pa*pk), pjpk(pj*pk), Q2(Q.Abs2());
   double xjka((papj+papk-pjpk)/(papj+papk)), uj(papj/(papj+papk));
   Kin_Args res(uj,xjka,0.0,(mode&4)?1:0,1);
-  if (dabs(xjka-uj)<Kin_Args::s_uxeps) res.m_mode=1;
+  if (dabs(xjka-uj)<Kin_Args::s_uxeps ||
+      dabs(Q2)<Kin_Args::s_uxeps) res.m_mode=1;
   if (res.m_mode==1) {
     double sjk((pj+pk).Abs2()), kt2(Q.PPerp2());
     double po(sqr(Q2-mk2-maj2)-4.0*maj2*(mk2+kt2));
