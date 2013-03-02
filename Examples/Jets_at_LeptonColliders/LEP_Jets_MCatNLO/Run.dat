@@ -31,7 +31,7 @@
 (me){
   ME_SIGNAL_GENERATOR = Internal Amegic
   EVENT_GENERATION_MODE = Weighted
-  NLO_Mode = 2
+  NLO_Mode = 3
   SCALES = VAR{sqr(91.25)}
 }(me)
 
