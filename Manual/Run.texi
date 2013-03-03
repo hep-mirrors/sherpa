@@ -222,6 +222,15 @@ of the HepMC event file.
 Generates output in HepMC::IO_GenEvent format, however, only incoming beams and 
 outgoing particles are stored. Intermediate and decayed particles are not 
 listed. The event weights stored as the same as above.
+@item Delphes_GenEvent
+Generates output in @url{http://root.cern.ch,,Root} format, which can be passed to
+@uref{http://cp3.irmp.ucl.ac.be/projects/delphes,,Delphes} for analyses.
+Input events are taken from the HepMC interface, storage space can be reduced
+by up to 50% compared to gzip compressed HepMC.
+@item Delphes_Short
+Generates output in @url{http://root.cern.ch,,Root} format, which can be passed to
+@uref{http://cp3.irmp.ucl.ac.be/projects/delphes,,Delphes} for analyses.
+Only incoming beams and outgoing particles are stored.
 @item HEPEVT
 Generates output in HepEvt format.
 @item LHEF

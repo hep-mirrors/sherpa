@@ -7,6 +7,7 @@ SUBDIRS       =	\
 		HZTool \
 		OpenLoops \
 		PGS \
+		Delphes \
 		Rivet \
 		HepMC \
 		Root

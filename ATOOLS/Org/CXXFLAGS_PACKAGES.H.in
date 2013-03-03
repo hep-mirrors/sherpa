@@ -57,3 +57,6 @@
 
 /* using MCFM */
 #undef USING__MCFM
+
+/* using Delphes */
+#undef USING__DELPHES
