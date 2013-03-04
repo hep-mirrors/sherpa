@@ -137,6 +137,16 @@ namespace PHASIC {
     void     BuildCuts(Cut_Data *);
   };
 
+  class Delta_Y_Selector : public Selector_Base {
+    double ** dymin, ** dymax, * value;
+  public:
+    Delta_Y_Selector(int,int,ATOOLS::Flavour *);
+    ~Delta_Y_Selector();
+    void     SetRange(ATOOLS::Flavour_Vector,double,double);
+    bool     Trigger(const ATOOLS::Vec4D_Vector & );
+    void     BuildCuts(Cut_Data *);
+  };
+
   class Delta_Phi_Selector : public Selector_Base {
     double ** dphimin, ** dphimax, * value;
   public:
@@ -1440,6 +1450,111 @@ void ATOOLS::Getter<Selector_Base,Selector_Key,Delta_Eta_Selector>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
   str<<"\\Delta\\eta selector"; 
+}
+
+/*--------------------------------------------------------------------
+
+  Delta Y Selector
+
+  --------------------------------------------------------------------*/
+
+Delta_Y_Selector::Delta_Y_Selector(int _nin,int _nout, Flavour * _fl) :
+  Selector_Base("Delta_Y_Selector")
+{
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl   = _fl;
+  m_smin = 0.;
+  m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
+
+  dymin = new double*[m_n];
+  dymax = new double*[m_n];
+  value = new double[m_n*m_n];
+
+  for (int i=0;i<m_n;i++) {
+    dymin[i] = new double[m_n];
+    dymax[i] = new double[m_n];
+  }
+
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      dymin[i][j] = dymin[j][i] = 0.;
+      dymax[i][j] = dymax[j][i] = 200.;
+    }
+  }
+  m_sel_log = new Selector_Log(m_name);
+}
+
+Delta_Y_Selector::~Delta_Y_Selector() {
+  for (int i=0;i<m_n;i++) {
+    delete [] dymin[i];
+    delete [] dymax[i];
+  }
+  delete [] dymin;
+  delete [] dymax;
+  delete [] value;
+}
+
+bool Delta_Y_Selector::Trigger(const Vec4D_Vector & mom)
+{
+  double dyij;
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      dyij = abs(value[i*m_n+j] = mom[i].DY(mom[j]));
+      if (m_sel_log->Hit( ((dyij < dymin[i][j]) ||
+			   (dyij > dymax[i][j])) )) return 0;
+    }
+  }
+  return 1;
+}
+
+void Delta_Y_Selector::BuildCuts(Cut_Data * cuts) {}
+
+void Delta_Y_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
+{
+  if (crit.size() != 2) {
+    msg_Error()<<"Wrong number of arguments in Delta_Y_Selector::SetRange : "
+			  <<crit.size()<<endl;
+    return;
+  }
+
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=m_nin+1;j<m_n;j++) {
+      if ( ((crit[0].Includes(m_fl[i])) && (crit[1].Includes(m_fl[j])) ) ||
+	   ((crit[0].Includes(m_fl[j])) && (crit[1].Includes(m_fl[i])) ) ) {
+	dymin[i][j] = dymin[j][i] = _min;
+	dymax[i][j] = dymax[j][i] = _max;
+      }
+    }
+  }
+}
+
+DECLARE_ND_GETTER(Delta_Y_Selector,"DeltaY",Selector_Base,Selector_Key,true);
+
+Selector_Base *ATOOLS::Getter<Selector_Base,Selector_Key,Delta_Y_Selector>::
+operator()(const Selector_Key &key) const
+{
+  if (key.empty() || key.front().size()<4) THROW(critical_error,"Invalid syntax");
+  int crit1=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][0]));
+  int crit2=ToType<int>(key.p_read->Interpreter()->Interprete(key[0][1]));
+  double min=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][2]));
+  double max=ToType<double>(key.p_read->Interpreter()->Interprete(key[0][3]));
+  Flavour flav = Flavour((kf_code)abs(crit1));
+  if (crit1<0) flav = flav.Bar();
+  Flavour_Vector critflavs(1,flav);
+  flav = Flavour((kf_code)abs(crit2));
+  if (crit2<0) flav = flav.Bar();
+  critflavs.push_back(flav);
+  Delta_Y_Selector *sel = new Delta_Y_Selector
+    (key.p_proc->NIn(),key.p_proc->NOut(),
+     (Flavour*)&key.p_proc->Process()->Flavours().front());
+  sel->SetRange(critflavs,min,max);
+  return sel;
+}
+
+void ATOOLS::Getter<Selector_Base,Selector_Key,Delta_Y_Selector>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"\\Delta y selector";
 }
 
 /*--------------------------------------------------------------------
