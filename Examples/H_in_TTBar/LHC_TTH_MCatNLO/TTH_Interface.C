@@ -36,7 +36,7 @@ inline void MakeFortranString
     double yukt,yukb,yukf;
   } yukawa_;
 
-  void m2_virt_tth_(double *p,double *res,int *mode);
+  void m2_virt_tth_(double *p,double *res,int *mode,int *type);
 
 }
 
@@ -115,9 +115,9 @@ namespace TTH {
     {
       dimreg_.muedr=sqrt(m_mur2);
       topas_.alphas=(*MODEL::as)(m_mur2);
-      int s(m_flavs[0].IsAnti()), m(m_flavs[0].IsQuark()?1:2);
-      for (size_t n(0);n<p.size();++n) GetMom(p_p,n,p[(s&&n<2)?1-n:n]);
-      m2_virt_tth_(p_p,p_res,&m);
+      int s(m_flavs[0].IsAnti()?2:1), m(m_flavs[0].IsQuark()?1:2);
+      for (size_t n(0);n<p.size();++n) GetMom(p_p,n,p[n]);
+      m2_virt_tth_(p_p,p_res,&m,&s);
       m_res.Finite()=p_res[0];
       m_res.IR()=p_res[1];
       m_res.IR2()=p_res[2];

@@ -1,13 +1,14 @@
 
-      subroutine m2_virt_tth(pphy,res,mode)
+      subroutine m2_virt_tth(pphy,res,mode,type)
       implicit none
-      integer nlegs, j, mode
+      integer nlegs, j, mode, type
       parameter (nlegs=5)  
       real*8 pphy(0:3,nlegs)
       real*8 res(4)
 
       real*8 sig0(2),sig0qq(2),sig0gg(2)
       real*8 sigv(2),sigvqq(2),sigvgg(2)
+      real*8 sigvqq_ir(2,2),sigvgg_ir(2,2)
       real*8 mtop,alphas,mb
       common/topas/mtop,alphas,mb
       real*8 mh
@@ -36,6 +37,9 @@ c
       ph(4)=pphy(0,3)
       pt(4)=pphy(0,4)
       ptb(4)=pphy(0,5)
+c      write (*,*) 'mode ',mode,', type ',type
+c      write (*,*) 'pa ',b1(4),b1(1),b1(2),b1(3)
+c      write (*,*) 'pb ',b2(4),b2(1),b2(2),b2(3)
 c
 c calculate the invariants :
 c
@@ -62,25 +66,28 @@ c
 c calculate the matrix elements squared at the parton level:	
 c qqg=1 -> qqbar , qqg=2 -> gg, qqg=3 -> qqbar and gg
 c
-      call tthvirt(mode,sp,t1,t2,u1,u2,sig0qq,sig0gg,sigvqq,sigvgg)
+      call tthvirt(mode,sp,t1,t2,u1,u2,sig0qq,sig0gg,sigvqq,sigvgg,
+     $     sigvqq_ir,sigvgg_ir)
       if (mode.eq.1) then
-         res(1)=sigvqq(1)
-         res(2)=0
-         res(3)=0
-         res(4)=sig0qq(1)
+         res(1)=sigvqq(type)
+         res(2)=sigvqq_ir(1,type)
+         res(3)=sigvqq_ir(2,type)
+         res(4)=sig0qq(type)
       elseif (mode.eq.2) then
          res(1)=sigvgg(1)
-         res(2)=0
-         res(3)=0
+         res(2)=sigvgg_ir(1,1)
+         res(3)=sigvgg_ir(2,1)
          res(4)=sig0gg(1)
       endif
 
       end
 
-      subroutine tthvirt(qqg,sp,t1,t2,u1,u2,sig0qq,sig0gg,sigvqq,sigvgg)
+      subroutine tthvirt(qqg,sp,t1,t2,u1,u2,
+     $     sig0qq,sig0gg,sigvqq,sigvgg,sigvqq_ir,sigvgg_ir)
 ***********************************************************
 c virtual O(alpha_s) corrections to ttbarH production
 c October 2011, D.W.
+c February 2012: IR poles added, D.W.
 ***********************************************************
       implicit none
       integer i,j
@@ -95,6 +102,7 @@ c October 2011, D.W.
       common/para/pi,pi2,w2
       real*8 delta,muedr
       common/dimreg/delta,muedr
+      real*8 irfinite(2,2)
       real*8 yukt,yukb,yukf
       common/yukawa/yukt,yukb,yukf
 c Coulomb singularity
@@ -104,9 +112,10 @@ c
 c o_fac: overall factor (coupling constant)
 c
       real*8 o_fac
-c matrixelements squared
+c matrix elements squared
       real*8 matb_gg,matb_qq
-      real*8 matv_gg,matv_qq
+c coefficients of IR single and double poles
+      real*8 sigv_irpole(2,2),sigvqq_ir(2,2),sigvgg_ir(2,2)
 c switch for qqbar and/or gluon fusion
       integer qqg
 c
@@ -116,6 +125,10 @@ c initialization
          sig0gg(i)=0d0
          sigvqq(i)=0d0
          sigvgg(i)=0d0
+         do j=1,2
+            sigvqq_ir(i,j)=0d0
+            sigvgg_ir(i,j)=0d0
+         enddo
       enddo
 c constants
       pi=4d0*datan(1d0)
@@ -172,27 +185,47 @@ c         muedr=10d0**(j**2)
 c qqbar annihilation:
       do i=1,2
          sigv(i)=0d0
+         do j=1,2
+            sigv_irpole(i,j)=0d0
+         enddo
       enddo
       if (qqg.eq.1.or.qqg.eq.3) then
-         sigv(1)=matv_qq(sp,t1(1),t2(1),u1(1),u2(1),mtop,mh)
-         sigv(2)=matv_qq(sp,t1(2),t2(2),u1(2),u2(2),mtop,mh)
+         call mvirt_qq(sp,t1(1),t2(1),u1(1),u2(1),mtop,mh,sigv(1),
+     $        sigv_irpole(1,1),sigv_irpole(2,1))
+         call mvirt_qq(sp,t1(2),t2(2),u1(2),u2(2),mtop,mh,sigv(2),
+     $        sigv_irpole(1,2),sigv_irpole(2,2))
          do i=1,2
             sigvqq(i)=o_fac*sigv(i)*alphas/4d0/pi
+c IR poles
+c single
+            sigvqq_ir(1,i)=o_fac*sigv_irpole(1,i)/2d0
+c double
+            sigvqq_ir(2,i)=o_fac*sigv_irpole(2,i)/2d0
          enddo
       endif
 c gluon fusion:
       do i=1,2
          sigv(i)=0d0
+         do j=1,2
+            sigv_irpole(i,j)=0d0
+         enddo
       enddo
       if (qqg.eq.2.or.qqg.eq.3) then
-         sigv(1)=matv_gg(sp,t1(1),t2(1),u1(1),u2(1),mtop,mh)
-         sigv(2)=matv_gg(sp,t1(2),t2(2),u1(2),u2(2),mtop,mh)
+         call mvirt_gg(sp,t1(1),t2(1),u1(1),u2(1),mtop,mh,sigv(1),
+     $        sigv_irpole(1,1),sigv_irpole(2,1))
+         call mvirt_gg(sp,t1(2),t2(2),u1(2),u2(2),mtop,mh,sigv(2),
+     $        sigv_irpole(1,2),sigv_irpole(2,2))
 c        sigv(2)=sigv(1)
-c         nlf=5d0
+c        nlf=5d0
          do i=1,2
             sigvgg(i)=o_fac*sigv(i)*alphas/4d0/pi
-c            sigvgg(i)=sigvgg(i)-2d0*sig0gg(i)*alphas/4d0/pi*
+c           sigvgg(i)=sigvgg(i)-2d0*sig0gg(i)*alphas/4d0/pi*
 c     $        (-2d0/3d0*5d0+11d0/3d0*3d0)*dlog(muedr**2/sp)
+c IR poles
+c single
+            sigvgg_ir(1,i)=o_fac*sigv_irpole(1,i)/2d0
+c double
+            sigvgg_ir(2,i)=o_fac*sigv_irpole(2,i)/2d0
          enddo
       endif
 c      write(6,*)muedr,sigvqq(1),sigvgg(1)

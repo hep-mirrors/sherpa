@@ -6,8 +6,13 @@
       real*8 ncf,cg,cf
       real*8 colfac(3,3),born(3,3),mat(3,68),matu(3,68),matus(3,68)
       real*8 pt(4),ptb(4),ph(4),p3(4),p4(4)
-
+      real*8 a0_ab,a0_abnab,a0_ts,a0_us
+      common/a0parts/a0_ab,a0_abnab,a0_ts,a0_us
       matb_gg=0d0
+      a0_ab=0d0
+      a0_abnab=0d0
+      a0_ts=0d0
+      a0_us=0d0
 c color factors:
       ncf=3d0
       cg=ncf
@@ -81,12 +86,19 @@ c interference of u-channel Born with Born matrix element:
             matb_gg=matb_gg+colfac(i,j)*born(i,j)/64d0
          end do
       end do
+c born contributions for virtual IR poles:
+      a0_ab=(born(2,2)+born(3,3)+born(2,3)+born(3,2))/4d0/64d0
+      a0_ts=(born(1,1)+born(2,2)+born(1,2)+born(2,1))/64d0
+      a0_us=(born(1,1)+born(3,3)-born(1,3)-born(3,1))/64d0
+      a0_abnab=(born(1,1)+born(1,2)-born(1,3)+
+     $     (born(2,2)+born(3,3))/2d0)/64d0
       return
       end
 c---------------------------------------------------------------------
 *
 c---------------------------------------------------------------------
-      double precision function matv_gg(s,t1,t2,u1,u2,mt,mh)
+      subroutine mvirt_gg(s,t1,t2,u1,u2,mt,mh,matv_gg,
+     $     mirpole_1,mirpole_2)
       implicit none
       integer i,j
       real*8 s,s1,s2,t1,t2,u1,u2,mt,mh
@@ -107,9 +119,16 @@ c---------------------------------------------------------------------
       complex*16 mvtp(8),mvup(8)
       real*8 pt(4),ptb(4),ph(4),p3(4),p4(4)
       real*8 dets3
-
+      real*8 s3,beta,lbeta,lmu,p1p2,p1p3,p1p4,p2p3,p2p4
+      real*8 cir(3),ceps1(3),ceps1s(3),ceps2(3)
+      real*8 matb_gg,sig0gg
+      real*8 nlf
+      real*8 matv_gg,mirpole_1,mirpole_2,dirfinite
+      real*8 delta,muedr
+      common/dimreg/delta,muedr
+      real*8 a0_ab,a0_abnab,a0_ts,a0_us
+      common/a0parts/a0_ab,a0_abnab,a0_ts,a0_us
       dets3=1d0
-
       matv_gg=0d0
       zero=dcmplx(0d0,0d0)
 c initialization of coefficients:
@@ -501,6 +520,53 @@ c u u*
          enddo
       enddo
  9999 continue
+c IR poles and finite parts resulting from fully expanding the prefactor
+c in epsilon: the virtual part is now simply alphas/4/pi x Born (IR poles+finite parts)
+c Born      
+      sig0gg=matb_gg(s,t1,t2,u1,u2,mt,mh)
+      s3=4d0*mt**2+mh**2-s-t1-t2-u1-u2
+      p1p2=(s3-2d0*mt**2)/2d0
+      p1p3=(mt**2-t2)/2d0
+      p1p4=(mt**2-u2)/2d0
+      p2p3=(mt**2-u1)/2d0
+      p2p4=(mt**2-t1)/2d0
+      beta=dsqrt(1d0-4d0*mt**2/(2d0*p1p2+2d0*mt**2))
+      lbeta=dlog((1d0+beta)/(1d0-beta))
+      lmu=dlog(muedr**2/mt**2)
+c color factors
+      cir(1)=ncf**2/4d0*(ncf**2-1d0)
+      cir(2)=-1d0/4d0*(ncf**2-1d0)
+      cir(3)=(1d0+1d0/ncf**2)*(ncf**2-1d0)
+c coefficient of double IR pole:
+      ceps2(1)=-4d0*a0_abnab
+      ceps2(2)=-8d0*a0_ab
+      ceps2(3)=0d0
+c coefficient of single IR pole:
+      ceps1s(1)=2d0*(-2d0+dlog(s/mt**2))*a0_abnab+
+     $     (dlog(2d0*p2p4/mt**2)+dlog(2d0*p1p3/mt**2))*a0_ts+
+     $     (dlog(2d0*p2p3/mt**2)+dlog(2d0*p1p4/mt**2))*a0_us
+      ceps1s(2)=4d0*(-2d0+dlog(2d0*p2p4/mt**2)+
+     $     dlog(2d0*p1p3/mt**2)+dlog(2d0*p2p3/mt**2)+
+     $     dlog(2d0*p1p4/mt**2))*a0_ab+
+     $     2d0*p1p2/(p1p2+mt**2)/beta*lbeta*a0_abnab
+      ceps1s(3)=p1p2/(p1p2+mt**2)/beta*lbeta*a0_ab
+      do i=1,3
+         ceps1(i)=ceps2(i)*lmu+ceps1s(i)
+      enddo
+c poles
+      mirpole_1=0d0
+      mirpole_2=0d0
+      dirfinite=0d0
+      do i=1,3
+         mirpole_1=mirpole_1+2d0*cir(i)*ceps1(i)
+         mirpole_2=mirpole_2+2d0*cir(i)*ceps2(i)
+         dirfinite=dirfinite+cir(i)*(ceps1s(i)*lmu+ceps2(i)*lmu**2/2d0)
+      enddo
+c number of light flavors
+      nlf=5d0
+      mirpole_1=mirpole_1+2d0*(2d0/3d0*nlf-8d0/3d0*ncf+1d0/ncf)*sig0gg
+      matv_gg=matv_gg+2d0*(dirfinite+
+     $     (2d0/3d0*nlf-8d0/3d0*ncf+1d0/ncf)*sig0gg*lmu)
       return
       end
 c---------------------------------------------------------------------

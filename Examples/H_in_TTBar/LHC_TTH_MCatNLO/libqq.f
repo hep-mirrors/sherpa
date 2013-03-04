@@ -50,7 +50,8 @@
 c---------------------------------------------------------------------
 *
 c---------------------------------------------------------------------
-      double precision function matv_qq(s,t1,t2,u1,u2,mt,mh)
+      subroutine mvirt_qq(s,t1,t2,u1,u2,mt,mh,matv_qq,
+     $     mirpole_1,mirpole_2)
       implicit none
       integer i,j
       real*8 s,s1,s2,t1,t2,u1,u2,mt,mh
@@ -60,8 +61,15 @@ c---------------------------------------------------------------------
       real*8 colfacb,colfac_b3(4),colfac_p(2)
       complex*16 kmvs1(15),kmvs2(15),kmvs3(15),kmvb3(4),kmvp(2),zero
       real*8 pt(4),ptb(4),ph(4),p3(4),p4(4)
-
+      real*8 s3,beta,lbeta,lmu,p1p2,p1p3,p1p4,p2p3,p2p4
+      real*8 ceps1,ceps1s,ceps2,dvirt,dirfinite
+      real*8 matb_qq,sig0qq
+      real*8 matv_qq,mirpole_1,mirpole_2
+      real*8 delta,muedr
+      common/dimreg/delta,muedr
       matv_qq=0d0
+      mirpole_1=0d0
+      mirpole_2=0d0
       zero=dcmplx(0d0,0d0)
 c initialization of coefficients:
       do i=1,15
@@ -117,6 +125,35 @@ c contribution from P1,P2:
          matv_qq=matv_qq+2d0*dreal(kmvp(i))*colfac_p(i)/9d0
       enddo
  9999 continue
+c IR poles and finite parts resulting from fully expanding the prefactor
+c in epsilon: the virtual part is now simply alphas/4/pi x Born (IR poles+finite parts)
+c Born      
+      sig0qq=matb_qq(s,t1,t2,u1,u2,mt,mh)
+      s3=4d0*mt**2+mh**2-s-t1-t2-u1-u2
+      p1p2=(s3-2d0*mt**2)/2d0
+      p1p3=(mt**2-t2)/2d0
+      p1p4=(mt**2-u2)/2d0
+      p2p3=(mt**2-u1)/2d0
+      p2p4=(mt**2-t1)/2d0
+      beta=dsqrt(1d0-4d0*mt**2/(2d0*p1p2+2d0*mt**2))
+      lbeta=dlog((1d0+beta)/(1d0-beta))
+      lmu=dlog(muedr**2/mt**2)
+c coefficient of double IR pole:
+      ceps2=-(ncf-1d0/ncf)
+c coefficient of single IR pole:
+      ceps1s=ncf*(-5d0/2d0+dlog(2d0*p2p4/mt**2)+dlog(2d0*p1p3/mt**2))+
+     $     1d0/ncf*(5d0/2d0-dlog(s/mt**2)-p1p2/(p1p2+mt**2)/beta*lbeta-
+     $     2d0*dlog(p2p4*p1p3/p1p4/p2p3))
+      ceps1=ceps2*lmu+ceps1s
+c 
+      mirpole_1=2d0*sig0qq*ceps1
+      mirpole_2=2d0*sig0qq*ceps2
+c finite remainder:
+      dvirt=(ncf-1d0/ncf)*3d0/2d0*dlog(s/mt**2)+
+     $     1d0/ncf/2d0*dlog(s/mt**2)**2
+c dvirt is already included in matv_qq
+      dirfinite=0d0*dvirt+ceps1s*lmu+ceps2*lmu**2/2d0
+      matv_qq=matv_qq+2d0*sig0qq*dirfinite
       return
       end
 c---------------------------------------------------------------------
@@ -372,7 +409,8 @@ c V5(1),V5(2)
      $        2d0*mf**2+2d0*p1p2-p1p4-p2p4-p1p3-p2p3,mi,mi,mi,
      $        c0,c11,c12,c21,c22,c20,c23)
          call bfunc(s,mi,mi,b0,b1,b20)
-         kmvi(2,1)=(-4*b0+16*c20-8*c0*mf**2-16*c11*mf**2-16*c12*mf**2- 
+         kmvi(2,1)=(-4*b0+16*c20-8*c0*mf**2-16*c11*mf**2-
+     $        16*c12*mf**2- 
      $        8*c0*p1p2-16*c11*p1p2-16*c12*p1p2+4*c0*p1p3+ 
      $        8*c12*p1p3+4*c0*p1p4+8*c12*p1p4+4*c0*p2p3+ 
      $        8*c12*p2p3+4*c0*p2p4+8*c12*p2p4)
@@ -665,20 +703,20 @@ c      write(6,*)'b0s3=',b0s3
       d212 = d2(4)
       d213 = d2(5)
       d223 = d2(6)
-      mbox(1)=(4*p1p2*d0 + 4*d11*p1p2 + 4*d12*p1p2 + 4*d13*p1p2)
-      mbox(2)=(2*c0*mt - 8*d20*mt + d11*(-4*mt*p1p2 + 4*mt*p1p3) + d13
-     $     *(4*mt**3 + 4*mt*p2p3) + d12*(4*mt**3 - 4*mt*p1p3 + 4*mt*p2p3
+      mbox(1)=(4*p1p2*d0+4*d11*p1p2+4*d12*p1p2+4*d13*p1p2)
+      mbox(2)=(2*c0*mt - 8*d20*mt+d11*(-4*mt*p1p2+4*mt*p1p3)+d13
+     $     *(4*mt**3+4*mt*p2p3)+d12*(4*mt**3 - 4*mt*p1p3+4*mt*p2p3
      $     ))
-      mbox(3)=(-4*d11*mt + 8*d12*mt + 8*d22*mt + 8*d223*mt)
+      mbox(3)=(-4*d11*mt+8*d12*mt+8*d22*mt+8*d223*mt)
       mbox(4)=(-4*d12*mt - 4*d13*mt - 8*d212*mt)
-      mbox(5)=(-4*c0 + 4*c12 + 8*p1p2*d0 + 16*d13*p1p2 + 
-     $     d23*(8*p1p2 + 8*mt**2) + d22*(8*p1p2 - 8*p2p3 + 8*mt**2) + 
-     $     d223*(16*p1p2 - 8*p2p3 + 16*mt**2) + 
-     $     d11*8*p1p2 + d12*(8*p1p3 - 4*s + 16*p1p2 - 8*p2p3))
-      mbox(6)=(-4*c0 + 4*c12 + 8*d20 - 8*d13*mt**2 + 
-     $     d213*(-8*p1p2 - 8*mt**2) + 
-     $     d212*(-8*p1p2 + 8*p2p3 - 8*mt**2) + 
-     $     d12*(-8*mt**2 - 4*s + 8*p1p3))
+      mbox(5)=(-4*c0+4*c12+8*p1p2*d0+16*d13*p1p2+
+     $     d23*(8*p1p2+8*mt**2)+d22*(8*p1p2 - 8*p2p3+8*mt**2)+
+     $     d223*(16*p1p2 - 8*p2p3+16*mt**2)+
+     $     d11*8*p1p2+d12*(8*p1p3 - 4*s+16*p1p2 - 8*p2p3))
+      mbox(6)=(-4*c0+4*c12+8*d20 - 8*d13*mt**2+
+     $     d213*(-8*p1p2 - 8*mt**2)+
+     $     d212*(-8*p1p2+8*p2p3 - 8*mt**2)+
+     $     d12*(-8*mt**2 - 4*s+8*p1p3))
       return
       end
 c---------------------------------------------------------------------
@@ -711,50 +749,50 @@ c initialization
       cs2=1d0/(s2-mt**2)
 *
 c G[{ro},p3]:
-      mat(1)=cs1*(-16*mt**2*s**2 + 16*s*p1p2*p1p3 + 
+      mat(1)=cs1*(-16*mt**2*s**2+16*s*p1p2*p1p3+
      $        16*s*p1p2*p1p4 - 16*mt**2*s*p2p3 - 
-     $        32*s*p1p3*p2p3 + 32*p1p3*p1p4*p2p3 - 
+     $        32*s*p1p3*p2p3+32*p1p3*p1p4*p2p3 - 
      $        32*p1p4**2*p2p3 - 16*mt**2*s*p2p4 - 
-     $        32*p1p3**2*p2p4 - 32*s*p1p4*p2p4 + 
-     $        32*p1p3*p1p4*p2p4) + 
+     $        32*p1p3**2*p2p4 - 32*s*p1p4*p2p4+
+     $        32*p1p3*p1p4*p2p4)+
      $        cs2*(-16*mt**2*s**2 - 16*mt**2*s*p1p3 -16*mt**2*s*p1p4+ 
      $        16*s*p1p2*p2p3 - 32*s*p1p3*p2p3 - 
-     $        32*p1p4*p2p3**2 + 16*s*p1p2*p2p4 - 
-     $        32*s*p1p4*p2p4 + 32*p1p3*p2p3*p2p4 + 
+     $        32*p1p4*p2p3**2+16*s*p1p2*p2p4 - 
+     $        32*s*p1p4*p2p4+32*p1p3*p2p3*p2p4+
      $        32*p1p4*p2p3*p2p4 - 32*p1p3*p2p4**2)
 c G[{ro}]:
-      mat(2)=cs1*(16*mt**3*s - 16*mt*s*p1p2 + 16*mt*s*p1p3 + 
-     $     16*mt*s*p1p4 - 64*mt*p1p3*p1p4 + 16*mt*s*p2p3 + 
-     $     32*mt*p1p4*p2p3 + 16*mt*s*p2p4 + 
-     $     32*mt*p1p3*p2p4) + 
-     $     cs2*(16*mt**3*s - 16*mt*s*p1p2 + 16*mt*s*p1p3 + 
-     $     16*mt*s*p1p4 + 16*mt*s*p2p3 + 32*mt*p1p4*p2p3 + 
-     $     16*mt*s*p2p4 + 32*mt*p1p3*p2p4 - 64*mt*p2p3*p2p4)
+      mat(2)=cs1*(16*mt**3*s - 16*mt*s*p1p2+16*mt*s*p1p3+
+     $     16*mt*s*p1p4 - 64*mt*p1p3*p1p4+16*mt*s*p2p3+
+     $     32*mt*p1p4*p2p3+16*mt*s*p2p4+
+     $     32*mt*p1p3*p2p4)+
+     $     cs2*(16*mt**3*s - 16*mt*s*p1p2+16*mt*s*p1p3+
+     $     16*mt*s*p1p4+16*mt*s*p2p3+32*mt*p1p4*p2p3+
+     $     16*mt*s*p2p4+32*mt*p1p3*p2p4 - 64*mt*p2p3*p2p4)
 c G[p3] p1.{ro}:
-      mat(3)=cs1*(-8*mt**3*s**2 - 8*mt*s**2*p1p2 + 
-     $     16*mt**3*s*p1p3 + 16*mt**3*s*p1p4 + 
+      mat(3)=cs1*(-8*mt**3*s**2 - 8*mt*s**2*p1p2+
+     $     16*mt**3*s*p1p3+16*mt**3*s*p1p4+
      $     32*mt*s*p1p3*p1p4 - 64*mt*p1p3**2*p1p4 - 
-     $     64*mt*p1p3*p1p4**2 - 16*mt**3*s*p2p3 + 
-     $     16*mt*s*p1p4*p2p3 + 64*mt*p1p3*p1p4*p2p3 - 
-     $     16*mt**3*s*p2p4 + 16*mt*s*p1p3*p2p4 + 
-     $     64*mt*p1p3*p1p4*p2p4) + 
+     $     64*mt*p1p3*p1p4**2 - 16*mt**3*s*p2p3+
+     $     16*mt*s*p1p4*p2p3+64*mt*p1p3*p1p4*p2p3 - 
+     $     16*mt**3*s*p2p4+16*mt*s*p1p3*p2p4+
+     $     64*mt*p1p3*p1p4*p2p4)+
      $     cs2*(-8*mt**3*s**2 - 8*mt*s**2*p1p2 - 16*mt*s*p1p2*p1p3 - 
-     $     16*mt*s*p1p2*p1p4 + 32*mt*s*p1p3*p1p4 + 
-     $     16*mt*s*p1p2*p2p3 + 16*mt*s*p1p4*p2p3 + 
-     $     32*mt*p1p3*p1p4*p2p3 + 32*mt*p1p4**2*p2p3 - 
-     $     32*mt*p1p4*p2p3**2 + 16*mt*s*p1p2*p2p4 + 
-     $     16*mt*s*p1p3*p2p4 + 32*mt*p1p3**2*p2p4 + 
+     $     16*mt*s*p1p2*p1p4+32*mt*s*p1p3*p1p4+
+     $     16*mt*s*p1p2*p2p3+16*mt*s*p1p4*p2p3+
+     $     32*mt*p1p3*p1p4*p2p3+32*mt*p1p4**2*p2p3 - 
+     $     32*mt*p1p4*p2p3**2+16*mt*s*p1p2*p2p4+
+     $     16*mt*s*p1p3*p2p4+32*mt*p1p3**2*p2p4+
      $     32*mt*p1p3*p1p4*p2p4 - 
      $     32*mt*p1p3*p2p3*p2p4 - 
      $     32*mt*p1p4*p2p3*p2p4 - 32*mt*p1p3*p2p4**2)
 c G[p3] p2.{ro}:
-      mat(4)=cs1*(-8*mt**3*s**2 - 8*mt*s**2*p1p2 + 
-     $     16*mt*s*p1p2*p1p3 + 16*mt*s*p1p2*p1p4 - 
-     $     16*mt*s*p1p2*p2p3 + 16*mt*s*p1p4*p2p3 - 
-     $     32*mt*p1p3*p1p4*p2p3 - 32*mt*p1p4**2*p2p3 + 
-     $     32*mt*p1p4*p2p3**2 - 16*mt*s*p1p2*p2p4 + 
+      mat(4)=cs1*(-8*mt**3*s**2 - 8*mt*s**2*p1p2+
+     $     16*mt*s*p1p2*p1p3+16*mt*s*p1p2*p1p4 - 
+     $     16*mt*s*p1p2*p2p3+16*mt*s*p1p4*p2p3 - 
+     $     32*mt*p1p3*p1p4*p2p3 - 32*mt*p1p4**2*p2p3+
+     $     32*mt*p1p4*p2p3**2 - 16*mt*s*p1p2*p2p4+
      $     16*mt*s*p1p3*p2p4 - 32*mt*p1p3**2*p2p4 - 
-     $     32*mt*p1p3*p1p4*p2p4 + 32*mt*s*p2p3*p2p4 + 
+     $     32*mt*p1p3*p1p4*p2p4+32*mt*s*p2p3*p2p4+
      $     32*mt*p1p3*p2p3*p2p4 + 
      $     32*mt*p1p4*p2p3*p2p4 + 32*mt*p1p3*p2p4**2) + 
      $     cs2*(-8*mt**3*s**2 - 8*mt*s**2*p1p2 - 16*mt**3*s*p1p3 - 
