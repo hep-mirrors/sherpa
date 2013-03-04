@@ -587,7 +587,6 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
     std::vector<double> scale(p_proc->NOut()+1);
     msg_Debugging()<<"Setting scales {\n";
     mur2=1.0;
-    int smup(false);
     double as(1.0), oqcd(0.0), mum2(1.0);
     for (size_t idx(2);ampl->Next();++idx,ampl=ampl->Next()) {
       scale[idx]=Max(ampl->Mu2(),MODEL::as->CutQ2());
