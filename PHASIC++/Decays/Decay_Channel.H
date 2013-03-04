@@ -9,7 +9,6 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Particle.H"
 #include <set>
-#include <deque>
 
 namespace METOOLS {
   class Spin_Amplitudes;
@@ -50,12 +49,12 @@ namespace PHASIC {
      */
     double Differential(ATOOLS::Vec4D_Vector& momenta, bool anti,
                         METOOLS::Spin_Density* sigma=NULL,
-                        const std::deque<ATOOLS::Particle*>& p=
-                          std::deque<ATOOLS::Particle*>());
+                        const std::vector<ATOOLS::Particle*>& p=
+                          std::vector<ATOOLS::Particle*>());
     double ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
                METOOLS::Spin_Density* sigma=NULL,
-               const std::deque<ATOOLS::Particle*>& p=
-               std::deque<ATOOLS::Particle*>());
+               const std::vector<ATOOLS::Particle*>& p=
+               std::vector<ATOOLS::Particle*>());
 
   protected :
     double      m_width, m_deltawidth, m_minmass, m_max, m_symfac;
@@ -137,8 +136,8 @@ namespace PHASIC {
     void CalculateWidth();
     void GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
                         METOOLS::Spin_Density* sigma=NULL,
-                        const std::deque<ATOOLS::Particle*>& p=
-                          std::deque<ATOOLS::Particle*>());
+                        const std::vector<ATOOLS::Particle*>& p=
+                          std::vector<ATOOLS::Particle*>());
     inline METOOLS::Amplitude2_Tensor* Amps() { return p_amps; }
 
     friend std::ostream &operator<<(std::ostream &os, const Decay_Channel &dt);

@@ -16,6 +16,7 @@ using namespace SHERPA;
 using namespace METOOLS;
 using namespace ATOOLS;
 using namespace PHASIC;
+using namespace std;
 
 Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler) :
   p_mehandler(mehandler), p_atensor(NULL), m_overweight(0.0)
@@ -149,36 +150,37 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   NLO_subevtlist* nlos=proc->GetSubevtList();
   if (nlos) blob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(nlos));
 
-  if (rpa->gen.HardSC() || rpa->gen.SoftSC()) {
+  if (rpa->gen.HardSC()) {
     DEBUG_INFO("Filling amplitude tensor for spin correlations.");
     std::vector<Spin_Amplitudes> amps;
     std::vector<std::vector<Complex> > cols;
     proc->FillAmplitudes(amps, cols);
     DEBUG_VAR(amps[0]);
-    Particle_Vector outparts=blob->GetOutParticles();
     Particle_Vector inparts=blob->GetInParticles();
-    std::deque<Particle*> parts;
-    parts.insert(parts.end(), inparts.begin(), inparts.end());
-    parts.insert(parts.end(), outparts.begin(), outparts.end());
+    Particle_Vector outparts=blob->GetOutParticles();
+    vector<pair<Particle*, size_t> > parts(inparts.size()+outparts.size());
+    for (size_t i=0; i<inparts.size(); ++i)
+      parts[i]=make_pair(inparts[i], i);
+    for (size_t i=inparts.size(); i<inparts.size()+outparts.size(); ++i)
+      parts[i]=make_pair(outparts[i-inparts.size()], i);
+
+    DEBUG_INFO("particles before stability sorting:");
+    for (size_t i=0; i<parts.size(); ++i) DEBUG_INFO(parts[i].first->RefFlav());
+    stable_sort(parts.begin(), parts.end(), Amplitude2_Tensor::SortCrit);
+    DEBUG_INFO("particles after stability sorting:");
+    for (size_t i=0; i<parts.size(); ++i) DEBUG_INFO(parts[i].first->RefFlav());
+
+    vector<int> permutation(parts.size(), -1);
+    for (size_t i=0; i<parts.size(); ++i) permutation[parts[i].second]=i;
+    DEBUG_INFO("permutation:");
+    for (size_t i=0; i<parts.size(); ++i) DEBUG_INFO(permutation[i]);
+
+    vector<int> spin_i(parts.size(), -1), spin_j(parts.size(), -1);
+    vector<Particle*> partsonly(parts.size());
+    for (size_t i=0; i<parts.size(); ++i) partsonly[i]=parts[i].first;
     if (p_atensor) delete p_atensor;
-    p_atensor=new Amplitude2_Tensor(parts, amps, cols);
-    DEBUG_VAR(*p_atensor);
-    for (size_t i=0; i<inparts.size(); ++i) {
-      Particle* part=inparts[i];
-      DEBUG_INFO("contracting incoming particle "<<part->Flav());
-      Spin_Density sigma(part);
-      p_atensor->Contract(&sigma);
-      DEBUG_VAR(*p_atensor);
-    }
-    for (size_t i=0; i<outparts.size(); ++i) {
-      Particle* part=outparts[i];
-      if (part->Flav().IsStable()) {
-        DEBUG_INFO("contracting stable particle "<<part->Flav());
-        Decay_Matrix dm(part);
-        p_atensor->Contract(&dm);
-        DEBUG_VAR(*p_atensor);
-      }
-    }
+    p_atensor=new Amplitude2_Tensor(partsonly, permutation, 0, amps, cols,
+                                    spin_i, spin_j);
     DEBUG_VAR(*p_atensor);
     blob->AddData("ATensor",new Blob_Data<Amplitude2_Tensor*>(p_atensor));
   }

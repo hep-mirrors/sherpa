@@ -343,7 +343,7 @@ Amplitude2_Tensor* Decay_Handler_Base::FillOnshellDecay(Blob *blob,
 
   Amplitude2_Tensor* amps(NULL);
   if (sigma) {
-    std::deque<Particle*> parts;
+    std::vector<Particle*> parts;
     parts.insert(parts.end(), blob->InParticle(0));
     Particle_Vector outparts=blob->GetOutParticles();
     parts.insert(parts.end(), outparts.begin(), outparts.end());

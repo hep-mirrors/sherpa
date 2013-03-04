@@ -2,7 +2,6 @@
 #define METOOLS_SpinCorrelations_Amplitude2_Tensor_H
 
 #include <vector>
-#include <deque>
 #include "ATOOLS/Math/MyComplex.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Matrix.H"
 #include "METOOLS/Main/Spin_Structure.H"
@@ -25,18 +24,28 @@ namespace METOOLS {
     ATOOLS::Particle* p_part;
     size_t m_nhel;
 
-  public:
-    Amplitude2_Tensor(std::deque<ATOOLS::Particle*> parts);
-    Amplitude2_Tensor(std::deque<ATOOLS::Particle*> parts,
+    Complex ContractRemaining(const std::vector<ATOOLS::Particle*> &parts,
+                              const std::vector<int> &permutation,
+                              size_t level,
+                              const std::vector<Spin_Amplitudes> &diagrams,
+                              const std::vector<std::vector<Complex> > &cmatrix,
+                              std::vector<int> &spin_i, std::vector<int> &spin_j,
+                              double factor) const;
+
+    public:
+    Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts, size_t level);
+    Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts,
+                      size_t level,
                       const PHASIC::DiagColVec& diagrams,
                       const std::vector<std::vector<Complex> >& colormatrix,
-                      std::vector<int> spin_path_i=std::vector<int>(),
-                      std::vector<int> spin_path_j=std::vector<int>());
-    Amplitude2_Tensor(std::deque<ATOOLS::Particle*> parts,
+                      std::vector<int>& spin_i,
+                      std::vector<int>& spin_j);
+    Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts,
+                      const std::vector<int>& permutation,
+                      size_t level,
                       const std::vector<Spin_Amplitudes>& diagrams,
-                      const std::vector<std::vector<Complex> >& colormatrix,
-                      std::vector<int> spin_path_i=std::vector<int>(),
-                      std::vector<int> spin_path_j=std::vector<int>());
+                      const std::vector<std::vector<Complex> >& cmatrix,
+                      std::vector<int>& spin_i, std::vector<int>& spin_j);
     ~Amplitude2_Tensor();
 
     void Contract(const Amplitude2_Matrix* D);
@@ -50,6 +59,9 @@ namespace METOOLS {
 
     void Print(std::ostream& ostr, std::string label) const;
     friend std::ostream& operator<<(std::ostream&, const Amplitude2_Tensor&);
+
+    static bool SortCrit(const std::pair<ATOOLS::Particle*, size_t>& p1,
+                         const std::pair<ATOOLS::Particle*, size_t>& p2);
   };
 
 

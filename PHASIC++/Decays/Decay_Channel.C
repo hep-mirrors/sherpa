@@ -279,7 +279,7 @@ void Decay_Channel::CalculateWidth()
 
 double Decay_Channel::Differential(ATOOLS::Vec4D_Vector& momenta, bool anti,
                                    METOOLS::Spin_Density* sigma,
-                                   const std::deque<ATOOLS::Particle*>& p)
+                                   const std::vector<ATOOLS::Particle*>& p)
 {
   Poincare labboost(momenta[0]);
   labboost.Boost(momenta[0]);
@@ -301,7 +301,7 @@ double Decay_Channel::Differential(ATOOLS::Vec4D_Vector& momenta, bool anti,
 
 double Decay_Channel::ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
                           METOOLS::Spin_Density* sigma,
-                          const std::deque<ATOOLS::Particle*>& p)
+                          const std::vector<ATOOLS::Particle*>& p)
 {
   if (GetDiagrams().size()<1) return 0.0;
 
@@ -314,7 +314,8 @@ double Decay_Channel::ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   if (sigma) {
     for (size_t i(0); i<m_diagrams.size(); ++i) DEBUG_VAR(*m_diagrams[i].first);
     if (p_amps) delete p_amps;
-    p_amps=new Amplitude2_Tensor(p,m_diagrams,m_colormatrix);
+    vector<int> spin_i(p.size(), -1), spin_j(p.size(), -1);
+    p_amps=new Amplitude2_Tensor(p,0,m_diagrams,m_colormatrix,spin_i, spin_j);
     DEBUG_VAR(*p_amps);
     sumijlambda_AiAjCiCj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
   }
@@ -351,7 +352,7 @@ double Decay_Channel::ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
 
 void Decay_Channel::GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
                                    METOOLS::Spin_Density* sigma,
-                                   const std::deque<ATOOLS::Particle*>& parts)
+                                   const std::vector<ATOOLS::Particle*>& parts)
 {
   static std::string mname(METHOD);
   Return_Value::IncCall(mname);
@@ -359,7 +360,7 @@ void Decay_Channel::GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
     momenta[1]=momenta[0];
     if (sigma) {
       if (p_amps) delete p_amps;
-      p_amps=new Amplitude2_Tensor(parts);
+      p_amps=new Amplitude2_Tensor(parts, 0);
     }
     return;
   }
