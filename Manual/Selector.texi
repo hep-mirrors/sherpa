@@ -74,6 +74,8 @@ angular separation w.r.t. beam
 (@samp{<flavour2 code>} is 0 or 1, referring to beam 1 or 2)
 @item DeltaEta
 pseudorapidity separation
+@item DeltaY
+rapidity separation
 @item DeltaPhi
 azimuthal angle separation (rad)
 @item DeltaR
