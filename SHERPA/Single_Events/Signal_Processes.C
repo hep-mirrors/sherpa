@@ -89,9 +89,9 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->ClearAllData();
   bool success(true);
   Particle *particle(NULL);
+  blob->SetStatus(blob_status::needs_harddecays);
   if (proc->Info().m_nlomode!=1)
-    blob->SetStatus(blob_status::needs_showers | blob_status::needs_harddecays);
-  else blob->SetStatus();
+    blob->AddStatus(blob_status::needs_showers);
   for (unsigned int i=0;i<proc->NIn();i++) {
     particle = new Particle(0,proc->Flavours()[i],
 			    proc->Integrator()->Momenta()[i]);

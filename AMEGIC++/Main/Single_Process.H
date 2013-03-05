@@ -37,6 +37,10 @@ namespace AMEGIC {
 
     void FillCombinations(Point *const p,size_t &id);
     void FillCombinations();
+    void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
+                        std::vector<std::vector<Complex> >& cols,
+                        double sfactor);
+
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -113,9 +117,6 @@ namespace AMEGIC {
     double         operator()(const ATOOLS::Vec4D *);
     void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
                         std::vector<std::vector<Complex> >& cols);
-    void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
-                        std::vector<std::vector<Complex> >& cols,
-                        double sfactor);
     int PerformTests();
     ATOOLS::NLO_subevtlist*             GetRSSubevtList()
     { return p_subevtlist; }

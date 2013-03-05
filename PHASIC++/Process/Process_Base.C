@@ -564,7 +564,7 @@ void Process_Base::FillOnshellConditions()
 void Process_Base::FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amp,
                                   std::vector<std::vector<Complex> >& cols)
 {
-  msg_Error()<<METHOD<<" called virtual function."<<std::endl;
+  THROW(fatal_error, "Virtual function called.");
 }
 
 void Process_Base::SetSelector(const Selector_Key &key)

@@ -1139,6 +1139,21 @@ double Single_LOProcess::operator()(const ATOOLS::Vec4D_Vector &labmom,const ATO
   return M2;
 }
 
+void Single_LOProcess::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,
+                                      std::vector<std::vector<Complex> >& cols)
+{
+  if (p_partner==this) p_ampl->FillAmplitudes(amps, cols, p_hel, 1.0);
+  else p_partner->FillAmplitudes(amps, cols, sqrt(m_sfactor));
+}
+
+void Single_LOProcess::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,
+                                      std::vector<std::vector<Complex> >& cols,
+                                      double sfactor)
+{
+  if (p_partner==this) p_ampl->FillAmplitudes(amps, cols, p_hel, sfactor);
+  else p_partner->FillAmplitudes(amps, cols, sfactor*sqrt(m_sfactor));
+}
+
 double Single_LOProcess::Calc_M2ik(int ci, int ck) 
 {
   double M2=0.;

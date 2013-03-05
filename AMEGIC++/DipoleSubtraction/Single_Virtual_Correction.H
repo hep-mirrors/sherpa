@@ -122,6 +122,8 @@ namespace AMEGIC {
     double         Partonic(const ATOOLS::Vec4D_Vector &,const int mode);
     double         DSigma(const ATOOLS::Vec4D_Vector &,bool,const int);
     double         operator()(const ATOOLS::Vec4D_Vector &,const int mode);
+    void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
+                        std::vector<std::vector<Complex> >& cols);
 
     int            NumberOfDiagrams();
     Point        * Diagram(int i);

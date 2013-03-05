@@ -421,6 +421,12 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   return m_lastdxs;
 }
 
+void Single_Real_Correction::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,
+                                            vector<vector<Complex> >& cols)
+{
+  p_tree_process->FillAmplitudes(amps, cols);
+}
+
 bool Single_Real_Correction::Trigger(const ATOOLS::Vec4D_Vector &p)
 {
 //   if (p_tree_process->IsMapped() && p_tree_process->LookUp())

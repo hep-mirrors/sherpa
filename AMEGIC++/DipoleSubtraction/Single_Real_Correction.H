@@ -109,6 +109,8 @@ namespace AMEGIC {
   public:
     double         Partonic(const ATOOLS::Vec4D_Vector &,const int mode);
     double         operator()(const ATOOLS::Vec4D_Vector &,const int mode);
+    void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
+                        std::vector<std::vector<Complex> >& cols);
 
     bool Trigger(const ATOOLS::Vec4D_Vector &p);
 

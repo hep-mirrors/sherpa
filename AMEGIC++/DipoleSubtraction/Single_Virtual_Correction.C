@@ -758,6 +758,12 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   return M2 * KFactor();
 }
 
+void Single_Virtual_Correction::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,
+                                               vector<vector<Complex> >& cols)
+{
+  p_LO_process->FillAmplitudes(amps, cols);
+}
+
 
 
 int Single_Virtual_Correction::NumberOfDiagrams() { 

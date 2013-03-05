@@ -252,8 +252,7 @@ void Jet_Evolution::AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist
     for (int i=0;i<blob->NOutP();i++) {
       myblob = new Blob();
       myblob->SetType(btp::Shower);
-      myblob->SetStatus(blob_status::needs_harddecays |
-			blob_status::needs_hadronization);
+      myblob->SetStatus(blob_status::needs_hadronization);
       Particle * p = new Particle(*blob->OutParticle(i));
       if (blob->OutParticle(i)->DecayBlob()) {
 	Blob * dec  = blob->OutParticle(i)->DecayBlob();

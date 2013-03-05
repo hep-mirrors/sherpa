@@ -41,6 +41,10 @@ namespace AMEGIC {
 
     void FillCombinations(Point *const p,size_t &id);
     void FillCombinations();    
+    void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
+                        std::vector<std::vector<Complex> >& cols,
+                        double sfactor);
+
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -131,6 +135,8 @@ namespace AMEGIC {
     double         Partonic(const ATOOLS::Vec4D_Vector&,const int);
     virtual double operator()(const ATOOLS::Vec4D_Vector &,const ATOOLS::Vec4D *,
 			      std::vector<double>*,std::vector<ATOOLS::Vec4D>*,const int);
+    void FillAmplitudes(std::vector<METOOLS::Spin_Amplitudes>& amps,
+                        std::vector<std::vector<Complex> >& cols);
     virtual void   Calc_AllXS(const ATOOLS::Vec4D_Vector &,
 			      const ATOOLS::Vec4D *,std::vector<std::vector<double> > &,const int);
     inline const std::vector<int> &RSMap() const { return m_rsmap; }

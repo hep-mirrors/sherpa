@@ -44,7 +44,7 @@ Return_Value::code Hard_Decays::Treat(Blob_List * bloblist, double & weight)
       } catch (Return_Value::code ret) {
         return ret;
       }
-      blob->SetStatus(blob_status::needs_showers);
+      blob->UnsetStatus(blob_status::needs_harddecays);
     }
   }
   return (didit ? Return_Value::Success : Return_Value::Nothing);
