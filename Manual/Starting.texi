@@ -159,7 +159,7 @@ one version to the next.
 These changes are documented in our manuals. In addition, 
 always use the newer Hadron.dat and Decaydata directories 
 (and reapply any changes which you might have applied to the old ones),
-see @ref{HADRONS++}.
+see @ref{Hadron decays}.
  
 The very first step in running Sherpa 
 is therefore to adjust all parameters to the needs of the

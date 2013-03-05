@@ -21,10 +21,10 @@ performed in all inputs, see @ref{Tags}.
 * Processes::         Syntax of the process setup
 * Selectors::         Syntax of parton level cuts
 * Integration::       List of integration parameters
-* HardDecays::        List of paramters to steer hard/inclusive decays
+* Hard decays::       List of paramters to steer hard/inclusive decays
 * Shower Parameters:: List of shower parameters
 * MPI Parameters::    List of multiple parton interaction parameters
-* Fragmentation::     List of hadronization parameters
+* Hadronization::     List of hadronization parameters
 * QED Corrections::   List of QED correction parameters
 * MinBias::           List of MinBias simulation parameters
 @end menu

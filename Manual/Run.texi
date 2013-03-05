@@ -12,7 +12,6 @@ The following parameters describe general run information. They may be set in th
 * ANALYSIS_OUTPUT::   Directory for generated analysis histogram files.
 * TIMEOUT::           Run time limitation.
 * BATCH_MODE::        Batch mode settings.
-* SPIN_CORRELATIONS:: Switch spin correlations on/off.
 * NUM_ACCURACY::      Accuracy for gauge tests.
 
 * SHERPA_CPP_PATH::   The C++ code generation path.
@@ -154,13 +153,6 @@ at the same time.
 
 The command line option @option{-b} should therefore not be used in this case, see
 @ref{Command line}.
-
-@node SPIN_CORRELATIONS
-@subsection SPIN_CORRELATIONS
-@cindex SPIN_CORRELATIONS
-The algorithm used to transfer spin-correlation information from AMEGIC++ to HADRONS++
-is switched off (=0) by default. It can be switched on via SPIN CORRELATIONS=1. Process
-libraries have to be re-created in this case.
 
 @node NUM_ACCURACY
 @subsection NUM_ACCURACY

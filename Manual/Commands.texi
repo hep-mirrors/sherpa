@@ -44,8 +44,8 @@ Set the fragmentation module to @samp{<module>},
 see @ref{Fragmentation}.
 
 @item -D <module>
-Set the decay module to @samp{<module>},
-see @ref{Fragmentation}.
+Set the hadron decay module to @samp{<module>},
+see @ref{Hadron decays}.
 
 @item -a <analyses>
 Set the analysis handler list to @samp{<analyses>},

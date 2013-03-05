@@ -109,7 +109,7 @@ off the emission of additional soft photons from the hard scattering.
 @item
 To generate only prompt photons, the hadronisation, hadron decays and
 underlying event are turned off. These steps of the simulation can be 
-enabled as described in @ref{Hadronization parameters} and
+enabled as described in @ref{Hadronization} and
 @ref{MI_HANDLER}.
 
 @item

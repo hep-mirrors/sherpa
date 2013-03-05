@@ -1,91 +1,42 @@
-@node Fragmentation
-@section Fragmentation
+@node Hadronization
+@section Hadronization
 
 The hadronization setup is covered by the `(fragmentation)' section of
-the steering file or the fragmentation data file `Fragmentation.dat', respectively.
+the steering file or the fragmentation data file `Fragmentation.dat',
+respectively.
 
-There are, broadly speaking, two options of how Sherpa handles the transition
-of quarks and gluons into primordial hadrons (hadronization) and their decay:
-@itemize @bullet
-@item  In previous versions the only way of dealing with this was to invoke
-	corresponding routines of Pythia, invoking the Lund model of
-	string fragmentation and Pythia's native hadron decay routines.
-	Although now the @option{Lund} option is disfavoured, it will still be 
-	kept in Sherpa for backward compatibility and for some consistency checks.  
-@item  From version 1.1 on, the default choice will be to rely entirely on
-	two internal modules, AHADIC++ and HADRONS++ for hadronization and
-	hadron decays.  
-@end itemize
+It covers the fragmentation of partons into primordial hadrons as well as the
+decays of unstable hadrons into stable final states.
 
 @menu
-* Hadronization parameters:: General hadronization parameters
-* AHADIC++::                 The fragmentation module, and its parameters.
-* HADRONS++::                The hadron decay module, and its parameters.
+* Fragmentation:: The fragmentation module, and its parameters.
+* Hadron decays:: The hadron decay module, and its parameters.
 @end menu
 
-@node Hadronization parameters
-@subsection Hadronization parameters
+@node Fragmentation
+@subsection Fragmentation
 @cindex FRAGMENTATION
-@cindex DECAYMODEL
-@cindex STABLE[<id>]
-@cindex WIDTH[<id>]
-@cindex MASS[<id>]
 
 The @code{FRAGMENTATION} parameter sets the fragmentation module to be employed
-during event generation. The default is @option{Ahadic}. This parameter steers whether the 
-fragmentation is switched on and performed by the internal cluster fragmentation module 
-AHADIC++, by an interface to the corresponding routines of the Lund 
-string hadronization of Pythia @mycite{Sjostrand2003wg}), indicated by @option{Lund}), or 
-whether the fragmentation is completely switched (@option{Off}).
+during event generation. The default is @option{Ahadic}, alternatively the
+hadronization can be disabled with the value @option{Off}.
 
-The treatment of hadron 
-and tau decays is specified by @code{DECAYMODEL}.  Its allowed values are either the 
-default choice @option{Hadrons}, which renders the HADRONS++ module responsible for 
-performing the decays, or as alternative, the interface to Pythia can be invoked 
-by setting this parameter to @option{Lund}.  For the former option, the reader is referred
-to @ref{HADRONS++} for a more detailed discussion.
+TODO: Description of parameters and their tuned values.
 
-Please note that it is absolutely not advisable to use one fragmentation model with 
-another model for the hadron decays, since there is quite an intimate relation between 
-two - for instance, AHADIC++ knows and allows for many more primordial hadrons than Pythia 
-does, which would obviously lead to problems, if they were created in AHADIC++ and left 
-to Pythia for decays.
-
-
-@subsubsection Using the Pythia routines 
-@cindex LUND_FILE
-
-The Pythia routines have been made available through an interface to
-the corresponding @code{Fortran} code, with the option to steer Pythia
-parameters through Sherpa.
-The Lund parameters can be collected in a file set by the parameter @code{LUND_FILE} 
-(default is @code{Lund.dat}), if @option{Lund} is chosen as the method of choice for 
-both fragmentation and hadron decays.  Driven in this option, Sherpa is more or less 
-ignorant about hadron decays, with the exception of tau-decays, which have been 
-supplemented early in the development of the Sherpa event generator.  
-	
-The coarse features of the string breakup in the Lund model are characterized by three 
-parameters, Lund-a through @code{PARJ(41)}, Lund-b through @code{PARJ(42)}, and 
-Lund-sigma through @code{PARJ(21)}. If the data-file parameters are not set, 
-Sherpa employs the default values in Pythia.  
-
-More Pythia parameters can be added to the @code{Lund.dat} file using the Pythia 
-nomenclature in the common-blocks, e.g. @code{MSTJ(11)} for changing the fragmentation 
-function for heavy quarks. Please note that particle decays cannot directly be disabled 
-there.  Instead, the stable flag for the corresponding hadron needs to be used. 
-
-
-@node AHADIC++
-@subsection AHADIC++
-
-TODO.
-
-@node HADRONS++
-@subsection HADRONS++
+@node Hadron decays
+@subsection Hadron decays
+@cindex DECAYMODEL
+@cindex WIDTH[<id>]
+@cindex MASS[<id>]
+@cindex STABLE[<id>]
 @cindex DECAYPATH
 @cindex SOFT_MASS_SMEARING
 @cindex MAX_PROPER_LIFETIME
 
+The treatment of hadron and tau decays is specified by @code{DECAYMODEL}.
+Its allowed values are either the default choice @option{Hadrons}, which
+renders the HADRONS++ module responsible for performing the decays, or the
+hadron decays can be disabled with the option @option{Off}.
 
 HADRONS++ is the module within the Sherpa framework which is responsible for
 treating hadron and tau decays.  It contains decay tables with branching 
@@ -104,9 +55,9 @@ Some general switches which relate to hadron decays can be adjusted in the
   (default: @code{Decaydata/}). It is important to note that the path 
   has to be given relative to the current working directory.
   If it doesn't exist, the default Decaydata
-  directory (@code{\$prefix/share/SHERPA-MC/Decaydata}) will be used.
+  directory (@code{<prefix>/share/SHERPA-MC/Decaydata}) will be used.
 @item  Hadron properties like mass, width, stable/unstable and active can be set
-  in the @code{(fragmentation)} section in full analogy to the settings for fundamental particles
+  in full analogy to the settings for fundamental particles
   in the @code{(model)} section (cf. @ref{Model Parameters}).
 @item @anchor{SOFT_MASS_SMEARING} @code{SOFT_MASS_SMEARING = [0,1,2]} (default: 1) 
   Determines whether particles entering the hadron decay event
@@ -357,12 +308,18 @@ Mixing_B(s) = 0
 
 
 @subsubsection Further remarks
+@cindex SOFT_SPIN_CORRELATIONS
+@cindex HARD_SPIN_CORRELATIONS
 
 @strong{Spin correlations:}
-the spin correlation algorithm is implemented, also for decays of tau's
-produced in the signal process. It can be switched on through the keyword
-@code{SPIN_CORRELATIONS} in the @code{(run)} section, see @ref{Run Parameters} for more
-details.
+a spin correlation algorithm is implemented. It can be switched on through the
+keyword @option{SOFT_SPIN_CORRELATIONS=1} in the @code{(run)} section.
+
+If spin correlations for tau leptons
+produced in the hard scattering process are supposed to be taken into account,
+one needs to specify @option{HARD_SPIN_CORRELATIONS=1} as well. If using
+AMEGIC++ as ME generator, note that the Process libraries have to be re-created
+if this is changed.
 
 @strong{Adding new channels:}
 if new channels are added to HADRONS++ (choosing isotropic decay kinematics) a new 

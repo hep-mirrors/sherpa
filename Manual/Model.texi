@@ -58,10 +58,10 @@ Particle is stable, anti-particle is unstable
 @item 3
 Particle is unstable, anti-particle is stable
 @end table
-At present this
-affects only the simulation of tau decays, dealt with by the HADRONS++ package.
-Decays of other particles have to be specified in the process setup
-(see @ref{Processes}) and are not treated automatically.
+This option applies to decays of hadrons (cf. @ref{Hadron decays}) as well
+as particles produced in the hard scattering (cf. @ref{Hard decays}).
+For the latter, alternatively the decays can be specified explicitly in the
+process setup (see @ref{Processes}) to avoid the narrow-width approximation.
 
 @item PRIORITY[<id>]
 Allows to overwrite the default automatic flavour sorting in a process by specifying a priority for the given flavour. This way one can identify certain particles which are part of a container (e.g. massless b-quarks), such that their position can be used reliably in selectors and scale setters.
@@ -69,7 +69,7 @@ Allows to overwrite the default automatic flavour sorting in a process by specif
 @end table
 
 Note: To set properties of hadrons, you can use the same switches (except for
-@code{MASSIVE}) in the fragmentation section, see @ref{Fragmentation}.
+@code{MASSIVE}) in the fragmentation section, see @ref{Hadronization}.
 
 @anchor{Models available in Sherpa}
 @menu
