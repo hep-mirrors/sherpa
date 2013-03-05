@@ -1064,7 +1064,8 @@
 @mybibitem{Re2012zi,Re212, E. Re,NLO corrections merged with parton showers for Z+2 jets production using the POWHEG method,,,,,arXiv:1204.5433,arXiv:1204.5433}
 @mybibitem{Regge1959mz,Reg59, T. Regge,Introduction to complex orbital momenta,Nuovo Cim.,14,(1959),951,,F+J+Nuovo Cim.%2C14%2C951}
 @mybibitem{Regge1960zc,Reg60, T. Regge,Bound states shadow states and Mandelstam representation,Nuovo Cim.,18,(1960),947-956,,F+J+Nuovo Cim.%2C18%2C947}
-@mybibitem{Reina2001bc,Rei01, L. Reina and S. Dawson and D. Wackeroth,QCD corrections to associated t anti-t h production at the Tevatron,Phys.Rev.,D65,(2002),053017,[hep-ph/0109066],hep-ph/0109066}
+@mybibitem{Reina2001sf,Rei01, L. Reina and S. Dawson,Next-to-leading order results for t anti-t h production at the Tevatron,Phys.Rev.Lett.,87,(2001),201804,[hep-ph/0107101],hep-ph/0107101}
+@mybibitem{Reina2001bc,Rei01a, L. Reina and S. Dawson and D. Wackeroth,QCD corrections to associated t anti-t h production at the Tevatron,Phys.Rev.,D65,(2002),053017,[hep-ph/0109066],hep-ph/0109066}
 @mybibitem{Richardson2001df,Ric01, P. Richardson,Spin correlations in Monte Carlo simulations,JHEP,11,(2001),029,[hep-ph/0110108],hep-ph/0110108}
 @mybibitem{Richardson2010gz,Ric10, P. Richardson and R.R. Sadykov and A.A. Sapronov and  M.H. Seymour and P.Z. Skands,QCD parton showers and NLO EW corrections to Drell-Yan,,,,,arXiv:1011.5444,arXiv:1011.5444}
 @mybibitem{Richman1995wm,Ric95, J. D. Richman and P. R. Burchat,Leptonic and semileptonic decays of charm and bottom hadrons,Rev. Mod. Phys.,67,(1995),893-976,[hep-ph/9508250],hep-ph/9508250}

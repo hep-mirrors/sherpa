@@ -1,6 +1,14 @@
 @node LHC_HTTBar
 @subsection Associated t anti-t H production at the LHC
 
+This set-up illustrates the interface to an external loop matrix element
+generator as well as the possibility of specifying hard decays for 
+particles emerging from the hard interaction. The process generated 
+is the production of a Higgs boson in association with a top quark pair 
+from two light partons in the initial state. Each top quark decays into 
+an (anti-)bottom quark and a W boson. The W bosons in turn decay to either 
+quarks or leptons.
+
 @example
 @smallformat
 @verbatiminclude Examples/H_in_TTBar/LHC_TTH_MCatNLO/Run.dat
@@ -9,12 +17,16 @@
 
 Things to notice:
 @itemize
-@item The matrix elements are interfaced from @mycite{Reina2001bc},
-  @mycite{Dawson2002tg}, @mycite{Dawson2003zu}.
+@item The matrix elements are interfaced from @mycite{Reina2001sf},
+  @mycite{Reina2001bc}, @mycite{Dawson2002tg}, @mycite{Dawson2003zu}.
   The shared library necessary for running this setup is built using
   @uref{http://www.scons.org/,,scons}.
-@item The top quark is stable in the hard matrix elements.
-  It is decayed using the internal decay module, indicated by
+@item The top quarks are stable in the hard matrix elements.
+  They are decayed using the internal decay module, indicated by
   the settings @option{HARD_DECAYS 1} and @option{STABLE[6] 0; STABLE[24] 0}.
+@item @uref{http://projects.hepforge.org/lhapdf,,LHAPDF} is used 
+  (see @ref{ISR Parameters}) with the parametrization of the strong coupling 
+  taken from LHAPDF itself as indicated by @option{USE_PDF_ALPHAS 1}
+  (see @ref{SM}).
 @end itemize
  
