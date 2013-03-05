@@ -68,7 +68,9 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
     return;
   }
 #endif
-  else if (m_fragmentationmodel==string("Off")) return;
+  else if (m_fragmentationmodel==string("Off") ||
+           m_fragmentationmodel==string("None") ||
+           m_fragmentationmodel==string("0")) return;
   THROW(critical_error,"Fragmentation model not implemented.");
 }
    

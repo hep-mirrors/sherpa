@@ -724,11 +724,11 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   dr.SetInputPath(m_path);
   dr.SetInputFile(m_hadrondecaysdat);
   std::string frag=dr.GetValue<string>("FRAGMENTATION",string("Ahadic"));
-  if (frag=="Off") return true;
+  if (frag=="Off" || frag=="None" || frag=="0") return true;
 
   string decmodel = dr.GetValue<string>("DECAYMODEL",string("Hadrons"));
   msg_Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
-  if (decmodel=="Off") return true;
+  if (decmodel=="Off" || decmodel=="None" || decmodel=="0") return true;
   else if (decmodel==std::string("Hadrons")) {
     as->SetActiveAs(isr::hard_subprocess);
     Hadron_Decay_Handler* hd=new Hadron_Decay_Handler(m_path,m_hadrondecaysdat);
