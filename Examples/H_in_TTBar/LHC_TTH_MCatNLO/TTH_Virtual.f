@@ -198,9 +198,9 @@ c qqbar annihilation:
             sigvqq(i)=o_fac*sigv(i)*alphas/4d0/pi
 c IR poles
 c single
-            sigvqq_ir(1,i)=o_fac*sigv_irpole(1,i)/2d0
+            sigvqq_ir(1,i)=o_fac*sigv_irpole(1,i)*alphas/4d0/pi
 c double
-            sigvqq_ir(2,i)=o_fac*sigv_irpole(2,i)/2d0
+            sigvqq_ir(2,i)=o_fac*sigv_irpole(2,i)*alphas/4d0/pi
          enddo
       endif
 c gluon fusion:
@@ -223,9 +223,9 @@ c           sigvgg(i)=sigvgg(i)-2d0*sig0gg(i)*alphas/4d0/pi*
 c     $        (-2d0/3d0*5d0+11d0/3d0*3d0)*dlog(muedr**2/sp)
 c IR poles
 c single
-            sigvgg_ir(1,i)=o_fac*sigv_irpole(1,i)/2d0
+            sigvgg_ir(1,i)=o_fac*sigv_irpole(1,i)*alphas/4d0/pi
 c double
-            sigvgg_ir(2,i)=o_fac*sigv_irpole(2,i)/2d0
+            sigvgg_ir(2,i)=o_fac*sigv_irpole(2,i)*alphas/4d0/pi
          enddo
       endif
 c      write(6,*)muedr,sigvqq(1),sigvgg(1)

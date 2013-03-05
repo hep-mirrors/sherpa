@@ -97,7 +97,6 @@ namespace TTH {
 		const ATOOLS::Flavour_Vector& flavs):
       Virtual_ME2_Base(pi,flavs)
     {
-      m_mode=1;
       p_p = new double[4*(TTH_NMX+1)];
       p_res = new double[4];
       rpa->gen.AddCitation
@@ -118,9 +117,10 @@ namespace TTH {
       int s(m_flavs[0].IsAnti()?2:1), m(m_flavs[0].IsQuark()?1:2);
       for (size_t n(0);n<p.size();++n) GetMom(p_p,n,p[n]);
       m2_virt_tth_(p_p,p_res,&m,&s);
-      m_res.Finite()=p_res[0];
-      m_res.IR()=p_res[1];
-      m_res.IR2()=p_res[2];
+      double norm((2.0*M_PI)/topas_.alphas/p_res[3]);
+      m_res.Finite()=(p_res[0]+sqr(M_PI)/6.0*p_res[2])*norm;
+      m_res.IR()=p_res[1]*norm;
+      m_res.IR2()=p_res[2]*norm;
       m_born=p_res[3];
     }
 
