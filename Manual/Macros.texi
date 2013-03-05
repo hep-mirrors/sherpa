@@ -1,4 +1,4 @@
-@set spires http://www-spires.dur.ac.uk/cgi-bin/spiface/hep/www?rawcmd=
+@set spires http://inspirehep.net/search?p=
 
 @macro mybibmake{llink,lref}
 @end macro
