@@ -334,17 +334,20 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
           !p_isrbase[1]->PDF()->Contains(fl2)) { MtxUnLock(); return 0.; }
       if (x1>p_isrbase[0]->PDF()->RescaleFactor() ||
           x2>p_isrbase[1]->PDF()->RescaleFactor()) { MtxUnLock(); return 0.; }
-      if (p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12,warn) &&
-          p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22,warn)) break;
+      if (!(p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12,warn) &&
+	    p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22,warn))) { MtxUnLock(); return 0.; }
+      break;
     case 2 :
       if (!p_isrbase[1]->PDF()->Contains(fl2)) { MtxUnLock(); return 0.; }
-      if (m_x[1]>p_isrbase[1]->PDF()->RescaleFactor()) { MtxUnLock(); return 0.; }
-      if (p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22,warn)) break;
+      if (x2>p_isrbase[1]->PDF()->RescaleFactor()) { MtxUnLock(); return 0.; }
+      if (!p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22,warn)) { MtxUnLock(); return 0.; }
+      break;
     case 1 :
       if (!p_isrbase[0]->PDF()->Contains(fl1)) { MtxUnLock(); return 0.; }
-      if (m_x[0]>p_isrbase[0]->PDF()->RescaleFactor()) { MtxUnLock(); return 0.; }
-      if (p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12,warn)) break;
-    case 0 : break;
+      if (x1>p_isrbase[0]->PDF()->RescaleFactor()) { MtxUnLock(); return 0.; }
+      if (!p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12,warn)) { MtxUnLock(); return 0.; }
+      break;
+    case 0 : MtxUnLock(); break;
     default : MtxUnLock(); return 0.;
   }
   if (cmode!=3 || (CheckRemnantKinematics(fl1,x1,0,false) &&

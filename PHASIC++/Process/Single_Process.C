@@ -12,6 +12,7 @@
 #include "PDF/Main/Cluster_Definitions_Base.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -144,58 +145,68 @@ double Single_Process::NLOCounterTerms() const
   msg_Debugging()<<"\\alpha_s term: "<<(m_oqcd-1)<<" * "<<as
 		 <<"/\\pi * "<<Beta0()<<" * log("<<sqrt(mur2)<<"/"
 		 <<sqrt(lmur2)<<") -> "<<ct<<"\n";
-  if (p_int->ISR() && p_int->ISR()->On()) {
-    double x[2]={p_int->Momenta()[0].PPlus()/
-		 p_int->Beam()->GetBeam(0)->OutMomentum().PPlus(),
-		 p_int->Momenta()[1].PMinus()/
-		 p_int->Beam()->GetBeam(1)->OutMomentum().PMinus()};
-    double z[2]={m_wgtinfo.m_y1,m_wgtinfo.m_y2};
-    double fct[2]={0.0,0.0}, lt(log(muf2/lmuf2));
-    msg_Debugging()<<"PDF terms: "<<as<<"/\\pi * log("<<sqrt(muf2)
-		   <<"/"<<sqrt(lmuf2)<<") = "<<as/(2.0*M_PI)*lt<<" {\n";
-    Flavour jet(kf_jet);
-    for (size_t i(0);i<2;++i) {
-      if (p_int->ISR()->On()&(1<<i)) {
-	Vec4D mom(p_int->Momenta()[i]);
-	double fb=p_int->ISR()->Weight
-	  (1<<(i+1),mom,mom,lmuf2,lmuf2,m_flavs[i],m_flavs[i],0);
-	if (IsZero(fb,th)) {
-	  msg_Tracking()<<METHOD<<"(): Zero xPDF. Skip.\n";
-	  continue;
-	}
-	msg_Debugging()<<"  Beam "<<i<<": z = "<<z[i]
-		       <<", f_{"<<m_flavs[i]<<"}("<<x[i]<<","
-		       <<sqrt(lmuf2)<<") = "<<fb<<" {\n";
-	for (size_t j(0);j<jet.Size();++j) {
-	  double Pf(FPab(jet[j],m_flavs[i],z[i]));
-	  double Ps(SPab(jet[j],m_flavs[i],z[i]));
-	  if (Pf+Ps==0.0) continue;
-	  double Pi(IPab(jet[j],m_flavs[i],x[i]));
-	  double H(Hab(jet[j],m_flavs[i]));
-	  double fa=p_int->ISR()->Weight
-	    (1<<(i+1),mom/z[i],mom/z[i],lmuf2,lmuf2,jet[j],jet[j],0);
-	  double fc=p_int->ISR()->Weight
-	    (1<<(i+1),mom,mom,lmuf2,lmuf2,jet[j],jet[j],0);
-	  msg_Debugging()<<"    P_{"<<jet[j]<<","<<m_flavs[i]
-			 <<"}("<<z[i]<<") = {F="<<Pf<<",S="<<Ps
-			 <<",I="<<Pi<<"}, f_{"<<jet[j]<<"}("
-			 <<x[i]/z[i]<<","<<sqrt(lmuf2)<<") = "<<fa
-			 <<", f_{"<<jet[j]<<"}("<<x[i]<<","
-			 <<sqrt(lmuf2)<<") = "<<fc<<"\n";
-	  if (IsZero(fa,th)||IsZero(fc,th)) {
-	    msg_Tracking()<<METHOD<<"(): Zero xPDF. Skip.\n";
-	    continue;
-	  }
-	  fct[i]+=as/(2.0*M_PI)*lt*
-	    ((fa/z[i]*Pf+(fa/z[i]-fc)*Ps)*(1.0-x[i])+fc*(H-Pi))/fb;
-	}
-	msg_Debugging()<<"  } -> "<<fct[i]<<"\n";
-      }
-    }
-    ct+=fct[0]+fct[1];
-    msg_Debugging()<<"}\n";
-  }
+  double z[2]={m_wgtinfo.m_y1,m_wgtinfo.m_y2};
+  for (size_t i(0);i<2;++i)
+    ct+=CollinearCounterTerms
+      (i,m_flavs[i],p_int->Momenta()[i],z[i],muf2,lmuf2);
   msg_Debugging()<<"C = "<<ct<<"\n";
+  return ct;
+}
+
+double Single_Process::GetX(const ATOOLS::Vec4D &p,const int i) const
+{
+  if (i==0) return p.PPlus()/p_int->Beam()->GetBeam(0)->OutMomentum().PPlus();
+  return p.PMinus()/p_int->Beam()->GetBeam(1)->OutMomentum().PMinus();
+}
+
+double Single_Process::CollinearCounterTerms
+(const int i,const Flavour &fl,const Vec4D &p,
+ const double &z,const double &t1,const double &t2) const
+{
+  if (!(p_int->ISR() && p_int->ISR()->On()&(1<<i))) return 0.0;
+  static double th(1.0e-12);
+  DEBUG_FUNC("Q = "<<sqrt(t1)<<" / "<<sqrt(t2));
+  double lmuf2(p_scale->Scale(stp::fac));
+  msg_Debugging()<<"\\mu_F = "<<sqrt(lmuf2)<<"\n";
+  msg_Debugging()<<"\\mu_R = "<<sqrt(p_scale->Scale(stp::ren))<<"\n";
+  MODEL::Coupling_Data *cpl(m_cpls.Get("Alpha_QCD"));
+  double as(cpl->Default()*cpl->Factor());
+  double ct(0.0), lt(log(t1/t2)), x(GetX(p,i));
+  msg_Debugging()<<as<<"/(2\\pi) * log("<<sqrt(t1)<<"/"
+		 <<sqrt(t2)<<") = "<<as/(2.0*M_PI)*lt<<"\n";
+  Flavour jet(kf_jet);
+  double fb=p_int->ISR()->Weight(1<<(i+1),p,p,lmuf2,lmuf2,fl,fl,0);
+  if (IsZero(fb,th)) {
+    msg_Tracking()<<METHOD<<"(): Zero xPDF ( f_{"<<fl<<"}("
+		  <<x<<","<<sqrt(lmuf2)<<") = "<<fb<<" ). Skip.\n";
+    return 0.0;
+  }
+  msg_Debugging()<<"Beam "<<i<<": z = "<<z<<", f_{"<<fl
+		 <<"}("<<x<<","<<sqrt(lmuf2)<<") = "<<fb<<" {\n";
+  for (size_t j(0);j<jet.Size();++j) {
+    double Pf(FPab(jet[j],fl,z));
+    double Ps(SPab(jet[j],fl,z));
+    if (Pf+Ps==0.0) continue;
+    double Pi(IPab(jet[j],fl,x));
+    double H(Hab(jet[j],fl));
+    double fa=p_int->ISR()->Weight
+      (1<<(i+1),p/z,p/z,lmuf2,lmuf2,jet[j],jet[j],0);
+    double fc=p_int->ISR()->Weight
+      (1<<(i+1),p,p,lmuf2,lmuf2,jet[j],jet[j],0);
+    msg_Debugging()<<"  P_{"<<jet[j]<<","<<fl
+		   <<"}("<<z<<") = {F="<<Pf<<",S="<<Ps
+		   <<",I="<<Pi<<"}, f_{"<<jet[j]<<"}("
+		   <<x/z<<","<<sqrt(lmuf2)<<") = "<<fa
+		   <<", f_{"<<jet[j]<<"}("<<x<<","
+		   <<sqrt(lmuf2)<<") = "<<fc<<"\n";
+    if (IsZero(fa,th)||IsZero(fc,th)) {
+      msg_Tracking()<<METHOD<<"(): Zero xPDF. Skip.\n";
+      return 0.0;
+    }
+    ct+=as/(2.0*M_PI)*lt*
+      ((fa/z*Pf+(fa/z-fc)*Ps)*(1.0-x)+fc*(H-Pi))/fb;
+  }
+  msg_Debugging()<<"} -> "<<ct<<"\n";
   return ct;
 }
 
@@ -205,7 +216,7 @@ double Single_Process::BeamISRWeight
 {
   int mode(imode&1);
   if (!m_use_biweight) return 1.;
-  double wgt(1.0);
+  double wgt(1.0), ct(0.0);
   if (m_nin!=2) return 0.5/p_int->Momenta()[0].Mass();
   if (p_int->ISR()) {
     wgt*=p_int->ISR()->Weight
@@ -251,6 +262,7 @@ double Single_Process::BeamISRWeight
 	  (mode|2,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
 	double wd2=p_int->ISR()->Weight
 	  (mode|4,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
+	double LLQ2=LQ2;
 	LQ2=ampl->KT2();
 	if (ampl->Next()==NULL) LQ2=ampl->MuF2();
 	set=true;
@@ -262,7 +274,17 @@ double Single_Process::BeamISRWeight
 	if (!IsZero(wn2) && !IsZero(wd2)) wgt*=wn2/wd2;
 	msg_Debugging()<<" / "<<sqrt(LQ2)<<" -> "
 		       <<wn1/wd1<<" * "<<wn2/wd2<<" ( "<<wgt<<" )\n";
+	if (m_pinfo.Has(nlo_type::born)) {
+	  for (int i(0);i<2;++i) {
+	    if (i==0 && (IsZero(wn1) || IsZero(wd1))) continue;
+	    if (i==1 && (IsZero(wn2) || IsZero(wd2))) continue;
+	    Vec4D p(-ampl->Leg(i)->Mom());
+	    double x(GetX(p,i)), z(x+(1.0-x)*ran->Get());
+	    ct+=CollinearCounterTerms(i,i?f2:f1,p,z,LQ2,LLQ2);
+	  }
+	}
       }
+      wgt*=1.0-m_lastbxs/m_lastxs*ct;
     }
   }
   if (p_int->Beam() && p_int->Beam()->On()) {

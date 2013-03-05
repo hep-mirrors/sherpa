@@ -27,6 +27,10 @@ namespace PHASIC {
     double KFactor() const;
 
     double NLOCounterTerms() const;
+    double CollinearCounterTerms
+    (const int i,const ATOOLS::Flavour &fl,const ATOOLS::Vec4D &p,
+     const double &z,const double &t1,const double &t2) const;
+    double GetX(const ATOOLS::Vec4D &p,const int i) const;
 
     double BeamISRWeight(const double &Q2,const int mode,
 			 const ATOOLS::ClusterAmplitude_Vector &ampls) const;
