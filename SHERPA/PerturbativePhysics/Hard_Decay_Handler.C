@@ -76,7 +76,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file)
   KFCode_ParticleInfo_Map::const_iterator it;
   for (it=s_kftable.begin();it!=s_kftable.end();it++) {
     Flavour flav(it->first);
-    if (Decays(flav)) {
+    if (Decays(flav) || Decays(flav.Bar())) {
       Decay_Table* dt=new Decay_Table(flav, this);
       vector<Decay_Table*> decaytables;
       decaytables.push_back(dt);
