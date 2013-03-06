@@ -46,19 +46,46 @@ For complicated processes the evaluation of one-loop matrix elements
 can be very time consuming. The generation time of a fully optimized 
 integration grid can become prohibitively long. Rather than using a 
 poorly optimized grid in this case it is more advisable to use a grid
-optimized with the born matrix elements, since the distibution in
-the phase space is rather similar.
+optimized with either the born matrix elements or the born matrix 
+elements and the finite part of the integrated subtraction terms only,
+working under the assumption that the distibutions in phase space are 
+rather similar.
 
-This can be done as follows:
-@enumerate
-@item Run the born piece with a specified (and existing) 
-@ref{RESULT_DIRECTORY} and adding the parameter 
-@code{RESULT_OMIT_NLO_SUFFIX=1}.
-@item Run the loop piece using the same @code{RESULT_DIRECTORY}
-and also with @code{RESULT_OMIT_NLO_SUFFIX=1}.
-@item Note: while running the total cross section of the born
-piece is displayed. This is not an error, the weighted
-event generation will produce the correct (one-loop) cross section.
+This can be done by one of the following methods:
+@enumerate 3
+@item Employ a dummy virtual (requires no computing time, returns 
+      @code{0.} as its finite result) to optimise the grid. This 
+      only works if @code{V} is not the only @code{NLO_QCD_Part} 
+      specified.
+  @enumerate
+  @item During integration set the @code{Loop_Generator} to 
+        @code{Internal} and add @code{USE_DUMMY_VIRTUAL=1} to 
+        your @code{(run)@{...@}(run)} section. The grid will 
+        then be optimised to the phase space distribution of 
+        the sum of the Born matrix element and the finite part 
+        of the integrated subtraction term. @b{Note:} The 
+        cross section displayed during integration will also 
+        correspond to the sum of the Born matrix element and 
+        the finite part of the integrated subtraction term.
+  @item During event generation reset @code{Loop_Generator} to 
+        your generator supplying the virtual correction. The 
+        events generated then carry the correct event weight.
+  @end enumerate
+@item Suppress the evaluation of the virtual and/or the integrated 
+      subtraction terms. This only works if Amegic is used as the 
+      matrix element generator for the @code{BVI} pieces and @code{V} 
+      is not the only @code{NLO_QCD_Part} specified.
+  @enumerate
+  @item During integration add @code{NLO_BVI_MODE=<num>} to your 
+        @code{(run)@{...@}(run)} section. @code{<num>} takes the 
+        following values: @code{1}-@code{B}, @code{2}-@code{I}, 
+        and @code{4}-@code{V}. The values are additive, i.e. 
+        @code{3}-@code{BI}. @b{Note:} The cross section displayed 
+        during integration will match the parts selected by 
+        @code{NLO_BVI_MODE}.
+  @item During event generation remove the switch again and the 
+        events will carry the correct weight.
+  @end enumerate
 @end enumerate
 
 Note: this will not work for the @code{RS} piece!
