@@ -24,7 +24,7 @@ using namespace ATOOLS;
 namespace ATOOLS { template class SP(Process_Integrator); }
 
 static int s_whbins(1000);
-static int s_omitnlosuffix(0), s_genresdir(0);
+static int s_genresdir(0);
  
 Process_Integrator::Process_Integrator(Process_Base *const proc):
   p_proc(proc), p_pshandler(NULL),
@@ -62,11 +62,6 @@ bool Process_Integrator::Initialize
     }
     if (!read.ReadFromFile(s_whbins,"IB_WHBINS")) s_whbins=1000;
     else msg_Info()<<METHOD<<"(): Set weight histo bin number = "<<s_whbins<<".\n";
-    if (read.ReadFromFile(s_omitnlosuffix,"RESULT_OMIT_NLO_SUFFIX")) {
-      if (s_omitnlosuffix) 
-	msg_Info()<<METHOD<<"(): store/read results without Process_Info suffix.\n";
-    }
-    else s_omitnlosuffix=0;
     if (read.ReadFromFile(s_genresdir,"GENERATE_RESULT_DIRECTORY"));
     else s_genresdir=1;
     minit=true;
@@ -215,12 +210,6 @@ void Process_Integrator::InitWeightHistogram()
 bool Process_Integrator::ReadInXSecs(const std::string &path)
 {
   std::string fname(p_proc->Name());
-  if (s_omitnlosuffix) {
-    size_t pos=fname.find("EW");
-    if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
-    pos=fname.find("QCD");
-    if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
-  }
   size_t vn;
   std::string name, dummy;
   std::ifstream from((path+"/"+fname).c_str());
@@ -269,12 +258,6 @@ void Process_Integrator::ReadInHistogram(std::string dir)
 void Process_Integrator::WriteOutXSecs(const std::string &path)
 {
   std::string fname(p_proc->Name());
-  if (s_omitnlosuffix) {
-    size_t pos=fname.find("EW");
-    if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
-    pos=fname.find("QCD");
-    if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
-  }
   std::ofstream outfile((path+"/"+fname).c_str());
   if (outfile) m_writeout=1;
   outfile.precision(16);
@@ -619,12 +602,6 @@ void Process_Integrator::StoreResults(const int mode)
   if (MPI::COMM_WORLD.Get_rank()) return;
 #endif
   std::string fname(p_proc->Name());
-  if (s_omitnlosuffix) {
-    size_t pos=fname.find("EW");
-    if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
-    pos=fname.find("QCD");
-    if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
-  }
   if (s_genresdir) MakeDir(m_resultpath,true); 
   MakeDir(m_resultpath+"/XS_"+fname,0); 
   MakeDir(m_resultpath+"/WD_"+p_proc->Name(),0); 
@@ -638,12 +615,6 @@ void Process_Integrator::ReadResults()
 {
   if (m_resultpath.length()==0) return;
   std::string fname(p_proc->Name());
-  if (s_omitnlosuffix) {
-    size_t pos=fname.find("EW");
-    if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
-    pos=fname.find("QCD");
-    if (pos!=std::string::npos) fname=fname.substr(0,pos-2);
-  }
   if (!ReadInXSecs(m_resultpath+"/XS_"+fname)) return;
   ReadInHistogram(m_resultpath+"/WD_"+p_proc->Name());
   p_pshandler->ReadIn(m_resultpath+"/MC_"+fname);
