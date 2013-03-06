@@ -112,8 +112,7 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
 {
   Vec4D_Vector p(ampl.Legs().size());
   for (size_t i(0);i<ampl.NIn();++i) p[i]=-ampl.Leg(i)->Mom();
-  if (mode&16) return Get<Single_Process>()->BeamISRWeight
-		 (ampl.MuF2(),0,ScaleSetter(1)->Amplitudes());
+  if (mode&16) THROW(not_implemented,"Invalid mode");
   for (size_t i(ampl.NIn());i<p.size();++i) p[i]=ampl.Leg(i)->Mom();
   bool selon(Selector()->On());
   if (!Trigger(p)) {

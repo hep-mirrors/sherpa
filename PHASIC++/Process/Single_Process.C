@@ -210,7 +210,7 @@ double Single_Process::CollinearCounterTerms
   return ct;
 }
 
-double Single_Process::BeamISRWeight
+Single_Process::BVI_Wgt Single_Process::BeamISRWeight
 (const double& Q2,const int imode,
  const ClusterAmplitude_Vector &ampls) const
 {
@@ -284,7 +284,6 @@ double Single_Process::BeamISRWeight
 	  }
 	}
       }
-      wgt*=1.0-m_lastbxs/m_lastxs*ct;
     }
   }
   if (p_int->Beam() && p_int->Beam()->On()) {
@@ -293,7 +292,7 @@ double Single_Process::BeamISRWeight
     wgt*=p_int->Beam()->Weight();
     p_int->Beam()->MtxUnLock();
   }
-  return wgt;
+  return BVI_Wgt(wgt,ct);
 }
 
 void Single_Process::BeamISRWeight
@@ -309,12 +308,12 @@ void Single_Process::BeamISRWeight
 	ClusterAmplitude_Vector ampls(sub->p_ampl?1:0,sub->p_ampl);
 	if (ampls.size()) ampls.front()->SetProc(sub->p_proc);
         sub->m_result=sub->m_me*
-	  BeamISRWeight(sub->m_mu2[stp::fac],mode|2,ampls);
+	  BeamISRWeight(sub->m_mu2[stp::fac],mode|2,ampls).m_w;
 	++nscales;
       }
     }
     if (nscales<subs->size() && m_pinfo.m_nlomode==1) {
-      double lumi(BeamISRWeight(muf2,mode,ClusterAmplitude_Vector()));
+      double lumi(BeamISRWeight(muf2,mode,ClusterAmplitude_Vector()).m_w);
       for (size_t i(0);i<subs->size();++i) {
 	if (IsEqual((*subs)[i]->m_mu2[stp::fac],muf2) &&
 	    (*subs)[i]->m_me!=0.0) {
@@ -328,7 +327,7 @@ void Single_Process::BeamISRWeight
       ClusterAmplitude_Vector ampls(1,(*subs)[i]->p_ampl);
       if (ampls.size()) ampls.front()->SetProc((*subs)[i]->p_proc);
       (*subs)[i]->m_result=(*subs)[i]->m_me*
-	BeamISRWeight((*subs)[i]->m_mu2[stp::fac],mode,ampls);
+	BeamISRWeight((*subs)[i]->m_mu2[stp::fac],mode,ampls).m_w;
     }
   }
 }
@@ -351,10 +350,10 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     m_last=m_lastxs;
     if (m_nloct && m_pinfo.Has(nlo_type::born))
       m_last+=m_lastbxs*NLOCounterTerms();
-    double bviw=BeamISRWeight
+    BVI_Wgt bviw=BeamISRWeight
       (scs->Scale(stp::fac),0,scs->Amplitudes());
-    m_last*=bviw;
-    m_lastb=m_lastbxs*bviw;
+    m_last=(m_last-m_lastbxs*bviw.m_c)*bviw.m_w;
+    m_lastb=m_lastbxs*bviw.m_w;
     if (p_mc==NULL) return m_last;
     Dipole_Params dps(p_mc->Active(this));
     for (size_t i(0);i<dps.m_procs.size();++i) {
