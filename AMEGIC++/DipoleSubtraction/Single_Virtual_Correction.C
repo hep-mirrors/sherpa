@@ -101,7 +101,7 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   else m_dalpha_ii=m_dalpha;
   m_force_init=reader.GetValue("LOOP_ME_INIT",0);
   m_sccmur=reader.GetValue("USR_WGT_MODE",1);
-  m_user_bvimode=reader.GetValue("MCATNLO_BVI_MODE",0);
+  m_user_bvimode=reader.GetValue("NLO_BVI_MODE",0);
   m_cmur[0]=0.;
   m_cmur[1]=0.;
 
