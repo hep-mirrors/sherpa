@@ -61,7 +61,9 @@ namespace TTH {
 		<<"##                                                         ##\n"
 		<<"##  Top anti-top Higgs  virtual corrections  computed  by  ##\n"
 		<<"##  S. Dawson, C. Jackson, L. Orr, L. Reina, D. Wackeroth  ##\n"
-		<<"##  Please cite  Phys. Rev. D65 (2002) 053017              ##\n"
+		<<"##  Please cite  Phys. Rev. Lett. 87 (2001) 201804         ##\n"
+		<<"##               Phys. Rev. D65 (2002) 053017              ##\n"
+		<<"##               Phys. Rev. D67 (2003) 071503              ##\n"
 		<<"##               Phys. Rev. D68 (2003) 034022              ##\n"
 		<<"##                                                         ##\n"
 		<<"#############################################################\n";
@@ -100,8 +102,9 @@ namespace TTH {
       p_p = new double[4*(TTH_NMX+1)];
       p_res = new double[4];
       rpa->gen.AddCitation
-	(1,std::string("NLO ME for tth from ")
-	 +"\\cite{Reina:2001bc}, \\cite{Dawson:2003zu}.");
+	(1,std::string("NLO ME for tth from")
+	 +"\\cite{Reina:2001sf}, \\cite{Reina:2001bc}"
+	 +", \\cite{Dawson:2002tg}, \\cite{Dawson:2003zu}.");
     }
 
     ~TTH_Process()
