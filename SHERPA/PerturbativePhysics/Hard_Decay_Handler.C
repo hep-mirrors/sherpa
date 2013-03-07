@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Math/Random.H"
 #include "PHASIC++/Decays/Decay_Map.H"
 #include "PHASIC++/Decays/Decay_Table.H"
@@ -37,7 +38,8 @@ using namespace PHASIC;
 using namespace METOOLS;
 using namespace std;
 
-Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file)
+Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
+  p_newsublist(NULL)
 {
   Data_Reader dr(" ",";","!","=");
   dr.AddWordSeparator("\t");
@@ -136,6 +138,11 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file)
 
 Hard_Decay_Handler::~Hard_Decay_Handler()
 {
+  if (p_newsublist) {
+    for (size_t i=0; i<p_newsublist->size(); ++i) delete (*p_newsublist)[i];
+    p_newsublist->clear();
+    delete p_newsublist;
+  }
 }
 
 void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
@@ -396,6 +403,109 @@ void Hard_Decay_Handler::CreateDecayBlob(ATOOLS::Particle* inpart)
   DEBUG_INFO("p_onshell="<<inpart->Momentum());
   blob->AddData("p_onshell",new Blob_Data<Vec4D>(inpart->Momentum()));
   DEBUG_INFO("succeeded.");
+}
+
+void Hard_Decay_Handler::FindDecayProducts(Particle* decayer,
+                                           list<Particle*>& decayprods)
+{
+  if (decayer->DecayBlob()==NULL) {
+    decayprods.push_back(decayer);
+  }
+  else {
+    for (size_t i=0; i<decayer->DecayBlob()->NOutP(); ++i) {
+      FindDecayProducts(decayer->DecayBlob()->OutParticle(i), decayprods);
+    }
+  }
+}
+
+
+void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
+                                          METOOLS::Amplitude2_Tensor* amps,
+                                          const Particle_Vector& origparts)
+{
+  Decay_Handler_Base::TreatInitialBlob(blob, amps, origparts);
+
+  NLO_subevtlist* sublist(NULL);
+  Blob_Data_Base * bdb((*blob)["NLO_subeventlist"]);
+  if (bdb) sublist=bdb->Get<NLO_subevtlist*>();
+  if (sublist) {
+    // If the blob contains a NLO_subeventlist, we have to attach decays
+    // in the sub-events as well. The decay has to be identical for infrared
+    // cancellations, so we simply take each decay and boost it to the sub
+    // kinematics to replace the particle in the subevent
+
+    DEBUG_FUNC("");
+
+    vector<list<Particle*> > decayprods(blob->NOutP());
+    size_t newn(2);
+    for (size_t i=0; i<blob->NOutP()-1; ++i) {
+      // iterate over out-particles excluding real emission parton
+      list<Particle*> decayprods_i;
+      FindDecayProducts(blob->OutParticle(i), decayprods_i);
+      DEBUG_VAR(blob->OutParticle(i)->Flav());
+      list<Particle*>::const_iterator it;
+      for (it=decayprods_i.begin(); it!=decayprods_i.end(); ++it) {
+        DEBUG_VAR((*it)->Flav());
+      }
+      decayprods[i]=decayprods_i;
+      newn+=decayprods_i.size();
+    }
+    DEBUG_VAR(newn);
+
+    if (p_newsublist) {
+      for (size_t i=0; i<p_newsublist->size(); ++i) delete (*p_newsublist)[i];
+      p_newsublist->clear();
+    }
+    else p_newsublist=new NLO_subevtlist();
+    for (size_t i=0; i<sublist->size(); ++i) {
+      // iterate over sub events and replace decayed particles
+      NLO_subevt * sub((*sublist)[i]);
+      DEBUG_VAR(*(*sublist)[i]);
+
+      if (sub->IsReal()) newn+=1;
+      Flavour* newfls = new Flavour[newn];
+      Vec4D* newmoms = new Vec4D[newn];
+      size_t* newid = new size_t[newn];
+      for (size_t n=0; n<newn; ++n) newid[n]=0;
+      p_newsublist->push_back(new NLO_subevt(newn, newid, newfls, newmoms,
+                                             sub->m_i, sub->m_j, sub->m_k));
+      p_newsublist->back()->m_delete=true;
+
+      int nin=blob->NInP();
+      for (size_t j=0, jnew=0; j<nin+blob->NOutP()-1; ++j, ++jnew) {
+        if (j<2 || decayprods[j-nin].size()==1) {
+          newfls[jnew]=sub->p_fl[j];
+          newmoms[jnew]=sub->p_mom[j];
+          continue;
+        }
+        if (sub->p_fl[j]!=blob->OutParticle(j-nin)->Flav()) {
+          THROW(fatal_error, "Internal Error 1");
+        }
+
+        Vec4D oldmom=blob->OutParticle(j-nin)->Momentum();
+        Vec4D newmom=sub->p_mom[j];
+        Poincare cms(oldmom);
+        Poincare newframe(newmom);
+        newframe.Invert();
+
+        list<Particle*>::const_iterator it;
+        for (it=decayprods[j-nin].begin(); it!=decayprods[j-nin].end(); ++it) {
+          newfls[jnew]=(*it)->Flav();
+          newmoms[jnew]=Vec4D(newframe*(cms*(*it)->Momentum()));
+          jnew++;
+        }
+        jnew--; // because we replaced one particle
+      }
+      if (sub->IsReal()) {
+        // Add remaining parton for real event
+        newfls[newn-1]=sub->p_fl[sub->m_n-1];
+        newmoms[newn-1]=sub->p_mom[sub->m_n-1];
+      }
+    }
+    bdb->Set<NLO_subevtlist*>(p_newsublist);
+    DEBUG_INFO("New subevts:");
+    for (size_t i=0;i<p_newsublist->size();++i) DEBUG_VAR(*(*p_newsublist)[i]);
+  }
 }
 
 void Hard_Decay_Handler::DefineInitialConditions(Cluster_Amplitude* ampl,

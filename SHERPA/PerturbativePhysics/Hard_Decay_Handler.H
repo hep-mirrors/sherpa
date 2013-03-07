@@ -13,6 +13,10 @@ namespace MODEL {
   typedef std::vector<Single_Vertex *>  Vertex_List;
 }
 
+namespace ATOOLS {
+  class NLO_subevtlist;
+}
+
 namespace PHASIC {
   class Decay_Channel;
 }
@@ -26,6 +30,7 @@ namespace SHERPA {
     std::map<ATOOLS::Flavour, std::map<std::string, std::vector<double> > > 
                              m_read;
     PDF::Cluster_Definitions_Base *p_clus;
+    ATOOLS::NLO_subevtlist *p_newsublist;
 
     void InitializeDirectDecays(PHASIC::Decay_Table* dt);
     void RefineDecaysThreshold(PHASIC::Decay_Table* dt);
@@ -42,11 +47,18 @@ namespace SHERPA {
     void WriteDecayTables();
     bool CalculateWidth(PHASIC::Decay_Channel* dc);
 
+    void FindDecayProducts(ATOOLS::Particle* decayer,
+                           std::list<ATOOLS::Particle*>& decayproducts);
+
   public :
     Hard_Decay_Handler(std::string,std::string);
     ~Hard_Decay_Handler();
 
     void CreateDecayBlob(ATOOLS::Particle* inpart);
+    void TreatInitialBlob(ATOOLS::Blob* blob,
+                          METOOLS::Amplitude2_Tensor* amps,
+                          const ATOOLS::Particle_Vector& origparts);
+
     void DefineInitialConditions(ATOOLS::Cluster_Amplitude* ampl,
                                  ATOOLS::Blob* initial_blob);
 

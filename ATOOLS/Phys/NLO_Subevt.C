@@ -67,6 +67,15 @@ bool Dip_ID::operator<(const Dip_ID &di) const
   return DDip_ID::operator<(di);
 }
 
+NLO_subevt::~NLO_subevt()
+{
+  if (m_delete) {
+    delete[] p_fl;
+    delete[] p_mom;
+    delete[] p_id;
+  }
+}
+
 void NLO_subevt::CopyXSData(const NLO_subevt *sub)
 {
   m_me=sub->m_me;
