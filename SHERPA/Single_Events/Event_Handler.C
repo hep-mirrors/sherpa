@@ -525,7 +525,7 @@ bool Event_Handler::WeightIsGood(const double& weight)
     m_maxweight=fabs(weight);
     std::string ranfilename="random";
     if (ATOOLS::msg->LogFile()!="") ranfilename+="."+ATOOLS::msg->LogFile();
-    ranfilename+=".dat";
+    ranfilename+=".log";
     ATOOLS::ran->WriteOutSavedStatus(ranfilename.c_str());
     std::ofstream outstream(ranfilename.c_str(), std::fstream::app);
     outstream<<std::endl;
