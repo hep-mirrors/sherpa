@@ -11,6 +11,14 @@ Which particles should be treated as unstable is determined by the
 This decay module can also be used on top of NLO matrix elements, but it does
 not include any NLO corrections in the decay matrix elements themselves.
 
+Note that the decay handler is an afterburner at the event generation level.
+It does not affect the calculation and integration of the hard scattering
+matrix elements at all. The total cross section is thus unaffected, i.e. one
+has to multiply with the appropriate branching ratios manually if any decay
+channels have been disabled. Furthermore any cuts or scale definitions are
+not affected by decays at all and should be based on the inclusively produced
+particles before decays.
+
 @menu
 * HDH_NO_DECAY::
 * HDH_ONLY_DECAY::
@@ -75,10 +83,14 @@ directory, one has to specify @option{STORE_DECAY_RESULTS=1}.
 @node HDH_SET_WIDTHS
 @subsection HDH_SET_WIDTHS
 @cindex HDH_SET_WIDTHS
+@cindex WIDTH[<id>]
 
+By default, the decay handler operates independently from the particle width
+specified by @option{WIDTH[<id>]}. This allows to set the unstable particle
+width to zero for gauge invariance in the production matrix elements.
 To use the sum of the calculated partial widths as total width for each unstable
-particle one has to use @option{HDH_SET_WIDTHS=1}. This will replace the width
-specified by @option{WIDTH[<id>]}.
+particle instead one has to use @option{HDH_SET_WIDTHS=1}. This will overwrite
+the width specified by @option{WIDTH[<id>]}.
 
 @node HARD_MASS_SMEARING
 @subsection HARD_MASS_SMEARING
