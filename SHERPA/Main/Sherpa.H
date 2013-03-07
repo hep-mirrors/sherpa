@@ -38,6 +38,11 @@ namespace SHERPA {
     bool GenerateOneEvent(bool reset=true);
     void FillHepMCEvent(HepMC::GenEvent& event);
 
+    double TotalXS();
+    double TotalErr();
+
+    std::string PDFInfo();
+
     bool SummarizeRun();
 
     

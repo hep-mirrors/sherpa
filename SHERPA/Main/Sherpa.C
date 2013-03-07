@@ -294,6 +294,31 @@ void Sherpa::FillHepMCEvent(HepMC::GenEvent& event)
 #endif
 }
 
+double Sherpa::TotalXS()
+{
+  return p_eventhandler->TotalXS();
+}
+
+double Sherpa::TotalErr()
+{
+  return p_eventhandler->TotalErr();
+}
+
+std::string Sherpa::PDFInfo()
+{
+  std::string pdf="Unknown";
+  PDF::ISR_Handler* isr=GetInitHandler()->GetISRHandler(PDF::isr::hard_process);
+  if (isr) {
+    if (isr->PDF(0)) {
+      pdf=isr->PDF(0)->Type();
+      if (isr->PDF(1) && isr->PDF(1)->Type()!=pdf) {
+        pdf="Unknown";
+      }
+    }
+  }
+  return pdf;
+}
+
 void Sherpa::PrepareTerminate()
 {
   SummarizeRun();
