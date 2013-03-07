@@ -459,7 +459,7 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     else p_newsublist=new NLO_subevtlist();
     for (size_t i=0; i<sublist->size(); ++i) {
       // iterate over sub events and replace decayed particles
-      NLO_subevt * sub((*sublist)[i]);
+      NLO_subevt* sub((*sublist)[i]);
       DEBUG_VAR(*(*sublist)[i]);
 
       if (sub->IsReal()) newn+=1;
@@ -467,9 +467,13 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
       Vec4D* newmoms = new Vec4D[newn];
       size_t* newid = new size_t[newn];
       for (size_t n=0; n<newn; ++n) newid[n]=0;
-      p_newsublist->push_back(new NLO_subevt(newn, newid, newfls, newmoms,
-                                             sub->m_i, sub->m_j, sub->m_k));
-      p_newsublist->back()->m_delete=true;
+      NLO_subevt* newsub=new NLO_subevt(*sub);
+      newsub->m_n=newn;
+      newsub->p_id=newid;
+      newsub->p_fl=newfls;
+      newsub->p_mom=newmoms;
+      newsub->m_delete=true;
+      p_newsublist->push_back(newsub);
 
       int nin=blob->NInP();
       for (size_t j=0, jnew=0; j<nin+blob->NOutP()-1; ++j, ++jnew) {
