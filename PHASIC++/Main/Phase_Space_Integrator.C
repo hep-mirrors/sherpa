@@ -127,7 +127,8 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
   maxabserror=_maxabserror;
   fin_opt=_fin_opt;
   psh=_psh;
-  msg_Info()<<"Starting the calculation. Lean back and enjoy ... ."<<endl; 
+  msg_Info()<<"Starting the calculation at "
+	    <<rpa->gen.Timer().StrFTime("%H:%M:%S")<<". Lean back and enjoy ... ."<<endl; 
   if (maxerror >= 1.) nmax = 1;
 
   int numberofchannels = 1;
@@ -169,7 +170,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
   if (ncontrib>maxopt) endopt=2;
 
   addtime = 0.0;
-#ifdef USING__Threading
+#if (defined USING__Threading || defined USING__MPI)
   rlotime = rstarttime = ATOOLS::rpa->gen.Timer().RealTime();
 #endif
   lotime = starttime = ATOOLS::rpa->gen.Timer().UserTime();
@@ -240,7 +241,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	if (ncontrib%iter1==0) {
 	  (psh->Process())->OptimizeResult();
 	  if ((psh->Process())->SPoints()==0) {
-#ifdef USING__Threading
+#if (defined USING__Threading || defined USING__MPI)
 	    rlotime = ATOOLS::rpa->gen.Timer().RealTime();
 #endif
 	    lotime = ATOOLS::rpa->gen.Timer().UserTime();
@@ -268,14 +269,14 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	(psh->Process())->ResetMax(1);
 	(psh->Process())->InitWeightHistogram();
 	(psh->Process())->EndOptimize();
-#ifdef USING__Threading
+#if (defined USING__Threading || defined USING__MPI)
 	rlotime = ATOOLS::rpa->gen.Timer().RealTime();
 #endif
 	lotime = ATOOLS::rpa->gen.Timer().UserTime();
 	return false;
       }
 
-#ifdef USING__Threading
+#if (defined USING__Threading || defined USING__MPI)
       double rtime = ATOOLS::rpa->gen.Timer().RealTime();
       double rtimeest=0.;
       rtimeest = totalopt/double(ncontrib)*(rtime-rstarttime);
@@ -287,7 +288,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	if (fin_opt==1) {
 	  timeest = ATOOLS::Max(timeest,(psh->Process())->RemainTimeFactor(maxerror)*
 				(time-lotime)+lotime-starttime);
-#ifdef USING__Threading
+#if (defined USING__Threading || defined USING__MPI)
 	  rtimeest = ATOOLS::Max(rtimeest,(psh->Process())->RemainTimeFactor(maxerror)*
 				(rtime-rlotime)+rlotime-rstarttime);
 #endif
@@ -295,7 +296,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	else {
 	  timeest = (psh->Process())->RemainTimeFactor(maxerror)*
 	    (time-lotime)+lotime-starttime;
-#ifdef USING__Threading
+#if (defined USING__Threading || defined USING__MPI)
 	  rtimeest = (psh->Process())->RemainTimeFactor(maxerror)*
 	    (rtime-rlotime)+rlotime-rstarttime;
 #endif
@@ -314,14 +315,14 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	msg_Info()<<"full optimization: ";
       }
       else msg_Info()<<"integration time: ";
-#ifdef USING__Threading
-      msg_Info()<<" ( "<<FormatTime(size_t(rtime-rstarttime+0.5))<<"("
+#if (defined USING__Threading || defined USING__MPI)
+      msg_Info()<<" ( "<<FormatTime(size_t(rtime-rstarttime+0.5))<<" ("
 		<<FormatTime(size_t(time-starttime+0.5))<<") elapsed / "
 		<<FormatTime(size_t(rtimeest+0.5)
-			     -size_t((rtime-rstarttime+0.5)))<<"("
+			     -size_t((rtime-rstarttime+0.5)))<<" ("
 		<<FormatTime(size_t(timeest+0.5)
 			     -size_t((time-starttime+0.5)))
-		<<" left ) ["<<rpa->gen.Timer().StrFTime("%H:%M:%S")<<"]   "<<endl;
+		<<") left ) ["<<rpa->gen.Timer().StrFTime("%H:%M:%S")<<"]   "<<endl;
 #else
       msg_Info()<<" ( "<<FormatTime(size_t(time-starttime))<<" elapsed / " 
 		<<FormatTime(size_t(timeest)-size_t((time-starttime))) 
