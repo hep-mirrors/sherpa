@@ -435,7 +435,7 @@ void Event_Handler::MPISync()
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
     int rank=MPI::COMM_WORLD.Get_rank();
-    int cn=3;
+    int cn=4;
     double *values = new double[cn];
     if (rank==0) {
       for (int tag=1;tag<size;++tag) {
@@ -444,10 +444,12 @@ void Event_Handler::MPISync()
         m_mn+=values[0];
         m_msum+=values[1];
         m_msumsqr+=values[2];
+        if (values[3]>m_maxweight) m_maxweight=values[3];
       }
       values[0]=m_mn;
       values[1]=m_msum;
       values[2]=m_msumsqr;
+      values[3]=m_maxweight;
       for (int tag=1;tag<size;++tag) {
 	if (!exh->MPIStat(tag)) continue;
 	MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,tag,size+tag);
@@ -457,11 +459,13 @@ void Event_Handler::MPISync()
       values[0]=m_mn;
       values[1]=m_msum;
       values[2]=m_msumsqr;
+      values[3]=m_maxweight;
       MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,0,rank);
       MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,0,size+rank);
       m_mn=values[0];
       m_msum=values[1];
       m_msumsqr=values[2];
+      m_maxweight=values[3];
     }
     delete [] values;
   }
@@ -520,11 +524,8 @@ bool Event_Handler::WeightIsGood(const double& weight)
   if (m_checkweight && fabs(weight)>m_maxweight) {
     m_maxweight=fabs(weight);
     std::string ranfilename="random";
-#ifdef USING__MPI
-    ranfilename+="."+ToString(MPI::COMM_WORLD.Get_rank());
-#endif
     if (ATOOLS::msg->LogFile()!="") ranfilename+="."+ATOOLS::msg->LogFile();
-    else ranfilename+=".dat";
+    ranfilename+=".dat";
     ATOOLS::ran->WriteOutSavedStatus(ranfilename.c_str());
     std::ofstream outstream(ranfilename.c_str(), std::fstream::app);
     outstream<<std::endl;
