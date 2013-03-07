@@ -23,7 +23,6 @@ namespace SHERPA {
     HepMC2_Interface       * p_hepmc2;
 
     void DrawLogo(const int mode);  
-    void PrintDisclaimer();  
 
     void PrepareTerminate();
 
