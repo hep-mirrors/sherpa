@@ -185,7 +185,7 @@ void CS_Cluster_Definitions::KernelWeight
   cs.m_mu2=Max(cs.m_kt2,cs.m_mode&1?
 	       p_shower->GetSudakov()->ISPT2Min():
 	       p_shower->GetSudakov()->FSPT2Min());
-  cs.m_mu2*=cdip->Coupling()->CplFac();
+  cs.m_mu2*=cdip->Coupling()->CplFac(cs.m_mu2);
   if (!cdip->On()) cs.m_mu2=Max(cs.m_mu2,sqr(mo.Mass()));
   if (!(m_mode&1)) return;
   double scale=cs.m_kt2, eta=1.0;
