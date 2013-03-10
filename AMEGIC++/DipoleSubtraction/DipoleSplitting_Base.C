@@ -190,12 +190,12 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
 	       <<Demangle(typeid(*this).name())
 	       <<"[type="<<m_ft<<"]"<<std::endl;
   if (m_mcmode==1) {
-    int da(m_av>0.0 && m_kt2<m_kt2max), ds(alpha<m_alpha);
+    int da(m_av>0.0 && (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6))), ds(alpha<=m_alpha);
     m_mcsign=ds-da;
     return m_mcsign==0;
   }
   if (m_mcmode==2) {
-    m_mcsign=m_av>0.0 && m_kt2<m_kt2max;
+    m_mcsign=m_av>0.0 && (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6));
     return m_mcsign==0;
   }
   return alpha>m_alpha || (m_av>0.0 && m_kt2>m_kt2max);
