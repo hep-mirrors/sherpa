@@ -150,9 +150,8 @@ here Sherpa can provide it internally.
 algorithm ensures that only QCD-splittings are inverted, such that the 
 production of a lepton-neutrino pair is always identified as the core 
 process.
-@item Contrary to the best shower setup, for NLO merging the shower is 
-setup in a crossing invariant way, employing the very same recoil scheme as 
-the MC@@NLO emission.
+@item The handling of scale factors in the shower differs from the best LO 
+order setup.
 @item tau leptons are set massive in order to exclude them from the massless 
 lepton container (@code{90}).
 @item As both Comix and Amegic are specified as matrix element generators 
