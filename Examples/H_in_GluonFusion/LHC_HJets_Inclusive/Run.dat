@@ -1,7 +1,6 @@
 (run){
   % general settings
   EVENTS 5M; ERROR 0.1;
-  MI_HANDLER Amisic;
 
   % tags and settings for scale definitions
   SP_NLOCT=1; FSF:=1.0; RSF:=1.0; QSF:=1.0;

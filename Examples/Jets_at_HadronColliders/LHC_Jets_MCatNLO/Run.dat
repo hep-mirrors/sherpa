@@ -1,7 +1,6 @@
 (run){
   % general settings
   EVENTS 1M;
-  MI_HANDLER Amisic;
 
   % tags and settings for scale definitions
   FSF:=1.; RSF:=1.; QSF:=1.;
