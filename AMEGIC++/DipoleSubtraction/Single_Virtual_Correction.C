@@ -746,7 +746,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   }
   if (!(M2>0.) && !(M2<0.) && !(M2==0.)) {
     msg->SetPrecision(16);
-    msg_Error()<<METHOD<<"(){\n  M2 = nan.\n  eta0 = "<<eta0
+    msg_Error()<<METHOD<<"("<<Name()<<"){\n  M2 = nan.\n  eta0 = "<<eta0
         <<" ,  m_x0 = "<<m_x0<<" ,  eta1 = "<<eta1<<" ,  m_x1 = "<<m_x1
         <<" ,  p_dsij[0][0] = "<<p_dsij[0][0]
         <<"\n  L = "<<lme<<" , I = "<<I<<"\n";
