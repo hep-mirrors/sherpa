@@ -49,6 +49,8 @@ Single_Real_Correction::Single_Real_Correction() :
     m_ossubon = helpi;
     if (m_ossubon==1) msg_Tracking()<<"Set on shell subtraction on. "<<std::endl;
   }
+  m_smear_threshold=reader.GetValue<double>("NLO_SMEAR_THRESHOLD",0.0);
+  m_smear_power=reader.GetValue<double>("NLO_SMEAR_POWER",4.0);
 }
 
 
@@ -400,6 +402,8 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   }
   m_lastdxs = m_realevt.m_me;
 
+  if (m_smear_threshold>0.0) SmearCounterEvents(m_subevtlist);
+
   if (msg_LevelIsTracking()) {
     msg->SetPrecision(16);
     msg_Out() << "// Single_Real_Correction for " << Name() << endl;
@@ -595,4 +599,33 @@ ATOOLS::Flavour Single_Real_Correction::ReMap(const ATOOLS::Flavour &fl,const si
 AMEGIC::Process_Base *AMEGIC::Single_Real_Correction::GetReal()
 {
   return p_tree_process;
+}
+
+void Single_Real_Correction::SmearCounterEvents(NLO_subevtlist& subevtlist)
+{
+  if (m_smear_threshold==0.0) return;
+  DEBUG_FUNC(m_smear_threshold);
+
+  DEBUG_VAR(m_realevt.m_me);
+  for (size_t i=0;i<m_subtermlist.size()-1;i++) {
+    if (!m_subtermlist[i]->IsValid()) continue;
+    double alpha=m_subtermlist[i]->Dipole()->LastAlpha();
+    if (alpha<m_smear_threshold) {
+      double x=pow(alpha/m_smear_threshold, m_smear_power);
+
+      DEBUG_VAR(alpha);
+      DEBUG_VAR(x);
+      DEBUG_INFO("me = "<<m_subtermlist[i]->GetSubevt()->m_me<<" --> "<<m_subtermlist[i]->GetSubevt()->m_me*x);
+
+      m_realevt.m_result += (1.0-x)*m_subtermlist[i]->GetSubevt()->m_result;
+      m_subtermlist[i]->GetSubevt()->m_result *= x;
+
+      m_realevt.m_me += (1.0-x)*m_subtermlist[i]->GetSubevt()->m_me;
+      m_subtermlist[i]->GetSubevt()->m_me *= x;
+
+      m_realevt.m_mewgt += (1.0-x)*m_subtermlist[i]->GetSubevt()->m_mewgt;
+      m_subtermlist[i]->GetSubevt()->m_mewgt *= x;
+    }
+  }
+  DEBUG_VAR(m_realevt.m_me);
 }

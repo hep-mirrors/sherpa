@@ -98,6 +98,7 @@ namespace AMEGIC {
 
     int                 NumberOfDiagrams();
     AMEGIC::Point     * Diagram(int i);
+    const DipoleSplitting_Base* Dipole() const { return p_dipole; }
 
     inline size_t       Lijt()                         { return p_LO_process->GetEmit(); }
     inline size_t       Lkt()                          { return p_LO_process->GetSpect(); }

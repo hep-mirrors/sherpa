@@ -25,6 +25,7 @@ namespace AMEGIC {
   private:
     bool                    m_newlib;
     double                  m_iresult;
+    double                  m_smear_threshold, m_smear_power;
     int                     m_libnumb;
     bool                    m_valid;
     bool                    m_ossubon;
@@ -41,6 +42,8 @@ namespace AMEGIC {
     std::vector<size_t> m_sids;
     std::map<void*,DM_Info> m_dfmap;
     void ReMapFlavs(ATOOLS::NLO_subevt *const sub,const int mode=0);
+    void SmearCounterEvents(ATOOLS::NLO_subevtlist& subevtlist);
+
     /*------------------------------------------------------------------------------
 
       Constructors
