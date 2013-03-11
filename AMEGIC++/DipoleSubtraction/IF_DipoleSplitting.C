@@ -51,9 +51,8 @@ void IF_DipoleSplitting::SetMomenta(const Vec4D *mom)
   }
 }
 
-double IF_DipoleSplitting::GetF()
+double IF_DipoleSplitting::GetValue()
 {
-  if (Reject(m_uj)) return 0.;
   double h=1.0/(2.*m_pi*m_pj)/m_xijk;  
   switch (m_ft) {
   case 1:
@@ -128,9 +127,8 @@ void IF_MassiveDipoleSplitting::SetMomenta(const Vec4D *mom)
   }
 }
 
-double IF_MassiveDipoleSplitting::GetF()
+double IF_MassiveDipoleSplitting::GetValue()
 {
-  if (Reject(m_uj)) return 0.;
   double h=1.0/(2.*m_pi*m_pj)/m_xijk;  
   switch (m_ft) {
   case 1:

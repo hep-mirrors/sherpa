@@ -66,10 +66,8 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   }
 }
 
-double FF_DipoleSplitting::GetF()
+double FF_DipoleSplitting::GetValue()
 {
-  if (Reject(m_yijk)) return 0.;
-
   double h=1.0/(2.*m_pi*m_pj);  
   switch (m_ft) {
   case 1:
@@ -120,7 +118,8 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
   m_ptij = m_Q-m_ptk;
 
   m_yijk = m_pi*m_pj/(m_pi*m_pj+m_pj*m_pk+m_pk*m_pi);
-  m_a = m_yijk;
+  m_yp = 1. - 2.*(sqrt(m_mk*m_Q2) - m_mk)/(m_Q2 - m_mi - m_mj - m_mk);
+  m_a = m_yijk/m_yp;
   if ((m_mij && !IsEqual(m_ptij.Abs2(),m_mij,1.0e-3)) ||
       (m_mk && !IsEqual(m_ptk.Abs2(),m_mk,1.0e-3))) {
     msg_Tracking()<<METHOD<<"(): Kinematics unstable in {\n"
@@ -129,7 +128,6 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
 		  <<"  p_k = "<<m_pk<<" "<<sqrt(dabs(m_pk.Abs2()))<<"\n}"<<std::endl;
     m_a=0.0;
   }
-  m_yp = 1. - 2.*(sqrt(m_mk*m_Q2) - m_mk)/(m_Q2 - m_mi - m_mj - m_mk);
 
   m_zi   = (m_pi*m_pk)/(m_pi*m_pk+m_pj*m_pk);
   m_zj   = 1.-m_zi;
@@ -184,10 +182,8 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
   }
 }
 
-double FF_MassiveDipoleSplitting::GetF()
+double FF_MassiveDipoleSplitting::GetValue()
 {
-  if (Reject(m_yijk/m_yp)) return 0.;
-
   double h=1.0/((m_pi+m_pj).Abs2()-m_mij);  
   switch (m_ft) {
   case 1:

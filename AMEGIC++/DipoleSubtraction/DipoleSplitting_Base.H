@@ -74,7 +74,8 @@ namespace AMEGIC {
     std::vector<ATOOLS::Vec4D>* GetMomenta() {return &m_mom;}
     ATOOLS::Vec4D Getptij() {return m_ptij;}
     ATOOLS::Vec4D Getptk()  {return m_ptk;}
-    virtual double GetF()   {return 0.;}
+    double GetF();
+    virtual double GetValue();
     virtual double GetDPSF()   {return 0.;}
     virtual void CalcDiPolarizations() {}
     virtual void SetAlpha(double alp) {m_alpha=alp;}
@@ -92,6 +93,7 @@ namespace AMEGIC {
     double G2() { return m_g2; }
     int MCSign() { return m_mcsign; }
     inline bool KinCheck() const { return m_a>m_amin; }
+    inline const double& LastAlpha() const { return m_a; }
   };
 }
 #endif

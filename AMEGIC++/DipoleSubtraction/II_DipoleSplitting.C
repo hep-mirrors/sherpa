@@ -55,10 +55,9 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
   }
 }
 
-double II_DipoleSplitting::GetF()
+double II_DipoleSplitting::GetValue()
 {
-  if (Reject(m_vi)) return 0.;
-   double h=1.0/(2.*m_pi*m_pj)/m_xijk;  
+  double h=1.0/(2.*m_pi*m_pj)/m_xijk;  
   switch (m_ft) {
   case 1:
     h*=m_sff;

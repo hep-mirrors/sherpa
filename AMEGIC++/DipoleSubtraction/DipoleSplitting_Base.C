@@ -20,6 +20,7 @@ DipoleSplitting_Base::DipoleSplitting_Base()
   m_spfdef = 0.0;
   p_cpl = NULL;
   m_av=sqrt(-1.0);
+  m_a=-1.0;
   
   Flavour hfl(kf_quark);
   m_nf = hfl.Size()/2;
@@ -199,4 +200,16 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
     return m_mcsign==0;
   }
   return alpha>m_alpha || (m_av>0.0 && m_kt2>m_kt2max);
+}
+
+double DipoleSplitting_Base::GetF()
+{
+  if (Reject(m_a)) return 0.;
+  else return GetValue();
+}
+
+double DipoleSplitting_Base::GetValue()
+{
+  THROW(fatal_error, "Virtual function not reimplemented.");
+  return 0.0;
 }

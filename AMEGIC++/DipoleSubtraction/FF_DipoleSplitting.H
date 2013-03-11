@@ -19,7 +19,7 @@ namespace AMEGIC {
     {m_ft=ft; m_type=dpt::f_f; m_m=m; m_i=i;m_j=j;m_k=k;}
     
     void SetMomenta(const ATOOLS::Vec4D*);
-    double GetF();
+    double GetValue();
     double GetDPSF()   {return m_yijk;}
     void CalcDiPolarizations();
   };
@@ -38,7 +38,7 @@ namespace AMEGIC {
       m_mi=mi*mi; m_mj=mj*mj; m_mk=mk*mk; m_mij=mij*mij; }
     
     void SetMomenta(const ATOOLS::Vec4D*);
-    double GetF();
+    double GetValue();
     double GetDPSF()   {return m_yijk;}
     void CalcDiPolarizations();
   };

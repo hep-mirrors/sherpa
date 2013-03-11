@@ -50,9 +50,8 @@ void FI_DipoleSplitting::SetMomenta(const Vec4D* mom )
   }
 }
 
-double FI_DipoleSplitting::GetF()
+double FI_DipoleSplitting::GetValue()
 {
-  if (Reject(1.0-m_xijk)) return 0.;
   double h=1.0/(2.*m_pi*m_pj)/m_xijk;  
   switch (m_ft) {
   case 1:
@@ -150,9 +149,8 @@ void FI_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom )
   }
 }
 
-double FI_MassiveDipoleSplitting::GetF()
+double FI_MassiveDipoleSplitting::GetValue()
 {
-  if (Reject(1.0-m_xijk)) return 0.;
   double h=1.0/((m_pi+m_pj).Abs2()-m_mij)/m_xijk;
   switch (m_ft) {
   case 1:
