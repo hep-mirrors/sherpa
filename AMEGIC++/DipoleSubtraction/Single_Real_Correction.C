@@ -603,7 +603,7 @@ AMEGIC::Process_Base *AMEGIC::Single_Real_Correction::GetReal()
 
 void Single_Real_Correction::SmearCounterEvents(NLO_subevtlist& subevtlist)
 {
-  if (m_smear_threshold==0.0) return;
+  if (m_smear_threshold==0.0 || m_subtermlist.size()==0) return;
   DEBUG_FUNC(m_smear_threshold);
 
   DEBUG_VAR(m_realevt.m_me);
