@@ -52,7 +52,7 @@ namespace SHERPA {
 #endif
     std::string m_basename, m_ext;
     size_t m_cnt2,m_cnt3,m_fcnt,m_evt,m_idcnt;
-    size_t m_avsize,m_total,m_mode;
+    size_t m_filesize,m_avsize,m_total,m_mode;
     double m_sum,m_s2,m_s3,m_c1,m_c2;
     double m_sq,m_sq2,m_sq3,m_fsq;
     double m_alphas;
@@ -64,6 +64,8 @@ namespace SHERPA {
   public:
     Output_RootNtuple(const Output_Arguments &args);
     ~Output_RootNtuple();
+    void Header();
+    void Footer();
     void ChangeFile(std::string nr);
     void Output(ATOOLS::Blob_List* blobs, double weight);
     void PrepareTerminate();

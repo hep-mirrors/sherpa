@@ -32,7 +32,7 @@ Output_RootNtuple::Output_RootNtuple(const Output_Arguments &args):
   Output_Base("Root")
 {
   args.p_reader->SetAllowUnits(true);
-  long int filesize = args.p_reader->GetValue<long int>
+  m_filesize = args.p_reader->GetValue<long int>
     ("NTUPLE_SIZE",std::numeric_limits<long int>::max());
   args.p_reader->SetAllowUnits(false);
   m_mode=args.p_reader->GetValue<int>("ROOTNTUPLE_MODE",0);
@@ -43,7 +43,6 @@ Output_RootNtuple::Output_RootNtuple(const Output_Arguments &args):
   m_avsize=args.p_reader->GetValue<int>("ROOTNTUPLE_AVSIZE",10000);
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
-  int rank=MPI::COMM_WORLD.Get_rank();
 #endif
   m_total=0;
   m_evtlist.resize(m_avsize+100);
@@ -93,12 +92,21 @@ Output_RootNtuple::Output_RootNtuple(const Output_Arguments &args):
   for (size_t i=0;i<1;++i) dispv[i]-=basev;
   MPI_Type_create_struct(1,blocklenv,dispv,typev,&MPI_Vec4D);
   MPI_Type_commit(&MPI_Vec4D);
+#endif
+#endif
+}
+
+void Output_RootNtuple::Header()
+{
+#ifdef USING__ROOT
+#ifdef USING__MPI
+  int rank=MPI::COMM_WORLD.Get_rank();
   if (rank) return;
 #endif
   p_f=new TFile((m_basename+m_ext).c_str(),"recreate");
   p_t3 = new TTree("t3","Reconst ntuple");
-  long int max = 2147483647;
-  p_t3->SetMaxTreeSize(Min(filesize,max));
+  size_t max = 2147483647;
+  p_t3->SetMaxTreeSize(Min(m_filesize,max));
   p_t3->Branch("id",&m_id,"id/I");
   p_t3->Branch("nparticle",&m_nparticle,"nparticle/I");
   p_t3->Branch("px",p_px,"px[nparticle]/F");
@@ -126,9 +134,6 @@ Output_RootNtuple::Output_RootNtuple(const Output_Arguments &args):
   ATOOLS::exh->AddTerminatorObject(this);
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo","*",
 					"TStreamerInfo","RIO","TStreamerInfo()"); 
-#else
-  msg_Error()<<"Sherpa must be linked with root to enable ROOTNTUPLE output!"<<endl;
-  THROW(fatal_error,"Disable root output or recompile with --enable-root");
 #endif
 }
 
@@ -142,6 +147,11 @@ Output_RootNtuple::~Output_RootNtuple()
 #endif
 }
 
+void Output_RootNtuple::Footer()
+{
+  PrepareTerminate();
+}
+
 void Output_RootNtuple::PrepareTerminate()
 {
   StoreEvt();
@@ -149,6 +159,7 @@ void Output_RootNtuple::PrepareTerminate()
   if (p_t3==NULL) return;
   p_t3->AutoSave();
   delete p_t3;
+  p_t3=NULL;
   // delete p_f;
   ATOOLS::exh->RemoveTerminatorObject(this);
 #endif
