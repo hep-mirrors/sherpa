@@ -58,7 +58,7 @@ if test x$pyext == xtrue; then
   AX_SWIG_MULTI_MODULE_SUPPORT
   AX_SWIG_PYTHON
 fi
-AM_CONDITIONAL(ENABLE_PYEXT, [test x$enable_pyext == xtrue])
+AM_CONDITIONAL(ENABLE_PYEXT, [test x$pyext == xtrue])
 
 case "$build_os:$build_cpu:$build_vendor" in
   *darwin*:*:*) ;;
