@@ -398,8 +398,11 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   signalblob->SetStatus(blob_status::needs_beams);
   signalblob->SetWeight(m_weight);
   signalblob->AddData("Weight",new Blob_Data<double>(m_weight));
+  signalblob->AddData("MEWeight",new Blob_Data<double>
+		      (p_vars->m_nuwgt?p_vars->m_mewgt:p_vars->m_mewgt2));
   signalblob->AddData("Trials",new Blob_Data<double>(1.));
   signalblob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(&m_nlos));
+  signalblob->AddData("Weight_Norm",new Blob_Data<double>(1.0));
   m_evtcnt++;  
   return 1;
 }
