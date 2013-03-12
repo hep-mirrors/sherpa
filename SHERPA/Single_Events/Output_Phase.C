@@ -18,6 +18,7 @@ Output_Phase::Output_Phase(Output_Vector *const outputs,Event_Handler *const h):
   p_eventhandler=h;
   m_type=eph::Analysis;
   for (Output_Vector::iterator it=p_outputs->begin(); it!=p_outputs->end(); ++it) {
+    (*it)->SetEventHandler(p_eventhandler);
     (*it)->Header();
     m_name+=(*it)->Name()+"+";
   }
