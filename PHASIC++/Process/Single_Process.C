@@ -141,10 +141,12 @@ double Single_Process::NLOCounterTerms() const
   MODEL::Coupling_Data *cpl(m_cpls.Get("Alpha_QCD"));
   double as(cpl->Default()*cpl->Factor());
   double ct(0.0);
+  if (!IsEqual(mur2,lmur2)) {
   if (m_oqcd>1) ct-=double(m_oqcd-1)*as/(2.0*M_PI)*Beta0()*log(mur2/lmur2);
   msg_Debugging()<<"\\alpha_s term: "<<(m_oqcd-1)<<" * "<<as
 		 <<"/\\pi * "<<Beta0()<<" * log("<<sqrt(mur2)<<"/"
 		 <<sqrt(lmur2)<<") -> "<<ct<<"\n";
+  }
   double z[2]={m_wgtinfo.m_y1,m_wgtinfo.m_y2};
   for (size_t i(0);i<2;++i)
     ct+=CollinearCounterTerms
@@ -166,6 +168,7 @@ double Single_Process::CollinearCounterTerms
   if (!(p_int->ISR() && p_int->ISR()->On()&(1<<i))) return 0.0;
   static double th(1.0e-12);
   DEBUG_FUNC("Q = "<<sqrt(t1)<<" / "<<sqrt(t2));
+  if (IsEqual(t1,t2)) return 0.0;
   double lmuf2(p_scale->Scale(stp::fac));
   msg_Debugging()<<"\\mu_F = "<<sqrt(lmuf2)<<"\n";
   msg_Debugging()<<"\\mu_R = "<<sqrt(p_scale->Scale(stp::ren))<<"\n";
@@ -233,7 +236,8 @@ Single_Process::BVI_Wgt Single_Process::BeamISRWeight
 	msg_IODebugging()<<*ampl<<"\n";
       }
       for (;ampl;ampl=ampl->Next()) {
-	if (IsEqual(LQ2,ampl->KT2())) continue;
+	double rn[2]={ran->Get(),ran->Get()};
+	if (IsEqual(LQ2,ampl->Next()?ampl->KT2():ampl->MuF2())) continue;
 	msg_IODebugging()<<*ampl<<"\n";
 	if (ampl->Next()) {
 	  if (ampl->Next()->Splitter()->Stat()==3) {
@@ -279,7 +283,7 @@ Single_Process::BVI_Wgt Single_Process::BeamISRWeight
 	    if (i==0 && (IsZero(wn1) || IsZero(wd1))) continue;
 	    if (i==1 && (IsZero(wn2) || IsZero(wd2))) continue;
 	    Vec4D p(-ampl->Leg(i)->Mom());
-	    double x(GetX(p,i)), z(x+(1.0-x)*ran->Get());
+	    double x(GetX(p,i)), z(x+(1.0-x)*rn[i]);
 	    ct+=CollinearCounterTerms(i,i?f2:f1,p,z,LQ2,LLQ2);
 	  }
 	}
