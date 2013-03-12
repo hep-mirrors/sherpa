@@ -104,6 +104,11 @@ The Rivet package, see @uref{http://projects.hepforge.org/rivet/,,Rivet Website}
 @*
 To enable it, Rivet and HepMC have to be installed and Sherpa must be configured
 as described in @ref{Rivet analyses}.
+@item HZTool
+The HZTool package, see @uref{http://hztool.hepforge.org/,,HZTool Website}.
+@*
+To enable it, HZTool and CERNLIB have to be installed and Sherpa must be configured
+as described in @ref{HZTool analyses}.
 @end table
 
 Multiple options can be combined using a comma, e.g. @samp{ANALYSIS=Internal,Rivet}.
@@ -231,6 +236,10 @@ Generates output in @url{http://cepa.fnal.gov/psm/stdhep,,StdHEP} format, which 
 passed to @uref{http://www.physics.ucdavis.edu/~conway/research/software/pgs/pgs4-general.htm,,PGS} 
 for analyses. This output format is available only if Sherpa was configured and installed 
 with options @option{--enable-hepevtsize=4000} and @option{--enable-pgs=/path/to/pgs}.
+Please refer to the PGS documentation for how to pass StdHEP event files on to PGS.
+If you are using the LHC olympics executeable, you may run
+@option{./olympics --stdhep events.lhe <other options>}.
+
 @item PGS_Weighted
 Generates output in @url{http://cepa.fnal.gov/psm/stdhep,,StdHEP} format, which can be 
 passed to @uref{http://www.physics.ucdavis.edu/~conway/research/software/pgs/pgs4-general.htm,,PGS} 
