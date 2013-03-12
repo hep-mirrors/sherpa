@@ -759,13 +759,25 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         no) AC_MSG_RESULT(cernlib not enabled); cernlib=false;;
         *)  if test -d "${enableval}"; then
               if test -f "${enableval}/lib/libkernlib_noshift.a"; then
+                if test -f "${enableval}/lib/libkernlib_noshift.so"; then
+                  CONDITIONAL_CERNLIBLIBS="${enableval}/lib/libpacklib_noshift.so ${enableval}/lib/libmathlib.so ${enableval}/lib/libkernlib_noshift.so"
+                  cernlib=true;
+                  AC_MSG_RESULT(${enableval});
+		else
                 CONDITIONAL_CERNLIBLIBS="${enableval}/lib/libpacklib_noshift.a ${enableval}/lib/libmathlib.a ${enableval}/lib/libkernlib_noshift.a"
                 cernlib=true;
                 AC_MSG_RESULT(${enableval});
+		fi
               elif test -f "${enableval}/lib/libkernlib.a"; then
+	        if test -f "${enableval}/lib/libkernlib.so"; then
+                  CONDITIONAL_CERNLIBLIBS="${enableval}/lib/libpacklib.so ${enableval}/lib/libmathlib.so ${enableval}/lib/libkernlib.so"
+                  cernlib=true;
+                  AC_MSG_RESULT(${enableval});
+		else
                 CONDITIONAL_CERNLIBLIBS="${enableval}/lib/libpacklib.a ${enableval}/lib/libmathlib.a ${enableval}/lib/libkernlib.a"
                 cernlib=true;
                 AC_MSG_RESULT(${enableval});
+		fi
               else
                 AC_MSG_ERROR(Did not find '${enableval}/lib/libkernlib.a'.); 
               fi;
