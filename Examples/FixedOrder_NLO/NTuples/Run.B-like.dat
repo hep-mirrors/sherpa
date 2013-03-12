@@ -41,5 +41,6 @@
   BEGIN_RIVET {
     -a ATLAS_2012_I1083318;
     USE_HEPMC_SHORT 1;
+    IGNOREBEAMS 1;
   } END_RIVET;
 }(analysis);

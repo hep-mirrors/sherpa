@@ -788,7 +788,6 @@ bool Initialization_Handler::InitializeTheAnalyses()
         THROW(missing_module,"Cannot load HepMC library --enable-hepmc2).");
       if (!s_loader->LoadLibrary("SherpaRivetAnalysis")) 
         THROW(missing_module,"Cannot load RivetAnalysis library (--enable-rivet).");
-      Read_Write_Base::AddCommandLine("BEAM_REMNANTS 1;");
     }
     Analysis_Interface* ana=Analysis_Interface::Analysis_Getter_Function::GetObject
                             (analyses[i],Analysis_Arguments(m_path,m_analysisdat,outpath));
