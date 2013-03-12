@@ -1,4 +1,4 @@
-#include "SHERPA/Tools/Analysis_Interface.H"
+#include "SHERPA/Tools/Output_Base.H"
 
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
@@ -64,10 +64,10 @@ struct MD_Info {
 
 typedef std::map<ATOOLS::Particle*,MD_Info> MotherDaughter_Map;
 
-class PGS_Interface: public SHERPA::Analysis_Interface {
+class Output_PGS: public SHERPA::Output_Base {
 private:
 
-  std::string m_inpath, m_infile, m_outfile;
+  std::string m_basename, m_ext;
 
   int m_imode;
 
@@ -76,42 +76,44 @@ private:
   void Convert(ATOOLS::Blob_List *const bl,
 	       MotherDaughter_Map &mdmap);
 
-  void CheckParticle(ATOOLS::Particle *const cp,const int sc,
-		     const int mode,MotherDaughter_Map &mdmap);
-  void Check(ATOOLS::Blob_List *const bl,
-	     MotherDaughter_Map &mdmap);
-
 public:
 
-  inline PGS_Interface(const std::string &inpath,
-			  const std::string &infile,
-			  const std::string &outpath):
-    Analysis_Interface("PGS"),
-    m_inpath(inpath), m_infile(infile) {}
+  Output_PGS(const SHERPA::Output_Arguments &args,const int mode);
 
-  bool Init();
-  bool Run(ATOOLS::Blob_List *const bl);
-  bool Finish();
+  void Header();
+  void Footer();
+
+  void Output(ATOOLS::Blob_List *bl,const double weight);
 
   void ShowSyntax(const int i);
 
-};// end of class PGS_Interface
+};// end of class Output_PGS
+
+class Output_PGSW: public Output_PGS {};
 
 using namespace SHERPA;
 using namespace ATOOLS;
-
-void PGS_Interface::ShowSyntax(const int i)
+  
+Output_PGS::Output_PGS(const SHERPA::Output_Arguments &args,const int mode):
+  Output_Base("PGS"), m_imode(mode)
 {
-  if (!msg_LevelIsInfo() || i==0) return;
-  msg_Out()<<METHOD<<"(): {\n\n"
-	   <<"   BEGIN_PGS {\n\n"
-	   <<"     FILE_NAME <filename>\n"
-	   <<"     WRITE_MODE <mode>\n";
-  msg_Out()<<"\n   } END_PGS\n\n"
-	   <<"}"<<std::endl;
+  m_basename=args.m_outpath+"/"+args.m_outfile;
+  m_ext=".lhe";
 }
 
-void PGS_Interface::ConvertParticle
+void Output_PGS::Header()
+{
+  pgspars.nevsha=rpa->gen.NumberOfEvents();
+  MakeFortranString(pgspars.shafile,m_basename+m_ext,80);
+  msg_Info()<<METHOD<<"("<<m_imode<<"): {"<<std::endl;
+  pgsxxx(1);
+  msg_Info()<<"}"<<std::endl;
+  hepev4.alphaqedlh=hepev4.alphaqcdlh=0.0;
+  for (size_t i(0);i<10;++i) hepev4.scalelh[i]=0.0;
+  hepev4.idruplh=0;
+}
+
+void Output_PGS::ConvertParticle
 (ATOOLS::Particle *const cp,const int sc,
  const int mode,MotherDaughter_Map &mdmap)
 {
@@ -171,13 +173,7 @@ void PGS_Interface::ConvertParticle
     }
 }
 
-void PGS_Interface::CheckParticle
-(ATOOLS::Particle *const cp,const int sc,
- const int mode,MotherDaughter_Map &mdmap)
-{
-}
-
-void PGS_Interface::Convert(ATOOLS::Blob_List *const bl,
+void Output_PGS::Convert(ATOOLS::Blob_List *const bl,
 			       MotherDaughter_Map &mdmap)
 {
   hepevt.nhep=0;
@@ -190,48 +186,7 @@ void PGS_Interface::Convert(ATOOLS::Blob_List *const bl,
       ConvertParticle(pl[n],1,0,mdmap);
 }
 
-void PGS_Interface::Check(ATOOLS::Blob_List *const bl,
-			     MotherDaughter_Map &mdmap)
-{
-}
-
-bool PGS_Interface::Init()
-{
-  Data_Reader reader(" ",";","//");
-  reader.AddWordSeparator("\t");
-  reader.SetAddCommandLine(false);
-  reader.SetInputPath(m_inpath);
-  std::string infile(m_infile);
-  if (infile.find('|')!=std::string::npos)
-    infile=infile.substr(0,infile.find('|'));
-  reader.SetInputFile(infile);
-  reader.AddComment("#");
-  reader.SetFileBegin("BEGIN_PGS");
-  reader.SetFileEnd("END_PGS");
-  std::string stag(rpa->gen.Variable("RNG_SEED"));
-  while (stag.find(' ')!=std::string::npos) stag.replace(stag.find(' '),1,"-");
-  reader.AddTag("RNG_SEED",stag);
-  m_outfile=reader.GetValue<std::string>("FILE_NAME","sherpa_events.hep");
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_size()>1) {
-    size_t pos(m_outfile.find('.'));
-    if (pos==std::string::npos) pos=m_outfile.length();
-    m_outfile.insert(pos,"_"+rpa->gen.Variable("RNG_SEED"));
-  }
-#endif
-  m_imode=reader.GetValue<int>("WRITE_MODE",1);
-  pgspars.nevsha=rpa->gen.NumberOfEvents();
-  MakeFortranString(pgspars.shafile,m_outfile,80);
-  msg_Info()<<"\n"<<METHOD<<"(): {"<<std::endl;
-  pgsxxx(1);
-  msg_Info()<<"}"<<std::endl;
-  hepev4.alphaqedlh=hepev4.alphaqcdlh=0.0;
-  for (size_t i(0);i<10;++i) hepev4.scalelh[i]=0.0;
-  hepev4.idruplh=0;
-  return true;
-}
-
-bool PGS_Interface::Run(ATOOLS::Blob_List *const bl)
+void Output_PGS::Output(Blob_List *bl,const double weight)
 {
   if (!bl->FourMomentumConservation())
     msg_Error()<<METHOD<<"(): Four momentum not conserved."<<std::endl;
@@ -243,18 +198,15 @@ bool PGS_Interface::Run(ATOOLS::Blob_List *const bl)
   hepev4.eventweightlh=xs->Get<double>();
   hepevt.nevhep=rpa->gen.NumberOfGeneratedEvents();
   pgsxxx(2,m_imode);
-  Check(bl,mdmap);
-  return true;
 }
 
-bool PGS_Interface::Finish()
+void Output_PGS::Footer()
 {
   msg_Info()<<METHOD<<"(): {\n  Total xs is "
 	    <<p_eventhandler->TotalXS()<<" pb +- "
 	    <<p_eventhandler->TotalErr()<<" pb.\n";
   pgsxxx(3);
   msg_Info()<<"}"<<std::endl;
-  return true;
 }
 
 }// end of namespace PGS
@@ -262,20 +214,32 @@ bool PGS_Interface::Finish()
 using namespace PGS;
 using namespace SHERPA;
 
-DECLARE_GETTER(PGS_Interface,"PGS",
-	       Analysis_Interface,Analysis_Arguments);
+DECLARE_GETTER(Output_PGS,"PGS",
+	       Output_Base,Output_Arguments);
 
-Analysis_Interface *ATOOLS::Getter
-<Analysis_Interface,Analysis_Arguments,PGS_Interface>::
-operator()(const Analysis_Arguments &args) const
+Output_Base *ATOOLS::Getter<Output_Base,Output_Arguments,Output_PGS>::
+operator()(const Output_Arguments &args) const
 {
-  return new PGS_Interface
-    (args.m_inpath,args.m_infile,args.m_outpath);
+  return new Output_PGS(args,1);
 }
 
-void ATOOLS::Getter<Analysis_Interface,Analysis_Arguments,
-		    PGS_Interface>::
+void ATOOLS::Getter<Output_Base,Output_Arguments,Output_PGS>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"PGS interface";
+  str<<"PGS output unweighted";
+}
+
+DECLARE_GETTER(Output_PGSW,"PGS_Weighted",
+	       Output_Base,Output_Arguments);
+
+Output_Base *ATOOLS::Getter<Output_Base,Output_Arguments,Output_PGSW>::
+operator()(const Output_Arguments &args) const
+{
+  return new Output_PGS(args,4);
+}
+
+void ATOOLS::Getter<Output_Base,Output_Arguments,Output_PGSW>::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"PGS output weighted";
 }

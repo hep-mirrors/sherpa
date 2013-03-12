@@ -1,15 +1,15 @@
 
 PGS_SOURCES   =	\
 		pgs_finterface.f \
-		PGS_Interface.C
+		Output_PGS.C
 
 AM_FFLAGS     =	-fno-automatic
 
 if PGS_SUPPORT
-pkglib_LTLIBRARIES    =	libPGSSherpa.la
+pkglib_LTLIBRARIES    =	libSherpaPGSOutput.la
 
-libPGSSherpa_la_SOURCES       =	$(PGS_SOURCES)
-libPGSSherpa_la_LIBADD        =	@CONDITIONAL_PGSLIBS@
+libSherpaPGSOutput_la_SOURCES         =	$(PGS_SOURCES)
+libSherpaPGSOutput_la_LIBADD          =	@CONDITIONAL_PGSLIBS@
 else
 PGS_EXTRA_DIST    = $(PGS_SOURCES)
 endif

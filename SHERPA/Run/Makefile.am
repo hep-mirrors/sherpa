@@ -2,24 +2,9 @@ bin_PROGRAMS  =	Sherpa@VERSIONING@
 
 Sherpa@VERSIONING@_SOURCES        =	Main.C 
 
-if HZTOOL_SUPPORT
-if CERNLIB_SUPPORT
-HZTOOLLIBS    = -L../../AddOns/HZTool -lHZToolSherpa \
-		@CONDITIONAL_HZTOOLLIBS@ @CONDITIONAL_CERNLIBLIBS@
-else
-HZTOOLLIBS    =
-endif
-else
-HZTOOLLIBS    =
-endif
-if PGS_SUPPORT
-PGSLIBS       =	-L../../AddOns/PGS -lPGSSherpa \
-		@CONDITIONAL_PGSLIBS@
-endif
-
 Sherpa@VERSIONING@_LDADD  =	-L@SHERPABUILDDIR@/Main -lSherpaMain \
 		-L@SHERPABUILDDIR@/Single_Events -lSherpaSingleEvents \
-		$(HZTOOLLIBS) $(PGSLIBS) @ATOOLSLIBS@
+		@ATOOLSLIBS@
 
 dist_pkgdata_DATA         = \
 			Analysis.dat \

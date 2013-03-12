@@ -182,6 +182,7 @@ C++ source code, cf. @ref{SHERPA_CPP_PATH}.
 @cindex HEPEVT
 @cindex LHEF
 @cindex Root
+@cindex Delphes
 @cindex FILE_SIZE
 @cindex EVT_FILE_PATH
 @cindex OUTPUT_PRECISION
@@ -217,12 +218,23 @@ listed. The event weights stored as the same as above.
 @item Delphes_GenEvent
 Generates output in @url{http://root.cern.ch,,Root} format, which can be passed to
 @uref{http://cp3.irmp.ucl.ac.be/projects/delphes,,Delphes} for analyses.
-Input events are taken from the HepMC interface, storage space can be reduced
-by up to 50% compared to gzip compressed HepMC.
+Input events are taken from the HepMC interface. Storage space can be reduced
+by up to 50% compared to gzip compressed HepMC. This output format is available 
+only if Sherpa was configured and installed with options @option{--enable-root} 
+and @option{--enable-delphes=/path/to/delphes}.
 @item Delphes_Short
 Generates output in @url{http://root.cern.ch,,Root} format, which can be passed to
 @uref{http://cp3.irmp.ucl.ac.be/projects/delphes,,Delphes} for analyses.
 Only incoming beams and outgoing particles are stored.
+@item PGS
+Generates output in @url{http://cepa.fnal.gov/psm/stdhep,,StdHEP} format, which can be 
+passed to @uref{http://www.physics.ucdavis.edu/~conway/research/software/pgs/pgs4-general.htm,,PGS} 
+for analyses. This output format is available only if Sherpa was configured and installed 
+with options @option{--enable-hepevtsize=4000} and @option{--enable-pgs=/path/to/pgs}.
+@item PGS_Weighted
+Generates output in @url{http://cepa.fnal.gov/psm/stdhep,,StdHEP} format, which can be 
+passed to @uref{http://www.physics.ucdavis.edu/~conway/research/software/pgs/pgs4-general.htm,,PGS} 
+for analyses. Event weights in the HEPEV4 common block are stored in the event file.
 @item HEPEVT
 Generates output in HepEvt format.
 @item LHEF

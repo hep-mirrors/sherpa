@@ -17,8 +17,8 @@ SUBDIRS       = \
 		HADRONS++ \
 		PHOTONS++ \
 		SHRiMPS \
-		AddOns \
 		SHERPA \
+		AddOns \
 		Manual \
 		Examples
 
