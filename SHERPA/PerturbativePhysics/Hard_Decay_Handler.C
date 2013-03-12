@@ -425,6 +425,16 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
 {
   Decay_Handler_Base::TreatInitialBlob(blob, amps, origparts);
 
+  double brfactor=1.0;
+  for (size_t i=0; i<blob->NOutP(); ++i) {
+    Decay_Table* dt=p_decaymap->FindDecay(blob->OutParticle(i)->RefFlav());
+    if (dt) brfactor*=dt->ActiveWidth()/dt->TotalWidth();
+  }
+  Blob_Data_Base * bdbweight((*blob)["Weight"]);
+  if (bdbweight) bdbweight->Set<double>(brfactor*bdbweight->Get<double>());
+  Blob_Data_Base * bdbmeweight((*blob)["MEWeight"]);
+  if (bdbmeweight) bdbmeweight->Set<double>(brfactor*bdbmeweight->Get<double>());
+
   NLO_subevtlist* sublist(NULL);
   Blob_Data_Base * bdb((*blob)["NLO_subeventlist"]);
   if (bdb) sublist=bdb->Get<NLO_subevtlist*>();
