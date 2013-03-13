@@ -19,6 +19,7 @@ namespace MYSTUFF {
 
 }// end of namespace MYSTUFF
 
+
 using namespace MYSTUFF;
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -35,7 +36,7 @@ PDF::CParam WBF_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   return PDF::CParam(muf2,q2,0.0,mur2,-1);
 }
 
-DECLARE_ND_GETTER(WBF_Core_Scale,"WBF",
+DECLARE_ND_GETTER(WBF_Core_Scale,"WBF_Test",
 		  Core_Scale_Setter,Core_Scale_Arguments,true);
 
 Core_Scale_Setter *ATOOLS::Getter

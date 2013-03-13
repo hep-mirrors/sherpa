@@ -1,22 +1,32 @@
 (run){
+  ###### event generation #####################
   EVENTS 10k;
-  NJET:=2; QCUT:=20;
-  # generator parameters
-  HARD_DECAYS 1; STABLE[25] 0;
-  STABLE[23] 0; STABLE[24] 0;
+  EVENT_GENERATION_MODE=Weighted
+  MI_HANDLER Off;
+  ###### generator parameters #################
+  NJET:=1; QCUT:=20;
+  ME_SIGNAL_GENERATOR=Comix;
+  HARD_DECAYS 1; 
+  MASS[25]=125.5;  WIDTH[25]=0.0;
+  STABLE[25] 0; STABLE[23] 0; STABLE[24] 0;
+  ERROR = 0.1;
   STORE_DECAY_RESULTS 1;
+  ###### scale setting parameters #############
+  SCF:=1.0; SCR:=1.0; QF:=1.0
+  SCALES STRICT_METS{SCF*MU_F2}{SCR*MU_R2}{QF*MU_Q2};
   EXCLUSIVE_CLUSTER_MODE 1;
-  CORE_SCALE WBF; SHERPA_LDADD SherpaWBF;
-  # physics parameters
+  CORE_SCALE WBF;
+  ###### physics parameters ###################
   BEAM_1 2212; BEAM_ENERGY_1 7000;
   BEAM_2 2212; BEAM_ENERGY_2 7000;
 }(run);
 
 (processes){
   Process 93 93 -> 25 93 93 93{NJET};
-  Order_EW 3; CKKW sqr(QCUT/E_CMS);
+  Order_EW 3;
+  CKKW sqr(QCUT/E_CMS);
   End process;
 }(processes);
 (selector){
-  NJetFinder 2 2 0 1;
+  NJetFinder 2 20. 0 0.4;
 }(selector);
