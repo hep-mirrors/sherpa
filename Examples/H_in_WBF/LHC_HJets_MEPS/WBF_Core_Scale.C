@@ -36,7 +36,7 @@ PDF::CParam WBF_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   return PDF::CParam(muf2,q2,0.0,mur2,-1);
 }
 
-DECLARE_ND_GETTER(WBF_Core_Scale,"WBF_Test",
+DECLARE_ND_GETTER(WBF_Core_Scale,"My_WBF",
 		  Core_Scale_Setter,Core_Scale_Arguments,true);
 
 Core_Scale_Setter *ATOOLS::Getter
@@ -50,5 +50,5 @@ void ATOOLS::Getter<Core_Scale_Setter,Core_Scale_Arguments,
 		    WBF_Core_Scale>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"WBF core scale"; 
+  str<<"My WBF core scale"; 
 }
