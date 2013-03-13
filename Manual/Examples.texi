@@ -60,12 +60,12 @@ of the main features of these examples.
 @section Top quark (pair) + jets production
 
 @menu
-* Tops in MC@@NLO:: 
-* Tops plus Jets in MEPS:: 
-* Tops plus W in MC@@NLO:: 
+* Tops in MC@@NLO::
+* Tops plus Jets in MEPS::
+* Tops plus W in MC@@NLO::
 @end menu
 
-@include Tevatron_TT.texi
+@include LHC_TTBar.texi
 @include LHC_TTW.texi
 
 
@@ -73,12 +73,16 @@ of the main features of these examples.
 @section Fixed-order next-to-leading order calculations
 
 @menu
-* NTuple production::        Production of Root NTuples with Sherpa
+* NTuple production::
 @end menu
 
 @include NLO_NTuples.texi
 
 @node MEWeight
 @section Computing matrix element weights with the Python API
+
+@menu
+* ME weight::
+@end menu
 
 @include MEWeight.texi

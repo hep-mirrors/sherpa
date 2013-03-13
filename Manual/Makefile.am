@@ -17,7 +17,6 @@ Sherpa_TEXINFOS = \
 	Commands.texi \
 	CrossSection.texi \
 	Customization.texi \
-	EGamma.texi \
 	EHC.texi \
 	Examples.texi \
 	FeynRules.texi \
@@ -28,7 +27,9 @@ Sherpa_TEXINFOS = \
 	Introduction.texi \
 	ISR.texi \
 	LHC_HJets.texi \
-	Tevatron_TT.texi \
+	LHC_TTBar.texi \
+	LHC_HTTBar.texi \
+	LHC_HWBF.texi \
 	LHC_TTW.texi \
 	LHC_Jets.texi \
 	LEP_Jets.texi \

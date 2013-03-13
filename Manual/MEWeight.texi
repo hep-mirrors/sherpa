@@ -1,0 +1,4 @@
+@node ME weight
+@subsection Calculation of matrix elements weights for given momentum configurations
+
+to be documented
