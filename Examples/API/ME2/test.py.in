@@ -17,9 +17,9 @@ try:
     Amp.CreateLegFromPyVec4D(-Sherpa.Vec4D(45.6,0,0,-45.6),Sherpa.Flavour(11,0))
     Amp.CreateLegFromPyVec4D(Sherpa.Vec4D(45.6,0,45.6,0),Sherpa.Flavour(1,0))
     Amp.CreateLegFromPyVec4D(Sherpa.Vec4D(45.6,0,-45.6,0),Sherpa.Flavour(1,1))
-    Proc=Generator.GetInitHandler().GetMatrixElementHandler().GetProcess(Amp)
+    ME=Generator.GetInitHandler().GetMatrixElementHandler().GetWeight(Amp)
     print "*****************************"
-    print "ME^2: ",Proc.Differential(Amp)
+    print "ME^2/s^2: ",ME
     print "*****************************"
         
 except Sherpa.Exception as exc:
