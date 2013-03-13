@@ -15,7 +15,7 @@ if ENABLE_PYEXT
 Sherpa_wrap.cxx: $(noinst_HEADERS)
 	@$(SWIG) -c++ -python -I$(top_srcdir) $<
 
-pkgpython_LTLIBRARIES = _Sherpa.la
+python_LTLIBRARIES = _Sherpa.la
 
 nodist__Sherpa_la_SOURCES = Sherpa_wrap.cxx
 _Sherpa_la_CPPFLAGS= @PYTHON_CPPFLAGS@

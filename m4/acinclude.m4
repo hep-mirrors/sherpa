@@ -270,7 +270,7 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   fi
 
   AS_AC_EXPAND(LIBDIR, ${pkglibdir})
-  AS_AC_EXPAND(PYLIBDIR, ${pkgpythondir})
+  AS_AC_EXPAND(PYLIBDIR, ${pythondir})
   AS_AC_EXPAND(INCLUDEDIR, ${pkgincludedir})
   AS_AC_EXPAND(BINDIR, ${bindir})
   AS_AC_EXPAND(DATADIR, ${pkgdatadir})
