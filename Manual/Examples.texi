@@ -60,8 +60,9 @@ of the main features of these examples.
 @section Top quark (pair) + jets production
 
 @menu
-* Tops in MC@@NLO:: Production of a top quark pair
-* Tops plus W in MC@@NLO:: Production of a top quark pair in association with a W
+* Tops in MC@@NLO:: 
+* Tops plus Jets in MEPS:: 
+* Tops plus W in MC@@NLO:: 
 @end menu
 
 @include Tevatron_TT.texi

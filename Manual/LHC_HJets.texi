@@ -45,10 +45,6 @@ is interfaced throught the BLHA interface for the H+2jet process.
 @item Contrary to the best LO shower setup, for NLO merging the shower is 
 setup in a crossing invariant way, employing the very same recoil scheme as 
 the MC@@NLO emission.
-@item The hard decays are switched on to decay all unstable final states 
-of the ME calculation. Decay channels can be restricted to a limited set 
-through @code{HDH_ONLY_DECAY <channel1>|<channel2>|...} or by editing the 
-relevant decay channel file, cf. @ref{Hard decays}.
 @item As both Comix and Amegic are specified as matrix element generators 
 to be used, Amegic has to be specified to be used for all MC@@NLO 
 multiplicities using @code{ME_Generator Amegic @{LJET@}}.
@@ -63,5 +59,16 @@ simply change the beam settings to
   BEAM_1  2212; BEAM_ENERGY_1 980;
   BEAM_2 -2212; BEAM_ENERGY_2 980;
 @end verbatim
+@item To enable the Higgs to decay to a pair of photons, for example, the 
+hard decays can be envoked. To this end simply add the following to your 
+run section
+@verbatim
+  % settings for hard decays
+  HARD_DECAYS On;
+  STORE_DECAY_RESULTS 1;
+  HDH_ONLY_DECAY {25,21,21}
+@end verbatim
+For details on the hard decay handling and how to enable specific decay modes 
+see @ref{Hard decays}.
 @end itemize
  

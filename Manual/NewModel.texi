@@ -1,34 +1,47 @@
 @node Exotic physics
 @section Exotic physics
 
-It is possible to add your own models to Sherpa in a straightforward way. To illustrate, a simple example has been included in the directory @code{Examples/Models/SM_ZPrime}, showing how to add a Z-prime boson to the Standard Model.
+It is possible to add your own models to Sherpa in a straightforward way. 
+To illustrate, a simple example has been included in the directory 
+@code{Examples/Models/SM_ZPrime}, showing how to add a Z-prime boson to 
+the Standard Model.
 
 The important features of this example include:
 @itemize @bullet
 @item The @code{SM_Zprime.C} file. 
 
-      This file contains the initialisation of the Z-prime boson. The properties of the Z-prime are set here, such as mass, width, electromagnetic charge, spin etc.
+      This file contains the initialisation of the Z-prime boson. The 
+      properties of the Z-prime are set here, such as mass, width, 
+      electromagnetic charge, spin etc.
       
 @item The @code{Interaction_Model_SM_Zprime.C} file. 
 
       This file contains the definition of the Z-prime boson's interactions. 
-      The right- and left-handed couplings to each of the fermions are set here.
+      The right- and left-handed couplings to each of the fermions are 
+      set here.
 
 @item An example @code{Makefile}.
 
       This shows how to compile the sources above into a shared library.
       
-@item The line @code{SHERPA_LDADD = SMZprime} in the @code{(run)} section of the run-card.
+@item The line @code{SHERPA_LDADD = SMZprime} in the @code{(run)} section 
+      of the run-card.
 
-      This line tells Sherpa to load the extra libraries created from the *.C files above.
+      This line tells Sherpa to load the extra libraries created from the *.C 
+      files above.
       
-@item The line @code{MODEL = SM+Zprime} in the @code{(model)} section of the run-card.
+@item The line @code{MODEL = SM+Zprime} in the @code{(model)} section of 
+      the run-card.
 
       This line tells Sherpa which model to use for the run.
 
-@item The lines @code{MASS[32] = 1000.} and @code{WIDTH[32] = 50.} in the @code{(model)} section of the run-card.
+@item The lines @code{MASS[32] = 1000.} and @code{WIDTH[32] = 50.} in the 
+      @code{(model)} section of the run-card.
 
-      These lines show how you can overrule the choices you made for the properties of the new particle in the @code{SM_Zprime.C} file. For more information on changing parameters in Sherpa, see @ref{Input structure} and @ref{Parameters}.
+      These lines show how you can overrule the choices you made for the 
+      properties of the new particle in the @code{SM_Zprime.C} file. For 
+      more information on changing parameters in Sherpa, see 
+      @ref{Input structure} and @ref{Parameters}.
 
 @end itemize
 
@@ -41,18 +54,19 @@ make
 in this directory. Then run Sherpa as normal:
 
 @example
-../../bin/Sherpa
+../../../bin/Sherpa
 @end example 
 
-To implement your own model, copy these example files anywhere and modify them
-according to your needs.
+To implement your own model, copy these example files anywhere and modify 
+them according to your needs.
 
 Note: You don't have to modify or recompile any part of Sherpa to use your
 model. As long as the @code{SHERPA_LDADD} parameter is specified as above,
 Sherpa will pick up your model automatically.
 
-Furthermore note: New physics models with an existing implementation in FeynRules, cf.
- @mycite{Christensen2008py} and @mycite{Christensen2009jx}, can directly 
-be invoked using Sherpa's interface to FeynRules, see @ref{FeynRules}.
+Furthermore note: New physics models with an existing implementation in 
+FeynRules, cf. @mycite{Christensen2008py} and @mycite{Christensen2009jx}, 
+can directly be invoked using Sherpa's interface to FeynRules, see 
+@ref{FeynRules}.
 
 

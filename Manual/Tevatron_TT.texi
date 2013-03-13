@@ -12,3 +12,17 @@ Things to notice:
 @item ...
 @end itemize
  
+@node Tops plus Jets in MEPS
+@subsection Simulation of top quark pair production in association with jets using MEPS methods
+
+@example
+@smallformat
+@verbatiminclude Examples/Tops_plus_Jets/LHC_Tops_MEPS/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item ...
+@end itemize
+ 
