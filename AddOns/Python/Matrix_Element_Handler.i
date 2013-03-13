@@ -11,6 +11,7 @@
 #include <ATOOLS/Org/CXXFLAGS_PACKAGES.H>
 #include <SHERPA/PerturbativePhysics/Matrix_Element_Handler.H>
 #include <ATOOLS/Phys/Cluster_Amplitude.H>
+#include <PHASIC++/Main/Process_Integrator.H>
 
 #include <map> 
 
@@ -110,9 +111,17 @@ namespace SHERPA {
 	  PHASIC::StringProcess_Map::const_iterator pit($self->ProcMaps()[i]->find(PHASIC::nlo_type::lo)->second->find(name));
 	  if(pit == $self->ProcMaps()[i]->find(PHASIC::nlo_type::lo)->second->end())
 	    continue;
-	  else
+	  else{
+	    SP(PHASIC::Color_Integrator) CI = (pit->second->Integrator()->ColorIntegrator());
+	    if(CI!=0)
+	      {
+                CI->GeneratePoint();
+                for (size_t i=0; i<ampl.Legs().size(); ++i)
+                ampl.Leg(i)->SetCol(ATOOLS::ColorID(CI->I()[i],CI->J()[i]));
+               }
 	    weight+=pit->second->Differential(ampl);
-	  return weight; 
+	    return weight; 
+	  }
 	}
 	std::string error("Could not find process ");
 	error.append(name);
