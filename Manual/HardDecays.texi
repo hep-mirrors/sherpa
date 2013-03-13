@@ -13,11 +13,11 @@ not include any NLO corrections in the decay matrix elements themselves.
 
 Note that the decay handler is an afterburner at the event generation level.
 It does not affect the calculation and integration of the hard scattering
-matrix elements at all. The cross section is thus unaffected during integration,
-and only the ``Total XS'' output at the end of event generation takes the
-branching ratios into account (if any decay channels have been disabled).
-Furthermore any cuts or scale definitions are not affected by decays at all and
-should be based on the inclusively produced particles before decays.
+matrix elements. The cross section is thus unaffected during integration, and
+the branching ratios (if any decay channels have been disabled) are only taken
+into account for the event weights and cross section output at the end of event
+generation. Furthermore any cuts or scale definitions are not affected by decays
+and operate only on the inclusively produced particles before decays.
 
 @menu
 * HDH_NO_DECAY::
