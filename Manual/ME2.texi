@@ -1,0 +1,48 @@
+@node ME2
+@subsection Computing matrix elements for idividual phase space points
+Sherpa's Python interface (see @ref{API}) can be used to compute
+matrix elemtents for individual phase space points. For processes with
+coloured external particles this is so far only supported by AMEGIC++.
+COMIX can be used however if all external particles are colourless.
+
+All information about the incoming and outgoing flavours and momenta
+of a process are stored in a 'cluster amplitude'. For each incoming
+and outgoing particle, a 'leg' must be added to the cluster amplitude
+using the 'CreateLegFromPyVec4D' method. This method accepts a 'Vec4D'
+object that represents the four-momentum of the corresponding particle
+as the first argument. The second argument represents it's flavour.
+Note that both momenta and flavours must be reversed for legs that
+correspond to incoming particles. A Flavour can be reversed by setting
+the second argument of it's constructor to '1'. The first argument is
+the pdg-ID of the particle. @code{Sherpa.Flavour(11,1)} represents an
+anti-electron, for example. Note that the value returned by the
+'Differential' method of the process needs to be multiplied by a
+factor of two times the center of mass energy squared.
+
+If AMEGIC++ is used as the matrix element generator, executing the
+script will result in AMEGIC++ writing out libraries and exiting.
+After compiling the libraries using @code{./makelibs}, the script must
+be executed again in order to obtain the matrix element. On some
+systems, this might result in a termination with errors of the form
+@verbatim
+Library_Loader::LoadLibrary(): ./Process/lib/libProc_P2_2_2_6_24_16_5_0.so: undefined symbol: _ZN6AMEGIC10Basic_Func1XEiii
+@end verbatim
+
+If this is the case, the library libSherpaMain.so must be preloaded,
+which can be achieved on a linux system via setting LD_PRELOAD
+accordingly:
+@verbatim
+export LD_PRELOAD=<prefix>/lib/SHERPA-MC/libSherpaMain.so
+@end verbatim
+
+In order to prevent Sherpa's initialization routine from integrating
+total cross sections, one can pass the command line argument
+@code{INIT_ONLY=1} when executing the script in order to save time.
+Alternatively, this argument can be added in the script itself via
+@code{sys.argv.append('INIT_ONLY=1')}.
+
+@example
+@smallformat
+@verbatiminclude Examples/API/ME2/test.py.in
+@end smallformat
+@end example
