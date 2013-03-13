@@ -30,11 +30,8 @@ nobase_dist_examples_DATA         =	\
 		V_plus_Bs/LHC_Wbb/Analysis.dat \
 		Jets_at_HadronColliders/LHC_Jets_MCatNLO/Run.dat \
 		Jets_at_HadronColliders/LHC_Jets_MEPS/Run.dat \
-		Gamma_plus_Jets/Tevatron_SinglePhotons_MEPS/Run.single.me.dat \
-		Gamma_plus_Jets/Tevatron_SinglePhotons_MEPS/Run.single.ps.dat \
-		GammaGamma_plus_Jets/Tevatron_Diphotons_MEPS/Run.diphoton.me.dat \
-		GammaGamma_plus_Jets/Tevatron_Diphotons_MEPS/Run.diphoton.ps.dat \
 		H_in_GluonFusion/LHC_HJets_Inclusive/Run.dat \
+		H_in_GluonFusion/LHC_HJets_DecayToPhotons/Run.dat \
 		H_in_TTBar/LHC_TTH_MCatNLO/lib.f \
 		H_in_TTBar/LHC_TTH_MCatNLO/intlib.f \
 		H_in_TTBar/LHC_TTH_MCatNLO/libqq.f \
@@ -53,6 +50,7 @@ nobase_dist_examples_DATA         =	\
 		H_in_TTBar/LHC_TTH_MCatNLO/TTH_Interface.C \
 		H_in_TTBar/LHC_TTH_MCatNLO/SConstruct \
 		H_in_TTBar/LHC_TTH_MCatNLO/Run.dat \
+		H_in_WBF/LHC_HJets_MEPS/Run.dat \
 		Tops_plus_Jets/Tevatron_Tops_MEPS/Run.dat \
 		Tops_plus_Jets/LHC_Tops_MEPS/Run.dat \
 		Tops_plus_Jets/Tevatron_Tops_MCatNLO/Run.dat \
