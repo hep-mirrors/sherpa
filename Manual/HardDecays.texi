@@ -85,12 +85,19 @@ directory, one has to specify @option{STORE_DECAY_RESULTS=1}.
 @cindex HDH_SET_WIDTHS
 @cindex WIDTH[<id>]
 
-By default, the decay handler operates independently from the particle width
-specified by @option{WIDTH[<id>]}. This allows to set the unstable particle
-width to zero for gauge invariance in the production matrix elements.
-To use the sum of the calculated partial widths as total width for each unstable
-particle instead one has to use @option{HDH_SET_WIDTHS=1}. This will overwrite
-the width specified by @option{WIDTH[<id>]}.
+The decay handler computes LO partial and total decay widths and generates
+decays with corresponding branching fractions, independently from the particle
+widths specified by @option{WIDTH[<id>]}. The latter are relevant only for the
+core process and should be set to zero for all unstable particles appearing
+in the core-process final state. This guarantees on-shellness and gauge
+invariance of the core process, and subsequent decays can be handled by the
+afterburner.
+In constrast, ‘WIDTH[<id>]' should be set to the physical width when unstable
+particles appear (only) as intermediate states in the core process, i.e. when
+production and decay are handled as a full process or using Decay(OS).
+In this case, the option @option{HDH_SET_WIDTHS=1} permits to overwrite the
+@option{WIDTH[<id>]} values of unstable particles by the LO widths computed by
+the decay handler.
 
 @node HARD_MASS_SMEARING
 @subsection HARD_MASS_SMEARING
