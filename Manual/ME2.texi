@@ -1,6 +1,6 @@
 @node ME2
 @subsection Computing matrix elements for idividual phase space points
-Sherpa's Python interface (see @ref{API}) can be used to compute
+Sherpa's Python interface (see @ref{Python Interface}) can be used to compute
 matrix elemtents for individual phase space points. For processes with
 coloured external particles this is so far only supported by AMEGIC++.
 COMIX can be used however if all external particles are colourless.

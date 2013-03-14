@@ -79,10 +79,12 @@ of the main features of these examples.
 @include NLO_NTuples.texi
 
 @node APIexamples
-@section Computing matrix elements with the Python interface
+@section Using the Python interface
 
 @menu
-* ME2:: Computing matrix elements for individual phase space points
+* ME2::
+* Events::
 @end menu
 
 @include ME2.texi
+@include Events.texi

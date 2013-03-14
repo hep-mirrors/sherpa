@@ -1,5 +1,5 @@
-@node API
-@section API
+@node Python Interface
+@section Python Interface
 Certain Sherpa classes and methods can be made available to the Python
 interpreter in the form of an extension module. This module can be
 loaded in Python and provides access to certain functionalities of the
@@ -33,6 +33,10 @@ the generator causes Sherpa to compute the cross sections for the
 processes specified in the run card. See @ref{ME2} for an example that
 shows how to use the Python interface to compute matrix elements.
 
+Note that if you have compiled Sherpa with MPI support, you need to
+source the @uref{http://mpi4py.scipy.org,,mpi4py} module using
+@code{from mpi4py import MPI}.
+
 @verbatim
   #!/usr/bin/python
   import sys
@@ -48,7 +52,5 @@ shows how to use the Python interface to compute matrix elements.
 
   # catch exceptions
   except Sherpa.Exception as exc:
-      # print the exception message
-      Sherpa.Stream_Exception(Sherpa.cvar.msg.Error(), exc)
-      Sherpa.cvar.msg.Error().Endl()
+      print exc
 @end verbatim
