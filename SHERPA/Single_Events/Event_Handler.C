@@ -431,6 +431,7 @@ void Event_Handler::MPISync()
   m_mn=m_n;
   m_msum=m_sum;
   m_msumsqr=m_sumsqr;
+  exh->MPISync();
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
