@@ -167,10 +167,10 @@ void Exception_Handler::MPISync()
     for (int tag=1;tag<size;++tag) {
       if (m_mpi[tag]==0) continue;
       int flag, test;
+      MPI_Request req;
+      MPI_Irecv(&flag,1,MPI::INT,tag,10*size+tag,MPI::COMM_WORLD,&req);
       unsigned int time=0;
       for (;time<m_mpi_timeout;++time) {
-	MPI_Request req;
-	MPI_Irecv(&flag,1,MPI::INT,tag,10*size+tag,MPI::COMM_WORLD,&req);
 	MPI_Test(&req,&test,MPI_STATUS_IGNORE);
 	if (test) {
 	  m_mpi[tag]=flag<0?0:1;
@@ -179,11 +179,11 @@ void Exception_Handler::MPISync()
 		       <<" of "<<size<<" exited."<<std::endl;
 	  break;
 	}
-	MPI_Cancel(&req);
-	m_mpi[tag]=0;
 	sleep(1);
       }
       if (time==m_mpi_timeout) {
+	MPI_Cancel(&req);
+	m_mpi[tag]=0;
       	msg_Error()<<METHOD<<"(): MPI rank "<<tag
       		   <<" of "<<size<<" does not respond."<<std::endl;
       }
