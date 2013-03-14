@@ -138,8 +138,8 @@ double Process_Integrator::TotalVar() const
 
 void Process_Integrator::OptimizeSubResult(const double &s2)
 {
+  m_n+=m_sn;
   if (m_smode==0) {
-    m_n+=m_sn;
     m_totalsum+=m_ssum;
     m_totalsumsqr+=m_ssumsqr;
   }
