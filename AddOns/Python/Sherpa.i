@@ -7,7 +7,9 @@
 %include "Message.i"
 %include "Flavour.i"
 %include "Vec4.i"
-%include "iostream.i"
+%include "Particle.i"
+%include "Blob.i"
+%include "Blob_List.i"
 %{
 #include <SHERPA/Main/Sherpa.H>
   %}
@@ -57,6 +59,8 @@ namespace SHERPA {
     bool SummarizeRun();
     bool GenerateOneEvent();
     bool InitializeTheEventHandler();
+    long int NumberOfEvents() const;
+    const ATOOLS::Blob_List &GetBlobList() const;
     inline Initialization_Handler * GetInitHandler() const;
     
   };

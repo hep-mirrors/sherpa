@@ -2,7 +2,9 @@ examplesdir        = $(pkgdatadir)/Examples
 
 nobase_dist_examples_DATA         =	\
 		API/ME2/Run.dat \
-		API/ME2/test.py \
+		API/ME2/test.py.in \
+		API/Events/Run.dat \
+		API/Events/test.py.in \
 		Models/SM_ZPrime/Interaction_Model_SM_Zprime.C \
 		Models/SM_ZPrime/SM_Zprime.C \
 		Models/SM_ZPrime/Run.dat \

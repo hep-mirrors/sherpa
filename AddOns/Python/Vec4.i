@@ -2,6 +2,7 @@
 %{
 #include <ATOOLS/Math/MathTools.H>
 #include <ATOOLS/Math/Vec4.H>
+#include <ATOOLS/Org/MyStrStream.H>
 #include <iostream>
 %}
 
@@ -50,6 +51,15 @@ namespace ATOOLS {
     double Mass() const { 
       return sqrt(ATOOLS::Abs<Scalar>(Abs2()));
     }
+
+    %extend {
+      std::string __str__() {
+	MyStrStream conv;
+	conv<<*self;
+	return conv.str();
+      };
+    };
+
   };
 
   // Instantiate a "double" version of the template that will be available as a Class Vec4D in python

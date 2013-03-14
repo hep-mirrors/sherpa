@@ -2,6 +2,7 @@
 %{
 #include <ATOOLS/Org/Message.H>
 #include <ATOOLS/Org/Exception.H>
+#include <ATOOLS/Org/MyStrStream.H>
 #include <signal.h>
 #include <iostream>
   %}
@@ -85,12 +86,14 @@ namespace ATOOLS {
     inline const std::string &Info() const { return m_info; }
     inline ex::type           Type() const { return m_type; }
 
+    %extend {
+      std::string __str__() {
+	MyStrStream conv;
+	conv<<*self;
+	return conv.str();
+      };
+    };
+
   };// end of class Exception
   
-  // SWIG needs to rename the following operator to succesfully wrap the functionality
-  // In Python, the operator is used like Exception.Input_Exception( STR, EXC),
-  // where STR is of std::ostream type and EXC is of ATOOLS::Exception type.
-  // The usaage of this method requires std::ostream to be at least minimally wrapped (see iostream.i)
-  %rename(Stream_Exception) &operator<<(std::ostream &str,const ATOOLS::Exception &exception);
-  std::ostream &operator<<(std::ostream &str,const ATOOLS::Exception &exception);
 }// end of namespace ATOOLS

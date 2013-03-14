@@ -1,5 +1,4 @@
 //%module Matrix_Element_Handler
-%include "exception.i"
 %{
 #include <MODEL/Main/Model_Base.H>
 #include <BEAM/Main/Beam_Spectra_Handler.H>
@@ -58,34 +57,6 @@ namespace SHERPA {
 
     inline PHASIC::Process_Vector AllProcesses() const { return m_procs; }
 
-    // Here we define exeption handlers that only apply to the methods GetWeigth and 
-    // GetProcess. These methods are added to the Matrix_Element_Handler class
-    // and implemented in this interface file. If these methods fail to do their job,
-    // an instance of const char* is thrown that in turn is propagated to the
-    // python exception routines and treated by the python interpreter instead of 
-    // Sherpa's exception handling system.
-    %exception GetWeight {
-      try 
-	{ 
-	  $action 
-	    } 
-      catch(const char* error) 
-	{ 
-	  SWIG_exception(SWIG_RuntimeError, error); 
-	} 
-    } 
-
-    %exception GetProcess {
-      try 
-	{ 
-	  $action 
-	    } 
-      catch(const char* error) 
-	{ 
-	  SWIG_exception(SWIG_RuntimeError, error); 
-	} 
-    } 
-    
     %extend{
        PHASIC::Process_Base* GetProcess(const ATOOLS::Cluster_Amplitude &ampl) const
       {   

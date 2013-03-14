@@ -3,6 +3,10 @@
 
 #include "ATOOLS/Org/Exception.H"
 
+namespace ATOOLS {
+  class Blob_List;
+}
+
 namespace HepMC{
   class GenEvent;
 }
@@ -44,6 +48,9 @@ namespace SHERPA {
 
     bool SummarizeRun();
 
+    long int NumberOfEvents() const;
+
+    const ATOOLS::Blob_List &GetBlobList() const;
     
     inline Initialization_Handler * GetInitHandler() const 
     { return p_inithandler; }

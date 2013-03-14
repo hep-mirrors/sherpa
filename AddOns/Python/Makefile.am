@@ -6,9 +6,11 @@ noinst_HEADERS = \
 	Cluster_Amplitude.i \
 	Flavour.i \
 	Vec4.i \
+	Particle.i \
+	Blob.i \
+	Blob_List.i \
 	Exception.i \
-	Message.i \
-	iostream.i
+	Message.i
 
 if ENABLE_PYEXT
 

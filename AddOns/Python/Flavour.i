@@ -8,6 +8,7 @@
 #include <ATOOLS/Phys/Flavour_Tags.H>
 #include <ATOOLS/Math/MathTools.H>
 #include <ATOOLS/Phys/Flavour.H>
+#include <ATOOLS/Org/MyStrStream.H>
 #include <string> 
 #include <vector>
 #include <set>
@@ -236,6 +237,14 @@ namespace ATOOLS {
     }
     
     static kf_code PdgToSherpa(const unsigned long& pdg);
+
+    %extend {
+      std::string __str__() {
+	MyStrStream conv;
+	conv<<*self;
+	return conv.str();
+      };
+    };
 
   };// end of class Flavour
 

@@ -331,6 +331,16 @@ bool Sherpa::SummarizeRun()
   return true; 
 }
 
+long int Sherpa::NumberOfEvents() const
+{
+  return rpa->gen.NumberOfEvents();
+}
+
+const Blob_List &Sherpa::GetBlobList() const
+{
+  return *p_eventhandler->GetBlobs();
+}
+
 void Sherpa::DrawLogo(const int mode) 
 { 
   msg_Info()<<"-----------------------------------------------------------------------------"<<std::endl;
