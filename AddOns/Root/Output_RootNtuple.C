@@ -45,9 +45,6 @@ Output_RootNtuple::Output_RootNtuple(const Output_Arguments &args):
   int size=MPI::COMM_WORLD.Get_size();
 #endif
   m_total=0;
-  m_evtlist.resize(m_avsize+100);
-  m_flavlist.resize(3*m_avsize);
-  m_momlist.resize(3*m_avsize);
   m_sum=m_s2=m_s3=m_c1=m_c2=0.;
   m_sq=m_fsq=m_sq2=m_sq3=0.;
 #ifdef USING__ROOT
@@ -163,10 +160,10 @@ void Output_RootNtuple::PrepareTerminate()
   // delete p_f;
   ATOOLS::exh->RemoveTerminatorObject(this);
 #endif
-  cout<<"ROOTNTUPLE_OUTPUT stored: "<<m_s2/m_c2<<" +/- "<<sqrt((m_sq2/m_c2-sqr(m_s2/m_c2))/(m_c2-1.))<<" pb  (reweighted 1) \n"; 
+  msg_Info()<<"ROOTNTUPLE_OUTPUT stored: "<<m_s2/m_c2<<" +/- "<<sqrt((m_sq2/m_c2-sqr(m_s2/m_c2))/(m_c2-1.))<<" pb  (reweighted 1) \n"; 
   double c3(m_idcnt);
-  cout<<"                          "<<m_s3/c3<<" +/- "<<sqrt((m_sq3/c3-sqr(m_s3/c3))/(c3-1.))<<" pb  (reweighted 2) \n"; 
-  cout<<"                          "<<m_sum/m_c1<<" +/- "<<sqrt((m_sq/m_c1-sqr(m_sum/m_c1))/(m_c1-1.))<<" pb  (before reweighting) \n"<<endl; 
+  msg_Info()<<"                          "<<m_s3/c3<<" +/- "<<sqrt((m_sq3/c3-sqr(m_s3/c3))/(c3-1.))<<" pb  (reweighted 2) \n"; 
+  msg_Info()<<"                          "<<m_sum/m_c1<<" +/- "<<sqrt((m_sq/m_c1-sqr(m_sum/m_c1))/(m_c1-1.))<<" pb  (before reweighting) \n"<<endl; 
 }
 
 void Output_RootNtuple::Output(Blob_List* blobs, const double weight) 
@@ -195,6 +192,8 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
   std::string type((*signal)["NLOQCDType"]->Get<std::string>());
   
   if (!seinfo) {
+    if (m_evtlist.size()<=m_cnt2)
+      m_evtlist.resize(m_evtlist.size()+m_avsize);
     m_evtlist[m_cnt2].weight=(*signal)["Weight"]->Get<double>();
     m_sum+=m_evtlist[m_cnt2].weight;
     m_fsq+=sqr(m_evtlist[m_cnt2].weight);
@@ -233,13 +232,13 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
       ++np;
       int kfc=part->Flav().Kfcode(); 
       if (part->Flav().IsAnti()) kfc=-kfc;
+      if (m_fcnt>=m_flavlist.size()) {
+	m_flavlist.resize(m_flavlist.size()+3*m_avsize);
+	m_momlist.resize(m_momlist.size()+3*m_avsize);
+      }
       m_flavlist[m_fcnt]=kfc;
       m_momlist[m_fcnt]=part->Momentum();
       ++m_fcnt;
-      if (m_fcnt>=m_flavlist.size()) {
-	m_flavlist.resize(m_flavlist.size()+m_avsize);
-	m_momlist.resize(m_momlist.size()+m_avsize);
-      }
     }
     m_evtlist[m_cnt2].nparticle=np;
     ++m_cnt2;
@@ -249,6 +248,8 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
     double tweight=0.;
     for (size_t j=0;j<nlos->size();j++) {
       if ((*nlos)[j]->m_result==0.0) continue;
+      if (m_evtlist.size()<=m_cnt2)
+	m_evtlist.resize(m_evtlist.size()+m_avsize);
       ATOOLS::Particle_List * pl=(*nlos)[j]->CreateParticleList();
       m_evtlist[m_cnt2].weight=(*nlos)[j]->m_result;
       tweight+=m_evtlist[m_cnt2].weight;
@@ -282,13 +283,13 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
 	   pit!=pl->end();++pit) {
 	kfc=(*pit)->Flav().Kfcode(); 
 	if ((*pit)->Flav().IsAnti()) kfc=-kfc;	  
+	if (m_fcnt>=m_flavlist.size()) {
+	  m_flavlist.resize(m_flavlist.size()+3*m_avsize);
+	  m_momlist.resize(m_momlist.size()+3*m_avsize);
+	}	
 	m_flavlist[m_fcnt]=kfc;
 	m_momlist[m_fcnt]=(*pit)->Momentum();
 	++m_fcnt;
-	if (m_fcnt>=m_flavlist.size()) {
-	  m_flavlist.resize(m_flavlist.size()+m_avsize);
-	  m_momlist.resize(m_momlist.size()+m_avsize);
-	}	
 	delete *pit;
       }      
       delete pl;
@@ -297,7 +298,7 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
     m_fsq+=sqr(tweight);
   }
   
-  if (m_cnt2>=m_avsize) StoreEvt();
+  if ((rpa->gen.NumberOfGeneratedEvents()%m_avsize)==0) StoreEvt();
 }
 
 void Output_RootNtuple::ChangeFile(std::string number)
@@ -311,6 +312,7 @@ void Output_RootNtuple::ChangeFile(std::string number)
 void Output_RootNtuple::MPISync()
 {
 #ifdef USING__MPI
+  static int s_offset=11;
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
     int rank=MPI::COMM_WORLD.Get_rank();
@@ -321,15 +323,13 @@ void Output_RootNtuple::MPISync()
       m_momlist.resize(m_fcnt);
       for (int tag=1;tag<size;++tag) {
 	if (!exh->MPIStat(tag)) continue;
-	MPI::COMM_WORLD.Recv(&vals,6,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
-	MPI::COMM_WORLD.Send(&vals,1,MPI::DOUBLE,tag,size+tag);
+	MPI::COMM_WORLD.Recv(&vals,6,MPI::DOUBLE,MPI::ANY_SOURCE,s_offset*size+tag);
 	std::vector<rntuple_evt2> evts((int)vals[0]);
 	std::vector<int> flavs((int)vals[3]);
 	std::vector<Vec4D> moms((int)vals[3]);
-	MPI::COMM_WORLD.Recv(&evts.front(),(int)vals[0],MPI_rntuple_evt2,MPI::ANY_SOURCE,tag);
-	MPI::COMM_WORLD.Recv(&flavs.front(),(int)vals[3],MPI::INT,MPI::ANY_SOURCE,size+tag);
-	MPI::COMM_WORLD.Recv(&moms.front(),(int)vals[3],MPI_Vec4D,MPI::ANY_SOURCE,2*size+tag);
-	MPI::COMM_WORLD.Send(&vals,1,MPI::DOUBLE,tag,3*size+tag);
+	MPI::COMM_WORLD.Recv(&evts.front(),(int)vals[0],MPI_rntuple_evt2,MPI::ANY_SOURCE,(s_offset+1)*size+tag);
+	MPI::COMM_WORLD.Recv(&flavs.front(),(int)vals[3],MPI::INT,MPI::ANY_SOURCE,(s_offset+2)*size+tag);
+	MPI::COMM_WORLD.Recv(&moms.front(),(int)vals[3],MPI_Vec4D,MPI::ANY_SOURCE,(s_offset+3)*size+tag);
 	m_evtlist.insert(m_evtlist.end(),evts.begin(),evts.end());
 	m_flavlist.insert(m_flavlist.end(),flavs.begin(),flavs.end());
 	m_momlist.insert(m_momlist.end(),moms.begin(),moms.end());
@@ -357,12 +357,10 @@ void Output_RootNtuple::MPISync()
       vals[3]=m_fcnt;
       vals[4]=m_fsq;
       vals[5]=m_sum;
-      MPI::COMM_WORLD.Send(&vals,6,MPI::DOUBLE,0,rank);
-      MPI::COMM_WORLD.Recv(&vals,1,MPI::DOUBLE,0,size+rank);
-      MPI::COMM_WORLD.Send(&m_evtlist.front(),(int)vals[0],MPI_rntuple_evt2,0,rank);
-      MPI::COMM_WORLD.Send(&m_flavlist.front(),(int)vals[3],MPI::INT,0,size+rank);
-      MPI::COMM_WORLD.Send(&m_momlist.front(),(int)vals[3],MPI_Vec4D,0,2*size+rank);
-      MPI::COMM_WORLD.Recv(&vals,1,MPI::DOUBLE,0,3*size+rank);
+      MPI::COMM_WORLD.Send(&vals,6,MPI::DOUBLE,0,s_offset*size+rank);
+      MPI::COMM_WORLD.Send(&m_evtlist.front(),(int)vals[0],MPI_rntuple_evt2,0,(s_offset+1)*size+rank);
+      MPI::COMM_WORLD.Send(&m_flavlist.front(),(int)vals[3],MPI::INT,0,(s_offset+2)*size+rank);
+      MPI::COMM_WORLD.Send(&m_momlist.front(),(int)vals[3],MPI_Vec4D,0,(s_offset+3)*size+rank);
       m_cnt2=m_cnt3=m_fcnt=m_evt=0;
       m_sum=m_fsq=0.0;
     }
