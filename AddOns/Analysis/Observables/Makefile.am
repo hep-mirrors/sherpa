@@ -7,6 +7,7 @@ ANAOBS_SOURCES        =	\
 			Normalized_Observable.C \
 			One_Variable_Observable.C \
 			HT.C \
+			XS.C \
 			TotalMass.C \
 			LMass.C \
 			EV_C_Observables.C \
@@ -20,7 +21,7 @@ ANAOBS_SOURCES        =	\
 			Conditional_One_Particle_Observables.C \
 			Two_Particle_Observables.C \
 			Two_Particle_Observables_2.C \
-                        Three_Particle_Observables.C \
+			Three_Particle_Observables.C \
 			Four_Particle_Observables.C \
 			Four_Particle_Observables_2.C \
 			Six_Particle_Observables.C \
