@@ -162,6 +162,9 @@ namespace SHERPA {
     
     inline int HasNLO() const  { return m_hasnlo;  }
 
+    double GetWeight(const ATOOLS::Cluster_Amplitude &ampl,
+		     const PHASIC::nlo_type::code type) const;
+
   };// end of class Matrix_Element_Handler
 
 }// end of namespace SHERPA

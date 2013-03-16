@@ -1,9 +1,8 @@
 //%module Blob_List
 %include "std_deque.i"
 %{
-#include <ATOOLS/Phys/Blob.H>
+#include <ATOOLS/Phys/Blob_List.H>
 #include <ATOOLS/Org/MyStrStream.H>
-#include <iostream>
 %}
 
 %template(BlobDeque) std::deque<ATOOLS::Blob*>;

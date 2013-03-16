@@ -1,8 +1,5 @@
 noinst_HEADERS = \
 	Sherpa.i \
-	Initialization_Handler.i \
-	Matrix_Element_Handler.i \
-	Process_Base.i \
 	Cluster_Amplitude.i \
 	Flavour.i \
 	Vec4.i \

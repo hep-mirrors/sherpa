@@ -1,11 +1,8 @@
 //%module Particle
 %{
-#include <ATOOLS/Math/Vector.H>
-#include <ATOOLS/Phys/Flavour.H>
-#include <ATOOLS/Phys/Flow.H>
+#include <ATOOLS/Phys/Particle.H>
+#include <ATOOLS/Phys/Blob.H>
 #include <ATOOLS/Org/MyStrStream.H>
-#include <iostream>
-#include <list>
 %}
 
 namespace ATOOLS {

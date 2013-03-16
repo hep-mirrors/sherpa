@@ -1,9 +1,6 @@
 %module Sherpa
 %include "Exception.i"
-%include "Initialization_Handler.i"
-%include "Matrix_Element_Handler.i"
 %include "Cluster_Amplitude.i"
-%include "Process_Base.i"
 %include "Message.i"
 %include "Flavour.i"
 %include "Vec4.i"
@@ -48,8 +45,6 @@
 
 namespace SHERPA {
 
-  class Initialization_Handler;
-
   class Sherpa : public ATOOLS::Terminator_Object {
     
   public:
@@ -61,7 +56,7 @@ namespace SHERPA {
     bool InitializeTheEventHandler();
     long int NumberOfEvents() const;
     const ATOOLS::Blob_List &GetBlobList() const;
-    inline Initialization_Handler * GetInitHandler() const;
+    double GetMEWeight(const ATOOLS::Cluster_Amplitude &ampl) const;
     
   };
 }

@@ -967,4 +967,22 @@ std::string Matrix_Element_Handler::MakeString
   return out;
 }
 
+double Matrix_Element_Handler::GetWeight
+(const Cluster_Amplitude &ampl,const nlo_type::code type) const
+{
+  std::string name(Process_Base::GenerateName(&ampl));
+  for (int i(0);i<m_pmaps.size();++i) {
+    StringProcess_Map::const_iterator pit
+      (m_pmaps[i]->find(type)->second->find(name));
+    if(pit==m_pmaps[i]->find(type)->second->end()) continue;
+    SP(Color_Integrator) ci(pit->second->Integrator()->ColorIntegrator());
+    if (ci!=NULL) {
+      ci->GeneratePoint();
+      for (size_t j(0);j<ampl.Legs().size();++j)
+	ampl.Leg(j)->SetCol(ColorID(ci->I()[j],ci->J()[j]));
+      return pit->second->Differential(ampl);
+    }
+  }
+  return 0.0;
+}
 

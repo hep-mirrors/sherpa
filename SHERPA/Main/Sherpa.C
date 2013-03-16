@@ -341,6 +341,12 @@ const Blob_List &Sherpa::GetBlobList() const
   return *p_eventhandler->GetBlobs();
 }
 
+double Sherpa::GetMEWeight(const Cluster_Amplitude &ampl) const
+{
+  return p_inithandler->GetMatrixElementHandler()->
+    GetWeight(ampl,PHASIC::nlo_type::lo);
+}
+
 void Sherpa::DrawLogo(const int mode) 
 { 
   msg_Info()<<"-----------------------------------------------------------------------------"<<std::endl;

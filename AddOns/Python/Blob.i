@@ -1,11 +1,6 @@
 //%module Blob
 %{
-#include <string>
-#include <vector>
-#include <map>
-#include <ATOOLS/Math/Poincare.H>
-#include <ATOOLS/Phys/Particle.H>
-#include <ATOOLS/Org/STL_Tools.H>
+#include <ATOOLS/Phys/Blob.H>
 #include <ATOOLS/Org/MyStrStream.H>
 %}
 

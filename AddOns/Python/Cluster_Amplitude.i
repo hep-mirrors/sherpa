@@ -43,17 +43,6 @@ namespace ATOOLS {
     
     inline void SetNIn(const size_t &nin)  { m_nin=nin; }
 
-    // The default CreateLeg method takes a Vec4D as the first argument. Vec4D is a Vec4<double> typedef
-    // that is not available in python and therefore, the class is extended by a function that simply
-    // casts a Vec4<double> into a Vec4D before calling CreateLeg
-    %extend{
-      void CreateLegFromPyVec4D(const ATOOLS::Vec4<double> &p,const ATOOLS::Flavour &fl,
-    			  const ATOOLS::ColorID &col=ATOOLS::ColorID(),
-    			  const size_t &id=std::string::npos){
-    	$self->CreateLeg((ATOOLS::Vec4D&) p, fl,col,id);
-      }
-    }    
-
   };// end of class Cluster_Amplitude
 
   // SWIG needs to rename the following operator to succesfully wrap the functionality

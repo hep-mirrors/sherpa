@@ -5,6 +5,7 @@
 
 namespace ATOOLS {
   class Blob_List;
+  class Cluster_Amplitude;
 }
 
 namespace HepMC{
@@ -51,6 +52,8 @@ namespace SHERPA {
     long int NumberOfEvents() const;
 
     const ATOOLS::Blob_List &GetBlobList() const;
+
+    double GetMEWeight(const ATOOLS::Cluster_Amplitude &ampl) const;
     
     inline Initialization_Handler * GetInitHandler() const 
     { return p_inithandler; }
