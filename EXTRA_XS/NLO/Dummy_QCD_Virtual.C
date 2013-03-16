@@ -9,9 +9,11 @@ using namespace ATOOLS;
 
 namespace EXTRAXS {
   class Dummy_QCD_Virtual : public PHASIC::Virtual_ME2_Base {
+    double m_eps2, m_eps, m_fin;
   public:
-    Dummy_QCD_Virtual(const Process_Info& pi, const Flavour_Vector& flavs) :
-      Virtual_ME2_Base(pi, flavs)
+    Dummy_QCD_Virtual(const Process_Info& pi, const Flavour_Vector& flavs,
+                      const double& ep2, const double& ep, const double& fn) :
+      Virtual_ME2_Base(pi, flavs), m_eps2(ep2), m_eps(ep), m_fin(fn)
     {
     }
 
@@ -27,11 +29,11 @@ using namespace EXTRAXS;
 
 void Dummy_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
   // 1/epsIR
-  m_res.IR()=0.3;
+  m_res.IR()=m_eps;
   // 1/epsIR2
-  m_res.IR2()=0.3;
+  m_res.IR2()=m_eps2;
   // finite
-  m_res.Finite()=0.3;
+  m_res.Finite()=m_fin;
 }
 
 DECLARE_VIRTUALME2_GETTER(Dummy_QCD_Virtual,"Dummy_QCD_Virtual")
@@ -40,13 +42,20 @@ Virtual_ME2_Base *ATOOLS::Getter
 operator()(const Process_Info &pi) const
 {
   Data_Reader read(" ",";","!","=");
-  if (read.GetValue<int>("USE_DUMMY_VIRTUAL",0)==0) return NULL;
+  std::vector<double> helpvd;
+  if (!read.VectorFromFile(helpvd,"USE_DUMMY_VIRTUAL")) return NULL;
+  if (!(helpvd.size()>0 && helpvd[0]==1)) return NULL;
   if (pi.m_loopgenerator!="Internal") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
+    double eps2(0.3), eps(0.3), fin(0.3);
+    if (helpvd.size()>1) fin=helpvd[1];
+    if (helpvd.size()>2) eps=helpvd[2];
+    if (helpvd.size()>3) eps2=helpvd[3];
     Flavour_Vector fl(pi.ExtractFlavours());
-    PRINT_INFO("Using Dummy_QCD_Virtual for "<<fl);
-    return new Dummy_QCD_Virtual(pi, fl);
+    msg_Info()<<om::bold<<om::green<<"Caution: Using Dummy_QCD_Virtual for "
+              <<fl<<om::reset<<std::endl;
+    return new Dummy_QCD_Virtual(pi,fl,eps2,eps,fin);
   }
   return NULL;
 }
