@@ -5,6 +5,8 @@ nobase_dist_examples_DATA         =	\
 		API/ME2/test.py.in \
 		API/Events/Run.dat \
 		API/Events/test.py.in \
+		API/MPIEvents/Run.dat \
+		API/MPIEvents/test.py.in \
 		Models/SM_ZPrime/Interaction_Model_SM_Zprime.C \
 		Models/SM_ZPrime/SM_Zprime.C \
 		Models/SM_ZPrime/Run.dat \

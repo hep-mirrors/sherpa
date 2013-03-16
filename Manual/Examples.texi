@@ -84,7 +84,9 @@ of the main features of these examples.
 @menu
 * ME2::
 * Events::
+* MPIEvents::
 @end menu
 
 @include ME2.texi
 @include Events.texi
+@include MPIEvents.texi

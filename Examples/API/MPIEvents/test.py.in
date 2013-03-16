@@ -1,0 +1,57 @@
+#!/usr/bin/python2
+from mpi4py import MPI
+import sys
+sys.path.append('@PYLIBDIR@')
+import Sherpa
+import gzip
+
+class MyParticle:
+    def __init__(self,p):
+        self.kfc=p.Flav().Kfcode()
+        if p.Flav().IsAnti(): self.kfc=-self.kfc
+        self.E=p.Momentum()[0]
+        self.px=p.Momentum()[1]
+        self.py=p.Momentum()[2]
+        self.pz=p.Momentum()[3]
+    def __str__(self):
+        return (str(self.kfc)+" "+str(self.E)+" "
+                +str(self.px)+" "+str(self.py)+" "+str(self.pz))
+
+Generator=Sherpa.Sherpa()
+try:
+    Generator.InitializeTheRun(len(sys.argv),sys.argv)
+    Generator.InitializeTheEventHandler()
+    comm=MPI.COMM_WORLD
+    rank=comm.Get_rank()
+    size=comm.Get_size()
+    if rank==0:
+        outfile=gzip.GzipFile("events.gz",'w')
+        for n in range(1,1+Generator.NumberOfEvents()):
+            for t in range(1,size):
+                weight=comm.recv(source=t,tag=t)
+                trials=comm.recv(source=t,tag=2*t)
+                parts=comm.recv(source=t,tag=3*t)
+                outfile.write("E "+str(weight)+" "+str(trials)+"\n")
+                for p in parts:
+                    outfile.write(str(p)+"\n")
+            if (n%100)==0: print "  Event",n
+        outfile.close()
+    else:
+        for n in range(1,1+Generator.NumberOfEvents()):
+            Generator.GenerateOneEvent()
+            blobs=Generator.GetBlobList();
+            weight=blobs.GetFirst(1)["Weight"]
+            trials=blobs.GetFirst(1)["Trials"]
+            parts=[]
+            for i in range(0,blobs.size()):
+                for j in range(0,blobs[i].NOutP()):
+                    part=blobs[i].OutPart(j)
+                    if part.Stat()==1 and part.HasDecBlob()==0:
+                        parts.append(MyParticle(part))
+            comm.send(weight,dest=0,tag=rank)
+            comm.send(trials,dest=0,tag=2*rank)
+            comm.send(parts,dest=0,tag=3*rank)
+    Generator.SummarizeRun()
+
+except Sherpa.Exception as exc:
+    exit(1)
