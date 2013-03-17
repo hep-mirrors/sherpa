@@ -682,31 +682,20 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
     [ AC_MSG_CHECKING(for LHAPDF installation directory);
       case "${enableval}" in
         no)  AC_MSG_RESULT(LHAPDF not enabled); lhapdf=false ;;
-        yes) if test -d "$LHAPDFDIR"; then
-               CONDITIONAL_LHAPDFDIR=$LHAPDFDIR;
-             elif test -x "`which lhapdf-config`"; then
+        yes) if test -x "`which lhapdf-config`"; then
                CONDITIONAL_LHAPDFDIR=`lhapdf-config --prefix`;
-             fi
-             AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;;
+             fi;;
         *)  if test -d "${enableval}"; then
               CONDITIONAL_LHAPDFDIR=${enableval};
-            fi;
+            fi;;
       esac;
-      if test -d "$CONDITIONAL_LHAPDFDIR"; then
-        if test -f "$CONDITIONAL_LHAPDFDIR/lib/libLHAPDF.la"; then
-          CONDITIONAL_LHAPDFLIBS="-L$CONDITIONAL_LHAPDFDIR/lib -lLHAPDF";
-          CONDITIONAL_LHAPDFINCS="-I$CONDITIONAL_LHAPDFDIR/include";
-        else
-          CONDITIONAL_LHAPDFLIBS="$CONDITIONAL_LHAPDFDIR/lib/libLHAPDF.a";
-          CONDITIONAL_LHAPDFINCS="-I$CONDITIONAL_LHAPDFDIR/include";
-        fi;
-        if test -f "$CONDITIONAL_LHAPDFDIR/include/LHAPDF/LHAPDF.h"; then
-          lhapdfnativewrapper=true;
-        fi;
+
+      if test -x "$CONDITIONAL_LHAPDFDIR/bin/lhapdf-config"; then
+        CONDITIONAL_LHAPDFLIBS="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --ldflags)";
+        CONDITIONAL_LHAPDFINCS="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --cppflags)";
         AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;
       else
-        AC_MSG_ERROR(Unable to determine path to your LHAPDF installation. \
-                     Please set \$LHAPDFDIR manually.);
+        AC_MSG_ERROR(Unable to use LHAPDF from specified path.);
       fi;
     ],
     [ lhapdf=false ]
