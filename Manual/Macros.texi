@@ -4,6 +4,7 @@
 @end macro
 
 @macro mycite{ref}
+
 @ifinfo
 [@value{K\ref\}] in @ref{References} @set U\ref\ true
 @end ifinfo
@@ -11,6 +12,7 @@
 @set U\ref\ true
 [@ref{\ref\, @value{K\ref\}}]
 @end ifnotinfo
+
 @end macro
 
 @macro mybibitem{ref,key,author,title,journal,vol,year,pages,eprint,slink}

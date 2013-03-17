@@ -39,7 +39,7 @@
   @item @strong{WWV interactions:}
     The general coupling between two charged vector bosons and a
     neutral one is given by @mycite{Hagiwara1986vm} 
-    @iftex
+@iftex
     \bean
         {\cal L}_{WWV}/g_{WWV}&=& 
 	i g_1^V( W^\dagger_{\mu\nu}W^\mu V^\nu-W^\dagger_{\mu}V_\nu W^{\mu\nu})
@@ -61,7 +61,7 @@
       g_{WW\gamma}&=&-e\;,\\
       g_{WWZ}&=&-e\cot\theta_W\;.
     \eean
-    @end iftex
+@end iftex
     The parameters for the individual coupling terms can be specified
     through the
     switches @code{G1_GAMMA}, @code{KAPPA_GAMMA}, @code{LAMBDA_GAMMA}, 

@@ -244,8 +244,8 @@ are stated below:
 @itemize @bullet
 @item  Factors can be given to vary the default choices for the
   renormalization and factorization scales used in Sherpa
-  simulations. The corresponding keywords are @ref{
-  RENORMALIZATION_SCALE_FACTOR}
+  simulations. The corresponding keywords are
+  @ref{RENORMALIZATION_SCALE_FACTOR}
   and @ref{FACTORIZATION_SCALE_FACTOR}, and they are multiplied
   to the default mu_R^2 and mu_F^2 scales used for alpha_s
   and PDF evaluations, respectively. By varying them in a certain

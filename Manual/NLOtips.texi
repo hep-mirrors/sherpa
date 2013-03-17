@@ -201,7 +201,6 @@ correction @code{weight} and @code{weight2} are identical.
 Notation:
 
 @code{f_a(x_a) = PDF 1 applied on parton a,
-
       F_b(x_b) = PDF 2 applied on parton b.}
 
 The total cross section weight is given by
@@ -233,11 +232,8 @@ The full cross section weight can be calculated as
 where
 
 @code{f_a^1 = f_a(x_a) (a=quark), \sum_q f_q(x_a) (a=gluon),
-
       f_a^2 = f_a(x_a/x'_a)/x'_a (a=quark), \sum_q f_q(x_a/x'_a)x'_a (a=gluon),
-
       f_a^3 = f_g(x_a),
-
       f_a^4 = f_g(x_a/x'_a)/x'_a.}
 
 
