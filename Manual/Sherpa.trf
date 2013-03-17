@@ -13,6 +13,8 @@ Sherpa
 .br
 .B "       [\-s \fIshower\fP] [\-F \fImodule\fP] [\-D \fImodule\fP]"
 .br
+.B "       [\-L \fIpath\fP] [\-R \fIseed\fP] [\-l \fIlogfile\fP]"
+.br
 .B "       [\fIPARAMETER1=VALUE1\fP [\fIPARAMETER2=VALUE2\fP ... ] ]"
 .br
 .B "       [\fITAG1:=VALUE1\fP [\fITAG2:=VALUE2\fP ... ] ]"
@@ -40,16 +42,24 @@ Sets the parton shower generator \fIshower\fP.
 Sets the fragmentation module \fImodule\fP.
 .IP "\fB-D\fP \fImodule\fP"
 Sets the decay module \fImodule\fP.
+.IP "\fB-L\fP \fIpath\fP"
+Sets the process library path to \fIpath\fP.
+.IP "\fB-R\fP \fIseed\fP"
+Sets the random seed to \fIseed\fP.
+.IP "\fB-l\fP \fIlogfile\fP"
+Sets the log file name to \fIlogfile\fP.
 .IP "\fB-a\fP \fIanalyses\fP"
 Sets the analysis handler list to \fIanalyses\fP.
 .IP "\fB-A\fP \fIpath\fP"
 Sets the analysis output path \fIpath\fP.
 .IP "\fB-O\fP \fIlevel\fP"
 Sets the output level \fIlevel\fP.
+.IP "\fB-o\fP \fIlevel\fP"
+Sets the event output level \fIlevel\fP.
 .IP "\fB-j\fP \fIthreads\fP"
 Sets the number of threads \fIthreads\fP.
 .IP "\fB-g\fP"
-Creates the result directory automatically.
+Does not create the result directory.
 .IP "\fB-b\fP"
 Switches to non-batch mode.
 .IP "\fB-v\fP, \fB--version\fP" 
