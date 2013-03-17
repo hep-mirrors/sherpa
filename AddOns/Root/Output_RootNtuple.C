@@ -138,7 +138,6 @@ Output_RootNtuple::~Output_RootNtuple()
 {
   PrepareTerminate();
 #ifdef USING__MPI
-  exh->MPISync();
   MPI_Type_free(&MPI_rntuple_evt2);
   MPI_Type_free(&MPI_Vec4D);
 #endif

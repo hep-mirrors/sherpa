@@ -47,7 +47,6 @@ void Phase_Space_Integrator::MPISync()
 {
 #ifdef USING__MPI
   double nrtime=ATOOLS::rpa->gen.Timer().RealTime();
-  exh->MPISync();
   psh->MPISync();
   int size=MPI::COMM_WORLD.Get_size(), nact=1;
   if (size>1) {

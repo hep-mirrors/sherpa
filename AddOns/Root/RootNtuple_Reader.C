@@ -102,7 +102,6 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args) :
     size_t i(ToType<size_t>(range.substr(0,spos)));
     size_t e(ToType<size_t>(range.substr(spos+1)));
 #ifdef USING__MPI
-    exh->MPISync();
     int size=MPI::COMM_WORLD.Get_size();
     int rank=MPI::COMM_WORLD.Get_rank();
     int le=e, nact=1, values[2];
