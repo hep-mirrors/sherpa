@@ -32,17 +32,13 @@ namespace MODEL {
 }
 
 One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
-				       const int order, const int thmode,
-				       PDF::PDF_Base *const aspdf) : 
+			       const int order, const int thmode,
+			       PDF::PDF_Base *const aspdf,
+				       One_Running_AlphaS *const mo) : 
   m_order(order), m_pdf(0),
-  m_as_MZ(as_MZ), m_m2_MZ(m2_MZ), m_fac(1.0),
-  p_shower(NULL), p_pdf(aspdf)
+  m_as_MZ(as_MZ), m_m2_MZ(m2_MZ),
+  p_pdf(aspdf), p_sas(NULL)
 {
-  if(m_fac==1.0 && rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")!="") {
-    m_fac=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
-  }
-  if (m_fac!=1.0) 
-    msg_Debugging()<<METHOD<<"(): Setting scale factor "<<m_fac<<"\n";
   p_thresh  = NULL;
 
   m_CF    = 4./3.;        
@@ -83,8 +79,10 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
     else {
       const PDF::PDF_AS_Info &info(p_pdf->ASInfo());
       if (info.m_order>=0) {
+      if (mo==NULL) {
       m_order=info.m_order;
       m_as_MZ=info.m_asmz;
+      }
       if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)==1) m_pdf=1;
       /*
       m_nth=info.m_flavs.size()+1;
@@ -93,12 +91,16 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
       }
       masses[m_nth-1]=0.0;
       */
+      if (mo && m_as_MZ!=mo->m_as_MZ && m_pdf)
+	THROW(fatal_error,"Cannot use PDF alphas to vary \\mu_R");
+      if (mo==NULL || !IsEqual(m_as_MZ,mo->m_as_MZ)) {
       msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n"
 		<<"  perturbative order "<<m_order
 		<<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
       // msg_Info<<"\n  quark masses = { ";
       // for (int i(0);i<m_nth-1;++i) msg_Info()<<sqrt(masses[i])<<" ";
       msg_Info()<<"\n}"<<std::endl;
+      }
       }
     }
   }
@@ -147,22 +149,26 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
     p_thresh[i].as_high       = AlphaSLam(p_thresh[i].high_scale,i);
     if (i<m_nth) {
       p_thresh[i+1].as_low    = p_thresh[i].as_high *
-	InvZetaOS2(p_thresh[i].as_high,p_thresh[i].high_scale,
-		   p_thresh[i].high_scale,p_thresh[i].nf);
+	InvZetaOS2(p_thresh[i].as_high,p_thresh[i].high_scale,p_thresh[i].high_scale,p_thresh[i].nf);
     }
   }
   for (int i=m_mzset-1;i>=0;--i) {
     double lam2               = Lambda2(i);
     p_thresh[i].as_low        = AlphaSLam(p_thresh[i].low_scale,i);
-    if ((lam2>p_thresh[i].low_scale) || (p_thresh[i].as_low>1.)) 
-      ContinueAlphaS(i);
+    if ((lam2>p_thresh[i].low_scale) || (p_thresh[i].as_low>1.)) ContinueAlphaS(i);
     else {
       if (i>0) {
 	p_thresh[i-1].as_high = p_thresh[i].as_low *
-	  ZetaOS2(p_thresh[i].as_low,p_thresh[i].low_scale,
-		  p_thresh[i].low_scale,p_thresh[i-1].nf);
+	  ZetaOS2(p_thresh[i].as_low,p_thresh[i].low_scale,p_thresh[i].low_scale,p_thresh[i-1].nf);
       }
     }
+  }
+
+  if (mo==NULL) {
+    double fac=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
+    if (fac!=1.0) msg_Info()<<METHOD<<"(): Setting scale factor "<<fac<<"\n";
+    msg_Indent();
+    p_sas = new One_Running_AlphaS((*this)(fac*m2_MZ),m2_MZ,order,thmode,aspdf,this);
   }
 }
 
@@ -170,6 +176,7 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
 One_Running_AlphaS::~One_Running_AlphaS()
 {
   if (p_thresh!=0) { delete [] p_thresh; p_thresh = NULL; }
+  if (p_sas) delete p_sas;
 }
 
 double One_Running_AlphaS::Beta0(const int nf) {
@@ -239,81 +246,33 @@ double One_Running_AlphaS::Lambda2(const int nr) {
   return lambda2;
 }
 
-void One_Running_AlphaS::
-FixShowerLambda2(const double mu2,const double asmu,
-		 const int nf,const int order) 
-{
-  if (p_shower) delete p_shower;
-  p_shower = new AsDataSet;
-  p_shower->high_scale = mu2;
-  p_shower->as_high    = asmu;
-  p_shower->nf         = nf;
-  p_shower->beta0      = Beta0(nf); 
-  p_shower->b[1]       = Beta1(nf)/p_shower->beta0; 
-  p_shower->b[2]       = Beta2(nf)/p_shower->beta0; 
-  p_shower->b[3]       = Beta3(nf)/p_shower->beta0; 
-  p_shower->lambda2    = 0.;
-
-  const double a(asmu/M_PI); 
-  double betaL(1./a);
-  if (order>=1) {
-    betaL     += p_shower->b[1]*log(a);
-    if (order>=2) {
-      betaL   += (p_shower->b[2]-p_shower->b[1]*p_shower->b[1])*a;
-      if (m_order>=3) {
-	betaL += (p_shower->b[3]/2. - 
-		  p_shower->b[1] * p_shower->b[2] + 
-		  p_shower->b[1]*p_shower->b[1]*p_shower->b[1]/2.)*a*a;
-      }
-    }
-  }
-
-  p_shower->lambda2 = ::exp(-betaL/p_shower->beta0)*mu2;
-  double tas1       = AlphaSLam(mu2,-1), tas2;
-  double dlambda2   = 1.e-8;
-  if (dabs(tas1-p_shower->as_high)/p_shower->as_high>1.e-11) {
-    for (;(dabs(tas1-p_shower->as_high)/p_shower->as_high>1.e-11);) {
-      p_shower->lambda2 += dlambda2;
-      tas2     = AlphaSLam(mu2,-1);
-      dlambda2 = (p_shower->as_high-tas2)/(tas2-tas1)*dlambda2;
-      tas1     = tas2;
-    }
-  }
-}
-
 double One_Running_AlphaS::AlphaSLam(const double Q2,const int nr)
 {
   // using shorter names
-  double beta0, * b, lambda2;
-  if (nr>0) {
-    beta0   = p_thresh[nr].beta0;
-    b       = p_thresh[nr].b;
-    lambda2 = p_thresh[nr].lambda2;
-  }
-  else {
-    beta0   = p_shower->beta0;
-    b       = p_shower->b;
-    lambda2 = p_shower->lambda2;
-  }
+  double & beta0   = p_thresh[nr].beta0;
+  double *  b      = p_thresh[nr].b;
+  double & lambda2 = p_thresh[nr].lambda2;
+  double L         = log(Q2/lambda2);
+  double pref      = 1./(beta0*L);
 
-  double L(log(Q2/lambda2)),pref(1./(beta0*L)),a(pref);
-  if (m_order>=1) {
-    double logL(log(L));
-    pref *=1./(beta0*L);
-    a    += -pref*(b[1] * logL);
-    if (m_order>=2) {
-      double log2L(logL*logL);
-      pref *= 1./(beta0*L);
-      a    += pref*(b[1]*b[1]*(log2L-logL-1.) + b[2]);
-      if (m_order>=3) {
-	// 3rd order (four loop) to be checked.
-	double log3L(logL*log2L);
-	pref *= 1./(beta0*L);
-	a    += pref*(b[1]*b[1]*b[1]*(-log3L+2.5*log2L+2.*logL-0.5) 
-		      - 3.*b[1]*b[2] + 0.5*b[3]);
-      }
-    }
-  }
+  double a         = pref;
+  if (m_order==0) return M_PI*a;
+
+  double logL     = log(L);
+  pref           *=1./(beta0*L);
+  a              += -pref*(b[1] * logL);
+  if (m_order==1) return M_PI*a;
+
+  double log2L    = logL*logL;
+  pref           *= 1./(beta0*L);
+  a              += pref*(b[1]*b[1]*(log2L-logL-1.) + b[2]);
+  if (m_order==2) return M_PI*a;
+
+  // 3rd order (four loop) to be checked.
+  double log3L    = logL*log2L;
+  pref           *= 1./(beta0*L);
+  a              += pref*(b[1]*b[1]*b[1]*(-log3L+2.5*log2L+2.*logL-0.5) 
+			  - 3.*b[1]*b[2] + 0.5*b[3]);
   return M_PI*a;
 }
 
@@ -343,8 +302,7 @@ double One_Running_AlphaS::ZetaOS2(const double as,const double mass2_os,
   double zeta3  = 1.2020569031595942854;
   zeta2g       += a3 * (-58933./124416. - 2./3.*zeta2*(1.+1./3.* log(2.)) 
 			- 80507./27648.*zeta3 - 8521./1728.*L- 131./576. * L2 
-			- 1./216.*L3 + 
-			nl*(2479./31104.+ zeta2/9. + 409./1728. * L ));
+			- 1./216.*L3 + nl*(2479./31104.+ zeta2/9. + 409./1728. * L ));
   return zeta2g;
 }
 
@@ -374,8 +332,7 @@ double One_Running_AlphaS::InvZetaOS2(const double as,const double mass2_os,
   double zeta3  = 1.2020569031595942854;
   zeta2g       += a3 * (58933./124416. + 2./3.*zeta2*(1.+1./3.* log(2.)) 
 			+ 80507./27648.*zeta3 + 8941./1728.*L + 511./576. * L2 
-			+ 1./216.*L3 + 
-			nl*(-2479./31104.- zeta2/9. - 409./1728. * L ));
+			+ 1./216.*L3 + nl*(-2479./31104.- zeta2/9. - 409./1728. * L ));
   return zeta2g;
 }
 
@@ -410,21 +367,29 @@ void One_Running_AlphaS::ContinueAlphaS(int & nr) {
   for (int i = nr-1; i>=0; --i) {
     p_thresh[i].nf          = -1;  // i.e. no ordinary running !!!
     p_thresh[i].lambda2     = 0.;
-    p_thresh[i].as_low      = 
-      p_thresh[i].as_high/p_thresh[i].high_scale*
-      p_thresh[i].low_scale;
+    p_thresh[i].as_low      = p_thresh[i].as_high/p_thresh[i].high_scale*p_thresh[i].low_scale;
     if (i>0) p_thresh[i-1].as_high=p_thresh[i].as_low;
   }
   nr =0;
 }
 
 
+double One_Running_AlphaS::ShowerCutQ2()
+{
+  if (p_sas==NULL) THROW(fatal_error,"Invalid call");
+  return p_sas->m_cutq2;
+}
+
+double One_Running_AlphaS::operator[](double q2)
+{
+  if (p_sas==NULL) THROW(fatal_error,"Invalid call");
+  return (*p_sas)(q2);
+}
 
 double One_Running_AlphaS::operator()(double q2)
 {
   if (m_pdf) return p_pdf->AlphaSPDF(q2);
   double as;
-  q2=q2*m_fac;
   if (q2<0.) q2=-q2;
   int i = m_mzset-1;
   if (q2<=m_m2_MZ) {
@@ -446,15 +411,13 @@ double One_Running_AlphaS::operator()(double q2)
   return as;
 }  
 
-double  One_Running_AlphaS::AlphaS(const double q2,bool shower){
-  //msg_Out()<<"In "<<METHOD<<"("<<sqrt(q2)<<") from |"<<this<<"|\n";
-  if (shower && p_shower) return AlphaSLam(q2,-1);
+double  One_Running_AlphaS::AlphaS(const double q2){
   return operator()(q2);
 }
 
 int One_Running_AlphaS::Nf(const double sc)
 {
-  double q2(sc*m_fac);
+  double q2(sc);
   for (int i=0;i<=m_nth;++i) {
     if (q2<=p_thresh[i].high_scale && q2>p_thresh[i].low_scale )
       return p_thresh[i].nf;

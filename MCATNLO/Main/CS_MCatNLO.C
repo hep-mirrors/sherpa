@@ -4,7 +4,6 @@
 #include "MCATNLO/Showers/Splitting_Function_Base.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
-#include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -17,19 +16,14 @@ using namespace PDF;
 using namespace ATOOLS;
 using namespace std;
 
-CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,
-		       MODEL::Model_Base *const model,
-		       Data_Reader *const _dataread) : 
+CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model,
+		     Data_Reader *const _dataread) : 
   NLOMC_Base("MC@NLO_CSS"), p_isr(_isr), 
-  p_powheg(NULL), p_as(NULL), p_cluster(NULL), p_gamma(NULL)
+  p_powheg(NULL), p_cluster(NULL), p_gamma(NULL)
 {
   m_psmode=_dataread->GetValue<int>("NLO_CSS_PSMODE",0);
   if (m_psmode) msg_Info()<<METHOD<<"(): Set PS mode "<<m_psmode<<".\n";
   m_maxem=_dataread->GetValue<int>("NLO_CSS_MAXEM",1);
-  m_scale2fac  = _dataread->GetValue<double>("CSS_SHOWER_SCALE2_FACTOR",-1.);
-  if (m_scale2fac>0. && m_scale2fac!=1.) {
-    p_as = (MODEL::Running_AlphaS*)model->GetScalarFunction("alpha_S");
-  }
   SF_Lorentz::SetKappa(_dataread->GetValue<double>("DIPOLE_KAPPA",2.0/3.0));
 
   p_powheg = new Shower(_isr,0,_dataread);
@@ -167,23 +161,6 @@ bool CS_MCatNLO::PrepareMCatNLO(Cluster_Amplitude *const ampl)
   }
   msg_Debugging()<<"}\n";
   p_powheg->SetMS(p_ms);
-  // p_as is alphaS in case we do a shower variation it is != NULL.
-  if (p_as && m_scale2fac!=-1. && m_scale2fac!=1.) {
-    double mu2=(ampl->Q2());
-    double newasmu2((*p_as)(m_scale2fac*mu2));
-    // fixes an operator (*p_as)(qt^2,true) to be with new Lambda2
-    p_as->FixShowerLambda2(mu2,newasmu2,p_as->Nf(mu2),p_as->Order());
-    p_powheg->SetCouplingMax();
-    // msg_Out()<<METHOD<<" tests alphaS(order = "<<p_as->Order()<<", "
-    // 	     <<"mu = "<<sqrt(mu2)<<"): \n"
-    // 	     <<" mu alphaS(mu) alphaS(mu,new)\n"
-    // 	     <<"  5. "<<(*p_as)(25.)<<"  "<<p_as->AlphaS(25.,true)<<"\n"
-    // 	     <<" 10. "<<(*p_as)(100.)<<"  "<<p_as->AlphaS(100.,true)<<"\n"
-    // 	     <<" 25. "<<(*p_as)(625.)<<"  "<<p_as->AlphaS(625.,true)<<"\n"
-    // 	     <<" 50. "<<(*p_as)(2500.)<<"  "<<p_as->AlphaS(2500.,true)<<"\n"
-    // 	     <<"100. "<<(*p_as)(10000.)<<"  "<<p_as->AlphaS(10000.,true)<<"\n";
-  }
-
   return true;
 }
 

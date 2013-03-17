@@ -18,15 +18,15 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
 {
   int kfmode = ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
-  m_k0sqf = ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
-  m_k0sqi = ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
-  m_fs_as_fac = ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
-  m_is_as_fac = ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
+  double k0sqf = ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
+  double k0sqi = ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
+  double fs_as_fac = ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
+  double is_as_fac = ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   m_kscheme = dataread->GetValue<int>("NLO_CSS_KIN_SCHEME",1);
   std::vector<std::vector<std::string> > helpsvv;
   m_sudakov.SetShower(this);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
-  m_sudakov.SetCoupling(MODEL::s_model,m_k0sqi,m_k0sqf,m_is_as_fac,m_fs_as_fac);
+  m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
   m_kinFF.SetSudakov(&m_sudakov);
   m_kinFI.SetSudakov(&m_sudakov);
   m_kinIF.SetSudakov(&m_sudakov);

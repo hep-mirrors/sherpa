@@ -25,7 +25,6 @@ namespace MCATNLO {
     Sudakov            m_sudakov;
     PDF::ISR_Handler * p_isr;
     Parton           * m_last[4];
-    double             m_k0sqf,m_k0sqi,m_fs_as_fac,m_is_as_fac;
     int                m_kscheme;
 
     ATOOLS::Cluster_Leg *p_old[2];
@@ -58,9 +57,6 @@ namespace MCATNLO {
     inline const Sudakov *GetSudakov() const { return &m_sudakov; }
     inline Parton *const *GetLast() const { return m_last; }
     inline ATOOLS::Cluster_Leg *GetOld(const int i) const { return p_old[i]; }
-    inline void SetCouplingMax() {
-      m_sudakov.SetCouplingMax(m_k0sqi,m_k0sqf,m_is_as_fac,m_fs_as_fac);
-    }
 
     inline const Kinematics_FF *KinFF() const { return &m_kinFF; }
     inline const Kinematics_FI *KinFI() const { return &m_kinFI; }

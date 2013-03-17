@@ -13,15 +13,15 @@ using namespace CSSHOWER;
 using namespace ATOOLS;
 using namespace std;
 
-Shower::Shower(PDF::ISR_Handler * isr,const int qed,const double & ktfac,
+Shower::Shower(PDF::ISR_Handler * isr,const int qed,
 	       Data_Reader *const dataread) : 
   p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
 {
-  int kfmode  = ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
-  m_k0sqf     = ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"))*sqr(ktfac);
-  m_k0sqi     = ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"))*sqr(ktfac);
-  m_fs_as_fac = ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
-  m_is_as_fac = ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
+  int kfmode=ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
+  double k0sqf=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
+  double k0sqi=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
+  double fs_as_fac=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
+  double is_as_fac=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   m_use_bbw   = dataread->GetValue<int>("CSS_USE_BBW",1);
   m_kscheme   = dataread->GetValue<int>("CSS_KIN_SCHEME",0);
   m_noem      = dataread->GetValue<int>("CSS_NOEM",0);
@@ -34,10 +34,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,const double & ktfac,
     }
   m_sudakov.SetShower(this);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
-  m_sudakov.SetCoupling(MODEL::s_model,m_k0sqi,m_k0sqf,m_is_as_fac,m_fs_as_fac);
-
-  msg_Out()<<METHOD<<"(asfacs: IS = "<<m_is_as_fac<<", FS = "<<m_fs_as_fac<<")"
-	   <<"\n"; 
+  m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
   m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
   p_old[0]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());
   p_old[1]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());

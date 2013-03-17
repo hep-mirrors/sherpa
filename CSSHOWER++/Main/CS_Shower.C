@@ -4,7 +4,6 @@
 #include "PHASIC++/Selectors/Jet_Finder.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PDF/Main/Jet_Criterion.H"
-#include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -16,11 +15,10 @@ using namespace PHASIC;
 using namespace PDF;
 using namespace ATOOLS;
 
-CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
-		     MODEL::Model_Base *const model,
+CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model,
 		     Data_Reader *const _dataread) : 
   Shower_Base("CSS"), p_isr(_isr), 
-  p_shower(NULL), p_as(NULL), p_cluster(NULL), p_ampl(NULL)
+  p_shower(NULL), p_cluster(NULL), p_ampl(NULL)
 {
   rpa->gen.AddCitation
     (1,"The Catani-Seymour subtraction based shower is published under \\cite{Schumann:2007mg}.");
@@ -41,21 +39,12 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   if (amode!=0) msg_Info()<<METHOD<<"(): Set exclusive cluster mode "<<amode<<".\n";
   
   m_weightmode = int(_dataread->GetValue<int>("WEIGHT_MODE",1));
-  m_kt2fac     = _dataread->GetValue<double>("CSS_SHOWER_KT2_FACTOR",1.);
-  
-  m_scale2fac  = _dataread->GetValue<double>("CSS_SHOWER_SCALE2_FACTOR",-1.);
-
-  //msg_Out()<<METHOD<<"(scale2fac = "<<m_scale2fac<<").\n";
-  //exit(1);
-  if (m_scale2fac>0. && m_scale2fac!=1.) {
-    p_as = (MODEL::Running_AlphaS*)model->GetScalarFunction("alpha_S");
-  }
   
   int _qed=_dataread->GetValue<int>("CSS_EW_MODE",0);
   if (_qed==1) {
     s_kftable[kf_photon]->SetResummed();
   }
-  p_shower = new Shower(_isr,_qed,m_kt2fac,_dataread);
+  p_shower = new Shower(_isr,_qed,_dataread);
   
   p_next = new All_Singlets();
 
@@ -77,33 +66,6 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 {
   if (!p_shower || !m_on) return 1;
   m_weight=1.0;
-  // p_as is alphaS in case we do a shower variation it is != NULL.
-  if (p_as && m_as_showerflag &&
-      m_scale2fac!=-1. && m_scale2fac!=1.) {
-    double mu2=((*(*m_allsinglets.begin())->begin())->KtStart());
-    double newasmu2((*p_as)(m_scale2fac*mu2));
-    // fixes an operator (*p_as)(qt^2,true) to be with new Lambda2
-    p_as->FixShowerLambda2(mu2,newasmu2,p_as->Nf(mu2),p_as->Order());
-    p_shower->SetCouplingMax();
-    for (All_Singlets::const_iterator sit(m_allsinglets.begin());
-	 sit!=m_allsinglets.end();++sit) {
-      for (Singlet::const_iterator it((*sit)->begin());
-	   it!=(*sit)->end();++it) {
-	// update shower scales.
-	double kt2(m_kt2fac*(*it)->KtStart());
-	(*it)->SetStart(kt2);
-      }
-    }
-    // msg_Out()<<METHOD<<" tests alphaS(order = "<<p_as->Order()<<", "
-    // 	     <<"mu = "<<sqrt(mu2)<<"): \n"
-    // 	     <<" mu alphaS(mu) alphaS(mu,new)\n"
-    // 	     <<"  5. "<<(*p_as)(25.)<<"  "<<p_as->AlphaS(25.,true)<<"\n"
-    // 	     <<" 10. "<<(*p_as)(100.)<<"  "<<p_as->AlphaS(100.,true)<<"\n"
-    // 	     <<" 25. "<<(*p_as)(625.)<<"  "<<p_as->AlphaS(625.,true)<<"\n"
-    // 	     <<" 50. "<<(*p_as)(2500.)<<"  "<<p_as->AlphaS(2500.,true)<<"\n"
-    // 	     <<"100. "<<(*p_as)(10000.)<<"  "<<p_as->AlphaS(10000.,true)<<"\n";
-  }
-
   for (All_Singlets::const_iterator sit(m_allsinglets.begin());
        sit!=m_allsinglets.end();++sit) {
     msg_Debugging()<<"before shower step\n";
@@ -523,7 +485,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 			split->GetType()==pst::FS?split->GetFlavour():
 			split->GetFlavour().Bar(),p_ms,
 			split->Kin(),split->KScheme()));
-      l->SetTest(cp.m_kt2*m_kt2fac,cp.m_z,cp.m_y,cp.m_phi);
+      l->SetTest(cp.m_kt2,cp.m_z,cp.m_y,cp.m_phi);
       if (split->KScheme()) split->SetFixSpec(cp.m_pk);
       msg_Debugging()<<"Set reco params: kt = "<<sqrt(cp.m_kt2)<<", z = "
 		     <<cp.m_z<<", y = "<<cp.m_y<<", phi = "<<cp.m_phi
@@ -583,7 +545,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       s->SetOldMomentum(olds);
       sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode|4|8);
     }
-    double kt2next((campl->Prev()?campl->Prev()->KT2():0.0)*m_kt2fac);
+    double kt2next(campl->Prev()?campl->Prev()->KT2():0.0);
     sing->SetKtNext(kt2next);
     if (ampl->NIn()==1 && ampl->Leg(0)->Flav().IsHadron()) break;
     p_next->push_back(sing);
@@ -621,8 +583,6 @@ Singlet *CS_Shower::TranslateAmplitude
  std::map<Cluster_Leg*,Parton*> &pmap,std::map<Parton*,Cluster_Leg*> &lmap,
  const KT2X_Map &kt2xmap)
 {
-  if (!(ampl->NLO()&4)) m_as_showerflag=true;
-  else m_as_showerflag=false;
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
   double ktveto2(jf?jf->Ycut()*sqr(rpa->gen.Ecms()):
 		 sqrt(std::numeric_limits<double>::max()));
@@ -653,9 +613,9 @@ Singlet *CS_Shower::TranslateAmplitude
     parton->SetKin(p_shower->KinScheme());
     if (is) parton->SetBeam(i);
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
-    parton->SetStart(xit->second.second*m_kt2fac);
-    parton->SetKtMax(xit->second.first*m_kt2fac);
-    parton->SetVeto(ktveto2*m_kt2fac);
+    parton->SetStart(xit->second.second);
+    parton->SetKtMax(xit->second.first);
+    parton->SetVeto(ktveto2);
     singlet->push_back(parton);
     parton->SetSing(singlet);
   }

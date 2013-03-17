@@ -25,7 +25,6 @@ namespace MODEL {
     int         m_nth,m_mzset;
     double      m_TR,m_CF,m_CA;
     double      m_as_MZ,m_m2_MZ;
-    double      m_fac;
     std::string m_group;
     double      m_Nc;
     double      m_cutq2;
@@ -43,7 +42,7 @@ namespace MODEL {
   public:
 
     // constructor
-    Running_Alpha_HV(const double as_MZ,const double m2_MZ,const int order=0, const double fac=1.,
+    Running_Alpha_HV(const double as_MZ,const double m2_MZ,const int order=0,
 		     const std::string group="SU", const double Nc=3.);
     
     // destructor
@@ -63,7 +62,6 @@ namespace MODEL {
     int    Nf(const double q2);
 
     inline double CutQ2() { return m_cutq2; }    
-    inline double ScaleFactor() { return m_fac; }
   };
 
   extern Running_Alpha_HV * as_HV;

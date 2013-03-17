@@ -72,7 +72,7 @@ namespace PHASIC {
     SP(Color_Integrator) p_ci;
 
     size_t m_cnt, m_rej, m_mode, m_cmode, m_cmoders;
-    double m_lfrac, m_aqed, m_wthres;
+    double m_lfrac, m_aqed, m_wthres, m_rsf;
     int    m_rproc, m_vproc, m_nproc, m_nfgsplit;
 
     ATOOLS::DecayInfo_Vector m_decids;
@@ -241,6 +241,9 @@ METS_Scale_Setter::METS_Scale_Setter
   if (!read.ReadFromFile(m_nfgsplit,"DIPOLE_NF_GSPLIT"))
     m_nfgsplit=Flavour(kf_jet).Size()/2;
   else msg_Tracking()<<METHOD<<"(): Set dipole N_f="<<m_nfgsplit<<"\n.";
+  m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
+  if (m_rsf!=1.0) msg_Debugging()<<METHOD<<
+		    "(): Renormalization scale factor "<<sqrt(m_rsf)<<"\n";
 }
 
 METS_Scale_Setter::~METS_Scale_Setter()
@@ -580,7 +583,7 @@ PDF::CParam METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl) const
 
 double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 {
-  double mur2(muf2);
+  double mur2(m_rsf*muf2);
   m_scale[stp::size+stp::res]=m_scale[stp::res]=muf2;
   if (ampl) {
     m_scale[stp::size+stp::res]=ampl->KT2();
@@ -614,10 +617,11 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
       }
       double coqcd(ampl->OrderQCD()-ampl->Next()->OrderQCD());
       if (coqcd>0.0) {
-	double cas(MODEL::as->BoundedAlphaS(scale[idx]));
-	msg_Debugging()<<"  \\mu_{"<<idx<<"} = "<<sqrt(scale[idx])
+	double cas(MODEL::as->BoundedAlphaS(m_rsf*scale[idx]));
+	msg_Debugging()<<"  \\mu_{"<<idx<<"} = "
+		       <<sqrt(m_rsf)<<" * "<<sqrt(scale[idx])
 		       <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
-	mur2*=pow(scale[idx],coqcd);
+	mur2*=pow(m_rsf*scale[idx],coqcd);
 	as*=pow(cas,coqcd);
 	oqcd+=coqcd;
       }
@@ -627,18 +631,18 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
       double mu2(Max(ampl->Mu2(),MODEL::as->CutQ2()));
       mum2=Min(mum2,mu2);
       int coqcd(ampl->OrderQCD()-(m_vproc?1:0));
-      double cas(MODEL::as->BoundedAlphaS(mu2));
-      msg_Debugging()<<"  \\mu_{0} = "<<sqrt(mu2)<<", as = "<<cas
-		     <<", O(QCD) = "<<coqcd<<"\n";
-      mur2*=pow(mu2,coqcd);
+      double cas(MODEL::as->BoundedAlphaS(m_rsf*mu2));
+      msg_Debugging()<<"  \\mu_{0} = "<<sqrt(m_rsf)<<" * "<<sqrt(mu2)
+		     <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
+      mur2*=pow(m_rsf*mu2,coqcd);
       as*=pow(cas,coqcd);
       oqcd+=coqcd;
     }
-    if (oqcd==0.0) mur2=muf2;
+    if (oqcd==0.0) mur2=m_rsf*muf2;
     else {
       mur2=pow(mur2,1.0/oqcd);
       as=pow(as,1.0/oqcd);
-      mur2=MODEL::as->WDBSolve(as,mum2,1.01*rpa->gen.CplScale());
+      mur2=MODEL::as->WDBSolve(as,m_rsf*mum2,m_rsf*1.01*rpa->gen.CplScale());
       if (!IsEqual((*MODEL::as)(mur2),as))
 	msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl; 
     }

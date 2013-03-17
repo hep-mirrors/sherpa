@@ -29,13 +29,13 @@ namespace MODEL {
     int         m_nth,m_mzset;
     double      m_CF,m_CA;
     double      m_as_MZ,m_m2_MZ;
-    double      m_fac;
     double      m_cutq2;
 
     AsDataSet * p_thresh;
-    AsDataSet * p_shower;
 
     PDF::PDF_Base *p_pdf;
+
+    One_Running_AlphaS *p_sas;
 
     double Beta0(const int);
     double Beta1(const int);
@@ -52,17 +52,19 @@ namespace MODEL {
     // constructor
     One_Running_AlphaS(const double as_MZ,const double m2_MZ,
 		   const int order=0, const int thmode=1,
-		   PDF::PDF_Base *const pdf=NULL);
+		       PDF::PDF_Base *const pdf=NULL,
+		       One_Running_AlphaS *const mo=NULL);
     
     // destructor
     ~One_Running_AlphaS();
 
     // member functions
     double operator()(double q2); 
-    void   FixShowerLambda2(const double mu2,const double asmu,
-			    const int nf=5,const int order=0);
-    double AlphaS(const double q2,bool shower=false);
+    double operator[](double q2); 
+    double AlphaS(const double q2);
     void   SelfTest();
+
+    double ShowerCutQ2();    
 
     // inline functions
     inline int    Order()                { return m_order;      }
@@ -74,7 +76,6 @@ namespace MODEL {
     int    Nf(const double q2);
 
     inline double CutQ2() { return m_cutq2; }    
-    inline double ScaleFactor() { return m_fac; }
 
     inline double BoundedAlphaS(const double &q2)
     { return (*this)(std::max(q2,m_cutq2)); }
@@ -104,18 +105,9 @@ namespace MODEL {
     inline PDF::isr::id ActiveAs() { return m_active; }
 
     // proxy member functions
-    inline double operator()(double q2) { 
-      //std::cout<<"In Running_AlphaS("<<sqrt(q2)<<") from |"<<this<<"| "
-      //       <<"vs active = |"<<p_active<<"|\n";
-      return p_active->operator()(q2); 
-    }
-    inline void FixShowerLambda2(const double mu2,const double asmu,
-				 const int nf=5,const int order=0) {
-      p_active->FixShowerLambda2(mu2,asmu,nf,order);
-    }
-    inline double AlphaS(const double q2,bool shower=false) { 
-      return p_active->AlphaS(q2,shower); 
-    }
+    inline double operator()(double q2)   { return p_active->operator()(q2); }
+    inline double operator[](double q2)   { return p_active->operator[](q2); }
+    inline double AlphaS(const double q2) { return p_active->AlphaS(q2); }
     inline int    Order()                 { return p_active->Order(); }
     inline double Beta0(const double q2)  { return p_active->Beta0(q2); }
     inline double Beta1(const double q2)  { return p_active->Beta1(q2); }
@@ -124,7 +116,7 @@ namespace MODEL {
     inline double AsMZ()                  { return p_active->AsMZ(); }
     inline int    Nf(const double q2)     { return p_active->Nf(q2); }
     inline double CutQ2()                 { return p_active->CutQ2(); }
-    inline double ScaleFactor()           { return p_active->ScaleFactor(); }
+    inline double ShowerCutQ2()           { return p_active->ShowerCutQ2(); }
     inline double BoundedAlphaS(const double &q2) { return p_active->BoundedAlphaS(q2); }
   };
 

@@ -124,7 +124,7 @@ void HiddenValley::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
     TR = 0.5;
   }
   
-  as_HV = new Running_Alpha_HV(alpha_HV,MZ2,order_alpha_HV,1.,group,HV_Nc);
+  as_HV = new Running_Alpha_HV(alpha_HV,MZ2,order_alpha_HV,group,HV_Nc);
   as_HV->SetDefault(alpha_HV_def);
 
   msg_Info()<<" ======== Initialize HV gauge coupling ========"<<std::endl; 

@@ -16,12 +16,7 @@ using namespace ATOOLS;
 
 PDF_Base::PDF_Base():
   m_type("none"), m_member(0), m_exponent(1.),
-  m_rescale(1.), m_fac_scale_factor(1.) {
-
-  if (rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR")!="")
-    m_fac_scale_factor = ToType<double>(rpa->gen.Variable("FACTORIZATION_SCALE_FACTOR"));
-  if (m_fac_scale_factor!=1.0) 
-    msg_Debugging()<<METHOD<<"(): Setting scale factor "<<m_fac_scale_factor<<"\n";
+  m_rescale(1.) {
 
   Data_Reader dr(" ",";","!","=");
   m_lhef_number = dr.GetValue<int>("LHEF_PDF_NUMBER",-1);
@@ -53,8 +48,8 @@ double PDF_Base::Cut(const std::string &type)
 
 void PDF_Base::SetBounds()
 {
-  m_rq2min=m_q2min/m_fac_scale_factor;
-  m_rq2max=m_q2max/m_fac_scale_factor;
+  m_rq2min=m_q2min;
+  m_rq2max=m_q2max;
 }
 
 void PDF_Base::SetPDFMember()
@@ -63,7 +58,6 @@ void PDF_Base::SetPDFMember()
 
 void PDF_Base::Calculate(double x,double Q2) 
 {
-  Q2*=m_fac_scale_factor;
   if(Q2<m_q2min) {
     static double lasterr(-1.0);
     if (Q2!=lasterr)

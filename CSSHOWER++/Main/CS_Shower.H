@@ -29,13 +29,11 @@ namespace CSSHOWER {
     PDF::ISR_Handler * p_isr;
     int m_weightmode, m_kmode;
     size_t m_maxem, m_nem, m_recocheck;
-    double m_kt2fac, m_scale2fac;
     
-    Shower                 * p_shower;
-    MODEL::Running_AlphaS  * p_as;
-    bool                     m_as_showerflag;
-    CS_Cluster_Definitions * p_cluster;
-    All_Singlets m_allsinglets, * p_next, *p_refs;
+    Shower          * p_shower;
+    All_Singlets m_allsinglets;
+    CS_Cluster_Definitions *p_cluster;
+    All_Singlets *p_next, *p_refs;
 
     ATOOLS::Mass_Selector *p_ms;
 

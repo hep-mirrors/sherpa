@@ -141,13 +141,6 @@ void Sudakov::SetCoupling(MODEL::Model_Base *md,
     }
 }
 
-void Sudakov::SetCouplingMax(const double &k0sqi,const double &k0sqf,
-			     const double &isfac,const double &fsfac) {
-  for (std::vector<Splitting_Function_Base*>::iterator
-	 sit(m_splittings.begin());sit!=m_splittings.end(); sit++)
-    (*sit)->Coupling()->SetCouplingMax(m_k0sqi,m_k0sqf,isfac,fsfac);
-}
-
 void Sudakov::Add(Splitting_Function_Base * split) 
 {
   if (split->On()<0) {

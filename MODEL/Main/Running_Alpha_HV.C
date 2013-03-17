@@ -14,12 +14,8 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
-Running_Alpha_HV::Running_Alpha_HV(const double as_MZ,const double m2_MZ,const int order, const double fac, const std::string group, const double Nc) :   m_order(order), m_as_MZ(as_MZ), m_m2_MZ(m2_MZ), m_fac(fac), m_group(group), m_Nc(Nc)
+Running_Alpha_HV::Running_Alpha_HV(const double as_MZ,const double m2_MZ,const int order, const std::string group, const double Nc) :   m_order(order), m_as_MZ(as_MZ), m_m2_MZ(m2_MZ), m_group(group), m_Nc(Nc)
 {
-  if(m_fac==1.0 && rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR")!="") {
-    m_fac=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
-  }
-  if (m_fac!=1.0) msg_Debugging()<<METHOD<<"(): Setting scale factor "<<m_fac<<"\n";
   m_type  = std::string("Running Coupling");
   p_thresh  = NULL;
   
@@ -280,7 +276,6 @@ void Running_Alpha_HV::ContinueAlpha_HV(int & nr) {
 double Running_Alpha_HV::operator()(double q2)
 {
   double as;
-  q2=q2*m_fac;
   if (q2<0.) q2=-q2;
   int i = m_mzset-1;
   if (q2<=m_m2_MZ) {
@@ -308,7 +303,7 @@ double  Running_Alpha_HV::Alpha_HV(const double q2){
 
 int Running_Alpha_HV::Nf(const double sc) 
 {
-  double q2(sc*m_fac);
+  double q2(sc);
   for (int i=0;i<=m_nth;++i) {
     if (q2<=p_thresh[i].high_scale && q2>p_thresh[i].low_scale )
       return p_thresh[i].nf;

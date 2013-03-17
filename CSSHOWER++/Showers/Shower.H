@@ -23,7 +23,6 @@ namespace CSSHOWER {
     Sudakov            m_sudakov;
     PDF::ISR_Handler * p_isr;
     Parton           * m_last[4];
-    double             m_k0sqf,m_k0sqi,m_fs_as_fac,m_is_as_fac;
     int                m_kscheme, m_noem, m_use_bbw;
 
     ATOOLS::Cluster_Leg *p_old[2];
@@ -50,7 +49,7 @@ namespace CSSHOWER {
 		       const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
 		       const int mode);
  public:
-    Shower(PDF::ISR_Handler * isr,const int qed,const double & ktfac,
+    Shower(PDF::ISR_Handler * isr,const int qed,
 	   ATOOLS::Data_Reader *const dataread);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
@@ -74,11 +73,7 @@ namespace CSSHOWER {
     inline double Weight() const { return m_weight; }
 
     inline int KinScheme() const { return m_kscheme; }
-    inline Parton *const *GetLast() const { return m_last; }
-    inline ATOOLS::Cluster_Leg *GetOld(const int i) const { return p_old[i]; }
-    inline void SetCouplingMax() {
-      m_sudakov.SetCouplingMax(m_k0sqi,m_k0sqf,m_is_as_fac,m_fs_as_fac);
-    }
+
   };
 }
 

@@ -62,7 +62,7 @@ namespace PDF {
 
   private:
 
-    double m_fac_scale_factor, m_rq2min, m_rq2max;
+    double m_rq2min, m_rq2max;
 
   public:
 
