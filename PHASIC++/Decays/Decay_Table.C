@@ -58,7 +58,13 @@ namespace PHASIC {
       os<<setw(30)<<"Flavour width: "<<dt.Flav().Width()<<" GeV"<<endl;
     os<<"----------------------------------------"<<endl;
     for (size_t i=0;i<dt.size();i++) {
-      if (dt.at(i)->Active()!=-1) os<<*dt.at(i)<<endl;
+      if (dt.at(i)->Active()!=-1) {
+	os<<*dt.at(i);
+	if (dt.TotalWidth()>0. && dt.at(i)->Width()>0.) 
+	  os<<", BR= "<<setw(5)<<(dt.at(i)->Width()/dt.TotalWidth()*100.)
+	    <<" %";
+	os<<endl;
+      }
     }
     os<<"----------------------------------------"<<endl;
     return os;
