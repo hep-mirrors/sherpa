@@ -16,7 +16,8 @@ It does not affect the calculation and integration of the hard scattering
 matrix elements. The cross section is thus unaffected during integration, and
 the branching ratios (if any decay channels have been disabled) are only taken
 into account for the event weights and cross section output at the end of event
-generation. Furthermore any cuts or scale definitions are not affected by decays
+generation (if not disabled with the @option{HDH_BR_WEIGHTS} option, cf. below).
+Furthermore any cuts or scale definitions are not affected by decays
 and operate only on the inclusively produced particles before decays.
 
 @menu
@@ -25,6 +26,7 @@ and operate only on the inclusively produced particles before decays.
 * HARD_SPIN_CORRELATIONS::
 * STORE_DECAY_RESULTS::
 * HDH_SET_WIDTHS::
+* HDH_BR_WEIGHTS::
 * HARD_MASS_SMEARING::
 * RESOLVE_DECAYS::
 * DECAY_TAU_HARD::
@@ -98,6 +100,18 @@ production and decay are handled as a full process or using Decay(OS).
 In this case, the option @option{HDH_SET_WIDTHS=1} permits to overwrite the
 @option{WIDTH[<id>]} values of unstable particles by the LO widths computed by
 the decay handler.
+
+@node HDH_BR_WEIGHTS
+@subsection HDH_BR_WEIGHTS
+@cindex HDH_BR_WEIGHTS
+
+By default (@option{HDH_BR_WEIGHTS=1}), weights for events which involve a hard
+decay are multiplied with the corresponding branching ratios (if decay channels
+have been disabled). This also means that the total cross section at the end of
+the event generation run already includes the appropriate BR factors. If you
+want to disable that, e.g. because you want to multiply with your own modified
+BR, you can set the option @option{HDH_BR_WEIGHTS=0}.
+
 
 @node HARD_MASS_SMEARING
 @subsection HARD_MASS_SMEARING

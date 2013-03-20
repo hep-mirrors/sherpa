@@ -52,6 +52,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
     resolved configuration, and a small one in another?
     */
   m_store_results=dr.GetValue<int>("STORE_DECAY_RESULTS",0);
+  m_br_weights=dr.GetValue<int>("HDH_BR_WEIGHTS",1);
   m_decay_tau=dr.GetValue<int>("DECAY_TAU_HARD",0);
   m_set_widths=dr.GetValue<int>("HDH_SET_WIDTHS",0);
   m_resultdir=dr.GetValue<std::string>("RESULT_DIRECTORY","Results");
@@ -418,6 +419,20 @@ void Hard_Decay_Handler::FindDecayProducts(Particle* decayer,
   }
 }
 
+double Hard_Decay_Handler::BRFactor(ATOOLS::Blob* blob) const
+{
+  double brfactor=1.0;
+  for (size_t i=0; i<blob->NOutP(); ++i) {
+    Particle* part=blob->OutParticle(i);
+    Decay_Table* dt=p_decaymap->FindDecay(part->RefFlav());
+    if (dt) {
+      brfactor*=dt->ActiveWidth()/dt->TotalWidth();
+      if (part->DecayBlob() && part->DecayBlob()->Type()==btp::Hard_Decay)
+        brfactor*=BRFactor(part->DecayBlob());
+    }
+  }
+  return brfactor;
+}
 
 void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
                                           METOOLS::Amplitude2_Tensor* amps,
@@ -425,11 +440,8 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
 {
   Decay_Handler_Base::TreatInitialBlob(blob, amps, origparts);
 
-  double brfactor=1.0;
-  for (size_t i=0; i<blob->NOutP(); ++i) {
-    Decay_Table* dt=p_decaymap->FindDecay(blob->OutParticle(i)->RefFlav());
-    if (dt) brfactor*=dt->ActiveWidth()/dt->TotalWidth();
-  }
+  double brfactor=m_br_weights ? BRFactor(blob) : 1.0;
+  DEBUG_VAR(brfactor);
   Blob_Data_Base * bdbweight((*blob)["Weight"]);
   if (bdbweight) bdbweight->Set<double>(brfactor*bdbweight->Get<double>());
   Blob_Data_Base * bdbmeweight((*blob)["MEWeight"]);
@@ -518,7 +530,12 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     }
     bdb->Set<NLO_subevtlist*>(p_newsublist);
     DEBUG_INFO("New subevts:");
-    for (size_t i=0;i<p_newsublist->size();++i) DEBUG_VAR(*(*p_newsublist)[i]);
+    for (size_t i=0;i<p_newsublist->size();++i) {
+      (*p_newsublist)[i]->m_result*=brfactor;
+      (*p_newsublist)[i]->m_me*=brfactor;
+      (*p_newsublist)[i]->m_mewgt*=brfactor;
+      DEBUG_VAR(*(*p_newsublist)[i]);
+    }
   }
 }
 
