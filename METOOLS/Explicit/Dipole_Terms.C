@@ -19,7 +19,7 @@ I_Args::I_Args(const ATOOLS::Vec4D &pij,const ATOOLS::Vec4D &pk,
 {
   type=(pij[0]<0.0?1:0)|(pk[0]<0.0?2:0);
   s=dabs(2.0*pij*pk);
-  Q=sqrt(Q2=(type?s:s+mij2+mk2));
+  Q=sqrt(Q2=s+mij2+mk2);
   v=sqrt(1.0-sqr(2.0*mij*mk)/(s*s));
   if (mij && mk) {
     r=sqrt(r2=(1.0-v)/(1.0+v));
