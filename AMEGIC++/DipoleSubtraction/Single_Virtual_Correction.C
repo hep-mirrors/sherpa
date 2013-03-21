@@ -499,8 +499,13 @@ double Single_Virtual_Correction::Calc_Imassive(const ATOOLS::Vec4D *mom)
 
       splf+=splf1*lsc+splf2*0.5*sqr(lsc);
       res+=p_dsij[i][k]*splf;
+      m_cmur[0]+=p_dsij[i][k]*(splf1+splf2*lsc);
+      m_cmur[1]+=p_dsij[i][k]*splf2;
     }
   }
+  m_cmur[0]*=-p_kpterms->Coupling();
+  m_cmur[1]*=-p_kpterms->Coupling();
+
   return -res*p_kpterms->Coupling();
 }
 
