@@ -401,10 +401,10 @@ double COMIX::Single_Process::Partonic
 double COMIX::Single_Process::GetKPTerms
 (const Flavour_Vector &fl,const int mode)
 {
+  m_x[0]=m_x[1]=1.0;
   if (!(m_pinfo.m_fi.NLOType()&nlo_type::vsub)) return 0.0;
   if (mode==0) {
     Single_Process *sp(p_map!=NULL?p_map:this);
-    m_x[0]=m_x[1]=1.0;
     double eta0=1.0, eta1=1.0;
     double w=sp->p_bg->Coupling(0)/(2.0*M_PI);
     bool map(p_map!=NULL && m_lookup && p_map->m_lookup);

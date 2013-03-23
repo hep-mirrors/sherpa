@@ -1453,7 +1453,7 @@ bool Amplitude::EvaluateAll()
       csum+=cw*asf*p_loop->ME_Finite();
       if (m_sccmur) {
 	double b0(11.0/6.0*3.0-2.0/3.0*0.5*Flavour(kf_quark).Size()/2);
-	m_cmur[0]+=cw*asf*(p_loop->ME_E1()+m_oqcd*b0);
+	m_cmur[0]+=cw*asf*(p_loop->ME_E1()+m_maxoqcd*b0);
 	m_cmur[1]+=cw*asf*p_loop->ME_E2();
       }
       else {
