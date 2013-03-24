@@ -2,6 +2,7 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
 #define TTH_NMX 4
@@ -73,8 +74,10 @@ namespace TTH {
       topas_.alphas=model->ScalarFunction
 	(std::string("alpha_S"),rpa->gen.CplScale());
       double gf(1.0/sqrt(2.0)/std::abs(sqr(model->ComplexConstant("cvev"))));
-      yukawa_.yukt=-topas_.mtop*sqrt(gf*sqrt(2.0));
-      yukawa_.yukb=-topas_.mb*sqrt(gf*sqrt(2.0));
+      yukawa_.yukt=-model->GetInteractionModel()->
+	ScalarFunction("m"+Flavour(kf_t).IDName(),sqr(smhiggs_.mh))*sqrt(gf*sqrt(2.0));
+      yukawa_.yukb=-model->GetInteractionModel()->
+	ScalarFunction("m"+Flavour(kf_b).IDName(),sqr(smhiggs_.mh))*sqrt(gf*sqrt(2.0));
       return true;
     }
 
