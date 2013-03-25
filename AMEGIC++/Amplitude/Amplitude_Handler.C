@@ -915,14 +915,16 @@ void Amplitude_Handler::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,
       cols[i][j]=CFCol_Matrix->Mij(i,j);
     }
   }
-  
   ////////////////////////////////////////////////////// BEGIN HACK
   if (m_hm.empty()) {
     m_hm.resize(hel->MaxHel());
     METOOLS::Spin_Structure<int> amp(hel->GetFlavs(),0);
     for (size_t ihel=0; ihel<hel->MaxHel(); ++ihel) {
       std::vector<int> ch(amp(ihel));
-      for (size_t j(0);j<ch.size();++j) if (ch[j]<2) ch[j]=1-ch[j];
+      for (size_t j(0);j<ch.size();++j){
+	if (hel->GetFlavs()[j].IsScalar()) continue;
+	if (ch[j]<2) ch[j]=1-ch[j];
+      }
       m_hm[ihel]=amp(ch);
     }
   }
@@ -933,6 +935,8 @@ void Amplitude_Handler::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,
       amps.back().Insert(graphs[i]->Zvalue(ihel)*sfactor, m_hm[ihel]);
     }
   }
+  DEBUG_INFO("end");
+  
 }
 
 int Amplitude_Handler::TOrder(Single_Amplitude* a)
