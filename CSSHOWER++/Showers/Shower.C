@@ -475,7 +475,8 @@ Parton *Shower::SelectSplitting(double & kt2win) {
 
 bool Shower::TrialEmission(double & kt2win,Parton * split) 
 {
-  if (split->KtStart()==0.0 ||
+  if (!split->Connected() ||
+      split->KtStart()==0.0 ||
       split->KtStart()<split->GetSing()->KtNext()) return false;
   double kt2(0.),z(0.),y(0.),phi(0.);
   while (true) {

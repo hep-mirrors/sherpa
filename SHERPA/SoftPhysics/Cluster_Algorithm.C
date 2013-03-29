@@ -273,41 +273,18 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
     for (size_t j=nlegs;j>2;j--) {
       if (i==j-1) continue;
       spect = legs[j-1];
-/*      ybar   = dabs(split->Mom().Y()+spect->Mom().Y())/2.;
-      deltay = dabs(split->Mom().Y()-spect->Mom().Y());*/
       int nconn(ColorConnected(split->Col(),spect->Col()));
       if (nconn==0) continue;
-/*      if (ColorConnected(split->Col(),colbeam0)>0) {
-	kt2FS = Min(PTi2(split->Mom(),spect->Mom())*exp(magicfac*ybar),
-		      PTi2(split->Mom(),pbeam0))*exp(magicfac*ysplit);
-      }
-      else if (ColorConnected(split->Col(),colbeam1)>0) {
-	kt2FS = Min(PTi2(split->Mom(),spect->Mom())*exp(magicfac*ybar),
-		      PTi2(split->Mom(),pbeam1))*exp(magicfac*ysplit);
-      }
-      else {
-	kt2FS = PTi2(split->Mom(),spect->Mom())*exp(magicfac*ybar);
-      }*/
       kt2FS = (split->Mom()+spect->Mom()).Abs2();
-      if (ColorConnected(split->Col(),colbeam0)>0 || ColorConnected(split->Col(),colbeam1)>0) {
-//         kt2min = Max(m_tmax,scale/4.);
+      if (ColorConnected(split->Col(),colbeam0)>0 || 
+	  ColorConnected(split->Col(),colbeam1)>0) {
         kt2min = Max(m_tmax,scale);
       }
       else {
         kt2min = m_tmax;
       }
-// 	kt2FS *= m_nlad;
-// 	kt2min *= m_nlad;
-/*      kt2FS = Min(PTij2(split->Mom(),spect->Mom()),
-		  Min(PTi2(split->Mom(),pbeam0),
-		      PTi2(split->Mom(),pbeam1)));*/
-      //msg_Out()<<"kt2FS for "<<split->Mom()<<" = "<<kt2FS
-      //       <<" from ptij2 = "<<PTij2(split->Mom(),spect->Mom())<<", "
-      //       <<"pti2 = "<<PTi2(split->Mom(),pbeam0)
-      //       <<" "<<PTi2(split->Mom(),pbeam1)<<".\n";
       if (kt2FS<kt2min) kt2min = kt2FS;
       if (kt2FS>kt2max) kt2max = kt2FS;
-//       if (kt2FS<kt2max) kt2max = kt2FS;
       if (j>2) {
 	do {
 	  split->AddToSpectators(spect);
@@ -316,35 +293,27 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
 	split->SetConnected(true);
       }
     }
-    if (!split->Connected()) {
+    //msg_Out()<<"Splitter "<<split->Id()<<" with "
+    //	     <<split->NumberOfSpectators()<<" spectators.\n";
+    if (split->NumberOfSpectators()<1+int(split->Flav().IsGluon())) {
       int j(i);
-      for (int cnt=0;cnt<1+int(split->Flav().IsGluon());cnt++) {
+      for (size_t cnt(split->NumberOfSpectators());
+	   cnt<1+int(split->Flav().IsGluon());cnt++) {
 	while (j==i) { j = 2+int(ATOOLS::ran->Get()*(nlegs-2)); }
 	split->AddToSpectators(legs[j]);
       }
-      split->SetConnected(false);
-	// default choice
-/*        if (ColorConnected(split->Col(),colbeam0)>0) {
-	  kt2max = PTi2(split->Mom(),pbeam0)*exp(magicfac*ysplit);
-        }
-        else {
-	  kt2max = PTi2(split->Mom(),pbeam1)*exp(magicfac*ysplit);
-        }*/
-        kt2max = scale;
-// 	kt2min = scale/16.;
+      if (!split->Connected()) {
+	kt2max = scale;
 	kt2min = m_tmax;
-// 	kt2min *= m_nlad;
-/*	kt2max = Min(PTij2(split->Mom(),legs[j]->Mom())/m_showerfac,
-		     Min(PTi2(split->Mom(),pbeam0),
-			 PTi2(split->Mom(),pbeam1)));*/
+      }
     }
-//     if (kt2max>kt2min) kt2min = sqrt(kt2min*kt2max);
+    //msg_Out()<<"Now: Splitter "<<split->Id()<<" with "
+    //	     <<split->NumberOfSpectators()<<" spectators.\n";
     if (kt2max>totmax) totmax = kt2max;
     split->SetKTStart(kt2max);
-//     split->SetKTMax(kt2max);
     split->SetKTMax(kt2min);
     split->SetKTVeto(kt2min);
-
+    
     m_histomap[std::string("startvspt")]->Insert(split->Mom().PPerp(),kt2max);  
     m_histomap[std::string("vetovspt")]->Insert(split->Mom().PPerp(),kt2min);  
     m_histomap[std::string("nstartvspt")]->Insert(split->Mom().PPerp());  

@@ -23,12 +23,15 @@ Return_Value::code Beam_Remnants::Treat(ATOOLS::Blob_List *bloblist,double &weig
   }
   Blob *signal(bloblist->FindFirst(btp::Signal_Process));
   if (!signal || signal->Has(blob_status::needs_signal)) {
-    Blob * hard = bloblist->FindFirst(btp::Hard_Collision);
+    Blob * hard  = bloblist->FindFirst(btp::Hard_Collision);
     Blob * qelas = bloblist->FindFirst(btp::QElastic_Collision);
     if (!hard && !qelas) {
       return Return_Value::Nothing;
     }
   }
+  Blob *beam(bloblist->FindFirst(btp::Beam));
+  if (beam && !beam->Has(blob_status::needs_beams)) 
+    return Return_Value::Nothing;
   return p_beamremnanthandler->FillBeamAndBunchBlobs(bloblist);
 }
 

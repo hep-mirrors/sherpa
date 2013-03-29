@@ -20,8 +20,7 @@ Shrimps::Shrimps(ATOOLS::Data_Reader * dr,
   p_generator(NULL)
 {
   ATOOLS::rpa->gen.AddCitation
-    (1,"SHRiMPS is not published yet. \
-Please contact the authors if you are using it.");
+    (1,"SHRiMPS is not published yet.  Please contact the authors if you are using it.");
   double Ecms(ATOOLS::rpa->gen.Ecms());
   MBpars.Init(dr);
   MBpars.Set(std::string("originalY"),
@@ -172,9 +171,6 @@ int Shrimps::GenerateEvent(ATOOLS::Blob_List * blobs) {
 }
 
 ATOOLS::Return_Value::code Shrimps::FillBeamBlobs(ATOOLS::Blob_List * blobs) {
-  msg_Tracking()
-    <<"===================== "<<METHOD<<"("<<blobs->size()<<" blobs) "
-    <<"=====================\n";
   return p_beamremnants->FillBeamBlobs(blobs,p_generator->GetEikonal(),
 				       p_generator->Smin());
 }
@@ -248,9 +244,11 @@ void Shrimps::GenerateXsecs() {
          <<std::endl;
       if (Elastics.find((*energy))!=Elastics.end()) {
         Elastic_Event_Generator elastic(m_cross.GetSigmaElastic(),NULL,-1);
-        m_cross.GetSigmaElastic()->PrintDifferentialelasticXsec(false,tuning,dirname);
+        m_cross.GetSigmaElastic()->PrintDifferentialelasticXsec(false,tuning,
+								dirname);
         m_cross.GetSigmaSD()->PrintDifferentialElasticAndSDXsec(false,dirname);
-        m_cross.GetSigmaDD()->PrintDifferentialElasticAndDiffXsec(false,dirname);
+        m_cross.GetSigmaDD()->PrintDifferentialElasticAndDiffXsec(false,
+								  dirname);
       }
     }
     was.close();
@@ -261,7 +259,7 @@ void Shrimps::GenerateXsecs() {
     std::ifstream input;
     input.open(infile.c_str());
     if(!input){
-      msg_Error()<<"File "<<infile<<" does not exist, will exit now."<<std::endl;
+      msg_Error()<<"File "<<infile<<" does not exist, will exit now.\n";
       exit(1);
     }
     std::string test;
@@ -274,13 +272,10 @@ void Shrimps::GenerateXsecs() {
     Elastics.push_back(62.5);
     Elastics.push_back(546.);
     Elastics.push_back(1800.);
-//     Elastics.push_back(7000.);
 
     std::vector<double> xsectot, xsecinel,xsecelas;
     
-//     msg_Out()<<"Calculating integrated cross sections for tuning."<<std::endl;
     for (int i=0; i<Energies.size(); i++) {
-//       msg_Out()<<"Integrating for energy "<<Energies[i]<<" GeV"<<std::endl;
       InitialiseSingleChannelEikonals((Energies[i]));
       InitialiseCrossSections((Energies[i]));
       xsectot.push_back(m_cross.SigmaTot()/1.e9);
@@ -313,7 +308,8 @@ void Shrimps::GenerateXsecs() {
     for (int i=0; i<Elastics.size(); i++) {
       InitialiseSingleChannelEikonals((Elastics[i]));
       InitialiseCrossSections((Elastics[i]));
-      m_cross.GetSigmaElastic()->PrintDifferentialelasticXsec(false,tuning,dirname);
+      m_cross.GetSigmaElastic()->PrintDifferentialelasticXsec(false,tuning,
+							      dirname);
     }
   }
 }
@@ -338,7 +334,8 @@ void Shrimps::PrintPDFandAlphaS()
       dpdf    = m_pdfs[0].XPDF(ATOOLS::Flavour(kf_d));
       spdf    = m_pdfs[0].XPDF(ATOOLS::Flavour(kf_s));
       gpdf    = m_pdfs[0].XPDF(ATOOLS::Flavour(kf_gluon));
-      was<<x<<"   "<<updf<<"   "<<ubarpdf<<"   "<<dpdf<<"   "<<spdf<<"   "<<gpdf<<std::endl;
+      was<<x<<"   "<<updf<<"   "<<ubarpdf<<"   "<<dpdf<<"   "
+	 <<spdf<<"   "<<gpdf<<std::endl;
     }
     was<<std::endl<<std::endl;
   }

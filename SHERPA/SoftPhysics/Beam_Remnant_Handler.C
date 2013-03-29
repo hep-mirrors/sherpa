@@ -58,10 +58,9 @@ Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
     }
   }
   for (short unsigned int i=0;i<2;++i) {
-    p_beamblobs[i]    = InitBeamBlob(i);
-    if (p_shrimps)        p_shrimps->SetBeamBlob(p_beamblobs[i],i);
+    p_beamblobs[i] = InitBeamBlob(i);
+    if (p_shrimps)      p_shrimps->SetBeamBlob(p_beamblobs[i],i);
     if (p_parametrised) p_parametrised->SetBeamBlob(p_beamblobs[i],i);
-    //msg_Out()<<METHOD<<"("<<i<<"):\n"<<(*p_beamblobs[i])<<"\n";
   }
   Return_Value::code fbc(Return_Value::Error);
   if (p_shrimps) {
@@ -103,6 +102,7 @@ FillBunchBlobs(Blob_List *const  bloblist,
       flag=true;
     }
   }
+  return Return_Value::Success;
   return (flag?Return_Value::Success:Return_Value::Nothing);
 }
 

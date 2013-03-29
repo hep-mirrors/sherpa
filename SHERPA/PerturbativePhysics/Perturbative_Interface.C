@@ -122,7 +122,7 @@ DefineInitialConditions(ATOOLS::Blob *blob)
       stat=p_mi->Shower()->GetShower()->
 	GetClusterDefinitions()->ReCluster(p_ampl);
       if (stat!=1) {
-	msg_Tracking()<<METHOD<<"(): Reclustering failed. Reject event."<<std::endl;
+	msg_Tracking()<<METHOD<<"(): Reclustering failed. Reject event.\n";
 	return Return_Value::New_Event;
       }
     }

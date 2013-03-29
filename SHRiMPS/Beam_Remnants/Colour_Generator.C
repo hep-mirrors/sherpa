@@ -63,12 +63,12 @@ bool Colour_Generator::FixCorrelatedIndices() {
   Particle * part2(p_ladder->GetIn2()->GetParticle());
   size_t fix(ColourConnected(part1,part2));
   int mod;
-//   msg_Out()<<METHOD<<" after first check fix = "<<fix<<".\n";
+  //   msg_Out()<<METHOD<<" after first check fix = "<<fix<<".\n";
   switch (fix) {
   case 0: {
-/*    msg_Out()<<"********** fix = "<<fix
-    		  <<"["<<part1->GetFlow(1)<<" "<<part1->GetFlow(2)<<"] "
-    		  <<"["<<part2->GetFlow(1)<<" "<<part2->GetFlow(2)<<"].\n";*/
+    /*    msg_Out()<<"********** fix = "<<fix
+	  <<"["<<part1->GetFlow(1)<<" "<<part1->GetFlow(2)<<"] "
+	  <<"["<<part2->GetFlow(1)<<" "<<part2->GetFlow(2)<<"].\n";*/
     fix = SelectColourReplacement(part1,part2);
     if (fix==0) {
       mod = ModifyOriginators(part1,part2);
@@ -101,14 +101,14 @@ int Colour_Generator::ModifyOriginators(Particle * part1,Particle * part2) {
   Blob * specblob((beam?p_inpart2:p_inpart1)->ProductionBlob());
   size_t index(1+int(ran->Get()>0.5)),col, col1, adj, adj1;
   
-/*    msg_Out()<<"-----------------------------------------------------\n"
-    <<METHOD<<"("<<beam<<") for "
-    <<"["<<part1->GetFlow(1)<<", "<<part1->GetFlow(2)<<"] "
-    <<"["<<part2->GetFlow(1)<<", "<<part2->GetFlow(2)<<"], "
-    <<"blobs = "<<partblob->Id()<<" & "<<specblob->Id()<<".\n";
-    msg_Out()<<(*p_ladder)<<"\n";
-    msg_Out()<<" Deal with {"<<part->Number()<<", "<<spec->Number()<<"}:\n"
-    <<(*part)<<"\n"<<(*spec)<<"\n";*/
+  /*    msg_Out()<<"-----------------------------------------------------\n"
+	<<METHOD<<"("<<beam<<") for "
+	<<"["<<part1->GetFlow(1)<<", "<<part1->GetFlow(2)<<"] "
+	<<"["<<part2->GetFlow(1)<<", "<<part2->GetFlow(2)<<"], "
+	<<"blobs = "<<partblob->Id()<<" & "<<specblob->Id()<<".\n";
+	msg_Out()<<(*p_ladder)<<"\n";
+	msg_Out()<<" Deal with {"<<part->Number()<<", "<<spec->Number()<<"}:\n"
+	<<(*part)<<"\n"<<(*spec)<<"\n";*/
   
   for (int i=0;i<2;i++) {
     index = 3-index;
@@ -116,7 +116,8 @@ int Colour_Generator::ModifyOriginators(Particle * part1,Particle * part2) {
     adj  = part->GetFlow(3-index);
     col1 = spec->GetFlow(3-index);
     adj1 = spec->GetFlow(index);
-//     msg_Out()<<i<<"th attempt: Check to replace "<<col<<" <-> "<<col1<<".\n";
+    //     msg_Out()<<i<<"th attempt: 
+    //Check to replace "<<col<<" <-> "<<col1<<".\n";
     if (col==0 || col1==0) continue;
     if (ReplaceColour(partblob,index,col,col1,adj)) {
       part->SetFlow(index,col1);
@@ -128,11 +129,11 @@ int Colour_Generator::ModifyOriginators(Particle * part1,Particle * part2) {
 	msg_Error()<<"Error with colours here (1).\n";
       (beam?p_ladder->GetIn1():p_ladder->GetIn2())->m_flow.SetCode(index,col1);
       
-/*	msg_Out()<<"index(1) = "
-	<<(beam?index:3-index)<<" for beam = "<<beam<<": "
-	<<col<<" ---> "<<col1<<", "
-	<<"set "<<part->Number()
-	<<"(index = "<<index<<") = "<<col1<<".\n";*/
+      /*	msg_Out()<<"index(1) = "
+		<<(beam?index:3-index)<<" for beam = "<<beam<<": "
+		<<col<<" ---> "<<col1<<", "
+		<<"set "<<part->Number()
+		<<"(index = "<<index<<") = "<<col1<<".\n";*/
       
       if (!partblob->CheckColour()) {
 	msg_Error()<<"Problem in "<<METHOD<<":\n"
@@ -152,12 +153,12 @@ int Colour_Generator::ModifyOriginators(Particle * part1,Particle * part2) {
 	msg_Error()<<"Error with colours here (2).\n";
       spec->SetFlow(3-index,col);
       
-/*	msg_Out()<<"index(2) = "
-	<<(beam?3-index:index)<<" for beam = "<<beam<<": "
-	<<col1<<" ---> "<<col<<", "
-	<<"set "<<spec->Number()
-	<<"(index = "<<(3-index)<<") = "<<col<<"\n"
-	<<(*spec)<<"\n"<<(*part)<<"\n";*/
+      /*	msg_Out()<<"index(2) = "
+		<<(beam?3-index:index)<<" for beam = "<<beam<<": "
+		<<col1<<" ---> "<<col<<", "
+		<<"set "<<spec->Number()
+		<<"(index = "<<(3-index)<<") = "<<col<<"\n"
+		<<(*spec)<<"\n"<<(*part)<<"\n";*/
       
       if (!specblob->CheckColour()) {
 	msg_Error()<<"Problem in "<<METHOD<<":\n"
@@ -191,13 +192,13 @@ ReplaceColour(Blob * blob,const size_t & index,
 	if (partj->GetFlow(3-index)==col) {
 	  if (partj->GetFlow(index)==col1) return false;
 	  
-/*	    msg_Out()<<METHOD
-	    <<"("<<parti->Number()<<" & "<<partj->Number()<<") "
-	    <<"successful.  Decayblobs = "
-	    <<(parti->DecayBlob()?parti->DecayBlob()->Id():0)
-	    << " & "
-	    <<(partj->DecayBlob()?partj->DecayBlob()->Id():0)
-	    << ".\n"<<(*blob)<<"\n";*/
+	  /*	    msg_Out()<<METHOD
+		    <<"("<<parti->Number()<<" & "<<partj->Number()<<") "
+		    <<"successful.  Decayblobs = "
+		    <<(parti->DecayBlob()?parti->DecayBlob()->Id():0)
+		    << " & "
+		    <<(partj->DecayBlob()?partj->DecayBlob()->Id():0)
+		    << ".\n"<<(*blob)<<"\n";*/
 	  
 	  if ((parti->Flav().IsGluon() && col1==0) ||
 	      (parti->Flav().IsQuark() && parti->Flav().IsAnti() && 
@@ -213,7 +214,7 @@ ReplaceColour(Blob * blob,const size_t & index,
 	    msg_Error()<<"Error with colours here (3j).\n";
 	  parti->SetFlow(index,col1);
 	  partj->SetFlow(3-index,col1);
-// 	  msg_Out()<<(*parti)<<"\n"<<(*partj)<<"\n";
+	  // 	  msg_Out()<<(*parti)<<"\n"<<(*partj)<<"\n";
 	  if (!blob->CheckColour()) {
 	    msg_Error()<<"Problem in "<<METHOD<<":\n"
 		       <<"   Extra blob ("<<blob->Id()<<") seems fishy: "
@@ -225,8 +226,8 @@ ReplaceColour(Blob * blob,const size_t & index,
       }
     }
   }
-/*  msg_Out()<<METHOD<<"("<<col<<", "<<col1<<") for blob ["<<blob->Id()<<"]: "
-  	     <<"Colour not found in index = "<<index<<".\n";*/
+  /*  msg_Out()<<METHOD<<"("<<col<<", "<<col1<<") for blob ["<<blob->Id()<<"]: "
+      <<"Colour not found in index = "<<index<<".\n";*/
   return false;
 }
 
@@ -376,7 +377,7 @@ int Colour_Generator::CorrelatedIndices(int col[2][2]) {
       }
     }
   }
-//   msg_Out()<<METHOD<<"("<<flav[0]<<" "<<flav[1]<<"): fix = "<<fix<<".\n";
+  //   msg_Out()<<METHOD<<"("<<flav[0]<<" "<<flav[1]<<"): fix = "<<fix<<".\n";
   return fix;
 } 
 
@@ -513,21 +514,21 @@ void Colour_Generator::PickTwoColours(const size_t & beam,int * cols) {
 }
 
 void Colour_Generator::FinalColours() {
-//   msg_Out()<<METHOD<<":\n";
+  //   msg_Out()<<METHOD<<":\n";
   size_t flow(0),col(0);
   Particle * part;
   Flavour flav;
   for (size_t beam=0;beam<2;beam++) {
     size_t length(m_hadrons[1-beam]->Size());
     
-/*      msg_Out()<<"   Trips["<<beam<<"]:";
-      for (set<int>::iterator cit=m_col[beam][0].begin();
-      cit!=m_col[beam][0].end();cit++) msg_Out()<<" "<<(*cit);
-      msg_Out()<<"\n";
-      msg_Out()<<"   Antis["<<beam<<"]:";
-      for (set<int>::iterator cit=m_col[beam][1].begin();
-      cit!=m_col[beam][1].end();cit++) msg_Out()<<" "<<(*cit);
-      msg_Out()<<"\n";*/
+    /*      msg_Out()<<"   Trips["<<beam<<"]:";
+	    for (set<int>::iterator cit=m_col[beam][0].begin();
+	    cit!=m_col[beam][0].end();cit++) msg_Out()<<" "<<(*cit);
+	    msg_Out()<<"\n";
+	    msg_Out()<<"   Antis["<<beam<<"]:";
+	    for (set<int>::iterator cit=m_col[beam][1].begin();
+	    cit!=m_col[beam][1].end();cit++) msg_Out()<<" "<<(*cit);
+	    msg_Out()<<"\n";*/
     
     for (size_t i=length-2;i<length;i++) {
       part = m_hadrons[1-beam]->GetParticle(i);
@@ -560,7 +561,7 @@ void Colour_Generator::FinalColours() {
 	  }
 	}
       }
-//       msg_Out()<<(*part)<<"\n";
+      //       msg_Out()<<(*part)<<"\n";
     }
   }
 }

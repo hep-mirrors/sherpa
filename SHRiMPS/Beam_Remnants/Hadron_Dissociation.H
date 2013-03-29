@@ -35,7 +35,8 @@ namespace SHRIMPS {
   public:
     Hadron_Dissociation(Continued_PDF *const pdf);
     ~Hadron_Dissociation();
-    bool DefineDissociation(const int & Nladders, const double B, const double & xcut,
+    bool DefineDissociation(const int & Nladders, const double B, 
+			    const double & xcut,
 			    const double & eta,Form_Factor * ff);
     void Reshuffle(const size_t & N);
     void FillBeamBlob();
@@ -45,6 +46,7 @@ namespace SHRIMPS {
     inline void Reset(const ATOOLS::Vec4D & mom) {
       m_quark    = m_remnant = ATOOLS::Flavour(kf_none);
       m_bunchmom = mom;
+      p_blob     = NULL;
       m_particles.clear();
       m_xs.clear();
       m_qtvecs.clear();

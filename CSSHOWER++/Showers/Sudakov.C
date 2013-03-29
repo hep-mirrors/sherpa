@@ -232,8 +232,11 @@ bool Sudakov::Generate(Parton * split)
   if (((cc==8 || (split->GetType()==pst::FS?cc:-cc)==3) &&
        split->GetLeft()==NULL) ||
       ((cc==8 || (split->GetType()==pst::FS?cc:-cc)==-3) &&
-       split->GetRight()==NULL))
+       split->GetRight()==NULL)) {
+    msg_Out()<<"Error in "<<METHOD<<": cannot split \n"<<(*split)<<"\n"
+	     <<"   connected = "<<split->Connected()<<"\n";
     THROW(fatal_error,"Invalid color flow.");
+  }
   m_cfl  = split->GetFlavour();
   m_type = cstp::none;
   std::vector<Parton*> slist;

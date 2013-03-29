@@ -72,15 +72,15 @@ void Event_Handler::EmptyEventPhases()
 void Event_Handler::PrintGenericEventStructure() 
 {
   if (!msg_LevelIsInfo()) return;
-  msg_Out()<<"----------------------------------------------------------"<<std::endl
-	    <<"-- SHERPA generates events with the following structure --"<<std::endl
-	    <<"----------------------------------------------------------"<<std::endl;
+  msg_Out()<<"----------------------------------------------------------\n"
+	    <<"-- SHERPA generates events with the following structure --\n"
+	    <<"----------------------------------------------------------\n";
   if (!p_phases->empty()) {
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       msg_Out()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
     }
   }
-  msg_Out()<<"---------------------------------------------------------"<<std::endl;
+  msg_Out()<<"---------------------------------------------------------\n";
 }
 
 void Event_Handler::Reset()
@@ -93,7 +93,7 @@ void Event_Handler::Reset()
       Blob::Counter()>m_lastblobcounter) {
     msg_Error()<<METHOD<<"(): "<<Particle::Counter()
                <<" particles and "<<Blob::Counter()
-               <<" blobs undeleted. Continuing."<<std::endl;
+               <<" blobs undeleted. Continuing.\n";
     m_lastparticlecounter=Particle::Counter();
     m_lastblobcounter=Blob::Counter();
   }
@@ -120,13 +120,10 @@ bool Event_Handler::GenerateEvent(eventtype::code mode)
   switch (mode) {
   case eventtype::StandardPerturbative:
   case eventtype::EventReader:
-    //msg_Out()<<METHOD<<" for StandardPerturbative.\n";
     return GenerateStandardPerturbativeEvent(mode);
   case eventtype::MinimumBias:
-    //msg_Out()<<METHOD<<" for MinimumBias.\n";
     return GenerateMinimumBiasEvent();
   case eventtype::HadronDecay:
-    //msg_Out()<<METHOD<<" for HadronDecay.\n";
     return GenerateHadronDecayEvent();
   }
   return false;
@@ -156,9 +153,9 @@ bool Event_Handler::AnalyseEvent(double & weight) {
         Return_Value::IncError((*pit)->Name());
 	return false;
       default:
-	msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-		   <<"  Unknown return value for 'Treat',"<<std::endl
-		   <<"  Will continue and hope for the best."<<std::endl;
+	msg_Error()<<"Error in "<<METHOD<<":\n"
+		   <<"  Unknown return value for 'Treat',\n"
+		   <<"  Will continue and hope for the best.\n";
 	return false;
       }
     }
@@ -171,19 +168,15 @@ int Event_Handler::IterateEventPhases(double & weight) {
   int retry = 0;
   bool hardps = true;
   do {
-/*    msg_Out()<<"\n";
-    PRINT_VAR((*pit)->Type());
-    PRINT_VAR((*pit)->Name());
-    msg_Out()<<m_blobs<<"\n";*/
     if ((*pit)->Type()==eph::Analysis) {
       ++pit;
       continue;
     }
 
     Return_Value::code rv((*pit)->Treat(&m_blobs,weight));
-//     PRINT_VAR(rv);
     if (rv!=Return_Value::Nothing)
-      msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "<<rv<<std::endl;
+      msg_Tracking()<<METHOD<<"(): run '"<<(*pit)->Name()<<"' -> "
+		    <<rv<<std::endl;
     switch (rv) {
     case Return_Value::Success : 
       if ((*pit)->Name().find("Jet_Evolution")==0 && hardps) {
@@ -203,6 +196,7 @@ int Event_Handler::IterateEventPhases(double & weight) {
       Return_Value::IncRetryPhase((*pit)->Name());
       break;
     case Return_Value::Retry_Event : 
+      msg_Out()<<METHOD<<" throws retrial of event.\n";
       if (retry <= s_retrymax) {
         retry++;
         Return_Value::IncCall((*pit)->Name());
@@ -210,12 +204,17 @@ int Event_Handler::IterateEventPhases(double & weight) {
 	m_blobs.Clear();
 	m_blobs=m_sblobs.Copy();
 	p_signal=m_blobs.FindFirst(btp::Signal_Process);
-	pit=p_phases->begin();
-	break;
+	if (p_signal) {
+	  pit=p_phases->begin();
+	  break;
+	}
+	else {
+	  msg_Out()<<"   --> continue to new event.\n";
+	}
       }
       else {
 	msg_Error()<<METHOD<<"(): No success after "<<s_retrymax
-		   <<" trials. Request new event."<<std::endl;
+		   <<" trials. Request new event.\n";
       }
     case Return_Value::New_Event : 
       Return_Value::IncCall((*pit)->Name());
@@ -231,7 +230,7 @@ int Event_Handler::IterateEventPhases(double & weight) {
       THROW(fatal_error,"Invalid return value");
     }
   } while (pit!=p_phases->end());
-  msg_Tracking()<<METHOD<<": Event ended normally."<<std::endl;
+  msg_Tracking()<<METHOD<<": Event ended normally.\n";
   return 0;
 }
 
@@ -268,7 +267,8 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
   else {
     if (!m_blobs.FourMomentumConservation()) {
       msg_Debugging()<<m_blobs<<"\n";
-      msg_Error()<<METHOD<<"(): Four momentum not conserved. Rejecting event."<<std::endl;
+      msg_Error()<<METHOD<<"(): "
+		 <<"Four momentum not conserved. Rejecting event.\n";
       return false;
     }
   }
@@ -310,7 +310,7 @@ bool Event_Handler::GenerateMinimumBiasEvent() {
 	  Blob::Counter()>m_lastblobcounter) {
 	msg_Error()<<METHOD<<"(): "<<Particle::Counter()
 		   <<" particles and "<<Blob::Counter()
-		   <<" blobs undeleted. Continuing."<<std::endl;
+		   <<" blobs undeleted. Continuing.\n";
 	m_lastparticlecounter=Particle::Counter();
 	m_lastblobcounter=Blob::Counter();
       }
@@ -323,7 +323,6 @@ bool Event_Handler::GenerateMinimumBiasEvent() {
     }
   } while (run);
 
-  //msg_Out()<<METHOD<<" done with event:\n"<<m_blobs<<"\n";
   double xs((*p_signal)["Weight"]->Get<double>());
   m_n++;
   m_sum    += xs;
@@ -393,7 +392,8 @@ bool Event_Handler::GenerateHadronDecayEvent() {
 void Event_Handler::Finish() {
   if (this==NULL) return;
   MPISync();
-  msg_Info()<<"In Event_Handler::Finish : Summarizing the run may take some time."<<std::endl;
+  msg_Info()<<"In Event_Handler::Finish : "
+	    <<"Summarizing the run may take some time.\n";
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     (*pit)->Finish(std::string("Results"));
     (*pit)->CleanUp();
@@ -402,10 +402,11 @@ void Event_Handler::Finish() {
   m_sblobs.Clear();
   if (Particle::Counter()>m_lastparticlecounter || 
       Blob::Counter()>m_lastblobcounter) {
-    msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
-	       <<"   After event : "<<Particle::Counter()<<" / "<<Blob::Counter()
-	       <<" particles / blobs undeleted !"<<std::endl
-	       <<"   Continue and hope for the best."<<std::endl;
+    msg_Error()<<"ERROR in "<<METHOD<<":\n"
+	       <<"   After event : "<<Particle::Counter()
+	       <<" / "<<Blob::Counter()
+	       <<" particles / blobs undeleted !\n"
+	       <<"   Continue and hope for the best.\n";
     m_lastparticlecounter=Particle::Counter();
     m_lastblobcounter=Blob::Counter();
   }

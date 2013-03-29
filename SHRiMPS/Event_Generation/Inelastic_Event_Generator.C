@@ -25,8 +25,8 @@ Inelastic_Event_Generator(Sigma_Inelastic * sigma,
   m_kt2fac(MBpars("kt2_factor")), m_difffac(MBpars("diff_factor")),
   m_test(test), m_output(1), m_analyse(m_output>0), p_ladder(NULL)
 { 
-  msg_Out()<<METHOD<<" for "<<m_Nladders_fix<<" vs "
-	   <<MBpars("NLaddersFix")<<".\n";
+  //msg_Out()<<METHOD<<" for "<<m_Nladders_fix<<" vs "
+  //	   <<MBpars("NLaddersFix")<<".\n";
   if (m_analyse) {
     m_histograms[string("N_ladder_naive")] = new Histogram(0,0.0,25.0,25);
     m_histograms[string("N_ladder_start")] = new Histogram(0,0.0,25.0,25);
@@ -157,7 +157,8 @@ InitInelasticEvent(const bool & isUE,const bool & weighted) {
       if (m_analyse) m_histograms[string("N_ladder_naive")]->Insert(m_Nladders);
       if (m_Nladders<1) continue;
       if (m_analyse) m_histograms[string("N_ladder_start")]->Insert(m_Nladders);
-      if (p_beams->InitialiseCollision(m_Nladders,m_B,p_eikonal)) success = true;
+      if (p_beams->InitialiseCollision(m_Nladders,m_B,p_eikonal)) 
+	success = true;
       trials++;
     } while (trials<100 && !success);
   } while (!success);
@@ -304,24 +305,12 @@ CreateBlob(Blob_List * blobs,const double & xsec) {
   }
   double shat((p_ladder->GetIn1()->GetParticle()->Momentum()
 	      +p_ladder->GetIn2()->GetParticle()->Momentum()).Abs2());
-  //p_ladder->GetEmissionsBegin()->second.GetParticle()->SetInfo('B');
-  //p_ladder->GetEmissionsRBegin()->second.GetParticle()->SetInfo('B');
-
   m_rescatterhandler.FillInitialStateIntoBlob(blob,p_ladder);
   blob->SetCMS();  
 
   if (blob->CheckMomentumConservation().Abs2()/shat>1.e-6 ||
       blob->CheckMomentumConservation()[0]/sqrt(shat)>1.e-3 ||
       blob->CheckMomentumConservation()[3]/sqrt(shat)>1.e-3) {
-/*    if (blob->CheckMomentumConservation()[0]>1.e-3) {
-      msg_Error()<<METHOD<<" try to flip orientation of momenta.\n";
-      Vec4D mom;
-      for (int i=0;i<blob->NOutP();i++) {
-	mom = blob->OutParticle(i)->Momentum();
-	mom[3] *= -1.;
-	blob->OutParticle(i)->SetMomentum(mom);
-      }
-    }*/
     msg_Error()<<"Problem in "<<METHOD<<":\n"
 	       <<"   Scattering blob ("<<blob->Id()<<") seems fishy: "
 	       <<blob->CheckMomentumConservation()<<".\n"
@@ -334,8 +323,9 @@ CreateBlob(Blob_List * blobs,const double & xsec) {
 	       <<(*blob)<<"\n"<<(*p_ladder)<<"\n";
     return false;
   }
-  msg_Tracking()<<METHOD<<":\n"<<(*blob)<<"\n"
-		<<"===============================================\n";
+  //msg_Out()<<METHOD<<":\n"<<(*blob)<<"\n"
+  //	   <<"--> Hand over to shower now.\n"
+  //	   <<"===============================================\n";
   return true;
 }
 

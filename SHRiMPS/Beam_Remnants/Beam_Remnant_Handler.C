@@ -99,6 +99,7 @@ InitialiseCollision(const int & N, double B, Omega_ik * eikonal) {
 		    blob_status::needs_beams);
   for (size_t beam=0;beam<2;beam++) 
     m_hadrons[beam]->AddParticlesToBlob(p_blob,beam);
+  //msg_Out()<<METHOD<<": \n"<<p_blob->Id()<<"\n";
   p_colour->SetSoftBlob(p_blob);
   m_paircounter = 0;
   return true;
@@ -113,6 +114,7 @@ void Beam_Remnant_Handler::AddBeamBlobs(ATOOLS::Blob_List * blobs) {
 
 Return_Value::code Beam_Remnant_Handler::
 FillBeamBlobs(Blob_List * blobs,Omega_ik * eikonal,const double & smin) {
+  //msg_Out()<<METHOD<<"(Shrimps) for "<<blobs->size()<<" blobs.\n";
   AddBeamBlobs(blobs);
   Blob * blob;
   for (Blob_List::iterator biter=blobs->begin();biter!=blobs->end();biter++) {
@@ -186,8 +188,11 @@ FillBeamBlobs(Blob_List * blobs,Omega_ik * eikonal,const double & smin) {
       return Return_Value::Retry_Event;
     }
   }
-  if (p_reconnections->FinishConfiguration(blobs,smin)) 
+  if (p_reconnections->FinishConfiguration(blobs,smin)) {
+    //msg_Out()<<METHOD<<" was successful for "<<p_blob->Id()<<":\n";
+    //	     <<(*blobs)<<"\n\n";
     return Return_Value::Success;
+  }
   return Return_Value::Retry_Event;
 }
 
@@ -248,9 +253,9 @@ NextIS(Particle *& part1,Particle *& part2) {
     m_checkmom[beam] += p_part[beam]->Momentum();
     if (m_paircounter+1 == m_hadrons[beam]->Size()
         && !ATOOLS::IsEqual(m_checkmom[beam],m_beamvecs[beam],1e-3))
-      msg_Out()<<METHOD<<" Four Momentum not conserved in intial state: "
-                       <<(m_checkmom[beam]-m_beamvecs[beam])/
-	m_beamvecs[beam][0]<<std::endl;
+      msg_Tracking()<<METHOD<<" Four Momentum not conserved in intial state: "
+		    <<((m_checkmom[beam]-m_beamvecs[beam])/m_beamvecs[beam][0])
+		    <<std::endl;
   }	   
   m_paircounter++;
   part1 = p_part[0]; part2 = p_part[1];
@@ -280,6 +285,25 @@ void Beam_Remnant_Handler::Reset(const size_t & mode) {
     if (p_blob && (p_blob->NInP()>0 || p_blob->NOutP()>0)) {
       delete p_blob;
       p_blob = NULL;
+    }
+  }
+  else if (mode==0) {
+    if (p_blob && (p_blob->NInP()>0 || p_blob->NOutP()>0)) {
+      if (p_blob) msg_Out()<<(*p_blob)<<"\n";
+      bool trigger = false;
+      Particle_Vector parts(p_blob->GetOutParticles());
+      for (Particle_Vector::iterator part = parts.begin();
+	   part != parts.end(); ++part) {
+	if (!(*part)->DecayBlob()) trigger = true;
+      }
+      if (trigger) {
+	for (Particle_Vector::iterator part = parts.begin();
+	     part != parts.end(); ++part) {
+	  if (!(*part)->DecayBlob()) parts.erase(part);
+	}
+	delete p_blob;
+	p_blob = NULL;
+      }
     }
   }
 }

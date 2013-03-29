@@ -14,7 +14,8 @@ Ladder_Generator(Parton_Luminosity * lumi,const int & test) :
   m_IS(Initial_State(lumi)), m_FS(Final_State(test)),
   m_originalY(MBpars("originalY")), m_cutoffY(MBpars("deltaY")), 
   p_ladder(0), m_output(true),
-  m_Nprim(0),m_Nsec(0),m_Ndd_p(0),m_Ndd_s(0),m_Nsd_p(0),m_Nsd_s(0),m_Ncep_p(0),m_Ncep_s(0)
+  m_Nprim(0),m_Nsec(0),m_Ndd_p(0),m_Ndd_s(0),m_Nsd_p(0),m_Nsd_s(0),
+  m_Ncep_p(0),m_Ncep_s(0)
   {    
   Vec4D cms(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
   m_pplus   = cms.PPlus();
@@ -179,9 +180,9 @@ InitialiseLadder(Particle * part1,Particle * part2,const bool & rescatter) {
   double kt2min(0.); 
   p_ladder->SetMinKT2(kt2min);
   if (FixFirstOutgoings()) {
-    msg_Tracking()<<"      ...............................................\n"
-		  <<"      "<<METHOD<<":\n"<<(*p_ladder)
-		  <<"      ...............................................\n";
+    //msg_Out()<<"      ...............................................\n"
+    //	     <<"      "<<METHOD<<" start ladder with:\n"<<(*p_ladder)
+    //	     <<"      ...............................................\n";
     return m_IS.Weight();
   }
   return -1.;

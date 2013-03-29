@@ -18,9 +18,12 @@ Hadron_Dissociation::Hadron_Dissociation(Continued_PDF *const pdf) :
     m_histomap[string("X_quark")]      = new Histogram(0,0.0,1.0,1000);
     m_histomap[string("X_gluon")]      = new Histogram(0,0.0,1.0,1000);
     m_histomap[string("X_diquark")]    = new Histogram(0,0.0,1.0,1000);
-    m_histomap2D[string("X_quark_2D")]      = new Histogram_2D(0,0.,25.,25,0.0,1.0,100);
-    m_histomap2D[string("X_gluon_2D")]      = new Histogram_2D(0,0.,25.,25,0.0,1.0,100);
-    m_histomap2D[string("X_diquark_2D")]    = new Histogram_2D(0,0.,25.,25,0.0,1.0,100);
+    m_histomap2D[string("X_quark_2D")] = 
+      new Histogram_2D(0,0.,25.,25,0.0,1.0,100);
+    m_histomap2D[string("X_gluon_2D")] = 
+      new Histogram_2D(0,0.,25.,25,0.0,1.0,100);
+    m_histomap2D[string("X_diquark_2D")] = 
+      new Histogram_2D(0,0.,25.,25,0.0,1.0,100);
   }
 }
 
@@ -119,7 +122,8 @@ void Hadron_Dissociation::FillParticleList(const int & N) {
 }
 
 bool Hadron_Dissociation::
-DefineDissociation(const int & Nladders,const double B, const double & xcut,const double & eta,
+DefineDissociation(const int & Nladders,const double B, 
+		   const double & xcut,const double & eta,
 		   Form_Factor * ff)
 {
   //msg_Out()<<METHOD<<"("<<Nladders<<", xcut="<<xcut<<", eta="<<eta<<"):\n";
@@ -149,37 +153,8 @@ DefineDissociation(const int & Nladders,const double B, const double & xcut,cons
     while (trials++<pow(10.,ATOOLS::Min(4,Nladders+3))) {
       m_xs.clear();
       weight = startweight;
-//       weight = 0.;
       xsum   = 0.;
       int idiquark;
-//       for (int i=0;i<Nladders+2;i++) {
-// 	flav = m_particles[i]->Flav();
-// 	if (flav.IsDiQuark()) {
-// 	  idiquark=i;
-// 	  m_xs.push_back(1.);
-// 	}
-// 	else {
-// 	  xsum += x = xlow*pow(1./xlow,ran->Get());
-// 	  m_xs.push_back(x);
-// 	}
-//       }
-//       if (xsum < 1.){ 
-// 	m_xs[idiquark]=1.-xsum;
-// 	weight=1.;
-//       }
-//       else {
-// 	xsum += x = xcut + (1.-xcut)*ran->Get();
-// 	m_xs[idiquark] = x;
-//         for (int i=0;i<Nladders+2;i++) {
-// 	  x    = m_xs[i] /= xsum;
-// 	}
-// 	weight = pow(1.+xlow-m_xs[idiquark],-Nladders);
-//       }
-//       if (weight>maxwt) maxwt=weight;
-//       for (int i=0;i<Nladders+2;i++) {
-// 	if (i!=Nladders+1 && !IsZero(eta)) weight *= pow(x,eta);
-//       }
-
       for (int i=0;i<Nladders+2;i++) {
 	xsum += x = xcut + (1.-xcut)*ran->Get();
 	m_xs.push_back(x);
@@ -189,15 +164,11 @@ DefineDissociation(const int & Nladders,const double B, const double & xcut,cons
 	flav = m_particles[i]->Flav();
 	if (flav.IsDiQuark()) {
 	  if (x/2<p_pdf->XMin()) { weight = 0.; break; }
-//	  p_pdf->Calculate(x/2.,0.);
-//	  weight *= wt = 2.*p_pdf->XPDF(flav)/p_pdf->XPDFMax(flav);
           weight *= wt = pow(1.+xcut-x,-Nladders);//exp((x-1.)/Nladders); 
 	}
-// 	else {
         else if (flav.IsQuark()) {
 	  if (x<p_pdf->XMin()) { weight = 0.; break; }
 	  p_pdf->Calculate(x,0.);
-// 	  weight *= wt = p_pdf->XPDF(flav)/p_pdf->XPDFMax(flav);
 	  weight *= wt = p_pdf->XPDF(flav)/p_pdf->XPDFMax(flav)/x;
 	}
 	// the extra x in xpdf compensates for the incoming flux.
@@ -230,16 +201,12 @@ DefineDissociation(const int & Nladders,const double B, const double & xcut,cons
 	  }
 	}
 	DefineTransverseMomenta(ff);
-	//PrintParticles();
-	//msg_Out()<<" --> success for maxwt = "<<maxwt<<" "
-	//		 <<"("<<Nladders<<" ladders).\n";
 	return true;
       }
     }
     msg_Tracking()<<"\n";
     msg_Error()<<METHOD<<": After "<<trials<<" trials no dissociation for "
     	       <<Nladders<<" ladders, maxwt = "<<maxwt<<".\n";
-//     PrintParticles();
   }
   return false;
 }
@@ -292,7 +259,6 @@ void Hadron_Dissociation::DefineTransverseMomenta(Form_Factor * ff) {
 void Hadron_Dissociation::FillBeamBlob() {
   p_blob->SetType(btp::Beam);
   p_blob->SetTypeSpec("Shrimps");
-  p_blob->SetId();
   p_blob->SetStatus(blob_status::inactive);
 
   if (!m_elastic) {
@@ -300,6 +266,7 @@ void Hadron_Dissociation::FillBeamBlob() {
       p_blob->AddToOutParticles(m_particles[i]);
     }
   }
+  //msg_Out()<<METHOD<<":\n"<<(*p_blob)<<"\n";
 }
 
 void Hadron_Dissociation::AddParticlesToBlob(ATOOLS::Blob * blob,int beam) {
