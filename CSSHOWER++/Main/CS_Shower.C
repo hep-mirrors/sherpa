@@ -69,20 +69,20 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
   m_weight=1.0;
   for (All_Singlets::const_iterator sit(m_allsinglets.begin());
        sit!=m_allsinglets.end();++sit) {
-    //msg_Out()<<METHOD<<": before shower step\n";
+    msg_Debugging()<<"before shower step\n";
     for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it)
       if ((*it)->GetPrev() && (*it)->GetPrev()->KScheme()!=1)
 	(*it)->SetStart((*it)->GetPrev()->KtStart());
-    //msg_Out()<<**sit;
+    msg_Debugging()<<**sit;
     size_t pem(nem);
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
     m_weight*=p_shower->Weight();
     if ((*sit)->GetLeft()) {
       p_shower->ReconstructDaughters(*sit,1);
     }
-    //msg_Out()<<METHOD<<": after shower step with "<<nem-pem
-    //	     <<" of "<<nem<<" emission(s)\n";
-    //msg_Out()<<**sit<<"\n";
+    msg_Debugging()<<"after shower step with "<<nem-pem
+		   <<" of "<<nem<<" emission(s)\n";
+    msg_Debugging()<<**sit<<"\n";
   }
   return 1;
 }
@@ -118,8 +118,6 @@ bool CS_Shower::ExtractPartons(Blob_List *const blist) {
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit)
       (*sit)->ExtractPartons(psblob,p_ms);
-
-  //msg_Out()<<METHOD<<":\n"<<(*psblob)<<"\n";
   return true;
 }
 
