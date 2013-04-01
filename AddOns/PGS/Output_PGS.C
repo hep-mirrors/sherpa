@@ -9,10 +9,7 @@
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Data_Reader.H"
-
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
+#include "ATOOLS/Org/My_MPI.H"
 
 inline void MakeFortranString
 (char *output,std::string input,unsigned int length)

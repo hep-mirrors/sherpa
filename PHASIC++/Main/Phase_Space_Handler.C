@@ -22,9 +22,7 @@
 #include "ATOOLS/Org/Data_Writer.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;

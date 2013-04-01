@@ -31,9 +31,8 @@ ATOOLS::Exception_Handler *ATOOLS::exh(NULL);
 Exception_Handler::Exception_Handler():
   m_active(true), m_prepared(false), m_stacktrace(true), 
   m_print(true), m_noremove(false),
-  m_hassend(false), m_hasrecv(false),
   m_signal(0), m_exitcode(0), m_exception(0),
-  m_nbus(0), m_nsegv(0), m_mpi_timeout(3600),
+  m_nbus(0), m_nsegv(0),
   m_progname("Sherpa")
 {
   std::set_terminate(ATOOLS::Terminate);
@@ -51,10 +50,6 @@ Exception_Handler::Exception_Handler():
 
 Exception_Handler::~Exception_Handler()
 {
-#ifdef USING__MPI
-  if (m_hassend) m_send.Free();
-  if (m_hasrecv) m_recv.Free();
-#endif  
 }
 
 bool Exception_Handler::ReadInStatus(const std::string &path)
@@ -126,43 +121,6 @@ void Exception_Handler::Exit(int exitcode)
 			  <<om::red<<exitcode<<om::reset<<om::bold<<")"
 			  <<om::reset<<tm::curon<<std::endl;
   exit(exitcode);
-}
-
-void Exception_Handler::SetMPIRecv(std::vector<int> r)
-{
-#ifdef USING__MPI
-  int rank=MPI::COMM_WORLD.Get_rank();
-  if (rank==0) {
-    m_hasrecv=true;
-    m_recv=MPI::COMM_WORLD.Split(rank,rank);
-    m_send=MPI::COMM_WORLD.Split(MPI_UNDEFINED,rank);
-  }
-  else {
-    if (r[0]==0) {
-      m_hassend=m_hasrecv=true;
-      m_send=MPI::COMM_WORLD.Split(r[0],rank);
-      m_recv=MPI::COMM_WORLD.Split(rank,rank);
-    }
-    else {
-      m_hassend=true;
-      m_recv=MPI::COMM_WORLD.Split(MPI_UNDEFINED,rank);
-      m_send=MPI::COMM_WORLD.Split(r[0],rank);
-    }
-  }
-#endif
-}
-
-bool Exception_Handler::HasMPISend() const
-{
-  return m_hassend;
-}
-
-bool Exception_Handler::HasMPIRecv() const
-{
-#ifdef USING__MPI
-  if (m_hasrecv) return m_recv.Get_size()>1;
-#endif
-  return false;
 }
 
 void Exception_Handler::Reset()
@@ -335,15 +293,8 @@ void Exception_Handler::SignalHandler(int signal)
     Terminate();
     break;
   case SIGUSR1:
-#ifdef USING__MPI
-    if (MPI::COMM_WORLD.Get_rank()) {
-      m_exitcode=1;
-      Terminate();
-    }
-    else {
-      msg_Error()<<"   SIGUSR1 ignored by MPI master."<<om::reset<<std::endl;
-    }
-#endif
+    m_exitcode=1;
+    Terminate();
     break;
   default:
     msg_Error()<<"   Cannot handle signal."<<om::reset<<std::endl;

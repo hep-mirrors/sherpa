@@ -14,10 +14,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace COMIX;
 using namespace ATOOLS;

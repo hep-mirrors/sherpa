@@ -7,11 +7,9 @@
 #include "ATOOLS/Org/MyTiming.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "SHERPA/Single_Events/Event_Handler.H"
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;

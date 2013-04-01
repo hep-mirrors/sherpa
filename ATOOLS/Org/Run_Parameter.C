@@ -10,6 +10,7 @@
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Data_Writer.H"
 #include "ATOOLS/Org/SVN_Info.H"
 #include "ATOOLS/Org/binreloc.h"
@@ -21,9 +22,6 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <limits>
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
 
 namespace ATOOLS {
   Run_Parameter *rpa(NULL);
@@ -193,7 +191,6 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   std::string logfile = dr.GetValue<std::string>("LOG_FILE","");
   msg->Init(outputlevel,logfile);
   msg->SetMPIMode(dr.GetValue<int>("MPI_OUTPUT",0));
-  exh->SetMPITimeOut(dr.GetValue<int>("MPI_TIMEOUT",3600));
   if (msg->LevelIsInfo()) 
     msg_Out()<<"Welcome to "<<exh->ProgramName()<<", "<<gen.m_username
 	     <<". Initialization of framework underway."<<std::endl;

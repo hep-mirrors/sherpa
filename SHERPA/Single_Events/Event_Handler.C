@@ -4,15 +4,13 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "SHERPA/Single_Events/Signal_Processes.H"
 #ifdef USING__PYTHIA
 #include "SHERPA/LundTools/Lund_Interface.H"
 #endif
 #include <unistd.h>
 #include <cassert>
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
 
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -435,12 +433,12 @@ void Event_Handler::MPISync()
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    int rank=exh->HasMPISend()?exh->MPISend().Get_rank():0;
+    int rank=mpi->HasMPISend()?mpi->MPISend().Get_rank():0;
     int cn=4;
     double *values = new double[cn];
-    if (exh->HasMPIRecv()) {
-      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
-	exh->MPIRecv().Recv(values,cn,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+    if (mpi->HasMPIRecv()) {
+      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
+	mpi->MPIRecv().Recv(values,cn,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
         m_mn+=values[0];
         m_msum+=values[1];
         m_msumsqr+=values[2];
@@ -451,8 +449,8 @@ void Event_Handler::MPISync()
 	values[1]=m_msum;
 	values[2]=m_msumsqr;
 	values[3]=m_maxweight;
-	exh->MPISend().Send(values,cn,MPI::DOUBLE,0,rank);
-	exh->MPISend().Recv(values,cn,MPI::DOUBLE,0,size+rank);
+	mpi->MPISend().Send(values,cn,MPI::DOUBLE,0,rank);
+	mpi->MPISend().Recv(values,cn,MPI::DOUBLE,0,size+rank);
 	m_mn=values[0];
 	m_msum=values[1];
 	m_msumsqr=values[2];
@@ -462,8 +460,8 @@ void Event_Handler::MPISync()
       values[1]=m_msum;
       values[2]=m_msumsqr;
       values[3]=m_maxweight;
-      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
-	exh->MPIRecv().Send(values,cn,MPI::DOUBLE,tag,size+tag);
+      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
+	mpi->MPIRecv().Send(values,cn,MPI::DOUBLE,tag,size+tag);
       }
     }
     else {
@@ -471,8 +469,8 @@ void Event_Handler::MPISync()
       values[1]=m_msum;
       values[2]=m_msumsqr;
       values[3]=m_maxweight;
-      exh->MPISend().Send(values,cn,MPI::DOUBLE,0,rank);
-      exh->MPISend().Recv(values,cn,MPI::DOUBLE,0,size+rank);
+      mpi->MPISend().Send(values,cn,MPI::DOUBLE,0,rank);
+      mpi->MPISend().Recv(values,cn,MPI::DOUBLE,0,size+rank);
       m_mn=values[0];
       m_msum=values[1];
       m_msumsqr=values[2];

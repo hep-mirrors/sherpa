@@ -6,13 +6,11 @@
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 
 #include "ATOOLS/Math/Random.H"
 #include <unistd.h>
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -48,11 +46,11 @@ void Phase_Space_Integrator::MPISync()
   psh->MPISync();
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    int rank=exh->HasMPISend()?exh->MPISend().Get_rank():0;
+    int rank=mpi->HasMPISend()?mpi->MPISend().Get_rank():0;
     double values[3];
-    if (exh->HasMPIRecv()) {
-      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
-	exh->MPIRecv().Recv(&values,3,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+    if (mpi->HasMPIRecv()) {
+      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
+	mpi->MPIRecv().Recv(&values,3,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
 	mn+=values[0];
 	mnstep+=values[1];
 	mncstep+=values[2];
@@ -61,8 +59,8 @@ void Phase_Space_Integrator::MPISync()
 	values[0]=mn;
 	values[1]=mnstep;
 	values[2]=mncstep;
-	exh->MPISend().Send(&values,3,MPI::DOUBLE,0,rank);
-	exh->MPISend().Recv(&values,3,MPI::DOUBLE,0,size+rank);
+	mpi->MPISend().Send(&values,3,MPI::DOUBLE,0,rank);
+	mpi->MPISend().Recv(&values,3,MPI::DOUBLE,0,size+rank);
 	mn=values[0];
 	mnstep=values[1];
 	mncstep=values[2];
@@ -70,16 +68,16 @@ void Phase_Space_Integrator::MPISync()
       values[0]=mn;
       values[1]=mnstep;
       values[2]=mncstep;
-      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
-	exh->MPIRecv().Send(&values,3,MPI::DOUBLE,tag,size+tag);
+      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
+	mpi->MPIRecv().Send(&values,3,MPI::DOUBLE,tag,size+tag);
       }
     }
     else {
       values[0]=mn;
       values[1]=mnstep;
       values[2]=mncstep;
-      exh->MPISend().Send(&values,3,MPI::DOUBLE,0,rank);
-      exh->MPISend().Recv(&values,3,MPI::DOUBLE,0,size+rank);
+      mpi->MPISend().Send(&values,3,MPI::DOUBLE,0,rank);
+      mpi->MPISend().Recv(&values,3,MPI::DOUBLE,0,size+rank);
       mn=values[0];
       mnstep=values[1];
       mncstep=values[2];

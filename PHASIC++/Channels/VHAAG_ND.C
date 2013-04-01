@@ -6,11 +6,8 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include <stdio.h>
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
 
 using namespace PHASIC;
 using namespace ATOOLS;

@@ -4,11 +4,7 @@
 #include "COMIX/Main/Process_Group.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
-
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
+#include "ATOOLS/Org/My_MPI.H"
 
 namespace MODEL  { class Model_Base;   }
 namespace PDF    { class Remnant_Base; }

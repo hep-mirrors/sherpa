@@ -4,6 +4,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Message.H"
 #include "MODEL/Main/Model_Base.H"
 
@@ -13,10 +14,6 @@
 #ifdef USING__ROOT
 #include "TPluginManager.h"
 #include "TROOT.h"
-#endif
-
-#ifdef USING__MPI
-#include "mpi.h"
 #endif
 
 using namespace SHERPA;

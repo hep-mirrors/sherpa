@@ -32,10 +32,7 @@ void PrintInfo()
 }
 
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
+#include "ATOOLS/Org/My_MPI.H"
 
 int main(int argc,char **argv)
 {

@@ -19,11 +19,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
-
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace COMIX;
 using namespace PHASIC;

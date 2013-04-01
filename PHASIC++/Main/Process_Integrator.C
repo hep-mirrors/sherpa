@@ -9,14 +9,12 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -512,11 +510,11 @@ void Process_Integrator::MPISync()
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    int rank=exh->HasMPISend()?exh->MPISend().Get_rank():0;
+    int rank=mpi->HasMPISend()?mpi->MPISend().Get_rank():0;
     double val[5];
-    if (exh->HasMPIRecv()) {
-      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
-	exh->MPIRecv().Recv(&val,5,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+    if (mpi->HasMPIRecv()) {
+      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
+	mpi->MPIRecv().Recv(&val,5,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
 	m_msn+=val[0];
 	m_mssum+=val[2];
 	m_mssumsqr+=val[3];
@@ -529,8 +527,8 @@ void Process_Integrator::MPISync()
 	val[3]=m_mssumsqr;
 	val[4]=m_max;
 	val[1]=m_smax;
-	exh->MPISend().Send(&val,5,MPI::DOUBLE,0,rank);
-	exh->MPISend().Recv(&val,5,MPI::DOUBLE,0,size+rank);
+	mpi->MPISend().Send(&val,5,MPI::DOUBLE,0,rank);
+	mpi->MPISend().Recv(&val,5,MPI::DOUBLE,0,size+rank);
 	m_msn=val[0];
 	m_mssum=val[2];
 	m_mssumsqr=val[3];
@@ -542,8 +540,8 @@ void Process_Integrator::MPISync()
       val[3]=m_mssumsqr;
       val[4]=m_max;
       val[1]=m_smax;
-      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
-	exh->MPIRecv().Send(&val,5,MPI::DOUBLE,tag,size+tag);
+      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
+	mpi->MPIRecv().Send(&val,5,MPI::DOUBLE,tag,size+tag);
       }
     }
     else {
@@ -552,8 +550,8 @@ void Process_Integrator::MPISync()
       val[3]=m_mssumsqr;
       val[4]=m_max;
       val[1]=m_smax;
-      exh->MPISend().Send(&val,5,MPI::DOUBLE,0,rank);
-      exh->MPISend().Recv(&val,5,MPI::DOUBLE,0,size+rank);
+      mpi->MPISend().Send(&val,5,MPI::DOUBLE,0,rank);
+      mpi->MPISend().Recv(&val,5,MPI::DOUBLE,0,size+rank);
       m_msn=val[0];
       m_mssum=val[2];
       m_mssumsqr=val[3];

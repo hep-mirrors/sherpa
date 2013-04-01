@@ -3,10 +3,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
+#include "ATOOLS/Org/My_MPI.H"
 
 #include <sys/stat.h>
 #include <iterator>

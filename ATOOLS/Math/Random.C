@@ -5,12 +5,9 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include <iostream>
 #include <cstring>
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE ATOOLS::External_RNG

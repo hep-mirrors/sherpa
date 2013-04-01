@@ -8,15 +8,12 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Message.H"
 #include <iostream>
 
 #ifdef USING__ROOT
 #include "TChain.h"
-#endif
-
-#ifdef USING__MPI
-#include "mpi.h"
 #endif
 
 using namespace SHERPA;

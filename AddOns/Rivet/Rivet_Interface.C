@@ -11,6 +11,7 @@
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #ifdef USING__RIVET
 #include "Rivet/AnalysisHandler.hh"
@@ -18,10 +19,6 @@
 
 #ifdef USING__HEPMC2__DEFS
 #include "HepMC/HepMCDefs.h"
-#endif
-
-#ifdef USING__MPI
-#include "mpi.h"
 #endif
 
 using namespace SHERPA;

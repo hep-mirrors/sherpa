@@ -8,11 +8,6 @@ Please include the header 'Exception.H' instead.
 
 #include <vector>
 
-#include "ATOOLS/Org/CXXFLAGS.H"
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
-
 namespace ATOOLS {
 
   class Exception_Handler {
@@ -24,11 +19,11 @@ namespace ATOOLS {
   private:
 
     bool          m_active, m_prepared, m_stacktrace;
-    bool          m_print, m_noremove, m_hassend, m_hasrecv;
+    bool          m_print, m_noremove;
     unsigned int  m_signal, m_exitcode;
     Exception    *m_exception;
     
-    unsigned int m_nbus, m_nsegv, m_mpi_timeout;
+    unsigned int m_nbus, m_nsegv;
 
     std::string m_progname;
 
@@ -37,10 +32,6 @@ namespace ATOOLS {
 
     std::vector<Tester_Object*>     m_testerobjects;
     std::vector<Terminator_Object*> m_terminatorobjects;
-
-#ifdef USING__MPI
-    MPI::Intracomm m_send, m_recv;
-#endif
 
     void SetExitCode();
 
@@ -80,7 +71,6 @@ namespace ATOOLS {
     inline void SetActive(const bool active)            { m_active=active;    }
     inline void SetStackTrace(const bool trace)         { m_stacktrace=trace; }
     inline void SetProgramName(const std::string &name) { m_progname=name;    }
-    inline void SetMPITimeOut(const int t)              { m_mpi_timeout=t;    }
 
     inline bool Active()     { return m_active;     }
     inline bool StackTrace() { return m_stacktrace; }
@@ -88,16 +78,6 @@ namespace ATOOLS {
     inline Exception    *LastException() { return m_exception; }
     inline unsigned int  LastSignal()    { return m_signal;    }
     inline std::string   ProgramName()   { return m_progname;  }
-
-    void SetMPIRecv(std::vector<int> r);
-
-#ifdef USING__MPI
-    bool HasMPISend() const;
-    bool HasMPIRecv() const;
-
-    inline MPI::Intracomm &MPISend() { return m_send; }
-    inline MPI::Intracomm &MPIRecv() { return m_recv; }
-#endif
 
   };// end of class Exception_Handler
 

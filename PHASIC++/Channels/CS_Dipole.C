@@ -9,10 +9,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PDF/Main/ISR_Handler.H"
-
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace ATOOLS;
 using namespace PHASIC;
@@ -108,11 +105,11 @@ void CS_Dipole::MPISync()
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    int rank=exh->HasMPISend()?exh->MPISend().Get_rank():0;
+    int rank=mpi->HasMPISend()?mpi->MPISend().Get_rank():0;
     double val[3];
-    if (exh->HasMPIRecv()) {
-      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
-	exh->MPIRecv().Recv(&val,3,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+    if (mpi->HasMPIRecv()) {
+      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
+	mpi->MPIRecv().Recv(&val,3,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
 	m_mnp+=val[0];
 	m_msum+=val[1];
 	m_msum2+=val[2];
@@ -121,8 +118,8 @@ void CS_Dipole::MPISync()
 	val[0]=m_mnp;
 	val[1]=m_msum;
 	val[2]=m_msum2;
-	exh->MPISend().Send(&val,3,MPI::DOUBLE,0,rank);
-	exh->MPISend().Recv(&val,3,MPI::DOUBLE,0,size+rank);
+	mpi->MPISend().Send(&val,3,MPI::DOUBLE,0,rank);
+	mpi->MPISend().Recv(&val,3,MPI::DOUBLE,0,size+rank);
 	m_mnp=val[0];
 	m_msum=val[1];
 	m_msum2=val[2];
@@ -130,16 +127,16 @@ void CS_Dipole::MPISync()
       val[0]=m_mnp;
       val[1]=m_msum;
       val[2]=m_msum2;
-      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
-	exh->MPIRecv().Send(&val,3,MPI::DOUBLE,tag,size+tag);
+      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
+	mpi->MPIRecv().Send(&val,3,MPI::DOUBLE,tag,size+tag);
       }
     }
     else {
       val[0]=m_mnp;
       val[1]=m_msum;
       val[2]=m_msum2;
-      exh->MPISend().Send(&val,3,MPI::DOUBLE,0,rank);
-      exh->MPISend().Recv(&val,3,MPI::DOUBLE,0,size+rank);
+      mpi->MPISend().Send(&val,3,MPI::DOUBLE,0,rank);
+      mpi->MPISend().Recv(&val,3,MPI::DOUBLE,0,size+rank);
       m_mnp=val[0];
       m_msum=val[1];
       m_msum2=val[2];

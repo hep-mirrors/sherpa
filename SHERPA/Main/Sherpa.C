@@ -21,12 +21,10 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Library_Loader.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include <cstring>
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -35,6 +33,7 @@ using namespace std;
 Sherpa::Sherpa() :
   p_inithandler(NULL), p_eventhandler(NULL), p_hepmc2(NULL)
 {
+  ATOOLS::mpi = new My_MPI();
   ATOOLS::exh = new Exception_Handler();
   ATOOLS::msg = new Message();
   ATOOLS::ran = new Random(1234,4321);
@@ -62,6 +61,7 @@ Sherpa::~Sherpa()
 #endif  
   delete ATOOLS::msg;
   delete ATOOLS::exh;
+  delete ATOOLS::mpi;
   for (KF_Table::const_iterator kfit(s_kftable.begin());kfit!=s_kftable.end();++kfit)
     delete kfit->second;
   ATOOLS::s_kftable.clear();
@@ -164,7 +164,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 	MPI::COMM_WORLD.Send(&nrecv,1,MPI::INT,tag,size+tag);
 	MPI::COMM_WORLD.Send(&recv.front(),nrecv,MPI::INT,tag,size+tag);
       }
-      exh->SetMPIRecv(mrecv);
+      mpi->SetMPIRecv(mrecv);
       double diff=rpa->gen.Timer().RealTime()-starttime;
       msg_Info()<<"} -> "<<FormatTime(size_t(diff))<<" elapsed"<<std::endl;
     }
@@ -175,7 +175,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
       MPI::COMM_WORLD.Recv(&nrecv,1,MPI::INT,0,size+rank);
       std::vector<int> recv(nrecv);
       MPI::COMM_WORLD.Recv(&recv.front(),nrecv,MPI::INT,0,size+rank);
-      exh->SetMPIRecv(recv);
+      mpi->SetMPIRecv(recv);
     }
   }
 #endif

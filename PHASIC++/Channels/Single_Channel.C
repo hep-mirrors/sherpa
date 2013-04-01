@@ -2,9 +2,6 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
 
 using namespace PHASIC;
 using namespace ATOOLS;

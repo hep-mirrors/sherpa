@@ -17,6 +17,7 @@ libToolsOrg_la_SOURCES        = \
 				Shell_Tools.C \
 				STL_Tools.C \
 				Getter_Function.C \
+				My_MPI.C \
 				Exception.C \
 				Exception_Handler.C \
 				My_File.C \
@@ -44,6 +45,7 @@ localinc_HEADERS         =	\
 			Shell_Tools.H \
 			STL_Tools.H \
 			Getter_Function.H \
+			My_MPI.H \
 			Exception.H \
 			Exception_Handler.H \
 			My_File.H \
