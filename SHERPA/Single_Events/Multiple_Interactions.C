@@ -9,6 +9,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "SHERPA/PerturbativePhysics/Matrix_Element_Handler.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
 #ifdef USING__Amisic
@@ -150,6 +151,18 @@ Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,doub
     blob->SetStatus(blob_status::needs_showers);
     blob->AddData("Weight",new Blob_Data<double>(1.0));
     bloblist->push_back(blob);
+    static bool init(false);
+    static double ptmax(1.0e12);
+    if (!init) {
+      init=true;
+      Data_Reader read(" ",";","!","=");
+      read.AddComment("#");
+      read.AddWordSeparator("\t");
+      read.SetInputPath(rpa->GetPath());
+      read.SetInputFile(rpa->gen.Variable("RUN_DATA_FILE"));
+      ptmax=read.GetValue<double>("MPI_PT_MAX",1.0e12);
+    }
+    if (ptmax<m_ptmax) return Return_Value::New_Event;
     return Return_Value::Success;
   }
   delete blob;
