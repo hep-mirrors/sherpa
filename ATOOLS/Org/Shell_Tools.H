@@ -24,6 +24,8 @@ namespace ATOOLS {
 
   std::string Demangle(const std::string &name);
 
+  std::string GetCWD();
+
 }// end of namespace ATOOLS
 
 #endif

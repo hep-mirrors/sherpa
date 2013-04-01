@@ -1,5 +1,6 @@
 #include "ATOOLS/Org/My_File.H"
 
+#include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Exception.H"
 
 #include <typeinfo>
@@ -174,7 +175,7 @@ void My_File<FileType>::SetNoComplains(const String_Vector &names)
 
 template <class FileType> 
 typename My_File<FileType>::String_Vector 
-My_File<FileType>::s_searchpaths(1,getenv("PWD"));
+My_File<FileType>::s_searchpaths(1,GetCWD());
 template <class FileType> 
 typename My_File<FileType>::String_Vector 
 My_File<FileType>::s_nocomplains;

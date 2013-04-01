@@ -136,14 +136,12 @@ void Run_Parameter::AnalyseEnvironment()
 #endif
 #endif
   char *var=NULL;
-  gen.m_variables["HOSTNAME"]=std::string(((var=getenv("HOSTNAME"))==NULL?"":var));
-  gen.m_variables["PATH"]=std::string(((var=getenv("PATH"))==NULL?"":var));
   gen.m_variables["SHERPASYS"]=std::string(((var=getenv("SHERPASYS"))==NULL?"":var));
   gen.m_variables["SHERPA_CPP_PATH"]=std::string(((var=getenv("SHERPA_CPP_PATH"))==NULL?"":var));
   gen.m_variables["SHERPA_LIB_PATH"]=std::string(((var=getenv("SHERPA_LIB_PATH"))==NULL?"":var));
   gen.m_variables["SHERPA_DAT_PATH"]=std::string(((var=getenv("SHERPA_DAT_PATH"))==NULL?"":var));
   gen.m_variables["LD_LIBRARY_PATH"]=std::string(((var=getenv("LD_LIBRARY_PATH"))==NULL?"":var));
-  gen.m_variables["SHERPA_RUN_PATH"]=getenv("PWD");
+  gen.m_variables["SHERPA_RUN_PATH"]=GetCWD();
   gen.m_variables["HOME"]=std::string(((var=getenv("HOME"))==
 				       NULL?gen.m_variables["SHERPA_RUN_PATH"]:var));
 

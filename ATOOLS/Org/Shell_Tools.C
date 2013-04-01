@@ -187,3 +187,14 @@ std::string ATOOLS::Demangle(const std::string &name)
   return name;
 #endif
 }
+
+std::string ATOOLS::GetCWD()
+{
+  long int size = pathconf(".",_PC_PATH_MAX);
+  char *buf = new char[size];
+  char *ptr = getcwd(buf, (size_t)size);
+  if (ptr==NULL) abort();
+  std::string pwd(buf);
+  delete [] buf;
+  return pwd;
+}
