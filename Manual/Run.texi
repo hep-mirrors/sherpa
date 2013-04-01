@@ -283,7 +283,6 @@ option @option{--enable-gzip} has to be specified during the installation.
 
 @node MPI parallelization
 @subsection MPI parallelization
-@cindex PSI_ADJUST_POINTS
 MPI parallelization in Sherpa can be enabled using the configuration
 option @samp{--enable-mpi}. Sherpa supports
 @uref{http://www.open-mpi.org/,,OpenMPI}
@@ -298,11 +297,6 @@ by starting multiple instances of Sherpa with different random seed, cf.
 NTuple writeout can be used with MPI. Note that these require substantial 
 data transfer. We only recommend to use them in MPI mode if your local cluster
 has sufficient ethernet bandwidth.
-
-When compiled with MPI support, Sherpa implements an automatic load balancing 
-to make optimal use of potentially different types of cluster nodes. 
-If you do not wish Sherpa to take control, this option can be disabled 
-by setting @option{PSI_ADJUST_POINTS=0}.
 
 @node Multi-threading
 @subsection Multi-threading

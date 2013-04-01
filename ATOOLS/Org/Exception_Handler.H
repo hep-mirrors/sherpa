@@ -8,6 +8,11 @@ Please include the header 'Exception.H' instead.
 
 #include <vector>
 
+#include "ATOOLS/Org/CXXFLAGS.H"
+#ifdef USING__MPI
+#include "mpi.h"
+#endif
+
 namespace ATOOLS {
 
   class Exception_Handler {
@@ -19,7 +24,7 @@ namespace ATOOLS {
   private:
 
     bool          m_active, m_prepared, m_stacktrace;
-    bool          m_print, m_noremove;
+    bool          m_print, m_noremove, m_hassend, m_hasrecv;
     unsigned int  m_signal, m_exitcode;
     Exception    *m_exception;
     
@@ -33,7 +38,9 @@ namespace ATOOLS {
     std::vector<Tester_Object*>     m_testerobjects;
     std::vector<Terminator_Object*> m_terminatorobjects;
 
-    std::vector<int> m_mpi;
+#ifdef USING__MPI
+    MPI::Intracomm m_send, m_recv;
+#endif
 
     void SetExitCode();
 
@@ -47,8 +54,6 @@ namespace ATOOLS {
 
     // member functions
     void Reset();
-    void MPISync();
-    void MPISuspend(int mode=0);
 
     bool ReadInStatus(const std::string &path);
     bool ApproveTerminate();
@@ -84,7 +89,15 @@ namespace ATOOLS {
     inline unsigned int  LastSignal()    { return m_signal;    }
     inline std::string   ProgramName()   { return m_progname;  }
 
-    int MPIStat(int rank);
+    void SetMPIRecv(std::vector<int> r);
+
+#ifdef USING__MPI
+    bool HasMPISend() const;
+    bool HasMPIRecv() const;
+
+    inline MPI::Intracomm &MPISend() { return m_send; }
+    inline MPI::Intracomm &MPIRecv() { return m_recv; }
+#endif
 
   };// end of class Exception_Handler
 

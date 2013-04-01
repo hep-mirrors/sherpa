@@ -56,7 +56,10 @@ Sherpa::~Sherpa()
   delete ATOOLS::s_loader;
   delete ATOOLS::rpa;
   delete ATOOLS::ran;
-  exh->MPISync();
+#ifdef USING__MPI
+  int dummy;
+  MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
+#endif  
   delete ATOOLS::msg;
   delete ATOOLS::exh;
   for (KF_Table::const_iterator kfit(s_kftable.begin());kfit!=s_kftable.end();++kfit)
@@ -115,9 +118,14 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
     if (rank==0) {
       msg_Info()<<"  Rank "<<rank<<", pid "<<pid
 		<<" running on "<<host<<".\n";
+      char mhost[MPI_MAX_PROCESSOR_NAME];
+      MPI_Get_processor_name(mhost,&hlen);
       std::vector<std::string> hosts(size,host);
-      std::map<std::string,size_t> procs, cprocs;
-      cprocs[host]=procs[host]=1;
+      std::map<std::string,size_t> procs;
+      std::vector<std::vector<int> > recv(size);
+      std::map<std::string,std::vector<int> > recvmap;
+      std::vector<int> mrecv(1,-1);
+      procs[mhost]=1;
       for (int tag=1;tag<size;++tag) {
 	MPI::COMM_WORLD.Recv(&pid,1,MPI::INT,MPI::ANY_SOURCE,tag);
 	MPI::COMM_WORLD.Recv(host,MPI_MAX_PROCESSOR_NAME,
@@ -125,48 +133,50 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 	msg_Info()<<"  Rank "<<tag<<", pid "<<pid
 		  <<" running on "<<host<<"."<<std::endl;
 	hosts[tag]=host;
-	if (procs.find(hosts[tag])!=procs.end()) ++procs[hosts[tag]];
+	recvmap[hosts[tag]].push_back(tag);
+	if (procs.find(hosts[tag])!=procs.end()) {
+	  if (strcmp(host,mhost)==0 && procs[mhost]==1)
+	    mrecv.push_back(tag);
+	  ++procs[hosts[tag]];
+	}
 	else {
+	  mrecv.push_back(tag);
 	  procs[hosts[tag]]=1;
-	  cprocs[hosts[tag]]=0;
 	}
       }
-#ifdef USING__Threading
-      pid=Min(ppn,(int)procs[hosts[0]]);
-      msg_Info()<<"  Rank 0 runs "<<pid<<" threads.\n";
-      Read_Write_Base::AddCommandLine("PG_THREADS = "+ToString(pid)+"; ");
-      --procs[hosts[0]];
-      std::string sranks;
+      if (procs.size()==1) {
+	mrecv.insert(mrecv.end(),
+		     recvmap[mhost].begin(),
+		     recvmap[mhost].end());
+	recvmap[mhost].resize(1);
+      }
+      std::set<std::string> send;
       for (int tag=1;tag<size;++tag) {
-	if (++cprocs[hosts[tag]]==1) pid=Min(ppn,(int)procs[hosts[tag]]);
-	else {
-	  pid=0;
-	  sranks+=" "+ToString(tag);
-	  if (cprocs[hosts[tag]]==ppn) cprocs[hosts[tag]]=0;
+	std::vector<int> recv(1,recvmap[hosts[tag]][0]);
+	if (send.find(hosts[tag])==send.end()) {
+	  send.insert(hosts[tag]);
+	  recv=recvmap[hosts[tag]];
+	  recv[0]=0;
 	}
-	--procs[hosts[tag]];
-	if (pid) msg_Info()<<"  Rank "<<tag<<" runs "<<pid<<" threads.\n";
-	MPI::COMM_WORLD.Send(&pid,1,MPI::INT,tag,size+tag);
+	if (recv.size()>1)
+	  msg_Info()<<"  Rank "<<tag<<" send/recv "<<recv<<".\n";
+	int nrecv(recv.size());
+	MPI::COMM_WORLD.Send(&nrecv,1,MPI::INT,tag,size+tag);
+	MPI::COMM_WORLD.Send(&recv.front(),nrecv,MPI::INT,tag,size+tag);
       }
-      if (sranks.length()) msg_Info()<<"  Suspending ranks"<<sranks<<".\n";
-#endif
+      exh->SetMPIRecv(mrecv);
       double diff=rpa->gen.Timer().RealTime()-starttime;
       msg_Info()<<"} -> "<<FormatTime(size_t(diff))<<" elapsed"<<std::endl;
     }
     else {
       MPI::COMM_WORLD.Send(&pid,1,MPI::INT,0,rank);
       MPI::COMM_WORLD.Send(host,MPI_MAX_PROCESSOR_NAME,MPI::CHAR,0,rank);
-#ifdef USING__Threading
-      MPI::COMM_WORLD.Recv(&pid,1,MPI::INT,0,size+rank);
-      if (pid==0) {
-	exh->MPISuspend();
-	delete this;
-	exit(0);
-      }
-      Read_Write_Base::AddCommandLine("PG_THREADS = "+ToString(pid)+"; ");
-#endif
+      int nrecv;
+      MPI::COMM_WORLD.Recv(&nrecv,1,MPI::INT,0,size+rank);
+      std::vector<int> recv(nrecv);
+      MPI::COMM_WORLD.Recv(&recv.front(),nrecv,MPI::INT,0,size+rank);
+      exh->SetMPIRecv(recv);
     }
-    exh->MPISync();
   }
 #endif
 

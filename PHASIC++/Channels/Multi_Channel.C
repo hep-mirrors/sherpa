@@ -14,7 +14,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Multi_Channel::Multi_Channel(string _name,int id) : 
-  fl(NULL), m_id(id), s1(NULL), s2(NULL), m_readin(false), m_fixalpha(false),
+  fl(NULL), m_id(id), s1(NULL), m_readin(false), m_fixalpha(false),
   m_minalpha(0.0), m_weight(1.0)
 {
   string help;
@@ -38,7 +38,6 @@ Multi_Channel::~Multi_Channel()
 {
   DropAllChannels();
   if (s1) { delete[] s1; s1 = 0; }
-  if (s2) { delete[] s2; s2 = 0; }
 }
 
 void Multi_Channel::Add(Single_Channel * Ch) { 
@@ -86,13 +85,10 @@ void Multi_Channel::Reset()
 {
   if (channels.size()==0) {
     if (s1!=NULL) delete[] s1; s1=NULL;
-    if (s2!=NULL) delete[] s2; s2=NULL;
     return;
   }
   if (s1!=NULL) delete[] s1;
   s1 =  new double[channels.size()];
-  if (s2!=NULL) delete[] s2;
-  s2 =  new double[channels.size()];
   if (!m_readin) {
     s1xmin     = 1.e32;
     n_points   = 0;  
@@ -131,47 +127,57 @@ void Multi_Channel::MPISync()
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    int rank=MPI::COMM_WORLD.Get_rank();
-    int cn=3*channels.size()+2;
+    int rank=exh->HasMPISend()?exh->MPISend().Get_rank():0;
+    int cn=2*channels.size()+2;
     double *values = new double[cn];
-    if (rank==0) {
-      for (int tag=1;tag<size;++tag) {
-	if (!exh->MPIStat(tag)) continue;
-	MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+    if (exh->HasMPIRecv()) {
+      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
+	exh->MPIRecv().Recv(values,cn,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
 	for (size_t i=0;i<channels.size();++i) {
 	  channels[i]->AddMPIVars(values[i],
-				  values[channels.size()+i],
-				  values[2*channels.size()+i]);
+				  values[channels.size()+i]);
 	}
 	mn_points+=values[cn-2];
 	mn_contrib+=values[cn-1];
       }
+      if (rank) {
+	for (size_t i=0;i<channels.size();++i) {
+	  values[i]=channels[i]->MRes1();
+	  values[channels.size()+i]=channels[i]->MRes2();
+	}
+	values[cn-2]=mn_points;
+	values[cn-1]=mn_contrib;
+	exh->MPISend().Send(values,cn,MPI::DOUBLE,0,rank);
+	exh->MPISend().Recv(values,cn,MPI::DOUBLE,0,size+rank);
+	for (size_t i=0;i<channels.size();++i) {
+	  channels[i]->SetMPIVars(values[i],
+				  values[channels.size()+i]);
+	}
+	mn_points=values[cn-2];
+	mn_contrib=values[cn-1];
+      }
       for (size_t i=0;i<channels.size();++i) {
 	values[i]=channels[i]->MRes1();
 	values[channels.size()+i]=channels[i]->MRes2();
-	values[2*channels.size()+i]=channels[i]->MRes3();
       }
       values[cn-2]=mn_points;
       values[cn-1]=mn_contrib;
-      for (int tag=1;tag<size;++tag) {
-	if (!exh->MPIStat(tag)) continue;
-	MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,tag,size+tag);
+      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
+	exh->MPIRecv().Send(values,cn,MPI::DOUBLE,tag,size+tag);
       }
     }
     else {
       for (size_t i=0;i<channels.size();++i) {
 	values[i]=channels[i]->MRes1();
 	values[channels.size()+i]=channels[i]->MRes2();
-	values[2*channels.size()+i]=channels[i]->MRes3();
       }
       values[cn-2]=mn_points;
       values[cn-1]=mn_contrib;
-      MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,0,rank);
-      MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,0,size+rank);
+      exh->MPISend().Send(values,cn,MPI::DOUBLE,0,rank);
+      exh->MPISend().Recv(values,cn,MPI::DOUBLE,0,size+rank);
       for (size_t i=0;i<channels.size();++i) {
 	channels[i]->SetMPIVars(values[i],
-				values[channels.size()+i],
-				values[2*channels.size()+i]);
+				values[channels.size()+i]);
       }
       mn_points=values[cn-2];
       mn_contrib=values[cn-1];
@@ -197,8 +203,6 @@ void Multi_Channel::Optimize(double error)
   size_t i;
   for (i=0;i<channels.size();i++) {
     s1[i]  = channels[i]->Res1()/n_points;
-    s2[i]  = sqrt(channels[i]->Res2()-
-		  channels[i]->Res3()/(n_points-1. ))/n_points;
     aptot += channels[i]->Alpha()*sqrt(s1[i]);
   }
   
@@ -299,14 +303,10 @@ void Multi_Channel::AddPoint(double value)
 	var = sqr(value)*m_weight/channels[i]->Weight();
       else var = 0.;
 #ifdef USING__MPI
-      channels[i]->AddMPIVars(var,sqr(var),
-			      sqr(channels[i]->MRes1())
-			      -channels[i]->MRes2()
-			      -channels[i]->MRes3());
+      channels[i]->AddMPIVars(var,sqr(var));
 #else
       channels[i]->SetRes1(channels[i]->Res1() + var);
       channels[i]->SetRes2(channels[i]->Res2() + sqr(var));
-      channels[i]->SetRes3(sqr(channels[i]->Res1())-channels[i]->Res2());
 #endif
     }
   }
@@ -456,7 +456,7 @@ void Multi_Channel::WriteOut(std::string pID)
     ofile<<channels[i]->Name()<<" "<<channels[i]->N()<<" "
 	 <<channels[i]->Alpha()<<" "<<channels[i]->AlphaSave()<<" "
 	 <<channels[i]->Weight()<<" "<<channels[i]->Res1()<<" "
-	 <<channels[i]->Res2()<<" "<<channels[i]->Res3()<<std::endl;
+	 <<channels[i]->Res2()<<std::endl;
   ofile.close();
   for (size_t i=0;i<channels.size();i++) channels[i]->WriteOut(pID);
 }
@@ -468,7 +468,7 @@ bool Multi_Channel::ReadIn(std::string pID) {
   size_t      size;
   std::string name;
   long int    points;
-  double      alpha, alphasave, weight, res1, res2, res3;
+  double      alpha, alphasave, weight, res1, res2;
   ifile>>size>>name;
   if (( size != channels.size()) || ( name != name) ) {
     msg_Error()<<"Error in Multi_Channel::ReadIn("<<pID<<")"<<endl 
@@ -484,7 +484,7 @@ bool Multi_Channel::ReadIn(std::string pID) {
 
   double sum=0;
   for (size_t i=0;i<channels.size();i++) {
-    ifile>>name>>points>>alpha>>alphasave>>weight>>res1>>res2>>res3;
+    ifile>>name>>points>>alpha>>alphasave>>weight>>res1>>res2;
     sum+= alpha;
     if (name != channels[i]->Name()) {
       msg_Error()<<"ERROR in "<<METHOD<<" for "<<pID<<")"<<endl 
@@ -503,7 +503,6 @@ bool Multi_Channel::ReadIn(std::string pID) {
     channels[i]->SetWeight(weight);
     channels[i]->SetRes1(res1);
     channels[i]->SetRes2(res2);
-    channels[i]->SetRes3(res3);
   }
   ifile.close();
   for (size_t i=0;i<channels.size();i++) channels[i]->ReadIn(pID);

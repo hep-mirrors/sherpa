@@ -104,17 +104,15 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args) :
 #ifdef USING__MPI
     int size=MPI::COMM_WORLD.Get_size();
     int rank=MPI::COMM_WORLD.Get_rank();
-    int le=e, nact=1, values[2];
+    int le=e, nact=size, values[2];
     if (size>1) {
       if (rank==0) {
 	msg_Info()<<"MPI Analysis {\n";
-	for (int tag=1;tag<size;++tag) if (exh->MPIStat(tag)) ++nact;
 	int inc=Max(1,(int)((e-i+1)/nact));
 	e=i+inc-1;
 	msg_Info()<<"  Rank 0 analyzes "<<basename
 		  <<"["<<i<<"-"<<e<<"].\n";
 	for (int tag=1;tag<size;++tag) {
-	  if (!exh->MPIStat(tag)) continue;
 	  values[0]=i+tag*inc;
 	  values[1]=i+(tag+1)*inc-1;
 	  if (tag==nact-1) values[1]=le;

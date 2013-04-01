@@ -1207,7 +1207,7 @@ void PS_Channel::WriteOut(std::string pid)
   for (size_t pc(0), n(2);n<m_n;++n)
     for (size_t i(0);i<(*p_cur)[n].size();++i) {
       pvds.resize(pvds.size()+(*p_cur)[n][i]->In().size(),
-		  std::vector<std::string>(7));
+		  std::vector<std::string>(6));
       for (size_t j(0);j<(*p_cur)[n][i]->In().size();++j) {
 	PS_Vertex *v((PS_Vertex *)(*p_cur)[n][i]->In()[j]);
 	pvds[pc][0]=v->VId();
@@ -1216,7 +1216,6 @@ void PS_Channel::WriteOut(std::string pid)
 	pvds[pc][3]=ToString(v->N(),12);
 	pvds[pc][4]=ToString(v->Sum(),12);
 	pvds[pc][5]=ToString(v->Sum2(),12);
-	pvds[pc][6]=ToString(v->Max(),12);
 	++pc;
       }
     }
@@ -1271,7 +1270,6 @@ void PS_Channel::ReadIn(std::string pid)
 	v->SetN(ToType<double>(pvds[pc][3]));
 	v->SetSum(ToType<double>(pvds[pc][4]));
 	v->SetSum2(ToType<double>(pvds[pc][5]));
-	v->SetMax(ToType<double>(pvds[pc][6]));
 	++pc;
       }
   }

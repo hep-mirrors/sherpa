@@ -435,25 +435,35 @@ void Event_Handler::MPISync()
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    int rank=MPI::COMM_WORLD.Get_rank();
+    int rank=exh->HasMPISend()?exh->MPISend().Get_rank():0;
     int cn=4;
     double *values = new double[cn];
-    if (rank==0) {
-      for (int tag=1;tag<size;++tag) {
-	if (!exh->MPIStat(tag)) continue;
-	MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+    if (exh->HasMPIRecv()) {
+      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
+	exh->MPIRecv().Recv(values,cn,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
         m_mn+=values[0];
         m_msum+=values[1];
         m_msumsqr+=values[2];
         if (values[3]>m_maxweight) m_maxweight=values[3];
       }
+      if (rank) {
+	values[0]=m_mn;
+	values[1]=m_msum;
+	values[2]=m_msumsqr;
+	values[3]=m_maxweight;
+	exh->MPISend().Send(values,cn,MPI::DOUBLE,0,rank);
+	exh->MPISend().Recv(values,cn,MPI::DOUBLE,0,size+rank);
+	m_mn=values[0];
+	m_msum=values[1];
+	m_msumsqr=values[2];
+	m_maxweight=values[3];
+      }
       values[0]=m_mn;
       values[1]=m_msum;
       values[2]=m_msumsqr;
       values[3]=m_maxweight;
-      for (int tag=1;tag<size;++tag) {
-	if (!exh->MPIStat(tag)) continue;
-	MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,tag,size+tag);
+      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
+	exh->MPIRecv().Send(values,cn,MPI::DOUBLE,tag,size+tag);
       }
     }
     else {
@@ -461,8 +471,8 @@ void Event_Handler::MPISync()
       values[1]=m_msum;
       values[2]=m_msumsqr;
       values[3]=m_maxweight;
-      MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,0,rank);
-      MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,0,size+rank);
+      exh->MPISend().Send(values,cn,MPI::DOUBLE,0,rank);
+      exh->MPISend().Recv(values,cn,MPI::DOUBLE,0,size+rank);
       m_mn=values[0];
       m_msum=values[1];
       m_msumsqr=values[2];

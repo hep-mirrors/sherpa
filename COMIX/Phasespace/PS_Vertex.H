@@ -14,7 +14,7 @@ namespace COMIX {
   protected:
 
     double m_alpha, m_oldalpha, m_weight;
-    double m_np, m_sum, m_sum2, m_max;
+    double m_np, m_sum, m_sum2;
     double m_mnp, m_msum, m_msum2;
 
     int m_type;
@@ -46,12 +46,10 @@ namespace COMIX {
     inline double N() const    { return m_np;   }
     inline double Sum() const  { return m_sum;  }
     inline double Sum2() const { return m_sum2; }
-    inline double Max() const  { return m_max;  }
 
     inline void SetN(const double &n)       { m_np=n;      }
     inline void SetSum(const double &sum)   { m_sum=sum;   }
     inline void SetSum2(const double &sum2) { m_sum2=sum2; }
-    inline void SetMax(const double &max)   { m_max=max;   }
 
     inline double Mean() const { return m_sum/m_np; }
     inline double Variance() const    

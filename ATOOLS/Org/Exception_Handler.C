@@ -2,7 +2,6 @@
 
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include <sys/types.h>
 #include <unistd.h>
@@ -25,10 +24,6 @@
 #define MAX_BACKTRACE_DEPTH 128
 #endif
 
-#ifdef USING__MPI
-#include "mpi.h"
-#endif
-
 using namespace ATOOLS;
 
 ATOOLS::Exception_Handler *ATOOLS::exh(NULL);
@@ -36,6 +31,7 @@ ATOOLS::Exception_Handler *ATOOLS::exh(NULL);
 Exception_Handler::Exception_Handler():
   m_active(true), m_prepared(false), m_stacktrace(true), 
   m_print(true), m_noremove(false),
+  m_hassend(false), m_hasrecv(false),
   m_signal(0), m_exitcode(0), m_exception(0),
   m_nbus(0), m_nsegv(0), m_mpi_timeout(3600),
   m_progname("Sherpa")
@@ -51,13 +47,14 @@ Exception_Handler::Exception_Handler():
   signal(SIGTERM,ATOOLS::SignalHandler);
   signal(SIGXCPU,ATOOLS::SignalHandler);
   signal(SIGUSR1,ATOOLS::SignalHandler);
-#ifdef USING__MPI
-  m_mpi.resize(MPI::COMM_WORLD.Get_size(),1);
-#endif
 }
 
 Exception_Handler::~Exception_Handler()
 {
+#ifdef USING__MPI
+  if (m_hassend) m_send.Free();
+  if (m_hasrecv) m_recv.Free();
+#endif  
 }
 
 bool Exception_Handler::ReadInStatus(const std::string &path)
@@ -128,80 +125,44 @@ void Exception_Handler::Exit(int exitcode)
 			  <<om::reset<<om::bold<<"("
 			  <<om::red<<exitcode<<om::reset<<om::bold<<")"
 			  <<om::reset<<tm::curon<<std::endl;
-  MPISuspend(1);
   exit(exitcode);
 }
 
-void Exception_Handler::MPISuspend(int mode)
+void Exception_Handler::SetMPIRecv(std::vector<int> r)
 {
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
-  int rank=MPI::COMM_WORLD.Get_rank();
-  if (rank>0) {
-    if (mode) {
-      msg_Error()<<METHOD<<"(): MPI rank "<<rank<<", pid "<<getpid()<<" on "
-		 <<rpa->gen.Variable("HOSTNAME")<<" is killed."<<std::endl;
-    }
-    if (m_mpi.size()>rank) {
-      int flag=-1;
-      MPI_Request req;
-      MPI_Irsend(&flag,1,MPI::INT,0,10*size+rank,MPI::COMM_WORLD,&req);
-      MPI::Finalize();
-    }
-  }
-  else {
-    if (mode) {
-      msg_Error()<<METHOD<<"(): MPI master is killed. Abort."<<std::endl;
-      MPI_Abort(MPI::COMM_WORLD,m_exitcode);
-    }
-  }
-#endif
-}
-
-void Exception_Handler::MPISync()
-{
-#ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
   int rank=MPI::COMM_WORLD.Get_rank();
   if (rank==0) {
-    for (int tag=1;tag<size;++tag) {
-      if (m_mpi[tag]==0) continue;
-      int flag, test;
-      MPI_Request req;
-      MPI_Irecv(&flag,1,MPI::INT,tag,10*size+tag,MPI::COMM_WORLD,&req);
-      unsigned int time=0;
-      for (;time<m_mpi_timeout;++time) {
-	MPI_Test(&req,&test,MPI_STATUS_IGNORE);
-	if (test) {
-	  m_mpi[tag]=flag<0?0:1;
-	  if (m_mpi[tag]==0)
-	    msg_Error()<<METHOD<<"(): MPI rank "<<tag
-		       <<" of "<<size<<" exited."<<std::endl;
-	  break;
-	}
-	sleep(1);
-      }
-      if (time==m_mpi_timeout) {
-	MPI_Cancel(&req);
-	m_mpi[tag]=0;
-      	msg_Error()<<METHOD<<"(): MPI rank "<<tag
-      		   <<" of "<<size<<" does not respond."<<std::endl;
-      }
-    }
+    m_hasrecv=true;
+    m_recv=MPI::COMM_WORLD.Split(rank,rank);
+    m_send=MPI::COMM_WORLD.Split(MPI_UNDEFINED,rank);
   }
   else {
-    int flag=0;
-    MPI_Request req;
-    MPI_Isend(&flag,1,MPI::INT,0,10*size+rank,MPI::COMM_WORLD,&req);
+    if (r[0]==0) {
+      m_hassend=m_hasrecv=true;
+      m_send=MPI::COMM_WORLD.Split(r[0],rank);
+      m_recv=MPI::COMM_WORLD.Split(rank,rank);
+    }
+    else {
+      m_hassend=true;
+      m_recv=MPI::COMM_WORLD.Split(MPI_UNDEFINED,rank);
+      m_send=MPI::COMM_WORLD.Split(r[0],rank);
+    }
   }
 #endif
 }
 
-int Exception_Handler::MPIStat(int rank)
+bool Exception_Handler::HasMPISend() const
 {
-  if (rank<0 || rank>m_mpi.size())
-    THROW(fatal_error,"Index out of range");
-  return m_mpi[rank];
+  return m_hassend;
+}
+
+bool Exception_Handler::HasMPIRecv() const
+{
+#ifdef USING__MPI
+  if (m_hasrecv) return m_recv.Get_size()>1;
+#endif
+  return false;
 }
 
 void Exception_Handler::Reset()

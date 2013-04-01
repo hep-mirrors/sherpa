@@ -321,7 +321,6 @@ void Output_RootNtuple::MPISync()
       m_flavlist.resize(m_fcnt);
       m_momlist.resize(m_fcnt);
       for (int tag=1;tag<size;++tag) {
-	if (!exh->MPIStat(tag)) continue;
 	MPI::COMM_WORLD.Recv(&vals,6,MPI::DOUBLE,MPI::ANY_SOURCE,s_offset*size+tag);
 	std::vector<rntuple_evt2> evts((int)vals[0]);
 	std::vector<int> flavs((int)vals[3]);

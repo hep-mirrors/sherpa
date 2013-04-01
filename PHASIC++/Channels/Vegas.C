@@ -154,13 +154,12 @@ void Vegas::MPISync()
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    int rank=MPI::COMM_WORLD.Get_rank();
+    int rank=exh->HasMPISend()?exh->MPISend().Get_rank():0;
     int cn=3*m_dim*m_nd+2;
     double *values = new double[cn];
-    if (rank==0) {
-      for (int tag=1;tag<size;++tag) {
-	if (!exh->MPIStat(tag)) continue;
-	MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+    if (exh->HasMPIRecv()) {
+      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
+	exh->MPIRecv().Recv(values,cn,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
 	for (int i=0;i<m_dim;i++) {
 	  for (int j=0;j<m_nd;j++) {
 	    p_md[i][j]+=values[i*m_nd+j];
@@ -171,6 +170,28 @@ void Vegas::MPISync()
 	m_mnevt+=values[cn-2];
 	m_mcevt+=values[cn-1];
       }
+      if (rank) {
+	for (int i=0;i<m_dim;i++) {
+	  for (int j=0;j<m_nd;j++) {
+	    values[i*m_nd+j]=p_md[i][j];
+	    values[(m_dim+i)*m_nd+j]=p_mdi[i][j];
+	    values[(2*m_dim+i)*m_nd+j]=p_mhit[i][j];
+	  }
+	}
+	values[cn-2]=m_mnevt;
+	values[cn-1]=m_mcevt;
+	exh->MPISend().Send(values,cn,MPI::DOUBLE,0,rank);
+	exh->MPISend().Recv(values,cn,MPI::DOUBLE,0,size+rank);
+	for (int i=0;i<m_dim;i++) {
+	  for (int j=0;j<m_nd;j++) {
+	    p_md[i][j]=values[i*m_nd+j];
+	    p_mdi[i][j]+=values[(m_dim+i)*m_nd+j];
+	    p_mhit[i][j]+=values[(2*m_dim+i)*m_nd+j];
+	  }
+	}
+	m_mnevt=values[cn-2];
+	m_mcevt=values[cn-1];
+      }
       for (int i=0;i<m_dim;i++) {
 	for (int j=0;j<m_nd;j++) {
 	  values[i*m_nd+j]=p_md[i][j];
@@ -180,9 +201,8 @@ void Vegas::MPISync()
       }
       values[cn-2]=m_mnevt;
       values[cn-1]=m_mcevt;
-      for (int tag=1;tag<size;++tag) {
-	if (!exh->MPIStat(tag)) continue;
-	MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,tag,size+tag);
+      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
+	exh->MPIRecv().Send(values,cn,MPI::DOUBLE,tag,size+tag);
       }
     }
     else {
@@ -195,8 +215,8 @@ void Vegas::MPISync()
       }
       values[cn-2]=m_mnevt;
       values[cn-1]=m_mcevt;
-      MPI::COMM_WORLD.Send(values,cn,MPI::DOUBLE,0,rank);
-      MPI::COMM_WORLD.Recv(values,cn,MPI::DOUBLE,0,size+rank);
+      exh->MPISend().Send(values,cn,MPI::DOUBLE,0,rank);
+      exh->MPISend().Recv(values,cn,MPI::DOUBLE,0,size+rank);
       for (int i=0;i<m_dim;i++) {
 	for (int j=0;j<m_nd;j++) {
 	  p_md[i][j]=values[i*m_nd+j];

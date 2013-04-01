@@ -850,7 +850,6 @@ void Single_Virtual_Correction::MPISync()
     double val[4];
     if (rank==0) {
       for (int tag=1;tag<size;++tag) {
-	if (!exh->MPIStat(tag)) continue;
 	MPI::COMM_WORLD.Recv(&val,4,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
 	m_mn+=val[0];
 	m_mbsum+=val[1];
@@ -862,7 +861,6 @@ void Single_Virtual_Correction::MPISync()
       val[2]=m_mvsum;
       val[3]=m_misum;
       for (int tag=1;tag<size;++tag) {
-	if (!exh->MPIStat(tag)) continue;
 	MPI::COMM_WORLD.Send(&val,4,MPI::DOUBLE,tag,size+tag);
       }
     }

@@ -16,8 +16,8 @@ namespace PHASIC {
 
     long int n_points, n_contrib;
     double   weight, result, result2;
-    double   res1, res2, res3;
-    double   mres1, mres2, mres3;
+    double   res1, res2;
+    double   mres1, mres2;
     double   alpha, alpha_save;
 
     int     nin, nout;
@@ -77,7 +77,6 @@ namespace PHASIC {
 
     virtual double Res1();  
     virtual double Res2();  
-    virtual double Res3();  
     virtual double Weight();
     virtual double Alpha(); 
     virtual double AlphaSave();
@@ -86,7 +85,6 @@ namespace PHASIC {
     virtual void IncrementN();               
     virtual void SetRes1(double r);         
     virtual void SetRes2(double r);         
-    virtual void SetRes3(double r);         
     virtual void SetN(long int n);          
     virtual void SetName(std::string name); 
     virtual void SetWeight(double weight);  
@@ -106,17 +104,14 @@ namespace PHASIC {
     void CopyMPIValues();
 
     inline void AddMPIVars(const double &r1,
-			   const double &r2,
-			   const double &r3)
-    { mres1+=r1; mres2+=r2; mres3+=r3; }
+			   const double &r2)
+    { mres1+=r1; mres2+=r2; }
     inline void SetMPIVars(const double &r1,
-			   const double &r2,
-			   const double &r3)
-    { mres1=r1; mres2=r2; mres3=r3; }
+			   const double &r2)
+    { mres1=r1; mres2=r2; }
 
     inline double MRes1() { return mres1; }
     inline double MRes2() { return mres2; }
-    inline double MRes3() { return mres3; }
 
   };// end of class Single_Channel
 

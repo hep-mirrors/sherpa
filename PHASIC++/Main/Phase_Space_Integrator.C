@@ -30,7 +30,6 @@ Phase_Space_Integrator::Phase_Space_Integrator()
   if (!read.ReadFromFile(nmax,"PSI_NMAX")) 
     nmax=std::numeric_limits<long unsigned int>::max();
   else msg_Info()<<METHOD<<"(): Set n_{max} = "<<nmax<<".\n";
-  if (!read.ReadFromFile(wadjust,"PSI_ADJUST_POINTS")) wadjust=1;
   read.SetAllowUnits(true);
   if (!read.ReadFromFile(itmin,"PSI_ITMIN")) itmin=5000;
   else msg_Info()<<METHOD<<"(): Set n_{it,min} = "<<itmin<<".\n";
@@ -46,65 +45,44 @@ Phase_Space_Integrator::~Phase_Space_Integrator()
 void Phase_Space_Integrator::MPISync()
 {
 #ifdef USING__MPI
-  double nrtime=ATOOLS::rpa->gen.Timer().RealTime();
   psh->MPISync();
-  int size=MPI::COMM_WORLD.Get_size(), nact=1;
+  int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    int rank=MPI::COMM_WORLD.Get_rank();
-    double values[4];
-    if (rank==0) {
-      double trtime=(nrtime-lrtime)/mn;
-      std::vector<double> times(size,nrtime-lrtime);
-      for (int tag=1;tag<size;++tag) {
-	if (!exh->MPIStat(tag)) continue;
-	MPI::COMM_WORLD.Recv(&values,4,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
+    int rank=exh->HasMPISend()?exh->MPISend().Get_rank():0;
+    double values[3];
+    if (exh->HasMPIRecv()) {
+      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
+	exh->MPIRecv().Recv(&values,3,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
 	mn+=values[0];
 	mnstep+=values[1];
 	mncstep+=values[2];
-	trtime+=times[tag]=values[3]/values[0];
-	++nact;
       }
-      int sum=0, max=0, min=std::numeric_limits<int>::max();
-      for (int tag=1;tag<size;++tag) {
-	if (!exh->MPIStat(tag)) continue;
-	if (!wadjust) sum+=times[tag]=(int)iter/size;
-	else sum+=times[tag]=(int)Max(10.0,iter*times[tag]/trtime);
-	min=Min(min,(int)times[tag]);
-	max=Max(max,(int)times[tag]);
-      }
-      optiter=iter-sum;
-      min=Min(min,optiter);
-      max=Max(max,optiter);
-      if (wadjust) {
-	msg_Info()<<"MPI point range: "
-		  <<min<<" .. "<<max<<" ("<<nact<<" nodes)"<<std::endl;
-	if (msg_LevelIsTracking() || wadjust>1) {
-	msg_Info()<<"New weights {\n  master: "<<optiter<<"\n";
-	for (int tag=1;tag<size;++tag)
-	  msg_Info()<<"  node "<<tag<<": "<<times[tag]<<"\n";
-	msg_Info()<<"}"<<std::endl;
-	}
+      if (rank) {
+	values[0]=mn;
+	values[1]=mnstep;
+	values[2]=mncstep;
+	exh->MPISend().Send(&values,3,MPI::DOUBLE,0,rank);
+	exh->MPISend().Recv(&values,3,MPI::DOUBLE,0,size+rank);
+	mn=values[0];
+	mnstep=values[1];
+	mncstep=values[2];
       }
       values[0]=mn;
       values[1]=mnstep;
       values[2]=mncstep;
-      for (int tag=1;tag<size;++tag) {
-	if (!exh->MPIStat(tag)) continue;
-	values[3]=times[tag];
-	MPI::COMM_WORLD.Send(&values,4,MPI::DOUBLE,tag,size+tag);
+      for (int tag=1;tag<exh->MPIRecv().Get_size();++tag) {
+	exh->MPIRecv().Send(&values,3,MPI::DOUBLE,tag,size+tag);
       }
     }
     else {
       values[0]=mn;
       values[1]=mnstep;
       values[2]=mncstep;
-      values[3]=nrtime-lrtime;
-      MPI::COMM_WORLD.Send(&values,4,MPI::DOUBLE,0,rank);
-      MPI::COMM_WORLD.Recv(&values,4,MPI::DOUBLE,0,size+rank);
+      exh->MPISend().Send(&values,3,MPI::DOUBLE,0,rank);
+      exh->MPISend().Recv(&values,3,MPI::DOUBLE,0,size+rank);
       mn=values[0];
       mnstep=values[1];
       mncstep=values[2];
-      optiter=values[3];
     }
   }
   n+=mn;
@@ -158,7 +136,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
 
   maxopt    = (5/hlp+21)*iter1;
   ncontrib = psh->FSRIntegrator()->ValidN();
-  if (ncontrib/iter0>=5) iter=iter1;
+  if (ncontrib/iter0>=6) iter=iter1;
 
   endopt = 1;
 #ifdef USING__MPI
@@ -336,7 +314,14 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       stats[5]=time-starttime+addtime;
       psh->AddStats(stats);
       psh->Process()->StoreResults(1);
-      if (ncontrib/iter0==5) iter=iter1;
+      if (ncontrib/iter0==6) {
+	optiter=iter=iter1;
+#ifdef USING__MPI
+	int size = MPI::COMM_WORLD.Get_size();
+	optiter /= size;
+	if (MPI::COMM_WORLD.Get_rank()==0) optiter+=iter-(iter/size)*size;
+#endif
+      }
       bool allowbreak = true;
       if (fin_opt==1 && (endopt<2||ncontrib<maxopt)) allowbreak = false;
       if (allowbreak && 

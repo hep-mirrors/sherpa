@@ -36,7 +36,7 @@ namespace PHASIC {
     long unsigned int             mn_points,mn_contrib;
     double                        m_weight;
     double                        rans[2];
-    double                        s1xmin, * s1, * s2;
+    double                        s1xmin, * s1;
     std::vector<Single_Channel *> channels, m_best;
     bool m_readin, m_fixalpha;
     double m_minalpha;
