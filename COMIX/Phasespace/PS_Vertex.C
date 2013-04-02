@@ -126,45 +126,6 @@ void PS_Vertex::Evaluate()
 void PS_Vertex::MPISync()
 {
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
-  if (size>1) {
-    int rank=MPI::COMM_WORLD.Get_rank();
-    double val[3];
-    if (rank==0) {
-      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
-	mpi->MPIRecv().Recv(&val,3,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
-	m_mnp+=val[0];
-	m_msum+=val[1];
-	m_msum2+=val[2];
-      }
-      if (rank) {
-	val[0]=m_mnp;
-	val[1]=m_msum;
-	val[2]=m_msum2;
-	mpi->MPISend().Send(&val,3,MPI::DOUBLE,0,rank);
-	mpi->MPISend().Recv(&val,3,MPI::DOUBLE,0,size+rank);
-	m_mnp=val[0];
-	m_msum=val[1];
-	m_msum2=val[2];
-      }
-      val[0]=m_mnp;
-      val[1]=m_msum;
-      val[2]=m_msum2;
-      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
-	mpi->MPIRecv().Send(&val,3,MPI::DOUBLE,tag,size+tag);
-      }
-    }
-    else {
-      val[0]=m_mnp;
-      val[1]=m_msum;
-      val[2]=m_msum2;
-      mpi->MPISend().Send(&val,3,MPI::DOUBLE,0,rank);
-      mpi->MPISend().Recv(&val,3,MPI::DOUBLE,0,size+rank);
-      m_mnp=val[0];
-      m_msum=val[1];
-      m_msum2=val[2];
-    }
-  }
   m_np+=m_mnp;
   m_sum+=m_msum;
   m_sum2+=m_msum2;

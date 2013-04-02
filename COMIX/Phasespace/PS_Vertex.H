@@ -61,6 +61,13 @@ namespace COMIX {
 
     inline int Type() const { return m_type; }
 
+    inline void GetMPIVars(double *v)
+    { v[0]=m_mnp; v[1]=m_msum; v[2]=m_msum2; }
+    inline void AddMPIVars(const double *v)
+    { m_mnp+=v[0]; m_msum+=v[1]; m_msum2+=v[2]; }
+    inline void SetMPIVars(const double *v)
+    { m_mnp=v[0]; m_msum=v[1]; m_msum2=v[2]; }
+
   };// end of class PS_Vertex
 
 }// end of namespace COMIX
