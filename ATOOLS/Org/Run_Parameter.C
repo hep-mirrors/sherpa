@@ -180,6 +180,9 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   struct passwd* user_info = getpwuid(getuid());
   if (!user_info) gen.m_username="<unknown user>";
   else gen.m_username=user_info->pw_gecos;
+  size_t pos(gen.m_username.find(','));
+  if (pos<std::string::npos)
+    gen.m_username.erase(pos,gen.m_username.length()-pos);
   Data_Reader dr(" ",";","!","=");
   dr.AddComment("#");
   dr.AddWordSeparator("\t");
