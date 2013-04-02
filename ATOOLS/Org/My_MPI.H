@@ -10,6 +10,8 @@
 
 namespace ATOOLS {
 
+  class Data_Reader;
+
   class My_MPI {
   private:
 
@@ -19,13 +21,15 @@ namespace ATOOLS {
     MPI::Intracomm m_send, m_recv;
 #endif
 
+    void SetMPIRecv(std::vector<int> r);
+
   public:
 
     My_MPI();
 
     ~My_MPI();
 
-    void SetMPIRecv(std::vector<int> r);
+    void SetUpSendRecv(Data_Reader *const read);
 
     bool HasMPISend() const;
     bool HasMPIRecv() const;

@@ -26,6 +26,9 @@ namespace ATOOLS {
 
   std::string GetCWD();
 
+  std::vector<std::string> RegExMatch
+  (const std::string &str,const std::string &pat,const size_t nm=1);
+
 }// end of namespace ATOOLS
 
 #endif

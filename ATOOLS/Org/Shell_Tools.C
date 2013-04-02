@@ -8,6 +8,7 @@
 #include <dirent.h>
 #include <cstdlib>
 #include <unistd.h>
+#include <regex.h>
 #if __GNUC__
 #include <cxxabi.h>
 #endif
@@ -197,4 +198,20 @@ std::string ATOOLS::GetCWD()
   std::string pwd(buf);
   delete [] buf;
   return pwd;
+}
+
+std::vector<std::string> ATOOLS::RegExMatch
+(const std::string &str,const std::string &pat,const size_t nm)
+{
+  std::vector<std::string> res;
+  regex_t re;
+  if (regcomp(&re,pat.c_str(),REG_EXTENDED)!=0) return res;
+  std::vector<regmatch_t> pm(nm);
+  int stat=regexec(&re,str.c_str(),nm,&pm.front(),0);
+  if (stat==0) {
+    for (size_t i=0;i<nm;++i)
+      res.push_back(str.substr(pm[i].rm_so,pm[i].rm_eo-pm[i].rm_so));
+  }
+  regfree(&re);
+  return res;
 }
