@@ -28,12 +28,13 @@ namespace EXTRAXS {
 using namespace EXTRAXS;
 
 void Dummy_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
+  double factor=2*M_PI/AlphaQCD();
   // 1/epsIR
-  m_res.IR()=m_eps;
+  m_res.IR()=m_eps*factor;
   // 1/epsIR2
-  m_res.IR2()=m_eps2;
+  m_res.IR2()=m_eps2*factor;
   // finite
-  m_res.Finite()=m_fin;
+  m_res.Finite()=m_fin*factor;
 }
 
 DECLARE_VIRTUALME2_GETTER(Dummy_QCD_Virtual,"Dummy_QCD_Virtual")
