@@ -256,7 +256,23 @@ bool Analysis_Handler::WriteOut()
 		 <<"'."<<std::endl; 
     }
   }
-  msg_Info()<<"\n";
+  for (Analyses_Vector::const_iterator ait=m_analyses.begin();
+       ait!=m_analyses.end();++ait) {
+    (*ait)->FinishAnalysis(OutputPath());
+    (*ait)->RestoreAnalysis();
+  }
+  return true;
+}
+
+bool Analysis_Handler::Finish()
+{
+  if (OutputPath()[OutputPath().length()-1]=='/') {
+    if (!MakeDir(OutputPath())) {
+      msg_Error()<<"Analysis_Handler::Finish(..): "
+		 <<"Cannot create directory '"<<OutputPath()
+		 <<"'."<<std::endl; 
+    }
+  }
   msg_Info()<<"Analysis_Handler::Finish(..): {\n";
   for (Analyses_Vector::const_iterator ait=m_analyses.begin();
        ait!=m_analyses.end();++ait) {
@@ -266,12 +282,6 @@ bool Analysis_Handler::WriteOut()
     (*ait)->RestoreAnalysis();
   }
   msg_Info()<<"}"<<std::endl;
-  return true;
-}
-
-bool Analysis_Handler::Finish()
-{
-  WriteOut();
   if (m_analyses.size()) {
     exh->RemoveTesterObject(this);
   }
