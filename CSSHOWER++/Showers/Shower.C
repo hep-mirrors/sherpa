@@ -429,9 +429,10 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  return false;
 	}
       }
-      if (m_noem) continue;
+      if (!m_noem) {
       int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,0));
       if (kstat<0) continue;
+      }
       if (p_actual->JF()) {
 	if (p_actual->GetSplit()) {
 	  msg_Debugging()<<"Truncated shower veto\n";
@@ -446,6 +447,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  sing->SetJF(NULL);
 	}
       }
+      if (m_noem) continue;
       msg_Debugging()<<"nem = "<<nem+1<<" vs. maxem = "<<maxem<<"\n";
       if (m_last[0]) {
         for (Singlet::const_iterator it=p_actual->begin();
