@@ -230,6 +230,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
 		 <<" -> S = "<<s<<", H = "<<h<<"\n";
   double sw(1.0/(1.0+dabs(h/s)));
   if (sw>ran->Get()) {
+    msg_Debugging()<<"S selected ( w = "<<s/sw<<" )\n";
     for (Cluster_Amplitude *campl(ampl.Next());
 	 campl;campl=campl->Next()) {
       campl->SetLKF(bvi/b);
@@ -237,6 +238,7 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
     }
     return s/sw;
   }
+  msg_Debugging()<<"H selected ( w = "<<h/(1.0-sw)<<" )\n";
   return h/(1.0-sw);
 }
 
