@@ -209,7 +209,7 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   newpB->SetOldMomentum(split->OldMomentum());
   int rd(ReconstructDaughters(split->GetSing(),mode,newpB,newpC));
   split->GetSing()->RemoveParton(newpC);
-  if (rd<=0 || (mode&2)) {
+  if (rd<=0 || mode!=0) {
     if (mode==0) split->GetSing()->RearrangeColours(split,newpB,newpC);
     if (split->GetNext()) {
       newpB->GetNext()->SetPrev(split);
@@ -250,7 +250,7 @@ void Shower::SetSplitInfo
 
 int Shower::MakeKinematics
 (Parton *split,const Flavour &fla,const Flavour &flb,
- const Flavour &flc,const int mode)
+ const Flavour &flc,const int mode,const int fc)
 {
   DEBUG_FUNC(mode);
   Parton *spect(split->GetSpect()), *pj(NULL);
@@ -314,8 +314,8 @@ int Shower::MakeKinematics
     (pi,pj,spect,split,split->GetFlavour(),stype);
   Flavour fls(split->GetFlavour());
   if (mode!=0) split->SetFlavour(pi->GetFlavour());
-  int ustat(UpdateDaughters(split,pi,pj,mode));
-  if (ustat<=0 || mode!=0) {
+  int ustat(UpdateDaughters(split,pi,pj,mode|fc));
+  if (ustat<=0 || mode!=0 || fc!=0) {
     split->SetFlavour(fls);
     if (stype) split->GetSing()->BoostBackAllFS
       (pi,pj,spect,split,split->GetFlavour(),stype);
@@ -330,7 +330,7 @@ int Shower::MakeKinematics
     msg_Debugging()<<"Save history for\n"<<*split<<*spect<<"\n";
     split->UpdateDaughters();
     spect->UpdateDaughters();
-    if (mode==0) {
+    if (mode==0 && fc==0) {
       if (!ReconstructDaughters(split->GetSing(),0)) {
 	msg_Error()<<METHOD<<"(): Reconstruction error. Reject event."<<std::endl;
 	return 0;
@@ -391,13 +391,14 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	return true;
       }
       ResetScales(kt2win);
+      int fc=0;
       if (split->Splits()) {
 	if ((split->GetType()==pst::IS &&
 	     m_flavA!=split->GetFlavour()) ||
 	    (split->GetType()==pst::FS &&
 	     m_flavB!=split->GetFlavour())) {
-	  msg_Debugging()<<"... Skip flavour change ...\n\n";
-	  continue;
+	  msg_Debugging()<<"... Flavour change ...\n\n";
+	  fc=4;
 	}
       }
       if (p_actual->JF() &&
@@ -411,7 +412,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	}
       }
       if (p_actual->JF()) {
-	int vstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,2));
+	int vstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,2,fc));
 	if (vstat==0) {
 	  if (p_actual->NLO()&2) {
 	    msg_Debugging()<<"Skip first truncated emission, K = "
@@ -430,8 +431,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	}
       }
       if (!m_noem) {
-      int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,0));
-      if (kstat<0) continue;
+	int kstat(MakeKinematics(split,m_flavA,m_flavB,m_flavC,0,fc));
+	if (kstat<0) continue;
       }
       if (p_actual->JF()) {
 	if (p_actual->GetSplit()) {

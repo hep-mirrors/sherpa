@@ -47,7 +47,7 @@ namespace CSSHOWER {
 			   Parton *const newpC,int mode);
     int MakeKinematics(Parton *const split,const ATOOLS::Flavour &fla,
 		       const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
-		       const int mode);
+		       const int mode,const int fc);
  public:
     Shower(PDF::ISR_Handler * isr,const int qed,
 	   ATOOLS::Data_Reader *const dataread);
