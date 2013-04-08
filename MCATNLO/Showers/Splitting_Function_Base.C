@@ -115,10 +115,27 @@ Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
       (p_lf->FlA().IsPhoton() || p_lf->FlB().IsPhoton() ||
        p_lf->FlC().IsPhoton())) m_on=true;
   Data_Reader read(" ",";","#","=");
+  // exclude all massive partons to split, but also Q->Qg
   bool massive_splittings=read.GetValue<int>("MCATNLO_MASSIVE_SPLITTINGS",1);
   if (!massive_splittings &&
       (p_lf->FlA().IsMassive() || p_lf->FlB().IsMassive() ||
        p_lf->FlC().IsMassive())) {
+    m_on=false;
+  }
+  // do not add a new massive FS (not implemented in as ME dipoles in SRC)
+  // IS a->bc (b to hard process): forbid c to be massive
+  //                               if b massless, this forbids Q->gQ
+  //                               if b is massive, this forbids g->QQ
+  //                                                and allows Q->Qg
+  // FS a->bc (a from hard process): forbid b massive && b==cbar
+  //                                 if a is massless, this forbids g->QQ
+  //                                 if a is massive, this allows Q->Qg, Q->gQ
+  bool splitintomassive=read.GetValue<int>("MCATNLO_SPLIT_INTO_MASSIVE",0);
+  if (!splitintomassive &&
+      (((key.m_type==cstp::IF || key.m_type==cstp::II) &&
+        p_lf->FlC().IsMassive()) ||
+       ((key.m_type==cstp::FF || key.m_type==cstp::FI) &&
+        (p_lf->FlB().IsMassive() && p_lf->FlC()==p_lf->FlB().Bar())))) {
     m_on=false;
   }
   if (key.p_v->in[1].Mass()>10.0 &&
