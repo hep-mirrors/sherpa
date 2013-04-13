@@ -1,6 +1,7 @@
 
 MCFM_SOURCES  =	\
 		MCFM_qqb_QQb.C \
+		MCFM_gg_yy.C \
 		MCFM_gg_h.C \
 		MCFM_gg_hg.C \
 		MCFM_gg_hgg.C \
