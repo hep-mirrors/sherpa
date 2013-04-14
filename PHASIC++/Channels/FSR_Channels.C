@@ -34,7 +34,6 @@ bool FSR_Channels::Initialize()
     else m_inttype = 4;
   }
   if (nin==2) { 
-    if (nout==2&&m_inttype==2) m_inttype=6;
     if (nout==2&&m_inttype==3) m_inttype=7;
     if (p_psh->Process()->Process()->Info().m_fi.m_nloqcdtype&nlo_type::real) {
       if (m_inttype==2) m_inttype=3;
@@ -77,8 +76,14 @@ bool FSR_Channels::Initialize()
  	}
     }
     break;
-  case 2: 
+  case 2:
     {
+      if (m_nin==2 && m_nout==2) {
+	Add(new S1Channel(m_nin,m_nout,(Flavour*)&p_psh->Flavs().front()));
+	Add(new T1Channel(m_nin,m_nout,(Flavour*)&p_psh->Flavs().front()));
+	Add(new U1Channel(m_nin,m_nout,(Flavour*)&p_psh->Flavs().front()));
+      }
+      else {
       VHAAG *firsthaag=NULL,*hlp=NULL;
       Permutation pp(m_nin+m_nout-1);
       for (int j=0;j<pp.MaxNumber();j++) {
@@ -86,6 +91,7 @@ bool FSR_Channels::Initialize()
 	if (pm[1]==0||pm[m_nin+m_nout-3]==0) 
 	  Add(hlp=new VHAAG(m_nin,m_nout,j,firsthaag));
 	if (!firsthaag) firsthaag=hlp;
+      }
       }
     }
     break;
