@@ -20,7 +20,7 @@ namespace BLACKHAT {
     static BH::BH_interface  *s_interface;
     static MODEL::Model_Base *s_model;
 
-    size_t m_oqcd, m_oew;
+    size_t m_oqcd, m_oew, m_mode;
     double m_asfac, m_afac;
 
     double CouplingFactor(const int oqcd,const int oew) const;
@@ -29,7 +29,7 @@ namespace BLACKHAT {
 
     BlackHat_Tree(const PHASIC::Process_Info& pi,
 		  const ATOOLS::Flavour_Vector& flavs,
-		  BH::BH_Ampl *ampl);
+		  BH::BH_Ampl *ampl,const int mode);
 
     ~BlackHat_Tree();
 
