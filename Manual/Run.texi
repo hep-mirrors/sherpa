@@ -11,6 +11,7 @@ The following parameters describe general run information. They may be set in th
 * ANALYSIS::          Switch internal analysis on or off.
 * ANALYSIS_OUTPUT::   Directory for generated analysis histogram files.
 * TIMEOUT::           Run time limitation.
+* RLIMIT_AS::         Memory limitation.
 * BATCH_MODE::        Batch mode settings.
 * NUM_ACCURACY::      Accuracy for gauge tests.
 
@@ -131,6 +132,19 @@ terminated, this allows to interrupt a run, to store all relevant information an
 it without any loss. This is particularly useful when carrying out long integrations.
 Alternatively, setting the TIMEOUT variable to -1, which is the default setting, translates into
 having no run time limitation at all. The unit is seconds.
+
+@node RLIMIT_AS
+@subsection RLIMIT_AS
+@cindex RLIMIT_AS
+@cindex RLIMIT_BY_CPU
+A memory limitation can be given to prevent Sherpa to crash the system it is 
+running on as it continues to build up matrix elements and loads additional 
+libraries at run time. Per default the maximum RAM of the system is determined 
+and set as the memory limit. This can be changed by giving 
+@code{RLIMIT_AS=<size>} where the size is given as eg. @code{500MB} or 
+@code{4 GB}. When running with @ref{MPI parallelization} it might be necessary 
+to divide the total maximum by the number of cores. This can be done by 
+setting @code{RLIMIT_BY_CPU=1}.
 
 @node BATCH_MODE
 @subsection BATCH_MODE

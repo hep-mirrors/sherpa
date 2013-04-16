@@ -14,6 +14,8 @@ The following parameters are used to steer the integration.
 * VEGAS::                Whether to enable Vegas
 * FINISH_OPTIMIZATION::  Whether to fully optimise the Vegas grid
 * PSI_NMAX::             Maximum number of points per process
+* PSI_ITMIN::            Minimum number of points per iteration cycle
+* PSI_ITMAX::            Maximum number of points per iteration cycle
 @end menu
 
 
@@ -89,3 +91,16 @@ default being @option{On}.
 @cindex PSI_NMAX
 The maximum number of points before cuts to be generated during integration.
 This parameter acts on a process-by-process basis.
+
+@node PSI_ITMIN
+@subsection PSI_ITMIN
+@cindex PSI_ITMIN
+The minimum number of points used for every optimisation cycle. Please note 
+that it might be increased automatically for complicated processes.
+
+@node PSI_ITMAX
+@subsection PSI_ITMAX
+@cindex PSI_ITMAX
+The maximum number of points used for every optimisation cycle. Please note 
+that for complicated processes the number given might be insufficient for 
+a meaningful optimisation.
