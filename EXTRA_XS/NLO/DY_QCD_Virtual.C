@@ -51,6 +51,7 @@ operator()(const Process_Info &pi) const
   if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
     Flavour_Vector fl=pi.ExtractFlavours();
     if (fl.size()!=4) return NULL;
+    for (size_t i(0);i<fl.size();++i) if (fl[i].IsMassive()) return NULL;
     if ((fl[2].IsLepton() && fl[3]==fl[2].Bar() &&
          fl[0].IsQuark()  && fl[1]==fl[0].Bar()) ||   
         (fl[0].IsLepton() && fl[1]==fl[0].Bar() &&
