@@ -1,16 +1,29 @@
 @node LEP_Jets
 @subsection Jets at lepton colliders
 
+@menu
+* LEP_Jets_LOmerging::
+* LEP_Jets_NLOmerging::
+@end menu
+
+This section contains two setups to describe jet production at LEP I, 
+either through multijet merging at leading order accuracy or at 
+next-to-leading order accuracy.
+
+@node LEP_Jets_LOmerging
+@subsubsection MEPS setup for ee->jets
+
 @example
 @smallformat
-@verbatiminclude Examples/Jets_at_LeptonColliders/LEP_Jets_MCatNLO/Run.dat
+@verbatiminclude Examples/Jets_at_LeptonColliders/LEP_Jets/Run.dat
 @end smallformat
 @end example
 
 This example shows a LEP set up, with electrons and positrons colliding 
 at a centre of mass energy of 91.25GeV. Two processes have been specified, 
-one final state with two or three light quarks and gluons being produced,
-and one with a b b-bar pair and possibly an extra light parton. 
+one final state with two or more light quarks and gluons being produced,
+and one with a b b-bar pair and possibly extra light partons. Four 
+b quark production is also included for consistencies sake.
 
 Things to notice:
 @itemize @bullet
@@ -19,11 +32,33 @@ Things to notice:
 @item the b b-bar process is specified separately because the 
 @option{93} particle container contains only partons set massless in the matrix
 element calculation, see @ref{Particle containers}. 
-
-@item some model parameters have been set. In the 
-@code{(model)} section of the run-card, parameters relating
-to the model can be set. In this example, the running of alpha_s 
-is set to leading order and the value of alpha_s at the Z-mass is set.
+@item some model parameters have been set. In this example, the running 
+of alpha_s is set to leading order and the value of alpha_s at the Z-mass 
+is set.
 @end itemize
 
+@node LEP_Jets_NLOmerging
+@subsubsection MEPS@@NLO setup for ee->jets
+
+@example
+@smallformat
+@verbatiminclude Examples/Jets_at_LeptonColliders/LEP_Jets/Run.NLO.dat
+@end smallformat
+@end example
+
+This example expands upon the above setup, elevating its description 
+of hard jet production to next-to-leading order.
+
+Things to notice:
+@itemize @bullet
+@item the b-quark mass has been enabled for the matrix element calculation
+(the default is massless) because it is not negligible for LEP energies
+@item the b b-bar process is specified separately because the 
+@option{93} particle container contains only partons set massless in the matrix
+element calculation, see @ref{Particle containers}. 
+@item some model parameters have been set. In the 
+@code{(model)} section of the run-card, parameters relating
+to the model can be set. In this example, the value of alpha_s at the 
+Z mass is set.
+@end itemize
 
