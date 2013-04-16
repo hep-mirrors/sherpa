@@ -139,10 +139,12 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
   }
 
   int pstatus=lhfile.CheckProcess(2,m_pn-2,flavs);
+  std::string pstr("");
   switch (pstatus) {
   case -2: 
   case 0:
-    THROW(fatal_error,"OLE did not return valid process ID.");
+    for (size_t i(0);i<flavs.size();++i) pstr+=ToString((long int)flavs[i])+" ";
+    THROW(fatal_error,"Process "+pstr+"not found in contract file.");
   case -1: 
     THROW(fatal_error,"Process not found in contract file.");
   default:
