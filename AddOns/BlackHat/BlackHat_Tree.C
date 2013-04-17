@@ -5,7 +5,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
-#include "blackhat/BH_error.h"
+#include "blackhat-lib/BH_error.h"
 
 using namespace BLACKHAT;
 using namespace PHASIC;
@@ -98,11 +98,14 @@ operator()(const Process_Info &pi) const
     try {
       msg_Info()<<"Trying BlackHat for "<<kfvector<<" ... "<<std::flush;
       ampl = BlackHat_Tree::Interface()->new_tree_ampl(kfvector);
-      if (!ampl->is_born_LO()) {
-	delete ampl;
-	ampl = BlackHat_Tree::Interface()->new_ampl(kfvector);
-	mode=1;
-      }
+      msg_Out()<<"Cannot check whether tree process or not with public "
+               <<"BlackHat library.\nPlease reenable when suitable BlackHat "
+               <<"version is public.\n";
+//      if (!ampl->is_born_LO()) {
+//	delete ampl;
+//	ampl = BlackHat_Tree::Interface()->new_ampl(kfvector);
+//	mode=1;
+//      }
     } catch (BH::BHerror err) {
       msg_Info()<<"not found."<<std::endl;
       return NULL;
