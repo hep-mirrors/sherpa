@@ -31,13 +31,14 @@ int main(int argc,char* argv[])
       Generator->InitializeTheEventHandler();
       Data_Reader read(" ",";","!","=");
       msg->SetLevel(read.GetValue<int>("EVT_OUTPUT",msg->Level()));
+      int edi(read.GetValue<int>("EVENT_DISPLAY_INTERVAL",100));
       double starttime=rpa->gen.Timer().RealTime();
       for (size_t i=1;i<=rpa->gen.NumberOfEvents();) {
         if (Generator->GenerateOneEvent()) {
           msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
           int exp;
           for (exp=5; i/int(pow(10,exp))==0; --exp) {}
-          if (((rpa->gen.BatchMode()&4 && i%100==0) ||
+          if (((rpa->gen.BatchMode()&4 && i%edi==0) ||
                (!(rpa->gen.BatchMode()&4) && i%int(pow(10,exp))==0)) &&
               i<rpa->gen.NumberOfEvents()) {
             double diff=rpa->gen.Timer().RealTime()-starttime;
