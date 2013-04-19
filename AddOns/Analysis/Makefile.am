@@ -1,3 +1,3 @@
 SUBDIRS = Tools Triggers Observables Analyses Main Scripts
 
-EXTRA_DIST    = @SVNINCLUDE@ Doxyfile
+EXTRA_DIST    = @SVNINCLUDE@
