@@ -607,7 +607,7 @@ void Single_Real_Correction::SmearCounterEvents(NLO_subevtlist& subevtlist)
   DEBUG_FUNC(m_smear_threshold);
 
   DEBUG_VAR(m_realevt.m_me);
-  for (size_t i=0;i<m_subtermlist.size()-1;i++) {
+  for (size_t i=0;i<m_subtermlist.size();i++) {
     if (!m_subtermlist[i]->IsValid()) continue;
     double alpha=m_subtermlist[i]->Dipole()->LastAlpha();
     if (alpha<m_smear_threshold) {
