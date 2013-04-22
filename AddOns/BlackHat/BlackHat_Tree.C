@@ -25,7 +25,7 @@ BlackHat_Tree::BlackHat_Tree(const Process_Info& pi,
 			     BH::BH_Ampl* ampl,const int mode) :
   Tree_ME2_Base(pi, flavs), p_ampl(ampl), m_mode(mode)
 {
-  m_oqcd=ampl->get_order_qcd()+(m_mode?1:0);
+  m_oqcd=ampl->get_order_qcd()+(m_mode?2:0);
   m_oew=ampl->get_order_qed();
 #ifdef USING__Threading
   static bool first(true);
@@ -71,7 +71,7 @@ double BlackHat_Tree::Calc(const Vec4D_Vector& momenta)
   double res=p_ampl->get_born()*CouplingFactor(m_oqcd,m_oew);
   if (m_mode)
     res*=p_ampl->get_finite()*
-      s_model->ScalarFunction("alpha_S")/(2.0*M_PI);
+      2.0*sqr(s_model->ScalarFunction("alpha_S")/(4.0*M_PI));
 #ifdef USING__Threading
   pthread_mutex_unlock(&s_mtx);
 #endif
@@ -101,11 +101,13 @@ operator()(const Process_Info &pi) const
       msg_Out()<<"Cannot check whether tree process or not with public "
                <<"BlackHat library.\nPlease reenable when suitable BlackHat "
                <<"version is public.\n";
-//      if (!ampl->is_born_LO()) {
-//	delete ampl;
-//	ampl = BlackHat_Tree::Interface()->new_ampl(kfvector);
-//	mode=1;
-//      }
+#ifdef VIRTUAL_PREFACTOR
+      if (!ampl->is_born_LO()) {
+	delete ampl;
+	ampl = BlackHat_Tree::Interface()->new_ampl(kfvector);
+	mode=1;
+      }
+#endif
     } catch (BH::BHerror err) {
       msg_Info()<<"not found."<<std::endl;
       return NULL;

@@ -35,7 +35,11 @@ void BlackHat_Virtual::Calc(const Vec4D_Vector& momenta) {
   BH::BHinput input(moms, sqrt(m_mur2));
   s_interface->operator()(input);
 
+#ifdef VIRTUAL_PREFACTOR
+  m_res.Finite() = p_ampl->get_finite()*0.5/VIRTUAL_PREFACTOR;
+#else
   m_res.Finite() = p_ampl->get_finite();
+#endif
   m_res.IR()     = p_ampl->get_single_pole();
   m_res.IR2()    = p_ampl->get_double_pole();
 }
