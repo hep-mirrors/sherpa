@@ -314,7 +314,7 @@ void Sherpa::DrawLogo(const int mode)
 	    <<"................................... ## | | /    / + +      + + /      +      "<<std::endl
 	    <<"....................... /TT\\ .....  ##/ ///  / + + + + + + +/       +        "<<std::endl
 	    <<"......................./TTT/T\\ ... /TT\\/\\\\\\ / + + + + + + +/   \\         +   "<<std::endl
-	    <<"version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<" ......../TTT/TTTT\\...|TT/T\\\\\\/   +    ++  + /                  "<<std::endl
+	    <<"Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<" ......../TTT/TTTT\\...|TT/T\\\\\\/   +    ++  + /       (Annapurna)"<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
 	    <<std::endl
 	    <<"     SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION
