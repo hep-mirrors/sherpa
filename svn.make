@@ -23,16 +23,14 @@ SVN_Info.C: SVN_Info.C.in
 	  echo '#include "ATOOLS/Org/SVN_Info.H"' > $@.tmp; \
 	  echo 'static ATOOLS::SVN_Info initializer' >> $@.tmp; \
 	  echo '("$(SVNTAG)","'$$url'","'$$rev'","X");' >> $@.tmp; \
-	fi
-
-	@if test -z $(NOMD5SUM); then \
+	fi; \
+	if test -z $(NOMD5SUM); then \
 	  mds=$$(cat $(addprefix $(srcdir)/, \
 	    $(filter-out $@ $(CONFIG_HEADER) $(MD5_EXCLUDE), \
 	    $(SOURCES) $(HEADERS))) | $(MD5COMMAND)); \
 	  $(SEDCOMMAND) -e's/".?"\);/"'$$mds'");/g' $@.tmp; \
-	fi;
-
-	@if ! diff $@.tmp $@ > /dev/null 2>&1; then \
+	fi; \
+	if ! diff $@.tmp $@ > /dev/null 2>&1; then \
 	  mv $@.tmp $@; \
 	else \
 	  rm $@.tmp; \
