@@ -128,7 +128,9 @@ bool Phase_Space_Handler::InitIncoming()
 
 double Phase_Space_Handler::Integrate() 
 {
-  if (p_process->Points()>0 && p_process->TotalError()<dabs(m_error*p_process->TotalXS())) 
+  if (p_process->Points()>0 &&
+      (p_process->TotalError()<dabs(m_error*p_process->TotalXS()) ||
+       p_process->TotalError()<m_abserror)) 
     return p_process->TotalXS()*rpa->Picobarn();
   p_integrator = new Phase_Space_Integrator();
   if (!InitIncoming()) return 0;
