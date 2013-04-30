@@ -1006,8 +1006,7 @@ void PS_Channel::AddPoint(double value)
 #ifdef DEBUG__BG
 	  msg_Debugging()<<"    V_{"<<PSId(v->JA()->CId())
 			 <<","<<PSId(v->JB()->CId())<<"}: <w> = "
-			 <<v->Mean()<<" +- "<<v->Sigma()
-			 <<", max = "<<v->Max()<<"\n";
+			 <<v->Mean()<<" +- "<<v->Sigma()<<"\n";
 #endif
 	}
       }
