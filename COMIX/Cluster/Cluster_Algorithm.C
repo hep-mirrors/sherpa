@@ -542,6 +542,7 @@ bool Cluster_Algorithm::Cluster
     return true;
   }
   if ((m_wmode&512) && p_ampl->OrderQCD()==0) {
+    p_ampl->SetProc(p_xs);
     p_ampl->SetKT2((p_xs->IsMapped()?p_xs->MapProc():p_xs)
 		   ->ScaleSetter()->CoreScale(p_ampl).m_mu2);
     if (p_ampl->Prev()) kt2ord=UpdateKT2(kt2ord,p_ampl->Prev(),1);
