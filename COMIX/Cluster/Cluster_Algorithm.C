@@ -144,10 +144,9 @@ void Cluster_Algorithm::CalculateMeasures
 	  ColorID colk(p_ampl->Leg(k)->Col());
 	  int cc[2]={0,0};
 	  for (int l(0);l<=1;++l) {
-	    if (cc[0]>0 && in[j]->JA()->Flav()!=in[j]->JB()->Flav()) break;
 	    cc[l]=l?Connected(in[j]->JB()->Out(),idk):
 	      Connected(in[j]->JA()->Out(),idk);
-	    if (l==1 && cc[l]<0) cc[l]=Connected(in[j]->JC()->Out(),idk);
+	    if (cc[l]<=0) cc[l]=Connected(in[j]->JC()->Out(),idk);
 	    if (p_ampl->Legs().size()==4 || cc[l]>0) {
 	      if (in[j]->OrderQCD()) {
 		ColorID ccj(l?colj:coli);
@@ -194,15 +193,14 @@ void Cluster_Algorithm::CalculateMeasures
 	    ColorID colk(p_ampl->Leg(k)->Col());
 	    int cc[2]={0,0};
 	    for (int l(0);l<=1;++l) {
-	      if (cc[0]>0 && ccurs[i]->Flav()!=fcur->Flav().Bar()) break;
 	      cc[l]=l?Connected(ccurs[i]->Out(),idk):
 		Connected(fcur->In(),idk);
-	      if (l==1 && cc[l]<0) cc[l]=Connected(mocur->In(),idk);
+	      if (cc[l]<=0) cc[l]=Connected(mocur->In(),idk);
 	      if (p_ampl->Legs().size()==4 || cc[l]>0) {
 		if (in[j]->OrderQCD()) {
 		  ColorID ccj(l?colj:coli);
 		  if (!((ccj.m_i && ccj.m_i==colk.m_j) ||
-		 	(ccj.m_j && ccj.m_j==colk.m_i))) continue;
+			(ccj.m_j && ccj.m_j==colk.m_i))) continue;
 		}
 		CParam ckt2(GetMeasure(m_id[l?idi:idj],m_id[l?idj:idi],
 				       idk,mofl,kt2,cid,0));
