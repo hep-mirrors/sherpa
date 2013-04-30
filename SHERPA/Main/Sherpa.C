@@ -314,11 +314,10 @@ void Sherpa::DrawLogo(const int mode)
 	    <<"................................... ## | | /    / + +      + + /      +      "<<std::endl
 	    <<"....................... /TT\\ .....  ##/ ///  / + + + + + + +/       +        "<<std::endl
 	    <<"......................./TTT/T\\ ... /TT\\/\\\\\\ / + + + + + + +/   \\         +   "<<std::endl
-	    <<"Version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<" ......../TTT/TTTT\\...|TT/T\\\\\\/   +    ++  + /       (Annapurna)"<<std::endl
+	    <<"....................../TTT/TTTT\\...|TT/T\\\\\\/   +    ++  + /              "<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
 	    <<std::endl
-	    <<"     SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION
-	    <<"                                              "<<std::endl
+	    <<"     SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<" (Annapurna) "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"     Authors:        Stefan Hoeche, Hendrik Hoeth, Frank Krauss,             "<<std::endl
 	    <<"                     Marek Schoenherr, Steffen Schumann, Frank Siegert,      "<<std::endl
