@@ -49,17 +49,16 @@ int Cluster_Algorithm::Connected
 (const Vertex_Vector &dvs,const size_t &idk) const
 {
   for (size_t i(0);i<dvs.size();++i) {
-    if (dvs[i]->JC()->Zero()) continue;
     SizeT_Map::const_iterator ait(m_id.find(dvs[i]->JA()->CId()));
     SizeT_Map::const_iterator bit(m_id.find(dvs[i]->JB()->CId()));
     SizeT_Map::const_iterator cit(m_id.find(dvs[i]->JC()->CId()));
-    if ((ait==m_id.end() || ait->second==idk) ||
-	(bit==m_id.end() || bit->second==idk) ||
-	(cit==m_id.end() || cit->second==idk)) {
-      return 1;
+    if ((ait!=m_id.end() && ait->second==idk) ||
+	(bit!=m_id.end() && bit->second==idk) ||
+	(cit!=m_id.end() && cit->second==idk)) {
+      return dvs[i]->JC()->Zero()?0:1;
     }
   }
-  return 0;
+  return -1;
 }
 
 CParam Cluster_Algorithm::GetMeasure
@@ -145,11 +144,11 @@ void Cluster_Algorithm::CalculateMeasures
 	  ColorID colk(p_ampl->Leg(k)->Col());
 	  int cc[2]={0,0};
 	  for (int l(0);l<=1;++l) {
-	    if (cc[0] && in[j]->JA()->Flav()!=in[j]->JB()->Flav()) break;
-	    cc[l]=l?(Connected(in[j]->JB()->Out(),idk)||
-		     Connected(in[j]->JC()->Out(),idk)):
+	    if (cc[0]>0 && in[j]->JA()->Flav()!=in[j]->JB()->Flav()) break;
+	    cc[l]=l?Connected(in[j]->JB()->Out(),idk):
 	      Connected(in[j]->JA()->Out(),idk);
-	    if (p_ampl->Legs().size()==4 || cc[l]) {
+	    if (l==1 && cc[l]<0) cc[l]=Connected(in[j]->JC()->Out(),idk);
+	    if (p_ampl->Legs().size()==4 || cc[l]>0) {
 	      CParam ckt2(GetMeasure(m_id[l?idi:idj],m_id[l?idj:idi],idk,
 				     in[j]->JC()->Flav(),kt2,cid,
 				     in[j]->JC()->Cut()));
@@ -190,11 +189,11 @@ void Cluster_Algorithm::CalculateMeasures
 	    ColorID colk(p_ampl->Leg(k)->Col());
 	    int cc[2]={0,0};
 	    for (int l(0);l<=1;++l) {
-	      if (cc[0] && ccurs[i]->Flav()!=fcur->Flav().Bar()) break;
-	      cc[l]=l?(Connected(ccurs[i]->Out(),idk) ||
-		       Connected(mocur->In(),idk)):
+	      if (cc[0]>0 && ccurs[i]->Flav()!=fcur->Flav().Bar()) break;
+	      cc[l]=l?Connected(ccurs[i]->Out(),idk):
 		Connected(fcur->In(),idk);
-	      if (p_ampl->Legs().size()==4 || cc[l]) {
+	      if (l==1 && cc[l]<0) cc[l]=Connected(mocur->In(),idk);
+	      if (p_ampl->Legs().size()==4 || cc[l]>0) {
 		CParam ckt2(GetMeasure(m_id[l?idi:idj],m_id[l?idj:idi],
 				       idk,mofl,kt2,cid,0));
 		cinfo.insert(ClusterInfo_Pair
