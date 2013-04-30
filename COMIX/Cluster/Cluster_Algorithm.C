@@ -149,6 +149,11 @@ void Cluster_Algorithm::CalculateMeasures
 	      Connected(in[j]->JA()->Out(),idk);
 	    if (l==1 && cc[l]<0) cc[l]=Connected(in[j]->JC()->Out(),idk);
 	    if (p_ampl->Legs().size()==4 || cc[l]>0) {
+	      if (in[j]->OrderQCD()) {
+		ColorID ccj(l?colj:coli);
+		if (!((ccj.m_i && ccj.m_i==colk.m_j) ||
+		      (ccj.m_j && ccj.m_j==colk.m_i))) continue;
+	      }
 	      CParam ckt2(GetMeasure(m_id[l?idi:idj],m_id[l?idj:idi],idk,
 				     in[j]->JC()->Flav(),kt2,cid,
 				     in[j]->JC()->Cut()));
@@ -194,6 +199,11 @@ void Cluster_Algorithm::CalculateMeasures
 		Connected(fcur->In(),idk);
 	      if (l==1 && cc[l]<0) cc[l]=Connected(mocur->In(),idk);
 	      if (p_ampl->Legs().size()==4 || cc[l]>0) {
+		if (in[j]->OrderQCD()) {
+		  ColorID ccj(l?colj:coli);
+		  if (!((ccj.m_i && ccj.m_i==colk.m_j) ||
+		 	(ccj.m_j && ccj.m_j==colk.m_i))) continue;
+		}
 		CParam ckt2(GetMeasure(m_id[l?idi:idj],m_id[l?idj:idi],
 				       idk,mofl,kt2,cid,0));
 		cinfo.insert(ClusterInfo_Pair
