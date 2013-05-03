@@ -307,6 +307,7 @@ void Single_Process::BeamISRWeight
     size_t nscales(0);
     for (size_t i(0);i<subs->size();++i) {
       NLO_subevt *sub((*subs)[i]);
+      if (sub->m_me==0.0) sub->m_result=0.0;
       if ((!IsEqual(sub->m_mu2[stp::fac],muf2) ||
 	   m_pinfo.m_nlomode!=1) && sub->m_me!=0.0) {
 	ClusterAmplitude_Vector ampls(sub->p_ampl?1:0,sub->p_ampl);
@@ -319,6 +320,7 @@ void Single_Process::BeamISRWeight
     if (nscales<subs->size() && m_pinfo.m_nlomode==1) {
       double lumi(BeamISRWeight(muf2,mode,ClusterAmplitude_Vector()).m_w);
       for (size_t i(0);i<subs->size();++i) {
+	if ((*subs)[i]->m_me==0.0) (*subs)[i]->m_result=0.0;
 	if (IsEqual((*subs)[i]->m_mu2[stp::fac],muf2) &&
 	    (*subs)[i]->m_me!=0.0) {
           (*subs)[i]->m_result=(*subs)[i]->m_me*lumi;

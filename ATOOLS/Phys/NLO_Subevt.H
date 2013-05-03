@@ -92,7 +92,7 @@ namespace ATOOLS {
 
     Cluster_Amplitude *p_ampl;
 
-    bool m_delete;
+    bool m_delete, m_trig;
 
   public:
 
@@ -102,7 +102,7 @@ namespace ATOOLS {
       Dip_ID(0,0,i,j,k), p_fl(fl), p_mom(mom), p_id(id), p_dec(NULL),
       p_real(NULL), p_proc(NULL), m_n(n), m_idx(0),
       m_result(0.0), m_me(0.0), m_mewgt(0.0), m_kt2(0.0),
-      m_mu2(stp::size,0.0), p_ampl(NULL), m_delete(false) {}
+      m_mu2(stp::size,0.0), p_ampl(NULL), m_delete(false), m_trig(false) {}
 
     ~NLO_subevt();
 
@@ -128,7 +128,7 @@ namespace ATOOLS {
     { return static_cast<Type*>(p_proc); }
 
     inline void Reset()
-    { m_result=m_me=m_mewgt=0.0; }
+    { m_result=m_me=m_mewgt=0.0; m_trig=false; }
 
   };// end of class NLO_subevt
 

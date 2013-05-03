@@ -503,18 +503,19 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
 
   p_scale->SetCaller((_mode&2)?p_LO_process->Partner():p_LO_process);
 
-  bool trg(!p_LO_process->Selector()->On());
-  if (!trg) trg=p_dipole->KinCheck()?p_LO_process->Trigger(p_LO_labmom):0;
+  if (p_LO_process->Selector()->On())
+    m_subevt.m_trig=p_dipole->KinCheck()?p_LO_process->Trigger(p_LO_labmom):0;
+  else m_subevt.m_trig=true;
   p_LO_process->Integrator()->SetMomenta(p_LO_labmom);
 
-  double M2 =trg ? p_LO_process->operator()
+  double M2 =m_subevt.m_trig ? p_LO_process->operator()
     (p_LO_labmom,p_LO_mom,p_dipole->GetFactors(),
      p_dipole->GetDiPolarizations(),mode) : 0.0;
 
   if (m_subevt.p_ampl) m_subevt.p_ampl->Delete();
   m_subevt.p_ampl=NULL;
 
-  if (trg && p_scale->FixedScales().empty() && (_mode&2)) {
+  if (m_subevt.m_trig && p_scale->FixedScales().empty() && (_mode&2)) {
     ClusterAmplitude_Vector &ampls
       (ScaleSetter(1)->Amplitudes());
     if (ampls.size()) {
@@ -572,7 +573,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   }
 
   p_dipole->SetMCMode(m_mcmode);
-  if (trg && m_mcmode) {
+  if (m_subevt.m_trig && m_mcmode) {
     p_dipole->SetKt2Max(p_scale->Scale(stp::res));
     if (p_scale->Scales().size()>(stp::size+stp::res)) {
       p_dipole->SetKt2Max(p_scale->Scale(stp::id(stp::size+stp::res)));
@@ -580,13 +581,13 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   }
 
   double df = p_dipole->KinCheck()?p_dipole->GetF():nan;
-  m_subevt.m_me = m_subevt.m_mewgt = m_subevt.m_result = 0.;
-
-  if (!(df>0.)&& !(df<0.)) return m_lastxs=(m_mcmode&1)?0.0:df;
+  if (!(df>0.)&& !(df<0.)) {
+    m_subevt.m_me = m_subevt.m_mewgt = 0.;
+    m_subevt.m_trig = false;
+    return m_lastxs=(m_mcmode&1)?0.0:df;
+  }
 
   if (m_mcmode && p_dipole->MCSign()<0) df=-df;
-
-  if (!trg) return m_lastxs=m_subevt.m_me=m_subevt.m_mewgt=0.;
 
   m_lastxs = M2 * df * p_dipole->SPFac() * KFactor() * Norm();
   m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
@@ -594,6 +595,8 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   m_subevt.m_mu2[stp::ren] = p_scale->Scale(stp::ren);
   m_subevt.m_mu2[stp::res] = p_scale->Scale(stp::res);
   m_subevt.m_kt2=p_dipole->KT2();
+  if (!m_subevt.m_trig) m_lastxs=0.0;
+  DEBUG_VAR(m_lastxs);
   return m_lastxs;
 }
 

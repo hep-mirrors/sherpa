@@ -338,6 +338,7 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const i
     }
     m_subevtlist.Mult(m_sfactor);
   }
+  DEBUG_VAR(m_lastdxs);
   return m_lastxs=m_lastdxs;
 }
 
@@ -373,7 +374,8 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   }
 
   m_subevtlist.push_back(&m_realevt);
-  m_realevt.m_me = m_realevt.m_mewgt = m_realevt.m_result = 0.0;
+  m_realevt.m_me = m_realevt.m_mewgt = 0.0;
+  m_realevt.m_trig = false;
 
   bool trg(false);
 
@@ -389,20 +391,20 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
     m_realevt.p_ampl = p_tree_process->ScaleSetter(1)->Amplitudes().front()->CopyAll();
   trg=p_tree_process->Selector()->JetTrigger(_mom,&m_subevtlist);
   trg|=!p_tree_process->Selector()->On();
+  m_realevt.m_trig=trg;
+  if (m_smear_threshold!=0.0) SmearCounterEvents(m_subevtlist);
   if (res && trg) {
-    m_realevt.m_me = m_realevt.m_mewgt
-      = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
+    double real = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
+    m_realevt.m_me += real;
+    m_realevt.m_mewgt += real;
     if (IsBad(m_realevt.m_me)) res=false;
   }
-
-  if (!res) {
-    for (size_t i(0);i<m_subevtlist.size();++i)
-      m_subevtlist[i]->m_result=m_subevtlist[i]->m_me=
-          m_subevtlist[i]->m_mewgt=0.0;
+  for (size_t i(0);i<m_subevtlist.size();++i) {
+    if (m_subevtlist[i]->m_trig==false || !res)
+      m_subevtlist[i]->m_me=m_subevtlist[i]->m_mewgt=0.0;
   }
-  m_lastdxs = m_realevt.m_me;
 
-  if (m_smear_threshold>0.0) SmearCounterEvents(m_subevtlist);
+  m_lastdxs = m_realevt.m_me;
 
   if (msg_LevelIsTracking()) {
     msg->SetPrecision(16);
@@ -609,16 +611,14 @@ void Single_Real_Correction::SmearCounterEvents(NLO_subevtlist& subevtlist)
   DEBUG_VAR(m_realevt.m_me);
   for (size_t i=0;i<m_subtermlist.size();i++) {
     if (!m_subtermlist[i]->IsValid()) continue;
-    double alpha=m_subtermlist[i]->Dipole()->LastAlpha();
-    if (alpha<m_smear_threshold) {
-      double x=pow(alpha/m_smear_threshold, m_smear_power);
+    double alpha = m_smear_threshold>0.0 ? m_subtermlist[i]->Dipole()->KT2() :
+                                           m_subtermlist[i]->Dipole()->LastAlpha();
+    if (alpha<dabs(m_smear_threshold)) {
+      double x=pow(alpha/dabs(m_smear_threshold), m_smear_power);
 
       DEBUG_VAR(alpha);
       DEBUG_VAR(x);
       DEBUG_INFO("me = "<<m_subtermlist[i]->GetSubevt()->m_me<<" --> "<<m_subtermlist[i]->GetSubevt()->m_me*x);
-
-      m_realevt.m_result += (1.0-x)*m_subtermlist[i]->GetSubevt()->m_result;
-      m_subtermlist[i]->GetSubevt()->m_result *= x;
 
       m_realevt.m_me += (1.0-x)*m_subtermlist[i]->GetSubevt()->m_me;
       m_subtermlist[i]->GetSubevt()->m_me *= x;

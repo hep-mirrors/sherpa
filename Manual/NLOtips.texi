@@ -4,6 +4,7 @@
 @menu
 * Choosing DIPOLE_ALPHA::
 * Integrating complicated Loop-ME::
+* Avoiding misbinning effects::
 * Structure of HepMC Output::
 * Structure of ROOT NTuple Output::
 @end menu
@@ -90,6 +91,31 @@ This can be done by one of the following methods:
 
 Note: this will not work for the @code{RS} piece!
 
+@node Avoiding misbinning effects
+@subsection Avoiding misbinning effects
+
+Close to the infrared limit, the real emission matrix element and
+corresponding subtraction events exhibit large cancellations. If the
+(minor) kinematics difference of the events happens to cross a parton-level
+cut or analysis histogram bin boundary, then large spurious spikes can appear.
+
+These can be smoothed to some extend by shifting the weight from the subtraction
+kinematic to the real-emission kinematic if the dipole measure is below a given
+threshold. The fraction of the shifted weight is inversely proportional to the
+dipole measure, such that the final real-emission and subtraction weights are
+calculated as:
+@verbatim
+  w_r -> w_r + sum_i [1-x(alpha_i)] w_{s,i}
+  foreach i: w_{s,i} -> x(alpha_i) w_{s,i}
+@end verbatim
+with the function x(alpha)=(alpha/alpha_0)^n for alpha<alpha_0 and 0 otherwise.
+
+The threshold can be set by the parameter
+@option{NLO_SMEAR_THRESHOLD=<alpha_0>} and the functional form of alpha and thus
+interpretation of the threshold can be chosen by its sign (positive: relative
+dipole kT in GeV, negative: dipole alpha).
+In addition, the exponent n can be set by @option{NLO_SMEAR_POWER=<n>}.
+
 @node Structure of HepMC Output
 @subsection Structure of HepMC Output
 
@@ -100,7 +126,7 @@ are labeled with the same event number such that their possible cancelations
 can be taken into account properly.
 
 To use this output option Sherpa has to be compiled with HepMC support. cf.
-@ref{Installation}. The @code{HEPMC2_SHORT_OUTPUT=<filename>} has to used, cf.
+@ref{Installation}. The @code{EVENT_OUTPUT=HepMC_Short[<filename>]} has to used, cf.
 @ref{Event output formats}.
 
 Using this HepMC output format the internal Rivet interface 
