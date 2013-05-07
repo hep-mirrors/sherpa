@@ -826,9 +826,11 @@ bool Isolation_Cut::Trigger(const Vec4D_Vector & p)
   for (size_t k=0;k<m_if.size();k++) {
     double egamma=p[m_if[k]].PPerp();
     vector<edr> edrlist;
-    for (int i=m_nin;i<m_nin+m_nout;i++) if (m_fl[i].Strong()) {
-      double dr=DR(p[m_if[k]],p[i]);
-      if (dr<m_d0) edrlist.push_back(edr(p[i].PPerp(),dr));
+    for (int i=m_nin;i<m_nin+m_nout;i++) {
+      if (Flavour(kf_jet).Includes(m_fl[i])) {
+        double dr=DR(p[m_if[k]],p[i]);
+        if (dr<m_d0) edrlist.push_back(edr(p[i].PPerp(),dr));
+      }
     }
     if (edrlist.size()>0) {
       stable_sort(edrlist.begin(),edrlist.end(),Order_edr());
@@ -854,10 +856,11 @@ bool Isolation_Cut::JetTrigger(const Vec4D_Vector &p,ATOOLS::NLO_subevtlist *con
   for (size_t k=0;k<vf.size();k++) {
     double egamma=p[vf[k]].PPerp();
     vector<edr> edrlist;
-    for (size_t i=m_nin;i<subs->back()->m_n;i++)
-      if (subs->back()->p_fl[i].Strong()) {
-      double dr=DR(p[vf[k]],p[i]);
-      if (dr<m_d0) edrlist.push_back(edr(p[i].PPerp(),dr));
+    for (size_t i=m_nin;i<subs->back()->m_n;i++) {
+      if (Flavour(kf_jet).Includes(subs->back()->p_fl[i])) {
+        double dr=DR(p[vf[k]],p[i]);
+        if (dr<m_d0) edrlist.push_back(edr(p[i].PPerp(),dr));
+      }
     }
     if (edrlist.size()>0) {
       stable_sort(edrlist.begin(),edrlist.end(),Order_edr());
