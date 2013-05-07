@@ -75,7 +75,7 @@ public:
       jets=fastjet::sorted_by_pt(cs.exclusive_jets((int)m_njets));
     }
     else {
-      jets=fastjet::sorted_by_pt(cs.inclusive_jets());
+      jets=fastjet::sorted_by_pt(cs.inclusive_jets(m_ptmin));
     }
     std::vector<double> *ktdrs(new std::vector<double>());
     for (size_t i(input.size());i>0;--i)
@@ -162,6 +162,7 @@ operator()(const Argument_Matrix &parameters) const
     return new Fastjet_Interface(inlist,outlist,jdef,plug,njets,ptmin,btag);
   }
   fastjet::JetDefinition jdef(algo,R,recom,strategy);
+  PRINT_VAR(njets<<" "<<ptmin<<" "<<btag);
   return new Fastjet_Interface(inlist,outlist,jdef,NULL,njets,ptmin,btag);
 }									
 
