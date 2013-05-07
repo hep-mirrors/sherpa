@@ -162,7 +162,6 @@ operator()(const Argument_Matrix &parameters) const
     return new Fastjet_Interface(inlist,outlist,jdef,plug,njets,ptmin,btag);
   }
   fastjet::JetDefinition jdef(algo,R,recom,strategy);
-  PRINT_VAR(njets<<" "<<ptmin<<" "<<btag);
   return new Fastjet_Interface(inlist,outlist,jdef,NULL,njets,ptmin,btag);
 }									
 
