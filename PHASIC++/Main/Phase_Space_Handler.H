@@ -106,6 +106,8 @@ namespace PHASIC {
 
     psm::code m_cmode;
 
+    bool m_printpspoint;
+
 #ifdef USING__Threading
     pthread_t m_met, m_pst;
     size_t m_sig, m_uset;

@@ -40,7 +40,8 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   p_beamhandler(proc->Beam()), p_isrhandler(proc->ISR()), p_fsrchannels(NULL),
   p_isrchannels(NULL), p_beamchannels(NULL), p_massboost(NULL),
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_dmode(1), m_initialized(0), m_sintegrator(0),
-  m_maxtrials(1000000), m_E(ATOOLS::rpa->gen.Ecms()), m_s(m_E*m_E)
+  m_maxtrials(1000000), m_E(ATOOLS::rpa->gen.Ecms()), m_s(m_E*m_E),
+  m_printpspoint(false)
 {
   Data_Reader dr(" ",";","!","=");
   dr.AddComment("#");
@@ -52,6 +53,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   m_maxtrials = dr.GetValue<int>("MAX_TRIALS",1000000);
   m_fin_opt  = dr.GetValue<std::string>("FINISH_OPTIMIZATION","On")=="On"?1:0;
   m_enhancexs = dr.GetValue<int>("ENHANCE_XS",0);
+  m_printpspoint = dr.GetValue<int>("PRINT_PS_POINTS",0); 
   if (error>0.) {
     m_error   = error;
   }
@@ -402,9 +404,21 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     CalculateME();
     if (m_result==0.) { return 0.;}
 #endif
-    msg_Debugging()<<"csum: me = "<<m_result
-		   <<", ps = "<<m_psweight<<", p[2] = "<<p_lab[2]
-		   <<" "<<p_active->Process()->Name()<<"\n";
+    if (m_printpspoint || msg_LevelIsDebugging()) {
+      size_t precision(msg->Out().precision());
+      msg->SetPrecision(15);
+      msg_Out()<<p_active->Process()->Name();
+      msg_Out()<<"  ME = "<<m_result
+               <<" ,  PS = "<<m_psweight<<"  ->  "
+               <<m_result*m_psweight<<std::endl;
+      if (p_active->Process()->GetSubevtList()) {
+        NLO_subevtlist * subs(p_active->Process()->GetSubevtList());
+        for (size_t i(0);i<subs->size();++i) msg_Out()<<(*(*subs)[i]);
+      }
+      for (size_t i(0);i<p_lab.size();++i) msg_Out()<<"  "<<p_lab[i]<<std::endl;
+      msg_Out()<<"==========================================================\n";
+      msg->SetPrecision(precision);
+    }
     m_result*=m_psweight;
   }
   NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
