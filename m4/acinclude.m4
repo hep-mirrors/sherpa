@@ -693,6 +693,8 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       if test -x "$CONDITIONAL_LHAPDFDIR/bin/lhapdf-config"; then
         CONDITIONAL_LHAPDFLIBS="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --ldflags)";
         CONDITIONAL_LHAPDFINCS="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --cppflags)";
+        lhapdfversion="$($CONDITIONAL_LHAPDFDIR/bin/lhapdf-config --version)";
+        lhapdfversion=${lhapdfversion:0:1}
         AC_MSG_RESULT([${CONDITIONAL_LHAPDFDIR}]); lhapdf=true;
       else
         AC_MSG_ERROR(Unable to use LHAPDF from specified path.);
@@ -708,6 +710,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_LHAPDFLIBS)
   AC_SUBST(CONDITIONAL_LHAPDFINCS)
   AM_CONDITIONAL(LHAPDF_SUPPORT, test "$lhapdf" = "true")
+  AM_CONDITIONAL(LHAPDF_NATIVE_CPP, test [ "$lhapdfversion" -ge "6" ])
 
   AC_ARG_ENABLE(
     hztool,
