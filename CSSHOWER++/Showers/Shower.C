@@ -207,7 +207,9 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   newpC->SetPrev(split->GetPrev());
   newpB->SetFixSpec(split->FixSpec());
   newpB->SetOldMomentum(split->OldMomentum());
-  int rd(ReconstructDaughters(split->GetSing(),mode,newpB,newpC));
+  int rd(1);
+  if ((mode&4) && split->Mass2()!=newpB->Mass2()) rd=1;
+  else rd=ReconstructDaughters(split->GetSing(),mode,newpB,newpC);
   split->GetSing()->RemoveParton(newpC);
   if (rd<=0 || mode!=0) {
     if (mode==0) split->GetSing()->RearrangeColours(split,newpB,newpC);
