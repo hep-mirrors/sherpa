@@ -33,6 +33,10 @@ Phase_Space_Integrator::Phase_Space_Integrator()
   else msg_Info()<<METHOD<<"(): Set n_{it,min} = "<<itmin<<".\n";
   if (!read.ReadFromFile(itmax,"PSI_ITMAX")) itmax=50000;
   else msg_Info()<<METHOD<<"(): Set n_{it,max} = "<<itmax<<".\n";
+  if (!read.ReadFromFile(nopt,"PSI_NOPT")) nopt=25;
+  else msg_Info()<<METHOD<<"(): Set n_{opt} = "<<nopt<<".\n";
+  if (!read.ReadFromFile(ndecopt,"PSI_NDECOPT")) ndecopt=10;
+  else msg_Info()<<METHOD<<"(): Set n_{opt,dec} = "<<ndecopt<<".\n";
   addtime=0.0;
 }
 
@@ -130,7 +134,6 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
   if (iter1>itmax) iter1=Max(iter0,itmax);
   int hlp = (iter1-1)/iter0+1;
   iter1   = hlp*iter0;
-  nopt      = 25;
 
   maxopt    = (5/hlp+21)*iter1;
   ncontrib = psh->FSRIntegrator()->ValidN();
@@ -337,9 +340,8 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* _psh,
   msg_Info()<<"Starting the calculation for a decay. Lean back and enjoy ... ."<<endl; 
   
   optiter = iter = 20000;
-  nopt      = 10; 
 
-  maxopt    = iter*nopt;
+  maxopt    = iter*ndecopt;
 
   long unsigned int n;
   double value;
