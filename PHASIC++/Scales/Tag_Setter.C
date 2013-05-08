@@ -63,7 +63,11 @@ void Tag_Setter::AssignId(Term *term)
                                           term->Tag().find("]")-7);
     while(true) {
       std::string par(params.substr(0,params.find(",")));
-      if (par.find("=")!=std::string::npos)
+      if (par.find(":")!=std::string::npos)
+        p_setter->SetHTYweightedParameters
+                 (par.substr(0,par.find(":")),
+                  par.substr(par.find(":")+1,std::string::npos));
+      else if (par.find("=")!=std::string::npos)
         p_setter->SetHTYweightedParameters
                  (par.substr(0,par.find("=")),
                   par.substr(par.find("=")+1,std::string::npos));
