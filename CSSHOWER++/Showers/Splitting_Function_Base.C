@@ -77,6 +77,7 @@ void Splitting_Function_Base::SetEFac(Shower *const shower)
     +ToString(p_lf->FlB())+"}{"+ToString(p_lf->FlC())+"}";
   m_efac=shower->EFac(id);
   if (m_efac!=1.0) msg_Info()<<"Enhance "<<id<<" with "<<m_efac<<"\n";
+  if (m_efac==0.0) m_on=0;
 }
 
 Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
