@@ -500,7 +500,7 @@ void Final_Selector::Evaluate(const Blob_List &bl,double value, double ncount) {
       std::vector<double> * diffrates=new std::vector<double>();
       p_jetalg->SetBlobList(&bl);
       p_jetalg->ConstructJets(pl_in,pl_out,diffrates,it->second.r_min);
-      JetSelect(pl_out,it->first);
+      // JetSelect(pl_out,it->first);
       // add leptons
       for (Particle_List::iterator pit=pl_in->begin();pit!=pl_in->end();++pit) {
 	if (!(*p_qualifier)(*pit))  pl_out->push_back(new Particle(**pit));
