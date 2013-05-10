@@ -662,7 +662,7 @@ void Jet_Differential_Rates::Evaluate(const Blob_List & blobs,double weight, dou
 
   size_t j=jd->size();
   // plot only selected events 
-  if (pl->size()==0) j=0;
+  // if (pl->size()==0) j=0;
 
   for (size_t i=0; i<m_histos.size();++i) {
     if (j>0) {
@@ -704,7 +704,7 @@ void Jet_Differential_Rates::EvaluateNLOcontrib(double weight, double ncount)
 
   size_t j=jd->size();
   // plot only selected events 
-  if (pl->size()==0) j=0;
+  // if (pl->size()==0) j=0;
 
   for (size_t i=0; i<m_histos.size();++i) {
     if (j>0) {
