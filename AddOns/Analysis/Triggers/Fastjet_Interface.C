@@ -8,6 +8,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "fastjet/PseudoJet.hh"
 #include "fastjet/ClusterSequence.hh"
+#include "fastjet/JetDefinition.hh"
 #include "fastjet/SISConePlugin.hh"
 
 using namespace ANALYSIS;
@@ -21,7 +22,7 @@ private:
   fastjet::JetDefinition::Plugin *p_plug;
 
   size_t m_njets, m_btag;
-  double m_ptmin;
+  double m_ptmin, m_etamax;
 
 public:
 
@@ -31,9 +32,9 @@ public:
 		    const fastjet::JetDefinition &jdef,
  		    fastjet::JetDefinition::Plugin *const plug,
 		    const size_t &njets,const double &ptmin,
-		    const size_t btag):
+		    const double &etamax,const size_t btag):
     Trigger_Base(inlist,outlist), m_jdef(jdef), p_plug(plug),
-    m_njets(njets), m_ptmin(ptmin), m_btag(btag) {}
+    m_njets(njets), m_btag(btag), m_ptmin(ptmin), m_etamax(etamax) {}
 
   ~Fastjet_Interface()
   {
@@ -44,7 +45,7 @@ public:
   Analysis_Object *GetCopy() const 
   {
     return new Fastjet_Interface
-      (m_inlist,m_outlist,m_jdef,NULL,m_njets,m_ptmin,m_btag);
+      (m_inlist,m_outlist,m_jdef,NULL,m_njets,m_ptmin,m_etamax,m_btag);
   }
 
   int BTag(ATOOLS::Particle *const p)
@@ -75,15 +76,18 @@ public:
       jets=fastjet::sorted_by_pt(cs.exclusive_jets((int)m_njets));
     }
     else {
-      jets=fastjet::sorted_by_pt(cs.inclusive_jets(m_ptmin));
+      jets=fastjet::sorted_by_pt(cs.inclusive_jets());
     }
     std::vector<double> *ktdrs(new std::vector<double>());
-    for (size_t i(input.size());i>0;--i)
-      ktdrs->push_back(cs.exclusive_dmerge(i-1));
+    for (size_t i(input.size());i>0;--i) {
+      if      (m_jdef.jet_algorithm()==fastjet::kt_algorithm)
+        ktdrs->push_back(cs.exclusive_dmerge(i-1));
+      else if (m_jdef.jet_algorithm()==fastjet::antikt_algorithm)
+        ktdrs->insert(ktdrs->begin(),1./cs.exclusive_dmerge(i-1));
+    }
     std::string key("KtJetrates(1)"+m_outlist);
     p_ana->AddData(key,new Blob_Data<std::vector<double> *>(ktdrs));
-    outlist.resize(jets.size());
-    for (size_t i(0);i<outlist.size();++i) {
+    for (size_t i(0);i<jets.size();++i) {
       kf_code flav(kf_jet);
       if (m_btag) {
 #ifdef USING__FASTJET__3
@@ -99,9 +103,9 @@ public:
 	THROW(fatal_error,"FastJet >= v3 required for b tags");
 #endif
       }
-      outlist[i] = new Particle
-	(1,Flavour(flav),Vec4D
-	 (jets[i][3],jets[i][0],jets[i][1],jets[i][2]));
+      Vec4D jetmom(jets[i][3],jets[i][0],jets[i][1],jets[i][2]);
+      if (jetmom.PPerp()>m_ptmin && abs(jetmom.Eta())<m_etamax)
+        outlist.push_back(new Particle (1,Flavour(flav),jetmom));
     }
     std::sort(outlist.begin(),outlist.end(),Order_PT());
   }
@@ -119,7 +123,7 @@ operator()(const Argument_Matrix &parameters) const
   fastjet::JetAlgorithm algo(fastjet::kt_algorithm);
   fastjet::RecombinationScheme recom(fastjet::E_scheme);
   fastjet::Strategy strategy(fastjet::Best);
-  double R=0.4, f=0.75, p=1.0, ptmin=0.0;
+  double R=0.4, f=0.75, p=1.0, ptmin=0.0, etamax=1000.;
   size_t njets=0, siscone=0, btag=0;
   std::string inlist="FinalState", outlist="FastJets";
   for (size_t i=0;i<parameters.size();++i) {
@@ -154,15 +158,16 @@ operator()(const Argument_Matrix &parameters) const
     }
     else if (parameters[i][0]=="NJets") njets=ATOOLS::ToType<int>(parameters[i][1]);
     else if (parameters[i][0]=="PTMin") ptmin=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="EtaMax") etamax=ATOOLS::ToType<int>(parameters[i][1]);
     else if (parameters[i][0]=="BTag") btag=ATOOLS::ToType<int>(parameters[i][1]);
   }
   if (siscone) {
     fastjet::JetDefinition::Plugin *plug(new fastjet::SISConePlugin(R,f));
     fastjet::JetDefinition jdef(plug);
-    return new Fastjet_Interface(inlist,outlist,jdef,plug,njets,ptmin,btag);
+    return new Fastjet_Interface(inlist,outlist,jdef,plug,njets,ptmin,etamax,btag);
   }
   fastjet::JetDefinition jdef(algo,R,recom,strategy);
-  return new Fastjet_Interface(inlist,outlist,jdef,NULL,njets,ptmin,btag);
+  return new Fastjet_Interface(inlist,outlist,jdef,NULL,njets,ptmin,etamax,btag);
 }									
 
 void ATOOLS::Getter
@@ -174,6 +179,7 @@ PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+7)<<" "<<"OutList   list\n"
      <<std::setw(width+7)<<" "<<"NJets     #jets (default 0 -> inclusive mode)\n"
      <<std::setw(width+7)<<" "<<"PTMin     ptmin (default 0)\n"
+     <<std::setw(width+7)<<" "<<"EtaMax    etamax (default 1000.)\n"
      <<std::setw(width+7)<<" "<<"Algorithm algorithm [kt|antikt|cambridge|siscone] (default kt)\n"
      <<std::setw(width+7)<<" "<<"Scheme    scheme [E|pt|pt2|Et|Et2|BIpt|BIpt2] (default E)\n"
      <<std::setw(width+7)<<" "<<"R         R (default 0.4)\n"
