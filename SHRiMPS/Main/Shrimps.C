@@ -26,6 +26,7 @@ Shrimps::Shrimps(ATOOLS::Data_Reader * dr,
   MBpars.Set(std::string("originalY"),
 	     log(Ecms/ATOOLS::Flavour(kf_p_plus).HadMass()));
 
+  m_pdfs.clear();
   m_NGWstates  = m_test?1:int(MBpars("NGWstates"));	     
   m_runmode    = MBpars.RunMode();
   m_weightmode = MBpars.WeightMode();

@@ -288,21 +288,25 @@ void Beam_Remnant_Handler::Reset(const size_t & mode) {
     }
   }
   else if (mode==0) {
+    //if (p_blob) {
+    //  delete p_blob;
+    //  p_blob = NULL;
+    //}
     if (p_blob && (p_blob->NInP()>0 || p_blob->NOutP()>0)) {
       // if (p_blob) msg_Out()<<(*p_blob)<<"\n";
       bool trigger = false;
       Particle_Vector parts(p_blob->GetOutParticles());
       for (Particle_Vector::iterator part = parts.begin();
-	   part != parts.end(); ++part) {
-	if (!(*part)->DecayBlob()) trigger = true;
+           part != parts.end(); ++part) {
+        if (!(*part)->DecayBlob()) trigger = true;
       }
       if (trigger) {
-	for (Particle_Vector::iterator part = parts.begin();
-	     part != parts.end(); ++part) {
-	  if (!(*part)->DecayBlob()) parts.erase(part);
-	}
-	delete p_blob;
-	p_blob = NULL;
+        for (Particle_Vector::iterator part = parts.begin();
+             part != parts.end(); ++part) {
+          if (!(*part)->DecayBlob()) parts.erase(part);
+        }
+        delete p_blob;
+        p_blob = NULL;
       }
     }
   }
