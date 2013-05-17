@@ -193,46 +193,48 @@ namespace OpenLoops {
                           &set_C_PV_threshold, &set_D_PV_threshold, &set_DD_red_mode);
   }
 
-  bool OpenLoops_Interface::MatchOptions(vector<string> options, int oew, int oqcd, int nloop) {
+  std::string OpenLoops_Interface::MatchOptions(vector<string> options, int oew, int oqcd, int nloop) {
     for (size_t i=2; i<options.size(); ++i) {
       string option=options[i].substr(0, options[i].find("="));
       string value=options[i].substr(options[i].find("=")+1);
 
-      if (option=="EW" && value!=ToString(oew)+",0") return false;
-      if (option=="QCD" && value!=ToString(oqcd)+","+ToString(nloop)) return false;
+      if (option=="EW" && value!=ToString(oew)+",0") return "0";
+      if (option=="QCD" && value!=ToString(oqcd)+","+ToString(nloop)) return "0";
       if (option=="CKMORDER") {
         int ckmorder=ToType<int>(value);
         if (ckmorder<3) {
           if (s_model->ComplexMatrixElement("CKM", 0,2)!=Complex(0.0,0.0) ||
               s_model->ComplexMatrixElement("CKM", 2,0)!=Complex(0.0,0.0)) {
-            return false;
+            return "0";
           }
         }
         if (ckmorder<2) {
           if (s_model->ComplexMatrixElement("CKM", 1,2)!=Complex(0.0,0.0) ||
               s_model->ComplexMatrixElement("CKM", 2,1)!=Complex(0.0,0.0)) {
-            return false;
+            return "0";
           }
         }
         if (ckmorder<1) {
           if (s_model->ComplexMatrixElement("CKM", 0,1)!=Complex(0.0,0.0) ||
               s_model->ComplexMatrixElement("CKM", 1,0)!=Complex(0.0,0.0)) {
-            return false;
+            return "0";
           }
         }
       }
-      if (option=="nf" && ToType<int>(value)!=s_nf) return false;
-      if (option=="MD" && Flavour(kf_d).Mass()>0.0) return false;
-      if (option=="MU" && Flavour(kf_u).Mass()>0.0) return false;
-      if (option=="MS" && Flavour(kf_s).Mass()>0.0) return false;
-      if (option=="MC" && Flavour(kf_c).Mass()>0.0) return false;
-      if (option=="MB" && Flavour(kf_b).Mass()>0.0) return false;
-      if (option=="MT" && Flavour(kf_t).Mass()>0.0) return false;
-      if (option=="ME" && Flavour(kf_e).Mass()>0.0) return false;
-      if (option=="MM" && Flavour(kf_mu).Mass()>0.0) return false;
-      if (option=="MT" && Flavour(kf_tau).Mass()>0.0) return false;
+      if (option=="nf" && ToType<int>(value)!=s_nf) return "0";
+      if (option=="MD" && Flavour(kf_d).Mass()>0.0) return "0";
+      if (option=="MU" && Flavour(kf_u).Mass()>0.0) return "0";
+      if (option=="MS" && Flavour(kf_s).Mass()>0.0) return "0";
+      if (option=="MC" && Flavour(kf_c).Mass()>0.0) return "0";
+      if (option=="MB" && Flavour(kf_b).Mass()>0.0) return "0";
+      if (option=="MT" && Flavour(kf_t).Mass()>0.0) return "0";
+      if (option=="ME" && Flavour(kf_e).Mass()>0.0) return "0";
+      if (option=="MM" && Flavour(kf_mu).Mass()>0.0) return "0";
+      if (option=="MT" && Flavour(kf_tau).Mass()>0.0) return "0";
+
+      if (option=="map") return value;
     }
-    return true;
+    return "1";
   }
 
 
@@ -245,12 +247,13 @@ namespace OpenLoops {
     else return false;
   }
 
-  pair<string, string> OpenLoops_Interface::ScanFiles(const string& process, int oew, int oqcd, int nloop)
+  pair<string, string> OpenLoops_Interface::ScanFiles(string& process, int oew, int oqcd, int nloop)
   {
     struct dirent **entries;
     string procdatapath=s_olprefix+"/proclib";
     int n(scandir(procdatapath.c_str(),&entries,&SelectInfo,alphasort));
     if (n<0) THROW(fatal_error, "OpenLoops process dir "+procdatapath+" not found.");
+
     for (int ifile=0; ifile<n; ++ifile) {
       string file(entries[ifile]->d_name);
       Data_Reader reader(" ",";","#","");
@@ -261,9 +264,13 @@ namespace OpenLoops {
       reader.MatrixFromFile(content);
       for (size_t i=0; i<content.size(); ++i) {
         if (content[i][1]==process) {
-          if (!MatchOptions(content[i], oew, oqcd, nloop)) {
+          string match=MatchOptions(content[i], oew, oqcd, nloop);
+          if (match=="0") {
             PRINT_INFO("Ignoring process with incompatible options.");
             continue;
+          }
+          else if (match!="1") {
+            process=match;
           }
           string grouptag=content[i][0];
           string process_subid=content[i][2];

@@ -94,7 +94,7 @@ core process and should be set to zero for all unstable particles appearing
 in the core-process final state. This guarantees on-shellness and gauge
 invariance of the core process, and subsequent decays can be handled by the
 afterburner.
-In constrast, ‘WIDTH[<id>]' should be set to the physical width when unstable
+In constrast, @option{WIDTH[<id>]} should be set to the physical width when unstable
 particles appear (only) as intermediate states in the core process, i.e. when
 production and decay are handled as a full process or using Decay(OS).
 In this case, the option @option{HDH_SET_WIDTHS=1} permits to overwrite the
