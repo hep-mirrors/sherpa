@@ -18,11 +18,6 @@ typedef std::complex<double> Complex;
 
 namespace ATOOLS {
 
-  const double NC(3.0);
-  const double CA(3.0);
-  const double CF(0.5*(NC*NC-1.0)/NC);
-  const double TR(0.5);
-
   struct ctt {
     
     enum type {
@@ -349,6 +344,8 @@ namespace ATOOLS {
 
     Complex m_result;
 
+    double m_NC, m_TR;
+
     size_t m_findex, m_aindex;
     size_t m_evaluated, m_cindex;
 
@@ -356,11 +353,11 @@ namespace ATOOLS {
     
     // constructor
     inline Expression(): 
-      Node<Color_Term*>(NULL,true), m_result(0.0,0.0),
+      Node<Color_Term*>(NULL,true), m_result(0.0,0.0), m_NC(3.0), m_TR(0.5),
       m_findex(0), m_aindex(0), m_evaluated(0), m_cindex(0) {}
 
     inline Expression(int ma,int mf): 
-      Node<Color_Term*>(NULL,true), m_result(0.0,0.0),
+      Node<Color_Term*>(NULL,true), m_result(0.0,0.0), m_NC(3.0), m_TR(0.5),
       m_findex(mf+1), m_aindex(ma+1), m_evaluated(0), m_cindex(0) {}
 
     Expression(const std::string &expression); 
@@ -394,10 +391,16 @@ namespace ATOOLS {
     // inline functions
     inline Complex Result() const { return m_result; }
 
+    inline double NC() const { return m_NC; }
+    inline double TR() const { return m_TR; }
+
     inline size_t FIndex() { return ++m_findex; }
     inline size_t AIndex() { return ++m_aindex; }
 
     inline size_t CIndex() const { return m_cindex; }
+
+    inline void SetNC(const double &nc) { m_NC=nc; }
+    inline void SetTR(const double &tr) { m_TR=tr; }
 
   };// end of class Expression
   /*!

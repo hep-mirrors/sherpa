@@ -10,12 +10,19 @@ namespace AMEGIC {
   class Helicity;
   class Phase_Space_Generator;
   class Single_Process_External: public Process_Base {
+
+  typedef std::set<std::pair<size_t,size_t> >     Combination_Set;
+  typedef std::map<size_t,ATOOLS::Flavour_Vector> CFlavVector_Map;
+
   private:
     PHASIC::Tree_ME2_Base *p_me2;
     size_t m_pn;
     bool                    m_newlib;
     Polarisation            m_pol;
     double                  m_iresult;
+
+    Combination_Set m_ccombs;
+    CFlavVector_Map m_cflavs;
 
     Single_Process_External        * p_partner;
     /*------------------------------------------------------------------------------
@@ -28,6 +35,10 @@ namespace AMEGIC {
     Single_Process_External();
     ~Single_Process_External();
     
+    bool Combinable(const size_t &idi,const size_t &idj);
+
+    const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
+
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
    private:
 

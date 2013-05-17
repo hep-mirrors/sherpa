@@ -18,7 +18,7 @@ namespace AMEGIC {
 
     std::string m_resdir;
 
-    int *p_b, m_eoreset;
+    int *p_b, m_eoreset, m_allowmap;
 
     AMEGIC::Pol_Info      *p_pl;
     

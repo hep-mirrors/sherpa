@@ -196,8 +196,6 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
 
   if (m_pinfo.m_amegicmhv>0) {
     if (m_pinfo.m_amegicmhv==10) {
-      if (m_pinfo.Has(nlo_type::vsub))
-	THROW(not_implemented,"Invalid NLO mode for Enable_MHV=10");
       p_LO_process = new Single_LOProcess_External(m_pinfo, p_int->Beam(), p_int->ISR());
     }
     else if (CF.MHVCalculable(m_pinfo))

@@ -2,50 +2,45 @@
 #define AMEGIC_DipoleSubtraction_Single_LOProcess_External_H
 
 #include "AMEGIC++/DipoleSubtraction/Single_LOProcess.H"
-#include "PHASIC++/Process/Tree_ME2_Base.H"
+#include "AMEGIC++/Amplitude/Zfunctions/Mom.H"
 
 namespace AMEGIC {
-
+  class FullAmplitude_External;
   class Single_LOProcess_External : public Single_LOProcess {
-  protected:
+  private:
+    bool                    m_emitgluon;
 
-    PHASIC::Tree_ME2_Base *p_me2;
+    std::vector<ATOOLS::Vec4D>* p_epol;
 
-    size_t m_pn;
-
-  public:
-
-    Single_LOProcess_External(const PHASIC::Process_Info &pi,
-			      BEAM::Beam_Spectra_Handler *const beam,
-			      PDF::ISR_Handler *const isr);
-    ~Single_LOProcess_External();
-
-  public:
-
-    void                AddChannels(std::list<std::string>*);
-    bool                NewLibs() {return m_newlib;}
-    bool                FoundMappingFile(std::string &,std::string &);
-    virtual int         InitAmplitude(MODEL::Model_Base *,Topology *,
-				      std::vector<Process_Base *> &,
-				      std::vector<Process_Base *> &);
-    bool                SetUpIntegrator();
-    void                WriteMomFlavs(std::ofstream& to) { p_BS->WriteMomFlavs(to); }
-    double              Result()                       { return m_iresult; } 
-
-    double              Norm()  {return m_Norm;}
-
-    inline size_t       GetEmit()  { return m_emit; }
-    inline size_t       GetSpect() { return m_spect; }
-    int                 PerformTests();
+    FullAmplitude_External    * p_MHVamp;
     /*------------------------------------------------------------------------------
 
-      Process management
+      Constructors
 
       ------------------------------------------------------------------------------*/
   public:
-    void             Minimize();
-    int  Type() { return m_type; }
-    inline const std::vector<size_t>& PartonList() const { return m_partonlist; }
+
+   Single_LOProcess_External(const PHASIC::Process_Info &pi,
+                        BEAM::Beam_Spectra_Handler *const beam,
+                        PDF::ISR_Handler *const isr);
+    ~Single_LOProcess_External();
+
+
+    /*------------------------------------------------------------------------------
+
+      Initializing libraries, amplitudes, etc.
+
+      ------------------------------------------------------------------------------*/
+  private :
+    int         Tests(std::vector<double>* =NULL);
+  public:
+    int         InitAmplitude(MODEL::Model_Base *,Topology *,
+			      std::vector<Process_Base *> &,
+			      std::vector<Process_Base *> &);
+    int         InitAmplitude(MODEL::Model_Base *,Topology *,
+			      std::vector<Process_Base *> &,
+			      std::vector<Process_Base *> &,
+			      std::vector<ATOOLS::Vec4D>*,std::vector<double>*);
 
     /*------------------------------------------------------------------------------
 
@@ -53,12 +48,11 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    int            NumberOfDiagrams();
-    double         Partonic(const ATOOLS::Vec4D_Vector&,const int);
-    virtual double operator()(const ATOOLS::Vec4D_Vector &,const ATOOLS::Vec4D *,
-			      std::vector<double>*,std::vector<ATOOLS::Vec4D>*,const int);
-    virtual void   Calc_AllXS(const ATOOLS::Vec4D_Vector &,
-			      const ATOOLS::Vec4D *,std::vector<std::vector<double> > &,const int);
+    double  operator()(const ATOOLS::Vec4D_Vector &,const ATOOLS::Vec4D *,
+		       std::vector<double>*,std::vector<ATOOLS::Vec4D>*,const int);
+    void    Calc_AllXS(const ATOOLS::Vec4D_Vector &,const ATOOLS::Vec4D *,
+		       std::vector<std::vector<double> > &dsij,const int);
+    int NumberOfDiagrams();
   };
 }
 

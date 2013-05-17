@@ -77,7 +77,6 @@ namespace AMEGIC {
     std::string         CreateLibName();
     void                CreateMappingFile(Single_LOProcess*);
     void                UpdateMappingFile(std::string,std::map<std::string,Complex> &); 
-    bool                CreateChannelLibrary();
     void                WriteAlternativeName(std::string aname);
     bool                CheckAlternatives(std::vector<Process_Base *> & links,
 					  std::string procname);

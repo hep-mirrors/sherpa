@@ -55,10 +55,10 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
   if (nloqcd&nlo_type::real && nloqcd&nlo_type::rsub) {
     return new Single_Real_Correction();
   }
-  else if (nloqcd&nlo_type::vsub || nloqcd&nlo_type::loop) {
+  else if (nloqcd&nlo_type::born || nloqcd&nlo_type::vsub || nloqcd&nlo_type::loop) {
     return new Single_Virtual_Correction();
   }
-  else if (nloqcd==nlo_type::lo || nloqcd==nlo_type::born || nloqcd==nlo_type::real) {
+  else if (nloqcd==nlo_type::lo || nloqcd==nlo_type::real) {
     if (pi.m_amegicmhv>0) {
       if (pi.m_amegicmhv==10) return new Single_Process_External();
       if (pi.m_amegicmhv==11) return new Single_Process_Combined();

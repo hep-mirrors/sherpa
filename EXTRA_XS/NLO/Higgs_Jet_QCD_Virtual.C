@@ -2,12 +2,17 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
-#include "ATOOLS/Phys/Color.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
 
 namespace EXTRAXS {
+
+  const double NC(3.0);
+  const double CA(3.0);
+  const double CF(0.5*(NC*NC-1.0)/NC);
+  const double TR(0.5);
+
   class GGHG_QCD_Virtual : public Virtual_ME2_Base {
     bool   m_flip;
     double m_b0, m_nlf;

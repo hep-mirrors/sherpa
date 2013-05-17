@@ -8,6 +8,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PHASIC++/Channels/Single_Channel.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -23,6 +24,13 @@ AMEGIC::Process_Base::Process_Base():
   m_print_graphs(""), p_testmoms(0), m_Norm(1.), m_sfactor(1.)
 {
   p_channellibnames = new std::list<std::string>();
+  static int allowmap(-1);
+  if (allowmap<0) {
+    Data_Reader read(" ",";","!","=");
+    allowmap=read.GetValue<int>("AMEGIC_ALLOW_MAPPING",1);
+    if (allowmap!=1) msg_Info()<<METHOD<<"(): Disable process mapping.\n";
+  }
+  m_allowmap=allowmap;
 }
 
 AMEGIC::Process_Base::~Process_Base() 

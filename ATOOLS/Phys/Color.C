@@ -105,7 +105,8 @@ bool Delta::Evaluate(Expression *const expression)
 {
   if (m_i==m_j) {
     Delete();
-    (*expression)[expression->CIndex()] = CNumber::New(Complex(NC,0.0));
+    (*expression)[expression->CIndex()] =
+      CNumber::New(Complex(expression->NC(),0.0));
     return true;
   }
   bool evaluated(false);
@@ -192,13 +193,15 @@ bool Fundamental::Evaluate(Expression *const expression)
 	if (m_a==fundamental->m_a) {
 	  if (m_j==fundamental->m_i) {
 	    if (m_i==fundamental->m_j)
-	      (*expression)[j] = CNumber::New(NC);
+	      (*expression)[j] = CNumber::New(expression->NC());
 	    else
 	      (*expression)[j] = Delta::New(m_i,fundamental->m_j);
 	    if (m_fromf || fundamental->m_fromf) 
-	      (*expression)[i] = CNumber::New(Complex(0.5*NC,0.0));
+	      (*expression)[i] = CNumber::New
+		(expression->TR()*expression->NC());
 	    else
-	      (*expression)[i] = CNumber::New(Complex(CF,0.0));
+	      (*expression)[i] = CNumber::New
+		(expression->TR()*(expression->NC()-1.0/expression->NC()));
 	    fundamental->Delete();
 	    Delete();
 	    return true;
@@ -206,9 +209,11 @@ bool Fundamental::Evaluate(Expression *const expression)
 	  if (m_i==fundamental->m_j) {
 	    (*expression)[j] = Delta::New(fundamental->m_i,m_j);
 	    if (m_fromf || fundamental->m_fromf) 
-	      (*expression)[i] = CNumber::New(Complex(0.5*NC,0.0));
+	      (*expression)[i] = CNumber::New
+		(expression->TR()*expression->NC());
 	    else
-	      (*expression)[i] = CNumber::New(Complex(CF,0.0));
+	      (*expression)[i] = CNumber::New
+		(expression->TR()*(expression->NC()-1.0/expression->NC()));
 	    fundamental->Delete();
 	    Delete();
 	    return true;
@@ -220,11 +225,12 @@ bool Fundamental::Evaluate(Expression *const expression)
 	    (*copy)[i]->Delete();
 	    (*copy)[j] = Delta::New(m_i,m_j);
 	    (*copy)[i] = Delta::New(fundamental->m_i,fundamental->m_j);
-	    copy->push_back(CNumber::New(Complex(-0.5/NC,0.0)));
+	    copy->push_back(CNumber::New
+			    (Complex(-expression->TR()/expression->NC(),0.0)));
 	  }
 	  (*expression)[j] = Delta::New(m_i,fundamental->m_j);
 	  (*expression)[i] = Delta::New(fundamental->m_i,m_j);
-	  expression->push_back(CNumber::New(Complex(0.5,0.0)));
+	  expression->push_back(CNumber::New(Complex(expression->TR(),0.0)));
 	  fundamental->Delete();
 	  Delete();
 	  return true;
@@ -436,7 +442,7 @@ void Trace::DeleteAll()
 
 Expression::Expression(const std::string &expression): 
   Node<Color_Term*>(NULL,true),
-  m_result(0.0,0.0),
+  m_result(0.0,0.0), m_NC(3.0), m_TR(0.5),
   m_findex(0), m_aindex(0), m_evaluated(0)
 {
   if (expression.length()==0) THROW(fatal_error,"No input.");
@@ -636,6 +642,8 @@ void Expression::Print()
 Expression *Expression::GetCopy() const
 {
   Expression *expression(New(size()));
+  expression->SetTR(m_TR);
+  expression->SetNC(m_NC);
   size_t esize(size());
   for (size_t i(0);i<esize;++i) 
     (*expression)[i] = (*this)[i]->GetCopy();

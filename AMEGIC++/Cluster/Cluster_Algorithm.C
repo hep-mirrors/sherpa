@@ -36,10 +36,13 @@ bool Cluster_Algorithm::Cluster
   p_ampl=NULL;
   int nampl=p_proc->NumberOfDiagrams();
   int nlegs=p_proc->NIn()+p_proc->NOut();
+  if (nampl==0) p_ct=NULL;
+  else {
   Leg **legs(CreateLegs(nampl,nlegs));
   CreateTables(legs,nampl,mode,kt2);
+  }
   ++m_cnt;
-  if (p_ct==NULL || p_ct->RScale()>0.0) {
+  if (nampl==0 || p_ct==NULL || p_ct->RScale()>0.0) {
     PHASIC::Process_Base *pb(p_proc->IsMapped()?
 			     p_proc->MapProc():p_proc);
     double rscale((pb->Integrator()->Momenta()[0]+

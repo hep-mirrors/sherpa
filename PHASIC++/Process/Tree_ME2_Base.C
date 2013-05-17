@@ -17,6 +17,44 @@ Tree_ME2_Base::Tree_ME2_Base(const Process_Info &pi,
 
 Tree_ME2_Base::~Tree_ME2_Base() {}
 
+std::vector<Complex> Tree_ME2_Base::GetAmplitudes()
+{
+  return std::vector<Complex>();
+}
+
+Complex Tree_ME2_Base::GetHelicityPhase(const Vec4D &pijt,const Vec4D &eps1)
+{
+  THROW(not_implemented,"Missing phase for interference term");
+  return Complex(0.0,0.0);
+}
+
+std::vector<Tree_ME2_Base::Map_Info>
+Tree_ME2_Base::GetFlavourHelicityMap()
+{
+  return std::vector<Map_Info>();
+}
+
+void Tree_ME2_Base::FillCombinations
+(std::set<std::pair<size_t,size_t> > &combs,
+ std::map<size_t,ATOOLS::Flavour_Vector> &fls)
+{
+}
+
+int Tree_ME2_Base::OrderQCD(const int &id)
+{
+  return -1;
+}
+
+int Tree_ME2_Base::OrderEW(const int &id)
+{
+  return -1;
+}
+
+double Tree_ME2_Base::TR() const
+{
+  return 0.5;
+}
+
 typedef ATOOLS::Getter_Function
 <Tree_ME2_Base,PHASIC::Process_Info> Tree_ME2_Getter;
 
@@ -63,4 +101,13 @@ double Tree_ME2_Base::AlphaQED() const
 double Trivial_Tree::Calc(const ATOOLS::Vec4D_Vector &p)
 {
   return 0.0;
+}
+
+namespace PHASIC {
+
+  std::ostream &operator<<(std::ostream &str,const Tree_ME2_Base::Map_Info &mi)
+  {
+    return str<<'{'<<mi.m_id<<"|P"<<mi.m_perm<<",H"<<mi.m_hels<<'}';
+  }
+
 }

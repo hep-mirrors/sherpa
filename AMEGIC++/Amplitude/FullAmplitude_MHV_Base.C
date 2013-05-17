@@ -1084,12 +1084,12 @@ bool FullAmplitude_MHV_Q4::AmpStore(MomentumList* BS)
     m_perm[qpos+1]=m_permgl[n_part-3];
     for (int i=qpos+1;i<n_part-3;i++) m_perm[i+1]=m_permgl[permamp[i]];	 
     Complex amp(p_calc->Differential(m_perm,m_hlist));
-    if (p_calc_partner) amp += p_calc_partner->Differential(m_perm,m_hlist)/NC;	
+    if (p_calc_partner) amp += p_calc_partner->Differential(m_perm,m_hlist)/3.0;	
     m_ampstore[y]=amp; 
     
     m_perm[qpos]=m_perm[n_part-2];
     m_perm[n_part-2]=m_permgl[n_part-4];	
-    amp= -p_calc->Differential(m_perm,m_hlist)/NC;   	
+    amp= -p_calc->Differential(m_perm,m_hlist)/3.0;   	
     if (p_calc_partner) amp -= p_calc_partner->Differential(m_perm,m_hlist);	
     m_ampstore[y+maxn]= amp;
     m_perm[n_part-2]=m_perm[qpos];
@@ -1113,12 +1113,12 @@ bool FullAmplitude_MHV_Q4::AmpStoreDPT(MomentumList* BS)
     m_perm[qpos+1]=m_permgl[n_part-3];
     for (int i=qpos+1;i<n_part-3;i++) m_perm[i+1]=m_permgl[permamp[i]];	 
     Complex amp(p_calc->Differential(m_perm,m_hlist));
-    if (p_calc_partner) amp += p_calc_partner->Differential(m_perm,m_hlist)/NC;	
+    if (p_calc_partner) amp += p_calc_partner->Differential(m_perm,m_hlist)/3.0;	
     m_ampstore[y]=amp; 
     
     m_perm[qpos]=m_perm[n_part-2];
     m_perm[n_part-2]=m_permgl[n_part-4];	
-    amp= -p_calc->Differential(m_perm,m_hlist)/NC;   	
+    amp= -p_calc->Differential(m_perm,m_hlist)/3.0;   	
     if (p_calc_partner) amp -= p_calc_partner->Differential(m_perm,m_hlist);	
     m_ampstore[y+maxn]= amp;
     m_perm[n_part-2]=m_perm[qpos];
@@ -1134,13 +1134,13 @@ bool FullAmplitude_MHV_Q4::AmpStoreDPT(MomentumList* BS)
     m_perm[qpos+1]=m_permgl[n_part-3];
     for (int i=qpos+1;i<n_part-3;i++) m_perm[i+1]=m_permgl[permamp[i]];	 
     Complex amp(p_calc->Differential(m_perm,m_hlist));
-    if (p_calc_partner) amp += p_calc_partner->Differential(m_perm,m_hlist)/NC;	
+    if (p_calc_partner) amp += p_calc_partner->Differential(m_perm,m_hlist)/3.0;	
 //     else amp *=-1.;
     m_ampstore2[y]=amp; 
     
     m_perm[qpos]=m_perm[n_part-2];
     m_perm[n_part-2]=m_permgl[n_part-4];	
-    amp=-p_calc->Differential(m_perm,m_hlist)/NC;   	
+    amp=-p_calc->Differential(m_perm,m_hlist)/3.0;   	
     if (p_calc_partner) amp -= p_calc_partner->Differential(m_perm,m_hlist);	
 //     else amp*=-1.;
     m_ampstore2[y+maxn]= amp;

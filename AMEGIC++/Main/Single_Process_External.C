@@ -63,6 +63,7 @@ int AMEGIC::Single_Process_External::InitAmplitude(Model_Base * model,Topology* 
   p_me2 = Tree_ME2_Base::GetME2(m_pinfo);
   if (!p_me2) return 0;
   p_me2->SetCouplings(m_cpls);
+  p_me2->FillCombinations(m_ccombs,m_cflavs);
   
   m_oew=oew;
   m_oqcd=oqcd;
@@ -70,7 +71,7 @@ int AMEGIC::Single_Process_External::InitAmplitude(Model_Base * model,Topology* 
   m_iresult=p_me2->Calc(tmoms);
   if (m_iresult==0.) return 0;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-    if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
+    if (m_allowmap && FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
       msg_Tracking()<<"AMEGIC::Single_Process_External::InitAmplitude : "<<std::endl
 		    <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
       p_mapproc = p_partner   = (Single_Process_External*)links[j];
@@ -179,4 +180,20 @@ double AMEGIC::Single_Process_External::operator()(const ATOOLS::Vec4D* mom)
 {
   Vec4D_Vector moms(mom,&mom[m_nin+m_nout]);
   return p_me2->Calc(moms);
+}
+
+bool AMEGIC::Single_Process_External::Combinable
+(const size_t &idi,const size_t &idj)
+{
+  Combination_Set::const_iterator 
+    cit(m_ccombs.find(std::pair<size_t,size_t>(idi,idj)));
+  return cit!=m_ccombs.end();
+}
+
+const Flavour_Vector &AMEGIC::Single_Process_External::
+CombinedFlavour(const size_t &idij)
+{
+  CFlavVector_Map::const_iterator fit(m_cflavs.find(idij));
+  if (fit==m_cflavs.end()) THROW(fatal_error,"Invalid request");
+  return fit->second;
 }

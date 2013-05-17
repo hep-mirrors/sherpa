@@ -1,6 +1,7 @@
 #include "AMEGIC++/DipoleSubtraction/Single_DipoleTerm.H"
 #include "AMEGIC++/DipoleSubtraction/Single_LOProcess.H"
 #include "AMEGIC++/DipoleSubtraction/Single_LOProcess_MHV.H"
+#include "AMEGIC++/DipoleSubtraction/Single_LOProcess_External.H"
 
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
@@ -35,7 +36,7 @@ using namespace std;
 Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t pj,size_t pk, Process_Integrator* pint) :
   m_maxgsmass(0.), p_partner(this), p_LO_process(0), p_LO_mom(0), m_ftype(0), p_dipole(0), p_realint(pint)
 {
-  DEBUG_FUNC("");
+  DEBUG_FUNC("("<<pi<<","<<pj<<") <-> "<<pk);
   PHASIC::Process_Base::Init(pinfo, pint->Beam(), pint->ISR());
   AMEGIC::Process_Base::Init();
 
@@ -91,7 +92,9 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   SortFlavours(lopi);
 
   if (lopi.m_amegicmhv>0) {
-    if (CF.MHVCalculable(lopi))
+    if (lopi.m_amegicmhv==10)
+      p_LO_process = new Single_LOProcess_External(lopi, p_int->Beam(), p_int->ISR());
+    else if (CF.MHVCalculable(lopi))
       p_LO_process = new Single_LOProcess_MHV(lopi, p_int->Beam(), p_int->ISR());
     if (lopi.m_amegicmhv==2) { m_valid=0; return; }
   }
