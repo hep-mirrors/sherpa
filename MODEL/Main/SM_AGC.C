@@ -133,7 +133,7 @@ void SM_AGC::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
 				     p_dataread->GetValue<double>("H3_Z",0.)));
   p_constants->insert(std::make_pair(std::string("h4_Z"),
 				     p_dataread->GetValue<double>("H4_Z",0.)));
-  double n(p_dataread->GetValue<double>("UNITARIZATION_N",0.));
+  double n(p_dataread->GetValue<double>("UNITARIZATION_N",2.));
   p_constants->insert(std::make_pair(std::string("UNITARIZATION_N"),n));
   double mu(p_dataread->GetValue<double>("UNITARIZATION_SCALE",1000.));
   p_constants->insert(std::make_pair(std::string("UNITARIZATION_SCALE"),mu));
