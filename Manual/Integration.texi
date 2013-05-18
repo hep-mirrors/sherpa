@@ -32,10 +32,10 @@ Specifies the integrator. The possible integrator types
 depend on the matrix element generator. In general users 
 should rely on the default value and otherwise seek the 
 help of the authors, see @ref{Authors}.
-The options for AMEGIC++ are
+Within AMEGIC++ the options @option{AMEGIC_INTEGRATOR} and
+@option{AMEGIC_RS_INTEGRATOR} can be used to steer the behaviour
+of the default integrator
 @itemize
-@item @option{0}: RAMBO @mycite{Kleiss1985gy}. Generates isotropic 
-final states.
 @item @option{4}: building up the channels is achieved through 
 respecting the peak structure given by the propagators. The 
 algorithm works recursively starting from the initial state.
@@ -47,14 +47,16 @@ This is the default integrator.
 @item @option{7}: Same as option @option{4} but with tweaked 
 exponents. Optimised for the integration of real-subtracted 
 matrix-elements.
-@end itemize
-In addition, however, there are a few generator independent choices
-which have been designed for specific processes and might 
-be more efficient there:
+@end itemize 
+In addition, a few ME-generator independent integrators
+have been implemented for specific processes:
 @itemize @bullet
- @item @option{1}: is an integrator for a final state of a weak boson,
-decaying into two particles plus two or more jets. When this
-integrator is used the keyword @code{VHAAG_RES_KF} specifies
+@item @option{Rambo}: RAMBO @mycite{Kleiss1985gy}. Generates isotropic 
+final states.
+@item @option{VHAAG}: Vegas-improved HAAG integrator @mycite{vanHameren2002tc}.
+@item @option{VHAAG_res}: is an integrator for a final state of a weak boson,
+decaying into two particles plus two or more jets based on HAAG @mycite{vanHameren2002tc}. 
+When this integrator is used the keyword @code{VHAAG_RES_KF} specifies
 the kf-code of the weak boson, the default is W (@code{24}).
 @code{VHAAG_RES_D1} and @code{VHAAG_RES_D2} define the
 positions of the Boson decay products within the internal

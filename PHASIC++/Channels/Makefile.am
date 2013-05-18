@@ -14,7 +14,6 @@ libPhasicChannels_la_SOURCES  =	\
 				FSR_Channel.C \
 				Rambo.C \
 				RamboKK.C \
-				Sarge.C \
 				VHAAG.C \
 				VHAAG_ND.C \
 				VHAAG_res.C \
@@ -23,6 +22,7 @@ libPhasicChannels_la_SOURCES  =	\
 				Multi_Channel.C \
 				ISR_Channels.C \
 				Beam_Channels.C \
+				Channel_Generator.C \
 				FSR_Channels.C \
 				BBar_Multi_Channel.C \
 				CS_Dipole.C \
@@ -39,7 +39,6 @@ localinc_HEADERS      =	\
 			Channel_Interface.H \
 			Rambo.H \
 			RamboKK.H \
-			Sarge.H \
 			VHAAG.H \
 			VHAAG_ND.H \
 			VHAAG_res.H \
@@ -47,6 +46,7 @@ localinc_HEADERS      =	\
 			Multi_Channel.H \
 			ISR_Channels.H \
 			Beam_Channels.H \
+			Channel_Generator.H \
 			FSR_Channels.H \
 			BBar_Multi_Channel.H \
 			CS_Dipole.H \

@@ -32,6 +32,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Selectors/Selector.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
+#include "PHASIC++/Channels/Channel_Generator.H"
 #include "PDF/Main/NLOMC_Base.H"
 #include "PDF/Main/Shower_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -234,6 +235,12 @@ void Initialization_Handler::ShowParameterSyntax()
   if (helpi>0) {
     msg->SetLevel(2);
     PHASIC::ME_Generator_Base::ShowSyntax(helpi);
+    THROW(normal_exit,"Syntax shown.");
+  }
+  if (!read.ReadFromFile(helpi,"SHOW_PS_GENERATORS")) helpi=0;
+  if (helpi>0) {
+    msg->SetLevel(2);
+    PHASIC::Channel_Generator::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
   if (!read.ReadFromFile(helpi,"SHOW_NLOMC_GENERATORS")) helpi=0;

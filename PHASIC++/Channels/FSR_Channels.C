@@ -2,14 +2,8 @@
 
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
-#include "PHASIC++/Channels/FSR_Channel.H"
-#include "PHASIC++/Channels/Rambo.H"
-#include "PHASIC++/Channels/RamboKK.H"
-#include "PHASIC++/Channels/Sarge.H"
-#include "PHASIC++/Channels/VHAAG.H"
-#include "PHASIC++/Channels/VHAAG_ND.H"
+#include "PHASIC++/Channels/Channel_Generator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
-#include "PHASIC++/Channels/VHAAG_res.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/Permutation.H"
@@ -24,98 +18,26 @@ bool FSR_Channels::Initialize()
   dr.AddWordSeparator("\t");
   dr.SetInputPath(rpa->GetPath());
   dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  m_inttype=dr.GetValue<int>("INTEGRATOR",6);
+  std::vector<std::string> inttypes;
+  dr.VectorFromFile(inttypes,"INTEGRATOR");
+  if (inttypes.empty()) inttypes.push_back("Default");
   nin=p_psh->Process()->NIn();
   nout=p_psh->Process()->NOut();
   int m_nin(nin), m_nout(nout);
-  if (nin==1) {
-    if (nout==2) m_inttype = 0;
-    if (m_inttype<4)  m_inttype = 0;
-    else m_inttype = 4;
+  int sintegrator=0;
+  for (size_t i(0);i<inttypes.size();++i) {
+    Channel_Generator *cg=
+      Channel_Generator::Getter_Function::GetObject
+      (inttypes[i],Channel_Generator_Key
+       (p_psh->Process()->Process(),this));
+    if (cg==NULL) {
+      msg_Error()<<METHOD<<"(): Channel generator '"<<inttypes[i]
+		 <<"' not found. Skip."<<std::endl;
+      continue;
+    }
+    sintegrator|=cg->GenerateChannels();
+    delete cg;
   }
-  if (nin==2) { 
-    if (nout==2&&m_inttype==3) m_inttype=7;
-    if (p_psh->Process()->Process()->Info().m_fi.m_nloqcdtype&nlo_type::real) {
-      if (m_inttype==2) m_inttype=3;
-      if (m_inttype>=4&&m_inttype<7) m_inttype=7;
-    }
-    if (m_inttype<4||m_inttype>20) DropAllChannels();
-  }
-  if (p_psh->Process()->NOut()==1) {
-    if (!p_psh->Process()->Process()->InitIntegrator(p_psh))
-      THROW(critical_error,"InitIntegrator failed");
-    return false;
-  }
-  bool sintegrator(false);
-  switch (m_inttype) {
-  case 0:
-    {
-      bool kk_fs=false;
-      for (int i=0;i<m_nout;i++){
-	if (p_psh->Flavs()[i+m_nin].IsKK()) kk_fs=true;
-      }
-      if (kk_fs) {
-	Add(new RamboKK(m_nin,m_nout,&p_psh->Flavs().front()));
-	break;
-      }
-    }
-      
-    if (m_nin==1 && m_nout==2) Add(new Decay2Channel(m_nin,m_nout,&p_psh->Flavs().front()));
-    else Add(new Rambo(m_nin,m_nout,&p_psh->Flavs().front(),
-                       p_psh->Process()->Process()->Generator()));
-    break;
-  case 1: 
-    {
-	VHAAG_res *firsthaag=NULL,*hlp=NULL;
-	Permutation pp(m_nin+m_nout-3);
-	for (int j=0;j<pp.MaxNumber();j++) {
-	  Add(hlp=new VHAAG_res(m_nin,m_nout,2*j,firsthaag));
-	  if (!firsthaag) firsthaag=hlp;
-	  Add(hlp=new VHAAG_res(m_nin,m_nout,2*j+1,firsthaag));
-	  if (!firsthaag) firsthaag=hlp;
- 	}
-    }
-    break;
-  case 2:
-    {
-      if (m_nin==2 && m_nout==2) {
-	Add(new S1Channel(m_nin,m_nout,(Flavour*)&p_psh->Flavs().front()));
-	Add(new T1Channel(m_nin,m_nout,(Flavour*)&p_psh->Flavs().front()));
-	Add(new U1Channel(m_nin,m_nout,(Flavour*)&p_psh->Flavs().front()));
-      }
-      else {
-      VHAAG *firsthaag=NULL,*hlp=NULL;
-      Permutation pp(m_nin+m_nout-1);
-      for (int j=0;j<pp.MaxNumber();j++) {
-	int* pm = pp.Get(j);
-	if (pm[1]==0||pm[m_nin+m_nout-3]==0) 
-	  Add(hlp=new VHAAG(m_nin,m_nout,j,firsthaag));
-	if (!firsthaag) firsthaag=hlp;
-      }
-      }
-    }
-    break;
-  case 3: 
-    {
-      VHAAG_ND *firsthaag=NULL,*hlp=NULL;
-      Permutation pp(m_nin+m_nout-1);
-      for (int j=0;j<pp.MaxNumber();j++) {
-	int* pm = pp.Get(j);
-	if (pm[1]!=0&&pm[m_nin+m_nout-3]!=0) 
-	  Add(hlp=new VHAAG_ND(m_nin,m_nout,j,firsthaag));
-	if (!firsthaag) firsthaag=hlp;
-      }
-    }
-    break;
-  case 4:case 5:case 6:case 7: 
-    DropRedundantChannels();
-    sintegrator=p_psh->Process()->Process()->FillIntegrator(p_psh);
-    break;
-  default:
-    msg_Error()<<"Wrong phasespace integration switch ! Using RAMBO as default."<<std::endl;
-    Add(new Rambo(m_nin,m_nout,&p_psh->Flavs().front(),
-                  p_psh->Process()->Process()->Generator()));
-  }  
   if (!p_psh->Process()->Process()->InitIntegrator(p_psh))
     THROW(critical_error,"InitIntegrator failed");
   return sintegrator;

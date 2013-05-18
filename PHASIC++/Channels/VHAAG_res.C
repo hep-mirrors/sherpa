@@ -6,6 +6,9 @@
 #include "ATOOLS/Math/Permutation.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
+#include "PHASIC++/Channels/Channel_Generator.H"
+#include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Channels/Multi_Channel.H"
 #include <stdio.h>
 
 using namespace PHASIC;
@@ -636,4 +639,47 @@ void VHAAG_res::CalculateS0(Cut_Data * cuts)
 int VHAAG_res::OType()
 {
   return (1<<m_type);
+}
+
+namespace PHASIC {
+
+  class VHAAG_res_Channel_Generator: public Channel_Generator {
+  public:
+    
+    VHAAG_res_Channel_Generator(const Channel_Generator_Key &key):
+    Channel_Generator(key) {}
+
+    int GenerateChannels()
+    {
+      int m_nin=p_proc->NIn(), m_nout=p_proc->NOut();
+      VHAAG_res *firsthaag=NULL,*hlp=NULL;
+      Permutation pp(m_nin+m_nout-3);
+      for (int j=0;j<pp.MaxNumber();j++) {
+	p_mc->Add(hlp=new VHAAG_res(m_nin,m_nout,2*j,firsthaag));
+	if (!firsthaag) firsthaag=hlp;
+	p_mc->Add(hlp=new VHAAG_res(m_nin,m_nout,2*j+1,firsthaag));
+	if (!firsthaag) firsthaag=hlp;
+      }
+      return 0;
+    }
+
+  };// end of class VHAAG_res_Channel_Generator
+
+}// end of namespace PHASIC
+
+DECLARE_GETTER(VHAAG_res_Channel_Generator,"VHAAG_res",
+	       Channel_Generator,Channel_Generator_Key);
+
+Channel_Generator *ATOOLS::Getter
+<Channel_Generator,Channel_Generator_Key,VHAAG_res_Channel_Generator>::
+operator()(const Channel_Generator_Key &args) const
+{
+  return new VHAAG_res_Channel_Generator(args);
+}
+
+void ATOOLS::Getter<Channel_Generator,Channel_Generator_Key,
+		    VHAAG_res_Channel_Generator>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"Vegas-improved HAAG integrator for resonance + jets";
 }

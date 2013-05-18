@@ -1,6 +1,9 @@
 #include "PHASIC++/Channels/FSR_Channel.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "PHASIC++/Channels/Channel_Basics.H"
+#include "PHASIC++/Channels/Channel_Generator.H"
+#include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Channels/Multi_Channel.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
@@ -68,6 +71,42 @@ std::string S1Channel::ChID()
   return std::string("S-Channel");
 }
 
+namespace PHASIC {
+
+  class S1_Channel_Generator: public Channel_Generator {
+  public:
+    
+    S1_Channel_Generator(const Channel_Generator_Key &key):
+    Channel_Generator(key) {}
+
+    int GenerateChannels()
+    {
+      p_mc->Add(new S1Channel(p_proc->NIn(),p_proc->NOut(),
+				  (Flavour*)&p_proc->Flavours().front()));
+      return 0;
+    }
+
+  };// end of class S1_Channel_Generator
+
+}// end of namespace PHASIC
+
+DECLARE_GETTER(S1_Channel_Generator,"SChannel",
+	       Channel_Generator,Channel_Generator_Key);
+
+Channel_Generator *ATOOLS::Getter
+<Channel_Generator,Channel_Generator_Key,S1_Channel_Generator>::
+operator()(const Channel_Generator_Key &args) const
+{
+  return new S1_Channel_Generator(args);
+}
+
+void ATOOLS::Getter<Channel_Generator,Channel_Generator_Key,
+		    S1_Channel_Generator>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"2->2 S-channel integrator";
+}
+
 T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res) 
 {  
   if (_nout != 2 || _nin!=2) {
@@ -126,6 +165,42 @@ void T1Channel::ISRInfo(int & _type,double & _mass,double & _width) {
 std::string T1Channel::ChID() 
 {
   return name;
+}
+
+namespace PHASIC {
+
+  class T1_Channel_Generator: public Channel_Generator {
+  public:
+    
+    T1_Channel_Generator(const Channel_Generator_Key &key):
+    Channel_Generator(key) {}
+
+    int GenerateChannels()
+    {
+      p_mc->Add(new T1Channel(p_proc->NIn(),p_proc->NOut(),
+				  (Flavour*)&p_proc->Flavours().front()));
+      return 0;
+    }
+
+  };// end of class T1_Channel_Generator
+
+}// end of namespace PHASIC
+
+DECLARE_GETTER(T1_Channel_Generator,"TChannel",
+	       Channel_Generator,Channel_Generator_Key);
+
+Channel_Generator *ATOOLS::Getter
+<Channel_Generator,Channel_Generator_Key,T1_Channel_Generator>::
+operator()(const Channel_Generator_Key &args) const
+{
+  return new T1_Channel_Generator(args);
+}
+
+void ATOOLS::Getter<Channel_Generator,Channel_Generator_Key,
+		    T1_Channel_Generator>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"2->2 T-channel integrator";
 }
 
 T2Channel::T2Channel(int _nin,int _nout,Flavour * fl,Flavour res) 
@@ -360,6 +435,42 @@ std::string U1Channel::ChID()
   return std::string("U-Channel");
 }
 
+namespace PHASIC {
+
+  class U1_Channel_Generator: public Channel_Generator {
+  public:
+    
+    U1_Channel_Generator(const Channel_Generator_Key &key):
+    Channel_Generator(key) {}
+
+    int GenerateChannels()
+    {
+      p_mc->Add(new U1Channel(p_proc->NIn(),p_proc->NOut(),
+				  (Flavour*)&p_proc->Flavours().front()));
+      return 0;
+    }
+
+  };// end of class U1_Channel_Generator
+
+}// end of namespace PHASIC
+
+DECLARE_GETTER(U1_Channel_Generator,"UChannel",
+	       Channel_Generator,Channel_Generator_Key);
+
+Channel_Generator *ATOOLS::Getter
+<Channel_Generator,Channel_Generator_Key,U1_Channel_Generator>::
+operator()(const Channel_Generator_Key &args) const
+{
+  return new U1_Channel_Generator(args);
+}
+
+void ATOOLS::Getter<Channel_Generator,Channel_Generator_Key,
+		    U1_Channel_Generator>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"2->2 U-channel integrator";
+}
+
 Decay2Channel::Decay2Channel(int _nin,int _nout,const Flavour * fl,Flavour res) 
 {  
   if (_nout != 2 || _nin!=1) {
@@ -395,3 +506,38 @@ void Decay2Channel::ISRInfo(int & _type,double & _mass,double & _width) {
   _type = type; _mass = mass; _width = width;
 }
 
+namespace PHASIC {
+
+  class Decay2_Channel_Generator: public Channel_Generator {
+  public:
+    
+    Decay2_Channel_Generator(const Channel_Generator_Key &key):
+    Channel_Generator(key) {}
+
+    int GenerateChannels()
+    {
+      p_mc->Add(new Decay2Channel(p_proc->NIn(),p_proc->NOut(),
+				  (Flavour*)&p_proc->Flavours().front()));
+      return 0;
+    }
+
+  };// end of class Decay2_Channel_Generator
+
+}// end of namespace PHASIC
+
+DECLARE_GETTER(Decay2_Channel_Generator,"Decay2",
+	       Channel_Generator,Channel_Generator_Key);
+
+Channel_Generator *ATOOLS::Getter
+<Channel_Generator,Channel_Generator_Key,Decay2_Channel_Generator>::
+operator()(const Channel_Generator_Key &args) const
+{
+  return new Decay2_Channel_Generator(args);
+}
+
+void ATOOLS::Getter<Channel_Generator,Channel_Generator_Key,
+		    Decay2_Channel_Generator>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"1->2 decay integrator";
+}

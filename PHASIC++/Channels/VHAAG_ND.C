@@ -5,6 +5,10 @@
 #include "ATOOLS/Math/Permutation.H"
 #include "ATOOLS/Math/Poincare.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
+#include "PHASIC++/Channels/FSR_Channel.H"
+#include "PHASIC++/Channels/Channel_Generator.H"
+#include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Channels/Multi_Channel.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include <stdio.h>
@@ -763,4 +767,54 @@ void VHAAG_ND::CalculateS0(Cut_Data * cuts)
 int VHAAG_ND::OType()
 {
   return (1<<m_type);
+}
+
+namespace PHASIC {
+
+  class VHAAG_ND_Channel_Generator: public Channel_Generator {
+  public:
+    
+    VHAAG_ND_Channel_Generator(const Channel_Generator_Key &key):
+    Channel_Generator(key) {}
+
+    int GenerateChannels()
+    {
+      int m_nin=p_proc->NIn(), m_nout=p_proc->NOut();
+      if (m_nin==2 && m_nout==2) {
+	p_mc->Add(new S1Channel(m_nin,m_nout,(Flavour*)&p_proc->Flavours().front()));
+	p_mc->Add(new T1Channel(m_nin,m_nout,(Flavour*)&p_proc->Flavours().front()));
+	p_mc->Add(new U1Channel(m_nin,m_nout,(Flavour*)&p_proc->Flavours().front()));
+      }
+      else {
+	VHAAG_ND *firsthaag=NULL,*hlp=NULL;
+	Permutation pp(m_nin+m_nout-1);
+	for (int j=0;j<pp.MaxNumber();j++) {
+	  int* pm = pp.Get(j);
+	  if (pm[1]==0||pm[m_nin+m_nout-3]==0) 
+	    p_mc->Add(hlp=new VHAAG_ND(m_nin,m_nout,j,firsthaag));
+	  if (!firsthaag) firsthaag=hlp;
+	}
+      }
+      return 0;
+    }
+
+  };// end of class VHAAG_ND_Channel_Generator
+
+}// end of namespace PHASIC
+
+DECLARE_GETTER(VHAAG_ND_Channel_Generator,"VHAAG_ND",
+	       Channel_Generator,Channel_Generator_Key);
+
+Channel_Generator *ATOOLS::Getter
+<Channel_Generator,Channel_Generator_Key,VHAAG_ND_Channel_Generator>::
+operator()(const Channel_Generator_Key &args) const
+{
+  return new VHAAG_ND_Channel_Generator(args);
+}
+
+void ATOOLS::Getter<Channel_Generator,Channel_Generator_Key,
+		    VHAAG_ND_Channel_Generator>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"Vegas-improved HAAG integrator";
 }

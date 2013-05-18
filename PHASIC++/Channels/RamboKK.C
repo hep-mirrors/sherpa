@@ -1,4 +1,7 @@
 #include "PHASIC++/Channels/RamboKK.H"
+#include "PHASIC++/Channels/Channel_Generator.H"
+#include "PHASIC++/Channels/Multi_Channel.H"
+#include "PHASIC++/Process/Process_Base.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -241,9 +244,38 @@ void RamboKK::MassivePoint(Vec4D* p,double ET)
   for (short int i=nin;i<nin+nout;i++) p[i] = Vec4D(E[i],x*Vec3D(p[i]));
 }
 
+namespace PHASIC {
 
+  class RamboKK_Channel_Generator: public Channel_Generator {
+  public:
+    
+    RamboKK_Channel_Generator(const Channel_Generator_Key &key):
+    Channel_Generator(key) {}
 
+    int GenerateChannels()
+    {
+      p_mc->Add(new RamboKK(p_proc->NIn(),p_proc->NOut(),
+			  &p_proc->Flavours().front()));
+      return 0;
+    }
 
+  };// end of class RamboKK_Channel_Generator
 
+}// end of namespace PHASIC
 
+DECLARE_GETTER(RamboKK_Channel_Generator,"RamboKK",
+	       Channel_Generator,Channel_Generator_Key);
 
+Channel_Generator *ATOOLS::Getter
+<Channel_Generator,Channel_Generator_Key,RamboKK_Channel_Generator>::
+operator()(const Channel_Generator_Key &args) const
+{
+  return new RamboKK_Channel_Generator(args);
+}
+
+void ATOOLS::Getter<Channel_Generator,Channel_Generator_Key,
+		    RamboKK_Channel_Generator>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"Rambo integrator for KK states";
+}

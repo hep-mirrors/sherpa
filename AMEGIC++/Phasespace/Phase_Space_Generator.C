@@ -50,9 +50,9 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   dr.AddWordSeparator("\t");
   dr.SetInputPath(rpa->GetPath());
   dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  int inttype  = dr.GetValue<int>("INTEGRATOR",6);
+  int inttype  = dr.GetValue<int>("AMEGIC_INTEGRATOR",6);
   if (proc->Info().Has(nlo_type::real)) {
-    inttype  = dr.GetValue<int>("RS_INTEGRATOR",7);
+    inttype  = dr.GetValue<int>("AMEGIC_RS_INTEGRATOR",7);
   }
   if (nout==1) return 0;
   if (nin==1&&nout==2) return 0;
@@ -197,11 +197,55 @@ void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,st
     ofstream file(makefilename.c_str());
 
     file<<"lib_LTLIBRARIES = libProc_"<<subdirname<<".la"<<endl;
-    file<<"libProc_"<<subdirname<<"_la_SOURCES = "<<'\\'<<endl;
+    file<<"libProc_"<<subdirname<<"_la_SOURCES = CG.C "<<'\\'<<endl;
     file<<"\t"<<fileID<<".C"<<endl;
     file<<"CURRENT_SHERPASYS = "<<ATOOLS::rpa->gen.Variable("SHERPA_INC_PATH")<<endl;
     file<<"INCLUDES = -I$(CURRENT_SHERPASYS)"<<endl;
     file<<"DEFS     = "<<endl;
+    ofstream cgfile((rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pathID+"/CG.C").c_str());
+    cgfile<<"#include \"PHASIC++/Channels/Channel_Generator.H\"\n"
+	  <<"#include \"PHASIC++/Channels/Multi_Channel.H\"\n"
+	  <<"#include \"PHASIC++/Process/Process_Base.H\"\n"
+	  <<"#include \"PHASIC++/Process/ME_Generator_Base.H\"\n"
+	  <<"#include \"PHASIC++/Channels/Single_Channel.H\"\n"
+	  <<"#include \"ATOOLS/Org/Library_Loader.H\"\n"
+	  <<"#include \"ATOOLS/Org/Run_Parameter.H\"\n"
+	  <<"#include \"PHASIC++/Main/Phase_Space_Handler.H\"\n"
+	  <<"#include \"PHASIC++/Main/Process_Integrator.H\"\n";
+    cgfile<<"\nusing namespace PHASIC;\nusing namespace ATOOLS;\n\n";
+    cgfile<<"#define PTS long unsigned int\n#define PT(ARG) (PTS)(ARG)\n"
+	  <<"typedef PHASIC::Single_Channel *(*Lib_Getter_Function)\n"
+	  <<"  (int nin,int nout,ATOOLS::Flavour* fl,\n"
+	  <<"   ATOOLS::Integration_Info * const info,PHASIC::Phase_Space_Handler *psh);\n";
+    cgfile<<"\nnamespace PHASIC {\n";
+    cgfile<<"  class "<<subdirname<<"_Channel_Generator: public Channel_Generator {\n";
+    cgfile<<"  public:\n    "<<subdirname<<"_Channel_Generator(const Channel_Generator_Key &key):\n"
+	  <<"      Channel_Generator(key) {}\n";
+    cgfile<<"    Single_Channel *LoadChannel(int nin,int nout,Flavour* fl,"
+	  <<"const std::string &pID,Phase_Space_Handler *psh)\n"
+	  <<"    {\n      size_t pos(pID.find(\"/\"));\n"
+	  <<"      s_loader->AddPath(rpa->gen.Variable(\"SHERPA_LIB_PATH\"));\n"
+	  <<"      Lib_Getter_Function gf = (Lib_Getter_Function)\n"
+	  <<"        PT(s_loader->GetLibraryFunction(\"Proc_"<<subdirname<<"\",\"Getter_\"+pID));\n"
+	  <<"      if (gf==NULL) return NULL;\n"
+	  <<"      return gf(nin,nout,fl,psh->GetInfo(),psh);\n    }\n";
+    cgfile<<"    int GenerateChannels()\n"
+	  <<"    {\n      int nin=p_proc->NIn(), nout=p_proc->NOut();\n"
+	  <<"      Flavour *fl=(Flavour*)&p_proc->Flavours().front();\n"
+	  <<"      Phase_Space_Handler *psh=&*p_proc->Integrator()->PSHandler();\n"
+	  <<"      p_mc->Add(LoadChannel(nin,nout,fl,\""<<fileID<<"\",psh));\n"
+	  <<"      return 0;\n    }\n";
+    cgfile<<"  };\n}\n\n";
+    cgfile<<"DECLARE_GETTER("<<subdirname<<"_Channel_Generator,\""
+	  <<subdirname<<"\",Channel_Generator,Channel_Generator_Key);\n";
+    cgfile<<"Channel_Generator *ATOOLS::Getter<Channel_Generator,"
+	  <<"Channel_Generator_Key,"<<subdirname<<"_Channel_Generator>::\n"
+	  <<"operator()(const Channel_Generator_Key &args) const "
+	  <<"{ return new "<<subdirname<<"_Channel_Generator(args); }\n";
+    cgfile<<"void ATOOLS::Getter<Channel_Generator,Channel_Generator_Key,"
+	  <<subdirname<<"_Channel_Generator>::\n"
+	  <<"PrintInfo(std::ostream &str,const size_t width) const "
+	  <<"{ str<<\""<<subdirname<<"\"; }\n"<<std::flush;
   }
   else {
     ifstream from(makefilename.c_str());
@@ -220,6 +264,26 @@ void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,st
     to.close();
 
     Move(makefilename+".tmp",makefilename);
+    {
+      std::string fname=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pathID+"/CG.C";
+      ifstream from(fname.c_str());
+      ofstream to((fname+".tmp").c_str());
+      bool first=true;
+      string buffer;
+      string key=string("p_mc->Add");
+      for (;from;) {
+	getline(from,buffer);
+	if (first && buffer.find(key)!=string::npos) {
+	  to<<"      p_mc->Add(LoadChannel(nin,nout,fl,\""<<fileID<<"\",psh));\n";
+	  first=false;
+	}
+	to<<buffer<<endl;
+      }
+      from.close();
+      to.close();
+
+      Move(fname+".tmp",fname);
+    }
   }
 }
 
