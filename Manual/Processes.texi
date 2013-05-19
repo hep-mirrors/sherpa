@@ -37,6 +37,7 @@ The following parameters are used to steer the process setup.
 * Subdivide_Virtual::       Tag to split virtual contribution into pieces.
 * ME_Generator::            Tag to specifiy the tree ME generator.
 * Loop_Generator::          Tag to specifiy the loop ME generator.
+* Integrator::              Tag to specifiy the integrator.
 * End process::             The process setup end tag.
 @end menu
 
@@ -498,6 +499,10 @@ Another source for loop matrix elements is @url{http://projects.hepforge.org/bla
 To use this Sherpa has to be linked to BlackHat during installation by using the configure option 
 @code{--enable-blackhat=/path/to/blackhat}.
 
+
+@node Integrator
+@subsection Integrator
+Sets a process-specific integrator, see @ref{INTEGRATOR}.
 
 @node End process
 @subsection End process

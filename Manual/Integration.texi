@@ -10,7 +10,6 @@ The following parameters are used to steer the integration.
 @menu
 * ERROR::                The relative integration error
 * INTEGRATOR::           The integrator type
-* RS_INTEGRATOR::        The RS integrator type
 * VEGAS::                Whether to enable Vegas
 * FINISH_OPTIMIZATION::  Whether to fully optimise the Vegas grid
 * PSI_NMAX::             Maximum number of points per process
@@ -66,12 +65,6 @@ and @code{VHAAG_RES_D2=3}, which is the correct choice for
 all processes where the decay products are the only not
 strongly interacting final state particles.
 @end itemize
-
-@node RS_INTEGRATOR
-@subsection RS_INTEGRATOR
-@cindex RS_INTEGRATOR
-In an NLO process, specifies the integrator for real-subtracted processes. 
-It takes the same values as @ref{INTEGRATOR}, but defaults to @code{7}.
 
 @node VEGAS
 @subsection VEGAS

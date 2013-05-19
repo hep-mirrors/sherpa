@@ -16,11 +16,16 @@ bool FSR_Channels::Initialize()
   Data_Reader dr(" ",";","!","=");
   dr.AddComment("#");
   dr.AddWordSeparator("\t");
+  dr.AddWordSeparator(",");
   dr.SetInputPath(rpa->GetPath());
   dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   std::vector<std::string> inttypes;
   dr.VectorFromFile(inttypes,"INTEGRATOR");
   if (inttypes.empty()) inttypes.push_back("Default");
+  if (p_psh->Process()->Process()->Info().m_integrator!="") {
+    dr.SetString(p_psh->Process()->Process()->Info().m_integrator);
+    dr.VectorFromString(inttypes,"");
+  }
   nin=p_psh->Process()->NIn();
   nout=p_psh->Process()->NOut();
   int m_nin(nin), m_nout(nout);
