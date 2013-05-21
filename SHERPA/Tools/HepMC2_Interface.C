@@ -227,7 +227,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
           momentum.set( mom[j][1], mom[j][2], mom[j][3],mom[j][0]);
           ATOOLS::Flavour flc(fl[j]);
           HepMC::GenParticle* inpart
-              = new HepMC::GenParticle(momentum,flc.HepEvt(),1);
+              = new HepMC::GenParticle(momentum,flc.HepEvt(),2);
           subvertex->add_particle_in(inpart);
         }
       }
