@@ -837,14 +837,6 @@ void Phase_Space_Handler::AddStats(const std::vector<double> &stats)
 template Weight_Info &ATOOLS::Blob_Data_Base::Get<Weight_Info>();
 
 namespace ATOOLS {
-  std::ostream & operator<<(std::ostream & s, const PHASIC::Weight_Info & wi)
-  {
-    s<<" w = "<<wi.m_weight<<std::endl;
-    return s;
-  }
-}
-
-namespace ATOOLS {
 template <> Blob_Data<Weight_Info>::~Blob_Data() {}
 
 template class Blob_Data<Weight_Info>;
