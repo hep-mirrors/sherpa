@@ -74,7 +74,7 @@ void CP<SType>::AddPropagator()
 {
   // add propagator for off-shell leg
   for (size_t i(0);i<m_j.size();++i) {
-  CAsT4Type_Vector *j(m_j[i].Get<CAsT4Type>());
+  CAsT4Type_Vector *j(m_j[i].template Get<CAsT4Type>());
   for (typename CAsT4Type_Vector::iterator 
 	 jit(j->begin());jit!=j->end();++jit) **jit*=m_prop;
   }

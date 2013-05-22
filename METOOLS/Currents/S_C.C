@@ -102,7 +102,7 @@ void CS<SType>::AddPropagator()
 		 <<this->m_p.Abs2()<<", m = "<<sqrt(m_cmass2)<<"\n";
 #endif
   for (size_t i(0);i<m_j.size();++i) {
-  CScalarType_Vector *j(m_j[i].Get<CScalarType>());
+  CScalarType_Vector *j(m_j[i].template Get<CScalarType>());
   for (typename CScalarType_Vector::iterator 
 	 jit(j->begin());jit!=j->end();++jit) **jit*=prop;
   }

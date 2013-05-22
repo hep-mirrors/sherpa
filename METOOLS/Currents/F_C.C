@@ -133,7 +133,7 @@ void CF<SType>::AddPropagator()
   msg_Debugging()<<"pp = "<<pp<<", pm = "<<pm<<", pt = "<<pt<<"\n";
 #endif
   for (size_t i(0);i<m_j.size();++i) {
-  CSpinorType_Vector *j(m_j[i].Get<CSpinorType>());
+  CSpinorType_Vector *j(m_j[i].template Get<CSpinorType>());
   for (typename CSpinorType_Vector::iterator 
 	 jit(j->begin());jit!=j->end();++jit) {
     CSpinorType j((*jit)->R(),(*jit)->B(),(**jit)(0),(**jit)(1),

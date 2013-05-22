@@ -110,9 +110,9 @@ void SSVV_Calculator<SType>::Evaluate()
     for (jit[1]=ccb.begin();jit[1]!=ccb.end();++jit[1]) {
       for (jit[2]=cce.begin();jit[2]!=cce.end();++jit[2],++i) {
   if (m_dir==0) {
-    const CVec4Type_Vector *ca(jit[m_n[1]]->Get<CVec4Type>());
-    const CVec4Type_Vector *cb(jit[m_n[2]]->Get<CVec4Type>());
-    const CScalarType_Vector *ce(jit[m_n[0]]->Get<CScalarType>());
+    const CVec4Type_Vector *ca(jit[m_n[1]]->template Get<CVec4Type>());
+    const CVec4Type_Vector *cb(jit[m_n[2]]->template Get<CVec4Type>());
+    const CScalarType_Vector *ce(jit[m_n[0]]->template Get<CScalarType>());
     for (typename CVec4Type_Vector::const_iterator 
 	   ait(ca->begin());ait!=ca->end();++ait)
       for (typename CVec4Type_Vector::const_iterator 
@@ -134,9 +134,9 @@ void SSVV_Calculator<SType>::Evaluate()
 	  }
   }
   else {
-    const CScalarType_Vector *ca(jit[m_n[0]]->Get<CScalarType>());
-    const CScalarType_Vector *cb(jit[m_n[1]]->Get<CScalarType>());
-    const CVec4Type_Vector *ce(jit[m_n[2]]->Get<CVec4Type>());
+    const CScalarType_Vector *ca(jit[m_n[0]]->template Get<CScalarType>());
+    const CScalarType_Vector *cb(jit[m_n[1]]->template Get<CScalarType>());
+    const CVec4Type_Vector *ce(jit[m_n[2]]->template Get<CVec4Type>());
     for (typename CScalarType_Vector::const_iterator 
 	   ait(ca->begin());ait!=ca->end();++ait)
       for (typename CScalarType_Vector::const_iterator 
