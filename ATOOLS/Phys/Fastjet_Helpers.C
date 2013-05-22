@@ -25,7 +25,7 @@ namespace ATOOLS {
   }
 
 
-  bool ToBeClustered(const ATOOLS::Flavour& flav, bool bmode)
+  bool ToBeClustered(const ATOOLS::Flavour& flav, int bmode)
   {
     return
       (bmode==0 && Flavour(kf_jet).Includes(flav)) || 
