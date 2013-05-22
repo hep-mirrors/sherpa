@@ -103,7 +103,7 @@ DECLARE_PDF_GETTER(PDFE_Getter);
 PDF_Base *PDFE_Getter::operator()
   (const Parameter_Type &args) const
 {
-  if (!args.m_bunch.Kfcode()==kf_e) return NULL;
+  if (args.m_bunch.Kfcode()!=kf_e) return NULL;
   int izetta=args.p_read->GetValue<int>("ISR_E_ORDER",1);
   int order=args.p_read->GetValue<int>("ISR_E_SCHEME",2);
   return new PDF_Electron(args.m_bunch,izetta,order);
