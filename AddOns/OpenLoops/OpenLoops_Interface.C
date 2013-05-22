@@ -157,9 +157,11 @@ namespace OpenLoops {
     int check_Ward_tree=false;
     int check_Ward_loop=false;
     int out_symmetry=true;
+    int leading_colour=false;
     parameters_init_(&Mass_E, &Mass_M, &Mass_L, &Mass_U, &Mass_D, &Mass_S, &Mass_C, &Width_C, &Mass_B, &Width_B, &Mass_T, &Width_T,
                      &Mass_W, &Width_W, &Mass_Z, &Width_Z, &Mass_H, &Width_H, &alpha_QED, &alpha_S,
-                     &last_switch, &amp_switch, &amp_switch_rescue, &use_coli_cache, &check_Ward_tree, &check_Ward_loop, &out_symmetry);
+                     &last_switch, &amp_switch, &amp_switch_rescue, &use_coli_cache,
+                     &check_Ward_tree, &check_Ward_loop, &out_symmetry, &leading_colour);
 
 
     double renscale=sqrt(mur2);
@@ -253,12 +255,17 @@ namespace OpenLoops {
     string procdatapath=s_olprefix+"/proclib";
     int n(scandir(procdatapath.c_str(),&entries,&SelectInfo,alphasort));
     if (n<0) THROW(fatal_error, "OpenLoops process dir "+procdatapath+" not found.");
-
+    vector<string> files;
     for (int ifile=0; ifile<n; ++ifile) {
-      string file(entries[ifile]->d_name);
+      files.push_back(string(entries[ifile]->d_name));
+      free(entries[ifile]);
+    }
+    free(entries);
+
+    for (int ifile=0; ifile<files.size(); ++ifile) {
       Data_Reader reader(" ",";","#","");
       reader.SetAddCommandLine(false);
-      reader.SetInputFile(procdatapath+"/"+file);
+      reader.SetInputFile(procdatapath+"/"+files[ifile]);
       reader.SetMatrixType(mtc::transposed);
       vector<vector<string> > content;
       reader.MatrixFromFile(content);
@@ -270,7 +277,9 @@ namespace OpenLoops {
             continue;
           }
           else if (match!="1") {
+            PRINT_INFO("Mapping "<<process<<" to "<<match<<".");
             process=match;
+            return ScanFiles(process, oew, oqcd, nloop);
           }
           string grouptag=content[i][0];
           string process_subid=content[i][2];
@@ -284,10 +293,8 @@ namespace OpenLoops {
           return make_pair(grouptag, process_subid);
         }
       }
-      free(entries[ifile]);
     }
     PRINT_INFO("Didn't find info file matching process "<<process);
-    free(entries);
     return make_pair("", "0");
   }
 
@@ -400,10 +407,8 @@ namespace OpenLoops {
     return ret;
   }
 
-  void dummyamp2func(double* moms,
-                     double* B,
-                     double* V_finite, double* V_eps, double* V_eps2,
-                     double* I_finite, double* I_eps, double* I_eps2)
+  void dummyamp2func(double* moms, double* M2L0, double* M2L1, double* IRL1,
+                     double* M2L2, double* IRL2)
   {
     THROW(normal_exit, "Shopping list generated.");
   }
@@ -449,7 +454,7 @@ using namespace OpenLoops;
       void *ampfunc, *permfunc;
       for (size_t i=0; i<suffixes.size(); ++i) {
         string libraryfile="openloops_"+grouptag+"_"+suffixes[i]+"L";
-        ampfunc=s_loader->GetLibraryFunction(libraryfile,"vamp2chk_"+lc_functag);
+        ampfunc=s_loader->GetLibraryFunction(libraryfile,"vamp2_"+lc_functag);
         permfunc=s_loader->GetLibraryFunction(libraryfile,"set_permutation_"+lc_functag);
         if (ampfunc!=NULL && permfunc!=NULL) break;
       }
@@ -530,7 +535,7 @@ using namespace OpenLoops;
       void *ampfunc, *permfunc;
       for (size_t i=0; i<suffixes.size(); ++i) {
         string libraryfile="openloops_"+grouptag+"_"+suffixes[i]+"L";
-        ampfunc=s_loader->GetLibraryFunction(libraryfile,"vamp2chk_"+lc_functag);
+        ampfunc=s_loader->GetLibraryFunction(libraryfile,"vamp2_"+lc_functag);
         permfunc=s_loader->GetLibraryFunction(libraryfile,"set_permutation_"+lc_functag);
         if (ampfunc!=NULL && permfunc!=NULL) break;
       }

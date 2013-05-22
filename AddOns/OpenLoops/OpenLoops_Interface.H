@@ -65,10 +65,8 @@ namespace OpenLoops {
 
 
 
-typedef void (*Amp2Func)(double* moms,
-                         double* B,
-                         double* V_finite, double* V_eps, double* V_eps2,
-                         double* I_finite, double* I_eps, double* I_eps2);
+typedef void (*Amp2Func)(double* moms, double* M2L0, double* M2L1, double* IRL1,
+                         double* M2L2, double* IRL2);
 
 typedef void (*PermutationFunc)(int* permutation);
 
@@ -79,7 +77,8 @@ extern "C" {
                         double* Mass_C, double* Width_C, double* Mass_B, double* Width_B, double* Mass_T, double* Width_T,
                         double* Mass_W, double* Width_W, double* Mass_Z, double* Width_Z, double* Mass_H, double* Width_H,
                         double* Coupl_Alpha_QED, double* Coupl_Alpha_QCD,
-                        int* last_switch, int* amp_switch, int* amp_switch_rescue, int* use_coli_cache, int* check_Ward_tree, int* check_Ward_loop, int* out_symmetry);
+                        int* last_switch, int* amp_switch, int* amp_switch_rescue, int* use_coli_cache,
+                        int* check_Ward_tree, int* check_Ward_loop, int* out_symmetry, int* leading_colour);
 
 
   void loop_parameters_init_(double* renscale, double* fact_UV, double* fact_IR, double* pole1_UV, double* pole1_IR, double* pole2_IR,
