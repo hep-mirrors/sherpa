@@ -1,9 +1,10 @@
 #include "ATOOLS/Phys/Fastjet_Helpers.H"
+#include "ATOOLS/Org/Message.H"
 #ifdef USING__FASTJET
 
 namespace ATOOLS {
 
-  bool BTag(const fastjet::PseudoJet& jet, bool bmode)
+  bool BTag(const fastjet::PseudoJet& jet, int bmode)
   {
     if (bmode==0) return false;
 

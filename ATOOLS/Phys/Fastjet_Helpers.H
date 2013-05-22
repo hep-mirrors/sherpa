@@ -9,8 +9,8 @@
 
 namespace ATOOLS {
 
-  bool ToBeClustered(const ATOOLS::Flavour& flav, bool bmode);
-  bool BTag(const fastjet::PseudoJet& jet, bool bmode);
+  bool ToBeClustered(const ATOOLS::Flavour& flav, int bmode);
+  bool BTag(const fastjet::PseudoJet& jet, int bmode);
   fastjet::PseudoJet MakePseudoJet(const Flavour& flav, const Vec4D& mom);
 }
 
