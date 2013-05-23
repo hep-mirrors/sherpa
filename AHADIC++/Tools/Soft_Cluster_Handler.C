@@ -283,8 +283,12 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter)
       return 2;
     }
     if (transformweight>0.) {
-      m_transitions += 1;
       cluster->push_back(hadtrans);
+      if (hadtrans.Mass() < cluster->Mass()) {
+        cluster->push_back(Flavour(kf_photon));
+        return 2;
+      }
+      m_transitions += 1;
       return 1;
     }
   }
