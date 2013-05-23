@@ -180,11 +180,6 @@ void Single_Amplitude::PrintGraph()
         msg_Out()<<"G("<<c->ParticleArg(0)<<" "<<c->ParticleArg(1)<<") ";
 	break;
       }
-      case 10: {
-	msg_Out()<<"TP("<<c->ParticleArg(0)<<" "<<c->ParticleArg(1)
-			    <<" "<<c->ParticleArg(2)<<") ";
-	break;
-      }
       default : break;
     }
     c = c->Next();     
