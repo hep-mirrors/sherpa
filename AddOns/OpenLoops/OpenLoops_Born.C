@@ -40,23 +40,26 @@ double OpenLoops_Born::Calc(const Vec4D_Vector& momenta)
   double mur2(10000.0);
   s_interface->OpenLoopsInit(mur2, alpha_QED, alpha_S);
 
-  double M2L0;
-  std::vector<double> M2L1(3), M2L2(5), IRL1(3), IRL2(5);
+  double B(0.0), V_finite(0.0), V_eps(0.0), V_eps2(0.0), I_finite(0.0), I_eps(0.0), I_eps2(0.0);
 
   m_permutationfunc(&m_permutation[0]);
-  m_amp2(&m_moms[0][0], &M2L0, &M2L1[0], &IRL1[0], &M2L2[0], &IRL2[0]);
+  m_amp2(&m_moms[0][0], &B, &V_finite, &V_eps, &V_eps2, &I_finite, &I_eps, &I_eps2);
 
-  if (IsZero(M2L1[1]) && IsZero(M2L1[2]) &&
-      IsZero(IRL1[1]) && IsZero(IRL1[2]) &&
-      IsZero(M2L2[1]) && IsZero(M2L2[2]) && IsZero(M2L2[3]) && IsZero(M2L2[4]) &&
-      IsZero(IRL2[1]) && IsZero(IRL2[2]) && IsZero(IRL2[3]) && IsZero(IRL2[4])) {
+  if (IsZero(V_eps) && IsZero(V_eps2) && IsZero(I_eps) && IsZero(I_eps2)) {
     // OL returns ME2 including 1/symfac, but Calc is supposed to return it
     // without 1/symfac, thus multiplying with symfac here
-    if (IsZero(M2L0)) return m_symfac*M2L2[0];
-    else return m_symfac*M2L0;
+    if (IsZero(B)) return m_symfac*I_finite;
+    else return m_symfac*B;
   }
   else {
     PRINT_INFO("Poles non-zero. Returning 0.");
+    PRINT_VAR(B);
+    PRINT_VAR(V_finite);
+    PRINT_VAR(V_eps);
+    PRINT_VAR(V_eps2);
+    PRINT_VAR(I_finite);
+    PRINT_VAR(I_eps);
+    PRINT_VAR(I_eps2);
     return 0.0;
   }
 }

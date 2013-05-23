@@ -157,11 +157,9 @@ namespace OpenLoops {
     int check_Ward_tree=false;
     int check_Ward_loop=false;
     int out_symmetry=true;
-    int leading_colour=false;
     parameters_init_(&Mass_E, &Mass_M, &Mass_L, &Mass_U, &Mass_D, &Mass_S, &Mass_C, &Width_C, &Mass_B, &Width_B, &Mass_T, &Width_T,
                      &Mass_W, &Width_W, &Mass_Z, &Width_Z, &Mass_H, &Width_H, &alpha_QED, &alpha_S,
-                     &last_switch, &amp_switch, &amp_switch_rescue, &use_coli_cache,
-                     &check_Ward_tree, &check_Ward_loop, &out_symmetry, &leading_colour);
+                     &last_switch, &amp_switch, &amp_switch_rescue, &use_coli_cache, &check_Ward_tree, &check_Ward_loop, &out_symmetry);
 
 
     double renscale=sqrt(mur2);
@@ -195,48 +193,46 @@ namespace OpenLoops {
                           &set_C_PV_threshold, &set_D_PV_threshold, &set_DD_red_mode);
   }
 
-  std::string OpenLoops_Interface::MatchOptions(vector<string> options, int oew, int oqcd, int nloop) {
+  bool OpenLoops_Interface::MatchOptions(vector<string> options, int oew, int oqcd, int nloop) {
     for (size_t i=2; i<options.size(); ++i) {
       string option=options[i].substr(0, options[i].find("="));
       string value=options[i].substr(options[i].find("=")+1);
 
-      if (option=="EW" && value!=ToString(oew)+",0") return "0";
-      if (option=="QCD" && value!=ToString(oqcd)+","+ToString(nloop)) return "0";
+      if (option=="EW" && value!=ToString(oew)+",0") return false;
+      if (option=="QCD" && value!=ToString(oqcd)+","+ToString(nloop)) return false;
       if (option=="CKMORDER") {
         int ckmorder=ToType<int>(value);
         if (ckmorder<3) {
           if (s_model->ComplexMatrixElement("CKM", 0,2)!=Complex(0.0,0.0) ||
               s_model->ComplexMatrixElement("CKM", 2,0)!=Complex(0.0,0.0)) {
-            return "0";
+            return false;
           }
         }
         if (ckmorder<2) {
           if (s_model->ComplexMatrixElement("CKM", 1,2)!=Complex(0.0,0.0) ||
               s_model->ComplexMatrixElement("CKM", 2,1)!=Complex(0.0,0.0)) {
-            return "0";
+            return false;
           }
         }
         if (ckmorder<1) {
           if (s_model->ComplexMatrixElement("CKM", 0,1)!=Complex(0.0,0.0) ||
               s_model->ComplexMatrixElement("CKM", 1,0)!=Complex(0.0,0.0)) {
-            return "0";
+            return false;
           }
         }
       }
-      if (option=="nf" && ToType<int>(value)!=s_nf) return "0";
-      if (option=="MD" && Flavour(kf_d).Mass()>0.0) return "0";
-      if (option=="MU" && Flavour(kf_u).Mass()>0.0) return "0";
-      if (option=="MS" && Flavour(kf_s).Mass()>0.0) return "0";
-      if (option=="MC" && Flavour(kf_c).Mass()>0.0) return "0";
-      if (option=="MB" && Flavour(kf_b).Mass()>0.0) return "0";
-      if (option=="MT" && Flavour(kf_t).Mass()>0.0) return "0";
-      if (option=="ME" && Flavour(kf_e).Mass()>0.0) return "0";
-      if (option=="MM" && Flavour(kf_mu).Mass()>0.0) return "0";
-      if (option=="MT" && Flavour(kf_tau).Mass()>0.0) return "0";
-
-      if (option=="map") return value;
+      if (option=="nf" && ToType<int>(value)!=s_nf) return false;
+      if (option=="MD" && Flavour(kf_d).Mass()>0.0) return false;
+      if (option=="MU" && Flavour(kf_u).Mass()>0.0) return false;
+      if (option=="MS" && Flavour(kf_s).Mass()>0.0) return false;
+      if (option=="MC" && Flavour(kf_c).Mass()>0.0) return false;
+      if (option=="MB" && Flavour(kf_b).Mass()>0.0) return false;
+      if (option=="MT" && Flavour(kf_t).Mass()>0.0) return false;
+      if (option=="ME" && Flavour(kf_e).Mass()>0.0) return false;
+      if (option=="MM" && Flavour(kf_mu).Mass()>0.0) return false;
+      if (option=="MT" && Flavour(kf_tau).Mass()>0.0) return false;
     }
-    return "1";
+    return true;
   }
 
 
@@ -249,37 +245,25 @@ namespace OpenLoops {
     else return false;
   }
 
-  pair<string, string> OpenLoops_Interface::ScanFiles(string& process, int oew, int oqcd, int nloop)
+  pair<string, string> OpenLoops_Interface::ScanFiles(const string& process, int oew, int oqcd, int nloop)
   {
     struct dirent **entries;
     string procdatapath=s_olprefix+"/proclib";
     int n(scandir(procdatapath.c_str(),&entries,&SelectInfo,alphasort));
     if (n<0) THROW(fatal_error, "OpenLoops process dir "+procdatapath+" not found.");
-    vector<string> files;
     for (int ifile=0; ifile<n; ++ifile) {
-      files.push_back(string(entries[ifile]->d_name));
-      free(entries[ifile]);
-    }
-    free(entries);
-
-    for (int ifile=0; ifile<files.size(); ++ifile) {
+      string file(entries[ifile]->d_name);
       Data_Reader reader(" ",";","#","");
       reader.SetAddCommandLine(false);
-      reader.SetInputFile(procdatapath+"/"+files[ifile]);
+      reader.SetInputFile(procdatapath+"/"+file);
       reader.SetMatrixType(mtc::transposed);
       vector<vector<string> > content;
       reader.MatrixFromFile(content);
       for (size_t i=0; i<content.size(); ++i) {
         if (content[i][1]==process) {
-          string match=MatchOptions(content[i], oew, oqcd, nloop);
-          if (match=="0") {
+          if (!MatchOptions(content[i], oew, oqcd, nloop)) {
             PRINT_INFO("Ignoring process with incompatible options.");
             continue;
-          }
-          else if (match!="1") {
-            PRINT_INFO("Mapping "<<process<<" to "<<match<<".");
-            process=match;
-            return ScanFiles(process, oew, oqcd, nloop);
           }
           string grouptag=content[i][0];
           string process_subid=content[i][2];
@@ -293,8 +277,10 @@ namespace OpenLoops {
           return make_pair(grouptag, process_subid);
         }
       }
+      free(entries[ifile]);
     }
     PRINT_INFO("Didn't find info file matching process "<<process);
+    free(entries);
     return make_pair("", "0");
   }
 
@@ -407,8 +393,10 @@ namespace OpenLoops {
     return ret;
   }
 
-  void dummyamp2func(double* moms, double* M2L0, double* M2L1, double* IRL1,
-                     double* M2L2, double* IRL2)
+  void dummyamp2func(double* moms,
+                     double* B,
+                     double* V_finite, double* V_eps, double* V_eps2,
+                     double* I_finite, double* I_eps, double* I_eps2)
   {
     THROW(normal_exit, "Shopping list generated.");
   }
@@ -454,7 +442,7 @@ using namespace OpenLoops;
       void *ampfunc, *permfunc;
       for (size_t i=0; i<suffixes.size(); ++i) {
         string libraryfile="openloops_"+grouptag+"_"+suffixes[i]+"L";
-        ampfunc=s_loader->GetLibraryFunction(libraryfile,"vamp2_"+lc_functag);
+        ampfunc=s_loader->GetLibraryFunction(libraryfile,"vamp2chk_"+lc_functag);
         permfunc=s_loader->GetLibraryFunction(libraryfile,"set_permutation_"+lc_functag);
         if (ampfunc!=NULL && permfunc!=NULL) break;
       }
@@ -535,7 +523,7 @@ using namespace OpenLoops;
       void *ampfunc, *permfunc;
       for (size_t i=0; i<suffixes.size(); ++i) {
         string libraryfile="openloops_"+grouptag+"_"+suffixes[i]+"L";
-        ampfunc=s_loader->GetLibraryFunction(libraryfile,"vamp2_"+lc_functag);
+        ampfunc=s_loader->GetLibraryFunction(libraryfile,"vamp2chk_"+lc_functag);
         permfunc=s_loader->GetLibraryFunction(libraryfile,"set_permutation_"+lc_functag);
         if (ampfunc!=NULL && permfunc!=NULL) break;
       }
