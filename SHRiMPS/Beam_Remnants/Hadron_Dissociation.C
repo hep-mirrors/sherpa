@@ -133,19 +133,6 @@ DefineDissociation(const int & Nladders,const double B,
   double  xmin(p_pdf->XMin()*double(Nladders+2)),xave(1./double(Nladders+2));
   double  startweight(pow(1.25,Nladders)*pow(xave,-(2+Nladders)*eta));
   
-  double xmean(0.1*exp(-B/1.)),xlow;
-  double xtlow(1.e-10),xthigh(1.),xtmid,xmlow,xmhigh,xmmid;
-  do {
-    xtmid = (xthigh+xtlow)/2.;
-    xmlow = (1.-xtlow)/log(1./xtlow);
-    xmhigh = (1.-xthigh)/log(1./xthigh);
-    xmmid = (1.-xtmid)/log(1./xtmid);
-    if (xmean < xmlow) break; 
-    if (xmean < xmmid) xthigh = xtmid;
-    else xtlow = xtmid;
-  } while ((xmhigh-xmlow) > 0.0001);
-  xlow = xtlow;
-  
   if (xmin<xcut) {
     int     trials(0);
     double  weight,wt,x,xsum,maxwt(0.);
