@@ -229,7 +229,7 @@ NextIS(Particle *& part1,Particle *& part2) {
     if (!p_part[beam]) return false;
     p_part[beam]->SetNumber();
   }
-  double xp[2], xm[2], xt2[2];
+  double xp[2] = {0,0}, xm[2] = {0,0}, xt2[2] = {0,0};
   for (int beam=0;beam<2;beam++) 
     m_hadrons[beam]->GetXs(m_paircounter,xp[beam],xm[beam],xt2[beam],m_shat);
   double Xp = xp[0] + xp[1],        Xm = xm[0] + xm[1];
