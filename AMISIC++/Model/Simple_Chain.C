@@ -225,7 +225,7 @@ bool Simple_Chain::CreateGrid()
   return true;
 }
 
-bool Simple_Chain::InitializeProcessList(const Flavour& in1,
+void Simple_Chain::InitializeProcessList(const Flavour& in1,
                                          const Flavour& in2,
                                          const Flavour& out1,
                                          const Flavour& out2)

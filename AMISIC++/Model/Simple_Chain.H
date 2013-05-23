@@ -75,7 +75,7 @@ namespace AMISIC {
     bool ReadInData();
 
     bool CreateGrid();
-    bool InitializeProcessList(const ATOOLS::Flavour& in1,
+    void InitializeProcessList(const ATOOLS::Flavour& in1,
                                const ATOOLS::Flavour& in2,
                                const ATOOLS::Flavour& out1,
                                const ATOOLS::Flavour& out2);
