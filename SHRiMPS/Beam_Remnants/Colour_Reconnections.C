@@ -128,7 +128,7 @@ void Colour_Reconnections::ShuffleColours() {
   map<Particle *,map<double, Particle *>,partcomp>::iterator mapit;
   map<double,Particle *>           dists;
   map<double,Particle *>::iterator distit;
-  Particle * test1, * test2, * trip, * anti;
+  Particle * test1, * test2, * trip=NULL, * anti=NULL;
   while (!m_trips.empty()) {
     double maxdist = -1.;
     //msg_Out()<<"Start looping to look for next colour connection: "
@@ -187,7 +187,7 @@ void Colour_Reconnections::ShuffleColours() {
 void Colour_Reconnections::SaveLastGluon(Particle * part) {
   partpair winner;
   double combdist(1.e99), testdist;
-  Particle *test1, * test2, * trip, * anti;
+  Particle *test1, * test2, * trip=NULL, * anti=NULL;
   partdists pdists(m_links[part]), tdists;
   std::list<partpair>::iterator winit;
   for (std::list<partpair>::iterator ppit=m_pairs.begin();
@@ -223,6 +223,11 @@ void Colour_Reconnections::SaveLastGluon(Particle * part) {
   //	   <<"["<<anti->Number()<<"]"
   //	   <<"("<<m_newcols[anti].first<<", "<<m_newcols[anti].second<<").\n";
 
+  if (trip==NULL || anti==NULL) {
+    msg_Error()<<"Error in "<<METHOD<<":\n"
+               <<"   did not find a viable pair!\n";
+    exit(1);
+  }
   size_t col = trip->GetFlow(1);
   m_newcols[part].second = col;
   col = part->GetFlow(1);
