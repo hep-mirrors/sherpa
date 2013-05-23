@@ -64,9 +64,12 @@ void DEQ_Solver::SolveSystem(const std::vector<double> & x0,int & steps,
       }
     }
   } while (run);
-  if (accu>=0.) msg_Tracking()<<"Out "<<METHOD<<"(steps = "<<steps<<", accu = "<<accu<<"), "
-			      <<"accuracy better than "<<diffmax<<"."<<std::endl;
-  else msg_Debugging()<<"Out "<<METHOD<<"(steps = "<<steps<<", accu = "<<accu<<")."<<std::endl;
+  if (accu>=0.) {
+    msg_Tracking()<<"Out "<<METHOD<<"(steps = "<<steps<<", accu = "<<accu<<"), "
+                  <<"accuracy better than "<<diffmax<<"."<<std::endl;
+  } else {
+    msg_Debugging()<<"Out "<<METHOD<<"(steps = "<<steps<<", accu = "<<accu<<")."<<std::endl;
+  }
 }
 
 
