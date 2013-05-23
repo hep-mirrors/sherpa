@@ -16,7 +16,7 @@ Amplitude_Output::Amplitude_Output(std::string pid, Topology * _top,
   pid=pid.substr(pid.rfind('/')+1);
   std::string fname=gpath+pid+std::string(".tex");
   pios.open(fname.c_str());
-  top = top;
+  top = _top;
   ampl=0;
   counter=0;
   maincounter=1;
