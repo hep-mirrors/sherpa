@@ -141,6 +141,9 @@ namespace PHASIC {
     inline METOOLS::Amplitude2_Tensor* Amps() { return p_amps; }
 
     friend std::ostream &operator<<(std::ostream &os, const Decay_Channel &dt);
+
+    static bool FlavourSort(const ATOOLS::Flavour &fl1,
+                            const ATOOLS::Flavour &fl2);
   };
 }
 #endif

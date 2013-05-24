@@ -37,7 +37,7 @@ Decay_Channel::~Decay_Channel()
   if (p_amps) delete p_amps;
 }
 
-bool FlavourSort(const Flavour &fl1,const Flavour &fl2)
+bool Decay_Channel::FlavourSort(const Flavour &fl1,const Flavour &fl2)
 {
   // TODO: Get rid of this custom sorting, but then the hadron decay channel
   // files have to be changed as well (order mapping in MEs)
@@ -64,7 +64,7 @@ void Decay_Channel::AddDecayProduct(const ATOOLS::Flavour& flout)
   for (size_t i=1; i<m_flavours.size(); ++i) {
     flouts[i-1]=m_flavours[i];
   }
-  std::sort(flouts.begin(), flouts.end(),FlavourSort);
+  std::sort(flouts.begin(), flouts.end(),Decay_Channel::FlavourSort);
   m_flavours.clear();
   m_flavours.resize(flouts.size()+1);
   m_flavours[0]=flin;

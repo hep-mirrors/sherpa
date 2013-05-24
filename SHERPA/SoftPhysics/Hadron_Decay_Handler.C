@@ -147,18 +147,22 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
       if(decayblob && decayblob->Type()==btp::Hadron_Decay) {
         DEBUG_FUNC(decayblob->InParticle(0));
         DEBUG_VAR(*fblob);
+        DEBUG_VAR(decayblob->InParticle(0)->Flav());
         Return_Value::IncCall(mname);
-        Flavour_Vector decayresults;
+        Flavour_Vector compflavs(fblob->NOutP()+1);
+        bool anti=decayblob->InParticle(0)->Flav().IsAnti();
+        compflavs[0]=anti?decayblob->InParticle(0)->Flav().Bar():
+                          decayblob->InParticle(0)->Flav();
+        Flavour_Vector tmp;
         for(int i=0;i<fblob->NOutP();i++) {
-          decayresults.push_back(fblob->OutParticle(i)->Flav());
+          tmp.push_back(anti?fblob->OutParticle(i)->Flav().Bar():
+                             fblob->OutParticle(i)->Flav());
         }
-        std::sort(decayresults.begin(), decayresults.end());
-        Flavour_Vector flavs(decayresults.size()+1);
-        flavs[0]=decayblob->InParticle(0)->Flav();
-        for (size_t i=0; i<decayresults.size(); ++i) flavs[i+1]=decayresults[i];
-        Decay_Map::iterator dt=p_decaymap->find(flavs[0]);
+        std::sort(tmp.begin(), tmp.end(), Decay_Channel::FlavourSort);
+        for (size_t i=0; i<tmp.size(); ++i) compflavs[i+1]=tmp[i];
+        Decay_Map::iterator dt=p_decaymap->find(compflavs[0]);
         if(dt!=p_decaymap->end() &&
-           dt->second[0]->GetDecayChannel(flavs)) {
+           dt->second[0]->GetDecayChannel(compflavs)) {
           Return_Value::IncRetryPhase(mname);
           DEBUG_INFO("rejected. retrying decay.");
           p_bloblist->Delete(fblob);
@@ -174,6 +178,10 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
           return true;
         }
         else {
+          if (dt==p_decaymap->end()) {
+            PRINT_INFO("Decay table not found for "<<compflavs[0]);
+          }
+          DEBUG_INFO("not found as exclusive. accepted.");
           Vec4D vertex_position=decayblob->Position();
           showerblob->SetPosition(vertex_position);
           fblob->SetPosition(vertex_position);
