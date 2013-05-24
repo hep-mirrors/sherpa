@@ -449,8 +449,14 @@ void Matrix_Element_Handler::BuildProcesses()
 	    long int kfc(ToType<long int>(cur[i]));
 	    pi.m_nodecs.push_back(Flavour(abs(kfc),kfc<0));
 	  }
-	if (cur[0]=="Order_EW") pi.m_oew=ToType<int>(cur[1]);
-	if (cur[0]=="Order_QCD") pi.m_oqcd=ToType<int>(cur[1]);
+	if (cur[0]=="Order_EW") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_voew,nf);
+        }
+	if (cur[0]=="Order_QCD") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_voqcd,nf);
+        }
 	if (cur[0]=="Max_Order_EW") pi.m_maxoew=ToType<int>(cur[1]);
 	if (cur[0]=="Max_Order_QCD") pi.m_maxoqcd=ToType<int>(cur[1]);
 	if (cur[0]=="Cut_Core") pbi.m_cutcore=ToType<int>(cur[1]);
@@ -673,6 +679,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	cpi.m_fi.m_nloqcdtype=pi.m_fi.m_nloqcdtype;
 	cpi.m_fi.m_nloewtype=pi.m_fi.m_nloewtype;
 	cpi.m_fi.SetNMax(pi.m_fi);
+	if (GetMPvalue(pbi.m_voew,nfs,pnid,di)) cpi.m_oew=di;
+	if (GetMPvalue(pbi.m_voqcd,nfs,pnid,di)) cpi.m_oqcd=di;
 	if (GetMPvalue(pbi.m_vscale,nfs,pnid,ds)) cpi.m_scale=ds;
 	if (GetMPvalue(pbi.m_vcoupl,nfs,pnid,ds)) cpi.m_coupling=ds;
 	if (GetMPvalue(pbi.m_vkfac,nfs,pnid,ds)) cpi.m_kfactor=ds;
