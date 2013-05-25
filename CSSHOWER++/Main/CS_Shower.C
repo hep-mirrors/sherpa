@@ -335,10 +335,10 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
 	parton->SetBeam(1);
       }
     }
-    double kt2max(leg->KTMax()),kt2veto(leg->KTVeto()),kt2start(leg->KTStart());
-    parton->SetStart(Min(kt2veto,kt2start));   // start scale of shower
-    parton->SetKtMax(kt2max);    // no jet veto below ktmax
-    parton->SetVeto(kt2veto);     // irrelevant 
+    double kt2start(leg->KTStart());
+    parton->SetStart(kt2start);   // start scale of shower
+    parton->SetKtMax(sqr(rpa->gen.Ecms()));    // no jet veto below ktmax
+    parton->SetVeto(sqr(rpa->gen.Ecms()));     // irrelevant 
     parton->SetConnected(leg->Connected());
     parton->SetMass2(p_ms->Mass2(leg->Flav()));
     singlet->push_back(parton);

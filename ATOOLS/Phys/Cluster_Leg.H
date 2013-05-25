@@ -65,7 +65,7 @@ namespace ATOOLS {
     Flavour m_fl;
     ColorID m_c;
 
-    double  m_ktstart, m_ktmax, m_ktveto;
+    double  m_ktstart;
 
     bool    m_connected;
     std::list<Cluster_Leg *> m_spectators;
@@ -82,8 +82,7 @@ namespace ATOOLS {
 		       const ColorID &c=ColorID()):
       p_ampl(ampl), m_id(0), m_st(0), m_n(0), m_d(0), m_k(0),
       m_p(p), m_fl(fl), m_c(c),
-      m_ktstart(0.), m_ktmax(0.), m_ktveto(0.), m_connected(true)
-    {}
+      m_ktstart(0.), m_connected(true) {}
 
     inline ~Cluster_Leg() {}
 
@@ -110,8 +109,6 @@ namespace ATOOLS {
     inline void SetFlav(const Flavour &fl) { m_fl=fl; }
 
     inline void SetKTStart(const double &kt) { m_ktstart = kt; }
-    inline void SetKTMax(const double &kt)   { m_ktmax   = kt; }
-    inline void SetKTVeto(const double &kt)  { m_ktveto  = kt; }
 
     inline void SetConnected(const bool &c)  { m_connected = c; }
 
@@ -127,10 +124,9 @@ namespace ATOOLS {
     inline size_t K() const    { return m_k;  }
 
     inline double KTStart() const { return m_ktstart; }
-    inline double KTMax() const   { return m_ktmax; }
-    inline double KTVeto() const  { return m_ktveto; }
 
     inline bool Connected() const { return m_connected; }
+
   };// end of class Cluster_Leg
 
   typedef std::vector<Cluster_Leg*> ClusterLeg_Vector;

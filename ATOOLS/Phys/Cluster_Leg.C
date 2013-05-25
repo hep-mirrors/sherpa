@@ -65,7 +65,7 @@ Cluster_Leg *Cluster_Leg::New
   cl->m_p=p;
   cl->m_fl=fl;
   cl->m_c=c;
-  cl->m_ktstart=cl->m_ktmax=cl->m_ktveto=0.;
+  cl->m_ktstart=0.0;
   return cl;
 }
 
@@ -92,11 +92,8 @@ namespace ATOOLS {
 	<<sqrt(dabs(leg.Mom().Abs2()))<<" "<<leg.Col();
     ostr<<" ["<<leg.Stat()<<"|"<<leg.NMax()<<"]";
     if (leg.K()>0) ostr<<" <-> "<<ID(leg.K());
-    if (leg.KTStart()>0. || leg.KTMax()>0. || leg.KTVeto()>0.)
-      ostr<<"\n"
-	  <<"   kts: start = "<<sqrt(leg.KTStart())
-	  <<", max = "<<sqrt(leg.KTMax())<<", "
-	  <<"veto = "<<sqrt(leg.KTVeto());
+    if (leg.KTStart()>0.0)
+      ostr<<"\n   kts: start = "<<sqrt(leg.KTStart());
     return ostr;
   }
 

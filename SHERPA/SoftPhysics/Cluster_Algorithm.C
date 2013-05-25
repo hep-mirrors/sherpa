@@ -216,8 +216,6 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
     Cluster_Leg * leg(p_ampl->Legs().back());
     leg->SetNMax(blob->NOutP()+2);
     leg->SetKTStart(0.);
-    leg->SetKTMax(0.);
-    leg->SetKTVeto(0.);
     leg->GetSpectators().clear();
     leg->SetConnected(false);
   }
@@ -242,8 +240,6 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       Cluster_Leg * leg(p_ampl->Legs().back());
       leg->SetStat(0);
       leg->SetKTStart(scale);
-      leg->SetKTMax(scale);
-      leg->SetKTVeto(scale);
       leg->SetNMax(blob->NOutP()+3);
       leg->GetSpectators().clear();
       leg->SetConnected(false);
@@ -311,8 +307,6 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
     //	     <<split->NumberOfSpectators()<<" spectators.\n";
     if (kt2max>totmax) totmax = kt2max;
     split->SetKTStart(kt2max);
-    split->SetKTMax(kt2min);
-    split->SetKTVeto(kt2min);
     
     m_histomap[std::string("startvspt")]->Insert(split->Mom().PPerp(),kt2max);  
     m_histomap[std::string("vetovspt")]->Insert(split->Mom().PPerp(),kt2min);  
