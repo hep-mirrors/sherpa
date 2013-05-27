@@ -14,8 +14,19 @@
 }(run)
 
 (processes){
-  Process 11 -11 -> 93 93 93{0};
+  Process 11 -11 -> 93 93 93{3};
   CKKW pow(10,-2.25);
   Order_EW 2;
+  End process;
+
+  Process 11 -11 -> 5 -5 93{3};
+  CKKW pow(10,-2.25);
+  Order_EW 2;
+  End process;
+
+  Process 11 -11 -> 5 5 -5 -5 93{1};
+  CKKW pow(10,-2.25);
+  Order_EW 2;
+  Cut_Core 1;
   End process;
 }(processes)
