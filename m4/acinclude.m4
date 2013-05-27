@@ -676,6 +676,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AM_CONDITIONAL(ROOT_SUPPORT, test "$root" = "true")
   
 
+  lhapdfversion=5
   AC_ARG_ENABLE(
     lhapdf,
     AC_HELP_STRING([--enable-lhapdf=/path/to/lhapdf], [Enable LHAPDF support and specify where it is installed.]),
