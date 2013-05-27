@@ -76,7 +76,8 @@ void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta) {
   double alpha_S=AlphaQCD();
   s_interface->OpenLoopsInit(m_mur2, alpha_QED, alpha_S);
 
-  double B, V_finite, V_eps, V_eps2, I_finite, I_eps, I_eps2;
+  double M2L0;
+  vector<double> M2L1(3), M2L2(5), IRL1(3), IRL2(5);
 
   MyTiming* timing;
   if (msg_LevelIsDebugging()) {
@@ -84,22 +85,20 @@ void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta) {
     timing->Start();
   }
   m_permutationfunc(&m_permutation[0]);
-  m_amp2(&m_moms[0][0], &B, &V_finite, &V_eps, &V_eps2, &I_finite, &I_eps, &I_eps2);
+  m_amp2(&m_moms[0][0], &M2L0, &M2L1[0], &IRL1[0], &M2L2[0], &IRL2[0]);
   if (msg_LevelIsDebugging()) {
     timing->Stop();
-    PRINT_INFO(momenta[2][0]<<" "<<m_flavs<<" user="<<timing->UserTime()<<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
+    PRINT_INFO(momenta[2][0]<<" "<<m_flavs<<" user="<<timing->UserTime()
+               <<" real="<<timing->RealTime()<<" sys="<<timing->SystemTime());
   }
+
+  double B(M2L0), V_finite(M2L1[0]), V_eps(M2L1[1]), V_eps2(M2L1[2]);
 
   // factor which by Sherpa convention has to be divided out at this stage
   double factor=B*alpha_S/2.0/M_PI;
 
   m_born=B;
-  if (OpenLoops_Interface::s_pole_mode==-1) {
-    m_res.Finite()=(-I_finite/factor);
-  }
-  else {
-    m_res.Finite()=(V_finite/factor);
-  }
+  m_res.Finite()=(V_finite/factor);
   m_res.IR()=(V_eps/factor);
   m_res.IR2()=(V_eps2/factor);
 
@@ -112,7 +111,7 @@ void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta) {
       }
       m_points_file<<endl;
     }
-    m_points_file<<B<<" "<<V_finite<<" "<<V_eps<<" "<<V_eps2<<" "<<I_finite<<" "<<I_eps<<" "<<I_eps2<<endl;
+    m_points_file<<B<<" "<<V_finite<<" "<<V_eps<<" "<<V_eps2<<endl;
   }
   // Here the histograms are filled.  The syntax is with 
   // Insert(xbin, value), where the value, by default is 1.
