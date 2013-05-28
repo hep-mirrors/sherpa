@@ -183,7 +183,7 @@ PTij2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pj) const
   double ptij2    = 
     2.*Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-cos(pi.Phi()-pj.Phi()));
   //   return m_showerfac*Min(pref*pti2,ptij2);
-  return m_showerfac*ptij2;
+  return m_showerfac*Min(pti2,ptij2);
 }
 
 double Cluster_Algorithm::
@@ -271,7 +271,8 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       spect = legs[j-1];
       int nconn(ColorConnected(split->Col(),spect->Col()));
       if (nconn==0) continue;
-      kt2FS = (split->Mom()+spect->Mom()).Abs2();
+      kt2FS = PTij2(split->Mom(),spect->Mom());
+      //(split->Mom()+spect->Mom()).Abs2();
       if (ColorConnected(split->Col(),colbeam0)>0 || 
 	  ColorConnected(split->Col(),colbeam1)>0) {
         kt2min = Max(m_tmax,scale);
