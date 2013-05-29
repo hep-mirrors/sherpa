@@ -121,11 +121,11 @@ namespace OpenLoops {
     s_particles[-kf_s] = OpenLoops_Particle("sx", "-F[4,{2}]", 21);
     s_particles[kf_b] = OpenLoops_Particle("b", "F[4,{3}]", 22);
     s_particles[-kf_b] = OpenLoops_Particle("bx", "-F[4,{3}]", 23);
-    s_particles[kf_h0] = OpenLoops_Particle("H", "S[1]", 24);
+    s_particles[kf_h0] = OpenLoops_Particle("h", "S[1]", 24);
     s_particles[kf_photon] = OpenLoops_Particle("a", "V[1]", 25);
-    s_particles[kf_Z] = OpenLoops_Particle("Z", "V[2]", 26);
-    s_particles[-kf_Wplus] = OpenLoops_Particle("W", "V[3]", 27);
-    s_particles[kf_Wplus] = OpenLoops_Particle("Wx", "-V[3]", 28);
+    s_particles[kf_Z] = OpenLoops_Particle("z", "V[2]", 26);
+    s_particles[-kf_Wplus] = OpenLoops_Particle("w", "V[3]", 27);
+    s_particles[kf_Wplus] = OpenLoops_Particle("wx", "-V[3]", 28);
     s_particles[kf_gluon] = OpenLoops_Particle("g", "V[5]", 29);
   }
 
