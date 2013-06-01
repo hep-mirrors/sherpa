@@ -389,7 +389,9 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
 		continue;
 	      }
 	      if (cf[f].IsGluon() &&
+		  !li->Flav().IsGluon() &&
 		  li->Flav().Kfcode()>m_nfgsplit &&
+		  !lj->Flav().IsGluon() &&
 		  lj->Flav().Kfcode()>m_nfgsplit) {
 		msg_Debugging()<<"Veto flavour: "<<cf[f]<<" = "
 			       <<ID(cs.m_idi)<<" & "<<ID(cs.m_idj)
