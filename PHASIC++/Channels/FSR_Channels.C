@@ -4,9 +4,9 @@
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Channels/Channel_Generator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
+#include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Math/Permutation.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -36,9 +36,16 @@ bool FSR_Channels::Initialize()
       (inttypes[i],Channel_Generator_Key
        (p_psh->Process()->Process(),this));
     if (cg==NULL) {
-      msg_Error()<<METHOD<<"(): Channel generator '"<<inttypes[i]
-		 <<"' not found. Skip."<<std::endl;
-      continue;
+      s_loader->AddPath(rpa->gen.Variable("SHERPA_LIB_PATH"));
+      if (s_loader->LoadLibrary("Proc_"+inttypes[i])) {
+	cg=Channel_Generator::Getter_Function::GetObject
+	  (inttypes[i],Channel_Generator_Key
+	   (p_psh->Process()->Process(),this));
+      }
+      if (cg==NULL) {
+	THROW(fatal_error,"Channel generator '"
+	      +inttypes[i]+"' not found.");
+      }
     }
     sintegrator|=cg->GenerateChannels();
     delete cg;
