@@ -1,8 +1,13 @@
+# Declare spectators {flav1:weight1,flav2,weight2,...}
+SPECTATORS     | {4:0.642,-5:0.321,0}
+
+
 # outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
 
 {12,-11}	 | 1.46e-9[FS]	 | Bc+_nu_ee+.dat;
 {14,-13}	 | 6.16e-5[FS]	 | Bc+_nu_mumu+.dat;
 {16,-15}	 | 0.0152[FS]	 | Bc+_nu_tautau+.dat;
+{4,-3}           | 0.037[Lenz]   | Bc+_csb.dat
 
 {441,12,-11}	 | 0.0081[hep-ph/0602050]	 | Bc+_etac1Snu_ee+.dat;
 {441,14,-13}	 | 0.0081[hep-ph/0602050]	 | Bc+_etac1Snu_mumu+.dat;

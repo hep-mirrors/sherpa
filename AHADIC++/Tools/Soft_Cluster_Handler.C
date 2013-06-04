@@ -117,14 +117,15 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
 
 bool Soft_Cluster_Handler::TreatSingleCluster(Cluster * cluster)
 {
-  switch (CheckCluster(cluster,true)) {
+  switch (CheckCluster(cluster,true,true)) {
   case 1:
-    msg_Debugging()<<"Potential problem in "<<METHOD<<" : \n"
-		   <<"   Clusterlist with one element that "
-		   <<"needs to transform to a hadron."
-		   <<"\n"
-		   <<"   Will possibly lead to retrying the event.\n";
-    return false;
+    msg_Error()<<"Potential problem in "<<METHOD<<" : \n"
+	       <<"   Clusterlist with one element that "
+	       <<"needs to transform to a hadron."
+	       <<"\n"<<(*cluster)<<"\n"
+	       <<"   Will force decay to hadron+photon.\n";
+    cluster->push_back(Flavour(kf_photon));
+    return true;
   case 2:
   case 0:
   default:
@@ -260,7 +261,8 @@ bool Soft_Cluster_Handler::CheckListForTreatment(Cluster_List * clin) {
 }
 
 
-int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter)
+int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter,
+				       bool mustdecay)
 {
   msg_Tracking()<<METHOD<<"("<<cluster->Number()<<").\n";
   cluster->clear();
@@ -276,6 +278,22 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter)
   double transformweight(TransformWeight(cluster,hadtrans,lighter,false));
   if (decayweight>0. || transformweight>0.) {
     double totweight((Max(0.,decayweight)+Max(0.,transformweight))*0.9999999);
+    if (mustdecay) {
+      if (decayweight>0.) {
+	cluster->push_back(haddec1);
+	cluster->push_back(haddec2);
+      }
+      else if (transformweight>0.) {
+	cluster->push_back(hadtrans);
+	cluster->push_back(Flavour(kf_photon));
+      }
+      else {
+	cluster->clear();
+	return 0;
+      }
+      m_decays      += 1;
+      return 2;
+    }
     if (transformweight<=0. || decayweight/totweight>ran->Get()) {
       m_decays      += 1;
       cluster->push_back(haddec1);

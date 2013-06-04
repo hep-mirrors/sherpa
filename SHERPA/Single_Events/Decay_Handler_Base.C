@@ -86,7 +86,8 @@ void Decay_Handler_Base::SetMasses(ATOOLS::Blob* blob, bool usefinalmass)
         }
       }
       else {
-        double mass = (*it)->RefFlav().RelBWMass(0.0, max, this->Mass((*it)->RefFlav()));
+        double mass = (*it)->RefFlav().RelBWMass(0.0, max, 
+						 this->Mass((*it)->RefFlav()));
         (*it)->SetFinalMass(mass);
         DEBUG_INFO(max<<" > "<<"m["<<(*it)->RefFlav()<<"]="<<mass);
       }
@@ -161,7 +162,8 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
   std::vector<size_t> shuffled(daughters.size());
   for (size_t i=0; i<daughters.size(); ++i) shuffled[i]=i;
   for (size_t i=0; i<daughters.size(); ++i) {
-    if (abs(daughters[i]->Momentum().Abs2()-sqr(daughters[i]->FinalMass()))>1e-6) {
+    if (abs(daughters[i]->Momentum().Abs2()-
+	    sqr(daughters[i]->FinalMass()))>1e-6) {
       PRINT_INFO("Initial particle "<<daughters[i]->Flav()<<" not onshell: "
                  <<"p^2="<<daughters[i]->Momentum().Mass()
                  <<" vs. m^2="<<daughters[i]->FinalMass());
@@ -360,7 +362,6 @@ Amplitude2_Tensor* Decay_Handler_Base::FillOnshellDecay(Blob *blob,
 
 Cluster_Amplitude* Decay_Handler_Base::ClusterConfiguration(Blob *const bl)
 {
-  msg_Debugging()<<METHOD<<"() {\n";
   msg_Indent();
   p_ampl = Cluster_Amplitude::New();
   p_ampl->SetMS(this);
@@ -372,6 +373,7 @@ Cluster_Amplitude* Decay_Handler_Base::ClusterConfiguration(Blob *const bl)
   p_ampl->SetNIn(bl->NInP());
   for (int i(0);i<bl->NOutP();++i) {
     Particle *p(bl->OutParticle(i));
+    if (p->GetFlow(1)==0 && p->GetFlow(2)==0) continue;
     ColorID col(p->GetFlow(1),p->GetFlow(2));
     p_ampl->CreateLeg(p->Momentum(),p->Flav(),col,1<<(i+p_ampl->NIn()));
   }

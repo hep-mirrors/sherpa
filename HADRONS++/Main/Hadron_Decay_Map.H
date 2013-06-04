@@ -43,7 +43,8 @@ namespace HADRONS {
      * Reads all decay tables and create their decay channels, but does not
      * initialise (integrate) them.
      */
-    void Read(const std::string& path, const std::string& file, bool verify=false);
+    void Read(const std::string& path, const std::string& file, 
+	      bool verify=false);
     /**
      * Reads fixed decay tables from FixedDecays.dat which can later be
      * programmatically set to be used for the next decay of a certain decayer,
@@ -57,6 +58,11 @@ namespace HADRONS {
      * HadronConstants.dat and sets them to the flavour.
      */
     void ReadInConstants(const std::string& path, const std::string& file);
+    /**
+     * Reads partonic decay data.
+     */
+    void ReadInPartonicDecays(const ATOOLS::Flavour & decflav,
+			      const std::string& path,const std::string& file);
     /**
      * Reads a file with lines of the format "1234->111" and creates alias
      * particles 1234 with the properties of 111, which can be used in

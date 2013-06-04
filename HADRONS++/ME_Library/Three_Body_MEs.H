@@ -104,6 +104,18 @@ namespace HADRONS {
     void SetModelParameters( GeneralModel _md );
   };
 
+  class QQ_QVQ_Spectator : public HD_ME_Base {
+    ATOOLS::Flavour m_decayer;
+  public:
+    QQ_QVQ_Spectator(const ATOOLS::Flavour_Vector& flavs,
+		     const std::vector<int>& decayindices,
+		     const std::string& name);
+    void Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti=false);
+    void SetModelParameters( GeneralModel _md );
+    bool SetColorFlow(std::vector<ATOOLS::Particle*> outparts,
+		      int n_q, int n_g, bool anti);
+  };
+
   class QQ_PGG : public HD_ME_Base {
     double m_min_mass2;
   public:

@@ -1,3 +1,7 @@
+# Declare spectators {flav1:weight1,flav2,weight2,...}
+SPECTATORS     | {2:1.}
+
+
 # outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
 
 ## (semi)leptonic decays
@@ -520,15 +524,3 @@
 {211,113}        | 9.1e-06[EvtGen]   | B+_pi+rho770.dat;
 {100113,211}     | 2.2e-06[EvtGen]   | B+_rho1450pi+.dat;
 {225,211}        | 2.3e-06[EvtGen]  | B+_f21270pi+.dat;
-
-
-### partonic decays followed by shower and fragmentation
-### (remainder: 0.4365)
-{-4,2,2,-1}	 | 0.2484	 | B+_cbuudb.dat;
-{-4,-3,2,2}	 | 0.0372	 | B+_cbsbuu.dat;
-{4,-4,-3,2}	 | 0.1378	 | B+_ccbsbu.dat;
-{4,-4,2,-1}	 | 0.0066	 | B+_ccbudb.dat;
-{2,2,-2,-1}	 | 0.0040	 | B+_uuubdb.dat;
-{-3,2,2,-2}	 | 0.00021	 | B+_sbuuub.dat;
-{4,-3,2,-2}	 | 0.0021	 | B+_csbuub.dat;
-{4,2,-2,-1}	 | 0.00012	 | B+_cuubdb.dat;

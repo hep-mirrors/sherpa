@@ -1,10 +1,9 @@
 #include "HADRONS++/Main/Hadron_Decay_Table.H"
 #include "HADRONS++/Main/Hadron_Decay_Channel.H"
 #include "HADRONS++/Main/Mixing_Handler.H"
+#include "HADRONS++/Main/Tools.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 
 using namespace HADRONS;
@@ -39,18 +38,31 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
     abort();
   }
 
+  bool haspartonics(false);
+  std::vector<int> specs;
+  std::vector<double> specweights;
+  for (size_t i=0;i<helpsvv.size();i++) {
+    if (helpsvv[i].size()!=3 && helpsvv[i][0]==string("SPECTATORS")) {
+      haspartonics = true;
+      Tools::ExtractSpecs(helpsvv[i][1],specs,specweights);
+      msg_Tracking()<<METHOD<<": found spectators for "<<m_flin<<": ";
+      for (size_t j=0;j<specs.size();j++) msg_Tracking()<<specs[j]<<" ";
+      msg_Tracking()<<"\n";
+    }
+  }
+
   int nchannels(0), rewrite(0);
   vector<int>      helpkfc;
-  double           BR, dBR;
+  double           BR, dBR, totBR(0.);
   string           origin;
   Flavour          flav;
   Hadron_Decay_Channel* hdc;
-  
   for (size_t i=0;i<helpsvv.size();i++) {
     if ( helpsvv[i][0] == string("NO_ANTI") )
       continue;
-    if (ExtractFlavours(helpkfc,helpsvv[i][0])) {
-      ExtractBRInfo( helpsvv[i][1], BR, dBR, origin );
+    if (Tools::ExtractFlavours(helpkfc,helpsvv[i][0])) {
+      Tools::ExtractBRInfo(helpsvv[i][1], BR, dBR, origin);
+      if (haspartonics) totBR += BR;
       hdc = new Hadron_Decay_Channel(Flav(),p_ms,path);
       int charge = Flav().IntCharge();
       double mass = Flav().HadMass();
@@ -78,6 +90,95 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
       nchannels++;
     }
   }
+  if (Flav().IsC_Hadron()) 
+    msg_Tracking()<<METHOD<<" for "<<om::green<<Flav()<<om::reset<<": "
+	     <<"total BR = "<<om::green<<totBR<<om::reset<<".\n";
+  if (haspartonics) {
+    PHASIC::Decay_Table * dectable(NULL);
+    if (!Flav().IsB_Hadron() && !Flav().IsC_Hadron()) {
+      msg_Error()<<"ERROR in "<<METHOD<<":\n"
+		 <<"   No suitable partonic decay table found for "
+		 <<Flav()<<".\n"
+		 <<"   Will continue and hope for the best.\n";
+      if(rewrite) {
+	Move(path+file, path+"."+file+".old");
+	ofstream ostr( (path + file).c_str() );
+	Write(ostr);
+	ostr.close();
+      }
+      ScaleToWidth();
+      return;
+    }
+    double  totspec(0.);
+    Flavour spec;
+    for (size_t k=0;k<specs.size();k++) totspec+=specweights[k];
+    for (size_t k=0;k<specs.size();k++) {
+      bool isAnti(false);
+      spec = Flavour(abs(specs[k]));
+      if (specs[k]<0) spec = spec.Bar();
+      if ((spec.IsQuark() && !spec.IsAnti()) ||
+	  (spec.IsDiQuark() && spec.IsAnti())) isAnti=true;
+      if (Flav()==Flavour(kf_B_c)) {
+	msg_Tracking()<<METHOD<<"("<<Flav()<<"): spectator = "<<spec
+		 <<" --> anti = "<<isAnti<<".\n";
+	if (abs(specs[k])==5)         dectable = Tools::partonic_c;
+	else if (abs(specs[k])==4)    dectable = Tools::partonic_b;
+	else {
+	  msg_Tracking()<<"WARNING in "<<METHOD<<" for "<<Flav()<<":\n"
+		   <<"   No annihilation table yet.  Will continue.\n";
+	  continue;
+	}
+      }
+      else {
+	if (Flav().IsB_Hadron())      dectable = Tools::partonic_b;
+	else if (Flav().IsC_Hadron()) dectable = Tools::partonic_c;
+      }
+      double  partWidth((1.-totBR)*Flav().Width()/
+			(dectable->TotalWidth()*totspec));
+      for (size_t i=0;i<dectable->size();i++) {
+	BR = ((*dectable)[i]->Width()*specweights[k]);
+	hdc = new Hadron_Decay_Channel(Flav(),p_ms,path);
+	int charge = Flav().IntCharge();
+	double mass = Flav().HadMass();
+	hdc->AddDecayProduct(spec,false);
+	charge-=spec.IntCharge();
+	mass-=spec.HadMass();
+	std::string filename=m_flin.IDName();
+	if (filename.find("_{s}")!=string::npos) 
+	  filename = StringReplace(filename, "_{s}", "s");
+	if (filename.find("-_{b}")!=string::npos) 
+	  filename = StringReplace(filename, "-_{b}", "b-");
+	if (filename.find("_{b}")!=string::npos) 
+	  filename = StringReplace(filename, "_{b}", "b");
+	if (filename.find("++_{c}")!=string::npos) 
+	  filename = StringReplace(filename, "++_{c}", "c++");
+	if (filename.find("+_{c}")!=string::npos) 
+	  filename = StringReplace(filename, "+_{c}", "c+");
+	if (filename.find("_{c}")!=string::npos) 
+	  filename = StringReplace(filename, "_{c}", "c");
+	filename += "_"+spec.IDName();
+	msg_Tracking()<<"   Add partonic decay: "<<Flav()<<" --> ";
+	for (size_t j=0;j<(*dectable)[i]->NOut();j++) {
+	  flav = (*dectable)[i]->GetDecayProduct(j);
+	  if (isAnti) flav=flav.Bar();
+	  msg_Tracking()<<flav<<" ";
+	  hdc->AddDecayProduct(flav,false);
+	  charge   -= flav.IntCharge();
+	  mass     -= flav.HadMass();
+	  filename += flav.IDName();
+	}
+	hdc->SetWidth(BR*partWidth);
+	hdc->SetDeltaWidth(0.);
+	hdc->SetOrigin("");
+	filename += ".dat";
+	msg_Tracking()<<"  ---> "<<filename<<".\n";
+	hdc->SetFileName(filename);
+	AddDecayChannel(hdc);
+	nchannels++;
+      }
+    }
+  }
+
 
   if(rewrite) {
     Move(path+file, path+"."+file+".old");
@@ -86,6 +187,9 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
     ostr.close();
   }
   ScaleToWidth();
+  if (Flav().IsC_Hadron()) 
+    msg_Tracking()<<"   --> after rescaling: "
+	     <<om::green<<totBR<<om::reset<<".\n";
 }
 
 
@@ -126,91 +230,6 @@ void Hadron_Decay_Table::Write(std::ostream& ostr)
     ostr<<"\t | ";
     ostr<<hdc->FileName()<<";"<<endl;
   }
-}
-
-bool Hadron_Decay_Table::ExtractFlavours(vector<int> & helpkfc,string help)
-{
-  helpkfc.clear();    
-  size_t pos = help.find("{");
-  bool             hit;
-  if (pos!=string::npos) help = help.substr(pos+1);
-  else {
-    msg_Error()<<"WARNING in "<<METHOD<<": "<<endl
-           <<"   Something wrong with final state of decay (Bracket missing) :"<<help<<endl
-           <<"   Will skip it."<<endl;
-    return false;
-  }
-  pos    = help.find("}");
-  if (pos!=string::npos) help = help.substr(0,pos);
-  else {
-    msg_Error()<<"WARNING in "<<METHOD<<": "<<endl
-           <<"   Something wrong with final state of decay (Bracket missing) :"<<help<<endl
-           <<"   Will skip it."<<endl;
-    return false;
-  }
-  hit    = true;
-  while (hit) {
-    pos      = help.find(",");
-    if (pos!=string::npos) {
-      helpkfc.push_back(atoi((help.substr(0,pos)).c_str()));
-      help  = help.substr(pos+1);
-    }
-    else {
-      helpkfc.push_back(atoi(help.c_str()));
-      hit = false;
-    }
-  }
-//  if (helpkfc.size()<2) {
-//    msg_Error()<<"WARNING in Decay_Map:: : "<<endl
-//           <<"   Something wrong with final state of decay (Too little particles) : ";
-//    for (int j=0;j<helpkfc.size();j++) msg_Error()<<helpkfc[j]<<" ";
-//    msg_Error()<<endl<<"   Will skip it."<<endl;
-//    return false;
-//  } 
-  if (helpkfc.size()<1) {
-    msg_Error()<<"WARNING in "<<METHOD<<": "<<endl
-           <<"   Something wrong with final state of decay. (no particles?)"<<endl
-           <<"   Will skip it and hope for the best."<<endl;
-    return false;
-  } 
-  return true;
-}
- 
-void Hadron_Decay_Table::ExtractBRInfo( string entry, double & br, double & dbr, string & origin )
-{
-  size_t posa, posb;        // start and end of things b/w brackets
-  size_t posmin;            // start of first bracket
-
-  std::string sbr, sdbr;
-
-  // extract Delta BR
-  posa = entry.find("(");
-  posb = entry.find(")");
-  posmin = posa;
-  if(posa!=string::npos && posb!=string::npos)
-    sdbr = entry.substr(posa+1,posb-posa-1);
-  else sdbr = "-1.0";
-
-  // extract Origin
-  posa = entry.find("[");
-  posb = entry.find("]");
-  if(posmin==string::npos || (posmin!=string::npos && posmin>posa)) posmin=posa;
-  if(posa!=string::npos && posb!=string::npos)
-    origin = entry.substr(posa+1,posb-posa-1);
-  else origin = string("");
-
-  // extract BR
-  if( posmin!=string::npos ) sbr = entry.substr(0,posmin);
-  else                       sbr = entry.substr(0);
-
-  Algebra_Interpreter ip;
-  sdbr=ip.Interprete(sdbr);
-  sbr=ip.Interprete(sbr);
-
-  dbr=ToType<double>(sdbr);
-  br=ToType<double>(sbr);
-
-  if (dbr==-1.0) dbr = br;
 }
 
 void Hadron_Decay_Table::LatexOutput(std::ostream& f)

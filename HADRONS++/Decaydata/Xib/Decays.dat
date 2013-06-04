@@ -1,3 +1,7 @@
+# Declare spectators {flav1:weight1,flav2,weight2,...}
+SPECTATORS     | {3201:1.}
+
+
 # outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
 
 {4232,-12,11}	 | 0.0546	 | Xib_Xic+nu_ebe-.dat;

@@ -1,0 +1,19 @@
+# Decay: Lambda+_{c} --> Sigma pi+ pi+ pi+b 
+#        0           --> 2     4   
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+
+<Result>
+  1.821e-08 7.246e-11 3.608e-07;
+</Result>

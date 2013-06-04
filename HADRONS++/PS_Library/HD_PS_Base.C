@@ -102,6 +102,9 @@ Single_Channel * HD_Channel_Selector::GetChannel(
           md("Width_"+Flavour(kfres).IDName(), width ) );
       return new Dalitz(flavs,res,ci.a,ci.b);
     }
+    if( ci.name==string("IsotropicSpectator") ) {
+      return new IsotropicSpectator( flavs, nout, ci.a, ms );
+    }
   }
   if (nout==4) {
     if( ci.name==string("TwoResonances") ) {
@@ -117,7 +120,7 @@ Single_Channel * HD_Channel_Selector::GetChannel(
       return new TwoResonances( flavs, res_a, ci.a, res_v, ci.b, ci.c );
     }
     if( ci.name==string("IsotropicSpectator") ) {
-      return new IsotropicSpectator( flavs, ci.a, ms );
+      return new IsotropicSpectator( flavs, nout, ci.a, ms );
     }
   }
 

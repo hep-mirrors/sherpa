@@ -44,6 +44,10 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
   string decayfile=dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
   string decayconstfile=dr.GetValue<string>("DECAYCONSTFILE",
                                             string("HadronConstants.dat"));
+  string bdecayfile=dr.GetValue<string>("B_DECAYFILE",
+					string("Partonic_b/Decays.dat"));
+  string cdecayfile=dr.GetValue<string>("C_DECAYFILE",
+					string("Partonic_c/Decays.dat"));
   string aliasfile=dr.GetValue<string>("HADRONALIASESFILE",
                                        string("HadronAliases.dat"));
   string aliasdecayfile=dr.GetValue<string>("ALIASDECAYFILE",
@@ -53,6 +57,8 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
 
   Hadron_Decay_Map * dmap = new Hadron_Decay_Map(this);
   dmap->ReadInConstants(decaypath, decayconstfile);
+  dmap->ReadInPartonicDecays(Flavour(kf_b),decaypath,bdecayfile);
+  dmap->ReadInPartonicDecays(Flavour(kf_c),decaypath,cdecayfile);
   dmap->ReadHadronAliases(decaypath, aliasfile);
   dmap->Read(decaypath, decayfile, true);
   dmap->Read(decaypath, aliasdecayfile);
@@ -149,16 +155,22 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
         DEBUG_VAR(*fblob);
         DEBUG_VAR(decayblob->InParticle(0)->Flav());
         Return_Value::IncCall(mname);
-        Flavour_Vector compflavs(fblob->NOutP()+1);
         bool anti=decayblob->InParticle(0)->Flav().IsAnti();
-        compflavs[0]=anti?decayblob->InParticle(0)->Flav().Bar():
-                          decayblob->InParticle(0)->Flav();
         Flavour_Vector tmp;
         for(int i=0;i<fblob->NOutP();i++) {
           tmp.push_back(anti?fblob->OutParticle(i)->Flav().Bar():
                              fblob->OutParticle(i)->Flav());
         }
+        for(int i=0;i<decayblob->NOutP();i++) {
+          if (decayblob->OutParticle(i)->GetFlow(1)==0 &&
+              decayblob->OutParticle(i)->GetFlow(2)==0)
+            tmp.push_back(anti?decayblob->OutParticle(i)->Flav().Bar():
+                               decayblob->OutParticle(i)->Flav());
+        }
         std::sort(tmp.begin(), tmp.end(), Decay_Channel::FlavourSort);
+        Flavour_Vector compflavs(tmp.size()+1);
+        compflavs[0]=anti?decayblob->InParticle(0)->Flav().Bar():
+                          decayblob->InParticle(0)->Flav();
         for (size_t i=0; i<tmp.size(); ++i) compflavs[i+1]=tmp[i];
         Decay_Map::iterator dt=p_decaymap->find(compflavs[0]);
         if(dt!=p_decaymap->end() &&

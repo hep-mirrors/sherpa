@@ -1,12 +1,5 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
+# Declare spectators {flav1:weight1,flav2,weight2,...}
+SPECTATORS     | {3101:1.}
 
-{2212,-321,-321,211}	 | 9.454e-09	 | Xic_P+K-K-pi+.dat;
-{2212,-321,-313}	 | 6.877e-06	 | Xic_P+K-Kstar892b.dat;
-{3122,310}	 | 0.01181	 | Xic_LambdaKS.dat;
-{3122,-321,211}	 | 4.305e-05	 | Xic_LambdaK-pi+.dat;
-{3122,-311,211,-211}	 | 2.536e-08	 | Xic_LambdaKbpi+pi-.dat;
-{3122,-321,211,211,-211}	 | 3.131e-12	 | Xic_LambdaK-pi+pi+pi-.dat;
-{3312,211}	 | 0.01141	 | Xic_Xi-pi+.dat;
-{3312,211,211,-211}	 | 4.432e-08	 | Xic_Xi-pi+pi+pi-.dat;
-{3334,321}	 | 0.01361	 | Xic_Omega-K+.dat;
-{3312,12,-11}	 | 0.0002498	 | Xic_Xi-nu_ee+.dat;
+# in PDG everything is "seen" only.
+# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file

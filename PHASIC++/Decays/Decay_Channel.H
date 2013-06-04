@@ -92,7 +92,7 @@ namespace PHASIC {
     //Decay_Channel() {}
     Decay_Channel(const ATOOLS::Flavour &, const ATOOLS::Mass_Selector* ms);
     virtual ~Decay_Channel();
-    void AddDecayProduct(const ATOOLS::Flavour & flout);
+    void AddDecayProduct(const ATOOLS::Flavour & flout,const bool & sort=true);
     inline void SetWidth(const double & width) { m_width =width; }
     inline void SetDeltaWidth(const double & delta) { m_deltawidth=delta; }
 

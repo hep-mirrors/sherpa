@@ -33,7 +33,9 @@ Hadron_Decay_Channel::~Hadron_Decay_Channel()
 void Hadron_Decay_Channel::SetFileName(std::string filename)
 {
   if(filename=="") {
-    filename += GetDecaying().ShellName() + string("_");
+    filename += GetDecaying().ShellName();
+    if (filename=="B_{s}") filename = "Bs";
+    filename += string("_");
     for ( int i=0; i<NOut(); i++ ) {
       filename += GetDecayProduct(i).ShellName();
     }
@@ -58,8 +60,9 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     totalmass+=m_flavours[i].HadMass();
   }
   if(totalmass>m_flavours[0].HadMass()) {
-    msg_Error()<<"Error in "<<METHOD<<" for "<<Name()<<endl;
-    msg_Error()<<"  Total outgoing mass heavier than incoming particle. Will abort."<<endl;
+    msg_Error()<<"Error in "<<METHOD<<" for "<<Name()<<"\n"
+	       <<"    Total outgoing mass heavier than incoming particle.\n"
+	       <<"    Will abort.\n";
     abort();
   }
   SetChannels(new PHASIC::Multi_Channel(""));
@@ -86,7 +89,9 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     if(reader.MatrixFromFile(options_svv)) ProcessOptions(options_svv);
     else {
       msg_Error()<<METHOD<<": Error.\n"
-         <<"  Read in failure for <Options> section in "<<m_path<<m_filename<<", will abort."<<endl;
+		 <<"   Read in failure for <Options> section in "
+		 <<m_path<<m_filename<<".\n"
+		 <<"   Will abort."<<endl;
       abort();
     }
 
@@ -108,13 +113,16 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     reader.SetFileBegin("<Phasespace>"); reader.SetFileEnd("</Phasespace>");
     reader.RereadInFile();
     if(!reader.MatrixFromFile(ps_svv)) {
-    msg_Error()<<METHOD<<": Error."<<"  Read in failure for <Phasespace> section in "
-        <<m_path<<m_filename<<", will abort."<<endl;
+    msg_Error()<<METHOD<<": Error.\n"
+	       <<"   Read in failure for <Phasespace> section in "
+	       <<m_path<<m_filename<<".\n"
+	       <<"   Will abort."<<endl;
       abort();
     }
     ProcessPhasespace(ps_svv, reader, model_for_ps);
 
-    // process <Result> // don't do it before ME and phasespace, or CalcNormWidth doesn't work!
+    // process <Result> 
+    // don't do it before ME and phasespace, or CalcNormWidth doesn't work!
     vector<vector<string> > result_svv;
     reader.SetFileBegin("<Result>"); reader.SetFileEnd("</Result>");
     reader.RereadInFile();
@@ -122,6 +130,7 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     ProcessResult(result_svv);
   }
   else { // if DC file does not exist yet
+    msg_Tracking()<<"No DC file yet in :"<<m_path<<"/"<<m_filename<<".\n";
     int n=NOut()+1;
     vector<int> decayindices(n);
     for(int i=0;i<n;i++) decayindices[i]=i;
@@ -129,8 +138,9 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     PHASIC::Color_Function_Decay* col=new PHASIC::Color_Function_Decay();
     AddDiagram(me, col);
     AddPSChannel( string("Isotropic"), 1., m_startmd);
-    msg_Info()<<"Calculating width for "<<Name()<<endl;
+    msg_Info()<<"Calculating width for "<<Name()<<":\n";
     CalculateWidth();
+    msg_Info()<<"   yields "<<m_iwidth<<".\n";
     WriteOut(true);
   }
 }
@@ -148,7 +158,8 @@ void Hadron_Decay_Channel::ProcessOptions(vector<vector<string> > helpsvv)
       m_cp_asymmetry_C = ToType<double>(helpsvv[i][2]);
     }
   }
-  // convert C and S to lambda, assuming DeltaGamma=0 for the determination of C and S.
+  // convert C and S to lambda, assuming DeltaGamma=0 for the determination 
+  // of C and S.
   // this allows DeltaGamma dependent terms in the asymmetry
   double Abs2 = -1.0*(m_cp_asymmetry_C-1.0)/(m_cp_asymmetry_C+1.0);
   double Im = m_cp_asymmetry_S/(m_cp_asymmetry_C+1.0);
@@ -165,13 +176,15 @@ void Hadron_Decay_Channel::ProcessPhasespace(vector<vector<string> > ps_svv,
     double weight = ToType<double>(ps_svv[i][0]);
     if(AddPSChannel( ps_svv[i][1], weight, model_for_ps ) ) nr_of_channels++;
     else {
-      msg_Error()<<METHOD<<": Warning. "<<ps_svv[i][1]<<" in "<<m_path<<m_filename
-        <<" is not a valid phase space channel. Will ignore it."<<endl;
+      msg_Error()<<METHOD<<":  Warning\n"
+		 <<"   "<<ps_svv[i][1]<<" in "<<m_path<<m_filename
+		 <<" is not a valid phase space channel.\n"
+		 <<"   Will ignore it and hope for the best.\n";
     }
   }
   if(nr_of_channels == 0) {
     msg_Error()<<METHOD<<": Warning. No valid phase space channels found in "
-      <<m_path<<m_filename<<". Using Isotropic."<<endl;
+	       <<m_path<<m_filename<<". Using Isotropic."<<endl;
     AddPSChannel( string("Isotropic"), 1., m_startmd );
   }
 }
@@ -264,13 +277,15 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
 void Hadron_Decay_Channel::ProcessResult(vector<vector<string> > result_svv)
 {
   if(result_svv.size()!=1) {
-    msg_Info()<<"Calculating width for "<<Name()<<endl;
+    msg_Info()<<"Calculating width (PR1) for "<<Name()<<endl;
     CalculateWidth();
+    msg_Info()<<"   yields "<<m_iwidth<<".\n";
     WriteOut();
   }
   else if(result_svv[0].size()==3 && m_always_integrate) {
-    msg_Info()<<"Calculating width for "<<Name()<<endl;
+    msg_Info()<<"Calculating width (PR2) for "<<Name()<<endl;
     CalculateWidth();
+    msg_Info()<<"   yields "<<m_iwidth<<".\n";
     // check whether result is different from before and write out if it is
     double oldwidth=ToType<double>(result_svv[0][0]);
     double oldmax=ToType<double>(result_svv[0][2]);
@@ -345,7 +360,8 @@ void Hadron_Decay_Channel::WriteOut(bool newfile) {
 
     // write out options
     to<<"<Options>"<<endl;
-    to<<"  AlwaysIntegrate = "<<m_always_integrate<<"    # 0...read results and skip integration"<<endl;
+    to<<"  AlwaysIntegrate = "<<m_always_integrate
+      <<"    # 0...read results and skip integration"<<endl;
     to<<"                         # 1...don't read results and integrate"<<endl;
     to<<"</Options>"<<endl<<endl;
 
@@ -367,7 +383,8 @@ void Hadron_Decay_Channel::WriteOut(bool newfile) {
     to<<"</Result>"<<endl;
     to.close();
   } // if (read DC file)
-  else {                                // if DC file exists
+  else {                                
+    // if DC file exists
     Move(m_path+m_filename, m_path+"."+m_filename+".old");
     ofstream to((m_path+m_filename).c_str(),ios::out);
 
@@ -403,7 +420,6 @@ bool Hadron_Decay_Channel::SetColorFlow(ATOOLS::Blob* blob)
   if(n_q>0 || n_g>0) {
     blob->SetStatus(blob_status::needs_showers);
     Particle_Vector outparts=blob->GetOutParticles();
-
     if(m_diagrams.size()>0) {
       // try if the matrix element knows how to set the color flow
       HD_ME_Base* firstme=(HD_ME_Base*) m_diagrams[0].first;

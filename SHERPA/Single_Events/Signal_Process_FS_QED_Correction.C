@@ -84,7 +84,8 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
 {
   if (!m_on) return Return_Value::Nothing;
   if (bloblist->empty()) {
-    msg_Error()<<"Signal_Process_FS_QED_Correction::Treat("<<bloblist<<","<<weight<<"): "<<endl
+    msg_Error()<<"Signal_Process_FS_QED_Correction::Treat"
+	       <<"("<<bloblist<<","<<weight<<"): "<<endl
                <<"   Blob list contains "<<bloblist->size()<<" entries."<<endl
                <<"   Continue and hope for the best."<<endl;
     return Return_Value::Error;
@@ -102,7 +103,8 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   Particle_Vector fslep(sigblob->GetOutParticles());
   Particle_Vector mfslep;
   for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();) {
-    if ((*it)->Flav().Strong() || (*it)->DecayBlob()!=NULL) {
+    if ((*it)->Flav().Strong() || (*it)->Flav().IsDiQuark() || 
+	(*it)->DecayBlob()!=NULL) {
       fslep.erase(it);
     }
     else {

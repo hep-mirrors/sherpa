@@ -330,7 +330,46 @@ PrintInfo(std::ostream &st,const size_t width) const {
 
 //##############################################################################
 //##############################################################################
+QQ_QVQ_Spectator::QQ_QVQ_Spectator(const ATOOLS::Flavour_Vector& flavs,
+		  const std::vector<int>& decayindices,
+		  const std::string& name):
+  HD_ME_Base(flavs,decayindices,name) {}
 
+
+void QQ_QVQ_Spectator::SetModelParameters( GeneralModel _md ) {}
+
+void QQ_QVQ_Spectator::Calculate(const Vec4D_Vector& p, bool m_anti)
+{
+  CreateTrivial(Complex(1.0,0.0));
+}
+
+bool QQ_QVQ_Spectator::SetColorFlow(std::vector<ATOOLS::Particle*> outparts,
+				     int n_q, int n_g, bool m_anti)
+{ 
+  int pos = ((outparts[0]->Flav().IsAnti() && 
+	      outparts[0]->Flav().IsQuark()) ||
+	     (!outparts[0]->Flav().IsAnti() && 
+	      outparts[0]->Flav().IsDiQuark())) ? 2:1;
+  outparts[0]->SetFlow(pos,-1);
+  outparts[1]->SetFlow(3-pos,outparts[0]->GetFlow(pos));
+  outparts[1]->SetFlow(pos,-1);
+  outparts[2]->SetFlow(3-pos,outparts[1]->GetFlow(pos));
+  return true;
+}
+
+DEFINE_ME_GETTER(QQ_QVQ_Spectator,"QQ_QVQ_Spectator")
+
+void ATOOLS::Getter<HD_ME_Base,ME_Parameters,QQ_QVQ_Spectator>::
+PrintInfo(std::ostream &st,const size_t width) const {
+  st<<"Example: $ B^{+} \\rightarrow d g sbar $ \n\n"
+    <<"Order: 0 = Scalar ($B^{+}$), 1 = spectator quark ($u$), "
+    <<"2 = vector boson ($g$), 3 = quark from decay \n\n"
+    <<"\\[ \\mathcal{M} =  \\]"
+    <<endl;
+}
+
+//##############################################################################
+//##############################################################################
 void QQ_PGG::SetModelParameters( GeneralModel _md )
 {
   m_min_mass2 = _md("min_mass2",1.0);

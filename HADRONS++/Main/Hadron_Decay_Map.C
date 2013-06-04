@@ -1,3 +1,4 @@
+#include "HADRONS++/Main/Tools.H"
 #include "HADRONS++/Main/Hadron_Decay_Map.H"
 #include "HADRONS++/Main/Hadron_Decay_Table.H"
 #include "HADRONS++/Main/Hadron_Decay_Channel.H"
@@ -19,8 +20,7 @@ using namespace std;
 Hadron_Decay_Map::Hadron_Decay_Map(const Mass_Selector* ms) :
   Decay_Map(ms),
   m_fixed_next_tables(0), p_mixinghandler(NULL)
-{
-}
+{}
 
 Hadron_Decay_Map::~Hadron_Decay_Map()
 {
@@ -71,6 +71,65 @@ void Hadron_Decay_Map::ReadInConstants(const string& path, const string& file)
     if(qit!=m_startmd.end()) flavit->SetQOverP2(qit->second);
   }
 }
+
+void Hadron_Decay_Map::ReadInPartonicDecays(const ATOOLS::Flavour & decflav,
+					    const std::string& path, 
+					    const std::string& file) 
+{
+  if (decflav!=Flavour(kf_b) && decflav!=Flavour(kf_c)) {
+    msg_Error()<<"Error in "<<METHOD<<":\n"
+	       <<"   No structure to read in partonic decays of "
+	       <<decflav<<".\n"
+	       <<"   Will continue and hope for the best.\n";
+    return;
+  }
+  Data_Reader reader = Data_Reader(" ",";","!","|");
+  reader.AddWordSeparator("\t");
+  reader.SetAddCommandLine(false);
+  reader.AddComment("#");
+  reader.AddComment("//");
+  reader.SetInputPath(path);
+  reader.SetInputFile(file);
+  vector<vector<string> > helpsvv;
+  vector<int>             helpkfc;
+  if(!reader.MatrixFromFile(helpsvv)) {
+    msg_Error()<<"ERROR in "<<METHOD<<endl
+      <<"   Read in failure "<<path<<file<<", will abort."<<endl;
+    abort();
+  }
+  Flavour flav;
+  double  width(0.),BR,dBR;
+  std::string origin;
+  Decay_Table * dt;
+  if (decflav==Flavour(kf_b))
+    dt = Tools::partonic_b;
+  else if (decflav==Flavour(kf_c))
+    dt = Tools::partonic_c;
+  
+  for (size_t i=0;i<helpsvv.size();i++) {
+    if (helpsvv[i].size()==2) {
+      if (helpsvv[i][0]=="Width:") width = ToType<double>(helpsvv[i][1]);
+    }
+    else if (helpsvv[i].size()==3) {
+      Decay_Channel * dc(new Decay_Channel(decflav,p_ms));
+      if (Tools::ExtractFlavours(helpkfc,helpsvv[i][0])) {
+	for (size_t j=0;j<helpkfc.size();++j) {
+	  flav = Flavour(abs(helpkfc[j]));
+	  if (helpkfc[j]<0) flav = flav.Bar();
+	  dc->AddDecayProduct(flav,false);
+	}
+	Tools::ExtractBRInfo(helpsvv[i][1], BR, dBR, origin);
+	dc->SetWidth(BR*width);
+	dt->AddDecayChannel(dc);
+      }
+    }
+  }
+  dt->UpdateWidth();
+  msg_Tracking()<<om::red<<"Read in partonic "<<decflav<<"-decays "
+		<<"from "<<file<<".  Found "<<dt->size()
+		<<" channels.\n"<<om::reset;
+}
+
 
 void Hadron_Decay_Map::ReadHadronAliases(const string& path, const string& file)
 {

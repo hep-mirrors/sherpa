@@ -54,10 +54,11 @@ bool Decay_Channel::FlavourSort(const Flavour &fl1,const Flavour &fl2)
 }
 
 
-void Decay_Channel::AddDecayProduct(const ATOOLS::Flavour& flout)
+void Decay_Channel::AddDecayProduct(const ATOOLS::Flavour& flout,
+				    const bool & sort)
 {
   m_flavours.push_back(flout);
-
+  if (!sort) return;
   // sort
   Flavour flin=m_flavours[0];
   Flavour_Vector flouts(m_flavours.size()-1);
@@ -286,16 +287,9 @@ double Decay_Channel::Differential(ATOOLS::Vec4D_Vector& momenta, bool anti,
   Channels()->GeneratePoint(&momenta.front(),NULL);
   Channels()->GenerateWeight(&momenta.front(),NULL);
   
-//  double dsigma_cms=ME2(momenta, anti, sigma, p);
-  
   labboost.Invert();
   for (size_t i(0); i<momenta.size(); ++i) labboost.Boost(momenta[i]);
-  
   double dsigma_lab=ME2(momenta, anti, sigma, p);
-  
-//  if (!IsZero(dsigma_cms-dsigma_lab,1e-6))
-//    PRINT_INFO(Name()<<": dsigma_lab="<<dsigma_lab<<" dsigma_cms="<<dsigma_cms);
-  
   return dsigma_lab*Channels()->Weight();
 }
 
@@ -350,9 +344,10 @@ double Decay_Channel::ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   return value;
 }
 
-void Decay_Channel::GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
-                                   METOOLS::Spin_Density* sigma,
-                                   const std::vector<ATOOLS::Particle*>& parts)
+void Decay_Channel::
+GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
+		   METOOLS::Spin_Density* sigma,
+		   const std::vector<ATOOLS::Particle*>& parts)
 {
   static std::string mname(METHOD);
   Return_Value::IncCall(mname);

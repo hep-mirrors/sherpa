@@ -410,8 +410,11 @@ bool Cluster_Formation_Handler::ClustersToHadrons(Blob * blob)
 
   if (!p_softclusters->TreatClusterList(p_clulist,blob)) {
     msg_Error()<<"Error in "<<METHOD<<" : \n"
-	       <<"   Did not find a kinematically allowed solution for the cluster list.\n"
+	       <<"   Did not find a kinematically allowed solution for the "
+	       <<"cluster list.\n"
 	       <<"   Will trigger a new event.\n";
+    msg_Out()<<(*blob)<<"\n";
+    exit(1);
     return false;
   }
 

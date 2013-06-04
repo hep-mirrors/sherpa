@@ -53,7 +53,7 @@ namespace AHADIC {
 
     bool          TreatSingleCluster(Cluster *);
     bool          CheckListForTreatment(Cluster_List *);
-    int           CheckCluster(Cluster *,bool);
+    int           CheckCluster(Cluster *,bool,bool=false);
 
     double        TransformWeight(Cluster *,ATOOLS::Flavour &,
 				  const bool & lighter=false,
@@ -87,7 +87,8 @@ namespace AHADIC {
     ~Soft_Cluster_Handler();
     bool          TreatClusterList(Cluster_List *,ATOOLS::Blob *);
     bool          TreatClusterDecay(Cluster_List *,ATOOLS::Blob *);
-    bool          EnforcedDecay(Cluster * cluster,ATOOLS::Blob * blob,const bool & constrained,
+    bool          EnforcedDecay(Cluster * cluster,ATOOLS::Blob * blob,
+				const bool & constrained,
 				Cluster_List * clin=0);
   };
 

@@ -59,7 +59,8 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 {
   if (bloblist->empty()) {
     msg_Error()<<"Potential error in Jet_Evolution::Treat."<<endl
-	       <<"   Incoming blob list contains "<<bloblist->size()<<" entries."<<endl
+	       <<"   Incoming blob list contains "<<bloblist->size()
+	       <<" entries."<<endl
 	       <<"   Continue and hope for the best."<<endl;
     return Return_Value::Error;
   }
@@ -92,7 +93,8 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 	    break;
 	  default:
 	    msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
-		       <<"   Do not have an interface for this type of blob:"<<std::endl
+		       <<"   Do not have an interface for this type of blob:"
+		       <<std::endl
 		       <<(*blob)<<std::endl
 		       <<"   Will abort."<<std::endl;
 	    abort();
@@ -100,7 +102,8 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 	piIter = m_interfaces.find(tag);
 	if (piIter==m_interfaces.end()) {
 	  msg_Error()<<"Error in Jet_Evolution::Treat :"<<endl
-		     <<"   No Perturbative_Interface found for type : "<<tag<<endl
+		     <<"   No Perturbative_Interface found for type : "
+		     <<tag<<endl
 		     <<"   Abort the run."<<endl;
 	  abort();
 	}	
@@ -114,7 +117,8 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 	case Return_Value::Error      : return Return_Value::Error;
 	default:
 	  msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
-		     <<"   Unexpected status of AttachShowers for "<<std::endl<<(*blob)
+		     <<"   Unexpected status of AttachShowers for "<<std::endl
+		     <<(*blob)
 		     <<"   Return 'Error' and hope for the best."<<std::endl;
 	  return Return_Value::Error;
 	}
@@ -132,11 +136,13 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
   return Return_Value::Nothing;
 }
 
-Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist,
-						Perturbative_Interface * interface) 
+Return_Value::code Jet_Evolution::
+AttachShowers(Blob * blob,Blob_List * bloblist,
+	      Perturbative_Interface * interface) 
 {
   if (!interface->Shower()->On() ||
-      (interface->MEHandler() && interface->MEHandler()->Process()->Info().m_nlomode==1)) {
+      (interface->MEHandler() && 
+       interface->MEHandler()->Process()->Info().m_nlomode==1)) {
     AftermathOfNoShower(blob,bloblist);
     return Return_Value::Nothing;
   }
@@ -161,7 +167,8 @@ Return_Value::code Jet_Evolution::AttachShowers(Blob * blob,Blob_List * bloblist
   }
   switch (stat) {
   case Return_Value::Success:
-    if (blob->Type()!=::btp::Hadron_Decay) DefineInitialConditions(blob,bloblist, interface);
+    if (blob->Type()!=::btp::Hadron_Decay) 
+      DefineInitialConditions(blob,bloblist, interface);
     if (blob->NInP()==1) shower = interface->PerformDecayShowers();
     if (blob->NInP()==2) shower = interface->PerformShowers();
     switch (shower) {
@@ -223,8 +230,9 @@ void Jet_Evolution::AftermathOfNoShower(Blob * blob,Blob_List * bloblist)
   blob->SetStatus(blob_status::inactive);
 }
 
-void Jet_Evolution::AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist,
-						Perturbative_Interface * interface)
+void Jet_Evolution::
+AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist,
+			    Perturbative_Interface * interface)
 {
   Blob * myblob;
   if (blob->NInP()==1 && 
@@ -233,21 +241,22 @@ void Jet_Evolution::AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist
   //std::cout<<METHOD<<": found a blob for status=0"<<std::endl<<(*blob)<<std::endl;
   blob->SetStatus(blob_status::inactive);
   if (!interface->Shower()->On()) {
-    if (blob->NInP()!=1)
-    for (int i=0;i<2;i++) {
-      // new ISR Blob
-      myblob = new Blob();
-      myblob->SetType(btp::Shower);
-      myblob->SetStatus(blob_status::needs_beams);
-      Particle * p = new Particle(*blob->InParticle(i));
-      p->SetStatus(part_status::decayed);
-      p->SetBeam(int( blob->InParticle(1-i)->Momentum()[3] 
-		      > blob->InParticle(i)->Momentum()[3]));
-      myblob->AddToInParticles(p);
-      myblob->AddToOutParticles(blob->InParticle(i));
-      blob->InParticle(i)->SetStatus(part_status::decayed);
-      myblob->SetId();
-      bloblist->insert(bloblist->begin(),myblob);
+    if (blob->NInP()!=1) {
+      for (int i=0;i<2;i++) {
+	// new ISR Blob
+	myblob = new Blob();
+	myblob->SetType(btp::Shower);
+	myblob->SetStatus(blob_status::needs_beams);
+	Particle * p = new Particle(*blob->InParticle(i));
+	p->SetStatus(part_status::decayed);
+	p->SetBeam(int( blob->InParticle(1-i)->Momentum()[3] 
+			> blob->InParticle(i)->Momentum()[3]));
+	myblob->AddToInParticles(p);
+	myblob->AddToOutParticles(blob->InParticle(i));
+	blob->InParticle(i)->SetStatus(part_status::decayed);
+	myblob->SetId();
+	bloblist->insert(bloblist->begin(),myblob);
+      }
     }
     for (int i=0;i<blob->NOutP();i++) {
       myblob = new Blob();

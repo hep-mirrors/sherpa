@@ -1,0 +1,27 @@
+# Decay: B -->  d  G db 
+#        0 -->  2  3  4   
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 IsotropicSpectator_1
+</Phasespace>
+
+<ME>
+  1.0 0.0 QQ_QVQ_Spectator[0,1,2,3]
+</ME>
+
+
+
+
+
+
+
+
+
+<Result>
+  0.03011 0 0.3179;
+</Result>

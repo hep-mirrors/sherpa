@@ -1,0 +1,16 @@
+# Decay: B --> d sb s ub 
+#        0 --> 2 4 
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 Isotropic
+</Phasespace>
+
+<ME>
+  1.0 0.0 Generic
+</ME>
+

@@ -22,27 +22,6 @@ namespace HADRONS {
     /// Pointer to the mixing handler. Needed for rate asymmetries.
     Mixing_Handler* p_mixinghandler;
     
-    /** 
-     * Extracts the kfcodes from a string like {-211,111,22}
-     * 
-     * @param kfc The returned kfcodes will be inserted here.
-     * @param tag The string to be parsed.
-     * 
-     * @return bool indicating whether parsing succeeded.
-     */
-    bool ExtractFlavours(std::vector<int>& kfc,std::string tag);
-    
-    /** 
-     * Extracts branching ratio information from a string like 0.5(0.01)[PDG]
-     * 
-     * @param entry The string to be parsed.
-     * @param sbr Extracted branching ratio (e.g. 0.5)
-     * @param sdbr Extracted error on branching ratio (e.g. 0.01)
-     * @param sorigin Extracted source of the branching ratio (e.g. PDG)
-     */
-    void ExtractBRInfo(std::string entry, double & sbr, double & sdbr,
-                       std::string & sorigin );
-
     void ScaleToWidth();
 
   public:
@@ -51,7 +30,8 @@ namespace HADRONS {
      * 
      * @param decayer The decay particle flavour.
      */
-    Hadron_Decay_Table(ATOOLS::Flavour decayer, const ATOOLS::Mass_Selector* ms, 
+    Hadron_Decay_Table(ATOOLS::Flavour decayer, 
+		       const ATOOLS::Mass_Selector* ms, 
                        Mixing_Handler* mh);
     ~Hadron_Decay_Table();
 

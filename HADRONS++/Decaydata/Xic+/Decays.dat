@@ -1,18 +1,5 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
+# Declare spectators {flav1:weight1,flav2,weight2,...}
+SPECTATORS     | {3201:1.}
 
-# everything relative to Xi- pi+ pi+
-{3312,211,211}	 | 1[defined]	 | Xic+_Xi-pi+pi+.dat;
-{2212,310,310}	 | 0.087[PDG]	 | Xic+_P+KSKS.dat;
-{3224,-311}	 | 1[PDG]	 | Xic+_Sigma1385+Kb.dat;
-{3122,-321,211,211}	 | 0.323[PDG]	 | Xic+_LambdaK-pi+pi+.dat;
-{3222,-313}	 | 0.81[PDG]	 | Xic+_Sigma+Kstar892b.dat;
-{3222,-321,211}	 | 0.13[PDG]	 | Xic+_Sigma+K-pi+.dat;
-{3212,-321,211,211}	 | 0.29[PDG]	 | Xic+_SigmaK-pi+pi+.dat;
-{3322,211}	 | 0.55[PDG]	 | Xic+_Xipi+.dat;
-{3322,211,111}	 | 2.34[PDG]	 | Xic+_Xipi+pi.dat;
-{3322,211,211,-211}	 | 1.74[PDG]	 | Xic+_Xipi+pi+pi-.dat;
-{3322,12,-11}	 | 2.3[PDG]	 | Xic+_Xinu_ee+.dat;
-{3334,321,211}	 | 0.07[PDG]	 | Xic+_Omega-K+pi+.dat;
-{2212,-321,211}	 | 0.9[PDG]	 | Xic+_P+K-pi+.dat;
-{2212,-313}	 | 0.12[PDG]	 | Xic+_P+Kstar892b.dat;
-{3222,321,-321}	 | 0.15[PDG]	 | Xic+_Sigma+K+K-.dat;
+# in PDG everything is relative to Xi- pi+ pi+ - so we do partonic decays only
+# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file

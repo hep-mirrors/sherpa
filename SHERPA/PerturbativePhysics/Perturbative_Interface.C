@@ -253,8 +253,11 @@ bool Perturbative_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
       }
     }
     else {
-      for (int i(0);i<p_hard->NOutP();++i)
-        sblob->AddToInParticles(p_hard->OutParticle(i));
+      for (int i(0);i<p_hard->NOutP();++i) {
+	if (!(p_hard->OutParticle(i)->GetFlow(1)==0 &&
+	      p_hard->OutParticle(i)->GetFlow(2)==0))
+	  sblob->AddToInParticles(p_hard->OutParticle(i));
+      }
     }
   }
   blobs->push_back(sblob);

@@ -1,0 +1,24 @@
+# Decay: B-Hadron --> spectator q1 q2 q3
+#               0 -->         1  2  3  4
+
+<Options>
+  AlwaysIntegrate = 0    # 0...read results and skip integration
+                         # 1...don't read results and integrate
+</Options>
+
+<Phasespace>
+  1.0 IsotropicSpectator_1
+</Phasespace>
+
+<ME>
+  1.0 0.0 QQ_QQQQ_Spectator[0,1,2,3,4]
+</ME>
+
+<QQ_QQQQ_Spectator[0,1,2,3,4]>
+  colourflip_ratio = 0.0
+</QQ_QQQQ_Spectator[0,1,2,3,4]>
+
+
+<Result>
+  3.106e-15 1.168e-17 8.244e-14;
+</Result>
