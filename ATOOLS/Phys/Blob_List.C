@@ -264,7 +264,7 @@ void Blob_List::Clear(Blob * blob)
 {
   if (blob==NULL) {
     while (!empty()) {
-      delete back();
+      if (back()) delete back();
       pop_back();
     }
     return;
