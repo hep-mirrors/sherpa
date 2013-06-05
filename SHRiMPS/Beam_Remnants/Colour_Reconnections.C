@@ -50,21 +50,21 @@ FinishConfiguration(Blob_List * blobs,const double & smin) {
   m_pairs.clear();
   HarvestParticles(blobs);
   FillWeightTable();
-//   OutputWeightTable();
+  //   OutputWeightTable();
   ShuffleColours();
   blobs->push_back(AddReconnectionBlob());
   return true;
 }
 
 void Colour_Reconnections::HarvestParticles(Blob_List * blobs) {
-//   msg_Out()<<"==============================================\n";
-//   msg_Out()<<METHOD<<std::endl;
+  //   msg_Out()<<"==============================================\n";
+  //   msg_Out()<<METHOD<<std::endl;
   Blob * blob;
   Particle * part;
   for (Blob_List::iterator bit=blobs->begin();bit!=blobs->end();bit++) {
     blob = (*bit);
     if (blob->Has(blob_status::needs_hadronization)) {
-//             msg_Out()<<(*blob)<<std::endl;
+      //             msg_Out()<<(*blob)<<std::endl;
       for (int i=0;i<blob->NOutP();i++) {
 	part = blob->OutParticle(i);
 	if (dabs(part->Momentum().Y())>m_ycut) part->SetInfo('B');
@@ -101,18 +101,18 @@ void Colour_Reconnections::FillWeightTable() {
       anti = (*antiit);
       if (anti==trip) continue;
       double dist(Distance(trip,anti));
-/*      switch (ColourConnected(trip,anti)) {
-      case 2:
-//    dist *= m_reconn;
-	break;
-      case 1:
-//    dist /= m_reconn;
-        dist *= exp(m_reconn);
-	break;
-      case 0:
-      default:
-	break;
-      }*/
+      /*      switch (ColourConnected(trip,anti)) {
+	      case 2:
+	      //    dist *= m_reconn;
+	      break;
+	      case 1:
+	      //    dist /= m_reconn;
+	      dist *= exp(m_reconn);
+	      break;
+	      case 0:
+	      default:
+	      break;
+	      }*/
       if (trip->GetFlow(1)==anti->GetFlow(2)) {
 	if (m_on) dist *= exp(m_reconn);
 	else dist = 0.;
@@ -142,7 +142,7 @@ void Colour_Reconnections::ShuffleColours() {
 	test2 = distit->second;
 	if (m_antis.find(test2)!=m_antis.end()) {
           if (distit->first>maxdist) {
-//           if (test1->GetFlow(1) == test2->GetFlow(2)) {
+	    //           if (test1->GetFlow(1) == test2->GetFlow(2)) {
 	    trip    = test1;
 	    anti    = test2;
             maxdist = distit->first;
@@ -157,31 +157,31 @@ void Colour_Reconnections::ShuffleColours() {
 		 <<"   did not find a viable pair!\n";
       exit(1);
     }
-/*   msg_Out()<<"   * want to establish connection between "
-   	     <<"["<<trip->Number()<<"]"
-   	     <<"("<<trip->GetFlow(1)<<", "<<trip->GetFlow(2)<<") and "
-   	     <<"["<<anti->Number()<<"]"
-   	     <<"("<<anti->GetFlow(1)<<", "<<anti->GetFlow(2)<<"), "
-          <<"dist = "<<maxdist<<".\n";*/
+    /*   msg_Out()<<"   * want to establish connection between "
+	 <<"["<<trip->Number()<<"]"
+	 <<"("<<trip->GetFlow(1)<<", "<<trip->GetFlow(2)<<") and "
+	 <<"["<<anti->Number()<<"]"
+	 <<"("<<anti->GetFlow(1)<<", "<<anti->GetFlow(2)<<"), "
+	 <<"dist = "<<maxdist<<".\n";*/
     m_trips.erase(trip);
     m_antis.erase(anti);    
     m_pairs.push_back(partpair(trip,anti));
     size_t col = trip->GetFlow(1);
     m_newcols[anti].second = col;
     m_colours.erase(col);
-/*    msg_Out()<<"   * now "<<m_trips.size()<<" / "<<m_antis.size()<<" "
-    	     <<"particles left for triplet/antitriplet, "
-    	     <<m_colours.size()<<" colours left.\n";*/
+    /*    msg_Out()<<"   * now "<<m_trips.size()<<" / "<<m_antis.size()<<" "
+	  <<"particles left for triplet/antitriplet, "
+	  <<m_colours.size()<<" colours left.\n";*/
     if (m_trips.size()==1 &&
 	(*m_trips.begin())==(*m_antis.begin())) {
-/*      msg_Out()<<"Would have to save last gluon.\n"
-      	       <<(**m_trips.begin())<<"\n";*/
+      /*      msg_Out()<<"Would have to save last gluon.\n"
+	      <<(**m_trips.begin())<<"\n";*/
       SaveLastGluon((*m_trips.begin()));
     }
   }
-/*  msg_Out()<<"   * now "<<m_trips.size()<<" / "<<m_antis.size()<<" "
-  	   <<"particles left for triplet/antitriplet, "
-  	   <<m_colours.size()<<" colours left.\n";*/
+  /*  msg_Out()<<"   * now "<<m_trips.size()<<" / "<<m_antis.size()<<" "
+      <<"particles left for triplet/antitriplet, "
+      <<m_colours.size()<<" colours left.\n";*/
 }
 
 void Colour_Reconnections::SaveLastGluon(Particle * part) {

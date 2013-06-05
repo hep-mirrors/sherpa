@@ -396,11 +396,11 @@ TryEmission(double & kt12,const bool & dir) {
     if ((MBpars.LadderWeight()==ladder_weight::Regge || 
 	 MBpars.LadderWeight()==ladder_weight::ReggeDiffusion) && 
 	deltay>m_Deltay) { 
-//       rarg = Min(mu01_2/q01.PPerp2(),q01.PPerp2()/mu01_2);
+      //       rarg = Min(mu01_2/q01.PPerp2(),q01.PPerp2()/mu01_2);
       rarg = mu01_2/(dabs(q01.Abs2())+mu01_2);
       expo = colfac*(*p_alphaS)(q01.PPerp2())*deltay/M_PI; 
-//       rarg = Min(mu01_2/q01.Abs2(),q01.Abs2()/mu01_2);
-//       expo = colfac*(*p_alphaS)(q01.Abs2())*deltay/M_PI;
+      //       rarg = Min(mu01_2/q01.Abs2(),q01.Abs2()/mu01_2);
+      //       expo = colfac*(*p_alphaS)(q01.Abs2())*deltay/M_PI;
       //expo = colfac*p_alphaS->MaxValue()*deltay/M_PI; 
       wt  *= reggewt = pow(rarg,expo);
       m_histomap[std::string("ReggeWt")]->Insert(reggewt);
@@ -414,7 +414,8 @@ TryEmission(double & kt12,const bool & dir) {
     sup    = SuppressionTerm(m_q01_2,m_q12_2)*Q02(y1)/(Q02(y1)+kt12);
     wt    *= recombwt= 
       Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup));
-//     recombwt = Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup));
+    //     recombwt = 
+    //Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup));
     m_histomap[std::string("RecombWt")]->Insert(recombwt);
     if (dir) {
       m_histomap[std::string("ReggeWt1")]->Insert(reggewt);
@@ -559,8 +560,10 @@ bool Final_State::FixPropColours(const LadderMap::iterator & split,
   double wt81(0.), wt18(0.), wt88(0.);
   int beam1(int(y0>m_Ylimit)), beam2(int(y2>m_Ylimit));
 
-  double sup01(SuppressionTerm(m_q01_2,m_q01_2));
-  double sup12(SuppressionTerm(m_q12_2,m_q12_2));
+  //double sup01(1./SuppressionTerm(m_q01_2,m_q01_2));
+  //double sup12(1./SuppressionTerm(m_q12_2,m_q12_2));
+  double sup01 = pow((Max(m_q01_2,m_Q02),m_Q02),0.08*dabs(y0-y1));
+  double sup12 = pow((Max(m_q12_2,m_Q02),m_Q02),0.08*dabs(y1-y2));
 
   double tot = wt18 = prev?0.:
     p_eikonal->SingletWeight(m_b1,m_b2,y0,y1,sup01,beam1)*
@@ -704,11 +707,12 @@ double Final_State::Q02(const double & y) {
   //return m_Q02eff; //+m_Q12*term;
   //double term = pow(p_eikonal->Sum(m_b1,m_b2,y),1.5);
   if (MBpars("Misha")) {
-    double eik = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
+    double eik = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + 
+		  (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
     double eik2 = (*p_eikonal)(m_B);
-    eik*=eik2;
-        return m_Q02*eik + (m_nprimlad-1)*m_QN2*eik;
-//     return m_Q02*eik + (m_nprimlad-1)*m_QN2;
+    eik *= eik2;
+    return m_Q02*eik + (m_nprimlad-1)*m_QN2*eik;
+    //     return m_Q02*eik + (m_nprimlad-1)*m_QN2;
   }
   else {
     return m_Q02 + (m_nprimlad-1)*m_QN2;
