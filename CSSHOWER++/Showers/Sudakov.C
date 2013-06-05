@@ -303,13 +303,15 @@ bool Sudakov::Generate(Parton * split)
       break;
     }
   case pst::none: 
-    msg_Error()<<"Error in Sudakov::Generate : No pst-type for splitter. "<<endl
-	       <<(*split)<<(*spect);
+    msg_Error()<<"Error in Sudakov::Generate : No pst-type for splitter.\n"
+	       <<(*split);
+    return false;
     abort();
   }
   if (m_type==cstp::none) {
-    msg_Error()<<"Error in Sudakov::Generate : No type for splitter. "<<endl
-	       <<(*split)<<(*spect);
+    msg_Error()<<"Error in Sudakov::Generate : No type for splitter.\n"
+	       <<(*split);
+    return false;
     abort();
   }
   }  
