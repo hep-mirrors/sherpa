@@ -179,10 +179,17 @@ ProjectOnSinglets(Blob * const blob,std::list<ParticleList *> & singlets) {
 double Cluster_Algorithm::
 PTij2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pj) const
 {
-  double pti2(pi.PPerp2()), ptj2(pj.PPerp2());
-  double ptij2    = 
-    2.*Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-cos(pi.Phi()-pj.Phi()));
-  //   return m_showerfac*Min(pref*pti2,ptij2);
+  //  double pti2, ptj2, ptij2;
+  //if (m_resc) {
+  //  pti2  = pi.PPerp2(m_rescvec);
+  //  ptj2  = pj.PPerp2(m_rescvec);
+  //  ptij2 = (pi+pj).Abs2()/sqrt(Max(pti2,ptj2));
+  //}
+  //else {
+  double pti2  = pi.PPerp2(), ptj2  = pj.PPerp2();    
+  double ptij2 = Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-
+				 cos(pi.Phi()-pj.Phi()));
+  //}
   return m_showerfac*Min(pti2,ptij2);
 }
 
@@ -254,13 +261,16 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
 
   double kt2max, kt2min, kt2FS, sFS, ysplit, totmax(m_minkt2);
   double magicfac(0.3),ybar,deltay;
-  double shat((legs[0]->Mom()+legs[1]->Mom()).Abs2());
+  m_rescvec = legs[0]->Mom()+legs[1]->Mom();
+  double shat(m_rescvec.Abs2());
   size_t nlegs(legs.size());
 
 
   Vec4D pbeam0(-legs[0]->Mom()),  pbeam1(-legs[1]->Mom());
   ColorID colbeam0(legs[0]->Col()), colbeam1(legs[1]->Col());
-  //msg_Out()<<METHOD<<": "<<pbeam0<<" & "<<pbeam1<<".\n";
+  //msg_Out()<<METHOD<<": "<<pbeam0<<" & "<<pbeam1<<", "
+  //	   <<"scale = "<<sqrt(scale)<<", resc = "<<m_resc<<".\n"
+  //	   <<(*blob)<<"\n";
   for (size_t i=2;i<nlegs;i++) {
     split   = legs[i];
     ysplit  = dabs(split->Mom().Y());
@@ -272,7 +282,8 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       int nconn(ColorConnected(split->Col(),spect->Col()));
       if (nconn==0) continue;
       kt2FS = PTij2(split->Mom(),spect->Mom());
-      //(split->Mom()+spect->Mom()).Abs2();
+      if (!m_resc && (nlegs==4 || i==2 || i==nlegs-1)) 
+	kt2FS = Max(kt2FS,scale);
       if (ColorConnected(split->Col(),colbeam0)>0 || 
 	  ColorConnected(split->Col(),colbeam1)>0) {
         kt2min = Max(m_tmax,scale);
@@ -290,8 +301,6 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
 	split->SetConnected(true);
       }
     }
-    //msg_Out()<<"Splitter "<<split->Id()<<" with "
-    //	     <<split->NumberOfSpectators()<<" spectators.\n";
     if (split->NumberOfSpectators()<1+int(split->Flav().IsGluon())) {
       int j(i);
       for (size_t cnt(split->NumberOfSpectators());
@@ -300,12 +309,13 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
 	split->AddToSpectators(legs[j]);
       }
       if (!split->Connected()) {
-	kt2max = scale;
+	kt2max = Min(scale/4.,split->Mom().PPerp2(m_rescvec));
 	kt2min = m_tmax;
       }
     }
-    //msg_Out()<<"Now: Splitter "<<split->Id()<<" with "
-    //	     <<split->NumberOfSpectators()<<" spectators.\n";
+    //msg_Out()<<"Now: Splitter "<<split->Flav()<<" with "
+    //	     <<split->NumberOfSpectators()<<" spectators, "
+    //	     <<"ktmax = "<<sqrt(kt2max)<<".\n";
     if (kt2max>totmax) totmax = kt2max;
     split->SetKTStart(kt2max);
     

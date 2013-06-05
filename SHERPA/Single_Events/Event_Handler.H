@@ -24,14 +24,14 @@ namespace SHERPA {
     ATOOLS::Blob_List   m_blobs, m_sblobs;
     ATOOLS::Blob      * p_signal;
 
-    bool GenerateStandardPerturbativeEvent(eventtype::code &mode);
-    bool GenerateMinimumBiasEvent();
-    bool GenerateHadronDecayEvent();
+    bool GenerateStandardPerturbativeEvent(eventtype::code & mode);
+    bool GenerateMinimumBiasEvent(eventtype::code & mode);
+    bool GenerateHadronDecayEvent(eventtype::code & mode);
     void InitialiseSeedBlob(ATOOLS::btp::code type,
 			    ATOOLS::blob_status::code status);
     bool AnalyseEvent(double & weight);
     bool WeightIsGood(const double& weight);
-    int  IterateEventPhases(double & weight);
+    int  IterateEventPhases(eventtype::code & mode,double & weight);
 
   public:
 

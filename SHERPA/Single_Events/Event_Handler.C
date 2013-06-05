@@ -120,9 +120,9 @@ bool Event_Handler::GenerateEvent(eventtype::code mode)
   case eventtype::EventReader:
     return GenerateStandardPerturbativeEvent(mode);
   case eventtype::MinimumBias:
-    return GenerateMinimumBiasEvent();
+    return GenerateMinimumBiasEvent(mode);
   case eventtype::HadronDecay:
-    return GenerateHadronDecayEvent();
+    return GenerateHadronDecayEvent(mode);
   }
   return false;
 } 
@@ -161,7 +161,7 @@ bool Event_Handler::AnalyseEvent(double & weight) {
   return true;
 }
 
-int Event_Handler::IterateEventPhases(double & weight) {
+int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
   Phase_Iterator pit=p_phases->begin();
   int retry = 0;
   bool hardps = true;
@@ -177,7 +177,8 @@ int Event_Handler::IterateEventPhases(double & weight) {
 		    <<rv<<std::endl;
     switch (rv) {
     case Return_Value::Success : 
-      if ((*pit)->Name().find("Jet_Evolution")==0 && hardps) {
+      if (mode==eventtype::StandardPerturbative &&
+	  (*pit)->Name().find("Jet_Evolution")==0 && hardps) {
 	m_sblobs.Clear();
 	m_sblobs=m_blobs.Copy();
 	hardps=false;
@@ -194,20 +195,18 @@ int Event_Handler::IterateEventPhases(double & weight) {
       Return_Value::IncRetryPhase((*pit)->Name());
       break;
     case Return_Value::Retry_Event : 
-      msg_Tracking()<<METHOD<<" throws retrial of event.\n";
       if (retry <= s_retrymax) {
         retry++;
         Return_Value::IncCall((*pit)->Name());
         Return_Value::IncRetryEvent((*pit)->Name());
-	m_blobs.Clear();
-	m_blobs=m_sblobs.Copy();
-	p_signal=m_blobs.FindFirst(btp::Signal_Process);
-	if (p_signal) {
-	  pit=p_phases->begin();
-	  break;
-	}
-	else {
-	  msg_Tracking()<<"   --> continue to new event.\n";
+	if (mode==eventtype::StandardPerturbative) {
+	  m_blobs.Clear();
+	  m_blobs=m_sblobs.Copy();
+	  p_signal=m_blobs.FindFirst(btp::Signal_Process);
+	  if (p_signal) {
+	    pit=p_phases->begin();
+	    break;
+	  }
 	}
       }
       else {
@@ -241,7 +240,7 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
 		     ATOOLS::blob_status::needs_signal);
   do {
     weight = 1.;
-    switch (IterateEventPhases(weight)) {
+    switch (IterateEventPhases(mode,weight)) {
     case 3:
       return false;
     case 2:
@@ -286,16 +285,15 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
   return AnalyseEvent(weight);
 }
 
-bool Event_Handler::GenerateMinimumBiasEvent() {
+bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
   double weight = 1.;
   bool run(true);
 
   InitialiseSeedBlob(ATOOLS::btp::Soft_Collision,
 		     ATOOLS::blob_status::needs_minBias);
-  //msg_Out()<<METHOD<<" for: "<<(*p_signal)<<"\n";
   do {
     weight = 1.;
-    switch (IterateEventPhases(weight)) {
+    switch (IterateEventPhases(mode,weight)) {
     case 3:
       return false;
     case 2:
@@ -330,7 +328,7 @@ bool Event_Handler::GenerateMinimumBiasEvent() {
 }
 
 
-bool Event_Handler::GenerateHadronDecayEvent() {
+bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
   double weight = 1.;
   bool run(true);
 
@@ -358,7 +356,7 @@ bool Event_Handler::GenerateHadronDecayEvent() {
   
   do {
     weight = 1.;
-    switch (IterateEventPhases(weight)) {
+    switch (IterateEventPhases(mode,weight)) {
     case 3:
       return false;
     case 2:

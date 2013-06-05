@@ -35,9 +35,10 @@ namespace SHERPA {
       inline double DR()   const { return 1.; }
     };
   private:
-    int    m_mode,m_nlad;
-    bool   m_resc;
-    double m_minkt2,m_showerfac,m_tmax;
+    int           m_mode,m_nlad;
+    bool          m_resc;
+    ATOOLS::Vec4D m_rescvec;
+    double        m_minkt2,m_showerfac,m_tmax;
 
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
 
