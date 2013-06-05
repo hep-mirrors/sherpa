@@ -446,7 +446,6 @@ void Decay_Handler_Base::CleanUp()
 
 bool Decay_Handler_Base::Decays(const ATOOLS::Flavour& flav)
 {
-  if (!flav.IsOn()) return false;
   if (flav.IsStable()) return false;
   return true;
 }
