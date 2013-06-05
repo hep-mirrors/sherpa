@@ -137,6 +137,7 @@
 # Some charmonia
 #
 30443   -> psi3770/           Decays.dat;
+100441  -> etac2S/            Decays.dat;
 #
 #
 ##################################################################
@@ -239,18 +240,6 @@
 #100311  -> K1460/             Decays.dat;
 #100321  -> K1460+/            Decays.dat;
 #100331  -> eta1475/           Decays.dat;
-#100441  -> etac2S/            Decays.dat;
-#
-# Radially Excited Vectors
-#
-#100113  -> rho1450/           Decays.dat;
-#100213  -> rho1450+/          Decays.dat;
-#100223  -> omega1420/         Decays.dat;
-#100313  -> Kstar1410/         Decays.dat;
-#100323  -> Kstar1410+/        Decays.dat;
-#100333  -> phi1680/           Decays.dat;
-#100443  -> psi2S/             Decays.dat;
-#100553  -> Upsilon2S/         Decays.dat;
 #
 # Miscellanea
 

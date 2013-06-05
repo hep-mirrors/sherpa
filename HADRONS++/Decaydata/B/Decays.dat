@@ -165,7 +165,7 @@
 {321,-213}       | 9.9e-06[EvtGen]      | B_K+rho770-.dat;
 {431,-213}       | 1.6e-05[EvtGen]      | B_Ds+rho770-.dat;
 {433,-213}       | 1.6e-05[EvtGen]       | B_Dsstar+rho770-.dat;
-{-100213,211}    | 0[EvtGen]    | B_rho1450-pi+.dat;
+#{-100213,211}    | 0[EvtGen]    | B_rho1450-pi+.dat;
 {-30213,211}     | 0[EvtGen]    | B_rho1700-pi+.dat;
 {-20213,211}     | 4e-05[EvtGen]        | B_a11260-pi+.dat;
 {-10213,211}     | 1e-05[EvtGen]        | B_b11235-pi+.dat;
@@ -175,7 +175,7 @@
 # b -> u three-body
 {211,-211,111}   | 2.4e-05[EvtGen]        | B_pi+pi-pi.dat;
 {213,-211}       | 0.0 | B_rho770+pi-.dat; # ^^ included
-{100213,-211}    | 0.0 | B_rho1450+pi-.dat; # ^^ included
+#{100213,-211}    | 0.0 | B_rho1450+pi-.dat; # ^^ included
 {30213,-211}     | 0.0 | B_rho1700+pi-.dat; # ^^ included
 {311,211,-211}   | 3.6e-05[EvtGen]     | B_Kpi+pi-.dat;
 {323,-211}       | 0.0 | B_Kstar892+pi-.dat; # ^^ included
@@ -298,7 +298,7 @@
 {323,-321}       | 2e-06[EvtGen]        | B_Kstar892+K-.dat;
 {113,111}        | 0[EvtGen]         | B_rho770pi.dat;
 {311,113}        | 5.2e-06[EvtGen]   | B_Krho770.dat;
-{100113,311}     | 1e-06[EvtGen]     | B_rho1450K.dat;
+#{100113,311}     | 1e-06[EvtGen]     | B_rho1450K.dat;
 
 
 ## charmonium modes

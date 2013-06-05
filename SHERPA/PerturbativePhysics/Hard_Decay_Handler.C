@@ -620,7 +620,6 @@ void Hard_Decay_Handler::WriteDecayTables()
 
 bool Hard_Decay_Handler::Decays(const ATOOLS::Flavour& flav)
 {
-  if (!flav.IsOn()) return false;
   if (flav.IsHadron()) return false;
   if (flav.Kfcode()==kf_tau && !m_decay_tau) return false;
   if (flav.IsStable()) return false;
