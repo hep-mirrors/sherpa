@@ -144,17 +144,29 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
     if(showerblob && showerblob->Type()==btp::Shower) {
       Blob* decayblob = showerblob->UpstreamBlob();
       if(decayblob && decayblob->Type()==btp::Hadron_Decay) {
-        DEBUG_FUNC(decayblob->InParticle(0));
+        DEBUG_FUNC(*decayblob->InParticle(0));
         DEBUG_VAR(*fblob);
         Return_Value::IncCall(mname);
-        FlavourMultiSet decayresults;
-        for(int i=0;i<fblob->NOutP();i++) {
-          decayresults.insert(fblob->OutParticle(i)->Flav());
-        }
+
+        bool anti=false;
         Decay_Map::iterator dt=
           p_decaymap->find(decayblob->InParticle(0)->Flav());
-        if(dt!=p_decaymap->end() &&
-           dt->second[0]->GetDecayChannel(decayresults)) {
+        if (dt==p_decaymap->end()) {
+          anti=true;
+          dt=p_decaymap->find(decayblob->InParticle(0)->Flav().Bar());
+          if (dt==p_decaymap->end() || dt->second.size()!=1) {
+            PRINT_INFO("Internal error.");
+            throw Return_Value::Retry_Event;
+          }
+        }
+
+        FlavourMultiSet decayresults;
+        for(int i=0;i<fblob->NOutP();i++) {
+          decayresults.insert(anti?
+                              fblob->OutParticle(i)->Flav().Bar():
+                              fblob->OutParticle(i)->Flav());
+        }
+        if(dt->second[0]->GetDecayChannel(decayresults)) {
           Return_Value::IncRetryPhase(mname);
           DEBUG_INFO("rejected. retrying decay.");
           p_bloblist->Delete(fblob);
@@ -170,6 +182,7 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
           return true;
         }
         else {
+          DEBUG_INFO("accepted.");
           Vec4D vertex_position=decayblob->Position();
           showerblob->SetPosition(vertex_position);
           fblob->SetPosition(vertex_position);
