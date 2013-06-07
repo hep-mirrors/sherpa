@@ -11,11 +11,15 @@
 #include <dirent.h>
 #include <cstring>
 
-#ifdef ARCH_LINUX
-#define DIRENT_TYPE const dirent
-#else
+#ifdef DARWIN
+#if __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_8
 #define DIRENT_TYPE dirent
-#endif
+#else
+#define DIRENT_TYPE const dirent
+#endif // Lion or earlier
+#else //DARWIN
+#define DIRENT_TYPE const dirent
+#endif //DARWIN
 
 #ifndef _D_EXACT_NAMLEN
 #define _D_EXACT_NAMLEN(ENTRY) ENTRY->d_namlen
