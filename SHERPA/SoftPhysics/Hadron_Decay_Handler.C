@@ -155,7 +155,19 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
         DEBUG_VAR(*fblob);
         DEBUG_VAR(decayblob->InParticle(0)->Flav());
         Return_Value::IncCall(mname);
-        bool anti=decayblob->InParticle(0)->Flav().IsAnti();
+
+        bool anti=false;
+        Decay_Map::iterator dt=
+            p_decaymap->find(decayblob->InParticle(0)->Flav());
+        if (dt==p_decaymap->end()) {
+          anti=true;
+          dt=p_decaymap->find(decayblob->InParticle(0)->Flav().Bar());
+          if (dt==p_decaymap->end() || dt->second.size()!=1) {
+            PRINT_INFO("Internal error.");
+            throw Return_Value::Retry_Event;
+          }
+        }
+
         Flavour_Vector tmp;
         for(int i=0;i<fblob->NOutP();i++) {
           tmp.push_back(anti?fblob->OutParticle(i)->Flav().Bar():
@@ -172,9 +184,7 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
         compflavs[0]=anti?decayblob->InParticle(0)->Flav().Bar():
                           decayblob->InParticle(0)->Flav();
         for (size_t i=0; i<tmp.size(); ++i) compflavs[i+1]=tmp[i];
-        Decay_Map::iterator dt=p_decaymap->find(compflavs[0]);
-        if(dt!=p_decaymap->end() &&
-           dt->second[0]->GetDecayChannel(compflavs)) {
+        if(dt->second[0]->GetDecayChannel(compflavs)) {
           Return_Value::IncRetryPhase(mname);
           DEBUG_INFO("rejected. retrying decay.");
           p_bloblist->Delete(fblob);
@@ -190,9 +200,6 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
           return true;
         }
         else {
-          if (dt==p_decaymap->end()) {
-            PRINT_INFO("Decay table not found for "<<compflavs[0]);
-          }
           DEBUG_INFO("not found as exclusive. accepted.");
           Vec4D vertex_position=decayblob->Position();
           showerblob->SetPosition(vertex_position);
