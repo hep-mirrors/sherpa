@@ -83,9 +83,9 @@ void VVVV_Calculator<SType>::Evaluate()
   for (jit[0]=cca.begin();jit[0]!=cca.end();++jit[0]) {
     for (jit[1]=ccb.begin();jit[1]!=ccb.end();++jit[1]) {
       for (jit[2]=cce.begin();jit[2]!=cce.end();++jit[2],++i) {
-	const CVec4Type_Vector *ca(jit[m_n[0]]->Get<CVec4Type>());
-	const CVec4Type_Vector *cb(jit[m_n[1]]->Get<CVec4Type>());
-	const CVec4Type_Vector *ce(jit[m_n[2]]->Get<CVec4Type>());
+	const CVec4Type_Vector *ca(jit[m_n[0]]->template Get<CVec4Type>());
+	const CVec4Type_Vector *cb(jit[m_n[1]]->template Get<CVec4Type>());
+	const CVec4Type_Vector *ce(jit[m_n[2]]->template Get<CVec4Type>());
 	for (typename CVec4Type_Vector::const_iterator 
 	       eit(ce->begin());eit!=ce->end();++eit)
 	  for (typename CVec4Type_Vector::const_iterator 

@@ -65,7 +65,7 @@ ATOOLS::Blob* Mixing_Handler::PerformMixing(Particle* decayer) const
   string tag = flav.IsAnti() ? flav.Bar().IDName() : flav.IDName();
   if(m_model("Mixing_"+tag,0.0)!=0.0 && decayer->Info()!=char('M')) {
     double t = DetermineMixingTime(decayer,true)/rpa->hBar();
-    if(t==0.0) return false;
+    if(t==0.0) return NULL;
     double factor = decayer->Flav().QOverP2();
     if(decayer->Flav().IsAnti()) factor = 1.0/factor;
     double dG = decayer->Flav().DeltaGamma()*t/4.0;

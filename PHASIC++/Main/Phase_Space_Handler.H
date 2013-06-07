@@ -63,6 +63,12 @@ namespace PHASIC {
 
   };// end of struct Weight_Info
 
+  inline std::ostream & operator<<(std::ostream & s, const PHASIC::Weight_Info & wi)
+  {
+    s<<" w = "<<wi.m_weight<<std::endl;
+    return s;
+  }
+
   class Phase_Space_Integrator;
   class Process_Base;
 

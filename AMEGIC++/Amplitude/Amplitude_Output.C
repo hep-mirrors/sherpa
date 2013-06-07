@@ -11,7 +11,7 @@ Amplitude_Output::Amplitude_Output(std::string pid, Topology * _top)
 {
   std::string fname=rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pid+std::string(".tex");
   pios.open(fname.c_str());
-  top = top;
+  top = _top;
   ampl=0;
   counter=0;
   maincounter=1;
