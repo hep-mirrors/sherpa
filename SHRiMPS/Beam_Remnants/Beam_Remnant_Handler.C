@@ -14,7 +14,7 @@ Beam_Remnant_Handler::
 Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler * beamspectra,
 		     vector<Continued_PDF> & pdfs) :
   p_blob(NULL), p_pdfs(&pdfs), m_paircounter(0),
-  m_analyse(true)
+  m_analyse(true), m_didinsertbeamblob(false)
 {
   m_checkmom.push_back(Vec4D(0,0,0,0)); 
   m_checkmom.push_back(Vec4D(0,0,0,0));
@@ -60,6 +60,7 @@ Beam_Remnant_Handler::~Beam_Remnant_Handler() {
 bool Beam_Remnant_Handler::
 InitialiseCollision(const int & N, double B, Omega_ik * eikonal) {
   Reset();
+  m_didinsertbeamblob = false;
   if (eikonal==NULL && N==0) {
     for (size_t beam=0;beam<2;beam++) {
       m_hadrons[beam]->DeleteParticles();
@@ -110,6 +111,7 @@ void Beam_Remnant_Handler::AddBeamBlobs(ATOOLS::Blob_List * blobs) {
     m_hadrons[beam]->FillBeamBlob();
     blobs->push_front(m_hadrons[beam]->GetBeamBlob());
   }
+  m_didinsertbeamblob = true;
 }
 
 Return_Value::code Beam_Remnant_Handler::
@@ -281,6 +283,8 @@ void Beam_Remnant_Handler::Reset(const size_t & mode) {
   m_checkmom[1] = ATOOLS::Vec4D(0,0,0,0);
   p_colour->Reset();
 
+  if (m_didinsertbeamblob) return;
+  else msg_Debugging()<<METHOD<<"  We didn't insert the blobs, so we need to cleanup here.\n";
   if (mode>0) {
     if (p_blob && (p_blob->NInP()>0 || p_blob->NOutP()>0)) {
       delete p_blob;

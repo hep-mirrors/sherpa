@@ -299,7 +299,7 @@ bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
     case 2:
     case 1:
       for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-	(*pit)->CleanUp();
+        (*pit)->CleanUp();
       }
       m_blobs.Clear();
       if (Particle::Counter()>m_lastparticlecounter || 
