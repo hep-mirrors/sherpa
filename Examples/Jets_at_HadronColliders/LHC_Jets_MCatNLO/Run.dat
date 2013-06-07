@@ -4,7 +4,7 @@
 
   % tags and settings for scale definitions
   FSF:=1.; RSF:=1.; QSF:=1.;
-  Scales FASTJET[A:antikt,PT:J1CUT,ET:0,R:0.4,M:0]{FSF*0.0625*H_T2}{RSF*0.0625*H_T2}{QSF*0.25*PPerp2(p[3])}
+  SCALES FASTJET[A:antikt,PT:J1CUT,ET:0,R:0.4,M:0]{FSF*0.0625*H_T2}{RSF*0.0625*H_T2}{QSF*0.25*PPerp2(p[3])}
 
   % tags and settings for ME-level cuts
   J1CUT:=20.; J2CUT:=10.;
