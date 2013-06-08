@@ -100,7 +100,7 @@ corresponding subtraction events exhibit large cancellations. If the
 cut or analysis histogram bin boundary, then large spurious spikes can appear.
 
 These can be smoothed to some extend by shifting the weight from the subtraction
-kinematic to the real-emission kinematic if the dipole measure is below a given
+kinematic to the real-emission kinematic if the dipole measure alpha is below a given
 threshold. The fraction of the shifted weight is inversely proportional to the
 dipole measure, such that the final real-emission and subtraction weights are
 calculated as:
@@ -108,13 +108,15 @@ calculated as:
   w_r -> w_r + sum_i [1-x(alpha_i)] w_{s,i}
   foreach i: w_{s,i} -> x(alpha_i) w_{s,i}
 @end verbatim
-with the function x(alpha)=(alpha/alpha_0)^n for alpha<alpha_0 and 0 otherwise.
+with the function x(alpha)=(alpha/|alpha_0|)^n for alpha<alpha_0 and 1 otherwise.
 
 The threshold can be set by the parameter
 @option{NLO_SMEAR_THRESHOLD=<alpha_0>} and the functional form of alpha and thus
 interpretation of the threshold can be chosen by its sign (positive: relative
 dipole kT in GeV, negative: dipole alpha).
 In addition, the exponent n can be set by @option{NLO_SMEAR_POWER=<n>}.
+
+Note, that these options only work with Amegic so far.
 
 @node Structure of HepMC Output
 @subsection Structure of HepMC Output
