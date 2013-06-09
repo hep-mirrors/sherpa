@@ -11,10 +11,25 @@ namespace SHERPA {
 
   class Primordial_KPerp {
   private:
+    struct partcomp{
+      bool operator() (const ATOOLS::Particle * part1, const ATOOLS::Particle * part2) const
+      {
+        if (part1->Number() < part2->Number()) return true;
+        else return false;
+      }
+    };
+
+    struct blobcomp{
+      bool operator() (const ATOOLS::Blob * blob1, const ATOOLS::Blob * blob2) const
+      {
+        if (blob1->Id() < blob2->Id()) return true;
+        else return false;
+      }
+    };
     
-    std::vector<ATOOLS::Vec3D>  *p_kperp[2];
-    std::set<ATOOLS::Particle*> *p_filled;
-    std::set<ATOOLS::Blob*>     *p_boosted;
+    std::vector<ATOOLS::Vec3D>            *p_kperp[2];
+    std::set<ATOOLS::Particle*, partcomp> *p_filled;
+    std::set<ATOOLS::Blob*, blobcomp>     *p_boosted;
 
     ATOOLS::Poincare m_oldcms, m_rotate, m_newcms;
 

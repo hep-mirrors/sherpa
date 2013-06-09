@@ -14,7 +14,7 @@ Sigma_Inelastic::~Sigma_Inelastic() {
 
 double Sigma_Inelastic::FixEikonalAndImpact(Omega_ik *& eikonal) {
   double random(m_sigma*ATOOLS::ran->Get()*0.99999999999);
-  for (std::map<Omega_ik *,double>::iterator xseciter=m_xsecs.begin();
+  for (std::map<Omega_ik *, double, eikcomp>::iterator xseciter=m_xsecs.begin();
        xseciter!=m_xsecs.end();xseciter++) {
     random -= xseciter->second;
     if (random<0.) {
@@ -98,7 +98,7 @@ void Sigma_Inelastic::SetSigma(const double & sigma) {
   if (sigma>=0) m_sigma = sigma;
   else {
     m_sigma = 0.;
-    for (std::map<Omega_ik *,double>::iterator xseciter=m_xsecs.begin();
+    for (std::map<Omega_ik *, double, eikcomp>::iterator xseciter=m_xsecs.begin();
 	 xseciter!=m_xsecs.end();xseciter++) {
       m_sigma += xseciter->second;
     }

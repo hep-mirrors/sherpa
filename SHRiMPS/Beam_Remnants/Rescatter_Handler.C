@@ -147,7 +147,7 @@ void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
   int nbeam(dabs(y1)>m_Ylimit);
   double expo(p_eikonal->EffectiveIntercept(m_b1,m_b2));
   bool allowed;
-  for (set<Particle *>::iterator piter=m_particles.begin();
+  for (set<Particle *, partcomp>::iterator piter=m_particles.begin();
        piter!=m_particles.end();piter++) {
     allowed = true;
     prob    = 1.;

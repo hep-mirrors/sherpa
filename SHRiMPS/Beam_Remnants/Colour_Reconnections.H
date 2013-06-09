@@ -18,6 +18,14 @@ namespace SHRIMPS {
     }
   };
 
+  struct blobcomp{
+    bool operator() (const ATOOLS::Blob * blob1, const ATOOLS::Blob * blob2) const
+    {
+      if (blob1->Id() < blob2->Id()) return true;
+      else return false;
+    }
+  };
+
   typedef std::pair<unsigned int,unsigned int> colpair;
   typedef std::pair<ATOOLS::Particle *,ATOOLS::Particle *> partpair;
   typedef std::map<double,ATOOLS::Particle *> partdists; 

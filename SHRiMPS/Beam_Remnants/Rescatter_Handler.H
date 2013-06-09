@@ -22,16 +22,16 @@ namespace SHRIMPS {
     bool                                        m_analyse;
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
 
-    Omega_ik                            * p_eikonal;
-    int                                   m_Nresc, m_Nfact;
-    std::set<ATOOLS::Blob * >             m_treatedblobs;
-    std::set<ATOOLS::Particle * >         m_particles;
-    std::list<std::pair<double, double> > m_intervals;
-    ProbPairMap                           m_probpairs;
-    double                                m_smin,m_B,m_b1,m_b2;
+    Omega_ik *                             p_eikonal;
+    int                                    m_Nresc, m_Nfact;
+    std::set<ATOOLS::Blob *, blobcomp >    m_treatedblobs;
+    std::set<ATOOLS::Particle *, partcomp> m_particles;
+    std::list<std::pair<double, double> >  m_intervals;
+    ProbPairMap                            m_probpairs;
+    double                                 m_smin,m_B,m_b1,m_b2;
  
 
-    std::map<ATOOLS::Particle *,ATOOLS::Particle *> m_partmap;
+    std::map<ATOOLS::Particle *, ATOOLS::Particle *, partcomp> m_partmap;
 
     bool DealWithBlob(ATOOLS::Blob * blob);
     void AddParticleToRescatters(ATOOLS::Particle * part);

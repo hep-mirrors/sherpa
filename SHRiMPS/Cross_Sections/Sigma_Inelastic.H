@@ -5,18 +5,6 @@
 
 namespace SHRIMPS {
   
-  struct eikcomp{
-    bool operator() (const Omega_ik * eik1, const Omega_ik * eik2) const
-    {
-      if(eik1->FF1()->Number() < eik2->FF1()->Number()) return true;
-      else if(eik1->FF1()->Number() > eik2->FF1()->Number()) return false;
-      else {
-	if (eik1->FF2()->Number() < eik2->FF2()->Number()) return true;
-	else return false;
-      }
-    }
-  };
-
   class Sigma_Inelastic : public Sigma_Base {
     double m_Bmin, m_Bmax, m_deltaB;
     std::map<Omega_ik *,double,eikcomp>               m_xsecs;

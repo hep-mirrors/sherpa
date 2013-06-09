@@ -31,6 +31,7 @@ namespace SHRIMPS {
     would be good to maintain: in principle \f$\Omega_{ik}(Y,\,y,\,B_\perp)\f$ 
     should not depend on it.
   */
+
   class Omega_ik : public ATOOLS::Function_Base {
   private:
     Form_Factor         * p_ff1, * p_ff2;
@@ -102,6 +103,19 @@ namespace SHRIMPS {
     void  SetSigmaInelastic(const double & sigma) { m_sigmaInelastic = sigma; }
     const double & Sigma_Inelastic() const        { return m_sigmaInelastic; }
   };
+
+  struct eikcomp{
+    bool operator() (const Omega_ik * eik1, const Omega_ik * eik2) const
+    {
+      if(eik1->FF1()->Number() < eik2->FF1()->Number()) return true;
+      else if(eik1->FF1()->Number() > eik2->FF1()->Number()) return false;
+      else {
+	if (eik1->FF2()->Number() < eik2->FF2()->Number()) return true;
+	else return false;
+      }
+    }
+  };
+
 }
 
 #endif

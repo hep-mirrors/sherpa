@@ -12,8 +12,8 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 Primordial_KPerp::Primordial_KPerp(std::string _m_path,std::string _m_file):
-  p_filled(new std::set<ATOOLS::Particle*>()),
-  p_boosted(new std::set<ATOOLS::Blob*>()),
+  p_filled(new std::set<ATOOLS::Particle*, partcomp>()),
+  p_boosted(new std::set<ATOOLS::Blob*, blobcomp>()),
   m_scheme(0)
 {
   p_remnants[0] = p_remnants[1] = NULL;

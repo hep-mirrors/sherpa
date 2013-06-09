@@ -45,7 +45,7 @@ namespace SHRIMPS {
     int    m_shatsteps;
     double m_deltalog,m_maxdl;
 
-    std::map<Omega_ik *,double > m_deltalogs, m_smins, m_maxdls;
+    std::map<Omega_ik *,double, eikcomp> m_deltalogs, m_smins, m_maxdls;
     Kernel                       m_kernel;
     Continued_PDF              * p_pdf[2];
 
