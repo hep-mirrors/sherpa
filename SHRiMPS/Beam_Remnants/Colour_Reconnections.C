@@ -277,7 +277,7 @@ void Colour_Reconnections::
 AddParticleToReconnectionBlob(Blob * blob,Particle * partin) {
   partin->SetStatus(part_status::decayed);
   blob->AddToInParticles(partin);
-  map<Particle *,colpair>::iterator pcit = m_newcols.find(partin);
+  map<Particle *, colpair, partcomp>::iterator pcit = m_newcols.find(partin);
   if (pcit==m_newcols.end()) {
     msg_Error()<<"Error in "<<METHOD<<":\n"
 	       <<"   Did not find particle ["<<partin->Number()<<"] "
