@@ -656,7 +656,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
              AC_MSG_RESULT([${CONDITIONAL_ROOTDIR}]); root=true;;
         *)   if test -d "${enableval}"; then
                CONDITIONAL_ROOTDIR="${enableval}"
-               CONDITIONAL_ROOTINCS="-I${enableval}/include";
+               CONDITIONAL_ROOTINCS="-I${enableval}/include -I${enableval}/include/root";
                CONDITIONAL_ROOTLIBS="-L${enableval}/lib $(${enableval}/bin/root-config --glibs)";
                CONDITIONAL_ROOTFLAGS="-Wno-long-long"
              else
