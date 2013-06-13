@@ -392,11 +392,12 @@ int Amplitude::CheckDecay(const ATOOLS::Flavour &fl,
 			       const Int_Vector &ids) const
 {
   size_t cid(0);
-  if (m_decid.empty()) return 0;
+  if (m_decid.empty() && m_ndc.empty()) return 0;
   for (size_t i(0);i<ids.size();++i) cid+=1<<ids[i];
   if ((cid&(1<<m_nin)-1)==0)
     for (size_t i(0);i<m_ndc.size();++i)
       if (m_ndc[i].Includes(fl)) return -1;
+  if (m_decid.empty()) return 0;
   for (size_t i(0);i<m_decid.size();++i) {
     size_t did(m_decid[i]->m_id);
     Flavour dfl(m_decid[i]->m_fl);
