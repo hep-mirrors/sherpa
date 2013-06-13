@@ -27,6 +27,7 @@ namespace OpenLoops {
   int OpenLoops_Interface::s_amp_switch;
   int OpenLoops_Interface::s_amp_switch_rescue;
   int OpenLoops_Interface::s_nf;
+  int OpenLoops_Interface::s_nq_nondecoupled;
   bool OpenLoops_Interface::s_generate_list;
   set<string> OpenLoops_Interface::s_shoppinglist;
 
@@ -64,7 +65,9 @@ namespace OpenLoops {
     s_amp_switch=reader.GetValue<int>("OL_AMP_SWITCH", 1);
     s_amp_switch_rescue=reader.GetValue<int>("OL_AMP_SWITCH_RESCUE", 7);
     s_nf=reader.GetValue<int>("OL_NF", 6);
+    s_nq_nondecoupled=reader.GetValue<int>("OL_RUNNING_FLAVOURS",Flavour(kf_quark).Size()/2);
     s_generate_list=reader.GetValue<size_t>("OL_GENERATE_LIST", false);
+
 
     OpenLoops_Virtual::SetInterface(this);
     OpenLoops_Born::SetInterface(this);
@@ -79,6 +82,7 @@ namespace OpenLoops {
     PRINT_VAR(s_amp_switch_rescue);
     PRINT_VAR(s_pole_mode);
     PRINT_VAR(s_nf);
+    PRINT_VAR(s_nq_nondecoupled);
     PRINT_VAR(s_allowed_libs);
 
     MyStrStream cite;
@@ -171,7 +175,6 @@ namespace OpenLoops {
     double pole1_IR=0.0;
     double pole2_IR=0.0;
     int polenorm_swi=0;
-    int nq_nondecoupled=Flavour(kf_quark).Size()/2;
     double opp_rootsvalue=1000.0;
     double opp_limitvalue=0.01;
     double opp_thrs=0.000001;
@@ -189,7 +192,7 @@ namespace OpenLoops {
     double set_C_PV_threshold=1.E-10;
     double set_D_PV_threshold=1.E-10;
     int set_DD_red_mode=2;
-    loop_parameters_init_(&renscale, &fact_UV, &fact_IR, &pole1_UV, &pole1_IR, &pole2_IR, &polenorm_swi, &s_nf, &nq_nondecoupled ,
+    loop_parameters_init_(&renscale, &fact_UV, &fact_IR, &pole1_UV, &pole1_IR, &pole2_IR, &polenorm_swi, &s_nf, &s_nq_nondecoupled,
                           &opp_rootsvalue, &opp_limitvalue, &opp_thrs, &opp_idig, &opp_scaloop,
                           &sam_isca, &sam_verbosity, &sam_itest, &fermion_loops, &nonfermion_loops, &CT_on, &R2_on, &IR_on, &polemode,
                           &set_C_PV_threshold, &set_D_PV_threshold, &set_DD_red_mode);

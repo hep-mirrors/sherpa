@@ -55,7 +55,7 @@ namespace OpenLoops {
 
     static std::string s_olprefix;
     static std::vector<std::string> s_allowed_libs;
-    static int s_pole_mode, s_amp_switch, s_amp_switch_rescue, s_nf;
+    static int s_pole_mode, s_amp_switch, s_amp_switch_rescue, s_nf, s_nq_nondecoupled;
     static bool s_generate_list;
     static std::set<std::string> s_shoppinglist;
     static std::map<int, OpenLoops_Particle> s_particles;
