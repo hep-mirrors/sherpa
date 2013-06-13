@@ -404,8 +404,14 @@ void Histogram::Output(const std::string name)
   if (MPI::COMM_WORLD.Get_rank()) return;
 #endif
   if (!m_active) return;
+  static int prec(-1);
+  if (prec<0) {
+    Data_Reader read(" ",";","!","=");
+    prec=read.GetValue<int>("HISTOGRAM_OUTPUT_PRECISION",6);
+  }
   std::ofstream ofile;
   ofile.open(name.c_str());
+  ofile.precision(prec);
 
   if (m_fills>=0) {
     ofile<<m_type<<" "<<m_nbin<<" "<<m_lower<<" "<<m_upper<<" ";
