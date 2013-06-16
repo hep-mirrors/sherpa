@@ -271,16 +271,17 @@ to the given value.
 
 @node Print_Graphs
 @subsection Print_Graphs
-Writes out Feynman graphs in LaTeX format. The parameter specifies the 
+Writes out Feynman graphs in LaTeX format. The parameter specifies a 
 directory name in which the diagram information is stored. This directory 
-is created automatically by Sherpa.
-After Sherpa has run, there will be a @code{.tex}-file located in the 
-Comix/Amegic subdirectory of the diagram information directory specified 
-with the name @code{<process>.tex}. This 
-has to be compiled by using @code{latex <process>.tex}, which 
-produces a @code{.mp}-file. Enter @code{mpost *.mp} and 
-again @code{latex <process>.tex} in order to produce the 
-@code{.dvi}-file @code{<process>.dvi} containing the Feynman diagrams.
+is created automatically by Sherpa. Amegic and/or Comix produce LaTeX 
+source files in the Comix/Amegic subdirectory. 
+They can be compiled using the command (in the case of Comix)
+@verbatim
+  <prefix>/bin/plot_graphs.sh graphs/Comix/
+@end verbatim
+which creates a file @code{index.html} within @code{graphs/Comix/}.
+In addition to the webpage, the script produces postscript files for
+the individual processes.
 
 @node Integration_Error
 @subsection Integration_Error
