@@ -17,4 +17,5 @@ localinc_HEADERS      =	\
 			Single_Process.H \
 			Single_Dipole_Term.H
 
-dist_pkgdata_SCRIPTS  =	init_nlo.sh
+dist_pkgdata_SCRIPTS  =	init_nlo.sh \
+			plot_graphs.sh
