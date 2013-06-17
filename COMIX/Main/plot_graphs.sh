@@ -1,9 +1,7 @@
 #!/bin/bash
-if ! test -d $1; then
-  echo "directory "$1" does not exist"
-  exit 1
-fi 
-cd $1
+plot(){
+texs=(*.tex)
+test -f ${texs[0]} || return
 echo "" | sed '1 i \
 %.aux: %.tex \
 \	latex $(addsuffix .tex,$(basename $<)) \
@@ -18,22 +16,37 @@ echo "" | sed '1 i \
 \	  && [ $$lc -gt 0 ] ; do latex $<; lc=`expr $$lc - 1`; done; \\\
 \	dvips -o $(addsuffix .ps,$(basename $<)) \\\
 \	  $(addsuffix .dvi,$(basename $<))' > Makefile.Graphs
-echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-  <body>
-    <h2>Contents of '$1'</h2>
+echo '    <h2>Contents of directory '$(echo $1 | sed 's|./||1')'</h2>
     <table border="1">
-      <tr><td>Process</td><td>Graphs</td></tr>' > index.html
+      <tr><td>Process</td><td>Graphs</td></tr>' >> $2/index.html
 for I in *.tex; do
   bn=`echo $I | cut -d'.' -f1`
   make -f Makefile.Graphs $bn.ps
   convert -trim $bn.ps $bn.png
-  echo -n "      <tr><td>"$bn"</td><td>" >> index.html
+  echo -n "      <tr><td><a href="$1/$bn".ps>"$bn"</a></td><td>" >> $2/index.html
   for i in $(ls -rc $bn*.png); do
-    echo -n "<img src=\""$i"\">" >> index.html
+    echo -n "<img src=\""$1/$i"\">" >> $2/index.html
   done
-  echo "</td></tr>" >> index.html
+  echo "</td></tr>" >> $2/index.html
 done
-echo '    </table>
-  </body>
-</html>' >> index.html
+echo '    </table>' >> $2/index.html
+}
+sub(){
+cd $3
+plot $1 $2
+for i in *; do
+  test -d $i && (sub $1/$i ../$2 $i)
+done
+}
+help(){
+echo "usage: "$(basename $0)" <path>" 
+exit 1
+}
+test -z "$1" && help
+test -d $1 || help
+echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <body>' > $PWD/$1/index.html
+(sub . . $1)
+echo '  </body>
+</html>' >> $PWD/$1/index.html
