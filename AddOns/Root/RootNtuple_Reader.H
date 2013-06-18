@@ -27,6 +27,7 @@ namespace SHERPA {
     std::map<int,PHASIC::Process_Base*> m_procs;
     std::map<int,PHASIC::Scale_Setter_Base*> m_scales;
     PDF::ISR_Handler *p_isr;
+    double m_ecms;
 
     void               CloseFile();
     bool               ReadInEntry();

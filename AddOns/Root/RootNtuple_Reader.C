@@ -68,6 +68,7 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args) :
 {
   std::string filename=m_path+m_file+".root";
   msg_Out()<<" Reading from "<<filename<<"\n";
+  m_ecms=args.p_reader->GetValue<double>("ROOTNTUPLE_ECMS",rpa->gen.Ecms());
   m_calc=args.p_reader->GetValue<int>("ROOTNTUPLE_CALC",1);
   if (m_calc) msg_Info()<<METHOD<<"(): Ntuple calc mode set to "<<m_calc<<"."<<std::endl;
   m_check=args.p_reader->GetValue<int>("ROOTNTUPLE_CHECK",m_calc&2?1:0);
@@ -219,8 +220,9 @@ double RootNtuple_Reader::CalculateWeight
 #ifdef USING__ROOT
   Flavour fl1((kf_code)abs(p_vars->m_id1),p_vars->m_id1<0);
   Flavour fl2((kf_code)abs(p_vars->m_id2),p_vars->m_id2<0);
-  p_isr->PDF(0)->Calculate(p_vars->m_x1,muf2);
-  p_isr->PDF(1)->Calculate(p_vars->m_x2,muf2);
+  double sf(m_ecms/rpa->gen.Ecms());
+  p_isr->PDF(0)->Calculate(p_vars->m_x1*sf,muf2);
+  p_isr->PDF(1)->Calculate(p_vars->m_x2*sf,muf2);
   double fa=p_isr->PDF(0)->GetXPDF(fl1)/p_vars->m_x1;
   double fb=p_isr->PDF(1)->GetXPDF(fl2)/p_vars->m_x2;
   double asf=pow((*MODEL::as)(mur2)/p_vars->m_as,p_vars->m_oqcd);
@@ -234,8 +236,14 @@ double RootNtuple_Reader::CalculateWeight
     double w[9];
     double lr=log(mur2/sqr(p_vars->m_mur)), lf=log(muf2/sqr(p_vars->m_muf));
     w[0]=p_vars->m_mewgt+p_vars->p_uwgt[0]*lr+p_vars->p_uwgt[1]*lr*lr/2.0;
-    for (int i(1);i<9;++i) w[i]=p_vars->p_uwgt[i+1]+p_vars->p_uwgt[i+9]*lf;
+    bool wnz=false;
+    for (int i(1);i<9;++i) {
+      w[i]=p_vars->p_uwgt[i+1]+p_vars->p_uwgt[i+9]*lf;
+      if (w[i]) wnz=true;
+    }
     double wgt=w[0]*fa*fb;
+    if (wnz) {
+    if (sf!=1.0) THROW(not_implemented,"I-term rescaling not supported.");
     double faq=0.0, faqx=0.0, fag=0.0, fagx=0.0;
     double fbq=0.0, fbqx=0.0, fbg=0.0, fbgx=0.0;
     Flavour quark(kf_quark), gluon(kf_gluon);
@@ -273,6 +281,7 @@ double RootNtuple_Reader::CalculateWeight
     }
     wgt+=(faq*w[1]+faqx*w[2]+fag*w[3]+fagx*w[4])*fb;
     wgt+=(fbq*w[5]+fbqx*w[6]+fbg*w[7]+fbgx*w[8])*fa;
+    }
     return wgt*asf;
   }
   else {
@@ -317,8 +326,9 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     m_nlos.back()->m_result=p_vars->m_wgt2;
     id1=p_vars->m_id1;
     id2=p_vars->m_id2;
-    x1=p_vars->m_x1;
-    x2=p_vars->m_x2;
+    double sf(m_ecms/rpa->gen.Ecms());
+    x1=p_vars->m_x1*sf;
+    x2=p_vars->m_x2*sf;
     if (m_calc) {
       Vec4D_Vector p(2+p_vars->m_nparticle);
       for (int i=0;i<p_vars->m_nparticle;++i) {
