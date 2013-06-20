@@ -280,7 +280,7 @@ FastjetSelector <expression> <algorithm> <n> <ptmin> <etmin> <dr> [<f(siscone)>=
 wherein @code{algorithm} can take the values @code{kt,antikt,cambridge,siscone}. 
 In the algebraic @code{expression} @code{MU_n2} (n=2..njet+1) signify the nodal 
 values of the jets found and @code{p[i]} are their momenta. For details see
-@ref{Scale setting using jets}. For example, in lepton pair production in 
+@ref{Scale setters}. For example, in lepton pair production in 
 association with jets
 
 @verbatim
