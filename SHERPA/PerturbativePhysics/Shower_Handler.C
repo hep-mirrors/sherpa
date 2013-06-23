@@ -4,6 +4,7 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -25,7 +26,13 @@ Shower_Handler::Shower_Handler
 		       <std::string>("JET_CRITERION",m_name));
   p_shower = PDF::Shower_Getter::GetObject
     (m_name,PDF::Shower_Key(model,p_isr,&dataread));
-  if (p_shower==NULL) msg_Info()<<METHOD<<"(): No shower selected."<<std::endl;
+  if (p_shower==NULL) {
+    if (!s_loader->LoadLibrary("Sherpa"+m_name)) 
+      THROW(missing_module,"Cannot load Analysis library (--enable-analysis).");
+    p_shower = PDF::Shower_Getter::GetObject
+      (m_name,PDF::Shower_Key(model,p_isr,&dataread));
+    if (p_shower==NULL) msg_Info()<<METHOD<<"(): No shower selected."<<std::endl;
+  }
 }
 
 
