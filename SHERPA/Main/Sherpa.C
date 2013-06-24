@@ -24,6 +24,7 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include <cstring>
 #ifdef USING__MPI
+#include <unistd.h>
 #include "mpi.h"
 #endif
 
