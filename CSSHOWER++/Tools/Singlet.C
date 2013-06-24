@@ -203,8 +203,8 @@ void Singlet::RemoveParton(Parton *const p,const int mode)
 {
   for (iterator pit(begin());pit!=end();++pit)
     if (*pit==p) {
-      if (p->GetNext()) p->GetNext()->GetSing()->
-	RemoveParton(p->GetNext(),mode);
+      if (p->GetNext()) 
+	p->GetNext()->GetSing()->RemoveParton(p->GetNext(),mode);
       if (mode) {
 	if (p->GetPrev()) p->GetPrev()->SetNext(NULL);
 	delete p;
@@ -235,7 +235,8 @@ void Singlet::AddParton(Parton *const p)
   }
 }
 
-bool Singlet::RearrangeColours(Parton * mother, Parton * daughter1, Parton * daughter2)
+bool Singlet::
+RearrangeColours(Parton * mother, Parton * daughter1, Parton * daughter2)
 {
   daughter1->SetSing(this);
   for (iterator pit(begin());pit!=end();++pit)
@@ -247,8 +248,8 @@ bool Singlet::RearrangeColours(Parton * mother, Parton * daughter1, Parton * dau
   daughter1->SetFlow(2,mother->GetFlow(2));
   daughter1->SetPrev(mother);
   daughter1->UpdateColours();
-  daughter1->SetLeftOf(mother);
-  daughter1->SetRightOf(mother);
+  daughter1->SetLeft(mother,true);
+  daughter1->SetRight(mother,true);
   for (iterator pit(begin());pit!=end();++pit)
     if (*pit==daughter1) *pit=mother;
   return true;
@@ -267,7 +268,8 @@ ReestablishConnections(Parton * mother, Parton * daughter1, Parton * daughter2)
   }
 }
 
-bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daughter2)
+bool Singlet::
+ArrangeColours(Parton * mother, Parton * daughter1, Parton * daughter2)
 {
   daughter1->SetSing(this);
   daughter2->SetSing(this);
@@ -281,7 +283,8 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
   daughter1->SetPrev(mother);
   daughter2->SetFlow(1,0);
   daughter2->SetFlow(2,0);
-  Flavour mo(mother->GetFlavour()), d1(daughter1->GetFlavour()), d2(daughter2->GetFlavour());
+  Flavour mo(mother->GetFlavour());
+  Flavour d1(daughter1->GetFlavour()), d2(daughter2->GetFlavour());
   if (mother->GetType()==pst::IS) { mo=mo.Bar(); d1=d1.Bar(); }
   ReestablishConnections(mother,daughter1,daughter2);
   if (mo.StrongCharge()==-3) {

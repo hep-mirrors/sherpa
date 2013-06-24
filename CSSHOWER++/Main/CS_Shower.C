@@ -241,37 +241,24 @@ bool CS_Shower::EstablishRelations(Parton * parton,Cluster_Leg * leg,
     if (col1!=0 && col1==spect->GetFlow(2)) {
       if ((parton->GetLeft() && parton->GetLeft()!=spect) ||
 	  (spect->GetRight() && spect->GetRight()!=parton)) {
-	//msg_Error()<<"Error in "<<METHOD<<":\n"
-	//	   <<"   have already left colour partner for \n"<<(*parton)
-	//	   <<"  --> ["<<parton->GetLeft()->GetFlow(1)
-	//	   <<", "<<parton->GetLeft()->GetFlow(2)<<"] while trying "
-	//	   <<"["<<spect->GetFlow(1)<<", "<<spect->GetFlow(2)<<"].\n"
-	//	   <<"   or right colour partner for \n"<<(*spect);
-	//return false;
 	connect = true;
       }
       else {
 	parton->SetLeft(spect);
 	spect->SetRight(parton);
+	parton->SetRightOf(spect);
 	connect = true;
       }
     }
     if (col2!=0 && col2==spect->GetFlow(1)) {
       if ((parton->GetRight() && parton->GetRight()!=spect) ||
 	  (spect->GetLeft() && spect->GetLeft()!=parton)) {
-	//msg_Error()<<"Error in "<<METHOD<<":\n"
-	//	   <<"   have already right colour partner for \n"<<(*parton)
-	//	   <<"  --> ["<<parton->GetRight()->GetFlow(1)
-	//	   <<", "<<parton->GetRight()->GetFlow(2)<<"] while trying "
-	//	   <<"["<<spect->GetLeft()->GetFlow(1)<<", "
-	//	   <<spect->GetLeft()->GetFlow(2)<<"].\n"
-	//	   <<"   or left colour partner for \n"<<(*spect);
-	//return false;
 	connect = true;
       }
       else {
 	parton->SetRight(spect);
 	spect->SetLeft(parton);
+	parton->SetLeftOf(spect);
 	connect = true;
       }
     }
@@ -279,8 +266,8 @@ bool CS_Shower::EstablishRelations(Parton * parton,Cluster_Leg * leg,
       if (spect->GetLeft()==parton)       parton->SetRight(spect);
       else if (spect->GetRight()==parton) parton->SetLeft(spect);
       else {
-	if (!parton->GetLeft())       parton->SetLeft(spect);
-	else if (!parton->GetRight()) parton->SetRight(spect);
+	if (!parton->GetLeft())           parton->SetLeft(spect);
+	else if (!parton->GetRight())     parton->SetRight(spect);
       }
     }
   }
@@ -288,6 +275,9 @@ bool CS_Shower::EstablishRelations(Parton * parton,Cluster_Leg * leg,
     if (parton->GetLeft()==NULL)  parton->SetLeft(parton->GetRight());
     if (parton->GetRight()==NULL) parton->SetRight(parton->GetLeft());
   }
+  if (parton->GetLeft())  parton->GetLeft()->SetLeftOf(parton);
+  if (parton->GetRight()) parton->GetRight()->SetRightOf(parton);
+
   parton->SetStat(leg->Stat());
   return true;
 }
@@ -341,6 +331,7 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
     parton->SetVeto(sqr(rpa->gen.Ecms()));     // irrelevant 
     parton->SetConnected(leg->Connected());
     parton->SetMass2(p_ms->Mass2(leg->Flav()));
+    parton->SetTrackColors(true);
     singlet->push_back(parton);
     parton->SetSing(singlet);
   }

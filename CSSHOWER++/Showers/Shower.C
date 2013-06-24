@@ -383,7 +383,8 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       msg_Debugging()<<"Emission "<<m_flavA<<" -> "<<m_flavB<<" "<<m_flavC
 		     <<" at kt = "<<sqrt(split->KtTest())
 		     <<"( "<<sqrt(split->GetSing()->KtNext())<<" .. "
-		     <<sqrt(split->KtStart())<<" ), z = "<<split->ZTest()<<", y = "
+		     <<sqrt(split->KtStart())<<" ), "
+		     <<"z = "<<split->ZTest()<<", y = "
 		     <<split->YTest()<<" for\n"<<*split
 		     <<*split->GetSpect()<<"\n";
       m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
