@@ -81,7 +81,7 @@ For a complete list of possible configuration options run
 
 The Sherpa package has successfully been compiled, installed and
 tested on SuSE, RedHat / Scientific Linux and Debian / Ubuntu Linux systems 
-using the GNU C++ compiler versions 3.2, 3.3, 3.4, 4.0, 4.1, 4.2, 4.3 and 4.4 as
+using the GNU C++ compiler versions 3.2, 3.3, 3.4, and 4.x as
 well as on Mac OS X 10 using the GNU C++ compiler version 4.0. In all cases the 
 GNU FORTRAN compiler g77 or gfortran has been employed. Note that GCC
 version 2.96 is @strong{not} supported.
@@ -104,11 +104,14 @@ export CPP=cpp-3.4}
 
 @subsubheading MacOS Installation
 
-Installation on MacOS is supported at least in all Sherpa versions > 1.1.2. 
-Before that, there might have been problems on the newer MacOS 
-versions or architectures (10.5, Intel).
-The following issues have come up on Mac installations before, so 
-please be aware of them:
+Since it is more complicated to set up the necessary compiler environment
+on a Mac we recommend using a package manager to install Sherpa and its
+dependencies. David Hall is hosting a repository for Homebrew packages at:
+@uref{http://davidchall.github.io/homebrew-hep/,,http://davidchall.github.io/homebrew-hep/}
+
+
+In case you are compiling yourself, please be aware of
+the following issues which have come up on Mac installations before:
 @itemize @bullet
 @item On 10.4 and 10.5 only gfortran is supported, and you will 
 have to install it e.g. from HPC
@@ -127,13 +130,6 @@ is located in /sw/lib). You can find out which libraries are used by Sherpa
 by running @code{otool -L bin/Sherpa}
 @end itemize
 
-
-@ignore
-For users who modified parts of Sherpa according to their own needs
-or who added own modules and who would like to distribute the code,
-the @code{makedist} script is available. Its options can be listed by
-running @code{makedist -h}.
-@end ignore
 
 @node Running Sherpa
 @section Running Sherpa
