@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <cstring>
+#include <unistd.h>
 
 using namespace ATOOLS;
 
