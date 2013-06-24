@@ -24,6 +24,7 @@ namespace SHERPA {
     std::string m_dir,m_file, m_sfile;
     std::string m_fragmentationmodel;
     int         m_mode;
+    bool        m_shrink, m_flagpartonics;
 
 #ifdef USING__Ahadic
     AHADIC::Ahadic * p_ahadic;
@@ -33,6 +34,7 @@ namespace SHERPA {
 #endif
 
     ATOOLS::Return_Value::code ExtractSinglets(ATOOLS::Blob_List *);
+    void Shrink(ATOOLS::Blob_List *);
     void PrepareTerminate(); 
   public:
     Fragmentation_Handler(std::string,std::string);

@@ -8,13 +8,15 @@ using namespace std;
 Hadronization::Hadronization(Fragmentation_Handler * fragmentation) :
   p_fragmentationhandler(fragmentation)
 {
-  m_name = std::string("Hadronization:")+p_fragmentationhandler->FragmentationModel();
+  m_name = std::string("Hadronization:")+
+    p_fragmentationhandler->FragmentationModel();
   m_type = eph::Hadronization;
 }
 
 Hadronization::~Hadronization() {}
 
-Return_Value::code Hadronization::Treat(ATOOLS::Blob_List *bloblist,double &weight) 
+Return_Value::code Hadronization::
+Treat(ATOOLS::Blob_List *bloblist,double &weight) 
 {
   if (bloblist->empty()) {
     msg_Error()<<"Hadronization::Treat("<<bloblist<<","<<weight<<"): "<<endl

@@ -395,6 +395,17 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob, HepMC::GenVertex *& ver
     HepMC::FourVector position(pos[1],pos[2],pos[3],pos[0]);
     vertex = new HepMC::GenVertex(position,blob->Id());
     vertex->weights().push_back(1.);
+    if (blob->Type()==btp::Signal_Process)      vertex->set_id(1);
+    else if (blob->Type()==btp::Hard_Collision) vertex->set_id(2);
+    else if (blob->Type()==btp::Hard_Decay)     vertex->set_id(3);
+    else if (blob->Type()==btp::Shower || 
+	     blob->Type()==btp::QED_Radiation)  vertex->set_id(4);
+    else if (blob->Type()==btp::Fragmentation)  vertex->set_id(5);
+    else if (blob->Type()==btp::Hadron_Decay) {  
+      if ((*blob)["Partonic"]!=NULL) vertex->set_id(-6);
+      else vertex->set_id(6);
+    }
+    else vertex->set_id(0);
   }
 
   bool okay = 1;
