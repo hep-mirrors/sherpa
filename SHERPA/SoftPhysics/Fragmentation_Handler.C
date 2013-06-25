@@ -114,7 +114,7 @@ Fragmentation_Handler::PerformFragmentation(Blob_List *bloblist,
   switch (m_mode) {
 #ifdef USING__PYTHIA
   case 1  : 
-    success p_lund->Hadronize(bloblist);
+    success = p_lund->Hadronize(bloblist);
     if (m_shrink>0 && success==Return_Value::Success) Shrink(bloblist);
     return success;
 #endif
