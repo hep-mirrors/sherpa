@@ -80,6 +80,7 @@ factorization scale and potential additional scales.
 
 @menu
 * Scale setters::
+* Custom scale implementation::
 * Predefined scale tags::
 * Scale schemes for NLO calculations::
 * Simple scale variations::
@@ -288,10 +289,13 @@ of the partonic process.
 
 @end table
 
-It is possible to implement a dedicated scale
-scheme within Sherpa. For advice on this topic
-please contact the authors, @ref{Authors}.
+@node Custom scale implementation
+@subsubsection Custom scale implementation
 
+When the flexibility of the @option{VAR} scale setter above is not sufficient,
+it is also possible to implement a completely custom scale scheme within Sherpa
+as C++ class plugin. For details please refer to the @ref{Customization}
+section.
 
 @node Predefined scale tags
 @subsubsection Predefined scale tags

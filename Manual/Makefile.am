@@ -17,6 +17,7 @@ Sherpa_TEXINFOS = \
 	Commands.texi \
 	CrossSection.texi \
 	Customization.texi \
+	CustomScale.texi \
 	EHC.texi \
 	Examples.texi \
 	FeynRules.texi \

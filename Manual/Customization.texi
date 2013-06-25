@@ -5,31 +5,40 @@
 Customizing Sherpa according to your needs.
 
 Sherpa can be easily extended with certain user defined tools.
-To this extent, a corresponding class must be written,
-equipped with a corresponding getter function and compiled into
-an external library which can be linked to Sherpa at runtime. 
-To this end the switch @code{SHERPA_LDADD} has to be given the 
-name of the library to be loaded, ie.
+To this extent, a corresponding C++ class must be written,
+and compiled into an external library:
 
 @verbatim
-  SHERPA_LDADD <libname>
+  g++ -shared \
+    -I`$SHERPA_PREFIX/bin/Sherpa-config --incdir` \
+    `$SHERPA_PREFIX/bin/Sherpa-config --ldflags` \
+    -o libMyCustomClass.so My_Custom_Class.C
 @end verbatim
 
-to load @code{lib<libname>.so}. 
-Several specific examples are listed in the following sections.
+This library can then be loaded in Sherpa at runtime with the switch
+@code{SHERPA_LDADD}, e.g.:
+
+@verbatim
+  SHERPA_LDADD=MyCustomClass
+@end verbatim
+
+Several specific examples of features which can be extended in this way are
+listed in the following sections.
 
 @menu
+* Exotic physics::   How to introduce your own models to Sherpa. Example: Z-prime.
+* Custom scale setter:: How to write a custom calculator for factorisation and renormalisation scale
+* External one-loop ME:: How to interface external one-loop codes.
 * External RNG::     How to add an external random number generator.
 * External PDF::     How to add an external PDF.
-* Exotic physics::   How to introduce your own models to Sherpa. Example: Z-prime.
-* External one-loop ME:: How to interface external one-loop codes.
 * My own interface:: How to make Sherpa send output to your framework.
 * Python Interface:: How to make Sherpa talk to your Python script.
 @end menu
 
+@include NewModel.texi
+@include CustomScale.texi
+@include OLE.texi
 @include RNG.texi
 @include PDF.texi
-@include NewModel.texi
-@include OLE.texi
 @include MyInterface.texi
 @include API.texi

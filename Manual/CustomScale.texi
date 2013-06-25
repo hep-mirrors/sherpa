@@ -1,0 +1,84 @@
+@node Custom scale setter
+@section Custom scale setter
+
+You can write a custom calculator to set the factorisation, renormalisation and
+resummation scales. It has to be implemented as a C++ class which derives from
+the @code{Scale_Setter_Base} base class and implements only the constructor and
+the @code{Calculate} method.
+
+Here is a snippet for a very simple one, which sets all three scales to the
+invariant mass of the two incoming partons.
+
+@verbatim
+#include "PHASIC++/Scales/Scale_Setter_Base.H"
+#include "ATOOLS/Org/Message.H"
+
+using namespace PHASIC;
+using namespace ATOOLS;
+
+namespace PHASIC {
+
+  class Custom_Scale_Setter: public Scale_Setter_Base {
+  protected:
+
+  public:
+
+    Custom_Scale_Setter(const Scale_Setter_Arguments &args) :
+      Scale_Setter_Base(args)
+    {
+      m_scale.resize(3); // by default three scales: fac, ren, res
+                         // but you can add more if you need for COUPLINGS
+      SetCouplings(); // the default value of COUPLINGS is "Alpha_QCD 1", i.e.
+                      // m_scale[1] is used for running alpha_s
+                      // (counting starts at zero!)
+    }
+
+    double Calculate(const std::vector<ATOOLS::Vec4D> &p,
+		     const size_t &mode)
+    {
+      double muF=(p[0]+p[1]).Abs2();
+      double muR=(p[0]+p[1]).Abs2();
+      double muQ=(p[0]+p[1]).Abs2();
+
+      m_scale[stp::fac] = muF;
+      m_scale[stp::ren] = muR;
+      m_scale[stp::res] = muQ;
+
+      // Switch on debugging output for this class with:
+      // Sherpa "OUTPUT=2[Custom_Scale_Setter|15]"
+      DEBUG_FUNC("Calculated scales:");
+      DEBUG_VAR(m_scale[stp::fac]);
+      DEBUG_VAR(m_scale[stp::ren]);
+      DEBUG_VAR(m_scale[stp::res]);
+
+      return m_scale[stp::fac];
+    }
+
+  };
+
+}
+
+// Some plugin magic to make it available for SCALES=CUSTOM
+DECLARE_GETTER(Custom_Scale_Setter,"CUSTOM",
+	       Scale_Setter_Base,Scale_Setter_Arguments);
+
+Scale_Setter_Base *ATOOLS::Getter
+<Scale_Setter_Base,Scale_Setter_Arguments,Custom_Scale_Setter>::
+operator()(const Scale_Setter_Arguments &args) const
+{
+  return new Custom_Scale_Setter(args);
+}
+
+void ATOOLS::Getter<Scale_Setter_Base,Scale_Setter_Arguments,
+		    Custom_Scale_Setter>::
+PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"Custom scale scheme";
+}
+@end verbatim
+
+If the code is compiled into a library called libCustomScale.so,
+then this library is loaded dynamically at runtime with the switch
+@samp{SHERPA_LDADD=CustomScale} either on the command line or in the run
+section, cf. @ref{Customization}. This then allows to use the custom scale like
+a built-in scale setter by specifying @option{SCALES=CUSTOM} (cf. @ref{SCALES}).
