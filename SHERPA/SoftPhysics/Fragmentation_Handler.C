@@ -37,8 +37,6 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
   dr.SetInputPath(m_dir);
   dr.SetInputFile(m_file);
   m_fragmentationmodel=dr.GetValue<string>("FRAGMENTATION",string("Ahadic"));
-  m_shrink=dr.GetValue<int>("COMPRESS_PARTONIC_DECAYS",1);
-  m_flagpartonics=dr.GetValue<int>("FLAG_PARTONIC_DECAYS",0);
   if (m_fragmentationmodel==string("Lund")) {
 #ifndef USING__PYTHIA
     THROW(fatal_error, "Fragmentation/decay interface to Pythia has not been "+
@@ -113,56 +111,23 @@ Fragmentation_Handler::PerformFragmentation(Blob_List *bloblist,
   }
   switch (m_mode) {
 #ifdef USING__PYTHIA
-  case 1  : 
-    success = p_lund->Hadronize(bloblist);
-    if (m_shrink>0 && success==Return_Value::Success) Shrink(bloblist);
-    return success;
+    case 1  : return p_lund->Hadronize(bloblist);
 #endif
 #ifdef USING__Ahadic
-  case 2  : 
-    success = p_ahadic->Hadronize(bloblist);
+  case 2  : success = p_ahadic->Hadronize(bloblist);
     if (success!=Return_Value::Success &&
 	success!=Return_Value::Nothing) {
       msg_Tracking()<<"Potential problem in "<<METHOD<<":\n"<<(*bloblist)<<"\n";
     }
-    if (m_shrink>0 && success==Return_Value::Success) Shrink(bloblist);
     return success;
 #endif
-  default : 
-    msg_Error()<<"ERROR in "<<METHOD<<":\n"
-	       <<"   Unknown hadronization model in mode = "<<m_mode<<".\n"
-	       <<"   Abort the run.\n";
-    THROW(critical_error,"Fragmentation model not implemented.");
+    default : 
+      msg_Error()<<"ERROR in "<<METHOD<<":\n"
+		 <<"   Unknown hadronization model in mode = "<<m_mode<<".\n"
+		 <<"   Abort the run.\n";
+      THROW(critical_error,"Fragmentation model not implemented.");
   }
 }
-
-void Fragmentation_Handler::Shrink(Blob_List * bloblist) {
-  list<Blob *> deleteblobs;
-  Particle_Vector * parts;
-  for (Blob_List::reverse_iterator blit=bloblist->rbegin();
-       blit!=bloblist->rend();++blit) {
-    Blob * blob = (*blit);
-    if (blob->Type()==btp::Fragmentation) {
-      if (blob->Status()!=blob_status::needs_hadrondecays) return;
-      Blob * showerblob(blob->InParticle(0)->ProductionBlob());
-      Blob * decblob(showerblob->InParticle(0)->ProductionBlob());
-      showerblob->DeleteInParticles(0);
-      showerblob->DeleteOutParticles(0);
-      deleteblobs.push_back(blob);
-      deleteblobs.push_back(showerblob);
-      while (!blob->GetOutParticles().empty()) {
-	Particle * part = 
-	  blob->RemoveOutParticle(blob->GetOutParticles().front());
-	decblob->AddToOutParticles(part);
-      }
-      if (m_flagpartonics>0) decblob->AddData("Partonic",new Blob_Data<int>(1));
-    }
-  }
-  for (list<Blob *>::iterator blit=deleteblobs.begin();
-       blit!=deleteblobs.end();blit++) bloblist->Delete((*blit));
-}
-
-
 
 Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 {
@@ -170,8 +135,7 @@ Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
   Blob      * blob(NULL);
   std::vector<SP(Part_List)> plists;
   plists.push_back(new Part_List);
-  for (Blob_List::iterator blit=bloblist->begin();
-       blit!=bloblist->end();++blit) {
+  for (Blob_List::iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
     if ((*blit)->Has(blob_status::needs_hadronization)) {
       // If not coming from hadron decays, fill default plists[0].
       // If from hadron decays, create separate plist for each blob

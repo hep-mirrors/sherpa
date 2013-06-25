@@ -52,8 +52,8 @@ Soft_Collision_Handler::~Soft_Collision_Handler()
   exh->RemoveTerminatorObject(this);
 }
 
-void Soft_Collision_Handler::CleanUp(const size_t mode) {
-  if (p_shrimps) p_shrimps->CleanUp(mode);
+void Soft_Collision_Handler::CleanUp() {
+  if (p_shrimps) p_shrimps->CleanUp();
 } 
 
 void Soft_Collision_Handler::PrepareTerminate() 

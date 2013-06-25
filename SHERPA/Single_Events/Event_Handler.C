@@ -83,13 +83,10 @@ void Event_Handler::PrintGenericEventStructure()
 
 void Event_Handler::Reset()
 {
-  //msg_Out()<<METHOD<<":\n";
   m_sblobs.Clear();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit)
-    (*pit)->CleanUp(99);
-  //msg_Out()<<"  --> passed cleaning of phases.\n";
+    (*pit)->CleanUp();
   m_blobs.Clear();
-  //msg_Out()<<"  --> passed clearing of blobs.\n";
   if (Particle::Counter()>m_lastparticlecounter || 
       Blob::Counter()>m_lastblobcounter) {
     msg_Error()<<METHOD<<"(): "<<Particle::Counter()
@@ -211,17 +208,16 @@ int Event_Handler::IterateEventPhases(eventtype::code & mode,double & weight) {
 	    break;
 	  }
 	}
-	//msg_Out()<<METHOD<<": retry event.\n";
       }
       else {
 	msg_Error()<<METHOD<<"(): No success after "<<s_retrymax
 		   <<" trials. Request new event.\n";
       }
     case Return_Value::New_Event : 
-      //msg_Out()<<METHOD<<": new event.\n";
       Return_Value::IncCall((*pit)->Name());
       Return_Value::IncNewEvent((*pit)->Name());
       if (p_signal) m_addn+=(*p_signal)["Trials"]->Get<double>();
+      Reset();
       return 2;
     case Return_Value::Error :
       Return_Value::IncCall((*pit)->Name());
@@ -248,7 +244,6 @@ bool Event_Handler::GenerateStandardPerturbativeEvent(eventtype::code &mode)
     case 3:
       return false;
     case 2:
-      Reset();
       InitialiseSeedBlob(ATOOLS::btp::Signal_Process,
 			 ATOOLS::blob_status::needs_signal);
       break;
@@ -300,7 +295,6 @@ bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
     weight = 1.;
     switch (IterateEventPhases(mode,weight)) {
     case 3:
-      //msg_Out()<<METHOD<<" yields case 3.\n";
       return false;
     case 2:
     case 1:
@@ -320,7 +314,6 @@ bool Event_Handler::GenerateMinimumBiasEvent(eventtype::code & mode) {
 			 ATOOLS::blob_status::needs_minBias);
       break;
     case 0:
-      //msg_Out()<<METHOD<<" yields case 0.\n";
       run = false;
       break;
     }
@@ -399,7 +392,7 @@ void Event_Handler::Finish() {
 	    <<"Summarizing the run may take some time.\n";
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
     (*pit)->Finish(std::string("Results"));
-    (*pit)->CleanUp(99);
+    (*pit)->CleanUp();
   }
   m_blobs.Clear();
   m_sblobs.Clear();

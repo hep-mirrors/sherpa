@@ -21,7 +21,7 @@ Minimum_Bias::Treat(ATOOLS::Blob_List * blobs, double & weight) {
 }
 
 void Minimum_Bias::CleanUp(const size_t & mode) {
-  p_schandler->CleanUp(mode);
+  p_schandler->CleanUp();
 }
 
 void Minimum_Bias::Finish(const std::string &) {}

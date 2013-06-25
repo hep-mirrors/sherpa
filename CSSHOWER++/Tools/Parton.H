@@ -32,17 +32,14 @@ namespace CSSHOWER {
     Parton        * p_spect, * p_prev, * p_next;
     Singlet       * p_sing;
     size_t          m_id;
-    bool            m_connected, m_trackcols;
-    Parton        * p_leftof, * p_rightof;
-
+    bool            m_connected;
     ATOOLS::Poincare_Sequence m_lt;
 
     std::vector<std::pair<double,double> > m_weights;
 
   public:
     inline Parton();
-    inline Parton(const ATOOLS::Flavour &,const ATOOLS::Vec4D &,
-		  pst::code=pst::none);
+    inline Parton(const ATOOLS::Flavour &,const ATOOLS::Vec4D &,pst::code=pst::none);
     inline Parton(const ATOOLS::Particle *,pst::code=pst::none);
 
     void DeleteAll();
@@ -83,7 +80,7 @@ namespace CSSHOWER {
     inline double                  KtTest()      const;
     inline double                  ZTest()       const;
     inline double                  YTest()       const;
-    inline double                  Weight()      const;
+    inline double                  Weight()        const;
     inline double                  Xbj()         const;
     inline double                  Mass2()       const { return m_t; }
     inline double                  Phi()         const;
@@ -94,9 +91,6 @@ namespace CSSHOWER {
     inline Parton *                GetNext();
     inline Singlet*                GetSing();
     inline bool                    Connected()   const { return m_connected; }
-    inline bool                    TrackColors() const { return m_trackcols; }
-    inline Parton *                GetLeftof()    const { return p_leftof; }
-    inline Parton *                GetRightof()   const { return p_rightof; }
 
     inline void SetFlavour(const ATOOLS::Flavour &);
     inline void SetMomentum(const ATOOLS::Vec4D &);
@@ -113,10 +107,10 @@ namespace CSSHOWER {
     inline void SetXbj(const double);
     inline void SetMass2(const double t) { m_t=t; }
     inline void SetPhi(const double);
-    inline void SetLeft(Parton *,const bool & tot=false);
-    inline void SetRight(Parton *,const bool & tot=false);
-    inline void SetLeftOf(Parton *);
-    inline void SetRightOf(Parton *);
+    void SetLeftOf(Parton *);
+    void SetRightOf(Parton *);
+    inline void SetLeft(Parton *);
+    inline void SetRight(Parton *);
     inline void SetSpect(Parton *);
     inline void SetPrev(Parton *);
     inline void SetNext(Parton *);
@@ -129,8 +123,7 @@ namespace CSSHOWER {
     inline void SetKin(int kin) { m_kin=kin; }
     inline void SetCol(int col) { m_col=col; }
     inline void SetId(size_t);
-    inline void SetConnected(const bool & c)   { m_connected = c; }
-    inline void SetTrackColors(const bool & c) { m_trackcols = c; }
+    inline void SetConnected(const bool & c) { m_connected = c; }
     friend std::ostream& operator<<(std::ostream &,const Parton &);
   };
 
@@ -140,10 +133,8 @@ namespace CSSHOWER {
     m_pst(pst::none), m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.), m_kt_max(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
-    p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), 
-    p_sing(NULL), 
-    m_id(0), m_connected(true), 
-    m_trackcols(false), p_leftof(NULL), p_rightof(NULL)
+    p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
+    m_id(0), m_connected(true)
   { 
     m_flow.SetCode(1,0);
     m_flow.SetCode(2,0);
@@ -153,10 +144,8 @@ namespace CSSHOWER {
     m_flav(flav), m_mom(mom), m_pst(pst), m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.), m_kt_max(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
-    p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), 
-    p_sing(NULL), 
-    m_id(0), m_connected(true), 
-    m_trackcols(false), p_leftof(NULL), p_rightof(NULL)
+    p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
+    m_id(0), m_connected(true)
   {
     m_flow.SetCode(1,0);
     m_flow.SetCode(2,0);
@@ -167,10 +156,8 @@ namespace CSSHOWER {
     m_pst(pst), m_beam(0), m_stat(0), m_kin(0), m_kscheme(0), m_col(0),
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.), m_kt_max(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
-    p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), 
-    p_sing(NULL), 
-    m_id(0), m_connected(true), 
-    m_trackcols(false), p_leftof(NULL), p_rightof(NULL)
+    p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
+    m_id(0), m_connected(true)
   {
     if (m_pst==pst::FS) {
       m_flow.SetCode(1,part->GetFlow(1));
@@ -213,7 +200,7 @@ namespace CSSHOWER {
   Parton *                Parton::GetPrev()           { return p_prev; }
   Parton *                Parton::GetNext()           { return p_next; }
   Singlet*                Parton::GetSing()           { return p_sing; }
-  void Parton::SetFlavour(const ATOOLS::Flavour & fl) { m_flav     = fl; }
+  void Parton::SetFlavour(const ATOOLS::Flavour & fl) { m_flav      = fl; }
   void Parton::SetMomentum(const ATOOLS::Vec4D & mom) { m_mom      = mom; }
   void Parton::SetStart(const double kt)              { m_kt_start = kt; }
   void Parton::SetKtMax(const double kt)              { m_kt_max   = kt; }
@@ -231,22 +218,12 @@ namespace CSSHOWER {
                                                         m_phi      = phi; }
   void Parton::SetXbj(const double x)                 { m_xBj      = x; }
   void Parton::SetPhi(const double phi)               { m_phi      = phi; }
-  void Parton::SetLeftOf(Parton * part)               { p_leftof    = part; }  
-  void Parton::SetRightOf(Parton * part)              { p_rightof   = part; }  
+  void Parton::SetLeft(Parton * part)                 { p_left    = part; }  
+  void Parton::SetRight(Parton * part)                { p_right   = part; }  
   void Parton::SetSpect(Parton * part)                { p_spect    = part; }  
-  void Parton::SetPrev(Parton * part)                 { p_prev     = part; }  
-  void Parton::SetNext(Parton * part)                 { p_next     = part; }  
-  void Parton::SetLeft(Parton * part,const bool & tot) {
-    if (tot && !m_connected) return;
-    p_left = part;
-    if (tot && p_left) p_left->SetRight(part);
-  }
-  void Parton::SetRight(Parton * part,const bool & tot) {
-    if (tot && !m_connected) return;
-    p_right = part;
-    if (tot && p_right) p_right->SetLeft(part);
-  }
-  void Parton::SetSing(Singlet* sing)                 { p_sing     = sing; }  
+  void Parton::SetPrev(Parton * part)                 { p_prev    = part; }  
+  void Parton::SetNext(Parton * part)                 { p_next    = part; }  
+  void Parton::SetSing(Singlet* sing)                 { p_sing    = sing; }  
   void Parton::SetFlow(const int index, const int code) {
     if ((!m_flav.IsDiQuark()) && (!m_flav.Strong())) return;
     m_flow.SetCode(index,code);
@@ -259,8 +236,8 @@ namespace CSSHOWER {
     m_meflow.SetCode(1,m_flow.Code(1));
     m_meflow.SetCode(2,m_flow.Code(2));
   }
-  void Parton::SetBeam(const int beam)                { m_beam = beam;}
-  void Parton::SetStat(const int stat)                { m_stat = stat;}
+  void Parton::SetBeam(const int beam)                { m_beam = beam;}          
+  void Parton::SetStat(const int stat)                { m_stat = stat;}          
   void Parton::SetId(const size_t id)                 { m_id = id;}          
   typedef std::list<Parton *>   Parton_List;
   typedef Parton_List::iterator PLiter;

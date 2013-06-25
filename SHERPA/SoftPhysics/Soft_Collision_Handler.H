@@ -33,7 +33,7 @@ namespace SHERPA {
     ATOOLS::Return_Value::code 
     GenerateMinimumBiasEvent(ATOOLS::Blob_List * blobs,
 			     double & weight);
-    void CleanUp(const size_t mode=0);
+    void CleanUp();
     ATOOLS::Cluster_Amplitude * ClusterConfiguration(ATOOLS::Blob *const bl);
     
     inline void 
