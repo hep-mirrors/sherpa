@@ -562,6 +562,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vint,nf);
 	}
+	if (cur[0]=="RS_Integrator") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vrsint,nf);
+	}
         pi.p_gens=&m_gens;
 	if (cur[0]=="End" && cur[1]=="process") break;
       }
@@ -722,6 +726,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	if (GetMPvalue(pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
 	if (GetMPvalue(pbi.m_vloopgen,nfs,pnid,ds)) cpi.m_loopgenerator=ds;
 	if (GetMPvalue(pbi.m_vint,nfs,pnid,ds)) cpi.m_integrator=ds;
+	if (GetMPvalue(pbi.m_vrsint,nfs,pnid,ds)) cpi.m_rsintegrator=ds;
+	else cpi.m_rsintegrator=cpi.m_integrator;
 	std::vector<Process_Base*> proc=InitializeProcess(cpi,pmap);
 	for (size_t i(0);i<proc.size();i++) {
 	  if (proc[i]==NULL)

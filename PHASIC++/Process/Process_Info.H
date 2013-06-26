@@ -24,7 +24,7 @@ namespace PHASIC {
     std::string m_scale, m_coupling, m_kfactor, m_gpath;
     std::string m_megenerator, m_loopgenerator;
 
-    std::string m_selectorfile, m_integrator;
+    std::string m_selectorfile, m_integrator, m_rsintegrator;
 
     bool m_mpiprocess;
 

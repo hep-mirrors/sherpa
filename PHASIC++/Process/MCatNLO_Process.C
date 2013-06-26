@@ -80,6 +80,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_bproc=InitProcess(spi,nlo_type::lo,false);
   p_rproc=InitProcess(spi,nlo_type::lo,true);
   p_bviproc=InitProcess(spi,nlo_type::born|nlo_type::loop|nlo_type::vsub,false);
+  spi.m_integrator=spi.m_rsintegrator;
   p_rsproc=InitProcess(spi,nlo_type::real|nlo_type::rsub,true);
   p_bviproc->FillProcessMap(p_apmap);
   p_rsproc->FillProcessMap(p_apmap);
