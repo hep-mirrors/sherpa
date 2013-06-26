@@ -178,6 +178,21 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   if (p_dec) {
     p_dec->SetCluster(p_me->Shower()->GetShower()->GetClusterDefinitions());
     p_dec->DefineInitialConditions(p_ampl, blob);
+    Cluster_Amplitude *ampl(p_ampl);
+    while (ampl->Prev()) ampl=ampl->Prev();
+    int stat(p_me->Process()->Generator()->ShiftMasses(ampl));
+    if (stat<0) {
+      msg_Tracking()<<METHOD<<"(): Mass shift failed. Reject event."<<std::endl;
+      return Return_Value::New_Event;
+    }
+    if (stat==1) {
+      stat=p_me->Shower()->GetShower()->
+	GetClusterDefinitions()->ReCluster(ampl);
+      if (stat!=1) {
+	msg_Tracking()<<METHOD<<"(): Reclustering failed. Reject event."<<std::endl;
+	return Return_Value::New_Event;
+      }
+    }
   }
   while (p_ampl->Prev()) p_ampl=p_ampl->Prev();
   //if (!SetColours(p_ampl,blob)) return Return_Value::New_Event;
