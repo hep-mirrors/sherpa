@@ -59,9 +59,6 @@ bool Cluster_Algorithm::Cluster
     p_ampl->SetNIn(p_proc->NIn());
     p_ampl->SetOrderEW(p_proc->OrderEW());
     p_ampl->SetOrderQCD(p_proc->OrderQCD());
-    double muf2(pb->ScaleSetter()->Scale(stp::fac));
-    double mur2(pb->ScaleSetter()->Scale(stp::ren));
-    double Q2(pb->ScaleSetter()->Scale(stp::res));
     std::vector<size_t> tids, atids;
     for (int i(0);i<pb->NIn()+pb->NOut();++i) {
       Flavour flav(i<pb->NIn()?p_proc->Flavours()[i].Bar():
@@ -92,12 +89,11 @@ bool Cluster_Algorithm::Cluster
       p_ampl->Leg(atids[i])->SetCol
 	(ColorID(p_ampl->Leg(atids[i])->Col().m_i,
 		 p_ampl->Leg(tids[i])->Col().m_i));
-    p_ampl->SetMuR2(mur2);
-    p_ampl->SetMuF2(muf2);
-    p_ampl->SetQ2(Q2);
-    p_ampl->SetProc(p_proc);
-    p_ampl->SetKT2(rscale);
-    p_ampl->SetMu2(p_ampl->KT2());
+    p_ampl->SetMuF2(pb->ScaleSetter()->Scale(stp::fac));
+    p_ampl->SetMuR2(pb->ScaleSetter()->Scale(stp::ren));
+    p_ampl->SetQ2(pb->ScaleSetter()->Scale(stp::res));
+    PDF::CParam scale((p_proc->IsMapped()?p_proc->MapProc():p_proc)
+                      ->ScaleSetter()->CoreScale(p_ampl));
     size_t nmax(p_proc->Info().m_fi.NMaxExternal());
     p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
     SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,nmax);

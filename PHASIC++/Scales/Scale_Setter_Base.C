@@ -92,8 +92,6 @@ Scale_Setter_Base::~Scale_Setter_Base()
 
 PDF::CParam Scale_Setter_Base::CoreScale(Cluster_Amplitude *const ampl) const
 {
-  if (p_proc->Shower())
-    return p_proc->Shower()->GetClusterDefinitions()->CoreScale(ampl);
   return PDF::CParam(0.0);
 }
 
