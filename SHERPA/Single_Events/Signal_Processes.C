@@ -150,7 +150,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   NLO_subevtlist* nlos=proc->GetSubevtList();
   if (nlos) blob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(nlos));
 
-  if (rpa->gen.HardSC()) {
+  if (rpa->gen.HardSC() || (rpa->gen.SoftSC() && !Flavour(kf_tau).IsStable())) {
     DEBUG_INFO("Filling amplitude tensor for spin correlations.");
     std::vector<Spin_Amplitudes> amps;
     std::vector<std::vector<Complex> > cols;
