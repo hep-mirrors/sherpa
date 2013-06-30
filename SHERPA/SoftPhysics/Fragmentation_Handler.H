@@ -40,15 +40,17 @@ namespace SHERPA {
     Fragmentation_Handler(std::string,std::string);
     ~Fragmentation_Handler();
 
-    ATOOLS::Return_Value::code PerformFragmentation(ATOOLS::Blob_List *,
-						    ATOOLS::Particle_List * = NULL);
+    ATOOLS::Return_Value::code 
+    PerformFragmentation(ATOOLS::Blob_List *,
+			 ATOOLS::Particle_List * = NULL);
     
-    const std::string &           FragmentationModel() const { return m_fragmentationmodel; }
+    const std::string & FragmentationModel() const 
+    { return m_fragmentationmodel; }
 #ifdef USING__PYTHIA
-    inline Lund_Interface * GetLundInterface()   const { return p_lund; }
+    inline Lund_Interface * GetLundInterface() const { return p_lund; }
 #endif
 #ifdef USING__Ahadic
-    inline AHADIC::Ahadic * GetAhadic()          const { return p_ahadic; }
+    inline AHADIC::Ahadic * GetAhadic() const { return p_ahadic; }
 #endif
   };// end of class Fragmentation_Handler
 

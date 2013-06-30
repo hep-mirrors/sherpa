@@ -38,7 +38,7 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
   dr.SetInputFile(m_file);
   m_fragmentationmodel=dr.GetValue<string>("FRAGMENTATION",string("Ahadic"));
   m_shrink=dr.GetValue<int>("COMPRESS_PARTONIC_DECAYS",1);
-  m_flagpartonics=dr.GetValue<int>("FLAG_PARTONIC_DECAYS",0);
+  m_flagpartonics=dr.GetValue<int>("FLAG_PARTONIC_DECAYS",1);
   if (m_fragmentationmodel==string("Lund")) {
 #ifndef USING__PYTHIA
     THROW(fatal_error, "Fragmentation/decay interface to Pythia has not been "+
@@ -156,14 +156,12 @@ void Fragmentation_Handler::Shrink(Blob_List * bloblist) {
 	decblob->AddToOutParticles(part);
       }
       decblob->SetStatus(blob_status::needs_hadrondecays);
-      if (m_flagpartonics>0) decblob->AddData("Partonic",new Blob_Data<int>(1));
+      decblob->AddData("Partonic",new Blob_Data<int>(m_flagpartonics));
     }
   }
   for (list<Blob *>::iterator blit=deleteblobs.begin();
        blit!=deleteblobs.end();blit++) bloblist->Delete((*blit));
 }
-
-
 
 Return_Value::code Fragmentation_Handler::ExtractSinglets(Blob_List * bloblist)
 {
