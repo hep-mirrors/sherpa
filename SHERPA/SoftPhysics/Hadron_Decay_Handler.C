@@ -145,67 +145,83 @@ void Hadron_Decay_Handler::CreateDecayBlob(Particle* inpart)
 
 bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
 {
+  //msg_Out()<<METHOD<<" for "<<fblob->Type()<<"\n";
   static std::string mname(METHOD);
+  Blob * decayblob(NULL), * showerblob(NULL);
   if(fblob->Type()==btp::Fragmentation) {
-    Blob* showerblob = fblob->UpstreamBlob();
+    showerblob = fblob->UpstreamBlob();
     if(showerblob && showerblob->Type()==btp::Shower) {
-      Blob* decayblob = showerblob->UpstreamBlob();
+      decayblob = showerblob->UpstreamBlob();
       if(decayblob && decayblob->Type()==btp::Hadron_Decay) {
         DEBUG_FUNC(decayblob->InParticle(0));
         DEBUG_VAR(*fblob);
         DEBUG_VAR(decayblob->InParticle(0)->Flav());
         Return_Value::IncCall(mname);
-
-        bool anti=false;
-        Decay_Map::iterator dt=
-            p_decaymap->find(decayblob->InParticle(0)->Flav());
-        if (dt==p_decaymap->end()) {
-          anti=true;
-          dt=p_decaymap->find(decayblob->InParticle(0)->Flav().Bar());
-          if (dt==p_decaymap->end() || dt->second.size()!=1) {
-            PRINT_INFO("Internal error.");
-            throw Return_Value::Retry_Event;
-          }
-        }
-
-        Flavour_Vector tmp;
-        for(int i=0;i<fblob->NOutP();i++) {
-          tmp.push_back(anti?fblob->OutParticle(i)->Flav().Bar():
-                             fblob->OutParticle(i)->Flav());
-        }
-        for(int i=0;i<decayblob->NOutP();i++) {
-          if (decayblob->OutParticle(i)->GetFlow(1)==0 &&
-              decayblob->OutParticle(i)->GetFlow(2)==0)
-            tmp.push_back(anti?decayblob->OutParticle(i)->Flav().Bar():
-                               decayblob->OutParticle(i)->Flav());
-        }
-        std::sort(tmp.begin(), tmp.end(), Decay_Channel::FlavourSort);
-        Flavour_Vector compflavs(tmp.size()+1);
-        compflavs[0]=anti?decayblob->InParticle(0)->Flav().Bar():
-                          decayblob->InParticle(0)->Flav();
-        for (size_t i=0; i<tmp.size(); ++i) compflavs[i+1]=tmp[i];
-        if(dt->second[0]->GetDecayChannel(compflavs)) {
-          Return_Value::IncRetryPhase(mname);
-          DEBUG_INFO("rejected. retrying decay.");
-          p_bloblist->Delete(fblob);
-          p_bloblist->Delete(showerblob);
-          decayblob->AddStatus(blob_status::internal_flag);
-          decayblob->DeleteOutParticles();
-          decayblob->InParticle(0)->SetStatus(part_status::active);
-          Spin_Density* sigma=
-            m_spincorr ? new Spin_Density(decayblob->InParticle(0)) : NULL;
-          Decay_Matrix* D=FillDecayTree(decayblob, sigma);
-          delete sigma;
-          delete D;
-          return true;
-        }
-        else {
-          DEBUG_INFO("not found as exclusive. accepted.");
-          Vec4D vertex_position=decayblob->Position();
-          showerblob->SetPosition(vertex_position);
-          fblob->SetPosition(vertex_position);
-        }
       }
+    }
+  }
+  else if (fblob->Type()==btp::Hadron_Decay && 
+	   (*fblob)["Partonic"]!=NULL) {
+    //msg_Out()<<METHOD<<" found blob to test: "
+    //<<(*fblob)["Partonic"]->Get<int>()
+    //	     <<"\n"<<(*fblob)<<"\n";
+    decayblob = fblob;
+  }
+  if (decayblob) {
+    bool anti=false;
+    Decay_Map::iterator dt=
+      p_decaymap->find(decayblob->InParticle(0)->Flav());
+    if (dt==p_decaymap->end()) {
+      anti=true;
+      dt=p_decaymap->find(decayblob->InParticle(0)->Flav().Bar());
+      if (dt==p_decaymap->end() || dt->second.size()!=1) {
+	PRINT_INFO("Internal error.");
+	throw Return_Value::Retry_Event;
+      }
+    }
+    Flavour_Vector tmp;
+    for(int i=0;i<fblob->NOutP();i++) {
+      tmp.push_back(anti?fblob->OutParticle(i)->Flav().Bar():
+		    fblob->OutParticle(i)->Flav());
+    }
+    if (fblob!=decayblob) {
+      for(int i=0;i<decayblob->NOutP();i++) {
+	if (decayblob->OutParticle(i)->GetFlow(1)==0 &&
+	    decayblob->OutParticle(i)->GetFlow(2)==0)
+	  tmp.push_back(anti?decayblob->OutParticle(i)->Flav().Bar():
+			decayblob->OutParticle(i)->Flav());
+      }
+    }
+    std::sort(tmp.begin(), tmp.end(), Decay_Channel::FlavourSort);
+    Flavour_Vector compflavs(tmp.size()+1);
+    compflavs[0]=(anti?decayblob->InParticle(0)->Flav().Bar():
+		  decayblob->InParticle(0)->Flav());
+    for (size_t i=0; i<tmp.size(); ++i) compflavs[i+1]=tmp[i];
+    //msg_Out()<<"Check for this as a proper decay:";
+    //for (size_t i=0; i<tmp.size(); ++i) msg_Out()<<" "<<tmp[i];
+    //msg_Out()<<"!\n";
+    if(dt->second[0]->GetDecayChannel(compflavs)) {
+      Return_Value::IncRetryPhase(mname);
+      DEBUG_INFO("rejected. retrying decay.");
+      if (fblob!=decayblob) p_bloblist->Delete(fblob);
+      if (showerblob) p_bloblist->Delete(showerblob);
+      decayblob->AddStatus(blob_status::internal_flag);
+      decayblob->DeleteOutParticles();
+      decayblob->InParticle(0)->SetStatus(part_status::active);
+      Spin_Density* sigma=
+	m_spincorr ? new Spin_Density(decayblob->InParticle(0)) : NULL;
+      Decay_Matrix* D=FillDecayTree(decayblob, sigma);
+      delete sigma;
+      delete D;
+      //msg_Out()<<"--> found.\n";
+      return true;
+    }
+    else {
+      //msg_Out()<<"--> fine.\n";
+      DEBUG_INFO("not found as exclusive. accepted.");
+      Vec4D vertex_position=decayblob->Position();
+      if (showerblob) showerblob->SetPosition(vertex_position);
+      if (fblob!=decayblob) fblob->SetPosition(vertex_position);
     }
   }
   return false;
