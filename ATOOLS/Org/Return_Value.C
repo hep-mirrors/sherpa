@@ -41,8 +41,10 @@ void Return_Value::PrintSingleStatistics(std::ostream &str,
     for (Counter_Map::const_iterator it=map.begin();it!=map.end();it++) {
       unsigned long int calls(s_call_counter[it->first]);
       str<<"    From \""<<it->first<<"\": "<<it->second<<" ("
-	 <<calls<<") -> "<<((it->second*1000)/calls)/10.0
-	 <<" %"<<endl;
+	 <<calls<<") -> ";
+      if (calls>0) str<<((it->second*1000)/calls)/10.0<<" %";
+      else str<<it->second<<".";
+      str<<endl;
     }
     str<<"  }"<<endl;
   }
