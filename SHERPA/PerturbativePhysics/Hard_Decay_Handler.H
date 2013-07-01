@@ -25,7 +25,8 @@ namespace SHERPA {
   
   class Hard_Decay_Handler : public Decay_Handler_Base {
     std::string              m_path, m_file, m_resultdir, m_offshell;
-    std::set<std::string>    m_disabled_channels, m_forced_channels;
+    std::set<std::string>    m_disabled_channels;
+    std::map<ATOOLS::Flavour,std::set<std::string> > m_forced_channels;
     bool                     m_store_results, m_decay_tau, m_set_widths, m_br_weights;
     std::map<ATOOLS::Flavour, std::map<std::string, std::vector<double> > > 
                              m_read;

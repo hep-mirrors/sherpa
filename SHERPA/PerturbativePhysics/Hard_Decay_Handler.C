@@ -70,9 +70,12 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   nodecayreader.SetString(dr.GetValue<std::string>("HDH_ONLY_DECAY", ""));
   vector<string> forced_channels;
   nodecayreader.VectorFromString(forced_channels);
-  for (size_t i=0; i<forced_channels.size(); ++i)
-    m_forced_channels.insert(forced_channels[i]);
-
+  for (size_t i=0; i<forced_channels.size(); ++i) {
+    string fc(forced_channels[i]);
+    size_t bracket(fc.find("{")), comma(fc.find(","));
+    size_t kfc(atoi((fc.substr(bracket+1,comma-bracket-1)).c_str()));
+    m_forced_channels[Flavour(kfc)].insert(fc);
+  }
 
   DEBUG_FUNC("");
   p_decaymap = new Decay_Map(this);
@@ -123,9 +126,14 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
     for (size_t i=0;i<dmit->second.at(0)->size();++i) {
       Decay_Channel* dc=dmit->second.at(0)->at(i);
       if (dc->Active()<1) continue;
-      if (m_disabled_channels.count(dc->IDCode()) ||
-          (m_forced_channels.size() && !m_forced_channels.count(dc->IDCode())))
-        dc->SetActive(0);
+      string idc(dc->IDCode());
+      size_t bracket(idc.find("{")), comma(idc.find(","));
+      size_t kfc(atoi((idc.substr(bracket+1,comma-bracket-1)).c_str()));
+      Flavour dec(kfc);
+      if (m_disabled_channels.count(idc) ||
+	  (m_forced_channels[dec].size() &&
+	   !m_forced_channels[dec].count(idc))) 
+	dc->SetActive(0);
     }
 
     dmit->second.at(0)->UpdateWidth();
@@ -445,8 +453,16 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
   Blob_Data_Base * bdbweight((*blob)["Weight"]);
   if (bdbweight) bdbweight->Set<double>(brfactor*bdbweight->Get<double>());
   Blob_Data_Base * bdbmeweight((*blob)["MEWeight"]);
-  if (bdbmeweight) bdbmeweight->Set<double>(brfactor*bdbmeweight->Get<double>());
-
+  if (bdbmeweight) {
+    // msg_Out()<<METHOD<<"(ME = "<<bdbmeweight->Get<double>()<<", "
+    // 	     <<"BR = "<<brfactor<<") for\n"<<"   "
+    // 	     <<blob->InParticle(0)->Flav()<<" "
+    // 	     <<blob->InParticle(1)->Flav()<<" -->";
+    // for (size_t i=0;i<blob->NOutP();i++) 
+    //   msg_Out()<<" "<<blob->OutParticle(i)->Flav();
+    // msg_Out()<<".\n";
+    bdbmeweight->Set<double>(brfactor*bdbmeweight->Get<double>());
+  }
   NLO_subevtlist* sublist(NULL);
   Blob_Data_Base * bdb((*blob)["NLO_subeventlist"]);
   if (bdb) sublist=bdb->Get<NLO_subevtlist*>();
