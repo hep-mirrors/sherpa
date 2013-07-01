@@ -431,11 +431,13 @@ Cluster_Amplitude* Decay_Handler_Base::ClusterConfiguration(Blob *const bl)
   double mu2=p_ampl->Leg(0)->Mom().Abs2();
   p_ampl->SetMuF2(mu2);
   p_ampl->SetKT2(mu2);
+  p_ampl->SetQ2(mu2);
   msg_Debugging()<<*p_ampl<<"\n";
   while (p_ampl->Prev()) {
     p_ampl=p_ampl->Prev();
     p_ampl->SetMuF2(mu2);
     p_ampl->SetKT2(mu2);
+    p_ampl->SetQ2(mu2);
   }
   msg_Debugging()<<"}\n";
   return p_ampl;
