@@ -204,6 +204,15 @@ bool Color_Setter::SetColors(Single_Process *const xs)
   p_xs=xs;
   SP(Color_Integrator) colint(p_xs->Integrator()->ColorIntegrator());
   Int_Vector ci(colint->I()), cj(colint->J());
+  if (m_cmode==3) {
+    Cluster_Amplitude *ampl(p_ca->GetAmplitude());
+    for (size_t i(0);i<ampl->Legs().size();++i)
+      ampl->Leg(i)->SetCol(ColorID(ci[i],cj[i]));
+    CI_Map &cmap(ampl->ColorMap());
+    for (size_t i(0);i<ampl->Legs().size();++i)
+      if (ci[i]!=0) cmap[ci[i]]=ci[i];
+    return true;
+  }
   bool sol(false);
   switch (m_cmode) {
   case 1: {
