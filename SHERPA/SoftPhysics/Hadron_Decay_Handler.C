@@ -145,7 +145,6 @@ void Hadron_Decay_Handler::CreateDecayBlob(Particle* inpart)
 
 bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
 {
-  //msg_Out()<<METHOD<<" for "<<fblob->Type()<<"\n";
   static std::string mname(METHOD);
   Blob * decayblob(NULL), * showerblob(NULL);
   if(fblob->Type()==btp::Fragmentation) {
@@ -161,12 +160,7 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
     }
   }
   else if (fblob->Type()==btp::Hadron_Decay && 
-	   (*fblob)["Partonic"]!=NULL) {
-    //msg_Out()<<METHOD<<" found blob to test: "
-    //<<(*fblob)["Partonic"]->Get<int>()
-    //	     <<"\n"<<(*fblob)<<"\n";
-    decayblob = fblob;
-  }
+	   (*fblob)["Partonic"]!=NULL) decayblob = fblob;
   if (decayblob) {
     bool anti=false;
     Decay_Map::iterator dt=
@@ -179,10 +173,12 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
 	throw Return_Value::Retry_Event;
       }
     }
-    Flavour_Vector tmp;
+    Flavour_Vector tmp, tmpno;
     for(int i=0;i<fblob->NOutP();i++) {
-      tmp.push_back(anti?fblob->OutParticle(i)->Flav().Bar():
-		    fblob->OutParticle(i)->Flav());
+      Flavour flav(anti?fblob->OutParticle(i)->Flav().Bar():
+		   fblob->OutParticle(i)->Flav());
+      tmp.push_back(flav);
+      if (!flav.IsPhoton()) tmpno.push_back(flav);
     }
     if (fblob!=decayblob) {
       for(int i=0;i<decayblob->NOutP();i++) {
@@ -193,14 +189,19 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
       }
     }
     std::sort(tmp.begin(), tmp.end(), Decay_Channel::FlavourSort);
-    Flavour_Vector compflavs(tmp.size()+1);
+    Flavour_Vector compflavs(tmp.size()+1), compflavsno(tmpno.size()+1);
     compflavs[0]=(anti?decayblob->InParticle(0)->Flav().Bar():
 		  decayblob->InParticle(0)->Flav());
     for (size_t i=0; i<tmp.size(); ++i) compflavs[i+1]=tmp[i];
-    //msg_Out()<<"Check for this as a proper decay:";
-    //for (size_t i=0; i<tmp.size(); ++i) msg_Out()<<" "<<tmp[i];
-    //msg_Out()<<"!\n";
-    if(dt->second[0]->GetDecayChannel(compflavs)) {
+    if (tmpno.size()!=tmp.size()) {
+      std::sort(tmpno.begin(), tmpno.end(), Decay_Channel::FlavourSort);
+      compflavsno[0]=(anti?decayblob->InParticle(0)->Flav().Bar():
+		      decayblob->InParticle(0)->Flav());
+      for (size_t i=0; i<tmpno.size(); ++i) compflavsno[i+1]=tmpno[i];
+    }
+    if(dt->second[0]->GetDecayChannel(compflavs) ||
+       (tmpno.size()!=tmp.size() && 
+	dt->second[0]->GetDecayChannel(compflavsno))) {
       Return_Value::IncRetryPhase(mname);
       DEBUG_INFO("rejected. retrying decay.");
       if (fblob!=decayblob) p_bloblist->Delete(fblob);
@@ -213,11 +214,9 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
       Decay_Matrix* D=FillDecayTree(decayblob, sigma);
       delete sigma;
       delete D;
-      //msg_Out()<<"--> found.\n";
       return true;
     }
     else {
-      //msg_Out()<<"--> fine.\n";
       DEBUG_INFO("not found as exclusive. accepted.");
       Vec4D vertex_position=decayblob->Position();
       if (showerblob) showerblob->SetPosition(vertex_position);
