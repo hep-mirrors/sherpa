@@ -273,7 +273,7 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   p_ampl=p_rsproc->Selected()->GetSubevtList()->back()->p_ampl;
   if (p_ampl) p_ampl = p_ampl->CopyAll();
   else {
-    rproc->Differential(p);
+    rproc->Differential(p); // is this call really necessary?
     p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(256|512|4096);
   }
   if (p_ampl==NULL) {
@@ -440,6 +440,11 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
   if (winfo && winfo->m_weight==0) {
     delete winfo;
     winfo=NULL;
+  }
+
+  if (rpa->gen.HardSC() || (rpa->gen.SoftSC() && !Flavour(kf_tau).IsStable())) {
+    DEBUG_INFO("Calcing Differential for spin correlations:");
+    Selected()->Differential(*p_ampl, 6);
   }
   return winfo;
 }
