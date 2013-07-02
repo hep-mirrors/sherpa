@@ -23,7 +23,7 @@ namespace COMIX {
     std::vector<PHASIC::Process_Base*>         m_rsprocs;
 
     std::string m_path, m_file;
-    int    m_break, m_act;
+    int    m_act;
     time_t m_mets;
 
     void PrintLogo(std::ostream &s);
@@ -161,7 +161,6 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
   SetPSMasses(&read);
-  m_break=read.GetValue<int>("ONLY_MAPPING_FILE",0);
   if (!read.GetValue<int>("COMIX_ALLOW_BSM",0))
     if (model->Name()!="SM") m_act=false;
   if (m_act) {
@@ -233,11 +232,6 @@ int Comix::PerformTests()
   if (!Tests()) return 0;
   for (size_t i=0;i<m_rsprocs.size();++i)
     if (!m_rsprocs[i]->Get<COMIX::Process_Base>()->Tests()) return false;
-  if (m_break) {
-    msg_Out()<<METHOD<<"(): "<<om::red<<"Mapping files created. "
-	     <<"Stop upon request."<<om::reset<< std::endl;
-    return -1;
-  }
   return 1;
 }
 

@@ -112,7 +112,9 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 
   if (p_inithandler->InitializeTheFramework()) {
     Data_Reader read(" ",";","!","=");
-    if (read.GetValue<int>("INIT_ONLY",0)==1) return true;
+    int initonly=read.GetValue<int>("INIT_ONLY",0);
+    if (initonly==1) THROW(normal_exit,"Initialization complete.");
+    if (initonly==2) return true;
     if (!p_inithandler->CalculateTheHardProcesses()) return false;
     bool res(true);
     if (statuspath!="") {
