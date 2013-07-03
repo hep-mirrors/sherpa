@@ -251,7 +251,7 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
 
   Particle_Vector daughters = blob->GetOutParticles();
   random_shuffle(daughters.begin(), daughters.end(), *ran);
-  if (!(blob->Has(blob_status::needs_showers))) {
+  if (!(blob->Type()==btp::Hadron_Decay && blob->Has(blob_status::needs_showers))) {
     for (PVIt it=daughters.begin();it!=daughters.end();++it) {
       if (Decays((*it)->Flav())) {
         if (!CanDecay(inpart->Flav())) {
@@ -276,7 +276,8 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
     if (daughters[i]->Info()=='S') continue;
     DEBUG_VAR(daughters[i]->Flav());
 
-    if (!Decays(daughters[i]->Flav()) || blob->Has(blob_status::needs_showers)) {
+    if (!Decays(daughters[i]->Flav()) ||
+        (blob->Type()==btp::Hadron_Decay && blob->Has(blob_status::needs_showers))) {
       DEBUG_INFO("is stable.");
       if (m_spincorr) {
         Decay_Matrix* D=new Decay_Matrix(daughters[i]);
