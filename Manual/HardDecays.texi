@@ -5,7 +5,7 @@
 
 The handler for decays of particles produced in the hard scattering process
 (e.g. W, Z, top, Higgs) can be enabled using the @option{HARD_DECAYS=1} switch.
-Which particles should be treated as unstable is determined by the
+Which (anti)particles should be treated as unstable is determined by the
 @option{STABLE[<id>]} switch described in @ref{Model Parameters}.
 
 This decay module can also be used on top of NLO matrix elements, but it does
@@ -39,13 +39,13 @@ and operate only on the inclusively produced particles before decays.
 This option allows to disable an explicit list of decay channels. For example,
 to disable the hadronic decay channels of the W boson one would use:
 @verbatim
-HDH_NO_DECAY={24,2,-1}|{24,4,-3}|{24,16,-15}
+HDH_NO_DECAY={24,2,-1}|{24,4,-3}|{-24,-2,1}|{-24,-4,3}
 @end verbatim
 Note that the ordering of the decay products in each channel is important and
 has to be identical to the ordering in the decay table printed to screen.
-Multiple decay channels (also for different decaying particles) can be specified
-using the @option{|} (pipe) symbol as separator. Spaces are not allowed anywere
-in the list.
+Multiple decay channels (also for different decaying particles and
+antiparticles) can be specified using the @option{|} (pipe) symbol as separator.
+Spaces are not allowed anywere in the list.
 
 @node HDH_ONLY_DECAY
 @subsection HDH_ONLY_DECAY
@@ -59,9 +59,9 @@ HDH_ONLY_DECAY={25,5,-5}
 @end verbatim
 Note that the ordering of the decay products in each channel is important and
 has to be identical to the ordering in the decay table printed to screen.
-Multiple decay channels (also for different decaying particles) can be specified
-using the @option{|} (pipe) symbol as separator. Spaces are not allowed anywere
-in the list.
+Multiple decay channels (also for different decaying particles and
+antiparticles) can be specified using the @option{|} (pipe) symbol as separator.
+Spaces are not allowed anywere in the list.
 
 @node HARD_SPIN_CORRELATIONS
 @subsection HARD_SPIN_CORRELATIONS
