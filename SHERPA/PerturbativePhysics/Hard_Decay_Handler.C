@@ -73,8 +73,8 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   for (size_t i=0; i<forced_channels.size(); ++i) {
     string fc(forced_channels[i]);
     size_t bracket(fc.find("{")), comma(fc.find(","));
-    size_t kfc(atoi((fc.substr(bracket+1,comma-bracket-1)).c_str()));
-    m_forced_channels[Flavour(kfc)].insert(fc);
+    int kfc(atoi((fc.substr(bracket+1,comma-bracket-1)).c_str()));
+    m_forced_channels[Flavour(abs(kfc), kfc<0)].insert(fc);
   }
 
   DEBUG_FUNC("");
@@ -82,12 +82,19 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   KFCode_ParticleInfo_Map::const_iterator it;
   for (it=s_kftable.begin();it!=s_kftable.end();it++) {
     Flavour flav(it->first);
-    if (Decays(flav) || Decays(flav.Bar())) {
+    if (Decays(flav)) {
       Decay_Table* dt=new Decay_Table(flav, this);
       vector<Decay_Table*> decaytables;
       decaytables.push_back(dt);
       p_decaymap->insert(make_pair(flav,decaytables));
       ReadDecayTable(flav);
+    }
+    if (flav!=flav.Bar() && Decays(flav.Bar())) {
+      Decay_Table* dt=new Decay_Table(flav.Bar(), this);
+      vector<Decay_Table*> decaytables;
+      decaytables.push_back(dt);
+      p_decaymap->insert(make_pair(flav.Bar(),decaytables));
+      ReadDecayTable(flav.Bar());
     }
   }
   
@@ -128,10 +135,11 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
       if (dc->Active()<1) continue;
       string idc(dc->IDCode());
       size_t bracket(idc.find("{")), comma(idc.find(","));
-      size_t kfc(atoi((idc.substr(bracket+1,comma-bracket-1)).c_str()));
-      Flavour dec(kfc);
+      int kfc(atoi((idc.substr(bracket+1,comma-bracket-1)).c_str()));
+      Flavour dec(abs(kfc), kfc<0);
       if (m_disabled_channels.count(idc) ||
-	  (m_forced_channels[dec].size() &&
+	  (m_forced_channels.find(dec)!=m_forced_channels.end() &&
+           m_forced_channels[dec].size() &&
 	   !m_forced_channels[dec].count(idc))) 
 	dc->SetActive(0);
     }
