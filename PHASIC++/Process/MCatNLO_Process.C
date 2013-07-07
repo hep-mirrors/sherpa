@@ -441,6 +441,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
     delete winfo;
     winfo=NULL;
   }
+  if (winfo==NULL) return winfo;
 
   if (rpa->gen.HardSC() || (rpa->gen.SoftSC() && !Flavour(kf_tau).IsStable())) {
     DEBUG_INFO("Calcing Differential for spin correlations:");
