@@ -714,6 +714,10 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
   }
   if (mode!=0 && imin!=jmin) {
     Vec4D_Vector p=p_cluster->Combine(*ampl,imin,jmin,kmin,mofl,ampl->MS(),1);
+    if (p.empty()) {
+      msg_Error()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
+      return JetVeto(ampl,0);
+    }
     Cluster_Amplitude *bampl(Cluster_Amplitude::New());
     bampl->SetProc(ampl->Proc<void>());
     bampl->SetNIn(ampl->NIn());
