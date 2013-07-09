@@ -339,7 +339,7 @@ double Decay_Channel::ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
 
   double value=sumijlambda_AiAjCiCj.real();
   value /= double(GetDecaying().IntSpin()+1);
-  if (GetDecaying().StrongCharge()) value/=double(GetDecaying().StrongCharge());
+  if (GetDecaying().StrongCharge()) value/=double(abs(GetDecaying().StrongCharge()));
   value /= SymmetryFactor();
   return value;
 }

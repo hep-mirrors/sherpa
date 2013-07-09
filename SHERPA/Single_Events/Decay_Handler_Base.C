@@ -333,7 +333,7 @@ Amplitude2_Tensor* Decay_Handler_Base::FillOnshellDecay(Blob *blob,
   Flavour flav; Particle* particle=NULL;
   for (size_t i=1; i<dc->Flavs().size(); ++i) {
     flav=dc->Flavs()[i];
-    if (inpart->Flav().IsAnti()) flav = flav.Bar();
+    if (inpart->Flav().IsAnti()!=dc->GetDecaying().IsAnti()) flav = flav.Bar();
     particle = new Particle(0, flav);
     particle->SetFinalMass(Mass(flav));
     particle->SetStatus(part_status::active);
@@ -352,11 +352,11 @@ Amplitude2_Tensor* Decay_Handler_Base::FillOnshellDecay(Blob *blob,
     parts.insert(parts.end(), blob->InParticle(0));
     Particle_Vector outparts=blob->GetOutParticles();
     parts.insert(parts.end(), outparts.begin(), outparts.end());
-    dc->GenerateKinematics(moms,inpart->Flav().IsAnti(),sigma,parts);
+    dc->GenerateKinematics(moms,inpart->Flav().IsAnti()!=dc->GetDecaying().IsAnti(),sigma,parts);
     amps=dc->Amps();
   }
   else {
-    dc->GenerateKinematics(moms,inpart->Flav().IsAnti());
+    dc->GenerateKinematics(moms,inpart->Flav().IsAnti()!=dc->GetDecaying().IsAnti());
   }
   for (size_t i=1; i<n; i++) blob->GetOutParticles()[i-1]->SetMomentum(moms[i]);
   DEBUG_VAR(*blob);
