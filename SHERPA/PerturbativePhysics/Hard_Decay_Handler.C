@@ -57,7 +57,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   m_set_widths=dr.GetValue<int>("HDH_SET_WIDTHS",0);
   m_resultdir=dr.GetValue<std::string>("RESULT_DIRECTORY","Results");
   if (m_store_results) {
-    MakeDir("Results/Decays/", true);
+    MakeDir(m_resultdir+"/Decays/", true);
   }
   m_offshell=dr.GetValue<std::string>("RESOLVE_DECAYS", "Threshold");
 
@@ -769,7 +769,7 @@ void Hard_Decay_Handler::ReadDecayTable(Flavour decayer)
   reader.AddComment("#");
   reader.AddComment("//");
   reader.AddWordSeparator("\t");
-  reader.SetInputPath("Results/Decays/");
+  reader.SetInputPath(m_resultdir+"/Decays/");
   reader.SetInputFile(decayer.ShellName());
   
   vector<vector<string> > file;
@@ -782,7 +782,7 @@ void Hard_Decay_Handler::ReadDecayTable(Flavour decayer)
         m_read[decayer].insert(make_pair(decaychannel, results));
       }
       else {
-        PRINT_INFO("Wrong format in decay table in Results directory.");
+        PRINT_INFO("Wrong format in decay table in "<<m_resultdir);
       }
     }
   }
@@ -794,7 +794,7 @@ void Hard_Decay_Handler::WriteDecayTables()
   
   Decay_Map::iterator dmit;
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
-    ofstream ostr(("Results/Decays/"+dmit->first.ShellName()).c_str());
+    ofstream ostr((m_resultdir+"/Decays/"+dmit->first.ShellName()).c_str());
     ostr<<"# Decay table for "<<dmit->first<<endl<<endl;
     Decay_Table::iterator dtit;
     for (dtit=dmit->second[0]->begin(); dtit!=dmit->second[0]->end(); ++dtit) {
