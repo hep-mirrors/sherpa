@@ -41,6 +41,7 @@ namespace AMISIC {
     double m_norm, m_enhance, m_maxreduction, m_sigma_nd_fac;
 
     std::string m_xsextension, m_mcextension, m_pathextra, m_selectorfile;
+    std::string m_resdir, m_ressuffix;
 
     std::vector<Semihard_QCD*> p_processes;
     std::vector<FSR_Channel*>  p_fsrinterface;

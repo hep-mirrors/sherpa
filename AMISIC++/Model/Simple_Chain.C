@@ -35,6 +35,7 @@ Simple_Chain::Simple_Chain():
   p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0), 
   m_maxreduction(1.0), m_sigma_nd_fac(1.0),
   m_xsextension("_xs.dat"), m_mcextension("MC"),
+  m_resdir(""), m_ressuffix(""),
   p_model(NULL),
   p_beam(NULL), p_isr(NULL), p_profile(NULL), m_maxtrials(1000),
   m_ecms(rpa->gen.Ecms()), m_external(false), m_regulate(false)
@@ -118,27 +119,33 @@ void Simple_Chain::CleanUp()
 
 bool Simple_Chain::GeneratePathName()
 {
-  std::string outputpath, help[2];
+  std::string outputpath;
   MyStrStream converter;
-  converter<<rpa->gen.Bunch(0);
-  converter>>help[0];
-  converter.clear();
-  converter<<rpa->gen.Bunch(1);
-  converter>>help[1];
-  outputpath=std::string("MIG_")+help[0]+help[1]+
-    std::string("_")+ToString(rpa->gen.Ecms());
-  if (m_regulate) {
-    outputpath+=std::string("_")+m_regulator[0];
-    for (size_t i=0;i<m_regulation.size();++i) {
-      outputpath+=std::string("_")+ToString(m_regulation[i]);
+  if (m_resdir=="") {
+    std::string help[2];
+    converter<<rpa->gen.Bunch(0);
+    converter>>help[0];
+    converter.clear();
+    converter<<rpa->gen.Bunch(1);
+    converter>>help[1];
+    outputpath=std::string("MIG_")+help[0]+help[1]+
+      std::string("_")+ToString(rpa->gen.Ecms());
+    if (m_regulate) {
+      outputpath+=std::string("_")+m_regulator[0];
+      for (size_t i=0;i<m_regulation.size();++i) {
+        outputpath+=std::string("_")+ToString(m_regulation[i]);
+      }
     }
+    if (p_isr->PDF(0)->Type()!=p_isr->PDF(1)->Type()) {
+      outputpath+=std::string("_")+p_isr->PDF(0)->Type();
+    }
+    outputpath+=std::string("_")+p_isr->PDF(0)->Type()+std::string("_")
+                +ToString(static_cast<MODEL::Running_AlphaS*>
+                       (p_model->GetScalarFunction("alpha_S"))->Order())
+                +m_ressuffix+"/";
   }
-  if (p_isr->PDF(0)->Type()!=p_isr->PDF(1)->Type()) {
-    outputpath+=std::string("_")+p_isr->PDF(0)->Type();
-  }
-  outputpath+=std::string("_")+p_isr->PDF(0)->Type()+std::string("_")+
-    ToString(static_cast<MODEL::Running_AlphaS*>
-		     (p_model->GetScalarFunction("alpha_S"))->Order())+"/";
+  else outputpath=m_resdir+m_ressuffix+"/";
+  msg_Out()<<METHOD<<"(): path = "<<OutputPath()+m_pathextra+outputpath<<std::endl;
   SetOutputPath(OutputPath()+m_pathextra+outputpath);
   m_pathextra=outputpath;
   return true;
@@ -168,6 +175,8 @@ bool Simple_Chain::ReadInData()
   if (!reader->ReadFromFile(m_error,"PS_ERROR")) m_error=1.e-2;
   if (!reader->ReadFromFile(m_pathextra,"PATH_EXTRA")) m_pathextra="";
   m_sigma_nd_fac = reader->GetValue<double>("SIGMA_ND_FACTOR",0.54);
+  m_resdir = reader->GetValue<std::string>("MI_RESULT_DIRECTORY","");
+  m_ressuffix = reader->GetValue<std::string>("MI_RESULT_DIRECTORY_SUFFIX","");
   GeneratePathName();
   delete reader;
   return true;

@@ -1072,8 +1072,10 @@ void Initialization_Handler::SetTuneParameters(const std::string tune)
     tuneparams.push_back("SCALE_MIN                    = 2.63");
     if (tune == "NNPDF23_UEup") {
       tuneparams.push_back("SIGMA_ND_FACTOR              = 0.358");
+      Read_Write_Base::AddCommandLine("MI_RESULT_DIRECTORY_SUFFIX _up;");
     } else if (tune == "NNPDF23_UEdown") {
       tuneparams.push_back("SIGMA_ND_FACTOR              = 0.418");
+      Read_Write_Base::AddCommandLine("MI_RESULT_DIRECTORY_SUFFIX _down;");
     } else {
       tuneparams.push_back("SIGMA_ND_FACTOR              = 0.388");
     }
@@ -1092,8 +1094,10 @@ void Initialization_Handler::SetTuneParameters(const std::string tune)
     tuneparams.push_back("SCALE_MIN                    = 2.38");
     if (tune == "CT10_UEup") {
       tuneparams.push_back("SIGMA_ND_FACTOR              = 0.49");
+      Read_Write_Base::AddCommandLine("MI_RESULT_DIRECTORY_SUFFIX _up;");
     } else if (tune == "CT10_UEdown") {
       tuneparams.push_back("SIGMA_ND_FACTOR              = 0.59");
+      Read_Write_Base::AddCommandLine("MI_RESULT_DIRECTORY_SUFFIX _down;");
     } else {
       tuneparams.push_back("SIGMA_ND_FACTOR              = 0.54");
     }
