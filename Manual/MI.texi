@@ -2,10 +2,10 @@
 @section MPI Parameters
 
 The multiple parton interaction (MPI) setup is covered by
-the `(mi)' section of the steering file or the 
-MPI data file `MI.dat', respectively. The basic MPI model is described in 
-@mycite{Sjostrand1987su} while Sherpa's implementation details are discussed in
-@mycite{Alekhin2005dx}
+the `(mi)' section of the steering file or the
+MPI data file `MI.dat', respectively. The basic MPI model is described
+in @mycite{Sjostrand1987su} while Sherpa's implementation details are
+discussed in @mycite{Alekhin2005dx}
 
 The following parameters are used to steer the MPI setup.
 
@@ -17,6 +17,8 @@ The following parameters are used to steer the MPI setup.
 * REFERENCE_SCALE::     The reference scale
 * RESCALE_EXPONENT::    The rescaling exponent
 * SIGMA_ND_FACTOR::     The non-diffractive cross section factor
+* MI_RESULT_DIRECTORY:: The directory for the MPI grid
+* MI_RESULT_DIRECTORY_SUFFIX:: The suffix for the directory for the MPI grid
 @end menu
 
 
@@ -69,3 +71,17 @@ reference scale, see @ref{SCALE_MIN}, @ref{REFERENCE_SCALE}.
 @cindex SIGMA_ND_FACTOR
 Specifies the factor to scale the non-diffractive cross section 
 calculated in the MPI initialisation.
+
+@node MI_RESULT_DIRECTORY
+@subsection MI_RESULT_DIRECTORY
+@cindex MI_RESULT_DIRECTORY
+Specifies the name of the directory where the MPI grid is stored. The 
+default comprises the beam particles, their energies and the PDF used. 
+In its default value, this information safeguards against using unsuitable 
+grids for the current calculation, assuming a standard @ref{TUNE} has 
+been used.
+
+@node MI_RESULT_DIRECTORY_SUFFIX
+@subsection MI_RESULT_DIRECTORY_SUFFIX
+@cindex MI_RESULT_DIRECTORY_SUFFIX
+Supplements the default directory name for the MPI grid with a suffix.

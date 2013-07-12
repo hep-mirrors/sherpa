@@ -5,6 +5,7 @@ The following parameters describe general run information. They may be set in th
 
 @menu
 * EVENTS::            Number of events to generate.
+* TUNE::              Parameter tunes.
 * OUTPUT::            Output level.
 * LOG_FILE::          Log file.
 * RANDOM_SEED::       Seed for random number generator.
@@ -31,6 +32,24 @@ This parameter specifies the number of events to be generated.
 @*
 It can alternatively be set on the command line through option
 @option{-e}, see @ref{Command line}.
+
+@node TUNE
+@subsection TUNE
+@cindex TUNE
+This parameter specifies which tune is to be used. Setting different 
+tunes using this parameter ensures, that consistent settings are 
+employed. This affects mostly @ref{MPI Parameters} and
+@ref{Intrinsic Transverse Momentum} parameters. Possible values are:
+@itemize @bullet
+@item
+@code{CT10} MPI tune for the Sherpa's default PDF, CT10. This is the default tune.
+@item
+@code{CT10_UEup} Upward variation of MPI activity, variation of the CT10 tune to 
+assess MPI uncertainties.
+@item
+@code{CT10_UEdown} Downward variation of MPI activity, variation of the CT10 tune to 
+assess MPI uncertainties.
+@end itemize
 
 @node OUTPUT
 @subsection OUTPUT
