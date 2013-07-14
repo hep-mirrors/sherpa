@@ -16,7 +16,7 @@ namespace METOOLS {
     int m_type, m_swap, m_trig;
 
     double m_z, m_y, m_kt2, m_Q2, m_phase[2], m_res[3];
-    double m_mi2, m_mj2, m_mij2, m_mk2, m_ym, m_yp;
+    double m_mi2, m_mj2, m_mij2, m_mk2, m_ym, m_yp, m_f;
 
     Dipole_Info *p_info;
     SizeT_Vector m_pm;
@@ -90,6 +90,10 @@ namespace METOOLS {
 
     inline bool Massive() const
     { return m_mi2||m_mj2||m_mk2||m_mij2; }
+
+    inline double F() const { return m_f; }
+
+    inline void SetF(const double &f) { m_f=f; }
 
   };// end of class Dipole_Kinematics
   

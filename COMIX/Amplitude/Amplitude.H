@@ -98,6 +98,7 @@ namespace COMIX {
     std::vector<double> m_dsf;
 
     double m_res, m_cmur[2];
+    double m_smth, m_smpow;
 
     Current_Matrix m_cur;
     Current_Vector m_scur;

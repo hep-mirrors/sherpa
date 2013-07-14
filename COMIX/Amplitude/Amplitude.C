@@ -77,6 +77,8 @@ Amplitude::Amplitude():
   p_dinfo->SetKT2Max(helpd);
   p_dinfo->SetDRMode(0);
   m_sccmur=read.GetValue("USR_WGT_MODE",1);
+  m_smth=read.GetValue("NLO_SMEAR_THRESHOLD",0.0);
+  m_smpow=read.GetValue("NLO_SMEAR_POWER",4.0);
 #ifdef USING__Threading
   if (!read.ReadFromFile(helpi,"COMIX_ME_THREADS")) helpi=0;
   else msg_Tracking()<<METHOD<<"(): Set number of threads "<<helpi<<".\n";
@@ -1241,6 +1243,15 @@ bool Amplitude::JetTrigger
     tmp.back()=m_subs[i];
     Dipole_Kinematics *kin(m_scur[i]->Sub()->In().front()->Kin());
     int ltrig(sel->JetTrigger(kin->Momenta(),&tmp));
+    kin->SetF(1.0);
+    if (m_smth) {
+      double a(m_smth>0.0?kin->KT2():kin->Y());
+      if (a>0.0 && a<dabs(m_smth)) {
+	kin->SetF(pow(a/dabs(m_smth),m_smpow));
+	if (ltrig==0) kin->SetF(-kin->F());
+	ltrig=1;
+      }
+    }
     kin->AddTrig(ltrig);
     if (mode==1) {
       int da(kin->KT2()<m_subs[i]->m_mu2[stp::res]);
@@ -1413,6 +1424,19 @@ bool Amplitude::EvaluateAll()
 #endif
       ccsum/=m_sf;
       if (p_dinfo->Mode()==1) {
+	if (m_smth) {
+	  Dipole_Kinematics *kin=m_cur.back()[j]->
+	    Sub()->Sub()->In().front()->Kin();
+	  if (kin->F()!=1.0) {
+	    double x(dabs(kin->F()));
+	    if (m_trig) {
+	      m_subs.back()->m_me+=(1.0-x)*ccsum;
+	      m_subs.back()->m_mewgt+=(1.0-x)*ccsum;
+	    }
+	    if (kin->F()<0.0) x=0.0;
+	    ccsum*=x;
+	  }
+	}
 	m_subs[m_sid[j]]->m_me=m_subs[m_sid[j]]->m_mewgt=ccsum;
       }
       else {
