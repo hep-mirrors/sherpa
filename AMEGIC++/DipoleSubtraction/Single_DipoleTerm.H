@@ -33,7 +33,7 @@ namespace AMEGIC {
     ATOOLS::Flavour_Vector  m_lofl;
     DipoleSplitting_Base*   p_dipole;
     ATOOLS::NLO_subevt      m_subevt;
-    double                  m_lastscale;
+    double                  m_smth;
     
     PHASIC::Process_Integrator*     p_realint;
 
@@ -131,6 +131,7 @@ namespace AMEGIC {
     int            Type() { return 15; }
     int PerformTests() { return 1; }
     void PrintLOmom();
+    inline void SetSmearThreshold(const double &th) { m_smth=th; }
   };
 }
 

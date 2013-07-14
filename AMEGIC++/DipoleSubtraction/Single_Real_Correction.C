@@ -165,6 +165,7 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
             if (pdummy->Partner()->NewLibs()) m_newlib = 1;
             m_subtermlist.push_back(pdummy);
             m_subtermlist.back()->SetNorm(p_tree_process->Norm());
+	    m_subtermlist.back()->SetSmearThreshold(m_smear_threshold);
           }
           else delete pdummy;
 	}

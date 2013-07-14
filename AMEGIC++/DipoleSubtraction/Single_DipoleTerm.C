@@ -511,7 +511,12 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   else m_subevt.m_trig=true;
   p_LO_process->Integrator()->SetMomenta(p_LO_labmom);
 
-  double M2 =m_subevt.m_trig ? p_LO_process->operator()
+  int calc=m_subevt.m_trig;
+  if (m_smth) {
+    double a=m_smth>0.0?p_dipole->KT2():p_dipole->LastAlpha();
+    if (a<dabs(m_smth)) calc=1;
+  }
+  double M2 = calc ? p_LO_process->operator()
     (p_LO_labmom,p_LO_mom,p_dipole->GetFactors(),
      p_dipole->GetDiPolarizations(),mode) : 0.0;
 
