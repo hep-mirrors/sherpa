@@ -25,6 +25,7 @@ and operate only on the inclusively produced particles before decays.
 * HDH_ONLY_DECAY::
 * HARD_SPIN_CORRELATIONS::
 * STORE_DECAY_RESULTS::
+* DECAY_RESULT_DIRECTORY::
 * HDH_SET_WIDTHS::
 * HDH_BR_WEIGHTS::
 * HARD_MASS_SMEARING::
@@ -81,6 +82,13 @@ The decay table and partial widths are calculated on-the-fly during the
 initialization phase of Sherpa from the given model and its particles and
 interaction vertices. To store these results in the @code{Results/Decays}
 directory, one has to specify @option{STORE_DECAY_RESULTS=1}.
+
+@node DECAY_RESULT_DIRECTORY
+@subsection DECAY_RESULT_DIRECTORY
+@cindex DECAY_RESULT_DIRECTORY
+
+Specifies the name of the directory where the decay results are to be 
+stored. Defaults to the value of @ref{RESULT_DIRECTORY}.
 
 @node HDH_SET_WIDTHS
 @subsection HDH_SET_WIDTHS

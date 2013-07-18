@@ -55,7 +55,8 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   m_br_weights=dr.GetValue<int>("HDH_BR_WEIGHTS",1);
   m_decay_tau=dr.GetValue<int>("DECAY_TAU_HARD",0);
   m_set_widths=dr.GetValue<int>("HDH_SET_WIDTHS",0);
-  m_resultdir=dr.GetValue<std::string>("RESULT_DIRECTORY","Results");
+  std::string r=dr.GetValue<std::string>("DECAY_RESULT_DIRECTORY","");
+  m_resultdir=(r==""?dr.GetValue<std::string>("RESULT_DIRECTORY","Results"):r);
   if (m_store_results) {
     MakeDir(m_resultdir+"/Decays/", true);
   }
