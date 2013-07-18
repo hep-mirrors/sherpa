@@ -170,6 +170,7 @@ void MCFM_gg_hgg::SelectIndices() {
       for (size_t j=0;j<2;j++) {
 	if (m_flavs[i]==m_flavs[flsize-2+j] &&
 	    m_flavs[1-i]==m_flavs[flsize-1-j]) {
+          // only db d -> h d db should be in here
 	  if (m_flavs[i].IsAnti()) { m_j3 = i+1;        m_j4 = flsize-1+j; }
 	                      else { m_j3 = flsize-1+j; m_j4 = i+1; }
 	  if (m_flavs[1-i].IsAnti()) { m_j1 = 2-i;      m_j2 = flsize-j; }
@@ -218,6 +219,8 @@ void MCFM_gg_hgg::SelectIndices() {
 	                      else { m_j3 = 2-i;          m_j4 = i+1; }
 	  if (m_flavs[1-i].IsAnti()) { m_j1 = flsize-1+j; m_j2 = flsize-j; }
 	                       else  { m_j1 = flsize-j;   m_j2 = flsize-1+j; }
+          // correct db d -> u ub case
+          if (m_j1==5 && m_j2==4 && m_j3==1 && m_j4==2) { m_j3=2; m_j4=1; }
 	  m_me = m_flavs[i].Kfcode()!=m_flavs[flsize-2+j].Kfcode()?2:3;
 	  if (m_me==3) { THROW(fatal_error,"Internal error"); }
 	  else m_normcorr*=1./36.;
