@@ -40,8 +40,8 @@ ATOOLS::Random *ATOOLS::ran(NULL);
 ATOOLS::Random::Random(long nid): 
   m_nsinceinit(0), m_increment(0), p_external(NULL)
 {
-  SetSeed(nid); 
   ATOOLS::exh->AddTerminatorObject(this);
+  SetSeed(nid); 
   SaveStatus();
 }
 
@@ -409,14 +409,19 @@ ATOOLS::Random::Random(int ij,int kl) :
   m_lastincrementedseed(ios_base::binary|ios_base::in|ios_base::out),
   m_nsinceinit(0), m_increment(0), p_external(NULL)
 {  
-  SetSeed(ij, kl); 
   ATOOLS::exh->AddTerminatorObject(this);
+  SetSeed(ij, kl); 
   SaveStatus(); 
 }
 
 
 void ATOOLS::Random::SetSeed(int ij, int kl)
 {
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_size()>1)
+    THROW(fatal_error,"MPI does not work with our two-seed RNG, please use "
+                      "the single seed RNG. See Manual.");
+#endif
   msg_Info()<<METHOD<<"(): Seeds set to "<<ij<<" "<<kl<<std::endl;
   // mark Generator 4 as used one and set idTag for file output
   activeGenerator = 4;
@@ -429,10 +434,8 @@ void ATOOLS::Random::SetSeed(int ij, int kl)
   /*  Handle the seed range errors
       First random number seed must be between 0 and 31328
       Second seed must have a value between 0 and 30081    */
-  if (ij < 0 || ij > 31328 || kl < 0 || kl > 30081) {
-    ij = 1802;
-    kl = 9373;
-  }
+  if (ij < 0 || ij > 31328 || kl < 0 || kl > 30081)
+    THROW(fatal_error,"Seeds out of range. Seed1=0..31328, Seed2=0..30081.");
 
   i = (ij / 177) % 177 + 2;
   j = (ij % 177)       + 2;

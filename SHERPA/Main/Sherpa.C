@@ -36,7 +36,7 @@ Sherpa::Sherpa() :
   ATOOLS::mpi = new My_MPI();
   ATOOLS::exh = new Exception_Handler();
   ATOOLS::msg = new Message();
-  ATOOLS::ran = new Random(1234,4321);
+  ATOOLS::ran = new Random(1234);
   ATOOLS::rpa = new Run_Parameter();
   ATOOLS::s_loader = new Library_Loader();
   m_trials = 100;
