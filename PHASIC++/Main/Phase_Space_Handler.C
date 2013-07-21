@@ -402,10 +402,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
 #else
     CalculatePS();
     CalculateME();
-    if (m_result==0.) {
-      // m_psweight=0.0;
-      return 0.0;
-    }
+    if (m_result==0.) { return 0.;}
 #endif
     if (m_printpspoint || msg_LevelIsDebugging()) {
       size_t precision(msg->Out().precision());
