@@ -59,7 +59,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
   else msg_Info()<<METHOD<<"(): Set RS add mode "<<m_rsadd<<"."<<std::endl;
   std::string seedfile;
   if (!read.ReadFromFile(seedfile,"EVENT_SEED_FILE")) 
-    seedfile="ran.stat."+ToString(rpa->gen.RandomSeed());
+    seedfile="ran.stat."+rpa->gen.Variable("RANDOM_SEED");
   else msg_Info()<<METHOD<<"(): Set seed file "<<seedfile<<"."<<std::endl;
 #ifdef USING__GZIP
   seedfile+=".gz";

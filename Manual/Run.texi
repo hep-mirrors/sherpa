@@ -93,15 +93,14 @@ A file name can alternatively be specified on the command line through option
 @cindex RANDOM_SEED
 @cindex RANDOM_SEED1
 @cindex RANDOM_SEED2
-SHERPA uses a random-number generator as described in
-[Florida State University Report FSU-SCRI-87-50].
-The two independent integer-valued seeds are specified by the option
-``RANDOM_SEED=A B''. The seeds A and B may range from 0 to 31328 and from
-0 to 30081, respectively. They can also directly be set using 
-``RANDOM_SEED1=A'' and ``RANDOM_SEED2=B'' If RANDOM_SEED is not 
-specified at all or only by one integer number, the old random-number 
-generator (SHERPA 1.0.6 and older) will be used. This value can also be set 
-using the command line option @option{-R}, see @ref{Command line}.
+SHERPA uses different random-number generators.
+The integer-valued seeds of these generators are specified by the option
+``RANDOM_SEED=A .. F''. They can also directly be set using 
+``RANDOM_SEED1=A'' through ``RANDOM_SEED6=F''. If RANDOM_SEED is not 
+specified at all or only by one integer number, the `ran3' generator 
+described in [@uref{http://www.nr.com/,,ISBN-10:0521880688}] is used. 
+This value can also be set using the command line option @option{-R}, 
+see @ref{Command line}.
 
 @node ANALYSIS
 @subsection ANALYSIS

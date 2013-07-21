@@ -23,6 +23,8 @@ namespace ATOOLS {
 
   typedef Getter_Function<External_RNG,RNG_Key> RNG_Getter;
 
+  class Marsaglia;
+
   class Random: public Terminator_Object {
   private:
 
@@ -38,12 +40,7 @@ namespace ATOOLS {
 
     External_RNG *p_external;
 
-    // Variables for Ran4()
-    struct Ran4Status{
-      char idTag[16];
-      int i97,j97;
-      double u[97],c,cd,cm; } status;
-    Ran4Status backupStat;   // Backup data for Save-/RestoreStatus()
+    Marsaglia *p_ran4[2];
 
     double Ran1(long *idum);
     double Ran2(long *idum);
@@ -68,7 +65,8 @@ namespace ATOOLS {
 
     // constructors
     Random(long nid);  // initialization for Ran2()
-    Random(int, int);  // initialization for Ran4()
+    Random(unsigned int i1,unsigned int i2,unsigned int i3,
+	   unsigned int i4,unsigned int i5,unsigned int i6);
 
     // destructor
     ~Random();
@@ -76,7 +74,8 @@ namespace ATOOLS {
     // member functions
     bool InitExternal(const std::string &path,const std::string &file);
     void SetSeed(long nid);  // seed for Rnd2()
-    void SetSeed(int, int);  // seed for Rnd4()
+    void SetSeed(unsigned int i1,unsigned int i2,unsigned int i3,
+		 unsigned int i4,unsigned int i5,unsigned int i6);
     inline long int GetSeed() { return m_id; }
 
     int  WriteOutStatus(const char *outfile);

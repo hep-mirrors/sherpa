@@ -241,30 +241,40 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   s_loader->AddPath(rpa->gen.Variable("SHERPA_RUN_PATH"));
 
   // read only if defined (no error message if not defined)
+  long int seed;
   std::vector<long int> seeds;
-  std::vector<long int> seed1;
-  std::vector<long int> seed2;
-  gen.m_seed2 = -1;
+  for (int i(0);i<6;++i) gen.m_seeds[i] = -1;
   if (dr.VectorFromFile(seeds,"RANDOM_SEED")) {
-    gen.m_seed = seeds[0];
-    // if 2nd seed is given, store it
-    if (seeds.size() == 2) { gen.m_seed2 = seeds[1]; } 
+    for (int i(0);i<Min((int)seeds.size(),6);++i) gen.m_seeds[i] = seeds[i];
   } 
-  else if (dr.VectorFromFile(seed1,"RANDOM_SEED1") && 
-	   dr.VectorFromFile(seed2,"RANDOM_SEED2")) {
-    gen.m_seed  = seed1[0];
-    gen.m_seed2 = seed2[0]; 
+  else {
+    for (int i(0);i<6;++i)
+      if (dr.ReadFromFile(seed,"RANDOM_SEED"+ToString(i+1)))
+	gen.m_seeds[i]=seed;
   }
-  else gen.m_seed=1234;
+  int nseed=0;
+  for (int i(0);i<6;++i) if (gen.m_seeds[i]>0) ++nseed;
+  if (nseed==0) {
+    gen.m_seeds[0]=1234;
+  }
+  else if (nseed>1) {
+    if (gen.m_seeds[0]<0) gen.m_seeds[0]=12345;
+    if (gen.m_seeds[1]<0) gen.m_seeds[1]=65435;
+    if (gen.m_seeds[2]<0) gen.m_seeds[2]=34221;
+    if (gen.m_seeds[3]<0) gen.m_seeds[3]=12345;
+    if (gen.m_seeds[4]<0) gen.m_seeds[4]=83651;
+    if (gen.m_seeds[5]<0) gen.m_seeds[5]=46118;
+  }
 
 #ifdef USING__MPI
   int rank=MPI::COMM_WORLD.Get_rank();
-  gen.m_seed*=rank+1;
-  if (gen.m_seed2>0) gen.m_seed2*=rank+1;
+  for (int i(0);i<6;++i) gen.m_seeds[i]*=rank+1;
 #endif
 
-  if (gen.m_seed2<0) gen.SetVariable("RNG_SEED",ToString(gen.m_seed));
-  else gen.SetVariable("RNG_SEED",ToString(gen.m_seed)+" "+ToString(gen.m_seed2));
+  std::string seedstr;
+  if (gen.m_seeds[1]>0) 
+    for (int i(1);i<6;++i) seedstr+="_"+ToString(gen.m_seeds[i]);
+  gen.SetVariable("RNG_SEED",ToString(gen.m_seeds[0])+seedstr);
 
   gen.m_timeout = dr.GetValue<double>("TIMEOUT",std::numeric_limits<double>::max());
   if (gen.m_timeout<0.) gen.m_timeout=0.;
@@ -322,8 +332,10 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_accu = dr.GetValue<double>
     ("Num._Accuracy",dr.GetValue<double>("NUM_ACCURACY",1.e-10));
   //gen.m_runtime            = dr.GetValue<std::string>("Runtime"); // Time
-  if (gen.m_seed2!=-1) { ran->SetSeed(gen.m_seed, gen.m_seed2); }
-                  else { ran->SetSeed(gen.m_seed); }
+  if (gen.m_seeds[1]>0) {
+    ran->SetSeed(gen.m_seeds[0],gen.m_seeds[1],gen.m_seeds[2],
+		 gen.m_seeds[3],gen.m_seeds[4],gen.m_seeds[5]); }
+  else { ran->SetSeed(gen.m_seeds[0]); }
   msg_Debugging()<<METHOD<<"(): Set global tags {\n";
   const String_Map &gtags(Read_Write_Base::GlobalTags());
   for (String_Map::const_iterator tit(gtags.begin());tit!=gtags.end();++tit)

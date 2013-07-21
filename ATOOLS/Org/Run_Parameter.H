@@ -27,8 +27,7 @@ namespace ATOOLS {
       int                 m_analysis, m_cutscheme;
       //std::string         m_runtime;
       long int            m_nevents, m_ngenevents;
-      long int            m_seed;
-      long int            m_seed2;
+      long int            m_seeds[6];
       double              m_ecms;
       double              m_cplscale;
       double              m_accu;
@@ -46,7 +45,6 @@ namespace ATOOLS {
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
       inline long   NumberOfGeneratedEvents()             { return m_ngenevents; }
-      inline long   RandomSeed()                          { return m_seed;    }
       inline int    Analysis()                            { return m_analysis; }
       inline int    CutScheme()                           { return m_cutscheme; }
       inline void   SetNumberOfEvents(long N)             { m_nevents    = N; }

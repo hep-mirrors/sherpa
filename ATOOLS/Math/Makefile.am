@@ -9,6 +9,7 @@ libToolsMath_la_SOURCES       =	\
 				MathTools.C \
 				Term.C \
 				Algebra_Interpreter.C \
+				Marsaglia.C \
 				Random.C \
 				Function_Base.C \
 				Poincare.C \
@@ -31,6 +32,7 @@ localinc_HEADERS          =	\
 			MathTools.H \
 			Term.H \
 			Algebra_Interpreter.H \
+			Marsaglia.H \
 			Random.H \
 			Function_Base.H \
 			Poincare.H \

@@ -760,7 +760,7 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
   if (p_beamchannels!=NULL && !(exclude&1)) okay = okay && p_beamchannels->ReadIn(pID+"/MC_Beam");
   if (p_isrchannels!=NULL && !(exclude&2)) okay = okay && p_isrchannels->ReadIn(pID+"/MC_ISR");
   if (p_fsrchannels!=NULL && !(exclude&16)) okay = okay && p_fsrchannels->ReadIn(pID+"/MC_FSR");
-  if (rpa->gen.RandomSeed()==1234 && !(exclude&32)) {
+  if (!(exclude&32)) {
     std::string filename     = (pID+"/Random").c_str();
     ran->ReadInStatus(filename.c_str());
   }
