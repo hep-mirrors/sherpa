@@ -3,7 +3,7 @@
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE PHASIC::Channel_Generator
 #define PARAMETER_TYPE PHASIC::Channel_Generator_Key
-#define EXACTMATCH false
+#define EXACTMATCH true
 #include "ATOOLS/Org/Getter_Function.C"
 
 using namespace PHASIC;
