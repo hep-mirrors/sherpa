@@ -23,11 +23,11 @@ public:
 };// end of class Example_RNG
 
 // this makes Example_RNG loadable in Sherpa
-DECLARE_GETTER(Example_RNG_Getter,"Example_RNG",External_RNG,RNG_Key);
-External_RNG *Example_RNG_Getter::operator()(const RNG_Key &arg) const
+DECLARE_GETTER(Example_RNG,"Example_RNG",External_RNG,RNG_Key);
+External_RNG *ATOOLS::Getter<External_RNG,RNG_Key,Example_RNG>::operator()(const RNG_Key &) const
 { return new Example_RNG(); }
 // this eventually prints a help message
-void Example_RNG_Getter::PrintInfo(std::ostream &str,const size_t width) const
+void ATOOLS::Getter<External_RNG,RNG_Key,Example_RNG>::PrintInfo(std::ostream &str,const size_t) const
 { str<<"example RNG interface"; }
 @end verbatim
 
