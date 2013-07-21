@@ -273,7 +273,10 @@ CParam CS_Cluster_Definitions::CoreScale
     double kt2cmin(ampl->Leg(2)->Mom().Abs2());
     return CParam(kt2cmin,kt2cmin,0.0,kt2cmin,-1);
   }
-  if (ampl->Legs().size()!=4) THROW(fatal_error,"Invalid function call");
+  if (ampl->Legs().size()!=4) {
+    double kt2cmin((ampl->Leg(0)->Mom()+ampl->Leg(1)->Mom()).Abs2());
+    return CParam(kt2cmin,kt2cmin,0.0,kt2cmin,-1);    
+  }
   Vec4D psum;
   Vec4D_Vector p(4);
   int res(0), qcd(0);
