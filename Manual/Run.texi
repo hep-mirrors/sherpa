@@ -93,14 +93,17 @@ A file name can alternatively be specified on the command line through option
 @cindex RANDOM_SEED
 @cindex RANDOM_SEED1
 @cindex RANDOM_SEED2
-SHERPA uses different random-number generators.
-The integer-valued seeds of these generators are specified by the option
-``RANDOM_SEED=A .. F''. They can also directly be set using 
-``RANDOM_SEED1=A'' through ``RANDOM_SEED6=F''. If RANDOM_SEED is not 
-specified at all or only by one integer number, the `ran3' generator 
-described in [@uref{http://www.nr.com/,,ISBN-10:0521880688}] is used. 
-This value can also be set using the command line option @option{-R}, 
-see @ref{Command line}.
+Sherpa uses different random-number generators. The default is the Ran3 
+generator described in [@uref{http://www.nr.com/,,ISBN-10:0521880688}].
+Alternatively, a combination of George Marsaglias KISS and SWB 
+[@uref{http://dx.doi.org/10.1214/aoap/1177005878,,Ann.Appl.Probab.1,3(1991)462}]
+can be employed, see @uref{http://groups.google.co.uk/group/sci.stat.math/msg/edcb117233979602,,this} 
+@uref{http://groups.google.co.uk/group/sci.math.num-analysis/msg/eb4ddde782b17051,,website}.
+The integer-valued seeds of the generators are specified by 
+@option{RANDOM_SEED=A .. F}. They can also be set directly using 
+@option{RANDOM_SEED1=A} through @option{RANDOM_SEED6=F}. The Ran3 generator 
+takes only one argument. This value can also be set using the command line 
+option @option{-R}, see @ref{Command line}.
 
 @node ANALYSIS
 @subsection ANALYSIS
