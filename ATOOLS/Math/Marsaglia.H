@@ -19,7 +19,7 @@ namespace ATOOLS {
 
   private:
 
-    UL m_z, m_w, m_jsr, m_jcong, m_a, m_b;
+    UL m_z, m_w, m_jsr, m_jcong;
     UL m_t[256], m_x, m_y, m_bro;
 
     unsigned char m_c;
@@ -28,7 +28,7 @@ namespace ATOOLS {
 
     Marsaglia();
 
-    void Init(UL i1,UL i2,UL i3,UL i4,UL i5,UL i6);
+    void Init(UL i1,UL i2,UL i3,UL i4);
   
     double Get();
 

@@ -243,12 +243,12 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   // read only if defined (no error message if not defined)
   long int seed;
   std::vector<long int> seeds;
-  for (int i(0);i<6;++i) gen.m_seeds[i] = -1;
+  for (int i(0);i<4;++i) gen.m_seeds[i] = -1;
   if (dr.VectorFromFile(seeds,"RANDOM_SEED")) {
-    for (int i(0);i<Min((int)seeds.size(),6);++i) gen.m_seeds[i] = seeds[i];
+    for (int i(0);i<Min((int)seeds.size(),4);++i) gen.m_seeds[i] = seeds[i];
   } 
   else {
-    for (int i(0);i<6;++i)
+    for (int i(0);i<4;++i)
       if (dr.ReadFromFile(seed,"RANDOM_SEED"+ToString(i+1)))
 	gen.m_seeds[i]=seed;
   }
@@ -262,18 +262,16 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     if (gen.m_seeds[1]<0) gen.m_seeds[1]=65435;
     if (gen.m_seeds[2]<0) gen.m_seeds[2]=34221;
     if (gen.m_seeds[3]<0) gen.m_seeds[3]=12345;
-    if (gen.m_seeds[4]<0) gen.m_seeds[4]=83651;
-    if (gen.m_seeds[5]<0) gen.m_seeds[5]=46118;
   }
 
 #ifdef USING__MPI
   int rank=MPI::COMM_WORLD.Get_rank();
-  for (int i(0);i<6;++i) gen.m_seeds[i]*=rank+1;
+  for (int i(0);i<4;++i) gen.m_seeds[i]*=rank+1;
 #endif
 
   std::string seedstr;
   if (gen.m_seeds[1]>0) 
-    for (int i(1);i<6;++i) seedstr+="_"+ToString(gen.m_seeds[i]);
+    for (int i(1);i<4;++i) seedstr+="_"+ToString(gen.m_seeds[i]);
   gen.SetVariable("RNG_SEED",ToString(gen.m_seeds[0])+seedstr);
 
   gen.m_timeout = dr.GetValue<double>("TIMEOUT",std::numeric_limits<double>::max());
@@ -333,8 +331,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     ("Num._Accuracy",dr.GetValue<double>("NUM_ACCURACY",1.e-10));
   //gen.m_runtime            = dr.GetValue<std::string>("Runtime"); // Time
   if (gen.m_seeds[1]>0) {
-    ran->SetSeed(gen.m_seeds[0],gen.m_seeds[1],gen.m_seeds[2],
-		 gen.m_seeds[3],gen.m_seeds[4],gen.m_seeds[5]); }
+    ran->SetSeed(gen.m_seeds[0],gen.m_seeds[1],gen.m_seeds[2],gen.m_seeds[3]);
+  }
   else { ran->SetSeed(gen.m_seeds[0]); }
   msg_Debugging()<<METHOD<<"(): Set global tags {\n";
   const String_Map &gtags(Read_Write_Base::GlobalTags());

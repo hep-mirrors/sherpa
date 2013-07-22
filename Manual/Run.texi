@@ -100,8 +100,8 @@ Alternatively, a combination of George Marsaglias KISS and SWB
 can be employed, see @uref{http://groups.google.co.uk/group/sci.stat.math/msg/edcb117233979602,,this} 
 @uref{http://groups.google.co.uk/group/sci.math.num-analysis/msg/eb4ddde782b17051,,website}.
 The integer-valued seeds of the generators are specified by 
-@option{RANDOM_SEED=A .. F}. They can also be set directly using 
-@option{RANDOM_SEED1=A} through @option{RANDOM_SEED6=F}. The Ran3 generator 
+@option{RANDOM_SEED=A .. D}. They can also be set directly using 
+@option{RANDOM_SEED1=A} through @option{RANDOM_SEED4=D}. The Ran3 generator 
 takes only one argument. This value can also be set using the command line 
 option @option{-R}, see @ref{Command line}.
 

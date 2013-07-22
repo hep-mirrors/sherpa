@@ -74,8 +74,8 @@ namespace ATOOLS {
     // member functions
     bool InitExternal(const std::string &path,const std::string &file);
     void SetSeed(long nid);  // seed for Rnd2()
-    void SetSeed(unsigned int i1,unsigned int i2,unsigned int i3,
-		 unsigned int i4,unsigned int i5,unsigned int i6);
+    void SetSeed(unsigned int i1,unsigned int i2,
+		 unsigned int i3,unsigned int i4);
     inline long int GetSeed() { return m_id; }
 
     int  WriteOutStatus(const char *outfile);

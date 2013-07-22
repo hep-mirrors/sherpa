@@ -27,7 +27,7 @@ namespace ATOOLS {
       int                 m_analysis, m_cutscheme;
       //std::string         m_runtime;
       long int            m_nevents, m_ngenevents;
-      long int            m_seeds[6];
+      long int            m_seeds[4];
       double              m_ecms;
       double              m_cplscale;
       double              m_accu;

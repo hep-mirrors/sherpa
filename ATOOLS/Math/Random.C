@@ -416,17 +416,18 @@ ATOOLS::Random::Random(unsigned int i1,unsigned int i2,unsigned int i3,
 {  
   ATOOLS::exh->AddTerminatorObject(this);
   p_ran4[0] = new Marsaglia();
-  SetSeed(i1,i2,i3,i4,i5,i6);
+  SetSeed(i1,i2,i3,i4);
   p_ran4[1] = new Marsaglia(*p_ran4[0]);
 }
 
 
-void ATOOLS::Random::SetSeed(unsigned int i1,unsigned int i2,unsigned int i3,
-			     unsigned int i4,unsigned int i5,unsigned int i6)
+void ATOOLS::Random::SetSeed(unsigned int i1,unsigned int i2,
+			     unsigned int i3,unsigned int i4)
 {
-  msg_Info()<<METHOD<<"(): Seeds set to "<<i1<<" "<<i2<<" "<<i3
-	    <<" "<<i4<<" "<<i5<<" "<<i6<<std::endl;
-  // mark Generator 4 as used one and set idTag for file output
+  msg_Info()<<METHOD<<"(): Seeds set to "<<i1<<" "<<i2
+	    <<" "<<i3<<" "<<i4<<std::endl;
+  p_ran4[0]->Init(i1,i2,i3,i4);
+  *p_ran4[1]=*p_ran4[0];
   activeGenerator = 4;
 }
 

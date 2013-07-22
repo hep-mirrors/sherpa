@@ -20,7 +20,7 @@ Marsaglia::Marsaglia(): m_x(0), m_y(0), m_c(0)
 	     <<sizeof(UL)<<", should be 4."<<std::endl;
     exit(1);
   }
-  Init(12345,65435,34221,12345,9983651,95746118);
+  Init(12345,65435,34221,12345);
   for(int i=1;i<1000000;++i) SWB(m_c,m_bro,m_x,m_y,m_t);
   if (SWB(m_c,m_bro,m_x,m_y,m_t)!=1429146441U) {
     std::cout<<"RNG test 1 failed."<<std::endl;
@@ -33,10 +33,9 @@ Marsaglia::Marsaglia(): m_x(0), m_y(0), m_c(0)
   }
 }
 
-void Marsaglia::Init(UL i1,UL i2,UL i3,
-		     UL i4,UL i5,UL i6)
+void Marsaglia::Init(UL i1,UL i2,UL i3,UL i4)
 {
-  m_z=i1, m_w=i2, m_jsr=i3, m_jcong=i4, m_a=i5, m_b=i6;
+  m_z=i1, m_w=i2, m_jsr=i3, m_jcong=i4;
   for(int i=0;i<256;++i) m_t[i]=KISS(m_z,m_w,m_jcong,m_jsr);
 }
 
