@@ -66,7 +66,7 @@ namespace SHERPA {
     ~Output_RootNtuple();
     void Header();
     void Footer();
-    void ChangeFile(std::string nr);
+    void ChangeFile();
     void Output(ATOOLS::Blob_List* blobs, double weight);
     void PrepareTerminate();
   };

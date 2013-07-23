@@ -56,7 +56,7 @@ MCatNLO_Process::~MCatNLO_Process()
 
 void MCatNLO_Process::Init(const Process_Info &pi,
 			  BEAM::Beam_Spectra_Handler *const beam,
-			  PDF::ISR_Handler *const isr)
+			   PDF::ISR_Handler *const isr,const int mode)
 {
   if (m_gens.NewLibraries())
     THROW(normal_exit,"New libraries created. Please compile.");

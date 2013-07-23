@@ -297,7 +297,7 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
   if ((rpa->gen.NumberOfGeneratedEvents()%m_avsize)==0) StoreEvt();
 }
 
-void Output_RootNtuple::ChangeFile(std::string number)
+void Output_RootNtuple::ChangeFile()
 {
   StoreEvt();
 #ifdef USING__ROOT

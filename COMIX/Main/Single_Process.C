@@ -322,7 +322,8 @@ bool COMIX::Single_Process::GeneratePoint()
   if (!p_int->ColorIntegrator()->GeneratePoint()) return false;
   if (p_int->HelicityIntegrator()!=NULL && 
       !p_int->HelicityIntegrator()->GeneratePoint()) return false;
-  return !(m_zero=false);
+  m_zero=false;
+  return true;
 }
 
 double COMIX::Single_Process::Differential

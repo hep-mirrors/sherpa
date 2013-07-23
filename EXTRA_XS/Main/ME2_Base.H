@@ -26,8 +26,6 @@ namespace EXTRAXS {
     virtual bool SetColours(const ATOOLS::Vec4D_Vector& momenta);
 
     inline int **Colours() const { return p_colours; }
-    inline size_t OrderEW() const { return m_oew;  }
-    inline size_t OrderQCD() const { return m_oqcd; }
     inline size_t SIntType() const { return m_sintt; }
 
     inline const ATOOLS::Flavour_Vector &

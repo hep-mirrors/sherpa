@@ -85,12 +85,15 @@ bool Single_Dipole_Term::Trigger(const ATOOLS::Vec4D_Vector &p)
 
 bool Single_Dipole_Term::GeneratePoint()
 {
+  return false;
 }
 
 bool Single_Dipole_Term::Combinable(const size_t &idi,const size_t &idj)
 {
+  return false;
 }
 
 const Flavour_Vector &Single_Dipole_Term::CombinedFlavour(const size_t &idij)
 {
+  return Flavour_Vector();
 }

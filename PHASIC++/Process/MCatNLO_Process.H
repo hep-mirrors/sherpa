@@ -56,7 +56,7 @@ namespace PHASIC {
 
     void Init(const Process_Info &pi,
               BEAM::Beam_Spectra_Handler *const beam,
-              PDF::ISR_Handler *const isr);
+              PDF::ISR_Handler *const isr,const int mode=0);
     bool InitSubtermInfo();
 
     bool IsGroup() const;
