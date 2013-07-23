@@ -498,10 +498,10 @@ bool Cluster_Algorithm::Cluster
     kt2ord.push_back(std::make_pair(decids[i]->m_id,0.0));
   if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo,kt2ord)) {
     msg_Debugging()<<"classify as born\n";
-    Vec4D sum;
-    for (size_t i(0);i<p_ampl->NIn();++i) sum+=p_ampl->Leg(i)->Mom();
-    p_ampl->SetKT2(sum.Abs2());
-    p_ampl->SetMu2(sum.Abs2());
+    p_ampl->SetProc(p_xs);
+    p_ampl->SetKT2((p_xs->IsMapped()?p_xs->MapProc():p_xs)
+		   ->ScaleSetter()->CoreScale(p_ampl).m_mu2);
+    p_ampl->SetMu2(p_ampl->KT2());
     size_t nmax(xs->Process()->Info().m_fi.NMaxExternal());
     SetNMax(p_ampl,(1<<ccurs.size())-1,nmax);
     return true;
