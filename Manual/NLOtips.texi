@@ -116,8 +116,6 @@ interpretation of the threshold can be chosen by its sign (positive: relative
 dipole kT in GeV, negative: dipole alpha).
 In addition, the exponent n can be set by @option{NLO_SMEAR_POWER=<n>}.
 
-Note, that these options only work with Amegic so far.
-
 @node Structure of HepMC Output
 @subsection Structure of HepMC Output
 
