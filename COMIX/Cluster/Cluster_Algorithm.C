@@ -502,6 +502,8 @@ bool Cluster_Algorithm::Cluster
     for (size_t i(0);i<p_ampl->NIn();++i) sum+=p_ampl->Leg(i)->Mom();
     p_ampl->SetKT2(sum.Abs2());
     p_ampl->SetMu2(sum.Abs2());
+    size_t nmax(xs->Process()->Info().m_fi.NMaxExternal());
+    SetNMax(p_ampl,(1<<ccurs.size())-1,nmax);
     return true;
   }
   size_t nmax(xs->Process()->Info().m_fi.NMaxExternal());
