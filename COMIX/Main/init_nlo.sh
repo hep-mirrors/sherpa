@@ -12,7 +12,7 @@ if test $tp = RS; then
     rm -rf $nt; exit 1;
   fi;
 fi;
-sed -e's/}(run)/  ONLY_MAPPING_FILE 1;\n}(run)/g' < $2 > $2.$tp;
+sed -e's/}(run)/  INIT_ONLY 1;\n}(run)/g' < $2 > $2.$tp;
 sed -e'/NLO_QCD/ d' < $2.$tp > $2.B;
 test -z "$3" && cp -r $PWD/Process/ $nt/ 2>&1;
 $1 -f$2.B SHERPA_CPP_PATH=$nt;
