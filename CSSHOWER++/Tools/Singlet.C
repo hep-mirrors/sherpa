@@ -350,21 +350,27 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
 	  daughter1->SetFlow(1,daughter2->GetFlow(2));
 	  daughter1->SetFlow(2,mother->GetFlow(2));
 	}
+	else {
 	daughter2->SetFlow(2,mother->GetFlow(2));
 	daughter2->SetFlow(1,-1);
 	daughter1->SetFlow(2,daughter2->GetFlow(1));
 	daughter1->SetFlow(1,mother->GetFlow(1));
+	}
       }
+      else {
       if (mother->GetRight()==mother->GetSpect()) {
 	daughter1->SetFlow(1,mother->GetFlow(1));
 	daughter1->SetFlow(2,-1);
 	daughter2->SetFlow(1,daughter1->GetFlow(2));
 	daughter2->SetFlow(2,mother->GetFlow(2));
       }
+      else {
       daughter1->SetFlow(2,mother->GetFlow(2));
       daughter1->SetFlow(1,-1);
       daughter2->SetFlow(2,daughter1->GetFlow(1));
       daughter2->SetFlow(1,mother->GetFlow(1));
+      }
+      }
     }
   }
   else if (mo.StrongCharge()==0) {
