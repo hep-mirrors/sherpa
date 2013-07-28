@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Math/Random.H"
 #include "PHASIC++/Channels/CSS_Kinematics.H"
 #include <list>
 
@@ -138,261 +139,159 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
 {
   daughter1->SetSing(this);
   daughter2->SetSing(this);
-  if (mother->GetType()==pst::IS) std::swap<Parton*>(mother,daughter1);
   Flavour mo(mother->GetFlavour()), d1(daughter1->GetFlavour()), d2(daughter2->GetFlavour());
   msg_Tracking()<<METHOD<<" for "<<mo<<" --> "<<d1<<" & "<<d2<<"\n";
-  if (mother->GetType()==pst::FS) {
-    if (mo.StrongCharge()==-3) {
-      if (d1.StrongCharge()==-3) {
-	if (d2.StrongCharge()==8) {
-	  daughter2->SetFlow(2,mother->GetFlow(2));
-	  daughter2->SetFlow(1,-1);
-	  daughter1->SetFlow(2,daughter2->GetFlow(1));
-	  return true;
-	}
-	else if (d2.StrongCharge()==0) {
-	  daughter1->SetFlow(2,mother->GetFlow(2));
-	  daughter2->SetFlow(1,0);
-	  daughter2->SetFlow(2,0);
-	  return true;
-	}
-      }
-      else if (d2.StrongCharge()==-3) {
-	if (d1.StrongCharge()==8) {
-	  daughter1->SetFlow(2,mother->GetFlow(2));
-	  daughter1->SetFlow(1,-1);
-	  daughter2->SetFlow(2,daughter1->GetFlow(1));
-	  return true;
-	}
-	else if (d1.StrongCharge()==0) {
-	  daughter2->SetFlow(2,mother->GetFlow(2));
-	  daughter1->SetFlow(1,0);
-	  daughter1->SetFlow(2,0);
-	  return true;
-	}
-      }
-    }
-    else if (mo.StrongCharge()==3) {
-      if (d1.StrongCharge()==3) {
-	if (d2.StrongCharge()==8) {
-	  daughter2->SetFlow(1,mother->GetFlow(1));
-	  daughter2->SetFlow(2,-1);
-	  daughter1->SetFlow(1,daughter2->GetFlow(2));
-	  return true;
-	}
-	else if (d2.StrongCharge()==0) {
-	  daughter1->SetFlow(1,mother->GetFlow(1));
-	  daughter2->SetFlow(1,0);
-	  daughter2->SetFlow(2,0);
-	  return true;
-	}
-      }
-      else if (d2.StrongCharge()==3) {
-	if (d1.StrongCharge()==8) {
-	  daughter1->SetFlow(1,mother->GetFlow(1));
-	  daughter1->SetFlow(2,-1);
-	  daughter2->SetFlow(1,daughter1->GetFlow(2));
-	  return true;
-	}
-	else if (d1.StrongCharge()==0) {
-	  daughter2->SetFlow(1,mother->GetFlow(1));
-	  daughter1->SetFlow(1,0);
-	  daughter1->SetFlow(2,0);
-	  return true;
-	}
-      }
-    }
-    else if (mo.StrongCharge()==8) {
-      if (d1.StrongCharge()==3 && 
-	  d2.StrongCharge()==-3) {  
-	daughter1->SetFlow(1,mother->GetFlow(1));
-	daughter1->SetFlow(2,0);
-	daughter2->SetFlow(1,0);
+  if (mother->GetType()==pst::IS) { mo=mo.Bar(); d1=d1.Bar(); }
+  if (mo.StrongCharge()==-3) {
+    if (d1.StrongCharge()==-3) {
+      if (d2.StrongCharge()==8) {
 	daughter2->SetFlow(2,mother->GetFlow(2));
+	daughter2->SetFlow(1,-1);
+	daughter1->SetFlow(2,daughter2->GetFlow(1));
 	return true;
       }
-      else if (d1.StrongCharge()==-3 && 
-	       d2.StrongCharge()==3) {  
-	daughter2->SetFlow(1,mother->GetFlow(1));
+      else if (d2.StrongCharge()==0) {
+	daughter1->SetFlow(2,mother->GetFlow(2));
+	daughter2->SetFlow(1,0);
 	daughter2->SetFlow(2,0);
-	daughter1->SetFlow(1,0);
-	daughter1->SetFlow(2,mother->GetFlow(2));
-	return true;
-      }
-      else if (d1.StrongCharge()==8 && 
-	       d2.StrongCharge()==8) {
-	if (mother->Col()<0) {
-	  // if (mother->GetRight()==mother->GetSpect()) {
-	  //   daughter2->SetFlow(1,mother->GetFlow(1));
-	  //   daughter2->SetFlow(2,-1);
-	  //   daughter1->SetFlow(1,daughter2->GetFlow(2));
-	  //   daughter1->SetFlow(2,mother->GetFlow(2));
-	  //   return true;
-	  // }
-	  daughter2->SetFlow(2,mother->GetFlow(2));
-	  daughter2->SetFlow(1,-1);
-	  daughter1->SetFlow(2,daughter2->GetFlow(1));
-	  daughter1->SetFlow(1,mother->GetFlow(1));
-	  return true;
-	}
-	// if (mother->GetRight()==mother->GetSpect()) {
-	//   daughter1->SetFlow(1,mother->GetFlow(1));
-	//   daughter1->SetFlow(2,-1);
-	//   daughter2->SetFlow(1,daughter1->GetFlow(2));
-	//   daughter2->SetFlow(2,mother->GetFlow(2));
-	//   return true;
-	// }
-	daughter1->SetFlow(2,mother->GetFlow(2));
-	daughter1->SetFlow(1,-1);
-	daughter2->SetFlow(2,daughter1->GetFlow(1));
-	daughter2->SetFlow(1,mother->GetFlow(1));
 	return true;
       }
     }
-    else if (mo.StrongCharge()==0) {
-      if (abs(d1.StrongCharge())==3 && 
-	  abs(d2.StrongCharge())==3) {  
+    else if (d2.StrongCharge()==-3) {
+      if (d1.StrongCharge()==8) {
+	daughter1->SetFlow(2,mother->GetFlow(2));
 	daughter1->SetFlow(1,-1);
-	daughter1->SetFlow(2,0);
 	daughter2->SetFlow(2,daughter1->GetFlow(1));
-	daughter2->SetFlow(1,0);
 	return true;
       }
-      else if (d1.StrongCharge()==0 && 
-	       d2.StrongCharge()==0) {
+      else if (d1.StrongCharge()==0) {
+	daughter2->SetFlow(2,mother->GetFlow(2));
 	daughter1->SetFlow(1,0);
 	daughter1->SetFlow(2,0);
-	daughter2->SetFlow(1,0);
-	daughter2->SetFlow(2,0);
 	return true;
       }
     }
   }
-  else if (daughter1->GetType()==pst::IS) {
-    if (d1.StrongCharge()==-3) {
-      if (mo.StrongCharge()==-3) {
-	if (d2.StrongCharge()==8) {
-	  mother->SetFlow(1,-1);
-	  daughter2->SetFlow(1,daughter1->GetFlow(1));
-	  daughter2->SetFlow(2,mother->GetFlow(1));
-	  return true;
-	}
-	else if (d2.StrongCharge()==0) {
-	  mother->SetFlow(1,daughter1->GetFlow(1));
-	  daughter2->SetFlow(1,0);
-	  daughter2->SetFlow(2,0);
-	  return true;
-	}
+  else if (mo.StrongCharge()==3) {
+    if (d1.StrongCharge()==3) {
+      if (d2.StrongCharge()==8) {
+	daughter2->SetFlow(1,mother->GetFlow(1));
+	daughter2->SetFlow(2,-1);
+	daughter1->SetFlow(1,daughter2->GetFlow(2));
+	return true;
       }
-      else if (d2.StrongCharge()==3) {
-	if (mo.StrongCharge()==8) {
-	  mother->SetFlow(1,daughter1->GetFlow(1));
-	  mother->SetFlow(2,-1);
-	  daughter2->SetFlow(1,mother->GetFlow(2));
-	  return true;
-	}
-	if (mo.StrongCharge()==0) {
-	  daughter2->SetFlow(1,daughter1->GetFlow(1));
-	  mother->SetFlow(1,0);
-	  mother->SetFlow(2,0);
-	  return true;
-	}
-      }
-    }
-    else if (d1.StrongCharge()==3) {
-      if (mo.StrongCharge()==3) {
-	if (d2.StrongCharge()==8) {
-	  mother->SetFlow(2,-1);
-	  daughter2->SetFlow(1,mother->GetFlow(2));
-	  daughter2->SetFlow(2,daughter1->GetFlow(2));
-	  return true;
-	}
-	else if (d2.StrongCharge()==0) {
-	  mother->SetFlow(2,daughter1->GetFlow(2));
-	  daughter2->SetFlow(1,0);
-	  daughter2->SetFlow(2,0);
-	  return true;
-	}
-      }
-      else if (d2.StrongCharge()==-3) {
-	if (mo.StrongCharge()==8) {
-	  mother->SetFlow(1,-1);
-	  mother->SetFlow(2,daughter1->GetFlow(2));
-	  daughter2->SetFlow(2,mother->GetFlow(1));
-	  return true;
-	}
-	else if (mo.StrongCharge()==0) {
-	  daughter2->SetFlow(2,daughter1->GetFlow(2));
-	  mother->SetFlow(1,0);
-	  mother->SetFlow(2,0);
-	  return true;
-	}
-      }
-    }
-    else if (d1.StrongCharge()==8) {
-      if (abs(mo.StrongCharge())==3) {
-	if (d2.StrongCharge()==-3) {
-	  daughter2->SetFlow(1,0);
-	  daughter2->SetFlow(2,daughter1->GetFlow(2));
-	  mother->SetFlow(2,0);
-	  mother->SetFlow(1,daughter1->GetFlow(1));
-	  return true;
-	}
-	else if (d2.StrongCharge()==3) {
-	  daughter2->SetFlow(2,0);
-	  daughter2->SetFlow(1,daughter1->GetFlow(1));
-	  mother->SetFlow(1,0);
-	  mother->SetFlow(2,daughter1->GetFlow(2));
-	  return true;
-	}
-      }
-      else if (mo.StrongCharge()==8 && 
-	       d2.StrongCharge()==8) {
-	if (daughter1->Col()<0) {
-	  // if (daughter1->GetRight()==daughter1->GetSpect()) {
-	  //   daughter2->SetFlow(1,daughter1->GetFlow(1));
-	  //   daughter2->SetFlow(2,-1);	
-	  //   mother->SetFlow(2,daughter1->GetFlow(2));
-	  //   mother->SetFlow(1,daughter2->GetFlow(2));
-	  //   return true;
-	  // }
-	  daughter2->SetFlow(2,daughter1->GetFlow(2));
-	  daughter2->SetFlow(1,-1);	
-	  mother->SetFlow(1,daughter1->GetFlow(1));
-	  mother->SetFlow(2,daughter2->GetFlow(1));
-	  return true;
-	}
-	// if (daughter1->GetRight()==daughter1->GetSpect()) {
-	//   mother->SetFlow(1,daughter1->GetFlow(1));
-	//   mother->SetFlow(2,-1);	
-	//   daughter2->SetFlow(2,daughter1->GetFlow(2));
-	//   daughter2->SetFlow(1,mother->GetFlow(2));
-	//   return true;
-	// }
-	mother->SetFlow(2,daughter1->GetFlow(2));
-	mother->SetFlow(1,-1);	
-	daughter2->SetFlow(1,daughter1->GetFlow(1));
-	daughter2->SetFlow(2,mother->GetFlow(1));
+      else if (d2.StrongCharge()==0) {
+	daughter1->SetFlow(1,mother->GetFlow(1));
+	daughter2->SetFlow(1,0);
+	daughter2->SetFlow(2,0);
 	return true;
       }
     }
-    else if (d1.StrongCharge()==0) {
-      if (abs(mo.StrongCharge())==3) {
-	if (d2.StrongCharge()==-3) {
-	  daughter2->SetFlow(1,0);
+    else if (d2.StrongCharge()==3) {
+      if (d1.StrongCharge()==8) {
+	daughter1->SetFlow(1,mother->GetFlow(1));
+	daughter1->SetFlow(2,-1);
+	daughter2->SetFlow(1,daughter1->GetFlow(2));
+	return true;
+      }
+      else if (d1.StrongCharge()==0) {
+	daughter2->SetFlow(1,mother->GetFlow(1));
+	daughter1->SetFlow(1,0);
+	daughter1->SetFlow(2,0);
+	return true;
+      }
+    }
+  }
+  else if (mo.StrongCharge()==8) {
+    if (d1.StrongCharge()==3 && 
+	d2.StrongCharge()==-3) {  
+      daughter1->SetFlow(1,mother->GetFlow(1));
+      daughter1->SetFlow(2,0);
+      daughter2->SetFlow(1,0);
+      daughter2->SetFlow(2,mother->GetFlow(2));
+      return true;
+    }
+    else if (d1.StrongCharge()==-3 && 
+	     d2.StrongCharge()==3) {  
+      daughter2->SetFlow(1,mother->GetFlow(1));
+      daughter2->SetFlow(2,0);
+      daughter1->SetFlow(1,0);
+      daughter1->SetFlow(2,mother->GetFlow(2));
+      return true;
+    }
+    else if (d1.StrongCharge()==8 && 
+	     d2.StrongCharge()==8) {
+      int rc(mother->GetFlow(2) && mother->GetFlow(2) 
+	     ==mother->GetSpect()->GetFlow(1));
+      int lc(mother->GetFlow(1) && mother->GetFlow(1) 
+	     ==mother->GetSpect()->GetFlow(2));
+      if (rc==lc) {
+	rc=mother->GetSpect()->GetFlow(1)?1:0;
+	lc=mother->GetSpect()->GetFlow(2)?1:0;
+	if (rc==lc) {
+	  rc=ran->Get()>0.5?1:0;
+	  lc=1-rc;
+	}
+      }
+      if (rc==lc) THROW(fatal_error,"Internal error");
+      if (mother->Col()<0) {
+	if (rc) {
+	  daughter2->SetFlow(1,mother->GetFlow(1));
 	  daughter2->SetFlow(2,-1);
-	  mother->SetFlow(1,daughter2->GetFlow(2));
-	  mother->SetFlow(2,0);
+	  daughter1->SetFlow(1,daughter2->GetFlow(2));
+	  daughter1->SetFlow(2,mother->GetFlow(2));
 	  return true;
 	}
-	else if (d2.StrongCharge()==3) {
-	  daughter2->SetFlow(2,0);
+	else {
+	  daughter2->SetFlow(2,mother->GetFlow(2));
 	  daughter2->SetFlow(1,-1);
-	  mother->SetFlow(2,daughter2->GetFlow(1));
-	  mother->SetFlow(1,0);
+	  daughter1->SetFlow(2,daughter2->GetFlow(1));
+	  daughter1->SetFlow(1,mother->GetFlow(1));
 	  return true;
 	}
       }
+      else {
+	if (rc) {
+	  daughter1->SetFlow(1,mother->GetFlow(1));
+	  daughter1->SetFlow(2,-1);
+	  daughter2->SetFlow(1,daughter1->GetFlow(2));
+	  daughter2->SetFlow(2,mother->GetFlow(2));
+	  return true;
+	}
+	else {
+	  daughter1->SetFlow(2,mother->GetFlow(2));
+	  daughter1->SetFlow(1,-1);
+	  daughter2->SetFlow(2,daughter1->GetFlow(1));
+	  daughter2->SetFlow(1,mother->GetFlow(1));
+	  return true;
+	}
+      }
+    }
+  }
+  else if (mo.StrongCharge()==0) {
+    if (d1.StrongCharge()==3 &&
+	d2.StrongCharge()==-3) {
+      daughter1->SetFlow(1,-1);
+      daughter1->SetFlow(2,0);
+      daughter2->SetFlow(2,daughter1->GetFlow(1));
+      daughter2->SetFlow(1,0);
+      return true;
+    }
+    else if (d1.StrongCharge()==-3 &&
+	     d2.StrongCharge()==3) {
+      daughter2->SetFlow(1,-1);
+      daughter2->SetFlow(2,0);
+      daughter1->SetFlow(2,daughter2->GetFlow(1));
+      daughter1->SetFlow(1,0);
+      return true;
+    }
+    else if (d1.StrongCharge()==0 && 
+	     d2.StrongCharge()==0) {
+      daughter1->SetFlow(1,0);
+      daughter1->SetFlow(2,0);
+      daughter2->SetFlow(1,0);
+      daughter2->SetFlow(2,0);
+      return true;
     }
   }
   return false;
