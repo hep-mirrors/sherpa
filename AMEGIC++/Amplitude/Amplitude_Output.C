@@ -11,6 +11,10 @@ using namespace std;
 Amplitude_Output::Amplitude_Output(std::string pid, Topology * _top,
                                    std::string gpath)
 {
+  std::string script("/plot_graphs");
+  if (!FileExists(rpa->gen.Variable("SHERPA_CPP_PATH")+script))
+    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+script+".sh",
+         rpa->gen.Variable("SHERPA_CPP_PATH")+script);
   gpath+=std::string("/Amegic/");
   MakeDir(gpath);
   pid=pid.substr(pid.rfind('/')+1);

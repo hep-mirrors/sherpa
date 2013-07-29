@@ -453,6 +453,10 @@ bool COMIX::Single_Process::Tests()
     return false;
   }
   if (m_gpath.length()>0) {
+    std::string script("/plot_graphs");
+    if (!FileExists(rpa->gen.Variable("SHERPA_CPP_PATH")+script))
+      Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+script+".sh",
+           rpa->gen.Variable("SHERPA_CPP_PATH")+script);
     m_gpath+=std::string("/Comix");
     MakeDir(m_gpath,448);
     p_bg->WriteOutGraphs(m_gpath+"/"+m_name+".tex");

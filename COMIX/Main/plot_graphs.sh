@@ -22,8 +22,9 @@ echo '    <h2>Contents of directory '$(echo $1 | sed 's|./||1')'</h2>
 for I in *.tex; do
   bn=`echo $I | cut -d'.' -f1`
   make -f Makefile.Graphs $bn.ps
+  ps2pdf $bn.ps
   convert -trim $bn.ps $bn.png
-  echo -n "      <tr><td><a href="$1/$bn".ps>"$bn"</a></td><td>" >> $2/index.html
+  echo -n "      <tr><td>"$bn"<br><a href="$1/$bn".ps>[ps]</a> <a href="$1/$bn".pdf>[pdf]</a></td><td>" >> $2/index.html
   for i in $(ls -rc $bn*.png); do
     echo -n "<img src=\""$1/$i"\">" >> $2/index.html
   done
