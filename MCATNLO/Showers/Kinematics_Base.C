@@ -63,7 +63,9 @@ int Kinematics_FI::MakeKinematics
   double mi2 = p_ms->Mass2(fli), mj2 = p_ms->Mass2(flj);
   double ma2 = p_ms->Mass2(spect->GetFlavour()), mij2 = p_ms->Mass2(split->GetFlavour()); 
   
-  double y=1.0-GetY((p1-p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,ma2,1);
+  double Q2((p1-p2).Abs2());
+  double y=GetY(Q2,split->KtTest(),split->ZTest(),mi2,mj2,ma2,1);
+  y=1.0-y*(Q2-mij2-ma2)/(Q2-mi2-mj2-ma2);
   Kin_Args fi(y,split->ZTest(),split->Phi());
   if (ConstructFIDipole(mi2,mj2,mij2,ma2,p1,p2,fi)<0) return -1;
 
