@@ -253,7 +253,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 	gen.m_seeds[i]=seed;
   }
   int nseed=0;
-  for (int i(0);i<6;++i) if (gen.m_seeds[i]>0) ++nseed;
+  for (int i(0);i<4;++i) if (gen.m_seeds[i]>0) ++nseed;
   if (nseed==0) {
     gen.m_seeds[0]=1234;
   }
@@ -266,7 +266,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 
 #ifdef USING__MPI
   int rank=MPI::COMM_WORLD.Get_rank();
-  for (int i(0);i<4;++i) gen.m_seeds[i]*=rank+1;
+  for (int i(0);i<4;++i)
+    if (gen.m_seeds[i]>0) gen.m_seeds[i]*=rank+1;
 #endif
 
   std::string seedstr;
