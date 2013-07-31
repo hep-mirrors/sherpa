@@ -60,7 +60,7 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
   for (size_t i=0;i<helpsvv.size();i++) {
     if ( helpsvv[i][0] == string("NO_ANTI") )
       continue;
-    if (Tools::ExtractFlavours(helpkfc,helpsvv[i][0])) {
+    if (helpsvv[i].size()>1 && Tools::ExtractFlavours(helpkfc,helpsvv[i][0])) {
       Tools::ExtractBRInfo(helpsvv[i][1], BR, dBR, origin);
       if (haspartonics) totBR += BR;
       hdc = new Hadron_Decay_Channel(Flav(),p_ms,path);
@@ -133,6 +133,7 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 	if (Flav().IsB_Hadron())      dectable = Tools::partonic_b;
 	else if (Flav().IsC_Hadron()) dectable = Tools::partonic_c;
       }
+      msg_Tracking()<<"Total hadronic width for "<<Flav()<<" = "<<totBR<<".\n";
       double  partWidth((1.-totBR)*Flav().Width()/
 			(dectable->TotalWidth()*totspec));
       for (size_t i=0;i<dectable->size();i++) {
@@ -189,7 +190,7 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
   ScaleToWidth();
   if (Flav().IsC_Hadron()) 
     msg_Tracking()<<"   --> after rescaling: "
-	     <<om::green<<totBR<<om::reset<<".\n";
+		  <<om::green<<totBR<<om::reset<<".\n";
 }
 
 

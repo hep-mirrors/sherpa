@@ -85,7 +85,7 @@ namespace HADRONS {
      * 
      * @param f ostream the booklet is written to
      */
-    void CreateBooklet(std::ostream& f);
+    void CreateBooklet(std::string& name);
     /**
      * Activate a previously read fixed decay table 
      */

@@ -5,6 +5,7 @@
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "HADRONS++/Main/Hadron_Decay_Map.H"
+#include "HADRONS++/Main/Hadron_Decay_Table.H"
 #include "HADRONS++/Main/Hadron_Decay_Channel.H"
 #include "HADRONS++/Main/Mixing_Handler.H"
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
@@ -88,7 +89,7 @@ void Hadron_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
                                             METOOLS::Amplitude2_Tensor* amps,
                                             const Particle_Vector& origparts)
 {
-  if(RejectExclusiveChannelsFromFragmentation(blob)) return;
+  if (RejectExclusiveChannelsFromFragmentation(blob)) return;
   Decay_Handler_Base::TreatInitialBlob(blob, amps, origparts);
 }
 
@@ -113,6 +114,8 @@ Hadron_Decay_Handler::FillOnshellDecay(Blob *blob, Spin_Density* sigma)
   Amplitude2_Tensor* amps=Decay_Handler_Base::FillOnshellDecay(blob,sigma);
   Decay_Channel* dc=(*blob)["dc"]->Get<Decay_Channel*>();
   Hadron_Decay_Channel* hdc=dynamic_cast<Hadron_Decay_Channel*>(dc);
+  //if (blob->InParticle(0)->Flav().IsB_Hadron())
+  //  msg_Out()<<METHOD<<":\n"<<(*blob)<<"\n";
   if(hdc && !hdc->SetColorFlow(blob)) {
     msg_Error()<<METHOD<<" failed to set color flow, retrying event."<<endl
                <<*blob<<endl;
@@ -143,7 +146,8 @@ void Hadron_Decay_Handler::CreateDecayBlob(Particle* inpart)
   DEBUG_VAR(inpart->Momentum());
 }
 
-bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
+bool Hadron_Decay_Handler::
+RejectExclusiveChannelsFromFragmentation(Blob* fblob)
 {
   static std::string mname(METHOD);
   Blob * decayblob(NULL), * showerblob(NULL);
@@ -199,7 +203,11 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
 		      decayblob->InParticle(0)->Flav());
       for (size_t i=0; i<tmpno.size(); ++i) compflavsno[i+1]=tmpno[i];
     }
-    if(dt->second[0]->GetDecayChannel(compflavs) ||
+    //msg_Out()<<om::red
+    //	     <<METHOD<<" for "<<decayblob->InParticle(0)->Flav()<<" ->";
+    //for (size_t i=0; i<tmpno.size(); ++i) msg_Out()<<" "<<tmpno[i];
+    //msg_Out()<<": ";
+    if (dt->second[0]->GetDecayChannel(compflavs) ||
        (tmpno.size()!=tmp.size() && 
 	dt->second[0]->GetDecayChannel(compflavsno))) {
       Return_Value::IncRetryPhase(mname);
@@ -212,8 +220,14 @@ bool Hadron_Decay_Handler::RejectExclusiveChannelsFromFragmentation(Blob* fblob)
       Spin_Density* sigma=
 	m_spincorr ? new Spin_Density(decayblob->InParticle(0)) : NULL;
       Decay_Matrix* D=FillDecayTree(decayblob, sigma);
-      delete sigma;
+      if (sigma) delete sigma;
       delete D;
+      Flavour infl(decayblob->InParticle(0)->Flav());
+      //Hadron_Decay_Map* hdm=dynamic_cast<Hadron_Decay_Map*>(p_decaymap);
+      //Decay_Table * dect = p_decaymap->FindDecay(infl);
+      Hadron_Decay_Table * hdt = 
+	dynamic_cast<Hadron_Decay_Table*>(p_decaymap->FindDecay(infl));
+      hdt->Select(decayblob);
       return true;
     }
     else {

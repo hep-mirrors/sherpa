@@ -209,10 +209,10 @@ void Hadron_Decay_Map::Read(const string& path, const string& file, bool verify)
                  <<" contains incorrect line: "<<endl<<line);
     }
   }
+  //createbooklet = "hadrons.tex";
   if(!createbooklet.empty()) {
     Initialise();
-    ofstream f(createbooklet.c_str());
-    CreateBooklet(f);
+    CreateBooklet(createbooklet);
     THROW(normal_exit, string("Created HADRONS++ booklet. ")
           +"Run 'latex hadrons.tex' for compilation.");
   }
@@ -292,8 +292,9 @@ void Hadron_Decay_Map::Initialise()
 }
 
 
-void Hadron_Decay_Map::CreateBooklet(std::ostream& f)
+void Hadron_Decay_Map::CreateBooklet(std::string & name)
 {
+  ofstream f(name.c_str());
   // header
   f<<"\\documentclass[a4paper]{scrartcl}\n"
    <<"\\usepackage{latexsym,amssymb,amsmath,amsxtra,longtable,fullpage}\n"
@@ -332,4 +333,5 @@ void Hadron_Decay_Map::CreateBooklet(std::ostream& f)
   }
   // end 
   f<<"\\end{document}"<<endl;
+  f.close();
 }
