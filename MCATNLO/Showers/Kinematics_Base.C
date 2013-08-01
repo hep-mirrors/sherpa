@@ -12,10 +12,13 @@ using namespace ATOOLS;
 
 double Kinematics_FF::GetY(const double &Q2,const double &kt2,const double &z,
 			   const double &mi2,const double &mj2,const double &mk2,
+			   const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flb,
 			   const bool force) const
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2<=mi2+mj2+mk2)) return -1.0;
-  return (kt2/(z*(1.0-z))+(1.0-z)/z*mi2+z/(1.0-z)*mj2)/(Q2-mi2-mj2-mk2);
+  if (fla.IsFermion()) return kt2/(1.0-z)/(Q2-mi2-mj2-mk2);
+  if (flb.IsFermion()) return kt2/(Q2-mi2-mj2-mk2);
+  return kt2/(z*(1.0-z))/(Q2-mi2-mj2-mk2);
 }
 
 int Kinematics_FF::MakeKinematics
@@ -29,7 +32,8 @@ int Kinematics_FF::MakeKinematics
   double mij2 = p_ms->Mass2(split->GetFlavour()), mk2 = p_ms->Mass2(spect->GetFlavour());
   if (mk2 && !spect->GetFlavour().Strong()) mk2=p2.Abs2();
 
-  double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,mk2,1);
+  double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),mi2,mj2,mk2,
+		split->GetFlavour(),flj,1);
   Kin_Args ff(y,split->ZTest(),split->Phi());
   if (ConstructFFDipole(mi2,mj2,mij2,mk2,p1,p2,ff)<0) return -1;
 
@@ -47,10 +51,13 @@ int Kinematics_FF::MakeKinematics
 
 double Kinematics_FI::GetY(const double &Q2,const double &kt2,const double &z,
 			   const double &mi2,const double &mj2,const double &ma2,
+			   const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flb,
 			   const bool force) const
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2>=mi2+mj2+ma2)) return -1.0;
-  return 1.0/(1.0-(kt2/(z*(1.0-z))+mi2*(1.0-z)/z+mj2*z/(1.0-z))/(Q2-ma2-mi2-mj2));
+  if (fla.IsFermion()) return 1.0/(1.0-kt2/(1.0-z)/(Q2-ma2-mi2-mj2));
+  if (flb.IsFermion()) return 1.0/(1.0-kt2/(Q2-ma2-mi2-mj2));
+  return 1.0/(1.0-kt2/(z*(1.0-z))/(Q2-ma2-mi2-mj2));
 }
 
 int Kinematics_FI::MakeKinematics
@@ -64,7 +71,8 @@ int Kinematics_FI::MakeKinematics
   double ma2 = p_ms->Mass2(spect->GetFlavour()), mij2 = p_ms->Mass2(split->GetFlavour()); 
   
   double Q2((p1-p2).Abs2());
-  double y=GetY(Q2,split->KtTest(),split->ZTest(),mi2,mj2,ma2,1);
+  double y=GetY(Q2,split->KtTest(),split->ZTest(),mi2,mj2,ma2,
+		split->GetFlavour(),flj,1);
   y=1.0-y*(Q2-mij2-ma2)/(Q2-mi2-mj2-ma2);
   Kin_Args fi(y,split->ZTest(),split->Phi());
   if (ConstructFIDipole(mi2,mj2,mij2,ma2,p1,p2,fi)<0) return -1;

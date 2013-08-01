@@ -17,9 +17,6 @@ namespace CSSHOWER {
     virtual int MakeKinematics(Parton *const,const double &,
 			       const double &,const ATOOLS::Flavour &,
 			       Parton *&,const int mode=0) = 0;
-    virtual double GetY(const double &Q2,const double &kt2,const double &z,
-			const double &s1,const double &s2,const double &s3,
-			const bool force=false) const = 0;
     void SetFixVec(Parton *const p,ATOOLS::Vec4D mom,
 		   const PHASIC::Kin_Args &lt,const int mode) const;
     inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
@@ -35,6 +32,7 @@ namespace CSSHOWER {
 		       Parton *&,const int mode=0);
     double GetY(const double &Q2,const double &kt2,const double &z,
 		const double &s1,const double &s2,const double &s3,
+		const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flb,
 		const bool force=false) const;
   };
   
@@ -47,6 +45,7 @@ namespace CSSHOWER {
 		       Parton *&,const int mode=0);
     double GetY(const double &Q2,const double &kt2,const double &z,
 		const double &s1,const double &s2,const double &s3,
+		const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flb,
 		const bool force=false) const;
   };
 

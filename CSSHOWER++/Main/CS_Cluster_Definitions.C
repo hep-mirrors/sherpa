@@ -69,8 +69,9 @@ CS_Parameters CS_Cluster_Definitions::KT2
       if ((k->Id()&3)==0) {
 	Kin_Args ff(ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,1|(kin?4:0)));
 	if (ff.m_stat!=1) return cs;
-	double kt2=2.0*(pi*pj)*ff.m_z*(1.0-ff.m_z)
-	  -sqr(1.0-ff.m_z)*mi2-sqr(ff.m_z)*mj2;
+	double kt2=2.0*(pi*pj)*ff.m_z*(1.0-ff.m_z);
+	if (mo.IsFermion()) kt2=2.0*(pi*pj)*(1.0-ff.m_z);
+	else if (i->Flav().IsFermion()) kt2=2.0*(pi*pj);
 	cs=CS_Parameters(kt2,ff.m_z,ff.m_y,ff.m_phi,1.0,Q2,0,kin,kmode);
 	cs.m_pk=pk;
       }
@@ -80,8 +81,9 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	if ((k==ampl->Leg(0) && fi.m_pk[3]<0.0) ||
 	    (k==ampl->Leg(1) && fi.m_pk[3]>0.0) ||
 	    fi.m_pk[0]<0.0 || fi.m_y>1.0 || fi.m_stat!=1) return cs;
-	double kt2=2.0*(pi*pj)*fi.m_z*(1.0-fi.m_z)
-	  -sqr(1.0-fi.m_z)*mi2-sqr(fi.m_z)*mj2;
+	double kt2=2.0*(pi*pj)*fi.m_z*(1.0-fi.m_z);
+	if (mo.IsFermion()) kt2=2.0*(pi*pj)*(1.0-fi.m_z);
+	else if (i->Flav().IsFermion()) kt2=2.0*(pi*pj);
 	cs=CS_Parameters(kt2,fi.m_z,fi.m_y,fi.m_phi,1.0-fi.m_y,Q2,2,kin,kmode);
 	cs.m_pk=-pk;
       }

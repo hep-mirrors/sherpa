@@ -18,9 +18,6 @@ namespace MCATNLO {
     virtual ~Kinematics_Base() {}
     virtual int MakeKinematics(Parton *const,const ATOOLS::Flavour &,
 			       const ATOOLS::Flavour &,Parton *&) = 0;
-    virtual double GetY(const double &Q2,const double &kt2,const double &z,
-			const double &s1,const double &s2,const double &s3,
-			const bool force=false) const = 0;
     double GetS(const double &Q2,const double &y,
 		const double &mi2,const double &mj2,const double &mk2) const;
     double GetZ(const double &Q2,const double &sij,const double &y,const double &zt,
@@ -42,6 +39,7 @@ namespace MCATNLO {
     int MakeKinematics(Parton *const,const ATOOLS::Flavour &,const ATOOLS::Flavour &,Parton *&);
     double GetY(const double &Q2,const double &kt2,const double &z,
 		const double &s1,const double &s2,const double &s3,
+		const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flb,
 		const bool force=false) const;
   };
   
@@ -52,6 +50,7 @@ namespace MCATNLO {
     int MakeKinematics(Parton *const,const ATOOLS::Flavour &,const ATOOLS::Flavour &,Parton *&);
     double GetY(const double &Q2,const double &kt2,const double &z,
 		const double &s1,const double &s2,const double &s3,
+		const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flb,
 		const bool force=false) const;
   };
 

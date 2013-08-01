@@ -143,12 +143,6 @@ double Splitting_Function_Base::operator()
 double Splitting_Function_Base::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
-  if (m_type==cstp::FF || m_type==cstp::FI) {
-    if (p_lf->FlA().Mass(true)<100.0 &&
-	sqr(p_lf->FlA().Mass(true))>scale) return 0.0;
-    if (sqr(p_lf->FlB().Mass(true)+
-	    p_lf->FlC().Mass(true))>scale) return 0.0;
-  }
   double lastint = p_lf->OverIntegrated(zmin,zmax,scale,xbj)/m_symf/m_polfac;
   if (!(IsBad(lastint)||lastint<0.0)) {
     if (m_efac!=1.0) lastint*=m_efac;
