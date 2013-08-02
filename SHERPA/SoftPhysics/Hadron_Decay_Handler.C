@@ -89,6 +89,7 @@ void Hadron_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
                                             METOOLS::Amplitude2_Tensor* amps,
                                             const Particle_Vector& origparts)
 {
+  if (blob->Has(blob_status::needs_showers)) return;
   if (RejectExclusiveChannelsFromFragmentation(blob)) return;
   Decay_Handler_Base::TreatInitialBlob(blob, amps, origparts);
 }
@@ -163,7 +164,7 @@ RejectExclusiveChannelsFromFragmentation(Blob* fblob)
       }
     }
   }
-  else if (fblob->Type()==btp::Hadron_Decay && 
+  else if (fblob->Type()==btp::Hadron_Decay &&
 	   (*fblob)["Partonic"]!=NULL) decayblob = fblob;
   if (decayblob) {
     bool anti=false;
@@ -203,10 +204,19 @@ RejectExclusiveChannelsFromFragmentation(Blob* fblob)
 		      decayblob->InParticle(0)->Flav());
       for (size_t i=0; i<tmpno.size(); ++i) compflavsno[i+1]=tmpno[i];
     }
-    //msg_Out()<<om::red
-    //	     <<METHOD<<" for "<<decayblob->InParticle(0)->Flav()<<" ->";
-    //for (size_t i=0; i<tmpno.size(); ++i) msg_Out()<<" "<<tmpno[i];
-    //msg_Out()<<": ";
+    Blob_Data_Base* data = (*fblob)["dc"];
+    /*
+      std::string decname(data->Get<Decay_Channel*>()->Name());
+      bool outtag(decayblob->InParticle(0)->Flav()==Flavour(kf_B_s));
+      if (outtag) {
+      msg_Out()<<om::red
+      <<METHOD<<" for "<<decayblob->InParticle(0)->Flav()<<" ->";
+      for (size_t i=0; i<compflavs.size(); i++) 
+      msg_Out()<<" "<<compflavs[i];
+      msg_Out()<<"\n --> |"<<decname<<"|\n"
+      <<(*fblob)<<"\n";
+      }
+    */
     if (dt->second[0]->GetDecayChannel(compflavs) ||
        (tmpno.size()!=tmp.size() && 
 	dt->second[0]->GetDecayChannel(compflavsno))) {
@@ -214,23 +224,29 @@ RejectExclusiveChannelsFromFragmentation(Blob* fblob)
       DEBUG_INFO("rejected. retrying decay.");
       if (fblob!=decayblob) p_bloblist->Delete(fblob);
       if (showerblob) p_bloblist->Delete(showerblob);
-      decayblob->AddStatus(blob_status::internal_flag);
       decayblob->DeleteOutParticles();
       decayblob->InParticle(0)->SetStatus(part_status::active);
-      Spin_Density* sigma=
-	m_spincorr ? new Spin_Density(decayblob->InParticle(0)) : NULL;
-      Decay_Matrix* D=FillDecayTree(decayblob, sigma);
-      if (sigma) delete sigma;
-      delete D;
       Flavour infl(decayblob->InParticle(0)->Flav());
-      //Hadron_Decay_Map* hdm=dynamic_cast<Hadron_Decay_Map*>(p_decaymap);
-      //Decay_Table * dect = p_decaymap->FindDecay(infl);
+      decayblob->AddStatus(blob_status::internal_flag);
       Hadron_Decay_Table * hdt = 
 	dynamic_cast<Hadron_Decay_Table*>(p_decaymap->FindDecay(infl));
       hdt->Select(decayblob);
+      Spin_Density* sigma=
+	m_spincorr ? new Spin_Density(decayblob->InParticle(0)) : NULL;
+      Decay_Matrix* D=FillDecayTree(decayblob, sigma);
+      delete sigma;
+      delete D;
+      /*
+	if (outtag) {
+	msg_Out()<<".\n"<<"Define new blob:"
+	<<om::green<<(*decayblob)<<om::reset<<".\n"
+	<<"=================================================\n";
+	}
+      */
       return true;
     }
     else {
+      //if (outtag) msg_Out()<<om::green<<" --> accepted.\n"<<om::reset;
       DEBUG_INFO("not found as exclusive. accepted.");
       Vec4D vertex_position=decayblob->Position();
       if (showerblob) showerblob->SetPosition(vertex_position);

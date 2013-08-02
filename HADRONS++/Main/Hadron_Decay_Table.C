@@ -86,6 +86,8 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
       if(mass<-Accu())
 	THROW(fatal_error,"Decaying mass "+ToString(mass)+" too low in "+
               hdc->FileName());
+      //if (Flav()==Flavour(kf_B_s)) 
+      //msg_Out()<<hdc->Name()<<": "<<hdc->Width()/Flav().Width()*100.<<"%.\n";
       AddDecayChannel(hdc);
       nchannels++;
     }
@@ -278,25 +280,30 @@ void Hadron_Decay_Table::ScaleToWidth() {
 Decay_Channel * Hadron_Decay_Table::Select(Blob* blob) const
 {
   Blob_Data_Base* data = (*blob)["dc"];
-  if(data) {
-    if(blob->Has(blob_status::internal_flag)) {
+  //msg_Out()<<METHOD<<" for "<<data<<" and flag "<<blob->Status()<<"\n"
+  //	   <<(*blob)<<"\n";
+  if (data) {
+    if (blob->Has(blob_status::internal_flag)) {
       bool partonic_finalstate(false);
       Decay_Channel* dc;
       do {
-        dc = Decay_Table::Select();
-        for (size_t i=0; i<dc->Flavs().size(); ++i) {
-          if(dc->Flavs()[i].Strong()) {
-            partonic_finalstate=true;
-            break;
-          }
-        }
+	dc = Decay_Table::Select();
+	for (size_t i=0; i<dc->Flavs().size(); ++i) {
+	  if(dc->Flavs()[i].Strong()) {
+	    partonic_finalstate=true;
+	    break;
+	  }
+	}
       } while (!partonic_finalstate);
+      //msg_Out()<<METHOD<<": erasing "
+      //	       <<data->Get<Decay_Channel*>()->Name()<<",\n"
+      //	       <<"   retrying with "<<dc->Name()<<".\n";
       DEBUG_INFO("retrying with "<<dc->Name());
       blob->UnsetStatus(blob_status::internal_flag);
       blob->AddData("dc",new Blob_Data<Decay_Channel*>(dc));
       return dc;
     }
-    else return data->Get<Decay_Channel*>();
+    return data->Get<Decay_Channel*>();
   }
   
   Decay_Channel* dec_channel=p_mixinghandler->Select(blob->InParticle(0),*this);

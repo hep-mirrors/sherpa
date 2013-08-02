@@ -27,6 +27,8 @@ namespace SHERPA {
     SHERPA::Soft_Photon_Handler* p_softphotons;
     HADRONS::Mixing_Handler* p_mixinghandler;
 
+    long int bs, bs_cs_semilep, bs_ccss, bs_ccds, bs_cuds;
+    long int bs_cs_semilep_rej, bs_ccss_rej, bs_ccds_rej, bs_cuds_rej;
   public :
     Hadron_Decay_Handler(std::string path, std::string fragfile);
     ~Hadron_Decay_Handler();
