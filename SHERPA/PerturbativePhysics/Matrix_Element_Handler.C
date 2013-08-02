@@ -270,6 +270,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
         // in the process info, but has to be added here
         Process_Info rpi(pi);
 	rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::real|nlo_type::rsub));
+	rpi.m_integrator=rpi.m_rsintegrator;
 	if (m_rsadd) {
 	  if (pi.m_fi.m_nloqcdtype==nlo_type::lo) {
 	    rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon,"",""));
