@@ -23,6 +23,8 @@ namespace PHASIC {
     const ATOOLS::Flavour_Vector m_flavs;
     MODEL::Coupling_Data* p_aqcd, * p_aqed;
 
+    size_t m_namps;
+
   public:
 
     Tree_ME2_Base(const PHASIC::Process_Info &pi,
@@ -36,7 +38,8 @@ namespace PHASIC {
     virtual double AlphaQCD() const;
     virtual double AlphaQED() const;
 
-    virtual std::vector<Complex> GetAmplitudes();
+    virtual std::vector<Complex> GetAmplitudes(const size_t &id);
+    virtual Complex GetPhase(const size_t &id);
 
     virtual Complex GetHelicityPhase(const ATOOLS::Vec4D &pijt,
 				     const ATOOLS::Vec4D &eps1);
@@ -55,6 +58,9 @@ namespace PHASIC {
     static Tree_ME2_Base *GetME2(const PHASIC::Process_Info& pi);
     static Tree_ME2_Base *GetME2(const std::string& tag,
                                     const PHASIC::Process_Info& pi);
+
+    inline size_t NAmps() const { return m_namps; }
+
   };
 
   std::ostream &operator<<(std::ostream &str,

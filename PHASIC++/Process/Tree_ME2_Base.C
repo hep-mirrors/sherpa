@@ -11,15 +11,21 @@ using namespace MODEL;
 
 Tree_ME2_Base::Tree_ME2_Base(const Process_Info &pi,
                              const Flavour_Vector &flavs):
-  m_pinfo(pi), m_flavs(flavs), p_aqcd(NULL), p_aqed(NULL)
+  m_pinfo(pi), m_flavs(flavs), p_aqcd(NULL), p_aqed(NULL),
+  m_namps(0)
 {
 }
 
 Tree_ME2_Base::~Tree_ME2_Base() {}
 
-std::vector<Complex> Tree_ME2_Base::GetAmplitudes()
+std::vector<Complex> Tree_ME2_Base::GetAmplitudes(const size_t &id)
 {
   return std::vector<Complex>();
+}
+
+Complex Tree_ME2_Base::GetPhase(const size_t &id)
+{
+  return Complex(1.0,0.0);
 }
 
 Complex Tree_ME2_Base::GetHelicityPhase(const Vec4D &pijt,const Vec4D &eps1)

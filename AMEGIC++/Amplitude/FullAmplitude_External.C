@@ -48,20 +48,9 @@ double FullAmplitude_External::Calc(const ATOOLS::Vec4D *_p)
   Vec4D_Vector p(m_fls.size());
   for (size_t i(0);i<p.size();++i) p[i]=_p[i];
   double res(p_calc->Calc(p));
-  m_amps=p_calc->GetAmplitudes();
 #ifdef DEBUG__External
   for (size_t i(0);i<p.size();++i)
     msg_Debugging()<<"p["<<i<<"]="<<p[i]<<"\n";  
-  for (size_t i(0);i<m_amap.size();++i) {
-    msg_Debugging()<<"A[";
-    for (size_t k(0);k<m_fls.size();++k)
-      msg_Debugging()<<m_amap[i].m_perm[k]%100;
-    msg_Debugging()<<"](";
-    for (size_t k(0);k<m_fls.size();++k)
-      msg_Debugging()<<(k==0?"":",")<<m_amap[i].m_hels[k];
-    msg_Debugging()<<") = "<<m_amps[i]
-		   <<" -> "<<std::abs(m_amps[i])<<"\n";
-  }
 #endif
   return res;
 }
@@ -71,25 +60,30 @@ double FullAmplitude_External::MSquare(const size_t &h) const
   DEBUG_FUNC(h);
   Complex ampsqpp(0.,0.), ampsqmm(0.,0.);
   Complex ampsqpm(0.,0.), ampsqmp(0.,0.);
-  for (size_t k=0;k<m_hmap[h].size();++k) {
-    size_t i=m_hmap[h][k];
-    for (size_t l=0;l<m_hmap[h].size();++l) {
-      size_t j=m_hmap[h][l];
-      Complex amp(m_amps[i]);
-      amp*=std::conj(m_amps[j]);	
-      amp*=m_colfs[m_emit][m_spect][i][j];
-      msg_Debugging()<<m_colfs[m_emit][m_spect][i][j]
-		     <<"*"<<m_amps[i]<<"*"
-		     <<std::conj(m_amps[j])<<" = "<<amp
-		     <<(m_pmap[h][k]>0?" +":" -")
-		     <<(m_pmap[h][l]>0?'+':'-')<<"\n";
-      if (m_pmap[h][k]<0) {
-	if (m_pmap[h][l]<0) ampsqmm+=amp;
-	else ampsqmp+=amp;
-      }
-      else {
-	if (m_pmap[h][l]>0) ampsqpp+=amp;
-	else ampsqpm+=amp;
+  for (size_t id(0);id<p_calc->NAmps();++id) {
+    const std::vector<Complex> &amps(p_calc->GetAmplitudes(id));
+    for (size_t k=0;k<m_hmap[h].size();++k) {
+      size_t i=m_hmap[h][k];
+      for (size_t l=0;l<m_hmap[h].size();++l) {
+	size_t j=m_hmap[h][l];
+	Complex amp(amps[i]);
+	amp*=p_calc->GetPhase(id)*std::conj(amps[j]);	
+	amp*=m_colfs[m_emit][m_spect][i][j];
+	msg_Debugging()<<m_colfs[m_emit][m_spect][i][j]
+		       <<"*"<<amps[i]<<"*"
+		       <<std::conj(amps[j])<<" = "<<amp
+		       <<(m_pmap[h][k]>0?" +":" -")
+		       <<(m_pmap[h][l]>0?'+':'-')
+		       <<", id = "<<id<<" "
+		       <<p_calc->GetPhase(id)<<"\n";
+	if (m_pmap[h][k]<0) {
+	  if (m_pmap[h][l]<0) ampsqmm+=amp;
+	  else ampsqmp+=amp;
+	}
+	else {
+	  if (m_pmap[h][l]>0) ampsqpp+=amp;
+	  else ampsqpm+=amp;
+	}
       }
     }
   }
@@ -124,20 +118,25 @@ double FullAmplitude_External::MSquare
 {
   DEBUG_FUNC("h="<<h<<", "<<ci<<"<>"<<cj);
   Complex sum(0.,0.);
-  for (size_t k=0;k<m_hmap[h].size();++k) {
-    size_t i=m_hmap[h][k];
-    for (size_t l=0;l<m_hmap[h].size();++l) {
-      size_t j=m_hmap[h][l];
-      if (m_pmap[h][k]!=m_pmap[h][l]) continue;
-      Complex amp(m_amps[i]);
-      amp*=std::conj(m_amps[j]);	
-      amp*=m_colfs[ci][cj][i][j];
-      msg_Debugging()<<m_colfs[ci][cj][i][j]
-		     <<"*"<<m_amps[i]<<"*"
-		     <<std::conj(m_amps[j])<<" = "<<amp
-		     <<(m_pmap[h][k]>0?" +":" -")
-		     <<(m_pmap[h][l]>0?'+':'-')<<"\n";
-      sum+=amp;
+  for (size_t id(0);id<p_calc->NAmps();++id) {
+    const std::vector<Complex> &amps(p_calc->GetAmplitudes(id));
+    for (size_t k=0;k<m_hmap[h].size();++k) {
+      size_t i=m_hmap[h][k];
+      for (size_t l=0;l<m_hmap[h].size();++l) {
+	size_t j=m_hmap[h][l];
+	if (m_pmap[h][k]!=m_pmap[h][l]) continue;
+	Complex amp(amps[i]);
+	amp*=p_calc->GetPhase(id)*std::conj(amps[j]);	
+	amp*=m_colfs[ci][cj][i][j];
+	msg_Debugging()<<m_colfs[ci][cj][i][j]
+		       <<"*"<<amps[i]<<"*"
+		       <<std::conj(amps[j])<<" = "<<amp
+		       <<(m_pmap[h][k]>0?" +":" -")
+		       <<(m_pmap[h][l]>0?'+':'-')
+		       <<", id = "<<id<<" "
+		       <<p_calc->GetPhase(id)<<"\n";
+	sum+=amp;
+      }
     }
   }
   msg_Debugging()<<"AA* = "<<sum.real()<<"\n"; 
@@ -206,7 +205,6 @@ void FullAmplitude_External::GetPermutation
 void FullAmplitude_External::BuildColorMatrix() 
 {
   DEBUG_FUNC(m_amap.size());
-  m_amps.resize(m_amap.size());
   m_colfs.resize(m_fls.size());
   for (size_t i(0);i<m_colfs.size();++i)
     if (m_fls[i].Strong()) m_colfs[i].resize(m_fls.size());

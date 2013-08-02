@@ -28,8 +28,6 @@ namespace AMEGIC {
     std::vector<std::vector<size_t> > m_hmap;
     std::vector<std::vector<int> >    m_pmap;
 
-    std::vector<Complex> m_amps;
-
     std::vector<std::vector<std::vector<std::vector<Complex> > > > m_colfs;
 
     void GetPermutation(const std::vector<size_t> &ids,
