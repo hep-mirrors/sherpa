@@ -46,11 +46,13 @@ of the main features of these examples.
 @section Higgs boson + jets production
 
 @menu
+* LHC_HInt::
 * LHC_HJets::
 * LHC_HWBF::
 * LHC_HTTBar::
 @end menu
 
+@include LHC_HInt.texi
 @include LHC_HJets.texi
 @include LHC_HWBF.texi
 @include LHC_HTTBar.texi

@@ -586,6 +586,7 @@
 @mybibitem{Dittmaier1999mb,Dit99, S. Dittmaier,A general approach to photon radiation off fermions,Nucl. Phys.,B565,(2000),69-122,[hep-ph/9904440],hep-ph/9904440}
 @mybibitem{Dixon2004za,Dix04, L. J. Dixon and E. W. N. Glover and V. V. Khoze,MHV rules for Higgs plus multi-gluon amplitudes,JHEP,12,(2004),015,[hep-th/0411092],hep-th/0411092}
 @mybibitem{Dixon2009ur,Dix09, L. J. Dixon and E. Gardi and L. Magnea,On soft singularities at three loops and beyond,JHEP,1002,(2010),081,[arXiv:0910.3653],arXiv:0910.3653}
+@mybibitem{Dixon2013haa,Dix13, L. J. Dixon and Y. Li,Bounding the Higgs Boson Width Through Interferometry,,,,,arXiv:1305.3854,arXiv:1305.3854}
 @mybibitem{Dixon1993xd,Dix93, L. J. Dixon and Y. Shadmi,Testing gluon selfinteractions in three jet events at hadron colliders,Nucl.Phys.,B423,(1994),3-32,[hep-ph/9312363],hep-ph/9312363}
 @mybibitem{Dixon1996wi,Dix96, L. J. Dixon,Calculating scattering amplitudes efficiently,,,,,hep-ph/9601359,hep-ph/9601359}
 @mybibitem{Dixon1998py,Dix98, L. J. Dixon and Z. Kunszt and A. Signer,Helicity amplitudes for mathcalO(alpha_s) production of W^+ W^- W^pm Z Z Z W^pm gamma or Z gamma pairs at hadron colliders,Nucl. Phys.,B531,(1998),3-23,[hep-ph/9803250],hep-ph/9803250}

@@ -1,6 +1,7 @@
 SUBDIRS       =	\
 		Python \
 		Analysis \
+		Higgs \
 		BlackHat \
 		MCFM \
 		LH_OLE \

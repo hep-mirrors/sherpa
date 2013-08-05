@@ -1,0 +1,30 @@
+(run){
+  # generator parameters
+  EVENTS 1M; LGEN:=Higgs;
+  EVENT_GENERATION_MODE W;
+  AMEGIC_ALLOW_MAPPING 0;
+  ME_SIGNAL_GENERATOR Amegic LGEN;
+  SCALES VAR{Abs2(p[2]+p[3])};
+  # collider parameters
+  BEAM_1 2212; BEAM_ENERGY_1 4000;
+  BEAM_2 2212; BEAM_ENERGY_2 4000;
+  # physics parameters
+  YUKAWA[4] 1.42; YUKAWA[5] 4.8;
+  YUKAWA[15] 1.777;
+  EW_SCHEME 3;
+}(run);
+
+(processes){
+  Process 93 93 -> 22 22;
+  NLO_QCD_Mode 3; NLO_QCD_Part BVIRS;
+  Order_EW 2; Enable_MHV 10;
+  Loop_Generator LGEN;
+  Integrator PS2;
+  RS_Integrator PS3;
+  End process;
+}(processes);
+
+(selector){
+  HiggsFinder 40 30 2.5 100 150;
+  IsolationCut 22 0.4 2 0.025;
+}(selector);

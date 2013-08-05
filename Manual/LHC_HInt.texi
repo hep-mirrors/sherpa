@@ -1,0 +1,34 @@
+@node LHC_HInt
+@subsection H production in gluon fusion with interference effects
+
+This is an example setup for inclusive Higgs production through 
+gluon fusion at hadron colliders. The inclusive process is calculated 
+at next-to-leading order accuracy, including all interference effects
+between Higgs-boson production and the SM gg->yy background.
+The corresponding matrix elements are taken from @mycite{Bern2002jx} 
+and @mycite{Dixon2013haa}. They are matched to the parton shower using 
+the MC@@NLO prescription detailed in @mycite{Hoeche2011fd}. The example 
+can be converted a fixed-order calculation by setting @code{NLO_QCD_Mode 1}.
+
+@example
+@smallformat
+@verbatiminclude Examples/H_in_GluonFusion/LHC_HInt_MCatNLO/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item All scales, i.e. the factorisation, renormalisation and resummation 
+scales are set to the invariant mass of the di-photon pair.
+@item Dedicated phase space generators are used by setting 
+@option{Integrator PS2;} and @option{RS_Integrator PS3;}, cf. @ref{Integrator}.
+@end itemize
+@strong{The following can only be done in fixed-order mode, not when running 
+the setup as an MC@@NLO simulation}. 
+
+To compute the interference contribution only, as was done in @mycite{Dixon2013haa},
+one can set @option{HIGGS_INTERFERENCE_ONLY 1;} in the @code{(run)@{...@}(run)} section.
+By default, all partonic processes are included in this simulation, however, 
+it is sensible to disable quark initial states at the leading order. This is achieved 
+by setting @option{HIGGS_INTERFERENCE_MODE 3;} in the @code{(run)@{...@}(run)} section.
+ 
