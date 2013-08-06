@@ -69,6 +69,7 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_partons.insert(Flavour(kf_jet));
   m_partons.insert(Flavour(kf_quark));
   m_partons.insert(Flavour(kf_quark).Bar());
+  if (LHAPDF::hasPhoton()) m_partons.insert(Flavour(kf_photon));
 
 //  m_lhef_number = LHAPDF::getPDFSetInfo(m_set,m_member).id;
 }
@@ -97,13 +98,15 @@ void LHAPDF_Fortran_Interface::SetPDFMember()
 void LHAPDF_Fortran_Interface::CalculateSpec(double x,double Q2) {
   x/=m_rescale;
   double Q = sqrt(Q2);
-  m_fv=LHAPDF::xfx(x,Q);
+  if (LHAPDF::hasPhoton()) m_fv=LHAPDF::xfxphoton(x,Q);
+  else                     m_fv=LHAPDF::xfx(x,Q);
 }
 
 double LHAPDF_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl) {
   int kfc = m_anti*int(infl);
-  if (infl == Flavour(kf_gluon)) kfc=0;
-  if (kfc<-6 || kfc>6) {
+  if (LHAPDF::hasPhoton() && kfc == kf_photon) kfc=7;
+  else if (kfc == kf_gluon) kfc=0;
+  else if (kfc<-6 || kfc>6) {
     msg_Out()<<"WARNING in LHAPDF_Fortran_Interface::GetXPDF("<<infl<<") not supported by this PDF!"<<std::endl;
     return 0.;
   }
@@ -170,6 +173,7 @@ extern "C" void InitPDFLib()
   read.AddComment("#");
   read.AddWordSeparator("\t");
   std::string path;
+  PRINT_VAR(LHAPDF::pdfsetsPath());
   if (read.ReadFromFile(path,"LHAPDF_GRID_PATH")) LHAPDF::setPDFPath(path); 
   std::vector<std::string> files=LHAPDF_ScanDir(LHAPDF::pdfsetsPath());
   p_get_lhapdf.resize(files.size());
