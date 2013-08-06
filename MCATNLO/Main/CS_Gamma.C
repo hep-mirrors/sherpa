@@ -264,7 +264,7 @@ Trial_Weight CS_Gamma::TrialWeight(Cluster_Amplitude *const ampl)
   msg_Debugging()<<"me / ecss = "<<rme<<" / "<<wact.m_me
 		 <<" = "<<rme/wact.m_me<<"\n";
   double h(wact.m_me), g(m_oef*rme);
-  if (IsEqual(rme,h) || rme==0.0) g=h;
+  if (IsEqual(rme,h,1.0e-6) || rme==0.0) g=h;
   return Trial_Weight(rme,g,h);
 }
 
