@@ -130,9 +130,13 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	    clo+=fblo*gggamgam1l(i,j,k,l);
 	    cnlo+=fblo*gggamgam2l(i,j,k,l);
 	  }
-	  if (m_io) {
+	  if (m_io==1) {
 	    los+=clos*std::conj(clos);
 	    nlos+=2.0*clos*std::conj(cnlos);
+	    lob+=clob*std::conj(clob);
+	    nlob+=2.0*clob*std::conj(cnlob);
+	  }
+	  if (m_io==2) {
 	    lob+=clob*std::conj(clob);
 	    nlob+=2.0*clob*std::conj(cnlob);
 	  }
@@ -146,9 +150,13 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
   double lmur=log(m_mur2/s);
   m_res.IR2()=-2.0*3.0;
   m_res.IR()=-2.0*(b0+3.0*lmur);
-  if (m_io) {
+  if (m_io==1) {
     lo-=los+lob;
     nlo-=nlos+nlob;
+  }
+  if (m_io==2) {
+    lo-=lob;
+    nlo-=nlob;
   }
   m_res.Finite()=(nlo/lo).real()+3.0*sqr(M_PI)+2.0*b0*lmur;
   m_born=lo.real()/64.0;
