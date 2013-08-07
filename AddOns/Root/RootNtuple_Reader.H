@@ -28,6 +28,7 @@ namespace SHERPA {
     std::map<int,PHASIC::Scale_Setter_Base*> m_scales;
     PDF::ISR_Handler *p_isr;
     double m_ecms;
+    std::string m_treename;
 
     void               CloseFile();
     bool               ReadInEntry();

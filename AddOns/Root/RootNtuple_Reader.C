@@ -70,6 +70,7 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args) :
   msg_Out()<<" Reading from "<<filename<<"\n";
   m_ecms=args.p_reader->GetValue<double>("ROOTNTUPLE_ECMS",rpa->gen.Ecms());
   m_calc=args.p_reader->GetValue<int>("ROOTNTUPLE_CALC",1);
+  m_treename=args.p_reader->GetValue<std::string>("ROOTNTUPLE_TREENAME","t3");
   if (m_calc) msg_Info()<<METHOD<<"(): Ntuple calc mode set to "<<m_calc<<"."<<std::endl;
   m_check=args.p_reader->GetValue<int>("ROOTNTUPLE_CHECK",m_calc&2?1:0);
   if (m_check) msg_Info()<<METHOD<<"(): Ntuple check mode set to "<<m_check<<"."<<std::endl;
@@ -85,7 +86,7 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args) :
   m_sargs.m_nin=2;
 #ifdef USING__ROOT
   p_vars = new RootNTupleReader_Variables();
-  p_vars->p_f=new TChain("t3");
+  p_vars->p_f=new TChain(m_treename.c_str());
   size_t bpos(filename.find("[")), epos(filename.find("]",bpos));
   if (bpos==std::string::npos ||
       epos==std::string::npos) {

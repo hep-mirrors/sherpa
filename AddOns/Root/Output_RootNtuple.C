@@ -33,6 +33,7 @@ Output_RootNtuple::Output_RootNtuple(const Output_Arguments &args):
     ("NTUPLE_SIZE",std::numeric_limits<long int>::max());
   args.p_reader->SetAllowUnits(false);
   m_mode=args.p_reader->GetValue<int>("ROOTNTUPLE_MODE",0);
+  m_treename=args.p_reader->GetValue<std::string>("ROOTNTUPLE_TREENAME","t3");
   m_basename =args.m_outpath+"/"+args.m_outfile;
   m_ext = ".root";
   m_cnt2=m_cnt3=m_fcnt=m_evt=0;
@@ -98,7 +99,7 @@ void Output_RootNtuple::Header()
   if (rank) return;
 #endif
   p_f=new TFile((m_basename+m_ext).c_str(),"recreate");
-  p_t3 = new TTree("t3","Reconst ntuple");
+  p_t3 = new TTree(m_treename.c_str(),"Reconst ntuple");
   size_t max = 2147483647;
   p_t3->SetMaxTreeSize(Min(m_filesize,max));
   p_t3->Branch("id",&m_id,"id/I");

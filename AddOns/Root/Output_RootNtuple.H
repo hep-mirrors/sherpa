@@ -50,7 +50,7 @@ namespace SHERPA {
     TFile* p_f;
     TTree* p_t3;
 #endif
-    std::string m_basename, m_ext;
+    std::string m_basename, m_ext, m_treename;
     size_t m_cnt2,m_cnt3,m_fcnt,m_evt,m_idcnt;
     size_t m_filesize,m_avsize,m_total,m_mode;
     double m_sum,m_s2,m_s3,m_c1,m_c2;
