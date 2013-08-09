@@ -159,9 +159,11 @@ double Higgs_Tree::Calc(const Vec4D_Vector &p)
 		if ((m_int&2) && j!=i) m_resb[n]+=fb*qbqgamgamg(j,k,l,m)/sqrt(2.0);
 		if ((m_int&4) && j!=i) m_rest[n]+=ft*qbqgamgamg_tree(j,k,l,m)*sqrt(2.0);
 	      }
+	      res+=2.0*(m_ress[n]*std::conj(m_rest[n])).real();
 	      m_resa[n]=m_ress[n]+m_resb[n];
 	      if (m_io==0) m_ress[n]=m_resb[n]=0.0;
-	      if (m_io==2) m_ress[n]=0.0;
+	      if (m_io==2) m_ress[n]=m_rest[n]=0.0;
+	      if (m_io==1) m_rest[n]=0.0;
 	      res+=(m_resa[n]*std::conj(m_resa[n])).real();
 	      res-=(m_ress[n]*std::conj(m_ress[n])).real();
 	      res-=(m_resb[n]*std::conj(m_resb[n])).real();
@@ -196,7 +198,8 @@ double Higgs_Tree::Calc(const Vec4D_Vector &p)
 	  m_rest[n]*=2.0;
 	  m_resa[n]=m_ress[n]+m_resb[n];
 	  if (m_io==0) m_ress[n]=m_resb[n]=0.0;
-	  if (m_io==2) m_ress[n]=0.0;
+	  if (m_io==2) m_ress[n]=m_rest[n]=0.0;
+	  if (m_io==1) m_rest[n]=0.0;
 	  res+=(m_resa[n]*std::conj(m_resa[n])).real()/4.0;
 	  res-=(m_ress[n]*std::conj(m_ress[n])).real()/4.0;
 	  res-=(m_resb[n]*std::conj(m_resb[n])).real()/4.0;
