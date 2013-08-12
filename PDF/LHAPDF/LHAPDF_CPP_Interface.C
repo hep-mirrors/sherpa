@@ -1,17 +1,13 @@
-#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
-#include "ATOOLS/Org/Library_Loader.H"
-#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
-#include <cstring>
-#include <cstring>
-
-#include "LHAPDF/LHAPDF.h"
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Phys/Flavour.H"
+
+#include "LHAPDF/LHAPDF.h"
 
 namespace PDF {
   class LHAPDF_CPP_Interface : public PDF_Base {
@@ -38,7 +34,6 @@ namespace PDF {
 
 using namespace PDF;
 using namespace ATOOLS;
-using namespace LHAPDF;
 
 
 LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
@@ -49,16 +44,17 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   m_smember=_member;
   m_type="LHA["+m_set+"]";
 
-  m_bunch = _bunch; 
+  m_bunch = _bunch;
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   static std::set<std::string> s_init;
   if (s_init.find(m_set)==s_init.end()) {
-    if (m_smember!=0) msg_Info()<<METHOD<<"(): Init member "<<m_smember<<"."<<std::endl;
+    if (m_smember!=0)
+      msg_Info()<<METHOD<<"(): Init member "<<m_smember<<"."<<std::endl;
     m_member=abs(m_smember);
     p_pdf = LHAPDF::mkPDF(m_set,m_smember);
     // TODO: get alphaS info
-    m_asinfo.m_order=p_pdf->info().metadata<int>("AlphaS_OrderQCD");
-    int nf(p_pdf->info().metadata<int>("EvolutionNf"));
+    m_asinfo.m_order=p_pdf->info().get_entry_as<int>("AlphaS_OrderQCD");
+    int nf(p_pdf->info().get_entry_as<int>("NumFlavors"));
     if (nf<0) m_asinfo.m_flavs.resize(5);
     else      m_asinfo.m_flavs.resize(nf);
     // for now assume thresholds are equal to masses
@@ -66,31 +62,31 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
       m_asinfo.m_flavs[i]=PDF_Flavour((kf_code)i+1);
       if      (i==0)
         m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
-                                  =p_pdf->info().metadata<double>("MDown");
+            =p_pdf->info().get_entry_as<double>("MDown");
       else if (i==1)
         m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
-                                  =p_pdf->info().metadata<double>("MUp");
+            =p_pdf->info().get_entry_as<double>("MUp");
       else if (i==2)
         m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
-                                  =p_pdf->info().metadata<double>("MStrange");
+            =p_pdf->info().get_entry_as<double>("MStrange");
       else if (i==3)
         m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
-                                  =p_pdf->info().metadata<double>("MCharm");
+            =p_pdf->info().get_entry_as<double>("MCharm");
       else if (i==4)
         m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
-                                  =p_pdf->info().metadata<double>("MBottom");
+            =p_pdf->info().get_entry_as<double>("MBottom");
       else if (i==5)
         m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
-                                  =p_pdf->info().metadata<double>("MTop");
+            =p_pdf->info().get_entry_as<double>("MTop");
     }
-    m_asinfo.m_asmz=p_pdf->info().metadata<double>("AlphaS_MZ");
+    m_asinfo.m_asmz=p_pdf->info().get_entry_as<double>("AlphaS_MZ");
   }
 
   // get x,Q2 ranges from PDF
-  m_xmin=p_pdf->info().metadata<double>("XMin");
-  m_xmax=p_pdf->info().metadata<double>("XMax");
-  m_q2min=p_pdf->info().metadata<double>("Q2Min");
-  m_q2max=p_pdf->info().metadata<double>("Q2Max");
+  m_xmin=p_pdf->info().get_entry_as<double>("XMin");
+  m_xmax=p_pdf->info().get_entry_as<double>("XMax");
+  m_q2min=ATOOLS::sqr(p_pdf->info().get_entry_as<double>("QMin"));
+  m_q2max=ATOOLS::sqr(p_pdf->info().get_entry_as<double>("QMax"));
   
   for (int i=1;i<6;i++) {
     m_partons.insert(Flavour((kf_code)(i)));
@@ -116,7 +112,7 @@ PDF_Base * LHAPDF_CPP_Interface::GetCopy()
 }
 
 double LHAPDF_CPP_Interface::AlphaSPDF(const double &scale2) {
-  return p_pdf->alphaS(scale2);
+  return p_pdf->alphasQ2(scale2);
 }
 
 void LHAPDF_CPP_Interface::SetPDFMember()
@@ -161,17 +157,16 @@ std::vector<LHAPDF_Getter*> p_get_lhapdf;
 
 extern "C" void InitPDFLib()
 {
-  p_get_lhapdf.resize(1);
-  p_get_lhapdf[0] = new LHAPDF_Getter("CT10nlo");
-//  Data_Reader read(" ",";","!","=");
-//  read.AddComment("#");
-//  read.AddWordSeparator("\t");
-//  std::string path;
-//  if (read.ReadFromFile(path,"LHAPDF_DATA_PATH"))
-//    path=std::string(LHAPDF_PATH)+"share/LHAPDF/"; 
-//  std::vector<std::string> files=LHAPDF_ScanDir(LHAPDF::pdfsetsPath());
-//  p_get_lhapdf.resize(files.size());
-//  for (size_t i(0);i<files.size();++i) p_get_lhapdf[i] = new LHAPDF_Getter(files[i]);
+  Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
+  read.AddWordSeparator("\t");
+  std::string path;
+  if (read.ReadFromFile(path,"LHAPDF_GRID_PATH")) LHAPDF::setPaths(path);
+  const std::vector<std::string>& sets(LHAPDF::availablePDFSets());
+  msg_Debugging()<<METHOD<<"(): LHAPDF paths: "<<LHAPDF::_paths()<<std::endl;
+  msg_Debugging()<<METHOD<<"(): LHAPDF sets: "<<sets<<std::endl;
+  for (size_t i(0);i<sets.size();++i)
+    p_get_lhapdf.push_back(new LHAPDF_Getter(sets[i]));
 }
 
 extern "C" void ExitPDFLib()
