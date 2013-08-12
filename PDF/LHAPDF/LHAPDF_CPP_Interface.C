@@ -16,8 +16,9 @@ namespace PDF {
     std::string   m_set;
     int           m_smember;
     int           m_anti;
-    std::map<int, double> m_f;
-    std::map<int, double> m_fv;
+    std::map<int, double> m_xfx;
+    std::map<int, bool>   m_calculated;
+    double        m_x,m_Q2;
   public:
     LHAPDF_CPP_Interface(const ATOOLS::Flavour,std::string,int);
     ~LHAPDF_CPP_Interface();
@@ -98,6 +99,25 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   m_partons.insert(Flavour(kf_quark).Bar());
 
   m_lhef_number = p_pdf->lhapdfID();
+
+  // initialise bookeeping arrays
+  m_xfx[kf_d]=0.; m_xfx[-kf_d]=0.;
+  m_xfx[kf_u]=0.; m_xfx[-kf_u]=0.;
+  m_xfx[kf_s]=0.; m_xfx[-kf_s]=0.;
+  m_xfx[kf_c]=0.; m_xfx[-kf_c]=0.;
+  m_xfx[kf_b]=0.; m_xfx[-kf_b]=0.;
+  m_xfx[kf_t]=0.; m_xfx[-kf_t]=0.;
+  m_xfx[kf_gluon]=0.;
+  m_xfx[kf_photon]=0.;
+
+  m_calculated[kf_d]=false; m_calculated[-kf_d]=false;
+  m_calculated[kf_u]=false; m_calculated[-kf_u]=false;
+  m_calculated[kf_s]=false; m_calculated[-kf_s]=false;
+  m_calculated[kf_c]=false; m_calculated[-kf_c]=false;
+  m_calculated[kf_b]=false; m_calculated[-kf_b]=false;
+  m_calculated[kf_t]=false; m_calculated[-kf_t]=false;
+  m_calculated[kf_gluon]=false;
+  m_calculated[kf_photon]=false;
 }
 
 LHAPDF_CPP_Interface::~LHAPDF_CPP_Interface()
@@ -126,13 +146,19 @@ void LHAPDF_CPP_Interface::SetPDFMember()
 }
 
 void LHAPDF_CPP_Interface::CalculateSpec(double x,double Q2) {
-  x/=m_rescale;
-  m_fv=p_pdf->xfxQ2(x,Q2);
+  for (std::map<int,bool>::iterator it=m_calculated.begin();
+       it!=m_calculated.end();++it) it->second=false;
+  m_x=x/m_rescale;
+  m_Q2=Q2;
 }
 
 double LHAPDF_CPP_Interface::GetXPDF(const ATOOLS::Flavour infl) {
   int kfc = m_anti*int(infl);
-  return m_rescale*m_fv[kfc];
+  if (!m_calculated[kfc]) {
+    m_xfx[kfc]=p_pdf->xfxQ2(kfc,m_x,m_Q2);
+    m_calculated[kfc]=true;
+  }
+  return m_rescale*m_xfx[kfc];
 }
 
 DECLARE_PDF_GETTER(LHAPDF_Getter);
