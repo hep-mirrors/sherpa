@@ -179,8 +179,8 @@ namespace ATOOLS {
       //!       the Riemann Zeta Function and Polylogarithms"; Proceedings 
       //!       of the American Mathematical Society, Volume 125, Number 9,
       //!       September 1997, Pages 2543-2550
-      if (cabs(x) < radius) {
-        std::cout<<cabs(x)<<std::endl;
+      if (abs(x) < radius) {
+        std::cout<<abs(x)<<std::endl;
         std::cout<<"region I ..."<<std::endl;
         // DiLog(x) = sum_{1}^{infty} x^i/i^2
         // 50 terms give rel. error of < 6.7E-19 using 19 dec. places
@@ -205,9 +205,9 @@ namespace ATOOLS {
 //         Complex next(prod/24.);
 //         Complex sum(next);
 //         Complex factor(4.*x*x/(1.+4.*x+x*x));
-//         double convfactor(1E-12/cabs(factor));
+//         double convfactor(1E-12/abs(factor));
 //         unsigned int i=1;
-//         while (cabs(next/sum) > convfactor) {
+//         while (abs(next/sum) > convfactor) {
 //           ++i;
 //           prod *= x;
 //           next  = prod/sqr((double)(i*(i+1)*(i+2)));
@@ -215,28 +215,28 @@ namespace ATOOLS {
 //         }
 //         return factor*sum + 4.*x + 23./4.*x*x + 3.*(1.-x*x)*log(1.-x);
       }
-      else if (cabs(x) > 1./radius) {
-        std::cout<<cabs(x)<<std::endl;
+      else if (abs(x) > 1./radius) {
+        std::cout<<abs(x)<<std::endl;
         std::cout<<"region II ..."<<std::endl;
         // DiLog(x) = -DiLog(1/x) - 1/2*ln2(-x) - pi2/6
         return -DiLog(1./x) - 0.5*sqr(log(-x)) - sqr(M_PI)/6.;
       }
-      else if (cabs(1.-x) < radius) {
-        std::cout<<cabs(x)<<std::endl;
+      else if (abs(1.-x) < radius) {
+        std::cout<<abs(x)<<std::endl;
         std::cout<<"region III ..."<<std::endl;
         // DiLog(x) = -DiLog(1-x) - ln x ln(1-x) + pi2/6
         return -DiLog(1.-x) - log(x)*log(1.-x) + sqr(M_PI)/6.;
       }
-      else if (cabs(x+1.) < radius) {
-        std::cout<<cabs(x)<<std::endl;
+      else if (abs(x+1.) < radius) {
+        std::cout<<abs(x)<<std::endl;
         std::cout<<"region IV ..."<<std::endl;
         // DiLog(x) = -DiLog(-x/(1-x)) - 1/2 ln2(1-x)
 //         return -DiLog(-x/(1.-x)) - 0.5*sqr(log(1.-x));
         // DiLog(x) = -DiLog(1-x)-log(x)*log(1-x)+pi2/6;
         return -DiLog(1.-x)-log(x)*log(1.-x) + sqr(M_PI)/6.;
       }
-      else if (cabs(x-Complex(0.,1.)) < 0.7*radius) {
-        std::cout<<cabs(x)<<std::endl;
+      else if (abs(x-Complex(0.,1.)) < 0.7*radius) {
+        std::cout<<abs(x)<<std::endl;
         std::cout<<"region V ..."<<std::endl;
         // expansion around (0,i), coeffients taken from Mathematica(TM)
         Complex A[35] = {
@@ -298,7 +298,7 @@ namespace ATOOLS {
         return sum;
       }
       else
-        std::cout<<cabs(x)<<std::endl;
+        std::cout<<abs(x)<<std::endl;
         std::cout<<"region VI ..."<<std::endl;
         // DiLog(x) = -DiLog(1/x) - 1/2*ln2(-x) - pi2/6
         return -DiLog(1./x) - 0.5*sqr(log(-x)) - sqr(M_PI)/6.;

@@ -52,7 +52,6 @@ namespace ATOOLS {
 
   inline int    iabs(const int& a)    { return a<0?-a:a;   } 
   inline double dabs(const double& a) { return a<0.0?-a:a; } 
-  inline double cabs(const Complex& a){ return real(a*conj(a)); }
 
   template <typename Scalar>
   inline Scalar sqr(const Scalar &x)   { return x*x; } 
