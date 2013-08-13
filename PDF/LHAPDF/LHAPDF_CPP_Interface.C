@@ -58,7 +58,7 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
     int nf(p_pdf->info().get_entry_as<int>("NumFlavors"));
     if (nf<0) m_asinfo.m_flavs.resize(5);
     else      m_asinfo.m_flavs.resize(nf);
-    // for now assume thresholds are equal to masses
+    // for now assume thresholds are equal to masses, as does LHAPDF-6.0.0
     for (size_t i(0);i<m_asinfo.m_flavs.size();++i) {
       m_asinfo.m_flavs[i]=PDF_Flavour((kf_code)i+1);
       if      (i==0)
@@ -84,40 +84,37 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   }
 
   // get x,Q2 ranges from PDF
-  m_xmin=p_pdf->info().get_entry_as<double>("XMin");
-  m_xmax=p_pdf->info().get_entry_as<double>("XMax");
-  m_q2min=ATOOLS::sqr(p_pdf->info().get_entry_as<double>("QMin"));
-  m_q2max=ATOOLS::sqr(p_pdf->info().get_entry_as<double>("QMax"));
-  
-  for (int i=1;i<6;i++) {
-    m_partons.insert(Flavour((kf_code)(i)));
-    m_partons.insert(Flavour((kf_code)(i)).Bar());
+  m_xmin=p_pdf->xMin();
+  m_xmax=p_pdf->xMax();
+  m_q2min=p_pdf->q2Min();
+  m_q2max=p_pdf->q2Max();
+
+  // initialise all book-keep arrays etc.
+  std::vector<int> kfcs;
+  kfcs.push_back(kf_d);
+  kfcs.push_back(-kf_d);
+  kfcs.push_back(kf_u);
+  kfcs.push_back(-kf_u);
+  kfcs.push_back(kf_s);
+  kfcs.push_back(-kf_s);
+  kfcs.push_back(kf_c);
+  kfcs.push_back(-kf_c);
+  kfcs.push_back(kf_b);
+  kfcs.push_back(-kf_b);
+  kfcs.push_back(kf_t);
+  kfcs.push_back(-kf_t);
+  kfcs.push_back(kf_gluon);
+  kfcs.push_back(kf_photon);
+  for (int i=0;i<kfcs.size();i++) if (p_pdf->hasFlavor(kfcs[i])) {
+    m_partons.insert(Flavour(abs(kfcs[i]),kfcs[i]<0));
+    m_xfx[kfcs[i]]=0.;
+    m_calculated[kfcs[i]]=false;
   }
-  m_partons.insert(Flavour(kf_gluon));
-  m_partons.insert(Flavour(kf_jet));
-  m_partons.insert(Flavour(kf_quark));
-  m_partons.insert(Flavour(kf_quark).Bar());
+  if (p_pdf->hasFlavor( kf_d))    m_partons.insert(Flavour(kf_quark));
+  if (p_pdf->hasFlavor(-kf_d))    m_partons.insert(Flavour(kf_quark).Bar());
+  if (p_pdf->hasFlavor(kf_gluon)) m_partons.insert(Flavour(kf_jet));
 
   m_lhef_number = p_pdf->lhapdfID();
-
-  // initialise bookeeping arrays
-  m_xfx[kf_d]=0.; m_xfx[-kf_d]=0.;
-  m_xfx[kf_u]=0.; m_xfx[-kf_u]=0.;
-  m_xfx[kf_s]=0.; m_xfx[-kf_s]=0.;
-  m_xfx[kf_c]=0.; m_xfx[-kf_c]=0.;
-  m_xfx[kf_b]=0.; m_xfx[-kf_b]=0.;
-  m_xfx[kf_t]=0.; m_xfx[-kf_t]=0.;
-  m_xfx[kf_gluon]=0.;
-  m_xfx[kf_photon]=0.;
-
-  m_calculated[kf_d]=false; m_calculated[-kf_d]=false;
-  m_calculated[kf_u]=false; m_calculated[-kf_u]=false;
-  m_calculated[kf_s]=false; m_calculated[-kf_s]=false;
-  m_calculated[kf_c]=false; m_calculated[-kf_c]=false;
-  m_calculated[kf_b]=false; m_calculated[-kf_b]=false;
-  m_calculated[kf_t]=false; m_calculated[-kf_t]=false;
-  m_calculated[kf_gluon]=false;
-  m_calculated[kf_photon]=false;
 }
 
 LHAPDF_CPP_Interface::~LHAPDF_CPP_Interface()
