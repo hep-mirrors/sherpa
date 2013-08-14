@@ -70,15 +70,9 @@ void Output_LHEF::Header()
     m_outstream<<"# Run data extracted from : "<<file<<std::endl; 
     m_outstream<<"--> "<<std::endl; 
     m_outstream<<"<SHRunCard> "<<std::endl; 
-    std::vector<std::vector<std::string> > helpsvv;
-    if (dr.MatrixFromFile(helpsvv,"")) {
-      for (size_t i(0);i<helpsvv.size();++i) {
-	for (size_t j(0);j<helpsvv[i].size();++j) {
-	  m_outstream<<helpsvv[i][j]<<" ";
-	}
-	m_outstream<<std::endl;
-      }
-    }
+    My_In_File oldfile(path,file);
+    oldfile.Open();
+    m_outstream<<oldfile->rdbuf();
     m_outstream<<"</SHRunCard> "<<std::endl; 
   }
   m_outstream<<"</header>"<<std::endl;
