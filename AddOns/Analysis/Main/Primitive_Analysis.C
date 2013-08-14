@@ -408,8 +408,7 @@ bool Primitive_Analysis::DoAnalysisNLO(const Blob_List * const bl, const double 
 
 void Primitive_Analysis::FinishAnalysis(const std::string & resdir) 
 {
-  if (m_mode&ANALYSIS::output_this) 
-    ATOOLS::MakeDir(resdir+OutputPath()); 
+  ATOOLS::MakeDir(resdir+OutputPath()); 
 
   if (m_mode&ANALYSIS::do_menlo) {
     for (size_t i=0;i<m_objects.size();i++) {
