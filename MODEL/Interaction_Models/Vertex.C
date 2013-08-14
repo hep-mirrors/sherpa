@@ -122,53 +122,51 @@ void Vertex::GenerateVertex()
     int hit = 1;
     if (hit) {
       //required by Interaction_Model_ADD due to small couplings
-      m_v4[i].on = m_v4[i].CheckCoupling();
-      if (m_v4[i].on) { 
-	if(m_v4[i].nleg==4) {
-	  OSV_Map svs;
-	  int id[4]={1,2,3,4};
-	  for (size_t k(0);k<4;++k) {
-	    if (SetVertex(m_v4[i],dummy,id[0],id[1],id[2],id[3],1)
-		&& svs.find(dummy)==svs.end()) { 
-	      m_a.push_back(dummy); 
-	      svs.insert(dummy); 
-	    }
-	    if (SetVertex(m_v4[i],dummy,-id[0],-id[3],-id[2],-id[1],1)
-		&& svs.find(dummy)==svs.end()) { 
-	      m_a.push_back(dummy); 
-	      svs.insert(dummy); 
-	    }
-	    int l=-id[0];
-	    for (size_t j(0);j<3;++j) id[j]=id[j+1];
-	    id[0]=-id[0];
-	    id[3]=l;
+      if (!m_v4[i].CheckCoupling()) m_v4[i].on = 0;
+      if(m_v4[i].nleg==4 && m_v4[i].on) {
+	OSV_Map svs;
+	int id[4]={1,2,3,4};
+	for (size_t k(0);k<4;++k) {
+	  if (SetVertex(m_v4[i],dummy,id[0],id[1],id[2],id[3],1)
+	      && svs.find(dummy)==svs.end()) { 
+	    m_a.push_back(dummy); 
+	    svs.insert(dummy); 
 	  }
-	  for (short int k=1;k<5;k++) {
-	    for (short int l=1;l<5;l++) {
-	      if (l!=k) {
-		for (short int m=1;m<5;m++) {
-		  if (m!=l && m!=k) {
-		    for (short int n=1;n<5;n++) {
-		      if (n!=l && n!=k && n!=m) {
-			if (k!=1) k = -k;
-			if (l==1) l = -l;
-			if (m==1) m = -m;
-			if (n==1) n = -n;
-			if (SetVertex(m_v4[i],dummy,k,l,m,n)) {
-			  m_v4.push_back(dummy);
-			  m_n4vertex++;
-			}
-			if (SetVertex(m_v4[i],dummy,-k,-l,-m,-n)) {
-			  m_v4.push_back(dummy);
-			  m_n4vertex++;
-			}
-			k = abs(k);l=abs(l);m=abs(m);n=abs(n);
+	  if (SetVertex(m_v4[i],dummy,-id[0],-id[3],-id[2],-id[1],1)
+	      && svs.find(dummy)==svs.end()) { 
+	    m_a.push_back(dummy); 
+	    svs.insert(dummy); 
+	  }
+	  int l=-id[0];
+	  for (size_t j(0);j<3;++j) id[j]=id[j+1];
+	  id[0]=-id[0];
+	  id[3]=l;
+	}
+	for (short int k=1;k<5;k++) {
+	  for (short int l=1;l<5;l++) {
+	    if (l!=k) {
+	      for (short int m=1;m<5;m++) {
+		if (m!=l && m!=k) {
+		  for (short int n=1;n<5;n++) {
+		    if (n!=l && n!=k && n!=m) {
+		      if (k!=1) k = -k;
+		      if (l==1) l = -l;
+		      if (m==1) m = -m;
+		      if (n==1) n = -n;
+		      if (SetVertex(m_v4[i],dummy,k,l,m,n)) {
+			m_v4.push_back(dummy);
+			m_n4vertex++;
 		      }
+		      if (SetVertex(m_v4[i],dummy,-k,-l,-m,-n)) {
+			m_v4.push_back(dummy);
+			m_n4vertex++;
+		      }
+		      k = abs(k);l=abs(l);m=abs(m);n=abs(n);
 		    }
 		  }
 		}
-	      } 
-	    }
+	      }
+	    } 
 	  }
 	}
       }
@@ -178,8 +176,8 @@ void Vertex::GenerateVertex()
     int hit = 1;
     if (hit) {
       //required by Interaction_Model_ADD due to small couplings
-      m_v[i].on = m_v[i].CheckCoupling();
-      if (m_v[i].nleg==3) {  
+      if (!m_v[i].CheckCoupling()) m_v[i].on = 0;
+      if (m_v[i].nleg==3 && m_v[i].on==1) {  
 	OSV_Map svs;
 	int id[3]={1,2,3};
 	for (size_t k(0);k<3;++k) {
