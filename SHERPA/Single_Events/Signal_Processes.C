@@ -9,6 +9,7 @@
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/Random.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
@@ -27,6 +28,8 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler) :
   p_remnants[1]=mehandler->GetISR()->GetRemnant(1);
   if (p_remnants[0]==NULL || p_remnants[1]==NULL)
     THROW(critical_error,"No beam remnant handler found.");
+  Data_Reader read(" ",";","!","=");
+  m_setcolors=read.GetValue<int>("SP_SET_COLORS",0);
 }
 
 Signal_Processes::~Signal_Processes()
@@ -71,6 +74,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   PHASIC::Process_Base *proc(p_mehandler->Process());
   blob->SetPosition(Vec4D(0.,0.,0.,0.));
   blob->SetTypeSpec(proc->Parent()->Name());
+  Cluster_Amplitude *ampl(NULL);
   if (p_mehandler->HasNLO()==3 &&
       proc->Parent()->Info().m_fi.NLOType()!=nlo_type::lo) {
     MCatNLO_Process* mcatnloproc=dynamic_cast<MCatNLO_Process*>(proc->Parent());
@@ -79,6 +83,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
         blob->SetTypeSpec(proc->Parent()->Name()+"+S");
       else
         blob->SetTypeSpec(proc->Parent()->Name()+"+H");
+      if (m_setcolors) ampl=mcatnloproc->GetAmplitude();
     }
   }
   Vec4D cms = Vec4D(0.,0.,0.,0.);
@@ -99,6 +104,10 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     particle->SetStatus(part_status::decayed);
     particle->SetInfo('G');
     blob->AddToInParticles(particle);
+    if (ampl) {
+      particle->SetFlow(1,ampl->Leg(i)->Col().m_j);
+      particle->SetFlow(2,ampl->Leg(i)->Col().m_i);
+    }
     if (p_remnants[i]!=NULL) {
       p_remnants[i]->QuickClear();
       if (!p_remnants[i]->TestExtract(particle)) success=false;
@@ -113,8 +122,13 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     particle->SetStatus(part_status::active);
     particle->SetInfo('H');
     blob->AddToOutParticles(particle);
+    if (ampl) {
+      particle->SetFlow(1,ampl->Leg(i)->Col().m_i);
+      particle->SetFlow(2,ampl->Leg(i)->Col().m_j);
+    }
   }
   DEBUG_VAR(*blob);
+  if (ampl) ampl->Delete();
   PHASIC::Weight_Info winfo(p_mehandler->WeightInfo());
   double weight(winfo.m_weight);
   if (p_mehandler->EventGenerationMode()==1) {
