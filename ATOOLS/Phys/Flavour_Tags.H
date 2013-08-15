@@ -47,6 +47,11 @@
 #define      kf_h0_qsc                    925
 #define      kf_Z_qgc                     923
 #define      kf_Wplus_qgc                 924
+// photons helpers for indeterminant resonances
+#define      kf_PhotonsHelperNeutral      931
+#define      kf_PhotonsHelperPlus         932
+#define      kf_PhotonsHelperPlusPlus     933
+#define      kf_PhotonsHelperPlusPlusPlus 934
 // Regge stuff
 #define      kf_reggeon                   110
 #define      kf_pomeron                   990
