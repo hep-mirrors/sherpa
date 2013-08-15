@@ -29,8 +29,9 @@ Generate_Dipole_Photon_Angle::Generate_Dipole_Photon_Angle(Vec4D p1, Vec4D p2) {
   rotate.RotateBack(m_dir);
   boost.BoostBack(m_dir);
   // determine angles in that frame
-  m_theta = acos(m_dir[3]/m_dir[0]);
-  m_phi   = acos(m_dir[1]/(m_dir[0]*sin(m_theta)));
+  m_theta = acos(m_dir[3]/sqrt(sqr(m_dir[1])+sqr(m_dir[2])+sqr(m_dir[3])));
+  double phi(acos(m_dir[1]/sqrt(sqr(m_dir[1])+sqr(m_dir[2]))));
+  m_phi   = m_dir[2]>0.?phi:2.*M_PI-phi;
 }
 
 Generate_Dipole_Photon_Angle::Generate_Dipole_Photon_Angle

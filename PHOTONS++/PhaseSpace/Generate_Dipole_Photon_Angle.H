@@ -25,7 +25,7 @@ namespace PHOTONS {
       inline double               GetCosTheta()   { return m_c; }
       inline double               GetTheta()      { return m_theta; }
       inline double               GetPhi()        { return m_phi; }
-      inline ATOOLS::Vec4D        GetVector()     { return m_dir; }
+      inline const ATOOLS::Vec4D& GetVector()     { return m_dir; }
   };
 
 

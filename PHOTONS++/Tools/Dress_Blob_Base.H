@@ -38,7 +38,7 @@ namespace PHOTONS {
       double                  m_genweight;
       double                  m_genmaxweight;
       double                  m_nbar;
-      double                  m_n;
+      int                     m_n;
       double                  m_omegaMax;
       double                  m_omegaMin;
       double                  m_M;
@@ -56,7 +56,7 @@ namespace PHOTONS {
       void                DetermineU();
       std::vector<double> GenerateNumberAndEnergies();
       void                GeneratePhotons(const double&, const double&);
-      void                GeneratePhotons(const std::vector<double>&);
+      void                GeneratePhotons(const IdPairNbarVector&);
       double              KallenFunction(const double&, const double&,
                                          const double&);
 

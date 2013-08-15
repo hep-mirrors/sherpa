@@ -6,7 +6,8 @@ include ../../svn.make
 libPhotonsMain_la_SOURCES = \
 				SVN_Info.C \
 				Photons.C \
-				Define_Dipole.C
+				Define_Dipole.C \
+				Dipole_Type.C
 
 localinc_HEADERS   = \
 			Photons.H \

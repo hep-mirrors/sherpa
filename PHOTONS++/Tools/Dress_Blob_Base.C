@@ -116,14 +116,14 @@ void Dress_Blob_Base::CalculateWeights() {
   sprintf(s5m,"%f",mwyfs);
   msg_Info()<<"maxweights: "<<s1m<<" "<<s2m<<" "<<s3m<<" "<<s4m<<" "<<s5m
             <<" : "<<m_genmaxweight<<endl;
-  if (m_genweight > m_genmaxweight) {
-    msg_Info()<<"weight: "<<m_genweight<<" > maxweight: "<<m_genmaxweight
-              <<"  ... event will be rejected"<<endl;
+#endif
+  if (Photons::s_strict && m_genweight > m_genmaxweight) {
+    msg_Tracking()<<"weight: "<<m_genweight<<" > maxweight: "<<m_genmaxweight
+                   <<"  ... event will be rejected. Retrying ... "<<endl;
     for (unsigned int i=0; i<m_softphotons.size(); i++)
-      msg_Info()<<*m_softphotons[i]<<endl;
+      msg_Debugging()<<*m_softphotons[i]<<endl;
     m_genweight = 0.;
   }
-#endif
 }
 
 void Dress_Blob_Base::CheckAvaragePhotonNumberForNumericalErrors() {
@@ -217,35 +217,29 @@ void Dress_Blob_Base::DetermineU() {
 }
 
 std::vector<double> Dress_Blob_Base::GenerateNumberAndEnergies() {
-//-------------------poissonian generation according to Jadach 1987--------
-//---------------------dicing of energies inclusive------------------------
-//   std::vector<double> R, k;
-//   R.push_back(0);
-//   for (unsigned int i=0; R.back()<m_nbar; i++) {
-//     R.push_back(R.back()-log(ran->Get()));
-//     k.push_back(m_omegaMax*pow(m_omegaMin/m_omegaMax,R.back()/m_nbar));
-//     msg_Info()<<R.back()<<"  "<<k.back()<<endl;
+  std::vector<double> R, k;
+  R.push_back(0);
+  for (unsigned int i=0; R.back()<m_nbar; ++i) {
+    R.push_back(R.back()-log(ran->Get()));
+    k.push_back(m_omegaMax*pow(m_omegaMin/m_omegaMax,R.back()/m_nbar));
+    if (k.size()>Photons::s_nmax) break;
+  }
+  k.pop_back();
+  m_n = k.size();
+//   m_n = -1;
+//   double expnbar = exp(-m_nbar);
+//   double prod = 1.;
+//   while (true) {
+//     m_n++;
+//     prod = prod*ran->Get();
+//     if (prod <= expnbar) break;
 //   }
-//   k.pop_back();
-//   m_n = k.size();
-
-//---------------------new poissonian generation--------as in ROOT---------
-  m_n = -1;
-  double expnbar = exp(-m_nbar);
-  double prod = 1.;
-  while(1) {
-    m_n++;
-    prod = prod*ran->Get();
-    if (prod <= expnbar) break;
-  }
-//-----------------------more accurate-------------------------------------
-//   m_n = 1;
-//----------------------new dicing of energies-----------------------------
-  std::vector<double> k;
-  for (unsigned int i=0; i<m_n; i++) {
-    k.push_back(m_omegaMin*pow(m_omegaMax/m_omegaMin,ran->Get()));
-  }
-//-------------------------------------------------------------------------
+  // m_n = 1;
+//   m_n = Min(m_n,Photons::s_nmax);
+//   std::vector<double> k;
+//   for (unsigned int i=0; i<m_n; i++) {
+//     k.push_back(m_omegaMin*pow(m_omegaMax/m_omegaMin,ran->Get()));
+//   }
   return k;
 }
 
@@ -255,18 +249,16 @@ void Dress_Blob_Base::GeneratePhotons(const double& beta1, const double& beta2) 
   k = GenerateNumberAndEnergies();
   for (unsigned int i=0; i<m_n; i++) {
     Generate_One_Photon gamma(beta1,beta2,k[i],m_dtype);
-//     Generate_One_Photon gamma(beta1,beta2,m_omegaMax/1.22467,m_dtype);
     m_softphotons.push_back(gamma.GetPhoton());
   }
 }
 
-void Dress_Blob_Base::GeneratePhotons(const std::vector<double>& nbars) {
+void Dress_Blob_Base::GeneratePhotons(const IdPairNbarVector& nbars) {
   m_softphotons.clear();
   std::vector<double> k;
   k = GenerateNumberAndEnergies();
   for (unsigned int i=0; i<m_n; i++) {
     Generate_One_Photon gamma(m_olddipole,nbars,k[i],m_dtype);
-//     Generate_One_Photon gamma(m_olddipole,nbars,m_omegaMax/2.,m_dtype);
     m_softphotons.push_back(gamma.GetPhoton());
   }
 }

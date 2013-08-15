@@ -12,6 +12,7 @@ using namespace std;
 
 Define_Dipole::Define_Dipole(Blob * blob) :
 m_success(true), m_photonsadded(false) {
+  DEBUG_FUNC("");
   p_blob = blob;
   for (unsigned int i=0; i<(blob->GetInParticles().size()); i++)
     if (blob->InParticle(i)->Flav().Charge() == 0)
@@ -23,13 +24,6 @@ m_success(true), m_photonsadded(false) {
       m_neutraloutparticles.push_back(blob->OutParticle(i));
     else
       m_chargedoutparticles.push_back(blob->OutParticle(i));
-
-#ifdef PHOTONS_DEBUG
-  msg_Info()<<m_chargedinparticles.size()<<" "
-            <<m_neutralinparticles.size()<<" "
-            <<m_chargedoutparticles.size()<<" "
-            <<m_neutraloutparticles.size()<<endl;
-#endif
 
   if ((m_chargedinparticles.size() == 0) &&
       (m_chargedoutparticles.size() >= 2))
@@ -46,7 +40,6 @@ m_success(true), m_photonsadded(false) {
     m_dtype = Dipole_Type::unknown;
 
   if (msg_LevelIsDebugging()) {
-    msg_Out()<<METHOD<<"(){\n";
     if      (m_dtype==Dipole_Type::ff) msg_Out()<<"  Dipole_FF(";
     else if (m_dtype==Dipole_Type::fi) msg_Out()<<"  Dipole_FI(";
     else if (m_dtype==Dipole_Type::ii) msg_Out()<<"  Dipole_II(";
@@ -54,7 +47,7 @@ m_success(true), m_photonsadded(false) {
     msg_Out()<<m_chargedinparticles.size()<<","
 	     <<m_neutralinparticles.size()<<","
 	     <<m_chargedoutparticles.size()<<","
-	     <<m_neutraloutparticles.size()<<")\n}\n";
+	     <<m_neutraloutparticles.size()<<")\n";
   }
 
   m_pvv.push_back(m_chargedinparticles);
@@ -67,6 +60,7 @@ Define_Dipole::~Define_Dipole() {
 }
 
 void Define_Dipole::AddRadiation() {
+  DEBUG_FUNC("");
   Dress_Blob_Base * dipole(NULL);
   if (m_dtype == Dipole_Type::ff) {
     dipole = new Dipole_FF(m_pvv);
@@ -96,8 +90,6 @@ void Define_Dipole::AddRadiation() {
     }
   }
   else m_success = false;
-#ifdef PHOTONS_DEBUG
-  msg_Info()<<"momentum conservation in lab: "
-            <<p_blob->CheckMomentumConservation()<<endl;
-#endif
+  msg_Debugging()<<"Momentum conservation in lab: "
+                 <<p_blob->CheckMomentumConservation()<<endl;
 }

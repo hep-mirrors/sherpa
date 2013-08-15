@@ -17,7 +17,7 @@ Dipole_FF::Dipole_FF(const Particle_Vector_Vector& pvv) {
   m_neutralinparticles  = pvv[1];
   m_chargedoutparticles = pvv[2];
   m_neutraloutparticles = pvv[3];
-  m_M                   = m_neutralinparticles[0]->FinalMass();
+  m_M                   = m_neutralinparticles[0]->Momentum().Mass();
   m_Q                   = Vec4D(0.,0.,0.,0.);
   m_QN                  = Vec4D(0.,0.,0.,0.);
   for (unsigned int i=0; i<m_chargedoutparticles.size(); i++) {
@@ -33,7 +33,7 @@ Dipole_FF::Dipole_FF(const Particle_Vector_Vector& pvv) {
   for (unsigned int i=0; i<m_mN.size(); i++) {
     sum = sum + m_mN[i];
   }
-  m_omegaMax  = (m_M/2.) * ( m_M/sum - sum/m_M );
+  m_omegaMax  = Photons::s_reducemax * (m_M/2.) * ( m_M/sum - sum/m_M );
   if (m_omegaMax<0.) m_omegaMax = m_omegaMin;
   // set running alpha_QED to squared mass of incomming parton
   // -> taken at maximal scale
@@ -48,8 +48,9 @@ Dipole_FF::~Dipole_FF() {
 }
 
 void Dipole_FF::AddRadiation() {
+  DEBUG_FUNC(m_M<<"->"<<m_mC<<m_mN);
   DefineDipole();
-  std::vector<double> nbars;
+  IdPairNbarVector nbars;
   // calculate avarage photon number in Lab frame
   if (PHOTONS::Photons::s_ircutoffframe==1) {
       Avarage_Photon_Number avnum(m_olddipole,m_omegaMax,m_omegaMin);
@@ -95,9 +96,7 @@ void Dipole_FF::AddRadiation() {
     }
   }
   CheckAvaragePhotonNumberForNumericalErrors();
-#ifdef PHOTONS_DEBUG
-  msg_Info()<<"nbar: "<<m_nbar<<endl;
-#endif
+  msg_Debugging()<<"nbar: "<<m_nbar<<endl;
   // correction weights -> acception/rejection
   if (m_nbar > 0.) {
     bool genreject(true);
@@ -113,9 +112,7 @@ void Dipole_FF::AddRadiation() {
         if (m_n != 0)  photoncheck = CheckIfExceedingPhotonEnergyLimits();
         else photoncheck = true;
       }
-#ifdef PHOTONS_DEBUG
-      msg_Info()<<"n:    "<<m_n<<endl;
-#endif
+      msg_Debugging()<<"n:    "<<m_n<<endl;
       if (m_n != 0) {
         CorrectMomenta();     // m_newdipole, m_newspectator, m_K are in P-CMS;
         if (m_u < 0.|| m_u > 1.) continue;
@@ -212,7 +209,7 @@ void Dipole_FF::CheckMomentumConservationInQCMS
 (const Poincare& boost,const Poincare& rotate) {
   // in Q-CMS
   if ((m_u > 1) || (m_u < 0)) {
-    msg_Out()<<"u: "<<m_u<<" not in [0,1] ... all photons deleted ..."<<endl;
+    msg_Error()<<"u: "<<m_u<<" not in [0,1] ... all photons deleted ..."<<endl;
     m_success = false;
     return;
   }
