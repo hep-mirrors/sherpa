@@ -115,7 +115,8 @@ void Output_LHEF::Header()
 
 void Output_LHEF::Output(Blob_List* blobs, const double weight) 
 {
-  m_outstream<<"<event>"<<std::endl;
+  m_outstream<<"<event trials='"<<(int)(*blobs->FindFirst(btp::Signal_Process))
+    ["Trials"]->Get<double>()<<"'>"<<std::endl;
   for (Blob_List::const_iterator blit=blobs->begin();blit!=blobs->end();++blit){
     if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
       //LHE event information
