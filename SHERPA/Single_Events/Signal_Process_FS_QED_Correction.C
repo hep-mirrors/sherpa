@@ -340,23 +340,23 @@ void Signal_Process_FS_QED_Correction::FindProcessPossibleResonances
 {
   const Vertex_Table * vtab(s_model->GetVertexTable());
   Flavour_Vector fslep;
-  for (size_t k(2);k<fv.size();++k)
-    if (!fv[k].Strong()) fslep.push_back(fv[k]);
+  for (size_t i(2);i<fv.size();++i)
+    if (!fv[i].Strong()) fslep.push_back(fv[i]);
   for (Vertex_Table::const_iterator it(vtab->begin());it!=vtab->end();++it) {
     if (it->first.IsOn()      && !it->first.Strong() &&
         it->first.IsMassive() && !it->first.IsDummy()) {
-      for (size_t l(0);l<it->second.size();++l) {
+      for (size_t i(0);i<it->second.size();++i) {
         bool on(true);
         double m(it->first.Mass());
-        Single_Vertex * v(it->second[l]);
-        for (size_t m(1);m<v->nleg;++m) {
+        Single_Vertex * v(it->second[i]);
+        for (size_t j(1);j<v->nleg;++j) {
           if (!v->on || v->dec)        { on=false; break; }
-          if (v->in[m]==v->in[0])      { on=false; break; }
-          if (v->in[m].IsDummy())      { on=false; break; }
-          if ((m-=v->in[m].Mass())<0.) { on=false; break; }
+          if (v->in[j]==v->in[0])      { on=false; break; }
+          if (v->in[j].IsDummy())      { on=false; break; }
+          if ((m-=v->in[j].Mass())<0.) { on=false; break; }
           bool flavfound(false);
-          for (size_t n(0);n<fslep.size();++n)
-            if (v->in[m]==fslep[n])    { flavfound=true; break; }
+          for (size_t k(0);k<fslep.size();++k)
+            if (v->in[j]==fslep[k])    { flavfound=true; break; }
           if (!flavfound)              { on=false; break; }
         }
         if (on) vlist.push_back(v);
