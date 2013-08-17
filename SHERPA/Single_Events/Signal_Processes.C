@@ -128,6 +128,17 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     }
   }
   DEBUG_VAR(*blob);
+  if (ampl) {
+    if (ampl->NLO()&4) {
+      blob->AddData("MC@NLO_KT2_Stop",new Blob_Data<double>(0.0));
+      blob->AddData("MC@NLO_KT2_Start",new Blob_Data<double>(ampl->KT2()));
+    }
+    else {
+      DEBUG_VAR(*ampl->Next());
+      blob->AddData("MC@NLO_KT2_Stop",new Blob_Data<double>(ampl->KT2()));
+      blob->AddData("MC@NLO_KT2_Start",new Blob_Data<double>(ampl->Next()->KT2()));
+    }
+  }
   if (ampl) ampl->Delete();
   PHASIC::Weight_Info winfo(p_mehandler->WeightInfo());
   double weight(winfo.m_weight);
