@@ -42,7 +42,7 @@ Complex A_prod_1l(double M_H, double mu_R){
 
 Complex A_prod_2l(double M_H, double mu_R){
  return alpha_s(mu_R)/3. * M_H*M_H/PI * sqrt(G_F/2./SQRT2) 
-   * A_Q(M_t(mu_R),M_H) // SHOULD FIX UP TO INCLUDE b QUARK CORRECTION TOO!!!!
+   * ( A_Q(M_t(mu_R),M_H) + A_Q(M_b(mu_R),M_H) + A_Q(M_c(mu_R),M_H) )
    * 11./6. * C_A * alpha_s(mu_R)/2./PI ;
 }
 
