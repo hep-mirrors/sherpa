@@ -60,7 +60,6 @@ Define_Dipole::~Define_Dipole() {
 }
 
 void Define_Dipole::AddRadiation() {
-  DEBUG_FUNC("");
   Dress_Blob_Base * dipole(NULL);
   if (m_dtype == Dipole_Type::ff) {
     dipole = new Dipole_FF(m_pvv);
@@ -90,6 +89,4 @@ void Define_Dipole::AddRadiation() {
     }
   }
   else m_success = false;
-  msg_Debugging()<<"Momentum conservation in lab: "
-                 <<p_blob->CheckMomentumConservation()<<endl;
 }

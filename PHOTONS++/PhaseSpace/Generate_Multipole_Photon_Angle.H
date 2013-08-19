@@ -24,6 +24,7 @@ namespace PHOTONS {
       void    GenerateMultipoleAngle();
       double  CalculateWeightByThetaPhi(const double&, const double&);
       double  CalculateWeightByVector(const ATOOLS::Vec4D&);
+      double  TiTj(const size_t&, const size_t&);
 
     public:
       Generate_Multipole_Photon_Angle(const ATOOLS::Particle_Vector&,

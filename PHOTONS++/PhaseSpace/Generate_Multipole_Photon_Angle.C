@@ -19,15 +19,14 @@ Generate_Multipole_Photon_Angle::Generate_Multipole_Photon_Angle
   m_dipole(dip), m_nbars(nbars), m_posnbar(0.), m_theta(0.), m_phi(0.)
 {
   DEBUG_FUNC("");
+  msg_Debugging()<<"positive dipoles:\n";
   for (unsigned int i=0; i<nbars.size(); i++) {
     if (nbars[i].nbar>0) {
       m_posnbar += nbars[i].nbar;
       m_posnbars.push_back(nbars[i]);
-      msg_Debugging()<<i<<" ("<<m_posnbars.back().ij.i<<","
-                              <<m_posnbars.back().ij.j<<"), ["
-                              <<m_dipole[m_posnbars.back().ij.i]->Flav()<<","
-                              <<m_dipole[m_posnbars.back().ij.j]->Flav()<<"]: "
-                     <<nbars[i]<<std::endl;
+      msg_Debugging()<<i<<" "<<nbars[i]<<": ["
+                     <<m_dipole[m_posnbars.back().ij.i]->Flav()<<","
+                     <<m_dipole[m_posnbars.back().ij.j]->Flav()<<"]"<<std::endl;
     }
   }
   msg_Debugging()<<"-> "<<m_posnbar<<std::endl;
@@ -56,16 +55,10 @@ void Generate_Multipole_Photon_Angle::GenerateMultipoleAngle() {
       s += m_posnbars[i].nbar/m_posnbar;
       if (rdm < s) { k = i; break; }
     }
-    msg_Debugging()<<"select ("<<m_posnbars[k].ij.i<<","
-                               <<m_posnbars[k].ij.j<<"), ["
-                               <<m_dipole[m_posnbars[k].ij.i]->Flav()<<","
-                               <<m_dipole[m_posnbars[k].ij.j]->Flav()<<"] ";
+    msg_Debugging()<<"select "<<m_nbars[k]<<", ["
+                              <<m_dipole[m_posnbars[k].ij.i]->Flav()<<","
+                              <<m_dipole[m_posnbars[k].ij.j]->Flav()<<"]\n";
 
-  // generate this angle
-  // generate massless unit vector in p_i-p_j rest frame then transform back
-  // can be later streched to be massless vector of energy E
-
-    msg_Debugging()<<"chose "<<m_nbars[k]<<std::endl;
     Vec4D p1 = m_dipole[m_nbars[k].ij.i]->Momentum();
     Vec4D p2 = m_dipole[m_nbars[k].ij.j]->Momentum();
     Generate_Dipole_Photon_Angle gdpa(p1,p2);
@@ -161,7 +154,8 @@ double Generate_Multipole_Photon_Angle::CalculateWeightByVector
     double QiQj(m_dipole[m_nbars[i].ij.i]->Flav().Charge()
                 *m_dipole[m_nbars[i].ij.j]->Flav().Charge());
     Vec4D eikvec(pi/(pi*ek)-pj/(pj*ek));
-    double val(QiQj*eikvec.Abs2());
+    double titj(TiTj(m_nbars[i].ij.i,m_nbars[i].ij.j));
+    double val(QiQj*titj*eikvec.Abs2());
     if (IsBad(val)) {
       msg_Error()<<METHOD<<"(): encountered "<<val<<", set to 0"<<std::endl;
       val=0.;
@@ -173,11 +167,24 @@ double Generate_Multipole_Photon_Angle::CalculateWeightByVector
                    <<val<<std::endl;
     if (pi.DR(ek)<Photons::s_drcut || pj.DR(ek)<Photons::s_drcut) close=true;
     all+=val;
-    if (QiQj<0.) pos+=val;
+    if (val>0.) pos+=val;
   }
   msg_Debugging()<<all<<" / "<<pos<<" = "<<all/pos<<std::endl;
   msg->SetPrecision(precision);
   if (!close) return 0.;
   if (all==0. && pos==0.) pos=1.;
   return all/pos;
+}
+
+double Generate_Multipole_Photon_Angle::TiTj(const size_t& i, const size_t& j)
+{
+  if      ((m_dipole[i]->ProductionBlob() == m_dipole[j]->ProductionBlob()) &&
+           (m_dipole[i]->ProductionBlob() != NULL))  return  1.;
+  else if ((m_dipole[i]->DecayBlob() == m_dipole[j]->ProductionBlob()) &&
+           (m_dipole[i]->DecayBlob() != NULL))       return -1.;
+  else if ((m_dipole[i]->ProductionBlob() == m_dipole[j]->DecayBlob()) &&
+           (m_dipole[i]->ProductionBlob() != NULL))  return -1.;
+  else if ((m_dipole[i]->DecayBlob() == m_dipole[j]->DecayBlob()) &&
+           (m_dipole[i]->DecayBlob() != NULL))       return  1.;
+  else                                               return  0.;
 }

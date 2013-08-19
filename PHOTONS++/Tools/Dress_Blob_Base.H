@@ -59,6 +59,7 @@ namespace PHOTONS {
       void                GeneratePhotons(const IdPairNbarVector&);
       double              KallenFunction(const double&, const double&,
                                          const double&);
+      std::string         ProcessName();
 
       virtual void   CalculateAvaragePhotonNumber(const double&,
                                                   const double&) = 0;

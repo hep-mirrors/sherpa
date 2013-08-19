@@ -39,7 +39,7 @@ Dipole_FI::~Dipole_FI() {
 }
 
 void Dipole_FI::AddRadiation() {
-  DEBUG_FUNC(m_M<<"->"<<m_mC<<m_mN);
+  DEBUG_FUNC(ProcessName());
   DefineDipole();
   Vec4D sumdip = Vec4D(0.,0.,0.,0.);
   for (unsigned int i=0; i<m_olddipole.size(); i++) {

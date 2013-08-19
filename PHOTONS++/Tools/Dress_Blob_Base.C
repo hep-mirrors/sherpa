@@ -267,3 +267,19 @@ double Dress_Blob_Base::KallenFunction(const double& x, const double& y,
                                        const double& z) {
   return ( x*x + y*y + z*z - 2.*x*y - 2.*x*z - 2.*y*z );
 }
+
+std::string Dress_Blob_Base::ProcessName()
+{
+  std::string str(" ");
+  for (size_t i(0);i<m_chargedinparticles.size();++i)
+    str+=m_chargedinparticles[i]->Flav().IDName()+" ";
+  for (size_t i(0);i<m_neutralinparticles.size();++i)
+    str+=m_neutralinparticles[i]->Flav().IDName()+" ";
+  str+=" -> ";
+  for (size_t i(0);i<m_chargedoutparticles.size();++i)
+    str+=m_chargedoutparticles[i]->Flav().IDName()+" ";
+  for (size_t i(0);i<m_neutraloutparticles.size();++i)
+    str+=m_neutraloutparticles[i]->Flav().IDName()+" ";
+  return str;
+}
+
