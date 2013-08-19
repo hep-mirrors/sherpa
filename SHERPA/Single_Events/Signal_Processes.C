@@ -133,7 +133,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       blob->AddData("MC@NLO_KT2_Stop",new Blob_Data<double>(0.0));
       blob->AddData("MC@NLO_KT2_Start",new Blob_Data<double>(ampl->Q2()));
     }
-    else {
+    else if (ampl->Next()) {
       DEBUG_VAR(*ampl->Next());
       blob->AddData("MC@NLO_KT2_Stop",new Blob_Data<double>(ampl->KT2()));
       blob->AddData("MC@NLO_KT2_Start",new Blob_Data<double>
