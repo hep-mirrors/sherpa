@@ -56,7 +56,7 @@ void Output_LHEF::Header()
     file.erase(sep);
   }
     
-  m_outstream<<"<LesHouchesEvents>"<<std::endl;
+  m_outstream<<"<LesHouchesEvents version=\"1.0\">"<<std::endl;
   m_outstream<<"<header>"<<std::endl;
   m_outstream<<"<!-- "<<std::endl; 
   m_outstream<<"# created by SHERPA "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION
@@ -86,7 +86,8 @@ void Output_LHEF::Header()
   double EBMUP1 = rpa->gen.PBeam(0)[0];
   double EBMUP2 = rpa->gen.PBeam(1)[0];
   
-  int IDWTUP(ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"))==0?1:3);
+  int IDWTUP(dr.GetValue<int>("LHEF_IDWTUP",0));
+  if (IDWTUP==0) IDWTUP=ToType<int>(rpa->gen.Variable("EVENT_GENERATION_MODE"))==0?1:3; 
   int NPRUP = 1;
   int PDFGUP1 = 0;
   int PDFGUP2 = 0;
@@ -128,6 +129,8 @@ void Output_LHEF::Output(Blob_List* blobs, const double weight)
       int IDPRUP = 1;
       double XWGTUP = weight;
       double SCALUP = sqrt((*(*blit))["Factorisation_Scale"]->Get<double>());
+      if ((*(*blit))["Resummation_Scale"])
+	SCALUP=sqrt((*(*blit))["Resummation_Scale"]->Get<double>());
       double AQEDUP = -1.;
       double AQCDUP = -1.;
       m_outstream<<std::setprecision(10);
