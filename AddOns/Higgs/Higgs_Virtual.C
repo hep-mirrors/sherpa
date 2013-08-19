@@ -158,7 +158,7 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
     lo-=lob;
     nlo-=nlob;
   }
-  m_res.Finite()=(nlo/lo).real()+3.0*sqr(M_PI)+2.0*b0*lmur;
+  m_res.Finite()=(nlo/lo).real()+3.0*sqr(M_PI)-3.0*lmur*lmur;
   m_born=lo.real()/64.0;
 }
 
