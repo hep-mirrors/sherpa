@@ -125,8 +125,10 @@ bool Beam_Spectra_Handler::InitializeLaserBackscattering(Data_Reader * dataread,
 
   if ((beam_particle!=Flavour(kf_e)) && (beam_particle!=Flavour(kf_e).Bar())) {
     msg_Error()<<"Error in Beam_Initialization::SpecifySpectra :"<<endl
-	       <<"   Tried to initialize Laser_Backscattering for "<<beam_particle<<"."<<endl
-	       <<"   This option is not available. Result will be to terminate program."<<endl;
+	       <<"   Tried to initialize Laser_Backscattering for "
+	       <<beam_particle<<"."<<endl
+	       <<"   This option is not available. "
+	       <<"Result will be to terminate program."<<endl;
     return false;
   }      
   double Laser_energy       = dataread->GetValue<double>("E_LASER_"+number,0.0);
@@ -185,10 +187,12 @@ bool Beam_Spectra_Handler::InitializeEPA(Data_Reader * dataread,int num)
   InitializeFlav((kf_code)abs(flav));
   Flavour beam_particle     = Flavour((kf_code)(abs(flav)));
   if (flav<0) beam_particle = beam_particle.Bar();
-  if ((abs(flav) != kf_p_plus) && !beam_particle.IsIon()) {
+  if (!(abs(flav)==kf_p_plus || abs(flav)==kf_e) && 
+      !beam_particle.IsIon()) {
     msg_Error()<<"Error in Beam_Initialization::SpecifySpectra :"<<endl
                <<"   Tried to initialize EPA for "<<beam_particle<<"."<<endl
-	       <<"   This option is not available. Result will be to terminate program."<<endl;
+	       <<"   This option is not available. "
+	       <<"Result will be to terminate program."<<endl;
     return false;
   }
   
@@ -204,7 +208,8 @@ bool Beam_Spectra_Handler::InitializeEPA(Data_Reader * dataread,int num)
   double  beam_mass         = beam_particle.Mass(true);
   double  beam_charge       = beam_particle.Charge();
   p_BeamBase[num]           = new EPA(beam_particle,beam_mass,beam_charge,
-				      beam_energy,beam_polarization,1-2*num,dataread);
+				      beam_energy,beam_polarization,
+				      1-2*num,dataread);
   return true;
 }
 

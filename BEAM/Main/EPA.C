@@ -28,7 +28,8 @@ EPA::EPA(const Flavour _beam,const double _mass,
   m_formfactor=read->GetValue<int>("EPA_Form_Factor_"+num,m_beam.FormFactor());
 
   if (m_pt_min>1.0) {
-    /* pt_min > 1 - according to approximation of 'qmi' calculation in CalculateWeight */
+    /* pt_min > 1 - according to approximation of 
+       'qmi' calculation in CalculateWeight */
     THROW(critical_error,"Too big p_T cut ( "+ToString(m_pt_min)+")");
   }
   if (m_debug) {
@@ -172,15 +173,22 @@ bool EPA::CalculateWeight(double x,double q2)
 {
   // x = omega/E = (E-E')/E  ; E,E' - incoming and outgoing protons energy
   //                           omega = E-E' - energy of emitted photon
-
-  if (abs(m_beam.Kfcode()) == kf_p_plus) {
-    const double alpha = m_aqed;
+  const double alpha = m_aqed;
+  m_x = x; m_Q2 = q2;
+  if (x>=1.) {
+    m_weight=0.0;
+    return 1;
+  }
+  if (abs(m_beam.Kfcode()) == kf_e) {
+    double f = alpha/M_PI*(1+sqr(1-m_x))/m_x*log(2.*m_energy/m_mass);
+    if (f < 0) f = 0.;
+    m_weight = f;
+    msg_Out()<<METHOD<<"(x = "<<m_x<<", q^2 = "<<q2<<") = "<<f<<", "
+	     <<"energy = "<<m_energy<<", "<<"mass = "<<m_mass<<".\n";
+    return 1;    
+  }
+  else if (abs(m_beam.Kfcode()) == kf_p_plus) {
     const double qz = 0.71;
-    m_x = x; m_Q2 = q2;
-    if (x==1) {
-      m_weight=0.0;
-      return 1;
-    }
     double f, qmi, qma;
     qma=m_q2Max/qz;
     // x = omega/E = (E-E')/E  ; E,E' - incoming and outgoing protons energy
@@ -195,8 +203,6 @@ bool EPA::CalculateWeight(double x,double q2)
     return 1;
   }
   else if (m_beam.IsIon()) { // n(x)
-    const double alpha = m_aqed;
-    m_x = x; m_Q2 = q2;
     const int atomicNumber = m_beam.GetAtomicNumber();
     const double radius = 1.2/.197*pow(atomicNumber, 1./3.);
     double f, omega0, gamma;
