@@ -654,7 +654,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
       IS.GetExternal(flavs);
       if (flavs.size()>1) {
         if (!p_isr->CheckConsistency(&flavs.front())) {
-          msg_Error()<<METHOD<<"(): Error in initialising isr ("
+          msg_Error()<<METHOD<<"(): Error in initialising ISR ("
                      <<p_isr->Flav(0)<<" -> "<<flavs[0]<<") x ("
                      <<p_isr->Flav(1)<<" -> "<<flavs[1]
                      <<"). Ignoring process."<<std::endl;

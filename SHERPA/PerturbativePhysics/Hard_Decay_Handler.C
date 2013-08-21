@@ -50,7 +50,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   /*
     TODO: Writing out a 1->3 channel which might have a large width in one
     resolved configuration, and a small one in another?
-    */
+  */
   m_store_results=dr.GetValue<int>("STORE_DECAY_RESULTS",0);
   m_br_weights=dr.GetValue<int>("HDH_BR_WEIGHTS",1);
   m_decay_tau=dr.GetValue<int>("DECAY_TAU_HARD",0);
@@ -102,21 +102,21 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   // initialize them sorted by masses:
   Decay_Map::iterator dmit;
   Vertex_Table offshell;
-  msg_Info()<<"Initialising hard decay tables."<<endl;
+  msg_Tracking()<<"Initialising hard decay tables."<<endl;
   size_t i(0);
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
     offshell.insert(make_pair(dmit->first,Vertex_List()));
-    msg_Info()<<"  Initialising two-body decays. Step "
-              <<++i<<"/"<<p_decaymap->size()<<" ("<<dmit->first<<")            "
-              <<endl;
+    msg_Tracking()<<"  Initialising two-body decays. Step "
+		  <<++i<<"/"<<p_decaymap->size()<<" ("<<dmit->first<<")            "
+		  <<endl;
     InitializeDirectDecays(dmit->second.at(0));
   }
   i=0;
-  if (p_decaymap->size()) msg_Info()<<endl;
+  if (p_decaymap->size()) msg_Tracking()<<endl;
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
-    msg_Info()<<"  Initialising three-body decays. Step "
-              <<++i<<"/"<<p_decaymap->size()<<" ("<<dmit->first<<")            "
-              <<endl;
+    msg_Tracking()<<"  Initialising three-body decays. Step "
+		  <<++i<<"/"<<p_decaymap->size()<<" ("<<dmit->first<<")            "
+		  <<endl;
     if (m_offshell=="None") {
       PRINT_INFO("Warning: Ignoring offshell decays as requested.");
     }
@@ -128,7 +128,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
     }
     else {
       THROW(fatal_error, "Parameter RESOLVE_DECAYS set to wrong value.")
-    }
+	}
 
     // force/disable specified decay channels
     for (size_t i=0;i<dmit->second.at(0)->size();++i) {
@@ -150,7 +150,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
       dmit->second.at(0)->Flav().SetWidth(dmit->second.at(0)->TotalWidth());
   }
 
-  if (p_decaymap->size()) msg_Info()<<endl<<*p_decaymap<<endl;
+  if (p_decaymap->size()) msg_Tracking()<<endl<<*p_decaymap<<endl;
   WriteDecayTables();
 }
 
@@ -338,7 +338,7 @@ vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
   /* TODO:
      What about cases where a 1->3 was resolved from one 1->2, but would have
      been possible from another 1->2 where it was decided not to be resolved?
-     */
+  */
 }
 
 bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
@@ -359,12 +359,12 @@ bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
         dc->SetMax(results[2]);
       }
       else {
-        msg_Info()<<"    Integrating "<<dc->Name()<<endl;
+        msg_Tracking()<<"    Integrating "<<dc->Name()<<endl;
         dc->CalculateWidth();
       }
     }
     else {
-      msg_Info()<<"    Integrating "<<dc->Name()<<endl;
+      msg_Tracking()<<"    Integrating "<<dc->Name()<<endl;
       dc->CalculateWidth();
     }
   }
@@ -600,21 +600,21 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     for (size_t i=0; i<copy->Legs().size(); ++i) {
       copy->Leg(i)->SetK(0);
       if (copy->Leg(i)->Id()!=idmother)
-      if (copy->Leg(i)->Col().m_i==lij->Col().m_j ||
-          copy->Leg(i)->Col().m_j==lij->Col().m_i) 
-        idk=copy->Leg(i)->Id();
+	if (copy->Leg(i)->Col().m_i==lij->Col().m_j ||
+	    copy->Leg(i)->Col().m_j==lij->Col().m_i) 
+	  idk=copy->Leg(i)->Id();
     }
     if (lij->Col().m_i==0 && lij->Col().m_j==0) {
-        // Ad hoc EW partner
-        size_t ampl_nout=ampl->Legs().size()-ampl->NIn();
-	if (ampl_nout==1) idk=ampl->Leg(0)->Id();
-	else {
+      // Ad hoc EW partner
+      size_t ampl_nout=ampl->Legs().size()-ampl->NIn();
+      if (ampl_nout==1) idk=ampl->Leg(0)->Id();
+      else {
         size_t select=ampl->Legs().size();
         do {
           select=ampl->NIn()+floor(ran->Get()*ampl_nout);
         } while (ampl->Leg(select)->Id()&idmother || select>ampl->Legs().size()-1);
         idk=ampl->Leg(select)->Id();
-	}
+      }
     }
     if (idk==0) THROW(fatal_error,"Colour partner not found");
     lij->SetK(idk);
@@ -659,21 +659,21 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     for (size_t i=0; i<step1->Legs().size(); ++i) {
       step1->Leg(i)->SetK(0);
       if (step1->Leg(i)->Id()!=idmother)
-      if (step1->Leg(i)->Col().m_i==lij->Col().m_j ||
-          step1->Leg(i)->Col().m_j==lij->Col().m_i) 
-        idk=step1->Leg(i)->Id();
+	if (step1->Leg(i)->Col().m_i==lij->Col().m_j ||
+	    step1->Leg(i)->Col().m_j==lij->Col().m_i) 
+	  idk=step1->Leg(i)->Id();
     }
     if (lij->Col().m_i==0 && lij->Col().m_j==0) {
-        // Ad hoc EW partner
-        size_t ampl_nout=ampl->Legs().size()-ampl->NIn();
-        if (ampl_nout==1) idk=ampl->Leg(0)->Id();
-        else {
+      // Ad hoc EW partner
+      size_t ampl_nout=ampl->Legs().size()-ampl->NIn();
+      if (ampl_nout==1) idk=ampl->Leg(0)->Id();
+      else {
         size_t select=ampl->Legs().size();
         do {
           select=ampl->NIn()+floor(ran->Get()*ampl_nout);
         } while (ampl->Leg(select)->Id()&idmother || select>ampl->Legs().size()-1);
         idk=ampl->Leg(select)->Id();
-        }
+      }
     }
     if (idk==0) THROW(fatal_error,"Colour partner not found");
     lij->SetK(idk);

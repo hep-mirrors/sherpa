@@ -138,9 +138,9 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     PHASIC::Color_Function_Decay* col=new PHASIC::Color_Function_Decay();
     AddDiagram(me, col);
     AddPSChannel( string("Isotropic"), 1., m_startmd);
-    msg_Info()<<"Calculating width for "<<Name()<<":\n";
+    msg_Tracking()<<"Calculating width for "<<Name()<<":\n";
     CalculateWidth();
-    msg_Info()<<"   yields "<<m_iwidth<<".\n";
+    msg_Tracking()<<"   yields "<<m_iwidth<<".\n";
     WriteOut(true);
   }
 }

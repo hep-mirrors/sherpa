@@ -141,7 +141,8 @@ void ISR_Handler::SetPDFMember() const
     if (p_isrbase[i]->On()) p_isrbase[i]->PDF()->SetPDFMember();
 }
 
-bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *partons) 
+bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,
+				   ATOOLS::Flavour *partons) 
 {
   bool fit = 1;
   for (int i=0;i<2;i++) {
