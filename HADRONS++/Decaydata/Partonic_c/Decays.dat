@@ -1,9 +1,9 @@
 Width: 4.1397e-14
-{3,-1,2}    |   0.593[Lenz] | c_sdbaru.dat 
-{3,-3,2}    |   0.030[Lenz] | c_ssbaru.dat 
-{3,-11,12}  |   0.165[Lenz] | c_se+nu_e.dat 
-{3,-13,14}  |   0.165[Lenz] | c_smu+nu_mu.dat 
-{1,-1,2}    |   0.030[Lenz] | c_ddbaru.dat 
+{3,-1,2}    |   0.706[Lenz] | c_sdbaru.dat 
+{3,-3,2}    |   0.033[Lenz] | c_ssbaru.dat 
+{3,-11,12}  |   0.104[Lenz] | c_se+nu_e.dat 
+{3,-13,14}  |   0.101[Lenz] | c_smu+nu_mu.dat 
+{1,-1,2}    |   0.042[Lenz] | c_ddbaru.dat 
 {1,-3,2}    |   0.002[Lenz] | c_dsbaru.dat 
-{1,-11,12}  |   0.008[Lenz] | c_de+nu_e.dat 
-{1,-13,14}  |   0.008[Lenz] | c_dmu+nu_mu.dat 
+{1,-11,12}  |   0.006[Lenz] | c_de+nu_e.dat 
+{1,-13,14}  |   0.006[Lenz] | c_dmu+nu_mu.dat 

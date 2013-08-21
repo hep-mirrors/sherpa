@@ -1,3 +1,2 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-
-{5232,22}	 | 1	 | Xibprime_XibP.dat;
+# Declare spectators {flav1:weight1,flav2,weight2,...}
+SPECTATORS     | {3201:1.}
