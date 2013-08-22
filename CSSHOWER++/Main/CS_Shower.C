@@ -241,13 +241,6 @@ bool CS_Shower::EstablishRelations(Parton * parton,Cluster_Leg * leg,
     if (col1!=0 && col1==spect->GetFlow(2)) {
       if ((parton->GetLeft() && parton->GetLeft()!=spect) ||
 	  (spect->GetRight() && spect->GetRight()!=parton)) {
-	//msg_Error()<<"Error in "<<METHOD<<":\n"
-	//	   <<"   have already left colour partner for \n"<<(*parton)
-	//	   <<"  --> ["<<parton->GetLeft()->GetFlow(1)
-	//	   <<", "<<parton->GetLeft()->GetFlow(2)<<"] while trying "
-	//	   <<"["<<spect->GetFlow(1)<<", "<<spect->GetFlow(2)<<"].\n"
-	//	   <<"   or right colour partner for \n"<<(*spect);
-	//return false;
 	connect = true;
       }
       else {
@@ -259,14 +252,6 @@ bool CS_Shower::EstablishRelations(Parton * parton,Cluster_Leg * leg,
     if (col2!=0 && col2==spect->GetFlow(1)) {
       if ((parton->GetRight() && parton->GetRight()!=spect) ||
 	  (spect->GetLeft() && spect->GetLeft()!=parton)) {
-	//msg_Error()<<"Error in "<<METHOD<<":\n"
-	//	   <<"   have already right colour partner for \n"<<(*parton)
-	//	   <<"  --> ["<<parton->GetRight()->GetFlow(1)
-	//	   <<", "<<parton->GetRight()->GetFlow(2)<<"] while trying "
-	//	   <<"["<<spect->GetLeft()->GetFlow(1)<<", "
-	//	   <<spect->GetLeft()->GetFlow(2)<<"].\n"
-	//	   <<"   or left colour partner for \n"<<(*spect);
-	//return false;
 	connect = true;
       }
       else {
@@ -279,21 +264,36 @@ bool CS_Shower::EstablishRelations(Parton * parton,Cluster_Leg * leg,
       if (spect->GetLeft()==parton)       parton->SetRight(spect);
       else if (spect->GetRight()==parton) parton->SetLeft(spect);
       else {
-	if (!parton->GetLeft())       parton->SetLeft(spect);
-	else if (!parton->GetRight()) parton->SetRight(spect);
+	if (!parton->GetLeft())           parton->SetLeft(spect);
+	else if (!parton->GetRight())     parton->SetRight(spect);
       }
     }
   }
   if (parton->GetFlavour().IsGluon()) {
-    if (parton->GetLeft()==NULL)  parton->SetLeft(parton->GetRight());
-    if (parton->GetRight()==NULL) parton->SetRight(parton->GetLeft());
+    if (parton->GetLeft()==NULL) {
+      msg_Debugging()<<METHOD<<": gluon "<<ATOOLS::ID(parton->Id())
+	       <<" with no left - use "
+	       <<ATOOLS::ID(parton->GetRight()->Id())<<" instead.\n";
+      parton->SetLeft(parton->GetRight());
+    }
+    if (parton->GetRight()==NULL) {
+      msg_Debugging()<<METHOD<<": gluon "<<ATOOLS::ID(parton->Id())
+	       <<" with no right - use "
+	       <<ATOOLS::ID(parton->GetLeft()->Id())<<" instead.\n";
+      parton->SetRight(parton->GetLeft());
+    }
   }
+  if (parton->GetRight()) parton->GetRight()->SetInvRight(parton);
+  if (parton->GetLeft())  parton->GetLeft()->SetInvLeft(parton);
   parton->SetStat(leg->Stat());
   return true;
 }
 
 bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
 {
+  msg_Debugging()<<"============================================================\n"
+	   <<"============================================================\n"
+	   <<"============================================================\n";
   CleanUp();
   p_rampl = ampl;
   p_ms    = ampl->MS();
@@ -328,12 +328,8 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
     parton->SetKin(p_shower->KinScheme());
     parton->SetId(leg->Id());
     if (is) {
-      if (Vec3D(p.Momentum())*Vec3D(rpa->gen.PBeam(0))>0.) {
-	parton->SetBeam(0);
-      }
-      else { 
-	parton->SetBeam(1);
-      }
+      if (Vec3D(p.Momentum())*Vec3D(rpa->gen.PBeam(0))>0.) parton->SetBeam(0);
+      else parton->SetBeam(1);
     }
     double kt2start(leg->KTStart());
     parton->SetStart(kt2start);   // start scale of shower
@@ -341,6 +337,7 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
     parton->SetVeto(sqr(rpa->gen.Ecms()));     // irrelevant 
     parton->SetConnected(leg->Connected());
     parton->SetMass2(p_ms->Mass2(leg->Flav()));
+    parton->SetInvColours(true);
     singlet->push_back(parton);
     parton->SetSing(singlet);
   }
@@ -350,16 +347,28 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
     leg    = pit->second;
     if (!EstablishRelations(parton,leg,pmap)) {
       for (size_t i(0);i<ampl->Legs().size();++i) {
-	msg_Out()<<(*ampl->Leg(i))<<"\n";
+	msg_Debugging()<<(*ampl->Leg(i))<<"\n";
       }
       return false;
     }
+  }
+  msg_Debugging()<<METHOD<<" for "<<lmap.size()<<" partons:\n";
+  for (std::map<Parton*,Cluster_Leg*>::iterator pit=lmap.begin();
+       pit!=lmap.end();pit++) {
+    parton = pit->first;
+    if (parton->GetType()==pst::IS) continue;
+    msg_Debugging()<<parton<<" ("<<parton->GetFlavour()<<") "
+	     <<"["<<parton->GetFlow(1)<<", "<<parton->GetFlow(2)<<"], "
+	     <<"{"<<parton->GetLeft()<<", "<<parton->GetRight()<<"}; "
+	     <<"{"<<parton->GetInvLeft()<<", "<<parton->GetInvRight()<<"};\n";
   }
   p_shower->SetMS(p_ms);
 
   pmap.clear();
   lmap.clear();
   m_allsinglets.push_back(singlet);
+  msg_Debugging()<<"-------------------------------------------------------\n"
+	   <<"-------------------------------------------------------\n";
   return true;
 }
 
