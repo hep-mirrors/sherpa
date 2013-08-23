@@ -590,7 +590,7 @@ double LF_FVF_II::Z()
 
 double LF_VFF_FF::operator()
   (const double z,const double y,const double eta,
-   const double _scale,const double Q2)
+   const double scale,const double Q2)
 {
   double mui2  = sqr(p_ms->Mass(m_flavs[1]))/Q2;
   double muj2  = sqr(p_ms->Mass(m_flavs[2]))/Q2;
@@ -598,8 +598,6 @@ double LF_VFF_FF::operator()
   //the massless case 
   double massless = (1.-2.*z*(1.-z));
   double longpol = 0.5;
-  double scale = Q2*(1.0-mui2-muj2-muk2)*y;
-  if (_scale<0.0) scale=_scale;
   if (mui2==0. && muj2==0. && muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y);
@@ -657,14 +655,12 @@ double LF_VFF_FI::CDISMax()
 
 double LF_VFF_FI::operator()
   (const double z,const double y,const double eta,
-   const double _scale,const double Q2)
+   const double scale,const double Q2)
 {
   double muQ2 = sqr(p_ms->Mass(m_flavs[1]))*(1.-y)/Q2;
   //the massless case 
   double massless = ( (1.-2.*z*(1.-z))*(1.-0.5/z*CDIS(y,z)) + CDIS(z,y) );
   double longpol = 0.5;
-  double scale = (Q2+p_ms->Mass2(m_flspec))*y/(1.0-y)-2.0*p_ms->Mass2(m_flavs[1]);
-  if (_scale<0.0) scale=_scale;
   if (muQ2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);

@@ -349,7 +349,7 @@ bool Sudakov::Generate(Parton * split)
       if (Q2<=mi2+mj2+mk2) return false;
       m_y = p_shower->KinFF()->GetY(Q2,m_kperp2,m_z,mi2,mj2,mk2,
 				    (*m_splitter)->GetFlavourA(),
-				    (*m_splitter)->GetFlavourB());
+				    (*m_splitter)->GetFlavourC());
       if (m_y<0.0 || m_y>1.0) continue;
       x   = 0.;
     }    
@@ -362,7 +362,7 @@ bool Sudakov::Generate(Parton * split)
       Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
       m_y = p_shower->KinFI()->GetY(-Q2,m_kperp2,m_z,mi2,mj2,ma2,
 				    (*m_splitter)->GetFlavourA(),
-				    (*m_splitter)->GetFlavourB());
+				    (*m_splitter)->GetFlavourC());
       m_y = 1.0-m_y*(-Q2-mij2-ma2)/(-Q2-mi2-mj2-ma2);
       x   = split->GetSpect()->Xbj();
       if (m_y<0.0 || m_y>1.0-x) continue;

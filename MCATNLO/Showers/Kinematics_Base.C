@@ -12,12 +12,15 @@ using namespace ATOOLS;
 
 double Kinematics_FF::GetY(const double &Q2,const double &kt2,const double &z,
 			   const double &mi2,const double &mj2,const double &mk2,
-			   const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flb,
+			   const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc,
 			   const bool force) const
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2<=mi2+mj2+mk2)) return -1.0;
-  if (fla.IsFermion()) return kt2/(1.0-z)/(Q2-mi2-mj2-mk2);
-  if (flb.IsFermion()) return kt2/(Q2-mi2-mj2-mk2);
+  if (fla.IsFermion()) {
+    if (flc.IsFermion()) return kt2/z/(Q2-mi2-mj2-mk2);
+    return kt2/(1.0-z)/(Q2-mi2-mj2-mk2);
+  }
+  if (flc.IsFermion()) return kt2/(Q2-mi2-mj2-mk2);
   return kt2/(z*(1.0-z))/(Q2-mi2-mj2-mk2);
 }
 
@@ -51,12 +54,15 @@ int Kinematics_FF::MakeKinematics
 
 double Kinematics_FI::GetY(const double &Q2,const double &kt2,const double &z,
 			   const double &mi2,const double &mj2,const double &ma2,
-			   const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flb,
+			   const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc,
 			   const bool force) const
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2>=mi2+mj2+ma2)) return -1.0;
-  if (fla.IsFermion()) return 1.0/(1.0-kt2/(1.0-z)/(Q2-ma2-mi2-mj2));
-  if (flb.IsFermion()) return 1.0/(1.0-kt2/(Q2-ma2-mi2-mj2));
+  if (fla.IsFermion()) {
+    if (flc.IsFermion()) return 1.0/(1.0-kt2/z/(Q2-ma2-mi2-mj2));
+    return 1.0/(1.0-kt2/(1.0-z)/(Q2-ma2-mi2-mj2));
+  }
+  if (flc.IsFermion()) return 1.0/(1.0-kt2/(Q2-ma2-mi2-mj2));
   return 1.0/(1.0-kt2/(z*(1.0-z))/(Q2-ma2-mi2-mj2));
 }
 
