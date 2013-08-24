@@ -507,14 +507,11 @@ bool Sudakov::DefineIIBoundaries(double Q2,double x,int beam)
 
 double Sudakov::OverIntegrated(const double zmin,const double zmax,
 			       const double scale,const double xbj,int beam) {
-  for (m_splitter=m_splittings.begin();
-       m_splitter!=m_splittings.end();m_splitter++) {
-    //msg_Out()<<METHOD<<": "<<(*m_splitter)<<"\n";
+  for (m_splitter=m_splittings.begin();m_splitter!=m_splittings.end();m_splitter++) {
     if ((*m_splitter)->GetType()==m_type && 
 	(*m_splitter)->Coupling()->AllowSpec(m_flspec)) {
       if ((*m_splitter)->PureQCD() && 
-	  !(p_split->GetLeft()==p_spect || 
-	    p_split->GetRight()==p_spect)) continue;
+	  !(p_split->GetLeft()==p_spect || p_split->GetRight()==p_spect)) continue;
       bool match=false;
       switch (m_type) {
       case cstp::FF: 

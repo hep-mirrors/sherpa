@@ -20,14 +20,9 @@ namespace CSSHOWER {
     if (part.m_pst==pst::IS)      str<<"     (Initial state parton)";
     else if (part.m_pst==pst::FS) str<<"     (Final state parton)  ";
     else                     str<<"                           ";
-    str<<"  Colour partners [";
-    if (part.p_left) str<<ATOOLS::ID(part.p_left->Id());
-    else str<<"(--)";
-    str<<", ";
-    if (part.p_right) str<<ATOOLS::ID(part.p_right->Id());
-    else str<<"(--)";
-    str<<"]"<<endl;
-    if (part.InvColours()) {
+    str<<"  Colour partners ("
+       <<part.p_left<<","<<part.p_right<<")"<<endl;
+    if (part.p_invleft || part.p_invright) {
       str<<"   Inverse connections [";
       if (part.p_invleft) str<<ATOOLS::ID(part.p_invleft->Id());
       else str<<"(--)";

@@ -264,22 +264,22 @@ bool CS_Shower::EstablishRelations(Parton * parton,Cluster_Leg * leg,
       if (spect->GetLeft()==parton)       parton->SetRight(spect);
       else if (spect->GetRight()==parton) parton->SetLeft(spect);
       else {
-	if (!parton->GetLeft())           parton->SetLeft(spect);
-	else if (!parton->GetRight())     parton->SetRight(spect);
+	if (!parton->GetLeft())       parton->SetLeft(spect);
+	else if (!parton->GetRight()) parton->SetRight(spect);
       }
     }
   }
   if (parton->GetFlavour().IsGluon()) {
     if (parton->GetLeft()==NULL) {
       msg_Debugging()<<METHOD<<": gluon "<<ATOOLS::ID(parton->Id())
-	       <<" with no left - use "
-	       <<ATOOLS::ID(parton->GetRight()->Id())<<" instead.\n";
+		     <<" with no left - use "
+		     <<ATOOLS::ID(parton->GetRight()->Id())<<" instead.\n";
       parton->SetLeft(parton->GetRight());
     }
     if (parton->GetRight()==NULL) {
       msg_Debugging()<<METHOD<<": gluon "<<ATOOLS::ID(parton->Id())
-	       <<" with no right - use "
-	       <<ATOOLS::ID(parton->GetLeft()->Id())<<" instead.\n";
+		     <<" with no right - use "
+		     <<ATOOLS::ID(parton->GetLeft()->Id())<<" instead.\n";
       parton->SetRight(parton->GetLeft());
     }
   }
@@ -291,9 +291,6 @@ bool CS_Shower::EstablishRelations(Parton * parton,Cluster_Leg * leg,
 
 bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
 {
-  msg_Debugging()<<"============================================================\n"
-	   <<"============================================================\n"
-	   <<"============================================================\n";
   CleanUp();
   p_rampl = ampl;
   p_ms    = ampl->MS();
@@ -328,8 +325,12 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
     parton->SetKin(p_shower->KinScheme());
     parton->SetId(leg->Id());
     if (is) {
-      if (Vec3D(p.Momentum())*Vec3D(rpa->gen.PBeam(0))>0.) parton->SetBeam(0);
-      else parton->SetBeam(1);
+      if (Vec3D(p.Momentum())*Vec3D(rpa->gen.PBeam(0))>0.) {
+	parton->SetBeam(0);
+      }
+      else { 
+	parton->SetBeam(1);
+      }
     }
     double kt2start(leg->KTStart());
     parton->SetStart(kt2start);   // start scale of shower
@@ -337,7 +338,6 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
     parton->SetVeto(sqr(rpa->gen.Ecms()));     // irrelevant 
     parton->SetConnected(leg->Connected());
     parton->SetMass2(p_ms->Mass2(leg->Flav()));
-    parton->SetInvColours(true);
     singlet->push_back(parton);
     parton->SetSing(singlet);
   }
@@ -358,17 +358,15 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
     parton = pit->first;
     if (parton->GetType()==pst::IS) continue;
     msg_Debugging()<<parton<<" ("<<parton->GetFlavour()<<") "
-	     <<"["<<parton->GetFlow(1)<<", "<<parton->GetFlow(2)<<"], "
-	     <<"{"<<parton->GetLeft()<<", "<<parton->GetRight()<<"}; "
-	     <<"{"<<parton->GetInvLeft()<<", "<<parton->GetInvRight()<<"};\n";
+		   <<"["<<parton->GetFlow(1)<<", "<<parton->GetFlow(2)<<"], "
+		   <<"{"<<parton->GetLeft()<<", "<<parton->GetRight()<<"}; "
+		   <<"{"<<parton->GetInvLeft()<<", "<<parton->GetInvRight()<<"};\n";
   }
   p_shower->SetMS(p_ms);
 
   pmap.clear();
   lmap.clear();
   m_allsinglets.push_back(singlet);
-  msg_Debugging()<<"-------------------------------------------------------\n"
-	   <<"-------------------------------------------------------\n";
   return true;
 }
 
