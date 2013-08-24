@@ -225,8 +225,8 @@ ATOOLS::Flavour AMEGIC::Process_Base::ReMap
     id=ToString(fl.Bar())+ToString(((1<<(m_nin+m_nout))-1)-cid);
     std::map<std::string,ATOOLS::Flavour>::const_iterator fit(m_fmap.find(id));
     if (fit!=m_fmap.end()) return swap?fit->second:fit->second.Bar();
-    Flavour_Map::const_iterator efit(m_eflmap.find(ifl));
-    if (efit!=m_eflmap.end()) return efit->second;
+    Flavour_Map::const_iterator efit(m_eflmap.find(fl));
+    if (efit!=m_eflmap.end()) return swap?efit->second.Bar():efit->second;
     if (ifl.IsBoson()) return ifl;
     else {
       DO_STACK_TRACE;

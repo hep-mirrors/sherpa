@@ -127,6 +127,7 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
 	  
 	p_partner = (Single_LOProcess_MHV*)links[j];
 	m_iresult = p_partner->Result()*m_sfactor;
+	InitFlavmap(p_partner);
 
 	Minimize();
 	return 1;
@@ -146,6 +147,7 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
 			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
 	  p_partner   = (Single_LOProcess_MHV*)links[j];
 	  m_pslibname = links[j]->PSLibName();
+	  InitFlavmap(p_partner);
 	  break;
 	}
       } 
@@ -270,6 +272,7 @@ int Single_LOProcess_MHV::InitAmplitude(Model_Base * model,Topology* top,
 			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
 	  p_partner   = (Single_LOProcess_MHV*)links[j];
 	  m_pslibname = links[j]->PSLibName();
+	  InitFlavmap(p_partner);
 	  break;
 	}
       } 
