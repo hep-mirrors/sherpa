@@ -121,6 +121,10 @@ void Output_LHEF::Output(Blob_List* blobs, const double weight)
   if ((*sp)["MC@NLO_KT2_Start"])
     m_outstream<<"' kt2_start='"<<(*sp)["MC@NLO_KT2_Start"]->Get<double>()
 	       <<"' kt2_stop='"<<(*sp)["MC@NLO_KT2_Stop"]->Get<double>();
+  if ((*sp)["Factorisation_Scale"])
+    m_outstream<<"' muf2='"<<(*sp)["Factorisation_Scale"]->Get<double>();
+  if ((*sp)["Renormalization_Scale"])
+    m_outstream<<"' mur2='"<<(*sp)["Renormalization_Scale"]->Get<double>();
   m_outstream<<"'>"<<std::endl;
   for (Blob_List::const_iterator blit=blobs->begin();blit!=blobs->end();++blit){
     if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {

@@ -19,7 +19,7 @@ namespace SHERPA {
     METOOLS::Amplitude2_Tensor* p_atensor;
 
     double m_overweight;
-    int m_setcolors;
+    int m_setcolors, m_cmode;
 
     bool FillBlob(ATOOLS::Blob_List *const bl,ATOOLS::Blob *const b);
 

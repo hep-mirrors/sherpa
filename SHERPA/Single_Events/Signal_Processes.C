@@ -2,6 +2,7 @@
 
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/MCatNLO_Process.H"
+#include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
@@ -30,6 +31,7 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler) :
     THROW(critical_error,"No beam remnant handler found.");
   Data_Reader read(" ",";","!","=");
   m_setcolors=read.GetValue<int>("SP_SET_COLORS",0);
+  m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
 }
 
 Signal_Processes::~Signal_Processes()
@@ -86,6 +88,9 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       if (m_setcolors) ampl=mcatnloproc->GetAmplitude();
     }
   }
+  else {
+    if (m_setcolors) ampl=proc->Get<Single_Process>()->Cluster(m_cmode);
+  }
   Vec4D cms = Vec4D(0.,0.,0.,0.);
   for (size_t i=0;i<proc->NIn();i++) 
     cms += proc->Integrator()->Momenta()[i];
@@ -127,8 +132,8 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       particle->SetFlow(2,ampl->Leg(i)->Col().m_j);
     }
   }
-  DEBUG_VAR(*blob);
-  if (ampl) {
+  if (ampl && p_mehandler->HasNLO()==3 &&
+      proc->Parent()->Info().m_fi.NLOType()!=nlo_type::lo) {
     if (ampl->NLO()&4) {
       blob->AddData("MC@NLO_KT2_Stop",new Blob_Data<double>(0.0));
       blob->AddData("MC@NLO_KT2_Start",new Blob_Data<double>(ampl->Q2()));
