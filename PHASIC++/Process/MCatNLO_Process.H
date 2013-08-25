@@ -26,7 +26,7 @@ namespace PHASIC {
     PDF::NLOMC_Base  *p_nlomc;
 
     double m_lastrs, m_lastb, m_lastvi;
-    int    m_fomode, m_wassevent;
+    int    m_fomode, m_hpsmode, m_wassevent;
 
     ATOOLS::StringIDipSet_Map m_iinfo;
     ATOOLS::StringDDipSet_Map m_dinfo;

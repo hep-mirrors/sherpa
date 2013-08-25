@@ -94,6 +94,8 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   Data_Reader read(" ",";","!","=");
   read.SetInputPath(rpa->GetPath());
   read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  if (!read.ReadFromFile(m_hpsmode,"PP_HPSMODE")) m_hpsmode=8;
+  else msg_Info()<<METHOD<<"(): Set H event shower mode "<<m_hpsmode<<".\n";
   if (!read.ReadFromFile(m_fomode,"PP_FOMODE")) m_fomode=0;
   else msg_Info()<<METHOD<<"(): Set fixed order mode "<<m_fomode<<".\n";
   if (!m_fomode) {
@@ -286,7 +288,7 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     ampl->SetMuF2(scs->Scale(stp::fac));
     ampl->SetQ2(scs->Scale(stp::res));
   }
-  if (p_ampl->Next()) p_ampl->Next()->SetNLO(8);
+  if (p_ampl->Next()) p_ampl->Next()->SetNLO(m_hpsmode);
   Selector_Base *jf=p_rsproc->Selected()->
     Selector()->GetSelector("Jetfinder");
   if (jf && m_nout-1<m_pinfo.m_fi.NMaxExternal()) {
