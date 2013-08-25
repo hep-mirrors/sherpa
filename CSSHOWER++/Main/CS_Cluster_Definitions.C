@@ -98,7 +98,8 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	if ((i==ampl->Leg(0) && fi.m_pi[3]<0.0) ||
 	    (i==ampl->Leg(1) && fi.m_pi[3]>0.0) ||
 	    fi.m_pi[0]<0.0 || fi.m_z<0.0 || fi.m_stat!=1) return cs;
-	double kt2=-2.0*(pi*pj)*(1.0-fi.m_z)-mj2-sqr(1.0-fi.m_z)*mi2;
+	double kt2=-2.0*(pi*pj)*(1.0-fi.m_z);
+	if (j->Flav().IsFermion()) kt2=-2.0*(pi*pj);
 	cs=CS_Parameters(kt2,fi.m_z,fi.m_y,fi.m_phi,fi.m_z,Q2,1,fi.m_mode,kmode);
 	cs.m_pk=pk;
       }
@@ -107,7 +108,8 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	if ((i==ampl->Leg(0) && ii.m_pi[3]<0.0) ||
 	    (i==ampl->Leg(1) && ii.m_pi[3]>0.0) ||
 	    ii.m_pi[0]<0.0 || ii.m_z<0.0 || ii.m_stat!=1) return cs;
-	double kt2=-2.0*(pi*pj)*(1.0-ii.m_z)-mj2-sqr(1.0-ii.m_z)*mi2;
+	double kt2=-2.0*(pi*pj)*(1.0-ii.m_z);
+	if (j->Flav().IsFermion()) kt2=-2.0*(pi*pj);
 	cs=CS_Parameters(kt2,ii.m_z,ii.m_y,ii.m_phi,ii.m_z,Q2,3,kin,kmode);
 	cs.m_pk=-pk;
       }

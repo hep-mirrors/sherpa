@@ -332,7 +332,9 @@ bool Sudakov::Generate(Parton * split)
       double mi2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourC())));
       double mk2 = sqr(p_rms->Mass(m_flspec));
       Q2 = -(split->Momentum()-split->GetSpect()->Momentum()).Abs2();
-      m_y = p_shower->KinIF()->GetY(-Q2,m_kperp2,m_z,ma2,mi2,mk2);
+      m_y = p_shower->KinIF()->GetY(-Q2,m_kperp2,m_z,ma2,mi2,mk2,
+				    (*m_splitter)->GetFlavourB(),
+				    (*m_splitter)->GetFlavourC());
       x   = split->Xbj();
       if (m_y<0.0 || m_y>1.0 || m_z<x) continue;
     }
@@ -342,7 +344,9 @@ bool Sudakov::Generate(Parton * split)
       double mi2 = sqr(p_rms->Mass(((*m_splitter)->GetFlavourC())));
       double mb2 = sqr(p_rms->Mass(m_flspec));
       Q2 = (split->Momentum()+split->GetSpect()->Momentum()).Abs2();
-      m_y = p_shower->KinII()->GetY(Q2,m_kperp2,m_z,ma2,mi2,mb2);
+      m_y = p_shower->KinII()->GetY(Q2,m_kperp2,m_z,ma2,mi2,mb2,
+				    (*m_splitter)->GetFlavourB(),
+				    (*m_splitter)->GetFlavourC());
       x   = split->Xbj();
       if (m_y<0.0 || m_y>1.0-m_z || m_z<x) continue;
     }

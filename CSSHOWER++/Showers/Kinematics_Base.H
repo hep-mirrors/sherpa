@@ -32,7 +32,7 @@ namespace CSSHOWER {
 		       Parton *&,const int mode=0);
     double GetY(const double &Q2,const double &kt2,const double &z,
 		const double &s1,const double &s2,const double &s3,
-		const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flb,
+		const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc,
 		const bool force=false) const;
   };
   
@@ -45,7 +45,7 @@ namespace CSSHOWER {
 		       Parton *&,const int mode=0);
     double GetY(const double &Q2,const double &kt2,const double &z,
 		const double &s1,const double &s2,const double &s3,
-		const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flb,
+		const ATOOLS::Flavour &fla,const ATOOLS::Flavour &flc,
 		const bool force=false) const;
   };
 
@@ -58,6 +58,7 @@ namespace CSSHOWER {
 		       Parton *&,const int mode=0);
     double GetY(const double &Q2,const double &kt2,const double &z,
 		const double &s1,const double &s2,const double &s3,
+		const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
 		const bool force=false) const;
   };
 
@@ -70,6 +71,7 @@ namespace CSSHOWER {
 		       Parton *&,const int mode=0);
     double GetY(const double &Q2,const double &kt2,const double &z,
 		const double &s1,const double &s2,const double &s3,
+		const ATOOLS::Flavour &flb,const ATOOLS::Flavour &flc,
 		const bool force=false) const;
   };
 }
