@@ -78,7 +78,9 @@ section of the steering file or the matrix element data file `ME.dat',
 respectively.
 
 @menu
-* ME_QED::           Mode of operation.
+* ME_QED::                       Mode of operation.
+* ME_QED_CLUSTERING::            Identify and preserve resonances.
+* ME_QED_CLUSTERING_THRESHOLD::  Threshold for identifying resonances.
 @end menu
 
 @node ME_QED
@@ -95,6 +97,25 @@ declaration (cf. @ref{Processes}) this can be taken into account and dedicated
 higher order matrix elements can be used (if @code{YFS_MODE = 2} and
 @code{YFS_USE_ME = 1}).
 
+@node ME_QED_CLUSTERING
+@subsubsection ME_QED_CLUSTERING
+@cindex ME_QED_CLUSTERING
+@code{ME_QED_CLUSTERING = On}/@code{Off} switches the phase space point
+dependent identification of possible resonances within the hard matrix
+element on or off, respectively. The default is @option{On}.
+Resonances are identified by recombining the electroweak final state of
+the matrix element into resonances that are allowed by the model.
+Competing resonances are identified by their on-shell-ness, i.e.
+the distance of the decay product's invariant mass from the nominal
+resonance mass in units of the resonance width.
+
+@node ME_QED_CLUSTERING_THRESHOLD
+@subsubsection ME_QED_CLUSTERING_THRESHOLD
+@cindex ME_QED_CLUSTERING_THRESHOLD
+Sets the maximal distance of the decay product invariant mass from the
+nominal resonance mass in units of the resonance width in order for the
+resonance to be identified. The default is
+@option{ME_QED_CLUSTERING_THRESHOLD = 1}.
 
 @node QED Corrections to Hadron Decays
 @subsection QED Corrections to Hadron Decays
