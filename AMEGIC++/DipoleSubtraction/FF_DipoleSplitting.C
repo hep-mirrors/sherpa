@@ -40,7 +40,18 @@ void FF_DipoleSplitting::SetMomenta(const Vec4D* mom)
   m_zj   = 1.-m_zi;
 
   m_Q2 = (m_pi+m_pj+m_pk).Abs2();
-  m_kt2 = m_Q2*m_yijk*m_zi*m_zj;
+  m_kt2 = m_Q2*m_yijk;
+  switch (m_ft) {
+  case 1:
+    m_kt2*=m_zj;
+    break;
+  case 2:
+    m_kt2*=m_zi;
+    break;
+  case 4:
+    m_kt2*=m_zi*m_zj;
+    break;
+  }
 
 //   m_pt1   =     m_zi*m_pi;
 //   m_pt2   = -1.*m_zj*m_pj;
@@ -132,7 +143,18 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
   m_zi   = (m_pi*m_pk)/(m_pi*m_pk+m_pj*m_pk);
   m_zj   = 1.-m_zi;
 
-  m_kt2  = 2.0*m_pi*m_pj*m_zi*m_zj-sqr(m_zi)*m_mj-sqr(m_zj)*m_mi;
+  m_kt2  = 2.0*m_pi*m_pj;
+  switch (m_ft) {
+  case 1:
+    m_kt2*=m_zj;
+    break;
+  case 2:
+    m_kt2*=m_zi;
+    break;
+  case 4:
+    m_kt2*=m_zi*m_zj;
+    break;
+  }
 
   m_vijk = Vrel(m_pi+m_pj,m_pk);
   
