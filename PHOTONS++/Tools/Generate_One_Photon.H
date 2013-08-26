@@ -3,6 +3,10 @@
 
 #include "PHOTONS++/Main/Dipole_Type.H"
 
+namespace ATOOLS {
+  class Histogram_2D;
+}
+
 namespace PHOTONS {
   class Generate_One_Photon {
     private:
@@ -22,12 +26,15 @@ namespace PHOTONS {
       Generate_One_Photon(const double&, const double&,
                           const double&, Dipole_Type::code);
       Generate_One_Photon(const ATOOLS::Particle_Vector&,
-                          const std::vector<double>&,double, Dipole_Type::code);
+                          const IdPairNbarVector&,double,
+                          Dipole_Type::code);
       ~Generate_One_Photon();
 
       inline ATOOLS::Particle * GetPhoton() { return p_photon; }
 
       void SetMinimalPhotonAngle(const double&);
+
+      static ATOOLS::Histogram_2D *s_histo;
   };
 
 

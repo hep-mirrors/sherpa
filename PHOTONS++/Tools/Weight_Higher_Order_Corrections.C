@@ -15,16 +15,16 @@ using namespace std;
 Weight_Higher_Order_Corrections::Weight_Higher_Order_Corrections
 (const Particle_Vector_Vector& pvv_old, const Particle_Vector_Vector& pvv_new,
  Dipole_Type::code dtype) : m_n(pvv_new[4].size()), p_pme(NULL) {
+  DEBUG_FUNC(PHOTONS::Photons::s_useme);
   if (PHOTONS::Photons::s_useme)
     p_pme = PHOTONS_ME_Base::GetIRsubtractedME(pvv_old);
   if (p_pme) {
+    msg_Debugging()<<"ME -> "<<p_pme->Name()<<std::endl;
     p_pme->FillMomentumArrays(pvv_new);
     CalculateWeightAndMaxWithME();
   }
   else {
-#ifdef PHOTONS_DEBUG
-    PRINT_INFO("no ME found");
-#endif
+    msg_Debugging()<<"ME -> none"<<std::endl;
     m_dtype       = dtype;
     m_newdipole   = pvv_new[2];
     m_olddipole   = pvv_old[2];

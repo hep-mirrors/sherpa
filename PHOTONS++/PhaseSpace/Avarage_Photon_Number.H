@@ -5,6 +5,9 @@
 #include "PHOTONS++/Main/Dipole_Type.H"
 
 namespace PHOTONS {
+  struct IdPairNbar;
+  typedef std::vector<IdPairNbar> IdPairNbarVector;
+
   class Avarage_Photon_Number {
     private:
       double              m_omegaMax;
@@ -12,7 +15,7 @@ namespace PHOTONS {
       ATOOLS::Particle_Vector m_dipole;
 
       double              m_nbar;
-      std::vector<double> m_nbars;
+      IdPairNbarVector    m_nbars;
 
       void    CalculateAvaragePhotonNumber();
       double  CalculateBeta(const ATOOLS::Vec4D&);
@@ -24,8 +27,8 @@ namespace PHOTONS {
                             const double&, const double&);
       ~Avarage_Photon_Number();
 
-      double              GetNBar()                     { return m_nbar; }
-      std::vector<double> GetNBars()                    { return m_nbars; }
+      const double            GetNBar()  const { return m_nbar; }
+      const IdPairNbarVector& GetNBars() const { return m_nbars; }
 
   };
 

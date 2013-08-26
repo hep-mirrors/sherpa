@@ -9,23 +9,25 @@ namespace ATOOLS {
 }
 
 namespace PHOTONS {
+  struct IdPairNbar;
+  typedef std::vector<IdPairNbar> IdPairNbarVector;
+
   class Generate_Multipole_Photon_Angle {
     private:
       ATOOLS::Particle_Vector m_dipole;
-      double              m_nbar;
-      std::vector<double> m_nbars;
-      unsigned int        m_i;
-      unsigned int        m_j;
+      double              m_posnbar;
+      IdPairNbarVector    m_nbars, m_posnbars;
       double              m_theta;
       double              m_phi;
 
       double  CalculateBeta(const ATOOLS::Vec4D&);
       void    GenerateMultipoleAngle();
-      void    IndexLookup(unsigned int);
+      double  CalculateWeightByThetaPhi(const double&, const double&);
+      double  CalculateWeightByVector(const ATOOLS::Vec4D&);
 
     public:
       Generate_Multipole_Photon_Angle(const ATOOLS::Particle_Vector&,
-                                      const std::vector<double>&);
+                                      const IdPairNbarVector&);
       ~Generate_Multipole_Photon_Angle();
 
       inline double  GetTheta()      { return m_theta; }

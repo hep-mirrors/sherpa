@@ -2,8 +2,9 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "PHOTONS++/Main/Define_Dipole.H"
+#include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Phys/Blob.H"
+#include "PHOTONS++/Main/Define_Dipole.H"
 
 
 using namespace PHOTONS;
@@ -16,6 +17,10 @@ bool   PHOTONS::Photons::s_useme         = true;
 double PHOTONS::Photons::s_ircutoff      = 1E-3;
 int    PHOTONS::Photons::s_ircutoffframe = 0;
 double PHOTONS::Photons::s_accu          = 1E-6;
+int    PHOTONS::Photons::s_nmax          = std::numeric_limits<double>::max();
+double PHOTONS::Photons::s_drcut         = 1000.;
+bool   PHOTONS::Photons::s_strict        = false;
+double PHOTONS::Photons::s_reducemax     = 1.;
 
 double PHOTONS::Photons::s_alpha                = 0.;
 bool   PHOTONS::Photons::s_userunningparameters = false;
@@ -43,12 +48,21 @@ Photons::Photons(Data_Reader* reader, bool ana) :
               <<"IR cut-off for soft photon radiation unkown ...\n"
               <<"setting it to 'Multipole_CMS' ...\n";
   }
+  s_nmax          = reader->GetValue<int>("YFS_MAXEM",-1);
+  if (s_nmax<0) s_nmax = std::numeric_limits<double>::max();
+  s_drcut         = reader->GetValue<double>("YFS_DRCUT",1000.);
+  s_strict        = reader->GetValue<int>("YFS_STRICTNESS",0);
+  s_reducemax     = reader->GetValue<double>("YFS_REDUCE_MAXIMUM",1.);
   s_accu          = sqrt(rpa->gen.Accu());
   m_success       = true;
   m_photonsadded  = false;
   msg_Debugging()<<METHOD<<"(){\n"
 		 <<"  Mode: "<<s_mode
 		 <<" ,  MEs: "<<(s_mode>1?s_useme:0)
+		 <<" ,  nmax: "<<s_nmax
+		 <<" ,  strict: "<<s_strict
+		 <<" ,  dRcut: "<<s_drcut
+		 <<" ,  reducemax: "<<s_reducemax
 		 <<" ,  IR cut-off: "<<(s_mode>0?s_ircutoff:0)
 		 <<" in frame "<<irframe<<" ("<<s_ircutoffframe<<")"
 		 <<" ,  use running parameters "<<s_userunningparameters
@@ -64,6 +78,10 @@ Photons::Photons(bool ana) :
   s_useme         = true;
   s_ircutoff      = 1E-3;
   s_ircutoffframe = 0;
+  s_nmax          = std::numeric_limits<double>::max();
+  s_drcut         = 1000.;
+  s_strict        = false;
+  s_reducemax     = 1.;
   s_accu          = sqrt(rpa->gen.Accu());
   s_userunningparameters = false;
   m_success       = true;
@@ -71,6 +89,10 @@ Photons::Photons(bool ana) :
   msg_Debugging()<<METHOD<<"(){\n"
 		 <<"  Mode: "<<s_mode
 		 <<" ,  MEs: "<<(s_mode>1?s_useme:0)
+		 <<" ,  nmax: "<<s_nmax
+		 <<" ,  strict: "<<s_strict
+		 <<" ,  dRcut: "<<s_drcut
+		 <<" ,  reducemax: "<<s_reducemax
 		 <<" ,  IR cut-off: "<<(s_mode>0?s_ircutoff:0)
 		 <<" in frame "<<s_ircutoffframe
 		 <<" ,  use running parameters "<<s_userunningparameters
@@ -83,24 +105,11 @@ Photons::~Photons() {
 bool Photons::AddRadiation(Blob * blob) {
 
   if ((blob->Status() == blob_status::needs_extraQED) && (m_analyse == true)) {
-#ifdef PHOTONS_DEBUG
-    msg_Out()<<"************************************************************\n"
-             <<"** next event                                             **\n"
-             <<"************************************************************\n";
-#endif
     ResetAlphaQED();
     Define_Dipole dress(blob);
     dress.AddRadiation();
     m_photonsadded = dress.AddedAnything();
     m_success = dress.DoneSuccessfully();
-
-#ifdef PHOTONS_DEBUG
-    if (m_success)
-      msg_Out()<<*blob<<endl;
-    else
-      msg_Out()<<"generation of YFS-radiation failed"<<endl;
-#endif
-
   }
   return m_photonsadded;
 }

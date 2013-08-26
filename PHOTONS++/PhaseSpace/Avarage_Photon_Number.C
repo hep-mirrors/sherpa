@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "PHOTONS++/Main/Photons.H"
+#include "PHOTONS++/Main/Dipole_Type.H"
 
 using namespace PHOTONS;
 using namespace ATOOLS;
@@ -13,14 +14,46 @@ Avarage_Photon_Number::Avarage_Photon_Number
 (const Particle_Vector& dip, const double& wmax, const double& wmin) :
   m_omegaMax(wmax), m_omegaMin(wmin), m_dipole(dip), m_nbar(0.)
 {
+  DEBUG_FUNC("");
   CalculateAvaragePhotonNumber();
-#ifdef PHOTONS_DEBUG
-  msg_Events()<<endl<<"nbar: "<<m_nbar<<" = ";
   for (unsigned int i=0; i<m_nbars.size(); i++) {
-    msg_Events()<<m_nbars[i]<<" + ";
+    msg_Debugging()<<m_nbars[i]<<std::endl;
   }
-  msg_Events()<<endl;
-#endif
+  msg_Debugging()<<"-> "<<m_nbar<<endl;
+  return;
+  // set those which cancel to zero if individually larger than sum
+  // and they cancel to within 10% of the resultant nbar
+  // or they cancel to within 5% of each other
+  double nbardiff(0.);
+  size_t nonzeronbars(m_nbars.size());
+  for (size_t i(0);i<m_nbars.size();++i) {
+    for (size_t j(0);j<m_nbars.size();++j) {
+      if (m_dipole[m_nbars[i].ij.i]->Flav()!=
+            m_dipole[m_nbars[i].ij.j]->Flav().Bar() &&
+          m_dipole[m_nbars[i].ij.i]->Flav()!=
+            m_dipole[m_nbars[i].ij.j]->Flav().Bar() &&
+          m_nbars[i].nbar>0.1*m_nbar && m_nbars[j].nbar<-0.1*m_nbar &&
+          ((m_nbars[i].nbar+m_nbars[j].nbar)<0.1*m_nbar ||
+           (m_nbars[i].nbar+m_nbars[j].nbar)<0.025*(m_nbars[i].nbar-m_nbars[j].nbar))) {
+        msg_Debugging()<<"removing "
+                       <<m_nbars[i]<<", "<<m_nbars[j]<<" -> "
+                       <<m_nbars[i].nbar+m_nbars[j].nbar<<std::endl;
+        nbardiff+=m_nbars[i].nbar+m_nbars[j].nbar;
+        m_nbars[i].nbar=m_nbars[j].nbar=0.;
+        nonzeronbars-=2;
+      }
+    }
+  }
+  // adjust other nbars
+  if (nbardiff!=0.) {
+    for (size_t i(0); i<m_nbars.size(); ++i) {
+      if (m_nbars[i].nbar!=0.) m_nbars[i].nbar+=(nbardiff)/nonzeronbars;
+    }
+    for (unsigned int i=0; i<m_nbars.size(); i++) {
+      msg_Debugging()<<m_nbars[i]<<std::endl;
+    }
+    msg_Debugging()<<"-> "<<m_nbar<<endl;
+  }
 }
 
 Avarage_Photon_Number::~Avarage_Photon_Number() {
@@ -30,6 +63,9 @@ void Avarage_Photon_Number::CalculateAvaragePhotonNumber() {
   double sum      = 0.;
   for(unsigned int j=0; j<m_dipole.size(); j++) {
     for(unsigned int i=0; i<j; i++) {
+      if ((j==1 &&  i==0) ||
+	  (j==2 && (i==0 || i==1)) ||
+	  (j==3 && (i==0 || i==2))) continue;
       double Zi       = m_dipole[i]->Flav().Charge();
       double Zj       = m_dipole[j]->Flav().Charge();
       double titj     = 0;
@@ -60,14 +96,16 @@ void Avarage_Photon_Number::CalculateAvaragePhotonNumber() {
 			  *log(m_omegaMax/m_omegaMin)
                           *(2.-(1.-ai*aj+bi*bj)*InterferenceTerm(ai,aj,bi,bj));
 #ifdef PHOTONS_DEBUG
-      msg_Info()<<"ana: "<<dipoleij<<endl;
-      msg_Info()<<"alpha/pi*ZiZjtitj: "<<Photons::s_alpha/M_PI*Zi*Zj*titj<<endl;
-      msg_Info()<<"log(Emax/Emin): "<<log(m_omegaMax/m_omegaMin)<<endl;
-      msg_Info()<<"int: "<<(1-ai*aj+bi*bj)*InterferenceTerm(ai,aj,bi,bj)<<endl;
-      msg_Info()<<"Emax,Emin: "<<m_omegaMax<<" ,  "<<m_omegaMin<<endl;
+      msg_Debugging()<<"ana: "<<dipoleij<<endl;
+      msg_Debugging()<<"alpha/pi*ZiZjtitj: "
+                     <<Photons::s_alpha/M_PI*Zi*Zj*titj<<endl;
+      msg_Debugging()<<"log(Emax/Emin): "<<log(m_omegaMax/m_omegaMin)<<endl;
+      msg_Debugging()<<"int: "
+                     <<(1-ai*aj+bi*bj)*InterferenceTerm(ai,aj,bi,bj)<<endl;
+      msg_Debugging()<<"Emax,Emin: "<<m_omegaMax<<" ,  "<<m_omegaMin<<endl;
 #endif
-      m_nbars.push_back(dipoleij);
-      sum = sum + dipoleij;
+      m_nbars.push_back(IdPairNbar(IdPair(i,j),dipoleij));
+      sum += dipoleij;
     }
   }
   m_nbar = sum;

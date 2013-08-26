@@ -18,14 +18,14 @@ Dipole_FI::Dipole_FI(const Particle_Vector_Vector& pvv) {
   m_neutralinparticles  = pvv[1];
   m_chargedoutparticles = pvv[2];
   m_neutraloutparticles = pvv[3];
-  m_M                   = m_chargedinparticles[0]->FinalMass();
+  m_M                   = m_chargedinparticles[0]->Momentum().Mass();
   m_Q                   = Vec4D(0.,0.,0.,0.);
   m_QN                  = Vec4D(0.,0.,0.,0.);
   for (unsigned int i=0; i<m_chargedoutparticles.size(); i++)
     m_mC.push_back(m_chargedoutparticles[i]->FinalMass());
   for (unsigned int i=0; i<m_neutraloutparticles.size(); i++)
     m_mN.push_back(m_neutraloutparticles[i]->FinalMass());
-  m_omegaMax = DetermineMaximumPhotonEnergy();
+  m_omegaMax = Photons::s_reducemax * DetermineMaximumPhotonEnergy();
   // set running alpha_QED to squared mass of incomming parton
   // -> taken at maximal scale
   Photons::SetAlphaQED(sqr(m_M));
@@ -39,6 +39,7 @@ Dipole_FI::~Dipole_FI() {
 }
 
 void Dipole_FI::AddRadiation() {
+  DEBUG_FUNC(m_M<<"->"<<m_mC<<m_mN);
   DefineDipole();
   Vec4D sumdip = Vec4D(0.,0.,0.,0.);
   for (unsigned int i=0; i<m_olddipole.size(); i++) {
@@ -67,7 +68,7 @@ void Dipole_FI::AddRadiation() {
   }
   // calculate avarage photon number (only for two particle dipole)
   double beta1(0.), beta2(0.);
-  std::vector<double> nbars;
+  IdPairNbarVector nbars;
   if (m_olddipole.size() == 2) {
     beta1 = CalculateBeta(m_olddipole[0]->Momentum());
     beta2 = CalculateBeta(m_olddipole[1]->Momentum());
@@ -79,9 +80,7 @@ void Dipole_FI::AddRadiation() {
     nbars  = avnum.GetNBars();
   }
   CheckAvaragePhotonNumberForNumericalErrors();
-#ifdef PHOTONS_DEBUG
-  msg_Info()<<"nbar: "<<m_nbar<<endl;
-#endif
+  msg_Debugging()<<"nbar: "<<m_nbar<<endl;
   // correction weights -> acception/rejection
   if (m_nbar > 0) {
     bool genreject(true);
@@ -97,9 +96,7 @@ void Dipole_FI::AddRadiation() {
         if (m_n != 0)  photoncheck = CheckIfExceedingPhotonEnergyLimits();
         else photoncheck = true;
       }
-#ifdef PHOTONS_DEBUG
-      msg_Info()<<"n:    "<<m_n<<endl;
-#endif
+      msg_Debugging()<<"n:    "<<m_n<<endl;
       if (m_n != 0) {
         CorrectMomenta();
         if (m_u < 0.|| m_u > 1.) continue;
@@ -198,7 +195,7 @@ void Dipole_FI::CheckMomentumConservationInQCMS
 (const Poincare& boost,const Poincare& rotate) {
   // in (p+Q)-CMS
   if ((m_u > 1) || (m_u < 0)) {
-    msg_Out()<<"u: "<<m_u<<" not in [0,1] ... all photons deleted ..."<<endl;
+    msg_Error()<<"u: "<<m_u<<" not in [0,1] ... all photons deleted ..."<<endl;
     m_success = false;
     return;
   }

@@ -18,6 +18,11 @@ namespace PHASIC {
   struct Subprocess_Info;
 }
 
+namespace MODEL {
+  class Single_Vertex;
+  typedef std::vector<Single_Vertex *> Vertex_List;
+}
+
 namespace SHERPA {
 
   typedef std::vector<ATOOLS::Blob *> Blob_Vector;
@@ -27,19 +32,28 @@ namespace SHERPA {
   private :
     bool                      m_on;
     bool                      m_qed;
+    bool                      m_findresonances;
+    double                    m_resdist;
     Matrix_Element_Handler  * p_mehandler;
     Soft_Photon_Handler     * p_sphotons;
 
-    std::map<std::string,SubInfoVector> m_proc_lep_map;
+    std::map<std::string,SubInfoVector>      m_proc_lep_map;
+    std::map<std::string,MODEL::Vertex_List> m_proc_restab_map;
 
     bool            PutOnMassShell(const ATOOLS::Particle_Vector&);
-    ATOOLS::Flavour DetermineResonanceFlavour(const ATOOLS::Particle_Vector&);
+    ATOOLS::Flavour DetermineGenericResonance(const ATOOLS::Particle_Vector&);
     ATOOLS::Vec4D   MomentumSum(const ATOOLS::Particle_Vector&);
 
     void FindSubProcessInfosContainingLeptons(const PHASIC::Process_Info&,
                                               SubInfoVector&);
     void FindSubProcessInfosContainingLeptons(const PHASIC::Subprocess_Info&,
                                               SubInfoVector&);
+    void FindProcessPossibleResonances(const ATOOLS::Flavour_Vector&,
+                                       MODEL::Vertex_List&);
+    bool FindResonances(ATOOLS::Particle_Vector&,
+                        std::vector<ATOOLS::Particle_Vector>&,
+                        ATOOLS::Flavour_Vector&,
+                        const MODEL::Vertex_List&);
 
     Blob_Vector BuildResonantBlobs(ATOOLS::Particle_Vector&);
 
