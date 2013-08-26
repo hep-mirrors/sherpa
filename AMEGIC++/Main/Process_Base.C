@@ -23,6 +23,7 @@ AMEGIC::Process_Base::Process_Base():
   p_b(0), m_eoreset(0), p_pl(0), 
   m_print_graphs(""), p_testmoms(0), m_Norm(1.), m_sfactor(1.)
 {
+  p_subevtlist=NULL;
   p_channellibnames = new std::list<std::string>();
   static int allowmap(-1);
   if (allowmap<0) {
