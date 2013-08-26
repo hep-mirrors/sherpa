@@ -145,7 +145,8 @@ bool Simple_Chain::GeneratePathName()
                 +m_ressuffix+"/";
   }
   else outputpath=m_resdir+m_ressuffix+"/";
-  msg_Out()<<METHOD<<"(): path = "<<OutputPath()+m_pathextra+outputpath<<std::endl;
+  msg_Debugging()<<METHOD<<"(): path = "
+                 <<OutputPath()+m_pathextra+outputpath<<std::endl;
   SetOutputPath(OutputPath()+m_pathextra+outputpath);
   m_pathextra=outputpath;
   return true;
