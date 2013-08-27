@@ -66,7 +66,7 @@ namespace CSSHOWER {
 
     static double s_pdfcut, s_kappa;
 
-    double Lambda(const double &a,const double &b,const double &c);
+    double Lambda(const double &a,const double &b,const double &c) const;
 
   public:
 
@@ -91,7 +91,8 @@ namespace CSSHOWER {
       */
     virtual double Z() = 0;
 
-    double JFF(const double &y) const;
+    double JFF(const double &y,const double &mui2,const double &muj2,
+	       const double &muk2,const double &muij2) const;
     double JFI(const double &y,const double &eta,const double &scale) const;
     double JIF(const double &z,const double &y,
 	       const double &eta,const double &scale) const;
@@ -190,6 +191,9 @@ namespace CSSHOWER {
 
     virtual ~Splitting_Function_Base();
 
+    double MEPSWeight(const double &z,const double &y,const double &eta,
+		      const double &scale,const double &Q2) const;
+
     virtual double operator()
       (const double z,const double y,const double eta,
        const double scale,const double Q2);
@@ -240,6 +244,8 @@ namespace CSSHOWER {
     inline SF_Coupling *Coupling() const { return p_cf; }
 
     inline void SetPDF(PDF::PDF_Base **const pdf) { p_pdf=pdf; }
+
+    inline double SymFac() const { return m_symf; }
 
     friend std::ostream& operator<<(std::ostream &,const Splitting_Function_Base &);
   };
