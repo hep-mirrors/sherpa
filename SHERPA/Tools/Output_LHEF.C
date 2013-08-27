@@ -1,4 +1,5 @@
 #include "SHERPA/Tools/Output_LHEF.H"
+#include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -123,8 +124,11 @@ void Output_LHEF::Output(Blob_List* blobs, const double weight)
 	       <<"' kt2_stop='"<<(*sp)["MC@NLO_KT2_Stop"]->Get<double>();
   if ((*sp)["Factorisation_Scale"])
     m_outstream<<"' muf2='"<<(*sp)["Factorisation_Scale"]->Get<double>();
-  if ((*sp)["Renormalization_Scale"])
-    m_outstream<<"' mur2='"<<(*sp)["Renormalization_Scale"]->Get<double>();
+  double mur2=0.0;
+  if ((*sp)["Renormalization_Scale"]) {
+    mur2=(*sp)["Renormalization_Scale"]->Get<double>();
+    m_outstream<<"' mur2='"<<mur2;
+  }
   m_outstream<<"'>"<<std::endl;
   for (Blob_List::const_iterator blit=blobs->begin();blit!=blobs->end();++blit){
     if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
@@ -136,7 +140,7 @@ void Output_LHEF::Output(Blob_List* blobs, const double weight)
       if ((*(*blit))["Resummation_Scale"])
 	SCALUP=sqrt((*(*blit))["Resummation_Scale"]->Get<double>());
       double AQEDUP = -1.;
-      double AQCDUP = -1.;
+      double AQCDUP = mur2?(*MODEL::as)(mur2):-1.0;
       m_outstream<<std::setprecision(10);
       m_outstream<<std::setiosflags(std::ios::scientific);
       m_outstream<<std::setw(4)<<NUP<<" "
