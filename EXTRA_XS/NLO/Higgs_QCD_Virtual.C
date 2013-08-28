@@ -29,7 +29,7 @@ namespace EXTRAXS {
       else if (flavs[1].IsGluon()) {
         m_fac = CA;
         m_pij = 2.0*M_PI*m_b0/CA;
-        m_finiteconst = -sqr(M_PI)/3.0 + 11.0/3.0 + 4.0*sqr(M_PI)/3.0;
+        m_finiteconst = sqr(M_PI) + 11.0/3.0;
       }
       else THROW(fatal_error, "Internal Error.");
     }
@@ -51,7 +51,7 @@ void Higgs_QCD_Virtual::Calc(const Vec4D_Vector& momenta) {
   // 1/epsIR2
   m_res.IR2()=-2.*m_fac;
   // finite
-  m_res.Finite()=(m_finiteconst - 4.0*M_PI*m_b0/CA*log(p2/m_mur2))*m_fac;
+  m_res.Finite()=(m_finiteconst - sqr(log(p2/m_mur2)))*m_fac;
 }
 
 DECLARE_VIRTUALME2_GETTER(Higgs_QCD_Virtual,"Higgs_QCD_Virtual")
