@@ -27,7 +27,7 @@
   % settings for hard decays
   HARD_DECAYS On;
   STORE_DECAY_RESULTS 1;
-  HDH_ONLY_DECAY {25,21,21}
+  HDH_ONLY_DECAY {25,22,22}
 
   % model parameters
   MODEL SM+EHC
