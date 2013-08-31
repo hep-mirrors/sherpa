@@ -1,5 +1,6 @@
 #include "MODEL/Main/Running_Fermion_Mass.H"
 #include "ATOOLS/Math/MathTools.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -10,6 +11,12 @@ Running_Fermion_Mass::Running_Fermion_Mass(ATOOLS::Flavour _flav,double _polemas
 					   Running_AlphaS * _as) :
   m_polemass(_polemass), p_as(as)
 {
+  Data_Reader dataread(" ",";","!","=");
+  dataread.AddComment("#");
+  dataread.AddWordSeparator("\t");
+  m_runbelowpole = dataread.GetValue<int>("RUN_MASS_BELOW_POLE",0);
+  if (m_runbelowpole)
+    msg_Debugging()<<METHOD<<"(): "<<_flav<<" mass runs below pole."<<std::endl;
   m_type    = std::string("Running Mass");
   m_name    = "Mass_"+ToString(_flav);
   m_defval  = m_polemass;
@@ -28,7 +35,7 @@ Running_Fermion_Mass::Running_Fermion_Mass(ATOOLS::Flavour _flav,double _polemas
 double Running_Fermion_Mass::operator()(double t) {
   if (m_order==0) return m_polemass;
   if (t<0.) t = -t;
-  if (t<sqr(m_polemass)) return m_polemass;
+  if (!m_runbelowpole && t<sqr(m_polemass)) return m_polemass;
   m_beta = (33. - 2.*p_as->Nf(t/4.))/(12.*M_PI); 
 
   return m_polemass*pow((*p_as)(t)/m_alphahat,m_gamma/m_beta);

@@ -8,7 +8,7 @@
 namespace MODEL {
   class Running_Fermion_Mass : public ATOOLS::Function_Base {
   protected:
-    int              m_order;
+    int              m_order, m_runbelowpole;
     double           m_gamma,m_beta;
     double           m_polemass,m_alphahat;
     Running_AlphaS * p_as;
