@@ -29,8 +29,8 @@ namespace HIGGS {
 
   extern AMEGIC::Basic_Sfuncs *s_bs;
 
-  inline Complex spa(int i,int j) { return s_bs->S1(i-1,j-1); }
-  inline Complex spb(int i,int j) { return s_bs->S0(i-1,j-1); }
+  inline Complex spa(int i,int j) { return s_bs->S0(i-1,j-1); }
+  inline Complex spb(int i,int j) { return s_bs->S1(i-1,j-1); }
 
   inline double sij(int i,int j)
   { return (spa(i,j)*spb(j,i)).real(); }

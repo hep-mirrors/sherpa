@@ -786,6 +786,9 @@ void Basic_Sfuncs::PrecalcS()
 	if (IsComplex(j)){
 	  _S0[i][j] -= Complex(m1->mom_img[R2()],m1->mom_img[R1()])/A;
 	}
+	// Combined 1/I and minus sign from momentum inversion
+	if (b[j]<0) _S0[i][j] = Complex(_S0[i][j].imag(),-_S0[i][j].real());
+	if (b[i]<0) _S0[i][j] = Complex(_S0[i][j].imag(),-_S0[i][j].real());
 	{
 	  Complex sij;
 	  double sign=1.0;
@@ -906,6 +909,9 @@ void Basic_Sfuncs::CalcS(int i, int j)
       if (IsComplex(j)){
 	_S0[i][j] -= Complex(m1->mom_img[R2()],m1->mom_img[R1()])/A;
       }
+      // Combined 1/I and minus sign from momentum inversion
+      if (b[j]<0) _S0[i][j] = Complex(_S0[i][j].imag(),-_S0[i][j].real());
+      if (b[i]<0) _S0[i][j] = Complex(_S0[i][j].imag(),-_S0[i][j].real());
       {
 	Complex sij;
 	double sign=1.0;
