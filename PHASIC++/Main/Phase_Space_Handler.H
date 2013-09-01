@@ -129,6 +129,8 @@ namespace PHASIC {
     bool MakeIncoming(ATOOLS::Vec4D *const p);
     bool Check4Momentum(const ATOOLS::Vec4D_Vector &p);
 
+    void CheckSinglePoint();
+
     static void TestPoint(ATOOLS::Vec4D *const p,
 			  ATOOLS::Vec4D_Vector cp,ATOOLS::Flavour_Vector fl,
 			  const Subprocess_Info *info,size_t &n,

@@ -10,6 +10,7 @@
 #include "PHASIC++/Channels/Beam_Channels.H"
 #include "PHASIC++/Channels/Rambo.H"
 #include "PHASIC++/Process/Process_Info.H"
+#include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Enhance/Enhance_Observable_Base.H"
 
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -128,8 +129,47 @@ bool Phase_Space_Handler::InitIncoming()
   return 1;
 }
 
+void Phase_Space_Handler::CheckSinglePoint()
+{
+  Data_Reader read(" ",";","#","=");
+  read.SetInputPath(rpa->GetPath());
+  read.SetInputFile(rpa->gen.Variable("RUN_DATA_FILE"));
+  std::string file=read.GetValue<std::string>("PS_PT_FILE","");
+  if (file!="") {
+    read.SetAddCommandLine(false);
+    read.SetInputFile(file);
+    read.AddIgnore("Vec4D");
+    read.RereadInFile();
+    for (size_t i(0);i<p_lab.size();++i) {
+      std::vector<std::string> vec;
+      if (!read.VectorFromFile(vec,"p_lab["+ToString(i)+"]"))
+	THROW(fatal_error,"No ps points in file");
+      if (vec.front()=="-") p_lab[i]=-ToType<Vec4D>(vec.back());
+      else p_lab[i]=ToType<Vec4D>(vec.front());
+      msg_Debugging()<<"p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";\n";
+    }
+    Process_Base *proc(p_active->Process());
+    proc->Trigger(p_lab);
+    CalculateME();
+    msg->SetPrecision(16);
+    msg_Out()<<"// "<<proc->Name()<<"\n";
+    for (size_t i(0);i<p_lab.size();++i)
+      msg_Out()<<"p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";"<<std::endl;
+    if (proc->Get<Single_Process>()) {
+      msg_Out()<<"double ME = "<<proc->Get<Single_Process>()->LastXS()
+	       <<"; // in GeV^2, incl. symfacs"<<std::endl;
+      if (proc->GetSubevtList()) {
+	NLO_subevtlist * subs(proc->GetSubevtList());
+	for (size_t i(0);i<subs->size();++i) msg_Out()<<(*(*subs)[i]);
+      }
+    }
+    THROW(normal_exit,"Computed ME^2");
+  }
+}
+
 double Phase_Space_Handler::Integrate() 
 {
+  CheckSinglePoint();
   if (p_process->Points()>0 &&
       (p_process->TotalError()<dabs(m_error*p_process->TotalXS()) ||
        p_process->TotalError()<m_abserror)) 
