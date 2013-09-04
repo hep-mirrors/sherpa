@@ -9,9 +9,15 @@ namespace MODEL {
   class Running_Fermion_Mass : public ATOOLS::Function_Base {
   protected:
     int              m_order, m_runbelowpole;
-    double           m_gamma,m_beta;
-    double           m_polemass,m_alphahat;
+    double           m_polemass, m_a;
     Running_AlphaS * p_as;
+    double Series(const double &a,const int nf) const;
+    double Beta0(const double &nf) const;
+    double Beta1(const double &nf) const;
+    double Beta2(const double &nf) const;
+    double Gamma0(const double &nf) const;
+    double Gamma1(const double &nf) const;
+    double Gamma2(const double &nf) const;
   public:
     Running_Fermion_Mass(ATOOLS::Flavour,double,Running_AlphaS *);
     ~Running_Fermion_Mass() {}
