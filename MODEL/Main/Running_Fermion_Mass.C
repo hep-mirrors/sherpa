@@ -8,27 +8,72 @@ using namespace MODEL;
 using namespace ATOOLS;
 
 const double ZETA3 = 1.2020569031595942855;
+const double ZETA5 = 1.036927755143369926331;
 
-Running_Fermion_Mass::Running_Fermion_Mass(ATOOLS::Flavour _flav,double _polemass,
+Running_Fermion_Mass::Running_Fermion_Mass(ATOOLS::Flavour _flav,double _yukmass,
 					   Running_AlphaS * _as) :
-  m_polemass(_polemass), p_as(as)
+  p_as(as), m_fl(_flav)
 {
+  if (m_fl.Mass(true)<1.0||(!_flav.IsQuark())||_yukmass<1.0) {
+    m_order = 0;
+    p_as    = NULL;
+    return;
+  }
   Data_Reader dataread(" ",";","!","=");
   dataread.AddComment("#");
   dataread.AddWordSeparator("\t");
   m_runbelowpole = dataread.GetValue<int>("RUN_MASS_BELOW_POLE",0);
   if (m_runbelowpole)
-    msg_Debugging()<<METHOD<<"(): "<<_flav<<" mass runs below pole."<<std::endl;
+    msg_Debugging()<<METHOD<<"(): "<<m_fl<<" mass runs below pole."<<std::endl;
+  m_polemass = GetMSBarMass(m_fl.Mass(true));
+  msg_Tracking()<<METHOD<<":("<<m_fl<<") m_{pole} = "<<m_fl.Mass(true)
+		<<" -> m_{MSbar} = "<<m_polemass<<".\n";
   m_type    = std::string("Running Mass");
-  m_name    = "Mass_"+ToString(_flav);
+  m_name    = "Mass_"+ToString(m_fl);
   m_defval  = m_polemass;
   m_a       = (*p_as)(sqr(m_polemass));
-  if (_flav.Mass(true)<1.||(!_flav.IsQuark())||m_polemass<1.) {
-    m_order = 0;
-    p_as    = NULL;
-    return;
-  }
   m_order = p_as->Order()+1;
+}
+
+double Running_Fermion_Mass::GetMSBarMass(const double &mp) const
+{
+  double a=(*p_as)(mp*mp)/M_PI;
+  double C=1.0-4.0/3.0*a;
+  if (p_as->Order()>0) {
+    double nl=m_fl.Kfcode()-1.0, nh=1.0;
+    double d12=7.0/128.0-3.0/4.0*ZETA3+1.0/2.0*sqr(M_PI)*log(2.0)-5.0/16.0*sqr(M_PI);
+    double d22=-1111.0/384.0+3.0/8.0*ZETA3-1.0/4.0*sqr(M_PI)*log(2.0)+1.0/12.0*sqr(M_PI);
+    double d32=71.0/96.0+1.0/12.0*sqr(M_PI);
+    double d42=143.0/96.0-1.0/6.0*sqr(M_PI);
+    C+=4.0/3.0*a*a*(4.0/3.0*d12+3.0*d22+0.5*nl*d32+0.5*nh*d42);
+    if (p_as->Order()>1) {
+      double a4=0.5174790616738994;
+      double d13=-2969.0/768.0-1.0/16.0*sqr(M_PI)*ZETA3-81.0/16.0*ZETA3+5.0/8.0*ZETA5+29.0/4.0*sqr(M_PI)*log(2.0)
+	+1.0/2.0*sqr(M_PI*log(2.0))-613.0/192.0*sqr(M_PI)-1.0/48.0*pow(M_PI,4.0)-1.0/2.0*pow(log(2.0),4.0)-12.0*a4;
+      double d23=13189.0/4608.0-19.0/16.0*sqr(M_PI)*ZETA3-773.0/96.0*ZETA3+45.0/16.0*ZETA5-31.0/72.0*sqr(M_PI)*log(2.0)
+	-31.0/36.0*sqr(M_PI*log(2.0))+509.0/576.0*sqr(M_PI)+65.0/432.0*pow(M_PI,4.0)-1.0/18.0*pow(log(2.0),4.0)-4.0/3.0*a4;
+      double d33=-1322545.0/124416.0+51.0/64.0*sqr(M_PI)*ZETA3+1343.0/288.0*ZETA3-65.0/32.0*ZETA5
+	-115.0/72.0*sqr(M_PI)*log(2.0)+11.0/36.0*sqr(M_PI*log(2.0))-1955.0/3456*sqr(M_PI)-179.0/3456.0*pow(M_PI,4.0)
+	+11.0/72.0*pow(log(2.0),4.0)+11.0/3.0*a4;
+      double d43=1283.0/576.0+55.0/24.0*ZETA3-11.0/9.0*sqr(M_PI)*log(2.0)+2.0/9.0*sqr(M_PI*log(2.0))+13.0/18.0*sqr(M_PI)
+	-119.0/2160.0*pow(M_PI,4.0)+1.0/9.0*pow(log(2.0),4.0)+8.0/3.0*a4;
+      double d53=1067.0/576.0-53.0/24.0*ZETA3+8.0/9.0*sqr(M_PI)*log(2.0)-1.0/9.0*sqr(M_PI*log(2.0))-85.0/108.0*sqr(M_PI)
+	+91.0/2160.0*pow(M_PI,4.0)+1.0/9.0*pow(log(2.0),4.0)+8.0/3.0*a4;
+      double d63=70763.0/15552.0+89.0/144.0*ZETA3+11.0/18.0*sqr(M_PI)*log(2.0)-1.0/9.0*sqr(M_PI*log(2.0))
+	+175.0/432.0*sqr(M_PI)+19.0/2160.0*pow(M_PI,4.0)-1.0/18.0*pow(log(2.0),4.0)-4.0/3.0*a4;
+      double d73=144959.0/15552.0+1.0/8.0*sqr(M_PI)*ZETA3-109.0/144.0*ZETA3-5.0/8.0*ZETA5+32.0/9.0*sqr(M_PI)*log(2.0)
+	+1.0/18.0*sqr(M_PI*log(2.0))-449.0/144.0*sqr(M_PI)-43.0/1080.0*pow(M_PI,4.0)-1.0/18.0*pow(log(2.0),4.0)-4.0/3.0*a4;
+      double d83=-5917.0/3888.0+2.0/9.0*ZETA3+13.0/108.0*sqr(M_PI);
+      double d93=-9481.0/7776.0+11.0/18.0*ZETA3+4.0/135.0*sqr(M_PI);
+      double d103=-2353.0/7776.0-7.0/18.0*ZETA3-13.0/108.0*sqr(M_PI);
+      C+=4.0/3.0*a*a*a*
+	(sqr(4.0/3.0)*d13+4.0/3.0*3.0*d23+sqr(3.0)*d33
+	 +4.0/3.0*0.5*nl*d43+4.0/3.0*0.5*nh*d53+3.0*0.5*nl*d63
+	 +3.0*0.5*nh*d73+sqr(0.5)*nl*nh*d83+sqr(0.5)*nh*d93
+	 +sqr(0.5*nl)*d103);
+    }
+  }
+  return mp*C;
 }
 
 double Running_Fermion_Mass::Beta0(const double &nf) const

@@ -11,6 +11,7 @@ namespace MODEL {
     int              m_order, m_runbelowpole;
     double           m_polemass, m_a;
     Running_AlphaS * p_as;
+    ATOOLS::Flavour  m_fl;
     double Series(const double &a,const int nf) const;
     double Beta0(const double &nf) const;
     double Beta1(const double &nf) const;
@@ -18,6 +19,7 @@ namespace MODEL {
     double Gamma0(const double &nf) const;
     double Gamma1(const double &nf) const;
     double Gamma2(const double &nf) const;
+    double GetMSBarMass(const double &mp) const;
   public:
     Running_Fermion_Mass(ATOOLS::Flavour,double,Running_AlphaS *);
     ~Running_Fermion_Mass() {}
