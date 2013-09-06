@@ -482,7 +482,7 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   bool res(p_bviproc->CalculateTotalXSec
 	   (resultpath+"/"+p_bviproc->Generator()->Name(),create));
   psh->SetAbsError(psh->Error()*rpa->Picobarn()*
-		   p_bviproc->Integrator()->TotalResult());
+		   dabs(p_bviproc->Integrator()->TotalResult()));
   if (!p_rsproc->CalculateTotalXSec
       (resultpath+"/"+p_rsproc->Generator()->Name(),create)) res=false;
   for (size_t i(0);i<p_bviproc->Size();++i)
