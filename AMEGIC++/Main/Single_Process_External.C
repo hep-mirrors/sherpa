@@ -30,7 +30,13 @@ using namespace std;
 
 AMEGIC::Single_Process_External::Single_Process_External():
   p_me2(NULL), p_partner(this)
-{ }
+{
+  Data_Reader reader(" ",";","!","=");
+  reader.AddComment("#");
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+  m_keep_zero_procs=reader.GetValue<int>("AMEGIC_KEEP_ZERO_PROCS",0);
+}
 
 AMEGIC::Single_Process_External::~Single_Process_External()
 {
@@ -69,7 +75,7 @@ int AMEGIC::Single_Process_External::InitAmplitude(Model_Base * model,Topology* 
   m_oqcd=oqcd;
   std::vector<Vec4D> tmoms(p_testmoms,&p_testmoms[m_nin+m_nout]);
   m_iresult=p_me2->Calc(tmoms);
-  if (m_iresult==0.) return 0;
+  if (m_iresult==0. && !m_keep_zero_procs) return 0;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
     if (m_allowmap && FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
       msg_Tracking()<<"AMEGIC::Single_Process_External::InitAmplitude : "<<std::endl

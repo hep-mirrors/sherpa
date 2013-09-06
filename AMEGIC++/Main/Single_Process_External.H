@@ -17,7 +17,7 @@ namespace AMEGIC {
   private:
     PHASIC::Tree_ME2_Base *p_me2;
     size_t m_pn;
-    bool                    m_newlib;
+    bool                    m_newlib, m_keep_zero_procs;
     Polarisation            m_pol;
     double                  m_iresult;
 
