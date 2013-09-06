@@ -76,7 +76,8 @@ double Process_Integrator::SelectionWeight(const int mode) const
 {
   if (!p_proc->IsGroup()) {
     if (mode!=0) return m_max*m_enhancefac;
-    if (m_totalxs==0.0) return -1.0;
+    if (m_n==0.0) return -1.0;
+    if (m_totalxs==0.0) return 0.0;
     double selweight = m_swmode==0 ?
       sqrt((m_n-1) * sqr(TotalVar()) + sqr(TotalResult())) :
       dabs(m_totalxs);
