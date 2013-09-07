@@ -19,6 +19,7 @@ namespace MCATNLO {
  
     PDF::ISR_Handler * p_isr;
     size_t m_maxem, m_nem, m_psmode;
+    double m_maxweight;
     
     Shower          * p_powheg;
     All_Singlets m_allsinglets;
@@ -33,7 +34,7 @@ namespace MCATNLO {
 				std::map<ATOOLS::Cluster_Leg*,Parton*> &pmap,
 				std::map<Parton*,ATOOLS::Cluster_Leg*> &lmap);
 
-    int PerformMCatNLO(const size_t &maxem,size_t &nem);
+    int PerformMCatNLO(const size_t &maxem,size_t &nem,const double &qfac);
 
     bool PrepareMCatNLO(ATOOLS::Cluster_Amplitude *const ampl);
 

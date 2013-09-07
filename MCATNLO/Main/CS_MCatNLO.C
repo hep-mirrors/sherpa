@@ -23,6 +23,8 @@ CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const mod
 {
   m_psmode=_dataread->GetValue<int>("NLO_CSS_PSMODE",0);
   if (m_psmode) msg_Info()<<METHOD<<"(): Set PS mode "<<m_psmode<<".\n";
+  m_maxweight=_dataread->GetValue<double>("NLO_CSS_MAXWEIGHT",1.0e3);
+  if (m_maxweight!=1.0e3) msg_Info()<<METHOD<<"(): Set max weight "<<m_maxweight<<".\n";
   m_maxem=_dataread->GetValue<int>("NLO_CSS_MAXEM",1);
   SF_Lorentz::SetKappa(_dataread->GetValue<double>("DIPOLE_KAPPA",2.0/3.0));
 
@@ -56,11 +58,17 @@ void CS_MCatNLO::CleanUp()
 int CS_MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl) 
 {
   DEBUG_FUNC("");
+  for (double qfac(1.0);;qfac*=10.0) {
   m_nem=0;
   m_weight=1.0;
   CleanUp();
   PrepareMCatNLO(ampl);
-  int stat(PerformMCatNLO(m_maxem,m_nem));
+  int stat(PerformMCatNLO(m_maxem,m_nem,qfac));
+  if (dabs(m_weight)>m_maxweight) {
+    msg_Tracking()<<METHOD<<"(): Weight is "<<m_weight
+		  <<". Retry with charge factor "<<qfac*10.0<<".\n";
+    continue;
+  }
   if (m_nem) {
     Cluster_Amplitude *rampl(GetRealEmissionAmplitude());
     rampl->SetNext(ampl);
@@ -87,11 +95,14 @@ int CS_MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
     }
   }
   return stat;
+  }
+  THROW(fatal_error,"Internal error");
+  return false;
 }
 
-int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem)
+int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem,const double &qfac)
 {
-  SF_Coupling::SetQFac(1.0);
+  SF_Coupling::SetQFac(qfac);
   std::set<Parton*> nxs;
   Singlet *last(*(m_allsinglets.end()-1));
   std::string pname(Process_Base::GenerateName(p_rampl));
@@ -115,7 +126,7 @@ int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem)
       }
     }
     if ((*cit)->GetFlavour().StrongCharge()==8 &&
-	(*cit)->Specs().size()<2) SF_Coupling::SetQFac(2.0);
+	(*cit)->Specs().size()<2) SF_Coupling::SetQFac(2.0*qfac);
     msg_Debugging()<<"-> "<<(*cit)->Specs().size()<<" dipole(s)\n";
   }
   p_gamma->SetOn(1);
