@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #ifdef PROFILE__Analysis_Phase
 #include "prof.hh"
@@ -408,6 +409,9 @@ bool Primitive_Analysis::DoAnalysisNLO(const Blob_List * const bl, const double 
 
 void Primitive_Analysis::FinishAnalysis(const std::string & resdir) 
 {
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()==0)
+#endif
   ATOOLS::MakeDir(resdir+OutputPath()); 
 
   if (m_mode&ANALYSIS::do_menlo) {
