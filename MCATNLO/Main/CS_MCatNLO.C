@@ -65,8 +65,8 @@ int CS_MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
   PrepareMCatNLO(ampl);
   int stat(PerformMCatNLO(m_maxem,m_nem,qfac));
   if (dabs(m_weight)>m_maxweight) {
-    msg_Tracking()<<METHOD<<"(): Weight is "<<m_weight
-		  <<". Retry with charge factor "<<qfac*10.0<<".\n";
+    msg_Info()<<METHOD<<"(): Weight is "<<m_weight
+	      <<". Retry with charge factor "<<qfac*10.0<<".\n";
     continue;
   }
   if (m_nem) {
