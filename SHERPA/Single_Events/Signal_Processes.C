@@ -114,8 +114,10 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       particle->SetFlow(2,ampl->Leg(i)->Col().m_i);
     }
     if (p_remnants[i]!=NULL) {
+      if (proc->NIn()>1) {
       p_remnants[i]->QuickClear();
       if (!p_remnants[i]->TestExtract(particle)) success=false;
+      }
     }
     else THROW(fatal_error,"No remnant found.");
   }
