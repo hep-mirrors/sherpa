@@ -85,7 +85,7 @@ CParam Cluster_Algorithm::GetMeasure
   bool ismo(idi&((1<<p_xs->NIn())-1));
   Flavour mmofl(p_xs->ReMap(ismo?mofl.Bar():mofl,0));
   if (ismo) mmofl=mmofl.Bar();
-  if (p_ampl->Legs().size()>4) {
+  if (p_ampl->Legs().size()>p_ampl->NIn()+2) {
     p_ampl->SetProcs(p_xs->AllProcs());
     kt2[idi][idj][idk][mofl]=
       p_clus->KPerp2(*p_ampl,i,j,k,mmofl,p_ms,(m_wmode&1024)?1:-1,
@@ -148,7 +148,7 @@ void Cluster_Algorithm::CalculateMeasures
 	    cc[l]=l?Connected(in[j]->JB()->Out(),idk):
 	      Connected(in[j]->JA()->Out(),idk);
 	    if (cc[l]<=0) cc[l]=Connected(in[j]->JC()->Out(),idk);
-	    if (p_ampl->Legs().size()==4 || cc[l]>0) {
+	    if (p_ampl->Legs().size()==p_ampl->NIn()+2 || cc[l]>0) {
 	      if (in[j]->OrderQCD()) {
 		ColorID ccj(l?colj:coli);
 		if (!((ccj.m_i && ccj.m_i==colk.m_j) ||
@@ -197,7 +197,7 @@ void Cluster_Algorithm::CalculateMeasures
 	      cc[l]=l?Connected(ccurs[i]->Out(),idk):
 		Connected(fcur->In(),idk);
 	      if (cc[l]<=0) cc[l]=Connected(mocur->In(),idk);
-	      if (p_ampl->Legs().size()==4 || cc[l]>0) {
+	      if (p_ampl->Legs().size()==p_ampl->NIn()+2 || cc[l]>0) {
 		if (in[j]->OrderQCD()) {
 		  ColorID ccj(l?colj:coli);
 		  if (!((ccj.m_i && ccj.m_i==colk.m_j) ||
@@ -351,9 +351,14 @@ bool Cluster_Algorithm::ClusterStep
       decays.push_back(decids[j]);
       break;
     }
-  if (p_ampl->Legs().size()==4) {
-    if (ccurs.size()!=3) THROW(fatal_error,"Internal error");
+  if (p_ampl->Legs().size()==p_ampl->NIn()+2) {
     bool match(false);
+    if (p_ampl->NIn()==1) {
+      if (ccurs.size()!=2) THROW(fatal_error,"Internal error");
+      match=true;
+    }
+    else {
+    if (ccurs.size()!=3) THROW(fatal_error,"Internal error");
     const Vertex_Vector &in(fcur->In());
     for (size_t i(0);i<in.size();++i) {
       size_t ncm(0);
@@ -366,6 +371,7 @@ bool Cluster_Algorithm::ClusterStep
 	break;
       }
     }
+    }
     if (decays.size()!=p_bg->DecayInfos().size()) {
       msg_Debugging()<<"Unclustered decay\n"<<*p_ampl<<"\n";
       match=false;
@@ -376,7 +382,7 @@ bool Cluster_Algorithm::ClusterStep
     }
   }
   Vec4D_Vector p;
-  if (p_ampl->Legs().size()>4) {
+  if (p_ampl->Legs().size()>p_ampl->NIn()+2) {
     p=p_clus->Combine(*p_ampl,cid[m_id[wkey.first]],
 		      cid[m_id[wkey.second]],cid[winfo.m_k],
 		      winfo.m_mofl,p_ms,winfo.m_kt2.m_kin,
@@ -393,10 +399,15 @@ bool Cluster_Algorithm::ClusterStep
       return false;
     }
   }
-  else if (p_ampl->Legs().size()==4) {
+  else if (p_ampl->Legs().size()==p_ampl->NIn()+2) {
     p.push_back(p_ampl->Leg(0)->Mom());
+    if (p_ampl->NIn()==1) {
+      p.push_back(p_ampl->Leg(0)->Mom());
+    }
+    else {
     p.push_back(p_ampl->Leg(1)->Mom());
     p.push_back(p_ampl->Leg(2)->Mom()+p_ampl->Leg(3)->Mom());
+    }
   }
   else {
     THROW(fatal_error,"Invalid amplitude");
@@ -533,7 +544,7 @@ KT2Info_Vector Cluster_Algorithm::UpdateKT2
   }
   if ((split->Stat()!=3 &&
        split->Flav().Strong()) ||
-      ampl->Legs().size()==4) {
+      ampl->Legs().size()==ampl->NIn()+2) {
     nkt2ord[li].second=(mode?ampl->Next():ampl)->KT2();
     msg_Debugging()<<"set last k_T = "<<sqrt(nkt2ord[li].second)
 		   <<" for "<<ID(nkt2ord[li].first)
@@ -546,7 +557,7 @@ bool Cluster_Algorithm::Cluster
 (const size_t &step,const Vertex_Set &onocl,const Current_Vector &ccurs,
  Current *const fcur,const ClusterInfo_Map &cinfo,KT2Info_Vector &kt2ord)
 {
-  if (p_ampl->Legs().size()==3) {
+  if (p_ampl->Legs().size()==p_ampl->NIn()+1) {
     p_ampl=p_ampl->Prev();
     p_ampl->Decays()=p_ampl->Next()->Decays();
     p_ampl->DeleteNext();
@@ -571,7 +582,7 @@ bool Cluster_Algorithm::Cluster
     if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo,kt2)) {
       KT2Info_Vector nkt2ord(UpdateKT2(kt2ord,ampl)), nnkt2ord(nkt2ord);
       if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo,nnkt2ord)) {
-  	if (ampl->Legs().size()==4) {
+  	if (ampl->Legs().size()==ampl->NIn()+2) {
 	  kt2ord=nkt2ord;
 	  return true;
 	}
@@ -597,7 +608,7 @@ bool Cluster_Algorithm::Cluster
     p_ampl->DeleteNext();
   } while (oldsize<nocl.size());
   msg_Debugging()<<"trying unordered configurations\n";
-  if (ampl->Legs().size()==4) return false;
+  if (ampl->Legs().size()==ampl->NIn()+2) return false;
   if (nocl.empty()) return false;
   Vertex_Set nonocl;
   while (true) {

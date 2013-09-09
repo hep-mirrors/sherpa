@@ -507,8 +507,8 @@ void Cluster_Algorithm::Convert()
   double Q2(pb->ScaleSetter()->Scale(stp::res));
   for (int i(0);i<ct_tmp->NLegs();++i) {
     size_t id(ct_tmp->GetLeg(i).ID());
-    Flavour flav(i<2?ct_tmp->Flav(i).Bar():ct_tmp->Flav(i));
-    Vec4D mom(i<2?-ct_tmp->Momentum(i):ct_tmp->Momentum(i));
+    Flavour flav(i<pb->NIn()?ct_tmp->Flav(i).Bar():ct_tmp->Flav(i));
+    Vec4D mom(i<pb->NIn()?-ct_tmp->Momentum(i):ct_tmp->Momentum(i));
     p_ampl->CreateLeg(mom,flav,ColorID(0,0),id);
     p_ampl->Legs().back()->SetStat(1);
   }
@@ -532,8 +532,8 @@ void Cluster_Algorithm::Convert()
     ampl->SetMu2(mu2);
     for (int i(0);i<ct_tmp->NLegs();++i) {
       size_t id(ampl->Leg(i<jwin?i:i+1)->Id());
-      Flavour flav(i<2?ct_tmp->Flav(i).Bar():ct_tmp->Flav(i));
-      Vec4D mom(i<2?-ct_tmp->Momentum(i):ct_tmp->Momentum(i));
+      Flavour flav(i<pb->NIn()?ct_tmp->Flav(i).Bar():ct_tmp->Flav(i));
+      Vec4D mom(i<pb->NIn()?-ct_tmp->Momentum(i):ct_tmp->Momentum(i));
       if (i==iwin) id+=ampl->Leg(jwin)->Id();
       p_ampl->CreateLeg(mom,flav,ColorID(0,0),id);
       if (IdCount(id)==1) {
