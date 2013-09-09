@@ -14,6 +14,9 @@ Running_Fermion_Mass::Running_Fermion_Mass(ATOOLS::Flavour _flav,double _yukmass
 					   Running_AlphaS * _as) :
   p_as(as), m_fl(_flav)
 {
+  m_type    = std::string("Running Mass");
+  m_name    = "Mass_"+ToString(m_fl);
+  m_defval  = _yukmass;
   if (m_fl.Mass(true)<1.0||(!_flav.IsQuark())||_yukmass<1.0) {
     m_order = 0;
     p_as    = NULL;
@@ -28,9 +31,6 @@ Running_Fermion_Mass::Running_Fermion_Mass(ATOOLS::Flavour _flav,double _yukmass
   m_polemass = GetMSBarMass(m_fl.Mass(true));
   msg_Tracking()<<METHOD<<":("<<m_fl<<") m_{pole} = "<<m_fl.Mass(true)
 		<<" -> m_{MSbar} = "<<m_polemass<<".\n";
-  m_type    = std::string("Running Mass");
-  m_name    = "Mass_"+ToString(m_fl);
-  m_defval  = m_polemass;
   m_a       = (*p_as)(sqr(m_polemass));
   m_order = p_as->Order()+1;
 }
