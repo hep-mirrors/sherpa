@@ -519,11 +519,13 @@ CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit,int mode)
 {
     if (cit->second.m_calc) return cit;
     Cluster_Amplitude *ampl(Cluster_Amplitude::New());
+    ampl->SetNIn(p_proc->NIn());
     for (int i=0;i<m_nlegs;++i)
       ampl->CreateLeg(i<2?-p_moms[i]:p_moms[i],
 		      i<2?p_legs[0][i].Flav().Bar():p_legs[0][i].Flav(),
 		     ColorID(),p_legs[0][i].ID());
     cit->second.m_calc=1;
+    ampl->SetProcs(p_proc->AllProcs());
     cit->second.m_pt2ij=p_clus->KPerp2
       (*ampl,cit->first.m_i,cit->first.m_j,cit->first.m_k,
        cit->first.m_i<2?cit->second.m_mo.Bar():cit->second.m_mo,p_ms,

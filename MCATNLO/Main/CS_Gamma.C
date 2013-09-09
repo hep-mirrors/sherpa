@@ -52,7 +52,7 @@ Weight_Map CS_Gamma::CalculateWeight
   std::map<nlo_type::code,StringProcess_Map*> *procs
     (ampl->Procs<std::map<nlo_type::code,StringProcess_Map*> >());
   std::string rname(Process_Base::GenerateName(rampl));
-  p_rproc=(*(*procs)[nlo_type::lo])[rname]->Get<Single_Process>();
+  p_rproc=(*(*procs)[nlo_type::real])[rname]->Get<Single_Process>();
   if (p_rproc==NULL) {
     THROW(fatal_error,"Process '"+rname+"' not found");
   }

@@ -683,3 +683,9 @@ ATOOLS::Flavour Single_DipoleTerm::ReMap(const ATOOLS::Flavour &fl,const size_t 
 {
   return p_LO_process->ReMap(fl,id);
 }
+
+void Single_DipoleTerm::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
+{
+  p_apmap=apmap;
+  if (p_LO_process) p_LO_process->FillProcessMap(apmap);
+}

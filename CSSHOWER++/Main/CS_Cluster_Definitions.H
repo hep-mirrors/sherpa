@@ -2,6 +2,7 @@
 #define CSSHOWER_Main_CS_Cluster_Definitions_H
 
 #include "PDF/Main/Cluster_Definitions_Base.H"
+#include "PHASIC++/Process/Subprocess_Info.H"
 
 namespace CSSHOWER {
 
@@ -30,7 +31,7 @@ namespace CSSHOWER {
     ATOOLS::Cluster_Leg   *p_b;
     
     Shower *p_shower;
-    int     m_mode, m_kmode, m_mtmode;
+    int     m_mode, m_kmode, m_mtmode, m_meweight;
 
     void KernelWeight(const ATOOLS::Cluster_Leg *i,
 		      const ATOOLS::Cluster_Leg *j,
@@ -43,9 +44,18 @@ namespace CSSHOWER {
 		     const ATOOLS::Cluster_Leg *lk,
 		     const ATOOLS::Flavour &mo) const;
 
+    double Differential(ATOOLS::Cluster_Amplitude *const ampl,
+			const PHASIC::nlo_type::code
+			type=PHASIC::nlo_type::lo,
+			const std::string add="") const;
+
+    ATOOLS::ColorID CombineColors
+    (const ATOOLS::Cluster_Leg *li,const ATOOLS::Cluster_Leg *lj,
+     const ATOOLS::Cluster_Leg *lk,const ATOOLS::Flavour &mo) const;
+
   public:
     
-    CS_Cluster_Definitions(Shower *const shower,const int kmode=1);
+    CS_Cluster_Definitions(Shower *const shower,const int kmode,const int meweight);
 
     // CS cluster kperps
     double GetX(const ATOOLS::Cluster_Leg *l,

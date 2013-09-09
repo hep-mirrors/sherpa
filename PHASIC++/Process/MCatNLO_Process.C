@@ -90,7 +90,6 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_bproc->SetParent(this);
   p_rproc->SetParent(this);
   p_bproc->FillProcessMap(p_apmap);
-  p_rproc->FillProcessMap(p_apmap);
   Data_Reader read(" ",";","!","=");
   read.SetInputPath(rpa->GetPath());
   read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
@@ -136,6 +135,8 @@ Process_Base* MCatNLO_Process::InitProcess
 
 bool MCatNLO_Process::InitSubtermInfo()
 {
+  if (p_apmap->find(nlo_type::rsub)==p_apmap->end())
+    (*p_apmap)[nlo_type::rsub] = new StringProcess_Map();
   for (size_t i(0);i<p_rsproc->Size();++i) {
     NLO_subevtlist *subs((*p_rsproc)[i]->GetSubevtList());
     for (size_t j(0);j<subs->size()-1;++j) {
@@ -326,7 +327,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   Cluster_Amplitude *next(p_ampl), *ampl(p_ampl->Prev());
   if (ampl) {
     p_ampl=NULL;
-    Process_Base *rproc(FindProcess(ampl));
+    Process_Base *rproc(FindProcess(ampl,nlo_type::real));
     if (rproc==NULL) THROW(fatal_error,"Invalid splitting");
     p_selected=p_rproc;
     p_rproc->SetSelected(rproc);

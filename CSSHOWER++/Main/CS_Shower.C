@@ -34,6 +34,8 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   if (mtmode!=1) msg_Info()<<METHOD<<"(): Set core m_T mode "<<mtmode<<"\n";
   m_kmode=_dataread->GetValue<int>("CSS_KMODE",1);
   if (m_kmode!=1) msg_Info()<<METHOD<<"(): Set kernel mode "<<m_kmode<<"\n";
+  int meweight=_dataread->GetValue<int>("CSS_MEWMODE",0);
+  if (meweight!=0) msg_Info()<<METHOD<<"(): Set ME weight mode "<<meweight<<"\n";
   m_recocheck=_dataread->GetValue<int>("CSS_RECO_CHECK",0);
   if (m_recocheck!=0) msg_Info()<<METHOD<<"(): Set reco check mode "<<m_recocheck<<"\n";
   int amode(_dataread->GetValue<int>("EXCLUSIVE_CLUSTER_MODE",0));
@@ -49,7 +51,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   
   p_next = new All_Singlets();
 
-  p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode);
+  p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode,meweight);
   p_cluster->SetAMode(amode);
   p_cluster->SetMTMode(mtmode);
 }

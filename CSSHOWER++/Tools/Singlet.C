@@ -91,6 +91,7 @@ bool Singlet::JetVeto(Sudakov *const sud) const
 		    1<<ampl->Legs().size());
   }
   ampl->SetJF(p_jf);
+  ampl->SetMS(p_ms);
   ampl->Decays()=m_decs;
   bool res(p_jf->JC()->Jets(ampl));
   ampl->Delete();

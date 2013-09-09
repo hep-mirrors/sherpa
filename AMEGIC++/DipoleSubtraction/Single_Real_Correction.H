@@ -41,6 +41,7 @@ namespace AMEGIC {
 
     std::vector<size_t> m_sids;
     std::map<void*,DM_Info> m_dfmap;
+    void FillProcessMap(PHASIC::NLOTypeStringProcessMap_Map *apmap);
     void ReMapFlavs(ATOOLS::NLO_subevt *const sub,const int mode=0);
     void SmearCounterEvents(ATOOLS::NLO_subevtlist& subevtlist);
 

@@ -52,6 +52,7 @@ namespace AMEGIC {
     void SetKFactor(const PHASIC::KFactor_Setter_Arguments &args);
     size_t SetMCMode(const size_t mcmode);
     size_t SetClusterMode(const size_t cmode);
+    void FillProcessMap(PHASIC::NLOTypeStringProcessMap_Map *apmap);
 
     /*------------------------------------------------------------------------------
 

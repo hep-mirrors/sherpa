@@ -1,6 +1,7 @@
 #include "PHASIC++/Selectors/Jet_Finder.H"
 
 #include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/Jet_Criterion.H"
@@ -40,6 +41,7 @@ Jet_Finder::Jet_Finder
   for (int i(0);i<m_nin+m_nout;++i)
     p_ampl->CreateLeg(Vec4D(),i<m_nin?m_fl[i].Bar():m_fl[i],ColorID());
   p_ampl->SetJF(this);
+  p_ampl->SetMS(proc->Process()->Generator());
   p_yccalc = new Algebra_Interpreter();
   p_yccalc->SetTagReplacer(this);
   for (int i=0;i<m_n;++i) p_yccalc->AddTag
@@ -80,7 +82,6 @@ bool Jet_Finder::JetTrigger(const ATOOLS::Vec4D_Vector &p,
   p_ampl->SetProc(p_proc->Process());
   for (size_t i(0);i<p.size();++i)
     p_ampl->Leg(i)->SetMom((int)i<m_nin?-p[i]:p[i]);
-  p_ampl->SetMS((Mass_Selector*)p_proc->Process()->Generator());
   m_ycut=p_yccalc->Calculate()->Get<double>();
   if (!m_on) return true;
   msg_Debugging()<<METHOD<<"(): '"<<p_proc->Process()->Name()

@@ -86,6 +86,7 @@ CParam Cluster_Algorithm::GetMeasure
   Flavour mmofl(p_xs->ReMap(ismo?mofl.Bar():mofl,0));
   if (ismo) mmofl=mmofl.Bar();
   if (p_ampl->Legs().size()>4) {
+    p_ampl->SetProcs(p_xs->AllProcs());
     kt2[idi][idj][idk][mofl]=
       p_clus->KPerp2(*p_ampl,i,j,k,mmofl,p_ms,(m_wmode&1024)?1:-1,
 		     (cut||!mmofl.Strong())?1:0);

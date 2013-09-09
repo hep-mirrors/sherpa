@@ -94,10 +94,10 @@ namespace PHASIC {
     double LastPlus();
     double LastMinus();
 
-    void FillProcessMap(NLOTypeStringProcessMap_Map *apmap);
-
     void SetSProc(Process_Base *sproc);
     void SetBBarMC(BBar_Multi_Channel *mc);
+
+    virtual void FillProcessMap(NLOTypeStringProcessMap_Map *apmap);
 
     virtual void SetScale(const Scale_Setter_Arguments &args) = 0;
     virtual void SetKFactor(const KFactor_Setter_Arguments &args) = 0;

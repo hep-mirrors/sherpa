@@ -25,7 +25,7 @@ Process_Base::Process_Base():
   p_scale(NULL), p_kfactor(NULL),
   m_nin(0), m_nout(0), 
   m_oqcd(0), m_oew(0), m_tinfo(1), m_mcmode(0), m_cmode(0),
-  m_lookup(false), m_use_biweight(true)
+  m_lookup(false), m_use_biweight(true), p_apmap(NULL)
 {
   m_last=m_lastb=0.0;
 }
@@ -114,6 +114,7 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
   for (size_t i(0);i<ampl.NIn();++i) p[i]=-ampl.Leg(i)->Mom();
   if (mode&16) THROW(not_implemented,"Invalid mode");
   for (size_t i(ampl.NIn());i<p.size();++i) p[i]=ampl.Leg(i)->Mom();
+  if (mode&64) return Trigger(p);
   bool selon(Selector()->On());
   if (!Trigger(p)) {
     if ((mode&1) && selon) {
