@@ -326,15 +326,11 @@ CParam CS_Cluster_Definitions::CoreScale
   }
   Vec4D psum;
   Vec4D_Vector p(4);
-  int res(0), qcd(0);
   ColorID c[4]={ampl->Leg(0)->Col(),ampl->Leg(1)->Col(),
 		ampl->Leg(2)->Col(),ampl->Leg(3)->Col()};
   for (size_t i(0);i<4;++i) {
     Cluster_Leg *li(ampl->Leg(i));
     psum+=p[i]=li->Mom();
-    if (c[i].m_i>0 || c[i].m_j>0) qcd+=1<<i;
-    if (ampl->Leg(i)->Flav().Strong() ||
-	ampl->Leg(i)->Flav().Resummed()) res+=1<<i;
   }
   if ((-p[0][0]>rpa->gen.PBeam(0)[0] &&
        !IsEqual(-p[0][0],rpa->gen.PBeam(0)[0],1.0e-6)) ||
