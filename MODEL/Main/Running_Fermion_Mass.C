@@ -20,6 +20,7 @@ Running_Fermion_Mass::Running_Fermion_Mass(ATOOLS::Flavour _flav,double _yukmass
   if (m_fl.Mass(true)<1.0||(!_flav.IsQuark())||_yukmass<1.0) {
     m_order = 0;
     p_as    = NULL;
+    m_polemass=_yukmass;
     return;
   }
   Data_Reader dataread(" ",";","!","=");
