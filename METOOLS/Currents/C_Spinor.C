@@ -10,6 +10,8 @@ using namespace ATOOLS;
 
 template <class Scalar>
 double CSpinor<Scalar>::s_accu(1.0e-12);
+template <class Scalar>
+int CSpinor<Scalar>::s_hsc(1);
 
 template <class Scalar> std::ostream &
 METOOLS::operator<<(std::ostream &ostr,const CSpinor<Scalar> &s)
@@ -43,6 +45,43 @@ Construct(const int h,const Vec4<Scalar> &p,Scalar m2)
     }
   }
   else {
+    if (s_hsc) {
+      if (m2<0.0) m2=p.Abs2();
+      SComplex m(sqrt(m2));
+      if (m_r>0) {
+	if (h>0) {
+	  Spinor<Scalar> sh(1,p); 
+	  m_u[2]=sh[0];
+	  m_u[3]=sh[1];
+	  m_u[0]=m/sh[0]; 
+	  m_on=3; 
+	}
+	else {
+	  Spinor<Scalar> sh(-1,p); 
+	  m_u[0]=sh[1];
+	  m_u[1]=-sh[0];
+	  m_u[3]=-m/sh[0]; 
+	  m_on=3; 
+	}
+      }
+      else {
+	if (h<0) {
+	  Spinor<Scalar> sh(1,p); 
+	  m_u[2]=sh[0];
+	  m_u[3]=sh[1];
+	  m_u[0]=-m/sh[0]; 
+	  m_on=3; 
+	}
+	else {
+	  Spinor<Scalar> sh(-1,p); 
+	  m_u[0]=sh[1];
+	  m_u[1]=-sh[0];
+	  m_u[3]=m/sh[0]; 
+	  m_on=3; 
+	}
+      }
+    }
+    else {
   Vec4<Scalar> ph(p[0]<0.0?-p.PSpat():p.PSpat(),p[1],p[2],p[3]);
   if ((m_r>0)^(h<0)) {// u+(p,m) / v-(p,m) 
     Spinor<Scalar> sh(1,ph); 
@@ -68,6 +107,7 @@ Construct(const int h,const Vec4<Scalar> &p,Scalar m2)
     m_u[3-r]*=omp;
     m_on=3;
   }
+    }
   if (m_b<0) {
     m_b=1;
     *this=Bar();

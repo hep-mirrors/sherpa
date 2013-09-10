@@ -18,6 +18,7 @@ namespace METOOLS {
   protected:
     
     static double s_accu;
+    static int    s_hsc;
 
     int m_r, m_b, m_on;
 
@@ -121,6 +122,8 @@ namespace METOOLS {
     { s_accu=1.0e-12; }
 
     inline static double Accuracy() { return s_accu; }
+
+    inline static void SetHSC(const int hsc) { s_hsc=hsc; }
 
   };// end of class CSpinor
   /*!

@@ -13,6 +13,7 @@
 #include "SHERPA/Tools/Event_Reader_Base.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "METOOLS/Currents/C_Spinor.H"
 #include "PDF/Main/Structure_Function.H"
 #include "PDF/Main/Intact.H"
 #include "PDF/Main/PDF_Base.H"
@@ -84,6 +85,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   rpa->gen.SetSoftSC(p_dataread->GetValue<int>("SOFT_SPIN_CORRELATIONS",0));
   rpa->gen.SetHardSC(p_dataread->GetValue<int>("HARD_SPIN_CORRELATIONS",0));
+  METOOLS::CSpinor<double>::SetHSC(rpa->gen.HardSC());
   exh->AddTerminatorObject(this);
 }
 

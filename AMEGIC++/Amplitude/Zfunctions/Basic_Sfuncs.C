@@ -762,17 +762,17 @@ void Basic_Sfuncs::PrecalcS()
 
       switch (k0_n) {
       case 10:
-        _S0[i][j] = Complex(m->mom[R1()],-m->mom[R2()])*A;
-	_S1[i][j] = Complex(-m->mom[R1()],-m->mom[R2()])*A;
+        _S0[i][j] = -Complex(m->mom[R1()],-m->mom[R2()])*A;
+	_S1[i][j] = -Complex(-m->mom[R1()],-m->mom[R2()])*A;
         if (IsComplex(i)){
-          _S0[i][j] += Complex(m->mom_img[R2()],m->mom_img[R1()])*A;
-	  _S1[i][j] += Complex(m->mom_img[R2()],-m->mom_img[R1()])*A;
+          _S0[i][j] += -Complex(m->mom_img[R2()],m->mom_img[R1()])*A;
+	  _S1[i][j] += -Complex(m->mom_img[R2()],-m->mom_img[R1()])*A;
         }
-        _S0[i][j] -= Complex(m1->mom[R1()],-m1->mom[R2()])/A;
-	_S1[i][j] -= Complex(-m1->mom[R1()],-m1->mom[R2()])/A;
+        _S0[i][j] -= -Complex(m1->mom[R1()],-m1->mom[R2()])/A;
+	_S1[i][j] -= -Complex(-m1->mom[R1()],-m1->mom[R2()])/A;
         if (IsComplex(j)){
-          _S0[i][j] -= Complex(m1->mom_img[R2()],m1->mom_img[R1()])/A;
-	  _S1[i][j] -= Complex(m1->mom_img[R2()],-m1->mom_img[R1()])/A;
+          _S0[i][j] -= -Complex(m1->mom_img[R2()],m1->mom_img[R1()])/A;
+	  _S1[i][j] -= -Complex(m1->mom_img[R2()],-m1->mom_img[R1()])/A;
 	}
 	// if (b[j]<0) _S0[i][j] = -_S0[i][j];
 	// if (b[i]<0) _S1[i][j] = -_S1[i][j];
@@ -885,17 +885,17 @@ void Basic_Sfuncs::CalcS(int i, int j)
 
     switch(k0_n){
     case 10:
-      _S0[i][j] = Complex(m->mom[R1()],-m->mom[R2()])*A;
-      _S1[i][j] = Complex(-m->mom[R1()],-m->mom[R2()])*A;
+      _S0[i][j] = -Complex(m->mom[R1()],-m->mom[R2()])*A;
+      _S1[i][j] = -Complex(-m->mom[R1()],-m->mom[R2()])*A;
       if (IsComplex(i)){
-	_S0[i][j] += Complex(m->mom_img[R2()],m->mom_img[R1()])*A;
-	_S1[i][j] += Complex(m->mom_img[R2()],-m->mom_img[R1()])*A;
+	_S0[i][j] += -Complex(m->mom_img[R2()],m->mom_img[R1()])*A;
+	_S1[i][j] += -Complex(m->mom_img[R2()],-m->mom_img[R1()])*A;
       }
-      _S0[i][j] -= Complex(m1->mom[R1()],-m1->mom[R2()])/A;
-      _S1[i][j] -= Complex(-m1->mom[R1()],-m1->mom[R2()])/A;
+      _S0[i][j] -= -Complex(m1->mom[R1()],-m1->mom[R2()])/A;
+      _S1[i][j] -= -Complex(-m1->mom[R1()],-m1->mom[R2()])/A;
       if (IsComplex(j)){
-	_S0[i][j] -= Complex(m1->mom_img[R2()],m1->mom_img[R1()])/A;
-	_S1[i][j] -= Complex(m1->mom_img[R2()],-m1->mom_img[R1()])/A;
+	_S0[i][j] -= -Complex(m1->mom_img[R2()],m1->mom_img[R1()])/A;
+	_S1[i][j] -= -Complex(m1->mom_img[R2()],-m1->mom_img[R1()])/A;
       }
       // if (b[j]<0) _S0[i][j] = -_S0[i][j];
       // if (b[i]<0) _S1[i][j] = -_S1[i][j];
@@ -1015,8 +1015,8 @@ Complex Basic_Sfuncs::CalcS(ATOOLS::Vec4D& m, ATOOLS::Vec4D& m1)
   case 11:
   case 10:
     A = csqrt((m1[0]+m1[R3()])/(m[0]+m[R3()]));
-    S = Complex(m[R1()],-m[R2()])*A; 
-    S -= Complex(m1[R1()],-m1[R2()])/A;
+    S = -Complex(m[R1()],-m[R2()])*A; 
+    S -= -Complex(m1[R1()],-m1[R2()])/A;
     break;
   case 1:
     A = csqrt((m1[0]-(m1[2]+m1[3])*SQRT_05)/(m[0]-(m[2]+m[3])*SQRT_05));
@@ -1056,13 +1056,13 @@ std::pair<Complex, Complex> Basic_Sfuncs::GetS(ATOOLS::Vec4D v, int j)
     switch(k0_n){
     case 11:
     case 10:
-      S.first   = Complex(v[R1()],-v[R2()])*A; 
-      S.second  = Complex(-v[R1()],-v[R2()])*A;
-      S.first  -= Complex(m1->mom[R1()],-m1->mom[R2()])/A;
-      S.second -= Complex(-m1->mom[R1()],-m1->mom[R2()])/A;
+      S.first   = -Complex(v[R1()],-v[R2()])*A; 
+      S.second  = -Complex(-v[R1()],-v[R2()])*A;
+      S.first  -= -Complex(m1->mom[R1()],-m1->mom[R2()])/A;
+      S.second -= -Complex(-m1->mom[R1()],-m1->mom[R2()])/A;
       if (IsComplex(j)){
- 	S.first  -= Complex(m1->mom_img[R2()],m1->mom_img[R1()])/A;
- 	S.second -= Complex(m1->mom_img[R2()],-m1->mom_img[R1()])/A;
+ 	S.first  -= -Complex(m1->mom_img[R2()],m1->mom_img[R1()])/A;
+ 	S.second -= -Complex(m1->mom_img[R2()],-m1->mom_img[R1()])/A;
       }
       break;
     case 1:

@@ -935,7 +935,6 @@ void Amplitude_Handler::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,
       amps.back().Insert(graphs[i]->Zvalue(ihel)*sfactor, m_hm[ihel]);
     }
   }
-  DEBUG_INFO("end");
   
 }
 
