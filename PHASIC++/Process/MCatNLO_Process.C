@@ -327,9 +327,18 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   Cluster_Amplitude *next(p_ampl), *ampl(p_ampl->Prev());
   if (ampl) {
     p_ampl=NULL;
-    Process_Base *rproc(FindProcess(ampl,nlo_type::real));
+    Process_Base *rproc(NULL);
+    Flavour_Vector afl(ampl->Legs().size());
+    for (size_t i(0);i<afl.size();++i)
+      afl[i]=i<m_nin?ampl->Leg(i)->Flav().Bar():ampl->Leg(i)->Flav();
+    for (size_t i(0);i<p_rproc->Size();++i)
+      if (afl==(*p_rproc)[i]->Flavours()) {
+	rproc=(*p_rproc)[i];
+	break;
+      }
     if (rproc==NULL) THROW(fatal_error,"Invalid splitting");
-    p_selected=rproc;
+    p_selected=p_rproc;
+    p_rproc->SetSelected(rproc);
     rproc->Integrator()->SetMax(bproc->Integrator()->Max());
     if (ampl->Leg(0)->Mom().PPlus()>ampl->Leg(1)->Mom().PPlus())
       std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
