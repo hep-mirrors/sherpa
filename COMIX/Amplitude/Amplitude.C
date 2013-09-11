@@ -25,7 +25,8 @@ static const double invsqrttwo(1.0/sqrt(2.0));
 
 Amplitude::Amplitude():
   p_model(NULL), m_nin(0), m_nout(0), m_n(0), m_nf(6), m_ngpl(3),
-  m_oew(99), m_oqcd(99), m_maxoew(99), m_maxoqcd(99), m_minntc(0),
+  m_oew(99), m_oqcd(99), m_maxoew(99), m_maxoqcd(99),
+  m_minntc(0), m_maxntc(99),
   m_pmode('D'), p_dinfo(new Dipole_Info()), p_colint(NULL), p_helint(NULL),
   m_trig(true), p_loop(NULL)
 {
@@ -450,7 +451,7 @@ Vertex *Amplitude::AddCurrent
       oew>m_maxoew || oqcd>m_maxoqcd ||
       (n==m_n-1 && ((m_oew<99 && oew!=m_oew) ||
 		    (m_oqcd<99 && oqcd!=m_oqcd) ||
-		    ntc<m_minntc))) {
+		    ntc<m_minntc || ntc>m_maxntc))) {
 #ifdef DEBUG__BG
     msg_Debugging()<<"delete vertex {"<<vkey.p_a->Flav()<<",("
 		   <<vkey.p_a->OrderEW()<<","<<vkey.p_a->OrderQCD()
@@ -459,8 +460,8 @@ Vertex *Amplitude::AddCurrent
 		   <<")}-"<<vkey.Type()<<"("<<v->OrderEW()<<","
 		   <<v->OrderQCD()<<")->{"<<vkey.p_c->Flav()<<"} => ("
 		   <<oew<<","<<oqcd<<") vs. max = ("<<m_oew<<","
-		   <<m_oqcd<<"), act = "<<v->Active()
-		   <<", n t-ch = "<<ntc<<" vs "<<m_minntc<<"\n";
+		   <<m_oqcd<<"), act = "<<v->Active()<<", n t-ch = "
+		   <<ntc<<" vs "<<m_minntc<<"/"<<m_maxntc<<"\n";
 #endif
     delete v;
     return NULL;
@@ -723,7 +724,8 @@ bool Amplitude::Construct(const Flavour_Vector &flavs)
 		       <<", O("<<(*cit)->OrderEW()<<","<<(*cit)->OrderQCD()
 		       <<") vs. O("<<m_oew<<","<<m_oqcd<<") / O_{max}("
 		       <<m_maxoew<<","<<m_maxoqcd<<"), n t-ch = "
-		       <<(*cit)->NTChannel()<<" vs. "<<m_minntc<<"\n";
+		       <<(*cit)->NTChannel()<<" vs. "
+		       <<m_minntc<<"/"<<m_maxntc<<"\n";
 #endif
 	if ((*cit)->Sub() && (*cit)->Sub()->Sub()==*cit)
 	  (*cit)->Sub()->SetSub(NULL);
@@ -829,7 +831,7 @@ bool Amplitude::Initialize
  const double &isf,const double &fsf,MODEL::Model_Base *const model,
  MODEL::Coupling_Map *const cpls,const int smode,const size_t &oew,
  const size_t &oqcd,const size_t &maxoew,const size_t &maxoqcd,
- const size_t &minntc,const std::string &name)
+ const size_t &minntc,const size_t &maxntc,const std::string &name)
 {
   CleanUp();
   m_nin=nin;
@@ -838,6 +840,7 @@ bool Amplitude::Initialize
   m_oew=oew;
   m_oqcd=oqcd;
   m_minntc=minntc;
+  m_maxntc=maxntc;
   m_maxoew=Min(oew,maxoew);
   m_maxoqcd=Min(oqcd,maxoqcd);
   p_dinfo->SetMode(smode);

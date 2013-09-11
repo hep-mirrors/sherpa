@@ -120,7 +120,7 @@ bool COMIX::Single_Process::Initialize
   if (p_bg->Initialize(m_nin,m_nout,flavs,isf,fsf,&*p_model,
 		       &m_cpls,smode,m_pinfo.m_oew,m_pinfo.m_oqcd,
 		       m_pinfo.m_maxoew,m_pinfo.m_maxoqcd,
-		       m_pinfo.m_ntchan,m_name)) {
+		       m_pinfo.m_ntchan,m_pinfo.m_mtchan,m_name)) {
     if (smode&1) {
       NLO_subevtlist *subs(GetSubevtList());
       for (size_t i(0);i<subs->size()-1;++i)

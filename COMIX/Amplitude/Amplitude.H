@@ -87,7 +87,8 @@ namespace COMIX {
 
     size_t m_nin, m_nout;
     size_t m_n, m_nf, m_pgmode, m_ngpl, m_sccmur;
-    size_t m_oew, m_oqcd, m_maxoew, m_maxoqcd, m_minntc;
+    size_t m_oew, m_oqcd, m_maxoew, m_maxoqcd;
+    size_t m_minntc, m_maxntc;
     char   m_pmode;
 
     Spin_Structure<DComplex> m_ress, m_rress, m_cress;
@@ -187,7 +188,8 @@ namespace COMIX {
 		    MODEL::Coupling_Map *const cpls,const int smode,
 		    const size_t &oew,const size_t &oqcd,
 		    const size_t &maxoew,const size_t &maxoqcd,
-		    const size_t &minntc,const std::string &name);
+		    const size_t &minntc,const size_t &maxntc,
+		    const std::string &name);
 
     void ResetZero();
 
