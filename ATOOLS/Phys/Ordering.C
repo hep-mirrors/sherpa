@@ -100,3 +100,18 @@ public:
 };
 
 DEFINE_ORDER_GETTER(Order_Up_Eta,"ETA_UP","order eta ascending")
+
+//-------------------------------------------------------------------------------
+
+class Order_Down_Eta : public Order_Base {
+public:
+  static bool OrderV(const Vec4D &a,const Vec4D &b) 
+  { return dabs(a.Eta())<dabs(b.Eta()); }
+  static bool OrderP(const Particle &a,const Particle &b) 
+  { return dabs(a.Momentum().Eta())<dabs(b.Momentum().Eta()); }
+  static bool OrderPP(Particle * const &a,Particle * const &b) 
+  { return dabs(a->Momentum().Eta())<dabs(b->Momentum().Eta()); }
+  Order_Down_Eta(): Order_Base(OrderV,OrderP,OrderPP) {}
+};
+
+DEFINE_ORDER_GETTER(Order_Down_Eta,"ETA_DOWN","order eta descending")

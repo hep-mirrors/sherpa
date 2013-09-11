@@ -171,8 +171,8 @@ the cuts have to be specified.
 
 If the fourth argument is given, particles are ordered
 before the cut is applied. Possible orderings are @option{PT_UP},
-@option{ET_UP}, @option{E_UP} and @option{ETA_UP}, 
-(increasing p_T, E_T, E, eta). They have to be specified
+@option{ET_UP}, @option{E_UP}, @option{ETA_UP} and @option{ETA_DOWN},
+(increasing p_T, E_T, E, eta, and decreasing eta). They have to be specified
 for each of the particles, separated by commas.
 
 
