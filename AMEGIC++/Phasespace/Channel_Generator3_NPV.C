@@ -420,7 +420,7 @@ void Channel_Generator3_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,of
       pin0sum = Order(pin0sum);
       string help1(""),help2 = pin0[pin0.size()-1];
       for (size_t i=0;i<pin0.size()-1;++i) help1+=pin0[i];
-      if (help1.length()>0) help1 = string("p0_") + help1;
+      if (help1.length()>0) help1 = string("p0_") + Order(help1);
       else help1 = string("p[0]");
 
       if (help2.length()>1) AddToVariables(flag,string("0_")+pin0sum,help1+string("-p")+help2,1,sf);
@@ -435,7 +435,7 @@ void Channel_Generator3_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,of
       pin1sum = Order(pin1sum);
       string help1(""),help2 = pin1[pin1.size()-1];
       for (size_t i=0;i<pin1.size()-1;++i) help1+=pin1[i];
-      if (help1.length()>0) help1 = string("p1_") + help1;
+      if (help1.length()>0) help1 = string("p1_") + Order(help1);
       else help1 = string("p[1]");
 
       if (help2.length()>1) AddToVariables(flag,string("1_")+pin1sum,help1+string("-p")+help2,1,sf);
