@@ -87,6 +87,7 @@ CParam Cluster_Algorithm::GetMeasure
   if (ismo) mmofl=mmofl.Bar();
   if (p_ampl->Legs().size()>p_ampl->NIn()+2) {
     p_ampl->SetProcs(p_xs->AllProcs());
+    p_ampl->Decays()=p_xs->Info().m_fi.GetDecayInfos();
     kt2[idi][idj][idk][mofl]=
       p_clus->KPerp2(*p_ampl,i,j,k,mmofl,p_ms,(m_wmode&1024)?1:-1,
 		     (cut||!mmofl.Strong())?1:0);
@@ -603,9 +604,17 @@ bool Cluster_Algorithm::Cluster
 	}
 	msg_Debugging()<<"reject ordering\n";
       }
+      p_ampl=ampl;
+      p_ampl->DeleteNext();
     }
-    p_ampl=ampl;
-    p_ampl->DeleteNext();
+    else {
+      msg_Debugging()<<"no valid combination -> classify as core\n";
+      p_ampl->SetProc(p_xs);
+      p_ampl->SetKT2((p_xs->IsMapped()?p_xs->MapProc():p_xs)
+		     ->ScaleSetter()->CoreScale(p_ampl).m_mu2);
+      if (p_ampl->Prev()) kt2ord=UpdateKT2(kt2ord,p_ampl->Prev(),1);
+      return true;
+    }
   } while (oldsize<nocl.size());
   msg_Debugging()<<"trying unordered configurations\n";
   if (ampl->Legs().size()==ampl->NIn()+2) return false;
@@ -644,6 +653,9 @@ bool Cluster_Algorithm::Cluster
       if (p_ampl->KT2()<sqrt(std::numeric_limits<double>::max()))
 	if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo,kt2ord)) {
 	  kt2ord=UpdateKT2(kt2ord,ampl);
+	  return true;
+	}
+	else {
 	  return true;
 	}
     p_ampl=ampl;

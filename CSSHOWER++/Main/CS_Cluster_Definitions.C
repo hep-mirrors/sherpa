@@ -122,6 +122,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
   if (cs.m_wk>0.0 && (m_meweight&1) && (m_mode&1)) {
     Cluster_Amplitude *campl(Cluster_Amplitude::New());
     campl->SetProcs(ampl->Procs<void>());
+    campl->Decays()=ampl->Decays();
     campl->SetNIn(ampl->NIn());
     campl->SetMuR2(rpa->gen.CplScale());
     campl->SetMuF2(rpa->gen.CplScale());

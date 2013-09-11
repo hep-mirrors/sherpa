@@ -520,6 +520,7 @@ CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit,int mode)
     if (cit->second.m_calc) return cit;
     Cluster_Amplitude *ampl(Cluster_Amplitude::New());
     ampl->SetNIn(p_proc->NIn());
+    ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
     for (int i=0;i<m_nlegs;++i)
       ampl->CreateLeg(i<2?-p_moms[i]:p_moms[i],
 		      i<2?p_legs[0][i].Flav().Bar():p_legs[0][i].Flav(),
@@ -563,19 +564,8 @@ KT2Info_Vector Combine_Table::UpdateKT2(const CD_List::iterator &cdit) const
   return nkt2ord;
 }
 
-Combine_Table *Combine_Table::
-CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2) 
+Combine_Table *Combine_Table::CheckCore(const int mode,const double &kt2)
 {
-  DEBUG_FUNC(mode<<" "<<nl<<" "<<sqrt(kt2));
-  msg_Debugging()<<*this<<"\n";
-  if (nl==3) return this;
-  m_rejected.clear();
-  bool invonly(true), valid(mode&512);
-  while (true) {
-    m_nl=nl;
-    if (moms) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
-    if (!SelectWinner(mode)) {
-      if ((mode&512) && m_nstrong==0) {
 	  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
 	  ampl->SetProc(p_proc);
 	  ampl->SetMS(p_ms);
@@ -604,6 +594,22 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
 	    }
 	  }
 	  return this;
+}
+
+Combine_Table *Combine_Table::
+CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2) 
+{
+  DEBUG_FUNC(mode<<" "<<nl<<" "<<sqrt(kt2));
+  msg_Debugging()<<*this<<"\n";
+  if (nl==3) return this;
+  m_rejected.clear();
+  bool invonly(true), valid(mode&512);
+  while (true) {
+    m_nl=nl;
+    if (moms) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
+    if (!SelectWinner(mode)) {
+      if ((mode&512) && m_nstrong==0) {
+	return CheckCore(mode,kt2);
       }
       if (nl==4 && p_proc->Info().m_fi.NMinExternal()>1 &&
 	  (IdentifyHardProcess() || p_up==NULL)) {
@@ -697,9 +703,8 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
   }
   if (valid && invonly && kt2>0.0 &&
       ((p_up && p_up->p_up) || !(mode&4096))) {
-    msg_Debugging()<<"no valid configuration, retry previous\n";
-    delete this;
-    return NULL;    
+    msg_Debugging()<<"no valid combination -> classify as core\n";
+    return CheckCore(mode,kt2);
   }
   msg_Debugging()<<"trying unordered configuration\n";
   CD_List norejected;

@@ -147,6 +147,7 @@ namespace AMEGIC {
     Combine_Table *CreateNext();
     Combine_Table *NextTable(Combine_Table *tab,
 			     const int mode,const double &kt2);
+    Combine_Table *CheckCore(const int mode,const double &kt2);
 
     double Sprime() const;
 
