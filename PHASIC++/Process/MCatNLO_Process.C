@@ -329,8 +329,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     p_ampl=NULL;
     Process_Base *rproc(FindProcess(ampl,nlo_type::real));
     if (rproc==NULL) THROW(fatal_error,"Invalid splitting");
-    p_selected=p_rproc;
-    p_rproc->SetSelected(rproc);
+    p_selected=rproc;
     rproc->Integrator()->SetMax(bproc->Integrator()->Max());
     if (ampl->Leg(0)->Mom().PPlus()>ampl->Leg(1)->Mom().PPlus())
       std::swap<Cluster_Leg*>(ampl->Legs()[0],ampl->Legs()[1]);
