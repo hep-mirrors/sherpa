@@ -135,8 +135,6 @@ Process_Base* MCatNLO_Process::InitProcess
 
 bool MCatNLO_Process::InitSubtermInfo()
 {
-  if (p_apmap->find(nlo_type::rsub)==p_apmap->end())
-    (*p_apmap)[nlo_type::rsub] = new StringProcess_Map();
   for (size_t i(0);i<p_rsproc->Size();++i) {
     NLO_subevtlist *subs((*p_rsproc)[i]->GetSubevtList());
     for (size_t j(0);j<subs->size()-1;++j) {
@@ -148,8 +146,6 @@ bool MCatNLO_Process::InitSubtermInfo()
 	    m_iinfo[sub->m_pname].insert(IDip_ID(ij,k));
 	  }
       m_dinfo[subs->back()->m_pname].insert(*sub);
-      std::string name(sub->Proc<Process_Base>()->Name());
-      (*(*p_apmap)[nlo_type::rsub])[name]=sub->Proc<Process_Base>();
     }
   }
   return true;

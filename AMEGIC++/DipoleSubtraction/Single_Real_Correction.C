@@ -596,6 +596,7 @@ void Single_Real_Correction::SetSelectorOn(const bool on)
 
 void Single_Real_Correction::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
 {
+  Process_Base::FillProcessMap(apmap);
   p_tree_process->FillProcessMap(apmap);
   for (size_t i=0;i<m_subtermlist.size();++i)
     m_subtermlist[i]->FillProcessMap(apmap);

@@ -1311,7 +1311,3 @@ CombinedFlavour(const size_t &idij)
   return fit->second;
 }
 
-void Single_LOProcess::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
-{
-  p_apmap=apmap;
-}

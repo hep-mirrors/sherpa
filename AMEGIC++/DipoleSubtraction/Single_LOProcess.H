@@ -61,7 +61,6 @@ namespace AMEGIC {
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
     
     const MODEL::Coupling_Map *CouplingMap() const { return &m_cpls; }
-    void FillProcessMap(PHASIC::NLOTypeStringProcessMap_Map *apmap);
     /*------------------------------------------------------------------------------
 
       Initializing libraries, amplitudes, etc.
