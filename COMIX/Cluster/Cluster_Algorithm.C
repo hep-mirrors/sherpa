@@ -607,7 +607,7 @@ bool Cluster_Algorithm::Cluster
       p_ampl=ampl;
       p_ampl->DeleteNext();
     }
-    else {
+    else if (nocl.empty()) {
       msg_Debugging()<<"no valid combination -> classify as core\n";
       p_ampl->SetProc(p_xs);
       p_ampl->SetKT2((p_xs->IsMapped()?p_xs->MapProc():p_xs)
