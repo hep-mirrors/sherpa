@@ -12,6 +12,7 @@ using namespace ATOOLS;
 bool ISR_Channels::MakeChannels()
 {
   if (m_isrparams.size()>0) return CreateChannels();
+  bool onshellresonance=false;
   Channel_Info ci;
   int    type;
   double mass,width;
@@ -22,7 +23,11 @@ bool ISR_Channels::MakeChannels()
   for (size_t i(0);i<fsr->Number();++i) fsr->ISRInfo(i,ts[i],ms[i],ws[i]);
   fsr->ISRInfo(ts,ms,ws);
   for (size_t i=0;i<ts.size();i++) {
-    type=ts[i]; 
+    type=abs(ts[i]); 
+    if (ts[i]==-1) {
+      p_psh->SetOSMass(ms[i]);
+      onshellresonance=true;
+    }
     mass=ms[i];
     width=ws[i];
     if (type==0 || type==3 ||
@@ -60,6 +65,7 @@ bool ISR_Channels::MakeChannels()
     }
     ci.parameters.clear();
   }
+  if (onshellresonance) return CreateChannels();
   
   if (p_psh->Flavs()[0].IsLepton() || p_psh->Flavs()[1].IsLepton()) {
     if ((p_psh->Flavs()[0].IsLepton() && p_psh->Flavs()[1].Strong()) ||

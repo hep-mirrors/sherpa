@@ -106,7 +106,7 @@ namespace PHASIC {
     long int m_maxtrials;
 
     double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight;
-    double m_result, m_error, m_abserror, m_enhance; 
+    double m_result, m_error, m_abserror, m_enhance, m_osmass; 
     
     std::vector<std::vector<double> > m_stats;
 
@@ -221,6 +221,8 @@ namespace PHASIC {
 
     inline const std::vector<std::vector<double> > Stats() const
     { return m_stats; }
+
+    inline void SetOSMass(const double &osmass) { m_osmass=osmass; }
 
   };// end of class Phase_Space_Handler
 

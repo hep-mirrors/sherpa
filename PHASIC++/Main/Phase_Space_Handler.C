@@ -63,6 +63,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   double minalpha = dr.GetValue<double>("INT_MINALPHA",0.0);
   p_fsrchannels->SetMinAlpha(minalpha);
   m_m[0] = p_flavours[0].Mass(); m_m2[0] = m_m[0]*m_m[0];
+  m_osmass=(m_nout==1?p_flavours[2].Mass():0.0);
   if (m_nin==2) {
     m_m[1] = p_flavours[1].Mass(); m_m2[1] = m_m[1]*m_m[1]; 
     if (p_beamhandler) {
@@ -382,7 +383,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
 				   p_isrhandler->Upper2());
       p_isrhandler->SetPole(m_beamspkey[3]);
     }
-    m_isrspkey[4]=m_nout>1?-1.0:sqr(p_flavours[2].Mass());
+    m_isrspkey[4]=m_osmass?sqr(m_osmass):-1.0;
     if (!(mode&psm::no_lim_isr)) p_isrhandler->SetSprimeMin(m_smin);
     if (!(mode&psm::no_gen_isr)) {
       p_isrhandler->SetLimits(m_isrspkey.Doubles(),m_isrykey.Doubles(),
@@ -392,7 +393,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
 	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
       }
     }
-    if (!p_isrhandler->MakeISR(m_nout==1?m_isrspkey[4]:m_isrspkey[3],
+    if (!p_isrhandler->MakeISR(m_osmass?m_isrspkey[4]:m_isrspkey[3],
 			       m_beamykey[2]+m_isrykey[2],
 			     p_lab,process->Process()->
 			     Selected()->Flavours())) {
