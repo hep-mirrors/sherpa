@@ -349,6 +349,8 @@ double Single_LOProcess_External::operator()(const ATOOLS::Vec4D_Vector &labmom,
   double M2(0.);
 
   if (m_emitgluon) p_MHVamp->SetSqMatrix((*pfactors)[1],mom[GetEmit()],(*p_epol)[0]);
+  if (p_MHVamp->Calc()->NAmps()==0) M2=p_MHVamp->Calc(mom);
+  else {
   p_MHVamp->Calc(mom);
   for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (p_hel->On(i) && p_hel->GetEPol(i)==90) {
@@ -356,6 +358,7 @@ double Single_LOProcess_External::operator()(const ATOOLS::Vec4D_Vector &labmom,
       mh *= p_hel->Multiplicity(i) * p_hel->PolarizationFactor(i);
       M2 += mh;
     }
+  }
   }
 
   m_lastxs = M2;
@@ -378,6 +381,8 @@ void Single_LOProcess_External::Calc_AllXS
     }
   }
 
+  if (p_MHVamp->Calc()->NAmps()==0) dsij[0][0]=p_MHVamp->Calc(mom);
+  else {
   p_MHVamp->Calc(mom);
   for (size_t h=0;h<p_hel->MaxHel();h++) {
     if (p_hel->On(h)) {
@@ -389,6 +394,7 @@ void Single_LOProcess_External::Calc_AllXS
 	}
       }
     }
+  }
   }
 }
 
