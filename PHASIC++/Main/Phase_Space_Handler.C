@@ -456,7 +456,7 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
         NLO_subevtlist * subs(p_active->Process()->GetSubevtList());
         for (size_t i(0);i<subs->size();++i) msg_Out()<<(*(*subs)[i]);
       }
-      for (size_t i(0);i<p_lab.size();++i) msg_Out()<<"  "<<p_lab[i]<<std::endl;
+      for (size_t i(0);i<p_lab.size();++i) msg_Out()<<"  p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";"<<std::endl;
       msg_Out()<<"==========================================================\n";
       msg->SetPrecision(precision);
     }
