@@ -82,8 +82,8 @@ void Triangle_Calculator<SType>::Evaluate()
 	  msg_Debugging()<<"    "<<**ait<<"\n";
 	  msg_Debugging()<<"    "<<**bit<<"\n";
 #endif
-	  SComplex s((**ait***bit)*(pa*pb));
-	  s-=(**ait*pb)*(**bit*pa);
+	  SComplex s(-(**ait***bit)*(pa*pb));
+	  s+=(**ait*pb)*(**bit*pa);
 	  CScalarType *j(CScalarType::New(s));
 	  *j*=SComplex(m_cpl);
 	  j->SetH(p_v->H(i));
