@@ -5,6 +5,7 @@
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 
@@ -33,24 +34,34 @@ namespace PHASIC {
     }
     int GenerateChannels()
     {
+      Data_Reader read(" ",";","#","=");
+      int os=read.GetValue<int>("HIGGS_ON_SHELL",0);
       int nin=p_proc->NIn(), nout=p_proc->NOut();
       Flavour *fl=(Flavour*)&p_proc->Flavours().front();
       Phase_Space_Handler *psh=&*p_proc->Integrator()->PSHandler();
+      if (!os) {
       p_mc->Add(LoadChannel(nin,nout,fl,"C3_14",psh));
       p_mc->Add(LoadChannel(nin,nout,fl,"C3_13",psh));
+      }
       p_mc->Add(LoadChannel(nin,nout,fl,"C3_12",psh));
+      if (!os) {
       p_mc->Add(LoadChannel(nin,nout,fl,"C3_11",psh));
       p_mc->Add(LoadChannel(nin,nout,fl,"C3_10",psh));
       p_mc->Add(LoadChannel(nin,nout,fl,"C3_9",psh));
+      }
       p_mc->Add(LoadChannel(nin,nout,fl,"C3_8",psh));
+      if (!os) {
       p_mc->Add(LoadChannel(nin,nout,fl,"C3_7",psh));
       p_mc->Add(LoadChannel(nin,nout,fl,"C3_6",psh));
       p_mc->Add(LoadChannel(nin,nout,fl,"C3_5",psh));
       p_mc->Add(LoadChannel(nin,nout,fl,"C3_4",psh));
       p_mc->Add(LoadChannel(nin,nout,fl,"C3_3",psh));
       p_mc->Add(LoadChannel(nin,nout,fl,"C3_2",psh));
+      }
       p_mc->Add(LoadChannel(nin,nout,fl,"C3_1",psh));
+      if (!os) {
       p_mc->Add(LoadChannel(nin,nout,fl,"C3_0",psh));
+      }
       return 0;
     }
   };

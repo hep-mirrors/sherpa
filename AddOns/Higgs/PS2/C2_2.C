@@ -1,5 +1,6 @@
 #include "PHASIC++/Channels/Single_Channel.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "PHASIC++/Channels/Vegas.H"
 
@@ -10,6 +11,7 @@ namespace PHASIC {
   class C2_2 : public Single_Channel {
     Info_Key m_kI_2_3,m_kZR25_125;
     Vegas* p_vegas;
+    int m_onshell;
   public:
     C2_2(int,int,Flavour*,Integration_Info * const);
     ~C2_2();
@@ -58,6 +60,10 @@ void C2_2::GenerateWeight(Vec4D* p,Cut_Data * cuts)
   if (wt!=0.) wt = vw/wt/pow(2.*M_PI,2*3.-4.);
 
   weight = wt;
+  if (m_onshell) {
+    weight/=M_PI/p23.Abs2();
+    weight*=Flavour((kf_code)(25)).Mass()*Flavour((kf_code)(25)).Width()*M_PI;
+  }
 }
 
 C2_2::C2_2(int nin,int nout,Flavour* fl,Integration_Info * const info)
@@ -69,6 +75,8 @@ C2_2::C2_2(int nin,int nout,Flavour* fl,Integration_Info * const info)
   m_kI_2_3.Assign(std::string("I_2_3"),2,0,info);
   m_kZR25_125.Assign(std::string("ZR25_125"),2,0,info);
   p_vegas = new Vegas(rannum,100,name);
+  Data_Reader read(" ",";","#","=");
+  m_onshell=read.GetValue<int>("HIGGS_ON_SHELL",0);
 }
 
 C2_2::~C2_2()
@@ -79,6 +87,7 @@ C2_2::~C2_2()
 void C2_2::ISRInfo(int & type,double & mass,double & width)
 {
   type  = 1;
+  if (m_onshell) type=-1;
   mass  = Flavour((kf_code)(25)).Mass();
   width = Flavour((kf_code)(25)).Width();
 }
