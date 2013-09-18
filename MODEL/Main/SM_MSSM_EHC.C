@@ -81,7 +81,7 @@ void SM_EHC::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
   
   //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 
   Complex eh(2./3.,0.);
-  double ph(2.*47./18.); double pfac(1.);
+  double ph(-2.*47./18.); double pfac(1.);
   if (p_dataread->GetValue<int>("FINITE_TOP_MASS",0)==1) {
     double hm=Flavour(kf_h0).Mass();
     double tm=Flavour(kf_t).Mass();
