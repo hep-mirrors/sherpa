@@ -26,6 +26,7 @@ namespace ATOOLS {
   private : 
     static long unsigned int s_currentnumber;
     int               m_number, m_beam; 
+    size_t            m_meid; 
     part_status::code m_status;         
     char              m_info;   
     Flavour           m_fl;         
@@ -84,6 +85,8 @@ namespace ATOOLS {
     static int    Counter()                         { return s_totalnumber; }
     inline static void Reset(const int number=0)    { s_currentnumber = number; }
     inline static long unsigned int CurrentNumber() { return s_currentnumber; }
+    inline size_t MEId() const { return m_meid; }
+    inline void   SetMEId(const size_t &id) { m_meid=id; }
   };
 
   typedef std::vector<Particle *>   Particle_Vector;

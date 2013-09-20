@@ -69,6 +69,7 @@ std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle &part) {
      <<" ("<<std::setw(3)<<part.GetFlow(1)<<","<<std::setw(3)<<part.GetFlow(2)<<")"
      <<std::resetiosflags(std::ios::scientific)<<std::resetiosflags(std::ios::left);
   if (part.Beam()>=0) str<<" "<<part.Beam();
+  if (part.MEId()) str<<" "<<ID(part.MEId());
   str.precision(io);
   return str;
 }
@@ -91,7 +92,7 @@ Particle::~Particle()
 }
 
 Particle::Particle():
-  m_number(-1), m_beam(-1), m_status(part_status::undefined), 
+  m_number(-1), m_beam(-1), m_meid(0), m_status(part_status::undefined), 
   m_info('X'), 
   m_fl(Flavour(kf_none)), m_momentum(Vec4D(0,0,0,0)), 
   p_flow(new Flow(this)),
@@ -102,7 +103,7 @@ Particle::Particle():
 }
 
 Particle::Particle(const Particle &in): 
-  m_number(in.m_number), m_beam(in.m_beam), m_status(in.m_status), 
+  m_number(in.m_number), m_beam(in.m_beam), m_meid(in.m_meid), m_status(in.m_status), 
   m_info(in.m_info), 
   m_fl(in.m_fl), m_momentum(in.m_momentum), 
   p_flow(new Flow(this)),
@@ -119,6 +120,7 @@ Particle& Particle::operator=(const Particle &in)
   if (this!=&in) {
     m_number    = in.m_number;
     m_beam      = in.m_beam;
+    m_meid      = in.m_meid;
     m_info      = in.m_info;
     m_status    = in.m_status;
     m_fl        = in.m_fl;
@@ -135,7 +137,7 @@ Particle& Particle::operator=(const Particle &in)
 
 
 Particle::Particle(int number, Flavour fl, Vec4D p, char a) :
-  m_number(number), m_beam(-1), m_status(part_status::active),
+  m_number(number), m_beam(-1), m_meid(0), m_status(part_status::active),
   m_info(a), 
   m_fl(fl), m_momentum(p),
   p_flow(new Flow(this)),
@@ -149,6 +151,7 @@ Particle::Particle(int number, Flavour fl, Vec4D p, char a) :
 void Particle::Copy(Particle * in)  {
   m_number    = in->m_number;
   m_beam      = in->m_beam;
+  m_meid      = in->m_meid;
   m_info      = in->m_info;
   m_status    = in->m_status;
   m_fl        = in->m_fl;

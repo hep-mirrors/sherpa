@@ -102,6 +102,8 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->SetStatus(blob_status::needs_harddecays);
   if (proc->Info().m_nlomode!=1)
     blob->AddStatus(blob_status::needs_showers);
+  const DecayInfo_Vector &decs(proc->DecayInfos());
+  blob->AddData("Decay_Info",new Blob_Data<DecayInfo_Vector>(decs));
   for (unsigned int i=0;i<proc->NIn();i++) {
     particle = new Particle(0,proc->Flavours()[i],
 			    proc->Integrator()->Momenta()[i]);
@@ -126,6 +128,8 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     particle = new Particle(0,proc->Flavours()[i],
 			    proc->Integrator()->Momenta()[i]);
     particle->SetNumber(0);
+    for (size_t j(0);j<decs.size();++j)
+      if (decs[j]->m_id&(1<<i)) particle->SetMEId(1<<i);
     particle->SetStatus(part_status::active);
     particle->SetInfo('H');
     blob->AddToOutParticles(particle);

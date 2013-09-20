@@ -39,12 +39,22 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
                   HepMC::Units::MM);
 #endif
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
+  size_t decid(11);
+  std::map<size_t,size_t> decids;
+  Blob *sp(blobs->FindFirst(btp::Signal_Process));
+  if (sp) {
+    Blob_Data_Base *info((*sp)["Decay_Info"]);
+    if (info) {
+      DecayInfo_Vector decs(info->Get<DecayInfo_Vector>());
+      for (size_t i(0);i<decs.size();++i) decids[decs[i]->m_id]=++decid;
+    }
+  }
   m_blob2genvertex.clear();
   m_particle2genparticle.clear();
   HepMC::GenVertex * vertex;
   std::vector<HepMC::GenParticle*> beamparticles;
   for (ATOOLS::Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
-    if (Sherpa2HepMC(*(blit),vertex)) {
+    if (Sherpa2HepMC(*(blit),vertex,decids)) {
       event.add_vertex(vertex);
       if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
         if ((**blit)["NLO_subeventlist"]) {
@@ -86,7 +96,6 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   std::vector<double> weights;
   //msg_Out()<<"Check: weight = "<<weight<<".\n";
   weights.push_back(weight);
-  Blob *sp(blobs->FindFirst(btp::Signal_Process));
   if (sp) {
     Blob_Data_Base *info((*sp)["MEWeight"]);
     if (!info) THROW(fatal_error,"Missing weight info.");
@@ -350,8 +359,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   return true;
 }
 
-bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
-                                    double weight)
+bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,double weight)
 {
   if (blobs->empty()) {
     msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
@@ -382,7 +390,8 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   return Sherpa2ShortHepMC(blobs, *p_event, weight);
 }
 
-bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob, HepMC::GenVertex *& vertex)
+bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob, HepMC::GenVertex *& vertex,
+				    const std::map<size_t,size_t> &decids)
 {
   if (m_ignoreblobs.count(blob->Type())) return false;
   int count = m_blob2genvertex.count(blob);
@@ -411,13 +420,13 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob, HepMC::GenVertex *& ver
   bool okay = 1;
   HepMC::GenParticle * _particle;
   for (int i=0;i<blob->NInP();i++) {
-    if (Sherpa2HepMC(blob->InParticle(i),_particle)) {
+    if (Sherpa2HepMC(blob->InParticle(i),_particle,decids)) {
       vertex->add_particle_in(_particle);
     }
     else okay = 0;
   }
   for (int i=0;i<blob->NOutP();i++) {
-    if (Sherpa2HepMC(blob->OutParticle(i),_particle)) {
+    if (Sherpa2HepMC(blob->OutParticle(i),_particle,decids)) {
       vertex->add_particle_out(_particle);
     }
     else okay = 0;
@@ -445,7 +454,8 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob, HepMC::GenVertex *& ver
   return okay;
 }
 
-bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle *& particle)
+bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle *& particle,
+				    const std::map<size_t,size_t> &decids)
 {
   int count = m_particle2genparticle.count(parton);
   if (count>0) {
@@ -475,6 +485,8 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle
     }
     else {
       status=11;
+      for (std::map<size_t,size_t>::const_iterator did(decids.begin());
+	   did!=decids.end();++did) if (did->first&parton->MEId()) status=did->second;
     }
   }
   particle = new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),status);

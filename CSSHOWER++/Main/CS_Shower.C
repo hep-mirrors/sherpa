@@ -109,9 +109,9 @@ bool CS_Shower::ExtractPartons(Blob_List *const blist) {
   Blob * psblob(blist->FindLast(btp::Shower));
   if (psblob==NULL) THROW(fatal_error,"No Shower blob");
   psblob->SetTypeSpec("CSSHOWER++1.0");
-  for (int i=0;i<psblob->NInP();++i) 
+  for (int i=0;i<psblob->NInP();++i)
     psblob->InParticle(i)->SetStatus(part_status::decayed);
-  for (int i=0;i<psblob->NOutP();++i) 
+  for (int i=0;i<psblob->NOutP();++i)
     psblob->OutParticle(i)->SetStatus(part_status::decayed);
   
   psblob->SetStatus(blob_status::needs_beams |

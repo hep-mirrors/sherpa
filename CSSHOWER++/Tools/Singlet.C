@@ -168,6 +168,8 @@ void Singlet::ExtractPartons
     if ((*plit)->Stat()==1) continue;
     part = new Particle(-1,(*plit)->GetFlavour(),(*plit)->Momentum(),'F');
     part->SetNumber(0);
+    for (size_t i(0);i<m_decs.size();++i)
+      if (m_decs[i]->m_id&(*plit)->Id()) part->SetMEId((*plit)->Id());
     if ((*plit)->GetType()==pst::IS) {
       part->SetBeam((*plit)->Beam());
       part->SetInfo('I');

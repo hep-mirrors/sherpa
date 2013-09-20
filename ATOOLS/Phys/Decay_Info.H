@@ -26,6 +26,8 @@ namespace ATOOLS {
 
   std::ostream &operator<<(std::ostream &ostr,const Decay_Info &di);
 
+  std::ostream &operator<<(std::ostream &s,const DecayInfo_Vector &ds);
+
 }// end of namespace ATOOLS
 
 #endif
