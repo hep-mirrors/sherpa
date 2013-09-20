@@ -21,6 +21,7 @@ namespace PHOTONS {
       double  CalculateBeta(const ATOOLS::Vec4D&);
       double  InterferenceTerm(const double&, const double&,
                                const double&, const double&);
+      double  TiTj(const size_t&, const size_t&);
 
     public:
       Avarage_Photon_Number(const ATOOLS::Particle_Vector&,

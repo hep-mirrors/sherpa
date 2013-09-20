@@ -48,7 +48,7 @@ Dipole_FF::~Dipole_FF() {
 }
 
 void Dipole_FF::AddRadiation() {
-  DEBUG_FUNC(m_M<<"->"<<m_mC<<m_mN);
+  DEBUG_FUNC(ProcessName());
   DefineDipole();
   IdPairNbarVector nbars;
   // calculate avarage photon number in Lab frame

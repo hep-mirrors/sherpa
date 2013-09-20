@@ -27,8 +27,8 @@ bool   PHOTONS::Photons::s_userunningparameters = false;
 
 // member functions of class Photons
 
-Photons::Photons(Data_Reader* reader, bool ana) :
-  m_name("Photons"), m_analyse(ana)
+Photons::Photons(Data_Reader* reader) :
+  m_name("Photons")
 {
   rpa->gen.AddCitation
     (1,"Photons is published under \\cite{Schonherr:2008av}.");
@@ -69,8 +69,8 @@ Photons::Photons(Data_Reader* reader, bool ana) :
 		 <<"\n}"<<std::endl;
 }
 
-Photons::Photons(bool ana) :
-  m_name("Photons"), m_analyse(ana)
+Photons::Photons() :
+  m_name("Photons")
 {
   PRINT_INFO("TODO: check whether running of alphaQED is MSbar");
   PRINT_INFO("TODO: evolve all particle masses in MSbar");
@@ -104,12 +104,14 @@ Photons::~Photons() {
 
 bool Photons::AddRadiation(Blob * blob) {
 
-  if ((blob->Status() == blob_status::needs_extraQED) && (m_analyse == true)) {
+  if (blob->Has(blob_status::needs_extraQED)) {
     ResetAlphaQED();
     Define_Dipole dress(blob);
     dress.AddRadiation();
     m_photonsadded = dress.AddedAnything();
     m_success = dress.DoneSuccessfully();
+    if (!blob->MomentumConserved())
+      msg_Error()<<"Momentum not conserved:\n"<<*blob<<std::endl;
   }
   return m_photonsadded;
 }
