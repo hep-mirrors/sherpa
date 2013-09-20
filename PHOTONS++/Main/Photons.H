@@ -12,12 +12,11 @@ namespace PHOTONS {
   class Photons {
   private:
     std::string                 m_name;
-    bool                        m_analyse;
     bool                        m_photonsadded;
     bool                        m_success;
   public:
-    Photons(ATOOLS::Data_Reader* reader=NULL,bool=false);
-    Photons(bool=false);
+    Photons(ATOOLS::Data_Reader* reader=NULL);
+    Photons();
     ~Photons();
     bool AddRadiation(ATOOLS::Blob *);
 

@@ -19,7 +19,7 @@ Soft_Photon_Handler::Soft_Photon_Handler(string path,string datfile) :
 
   m_mode = softphotons::code(dataread->GetValue<int>("YFS_MODE",2));
   if (m_mode != softphotons::off)
-    p_yfs  = new Photons(dataread,true);
+    p_yfs  = new Photons(dataread);
   if (p_yfs) m_name=p_yfs->Name();
   delete dataread;
 }

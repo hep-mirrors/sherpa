@@ -14,46 +14,15 @@ Avarage_Photon_Number::Avarage_Photon_Number
 (const Particle_Vector& dip, const double& wmax, const double& wmin) :
   m_omegaMax(wmax), m_omegaMin(wmin), m_dipole(dip), m_nbar(0.)
 {
-  DEBUG_FUNC("");
+  DEBUG_FUNC(dip.size());
   CalculateAvaragePhotonNumber();
+  msg_Debugging()<<"all dipoles:\n";
   for (unsigned int i=0; i<m_nbars.size(); i++) {
-    msg_Debugging()<<m_nbars[i]<<std::endl;
+    msg_Debugging()<<m_nbars[i]
+                   <<": ["<<m_dipole[m_nbars[i].ij.i]->Flav()<<","
+                   <<m_dipole[m_nbars[i].ij.j]->Flav()<<"]"<<std::endl;
   }
   msg_Debugging()<<"-> "<<m_nbar<<endl;
-  return;
-  // set those which cancel to zero if individually larger than sum
-  // and they cancel to within 10% of the resultant nbar
-  // or they cancel to within 5% of each other
-  double nbardiff(0.);
-  size_t nonzeronbars(m_nbars.size());
-  for (size_t i(0);i<m_nbars.size();++i) {
-    for (size_t j(0);j<m_nbars.size();++j) {
-      if (m_dipole[m_nbars[i].ij.i]->Flav()!=
-            m_dipole[m_nbars[i].ij.j]->Flav().Bar() &&
-          m_dipole[m_nbars[i].ij.i]->Flav()!=
-            m_dipole[m_nbars[i].ij.j]->Flav().Bar() &&
-          m_nbars[i].nbar>0.1*m_nbar && m_nbars[j].nbar<-0.1*m_nbar &&
-          ((m_nbars[i].nbar+m_nbars[j].nbar)<0.1*m_nbar ||
-           (m_nbars[i].nbar+m_nbars[j].nbar)<0.025*(m_nbars[i].nbar-m_nbars[j].nbar))) {
-        msg_Debugging()<<"removing "
-                       <<m_nbars[i]<<", "<<m_nbars[j]<<" -> "
-                       <<m_nbars[i].nbar+m_nbars[j].nbar<<std::endl;
-        nbardiff+=m_nbars[i].nbar+m_nbars[j].nbar;
-        m_nbars[i].nbar=m_nbars[j].nbar=0.;
-        nonzeronbars-=2;
-      }
-    }
-  }
-  // adjust other nbars
-  if (nbardiff!=0.) {
-    for (size_t i(0); i<m_nbars.size(); ++i) {
-      if (m_nbars[i].nbar!=0.) m_nbars[i].nbar+=(nbardiff)/nonzeronbars;
-    }
-    for (unsigned int i=0; i<m_nbars.size(); i++) {
-      msg_Debugging()<<m_nbars[i]<<std::endl;
-    }
-    msg_Debugging()<<"-> "<<m_nbar<<endl;
-  }
 }
 
 Avarage_Photon_Number::~Avarage_Photon_Number() {
@@ -63,20 +32,9 @@ void Avarage_Photon_Number::CalculateAvaragePhotonNumber() {
   double sum      = 0.;
   for(unsigned int j=0; j<m_dipole.size(); j++) {
     for(unsigned int i=0; i<j; i++) {
-      if ((j==1 &&  i==0) ||
-	  (j==2 && (i==0 || i==1)) ||
-	  (j==3 && (i==0 || i==2))) continue;
       double Zi       = m_dipole[i]->Flav().Charge();
       double Zj       = m_dipole[j]->Flav().Charge();
-      double titj     = 0;
-      if ((m_dipole[i]->ProductionBlob() == m_dipole[j]->ProductionBlob()) &&
-          (m_dipole[i]->ProductionBlob() != NULL))       titj = +1.;
-      else if ((m_dipole[i]->DecayBlob() == m_dipole[j]->ProductionBlob()) &&
-               (m_dipole[i]->DecayBlob() != NULL))       titj = -1.;
-      else if ((m_dipole[i]->ProductionBlob() == m_dipole[j]->DecayBlob()) &&
-               (m_dipole[i]->ProductionBlob() != NULL))  titj = -1.;
-      else if ((m_dipole[i]->DecayBlob() == m_dipole[j]->DecayBlob()) &&
-               (m_dipole[i]->DecayBlob() != NULL))       titj = +1.;
+      double titj     = TiTj(i,j);
       double betai    = CalculateBeta(m_dipole[i]->Momentum());
       double betaj    = CalculateBeta(m_dipole[j]->Momentum());
       Vec3D  pi       = m_dipole[i]->Momentum();
@@ -145,3 +103,15 @@ double Avarage_Photon_Number::InterferenceTerm
                        /(2.*sqrt(Cj+Dj+Ej)+(B*(2.*Cj+Dj)-A*(Dj+2.*Ej))/rootj)));
 }
 
+double Avarage_Photon_Number::TiTj(const size_t& i, const size_t& j)
+{
+  if      ((m_dipole[i]->ProductionBlob() == m_dipole[j]->ProductionBlob()) &&
+           (m_dipole[i]->ProductionBlob() != NULL))  return  1.;
+  else if ((m_dipole[i]->DecayBlob() == m_dipole[j]->ProductionBlob()) &&
+           (m_dipole[i]->DecayBlob() != NULL))       return -1.;
+  else if ((m_dipole[i]->ProductionBlob() == m_dipole[j]->DecayBlob()) &&
+           (m_dipole[i]->ProductionBlob() != NULL))  return -1.;
+  else if ((m_dipole[i]->DecayBlob() == m_dipole[j]->DecayBlob()) &&
+           (m_dipole[i]->DecayBlob() != NULL))       return  1.;
+  else                                               return  0.;
+}
