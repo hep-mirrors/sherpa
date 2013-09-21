@@ -417,7 +417,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
     msg_Out() << "double realme = " << m_realevt.m_me << ";" << endl;
     msg_Out() << "std::vector<double> dipoles(" << m_subtermlist.size() << ");" << endl;
     for (size_t k=0;k<m_subtermlist.size();++k) {
-      msg_Out() << "dipoles[" << k << "] = " << m_subtermlist[k]->LastXS() << "; // ("
+      msg_Out() << "dipoles[" << k << "] = " << m_subevtlist[k]->m_me << "; // ("
                 << m_flavs[m_subtermlist[k]->Li()] << ", "
                 << m_flavs[m_subtermlist[k]->Lj()] << "; "
                 << m_flavs[m_subtermlist[k]->Lk()] << ")" << endl;
