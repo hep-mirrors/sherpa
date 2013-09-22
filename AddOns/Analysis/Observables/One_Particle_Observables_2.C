@@ -25,6 +25,11 @@ namespace ANALYSIS {
     
     virtual bool Evaluate(const Particle &p1,
 			  double weight=1.,double ncount=1) const = 0;
+    virtual bool EvaluateNLOContrib(const Particle &p1,
+				    double weight=1., double ncount=1) const = 0;
+
+    void EvaluateNLOevt();
+    void EvaluateNLOcontrib(double weight,double ncount);
 
   };// end of class SOne_Particle_Observable_Base
 
@@ -36,6 +41,8 @@ namespace ANALYSIS {
 			 const std::string &inlist);
     
     bool Evaluate(const Particle &p1,
+		  double weight=1.,double ncount=1) const;
+    bool EvaluateNLOContrib(const Particle &p1,
 		  double weight=1.,double ncount=1) const;
 
     Primitive_Observable_Base *Copy() const;
@@ -51,6 +58,8 @@ namespace ANALYSIS {
     
     bool Evaluate(const Particle &p1,
 		  double weight=1.,double ncount=1) const;
+    bool EvaluateNLOContrib(const Particle &p1,
+		  double weight=1.,double ncount=1) const;
 
     Primitive_Observable_Base *Copy() const;
     
@@ -64,6 +73,8 @@ namespace ANALYSIS {
 		       const std::string &inlist);
     
     bool Evaluate(const Particle &p1,
+		  double weight=1.,double ncount=1) const;
+    bool EvaluateNLOContrib(const Particle &p1,
 		  double weight=1.,double ncount=1) const;
 
     Primitive_Observable_Base *Copy() const;
@@ -79,6 +90,8 @@ namespace ANALYSIS {
     
     bool Evaluate(const Particle &p1,
 		  double weight=1.,double ncount=1) const;
+    bool EvaluateNLOContrib(const Particle &p1,
+		  double weight=1.,double ncount=1) const;
 
     Primitive_Observable_Base *Copy() const;
     
@@ -92,6 +105,8 @@ namespace ANALYSIS {
 			const std::string &inlist);
     
     bool Evaluate(const Particle &p1,
+		  double weight=1.,double ncount=1) const;
+    bool EvaluateNLOContrib(const Particle &p1,
 		  double weight=1.,double ncount=1) const;
 
     Primitive_Observable_Base *Copy() const;
@@ -172,6 +187,33 @@ void SOne_Particle_Observable_Base::Evaluate(const ATOOLS::Particle_List &inlist
   Evaluate(*inlist[pos],weight,ncount);
 }
 
+void SOne_Particle_Observable_Base::EvaluateNLOevt()
+{
+  p_histo->FinishMCB();
+}
+
+void SOne_Particle_Observable_Base::EvaluateNLOcontrib(double weight,double ncount)
+{
+  Particle_List * inlist=p_ana->GetParticleList(m_listname);
+  int no=-1;
+  size_t pos=std::string::npos;
+  for (size_t i=0;i<inlist->size();++i) {
+    if ((*inlist)[i]->Flav()==m_flavour || 
+	m_flavour.Kfcode()==kf_none) {
+      ++no;
+      if (no==(int)m_item) {
+	pos=i;
+	break;
+      }
+    }
+  }
+  if (pos==std::string::npos) {
+    p_histo->InsertMCB(0.0,0.0,ncount);
+    return;
+  }
+  EvaluateNLOContrib(*(*inlist)[pos],weight,ncount);
+}
+
 DEFINE_ONE_OBSERVABLE_GETTER(One_Phi_Distribution,
 			     One_Phi_Distribution_Getter,"OnePhi")
 
@@ -186,6 +228,13 @@ bool One_Phi_Distribution::Evaluate(const Particle &p1,
 				    double weight,double ncount) const
 {
   p_histo->Insert(p1.Momentum().Phi(),weight,ncount);
+  return true;
+}
+
+bool One_Phi_Distribution::EvaluateNLOContrib(const Particle &p1,
+				    double weight,double ncount) const
+{
+  p_histo->InsertMCB(p1.Momentum().Phi(),weight,ncount);
   return true;
 }
 
@@ -212,6 +261,13 @@ bool One_Eta_Distribution::Evaluate(const Particle &p1,
   return true;
 }
 
+bool One_Eta_Distribution::EvaluateNLOContrib(const Particle &p1,
+				    double weight,double ncount) const
+{
+  p_histo->InsertMCB(p1.Momentum().Eta(),weight,ncount);
+  return true;
+}
+
 Primitive_Observable_Base *One_Eta_Distribution::Copy() const
 {
   return new One_Eta_Distribution(m_flavour,m_item,m_type,
@@ -232,6 +288,13 @@ bool One_Y_Distribution::Evaluate(const Particle &p1,
 				  double weight,double ncount) const
 {
   p_histo->Insert(p1.Momentum().Y(),weight,ncount);
+  return true;
+}
+
+bool One_Y_Distribution::EvaluateNLOContrib(const Particle &p1,
+				  double weight,double ncount) const
+{
+  p_histo->InsertMCB(p1.Momentum().Y(),weight,ncount);
   return true;
 }
 
@@ -258,6 +321,13 @@ bool One_Mass_Distribution::Evaluate(const Particle &p1,
   return true;
 }
 
+bool One_Mass_Distribution::EvaluateNLOContrib(const Particle &p1,
+				     double weight,double ncount) const
+{
+  p_histo->InsertMCB(p1.Momentum().Mass(),weight,ncount);
+  return true;
+}
+
 Primitive_Observable_Base *One_Mass_Distribution::Copy() const
 {
   return new One_Mass_Distribution(m_flavour,m_item,m_type,
@@ -278,6 +348,13 @@ bool One_PT_Distribution::Evaluate(const Particle &p1,
 				   double weight,double ncount) const
 {
   p_histo->Insert(p1.Momentum().PPerp(),weight,ncount);
+  return true;
+}
+
+bool One_PT_Distribution::EvaluateNLOContrib(const Particle &p1,
+				   double weight,double ncount) const
+{
+  p_histo->InsertMCB(p1.Momentum().PPerp(),weight,ncount);
   return true;
 }
 
