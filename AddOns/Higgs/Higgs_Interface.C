@@ -152,7 +152,7 @@ operator()(const ME_Generator_Key &key) const
 	    <<"##  gg->yy real & virtual corrections computed by  ##\n"
 	    <<"##  Z. Bern, L. J. Dixon, C. Schmidt, Y. Li        ##\n"
 	    <<"##  Please cite  Phys.Rev. D66 (2002) 074018       ##\n"
-	    <<"##               arXiv:1305.3854                   ##\n"
+	    <<"##               Phys.Rev.Lett. 111 (2013) 111802  ##\n"
 	    <<"##                                                 ##\n"
 	    <<"#####################################################\n";
   rpa->gen.AddCitation(1,"The Higgs library is described in \\cite{}.");

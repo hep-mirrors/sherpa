@@ -38,6 +38,7 @@ HIGGS_EXTRA_DIST = \
         qqgg_tree.C \
         qqggg_tree.C \
         A_higgs.C \
+        A_spin2.C \
         A_cont.C \
         Ahiggs.C \
         Ahiggs.h \

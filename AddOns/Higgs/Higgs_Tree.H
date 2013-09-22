@@ -17,7 +17,7 @@ namespace HIGGS {
 
     static MODEL::Model_Base *s_model;
 
-    size_t m_oqcd, m_oew, m_n, m_mode, m_int, m_io;
+    size_t m_oqcd, m_oew, m_n, m_mode, m_int, m_io, m_spin;
     double m_mh, m_gh;
 
     std::vector<Map_Info> m_hmap;
@@ -30,7 +30,7 @@ namespace HIGGS {
 
     Higgs_Tree(const PHASIC::Process_Info& pi,
 	       const ATOOLS::Flavour_Vector& flavs,
-	       int mode,int io);
+	       int mode,int io,int spin);
 
     ~Higgs_Tree();
 
