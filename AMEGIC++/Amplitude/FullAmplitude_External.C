@@ -356,12 +356,12 @@ void FullAmplitude_External::BuildColorMatrix
       double T2=1.0;
       if (ci!=cj) {
       if (m_fls[ci].StrongCharge()==8) {
-	T2=expression.NC();
-	T2/=CSC.CA*CSC.TR/expression.TR();
+	T2=expression.NC()*expression.TR();
+	T2/=CSC.CA*CSC.TR;
       }
       else {
 	T2=expression.TR()*(expression.NC()-1.0/expression.NC());
-	T2/=CSC.CF*CSC.TR/expression.TR();
+	T2/=CSC.CF;
       }
       }
       msg_Debugging()<<"A B^* = "<<col<<" <- sub = -"<<nsuba+nsubb
