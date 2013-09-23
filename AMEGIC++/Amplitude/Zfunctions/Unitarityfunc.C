@@ -20,10 +20,7 @@ Unitarityfunc::Unitarityfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS)
   m_lambda2_3 = sqr(MODEL::s_model->ScalarConstant(std::string("UNITARIZATION_SCALE3")));
   m_n4        = MODEL::s_model->ScalarConstant(std::string("UNITARIZATION_N4"));
   m_lambda2_4 = sqr(MODEL::s_model->ScalarConstant(std::string("UNITARIZATION_SCALE4")));
-  msg_Out()<<METHOD<<"(n = {"<<m_n<<", "<<m_n3<<", "<<m_n4<<"}, "
-	   <<"lambda^2 = {"<<m_lambda2<<", "<<m_lambda2_3<<", "
-	   <<m_lambda2_4<<"}.\n";
-} 
+}
 
 Kabbala Unitarityfunc::U(const int & n)
 { 
