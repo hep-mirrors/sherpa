@@ -143,7 +143,7 @@ std::vector<std::string> LHAPDF_ScanDir(const std::string &path)
   struct dirent **entries;
   int n(scandir(path.c_str(),&entries,&LHAPDF_DummyInclude,alphasort));
   if (n<0) {
-    msg_Error()<<METHOD<<"(): Scandir error. Abort."<<std::endl;
+    msg_Error()<<METHOD<<"(): Scandir error in "<<path<<". Abort."<<std::endl;
     return res;
   }
   for (int i(0);i<n;++i) {
@@ -173,7 +173,6 @@ extern "C" void InitPDFLib()
   read.AddComment("#");
   read.AddWordSeparator("\t");
   std::string path;
-  PRINT_VAR(LHAPDF::pdfsetsPath());
   if (read.ReadFromFile(path,"LHAPDF_GRID_PATH")) LHAPDF::setPDFPath(path); 
   std::vector<std::string> files=LHAPDF_ScanDir(LHAPDF::pdfsetsPath());
   p_get_lhapdf.resize(files.size());
