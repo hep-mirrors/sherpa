@@ -234,6 +234,13 @@ void CS_Cluster_Definitions::KernelWeight
   cs.m_mu2*=cdip->Coupling()->CplFac(cs.m_mu2);
   if (!cdip->On()) cs.m_mu2=Max(cs.m_mu2,sqr(mo.Mass()));
   if (!(m_mode&1)) return;
+  if (!cdip->On()) {
+    if (AMode()==1) cs.m_wk=-1.0;
+    else cs.m_wk=sqrt(std::numeric_limits<double>::min());
+    cs.m_ws=1.0/cs.m_wk;
+    msg_Debugging()<<"No Kernel. Set weight "<<cs.m_ws<<".\n";
+  }
+  else {
   double scale=cs.m_kt2, eta=1.0;
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
@@ -244,15 +251,11 @@ void CS_Cluster_Definitions::KernelWeight
   if (cs.m_wk<=0.0 || IsBad(cs.m_wk))
     cs.m_wk=sqrt(std::numeric_limits<double>::min());
   cs.m_ws=1.0/cs.m_wk;
-  if (!cdip->On() && AMode()) {
-    if (AMode()==1) cs.m_wk=-1.0;
-    else cs.m_wk=sqrt(std::numeric_limits<double>::min());
-    cs.m_ws=1.0/cs.m_wk;
-  }
   msg_Debugging()<<"Kernel weight (A="<<AMode()
 		 <<") [m="<<cs.m_mode<<",c="<<cs.m_col<<"] ( x = "<<eta
 		 <<" ) {\n  "<<*i<<"\n  "<<*j<<"\n  "<<*k
 		 <<"\n} -> w = "<<cs.m_wk<<" ("<<cs.m_ws<<")\n";
+  }
 }
 
 ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
