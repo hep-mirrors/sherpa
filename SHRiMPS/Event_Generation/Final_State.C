@@ -21,12 +21,11 @@ Final_State::Final_State(const int & test) :
   m_resc_ktmin(MBpars.RescKTMin()),
   m_resc_nosing(MBpars.RescNoSing()),
   m_ktmin_mode(MBpars("KTMin_Mode")),
-  //p_alphaS(static_cast<MODEL::Strong_Coupling *>
-  //	   (MODEL::s_model->GetScalarFunction(std::string("strong_cpl")))), 
   p_alphaS(new Strong_Coupling(static_cast<Running_AlphaS *>
 			       (s_model->GetScalarFunction(string("alpha_S"))),
 				MBpars.AsForm(),MBpars("Q_as2"))),
-  m_Q02(MBpars("Q02")), m_Q12(MBpars("Q12")), m_QN2(MBpars("QN2")), m_nprimlad(1), 
+  m_Q02(MBpars("Q02")), m_Q12(MBpars("Q12")), m_QN2(MBpars("QN2")), 
+  m_nprimlad(1), 
   m_d2(MBpars("Ddiff2")), m_kdiff(MBpars("kdiff")), 
   m_Ylimit(MBpars("originalY")-MBpars("deltaY")),
   m_test(test), m_output(true)
@@ -65,8 +64,7 @@ operator()(Ladder * ladder,const double & Deltay,
   m_q02min = Q02MinEstimate(y0,y1);
   m_lastwt = 1.;
   m_recombwt = 1.;
-  int nbeam(//!p_ladder->IsRescatter()?2:
-	    int(dabs(p_ladder->GetIn1()->m_mom.Y())>m_Ylimit)+
+  int nbeam(int(dabs(p_ladder->GetIn1()->m_mom.Y())>m_Ylimit)+
 	    int(dabs(p_ladder->GetIn2()->m_mom.Y())>m_Ylimit));
   if (firstattempt && FirstSinglet(y0,y1,1.,nbeam)) {
     m_firstsing++;
@@ -79,7 +77,7 @@ operator()(Ladder * ladder,const double & Deltay,
       double qt02_2(p_ladder->GetPropsBegin()->m_qt2);
       double mu02_2(Q02((y0+y1)/2.));
       double rarg(mu02_2/(dabs(q02_2)+mu02_2));
-      double expo(2.*colfac*p_alphaS->MaxValue()*dabs(y0-y1)/M_PI); 
+      double expo(colfac*p_alphaS->MaxValue()*dabs(y0-y1)/M_PI); 
       m_lastwt  = pow(rarg,expo);
     }
   }
@@ -127,7 +125,8 @@ double Final_State::GenerateEmissions() {
           double q12_2(m_propiter->m_q2);
           double mu12_2(Q02((m_k1.Y()+m_k2.Y())/2.));
           double rarg(mu12_2/(dabs(q12_2)+mu12_2));
-          double expo(2.*colfac*p_alphaS->MaxValue()*dabs(m_k2.Y()-m_k1.Y())/M_PI); 
+          double expo(colfac*p_alphaS->MaxValue()*
+		      dabs(m_k2.Y()-m_k1.Y())/M_PI); 
           m_lastwt  = pow(rarg,expo);
         }
 	m_singexit++;
@@ -148,8 +147,8 @@ double Final_State::GenerateEmissions() {
       double q02_2(p_ladder->GetPropsBegin()->m_q2);
       double mu02_2(Q02((m_k0.Y()+m_k2.Y())/2.));
       double rarg(mu02_2/(dabs(q02_2)+mu02_2));
-      double expo(colfac*(*p_alphaS)(dabs(qt02_2))*dabs(m_k2.Y()-m_k0.Y())/M_PI); 
-//       double expo(colfac*(*p_alphaS)(dabs(q02_2))*dabs(m_k2.Y()-m_k0.Y())/M_PI); 
+      double expo(colfac*(*p_alphaS)(dabs(q02_2))*
+		  dabs(m_k2.Y()-m_k0.Y())/M_PI); 
       m_lastwt  = pow(rarg,expo);
     }
   }
@@ -182,7 +181,6 @@ double Final_State::GenerateEmissions() {
   if (check) msg_Tracking()<<METHOD<<" yields ladder with tested colours:\n"
 			   <<(*p_ladder);
   
-//   return m_lastwt*m_recombwt;
   return m_lastwt;
 }
 
@@ -208,7 +206,6 @@ OneEmission(LadderMap::iterator & split,LadderMap::iterator & spect,
 
 bool Final_State::
 TryEmission(double & kt12,const bool & dir) {
-//   return false;
   m_trials++;
   Vec4D Q(m_k0+m_k2);
   double Q2(Q.Abs2()),kt1max2(Q2/4.);
@@ -234,8 +231,6 @@ TryEmission(double & kt12,const bool & dir) {
   double kt0old(m_k0.PPerp()), y0old(m_k0.Y());
   double ystop(y2old);
   double kt2(kt2old), y2(y2old), phi2(phi2old), kt02, kt0, y0(y0old);
-//   double Delta12,DeltaQ1,DeltaQ2,k2perp,termk1,termk2,that;
-
   double y1(m_k0.Y()),mu01_2(0.),mu12_2(0.),kt1,phi1;
   double term1(MT*cosh(Y-y2old)-QT*cos(Phi-phi2old)), term2, term3;
   double cphi0,sphi0,cphi1,sphi1,cphi2(cos(phi2)),sphi2(sin(phi2));
@@ -277,19 +272,6 @@ TryEmission(double & kt12,const bool & dir) {
     y0      = y0old;
     y2      = y2old;
     kt12    = SelectKT2(kt1max2,kt1min2,Q02(y1),ktexpo);
-/*    phi1    = ran->Get()*2.*M_PI;
-    cphi1   = cos(phi1);
-    sphi1   = sin(phi1);
-    that    = -SelectKT2(kt1max2,kt1min2,Q02(y1),ktexpo);
-    Delta12 = cosh(y1-y2)-cos(phi1-phi2);
-    DeltaQ1 = MT*cosh(Y-y1)-QT*cos(Phi-phi1);
-    DeltaQ2 = MT*cosh(Y-y2)-QT*cos(Phi-phi2);
-    termk1 = kt2old/2.+(Q2+that)/(4.*DeltaQ2);
-    termk2 = sqr(kt2old/2.+(Q2+that)/(4.*DeltaQ2)) - that*DeltaQ1/(2.*Delta12*DeltaQ2) - Q2*kt2old/(2.*DeltaQ2);
-    kt2 = termk1-sqrt(termk2);
-    kt1 = that/(2.*Delta12*(kt2-kt2old));
-    kt12 = kt1*kt1;*/
-    
     m_histomap[std::string("KT2_test1")]->Insert(kt12); 
     m_histomap[std::string("KT2_test2")]->Insert(kt12); 
     if (p_alphaS->Weight(kt12)<ran->Get()) {
@@ -297,10 +279,6 @@ TryEmission(double & kt12,const bool & dir) {
       continue;
     }
     q02wt = FKT2(kt12,Q02(y1),ktexpo)/FKT2(kt12,m_q02min,ktexpo);
-/*    if (q02wt>1.001) msg_Out()<<METHOD<<": Q02 minimum violated for y="<<y1
-                           <<" (Q_0^2 min="<<m_q02min<<" but Q_0^2="<<Q02(y1)
-                           <<")\n                          q02wt="
-                           <<FKT2(kt12,Q02(y1),ktexpo)<<"/"<<FKT2(kt12,m_q02min,ktexpo)<<"="<<q02wt<<".\n";*/
     if (q02wt<ran->Get()) {
       continue;
     }
@@ -353,17 +331,17 @@ TryEmission(double & kt12,const bool & dir) {
     }
     y0      = log(expy0);
     double coshy0(cosh(y0)),coshy1(cosh(y1)),coshy2(cosh(y2)); 
-    k_0     = kt0*Vec4D(coshy0,cphi0,sphi0,(y0>0.?1.:-1.)*sqrt((coshy0+1.)*(coshy0-1.)));
-    k_1     = kt1*Vec4D(coshy1,cphi1,sphi1,(y1>0.?1.:-1.)*sqrt((coshy1+1.)*(coshy1-1.)));
-    k_2     = kt2*Vec4D(coshy2,cphi2,sphi2,(y2>0.?1.:-1.)*sqrt((coshy2+1.)*(coshy2-1.)));
-/*    k_0     = kt0*Vec4D(cosh(y0),cphi0,sphi0,sinh(y0));
-    k_1     = kt1*Vec4D(cosh(y1),cphi1,sphi1,sinh(y1));
-    k_2     = kt2*Vec4D(cosh(y2),cphi2,sphi2,sinh(y2));*/
+    k_0     = kt0*Vec4D(coshy0,cphi0,sphi0,(y0>0.?1.:-1.)*
+			sqrt((coshy0+1.)*(coshy0-1.)));
+    k_1     = kt1*Vec4D(coshy1,cphi1,sphi1,(y1>0.?1.:-1.)*
+			sqrt((coshy1+1.)*(coshy1-1.)));
+    k_2     = kt2*Vec4D(coshy2,cphi2,sphi2,(y2>0.?1.:-1.)*
+			sqrt((coshy2+1.)*(coshy2-1.)));
     k_0[0]  = k_0.P();
     k_1[0]  = k_1.P();
     k_2[0]  = k_2.P();
     if ( k_0[3]>=k_0[0] || k_1[3]>=k_1[0] || k_2[3]>=k_2[0]) {
-      msg_Error()<<METHOD<<": Reject emission due to inaccuracy in four-momentum\n"
+      msg_Error()<<METHOD<<": Reject emission due to inaccuracy in 4-momentum\n"
                  <<"k_0 = "<<k_0<<" with y = "<<k_0.Y()<<"\n"
                  <<"k_1 = "<<k_1<<" with y = "<<k_1.Y()<<"\n"
                  <<"k_2 = "<<k_2<<" with y = "<<k_2.Y()<<std::endl;
@@ -384,7 +362,6 @@ TryEmission(double & kt12,const bool & dir) {
       m_histomap[std::string("q01_2_0")]->Insert(m_q01_2);
       m_histomap[std::string("q12_2_0")]->Insert(m_q12_2);
     }
-//     m_histomap[std::string("Delta_order")]->Insert(1./Max(1.e-2,dabs(y1-y0))); 
     if (!IsOrdered(dir,k_0,k_1,k_2,m_q01_2)) continue;
     m_histomap[std::string("Delta_order")]->Insert(1./Max(1.e-2,dabs(y1-y0))); 
     wt   = 1.;
@@ -396,12 +373,8 @@ TryEmission(double & kt12,const bool & dir) {
     if ((MBpars.LadderWeight()==ladder_weight::Regge || 
 	 MBpars.LadderWeight()==ladder_weight::ReggeDiffusion) && 
 	deltay>m_Deltay) { 
-      //       rarg = Min(mu01_2/q01.PPerp2(),q01.PPerp2()/mu01_2);
       rarg = mu01_2/(dabs(q01.Abs2())+mu01_2);
       expo = colfac*(*p_alphaS)(q01.PPerp2())*deltay/M_PI; 
-      //       rarg = Min(mu01_2/q01.Abs2(),q01.Abs2()/mu01_2);
-      //       expo = colfac*(*p_alphaS)(q01.Abs2())*deltay/M_PI;
-      //expo = colfac*p_alphaS->MaxValue()*deltay/M_PI; 
       wt  *= reggewt = pow(rarg,expo);
       m_histomap[std::string("ReggeWt")]->Insert(reggewt);
     }
@@ -414,8 +387,6 @@ TryEmission(double & kt12,const bool & dir) {
     sup    = SuppressionTerm(m_q01_2,m_q12_2)*Q02(y1)/(Q02(y1)+kt12);
     wt    *= recombwt= 
       Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup));
-    //     recombwt = 
-    //Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup));
     m_histomap[std::string("RecombWt")]->Insert(recombwt);
     if (dir) {
       m_histomap[std::string("ReggeWt1")]->Insert(reggewt);
@@ -433,17 +404,12 @@ TryEmission(double & kt12,const bool & dir) {
   m_k1 = k_1;
   m_k2 = k_2;
   
-//   m_recombwt *= recombwt;
+  //   m_recombwt *= recombwt;
   
   if (MBpars.LadderWeight()==ladder_weight::Regge) {
-//     rarg = Min(mu12_2/q12.PPerp2(),q12.PPerp2()/mu12_2);
     rarg = mu12_2/(dabs(q12.Abs2())+mu12_2);
     expo = colfac*(*p_alphaS)(q12.PPerp2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
-//     rarg = Min(mu12_2/q12.Abs2(),q12.Abs2()/mu12_2);
-//     expo = colfac*(*p_alphaS)(q12.Abs2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
     m_lastwt  = pow(rarg,expo);
-    //m_lastwt *= kmrwt = q12.PPerp2()/m_q12_2;
-    //m_histomap[std::string("KMRWt")]->Insert(kmrwt);
   }
 
   m_histomap[std::string("Delta_final")]->Insert(1./(dabs(y1-y0))); 
@@ -452,10 +418,6 @@ TryEmission(double & kt12,const bool & dir) {
 
 bool Final_State::MomViolation(ATOOLS::Vec4D & k_0, ATOOLS::Vec4D & k_1,
 			       ATOOLS::Vec4D & k_2, bool dir) {
-  //if (k_0[0]<0. || k_1[0]<0. || k_2[0]<0.) {
-  //  m_rej_offshell++;
-  //  return true;
-  //}
   if (k_0[0]<0. || k_0.Nan() || dabs(k_0.Abs2())>1.e-3) {
     m_rej_offshell++;
     return true;
@@ -488,11 +450,7 @@ bool Final_State::MomViolation(ATOOLS::Vec4D & k_0, ATOOLS::Vec4D & k_1,
 bool Final_State::
 SelectSplitterAndSpectator(LadderMap::iterator & split,
 			   LadderMap::iterator & spect) {
-  //double pp2 = dabs(m_pprop.Abs2());
-  //double pm2 = dabs(m_mprop.Abs2());
-  //double yp  = dabs(m_plusiter->first);
-  //double ym  = dabs(m_minusiter->first);
-  bool   dir = ran->Get()>0.5; //(yp>ym)?true:false;
+  bool   dir = ran->Get()>0.5; 
   if (dir) {
     split = m_plusiter;
     spect = m_minusiter;
@@ -558,12 +516,14 @@ bool Final_State::FixPropColours(const LadderMap::iterator & split,
 
   double y0(m_k0.Y()), y1(m_k1.Y()), y2(m_k2.Y());
   double wt81(0.), wt18(0.), wt88(0.);
-  int beam1(int(y0>m_Ylimit)), beam2(int(y2>m_Ylimit));
+  int beam1(int(dabs(y0)>m_Ylimit)), beam2(int(dabs(y2)>m_Ylimit));
 
-  //double sup01(1./SuppressionTerm(m_q01_2,m_q01_2));
-  //double sup12(1./SuppressionTerm(m_q12_2,m_q12_2));
-  double sup01 = pow((Max(m_q01_2,m_Q02),m_Q02),0.08*dabs(y0-y1));
-  double sup12 = pow((Max(m_q12_2,m_Q02),m_Q02),0.08*dabs(y1-y2));
+  double sup01 = pow(Max(m_q01_2,Q02((y0+y1)/2.))/m_Q02,
+		     3.*(*p_alphaS)(m_q01_2)*dabs(y1-y0)/M_PI);
+  double sup12 = pow(Max(m_q12_2,Q02((y1+y2)/2.))/m_Q02,
+		     3.*(*p_alphaS)(m_q12_2)*dabs(y2-y1)/M_PI);
+  //pow(Max(m_q01_2,m_Q02)/m_Q02,0.08*dabs(y0-y1));
+  //pow(Max(m_q12_2,m_Q02)/m_Q02,0.08*dabs(y1-y2));
 
   double tot = wt18 = prev?0.:
     p_eikonal->SingletWeight(m_b1,m_b2,y0,y1,sup01,beam1)*
@@ -704,8 +664,6 @@ double Final_State::SuppressionTerm(const double & q02,const double & q12) {
 }
 
 double Final_State::Q02(const double & y) {
-  //return m_Q02eff; //+m_Q12*term;
-  //double term = pow(p_eikonal->Sum(m_b1,m_b2,y),1.5);
   if (MBpars("Misha")) {
     double eik = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + 
 		  (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
@@ -720,27 +678,23 @@ double Final_State::Q02(const double & y) {
 }
 
 double Final_State::Q02MinEstimate(const double y0, const double y1) {
+  if (!MBpars("Misha")) return m_Q02 + (m_nprimlad-1)*m_QN2;  
+
   double y(Min(y0,y1)),eik,eik2(1.),eikmin(0.);
-  int nstep(20);
-  
+  int nstep(20);  
   eik2 = (*p_eikonal)(m_B);
-  eikmin = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
+  eikmin = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + 
+	    (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
   eikmin*=eik2;
-  if (MBpars("Misha")) {  
-/*    for (int i=0;i<=nstep;i++) {*/
-    while (y<Max(y0,y1)) {
-//       y = y0 + i*(y1-y0)/nstep;
-      y+=0.1;
-      eik = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
-      eik*=eik2;
-      if (eik < eikmin) eikmin = eik;
-    }
-    eikmin/=2.;
-    return m_Q02*eikmin + (m_nprimlad-1)*m_QN2*eikmin;
+  while (y<Max(y0,y1)) {
+    y+=0.1;
+    eik = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + 
+	   (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
+    eik*=eik2;
+    if (eik < eikmin) eikmin = eik;
   }
-  else {
-    return m_Q02 + (m_nprimlad-1)*m_QN2;
-  }
+  eikmin/=2.;
+  return m_Q02*eikmin + (m_nprimlad-1)*m_QN2*eikmin;
 }
 
 double Final_State::SelectKT2(const double & kt2max,const double & kt2min,
@@ -831,7 +785,8 @@ double Final_State::KT2integral(const double & kt2max,const double & kt2min,
   return fixterm + logterm;
 }
 
-double Final_State::FKT2(const double & kt2,const double & q02, const double & expo) {
+double Final_State::
+FKT2(const double & kt2,const double & q02, const double & expo) {
   double res(0.);
     switch (m_ktform) {
     case ktform::cut:

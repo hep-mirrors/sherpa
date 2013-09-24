@@ -37,7 +37,6 @@ Eikonal_Contributor * Omega_ik::GetSingleTerm(const int & i) {
 
 
 double Omega_ik::operator()(const double & B) const {
-  //msg_Out()<<METHOD<<"(B = "<<B<<" < "<<m_Bmax<<").\n";
   if (B<0. || B>=m_Bmax) return 0.;
   size_t Bbin(int(B/m_deltaB));
   return ((m_gridB[Bbin]*((Bbin+1)*m_deltaB-B)+
@@ -54,9 +53,7 @@ double Omega_ik::Maximum(const double & B) const {
 ATOOLS::Vec4D Omega_ik::
 SelectB1B2(double & b1,double & b2,const double & B) {
   double maxvalue(1.1*Maximum(B));
-  double theta(0.),b1max(m_Omegaik.B1max()),value(0.);
-  
-  msg_Debugging()<<"In "<<METHOD<<"("<<B<<")"<<std::endl;
+  double theta(0.),b1max(m_Omegaik.B1max()),value(0.);  
   bool   accept(false);
   while (!accept) {
     theta = 2.*M_PI*ATOOLS::ran->Get();
@@ -105,7 +102,7 @@ EmissionWeight(const double & b1,const double & b2,const double & y,
 double Omega_ik::SingletWeight(const double & b1,const double & b2,
 			       const double & y1,const double & y2,
 			       const double & sup,const int & nbeam) {
-  double term   =  m_singletwt*DeltaOmega(b1,b2,y1,y2,sup,nbeam); 
+  double term   = m_singletwt*DeltaOmega(b1,b2,y1,y2,sup,nbeam); 
   double weight = sqr(1.-exp(-term/2.));
   return weight;
 }
@@ -113,8 +110,8 @@ double Omega_ik::SingletWeight(const double & b1,const double & b2,
 double Omega_ik::OctetWeight(const double & b1,const double & b2,
 			     const double & y1,const double & y2,
 			     const double & sup,const int & nbeam) {
-  double term   =  DeltaOmega(b1,b2,y1,y2,sup,nbeam); 
-  double weight = (1.-exp(-term));
+  double term   = DeltaOmega(b1,b2,y1,y2,sup,nbeam); 
+  double weight = 1.-exp(-term);
   return weight;
 }
 

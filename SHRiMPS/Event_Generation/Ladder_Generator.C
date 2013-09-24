@@ -194,9 +194,6 @@ bool Ladder_Generator::FixFirstOutgoings() {
   Vec4D outmom1, outmom2,qt;
   Flavour outflav1,outflav2;
   bool keep(true);
-  //!(p_ladder->IsRescatter() &&
-  //	      inmom1.PPerp()<1. && inmom2.PPerp()<1.));
-//   if(p_ladder->IsRescatter()) keep=false;
   if (!Fix2To2Outgoing(inmom1,inmom2,outmom1,outmom2,keep)) return false;
   outflav1 = p_ladder->GetIn1()->m_flav;
   outflav2 = p_ladder->GetIn2()->m_flav;
@@ -210,10 +207,6 @@ bool Ladder_Generator::FixFirstOutgoings() {
   T_Prop prop(colour_type::octet,qt,m_FS.Q02((outmom1.Y()+outmom2.Y())/2.));
   p_ladder->GetProps()->push_back(prop);
   p_ladder->SetMaxKT2(Max(outmom1.PPerp2(),outmom2.PPerp2()));
-/*  if (!keep &&
-      (dabs(inmom1.PPerp()-outmom1.PPerp())>1. ||
-       dabs(inmom2.PPerp()-outmom2.PPerp())>1.)) */
-//     msg_Out()<<METHOD<<":\n"<<(*p_ladder)<<"\n";
   return true;
 }
 
@@ -224,20 +217,13 @@ Fix2To2Outgoing(const ATOOLS::Vec4D & inmom1,const ATOOLS::Vec4D & inmom2,
     outmom1 = inmom1; outmom2 = inmom2;
   }
   else {
-    // Distribute kt according to geometric mean of both form factors
     ATOOLS::Vec4D cms(inmom1+inmom2);  
     double shat  = cms.Abs2(), QT2min(0.0), QT2max = ATOOLS::Min(4.,shat/4.);
     double meany = (inmom1.Y()+inmom2.Y())/2.;
-/*    double q1T2  = p_eikonal->FF1()->SelectQT2(QT2max,QT2min);
+    double q1T2  = p_eikonal->FF1()->SelectQT2(QT2max,QT2min);
     double q2T2  = p_eikonal->FF2()->SelectQT2(QT2max,QT2min);
-    double QT2   = sqrt(q1T2*q2T2); //ATOOLS::Max(q1T2,q2T2);//
-    double QT    = sqrt(QT2);*/
-    double QT,QT2;
-    do {
-      QT2 = m_FS.SelectKT2(QT2max,QT2min,m_FS.Q02(meany),3.);
-    } while (sqr(m_FS.AlphaS(QT2)/m_FS.AlphaSMax()) < ran->Get());
-    QT=sqrt(QT2);
-    //msg_Out()<<METHOD<<": QT = "<<QT<<".\n";
+    double QT2   = sqrt(q1T2*q2T2); 
+    double QT    = sqrt(QT2);
     if (m_output) m_histograms[string("QT")]->Insert(QT);
     double dy    = acosh(sqrt(shat/(4.*QT2)));
     double phi1  = 2.*M_PI*ATOOLS::ran->Get();
@@ -253,22 +239,8 @@ Fix2To2Outgoing(const ATOOLS::Vec4D & inmom1,const ATOOLS::Vec4D & inmom2,
     ATOOLS::Poincare boost(cms);
     boost.BoostBack(outmom1);
     boost.BoostBack(outmom2);
-/*    if ((dabs(inmom1.Y()-outmom1.Y())>dabs(inmom1.Y()-outmom2.Y())) || 
-        (dabs(inmom2.Y()-outmom2.Y())>dabs(inmom2.Y()-outmom1.Y()))) {
-      //msg_Out()<<METHOD<<" swap: "
-      //       <<inmom1[3]*outmom1[3]<<"<"<<inmom1[3]*outmom2[3]<<", "
-      //       <<"y_in = {"<<inmom1.Y()<<", "<<inmom2.Y()<<"} -->"
-      //       <<"y_out = {"<<outmom1.Y()<<", "<<outmom2.Y()<<"}.\n";
-      Vec4D help = outmom1;
-      outmom1 = outmom2;
-      outmom2 = help;
-    }*/
     if (((inmom1.Y()<inmom2.Y()) && (outmom1.Y()>outmom2.Y())) || 
         ((inmom1.Y()>inmom2.Y()) && (outmom1.Y()<outmom2.Y()))) { 
-/*      msg_Out()<<METHOD<<" swap: "
-            <<inmom1[3]*outmom1[3]<<"<"<<inmom1[3]*outmom2[3]<<", "
-            <<"y_in = {"<<inmom1.Y()<<", "<<inmom2.Y()<<"} -->"
-            <<"y_out = {"<<outmom1.Y()<<", "<<outmom2.Y()<<"}.\n";*/
       Vec4D help = outmom1;
       outmom1 = outmom2;
       outmom2 = help;
@@ -287,28 +259,21 @@ double Ladder_Generator::Weight(const double & isweight) {
   double weight(1.);
   if (p_ladder->Size()>2) {
     double smin(m_IS.Smin());
-    double that(dabs(p_ladder->That())),shat(p_ladder->Shat());
-    double uhat(dabs(p_ladder->Uhat())),Yhat(p_ladder->Yhat());
-    double slad((p_ladder->GetIn1()->m_mom+p_ladder->GetIn2()->m_mom).Abs2());
-    //double mu2(4.*p_ladder->Mu2());
-    //double mu2(sqrt(4.*p_ladder->Mu2()*smin));
-    double mu2 = p_ladder->Mu2()*pow((that+p_ladder->Mu2())/slad,-0.225);
+    double that(dabs(p_ladder->That()));
     Flavour in1,in2,out1,out2;
     if (!p_ladder->ReconstructMEFlavours(in1,in2,out1,out2)) return 0.;
-    double pt2=4.*that*uhat*shat/(shat*shat+uhat*uhat+that*that);
-    double expo(3.*m_FS.AlphaS(pt2)/M_PI*dabs(p_ladder->DeltaYhat()));
-//    weight*=Min(that/smin,pow(smin/that,1.+expo))*uhat/shat;
-//     weight *= mu2*(mu2+pt2)/sqr(mu2+that);
-//      weight *=mu2/Max(mu2,that);
-//      weight *=pow(mu2/(mu2+that),1.);
-     weight *=pow((smin/4.)/(smin/4.+that),1.);
-    m_histogram2ds[string("pt2vspt2othat")]->Insert(pt2,pt2/that);
-    if (p_ladder->IsHardDiffractive()) {
+    weight *=pow((smin/4.)/(smin/4.+that),1.);
+    /*
+      if (p_ladder->IsHardDiffractive()) {
+      //double Yhat(p_ladder->Yhat());
+      double shat(p_ladder->Shat()), uhat(dabs(p_ladder->Uhat()));
+      double slad((p_ladder->GetIn1()->m_mom+p_ladder->GetIn2()->m_mom).Abs2());
+      double pt2(4.*that*uhat*shat/(shat*shat+uhat*uhat+that*that));
       weight *= sqr(m_FS.AlphaS(pt2)/m_FS.AlphaSMax());
-//       weight *= mu2/(mu2+that);
-    }
-/*    else if (p_ladder->Size()==3) 
-      weight *= m_FS.AlphaS(pt2)/m_FS.AlphaSMax();*/
+      }
+    //    else if (p_ladder->Size()==3) 
+    //	  weight *= m_FS.AlphaS(pt2)/m_FS.AlphaSMax();
+    */
   }
   m_histograms[string("LadderWt")]->Insert(weight);
   return weight;
@@ -431,7 +396,6 @@ void Ladder_Generator::Analyse(const bool & isprimary) {
       m_Ndd_s++;
       m_histograms[string("DDmass_s")]->Insert(momtot.Abs());  
     }
-//     msg_Out()<<"identified as DD ladder (M = "<<momtot.Abs()<<")."<<std::endl;
   }
   else {
     if (p_ladder->GetPropsBegin()->m_col==colour_type::singlet &&
@@ -446,7 +410,6 @@ void Ladder_Generator::Analyse(const bool & isprimary) {
         m_Ncep_s++;
         m_histograms[string("CEPmass_s")]->Insert(momtot.Abs());  
       }
-//       msg_Out()<<"identified as CEP ladder (M = "<<momtot.Abs()<<")."<<std::endl;
     }
     else if (p_ladder->GetPropsBegin()->m_col==colour_type::singlet) {
       momtot-=p_ladder->GetEmissionsBegin()->second.m_mom;
@@ -458,7 +421,6 @@ void Ladder_Generator::Analyse(const bool & isprimary) {
         m_Nsd_s++;
         m_histograms[string("SDmass_s")]->Insert(momtot.Abs());  
       }
-//       msg_Out()<<"identified as SD ladder (M = "<<momtot.Abs()<<")."<<std::endl;
     }
     else if (p_ladder->GetPropsRBegin()->m_col==colour_type::singlet) {
       momtot-=p_ladder->GetEmissionsRBegin()->second.m_mom;
@@ -470,7 +432,6 @@ void Ladder_Generator::Analyse(const bool & isprimary) {
         m_Nsd_s++;
         m_histograms[string("SDmass_s")]->Insert(momtot.Abs());  
       }
-//       msg_Out()<<"identified as SD ladder (M = "<<momtot.Abs()<<")."<<std::endl;
     }      
   }
 }
