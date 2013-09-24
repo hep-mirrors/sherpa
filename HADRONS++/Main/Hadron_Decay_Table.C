@@ -87,7 +87,7 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 	THROW(fatal_error,"Decaying mass "+ToString(mass)+" too low in "+
               hdc->FileName());
       //if (Flav()==Flavour(kf_B_s)) 
-      //msg_Out()<<hdc->Name()<<": "<<hdc->Width()/Flav().Width()*100.<<"%.\n";
+      //msg_Tracking()<<hdc->Name()<<": "<<hdc->Width()/Flav().Width()*100.<<"%.\n";
       AddDecayChannel(hdc);
       nchannels++;
     }
@@ -159,6 +159,8 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 	  filename = StringReplace(filename, "+_{c}", "c+");
 	if (filename.find("_{c}")!=string::npos) 
 	  filename = StringReplace(filename, "_{c}", "c");
+	if (filename.find("_fict")!=string::npos) 
+	  filename = StringReplace(filename, "_fict", "");
 	filename += "_"+spec.IDName();
 	msg_Tracking()<<"   Add partonic decay: "<<Flav()<<" --> ";
 	for (size_t j=0;j<(*dectable)[i]->NOut();j++) {
@@ -280,7 +282,7 @@ void Hadron_Decay_Table::ScaleToWidth() {
 Decay_Channel * Hadron_Decay_Table::Select(Blob* blob) const
 {
   Blob_Data_Base* data = (*blob)["dc"];
-  //msg_Out()<<METHOD<<" for "<<data<<" and flag "<<blob->Status()<<"\n"
+  //msg_Tracking()<<METHOD<<" for "<<data<<" and flag "<<blob->Status()<<"\n"
   //	   <<(*blob)<<"\n";
   if (data) {
     if (blob->Has(blob_status::internal_flag)) {
@@ -295,7 +297,7 @@ Decay_Channel * Hadron_Decay_Table::Select(Blob* blob) const
 	  }
 	}
       } while (!partonic_finalstate);
-      //msg_Out()<<METHOD<<": erasing "
+      //msg_Tracking()<<METHOD<<": erasing "
       //	       <<data->Get<Decay_Channel*>()->Name()<<",\n"
       //	       <<"   retrying with "<<dc->Name()<<".\n";
       DEBUG_INFO("retrying with "<<dc->Name());
