@@ -109,9 +109,9 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
     return AttachHadronsToBlob(clin,blob);
   }
 
-  msg_Error()<<"Error in "<<METHOD<<" : \n"
-	     <<"   Could not shift momenta.\n"
-	     <<"   Will possibly lead to retrying the event.\n";
+  msg_Tracking()<<"Error in "<<METHOD<<" : \n"
+		<<"   Could not shift momenta.\n"
+		<<"   Will possibly lead to retrying the event.\n";
   return false;
 }
 
@@ -119,11 +119,11 @@ bool Soft_Cluster_Handler::TreatSingleCluster(Cluster * cluster)
 {
   switch (CheckCluster(cluster,true,true)) {
   case 1:
-    msg_Error()<<"Potential problem in "<<METHOD<<" : \n"
-	       <<"   Clusterlist with one element that "
-	       <<"needs to transform to a hadron."
-	       <<"\n"<<(*cluster)<<"\n"
-	       <<"   Will force decay to hadron+photon.\n";
+    msg_Tracking()<<"Potential problem in "<<METHOD<<" : \n"
+		  <<"   Clusterlist with one element that "
+		  <<"needs to transform to a hadron."
+		  <<"\n"<<(*cluster)<<"\n"
+		  <<"   Will force decay to hadron+photon.\n";
     cluster->push_back(Flavour(kf_photon));
     return true;
   case 2:
@@ -157,8 +157,8 @@ bool Soft_Cluster_Handler::TreatClusterDecay(Cluster_List * clin, Blob * blob)
     }
     clin->clear();
     if (!EnforcedDecay(cluster,blob,true,clin)) {
-      msg_Error()<<"Error in "<<METHOD<<" ("<<clin->size()<<" clusters) : \n"
-		 <<"   No enforced decay possible.\n";
+      msg_Tracking()<<"Error in "<<METHOD<<" ("<<clin->size()<<" clusters) : \n"
+		    <<"   No enforced decay possible.\n";
       return false;
     }
     return true;
@@ -454,9 +454,9 @@ EnforcedDecay(Cluster * cluster, Blob * blob,const bool & constrained,
     else {
       weight1 = TransformWeight(cluster,had1,true,true);
       if (weight1<=0.) {
-	msg_Error()<<"Error in "<<METHOD<<" : \n"
-		   <<"   No suitable single transition found, "
-		   <<"will return false and hope for the best.\n";
+	msg_Tracking()<<"Error in "<<METHOD<<" : \n"
+		      <<"   No suitable single transition found, "
+		      <<"will return false and hope for the best.\n";
 	return false;
       }
       had2 = Flavour(kf_photon);
@@ -498,16 +498,16 @@ bool Soft_Cluster_Handler::EnforcedTransition(Cluster_List * clin) {
   }
   if (!hadpars->AdjustMomenta(size,&momenta.front(),&masses.front())) {
     if (size>1 /*&& msg->LevelIsDebugging()*/) {
-      msg_Error()<<"Error in "<<METHOD<<" ("<<size<<" clusters) : \n"
-		 <<"   Could not adjust momenta for : \n";
+      msg_Tracking()<<"Error in "<<METHOD<<" ("<<size<<" clusters) : \n"
+		    <<"   Could not adjust momenta for : \n";
       int i(0);
       for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
-	msg_Error()<<"Mass/Mom  = "<<masses[i]<<"/"<<momenta[i];
-	if ((*cit)->size()==1) msg_Error()<<" ("<<((**cit)[0])<<" )";
-	msg_Error()<<" for \n"<<(**cit)<<"\n";
+	msg_Tracking()<<"Mass/Mom  = "<<masses[i]<<"/"<<momenta[i];
+	if ((*cit)->size()==1) msg_Tracking()<<" ("<<((**cit)[0])<<" )";
+	msg_Tracking()<<" for \n"<<(**cit)<<"\n";
 	i++;
       }
-      msg_Error()<<"   Will possibly lead to retrying the event.\n";
+      msg_Tracking()<<"   Will possibly lead to retrying the event.\n";
     }
     return false;
   }
@@ -547,10 +547,10 @@ bool Soft_Cluster_Handler::EnforcedTransition(Cluster_List * clin) {
 #ifdef AHAmomcheck
   double Q2(dabs((checkbef-checkaft).Abs2()));
   if (Q2>1.e-12 || IsNan(Q2)) {
-    msg_Error()<<METHOD<<" yields a momentum violation for  "<<size<<" : \n"
-	       <<"   "<<checkbef<<" - "<<checkaft<<" --> "
-	       <<(checkbef-checkaft).Abs2()<<"("<<size<<").\n"
-	       <<(*clin)<<"\n";
+    msg_tracking()<<METHOD<<" yields a momentum violation for  "<<size<<" : \n"
+		  <<"   "<<checkbef<<" - "<<checkaft<<" --> "
+		  <<(checkbef-checkaft).Abs2()<<"("<<size<<").\n"
+		  <<(*clin)<<"\n";
   }
   else msg_Tracking()<<METHOD<<" satisfied four-momentum conservation.\n";
 #endif
@@ -591,16 +591,16 @@ TransformWeight(Cluster * cluster,Flavour & hadron,
     return 0.;
   }
   if ((enforce || lighter) && p_singletransitions->GetLightestMass(fpair)>MC) {
-    msg_Error()<<"Error in "<<METHOD<<"("<<lighter<<", "<<enforce<<") :\n"
-	       <<"   Cluster too light, no transformation possible.\n"
-	       <<"   Cluster = "<<cluster->Number()<<" ["
-	       <<fpair.first<<"("<<fpair.first.HadMass()<<"), "
-	       <<fpair.second<<"("<<fpair.second.HadMass()<<"), "
-	       <<"mass = "<<MC<<"] vs. "
-	       <<"lightest mass = "
-	       <<p_singletransitions->GetLightestMass(fpair)<<" for "
-	       <<p_singletransitions->GetLightestTransition(fpair)<<".\n"
-	       <<(*cluster)<<"\n";
+    msg_Tracking()<<"Error in "<<METHOD<<"("<<lighter<<", "<<enforce<<") :\n"
+		  <<"   Cluster too light, no transformation possible.\n"
+		  <<"   Cluster = "<<cluster->Number()<<" ["
+		  <<fpair.first<<"("<<fpair.first.HadMass()<<"), "
+		  <<fpair.second<<"("<<fpair.second.HadMass()<<"), "
+		  <<"mass = "<<MC<<"] vs. "
+		  <<"lightest mass = "
+		  <<p_singletransitions->GetLightestMass(fpair)<<" for "
+		  <<p_singletransitions->GetLightestTransition(fpair)<<".\n"
+		  <<(*cluster)<<"\n";
     return 0.;
   }
   Single_Transition_Miter stiter = 
@@ -899,9 +899,9 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
   Vec4D  p2      = cluster->Momentum()-p1;
 
   if (p1[0]<0. || p2[0]<0.) {
-    msg_Error()<<"Error in "<<METHOD<<": negative hadron energies\n"
-	       <<(*cluster)<<"\n"
-	       <<"   Will retry event.\n";
+    msg_Tracking()<<"Error in "<<METHOD<<": negative hadron energies\n"
+		  <<(*cluster)<<"\n"
+		  <<"   Will retry event.\n";
     throw Return_Value::Retry_Event;
   }
 
@@ -1092,16 +1092,16 @@ bool Soft_Cluster_Handler::ForceMomenta(Cluster_List * clin)
 
   if (!hadpars->AdjustMomenta(size,&momenta.front(),&masses.front())) {
     if (size>1) {
-      msg_Error()<<"Error in "<<METHOD<<" ("<<size<<" clusters) : \n"
-		 <<"   Could not adjust momenta for : \n";
+      msg_Tracking()<<"Error in "<<METHOD<<" ("<<size<<" clusters) : \n"
+		    <<"   Could not adjust momenta for : \n";
       int i(0);
       for (Cluster_Iterator cit=clin->begin();cit!=clin->end();cit++) {
-	msg_Error()<<"Mass/Mom  = "<<masses[i]<<"/"<<momenta[i];
-	if ((*cit)->size()==1) msg_Error()<<" ("<<((**cit)[0])<<" )";
-	msg_Error()<<" for \n"<<(**cit)<<"\n";
+	msg_Tracking()<<"Mass/Mom  = "<<masses[i]<<"/"<<momenta[i];
+	if ((*cit)->size()==1) msg_Tracking()<<" ("<<((**cit)[0])<<" )";
+	msg_Tracking()<<" for \n"<<(**cit)<<"\n";
 	i++;
       }
-      msg_Error()<<"   Will possibly lead to retrying the event.\n";
+      msg_Tracking()<<"   Will possibly lead to retrying the event.\n";
     }
     return false;
   }
@@ -1122,10 +1122,10 @@ bool Soft_Cluster_Handler::ForceMomenta(Cluster_List * clin)
   Vec4D checkaft(SumMomentum(clin));
   double Q2(dabs((checkbef-checkaft).Abs2()));
   if (Q2>1.e-12 || IsNan(Q2)) {
-    msg_Error()<<METHOD<<" yields a momentum violation for  "<<size<<" : \n"
-	       <<"   "<<checkbef<<" - "<<checkaft<<" --> "
-	       <<(checkbef-checkaft).Abs2()<<"("<<size<<").\n"
-	       <<(*clin)<<"\n";
+    msg_Tracking()<<METHOD<<" yields a momentum violation for  "<<size<<" : \n"
+		  <<"   "<<checkbef<<" - "<<checkaft<<" --> "
+		  <<(checkbef-checkaft).Abs2()<<"("<<size<<").\n"
+		  <<(*clin)<<"\n";
   }
   else msg_Debugging()<<METHOD<<" conserves momentum : "
 		      <<(checkbef-checkaft).Abs2()<<"("<<size<<").\n";
