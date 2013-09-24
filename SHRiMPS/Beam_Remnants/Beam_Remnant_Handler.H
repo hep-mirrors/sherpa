@@ -37,6 +37,7 @@ namespace SHRIMPS {
 
     bool                                        m_analyse;
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
+    long int                                    m_momconserv, m_colours;
 
     void LinkShowerInitiators(ATOOLS::Blob * blob);
     void AddSpectators();
@@ -47,7 +48,8 @@ namespace SHRIMPS {
     ~Beam_Remnant_Handler();
 
     void Reset(const size_t & mode=0);
-    bool InitialiseCollision(const int & N=0, double B=0., Omega_ik * eikonal=NULL);
+    bool InitialiseCollision(const int & N=0, double B=0., 
+			     Omega_ik * eikonal=NULL);
     bool NextIS(ATOOLS::Particle *& part1,ATOOLS::Particle *& part2);
     bool UpdateColours(Ladder * ladder,const bool & lastladder);
     ATOOLS::Return_Value::code FillBeamBlobs(ATOOLS::Blob_List * blobs,

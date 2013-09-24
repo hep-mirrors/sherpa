@@ -14,7 +14,7 @@ Beam_Remnant_Handler::
 Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler * beamspectra,
 		     vector<Continued_PDF> & pdfs) :
   p_blob(NULL), p_pdfs(&pdfs), m_paircounter(0),
-  m_analyse(true), m_didinsertbeamblob(false)
+  m_momconserv(0), m_colours(0), m_analyse(true), m_didinsertbeamblob(false)
 {
   m_checkmom.push_back(Vec4D(0,0,0,0)); 
   m_checkmom.push_back(Vec4D(0,0,0,0));
@@ -48,6 +48,10 @@ Beam_Remnant_Handler::~Beam_Remnant_Handler() {
     }
     m_histomap.clear();
   }
+  msg_Info()<<"Errors in SHRiMPS::Beam_Remnant_Handler: \n"
+	    <<"   "<<m_momconserv<<" problems with momentum conservation "
+	    <<"at 1e-6 level,\n"
+	    <<"   "<<m_colours<<" problems with colour connections.\n";
 
   while (!m_hadrons.empty()) {
     delete m_hadrons.back();
@@ -163,30 +167,34 @@ FillBeamBlobs(Blob_List * blobs,Omega_ik * eikonal,const double & smin) {
   for (int beam=0;beam<2;beam++) {
     if (m_hadrons[beam]->GetBeamBlob()->
 	CheckMomentumConservation().Abs2()>1.e-6) {
-      msg_Error()<<"Problem in "<<METHOD<<":\n"
-		 <<"   Beam blob ("<<m_hadrons[beam]->GetBeamBlob()->Id()
-		 <<") seems fishy.\n"
-		 <<(*m_hadrons[beam]->GetBeamBlob())<<"\n";
+      msg_Tracking()<<"Problem in "<<METHOD<<":\n"
+		    <<"   Beam blob ("<<m_hadrons[beam]->GetBeamBlob()->Id()
+		    <<") seems fishy.\n"
+		    <<(*m_hadrons[beam]->GetBeamBlob())<<"\n";
+      m_momconserv++;
     }
   }
   if (p_blob->CheckMomentumConservation().Abs2()>1.) {
-    msg_Error()<<"Problem in "<<METHOD<<":\n"
-	       <<"   Soft blob ("<<p_blob->Id()<<") seems fishy:\n"
-	       <<"   Delta = "<<p_blob->CheckMomentumConservation()<<"\n"
-	       <<(*p_blob)<<"\n";
+    msg_Tracking()<<"Problem in "<<METHOD<<":\n"
+		  <<"   Soft blob ("<<p_blob->Id()<<") seems fishy:\n"
+		  <<"   Delta = "<<p_blob->CheckMomentumConservation()<<"\n"
+		  <<(*p_blob)<<"\n";
+    m_momconserv++;
   }
   if (!p_blob->CheckColour()) {
-    msg_Error()<<"Problem in "<<METHOD<<":\n   Extra blob "
-	       <<"("<<p_blob->Id()<<") seems fishy: "
-	       <<"Bad colour configuration.\n"<<(*p_blob)<<"\n";
+    msg_Tracking()<<"Problem in "<<METHOD<<":\n   Extra blob "
+		  <<"("<<p_blob->Id()<<") seems fishy: "
+		  <<"Bad colour configuration.\n"<<(*p_blob)<<"\n";
+    m_colours++;
     return Return_Value::Retry_Event;
   }
   for (size_t beam=0;beam<2;beam++) {
     if (!m_hadrons[beam]->GetBeamBlob()->CheckColour()) {
-      msg_Error()<<"Problem in "<<METHOD<<":\n   Extra blob "
-		 <<"("<<m_hadrons[beam]->GetBeamBlob()->Id()<<") seems fishy: "
-		 <<"Bad colour configuration.\n"
-		 <<(*m_hadrons[beam]->GetBeamBlob())<<"\n";
+      msg_Tracking()<<"Problem in "<<METHOD<<":\n   Extra blob "
+		    <<"("<<m_hadrons[beam]->GetBeamBlob()->Id()<<") "
+		    <<"seems fishy: Bad colour configuration.\n"
+		    <<(*m_hadrons[beam]->GetBeamBlob())<<"\n";
+      m_colours++;
       return Return_Value::Retry_Event;
     }
   }
