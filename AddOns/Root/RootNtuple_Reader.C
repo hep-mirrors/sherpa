@@ -239,7 +239,7 @@ double RootNtuple_Reader::CalculateWeight
     w[0]=p_vars->m_mewgt+p_vars->p_uwgt[0]*lr+p_vars->p_uwgt[1]*lr*lr/2.0;
     bool wnz=false;
     for (int i(1);i<9;++i) {
-      w[i]=p_vars->p_uwgt[i+1]+p_vars->p_uwgt[i+9]*lf;
+      w[i]=p_vars->m_nuwgt<=2?0:p_vars->p_uwgt[i+1]+p_vars->p_uwgt[i+9]*lf;
       if (w[i]) wnz=true;
     }
     double wgt=w[0]*fa*fb;
