@@ -33,8 +33,8 @@ String_Generator::String_Generator(Basic_Sfuncs* _BS) :
   Basic_Epsilonfunc(this,_BS), Unitarityfunc(this,_BS),
   p_zxlsave(NULL), p_couplingssave(NULL), p_flavourssave(NULL), m_copied(0)
 { 
-  m_zuse.resize(12);
-  for (size_t i=0;i<12;i++) m_zuse[i]=0;
+  m_zuse.resize(13);
+  for (size_t i=0;i<13;i++) m_zuse[i]=0;
   p_zxl       = new vector<ZXlist>;
   p_couplings = new vector<Complex>;
   p_flavours  = new vector<long int>;
@@ -495,7 +495,7 @@ void String_Generator::Calculate(Values* val)
   for (size_t i=1;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].on) {
       int* arg = (*p_zxl)[i].arg;
-      if ((*p_zxl)[i].zlist>=0&&(*p_zxl)[i].zlist<12) m_zuse[(*p_zxl)[i].zlist]=1;
+      if ((*p_zxl)[i].zlist>=0&&(*p_zxl)[i].zlist<13) m_zuse[(*p_zxl)[i].zlist]=1;
       switch ((*p_zxl)[i].zlist) {
       case 0: (*p_zxl)[i].value = 
 		Kabbala((*p_zxl)[i].value.String(),
