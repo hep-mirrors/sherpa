@@ -21,7 +21,7 @@ int Gauss_Integrator::s_ngaujac=0;
 Weight_Module* Gauss_Integrator::s_wlistroot=0;
 
 
-Gauss_Integrator::Gauss_Integrator(Function_Base *func=0){
+Gauss_Integrator::Gauss_Integrator(Function_Base *func){
   m_numberabsc = 0;  // precisision (number of points) not jet choosen
   m_wlistact   = 0;    // so no precalculated weights or abscissas are available jet;
   m_func       = func;    // set function to be integrated

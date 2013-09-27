@@ -19,13 +19,13 @@ Vec4<Scalar>
 ATOOLS::Contraction(const Lorentz_Ten3<Scalar>& ten, int i, int j) {
   Lorentz_Ten3<Scalar> t;
   // v^{mu} = t{mu,alpha,alpha'} g_{alpha,alpha'}
-  if      (((i==2) && (j==3)) || (j==2) && (i==3))
+  if      (((i==2) && (j==3)) || ((j==2) && (i==3)))
     t = ten;
   // v^{mu} = t{alpha,mu,alpha'} g_{alpha,alpha'}
-  else if (((i==1) && (j==3)) || (j==1) && (i==3))
+  else if (((i==1) && (j==3)) || ((j==1) && (i==3)))
     t = ten.Transpose(1,2);
   // v^{mu} = t{alpha,alpha',mu} g_{alpha,alpha'}
-  else if (((i==1) && (j==2)) || (j==1) && (i==2))
+  else if (((i==1) && (j==2)) || ((j==1) && (i==2)))
     t = ten.Transpose(1,3);
   else
     return Vec4<Scalar>(0.,0.,0.,0.);

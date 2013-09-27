@@ -27,7 +27,7 @@ namespace ATOOLS {
     void   GauLeg(double * x, double * w, int n);    // mode=1;
     void   GauJac(double * x, double * w, int n, double alf = -0.5, double bet= -0.5);  // mode=5;
   public:
-    Gauss_Integrator(Function_Base *);
+    Gauss_Integrator(Function_Base *a =0);
     double Legendre(double x1 , double x2,int n);
     double Jacobi(double x1, double x2, int n, double alf, double bet);
     double Chebyshev( double a, double b, double prec, int n_max, int &i_err );

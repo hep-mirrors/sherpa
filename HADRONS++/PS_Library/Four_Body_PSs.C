@@ -152,7 +152,7 @@ IsotropicSpectator::IsotropicSpectator(const ATOOLS::Flavour * fl,
   Single_Channel(1,nOut,fl), m_spectator(spectator),
   m_spectator_mass(ms->Mass(fl[spectator])), m_residual_mass(0.)
 {
-  Flavour isotropicflavs[nout];
+  Flavour *isotropicflavs = new Flavour[nout];
   isotropicflavs[0] = Flavour(kf_none);
   int j=1;
   for (short int i=1;i<1+nout;i++) {
@@ -175,6 +175,7 @@ IsotropicSpectator::IsotropicSpectator(const ATOOLS::Flavour * fl,
   msg_Debugging()<<"   PS: m_decayermass = "<<m_decayer_mass
 		 <<" from "<<mass_saved
 		 <<" and "<<ms->Mass(fl[spectator])<<", nout = "<<nout<<"\n";
+  delete[] isotropicflavs;
 }
 
 void IsotropicSpectator::GeneratePoint(ATOOLS::Vec4D * p,
@@ -203,7 +204,7 @@ void IsotropicSpectator::GeneratePoint(ATOOLS::Vec4D * p,
 			      px, py, pz);
   Vec4D decayer_mom = Vec4D(p[0][0]-spectator_mom[0], -px, -py, -pz);
   
-  Vec4D isotropicmoms[nout+1];
+  Vec4D *isotropicmoms = new Vec4D[nout+1];
   Poincare boost(decayer_mom);
   isotropicmoms[0] = boost*decayer_mom;
   m_rambo->GeneratePoint(isotropicmoms);
@@ -219,13 +220,14 @@ void IsotropicSpectator::GeneratePoint(ATOOLS::Vec4D * p,
       j++;
     }
   }
+  delete[] isotropicmoms;
 }
 
 
 void IsotropicSpectator::GenerateWeight(ATOOLS::Vec4D * p,
 					PHASIC::Cut_Data * cuts)
 {
-  Vec4D isotropicmoms[nout+1];
+  Vec4D *isotropicmoms = new Vec4D[nout+1];
   int j=1;
   for (short int i=1;i<1+nout;i++) {
     if(i!=m_spectator) {
@@ -251,4 +253,5 @@ void IsotropicSpectator::GenerateWeight(ATOOLS::Vec4D * p,
 		 <<p[i]<<" ("<<sqrt(Max(0.,p[i].Abs2()))<<").\n";
     }
   }
+  delete[] isotropicmoms;
 }
