@@ -69,12 +69,12 @@ Interaction_Model_SM_EHC::Interaction_Model_SM_EHC(MODEL::Model_Base * _model,
   // h g g coupling
   double asggh=read.GetValue<double>("ALPHAS_GGH",
 				     ScalarFunction(string("alpha_S"),
-						    ehc_scale2));
+						    rpa->gen.CplScale()));
   ghgg  = Kabbala(std::string("ghgg"),ScalarConstant(string("h0_gg_fac"))*
 		  asggh/(2.*M_PI*vev.Value()));
   msg_Info()<<METHOD<<"() {\n"
             <<"  ggh coupling is "<<ghgg.Value()
-            <<" [ \\alpha_s(\\mu="<<sqrt(ehc_scale2)<<") = "<<asggh<<" ]\n"
+            <<" [ \\alpha_s(\\mu="<<sqrt(rpa->gen.CplScale())<<") = "<<asggh<<" ]\n"
             <<"  pph coupling is "<<ghpp.Value()
             <<" [ 1/\\alpha_qed(\\mu="<<sqrt(ehc_scale2)<<") = "<<1./aqedpph
             <<" ]\n}\n";
@@ -124,6 +124,8 @@ void Interaction_Model_SM_EHC::c_VVVV(std::vector<Single_Vertex>& vertex,int& va
   vertex[vanz].Lorentz.back()->SetParticleArg(0,1,2);     
 
   vertex[vanz].on      = 1;
+  vertex[vanz].oqcd    = 3;
+  vertex[vanz].oew     = 1;
   vertex.push_back(Single_Vertex());vanz++;
 
   Flavour flsh(kf_shgluon);
@@ -158,6 +160,8 @@ void Interaction_Model_SM_EHC::c_VVVV(std::vector<Single_Vertex>& vertex,int& va
   
   vertex[vanz].on              = 1;
   vertex[vanz].t               = 1;
+  vertex[vanz].oqcd            = 4;
+  vertex[vanz].oew             = 1;
   vertex.push_back(Single_Vertex());vanz++;
 }
 
@@ -195,6 +199,8 @@ void Interaction_Model_SM_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& van
     vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
     
     vertex[vanz].on      = 1;
+    vertex[vanz].oqcd    = 0;
+    vertex[vanz].oew     = 3;
     vertex.push_back(Single_Vertex());vanz++;
   }
   
@@ -220,6 +226,8 @@ void Interaction_Model_SM_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& van
     vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
     
     vertex[vanz].on      = 1;
+    vertex[vanz].oqcd    = 2;
+    vertex[vanz].oew     = 1;
     vertex.push_back(Single_Vertex());vanz++;
   }
   Flavour flsh(kf_shgluon);
@@ -246,6 +254,8 @@ void Interaction_Model_SM_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& van
     
     vertex[vanz].on      = 1;
     vertex[vanz].t       = -1;
+    vertex[vanz].oqcd    = 0;
+    vertex[vanz].oew     = 0;
     vertex.push_back(Single_Vertex());vanz++;
   }
 }

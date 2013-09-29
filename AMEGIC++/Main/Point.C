@@ -1,6 +1,6 @@
 #include "AMEGIC++/Main/Point.H"
 
-#include <iostream>
+#include "ATOOLS/Org/Message.H"
 
 using namespace AMEGIC;
 using namespace MODEL;
@@ -226,28 +226,7 @@ std::ostream & operator<<(std::ostream & s, const Point & p)
 
 int Point::FindQCDOrder(int & oqcd) {
  if (!this) return oqcd;
-  int hit = 0;
-  
-  //Gluon propagators
-  if (number>99 && (fl.IsGluon() || fl.IsGluino())) {
-    oqcd += middle?3:2;
-    hit       = 1;
-    if (fl==ATOOLS::Flavour(kf_shgluon)) oqcd += 2;
-  }
-  //External gluon 
-  if (number<99 && (fl.IsGluon() || fl.IsGluino())) {
-    oqcd += middle?2:1;
-    hit       = 1;
-  }
-
-   //triple and quartic Gluon/Gluino vertices and ADD-Gluon/Higgs-Gluon Vertices
-  if (hit) {
-    if (left   && (left->fl.IsGluon() || left->fl.IsGluino() || !left->fl.Strong()))     oqcd -= 1;
-    if (right  && (right->fl.IsGluon() || right->fl.IsGluino() || !right->fl.Strong()))  oqcd -= 1;
-    if (middle && (middle->fl.IsGluon() || middle->fl.IsGluino() || !middle->fl.Strong())) oqcd -= 1;
-  }
-  else if (!fl.Strong() && left   && (left->fl.IsGluon() || left->fl.IsGluino()))     oqcd -= 2;
-
+  if (v) oqcd+=v->oqcd;
   left->FindQCDOrder(oqcd);
   right->FindQCDOrder(oqcd);
   if (middle) middle->FindQCDOrder(oqcd);
@@ -256,27 +235,7 @@ int Point::FindQCDOrder(int & oqcd) {
 
 int Point::FindQEDOrder(int & oqed) {
 if (!this) return oqed;
-  
-  int hit = 0;
-  
-  //Vector-Boson propagators
-  if (number>99 && (fl.IsVector() || fl.IsScalar()) && !(fl.IsGluon())) {
-    oqed += middle?3:2;
-    hit       = 1; 
-  }    
-  //External Vector-Boson 
-  if (number<99 && (fl.IsVector() || fl.IsScalar()) && !(fl.IsGluon())) {
-    oqed += middle?2:1;
-    hit       = 1;
-  }
-  
-  //triple and quartic Vector-Boson interactions
-  if (hit) {
-    if (left   && (left->fl.IsVector() || left->fl.IsScalar()) && !(left->fl.IsGluon()))      oqed -= 1;
-    if (right  && (right->fl.IsVector() || right->fl.IsScalar()) && !(right->fl.IsGluon()))   oqed -= 1;
-    if (middle && (middle->fl.IsVector() || middle->fl.IsScalar()) && !(middle->fl.IsGluon())) oqed -= 1;
-  }
-  
+  if (v) oqed+=v->oew;
   left->FindQEDOrder(oqed);
   right->FindQEDOrder(oqed);
   if (middle) middle->FindQEDOrder(oqed);
