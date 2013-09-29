@@ -85,7 +85,6 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   rpa->gen.SetSoftSC(p_dataread->GetValue<int>("SOFT_SPIN_CORRELATIONS",0));
   rpa->gen.SetHardSC(p_dataread->GetValue<int>("HARD_SPIN_CORRELATIONS",0));
-  METOOLS::CSpinor<double>::SetHSC(rpa->gen.HardSC());
   exh->AddTerminatorObject(this);
 }
 
