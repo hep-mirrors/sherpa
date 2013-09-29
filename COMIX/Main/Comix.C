@@ -50,7 +50,7 @@ namespace COMIX {
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
 
     ATOOLS::Cluster_Amplitude *ClusterConfiguration
-    (PHASIC::Process_Base *const proc,const size_t &mode,const double &kt2);
+    (PHASIC::Process_Base *const proc,const size_t &mode);
 
   }; // end of class Comix
 
@@ -246,9 +246,9 @@ void Comix::SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs)
 }
 
 Cluster_Amplitude *Comix::ClusterConfiguration
-(PHASIC::Process_Base *const proc,const size_t &mode,const double &kt2)
+(PHASIC::Process_Base *const proc,const size_t &mode)
 {
-  p_cluster->Cluster(proc->Get<COMIX::Single_Process>(),mode,kt2);
+  p_cluster->Cluster(proc->Get<COMIX::Single_Process>(),mode);
   return p_cluster->GetAmplitude();
 }
 

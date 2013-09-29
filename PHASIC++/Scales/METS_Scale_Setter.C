@@ -18,6 +18,7 @@
 #include "PDF/Main/ISR_Handler.H"
 #include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/ZAlign.H"
@@ -232,10 +233,11 @@ METS_Scale_Setter::METS_Scale_Setter
   m_vproc=p_proc->Info().Has(nlo_type::vsub);
   if (m_nproc) m_mode=2;
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
-  m_cmoders=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE_RS"));
   Data_Reader read(" ",";","!","=");
+  m_cmoders=read.GetValue<int>("METS_CLUSTER_MODE_RS",0);
+  if (m_cmoders) msg_Info()<<METHOD<<"(): Set RS cluster mode "<<m_cmoders<<".\n";
   if (!read.ReadFromFile(m_wthres,"METS_WARNING_THRESHOLD")) m_wthres=0.1;
-  if (core=="" && !read.ReadFromFile(core,"CORE_SCALE")) core="SHOWER";
+  if (core=="" && !read.ReadFromFile(core,"CORE_SCALE")) core="DEFAULT";
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
   if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
   if (!read.ReadFromFile(m_nfgsplit,"DIPOLE_NF_GSPLIT"))
@@ -266,10 +268,31 @@ double METS_Scale_Setter::CalculateStrict
   int amode(cd->AMode()), camode((m_nproc|amode)?512:0);
   cd->SetAMode((camode&512)?1:0);
   if (m_rproc) camode|=4096;
-  if (proc->MCMode()==2) camode|=m_cmoders;
-  Cluster_Amplitude *ampl
+  Cluster_Amplitude *ampl=NULL;
+  if (m_rproc && m_cmoders) {
+    NLO_subevtlist *subs=proc->GetRSSubevtList();
+    double sum=0.0, psum=0.0;
+    for (size_t i(0);i<subs->size()-1;++i) {
+      msg_Debugging()<<*(*subs)[i]<<"\n";
+      sum+=dabs((*subs)[i]->m_me);
+    }
+    if (sum) {
+      sum*=ran->Get();
+      for (size_t i(0);i<subs->size()-1;++i) {
+	if ((psum+=dabs((*subs)[i]->m_me))>=sum) {
+	  ampl=(*subs)[i]->p_ampl->CopyAll();
+	  for (Cluster_Amplitude *campl(ampl);campl;campl=campl->Next())
+	    msg_Debugging()<<*campl<<"\n";
+	  break;
+	}
+      }
+    }
+  }
+  if (ampl==NULL) {
+    ampl=
     (proc->Generator()->
      ClusterConfiguration(proc,m_cmode|camode|mode));
+  }
   cd->SetAMode(amode);
   if (ampl==NULL) {
     msg_Debugging()<<METHOD<<"(): No CSS history for '"

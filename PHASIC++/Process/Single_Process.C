@@ -481,8 +481,7 @@ ATOOLS::Flavour Single_Process::ReMap
   return fl;
 }
 
-Cluster_Amplitude *Single_Process::Cluster
-(const size_t &mode,const double &kt2)
+Cluster_Amplitude *Single_Process::Cluster(const size_t &mode)
 {
   MCatNLO_Process *mp(dynamic_cast<MCatNLO_Process*>(Parent()));
   if (mp) {
@@ -504,7 +503,7 @@ Cluster_Amplitude *Single_Process::Cluster
   if (amode) cmode|=512;
   if (mode&512) cd->SetAMode(1);
   p_gen->SetClusterDefinitions(cd);
-  Cluster_Amplitude* ampl(p_gen->ClusterConfiguration(this,cmode,kt2));
+  Cluster_Amplitude* ampl(p_gen->ClusterConfiguration(this,cmode));
   if (ampl) ampl->Decays()=m_pinfo.m_fi.GetDecayInfos();
   cd->SetAMode(amode);
   return ampl;

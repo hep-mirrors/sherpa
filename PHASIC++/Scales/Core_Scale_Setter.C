@@ -21,36 +21,3 @@ Core_Scale_Setter::Core_Scale_Setter
 Core_Scale_Setter::~Core_Scale_Setter()
 {
 }
-
-namespace PHASIC {
-
-  class Shower_Core_Scale: public Core_Scale_Setter {
-  public:
-
-    Shower_Core_Scale(const Core_Scale_Arguments &args):
-      Core_Scale_Setter(args) {}
-
-    PDF::CParam Calculate(ATOOLS::Cluster_Amplitude *const ampl)
-    {
-      return p_proc->Shower()->GetClusterDefinitions()->CoreScale(ampl);
-    }
-
-  };// end of class Shower_Core_Scale
-
-}// end of namespace PHASIC
-
-DECLARE_ND_GETTER(Shower_Core_Scale,"SHOWER",
-		  Core_Scale_Setter,Core_Scale_Arguments,true);
-
-Core_Scale_Setter *ATOOLS::Getter
-<Core_Scale_Setter,Core_Scale_Arguments,Shower_Core_Scale>::
-operator()(const Core_Scale_Arguments &args) const
-{
-  return new Shower_Core_Scale(args);
-}
-
-void ATOOLS::Getter<Core_Scale_Setter,Core_Scale_Arguments,Shower_Core_Scale>::
-PrintInfo(std::ostream &str,const size_t width) const
-{ 
-  str<<"shower core scale"; 
-}

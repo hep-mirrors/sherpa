@@ -45,7 +45,7 @@ namespace AMISIC {
 
     ATOOLS::Cluster_Amplitude *
     ClusterConfiguration(PHASIC::Process_Base *const proc,
-			 const size_t &mode=0,const double &kt2=0.0)
+			 const size_t &mode=0)
     { return NULL; }
 
     // inline functions

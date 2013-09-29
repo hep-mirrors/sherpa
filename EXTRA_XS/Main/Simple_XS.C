@@ -42,7 +42,7 @@ namespace EXTRAXS {
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
 
     ATOOLS::Cluster_Amplitude *ClusterConfiguration
-    (Process_Base *const proc,const size_t &mode,const double &kt2);
+    (Process_Base *const proc,const size_t &mode);
 
   }; // end of class Simple_XS
 
@@ -156,7 +156,7 @@ void Simple_XS::SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs)
 }
 
 Cluster_Amplitude *Simple_XS::ClusterConfiguration
-(Process_Base *const proc,const size_t &mode,const double &kt2)
+(Process_Base *const proc,const size_t &mode)
 {
   if (mode!=2) p_cluster->Cluster(proc->Get<Single_Process>());
   Cluster_Amplitude *ampl(p_cluster->Amplitude());

@@ -31,12 +31,13 @@ namespace CSSHOWER {
     ATOOLS::Cluster_Leg   *p_b;
     
     Shower *p_shower;
-    int     m_mode, m_kmode, m_mtmode, m_meweight;
+    int     m_kmode, m_meweight;
 
     void KernelWeight(const ATOOLS::Cluster_Leg *i,
 		      const ATOOLS::Cluster_Leg *j,
 		      const ATOOLS::Cluster_Leg *k,
-		      const ATOOLS::Flavour &mo,CS_Parameters &cs) const;
+		      const ATOOLS::Flavour &mo,CS_Parameters &cs,
+		      const int kmode) const;
     ATOOLS::Flavour ProperFlav(const ATOOLS::Flavour &fl) const;
 
     bool CheckColors(const ATOOLS::Cluster_Leg *li,
@@ -45,9 +46,7 @@ namespace CSSHOWER {
 		     const ATOOLS::Flavour &mo) const;
 
     double Differential(ATOOLS::Cluster_Amplitude *const ampl,
-			const PHASIC::nlo_type::code
-			type=PHASIC::nlo_type::lo,
-			const std::string add="") const;
+			const int mode) const;
 
     ATOOLS::ColorID CombineColors
     (const ATOOLS::Cluster_Leg *li,const ATOOLS::Cluster_Leg *lj,
@@ -79,10 +78,6 @@ namespace CSSHOWER {
 				 const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
 				 ATOOLS::Mass_Selector *const ms=NULL,
 				 const int kin=0,const int mode=0);
-    
-    PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl);
-
-    inline void SetMTMode(const int mtmode) { m_mtmode=mtmode; }
     
   };// end of class CS_Cluster_Definitions
 

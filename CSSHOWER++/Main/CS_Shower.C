@@ -30,16 +30,16 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
     msg_Info()<<METHOD<<"(): Set max emissions "<<m_maxem<<"\n";
   }
   SF_Lorentz::SetKappa(_dataread->GetValue<double>("DIPOLE_KAPPA",2.0/3.0));
-  int mtmode=_dataread->GetValue<int>("CSS_CORE_MTMODE",0);
-  if (mtmode!=1) msg_Info()<<METHOD<<"(): Set core m_T mode "<<mtmode<<"\n";
-  m_kmode=_dataread->GetValue<int>("CSS_KMODE",1);
-  if (m_kmode!=1) msg_Info()<<METHOD<<"(): Set kernel mode "<<m_kmode<<"\n";
-  int meweight=_dataread->GetValue<int>("CSS_MEWMODE",0);
-  if (meweight!=0) msg_Info()<<METHOD<<"(): Set ME weight mode "<<meweight<<"\n";
+  m_kmode=_dataread->GetValue<int>("CSS_KMODE",2);
+  if (m_kmode!=2) msg_Info()<<METHOD<<"(): Set kernel mode "<<m_kmode<<"\n";
   m_recocheck=_dataread->GetValue<int>("CSS_RECO_CHECK",0);
   if (m_recocheck!=0) msg_Info()<<METHOD<<"(): Set reco check mode "<<m_recocheck<<"\n";
+  m_respectq2=_dataread->GetValue<int>("CSS_RESPECT_Q2",1);
+  if (m_respectq2!=1) msg_Info()<<METHOD<<"(): Set respect Q2 mode "<<m_respectq2<<"\n";
   int amode(_dataread->GetValue<int>("EXCLUSIVE_CLUSTER_MODE",0));
   if (amode!=0) msg_Info()<<METHOD<<"(): Set exclusive cluster mode "<<amode<<".\n";
+  int meweight=_dataread->GetValue<int>("CSS_MEWMODE",1);
+  if (meweight!=1) msg_Info()<<METHOD<<"(): Set ME weight mode "<<meweight<<"\n";
   
   m_weightmode = int(_dataread->GetValue<int>("WEIGHT_MODE",1));
   
@@ -53,7 +53,6 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
 
   p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode,meweight);
   p_cluster->SetAMode(amode);
-  p_cluster->SetMTMode(mtmode);
 }
 
 CS_Shower::~CS_Shower() 
@@ -74,7 +73,7 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
     msg_Debugging()<<"before shower step\n";
     for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it)
       if ((*it)->GetPrev() && (*it)->GetPrev()->KScheme()!=1)
-	(*it)->SetStart((*it)->GetPrev()->KtStart());
+	(*it)->SetStart(Min((*it)->KtStart(),(*it)->GetPrev()->KtStart()));
     msg_Debugging()<<**sit;
     size_t pem(nem);
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
@@ -582,7 +581,7 @@ Singlet *CS_Shower::TranslateAmplitude
     parton->SetKin(p_shower->KinScheme());
     if (is) parton->SetBeam(i);
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
-    parton->SetStart(xit->second.second);
+    parton->SetStart(m_respectq2?ampl->Q2():xit->second.second);
     parton->SetKtMax(xit->second.first);
     parton->SetVeto(ktveto2);
     singlet->push_back(parton);

@@ -114,7 +114,10 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
   for (size_t i(0);i<ampl.NIn();++i) p[i]=-ampl.Leg(i)->Mom();
   if (mode&16) THROW(not_implemented,"Invalid mode");
   for (size_t i(ampl.NIn());i<p.size();++i) p[i]=ampl.Leg(i)->Mom();
-  if (mode&64) return Trigger(p);
+  if (mode&64) {
+    if (mode&1) return 1.0;
+    return Trigger(p);
+  }
   bool selon(Selector()->On());
   if (!Trigger(p)) {
     if ((mode&1) && selon) {

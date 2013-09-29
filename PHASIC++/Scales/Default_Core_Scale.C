@@ -38,8 +38,12 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     msg_Debugging()<<*campl<<"\n";
   if (campl->Legs().size()!=4) {
     double q2((campl->Leg(0)->Mom()+campl->Leg(1)->Mom()).Abs2());
+    Vec4D ewsum;
+    for (size_t i(0);i<campl->Legs().size();++i)
+      if (!campl->Leg(i)->Flav().Strong()) ewsum+=campl->Leg(i)->Mom();
+    if (ewsum==Vec4D()) ewsum=campl->Leg(0)->Mom()+campl->Leg(1)->Mom();
     campl->Delete();
-    return PDF::CParam(q2,q2,0.0,q2,-1);
+    return PDF::CParam(q2,dabs(ewsum.Abs2()),0.0,q2,-1);
   }
   Flavour fl[4]={campl->Leg(0)->Flav(),campl->Leg(1)->Flav(),
 		 campl->Leg(2)->Flav(),campl->Leg(3)->Flav()};

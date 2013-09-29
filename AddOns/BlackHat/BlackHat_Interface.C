@@ -36,7 +36,7 @@ namespace BLACKHAT {
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
 
     ATOOLS::Cluster_Amplitude *ClusterConfiguration
-    (PHASIC::Process_Base *const proc,const size_t &mode,const double &kt2);
+    (PHASIC::Process_Base *const proc,const size_t &mode);
 
   }; // end of class BlackHat_Interface
 
@@ -114,7 +114,7 @@ void BlackHat_Interface::SetClusterDefinitions
 }
 
 Cluster_Amplitude *BlackHat_Interface::ClusterConfiguration
-(Process_Base *const proc,const size_t &mode,const double &kt2)
+(Process_Base *const proc,const size_t &mode)
 {
   return NULL;
 }

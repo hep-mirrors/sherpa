@@ -85,7 +85,8 @@ namespace COMIX {
 		     ClusterInfo_Map &cinfo,Double_Map &kt2);
     bool Cluster(const size_t &step,const Vertex_Set &nocl,
 		 const Current_Vector &ccurs,Current *const fcur,
-		 const ClusterInfo_Map &cinfo,KT2Info_Vector &kt2ord);
+		 const ClusterInfo_Map &cinfo,KT2Info_Vector &kt2ord,
+		 const int complete);
 
     bool SetRandomColors(Single_Process *const xs);
     bool SetLargeNCColors(Single_Process *const xs);
@@ -104,8 +105,7 @@ namespace COMIX {
 
     ~Cluster_Algorithm();
 
-    bool Cluster(Single_Process *const xs,
-		 const size_t &mode,const double &kt2);
+    bool Cluster(Single_Process *const xs,const size_t &mode);
 
     // inline functions
     inline ATOOLS::Cluster_Amplitude *GetAmplitude() { return p_ampl; }

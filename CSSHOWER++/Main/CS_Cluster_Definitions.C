@@ -16,16 +16,14 @@ using namespace ATOOLS;
 
 CS_Cluster_Definitions::CS_Cluster_Definitions
 (Shower *const shower,const int kmode,const int meweight):
-  p_shower(shower), m_mode(0), m_kmode(kmode), m_mtmode(1), m_meweight(meweight) {}
+  p_shower(shower), m_kmode(kmode), m_meweight(meweight) {}
 
 CParam CS_Cluster_Definitions::KPerp2
 (const Cluster_Amplitude &ampl,int i,int j,int k,
  const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,
  const int kin,const int mode)
 {
-  m_mode=m_kmode;
-  CS_Parameters cs(KT2(&ampl,ampl.Leg(i),ampl.Leg(j),ampl.Leg(k),mo,ms,kin,mode));
-  m_mode=0;
+  CS_Parameters cs(KT2(&ampl,ampl.Leg(i),ampl.Leg(j),ampl.Leg(k),mo,ms,kin,mode|m_kmode));
   return CParam(cs.m_kt2,cs.m_ws,cs.m_x,cs.m_mu2,cs.m_kin,cs.m_kmode);
 }
 
@@ -64,7 +62,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
   Kin_Args lt;
   CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),
 		   1.0,1.0,0.0,0.0,0.0,
-		   ((i->Id()&3)?1:0)|((k->Id()&3)?2:0),kin,kmode);
+		   ((i->Id()&3)?1:0)|((k->Id()&3)?2:0),kin,kmode&1);
   cs.m_wk=cs.m_ws=-1.0;
   if ((i->Id()&3)==0) {
     if ((j->Id()&3)==0) {
@@ -74,7 +72,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	double kt2=2.0*(pi*pj)*lt.m_z*(1.0-lt.m_z);
 	if (mo.IsFermion()) kt2=2.0*(pi*pj)*(i->Flav().IsFermion()?(1.0-lt.m_z):lt.m_z);
 	else if (i->Flav().IsFermion()) kt2=2.0*(pi*pj);
-	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,1.0,Q2,0,kin,kmode);
+	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,1.0,Q2,0,kin,kmode&1);
 	cs.m_pk=pk;
       }
       else {
@@ -86,7 +84,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	double kt2=2.0*(pi*pj)*lt.m_z*(1.0-lt.m_z);
 	if (mo.IsFermion()) kt2=2.0*(pi*pj)*(i->Flav().IsFermion()?(1.0-lt.m_z):lt.m_z);
 	else if (i->Flav().IsFermion()) kt2=2.0*(pi*pj);
-	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,1.0-lt.m_y,Q2,2,kin,kmode);
+	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,1.0-lt.m_y,Q2,2,kin,kmode&1);
 	cs.m_pk=-pk;
       }
     }
@@ -102,7 +100,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	    lt.m_pi[0]<0.0 || lt.m_z<0.0 || lt.m_stat!=1) return cs;
 	double kt2=-2.0*(pi*pj)*(1.0-lt.m_z);
 	if (j->Flav().IsFermion()) kt2=-2.0*(pi*pj);
-	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,lt.m_z,Q2,1,lt.m_mode,kmode);
+	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,lt.m_z,Q2,1,lt.m_mode,kmode&1);
 	cs.m_pk=pk;
       }
       else {
@@ -112,14 +110,15 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	    lt.m_pi[0]<0.0 || lt.m_z<0.0 || lt.m_stat!=1) return cs;
 	double kt2=-2.0*(pi*pj)*(1.0-lt.m_z);
 	if (j->Flav().IsFermion()) kt2=-2.0*(pi*pj);
-	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,lt.m_z,Q2,3,kin,kmode);
+	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,lt.m_z,Q2,3,kin,kmode&1);
 	cs.m_pk=-pk;
       }
     }
   }
   cs.m_col=col;
-  KernelWeight(i,j,k,mo,cs);
-  if (cs.m_wk>0.0 && (m_meweight&1) && (m_mode&1)) {
+  KernelWeight(i,j,k,mo,cs,kmode);
+  if (cs.m_wk>0.0 &&
+      (((m_meweight&1) && (kmode&2)) || (kmode&4))) {
     Cluster_Amplitude *campl(Cluster_Amplitude::New());
     campl->SetProcs(ampl->Procs<void>());
     campl->Decays()=ampl->Decays();
@@ -135,7 +134,14 @@ CS_Parameters CS_Cluster_Definitions::KT2
       else campl->CreateLeg(lt.m_lam*ampl->Leg(m)->Mom(),lm->Flav(),lm->Col());
       ++l;
     }
-    double me=Differential(campl);
+#ifndef DEBUG__Differential
+    int olv(msg->Level());
+    msg->SetLevel(2);
+#endif
+    double me=Differential(campl,kmode);
+#ifndef DEBUG__Differential
+    msg->SetLevel(olv);
+#endif
     if (me) cs.m_ws/=me;
     else cs.m_ws=-1.0;
     campl->Delete();
@@ -146,18 +152,21 @@ CS_Parameters CS_Cluster_Definitions::KT2
 }
 
 double CS_Cluster_Definitions::Differential
-(Cluster_Amplitude *const ampl,const nlo_type::code type,
- const std::string add) const
+(Cluster_Amplitude *const ampl,const int kmode) const
 {
   NLOTypeStringProcessMap_Map *procs
     (ampl->Procs<NLOTypeStringProcessMap_Map>());
+  if (procs==NULL) return 1.0;
+  nlo_type::code type=nlo_type::lo;
   if (procs->find(type)==procs->end()) return 0.0;
   Process_Base::SortFlavours(ampl);
   int rm(ampl->Leg(0)->Mom()[3]<0.0?0:1024);
   std::string pname(Process_Base::GenerateName(ampl));
-  StringProcess_Map::const_iterator pit((*(*procs)[type]).find(pname+add));
+  StringProcess_Map::const_iterator pit((*(*procs)[type]).find(pname));
   if (pit==(*(*procs)[type]).end()) return 0.0;
-  double meps=pit->second->Differential(*ampl,2|4|((m_meweight&2)?64:0)|rm);
+  int cm(pit->second->NOut()>pit->second->Info().m_fi.NMinExternal()?1|64:0);
+  if (kmode&4) cm&=~1;
+  double meps=pit->second->Differential(*ampl,cm|2|4|((m_meweight&2)?64:0)|rm);
   meps*=pit->second->SymFac();
   return meps;
 }
@@ -191,7 +200,7 @@ Flavour CS_Cluster_Definitions::ProperFlav(const Flavour &fl) const
 void CS_Cluster_Definitions::KernelWeight
 (const ATOOLS::Cluster_Leg *i,const ATOOLS::Cluster_Leg *j,
  const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo,
- CS_Parameters &cs) const
+ CS_Parameters &cs,const int kmode) const
 {
   const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFFMap());
   if (cs.m_mode==2) cmap=&p_shower->GetSudakov()->FFIMap();
@@ -233,7 +242,7 @@ void CS_Cluster_Definitions::KernelWeight
 	       p_shower->GetSudakov()->FSPT2Min());
   cs.m_mu2*=cdip->Coupling()->CplFac(cs.m_mu2);
   if (!cdip->On()) cs.m_mu2=Max(cs.m_mu2,sqr(mo.Mass()));
-  if (!(m_mode&1)) return;
+  if (!(kmode&2)) return;
   if (!cdip->On()) {
     if (AMode()==1) cs.m_wk=-1.0;
     else cs.m_wk=sqrt(std::numeric_limits<double>::min());
@@ -315,97 +324,6 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
     ++l;
   }
   return after;
-}
-
-CParam CS_Cluster_Definitions::CoreScale
-(ATOOLS::Cluster_Amplitude *const ampl)
-{
-  if (ampl->Legs().size()==3 && ampl->NIn()==2) {
-    double kt2cmin(ampl->Leg(2)->Mom().Abs2());
-    return CParam(kt2cmin,kt2cmin,0.0,kt2cmin,-1);
-  }
-  if (ampl->Legs().size()!=4) {
-    double kt2cmin((ampl->Leg(0)->Mom()+ampl->Leg(1)->Mom()).Abs2());
-    return CParam(kt2cmin,kt2cmin,0.0,kt2cmin,-1);    
-  }
-  Vec4D psum;
-  Vec4D_Vector p(4);
-  ColorID c[4]={ampl->Leg(0)->Col(),ampl->Leg(1)->Col(),
-		ampl->Leg(2)->Col(),ampl->Leg(3)->Col()};
-  for (size_t i(0);i<4;++i) {
-    Cluster_Leg *li(ampl->Leg(i));
-    psum+=p[i]=li->Mom();
-  }
-  if ((-p[0][0]>rpa->gen.PBeam(0)[0] &&
-       !IsEqual(-p[0][0],rpa->gen.PBeam(0)[0],1.0e-6)) ||
-      (-p[1][0]>rpa->gen.PBeam(1)[0] &&
-       !IsEqual(-p[1][0],rpa->gen.PBeam(1)[0],1.0e-6)))
-    msg_Error()<<METHOD<<"(): Parton energies exceed collider energy.\n"
-	       <<"  p_A = "<<-p[0]<<"\n  p_B = "<<-p[1]<<std::endl;
-  if (!IsEqual(psum,Vec4D(),1.0e-3) &&
-      -p[0][0]>1.0e-3 && -p[1][0]>1.0e-3) {
-    msg_Tracking()<<METHOD<<"(): Momentum not conserved.\n"
-	       <<"\\sum p = "<<psum<<" in\n"<<*ampl<<std::endl;
-  }
-  PHASIC::Single_Process *proc(ampl->Proc<PHASIC::Single_Process>());
-  double kt2cmin((p[0]+p[1]).Abs2()), mu2min(kt2cmin);
-  for (size_t i(0);i<4;++i) {
-    Cluster_Leg *li(ampl->Leg(i));
-    for (size_t j(i==0?2:i+1);j<4;++j) {
-      Cluster_Leg *lj(ampl->Leg(j));
-      if (!proc->Combinable(li->Id(),lj->Id())) continue;
-      const Flavour_Vector &cf(proc->CombinedFlavour(li->Id()+lj->Id()));
-      for (size_t k(0);k<4;++k) {
-	Cluster_Leg *lk(ampl->Leg(k));
-	if (k==i || k==j) continue;
-	for (size_t f(0);f<cf.size();++f) {
-	  Flavour mo(ProperFlav(cf[f]));
-	  if (mo!=cf[f] || !CheckColors(li,lj,lk,mo)) continue;
-	  const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFFMap());
-	  if (i>1 && k<2) cmap=&p_shower->GetSudakov()->FFIMap();
-	  else if (i<2 && k>1) cmap=&p_shower->GetSudakov()->IFFMap();
-	  else if (i<2 && k<2) cmap=&p_shower->GetSudakov()->IFIMap();
-	  SF_EEE_Map::const_iterator eees(cmap->find(ProperFlav(li->Flav())));
-	  if (eees==cmap->end()) continue;
-	  SF_EE_Map::const_iterator ees
-	    (eees->second.find(ProperFlav(lj->Flav())));
-	  if (ees==eees->second.end()) continue;
-	  SF_E_Map::const_iterator es(ees->second.find(mo));
-	  if (es==ees->second.end()) continue;
-	  Splitting_Function_Base *cdip(es->second);
-	  if (!cdip->Coupling()->AllowSpec
-	      (k<2?lk->Flav().Bar():lk->Flav())) continue;
-	  double kt2=2.0*dabs(p[i]*p[j]);
-	  if (mo==li->Flav()) {
-	    double ef=dabs((p[j]*p[k])/(p[i]*p[k]));
-	    if (i>1 && mo==lj->Flav()) kt2*=Min(ef,1.0/ef);
-	    else kt2*=ef;
-	  }
-	  else if (i>1 && cf[f]==lj->Flav()) {
-	    kt2*=dabs((p[i]*p[k])/(p[j]*p[k]));
-	  }
-	  kt2*=cdip->Coupling()->CplFac();
-	  if (m_mtmode) {
-	    double akt(0.0), nm(0.0);
-	    if (ampl->Leg(2)->Flav().Mass()) {
-	      akt+=ampl->Leg(2)->Mom().Mass();
-	      ++nm;
-	    }
-	    if (ampl->Leg(3)->Flav().Mass()) {
-	      akt+=ampl->Leg(3)->Mom().Mass();
-	      ++nm;
-	    }
-	    kt2+=sqr(akt/nm);
-	  }
-	  if (kt2<kt2cmin) {
-	    kt2cmin=kt2;
-	    mu2min=kt2;
-	  }
-	}
-      }
-    }
-  }
-  return CParam(kt2cmin,kt2cmin,0.0,mu2min,-1);
 }
 
 bool CS_Cluster_Definitions::CheckColors

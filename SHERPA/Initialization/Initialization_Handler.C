@@ -844,9 +844,6 @@ void Initialization_Handler::SetGlobalVariables()
   int cmode=dr.GetValue<int>("METS_CLUSTER_MODE",0);
   rpa->gen.SetVariable("METS_CLUSTER_MODE",ToString(cmode));
   if (cmode!=0) msg_Info()<<METHOD<<"(): Set cluster mode "<<cmode<<".\n";
-  int cmoders=dr.GetValue<int>("METS_CLUSTER_MODE_RS",1);
-  rpa->gen.SetVariable("METS_CLUSTER_MODE_RS",ToString(cmoders));
-  if (cmoders!=1) msg_Info()<<METHOD<<"(): Set RS cluster mode "<<cmoders<<".\n";
   Data_Reader sdr(" ",";","!","=");
   sdr.AddComment("#");
   sdr.AddWordSeparator("\t");

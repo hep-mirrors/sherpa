@@ -530,8 +530,10 @@ CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit,int mode)
     cit->second.m_pt2ij=p_clus->KPerp2
       (*ampl,cit->first.m_i,cit->first.m_j,cit->first.m_k,
        cit->first.m_i<2?cit->second.m_mo.Bar():cit->second.m_mo,p_ms,
-       (mode&1024)||(mode&4096)?1:-1,(cit->second.m_dec>10||!cit->second.m_mo.Strong()?1:0)|
-       (p_proc->Parent()->Info().m_fi.m_nloqcdtype!=PHASIC::nlo_type::lo?2:0));
+       (mode&1024)||((mode&4096)&&p_up==NULL?4:0)?1:-1,
+       (cit->second.m_dec>10||!cit->second.m_mo.Strong()?1:0)|
+       (p_proc->Parent()->Info().m_fi.m_nloqcdtype!=PHASIC::nlo_type::lo?2:0)|
+       ((mode&4096)&&p_up==NULL?4:0));
     msg_Debugging()<<"Calculate m_perp("<<cit->first.m_i<<"["
 		   <<p_legs[0][cit->first.m_i].Flav()<<"],"
 		   <<cit->first.m_j<<"["<<p_legs[0][cit->first.m_j].Flav()<<"],"
@@ -564,11 +566,12 @@ KT2Info_Vector Combine_Table::UpdateKT2(const CD_List::iterator &cdit) const
   return nkt2ord;
 }
 
-Combine_Table *Combine_Table::CheckCore(const int mode,const double &kt2)
+Combine_Table *Combine_Table::CheckCore(const int mode,const int complete)
 {
 	  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
 	  ampl->SetProc(p_proc);
 	  ampl->SetMS(p_ms);
+	  ampl->SetNIn(p_proc->NIn());
 	  for (int i=0;i<m_nlegs;++i)
 	    ampl->CreateLeg(i<2?-p_moms[i]:p_moms[i],
 			    i<2?p_legs[0][i].Flav().Bar():p_legs[0][i].Flav(),
@@ -576,18 +579,18 @@ Combine_Table *Combine_Table::CheckCore(const int mode,const double &kt2)
 	  PDF::CParam scale((p_proc->IsMapped()?p_proc->MapProc():p_proc)
 			    ->ScaleSetter()->CoreScale(ampl));
 	  ampl->Delete();
+	  if (complete==0) return this;
 	  bool ord(true);
 	  for (size_t i(0);i<m_kt2ord.size();++i) {
 	    if (scale.m_kt2<m_kt2ord[i].second) {
 	      msg_Debugging()<<"unordered configuration: "<<sqrt(scale.m_kt2)
 			     <<" vs. "<<sqrt(m_kt2ord[i].second)<<" "
 			     <<ID(m_kt2ord[i].first)<<" (mode="<<mode<<")\n";
-	      if ((p_up && p_up->p_up) || !(mode&4096)) ord=false;
+	      ord=false;
 	      break;
 	    }
 	  }
 	  if (!ord) {
-	    if (kt2==0.0) return this;
 	    if (!(mode&16)) {
 	      delete this;
 	      return NULL;
@@ -597,9 +600,9 @@ Combine_Table *Combine_Table::CheckCore(const int mode,const double &kt2)
 }
 
 Combine_Table *Combine_Table::
-CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2) 
+CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete) 
 {
-  DEBUG_FUNC(mode<<" "<<nl<<" "<<sqrt(kt2));
+  DEBUG_FUNC("mode = "<<mode<<", nl = "<<nl<<", complete = "<<complete);
   msg_Debugging()<<*this<<"\n";
   if (nl==3) return this;
   m_rejected.clear();
@@ -609,7 +612,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     if (moms) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
     if (!SelectWinner(mode)) {
       if ((mode&512) && m_nstrong==0) {
-	return CheckCore(mode,kt2);
+	return CheckCore(mode,complete);
       }
       if (nl==4 && p_proc->Info().m_fi.NMinExternal()>1 &&
 	  (IdentifyHardProcess() || p_up==NULL)) {
@@ -630,37 +633,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
 	      kt2min=p_scale[i];
 	      m_graph_winner=i;
 	    }
-	  Cluster_Amplitude *ampl(Cluster_Amplitude::New());
-	  ampl->SetProc(p_proc);
-	  ampl->SetMS(p_ms);
-	  for (int i=0;i<m_nlegs;++i)
-	    ampl->CreateLeg(i<2?-p_moms[i]:p_moms[i],
-			    i<2?p_legs[0][i].Flav().Bar():p_legs[0][i].Flav(),
-			    ColorID(),p_legs[0][i].ID());
-	  PDF::CParam scale((p_proc->IsMapped()?p_proc->MapProc():p_proc)
-			    ->ScaleSetter()->CoreScale(ampl));
-	  ampl->Delete();
-	  bool ord(true);
-	  for (size_t i(0);i<m_kt2ord.size();++i) {
-	    if (scale.m_kt2<m_kt2ord[i].second &&
-		p_hard[m_graph_winner][0].Flav().Strong()) {
-	      msg_Debugging()<<"unordered configuration: "
-			     <<sqrt(scale.m_kt2)<<" vs. "
-			     <<sqrt(m_kt2ord[i].second)<<" "
-			     <<ID(m_kt2ord[i].first)<<" "
-			     <<p_hard[m_graph_winner][0].Flav()
-			     <<" (mode="<<mode<<")\n";
-	      if ((p_up && p_up->p_up) || !(mode&4096)) ord=false;
-	      break;
-	    }
-	  }
-	  if (!ord) {
-	    if (!(mode&16)) {
-	      delete this;
-	      return NULL;
-	    }
-	  }
-	  return this;
+	  return CheckCore(mode,complete);
       }
       break;
     }
@@ -675,7 +648,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
 		       <<sqrt(nkt2ord[i].second)<<" vs. "
 		       <<sqrt(m_kt2ord[i].second)<<" "
 		       <<ID(m_kt2ord[i].first)<<" (mode="<<mode<<")\n";
-	if ((p_up && p_up->p_up) || !(mode&4096)) ord=false;
+	ord=false;
 	break;
       }
     }
@@ -687,71 +660,41 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const double &kt2)
     double scale(-1.0);
     Combine_Table *tab(CreateNext());
     if (tab!=NULL) {
+      if ((mode&4096) && p_up==NULL) {
+	tab->m_kt2ord.clear();
+	tab->m_kt2ord=KT2Info_Vector(1,KT2_Info((1<<p_proc->NIn()+p_proc->NOut())-1,0.0));
+	for (size_t i(0);i<m_decids.size();++i)
+	  tab->m_kt2ord.push_back(std::make_pair(m_decids[i]->m_id,0.0));
+      }
       scale=(tab->Momentum(0)+tab->Momentum(1)).Abs2();
-      Combine_Table *next(NextTable(tab,mode,m_cdata_winner->
-				    second.m_pt2ij.m_kt2));
+      Combine_Table *next(NextTable(tab,mode,complete));
       if (next!=NULL) return next;
-    }
-    if (p_up==NULL && (mode&4096)) {
-      if (scale<0.0) THROW(fatal_error,"No rescue scale");
-      msg_Debugging()<<"rescue scale is "<<sqrt(scale)<<"\n";
-      m_rscale=scale;
-      return this;
     }
     msg_Debugging()<<METHOD<<"(): Table "<<m_no<<": reject winner "
 		   <<m_cdata_winner->first<<"\n";
   }
-  if (valid && invonly && kt2>0.0 &&
-      ((p_up && p_up->p_up) || !(mode&4096))) {
+  if (invonly) {
     msg_Debugging()<<"no valid combination -> classify as core\n";
-    return CheckCore(mode,kt2);
+    return CheckCore(mode,complete);
+  }
+  if (complete==1) {
+    if ((mode&4096) && p_up && p_up->p_up==NULL) {
+      msg_Debugging()<<"no valid combination -> classify as rs core\n";
+      return CheckCore(mode,0);
+    }
+    if (p_up || valid) delete this;
+    return NULL;
+  }
+  if (valid) {
+    msg_Debugging()<<"no valid combination -> classify as core\n";
+    return CheckCore(mode,complete);
   }
   msg_Debugging()<<"trying unordered configuration\n";
-  CD_List norejected;
-  while (true) {
-    double nmin(std::numeric_limits<double>::max()), pmin(nmin);
-    CD_List::iterator nwin(m_rejected.end()), pwin(nwin);
-    for (CD_List::iterator vit(m_rejected.begin());
-	 vit!=m_rejected.end();++vit) {
-      if (norejected.find(vit->first)!=norejected.end()) continue;
-      if (vit->second.m_pt2ij.m_op2<0.0 && (mode&512)) continue;
-      double ktdiff(vit->second.m_pt2ij.m_kt2-kt2);
-      if (ktdiff<0.0) {
-	if (-ktdiff<nmin) {
-	  nmin=-ktdiff;
-	  nwin=vit;
-	}
-      }
-      else {
-	if (ktdiff<pmin) {
-	  pmin=ktdiff;
-	  pwin=vit;
-	}
-      }
-    }
-    if (nwin==m_rejected.end()) nwin=pwin;
-    if (nwin==m_rejected.end()) {
-	// if (valid && p_up==NULL) return CalcJet(nl,moms,mode,kt2);
-	delete this;
-	return NULL;
-    }
-    norejected[nwin->first]=nwin->second;
-    if (valid && nwin->second.m_pt2ij.m_op2<0.0) continue;
-    m_rejected.erase(nwin);
-    m_nl=nl;
-    if (moms) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
-    if (!SelectWinner(mode)) continue;
-    m_rejected[m_cdata_winner->first]=m_cdata_winner->second;
-    if (nl<4) THROW(fatal_error,"nlegs < min. Abort.");
-    Combine_Table *tab(CreateNext());
-    if (tab!=NULL) {
-      Combine_Table *next(NextTable(tab,mode,0.0));
-      if (next!=NULL) return next;
-    }
-    msg_Debugging()<<METHOD<<"(): Table "<<m_no<<": reject winner "
-		   <<m_cdata_winner->first<<"\n";
-  }
-  return NULL;
+  m_kt2ord.clear();
+  m_kt2ord=KT2Info_Vector(1,KT2_Info((1<<p_proc->NIn()+p_proc->NOut())-1,0.0));
+  for (size_t i(0);i<m_decids.size();++i)
+    m_kt2ord.push_back(std::make_pair(m_decids[i]->m_id,0.0));
+  return CalcJet(nl,moms,mode,complete); 
 }
 
 bool Combine_Table::SelectWinner(const size_t &mode)
@@ -760,7 +703,7 @@ bool Combine_Table::SelectWinner(const size_t &mode)
   if (cl.size()==0) return false;
   // calculate pt2ij and determine "best" combination
   m_cdata_winner = cl.end();
-  CD_List::iterator rdata_winner(cl.end()), ldata_winner(cl.end());
+  CD_List::iterator rdata_winner(cl.end());
   double kt2(std::numeric_limits<double>::max()), lkt2(kt2);
   double rkt2(std::numeric_limits<double>::max()), sum(0.0);
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
@@ -769,18 +712,14 @@ bool Combine_Table::SelectWinner(const size_t &mode)
     if (cit->second.m_graphs.size()==0) continue;
     if (m_rejected.find(cit->first)==m_rejected.end()) {
       if (pt2ij>0.0) {
-	// if (mode&1) {
+	if (mode&1) {
 	  if (pt2ij<kt2) {
 	    m_cdata_winner=cit;
 	    kt2=pt2ij;
 	  }
-	// }
+	}
 	else {
 	sum+=1.0/pt2ij;
-	}
-	if (cit->second.m_pt2ij.m_kt2<lkt2) {
-	  ldata_winner=cit;
-	  lkt2=cit->second.m_pt2ij.m_kt2;
 	}
       }
       else if (cit->second.m_pt2ij.m_kt2>0.0 &&
@@ -790,7 +729,7 @@ bool Combine_Table::SelectWinner(const size_t &mode)
       }
     }
   }
-  if (!(mode&1) && !(mode&8192)) {
+  if (!(mode&1)) {
     double disc(sum*ran->Get()), psum(0.0);
     for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
       double pt2ij(cit->second.m_pt2ij.m_op2);
@@ -805,7 +744,6 @@ bool Combine_Table::SelectWinner(const size_t &mode)
       THROW(fatal_error,"Internal error");
   }
   if (m_cdata_winner==cl.end() && !(mode&512)) m_cdata_winner=rdata_winner;
-  // if (mode&1) m_cdata_winner=ldata_winner;
   msg_Debugging()<<*this<<"\n";
   return m_cdata_winner!=cl.end();
 }
@@ -853,9 +791,9 @@ Combine_Table *Combine_Table::CreateNext()
 }
 
 Combine_Table *Combine_Table::NextTable(Combine_Table *tab,
-					const int mode,const double &kt2)
+					const int mode,const int complete)
 {
-  Combine_Table* ct = tab->CalcJet(m_nl,NULL,mode,kt2);
+  Combine_Table* ct = tab->CalcJet(m_nl,NULL,mode,complete);
   if (ct!=NULL) m_graph_winner=tab->m_graph_winner;
   else m_cdata_winner->second.p_down=NULL;
   // translate back

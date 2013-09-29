@@ -29,7 +29,7 @@ Cluster_Algorithm::~Cluster_Algorithm()
 }
 
 bool Cluster_Algorithm::Cluster
-(Process_Base *const xs,const size_t mode,const double &kt2)
+(Process_Base *const xs,const size_t mode)
 {
   DEBUG_FUNC("");
   p_proc=xs->GetReal();
@@ -39,7 +39,7 @@ bool Cluster_Algorithm::Cluster
   if (nampl==0) p_ct=NULL;
   else {
   Leg **legs(CreateLegs(nampl,nlegs));
-  CreateTables(legs,nampl,mode,kt2);
+  CreateTables(legs,nampl,mode);
   }
   ++m_cnt;
   if (nampl==0 || p_ct==NULL || p_ct->RScale()>0.0) {
@@ -168,7 +168,7 @@ Leg **Cluster_Algorithm::CreateLegs(int &nampl,const int nlegs)
 }
 
 void Cluster_Algorithm::CreateTables
-(Leg ** legs,const int nampl,const size_t mode,const double &kt2) 
+(Leg ** legs,const int nampl,const size_t mode) 
 {
   p_ct = 0;
   // if no combination table exist, create it
@@ -186,11 +186,19 @@ void Cluster_Algorithm::CreateTables
     m_decids=p_proc->DecayInfos();
     p_combi = new Combine_Table(p_proc,p_ms,p_clus,amoms,0,&m_decids);
     p_combi->FillTable(legs,nlegs,nampl);   
-    p_ct = p_combi->CalcJet(nlegs,NULL,mode,kt2); 
+    p_ct = p_combi->CalcJet(nlegs,NULL,mode,1); 
+    if (p_ct==NULL && !(mode&512)) {
+      msg_Debugging()<<"trying unordered configuration (top level)\n";
+      p_ct = p_combi->CalcJet(nlegs,NULL,mode,0); 
+    }
   }
   else {
     // use the existing combination table and determine best combination sheme
-    p_ct = p_combi->CalcJet(nlegs,amoms,mode,kt2);
+    p_ct = p_combi->CalcJet(nlegs,amoms,mode,1);
+    if (p_ct==NULL && !(mode&512)) {
+      msg_Debugging()<<"trying unordered configuration (top level)\n";
+      p_ct = p_combi->CalcJet(nlegs,NULL,mode,0); 
+    }
   }
   //  delete [] amoms;
 }

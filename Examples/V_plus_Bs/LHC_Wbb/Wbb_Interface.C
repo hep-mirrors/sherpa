@@ -78,7 +78,7 @@ namespace WBB {
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs) {}
 
     ATOOLS::Cluster_Amplitude *ClusterConfiguration
-    (PHASIC::Process_Base *const proc,const size_t &mode,const double &kt2)
+    (PHASIC::Process_Base *const proc,const size_t &mode)
     { return NULL; }
 
   }; // end of class Wbb_Interface

@@ -86,11 +86,12 @@ CParam Cluster_Algorithm::GetMeasure
   Flavour mmofl(p_xs->ReMap(ismo?mofl.Bar():mofl,0));
   if (ismo) mmofl=mmofl.Bar();
   if (p_ampl->Legs().size()>p_ampl->NIn()+2) {
-    p_ampl->SetProcs(p_xs->AllProcs());
-    p_ampl->Decays()=p_xs->Info().m_fi.GetDecayInfos();
     kt2[idi][idj][idk][mofl]=
-      p_clus->KPerp2(*p_ampl,i,j,k,mmofl,p_ms,(m_wmode&1024)?1:-1,
-		     (cut||!mmofl.Strong())?1:0);
+      p_clus->KPerp2(*p_ampl,i,j,k,mmofl,p_ms,
+		     (m_wmode&1024)||(m_wmode&4096)?1:-1,
+		     ((cut||!mmofl.Strong())?1:0)|
+		     (p_xs->Parent()->Info().m_fi.m_nloqcdtype!=
+		      PHASIC::nlo_type::lo?2:0));
   }
   else {
     p_ampl->SetProc(p_xs);
@@ -149,6 +150,7 @@ void Cluster_Algorithm::CalculateMeasures
 	    cc[l]=l?Connected(in[j]->JB()->Out(),idk):
 	      Connected(in[j]->JA()->Out(),idk);
 	    if (cc[l]<=0) cc[l]=Connected(in[j]->JC()->Out(),idk);
+	    if (in[j]->JC()->Cut()) cc[l]=1;
 	    if (p_ampl->Legs().size()==p_ampl->NIn()+2 || cc[l]>0) {
 	      if (in[j]->OrderQCD()) {
 		ColorID ccj(l?colj:coli);
@@ -345,13 +347,6 @@ bool Cluster_Algorithm::ClusterStep
   Cluster_Info winfo(win->second);
   nocl[winfo]=win->second.m_kt2.m_kt2-p_ampl->KT2();
   if (!CombineWinner(winfo,ccurs,fcur,cinfo)) return false;
-  DecayInfo_Vector decays(p_ampl->Decays());
-  const DecayInfo_Vector &decids(p_bg->DecayInfos());
-  for (size_t j(0);j<decids.size();++j)
-    if (decids[j]->m_id==m_id[wkey.first]+m_id[wkey.second]) {
-      decays.push_back(decids[j]);
-      break;
-    }
   if (p_ampl->Legs().size()==p_ampl->NIn()+2) {
     bool match(false);
     if (p_ampl->NIn()==1) {
@@ -372,10 +367,6 @@ bool Cluster_Algorithm::ClusterStep
 	break;
       }
     }
-    }
-    if (decays.size()!=p_bg->DecayInfos().size()) {
-      msg_Debugging()<<"Unclustered decay\n"<<*p_ampl<<"\n";
-      match=false;
     }
     if (!match) {
       msg_Debugging()<<"Invalid core\n";
@@ -428,7 +419,8 @@ bool Cluster_Algorithm::ClusterStep
   p_ampl->SetOrderEW(ampl->OrderEW()-winfo.p_v->OrderEW());
   p_ampl->SetOrderQCD(ampl->OrderQCD()-winfo.p_v->OrderQCD());
   p_ampl->SetKin(winfo.m_kt2.m_kin);
-  p_ampl->Decays()=decays;
+  p_ampl->SetProcs(ampl->Procs<void>());
+  p_ampl->Decays()=ampl->Decays();
   for (size_t i(0);i<ccurs.size();++i) {
     size_t cid(m_id[ccurs[i]->CId()]);
     Flavour flav(p_xs->ReMap(ccurs[i]->Flav(),0));
@@ -462,7 +454,7 @@ bool Cluster_Algorithm::ClusterStep
 }
 
 bool Cluster_Algorithm::Cluster
-(Single_Process *const xs,const size_t &mode,const double &kt2)
+(Single_Process *const xs,const size_t &mode)
 {
   m_wmode=mode;
   p_bg=(p_xs=xs)->GetAmplitude();
@@ -477,11 +469,11 @@ bool Cluster_Algorithm::Cluster
   p_ampl = Cluster_Amplitude::New();
   p_ampl->SetMS(p_ms);
   p_ampl->SetJF(jf);
-  p_ampl->SetKT2(kt2);
-  p_ampl->SetMu2(kt2);
   p_ampl->SetNIn(xs->NIn());
   p_ampl->SetOrderEW(p_bg->MaxOrderEW());
   p_ampl->SetOrderQCD(p_bg->MaxOrderQCD());
+  p_ampl->SetProcs(p_xs->AllProcs());
+  p_ampl->Decays()=p_bg->DecayInfos();
   PHASIC::Process_Base *pb(xs->Process()->IsMapped()?
 			   xs->Process()->MapProc():xs);
   double muf2(pb->ScaleSetter()->Scale(stp::fac));
@@ -509,18 +501,21 @@ bool Cluster_Algorithm::Cluster
   const DecayInfo_Vector &decids(p_bg->DecayInfos());
   for (size_t i(0);i<decids.size();++i)
     kt2ord.push_back(std::make_pair(decids[i]->m_id,0.0));
-  if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo,kt2ord)) {
-    msg_Debugging()<<"classify as born\n";
-    p_ampl->SetProc(p_xs);
-    p_ampl->SetKT2((p_xs->IsMapped()?p_xs->MapProc():p_xs)
-		   ->ScaleSetter()->CoreScale(p_ampl).m_mu2);
-    p_ampl->SetMu2(p_ampl->KT2());
-    size_t nmax(xs->Process()->Info().m_fi.NMaxExternal());
-    SetNMax(p_ampl,(1<<ccurs.size())-1,nmax);
-    return true;
+  if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo,kt2ord,1)) {
+    if (!(m_wmode&512)) {
+    KT2Info_Vector kt2ord
+      (1,KT2_Info((1<<p_ampl->Legs().size())-1,0.0));
+    const DecayInfo_Vector &decids(p_bg->DecayInfos());
+    for (size_t i(0);i<decids.size();++i)
+      kt2ord.push_back(std::make_pair(decids[i]->m_id,0.0));
+    msg_Debugging()<<"trying all unordered configurations\n";
+    if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo,kt2ord,0))
+      THROW(fatal_error,"Internal error");
+    }
   }
   size_t nmax(xs->Process()->Info().m_fi.NMaxExternal());
   SetNMax(p_ampl,(1<<ccurs.size())-1,nmax);
+  msg_Debugging()<<"Final configuration:\n";
   msg_Debugging()<<*p_ampl<<"\n";
   while (p_ampl->Prev()) {
     p_ampl=p_ampl->Prev();
@@ -556,21 +551,16 @@ KT2Info_Vector Cluster_Algorithm::UpdateKT2
 
 bool Cluster_Algorithm::Cluster
 (const size_t &step,const Vertex_Set &onocl,const Current_Vector &ccurs,
- Current *const fcur,const ClusterInfo_Map &cinfo,KT2Info_Vector &kt2ord)
+ Current *const fcur,const ClusterInfo_Map &cinfo,KT2Info_Vector &kt2ord,
+ const int complete)
 {
   if (p_ampl->Legs().size()==p_ampl->NIn()+1) {
     p_ampl=p_ampl->Prev();
-    p_ampl->Decays()=p_ampl->Next()->Decays();
     p_ampl->DeleteNext();
     return true;
   }
-  if ((m_wmode&512) && p_ampl->OrderQCD()==0) {
-    p_ampl->SetProc(p_xs);
-    p_ampl->SetKT2((p_xs->IsMapped()?p_xs->MapProc():p_xs)
-		   ->ScaleSetter()->CoreScale(p_ampl).m_mu2);
-    if (p_ampl->Prev()) kt2ord=UpdateKT2(kt2ord,p_ampl->Prev(),1);
-    return true;
-  }
+  for (int order(1);order>=0;--order) {
+  DEBUG_FUNC("step = "<<step<<", order = "<<order);
   size_t oldsize(0);
   Double_Map kt2;
   Vertex_Set nocl;
@@ -582,18 +572,26 @@ bool Cluster_Algorithm::Cluster
     ClusterInfo_Map ncinfo(cinfo);
     if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo,kt2)) {
       KT2Info_Vector nkt2ord(UpdateKT2(kt2ord,ampl)), nnkt2ord(nkt2ord);
-      if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo,nnkt2ord)) {
+      if (!order) {
+	nkt2ord=KT2Info_Vector(1,KT2_Info((1<<p_ampl->Legs().size())-1,0.0));
+	const DecayInfo_Vector &decids(p_bg->DecayInfos());
+	for (size_t i(0);i<decids.size();++i)
+	  nkt2ord.push_back(std::make_pair(decids[i]->m_id,0.0));
+	nnkt2ord=nkt2ord;
+      }
+      if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo,nnkt2ord,complete)) {
   	if (ampl->Legs().size()==ampl->NIn()+2) {
 	  kt2ord=nkt2ord;
 	  return true;
 	}
 	bool ord(true);
+	msg_Debugging()<<"check ordering:\n";
 	for (size_t i(0);i<nkt2ord.size();++i) {
+	  msg_Debugging()<<"  "<<ID(nkt2ord[i].first)<<": "
+			 <<sqrt(nnkt2ord[i].second)<<" vs. "
+			 <<sqrt(nkt2ord[i].second)<<"\n";
 	  if (nnkt2ord[i].second<nkt2ord[i].second) {
-	    msg_Debugging()<<"unordered configuration: "
-			   <<sqrt(nnkt2ord[i].second)<<" vs. "
-			   <<sqrt(nkt2ord[i].second)<<" "
-			   <<ID(nkt2ord[i].first)<<"\n";
+	    msg_Debugging()<<"unordered configuration\n";
 	    ord=false;
 	    break;
 	  }
@@ -616,50 +614,16 @@ bool Cluster_Algorithm::Cluster
       return true;
     }
   } while (oldsize<nocl.size());
-  msg_Debugging()<<"trying unordered configurations\n";
-  if (ampl->Legs().size()==ampl->NIn()+2) return false;
-  if (nocl.empty()) return false;
-  Vertex_Set nonocl;
-  while (true) {
-    double nmin(std::numeric_limits<double>::max()), pmin(nmin);
-    Vertex_Set::iterator nwin(nocl.end()), pwin(nwin);
-    for (Vertex_Set::iterator
-	   vit(nocl.begin());vit!=nocl.end();++vit) {
-      if (nonocl.find(vit->first)!=nonocl.end()) continue;
-      if (vit->second<0.0) {
-	if (-vit->second<nmin) {
-	  nmin=-vit->second;
-	  nwin=vit;
-	}
-      }
-      else {
-	if (vit->second<pmin) {
-	  pmin=vit->second;
-	  pwin=vit;
-	}
-      }
-    }
-    if (nwin==nocl.end()) nwin=pwin;
-    if (nwin==nocl.end()) {
-      p_ampl=ampl;
-      return false;
-    }
-    nonocl[nwin->first]=nwin->second;
-    nocl.erase(nwin);
-    Current_Vector nccurs(ccurs);
-    Current *nfcur(fcur);
-    ClusterInfo_Map ncinfo(cinfo);
-    if (ClusterStep(step,nocl,nccurs,nfcur,ncinfo,kt2))
-      if (p_ampl->KT2()<sqrt(std::numeric_limits<double>::max()))
-	if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo,kt2ord)) {
-	  kt2ord=UpdateKT2(kt2ord,ampl);
-	  return true;
-	}
-	else {
-	  return true;
-	}
-    p_ampl=ampl;
-    p_ampl->DeleteNext();
+  if (complete==1) return false;
+  if (m_wmode&512) {
+    msg_Debugging()<<"no valid combination -> classify as core\n";
+    p_ampl->SetProc(p_xs);
+    p_ampl->SetKT2((p_xs->IsMapped()?p_xs->MapProc():p_xs)
+		   ->ScaleSetter()->CoreScale(p_ampl).m_mu2);
+    if (p_ampl->Prev()) kt2ord=UpdateKT2(kt2ord,p_ampl->Prev(),1);
+    return true;
+  }
+  if (order) msg_Debugging()<<"trying unordered configurations\n";
   }
   return false;
 }

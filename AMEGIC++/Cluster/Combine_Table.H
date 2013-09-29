@@ -146,8 +146,8 @@ namespace AMEGIC {
     bool SelectWinner(const size_t &mode);
     Combine_Table *CreateNext();
     Combine_Table *NextTable(Combine_Table *tab,
-			     const int mode,const double &kt2);
-    Combine_Table *CheckCore(const int mode,const double &kt2);
+			     const int mode,const int complete);
+    Combine_Table *CheckCore(const int mode,const int complete);
 
     double Sprime() const;
 
@@ -165,7 +165,8 @@ namespace AMEGIC {
     ~Combine_Table();
     // member functions
     CD_List::iterator    CalcPropagator(CD_List::iterator &cit,int mode);
-    Combine_Table * CalcJet(int nl,ATOOLS::Vec4D *moms,const size_t mode,const double &kt2);
+    Combine_Table * CalcJet(int nl,ATOOLS::Vec4D *moms,const size_t mode,
+			    const int complete);
     void                 FillTable(Leg **legs,const int nlegs,const int nampl);
     double               GetWinner(int &i, int &j,int &k,double &mu2);
     bool                 IdentifyHardProcess();

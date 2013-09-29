@@ -49,8 +49,7 @@ namespace PHASIC {
     (PDF::Cluster_Definitions_Base *const defs) = 0;
 
     virtual ATOOLS::Cluster_Amplitude *
-    ClusterConfiguration(Process_Base *const proc,
-			 const size_t &mode=0,const double &kt2=0.0) = 0;
+    ClusterConfiguration(Process_Base *const proc,const size_t &mode=0) = 0;
 
     int ShiftMasses(ATOOLS::Cluster_Amplitude *const ampl);
 
