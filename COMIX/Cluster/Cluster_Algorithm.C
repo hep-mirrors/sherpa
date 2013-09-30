@@ -512,6 +512,14 @@ bool Cluster_Algorithm::Cluster
     if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo,kt2ord,0))
       THROW(fatal_error,"Internal error");
     }
+    else {
+      msg_Debugging()<<"no valid combination -> classify as core\n";
+      p_ampl->SetProc(p_xs);
+      p_ampl->SetKT2((p_xs->IsMapped()?p_xs->MapProc():p_xs)
+		     ->ScaleSetter()->CoreScale(p_ampl).m_mu2);
+      if (p_ampl->Prev()) kt2ord=UpdateKT2(kt2ord,p_ampl->Prev(),1);
+      return true;
+    }
   }
   size_t nmax(xs->Process()->Info().m_fi.NMaxExternal());
   SetNMax(p_ampl,(1<<ccurs.size())-1,nmax);
