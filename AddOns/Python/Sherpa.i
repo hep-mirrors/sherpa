@@ -1,12 +1,11 @@
 %module Sherpa
 %include "Exception.i"
-%include "Cluster_Amplitude.i"
-%include "Message.i"
 %include "Flavour.i"
 %include "Vec4.i"
 %include "Particle.i"
 %include "Blob.i"
 %include "Blob_List.i"
+%include "MEProcess.i"
 %{
 #include <SHERPA/Main/Sherpa.H>
   %}

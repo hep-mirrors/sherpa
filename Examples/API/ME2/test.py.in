@@ -3,24 +3,38 @@
 import sys
 sys.path.append('@PYLIBDIR@')
 import Sherpa
+
+# Add this to the execution arguments if only the matrix element and not the cross section is desired
 sys.argv.append('INIT_ONLY=2')
 
 Generator=Sherpa.Sherpa()
 try:
     Generator.InitializeTheRun(len(sys.argv),sys.argv)
-    ## if MPI.COMM_WORLD.Get_rank()>0:
-    ##    exit(1)
-    
-    Amp=Sherpa.Cluster_Amplitude.New()
-    Amp.SetNIn(2)
-    Amp.CreateLeg(-Sherpa.Vec4D(45.6,0,0,45.6),Sherpa.Flavour(11,1))
-    Amp.CreateLeg(-Sherpa.Vec4D(45.6,0,0,-45.6),Sherpa.Flavour(11,0))
-    Amp.CreateLeg(Sherpa.Vec4D(45.6,0,45.6,0),Sherpa.Flavour(1,0))
-    Amp.CreateLeg(Sherpa.Vec4D(45.6,0,-45.6,0),Sherpa.Flavour(1,1))
-    ME=Generator.GetMEWeight(Amp)
-    print "*****************************"
-    print "ME^2/s^2: ",ME
-    print "*****************************"
-        
+    Process=Sherpa.MEProcess(Generator)
+
+    # if MPI.COMM_WORLD.Get_rank()>0:
+    #    exit(1)
+
+    # Incoming flavors must be added first!
+    Process.AddInFlav(11);
+    Process.AddInFlav(-11);
+    Process.AddOutFlav(1);
+    Process.AddOutFlav(-1);
+    Process.Initialize();
+
+    if Process.HasColorIntegrator(): 
+        Process.GenerateColorPoint();
+
+    # First argument corresponds to particle index 
+    # which in turn is determined by the order in which the 
+    # particles were added
+    Process.SetMomentum(0, 45.6,0.,0.,45.6)
+    Process.SetMomentum(1, 45.6,0.,0.,-45.6)
+    Process.SetMomentum(2, 45.6,0.,45.6,0.)
+    Process.SetMomentum(3, 45.6,0.,-45.6,0.)
+
+    print Process.CSMatrixElement()
+
+
 except Sherpa.Exception as exc:
     exit(1)
