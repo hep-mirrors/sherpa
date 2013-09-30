@@ -32,7 +32,7 @@ namespace PHASIC {
 
     Enhance_Observable_Base(const Enhance_Arguments &args);
 
-    virtual ~Enhance_Observable_Base() {};
+    virtual ~Enhance_Observable_Base();
     virtual double operator()(const ATOOLS::Vec4D *p,
 			      const ATOOLS::Flavour *fl,
 			      const size_t n) = 0;

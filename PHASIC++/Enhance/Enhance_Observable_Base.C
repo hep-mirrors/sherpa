@@ -13,3 +13,7 @@ Enhance_Observable_Base::Enhance_Observable_Base
 (const Enhance_Arguments &args): p_proc(args.p_proc)
 {
 }
+
+Enhance_Observable_Base::~Enhance_Observable_Base()
+{
+}
