@@ -687,6 +687,7 @@ ATOOLS::Flavour Single_DipoleTerm::ReMap(const ATOOLS::Flavour &fl,const size_t 
 void Single_DipoleTerm::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
 {
   p_apmap=apmap;
+  p_LO_process->SetProcMap(p_apmap);
   if (p_apmap->find(nlo_type::rsub)==p_apmap->end())
     (*p_apmap)[nlo_type::rsub] = new StringProcess_Map();
   (*(*p_apmap)[nlo_type::rsub])[Name()]=this;
