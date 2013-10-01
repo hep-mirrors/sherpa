@@ -277,6 +277,8 @@ void Interaction_Model_FeynRules::c_VVVV(std::vector<Single_Vertex>& vertex,int 
 	switch (vv[i][1][0]) {
 	case 'N' : {
 	  vertex[vanz].Color.push_back(Color_Function(cf::None));
+	  vertex[vanz].oew  = 2;
+	  vertex[vanz].oqcd = 0;
 	  break;
 	}
 	case 'F' : {
@@ -293,6 +295,9 @@ void Interaction_Model_FeynRules::c_VVVV(std::vector<Single_Vertex>& vertex,int 
 	    vertex[vanz].Color.push_back(Color_Function(cf::F,arg1,arg2,arg3,sarg1[0],sarg2[0],sarg3[0]));
 	  }
 	  else vertex[vanz].Color.push_back(Color_Function(cf::F,0,1,2,'0','1','2'));
+	  
+	  vertex[vanz].oew  = 1;
+	  vertex[vanz].oqcd = 1;
 	}
 	case 'T' : {
 	  if (vv[i][1].size()==8) {
@@ -305,6 +310,8 @@ void Interaction_Model_FeynRules::c_VVVV(std::vector<Single_Vertex>& vertex,int 
 	    sprintf(sarg3,"%i",arg3);
 	    //
 	    vertex[vanz].Color.push_back(Color_Function(cf::T,arg1,arg2,arg3,sarg1[0],sarg2[0],sarg3[0]));
+	    vertex[vanz].oew  = 1;
+	    vertex[vanz].oqcd = 1;
 	  }
 	  if (vv[i][1].size()==10) {
 	    int arg1   = int(vv[i][1][2])-49;
@@ -330,6 +337,8 @@ void Interaction_Model_FeynRules::c_VVVV(std::vector<Single_Vertex>& vertex,int 
 						   new Color_Function(cf::T,arg1,4,arg4,sarg1[0],'4',sarg4[0]));
 	    vertex[vanz].Lorentz[1]= LF_Getter::GetObject("VVSS",LF_Key());     
 	    vertex[vanz].Lorentz[1]->SetParticleArg(0,3);     
+	    vertex[vanz].oew  = 0;
+	    vertex[vanz].oqcd = 2;
 	  }
 	  break;
 	}
@@ -341,6 +350,8 @@ void Interaction_Model_FeynRules::c_VVVV(std::vector<Single_Vertex>& vertex,int 
 	  sprintf(sarg2,"%i",arg2);
 	  //
 	  vertex[vanz].Color.push_back(Color_Function(cf::D,arg1,arg2,-1,sarg1[0],sarg2[0]));
+	  vertex[vanz].oew  = 2;
+	  vertex[vanz].oqcd = 0;
 	  break;
 	}
 	case 'G' : {
@@ -351,6 +362,8 @@ void Interaction_Model_FeynRules::c_VVVV(std::vector<Single_Vertex>& vertex,int 
 	  sprintf(sarg2,"%i",arg2);
 	  //
 	  vertex[vanz].Color.push_back(Color_Function(cf::G,arg1,arg2,-1,sarg1[0],sarg2[0]));
+	  vertex[vanz].oew  = 2;
+	  vertex[vanz].oqcd = 0;
 	  break;
 	}
 	default : {
@@ -393,7 +406,8 @@ void Interaction_Model_FeynRules::c_VVVV(std::vector<Single_Vertex>& vertex,int 
 	  Kabbala kcpl1 = Kabbala(vertex[vanz].cpl[1].String()+"*i",vertex[vanz].cpl[1].Value()*Complex(0.,1.));
 	  vertex[vanz].cpl[0] = kcpl0;
 	  vertex[vanz].cpl[1] = kcpl1;
-
+	  vertex[vanz].oew  = 0;
+	  vertex[vanz].oqcd = 2;
   	}
 	else if(vv[i][1]=="SSSS") {
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));
