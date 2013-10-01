@@ -550,6 +550,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
 
@@ -577,6 +578,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
 
@@ -604,6 +606,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
   // h0 - W - W - h0  
@@ -630,6 +633,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
  // H0 - W - W - h0  
@@ -656,6 +660,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
  // H0 - W - W - H0  
@@ -682,6 +687,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSVV(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
 }
@@ -748,6 +754,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
   // H0-H0-H0-H0
@@ -776,6 +783,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
   // H0-H0-H0-h0
@@ -803,6 +811,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
  // h0-h0-h0-H0
@@ -830,6 +839,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
  // h0-h0-H0-H0
@@ -858,6 +868,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
 // h0-h0-A0-A0
@@ -885,6 +896,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
 // H0-H0-A0-A0
@@ -912,6 +924,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
 // h0-H0-A0-A0
@@ -939,6 +952,7 @@ void Interaction_Model_SM_Phantom_U1::c_SSSS(vector<Single_Vertex>& vertex,int& 
     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
 }

@@ -423,6 +423,7 @@ void Interaction_Model_AEW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].Lorentz.back()->SetParticleArg(0,3,1,2);     
 
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
 
@@ -450,6 +451,7 @@ void Interaction_Model_AEW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].Lorentz.back()->SetParticleArg(0,3,1,2);     
 
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
   // Z - W - W - Z  
@@ -476,6 +478,7 @@ void Interaction_Model_AEW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].Lorentz.back()->SetParticleArg(0,3,1,2);     
 
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
   
@@ -503,6 +506,7 @@ void Interaction_Model_AEW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].Lorentz.back()->SetParticleArg(0,1,2,3);     
 
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
 
@@ -530,10 +534,11 @@ void Interaction_Model_AEW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].Lorentz.back()->SetParticleArg(0,1,2,3);     
 
     vertex[vanz].on      = 1;
+    vertex[vanz].oew     = 2;
     vertex.push_back(Single_Vertex());vanz++;
   }
 }
-//End anoumalous quadrpol vertices
+//End anomalous quadrupol vertices
 
 
 Kabbala Interaction_Model_AEW::K_CKM(short int i,short int j)       

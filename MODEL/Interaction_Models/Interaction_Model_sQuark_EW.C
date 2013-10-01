@@ -821,6 +821,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	 vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
 	 
 	 vertex[vanz].on      = 1;
+	 vertex[vanz].oew     = 2;
 	 vertex.push_back(Single_Vertex());vanz++;
       }
     }
@@ -869,6 +870,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
+	  vertex[vanz].oew     = 2;
 	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
@@ -917,6 +919,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
+	  vertex[vanz].oew     = 2;
 	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
@@ -967,6 +970,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
+	  vertex[vanz].oew     = 2;
 	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
@@ -1016,6 +1020,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
+	  vertex[vanz].oew     = 2;
 	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
@@ -1070,6 +1075,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
 	    
 	    vertex[vanz].on      = 1;
+	    vertex[vanz].oew     = 2;
 	    vertex.push_back(Single_Vertex());vanz++;
 	  }
 	  
@@ -1110,6 +1116,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
 	    
 	    vertex[vanz].on      = 1;
+	    vertex[vanz].oew     = 2;
 	    vertex.push_back(Single_Vertex());vanz++;
 	  }
 	}
@@ -1154,6 +1161,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
+	  vertex[vanz].oew     = 2;
 	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
@@ -1196,6 +1204,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
+	  vertex[vanz].oew     = 2;
 	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
@@ -1240,6 +1249,8 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
+	vertex[vanz].oew     = 1;
+	vertex[vanz].oqcd    = 1;
 	vertex.push_back(Single_Vertex());vanz++;
       }
     }
@@ -1275,6 +1286,8 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
+	vertex[vanz].oew     = 1;
+	vertex[vanz].oqcd    = 1;
 	vertex.push_back(Single_Vertex());vanz++;
       }
     }
@@ -1319,6 +1332,8 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
 	    
 	    vertex[vanz].on      = 1;
+	    vertex[vanz].oew     = 1;
+	    vertex[vanz].oqcd    = 1;
 	    vertex.push_back(Single_Vertex());vanz++;
 	  }
 	}
@@ -1364,6 +1379,8 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
 	    
 	    vertex[vanz].on      = 1;
+	    vertex[vanz].oew     = 1;
+	    vertex[vanz].oqcd    = 1;
 	    vertex.push_back(Single_Vertex());vanz++;
 	  }
 	}
@@ -1408,6 +1425,8 @@ void Interaction_Model_sQuark_EW::c_SSVV(std::vector<Single_Vertex>& vertex,int&
 	    vertex[vanz].Lorentz.back()->SetParticleArg(0,3);     
 	    
 	    vertex[vanz].on      = 1;
+	    vertex[vanz].oew     = 1;
+	    vertex[vanz].oqcd    = 1;
 	    vertex.push_back(Single_Vertex());vanz++;
 	  }
 	}
@@ -1480,6 +1499,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 	  
 	  vertex[vanz].on      = 1;
+	  vertex[vanz].oew     = 2;
 	  vertex.push_back(Single_Vertex());vanz++;
 	}
 	//A0 -> sUp - sUp - A0 
@@ -1517,6 +1537,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 	  
 	  vertex[vanz].on      = 1;
+	  vertex[vanz].oew     = 2;
 	  vertex.push_back(Single_Vertex());vanz++;
 	}
 	//h0/H0 -> sUp - sUp - h0/H0 
@@ -1558,7 +1579,8 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	      vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 	      
 	      vertex[vanz].on      = 1;
-		vertex.push_back(Single_Vertex());vanz++;
+	      vertex[vanz].oew     = 2;
+	      vertex.push_back(Single_Vertex());vanz++;
 	    }
 	  }
 	}
@@ -1622,6 +1644,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 	  
 	  vertex[vanz].on      = 1;
+	  vertex[vanz].oew     = 2;
 	  vertex.push_back(Single_Vertex());vanz++;
 	}
 	//A0 -> sdown - sdown - A0 
@@ -1659,6 +1682,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 	  
 	  vertex[vanz].on      = 1;
+	  vertex[vanz].oew     = 2;
 	  vertex.push_back(Single_Vertex());vanz++;
 	}
 	//h0/H0 -> sdown - sdown - h0/H0 
@@ -1700,7 +1724,8 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	      vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 	      
 	      vertex[vanz].on      = 1;
-		vertex.push_back(Single_Vertex());vanz++;
+	      vertex[vanz].oew     = 2;
+	      vertex.push_back(Single_Vertex());vanz++;
 	    }
 	  }
 	}
@@ -1764,6 +1789,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	      vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 	      
 	      vertex[vanz].on      = 1;
+	      vertex[vanz].oew     = 2;
 	      vertex.push_back(Single_Vertex());vanz++;
 	    }
 	  }
@@ -1795,6 +1821,7 @@ void Interaction_Model_sQuark_EW::c_SSSS(std::vector<Single_Vertex>& vertex,int&
 	     vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 	     
 	     vertex[vanz].on      = 1;
+	     vertex[vanz].oew     = 2;
 	     vertex.push_back(Single_Vertex());vanz++;
 	  }
 	}

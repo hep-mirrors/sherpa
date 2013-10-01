@@ -62,6 +62,8 @@ void Interaction_Model_AxiQCD::c_FFV(std::vector<Single_Vertex>& vertex,int & va
       vertex[vanz].Lorentz.back()->SetParticleArg(1);     
                   
       vertex[vanz].on            = 1;
+      vertex[vanz].oqcd          = 1;
+      vertex[vanz].oew           = 0;
       vertex.push_back(Single_Vertex());vanz++;
     } 
   }
@@ -93,6 +95,8 @@ void Interaction_Model_AxiQCD::c_VVV(std::vector<Single_Vertex>& vertex,int& van
     vertex[vanz].Lorentz.back()->SetParticleArg(0,1,2);     
     
     vertex[vanz].on            = 1;
+    vertex[vanz].oqcd          = 1;
+    vertex[vanz].oew           = 0;
     vertex.push_back(Single_Vertex());vanz++;
   }
 }

@@ -62,6 +62,8 @@ void Interaction_Model_sQCD::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));
 	  
 	  vertex[vanz].on      = 1;
+          vertex[vanz].oqcd    = 1;
+	  vertex[vanz].oew     = 0;
 	  vertex.push_back(Single_Vertex());vanz++;
 	}
       }
@@ -96,6 +98,8 @@ void Interaction_Model_sQCD::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz)
 	  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("FFS",LF_Key()));
 	  
 	  vertex[vanz].on      = 1;
+          vertex[vanz].oqcd    = 1;
+	  vertex[vanz].oew     = 0;
 	  vertex.push_back(Single_Vertex());vanz++;
 	}  
       }
@@ -131,6 +135,8 @@ void Interaction_Model_sQCD::c_FFV(std::vector<Single_Vertex>& vertex,int& vanz)
       vertex[vanz].Lorentz.back()->SetParticleArg(1);     
       
       vertex[vanz].on      = 1;
+      vertex[vanz].oqcd    = 1;
+      vertex[vanz].oew     = 0;
       vertex.push_back(Single_Vertex());vanz++;
     }   
   }
@@ -169,6 +175,8 @@ void Interaction_Model_sQCD::c_SSV(std::vector<Single_Vertex>& vertex,int& vanz)
 	  vertex[vanz].Lorentz.back()->SetParticleArg(0,2,1);     
 	  
 	  vertex[vanz].on      = 1;
+          vertex[vanz].oqcd    = 1;
+	  vertex[vanz].oew     = 0;
 	  vertex.push_back(Single_Vertex());vanz++;
 	} 
       }
@@ -220,6 +228,8 @@ void Interaction_Model_sQCD::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz
 	  vertex[vanz].Lorentz[1]->SetParticleArg(0,3);     
 	  
 	  vertex[vanz].on      = 1;
+          vertex[vanz].oqcd    = 2;
+	  vertex[vanz].oew     = 0;
 	  vertex.push_back(Single_Vertex());vanz++;
 	} 
       }

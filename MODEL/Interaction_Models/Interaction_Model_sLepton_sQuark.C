@@ -106,6 +106,7 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 	      vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 	      
 	      vertex[vanz].on      = 1;
+	      vertex[vanz].oew     = 2;
 	      if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) {vertex.push_back(Single_Vertex());vanz++;}
 	
 	    }
@@ -154,6 +155,7 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 	      vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 	      
 	      vertex[vanz].on      = 1;
+	      vertex[vanz].oew     = 2;
 	      if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) {vertex.push_back(Single_Vertex());vanz++;}
 	    }
 	  }
@@ -211,6 +213,7 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 		  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 		  
 		  vertex[vanz].on      = 1;
+		  vertex[vanz].oew     = 2;
 		  if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) {vertex.push_back(Single_Vertex());vanz++;}
 		}
 	      }
@@ -286,6 +289,7 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 		  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 		  
 		  vertex[vanz].on      = 1;
+		  vertex[vanz].oew     = 2;
 		  if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) {vertex.push_back(Single_Vertex());vanz++;}
 		}
 	      }
@@ -355,6 +359,7 @@ void Interaction_Model_sLepton_sQuark::c_SSSS(std::vector<Single_Vertex>& vertex
 		  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSSS",LF_Key()));     
 		  
 		  vertex[vanz].on      = 1;
+		  vertex[vanz].oew     = 2;
 		  if (kcpl0.Value()!=Complex(0.,0.) && kcpl1.Value()!=Complex(0.,0.)) {vertex.push_back(Single_Vertex());vanz++;}
 		}
 	      }
