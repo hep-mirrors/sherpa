@@ -179,7 +179,7 @@ namespace AMEGIC {
   template <> Complex Basic_Epsilonfunc::EpsCalc<4>(const int,const int,const int,const int);
 
   class Unitarityfunc : public virtual Basic_Func {
-    double m_n,m_lambda2,m_n3,m_n4,m_lambda2_3,m_lambda2_4;
+    double m_n,m_m,m_lambda2,m_n3,m_n4,m_m3,m_m4,m_lambda2_3,m_lambda2_4;
   public:
     Unitarityfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     Complex Ucalc(const int & n);

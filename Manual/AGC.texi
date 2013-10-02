@@ -16,8 +16,6 @@
 @cindex LAMBDAT_Z
 @cindex ALPHA_4_G_4
 @cindex ALPHA_5
-@cindex UNITARIZATION_SCALE
-@cindex UNITARIZATION_N
 @cindex F4_GAMMA
 @cindex F5_GAMMA
 @cindex H1_GAMMA
@@ -30,6 +28,15 @@
 @cindex H2_Z
 @cindex H3_Z
 @cindex H4_Z
+@cindex UNITARIZATION_SCALE
+@cindex UNITARIZATION_N
+@cindex UNITARIZATION_M
+@cindex UNITARIZATION_SCALE3
+@cindex UNITARIZATION_N3
+@cindex UNITARIZATION_M3
+@cindex UNITARIZATION_SCALE4
+@cindex UNITARIZATION_N4
+@cindex UNITARIZATION_M4
 
 @c *** What to do about equations? This section makes much more sense with them!
 
@@ -162,16 +169,21 @@
   of coupling parameters from their Standard Model values,
 @iftex
   \bea
-	a(\hat s)=\frac{a_0}{(1+\hat s/\Lambda^2)^n}\;,
+        a(\hat s)=\frac{a_0}{(1+(\hat s/\Lambda^2)^m)^n}\;,
   \eea
   where $\hat s$ is the collision energy of the partonic process,
   $\Lambda$ represents a scale at which new physics become important 
   and an exponent, typically to be chosen as $n=2$. 
 @end iftex
-  The corresponding 
-  switches are @code{UNITARIZATION_SCALE} and @code{UNITARIZATION_N}. 
-  By default the form factor is switched off 
-@iftex
-setting $n=0$.
-@end iftex
+  The corresponding switches are @code{UNITARIZATION_SCALE},
+  @code{UNITARIZATION_N} and @code{UNITARIZATION_M}. Triple and quartic
+  anomalous gauge couplings can be unitarised separatly, using
+  @code{UNITARIZATION_SCALE3}, @code{UNITARIZATION_SCALE4},
+  @code{UNITARIZATION_N3}, @code{UNITARIZATION_N4},
+  @code{UNITARIZATION_M3}, and @code{UNITARIZATION_M4}.
+  The default values are
+  @code{UNITARIZATION_SCALE=UNITARIZATION_SCALE3=UNITARIZATION_SCALE4=1000.}
+  (in units of GeV),
+  @code{UNITARIZATION_N=UNITARIZATION_N3=UNITARIZATION_N4=2} and
+  @code{UNITARIZATION_M=UNITARIZATION_M3=UNITARIZATION_M4=1}.
 
