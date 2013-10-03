@@ -265,8 +265,7 @@ double METS_Scale_Setter::CalculateStrict
   PDF::Cluster_Definitions_Base* cd=
     proc->Shower()->GetClusterDefinitions();
   proc->Generator()->SetClusterDefinitions(cd);
-  int amode(cd->AMode()), camode((m_nproc|amode)?512:0);
-  cd->SetAMode((camode&512)?1:0);
+  int camode(cd->AMode()?512:0);
   if (m_rproc) camode|=4096;
   Cluster_Amplitude *ampl=NULL;
   if (m_rproc && m_cmoders) {
@@ -293,7 +292,6 @@ double METS_Scale_Setter::CalculateStrict
     (proc->Generator()->
      ClusterConfiguration(proc,m_cmode|camode|mode));
   }
-  cd->SetAMode(amode);
   if (ampl==NULL) {
     msg_Debugging()<<METHOD<<"(): No CSS history for '"
 		   <<proc->Name()<<"'. Set \\hat{s}.\n";

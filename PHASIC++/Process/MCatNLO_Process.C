@@ -272,8 +272,7 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   p_ampl=p_rsproc->Selected()->GetSubevtList()->back()->p_ampl;
   if (p_ampl) p_ampl = p_ampl->CopyAll();
   else {
-    rproc->Differential(p); // is this call really necessary?
-    p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(256|512|4096);
+    p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(4096);
   }
   if (p_ampl==NULL) {
     msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;
@@ -312,7 +311,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   Vec4D_Vector &p(p_bviproc->Selected()->Integrator()->Momenta());
   bproc->Trigger(p);
   p_ampl = dynamic_cast<Single_Process*>
-    (p_bviproc->Selected())->Cluster(512|1024);
+    (p_bviproc->Selected())->Cluster();
   SortFlavours(p_ampl);
   p_ampl->SetProcs(p_apmap);
   p_ampl->SetIInfo(&m_iinfo);
@@ -431,9 +430,7 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
   }
   else {
     p_selected=p_rsproc;
-    p_rsproc->SetClusterMode(1024);
     winfo=p_rsproc->OneEvent(wmode,mode);
-    p_rsproc->SetClusterMode(0);
     if (winfo && m_fomode==0) {
       winfo->m_weight*=OneHEvent(wmode);
       winfo->m_weight*=p_rproc->Selected()
