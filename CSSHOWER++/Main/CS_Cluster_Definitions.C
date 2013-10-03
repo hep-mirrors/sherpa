@@ -23,6 +23,7 @@ CParam CS_Cluster_Definitions::KPerp2
  const ATOOLS::Flavour &mo,ATOOLS::Mass_Selector *const ms,
  const int kin,const int mode)
 {
+  DEBUG_FUNC("kin = "<<kin<<", mode = "<<mode);
   CS_Parameters cs(KT2(&ampl,ampl.Leg(i),ampl.Leg(j),ampl.Leg(k),mo,ms,kin,mode|m_kmode));
   return CParam(cs.m_kt2,cs.m_ws,cs.m_x,cs.m_mu2,cs.m_kin,cs.m_kmode);
 }
