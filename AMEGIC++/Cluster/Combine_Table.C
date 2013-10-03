@@ -602,6 +602,7 @@ Combine_Table *Combine_Table::CheckCore(const int mode,const int complete)
 Combine_Table *Combine_Table::
 CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete) 
 {
+  for (int order(1);order>=0;--order) {
   DEBUG_FUNC("mode = "<<mode<<", nl = "<<nl<<", complete = "<<complete);
   msg_Debugging()<<*this<<"\n";
   if (nl==3) return this;
@@ -612,7 +613,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete)
     if (moms) for (size_t l=0;l<m_nl;++l) p_moms[l]=moms[l];
     if (!SelectWinner(mode)) {
       if ((mode&512) && m_nstrong==0) {
-	return CheckCore(mode,complete);
+	return CheckCore(mode,1);
       }
       if (nl==4 && p_proc->Info().m_fi.NMinExternal()>1 &&
 	  (IdentifyHardProcess() || p_up==NULL)) {
@@ -633,12 +634,11 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete)
 	      kt2min=p_scale[i];
 	      m_graph_winner=i;
 	    }
-	  return CheckCore(mode,complete);
+	  return CheckCore(mode,1);
       }
       break;
     }
     m_rejected[m_cdata_winner->first]=m_cdata_winner->second;
-    if (m_cdata_winner->second.m_pt2ij.m_op2<0.0) continue;
     invonly=false;
     bool ord(true);
     KT2Info_Vector nkt2ord(UpdateKT2(m_cdata_winner));
@@ -660,7 +660,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete)
     double scale(-1.0);
     Combine_Table *tab(CreateNext());
     if (tab!=NULL) {
-      if ((mode&4096) && p_up==NULL) {
+      if (!order || ((mode&4096) && p_up==NULL)) {
 	tab->m_kt2ord.clear();
 	tab->m_kt2ord=KT2Info_Vector(1,KT2_Info((1<<p_proc->NIn()+p_proc->NOut())-1,0.0));
 	for (size_t i(0);i<m_decids.size();++i)
@@ -675,7 +675,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete)
   }
   if (invonly) {
     msg_Debugging()<<"no valid combination -> classify as core\n";
-    return CheckCore(mode,complete);
+    return CheckCore(mode,1);
   }
   if (complete==1) {
     if ((mode&4096) && p_up && p_up->p_up==NULL) {
@@ -687,14 +687,11 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete)
   }
   if (valid) {
     msg_Debugging()<<"no valid combination -> classify as core\n";
-    return CheckCore(mode,complete);
+    return CheckCore(mode,1);
   }
   msg_Debugging()<<"trying unordered configuration\n";
-  m_kt2ord.clear();
-  m_kt2ord=KT2Info_Vector(1,KT2_Info((1<<p_proc->NIn()+p_proc->NOut())-1,0.0));
-  for (size_t i(0);i<m_decids.size();++i)
-    m_kt2ord.push_back(std::make_pair(m_decids[i]->m_id,0.0));
-  return CalcJet(nl,moms,mode,complete); 
+  }
+  return false;
 }
 
 bool Combine_Table::SelectWinner(const size_t &mode)
