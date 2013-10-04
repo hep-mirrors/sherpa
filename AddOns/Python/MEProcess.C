@@ -251,8 +251,6 @@ void MEProcess::Initialize(){
     allpdgs.push_back(*it);
   for(std::vector<int>::const_iterator it=m_outpdgs.begin(); it!=m_outpdgs.end(); it++)
     allpdgs.push_back(*it);
-  for(std::vector<int>::const_iterator it=allpdgs.begin(); it!=allpdgs.end(); it++)
-    std::cout << *it << std::endl;
   SetMomentumIndices(allpdgs);
 }
 
@@ -282,14 +280,14 @@ double MEProcess::CSMatrixElement(){
 	  ind+=1;
 	} 
       if(ind!=m_ncolinds/2)
-	THROW(fatal_error, "Fucked shit up");
+	THROW(fatal_error, "Internal Error");
       for(std::vector<int>::const_iterator jt=m_quabarinds.begin(); jt!=m_quabarinds.end(); ++jt)
 	{
 	  m_amp->Leg(*jt)->SetCol(ATOOLS::ColorID(0,(*it)[indbar] ));
 	  indbar+=1;
 	}
       if(indbar!=m_ncolinds)
-	THROW(fatal_error, "Fucked shit up");
+	THROW(fatal_error, "Internal Error");
       SetColors();
       r_csme+=m_proc->Differential(*m_amp);
     }
