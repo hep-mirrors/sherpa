@@ -74,7 +74,7 @@ namespace PHASIC {
 
     size_t m_cnt, m_rej, m_mode, m_cmode, m_cmoders;
     double m_lfrac, m_aqed, m_wthres, m_rsf;
-    int    m_rproc, m_vproc, m_nproc, m_nfgsplit;
+    int    m_rproc, m_sproc, m_vproc, m_nproc, m_nfgsplit;
 
     ATOOLS::DecayInfo_Vector m_decids;
 
@@ -230,12 +230,13 @@ METS_Scale_Setter::METS_Scale_Setter
   m_aqed=(*MODEL::aqed)(sqr(Flavour(kf_Z).Mass()));
   for (size_t i(0);i<p_proc->NIn();++i) m_f[i]=m_f[i].Bar();
   m_rproc=p_proc->Info().Has(nlo_type::real);
+  m_sproc=p_proc->Info().Has(nlo_type::rsub);
   m_vproc=p_proc->Info().Has(nlo_type::vsub);
   if (m_nproc) m_mode=2;
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
   Data_Reader read(" ",";","!","=");
-  m_cmoders=read.GetValue<int>("METS_CLUSTER_MODE_RS",0);
-  if (m_cmoders) msg_Info()<<METHOD<<"(): Set RS cluster mode "<<m_cmoders<<".\n";
+  m_cmoders=read.GetValue<int>("METS_CLUSTER_MODE_RS",1);
+  if (m_cmoders!=1) msg_Info()<<METHOD<<"(): Set RS cluster mode "<<m_cmoders<<".\n";
   if (!read.ReadFromFile(m_wthres,"METS_WARNING_THRESHOLD")) m_wthres=0.1;
   if (core=="" && !read.ReadFromFile(core,"CORE_SCALE")) core="DEFAULT";
   p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
@@ -267,8 +268,12 @@ double METS_Scale_Setter::CalculateStrict
   proc->Generator()->SetClusterDefinitions(cd);
   int camode(cd->AMode()?512:0);
   if (m_rproc) camode|=4096;
+  if (m_cmoders&1) {
+    if (m_rproc) camode|=1;
+    if (m_sproc&&proc->MCMode()==2) camode|=1;
+  }
   Cluster_Amplitude *ampl=NULL;
-  if (m_rproc && m_cmoders) {
+  if (m_rproc && (m_cmoders&2)) {
     NLO_subevtlist *subs=proc->GetRSSubevtList();
     double sum=0.0, psum=0.0;
     for (size_t i(0);i<subs->size()-1;++i) {
