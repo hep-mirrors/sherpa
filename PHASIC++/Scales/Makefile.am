@@ -17,6 +17,7 @@ libPhasicScales_la_SOURCES    =	\
 				MPI_Scale_Setter.C \
 				QCD_Scale_Setter.C \
 				QCD_Core_Scale.C \
+				TTBar_Core_Scale.C \
 				WBF_Core_Scale.C \
 				QQSinglet_Core_Scale.C \
 				METS_Scale_Setter.C \
