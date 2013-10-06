@@ -42,6 +42,16 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     for (size_t i(0);i<campl->Legs().size();++i)
       if (!campl->Leg(i)->Flav().Strong()) ewsum+=campl->Leg(i)->Mom();
     if (ewsum==Vec4D()) ewsum=campl->Leg(0)->Mom()+campl->Leg(1)->Mom();
+    if (campl->NIn()==2 &&
+	campl->Leg(0)->Flav().Strong() &&
+	campl->Leg(1)->Flav().Strong()) {// HThat'/2
+      q2=0.0;
+      for (size_t i(0);i<campl->Legs().size();++i)
+	if (campl->Leg(i)->Flav().Strong())
+	  q2+=campl->Leg(i)->Mom().PPerp();
+      if (q2==0.0) q2=ewsum.Abs2();
+      else q2=sqr((ewsum.MPerp()+q2)/2.0);
+    }
     campl->Delete();
     return PDF::CParam(q2,dabs(ewsum.Abs2()),0.0,q2,-1);
   }
