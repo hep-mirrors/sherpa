@@ -30,6 +30,8 @@ namespace PHASIC {
 
     virtual PDF::CParam Calculate(ATOOLS::Cluster_Amplitude *const ampl) = 0;
 
+    static void ShowSyntax(const size_t i);
+
   };// end of class Core_Scale_Setter
 
   typedef ATOOLS::Getter_Function

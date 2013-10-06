@@ -21,3 +21,12 @@ Core_Scale_Setter::Core_Scale_Setter
 Core_Scale_Setter::~Core_Scale_Setter()
 {
 }
+
+void Core_Scale_Setter::ShowSyntax(const size_t i)
+{
+  if (!msg_LevelIsInfo() || i==0) return;
+  msg_Out()<<METHOD<<"(): {\n\n"
+	   <<"   // available core scales\n\n";
+  Core_Scale_Getter::PrintGetterInfo(msg->Out(),25);
+  msg_Out()<<"\n}"<<std::endl;
+}

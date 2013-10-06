@@ -11,6 +11,7 @@
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
 #include "SHERPA/LundTools/Lund_Interface.H"
 #include "SHERPA/Tools/Event_Reader_Base.H"
+#include "PHASIC++/Scales/Core_Scale_Setter.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "METOOLS/Currents/C_Spinor.H"
@@ -259,7 +260,8 @@ void Initialization_Handler::ShowParameterSyntax()
   if (!read.ReadFromFile(helpi,"SHOW_SCALE_SYNTAX")) helpi=0;
   if (helpi>0) {
     msg->SetLevel(2);
-    PHASIC::Scale_Setter_Base::ShowSyntax(helpi);
+    if (helpi&1) PHASIC::Scale_Setter_Base::ShowSyntax(helpi);
+    if (helpi&2) PHASIC::Core_Scale_Setter::ShowSyntax(helpi);
     THROW(normal_exit,"Syntax shown.");
   }
   if (!read.ReadFromFile(helpi,"SHOW_SELECTOR_SYNTAX")) helpi=0;
