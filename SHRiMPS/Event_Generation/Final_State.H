@@ -88,6 +88,7 @@ namespace SHRIMPS {
     double SelectKT2(const double & kt2max,const double & kt2min,
 		     const double & mu2,const double & expo=1.);
     double Q02(const double & y=0.);
+    double Saturation(const double & y=0.);
     const double & KTMin2() const { return m_kt1min2; }
   };
 }

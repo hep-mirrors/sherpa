@@ -258,21 +258,32 @@ double Ladder_Generator::Weight(const double & isweight) {
   }
   double weight(1.);
   if (p_ladder->Size()>2) {
-    double smin(m_IS.Smin());
+    //double tmin(p_ladder->Mu2());
+    double tmin(Smin()/4.);
     double that(dabs(p_ladder->That()));
     Flavour in1,in2,out1,out2;
     if (!p_ladder->ReconstructMEFlavours(in1,in2,out1,out2)) return 0.;
-    weight *=pow((smin/4.)/(smin/4.+that),1.);
+    weight *=pow(tmin/(tmin+that),1.);
     /*
+      double aslog(log(m_FS.AlphaS(Max(that,smin/4.))/m_FS.AlphaS(smin/4.)));
+      double colfac1(out1.IsGluon()?3.:4./3.);
+      double gamma1(out1.IsGluon()?-11./6.+10./9.:-3./2.);
+      double colfac2(out2.IsGluon()?3.:4./3.);
+      double gamma2(out2.IsGluon()?-11./6.+10./9.:-3./2.);
+      double term1(colfac1/(2.*M_PI)*(sqr(aslog)+gamma1*aslog));
+      double term2(colfac2/(2.*M_PI)*(sqr(aslog)+gamma2*aslog));
+      weight *= exp(-term1-term2);
+
       if (p_ladder->IsHardDiffractive()) {
       //double Yhat(p_ladder->Yhat());
-      double shat(p_ladder->Shat()), uhat(dabs(p_ladder->Uhat()));
       double slad((p_ladder->GetIn1()->m_mom+p_ladder->GetIn2()->m_mom).Abs2());
+      //double shat(p_ladder->Shat()), uhat(dabs(p_ladder->Uhat()));
+      //double pt2(2.*that*uhat*shat/(shat*shat+uhat*uhat+that*that));
       double pt2(4.*that*uhat*shat/(shat*shat+uhat*uhat+that*that));
       weight *= sqr(m_FS.AlphaS(pt2)/m_FS.AlphaSMax());
       }
-    //    else if (p_ladder->Size()==3) 
-    //	  weight *= m_FS.AlphaS(pt2)/m_FS.AlphaSMax();
+      //    else if (p_ladder->Size()==3) 
+      //	  weight *= m_FS.AlphaS(pt2)/m_FS.AlphaSMax();
     */
   }
   m_histograms[string("LadderWt")]->Insert(weight);

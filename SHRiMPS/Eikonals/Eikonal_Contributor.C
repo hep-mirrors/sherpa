@@ -92,7 +92,7 @@ double Eikonal_Contributor::operator()(const double & y) const
 	       <<m_grid[ff1bin+1][ff2bin+1].size()<<"."<<std::endl;
     return 0.;
   }
-  if (y<-m_Y) {
+  if (y<=-m_Y) {
     //if (y>-m_originalY) {
     value = 
       (d1low * d2low * m_grid[ff1bin+1][ff2bin+1][0]+
@@ -102,7 +102,7 @@ double Eikonal_Contributor::operator()(const double & y) const
       (m_deltaff1*m_deltaff2);
   }
   //} 
-  else if (y>m_Y) {
+  else if (y>=m_Y) {
     //else if (y<m_originalY) {
     size_t ylast(m_grid[0][0].size()-1);
     value = 

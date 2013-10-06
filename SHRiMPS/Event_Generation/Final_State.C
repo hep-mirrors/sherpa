@@ -185,9 +185,9 @@ double Final_State::GenerateEmissions() {
 }
 
 
-bool Final_State::
-OneEmission(LadderMap::iterator & split,LadderMap::iterator & spect,
-	    double & kt2) {
+bool Final_State::OneEmission(LadderMap::iterator & split,
+			      LadderMap::iterator & spect,
+			      double & kt2) {
   bool dir(SelectSplitterAndSpectator(split,spect)), test;
   if (dir) m_dir1++; else m_dir0++;
   m_k0 = split->second.m_mom;
@@ -204,8 +204,7 @@ OneEmission(LadderMap::iterator & split,LadderMap::iterator & spect,
   return test;
 }
 
-bool Final_State::
-TryEmission(double & kt12,const bool & dir) {
+bool Final_State::TryEmission(double & kt12,const bool & dir) {
   m_trials++;
   Vec4D Q(m_k0+m_k2);
   double Q2(Q.Abs2()),kt1max2(Q2/4.);
@@ -236,7 +235,7 @@ TryEmission(double & kt12,const bool & dir) {
   double cphi0,sphi0,cphi1,sphi1,cphi2(cos(phi2)),sphi2(sin(phi2));
   double expy0,expy1,expy2(std::exp(y2));
   double wt,expo,rarg,reggewt(0.),sup(0.),recombwt(0.),diffwt(0.);
-  double kmrwt(0.),q02wt(0.);
+  double kmrwt(0.),q02wt(0.),q02y;
   size_t ntrials(0);
   
   double colfac(3.);
@@ -271,14 +270,15 @@ TryEmission(double & kt12,const bool & dir) {
     }
     y0      = y0old;
     y2      = y2old;
-    kt12    = SelectKT2(kt1max2,kt1min2,Q02(y1),ktexpo);
+    q02y    = Q02(dir?-y1:y1);
+    kt12    = SelectKT2(kt1max2,kt1min2,q02y,ktexpo); 
     m_histomap[std::string("KT2_test1")]->Insert(kt12); 
     m_histomap[std::string("KT2_test2")]->Insert(kt12); 
     if (p_alphaS->Weight(kt12)<ran->Get()) {
       m_alphaS++;
       continue;
     }
-    q02wt = FKT2(kt12,Q02(y1),ktexpo)/FKT2(kt12,m_q02min,ktexpo);
+    q02wt = FKT2(kt12,q02y,ktexpo)/FKT2(kt12,m_q02min,ktexpo);
     if (q02wt<ran->Get()) {
       continue;
     }
@@ -366,10 +366,10 @@ TryEmission(double & kt12,const bool & dir) {
     m_histomap[std::string("Delta_order")]->Insert(1./Max(1.e-2,dabs(y1-y0))); 
     wt   = 1.;
     double deltay(dabs(k_1.Y()-k_0.Y()));
-    mu01_2 = Q02((k_0.Y()+k_1.Y())/2.);
-    mu12_2 = Q02((k_1.Y()+k_2.Y())/2.);
+    mu01_2 = Q02((dir?-1.:1.)*(k_0.Y()+k_1.Y())/2.);
+    mu12_2 = Q02((dir?-1.:1.)*(k_1.Y()+k_2.Y())/2.);
     if (dir) m_histomap[std::string("ytest1")]->Insert(y1);
-        else m_histomap[std::string("ytest0")]->Insert(y1);
+    else m_histomap[std::string("ytest0")]->Insert(y1);
     if ((MBpars.LadderWeight()==ladder_weight::Regge || 
 	 MBpars.LadderWeight()==ladder_weight::ReggeDiffusion) && 
 	deltay>m_Deltay) { 
@@ -381,10 +381,11 @@ TryEmission(double & kt12,const bool & dir) {
     if (MBpars.LadderWeight()==ladder_weight::ReggeDiffusion && 
 	dabs(m_kdiff)>1.e-6) {
       wt    *= diffwt =
-	exp(-m_kdiff*sqrt(m_d2+sqr(log(Max(m_q01_2,Q02((y0+y1)/2.))/
-				       Max(m_q12_2,Q02((y1+y2)/2.))))));
+	exp(-m_kdiff*sqrt(m_d2+sqr(log(Max(m_q01_2,mu01_2)/
+				       Max(m_q12_2,mu12_2)))));
     }
-    sup    = SuppressionTerm(m_q01_2,m_q12_2)*Q02(y1)/(Q02(y1)+kt12);
+    sup = SuppressionTerm(m_q01_2,m_q12_2)*
+      (Saturation(dir?-y1:y1)/(Saturation(dir?y1:-y1)+kt12));
     wt    *= recombwt= 
       Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup));
     m_histomap[std::string("RecombWt")]->Insert(recombwt);
@@ -518,12 +519,10 @@ bool Final_State::FixPropColours(const LadderMap::iterator & split,
   double wt81(0.), wt18(0.), wt88(0.);
   int beam1(int(dabs(y0)>m_Ylimit)), beam2(int(dabs(y2)>m_Ylimit));
 
-  double sup01 = pow(Max(m_q01_2,Q02((y0+y1)/2.))/m_Q02,
+  double sup01 = pow(Max(m_q01_2,Saturation((y0+y1)/2.))/m_Q02,
 		     3.*(*p_alphaS)(m_q01_2)*dabs(y1-y0)/M_PI);
-  double sup12 = pow(Max(m_q12_2,Q02((y1+y2)/2.))/m_Q02,
+  double sup12 = pow(Max(m_q12_2,Saturation((y1+y2)/2.))/m_Q02,
 		     3.*(*p_alphaS)(m_q12_2)*dabs(y2-y1)/M_PI);
-  //pow(Max(m_q01_2,m_Q02)/m_Q02,0.08*dabs(y0-y1));
-  //pow(Max(m_q12_2,m_Q02)/m_Q02,0.08*dabs(y1-y2));
 
   double tot = wt18 = prev?0.:
     p_eikonal->SingletWeight(m_b1,m_b2,y0,y1,sup01,beam1)*
@@ -562,7 +561,7 @@ bool Final_State::FixPropColours(const LadderMap::iterator & split,
     m_propiter->m_q   = m_q0+m_k0;
     m_propiter->m_q2  = m_propiter->m_q.Abs2();
     m_propiter->m_qt2 = m_propiter->m_q.PPerp2();
-    m_propiter->m_q02 = Q02((y0+y1)/2.);
+    m_propiter->m_q02 = Q02((y1+y2)/2.);
     m_propiter->m_col = cols.first;
     m_propiter++; 
     T_Prop prop(cols.second,-m_k2+m_q2,Q02((y1+y2)/2.));
@@ -577,7 +576,7 @@ bool Final_State::FixPropColours(const LadderMap::iterator & split,
     m_propiter->m_qt2 = m_propiter->m_q.PPerp2();
     m_propiter->m_q02 = Q02((y0+y1)/2.);
     m_propiter->m_col = cols.first;
-    T_Prop prop(cols.second,m_q2+m_k2,Q02((y1+y2)/2.));
+    T_Prop prop(cols.second,m_q2+m_k2,Q02((y0+y1)/2.));
     m_propiter        = p_props->insert(m_propiter,prop);
     if (m_propiter->m_col!=colour_type::singlet) return true;
   }
@@ -663,38 +662,49 @@ double Final_State::SuppressionTerm(const double & q02,const double & q12) {
   return sqrt(p_alphaS->Weight(q02,true)*p_alphaS->Weight(q12,true));
 }
 
-double Final_State::Q02(const double & y) {
+double Final_State::Saturation(const double & y) {
+  double eik(1.);
   if (MBpars("Misha")) {
-    double eik = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + 
-		  (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
-    double eik2 = (*p_eikonal)(m_B);
-    eik *= eik2;
-    return m_Q02*eik + (m_nprimlad-1)*m_QN2*eik;
-    //     return m_Q02*eik + (m_nprimlad-1)*m_QN2;
+    eik = p_eikonal->lambda()/2. *
+      ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y)+
+       (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y));
+    //eik = 1./((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y)+
+    //	      (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y)+1.);
   }
-  else {
-    return m_Q02 + (m_nprimlad-1)*m_QN2;
+  return (m_Q02 + (m_nprimlad-1)*m_QN2)*eik;
+}
+
+double Final_State::Q02(const double & y) {
+  double eik(1.);
+  if (MBpars("Misha")) {
+    eik = 2./(((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,-m_Ylimit)/
+	       (*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y)) +
+    	      ((*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,m_Ylimit)/
+	       (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y)));
+    //msg_Out()<<METHOD<<"("<<m_b1<<", "<<m_b2<<", "<<y<<") : "
+    //	     <<(*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y)<<" / "
+    //	     <<(*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,-m_Ylimit)<<" ["
+    //	     <<(*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,m_Ylimit)<<"] & "
+    //	     <<(*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y)<<" / "
+    //	     <<(*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,m_Ylimit)<<" ["
+    //	     <<(*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,-m_Ylimit)<<"].\n";
+    //eik = (Max(1.,(*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y))*
+    //	   Max(1.,(*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y)))/2.;
   }
+  return (m_Q02 + (m_nprimlad-1)*m_QN2)*eik;
 }
 
 double Final_State::Q02MinEstimate(const double y0, const double y1) {
-  if (!MBpars("Misha")) return m_Q02 + (m_nprimlad-1)*m_QN2;  
-
-  double y(Min(y0,y1)),eik,eik2(1.),eikmin(0.);
-  int nstep(20);  
-  eik2 = (*p_eikonal)(m_B);
-  eikmin = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + 
-	    (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
-  eikmin*=eik2;
-  while (y<Max(y0,y1)) {
-    y+=0.1;
-    eik = ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y) + 
-	   (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y))/2.;
-    eik*=eik2;
-    if (eik < eikmin) eikmin = eik;
+  double q02min(m_Q02 + (m_nprimlad-1)*m_QN2), q02test;
+  if (MBpars("Misha")) {
+    double y(Min(y0,y1)),deltay(dabs(y0-y1)/100.);
+    while (y<Max(y0,y1)) {
+      q02test = Q02(y);
+      if (q02test<q02min) q02min = q02test;
+      y+=deltay;
+    }
   }
-  eikmin/=2.;
-  return m_Q02*eikmin + (m_nprimlad-1)*m_QN2*eikmin;
+  return q02min;
 }
 
 double Final_State::SelectKT2(const double & kt2max,const double & kt2min,
@@ -723,7 +733,8 @@ double Final_State::SelectKT2(const double & kt2max,const double & kt2min,
       if (expo==0.) logterm = log(Max(mu2,kt2max)/kt2cut);
       else logterm = (pow(kt2cut,expo)-pow(Max(mu2,kt2max),expo))/expo;
       if (fixterm>ran->Get()*(fixterm+logterm)) {
-	kt2 = sqrt(kt2min*kt2min+rand*(Min(mu2*mu2,kt2max*kt2max)-kt2min*kt2min));
+	kt2 = sqrt(kt2min*kt2min+rand*(Min(mu2*mu2,kt2max*kt2max)-
+				       kt2min*kt2min));
       }
       else {
 	if (expo==0.) 
@@ -762,7 +773,8 @@ double Final_State::KT2integral(const double & kt2max,const double & kt2min,
     case ktform::cut:
       if (kt2max>q02) {
 	if (expo==0.) logterm = log(kt2max/Max(q02,kt2min));
-	else logterm = (pow(Max(q02,kt2min)/q02,expo)-pow(kt2max/q02,expo))/expo;
+	else logterm = (pow(Max(q02,kt2min)/q02,expo)-
+			pow(kt2max/q02,expo))/expo;
       }
       break;      
     case ktform::smooth:
@@ -772,13 +784,15 @@ double Final_State::KT2integral(const double & kt2max,const double & kt2min,
     case ktform::IR0:
       if (kt2min<q02) fixterm = 0.5*(1.-sqr(kt2min/q02));
       if (expo==0.) logterm = log(Max(q02,kt2max)/Max(q02,kt2min));
-      else logterm = (pow(Max(q02,kt2min)/q02,expo)-pow(Max(q02,kt2max)/q02,expo))/expo;
+      else logterm = (pow(Max(q02,kt2min)/q02,expo)-
+		      pow(Max(q02,kt2max)/q02,expo))/expo;
       break;
     case ktform::frozen:
     default:
       if (kt2min<q02) fixterm = 1.-kt2min/q02;
       if (expo==0.) logterm = log(Max(q02,kt2max)/Max(q02,kt2min));
-      else logterm = (pow(Max(q02,kt2min)/q02,expo)-pow(Max(q02,kt2max)/q02,expo))/expo;
+      else logterm = (pow(Max(q02,kt2min)/q02,expo)-
+		      pow(Max(q02,kt2max)/q02,expo))/expo;
       break;
     }
   }
@@ -871,6 +885,22 @@ void Final_State::InitHistograms() {
     new Histogram(0,0.0,20.0,100);
   m_histomap[std::string("Deltay_singexit")] = 
     new Histogram(0,0.0,20.0,100);
+  m_histomap[std::string("Q02v_b_lt_1")] = 
+    new Histogram(0,-10.0,10.0,40);
+  m_histomap[std::string("Q02v_b_lt_2")] = 
+    new Histogram(0,-10.0,10.0,40);
+  m_histomap[std::string("Q02v_b_lt_5")] = 
+    new Histogram(0,-10.0,10.0,40);
+  m_histomap[std::string("Q02v_b_lt_10")] = 
+    new Histogram(0,-10.0,10.0,40);
+  m_histomap[std::string("Q02n_b_lt_1")] = 
+    new Histogram(0,-10.0,10.0,40);
+  m_histomap[std::string("Q02n_b_lt_2")] = 
+    new Histogram(0,-10.0,10.0,40);
+  m_histomap[std::string("Q02n_b_lt_5")] = 
+    new Histogram(0,-10.0,10.0,40);
+  m_histomap[std::string("Q02n_b_lt_10")] = 
+    new Histogram(0,-10.0,10.0,40);
 
   m_trials=m_rej_negkt1=m_rej_nokt2=m_rej_nokt0=m_rej_nophi0=m_rej_noy0=0;
   m_rej_offshell=m_rej_nofit=m_rej_order=m_alphaS=m_ys=0;
@@ -914,13 +944,43 @@ void Final_State::OutputHistograms() {
     <<"   singlet exits       "<<m_singexit<<"\n"
     <<"   first singlet       "<<m_firstsing<<"\n";
   
-  Histogram * histo;
+  Histogram * histo, * histo1;
+  double val;
+  histo  = m_histomap[std::string("Q02v_b_lt_1")];
+  histo1 = m_histomap[std::string("Q02n_b_lt_1")];
+  for (size_t i=0;i<histo->Nbin()+2;++i) {
+    val = histo->Value(i)/(histo1->Value(i)>0?histo1->Value(i):-1.);
+    m_histomap[std::string("Q02v_b_lt_1")]->SetBin(i,val);
+  }
+  histo  = m_histomap[std::string("Q02v_b_lt_2")];
+  histo1 = m_histomap[std::string("Q02n_b_lt_2")];
+  for (size_t i=0;i<histo->Nbin()+2;++i) {
+    val = histo->Value(i)/(histo1->Value(i)>0?histo1->Value(i):-1.);
+    m_histomap[std::string("Q02v_b_lt_1")]->SetBin(i,val);
+  }
+  histo  = m_histomap[std::string("Q02v_b_lt_5")];
+  histo1 = m_histomap[std::string("Q02n_b_lt_5")];
+  for (size_t i=0;i<histo->Nbin()+2;++i) {
+    val = histo->Value(i)/(histo1->Value(i)>0?histo1->Value(i):-1.);
+    m_histomap[std::string("Q02v_b_lt_1")]->SetBin(i,val);
+  }
+  histo  = m_histomap[std::string("Q02v_b_lt_10")];
+  histo1 = m_histomap[std::string("Q02n_b_lt_10")];
+  for (size_t i=0;i<histo->Nbin()+2;++i) {
+    val = histo->Value(i)/(histo1->Value(i)>0?histo1->Value(i):-1.);
+    m_histomap[std::string("Q02v_b_lt_1")]->SetBin(i,val);
+  }
+
+
   std::string name;
   for (std::map<std::string,Histogram *>::iterator 
 	 hit=m_histomap.begin();hit!=m_histomap.end();hit++) {
     histo = hit->second;
     name  = std::string("Ladder_Analysis/")+hit->first+std::string(".dat");
-    histo->Finalize();
+    if (histo->Name()!=std::string("Q02v_b_lt_1") &&
+	histo->Name()!=std::string("Q02v_b_lt_2") &&
+	histo->Name()!=std::string("Q02v_b_lt_5") &&
+	histo->Name()!=std::string("Q02v_b_lt_10")) histo->Finalize();
     histo->Output(name);
     delete histo;
   }

@@ -190,28 +190,19 @@ void Shrimps::GenerateXsecs() {
   
   if(!tuning){
     std::list<double> Energies;
-    Energies.push_back(50.);
+    //Energies.push_back(50.);
     Energies.push_back(62.5);
-    Energies.push_back(100.);
-    //Energies.push_back(200.);
-    //Energies.push_back(300.);
-    //Energies.push_back(400.);
+    //Energies.push_back(100.);
     Energies.push_back(546.);
     Energies.push_back(630.);
-    //Energies.push_back(800.);
-    //Energies.push_back(900.);
-    Energies.push_back(1000.);
-    //Energies.push_back(1200.);
-    //Energies.push_back(1500.);
+    //Energies.push_back(1000.);
     Energies.push_back(1800.);
     Energies.push_back(1960.);
-    Energies.push_back(2360.);
-    //Energies.push_back(5000.);
+    //Energies.push_back(2360.);
     Energies.push_back(7000.);
     Energies.push_back(8000.);
-    Energies.push_back(14000.);
-    Energies.push_back(55000.);
-    Energies.push_back(100000.);
+    //Energies.push_back(14000.);
+    //Energies.push_back(55000.);
     //Energies.push_back(100000.);
     std::set<double> Elastics;
     Elastics.insert(62.5);
