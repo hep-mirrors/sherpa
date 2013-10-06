@@ -36,8 +36,8 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   if (m_recocheck!=0) msg_Info()<<METHOD<<"(): Set reco check mode "<<m_recocheck<<"\n";
   m_respectq2=_dataread->GetValue<int>("CSS_RESPECT_Q2",1);
   if (m_respectq2!=1) msg_Info()<<METHOD<<"(): Set respect Q2 mode "<<m_respectq2<<"\n";
-  int amode(_dataread->GetValue<int>("EXCLUSIVE_CLUSTER_MODE",0));
-  if (amode!=0) msg_Info()<<METHOD<<"(): Set exclusive cluster mode "<<amode<<".\n";
+  int amode(_dataread->GetValue<int>("EXCLUSIVE_CLUSTER_MODE",1));
+  if (amode!=1) msg_Info()<<METHOD<<"(): Set exclusive cluster mode "<<amode<<".\n";
   int meweight=_dataread->GetValue<int>("CSS_MEWMODE",1);
   if (meweight!=1) msg_Info()<<METHOD<<"(): Set ME weight mode "<<meweight<<"\n";
   
