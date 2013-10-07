@@ -444,11 +444,11 @@ SCALES METS{<muF-var-factor>*MU_F2}{<muR-var-factor>*MU_R2}{<muQ-var-factor>*MU_
 @subsubsection METS scale setting with multiparton core processes
 @cindex CORE_SCALE
 
-The METS scale setter can be instructed not to cluster to a 2->2 
-configuration but to stop at the minimal multiplicity present 
-in the process setup. The core scale of the 2->n process then 
-needs to be defined. This is done by specifying a core scale 
-through
+The METS scale setter stops clustering when no combination
+is found that corresponds to a parton shower branching, or if
+two subsequent branchings are unordered in terms of the parton shower
+evolution parameter. The core scale of the remaining 2->n process then 
+needs to be defined. This is done by specifying a core scale through
 @verbatim
 CORE_SCALE <core-scale-setter>{<core-fac-scale-definition>}{<core-ren-scale-definition>}{<core-res-scale-definition>}
 @end verbatim
@@ -462,6 +462,9 @@ Variable core scale setter. Syntax is identical to variable scale setter.
 QCD core scale setter. Scales are set to harmonic mean of s, t and u. Only 
 useful for 2->2 cores as alternatives to the usual core scale of the METS 
 scale setter.
+@item TTBar
+Core scale setter for processes involving top quarks. Implementation details 
+are described in Appendix C of @mycite{Hoeche2013mua}.
 @end table
 An example for defining a custom core scale is given in @ref{LHC_HWBF} 
 or @ref{Tops in MC@@NLO}.

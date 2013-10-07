@@ -804,6 +804,7 @@
 @mybibitem{Hoeche2012ft,Hoe12, S. Hoche and F. Krauss and M. Schonherr and F.  Siegert,W+n-jet predictions with MC@NLO in Sherpa,,,,,arXiv:1201.5882,arXiv:1201.5882}
 @mybibitem{Hoeche2012yf,Hoe12a, S. Hoche and F. Krauss and M. Schonherr and F.  Siegert,QCD matrix elements + parton showers: The NLO case,,,,,arXiv:1207.5030,arXiv:1207.5030}
 @mybibitem{Hoeche2012fm,Hoe12b, S. Hoche and M. Schonherr,Uncertainties in NLO + parton shower matched simulations of inclusive jet and dijet production,,,,,arXiv:1208.2815,arXiv:1208.2815}
+@mybibitem{Hoeche2013mua,Hoe13, S. Hoeche and J. Huang and G. Luisoni and  M. Schoenherr and J. Winter,Zero and one jet combined NLO analysis of the top quark forward-backward asymmetry,,,,,arXiv:1306.2703,arXiv:1306.2703}
 @mybibitem{Hollik2011ps,Hol11, W. Hollik and D. Pagani,The electroweak contribution to the top quark forward-backward asymmetry at the Tevatron,Phys.Rev.,D84,(2011),093003,[arXiv:1107.2606],arXiv:1107.2606}
 @mybibitem{Hou1987ya,Hou87, G. W. S. Hou,Charmless Rare B Decays Heavy Quarks and a Fourth Generation,,,,,,}
 @mybibitem{Hou1987vd,Hou87a, W. S. Hou and A. Soni and H. Steger,Charmless Decays of Bottom Mesons and a Fourth Generation,Phys. Rev. Lett.,59,(1987),1521,,F+J+Phys. Rev. Lett.%2C59%2C1521}
