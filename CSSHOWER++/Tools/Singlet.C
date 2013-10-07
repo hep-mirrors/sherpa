@@ -514,6 +514,8 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
 	(*plit)->SetOldMomentum(l->LT()*(*plit)->OldMomentum());
       }
       Vec4D p(l->LT()*(*plit)->Momentum());
+      if ((*plit)->GetType()==pst::IS &&
+	  IsZero(p.PPerp2())) p[1]=p[2]=0.0;
       if ((*plit)->Mass2()==0.0) p[0]=p.PSpat();
       (*plit)->SetMomentum(p);
     }
@@ -567,6 +569,8 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
        asit!=p_all->end();++asit) {
     for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
       Vec4D p(lp.m_lam*(*plit)->Momentum());
+      if ((*plit)->GetType()==pst::IS &&
+	  IsZero(p.PPerp2())) p[1]=p[2]=0.0;
       if ((*plit)->Mass2()==0.0) p[0]=p.PSpat();
       (*plit)->SetMomentum(p);
       if ((*plit)->FixSpec()!=Vec4D()) {
