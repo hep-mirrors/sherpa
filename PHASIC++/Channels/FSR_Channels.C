@@ -28,6 +28,7 @@ bool FSR_Channels::Initialize()
   }
   nin=p_psh->Process()->NIn();
   nout=p_psh->Process()->NOut();
+  if (nout==1) return false;
   int m_nin(nin), m_nout(nout);
   int sintegrator=0;
   for (size_t i(0);i<inttypes.size();++i) {
