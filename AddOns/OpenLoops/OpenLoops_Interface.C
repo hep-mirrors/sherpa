@@ -29,6 +29,7 @@ namespace OpenLoops {
   int OpenLoops_Interface::s_nf;
   int OpenLoops_Interface::s_nq_nondecoupled;
   bool OpenLoops_Interface::s_generate_list;
+  double OpenLoops_Interface::s_overwrite_mb;
   set<string> OpenLoops_Interface::s_shoppinglist;
 
   bool OpenLoops_Interface::Initialize(const string &path,const string &file,
@@ -67,6 +68,7 @@ namespace OpenLoops {
     s_nf=reader.GetValue<int>("OL_NF", 6);
     s_nq_nondecoupled=reader.GetValue<int>("OL_RUNNING_FLAVOURS",Flavour(kf_quark).Size()/2);
     s_generate_list=reader.GetValue<size_t>("OL_GENERATE_LIST", false);
+    s_overwrite_mb=reader.GetValue<double>("OL_OVERWRITE_MB", -1.0);
 
 
     OpenLoops_Virtual::SetInterface(this);
@@ -84,6 +86,7 @@ namespace OpenLoops {
     PRINT_VAR(s_nf);
     PRINT_VAR(s_nq_nondecoupled);
     PRINT_VAR(s_allowed_libs);
+    PRINT_VAR(s_overwrite_mb);
 
     MyStrStream cite;
     cite<<"The OpenLoops library~\\cite{Cascioli:2011va} of virtual"<<endl
@@ -143,7 +146,7 @@ namespace OpenLoops {
     double Mass_D=Flavour(kf_d).Mass();
     double Mass_S=Flavour(kf_s).Mass();
     double Mass_C=Flavour(kf_c).Mass();
-    double Mass_B=Flavour(kf_b).Mass();
+    double Mass_B=s_overwrite_mb<0.0 ? Flavour(kf_b).Mass() : s_overwrite_mb;
     double Mass_T=Flavour(kf_t).Mass();
     double Mass_W=Flavour(kf_Wplus).Mass();
     double Mass_Z=Flavour(kf_Z).Mass();
@@ -231,7 +234,7 @@ namespace OpenLoops {
       if (option=="MU" && Flavour(kf_u).Mass()>0.0) return "0";
       if (option=="MS" && Flavour(kf_s).Mass()>0.0) return "0";
       if (option=="MC" && Flavour(kf_c).Mass()>0.0) return "0";
-      if (option=="MB" && Flavour(kf_b).Mass()>0.0) return "0";
+      if (option=="MB" && Flavour(kf_b).Mass()>0.0 && s_overwrite_mb<0.0) return "0";
       if (option=="MT" && Flavour(kf_t).Mass()>0.0) return "0";
       if (option=="ME" && Flavour(kf_e).Mass()>0.0) return "0";
       if (option=="MM" && Flavour(kf_mu).Mass()>0.0) return "0";
