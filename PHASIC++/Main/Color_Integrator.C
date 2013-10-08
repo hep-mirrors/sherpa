@@ -64,7 +64,7 @@ Representation::Representation(const size_t &id,
 Color_Integrator::Color_Integrator():
   m_lastconf(0), m_alphamode(0), 
   m_check(false), m_on(true), 
-  m_otfcc(false), m_fincc(true), m_nogen(true),
+  m_otfcc(false), m_fincc(true), m_nogen(true), m_won(true),
   m_n(0), m_nv(0), m_over(0.0) {}
 
 Color_Integrator::~Color_Integrator()

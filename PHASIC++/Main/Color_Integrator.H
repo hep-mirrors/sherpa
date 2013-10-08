@@ -72,7 +72,7 @@ namespace PHASIC {
     Double_Vector m_weights, m_cweights, m_alpha;
 
     size_t m_pairs, m_lastconf, m_alphamode, m_csmode;
-    bool   m_check, m_on, m_otfcc, m_fincc, m_valid, m_nogen;
+    bool   m_check, m_on, m_otfcc, m_fincc, m_valid, m_nogen, m_won;
 
     double m_weight, m_n, m_nv, m_max, m_over, m_cmax, m_mean, m_cweight;
 
@@ -153,10 +153,12 @@ namespace PHASIC {
 
     inline void RestartOrders() { m_fincc=true; }
 
-    inline double GlobalWeight() const { return m_cweight; }
+    inline double GlobalWeight() const { return m_won?m_cweight:1.0; }
 
     inline const Idx_Matrix    &Orders() const  { return m_orders; }
     inline const Double_Vector &Weights() const { return m_weights; }
+
+    inline void SetWOn(const bool won) { m_won=won; }
 
   };// end of class Color_Integrator
 
