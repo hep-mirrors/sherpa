@@ -94,10 +94,30 @@ bool Cluster_Algorithm::Cluster
     p_ampl->SetQ2(pb->ScaleSetter()->Scale(stp::res));
     PDF::CParam scale((p_proc->IsMapped()?p_proc->MapProc():p_proc)
                       ->ScaleSetter()->CoreScale(p_ampl));
-    size_t nmax(p_proc->Info().m_fi.NMaxExternal());
     p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
-    SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,nmax);
+    SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,
+            p_proc->Info().m_fi.NMaxExternal());
+
+    size_t np=p_proc->Flavours().size();
+    if (
+        (np==7 && p_proc->OrderQCD()==3 && p_proc->OrderEW()==4 &&
+         p_proc->Flavours()[2].IsLepton() && p_proc->Flavours()[3].IsLepton() &&
+         p_proc->Flavours()[4].IsLepton() && p_proc->Flavours()[5].IsLepton())
+        &&
+        ((p_proc->Flavours()[0].IsGluon() && p_proc->Flavours()[1].IsGluon() &&
+          p_proc->Flavours()[np-1].IsGluon()) ||
+         (p_proc->Flavours()[0].IsGluon() && p_proc->Flavours()[1].IsQuark() &&
+          p_proc->Flavours()[np-1].IsQuark()) ||
+         (p_proc->Flavours()[0].IsQuark() && p_proc->Flavours()[1].IsGluon() &&
+          p_proc->Flavours()[np-1].IsQuark())
+         )) {
+      ClusterSpecial4lLoop2();
+    }
     msg_Debugging()<<*p_ampl<<"\n";
+    while (p_ampl->Prev()) {
+      p_ampl=p_ampl->Prev();
+      msg_Debugging()<<*p_ampl<<"\n";
+    }
     msg_Debugging()<<"}\n";
     return true;
   }
@@ -644,4 +664,54 @@ void Cluster_Algorithm::SetNMax(Cluster_Amplitude *const ampl,
 	SetNMax(ampl->Prev(),cli->Id(),nmax);
     }
   }
+}
+
+void Cluster_Algorithm::ClusterSpecial4lLoop2()
+{
+  DEBUG_FUNC(*p_ampl);
+  size_t emitted_idx=p_proc->Flavours().size()-1;
+      
+  PDF::CParam c0=p_clus->KPerp2(*p_ampl, 0, emitted_idx, 1, Flavour(kf_gluon), p_ms);
+  PDF::CParam c1=p_clus->KPerp2(*p_ampl, 1, emitted_idx, 0, Flavour(kf_gluon), p_ms);
+
+  int winner=0;
+  PDF::CParam win=c0;
+  if (ran->Get()*(1.0/c0.m_op2+1.0/c1.m_op2)>1.0/c0.m_op2) {
+    winner=1;
+    win=c1;
+  }
+      
+  Cluster_Amplitude *ampl(p_ampl);
+  p_ampl=p_ampl->InitNext();
+  p_ampl->SetMS(p_ms);
+  p_ampl->SetJF(p_proc->Selector()->GetSelector("Jetfinder"));
+  p_ampl->SetNIn(p_proc->NIn());
+  p_ampl->SetOrderEW(p_proc->OrderEW());
+  p_ampl->SetOrderQCD(p_proc->OrderQCD()-1);
+  ampl->SetKT2(win.m_kt2);
+  ampl->SetMu2(win.m_mu2);
+
+  Vec4D_Vector clustered_moms=p_clus->Combine
+    (*ampl, winner, emitted_idx, 1-winner, Flavour(kf_gluon),p_ms);
+
+  int color[2] = { Flow::Counter(), Flow::Counter() };
+  for (int i=0;i<2; ++i) {
+    size_t id=(1<<i);
+    if (i==winner) id+=(1<<emitted_idx);
+    p_ampl->CreateLeg(clustered_moms[i],Flavour(kf_gluon),ColorID(color[i],color[1-i]),id);
+    p_ampl->Legs().back()->SetNMax(p_proc->Info().m_fi.NMaxExternal());
+    if (i==winner) {
+      p_ampl->Legs().back()->SetK(1<<(1-i));
+    }
+  }
+  for (int i=2;i<p_proc->Flavours().size()-1;++i) {
+    p_ampl->CreateLeg(clustered_moms[i],p_proc->Flavours()[i],ColorID(0,0),(1<<i));
+    p_ampl->Legs().back()->SetStat(1);
+    p_ampl->Legs().back()->SetNMax(p_proc->Info().m_fi.NMaxExternal());
+  }
+  p_ampl->SetKin(win.m_kin);
+  p_ampl->SetMuR2(ampl->MuR2());
+  p_ampl->SetMuF2(ampl->MuF2());
+  p_ampl->SetQ2(ampl->Q2());
+  (p_proc->IsMapped()?p_proc->MapProc():p_proc)->ScaleSetter()->CoreScale(p_ampl);
 }

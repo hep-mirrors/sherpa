@@ -63,6 +63,8 @@ namespace AMEGIC {
 		   const ATOOLS::Vec4D_Vector& p, ATOOLS::Flavour * fl);
     EXTRAXS::ME2_Base *GetXS(const ATOOLS::Flavour_Vector &fl);
 
+    void ClusterSpecial4lLoop2();
+
   public:
 
     Cluster_Algorithm(ATOOLS::Mass_Selector *const ms);
