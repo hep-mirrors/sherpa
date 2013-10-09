@@ -112,7 +112,7 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   rpa->gen.SetVariable("AMEGIC_CHANNEL_ALPHA",ToString(alpha));
   double eps=read.GetValue<double>("AMEGIC_CHANNEL_EPSILON",0.0);
   rpa->gen.SetVariable("AMEGIC_CHANNEL_EPSILON",ToString(eps));
-  int gauge(read.GetValue<int>("AMEGIC_DEFAULT_GAUGE",rpa->gen.HardSC()?10:1));
+  int gauge(read.GetValue<int>("AMEGIC_DEFAULT_GAUGE",1));
   AMEGIC::Process_Base::SetGauge(gauge);
   if (gauge!=10) msg_Info()<<METHOD<<"(): Set gauge "<<gauge<<"."<<std::endl;
   return true;
