@@ -53,7 +53,7 @@ public:
   void SetColors();
   void Initialize();
 
-  void SetMomenta(double **p);
+  void SetMomenta(const std::vector<double*> &p);
   void SetMomentum(int, double, double, double, double);
 
   double MatrixElement();

@@ -1,10 +1,10 @@
-#!/usr/bin/python2
+#!/usr/bin/env python2
 ## from mpi4py import MPI
 import sys
 sys.path.append('@PYLIBDIR@')
 import Sherpa
 
-# Add this to the execution arguments if only the matrix element and not the cross section is desired
+# Add this to the execution arguments to prevent Sherpa from starting to integrate the cross section
 sys.argv.append('INIT_ONLY=2')
 
 Generator=Sherpa.Sherpa()
@@ -33,8 +33,9 @@ try:
     Process.SetMomentum(2, 45.6,0.,45.6,0.)
     Process.SetMomentum(3, 45.6,0.,-45.6,0.)
 
+    print '\nSquared matrix element:'
     print Process.CSMatrixElement()
-
+    print '\n'
 
 except Sherpa.Exception as exc:
     exit(1)

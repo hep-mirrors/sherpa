@@ -79,14 +79,14 @@ void MEProcess::SetMomentumIndices(const std::vector<int> &pdgs){
     }  
 }
 
-void MEProcess::SetMomenta(double **p){
+void MEProcess::SetMomenta(const std::vector<double*> &p){
   for (unsigned int i(0); i<m_nin; i++) 
     {
       m_amp->Leg(m_mom_inds[i])->SetMom(ATOOLS::Vec4D(-p[i][0], -p[i][1], -p[i][2], -p[i][3]));
       //double mass =  sqrt(p[i][0]*p[i][0] - p[i][1]*p[i][1] - p[i][2]*p[i][2] - p[i][3]*p[i][3]);
       //std:: cout << "Flavour " << m_amp->Leg(m_mom_inds[i])->Flav() << " Mass " << mass << std::endl;
     }
-  for (unsigned int i(m_nin); m_nin+m_nout; i++)
+  for (unsigned int i(m_nin); i<p.size(); i++)
     {
       m_amp->Leg(m_mom_inds[i])->SetMom(ATOOLS::Vec4D(p[i][0], p[i][1], p[i][2], p[i][3]));  
       //double mass =  sqrt(p[i][0]*p[i][0] - p[i][1]*p[i][1] - p[i][2]*p[i][2] - p[i][3]*p[i][3]);
@@ -262,7 +262,7 @@ double MEProcess::CSMatrixElement(){
   SP(PHASIC::Color_Integrator) ci(m_proc->Integrator()->ColorIntegrator());
   if(ci==0) // assume Amegic
     return m_proc->Differential(*m_amp);
-  //ci->SetWOn(false);
+  ci->SetWOn(false);
   double r_csme(0.);
   for(std::vector<std::vector<int> >::const_iterator it=m_colcombinations.begin(); it!=m_colcombinations.end(); ++it)
     {
@@ -291,6 +291,6 @@ double MEProcess::CSMatrixElement(){
       SetColors();
       r_csme+=m_proc->Differential(*m_amp);
     }
-  //ci->SetWOn(true);
+  ci->SetWOn(true);
   return r_csme;
 }
