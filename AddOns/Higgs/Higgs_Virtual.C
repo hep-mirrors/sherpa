@@ -20,8 +20,8 @@ MODEL::Model_Base *HIGGS::Higgs_Virtual::s_model=NULL;
 
 Higgs_Virtual::Higgs_Virtual(const Process_Info &pi,
 			     const Flavour_Vector &flavs,
-			     int mode,int io):
-  Virtual_ME2_Base(pi,flavs), m_int(mode), m_io(io)
+			     int mode,int io,int spin):
+  Virtual_ME2_Base(pi,flavs), m_int(mode), m_io(io), m_spin(spin)
 {
   m_mh=Flavour(kf_h0).Mass();
   m_gh=Flavour(kf_h0).Width();
@@ -158,8 +158,14 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
     lo-=lob;
     nlo-=nlob;
   }
+  if (m_spin==0) {
   m_res.Finite()=(nlo/lo).real()+3.0*sqr(M_PI)-3.0*lmur*lmur;
   m_born=lo.real()/64.0;
+  }
+  else {
+  m_res.Finite()=3.0*lmur*lmur;
+  m_born=0.0;
+  }
 }
 
 double Higgs_Virtual::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
@@ -178,13 +184,14 @@ operator()(const Process_Info &pi) const
     Data_Reader read(" ",";","#","=");
     int io=read.GetValue<int>("HIGGS_INTERFERENCE_ONLY",0);
     int mode=read.GetValue<int>("HIGGS_INTERFERENCE_MODE",7);
+    int spin=read.GetValue<int>("HIGGS_INTERFERENCE_SPIN",0);
     Flavour_Vector fl(pi.ExtractFlavours());
     if (fl.size()==4) {
       if (((fl[0].IsGluon() && fl[1].IsGluon()) ||
 	   (fl[0].IsQuark() && fl[1]==fl[0].Bar())) &&
 	  fl[2].IsPhoton() && fl[3].IsPhoton()) {
 	msg_Info()<<"!";
-	return new Higgs_Virtual(pi,fl,mode,io);
+	return new Higgs_Virtual(pi,fl,mode,io,spin);
       }
     }
   }

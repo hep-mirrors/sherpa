@@ -11,7 +11,7 @@ namespace HIGGS {
   class Higgs_Virtual: public PHASIC::Virtual_ME2_Base {
   private:
 
-    int    m_int, m_io, m_proc;
+    int    m_int, m_io, m_spin, m_proc;
     double m_mh, m_gh;
 
     AMEGIC::Basic_Sfuncs *p_bs;
@@ -26,7 +26,7 @@ namespace HIGGS {
 
     Higgs_Virtual(const PHASIC::Process_Info& pi,
 		  const ATOOLS::Flavour_Vector& flavs,
-		  int mode,int io);
+		  int mode,int io,int spin);
 
     ~Higgs_Virtual();
 
