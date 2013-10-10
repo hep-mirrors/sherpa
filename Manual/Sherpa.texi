@@ -22,7 +22,7 @@
 
 @contents
 
-@image{SherpaLogo,,,,jpg}
+@image{SherpaLogo,,,Sherpa Logo,jpg}
 
 @menu
 * Introduction::       What is Sherpa

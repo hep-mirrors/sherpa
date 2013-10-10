@@ -3,15 +3,17 @@
 @macro mybibmake{llink,lref}
 @end macro
 
-@macro mycite{ref}
 @ifinfo
+@macro mycite{ref}
 [@value{K\ref\}] in @ref{References} @set U\ref\ true
+@end macro
 @end ifinfo
 @ifnotinfo
+@macro mycite{ref}
 @set U\ref\ true
 [@ref{\ref\, @value{K\ref\}}]
-@end ifnotinfo
 @end macro
+@end ifnotinfo
 
 @macro mybibitem{ref,key,author,title,journal,vol,year,pages,eprint,slink}
 @ifclear mybibout
