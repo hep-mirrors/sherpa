@@ -34,7 +34,7 @@ namespace ANALYSIS {
     do_shower       = 4096,
     do_hadron       = 8192,
     splitt_phase    = 16384,
-    splitt_extra    = 32768,
+    split_sh        = 32768,
     do_menlo        = 65536
   };
 

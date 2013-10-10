@@ -179,40 +179,10 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
   }
   else name = sp->TypeSpec();
 
-  Blob_Data_Base * extra_info=operator[]("OrderEWeak");
-
   std::string key;
   int mode;
-  if (extra_info && m_mode&ANALYSIS::splitt_extra) {
-    mode=m_mode^ANALYSIS::splitt_extra;
-    if (m_mode&ANALYSIS::splitt_jetseeds)
-      mode=m_mode^ANALYSIS::splitt_jetseeds;
-    mode=mode|ANALYSIS::output_this;
-
-    double dkey=extra_info->Get<double>();
-    key="extra_"+ATOOLS::ToString(dkey);
-
-    GetSubAnalysis(bl,key,mode);
-
-    for (Analysis_List::iterator it=m_subanalyses.begin();it!=m_subanalyses.end();++it) {
-      if (it->first.find("extra_")!=std::string::npos) {
-	if (it->first==key) {
-	  it->second->DoAnalysis(bl,value);
-	  m_called.insert(it->second);
-	}
-	else {
-	  m_active=false;
-	  it->second->DoAnalysis(bl,value);
-	  m_called.insert(it->second);
-	  m_active=true;
-	}
-      }
-    }
-  }
   if (m_mode&ANALYSIS::splitt_jetseeds) {
     mode=m_mode^ANALYSIS::splitt_jetseeds;
-    if (mode&ANALYSIS::splitt_extra)
-      mode=m_mode^ANALYSIS::splitt_extra;
     if (!m_splitjetconts)
       mode=mode-(mode&ANALYSIS::output_this);
     std::string fsname(name.substr(name.find("__")+3));
@@ -336,6 +306,18 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
     }
   }
 
+  if (m_mode&ANALYSIS::split_sh) {
+    std::string typespec=sp->TypeSpec();
+    typespec=typespec.substr(typespec.length()-2, 2);
+    std::string type="";
+    if (typespec=="+S") type="S";
+    else if (typespec=="+H") type="H";
+
+    Primitive_Analysis * ana=
+      GetSubAnalysis(bl,type,m_mode^ANALYSIS::split_sh);
+    ana->DoAnalysis(bl,value);
+    m_called.insert(ana);
+  }
 
   if (m_mode&ANALYSIS::splitt_all) CallSubAnalysis(bl,value);
   if (p_partner==this && msg_LevelIsTracking()) PrintStatus();
