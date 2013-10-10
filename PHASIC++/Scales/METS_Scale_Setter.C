@@ -683,6 +683,8 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
   for (size_t i(0);i<m_calcs.size();++i)
     m_scale[i]=m_calcs[i]->Calculate()->Get<double>();
   for (size_t i(m_calcs.size());i<stp::size;++i) m_scale[i]=m_scale[0];
+  if (ampl==NULL || ampl->Prev()==NULL)
+    m_scale[stp::size+stp::res]=m_scale[stp::res];
   msg_Debugging()<<METHOD<<"(): Set {\n"
 		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
 		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n"
