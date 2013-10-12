@@ -9,4 +9,5 @@ libCT12Sherpa_la_SOURCES     =	\
                                 CT12_Fortran_Interface.C
 
 nobase_dist_pkgdata_DATA         =	\
-                        CT12Grid/ct10n.00.pds
+                                CT12Grid/ct10n.00.pds \
+                                CT12Grid/ct10nn.00.pds

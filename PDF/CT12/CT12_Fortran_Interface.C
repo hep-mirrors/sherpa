@@ -50,13 +50,11 @@ namespace PDF {
       std::string num;
       if (m_member<10) num="0"+ToString(m_member);
       else             num=ToString(m_member);
-      PRINT_VAR(num);
       std::string asmz[21] = {"0.110", "0.111", "0.112", "0.113", "0.114",
                               "0.115", "0.116", "0.117", "0.118", "0.119",
                               "0.120", "0.121", "0.122", "0.123", "0.124",
                               "0.125", "0.126", "0.127", "0.128", "0.129",
                               "0.130"};
-      PRINT_VAR(m_set);
       if (m_set==std::string("ct10nnlo")) {
         cset = std::string("ct10nn."+num+".pds");
         m_asinfo.m_order=2;
@@ -73,7 +71,6 @@ namespace PDF {
       }
       if (m_set==std::string("ct10nlo")) {
         cset = std::string("ct10n."+num+".pds");
-        PRINT_VAR(cset);
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.118;
         m_lhef_number=11000+m_member;
@@ -151,7 +148,6 @@ namespace PDF {
         m_asinfo.m_asmz=0.118;
         m_lhef_number=11183;
       }
-      PRINT_VAR(cset);
 
       if (cset=="") {
         THROW(fatal_error,"PDF set "+m_set
@@ -163,13 +159,10 @@ namespace PDF {
       if (err==NULL) {
         msg_Error()<<"Error in CT12_Fortran_Interface.C "<<std::endl;
       }
-      PRINT_VAR(path);
       int stat=chdir(path.c_str());
       msg_Tracking()<<METHOD<<"(): Init cset "<<cset<<"."<<std::endl;
       char tablefile[40];
-      PRINT_VAR(cset.size());
-      for (size_t i(0);i<cset.size();++i)  tablefile[i]=cset[i];
-      for (size_t i(cset.size());i<40;++i) tablefile[i]=' ';
+      MakeFortranString(tablefile,cset,40);
       setct12_(tablefile);
       if (stat==0) {
         stat=chdir(buffer);
@@ -223,6 +216,13 @@ namespace PDF {
         m_calculated[5-cteqindex]=true;
       }
       return m_rescale*m_f[5-cteqindex];     
+    }
+
+    inline void MakeFortranString(char *output,std::string input,
+                                  unsigned int length)
+    {
+      for (unsigned int i=0;i<length;++i) output[i]=(char)32;
+      for (size_t j=0;j<input.length();++j) output[j]=(char)input[j];
     }
 
   };
