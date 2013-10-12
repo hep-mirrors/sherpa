@@ -1,3 +1,34 @@
+@iftex 
+@macro Sherpa{}
+S\scalebox{0.8}{HERPA}\xspace 
+@end macro
+@end iftex 
+@ifnottex
+@macro Sherpa{}
+Sherpa 
+@end macro
+@end ifnottex
+@iftex 
+@macro Amegic{}
+A\scalebox{0.8}{MEGIC++}\xspace 
+@end macro
+@end iftex 
+@ifnottex
+@macro Amegic{}
+AMEGIC++ 
+@end macro
+@end ifnottex 
+@iftex 
+@macro Photons{}
+P\scalebox{0.8}{HOTONS++}\xspace
+@end macro
+@end iftex 
+@ifnottex
+@macro Photons{}
+PHOTONS++
+@end macro
+@end ifnottex
+
 @set spires http://inspirehep.net/search?p=
 
 @macro mybibmake{llink,lref}

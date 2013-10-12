@@ -1,36 +1,16 @@
 @node Introduction
 @chapter Introduction
 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex
-is a Monte Carlo event generator for the Simulation 
+@Sherpa{} is a Monte Carlo event generator for the Simulation 
 of High-Energy Reactions of PArticles in lepton-lepton, 
 lepton-photon, photon-photon, lepton-hadron and hadron-hadron collisions. 
 This document provides information to help users understand 
-and apply 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-for their physics studies. The event generator 
+and apply @Sherpa{} for their physics studies. The event generator 
 is introduced, in broad terms, and the installation and running 
 of the program are outlined. The various options and parameters 
 specifying the program are compiled, and their meanings are 
 explained. This document does not aim at giving a
-complete description of the physics content of 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex
-.
+complete description of the physics content of @Sherpa{}.
 To this end, the authors refer the reader to the original publication, 
 @mycite{Gleisberg2008ta}.
 
@@ -58,13 +38,7 @@ The entire code has been written in C++, like its competitors
 @uref{http://projects.hepforge.org/herwig/,,Herwig++} @mycite{Bahr2008pv} and 
 @uref{http://home.thep.lu.se/~torbjorn/Pythia.html,,Pythia 8} @mycite{Sjostrand2007gs}.
 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-simulations can be achieved for the following types of
+@Sherpa{} simulations can be achieved for the following types of
 collisions:
 @itemize @bullet
 @item for lepton--lepton collisions, as explored by the CERN LEP
@@ -80,36 +54,24 @@ collisions:
 
 
 The list of physics processes that come with 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-covers particle production at 
+@Sherpa{} covers particle production at 
 tree level in the Standard Model and in models beyond the Standard Model: 
-The complete set of Feynman rules for its Minimal Supersymmetric extension 
-according to @mycite{Rosiek1989rs} @mycite{Rosiek1995kg} has been implemented, including 
+The complete set of Feynman rules for the MSSM has been implemented
+according to @mycite{Rosiek1989rs}, @mycite{Rosiek1995kg}, including 
 general mixing matrices for inter-generational squark and slepton mixing. 
 Among other interaction models the ADD model of Large Extra Dimensions has been 
 made available, too @mycite{Gleisberg2003ue}.  Furthermore, anomalous gauge couplings 
 @mycite{Hagiwara1986vm}, a model with an extended Higgs sector @mycite{Dedes2008bf}, and a 
 version of the Two-Higgs Doublet Model are available.  
 The 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-program owes this versatility to the inbuilt matrix-element generators, AMEGIC++ and 
+@Sherpa{} program owes this versatility to the inbuilt matrix-element generators, AMEGIC++ and 
 @uref{http://comix.freacafe.de,,Comix},
 and to it's phase-space generator Phasic @mycite{Krauss2001iv}, which automatically 
 calculate and integrate tree-level amplitudes for the implemented models.  This 
 feature enables Sherpa 
 to be used as a cross-section integrator and parton-level 
 event generator as well.  This aspect has been extensively tested, see e.g. 
-@mycite{Gleisberg2003bi},@mycite{Hagiwara2005wg}.
+@mycite{Gleisberg2003bi}, @mycite{Hagiwara2005wg}.
 
 
 As a second key feature of 
@@ -119,96 +81,45 @@ S\scalebox{0.8}{HERPA}\xspace
 @ifnottex 
 Sherpa 
 @end ifnottex 
-the program provides an implementation of the merging approach of @mycite{Hoeche2009rj}. 
-This algorithm yields improved descriptions of multijet production processes, 
+the program provides an implementation of the merging approaches of @mycite{Hoeche2009rj} and @mycite{Gehrmann2012yg}, @mycite{Hoeche2012yf}. 
+These algorithms yield improved descriptions of multijet production processes, 
 which copiously appear at lepton-hadron colliders like HERA @mycite{Carli2009cg}, 
-or hadron-hadron colliders like the Tevatron and the LHC, @mycite{Krauss2004bs},
-@mycite{Krauss2005nu},@mycite{Gleisberg2005qq},@mycite{Hoeche2009xc}. 
+or hadron-hadron colliders like the Tevatron and the LHC, @mycite{Krauss2004bs}, 
+@mycite{Krauss2005nu}, @mycite{Gleisberg2005qq}, @mycite{Hoeche2009xc}. 
 An older approach, implemented in previous versions of Sherpa and known
-as the CKKW technique @mycite{Catani2001cc},@mycite{Krauss2002up},
+as the CKKW technique @mycite{Catani2001cc}, @mycite{Krauss2002up},
 has been compared in great detail in @mycite{Alwall2007fs} with other approaches, such 
 as the MLM merging prescription @mycite{Mangano2001xp} as implemented in 
-Alpgen @mycite{Mangano2002ea}, Madevent @mycite{Stelzer1994ta},@mycite{Maltoni2002qb}, 
-or Helac @mycite{Kanaki2000ey},@mycite{Papadopoulos2005ky} and the CKKW-L prescription 
+Alpgen @mycite{Mangano2002ea}, Madevent @mycite{Stelzer1994ta}, @mycite{Maltoni2002qb}, 
+or Helac @mycite{Kanaki2000ey}, @mycite{Papadopoulos2005ky} and the CKKW-L prescription 
 @mycite{Lonnblad2001iq},@mycite{Lavesson2005xu} of Ariadne @mycite{Lonnblad1992tz}. 
 
 
 This manual contains all information necessary to get started with 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-as quickly as possible.  By reading it, users should be enabled to setup the program according 
-to their needs for studying various physics aspects.  Therefore, all switches plus 
-options that have been provided are listed. It is explained how to use them, how
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-can be run in different modes and how the results and output of 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-can be interpreted.  For external code that can be linked, corresponding references are 
-given and users are encouraged to cite them accordingly. 
+@Sherpa{} as quickly as possible. It lists options and switches of interest
+for steering the simulation of various physics aspects of the collision. 
+It does not describe the physics simulated by Sherpa or the underlying 
+structure of the program.
+Many external codes can be linked with Sherpa. This manual explains how
+to do this, but it does not contain a description of the external programs. 
+You are encouraged to read their corresponding documentations, which are
+referenced in the text. If you use external programs with Sherpa, 
+you are encouraged to cite them accordingly. 
 
+The @uref{http://www.montecarlonet.org/index.php?p=Publications/Guidelines,,MCnet Guidelines} apply to Sherpa. You are kindly asked to cite 
+@mycite{Gleisberg2008ta} if you have used the program in your work.  
 
-On the other hand, the physics of 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-and its underlying structure and coding
-principles are not detailed in this manual. For this, readers are encouraged to refer to 
-original work of the authors. Also, whenever justified, 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-users are kindly asked 
-to cite 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa
-@end ifnottex
-'s original publication @mycite{Gleisberg2008ta}. Moreover the authors 
-strongly recommend the study of the manuals and/or many excellent publications on 
-different aspects of event generation and physics at collider experiments of the
-other event generator authors.
+The @Sherpa{} authors strongly recommend the study of the manuals and many excellent 
+publications on different aspects of event generation and physics at 
+collider experiments written by other event generator authors.
 
 
 This manual is organized as follows: in @ref{Basic structure}
 the modular structure intrinsic to 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-is introduced. @ref{Getting started} contains information about and
+@Sherpa{} is introduced. @ref{Getting started} contains information about and
 instructions for the installation of the package. There is also
 a description of the steps that are
-needed to run 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-and generate events. 
+needed to run @Sherpa{} and generate events. 
 The @ref{Input structure} is then discussed, and the ways in which 
 Sherpa can be steered are explained.
 All parameters and options are discussed in @ref{Parameters}.
@@ -219,13 +130,12 @@ There is also a short description of the different @ref{Examples}
 provided with Sherpa.
 
 
-It should be stressed that the construction of a Monte Carlo program
-requires a number of implicit assumptions, approximations and
-simplifications of complicated situations. Potential bugs and other
-shortcomings of the authors may also be included. The results of event
-generators, independent of their quality, should therefore always be
-verified and cross-checked with results obtained by the programs of
-other authors.
+The construction of Monte Carlo programs
+requires several assumptions, approximations and
+simplifications of complicated physics aspects. The results of event
+generators should therefore always be verified and cross-checked 
+with results obtained by other programs, and they should be interpreted 
+with care and common sense.
 
 
 
@@ -237,42 +147,23 @@ other authors.
 @node Basic structure
 @section Basic structure
 
-The construction of the 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-program has been pursued in a modular
-way. It fully reflects the paradigm of Monte Carlo event generation of
-factorizing the simulation into well defined phases. Accordingly, each
+@Sherpa{} is a modular program. This reflects the paradigm of Monte Carlo 
+event generation, with the full simulation is split into well defined 
+event phases, based on QCD factorization theorems. Accordingly, each
 module encapsulates a different aspect of event generation for
 high-energy particle reactions. It resides within its own namespace
 and is located in its own subdirectory of the same name. The main
 module called @code{SHERPA} steers the interplay of all modules -- or
 phases -- and the actual generation of the events.
 Altogether, the following modules are currently distributed with the
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-framework:
+@Sherpa{} framework:
 
 @itemize @bullet
 
 @item ATOOLS
          
 This is the toolbox for all other modules. Since the 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-framework does not rely on CLHEP etc., the ATOOLS contain classes 
+@Sherpa{} framework does not rely on CLHEP etc., the ATOOLS contain classes 
 with mathematical tools like vectors and matrices, organization tools 
 such as read-in or write-out devices, and physics tools like particle 
 data or classes for the event record.
@@ -328,78 +219,39 @@ as well.
 	
 @item MODEL
 
-This module is responsible for setting up the physics model for a simulation run.
-It comprises the initialization of particle properties, basic physics parameters 
+This module sets up the physics model for the simulation.
+It initializes particle properties, basic physics parameters 
 (coupling constants, mixing angles, etc.) and the set of available interaction
 vertices (Feynman rules). By now, there exist explicit implementations of the 
 Standard Model (SM), its Minimal Supersymmetric extension (MSSM), the ADD model
 of large extra dimensions, and a comprehensive set of operators parametrizing 
-anomalous triple and quartic electroweak gauge boson couplings.
+anomalous triple and quartic electroweak gauge boson couplings. An Interface to
+@uref{http://feynrules.irmp.ucl.ac.be/,,FeynRules} is also available.
 
 @item EXTRA_XS
 
 In this module a (limited) collection of analytic expressions
 for simple 2->2 processes within the SM are provided
-together with classes embedding them into the 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex
+together with classes embedding them into the @Sherpa{}
 framework. This also includes methods used for the definition
-of the starting conditions for parton-shower evolution, such as colour connections and
-the hard scale of the process. The classes for phase-space
-integration are not included here, they are located in the
-module Phasic, since they are needed by 
-@iftex 
-A\scalebox{0.8}{MEGIC++}\xspace 
-@end iftex 
-@ifnottex
-AMEGIC++ 
-@end ifnottex 
-and Comix as well.
+of the starting conditions for parton-shower evolution, 
+such as colour connections and the hard scale of the process.
 
 @item AMEGIC++
 
-@iftex 
-A\scalebox{0.8}{MEGIC++}\xspace 
-@end iftex 
-@ifnottex
-AMEGIC++ 
-@end ifnottex 
-@mycite{Krauss2001iv} is 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa
-@end ifnottex
-'s original matrix-element
+@Amegic{} @mycite{Krauss2001iv} is @Sherpa{}'s original matrix-element
 generator. It employs the method of helicity amplitudes
-@mycite{Kleiss1985yh},@mycite{Ballestrero1992dv} and works as
+@mycite{Kleiss1985yh}, @mycite{Ballestrero1992dv} and works as
 a generator, which generates generators:  
 During the initialization run the matrix elements for a given set of
 processes, as well as their 
-specific phase-space mappings are created by 
-@iftex 
-A\scalebox{0.8}{MEGIC++}.
-@end iftex 
-@ifnottex
-AMEGIC++.
-@end ifnottex 
+specific phase-space mappings are created by @Amegic{}.
 Corresponding C++ sourcecode is written to disk and compiled
 by the user using the @kbd{makelibs} script.
 The produced libraries are linked to the main program
 automatically in the next run and used to calculate cross
 sections and to generate weighted or unweighted events.
-@iftex 
-A\scalebox{0.8}{MEGIC++}\xspace 
-@end iftex 
-@ifnottex
-AMEGIC++ 
-@end ifnottex 
-has been tested for multi-particle production in the Standard 
+@Amegic{} has been tested for multi-particle production in the Standard 
 Model @mycite{Gleisberg2003bi}. Its MSSM implementation has been
 validated in @mycite{Hagiwara2005wg}. 
 
@@ -410,7 +262,7 @@ the color dressed Berends-Giele recursive relations @mycite{Duhr2006iq}.
 It employs a new algorithm to recursively compute phase-space weights and can
 be run in multithreaded mode to make better use of multicore processors
 and multiprocessor machines @mycite{Gleisberg2008fv}, see also @mycite{Gleisberg2008ft}.
-The module is a useful supplement to older matrix element generators like AMEGIC++
+The module is a useful supplement to older matrix element generators like @Amegic{}
 in the high multiplicity regime. Due to the usage of colour sampling it is 
 particularly suited for an interface with parton shower simulations and can hence be
 easily employed for the ME-PS merging within Sherpa. It is Sherpa's default
@@ -423,7 +275,7 @@ All base classes dealing with the Monte Carlo phase-space
 integration are located in this module. For the evaluation of the
 initial-state (laser backscattering, initial-state radiation)
 and final-state integrals, the adaptive multi-channel method
-of @mycite{Kleiss1994qy},@mycite{Berends1994pv} is used by default together
+of @mycite{Kleiss1994qy}, @mycite{Berends1994pv} is used by default together
 with a Vegas optimization @mycite{Lepage1980dq} of the single
 channels. In addition, final-state integration accomplished
 by Rambo @mycite{Kleiss1985gy}, Sarge
@@ -447,46 +299,24 @@ are used as shower splitting kernels.
 @item AMISIC++ 
 
 AMISIC++ contains classes for the simulation of multiple parton
-interactions according to @mycite{Sjostrand1987su}. In 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-the
+interactions according to @mycite{Sjostrand1987su}. In @Sherpa{} the
 treatment of multiple interactions has been extended by allowing for
 the simultaneous evolution of an independent parton shower in each
-of the subsequent (semi-)hard collisions.
-The beam--beam remnants
+of the subsequent (semi-)hard collisions. The beam--beam remnants
 are organized such that partons which are adjacent in colour space
 are also adjacent in momentum space. The corresponding classes for
 beam remnant handling reside in the PDF and SHERPA modules.
   
 @item AHADIC++
 
-AHADIC++ is 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa
-@end ifnottex
-'s hadronization package, for translating
+AHADIC++ is @Sherpa{}'s hadronization package, for translating
 the partons (quarks and gluons) into primordial hadrons, to be
 further decayed in HADRONS++.  The algorithm bases on the cluster
-fragmentation ideas presented in
-@mycite{Gottschalk1982yt},@mycite{Gottschalk1983fm},@mycite{Webber1983if},@mycite{Gottschalk1986bv} and 
-implemented in the Herwig family of event generators.  It should be
-noted, though, that the 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-version, based on
-@mycite{Winter2003tt}, indeed differs from the original versions.
+fragmentation ideas presented in @mycite{Gottschalk1982yt}, 
+@mycite{Gottschalk1983fm}, @mycite{Webber1983if}, @mycite{Gottschalk1986bv} 
+and implemented in the Herwig family of event generators.  The actual
+@Sherpa{} implementation, based on @mycite{Winter2003tt}, 
+differs from the original model in several respects.
   
 @item HADRONS++ 
 
@@ -499,34 +329,13 @@ heavy	quark effective theory or light cone sum rules for hadron decays.
 
 @item PHOTONS++ 
 
-The
-@iftex 
-P\scalebox{0.8}{HOTONS++}\xspace
-@end iftex 
-@ifnottex
-PHOTONS++
-@end ifnottex
-module holds routines to add QED radiation to
+The @Photons{} module holds routines to add QED radiation to
 hadron and tau-lepton decays. This has been achieved by an
 implementation of the YFS algorithm @mycite{Yennie1961ad}. The
-structure of
-@iftex 
-P\scalebox{0.8}{HOTONS++}\xspace
-@end iftex 
-@ifnottex
-PHOTONS++
-@end ifnottex
-is such that the formalism can be extended to
+structure of @Photons{} is such that the formalism can be extended to
 scattering processes and to a systematic improvement to higher
 orders of perturbation theory @mycite{Schonherr2008av}.  The application
-of
-@iftex 
-P\scalebox{0.8}{HOTONS++}\xspace
-@end iftex 
-@ifnottex
-PHOTONS++
-@end ifnottex
-therefore accounts for corrections that usually are
+of @Photons{} therefore accounts for corrections that usually are
 added by the application of PHOTOS @mycite{Barberio1993qi} to the
 final state.
  
@@ -541,62 +350,9 @@ matrix element and parton shower generator are found in this module.
 @end itemize
 
 The actual executable of the 
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex 
-generator can be found in the
+@Sherpa{} generator can be found in the
 subdirectory @code{<prefix>/bin/} and is
-called @code{
-@iftex 
-S\scalebox{0.8}{HERPA}\xspace 
-@end iftex 
-@ifnottex
-Sherpa 
-@end ifnottex
-}. To run the program, input files have to be
+called @code{Sherpa}. To run the program, input files have to be
 provided in the current working directory or elsewhere by specifying
 the corresponding path, see @ref{Input structure}. All output files are then written to this
 directory as well.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
