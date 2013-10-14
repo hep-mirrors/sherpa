@@ -29,13 +29,13 @@
 @sp 1
 * Getting started::    A guide to getting started with Sherpa
 @sp 1
+* Merging ME and PS::  Combining fixed-order calculations and resummation
+@sp 1
 * Cross section::      Sherpa's total inclusive cross section
 @sp 1
 * Command line::       Sherpa's command line options
 * Input structure::    How to specify parameters for a Sherpa run
 * Parameters::         The complete list of parameters
-@sp 1
-* Merging ME and PS::  The Sherpa method of merging matrix elements and parton showers
 @sp 1
 * Tips and Tricks::    Advanced usage tips
 * Customization::      Extending Sherpa 
@@ -57,11 +57,11 @@
 
 @include Introduction.texi
 @include Starting.texi
+@include Merging.texi
 @include CrossSection.texi
 @include Commands.texi
 @include Input.texi
 @include Parameters.texi
-@include Merging.texi
 @include Tips.texi
 @include Customization.texi
 @include Examples.texi
