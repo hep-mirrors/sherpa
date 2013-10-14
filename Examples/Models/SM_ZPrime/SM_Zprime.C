@@ -30,14 +30,14 @@ namespace MODEL {
   {
     p_sm = new Standard_Model(m_dir,m_file,false);
 
-    ParticleInit();    
+    ParticleInit();
     if (m_elementary) {
       ATOOLS::OutputParticles(msg->Info());
       ATOOLS::OutputContainers(msg->Info());
     }
   }
-  
-  
+
+
   void SM_Zprime::ParticleInit() {
     // Add Z' particle
     // kf_code,mass,width,3*charge,icharge,strong,2*spin,majorana,take,stable,massive,idname,tex_name
@@ -66,7 +66,7 @@ namespace MODEL {
   bool SM_Zprime::ModelInit(const PDF::ISR_Handler_Map& isr)
   {
     if (m_elementary) {
-      msg_Info()<<"Initialize the Standard Model plus dummy Zprime from "
+      msg_Info()<<"Initialize the Standard Model plus Zprime from "
           <<m_dir<<" / "<<m_file<<std::endl;
     }
     m_name      = std::string("SM+Zprime");
@@ -74,6 +74,7 @@ namespace MODEL {
     p_sm->ModelInit(isr);
     p_numbers   = p_sm->ExtractScalarNumbers();
     p_constants = p_sm->ExtractScalarConstants();
+    p_complexconstants = p_sm->ExtractComplexConstants();
     p_functions = p_sm->ExtractScalarFunctions();
     p_matrices  = p_sm->ExtractComplexMatrices();
     PRINT_INFO("inited SM::ModelInit");
