@@ -339,7 +339,8 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,const int 
   if ((-after[swap][0]>rpa->gen.PBeam(0)[0] &&
        !IsEqual(-after[swap][0],rpa->gen.PBeam(0)[0],1.0e-6)) ||
       (-after[1-swap][0]>rpa->gen.PBeam(1)[0] &&
-       !IsEqual(-after[1-swap][0]>rpa->gen.PBeam(1)[0],1.0e-6))) {
+       !IsEqual(-after[1-swap][0]>rpa->gen.PBeam(1)[0],1.0e-6)) ||
+      after[0].Nan() || after[1].Nan()) {
     msg_Debugging()<<"kinematics failed\n";
     return false;
   }
@@ -369,7 +370,8 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,
   if ((-after[swap][0]>rpa->gen.PBeam(0)[0] &&
        !IsEqual(-after[swap][0],rpa->gen.PBeam(0)[0],1.0e-6)) ||
       (-after[1-swap][0]>rpa->gen.PBeam(1)[0] &&
-       !IsEqual(-after[1-swap][0]>rpa->gen.PBeam(1)[0],1.0e-6))) {
+       !IsEqual(-after[1-swap][0]>rpa->gen.PBeam(1)[0],1.0e-6)) ||
+      after[0].Nan() || after[1].Nan()) {
     msg_Debugging()<<"kinematics failed\n";
     return false;
   }
@@ -691,7 +693,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete)
   }
   msg_Debugging()<<"trying unordered configuration\n";
   }
-  return false;
+  return NULL;
 }
 
 bool Combine_Table::SelectWinner(const size_t &mode)
