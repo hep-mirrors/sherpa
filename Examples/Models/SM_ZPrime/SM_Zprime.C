@@ -56,10 +56,9 @@ namespace MODEL {
     p_dataread->AddWordSeparator("\t");
     p_dataread->SetInputPath(m_dir);
     p_dataread->SetInputFile(m_file);
-    PRINT_INFO(p_constants);
-    p_constants->insert(make_pair(string("Zp_cpl_L"),    
+    p_constants->insert(make_pair(string("Zp_cpl_L"),
                                   p_dataread->GetValue<double>("Zp_cpl_L",1.)));
-    p_constants->insert(make_pair(string("Zp_cpl_R"),    
+    p_constants->insert(make_pair(string("Zp_cpl_R"),
                                   p_dataread->GetValue<double>("Zp_cpl_R",1.)));
   }
 
@@ -77,10 +76,8 @@ namespace MODEL {
     p_complexconstants = p_sm->ExtractComplexConstants();
     p_functions = p_sm->ExtractScalarFunctions();
     p_matrices  = p_sm->ExtractComplexMatrices();
-    PRINT_INFO("inited SM::ModelInit");
 
     FillSpectrum(isr);
-    PRINT_INFO("filled spectrum");
 
     return true;
   }

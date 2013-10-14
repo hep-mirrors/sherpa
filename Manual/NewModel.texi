@@ -24,24 +24,24 @@ The important features of this example include:
 
       This shows how to compile the sources above into a shared library.
       
-@item The line @code{SHERPA_LDADD = SMZprime} in the @code{(run)} section 
-      of the run-card.
+@item The line @code{SHERPA_LDADD SMZprime} in the run-card.
 
       This line tells Sherpa to load the extra libraries created from the *.C 
       files above.
       
-@item The line @code{MODEL = SM+Zprime} in the @code{(model)} section of 
-      the run-card.
+@item The line @code{MODEL SM+Zprime} in the run-card.
 
       This line tells Sherpa which model to use for the run.
 
-@item The lines @code{MASS[32] = 1000.} and @code{WIDTH[32] = 50.} in the 
-      @code{(model)} section of the run-card.
+@item The lines @code{MASS[32] 1000.} and @code{WIDTH[32] 50.} in the run-card.
 
       These lines show how you can overrule the choices you made for the 
       properties of the new particle in the @code{SM_Zprime.C} file. For 
       more information on changing parameters in Sherpa, see 
       @ref{Input structure} and @ref{Parameters}.
+
+@item The lines @code{Zp_cpl_L 0.3} and @code{Zp_cpl_R 0.6} set the
+      couplings to left and right handed fermions in the run-card.
 
 @end itemize
 
