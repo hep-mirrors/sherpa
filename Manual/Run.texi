@@ -260,7 +260,11 @@ can be obtained by (event weight)/(event weight normalisation)), and
 can be computed as the sum of event weights divided by the sum of the number of trials.
 This value must agree with the total cross section quoted by Sherpa at the end of
 the event generation run, and it can serve as a cross-check on the consistency
-of the HepMC event file.
+of the HepMC event file.  Note that Sherpa conforms to the Les Houches 2013
+suggestion (@url{http://phystev.in2p3.fr/wiki/2013:groups:tools:hepmc}) 
+of indicating interaction types through the GenVertex type-flag.  Multiple
+event weights will also be enabled as soon as a similar standard has been
+defined.
 @item HepMC_Short
 Generates output in HepMC::IO_GenEvent format, however, only incoming beams and 
 outgoing particles are stored. Intermediate and decayed particles are not 

@@ -1108,7 +1108,8 @@
 @mybibitem{Seymour1994bx,Sey94b, M. H. Seymour,Soft isolated photon production as a probe of the parton shower mechanism,Z. Phys.,C64,(1994),445-452,,F+J+Z. Phys.%2CC64%2C445}
 @mybibitem{Siegert2010ts,Sie10,F. Siegert,Monte-Carlo event generation for the LHC,,,,,,}
 @mybibitem{Siegert2010mk,Sie10a, F. Siegert and S. Hoche and F. Krauss and  M. Schonherr,Multi-jet merging with NLO matrix elements,PoS,ICHEP2010,(2010),119,[arXiv:1011.6657],arXiv:1011.6657}
-@mybibitem{Sjostrand2003wg,Sjo03,T. Sjostrand and L. Lonnblad and S. M.  and P. Skands,PYTHIA 6.3 Physics and Manual,,,,,hep-ph/0308153,hep-ph/0308153}
+@mybibitem{Sjostrand2001yu,T. Sjostrand and L. Lonnblad, Leif and S. Mrenna, PYTHIA 6.2: Physics and manual,,,,, hep-ph/0108264}
+@mybibitem{Sjostrand2003wg,Sjo03,T. Sjostrand and L. Lonnblad and S. Mrenna  and P. Skands,PYTHIA 6.3 Physics and Manual,,,,,hep-ph/0308153,hep-ph/0308153}
 @mybibitem{Sjostrand2004ef,Sjo04, T. Sjostrand and P. Z. Skands,Transverse-momentum-ordered showers and interleaved multiple interactions,Eur. Phys. J.,C39,(2005),129-154,[hep-ph/0408302],hep-ph/0408302}
 @mybibitem{Sjostrand2004pf,Sjo04a,T. Sjostrand and P. Z. Skands,Multiple interactions and the structure of beam remnants,JHEP,03,(2004),053,[hep-ph/0402078],hep-ph/0402078}
 @mybibitem{Sjostrand2006za,Sjo06, T. Sjostrand and S. Mrenna and P. Skands,PYTHIA 6.4 physics and manual,JHEP,05,(2006),026,[hep-ph/0603175],hep-ph/0603175}

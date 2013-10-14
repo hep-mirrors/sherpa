@@ -15,13 +15,220 @@ decays of unstable hadrons into stable final states.
 
 @node Fragmentation
 @subsection Fragmentation
+
+@subsubsection Fragmentation models
+
 @cindex FRAGMENTATION
 
 The @code{FRAGMENTATION} parameter sets the fragmentation module to be employed
-during event generation. The default is @option{Ahadic}, alternatively the
-hadronization can be disabled with the value @option{Off}.
+during event generation. 
+@itemize @bullet 
+@item 
+      The default is @option{Ahadic}, enabling Sherpa's native hadronization 
+      model AHADIC++, based on the cluster fragmentation model introduced in 
+      @mycite{Field1982dg}, @mycite{Webber1983if}, @mycite{Gottschalk1986bv}, 
+      and @mycite{Marchesini1987cf} and implementing some modifications 
+      discussed in @mycite{Winter2003tt}.   
+@item 
+      the hadronization can be disabled with the value @option{Off}. 
+@item 
+      To evaluate uncertainties stemming from the hadronization, Sherpa also 
+      provides an interface to the Lund string fragmentation in Pythia 6.2 
+      @mycite{Sjostrand2003wg} by using the setting @option{Lund}.
+@end itemize
 
-TODO: Description of parameters and their tuned values.
+@subsubsection Hadron constituents
+
+The constituent masses of the quarks and diquarks are given by 
+@itemize @bullet
+@item @code{M_UP_DOWN} (175 MeV), 
+@item @code{M_STRANGE} (375 MeV), 
+@item @code{M_CHARM} (1.9 GeV), and 
+@item @code{M_BOTTOM} (5.2 GeV).  
+@end itemize
+The diquark masses are composed of the quark 
+masses and some additional parameters,
+@iftex
+  \bean
+  m_{12} = (m_1+m_2+m_{\mathrm{offset}})\times(1+m_{\mathrm{bind}})
+@end iftex
+with 
+@itemize @bullet
+@item @code{M_DIQUARK_OFFSET} (550 MeV), 
+@item @code{M_BIND_0} (0 MeV), and 
+@item @code{M_BIND_1} (200 MeV).
+@end itemize
+
+@subsubsection Hadron multiplets
+
+For the selection of hadrons emerging in such cluster transitions and decays,
+an overlap between the cluster flavour content and the flavour part of the 
+hadronic wave function is formed.  This may be further modified by production
+probabilities, organised by multiplet and given by the parameters
+@itemize @bullet
+@item @code{MULTI_WEIGHT_L0R0_PSEUDOSCALARS} (default 1.0),
+@item @code{MULTI_WEIGHT_L0R0_VECTORS} (default 0.5),
+@item @code{MULTI_WEIGHT_L0R0_TENSORS2} (default 0.2),
+@item @code{MULTI_WEIGHT_L0R0_TENSORS3} (default 0.0),
+@item @code{MULTI_WEIGHT_L0R0_TENSORS4} (default 0.0),
+@item @code{MULTI_WEIGHT_L1R0_SCALARS} (default 0.25),
+@item @code{MULTI_WEIGHT_L1R0_AXIALVECTORS} (default 0.5),
+@item @code{MULTI_WEIGHT_L1R0_TENSORS2} (default 0.0),
+@item @code{MULTI_WEIGHT_L2R0_VECTORS} (default 0.5),
+@item @code{MULTI_WEIGHT_L3R0_VECTORS} (default 0.0),
+@item @code{MULTI_WEIGHT_L0R1_SCALARS} (default 0.5),
+@item @code{MULTI_WEIGHT_L0R1_AXIALVECTORS} (default 0.0),
+@item @code{MULTI_WEIGHT_L0R0_N_1/2} (default 1.0),
+@item @code{MULTI_WEIGHT_L0R0_N*_1/2} (default 1.0),
+@item @code{MULTI_WEIGHT_L1R0_N*_1/2} (default 0.0),
+@item @code{MULTI_WEIGHT_L1R0_N*_3/2} (default 0.0),
+@item @code{MULTI_WEIGHT_L0R0_DELTA_3/2} (default 0.45), and
+@item @code{MULTI_WEIGHT_L1R0_DELTA*_3/2} (default 0.0).  
+@end itemize
+In addition, there are some enhancement and suppression factors applied to 
+heavy baryons and meson singlets,
+@itemize @bullet
+@item @code{HEAVY_BARYON_ENHANCEMEMT} (default 7.5), and 
+@item @code{SINGLET_SUPPRESSION} (default 0.25).  
+@end itemize
+For the latter, Sherpa also allows
+to redfine the mixing angles through parameters such as
+@itemize @bullet
+@item @code{Mixing_0+} (default -0.31416-pi/2) or 
+@item @code{Mixing_1-} (default 0.61075).
+@end itemize
+
+@subsubsection Cluster transition to hadrons - flavour part
+
+The phase space effects due to these masses govern to a large extent the 
+flavour content of the non-perturbative gluon splittings at the end of the 
+parton shower and in the decay of clusters.  They are further modified by 
+relative probabilities with respect to the production of up/down flavours 
+through the parameters 
+@itemize @bullet
+@item @code{STRANGE_FRACTION} (default 0.42), 
+@item @code{BARYON_FRACTION} (default 0.44), 
+@item @code{P_@{QS@}/P_@{QQ@}} (default 0.26), 
+@item @code{P_@{SS@}/P_@{QQ@}} (default 0.18), and 
+@item @code{P_@{QQ_1@}/P_@{QQ_0@}} (default 0.18).  
+@end itemize
+
+The transition of clusters to hadrons is governed by the following 
+considerations: 
+@itemize @bullet
+@item 
+      Clusters can be interpreted as excited hadrons, with a continous mass
+      spectrum.
+@item 
+      When a cluster becomes sufficiently light such that its mass is below
+      the largest mass of any hadron with the same flavour content, it must
+      be re-iterpreted as such a hadron.  In this case it will be shifted on
+      the corresponding hadron mass, and the recoil will be distributed to the
+      ``neighbouring'' clusters or by emitting a soft photon.  This comparison 
+      of masses clearly depends on the multiplets switched on in AHADIC++, 
+      see above, and on an additional offset, which provides an important 
+      tuning parameter, namely 
+      @itemize @bullet
+      @item @code{TRANSITION_OFFSET} (default 0 MeV).   
+      @end itemize
+@item 
+      In addition, clusters may becomes sufficiently light such that they 
+      should decay directly into two hadrons instead of two clusters.  
+      This decision is based on the heaviest hadrons accessible in
+      a decay, modulated by another offset parameter, 
+      @itemize @bullet
+      @item @code{DECAY_OFFSET} (default 800 MeV).     
+      @end itemize
+@item
+      If both options, transition and decay, are available, there is a 
+      competition between  
+@end itemize
+ 
+@subsubsection Cluster transition and decay weights
+
+The probability for a cluster C to be transformed into a hadron H is given by
+a combination of weights, obtained from the overlap with the flavour part of
+the hadronic wave function, the relative weight of the corresponding multiplet
+and a kinematic weight taking into account the mass difference of cluster
+and hadron and the width of the latter.
+@iftex
+        \bean
+        \mathcal{P}_{C\to H} = 
+        \left\langle f_1\bar f_2 | \psi_{H, 12}\right\rangle\,\times\,
+        \mathcal{P}_{\mathrm{multiplet}}\,\times\,
+        \left(\frac{m_H^2}{(m_C^2-m_H^2)+\Gamma_h^2/4.}\right)   
+        \eean
+@end iftex
+For the direct decay of a cluster into two hadrons the overlaps with the
+wave functions of all hadrons, their respective multiplet suppression weights,
+the flavour weight for the creation of the new flavour q and a kinematical
+factor are relevant.  Here, yet another tuning paramter enters,
+@itemize @bullet
+@item @code{MassExponent_C->HH} (default 3.5) 
+@end itemize
+which partially compensates phase space effects favouring light hadrons,
+@iftex
+        \bean
+        \mathcal{P}_{C\to H_1H_2} = 
+        \mathcal{P}_q\,\times\,
+        \left\langle f_1\bar f_2 | \psi_{H, 1q}\psi_{H, q2}\right\rangle
+        \,\times\,
+        \mathcal{P}_{\mathrm{multiplet}}\,\times\,
+        \mathcal{P}_{\mathrm{multiplet}}\,\times\,      
+        \frac{\sqrt{[m_C^2-(m_{H_1}+m_{H_2})^2][m_C^2-(m_{H_1}-m_{H_2})^2]}}
+                {16\pi m_C^3}\,\times\,   
+                \left(\frac{4m_{H_1}m_{H_2}}{m_C^2}\right)^\chi\,.
+        \eean
+@end iftex
+
+
+@subsubsection Cluster decays - kinematics
+
+Cluster decays are generated by firstly emitting a non-perturbative ``gluon''
+from one of the quarks, using a transverse momentum distribution as in the
+non-perturbative gluon decays, see below, and by then splitting this gluon into
+a quark--antiquark of anti-diquark--diquark pair, again with the same 
+kinematics.  In the first of these splittings, the emission of the gluon,
+though, the energy distribution of the gluon is given by the quark splitting
+function, if this quark has been produced in the perturbative phase of the
+event.  If, in contrast, the quark stems from a cluster decay, the energy
+of the gluon is selected according to a flat distribution.    
+
+In clusters decaying to hadrons, the transverse momentum is chosen according
+to a distribution given by an infrared-continued strong coupling and a
+term inversemly proportional to the infrared-modified transverse momentum,
+@iftex
+        \bean
+        \mathcal{P}(p_\perp^2) \propto
+        \frac{\alpha_s^{(IR)}(p_\perp^2)}{p_\perp^2+p_{\perp,0}^2}\,,
+        \eean
+@end iftex
+constrained to be below a maximal transverse momentum.  The respective 
+tuning parameters are
+@itemize @bullet
+@item @code{PT^2_0} (default 3.0 GeV*GeV),
+@item @code{PT_MAX} (default 1.66 GeV), and
+@item @code{Q_as^2} (default 1.0 GeV*GeV).
+@end itemize
+@iftex
+The strong coupling is given by 
+    \bean
+    \alpha_s^{(IR)}(p_\perp^2) = \alpha_s(p_\perp^2+p_{\per,0}^2)
+    \eean
+@end iftex
+
+@subsubsection Splitting kinematics
+
+In each splitting, the kinematics is given by the transverse momentum, the
+energy splitting parameter and the azimuthal angle.  The latter, the azimuthal
+angle is always seleectred according to a flat distribution, while the energy
+splitting parameter will either be chosen according to the quark-to-gluon 
+splitting function (if the quark is a leading quark, i.e. produced in the
+pertrubative phase), to the gluon-to-quark splitting function, or according to
+a flat distribution.  The transverse momentum is given by the same 
+distribution as in the cluster decays to hadrons.
+
+
 
 @node Hadron decays
 @subsection Hadron decays
@@ -59,7 +266,8 @@ Some general switches which relate to hadron decays can be adjusted in the
 @item  Hadron properties like mass, width, stable/unstable and active can be set
   in full analogy to the settings for fundamental particles
   in the @code{(model)} section (cf. @ref{Model Parameters}).
-@item @anchor{SOFT_MASS_SMEARING} @code{SOFT_MASS_SMEARING = [0,1,2]} (default: 1) 
+@item @anchor{SOFT_MASS_SMEARING} 
+      @code{SOFT_MASS_SMEARING = [0,1,2]} (default: 1) 
   Determines whether particles entering the hadron decay event
   phase should be put off-shell according to their mass
   distribution. It is taken care that no decay mode is suppressed
