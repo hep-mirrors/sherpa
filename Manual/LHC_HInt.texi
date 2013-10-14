@@ -1,5 +1,8 @@
 @node LHC_HInt
 @subsection H production in gluon fusion with interference effects
+@cindex HIGGS_INTERFERENCE_MODE
+@cindex HIGGS_INTERFERENCE_ONLY
+@cindex HIGGS_INTERFERENCE_SPIN
 
 This is a setup for inclusive Higgs production through 
 gluon fusion at hadron colliders. The inclusive process is calculated 

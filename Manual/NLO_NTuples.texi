@@ -82,6 +82,9 @@ The result can then be plotted and displayed.
 @subsubsection Usage of NTuples in Sherpa
 Next we will compute the NLO uncertainty band using Sherpa.
 To this end, we make use of the Root NTuples generated in the previous steps.
+Note that the setup files for reweighting are almost identical to those for
+generating the NTuples. We have simply replaced @option{EVENT_OUTPUT} by
+@option{EVENT_INPUT}.
 
 First we re-evaluate the events with the scale increased by a factor 2:
 @verbatim

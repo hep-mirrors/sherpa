@@ -9,6 +9,7 @@ The following parameters describe general run information. They may be set in th
 * OUTPUT::            Output level.
 * LOG_FILE::          Log file.
 * RANDOM_SEED::       Seed for random number generator.
+* EVENT_SEED_MODE::   Setting predefined seeds.
 * ANALYSIS::          Switch internal analysis on or off.
 * ANALYSIS_OUTPUT::   Directory for generated analysis histogram files.
 * TIMEOUT::           Run time limitation.
@@ -91,8 +92,6 @@ A file name can alternatively be specified on the command line through option
 @node RANDOM_SEED
 @subsection RANDOM_SEED
 @cindex RANDOM_SEED
-@cindex RANDOM_SEED1
-@cindex RANDOM_SEED2
 Sherpa uses different random-number generators. The default is the Ran3 
 generator described in [@uref{http://www.nr.com/,,ISBN-10:0521880688}].
 Alternatively, a combination of George Marsaglias KISS and SWB 
@@ -104,6 +103,16 @@ The integer-valued seeds of the generators are specified by
 @option{RANDOM_SEED1=A} through @option{RANDOM_SEED4=D}. The Ran3 generator 
 takes only one argument. This value can also be set using the command line 
 option @option{-R}, see @ref{Command line}.
+
+@node EVENT_SEED_MODE
+@subsection EVENT_SEED_MODE
+The tag @option{EVENT_SEED_MODE} can be used to enforce the same seeds in different
+runs of the generator. When set to 1, seed files are written to disk. These files are
+gzip compressed, if Sherpa was compiled with option @option{--enable-gzip}.
+When set to 2, existing random seed files are read and the seed is set to the
+next available value in the file before each event. When set to 3, Sherpa uses
+an internal bookkeeping mechanism to advance to the next predefined seed.
+No seed files are written out or read in.
 
 @node ANALYSIS
 @subsection ANALYSIS
@@ -227,6 +236,7 @@ C++ source code, cf. @ref{SHERPA_CPP_PATH}.
 @cindex EVT_FILE_PATH
 @cindex OUTPUT_PRECISION
 @cindex EVENT_OUTPUT
+@cindex EVENT_INPUT
 
 Sherpa provides the possibility to output events in various formats, 
 e.g. the HepEVT common block structure or the HepMC format.
@@ -296,8 +306,10 @@ on top of multiparton final states.
 @item Root
 Generates output in ROOT ntuple format @strong{for NLO event generation only}. 
 For details on the ntuple format, see @ref{Structure of ROOT NTuple Output}.
-This output option is only available if Sherpa was linked to ROOT during 
+This output option is available only if Sherpa was linked to ROOT during 
 installation by using the configure option @code{--enable-root=/path/to/root}.
+ROOT ntuples can be read back into Sherpa and analyzed using the option
+@option{EVENT_INPUT}. This feature is described in @ref{NTuple production}.
 @end table
 
 The output can be further customized using the following options:
@@ -313,8 +325,9 @@ Directory where the files will be stored.
 Steers the precision of all numbers written to file.
 @end table
 
-To write events directly to gzipped files instead of plain text, the
-option @option{--enable-gzip} has to be specified during the installation.
+For all output formats except ROOT and Delphes, events can be written directly 
+to gzipped files instead of plain text. The option @option{--enable-gzip} 
+must be given during installation to enable this feature.
 
 @node MPI parallelization
 @subsection MPI parallelization

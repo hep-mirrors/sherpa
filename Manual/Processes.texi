@@ -498,10 +498,12 @@ loop-ME generator. The only Sherpa-native option is @code{Internal} with a few
 hard coded loop matrix elements.
 
 @subsubsection BlackHat Interface
+@cindex BH_SETTINGS_FILE
 
 Another source for loop matrix elements is @url{http://projects.hepforge.org/blackhat,BlackHat}.
 To use this Sherpa has to be linked to BlackHat during installation by using the configure option 
-@code{--enable-blackhat=/path/to/blackhat}.
+@code{--enable-blackhat=/path/to/blackhat}. The BlackHat settings file can be specified using
+@option{BH_SETTINGS_FILE}.
 
 
 @node Integrator
