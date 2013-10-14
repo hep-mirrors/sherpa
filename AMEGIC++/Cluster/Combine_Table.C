@@ -473,6 +473,18 @@ void Combine_Table::AddPossibility(const int i,const int j,const int k,
   }
 }
 
+int Combine_Table::NOutMin() const
+{
+  int noutmin=Min(2,(int)p_proc->Info().m_fi.NMinExternal());
+  if (noutmin<2) {
+    int msv=0;
+    for (size_t i(p_proc->NIn());i<m_nlegs;++i)
+      if (p_legs[0][i].Flav().Mass()) msv=1;
+    if (!msv) noutmin=2;
+  }
+  return noutmin;
+}
+
 void Combine_Table::FillTable(Leg **legs,const int nlegs,const int nampl)
 {
   // store information
@@ -481,7 +493,7 @@ void Combine_Table::FillTable(Leg **legs,const int nlegs,const int nampl)
   m_nampl=nampl;
   Flavour mo;
   // determine possible combinations and corresponding y_ij  if nlegs>4
-  if (m_nlegs>p_proc->NIn()+Min(2,(int)p_proc->Info().m_fi.NMinExternal())) {
+  if (m_nlegs>p_proc->NIn()+NOutMin()) {
     int start=0;
     // cluster initial state only if isrshower and isr_x is on. 
     if (!legs[0][0].Flav().Strong() && !legs[0][1].Flav().Strong()) start=2;
@@ -559,7 +571,7 @@ KT2Info_Vector Combine_Table::UpdateKT2(const CD_List::iterator &cdit) const
   }
   if ((cdit->second.m_dec<10 &&
        cdit->first.m_flav.Strong()) ||
-      m_nlegs==p_proc->NIn()+Min(2,(int)p_proc->Info().m_fi.NMinExternal())) {
+      m_nlegs==p_proc->NIn()+NOutMin()) {
     nkt2ord[li].second=cdit->second.m_pt2ij.m_kt2;
     msg_Debugging()<<"set last k_T = "<<sqrt(nkt2ord[li].second)
 		   <<" for "<<ID(nkt2ord[li].first)
@@ -617,7 +629,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete)
       if ((mode&512) && m_nstrong==0) {
 	return CheckCore(mode,1);
       }
-      if (nl==4 && p_proc->Info().m_fi.NMinExternal()>1 &&
+      if (nl==p_proc->NIn()+NOutMin() &&
 	  (IdentifyHardProcess() || p_up==NULL)) {
 	DecayInfo_Vector decids(m_decids);
 	for (int j(0);j<m_nampl;++j) {
@@ -657,7 +669,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete)
     if (!ord) {
       if (!(mode&16)) continue;
     }
-    if (nl<p_proc->NIn()+Min(2,(int)p_proc->Info().m_fi.NMinExternal()))
+    if (nl<p_proc->NIn()+NOutMin())
       THROW(fatal_error,"nlegs < min. Abort.");
     double scale(-1.0);
     Combine_Table *tab(CreateNext());

@@ -134,6 +134,8 @@ namespace AMEGIC {
 
     KT2Info_Vector UpdateKT2(const CD_List::iterator &cdit) const;
 
+    int NOutMin() const;
+
     Leg  CombinedLeg(Leg *legs,const int i,const int j);
     Leg *CombineLegs(Leg *legs,const int i,const int j,
 		     const int nlegs,const int kin);
