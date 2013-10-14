@@ -7,7 +7,7 @@
   # Physics parameters
   BEAM_1 2212; BEAM_ENERGY_1 4000;
   BEAM_2 2212; BEAM_ENERGY_2 4000;
-  CORE_SCALE TTBar;
+  CORE_SCALE QCD;
   WIDTH[6] 0;
 }(run);
 
