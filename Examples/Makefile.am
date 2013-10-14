@@ -53,9 +53,7 @@ nobase_dist_examples_DATA         =	\
 		H_in_TTBar/LHC_TTH_MCatNLO/TTH_Interface.C \
 		H_in_TTBar/LHC_TTH_MCatNLO/SConstruct \
 		H_in_TTBar/LHC_TTH_MCatNLO/Run.dat \
-		Tops_plus_Jets/Tevatron_Tops_MEPS/Run.dat \
 		Tops_plus_Jets/LHC_Tops_MEPS/Run.dat \
-		Tops_plus_Jets/Tevatron_Tops_MCatNLO/Run.dat \
 		Tops_plus_Jets/LHC_Tops_MCatNLO/Run.dat \
 		Tops_plus_V/LHC_TTW/Run.dat
 

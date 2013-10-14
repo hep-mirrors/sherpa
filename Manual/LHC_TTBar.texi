@@ -9,7 +9,10 @@
 
 Things to notice:
 @itemize
-@item ...
+@item We use OpenLoops to compute the virtual corrections @mycite{Cascioli2011va}.
+@item We match matrix elements and parton showers using the MC@@NLO technique 
+for massive particles, as described in @mycite{Hoeche2013mua}.
+@item The scale is defined as in Appendix C of @mycite{Hoeche2013mua}.
 @end itemize
  
 @node Tops plus Jets in MEPS
@@ -23,6 +26,7 @@ Things to notice:
 
 Things to notice:
 @itemize
-@item ...
+@item We enable top decays through the internal decay module using @option{HARD_DECAYS 1}
+and @option{HARD_SPIN_CORRELATIONS 1}.
 @end itemize
  
