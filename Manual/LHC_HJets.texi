@@ -32,9 +32,6 @@ scales are set to the above defined scale factors times the value determined
 by the METS-clustering algorithm. The scale of the two powers of alpha_s 
 in the effective ggH-coupling are fixed to the Higgs mass. They can be varied 
 separately by setting @code{EHC_SCALE2}, cf. @ref{EHC}.
-@item Enabling the @code{EXCLUSIVE_CLUSTER_MODE} for the METS-clustering 
-algorithm ensures that only QCD-splittings are inverted, such that the 
-production of a Higgs boson is always identified as the core process.
 @item Tags (@code{LJET}, @code{NJET} and @code{QCUT}) have been introduced 
 to be used in the process setup, defining the multiplicity of the MC@@NLO 
 subprocesses, the maximal number of extra jets, and the merging cut.

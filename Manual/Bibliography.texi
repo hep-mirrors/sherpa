@@ -689,6 +689,7 @@
 @mybibitem{Frixione1999gr,Fri99, S. Frixione and W. Vogelsang,Isolated-photon production in polarized p p collisions,Nucl. Phys.,B568,(2000),60-92,[hep-ph/9908387],hep-ph/9908387}
 @mybibitem{Furmanski1980cm,Fur80, W. Furmanski and R. Petronzio,Singlet parton densities beyond leading order,Phys. Lett.,B97,(1980),437,,F+J+Phys. Lett.%2CB97%2C437}
 @mybibitem{Gangemi1999gt,Gan99, F. Gangemi and G. Montagna and M. Moretti and O. Nicrosini and F. Piccinini,Electroweak physics in six-fermion final states at future e^+ e^- colliders,,,,,hep-ph/0001065,hep-ph/0001065}
+@mybibitem{Gao2013xoa,Gao13, J. Gao and M. Guzzi and J. Huston and H. L. Lai and Z.  Li and others,The CT10 NNLO Global Analysis of QCD,,,,,arXiv:1302.6246,arXiv:1302.6246}
 @mybibitem{Garzelli2011is,Gar11, M.V. Garzelli and A. Kardos and C.G. Papadopoulos and  Z. Trocsanyi,Z0 - boson production in association with a top anti-top pair at NLO accuracy with parton shower effects,Phys.Rev.,D85,(2012),074022,[arXiv:1111.1444],arXiv:1111.1444}
 @mybibitem{Garzelli2011vp,Gar11a, M.V. Garzelli and A. Kardos and C.G. Papadopoulos and  Z. Trocsanyi,Standard Model Higgs boson production in association with a top anti-top pair at NLO with parton showering,Europhys.Lett.,96,(2011),11001,[arXiv:1108.0387],arXiv:1108.0387}
 @mybibitem{Gasser1983yg,Gas83, J. Gasser and H. Leutwyler,Chiral Perturbation Theory to One Loop,Ann. Phys.,158,(1984),142,,F+J+Ann. Phys.%2C158%2C142}

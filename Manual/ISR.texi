@@ -55,10 +55,16 @@ The following options are distributed with Sherpa:
 Use PDF's from LHAPDF @mycite{Whalley2005nh}. The interface is only
 available if Sherpa has been compiled with support for LHAPDF, see
 @ref{Installation}.
+@item CT12Sherpa
+Built-in library for some PDF sets from the CTEQ collaboration, cf.
+@mycite{Gao2013xoa}.
+@item CT10Sherpa
+Built-in library for some PDF sets from the CTEQ collaboration, cf.
+@mycite{Lai2010vv}. This is the
+default, if Sherpa has not been compiled with LHAPDF support.
 @item CTEQ6Sherpa
 Built-in library for some PDF sets from the CTEQ collaboration, cf.
-@mycite{Nadolsky2008zw}. This is the
-default, if Sherpa has not been compiled with LHAPDF support.
+@mycite{Nadolsky2008zw}.
 @item MSTW08Sherpa
 Built-in library for PDF sets from the MSTW group, cf. @mycite{Martin2009iq}.
 @item MRST04QEDSherpa

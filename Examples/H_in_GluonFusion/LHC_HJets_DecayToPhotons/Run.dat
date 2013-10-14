@@ -8,11 +8,6 @@
 
   % tags for process setup
   LJET:=1,2,3; NJET:=3; QCUT:=30.;
-  EXCLUSIVE_CLUSTER_MODE 1;
-
-  % shower settings for NLO
-  CSS_FS_PT2MIN 2; CSS_IS_PT2MIN 2;
-  CSS_FS_AS_FAC 1; CSS_IS_AS_FAC 1;
 
   % tags and settings for ME generators
   LOOPGEN0:=Internal;
