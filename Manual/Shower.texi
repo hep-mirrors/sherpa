@@ -56,7 +56,10 @@ if both c- and b-quarks are to be treated as massive.
 @node CS Shower options
 @subsection CS Shower options
 @cindex CSS_KIN_SCHEME
-@cindex CSS_PT2MIN
+@cindex CSS_IS_PT2MIN
+@cindex CSS_FS_PT2MIN
+@cindex CSS_IS_AS_FAC
+@cindex CSS_FS_AS_FAC
 @cindex CSS_EW_MODE
 @cindex CSS_NOEM
 @cindex CSS_MAXEM
@@ -70,8 +73,12 @@ with initial-state emitter and final-state spectator can be changed
 for systematics studies. Setting @option{CSS_KIN_SCHEME=0} (default) 
 corresponds to using the recoil scheme proposed in @mycite{Hoeche2009xc}, 
 while @option{CSS_KIN_SCHEME=1} enables the original recoil strategy.
-The lower cutoff of the shower evolution can be set via @option{CSS_PT2MIN}. 
-Note that this value is specified in GeV^2.
+The lower cutoff of the shower evolution can be set via @option{CSS_FS_PT2MIN}
+and @option{CSS_IS_PT2MIN} for final and initial state shower, respectively. 
+Note that this value is specified in GeV^2. Scale factors for the evaluation
+of the strong coupling in the parton shower are given by @option{CSS_FS_AS_FAC}
+and @option{CSS_IS_AS_FAC}. They multiply the ordering parameter, which is
+given in units of GeV^2.
 
 By default, only QCD splitting functions are enabled in the shower.
 If you also want to allow for photon splittings, you can enable them
