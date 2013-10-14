@@ -1,7 +1,0 @@
-
-vars = Variables('.SConstruct')
-vars.Add(PathVariable('sherpa','path to sherpa','../../..',PathVariable.PathIsDir))
-env = Environment(variables=vars,CPPPATH=['${sherpa}'])
-vars.Save('.SConstruct',env)
-
-env.SharedLibrary('SherpaWBF', ['WBF_Core_Scale.C'])
