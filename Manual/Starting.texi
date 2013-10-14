@@ -10,11 +10,11 @@
 @section Installation
 
 Sherpa is distributed as a tarred and gzipped file named
-@code{Sherpa-<version>.tar.gz}, and can be unpacked in the current
+@code{SHERPA-MC-@value{VERSION}.tar.gz}, and can be unpacked in the current
 working directory with
 
 @example
-@code{ tar -zxf Sherpa-<version>.tar.gz} .
+@code{ tar -zxf SHERPA-MC-@value{VERSION}.tar.gz} .
 @end example
 
 To guarantee successful
@@ -59,8 +59,8 @@ one has to set the following environment variables for each run:
   @item @code{LD_LIBRARY_PATH=$SHERPA_LIBRARY_PATH:$LD_LIBRARY_PATH}
 @end itemize
 
-Sherpa can be interfaced with various external packages, e.g. HepMC,
-for event output, or LHAPDF, for PDFs. For this to work, the user has
+Sherpa can be interfaced with various external packages, e.g. @uref{http://lcgapp.cern.ch/project/simu/HepMC/,,HepMC},
+for event output, or @uref{https://lhapdf.hepforge.org/,,LHAPDF}, for PDFs. For this to work, the user has
 to pass the appropriate commands to the configure step. This is achieved 
 as shown below:
 
@@ -83,8 +83,7 @@ The Sherpa package has successfully been compiled, installed and
 tested on SuSE, RedHat / Scientific Linux and Debian / Ubuntu Linux systems 
 using the GNU C++ compiler versions 3.2, 3.3, 3.4, and 4.x as
 well as on Mac OS X 10 using the GNU C++ compiler version 4.0. In all cases the 
-GNU FORTRAN compiler g77 or gfortran has been employed. Note that GCC
-version 2.96 is @strong{not} supported.
+GNU FORTRAN compiler g77 or gfortran has been employed.
 
 If you have multiple compilers installed on your system, you can use shell 
 environment variables to specify which of these are to be used. A list of 
@@ -100,6 +99,32 @@ Examples:
 @code{export CXX=g++-3.4
 export CC=gcc-3.4
 export CPP=cpp-3.4}
+@end example
+
+@subsubheading Installation on Cray XE6 / XK7
+
+Sherpa has been installed successfully on Cray XE6 and Cray XK7.
+The following configure command should be used
+@example
+./configure <your options> --enable-mpi --host=i686-pc-linux CC=CC CXX=CC FC='ftn -fPIC' LDFLAGS=-dynamic
+@end example
+Sherpa can then be run with
+@example
+aprun -n <nofcores> <prefix>/bin/Sherpa -lrun.log
+@end example
+The modularity of the code requires setting the environment variable @option{CRAY_ROOTFS}, 
+cf. the Cray system documentation.
+
+@subsubheading Installation on IBM BlueGene/Q
+
+Sherpa has been installed successfully on an IBM BlueGene/Q system. 
+The following configure command should be used
+@example
+./configure <your options> --enable-mpi --host=powerpc64-bgq-linux CC=mpic++ CXX=mpic++ FC='mpif90 -fPIC -funderscoring' LDFLAGS=-dynamic
+@end example
+Sherpa can then be run with
+@example
+qsub -A <account> -n <nofcores> -t 60 --mode c16 <prefix>/bin/Sherpa -lrun.log
 @end example
 
 @subsubheading MacOS Installation
@@ -167,7 +192,7 @@ discussing and referring to the parameter settings that come in the run card
 This is a simple run card
 created to show the basics of how to operate Sherpa. @strong{It should be 
 stressed that this run-card relies on many of Sherpa's default settings,
-and, as such, the user should understand those settings before using it to 
+and, as such, you should understand those settings before using it to 
 look at physics.} For more information on the settings and parameters in 
 Sherpa, see @ref{Parameters}, and for more 
 examples see the @ref{Examples} section.
@@ -204,7 +229,7 @@ directory and executing
 @code{<prefix>/bin/Sherpa} 
 @end example
 
-The user may also run from an arbitrary directory, employing
+You may also run from an arbitrary directory, employing
 @code{<prefix>/bin/Sherpa PATH=<prefix>/share/SHERPA-MC/Examples/V_plus_Jets/LHC_ZJets}. 
 In the example, the keyword @code{PATH} is specified by an absolute path. 
 It may also be specified relative to the current working directory. If it is
@@ -216,13 +241,13 @@ subdirectories for different simulations as is demonstrated with
 the example setups. 
 
 If AMEGIC++ is used, Sherpa requires an initialization run, where 
-libraries are written out, then the libraries must be compiled and linked by 
-runninga @code{makelibs} script in the working directory, and then Sherpa is 
-run again for the actual cross section integrations and event generation.
+C++ source code is written to disk. This code must be compiled into dynamic libraries 
+by the user by running the @code{makelibs} script in the working directory.
+After this step Sherpa is run again for the actual cross section integrations and event generation.
 For more information on and examples of how to run Sherpa using AMEGIC++, see 
 @ref{Running Sherpa with AMEGIC++}.
 
-If the Internal hard-coded cross sections or Comix are used,
+If the internal hard-coded matrix elements or Comix are used,
 and AMEGIC++ is not, an initialization run is not needed, and Sherpa will 
 calculate the cross sections and generate events during the first run.
 
@@ -230,8 +255,8 @@ As the cross sections are integrated, the
 integration over phase space is optimized to arrive at an
 efficient event generation.
 Subsequently events are generated if @code{EVENTS} was specified
-either at the command line or added to the @code{Run.dat} file in the
-@code{(run)} section. 
+either on the command line or added to the @code{(run)} section
+in the @code{Run.dat} file. 
 
 The generated events are not stored into a file by
 default; for details on how to store the events see 
@@ -270,53 +295,45 @@ be prevented by either using
 or the command line option @option{-g} can be invoked, see @ref{Command line}. 
 
 
-In case a results directory under the name set via 
-@code{RESULT_DIRECTORY=<result>/} is present, Sherpa will look for the 
-integration results in the set directory and read them in. Of course, 
-if corresponding parameters do change,
-the cross sections have to be re-evaluated for a valid new generation
-run. The new results have to be stored in a new directory or the
+If physics parameters change, the cross sections have to be recomputed. 
+The new results should either be stored in a new directory or the 
 @code{<result>} directory may be re-used once it has been emptied.
-Basically, if any parameters affecting the @ref{Model Parameters}, 
-@ref{Matrix Elements} or @ref{Selectors} are changed a recalculation of 
-the cross sections is mandatory.
+Parameters which require a recomputation are any parameters affecting 
+the @ref{Model Parameters}, @ref{Matrix Elements} or @ref{Selectors}.
 Standard examples are changing the magnitude of couplings,
 renormalisation or factorisation scales, changing the PDF or
 centre-of-mass energy, or, applying different cuts at the parton
-level. If unsure whether a re-integration is required, a simple
+level. If unsure whether a recomputation is required, a simple
 test is to remove the
 @code{RESULT_DIRECTORY} option from the run command and check
 whether the new integration numbers (statistically) comply with the
 stored ones.
 
-One more remark (or maybe warning) concerning the validity of the
+A warning on the validity of the
 process libraries is in order here: it is absolutely mandatory to
 generate new library files, whenever the physics model is altered,
 i.e. particles are added or removed and hence new or existing
 diagrams may or may not anymore contribute to the same final states.
-Also, when particle masses are switched on or off new library files
+Also, when particle masses are switched on or off, new library files
 must be generated (however, masses may be changed between non-zero
-values keeping the same process libraries). Old library files cannot
-account for such changes, since once generated their functional
-structure is fixed. The best thing is to create a new and separate
-setup directory. Otherwise the @code{Process} and @code{Results}
-directories have to be erased:
+values keeping the same process libraries). The best recipe is to 
+create a new and separate setup directory in such cases. Otherwise the 
+@code{Process} and @code{Results} directories have to be erased:
 
 @example
 @code{rm -rf Process/ Results/}
 @end example
 
 In either case one has to start over with the whole initialization 
-procedure to prepare for the generation of events again.
+procedure to prepare for the generation of events.
 
 
 
 @subsection The example set-up: Z+Jets at the LHC
 
-The setup (or the @code{Run.dat} file) provided in
-@code{./Examples/V_plus_Jets/LHC_ZJets/}, cf. @ref{LHC_ZJets_LOmerging} 
-can be considered as a standard example to illustrate the generation of 
-fully hadronised events in Sherpa. Such events will include effects from 
+The setup file ( @code{Run.dat} ) provided in @code{./Examples/V_plus_Jets/LHC_ZJets/} 
+can be considered as a standard example to illustrate the generation of fully hadronised 
+events in Sherpa, cf. @ref{LHC_ZJets_LOmerging}. Such events will include effects from 
 parton showering, hadronisation into primary hadrons and their subsequent 
 decays into stable hadrons. Moreover, the example chosen here nicely 
 demonstrates how Sherpa is used in the context of merging matrix elements 
@@ -358,7 +375,7 @@ matrix elements of all partonic subprocesses for Drell-Yan production without
 any and with up to two extra QCD parton emissions will be generated.
 Proton--proton collisions are considered at beam energies of 3.5 TeV. 
 The default PDF used by Sherpa is CT10. Model parameters and couplings can 
-be set in the @code{Run.dat} section @code{(run)}. Similarly, the way 
+be set in section @code{(run)} of @code{Run.dat}. Similarly, the way 
 couplings are treated can be defined. As no options are set the default 
 parameters and scale setting procedures are used. 
 
@@ -536,8 +553,8 @@ parton-level event generation with Sherpa. These changes read
 @code{MI_HANDLER=None}, to switch off multiparton interactions, and
 @code{ME_QED=Off}, to switch off resummed QED corrections onto the 
 Z -> e- e+ decay. Additionally, the non-perturbative intrinsic transverse 
-momentum may be wished to not be taken into account, therefor set 
-@code{P_PERP_MEAN_1=0.; P_PERP_MEAN_2=0.; P_PERP_SIGMA_1=0.; P_PERP_SIGMA_2=0.;}.
+momentum may be wished to not be taken into account, therefore set 
+@code{BEAM_REMNANTS=0;}.
 
 @subsection Running Sherpa with AMEGIC++
 @anchor{Running Sherpa with AMEGIC++}

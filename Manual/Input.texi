@@ -127,6 +127,8 @@ The transverse mass squared of @var{v} in GeV^2.
 The polar angle of @var{v} in radians.
 @item Eta(@var{v})
 The pseudorapidity of @var{v}.
+@item Y(@var{v})
+The rapidity of @var{v}.
 @item Phi(@var{v})
 The azimuthal angle of @var{v} in radians.
 

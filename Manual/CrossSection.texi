@@ -2,7 +2,7 @@
 @chapter Cross section
 
 To determine the total cross section, in particular in the context of
-running CKKW merging with Sherpa, the final output of the event generation
+ME+PS merging with Sherpa, the final output of the event generation
 run should be used, e.g.
 @verbatim
 +-----------------------------------------------------+
@@ -13,37 +13,32 @@ run should be used, e.g.
 @end verbatim
 Note that the Monte Carlo error quoted for the total cross section is
 determined during event generation. It, therefore, might differ
-substantially from the errors quoted during the integration step.
+substantially from the errors quoted during the integration step,
+and it can be reduced simply by generating more events.
 
-In contrast to plain leading order results, Sherpa's total cross section
-is composed of values from various leading order processes, namely
-those which are combined by applying the ME-PS merging, see @ref{Merging ME and PS}.
+In contrast to plain fixed order results, Sherpa's total cross section
+is composed of values from various fixed order processes, namely
+those which are combined by applying the ME+PS merging, see @ref{Merging ME and PS}.
 In this context, it is important to note that
 
 @b{The exclusive higher order tree-level cross sections determined during the
 integration step are meaningless by themselves, only the inclusive cross section 
 printed at the end of the event generation run is to be used.}
 
-In principle, this value has the same formal accuracy as a leading order result,
-but it might still differ by a significant amount. Depending on jet definitions, 
-process etc., the merged cross section may be either larger or smaller than the 
-leading order cross section.
+This value has the same formal accuracy as a fixed order result for the 
+inclusive reaction (e.g. pp->Z in @ref{Running Sherpa}), but it might still differ 
+by a significant amount, see @mycite{Hoeche2009rj} and @mycite{Lonnblad2012ng} for details. 
+Depending on jet definitions, process etc., the merged cross section may be either 
+larger or smaller than the fixed order cross section.
 
-Concerning a comparison with NLO calculations: It is known that for, e.g., 
-inclusive Z production the NLO-LO K-factor is larger than one. In some setups 
-the Sherpa cross section is smaller than the LO one, and therefore further from the
-NLO. Therefore, the Sherpa total cross section should not be thought of as an 
-``improved leading order result'', which would suggest that it is always closer 
-to the NLO than the LO cross section. 
-
-@strong{Sherpa total cross sections have leading order accuracy.}
+@strong{Sherpa total cross sections have leading order accuracy when the generator
+  is run in LO merging mode, in NLO merging mode they have NLO accuracy.}
 
 Broadly speaking, Sherpa's ME-PS merging is adequate for capturing the information 
 from (resummed) logarithmic corrections to the leading order (as is the parton shower).
-On the contrary, NLO cross sections are typically dominated by finite terms, 
-as they are often quite inclusive and there are no large logarithms in this case. 
-Sherpa's merging algorithm has no way to calculate these finite terms, and 
-this is why Sherpa's cross section is not a better approximation to the NLO
-cross section. On the other hand, shape observables (especially jet transverse momenta 
+On the contrary, higher-order cross sections are dominated by finite terms when 
+they are computed inclusively. Sherpa's merging algorithm cannot predict the finite terms, 
+and this is why Sherpa's cross section is not a better approximation to higher-order
+cross sections. On the other hand, shape observables (especially jet transverse momenta 
 and the like) are typically dominated by logarithmic corrections. 
 If they are concerned, Sherpa can be expected to perform reasonably well.

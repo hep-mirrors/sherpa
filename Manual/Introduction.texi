@@ -92,7 +92,7 @@ has been compared in great detail in @mycite{Alwall2007fs} with other approaches
 as the MLM merging prescription @mycite{Mangano2001xp} as implemented in 
 Alpgen @mycite{Mangano2002ea}, Madevent @mycite{Stelzer1994ta}, @mycite{Maltoni2002qb}, 
 or Helac @mycite{Kanaki2000ey}, @mycite{Papadopoulos2005ky} and the CKKW-L prescription 
-@mycite{Lonnblad2001iq},@mycite{Lavesson2005xu} of Ariadne @mycite{Lonnblad1992tz}. 
+@mycite{Lonnblad2001iq}, @mycite{Lavesson2005xu} of Ariadne @mycite{Lonnblad1992tz}. 
 
 
 This manual contains all information necessary to get started with 
