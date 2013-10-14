@@ -45,7 +45,6 @@ Sherpa_TEXINFOS = \
 	MinBias.texi \
 	Model.texi \
 	MSSM.texi \
-	MyInterface.texi \
 	NewModel.texi \
 	NLOtips.texi \
 	OLE.texi \

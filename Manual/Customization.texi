@@ -31,7 +31,6 @@ listed in the following sections.
 * External one-loop ME:: How to interface external one-loop codes.
 * External RNG::     How to add an external random number generator.
 * External PDF::     How to add an external PDF.
-* My own interface:: How to make Sherpa send output to your framework.
 * Python Interface:: How to make Sherpa talk to your Python script.
 @end menu
 
@@ -40,5 +39,4 @@ listed in the following sections.
 @include OLE.texi
 @include RNG.texi
 @include PDF.texi
-@include MyInterface.texi
 @include API.texi
