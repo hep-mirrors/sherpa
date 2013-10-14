@@ -19,6 +19,12 @@ decays of unstable hadrons into stable final states.
 @subsubsection Fragmentation models
 
 @cindex FRAGMENTATION
+@cindex MSTJ
+@cindex MSTP
+@cindex MSTU
+@cindex PARP
+@cindex PARJ
+@cindex PARU
 
 The @code{FRAGMENTATION} parameter sets the fragmentation module to be employed
 during event generation. 
@@ -33,8 +39,13 @@ during event generation.
       the hadronization can be disabled with the value @option{Off}. 
 @item 
       To evaluate uncertainties stemming from the hadronization, Sherpa also 
-      provides an interface to the Lund string fragmentation in Pythia 6.2 
-      @mycite{Sjostrand2003wg} by using the setting @option{Lund}.
+      provides an interface to the Lund string fragmentation in Pythia 6.4 
+      @mycite{Sjostrand2006za} by using the setting @option{Lund}.
+      In this case, the standard Pythia switches @option{MSTJ}, @option{MSTP},
+      @option{MSTU}, @option{PARP}, @option{PARJ} and @option{PARU}
+      can be used to steer the behaviour of the Lund string, see
+      @mycite{Sjostrand2006za}. They are specified as
+      @code{MSTJ(<number>)=<value>}.
 @end itemize
 
 @subsubsection Hadron constituents
