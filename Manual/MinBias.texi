@@ -1,5 +1,82 @@
 @node MinBias
-@section Minimum Bias Simulation
+@section Physics and parameters for simulation of minimum bias events
 
-(SHRiMPS is yet to be documented)
+Minimum bias events are simulated through the Shrimps module in Sherpa.
+
+@subsection Physics of Shrimps
+
+blabla
+
+@subsubsection Inclusive part of the model
+
+tralala
+
+@subsubsection Exclusive part of the model
+
+more stuff
+
+@subsection Parameters and settings
+
+Below is a list of all relevant parameters to steer the Shrimps module.
+
+@subsubsection @code{Shrimps_Mode}
+
+The setup of minimum bias events and other, related simulations, is 
+covered by the '(run)' section of the run card.  The exact choice is steered
+through the parameter @code{Shrimps_Mode} (default @code{Inelastic}),
+which allows the following settings:
+@itemize @bullet
+@item @code{Xsecs}, which will only calculate total, elastic, inelastic,
+      single- and double-diffractive cross sections at various relevant energies
+      and write them to a file, typically 'InclusiveQuantities/Xsecs.dat';
+@item @code{Elastic}
+      generates elastic events at a fixed energy;
+@item @code{Single-diffractive}
+      generates low-mass single-diffractive events at a fixed energy, 
+      modelled by the transition of one of the protons to a N(1440) state;
+@item @code{Double-diffractive}
+      generates low-mass single-diffractive events at a fixed energy, 
+      modelled by the transition of both protons to N(1440) states;
+@item @code{Quasi-elastic}
+      generates a combination of elastic, single- and double-diffractive
+      events in due proportion;
+@item @code{Inelastic}
+      generates inelastic minimum bias events through the exchange of t-channel
+      gluons or singlets (pomerons).  This mode actually will include
+      large mass diffraction;
+@item @code{All}
+      generates a combination of quasi-elastic and inelastic events in due 
+      proportion.
+@end itemize
+
+@subsubsection Parameters of the eikonals
+
+In obvious nomenclature, the parameters defining the eikonals as outlined above 
+translate into the following parameters:
+
+@itemize @bullet
+@item @code{Lambda2} (default @math{1.0 GeV^2})
+@item @code{beta_0^2} (default 24.8 mb)
+@item @code{kappa} (default 0.538)
+@item @code{xi} (default 0.145)
+@item @code{deltaY} (default 1.0)
+@item @code{lambda} (default 0.3)
+@item @code{Delta} (default 0.3)
+@end itemize
+
+@subsubsection Parameters for event generation
+
+In obvious nomenclature, the parameters defining the eikonals as outlined above 
+translate into the following parameters:
+
+@itemize @bullet
+@item @code{Q_0^2} (default @math{1.0 GeV^2})
+@item @code{Q_as^2} (default @math{1.0 GeV^2})
+@item @code{Chi_S} (default 1.0)
+@item @code{KT2_Factor} (default 1.0)
+@item @code{RescProb} (default 1.0)
+@item @code{RescProb1} (default 0.0)
+@end itemize
+
+TODO: Check parameters and update, where needed.
  

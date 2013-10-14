@@ -5,6 +5,7 @@ The following parameters describe general run information. They may be set in th
 
 @menu
 * EVENTS::            Number of events to generate.
+* EVENT_TYPE::        Type of events to generate
 * TUNE::              Parameter tunes.
 * OUTPUT::            Output level.
 * LOG_FILE::          Log file.
@@ -33,6 +34,27 @@ This parameter specifies the number of events to be generated.
 @*
 It can alternatively be set on the command line through option
 @option{-e}, see @ref{Command line}.
+
+@node EVENT_TYPE
+@subsection EVENT_TYPE
+@cindex EVENT_TYPE
+This parameter specifies the kind of events to be generated.  
+@itemize @bullet
+@item
+        The default event type is @code{StandardPerturbative}, which will 
+        generate a hard event through exact matrix elements matched and/or 
+        merged with the paerton shower, eventually including hadronization, 
+        hadron decays, etc..
+@end itemize
+Alternatively there are two more specialised modes, namely:
+@itemize @bullet
+@item
+        @code{MinimumBias}, which generates minimum bias events through the
+        SHRIMPS model implemented in Sherpa, see @ref{Shrimps}
+@item
+        @code{HadronDecay}, which allows to simulate the decays of a specific
+        hadron.          
+@end itemize
 
 @node TUNE
 @subsection TUNE
