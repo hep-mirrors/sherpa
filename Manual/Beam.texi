@@ -49,20 +49,21 @@ lepton-lepton collisions.
 This can be used to describe the backscattering of a laser beam
 off initial leptons. The energy distribution of the emerging 
 photon beams is modelled by the CompAZ parametrization, see
-@mycite{Zarnecki2002qr}
+@mycite{Zarnecki2002qr}.
 Note that this parametrization is valid only for the proposed 
 TESLA photon collider, as various assumptions about the laser 
 parameters and the initial lepton beam energy have been made.
+See details below.
 @item Simple_Compton
 This corresponds to a simple light backscattering 
 off the initial lepton beam and produces initial-state 
-photons with a corresponding energy spectrum.
+photons with a corresponding energy spectrum.  See details below.
 @item EPA
 This enables the equivalent photon approximation for
 colliding protons, see @mycite{Archibald2008aa}. The resulting beam particles are photons that 
 follow a dipole form factor parametrization, cf. @mycite{Budnev1974de}.
 The authors would like to thank T. Pierzchala for his help in
-implementing and testing the corresponding code.
+implementing and testing the corresponding code. See details below.
 @item Spectrum_Reader
 A user defined spectrum is used to describe the energy spectrum
 of the assumed new beam particles. The name of the corresponding
@@ -78,6 +79,60 @@ centre of mass energy after eventual Beamstrahlung.
 @*
 The parameter can be specified using the internal interpreter, see
 @ref{Interpreter}, e.g. as @samp{BEAM_SMIN sqr(20/E_CMS)}.
+
+@subsubsection Laser Backscattering
+@cindex E_LASER_
+@cindex E_LASER_
+@cindex P_LASER_
+@cindex P_LASER_
+@cindex LASER_MODE
+@cindex LASER_ANGLES
+@cindex LASER_NONLINEARITY
+The energy distribution of the photon beams is modelled by the CompAZ
+parametrisation, see @mycite{Zarnecki2002qr}, with various assumptions
+valid only for the proposed TESLA photon collider. The laser energies
+can be set by @code{E_LASER_1/2} for the respective beam. @code{P_LASER_1/2}
+sets their polarisations, defaulting to @code{0.}. The @code{LASER_MODE}
+takes the values @code{-1}, @code{0}, and @code{1}, defaulting to @code{0}.
+@code{LASER_ANGLES} and @code{LASER_NONLINEARITY} take the values @code{On}
+and @code{Off}, both defaulting to @code{Off}.
+
+@subsubsection Simple Compton
+This corresponds to a simple light backscattering off the initial lepton
+beam and produces initial-state photons with a corresponding energy spectrum.
+It is a special case of the above Laser Backscattering with
+@code{LASER_MODE=-1}.
+
+@subsubsection EPA
+@cindex EPA_q2Max_1
+@cindex EPA_q2Max_2
+@cindex EPA_ptMin_1
+@cindex EPA_ptMin_2
+@cindex EPA_Form_Factor_1
+@cindex EPA_Form_Factor_2
+@cindex EPA_AlphaQED
+
+The equivalent photon approximation,
+cf. @mycite{Archibald2008aa}, @mycite{Budnev1974de},
+has a few free parameters:
+@table @option
+@item EPA_q2Max_1/2
+Parameter of the EPA spectrum of the respective beam, defaults to @code{2.}
+in units of GeV squared.
+@item EPA_ptMin_1/2
+Infrared regulator to EPA spectrum. Given in GeV, the value must be
+between @code{0.} and @code{1.} for EPA approximation to hold.
+Defaults to @code{0.}, i.e. the spectrum
+has to be regulated by cuts on the observable, cf @ref{Selectors}.
+@item EPA_Form_Factor_1/2
+Form factor model to be used on the respective beam. The options are
+@code{0} (pointlike), @code{1} (homogeneously charged sphere,
+@code{2} (gaussian shaped nucleus), and @code{3} (homogeneously charged
+sphere, smoothed at low and high x). Applicable only to heavy ion beams.
+Defaults to @code{0}.
+@item EPA_AlphaQED
+Value of alphaQED to be used in the EPA. Defaults to @code{0.0072992701}.
+@end table
 
 @node Intrinsic Transverse Momentum
 @subsection Intrinsic Transverse Momentum

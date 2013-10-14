@@ -525,6 +525,10 @@ version 1.2.2 while @code{YUKAWA_MASSES=Fixed} was the default until 1.2.1.
 
 @node Dipole subtraction
 @subsection Dipole subtraction
+@cindex DIPOLE_ALPHA
+@cindex DIPOLE_KAPPA
+@cindex DIPOLE_NF_GSPLIT
+@cindex DIPOLE_AMIN
 This list of parameters can be used to optimize the performance
 when employing the Catani-Seymour dipole subtraction 
 @mycite{Catani1996vz} as implemented in Amegic @mycite{Gleisberg2007md}.
