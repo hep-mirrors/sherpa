@@ -12,9 +12,10 @@ The following parameters are used to steer the matrix element setup.
 * RESULT_DIRECTORY::        The directory to store integration results.
 * EVENT_GENERATION_MODE::   The event generation mode.
 * SCALES::                  How to compute scales. 
+* COUPLING_SCHEME::         Running of SM gauge couplings.
 * COUPLINGS::               How to evaluate couplings.
 * KFACTOR::                 Whether and how to apply a K-factor.
-* YUKAWA_MASSES::           Running of Yukawa couplings
+* YUKAWA_MASSES::           Running of Yukawa couplings.
 * Dipole subtraction::      Parameters for calculations with dipole subtraction.
 @end menu
 
@@ -468,6 +469,17 @@ are described in Appendix C of @mycite{Hoeche2013mua}.
 @end table
 An example for defining a custom core scale is given in @ref{Tops in MC@@NLO}.
 
+@node COUPLING_SCHEME
+@subsection COUPLING_SCHEME
+@cindex COUPLING_SCHEME
+
+The parameter @code{COUPLING_SCHEME} is used to enable the running of the gauge couplings. The 
+default setting is @code{COUPLING_SCHEME=Running_alpha_S}, assuming only the strong coupling 
+as running. The QED coupling is considered running as well by setting 
+@code{COUPLING_SCHEME=Running}. To solely have a running QED coupling set  
+@code{COUPLING_SCHEME=Running_alpha_QED}. If not considered running the values specified by 
+@code{ALPHAS(default)} and @code{1/ALPHAQED(default)} are used, respectively. 
+
 @node COUPLINGS
 @subsection COUPLINGS
 @cindex COUPLINGS
@@ -514,7 +526,7 @@ Note that counting starts at zero.
 
 It is possible to implement a dedicated K-factor scheme within Sherpa.
 For advice on this topic please contact the authors, @ref{Authors}.
-
+ 
 @node YUKAWA_MASSES
 @subsection YUKAWA_MASSES
 @cindex YUKAWA_MASSES
