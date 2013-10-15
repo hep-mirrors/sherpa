@@ -91,7 +91,7 @@ CParam Cluster_Algorithm::GetMeasure
 		     (m_wmode&1024)||(m_wmode&4096)?1:-1,
 		     ((cut||!mmofl.Strong())?1:0)|
 		     (p_xs->Parent()->Info().m_fi.m_nloqcdtype!=
-		      PHASIC::nlo_type::lo?2:0));
+		      PHASIC::nlo_type::lo?16:0));
   }
   else {
     p_ampl->SetProc(p_xs);
