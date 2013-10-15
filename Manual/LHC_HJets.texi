@@ -63,7 +63,7 @@ run section
   % settings for hard decays
   HARD_DECAYS On;
   STORE_DECAY_RESULTS 1;
-  HDH_ONLY_DECAY {25,21,21}
+  HDH_ONLY_DECAY {25,22,22}
 @end verbatim
 For details on the hard decay handling and how to enable specific decay modes 
 see @ref{Hard decays}.
