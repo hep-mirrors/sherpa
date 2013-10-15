@@ -19,6 +19,10 @@ see @ref{SHERPA_CPP_PATH}.
 Set number of events to generate @samp{<events>},
 see @ref{EVENTS}.
 
+@item -t <events>
+Set the event type to @samp{<events>},
+see @ref{EVENT_TYPE}.
+
 @item -r <results>
 Set the result directory to @samp{<results>},
 see @ref{RESULT_DIRECTORY}.

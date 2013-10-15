@@ -355,6 +355,9 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     m_mode=eventtype::HadronDecay;
     Read_Write_Base::AddCommandLine("MI_HANDLER None;");
   }
+  else {
+    THROW(not_implemented,"Unknown event type '"+eventtype+"'");
+  }
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
   if (!p_model->ModelInit(m_isrhandlers))
@@ -930,6 +933,7 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
     else if (ExtractValArg(helpsv,oit,"-f","RUNDATA"));
     else if (ExtractValArg(helpsv,oit,"-p","PATH"));
     else if (ExtractValArg(helpsv,oit,"-e","EVENTS"));
+    else if (ExtractValArg(helpsv,oit,"-t","EVENT_TYPE"));
     else if (ExtractValArg(helpsv,oit,"-r","RESULT_DIRECTORY"));
     else if (ExtractValArg(helpsv,oit,"-L","SHERPA_CPP_PATH"));
     else if (ExtractValArg(helpsv,oit,"-R","RANDOM_SEED"));
@@ -960,6 +964,7 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
       msg_Out()<<"Options:\t-f <file>         read input from file <file>"<<endl;
       msg_Out()<<"\t\t-p <path>         read input from path <path>"<<endl;
       msg_Out()<<"\t\t-e <events>       set number of events <events>"<<endl;
+      msg_Out()<<"\t\t-t <type>         set event type <type>"<<endl;
       msg_Out()<<"\t\t-r <results>      set result directory <results>"<<endl;
       msg_Out()<<"\t\t-m <generator>    set me generator <generator>"<<endl;
       msg_Out()<<"\t\t-M <generator>    set mpi generator <generator>"<<endl;
