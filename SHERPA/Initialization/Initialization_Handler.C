@@ -341,10 +341,10 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   SetGlobalVariables();
   okay = okay && InitializeTheModel();  
   
-  std::string eventtype("StandardPerturbative");
-  if (m_mode!=eventtype::StandardPerturbative) eventtype="";
-  Data_Reader read(" ",";","!","=");
-  read.ReadFromFile(eventtype,"EVENT_TYPE");
+  if (m_mode==eventtype::StandardPerturbative) {
+  std::string eventtype;
+  if (!p_dataread->ReadFromFile(eventtype,"EVENT_TYPE"))
+    eventtype="StandardPerturbative";
   if (eventtype=="StandardPerturbative") 
     m_mode=eventtype::StandardPerturbative;
   else if (eventtype=="MinimumBias") {
@@ -357,6 +357,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
   else {
     THROW(not_implemented,"Unknown event type '"+eventtype+"'");
+  }
   }
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
