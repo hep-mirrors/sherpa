@@ -189,6 +189,7 @@ int Single_LOProcess_External::InitAmplitude(Model_Base * model,Topology* top,
   }
   m_oew=p_MHVamp->OrderEW();
   m_oqcd=p_MHVamp->OrderQCD();
+  p_MHVamp->Calc()->FillCombinations(m_ccombs,m_cflavs);
 
   //////////////////////////////////////////////
 
@@ -197,7 +198,7 @@ int Single_LOProcess_External::InitAmplitude(Model_Base * model,Topology* top,
   switch (tr) {
   case 1 :
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-      if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
+      if (m_allowmap && ATOOLS::IsEqual(links[j]->Result(),Result())) {
 	if (CompareTestMoms(links[j]->GetTestMoms())) {
 	  msg_Tracking()<<"Single_LOProcess_External::InitAmplitude : "<<std::endl
 			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
