@@ -63,6 +63,8 @@ if both c- and b-quarks are to be treated as massive.
 @cindex CSS_EW_MODE
 @cindex CSS_NOEM
 @cindex CSS_MAXEM
+@cindex CSS_MASS_THRESHOLD
+@cindex CSS_EVOLUTION_SCHEME
 
 Sherpa's default shower module is based on @mycite{Schumann2007mg}.
 A new ordering parameter for initial state splitters was introduced 
@@ -94,3 +96,11 @@ other hand, forces the CS Shower to truncate its evolution at the
 Nth emission. This setting, however does not necessarily compute all
 Sudakov weights correctly. Both settings still enable the CS Shower
 to be used in the METS scale setter, cf. @ref{SCALES}.
+
+The evolution variable of the CS shower can be changed using 
+@option{CSS_EVOLUTION_SCHEME}. Two options are currently implemented,
+which correspond to transverse momentum ordering (option 0) and modified
+transverse momentum ordering (option 1). Additionally, the CS shower
+allows to disable splittings at scales below the on-shell mass of heavy
+quarks. The upper limit for the corresponding heavy quark mass is set
+using @option{CSS_MASS_THRESHOLD}.
