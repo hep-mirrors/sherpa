@@ -47,11 +47,7 @@ bool Cluster_Algorithm::Cluster
 			     p_proc->MapProc():p_proc);
     double rscale((pb->Integrator()->Momenta()[0]+
 		   pb->Integrator()->Momenta()[1]).Abs2());
-    if (p_ct) {
-      rscale=p_ct->RScale();
-      delete p_ct;
-    }
-    p_combi=NULL;
+    if (p_ct) rscale=p_ct->RScale();
     msg_Debugging()<<METHOD<<"(): {\n";
     p_ampl = Cluster_Amplitude::New();
     p_ampl->SetMS(p_ms);
