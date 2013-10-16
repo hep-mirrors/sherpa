@@ -854,16 +854,20 @@ void Initialization_Handler::SetGlobalVariables()
   sdr.AddWordSeparator("\t");
   sdr.SetInputPath(m_path);
   sdr.SetInputFile(m_showerdat);
+  int evol = sdr.GetValue<int>("CSS_EVOLUTION_SCHEME",1);
   int kfmode = sdr.GetValue<int>("CSS_KFACTOR_SCHEME",1);
   double k0sqf = sdr.GetValue<double>("CSS_FS_PT2MIN",1.0);
   double k0sqi = sdr.GetValue<double>("CSS_IS_PT2MIN",4.55);
   double fs_as_fac = sdr.GetValue<double>("CSS_FS_AS_FAC",0.66);
   double is_as_fac = sdr.GetValue<double>("CSS_IS_AS_FAC",0.538);
+  double mth = sdr.GetValue<double>("CSS_MASS_THRESHOLD",0.0);
+  rpa->gen.SetVariable("CSS_EVOLUTION_SCHEME",ToString(evol));
   rpa->gen.SetVariable("CSS_KFACTOR_SCHEME",ToString(kfmode));
   rpa->gen.SetVariable("CSS_FS_PT2MIN",ToString(k0sqf));
   rpa->gen.SetVariable("CSS_IS_PT2MIN",ToString(k0sqi));
   rpa->gen.SetVariable("CSS_FS_AS_FAC",ToString(fs_as_fac));
   rpa->gen.SetVariable("CSS_IS_AS_FAC",ToString(is_as_fac));
+  rpa->gen.SetVariable("CSS_MASS_THRESHOLD",ToString(mth));
 }
 
 bool Initialization_Handler::ExtractValArg

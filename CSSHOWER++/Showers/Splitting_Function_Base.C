@@ -66,7 +66,7 @@ double SF_Coupling::CplFac(const double &scale) const
 }
 
 Splitting_Function_Base::Splitting_Function_Base():
-  p_lf(NULL), p_cf(NULL), m_type(cstp::none),
+  p_lf(NULL), p_cf(NULL), m_type(cstp::none), m_mth(0.0),
   m_on(1), m_qcd(-1)
 {
 }
@@ -82,7 +82,7 @@ void Splitting_Function_Base::SetEFac(Shower *const shower)
 
 Splitting_Function_Base::Splitting_Function_Base(const SF_Key &key):
   p_lf(NULL), p_cf(NULL), m_type(key.m_type),
-  m_symf(1.0), m_polfac(1.0), m_lpdf(1.0), m_efac(1.0),
+  m_symf(1.0), m_polfac(1.0), m_lpdf(1.0), m_efac(1.0), m_mth(0.0),
   m_on(1), m_qcd(-1)
 {
   SF_Key ckey(key);
@@ -163,6 +163,14 @@ double Splitting_Function_Base::operator()
 double Splitting_Function_Base::OverIntegrated
 (const double zmin,const double zmax,const double scale,const double xbj)
 {
+  if (m_mth && (m_type==cstp::FF || m_type==cstp::FI)) {
+    if (p_lf->FlA().Mass(true)<m_mth &&
+	sqr(p_lf->FlA().Mass(true))>scale) return 0.0;
+    if (p_lf->FlB().Mass(true)<m_mth &&
+	p_lf->FlC().Mass(true)<m_mth &&
+	sqr(p_lf->FlB().Mass(true)+
+	    p_lf->FlC().Mass(true))>scale) return 0.0;
+  }
   double lastint = p_lf->OverIntegrated(zmin,zmax,scale,xbj)/m_symf/m_polfac;
   if (!(IsBad(lastint)||lastint<0.0)) {
     if (m_efac!=1.0) lastint*=m_efac;

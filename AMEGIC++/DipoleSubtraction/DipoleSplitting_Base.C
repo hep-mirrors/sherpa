@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -39,6 +40,7 @@ DipoleSplitting_Base::DipoleSplitting_Base()
   m_alpha=1.;
   m_kt2max=std::numeric_limits<double>::max();
   m_amin = max(ATOOLS::Accu(),1.e-8);
+  m_es=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
   double helpd;
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");

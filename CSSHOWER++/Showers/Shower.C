@@ -17,11 +17,13 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
 	       Data_Reader *const dataread) : 
   p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
 {
+  int evol=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
   int kfmode=ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
   double k0sqf=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
   double k0sqi=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
   double fs_as_fac=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   double is_as_fac=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
+  double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
   m_use_bbw   = dataread->GetValue<int>("CSS_USE_BBW",1);
   m_kscheme   = dataread->GetValue<int>("CSS_KIN_SCHEME",0);
   m_noem      = dataread->GetValue<int>("CSS_NOEM",0);
@@ -33,8 +35,13 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
       m_efac[helpsvv[i][0]]=ToType<double>(helpsvv[i][1]);
     }
   m_sudakov.SetShower(this);
+  m_sudakov.SetMassThreshold(mth);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
+  m_kinFF.SetEvolScheme(evol);
+  m_kinFI.SetEvolScheme(evol);
+  m_kinIF.SetEvolScheme(evol);
+  m_kinII.SetEvolScheme(evol);
   m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
   p_old[0]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());
   p_old[1]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());

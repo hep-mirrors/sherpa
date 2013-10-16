@@ -179,7 +179,7 @@ namespace CSSHOWER {
     SF_Lorentz  *p_lf;
     SF_Coupling *p_cf;
     cstp::code m_type;
-    double m_lastint, m_symf, m_polfac, m_lpdf, m_efac;
+    double m_lastint, m_symf, m_polfac, m_lpdf, m_efac, m_mth;
     int m_on, m_qcd;
     std::vector<Parton*> m_specs;
     Parton *p_spec;
@@ -246,6 +246,8 @@ namespace CSSHOWER {
     inline void SetPDF(PDF::PDF_Base **const pdf) { p_pdf=pdf; }
 
     inline double SymFac() const { return m_symf; }
+
+    inline void SetMassThreshold(const double &mth) { m_mth=mth; }
 
     friend std::ostream& operator<<(std::ostream &,const Splitting_Function_Base &);
   };

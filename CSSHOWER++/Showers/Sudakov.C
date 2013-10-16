@@ -160,6 +160,7 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
     delete split;
     return;
   }
+  split->SetMassThreshold(m_mth);
   split->SetPDF(p_pdf);
   split->SetEFac(p_shower);
   if (mode) {

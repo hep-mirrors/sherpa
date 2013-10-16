@@ -17,20 +17,27 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
 	       Data_Reader *const dataread) : 
   p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
 {
+  int evol=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
   int kfmode = ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
   double k0sqf = ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
   double k0sqi = ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
   double fs_as_fac = ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   double is_as_fac = ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
+  double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
   m_kscheme = dataread->GetValue<int>("NLO_CSS_KIN_SCHEME",1);
   std::vector<std::vector<std::string> > helpsvv;
   m_sudakov.SetShower(this);
+  m_sudakov.SetMassThreshold(mth);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
   m_kinFF.SetSudakov(&m_sudakov);
   m_kinFI.SetSudakov(&m_sudakov);
   m_kinIF.SetSudakov(&m_sudakov);
   m_kinII.SetSudakov(&m_sudakov);
+  m_kinFF.SetEvolScheme(evol);
+  m_kinFI.SetEvolScheme(evol);
+  m_kinIF.SetEvolScheme(evol);
+  m_kinII.SetEvolScheme(evol);
   m_last[0]=m_last[1]=m_last[2]=m_last[3]=NULL;
   p_old[0]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());
   p_old[1]=Cluster_Leg::New(NULL,Vec4D(),kf_none,ColorID());
