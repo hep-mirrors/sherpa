@@ -251,6 +251,7 @@ METS_Scale_Setter::METS_Scale_Setter
 
 METS_Scale_Setter::~METS_Scale_Setter()
 {
+  for (size_t i(0);i<m_calcs.size();++i) delete m_calcs[i];
   for (size_t i(0);i<m_ampls.size();++i) m_ampls[i]->Delete();
   delete p_core;
 }
