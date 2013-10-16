@@ -1,5 +1,5 @@
 @node Shower Parameters
-@section Shower Parameters
+@section Parton Showers
 
 The shower setup is covered by the `(shower)' section of
 the steering file or the shower data file `Shower.dat',

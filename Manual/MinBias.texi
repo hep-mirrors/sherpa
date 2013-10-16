@@ -1,5 +1,5 @@
 @node Minimum Bias
-@section Physics and parameters for simulation of minimum bias events
+@section Minimum bias events
 
 Minimum bias events are simulated through the Shrimps module in Sherpa.
 

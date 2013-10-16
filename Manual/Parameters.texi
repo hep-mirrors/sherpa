@@ -26,7 +26,7 @@ performed in all inputs, see @ref{Tags}.
 * MPI Parameters::    List of multiple parton interaction parameters
 * Hadronization::     List of hadronization parameters
 * QED Corrections::   List of QED correction parameters
-* Minimum Bias::      List of MinBias simulation parameters
+* Minimum Bias::      List of minimum bias simulation parameters
 @end menu
 
 @include Run.texi
