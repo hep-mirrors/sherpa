@@ -1,5 +1,5 @@
 @node Model Parameters
-@section Model Parameters
+@section Model parameters
 @cindex SHOW_MODEL_SYNTAX
 @cindex MODEL
 @cindex MASS[<id>]

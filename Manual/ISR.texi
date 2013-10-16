@@ -1,5 +1,5 @@
 @node ISR Parameters
-@section ISR Parameters
+@section ISR parameters
 @cindex BUNCH_1
 @cindex BUNCH_2
 @cindex ISR_SMIN

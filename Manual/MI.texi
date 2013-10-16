@@ -1,5 +1,5 @@
 @node MPI Parameters
-@section Multiple Interactions
+@section Multiple interactions
 
 The multiple parton interaction (MPI) setup is covered by
 the `(mi)' section of the steering file or the

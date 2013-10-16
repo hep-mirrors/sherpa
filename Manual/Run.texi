@@ -1,5 +1,5 @@
 @node Run Parameters
-@section Run Parameters
+@section Run parameters
 
 The following parameters describe general run information. They may be set in the @code{(run)} section of the run-card, see @ref{Input structure}.
 
@@ -39,6 +39,8 @@ It can alternatively be set on the command line through option
 @subsection EVENT_TYPE
 @cindex EVENT_TYPE
 This parameter specifies the kind of events to be generated.  
+It can alternatively be set on the command line through option
+@option{-t}, see @ref{Command line}.
 @itemize @bullet
 @item
         The default event type is @code{StandardPerturbative}, which will 

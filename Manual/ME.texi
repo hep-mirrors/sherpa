@@ -1,5 +1,5 @@
 @node Matrix Elements
-@section Matrix Elements
+@section Matrix elements
 
 The setup of matrix elements is covered by the `(me)' section of
 the steering file or the ME data file `ME.dat', respectively.

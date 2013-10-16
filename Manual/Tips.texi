@@ -1,5 +1,5 @@
 @node Tips and Tricks
-@chapter Tips and Tricks
+@chapter Tips and tricks
 
 @menu
 * Bash completion:: How to add bash completion for Sherpa parameters

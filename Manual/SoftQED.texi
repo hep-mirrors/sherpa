@@ -1,5 +1,5 @@
 @node QED Corrections
-@section QED Corrections
+@section QED corrections
 
 Higher order QED corrections are effected both on hard interaction and, upon
 their formation, on each hadron's subsequent decay. The Photons

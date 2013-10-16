@@ -1,5 +1,5 @@
 @node Beam Parameters
-@section Beam Parameters
+@section Beam parameters
 @cindex BEAM_1
 @cindex BEAM_2
 @cindex BEAM_ENERGY_1
