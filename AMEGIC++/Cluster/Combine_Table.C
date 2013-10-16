@@ -616,6 +616,11 @@ Combine_Table *Combine_Table::CheckCore(const int mode,const int complete)
 Combine_Table *Combine_Table::
 CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete) 
 {
+  if (nl<p_proc->NIn()+NOutMin()) {
+    msg_Debugging()<<"invalid table {"<<*this<<"}\n";
+    delete this;
+    return NULL;
+  }
   for (int order(1);order>=0;--order) {
   DEBUG_FUNC("mode = "<<mode<<", nl = "<<nl<<", complete = "<<complete);
   msg_Debugging()<<*this<<"\n";
