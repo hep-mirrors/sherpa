@@ -50,7 +50,7 @@ Alternatively there are two more specialised modes, namely:
 @itemize @bullet
 @item
         @code{MinimumBias}, which generates minimum bias events through the
-        SHRIMPS model implemented in Sherpa, see @ref{MinBias}
+        SHRIMPS model implemented in Sherpa, see @ref{Minimum Bias}
 @item
         @code{HadronDecay}, which allows to simulate the decays of a specific
         hadron.          
