@@ -9,6 +9,14 @@
 
 Things to notice:
 @itemize
-@item ...
+@item Hard decays are enabled through @option{HARD_DECAYS=On}
+and spin correlations are switched on through 
+@option{HARD_SPIN_CORRELATIONS=1}
+@item Top quarks and W bosons are set unstable through 
+@option{STABLE[6]=0} @option{STABLE[24]=0}. As they are 
+final states in the hard matrix elements, their width is set 
+to zero using @option{WIDTH[6]=0} and @option{WIDTH[24]=0}.
+@item Certain decay channels are disabled using 
+@option{HDH_NO_DECAY=@{24,2,-1@}|@{24,4,-3@}|@{24,16,-15@}}
 @end itemize
  

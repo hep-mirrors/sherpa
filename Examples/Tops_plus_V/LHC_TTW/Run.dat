@@ -5,22 +5,17 @@
   BEAM_1=2212; BEAM_ENERGY_1=4000;
   BEAM_2=2212; BEAM_ENERGY_2=4000;
 
-  LJET:=3
-  SCF:=1.0
-  QF:=1.0
+  SCF:=1.0; QF:=1.0
   LGEN:=OpenLoops
 
   ME_SIGNAL_GENERATOR=Comix Amegic LGEN
   SCALES=METS{SCF*MU_F2}{SCF*MU_R2}{QF*MU_Q2}
 
   HARD_DECAYS=On
-  STABLE[6]=0
-  STABLE[24]=0
-  WIDTH[6]=0
-  WIDTH[24]=0
+  STABLE[6]=0; STABLE[24]=0
+  WIDTH[6]=0; WIDTH[24]=0
   HDH_NO_DECAY={24,2,-1}|{24,4,-3}|{24,16,-15}
   HARD_SPIN_CORRELATIONS=1
-  HARD_MASS_SMEARING=0
 
   # technical parameters
   EXCLUSIVE_CLUSTER_MODE=1
@@ -29,8 +24,8 @@
 
 (processes){
   Process 93 93 -> 6 -6 24;
-  NLO_QCD_Mode MC@NLO {LJET};
-  ME_Generator Amegic {LJET};
+  NLO_QCD_Mode MC@NLO;
+  ME_Generator Amegic;
   Loop_Generator LGEN;
   Order_EW 1;
   End process;
