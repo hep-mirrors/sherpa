@@ -113,8 +113,7 @@ int Kinematics_FI::MakeKinematics
   double Q2((p1-p2).Abs2());
   double y=GetY(Q2,split->KtTest(),split->ZTest(),mi2,mj2,ma2,
 		split->GetFlavour(),flj,1);
-  y=1.0-y*(Q2-mij2-ma2)/(Q2-mi2-mj2-ma2);
-  Kin_Args fi(y,split->ZTest(),split->Phi());
+  Kin_Args fi(1.0-y,split->ZTest(),split->Phi(),8);
   if (ConstructFIDipole(mi2,mj2,mij2,ma2,p1,p2,fi)<0) return -1;
 
   split->SetMomentum(fi.m_pi);

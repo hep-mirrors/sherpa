@@ -483,8 +483,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 		     <<", kin = "<<cp.m_kin<<"\n";
       if (!IsEqual(ncp.m_kt2,cp.m_kt2,1.0e-6) || 
 	  !IsEqual(ncp.m_z,cp.m_z,1.0e-6) || 
-	  !(IsEqual(ncp.m_y,cp.m_y,1.0e-6) ||
-	    (IsZero(ncp.m_y,1.0e-10)&&IsZero(cp.m_y,1.0e-10))) || 
+	  !IsEqual(ncp.m_y,cp.m_y,1.0e-6) || 
 	  !IsEqual(ncp.m_phi,cp.m_phi,1.0e-6) ||
 	  !IsEqual(oldl,l->Momentum(),1.0e-6) || 
 	  !IsEqual(oldr,r->Momentum(),1.0e-6) || 

@@ -76,13 +76,12 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	cs.m_pk=pk;
       }
       else {
-	lt=ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,1|(kin?4:0));
+	lt=ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,1|8|(kin?4:0));
 	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
 	if ((k==ampl->Leg(0) && lt.m_pk[3]<0.0) ||
 	    (k==ampl->Leg(1) && lt.m_pk[3]>0.0) ||
 	    lt.m_pk[0]<0.0 || lt.m_y>1.0 || lt.m_stat!=1) return cs;
-	double x=(1.0-lt.m_y)/((Q2-mij2-mk2)/(Q2-mi2-mj2-mk2));
-	double kt2=p_shower->KinFI()->GetKT2(Q2,x,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
+	double kt2=p_shower->KinFI()->GetKT2(Q2,1.0-lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,1.0-lt.m_y,Q2,2,kin,kmode&1);
 	cs.m_pk=-pk;
       }
