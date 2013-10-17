@@ -677,19 +677,11 @@ double Final_State::Saturation(const double & y) {
 double Final_State::Q02(const double & y) {
   double eik(1.);
   if (MBpars("Misha")) {
-    eik = 2./(((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,-m_Ylimit)/
-	       (*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y)) +
-    	      ((*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,m_Ylimit)/
-	       (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y)));
-    //msg_Out()<<METHOD<<"("<<m_b1<<", "<<m_b2<<", "<<y<<") : "
-    //	     <<(*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y)<<" / "
-    //	     <<(*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,-m_Ylimit)<<" ["
-    //	     <<(*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,m_Ylimit)<<"] & "
-    //	     <<(*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y)<<" / "
-    //	     <<(*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,m_Ylimit)<<" ["
-    //	     <<(*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,-m_Ylimit)<<"].\n";
-    //eik = (Max(1.,(*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y))*
-    //	   Max(1.,(*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y)))/2.;
+    eik = p_eikonal->lambda()/
+      (sqr((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,-m_Ylimit)/
+	   (*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y)) +
+       sqr((*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,m_Ylimit)/
+	   (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y)));
   }
   return (m_Q02 + (m_nprimlad-1)*m_QN2)*eik;
 }
