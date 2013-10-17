@@ -10,6 +10,7 @@ Sherpa provides the following selectors
 @menu
 * One particle selectors::    one particle selectors
 * Two particle selectors::    two particle selectors
+* Decay selectors::           decay selectors
 * Jet finders::               cuts on QCD partons
 * Universal selector::        user-defined cuts
 * Minimum selector::          cuts that are inclusive for several selectors
@@ -81,6 +82,40 @@ azimuthal angle separation (rad)
 @item DeltaR
 R separation
 @end table
+
+
+@node Decay selectors
+@subsection Decay selectors
+
+The selectors listed here implement cuts on the matrix element level, 
+based on particle decays, see @ref{Decay} and @ref{DecayOS}.
+
+@table @option
+@item DecayMass
+Invariant mass of a decaying particle. The syntax is
+@verbatim
+DecayMass <flavour code> <min value> <max value>
+@end verbatim
+@item Decay
+Any kinematic variable of a decaying particle. The syntax is
+@verbatim
+Decay(<expression>) <flavour code> <min value> <max value>
+@end verbatim
+where @code{<expression>} is an expression handled by the
+internal interpreter, see @ref{Interpreter}. 
+@item Decay2
+Any kinematic variable of a pair of decaying particles. The syntax is
+@verbatim
+  Decay2(<expression>) <flavour1 code> <flavour2 code> <min value> <max value>
+@end verbatim
+where @code{<expression>} is an expression handled by the
+internal interpreter, see @ref{Interpreter}. 
+@end table
+Particles are identified by flavour, i.e. the cut is applied 
+on @emph{all} decaying particles that match @option{<flavour code>}.
+@option{<min value>} and @option{<max value>} are floating point
+numbers, which can also be given in a format that is understood
+by the internal algebra interpreter, see @ref{Interpreter}.
 
 
 @node Jet finders
