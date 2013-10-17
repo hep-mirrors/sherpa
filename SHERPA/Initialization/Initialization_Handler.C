@@ -857,9 +857,9 @@ void Initialization_Handler::SetGlobalVariables()
   int evol = sdr.GetValue<int>("CSS_EVOLUTION_SCHEME",1);
   int kfmode = sdr.GetValue<int>("CSS_KFACTOR_SCHEME",1);
   double k0sqf = sdr.GetValue<double>("CSS_FS_PT2MIN",1.0);
-  double k0sqi = sdr.GetValue<double>("CSS_IS_PT2MIN",4.55);
+  double k0sqi = sdr.GetValue<double>("CSS_IS_PT2MIN",4.78);
   double fs_as_fac = sdr.GetValue<double>("CSS_FS_AS_FAC",0.66);
-  double is_as_fac = sdr.GetValue<double>("CSS_IS_AS_FAC",0.538);
+  double is_as_fac = sdr.GetValue<double>("CSS_IS_AS_FAC",0.493);
   double mth = sdr.GetValue<double>("CSS_MASS_THRESHOLD",0.0);
   rpa->gen.SetVariable("CSS_EVOLUTION_SCHEME",ToString(evol));
   rpa->gen.SetVariable("CSS_KFACTOR_SCHEME",ToString(kfmode));
@@ -1070,7 +1070,9 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
 void Initialization_Handler::SetTuneParameters(const std::string tune)
 {
   std::vector<std::string> tuneparams;
-  if (tune == "NNPDF23" || tune == "NNPDF23_UEup" || tune == "NNPDF23_UEdown") {
+  if (tune == "NNPDF23" ||
+      tune == "NNPDF23_UEup" || tune == "NNPDF23_UEdown") {
+    THROW(fatal_error,"Currently there is no such tune.");
     tuneparams.push_back("PDF_LIBRARY                  = LHAPDFSherpa");
     tuneparams.push_back("PDF_SET                      = NNPDF23_nlo_as_0119.LHgrid");
     tuneparams.push_back("K_PERP_MEAN_1                = 1.08");
@@ -1083,38 +1085,45 @@ void Initialization_Handler::SetTuneParameters(const std::string tune)
     if (tune == "NNPDF23_UEup") {
       tuneparams.push_back("SIGMA_ND_FACTOR              = 0.358");
       Read_Write_Base::AddCommandLine("MI_RESULT_DIRECTORY_SUFFIX _up;");
-    } else if (tune == "NNPDF23_UEdown") {
+    }
+    else if (tune == "NNPDF23_UEdown") {
       tuneparams.push_back("SIGMA_ND_FACTOR              = 0.418");
       Read_Write_Base::AddCommandLine("MI_RESULT_DIRECTORY_SUFFIX _down;");
-    } else {
+    }
+    else {
       tuneparams.push_back("SIGMA_ND_FACTOR              = 0.388");
     }
     tuneparams.push_back("CSS_IS_AS_FAC                = 0.872");
     tuneparams.push_back("CSS_IS_PT2MIN                = 2.21");
     tuneparams.push_back("COLOUR_RECONNECTION_STRENGTH = 0.25");
-  } else if (tune == "CT10" || tune == "CT10_UEup" || tune == "CT10_UEdown") {
+  }
+  else if (tune == "CT10" ||
+           tune == "CT10_UEup" || tune == "CT10_UEdown") {
     tuneparams.push_back("PDF_LIBRARY                  = CT10Sherpa");
     tuneparams.push_back("PDF_SET                      = ct10");
-    tuneparams.push_back("K_PERP_MEAN_1                = 1.00");
-    tuneparams.push_back("K_PERP_MEAN_2                = 1.00");
-    tuneparams.push_back("K_PERP_SIGMA_1               = 1.38");
-    tuneparams.push_back("K_PERP_SIGMA_2               = 1.38");
-    tuneparams.push_back("PROFILE_PARAMETERS           = 0.364 0.656");
-    tuneparams.push_back("RESCALE_EXPONENT             = 0.252");
-    tuneparams.push_back("SCALE_MIN                    = 2.38");
+    tuneparams.push_back("K_PERP_MEAN_1                = 1.10");
+    tuneparams.push_back("K_PERP_MEAN_2                = 1.10");
+    tuneparams.push_back("K_PERP_SIGMA_1               = 0.85");
+    tuneparams.push_back("K_PERP_SIGMA_2               = 0.85");
+    tuneparams.push_back("PROFILE_PARAMETERS           = 0.759 0.576");
+    tuneparams.push_back("RESCALE_EXPONENT             = 0.244");
+    tuneparams.push_back("SCALE_MIN                    = 2.44");
     if (tune == "CT10_UEup") {
-      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.49");
+      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.31");
       Read_Write_Base::AddCommandLine("MI_RESULT_DIRECTORY_SUFFIX _up;");
-    } else if (tune == "CT10_UEdown") {
-      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.59");
-      Read_Write_Base::AddCommandLine("MI_RESULT_DIRECTORY_SUFFIX _down;");
-    } else {
-      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.54");
     }
-    tuneparams.push_back("CSS_IS_AS_FAC                = 0.538");
-    tuneparams.push_back("CSS_IS_PT2MIN                = 4.55");
-    tuneparams.push_back("COLOUR_RECONNECTION_STRENGTH = 0.36");
-  } else {
+    else if (tune == "CT10_UEdown") {
+      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.37");
+      Read_Write_Base::AddCommandLine("MI_RESULT_DIRECTORY_SUFFIX _down;");
+    }
+    else {
+      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.34");
+    }
+    tuneparams.push_back("CSS_IS_AS_FAC                = 0.493");
+    tuneparams.push_back("CSS_IS_PT2MIN                = 4.78");
+    tuneparams.push_back("COLOUR_RECONNECTION_STRENGTH = 0.23");
+  }
+  else {
     msg_Error()<<"Ignoring unknown tune name \"" << tune << "\"" << std::endl;
     return;
   }
