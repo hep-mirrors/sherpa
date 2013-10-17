@@ -710,6 +710,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete)
   }
   msg_Debugging()<<"trying unordered configuration\n";
   }
+  if (p_up) delete this;
   return NULL;
 }
 
