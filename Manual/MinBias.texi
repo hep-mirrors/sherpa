@@ -75,6 +75,14 @@ hadronisation.
 
 Below is a list of all relevant parameters to steer the Shrimps module.
 
+@subsubsection Generating minimum bias events
+@cindex EVENT_TYPE
+@cindex SOFT_COLLISIONS
+
+To generate minimum bias events with Shrimps in the '(run)' section of the run
+card @code{EVENT_TYPE} has to be set to @code{MinimumBias} and
+@code{SOFT_COLLISIONS} to @code{Shrimps}.
+
 @subsubsection Shrimps Mode
 @cindex Shrimps_Mode
 
