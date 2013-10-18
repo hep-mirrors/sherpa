@@ -501,7 +501,8 @@ bool Cluster_Algorithm::Cluster
   const DecayInfo_Vector &decids(p_bg->DecayInfos());
   for (size_t i(0);i<decids.size();++i)
     kt2ord.push_back(std::make_pair(decids[i]->m_id,0.0));
-  if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo,kt2ord,1)) {
+  if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo,kt2ord,
+	       (m_wmode&512)?1:((m_wmode&16384)?1:0))) {
     if (!(m_wmode&512)) {
     KT2Info_Vector kt2ord
       (1,KT2_Info((1<<p_ampl->Legs().size())-1,0.0));
