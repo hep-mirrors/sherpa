@@ -7,6 +7,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+#include "MODEL/Main/Model_Base.H"
 
 #include "HepMC/GenEvent.h"
 #include "HepMC/GenVertex.h"
@@ -72,12 +73,12 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
           double x2=(*blit)->InParticle(1)->Momentum()[0]/rpa->gen.PBeam(1)[0];
           double q(0.0), p1(0.0), p2(0.0);
           Blob_Data_Base *facscale((**blit)["Factorisation_Scale"]);
-          if (facscale) q=sqrt(facscale->Get<double>());
-          Blob_Data_Base *xf1((**blit)["XF1"]);
+	  if (facscale) q=sqrt(facscale->Get<double>());
+	  Blob_Data_Base *xf1((**blit)["XF1"]);
           Blob_Data_Base *xf2((**blit)["XF2"]);
           if (xf1) p1=xf1->Get<double>();
-          if (xf1) p2=xf2->Get<double>();
-          HepMC::PdfInfo pdfinfo(fl1, fl2, x1, x2, q, p1, p2);
+          if (xf2) p2=xf2->Get<double>();
+	  HepMC::PdfInfo pdfinfo(fl1, fl2, x1, x2, q, p1, p2);
           event.set_pdf_info(pdfinfo);
         }
       }
@@ -130,7 +131,12 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
                                                  remnantparts1, remnantparts2;
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   NLO_subevtlist* subevtlist(NULL);
+  ME_wgtinfo* wgtinfo(0);
+  
   if (sp) {
+    Blob_Data_Base* seinfo=(*sp)["ME_wgtinfo"];
+    if (seinfo) wgtinfo=seinfo->Get<ME_wgtinfo*>();
+   
     Blob_Data_Base * bdb((*sp)["NLO_subeventlist"]);
     if (bdb) subevtlist=bdb->Get<NLO_subevtlist*>();
   }
@@ -171,7 +177,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         }
       }
     }
-
+    
     if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
       if((*blit)->NInP()==2) {
         kf_code fl1=(*blit)->InParticle(0)->Flav().HepEvt();
@@ -181,12 +187,12 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         double q(0.0), p1(0.0), p2(0.0);
         Blob_Data_Base *facscale((**blit)["Factorisation_Scale"]);
         if (facscale) q=sqrt(facscale->Get<double>());
-        Blob_Data_Base *xf1((**blit)["XF1"]);
+	Blob_Data_Base *xf1((**blit)["XF1"]);
         Blob_Data_Base *xf2((**blit)["XF2"]);
         if (xf1) p1=xf1->Get<double>();
-        if (xf1) p2=xf2->Get<double>();
-        HepMC::PdfInfo pdfinfo(fl1, fl2, x1, x2, q, p1, p2);
-        event.set_pdf_info(pdfinfo);
+        if (xf2) p2=xf2->Get<double>();
+	HepMC::PdfInfo pdfinfo(fl1, fl2, x1, x2, q, p1, p2);
+	event.set_pdf_info(pdfinfo);
       }
     }
   }
@@ -209,7 +215,28 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
     if (!info) THROW(fatal_error,"Missing nof trials.");
     double trials(info->Get<double>());
     weights.push_back(trials);
+    //alphaS value && power
+    double rscale2 = (*sp)["Renormalization_Scale"]->Get<double>();
+    double alphaS = MODEL::s_model->ScalarFunction("alpha_S",rscale2);
+    event.set_alphaQCD(alphaS);
+    double aSpower = ((*sp)["OQCD"])->Get<int>();
+    weights.push_back(aSpower);
+    
+    if (wgtinfo) {
+      //dump weight_0
+      weights.push_back(wgtinfo->m_w0);
+      //dump number of usr weights
+      weights.push_back(wgtinfo->m_nx);
+      //store xprimes
+      weights.push_back(wgtinfo->m_y1);
+      weights.push_back(wgtinfo->m_y2);
+      //fill in usr weights
+      for (int i=0;i<wgtinfo->m_nx;i++) {
+	weights.push_back(wgtinfo->p_wx[i]);
+      }
+    }
   }
+  
   event.weights()=weights;
 
   if (subevtlist) {
@@ -331,11 +358,10 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
       // so set only flavours, x1, x2, and q from the Signal_Process
       HepMC::PdfInfo subpdfinfo(*event.pdf_info());
       double q = sqrt(sub->m_mu2[stp::fac]);
-      if (q != subpdfinfo.scalePDF()) {
+      if (q!=0. && q != subpdfinfo.scalePDF()) 
         subpdfinfo.set_scalePDF(q);
-        subpdfinfo.set_pdf1(0.);
-        subpdfinfo.set_pdf2(0.);
-      }
+      if (sub->m_xf1) subpdfinfo.set_pdf1(sub->m_xf1);
+      if (sub->m_xf2) subpdfinfo.set_pdf2(sub->m_xf2);
       subevent->set_pdf_info(subpdfinfo);
       // add weight
       std::vector<double> subweight; subweight.push_back(sub->m_result);
@@ -352,6 +378,25 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
       if (!info) THROW(fatal_error,"Missing nof trials.");
       double trials(info->Get<double>());
       subweight.push_back(trials);
+      //alphaS value && power
+      double alphaS = MODEL::s_model->ScalarFunction("alpha_S",sub->m_mu2[stp::ren]);
+      subevent->set_alphaQCD(alphaS);
+      double aSpower = ((*sp)["OQCD"])->Get<int>();
+      subweight.push_back(aSpower);
+      subweight.push_back(sub->m_mewgt);
+      
+      if (wgtinfo) {
+	//dump number of usr weights
+	subweight.push_back(wgtinfo->m_nx);
+	//store xprimes
+	subweight.push_back(wgtinfo->m_y1);
+	subweight.push_back(wgtinfo->m_y2);
+	//fill in usr weights
+	for (int i=0;i<wgtinfo->m_nx;i++) {
+	  subweight.push_back(wgtinfo->p_wx[i]);
+	}
+      }
+      //
       subevent->weights()=subweight;
       // set the event number (could be used to identify correlated events)
       subevent->set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());

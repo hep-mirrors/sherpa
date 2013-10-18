@@ -85,7 +85,8 @@ namespace ATOOLS {
 
     size_t m_n, m_idx;
     double m_result, m_me, m_mewgt, m_kt2;
-
+    double m_x1, m_x2,m_xf1, m_xf2;
+    
     std::vector<double> m_mu2;
 
     std::string m_pname;
@@ -102,6 +103,7 @@ namespace ATOOLS {
       Dip_ID(0,0,i,j,k), p_fl(fl), p_mom(mom), p_id(id), p_dec(NULL),
       p_real(NULL), p_proc(NULL), m_n(n), m_idx(0),
       m_result(0.0), m_me(0.0), m_mewgt(0.0), m_kt2(0.0),
+      m_x1(0.0), m_x2(0.0), m_xf1(0.0), m_xf2(0.0),
       m_mu2(stp::size,0.0), p_ampl(NULL), m_delete(false), m_trig(false) {}
 
     ~NLO_subevt();
