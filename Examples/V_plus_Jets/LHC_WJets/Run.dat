@@ -14,8 +14,8 @@
   ## JET_CRITERION FASTJET[A:antikt,R:0.4,y:5];
 
   % tags and settings for ME generators
-  LOOPGEN:=Internal;
-  ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN;
+  LOOPGEN:=MCFM;
+  ME_SIGNAL_GENERATOR Comix Amegic Internal LOOPGEN;
   EVENT_GENERATION_MODE Weighted;
   RESULT_DIRECTORY res.QCUT.FSF.RSF.QSF;
 
