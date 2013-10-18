@@ -72,8 +72,10 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
        sit!=m_allsinglets.end();++sit) {
     msg_Debugging()<<"before shower step\n";
     for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it)
-      if ((*it)->GetPrev() && (*it)->GetPrev()->KScheme()!=1)
-	(*it)->SetStart(Min((*it)->KtStart(),(*it)->GetPrev()->KtStart()));
+      if ((*it)->GetPrev() && (*it)->GetPrev()->KScheme()!=1) {
+	if (m_respectq2) (*it)->SetStart(Min((*it)->KtStart(),(*it)->GetPrev()->KtStart()));
+	else (*it)->SetStart((*it)->GetPrev()->KtStart());
+      }
     msg_Debugging()<<**sit;
     size_t pem(nem);
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
