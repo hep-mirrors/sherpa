@@ -6,7 +6,7 @@
 * Integrating complicated Loop-ME::
 * Avoiding misbinning effects::
 * Enforcing the renormalization scheme::
-* Checks the pole cancellation::
+* Checking the pole cancellation::
 * Structure of HepMC Output::
 * Structure of ROOT NTuple Output::
 @end menu
@@ -127,8 +127,8 @@ for example when integrated subtraction terms are computed by themselves.
 This can lead to inconsistencies when combining event samples, which may be avoided
 by setting @option{LOOP_ME_INIT=1} in the @code{(run)} section of the input file.
 
-@node Checks the pole cancellation
-@subsection Checks the pole cancellation
+@node Checking the pole cancellation
+@subsection Checking the pole cancellation
 @cindex CHECK_BORN
 @cindex CHECK_FINITE
 @cindex CHECK_POLES
@@ -139,7 +139,7 @@ one-loop matrix element cancel phase space point by phase space point
 do have to cancel can be set via @code{CHECK_POLES_THRESHOLD=<accu>}.
 In the same way, the finite contributions of the infrared subtraction
 and the one-loop matrix element can be checked by setting
-@code{CHECK_FINITE=1}, and the Born matrix element via @code{CHECK_Born=1}.
+@code{CHECK_FINITE=1}, and the Born matrix element via @code{CHECK_BORN=1}.
 
 @node Structure of HepMC Output
 @subsection Structure of HepMC Output
