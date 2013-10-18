@@ -14,7 +14,7 @@ Beam_Remnant_Handler::
 Beam_Remnant_Handler(BEAM::Beam_Spectra_Handler * beamspectra,
 		     vector<Continued_PDF> & pdfs) :
   p_blob(NULL), p_pdfs(&pdfs), m_paircounter(0),
-  m_momconserv(0), m_colours(0), m_analyse(true), m_didinsertbeamblob(false)
+  m_momconserv(0), m_colours(0), m_analyse(false), m_didinsertbeamblob(false)
 {
   m_checkmom.push_back(Vec4D(0,0,0,0)); 
   m_checkmom.push_back(Vec4D(0,0,0,0));

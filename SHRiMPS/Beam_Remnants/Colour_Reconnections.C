@@ -13,7 +13,7 @@ Colour_Reconnections::Colour_Reconnections() :
   m_Q02(MBpars("QRC2")), m_b02(4.*m_Q02*sqr(rpa->hBar()*rpa->c())),
   m_eta(2.),
   m_ycut(MBpars("originalY")-MBpars("deltaY")),
-  m_analyse(true)
+  m_analyse(false)
 {
   if (m_analyse) {
     m_histomap[string("Reconn_MassBefore")] = new Histogram(0,0.0,2000.0,2000);

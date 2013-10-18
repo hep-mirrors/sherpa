@@ -10,7 +10,7 @@ using namespace std;
 Hadron_Dissociation::Hadron_Dissociation(Continued_PDF *const pdf) :
   p_pdf(pdf), m_bunch(p_pdf->Bunch()), 
   m_ycut(MBpars("originalY")), //-MBpars("deltaY")),
-  m_analyse(true)
+  m_analyse(false)
 { 
   if (m_analyse) {
     m_histomap[string("KT_remn_orig")] = new Histogram(0,0.0,5.0,50);

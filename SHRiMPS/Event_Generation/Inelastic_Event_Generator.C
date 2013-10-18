@@ -23,7 +23,7 @@ Inelastic_Event_Generator(Sigma_Inelastic * sigma,
   m_first(true), m_done(false), 
   m_Nladders_fix(MBpars("NLaddersFix")),
   m_kt2fac(MBpars("kt2_factor")), m_difffac(MBpars("diff_factor")),
-  m_test(test), m_output(1), m_analyse(m_output>0), p_ladder(NULL)
+  m_test(test), m_output(0), m_analyse(false), p_ladder(NULL)
 { 
   //msg_Out()<<METHOD<<" for "<<m_Nladders_fix<<" vs "
   //	   <<MBpars("NLaddersFix")<<".\n";
@@ -61,6 +61,7 @@ Inelastic_Event_Generator::~Inelastic_Event_Generator()
 	      <<"   Wrong colours from ladder "<<m_laddercols<<";\n"
 	      <<"   Not able to update colours in event "<<m_updatecols<<".\n";
   }
+  if (m_histograms.empty()) return;
   Histogram * histo;
   string name;
   for (map<string,Histogram *>::iterator hit=m_histograms.begin();

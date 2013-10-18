@@ -28,9 +28,9 @@ Final_State::Final_State(const int & test) :
   m_nprimlad(1), 
   m_d2(MBpars("Ddiff2")), m_kdiff(MBpars("kdiff")), 
   m_Ylimit(MBpars("originalY")-MBpars("deltaY")),
-  m_test(test), m_output(true)
+  m_test(test), m_analyse(false)
 {
-  InitHistograms();
+  if (m_analyse) InitHistograms();
 }
 
 
@@ -68,7 +68,8 @@ operator()(Ladder * ladder,const double & Deltay,
 	    int(dabs(p_ladder->GetIn2()->m_mom.Y())>m_Ylimit));
   if (firstattempt && FirstSinglet(y0,y1,1.,nbeam)) {
     m_firstsing++;
-    m_histomap[std::string("Delta_final")]->Insert(1./dabs(y0-y1)); 
+    if (m_analyse) 
+      m_histomap[std::string("Delta_final")]->Insert(1./dabs(y0-y1)); 
     p_ladder->GetProps()->begin()->m_col = colour_type::singlet;
     p_ladder->SetDiffractive(true);
     if (MBpars.LadderWeight()==ladder_weight::Regge) {
@@ -130,8 +131,9 @@ double Final_State::GenerateEmissions() {
           m_lastwt  = pow(rarg,expo);
         }
 	m_singexit++;
-        m_histomap[std::string("Deltay_singexit")]->
-	  Insert(dabs(m_k2.Y()-m_k1.Y()));
+	if (m_analyse) 
+	  m_histomap[std::string("Deltay_singexit")]->
+	    Insert(dabs(m_k2.Y()-m_k1.Y()));
 	msg_Tracking()
 	  <<"   active interval in singlet for "
 	  <<p_ladder->Size()<<", lastwt="<<m_lastwt<<".\n";
@@ -158,9 +160,10 @@ double Final_State::GenerateEmissions() {
     dabs(p_ladder->GetEmissionsBegin()->second.m_mom.Y()-
 	 p_ladder->GetEmissionsRBegin()->second.m_mom.Y());
 
-  m_histomap[std::string("Delta_final")]->Insert(Delta); 
-  m_histomap[std::string("FSWt")]->Insert(m_lastwt);
-
+  if (m_analyse) {
+    m_histomap[std::string("Delta_final")]->Insert(Delta); 
+    m_histomap[std::string("FSWt")]->Insert(m_lastwt);
+  }
   bool check(true);
   TPropList::iterator tpit=p_ladder->GetPropsBegin(),tbef(tpit);
   tpit++;
@@ -219,7 +222,7 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
   }
   double kt1min2=Max(m_kt1min2,m_kt1cut2);
   if (kt1max2<kt1min2) {
-    m_histomap[std::string("Delta_final")]->Insert(0.); 
+    if (m_analyse) m_histomap[std::string("Delta_final")]->Insert(0.); 
     return false;
   }
   double ktexpo(1.);
@@ -241,10 +244,11 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
   double colfac(3.);
   double Delta(colfac*p_alphaS->MaxValue()/M_PI *
 	       KT2integral(kt1max2,kt1min2,m_q02min,ktexpo));
-  m_histomap[std::string("Delta_naive")]->Insert(Delta); 
-  if (dir) m_histomap[std::string("Delta_naive1")]->Insert(Delta); 
-  else m_histomap[std::string("Delta_naive0")]->Insert(Delta);
-
+  if (m_analyse) { 
+    m_histomap[std::string("Delta_naive")]->Insert(Delta); 
+    if (dir) m_histomap[std::string("Delta_naive1")]->Insert(Delta); 
+    else m_histomap[std::string("Delta_naive0")]->Insert(Delta);
+  }
   Vec4D k_0, k_1, k_2, q01, q12;
   msg_Tracking()
     <<"------------- ["<<y0old<<", "<<y2old<<" - ["<<kt0old<<", "<<kt2old<<"]\n"
@@ -256,7 +260,7 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
   do {
     wt = 0.;
     if (ntrials++>10000) {
-      m_histomap[std::string("Delta_final")]->Insert(0.); 
+      if (m_analyse) m_histomap[std::string("Delta_final")]->Insert(0.); 
       return false;
     }
     double deltay1(-1.*log(ran->Get())/Delta);
@@ -264,16 +268,20 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
     m_histomap[std::string("Deltay_test")]->Insert(deltay1); 
     if (y1>ystop || y1<y0old) {
       m_ys++;
-      m_histomap[std::string("Deltay_regexit")]->Insert(dabs(y2old-y0old));
-      m_histomap[std::string("Delta_final")]->Insert(0.); 
+      if (m_analyse) {
+	m_histomap[std::string("Deltay_regexit")]->Insert(dabs(y2old-y0old));
+	m_histomap[std::string("Delta_final")]->Insert(0.); 
+      }
       return false;
     }
     y0      = y0old;
     y2      = y2old;
     q02y    = Q02(dir?-y1:y1);
     kt12    = SelectKT2(kt1max2,kt1min2,q02y,ktexpo); 
-    m_histomap[std::string("KT2_test1")]->Insert(kt12); 
-    m_histomap[std::string("KT2_test2")]->Insert(kt12); 
+    if (m_analyse) {
+      m_histomap[std::string("KT2_test1")]->Insert(kt12); 
+      m_histomap[std::string("KT2_test2")]->Insert(kt12); 
+    }
     if (p_alphaS->Weight(kt12)<ran->Get()) {
       m_alphaS++;
       continue;
@@ -283,8 +291,10 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
       continue;
     }
     kt1     = sqrt(kt12);
-    m_histomap[std::string("KT2_accept1")]->Insert(kt12); 
-    m_histomap[std::string("KT2_accept2")]->Insert(kt12); 
+    if (m_analyse) {
+      m_histomap[std::string("KT2_accept1")]->Insert(kt12); 
+      m_histomap[std::string("KT2_accept2")]->Insert(kt12); 
+    }
     if (IsNan(kt1)) {
       m_rej_negkt1++;
       continue;
@@ -348,35 +358,41 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
       continue;
     }
     if (MomViolation(k_0,k_1,k_2,dir)) continue;
-    m_histomap[std::string("Delta_kin")]->Insert(1./Max(1.e-2,dabs(y1-y0))); 
+    if (m_analyse) 
+      m_histomap[std::string("Delta_kin")]->Insert(1./Max(1.e-2,dabs(y1-y0))); 
     q01   = dir?m_q0+k_0:m_q0-k_0;
     q12   = dir?-m_q2+k_2:-m_q2-k_2;
 
     m_q01_2 = dabs(q01.Abs2());
     m_q12_2 = dabs(q12.Abs2());
-    if (dir) {
-      m_histomap[std::string("q01_2_1")]->Insert(m_q01_2);
-      m_histomap[std::string("q12_2_1")]->Insert(m_q12_2);
-    }
-    else {
-      m_histomap[std::string("q01_2_0")]->Insert(m_q01_2);
-      m_histomap[std::string("q12_2_0")]->Insert(m_q12_2);
+    if (m_analyse) {
+      if (dir) {
+	m_histomap[std::string("q01_2_1")]->Insert(m_q01_2);
+	m_histomap[std::string("q12_2_1")]->Insert(m_q12_2);
+      }
+      else {
+	m_histomap[std::string("q01_2_0")]->Insert(m_q01_2);
+	m_histomap[std::string("q12_2_0")]->Insert(m_q12_2);
+      }
     }
     if (!IsOrdered(dir,k_0,k_1,k_2,m_q01_2)) continue;
-    m_histomap[std::string("Delta_order")]->Insert(1./Max(1.e-2,dabs(y1-y0))); 
+    if (m_analyse) 
+      m_histomap[std::string("Delta_order")]->Insert(1./Max(1.e-2,dabs(y1-y0))); 
     wt   = 1.;
     double deltay(dabs(k_1.Y()-k_0.Y()));
     mu01_2 = Q02((dir?-1.:1.)*(k_0.Y()+k_1.Y())/2.);
     mu12_2 = Q02((dir?-1.:1.)*(k_1.Y()+k_2.Y())/2.);
-    if (dir) m_histomap[std::string("ytest1")]->Insert(y1);
-    else m_histomap[std::string("ytest0")]->Insert(y1);
+    if (m_analyse) {
+      if (dir) m_histomap[std::string("ytest1")]->Insert(y1);
+      else m_histomap[std::string("ytest0")]->Insert(y1);
+    }
     if ((MBpars.LadderWeight()==ladder_weight::Regge || 
 	 MBpars.LadderWeight()==ladder_weight::ReggeDiffusion) && 
 	deltay>m_Deltay) { 
       rarg = mu01_2/(dabs(q01.Abs2())+mu01_2);
       expo = colfac*(*p_alphaS)(q01.PPerp2())*deltay/M_PI; 
       wt  *= reggewt = pow(rarg,expo);
-      m_histomap[std::string("ReggeWt")]->Insert(reggewt);
+      if (m_analyse) m_histomap[std::string("ReggeWt")]->Insert(reggewt);
     }
     if (MBpars.LadderWeight()==ladder_weight::ReggeDiffusion && 
 	dabs(m_kdiff)>1.e-6) {
@@ -388,16 +404,18 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
       (Saturation(dir?-y1:y1)/(Saturation(dir?y1:-y1)+kt12));
     wt    *= recombwt= 
       Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup));
-    m_histomap[std::string("RecombWt")]->Insert(recombwt);
-    if (dir) {
-      m_histomap[std::string("ReggeWt1")]->Insert(reggewt);
-      m_histomap[std::string("RecombWt1")]->Insert(recombwt);
-      m_histomap[std::string("RecombSup1")]->Insert(sup);
-    }
-    else {
-      m_histomap[std::string("ReggeWt0")]->Insert(reggewt);
-      m_histomap[std::string("RecombWt0")]->Insert(recombwt);
-      m_histomap[std::string("RecombSup0")]->Insert(sup);
+    if (m_analyse) {
+      m_histomap[std::string("RecombWt")]->Insert(recombwt);
+      if (dir) {
+	m_histomap[std::string("ReggeWt1")]->Insert(reggewt);
+	m_histomap[std::string("RecombWt1")]->Insert(recombwt);
+	m_histomap[std::string("RecombSup1")]->Insert(sup);
+      }
+      else {
+	m_histomap[std::string("ReggeWt0")]->Insert(reggewt);
+	m_histomap[std::string("RecombWt0")]->Insert(recombwt);
+	m_histomap[std::string("RecombSup0")]->Insert(sup);
+      }
     }
   } while (wt<ran->Get());
 
@@ -413,7 +431,8 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
     m_lastwt  = pow(rarg,expo);
   }
 
-  m_histomap[std::string("Delta_final")]->Insert(1./(dabs(y1-y0))); 
+  if (m_analyse) 
+    m_histomap[std::string("Delta_final")]->Insert(1./(dabs(y1-y0))); 
   return true;
 }
 
@@ -901,6 +920,7 @@ void Final_State::InitHistograms() {
 }
 
 void Final_State::OutputHistograms() {
+  if (!m_analyse) return;
   msg_Info()
     <<METHOD<<" yields rejections from "<<m_trials<<" trial emissions:\n"
     <<"   regular exits       "<<m_ys<<"\n"

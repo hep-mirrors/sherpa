@@ -13,7 +13,7 @@ Ladder_Generator::
 Ladder_Generator(Parton_Luminosity * lumi,const int & test) :
   m_IS(Initial_State(lumi)), m_FS(Final_State(test)),
   m_originalY(MBpars("originalY")), m_cutoffY(MBpars("deltaY")), 
-  p_ladder(0), m_output(true),
+  p_ladder(0), m_output(false),
   m_Nprim(0),m_Nsec(0),m_Ndd_p(0),m_Ndd_s(0),m_Nsd_p(0),m_Nsd_s(0),
   m_Ncep_p(0),m_Ncep_s(0)
   {    

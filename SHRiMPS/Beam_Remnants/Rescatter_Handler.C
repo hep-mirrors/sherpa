@@ -17,7 +17,7 @@ Rescatter_Handler::Rescatter_Handler(Beam_Remnant_Handler * beams) :
   p_alphaS(static_cast<MODEL::Strong_Coupling *>
 	   (MODEL::s_model->GetScalarFunction(string("strong_cpl")))),
   m_Ylimit(MBpars("originalY")-MBpars("deltaY")),
-  m_analyse(true)
+  m_analyse(false)
 { 
   if (m_analyse) {
     m_histomap[string("Rescatter_B")]  = new Histogram(0,0.0,20.0,200);

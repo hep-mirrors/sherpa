@@ -37,7 +37,7 @@ namespace SHRIMPS {
     ATOOLS::Vec4D            m_k0,m_k1,m_k2,m_q0,m_q2;
     double                   m_q01_2,m_q12_2;
 
-    bool     m_output;
+    bool     m_analyse;
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
     long int m_rej_negkt1,m_rej_nokt2,m_rej_nokt0,m_rej_nophi0,m_rej_noy0;
     long int m_rej_offshell,m_rej_nofit,m_rej_order,m_trials,m_ys,m_alphaS;
@@ -69,9 +69,9 @@ namespace SHRIMPS {
     void   InitHistograms();
     void   OutputHistograms();
   public:
-    Final_State() : m_output(false) {}
+    Final_State() : m_analyse(false) {}
     Final_State(const int & test);
-    inline ~Final_State() { if (m_output) OutputHistograms(); }
+    inline ~Final_State() { if (m_analyse) OutputHistograms(); }
 
     double operator()(Ladder * ladder,const double & Deltay,
 		      const bool & firstladder,const bool & firstattempt);
