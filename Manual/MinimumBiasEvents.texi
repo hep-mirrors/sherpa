@@ -3,7 +3,7 @@
 
 @example
 @smallformat
-@verbatiminclude Examples/SoftQCD/LHC_MinBias/Run.7TeV.dat
+@verbatiminclude Examples/Soft_QCD/LHC_MinBias/Run.7TeV.dat
 @end smallformat
 @end example
 

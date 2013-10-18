@@ -3,7 +3,7 @@
 
 @example
 @smallformat
-@verbatiminclude Examples/SoftQCD/Run.Xsecs.dat
+@verbatiminclude Examples/Soft_QCD/Run.Xsecs.dat
 @end smallformat
 @end example
 

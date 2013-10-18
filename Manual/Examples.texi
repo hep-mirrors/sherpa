@@ -83,12 +83,12 @@ of the main features of these examples.
 @section Soft QCD: Minimum Bias and Cross Sections
 
 @menu
-* MinimumBiasEvents::
-* InclusiveCrossSections::
+* Calculation of inclusive cross sections::
+* Simulation of Minimum Bias events::
 @end menu
 
-@include MinimumBiasEvents.texi
 @include InclusiveCrossSections.texi
+@include MinimumBiasEvents.texi
 
 @node APIexamples
 @section Using the Python interface
