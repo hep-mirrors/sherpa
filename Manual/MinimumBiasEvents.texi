@@ -1,0 +1,18 @@
+@node Simulation of Minimum Bias events
+@subsection Simulation of Minimum Bias events
+
+@example
+@smallformat
+@verbatiminclude Examples/SoftQCD/LHC_MinBias/Run.7TeV.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item The SHRiMPS model is not properly tuned yet -- all parameters are set 
+      to very natural values, such as for example 1.0 GeV for infrared
+      parameters.
+@item Eleastic scattering and low-mass diffraction are not included.
+@item A large number of Minimum Bias-type analyses is enabled.
+@end itemize
+ 

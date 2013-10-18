@@ -1,0 +1,20 @@
+@node Calculation of inclusive cross sections
+@subsection Calculation of inclusive cross sections
+
+@example
+@smallformat
+@verbatiminclude Examples/SoftQCD/Run.Xsecs.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item Inclusive cross sections (total, inelastic, low-mass single-diffractive,
+      low-mass double-diffractive, elastic) and the elastic slope are
+      calculated for varying c.m. energies in pp collisions
+@item The results are written to the file InclusiveQuantities/xsecs_total.dat
+      and to the screen.  The directory will automatically be created in the
+      path from where Sherpa is run.
+@item The parameters of the model are not very well tuned.
+@end itemize
+ 

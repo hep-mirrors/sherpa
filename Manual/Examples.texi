@@ -13,6 +13,7 @@ of the main features of these examples.
 * HJets::
 * TopsJets::
 * FONLO::
+* SoftQCD::
 * APIexamples::
 @end menu
 
@@ -77,6 +78,17 @@ of the main features of these examples.
 @end menu
 
 @include NLO_NTuples.texi
+
+@node SoftQCD
+@section Soft QCD: Minimum Bias and Cross Sections
+
+@menu
+* MinimumBiasEvents::
+* InclusiveCrossSections::
+@end menu
+
+@include MinimumBiasEvents.texi
+@include InclusiveCrossSections.texi
 
 @node APIexamples
 @section Using the Python interface
