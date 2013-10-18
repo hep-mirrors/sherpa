@@ -700,6 +700,7 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
 			    li->Flav(),lj->Flav()));
  	  msg_Debugging()<<"Q_{"<<ID(li->Id())<<ID(lj->Id())
 			 <<","<<ID(lk->Id())<<"} = "<<sqrt(q2ijk)<<"\n";
+	  if (q2ijk<0.0) continue;
 	  if (mode==0) {
 	    if (q2ijk<q2cut) return false;
 	  }
