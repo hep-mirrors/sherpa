@@ -859,7 +859,7 @@ void Initialization_Handler::SetGlobalVariables()
   double k0sqf = sdr.GetValue<double>("CSS_FS_PT2MIN",1.0);
   double k0sqi = sdr.GetValue<double>("CSS_IS_PT2MIN",4.78);
   double fs_as_fac = sdr.GetValue<double>("CSS_FS_AS_FAC",0.66);
-  double is_as_fac = sdr.GetValue<double>("CSS_IS_AS_FAC",0.493);
+  double is_as_fac = sdr.GetValue<double>("CSS_IS_AS_FAC",0.50);
   double mth = sdr.GetValue<double>("CSS_MASS_THRESHOLD",0.0);
   rpa->gen.SetVariable("CSS_EVOLUTION_SCHEME",ToString(evol));
   rpa->gen.SetVariable("CSS_KFACTOR_SCHEME",ToString(kfmode));
@@ -1105,7 +1105,7 @@ void Initialization_Handler::SetTuneParameters(const std::string tune)
     tuneparams.push_back("K_PERP_MEAN_2                = 1.10");
     tuneparams.push_back("K_PERP_SIGMA_1               = 0.85");
     tuneparams.push_back("K_PERP_SIGMA_2               = 0.85");
-    tuneparams.push_back("PROFILE_PARAMETERS           = 0.759 0.576");
+    tuneparams.push_back("PROFILE_PARAMETERS           = 0.76 0.58");
     tuneparams.push_back("RESCALE_EXPONENT             = 0.244");
     tuneparams.push_back("SCALE_MIN                    = 2.44");
     if (tune == "CT10_UEup") {
@@ -1113,13 +1113,13 @@ void Initialization_Handler::SetTuneParameters(const std::string tune)
       Read_Write_Base::AddCommandLine("MI_RESULT_DIRECTORY_SUFFIX _up;");
     }
     else if (tune == "CT10_UEdown") {
-      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.37");
+      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.38");
       Read_Write_Base::AddCommandLine("MI_RESULT_DIRECTORY_SUFFIX _down;");
     }
     else {
-      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.34");
+      tuneparams.push_back("SIGMA_ND_FACTOR              = 0.3425");
     }
-    tuneparams.push_back("CSS_IS_AS_FAC                = 0.493");
+    tuneparams.push_back("CSS_IS_AS_FAC                = 0.50");
     tuneparams.push_back("CSS_IS_PT2MIN                = 4.78");
     tuneparams.push_back("COLOUR_RECONNECTION_STRENGTH = 0.23");
   }

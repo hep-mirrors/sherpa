@@ -175,7 +175,7 @@ bool Simple_Chain::ReadInData()
   m_heavy_flavour = reader->GetValue<int>("MI_HEAVY_FLAVOUR",1);
   if (!reader->ReadFromFile(m_error,"PS_ERROR")) m_error=1.e-2;
   if (!reader->ReadFromFile(m_pathextra,"PATH_EXTRA")) m_pathextra="";
-  m_sigma_nd_fac = reader->GetValue<double>("SIGMA_ND_FACTOR",0.34);
+  m_sigma_nd_fac = reader->GetValue<double>("SIGMA_ND_FACTOR",0.3425);
   m_resdir = reader->GetValue<std::string>("MI_RESULT_DIRECTORY","");
   m_ressuffix = reader->GetValue<std::string>("MI_RESULT_DIRECTORY_SUFFIX","");
   GeneratePathName();
@@ -433,8 +433,8 @@ bool Simple_Chain::Initialize()
   if (!p_read->ReadFromFile(function,"PROFILE_FUNCTION")) {
     function="Double_Gaussian";
     if (!p_read->VectorFromFile(parameters,"PROFILE_PARAMETERS")) {
-      parameters.push_back(0.759);
-      parameters.push_back(0.576);
+      parameters.push_back(0.76);
+      parameters.push_back(0.58);
     }
   }
   else {

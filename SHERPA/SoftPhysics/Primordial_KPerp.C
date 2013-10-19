@@ -36,8 +36,8 @@ Primordial_KPerp::Primordial_KPerp(std::string _m_path,std::string _m_file):
     defaultsigma1*=pow((rpa->gen.Ecms()/7000.),0.55);
   }
   if (rpa->gen.Beam2().Kfcode()==kf_p_plus) {
-    defaultmean2=1.00;
-    defaultsigma2=1.38;
+    defaultmean2=1.10;
+    defaultsigma2=0.85;
     // Energy dependent scaling of K_PERP_SIGMA
     defaultsigma2*=pow((rpa->gen.Ecms()/7000.),0.55);
   }
