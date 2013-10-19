@@ -205,7 +205,7 @@ DefineInitialConditions(ATOOLS::Blob *blob)
 	DEBUG_INFO("didn't find process using original amplitude");
 	if (m_bbarmode&4) {
 	  Cluster_Amplitude *ampl=p_me->Process()->
-	    Get<Single_Process>()->Cluster(m_cmode|256|512);
+	    Get<Single_Process>()->Cluster(m_cmode|16|256|512);
 	  while (ampl->Prev()) ampl=ampl->Prev();
 	  if (!LocalKFactor(ampl))
 	    DEBUG_INFO("didn't find process using exclusive clustering");
