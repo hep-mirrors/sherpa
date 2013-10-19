@@ -62,7 +62,7 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
       double s(2.0*campl->Leg(0)->Mom()*campl->Leg(1)->Mom());
       double t(2.0*campl->Leg(0)->Mom()*campl->Leg(2)->Mom());
       double u(2.0*campl->Leg(0)->Mom()*campl->Leg(3)->Mom());
-      muq2=muf2=mur2=-1.0/(1.0/s+1.0/t+1.0/u);
+      muq2=muf2=mur2=-1.0/(1.0/s+1.0/t+1.0/u)/4.0;
     }
     else if (!fl[2].Strong() && !fl[3].Strong()) {
       msg_Debugging()<<"DY like\n";
@@ -70,11 +70,11 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     }
     else if (fl[2].Strong() && !fl[3].Strong()) {
       msg_Debugging()<<"jV like\n";
-      muq2=muf2=mur2=campl->Leg(3)->Mom().MPerp2();
+      muq2=muf2=mur2=campl->Leg(3)->Mom().MPerp2()/4.0;
     }
     else if (!fl[2].Strong() && fl[3].Strong()) {
       msg_Debugging()<<"Vj like\n";
-      muq2=muf2=mur2=campl->Leg(2)->Mom().MPerp2();
+      muq2=muf2=mur2=campl->Leg(2)->Mom().MPerp2()/4.0;
     }
     else THROW(not_implemented,"Please define your own core scale");
   }
