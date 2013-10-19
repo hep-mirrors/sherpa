@@ -701,7 +701,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete)
       msg_Debugging()<<"no valid combination -> classify as rs core\n";
       return CheckCore(mode,0);
     }
-    if (p_up || valid) delete this;
+    if (p_up) delete this;
     return NULL;
   }
   if (valid) {
