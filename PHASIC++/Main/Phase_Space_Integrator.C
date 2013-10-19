@@ -9,7 +9,7 @@
 #include "ATOOLS/Org/My_MPI.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 
-#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/RUsage.H"
 #include <unistd.h>
 
 using namespace PHASIC;
@@ -38,6 +38,7 @@ Phase_Space_Integrator::Phase_Space_Integrator()
   if (!read.ReadFromFile(ndecopt,"PSI_NDECOPT")) ndecopt=10;
   else msg_Info()<<METHOD<<"(): Set n_{opt,dec} = "<<ndecopt<<".\n";
   addtime=0.0;
+  lastrss=GetCurrentRSS();
 }
 
 Phase_Space_Integrator::~Phase_Space_Integrator()
@@ -306,6 +307,16 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 		<<FormatTime(size_t(timeest)-size_t((time-starttime))) 
 		<<" left ) ["<<rpa->gen.Timer().StrFTime("%H:%M:%S")<<"]   "<<endl; 
 #endif
+      size_t currentrss=GetCurrentRSS();
+      if (currentrss-lastrss>ToType<int>
+	  (rpa->gen.Variable("MEMLEAK_WARNING_THRESHOLD"))) {
+	msg_Error()<<METHOD<<"() {\n"<<om::bold<<"  Memory usage increased by "
+		   <<(currentrss-lastrss)/(1<<20)<<" MB,"
+		   <<" now "<<currentrss/(1<<20)<<" MB.\n"
+		   <<om::red<<"  This might indicate a memory leak!\n"
+		   <<"  Please monitor this process closely.\n"<<om::reset<<"}"<<std::endl;
+      }
+      lastrss=currentrss;
       std::vector<double> stats(6);
       stats[0]=psh->Process()->TotalResult()*rpa->Picobarn();
       stats[1]=psh->Process()->TotalVar()*rpa->Picobarn();

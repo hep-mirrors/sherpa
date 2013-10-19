@@ -275,6 +275,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     for (int i(1);i<4;++i) seedstr+="_"+ToString(gen.m_seeds[i]);
   gen.SetVariable("RNG_SEED",ToString(gen.m_seeds[0])+seedstr);
 
+  gen.SetVariable("MEMLEAK_WARNING_THRESHOLD",
+		  ToString(dr.GetValue<int>("MEMLEAK_WARNING_THRESHOLD",1<<20)));
   gen.m_timeout = dr.GetValue<double>("TIMEOUT",std::numeric_limits<double>::max());
   if (gen.m_timeout<0.) gen.m_timeout=0.;
   rpa->gen.m_timer.Start();

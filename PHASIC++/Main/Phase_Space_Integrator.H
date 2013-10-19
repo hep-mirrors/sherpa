@@ -1,6 +1,8 @@
 #ifndef PHASIC_Main_Phase_Space_Integrator_H
 #define PHASIC_Main_Phase_Space_Integrator_H
 
+#include <stddef.h>
+
 namespace PHASIC {class Phase_Space_Handler;}
 
 namespace PHASIC {
@@ -16,6 +18,7 @@ namespace PHASIC {
     double value, maxerror, maxabserror, rstarttime, rlotime;
     long unsigned int n, ncontrib, endopt, nlo, fin_opt, nstep, ncstep;
     long int mn, mnstep, mncstep;
+    size_t lastrss;
 
     Phase_Space_Handler *psh;
 

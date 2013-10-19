@@ -19,6 +19,7 @@ namespace SHERPA {
     double m_n, m_addn, m_sum, m_sumsqr, m_maxweight;
     double m_mn, m_msum, m_msumsqr;
     bool m_checkweight;
+    size_t m_lastrss;
 
     Phase_List        * p_phases;
     ATOOLS::Blob_List   m_blobs, m_sblobs;
