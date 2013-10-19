@@ -17,6 +17,7 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "ATOOLS/Org/RUsage.H"
 #ifdef USING__GZIP
 #include "ATOOLS/Org/Gzip_Stream.H"
 #endif
@@ -340,20 +341,13 @@ int Matrix_Element_Handler::InitializeProcesses
   double retime(ATOOLS::rpa->gen.Timer().RealTime());
 #endif
   double etime(ATOOLS::rpa->gen.Timer().UserTime());
-  Data_Reader psread;
-  psread.SetAddCommandLine(false);
-  psread.AddWordSeparator("\t");
-  psread.SetInputPath("/proc/"+ToString(getpid())+"/");
-  psread.SetInputFile("status");
-  std::vector<std::string> musage;
-  if (psread.VectorFromFile(musage,"VmSize:"))
-    for (size_t i(1);i<musage.size();++i) musage.front()+=" "+musage[i];
+  size_t rss(GetCurrentRSS());
 #ifdef USING__Threading
-  msg_Info()<<" done ( "<<(musage.size()>0?musage.front():"?")<<", "
+  msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
 	    <<FormatTime(size_t(retime-rbtime))<<" / "
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
 #else
-  msg_Info()<<" done ( "<<(musage.size()>0?musage.front():"?")<<", "
+  msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
 #endif
   if (m_procs.empty() && m_gens.size()>0)
@@ -368,15 +362,13 @@ int Matrix_Element_Handler::InitializeProcesses
   retime=ATOOLS::rpa->gen.Timer().RealTime();
 #endif
   etime=ATOOLS::rpa->gen.Timer().UserTime();
-  psread.RereadInFile();
-  if (psread.VectorFromFile(musage,"VmSize:"))
-    for (size_t i(1);i<musage.size();++i) musage.front()+=" "+musage[i];
+  rss=GetCurrentRSS();
 #ifdef USING__Threading
-  msg_Info()<<" done ( "<<(musage.size()>0?musage.front():"?")<<", "
+  msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
 	    <<FormatTime(size_t(retime-rbtime))<<" / "
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
 #else
-  msg_Info()<<" done ( "<<(musage.size()>0?musage.front():"?")<<", "
+  msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
 #endif
   msg_Debugging()<<METHOD<<"(): Processes {\n";

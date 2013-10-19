@@ -16,6 +16,7 @@ libToolsOrg_la_SOURCES        = \
 				Return_Value.C \
 				Shell_Tools.C \
 				STL_Tools.C \
+				RUsage.C \
 				Getter_Function.C \
 				My_MPI.C \
 				Exception.C \
