@@ -14,7 +14,7 @@ The following parameters describe general run information. They may be set in th
 * ANALYSIS::          Switch internal analysis on or off.
 * ANALYSIS_OUTPUT::   Directory for generated analysis histogram files.
 * TIMEOUT::           Run time limitation.
-* RLIMIT_AS::         Memory limitation.
+* RLIMIT_AS::         Memory limitation and leak detection.
 * BATCH_MODE::        Batch mode settings.
 * NUM_ACCURACY::      Accuracy for gauge tests.
 
@@ -191,14 +191,23 @@ having no run time limitation at all. The unit is seconds.
 @subsection RLIMIT_AS
 @cindex RLIMIT_AS
 @cindex RLIMIT_BY_CPU
+@cindex MEMLEAK_WARNING_THRESHOLD
 A memory limitation can be given to prevent Sherpa to crash the system it is 
 running on as it continues to build up matrix elements and loads additional 
 libraries at run time. Per default the maximum RAM of the system is determined 
 and set as the memory limit. This can be changed by giving 
-@code{RLIMIT_AS=<size>} where the size is given as eg. @code{500MB} or 
-@code{4 GB}. When running with @ref{MPI parallelization} it might be necessary 
-to divide the total maximum by the number of cores. This can be done by 
-setting @code{RLIMIT_BY_CPU=1}.
+@option{RLIMIT_AS=<size>} where the size is given in the format @code{500 MB}, 
+@code{4 GB}, or @code{10 %}. The space between number and unit is mandatory. 
+When running with @ref{MPI parallelization} it might be necessary to divide 
+the total maximum by the number of cores. This can be done by setting 
+@code{RLIMIT_BY_CPU=1}.
+
+Sherpa checks for memory leaks during integration and event generation. 
+If the allocated memory after start of integration or event generation exceeds
+the parameter @option{MEMLEAK_WARNING_THRESHOLD}, a warning is printed. 
+Like @option{RLIMIT_AS}, @option{MEMLEAK_WARNING_THRESHOLD} can be set 
+using units. However, no spaces are allowed between the number and the unit.
+The warning threshold defaults to @code{16MB}.
 
 @node BATCH_MODE
 @subsection BATCH_MODE
