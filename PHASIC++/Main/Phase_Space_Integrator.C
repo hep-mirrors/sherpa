@@ -308,15 +308,15 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 		<<" left ) ["<<rpa->gen.Timer().StrFTime("%H:%M:%S")<<"]   "<<endl; 
 #endif
       size_t currentrss=GetCurrentRSS();
-      if (currentrss-lastrss>ToType<int>
+      if (currentrss>lastrss+ToType<int>
 	  (rpa->gen.Variable("MEMLEAK_WARNING_THRESHOLD"))) {
 	msg_Error()<<METHOD<<"() {\n"<<om::bold<<"  Memory usage increased by "
 		   <<(currentrss-lastrss)/(1<<20)<<" MB,"
 		   <<" now "<<currentrss/(1<<20)<<" MB.\n"
 		   <<om::red<<"  This might indicate a memory leak!\n"
 		   <<"  Please monitor this process closely.\n"<<om::reset<<"}"<<std::endl;
+	lastrss=currentrss;
       }
-      lastrss=currentrss;
       std::vector<double> stats(6);
       stats[0]=psh->Process()->TotalResult()*rpa->Picobarn();
       stats[1]=psh->Process()->TotalVar()*rpa->Picobarn();
