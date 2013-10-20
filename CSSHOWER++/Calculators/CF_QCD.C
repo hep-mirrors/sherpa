@@ -78,8 +78,8 @@ double CF_QCD::Coupling(const double &scale,const int pol)
   if (scl<p_cpl->ShowerCutQ2()) return 0.0;
   double cpl=(*p_cpl)[scl]*m_q;
   if (cpl>m_cplmax.front()) {
-    msg_Error()<<METHOD<<"(): Value exceeds maximum at k_T = "
-	       <<sqrt(scale)<<" -> q = "<<sqrt(scl)<<"."<<std::endl;
+    msg_Tracking()<<METHOD<<"(): Value exceeds maximum at k_T = "
+		  <<sqrt(scale)<<" -> q = "<<sqrt(scl)<<"."<<std::endl;
     return m_cplmax.front();
   }
 #ifdef DEBUG__Trial_Weight
