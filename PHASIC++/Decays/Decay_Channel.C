@@ -163,8 +163,8 @@ double Decay_Channel::Lambda(const double& a,
   if (L>0.0) return sqrt(L)/2/sqrt(a);
   if (L>-Accu()) return 0.0;
   msg_Error()<<"passed impossible mass combination:"<<std::endl;
-  msg_Error()<<"m_a="<<sqrt(a)<<" m_b="<<sqrt(b)<<" m_c="<<sqrt(c)<<endl;
-  msg_Error()<<"L="<<L<<endl;
+  msg_Error()<<"m_a="<<sqrt(a)<<" m_b="<<sqrt(b)<<" m_c="<<sqrt(c)<<" -> "
+             <<"L="<<L<<endl;
   return 0.;
 }
 
