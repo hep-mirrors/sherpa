@@ -217,29 +217,28 @@ void Dress_Blob_Base::DetermineU() {
 }
 
 std::vector<double> Dress_Blob_Base::GenerateNumberAndEnergies() {
-  std::vector<double> R, k;
-  R.push_back(0);
-  for (unsigned int i=0; R.back()<m_nbar; ++i) {
-    R.push_back(R.back()-log(ran->Get()));
-    k.push_back(m_omegaMax*pow(m_omegaMin/m_omegaMax,R.back()/m_nbar));
-    if (k.size()>Photons::s_nmax) break;
+//  std::vector<double> R, k;
+//  R.push_back(0);
+//  for (unsigned int i=0; R.back()<m_nbar; ++i) {
+//    R.push_back(R.back()-log(ran->Get()));
+//    k.push_back(m_omegaMax*pow(m_omegaMin/m_omegaMax,R.back()/m_nbar));
+//    if (k.size()>Photons::s_nmax) break;
+//  }
+//  k.pop_back();
+//  m_n = k.size();
+  m_n = -1;
+  double expnbar = exp(-m_nbar);
+  double prod = 1.;
+  while (true) {
+    m_n++;
+    prod = prod*ran->Get();
+    if (prod <= expnbar) break;
   }
-  k.pop_back();
-  m_n = k.size();
-//   m_n = -1;
-//   double expnbar = exp(-m_nbar);
-//   double prod = 1.;
-//   while (true) {
-//     m_n++;
-//     prod = prod*ran->Get();
-//     if (prod <= expnbar) break;
-//   }
-  // m_n = 1;
-//   m_n = Min(m_n,Photons::s_nmax);
-//   std::vector<double> k;
-//   for (unsigned int i=0; i<m_n; i++) {
-//     k.push_back(m_omegaMin*pow(m_omegaMax/m_omegaMin,ran->Get()));
-//   }
+  m_n = Min(m_n,Photons::s_nmax);
+  std::vector<double> k;
+  for (unsigned int i=0; i<m_n; i++) {
+    k.push_back(m_omegaMin*pow(m_omegaMax/m_omegaMin,ran->Get()));
+  }
   return k;
 }
 
