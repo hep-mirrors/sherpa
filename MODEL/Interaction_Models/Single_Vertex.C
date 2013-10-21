@@ -12,8 +12,6 @@ using namespace std;
 
 // Constructors and Destructors
 Single_Vertex::Single_Vertex()
-// do not change the default for oew=1 and oqcd=0,
-// it is relied upon in every model
 { t = 0; nleg=3; cpl.resize(4); oew=1; oqcd=0; dec=0; }
 
 Single_Vertex::Single_Vertex(const Single_Vertex& v): 

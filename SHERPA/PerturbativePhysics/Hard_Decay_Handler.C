@@ -150,7 +150,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
       dmit->second.at(0)->Flav().SetWidth(dmit->second.at(0)->TotalWidth());
   }
 
-  if (p_decaymap->size()) msg_Info()<<endl<<*p_decaymap<<endl;
+  if (p_decaymap->size()) msg_Tracking()<<endl<<*p_decaymap<<endl;
   WriteDecayTables();
 }
 

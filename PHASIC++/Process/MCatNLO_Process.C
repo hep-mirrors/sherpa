@@ -102,11 +102,9 @@ void MCatNLO_Process::Init(const Process_Info &pi,
     p_rsproc->SetMCMode(2);
   }
   if (p_rsproc->Size()!=p_rproc->Size())
-    THROW(fatal_error,"R and RS have different size: "
-          +ToString(p_rproc->Size())+" vs. "+ToString(p_rsproc->Size())+".");
+    THROW(fatal_error,"R and RS have different size");
   if (p_bproc->Size()!=p_bviproc->Size())
-    THROW(fatal_error,"B and BVI have different size: "
-          +ToString(p_bproc->Size())+" vs. "+ToString(p_bviproc->Size())+".");
+    THROW(fatal_error,"B and BVI have different size");
   for (size_t i(0);i<p_rsproc->Size();++i)
     if ((*p_rsproc)[i]->Flavours()!=(*p_rproc)[i]->Flavours())
       THROW(fatal_error,"Ordering differs in R and RS");

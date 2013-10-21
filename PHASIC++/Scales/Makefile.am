@@ -9,7 +9,6 @@ libPhasicScales_la_SOURCES    =	\
 				Scale_Setter_Base.C \
 				Core_Scale_Setter.C \
 				Default_Core_Scale.C \
-                                Higgs_Core_Scale.C \
 				KFactor_Setter_Base.C \
 				Tag_Setter.C \
 				Variable_Scale_Setter.C \
