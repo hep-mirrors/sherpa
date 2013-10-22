@@ -5,6 +5,10 @@ using namespace HADRONS;
 using namespace ATOOLS;
 using namespace std;
 
+VA_0_PP_strange::FF_Base::~FF_Base()
+{
+}
+
 void VA_0_PP_strange::SetModelParameters( struct GeneralModel _md )
 {
   m_chpionmode = (m_flavs[p_i[0]].Kfcode() == kf_pi_plus) ? 1 : 0;

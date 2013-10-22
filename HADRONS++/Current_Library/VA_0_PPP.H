@@ -23,7 +23,7 @@ namespace HADRONS {
        
       public :
         FF_Base(int mode, int kaon_mode, std::string path, GeneralModel _md, double * ms );
-        ~FF_Base() {}
+        virtual ~FF_Base();
         virtual Complex FormFactor( int, double, double, double ) = 0;
         inline double Mass2(int i)    { return m_ms[i]; }
     };

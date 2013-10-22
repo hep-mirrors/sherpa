@@ -5,6 +5,10 @@ using namespace HADRONS;
 using namespace ATOOLS;
 using namespace std;
 
+VA_0_PPP::FF_Base::~FF_Base()
+{
+}
+
 VA_0_PPP::VA_0_PPP(const ATOOLS::Flavour_Vector& flavs,
                    const std::vector<int>& indices, const std::string& name) :
   Current_Base(flavs, indices, name)

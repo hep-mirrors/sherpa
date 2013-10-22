@@ -95,5 +95,6 @@ bool Single_Dipole_Term::Combinable(const size_t &idi,const size_t &idj)
 
 const Flavour_Vector &Single_Dipole_Term::CombinedFlavour(const size_t &idij)
 {
-  return Flavour_Vector();
+  THROW(fatal_error,"Invalid call");
+  return m_flavs;
 }

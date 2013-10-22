@@ -16,6 +16,7 @@ namespace HADRONS {
         double m_Sigma_KP, m_Delta_KP;    // sum, difference of masses^2
       public :
         FF_Base(GeneralModel _md);
+        virtual ~FF_Base();
         virtual Complex VectorFormFactor( double ) = 0;
         virtual Complex ScalarFormFactor( double ) = 0;
         void SetMasses2( double, double, double );
