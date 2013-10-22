@@ -181,7 +181,7 @@ Combine_Table::Combine_Table(AMEGIC::Process_Base *const proc,
     m_nstrong--;
   p_proc=proc;
   m_no=++s_all;
-  m_kt2ord=KT2Info_Vector(1,KT2_Info((1<<proc->NIn()+proc->NOut())-1,0.0));
+  m_kt2ord=KT2Info_Vector(1,KT2_Info((1<<(proc->NIn()+proc->NOut()))-1,0.0));
   for (size_t i(0);i<m_decids.size();++i)
     m_kt2ord.push_back(std::make_pair(m_decids[i]->m_id,0.0));
 }
@@ -681,7 +681,7 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete)
     if (tab!=NULL) {
       if (!order || ((mode&4096) && p_up==NULL)) {
 	tab->m_kt2ord.clear();
-	tab->m_kt2ord=KT2Info_Vector(1,KT2_Info((1<<p_proc->NIn()+p_proc->NOut())-1,0.0));
+	tab->m_kt2ord=KT2Info_Vector(1,KT2_Info((1<<(p_proc->NIn()+p_proc->NOut()))-1,0.0));
 	for (size_t i(0);i<m_decids.size();++i)
 	  tab->m_kt2ord.push_back(std::make_pair(m_decids[i]->m_id,0.0));
       }

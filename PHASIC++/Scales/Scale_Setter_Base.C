@@ -23,6 +23,7 @@ std::ostream &operator<<(std::ostream &ostr,const stp::id &scl)
   switch (scl) {
   case stp::ren: return ostr<<"ren";
   case stp::fac: return ostr<<"fac";
+  case stp::res: return ostr<<"res";
   case stp::size: return ostr<<"<error>";
   }
   return ostr<<"<unknown>";

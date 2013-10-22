@@ -711,7 +711,7 @@ int Basic_Sfuncs::CalcEtaMu(Vec4D* _p)
     }
     if(ATOOLS::IsZero(_eta[i]))etachk=0;
     if ((int)i<nmom) {
-      if ((i==0)) _mu[0]  = sqrt(dabs(Momlist[i].mom.Abs2()))/_eta[0];
+      if (i==0) _mu[0]  = sqrt(dabs(Momlist[i].mom.Abs2()))/_eta[0];
       else _mu[i]  = Momlist[i].mass/_eta[i];
       //if (b[i]==1 && 
       if (fl[i].IsAnti() && i!=0) 

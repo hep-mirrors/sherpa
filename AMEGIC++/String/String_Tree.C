@@ -1047,7 +1047,7 @@ void String_Tree::Linear(sknot* m)
 	m->right       = c;
       }
       else {
-	if ((m->right->op=='*')) {
+	if (m->right->op=='*') {
 	  sknot* c = m->right;
 	  m->right = m->left;
 	  m->left  = c;
