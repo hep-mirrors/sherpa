@@ -408,6 +408,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   signalblob->AddData("Trials",new Blob_Data<double>(1.));
   signalblob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(&m_nlos));
   signalblob->AddData("Weight_Norm",new Blob_Data<double>(1.0));
+  signalblob->AddData("OQCD",new Blob_Data<int>(p_vars->m_oqcd));
   m_evtcnt++;  
   return 1;
 }
