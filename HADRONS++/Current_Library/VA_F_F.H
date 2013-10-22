@@ -9,6 +9,7 @@ namespace HADRONS {
     class FF_Base {
       public:
         FF_Base( struct GeneralModel _md ) {}
+        virtual ~FF_Base();
         virtual double ff( double q2 ) = 0;
     };
 

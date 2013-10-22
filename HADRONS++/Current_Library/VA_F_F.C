@@ -6,6 +6,10 @@ using namespace HADRONS;
 using namespace ATOOLS;
 using namespace METOOLS;
 
+VA_F_F::FF_Base::~FF_Base()
+{
+}
+
 void VA_F_F::SetModelParameters( struct GeneralModel _md )
 {
   m_cR   = Complex(0.,_md("v",1.)+_md("a",-1.));

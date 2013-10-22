@@ -25,6 +25,7 @@ namespace VA_P_V_FFs
       m_A0=m_A1=m_A2=m_A3=m_V=0.0;
       m_calced=false;
     }
+    virtual ~FormFactor_Base();
     virtual void CalcFFs( ATOOLS::Vec4D p0, ATOOLS::Vec4D p1 ) = 0;
     double A0()  { if(!m_calced) abort(); return m_A0; }
     double A1()  { if(!m_calced) abort(); return m_A1; }

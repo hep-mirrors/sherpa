@@ -11,6 +11,10 @@ using namespace std;
 #include "HADRONS++/Current_Library/VA_B_B_HO.C"
 #include "HADRONS++/Current_Library/VA_B_B_ST.C"
 
+VA_B_B_FFs::FormFactor_Base::~FormFactor_Base()
+{
+}
+
 void VA_B_B::SetModelParameters( struct GeneralModel model )
 {
   m_V_CKM    = model("V_CKM",1.0);

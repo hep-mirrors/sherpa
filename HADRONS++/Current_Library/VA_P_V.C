@@ -14,6 +14,9 @@ using namespace METOOLS;
 #include "HADRONS++/Current_Library/VA_P_V_hepph0007169.C"
 
 namespace HADRONS { namespace VA_P_V_FFs {
+    FormFactor_Base::~FormFactor_Base()
+    {
+    }
   class NoFF : public FormFactor_Base {
   public:
     NoFF(GeneralModel model, double* masses, const Flavour_Vector& flavs,

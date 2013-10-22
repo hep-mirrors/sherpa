@@ -16,6 +16,7 @@ namespace VA_B_B_FFs
     public:
       FormFactor_Base(struct GeneralModel model, double* masses) :
         m0(masses[0]), m1(masses[1]), m_calced(false) {}
+      virtual ~FormFactor_Base();
       virtual void CalcFFs( ATOOLS::Vec4D p0, ATOOLS::Vec4D p1 ) = 0;
       double V1() { if(!m_calced) abort(); return m_V1; }
       double V2() { if(!m_calced) abort(); return m_V2; }
