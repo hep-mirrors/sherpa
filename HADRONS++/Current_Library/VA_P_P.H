@@ -25,6 +25,7 @@ public:
     m_fplus=0.0; m_f0=0.0;
     m_calced=false;
   }
+  virtual ~FormFactor_Base();
   virtual void CalcFFs( ATOOLS::Vec4D p0, ATOOLS::Vec4D p1 ) = 0;
   double fplus()  { if(!m_calced) abort(); return m_fplus; }
   double f0()     { if(!m_calced) abort(); return m_f0; }
