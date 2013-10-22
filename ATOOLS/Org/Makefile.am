@@ -45,6 +45,7 @@ localinc_HEADERS         =	\
 			Smart_Pointer.C \
 			Shell_Tools.H \
 			STL_Tools.H \
+			RUsage.H \
 			Getter_Function.H \
 			My_MPI.H \
 			Exception.H \

@@ -12,6 +12,9 @@ using namespace ATOOLS;
 #include "HADRONS++/Current_Library/VA_P_P_BallZwicky.C"
 
 namespace HADRONS { namespace VA_P_P_FFs {
+  FormFactor_Base::~FormFactor_Base()
+  {
+  }
 class NoFF : public FormFactor_Base {
 public:
   NoFF(GeneralModel model, double* masses, const Flavour_Vector& flavs,
