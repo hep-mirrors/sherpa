@@ -54,8 +54,11 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     campl->Delete();
     return PDF::CParam(q2,dabs(ewsum.Abs2()),0.0,q2,-1);
   }
-  Flavour fl[4]={campl->Leg(0)->Flav(),campl->Leg(1)->Flav(),
-		 campl->Leg(2)->Flav(),campl->Leg(3)->Flav()};
+  Flavour_Vector fl; fl.resize(4);
+  fl[0]=campl->Leg(0)->Flav();
+  fl[1]=campl->Leg(1)->Flav();
+  fl[2]=campl->Leg(2)->Flav();
+  fl[3]=campl->Leg(3)->Flav();
   if (fl[0].Strong() && fl[1].Strong()) {// hh collision
     if (fl[2].Strong() && fl[3].Strong()) {
       msg_Debugging()<<"pure QCD like\n";
@@ -76,7 +79,7 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
       msg_Debugging()<<"Vj like\n";
       muq2=muf2=mur2=campl->Leg(2)->Mom().MPerp2()/4.0;
     }
-    else THROW(not_implemented,"Please define your own core scale");
+    else THROW(fatal_error,"Internal error.");
   }
   else if (!fl[0].Strong() && !fl[1].Strong()) {// ll collision
     if (fl[2].Strong() && fl[3].Strong()) {
@@ -85,7 +88,10 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     }
   }
   else {// lh collision
-    THROW(not_implemented,"Please define your own core scale");
+    std::string config(fl[0].IDName()+" "+fl[1].IDName()
+                       +" -> "+fl[2].IDName()+" "+fl[3].IDName());
+    THROW(not_implemented,"Please define your own core scale for "
+                           +config+" core configurations.");
   }
   campl->Delete();
   msg_Debugging()<<"\\mu_f = "<<sqrt(muf2)<<"\n"
