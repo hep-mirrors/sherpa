@@ -94,8 +94,12 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
   cfile<<"  return new "<<pID<<"(bs);"<<endl;
   cfile<<"}"<<endl<<endl;
 
-  cfile<<pID<<"::"<<pID<<"(Basic_Sfuncs* _BS) :"<<endl;
-  cfile<<"     Basic_Func(0,_BS)";  
+  cfile<<pID<<"::"<<pID<<"(Basic_Sfuncs* _BS)";
+  if (sgen->UsesFunction(4) || sgen->UsesFunction(1) ||
+      sgen->UsesFunction(0) || sgen->UsesFunction(3) ||
+      sgen->UsesFunction(9) || sgen->UsesFunction(5) ||
+      sgen->UsesFunction(10) || sgen->UsesFunction(7) ||
+      sgen->UsesFunction(11) || sgen->UsesFunction(12)) cfile<<" :"<<endl<<"     Basic_Func(0,_BS)";
   if (sgen->UsesFunction(4)) cfile<<","<<endl<<"     Basic_Yfunc(0,_BS)";  
   if (sgen->UsesFunction(1)) cfile<<","<<endl<<"     Basic_Zfunc(0,_BS)";  
   if (sgen->UsesFunction(0)) cfile<<","<<endl<<"     Basic_Xfunc(0,_BS)";  
