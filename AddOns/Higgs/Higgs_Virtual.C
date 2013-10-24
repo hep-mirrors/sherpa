@@ -6,6 +6,7 @@
 #include "Wrappers.H"
 #include "Ahiggs.h"
 #include "Acont.h"
+#include "A_spin2.h"
 
 Complex ggH(int h1, int h2);
 Complex Hgamgam(int h3, int h4);
@@ -70,6 +71,91 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
   Complex lo=0.0, nlo=0.0;
   Complex los=0.0, nlos=0.0;
   Complex lob=0.0, nlob=0.0;
+  if (m_spin!=0) {
+    Complex fs=A_prod_1l(rts,muR)/s*A_dec_1l(rts,muR)/s/
+      ((s-m_mh*m_mh)+I*m_mh*m_gh);
+    Complex fb=-4.0*sumQsq*alpha0*alpha_s(muR);
+    double qc=m_flavs[m_flavs[0].IsQuark()?0:1].Charge();
+    Complex ft=-2.0*(4.0*M_PI*alpha0)*sqr(qc);
+    for (int i(1);i>=-1;i-=2) {
+      for (int j(1);j>=-1;j-=2) {
+	for (int k(1);k>=-1;k-=2) {
+	  for (int l(1);l>=-1;l-=2) {
+	    Complex clos(0.0), cnlos(0.0);
+	    Complex clob(0.0), cnlob(0.0);
+	    Complex clo(0.0), cnlo(0.0);
+	    if (m_proc==1) {
+	      if (m_int&1) {
+		clos+=fs*ggXgamgam(i,j,k,l);
+		clo+=fs*ggXgamgam(i,j,k,l);
+	      }
+	      if (m_int&2) {
+		clob+=fb*gggamgam1l(i,j,k,l);
+		cnlob+=fb*gggamgam2l(i,j,k,l);
+		clo+=fb*gggamgam1l(i,j,k,l);
+		cnlo+=fb*gggamgam2l(i,j,k,l);
+	      }
+	    }
+	    if (m_proc==4) {
+	      if ((m_int&1) && i!=j) {
+		clos+=fs*qqbXgamgam(i,k,l);
+		clo+=fs*qqbXgamgam(i,k,l);
+	      }
+	      if ((m_int&4) && i!=j) {
+		clob+=ft*qqbgamgam_tree(i,k,l);
+		clo+=ft*qqbgamgam_tree(i,k,l);
+	      }
+	    }
+	    if (m_proc==5) {
+	      if ((m_int&1) && j!=i) {
+		clos+=fs*qbqXgamgam(j,k,l);
+		clo+=fs*qbqXgamgam(j,k,l);
+	      }
+	      if ((m_int&4) && j!=i) {
+		clob+=ft*qbqgamgam_tree(j,k,l);
+		clo+=ft*qbqgamgam_tree(j,k,l);;
+	      }
+	    }
+	    if (m_io==1) {
+	      los+=clos*std::conj(clos);
+	      lob+=clob*std::conj(clob);
+	      nlob+=2.0*clob*std::conj(cnlob);
+	    }
+	    if (m_io==2) {
+	      lob+=clob*std::conj(clob);
+	      nlob+=2.0*clob*std::conj(cnlob);
+	    }
+	    lo+=clo*std::conj(clo);
+	    nlo+=2.0*clo*std::conj(cnlo);
+	  }
+	}
+      }
+    }
+    if (m_io==1) {
+      lo-=los+lob;
+      nlo-=nlos+nlob;
+    }
+    if (m_io==2) {
+      lo-=lob;
+      nlo-=nlob;
+    }
+    if (m_proc==4 || m_proc==5) {
+      double lmur=log(m_mur2/s);
+      m_res.IR2()=-2.0*4.0/3.0;
+      m_res.IR()=-(3.0+2.0*lmur)*4.0/3.0;
+      m_res.Finite()=(nlo/lo).real()*4.0/3.0;
+      m_born=lo.real()/24.0;
+    }
+    else {
+      double b0=(11.0*3.0-2.0*(Flavour(kf_quark).Size()/2))/6.0;
+      double lmur=log(m_mur2/s);
+      m_res.IR2()=-2.0*3.0;
+      m_res.IR()=-2.0*(b0+3.0*lmur);
+      m_res.Finite()=(nlo/lo).real()+3.0*sqr(M_PI)-3.0*lmur*lmur;
+      m_born=lo.real()/64.0;
+    }
+    return;
+  }// end spin 2 case
   if (m_proc>1) {
     double deltar=1.0, cf=4.0/3.0;
     double s12=(p[2]+p[3]).Abs2();
@@ -98,9 +184,6 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 		 A_prod_1l(rts,muR)/s*A_dec_2l(rts,muR)/s)/
     ((s-m_mh*m_mh)+I*m_mh*m_gh)/(alpha_s(muR)/(2.0*M_PI));
   Complex fblo=-4.0*sumQsq*alpha0*alpha_s(muR);
-  Complex bloset[5];
-  // precalculated massive version for continuum bkg at LO
-  // for (int i(0);i<5;++i) bloset[i]=-A_cont_1l(i+1,1.+2.*sij(1,4)/sij(1,2),sij(1,2),muR);
   for (int i(1);i>=-1;i-=2) {
     for (int j(1);j>=-1;j-=2) {
       for (int k(1);k>=-1;k-=2) {
@@ -108,12 +191,6 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	  Complex clos(0.0), cnlos(0.0);
 	  Complex clob(0.0), cnlob(0.0);
 	  Complex clo(0.0), cnlo(0.0);
-	  int hel;
-          if (i==j && j==k && k==l) hel=1; //pppp
-          else if(-i==-j && -j==k && k==l) hel=3; // mmpp
-          else if(-i==j && j==-k && -k==l) hel=4; // mpmp
-          else if(-i==j && j==k && k==-l) hel=5; // mppm
-          else hel=2; //mppp, pmpp, ppmp, pppm
 	  if (m_int&1) {
 	    if (i==j && k==l) {
 	      clos+=fslo*s*s;
@@ -158,14 +235,8 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
     lo-=lob;
     nlo-=nlob;
   }
-  if (m_spin==0) {
   m_res.Finite()=(nlo/lo).real()+3.0*sqr(M_PI)-3.0*lmur*lmur;
   m_born=lo.real()/64.0;
-  }
-  else {
-  m_res.Finite()=3.0*lmur*lmur;
-  m_born=0.0;
-  }
 }
 
 double Higgs_Virtual::Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom)
