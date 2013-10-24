@@ -90,10 +90,8 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 		clo+=fs*ggXgamgam(i,j,k,l);
 	      }
 	      if (m_int&2) {
-		clob+=fb*gggamgam1l(i,j,k,l);
-		cnlob+=fb*gggamgam2l(i,j,k,l);
-		clo+=fb*gggamgam1l(i,j,k,l);
-		cnlo+=fb*gggamgam2l(i,j,k,l);
+		clob+=fb*gggamgam(i,j,k,l);
+		clo+=fb*gggamgam(i,j,k,l);
 	      }
 	    }
 	    if (m_proc==4) {
@@ -118,6 +116,7 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	    }
 	    if (m_io==1) {
 	      los+=clos*std::conj(clos);
+	      nlos+=2.0*clos*std::conj(cnlos);
 	      lob+=clob*std::conj(clob);
 	      nlob+=2.0*clob*std::conj(cnlob);
 	    }
