@@ -208,13 +208,13 @@ double Higgs_Tree::Calc(const Vec4D_Vector &p)
 	  }
 	  if (m_mode==4) {
 	    if (m_int&1) {
-	      if (m_spin!=0) m_ress[n]+=fs*qqbXgamgam(i,j,k,l);
+	      if (m_spin!=0 && i!=j) m_ress[n]+=fs*qqbXgamgam(i,k,l);
 	    }
 	    if ((m_int&4) && i!=j) m_resb[n]+=ft*qqbgamgam_tree(i,k,l);
 	  }
 	  if (m_mode==5) {
 	    if (m_int&1) {
-	      if (m_spin!=0) m_ress[n]+=fs*qbqXgamgam(i,j,k,l);
+	      if (m_spin!=0 && i!=j) m_ress[n]+=fs*qbqXgamgam(j,k,l);
 	    }
 	    if ((m_int&4) && j!=i) m_resb[n]+=ft*qbqgamgam_tree(j,k,l);
 	  }

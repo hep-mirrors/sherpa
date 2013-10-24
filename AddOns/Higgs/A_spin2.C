@@ -123,9 +123,9 @@ Complex gggXgamgam_gen(int i1, int h1, int i2, int h2, int i3, int h3, int i4, i
 Complex ggXgamgam(int h1, int h2, int h3, int h4){ return -ggXgamgam_gen(1,h1,2,h2,3,h3,4,h4); }
 
 // q(1) qbar(2) -> gam(3) gam(4):
-Complex qqbXgamgam(int h1, int h2, int h3, int h4){ return -qqXgamgam_gen(1,h1,2,3,h3,4,h4); }
+Complex qqbXgamgam(int h1, int h3, int h4){ return -qqXgamgam_gen(1,h1,2,3,h3,4,h4); }
 // qbar(1) q(2) -> gam(3) gam(4):
-Complex qbqXgamgam(int h1, int h2, int h3, int h4){ return -qqXgamgam_gen(2,h2,1,3,h3,4,h4); }
+Complex qbqXgamgam(int h2, int h3, int h4){ return -qqXgamgam_gen(2,h2,1,3,h3,4,h4); }
 
 // g(1) g(2) -> gam(3) gam(4) g(5):
 Complex ggXgamgamg(int h1, int h2, int h3, int h4, int h5){ return -gggXgamgam_gen(1,h1,2,h2,5,h5,3,h3,4,h4); }
