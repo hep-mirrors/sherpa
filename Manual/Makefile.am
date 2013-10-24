@@ -43,6 +43,7 @@ Sherpa_TEXINFOS = \
 	Macros.texi \
 	Merging.texi \
 	ME.texi \
+	ME2.texi \
 	MI.texi \
 	MinBias.texi \
 	MinimumBiasEvents.texi \
