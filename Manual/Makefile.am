@@ -10,6 +10,7 @@ info_TEXINFOS = Sherpa.texi
 
 Sherpa_TEXINFOS = \
 	4thGen.texi \
+	API.texi \
 	ADD.texi \
 	AGC.texi \
 	Beam.texi \
@@ -19,10 +20,12 @@ Sherpa_TEXINFOS = \
 	Customization.texi \
 	CustomScale.texi \
 	EHC.texi \
+	Events.texi \
 	Examples.texi \
 	FeynRules.texi \
 	Fragmentation.texi \
 	HardDecays.texi \
+	InclusiveCrossSections.texi \
 	Input.texi \
 	Integration.texi \
 	Introduction.texi \
@@ -42,7 +45,9 @@ Sherpa_TEXINFOS = \
 	ME.texi \
 	MI.texi \
 	MinBias.texi \
+	MinimumBiasEvents.texi \
 	Model.texi \
+	MPIEvents.texi \
 	MSSM.texi \
 	NewModel.texi \
 	NLOtips.texi \
