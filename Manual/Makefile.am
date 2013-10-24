@@ -30,6 +30,7 @@ Sherpa_TEXINFOS = \
 	Integration.texi \
 	Introduction.texi \
 	ISR.texi \
+	LHC_HInt.texi \
 	LHC_HJets.texi \
 	LHC_TTBar.texi \
 	LHC_HTTBar.texi \
