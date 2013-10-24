@@ -10,6 +10,7 @@ info_TEXINFOS = Sherpa.texi
 
 Sherpa_TEXINFOS = \
 	4thGen.texi \
+	API.texi \
 	ADD.texi \
 	AGC.texi \
 	Beam.texi \
@@ -19,14 +20,17 @@ Sherpa_TEXINFOS = \
 	Customization.texi \
 	CustomScale.texi \
 	EHC.texi \
+	Events.texi \
 	Examples.texi \
 	FeynRules.texi \
 	Fragmentation.texi \
 	HardDecays.texi \
+	InclusiveCrossSections.texi \
 	Input.texi \
 	Integration.texi \
 	Introduction.texi \
 	ISR.texi \
+	LHC_HInt.texi \
 	LHC_HJets.texi \
 	LHC_TTBar.texi \
 	LHC_HTTBar.texi \
@@ -40,9 +44,12 @@ Sherpa_TEXINFOS = \
 	Macros.texi \
 	Merging.texi \
 	ME.texi \
+	ME2.texi \
 	MI.texi \
 	MinBias.texi \
+	MinimumBiasEvents.texi \
 	Model.texi \
+	MPIEvents.texi \
 	MSSM.texi \
 	NewModel.texi \
 	NLOtips.texi \
