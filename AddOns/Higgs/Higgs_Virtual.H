@@ -12,7 +12,7 @@ namespace HIGGS {
   private:
 
     int    m_int, m_io, m_spin, m_proc;
-    double m_mh, m_gh;
+    double m_mh, m_gh, m_kg, m_kq;
 
     AMEGIC::Basic_Sfuncs *p_bs;
     std::vector<int>      m_b;
@@ -26,7 +26,8 @@ namespace HIGGS {
 
     Higgs_Virtual(const PHASIC::Process_Info& pi,
 		  const ATOOLS::Flavour_Vector& flavs,
-		  int mode,int io,int spin);
+		  int mode,int io,int spin,
+		  double kg, double kq);
 
     ~Higgs_Virtual();
 
