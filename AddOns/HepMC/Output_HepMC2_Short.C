@@ -4,6 +4,8 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 #ifdef USING__HEPMC2__IOGENEVENT
 #include "HepMC/IO_GenEvent.h"
@@ -40,6 +42,11 @@ Output_HepMC2_Short::Output_HepMC2_Short(const Output_Arguments &args) :
   p_event=new HepMC::GenEvent();
 #ifdef USING__GZIP
   m_ext += ".gz";
+#endif
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_size()>1) {
+    m_basename+="_"+rpa->gen.Variable("RNG_SEED");
+  }
 #endif
   m_outstream.open((m_basename+m_ext).c_str());
   if (!m_outstream.good())
