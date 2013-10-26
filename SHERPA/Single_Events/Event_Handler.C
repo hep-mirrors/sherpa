@@ -30,7 +30,7 @@ Event_Handler::Event_Handler():
   p_phases  = new Phase_List;
   Data_Reader reader(" ",";","!","=");
   m_checkweight = reader.GetValue<int>("CHECK_WEIGHT", 0);
-  m_lastrss=GetCurrentRSS();
+  m_lastrss=0;
 }
 
 Event_Handler::~Event_Handler() 
@@ -480,7 +480,8 @@ void Event_Handler::MPISync()
   }
 #endif
   size_t currentrss=GetCurrentRSS();
-  if (currentrss>m_lastrss+ToType<int>
+  if (m_lastrss==0) m_lastrss=currentrss;
+  else if (currentrss>m_lastrss+ToType<int>
       (rpa->gen.Variable("MEMLEAK_WARNING_THRESHOLD"))) {
     msg_Error()<<METHOD<<"() {\n"<<om::bold<<"  Memory usage increased by "
 	       <<(currentrss-m_lastrss)/(1<<20)<<" MB,"

@@ -38,7 +38,7 @@ Phase_Space_Integrator::Phase_Space_Integrator()
   if (!read.ReadFromFile(ndecopt,"PSI_NDECOPT")) ndecopt=10;
   else msg_Info()<<METHOD<<"(): Set n_{opt,dec} = "<<ndecopt<<".\n";
   addtime=0.0;
-  lastrss=GetCurrentRSS();
+  lastrss=0;
 }
 
 Phase_Space_Integrator::~Phase_Space_Integrator()
@@ -308,7 +308,8 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 		<<" left ) ["<<rpa->gen.Timer().StrFTime("%H:%M:%S")<<"]   "<<endl; 
 #endif
       size_t currentrss=GetCurrentRSS();
-      if (currentrss>lastrss+ToType<int>
+      if (lastrss==0) lastrss=currentrss;
+      else if (currentrss>lastrss+ToType<int>
 	  (rpa->gen.Variable("MEMLEAK_WARNING_THRESHOLD"))) {
 	msg_Error()<<METHOD<<"() {\n"<<om::bold<<"  Memory usage increased by "
 		   <<(currentrss-lastrss)/(1<<20)<<" MB,"
