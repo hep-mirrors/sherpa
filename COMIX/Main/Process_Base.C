@@ -45,6 +45,7 @@ bool COMIX::Process_Base::Initialize(std::map<std::string,std::string> *const pm
 
 bool COMIX::Process_Base::FillIntegrator(Phase_Space_Handler *const psh)
 {
+  if (p_proc->NOut()==1) return false;
   Multi_Channel *mc(psh->FSRIntegrator());
   mc->DropAllChannels();
   PS_Channel *ch(new PS_Channel(p_proc->NIn(),p_proc->NOut(),

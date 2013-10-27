@@ -562,8 +562,10 @@ bool Cluster_Algorithm::Cluster
  const int complete)
 {
   if (p_ampl->Legs().size()==p_ampl->NIn()+1) {
-    p_ampl=p_ampl->Prev();
-    p_ampl->DeleteNext();
+    if (p_ampl->Prev()) {
+      p_ampl=p_ampl->Prev();
+      p_ampl->DeleteNext();
+    }
     return true;
   }
   for (int order(1);order>=0;--order) {

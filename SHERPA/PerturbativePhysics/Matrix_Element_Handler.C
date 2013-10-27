@@ -671,7 +671,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	double inisum=0.0, finsum=0.0, dd(0.0);
 	for (size_t i(0);i<nis;++i) inisum+=flavs[i].Mass();
 	for (size_t i(0);i<nfs;++i) finsum+=flavs[i+nis].Mass();
-	if (inisum>=rpa->gen.Ecms() || finsum>=rpa->gen.Ecms()) continue;
+	if (inisum>rpa->gen.Ecms() || finsum>rpa->gen.Ecms()) continue;
 	std::string pnid(CFS.MultiplicityTag()), ds;
 	int di;
 	Process_Info cpi(pi);

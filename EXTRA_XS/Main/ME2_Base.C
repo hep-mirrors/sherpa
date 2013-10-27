@@ -24,7 +24,7 @@ ME2_Base::ME2_Base(const Process_Info& pi, const Flavour_Vector& flavs) :
 
 ME2_Base::~ME2_Base()
 {
-  for (size_t i(0);i<4;++i) delete [] p_colours[i];
+  for (size_t i(0);i<m_flavs.size();++i) delete [] p_colours[i];
   delete [] p_colours;
 }
 
