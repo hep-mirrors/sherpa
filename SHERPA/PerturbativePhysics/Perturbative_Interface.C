@@ -202,8 +202,7 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     if ((m_bbarmode&1) && p_me->HasNLO() &&
         p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
       Cluster_Amplitude *oampl=p_me->Process()->
-	Get<Single_Process>()->Cluster
-	(p_me->Process()->Integrator()->Momenta(),m_cmode);
+	Get<Single_Process>()->Cluster(m_cmode);
       if (!LocalKFactor(oampl)) {
 	DEBUG_INFO("didn't find process using original amplitude");
 	if (m_bbarmode&4) {
