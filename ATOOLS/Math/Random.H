@@ -30,10 +30,7 @@ namespace ATOOLS {
 
     int      activeGenerator;
 
-    long int m_id, m_ma[56];
-    long int m_sid, m_sma[56];
-    int      m_inext,m_inextp;
-    int      m_sinext,m_sinextp;
+    long int m_id, m_sid;
 
     std::stringstream m_lastincrementedseed;
     size_t m_nsinceinit, m_increment;
@@ -42,13 +39,9 @@ namespace ATOOLS {
 
     Marsaglia *p_ran4[2];
 
-    double Ran1(long *idum);
     double Ran2(long *idum);
-    double Ran3();
     double Ran4();
 
-    void InitRan3(long*);
- 
     bool ReadInStatus(const std::string &path);
     void PrepareTerminate();
 
@@ -133,28 +126,13 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn double Random::Ran1(long *idum)
-    \brief is a very fast but simple random number routine
-  */
-
-  /*!
     \fn double Random::Ran2(long *idum)
     \brief is a very stable and powerful random number routine
   */
 
   /*!
-    \fn double Random::Ran3()
-    \brief is a good and fast random number routine
-  */
-
-  /*!
     \fn double Random::Ran4()
     \brief a new random generator that still needs to be tested
-  */
-
-  /*!
-    \fn void   Random::InitRan3(long*)
-    \brief initializes the random number generator
   */
 
   /*!

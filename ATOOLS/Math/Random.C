@@ -109,99 +109,6 @@ double ATOOLS::Random::Ran2(long *idum)
 #undef RNMX
 /* (C) Copr. 1986-92 Numerical Recipes Software VsXz&v%120(9p+45$j3D. */
 
-#define IA 16807
-#define IM 2147483647
-#define AM (1.0/IM)
-#define IQ 127773
-#define IR 2836
-#define NDIV (1+(IM-1)/NTAB)
-#define EPS 1.2e-7
-#define RNMX (1.0-EPS)
-
-
-double ATOOLS::Random::Ran1(long *idum)
-{
-  int j;
-  long k;
-  double temp;
-
-  if (*idum <= 0 || !iy) {
-    if (-(*idum) < 1) *idum=1;
-    else *idum = -(*idum);
-    for (j=NTAB+7;j>=0;j--) {
-      k=(*idum)/IQ;
-      *idum=IA*(*idum-k*IQ)-IR*k;
-      if (*idum < 0) *idum += IM;
-      if (j < NTAB) iv[j] = *idum;
-    }
-    iy=iv[0];
-  }
-  k=(*idum)/IQ;
-  *idum=IA*(*idum-k*IQ)-IR*k;
-  if (*idum < 0) *idum += IM;
-  j=iy/NDIV;
-  iy=iv[j];
-  iv[j] = *idum;
-  if ((temp=AM*iy) > RNMX) return RNMX;
-  else return temp;
-}
-#undef IA
-#undef IM
-#undef AM
-#undef IQ
-#undef IR
-#undef NDIV
-#undef EPS
-#undef RNMX
-/* (C) Copr. 1986-92 Numerical Recipes Software VsXz&v%120(9p+45$j3D. */
-
-#define MBIG 1000000000
-#define MSEED 161803398
-#define MZ 0
-#define FAC (1.0/MBIG)
-
-
-void ATOOLS::Random::InitRan3(long *idum)
-{
-  long mj,mk;
-  int i,ii,k;
-  
-  mj=MSEED-(*idum < 0 ? -*idum : *idum);
-  mj %= MBIG;
-  m_ma[55]=mj;
-  mk=1;
-  for (i=1;i<=54;i++) {
-    ii=(21*i) % 55;
-    m_ma[ii]=mk;
-    mk=mj-mk;
-    if (mk < MZ) mk += MBIG;
-    mj=m_ma[ii];
-  }
-  for (k=1;k<=4;k++)
-    for (i=1;i<=55;i++) {
-      m_ma[i] -= m_ma[1+(i+30) % 55];
-      if (m_ma[i] < MZ) m_ma[i] += MBIG;
-    }
-  m_inext=0;
-  m_inextp=31;
-}
-
-
-double ATOOLS::Random::Ran3()
-{
-  if (++m_inext == 56) m_inext=1;
-  if (++m_inextp == 56) m_inextp=1;
-  long mj=m_ma[m_inext]-m_ma[m_inextp];
-  if (mj < MZ) mj += MBIG;
-  m_ma[m_inext]=mj;
-  return mj*FAC;
-}
-#undef MBIG
-#undef MSEED
-#undef MZ
-#undef FAC
-/* (C) Copr. 1986-92 Numerical Recipes Software VsXz&v%120(9p+45$j3D. */
-
 
 int ATOOLS::Random::WriteOutStatus(const char * filename)
 {
@@ -213,8 +120,7 @@ int ATOOLS::Random::WriteOutStatus(const char * filename)
   // remove old random file
   if (FileExists(filename)) remove(filename);
   std::ofstream outstream(filename);
-  outstream<<0<<"\t"<<m_id<<"\t"<<m_inext<<"\t"<<m_inextp<<"\t";
-  for (int i=0;i<56;++i) outstream<<m_ma[i]<<"\t";
+  outstream<<0<<"\t"<<m_id<<"\t";
   outstream<<iy<<"\t"<<idum2<<"\t";
   for (int i=0;i<NTAB;++i) outstream<<iv[i]<<"\t";
   outstream<<endl;
@@ -231,8 +137,7 @@ int ATOOLS::Random::WriteOutSavedStatus(const char * filename)
   // remove old random file
   if (FileExists(filename)) remove(filename);
   std::ofstream outstream(filename);
-  outstream<<0<<"\t"<<m_sid<<"\t"<<m_sinext<<"\t"<<m_sinextp<<"\t";
-  for (int i=0;i<56;++i) outstream<<m_sma[i]<<"\t";
+  outstream<<0<<"\t"<<m_sid<<"\t";
   outstream<<siy<<"\t"<<sidum2<<"\t";
   for (int i=0;i<NTAB;++i) outstream<<siv[i]<<"\t";
   outstream<<endl;
@@ -243,8 +148,7 @@ int ATOOLS::Random::WriteOutStatus
 (std::ostream &outstream,const size_t &idx)
 {
   if (activeGenerator==4) return WriteOutStatus4(outstream,idx);
-  outstream<<idx<<"\t"<<m_id<<"\t"<<m_inext<<"\t"<<m_inextp<<"\t";
-  for (int i=0;i<56;++i) outstream<<m_ma[i]<<"\t";
+  outstream<<idx<<"\t"<<m_id<<"\t";
   outstream<<iy<<"\t"<<idum2<<"\t";
   for (int i=0;i<NTAB;++i) outstream<<iv[i]<<"\t";
   outstream<<"\n";
@@ -282,8 +186,7 @@ void ATOOLS::Random::ReadInStatus(const char * filename)
     if (myinstream.good()) {
       (myinstream)>>count;
       std::string buffer;
-	(myinstream)>>m_id; (myinstream)>>m_inext; (myinstream)>>m_inextp;
-	for (int i=0;i<56;++i) (myinstream)>>m_ma[i];    
+	(myinstream)>>m_id;
 	(myinstream)>>iy>>idum2;
 	for (int i=0;i<NTAB;++i) (myinstream)>>iv[i];
       myinstream.close();
@@ -303,8 +206,7 @@ size_t ATOOLS::Random::ReadInStatus
   while (!myinstream.eof()) {
     myinstream>>count;
     std::string buffer;
-    myinstream>>m_id; myinstream>>m_inext; myinstream>>m_inextp;
-    for (int i=0;i<56;++i) myinstream>>m_ma[i];    
+    myinstream>>m_id;
     myinstream>>iy>>idum2;
     for (int i=0;i<NTAB;++i) myinstream>>iv[i];
     if (count==idx) return idx+1;
@@ -323,7 +225,6 @@ double ATOOLS::Random::GetNZ()
 void ATOOLS::Random::SetSeed(long int nid) 
 {
   m_id = nid<0 ? nid : -nid;
-  InitRan3(&m_id);
   activeGenerator = 2;
 }
 
@@ -333,9 +234,6 @@ void ATOOLS::Random::SaveStatus()
   if (p_external!=NULL) return;
   if (activeGenerator==4) { return SaveStatus4(); };
   m_sid=m_id; 
-  m_sinext=m_inext; 
-  m_sinextp=m_inextp;
-  for (int i=0;i<56;++i) m_sma[i]=m_ma[i];    
   siy=iy;
   sidum2=idum2;
   for (int i=0;i<NTAB;++i) siv[i]=iv[i];
@@ -347,9 +245,6 @@ void ATOOLS::Random::RestoreStatus()
   if (p_external!=NULL) return;
   if (activeGenerator==4) { return RestoreStatus4(); };
   m_id=m_sid; 
-  m_inext=m_sinext; 
-  m_inextp=m_sinextp;
-  for (int i=0;i<56;++i) m_ma[i]=m_sma[i];    
   iy=siy;
   idum2=sidum2;
   for (int i=0;i<NTAB;++i) iv[i]=siv[i];
