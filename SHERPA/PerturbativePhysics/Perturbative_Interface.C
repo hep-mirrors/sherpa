@@ -201,7 +201,10 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   if (p_me->Process()->Info().m_ckkw&1) {
     if ((m_bbarmode&1) && p_me->HasNLO() &&
         p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
-      if (!LocalKFactor(p_ampl)) {
+      Cluster_Amplitude *oampl=p_me->Process()->
+	Get<Single_Process>()->Cluster
+	(p_me->Process()->Integrator()->Momenta(),m_cmode);
+      if (!LocalKFactor(oampl)) {
 	DEBUG_INFO("didn't find process using original amplitude");
 	if (m_bbarmode&4) {
 	  Cluster_Amplitude *ampl=p_me->Process()->
@@ -212,6 +215,8 @@ DefineInitialConditions(ATOOLS::Blob *blob)
 	  ampl->Delete();
 	}
       }
+      while (oampl->Prev()) oampl=oampl->Prev();
+      oampl->Delete();
     }
     blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
     if (p_me->EventGenerationMode()!=0) {
