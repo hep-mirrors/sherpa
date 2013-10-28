@@ -32,10 +32,17 @@ void Kinematics_Base::SetFixVec(Parton *const p,Vec4D mom,
   double D(oldp*ref), T(oldp.PSpat()), F(ref[0]);
   double Q(mom[0]), P(mom.PSpat()), S(mom.Abs2());
   Poincare rot(oldp,mom);
-  double E((Q*D+P/T*(F*S-Q*D))/S);
-  ref=Vec4D(E,Vec3D(mom)*(Q*E-D)/(P*P));
-  ref+=pn+rot*pl;
-  if (mode==3 || (mode==1 && lt.m_mode==0)) ref=lt.m_lam*ref;
+  if (oldp.Abs2()>1.0e-3 && mom.Abs2()>1.0e-3) {
+    Poincare oldcms(oldp), newcms(mom);
+    oldcms.Boost(ref);
+    rot.Rotate(ref);
+    newcms.BoostBack(ref);
+  }
+  else {
+    double E((Q*D+P/T*(F*S-Q*D))/S);
+    ref=Vec4D(E,Vec3D(mom)*(Q*E-D)/(P*P));
+    ref+=pn+rot*pl;
+  }
   p->SetFixSpec(ref);
   p->SetOldMomentum(mom);
 }
