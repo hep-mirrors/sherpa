@@ -654,6 +654,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
 	as*=pow(cas,coqcd);
 	oqcd+=coqcd;
       }
+      if (oqcd==0) m_scale[stp::size+stp::res]=ampl->Next()->KT2();
     }
     m_scale[stp::res]=ampl->Q2();
     if (ampl->OrderQCD()-(m_vproc?1:0)) {

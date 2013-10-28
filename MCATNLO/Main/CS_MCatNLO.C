@@ -179,6 +179,13 @@ Singlet *CS_MCatNLO::TranslateAmplitude
 (Cluster_Amplitude *const ampl,
  std::map<Cluster_Leg*,Parton*> &pmap,std::map<Parton*,Cluster_Leg*> &lmap)
 {
+  double Q2(ampl->Q2());
+  for (Cluster_Amplitude *campl(ampl);
+       campl->Next();campl=campl->Next())
+    if (campl->Next()->OrderQCD()<campl->OrderQCD()) {
+      Q2=campl->KT2();
+      break;
+    }
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
   Singlet *singlet(new Singlet());
   singlet->SetMS(p_ms);
@@ -223,10 +230,10 @@ Singlet *CS_MCatNLO::TranslateAmplitude
 	parton->SetBeam(1);
       }
     }
-    parton->SetStart(ampl->Next()?ampl->KT2():ampl->Q2());
+    parton->SetStart(Q2);
     double ktveto2(jf?jf->Ycut()*sqr(rpa->gen.Ecms()):parton->KtStart());
     double ktmax2(ampl->Legs().size()-ampl->NIn()+1==
-		  ampl->Leg(2)->NMax()?parton->KtStart():0.0);
+		  ampl->Leg(0)->NMax()?parton->KtStart():0.0);
     parton->SetKtMax(ktmax2);
     parton->SetVeto(ktveto2);
     singlet->push_back(parton);
@@ -245,25 +252,29 @@ GetRealEmissionAmplitude(const int mode)
   ampl->SetIdNew(1<<(sing->size()-1));
   for (Singlet::const_iterator
 	 it(sing->begin());it!=sing->end();++it) {
-    if ((*it)->GetType()==pst::IS)
+    if ((*it)->GetType()==pst::IS) {
       ampl->CreateLeg
 	(-(*it)->Momentum(),(*it)->GetFlavour().Bar(),
 	 mode==0?ColorID((*it)->GetFlow(1),(*it)->GetFlow(2)):
 	 ColorID((*it)->GetMEFlow(1),(*it)->GetMEFlow(2)),
 	 (*it)->Id()?(*it)->Id():ampl->IdNew());
-    ampl->Legs().back()->SetStat(1);
-    ampl->Legs().back()->SetNMax(p_rampl->Leg(2)->NMax());
+      ampl->Legs().back()->SetStat(1);
+      ampl->Legs().back()->SetNMax
+	(p_rampl->IdLeg((*it)->Id()?(*it)->Id():1)->NMax());
+    }
   }
   for (Singlet::const_iterator
 	 it(sing->begin());it!=sing->end();++it) {
-    if ((*it)->GetType()==pst::FS)
+    if ((*it)->GetType()==pst::FS) {
       ampl->CreateLeg
 	((*it)->Momentum(),(*it)->GetFlavour(),
 	 mode==0?ColorID((*it)->GetFlow(1),(*it)->GetFlow(2)):
 	 ColorID((*it)->GetMEFlow(1),(*it)->GetMEFlow(2)),
 	 (*it)->Id()?(*it)->Id():ampl->IdNew());
-    ampl->Legs().back()->SetStat(1);
-    ampl->Legs().back()->SetNMax(p_rampl->Leg(2)->NMax());
+      ampl->Legs().back()->SetStat(1);
+      ampl->Legs().back()->SetNMax
+	(p_rampl->IdLeg((*it)->Id()?(*it)->Id():1)->NMax());
+    }
   }
   ampl->SetKT2(p_rampl->KT2());
   ampl->SetNewCol(p_powheg->GetLast()[3]->Color().m_new);

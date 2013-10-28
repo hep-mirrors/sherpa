@@ -207,7 +207,7 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap)
       if (rampl->Next()->Leg(i)->Stat()&4) dc=true;
     if (!dc) break;
   }
-  bool smin(rampl->Legs().size()-rampl->NIn()==campl->Leg(2)->NMax());
+  bool smin(rampl->Legs().size()-rampl->NIn()==campl->Leg(0)->NMax());
   for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
     if (aset.find(kit->first)==aset.end()) {
       if (smin) kit->second.first=ckt2min;
@@ -630,7 +630,7 @@ double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
 {
   if (ampl->Next()) {
     Cluster_Amplitude *next(ampl->Next());
-    if (next->NLO()&8) return next->KT2();
+    if (next->NLO()&8) return HardScale(next);
     if (next->OrderQCD()<ampl->OrderQCD()) return ampl->KT2();
     return HardScale(next);
   }
