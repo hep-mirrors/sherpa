@@ -890,3 +890,13 @@ void Single_Virtual_Correction::MPISync()
   m_mn=m_mbsum=m_mvsum=m_misum=0.0;
 #endif
 }
+
+Flavour Single_Virtual_Correction::ReMap(const Flavour &fl,const size_t &id) const
+{
+  return p_LO_process->ReMap(fl,id);
+}
+
+AMEGIC::Process_Base *Single_Virtual_Correction::GetReal()
+{
+  return p_LO_process->Partner();
+}

@@ -332,8 +332,11 @@ double Single_Real_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const i
       if ((*partnerlist)[i]->p_ampl) {
 	m_subevtlist[i]->p_ampl = (*partnerlist)[i]->p_ampl->CopyAll();
 	for (Cluster_Amplitude *campl(m_subevtlist[i]->p_ampl);campl;campl=campl->Next()) {
-	  for (size_t i(0);i<campl->Legs().size();++i)
-	    campl->Leg(i)->SetFlav(ReMap(campl->Leg(i)->Flav(),campl->Leg(i)->Id()));
+	  for (size_t i(0);i<campl->Legs().size();++i) {
+	    Flavour fl(campl->Leg(i)->Flav());
+	    fl=ReMap(i<m_nin?fl.Bar():fl,campl->Leg(i)->Id());
+	    campl->Leg(i)->SetFlav(i<m_nin?fl.Bar():fl);
+	  }
 	}
       }
     }
