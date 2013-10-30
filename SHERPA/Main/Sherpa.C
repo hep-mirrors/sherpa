@@ -5,6 +5,7 @@
 #include "SHERPA/Single_Events/Output_Phase.H"
 #include "SHERPA/Single_Events/EvtReadin_Phase.H"
 #include "SHERPA/Single_Events/Signal_Processes.H"
+#include "SHERPA/Single_Events/Additional_Process_Weights.H"
 #include "SHERPA/Single_Events/Hard_Decays.H"
 #include "SHERPA/Single_Events/Minimum_Bias.H"
 #include "SHERPA/Single_Events/Multiple_Interactions.H"
@@ -161,6 +162,7 @@ bool Sherpa::InitializeTheEventHandler()
   }
   else {
     p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
+    p_eventhandler->AddEventPhase(new Additional_Process_Weights());
     p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
                                                     p_inithandler->GetHardDecayHandler(),

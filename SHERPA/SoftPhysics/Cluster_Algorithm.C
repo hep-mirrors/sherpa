@@ -270,14 +270,8 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
   for (size_t i=2;i<nlegs;i++) {
     split   = legs[i];
     ysplit  = dabs(split->Mom().Y());
-    kt2max  = Max(m_tmax,m_minkt2/4.);// 0.;//1.e10;
-    //if (ColorConnected(split->Col(),colbeam0)>0 || 
-    //	ColorConnected(split->Col(),colbeam1)>0) {
-    //  kt2min = Max(m_tmax,m_minkt2);
-    //}
-    //else {
-    kt2min = Max(m_tmax,m_minkt2);
-    //}
+    kt2max  = Max(m_tmax,m_minkt2/4.); 
+    kt2min  = Max(m_tmax,m_minkt2);
     for (size_t j=nlegs;j>2;j--) {
       if (i==j-1) continue;
       spect = legs[j-1];

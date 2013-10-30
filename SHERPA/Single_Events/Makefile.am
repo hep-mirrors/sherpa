@@ -8,6 +8,7 @@ libSherpaSingleEvents_la_SOURCES      =	\
 					Event_Handler.C \
 					Event_Phase_Handler.C \
 				   	Signal_Processes.C \
+				   	Additional_Process_Weights.C \
 					Multiple_Interactions.C \
 					Minimum_Bias.C \
 					Jet_Evolution.C \
@@ -25,6 +26,7 @@ localinc_HEADERS      =	\
 			Event_Handler.H \
 			Event_Phase_Handler.H \
 		 	Signal_Processes.H \
+			Additional_Process_Weights.H \
 			Multiple_Interactions.H \
 			Minimum_Bias.H \
 			Jet_Evolution.H \
