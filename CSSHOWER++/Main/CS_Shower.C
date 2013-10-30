@@ -376,8 +376,7 @@ bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
 bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 {
   CleanUp();
-  msg_Debugging()<<METHOD<<"(): {\n";
-  msg_Indent();
+  DEBUG_FUNC("");
   p_rampl=ampl;
   p_ms=ampl->MS();
   KT2X_Map kt2xmap;
@@ -403,7 +402,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       std::map<size_t,Parton*>::iterator cit(kmap.find(cl->Id()));
       if (cit!=kmap.end()) {
 	if (k->GetNext()!=NULL) 
-	  THROW(fatal_error,"Invalid tree structure");
+	  THROW(fatal_error,"Invalid tree structure. No Next.");
 	k->SetNext(cit->second);
 	cit->second->SetPrev(k);
 	k->SetKScheme(cit->second->KScheme());
@@ -429,7 +428,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 	      k->GetSing()->SetRight(kit->second);
 	    }
 	  }
-	  else THROW(fatal_error,"Invalid tree structure");
+	  else THROW(fatal_error,"Invalid tree structure. LR exist.");
 	  kit->second->SetPrev(k);
 	  k->SetStat(1);
 	  kmap.erase(kit);
@@ -441,7 +440,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
     if (sing->GetSpec()) {
       split->SetOldMomentum(split->Momentum());
       sing->SetSpec(sing->GetSpec()->GetNext());
-      if (split==NULL) THROW(fatal_error,"Invalid tree structure");
+      if (split==NULL) THROW(fatal_error,"Invalid tree structure. No Split.");
       sing->SetSplit(split);
       Parton *l(sing->GetLeft()), *r(sing->GetRight()), *s(sing->GetSpec());
       almap[l]->SetMom(almap[l]->Id()&3?-l->Momentum():l->Momentum());
@@ -543,7 +542,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       msg_Debugging()<<**sit;
     msg_Debugging()<<"\n";
   }
-  msg_Debugging()<<"}\n";
   p_shower->SetMS(p_ms);
   return true;
 }
@@ -583,7 +581,7 @@ Singlet *CS_Shower::TranslateAmplitude
     parton->SetKin(p_shower->KinScheme());
     if (is) parton->SetBeam(i);
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
-    parton->SetStart(m_respectq2?ampl->Q2():xit->second.second);
+    parton->SetStart(m_respectq2?ampl->MuQ2():xit->second.second);
     parton->SetKtMax(xit->second.first);
     parton->SetVeto(ktveto2);
     singlet->push_back(parton);
@@ -634,7 +632,7 @@ double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
     if (next->OrderQCD()<ampl->OrderQCD()) return ampl->KT2();
     return HardScale(next);
   }
-  return ampl->Q2();
+  return ampl->MuQ2();
 }
 
 double CS_Shower::CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,

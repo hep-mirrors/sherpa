@@ -87,7 +87,7 @@ bool Cluster_Algorithm::Cluster
 		 p_ampl->Leg(tids[i])->Col().m_i));
     p_ampl->SetMuF2(pb->ScaleSetter()->Scale(stp::fac));
     p_ampl->SetMuR2(pb->ScaleSetter()->Scale(stp::ren));
-    p_ampl->SetQ2(pb->ScaleSetter()->Scale(stp::res));
+    p_ampl->SetMuQ2(pb->ScaleSetter()->Scale(stp::res));
     PDF::CParam scale((p_proc->IsMapped()?p_proc->MapProc():p_proc)
                       ->ScaleSetter()->CoreScale(p_ampl));
     p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
@@ -528,7 +528,7 @@ void Cluster_Algorithm::Convert()
 			   p_proc->MapProc():p_proc);
   double muf2(pb->ScaleSetter()->Scale(stp::fac));
   double mur2(pb->ScaleSetter()->Scale(stp::ren));
-  double Q2(pb->ScaleSetter()->Scale(stp::res));
+  double muq2(pb->ScaleSetter()->Scale(stp::res));
   for (int i(0);i<ct_tmp->NLegs();++i) {
     size_t id(ct_tmp->GetLeg(i).ID());
     Flavour flav(i<pb->NIn()?ct_tmp->Flav(i).Bar():ct_tmp->Flav(i));
@@ -536,7 +536,7 @@ void Cluster_Algorithm::Convert()
     p_ampl->CreateLeg(mom,flav,ColorID(0,0),id);
     p_ampl->Legs().back()->SetStat(1);
   }
-  p_ampl->SetQ2(Q2);
+  p_ampl->SetMuQ2(muq2);
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
   Cluster_Amplitude *eampl(p_ampl);
@@ -574,7 +574,7 @@ void Cluster_Algorithm::Convert()
 	}
       }
     }
-    p_ampl->SetQ2(ampl->Q2());
+    p_ampl->SetMuQ2(ampl->MuQ2());
     p_ampl->SetMuR2(ampl->MuR2());
     p_ampl->SetMuF2(ampl->MuF2());
     p_ampl->Decays()=ct_tmp->Decays();
@@ -708,6 +708,6 @@ void Cluster_Algorithm::ClusterSpecial4lLoop2()
   p_ampl->SetKin(win.m_kin);
   p_ampl->SetMuR2(ampl->MuR2());
   p_ampl->SetMuF2(ampl->MuF2());
-  p_ampl->SetQ2(ampl->Q2());
+  p_ampl->SetMuQ2(ampl->MuQ2());
   (p_proc->IsMapped()?p_proc->MapProc():p_proc)->ScaleSetter()->CoreScale(p_ampl);
 }

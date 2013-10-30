@@ -108,7 +108,7 @@ Run_Parameter::Run_Parameter()
   gen.m_analysis   = 0;
   gen.m_nevents   = 0;
   gen.m_cutscheme = 0;
-  gen.m_ecms      = gen.m_accu        = 0.;
+  gen.m_ecms      = gen.m_accu = gen.m_sqrtaccu = 0.;
   gen.m_beam1     = gen.m_beam2      = Flavour(kf_none);
   gen.m_pdfset[0] = gen.m_pdfset[1] = NULL;
   gen.m_ngenevents = 0;
@@ -334,6 +334,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   exh->SetStackTrace(stacktrace);
   gen.m_accu = dr.GetValue<double>
     ("Num._Accuracy",dr.GetValue<double>("NUM_ACCURACY",1.e-10));
+  gen.m_sqrtaccu = sqrt(gen.m_accu);
   //gen.m_runtime            = dr.GetValue<std::string>("Runtime"); // Time
   if (gen.m_seeds[1]>0) {
     ran->SetSeed(gen.m_seeds[0],gen.m_seeds[1],gen.m_seeds[2],gen.m_seeds[3]);

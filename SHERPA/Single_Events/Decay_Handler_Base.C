@@ -6,7 +6,9 @@
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Math/Tensor.H"
 #include "ATOOLS/Org/Return_Value.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 #include "PHASIC++/Decays/Decay_Channel.H"
 #include "PHASIC++/Decays/Decay_Table.H"
@@ -16,6 +18,8 @@
 #include "METOOLS/SpinCorrelations/Decay_Matrix.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 
+#include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
+
 using namespace SHERPA;
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -23,8 +27,8 @@ using namespace METOOLS;
 using namespace std;
 
 Decay_Handler_Base::Decay_Handler_Base() :
-  p_decaymap(NULL), p_bloblist(NULL), p_ampl(NULL),
-  m_extraqed(false), m_spincorr(false), m_mass_smearing(1)
+  p_softphotons(NULL), p_decaymap(NULL), p_bloblist(NULL), p_ampl(NULL),
+  m_qedmode(0), m_spincorr(false), m_decaychainend(false), m_mass_smearing(1)
 {
 }
 
@@ -86,7 +90,7 @@ void Decay_Handler_Base::SetMasses(ATOOLS::Blob* blob, bool usefinalmass)
         }
       }
       else {
-        double mass = (*it)->RefFlav().RelBWMass(0.0, max, 
+        double mass = (*it)->RefFlav().RelBWMass(0.0, max,
 						 this->Mass((*it)->RefFlav()));
         (*it)->SetFinalMass(mass);
         DEBUG_INFO(max<<" > "<<"m["<<(*it)->RefFlav()<<"]="<<mass);
@@ -102,6 +106,8 @@ bool Decay_Handler_Base::DiceMass(ATOOLS::Particle* p, double max)
   Blob_Data_Base* data = (*decayblob)["dc"];
   if (data) {
     Decay_Channel* dc = data->Get<Decay_Channel*>();
+    if (!dc) THROW(fatal_error,"Missing decay channel for "
+                               +decayblob->ShortProcessName()+".");
     double width = p_decaymap->FindDecay(p->Flav())->TotalWidth();
     double mass=dc->GenerateMass(max, width);
     if (mass>0.0) p->SetFinalMass(mass);
@@ -148,6 +154,11 @@ void Decay_Handler_Base::BoostAndStretch(Blob* blob, const Vec4D& labmom)
                <<*blob<<endl;
     throw Return_Value::Retry_Event;
   }
+  for (size_t i(0); i<blob->NOutP(); ++i)
+    if (blob->OutParticle(i)->DecayBlob())
+      blob->OutParticle(i)->DecayBlob()
+          ->AddData("p_actual",
+                    new Blob_Data<Vec4D>(blob->OutParticle(i)->Momentum()));
   DEBUG_VAR(blob->MomentumConserved());
 }
 
@@ -157,6 +168,7 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
 {
   DEBUG_FUNC("");
   DEBUG_VAR(*blob);
+  m_decaychainend=false;
   // random shuffle, against bias in spin correlations and mixing
   Particle_Vector daughters = blob->GetOutParticles();
   std::vector<size_t> shuffled(daughters.size());
@@ -192,6 +204,7 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
   for (size_t ii(0); ii<daughters.size(); ++ii) {
     size_t i=shuffled[ii];
     DEBUG_INFO("treating "<<*daughters[i]);
+    m_decaychainend=false;
     if (m_spincorr) {
       if (amps && origparts[i]) {
         DEBUG_VAR(*amps);
@@ -227,7 +240,10 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
         FillDecayTree(daughters[i]->DecayBlob(), NULL);
       }
     }
+    m_decaychainend=true;
   }
+  if (p_softphotons && m_qedmode==2)
+    AttachExtraQEDRecursively(blob);
 }
 
 Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
@@ -245,18 +261,21 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
                <<*blob<<endl;
     throw Return_Value::Retry_Event;
   }
+  msg_Debugging()<<*blob<<std::endl;
   Amplitude2_Tensor* amps=FillOnshellDecay(blob, s0);
   inpart->SetStatus(part_status::decayed);
   inpart->SetInfo('D');
 
   Particle_Vector daughters = blob->GetOutParticles();
   random_shuffle(daughters.begin(), daughters.end(), *ran);
-  if (!(blob->Type()==btp::Hadron_Decay && blob->Has(blob_status::needs_showers))) {
+  if (!(blob->Type()==btp::Hadron_Decay &&
+        blob->Has(blob_status::needs_showers))) {
     for (PVIt it=daughters.begin();it!=daughters.end();++it) {
       if (Decays((*it)->Flav())) {
         if (!CanDecay(inpart->Flav())) {
-          msg_Error()<<METHOD<<" Particle '"<<inpart->Flav()<<"' set unstable, "
-                     <<"but decay handler doesn't know how to deal with it.";
+          msg_Error()<<METHOD<<" Particle '"<<inpart->Flav()
+                     <<"' set unstable, but decay handler doesn't know how "
+                     <<"to deal with it.";
           throw Return_Value::Retry_Event;
         }
         CreateDecayBlob(*it);
@@ -267,7 +286,7 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
   SetMasses(blob, true);
   BoostAndStretch(blob, labmom);
   DEBUG_VAR(*blob);
-  if (m_extraqed) AttachExtraQED(blob);
+  if (p_softphotons) AttachExtraQED(blob);
 
   DEBUG_INFO("recursively treating the created daughter decay blobs:");
   if (m_spincorr) DEBUG_VAR(*amps);
@@ -277,7 +296,8 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
     DEBUG_VAR(daughters[i]->Flav());
 
     if (!Decays(daughters[i]->Flav()) ||
-        (blob->Type()==btp::Hadron_Decay && blob->Has(blob_status::needs_showers))) {
+        (blob->Type()==btp::Hadron_Decay &&
+         blob->Has(blob_status::needs_showers))) {
       DEBUG_INFO("is stable.");
       if (m_spincorr) {
         Decay_Matrix* D=new Decay_Matrix(daughters[i]);
@@ -302,7 +322,8 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
       }
     }
   }
-  DEBUG_INFO("finished daughters of "<<inpart->RefFlav()<<" "<<inpart->Number());
+  DEBUG_INFO("finished daughters of "<<inpart->RefFlav()<<" "
+             <<inpart->Number());
   if (m_spincorr) DEBUG_VAR(*amps);
   return m_spincorr?new Decay_Matrix(inpart,amps):NULL;
 }
@@ -313,9 +334,8 @@ Amplitude2_Tensor* Decay_Handler_Base::FillOnshellDecay(Blob *blob,
   DEBUG_FUNC("");
   Decay_Channel* dc(NULL);
   Blob_Data_Base* data = (*blob)["dc"];
-  if(data) {
+  if (data) {
     dc=data->Get<Decay_Channel*>();
-    DEBUG_VAR(*dc);
   }
   else {
     Decay_Table* table=p_decaymap->FindDecay(blob->InParticle(0)->Flav());
@@ -327,7 +347,10 @@ Amplitude2_Tensor* Decay_Handler_Base::FillOnshellDecay(Blob *blob,
     dc=table->Select();
     blob->AddData("dc",new Blob_Data<Decay_Channel*>(dc));
   }
-  
+  if (!dc) THROW(fatal_error,"No decay channel found for "
+                             +blob->InParticle(0)->Flav().IDName()+".");
+  msg_Debugging()<<*dc<<std::endl;
+
   Particle* inpart=blob->InParticle(0);
   inpart->SetStatus(part_status::decayed);
   Flavour flav; Particle* particle=NULL;
@@ -352,14 +375,17 @@ Amplitude2_Tensor* Decay_Handler_Base::FillOnshellDecay(Blob *blob,
     parts.insert(parts.end(), blob->InParticle(0));
     Particle_Vector outparts=blob->GetOutParticles();
     parts.insert(parts.end(), outparts.begin(), outparts.end());
-    dc->GenerateKinematics(moms,inpart->Flav().IsAnti()!=dc->GetDecaying().IsAnti(),sigma,parts);
+    dc->GenerateKinematics(moms,
+                           inpart->Flav().IsAnti()!=dc->GetDecaying().IsAnti(),
+                           sigma,parts);
     amps=dc->Amps();
   }
   else {
-    dc->GenerateKinematics(moms,inpart->Flav().IsAnti()!=dc->GetDecaying().IsAnti());
+    dc->GenerateKinematics(moms,
+                           inpart->Flav().IsAnti()!=dc->GetDecaying().IsAnti());
   }
   for (size_t i=1; i<n; i++) blob->GetOutParticles()[i-1]->SetMomentum(moms[i]);
-  DEBUG_VAR(*blob);
+  msg_Debugging()<<*blob<<std::endl;
   return amps;
 }
 
@@ -432,13 +458,13 @@ Cluster_Amplitude* Decay_Handler_Base::ClusterConfiguration(Blob *const bl)
   double mu2=p_ampl->Leg(0)->Mom().Abs2();
   p_ampl->SetMuF2(mu2);
   p_ampl->SetKT2(mu2);
-  p_ampl->SetQ2(mu2);
+  p_ampl->SetMuQ2(mu2);
   msg_Debugging()<<*p_ampl<<"\n";
   while (p_ampl->Prev()) {
     p_ampl=p_ampl->Prev();
     p_ampl->SetMuF2(mu2);
     p_ampl->SetKT2(mu2);
-    p_ampl->SetQ2(mu2);
+    p_ampl->SetMuQ2(mu2);
   }
   msg_Debugging()<<"}\n";
   return p_ampl;
@@ -459,4 +485,110 @@ bool Decay_Handler_Base::CanDecay(const ATOOLS::Flavour& flav)
 {
   if (p_decaymap) return p_decaymap->Knows(flav);
   else return false;
+}
+
+bool Decay_Handler_Base::AttachExtraQED(Blob* blob, size_t mode)
+{
+  DEBUG_FUNC("qedmode="<<m_qedmode
+             <<", shower="<<blob->Has(blob_status::needs_showers)
+             <<", mode="<<mode
+             <<", process="<<blob->ShortProcessName());
+  if (!blob->Has(blob_status::needs_extraQED)) return false;
+  if (blob->NInP()!=1) return AttachExtraQEDToProductionBlob(blob);
+  if (mode==0 && m_qedmode!=1) return false;
+  if (mode==1 && m_qedmode!=2) return false;
+  for (size_t i(0);i<blob->NOutP();++i)
+    if (blob->OutParticle(i)->Flav().Strong()) return false;
+  msg_Debugging()<<*blob<<std::endl;
+  msg_Debugging()<<"Momentum conserved: "<<blob->CheckMomentumConservation()
+                 <<std::endl;
+  if (!p_softphotons->AddRadiation(blob)) {
+    msg_Error()<<METHOD<<"(): Soft photon handler failed, retrying event."
+               <<std::endl;
+    throw Return_Value::Retry_Event;
+  }
+  msg_Debugging()<<*blob<<std::endl;
+  msg_Debugging()<<"Momentum conserved: "<<blob->CheckMomentumConservation()
+                 <<std::endl;
+  blob->UnsetStatus(blob_status::needs_extraQED);
+  msg_Debugging()<<"Added anything? "<<p_softphotons->AddedAnything()
+                 <<std::endl;
+  return p_softphotons->AddedAnything();
+}
+
+bool Decay_Handler_Base::AttachExtraQEDToProductionBlob(Blob* blob)
+{
+  DEBUG_FUNC("qedmode="<<m_qedmode<<", decay "<<blob->ShortProcessName());
+  return false;
+}
+
+bool Decay_Handler_Base::AttachExtraQEDRecursively(Blob* blob, bool aa)
+{
+  DEBUG_FUNC("qedmode="<<m_qedmode<<", decay "<<blob->ShortProcessName()
+             <<", already boosted="<<aa);
+  if (m_qedmode!=2) return false;
+  aa+=AttachExtraQED(blob,1);
+  msg_Debugging()<<"added anything: "<<aa<<std::endl;
+  for (size_t i(0);i<blob->NOutP();++i) {
+    if (blob->OutParticle(i)->DecayBlob()) {
+      Blob * decblob(blob->OutParticle(i)->DecayBlob());
+      msg_Debugging()<<blob->OutParticle(i)->Flav()<<" has "
+                     <<(blob->OutParticle(i)->DecayBlob()?"a ":"no ")
+                     <<"decay blob"<<std::endl;
+      if (decblob) {
+        if (aa) UpdateDecayBlob(decblob);
+        AttachExtraQEDRecursively(decblob,aa);
+      }
+    }
+  }
+  return aa;
+}
+
+void Decay_Handler_Base::UpdateDecayBlob(Blob* blob)
+{
+  DEBUG_FUNC(blob->ShortProcessName());
+  const Vec4D& P((*blob)["p_actual"]->Get<Vec4D>());
+  const Vec4D& Pt(blob->InParticle(0)->Momentum());
+  const Vec4D e(P-Pt);
+  msg_Debugging()<<"P-Pt="<<e<<" ["<<e.Mass()<<"]"<<std::endl;
+  const Lorentz_Ten2D lambda(MetricTensor()-2.*BuildTensor(e,e)/e.Abs2());
+  msg_Debugging()<<"\\Lambda="<<std::endl<<lambda<<std::endl;
+  for (size_t i(0);i<blob->NOutP();++i) {
+    Vec4D mom(blob->OutParticle(i)->Momentum());
+    msg_Debugging()<<blob->OutParticle(i)->Flav().IDName()<<" "
+                   <<mom<<" ["<<mom.Mass()<<"] -> ";
+    mom=Contraction(lambda,2,mom);
+    blob->OutParticle(i)->SetMomentum(mom);
+    msg_Debugging()<<mom<<" ["<<mom.Mass()<<"]"<<std::endl;
+  }
+  CheckOnshellness(blob);
+  if (msg_LevelIsDebugging()) {
+    for (size_t i(0);i<blob->NOutP();++i) {
+      Vec4D mom(blob->OutParticle(i)->Momentum());
+      msg_Debugging()<<blob->OutParticle(i)->Flav().IDName()<<" "
+                     <<mom<<" ["<<mom.Mass()<<"]"<<std::endl;
+    }
+  }
+  msg_Debugging()<<"Momentum conservation in decay blob of "
+                 <<blob->InParticle(0)->Flav()<<": "
+                 <<blob->CheckMomentumConservation()<<std::endl;
+}
+
+bool Decay_Handler_Base::CheckOnshellness(Blob* blob)
+{
+  std::vector<double> masses;
+  bool allonshell(true);
+  double accu(sqrt(Accu()));
+  for (size_t i(0);i<blob->NOutP();++i) {
+    masses.push_back(blob->OutParticle(i)->FinalMass());
+    if (allonshell &&
+        !IsEqual(blob->OutParticle(i)->Momentum().Abs2(),
+                 sqr(blob->OutParticle(i)->FinalMass()),accu)) allonshell=false;
+  }
+  msg_Debugging()<<"masses="<<masses<<std::endl;
+  if (allonshell) return true;
+  msg_Debugging()<<"need to put on-shell"<<std::endl;
+  Momenta_Stretcher momstretch;
+  momstretch.StretchMomenta(blob->GetOutParticles(),masses);
+  return false;
 }

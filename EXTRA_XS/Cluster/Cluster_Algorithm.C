@@ -37,7 +37,7 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   PHASIC::Process_Base *pb(xs->IsMapped()?xs->MapProc():xs);
   double muf2(pb->ScaleSetter()->Scale(stp::fac));
   double mur2(pb->ScaleSetter()->Scale(stp::ren));
-  double Q2(pb->ScaleSetter()->Scale(stp::res));
+  double muq2(pb->ScaleSetter()->Scale(stp::res));
   for (size_t i(0);i<xs->NIn()+xs->NOut();++i) {
     size_t idx(i);
     ColorID col(me->Colours()[idx][0],me->Colours()[idx][1]);
@@ -54,7 +54,7 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   p_ampl->SetNIn(xs->NIn());
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
-  p_ampl->SetQ2(Q2);
+  p_ampl->SetMuQ2(muq2);
   p_ampl->SetProc(xs);
   PDF::CParam kt2(xs->ScaleSetter()->CoreScale(p_ampl));
   p_ampl->SetKT2(kt2.m_kt2);

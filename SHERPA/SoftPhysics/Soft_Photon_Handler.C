@@ -37,5 +37,6 @@ bool Soft_Photon_Handler::AddRadiation(Blob * blob)
   }
   p_yfs->AddRadiation(blob);
   blob->UnsetStatus(blob_status::needs_extraQED);
+  m_photonsadded=p_yfs->AddedAnything();
   return p_yfs->DoneSuccessfully();
 }

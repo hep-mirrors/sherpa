@@ -52,13 +52,13 @@ PDF::CParam TTBar_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   else {
     THROW(fatal_error,"Invalid call");
   }
-  double mur2(muf2), q2(muf2);
+  double mur2(muf2), muq2(muf2);
   msg_Debugging()<<METHOD<<"(): Set {\n"
 		 <<"  \\mu_f = "<<sqrt(muf2)<<"\n"
 		 <<"  \\mu_r = "<<sqrt(mur2)<<"\n"
-		 <<"  \\mu_q = "<<sqrt(q2)<<"\n";
+		 <<"  \\mu_q = "<<sqrt(muq2)<<"\n";
   msg_Debugging()<<"}\n";
-  return PDF::CParam(muf2,q2,0.0,mur2,-1);
+  return PDF::CParam(muf2,muq2,0.0,mur2,-1);
 }
 
 DECLARE_ND_GETTER(TTBar_Core_Scale,"TTBar",

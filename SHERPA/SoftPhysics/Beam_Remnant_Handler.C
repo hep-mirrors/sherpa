@@ -48,7 +48,7 @@ Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
     if (!set) return Return_Value::Nothing;
     if (bloblist->FourMomentumConservation())
       return Return_Value::Success;
-    if (m_vmode) abort();
+    if (m_vmode) THROW(fatal_error,"Four Momentum not conserved.");
     return Return_Value::New_Event;
   }
   for (Blob_List::iterator bit=bloblist->begin();
@@ -68,7 +68,8 @@ Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
   }
   else {
     fbc = p_parametrised->FillBeamBlobs(bloblist);
-    if (fbc==Return_Value::New_Event && m_vmode) abort();
+    if (fbc==Return_Value::New_Event && m_vmode)
+      THROW(fatal_error,"Four Momentum not conserved.");
   }
   if (fbc!=Return_Value::Success) return fbc;
   fbc = FillBunchBlobs(bloblist);

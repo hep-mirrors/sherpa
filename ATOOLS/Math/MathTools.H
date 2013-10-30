@@ -44,6 +44,7 @@ namespace ATOOLS {
   { return a>b?a:b; }
 
   inline double Accu() {return 1.e-12;}
+  inline double SqrtAccu() {return 1.e-6;}
 
   inline int    Sign(const int& a)    { return a<0?-1:1;       }
   inline double Sign(const double& a) { return a<0.0?-1.0:1.0; }

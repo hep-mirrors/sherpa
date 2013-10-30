@@ -17,10 +17,12 @@ namespace PHOTONS {
   public:
     Photons(ATOOLS::Data_Reader* reader=NULL);
     Photons();
-    ~Photons();
+    ~Photons() {};
     bool AddRadiation(ATOOLS::Blob *);
+    bool CheckStateBeforeTreatment(ATOOLS::Blob *);
 
     inline bool        DoneSuccessfully() { return m_success; }
+    inline bool        AddedAnything()    { return m_photonsadded; }
     inline std::string Name()             { return m_name; }
 
     static double               s_alpha;
@@ -36,9 +38,11 @@ namespace PHOTONS {
     static int                  s_ircutoffframe;
     static double               s_accu;
     static int                  s_nmax;
+    static int                  s_nmin;
     static double               s_drcut;
     static bool                 s_strict;
     static double               s_reducemax;
+    static bool                 s_checkfirst;
   };
 
 

@@ -20,6 +20,7 @@ namespace SHERPA {
 
   class Soft_Photon_Handler {
   private:
+    bool                m_photonsadded;
     std::string         m_name;
     softphotons::code   m_mode;
     PHOTONS::Photons  * p_yfs;
@@ -33,6 +34,7 @@ namespace SHERPA {
 
     inline bool        IsOn()             { return m_mode; }
     inline std::string SoftQEDGenerator() { return m_name; }
+    inline size_t      AddedAnything()    { return m_photonsadded; }
   };// end of class Soft_Photon_Handler
 
 }// end of namespace SHERPA

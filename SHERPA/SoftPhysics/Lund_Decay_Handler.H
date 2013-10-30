@@ -35,7 +35,7 @@ class Lund_Decay_Handler : public Decay_Handler_Base {
     FillOnshellDecay(ATOOLS::Blob* blob, METOOLS::Spin_Density* sigma);
 
     void SetPosition(ATOOLS::Blob* blob);
-    
+
     bool CanDecay(const ATOOLS::Flavour& flav);
 
     inline double Mass(const ATOOLS::Flavour &fl) const { return fl.HadMass(); }

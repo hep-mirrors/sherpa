@@ -606,7 +606,7 @@ PDF::CParam METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl) const
   PDF::CParam kt2(p_core->Calculate(ampl));
   ampl->SetKT2(kt2.m_kt2);
   ampl->SetMu2(kt2.m_mu2);
-  ampl->SetQ2(kt2.m_op2);
+  ampl->SetMuQ2(kt2.m_op2);
   return kt2;
 }
 
@@ -656,7 +656,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
       }
       if (oqcd==0) m_scale[stp::size+stp::res]=ampl->Next()->KT2();
     }
-    m_scale[stp::res]=ampl->Q2();
+    m_scale[stp::res]=ampl->MuQ2();
     if (ampl->OrderQCD()-(m_vproc?1:0)) {
       double mu2(Max(ampl->Mu2(),MODEL::as->CutQ2()));
       mum2=Min(mum2,mu2);
@@ -697,12 +697,12 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
   if (ampl) {
     ampl->SetMuF2(m_scale[stp::fac]);
     ampl->SetMuR2(m_scale[stp::ren]);
-    ampl->SetQ2(m_scale[stp::res]);
+    ampl->SetMuQ2(m_scale[stp::res]);
     while (ampl->Prev()) {
       ampl=ampl->Prev();
       ampl->SetMuF2(m_scale[stp::fac]);
       ampl->SetMuR2(m_scale[stp::ren]);
-      ampl->SetQ2(m_scale[stp::res]);
+      ampl->SetMuQ2(m_scale[stp::res]);
     }
   }
   return m_scale[stp::fac];

@@ -20,6 +20,7 @@
 #include "PHASIC++/Channels/Rambo.H"
 #include "METOOLS/Main/Spin_Structure.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
 
 #include "EXTRA_XS/One2Two/Comix1to2.H"
 #include "EXTRA_XS/One2Three/Comix1to3.H"
@@ -38,8 +39,16 @@ using namespace PHASIC;
 using namespace METOOLS;
 using namespace std;
 
+class ParticlePairFirstEnergySort {
+public:
+  bool operator()(const ParticlePair& a,const ParticlePair& b)
+  { return (a.first->Momentum()[0]<b.first->Momentum()[0]); }
+};
+
 Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
-  p_newsublist(NULL)
+  p_newsublist(NULL), m_path(""), m_file(""), m_resultdir(""), m_offshell(""),
+  m_store_results(false), m_decay_tau(false), m_set_widths(false),
+  m_br_weights(true), m_usemass(true)
 {
   Data_Reader dr(" ",";","!","=");
   dr.AddWordSeparator("\t");
@@ -55,6 +64,15 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   m_br_weights=dr.GetValue<int>("HDH_BR_WEIGHTS",1);
   m_decay_tau=dr.GetValue<int>("DECAY_TAU_HARD",0);
   m_set_widths=dr.GetValue<int>("HDH_SET_WIDTHS",0);
+  // also need to tell shower whats massive now
+  m_usemass=!((bool)dr.GetValue<int>("RESPECT_MASSIVE_FLAG",0));
+  msg_Info()<<METHOD<<"(): Make decays massive: "<<m_usemass<<std::endl;
+  m_qedmode=dr.GetValue<int>("HDH_QED_CORRECTIONS",1);
+  if (m_qedmode && m_spincorr) m_qedmode=2;
+  if (m_qedmode>0 && !m_usemass) {
+    THROW(fatal_error,std::string("QED corrections to hard decays only ")
+                      +std::string("available in massive mode."));
+  }
   std::string r=dr.GetValue<std::string>("DECAY_RESULT_DIRECTORY","");
   m_resultdir=(r==""?dr.GetValue<std::string>("RESULT_DIRECTORY","Results"):r);
   if (m_store_results) {
@@ -102,7 +120,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   // initialize them sorted by masses:
   Decay_Map::iterator dmit;
   Vertex_Table offshell;
-  msg_Tracking()<<"Initialising hard decay tables."<<endl;
+  msg_Info()<<"Initialising hard decay tables."<<endl;
   size_t i(0);
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
     offshell.insert(make_pair(dmit->first,Vertex_List()));
@@ -126,9 +144,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
     else if (m_offshell=="ByWidth") {
       RefineDecaysByWidth(dmit->second.at(0));
     }
-    else {
-      THROW(fatal_error, "Parameter RESOLVE_DECAYS set to wrong value.")
-	}
+    else THROW(fatal_error, "Parameter RESOLVE_DECAYS set to wrong value.");
 
     // force/disable specified decay channels
     for (size_t i=0;i<dmit->second.at(0)->size();++i) {
@@ -150,7 +166,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
       dmit->second.at(0)->Flav().SetWidth(dmit->second.at(0)->TotalWidth());
   }
 
-  if (p_decaymap->size()) msg_Tracking()<<endl<<*p_decaymap<<endl;
+  if (p_decaymap->size()) msg_Info()<<endl<<*p_decaymap<<endl;
   WriteDecayTables();
 }
 
@@ -170,10 +186,11 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
   Vertex_Table::const_iterator vlit=s_model->VertexTable()->find(inflav);
   const Vertex_List& vertexlist(vlit->second);
 
+  msg_Debugging()<<"Vertices:"<<std::endl;
   for (size_t i=0;i<vertexlist.size();i++) {
     Single_Vertex* sv=vertexlist[i];
     if (!ProperVertex(sv)) continue;
-    DEBUG_VAR(*sv);
+    msg_Debugging()<<"  "<<i<<": "<<*sv<<std::endl;
     Decay_Channel* dc=new Decay_Channel(inflav, this);
     for (int j=1; j<sv->nleg; ++j) dc->AddDecayProduct(sv->in[j]);
 
@@ -200,11 +217,13 @@ void Hard_Decay_Handler::RefineDecaysThreshold(Decay_Table* dt) {
   size_t dtsize=dt->size();
   for (size_t i=0;i<dtsize;++i) {
     Decay_Channel* dc=dt->at(i);
-    DEBUG_VAR(*dc);
+    if (!dc) THROW(fatal_error,"Could not retrieve decay table.");
+    msg_Debugging()<<*dc<<std::endl;
     double outmass=0.0;
     for (size_t j=1; j<dc->Flavs().size(); ++j)
-      outmass+=dc->Flavs()[j].Mass();
-    if (dt->Flav().Mass()>outmass) continue;
+      outmass+=this->Mass(dc->Flavs()[j]);
+    msg_Debugging()<<this->Mass(dt->Flav())<<" vs "<<outmass<<std::endl;
+    if (this->Mass(dt->Flav())>outmass) continue;
 
     vector<Decay_Channel*> new_dcs=ResolveDecay(dc);
     for (size_t j=0; j<new_dcs.size(); ++j) {
@@ -346,8 +365,8 @@ bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
   // Integrate or use results read from decay table file
   double outmass=0.0;
   for (size_t l=1; l<dc->Flavs().size(); ++l)
-    outmass+=dc->Flavs()[l].Mass();
-  if (dc->Flavs()[0].Mass()>outmass) {
+    outmass+=this->Mass(dc->Flavs()[l]);
+  if (this->Mass(dc->Flavs()[0])>outmass) {
     DEBUG_INFO("Starting calculation of widths now.");
     DEBUG_INFO(*dc);
     if (m_store_results && m_read.find(dc->Flavs()[0])!=m_read.end()) {
@@ -404,10 +423,11 @@ bool Hard_Decay_Handler::ProperVertex(MODEL::Single_Vertex* sv)
 void Hard_Decay_Handler::CreateDecayBlob(ATOOLS::Particle* inpart)
 {
   DEBUG_FUNC(inpart->Flav());
-  if(inpart->DecayBlob()) abort();
+  if(inpart->DecayBlob()) THROW(fatal_error,"Decay blob already exists.");
   if(!Decays(inpart->Flav())) return;
   Blob* blob = p_bloblist->AddBlob(btp::Hard_Decay);
   blob->SetStatus(blob_status::needs_showers);
+  blob->AddStatus(blob_status::needs_extraQED);
   blob->AddToInParticles(inpart);
   blob->SetTypeSpec("Sherpa");
   Decay_Table* table=p_decaymap->FindDecay(blob->InParticle(0)->Flav());
@@ -574,6 +594,7 @@ void Hard_Decay_Handler::DefineInitialConditions(Cluster_Amplitude* ampl,
       (initial_blob->OutParticle(i)->Momentum());
   }
   p_clus->ReCluster(ampl);
+  ampl->SetMS(this);
   size_t imax=ampl->Legs().size()-1;
   for (int i=0; i<initial_blob->NOutP(); ++i) {
     if (initial_blob->OutParticle(i)->DecayBlob()) {
@@ -588,21 +609,35 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
                                             size_t& imax,
                                             size_t idmother)
 {
-  DEBUG_FUNC("blob->Id()="<<blob->Id()<<" idmother="<<idmother);
+  DEBUG_FUNC("blob->Id()="<<blob->Id()<<" idmother="<<ID(idmother));
   DEBUG_VAR(*blob);
-  Particle_Vector daughters=blob->GetOutParticles();
+  Particle_Vector daughters;
+  ParticlePair_Vector photons;
+  for (size_t i(0);i<blob->GetOutParticles().size();++i) {
+    Particle * p(blob->OutParticle(i));
+    if (p->Info()=='S') photons.push_back(make_pair(p,p));
+    else                daughters.push_back(p);
+  }
+  std::sort(photons.begin(),photons.end(),ParticlePairFirstEnergySort());
+  msg_Debugging()<<"daughters: ";
+  for (size_t i(0);i<daughters.size();++i)
+    msg_Debugging()<<daughters[i]->Flav().IDName()<<" ";
+  msg_Debugging()<<" +  "<<photons.size()<<" soft photon(s)"<<std::endl;
+  AssignPhotons(daughters,photons);
   if (daughters.size()==2) {
+    msg_Debugging()<<"1 to 2 case"<<std::endl;
     Cluster_Amplitude* copy=ampl->InitPrev();
     copy->CopyFrom(ampl);
+    copy->SetMS(this);
     Cluster_Leg *lij(ampl->IdLeg(idmother));
     lij->SetStat(1|2|4);
     size_t idk(0);
     for (size_t i=0; i<copy->Legs().size(); ++i) {
       copy->Leg(i)->SetK(0);
-      if (copy->Leg(i)->Id()!=idmother)
-	if (copy->Leg(i)->Col().m_i==lij->Col().m_j ||
-	    copy->Leg(i)->Col().m_j==lij->Col().m_i) 
-	  idk=copy->Leg(i)->Id();
+      if (copy->Leg(i)->Id()!=idmother &&
+          (copy->Leg(i)->Col().m_i==lij->Col().m_j ||
+           copy->Leg(i)->Col().m_j==lij->Col().m_i))
+        idk=copy->Leg(i)->Id();
     }
     if (lij->Col().m_i==0 && lij->Col().m_j==0) {
       // Ad hoc EW partner
@@ -612,23 +647,26 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
         size_t select=ampl->Legs().size();
         do {
           select=ampl->NIn()+floor(ran->Get()*ampl_nout);
-        } while (ampl->Leg(select)->Id()&idmother || select>ampl->Legs().size()-1);
+        } while (ampl->Leg(select)->Id()&idmother ||
+                 select>ampl->Legs().size()-1);
         idk=ampl->Leg(select)->Id();
       }
     }
     if (idk==0) THROW(fatal_error,"Colour partner not found");
     lij->SetK(idk);
     Cluster_Leg *d1(copy->IdLeg(idmother));
-    d1->SetMom(daughters[0]->Momentum());
+    size_t stat1(1), stat2(1);
+    d1->SetMom(RecombinedMomentum(daughters[0],photons,stat1));
+    d1->SetStat(stat1);
     d1->SetFlav(daughters[0]->Flav());
-    copy->CreateLeg(daughters[1]->Momentum(), daughters[1]->RefFlav());
+    copy->CreateLeg(RecombinedMomentum(daughters[1],photons,stat2),
+                    daughters[1]->RefFlav());
     size_t idnew=1<<(++imax);
     copy->Legs().back()->SetId(idnew);
-    copy->Legs().back()->SetStat(1);
+    copy->Legs().back()->SetStat(stat2);
     Cluster_Amplitude::SetColours(ampl->IdLeg(idmother),
                                   copy->IdLeg(idmother),
                                   copy->Legs().back());
-    
     DEBUG_VAR(*copy);
     Cluster_Amplitude* tmp=copy;
     while (tmp->Next()) {
@@ -643,6 +681,11 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
       }
       DEBUG_VAR(*tmp);
     }
+    std::vector<size_t> ids;
+    ids.push_back(idmother);
+    ids.push_back(idnew);
+    while (photons.size())
+      AddPhotonsClustering(copy, daughters, photons, imax, ids);
     if (daughters[0]->DecayBlob())
       AddDecayClustering(copy, daughters[0]->DecayBlob(), imax, idmother);
     if (daughters[1]->DecayBlob())
@@ -650,10 +693,15 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     ampl=copy;
   }
   else if (daughters.size()==3) {
-    DEBUG_VAR("size=3");
+    msg_Debugging()<<"1 to 3 case"<<std::endl;
+    // structure m -> 0 P[->1 2]
+    // propagator always combines daughters 1+2
     Cluster_Amplitude* step1=ampl->InitPrev();
     step1->CopyFrom(ampl);
+    step1->SetMS(this);
     Cluster_Leg *lij(ampl->IdLeg(idmother));
+    if (!lij) THROW(fatal_error,"Cluster leg of id "+ToString(idmother)
+                                +" not found.");
     lij->SetStat(1|2|4);
     size_t idk(0);
     for (size_t i=0; i<step1->Legs().size(); ++i) {
@@ -678,13 +726,15 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     if (idk==0) THROW(fatal_error,"Colour partner not found");
     lij->SetK(idk);
     Cluster_Leg *d1(step1->IdLeg(idmother));
-    d1->SetMom(daughters[0]->Momentum());
+    size_t stat1(1),stat2(1),stat3(1);
+    d1->SetMom(RecombinedMomentum(daughters[0],photons,stat1));
+    d1->SetStat(stat1);
     d1->SetFlav(daughters[0]->Flav());
     // todo: 1->2 qcd shower with ew fs recoil partner
     // d1->SetK(idmother);// not that simple: w->qq' has color connection in fs
     Decay_Channel* dc(NULL);
     Blob_Data_Base* data = (*blob)["dc"];
-    if(data) {
+    if (data) {
       dc=data->Get<Decay_Channel*>();
       DEBUG_VAR(*dc);
     }
@@ -692,7 +742,9 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     Comix1to3* amp=dynamic_cast<Comix1to3*>(dc->GetDiagrams()[0].first);
     if (!amp) THROW(fatal_error, "Internal error.");
     Flavour prop_flav=amp->Prop();
-    Vec4D prop_mom=daughters[1]->Momentum()+daughters[2]->Momentum();
+    Vec4D momd2=RecombinedMomentum(daughters[1],photons,stat2);
+    Vec4D momd3=RecombinedMomentum(daughters[2],photons,stat3);
+    Vec4D prop_mom=momd2+momd3;
     step1->CreateLeg(prop_mom, prop_flav);
     size_t idnew1=1<<(++imax);
     step1->Legs().back()->SetId(idnew1);
@@ -718,16 +770,18 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     
     Cluster_Amplitude* step2=step1->InitPrev();
     step2->CopyFrom(step1);
+    step2->SetMS(this);
     step1->IdLeg(idnew1)->SetStat(1|2|4);
     step1->IdLeg(idnew1)->SetK(idk);
     for (size_t i=0; i<step2->Legs().size(); ++i) step2->Leg(i)->SetK(0);
     Cluster_Leg *d2(step2->IdLeg(idnew1));
-    d2->SetMom(daughters[1]->Momentum());
+    d2->SetMom(momd2);
+    d2->SetStat(stat2);
     d2->SetFlav(daughters[1]->Flav());
-    step2->CreateLeg(daughters[2]->Momentum(), daughters[2]->Flav());
+    step2->CreateLeg(momd3, daughters[2]->Flav());
     size_t idnew2=1<<(++imax);
     step2->Legs().back()->SetId(idnew2);
-    step2->Legs().back()->SetStat(0);
+    step2->Legs().back()->SetStat(stat3);
     Cluster_Amplitude::SetColours(step1->IdLeg(idnew1),
                                   step2->IdLeg(idnew1),
                                   step2->Legs().back());
@@ -746,7 +800,12 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
       DEBUG_VAR(*tmp);
     }
 
-    
+    std::vector<size_t> ids;
+    ids.push_back(idmother);
+    ids.push_back(idnew1);
+    ids.push_back(idnew2);
+    while (photons.size())
+      AddPhotonsClustering(step2,daughters,photons,imax,ids);
     if (daughters[0]->DecayBlob())
       AddDecayClustering(step2, daughters[0]->DecayBlob(), imax, idmother);
     if (daughters[1]->DecayBlob())
@@ -760,6 +819,141 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     THROW(fatal_error, "1 -> n not implemented yet.");
   }
 }
+
+void Hard_Decay_Handler::AddPhotonsClustering(Cluster_Amplitude*& ampl,
+                                              const Particle_Vector daughters,
+                                              ParticlePair_Vector& photons,
+                                              size_t& imax,
+                                              const std::vector<size_t>& ids)
+{
+  DEBUG_FUNC(photons.size()<<" photons to be clustered");
+  Particle * photon(photons.back().first);
+  Particle * daughter(photons.back().second);
+  photons.pop_back();
+  size_t idmother(0);
+  if      (daughter==daughters[0]) idmother=ids[0];
+  else if (daughter==daughters[1]) idmother=ids[1];
+  else if (daughter==daughters[2]) idmother=ids[2];
+  else THROW(fatal_error,"Did not find id for "+daughter->Flav().IDName());
+  msg_Debugging()<<"Cluster "<<photon->Flav()<<" "<<photon->Momentum()
+                <<" with "<<daughter->Flav()<<" "<<ID(idmother)<<std::endl;
+  Cluster_Amplitude* copy=ampl->InitPrev();
+  copy->CopyFrom(ampl);
+  copy->SetMS(this);
+  Cluster_Leg *lij(ampl->IdLeg(idmother));
+  lij->SetStat(1|2|4);
+  size_t idk(0);
+  for (size_t i=0; i<copy->Legs().size(); ++i) {
+    copy->Leg(i)->SetK(0);
+    if (copy->Leg(i)->Id()!=idmother &&
+        (copy->Leg(i)->Col().m_i==lij->Col().m_j ||
+         copy->Leg(i)->Col().m_j==lij->Col().m_i))
+      idk=copy->Leg(i)->Id();
+  }
+  if (lij->Col().m_i==0 && lij->Col().m_j==0) {
+    // Ad hoc EW partner
+    size_t ampl_nout=ampl->Legs().size()-ampl->NIn();
+    if (ampl_nout==1) idk=ampl->Leg(0)->Id();
+    else {
+      size_t select=ampl->Legs().size();
+      do {
+        select=ampl->NIn()+floor(ran->Get()*ampl_nout);
+      } while (ampl->Leg(select)->Id()&idmother ||
+               select>ampl->Legs().size()-1);
+      idk=ampl->Leg(select)->Id();
+    }
+  }
+  else THROW(fatal_error,"Adding QED to coloured particle.");
+  if (idk==0) THROW(fatal_error,"Colour partner not found");
+  lij->SetK(idk);
+  Cluster_Leg *d1(copy->IdLeg(idmother));
+  size_t stat1(1), stat2(1);
+  d1->SetMom(RecombinedMomentum(daughter,photons,stat1));
+  d1->SetStat(stat1);
+  d1->SetFlav(daughter->Flav());
+  copy->CreateLeg(photon->Momentum(),photon->RefFlav());
+  size_t idnew=1<<(++imax);
+  copy->Legs().back()->SetId(idnew);
+  copy->Legs().back()->SetStat(stat2);
+  Cluster_Amplitude::SetColours(ampl->IdLeg(idmother),
+                                copy->IdLeg(idmother),
+                                copy->Legs().back());
+  DEBUG_VAR(*copy);
+  Cluster_Amplitude* tmp=copy;
+  while (tmp->Next()) {
+    tmp=tmp->Next();
+    for (size_t i=0; i<tmp->Legs().size(); ++i) {
+      if (tmp->Leg(i)->Id()&idmother) {
+        tmp->Leg(i)->SetId(tmp->Leg(i)->Id()|idnew);
+      }
+      if (tmp->Leg(i)->K()&idmother) {
+        tmp->Leg(i)->SetK(tmp->Leg(i)->K()|idnew);
+      }
+    }
+    DEBUG_VAR(*tmp);
+  }
+  ampl=copy;
+}
+
+void Hard_Decay_Handler::AssignPhotons(const Particle_Vector& daughters,
+                                       ParticlePair_Vector& photons)
+{
+  // for every photon, find charged particle that's closest
+  // ignore radiation off charged resonance for now
+  if (photons.size()) {
+    Particle_Vector cdaughters;
+    for (size_t i(0);i<daughters.size();++i)
+      if (daughters[i]->Flav().Charge()) cdaughters.push_back(daughters[i]);
+    if (cdaughters.size()==1) {
+      for (size_t i(0);i<photons.size();++i)
+        photons[i].second=cdaughters[0];
+    }
+    else {
+      Vec4D cmom(0.,0.,0.,0.);
+      Vec4D_Vector cmoms;
+      for (size_t i(0);i<cdaughters.size();++i) {
+        cmoms.push_back(cdaughters[i]->Momentum());
+        cmom+=cmoms[i];
+      }
+      Poincare ccms(cmom);
+      for (size_t i(0);i<cdaughters.size();++i) ccms.Boost(cmoms[i]);
+      for (size_t i(0);i<photons.size();++i){
+        Vec4D pmom(photons[i].first->Momentum());
+        ccms.Boost(pmom);
+        size_t id(0);
+        double dR(pmom.DR(cmoms[0]));
+        for (size_t j(1);j<cmoms.size();++j) {
+          double dRj(pmom.DR(cmoms[j]));
+          if (dRj<dR) { id=j; dR=dRj; }
+        }
+        photons[i].second=cdaughters[id];
+      }
+    }
+    for (size_t i(0);i<photons.size();++i) {
+      if (photons[i].first==photons[i].second)
+        THROW(fatal_error,"Photon has not been assigned.");
+      msg_Debugging()<<photons[i].first->Flav()<<" "
+                     <<photons[i].first->Momentum()
+                     <<" assigned to "<<photons[i].second->Flav()<<std::endl;
+    }
+  }
+}
+
+Vec4D Hard_Decay_Handler::RecombinedMomentum(const Particle * daughter,
+                                             const ParticlePair_Vector& photons,
+                                             size_t& stat)
+{
+  Vec4D mom(0.,0.,0.,0.);
+  for (size_t i(0);i<photons.size();++i) {
+    if (photons[i].second==daughter) {
+      mom+=photons[i].first->Momentum();
+      stat|=2;
+    }
+  }
+  msg_Debugging()<<daughter->Flav()<<": "<<mom<<" "<<stat<<std::endl;
+  return mom+daughter->Momentum();
+}
+
 
 void Hard_Decay_Handler::ReadDecayTable(Flavour decayer)
 {
@@ -813,3 +1007,4 @@ bool Hard_Decay_Handler::Decays(const ATOOLS::Flavour& flav)
   if (flav.IsStable()) return false;
   return true;
 }
+

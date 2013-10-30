@@ -397,9 +397,9 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay = okay && InitializeTheHardDecays();
   //  only if events:
   if (rpa->gen.NumberOfEvents()>0) {
-    okay = okay && InitializeTheSoftPhotons();
     okay = okay && InitializeTheHadronDecays();
     okay = okay && InitializeTheUnderlyingEvents();
+    okay = okay && InitializeTheSoftPhotons();
     okay = okay && InitializeTheIO();
   }
   return okay;
@@ -745,7 +745,6 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   else if (decmodel==std::string("Hadrons")) {
     as->SetActiveAs(isr::hard_subprocess);
     Hadron_Decay_Handler* hd=new Hadron_Decay_Handler(m_path,m_hadrondecaysdat);
-    hd->SetSoftPhotonHandler(p_softphotons);
     as->SetActiveAs(isr::hard_process);
     p_hdhandler=hd;
   }
@@ -778,6 +777,8 @@ bool Initialization_Handler::InitializeTheSoftPhotons()
 {
   if (p_softphotons) { delete p_softphotons; p_softphotons = NULL; }
   p_softphotons = new Soft_Photon_Handler(m_path,m_softphotonsdat);
+  if (p_harddecays) p_harddecays->SetSoftPhotonHandler(p_softphotons);
+  if (p_hdhandler)  p_hdhandler->SetSoftPhotonHandler(p_softphotons);
   msg_Info()<<"Initialized the Soft_Photon_Handler."<<endl;
   return true;
 }

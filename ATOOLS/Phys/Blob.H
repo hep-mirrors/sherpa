@@ -193,6 +193,7 @@ namespace ATOOLS {
     const double& Weight()               const { return m_weight; }
     std::vector<double> WeightContainer()      { return m_weightcontainer; } 
     Vec4D CheckMomentumConservation() const;
+    std::string ShortProcessName();
     bool  MomentumConserved();
     bool  CheckColour();
     const Vec4D& Position()              const { return m_position; }

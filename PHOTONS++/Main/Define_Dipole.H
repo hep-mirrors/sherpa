@@ -26,6 +26,7 @@ namespace PHOTONS {
       ~Define_Dipole();
 
       void AddRadiation();
+      bool CheckMasses();
 
       inline bool DoneSuccessfully()             { return m_success; }
       inline bool AddedAnything()                { return m_photonsadded; }

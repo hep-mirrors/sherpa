@@ -224,7 +224,7 @@ ATOOLS::Cluster_Amplitude *MI_Handler::ClusterConfiguration()
   me->SetColours(moms);
   double muf2(xs->ScaleSetter()->Scale(stp::fac));
   double mur2(xs->ScaleSetter()->Scale(stp::ren));
-  double Q2(xs->ScaleSetter()->Scale(stp::res));
+  double muq2(xs->ScaleSetter()->Scale(stp::res));
   for (size_t i(0);i<xs->NIn()+xs->NOut();++i) {
     size_t id(1<<p_ampl->Legs().size());
     size_t idx(i);
@@ -241,7 +241,7 @@ ATOOLS::Cluster_Amplitude *MI_Handler::ClusterConfiguration()
   p_ampl->SetNIn(xs->NIn());
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
-  p_ampl->SetQ2(Q2);
+  p_ampl->SetMuQ2(muq2);
   p_ampl->SetKT2(muf2);
   p_ampl->SetMu2(mur2);
   p_ampl->SetOrderEW(xs->OrderEW());

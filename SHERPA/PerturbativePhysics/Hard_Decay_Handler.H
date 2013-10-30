@@ -22,12 +22,16 @@ namespace PHASIC {
 }
 
 namespace SHERPA {
-  
+
+  typedef std::pair<ATOOLS::Particle *,ATOOLS::Particle *> ParticlePair;
+  typedef std::vector<ParticlePair> ParticlePair_Vector;
+
   class Hard_Decay_Handler : public Decay_Handler_Base {
     std::string              m_path, m_file, m_resultdir, m_offshell;
     std::set<std::string>    m_disabled_channels;
     std::map<ATOOLS::Flavour,std::set<std::string> > m_forced_channels;
-    bool                     m_store_results, m_decay_tau, m_set_widths, m_br_weights;
+    bool                     m_store_results, m_decay_tau, m_set_widths,
+                             m_br_weights, m_usemass;
     std::map<ATOOLS::Flavour, std::map<std::string, std::vector<double> > > 
                              m_read;
     PDF::Cluster_Definitions_Base *p_clus;
@@ -43,7 +47,17 @@ namespace SHERPA {
                             ATOOLS::Blob* blob,
                             size_t& imax,
                             size_t idmother);
-    
+    void AddPhotonsClustering(ATOOLS::Cluster_Amplitude*& ampl,
+                              const ATOOLS::Particle_Vector daughters,
+                              ParticlePair_Vector& photons,
+                              size_t& imax,
+                              const std::vector<size_t>& ids);
+    void AssignPhotons(const ATOOLS::Particle_Vector& daughters,
+                       ParticlePair_Vector& photons);
+    ATOOLS::Vec4D RecombinedMomentum(const ATOOLS::Particle * daughter,
+                                     const ParticlePair_Vector& photons,
+                                     size_t& stat);
+
     void ReadDecayTable(ATOOLS::Flavour decayer);
     void WriteDecayTables();
     bool CalculateWidth(PHASIC::Decay_Channel* dc);
@@ -64,7 +78,8 @@ namespace SHERPA {
     void DefineInitialConditions(ATOOLS::Cluster_Amplitude* ampl,
                                  ATOOLS::Blob* initial_blob);
 
-    inline double Mass(const ATOOLS::Flavour &fl) const { return fl.Mass(); }
+    double Mass(const ATOOLS::Flavour &fl) const
+    { return fl.Mass(m_usemass); }
     bool Decays(const ATOOLS::Flavour& flav);
 
     inline void SetCluster(PDF::Cluster_Definitions_Base *clus) { p_clus=clus; }
@@ -72,4 +87,3 @@ namespace SHERPA {
 }
 
 #endif
-

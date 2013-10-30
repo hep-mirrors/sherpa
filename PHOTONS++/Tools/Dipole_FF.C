@@ -121,6 +121,7 @@ void Dipole_FF::AddRadiation() {
       // if no photon generated, event always accepted
       else break;
       if (ran->Get()*m_genmaxweight < m_genweight)   genreject = false;
+      msg_Debugging()<<"-> "<<(genreject?"reject":"accept")<<std::endl;
       // accept new particle momenta if event accepted
       if (!genreject) {
       // if accepted rewrite momenta into Q-CMS, also transform the photon momenta
@@ -231,8 +232,8 @@ void Dipole_FF::CheckMomentumConservationInQCMS
       (abs(diff[2]) < accu) && (abs(diff[3]) < accu))
     m_success = true;
   else {
-    msg_Out()<<"momentum not conserved! residual is: "<<diff
-             <<" accuracy is: "<<accu<<endl;
+    msg_Error()<<"momentum not conserved! residual is: "<<diff
+               <<" accuracy is: "<<accu<<endl;
     for (unsigned int i=0;i<m_olddipole.size();i++)
       msg_Debugging()<<*m_olddipole[i]<<endl;
     for (unsigned int i=0;i<m_oldspectator.size();i++)
@@ -243,7 +244,7 @@ void Dipole_FF::CheckMomentumConservationInQCMS
       msg_Debugging()<<*m_newspectator[i]<<endl;
     for (unsigned int i=0;i<m_n;i++)
       msg_Debugging()<<*m_softphotons[i]<<endl;
-    msg_Out()<<"all photons deleted..."<<endl;
+    msg_Error()<<"all photons deleted..."<<endl;
   }
 }
 

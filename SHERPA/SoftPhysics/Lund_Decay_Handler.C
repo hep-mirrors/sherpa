@@ -26,6 +26,7 @@ Lund_Decay_Handler::Lund_Decay_Handler(Lund_Interface* lund,
   dr.SetInputPath(path);
   dr.SetInputFile(fragfile);
 
+  m_qedmode=dr.GetValue<size_t>("HADRON_DECAYS_QED_CORRECTIONS",1);
   double max_propertime = dr.GetValue<double>("MAX_PROPER_LIFETIME",-1.0);
 
   for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
@@ -122,3 +123,4 @@ bool Lund_Decay_Handler::CanDecay(const ATOOLS::Flavour& flav)
   return false;
 #endif
 }
+

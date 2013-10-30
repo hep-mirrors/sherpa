@@ -410,7 +410,7 @@ bool Cluster_Algorithm::ClusterStep
   p_ampl=p_ampl->InitNext();
   p_ampl->SetMS(p_ms);
   p_ampl->SetNIn(ampl->NIn());
-  p_ampl->SetQ2(ampl->Q2());
+  p_ampl->SetMuQ2(ampl->MuQ2());
   p_ampl->SetMuR2(ampl->MuR2());
   p_ampl->SetMuF2(ampl->MuF2());
   p_ampl->SetKT2(winfo.m_kt2.m_kt2);
@@ -478,7 +478,7 @@ bool Cluster_Algorithm::Cluster
 			   xs->Process()->MapProc():xs);
   double muf2(pb->ScaleSetter()->Scale(stp::fac));
   double mur2(pb->ScaleSetter()->Scale(stp::ren));
-  double Q2(pb->ScaleSetter()->Scale(stp::res));
+  double muq2(pb->ScaleSetter()->Scale(stp::res));
   for (size_t i(0);i<ccurs.size();++i) {
     size_t cid(m_id[ccurs[i]->CId()]=1<<p_ampl->Legs().size());
     Flavour flav(p_xs->ReMap(ccurs[i]->Flav(),0));
@@ -489,7 +489,7 @@ bool Cluster_Algorithm::Cluster
     p_ampl->CreateLeg(mom,flav,ColorID(),cid);
     p_ampl->Legs().back()->SetStat(1);
   }
-  p_ampl->SetQ2(Q2);
+  p_ampl->SetMuQ2(muq2);
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
   Cluster_Amplitude *eampl(p_ampl);

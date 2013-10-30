@@ -21,7 +21,7 @@ namespace PHASIC {
 
     int m_massmode;
 
-    std::set<ATOOLS::Flavour> m_psmass;
+    ATOOLS::Flavour_Set m_psmass;
 
   protected:
 

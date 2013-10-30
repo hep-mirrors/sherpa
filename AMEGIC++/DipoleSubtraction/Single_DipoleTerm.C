@@ -538,7 +538,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
 	m_subevt.p_ampl->CreateLeg(p_int->Momenta()[i],Flavours()[i],ColorID(),1<<i);
       m_subevt.p_ampl->SetMuR2(m_subevt.p_ampl->Next()->MuR2());
       m_subevt.p_ampl->SetMuF2(m_subevt.p_ampl->Next()->MuF2());
-      m_subevt.p_ampl->SetQ2(m_subevt.p_ampl->Next()->Q2());
+      m_subevt.p_ampl->SetMuQ2(m_subevt.p_ampl->Next()->MuQ2());
       m_subevt.p_ampl->SetKT2(p_dipole->KT2());
       m_subevt.p_ampl->SetMu2(p_dipole->KT2());
       m_subevt.p_ampl->SetOrderEW(m_subevt.p_ampl->Next()->OrderEW());

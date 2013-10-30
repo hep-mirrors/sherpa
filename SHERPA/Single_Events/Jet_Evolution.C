@@ -105,7 +105,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 		     <<"   No Perturbative_Interface found for type : "
 		     <<tag<<endl
 		     <<"   Abort the run."<<endl;
-	  abort();
+	  THROW(fatal_error,"No perturbative interface found.");
 	}	
 	switch (AttachShowers(blob,bloblist,piIter->second)) {
 	case Return_Value::Success:
@@ -131,6 +131,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
     // enable shower generator independent FS QED correction to ME
     // TODO: check first, whether shower did FS QED
     bloblist->FindLast(btp::Shower)->AddStatus(blob_status::needs_extraQED);
+    if (!bloblist->FourMomentumConservation()) return Return_Value::New_Event;
     return Return_Value::Success;
   }
   return Return_Value::Nothing;

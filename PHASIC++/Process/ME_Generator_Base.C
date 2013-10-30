@@ -4,6 +4,8 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Phys/Flavour.H"
+#include "MODEL/Main/Model_Base.H"
 
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE PHASIC::ME_Generator_Base
@@ -20,14 +22,44 @@ ME_Generator_Base::~ME_Generator_Base()
 
 void ME_Generator_Base::SetPSMasses(Data_Reader *const dr)
 {
-  std::vector<double> psmass;
-  dr->VectorFromFile(psmass,"MASSIVE_PS");
-  for (size_t i(0);i<psmass.size();++i) {
-    Flavour fl((int)psmass[i],0);
-    m_psmass.insert(fl);
-    m_psmass.insert(fl.Bar());
-    msg_Info()<<m_name<<": Using massive PS for "<<fl<<".\n";
+  ATOOLS::Flavour_Vector allflavs(MODEL::s_model->IncludedFlavours());
+  std::vector<size_t> psmassive;
+  std::vector<size_t> psmassless;
+  dr->VectorFromFile(psmassive,"MASSIVE_PS");
+  dr->VectorFromFile(psmassless,"MASSLESS_PS");
+  bool massive=!((bool)dr->GetValue<int>("RESPECT_MASSIVE_FLAG",0));
+  if (massive) {
+    Flavour_Set tempflavs;
+    for (size_t i(0);i<psmassless.size();++i) {
+      Flavour fl(psmassless[i],0);
+      tempflavs.insert(fl);
+      tempflavs.insert(fl.Bar());
+      msg_Info()<<METHOD<<"(): "<<m_name<<": Using massless PS for "<<fl<<".\n";
+    }
+    // find m_psmass=allflavs-tempflavs
+    for (size_t i(0);i<allflavs.size();++i) {
+      if (allflavs[i].IsDummy()) continue;
+      bool enter(true);
+      for (Flavour_Set::const_iterator it(tempflavs.begin());
+           it!=tempflavs.end();++it) {
+        if (allflavs[i].Kfcode()==it->Kfcode()) { enter=false;break; }
+      }
+      if (enter) m_psmass.insert(allflavs[i]);
+      if (enter) msg_Tracking()<<METHOD<<"(): "<<m_name
+                               <<": Using massive PS for "<<allflavs[i]<<".\n";
+    }
   }
+  else {
+    for (size_t i(0);i<psmassive.size();++i) {
+      Flavour fl(psmassive[i],0);
+      m_psmass.insert(fl);
+      m_psmass.insert(fl.Bar());
+      msg_Info()<<METHOD<<"(): "<<m_name<<": Using massive PS for "<<fl<<".\n";
+    }
+  }
+  Flavour_Vector mf(m_psmass.begin(),m_psmass.end());
+  msg_Info()<<METHOD<<"(): Massive PS flavours for "<<m_name<<": "
+                    <<mf<<std::endl;
 }
 
 namespace PHASIC {

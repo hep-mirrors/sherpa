@@ -121,7 +121,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
     campl->SetNIn(ampl->NIn());
     campl->SetMuR2(rpa->gen.CplScale());
     campl->SetMuF2(rpa->gen.CplScale());
-    campl->SetQ2(rpa->gen.CplScale());
+    campl->SetMuQ2(rpa->gen.CplScale());
     for (size_t l(0), m(0);m<ampl->Legs().size();++m) {
       Cluster_Leg *lm(ampl->Leg(m));
       if (lm==j) continue;

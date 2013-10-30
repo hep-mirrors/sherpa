@@ -142,15 +142,15 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
       proc->Parent()->Info().m_fi.NLOType()!=nlo_type::lo) {
     if (ampl->NLO()&4) {
       blob->AddData("MC@NLO_KT2_Stop",new Blob_Data<double>(0.0));
-      blob->AddData("MC@NLO_KT2_Start",new Blob_Data<double>(ampl->Q2()));
+      blob->AddData("MC@NLO_KT2_Start",new Blob_Data<double>(ampl->MuQ2()));
     }
     else if (ampl->Next()) {
       DEBUG_VAR(*ampl->Next());
       blob->AddData("MC@NLO_KT2_Stop",new Blob_Data<double>(ampl->KT2()));
       blob->AddData("MC@NLO_KT2_Start",new Blob_Data<double>
-		    (ampl->Next()->Next()?ampl->Next()->KT2():ampl->Q2()));
+                    (ampl->Next()->Next()?ampl->Next()->KT2():ampl->MuQ2()));
     }
-    blob->AddData("Resummation_Scale",new Blob_Data<double>(ampl->Q2()));
+    blob->AddData("Resummation_Scale",new Blob_Data<double>(ampl->MuQ2()));
   }
   if (ampl) ampl->Delete();
   PHASIC::Weight_Info winfo(p_mehandler->WeightInfo());

@@ -179,11 +179,11 @@ Singlet *CS_MCatNLO::TranslateAmplitude
 (Cluster_Amplitude *const ampl,
  std::map<Cluster_Leg*,Parton*> &pmap,std::map<Parton*,Cluster_Leg*> &lmap)
 {
-  double Q2(ampl->Q2());
+  double muQ2(ampl->MuQ2());
   for (Cluster_Amplitude *campl(ampl);
        campl->Next();campl=campl->Next())
     if (campl->Next()->OrderQCD()<campl->OrderQCD()) {
-      Q2=campl->KT2();
+      muQ2=campl->KT2();
       break;
     }
   PHASIC::Jet_Finder *jf(ampl->JF<PHASIC::Jet_Finder>());
@@ -230,7 +230,7 @@ Singlet *CS_MCatNLO::TranslateAmplitude
 	parton->SetBeam(1);
       }
     }
-    parton->SetStart(Q2);
+    parton->SetStart(muQ2);
     double ktveto2(jf?jf->Ycut()*sqr(rpa->gen.Ecms()):parton->KtStart());
     double ktmax2(ampl->Legs().size()-ampl->NIn()+1==
 		  ampl->Leg(0)->NMax()?parton->KtStart():0.0);

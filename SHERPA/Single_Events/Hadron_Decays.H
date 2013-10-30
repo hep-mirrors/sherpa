@@ -47,7 +47,7 @@ namespace SHERPA {
     \var double Hadron_Decays::m_mass_smearing
     \brief Switch to turn mass smearing on and off.
 
-    Can be set by the "MASS_SMEARING = [0,1]" variable in Fragmentation.dat
+    Can be set by the "SOFT_MASS_SMEARING = [0,1]" variable in Fragmentation.dat
   */
   /*!
     \fn Hadron_Decays::Treat(ATOOLS::Blob_List *, double &)

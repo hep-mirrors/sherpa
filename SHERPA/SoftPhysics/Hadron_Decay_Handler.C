@@ -8,7 +8,6 @@
 #include "HADRONS++/Main/Hadron_Decay_Table.H"
 #include "HADRONS++/Main/Hadron_Decay_Channel.H"
 #include "HADRONS++/Main/Mixing_Handler.H"
-#include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
 #include "METOOLS/SpinCorrelations/Decay_Matrix.H"
 #include <algorithm>
@@ -21,13 +20,14 @@ using namespace HADRONS;
 using namespace METOOLS;
 
 Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
-  Decay_Handler_Base(), p_softphotons(NULL)
+  Decay_Handler_Base()
 {
   Data_Reader dr(" ",";","!","=");
   dr.AddWordSeparator("\t");
   dr.SetInputPath(path);
   dr.SetInputFile(fragfile);
 
+  m_qedmode=dr.GetValue<size_t>("HADRON_DECAYS_QED_CORRECTIONS",1);
   double max_propertime = dr.GetValue<double>("MAX_PROPER_LIFETIME",-1.0);
   if( max_propertime > 0.0) {
     for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
@@ -77,12 +77,6 @@ Hadron_Decay_Handler::~Hadron_Decay_Handler()
   Hadron_Decay_Map* dmap=dynamic_cast<Hadron_Decay_Map*>(p_decaymap);
   delete dmap; p_decaymap=NULL;
   delete p_mixinghandler; p_mixinghandler=NULL;
-}
-
-void Hadron_Decay_Handler::SetSoftPhotonHandler(Soft_Photon_Handler* sph)
-{
-  p_softphotons=sph;
-  m_extraqed=true;
 }
 
 void Hadron_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
@@ -280,23 +274,3 @@ void Hadron_Decay_Handler::SetPosition(ATOOLS::Blob* blob)
   blob->SetPosition( inpart->XProd() + position ); // in mm
 }
 
-void Hadron_Decay_Handler::AttachExtraQED(Blob* blob)
-{
-  SetPosition(blob);
-  // attach QED radiation to blobs before they are subsequently decayed
-  if (blob->Status()==blob_status::needs_showers) return;
-  DEBUG_FUNC(blob->GetOutParticles().size());
-  if (!p_softphotons) {
-    msg_Error()<<METHOD<<" soft photon handler not found, retrying event."<<endl
-               <<*blob<<endl;
-    throw Return_Value::Retry_Event;
-  }
-  blob->SetStatus(blob_status::needs_extraQED);
-  if (!p_softphotons->AddRadiation(blob)) {
-    msg_Error()<<METHOD<<" soft photon handler failed, retrying event."<<endl
-               <<*blob<<endl;
-    throw Return_Value::Retry_Event;
-  }
-  DEBUG_VAR(*blob);
-  blob->UnsetStatus(blob_status::needs_extraQED);
-}

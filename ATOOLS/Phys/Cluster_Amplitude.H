@@ -50,7 +50,7 @@ namespace ATOOLS {
     DecayInfo_Vector  m_decs;
 
     size_t m_oew, m_oqcd, m_nin, m_new, m_ncl, m_kin, m_nlo;
-    double m_mur2, m_muf2, m_Q2, m_mu2, m_kt2, m_z, m_phi, m_lkf;
+    double m_mur2, m_muf2, m_muq2, m_mu2, m_kt2, m_z, m_phi, m_lkf;
     CI_Map m_cmap;
 
     void *p_jf, *p_proc, *p_procs, *p_iinfo, *p_dinfo;
@@ -131,9 +131,8 @@ namespace ATOOLS {
 
     inline void SetMuF2(const double &muf2) { m_muf2=muf2; }
     inline void SetMuR2(const double &mur2) { m_mur2=mur2; }
+    inline void SetMuQ2(const double &muq2) { m_muq2=muq2; }
     inline void SetMu2(const double &mu2)   { m_mu2=mu2;   }
-
-    inline void SetQ2(const double &Q2) { m_Q2=Q2; }
 
     inline void SetKT2(const double &kt2) { m_kt2=kt2; }
     inline void SetZ(const double &z)     { m_z=z;     }
@@ -159,9 +158,8 @@ namespace ATOOLS {
 
     inline double MuF2() const { return m_muf2; }
     inline double MuR2() const { return m_mur2; }
+    inline double MuQ2() const { return m_muq2; }
     inline double Mu2() const  { return m_mu2;  }
-
-    inline double Q2() const { return m_Q2; }
 
     inline double KT2() const { return m_kt2; }
     inline double Z() const   { return m_z;   }

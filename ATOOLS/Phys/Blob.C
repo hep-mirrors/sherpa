@@ -370,6 +370,15 @@ Vec4D Blob::CheckMomentumConservation() const {
   return sump;
 }
 
+std::string Blob::ShortProcessName() {
+  std::string str("");
+  for (size_t i(0);i<NInP();++i)  str+=InParticle(i)->Flav().IDName()+" ";
+  str+="-> ";
+  for (size_t i(0);i<NOutP();++i) str+=OutParticle(i)->Flav().IDName()+" ";
+  if (str.size()>0)  str.resize (str.size()-1);
+  return str;
+}
+
 bool Blob::MomentumConserved() {
   Vec4D cms_vec = Vec4D(0.,0.,0.,0.);
   for (int i=0;i<NInP();i++) cms_vec = cms_vec + InParticle(i)->Momentum();

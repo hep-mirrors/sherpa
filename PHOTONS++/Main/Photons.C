@@ -18,9 +18,11 @@ double PHOTONS::Photons::s_ircutoff      = 1E-3;
 int    PHOTONS::Photons::s_ircutoffframe = 0;
 double PHOTONS::Photons::s_accu          = 1E-6;
 int    PHOTONS::Photons::s_nmax          = std::numeric_limits<double>::max();
+int    PHOTONS::Photons::s_nmin          = 0;
 double PHOTONS::Photons::s_drcut         = 1000.;
 bool   PHOTONS::Photons::s_strict        = false;
 double PHOTONS::Photons::s_reducemax     = 1.;
+bool   PHOTONS::Photons::s_checkfirst    = false;
 
 double PHOTONS::Photons::s_alpha                = 0.;
 bool   PHOTONS::Photons::s_userunningparameters = false;
@@ -49,10 +51,13 @@ Photons::Photons(Data_Reader* reader) :
               <<"setting it to 'Multipole_CMS' ...\n";
   }
   s_nmax          = reader->GetValue<int>("YFS_MAXEM",-1);
+  s_nmin          = reader->GetValue<int>("YFS_MINEM",0);
   if (s_nmax<0) s_nmax = std::numeric_limits<double>::max();
+  s_nmin          = reader->GetValue<int>("YFS_MINEM",0);
   s_drcut         = reader->GetValue<double>("YFS_DRCUT",1000.);
   s_strict        = reader->GetValue<int>("YFS_STRICTNESS",0);
   s_reducemax     = reader->GetValue<double>("YFS_REDUCE_MAXIMUM",1.);
+  s_checkfirst    = (bool)reader->GetValue<double>("YFS_CHECK_FIRST",0);
   s_accu          = sqrt(rpa->gen.Accu());
   m_success       = true;
   m_photonsadded  = false;
@@ -60,6 +65,7 @@ Photons::Photons(Data_Reader* reader) :
 		 <<"  Mode: "<<s_mode
 		 <<" ,  MEs: "<<(s_mode>1?s_useme:0)
 		 <<" ,  nmax: "<<s_nmax
+		 <<" ,  nmin: "<<s_nmin
 		 <<" ,  strict: "<<s_strict
 		 <<" ,  dRcut: "<<s_drcut
 		 <<" ,  reducemax: "<<s_reducemax
@@ -79,9 +85,11 @@ Photons::Photons() :
   s_ircutoff      = 1E-3;
   s_ircutoffframe = 0;
   s_nmax          = std::numeric_limits<double>::max();
+  s_nmin          = 0;
   s_drcut         = 1000.;
   s_strict        = false;
   s_reducemax     = 1.;
+  s_checkfirst    = false;
   s_accu          = sqrt(rpa->gen.Accu());
   s_userunningparameters = false;
   m_success       = true;
@@ -90,6 +98,7 @@ Photons::Photons() :
 		 <<"  Mode: "<<s_mode
 		 <<" ,  MEs: "<<(s_mode>1?s_useme:0)
 		 <<" ,  nmax: "<<s_nmax
+		 <<" ,  nmin: "<<s_nmin
 		 <<" ,  strict: "<<s_strict
 		 <<" ,  dRcut: "<<s_drcut
 		 <<" ,  reducemax: "<<s_reducemax
@@ -99,20 +108,63 @@ Photons::Photons() :
 		 <<"\n}"<<std::endl;
 }
 
-Photons::~Photons() {
+bool Photons::AddRadiation(Blob * blob)
+{
+  if (!CheckStateBeforeTreatment(blob)) {
+    m_photonsadded=false;
+    return m_success=false;
+  }
+  ResetAlphaQED();
+  Define_Dipole dress(blob);
+  if (!dress.CheckMasses()) {
+    msg_Error()<<METHOD<<"(): Found massless charged particles. Cannot cope."
+               <<std::endl;
+    m_photonsadded=false;
+    return m_success=false;
+  }
+  dress.AddRadiation();
+  m_photonsadded = dress.AddedAnything();
+  m_success = dress.DoneSuccessfully();
+  if (!blob->MomentumConserved()) {
+    msg_Error()<<METHOD<<"(): Momentum not conserved after treatment: "
+               <<blob->CheckMomentumConservation()<<std::endl
+               <<*blob<<std::endl;
+    return m_success=false;
+  }
+  return m_success;
 }
 
-bool Photons::AddRadiation(Blob * blob) {
-
-  if (blob->Has(blob_status::needs_extraQED)) {
-    ResetAlphaQED();
-    Define_Dipole dress(blob);
-    dress.AddRadiation();
-    m_photonsadded = dress.AddedAnything();
-    m_success = dress.DoneSuccessfully();
-    if (!blob->MomentumConserved())
-      msg_Error()<<"Momentum not conserved:\n"<<*blob<<std::endl;
+bool Photons::CheckStateBeforeTreatment(Blob * blob)
+{
+  if (!s_checkfirst) return true;
+  DEBUG_FUNC(blob->ShortProcessName());
+  if (!blob->MomentumConserved()) {
+    msg_Error()<<METHOD<<"(): Momentum not conserved before treatment: "
+               <<blob->CheckMomentumConservation()<<std::endl
+               <<*blob<<std::endl;
+    return false;
   }
-  return m_photonsadded;
+  bool rightmasses(true);
+  for (size_t i(0);i<blob->NOutP();++i) {
+    if (blob->OutParticle(i)->FinalMass()==0. &&
+        blob->OutParticle(i)->Momentum().Mass()>1e-3) {
+      msg_Error()<<METHOD<<"(): "<<blob->OutParticle(i)->Flav().IDName()
+                         <<" not onshell: "
+                         <<blob->OutParticle(i)->Momentum().Mass()
+                         <<" vs "<<blob->OutParticle(i)->FinalMass()<<std::endl;
+      rightmasses=false;
+    }
+    else if (blob->OutParticle(i)->FinalMass()!=0. &&
+             !IsEqual(blob->OutParticle(i)->Momentum().Mass(),
+                      blob->OutParticle(i)->FinalMass(),1e-3)) {
+      msg_Error()<<METHOD<<"(): "<<blob->OutParticle(i)->Flav().IDName()
+                         <<" not onshell: "
+                         <<blob->OutParticle(i)->Momentum().Mass()
+                         <<" vs "<<blob->OutParticle(i)->FinalMass()<<std::endl;
+      rightmasses=false;
+    }
+  }
+  if (!rightmasses) return false;
+  return true;
 }
 

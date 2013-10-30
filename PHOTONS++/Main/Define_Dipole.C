@@ -90,3 +90,12 @@ void Define_Dipole::AddRadiation() {
   }
   else m_success = false;
 }
+
+bool Define_Dipole::CheckMasses()
+{
+  for (size_t i(0);i<m_chargedinparticles.size();++i)
+    if (m_chargedinparticles[i]->FinalMass()==0.) return false;
+  for (size_t i(0);i<m_chargedoutparticles.size();++i)
+    if (m_chargedoutparticles[i]->FinalMass()==0.) return false;
+  return true;
+}

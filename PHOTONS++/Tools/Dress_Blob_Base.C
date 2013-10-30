@@ -29,12 +29,15 @@ Dress_Blob_Base::Dress_Blob_Base() :
   if (PHOTONS::Photons::s_mode == 1) m_soft = true;
 }
 
-Dress_Blob_Base::~Dress_Blob_Base() {
+Dress_Blob_Base::~Dress_Blob_Base()
+{
   if (m_dtype == Dipole_Type::ff)  delete p_newinitialstate;
 }
 
-void Dress_Blob_Base::BuildNewParticleVectorVector() {
-  if ((m_dtype == Dipole_Type::ff) && (p_newinitialstate != NULL)) delete p_newinitialstate;
+void Dress_Blob_Base::BuildNewParticleVectorVector()
+{
+  if ((m_dtype == Dipole_Type::ff) && (p_newinitialstate != NULL))
+    delete p_newinitialstate;
   m_pvv_new.clear();
   Particle_Vector cinit, ninit;
   if (m_dtype == Dipole_Type::ff) {
@@ -59,17 +62,20 @@ void Dress_Blob_Base::BuildNewParticleVectorVector() {
 #endif
 }
 
-double Dress_Blob_Base::CalculateBeta(const Vec4D& p) {
+double Dress_Blob_Base::CalculateBeta(const Vec4D& p)
+{
   return Vec3D(p).Abs()/p[0];
 }
 
-Vec4D Dress_Blob_Base::CalculateMomentumSum(const Particle_Vector& partvec) {
+Vec4D Dress_Blob_Base::CalculateMomentumSum(const Particle_Vector& partvec)
+{
   Vec4D sum = Vec4D(0.,0.,0.,0.);
   for (unsigned int i=0; i<partvec.size(); i++) sum+=partvec[i]->Momentum();
   return sum;
 }
 
-void Dress_Blob_Base::CalculateWeights() {
+void Dress_Blob_Base::CalculateWeights()
+{
   BuildNewParticleVectorVector();
 
   Weight_Dipole           dip(m_olddipole,m_newdipole,m_softphotons,m_dtype);
@@ -126,7 +132,8 @@ void Dress_Blob_Base::CalculateWeights() {
   }
 }
 
-void Dress_Blob_Base::CheckAvaragePhotonNumberForNumericalErrors() {
+void Dress_Blob_Base::CheckAvaragePhotonNumberForNumericalErrors()
+{
   // numerical values slightly < 0. do not lead to fail
   if (m_nbar<0.) {
     m_nbar    = 0.;
@@ -136,18 +143,13 @@ void Dress_Blob_Base::CheckAvaragePhotonNumberForNumericalErrors() {
 }
 
 
-void Dress_Blob_Base::DeleteAll(Particle_Vector& pv) {
-  while (pv.size() != 0) {
-    delete pv[pv.size()-1];
-    pv.pop_back();
-  }
+void Dress_Blob_Base::DeleteAll(Particle_Vector& pv)
+{
+  while (pv.size() != 0) { delete pv[pv.size()-1]; pv.pop_back(); }
 }
 
-void Dress_Blob_Base::DeleteAllPhotons() {
-  DeleteAll(m_softphotons);
-}
-
-void Dress_Blob_Base::DetermineU() {
+void Dress_Blob_Base::DetermineU()
+{
   double M2 = m_M*m_M;
   std::vector<double> mC2;
   std::vector<double> mN2;
@@ -168,8 +170,7 @@ void Dress_Blob_Base::DetermineU() {
   else {
     double i = 0.;
     while ((c*Func(M2,mC2,mN2,q,1.-i) > 0.) && (i<=1))    i = i + 1E-2;
-/*    if (i>1)  m_u = -1;
-    else */if (abs(Func(M2,mC2,mN2,q,1.-i)) < 1E-14)    m_u = 1.-i;
+    if (abs(Func(M2,mC2,mN2,q,1.-i)) < 1E-14)    m_u = 1.-i;
     else {
       i = i - 1E-2;
       double j = 0.;
@@ -216,7 +217,8 @@ void Dress_Blob_Base::DetermineU() {
   }
 }
 
-std::vector<double> Dress_Blob_Base::GenerateNumberAndEnergies() {
+std::vector<double> Dress_Blob_Base::GenerateNumberAndEnergies()
+{
 //  std::vector<double> R, k;
 //  R.push_back(0);
 //  for (unsigned int i=0; R.back()<m_nbar; ++i) {
@@ -226,23 +228,24 @@ std::vector<double> Dress_Blob_Base::GenerateNumberAndEnergies() {
 //  }
 //  k.pop_back();
 //  m_n = k.size();
-  m_n = -1;
-  double expnbar = exp(-m_nbar);
-  double prod = 1.;
-  while (true) {
-    m_n++;
-    prod = prod*ran->Get();
-    if (prod <= expnbar) break;
-  }
-  m_n = Min(m_n,Photons::s_nmax);
-  std::vector<double> k;
-  for (unsigned int i=0; i<m_n; i++) {
-    k.push_back(m_omegaMin*pow(m_omegaMax/m_omegaMin,ran->Get()));
-  }
+   m_n = -1;
+   double expnbar = exp(-m_nbar);
+   double prod = 1.;
+   while (true) {
+     m_n++;
+     prod = prod*ran->Get();
+     if (prod <= expnbar) break;
+   }
+   m_n = Min(Max(m_n,Photons::s_nmin),Photons::s_nmax);
+   std::vector<double> k;
+   for (unsigned int i=0; i<m_n; i++) {
+     k.push_back(m_omegaMin*pow(m_omegaMax/m_omegaMin,ran->Get()));
+   }
   return k;
 }
 
-void Dress_Blob_Base::GeneratePhotons(const double& beta1, const double& beta2) {
+void Dress_Blob_Base::GeneratePhotons(const double& beta1, const double& beta2)
+{
   m_softphotons.clear();
   std::vector<double> k;
   k = GenerateNumberAndEnergies();
@@ -252,7 +255,8 @@ void Dress_Blob_Base::GeneratePhotons(const double& beta1, const double& beta2) 
   }
 }
 
-void Dress_Blob_Base::GeneratePhotons(const IdPairNbarVector& nbars) {
+void Dress_Blob_Base::GeneratePhotons(const IdPairNbarVector& nbars)
+{
   m_softphotons.clear();
   std::vector<double> k;
   k = GenerateNumberAndEnergies();
@@ -263,7 +267,8 @@ void Dress_Blob_Base::GeneratePhotons(const IdPairNbarVector& nbars) {
 }
 
 double Dress_Blob_Base::KallenFunction(const double& x, const double& y,
-                                       const double& z) {
+                                       const double& z)
+{
   return ( x*x + y*y + z*z - 2.*x*y - 2.*x*z - 2.*y*z );
 }
 

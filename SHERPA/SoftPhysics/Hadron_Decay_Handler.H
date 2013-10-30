@@ -21,10 +21,8 @@ namespace HADRONS {
 }
 
 namespace SHERPA {
-  class Soft_Photon_Handler;
 
   class Hadron_Decay_Handler : public Decay_Handler_Base {
-    SHERPA::Soft_Photon_Handler* p_softphotons;
     HADRONS::Mixing_Handler* p_mixinghandler;
 
     long int bs, bs_cs_semilep, bs_ccss, bs_ccds, bs_cuds;
@@ -45,10 +43,7 @@ namespace SHERPA {
 
     bool RejectExclusiveChannelsFromFragmentation(ATOOLS::Blob*);
     void SetPosition(ATOOLS::Blob* blob);
-    void AttachExtraQED(ATOOLS::Blob * blob);
 
-    void SetSoftPhotonHandler(Soft_Photon_Handler* sph);
-    
     inline double Mass(const ATOOLS::Flavour &fl) const { return fl.HadMass(); }
   };
 

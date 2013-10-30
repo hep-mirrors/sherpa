@@ -30,7 +30,7 @@ namespace ATOOLS {
       long int            m_seeds[4];
       double              m_ecms;
       double              m_cplscale;
-      double              m_accu;
+      double              m_accu, m_sqrtaccu;
       Flavour  m_beam1, m_beam2, p_bunch[2];
       Vec4D m_pbeam[2];
       PDF::PDF_Base* m_pdfset[2];
@@ -83,7 +83,8 @@ namespace ATOOLS {
 			   const std::string &prefix="");
 
       inline double Accu()                                { return m_accu; }
-      
+      inline double SqrtAccu()                            { return m_sqrtaccu; }
+
       friend class Run_Parameter;
     } gen;
 

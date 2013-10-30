@@ -52,7 +52,7 @@ namespace PHOTONS {
       void                CalculateWeights();
       void                CheckAvaragePhotonNumberForNumericalErrors();
       void                DeleteAll(ATOOLS::Particle_Vector&);
-      void                DeleteAllPhotons();
+      inline void         DeleteAllPhotons() { DeleteAll(m_softphotons); }
       void                DetermineU();
       std::vector<double> GenerateNumberAndEnergies();
       void                GeneratePhotons(const double&, const double&);

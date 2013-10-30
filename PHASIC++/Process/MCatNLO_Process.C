@@ -282,7 +282,7 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   for (Cluster_Amplitude *ampl(p_ampl);ampl;ampl=ampl->Next()) {
     ampl->SetMuR2(scs->Scale(stp::ren));
     ampl->SetMuF2(scs->Scale(stp::fac));
-    ampl->SetQ2(scs->Scale(stp::res));
+    ampl->SetMuQ2(scs->Scale(stp::res));
   }
   if (p_ampl->Next()) p_ampl->Next()->SetNLO(m_hpsmode);
   Selector_Base *jf=p_rsproc->Selected()->

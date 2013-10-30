@@ -129,7 +129,7 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
     std::vector<double> s(ScaleSetter(1)->Scales().size(),0.0);
     s[stp::fac]=ampl.MuF2();
     s[stp::ren]=ampl.MuR2();
-    s[stp::res]=ampl.Q2();
+    s[stp::res]=ampl.MuQ2();
     if (s.size()>stp::size+stp::res)
       s[stp::size+stp::res]=ampl.KT2();
     SetFixedScale(s);
