@@ -20,7 +20,7 @@ Additional_Process_Weights::Treat(ATOOLS::Blob_List * blobs,double & weight)
   p_signal=blobs->FindFirst(btp::Signal_Process);
   if (m_treated || !p_signal) return Return_Value::Nothing;
   m_treated = true;
-  msg_Out()<<"Success in "<<METHOD<<"!\n";
+  msg_Tracking()<<"Success in "<<METHOD<<"!\n";
   weight *= 1.;
   return Return_Value::Success;
 }
