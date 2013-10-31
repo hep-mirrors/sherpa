@@ -364,9 +364,12 @@ operator()(const Particle_Vector_Vector &pvv) const
   if ( (pvv.size() == 4) &&
        (pvv[0].size() == 0) &&
        (pvv[1].size() == 1) && pvv[1][0]->Flav().IsScalar()        &&
+                               pvv[1][0]->Flav().IsHadron()        &&
       (((pvv[2].size() == 2) && pvv[2][0]->Flav().IsVector() &&
+                                pvv[2][0]->Flav().IsHadron() &&
                                 pvv[2][1]->Flav().IsLepton())  ||
        ((pvv[2].size() == 2) && pvv[2][1]->Flav().IsVector() &&
+                                pvv[2][1]->Flav().IsHadron() &&
                                 pvv[2][0]->Flav().IsLepton())    ) &&
        (pvv[3].size() == 1) && pvv[3][0]->Flav().IsLepton())
     return new Scalar_To_Vector_Lepton_Neutrino(pvv);

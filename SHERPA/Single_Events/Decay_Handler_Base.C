@@ -199,6 +199,11 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
                <<*blob<<endl;
     throw Return_Value::Retry_Event;
   }
+  for (size_t i(0); i<blob->NOutP(); ++i)
+    if (blob->OutParticle(i)->DecayBlob())
+      blob->OutParticle(i)->DecayBlob()
+          ->AddData("p_actual",
+                    new Blob_Data<Vec4D>(blob->OutParticle(i)->Momentum()));
   DEBUG_VAR(*blob);
 
   for (size_t ii(0); ii<daughters.size(); ++ii) {
