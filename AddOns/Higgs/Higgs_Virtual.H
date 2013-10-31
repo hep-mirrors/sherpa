@@ -19,9 +19,6 @@ namespace HIGGS {
 
     static MODEL::Model_Base *s_model;
 
-    double  htheta(const double &x);
-    Complex lnrat(const double &x,const double &y);
-
   public:
 
     Higgs_Virtual(const PHASIC::Process_Info& pi,

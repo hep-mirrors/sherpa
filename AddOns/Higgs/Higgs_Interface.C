@@ -95,7 +95,6 @@ bool Higgs_Interface::Initialize
   m_tau=Flavour(kf_tau).Yuk();
   m_W=Flavour(kf_Wplus).Mass();
   m_Z=Flavour(kf_Z).Mass();
-  double N_f=5.0;//Flavour(kf_jet).Size()/2;
   sumQsq = ( N_f>=6. ? 3. : 2.) * 4./9. + ( N_f>=5. ? 3. : 2.) * 1./9.;
   DEBUG_VAR(sumQsq<<" "<<1.0/9.0*(3.0+2.0*4.0)<<" "<<N_f);
   sumQ4 = 2. * 16./81. + 3. * 1./81.;

@@ -20,6 +20,7 @@ namespace HIGGS {
 
   const double N_c=3.0, C_A=3.0;
   const double C_F=4.0/3.0;
+  const double N_f=5.0;
 
   extern double sumQsq, sumQ4, sumQ6;
 

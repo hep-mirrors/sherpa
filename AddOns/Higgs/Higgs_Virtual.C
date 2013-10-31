@@ -7,6 +7,7 @@
 #include "Ahiggs.h"
 #include "Acont.h"
 #include "A_spin2.h"
+#include "qqgg_loop.C"
 
 Complex ggH(int h1, int h2);
 Complex Hgamgam(int h3, int h4);
@@ -47,16 +48,6 @@ Higgs_Virtual::~Higgs_Virtual()
   delete p_bs;
 }
 
-double Higgs_Virtual::htheta(const double &x)
-{
-  return x>0.0?1.0:0.0;
-}
-
-Complex Higgs_Virtual::lnrat(const double &x,const double &y)
-{
-  return Complex(log(dabs(x/y)),-M_PI*(htheta(-x)-htheta(-y)));
-}
-
 void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 {
   DEBUG_FUNC(this<<", m_proc = "<<m_proc);
@@ -73,118 +64,14 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
   Complex lo=0.0, nlo=0.0;
   Complex los=0.0, nlos=0.0;
   Complex lob=0.0, nlob=0.0;
-  if (m_spin!=0) {
-    Complex fs=A_prod_1l(rts,muR)/s*A_dec_1l(rts,muR)/s/
-      ((s-m_mh*m_mh)+I*m_mh*m_gh);
-    Complex fb=-4.0*sumQsq*alpha0*alpha_s(muR);
-    double qc=m_flavs[m_flavs[0].IsQuark()?0:1].Charge();
-    Complex ft=-2.0*(4.0*M_PI*alpha0)*sqr(qc);
-    for (int i(1);i>=-1;i-=2) {
-      for (int j(1);j>=-1;j-=2) {
-	for (int k(1);k>=-1;k-=2) {
-	  for (int l(1);l>=-1;l-=2) {
-	    Complex clos(0.0), cnlos(0.0);
-	    Complex clob(0.0), cnlob(0.0);
-	    Complex clo(0.0), cnlo(0.0);
-	    if (m_proc==1) {
-	      if (m_int&1) {
-		clos+=fs*ggXgamgam(i,j,k,l,m_kg);
-		clo+=fs*ggXgamgam(i,j,k,l,m_kg);
-	      }
-	      if (m_int&2) {
-		clob+=fb*gggamgam(i,j,k,l);
-		clo+=fb*gggamgam(i,j,k,l);
-	      }
-	    }
-	    if (m_proc==4) {
-	      if ((m_int&1) && i!=j) {
-		clos+=fs*qqbXgamgam(i,k,l,m_kq);
-		clo+=fs*qqbXgamgam(i,k,l,m_kq);
-	      }
-	      if ((m_int&4) && i!=j) {
-		clob+=ft*qqbgamgam_tree(i,k,l);
-		clo+=ft*qqbgamgam_tree(i,k,l);
-	      }
-	    }
-	    if (m_proc==5) {
-	      if ((m_int&1) && j!=i) {
-		clos+=fs*qbqXgamgam(j,k,l,m_kq);
-		clo+=fs*qbqXgamgam(j,k,l,m_kq);
-	      }
-	      if ((m_int&4) && j!=i) {
-		clob+=ft*qbqgamgam_tree(j,k,l);
-		clo+=ft*qbqgamgam_tree(j,k,l);;
-	      }
-	    }
-	    if (m_io==1) {
-	      los+=clos*std::conj(clos);
-	      nlos+=2.0*clos*std::conj(cnlos);
-	      lob+=clob*std::conj(clob);
-	      nlob+=2.0*clob*std::conj(cnlob);
-	    }
-	    if (m_io==2) {
-	      lob+=clob*std::conj(clob);
-	      nlob+=2.0*clob*std::conj(cnlob);
-	    }
-	    lo+=clo*std::conj(clo);
-	    nlo+=2.0*clo*std::conj(cnlo);
-	  }
-	}
-      }
-    }
-    if (m_io==1) {
-      lo-=los+lob;
-      nlo-=nlos+nlob;
-    }
-    if (m_io==2) {
-      lo-=lob;
-      nlo-=nlob;
-    }
-    if (m_proc==4 || m_proc==5) {
-      double lmur=log(m_mur2/s);
-      m_res.IR2()=-2.0*4.0/3.0;
-      m_res.IR()=-(3.0+2.0*lmur)*4.0/3.0;
-      m_res.Finite()=(nlo/lo).real()*4.0/3.0;
-      m_born=lo.real()/24.0;
-    }
-    else {
-      double b0=(11.0*3.0-2.0*(Flavour(kf_quark).Size()/2))/6.0;
-      double lmur=log(m_mur2/s);
-      m_res.IR2()=-2.0*3.0;
-      m_res.IR()=-2.0*(b0+3.0*lmur);
-      m_res.Finite()=(nlo/lo).real()+3.0*sqr(M_PI)-3.0*lmur*lmur;
-      m_born=lo.real()/64.0;
-    }
-    return;
-  }// end spin 2 case
-  if (m_proc>1) {
-    double deltar=1.0, cf=4.0/3.0;
-    double s12=(p[2]+p[3]).Abs2();
-    double s13=(p[2]-p[1]).Abs2();
-    double s23=(p[3]-p[1]).Abs2();
-    Complex l12=lnrat(-s12,mu_sq);
-    Complex l13=lnrat(-s13,mu_sq);
-    Complex l23=lnrat(-s23,mu_sq);
-    lo=s13/s23+s23/s13;
-    nlo=(-7.0-l12*l12)*lo
-      +l13*(s23-2.0*s12)/s13+l23*(s13-2.0*s12)/s23
-      +(s12*s12+s23*s23)/s13/s23*(sqr(l12-l23)+sqr(M_PI))
-      +(s12*s12+s13*s13)/s13/s23*(sqr(l12-l13)+sqr(M_PI))
-      -4.0*l12;
-    double lmur=log(m_mur2/s);
-    m_res.IR2()=-2.0*4.0/3.0;
-    m_res.IR()=-(3.0+2.0*lmur)*4.0/3.0;
-    m_res.Finite()=(nlo/lo).real()*4.0/3.0;
-    double ft=sqr(-(4.0*M_PI*alpha0)*sqr(m_flavs[0].Charge()))/3.0;
-    m_born=ft*lo.real();
-    return;
-  }
   Complex fslo=A_prod_1l(rts,muR)/s*A_dec_1l(rts,muR)/s/
     ((s-m_mh*m_mh)+I*m_mh*m_gh);
   Complex fsnlo=(A_prod_2l(rts,muR)/s*A_dec_1l(rts,muR)/s+
 		 A_prod_1l(rts,muR)/s*A_dec_2l(rts,muR)/s)/
     ((s-m_mh*m_mh)+I*m_mh*m_gh)/(alpha_s(muR)/(2.0*M_PI));
   Complex fblo=-4.0*sumQsq*alpha0*alpha_s(muR);
+  double qc=m_flavs[m_flavs[0].IsQuark()?0:1].Charge();
+  Complex ft=-2.0*(4.0*M_PI*alpha0)*sqr(qc);
   for (int i(1);i>=-1;i-=2) {
     for (int j(1);j>=-1;j-=2) {
       for (int k(1);k>=-1;k-=2) {
@@ -192,21 +79,57 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	  Complex clos(0.0), cnlos(0.0);
 	  Complex clob(0.0), cnlob(0.0);
 	  Complex clo(0.0), cnlo(0.0);
-	  if (m_int&1) {
-	    if (i==j && k==l) {
-	      clos+=fslo*s*s;
-	      clo+=fslo*s*s;
+	  if (m_proc==1) {
+	    if (m_int&1) {
+	      if (m_spin!=0) {
+		clos+=fslo*ggXgamgam(i,j,k,l,m_kg);
+		clo+=fslo*ggXgamgam(i,j,k,l,m_kg);
+	      }
+	      else {
+		if (i==j && k==l) {
+		  clos+=fslo*s*s;
+		  clo+=fslo*s*s;
+		}
+		if (i==j && k==l) {
+		  cnlos+=fsnlo*s*s;
+		  cnlo+=fsnlo*s*s;
+		}
+	      }
 	    }
-	    if (i==j && k==l) {
-	      cnlos+=fsnlo*s*s;
-	      cnlo+=fsnlo*s*s;
+	    if (m_int&2) {
+	      clob+=fblo*gggamgam1l(i,j,k,l);
+	      cnlob+=fblo*gggamgam2l(i,j,k,l);
+	      clo+=fblo*gggamgam1l(i,j,k,l);
+	      cnlo+=fblo*gggamgam2l(i,j,k,l);
 	    }
 	  }
-	  if (m_int&2) {
-	    clob+=fblo*gggamgam1l(i,j,k,l);
-	    cnlob+=fblo*gggamgam2l(i,j,k,l);
-	    clo+=fblo*gggamgam1l(i,j,k,l);
-	    cnlo+=fblo*gggamgam2l(i,j,k,l);
+	  if (m_proc==4) {
+	    if ((m_int&1) && i!=j) {
+	      if (m_spin!=0) {
+		clos+=fslo*qqbXgamgam(i,k,l,m_kq);
+		clo+=fslo*qqbXgamgam(i,k,l,m_kq);
+	      }
+	    }
+	    if ((m_int&4) && i!=j) {
+	      clob+=ft*qqbgamgam_tree(i,k,l);
+	      cnlob+=ft*qqbyy1l(i,k,l).f/C_F;
+	      clo+=ft*qqbgamgam_tree(i,k,l);
+	      cnlo+=ft*qqbyy1l(i,k,l).f/C_F;
+	    }
+	  }
+	  if (m_proc==5) {
+	    if ((m_int&1) && j!=i) {
+	      if (m_spin!=0) {
+		clos+=fslo*qbqXgamgam(j,k,l,m_kq);
+		clo+=fslo*qbqXgamgam(j,k,l,m_kq);
+	      }
+	    }
+	    if ((m_int&4) && j!=i) {
+	      clob+=ft*qbqgamgam_tree(j,k,l);
+	      cnlob+=ft*qbqyy1l(j,k,l).f/C_F;
+	      clo+=ft*qbqgamgam_tree(j,k,l);
+	      cnlo+=ft*qbqyy1l(j,k,l).f/C_F;
+	    }
 	  }
 	  if (m_io==1) {
 	    los+=clos*std::conj(clos);
@@ -224,10 +147,6 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
       }
     }
   }
-  double b0=(11.0*3.0-2.0*(Flavour(kf_quark).Size()/2))/6.0;
-  double lmur=log(m_mur2/s);
-  m_res.IR2()=-2.0*3.0;
-  m_res.IR()=-2.0*(b0+3.0*lmur);
   if (m_io==1) {
     lo-=los+lob;
     nlo-=nlos+nlob;
@@ -236,6 +155,18 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
     lo-=lob;
     nlo-=nlob;
   }
+  if (m_proc==4 || m_proc==5) {
+    double lmur=log(m_mur2/s);
+    m_res.IR2()=-2.0*4.0/3.0;
+    m_res.IR()=-(3.0+2.0*lmur)*4.0/3.0;
+    m_res.Finite()=(nlo/lo).real()*4.0/3.0;
+    m_born=lo.real()/24.0;
+    return;
+  }
+  double b0=(11.0*3.0-2.0*(Flavour(kf_quark).Size()/2))/6.0;
+  double lmur=log(m_mur2/s);
+  m_res.IR2()=-2.0*3.0;
+  m_res.IR()=-2.0*(b0+3.0*lmur);
   m_res.Finite()=(nlo/lo).real()+3.0*sqr(M_PI)-3.0*lmur*lmur;
   m_born=lo.real()/64.0;
 }
