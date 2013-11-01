@@ -188,7 +188,7 @@ desired simulation. The details for doing this properly are given in
 @ref{Parameters}. In this section, the focus is on the main
 issues for a successful operation of Sherpa. This is illustrated by
 discussing and referring to the parameter settings that come in the run card 
-@code{./Examples/V_plus_Jets/LHC_ZJets/Run.dat}, cf. @ref{LHC_ZJets_LOmerging}. 
+@code{./Examples/V_plus_Jets/LHC_ZJets/Run.dat}, cf. @ref{LHC_ZJets}.
 This is a simple run card
 created to show the basics of how to operate Sherpa. @strong{It should be 
 stressed that this run-card relies on many of Sherpa's default settings,
@@ -333,7 +333,7 @@ procedure to prepare for the generation of events.
 
 The setup file ( @code{Run.dat} ) provided in @code{./Examples/V_plus_Jets/LHC_ZJets/} 
 can be considered as a standard example to illustrate the generation of fully hadronised 
-events in Sherpa, cf. @ref{LHC_ZJets_LOmerging}. Such events will include effects from 
+events in Sherpa, cf. @ref{LHC_ZJets}. Such events will include effects from
 parton showering, hadronisation into primary hadrons and their subsequent 
 decays into stable hadrons. Moreover, the example chosen here nicely 
 demonstrates how Sherpa is used in the context of merging matrix elements 
@@ -593,7 +593,7 @@ efficient event generation.
 @b{Using AMEGIC++ for MEPS@@NLO}
 
 When using using AMEGIC++ for an MEPS@@NLO setup, e.g. 
-@ref{LHC_WJets_NLOmerging}, the code for each multiplicity is created 
+@ref{LHC_WJets}, the code for each multiplicity is created
 sequentially, one NLO-multiplicity at a time. Thus, when merging e.g. 
 W, W+jet and W+2jet at NLO, AMEGIC++ will first create the code for W 
 production and ask for it being compiled, then create the code for 

@@ -1,80 +1,25 @@
 @node LHC_WJets
 @subsection W+jets production
 
-@menu
-* LHC_W1jet_MCatNLO::
-* LHC_WJets_LOmerging::
-* LHC_WJets_NLOmerging::
-@end menu
+To change any of the following LHC examples to production at different
+collider energies or beam types, e.g. proton anti-proton at the Tevatron,
+simply change the beam settings to.
 
-To change any of the following LHC examples to production at the Tevatron 
-simply change the beam settings to
-@verbatim
-  BEAM_1  2212; BEAM_ENERGY_1 980;
-  BEAM_2 -2212; BEAM_ENERGY_2 980;
-@end verbatim
-
-
-@node LHC_W1jet_MCatNLO
-@subsubsection MC@@NLO setup for pp->W+jet+X
-
-This is an example setup for W+jet production at hadron colliders at 
-next-to-leading order precision matched to the parton shower using the 
-MC@@NLO prescription detailed in @mycite{Hoeche2011fd}. A few things to 
-note are detailed below the example. It can be straight forwardly 
-modified to the production of a W in association with any number of jets 
-by simply adjusting the process and scale definitions as well as the 
-matrix element cuts in the selector.
-
-@example
-@smallformat
-@verbatiminclude Examples/V_plus_Jets/LHC_W1jet_MCatNLO/Run.dat
-@end smallformat
-@end example
-
-Things to notice:
-@itemize
-@item Any setting with the exception of the process and selector definitions 
-can be given in the @code{(run)@{...@}(run)} section of the run card.
-@item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for 
-easy scale variations. Tags are replaced throughout the entire run card by 
-their defined value, see @ref{Tags}.
-@item Both the factorisation and renormalisation scales are set to the above 
-defined scale factors times the transverse mass of the lepton-neutrino pair, 
-see @ref{SCALES} for details on scale setters.
-@item The resummation scale, which sets the maximum scale of the additional 
-emission to be resummed by the parton shower, is set to the above defined 
-resummation scale factor times the transverse momentum of the jet present 
-at Born level.
-@item The generator to provide the one-loop matrix element can be set through 
-@code{LOOPGEN} tag. For possible choices see TODO.
-@item tau leptons are set massive in order to exclude them from the massless 
-lepton container (@code{90}).
-@item The @code{NLO_QCD_Mode} is set to @code{MC@@NLO}.
-@item The selector, implementing ME-level cuts, requires at least one jet 
-and prevents possible numerical instabilities in the PDFs when the 
-lepton-neutrino mass goes to zero.
-@end itemize
-
-
-
-@node LHC_WJets_LOmerging
-@subsubsection MEPS and MENLOPS setup for pp->W+jets
 
 This is an example setup for inclusive W production at hadron colliders. 
 The inclusive process is calculated at next-to-leading order accuracy matched 
 to the parton shower using the MC@@NLO prescription detailed in 
-@mycite{Hoeche2011fd}. Higher jet multiplicities, calculated each at leading 
-order, are merged into the inclusive sample using the MENLOPS methods described 
-in @mycite{Gehrmann2012yg}, @mycite{Hoeche2010kg} and @mycite{Hoeche2009rj}. 
+@mycite{Hoeche2011fd}. The next few higher jet multiplicities, calculated at 
+next-to-leading order as well, are merged into the inclusive sample using 
+the MEPS@@NLO method - an extension of the CKKW method to NLO - as described 
+in @mycite{Hoeche2012yf} and @mycite{Gehrmann2012yg}. Finally, even higher 
+multiplicities, calculated at leading order, are merged on top of that.
 A few things to note are detailed below the example. The example can be 
-converted into a simple MEPS-type leading order merging (CKKW 
-@mycite{Catani2001cc}, @mycite{Krauss2002up} and @mycite{Hoeche2009rj}) 
-example by setting @code{LJET:=0}. This setup provides the option to
-use a custom jet criterion (see @ref{JET_CRITERION}), which is defined 
-in @code{My_JetCriterion.C}, and which is based on jets identified by 
-@uref{http://www.fastjet.fr,,FastJet}. The corresponding plugin is 
-compiled using @uref{http://www.scons.org/,,scons}.
+converted a simple MENLOPS setup by setting @code{LJET:=2}, or an MEPS 
+setup by setting @code{LJET:=0}, to study the effect of incorporating 
+higher-order matrix elements. The number of additional LO jets can be varied
+through @code{NJET}. Similarly, the merging cut can be changed through
+@code{QCUT}.
 
 @example
 @smallformat
@@ -94,74 +39,26 @@ scales are set to the above defined scale factors times the value determined
 by the METS-clustering algorithm.
 @item Tags (@code{LJET}, @code{NJET} and @code{QCUT}) have been introduced 
 to be used in the process setup, defining the multiplicity of the MC@@NLO 
-subprocess, the maximal number of extra jets, and the merging cut.
-@item The @code{LOOPGEN} tag is used to name the provider of the one-loop 
-matrix element. For the simple case here Sherpa can provide it internally.
-@item tau leptons are set massive in order to exclude them from the massless 
-lepton container (@code{90}).
-@item As both Comix and Amegic are specified as matrix element generators 
-to be used, Amegic has to be specified to be used for all MC@@NLO 
-multiplicities using @code{ME_Generator Amegic @{LJET@}}.
-@item @code{Enhance_Factors} have been introduced to increase the statistical 
-quality for processes of higher multiplicity, cf. @ref{Enhance_Factor}.
-@end itemize
-
-
-
-@node LHC_WJets_NLOmerging
-@subsubsection MEPS@@NLO setup for pp->W+jets
-
-This is an example setup for inclusive W production at hadron colliders. 
-The inclusive process is calculated at next-to-leading order accuracy matched 
-to the parton shower using the MC@@NLO prescription detailed in 
-@mycite{Hoeche2011fd}. The next few higher jet multiplicities, calculated at 
-next-to-leading order as well, are merged into the inclusive sample using 
-the MEPS@@NLO method - an extension of the CKKW method to NLO - as described 
-in @mycite{Hoeche2012yf} and @mycite{Gehrmann2012yg}. Finally, even higher 
-multiplicities, calculated at leading order, are merged on top of that.
-A few things to note are detailed below the example. The example can be 
-converted a simple MENLOPS setup by setting @code{LJET:=2}, or an MEPS 
-setup by setting @code{LJET:=0}, to study the effect of incorporating 
-higher-order matrix elements.
-
-@example
-@smallformat
-@verbatiminclude Examples/V_plus_Jets/LHC_WJets/Run.NLO.dat
-@end smallformat
-@end example
-
-Things to notice:
-@itemize
-@item Any setting with the exception of the process and selector definitions 
-can be given in the @code{(run)@{...@}(run)} section of the run card.
-@item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for 
-easy scale variations. Tags are replaced throughout the entire run card by 
-their defined value, see @ref{Tags}.
-@item All scales, i.e. the factorisation, renormalisation and resummation 
-scales are set to the above defined scale factors times the value determined 
-by the METS-clustering algorithm.
-@item Tags (@code{LJET}, @code{NJET} and @code{QCUT}) have been introduced 
-to be used in the process setup, defining the multiplicity of the MC@@NLO 
 subprocesses, the maximal number of extra jets, and the merging cut.
-@item The @code{LOOPGEN<i>} tag is used to name the providers of the one-loop 
+@item The @code{LOOPGEN} tag is used to name the provider of the one-loop
 matrix elements for the respective multiplicities. For the simplemost case 
 here Sherpa can provide it internally.
-@item Enabling the @code{EXCLUSIVE_CLUSTER_MODE} for the METS-clustering 
-algorithm ensures that only QCD-splittings are inverted, such that the 
-production of a lepton-neutrino pair is always identified as the core 
-process.
-@item The handling of scale factors in the shower differs from the best LO 
-order setup.
 @item tau leptons are set massive in order to exclude them from the massless 
 lepton container (@code{90}).
 @item As both Comix and Amegic are specified as matrix element generators 
 to be used, Amegic has to be specified to be used for all MC@@NLO 
 multiplicities using @code{ME_Generator Amegic @{LJET@}}.
-@item @code{Enhance_Factors} have been introduced to increase the statistical 
-quality for processes of higher multiplicity, cf. @ref{Enhance_Factor}.
-@item @code{RS_Enhance_Factors} have been introduced to increase the 
-statistical quality for the non-resummed parts of the MC@@NLO processes the
-respective multiplicity, cf. @ref{RS_Enhance_Factor}.
+@item The @code{LOOSE_METS} scale setter, a simplified version of the
+@code{METS} scale setter, is used for the highest multiplicities (if
+@code{NJET} is set to @code{5} or @code{6}) to speed up the calculation.
 @end itemize
 
+The jet criterion used to define the matrix element multiplicity in the
+context of multijet merging can be supplied by the user. As an example
+the source code file @code{./Examples/V_plus_Jets/LHC_WJets/My_JetCriterion.C}
+provides such an alternative jet criterion. It can be compiled using
+@code{SCons} via executing @code{scons} in that directory (edit the
+@code{SConstruct} file accordingly). The newly created library is linked
+at run time using the @code{SHERPA_LDADD} flag.
+The new jet criterion is then evoked by @code{JET_CRITERION}.
 

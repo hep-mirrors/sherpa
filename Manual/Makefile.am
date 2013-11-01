@@ -32,14 +32,14 @@ Sherpa_TEXINFOS = \
 	ISR.texi \
 	LHC_HInt.texi \
 	LHC_HJets.texi \
-	LHC_TTBar.texi \
-	LHC_HTTBar.texi \
-	LHC_TTW.texi \
 	LHC_Jets.texi \
 	LEP_Jets.texi \
+	LHC_TTBar.texi \
+	LHC_TTH.texi \
+	LHC_TTW.texi \
+	LHC_Vbb.texi \
 	LHC_WJets.texi \
 	LHC_ZJets.texi \
-	LHC_Wbb.texi \
 	NLO_NTuples.texi \
 	Macros.texi \
 	Merging.texi \

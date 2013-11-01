@@ -25,11 +25,12 @@ of the main features of these examples.
 * LHC_WJets::
 * LHC_ZJets::
 * LHC_Wbb::
+* LHC_Zbb::
 @end menu
 
 @include LHC_WJets.texi
 @include LHC_ZJets.texi
-@include LHC_Wbb.texi
+@include LHC_Vbb.texi
 
 
 @node Jets
@@ -54,7 +55,7 @@ of the main features of these examples.
 
 @include LHC_HInt.texi
 @include LHC_HJets.texi
-@include LHC_HTTBar.texi
+@include LHC_TTH.texi
 
 
 @node TopsJets

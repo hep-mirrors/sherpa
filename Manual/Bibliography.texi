@@ -149,6 +149,7 @@
 @mybibitem{Alioli2011as,Ali11a, S. Alioli and S. O. Moch and P. Uwer,Hadronic top-quark pair-production with one jet and parton showering,JHEP,1201,(2012),137,[arXiv:1110.5251],arXiv:1110.5251}
 @mybibitem{Alioli2012tp,Ali12, S. Alioli and J. R. Andersen and C. Oleari and E. Re and J. M. Smillie,Probing higher-order corrections in dijet production at the LHC,Phys.Rev.,D85,(2012),114034,[arXiv:1202.1475],arXiv:1202.1475}
 @mybibitem{Alioli2012,Ali12a, S. Alioli and S. O. Moch and P. Uwer,Hadronic top-quark pair-production with one jet and parton showering,JHEP,1201,(2012),137,[arXiv:1110.5251],arXiv:1110.5251}
+@mybibitem{Alioli2013nda,Ali13, S. Alioli and others,Update of the Binoth Les Houches Accord for a standard interface between Monte Carlo tools and one-loop programs,,,,,arXiv:1308.3462}
 @mybibitem{Alitti1990cn,Ali90, J. Alitti and others,Measurement of the transverse momentum distributions of W and Z bosons at the CERN barpp collider,Z. Phys.,C47,(1990),523-532,,F+J+Z. Phys.%2CC47%2C523}
 @mybibitem{Allanach2001kg,All01, B. C. Allanach,SOFTSUSY: A program for calculating supersymmetric spectra,Comput. Phys. Commun.,143,(2002),305-331,[hep-ph/0104145],hep-ph/0104145}
 @mybibitem{Allanach2002nj,All02, B. C. Allanach and others,The Snowmass Points and Slopes: benchmarks for SUSY searches,Eur. Phys. J.,C25,(2002),113-123,[hep-ph/0202233],hep-ph/0202233}

@@ -22,3 +22,27 @@ Things to notice:
 @item Four-flavour PDF's are used to comply with the calculational setup.
 @end itemize
  
+
+@node LHC_Zbb
+@subsection Zbb production
+
+@example
+@smallformat
+@verbatiminclude Examples/V_plus_Bs/LHC_Zbb/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item The matrix elements are interfaced via the
+  Binoth Les Houches interface proposal @mycite{Binoth2010xt},
+  @mycite{Alioli2013nda}, @ref{External one-loop ME}.
+@item The Z-boson is stable in the hard matrix elements.
+  It is decayed using the internal decay module, indicated by
+  the settings @option{HARD_DECAYS 1} and @option{STABLE[24] 0}.
+@item @uref{http://www.fastjet.fr/,,FastJet} is used to regularize the hard cross section.
+  Note that Sherpa must be configured with option @option{--enable-fastjet}, see
+  @ref{Fastjet selector}. We require two b-jets, indicated by the @option{2}
+  at the end of the @option{FastjetFinder} options.
+@item Four-flavour PDF's are used to comply with the calculational setup.
+@end itemize

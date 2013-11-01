@@ -5,4 +5,4 @@ vars.Add(PathVariable('fastjet','path to fastjet','../../..',PathVariable.PathIs
 env = Environment(variables=vars,CPPPATH=['${sherpa}','${fastjet}'])
 vars.Save('.SConstruct',env)
 
-env.SharedLibrary('MyStuff', ['My_JetCriterion.C'])
+env.SharedLibrary('MyJetCriterion', ['My_JetCriterion.C'])

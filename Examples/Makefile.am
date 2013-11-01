@@ -15,19 +15,16 @@ nobase_dist_examples_DATA         =	\
 		FixedOrder_NLO/NTuples/Reweight.B-like.dat \
 		FixedOrder_NLO/NTuples/Run.R-like.dat \
 		FixedOrder_NLO/NTuples/Reweight.R-like.dat \
-		V_plus_Jets/LHC_W1jet_MCatNLO/Run.dat \
 		V_plus_Jets/LHC_WJets/Run.dat \
-		V_plus_Jets/LHC_WJets/Run.NLO.dat \
 		V_plus_Jets/LHC_WJets/My_JetCriterion.C \
 		V_plus_Jets/LHC_WJets/SConstruct \
-		V_plus_Jets/LHC_Z1jet_MCatNLO_LHOLE/Run.dat \
 		V_plus_Jets/LHC_ZJets/Run.dat \
-		V_plus_Jets/LHC_ZJets/Run.NLO.dat \
 		V_plus_Bs/LHC_Wbb/Wbb_Virtual.f \
 		V_plus_Bs/LHC_Wbb/Wbb_Interface.C \
 		V_plus_Bs/LHC_Wbb/SConstruct \
 		V_plus_Bs/LHC_Wbb/Run.dat \
 		V_plus_Bs/LHC_Wbb/Analysis.dat \
+		V_plus_Bs/LHC_Zbb/Run.dat \
 		Jets_at_HadronColliders/LHC_Jets_MCatNLO/Run.dat \
 		Jets_at_HadronColliders/LHC_Jets_MEPS/Run.dat \
 		Jets_at_LeptonColliders/LEP_Jets/Run.dat \

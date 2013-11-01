@@ -22,7 +22,7 @@ regularization parameter epsilon up to the order epsilon^0).
 
 An example setup for interfacing such an external one-loop code, following 
 the Binoth Les Houches interface proposal @mycite{Binoth2010xt} of the 
-2009 Les Houches workshop, is provided in @ref{LHC_Z1jet_MCatNLO_LHOLE}. To use 
+2009 Les Houches workshop, is provided in @ref{LHC_Zbb}. To use
 the LH-OLE interface, Sherpa has to be configured with @code{--enable-lhole}.
 
 The interface:
@@ -70,7 +70,7 @@ The function @code{OLP_EvalSubProcess(...)} will be called many times
 for different subprocesses and momentum configurations.
 @end itemize
 
-The setup (cf. example @ref{LHC_Z1jet_MCatNLO_LHOLE}):
+The setup (cf. example @ref{LHC_Zbb}):
 @itemize @bullet
 @item The line @code{Loop_Generator LHOLE} tells the code to use
 the interface for computing one-loop matrix elements.
