@@ -153,6 +153,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
       mfslep.push_back(new Particle(-1,(*it)->Flav(),(*it)->Momentum(),'F'));
       (*mfslep.rbegin())->SetNumber(0);
       (*mfslep.rbegin())->SetOriginalPart(*it);
+      (*mfslep.rbegin())->SetFinalMass((*it)->FinalMass());
       ++it;
     }
   }
