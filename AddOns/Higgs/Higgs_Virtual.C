@@ -107,7 +107,9 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	    if ((m_int&1) && i!=j) {
 	      if (m_spin!=0) {
 		clos+=fslo*qqbXgamgam(i,k,l,m_kq);
+		cnlos+=fslo*qqbXgamgam1l(i,k,l,m_kq);
 		clo+=fslo*qqbXgamgam(i,k,l,m_kq);
+		cnlo+=fslo*qqbXgamgam1l(i,k,l,m_kq);
 	      }
 	    }
 	    if ((m_int&4) && i!=j) {
@@ -121,7 +123,9 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	    if ((m_int&1) && j!=i) {
 	      if (m_spin!=0) {
 		clos+=fslo*qbqXgamgam(j,k,l,m_kq);
+		cnlos+=fslo*qbqXgamgam1l(j,k,l,m_kq);
 		clo+=fslo*qbqXgamgam(j,k,l,m_kq);
+		cnlo+=fslo*qbqXgamgam1l(j,k,l,m_kq);
 	      }
 	    }
 	    if ((m_int&4) && j!=i) {

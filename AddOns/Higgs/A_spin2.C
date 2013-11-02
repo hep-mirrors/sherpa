@@ -1,3 +1,8 @@
+
+#include "ATOOLS/Math/MathTools.H"
+
+using namespace ATOOLS;
+
 /* =============================================================
    The resonant gg -> X -> gamma gamma  amplitudes, where X is spin-2 graviton,
    written in spinor products with phase given by specific definition
@@ -142,3 +147,9 @@ Complex qbqXgamgamg(int h2, int h3, int h4, int h5, double kg=1., double kq=1.) 
 Complex qgXgamgamq(int h1, int h2, int h3, int h4, double kg=1., double kq=1.) { return qqgXgamgam_gen(1,h1,5,2,h2,3,h3,4,h4,kg,kq); }
 // g(1) q(2) -> gam(3) gam(4) q(5)
 Complex gqXgamgamq(int h1, int h2, int h3, int h4, double kg=1., double kq=1.) { return qqgXgamgam_gen(2,h2,5,1,h1,3,h3,4,h4,kg,kq); }
+
+// q(1) qbar(2) -> gam(3) gam(4)
+Complex qqbXgamgam1l(int h1, int h3, int h4, double kq=1.) { return qqXgamgam_gen(1,h1,2,3,h3,4,h4,kq)*0.5*(sqr(M_PI)-sqr(log(mu_sq/sij(1,2)))); }
+// qbar(1) q(2) -> gam(3) gam(4)
+Complex qbqXgamgam1l(int h2, int h3, int h4, double kq=1.) { return qqXgamgam_gen(2,h2,1,3,h3,4,h4,kq)*0.5*(sqr(M_PI)-sqr(log(mu_sq/sij(1,2)))); }
+
