@@ -85,8 +85,8 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	  if (m_proc==1) {
 	    if (m_int&1) {
 	      if (m_spin!=0) {
-		clos+=fslo*ggXgamgam(i,j,k,l,m_kg);
-		clo+=fslo*ggXgamgam(i,j,k,l,m_kg);
+		Complex met=fslo*ggXgamgam(i,j,k,l,m_kg);
+		clos+=met; clo+=met;
 	      }
 	      else {
 		if (i==j && k==l) {
@@ -100,42 +100,42 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	      }
 	    }
 	    if (m_int&2) {
-	      clob+=fblo*gggamgam1l(i,j,k,l);
-	      cnlob+=fblo*gggamgam2l(i,j,k,l);
-	      clo+=fblo*gggamgam1l(i,j,k,l);
-	      cnlo+=fblo*gggamgam2l(i,j,k,l);
+	      Complex me1l=fblo*gggamgam1l(i,j,k,l);
+	      Complex me2l=fblo*gggamgam2l(i,j,k,l);
+	      clob+=me1l; clo+=me1l;
+	      cnlob+=me2l; cnlo+=me2l;
 	    }
 	  }
 	  if (m_proc==4) {
 	    if ((m_int&1) && i!=j) {
 	      if (m_spin!=0) {
-		clos+=fslo*qqbXgamgam(i,k,l,m_kq);
-		cnlos+=fslo*qqbXgamgam1l(i,k,l,m_kq);
-		clo+=fslo*qqbXgamgam(i,k,l,m_kq);
-		cnlo+=fslo*qqbXgamgam1l(i,k,l,m_kq);
+		Complex met=fslo*qqbXgamgam(i,k,l,m_kq);
+		Complex me1l=fslo*qqbXgamgam1l(i,k,l,m_kq);
+		clos+=met; clo+=met;
+		cnlos+=me1l; cnlo+=me1l;
 	      }
 	    }
 	    if ((m_int&4) && i!=j) {
-	      clob+=ft*qqbgamgam_tree(i,k,l);
-	      cnlob+=ft*qqbyy1l(i,k,l).f/C_F;
-	      clo+=ft*qqbgamgam_tree(i,k,l);
-	      cnlo+=ft*qqbyy1l(i,k,l).f/C_F;
+	      Complex met=ft*qqbgamgam_tree(i,k,l);
+	      Complex me1l=ft*qqbyy1l(i,k,l).f/C_F;
+	      clob+=met; clo+=met;
+	      cnlob+=me1l; cnlo+=me1l;
 	    }
 	  }
 	  if (m_proc==5) {
 	    if ((m_int&1) && j!=i) {
 	      if (m_spin!=0) {
-		clos+=fslo*qbqXgamgam(j,k,l,m_kq);
-		cnlos+=fslo*qbqXgamgam1l(j,k,l,m_kq);
-		clo+=fslo*qbqXgamgam(j,k,l,m_kq);
-		cnlo+=fslo*qbqXgamgam1l(j,k,l,m_kq);
+		Complex met=fslo*qbqXgamgam(j,k,l,m_kq);
+		Complex me1l=fslo*qbqXgamgam1l(j,k,l,m_kq);
+		clos+=met; clo+=met;
+		cnlos+=me1l; cnlo+=me1l;
 	      }
 	    }
 	    if ((m_int&4) && j!=i) {
-	      clob+=ft*qbqgamgam_tree(j,k,l);
-	      cnlob+=ft*qbqyy1l(j,k,l).f/C_F;
-	      clo+=ft*qbqgamgam_tree(j,k,l);
-	      cnlo+=ft*qbqyy1l(j,k,l).f/C_F;
+	      Complex met=ft*qbqgamgam_tree(j,k,l);
+	      Complex me1l=ft*qbqyy1l(j,k,l).f/C_F;
+	      clob+=met; clo+=met;
+	      cnlob+=me1l; cnlo+=me1l;
 	    }
 	  }
 	  if (m_io==1) {
