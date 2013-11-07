@@ -83,7 +83,7 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	    if (m_int&1) {
 	      if (m_spin!=0) {
 		Complex met=fslo*ggXgamgam(i,j,k,l,m_kg);
-		Complex me1l=fslo*ggXgamgam1l(i,j,k,l,m_kq,m_kg);
+		Complex me1l=fslo*ggXgamgam1l(i,j,k,l,muR,m_kg,m_kq);
 		clos+=met; clo+=met;
 		cnlos+=me1l; cnlo+=me1l;
 	      }
@@ -109,7 +109,7 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	    if ((m_int&1) && i!=j) {
 	      if (m_spin!=0) {
 		Complex met=fslo*qqbXgamgam(i,k,l,m_kq);
-		Complex me1l=fslo*qqbXgamgam1l(i,k,l,m_kq,m_kg);
+		Complex me1l=fslo*qqbXgamgam1l(i,k,l,muR,m_kg,m_kq);
 		clos+=met; clo+=met;
 		cnlos+=me1l; cnlo+=me1l;
 	      }
@@ -125,7 +125,7 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	    if ((m_int&1) && j!=i) {
 	      if (m_spin!=0) {
 		Complex met=fslo*qbqXgamgam(j,k,l,m_kq);
-		Complex me1l=fslo*qbqXgamgam1l(j,k,l,m_kq,m_kg);
+		Complex me1l=fslo*qbqXgamgam1l(j,k,l,muR,m_kg,m_kq);
 		clos+=met; clo+=met;
 		cnlos+=me1l; cnlo+=me1l;
 	      }

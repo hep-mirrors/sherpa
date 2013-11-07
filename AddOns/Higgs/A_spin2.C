@@ -148,14 +148,35 @@ Complex qgXgamgamq(int h1, int h2, int h3, int h4, double kg=1., double kq=1.) {
 // g(1) q(2) -> gam(3) gam(4) q(5)
 Complex gqXgamgamq(int h1, int h2, int h3, int h4, double kg=1., double kq=1.) { return qqgXgamgam_gen(2,h2,5,1,h1,3,h3,4,h4,kg,kq); }
 
-// g(1) g(2) -> gam(3) gam(4) g(5) 2-loop
-Complex ggXgamgam1l(int h1, int h2, int h3, int h4, double kq=1., double kg=1.) { // I*PI comes with ln(muR^2/s12) which is dropped as it's cancelled by kg running
-  return ggXgamgam_gen(1,h1,2,h2,3,h3,4,h4,1.0) * ( -1.0/4.0*(sij(1,2)>0.0?I*PI:1.)*(8.0/3.0*N_f)*(kq-kg) ); }
 
-// q(1) qbar(2) -> gam(3) gam(4) 2-loop
-Complex qqbXgamgam1l(int h1, int h3, int h4, double kq=1., double kg=1.) { // I*PI comes with ln(muR^2/s12) which is dropped as it's cancelled by kq running
-  return qqXgamgam_gen(1,h1,2,3,h3,4,h4,1.0) * ( -1.0/4.0*(sij(1,2)>0.0?I*PI:1.)*(16.0/3.0*4.0/3.0)*(kg-kq) ); }
-// qbar(1) q(2) -> gam(3) gam(4) 2-loop
-Complex qbqXgamgam1l(int h2, int h3, int h4, double kq=1., double kg=1.) { // I*PI comes with ln(muR^2/s12) which is dropped as it's cancelled by kq running
-  return qqXgamgam_gen(2,h2,1,3,h3,4,h4,1.0) * ( -1.0/4.0*(sij(1,2)>0.0?I*PI:1.)*(16.0/3.0*4.0/3.0)*(kg-kq) ); }
+double kgr(double muR, double kg=1., double kq=1., double muR0=0.) {
+  if (kq==kg) return kg;
+  double lmu2=(muR0<=0.)?2.*log(Flavour(kf_h0).Mass()/muR):2.*log(muR0/muR);
+  double Z1g=alpha_s(muR)/8./PI*8.0/3.0*N_f/2.0;
+  double Z1q=alpha_s(muR)/8./PI*16.0/3.0*4.0/3.0;
+  return (exp((Z1g+Z1q)*lmu2)*(kg-kq)*Z1g+kq*Z1g+kg*Z1q)/(Z1g+Z1q);
+}
 
+double kqr(double muR, double kg=1., double kq=1., double muR0=0.) {
+  if (kq==kg) return kq;
+  double lmu2=(muR0<=0.)?2.*log(Flavour(kf_h0).Mass()/muR):2.*log(muR0/muR);
+  double Z1g=alpha_s(muR)/8./PI*8.0/3.0*N_f/2.0;
+  double Z1q=alpha_s(muR)/8./PI*16.0/3.0*4.0/3.0;
+  return (exp((Z1g+Z1q)*lmu2)*(kq-kg)*Z1g+kq*Z1g+kg*Z1q)/(Z1g+Z1q);
+}
+
+// g(1) g(2) -> gam(3) gam(4) 1-loop
+Complex ggXgamgam1l(int h1, int h2, int h3, int h4, double muR, double kg=1., double kq=1.) {
+  if (kq==kg) return 0.;
+  Complex L12 = log(muR*muR/sij(1,2))+(sij(1,2)>0.0?I*PI:0.);
+  return ggXgamgam(h1,h2,h3,h4,kg) * ( kqr(muR,kg,kq)/kq * (1.0-1.0/4.0*L12*(8.0/3.0*N_f/2.0)*(kq-kg)) - 1. ); }
+// q(1) qbar(2) -> gam(3) gam(4) 1-loop
+Complex qqbXgamgam1l(int h1, int h3, int h4, double muR, double kg=1., double kq=1.) {
+  if (kq==kg) return 0.;
+  Complex L12 = log(muR*muR/sij(1,2))+(sij(1,2)>0.0?I*PI:0.);
+  return qqbXgamgam(h1,h3,h4,kq) * ( kqr(muR,kg,kq)/kq * (1.0-1.0/4.0*L12*(16.0/3.0*4.0/3.0)*(kq-kg)) - 1. ); }
+// qbar(1) q(2) -> gam(3) gam(4) 1-loop
+Complex qbqXgamgam1l(int h2, int h3, int h4, double muR, double kg=1., double kq=1.) {
+  if (kq==kg) return 0.;
+  Complex L12 = log(muR*muR/sij(1,2))+(sij(1,2)>0.0?I*PI:0.);
+  return qbqXgamgam(h2,h3,h4,kq) * ( kqr(muR,kg,kq)/kq * (1.0-1.0/4.0*L12*(16.0/3.0*4.0/3.0)*(kq-kg)) - 1. ); }
