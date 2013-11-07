@@ -11,7 +11,8 @@
 #include "ggggg.C"
 
 // ====== FIVE-POINT AMPLITUDES ======
-#include "qqggg.C"
+#include "qqgg_loop.C"
+#include "qqggg_loop.C"
 
 // ====== TREE AMPLITUDES ======
 #include "qqgg_tree.C"

@@ -32,15 +32,18 @@ libSherpaHiggs_la_SOURCES = \
 HIGGS_EXTRA_DIST = \
         gggg.C \
         ggggg.C \
-        qqggg.C \
+        qqgg_loop.C \
+        qqggg_loop.C \
         gggamgam1l.C \
         gggamgam2l.C \
         qqgg_tree.C \
         qqggg_tree.C \
         A_higgs.C \
+        A_higgs.h \
         A_spin2.C \
         A_spin2.h \
         A_cont.C \
+        A_cont.h \
         Ahiggs.C \
         Ahiggs.h \
         Acont.C \

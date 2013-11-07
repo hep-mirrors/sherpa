@@ -5,13 +5,10 @@
 
 #include "Wrappers.H"
 #include "Ahiggs.h"
-#include "Acont.h"
+#include "A_higgs.h"
 #include "A_spin2.h"
-#include "qqgg_loop.C"
-
-Complex ggH(int h1, int h2);
-Complex Hgamgam(int h3, int h4);
-Complex gggamgam(int h1, int h2, int h3, int h4);
+#include "Acont.h"
+#include "A_cont.h"
 
 using namespace HIGGS;
 using namespace AMEGIC;
@@ -86,7 +83,9 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	    if (m_int&1) {
 	      if (m_spin!=0) {
 		Complex met=fslo*ggXgamgam(i,j,k,l,m_kg);
+		Complex me1l=fslo*ggXgamgam1l(i,j,k,l,m_kq,m_kg);
 		clos+=met; clo+=met;
+		cnlos+=me1l; cnlo+=me1l;
 	      }
 	      else {
 		if (i==j && k==l) {
@@ -110,7 +109,7 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	    if ((m_int&1) && i!=j) {
 	      if (m_spin!=0) {
 		Complex met=fslo*qqbXgamgam(i,k,l,m_kq);
-		Complex me1l=fslo*qqbXgamgam1l(i,k,l,m_kq);
+		Complex me1l=fslo*qqbXgamgam1l(i,k,l,m_kq,m_kg);
 		clos+=met; clo+=met;
 		cnlos+=me1l; cnlo+=me1l;
 	      }
@@ -126,7 +125,7 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	    if ((m_int&1) && j!=i) {
 	      if (m_spin!=0) {
 		Complex met=fslo*qbqXgamgam(j,k,l,m_kq);
-		Complex me1l=fslo*qbqXgamgam1l(j,k,l,m_kq);
+		Complex me1l=fslo*qbqXgamgam1l(j,k,l,m_kq,m_kg);
 		clos+=met; clo+=met;
 		cnlos+=me1l; cnlo+=me1l;
 	      }
@@ -166,7 +165,8 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
     double lmur=log(m_mur2/s);
     m_res.IR2()=-2.0*4.0/3.0;
     m_res.IR()=-(3.0+2.0*lmur)*4.0/3.0;
-    m_res.Finite()=(nlo/lo).real()*4.0/3.0;
+    // extra single power of lmur term in quark case compared the gluon case
+    m_res.Finite()=(nlo/lo).real()*4.0/3.0+(sqr(M_PI)-lmur*lmur-3.*lmur)*4.0/3.0;
     m_born=lo.real()/24.0;
     return;
   }
@@ -174,6 +174,7 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
   double lmur=log(m_mur2/s);
   m_res.IR2()=-2.0*3.0;
   m_res.IR()=-2.0*(b0+3.0*lmur);
+  // no extra single power of lmur term in gluon case compared the quark case
   m_res.Finite()=(nlo/lo).real()+3.0*sqr(M_PI)-3.0*lmur*lmur;
   m_born=lo.real()/64.0;
 }
