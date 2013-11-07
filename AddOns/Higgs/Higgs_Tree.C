@@ -84,6 +84,8 @@ double Higgs_Tree::Calc(const Vec4D_Vector &p)
 		 <<alpha0<<", alpha_s = "<<alpha_s(muR)<<"\n";
   for (size_t i(0);i<p.size();++i)
     msg_Debugging()<<"p["<<i<<"]="<<p[i]<<"\n";
+  double m_kgr=kgr(muR,m_kg,m_kq,m_mh);
+  double m_kqr=kqr(muR,m_kg,m_kq,m_mh);
   s_bs=p_bs;
   p_bs->Setk0(11);
   p_bs->CalcEtaMu((Vec4D*)&p.front());
@@ -112,7 +114,7 @@ double Higgs_Tree::Calc(const Vec4D_Vector &p)
 	      if (m_mode==1) {
 		if (m_int&1) {
 		  if (m_spin==0) m_ress[n]+=fs*sqrt(3.0)*ggHg(i,j,m)*Hgamgam(k,l);
-		  else m_ress[n]+=fs*sqrt(3.0)*ggXgamgamg(i,j,k,l,m,m_kg);
+		  else m_ress[n]+=fs*sqrt(3.0)*ggXgamgamg(i,j,k,l,m,m_kgr);
 		}
 		// p_lab[0]=-Vec4D(-3066.22278407256,0,0,-3066.22278407256);
 		// p_lab[1]=-Vec4D(-3392.650805216435,0,0,3392.650805216435);
@@ -136,7 +138,7 @@ double Higgs_Tree::Calc(const Vec4D_Vector &p)
 	      if (m_mode==2) {
 		if ((m_int&1) && j!=m) {
 		  if (m_spin==0) m_ress[n]+=fs*gqHq(i,j)*Hgamgam(k,l)/sqrt(2.0);
-		  else m_ress[n]+=fs*gqXgamgamq(i,j,k,l,m_kg,m_kq)/sqrt(2.0);
+		  else m_ress[n]+=fs*gqXgamgamq(i,j,k,l,m_kgr,m_kqr)/sqrt(2.0);
 		}
 		if ((m_int&2) && j!=m) m_resb[n]+=fb*gqgamgamq(i,j,k,l)/sqrt(2.0);
 		if ((m_int&4) && j!=m) m_rest[n]+=ft*gqgamgamq_tree(i,j,k,l)/sqrt(2.0);
@@ -144,7 +146,7 @@ double Higgs_Tree::Calc(const Vec4D_Vector &p)
 	      if (m_mode==3) {
 		if ((m_int&1) && i!=m) {
 		  if (m_spin==0) m_ress[n]+=fs*qgHq(i,j)*Hgamgam(k,l)/sqrt(2.0);
-		  else m_ress[n]+=fs*qgXgamgamq(i,j,k,l,m_kg,m_kq)/sqrt(2.0);
+		  else m_ress[n]+=fs*qgXgamgamq(i,j,k,l,m_kgr,m_kqr)/sqrt(2.0);
 		}
 		// p_lab[0]=-Vec4D(-32.11250970836028,0,0,-32.11250970836028)
 		// p_lab[1]=-Vec4D(-1659.561441954768,0,0,1659.561441954768)
@@ -167,7 +169,7 @@ double Higgs_Tree::Calc(const Vec4D_Vector &p)
 	      if (m_mode==4) {
 		if ((m_int&1) && i!=j) {
 		  if (m_spin==0) m_ress[n]+=fs*qqbHg(i,m)*Hgamgam(k,l)/sqrt(2.0);
-		  else m_ress[n]+=fs*qqbXgamgamg(i,k,l,m,m_kg,m_kq)/sqrt(2.0);
+		  else m_ress[n]+=fs*qqbXgamgamg(i,k,l,m,m_kgr,m_kqr)/sqrt(2.0);
 		}
 		if ((m_int&2) && i!=j) m_resb[n]+=fb*qqbgamgamg(i,k,l,m)/sqrt(2.0);
 		if ((m_int&4) && i!=j) m_rest[n]+=ft*qqbgamgamg_tree(i,k,l,m)/sqrt(2.0);
@@ -175,7 +177,7 @@ double Higgs_Tree::Calc(const Vec4D_Vector &p)
 	      if (m_mode==5) {
 		if ((m_int&1) && j!=i) {
 		  if (m_spin==0) m_ress[n]+=fs*qbqHg(j,m)*Hgamgam(k,l)/sqrt(2.0);
-		  else m_ress[n]+=fs*qbqXgamgamg(j,k,l,m,m_kg,m_kq)/sqrt(2.0);
+		  else m_ress[n]+=fs*qbqXgamgamg(j,k,l,m,m_kgr,m_kqr)/sqrt(2.0);
 		}
 		if ((m_int&2) && j!=i) m_resb[n]+=fb*qbqgamgamg(j,k,l,m)/sqrt(2.0);
 		if ((m_int&4) && j!=i) m_rest[n]+=ft*qbqgamgamg_tree(j,k,l,m)/sqrt(2.0);
@@ -207,19 +209,19 @@ double Higgs_Tree::Calc(const Vec4D_Vector &p)
 	  if (m_mode==1) {
 	    if (m_int&1) {
 	      if (m_spin==0) m_ress[n]+=fs*ggH(i,j)*Hgamgam(k,l);
-	      else m_ress[n]+=fs*ggXgamgam(i,j,k,l,m_kg);
+	      else m_ress[n]+=fs*ggXgamgam(i,j,k,l,m_kgr);
 	    }
 	    if (m_int&2) m_resb[n]+=fb*gggamgam(i,j,k,l);
 	  }
 	  if (m_mode==4) {
 	    if (m_int&1) {
-	      if (m_spin!=0 && i!=j) m_ress[n]+=fs*qqbXgamgam(i,k,l,m_kq);
+	      if (m_spin!=0 && i!=j) m_ress[n]+=fs*qqbXgamgam(i,k,l,m_kqr);
 	    }
 	    if ((m_int&4) && i!=j) m_resb[n]+=ft*qqbgamgam_tree(i,k,l);
 	  }
 	  if (m_mode==5) {
 	    if (m_int&1) {
-	      if (m_spin!=0 && j!=i) m_ress[n]+=fs*qbqXgamgam(j,k,l,m_kq);
+	      if (m_spin!=0 && j!=i) m_ress[n]+=fs*qbqXgamgam(j,k,l,m_kqr);
 	    }
 	    if ((m_int&4) && j!=i) m_resb[n]+=ft*qbqgamgam_tree(j,k,l);
 	  }

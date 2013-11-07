@@ -54,6 +54,8 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
   msg_Debugging()<<"\\mu_R = "<<muR<<"\n";
   for (size_t i(0);i<p.size();++i)
     msg_Debugging()<<"p["<<i<<"]="<<p[i]<<"\n";
+  double m_kgr=kgr(muR,m_kg,m_kq,m_mh);
+  double m_kqr=kqr(muR,m_kg,m_kq,m_mh);
   s_bs=p_bs;
   p_bs->Setk0(11);
   p_bs->CalcEtaMu((Vec4D*)&p.front());
@@ -82,8 +84,8 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	  if (m_proc==1) {
 	    if (m_int&1) {
 	      if (m_spin!=0) {
-		Complex met=fslo*ggXgamgam(i,j,k,l,m_kg);
-		Complex me1l=fslo*ggXgamgam1l(i,j,k,l,muR,m_kg,m_kq);
+		Complex met=fslo*ggXgamgam(i,j,k,l,m_kgr);
+		Complex me1l=fslo*ggXgamgam1l(i,j,k,l,muR,m_kgr,m_kqr);
 		clos+=met; clo+=met;
 		cnlos+=me1l; cnlo+=me1l;
 	      }
@@ -108,8 +110,8 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	  if (m_proc==4) {
 	    if ((m_int&1) && i!=j) {
 	      if (m_spin!=0) {
-		Complex met=fslo*qqbXgamgam(i,k,l,m_kq);
-		Complex me1l=fslo*qqbXgamgam1l(i,k,l,muR,m_kg,m_kq);
+		Complex met=fslo*qqbXgamgam(i,k,l,m_kqr);
+		Complex me1l=fslo*qqbXgamgam1l(i,k,l,muR,m_kgr,m_kqr);
 		clos+=met; clo+=met;
 		cnlos+=me1l; cnlo+=me1l;
 	      }
@@ -124,8 +126,8 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	  if (m_proc==5) {
 	    if ((m_int&1) && j!=i) {
 	      if (m_spin!=0) {
-		Complex met=fslo*qbqXgamgam(j,k,l,m_kq);
-		Complex me1l=fslo*qbqXgamgam1l(j,k,l,muR,m_kg,m_kq);
+		Complex met=fslo*qbqXgamgam(j,k,l,m_kqr);
+		Complex me1l=fslo*qbqXgamgam1l(j,k,l,muR,m_kgr,m_kqr);
 		clos+=met; clo+=met;
 		cnlos+=me1l; cnlo+=me1l;
 	      }
@@ -165,7 +167,7 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
     double lmur=log(m_mur2/s);
     m_res.IR2()=-2.0*4.0/3.0;
     m_res.IR()=-(3.0+2.0*lmur)*4.0/3.0;
-    // extra single power of lmur term in quark case compared the gluon case
+    // extra single power of lmur term here compared to the gluon case
     m_res.Finite()=(nlo/lo).real()*4.0/3.0+(sqr(M_PI)-lmur*lmur-3.*lmur)*4.0/3.0;
     m_born=lo.real()/24.0;
     return;
@@ -174,7 +176,7 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
   double lmur=log(m_mur2/s);
   m_res.IR2()=-2.0*3.0;
   m_res.IR()=-2.0*(b0+3.0*lmur);
-  // no extra single power of lmur term in gluon case compared the quark case
+  // no extra single power of lmur term here compared to the quark case
   m_res.Finite()=(nlo/lo).real()+3.0*sqr(M_PI)-3.0*lmur*lmur;
   m_born=lo.real()/64.0;
 }
