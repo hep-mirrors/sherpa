@@ -91,12 +91,12 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	      }
 	      else {
 		if (i==j && k==l) {
-		  clos+=fslo*s*s;
-		  clo+=fslo*s*s;
+		  clos+=fslo*ggH(i,j)*Hgamgam(k,l);
+		  clo+=fslo*ggH(i,j)*Hgamgam(k,l);
 		}
 		if (i==j && k==l) {
-		  cnlos+=fsnlo*s*s;
-		  cnlo+=fsnlo*s*s;
+		  cnlos+=fsnlo*ggH(i,j)*Hgamgam(k,l);
+		  cnlo+=fsnlo*ggH(i,j)*Hgamgam(k,l);
 		}
 	      }
 	    }
