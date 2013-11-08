@@ -101,8 +101,10 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 	      }
 	    }
 	    if (m_int&2) {
-	      Complex me1l=fblo*gggamgam1l(i,j,k,l);
-	      Complex me2l=fblo*gggamgam2l(i,j,k,l);
+	      Complex me1l=gggamgam(i,j,k,l);
+	      Complex me2l=fblo*gggamgam2l(i,j,k,l)*
+		(me1l==0.0?1.0:me1l/gggamgam1l(i,j,k,l));
+	      me1l*=fblo;
 	      clob+=me1l; clo+=me1l;
 	      cnlob+=me2l; cnlo+=me2l;
 	    }
