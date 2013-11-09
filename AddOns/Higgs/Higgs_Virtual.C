@@ -90,14 +90,10 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
 		cnlos+=me1l; cnlo+=me1l;
 	      }
 	      else {
-		if (i==j && k==l) {
-		  clos+=fslo*ggH(i,j)*Hgamgam(k,l);
-		  clo+=fslo*ggH(i,j)*Hgamgam(k,l);
-		}
-		if (i==j && k==l) {
-		  cnlos+=fsnlo*ggH(i,j)*Hgamgam(k,l);
-		  cnlo+=fsnlo*ggH(i,j)*Hgamgam(k,l);
-		}
+		Complex me1l=fslo*ggH(i,j)*Hgamgam(k,l);
+		Complex me2l=fsnlo*ggH(i,j)*Hgamgam(k,l);
+		clos+=me1l; clo+=me1l;
+		cnlos+=me2l; cnlo+=me2l;
 	      }
 	    }
 	    if (m_int&2) {
@@ -164,6 +160,11 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
   if (m_io==2) {
     lo-=lob;
     nlo-=nlob;
+  }
+  if (nlo.real()==0.0 && lo.real()==0.0) {
+    m_res.IR2()=m_res.IR()=0.0;
+    m_res.Finite()=m_born=0.0;
+    return;
   }
   if (m_proc==4 || m_proc==5) {
     double lmur=log(m_mur2/s);
