@@ -27,6 +27,6 @@ endif
 
 pkglib_LTLIBRARIES = libMEProcess.la
 libMEProcess_la_SOURCES = MEProcess.C
-pkginclude_HEADERS = MEProcess.H
+localinc_HEADERS = MEProcess.H
 
 EXTRA_DIST    = @SVNINCLUDE@
