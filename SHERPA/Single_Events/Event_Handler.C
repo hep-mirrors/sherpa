@@ -543,7 +543,7 @@ bool Event_Handler::WeightIsGood(const double& weight)
 
   if (m_checkweight && fabs(weight)>m_maxweight) {
     m_maxweight=fabs(weight);
-    std::string ranfilename="random";
+    std::string ranfilename="random_"+rpa->gen.Variable("RNG_SEED");
     if (ATOOLS::msg->LogFile()!="") ranfilename+="."+ATOOLS::msg->LogFile();
     ranfilename+=".log";
     ATOOLS::ran->WriteOutSavedStatus(ranfilename.c_str());
