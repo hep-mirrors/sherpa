@@ -224,6 +224,7 @@ double ATOOLS::Random::GetNZ()
 
 void ATOOLS::Random::SetSeed(long int nid) 
 {
+  msg_Info()<<METHOD<<"(): Seed set to "<<nid<<std::endl;
   m_id = nid<0 ? nid : -nid;
   activeGenerator = 2;
 }
