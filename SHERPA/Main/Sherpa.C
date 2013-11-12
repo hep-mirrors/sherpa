@@ -41,7 +41,7 @@ Sherpa::Sherpa() :
   ATOOLS::s_loader = new Library_Loader();
   m_trials = 100;
   m_debuginterval = 0;
-  m_debugstep = 0;
+  m_debugstep = -1;
   exh->AddTerminatorObject(this);
 }
 
@@ -130,7 +130,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
       m_debuginterval=debuginterval;
       msg_Info()<<"Setting debug interval to "<<m_debuginterval<<std::endl;
     }
-    long int debugstep(0);
+    long int debugstep(-1);
     if (read.ReadFromFile(debugstep,"DEBUG_STEP")) {
       m_debugstep=debugstep;
       ran->ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
@@ -190,24 +190,24 @@ bool Sherpa::GenerateOneEvent(bool reset)
       std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
       ran->WriteOutStatus(("random."+fname).c_str());
     }
-    if (m_debugstep>0) {
+    if (m_debugstep>=0) {
       ran->ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
     }
     if (reset) p_eventhandler->Reset();
     if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
-      rpa->gen.SetNumberOfGeneratedEvents(rpa->gen.NumberOfGeneratedEvents()+1);
       if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
         std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
         std::ofstream eventout(("refevent."+fname).c_str());
         eventout<<*p_eventhandler->GetBlobs()<<std::endl;
         eventout.close();
       }
-      if (m_debugstep>0) {
+      if (m_debugstep>=0) {
         std::ofstream event(("event."+ToString(m_debugstep)+".dat").c_str());
         event<<*p_eventhandler->GetBlobs()<<std::endl;
         event.close();
         THROW(normal_exit,"Debug event written.");
       }
+      rpa->gen.SetNumberOfGeneratedEvents(rpa->gen.NumberOfGeneratedEvents()+1);
       if (msg_LevelIsEvents()) {
 	Blob_List *blobs(p_eventhandler->GetBlobs());
 	if (!blobs->empty()) {
