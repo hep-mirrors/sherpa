@@ -398,7 +398,7 @@ void Process_Integrator::AddPoint(const double value)
   if (max>m_smax) m_smax = max;
   if (p_whisto) {
     if(cur!=0.) p_whisto->Insert(max,1.0/p_pshandler->Enhance()); /*TODO*/
-    else p_whisto->SetFills(p_whisto->Fills()+1);
+    else p_whisto->Insert(1.0,0.0);
   }
   p_proc->AddPoint(value);
   if (p_proc->IsGroup()) {
