@@ -182,8 +182,8 @@ void Vegas::MPISync()
 	for (int i=0;i<m_dim;i++) {
 	  for (int j=0;j<m_nd;j++) {
 	    p_md[i][j]=values[i*m_nd+j];
-	    p_mdi[i][j]+=values[(m_dim+i)*m_nd+j];
-	    p_mhit[i][j]+=values[(2*m_dim+i)*m_nd+j];
+	    p_mdi[i][j]=values[(m_dim+i)*m_nd+j];
+	    p_mhit[i][j]=values[(2*m_dim+i)*m_nd+j];
 	  }
 	}
 	m_mnevt=values[cn-2];
