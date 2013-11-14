@@ -42,7 +42,6 @@ void Semihard_QCD::CreateFSRChannels()
       p_int->PSHandler()->FSRIntegrator()->DropAllChannels();
       p_int->PSHandler()->FSRIntegrator()->Add(p_fsrinterface);
       p_fsrinterface->SetAlpha(1.0);
-      p_fsrinterface->SetAlphaSave(1.0);
       m_fsrmode=1;
     }
   }
@@ -55,7 +54,6 @@ void Semihard_QCD::CreateISRChannels()
   PHASIC::Single_Channel *channel =
     new PHASIC::Simple_Pole_Uniform_V(1.0," isr",p_int->PSHandler()->GetInfo());
   channel->SetAlpha(1.0);
-  channel->SetAlphaSave(1.0);
   isr->Add(channel);
   isr->Reset();
 }

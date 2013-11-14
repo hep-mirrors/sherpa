@@ -14,8 +14,7 @@ namespace PHASIC {
 
     std::string      name;
 
-    long int n_points, n_contrib;
-    double   weight, result, result2;
+    double   weight;
     double   res1, res2;
     double   mres1, mres2;
     double   alpha, alpha_save;
@@ -70,8 +69,6 @@ namespace PHASIC {
 
     virtual size_t NChannels() const; 
 
-    virtual int N();
-    virtual int ValidN();
     virtual int Nin();    
     virtual int Nout();  
 
@@ -80,12 +77,9 @@ namespace PHASIC {
     virtual double Weight();
     virtual double Alpha(); 
     virtual double AlphaSave();
-    virtual double Result();   
 
-    virtual void IncrementN();               
     virtual void SetRes1(double r);         
     virtual void SetRes2(double r);         
-    virtual void SetN(long int n);          
     virtual void SetName(std::string name); 
     virtual void SetWeight(double weight);  
     virtual void SetAlpha(double alpha);    

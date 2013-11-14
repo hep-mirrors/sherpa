@@ -235,7 +235,7 @@ void Multi_Channel::Optimize(double error)
 		<<"----------------- "<<n_points<<" ----------------"<<endl;
   for (i=0;i<channels.size();i++) {
     if (channels[i]->Alpha() > 0) {
-      msg_Tracking()<<i<<" channel "<<channels[i]->Name()<<", "<<channels[i]->N()<<" : "
+      msg_Tracking()<<i<<" channel "<<channels[i]->Name()<<" : "
 		    <<channels[i]->Alpha()<<" -> "<<channels[i]->AlphaSave()<<endl;
     }
   }
@@ -264,7 +264,7 @@ void Multi_Channel::EndOptimize(double error)
   msg_Tracking()<<"Best weights:-------------------------------"<<endl;
   for (i=0;i<channels.size();i++) {
     if (channels[i]->Alpha() > 0) {
-      msg_Tracking()<<i<<" channel "<<channels[i]->Name()<<", "<<channels[i]->N()
+      msg_Tracking()<<i<<" channel "<<channels[i]->Name()
 		    <<" : "<<channels[i]->Alpha()<<endl;
     }
   }
@@ -451,9 +451,9 @@ void Multi_Channel::WriteOut(std::string pID)
 //        <<m_result<<" "<<m_result2<<" "<<s1xmin<<" "
 //        <<m_sresult<<" "<<m_sresult2<<" "<<m_ssigma2<<" "<<n_spoints<<" "<<m_optcnt<<endl;
   for (size_t i=0;i<channels.size();i++) 
-    ofile<<channels[i]->Name()<<" "<<channels[i]->N()<<" "
+    ofile<<channels[i]->Name()<<" "<<n_points<<" "
 	 <<channels[i]->Alpha()<<" "<<channels[i]->AlphaSave()<<" "
-	 <<channels[i]->Weight()<<" "<<channels[i]->Res1()<<" "
+	 <<0<<" "<<channels[i]->Res1()<<" "
 	 <<channels[i]->Res2()<<std::endl;
   ofile.close();
   for (size_t i=0;i<channels.size();i++) channels[i]->WriteOut(pID);
@@ -495,10 +495,8 @@ bool Multi_Channel::ReadIn(std::string pID) {
 	return 0;
       }
     }
-    channels[i]->SetN(points);
     channels[i]->SetAlpha(alpha);
     channels[i]->SetAlphaSave(alphasave);
-    channels[i]->SetWeight(weight);
     channels[i]->SetRes1(res1);
     channels[i]->SetRes2(res2);
   }
