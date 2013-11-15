@@ -49,7 +49,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   dr.AddWordSeparator("\t");
   dr.SetInputPath(rpa->GetPath());
   dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  m_error    = dr.GetValue<double>("ERROR",0.01);
+  m_error    = dr.GetValue<double>("INTEGRATION_ERROR", dr.GetValue<double>("ERROR", 0.01));
   m_abserror    = dr.GetValue<double>("ABS_ERROR",0.0);
   m_maxtrials = dr.GetValue<int>("MAX_TRIALS",1000000);
   m_fin_opt  = dr.GetValue<std::string>("FINISH_OPTIMIZATION","On")=="On"?1:0;
