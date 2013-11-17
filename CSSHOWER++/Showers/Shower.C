@@ -127,7 +127,7 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
       stat=m_kinFI.MakeKinematics(l,mi2,mj2,flj,r,1);
       l->SetFlavour(fli);
       l->SetMass2(mi2);
-      if (stat>0) stat=RemnantTest(s);
+      if (stat>0 && !(mode&1)) stat=RemnantTest(s);
       if (stat>0)
 	split->BoostAllFS(l,r,s,c,c->GetFlavour(),4|2);
     }
@@ -137,7 +137,7 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
       stat=m_kinIF.MakeKinematics(l,mi2,mj2,flj,r,1);
       l->SetFlavour(fli);
       l->SetMass2(mi2);
-      if (stat>0) stat=RemnantTest(l);
+      if (stat>0 && !(mode&1)) stat=RemnantTest(l);
       if (stat>0)
 	split->BoostAllFS(l,r,s,c,c->GetFlavour(),4|1);
     }
@@ -145,7 +145,7 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
       stat=m_kinII.MakeKinematics(l,mi2,mj2,flj,r,1);
       l->SetFlavour(fli);
       l->SetMass2(mi2);
-      if (stat>0) stat=RemnantTest(l);
+      if (stat>0 && !(mode&1)) stat=RemnantTest(l);
       if (stat>0)
 	split->BoostAllFS(l,r,s,c,c->GetFlavour(),4|3);
     }
