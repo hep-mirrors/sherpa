@@ -113,6 +113,7 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
 	  if (piIter->second->MEHandler()) weight *= piIter->second->Weight();
 	  break;
 	case Return_Value::New_Event  : return Return_Value::New_Event;
+	case Return_Value::Retry_Event: return Return_Value::Retry_Event;
 	case Return_Value::Nothing    : return Return_Value::Nothing;
 	case Return_Value::Error      : return Return_Value::Error;
 	default:
@@ -149,7 +150,8 @@ AttachShowers(Blob * blob,Blob_List * bloblist,
   }
   int shower(0);
   Return_Value::code stat(interface->DefineInitialConditions(blob));
-  if (stat==Return_Value::New_Event) {
+  if (stat==Return_Value::New_Event ||
+      stat==Return_Value::Retry_Event) {
     interface->CleanUp();
     return stat;
   }

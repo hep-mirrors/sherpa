@@ -177,7 +177,10 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   p_me->Process()->Parent()->SetRBMap(p_ampl);
   if (p_dec) {
     p_dec->SetCluster(p_me->Shower()->GetShower()->GetClusterDefinitions());
-    p_dec->DefineInitialConditions(p_ampl, blob);
+    if (!p_dec->DefineInitialConditions(p_ampl, blob)) {
+      msg_Tracking()<<METHOD<<"(): Decay clustering failed. Reject event."<<std::endl;
+      return Return_Value::Retry_Event;
+    }
     Cluster_Amplitude *ampl(p_ampl);
     while (ampl->Prev()) ampl=ampl->Prev();
     int stat(p_me->Process()->Generator()->ShiftMasses(ampl));

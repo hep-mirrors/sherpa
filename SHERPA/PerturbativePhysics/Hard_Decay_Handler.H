@@ -75,7 +75,7 @@ namespace SHERPA {
                           METOOLS::Amplitude2_Tensor* amps,
                           const ATOOLS::Particle_Vector& origparts);
 
-    void DefineInitialConditions(ATOOLS::Cluster_Amplitude* ampl,
+    bool DefineInitialConditions(ATOOLS::Cluster_Amplitude* ampl,
                                  ATOOLS::Blob* initial_blob);
 
     double Mass(const ATOOLS::Flavour &fl) const

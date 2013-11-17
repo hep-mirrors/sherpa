@@ -584,7 +584,7 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
   }
 }
 
-void Hard_Decay_Handler::DefineInitialConditions(Cluster_Amplitude* ampl,
+bool Hard_Decay_Handler::DefineInitialConditions(Cluster_Amplitude* ampl,
                                                  Blob* initial_blob)
 {
   DEBUG_FUNC(this);
@@ -594,6 +594,14 @@ void Hard_Decay_Handler::DefineInitialConditions(Cluster_Amplitude* ampl,
       (initial_blob->OutParticle(i)->Momentum());
   }
   p_clus->ReCluster(ampl);
+  if (ampl->NIn()==2) {
+    for (Cluster_Amplitude *campl(ampl);
+	 campl;campl=campl->Next()) {
+      if (-campl->Leg(0)->Mom()[0]>rpa->gen.PBeam(0)[0] ||
+	  -campl->Leg(1)->Mom()[0]>rpa->gen.PBeam(1)[0])
+	return false;
+    }
+  }
   ampl->SetMS(this);
   size_t imax=ampl->Legs().size()-1;
   for (int i=0; i<initial_blob->NOutP(); ++i) {
@@ -602,6 +610,7 @@ void Hard_Decay_Handler::DefineInitialConditions(Cluster_Amplitude* ampl,
                          imax, 1<<(initial_blob->NInP()+i));
     }
   }
+  return true;
 }
 
 void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
