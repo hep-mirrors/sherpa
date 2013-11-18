@@ -33,6 +33,8 @@ if ! test -d $dirname; then
       echo "patching specifics for MCFM-${version}.${subversion}"
       sed -e"/^      common\/spira\/spira/a\c---SHERPA: short-cut, we don't care about MCFM's BRs\n      return\nc---SHERPA: end short-cut" -i src/Need/sethparams.f
       sed -e"/^C---end statement functions/a\c---SHERPA: short-cut, h->gamgam ratio will be reweighted\n      msqgamgam=1d0\n      return\nc---SHERPA: end short-cut" -i src/ggHgaga/msqgamgam.f
+      sed -e "s/SetCT10/SetMCFMCT10/g" -i src/*/*
+      sed -e "s/CT10Pdf/MCFMCT10Pdf/g" -i src/*/*
     fi
   fi
   cd -
