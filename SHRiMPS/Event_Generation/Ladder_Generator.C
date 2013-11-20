@@ -16,7 +16,7 @@ Ladder_Generator(Parton_Luminosity * lumi,const int & test) :
   p_ladder(0), m_output(false),
   m_Nprim(0),m_Nsec(0),m_Ndd_p(0),m_Ndd_s(0),m_Nsd_p(0),m_Nsd_s(0),
   m_Ncep_p(0),m_Ncep_s(0)
-  {    
+{    
   Vec4D cms(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
   m_pplus   = cms.PPlus();
   m_pminus  = cms.PMinus();
@@ -48,7 +48,8 @@ Ladder_Generator(Parton_Luminosity * lumi,const int & test) :
     m_histograms[string("SDmass_s")]  = new Histogram(0, 0.0,10.0,100);
     m_histograms[string("CEPmass_s")] = new Histogram(0, 0.0,10.0,100);
     
-    m_histogram2ds[string("pt2vspt2othat")] = new Histogram_2D(0, 0.0, 100, 100, 0.0, 2.0, 20);
+    m_histogram2ds[string("pt2vspt2othat")] = 
+      new Histogram_2D(0, 0.0, 100, 100, 0.0, 2.0, 20);
   }
 }
 
@@ -79,30 +80,30 @@ Ladder_Generator::~Ladder_Generator() {
 		<<(100.*(m_wtover1+m_wtover2)/m_wt)<<" % "
 		<<" in total, "<<(1.*m_wtover2/(m_wtover1+m_wtover2)*100)
 		<<" % in secondary ladders, in total "<<m_wt<<" calls.\n";
-  }
-  Histogram * histo;
-  string name;
-  for (map<string,Histogram *>::iterator 
-	 hit=m_histograms.begin();hit!=m_histograms.end();hit++) {
-    histo = hit->second;
-    name  = string("Ladder_Analysis/")+hit->first+string(".dat");
-    histo->Finalize();
-    histo->Output(name);
-    delete histo;
-  }
-  m_histograms.clear();
   
-  Histogram_2D * histo2d;
-  for (map<string,Histogram_2D *>::iterator 
-	 hit=m_histogram2ds.begin();hit!=m_histogram2ds.end();hit++) {
-    histo2d = hit->second;
-    name  = string("Ladder_Analysis/")+hit->first+string(".dat");
-    histo2d->Finalize();
-    histo2d->Output(name);
-    delete histo2d;
-  }
-  m_histograms.clear();
+    Histogram * histo;
+    string name;
+    for (map<string,Histogram *>::iterator 
+	   hit=m_histograms.begin();hit!=m_histograms.end();hit++) {
+      histo = hit->second;
+      name  = string("Ladder_Analysis/")+hit->first+string(".dat");
+      histo->Finalize();
+      histo->Output(name);
+      delete histo;
+    }
+    m_histograms.clear();
   
+    Histogram_2D * histo2d;
+    for (map<string,Histogram_2D *>::iterator 
+	   hit=m_histogram2ds.begin();hit!=m_histogram2ds.end();hit++) {
+      histo2d = hit->second;
+      name  = string("Ladder_Analysis/")+hit->first+string(".dat");
+      histo2d->Finalize();
+      histo2d->Output(name);
+      delete histo2d;
+    }
+    m_histograms.clear();
+  }
   if (p_ladder) delete p_ladder; 
 }
 
@@ -286,7 +287,7 @@ double Ladder_Generator::Weight(const double & isweight) {
       //	  weight *= m_FS.AlphaS(pt2)/m_FS.AlphaSMax();
     */
   }
-  m_histograms[string("LadderWt")]->Insert(weight);
+  if (m_output) m_histograms[string("LadderWt")]->Insert(weight);
   return weight;
 }
 

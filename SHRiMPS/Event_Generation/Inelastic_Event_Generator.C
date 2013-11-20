@@ -50,18 +50,20 @@ Inelastic_Event_Generator::~Inelastic_Event_Generator()
 {
   msg_Info()<<"In "<<METHOD<<"(out = "<<m_output<<")\n";
   if (m_output) {
-    msg_Info()
-      <<"Mean number of number of ladders: "
-      <<"naive = "<<m_histograms[string("N_ladder_naive")]->Average()<<", "
-      <<"start = "<<m_histograms[string("N_ladder_start")]->Average()<<", "
-      <<"prim = "<<m_histograms[string("N_ladder_prim")]->Average()<<", "
-      <<"true = "<<m_histograms[string("N_ladder_true")]->Average()<<".\n";
+    if (m_analyse) {
+      msg_Info()
+	<<"Mean number of number of ladders: "
+	<<"naive = "<<m_histograms[string("N_ladder_naive")]->Average()<<", "
+	<<"start = "<<m_histograms[string("N_ladder_start")]->Average()<<", "
+	<<"prim = "<<m_histograms[string("N_ladder_prim")]->Average()<<", "
+	<<"true = "<<m_histograms[string("N_ladder_true")]->Average()<<".\n";
+    }
     msg_Info()<<"Errors: \n"
 	      <<"   Not able to connect blobs "<<m_connectblobs<<";\n"
 	      <<"   Wrong colours from ladder "<<m_laddercols<<";\n"
 	      <<"   Not able to update colours in event "<<m_updatecols<<".\n";
   }
-  if (m_histograms.empty()) return;
+  if (m_histograms.empty() || !m_analyse) return;
   Histogram * histo;
   string name;
   for (map<string,Histogram *>::iterator hit=m_histograms.begin();
@@ -211,8 +213,10 @@ AddScatter(Blob_List * blobs,const double & xsec)
       m_rescatterhandler.Map(part1,p_ladder->GetIn1()->GetParticle());
       m_rescatterhandler.Map(part2,p_ladder->GetIn2()->GetParticle());
       const double b1(m_laddergenerator.B1()), b2(m_laddergenerator.B2());
-      m_histograms[string("B1_all")]->Insert(b1);
-      m_histograms[string("B2_all")]->Insert(b2);
+      if (m_analyse) {
+	m_histograms[string("B1_all")]->Insert(b1);
+	m_histograms[string("B2_all")]->Insert(b2);
+      }
       m_Ngen++;
       return 1;
     }
@@ -233,10 +237,12 @@ AddScatter(Blob_List * blobs,const double & xsec)
       return -1;
     }
     const double b1(m_laddergenerator.B1()), b2(m_laddergenerator.B2());
-    m_histograms[string("B1_prim")]->Insert(b1);
-    m_histograms[string("B1_all")]->Insert(b1);
-    m_histograms[string("B2_prim")]->Insert(b2);
-    m_histograms[string("B2_all")]->Insert(b2);
+    if (m_analyse) {
+      m_histograms[string("B1_prim")]->Insert(b1);
+      m_histograms[string("B1_all")]->Insert(b1);
+      m_histograms[string("B2_prim")]->Insert(b2);
+      m_histograms[string("B2_all")]->Insert(b2);
+    }
     m_Nprim++; m_Ngen++;
     return 1;
   }

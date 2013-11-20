@@ -29,34 +29,36 @@ Hadron_Dissociation::Hadron_Dissociation(Continued_PDF *const pdf) :
 
 
 Hadron_Dissociation::~Hadron_Dissociation() {
-  msg_Info()<<"Initial kt's: "<<m_histomap[string("KT_remn_orig")]->Average()
-	    <<" and "<<m_histomap[string("KT_remn_resc")]->Average()
-	    <<" after rescaling.\n";
-  if (!m_histomap.empty()) {
-    Histogram * histo;
-    string name;
-    for (map<string,Histogram *>::iterator 
-	   hit=m_histomap.begin();hit!=m_histomap.end();hit++) {
-      histo = hit->second;
-      name  = string("Ladder_Analysis/")+hit->first+string(".dat");
-      histo->Finalize();
-      histo->Output(name);
-      delete histo;
+  if (m_analyse) {
+    msg_Info()<<"Initial kt's: "<<m_histomap[string("KT_remn_orig")]->Average()
+	      <<" and "<<m_histomap[string("KT_remn_resc")]->Average()
+	      <<" after rescaling.\n";
+    if (!m_histomap.empty()) {
+      Histogram * histo;
+      string name;
+      for (map<string,Histogram *>::iterator 
+	     hit=m_histomap.begin();hit!=m_histomap.end();hit++) {
+	histo = hit->second;
+	name  = string("Ladder_Analysis/")+hit->first+string(".dat");
+	histo->Finalize();
+	histo->Output(name);
+	delete histo;
+      }
+      m_histomap.clear();
     }
-    m_histomap.clear();
-  }
-  if (!m_histomap2D.empty()) {
-    Histogram_2D * histo;
-    string name;
-    for (map<string,Histogram_2D *>::iterator 
-	   hit=m_histomap2D.begin();hit!=m_histomap2D.end();hit++) {
-      histo = hit->second;
-      name  = string("Ladder_Analysis/")+hit->first+string(".dat");
-      histo->Finalize();
-      histo->Output(name);
-      delete histo;
+    if (!m_histomap2D.empty()) {
+      Histogram_2D * histo;
+      string name;
+      for (map<string,Histogram_2D *>::iterator 
+	     hit=m_histomap2D.begin();hit!=m_histomap2D.end();hit++) {
+	histo = hit->second;
+	name  = string("Ladder_Analysis/")+hit->first+string(".dat");
+	histo->Finalize();
+	histo->Output(name);
+	delete histo;
+      }
+      m_histomap.clear();
     }
-    m_histomap.clear();
   }
 }
 

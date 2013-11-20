@@ -265,7 +265,7 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
     }
     double deltay1(-1.*log(ran->Get())/Delta);
     y1 += deltay1;
-    m_histomap[std::string("Deltay_test")]->Insert(deltay1); 
+    if (m_analyse) m_histomap[std::string("Deltay_test")]->Insert(deltay1); 
     if (y1>ystop || y1<y0old) {
       m_ys++;
       if (m_analyse) {
@@ -377,7 +377,8 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
     }
     if (!IsOrdered(dir,k_0,k_1,k_2,m_q01_2)) continue;
     if (m_analyse) 
-      m_histomap[std::string("Delta_order")]->Insert(1./Max(1.e-2,dabs(y1-y0))); 
+      m_histomap[std::string("Delta_order")]->
+	Insert(1./Max(1.e-2,dabs(y1-y0))); 
     wt   = 1.;
     double deltay(dabs(k_1.Y()-k_0.Y()));
     mu01_2 = Q02((dir?-1.:1.)*(k_0.Y()+k_1.Y())/2.);
