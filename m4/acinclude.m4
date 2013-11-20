@@ -588,37 +588,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_MCFMLIBS)
   AM_CONDITIONAL(MCFM_SUPPORT, test "$mcfm" = "true")
 
-
-  AC_ARG_ENABLE(
-    phox,
-    AC_HELP_STRING([--enable-phox=/path/to/phox], [Enable Phox.]),
-    [ AC_MSG_CHECKING(for Phox installation directory);
-      case "${enableval}" in
-        no)  AC_MSG_RESULT(Phox not enabled); phox=false ;;
-        yes)  if test -d "$PhoxDIR"; then
-                CONDITIONAL_PhoxDIR="$PhoxDIR"
-                CONDITIONAL_PhoxLIBS="$CONDITIONAL_PhoxDIR/lib/libPhox.a"
-              else
-                AC_MSG_ERROR(\$PhoxDIR is not a valid path.);
-              fi;
-              AC_MSG_RESULT([${CONDITIONAL_PhoxDIR}]); phox=true;;
-        *)    if test -d "${enableval}"; then
-                CONDITIONAL_PhoxDIR="${enableval}"
-              else
-                AC_MSG_ERROR(${enableval} is not a valid path.);
-              fi;
-              AC_MSG_RESULT([${CONDITIONAL_PhoxDIR}]); phox=true;;
-      esac
-      ],
-    [ phox=false ]
-  )
-  if test "$phox" = "true" ; then
-    AC_DEFINE([USING__Phox], "1", [Using Phox])
-  fi
-  AC_SUBST(CONDITIONAL_PhoxDIR)
-  AC_SUBST(CONDITIONAL_PhoxLIBS)
-  AM_CONDITIONAL(Phox_SUPPORT, test "$phox" = "true")
-
   AC_ARG_ENABLE(
     lhole,
     AC_HELP_STRING([--enable-lhole], [Enable Les Houches One-Loop Generator interface.]),
