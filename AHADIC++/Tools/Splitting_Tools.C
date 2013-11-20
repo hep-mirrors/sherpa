@@ -324,14 +324,14 @@ ProduceKinematics(const bool & first,const bool & vetodiquark) {
 
 bool Splitting_Tools::ConstructKinematics() {
   if (IsNan(m_kt) || IsNan(m_z) || IsNan(m_y)) {
-    msg_Error()<<"Error in "<<METHOD
-    	       <<"(kt = "<<m_kt<<", z = "<<m_z<<", y = "<<m_y<<").\n";
+    msg_Tracking()<<"Error in "<<METHOD
+		  <<"(kt = "<<m_kt<<", z = "<<m_z<<", y = "<<m_y<<").\n";
     return false;
   }
   double po(sqr(m_Q2-m_m23_2-m_m1_2)- 4.*m_m23_2*m_m1_2);
   double pn(sqr(m_Q2-m_s23-m_m1_2)  - 4.*m_s23*m_m1_2);
   if (po<0. || pn<0.) {
-    msg_Error()<<"Error in "<<METHOD<<"(po,n = "<<po<<", "<<pn<<").\n";
+    msg_Tracking()<<"Error in "<<METHOD<<"(po,n = "<<po<<", "<<pn<<").\n";
     return false;
   }
   po = sqrt(po);
@@ -353,8 +353,8 @@ bool Splitting_Tools::ConstructKinematics() {
   m_mom3 = k3;
   m_mom2 = m_mom0-m_mom1-m_mom3;
   if (IsNan(m_mom2.Abs2())) {
-    msg_Error()<<"Error in "<<METHOD<<"(kt2 = "<<m_kt2<<").\n"
-	       <<m_mom1<<"+"<<m_mom2<<"+"<<m_mom3<<".\n";
+    msg_Tracking()<<"Error in "<<METHOD<<"(kt2 = "<<m_kt2<<").\n"
+		  <<m_mom1<<"+"<<m_mom2<<"+"<<m_mom3<<".\n";
     return false;
   }
   if (m_analyse) AnalyseKinematics(m_mom3,m_mom2,m_mom1);
