@@ -357,7 +357,7 @@ Vec4D Blob::CheckMomentumConservation() const {
     //	m_type==btp::Shower) 
     //  sump = sump + (-1.) * (*part)->Momentum();
     //else 
-      sump = sump + (*part)->Momentum();
+    sump = sump + (*part)->Momentum();
   }
   for (Particle_Vector::const_iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
@@ -365,7 +365,7 @@ Vec4D Blob::CheckMomentumConservation() const {
     //	&& m_type==btp::Shower) 
     // sump = sump + (*part)->Momentum();
     //else 
-      sump = sump + (-1.)*((*part)->Momentum());
+    sump = sump + (-1.)*((*part)->Momentum());
   }
   return sump;
 }

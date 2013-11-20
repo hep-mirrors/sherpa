@@ -49,6 +49,14 @@ Blob_List Blob_List::Find(const btp::code code) const
   return hits;
 }
 
+bool Blob_List::Find(const Blob * blob) const
+{
+  for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {
+    if ((*bit)==blob) return true;
+  }
+  return true;
+}
+
 void Blob_List::FindConnected(Blob *blob,Blob_List &connected,
 			      std::set<const Blob*> &selected)
 {
@@ -136,9 +144,13 @@ bool Blob_List::TotalFourMomentum(Blob *blob,std::set<Blob*> &summed,
 				  const int mode) const
 {
   if (summed.find(blob)!=summed.end()) return true;
+  if (Find(blob)) {
+    summed.insert(blob);
+    return true;
+  }
   summed.insert(blob);
   bool success=true;
-  if (mode<=0)
+  if (mode<=0) {
     for (int i=0;i<blob->NInP();++i) {
       const ATOOLS::Particle *part=blob->ConstInParticle(i);
       double abs2=part->Momentum().Abs2();
@@ -149,7 +161,8 @@ bool Blob_List::TotalFourMomentum(Blob *blob,std::set<Blob*> &summed,
 			       summed,inisum,finsum,mode))
 	  success=false;
     }
-  if (mode>=0)
+  }
+  if (mode>=0) {
     for (int i=0;i<blob->NOutP();++i) {
       const ATOOLS::Particle *part=blob->ConstOutParticle(i);
       double abs2=part->Momentum().Abs2();
@@ -159,6 +172,7 @@ bool Blob_List::TotalFourMomentum(Blob *blob,std::set<Blob*> &summed,
 	if (!TotalFourMomentum(part->DecayBlob(),summed,inisum,finsum,mode))
 	  success=false;
     }
+  }
   return success;
 }
 
@@ -208,12 +222,15 @@ bool Blob_List::FourMomentumConservation() const
                <<"   p_{in} = "<<inisum<<" vs. p_{out} = "<<finsum<<",\n"
                <<"   diff = "<<finsum-inisum<<"."<<std::endl;
     if (msg_LevelIsDebugging()) {
-      msg_Out()<<*this<<std::endl;
       for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {
+	if ((*bit)->Type()==btp::Soft_Collision) {
+	  msg_Out()<<"   contains blob(s) of type "
+		   <<btp::Soft_Collision<<", "
+		   <<(*bit)->NInP()<<" --> "<<(*bit)->NOutP()<<".\n";
+	}
 	Vec4D sum((*bit)->CheckMomentumConservation());
-	if (sum!=Vec4D()) {
-	  msg_Out()<<METHOD<<"(..): sum = "<<sum
-		   <<" in\n"<<**bit<<std::endl;
+	if (dabs(sum[0])>1.e-4 || dabs(sum.Abs2())>1.e-4) {
+	  msg_Out()<<METHOD<<"(..): sum = "<<sum<<" in\n"<<**bit<<std::endl;
 	}
       }
     }

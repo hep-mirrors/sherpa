@@ -59,6 +59,7 @@ namespace ATOOLS {
     Blob *FindLast(const btp::code code) const;
 
     Blob_List Find(const btp::code code) const;
+    bool Find(const Blob * blob) const;
 
     Blob_List FindConnected(const Blob *blob);
     Blob_List FindConnected(const Particle *blob);

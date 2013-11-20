@@ -45,7 +45,10 @@ Return_Value::code Hard_Decays::Treat(Blob_List * bloblist, double & weight)
         return ret;
       }
       blob->UnsetStatus(blob_status::needs_harddecays);
-      if (!bloblist->FourMomentumConservation()) return Return_Value::New_Event;
+      if (!bloblist->FourMomentumConservation()) {
+	msg_Tracking()<<METHOD<<" found four momentum conservation error.\n";
+	return Return_Value::New_Event;
+      }
     }
   }
   return (didit ? Return_Value::Success : Return_Value::Nothing);

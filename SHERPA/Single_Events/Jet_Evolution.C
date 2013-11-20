@@ -132,7 +132,10 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
     // enable shower generator independent FS QED correction to ME
     // TODO: check first, whether shower did FS QED
     bloblist->FindLast(btp::Shower)->AddStatus(blob_status::needs_extraQED);
-    if (!bloblist->FourMomentumConservation()) return Return_Value::New_Event;
+    if (!bloblist->FourMomentumConservation()) {
+      msg_Tracking()<<METHOD<<" found four momentum conservation error.\n";
+      return Return_Value::New_Event;
+    }
     return Return_Value::Success;
   }
   return Return_Value::Nothing;

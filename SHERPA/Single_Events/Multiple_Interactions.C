@@ -48,8 +48,7 @@ CheckBlobList(ATOOLS::Blob_List *const bloblist)
   p_bloblist=bloblist;
   if (m_vetoed) return Return_Value::Nothing;
   if (!p_bloblist->FourMomentumConservation()) {
-    //msg_Error()<<"Multiple_Interactions::CheckBlobList(..): "
-    //	       <<"Retry event "<<rpa->gen.NumberOfGeneratedEvents()<<std::endl;
+    msg_Tracking()<<METHOD<<" found four momentum conservation error.\n";
     return Return_Value::Retry_Event;
   }
   for (Blob_List::const_iterator bit=bloblist->begin();

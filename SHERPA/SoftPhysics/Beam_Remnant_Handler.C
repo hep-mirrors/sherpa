@@ -48,6 +48,7 @@ Beam_Remnant_Handler::FillBeamAndBunchBlobs(Blob_List *const bloblist)
     if (!set) return Return_Value::Nothing;
     if (bloblist->FourMomentumConservation())
       return Return_Value::Success;
+    msg_Tracking()<<METHOD<<" found four momentum conservation error.\n";
     if (m_vmode) THROW(fatal_error,"Four Momentum not conserved.");
     return Return_Value::New_Event;
   }
