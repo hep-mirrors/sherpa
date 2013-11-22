@@ -93,7 +93,7 @@ double Higgs_Tree::Calc(const Vec4D_Vector &p)
   Complex fs=A_prod_1l(rts,muR)/s*A_dec_1l(rts,muR)/s/
     ((s-m_mh*m_mh)+I*m_mh*m_gh);
   if (m_spin!=0)
-    fs=A_prod_1l(rts,muR).real()/s*A_dec_1l(rts,muR).real()/s/
+    fs=A_prod_1l(m_mh,m_mh).real()/sqr(m_mh)*A_dec_1l(m_mh,m_mh).real()/sqr(m_mh)/
       ((s-m_mh*m_mh)+I*m_mh*m_gh);
   Complex fb=-4.0*sumQsq*alpha0*alpha_s(muR);
   double qc=m_flavs[m_flavs[0].IsQuark()?0:1].Charge();

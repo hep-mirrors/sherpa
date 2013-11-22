@@ -66,7 +66,7 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
   Complex fslo=A_prod_1l(rts,muR)/s*A_dec_1l(rts,muR)/s/
     ((s-m_mh*m_mh)+I*m_mh*m_gh);
   if (m_spin!=0)
-    fslo=A_prod_1l(rts,muR).real()/s*A_dec_1l(rts,muR).real()/s/
+    fslo=A_prod_1l(m_mh,m_mh).real()/sqr(m_mh)*A_dec_1l(m_mh,m_mh).real()/sqr(m_mh)/
       ((s-m_mh*m_mh)+I*m_mh*m_gh);
   Complex fsnlo=(A_prod_2l(rts,muR)/s*A_dec_1l(rts,muR)/s+
 		 A_prod_1l(rts,muR)/s*A_dec_2l(rts,muR)/s)/
