@@ -85,7 +85,8 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   ran->InitExternal(m_path,m_file);
 
   rpa->gen.SetSoftSC(p_dataread->GetValue<int>("SOFT_SPIN_CORRELATIONS",0));
-  rpa->gen.SetHardSC(p_dataread->GetValue<int>("HARD_SPIN_CORRELATIONS",0));
+  int defhsc = p_dataread->GetValue<string>("HARD_DECAYS",string("Off"))!="Off" ? 1 : 0;
+  rpa->gen.SetHardSC(p_dataread->GetValue<int>("HARD_SPIN_CORRELATIONS",defhsc));
   exh->AddTerminatorObject(this);
 }
 
