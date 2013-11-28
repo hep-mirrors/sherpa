@@ -47,7 +47,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
   if (rpa->gen.Variable("PATH_PIECE")!="")
     m_respath=rpa->gen.Variable("PATH_PIECE")+"/"+m_respath;
   std::string evtm;
-  if (!read.ReadFromFile(evtm,"EVENT_GENERATION_MODE")) evtm="Unweighted";
+  if (!read.ReadFromFile(evtm,"EVENT_GENERATION_MODE")) evtm="PartiallyUnweighted";
   if (evtm=="Unweighted" || evtm=="U") m_eventmode=1;
   else if (evtm=="PartiallyUnweighted" || evtm=="P") m_eventmode=2;
   else m_eventmode=0;
