@@ -116,7 +116,7 @@ for dir in args:
     for path, dirs, files in os.walk(dir):
 	if opts.NO_JX_DIRS and len(dirs) > 0:
 	    for testdir in dirs:
-		if len(testdir)<=3 and testdir[:1]=="j":
+		if (len(testdir)<=3 and testdir[:1]=="j") or ("j[" in testdir):
 		    dirs.remove(testdir)
 		    print "Skipping %s/%s" %(path,testdir)
         for file in files:
