@@ -239,9 +239,9 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 	}
 
 	p_mapproc = p_partner = (Single_LOProcess*)links[j];
+	InitFlavmap(p_partner);
 	WriteAlternativeName(p_partner->Name());
 	m_iresult = p_partner->Result()*m_sfactor;
-	InitFlavmap(p_partner);
 
 	Minimize();
 	return 1;
@@ -253,7 +253,21 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 				  m_ptypename+string("/")+m_libname,127,127,&m_flavs.front());    
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 0;
     if (!TestLib()) return 0;
-    links.push_back(this);
+    for (size_t j=0;j<links.size();j++) {
+      if (links[j]->Type()==Type()) {
+	if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result()*m_sfactor,Result())) {
+	  if (CheckMapping(links[j])) {
+	    msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : "<<std::endl
+			  <<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
+			  <<"   Map processes."<<std::endl;
+	    p_mapproc = p_partner = (Single_LOProcess*)links[j];
+	    InitFlavmap(p_partner);
+	    break;
+	  }
+	}
+      } 
+    }
+    if (p_partner==this) links.push_back(this);
     msg_Info()<<".";
     Minimize();
     return 1;
@@ -268,9 +282,9 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   int result(Tests()); 
   switch (result) {
     case 2 : 
-    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
+    for (size_t j=0;j<links.size();j++) {
       if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	if (CheckMapping(links[j])&&p_ampl->CheckEFMap()) {
+	if (CheckMapping(links[j])) {
 	  msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : "<<std::endl
 			<<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
 			<<"   Map processes."<<std::endl;
@@ -285,17 +299,15 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
     WriteAlternativeName(p_partner->Name());
     return 1;
   case 1 :
-    for (size_t j=0;j<links.size();j++) {
+    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
       if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	if (CheckMapping(links[j])&&p_ampl->CheckEFMap()) {
-	  msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : "<<std::endl
-			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
-	  p_mapproc = p_partner   = (Single_LOProcess*)links[j];
-	  m_pslibname = links[j]->PSLibName();
-	  WriteAlternativeName(p_partner->Name());
-	  InitFlavmap(p_partner);
-	  break;
-	}
+	msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : "<<std::endl
+		      <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
+	p_mapproc = p_partner   = (Single_LOProcess*)links[j];
+	InitFlavmap(p_partner);
+	m_pslibname = links[j]->PSLibName();
+	WriteAlternativeName(p_partner->Name());
+	break;
       } 
     }
     if (p_partner==this) links.push_back(this);
@@ -359,8 +371,6 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   m_epol.resize(epol->size());
   for (size_t i=0;i<epol->size();i++) m_epol[i]=(*epol)[i];
 
-  if (CheckAlternatives(links,Name())) return 1;
-
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
 
   bool directload = true;
@@ -398,51 +408,28 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
     return 0;
   }
 
-  map<string,Complex> cplmap;
-  for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-    cplmap.clear();
-    if (FlavCompare(links[j]) && p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor,cplmap)) {
-      if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
-	m_sfactor = sqr(m_sfactor);
-	msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
-	  
-	if (!FoundMappingFile(m_libname,m_pslibname)) {
-	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+links[j]->Name();
-	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+Name();
-	  if (FileExists(mlname+string(".map"))) { 
-	    if (m_sfactor==1.) Copy(mlname+".map",mnname+".map");
-	    else {
-	      UpdateMappingFile(mlname,cplmap);
-	      CreateMappingFile((Single_LOProcess*)links[j]);
-	    }
-	    Copy(mlname+".col",mnname+".col");
-	    for (size_t i=0;i<m_nin+m_nout-1;i++) if (m_flavs[i].Strong()) {
-	      for (size_t j=i+1;j<m_nin+m_nout;j++) if (m_flavs[j].Strong()) {
-		string sij=string("_S")+ToString(i)+string("_")+ToString(j);
-		Copy(mlname+sij+".col",mnname+sij+".col");
-	      }
-	    }
-	  }
-	}
-
-	p_mapproc = p_partner = (Single_LOProcess*)links[j];
-	WriteAlternativeName(p_partner->Name());
-	m_iresult = p_partner->Result()*m_sfactor;
-	InitFlavmap(p_partner);
-
-	Minimize();
-	return 1;
-      }
-    }
-  }
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
 				  m_ptypename+string("/")+m_libname,
 				  m_emit,m_spect,&m_flavs.front());
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 1;
     if (!TestLib(pfactors)) return 0;
-    links.push_back(this);
-    msg_Info()<<".";
+ 
+    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
+      if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result()*m_sfactor,Result())) {
+	if (CompareTestMoms(links[j]->GetTestMoms())) {
+	  if (CheckMapping(links[j])) {
+	    msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : "<<std::endl
+			  <<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
+			  <<"   Map processes."<<std::endl;
+	    p_mapproc = p_partner = (Single_LOProcess*)links[j];
+	    InitFlavmap(p_partner);
+	    break;
+	  }
+	}
+      } 
+    }
+    if (p_partner==this) links.push_back(this);
     Minimize();
     return 1;
   }
@@ -485,8 +472,6 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 	  msg_Tracking()<<"Single_LOProcess::InitAmplitude : "<<std::endl
 			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
 	  p_mapproc = p_partner   = (Single_LOProcess*)links[j];
-	  WriteAlternativeName(p_partner->Name());
-	  InitFlavmap(p_partner);
 	  m_pslibname = links[j]->PSLibName();
 	  break;
 	}

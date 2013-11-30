@@ -245,7 +245,6 @@ AMEGIC::Process_Base *AMEGIC::Process_Base::GetReal()
 bool AMEGIC::Process_Base::FlavCompare(PHASIC::Process_Base *const proc)
 {
   if (m_nin!=proc->NIn() || m_nout!=proc->NOut()) return false;
-  if (m_flavs==proc->Flavours()) return false;
   bool flavsok(true);
   for (size_t i(0);i<m_nin+m_nout;++i)
     if (m_flavs[i].IsAnti()!=proc->Flavours()[i].IsAnti()) flavsok=false;
