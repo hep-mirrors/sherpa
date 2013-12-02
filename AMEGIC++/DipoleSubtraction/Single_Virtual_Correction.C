@@ -895,8 +895,3 @@ Flavour Single_Virtual_Correction::ReMap(const Flavour &fl,const size_t &id) con
 {
   return p_LO_process->ReMap(fl,id);
 }
-
-AMEGIC::Process_Base *Single_Virtual_Correction::GetReal()
-{
-  return p_LO_process->Partner();
-}

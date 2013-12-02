@@ -72,7 +72,6 @@ namespace AMEGIC {
     void SetSelectorOn(const bool on);
     void SetGenerator(PHASIC::ME_Generator_Base *const gen);
     ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl,const size_t &id) const;
-    Process_Base *GetReal();
     /*------------------------------------------------------------------------------
 
       Generic stuff for initialization of Single_Virtual_Correctiones
