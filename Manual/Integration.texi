@@ -8,7 +8,7 @@ respectively.
 The following parameters are used to steer the integration.
 
 @menu
-* ERROR::                The relative integration error
+* INTEGRATION_ERROR::    The relative integration error
 * INTEGRATOR::           The integrator type
 * VEGAS::                Whether to enable Vegas
 * FINISH_OPTIMIZATION::  Whether to fully optimise the Vegas grid
@@ -18,9 +18,9 @@ The following parameters are used to steer the integration.
 @end menu
 
 
-@node ERROR
-@subsection ERROR
-@cindex ERROR
+@node INTEGRATION_ERROR
+@subsection INTEGRATION_ERROR
+@cindex INTEGRATION_ERROR
 Specifies the relative integration error target.
 
 
