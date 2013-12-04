@@ -173,6 +173,7 @@ event structure:
 
 @node Structure of ROOT NTuple Output
 @subsection Structure of ROOT NTuple Output
+@cindex USR_WGT_MODE
 
 The generated events can be stored in a ROOT NTuple file, see 
 @ref{Event output formats}. The internal ROOT Tree has the following Branches:
@@ -287,4 +288,16 @@ where
       f_a^3 = f_g(x_a),
       f_a^4 = f_g(x_a/x'_a)/x'_a.}
 
+The scale dependence coefficients @code{usr_wgts[0]} and @code{usr_wgts[1]} 
+are normally obtained from the finite part of the virtual correction by
+removing renormalization terms and universal terms from dipole subtraction.
+This may be undesirable, especially when the loop provider splits up
+the calculation of the virtual correction into several pieces, like
+leading and sub-leading color. In this case the loop provider should 
+control the scale dependence coefficients, which can be enforced with
+option @option{USR_WGT_MODE=0;} in the @code{(run)} section of Sherpa's
+input file. 
+
+@strong{Note that the loop provider must support this option
+  or the scale dependence coefficients will be invalid!}
 
