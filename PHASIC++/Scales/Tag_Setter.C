@@ -33,6 +33,9 @@ Term *Tag_Setter::ReplaceTags(Term *term) const
   case 3:
     term->Set(p_setter->Scale(stp::res));
     return term;
+  case 4:
+    term->Set(sqr(p_setter->HTM()));
+    return term;
   case 5:
     term->Set(sqr(p_setter->HT()));
     return term;
@@ -54,6 +57,7 @@ void Tag_Setter::AssignId(Term *term)
   if (term->Tag()=="MU_F2") term->SetId(1);
   else if (term->Tag()=="MU_R2") term->SetId(2);
   else if (term->Tag()=="MU_Q2") term->SetId(3);
+  else if (term->Tag()=="H_TM2") term->SetId(4);
   else if (term->Tag()=="H_T2") term->SetId(5);
   else if (term->Tag()=="P_SUM") term->SetId(6);
   else if (term->Tag().find("H_TY2")!=std::string::npos) {
@@ -94,6 +98,7 @@ void Tag_Setter::SetTags(Algebra_Interpreter *const calc)
   calc->AddTag("MU_F2","1.0");
   calc->AddTag("MU_R2","1.0");
   calc->AddTag("MU_Q2","1.0");
+  calc->AddTag("H_TM2","1.0");
   calc->AddTag("H_T2","1.0");
   calc->AddTag("P_SUM","(1.0,0.0,0.0,0.0)");
   calc->AddTag("H_TY2","1.0");

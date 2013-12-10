@@ -64,6 +64,7 @@ namespace PHASIC {
 
     void SetCouplings();
 
+    double HTM() const;
     double HT() const;
 
     ATOOLS::Vec4D PSum() const;

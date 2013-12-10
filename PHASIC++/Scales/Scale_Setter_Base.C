@@ -105,6 +105,13 @@ void Scale_Setter_Base::ShowSyntax(const size_t i)
   msg_Out()<<"\n}"<<std::endl;
 }
 
+double Scale_Setter_Base::HTM() const
+{
+  double htm(0.0);
+  for (size_t i(m_nin);i<m_p.size();++i) htm+=m_p[i].MPerp();
+  return htm;
+}
+
 double Scale_Setter_Base::HT() const
 {
   double ht(0.0);
