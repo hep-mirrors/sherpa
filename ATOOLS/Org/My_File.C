@@ -229,7 +229,7 @@ bool My_File<FileType>::Open()
     p_file->clear(p_stream->rdstate());
     std::ifstream *is=dynamic_cast<std::ifstream*>(&*p_file);
     if (is) {
-      is->basic_ios<char>::rdbuf(p_stream->rdbuf());
+      is->std::ios::rdbuf(p_stream->rdbuf());
       is->seekg(0);
     }
     return true;

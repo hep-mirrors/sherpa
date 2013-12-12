@@ -301,10 +301,10 @@ void Sherpa::WriteMakefile() const
     mf.Open();
     *mf<<"\n%.db: %\n";
     *mf<<"\t@fl=$$(find $<); rm -f $@; \\\n";
-    *mf<<"\techo -n \"Building '\"$@\"'(\"$$(echo $$fl | wc -w)\") \"; \\\n";
+    *mf<<"\tprintf \"Building '%s'(%i) \" $@ $$(echo $$fl | wc -w); \\\n";
     *mf<<"\tsqlite3 $@ \"create table path(file,content);\"; \\\n";
     *mf<<"\tfor i in $$fl; do \\\n";
-    *mf<<"\t  test -d $$i && continue; echo -n \".\"; \\\n";
+    *mf<<"\t  test -d $$i && continue; printf \".\"; \\\n";
     *mf<<"\t  fn=$$(echo $$i | sed 's|'$<'||g;s|^/||g'); \\\n";
     *mf<<"\t  sed -e\"s|'|''|g\" -e \"$$ s|$$|');|1\" \\\n";
     *mf<<"\t    -e\"1 s|^|insert into path values('$$fn','|1\" \\\n";

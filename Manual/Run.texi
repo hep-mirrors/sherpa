@@ -408,3 +408,7 @@ normally partitioned into many small files. This is particularly useful in
 combination with @ref{MPI parallelization}, where I/O speed may severely
 limit the performance of the generator. This option is enabled using 
 @option{--enable-sqlite}.
+
+Each setup requires its own dedicated database. To build this database,
+run 'make' in the run path after Sherpa has finished computing the cross
+sections.
