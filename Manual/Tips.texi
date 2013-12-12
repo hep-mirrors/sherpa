@@ -112,7 +112,12 @@ switch, while @code{HISTO_NAME} specifies the hbook output file.
 Sherpa is equipped with an interface to the NLO library of
 @uref{http://mcfm.fnal.gov/,,MCFM} for decdicated processes. 
 To enable it, MCFM has to be installed and compiled into a single library, 
-libMCFM.a, and your Sherpa compilation has to be configured with the following 
+libMCFM.a. To this end, an installation script is provided in
+@code{AddOns/MCFM/install_mcfm.sh}. Please note, due to some process specific
+changes that are made by the installation script to the MCFM code, only few
+selected processes of MCFM-6.3 are available through the interface.
+
+Finally, your Sherpa compilation has to be configured with the following
 options:
 @verbatim
   ./configure --enable-mcfm=/path/to/mcfm
