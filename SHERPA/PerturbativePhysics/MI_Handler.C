@@ -246,7 +246,7 @@ ATOOLS::Cluster_Amplitude *MI_Handler::ClusterConfiguration()
   p_ampl->SetMu2(mur2);
   p_ampl->SetOrderEW(xs->OrderEW());
   p_ampl->SetOrderQCD(xs->OrderQCD());
-  p_ampl->SetMS(this);
+  p_ampl->SetMS(p_amisic->HardBase()->XS()->Generator());
   msg_Debugging()<<*p_ampl<<"\n";
 #endif
   return p_ampl;
