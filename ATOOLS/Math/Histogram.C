@@ -166,10 +166,11 @@ void Histogram::CopyFrom(const Histogram *histo)
 Histogram::Histogram(const std::string & pID)
   :  m_yvalues(0), m_y2values(0), m_psvalues(0), m_tmp(0), m_fills(0), m_mcb(0.)  {
   m_finished=true;
-  std::ifstream ifile(pID.c_str());
+  My_In_File ifile(pID.c_str());
+  ifile.Open();
 
   std::string dummy;
-  getline(ifile,dummy);
+  getline(*(&*ifile),dummy);
   
   Data_Reader dr(" ",";","!");
   dr.AddWordSeparator("\t");
@@ -251,7 +252,7 @@ Histogram::Histogram(const std::string & pID)
   std::vector<std::string> data;
   MyStrStream str;
   for (int i=0;i<m_nbin-1;i++) {
-    getline(ifile,dummy);
+    getline(*(&*ifile),dummy);
     data.clear();
     dr.SetString(dummy);
     dr.VectorFromString(data);
@@ -266,7 +267,7 @@ Histogram::Histogram(const std::string & pID)
       m_psvalues[i+1] = Get<double>(data[3]);
     }    
   }
-  ifile.close();
+  ifile.Close();
   MPIInit();
 }
 

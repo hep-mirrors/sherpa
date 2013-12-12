@@ -35,14 +35,14 @@ bool COMIX::Process_Group::Initialize(std::map<std::string,std::string> *const p
   }
   else {
     msg_Debugging()<<"found"<<std::endl;
-    std::ifstream map(mapfile.c_str());
-    if (map.good()) {
-      while (!map.eof()) {
+    My_In_File map(mapfile);
+    if (map.Open()) {
+      while (!map->eof()) {
 	std::string src, dest;
-	map>>src>>dest;
+	*map>>src>>dest;
 	if (src!="" && dest!="x")
 	  THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
-	if (map.eof()) break;
+	if (map->eof()) break;
 	(*pmap)[src]=dest;
 	msg_Debugging()<<" map '"<<src<<"' onto '"<<dest<<"'\n";
       }

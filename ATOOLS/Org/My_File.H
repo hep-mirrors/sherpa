@@ -2,6 +2,7 @@
 #define ATOOLS_Org_My_File_H
 
 #include "ATOOLS/Org/Smart_Pointer.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 #include <fstream>
 #include <vector>
@@ -39,16 +40,24 @@ namespace ATOOLS {
 
     typedef std::map<std::string,std::string> String_Map;
 
+    typedef std::map<std::string,std::pair
+		     <void*,std::string> > DataBase_Map;
+
   protected:
 
     static String_Vector s_searchpaths, s_nocomplains;
     static String_Map    s_filelocations;
+    static DataBase_Map  s_databases;
 
     std::string m_path, m_file;
 
-    SP(File_Type) p_file;
+    SP(File_Type)   p_file;
+    SP(MyStrStream) p_stream;
     
     fom::code m_mode;
+
+    static int ListFiles(void *data,int argc,char **argv,char **name);
+    static int GetFile(void *data,int argc,char **argv,char **name);
 
   public:
 
@@ -78,6 +87,12 @@ namespace ATOOLS {
 
     static void SetSearchPaths(const String_Vector &paths);
     static void SetNoComplains(const String_Vector &names);
+
+    // static member functions
+    static bool OpenDB(std::string file);
+    static bool CloseDB(std::string file);
+
+    static bool FileInDB(const std::string &name);
 
   };// end of class My_File
 

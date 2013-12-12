@@ -82,10 +82,10 @@ bool COMIX::Single_Process::Initialize
 		      +"/Process/Comix/"+m_name+".map");
   if (FileExists(mapfile)) {
     msg_Tracking()<<METHOD<<"(): Map file '"<<mapfile<<"' found.\n";
-    std::ifstream mapstream(mapfile.c_str());
-    if (mapstream.good()) {
+    My_In_File mapstream(mapfile);
+    if (mapstream.Open()) {
       std::string cname, mapname;
-      mapstream>>cname>>mapname;
+      *mapstream>>cname>>mapname;
       if (cname!=m_name)
 	THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
       (*pmap)[m_name]=mapname;
@@ -231,25 +231,25 @@ bool COMIX::Single_Process::MapProcess()
 	msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"<<mapname<<"'.\n";
 	std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 			    +"/Process/Comix/"+m_name+".map");
-	std::ifstream map(mapfile.c_str());
-	if (!map.good()) {
+	My_In_File map(mapfile);
+	if (!map.Open()) {
 	  THROW(fatal_error,"Map file '"+mapfile+"' not found");
 	}
 	else {
 	  size_t nfmap;
 	  std::string cname, cmapname;
-	  map>>cname>>cmapname>>nfmap;
-	  if (cname!=m_name || cmapname!=mapname || map.eof())
+	  *map>>cname>>cmapname>>nfmap;
+	  if (cname!=m_name || cmapname!=mapname || map->eof())
 	    THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
 	  for (size_t j(0);j<nfmap;++j) {
 	    long int src, dest;
-	    map>>src>>dest;
+	    *map>>src>>dest;
 	    Flavour ft((kf_code)(abs(src)),src<0);
 	    Flavour fb((kf_code)(abs(dest)),dest<0);
 	    m_fmap[ft]=fb;
 	    msg_Debugging()<<"  fmap '"<<ft<<"' onto '"<<fb<<"'\n";
 	  }
-	  map>>cname;
+	  *map>>cname;
 	  if (cname!="eof")
 	    THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
 	}

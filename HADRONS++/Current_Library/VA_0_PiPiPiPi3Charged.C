@@ -58,7 +58,7 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
   m_z = Complex( z_abs*cos(z_phase), z_abs*sin(z_phase) );
 
   // G(q2) function (read as histogram)
-  My_In_File fG("",path+"/PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat");
+  My_In_File fG("",path+"PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat");
   if( !fG.Open() ) {                            // if file does not exist
     msg_Error()<<"The file "<<path<<"PhaseSpaceFunctions/G_pi-pi+pi-pi0.dat does"
                <<"not exist. Don't know what to do. Will abort."<<endl;
@@ -68,7 +68,7 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
     // read table and create histogram
     msg_Tracking()<<"HADRONS::VA_0_PiPiPiPi3Charged::Novo::Novo(...) \n"
                   <<"     Read G_{pi-pi+pi-pi0}(q2)."<<endl;
-    std::string found_file_name = fG.Path()+"/"+fG.File();
+    std::string found_file_name = fG.Path()+fG.File();
     fG.Close();
     p_G = new Histogram( found_file_name );
   }
@@ -84,7 +84,7 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
     // read table and create histogram
     msg_Tracking()<<"HADRONS::VA_0_PiPiPiPi3Charged::Novo::Novo(...) \n"
                   <<"     Read Gomega_{pi+pi0pi-pi-}(q2)."<<endl;
-    std::string found_file_name = fGo.Path()+"/"+fGo.File();
+    std::string found_file_name = fGo.Path()+fGo.File();
     fGo.Close();
     p_Go = new Histogram( found_file_name );
   }
@@ -100,7 +100,7 @@ VA_0_PiPiPiPi3Charged::Novo::Novo( string path, GeneralModel _md )
     // read table and create histogram
     msg_Tracking()<<"HADRONS::VA_0_PiPiPiPi3Charged::Novo::Novo(...) \n"
                   <<"     Read a1's running width (q2)."<<endl;
-    std::string found_file_name = fW.Path()+"/"+fW.File();
+    std::string found_file_name = fW.Path()+fW.File();
     fW.Close();
     p_a1width = new Histogram( found_file_name );
   }

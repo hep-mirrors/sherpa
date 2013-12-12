@@ -13,6 +13,9 @@
 /* using gzip */
 #undef USING__GZIP
 
+/* using sqlite */
+#undef USING__SQLITE
+
 /* using LHAPDF */
 #undef USING__LHAPDF
 

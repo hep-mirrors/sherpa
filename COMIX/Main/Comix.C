@@ -85,6 +85,9 @@ Comix::Comix():
 
 Comix::~Comix() 
 {
+  My_In_File::CloseDB
+    (rpa->gen.Variable("SHERPA_CPP_PATH")
+     +"/Process/Comix/");
   if (p_cluster) delete p_cluster;
 }
 
@@ -172,6 +175,13 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
 #endif
   MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")
 	  +"/Process/Comix",true);
+  My_In_File::OpenDB
+    (rpa->gen.Variable("SHERPA_CPP_PATH")
+     +"/Process/Comix/");
+  rpa->gen.AddToVariable
+    ("SQLITE_DATABASES"," "+
+     rpa->gen.Variable("SHERPA_CPP_PATH")
+     +"/Process/Comix/");
   return true;
 }
 
@@ -235,7 +245,8 @@ int Comix::PerformTests()
   return 1;
 }
 
-bool Comix::NewLibraries() {
+bool Comix::NewLibraries()
+{
   return false;
 }
 

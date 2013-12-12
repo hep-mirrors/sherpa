@@ -59,7 +59,7 @@ Histogram * ResonanceFlavour::CreateGHistogram( ResonanceFlavour res1, Resonance
       res1.Mass(), res1.Width(), res2.Mass(), res2.Width(), beta, Flavour(out).HadMass() );
 
   // look if file already exists
-  My_In_File f("",m_path+"/PhaseSpaceFunctions/"+fn);
+  My_In_File f("",m_path+"PhaseSpaceFunctions/"+fn);
   if( !f.Open() ) {                            // if file does not exist
     // create histogram (i.e. table of values)
     msg_Out()<<"Create necessary phase space function for chosen parameters.\n"
@@ -76,14 +76,14 @@ Histogram * ResonanceFlavour::CreateGHistogram( ResonanceFlavour res1, Resonance
       myHist->Insert( q2, phi );        // insert into histogram
       q2 += step;       
     }
-    myHist->Output(m_path+"/PhaseSpaceFunctions/"+fn);         // write into file
+    myHist->Output(m_path+"PhaseSpaceFunctions/"+fn);         // write into file
     return myHist;
   }
   else {
     // read table and create histogram
     msg_Tracking()<<"HADRONS::Tau_Three_Pseudo::KS::CreateGHistogram : \n"
              <<"     Read G(q2) from "<<fn<<"."<<endl;
-    std::string found_file_name = f.Path()+"/"+f.File();
+    std::string found_file_name = f.Path()+f.File();
     f.Close();
     return new Histogram( found_file_name );
   }

@@ -76,6 +76,8 @@ namespace ATOOLS {
       std::string Variable(const std::string &key,const std::string &def="");
       inline void SetVariable(const std::string &key,const std::string &value) 
       { m_variables[key]=value; }
+      inline void AddToVariable(const std::string &key,const std::string &value) 
+      { m_variables[key]+=value; }
       inline const std::vector<std::string> &Citations() { return m_cites; }
       void AddCitation(const size_t &level,const std::string &cite);
       void WriteCitationInfo();

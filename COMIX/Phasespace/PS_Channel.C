@@ -1221,7 +1221,6 @@ void PS_Channel::WriteOut(std::string pid)
 { 
   {
     Data_Writer writer;
-    writer.SetOutFileMode(fom::permanent|fom::nosearch);
     writer.SetOutputPath(pid);
     writer.SetOutputFile("_"+name+"_PS");
     writer.WriteToFile(m_zmode,"m_zmode");
@@ -1246,7 +1245,6 @@ void PS_Channel::WriteOut(std::string pid)
       vids.push_back(vit->first);
     }
     Data_Writer writer;
-    writer.SetOutFileMode(fom::permanent|fom::nosearch);
     writer.SetOutputPath(pid);
     writer.SetOutputFile("_"+name+"_VI");
     writer.SetVectorType(vtc::vertical);
@@ -1271,7 +1269,6 @@ void PS_Channel::WriteOut(std::string pid)
       }
     }
   Data_Writer writer;
-  writer.SetOutFileMode(fom::permanent|fom::nosearch);
   writer.SetOutputPath(pid);
   writer.SetOutputFile("_"+name+"_PV");
   writer.MatrixToFile(pvds);
@@ -1281,7 +1278,6 @@ void PS_Channel::ReadIn(std::string pid)
 {
   {
     Data_Reader reader;
-    reader.SetInFileMode(fom::permanent|fom::nosearch);
     reader.SetAddCommandLine(false);
     reader.SetInputPath(pid);
     reader.SetInputFile("_"+name+"_PS");
@@ -1302,7 +1298,6 @@ void PS_Channel::ReadIn(std::string pid)
   p_gen->SetPrefMasses
     (p_xs->Process()->Integrator()->PSHandler()->Cuts());
   Data_Reader reader;
-  reader.SetInFileMode(fom::permanent|fom::nosearch);
   reader.SetAddCommandLine(false);
   reader.SetInputPath(pid);
   reader.SetInputFile("_"+name+"_PV");
@@ -1326,7 +1321,6 @@ void PS_Channel::ReadIn(std::string pid)
   }
   if (m_vmode>0) {
     Data_Reader reader;
-    reader.SetInFileMode(fom::permanent|fom::nosearch);
     reader.SetAddCommandLine(false);
     reader.SetInputPath(pid);
     reader.SetInputFile("_"+name+"_VI");

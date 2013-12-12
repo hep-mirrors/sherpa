@@ -211,10 +211,10 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
   std::string fname(p_proc->Name());
   size_t vn;
   std::string name, dummy;
-  std::ifstream from((path+"/"+fname).c_str());
-  if (!from.good()) return false;
-  from.precision(16);
-  from>>name>>m_totalxs>>m_max>>m_totalerr>>m_totalsum>>m_totalsumsqr
+  My_In_File from(path+"/"+fname);
+  if (!from.Open()) return false;
+  from->precision(16);
+  *from>>name>>m_totalxs>>m_max>>m_totalerr>>m_totalsum>>m_totalsumsqr
       >>m_n>>m_ssum>>m_ssumsqr>>m_smax>>m_ssigma2>>m_sn>>m_wmin
       >>m_son>>dummy>>dummy>>vn;
   if (name!=fname) THROW(fatal_error,"Corrupted results file");
@@ -226,7 +226,7 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
   m_vsum.resize(vn);
   m_vsn.resize(vn);
   for (size_t i(0);i<m_vsn.size();++i)
-    from>>m_vsmax[i]>>m_vsum[i]>>m_vsn[i]>>dummy;
+    *from>>m_vsmax[i]>>m_vsum[i]>>m_vsn[i]>>dummy;
   }
   msg_Tracking()<<"Found result: xs for "<<name<<" : "
 		<<m_totalxs*rpa->Picobarn()<<" pb"
@@ -245,8 +245,7 @@ bool Process_Integrator::ReadInXSecs(const std::string &path)
 void Process_Integrator::ReadInHistogram(std::string dir)
 {
   std::string filename = dir+"/"+p_proc->Name();
-  std::ifstream from(filename.c_str());
-  if (!from.good()) return;
+  if (!FileExists(filename)) return;
   if (p_whisto) delete p_whisto; 
   p_whisto = new Histogram(filename);	
   if (p_proc->IsGroup())

@@ -69,7 +69,7 @@ VA_0_PiPiPiPi1Charged::Novo::Novo( GeneralModel _md, string path )
     // read table and create histogram
     msg_Tracking()<<"HADRONS::VA_0_PiPiPiPi1Charged::Novo::Novo(...) \n"
                   <<"     Read G_{pi+pi0pi0pi0}(q2)."<<endl;
-    std::string found_file_name = fG.Path()+"/"+fG.File();
+    std::string found_file_name = fG.Path()+fG.File();
     fG.Close();
     p_G = new Histogram( found_file_name );
   }
@@ -85,7 +85,7 @@ VA_0_PiPiPiPi1Charged::Novo::Novo( GeneralModel _md, string path )
     // read table and create histogram
     msg_Tracking()<<"HADRONS::VA_0_PiPiPiPi1Charged::Novo::Novo(...) \n"
                   <<"     Read a1's running width (q2)."<<endl;
-    std::string found_file_name = fW.Path()+"/"+fW.File();
+    std::string found_file_name = fW.Path()+fW.File();
     fW.Close();
     p_a1width = new Histogram( found_file_name );
   }
@@ -101,7 +101,7 @@ VA_0_PiPiPiPi1Charged::Novo::Novo( GeneralModel _md, string path )
     // read table and create histogram
     msg_Tracking()<<"HADRONS::VA_0_PiPiPiPi1Charged::Novo::Novo(...) \n"
                   <<"     Read TAUOLA's magic correction function (q2)."<<endl;
-    std::string found_file_name = fF.Path()+"/"+fF.File();
+    std::string found_file_name = fF.Path()+fF.File();
     fF.Close();
     p_zforma1 = new Histogram( found_file_name );
   }

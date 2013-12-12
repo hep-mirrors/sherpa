@@ -781,19 +781,19 @@ bool Amplitude::ReadInAmpFile(const std::string &name)
 {
   std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 		      +"/Process/Comix/"+name+".map");
-  std::ifstream amp(ampfile.c_str());
-  if (!amp.good()) return false;
+  My_In_File amp(ampfile);
+  if (!amp.Open()) return false;
   std::string cname, cmname;
-  amp>>cname>>cmname;
-  if (cname!=name || cmname!=name || amp.eof())
+  *amp>>cname>>cmname;
+  if (cname!=name || cmname!=name || amp->eof())
     THROW(fatal_error,"Corrupted map file '"+ampfile+"'");
   m_affm.resize(m_n);
   for (size_t size, i(2);i<m_n;++i) {
-    amp>>size;
+    *amp>>size;
     m_affm[i].resize(size);
-    for (size_t j(0);j<size;++j) amp>>m_affm[i][j];
+    for (size_t j(0);j<size;++j) *amp>>m_affm[i][j];
   }
-  amp>>cname;
+  *amp>>cname;
   if (cname!="eof")
     THROW(fatal_error,"Corrupted map file '"+ampfile+"'");
   return true;

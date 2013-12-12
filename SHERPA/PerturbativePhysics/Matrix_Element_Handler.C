@@ -133,6 +133,8 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
     MakeDir(m_respath+"/"+(*it)->Name(),false);
   }
 
+  My_In_File::OpenDB(m_respath+"/");
+  rpa->gen.AddToVariable("SQLITE_DATABASES"," "+m_respath+"/");
   bool okay(true);
   for (size_t i=0;i<m_procs.size();++i) {
     m_procs[i]->SetUpThreading();
@@ -142,6 +144,7 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
     m_procs[i]->SetLookUp(false);
     m_procs[i]->Integrator()->SetUpEnhance();
   }
+  My_In_File::CloseDB(m_respath+"/");
   return okay;
 }
 

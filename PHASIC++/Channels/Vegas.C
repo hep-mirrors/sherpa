@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/My_MPI.H"
 
 
@@ -664,12 +665,12 @@ void Vegas::WriteOut(const std::string & pid)
 void Vegas::ReadIn(const std::string & pid)
 {
   std::string fn=pid+std::string("_")+m_name+std::string("_Vegas"), tn;
-  std::ifstream ifile(fn.c_str());
-  if (ifile.bad()) return;
-  ifile>>tn;
+  My_In_File ifile(fn);
+  if (!ifile.Open()) return;
+  *ifile>>tn;
   if (tn!=m_name) THROW(fatal_error,"Corrupted input file");
   int nd;
-  ifile>>m_dim>>nd>>m_autooptimize>>m_nopt>>m_sint>>m_scnt;
+  *ifile>>m_dim>>nd>>m_autooptimize>>m_nopt>>m_sint>>m_scnt;
   if (nd!=m_nd) {
     m_nd=nd;
     m_nc=pow(double(m_nd),double(m_dim));
@@ -692,9 +693,9 @@ void Vegas::ReadIn(const std::string & pid)
   }
   if (m_nopt==0||m_on==0) return;
   std::string buffer;
-  getline(ifile,buffer);
+  getline(*ifile,buffer);
   for (int i=0;i<m_dim;++i) {
-    getline(ifile,buffer);
+    getline(*ifile,buffer);
     size_t  a=buffer.find("(")+1;
     size_t  b=buffer.find(")");
     char * err;
@@ -706,8 +707,8 @@ void Vegas::ReadIn(const std::string & pid)
     }
   }
   for (int i=0;i<m_dim;++i) {
-    ifile>>p_opt[i]>>p_chi[i];
-    getline(ifile,buffer);
+    *ifile>>p_opt[i]>>p_chi[i];
+    getline(*ifile,buffer);
     size_t  a=buffer.find("(")+1;
     size_t  b=buffer.find(")");
     char * err;

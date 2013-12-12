@@ -31,6 +31,8 @@ namespace SHERPA {
 
     void PrepareTerminate();
 
+    void WriteMakefile() const;
+
   public:
 
     Sherpa();

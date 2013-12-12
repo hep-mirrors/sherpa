@@ -127,6 +127,8 @@ void Grid_Creator::Clear()
 
 bool Grid_Creator::ReadInGrid()
 {
+  My_In_File::OpenDB(OutputPath());
+  rpa->gen.AddToVariable("SQLITE_DATABASES"," "+OutputPath());
   double sum=0.0;
   msg_Info()<<METHOD<<"(): Reading grid ";
   msg_Tracking()<<"{\n";
@@ -138,6 +140,7 @@ bool Grid_Creator::ReadInGrid()
 	  m_gridxmax-hit->second->XMax()>m_gridxmax*1.0e-7 ||
 	  hit->second->Entries()<m_initevents) {
 	Clear();
+	My_In_File::CloseDB(OutputPath());
 	return false;
       }
       double cur=hit->second->Norm()*rpa->Picobarn();
@@ -147,11 +150,13 @@ bool Grid_Creator::ReadInGrid()
     }
     else {
       Clear();
+      My_In_File::CloseDB(OutputPath());
       return false;
     }
   }
   msg_Info()<<" done."<<std::endl;
   msg_Tracking()<<"} -> sum = "<<sum<<" pb\n";
+  My_In_File::CloseDB(OutputPath());
   return true;
 }
 

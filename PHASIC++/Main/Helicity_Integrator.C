@@ -6,7 +6,7 @@
 #include "ATOOLS/Org/Smart_Pointer.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
 #include "ATOOLS/Phys/Blob.H"
-#include <fstream>
+#include "ATOOLS/Org/My_File.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -113,12 +113,13 @@ void Helicity_Integrator::WriteOut(const std::string &pid)
 
 void Helicity_Integrator::ReadIn(const std::string &pid)
 {
-  std::ifstream file((pid+"/HW_"+ToString(m_chirs.size())).c_str());
-  file.precision(14);
+  My_In_File file(pid+"/HW_"+ToString(m_chirs.size()));
+  if (!file.Open()) return;
+  file->precision(14);
   msg_Debugging()<<METHOD<<"(): Read {\n";
   double sum(0.0);
   for (size_t i(0);i<m_weights.size();++i) {
-    file>>m_weights[i]>>m_sum[i]>>m_sum2[i]>>m_n[i];
+    *file>>m_weights[i]>>m_sum[i]>>m_sum2[i]>>m_n[i];
     m_asum[i]=sum+=m_weights[i];
     msg_Debugging()<<"  "<<MakeId(i)<<" -> "<<m_weights[i]<<" ("<<sum<<")\n";
   }

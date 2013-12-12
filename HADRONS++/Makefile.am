@@ -2,6 +2,13 @@ SUBDIRS       =	Main ME_Library Current_Library PS_Library
 
 DIST_SUBDIRS  = Main ME_Library Current_Library PS_Library Run
 
+include ../sql.make
+
+if SQLITE_SUPPORT
+CREATE_SQLDB  =	$(MAKE) $(DESTDIR)$(pkgdatadir)/Decaydata.db;
+REMOVE_SQLDB  =	rm $(DESTDIR)$(pkgdatadir)/Decaydata.db;
+endif
+
 install-data-local:
 	@echo "Installing Decaydata (this may take a while)."; \
 	cd "$(srcdir)"; \
@@ -21,6 +28,7 @@ install-data-local:
 	  fi; \
 	done; \
 	cp Decaydata/*.dat "$(DESTDIR)$(pkgdatadir)/Decaydata/"; \
+	$(CREATE_SQLDB) \
 	cd -;
 
 uninstall-local:
@@ -28,6 +36,7 @@ uninstall-local:
 	rm -rf "$(DESTDIR)$(pkgdatadir)/Decaydata"; \
 	if test "$$(ls -A $(DESTDIR)$(pkgdatadir))" = ""; then \
 	rm -rf "$(DESTDIR)$(pkgdatadir)"; \
+	$(REMOVE_SQLDB) \
 	fi;
 
 dist-hook:

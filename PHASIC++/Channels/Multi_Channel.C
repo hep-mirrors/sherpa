@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Org/My_File.H"
 #include <algorithm>
 
 using namespace PHASIC;
@@ -460,14 +461,13 @@ void Multi_Channel::WriteOut(std::string pID)
 }
 
 bool Multi_Channel::ReadIn(std::string pID) {
-  ifstream ifile;
-  ifile.open(pID.c_str());
-  if (ifile.bad()) return false;
+  My_In_File ifile(pID);
+  if (!ifile.Open()) return false;
   size_t      size;
   std::string name;
   long int    points;
   double      alpha, alphasave, weight, res1, res2;
-  ifile>>size>>name;
+  *ifile>>size>>name;
   if (( size != channels.size()) || ( name != name) ) {
     msg_Error()<<"Error in Multi_Channel::ReadIn("<<pID<<")"<<endl 
 	       <<"  Multi_Channel file did not coincide with actual Multi_Channel: "<<endl
@@ -478,11 +478,11 @@ bool Multi_Channel::ReadIn(std::string pID) {
   m_readin=true;
   //   ifile>>n_points>>n_contrib>>m_result>>m_result2>>s1xmin>>m_sresult
   // >>m_sresult2>>m_ssigma2>>n_spoints>>m_optcnt;
-  ifile>>n_points>>n_contrib>>s1xmin>>m_optcnt;
+  *ifile>>n_points>>n_contrib>>s1xmin>>m_optcnt;
 
   double sum=0;
   for (size_t i=0;i<channels.size();i++) {
-    ifile>>name>>points>>alpha>>alphasave>>weight>>res1>>res2;
+    *ifile>>name>>points>>alpha>>alphasave>>weight>>res1>>res2;
     sum+= alpha;
     if (name != channels[i]->Name()) {
       msg_Error()<<"ERROR in "<<METHOD<<" for "<<pID<<")"<<endl 
@@ -500,7 +500,7 @@ bool Multi_Channel::ReadIn(std::string pID) {
     channels[i]->SetRes1(res1);
     channels[i]->SetRes2(res2);
   }
-  ifile.close();
+  ifile.Close();
   for (size_t i=0;i<channels.size();i++) channels[i]->ReadIn(pID);
   return 1;
 }

@@ -29,6 +29,8 @@ namespace ATOOLS {
   std::vector<std::string> RegExMatch
   (const std::string &str,const std::string &pat,const size_t nm=1);
 
+  std::string ShortenPathName(std::string path);
+
 }// end of namespace ATOOLS
 
 #endif

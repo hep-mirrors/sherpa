@@ -24,6 +24,7 @@ The following parameters describe general run information. They may be set in th
 * Event output formats:: Event output in different formats.
 * MPI parallelization::  MPI parallelization with Sherpa.
 * Multi-threading::      Multi-threaded integration with Sherpa.
+* SQLite databases::     SQLite databases within Sherpa. 
 @end menu
 
 
@@ -369,7 +370,7 @@ must be given during installation to enable this feature.
 @node MPI parallelization
 @subsection MPI parallelization
 MPI parallelization in Sherpa can be enabled using the configuration
-option @samp{--enable-mpi}. Sherpa supports
+option @option{--enable-mpi}. Sherpa supports
 @uref{http://www.open-mpi.org/,,OpenMPI}
 and
 @uref{http://www.mcs.anl.gov/research/projects/mpich2/,,MPICH2}
@@ -380,8 +381,8 @@ the integration process, as event generation can be parallelized trivially
 by starting multiple instances of Sherpa with different random seed, cf.
 @ref{RANDOM_SEED}. However, both the internal analysis module and the Root
 NTuple writeout can be used with MPI. Note that these require substantial 
-data transfer. We only recommend to use them in MPI mode if your local cluster
-has sufficient ethernet bandwidth.
+data transfer. MPI is most efficiently used in combination with
+@ref{SQLite databases}, although this is not a requirement.
 
 @node Multi-threading
 @subsection Multi-threading
@@ -398,3 +399,12 @@ Additionally, matrix-element calculation and phase-space evaluation for a
 single process with Comix can be distributed to different threads according to 
 @mycite{Gleisberg2008fv}. The number of threads is then specified using the 
 parameters @option{COMIX_ME_THREADS} and @option{COMIX_PS_THREADS}, respectively.
+
+@node SQLite databases
+@subsection SQLite databases
+
+SQLite databases can be used to store various parts of Sherpa input which is
+normally partitioned into many small files. This is particularly useful in
+combination with @ref{MPI parallelization}, where I/O speed may severely
+limit the performance of the generator. This option is enabled using 
+@option{--enable-sqlite}.

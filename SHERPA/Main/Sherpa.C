@@ -135,6 +135,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
       m_debugstep=debugstep;
       ran->ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
     }
+    WriteMakefile();
     return res;
   }
   msg_Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl
@@ -285,6 +286,41 @@ double Sherpa::GetMEWeight(const Cluster_Amplitude &ampl) const
 {
   return p_inithandler->GetMatrixElementHandler()->
     GetWeight(ampl,PHASIC::nlo_type::lo);
+}
+
+void Sherpa::WriteMakefile() const
+{
+#ifdef USING__SQLITE
+  std::string db=rpa->gen.Variable("SQLITE_DATABASES");
+  Data_Reader read(" ",";","#","=");
+  read.SetString(db);
+  std::vector<std::string> dbs;
+  read.VectorFromString(dbs);
+  if (dbs.size()) {
+    My_Out_File mf(rpa->gen.Variable("SHERPA_RUN_PATH")+"/Makefile");
+    mf.Open();
+    *mf<<"\n%.db: %\n";
+    *mf<<"\t@fl=$$(find $<); rm -f $@; \\\n";
+    *mf<<"\techo -n \"Building '\"$@\"'(\"$$(echo $$fl | wc -w)\") \"; \\\n";
+    *mf<<"\tsqlite3 $@ \"create table path(file,content);\"; \\\n";
+    *mf<<"\tfor i in $$fl; do \\\n";
+    *mf<<"\t  test -d $$i && continue; echo -n \".\"; \\\n";
+    *mf<<"\t  fn=$$(echo $$i | sed 's|'$<'||g;s|^/||g'); \\\n";
+    *mf<<"\t  sed -e\"s|'|''|g\" -e \"$$ s|$$|');|1\" \\\n";
+    *mf<<"\t    -e\"1 s|^|insert into path values('$$fn','|1\" \\\n";
+    *mf<<"\t    $$i | sqlite3 $@; \\\n";
+    *mf<<"\tdone; echo \" done\"\n\n";
+    *mf<<"db:";
+    for (size_t i(0);i<dbs.size();++i) {
+      std::string cdb=ShortenPathName(dbs[i]);
+      if (cdb.find(rpa->gen.Variable("SHERPA_RUN_PATH"))==0)
+	cdb.erase(0,rpa->gen.Variable("SHERPA_RUN_PATH").length()+1);
+      *mf<<" "<<cdb+".db";
+    }
+    *mf<<"\n\n";
+    mf.Close();
+  }
+#endif
 }
 
 void Sherpa::DrawLogo(const int mode) 

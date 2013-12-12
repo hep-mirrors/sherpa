@@ -141,6 +141,7 @@ ATOOLS::EnvironmentVariable(const std::string &name,std::string entry)
 
 bool ATOOLS::FileExists(const std::string &file)
 {
+  if (My_In_File::FileInDB(file)) return true;
   struct stat fst;
   if (stat(file.c_str(),&fst)!=-1)
     return (fst.st_mode&S_IFMT)==S_IFREG;
@@ -214,4 +215,15 @@ std::vector<std::string> ATOOLS::RegExMatch
   }
   regfree(&re);
   return res;
+}
+
+std::string ATOOLS::ShortenPathName(std::string path)
+{
+  while (path.length() && path[path.length()-1]=='/')
+    path.erase(path.length()-1);
+  for (size_t pos=path.find("//");pos!=std::string::npos;
+       pos=path.find("//")) path.erase(pos,1);
+  for (size_t pos=path.find("./");pos!=std::string::npos;
+       pos=path.find("./")) path.erase(pos,2);
+  return path;
 }
