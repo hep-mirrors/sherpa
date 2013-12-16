@@ -1238,7 +1238,7 @@ bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
 bool Amplitude::JetTrigger
 (PHASIC::Combined_Selector *const sel,const int mode)
 {
-  if (m_scur.empty() || sel==NULL) return true;
+  if (m_subs.empty() || sel==NULL) return true;
   NLO_subevtlist tmp;
   tmp.resize(1,m_subs.back());
   bool trig(m_trig=sel->JetTrigger(m_p,&tmp));
