@@ -1710,6 +1710,7 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
     }
     msg_Debugging()<<"\\sigma_{tot} = "<<xs<<" vs. "<<rxs
 		   <<" -> dev. "<<xs/rxs-1.0<<"\n";
+    m_res=xs;
     if (!IsEqual(xs,rxs)) {
       msg_Error().precision(12);
       msg_Error()<<"\n"<<METHOD<<"(): Large deviation {\n      "
@@ -1718,15 +1719,6 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
 		  <<(xs/rxs-1.0)<<"\n}"<<std::left<<std::endl;
       msg_Error().precision(6);
       return true;
-    }
-    if (!IsEqual(xs,rxs,rpa->gen.Accu())) {
-      msg_Error().precision(12);
-      msg_Error()<<"\n"<<METHOD<<"(): Gauge test failed {\n      "
-		  <<std::setw(18)<<std::right<<xs<<"\n   vs "
-		  <<std::setw(18)<<rxs<<"\n   => "<<std::setw(18)
-		  <<(xs/rxs-1.0)<<"\n}"<<std::left<<std::endl;
-      msg_Error().precision(6);
-      return false;
     }
   }
   else {
