@@ -73,7 +73,7 @@ namespace PHASIC {
     SP(Color_Integrator) p_ci;
 
     size_t m_cnt, m_rej, m_mode, m_cmode, m_cmoders;
-    double m_lfrac, m_aqed, m_wthres, m_rsf;
+    double m_lfrac, m_aqed, m_wthres, m_rsf, m_csf;
     int    m_rproc, m_sproc, m_vproc, m_nproc, m_nfgsplit;
 
     ATOOLS::DecayInfo_Vector m_decids;
@@ -247,6 +247,9 @@ METS_Scale_Setter::METS_Scale_Setter
   m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   if (m_rsf!=1.0) msg_Debugging()<<METHOD<<
 		    "(): Renormalization scale factor "<<sqrt(m_rsf)<<"\n";
+  m_csf=read.GetValue<double>("METS_CLUSTER_SCALE_FACTOR",1.);
+  if (m_csf!=1.0) msg_Debugging()<<METHOD<<
+                    "(): METS cluster scale factor "<<sqrt(m_csf)<<"\n";
 }
 
 METS_Scale_Setter::~METS_Scale_Setter()
@@ -609,6 +612,7 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
     for (size_t idx(2);ampl->Next();++idx,ampl=ampl->Next()) {
       scale[idx]=Max(ampl->Mu2(),MODEL::as->CutQ2());
       scale[idx]=Min(scale[idx],sqr(rpa->gen.Ecms()));
+      scale[idx]*=m_csf;
       mum2=Min(mum2,scale[idx]);
       bool skip(false);
       Cluster_Amplitude *next(ampl->Next());
@@ -634,11 +638,18 @@ double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
       if (coqcd>0.0) {
 	double cas(MODEL::as->BoundedAlphaS(m_rsf*scale[idx]));
 	msg_Debugging()<<"  \\mu_{"<<idx<<"} = "
-		       <<sqrt(m_rsf)<<" * "<<sqrt(scale[idx])
+		       <<sqrt(m_rsf)<<" * "<<sqrt(m_csf)<<" * "
+		       <<sqrt(scale[idx]/m_csf)
 		       <<", as = "<<cas<<", O(QCD) = "<<coqcd<<"\n";
 	mur2*=pow(m_rsf*scale[idx],coqcd);
 	as*=pow(cas,coqcd);
 	oqcd+=coqcd;
+      }
+      else {
+        msg_Debugging()<<"  \\mu_{"<<idx<<"} = "
+                       <<sqrt(m_rsf)<<" * "<<sqrt(m_csf)<<" * "
+                       <<sqrt(scale[idx]/m_csf)
+                       <<", EW splitting\n";
       }
       if (oqcd==0) m_scale[stp::size+stp::res]=ampl->Next()->KT2();
     }

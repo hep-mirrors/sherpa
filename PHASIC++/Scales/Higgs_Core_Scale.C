@@ -29,6 +29,7 @@ PDF::CParam Higgs_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   DEBUG_FUNC("");
   msg_Debugging()<<*ampl<<"\n";
   if (ampl->Legs().size()==3 && ampl->NIn()==2) {
+    msg_Debugging()<<"2->1 like\n";
     double kt2cmin(ampl->Leg(2)->Mom().Abs2());
     return PDF::CParam(kt2cmin,kt2cmin,0.0,kt2cmin,-1);
   }
@@ -37,6 +38,7 @@ PDF::CParam Higgs_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   if (campl->Legs().size()!=ampl->Legs().size())
     msg_Debugging()<<*campl<<"\n";
   if (campl->Legs().size()!=4) {
+    msg_Debugging()<<"unknown config\n";
     double q2((campl->Leg(0)->Mom()+campl->Leg(1)->Mom()).Abs2());
     Vec4D ewsum;
     for (size_t i(0);i<campl->Legs().size();++i)
