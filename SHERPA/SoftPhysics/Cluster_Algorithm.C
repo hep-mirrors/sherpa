@@ -308,8 +308,8 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
 	kt2min = Min(m_tmax,split->Mom().PPerp2(m_rescvec));
       }
     }
-    if (kt2max>totmax) totmax = kt2max;
-    split->SetKTStart(kt2max);
+    if (kt2max>totmax) totmax = kt2max * exp(1.-dabs(ysplit));
+    split->SetKTStart(kt2max * exp(1.-dabs(0.3*ysplit)));
     
     m_histomap[std::string("startvspt")]->Insert(split->Mom().PPerp(),kt2max);  
     m_histomap[std::string("vetovspt")]->Insert(split->Mom().PPerp(),kt2min);  

@@ -50,8 +50,8 @@ namespace SHRIMPS {
     PDF::PDF_Base                  * p_pdf;
     std::list<ATOOLS::Flavour>       m_pdfpartons;
     ATOOLS::Flavour                  m_bunch;
-    double                           m_xmin,m_xmax,m_Q02;
-    double                           m_Vnorm,m_Snorm,m_geta,m_gnorm;
+    double                           m_xmin,m_xmax,m_Q02,m_geta,m_glambda;
+    double                           m_Vnorm,m_Snorm,m_gnorm;
     double                           m_x,m_Q2;
     std::map<ATOOLS::Flavour,double> m_xpdfmax;
     std::map<ATOOLS::Flavour,double> m_xmaxpdf;

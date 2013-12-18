@@ -282,7 +282,8 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
       m_histomap[std::string("KT2_test1")]->Insert(kt12); 
       m_histomap[std::string("KT2_test2")]->Insert(kt12); 
     }
-    if (p_alphaS->Weight(kt12)<ran->Get()) {
+    if (p_alphaS->Weight(kt12/2.5)<ran->Get()) {
+      // kt12
       m_alphaS++;
       continue;
     }

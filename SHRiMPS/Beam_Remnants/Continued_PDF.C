@@ -10,7 +10,7 @@ Continued_PDF::Continued_PDF(PDF::PDF_Base * pdf,
 			     const Flavour & bunch) :
   p_pdf(pdf), m_bunch(bunch), 
   m_xmin(p_pdf->XMin()), m_xmax(p_pdf->XMax()), m_Q02(p_pdf->Q2Min()),
-  m_geta(-0.1)
+  m_geta(2.), m_glambda(-0.25)
 {
   m_pdfpartons.push_back(Flavour(kf_u));
   m_pdfpartons.push_back(Flavour(kf_d));
@@ -40,10 +40,13 @@ void Continued_PDF::CalculateNorms()
   Valence_Kernel val(p_pdf,m_bunch,&m_pdfpartons,m_Q02);
   Gauss_Integrator vintegrator(&val);
   m_Vnorm = vintegrator.Integrate(m_xmin,m_xmax,0.0001,1);
-  if (dabs(m_geta+1)<1.e-6) 
-    m_gnorm = log(m_xmax/m_xmin);
-  else 
-    m_gnorm = 1./(m_geta+1.) * (pow(m_xmax,m_geta+1)-pow(m_xmin,m_geta+1));
+  m_gnorm = 
+    exp(Gammln(m_geta+1.))*exp(Gammln(m_glambda+1.))/
+    exp(Gammln(m_geta+m_glambda+2.));
+  //std::cout<<"Gamma("<<0.5<<") = "<<exp(Gammln(0.5))<<", "
+  //	   <<"Gamma("<<2<<") = "<<exp(Gammln(2))<<", "
+  //	   <<"Gamma("<<4<<") = "<<exp(Gammln(4))<<".\n";
+  //exit(1);
 }
 
 double Continued_PDF::XPDF(const Flavour & flav,const bool & defmax) {
@@ -66,14 +69,13 @@ double Continued_PDF::XPDF(const Flavour & flav,const bool & defmax) {
     }
     else if (flav==Flavour(kf_gluon)) {
       seapart = p_pdf->GetXPDF(flav)*(m_Q2/m_Q02); 
-      valpart = 1./m_gnorm * pow(m_x,m_geta) *
-	//1./(2.*sqrt(m_x)) *
-	/*
-	  ((p_pdf->GetXPDF(Flavour(kf_u))-p_pdf->GetXPDF(Flavour(kf_u).Bar()) +
-	  p_pdf->GetXPDF(Flavour(kf_d))-p_pdf->GetXPDF(Flavour(kf_d).Bar()))/  
-	 m_Vnorm) *
-	*/ 
+      valpart = 1./m_gnorm * pow(1.-m_x,m_geta) * pow(m_x,m_glambda) *
 	m_Snorm * (1.-m_Q2/m_Q02);
+      /*
+	((p_pdf->GetXPDF(Flavour(kf_u))-p_pdf->GetXPDF(Flavour(kf_u).Bar()) +
+	p_pdf->GetXPDF(Flavour(kf_d))-p_pdf->GetXPDF(Flavour(kf_d).Bar()))/  
+	m_Vnorm) *
+      */ 
     }
     else
       seapart = p_pdf->GetXPDF(flav)*(m_Q2/m_Q02);
@@ -118,7 +120,7 @@ double Continued_PDF::Sea_Kernel::operator()(double x) {
       if ((*flit)==Flavour(kf_u) || (*flit)==Flavour(kf_d)) 
 	continue;
       else if ((*flit)==Flavour(kf_u).Bar() || (*flit)==Flavour(kf_d).Bar())
-	xpdf += 2.*p_pdf->GetXPDF((*flit).Bar());
+	xpdf += 2.*p_pdf->GetXPDF((*flit));
       else 
 	xpdf += p_pdf->GetXPDF((*flit));
     }
@@ -126,7 +128,7 @@ double Continued_PDF::Sea_Kernel::operator()(double x) {
       if ((*flit)==Flavour(kf_u).Bar() || (*flit)==Flavour(kf_d).Bar()) 
 	continue;
       else if ((*flit)==Flavour(kf_u) || (*flit)==Flavour(kf_d))
-	xpdf += 2.*p_pdf->GetXPDF((*flit).Bar());
+	xpdf += 2.*p_pdf->GetXPDF((*flit));
       else 
 	xpdf += p_pdf->GetXPDF((*flit));
     }
