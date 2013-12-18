@@ -9,7 +9,8 @@ using namespace ATOOLS;
 Continued_PDF::Continued_PDF(PDF::PDF_Base * pdf,
 			     const Flavour & bunch) :
   p_pdf(pdf), m_bunch(bunch), 
-  m_xmin(p_pdf->XMin()), m_xmax(p_pdf->XMax()), m_Q02(p_pdf->Q2Min())
+  m_xmin(p_pdf->XMin()), m_xmax(p_pdf->XMax()), m_Q02(p_pdf->Q2Min()),
+  m_geta(-0.1)
 {
   m_pdfpartons.push_back(Flavour(kf_u));
   m_pdfpartons.push_back(Flavour(kf_d));
@@ -39,6 +40,10 @@ void Continued_PDF::CalculateNorms()
   Valence_Kernel val(p_pdf,m_bunch,&m_pdfpartons,m_Q02);
   Gauss_Integrator vintegrator(&val);
   m_Vnorm = vintegrator.Integrate(m_xmin,m_xmax,0.0001,1);
+  if (dabs(m_geta+1)<1.e-6) 
+    m_gnorm = log(m_xmax/m_xmin);
+  else 
+    m_gnorm = 1./(m_geta+1.) * (pow(m_xmax,m_geta+1)-pow(m_xmin,m_geta+1));
 }
 
 double Continued_PDF::XPDF(const Flavour & flav,const bool & defmax) {
@@ -61,15 +66,19 @@ double Continued_PDF::XPDF(const Flavour & flav,const bool & defmax) {
     }
     else if (flav==Flavour(kf_gluon)) {
       seapart = p_pdf->GetXPDF(flav)*(m_Q2/m_Q02); 
-      valpart = 
-	(p_pdf->GetXPDF(Flavour(kf_u))-p_pdf->GetXPDF(Flavour(kf_u).Bar()) +
-	 p_pdf->GetXPDF(Flavour(kf_d))-p_pdf->GetXPDF(Flavour(kf_d).Bar())) *  
-	m_Snorm/m_Vnorm * (1.-m_Q2/m_Q02);
+      valpart = 1./m_gnorm * pow(m_x,m_geta) *
+	//1./(2.*sqrt(m_x)) *
+	/*
+	  ((p_pdf->GetXPDF(Flavour(kf_u))-p_pdf->GetXPDF(Flavour(kf_u).Bar()) +
+	  p_pdf->GetXPDF(Flavour(kf_d))-p_pdf->GetXPDF(Flavour(kf_d).Bar()))/  
+	 m_Vnorm) *
+	*/ 
+	m_Snorm * (1.-m_Q2/m_Q02);
     }
     else
       seapart = p_pdf->GetXPDF(flav)*(m_Q2/m_Q02);
   }
-  else if (m_bunch==Flavour(kf_p_plus)) {
+  else if (m_bunch==Flavour(kf_p_plus).Bar()) {
     if (flav==Flavour(kf_u).Bar() || flav==Flavour(kf_d).Bar()) {
       seapart = p_pdf->GetXPDF(flav.Bar())*(m_Q2/m_Q02); 
       valpart = p_pdf->GetXPDF(flav)-p_pdf->GetXPDF(flav.Bar());

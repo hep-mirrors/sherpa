@@ -10,7 +10,7 @@ using namespace std;
 Hadron_Dissociation::Hadron_Dissociation(Continued_PDF *const pdf) :
   p_pdf(pdf), m_bunch(p_pdf->Bunch()), 
   m_ycut(MBpars("originalY")), //-MBpars("deltaY")),
-  m_analyse(false)
+  m_analyse(true)
 { 
   if (m_analyse) {
     m_histomap[string("KT_remn_orig")] = new Histogram(0,0.0,5.0,50);
@@ -129,31 +129,32 @@ DefineDissociation(const int & Nladders,const double B,
 		   Form_Factor * ff)
 {
   //msg_Out()<<METHOD<<"("<<Nladders<<", xcut="<<xcut<<", eta="<<eta<<"):\n";
+  int npart(Nladders+1);
   m_elastic = false;
-  FillParticleList(Nladders+1);
+  FillParticleList(npart);
 
-  double  xmin(p_pdf->XMin()*double(Nladders+2)),xave(1./double(Nladders+2));
-  double  startweight(pow(1.25,Nladders)*pow(xave,-(2+Nladders)*eta));
+  double  xmin(p_pdf->XMin()*double(npart+1)),xave(1./double(npart+1));
+  double  startweight(pow(1.25,npart-1)*pow(xave,-(npart+1)*eta));
   
   if (xmin<xcut) {
     int     trials(0);
     double  weight,wt,x,xsum,maxwt(0.);
     Flavour flav;
-    while (trials++<pow(10.,ATOOLS::Min(4,Nladders+3))) {
+    while (trials++<pow(10.,ATOOLS::Min(4,npart+2))) {
       m_xs.clear();
       weight = startweight;
       xsum   = 0.;
       int idiquark;
-      for (int i=0;i<Nladders+2;i++) {
+      for (int i=0;i<npart+1;i++) {
 	xsum += x = xcut + (1.-xcut)*ran->Get();
 	m_xs.push_back(x);
       }
-      for (int i=0;i<Nladders+2;i++) {
+      for (int i=0;i<npart+1;i++) {
 	x    = m_xs[i] /= xsum;
 	flav = m_particles[i]->Flav();
 	if (flav.IsDiQuark()) {
 	  if (x/2<p_pdf->XMin()) { weight = 0.; break; }
-          weight *= wt = pow(1.+xcut-x,-Nladders);//exp((x-1.)/Nladders); 
+          weight *= wt = exp((x-1.)/Nladders);  //pow(1.+xcut-x,-npart+1);//
 	}
         else if (flav.IsQuark()) {
 	  if (x<p_pdf->XMin()) { weight = 0.; break; }
@@ -161,13 +162,13 @@ DefineDissociation(const int & Nladders,const double B,
 	  weight *= wt = p_pdf->XPDF(flav)/p_pdf->XPDFMax(flav)/x;
 	}
 	// the extra x in xpdf compensates for the incoming flux.
-	if (i!=Nladders+1 && !IsZero(eta)) weight *= pow(x,eta);
+	if (i!=npart && !IsZero(eta)) weight *= pow(x,eta);
       }
       if (weight>maxwt) maxwt=weight;
       if (weight>1.) {
 	msg_Tracking()<<"\n";
 	msg_Tracking()<<"   Potential Error in "<<METHOD
-		      <<"(Nladders="<<Nladders<<"): "
+		      <<"(npart = "<<npart<<"): "
 		      <<"weight = "<<weight<<">1 "
 		      <<"(start = "<<startweight<<").\n";
       }
@@ -177,15 +178,15 @@ DefineDissociation(const int & Nladders,const double B,
 	  if (m_analyse) {
 	    if (m_particles[i]->Flav().IsGluon()){
 	      m_histomap["X_gluon"]->Insert(m_xs[i]);
-	      m_histomap2D["X_gluon_2D"]->Insert(Nladders,m_xs[i]);
+	      m_histomap2D["X_gluon_2D"]->Insert(npart-1,m_xs[i]);
 	    }
 	    else if (m_particles[i]->Flav().IsQuark()){
 	      m_histomap["X_quark"]->Insert(m_xs[i]);
-	      m_histomap2D["X_quark_2D"]->Insert(Nladders,m_xs[i]);
+	      m_histomap2D["X_quark_2D"]->Insert(npart-1,m_xs[i]);
 	    }
 	    else if (m_particles[i]->Flav().IsDiQuark()){
 	      m_histomap["X_diquark"]->Insert(m_xs[i]);
-	      m_histomap2D["X_diquark_2D"]->Insert(Nladders,m_xs[i]);
+	      m_histomap2D["X_diquark_2D"]->Insert(npart-1,m_xs[i]);
 	    }
 	  }
 	}

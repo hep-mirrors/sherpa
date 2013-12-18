@@ -688,8 +688,6 @@ double Final_State::Saturation(const double & y) {
     eik = p_eikonal->lambda()/2. *
       ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y)+
        (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y));
-    //eik = 1./((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y)+
-    //	      (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y)+1.);
   }
   return (m_Q02 + (m_nprimlad-1)*m_QN2)*eik;
 }
