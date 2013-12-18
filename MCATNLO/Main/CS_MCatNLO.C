@@ -276,7 +276,7 @@ GetRealEmissionAmplitude(const int mode)
 	(p_rampl->IdLeg((*it)->Id()?(*it)->Id():1)->NMax());
     }
   }
-  ampl->SetKT2(p_rampl->KT2());
+  ampl->SetKT2(p_rampl->MuQ2());
   ampl->SetNewCol(p_powheg->GetLast()[3]->Color().m_new);
   Process_Base::SortFlavours(ampl);
   return ampl;

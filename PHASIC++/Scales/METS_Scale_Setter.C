@@ -326,20 +326,6 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
   m_p=momenta;
   p_ci=p_proc->Integrator()->ColorIntegrator();
   for (size_t i(0);i<p_proc->NIn();++i) m_p[i]=-m_p[i];
-  if (m_nout==(m_rproc?2:1)) {
-    m_scale[stp::size+stp::res]=m_scale[stp::res]=m_p[2].Abs2();
-    m_scale[stp::size+stp::fac]=m_scale[stp::fac]=m_scale[stp::res];
-    m_scale[stp::size+stp::ren]=m_scale[stp::ren]=m_scale[stp::res];
-    for (size_t i(0);i<m_calcs.size();++i)
-      m_scale[i]=m_calcs[i]->Calculate()->Get<double>();
-    for (size_t i(m_calcs.size());i<stp::size;++i) m_scale[i]=m_scale[0];
-    msg_Debugging()<<METHOD<<"(): Set {\n"
-		   <<"  \\mu_q = "<<sqrt(m_scale[stp::res])<<"\n"
-		   <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
-		   <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n";
-    msg_Debugging()<<"} <- "<<(p_caller?p_caller->Name():"")<<"\n";
-    return m_scale[stp::fac];
-  }
   while (m_ampls.size()) {
     m_ampls.back()->Delete();
     m_ampls.pop_back();
