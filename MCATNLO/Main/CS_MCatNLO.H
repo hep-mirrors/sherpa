@@ -21,7 +21,7 @@ namespace MCATNLO {
     size_t m_maxem, m_nem, m_psmode;
     double m_maxweight;
     
-    Shower          * p_powheg;
+    Shower          * p_mcatnlo;
     All_Singlets m_allsinglets;
     CS_Cluster_Definitions *p_cluster;
     CS_Gamma *p_gamma;

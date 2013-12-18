@@ -17,7 +17,7 @@ using namespace ATOOLS;
 using namespace std;
 
 std::ostream& MCATNLO::operator<<(std::ostream& str, Singlet & singlet) {
-  str<<"Singlet parton list from CS_MCATNLO : "<<&singlet<<endl;
+  str<<"Singlet parton list from CS_MCatNLO : "<<&singlet<<endl;
   Parton * part;
   for (PLiter plit=singlet.begin();plit!=singlet.end();plit++) {
     part = (*plit);
@@ -28,7 +28,7 @@ std::ostream& MCATNLO::operator<<(std::ostream& str, Singlet & singlet) {
 }
 
 std::ostream& MCATNLO::operator<<(std::ostream & str,All_Singlets & all) {
-  str<<"Singlet list from CS_MCATNLO : "<<endl;
+  str<<"Singlet list from CS_MCatNLO : "<<endl;
   Singlet * sing;
   for (ASiter asit=all.begin();asit!=all.end();asit++) {
     sing = (*asit);

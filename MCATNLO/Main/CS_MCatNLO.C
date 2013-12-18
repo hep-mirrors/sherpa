@@ -19,7 +19,7 @@ using namespace std;
 CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const model,
 		     Data_Reader *const _dataread) : 
   NLOMC_Base("MC@NLO_CSS"), p_isr(_isr), 
-  p_powheg(NULL), p_cluster(NULL), p_gamma(NULL)
+  p_mcatnlo(NULL), p_cluster(NULL), p_gamma(NULL)
 {
   m_psmode=_dataread->GetValue<int>("NLO_CSS_PSMODE",0);
   if (m_psmode) msg_Info()<<METHOD<<"(): Set PS mode "<<m_psmode<<".\n";
@@ -28,19 +28,19 @@ CS_MCatNLO::CS_MCatNLO(PDF::ISR_Handler *const _isr,MODEL::Model_Base *const mod
   m_maxem=_dataread->GetValue<int>("NLO_CSS_MAXEM",1);
   SF_Lorentz::SetKappa(_dataread->GetValue<double>("DIPOLE_KAPPA",2.0/3.0));
 
-  p_powheg = new Shower(_isr,0,_dataread);
+  p_mcatnlo = new Shower(_isr,0,_dataread);
   p_next = new All_Singlets();
-  p_cluster = new CS_Cluster_Definitions(p_powheg,1);
-  p_gamma = new CS_Gamma(this,p_powheg,p_cluster);
+  p_cluster = new CS_Cluster_Definitions(p_mcatnlo,1);
+  p_gamma = new CS_Gamma(this,p_mcatnlo,p_cluster);
   p_gamma->SetOEF(_dataread->GetValue<double>("CSS_OEF",3.0));
-  p_powheg->SetGamma(p_gamma);
-  m_kt2min=p_powheg->GetSudakov()->ISPT2Min();
+  p_mcatnlo->SetGamma(p_gamma);
+  m_kt2min=p_mcatnlo->GetSudakov()->ISPT2Min();
 }
 
 CS_MCatNLO::~CS_MCatNLO() 
 {
   CleanUp();
-  if (p_powheg) delete p_powheg;
+  if (p_mcatnlo) delete p_mcatnlo;
   if (p_cluster) delete p_cluster;
   if (p_gamma) delete p_gamma;
   delete p_next;
@@ -74,7 +74,7 @@ int CS_MCatNLO::GeneratePoint(Cluster_Amplitude *const ampl)
     rampl->SetNext(ampl);
     size_t idnew(rampl->IdNew());
     rampl->SetIdNew(0);
-    Parton * const* last(p_powheg->GetLast());
+    Parton * const* last(p_mcatnlo->GetLast());
     while (rampl->Next()) {
       rampl=rampl->Next();
       for (size_t i(0);i<rampl->Legs().size();++i) {
@@ -132,12 +132,12 @@ int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem,const double &qfa
   p_gamma->SetOn(1);
   for (All_Singlets::const_iterator 
 	 sit(m_allsinglets.begin());sit!=m_allsinglets.end();++sit) {
-    msg_Debugging()<<"before powheg step\n";
+    msg_Debugging()<<"before mc@nlo step\n";
     msg_Debugging()<<**sit;
     size_t pem(nem);
-    if (!p_powheg->EvolveShower(*sit,maxem,nem)) return 0;
-    m_weight*=p_powheg->Weight();
-    msg_Debugging()<<"after powheg step with "<<nem-pem
+    if (!p_mcatnlo->EvolveShower(*sit,maxem,nem)) return 0;
+    m_weight*=p_mcatnlo->Weight();
+    msg_Debugging()<<"after mc@nlo step with "<<nem-pem
 		   <<" emission(s), w = "<<m_weight<<"\n";
     msg_Debugging()<<**sit;
     msg_Debugging()<<"\n";
@@ -171,7 +171,7 @@ bool CS_MCatNLO::PrepareMCatNLO(Cluster_Amplitude *const ampl)
     msg_Debugging()<<"\n";
   }
   msg_Debugging()<<"}\n";
-  p_powheg->SetMS(p_ms);
+  p_mcatnlo->SetMS(p_ms);
   return true;
 }
 
@@ -219,7 +219,7 @@ Singlet *CS_MCatNLO::TranslateAmplitude
     else parton->SetMEFlow(1,0);
     if (cj!=col.end()) parton->SetMEFlow(2,cj->second);
     else parton->SetMEFlow(2,0);
-    parton->SetKin(p_powheg->KinScheme());
+    parton->SetKin(p_mcatnlo->KinScheme());
     if (is) {
       if (Vec3D(p.Momentum())*Vec3D(rpa->gen.PBeam(0))>0.) {
 	parton->SetXbj(p.Momentum()[0]/rpa->gen.PBeam(0)[0]);
@@ -277,7 +277,7 @@ GetRealEmissionAmplitude(const int mode)
     }
   }
   ampl->SetKT2(p_rampl->MuQ2());
-  ampl->SetNewCol(p_powheg->GetLast()[3]->Color().m_new);
+  ampl->SetNewCol(p_mcatnlo->GetLast()[3]->Color().m_new);
   Process_Base::SortFlavours(ampl);
   return ampl;
 }
