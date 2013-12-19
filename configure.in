@@ -75,9 +75,38 @@ AC_TYPE_SIZE_T
 dnl Checks for library functions.
 AC_CHECK_FUNCS(mkdir)
 
+
+
 SHERPA_SETUP_CONFIGURE_OPTIONS
 
 SHERPA_SETUP_VARIABLES
+
+
+
+sqliteprefix=$ac_default_prefix;
+if test "x$prefix" != xNONE; then sqliteprefix=$prefix; fi
+if test "$INSTALL_SQLITE" = "1"; then
+  wget http://www.sqlite.org/2013/sqlite-autoconf-3080200.tar.gz;
+  tar xzf sqlite-autoconf-3080200.tar.gz;
+  cd sqlite-autoconf-3080200;
+  ./configure --prefix=${sqliteprefix} --disable-static || exit;
+  make || exit;
+  make install || exit;
+  cd ..;
+  rm -rf sqlite-autoconf-3080200.tar.gz sqlite-autoconf-3080200/;
+  echo "Successfully installed sqlite3 into ${sqliteprefix}."
+  export LDFLAGS="$LDFLAGS -L${sqliteprefix}/lib"
+  export CPPFLAGS="$CPPFLAGS -I${sqliteprefix}/include"
+fi;
+AC_CHECK_LIB(sqlite3, sqlite3_open, [libsql_found=yes], [libsql_found=no])
+AC_CHECK_HEADER(sqlite3.h, [sqllibh_found=yes], [sqllibh_found=no])
+if test "$libsql_found" = "yes" -a "$sqllibh_found" = "yes"; then
+  echo "found system copy of sqlite3.";
+else
+  AC_MSG_ERROR([Sqlite3 is required but was not found on your system. Please use your package manager to install (lib)sqlite3 and the corresponding development package (recommended). If you instead want Sherpa to download and install sqlite3 into ${sqliteprefix} during configure, please export INSTALL_SQLITE=1 and run configure again. If you have already installed sqlite3 into a non-standard location, please specify the correct LDFLAGS and CPPFLAGS."])
+fi;
+
+
 
 AC_OUTPUT(ATOOLS/Math/Makefile \
 	  ATOOLS/Phys/Makefile \

@@ -444,19 +444,19 @@ void Multi_Channel::Print() {
 
 void Multi_Channel::WriteOut(std::string pID) 
 {
-  ofstream ofile;
-  ofile.open(pID.c_str());
-  ofile.precision(12);
-  ofile<<channels.size()<<" "<<name<<" "<<n_points<<" "<<n_contrib<<" "
+  My_Out_File ofile(pID);
+  ofile.Open();
+  ofile->precision(12);
+  *ofile<<channels.size()<<" "<<name<<" "<<n_points<<" "<<n_contrib<<" "
        <<s1xmin<<" "<<m_optcnt<<endl;
 //        <<m_result<<" "<<m_result2<<" "<<s1xmin<<" "
 //        <<m_sresult<<" "<<m_sresult2<<" "<<m_ssigma2<<" "<<n_spoints<<" "<<m_optcnt<<endl;
   for (size_t i=0;i<channels.size();i++) 
-    ofile<<channels[i]->Name()<<" "<<n_points<<" "
+    *ofile<<channels[i]->Name()<<" "<<n_points<<" "
 	 <<channels[i]->Alpha()<<" "<<channels[i]->AlphaSave()<<" "
 	 <<0<<" "<<channels[i]->Res1()<<" "
 	 <<channels[i]->Res2()<<std::endl;
-  ofile.close();
+  ofile.Close();
   for (size_t i=0;i<channels.size();i++) channels[i]->WriteOut(pID);
 }
 

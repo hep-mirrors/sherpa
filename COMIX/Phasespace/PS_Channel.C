@@ -12,6 +12,7 @@
 #include "ATOOLS/Org/Data_Writer.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -37,7 +38,7 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   }
   name="CDBG_Channel";
   Data_Reader read(" ",";","!","=");
-  read.SetInputFile("Integration.dat");
+  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   if (!read.ReadFromFile(m_zmode,"CDXS_ZMODE")) m_zmode=0;
   else msg_Info()<<METHOD<<"(): Set zero treatment mode "<<m_zmode<<".\n";
   if (!read.ReadFromFile(m_bmode,"CDXS_BMODE")) m_bmode=1;

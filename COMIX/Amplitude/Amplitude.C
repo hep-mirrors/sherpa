@@ -807,9 +807,9 @@ void Amplitude::WriteOutAmpFile(const std::string &name)
   std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 		      +"/Process/Comix/"+name+".map");
   if (FileExists(ampfile)) return;
-  std::ofstream amp(ampfile.c_str());
-  if (!amp.good()) return;
-  amp<<name<<" "<<name<<"\n";
+  My_Out_File amp(ampfile);
+  if (!amp.Open()) return;
+  *amp<<name<<" "<<name<<"\n";
   m_affm.resize(m_n);
   for (size_t i(2);i<m_n;++i) {
     std::set<long int> kfcs;
@@ -819,11 +819,11 @@ void Amplitude::WriteOutAmpFile(const std::string &name)
       if (kfcs.find(kfc)==kfcs.end()) m_affm[i].push_back(kfc);
       kfcs.insert(kfc);
     }
-    amp<<m_affm[i].size();
-    for (size_t j(0);j<m_affm[i].size();++j) amp<<" "<<m_affm[i][j];
-    amp<<"\n";
+    *amp<<m_affm[i].size();
+    for (size_t j(0);j<m_affm[i].size();++j) *amp<<" "<<m_affm[i][j];
+    *amp<<"\n";
   }
-  amp<<"eof\n";
+  *amp<<"eof\n";
 }
 
 bool Amplitude::Initialize

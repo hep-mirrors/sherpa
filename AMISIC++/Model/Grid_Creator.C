@@ -9,6 +9,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -18,7 +19,6 @@ Grid_Creator::Grid_Creator(Amisic_Histogram_Map *histograms,
   p_histograms(histograms),
   p_processes(processes),
   m_xsextension("_xs.dat"),
-  m_mcextension("MC"),
   m_datatag("[x,w,w2,max,n]"),
   m_events(0)
 {
@@ -128,7 +128,6 @@ void Grid_Creator::Clear()
 bool Grid_Creator::ReadInGrid()
 {
   My_In_File::OpenDB(OutputPath());
-  rpa->gen.AddToVariable("SQLITE_DATABASES"," "+OutputPath());
   double sum=0.0;
   msg_Info()<<METHOD<<"(): Reading grid ";
   msg_Tracking()<<"{\n";
@@ -223,6 +222,9 @@ bool Grid_Creator::CreateGridInternal()
 bool Grid_Creator::WriteOutGrid(std::vector<std::string> addcomments,
 				const std::string &path) 
 {
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()) return true;
+#endif
   bool success=true;
   for (Amisic_Histogram_Map::iterator hit=p_histograms->begin();
        hit!=p_histograms->end();++hit) {
@@ -237,24 +239,27 @@ bool Grid_Creator::CreateGrid()
 {
   bool success=true;
   int formerlevel=msg->Level();
+  My_Out_File::OpenDB(OutputPath());
   msg_Info()<<"Grid_Creator::CreateGrid(): "
 	    <<"Calculating grid {"<<std::endl;
   msg->SetLevel(m_outputlevel);
   for (size_t i=0; i<p_processes.size(); ++i) {
-    p_processes[i]->CalculateTotalXSec(OutputPath()+OutputFile()
-                                       +MCExtension(),true);
+    p_processes[i]->CalculateTotalXSec(OutputPath()+OutputFile(),true);
   }
   if (!CreateGridInternal()) {
     msg_Out()<<"Grid_Creator_Base::CreateGrid(..): "
 	     <<"Grid creation failed."<<std::endl;
     success=false;
   }
+  My_Out_File::ExecDB(OutputPath(),"begin");
   if (!WriteOutGrid()) {
     msg_Out()<<"Grid_Creator_Base::CreateGrid(..): "
 		     <<"Sorry, grid cannot be written to '"
 		     <<OutputFile()<<"'"<<std::endl;
     success=false;
   }
+  My_Out_File::ExecDB(OutputPath(),"commit");
+  My_Out_File::CloseDB(OutputPath());
   msg->SetLevel(formerlevel);
   msg_Info()<<"\n}"<<std::endl;
   return success;

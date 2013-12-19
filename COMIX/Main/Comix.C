@@ -85,9 +85,6 @@ Comix::Comix():
 
 Comix::~Comix() 
 {
-  My_In_File::CloseDB
-    (rpa->gen.Variable("SHERPA_CPP_PATH")
-     +"/Process/Comix/");
   if (p_cluster) delete p_cluster;
 }
 
@@ -173,15 +170,13 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_rank()==0)
 #endif
-  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")
-	  +"/Process/Comix",true);
+  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
   My_In_File::OpenDB
     (rpa->gen.Variable("SHERPA_CPP_PATH")
      +"/Process/Comix/");
-  rpa->gen.AddToVariable
-    ("SQLITE_DATABASES"," "+
-     rpa->gen.Variable("SHERPA_CPP_PATH")
-     +"/Process/Comix/");
+  My_In_File::ExecDB
+    (rpa->gen.Variable("SHERPA_CPP_PATH")
+     +"/Process/Comix/","begin");
   return true;
 }
 
@@ -239,6 +234,10 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
 
 int Comix::PerformTests()
 {
+  My_In_File::ExecDB
+    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","commit");
+  My_In_File::CloseDB
+    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/");
   if (!Tests()) return 0;
   for (size_t i=0;i<m_rsprocs.size();++i)
     if (!m_rsprocs[i]->Get<COMIX::Process_Base>()->Tests()) return false;

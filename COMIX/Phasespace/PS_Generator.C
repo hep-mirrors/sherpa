@@ -34,7 +34,7 @@ PS_Generator::PS_Generator(Process_Base *const xs):
   m_thmass(0.0), m_chmass(0.0)
 {
   Data_Reader read(" ",";","!","=");
-  read.SetInputFile("Integration.dat");
+  read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   if (!read.ReadFromFile(m_itmin,"CDXS_ITMIN")) m_itmin=5000;
   else msg_Info()<<METHOD<<"(): Set iteration minimum "<<m_itmin<<".\n";
   if (!read.ReadFromFile(m_itmax,"CDXS_ITMAX")) m_itmax=50000;

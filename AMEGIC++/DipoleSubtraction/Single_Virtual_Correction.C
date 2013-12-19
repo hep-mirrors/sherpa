@@ -292,19 +292,20 @@ void AMEGIC::Single_Virtual_Correction::AddPoint(const double &value)
 bool AMEGIC::Single_Virtual_Correction::ReadIn(const std::string &pid)
 {
   std::string name;
-  std::ifstream from((pid+"/"+m_name+".bvi").c_str());
-  if (!from.good()) return false;
-  from.precision(16);
-  from>>name>>m_n>>m_bsum>>m_vsum>>m_isum;
+  My_In_File from(pid+"/"+m_name+".bvi");
+  if (!from.Open()) return false;
+  from->precision(16);
+  *from>>name>>m_n>>m_bsum>>m_vsum>>m_isum;
   if (name!=m_name) THROW(fatal_error,"Corrupted results file");
   return true;
 }
 
 void AMEGIC::Single_Virtual_Correction::WriteOut(const std::string &pid)
 {
-  std::ofstream outfile((pid+"/"+m_name+".bvi").c_str());
-  outfile.precision(16);
-  outfile<<m_name<<"  "<<m_n<<" "<<m_bsum<<" "<<m_vsum<<" "<<m_isum<<"\n";
+  My_Out_File outfile(pid+"/"+m_name+".bvi");
+  outfile.Open();
+  outfile->precision(16);
+  *outfile<<m_name<<"  "<<m_n<<" "<<m_bsum<<" "<<m_vsum<<" "<<m_isum<<"\n";
 }
 
 void AMEGIC::Single_Virtual_Correction::EndOptimize()

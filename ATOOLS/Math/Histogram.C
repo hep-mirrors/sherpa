@@ -410,27 +410,27 @@ void Histogram::Output(const std::string name)
     Data_Reader read(" ",";","!","=");
     prec=read.GetValue<int>("HISTOGRAM_OUTPUT_PRECISION",6);
   }
-  std::ofstream ofile;
-  ofile.open(name.c_str());
-  ofile.precision(prec);
+  My_Out_File ofile(name);
+  ofile.Open();
+  ofile->precision(prec);
 
   if (m_fills>=0) {
-    ofile<<m_type<<" "<<m_nbin<<" "<<m_lower<<" "<<m_upper<<" ";
-    ofile<<m_yvalues[0]<<"  ";
-    if (m_depth>1) ofile<<m_y2values[0]<<"  ";
-    ofile<<m_yvalues[m_nbin-1]<<"  ";
-    if (m_depth>1) ofile<<m_y2values[m_nbin-1]<<"  ";
-    ofile<<m_fills<<"\n";
+    *ofile<<m_type<<" "<<m_nbin<<" "<<m_lower<<" "<<m_upper<<" ";
+    *ofile<<m_yvalues[0]<<"  ";
+    if (m_depth>1) *ofile<<m_y2values[0]<<"  ";
+    *ofile<<m_yvalues[m_nbin-1]<<"  ";
+    if (m_depth>1) *ofile<<m_y2values[m_nbin-1]<<"  ";
+    *ofile<<m_fills<<"\n";
   }
   for (int i=0;i<m_nbin-1;i++) {
-    ofile<<m_lower+i*m_binsize<<"  ";
-    ofile<<m_yvalues[i+1]<<"  ";
-    if (m_depth>1) ofile<<sqrt(m_y2values[i+1])<<"  ";
-    if (m_depth>2) ofile<<m_psvalues[i+1]<<"  ";
-    if (m_depth>3) ofile<<sqrt(m_ps2values[i+1])<<"  ";
-    ofile<<"\n";
+    *ofile<<m_lower+i*m_binsize<<"  ";
+    *ofile<<m_yvalues[i+1]<<"  ";
+    if (m_depth>1) *ofile<<sqrt(m_y2values[i+1])<<"  ";
+    if (m_depth>2) *ofile<<m_psvalues[i+1]<<"  ";
+    if (m_depth>3) *ofile<<sqrt(m_ps2values[i+1])<<"  ";
+    *ofile<<"\n";
   }
-  ofile.close();
+  ofile.Close();
 }
 
 void Histogram::MPISync()

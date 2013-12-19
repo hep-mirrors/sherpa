@@ -6,11 +6,9 @@
 
 #include <typeinfo>
 #include <cstdlib>
-#ifdef USING__SQLITE
 #include <sqlite3.h>
 #include <string.h>
 #define PTS long unsigned int
-#endif
 
 using namespace ATOOLS;
 
@@ -20,7 +18,6 @@ std::ostream &ATOOLS::operator<<(std::ostream &ostr,const fom::code &code)
   case fom::temporary: return ostr<<"temporary";
   case fom::permanent: return ostr<<"permanent";
   case fom::error:     return ostr<<"error";
-  case fom::nosearch:  return ostr<<"nosearch";
   case fom::unknown:   return ostr<<"unknown";
   }
   return ostr;
@@ -28,10 +25,15 @@ std::ostream &ATOOLS::operator<<(std::ostream &ostr,const fom::code &code)
 	
 namespace ATOOLS {
 
-#ifdef USING__SQLITE
-  std::map<std::string,sqlite3*> s_sqldbs;
+  typedef std::map<std::string,std::pair
+		   <sqlite3*,std::string> > DataBase_Map;
+
+  static DataBase_Map  s_databases;
+
+  typedef std::map<std::string,sqlite3*> SQLDB_Map;
   typedef std::pair<std::string,sqlite3*> DB_Ref;
-#endif
+
+  SQLDB_Map s_sqldbs;
 	
   template <> std::ostream &
   operator<<<std::ifstream>(std::ostream &ostr,
@@ -54,50 +56,56 @@ namespace ATOOLS {
 }
 
 template <class FileType> int My_File<FileType>::
-ListFiles(void *data,int argc,char **argv,char **name)
+Nothing(void *data,int argc,char **argv,char **name)
 {
-#ifdef USING__SQLITE
-  if (argc!=1 || strcmp(name[0],"file")) return 1;
-  msg_IODebugging()<<"  '"<<argv[0]<<"' -> '"
-		   <<((DB_Ref*)data)->first+argv[0]<<"'\n";
-  s_databases[((DB_Ref*)data)->first+argv[0]]=
-    std::pair<void*,std::string>
-    (((DB_Ref*)data)->second,((DB_Ref*)data)->first);
-#endif
   return 0;
 }
 
 template <class FileType> int My_File<FileType>::
-GetFile(void *data,int argc,char **argv,char **name)
+ListFiles(void *data,int argc,char **argv,char **name)
 {
-#ifdef USING__SQLITE
-  if (argc!=1 || strcmp(name[0],"content")) return 1;
-  msg_IODebugging()<<argv[0]<<"\n";
-  (*(MyStrStream*)((PTS)data))<<argv[0]<<"\n";
-#endif
+  if (argc!=1 || strcmp(name[0],"file")) return 1;
+  msg_IODebugging()<<"  '"<<argv[0]<<"' -> '"
+		   <<((DB_Ref*)data)->first+argv[0]<<"'\n";
+  s_databases[((DB_Ref*)data)->first+argv[0]]=
+    std::pair<sqlite3*,std::string>
+    (((DB_Ref*)data)->second,((DB_Ref*)data)->first);
   return 0;
 }
 
 template <class FileType>
 bool My_File<FileType>::OpenDB(std::string file)
 {
-#ifdef USING__SQLITE
   DB_Ref dbref(file,NULL);
   while (file.length() && file[file.length()-1]=='/')
     file.erase(file.length()-1,1);
   file+=".db";
   if (s_sqldbs.find(file)!=s_sqldbs.end()) return true;
   sqlite3 *db=NULL;
-  for (size_t i(0);i<s_searchpaths.size();++i) {
-    if (!FileExists(s_searchpaths[i]+"/"+file)) continue;
-    int res=sqlite3_open((s_searchpaths[i]+"/"+file).c_str(),&db);
-    if (res==SQLITE_OK) {
-      msg_IODebugging()<<METHOD<<"(): '"<<file<<"' found in '"
-		       <<s_searchpaths[i]<<"'."<<std::endl;
-      break;
+  if (!FileExists(file)) {
+    int res=sqlite3_open(file.c_str(),&db);
+    if (res!=SQLITE_OK) {
+      msg_IODebugging()<<METHOD<<"(): '"<<file<<"' returns '"
+		       <<sqlite3_errmsg(db)<<"'."<<std::endl;
     }
+    char sql[100], *zErrMsg=0;
+    strcpy(sql,"create table path(file,content); begin");
+    msg_IODebugging()<<METHOD<<"(\""<<file<<"\"): Creating table.\n";
+    int rc=sqlite3_exec(db,sql,Nothing,NULL,&zErrMsg);
+    if(rc!=SQLITE_OK) {
+      msg_Debugging()<<METHOD<<"(): '"<<file
+		     <<"' returns '"<<zErrMsg<<"'."<<std::endl;
+      sqlite3_free(zErrMsg);
+      sqlite3_close(db);
+      return false;
+    }
+    s_sqldbs[file]=db;
+    return true;
+  }
+  int res=sqlite3_open(file.c_str(),&db);
+  if (res!=SQLITE_OK) {
     msg_IODebugging()<<METHOD<<"(): '"<<file<<"' returns '"
-		   <<sqlite3_errmsg(db)<<"'."<<std::endl;
+		     <<sqlite3_errmsg(db)<<"'."<<std::endl;
   }
   if (db==NULL) {
     msg_IODebugging()<<METHOD<<"(): '"<<file
@@ -119,20 +127,37 @@ bool My_File<FileType>::OpenDB(std::string file)
   msg_IODebugging()<<"}\n";
   s_sqldbs[file]=db;
   return true;
-#else
-  return false;
-#endif
+}
+
+template <class FileType> bool
+My_File<FileType>::ExecDB(std::string file,const std::string &cmd)
+{
+  while (file.length() && file[file.length()-1]=='/')
+    file.erase(file.length()-1,1);
+  file+=".db";
+  SQLDB_Map::iterator dbit(s_sqldbs.find(file));
+  if (dbit==s_sqldbs.end()) return true;
+  msg_Debugging()<<METHOD<<"("<<file<<"): Executing '"<<cmd<<"'.\n";
+  char *zErrMsg=0, *sql = new char[cmd.length()+1];
+  strcpy(sql,cmd.c_str());
+  int rc=sqlite3_exec(dbit->second,sql,Nothing,NULL,&zErrMsg);
+  delete [] sql;
+  if(rc!=SQLITE_OK) {
+    msg_Debugging()<<METHOD<<"(): '"<<file
+		   <<"' returns '"<<zErrMsg<<"'."<<std::endl;
+    sqlite3_free(zErrMsg);
+    return false;
+  }
+  return true; 
 }
 
 template <class FileType>
 bool My_File<FileType>::CloseDB(std::string file)
 {
-#ifdef USING__SQLITE
   while (file.length() && file[file.length()-1]=='/')
     file.erase(file.length()-1,1);
   file+=".db";
-  std::map<std::string,sqlite3*>::iterator
-    dbit(s_sqldbs.find(file));
+  SQLDB_Map::iterator dbit(s_sqldbs.find(file));
   if (dbit==s_sqldbs.end()) return true;
   msg_Debugging()<<METHOD<<"("<<file
 		 <<"): Closing '"<<dbit->second<<"'.";
@@ -149,9 +174,6 @@ bool My_File<FileType>::CloseDB(std::string file)
     }
   s_sqldbs.erase(dbit);
   return res==SQLITE_OK;
-#else
-  return false;
-#endif
 }
 
 template <class FileType>
@@ -162,7 +184,8 @@ My_File<FileType>::My_File(const std::string &path,
 
 template <class FileType>
 My_File<FileType>::~My_File() 
-{ 
+{
+  Close();
 }
 
 template <class FileType>
@@ -186,11 +209,18 @@ FileType &My_File<FileType>::operator*() const
 template <class FileType> bool 
 My_File<FileType>::FileInDB(const std::string &name)
 {
-#ifdef USING__SQLITE
   DataBase_Map::const_iterator sit(s_databases.find(name));
   if (sit!=s_databases.end()) return true;
-#endif
   return false;
+}
+
+template <class FileType> int My_File<FileType>::
+GetFile(void *data,int argc,char **argv,char **name)
+{
+  if (argc!=1 || strcmp(name[0],"content")) return 1;
+  msg_IODebugging()<<argv[0]<<"\n";
+  (*(MyStrStream*)((PTS)data))<<argv[0]<<"\n";
+  return 0;
 }
 
 template <class FileType>
@@ -201,15 +231,12 @@ bool My_File<FileType>::Open()
     return false;
   }
   Close();
-  if (m_mode&fom::nosearch) {
-    p_file = new File_Type();
-    p_file->open((m_path+m_file).c_str());
-    return p_file->good();
-  }
-#ifdef USING__SQLITE
+  p_file = new File_Type();
+  std::ifstream *is=dynamic_cast<std::ifstream*>(&*p_file);
+  std::ofstream *os=dynamic_cast<std::ofstream*>(&*p_file);
   DataBase_Map::const_iterator sit(s_databases.find(m_path+m_file));
-  if (sit!=s_databases.end()) {
-    sqlite3 *db=(sqlite3*)sit->second.first;
+  if (is && sit!=s_databases.end()) {
+    sqlite3 *db=sit->second.first;
     msg_IODebugging()<<METHOD<<"(): '"<<m_path+m_file
 		     <<"' found in '"<<db<<"' {\n";
     p_stream = new MyStrStream();
@@ -218,59 +245,88 @@ bool My_File<FileType>::Open()
     char *zErrMsg=0, *sql = new char[100+fn.length()];
     sprintf(sql,"select content from path where file = \"%s\"",fn.c_str());
     int rc=sqlite3_exec(db,sql,GetFile,(void*)&*p_stream,&zErrMsg);
+    delete [] sql;
     if(rc!=SQLITE_OK) {
       msg_Error()<<METHOD<<"(): '"<<db<<"' returns '"
 		     <<zErrMsg<<"'."<<std::endl;
       sqlite3_free(zErrMsg);
     }
     msg_IODebugging()<<"}\n";
-    p_file = new File_Type();
     p_file->copyfmt(*p_stream);
     p_file->clear(p_stream->rdstate());
-    std::ifstream *is=dynamic_cast<std::ifstream*>(&*p_file);
-    if (is) {
-      is->std::ios::rdbuf(p_stream->rdbuf());
-      is->seekg(0);
-    }
+    is->std::ios::rdbuf(p_stream->rdbuf());
+    is->seekg(0);
     return true;
   }
-#endif
-  String_Map::const_iterator fit(s_filelocations.find(m_path+m_file));
-  if (fit!=s_filelocations.end()) m_path=fit->second+"/"+m_path;
-  if ((m_path+m_file)[0]=='/') {
-    msg_IODebugging()<<METHOD<<"(): Relocated '"<<m_file<<"' at '"
-		   <<m_path<<"'."<<std::endl;  
-    p_file = new File_Type();
-    p_file->open((m_path+m_file).c_str());
-    return p_file->good();
-  }
-  else {
-    for (size_t i(0);i<s_searchpaths.size();++i) {
-      p_file = new File_Type();
-      p_file->open((s_searchpaths[i]+"/"+m_path+m_file).c_str());
-      if (p_file->good()) {
-	if (i>0 || msg_LevelIsDebugging()) {
-	  bool output(true);
-	  for (size_t j(0);j<s_nocomplains.size();++j)
-	    if ((m_path+m_file).find(s_nocomplains[j])!=
-		std::string::npos) output=false;
-	  if (output) 
-	    msg_Out()<<METHOD<<"(): Located '"<<m_file<<"' at '"
-		     <<s_searchpaths[i]<<"/"<<m_path<<"'."<<std::endl;
+  if (os) {
+    if (sit!=s_databases.end()) {
+      p_stream = new MyStrStream();
+      os->std::ios::rdbuf(p_stream->rdbuf());
+      os->seekp(0);
+      return true;
+    }
+    std::string fn(m_path+m_file);
+    for (SQLDB_Map::const_iterator sit(s_sqldbs.begin());
+	 sit!=s_sqldbs.end();++sit) {
+      std::string tag(sit->first);
+      tag.replace(tag.length()-3,3,"/");
+      if (fn.find(tag)==0) {
+	sqlite3 *db=sit->second;
+	std::string fn(m_path+m_file);
+	msg_IODebugging()<<METHOD<<"(): '"<<fn
+			 <<"' added to '"<<db<<"'.\n";
+	fn.erase(0,tag.length());
+	char *zErrMsg=0, *sql = new char[100+fn.length()];
+	sprintf(sql,"insert into path values('%s','')",fn.c_str());
+	int rc=sqlite3_exec(db,sql,Nothing,NULL,&zErrMsg);
+	delete [] sql;
+	if(rc!=SQLITE_OK) {
+	  msg_Error()<<METHOD<<"(): '"<<db<<"' returns '"
+		     <<zErrMsg<<"'."<<std::endl;
+	  sqlite3_free(zErrMsg);
 	}
-	s_filelocations[m_path+m_file]=s_searchpaths[i];
-	m_path=s_searchpaths[i]+"/"+m_path;
+	s_databases[m_path+m_file]=
+	  std::pair<sqlite3*,std::string>(db,tag);
+	p_stream = new MyStrStream();
+	os->std::ios::rdbuf(p_stream->rdbuf());
+	os->seekp(0);
 	return true;
       }
     }
   }
-  return false;
+  p_file->open((m_path+m_file).c_str());
+  return p_file->good();
 }
 
 template <class FileType>
 bool My_File<FileType>::Close()
 {
   if (p_file==NULL) return false;
+  std::ofstream *os=dynamic_cast<std::ofstream*>(&*p_file);
+  if (os) {
+    DataBase_Map::const_iterator sit(s_databases.find(m_path+m_file));
+    if (sit!=s_databases.end()) {
+      sqlite3 *db=sit->second.first;
+      std::string fn(m_path+m_file), fc(p_stream->str());
+      msg_IODebugging()<<METHOD<<"(): Write '"<<fn
+		       <<"' to '"<<db<<"' {\n"<<fc;
+      fn.erase(0,sit->second.second.length());
+      if (fc[fc.length()-1]=='\n') fc.erase(fc.length()-1,1);
+      for (size_t pos=fc.find("'");pos!=std::string::npos;
+	   pos=fc.find("'",pos+2)) fc.replace(pos,1,"''");
+      char *zErrMsg=0, *sql = new char[100+fn.length()+fc.length()];
+      sprintf(sql,"update path set content = '%s' where file = '%s'",
+	      fc.c_str(),fn.c_str());
+      int rc=sqlite3_exec(db,sql,Nothing,NULL,&zErrMsg);
+      delete [] sql;
+      if(rc!=SQLITE_OK) {
+      	msg_Error()<<METHOD<<"(): '"<<db<<"' returns '"
+      		   <<zErrMsg<<"'."<<std::endl;
+      	sqlite3_free(zErrMsg);
+      }
+      msg_IODebugging()<<"}\n";
+    }
+  }
   p_file->close();
   p_stream=NULL;
   p_file=NULL;
@@ -312,31 +368,6 @@ const fom::code &My_File<FileType>::Mode() const
 { 
   return m_mode; 
 }
-
-template <class FileType>
-void My_File<FileType>::SetSearchPaths(const String_Vector &paths)
-{ 
-  s_searchpaths=paths;
-}
-
-template <class FileType>
-void My_File<FileType>::SetNoComplains(const String_Vector &names)
-{ 
-  s_nocomplains=names;
-}
-
-template <class FileType> 
-typename My_File<FileType>::String_Vector 
-My_File<FileType>::s_searchpaths(1,GetCWD());
-template <class FileType> 
-typename My_File<FileType>::String_Vector 
-My_File<FileType>::s_nocomplains;
-template <class FileType> 
-typename My_File<FileType>::String_Map 
-My_File<FileType>::s_filelocations;
-template <class FileType> 
-typename My_File<FileType>::DataBase_Map 
-My_File<FileType>::s_databases;
 
 namespace ATOOLS {
 

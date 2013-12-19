@@ -785,8 +785,6 @@ void Phase_Space_Handler::WriteOut(const std::string &pID)
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+"/MC_Beam");
   if (p_isrchannels  != 0) p_isrchannels->WriteOut(pID+"/MC_ISR");
   if (p_fsrchannels  != 0) p_fsrchannels->WriteOut(pID+"/MC_FSR");
-  std::string help     = (pID+"/Random").c_str();
-  ran->WriteOutStatus(help.c_str());
   if (p_enhancehisto) p_enhancehisto->Output(pID+"/MC_Enhance.histo");
   Data_Writer writer;
   writer.SetOutputPath(pID+"/");

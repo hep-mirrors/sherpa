@@ -606,27 +606,29 @@ void Vegas::WriteHistos(const std::string & pid)
     for (int i=0;i<m_dim;i++) {
       std::string fn=pid+std::string("_")+m_name+std::string("_Vegas_")
 	+ToString(i)+std::string(".dat");
-      std::ofstream ofile(fn.c_str());
-      ofile<<x<<" "<<ar/p_xi[i][0]<<endl;
+      My_Out_File ofile(fn);
+      ofile.Open();
+      *ofile<<x<<" "<<ar/p_xi[i][0]<<endl;
       for (int j=0;j<m_nd-1;j++) {
-	ofile<<x+p_xi[i][j]<<" "<<ar/(p_xi[i][j+1]-p_xi[i][j])<<endl;
+	*ofile<<x+p_xi[i][j]<<" "<<ar/(p_xi[i][j+1]-p_xi[i][j])<<endl;
       }
-      ofile<<x+1.<<" 0."<<endl;
-      ofile.close();
+      *ofile<<x+1.<<" 0."<<endl;
+      ofile.Close();
     }
   }
   else {
     std::string fn=pid+std::string("_")+m_name+std::string("_Vegas_")+std::string(".dat");
-    std::ofstream ofile(fn.c_str());
+    My_Out_File ofile(fn);
+    ofile.Open();
     for (int i=0;i<m_dim;i++) {
-      ofile<<x<<" "<<ar/p_xi[i][0]<<endl;
+      *ofile<<x<<" "<<ar/p_xi[i][0]<<endl;
       for (int j=0;j<m_nd-1;j++) {
-	ofile<<x+p_xi[i][j]<<" "<<ar/(p_xi[i][j+1]-p_xi[i][j])<<endl;
+	*ofile<<x+p_xi[i][j]<<" "<<ar/(p_xi[i][j+1]-p_xi[i][j])<<endl;
       }
-      ofile<<x+1.<<" 0."<<endl;
+      *ofile<<x+1.<<" 0."<<endl;
       x+=1.;
     }
-    ofile.close();
+    ofile.Close();
   }  
 }
 
@@ -635,31 +637,32 @@ void Vegas::WriteOut(const std::string & pid)
   if (msg_LevelIsTracking() && m_on) 
     WriteHistos(pid);
   std::string fn=pid+std::string("_")+m_name+std::string("_Vegas");
-  std::ofstream ofile(fn.c_str());
+  My_Out_File ofile(fn);
+  ofile.Open();
 
-  ofile<<m_name<<" "<<m_dim<<" "<<m_nd<<" "
+  *ofile<<m_name<<" "<<m_dim<<" "<<m_nd<<" "
        <<m_autooptimize<<" "<<m_nopt<<" "
        <<m_sint<<" "<<m_scnt<<std::endl;
   if (m_nopt>0) {
-    ofile.precision(12);
+    ofile->precision(12);
     for (int i=0;i<m_dim;i++) {
-      ofile<<"(";
+      *ofile<<"(";
       for (int j=0;j<m_nd;j++) {
-	if (j!=0) ofile<<",";
-	ofile<<p_xi[i][j];
+	if (j!=0) *ofile<<",";
+	*ofile<<p_xi[i][j];
       }
-      ofile<<")"<<endl;
+      *ofile<<")"<<endl;
     }
     for (int i=0;i<m_dim;i++) {
-      ofile<<p_opt[i]<<" "<<p_chi[i]<<" (";
+      *ofile<<p_opt[i]<<" "<<p_chi[i]<<" (";
       for (int j=0;j<m_nd;j++) {
-	if (j!=0) ofile<<",";
-	ofile<<p_bestxi[i][j];
+	if (j!=0) *ofile<<",";
+	*ofile<<p_bestxi[i][j];
       }
-      ofile<<")"<<endl;
+      *ofile<<")"<<endl;
     }
   }
-  ofile.close();
+  ofile.Close();
 }
 
 void Vegas::ReadIn(const std::string & pid)

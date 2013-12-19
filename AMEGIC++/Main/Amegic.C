@@ -105,7 +105,7 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   p_int->SetISR(isrhandler);
   Data_Reader read(" ",";","#","=");
   read.AddWordSeparator("\t");
-  read.SetInputPath(m_path+"/");
+  read.SetInputPath(m_path);
   read.SetInputFile(m_file);
   SetPSMasses(&read);
   double alpha=read.GetValue<double>("AMEGIC_CHANNEL_ALPHA",0.4);

@@ -345,46 +345,48 @@ Hadron_Decay_Channel::Parameters2Model(vector<vector<string> > helpsvv,
 
 void Hadron_Decay_Channel::WriteOut(bool newfile) {
   if ( newfile ) {                // if DC file doesn't exist yet
-    ofstream to;
-    to.open((m_path+m_filename).c_str(),ios::out);
+    My_Out_File to(m_path+m_filename);
+    to.Open();
 
     // write header
-    to<<"# Decay: "<<Name()<<endl;
-    to<<"#        "<<setw(m_flavours[0].IDName().length())<<left<<"0"<<" --> ";
+    *to<<"# Decay: "<<Name()<<endl;
+    *to<<"#        "<<setw(m_flavours[0].IDName().length())<<left<<"0"<<" --> ";
     int i=0;
     for (size_t i=1; i<m_flavours.size(); ++i) {
-      to<<setw(m_flavours[i].IDName().length()+1)<<left<<i+1;
+      *to<<setw(m_flavours[i].IDName().length()+1)<<left<<i+1;
       i++;
     }
-    to<<endl<<endl;
+    *to<<endl<<endl;
 
     // write out options
-    to<<"<Options>"<<endl;
-    to<<"  AlwaysIntegrate = "<<m_always_integrate
-      <<"    # 0...read results and skip integration"<<endl;
-    to<<"                         # 1...don't read results and integrate"<<endl;
-    to<<"</Options>"<<endl<<endl;
+    *to<<"<Options>"<<endl;
+    *to<<"  AlwaysIntegrate = "<<m_always_integrate
+       <<"    # 0...read results and skip integration"<<endl;
+    *to<<"                         # 1...don't read results and integrate"<<endl;
+    *to<<"</Options>"<<endl<<endl;
 
     // write out phasespace settings
-    to<<"<Phasespace>"<<endl;
-    to<<"  1.0 Isotropic"<<endl;
-    to<<"</Phasespace>"<<endl<<endl;
+    *to<<"<Phasespace>"<<endl;
+    *to<<"  1.0 Isotropic"<<endl;
+    *to<<"</Phasespace>"<<endl<<endl;
 
     // write out ME settings
-    to<<"<ME>"<<endl;
-    to<<"  1.0 0.0 Generic"<<endl;
-    to<<"</ME>"<<endl<<endl;
+    *to<<"<ME>"<<endl;
+    *to<<"  1.0 0.0 Generic"<<endl;
+    *to<<"</ME>"<<endl<<endl;
 
     // write out result
-    to<<"<Result>"<<endl;
-    int oldprec=to.precision(4);
-    to<<"  "<<m_iwidth<<" "<<m_ideltawidth<<" "<<m_max<<";"<<endl;
-    to.precision(oldprec);
-    to<<"</Result>"<<endl;
-    to.close();
+    *to<<"<Result>"<<endl;
+    int oldprec=to->precision(4);
+    *to<<"  "<<m_iwidth<<" "<<m_ideltawidth<<" "<<m_max<<";"<<endl;
+    to->precision(oldprec);
+    *to<<"</Result>"<<endl;
+    to.Close();
   } // if (read DC file)
   else {                                
     // if DC file exists
+    PRINT_INFO("TODO: migrate to Decaydata.db for "<<m_path+m_filename<<": "<<m_iwidth<<" "<<m_ideltawidth<<" "<<m_max);
+    /* TODO migrate to Decaydata.db
     Move(m_path+m_filename, m_path+"."+m_filename+".old");
     ofstream to((m_path+m_filename).c_str(),ios::out);
 
@@ -407,6 +409,7 @@ void Hadron_Decay_Channel::WriteOut(bool newfile) {
     to.precision(oldprec);
     to<<"</Result>"<<endl;
     to.close();
+    */
   }
 }
 

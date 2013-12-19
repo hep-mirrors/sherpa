@@ -129,22 +129,17 @@ void Matrix_Element_Handler::InitNLOMC()
 
 bool Matrix_Element_Handler::CalculateTotalXSecs() 
 {
-  for (ME_Generators::const_iterator it=m_gens.begin();it!=m_gens.end();++it) {
-    MakeDir(m_respath+"/"+(*it)->Name(),false);
-  }
-
-  My_In_File::OpenDB(m_respath+"/");
-  rpa->gen.AddToVariable("SQLITE_DATABASES"," "+m_respath+"/");
+  int storeresults = Data_Reader(" ",";","!","=").GetValue("GENERATE_RESULT_DIRECTORY", 1);
+  if (storeresults) My_In_File::OpenDB(m_respath+"/");
   bool okay(true);
   for (size_t i=0;i<m_procs.size();++i) {
     m_procs[i]->SetUpThreading();
     m_procs[i]->SetLookUp(true);
-    std::string name=m_procs[i]->Generator()?m_procs[i]->Generator()->Name():"";
-    if (!m_procs[i]->CalculateTotalXSec(m_respath+"/"+name,false)) okay=false;
+    if (!m_procs[i]->CalculateTotalXSec(m_respath,false)) okay=false;
     m_procs[i]->SetLookUp(false);
     m_procs[i]->Integrator()->SetUpEnhance();
   }
-  My_In_File::CloseDB(m_respath+"/");
+  if (storeresults) My_In_File::CloseDB(m_respath+"/");
   return okay;
 }
 

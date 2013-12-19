@@ -19,7 +19,6 @@ namespace ATOOLS {
       temporary =  1,
       permanent =  2,
       error     =  4,
-      nosearch  =  8,
       unknown   = 99
     };
 
@@ -36,18 +35,7 @@ namespace ATOOLS {
 
     typedef FileType File_Type;
 
-    typedef std::vector<std::string> String_Vector;
-
-    typedef std::map<std::string,std::string> String_Map;
-
-    typedef std::map<std::string,std::pair
-		     <void*,std::string> > DataBase_Map;
-
   protected:
-
-    static String_Vector s_searchpaths, s_nocomplains;
-    static String_Map    s_filelocations;
-    static DataBase_Map  s_databases;
 
     std::string m_path, m_file;
 
@@ -56,6 +44,7 @@ namespace ATOOLS {
     
     fom::code m_mode;
 
+    static int Nothing(void *data,int argc,char **argv,char **name);
     static int ListFiles(void *data,int argc,char **argv,char **name);
     static int GetFile(void *data,int argc,char **argv,char **name);
 
@@ -85,14 +74,13 @@ namespace ATOOLS {
     File_Type *operator->() const;
     File_Type &operator*() const;
 
-    static void SetSearchPaths(const String_Vector &paths);
-    static void SetNoComplains(const String_Vector &names);
-
     // static member functions
     static bool OpenDB(std::string file);
     static bool CloseDB(std::string file);
 
     static bool FileInDB(const std::string &name);
+    static bool ExecDB(std::string file,
+		       const std::string &cmd);
 
   };// end of class My_File
 

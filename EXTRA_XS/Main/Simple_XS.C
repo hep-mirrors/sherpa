@@ -93,7 +93,7 @@ bool Simple_XS::Initialize(const string &path,const string &file,
   m_file=file;
   Data_Reader read(" ",";","#","=");
   read.AddWordSeparator("\t");
-  read.SetInputPath(m_path+"/");
+  read.SetInputPath(m_path);
   read.SetInputFile(m_file);
   SetPSMasses(&read);
   p_int->SetBeam(beam); 

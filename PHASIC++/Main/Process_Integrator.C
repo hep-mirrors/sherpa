@@ -4,6 +4,7 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 #include "PHASIC++/Main/Helicity_Integrator.H"
+#include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
@@ -256,16 +257,16 @@ void Process_Integrator::ReadInHistogram(std::string dir)
 void Process_Integrator::WriteOutXSecs(const std::string &path)
 {
   std::string fname(p_proc->Name());
-  std::ofstream outfile((path+"/"+fname).c_str());
-  if (outfile) m_writeout=1;
-  outfile.precision(16);
-  outfile<<fname<<"  "<<m_totalxs<<"  "<<m_max<<"  "
+  My_Out_File outfile(path+"/"+fname);
+  if (outfile.Open()) m_writeout=1;
+  outfile->precision(16);
+  *outfile<<fname<<"  "<<m_totalxs<<"  "<<m_max<<"  "
 	 <<m_totalerr<<" "<<m_totalsum<<" "<<m_totalsumsqr<<" "
 	 <<m_n<<" "<<m_ssum<<" "<<m_ssumsqr<<" "<<m_smax<<" "
 	 <<m_ssigma2<<" "<<m_sn<<" "<<m_wmin<<" "<<m_son<<" "
 	 <<-1<<" "<<-1<<"\n"<<m_vsn.size()<<"\n";
   for (size_t i(0);i<m_vsn.size();++i)
-    outfile<<m_vsmax[i]<<" "<<m_vsum[i]<<" "
+    *outfile<<m_vsmax[i]<<" "<<m_vsum[i]<<" "
 	   <<m_vsn[i]<<" "<<-1<<"\n";
   p_proc->WriteOut(path);
   if (p_proc->IsGroup())
@@ -588,20 +589,6 @@ void Process_Integrator::SetISRThreshold(const double threshold)
   m_threshold=threshold;
 }
 
-void Process_Integrator::StoreBackupResults()
-{
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return;
-#endif
-  if (!DirectoryExists(m_resultpath)) return;
-  std::string path(m_resultpath);
-  while (path.length() && path[path.length()-1]=='/')
-    path.erase(path.length()-1,1);
-  if (!Copy(m_resultpath,path+".bak",true))
-    msg_Error()<<METHOD<<"(): Copy error. "
-	       <<strerror(errno)<<"."<<std::endl;
-}
-
 void Process_Integrator::StoreResults(const int mode)
 {
   MPISync();
@@ -611,23 +598,25 @@ void Process_Integrator::StoreResults(const int mode)
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_rank()) return;
 #endif
+  My_In_File::ExecDB(m_resultpath+"/","begin");
   std::string fname(p_proc->Name());
-  if (s_genresdir) MakeDir(m_resultpath,true); 
-  MakeDir(m_resultpath+"/XS_"+fname,0); 
-  MakeDir(m_resultpath+"/WD_"+p_proc->Name(),0); 
-  MakeDir(m_resultpath+"/MC_"+fname,0); 
-  WriteOutXSecs(m_resultpath+"/XS_"+fname);
-  WriteOutHistogram(m_resultpath+"/WD_"+p_proc->Name());
-  p_pshandler->WriteOut(m_resultpath+"/MC_"+fname);
+  WriteOutXSecs(m_resultpath+"/"+p_proc->Generator()->Name()+"/XS_"+fname);
+  WriteOutHistogram(m_resultpath+"/"+p_proc->Generator()->Name()+"/WD_"+fname);
+  p_pshandler->WriteOut(m_resultpath+"/"+p_proc->Generator()->Name()+"/MC_"+fname);
+  My_In_File::ExecDB(m_resultpath+"/","commit");
+
+  if (FileExists(m_resultpath+".db") && !Copy(m_resultpath+".db",m_resultpath+".bak.db"))
+    msg_Error()<<METHOD<<"(): Copy error. "
+	       <<strerror(errno)<<"."<<std::endl;
 }
 
 void Process_Integrator::ReadResults()
 {
   if (m_resultpath.length()==0) return;
   std::string fname(p_proc->Name());
-  if (!ReadInXSecs(m_resultpath+"/XS_"+fname)) return;
-  ReadInHistogram(m_resultpath+"/WD_"+p_proc->Name());
-  p_pshandler->ReadIn(m_resultpath+"/MC_"+fname);
+  if (!ReadInXSecs(m_resultpath+"/"+p_proc->Generator()->Name()+"/XS_"+fname)) return;
+  ReadInHistogram(m_resultpath+"/"+p_proc->Generator()->Name()+"/WD_"+fname);
+  p_pshandler->ReadIn(m_resultpath+"/"+p_proc->Generator()->Name()+"/MC_"+fname);
   SetTotal(0); 
 }
 

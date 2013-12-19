@@ -828,28 +828,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(CONDITIONAL_GZIPLIBS)
 
   AC_ARG_ENABLE(
-    sqlite,
-    AC_HELP_STRING([--enable-sqlite], [Enable sqlite support]),
-    [ case "${enableval}" in
-        no)   AC_MSG_RESULT(sqlite not enabled); sqllib=false ;;
-        yes)  AC_CHECK_LIB(sqlite3, sqlite3_open, [libsql_found=yes], [libsql_found=no])
-              AC_CHECK_HEADER(sqlite3.h, [sqllibh_found=yes], [sqllibh_found=no])
-              if test "$libsql_found" = "yes" -a "$sqllibh_found" = "yes"; then
-                sqllib=true;
-                CONDITIONAL_SQLITELIBS="-lsqlite3";
-              else
-                AC_MSG_ERROR(Header sqlite3.h and/or library libsqlite3 not found.);
-              fi;;
-      esac ],
-    [ sqllib=false ]
-  )
-  if test "$sqllib" = "true" ; then
-    AC_DEFINE([USING__SQLITE], "1", [using sqlite])
-  fi
-  AM_CONDITIONAL(SQLITE_SUPPORT, test "$sqllib" = "true")
-  AC_SUBST(CONDITIONAL_SQLITELIBS)
-
-  AC_ARG_ENABLE(
     pythia,
     AC_HELP_STRING([--enable-pythia], [Enable fragmentation/decay interface to
     Pythia.]),

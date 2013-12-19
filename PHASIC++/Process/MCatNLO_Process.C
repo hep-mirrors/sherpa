@@ -481,12 +481,10 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
     p_rsproc->Differential(*ampl,4);
   } while (!InitSubtermInfo());
   ampl->Delete();
-  bool res(p_bviproc->CalculateTotalXSec
-	   (resultpath+"/"+p_bviproc->Generator()->Name(),create));
+  bool res(p_bviproc->CalculateTotalXSec(resultpath,create));
   psh->SetAbsError(psh->Error()*rpa->Picobarn()*
 		   dabs(p_bviproc->Integrator()->TotalResult()));
-  if (!p_rsproc->CalculateTotalXSec
-      (resultpath+"/"+p_rsproc->Generator()->Name(),create)) res=false;
+  if (!p_rsproc->CalculateTotalXSec(resultpath,create)) res=false;
   for (size_t i(0);i<p_bviproc->Size();++i)
     (*p_bproc)[i]->Integrator()->SetMax
       ((*p_bviproc)[i]->Integrator()->Max());

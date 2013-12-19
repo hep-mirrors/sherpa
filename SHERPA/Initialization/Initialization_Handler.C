@@ -63,11 +63,6 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_path=std::string("./");
   m_file=std::string("Run.dat");
 
-  std::vector<std::string> names(4);
-  names[0]="Decaydata";
-  names[1]="Run.dat";
-  My_In_File::SetNoComplains(names);
-
   ExtractCommandLineParameters(argc, argv);
 
   SetFileNames();
@@ -1001,14 +996,6 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
   }
 
   if (datpath!="") m_path=datpath;
-  std::vector<std::string> searchpaths;
-  searchpaths.push_back(rpa->gen.Variable("SHERPA_RUN_PATH")+"/"+m_path);
-  My_Out_File::SetSearchPaths(searchpaths);
-  searchpaths.push_back(rpa->gen.Variable("SHERPA_DAT_PATH")+"/"+m_path);
-  searchpaths.push_back(rpa->gen.Variable("SHERPA_DAT_PATH"));
-  searchpaths.push_back(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/"+m_path);
-  searchpaths.push_back(rpa->gen.Variable("SHERPA_SHARE_PATH"));
-  My_In_File::SetSearchPaths(searchpaths);
   rpa->gen.SetVariable("PATH_PIECE",m_path);
   m_path="";
 

@@ -101,11 +101,12 @@ bool Helicity_Integrator::Construct(const Flavour_Vector &flavs)
 
 void Helicity_Integrator::WriteOut(const std::string &pid)
 {
-  std::ofstream file((pid+"/HW_"+ToString(m_chirs.size())).c_str());
-  file.precision(14);
+  My_Out_File file(pid+"/HW_"+ToString(m_chirs.size()));
+  file.Open();
+  file->precision(14);
   msg_Debugging()<<METHOD<<"(): Write {\n";
   for (size_t i(0);i<m_weights.size();++i) {
-    file<<m_weights[i]<<" "<<m_sum[i]<<" "<<m_sum2[i]<<" "<<m_n[i]<<"\n";
+    *file<<m_weights[i]<<" "<<m_sum[i]<<" "<<m_sum2[i]<<" "<<m_n[i]<<"\n";
     msg_Debugging()<<"  "<<MakeId(i)<<" -> "<<m_weights[i]<<"\n";
   }
   msg_Debugging()<<"}\n";

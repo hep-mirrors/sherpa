@@ -167,8 +167,17 @@ bool COMIX::Single_Process::Initialize
 #endif
   mapfile=rpa->gen.Variable("SHERPA_CPP_PATH")
     +"/Process/Comix/"+Parent()->Name()+".map";
-  std::fstream map(mapfile.c_str(),std::ios::out|std::ios::app);
-  if (map.good()) map<<m_name<<" x\n";
+  std::string str, tmp;
+  My_In_File in(mapfile);
+  if (in.Open())
+    for (getline(*in,tmp);in->good();
+	 getline(*in,tmp)) str+=tmp+"\n";
+  in.Close();
+  My_Out_File out(mapfile);
+  if (!out.Open()) THROW(fatal_error,"Cannot open '"+mapfile+"'");
+  *out<<str;
+  *out<<m_name<<" x\n";
+  out.Close();
 #ifdef USING__MPI
   }
 #endif
@@ -281,17 +290,17 @@ bool COMIX::Single_Process::MapProcess()
       std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 			  +"/Process/Comix/"+m_name+".map");
       if (!FileExists(mapfile)) {
-	std::ofstream map(mapfile.c_str());
-	if (map.good()) {
-	  map<<m_name<<" "<<mapname<<"\n"<<m_fmap.size()<<"\n";
+	My_Out_File map(mapfile);
+	if (map.Open()) {
+	  *map<<m_name<<" "<<mapname<<"\n"<<m_fmap.size()<<"\n";
 	  for (Flavour_Map::const_iterator 
 		 fit(m_fmap.begin());fit!=m_fmap.end();++fit) {
 	    msg_Debugging()<<"  fmap '"<<fit->first
 			   <<"' onto '"<<fit->second<<"'\n";
 	    long int src(fit->first), dest(fit->second);
-	    map<<src<<" "<<dest<<"\n";
+	    *map<<src<<" "<<dest<<"\n";
 	  }
-	  map<<"eof\n";
+	  *map<<"eof\n";
 	}
       }
 #ifdef USING__MPI

@@ -186,10 +186,10 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 
 
   if(rewrite) {
-    Move(path+file, path+"."+file+".old");
-    ofstream ostr( (path + file).c_str() );
-    Write(ostr);
-    ostr.close();
+    My_Out_File ostr(path + file);
+    ostr.Open();
+    Write(*ostr);
+    ostr.Close();
   }
   ScaleToWidth();
   if (Flav().IsC_Hadron()) 

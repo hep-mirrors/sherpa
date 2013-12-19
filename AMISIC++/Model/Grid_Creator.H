@@ -32,7 +32,7 @@ namespace AMISIC {
     std::string m_gridxvariable, m_gridxscaling;
     std::string m_gridyvariable, m_gridyscaling;
     
-    std::string m_xsextension, m_mcextension, m_datatag, m_criterion;
+    std::string m_xsextension, m_datatag, m_criterion;
     
     int m_outputlevel;
 
@@ -129,13 +129,9 @@ namespace AMISIC {
    
     inline const std::string XSExtension() const  
     { return m_xsextension;  }
-    inline const std::string MCExtension() const  
-    { return m_mcextension;  }
 
     inline void SetXSExtension(const std::string xsextension)
     { m_xsextension=xsextension; }
-    inline void SetMCExtension(const std::string mcextension)
-    { m_mcextension=mcextension; }
 
     inline void SetGridXMin(const double gridxmin) 
     { m_gridxmin=gridxmin; }

@@ -34,7 +34,7 @@ Simple_Chain::Simple_Chain():
   MI_Base("Simple Chain",MI_Base::HardEvent,5,4,1),
   p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0), 
   m_maxreduction(1.0), m_sigma_nd_fac(1.0),
-  m_xsextension("_xs.dat"), m_mcextension("MC"),
+  m_xsextension("_xs.dat"),
   m_resdir(""), m_ressuffix(""),
   p_model(NULL),
   p_beam(NULL), p_isr(NULL), p_profile(NULL), m_maxtrials(1000),
@@ -49,7 +49,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   MI_Base("Simple Chain",MI_Base::HardEvent,5,4,1),
   p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0),
   m_maxreduction(1.0), m_sigma_nd_fac(1.0),
-  m_xsextension("_xs.dat"), m_mcextension("MC"),
+  m_xsextension("_xs.dat"),
   p_model(model),
   p_beam(beam), p_isr(isr), p_profile(NULL), m_maxtrials(1000),
   m_ecms(rpa->gen.Ecms()), m_external(true), m_regulate(false)
@@ -215,18 +215,12 @@ bool Simple_Chain::CreateGrid()
   p_gridcreator->SetGridXMax(m_ecms/2.0);
   p_gridcreator->ReadInArguments(InputFile(),InputPath());
   p_gridcreator->SetXSExtension(m_xsextension);
-  p_gridcreator->SetMCExtension(m_mcextension);
   p_gridcreator->SetOutputPath(OutputPath());
   if (!p_gridcreator->InitializeCalculation()) {
     msg_Error()<<METHOD<<"(): Initialization failed! Abort."<<std::endl;
     return false;
   }
   if (!p_gridcreator->ReadInGrid()) {
-    if (MakeDir(OutputPath())==0) {
-      msg_Tracking()<<"Simple_Chain::CreateGrid(..): "
-		    <<"Created output directory "
-		    <<OutputPath()<<"."<<std::endl;
-    }
     p_gridcreator->CreateGrid();
   }
   PHASIC::Vegas::SetOnExternal(vegas);

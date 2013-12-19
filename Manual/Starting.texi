@@ -17,12 +17,19 @@ working directory with
 @code{ tar -zxf SHERPA-MC-@value{VERSION}.tar.gz} .
 @end example
 
-To guarantee successful
-installation, the following tools should have been made available on
-the system: @code{make}, @code{autoconf}, @code{automake} and
-@c update
-@code{libtool}. Furthermore, a C++ and FORTRAN compiler must be
-provided. Compilation and installation proceed through the following commands
+To guarantee successful installation, the following tools should have been made
+available on the system:
+@itemize @bullet
+  @item C++ and Fortran compilers (e.g. from the gcc suite)
+  @item @code{make}
+  @item @code{sqlite3} (including the -dev package if installed through a package manager)
+@end itemize
+If you cannot install sqlite3 on your system, the Sherpa configure script
+provides the fallback option of installing it into the same directory as Sherpa.
+To enable that, you have to export @code{INSTALL_SQLITE=1} before proceeding
+with the configure step below.
+
+Compilation and installation proceed through the following commands:
 
 @example
 @code{ ./configure}
@@ -583,6 +590,9 @@ purpose and created in the working directory, must be invoked by the user
 @example
 ./makelibs
 @end example
+
+Note that the following tools have to be available for this step:
+@code{autoconf}, @code{automake} and @code{libtool}.
 
 Afterwards Sherpa can be restarted using the same command as
 before. In this run (the generation run) the cross sections of the hard
