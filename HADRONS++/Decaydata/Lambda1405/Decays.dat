@@ -1,5 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-
-{3112,211}	 | 0.33	 | Lambda1405_Sigma-pi+.dat;
-{3212,111}	 | 0.33	 | Lambda1405_Sigmapi.dat;
-{3222,-211}	 | 0.33	 | Lambda1405_Sigma+pi-.dat;

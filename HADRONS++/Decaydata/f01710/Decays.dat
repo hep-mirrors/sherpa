@@ -1,8 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{211,-211}	 | 0.500 [FK]	 | f01710_pi+pi-.dat;
-{111,111}	 | 0.250 [FK]	 | f01710_pipi.dat;
-{221,221}	 | 0.090 [FK]	 | f01710_etaeta.dat;
-{321,-321}	 | 0.08 [FK]	 | f01710_K+K-.dat;
-{130,130}	 | 0.04 [FK]	 | f01710_KLKL.dat;
-{310,310}	 | 0.04 [FK]	 | f01710_KSKS.dat;
-

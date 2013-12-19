@@ -1,7 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-
-{2212,-321}	 | 0.2	 | Lambda1690_P+K-.dat;
-{2112,-311}	 | 0.2	 | Lambda1690_nKb.dat;
-{3112,211}	 | 0.2	 | Lambda1690_Sigma-pi+.dat;
-{3212,111}	 | 0.2	 | Lambda1690_Sigmapi.dat;
-{3222,-211}	 | 0.2	 | Lambda1690_Sigma+pi-.dat;

@@ -1,6 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-
-{553,22}	 | 0.085(0.013)[PDG]	 | chib12P_Upsilon1SP.dat;
-{100553,22}	 | 0.21(0.04)[PDG]	 | chib12P_Upsilon2SP.dat;
-{553,223}	 | 0.0163(0.004)[PDG]	 | chib12P_Upsilon1Somega782.dat;
-{21,21}	 | 0.6887[FS]	 | chib12P_GG.dat;

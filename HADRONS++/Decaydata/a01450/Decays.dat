@@ -1,6 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{221,111}	 | 0.60 [FK]	 | a01450_etapi.dat;
-{331,111}	 | 0.30 [FK]	 | a01450_etaprime958pi.dat;
-{130,130}	 | 0.05 [FK]	 | a01450_KLKL.dat;
-{310,310}	 | 0.05 [FK]	 | a01450_KSKS.dat;
-

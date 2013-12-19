@@ -1,7 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{3122,-321}	 | .678(.007)	 | Omega-_LambdaK-.dat;
-{3322,-211}	 | .236(.007)	 | Omega-_Xipi-.dat;
-{3312,111}	 | .086(.004)	 | Omega-_Xi-pi.dat;
-{3324,-211}	 | .00064(.0005)	 | Omega-_Xi1530pi-.dat;
-{3314,111}	 | .00023(.0002)	 | Omega-_Xi1530-pi.dat;
-{3322,11,-12}	 | .0056(.0028)	 | Omega-_Xinu_ebe-.dat;

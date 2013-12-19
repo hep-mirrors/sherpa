@@ -1,9 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-
-## List of all Bs decays, for which we have implemented ME's
-
-{-11,12,-20433}	 | 1.0	 | Bs_Dstar_1s+bnu_ee+.dat;
-{-13,14,-20433}	 | 1.0	 | Bs_Dstar_1s+bnu_mumu+.dat;
-{-15,16,-20433}	 | 1.0	 | Bs_Dstar_1s+bnu_tautau+.dat;
-
-# NO_ANTI        # use this option: anti-mother does not decay

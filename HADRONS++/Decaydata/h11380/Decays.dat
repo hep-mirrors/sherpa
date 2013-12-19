@@ -1,6 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{311,-311,111}	 | 0.2500 [FK]	 | h11380_KKbpi.dat;
-{321,-321,111}	 | 0.2500 [FK]	 | h11380_K+K-pi.dat;
-{321,-311,-211}	 | 0.2500 [FK]	 | h11380_K+Kbpi-.dat;
-{-321,311,211}	 | 0.2500 [FK]	 | h11380_K-Kpi+.dat;
-

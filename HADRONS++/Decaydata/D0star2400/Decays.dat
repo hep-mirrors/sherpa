@@ -1,4 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{411,-211}	 | 0.667 [Pythia]	 | D0star2400_D+pi-.dat;
-{421,111}	 | 0.333 [Pythia]	 | D0star2400_Dpi.dat;
-

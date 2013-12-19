@@ -1,6 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-
-{2112,-321}	 | 0.4	 | Sigma1660-_nK-.dat;
-{3122,-211}	 | 0.2	 | Sigma1660-_Lambdapi-.dat;
-{3112,111}	 | 0.2	 | Sigma1660-_Sigma-pi.dat;
-{3212,-211}	 | 0.2	 | Sigma1660-_Sigmapi-.dat;

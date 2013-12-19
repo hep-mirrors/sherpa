@@ -1,6 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{313,-311}	 | 0.25 [FK]	 | f11420_Kstar892Kb.dat;
-{-313,311}	 | 0.25 [FK]	 | f11420_Kstar892bK.dat;
-{323,-321}	 | 0.25 [FK]	 | f11420_Kstar892+K-.dat;
-{-323,321}	 | 0.25 [FK]	 | f11420_Kstar892+bK+.dat;
-

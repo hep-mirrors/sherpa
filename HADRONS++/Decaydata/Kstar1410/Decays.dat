@@ -1,8 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{323,-211}	 | 0.450 [FS]	 | Kstar1410_Kstar892+pi-.dat;
-{313,111}	 | 0.450 [FS]	 | Kstar1410_Kstar892pi.dat;
-{321,-211}	 | 0.033 [FS]	 | Kstar1410_K+pi-.dat;
-{311,111}	 | 0.033 [FS]	 | Kstar1410_Kpi.dat;
-{321,-213}	 | 0.017 [FS]	 | Kstar1410_K+rho770+b.dat;
-{311,113}	 | 0.017 [FS]	 | Kstar1410_Krho770.dat;
-

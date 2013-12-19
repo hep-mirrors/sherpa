@@ -1,7 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{2212,-211}	 | .639(.005) [PDG]	 | Lambda_P+pi-.dat;
-{2112,111}	 | .358(.005) [PDG]	 | Lambda_npi.dat;
-{2112,22}	 | .00175(.00015) [PDG]	 | Lambda_nP.dat;
-{2212,11,-12}	 | .000832(.000014) [PDG]	 | Lambda_P+nu_ebe-.dat;
-{2212,13,-14}	 | .000157(.000035) [PDG]	 | Lambda_P+nu_mubmu-.dat;
-

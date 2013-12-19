@@ -1,6 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{2212,111}	 | .5157(.0030) [PDG]	 | Sigma+_P+pi.dat;
-{2112,211}	 | .4831(.0030) [PDG]	 | Sigma+_npi+.dat;
-{2212,22}	 | .00123(.0005) [PDG]	 | Sigma+_P+P.dat;
-{3122,-11,12}	 | .00002(.000005) [PDG]	 | Sigma+_Lambdanu_ee+.dat;
-

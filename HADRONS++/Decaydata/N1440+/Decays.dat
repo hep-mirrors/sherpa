@@ -1,6 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-
-{2212,111}	 | 0.6	 | N1440+_P+pi.dat;
-{2212,111,111}	 | 0.2	 | N1440+_P+pipi.dat;
-{2212,211,-211}	 | 0.2	 | N1440+_P+pi+pi-.dat;
-{2212,22}	 | 0.00035	 | N1440+_P+P.dat;

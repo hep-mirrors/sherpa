@@ -1,9 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-
-{-11,12,443}	 | 0.3	 | Bc+_Jpsi1Snu_ee+.dat;
-{-13,14,443}	 | 0.3	 | Bc+_Jpsi1Snu_mumu+.dat;
-{-15,16,443}	 | 0.1	 | Bc+_Jpsi1Snu_tautau+.dat;
-{211,211,-211,443}	 | 0.2	 | Bc+_Jpsi1Spi+pi+pi-.dat;
-{211,443}	 | 0.1	 | Bc+_Jpsi1Spi+.dat;
-{-421,413}	 | 0.1	 | Bc+_DbDstar2010+.dat;
-

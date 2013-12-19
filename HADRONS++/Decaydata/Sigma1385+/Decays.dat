@@ -1,5 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{3122,211}	 | .88(.02) [PDG]	 | Sigma1385+_Lambdapi+.dat;
-{3222,111}	 | .04(.0067) [PDG]	 | Sigma1385+_Sigma+pi.dat;
-{3212,211}	 | .08(.0133) [PDG]	 | Sigma1385+_Sigmapi+.dat;
-

@@ -1,5 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{113,111}	 | 0.334 [FK]	 | pi1300_rho770pi.dat;
-{213,-211}	 | 0.333 [FK]	 | pi1300_rho770+pi-.dat;
-{-213,211}	 | 0.333 [FK]	 | pi1300_rho770+bpi+.dat;
-

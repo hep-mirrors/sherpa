@@ -1,1 +1,0 @@
-sed -i  '/<Result>/,+3d'

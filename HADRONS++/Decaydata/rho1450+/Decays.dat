@@ -1,4 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{211,111}	 | 0.999 [FK]	 | rho1450+_pi+pi.dat;
-{321,311}	 | 0.001 [FK+PDG]	 | rho1450+_K+K.dat;
-

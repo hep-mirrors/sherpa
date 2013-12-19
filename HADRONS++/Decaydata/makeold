@@ -1,6 +1,0 @@
-#!/bin/bash
-
-FILES=`find -maxdepth 2 -name ".*.dat.old"`  # find files ./.<name>.dat.old    
-for I in $FILES; do
-  mv $I ${I/.dat.old/.dat}
-done  

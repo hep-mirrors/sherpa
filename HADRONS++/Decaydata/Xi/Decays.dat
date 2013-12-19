@@ -1,6 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{3122,111}	 | .99522(.0032) [PDG]	 | Xi_Lambdapi.dat;
-{3122,22}	 | .00118(.0003) [PDG]	 | Xi_LambdaP.dat;
-{3212,22}	 | .00333(.00010) [PDG]	 | Xi_SigmaP.dat;
-{3222,11,-12}	 | .00027(.00004) [PDG]	 | Xi_Sigma+nu_ebe-.dat;
-

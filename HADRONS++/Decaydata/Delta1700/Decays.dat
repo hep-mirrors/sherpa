@@ -1,9 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-
-{2212,-211}	 | 0.075	 | Delta1700_P+pi-.dat;
-{2112,111}	 | 0.075	 | Delta1700_npi.dat;
-{1114,211}	 | 0.15	 | Delta1700_Delta1232-pi+.dat;
-{2114,111}	 | 0.15	 | Delta1700_Delta1232pi.dat;
-{2214,-211}	 | 0.15	 | Delta1700_Delta1232+pi-.dat;
-{2212,-211,111}	 | 0.2	 | Delta1700_P+pi-pi.dat;
-{2112,211,-211}	 | 0.2	 | Delta1700_npi+pi-.dat;

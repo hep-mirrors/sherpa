@@ -1,6 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-
-{2212,-311}	 | 0.15	 | Sigma1670+_P+Kb.dat;
-{3122,211}	 | 0.15	 | Sigma1670+_Lambdapi+.dat;
-{3212,211}	 | 0.35	 | Sigma1670+_Sigmapi+.dat;
-{3222,111}	 | 0.35	 | Sigma1670+_Sigma+pi.dat;

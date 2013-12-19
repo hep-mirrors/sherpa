@@ -1,7 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{211,-211}	 | 0.6 [FS]	 | rho1450_pi+pi-.dat;
-{211,-211,111,111}	 | 0.169 [FS]	 | rho1450_pi+pi-pipi.dat;
-{211,-211,211,-211}	 | 0.169 [FS]	 | rho1450_pi+pi+pi-pi-.dat;
-{111,111,111,111}	 | 0.042 [FS]	 | rho1450_pipipipi.dat;
-{221,113}	 | 0.02 [FS]	 | rho1450_etarho770.dat;
-

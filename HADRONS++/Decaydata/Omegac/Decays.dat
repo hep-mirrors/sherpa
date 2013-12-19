@@ -1,5 +1,0 @@
-# Declare spectators {flav1:weight1,flav2,weight2,...}
-SPECTATORS     | {3303:1.}
-
-# in PDG everything is "seen" only.
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file

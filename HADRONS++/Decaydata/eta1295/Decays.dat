@@ -1,5 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{10111,111}	 | 0.334 [FK]	 | eta1295_a0980pi.dat;
-{10211,-211}	 | 0.333 [FK]	 | eta1295_a0980+pi-.dat;
-{-10211,211}	 | 0.333 [FK]	 | eta1295_a0980+bpi+.dat;
-

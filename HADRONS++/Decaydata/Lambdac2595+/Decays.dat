@@ -1,6 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-
-{4222,-211}	 | 0.24	 | Lambdac2595+_Sigmac2455++pi-.dat;
-{4212,111}	 | 0.24	 | Lambdac2595+_Sigmac2455+pi.dat;
-{4112,211}	 | 0.24	 | Lambdac2595+_Sigmac2455pi+.dat;
-{4122,211,-211}	 | 0.18	 | Lambdac2595+_Lambdac+pi+pi-.dat;

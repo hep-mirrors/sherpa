@@ -1,6 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{431,111}	 | 0.9(0.9) [FS]	 | Ds0star2317+_Ds+pi.dat;
-{431,22}	 | 0.02(0.02) [FS]	 | Ds0star2317+_Ds+P.dat;
-{433,111}	 | 0.06(0.06) [FS]	 | Ds0star2317+_Dsstar+pi.dat;
-{433,22}	 | 0.02(0.02) [FS]	 | Ds0star2317+_Dsstar+P.dat;
-

@@ -1,5 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{213,-211}	 | 0.333 [FK]	 | omega1420_rho770+pi-.dat;
-{211,-213}	 | 0.333 [FK]	 | omega1420_rho770+bpi+.dat;
-{113,111}	 | 0.333 [FK]	 | omega1420_rho770pi.dat;
-

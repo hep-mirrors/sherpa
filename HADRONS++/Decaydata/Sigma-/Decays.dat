@@ -1,6 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-{2112,-211}	 | .99848(.0005) [PDG]	 | Sigma-_npi-.dat;
-{2112,11,-12}	 | .00102(.00003) [PDG]	 | Sigma-_nnu_ebe-.dat;
-{2112,13,-14}	 | .00045(.00004) [PDG]	 | Sigma-_nnu_mubmu-.dat;
-{3122,11,-12}	 | .00006(.000003) [PDG]	 | Sigma-_Lambdanu_ebe-.dat;
-

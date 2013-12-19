@@ -1,7 +1,0 @@
-# outgoing part. 	 | BR(Delta BR) 	 [Origin] 	 | DC-file
-
-{2112,-211}	 | 0.4	 | Sigma1750-_npi-.dat;
-{3122,-211}	 | 0.1	 | Sigma1750-_Lambdapi-.dat;
-{3112,111}	 | 0.02	 | Sigma1750-_Sigma-pi.dat;
-{3212,-211}	 | 0.02	 | Sigma1750-_Sigmapi-.dat;
-{3112,221}	 | 0.46	 | Sigma1750-_Sigma-eta.dat;
