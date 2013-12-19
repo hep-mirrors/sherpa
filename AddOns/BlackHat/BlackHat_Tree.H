@@ -37,6 +37,9 @@ namespace BLACKHAT {
 
     void SetCouplings(const MODEL::Coupling_Map& cpls);
 
+    int OrderQCD(const int &id=-1);
+    int OrderEW(const int &id=-1);
+
     inline static void SetInterface(BH::BH_interface *const bh) { s_interface=bh; }
     inline static void SetModel(MODEL::Model_Base *const md) { s_model=md; }
 

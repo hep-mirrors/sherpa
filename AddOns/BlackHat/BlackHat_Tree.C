@@ -79,6 +79,16 @@ double BlackHat_Tree::Calc(const Vec4D_Vector& momenta)
   return res;
 }
 
+int BlackHat_Tree::OrderQCD(const int &id)
+{
+  return m_oqcd;
+}
+
+int BlackHat_Tree::OrderEW(const int &id)
+{
+  return m_oew;
+}
+
 DECLARE_TREEME2_GETTER(BlackHat_Tree,"BlackHat_Tree")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,BlackHat_Tree>::
 operator()(const Process_Info &pi) const
