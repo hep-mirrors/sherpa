@@ -1,0 +1,17 @@
+#!/bin/bash
+
+dir=${1%/}
+db=${dir}.db
+
+rm -f ${db}
+files=$(find ${dir})
+
+echo "Building ${db} ("$(echo $files | wc -w)")";
+
+sqlite3 ${db} "create table path(file,content)"
+for i in $files; do
+  test -d $i && continue; echo -n "."
+  filename=$(echo $i | sed 's|'${dir}'||g;s|^/||g')
+  sed -e "s|'|''|g" -e "$ s|$|');|1" -e "1 s|^|insert into path values('${filename}','|1" $i | sqlite3 ${db}
+done
+echo ". done"
