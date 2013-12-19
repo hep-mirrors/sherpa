@@ -223,8 +223,11 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
 
   if (!p_LO_process->InitAmplitude(model,top,links,errs)) return 0;
   m_iresult = p_LO_process->Result();
-  m_oqcd = p_LO_process->OrderQCD()+1;
-  m_oew = p_LO_process->OrderEW();
+  nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);
+  m_oqcd = p_LO_process->OrderQCD()+
+    ((m_pinfo.m_fi.m_nloqcdtype&nlot)?1:0);
+  m_oew = p_LO_process->OrderEW()+
+    ((m_pinfo.m_fi.m_nloewtype&nlot)?1:0);
   m_pinfo.m_oqcd=m_oqcd;
   m_pinfo.m_oew=m_oew;
 
