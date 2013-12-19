@@ -604,10 +604,6 @@ void Process_Integrator::StoreResults(const int mode)
   WriteOutHistogram(m_resultpath+"/"+p_proc->Generator()->Name()+"/WD_"+fname);
   p_pshandler->WriteOut(m_resultpath+"/"+p_proc->Generator()->Name()+"/MC_"+fname);
   My_In_File::ExecDB(m_resultpath+"/","commit");
-
-  if (FileExists(m_resultpath+".db") && !Copy(m_resultpath+".db",m_resultpath+".bak.db"))
-    msg_Error()<<METHOD<<"(): Copy error. "
-	       <<strerror(errno)<<"."<<std::endl;
 }
 
 void Process_Integrator::ReadResults()
