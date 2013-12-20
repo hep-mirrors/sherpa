@@ -1,0 +1,20 @@
+#!/bin/bash
+
+db=${1}
+dir=${db%.db}
+
+if test -d ${dir}; then echo "directory exists."; exit 1; fi
+
+files=$(sqlite3 ${db} "select file from path")
+
+echo "Building directory ("$(echo $files | wc -w)")";
+mkdir -p ${dir}
+
+for i in $files; do
+  file=${dir}/${i}
+  if test -f ${file}; then echo "file $file exists."; exit 1; fi
+  mkdir -p $(dirname $file)
+  echo $file
+  sqlite3 ${db} "select content from path where file='${i}'" > ${file}
+done
+echo "... done."
