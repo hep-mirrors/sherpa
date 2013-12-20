@@ -116,11 +116,13 @@ bool Beam_Spectra_Handler::InitializeLaserBackscattering(Data_Reader * dataread,
   char help[20];
   sprintf(help,"%i",num+1);
   std::string number        = string(help); 
-  int     flav              = dataread->GetValue<int>("BEAM_"+number,0);  
+  std::vector<double> beam;
+  if (!dataread->VectorFromFile(beam,"BEAM_"+number)) beam.resize(2,0.0);
+  int     flav              = (int)beam.front();
   InitializeFlav((kf_code)abs(flav));
   Flavour beam_particle     = Flavour((kf_code)abs(flav));
   if (flav<0) beam_particle = beam_particle.Bar();
-  double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number,0.0);
+  double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number,beam[1]);
   double  beam_polarization = dataread->GetValue<double>("BEAM_POL_"+number,0.0);
 
   if ((beam_particle!=Flavour(kf_e)) && (beam_particle!=Flavour(kf_e).Bar())) {
@@ -148,11 +150,13 @@ bool Beam_Spectra_Handler::InitializeSpectrumReader(Data_Reader * dataread,int n
   char help[20];
   sprintf(help,"%i",num+1);
   std::string number        = string(help); 
-  int     flav              = dataread->GetValue<int>("BEAM_"+number,0);  
+  std::vector<double> beam;
+  if (!dataread->VectorFromFile(beam,"BEAM_"+number)) beam.resize(2,0.0);
+  int     flav              = (int)beam.front();
   InitializeFlav((kf_code)abs(flav));
   Flavour beam_particle     = Flavour((kf_code)abs(flav));
   if (flav<0) beam_particle = beam_particle.Bar();
-  double beam_energy        = dataread->GetValue<double>("BEAM_ENERGY_"+number,0.0);
+  double beam_energy        = dataread->GetValue<double>("BEAM_ENERGY_"+number,beam[1]);
   double beam_polarization  = dataread->GetValue<double>("BEAM_POL_"+number,0.0);
   double laser_energy       = dataread->GetValue<double>("E_LASER_"+number,0.0);
   double laser_polarization = dataread->GetValue<double>("P_LASER_"+number,0.0);
@@ -169,11 +173,13 @@ bool Beam_Spectra_Handler::InitializeMonochromatic(Data_Reader * dataread,int nu
   char help[20];
   sprintf(help,"%i",num+1);
   std::string number = string(help); 
-  int     flav              = dataread->GetValue<int>("BEAM_"+number,0);  
+  std::vector<double> beam;
+  if (!dataread->VectorFromFile(beam,"BEAM_"+number)) beam.resize(2,0.0);
+  int     flav              = (int)beam.front();
   InitializeFlav((kf_code)abs(flav));
   Flavour beam_particle     = Flavour((kf_code)abs(flav));
   if (flav<0) beam_particle = beam_particle.Bar();
-  double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number,0.0);
+  double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number,beam[1]);
   double  beam_polarization = dataread->GetValue<double>("BEAM_POL_"+number,0.0);
   p_BeamBase[num]           = new Monochromatic(beam_particle,beam_energy,beam_polarization,1-2*num);
   return true;
@@ -183,7 +189,9 @@ bool Beam_Spectra_Handler::InitializeMonochromatic(Data_Reader * dataread,int nu
 bool Beam_Spectra_Handler::InitializeEPA(Data_Reader * dataread,int num) 
 {
   std::string number(ToString(num+1));
-  int     flav              = dataread->GetValue<int>("BEAM_"+number,num+1);  
+  std::vector<double> beam;
+  if (!dataread->VectorFromFile(beam,"BEAM_"+number)) beam.resize(2,0.0);
+  int     flav              = (int)beam.front();
   InitializeFlav((kf_code)abs(flav));
   Flavour beam_particle     = Flavour((kf_code)(abs(flav)));
   if (flav<0) beam_particle = beam_particle.Bar();
@@ -196,7 +204,7 @@ bool Beam_Spectra_Handler::InitializeEPA(Data_Reader * dataread,int num)
     return false;
   }
   
-  double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number,0.0);
+  double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number,beam[1]);
   if (beam_particle.IsIon()) { 
     beam_energy *= beam_particle.GetAtomicNumber();
     // for ions the energy is specified as nucleon energy and not as energy of the

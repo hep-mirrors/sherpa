@@ -491,8 +491,11 @@ bool Initialization_Handler::InitializeTheModel()
   beamer.AddComment("#");
   beamer.AddWordSeparator("\t");
   beamer.SetInputFile(m_path+m_beamdat);
-  double beam1 = beamer.GetValue<double>("BEAM_ENERGY_1",0.0);
-  double beam2 = beamer.GetValue<double>("BEAM_ENERGY_2",0.0);
+  std::vector<double> _beam1, _beam2;
+  if (!beamer.VectorFromFile(_beam1,"BEAM_1")) _beam1.resize(2,0.0);
+  if (!beamer.VectorFromFile(_beam2,"BEAM_2")) _beam2.resize(2,0.0);
+  double beam1 = beamer.GetValue<double>("BEAM_ENERGY_1",_beam1[1]);
+  double beam2 = beamer.GetValue<double>("BEAM_ENERGY_2",_beam2[1]);
   rpa->gen.SetCplScale(4.*beam1*beam2);
   Data_Reader read(" ",";","!","=");
   read.AddWordSeparator("\t");
