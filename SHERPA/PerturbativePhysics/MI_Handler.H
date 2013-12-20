@@ -10,9 +10,7 @@ namespace BEAM   { class Beam_Spectra_Handler; }
 namespace PDF    { class ISR_Handler;          }
 namespace PHASIC { class Process_Base;         }
 namespace MODEL  { class Model_Base;           }
-#ifdef USING__Amisic
 namespace AMISIC { class Amisic;               }
-#endif
 
 namespace SHERPA {
 
@@ -29,9 +27,7 @@ namespace SHERPA {
   private:
     BEAM::Beam_Spectra_Handler *p_beam;
     PDF::ISR_Handler           *p_isr;
-#ifdef USING__Amisic
     AMISIC::Amisic             *p_amisic;
-#endif
 
     ATOOLS::Cluster_Amplitude *p_ampl;
     PHASIC::Process_Base      *p_proc;

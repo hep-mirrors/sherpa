@@ -10,11 +10,9 @@
 #include "SHERPA/LundTools/Lund_Interface.H"
 #endif
 
-#ifdef USING__Ahadic
 namespace AHADIC {
   class Ahadic;
 }
-#endif
 
 namespace SHERPA {
 
@@ -26,9 +24,7 @@ namespace SHERPA {
     int         m_mode;
     bool        m_shrink, m_flagpartonics;
 
-#ifdef USING__Ahadic
     AHADIC::Ahadic * p_ahadic;
-#endif
 #ifdef USING__PYTHIA
     Lund_Interface * p_lund;
 #endif
@@ -49,9 +45,7 @@ namespace SHERPA {
 #ifdef USING__PYTHIA
     inline Lund_Interface * GetLundInterface() const { return p_lund; }
 #endif
-#ifdef USING__Ahadic
     inline AHADIC::Ahadic * GetAhadic() const { return p_ahadic; }
-#endif
   };// end of class Fragmentation_Handler
 
   /*!

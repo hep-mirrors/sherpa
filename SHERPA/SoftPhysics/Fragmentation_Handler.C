@@ -6,25 +6,17 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Smart_Pointer.H"
 #include "ATOOLS/Org/Return_Value.H"
-#ifdef USING__Ahadic
 #include "AHADIC++/Main/Ahadic.H"
-#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
-#ifdef USING__Ahadic
 using namespace AHADIC;
 #include "AHADIC++/Tools/Hadron_Init.H"
-#else
-#error Ahadic must be enabled for filling the hadron tables.
-#endif
 
 Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
   m_dir(_dir), m_file(_file), m_mode(0)
-#ifdef USING__Ahadic
   ,p_ahadic(NULL)
-#endif
 #ifdef USING__PYTHIA
   ,p_lund(NULL)
 #endif
@@ -57,7 +49,6 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
     return;
 #endif
   }
-#ifdef USING__Ahadic
   else if (m_fragmentationmodel==string("Ahadic")) {
     m_sfile=dr.GetValue<string>("AHADIC_FILE",m_file);
     Hadron_Init init;
@@ -69,7 +60,6 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
     exh->AddTerminatorObject(this);
     return;
   }
-#endif
   else if (m_fragmentationmodel==string("Off") ||
            m_fragmentationmodel==string("None") ||
            m_fragmentationmodel==string("0")) return;
@@ -81,9 +71,7 @@ Fragmentation_Handler::~Fragmentation_Handler()
 #ifdef USING__PYTHIA
   if (p_lund!=NULL)   { delete p_lund;   p_lund   = NULL;   }
 #endif
-#ifdef USING__Ahadic
   if (p_ahadic!=NULL) { delete p_ahadic; p_ahadic = NULL;   }
-#endif
   exh->RemoveTerminatorObject(this);
 }
 
@@ -118,7 +106,6 @@ Fragmentation_Handler::PerformFragmentation(Blob_List *bloblist,
     if (m_shrink>0 && success==Return_Value::Success) Shrink(bloblist);
     return success;
 #endif
-#ifdef USING__Ahadic
   case 2  : 
     success = p_ahadic->Hadronize(bloblist);
     if (success!=Return_Value::Success &&
@@ -127,7 +114,6 @@ Fragmentation_Handler::PerformFragmentation(Blob_List *bloblist,
     }
     if (m_shrink>0 && success==Return_Value::Success) Shrink(bloblist);
     return success;
-#endif
   default : 
     msg_Error()<<"ERROR in "<<METHOD<<":\n"
 	       <<"   Unknown hadronization model in mode = "<<m_mode<<".\n"

@@ -7,9 +7,7 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 
-#ifdef USING__Amisic
 #include "AMISIC++/Main/Amisic.H"
-#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -19,16 +17,13 @@ MI_Handler::MI_Handler(std::string path,std::string file,
 		       BEAM::Beam_Spectra_Handler *beam,
 		       PDF::ISR_Handler *isr) :
   p_beam(beam), p_isr(isr),
-#ifdef USING__Amisic
   p_amisic(NULL),
-#endif
   p_ampl(NULL),
   p_proc(NULL),
   p_shower(NULL),
   m_type(None),
   m_ycut(1.0e-7)
 {
-#ifdef USING__Amisic
   std::string mihandler="None";
   ATOOLS::Data_Reader read(" ",";","!","=");
   read.AddComment("#");
@@ -56,22 +51,17 @@ MI_Handler::MI_Handler(std::string path,std::string file,
     m_ycut=ATOOLS::sqr(m_ycut/ATOOLS::rpa->gen.Ecms());
     m_type=Amisic;
   }
-#endif
 }
 
 MI_Handler::~MI_Handler() 
 {
-#ifdef USING__Amisic
   if (p_amisic!=NULL) delete p_amisic;
-#endif
 }
 
 bool MI_Handler::GenerateHardProcess(ATOOLS::Blob *blob)
 {
   switch (m_type) {
-#ifdef USING__Amisic
   case Amisic: return p_amisic->GenerateHardProcess(blob);
-#endif
   default    : break;
   }
   return false;
@@ -80,9 +70,7 @@ bool MI_Handler::GenerateHardProcess(ATOOLS::Blob *blob)
 bool MI_Handler::GenerateSoftProcess(ATOOLS::Blob *blob)
 {
   switch (m_type) {
-#ifdef USING__Amisic
   case Amisic: return p_amisic->GenerateSoftProcess(blob);
-#endif
   default    : break;
   }
   return false;
@@ -91,9 +79,7 @@ bool MI_Handler::GenerateSoftProcess(ATOOLS::Blob *blob)
 bool MI_Handler::GenerateEvent(ATOOLS::Blob_List *bloblist)
 {
   switch (m_type) {
-#ifdef USING__Amisic
   case Amisic: break; // p_amisic->GenerateEvent(bloblist);
-#endif
   default    : break;
   }
   return false;
@@ -102,9 +88,7 @@ bool MI_Handler::GenerateEvent(ATOOLS::Blob_List *bloblist)
 bool MI_Handler::VetoHardProcess(ATOOLS::Blob *blob)
 {
   switch (m_type) {
-#ifdef USING__Amisic
   case Amisic: return p_amisic->VetoHardProcess(blob);
-#endif
   default    : break;
   }
   return false;
@@ -113,12 +97,10 @@ bool MI_Handler::VetoHardProcess(ATOOLS::Blob *blob)
 void MI_Handler::SetScaleMin(double scalemin,unsigned int i)
 {
   switch (m_type) {
-#ifdef USING__Amisic
   case Amisic:
     p_amisic->HardBase()->SetStop(scalemin,i);
     p_amisic->SoftBase()->SetStart(scalemin,i);
     break;
-#endif
   default:
     break;
   }
@@ -127,11 +109,9 @@ void MI_Handler::SetScaleMin(double scalemin,unsigned int i)
 void MI_Handler::SetScaleMax(double scalemax,unsigned int i)
 {
   switch (m_type) {
-#ifdef USING__Amisic
   case Amisic:
     p_amisic->HardBase()->SetStart(scalemax,i);
     break;
-#endif
   default:
     break;
   }
@@ -140,9 +120,7 @@ void MI_Handler::SetScaleMax(double scalemax,unsigned int i)
 double MI_Handler::ScaleMin(unsigned int i)
 {
   switch (m_type) {
-#ifdef USING__Amisic
   case Amisic: return p_amisic->HardBase()->Stop(i);
-#endif
   default    : break;
   }
   return 0.;
@@ -151,9 +129,7 @@ double MI_Handler::ScaleMin(unsigned int i)
 double MI_Handler::ScaleMax(unsigned int i)
 {
   switch (m_type) {
-#ifdef USING__Amisic
   case Amisic: return p_amisic->HardBase()->Start(i);
-#endif
   default    : break;
   }
   return 0.;
@@ -162,9 +138,7 @@ double MI_Handler::ScaleMax(unsigned int i)
 void MI_Handler::Reset()
 {
   switch (m_type) {
-#ifdef USING__Amisic
   case Amisic: p_amisic->Reset();
-#endif
   default    : break;
   }
 }
@@ -172,9 +146,7 @@ void MI_Handler::Reset()
 void MI_Handler::CleanUp()
 {
   switch (m_type) {
-#ifdef USING__Amisic
   case Amisic: p_amisic->CleanUp();
-#endif
   default    : break;
   }
 }
@@ -192,9 +164,7 @@ MI_Handler::TypeID MI_Handler::Type()
 std::string MI_Handler::Name() 
 {
   switch (m_type) {
-#ifdef USING__Amisic
   case Amisic: return std::string("Amisic");
-#endif
   case None  : return std::string("None");
   default    : break;
   }
@@ -208,7 +178,6 @@ PDF::ISR_Handler *MI_Handler::ISRHandler()
 
 ATOOLS::Cluster_Amplitude *MI_Handler::ClusterConfiguration()
 {
-#ifdef USING__Amisic
   PHASIC::Process_Base *xs(p_proc=p_amisic->HardBase()->XS());
   if (xs->Get<EXTRAXS::Single_Process>()==NULL) return NULL;
   if (p_proc->Generator()==NULL)
@@ -248,7 +217,6 @@ ATOOLS::Cluster_Amplitude *MI_Handler::ClusterConfiguration()
   p_ampl->SetOrderQCD(xs->OrderQCD());
   p_ampl->SetMS(p_amisic->HardBase()->XS()->Generator());
   msg_Debugging()<<*p_ampl<<"\n";
-#endif
   return p_ampl;
 }
 

@@ -53,14 +53,5 @@
 /* HEPEVT common block size */
 #undef HEPEVT_CB_SIZE
 
-/* using AHADIC */
-#undef USING__Ahadic
-
-/* using AMISIC */
-#undef USING__Amisic
-
 /* Using colour */
 #undef USING__COLOUR
-
-/* using HADRONS */
-#undef USING__Hadrons

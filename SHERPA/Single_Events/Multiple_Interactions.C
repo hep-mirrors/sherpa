@@ -12,15 +12,11 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
-#ifdef USING__Amisic
 #include "AMISIC++/Main/Amisic.H"
-#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
-#ifdef USING__Amisic
 using namespace AMISIC;
-#endif
 
 Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
   p_mihandler(mihandler), p_jetfinder(NULL)
@@ -95,7 +91,6 @@ CheckBlobList(ATOOLS::Blob_List *const bloblist)
 
 Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 {
-#ifdef USING__Amisic
   if (p_mihandler->Type()==MI_Handler::None ||
       MI_Base::StopGeneration()) return Return_Value::Nothing;
   if (bloblist->empty()) {
@@ -168,7 +163,6 @@ Return_Value::code Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,doub
   p_mihandler->ISRHandler()->Reset(0);
   p_mihandler->ISRHandler()->Reset(1);
   if (!MI_Base::StopGeneration()) return Return_Value::Retry_Phase;
-#endif
   return Return_Value::Nothing;
 }
 
