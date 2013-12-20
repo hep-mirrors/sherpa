@@ -6,12 +6,18 @@ db=${dir}.db
 rm -f ${db}
 files=$(find ${dir})
 
-echo "Building ${db} ("$(echo $files | wc -w)")";
+printf "Building ${db} ("$(echo $files | wc -w)") ";
 
-sqlite3 ${db} "create table path(file,content)"
+mkfifo ${dir}.tmp
+( sqlite3 ${db} < ${dir}.tmp ) &
+sqlpid=$!
+echo "create table path(file,content);" >> ${dir}.tmp
 for i in $files; do
-  test -d $i && continue; echo -n "."
+  test -d $i && continue; printf "."
   filename=$(echo $i | sed 's|'${dir}'||g;s|^/||g')
-  sed -e "s|'|''|g" -e "$ s|$|');|1" -e "1 s|^|insert into path values('${filename}','|1" $i | sqlite3 ${db}
+  sed -e "s|'|''|g" -e "$ s|$|');|1" -e "1 s|^|insert into path values('${filename}','|1" $i >> ${dir}.tmp
 done
-echo ". done"
+echo ".quit" >> ${dir}.tmp
+wait $sqlpid
+rm ${dir}.tmp
+echo " done"
