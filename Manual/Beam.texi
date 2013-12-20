@@ -17,7 +17,8 @@ for example, these are given by (-)2212 or (-)11, respectively.
 The code for photons is 22. 
 @item The energies of both incoming beams, defined through 
 @option{BEAM_ENERGY_1} and @option{BEAM_ENERGY_2}, 
-given in units of GeV.
+given in units of GeV. Beam energies may also be specified
+as a second argument to @option{BEAM_1} and @option{BEAM_2}.
 @end itemize
 
 More options related to beamstrahlung and intrinsic transverse momentum can
