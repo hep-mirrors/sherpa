@@ -25,7 +25,9 @@ for I in *.tex; do
   ps2pdf $bn.ps
   convert -trim $bn.ps $bn.png
   num=`ls -a ${bn}_fg.t* | wc -l`
-  echo -n "      <tr><td>"$num" graphs for<br>"$bn"<br><a href="$1/$bn".ps>[ps]</a> <a href="$1/$bn".pdf>[pdf]</a></td><td>" >> $2/index.html
+  echo -n "      <tr><td>"$num" graphs for<br>"$bn"<br>" >> $2/index.html
+  echo -n "<a href="$1/$bn".ps>[ps]</a>" >> $2/index.html
+  echo -n "<a href="$1/$bn".pdf>[pdf]</a></td><td>" >> $2/index.html
   for i in $(ls -rc $bn*.png); do
     echo -n "<img src=\""$1/$i"\">" >> $2/index.html
   done
