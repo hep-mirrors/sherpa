@@ -29,4 +29,3 @@ pkglib_LTLIBRARIES = libMEProcess.la
 libMEProcess_la_SOURCES = MEProcess.C
 localinc_HEADERS = MEProcess.H
 
-EXTRA_DIST    = @SVNINCLUDE@

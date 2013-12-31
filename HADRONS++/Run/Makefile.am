@@ -44,4 +44,4 @@ PhotonAnalysisBR_LDADD   = $(FULL_LDADD)
 PhotonAnalysisBR_CXXFLAGS   = $(AM_CXXFLAGS) @CONDITIONAL_ROOTFLAGS@
 PhotonAnalysisBR_CPPFLAGS   = $(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
 
-EXTRA_DIST    = @SVNINCLUDE@ Main_FullDecay.C Main.H Run.dat Analysis.dat
+EXTRA_DIST    = Main_FullDecay.C Main.H Run.dat Analysis.dat

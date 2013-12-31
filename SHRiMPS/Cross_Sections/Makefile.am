@@ -24,4 +24,3 @@ localinc_HEADERS   = \
 
 
 
-EXTRA_DIST    = @SVNINCLUDE@

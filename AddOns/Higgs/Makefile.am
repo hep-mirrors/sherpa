@@ -53,4 +53,4 @@ HIGGS_EXTRA_DIST = \
         Higgs_Tree.H \
         Higgs_Virtual.H
 
-EXTRA_DIST = @SVNINCLUDE@ $(HIGGS_EXTRA_DIST)
+EXTRA_DIST = $(HIGGS_EXTRA_DIST)

@@ -290,9 +290,6 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AM_CXXFLAGS="-g -O2"
   AC_SUBST(AM_CXXFLAGS)
 
-  EXTRA_DIST="\$(SVNINCLUDE)"
-  AC_SUBST(EXTRA_DIST)
-
   localincdir="\$(pkgincludedir)/\$(subdir)"
   AC_SUBST(localincdir)
 ])
@@ -322,20 +319,6 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
       VERSIONING=""; ] 
   )
   AC_SUBST(VERSIONING)
-
-  AC_ARG_ENABLE(
-    svninclude,
-    AC_HELP_STRING([--enable-svninclude], [Add .svn directories to dist tarball.]),
-    [ AC_MSG_CHECKING(whether to enable SVN synchronization)
-      case "${enableval}" in
-        no)  AC_MSG_RESULT(no);
-              SVNINCLUDE="";;
-        yes) AC_MSG_RESULT(yes);
-              SVNINCLUDE=".svn";;
-      esac ],
-    [ AC_MSG_CHECKING(whether to enable SVN synchronization); AC_MSG_RESULT(no); SVNINCLUDE="" ] 
-  )
-  AC_SUBST(SVNINCLUDE)
 
   AC_ARG_ENABLE(
     multithread,

@@ -74,7 +74,7 @@ localinc_HEADERS         =	\
 
 libToolsOrg_la_LIBADD = @CONDITIONAL_GZIPLIBS@
 
-EXTRA_DIST    = @SVNINCLUDE@ $(GZIPEXTRADIST) CXXFLAGS.H.in
+EXTRA_DIST    = $(GZIPEXTRADIST) CXXFLAGS.H.in
 
 dist-hook:
 	rm -f $(distdir)/CXXFLAGS.H

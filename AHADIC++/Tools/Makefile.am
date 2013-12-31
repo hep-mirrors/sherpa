@@ -34,4 +34,3 @@ localinc_HEADERS   = \
 		     Hadron_Init.H \
                      Hadronisation_Parameters.H
 
-EXTRA_DIST    = @SVNINCLUDE@

@@ -18,4 +18,3 @@ localinc_HEADERS   = \
                      Cluster_Former.H \
                      Colour_Reconnections.H
 
-EXTRA_DIST    = @SVNINCLUDE@

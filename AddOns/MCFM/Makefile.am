@@ -33,4 +33,4 @@ else
 MCFM_EXTRA_DIST = $(MCFM_SOURCES) $(MCFM_ADDS)
 endif
 
-EXTRA_DIST = @SVNINCLUDE@ $(MCFM_EXTRA_DIST) install_mcfm.sh
+EXTRA_DIST = $(MCFM_EXTRA_DIST) install_mcfm.sh

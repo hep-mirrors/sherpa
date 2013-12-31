@@ -41,7 +41,7 @@ localinc_HEADERS   = \
 	VA_B_B3.H \
         VA_F_F.H
 
-EXTRA_DIST    = @SVNINCLUDE@ \
+EXTRA_DIST    = \
 		VA_B_B3_HO.C \
 		VA_B_B3_ST.C \
 		VA_B_B_HO.C \

@@ -16,4 +16,3 @@ localinc_HEADERS   = \
                      Cluster_Decay_Analysis.H \
                      Cluster_Part.H 
 
-EXTRA_DIST    = @SVNINCLUDE@

@@ -21,4 +21,3 @@ localinc_HEADERS   = \
 			Beam_Remnant_Handler.H \
 			Rescatter_Handler.H
 
-EXTRA_DIST    = @SVNINCLUDE@

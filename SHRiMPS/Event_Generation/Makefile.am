@@ -32,4 +32,3 @@ localinc_HEADERS   = \
 			Quark_Replace.H
 
 
-EXTRA_DIST    = @SVNINCLUDE@

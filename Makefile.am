@@ -22,7 +22,7 @@ SUBDIRS       = \
 		Manual \
 		Examples
 
-EXTRA_DIST = @SVNINCLUDE@ GUIDELINES
+EXTRA_DIST = GUIDELINES
 
 fastinstall:
 	awk 'function install(){ \

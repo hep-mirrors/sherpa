@@ -10,4 +10,3 @@ localinc_HEADERS   = \
 			Shrimps.H \
 			Hadron_Init.H
 
-EXTRA_DIST    = @SVNINCLUDE@

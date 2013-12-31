@@ -3,4 +3,3 @@ SUBDIRS       =	\
 		Model \
 		Main
 
-EXTRA_DIST    = @SVNINCLUDE@ config.doxygen

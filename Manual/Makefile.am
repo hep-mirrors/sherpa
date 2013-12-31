@@ -105,4 +105,4 @@ Sherpa.html: $(srcdir)/*.texi $(srcdir)/*.css
         fi
 dvi:
 
-EXTRA_DIST    = @SVNINCLUDE@ Sherpa.1 Sherpa.css
+EXTRA_DIST    = Sherpa.1 Sherpa.css

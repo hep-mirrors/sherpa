@@ -12,4 +12,3 @@ localincdir = $(pkgincludedir)/AHADIC++/Main
 localinc_HEADERS   = \
 		     Ahadic.H
 
-EXTRA_DIST    = @SVNINCLUDE@
