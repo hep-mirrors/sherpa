@@ -24,11 +24,6 @@ namespace MCFM {
     int  PerformTests();
     bool NewLibraries();
 
-    void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
-
-    ATOOLS::Cluster_Amplitude *ClusterConfiguration
-    (PHASIC::Process_Base *const proc,const size_t &mode);
-
   }; // end of class MCFM_Interface
  
 } // end of namespace MCFM
@@ -164,17 +159,6 @@ int MCFM_Interface::PerformTests()
 bool MCFM_Interface::NewLibraries()
 {
   return false;
-}
-
-void MCFM_Interface::SetClusterDefinitions
-(PDF::Cluster_Definitions_Base *const defs)
-{
-}
-
-Cluster_Amplitude *MCFM_Interface::ClusterConfiguration
-(Process_Base *const proc,const size_t &mode)
-{
-  return NULL;
 }
 
 DECLARE_GETTER(MCFM_Interface,"MCFM",ME_Generator_Base,ME_Generator_Key);

@@ -20,6 +20,8 @@ Dipole_FF::Dipole_FF(const Particle_Vector_Vector& pvv) {
   m_M                   = m_neutralinparticles[0]->Momentum().Mass();
   m_Q                   = Vec4D(0.,0.,0.,0.);
   m_QN                  = Vec4D(0.,0.,0.,0.);
+  m_kappaC              = Vec3D(0.,0.,0.);
+  m_kappaN              = Vec3D(0.,0.,0.);
   for (unsigned int i=0; i<m_chargedoutparticles.size(); i++) {
     m_mC.push_back(m_chargedoutparticles[i]->FinalMass());
   }
@@ -33,7 +35,8 @@ Dipole_FF::Dipole_FF(const Particle_Vector_Vector& pvv) {
   for (unsigned int i=0; i<m_mN.size(); i++) {
     sum = sum + m_mN[i];
   }
-  m_omegaMax  = Photons::s_reducemax * (m_M/2.) * ( m_M/sum - sum/m_M );
+  m_omegaMax  = Min(m_omegaMax,
+                    Photons::s_reducemax * (m_M/2.) * ( m_M/sum - sum/m_M ));
   if (m_omegaMax<0.) m_omegaMax = m_omegaMin;
   // set running alpha_QED to squared mass of incomming parton
   // -> taken at maximal scale
@@ -109,6 +112,7 @@ void Dipole_FF::AddRadiation() {
         if (m_olddipole.size() == 2) GeneratePhotons(beta1,beta2);
         else                         GeneratePhotons(nbars);
         m_K = CalculateMomentumSum(m_softphotons);
+        DetermineKappa();
         if (m_n != 0)  photoncheck = CheckIfExceedingPhotonEnergyLimits();
         else photoncheck = true;
       }
@@ -124,7 +128,8 @@ void Dipole_FF::AddRadiation() {
       msg_Debugging()<<"-> "<<(genreject?"reject":"accept")<<std::endl;
       // accept new particle momenta if event accepted
       if (!genreject) {
-      // if accepted rewrite momenta into Q-CMS, also transform the photon momenta
+      // if accepted rewrite momenta into Q-CMS,
+      //   also transform the photon momenta
       // if no photons then P-CMS = Q-CMS
         if (m_n != 0) {
           // first boost to p-CMS (p = P + PN + K = Q + QN), then to Q-CMS
@@ -160,7 +165,8 @@ void Dipole_FF::AddRadiation() {
     // if any photons added
     else {
       CheckMomentumConservationInQCMS(boost,rotate);
-      // if momentum conserved, i.e. event successfully generated, boost back to original system
+      // if momentum conserved, i.e. event successfully generated,
+      // boost back to original system
       if (m_success) {
         m_photonsadded = true;
         for (unsigned int i=0; i<m_newdipole.size(); i++) {
@@ -200,10 +206,13 @@ void Dipole_FF::CalculateAvaragePhotonNumber(const double& b1,
 
 bool Dipole_FF::CheckIfExceedingPhotonEnergyLimits() {
   double sum = 0.;
+  double nN = m_mN.size();
+  double kappa2 = m_kappaN.Sqr();
+  double Kmkappa2 = (Vec3D(m_K)-nN*m_kappaN).Sqr();
   for (unsigned int i=0; i<m_mC.size(); i++) sum+=m_mC[i];
-  for (unsigned int i=0; i<m_mN.size(); i++) sum+=m_mN[i];
-  if (m_K[0] < (sqrt(m_M*m_M + (Vec3D(m_K)).Sqr()) - sum)) return true;
-  else                                                     return false;
+  for (unsigned int i=0; i<m_mN.size(); i++) sum+=sqrt(sqr(m_mN[i])+kappa2);
+  if (m_K[0] < (sqrt(m_M*m_M + Kmkappa2) - sum)) return true;
+  else                                           return false;
 }
 
 void Dipole_FF::CheckMomentumConservationInQCMS
@@ -251,24 +260,22 @@ void Dipole_FF::CheckMomentumConservationInQCMS
 void Dipole_FF::CorrectMomenta() {
   DetermineU();
   // reconstruct momenta in P-CMS
+  if ((m_u >= 0.) && (m_u <= 1.)) {
     // charged final state momenta
     for (unsigned int i=0; i<m_olddipole.size(); i++) {
-      Vec4D mom = m_olddipole[i]->Momentum();
-      for (unsigned int j=1; j<4; j++)
-        mom[j] = m_u * mom[j];
-      mom[0] = sqrt(sqr(m_mC[i])+Vec3D(mom).Sqr());
-      m_newdipole[i]->SetMomentum(mom);
-      m_P = m_P + mom;
+      Vec3D mom = m_u *Vec3D(m_olddipole[i]->Momentum());
+      double mom0 = sqrt(sqr(m_mC[i])+mom.Sqr());
+      m_newdipole[i]->SetMomentum(Vec4D(mom0,mom));
+      m_P += m_newdipole[i]->Momentum();
     }
     // neutral final state momenta
     for (unsigned int i=0; i<m_oldspectator.size(); i++) {
-      Vec4D mom = m_oldspectator[i]->Momentum();
-      for (unsigned int j=1; j<4; j++)
-        mom[j] = m_u * mom[j];
-      mom[0] = sqrt(sqr(m_mN[i])+Vec3D(mom).Sqr());
-      m_newspectator[i]->SetMomentum(mom);
-      m_PN = m_PN + mom;
+      Vec3D mom = m_u *Vec3D(m_oldspectator[i]->Momentum())-m_kappaN;
+      double mom0 = sqrt(sqr(m_mN[i])+mom.Sqr());
+      m_newspectator[i]->SetMomentum(Vec4D(mom0,mom));
+      m_PN += m_newspectator[i]->Momentum();
     }
+  }
 }
 
 void Dipole_FF::DefineDipole() {
@@ -298,11 +305,12 @@ double Dipole_FF::Func(const double& M2, const std::vector<double>& mC2,
                        const std::vector<double>& mN2,
                        const std::vector<Vec3D>& q, const double& u) {
   double sum = 0.;
+  double nN = m_mN.size();
   for (unsigned int i=0; i<mC2.size(); i++)
     sum+=sqrt(mC2[i]+u*u*(q[i]*q[i]));
   for (unsigned int i=0; i<mN2.size(); i++)
-    sum+=sqrt(mN2[i]+u*u*(q[i+mC2.size()]*q[i+mC2.size()]));
-  return sqrt(M2+(u*Vec3D(m_QN)+Vec3D(m_K)).Sqr()) - m_K[0] - sum;
+    sum+=sqrt(mN2[i]+(u*q[i+mC2.size()]-m_kappaN).Sqr());
+  return sqrt(M2+(u*Vec3D(m_QN)+Vec3D(m_K)-nN*m_kappaN).Sqr()) - m_K[0] - sum;
 }
 
 void Dipole_FF::ResetVariables() {
@@ -315,6 +323,8 @@ void Dipole_FF::ResetVariables() {
   m_K   = Vec4D(0.,0.,0.,0.);
   m_P   = Vec4D(0.,0.,0.,0.);
   m_PN  = Vec4D(0.,0.,0.,0.);
+  m_kappaC = Vec3D(0.,0.,0.);
+  m_kappaN = Vec3D(0.,0.,0.);
   m_genweight     = 1.;
   m_genmaxweight  = 1.;
 }
@@ -324,4 +334,22 @@ void Dipole_FF::ReturnMomenta() {
     m_chargedoutparticles[i]->SetMomentum(m_newdipole[i]->Momentum());
   for(unsigned int i=0; i<m_newspectator.size(); i++)
     m_neutraloutparticles[i]->SetMomentum(m_newspectator[i]->Momentum());
+}
+
+void Dipole_FF::DetermineKappa() {
+  double nN = m_mN.size();
+  m_kappaC = Vec3D(0.,0.,0.);
+  switch (Photons::s_ffrecscheme) {
+  case 1:
+    m_kappaN = 1./(nN+1.)*Vec3D(m_K);
+    break;
+  case 2:
+    if (nN>0) {
+      m_kappaN = 1./nN*Vec3D(m_K);
+      break;
+    }
+  default:
+    m_kappaN = Vec3D(0.,0.,0.);
+    break;
+  }
 }

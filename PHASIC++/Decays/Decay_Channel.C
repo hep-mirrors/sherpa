@@ -236,8 +236,6 @@ double Decay_Channel::SymmetryFactor()
 
 void Decay_Channel::CalculateWidth()
 {
-  long int seed = ran->GetSeed();
-  ran->SetSeed(123456);
   p_channels->Reset();
   long int iter = p_channels->Number()*5000*int(pow(2.,int(NOut())-2));
   int maxopt    = p_channels->Number()*int(pow(2.,2*(int(NOut())-2)));
@@ -278,7 +276,6 @@ void Decay_Channel::CalculateWidth()
   disc   = sqr(m_iwidth)/((sum2*sqr(flux)/n - sqr(m_iwidth))/(n-1));
   if (disc!=0.0) m_ideltawidth  = m_iwidth/sqrt(abs(disc));
   if(abs(m_ideltawidth)/m_iwidth<1e-6) m_ideltawidth=0.0;
-  ran->SetSeed(seed);
 }
 
 double Decay_Channel::Differential(ATOOLS::Vec4D_Vector& momenta, bool anti,

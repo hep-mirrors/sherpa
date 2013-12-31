@@ -289,7 +289,7 @@ double PS_Channel::PropMomenta(const Current *cur,const size_t &id,
 #endif
   }
   double sexp(m_sexp/pow(m_srbase,IdCount(id)-2.0));
-  if (cur!=NULL) {
+  if (cur!=NULL && cur->Mass()<rpa->gen.Ecms()) {
     if (cur->Width()>s_pwmin)
       return CE.MassivePropMomenta(cur->Mass(),cur->Width(),1,smin,smax,*cr);
     if (cur->Mass()>s_pmmin) 
@@ -305,7 +305,7 @@ double PS_Channel::PropWeight(const Current *cur,const size_t &id,
 {
   double wgt(1.0), rn;
   double sexp(m_sexp/pow(m_srbase,IdCount(id)-2.0));
-  if (cur!=NULL) {
+  if (cur!=NULL && cur->Mass()<rpa->gen.Ecms()) {
     if (cur->OnShell()) return (cur->Mass()*cur->Width())/M_PI;
     if (cur->Width()>s_pwmin) 
       wgt=CE.MassivePropWeight(cur->Mass(),cur->Width(),1,smin,smax,s,rn);

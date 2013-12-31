@@ -13,10 +13,10 @@ namespace METOOLS {
 
     ATOOLS::Vec4D m_pi, m_pj, m_pk, m_Q;
 
-    int m_type, m_swap, m_trig;
+    int m_type, m_swap, m_trig, m_evol;
 
     double m_z, m_y, m_kt2, m_Q2, m_phase[2], m_res[3];
-    double m_mi2, m_mj2, m_mij2, m_mk2, m_ym, m_yp, m_f;
+    double m_mi2, m_mj2, m_mij2, m_mk2, m_ym, m_yp, m_f, m_a;
 
     Dipole_Info *p_info;
     SizeT_Vector m_pm;
@@ -92,8 +92,10 @@ namespace METOOLS {
     { return m_mi2||m_mj2||m_mk2||m_mij2; }
 
     inline double F() const { return m_f; }
+    inline double A() const { return m_a; }
 
     inline void SetF(const double &f) { m_f=f; }
+    inline void SetA(const double &a) { m_a=a; }
 
   };// end of class Dipole_Kinematics
   

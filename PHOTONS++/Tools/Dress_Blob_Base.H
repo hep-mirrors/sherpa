@@ -34,6 +34,8 @@ namespace PHOTONS {
       ATOOLS::Vec4D           m_PN;
       ATOOLS::Vec4D           m_Q;
       ATOOLS::Vec4D           m_QN;
+      ATOOLS::Vec3D           m_kappaC;
+      ATOOLS::Vec3D           m_kappaN;
       double                  m_accu;
       double                  m_genweight;
       double                  m_genmaxweight;
@@ -74,6 +76,7 @@ namespace PHOTONS {
                           const double&) = 0;
       virtual void   ResetVariables() = 0;
       virtual void   ReturnMomenta() = 0;
+      virtual void   DetermineKappa() = 0;
 
     public:
       Dress_Blob_Base();

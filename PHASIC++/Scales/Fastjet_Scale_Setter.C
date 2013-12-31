@@ -149,6 +149,7 @@ Fastjet_Scale_Setter::Fastjet_Scale_Setter
   m_scale.resize(Max(m_scale.size(),m_calcs.size()+stp::size));
   for (size_t i(0);i<m_calcs.size();++i)
     SetScale(ctags[i],*m_calcs[i]);
+  m_scale.resize(stp::size);
   SetCouplings();
 }
 
@@ -187,6 +188,7 @@ double Fastjet_Scale_Setter::Calculate
           (m_y==100.0 || dabs(pj.Y())<m_y)) m_p.push_back(pj);
     }
   }
+  m_scale.resize(Max(m_scale.size(),m_calcs.size()+stp::size));
   for (size_t idx(stp::size), i(0);i<input.size();++i)
     m_scale[idx++]=cs.exclusive_dmerge_max(i);
   for (size_t i(0);i<m_calcs.size();++i)
@@ -201,6 +203,7 @@ double Fastjet_Scale_Setter::Calculate
   for (size_t i(stp::size);i<m_scale.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
   msg_Debugging()<<"} <- "<<p_proc->Name()<<"\n";
+  m_scale.resize(stp::size);
   return m_scale[stp::fac];
 }
 

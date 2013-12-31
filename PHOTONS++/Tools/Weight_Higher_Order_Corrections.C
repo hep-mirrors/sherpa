@@ -191,6 +191,7 @@ void Weight_Higher_Order_Corrections::CalculateMax() {
 }
 
 void Weight_Higher_Order_Corrections::CalculateWeightAndMaxWithME() {
+  DEBUG_FUNC("");
   double B_0_0 = p_pme->GetBeta_0_0();
   double B_0_1 = p_pme->GetBeta_0_1();
   double B_0_2 = p_pme->GetBeta_0_2();
@@ -208,10 +209,9 @@ void Weight_Higher_Order_Corrections::CalculateWeightAndMaxWithME() {
                           /(p_pme->Smod(i)*p_pme->Smod(i));
     }
   }
-#ifdef PHOTONS_DEBUG
-  PRINT_INFO(p_pme->Name()<<"  "<<B_0_0<<"  "<<B_0_1<<"  "<<B_0_2<<"  "
-                                <<Sum_1_1<<"  "<<Sum_1_2<<"  "<<Sum_2_2);
-#endif
+  msg_Debugging()<<p_pme->Name()<<"  "<<B_0_0<<"  "<<B_0_1<<"  "<<B_0_2
+                                <<"  "<<Sum_1_1<<"  "<<Sum_1_2<<"  "<<Sum_2_2
+                                <<std::endl;
 
   m_weight    = 1. + 1./B_0_0*( B_0_1 + B_0_2 + Sum_1_1 + Sum_1_2 + Sum_2_2 );
   m_maxweight = 1. + 1./B_0_0*( B_0_1 + B_0_2 );

@@ -4,11 +4,16 @@
 #include "PHASIC++/Selectors/Jet_Finder.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PDF/Main/Jet_Criterion.H"
+#include "EXTRA_XS/Main/ME2_Base.H"
+#include "PHASIC++/Process/Tree_ME2_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/My_Limits.H"
+
+#include <algorithm>
 
 using namespace CSSHOWER;
 using namespace PHASIC;
@@ -34,12 +39,14 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   if (m_kmode!=2) msg_Info()<<METHOD<<"(): Set kernel mode "<<m_kmode<<"\n";
   m_recocheck=_dataread->GetValue<int>("CSS_RECO_CHECK",0);
   if (m_recocheck!=0) msg_Info()<<METHOD<<"(): Set reco check mode "<<m_recocheck<<"\n";
-  m_respectq2=_dataread->GetValue<int>("CSS_RESPECT_Q2",1);
+  m_respectq2=_dataread->GetValue<int>("CSS_RESPECT_Q2",0);
   if (m_respectq2!=1) msg_Info()<<METHOD<<"(): Set respect Q2 mode "<<m_respectq2<<"\n";
   int amode(_dataread->GetValue<int>("EXCLUSIVE_CLUSTER_MODE",0));
   if (amode!=0) msg_Info()<<METHOD<<"(): Set exclusive cluster mode "<<amode<<".\n";
   int meweight=_dataread->GetValue<int>("CSS_MEWMODE",1);
   if (meweight!=1) msg_Info()<<METHOD<<"(): Set ME weight mode "<<meweight<<"\n";
+  int pdfcheck=_dataread->GetValue<int>("CSS_PDFCHECK",1);
+  if (pdfcheck!=1) msg_Info()<<METHOD<<"(): Set PDF check mode "<<pdfcheck<<"\n";
   
   m_weightmode = int(_dataread->GetValue<int>("WEIGHT_MODE",1));
   
@@ -51,13 +58,15 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   
   p_next = new All_Singlets();
 
-  p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode,meweight);
+  p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode,meweight,pdfcheck);
   p_cluster->SetAMode(amode);
 }
 
 CS_Shower::~CS_Shower() 
 {
   CleanUp();
+  for (Flav_ME_Map::const_iterator xsit(m_xsmap.begin());
+       xsit!=m_xsmap.end();++xsit) delete xsit->second;
   if (p_shower)      { delete p_shower; p_shower = NULL; }
   if (p_cluster)     { delete p_cluster; p_cluster = NULL; }
   if (p_ampl) p_ampl->Delete();
@@ -68,14 +77,25 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 {
   if (!p_shower || !m_on) return 1;
   m_weight=1.0;
+  Singlet *ls(NULL);
   for (All_Singlets::const_iterator sit(m_allsinglets.begin());
        sit!=m_allsinglets.end();++sit) {
     msg_Debugging()<<"before shower step\n";
     for (Singlet::const_iterator it((*sit)->begin());it!=(*sit)->end();++it)
-      if ((*it)->GetPrev() && (*it)->GetPrev()->KScheme()!=1) {
+      if ((*it)->GetPrev()) {
+	if (((*it)->GetPrev()->Stat()&2) &&
+	    (*it)->GetPrev()==(*it)->GetPrev()->GetSing()->GetSplit()) continue;
 	if (m_respectq2) (*it)->SetStart(Min((*it)->KtStart(),(*it)->GetPrev()->KtStart()));
 	else (*it)->SetStart((*it)->GetPrev()->KtStart());
       }
+    if (ls && (ls->GetSplit()->Stat()&2)) {
+      Parton *l(ls->GetLeft()), *r(ls->GetRight());
+      msg_Debugging()<<"Decay. Reset color connections.\n";
+      if (l->GetLeft()) l->SetLeft(r);
+      if (l->GetRight()) l->SetRight(r);
+      if (r->GetLeft()) r->SetLeft(l);
+      if (r->GetRight()) r->SetRight(l);
+    }
     msg_Debugging()<<**sit;
     size_t pem(nem);
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
@@ -86,6 +106,7 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
     msg_Debugging()<<"after shower step with "<<nem-pem
 		   <<" of "<<nem<<" emission(s)\n";
     msg_Debugging()<<**sit<<"\n";
+    ls=*sit;
   }
   return 1;
 }
@@ -377,6 +398,9 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 {
   CleanUp();
   DEBUG_FUNC("");
+  for (Cluster_Amplitude *campl(ampl);
+       campl;campl=campl->Next())
+    if (campl->Next()==NULL) SetColours(campl);
   p_rampl=ampl;
   p_ms=ampl->MS();
   KT2X_Map kt2xmap;
@@ -398,6 +422,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       if (pmap.find(cl)==pmap.end()) continue;
       Parton *k(pmap[cl]);
       k->SetId(cl->Id());
+      k->SetStat(cl->Stat());
       almap[apmap[cl]=k]=cl;
       std::map<size_t,Parton*>::iterator cit(kmap.find(cl->Id()));
       if (cit!=kmap.end()) {
@@ -407,7 +432,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 	cit->second->SetPrev(k);
 	k->SetKScheme(cit->second->KScheme());
 	if (k->KScheme()) k->SetMass2(k->Momentum().Abs2());
-	k->SetStat(1);
 	kmap[cl->Id()]=k;
 	continue;
       }
@@ -430,7 +454,6 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 	  }
 	  else THROW(fatal_error,"Invalid tree structure. LR exist.");
 	  kit->second->SetPrev(k);
-	  k->SetStat(1);
 	  kmap.erase(kit);
 	  kit=kmap.begin();
 	  split=k;
@@ -447,13 +470,13 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
       almap[s]->SetMom(almap[s]->Id()&3?-s->Momentum():s->Momentum());
       split->SetKin(campl->Kin());
-      split->SetKScheme((almap[split]->Stat()&2)?1:0);
+      split->SetKScheme((almap[split]->Stat()&4)?1:0);
       if (split->KScheme()) split->SetMass2(split->Momentum().Abs2());
       CS_Parameters cp(p_cluster->KT2
 		       (campl->Prev(),almap[l],almap[r],almap[s],
 			split->GetType()==pst::FS?split->GetFlavour():
 			split->GetFlavour().Bar(),p_ms,
-			split->Kin(),split->KScheme()));
+			split->Kin(),split->KScheme(),1));
       l->SetTest(cp.m_kt2,cp.m_z,cp.m_y,cp.m_phi);
       if (split->KScheme()) split->SetFixSpec(cp.m_pk);
       msg_Debugging()<<"Set reco params: kt = "<<sqrt(cp.m_kt2)<<", z = "
@@ -514,7 +537,11 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       s->SetOldMomentum(olds);
       sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode|4|8);
     }
-    double kt2next(campl->Prev()?campl->Prev()->KT2():0.0);
+    double kt2next(0.0);
+    if (campl->Prev()) {
+      kt2next=campl->Prev()->KT2();
+      if (almap[split]->Stat()&2) kt2next=0.0;
+    }
     sing->SetKtNext(kt2next);
     if (ampl->NIn()==1 && ampl->Leg(0)->Flav().IsHadron()) break;
     p_next->push_back(sing);
@@ -582,6 +609,8 @@ Singlet *CS_Shower::TranslateAmplitude
     if (is) parton->SetBeam(i);
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
     parton->SetStart(m_respectq2?ampl->MuQ2():xit->second.second);
+    if (m_respectq2)
+      if (IsDecay(ampl,cl)) parton->SetStart(xit->second.second);
     parton->SetKtMax(xit->second.first);
     parton->SetVeto(ktveto2);
     singlet->push_back(parton);
@@ -624,11 +653,24 @@ Singlet *CS_Shower::TranslateAmplitude
   return singlet;
 }
 
+int CS_Shower::IsDecay(Cluster_Amplitude *const ampl,
+		       Cluster_Leg *const cl) const
+{
+  for (Cluster_Amplitude *campl(ampl);
+       campl;campl=campl->Next()) {
+    for (size_t i(0);i<campl->Legs().size();++i) {
+      if (campl->Leg(i)->Id()&cl->Id() &&
+	  campl->Leg(i)->Stat()&2) return true;
+    }
+  }
+  return false;
+}
+
 double CS_Shower::HardScale(const Cluster_Amplitude *const ampl)
 {
   if (ampl->Next()) {
     Cluster_Amplitude *next(ampl->Next());
-    if (next->NLO()&8) return HardScale(next);
+    if (next->NLO()&(4|8)) return HardScale(next);
     if (next->OrderQCD()<ampl->OrderQCD()) return ampl->KT2();
     return HardScale(next);
   }
@@ -643,6 +685,87 @@ double CS_Shower::CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
 		 (type&2)?cstp::II:cstp::IF:
 		 (type&2)?cstp::FI:cstp::FF);
   return p_shower->GetSudakov()->CplFac(fli, flj, flk,stp,cpl,mu2);
+}
+
+void CS_Shower::SetColours(Cluster_Amplitude *const ampl)
+{
+  Vec4D_Vector moms(ampl->Legs().size());
+  Flavour_Vector fl(ampl->Legs().size());
+  for (int i(0);i<ampl->Legs().size();++i) {
+    Cluster_Leg *l(ampl->Leg(i));
+    moms[i]=i<ampl->NIn()?-l->Mom():l->Mom();
+    fl[i]=i<ampl->NIn()?l->Flav().Bar():l->Flav();
+  }
+  Flav_ME_Map::const_iterator xit(m_xsmap.find(fl));
+  if (xit==m_xsmap.end()) {
+    Process_Info pi;
+    pi.m_oqcd=2;
+    pi.m_oew=0;
+    for (size_t i(0);i<ampl->NIn();++i)
+      pi.m_ii.m_ps.push_back(Subprocess_Info(fl[i]));
+    for (size_t i(ampl->NIn());i<fl.size();++i)
+      pi.m_fi.m_ps.push_back(Subprocess_Info(fl[i]));
+    EXTRAXS::ME2_Base *me2=dynamic_cast<EXTRAXS::ME2_Base*>
+      (PHASIC::Tree_ME2_Base::GetME2(pi));
+    if (me2) {
+      m_xsmap[fl]=me2;
+      xit=m_xsmap.find(fl);
+    }
+  }
+  if (xit!=m_xsmap.end()) {
+    bool test(xit->second->SetColours(moms));
+    for (size_t i(0);i<fl.size();++i) {
+      ColorID c(xit->second->Colours()[i][0],
+		xit->second->Colours()[i][1]);
+      if (i<ampl->NIn())c=ColorID(c.m_j,c.m_i);
+      ampl->Leg(i)->SetCol(c);
+    }
+  }
+  else {
+    std::vector<int> tids, atids;
+    for (size_t i(0);i<ampl->Legs().size();++i)
+      if (ampl->Leg(i)->Flav().StrongCharge()>0) {
+	tids.push_back(i);
+	if (ampl->Leg(i)->Flav().StrongCharge()==8)
+	  atids.push_back(i);
+      }
+      else if (ampl->Leg(i)->Flav().StrongCharge()<0) {
+	atids.push_back(i);
+      }
+    while (true) {
+      std::random_shuffle(atids.begin(),atids.end(),*ran);
+      size_t i(0);
+      for (;i<atids.size();++i) if (atids[i]==tids[i]) break;
+      if (i==atids.size()) break;
+    }
+    for (size_t i(0);i<tids.size();++i) {
+      int cl(Flow::Counter());
+      ampl->Leg(tids[i])->SetCol(ColorID(cl,ampl->Leg(tids[i])->Col().m_j));
+      ampl->Leg(atids[i])->SetCol(ColorID(ampl->Leg(atids[i])->Col().m_i,cl));
+    }
+  }
+  for (Cluster_Amplitude *campl(ampl->Prev());campl;campl=campl->Prev()) {
+    Cluster_Amplitude *next(campl->Next()); 
+    Cluster_Leg *lij=NULL;
+    for (size_t i(0);i<next->Legs().size();++i)
+      if (next->Leg(i)->K()) {
+	lij=next->Leg(i);
+	break;
+      }
+    if (lij==NULL) THROW(fatal_error,"Invalid amplitude");
+    Cluster_Leg *li=NULL, *lj=NULL;
+    for (size_t i(0);i<campl->Legs().size();++i) {
+      if (campl->Leg(i)->Id()&lij->Id()) {
+	if (li==NULL) li=campl->Leg(i);
+	else if (lj==NULL) lj=campl->Leg(i);
+	else THROW(fatal_error,"Invalid splitting");
+      }
+      else {
+	campl->Leg(i)->SetCol(next->IdLeg(campl->Leg(i)->Id())->Col());
+      }
+    }
+    Cluster_Amplitude::SetColours(lij,li,lj);
+  }
 }
 
 double CS_Shower::Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,

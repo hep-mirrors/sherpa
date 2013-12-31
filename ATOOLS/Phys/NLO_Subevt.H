@@ -104,7 +104,7 @@ namespace ATOOLS {
       p_real(NULL), p_proc(NULL), m_n(n), m_idx(0),
       m_result(0.0), m_me(0.0), m_mewgt(0.0), m_kt2(0.0),
       m_x1(0.0), m_x2(0.0), m_xf1(0.0), m_xf2(0.0),
-      m_mu2(stp::size,0.0), p_ampl(NULL), m_delete(false), m_trig(false) {}
+      m_mu2(2*stp::size,0.0), p_ampl(NULL), m_delete(false), m_trig(false) {}
 
     ~NLO_subevt();
 
@@ -129,8 +129,8 @@ namespace ATOOLS {
     template <class Type> inline Type *Proc() const 
     { return static_cast<Type*>(p_proc); }
 
-    inline void Reset()
-    { m_result=m_me=m_mewgt=0.0; m_trig=false; }
+    inline void Reset(const int mode=1)
+    { m_result=m_me=m_mewgt=0.0; if (mode) m_trig=false; }
 
   };// end of class NLO_subevt
 

@@ -45,7 +45,7 @@ void Hadron_Decay_Channel::SetFileName(std::string filename)
 }
 
 
-void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
+bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
 {
   m_physicalflavours=m_flavours;
   for (size_t i=0; i<m_flavours.size(); ++i) {
@@ -62,8 +62,8 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
   if(totalmass>m_flavours[0].HadMass()) {
     msg_Error()<<"Error in "<<METHOD<<" for "<<Name()<<"\n"
 	       <<"    Total outgoing mass heavier than incoming particle.\n"
-	       <<"    Will abort.\n";
-    abort();
+	       <<"    Will return and hope for the best.\n";
+    return false;
   }
   SetChannels(new PHASIC::Multi_Channel(""));
   Channels()->SetNin(1);
@@ -143,6 +143,7 @@ void Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     msg_Tracking()<<"   yields "<<m_iwidth<<".\n";
     WriteOut(true);
   }
+  return true;
 }
 
 void Hadron_Decay_Channel::ProcessOptions(vector<vector<string> > helpsvv)

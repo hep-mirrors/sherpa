@@ -79,7 +79,7 @@ Amplitude::Amplitude():
   p_dinfo->SetDRMode(0);
   m_sccmur=read.GetValue("USR_WGT_MODE",1);
   m_smth=read.GetValue("NLO_SMEAR_THRESHOLD",0.0);
-  m_smpow=read.GetValue("NLO_SMEAR_POWER",4.0);
+  m_smpow=read.GetValue("NLO_SMEAR_POWER",0.5);
 #ifdef USING__Threading
   if (!read.ReadFromFile(helpi,"COMIX_ME_THREADS")) helpi=0;
   else msg_Tracking()<<METHOD<<"(): Set number of threads "<<helpi<<".\n";
@@ -1241,11 +1241,17 @@ bool Amplitude::JetTrigger
   if (m_subs.empty() || sel==NULL) return true;
   NLO_subevtlist tmp;
   tmp.resize(1,m_subs.back());
-  bool trig(m_trig=sel->JetTrigger(m_p,&tmp));
+  Vec4D_Vector p(m_p);
+  for (size_t i(0);i<m_nin;++i) p[i]=-p[i];
+  bool trig(m_trig=sel->JetTrigger(p,&tmp));
+  m_subs.back()->m_trig=trig;
   for (size_t i(0);i<m_scur.size();++i) {
     tmp.back()=m_subs[i];
     Dipole_Kinematics *kin(m_scur[i]->Sub()->In().front()->Kin());
-    int ltrig(sel->JetTrigger(kin->Momenta(),&tmp));
+    Vec4D_Vector p(kin->Momenta());
+    for (size_t j(0);j<m_nin;++j) p[j]=-p[j];
+    int ltrig(static_cast<PHASIC::Process_Base*>
+	      (m_subs[i]->p_proc)->Selector()->Trigger(p));
     kin->SetF(1.0);
     if (m_smth) {
       double a(m_smth>0.0?kin->KT2():kin->Y());
@@ -1256,15 +1262,7 @@ bool Amplitude::JetTrigger
       }
     }
     kin->AddTrig(ltrig);
-    if (mode==1) {
-      int da(kin->KT2()<m_subs[i]->m_mu2[stp::res]);
-      int ds(kin->Y()<p_dinfo->AMax(kin->Type()));
-      kin->SetTrig(ltrig&abs(ds-da));
-    }
-    else if (mode==2) {
-      int da(kin->KT2()<m_subs[i]->m_mu2[stp::res]);
-      kin->SetTrig(ltrig&da);
-    }
+    m_subs[i]->m_trig=kin->Trig();
     trig|=kin->Trig();
   }
   return trig;
@@ -1276,15 +1274,26 @@ double Amplitude::KT2Trigger(NLO_subevt *const sub,const int mode)
   Dipole_Kinematics *kin
     (m_scur[sub->m_idx]->Sub()->In().front()->Kin());
   if (mode==1) {
-    int da(kin->KT2()<sub->m_mu2[stp::res]);
+    double kt2j(sub->m_mu2[stp::res]);
+    if (sub->m_mu2[stp::size+stp::res])
+      kt2j=sub->m_mu2[stp::size+stp::res];
+    int da(kin->A()>0.0 && kin->KT2()<kt2j);
     int ds(kin->Y()<p_dinfo->AMax(kin->Type()));
-    kin->SetTrig(abs(ds-da));
+    kin->AddTrig(abs(ds-da));
     return ds-da;
   }
   if (mode==2) {
-    int da(kin->KT2()<sub->m_mu2[stp::res]);
-    kin->SetTrig(da);
+    double kt2j(sub->m_mu2[stp::res]);
+    if (sub->m_mu2[stp::size+stp::res])
+      kt2j=sub->m_mu2[stp::size+stp::res];
+    int da(kin->A()>0.0 && kin->KT2()<kt2j);
+    kin->AddTrig(da);
     return da;
+  }
+  if (mode==3) {
+    int ds(kin->Y()<p_dinfo->AMax(kin->Type()));
+    kin->AddTrig(abs(ds-1));
+    return ds-1;
   }
   THROW(not_implemented,"Invalid call");
   return 0.0;
@@ -1329,7 +1338,7 @@ bool Amplitude::Evaluate(const Int_Vector &chirs)
 bool Amplitude::EvaluateAll()
 {
   if (p_loop) p_dinfo->SetDRMode(p_loop->DRMode());
-  for (size_t i(0);i<m_subs.size();++i) m_subs[i]->Reset();
+  for (size_t i(0);i<m_subs.size();++i) m_subs[i]->Reset(0);
   for (size_t j(0);j<m_n;++j) m_ch[j]=0;
   MODEL::Coupling_Data *cpl(m_cpls.front().p_aqcd);
   double mu2(cpl?cpl->Scale():-1.0);
@@ -1496,16 +1505,14 @@ bool Amplitude::EvaluateAll()
   return true;
 }
 
-double Amplitude::Differential(const std::vector<Vec4D> &momenta,
-			       NLO_subevt *const sub)
+double Amplitude::Differential(NLO_subevt *const sub)
 {
   p_sub=sub;
-  return Differential(momenta,p_colint->I(),p_colint->J());
+  return Differential(p_colint->I(),p_colint->J());
 }
 
 double Amplitude::Differential
-(const std::vector<Vec4D> &momenta,
- const Int_Vector &ci,const Int_Vector &cj,const bool set)
+(const Int_Vector &ci,const Int_Vector &cj,const bool set)
 {
   SetColors(ci,cj,set);
   if (p_helint!=NULL && p_helint->On()) {

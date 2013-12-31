@@ -21,6 +21,8 @@ namespace ATOOLS {
     inline bool Singlet() { return m_i==m_j; }
   };// end of class ColorID
 
+  typedef std::vector<ColorID> ColorID_Vector;
+
   std::ostream &operator<<(std::ostream &ostr,const ColorID &col);
 
   class Cluster_Amplitude;

@@ -46,10 +46,14 @@ namespace PHASIC {
     virtual bool NewLibraries() = 0;
 
     virtual void SetClusterDefinitions
-    (PDF::Cluster_Definitions_Base *const defs) = 0;
+    (PDF::Cluster_Definitions_Base *const defs);
 
+    virtual void PreCluster(Process_Base *const proc,
+			    const ATOOLS::Vec4D_Vector &p);
     virtual ATOOLS::Cluster_Amplitude *
-    ClusterConfiguration(Process_Base *const proc,const size_t &mode=0) = 0;
+    ClusterConfiguration(Process_Base *const proc,
+			 const ATOOLS::Vec4D_Vector &p,
+			 const size_t &mode=0);
 
     int ShiftMasses(ATOOLS::Cluster_Amplitude *const ampl);
 

@@ -61,8 +61,6 @@ namespace MCATNLO {
     CS_Cluster_Definitions *p_cluster;
     ATOOLS::Mass_Selector  *p_ms;
 
-    PHASIC::Single_Process *p_rproc;
-
     int    m_on;
     double m_weight, m_oef;
 

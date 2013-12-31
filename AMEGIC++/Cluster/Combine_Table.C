@@ -440,12 +440,13 @@ bool Combine_Table::Combinable(const Leg &a,const Leg &b,const int i,const int j
   return false;
 }
 
-double Combine_Table::GetWinner(int &i,int &j,int &k,double &mu2)
+double Combine_Table::GetWinner(int &i,int &j,int &k,double &mu2,int &mode)
 { 
   i=m_cdata_winner->first.m_i; 
   j=m_cdata_winner->first.m_j;
   k=m_cdata_winner->first.m_k;
   mu2=m_cdata_winner->second.m_pt2ij.m_mu2;
+  mode=m_cdata_winner->second.m_pt2ij.m_mode;
   return m_cdata_winner->second.m_pt2ij.m_kt2;
 }
 
@@ -727,6 +728,7 @@ bool Combine_Table::SelectWinner(const size_t &mode)
     CD_List::iterator tit(CalcPropagator(cit,mode));
     double pt2ij(cit->second.m_pt2ij.m_op2);
     if (cit->second.m_graphs.size()==0) continue;
+    if (cit->second.m_pt2ij.m_mode<0) continue;
     if (m_rejected.find(cit->first)==m_rejected.end()) {
       if (pt2ij>0.0) {
 	if (mode&1) {

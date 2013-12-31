@@ -419,6 +419,11 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
       if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result()*m_sfactor,Result())) {
 	if (CompareTestMoms(links[j]->GetTestMoms())) {
 	  if (CheckMapping(links[j])) {
+	    map<string,Complex> cplmap; double sfactor;
+	    if (!p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),sfactor,cplmap)) continue;
+	    for (map<string,ATOOLS::Flavour>::const_iterator
+		   fit=p_ampl->GetFlavourmap().begin();fit!=p_ampl->GetFlavourmap().end();fit++)
+	      AddtoFlavmap(fit->first,fit->second);
 	    msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : "<<std::endl
 			  <<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
 			  <<"   Map processes."<<std::endl;

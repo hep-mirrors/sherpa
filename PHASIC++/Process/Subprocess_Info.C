@@ -338,6 +338,23 @@ void Subprocess_Info::GetTags(std::vector<int>& tags) const
   }
 }
 
+int Subprocess_Info::Combine
+(const size_t &i,const size_t &j,const Flavour &flij,int &cnt)
+{
+  if (m_ps.size()==0) {
+    ++cnt;
+    if (cnt-1==i) m_fl=flij;
+    if (cnt-1==j) return -1;
+    return 0;
+  }
+  else {
+    for (std::vector<Subprocess_Info>::iterator 
+	   psit(m_ps.begin());psit!=m_ps.end();++psit) {
+      int stat(psit->Combine(i,j,flij,cnt));
+      if (stat<0) psit=m_ps.erase(psit)-1;
+    }
+  }
+}
 
 void Subprocess_Info::Print(std::ostream &ostr,const size_t &ni) const
 {

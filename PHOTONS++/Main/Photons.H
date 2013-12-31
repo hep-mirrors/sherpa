@@ -35,6 +35,7 @@ namespace PHOTONS {
     static int                  s_mode;
     static bool                 s_useme;
     static double               s_ircutoff;
+    static double               s_uvcutoff;
     static int                  s_ircutoffframe;
     static double               s_accu;
     static int                  s_nmax;
@@ -43,6 +44,8 @@ namespace PHOTONS {
     static bool                 s_strict;
     static double               s_reducemax;
     static bool                 s_checkfirst;
+    static int                  s_ffrecscheme;
+    static int                  s_firecscheme;
   };
 
 

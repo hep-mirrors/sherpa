@@ -52,6 +52,7 @@ Construct(const int h,const Vec4<Scalar> &p,Scalar m2)
   } 
   else {// u-(p,m) / v+(p,m) 
     Spinor<Scalar> sh(-1,ph); 
+    if (p[0]<0.0) sh=-sh;
     m_u[0]=sh[1]; 
     m_u[1]=-sh[0]; 
     m_on=1; 

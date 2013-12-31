@@ -21,11 +21,14 @@ Dipole_FI::Dipole_FI(const Particle_Vector_Vector& pvv) {
   m_M                   = m_chargedinparticles[0]->Momentum().Mass();
   m_Q                   = Vec4D(0.,0.,0.,0.);
   m_QN                  = Vec4D(0.,0.,0.,0.);
+  m_kappaC              = Vec3D(0.,0.,0.);
+  m_kappaN              = Vec3D(0.,0.,0.);
   for (unsigned int i=0; i<m_chargedoutparticles.size(); i++)
     m_mC.push_back(m_chargedoutparticles[i]->FinalMass());
   for (unsigned int i=0; i<m_neutraloutparticles.size(); i++)
     m_mN.push_back(m_neutraloutparticles[i]->FinalMass());
-  m_omegaMax = Photons::s_reducemax * DetermineMaximumPhotonEnergy();
+  m_omegaMax = Min(m_omegaMax,
+                   Photons::s_reducemax * DetermineMaximumPhotonEnergy());
   // set running alpha_QED to squared mass of incomming parton
   // -> taken at maximal scale
   Photons::SetAlphaQED(sqr(m_M));
@@ -93,6 +96,7 @@ void Dipole_FI::AddRadiation() {
         if (m_olddipole.size() == 2) GeneratePhotons(beta1,beta2);
         else                         GeneratePhotons(nbars);
         m_K = CalculateMomentumSum(m_softphotons);
+        DetermineKappa();
         if (m_n != 0)  photoncheck = CheckIfExceedingPhotonEnergyLimits();
         else photoncheck = true;
       }
@@ -184,11 +188,11 @@ void Dipole_FI::CalculateAvaragePhotonNumber(const double& b1,
 bool Dipole_FI::CheckIfExceedingPhotonEnergyLimits() {
   double sum = 0.;
   double nC  = m_mC.size();
-  double nN  = m_mN.size();
-  double kappa2 = (1./(2.*nC+nN)*Vec3D(m_K)).Sqr();
-  for (unsigned int i=0; i<m_mC.size(); i++) sum+=sqrt(m_mC[i]*m_mC[i]+kappa2);
-  for (unsigned int i=0; i<m_mN.size(); i++) sum+=sqrt(m_mN[i]*m_mN[i]+kappa2);
-  if (m_K[0] < sqrt(m_M*m_M + nC*nC*kappa2) - sum) return true;
+  double kappaC2 = m_kappaC.Sqr();
+  double kappaN2 = m_kappaN.Sqr();
+  for (unsigned int i=0; i<m_mC.size(); i++) sum+=sqrt(m_mC[i]*m_mC[i]+kappaC2);
+  for (unsigned int i=0; i<m_mN.size(); i++) sum+=sqrt(m_mN[i]*m_mN[i]+kappaN2);
+  if (m_K[0] < sqrt(m_M*m_M + nC*nC*kappaC2) - sum) return true;
   else                                             return false;
 }
 
@@ -234,21 +238,19 @@ void Dipole_FI::CheckMomentumConservationInQCMS
 void Dipole_FI::CorrectMomenta() {
   DetermineU();
   double nC = m_mC.size();
-  double nN = m_mN.size();
-  Vec3D  kappa  = 1./(2.*nC+nN)*Vec3D(m_K);
   if ((m_u >= 0.) && (m_u <= 1.)) {
     // initial state charged momentum
-    Vec3D p = (-m_u)*Vec3D(m_Q)+nC*kappa;
+    Vec3D p = (-m_u)*Vec3D(m_Q)+nC*m_kappaC;
     m_newdipole[0]->SetMomentum(Vec4D(sqrt(m_M*m_M + p*p), p));
     // final state charged momenta
     for (unsigned int i=1; i<m_newdipole.size(); i++) {
-      Vec3D q = m_u*Vec3D(m_olddipole[i]->Momentum())-kappa;
+      Vec3D q = m_u*Vec3D(m_olddipole[i]->Momentum())-m_kappaC;
       m_newdipole[i]->SetMomentum(Vec4D(sqrt(m_mC[i-1]*m_mC[i-1] + q*q), q));
       m_P = m_P + m_newdipole[i]->Momentum();
     }
     // final state neutral momenta
     for (unsigned int i=0; i<m_newspectator.size(); i++) {
-      Vec3D q = m_u*Vec3D(m_oldspectator[i]->Momentum())-kappa;
+      Vec3D q = m_u*Vec3D(m_oldspectator[i]->Momentum())-m_kappaN;
       m_newspectator[i]->SetMomentum(Vec4D(sqrt(m_mN[i]*m_mN[i] + q*q), q));
       m_PN = m_PN + m_newspectator[i]->Momentum();
     }
@@ -323,15 +325,13 @@ double Dipole_FI::Func(const double& M2, const std::vector<double>& mC2,
                        const std::vector<double>& mN2,
                        const std::vector<Vec3D>& q, const double& u) {
   double sum  = 0.;
-  int nC      = m_mC.size();
-  int nN      = m_mN.size();
-  Vec3D kappa  = 1./(2.*nC+nN)*Vec3D(m_K);
+  int    nC   = m_mC.size();
   // first entry in q belongs to initial state dipole constituent
   for (unsigned int i=0; i<mC2.size(); i++)
-    sum+=sqrt(mC2[i]+(u*q[1+i]-kappa).Sqr());
+    sum+=sqrt(mC2[i]+(u*q[1+i]-m_kappaC).Sqr());
   for (unsigned int i=0; i<mN2.size(); i++)
-    sum+=sqrt(mN2[i]+(u*q[1+nC+i]-kappa).Sqr());
-  return sqrt(M2+(u*Vec3D(m_Q)-nC*kappa).Sqr()) - sum - m_K[0];
+    sum+=sqrt(mN2[i]+(u*q[1+nC+i]-m_kappaN).Sqr());
+  return sqrt(M2+(u*Vec3D(m_Q)-nC*m_kappaC).Sqr()) - sum - m_K[0];
 }
 
 void Dipole_FI::ResetVariables() {
@@ -344,6 +344,8 @@ void Dipole_FI::ResetVariables() {
   m_K   = Vec4D(0.,0.,0.,0.);
   m_P   = Vec4D(0.,0.,0.,0.);
   m_PN  = Vec4D(0.,0.,0.,0.);
+  m_kappaC = Vec3D(0.,0.,0.);
+  m_kappaN = Vec3D(0.,0.,0.);
   m_genweight     = 1.;
   m_genmaxweight  = 1.;
 }
@@ -353,4 +355,23 @@ void Dipole_FI::ReturnMomenta() {
     m_chargedoutparticles[i-1]->SetMomentum(m_newdipole[i]->Momentum());
   for(unsigned int i=0; i<m_newspectator.size(); i++)
     m_neutraloutparticles[i]->SetMomentum(m_newspectator[i]->Momentum());
+}
+
+void Dipole_FI::DetermineKappa() {
+  int nC      = m_mC.size();
+  int nN      = m_mN.size();
+  switch (Photons::s_firecscheme) {
+  case 1:
+    m_kappaN = Vec3D(0.,0.,0.);
+    m_kappaC = 1./(2.*nC)*Vec3D(m_K);
+  case 2:
+    if (nN>0) {
+      m_kappaN = 1./nN*Vec3D(m_K);
+      m_kappaC = Vec3D(0.,0.,0.);
+      break;
+    }
+  default:
+    m_kappaC = m_kappaN = 1./(2.*nC+nN)*Vec3D(m_K);
+    break;
+  }
 }

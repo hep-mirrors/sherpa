@@ -4,6 +4,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace CSSHOWER;
 using namespace PHASIC;
@@ -12,12 +13,24 @@ using namespace ATOOLS;
 void Kinematics_Base::SetFixVec(Parton *const p,Vec4D mom,
 				const Kin_Args &lt,const int mode) const
 {
+  if (p->GetNext()) SetFixVec(p->GetNext(),mom,lt,mode|4);
   if (p->FixSpec()==Vec4D()) return;
   Vec4D oldp(p->OldMomentum()), ref(p->FixSpec());
-  if (mode==3 || (mode==1 && lt.m_mode==0)) {
-    Poincare_Sequence lam(lt.m_lam);
-    lam.Invert();
-    mom=lam*mom;
+  if ((mode&3)==3 || ((mode&1)==1 && lt.m_mode==0)) {
+    if (mode&4) {
+      Poincare_Sequence lam(lt.m_lam);
+      lam.Invert();
+      mom=lam*mom;
+    }
+    else {
+      oldp=lt.m_lam*oldp;
+      ref=lt.m_lam*ref;
+    }
+  }
+  if (IsEqual(oldp,mom,rpa->gen.SqrtAccu())) {
+    p->SetFixSpec(ref);
+    p->SetOldMomentum(oldp);
+    return;
   }
   Vec4D np(0.0,cross(Vec3D(oldp),Vec3D(mom)));
   if (np.PSpat2()<=1.0e-6) {

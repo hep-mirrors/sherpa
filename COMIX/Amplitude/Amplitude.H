@@ -196,10 +196,8 @@ namespace COMIX {
     bool Evaluate(const Int_Vector &chirs);
     bool EvaluateAll();
 
-    double Differential(const std::vector<ATOOLS::Vec4D> &momenta,
-			NLO_subevt *const sub=NULL);
-    double Differential(const std::vector<ATOOLS::Vec4D> &momenta,
-			const Int_Vector &ci,const Int_Vector &cj,
+    double Differential(NLO_subevt *const sub=NULL);
+    double Differential(const Int_Vector &ci,const Int_Vector &cj,
 			const bool set=false);
 
     bool Map(const Amplitude &ampl,ATOOLS::Flavour_Map &flmap);

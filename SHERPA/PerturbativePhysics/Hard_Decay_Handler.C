@@ -65,8 +65,9 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   m_decay_tau=dr.GetValue<int>("DECAY_TAU_HARD",0);
   m_set_widths=dr.GetValue<int>("HDH_SET_WIDTHS",0);
   // also need to tell shower whats massive now
-  m_usemass=!((bool)dr.GetValue<int>("RESPECT_MASSIVE_FLAG",0));
-  msg_Info()<<METHOD<<"(): Make decays massive: "<<m_usemass<<std::endl;
+  // TODO: need to use the same mass-selector
+  // for now, implement alike
+  SetDecayMasses(dr);
   m_qedmode=dr.GetValue<int>("HDH_QED_CORRECTIONS",1);
   if (m_qedmode && m_spincorr) m_qedmode=2;
   if (m_qedmode>0 && !m_usemass) {
@@ -178,6 +179,50 @@ Hard_Decay_Handler::~Hard_Decay_Handler()
     delete p_newsublist;
   }
 }
+
+void Hard_Decay_Handler::SetDecayMasses(Data_Reader& dr)
+{
+  ATOOLS::Flavour_Vector allflavs(MODEL::s_model->IncludedFlavours());
+  std::vector<size_t> psmassive;
+  std::vector<size_t> psmassless;
+  dr.VectorFromFile(psmassive,"MASSIVE_PS");
+  dr.VectorFromFile(psmassless,"MASSLESS_PS");
+  m_usemass=!((bool)dr.GetValue<int>("RESPECT_MASSIVE_FLAG",0));
+  msg_Info()<<METHOD<<"(): Make decays massive: "<<m_usemass<<std::endl;
+  if (m_usemass) {
+    Flavour_Set tempflavs;
+    for (size_t i(0);i<psmassless.size();++i) {
+      Flavour fl(psmassless[i],0);
+      tempflavs.insert(fl);
+      tempflavs.insert(fl.Bar());
+      msg_Tracking()<<METHOD<<"(): Using massless decay for "
+                    <<fl<<".\n";
+    }
+    // find m_psmass=allflavs-tempflavs
+    for (size_t i(0);i<allflavs.size();++i) {
+      if (allflavs[i].IsDummy()) continue;
+      bool enter(true);
+      for (Flavour_Set::const_iterator it(tempflavs.begin());
+           it!=tempflavs.end();++it) {
+        if (allflavs[i].Kfcode()==it->Kfcode()) { enter=false;break; }
+      }
+      if (enter) m_decmass.insert(allflavs[i]);
+      if (enter) msg_Tracking()<<METHOD<<"(): Using massive decay for "
+                               <<allflavs[i]<<".\n";
+    }
+  }
+  else {
+    for (size_t i(0);i<psmassive.size();++i) {
+      Flavour fl(psmassive[i],0);
+      m_decmass.insert(fl);
+      m_decmass.insert(fl.Bar());
+      msg_Tracking()<<METHOD<<"(): Using massive decay for "<<fl<<".\n";
+    }
+  }
+  Flavour_Vector mf(m_decmass.begin(),m_decmass.end());
+  msg_Info()<<METHOD<<"(): Massive decay flavours for: "<<mf<<std::endl;
+}
+
 
 void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
 {
@@ -593,7 +638,7 @@ bool Hard_Decay_Handler::DefineInitialConditions(Cluster_Amplitude* ampl,
     ampl->Leg(initial_blob->NInP()+i)->SetMom
       (initial_blob->OutParticle(i)->Momentum());
   }
-  p_clus->ReCluster(ampl);
+  if (p_clus->ReCluster(ampl)<0) return false;
   if (ampl->NIn()==2) {
     for (Cluster_Amplitude *campl(ampl);
 	 campl;campl=campl->Next()) {
@@ -602,7 +647,6 @@ bool Hard_Decay_Handler::DefineInitialConditions(Cluster_Amplitude* ampl,
 	return false;
     }
   }
-  ampl->SetMS(this);
   size_t imax=ampl->Legs().size()-1;
   for (int i=0; i<initial_blob->NOutP(); ++i) {
     if (initial_blob->OutParticle(i)->DecayBlob()) {
@@ -637,8 +681,11 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     msg_Debugging()<<"1 to 2 case"<<std::endl;
     Cluster_Amplitude* copy=ampl->InitPrev();
     copy->CopyFrom(ampl);
-    copy->SetMS(this);
+    copy->SetMS(ampl->MS());
     Cluster_Leg *lij(ampl->IdLeg(idmother));
+    copy->SetKT2(lij->Mom().Abs2());
+    for (size_t i=0; i<ampl->Legs().size(); ++i)
+      ampl->Leg(i)->SetStat(ampl->Leg(i)->Stat()|1);
     lij->SetStat(1|2|4);
     size_t idk(0);
     for (size_t i=0; i<copy->Legs().size(); ++i) {
@@ -664,7 +711,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     if (idk==0) THROW(fatal_error,"Colour partner not found");
     lij->SetK(idk);
     Cluster_Leg *d1(copy->IdLeg(idmother));
-    size_t stat1(1), stat2(1);
+    size_t stat1(0), stat2(0);
     d1->SetMom(RecombinedMomentum(daughters[0],photons,stat1));
     d1->SetStat(stat1);
     d1->SetFlav(daughters[0]->Flav());
@@ -707,10 +754,13 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     // propagator always combines daughters 1+2
     Cluster_Amplitude* step1=ampl->InitPrev();
     step1->CopyFrom(ampl);
-    step1->SetMS(this);
+    step1->SetMS(ampl->MS());
     Cluster_Leg *lij(ampl->IdLeg(idmother));
+    step1->SetKT2(lij->Mom().Abs2());
     if (!lij) THROW(fatal_error,"Cluster leg of id "+ToString(idmother)
                                 +" not found.");
+    for (size_t i=0; i<ampl->Legs().size(); ++i)
+      ampl->Leg(i)->SetStat(ampl->Leg(i)->Stat()|1);
     lij->SetStat(1|2|4);
     size_t idk(0);
     for (size_t i=0; i<step1->Legs().size(); ++i) {
@@ -735,7 +785,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     if (idk==0) THROW(fatal_error,"Colour partner not found");
     lij->SetK(idk);
     Cluster_Leg *d1(step1->IdLeg(idmother));
-    size_t stat1(1),stat2(1),stat3(1);
+    size_t stat1(0),stat2(0),stat3(0);
     d1->SetMom(RecombinedMomentum(daughters[0],photons,stat1));
     d1->SetStat(stat1);
     d1->SetFlav(daughters[0]->Flav());
@@ -779,8 +829,10 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     
     Cluster_Amplitude* step2=step1->InitPrev();
     step2->CopyFrom(step1);
-    step2->SetMS(this);
-    step1->IdLeg(idnew1)->SetStat(1|2|4);
+    step2->SetMS(step1->MS());
+    for (size_t i=0; i<step1->Legs().size(); ++i)
+      step1->Leg(i)->SetStat(step1->Leg(i)->Stat()|1);
+    step1->IdLeg(idnew1)->SetStat(1|4);
     step1->IdLeg(idnew1)->SetK(idk);
     for (size_t i=0; i<step2->Legs().size(); ++i) step2->Leg(i)->SetK(0);
     Cluster_Leg *d2(step2->IdLeg(idnew1));
@@ -848,8 +900,10 @@ void Hard_Decay_Handler::AddPhotonsClustering(Cluster_Amplitude*& ampl,
                 <<" with "<<daughter->Flav()<<" "<<ID(idmother)<<std::endl;
   Cluster_Amplitude* copy=ampl->InitPrev();
   copy->CopyFrom(ampl);
-  copy->SetMS(this);
+  copy->SetMS(ampl->MS());
   Cluster_Leg *lij(ampl->IdLeg(idmother));
+  for (size_t i=0; i<ampl->Legs().size(); ++i)
+    ampl->Leg(i)->SetStat(ampl->Leg(i)->Stat()|1);
   lij->SetStat(1|2|4);
   size_t idk(0);
   for (size_t i=0; i<copy->Legs().size(); ++i) {
@@ -860,15 +914,28 @@ void Hard_Decay_Handler::AddPhotonsClustering(Cluster_Amplitude*& ampl,
       idk=copy->Leg(i)->Id();
   }
   if (lij->Col().m_i==0 && lij->Col().m_j==0) {
-    // Ad hoc EW partner
+    // Ad hoc QED partner, must not be another soft photon
     size_t ampl_nout=ampl->Legs().size()-ampl->NIn();
     if (ampl_nout==1) idk=ampl->Leg(0)->Id();
     else {
       size_t select=ampl->Legs().size();
-      do {
-        select=ampl->NIn()+floor(ran->Get()*ampl_nout);
-      } while (ampl->Leg(select)->Id()&idmother ||
-               select>ampl->Legs().size()-1);
+      size_t nvalid=0;
+      for (size_t i(ampl->NIn());i<ampl->Legs().size();++i) {
+        if (!(ampl->Leg(i)->Id()&idmother || i>ampl->Legs().size()-1 ||
+              ampl->Leg(i)->Flav().Kfcode()==kf_photon)) {
+          nvalid++;
+        }
+      }
+      if (nvalid==0) select=0;
+      else {
+        do {
+          select=ampl->NIn()+floor(ran->Get()*ampl_nout);
+        } while (ampl->Leg(select)->Id()&idmother ||
+                 select>ampl->Legs().size()-1 ||
+                 ampl->Leg(select)->Flav().Kfcode()==kf_photon);
+      }
+      msg_Debugging()<<"choose ("<<ID(ampl->Leg(select)->Id())<<") "
+                     <<ampl->Leg(select)->Flav()<<std::endl;
       idk=ampl->Leg(select)->Id();
     }
   }
@@ -876,7 +943,7 @@ void Hard_Decay_Handler::AddPhotonsClustering(Cluster_Amplitude*& ampl,
   if (idk==0) THROW(fatal_error,"Colour partner not found");
   lij->SetK(idk);
   Cluster_Leg *d1(copy->IdLeg(idmother));
-  size_t stat1(1), stat2(1);
+  size_t stat1(0), stat2(0);
   d1->SetMom(RecombinedMomentum(daughter,photons,stat1));
   d1->SetStat(stat1);
   d1->SetFlav(daughter->Flav());
@@ -956,7 +1023,7 @@ Vec4D Hard_Decay_Handler::RecombinedMomentum(const Particle * daughter,
   for (size_t i(0);i<photons.size();++i) {
     if (photons[i].second==daughter) {
       mom+=photons[i].first->Momentum();
-      stat|=2;
+      stat|=2|4;
     }
   }
   msg_Debugging()<<daughter->Flav()<<": "<<mom<<" "<<stat<<std::endl;
@@ -1015,5 +1082,12 @@ bool Hard_Decay_Handler::Decays(const ATOOLS::Flavour& flav)
   if (flav.Kfcode()==kf_tau && !m_decay_tau) return false;
   if (flav.IsStable()) return false;
   return true;
+}
+
+double Hard_Decay_Handler::Mass(const ATOOLS::Flavour &fl) const
+{
+  if (m_usemass==0) return fl.Mass();
+  if (m_decmass.find(fl)!=m_decmass.end()) return fl.Mass(true);
+  return fl.Mass();
 }
 

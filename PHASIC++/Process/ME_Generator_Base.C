@@ -146,6 +146,22 @@ double ME_Generator_Base::Mass(const ATOOLS::Flavour &fl) const
   return fl.Mass();
 }
 
+void ME_Generator_Base::SetClusterDefinitions
+(PDF::Cluster_Definitions_Base *const defs)
+{
+}
+
+void ME_Generator_Base::PreCluster
+(Process_Base *const proc,const ATOOLS::Vec4D_Vector &p)
+{
+}
+
+Cluster_Amplitude *ME_Generator_Base::ClusterConfiguration
+(Process_Base *const proc,const Vec4D_Vector &p,const size_t &mode)
+{
+  return NULL;
+}
+
 void ME_Generator_Base::ShowSyntax(const int mode)
 {
   if (!msg_LevelIsInfo() || mode==0) return;

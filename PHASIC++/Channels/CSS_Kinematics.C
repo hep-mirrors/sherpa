@@ -231,7 +231,12 @@ Kin_Args PHASIC::ClusterIFDipole
     }
     res.m_pk=sqrt(po/pn)*(pk-(Q*pk)/Q2*Q)-(Q2+mk2-maj2)/(2.0*Q2)*Q;
     res.m_pi=Q+res.m_pk;
-    res.m_lam=ZAlign(res.m_pi,pb,maj2,mb2);
+    ZAlign lam(res.m_pi,pb,maj2,mb2);
+    if (lam.Status()<0) {
+      msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+      return Kin_Args();
+    }
+    res.m_lam=lam;
     res.m_pi=res.m_lam*res.m_pi;
     res.m_pk=res.m_lam*res.m_pk;
     if (mode&1) res.m_phi=ComputePhi(res.m_pi,res.m_pk,res.m_lam*pj,1);
@@ -333,7 +338,12 @@ int PHASIC::ConstructIFDipole
     ifp.m_pj[0]=sqrt(mj2*rf*rf+ifp.m_pj.PSpat2());
     ifp.m_pj*=1.0/rf;
     ifp.m_pi=Q+ifp.m_pj+ifp.m_pk;
-    ifp.m_lam=ZAlign(ifp.m_pi,pb,ma2,mb2);
+    ZAlign lam(ifp.m_pi,pb,ma2,mb2);
+    if (lam.Status()<0) {
+      msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
+      return -1;
+    }
+    ifp.m_lam=lam;
     ifp.m_pi=ifp.m_lam*ifp.m_pi;
     ifp.m_pj=ifp.m_lam*ifp.m_pj;
     ifp.m_pk=ifp.m_lam*ifp.m_pk;

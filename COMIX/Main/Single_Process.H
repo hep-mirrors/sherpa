@@ -88,6 +88,7 @@ namespace COMIX {
     void SetShower(PDF::Shower_Base *const ps);
 
     size_t SetMCMode(const size_t mcmode);
+    void   SetLookUp(const bool lookup);
 
   };// end of class Single_Process
 

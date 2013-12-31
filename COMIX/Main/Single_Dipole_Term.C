@@ -26,12 +26,13 @@ using namespace PHASIC;
 Single_Dipole_Term::Single_Dipole_Term
 (COMIX::Single_Process *const rs,
  NLO_subevt *const sub,NLO_subevt *const msub):
-  p_bg(rs->GetAmplitude()), p_sub(sub), p_msub(msub)
+  p_proc(rs), p_bg(rs->GetAmplitude()), p_sub(sub), p_msub(msub)
 {
-  delete p_int;
-  p_int=rs->Integrator();
   p_gen=rs->Generator();
-  Init(rs->Info(),rs->Integrator()->Beam(),rs->Integrator()->ISR());
+  Process_Info info(rs->Info());
+  info.Combine(sub->m_i,sub->m_j,msub->p_fl[sub->m_ijt]);
+  Init(info,rs->Integrator()->Beam(),rs->Integrator()->ISR());
+  p_rsint=rs->Integrator();
   m_name.erase(m_name.length()-3,1);
   m_name+="_RS"+ToString(sub->m_i)+"_"
     +ToString(sub->m_j)+"_"+ToString(sub->m_k);
@@ -39,9 +40,7 @@ Single_Dipole_Term::Single_Dipole_Term
 
 Single_Dipole_Term::~Single_Dipole_Term()
 {
-  p_selector=NULL;
   p_scale=NULL;
-  p_int=NULL;
 }
 
 double COMIX::Single_Dipole_Term::Differential
@@ -49,7 +48,7 @@ double COMIX::Single_Dipole_Term::Differential
 {
   DEBUG_FUNC(Name());
   m_zero=false;
-  p_int->ColorIntegrator()->SetPoint(&ampl);
+  p_rsint->ColorIntegrator()->SetPoint(&ampl);
   return PHASIC::Process_Base::Differential(ampl,mode);
 }
 
@@ -63,16 +62,16 @@ double COMIX::Single_Dipole_Term::Partonic
     double psm(m_flavs[i].Mass());
     if (p[i][0]<psm) return m_lastxs;
   }
-  sp->p_scale->CalculateScale(p);
   if (!p_bg->JetTrigger(Selector(),m_mcmode))
     return m_lastxs=0.0;
-  if (m_mcmode==1) p_int->ColorIntegrator()->GeneratePoint();
+  sp->p_scale->CalculateScale(p);
+  if (m_mcmode==1) p_rsint->ColorIntegrator()->GeneratePoint();
   m_w=p_bg->KT2Trigger(p_sub,m_mcmode);
-  if (m_w) sp->p_bg->Differential(p,p_sub);
+  if (m_w) sp->p_bg->Differential(p_sub);
   m_lastxs=-p_sub->m_me;
-  m_w*=p_int->ColorIntegrator()->GlobalWeight();
-  if (p_int->HelicityIntegrator()!=NULL) 
-    m_w*=p_int->HelicityIntegrator()->Weight();
+  m_w*=p_rsint->ColorIntegrator()->GlobalWeight();
+  if (p_rsint->HelicityIntegrator()!=NULL) 
+    m_w*=p_rsint->HelicityIntegrator()->Weight();
   m_w*=sp->KFactor();
   return m_lastxs*=m_w;
 }

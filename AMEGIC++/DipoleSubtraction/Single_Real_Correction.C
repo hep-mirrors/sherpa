@@ -50,7 +50,8 @@ Single_Real_Correction::Single_Real_Correction() :
     if (m_ossubon==1) msg_Tracking()<<"Set on shell subtraction on. "<<std::endl;
   }
   m_smear_threshold=reader.GetValue<double>("NLO_SMEAR_THRESHOLD",0.0);
-  m_smear_power=reader.GetValue<double>("NLO_SMEAR_POWER",4.0);
+  m_smear_power=reader.GetValue<double>("NLO_SMEAR_POWER",0.5);
+  m_no_tree=false;
 }
 
 
@@ -103,6 +104,12 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
   p_tree_process->PHASIC::Process_Base::Init(rinfo,p_int->Beam(),p_int->ISR());
   p_tree_process->SetTestMoms(p_testmoms);
 
+  if (m_no_tree) {
+    p_tree_process->Init();
+    p_tree_process->Get<AMEGIC::Single_Process>()->PolarizationNorm();
+    status=1;
+  }
+  else {
   status = p_tree_process->InitAmplitude(model,top,links,errs);
 
   SetOrderQCD(p_tree_process->OrderQCD());
@@ -127,6 +134,7 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
 	// return 1;
       }
     }
+  }
   }
 
   m_real_momenta.resize(m_nin+m_nout);
@@ -383,6 +391,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
 
   bool trg(false);
 
+  if (!m_no_tree)
   if (res) {
   m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->CalculateScale(_mom,m_cmode);
   m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
@@ -390,13 +399,18 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   }
   if (m_realevt.p_ampl) m_realevt.p_ampl->Delete();
   m_realevt.p_ampl=NULL;
+  if (!m_no_tree)
   if (p_tree_process->ScaleSetter(1)->Amplitudes().size() &&
-      p_tree_process->ScaleSetter(1)->FixedScales().empty())
+      p_tree_process->ScaleSetter(1)->FixedScales().empty()) {
     m_realevt.p_ampl = p_tree_process->ScaleSetter(1)->Amplitudes().front()->CopyAll();
+    m_realevt.p_ampl->SetProc(this);
+  }
+  if (!m_no_tree)
   trg=p_tree_process->Selector()->JetTrigger(_mom,&m_subevtlist);
   trg|=!p_tree_process->Selector()->On();
   m_realevt.m_trig=trg;
   if (m_smear_threshold!=0.0) SmearCounterEvents(m_subevtlist);
+  if (!m_no_tree)
   if (res && trg) {
     double real = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
     m_realevt.m_me += real;
@@ -464,8 +478,10 @@ size_t Single_Real_Correction::SetClusterMode(const size_t cmode)
 
 void Single_Real_Correction::SetScale(const Scale_Setter_Arguments &args)
 {
-  p_tree_process->SetScale(args);
-  p_scale=p_tree_process->ScaleSetter();
+  if (!m_no_tree) {
+    p_tree_process->SetScale(args);
+    p_scale=p_tree_process->ScaleSetter();
+  }
   for (size_t i(0);i<m_subtermlist.size();++i) {
     m_subtermlist[i]->SetScale(args);
   }

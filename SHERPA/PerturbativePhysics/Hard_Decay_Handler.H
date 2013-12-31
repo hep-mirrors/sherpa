@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include "ATOOLS/Phys/Flavour.H"
 #include "SHERPA/Single_Events/Decay_Handler_Base.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
 
@@ -14,6 +15,7 @@ namespace MODEL {
 }
 
 namespace ATOOLS {
+  class Data_Reader;
   class NLO_subevtlist;
 }
 
@@ -32,11 +34,13 @@ namespace SHERPA {
     std::map<ATOOLS::Flavour,std::set<std::string> > m_forced_channels;
     bool                     m_store_results, m_decay_tau, m_set_widths,
                              m_br_weights, m_usemass;
-    std::map<ATOOLS::Flavour, std::map<std::string, std::vector<double> > > 
+    ATOOLS::Flavour_Set      m_decmass;
+    std::map<ATOOLS::Flavour, std::map<std::string, std::vector<double> > >
                              m_read;
     PDF::Cluster_Definitions_Base *p_clus;
     ATOOLS::NLO_subevtlist *p_newsublist;
 
+    void SetDecayMasses(ATOOLS::Data_Reader& dr);
     void InitializeDirectDecays(PHASIC::Decay_Table* dt);
     void RefineDecaysThreshold(PHASIC::Decay_Table* dt);
     void RefineDecaysByWidth(PHASIC::Decay_Table* dt);
@@ -78,8 +82,7 @@ namespace SHERPA {
     bool DefineInitialConditions(ATOOLS::Cluster_Amplitude* ampl,
                                  ATOOLS::Blob* initial_blob);
 
-    double Mass(const ATOOLS::Flavour &fl) const
-    { return fl.Mass(m_usemass); }
+    double Mass(const ATOOLS::Flavour &fl) const;
     bool Decays(const ATOOLS::Flavour& flav);
 
     inline void SetCluster(PDF::Cluster_Definitions_Base *clus) { p_clus=clus; }

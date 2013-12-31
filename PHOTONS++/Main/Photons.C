@@ -15,14 +15,17 @@ using namespace std;
 int    PHOTONS::Photons::s_mode          = 2;
 bool   PHOTONS::Photons::s_useme         = true;
 double PHOTONS::Photons::s_ircutoff      = 1E-3;
+double PHOTONS::Photons::s_uvcutoff      = std::numeric_limits<double>::max();
 int    PHOTONS::Photons::s_ircutoffframe = 0;
 double PHOTONS::Photons::s_accu          = 1E-6;
-int    PHOTONS::Photons::s_nmax          = std::numeric_limits<double>::max();
+int    PHOTONS::Photons::s_nmax          = std::numeric_limits<int>::max();
 int    PHOTONS::Photons::s_nmin          = 0;
 double PHOTONS::Photons::s_drcut         = 1000.;
 bool   PHOTONS::Photons::s_strict        = false;
 double PHOTONS::Photons::s_reducemax     = 1.;
 bool   PHOTONS::Photons::s_checkfirst    = false;
+int    PHOTONS::Photons::s_ffrecscheme   = 0;
+int    PHOTONS::Photons::s_firecscheme   = 0;
 
 double PHOTONS::Photons::s_alpha                = 0.;
 bool   PHOTONS::Photons::s_userunningparameters = false;
@@ -38,6 +41,8 @@ Photons::Photons(Data_Reader* reader) :
   if (s_mode>2) s_mode=2;
   s_useme         = (bool)reader->GetValue<int>("YFS_USE_ME",1);
   s_ircutoff      = reader->GetValue<double>("YFS_IR_CUTOFF",1E-3);
+  s_uvcutoff      = reader->GetValue<double>("YFS_UV_CUTOFF",-1.);
+  if (s_uvcutoff<0.) s_uvcutoff = std::numeric_limits<double>::max();
   s_userunningparameters = (bool)reader->GetValue<int>("YFS_USE_RUNNING_PARAMETERS",0);
   std::string irframe
             = reader->GetValue<std::string>("YFS_IR_CUTOFF_FRAME","Multipole_CMS");
@@ -51,13 +56,14 @@ Photons::Photons(Data_Reader* reader) :
               <<"setting it to 'Multipole_CMS' ...\n";
   }
   s_nmax          = reader->GetValue<int>("YFS_MAXEM",-1);
-  s_nmin          = reader->GetValue<int>("YFS_MINEM",0);
-  if (s_nmax<0) s_nmax = std::numeric_limits<double>::max();
+  if (s_nmax<0) s_nmax = std::numeric_limits<int>::max();
   s_nmin          = reader->GetValue<int>("YFS_MINEM",0);
   s_drcut         = reader->GetValue<double>("YFS_DRCUT",1000.);
   s_strict        = reader->GetValue<int>("YFS_STRICTNESS",0);
   s_reducemax     = reader->GetValue<double>("YFS_REDUCE_MAXIMUM",1.);
   s_checkfirst    = (bool)reader->GetValue<double>("YFS_CHECK_FIRST",0);
+  s_ffrecscheme   = reader->GetValue<int>("YFS_FF_RECOIL_SCHEME",2);
+  s_firecscheme   = reader->GetValue<int>("YFS_FI_RECOIL_SCHEME",0);
   s_accu          = sqrt(rpa->gen.Accu());
   m_success       = true;
   m_photonsadded  = false;
@@ -71,7 +77,10 @@ Photons::Photons(Data_Reader* reader) :
 		 <<" ,  reducemax: "<<s_reducemax
 		 <<" ,  IR cut-off: "<<(s_mode>0?s_ircutoff:0)
 		 <<" in frame "<<irframe<<" ("<<s_ircutoffframe<<")"
+		 <<" ,  UV cut-off: "<<s_uvcutoff
 		 <<" ,  use running parameters "<<s_userunningparameters
+		 <<" ,  FF recoil scheme: "<<s_ffrecscheme
+		 <<" ,  FI recoil scheme: "<<s_firecscheme
 		 <<"\n}"<<std::endl;
 }
 
@@ -83,13 +92,16 @@ Photons::Photons() :
   s_mode          = 2;
   s_useme         = true;
   s_ircutoff      = 1E-3;
+  s_uvcutoff      = std::numeric_limits<double>::max();
   s_ircutoffframe = 0;
-  s_nmax          = std::numeric_limits<double>::max();
+  s_nmax          = std::numeric_limits<int>::max();
   s_nmin          = 0;
   s_drcut         = 1000.;
   s_strict        = false;
   s_reducemax     = 1.;
   s_checkfirst    = false;
+  s_ffrecscheme   = 0;
+  s_firecscheme   = 0;
   s_accu          = sqrt(rpa->gen.Accu());
   s_userunningparameters = false;
   m_success       = true;
@@ -104,7 +116,10 @@ Photons::Photons() :
 		 <<" ,  reducemax: "<<s_reducemax
 		 <<" ,  IR cut-off: "<<(s_mode>0?s_ircutoff:0)
 		 <<" in frame "<<s_ircutoffframe
+		 <<" ,  UV cut-off: "<<s_uvcutoff
 		 <<" ,  use running parameters "<<s_userunningparameters
+		 <<" ,  FF recoil scheme: "<<s_ffrecscheme
+		 <<" ,  FI recoil scheme: "<<s_firecscheme
 		 <<"\n}"<<std::endl;
 }
 

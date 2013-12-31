@@ -66,7 +66,7 @@ namespace AHADIC {
     double             m_phi,m_y,m_z,m_s23,m_kt2,m_kt;
  
     ATOOLS::Flavour    m_flav;
-    long int           m_tot,m_d,m_s,m_u,m_reject_y,m_reject_z;
+    long int           m_tot,m_d,m_s,m_u,m_reject_y,m_reject_z,m_error;
 
     bool   ProduceKinematics(const bool & first,const bool & vetodiquark);
     bool   SelectFlavour(const bool & vetodiquark);

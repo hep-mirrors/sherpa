@@ -443,7 +443,7 @@ bool Primitive_Analysis::SelectBlob(const ATOOLS::Blob *blob)
       (blob->Type()==btp::Hard_Collision ||
        blob->Type()==btp::Signal_Process)) return true;
   if ((m_mode&ANALYSIS::do_me||m_mode&ANALYSIS::do_menlo) && 
-      blob->Type()==btp::Signal_Process) return true;
+      (blob->Type()==btp::Signal_Process || blob->Type()==btp::Hard_Decay)) return true;
   return false;
 }
 
@@ -451,7 +451,6 @@ void Primitive_Analysis::CreateFinalStateParticleList()
 {
   PL_Container::const_iterator cit=m_pls.find(finalstate_list);
   if (cit!=m_pls.end()) return;
-
   Particle_List * pl = new Particle_List;
 
   for (Blob_List::const_iterator blit=p_blobs->begin();

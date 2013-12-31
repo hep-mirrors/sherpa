@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/My_Limits.H"
 
 using namespace CSSHOWER;
@@ -15,8 +16,8 @@ using namespace PDF;
 using namespace ATOOLS;
 
 CS_Cluster_Definitions::CS_Cluster_Definitions
-(Shower *const shower,const int kmode,const int meweight):
-  p_shower(shower), m_kmode(kmode), m_meweight(meweight) {}
+(Shower *const shower,const int kmode,const int meweight,const int pdfcheck):
+  p_shower(shower), m_kmode(kmode), m_meweight(meweight), m_pdfcheck(pdfcheck) {}
 
 CParam CS_Cluster_Definitions::KPerp2
 (const Cluster_Amplitude &ampl,int i,int j,int k,
@@ -28,11 +29,40 @@ CParam CS_Cluster_Definitions::KPerp2
   return CParam(cs.m_kt2,cs.m_ws,cs.m_x,cs.m_mu2,cs.m_kin,cs.m_kmode);
 }
 
+Splitting_Function_Base *CS_Cluster_Definitions::GetSF
+(const ATOOLS::Cluster_Leg *i,const ATOOLS::Cluster_Leg *j,
+ const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo,CS_Parameters &cs) const
+{
+  const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFFMap());
+  if (cs.m_mode==2) cmap=&p_shower->GetSudakov()->FFIMap();
+  else if (cs.m_mode==1) cmap=cs.m_col>0?&p_shower->GetSudakov()->IFFMap():
+			   &p_shower->GetSudakov()->FIFMap();
+  else if (cs.m_mode==3) cmap=cs.m_col>0?&p_shower->GetSudakov()->IFIMap():
+			   &p_shower->GetSudakov()->FIIMap();
+  SF_EEE_Map::const_iterator eees(cmap->find(ProperFlav(i->Flav())));
+  if (eees==cmap->end()) {
+    msg_Debugging()<<"No splitting function (i)\n";
+    return NULL;
+  }
+  SF_EE_Map::const_iterator ees(eees->second.find(ProperFlav(j->Flav())));
+  if (ees==eees->second.end()) {
+    msg_Debugging()<<"No splitting function (j)\n";
+    return NULL;
+  }
+  SF_E_Map::const_iterator es(ees->second.find(ProperFlav(mo)));
+  if (es==ees->second.end()) {
+    msg_Debugging()<<"No splitting function (k)\n";
+    return NULL;
+  }
+  return es->second;
+}
+
 CS_Parameters CS_Cluster_Definitions::KT2
 (const ATOOLS::Cluster_Amplitude *ampl,
  const ATOOLS::Cluster_Leg *i,const ATOOLS::Cluster_Leg *j,
  const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo,
- ATOOLS::Mass_Selector *const ms,const int ikin,const int kmode)
+ ATOOLS::Mass_Selector *const ms,const int ikin,
+ const int kmode,const int force)
 {
   p_ms=ms;
   int kin(ikin<0?p_shower->KinScheme():ikin), col(1);
@@ -66,11 +96,12 @@ CS_Parameters CS_Cluster_Definitions::KT2
 		   1.0,1.0,0.0,0.0,0.0,
 		   ((i->Id()&3)?1:0)|((k->Id()&3)?2:0),kin,kmode&1);
   cs.m_wk=cs.m_ws=-1.0;
+  cs.m_col=col;
   if ((i->Id()&3)==0) {
     if ((j->Id()&3)==0) {
       if ((k->Id()&3)==0) {
 	lt=ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,1|(kin?4:0));
-	if (lt.m_stat!=1) return cs;
+	if (lt.m_stat!=1) if (!force) return cs;
 	double kt2=p_shower->KinFF()->GetKT2(Q2,lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,1.0,Q2,0,kin,kmode&1);
 	cs.m_pk=pk;
@@ -80,7 +111,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
 	if ((k==ampl->Leg(0) && lt.m_pk[3]<0.0) ||
 	    (k==ampl->Leg(1) && lt.m_pk[3]>0.0) ||
-	    lt.m_pk[0]<0.0 || lt.m_stat!=1) return cs;
+	    lt.m_pk[0]<0.0 || lt.m_stat!=1) if (!force) return cs;
 	double kt2=p_shower->KinFI()->GetKT2(Q2,1.0-lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,1.0-lt.m_y,Q2,2,kin,kmode&1);
 	cs.m_pk=-pk;
@@ -95,7 +126,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	if ((kmode&1) && lt.m_mode) lt.m_stat=-1;
 	if ((i==ampl->Leg(0) && lt.m_pi[3]<0.0) ||
 	    (i==ampl->Leg(1) && lt.m_pi[3]>0.0) ||
-	    lt.m_pi[0]<0.0 || lt.m_z<0.0 || lt.m_stat!=1) return cs;
+	    lt.m_pi[0]<0.0 || lt.m_z<0.0 || lt.m_stat!=1) if (!force) return cs;
 	double kt2=p_shower->KinIF()->GetKT2(Q2,lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,lt.m_z,Q2,1,lt.m_mode,kmode&1);
 	cs.m_pk=pk;
@@ -104,7 +135,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	lt=ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,3|(kin?4:0));
 	if ((i==ampl->Leg(0) && lt.m_pi[3]<0.0) ||
 	    (i==ampl->Leg(1) && lt.m_pi[3]>0.0) ||
-	    lt.m_pi[0]<0.0 || lt.m_z<0.0 || lt.m_stat!=1) return cs;
+	    lt.m_pi[0]<0.0 || lt.m_z<0.0 || lt.m_stat!=1) if (!force) return cs;
 	double kt2=p_shower->KinII()->GetKT2(Q2,lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,lt.m_z,Q2,3,kin,kmode&1);
 	cs.m_pk=-pk;
@@ -125,9 +156,9 @@ CS_Parameters CS_Cluster_Definitions::KT2
     for (size_t l(0), m(0);m<ampl->Legs().size();++m) {
       Cluster_Leg *lm(ampl->Leg(m));
       if (lm==j) continue;
-      if (lm==i) campl->CreateLeg((i->Id()&3)?-lt.m_pi:lt.m_pi,mo,CombineColors(i,j,k,mo));
-      else if (lm==k) campl->CreateLeg((k->Id()&3)?-lt.m_pk:lt.m_pk,lm->Flav(),lm->Col());
-      else campl->CreateLeg(lt.m_lam*ampl->Leg(m)->Mom(),lm->Flav(),lm->Col());
+      if (lm==i) campl->CreateLeg((i->Id()&3)?-lt.m_pi:lt.m_pi,mo);
+      else if (lm==k) campl->CreateLeg((k->Id()&3)?-lt.m_pk:lt.m_pk,lm->Flav());
+      else campl->CreateLeg(lt.m_lam*ampl->Leg(m)->Mom(),lm->Flav());
       ++l;
     }
 #ifndef DEBUG__Differential
@@ -162,6 +193,16 @@ double CS_Cluster_Definitions::Differential
   if (pit==(*(*procs)[type]).end()) return 0.0;
   int cm(pit->second->NOut()>pit->second->Info().m_fi.NMinExternal()?1|64:0);
   if (kmode&4) cm&=~1;
+  if (!(m_meweight&2)) {
+    SP(Color_Integrator) colint
+      (pit->second->Integrator()->ColorIntegrator());
+    if (!(colint==NULL)) {
+      while (!colint->GeneratePoint());
+      Int_Vector ni(colint->I()), nj(colint->J());
+      for (size_t i(0);i<ampl->Legs().size();++i)
+	ampl->Leg(i)->SetCol(ColorID(ni[i],nj[i]));
+    }
+  }
   double meps=pit->second->Differential(*ampl,cm|2|4|((m_meweight&2)?64:0)|rm);
   meps*=pit->second->SymFac();
   return meps;
@@ -198,33 +239,20 @@ void CS_Cluster_Definitions::KernelWeight
  const ATOOLS::Cluster_Leg *k,const ATOOLS::Flavour &mo,
  CS_Parameters &cs,const int kmode) const
 {
-  const SF_EEE_Map *cmap(&p_shower->GetSudakov()->FFFMap());
-  if (cs.m_mode==2) cmap=&p_shower->GetSudakov()->FFIMap();
-  else if (cs.m_mode==1) cmap=cs.m_col>0?&p_shower->GetSudakov()->IFFMap():
-			   &p_shower->GetSudakov()->FIFMap();
-  else if (cs.m_mode==3) cmap=cs.m_col>0?&p_shower->GetSudakov()->IFIMap():
-			   &p_shower->GetSudakov()->FIIMap();
-  SF_EEE_Map::const_iterator eees(cmap->find(ProperFlav(i->Flav())));
-  if (eees==cmap->end()) {
-    msg_Debugging()<<"No splitting function (i), skip kernel weight calc\n";
+  Splitting_Function_Base *cdip(GetSF(i,j,k,mo,cs));
+  if (cdip==NULL) {
     cs.m_ws=cs.m_wk=-1.0;
+    if (m_pdfcheck && (cs.m_mode&1)) {
+      int beam=i->Id()&1?0:1;
+      if (!p_shower->ISR()->PDF(beam)->Contains(mo)) {
+	msg_Debugging()<<"Not in PDF: "<<mo<<".\n";
+	cs.m_kmode=-1;
+      }
+    }
     return;
   }
-  SF_EE_Map::const_iterator ees(eees->second.find(ProperFlav(j->Flav())));
-  if (ees==eees->second.end()) {
-    msg_Debugging()<<"No splitting function (j), skip kernel weight calc\n";
-    cs.m_ws=cs.m_wk=-1.0;
-    return;
-  }
-  SF_E_Map::const_iterator es(ees->second.find(ProperFlav(mo)));
-  if (es==ees->second.end()) {
-    msg_Debugging()<<"No splitting function (k), skip kernel weight calc\n";
-    cs.m_ws=cs.m_wk=-1.0;
-    return;
-  }
-  Splitting_Function_Base *cdip(es->second);
   Flavour fls((k->Id()&3)?ProperFlav(k->Flav()).Bar():ProperFlav(k->Flav()));
-  if (!cdip->Coupling()->AllowSpec(fls)) {
+  if (!(kmode&32) && !cdip->Coupling()->AllowSpec(fls)) {
     msg_Debugging()<<"Invalid spectator "<<fls<<"\n";
     cs.m_ws=cs.m_wk=-1.0;
     return;
@@ -244,6 +272,13 @@ void CS_Cluster_Definitions::KernelWeight
     else cs.m_wk=sqrt(std::numeric_limits<double>::min());
     cs.m_ws=1.0/cs.m_wk;
     msg_Debugging()<<"No Kernel. Set weight "<<cs.m_ws<<".\n";
+    if (m_pdfcheck && (cs.m_mode&1)) {
+      int beam=i->Id()&1?0:1;
+      if (!p_shower->ISR()->PDF(beam)->Contains(mo)) {
+	msg_Debugging()<<"Not in PDF: "<<mo<<".\n";
+	cs.m_kmode=-1;
+      }
+    }
   }
   else {
   double scale=cs.m_kt2, eta=1.0;
@@ -258,7 +293,9 @@ void CS_Cluster_Definitions::KernelWeight
   cs.m_ws=1.0/cs.m_wk;
   msg_Debugging()<<"Kernel weight (A="<<AMode()
 		 <<") [m="<<cs.m_mode<<",c="<<cs.m_col<<"] ( x = "<<eta
-		 <<" ) {\n  "<<*i<<"\n  "<<*j<<"\n  "<<*k
+		 <<" ) "<<Demangle(typeid(*cdip->Lorentz()).name()).substr(10)
+		 <<"|"<<Demangle(typeid(*cdip->Coupling()).name()).substr(10)
+		 <<" {\n  "<<*i<<"\n  "<<*j<<"\n  "<<*k
 		 <<"\n} -> w = "<<cs.m_wk<<" ("<<cs.m_ws<<")\n";
   }
 }
@@ -418,69 +455,6 @@ bool CS_Cluster_Definitions::CheckColors
     return true;
   }
   return false;
-}
-
-ColorID CS_Cluster_Definitions::CombineColors
-(const Cluster_Leg *li,const Cluster_Leg *lj,
- const Cluster_Leg *lk,const ATOOLS::Flavour &mo) const
-{
-  ColorID ci(li->Col()), cj(lj->Col()), ck(lk->Col());
-  if (ci.m_i==-1 && cj.m_i==-1 && ck.m_i==-1) return ColorID();
-  if (!mo.Strong()) return ColorID(0,0);
-  if (li->Flav().StrongCharge()==3) {
-    if (lj->Flav().StrongCharge()==-3) {
-      return ColorID(ci.m_i,cj.m_j);
-    }
-    else if (lj->Flav().StrongCharge()==8) {
-      if (cj.Singlet()) return ColorID(ci.m_i,0);
-      return ColorID(cj.m_i,0);
-    }
-    else {
-      return ColorID(ci.m_i,0);
-    }
-  }
-  else if (li->Flav().StrongCharge()==-3) {
-    if (lj->Flav().StrongCharge()==3) {
-      return ColorID(cj.m_i,ci.m_j);
-    }
-    else if (lj->Flav().StrongCharge()==8) {
-      if (cj.Singlet()) return ColorID(0,ci.m_j);
-      return ColorID(0,cj.m_j);
-    }
-    else {
-      return ColorID(0,ci.m_j);
-    }
-  }
-  else if (li->Flav().StrongCharge()==8) {
-    if (lj->Flav().StrongCharge()==8) {
-      if (ci.m_i==cj.m_j) return ColorID(cj.m_i,ci.m_j);
-      if (ci.m_j==cj.m_i) return ColorID(ci.m_i,cj.m_j);
-      THROW(fatal_error,"Invalid clustering");
-    }
-    else if (lj->Flav().StrongCharge()==3) {
-      if (ci.Singlet()) return ColorID(cj.m_i,0);
-      return ColorID(ci.m_i,0);
-    }
-    else if (lj->Flav().StrongCharge()==-3) {
-      if (ci.Singlet()) return ColorID(0,cj.m_j);
-      return ColorID(0,ci.m_j);
-    }
-    else {
-      THROW(fatal_error,"Invalid combination");
-    }
-  }
-  else {
-    if (lj->Flav().StrongCharge()==3) {
-      return ColorID(cj.m_i,0);
-    }
-    else if (lj->Flav().StrongCharge()==-3) {
-      return ColorID(0,cj.m_j);
-    }
-    else {
-      return ColorID(0,0);
-    }
-  }
-  return ColorID();
 }
 
 namespace CSSHOWER {

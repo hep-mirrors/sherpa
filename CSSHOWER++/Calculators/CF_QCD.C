@@ -92,6 +92,7 @@ double CF_QCD::Coupling(const double &scale,const int pol)
 
 bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl) 
 {
+  if (m_type==cstp::FF && !fl.Strong()) return true;
   if (abs(fl.StrongCharge())==3) {
     switch (m_type) {
     case cstp::FF: 

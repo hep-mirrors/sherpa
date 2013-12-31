@@ -613,7 +613,7 @@ double LF_VFF_FF::operator()
     double frac = (2.*mui2+fac*y)/(2.*(mui2+muj2+fac*y));
     double zm = frac*(1.- viji*vijk);  
     double zp = frac*(1.+ viji*vijk);
-    double massive = vijk * (1.- 2.*(z*(1.-z) - 2.* zp*zm));
+    double massive = 1.0/vijk * (1.- 2.*(z*(1.-z) - zp*zm));
     massive *= 1./((1.-mui2-muj2-muk2)+1./y*(mui2+muj2));
     double value = 2.0 * p_cf->Coupling(scale,0) * massive + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y,mui2,muj2,muk2,0.0);

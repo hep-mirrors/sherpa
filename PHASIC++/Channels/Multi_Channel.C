@@ -347,7 +347,8 @@ void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 void Multi_Channel::GeneratePoint(Vec4D *p,Cut_Data * cuts)
 {
   if (channels.empty()) {
-    p[2]=p[0]+p[1];
+    if (nin>1) p[2]=p[0]+p[1];
+    else p[1]=p[0];
     return;
   }
   Poincare cms(p[0]+p[1]);

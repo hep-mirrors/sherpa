@@ -165,6 +165,23 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
       delete *it;
     return Return_Value::Nothing;
   }
+  // if switched off or no need for QED stop here and build a blob
+  if (!m_qed || !sigblob->Has(blob_status::needs_extraQED)) {
+    Blob * onshellblob = bloblist->AddBlob(btp::QED_Radiation);
+    onshellblob->SetTypeSpec("setting_leptons_on-shell");
+    if (sigblob->Has(blob_status::needs_extraQED))
+      sigblob->UnsetStatus(blob_status::needs_extraQED);
+    for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();++it) {
+      (*it)->SetInfo('H');
+      (*it)->SetStatus(part_status::decayed);
+      onshellblob->AddToInParticles(*it);
+    }
+    for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it) {
+      onshellblob->AddToOutParticles(*it);
+    }
+    onshellblob->SetStatus(blob_status::needs_hadronization);
+    return Return_Value::Success;
+  }
   // put them on-shell (spoils consistency of pertubative calculation,
   // but necessary for YFS)
   if (!PutOnMassShell(mfslep)) {
@@ -185,23 +202,6 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
     for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it)
       delete *it;
     return Return_Value::New_Event;
-  }
-  // if switched off or no need for QED stop here and build a blob
-  if (!m_qed || !sigblob->Has(blob_status::needs_extraQED)) {
-    Blob * onshellblob = bloblist->AddBlob(btp::QED_Radiation);
-    onshellblob->SetTypeSpec("setting_leptons_on-shell");
-    if (sigblob->Has(blob_status::needs_extraQED))
-      sigblob->UnsetStatus(blob_status::needs_extraQED);
-    for (Particle_Vector::iterator it=fslep.begin();it!=fslep.end();++it) {
-      (*it)->SetInfo('H');
-      (*it)->SetStatus(part_status::decayed);
-      onshellblob->AddToInParticles(*it);
-    }
-    for (Particle_Vector::iterator it=mfslep.begin();it!=mfslep.end();++it) {
-      onshellblob->AddToOutParticles(*it);
-    }
-    onshellblob->SetStatus(blob_status::needs_hadronization);
-    return Return_Value::Success;
   }
   // build effective verteces for resonant production
   // use subprocess infos if possible

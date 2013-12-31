@@ -33,11 +33,6 @@ namespace BLACKHAT {
     int  PerformTests();
     bool NewLibraries();
 
-    void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
-
-    ATOOLS::Cluster_Amplitude *ClusterConfiguration
-    (PHASIC::Process_Base *const proc,const size_t &mode);
-
   }; // end of class BlackHat_Interface
 
 } // end of namespace WHITEHAT
@@ -106,17 +101,6 @@ int BlackHat_Interface::PerformTests()
 bool BlackHat_Interface::NewLibraries()
 {
   return false;
-}
-
-void BlackHat_Interface::SetClusterDefinitions
-(PDF::Cluster_Definitions_Base *const defs)
-{
-}
-
-Cluster_Amplitude *BlackHat_Interface::ClusterConfiguration
-(Process_Base *const proc,const size_t &mode)
-{
-  return NULL;
 }
 
 DECLARE_GETTER(BlackHat_Interface,"BlackHat",ME_Generator_Base,ME_Generator_Key);

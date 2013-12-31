@@ -146,7 +146,7 @@ namespace HADRONS {
      * 
      * @param startmd Global hadron decay parameters.
      */
-    void   Initialise(GeneralModel startmd);
+    bool   Initialise(GeneralModel startmd);
 
     /** 
      * Tries to set the color flow for the outparticles of the blob given.

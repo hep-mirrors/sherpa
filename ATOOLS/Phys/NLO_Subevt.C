@@ -1,7 +1,7 @@
 #include "ATOOLS/Phys/NLO_Subevt.H"
 
 #include "ATOOLS/Phys/Blob.H"
-#include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Org/MyStrStream.H"
 
 using namespace ATOOLS;
@@ -82,6 +82,15 @@ void NLO_subevt::CopyXSData(const NLO_subevt *sub)
   m_mewgt=sub->m_mewgt;
   for (size_t i(0);i<m_mu2.size();++i) m_mu2[i]=sub->m_mu2[i];
   m_result=0.0;
+  if (p_ampl) {
+    p_ampl->Delete();
+    p_ampl=NULL;
+  }
+  if (sub->p_ampl) {
+    p_ampl=sub->p_ampl->CopyAll();
+    for (Cluster_Amplitude *ampl(p_ampl);
+	 ampl;ampl=ampl->Next()) ampl->SetProc(p_proc);
+  }
 }
 
 void NLO_subevtlist::Mult(const double &scal)
@@ -152,11 +161,21 @@ namespace ATOOLS
 	       <<", idx "<<sevt.m_idx
                <<" {\n  fl: "<<flavs<<", id: "<<ids
                <<"\n  result = "<<sevt.m_result
-               <<" ,  ME = "<<sevt.m_me
-	       <<"\n  Q = "<<sqrt(sevt.m_mu2[stp::res])
+               <<",  ME = "<<sevt.m_me<<" ("<<sevt.m_trig
+	       <<")\n  Q = "<<sqrt(sevt.m_mu2[stp::res])
 	       <<",  \\mu_F = "<<sqrt(sevt.m_mu2[stp::fac])
 	       <<", \\mu_R = "<<sqrt(sevt.m_mu2[stp::ren])
 	       <<", k_T = "<<sqrt(sevt.m_kt2)<<"\n}";
+  }
+  std::ostream &operator<<(std::ostream &ostr,const stp::id &scl)
+  {
+    switch (scl) {
+    case stp::ren: return ostr<<"ren";
+    case stp::fac: return ostr<<"fac";
+    case stp::res: return ostr<<"res";
+    case stp::size: return ostr<<"<error>";
+    }
+    return ostr<<"<unknown>";
   }
 }
 

@@ -133,7 +133,7 @@ void Shower::SetSplitInfo
 {
   p_old[0]->SetMom((mode&1)?-psplit:psplit);
   p_old[1]->SetMom((mode&2)?-pspect:pspect);
-  p_old[0]->SetFlav(split->GetFlavour());
+  p_old[0]->SetFlav((mode&1)?split->GetFlavour().Bar():split->GetFlavour());
   p_old[0]->SetCol(ColorID(split->GetFlow((mode&1)?2:1),
 			   split->GetFlow((mode&1)?1:2)));
   m_last[0]=newb;

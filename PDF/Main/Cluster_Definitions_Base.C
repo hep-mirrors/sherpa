@@ -46,7 +46,7 @@ int Cluster_Definitions_Base::ReCluster
     }
     Vec4D_Vector p=Combine
       (*campl->Prev(),i,j,k,lij->Flav(),campl->MS(),
-       campl->Kin(),(lij->Stat()&2)?1:0);
+       campl->Kin(),(lij->Stat()&4)?1:0);
     if (p.empty()) return -1;
     for (size_t m(0), n(0);n<campl->Legs().size();++m) {
       if (m==j) continue;

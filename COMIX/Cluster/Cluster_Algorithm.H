@@ -3,8 +3,8 @@
 
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
+#include "PHASIC++/Process/Process_Base.H"
 #include "COMIX/Amplitude/Amplitude.H"
-#include "COMIX/Cluster/Color_Setter.H"
 
 namespace PDF { class Cluster_Definitions_Base; }
 
@@ -17,11 +17,15 @@ namespace COMIX {
     size_t m_k, m_oew, m_oqcd;
     PDF::CParam m_kt2;
     ATOOLS::Flavour m_mofl;
+    ATOOLS::ColorID_Vector m_cols;
     Cluster_Info(Vertex *const v,const size_t &k,
 		 const PDF::CParam &kt2=PDF::CParam(-1.0,-1.0),
 		 const size_t &oew=0,const size_t &oqcd=0,
-		 const ATOOLS::Flavour &mofl=ATOOLS::Flavour(kf_none)): 
-      p_v(v), m_k(k), m_oew(oew), m_oqcd(oqcd), m_kt2(kt2), m_mofl(mofl) {}
+		 const ATOOLS::Flavour &mofl=ATOOLS::Flavour(kf_none),
+		 const ATOOLS::ColorID_Vector &cols=
+		 ATOOLS::ColorID_Vector()): 
+      p_v(v), m_k(k), m_oew(oew), m_oqcd(oqcd), m_kt2(kt2),
+      m_mofl(mofl), m_cols(cols) {}
     inline bool operator<(const Cluster_Info &ci) const
     { return p_v<ci.p_v?true:(p_v>ci.p_v?false:m_k<ci.m_k); }
   };// end of struct Cluster_Info
@@ -45,11 +49,10 @@ namespace COMIX {
   typedef std::vector<KT2_Info>    KT2Info_Vector;
 
   class Single_Process;
+  class Single_Dipole_Term;
 
   class Cluster_Algorithm {
   private:
-
-    Color_Setter m_cs;
 
     ATOOLS::Mass_Selector *p_ms;
 
@@ -59,20 +62,28 @@ namespace COMIX {
     Amplitude      *p_bg;
     Single_Process *p_xs;
 
+    PHASIC::Process_Base *p_proc;
+
+    std::map<size_t,ATOOLS::ColorID_Vector> m_cols;
+
     SizeT_Map m_id;
 
-    bool   m_nosol;
     size_t m_wmode;
     double m_lfrac;
 
     ATOOLS::ColorID GetColor(Current *const j,
 			     Current *const fcur) const;
 
-    int Connected(const Vertex_Vector &dvs,const size_t &idk) const;
+    ATOOLS::ColorID_Vector Connected
+    (const ATOOLS::ColorID &ci,const ATOOLS::ColorID &cj) const;
+    ATOOLS::ColorID_Vector Connected
+    (const ATOOLS::ColorID_Vector &ci,const ATOOLS::ColorID_Vector &cj,
+     const ATOOLS::ColorID_Vector &ck,const ATOOLS::Flavour &mo) const;
     
     PDF::CParam GetMeasure(const size_t &idi,const size_t &idj,
 			   const size_t &idk,const ATOOLS::Flavour &mofl,
-			   Double_Map &kt2,const SizeT_Map &cid,int cut);
+			   Double_Map &kt2,const SizeT_Map &cid,
+			   int cut,const size_t &step);
 
     void CalculateMeasures(const size_t &step,const Vertex_Set &nocl,
 			   const Current_Vector &curs,Current *const fcur,
@@ -88,10 +99,6 @@ namespace COMIX {
 		 const ClusterInfo_Map &cinfo,KT2Info_Vector &kt2ord,
 		 const int complete);
 
-    bool SetRandomColors(Single_Process *const xs);
-    bool SetLargeNCColors(Single_Process *const xs);
-    bool SetColors(Single_Process *const xs);
-
     void SetNMax(ATOOLS::Cluster_Amplitude *const ampl,
 		 const size_t &id,const size_t &nmax) const;
 
@@ -105,7 +112,14 @@ namespace COMIX {
 
     ~Cluster_Algorithm();
 
-    bool Cluster(Single_Process *const xs,const size_t &mode);
+    void PreCluster(Single_Process *const xs,
+		    Single_Dipole_Term *const dip,
+		    const ATOOLS::Vec4D_Vector &p);
+
+    bool Cluster(Single_Process *const xs,
+		 Single_Dipole_Term *const dip,
+		 const ATOOLS::Vec4D_Vector &p,
+		 const size_t &mode);
 
     // inline functions
     inline ATOOLS::Cluster_Amplitude *GetAmplitude() { return p_ampl; }

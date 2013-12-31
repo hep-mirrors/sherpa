@@ -23,7 +23,7 @@ namespace AMEGIC {
   };
   class Single_Real_Correction : public Process_Base {
   private:
-    bool                    m_newlib;
+    bool                    m_newlib, m_no_tree;
     double                  m_iresult;
     double                  m_smear_threshold, m_smear_power;
     int                     m_libnumb;
@@ -104,7 +104,8 @@ namespace AMEGIC {
     { return m_subtermlist.size(); }
 
     int Type() { return 100; }
-    
+
+    inline void SetNoTree(const int notree) { m_no_tree=notree; }    
     /*------------------------------------------------------------------------------
 
       Calculating total cross sections

@@ -62,7 +62,6 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
       continue;
     if (helpsvv[i].size()>1 && Tools::ExtractFlavours(helpkfc,helpsvv[i][0])) {
       Tools::ExtractBRInfo(helpsvv[i][1], BR, dBR, origin);
-      if (haspartonics) totBR += BR;
       hdc = new Hadron_Decay_Channel(Flav(),p_ms,path);
       int charge = Flav().IntCharge();
       double mass = Flav().HadMass();
@@ -73,6 +72,11 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 	charge-=flav.IntCharge();
 	mass-=flav.HadMass();
       }
+      if (mass<0.) { 
+	msg_Tracking()<<"Found too low mass.";
+	BR = 0.; dBR = 0.; continue; 
+      }
+      if (haspartonics) totBR += BR;
       hdc->SetWidth(BR*Flav().Width());
       hdc->SetDeltaWidth(dBR*Flav().Width());
       hdc->SetOrigin(origin);
@@ -86,8 +90,6 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
       if(mass<-Accu())
 	THROW(fatal_error,"Decaying mass "+ToString(mass)+" too low in "+
               hdc->FileName());
-      //if (Flav()==Flavour(kf_B_s)) 
-      //msg_Tracking()<<hdc->Name()<<": "<<hdc->Width()/Flav().Width()*100.<<"%.\n";
       AddDecayChannel(hdc);
       nchannels++;
     }
@@ -140,12 +142,23 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 			(dectable->TotalWidth()*totspec));
       for (size_t i=0;i<dectable->size();i++) {
 	BR = ((*dectable)[i]->Width()*specweights[k]);
-	hdc = new Hadron_Decay_Channel(Flav(),p_ms,path);
 	int charge = Flav().IntCharge();
 	double mass = Flav().HadMass();
-	hdc->AddDecayProduct(spec,false);
 	charge-=spec.IntCharge();
 	mass-=spec.HadMass();
+	for (size_t j=0;j<(*dectable)[i]->NOut();j++) {
+	  mass -= ((*dectable)[i]->GetDecayProduct(j)).HadMass();
+	}
+	if (mass<0.) {
+	  msg_Tracking()<<"Mass too low for "<<Flav()<<" -->";
+	  for (size_t j=0;j<(*dectable)[i]->NOut();j++) {
+	    msg_Tracking()<<" "<<(*dectable)[i]->GetDecayProduct(j);
+	  }
+	  msg_Tracking()<<".\n";
+	  continue;
+	}
+	hdc = new Hadron_Decay_Channel(Flav(),p_ms,path);
+	hdc->AddDecayProduct(spec,false);
 	std::string filename=m_flin.IDName();
 	if (filename.find("_{s}")!=string::npos) 
 	  filename = StringReplace(filename, "_{s}", "s");
@@ -211,14 +224,12 @@ void Hadron_Decay_Table::Initialise(GeneralModel& startmd)
       <<" ("<<TotalWidth()/Flav().Width()*100.0<<"%)"<<endl;
     if(msg_LevelIsDebugging()) Output();
   }
-
   Hadron_Decay_Channel* hdc;
   for (size_t i=0; i<size(); i++) {
     hdc = at(i);
     hdc->Initialise(startmd);
   }
 }
-
 
 void Hadron_Decay_Table::Write(std::ostream& ostr)
 {

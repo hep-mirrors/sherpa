@@ -62,7 +62,6 @@ bool Cluster_Algorithm::Cluster
       Vec4D mom(i<pb->NIn()?-pb->Integrator()->Momenta()[i]:
 		pb->Integrator()->Momenta()[i]);
       p_ampl->CreateLeg(mom,flav,ColorID(),1<<i);
-      p_ampl->Legs().back()->SetStat(1);
       int sc(p_ampl->Legs().back()->Flav().StrongCharge());
       if (sc==0) p_ampl->Legs().back()->SetCol(ColorID(0,0));
       if (sc==3 || sc==8) {
@@ -534,16 +533,15 @@ void Cluster_Algorithm::Convert()
     Flavour flav(i<pb->NIn()?ct_tmp->Flav(i).Bar():ct_tmp->Flav(i));
     Vec4D mom(i<pb->NIn()?-ct_tmp->Momentum(i):ct_tmp->Momentum(i));
     p_ampl->CreateLeg(mom,flav,ColorID(0,0),id);
-    p_ampl->Legs().back()->SetStat(1);
   }
   p_ampl->SetMuQ2(muq2);
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
   Cluster_Amplitude *eampl(p_ampl);
   while (ct_tmp->Down()) {
-    int iwin, jwin, kwin;
+    int iwin, jwin, kwin, kmode;
     double mu2;
-    double kt2qcd(ct_tmp->GetWinner(iwin,jwin,kwin,mu2));
+    double kt2qcd(ct_tmp->GetWinner(iwin,jwin,kwin,mu2,kmode));
     if (iwin>jwin) std::swap<int>(iwin,jwin);
     ct_tmp=ct_tmp->Down();
     const Leg &win(ct_tmp->GetLeg(iwin));
@@ -560,18 +558,20 @@ void Cluster_Algorithm::Convert()
       Vec4D mom(i<pb->NIn()?-ct_tmp->Momentum(i):ct_tmp->Momentum(i));
       if (i==iwin) id+=ampl->Leg(jwin)->Id();
       p_ampl->CreateLeg(mom,flav,ColorID(0,0),id);
-      if (IdCount(id)==1) {
-	p_ampl->Legs().back()->SetStat(1);
-      }
-      else if (i==iwin) {
+      p_ampl->Legs().back()->SetStat(1);
+      if (i==iwin) {
 	p_ampl->Legs().back()->SetK(ampl->Leg(kwin)->Id());
 	ampl->SetIdNew(ct_tmp->Up()->GetLeg(jwin).ID());
-	if (win.Point()->t>10 || !flav.Strong()) {
+	if (win.Point()->t>10) {
 	  size_t dmax(win.Point()->t>10?win.Point()->t-10:0);
 	  if (dmax==0) dmax=IdCount(id);
-	  p_ampl->Legs().back()->SetStat(3);
+	  p_ampl->Legs().back()->SetStat
+	    (p_ampl->Legs().back()->Stat()|2);
 	  SetNMax(p_ampl->Prev(),id,dmax);
 	}
+	if (kmode)
+	  p_ampl->Legs().back()->SetStat
+	    (p_ampl->Legs().back()->Stat()|4);
       }
     }
     p_ampl->SetMuQ2(ampl->MuQ2());
@@ -702,7 +702,6 @@ void Cluster_Algorithm::ClusterSpecial4lLoop2()
   }
   for (int i=2;i<p_proc->Flavours().size()-1;++i) {
     p_ampl->CreateLeg(clustered_moms[i],p_proc->Flavours()[i],ColorID(0,0),(1<<i));
-    p_ampl->Legs().back()->SetStat(1);
     p_ampl->Legs().back()->SetNMax(p_proc->Info().m_fi.NMaxExternal());
   }
   p_ampl->SetKin(win.m_kin);

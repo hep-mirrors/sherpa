@@ -6,6 +6,10 @@
 #include "CSSHOWER++/Showers/Shower.H"
 #include "ATOOLS/Phys/Blob_List.H"
 
+namespace EXTRAXS {
+  class ME2_Base;
+}
+
 namespace CSSHOWER {
 
 
@@ -17,6 +21,7 @@ namespace CSSHOWER {
     }
   };
 
+  typedef std::map<ATOOLS::Flavour_Vector,EXTRAXS::ME2_Base*> Flav_ME_Map;
 
   class Splitting_Function_Base;
 
@@ -39,9 +44,14 @@ namespace CSSHOWER {
 
     ATOOLS::Cluster_Amplitude *p_ampl, *p_rampl;
 
+    Flav_ME_Map m_xsmap;
+
     void   GetKT2Min(ATOOLS::Cluster_Amplitude *const ampl,const size_t &id,
 		     KT2X_Map &kt2xmap,std::set<size_t> &aset);
     void   GetKT2Min(ATOOLS::Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap);
+
+    int IsDecay(ATOOLS::Cluster_Amplitude *const ampl,
+		ATOOLS::Cluster_Leg *const cl) const;
 
     double HardScale(const ATOOLS::Cluster_Amplitude *const ampl);
 
@@ -59,6 +69,8 @@ namespace CSSHOWER {
     double Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,
 		const ATOOLS::Vec4D &pk,const ATOOLS::Flavour &fi,
 		const ATOOLS::Flavour &fj) const;
+
+    void SetColours(ATOOLS::Cluster_Amplitude *const ampl);
 
   public:
 

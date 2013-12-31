@@ -154,7 +154,8 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     }
     return Return_Value::Success;
   }
-  p_ampl=p_me->Process()->Get<Single_Process>()->Cluster(m_cmode);
+  p_ampl=p_me->Process()->Get<Single_Process>()->Cluster
+    (p_me->Process()->Integrator()->Momenta(),m_cmode);
   if (p_ampl==NULL) return Return_Value::New_Event;
   p_me->Process()->Generator()->SetMassMode(1);
   int stat(p_me->Process()->Generator()->ShiftMasses(p_ampl));
@@ -205,12 +206,14 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     if ((m_bbarmode&1) && p_me->HasNLO() &&
         p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
       Cluster_Amplitude *oampl=p_me->Process()->
-	Get<Single_Process>()->Cluster(m_cmode);
+	Get<Single_Process>()->Cluster
+	(p_me->Process()->Integrator()->Momenta(),m_cmode);
       if (!LocalKFactor(oampl)) {
 	DEBUG_INFO("didn't find process using original amplitude");
 	if (m_bbarmode&4) {
 	  Cluster_Amplitude *ampl=p_me->Process()->
-	    Get<Single_Process>()->Cluster(m_cmode|16|256|512);
+	    Get<Single_Process>()->Cluster
+	    (p_me->Process()->Integrator()->Momenta(),m_cmode|16|256|512);
 	  while (ampl->Prev()) ampl=ampl->Prev();
 	  if (!LocalKFactor(ampl))
 	    DEBUG_INFO("didn't find process using exclusive clustering");

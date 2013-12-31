@@ -258,7 +258,6 @@ GetRealEmissionAmplitude(const int mode)
 	 mode==0?ColorID((*it)->GetFlow(1),(*it)->GetFlow(2)):
 	 ColorID((*it)->GetMEFlow(1),(*it)->GetMEFlow(2)),
 	 (*it)->Id()?(*it)->Id():ampl->IdNew());
-      ampl->Legs().back()->SetStat(1);
       ampl->Legs().back()->SetNMax
 	(p_rampl->IdLeg((*it)->Id()?(*it)->Id():1)->NMax());
     }
@@ -271,12 +270,11 @@ GetRealEmissionAmplitude(const int mode)
 	 mode==0?ColorID((*it)->GetFlow(1),(*it)->GetFlow(2)):
 	 ColorID((*it)->GetMEFlow(1),(*it)->GetMEFlow(2)),
 	 (*it)->Id()?(*it)->Id():ampl->IdNew());
-      ampl->Legs().back()->SetStat(1);
       ampl->Legs().back()->SetNMax
 	(p_rampl->IdLeg((*it)->Id()?(*it)->Id():1)->NMax());
     }
   }
-  ampl->SetKT2(p_rampl->MuQ2());
+  ampl->SetKT2(p_mcatnlo->GetLast()[3]->KtTest());
   ampl->SetNewCol(p_mcatnlo->GetLast()[3]->Color().m_new);
   Process_Base::SortFlavours(ampl);
   return ampl;

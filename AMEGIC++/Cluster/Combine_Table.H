@@ -170,7 +170,7 @@ namespace AMEGIC {
     Combine_Table * CalcJet(int nl,ATOOLS::Vec4D *moms,const size_t mode,
 			    const int complete);
     void                 FillTable(Leg **legs,const int nlegs,const int nampl);
-    double               GetWinner(int &i, int &j,int &k,double &mu2);
+    double               GetWinner(int &i, int &j,int &k,double &mu2,int &mode);
     bool                 IdentifyHardProcess();
     int                  IdentifyHardPropagator(double &scale) const;
 

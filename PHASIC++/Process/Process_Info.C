@@ -50,3 +50,12 @@ bool Process_Info::Has(nlo_type::code nlotype) const
   }
 }
 
+int Process_Info::Combine(const size_t &i,const size_t &j,
+			  const ATOOLS::Flavour &flij)
+{
+  int cnt(0);
+  int res(m_ii.Combine(i,j,flij,cnt));
+  if (res<0) THROW(fatal_error,"Removed initial state particle");
+  res=m_fi.Combine(i,j,flij,cnt);
+  return -res;
+}

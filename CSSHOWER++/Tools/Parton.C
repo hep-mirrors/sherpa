@@ -41,7 +41,9 @@ namespace CSSHOWER {
       str<<std::endl;
     }
     if (part.m_fixspec!=Vec4D())
-      str<<"  fix spec : "<<part.m_fixspec<<"\n";
+      str<<"  fix spec : "<<part.m_fixspec<<", oldp : "<<part.OldMomentum()
+	 <<" "<<(IsEqual(part.OldMomentum(),part.Momentum(),1.0e-6)?
+		 "ok":"*** ERROR ***")<<"\n";
     return str;
   }
 }

@@ -1,6 +1,8 @@
 #include "METOOLS/Explicit/Dipole_Kinematics.H"
 
 #include "METOOLS/Explicit/Vertex.H"
+#include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 
 using namespace METOOLS;
@@ -12,7 +14,7 @@ Dipole_Kinematics::Dipole_Kinematics
   p_i(i), p_j(j), p_k(k), p_ijt(ijt), p_kt(kt),
   m_type(0), m_swap(0), m_trig(1), p_info(info), m_mi2(0.0), m_mj2(0.0),
   m_mij2(sqr(p_ijt->Flav().Mass())), m_mk2(sqr(p_k->Flav().Mass())),
-  m_ym(0.0), m_yp(1.0), m_f(0.0)
+  m_ym(0.0), m_yp(1.0), m_f(0.0), m_a(0.0)
 {
   if (p_i) m_mi2=sqr(p_i->Flav().Mass());
   if (p_j) m_mj2=sqr(p_j->Flav().Mass());
@@ -31,6 +33,7 @@ Dipole_Kinematics::Dipole_Kinematics
     }
     m_type|=1;
   }
+  m_evol=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
 }
 
 Dipole_Kinematics::~Dipole_Kinematics()
@@ -64,8 +67,16 @@ void Dipole_Kinematics::Evaluate()
     double pijpk((m_pi+m_pj)*m_pk);
     m_z=(m_pi*m_pk)/pijpk;
     m_y=1.0/(1.0+pijpk/(m_pi*m_pj));
-    m_kt2=(m_Q2-m_mi2-m_mj2-m_mk2)*m_y*m_z*(1.0-m_z)-
-      sqr(1.0-m_z)*m_mi2-sqr(m_z)*m_mj2;
+    if (m_evol==0) {
+      m_kt2=(m_Q2-m_mi2-m_mj2-m_mk2)*m_y*m_z*(1.0-m_z)-
+	sqr(1.0-m_z)*m_mi2-sqr(m_z)*m_mj2;
+    }
+    else {
+      m_kt2=2.0*(m_pi*m_pj)*m_z*(1.0-m_z);
+      if (p_ijt->Flav().IsFermion())
+	m_kt2=2.0*(m_pi*m_pj)*(p_i->Flav().IsFermion()?(1.0-m_z):m_z);
+      else if (p_i->Flav().IsFermion()) m_kt2=2.0*(m_pi*m_pj);
+    }
     if (p_info->Stat() && (m_pi[0]>1.0e-3 && m_pj[0]>1.0e-3) &&
 	(pkt[0]<0.0 || m_Q[0]<pkt[0])) {
       p_info->SetStat(0);
@@ -86,7 +97,15 @@ void Dipole_Kinematics::Evaluate()
     m_z=(m_pi*m_pk)/pijpa;
     m_y=-(m_pi*m_pj)/pijpa;
     if (Massive()) m_yp=1.0+m_y*(m_mij2-sqr(sqrt(m_mi2)+sqrt(m_mj2)))/m_Q2;
-    m_kt2=2.0*(m_pi*m_pj)*m_z*(1.0-m_z)-sqr(1.0-m_z)*m_mi2-sqr(m_z)*m_mj2;
+    if (m_evol==0) {
+      m_kt2=2.0*(m_pi*m_pj)*m_z*(1.0-m_z)-sqr(1.0-m_z)*m_mi2-sqr(m_z)*m_mj2;
+    }
+    else {
+      m_kt2=2.0*(m_pi*m_pj)*m_z*(1.0-m_z);
+      if (p_ijt->Flav().IsFermion())
+	m_kt2=2.0*(m_pi*m_pj)*(p_i->Flav().IsFermion()?(1.0-m_z):m_z);
+      else if (p_i->Flav().IsFermion()) m_kt2=2.0*(m_pi*m_pj);
+    }
     if (p_info->Stat() && (m_pi[0]>1.0e-3 && m_pj[0]>1.0e-3) &&
 	(m_Q[0]<pkt[0] || lrat<0.0)) {
       p_info->SetStat(0);
@@ -106,7 +125,13 @@ void Dipole_Kinematics::Evaluate()
     p_kt->SetP(m_Q-p_ijt->P());
     m_z=(pjpa+pkpa+pjpk)/(pjpa+pkpa);
     m_y=pjpa/(pjpa+pkpa);
-    m_kt2=(-m_Q2+m_mk2)*m_y/m_z*(1.0-m_z);
+    if (m_evol==0) {
+      m_kt2=(-m_Q2+m_mk2)*m_y/m_z*(1.0-m_z);
+    }
+    else {
+      m_kt2=(-m_Q2+m_mk2)*m_y/m_z*(1.0-m_z);
+      if (p_j->Flav().IsFermion()) m_kt2=(-m_Q2+m_mk2)*m_y/m_z;
+    }
     for (size_t i(0);i<m_cur.size();++i) m_p[i]=m_cur[i]->P();
   }
   else if (m_type==3) {
@@ -117,7 +142,13 @@ void Dipole_Kinematics::Evaluate()
     p_ijt->SetP(pajt);
     p_kt->SetP(m_pi+m_pj+m_pk-pajt);
     m_y=-pjpa/papb;
-    m_kt2=m_Q2*m_y/m_z*(1.0-m_z);
+    if (m_evol==0) {
+      m_kt2=m_Q2*m_y/m_z*(1.0-m_z);
+    }
+    else {
+      m_kt2=m_Q2*m_y/m_z*(1.0-m_z);
+      if (p_j->Flav().IsFermion()) m_kt2=m_Q2*m_y/m_z;
+    }
     for (size_t i(0);i<m_cur.size();++i) {
       const Vec4D &p(m_cur[i]->P());
       m_p[i]=p-2.0*p*KpKt/(KpKt*KpKt)*KpKt+2.0*p*K/(Kt*Kt)*Kt;

@@ -8,16 +8,14 @@ files=$(find ${dir})
 
 printf "Building ${db} ("$(echo $files | wc -w)") ";
 
-mkfifo ${dir}.tmp
-( sqlite3 ${db} < ${dir}.tmp ) &
-sqlpid=$!
-echo "create table path(file,content);" >> ${dir}.tmp
+(
+echo "begin transaction;"
+echo "create table path(file,content);"
 for i in $files; do
-  test -d $i && continue; printf "."
+  test -d $i && continue; printf "." 1>&2
   filename=$(echo $i | sed 's|'${dir}'||g;s|^/||g')
-  sed -e "s|'|''|g" -e "$ s|$|');|1" -e "1 s|^|insert into path values('${filename}','|1" $i >> ${dir}.tmp
+  sed -e "s|'|''|g" -e "$ s|$|');|1" -e "1 s|^|insert into path values('${filename}','|1" $i
 done
-echo ".quit" >> ${dir}.tmp
-wait $sqlpid
-rm ${dir}.tmp
+echo "commit;"
+) | sqlite3 ${db}
 echo " done"

@@ -41,42 +41,53 @@ namespace ATOOLS {
   Particle_Qualifier_Base *Getter_Function<Particle_Qualifier_Base,std::string>::
   GetObject(const std::string &name,const std::string &parameters)
   {
-    msg_Tracking()<<"Looking for Qualifier '"<<name<<"' ... ";
-    if (name[0]=='!') {
-      std::string name1=name.substr(1);
-      Particle_Qualifier_Base * qual = ATOOLS::Particle_Qualifier_Getter::GetObject(name1,name1);
-      if (qual) return new Not_Particle_Qualifier(qual);
-    }
+    DEBUG_FUNC(name);
     size_t pos=name.find("|");
     if (pos!=std::string::npos) {
       std::string name1=name.substr(0,pos);
       std::string name2=name.substr(pos+1);
+      msg_Debugging()<<"Try 'or'\n";
       Particle_Qualifier_Base * qual1 = ATOOLS::Particle_Qualifier_Getter::GetObject(name1,name1);
       Particle_Qualifier_Base * qual2 = ATOOLS::Particle_Qualifier_Getter::GetObject(name2,name2);
       if (qual1 && qual2) return new Or_Particle_Qualifier(qual1,qual2);
+      msg_Tracking()<<"not found"<<std::endl;
+      return NULL;
     }
     pos=name.find("&");
     if (pos!=std::string::npos) {
       std::string name1=name.substr(0,pos);
       std::string name2=name.substr(pos+1);
+      msg_Debugging()<<"Try 'and'\n";
       Particle_Qualifier_Base * qual1 = ATOOLS::Particle_Qualifier_Getter::GetObject(name1,name1);
       Particle_Qualifier_Base * qual2 = ATOOLS::Particle_Qualifier_Getter::GetObject(name2,name2);
       if (qual1 && qual2) return new And_Particle_Qualifier(qual1,qual2);
+      msg_Tracking()<<"not found"<<std::endl;
+      return NULL;
     }
+    if (name[0]=='!') {
+      std::string name1=name.substr(1);
+      msg_Debugging()<<"Try 'not'\n";
+      Particle_Qualifier_Base * qual = ATOOLS::Particle_Qualifier_Getter::GetObject(name1,name1);
+      if (qual) return new Not_Particle_Qualifier(qual);
+      msg_Tracking()<<"not found"<<std::endl;
+      return NULL;
+    }
+    std::string tag(name), par(parameters);
     pos=name.find('(');
     if (pos!=std::string::npos) {
       size_t epos(name.rfind(')'));
       if (epos>pos) {
-	return ATOOLS::Particle_Qualifier_Getter::
-	  GetObject(name.substr(0,pos),name.substr(pos+1,epos-pos-1));
+	par=name.substr(pos+1,epos-pos-1);
+	tag=name.substr(0,pos);
       }
     }
-    String_Getter_Map::iterator git=s_getters->find(name);
+    msg_Debugging()<<"Try '"<<tag<<"("<<par<<")' ... ";
+    String_Getter_Map::iterator git=s_getters->find(tag);
     if (git!=s_getters->end()) {
-      msg_Tracking()<<"found."<<std::endl;
-      return (*git->second)(parameters);
+      msg_Tracking()<<"found"<<std::endl;
+      return (*git->second)(par);
     }
-    msg_Tracking()<<"not found."<<std::endl;
+    msg_Tracking()<<"not found"<<std::endl;
     return NULL;
   }
 }

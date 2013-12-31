@@ -53,6 +53,9 @@ namespace PHASIC {
 
     ATOOLS::ClusterAmplitude_Vector m_ampls;
 
+    virtual void PreCalc(const ATOOLS::Vec4D_Vector &p,
+			 const size_t &mode);
+
     virtual double Calculate(const ATOOLS::Vec4D_Vector &p,
 			     const size_t &mode) = 0;
 

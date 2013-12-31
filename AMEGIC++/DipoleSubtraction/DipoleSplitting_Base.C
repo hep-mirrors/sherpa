@@ -201,7 +201,7 @@ bool DipoleSplitting_Base::Reject(const double &alpha)
     m_mcsign=m_av>0.0 && (m_kt2<m_kt2max || IsEqual(m_kt2,m_kt2max,1.0e-6));
     return m_mcsign==0;
   }
-  return alpha>m_alpha || (m_av>0.0 && m_kt2>m_kt2max);
+  return alpha>m_alpha || m_kt2>m_kt2max;
 }
 
 double DipoleSplitting_Base::GetF()

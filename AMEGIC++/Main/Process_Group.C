@@ -53,7 +53,9 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
 
   nlo_type::code nloqcd=pi.m_fi.m_nloqcdtype;
   if (nloqcd&nlo_type::real && nloqcd&nlo_type::rsub) {
-    return new Single_Real_Correction();
+    Single_Real_Correction *src = new Single_Real_Correction();
+    src->SetNoTree(pi.m_rsmegenerator!="Amegic");
+    return src;
   }
   else if (nloqcd&nlo_type::born || nloqcd&nlo_type::vsub || nloqcd&nlo_type::loop) {
     return new Single_Virtual_Correction();

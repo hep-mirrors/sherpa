@@ -16,18 +16,20 @@
 #include "PHOTONS++/PhaseSpace/Avarage_Photon_Number.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
+#include <iomanip>
+
 using namespace PHOTONS;
 using namespace ATOOLS;
 using namespace std;
 
 Dress_Blob_Base::Dress_Blob_Base() :
-  m_photonsadded(false), m_success(false), m_soft(false),
+  m_photonsadded(false), m_success(false),
+  m_soft((PHOTONS::Photons::s_mode==1)?true:false),
   p_newinitialstate(NULL), m_accu(PHOTONS::Photons::s_accu),
   m_genweight(1.), m_genmaxweight(1.), m_nbar(0.), m_n(0.),
+  m_omegaMax(PHOTONS::Photons::s_uvcutoff),
   m_omegaMin(PHOTONS::Photons::s_ircutoff)
-{
-  if (PHOTONS::Photons::s_mode == 1) m_soft = true;
-}
+{}
 
 Dress_Blob_Base::~Dress_Blob_Base()
 {
@@ -56,9 +58,10 @@ void Dress_Blob_Base::BuildNewParticleVectorVector()
   m_pvv_new.push_back(m_softphotons);
 
 #ifdef PHOTONS_DEBUG
+  msg_Debugging()<<"new particles:\n";
   for (unsigned int i=0; i<m_pvv_new.size(); i++)
     for(unsigned int j=0; j<m_pvv_new[i].size(); j++)
-      msg_Info()<<i<<j<<" "<<*m_pvv_new[i][j]<<endl;
+      msg_Debugging()<<i<<j<<" "<<*m_pvv_new[i][j]<<endl;
 #endif
 }
 
@@ -106,22 +109,18 @@ void Dress_Blob_Base::CalculateWeights()
   m_genmaxweight    = mwdipole * mwjacobianM * mwjacobianL * mwhigher * mwyfs;
 
 #ifdef PHOTONS_DEBUG
-  char s1w[10],s2w[10],s3w[10],s4w[10],s5w[10];
-  sprintf(s1w,"%f",wdipole);
-  sprintf(s2w,"%f",wjacobianM);
-  sprintf(s3w,"%f",wjacobianL);
-  sprintf(s4w,"%f",whigher);
-  sprintf(s5w,"%f",wyfs);
-  msg_Info()<<"weights:    "<<s1w<<" "<<s2w<<" "<<s3w<<" "<<s4w<<" "<<s5w<<" : "
-                            <<m_genweight<<endl;
-  char s1m[10],s2m[10],s3m[10],s4m[10],s5m[10];
-  sprintf(s1m,"%f",mwdipole);
-  sprintf(s2m,"%f",mwjacobianM);
-  sprintf(s3m,"%f",mwjacobianL);
-  sprintf(s4m,"%f",mwhigher);
-  sprintf(s5m,"%f",mwyfs);
-  msg_Info()<<"maxweights: "<<s1m<<" "<<s2m<<" "<<s3m<<" "<<s4m<<" "<<s5m
-            <<" : "<<m_genmaxweight<<endl;
+  msg_Debugging()<<"weights:    "<<std::setw(10)<<wdipole
+                                 <<std::setw(10)<<wjacobianM
+                                 <<std::setw(10)<<wjacobianL
+                                 <<std::setw(10)<<whigher
+                                 <<std::setw(10)<<wyfs<<" : "
+                                 <<std::setw(10)<<m_genweight<<endl;
+  msg_Debugging()<<"maxweights: "<<std::setw(10)<<mwdipole
+                                 <<std::setw(10)<<mwjacobianM
+                                 <<std::setw(10)<<mwjacobianL
+                                 <<std::setw(10)<<mwhigher
+                                 <<std::setw(10)<<mwyfs<<" : "
+                                 <<std::setw(10)<<m_genmaxweight<<endl;
 #endif
   if (Photons::s_strict && m_genweight > m_genmaxweight) {
     msg_Tracking()<<"weight: "<<m_genweight<<" > maxweight: "<<m_genmaxweight
@@ -215,6 +214,7 @@ void Dress_Blob_Base::DetermineU()
       }
     }
   }
+  msg_Debugging()<<"u:    "<<m_u<<std::endl;
 }
 
 std::vector<double> Dress_Blob_Base::GenerateNumberAndEnergies()
@@ -228,19 +228,25 @@ std::vector<double> Dress_Blob_Base::GenerateNumberAndEnergies()
 //  }
 //  k.pop_back();
 //  m_n = k.size();
-   m_n = -1;
-   double expnbar = exp(-m_nbar);
-   double prod = 1.;
-   while (true) {
-     m_n++;
-     prod = prod*ran->Get();
-     if (prod <= expnbar) break;
-   }
-   m_n = Min(Max(m_n,Photons::s_nmin),Photons::s_nmax);
-   std::vector<double> k;
-   for (unsigned int i=0; i<m_n; i++) {
-     k.push_back(m_omegaMin*pow(m_omegaMax/m_omegaMin,ran->Get()));
-   }
+  m_n = -1;
+  double expnbar = exp(-m_nbar);
+  double prod = 1.;
+  while (true) {
+    m_n++;
+    prod = prod*ran->Get();
+    if (prod <= expnbar) break;
+  }
+  m_n = Min(Max(m_n,Photons::s_nmin),Photons::s_nmax);
+  std::vector<double> k;
+  for (unsigned int i=0; i<m_n; i++) {
+    k.push_back(m_omegaMin*pow(m_omegaMax/m_omegaMin,ran->Get()));
+  }
+  if (m_n && msg_LevelIsDebugging()) {
+    msg_Debugging()<<"k_i = ["<<m_omegaMin<<" .. "<<m_omegaMax<<"]\n";
+    for (size_t i(0);i<k.size();++i) {
+      msg_Debugging()<<"  "<<std::setw(2)<<i<<": "<<std::setw(8)<<k[i]<<std::endl;
+    }
+  }
   return k;
 }
 

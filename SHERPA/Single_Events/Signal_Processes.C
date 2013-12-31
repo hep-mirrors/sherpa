@@ -89,7 +89,8 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     }
   }
   else {
-    if (m_setcolors) ampl=proc->Get<Single_Process>()->Cluster(m_cmode);
+    if (m_setcolors) ampl=proc->Get<Single_Process>()->
+		       Cluster(proc->Integrator()->Momenta(),m_cmode);
   }
   Vec4D cms = Vec4D(0.,0.,0.,0.);
   for (size_t i=0;i<proc->NIn();i++) 

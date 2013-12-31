@@ -101,7 +101,10 @@ namespace PHASIC {
     bool Combine(ATOOLS::Cluster_Amplitude &ampl,
 		 int i,int j,int k,const CS_Params &cs) const;
 
-    double SetScales(const double &muf2,ATOOLS::Cluster_Amplitude *ampl);
+    double SetScales(const double &muf2,ATOOLS::Cluster_Amplitude *ampl,
+		     const size_t &mode);
+
+    void PreCalc(const ATOOLS::Vec4D_Vector &p,const size_t &mode);
 
     double CalculateStrict(const ATOOLS::Vec4D_Vector &momenta,
 			   const size_t &mode);
@@ -259,6 +262,15 @@ METS_Scale_Setter::~METS_Scale_Setter()
   delete p_core;
 }
 
+void METS_Scale_Setter::PreCalc(const Vec4D_Vector &p,const size_t &mode)
+{
+  if (!(m_mode==2 || (m_mode==1 && !p_caller->LookUp()))) return;
+  Process_Base *proc((mode&1)?p_proc:p_caller);
+  proc->Generator()->SetClusterDefinitions
+    (proc->Shower()->GetClusterDefinitions());
+  proc->Generator()->PreCluster(proc,p);
+}
+
 double METS_Scale_Setter::CalculateStrict
 (const Vec4D_Vector &momenta,const size_t &mode)
 {
@@ -266,7 +278,6 @@ double METS_Scale_Setter::CalculateStrict
   Process_Base *proc((mode&1)?p_proc:p_caller);
   DEBUG_FUNC(p_proc->Name()<<" from "<<p_caller->Name()
 	     <<", mcmode = "<<proc->MCMode());
-  proc->Integrator()->SetMomenta(momenta);
   PDF::Cluster_Definitions_Base* cd=
     proc->Shower()->GetClusterDefinitions();
   proc->Generator()->SetClusterDefinitions(cd);
@@ -299,7 +310,7 @@ double METS_Scale_Setter::CalculateStrict
   if (ampl==NULL) {
     ampl=
     (proc->Generator()->
-     ClusterConfiguration(proc,m_cmode|camode|mode));
+     ClusterConfiguration(proc,momenta,m_cmode|camode|mode));
   }
   if (ampl==NULL) {
     msg_Debugging()<<METHOD<<"(): No CSS history for '"
@@ -314,11 +325,11 @@ double METS_Scale_Setter::CalculateStrict
 		 <<(int(m_lfrac*10000)/100.0)
 		 <<"% of calls. Set \\hat{s}."<<std::endl;
     }
-    return SetScales((m_p[0]+m_p[1]).Abs2(),NULL);
+    return SetScales((m_p[0]+m_p[1]).Abs2(),NULL,mode);
   }
   Cluster_Amplitude *rampl(ampl);
   while (rampl->Next()) rampl=rampl->Next();
-  double muf2(SetScales(rampl->KT2(),ampl));
+  double muf2(SetScales(rampl->KT2(),ampl,mode));
   m_ampls.push_back(ampl);
   return muf2;
 }
@@ -490,7 +501,7 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
 		     <<"% of calls. Set \\hat{s}."<<std::endl;
 	}
 	m_ampls.push_back(ampl);
-	return SetScales((m_p[0]+m_p[1]).Abs2(),NULL);
+	return SetScales((m_p[0]+m_p[1]).Abs2(),NULL,mode);
       }
       ampl=ampl->Prev();
       ampl->DeleteNext();
@@ -581,7 +592,7 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
   }
   if (ampl==NULL) continue;
   while (ampl->Prev()) ampl=ampl->Prev();
-  double muf2(SetScales(kt2core,ampl));
+  double muf2(SetScales(kt2core,ampl,mode));
   m_ampls.push_back(ampl);
   return muf2;
   }
@@ -599,7 +610,8 @@ PDF::CParam METS_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl) const
   return kt2;
 }
 
-double METS_Scale_Setter::SetScales(const double &muf2,Cluster_Amplitude *ampl)
+double METS_Scale_Setter::SetScales
+(const double &muf2,Cluster_Amplitude *ampl,const size_t &mode)
 {
   double mur2(m_rsf*muf2);
   m_scale[stp::size+stp::res]=m_scale[stp::res]=muf2;

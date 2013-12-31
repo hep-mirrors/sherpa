@@ -22,7 +22,7 @@ namespace PHASIC {
 
     ME_Generators &m_gens;
 
-    Process_Base     *p_bviproc, *p_rsproc, *p_bproc, *p_rproc;
+    Process_Base     *p_bviproc, *p_rsproc, *p_bproc, *p_rproc, *p_ddproc;
     PDF::NLOMC_Base  *p_nlomc;
 
     double m_lastrs, m_lastb, m_lastvi;

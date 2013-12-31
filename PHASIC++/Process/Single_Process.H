@@ -55,7 +55,8 @@ namespace PHASIC {
 
     ATOOLS::ME_wgtinfo *GetMEwgtinfo();
 
-    ATOOLS::Cluster_Amplitude *Cluster(const size_t &mode=0);
+    ATOOLS::Cluster_Amplitude *Cluster(const ATOOLS::Vec4D_Vector &p,
+				       const size_t &mode=0);
 
     virtual double Partonic(const ATOOLS::Vec4D_Vector &p,
 			    const int mode) = 0;

@@ -135,6 +135,7 @@ double Process_Base::Differential(const Cluster_Amplitude &ampl,int mode)
     SetFixedScale(s);
   }
   if (mode&4) SetUseBIWeight(false);
+  if (mode&128) this->GeneratePoint(); 
   double res(this->Differential(p));
   if (mode&32) {
     SP(Phase_Space_Handler) psh(Parent()->Integrator()->PSHandler());

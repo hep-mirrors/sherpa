@@ -11,6 +11,10 @@ ZAlign::ZAlign(const Vec4D &pa,const Vec4D &pb,
 {
   Vec4D Q(pa+pb);
   double Q2=Q.Abs2(), papb=0.5*(Q2-ma2-mb2);
+  if (papb<0.0) {
+    m_stat=-1;
+    return;
+  }
   if (!IsEqual(papb,pa*pb,1.0e-3) && !(mode&1))
     msg_Error()<<METHOD<<"(): p_a*p_b = "<<papb
 	       <<" vs. "<<pa*pb<<", rel. diff. "
@@ -27,14 +31,14 @@ ZAlign::ZAlign(const Vec4D &pa,const Vec4D &pb,
 	dabs((m_pan+pb).Abs2()-Q2)) m_pan[3]=-m_pan[3];
   }
   else {
-    double kap(papb*papb-ma2*mb2);
+    double lmb2(pb.Abs2()), kap(papb*papb-ma2*lmb2);
     if (kap<0.0) m_stat=-1;
     else kap=sqrt(kap);
     double kr((pb.PMinus()*Q.PPlus())/(pb.PPlus()*Q.PMinus()));
-    double ks((papb+mb2+kap)/(papb+mb2-kap));
+    double ks((papb+lmb2+kap)/(papb+lmb2-kap));
     if (Max(kr*ks,1.0/(kr*ks))<Max(kr/ks,ks/kr)) kap=-kap;
-    m_pan=Vec4D((pb[0]*papb+pb[3]*kap)/mb2,0.0,
-		0.0,(pb[3]*papb+pb[0]*kap)/mb2);
+    m_pan=Vec4D((pb[0]*papb+pb[3]*kap)/lmb2,0.0,
+		0.0,(pb[3]*papb+pb[0]*kap)/lmb2);
   }
   if (!IsEqual(Q2,(m_pan+m_pb).Abs2(),1.0e-3) && !(mode&1))
     msg_Error()<<METHOD<<"(): Q = "<<sqrt(Q2)<<" vs. "

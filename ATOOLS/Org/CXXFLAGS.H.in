@@ -47,6 +47,9 @@
 /* Sherpa version */
 #undef SHERPA_VERSION
 
+/* Sherpa version name */
+#undef SHERPA_NAME
+
 /* using Pythia */
 #undef USING__PYTHIA
 

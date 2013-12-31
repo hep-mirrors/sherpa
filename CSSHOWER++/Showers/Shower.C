@@ -27,6 +27,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   m_use_bbw   = dataread->GetValue<int>("CSS_USE_BBW",1);
   m_kscheme   = dataread->GetValue<int>("CSS_KIN_SCHEME",0);
   m_noem      = dataread->GetValue<int>("CSS_NOEM",0);
+  m_recdec    = dataread->GetValue<int>("CSS_RECO_DECAYS",0);
   std::vector<std::vector<std::string> > helpsvv;
   dataread->MatrixFromFile(helpsvv,"CSS_ENHANCE");
   m_efac.clear();
@@ -105,6 +106,7 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
   double mi2(l->Mass2()), mj2(r->Mass2());
   Vec4D spi(l->FixSpec()), spj(r->FixSpec()), spk(s->FixSpec());
   Vec4D opi(l->OldMomentum()), opj(r->OldMomentum()), opk(s->OldMomentum());
+  Vec4D cpi(l->Momentum()), cpj(r->Momentum()), cpk(s->Momentum());
   Flavour fli(l->GetFlavour()), flj(r->GetFlavour());
   s->SetMomentum(s->GetPrev()->Momentum());
   l->SetMomentum(c->Momentum());
@@ -112,11 +114,35 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
   l->SetMass2(c->Mass2());
   l->SetKin(ckin);
   l->SetSpect(s);
-  msg_Debugging()<<"before: c: "<<*l<<"        s: "<<*s<<"\n";
+  msg_Debugging()<<"before: c: "<<*c<<"        s: "<<*s<<"\n";
   msg_Debugging()<<"kt = "<<sqrt(l->KtTest())<<", z = "
 		 <<l->ZTest()<<", y = "<<l->YTest()
-		 <<", phi = "<<l->Phi()<<", scheme = "<<l->Kin()<<"\n\n";
+		 <<", phi = "<<l->Phi()<<", kin = "<<l->Kin()
+		 <<", kscheme = "<<c->KScheme()<<"\n\n";
   int stat=0;
+  if (c->KScheme() && !m_recdec) {
+    stat=1;
+    Poincare_Sequence lam;
+    Vec4D newp(c->Momentum()), oldp(cpi+cpj);
+    if (!IsEqual(newp,oldp,rpa->gen.SqrtAccu())) {
+      lam.push_back(Poincare(oldp));
+      lam.push_back(Poincare(oldp,newp));
+      lam.push_back(Poincare(newp));
+      lam.back().Invert();
+    }
+    l->SetMomentum(lam*cpi);
+    r->SetMomentum(lam*cpj);
+    s->SetMomentum(cpk);
+    l->SetFixSpec(lam*spi);
+    r->SetFixSpec(lam*spj);
+    s->SetFixSpec(spk);
+    l->SetOldMomentum(lam*opi);
+    r->SetOldMomentum(lam*opj);
+    s->SetOldMomentum(opk);
+    l->SetFlavour(fli);
+    l->SetMass2(mi2);
+  }
+  else {
   if (c->GetType()==pst::FS) {
     if (s->GetPrev()->GetType()==pst::FS) {
       stat=m_kinFF.MakeKinematics(l,mi2,mj2,flj,r,1);
@@ -150,6 +176,7 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
 	split->BoostAllFS(l,r,s,c,c->GetFlavour(),4|3);
     }
   }
+  }
   if (stat<=0) {
     l->SetFixSpec(spi);
     r->SetFixSpec(spj);
@@ -177,6 +204,9 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
        (s->GetType()==pst::IS?(c->GetType()==pst::IS?3:2):
 	(c->GetType()==pst::IS?1:0))|4);
     l->SetKin(kin);
+    l->SetMomentum(cpi);
+    r->SetMomentum(cpj);
+    s->SetMomentum(cpk);
     l->SetFixSpec(spi);
     r->SetFixSpec(spj);
     s->SetFixSpec(spk);
@@ -214,9 +244,10 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   newpC->SetPrev(split->GetPrev());
   newpB->SetFixSpec(split->FixSpec());
   newpB->SetOldMomentum(split->OldMomentum());
-  int rd(1);
-  if ((mode&4) && split->Mass2()!=newpB->Mass2()) rd=1;
-  else rd=ReconstructDaughters(split->GetSing(),mode,newpB,newpC);
+  double m2=split->Mass2();
+  split->SetMass2(newpB->Mass2());
+  int rd=ReconstructDaughters(split->GetSing(),mode,newpB,newpC);
+  split->SetMass2(m2);
   split->GetSing()->RemoveParton(newpC);
   if (rd<=0 || mode!=0) {
     if (mode==0) split->GetSing()->RearrangeColours(split,newpB,newpC);
@@ -237,8 +268,7 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
 void Shower::ResetScales(const double &kt2)
 {
   for (PLiter pit(p_actual->begin());pit!=p_actual->end();++pit)
-    if ((*pit)->GetPrev()==NULL ||
-	(*pit)->GetPrev()->KScheme()!=1) (*pit)->SetStart(kt2);
+    (*pit)->SetStart(kt2);
   m_last[0]=m_last[1]=m_last[2]=NULL;
 }
 
@@ -366,7 +396,9 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     return true;
   }
   if (p_actual->GetSplit() &&
-      p_actual->GetSplit()->KScheme()==1) {
+      (p_actual->GetSplit()->Stat()&4) &&
+      !(p_actual->GetSplit()->Stat()&2)) {
+    msg_Debugging()<<"Skip EW clustering\n";
     return true;
   }
   if (nem>=maxem) return true;
@@ -377,6 +409,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
     Parton *split=SelectSplitting(kt2win);
     //no shower anymore 
     if (split==NULL) {
+      msg_Debugging()<<"No emission\n";
       ResetScales(p_actual->KtNext());
       for (Singlet::const_iterator it=p_actual->begin(); it!=p_actual->end();
            ++it) {
@@ -446,8 +479,13 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
       if (p_actual->JF()) {
 	if (p_actual->GetSplit()) {
 	  msg_Debugging()<<"Truncated shower veto\n";
+	  if (p_actual->GetSplit()->Stat()&2) {
+	    msg_Debugging()<<"Non-QCD splitting. Skip truncated shower veto\n";
+	  }
+	  else {
 	  if (!(p_actual->NLO()&8)) return false;
 	  else msg_Debugging()<<"Skip truncated shower veto\n";
+	  }
 	}
 	msg_Debugging()<<"Disable jet veto\n";
 	Singlet *sing(p_actual);

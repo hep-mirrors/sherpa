@@ -18,17 +18,6 @@ using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 
-std::ostream &operator<<(std::ostream &ostr,const stp::id &scl)
-{
-  switch (scl) {
-  case stp::ren: return ostr<<"ren";
-  case stp::fac: return ostr<<"fac";
-  case stp::res: return ostr<<"res";
-  case stp::size: return ostr<<"<error>";
-  }
-  return ostr<<"<unknown>";
-}
-
 Scale_Setter_Base::Scale_Setter_Base
 (const Scale_Setter_Arguments &args):
   p_proc(args.p_proc), p_caller(p_proc),
@@ -155,16 +144,29 @@ double Scale_Setter_Base::BeamThrust() const
   return tauB;
 }
 
+void Scale_Setter_Base::PreCalc(const Vec4D_Vector &p,const size_t &mode)
+{
+}
+
 double Scale_Setter_Base::CalculateScale
 (const ATOOLS::Vec4D_Vector &p,const size_t mode)
 {
   DEBUG_FUNC((p_proc?p_proc->Name():""));
   if (!m_escale.empty()) {
     for (size_t i(0);i<m_escale.size();++i) m_scale[i]=m_escale[i];
+    while (m_ampls.size()) {
+      m_ampls.back()->Delete();
+      m_ampls.pop_back();
+    }
     if (p_subs) {
       for (size_t i(0);i<p_subs->size();++i) {
 	NLO_subevt *sub((*p_subs)[i]);
-	for (size_t j(0);j<stp::size;++j) sub->m_mu2[j]=m_scale[j];
+	size_t ssz(Min(sub->m_mu2.size(),m_scale.size()));
+	for (size_t j(0);j<ssz;++j) sub->m_mu2[j]=m_scale[j];
+	if (sub->p_ampl) {
+	  sub->p_ampl->Delete();
+	  sub->p_ampl=NULL;
+	}
       }
     }
     p_cpls->Calculate();
@@ -173,16 +175,46 @@ double Scale_Setter_Base::CalculateScale
   if (p_subs==NULL) {
     m_p.resize(p.size());
     for (size_t j(0);j<m_p.size();++j) m_p[j]=p[j];
+    PreCalc(p,mode);
     Calculate(p,mode);
   }
   else {
+    bool calc(false);
+    for (size_t i(0);i<p_subs->size();++i)
+      if ((*p_subs)[i]->m_trig) {
+	p_caller=p_proc;
+	PreCalc(p,mode);
+	calc=true;
+     	break;
+      }
+    if (!calc) return m_scale[stp::fac];
     for (size_t i(0);i<p_subs->size();++i) {
       NLO_subevt *sub((*p_subs)[i]);
+      if (!sub->m_trig) {
+	for (size_t j(0);j<sub->m_mu2.size();++j) sub->m_mu2[j]=0.0;
+	if (sub->p_ampl) {
+	  sub->p_ampl->Delete();
+	  sub->p_ampl=NULL;
+	}
+	continue;
+      }
       m_p.resize(sub->m_n);
       for (size_t j(0);j<m_p.size();++j)
 	m_p[j]=j<p_proc->NIn()?-sub->p_mom[j]:sub->p_mom[j];
+      p_caller=static_cast<Process_Base*>(sub->p_proc);
       Calculate(Vec4D_Vector(m_p),mode);
-      for (size_t j(0);j<stp::size;++j) sub->m_mu2[j]=m_scale[j];
+      size_t ssz(Min(sub->m_mu2.size(),m_scale.size()));
+      for (size_t j(0);j<ssz;++j) sub->m_mu2[j]=m_scale[j];
+      if (sub->p_ampl) {
+	sub->p_ampl->Delete();
+	sub->p_ampl=NULL;
+      }
+      if (m_ampls.size()) {
+	sub->p_ampl=m_ampls.back();
+	for (Cluster_Amplitude *ampl(sub->p_ampl);
+	     ampl;ampl=ampl->Next()) ampl->SetProc(sub->p_proc);
+	m_ampls.pop_back();
+      }
     }
   }
   if (p_proc && p_proc->Integrator()->ISR()) p_cpls->Calculate();

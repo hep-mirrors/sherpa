@@ -319,13 +319,14 @@ void Sherpa::DrawLogo(const int mode)
 	    <<"....................../TTT/TTTT\\...|TT/T\\\\\\/   +    ++  + /              "<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
 	    <<std::endl
-	    <<"     SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<" (Annapurna) "<<std::endl
+	    <<"     SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<" ("<<SHERPA_NAME<<")"<<std::endl
 	    <<"                                                                             "<<std::endl
-	    <<"     Authors:        Stefan Hoeche, Hendrik Hoeth, Frank Krauss,             "<<std::endl
+	    <<"     Authors:        Stefan Hoeche, Frank Krauss, Silvan Kuttimalai,         "<<std::endl
 	    <<"                     Marek Schoenherr, Steffen Schumann, Frank Siegert,      "<<std::endl
             <<"                     Korinna Zapp."<<std::endl
-	    <<"     Former Authors: Timo Fischer, Tanju Gleisberg, Ralf Kuhn,               "<<std::endl
-	    <<"                     Thomas Laubrich, Andreas Schaelicke, Jan Winter         "<<std::endl
+	    <<"     Former Authors: Timo Fischer, Tanju Gleisberg, Hendrik Hoeth,           "<<std::endl
+	    <<"                     Ralf Kuhn, Thomas Laubrich, Andreas Schaelicke,         "<<std::endl
+	    <<"                     Jan Winter                                              "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"     This program uses a lot of genuine and original research work           "<<std::endl
 	    <<"     by other people. Users are encouraged to refer to                       "<<std::endl

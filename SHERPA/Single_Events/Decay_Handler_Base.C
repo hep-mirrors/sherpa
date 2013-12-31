@@ -28,7 +28,8 @@ using namespace std;
 
 Decay_Handler_Base::Decay_Handler_Base() :
   p_softphotons(NULL), p_decaymap(NULL), p_bloblist(NULL), p_ampl(NULL),
-  m_qedmode(0), m_spincorr(false), m_decaychainend(false), m_mass_smearing(1)
+  m_qedmode(0), m_spincorr(false), m_decaychainend(false), m_cluster(true),
+  m_mass_smearing(1)
 {
 }
 
@@ -411,7 +412,7 @@ Cluster_Amplitude* Decay_Handler_Base::ClusterConfiguration(Blob *const bl)
     ColorID col(p->GetFlow(1),p->GetFlow(2));
     p_ampl->CreateLeg(p->Momentum(),p->Flav(),col,1<<(i+p_ampl->NIn()));
   }
-  while (p_ampl->Legs().size()>p_ampl->NIn()+2) {
+  while (m_cluster && p_ampl->Legs().size()>p_ampl->NIn()+2) {
     msg_Debugging()<<*p_ampl<<"\n";
     Cluster_Amplitude *ampl(p_ampl);
     p_ampl = p_ampl->InitNext();

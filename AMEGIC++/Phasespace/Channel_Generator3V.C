@@ -937,6 +937,7 @@ void Channel_Generator3V::BackLinks(Point* p,Point* &endp)
 
 void Channel_Generator3V::InitT(Point* p)
 {
+  if (p->fl.Mass()>rpa->gen.Ecms()) m_valid=0;
   p->t = 0;
   if (p->left==0) return;
   InitT(p->left);

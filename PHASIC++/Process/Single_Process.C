@@ -346,11 +346,11 @@ double Single_Process::Differential(const Vec4D_Vector &p)
 {
   m_wgtinfo.m_w0=m_lastb=m_last=0.0;
   p_int->SetMomenta(p);
+  if (IsMapped()) p_mapproc->Integrator()->SetMomenta(p);
   double flux=0.25/sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
   if (GetSubevtList()==NULL) {
     if (m_zero) return 0.0;
     Scale_Setter_Base *scs(ScaleSetter(1));
-    if (IsMapped()) p_mapproc->Integrator()->SetMomenta(p);
     scs->SetCaller(this);
     if (Partonic(p,0)==0.0) return 0.0;
     if (m_wgtinfo.m_nx==0) m_wgtinfo.m_w0 = m_lastxs;
@@ -361,7 +361,8 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     if (m_nloct && m_pinfo.Has(nlo_type::born))
       m_last+=m_lastbxs*NLOCounterTerms();
     BVI_Wgt bviw=BeamISRWeight
-      (scs->Scale(stp::fac),0,scs->Amplitudes());
+      (scs->Scale(stp::fac),0,scs->Amplitudes().size()?
+       scs->Amplitudes():ClusterAmplitude_Vector());
     m_last=(m_last-m_lastbxs*bviw.m_c)*bviw.m_w;
     m_lastb=m_lastbxs*bviw.m_w;
     if (p_mc==NULL) return m_last;
@@ -484,7 +485,8 @@ ATOOLS::Flavour Single_Process::ReMap
   return fl;
 }
 
-Cluster_Amplitude *Single_Process::Cluster(const size_t &mode)
+Cluster_Amplitude *Single_Process::Cluster
+(const Vec4D_Vector &p,const size_t &mode)
 {
   MCatNLO_Process *mp(dynamic_cast<MCatNLO_Process*>(Parent()));
   if (mp) {
@@ -506,7 +508,8 @@ Cluster_Amplitude *Single_Process::Cluster(const size_t &mode)
   if (amode) cmode|=512;
   if (mode&512) cd->SetAMode(1);
   p_gen->SetClusterDefinitions(cd);
-  Cluster_Amplitude* ampl(p_gen->ClusterConfiguration(this,cmode));
+  p_gen->PreCluster(this,p);
+  Cluster_Amplitude* ampl(p_gen->ClusterConfiguration(this,p,cmode));
   if (ampl) ampl->Decays()=m_pinfo.m_fi.GetDecayInfos();
   cd->SetAMode(amode);
   return ampl;

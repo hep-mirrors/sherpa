@@ -105,14 +105,26 @@ void Hadron_Decay_Map::ReadInPartonicDecays(const ATOOLS::Flavour & decflav,
     dt = Tools::partonic_b;
   else if (decflav==Flavour(kf_c))
     dt = Tools::partonic_c;
+  double decmass = decflav.HadMass(); 
   
   for (size_t i=0;i<helpsvv.size();i++) {
     if (helpsvv[i].size()==2) {
       if (helpsvv[i][0]=="Width:") width = ToType<double>(helpsvv[i][1]);
     }
     else if (helpsvv[i].size()==3) {
-      Decay_Channel * dc(new Decay_Channel(decflav,p_ms));
       if (Tools::ExtractFlavours(helpkfc,helpsvv[i][0])) {
+	double mass(decmass);
+	for (size_t j=0;j<helpkfc.size();++j) 
+	  mass -= Flavour(abs(helpkfc[j])).HadMass();
+	if (mass<0.) {
+	  msg_Tracking()<<METHOD<<": decay "<<decflav<<" --> ";
+	  for (size_t j=0;j<helpkfc.size();++j) 
+	    msg_Tracking()<<(helpkfc[j]>0?Flavour(helpkfc[j]):
+			Flavour(helpkfc[j]).Bar())<<" ";
+	  msg_Tracking()<<"cannot be initialised - not enough mass.\n";
+	  continue;
+	}
+	Decay_Channel * dc(new Decay_Channel(decflav,p_ms));
 	for (size_t j=0;j<helpkfc.size();++j) {
 	  flav = Flavour(abs(helpkfc[j]));
 	  if (helpkfc[j]<0) flav = flav.Bar();
@@ -121,6 +133,7 @@ void Hadron_Decay_Map::ReadInPartonicDecays(const ATOOLS::Flavour & decflav,
 	Tools::ExtractBRInfo(helpsvv[i][1], BR, dBR, origin);
 	dc->SetWidth(BR*width);
 	dt->AddDecayChannel(dc);
+	msg_Tracking()<<METHOD<<" adds "<<(*dc)<<"\n";
       }
     }
   }
@@ -191,6 +204,8 @@ void Hadron_Decay_Map::Read(const string& path, const string& file, bool verify)
     else if (line.size()==3) {
       int decayerkf = atoi((line[0]).c_str());
       Flavour decayerflav = Flavour( (kf_code) abs(decayerkf), decayerkf<0);
+      msg_Tracking()<<"New hadron decay table for "<<decayerflav<<", "
+		    <<"with mass = "<<decayerflav.HadMass()<<"\n";
       Hadron_Decay_Table * dt = new Hadron_Decay_Table(decayerflav, p_ms,
                                                        p_mixinghandler);
       dt->Read(path+line[1], line[2]);

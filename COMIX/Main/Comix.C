@@ -49,8 +49,12 @@ namespace COMIX {
 
     void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs);
 
+    void PreCluster(PHASIC::Process_Base *const proc,
+		    const ATOOLS::Vec4D_Vector &p);
+
     ATOOLS::Cluster_Amplitude *ClusterConfiguration
-    (PHASIC::Process_Base *const proc,const size_t &mode);
+    (PHASIC::Process_Base *const proc,const ATOOLS::Vec4D_Vector &p,
+     const size_t &mode);
 
   }; // end of class Comix
 
@@ -59,6 +63,7 @@ namespace COMIX {
 #endif
 
 #include "COMIX/Main/Single_Process.H"
+#include "COMIX/Main/Single_Dipole_Term.H"
 #include "PDF/Main/ISR_Handler.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Random.H"
@@ -255,10 +260,18 @@ void Comix::SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs)
   p_cluster->SetClusterDefinitions(defs);
 }
 
-Cluster_Amplitude *Comix::ClusterConfiguration
-(PHASIC::Process_Base *const proc,const size_t &mode)
+void Comix::PreCluster(PHASIC::Process_Base *const proc,const Vec4D_Vector &p)
 {
-  p_cluster->Cluster(proc->Get<COMIX::Single_Process>(),mode);
+  p_cluster->PreCluster(proc->Get<COMIX::Single_Process>(),
+			proc->Get<COMIX::Single_Dipole_Term>(),p);
+}
+
+Cluster_Amplitude *Comix::ClusterConfiguration
+(PHASIC::Process_Base *const proc,const Vec4D_Vector &p,
+ const size_t &mode)
+{
+  p_cluster->Cluster(proc->Get<COMIX::Single_Process>(),
+		     proc->Get<COMIX::Single_Dipole_Term>(),p,mode);
   return p_cluster->GetAmplitude();
 }
 

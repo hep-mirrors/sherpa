@@ -63,7 +63,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   double minalpha = dr.GetValue<double>("INT_MINALPHA",0.0);
   p_fsrchannels->SetMinAlpha(minalpha);
   m_m[0] = p_flavours[0].Mass(); m_m2[0] = m_m[0]*m_m[0];
-  m_osmass=(m_nout==1?p_flavours[2].Mass():0.0);
+  m_osmass=(m_nout==1?p_flavours[m_nin].Mass():0.0);
   if (m_nin==2) {
     m_m[1] = p_flavours[1].Mass(); m_m2[1] = m_m[1]*m_m[1]; 
     if (p_beamhandler) {
@@ -623,6 +623,10 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 {
   if (nin==1) {
     p[0]=Vec4D(flavs[0].Mass(),0.0,0.0,0.0);
+    if (nout==1) { 
+      p[1]=p[0]; 
+      return;
+    }
   }
   else {
     double m[2]={flavs[0].Mass(),flavs[1].Mass()};

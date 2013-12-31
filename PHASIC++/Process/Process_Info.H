@@ -22,7 +22,7 @@ namespace PHASIC {
     size_t m_nlomode, m_amegicmhv, m_ntchan, m_mtchan;
 
     std::string m_scale, m_coupling, m_kfactor, m_gpath;
-    std::string m_megenerator, m_loopgenerator;
+    std::string m_megenerator, m_rsmegenerator, m_loopgenerator;
 
     std::string m_selectorfile, m_integrator, m_rsintegrator;
 
@@ -46,6 +46,9 @@ namespace PHASIC {
 
     ATOOLS::Flavour_Vector ExtractFlavours() const;
     bool Has(nlo_type::code nlotype) const;
+
+    int Combine(const size_t &i,const size_t &j,
+		const ATOOLS::Flavour &flij);
 
   };// end of struct Process_Info
 

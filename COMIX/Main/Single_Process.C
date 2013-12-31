@@ -126,6 +126,7 @@ bool COMIX::Single_Process::Initialize
       for (size_t i(0);i<subs->size()-1;++i)
 	(*subs)[i]->p_proc =
 	  new Single_Dipole_Term(this,(*subs)[i],(*subs)[i]);
+      subs->back()->p_proc=this;
     }
     if (smode&2) {
       int massive(0);
@@ -203,19 +204,17 @@ void COMIX::Single_Process::MapSubEvts(const int mode)
       fls[j]=ReMap(rsubs[i]->p_fl[j],0);
       ids[j]=rsubs[i]->p_id[j];
     }
-    PHASIC::Process_Info cpi;
-    for (size_t j(0);j<m_nin;++j)
-      cpi.m_ii.m_ps.push_back(PHASIC::Subprocess_Info(fls[j]));
-    for (size_t j(m_nin);j<m_subs[i]->m_n;++j)
-      cpi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(fls[j]));
-    PHASIC::Process_Base::SortFlavours(cpi);
-    m_subs[i]->m_pname=
-      PHASIC::Process_Base::GenerateName(cpi.m_ii,cpi.m_fi);
     if (i+1<m_subs.size()) {
-    if (mode&1)
-      delete static_cast<Single_Dipole_Term*>(subs[i]->p_proc);
-    m_subs[i]->p_proc = new Single_Dipole_Term(this,rsubs[i],m_subs[i]);
+      if (mode&1)
+	delete static_cast<Single_Dipole_Term*>(subs[i]->p_proc);
+      m_subs[i]->p_proc =
+	new Single_Dipole_Term(this,rsubs[i],m_subs[i]);
     }
+    else {
+      m_subs[i]->p_proc=this;
+    }
+    m_subs[i]->m_pname=static_cast<PHASIC::Process_Base*>
+      (m_subs[i]->p_proc)->Name();
   }
 }
 
@@ -375,20 +374,22 @@ double COMIX::Single_Process::Partonic
     }
   }
   else {
-    sp->p_scale->CalculateScale(p);
     if (m_pinfo.m_fi.NLOType()&nlo_type::rsub &&
 	!sp->p_bg->JetTrigger(Selector(),m_mcmode))
       return m_lastxs=m_dxs=0.0;
-    m_dxs=sp->p_bg->Differential(m_p);
+    sp->p_scale->CalculateScale(p);
+    m_dxs=sp->p_bg->Differential();
     m_w=p_int->ColorIntegrator()->GlobalWeight();
     if (p_int->HelicityIntegrator()!=NULL) 
       m_w*=p_int->HelicityIntegrator()->Weight();
     m_w*=sp->KFactor();
     m_dxs*=m_w;
     if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
+      const NLO_subevtlist &rsubs(sp->p_bg->SubEvts());
+      for (size_t i(0);i<rsubs.size()-1;++i)
+	rsubs[i]->Mult(sp->p_bg->KT2Trigger(rsubs[i],m_mcmode));
       if (p_map==NULL) p_bg->SubEvts().MultME(m_w);
       else {
-	const NLO_subevtlist &rsubs(p_map->p_bg->SubEvts());
 	for (size_t i(0);i<rsubs.size();++i)
 	  m_subs[i]->CopyXSData(rsubs[i]);
 	m_subs.MultME(m_w);
@@ -620,12 +621,11 @@ void COMIX::Single_Process::SetScale(const Scale_Setter_Arguments &args)
 void COMIX::Single_Process::SetSelector(const Selector_Key &key)
 {
   PHASIC::Single_Process::SetSelector(key);
-  Combined_Selector *sel(Selector());
   NLO_subevtlist *subs(GetSubevtList());
   if (subs) {
     for (size_t i(0);i<subs->size()-1;++i)
       static_cast<Single_Dipole_Term*>
-	((*subs)[i]->p_proc)->SetSelector(sel);
+	((*subs)[i]->p_proc)->SetSelector(key);
   }
 }
 
@@ -651,4 +651,15 @@ size_t COMIX::Single_Process::SetMCMode(const size_t mcmode)
 	((*subs)[i]->p_proc)->SetMCMode(mcmode);
   }
   return cmcmode;
+}
+
+void COMIX::Single_Process::SetLookUp(const bool lookup)
+{
+  m_lookup=lookup;
+  NLO_subevtlist *subs(GetSubevtList());
+  if (subs) {
+    for (size_t i(0);i<subs->size()-1;++i)
+      static_cast<Single_Dipole_Term*>
+	((*subs)[i]->p_proc)->SetLookUp(m_lookup);
+  }
 }

@@ -43,7 +43,8 @@ Matrix_Element_Handler::Matrix_Element_Handler
   read.AddComment("#");
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
-  if (!read.ReadFromFile(m_respath,"RESULT_DIRECTORY")) m_respath="./Results";
+  if (!read.ReadFromFile(m_respath,"RESULT_DIRECTORY")) m_respath="Results";
+  m_respath=ShortenPathName(m_respath);
   if (rpa->gen.Variable("PATH_PIECE")!="")
     m_respath=rpa->gen.Variable("PATH_PIECE")+"/"+m_respath;
   std::string evtm;
@@ -270,6 +271,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
         Process_Info rpi(pi);
 	rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::real|nlo_type::rsub));
 	rpi.m_integrator=rpi.m_rsintegrator;
+	rpi.m_megenerator=rpi.m_rsmegenerator;
 	if (m_rsadd) {
 	  if (pi.m_fi.m_nloqcdtype==nlo_type::lo) {
 	    rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon,"",""));
@@ -549,6 +551,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vmegen,nf);
 	}
+	if (cur[0]=="RS_ME_Generator") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vrsmegen,nf);
+	}
 	if (cur[0]=="Loop_Generator") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vloopgen,nf);
@@ -720,6 +726,8 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	}
 	if (GetMPvalue(pbi.m_vnlosubv,nfs,pnid,ds)) cpi.m_fi.m_sv=ds;
 	if (GetMPvalue(pbi.m_vmegen,nfs,pnid,ds)) cpi.m_megenerator=ds;
+	if (GetMPvalue(pbi.m_vrsmegen,nfs,pnid,ds)) cpi.m_rsmegenerator=ds;
+	else cpi.m_rsmegenerator=cpi.m_megenerator;
 	if (GetMPvalue(pbi.m_vloopgen,nfs,pnid,ds)) cpi.m_loopgenerator=ds;
 	if (GetMPvalue(pbi.m_vint,nfs,pnid,ds)) cpi.m_integrator=ds;
 	if (GetMPvalue(pbi.m_vrsint,nfs,pnid,ds)) cpi.m_rsintegrator=ds;

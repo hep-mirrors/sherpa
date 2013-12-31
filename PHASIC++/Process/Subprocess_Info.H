@@ -40,7 +40,7 @@ namespace PHASIC {
     ATOOLS::DecayInfo_Vector m_decins;
     
     size_t m_nmax, m_nmin;
-    int    m_tag,m_osf;
+    int    m_tag, m_osf;
 
     nlo_type::code m_nloqcdtype, m_nloewtype;
 
@@ -94,6 +94,9 @@ namespace PHASIC {
 
     void SetTags(int& start);
     void GetTags(std::vector<int>& tags) const;
+
+    int Combine(const size_t &i,const size_t &j,
+		const ATOOLS::Flavour &flij,int &cnt);
 
   };// end of struct Subprocess_Info
 

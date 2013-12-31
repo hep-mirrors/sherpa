@@ -18,6 +18,7 @@ namespace PHOTONS {
                           const std::vector<ATOOLS::Vec3D>&, const double&);
       virtual void   ResetVariables();
       virtual void   ReturnMomenta();
+      virtual void   DetermineKappa();
 
     public:
       Dipole_FF(const Particle_Vector_Vector&);

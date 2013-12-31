@@ -31,7 +31,7 @@ Weight_Key::Weight_Key(const size_t &ij,const size_t &k,
 CS_Gamma::CS_Gamma(CS_MCatNLO *const css,Shower *const shower,
 		   CS_Cluster_Definitions *const cluster):
   p_css(css), p_shower(shower), p_cluster(cluster),
-  p_rproc(NULL), m_on(0), m_oef(9.0)
+  m_on(0), m_oef(9.0)
 {
 }
 
@@ -49,13 +49,6 @@ Weight_Map CS_Gamma::CalculateWeight
     idmap[1<<i]=rampl->Leg(i)->Id();
     rampl->Leg(i)->SetId(1<<i);
   }
-  std::map<nlo_type::code,StringProcess_Map*> *procs
-    (ampl->Procs<std::map<nlo_type::code,StringProcess_Map*> >());
-  std::string rname(Process_Base::GenerateName(rampl));
-  p_rproc=(*(*procs)[nlo_type::real])[rname]->Get<Single_Process>();
-  if (p_rproc==NULL) {
-    THROW(fatal_error,"Process '"+rname+"' not found");
-  }
   Weight_Map ws;
   int stat(CalculateWeights(rampl,idmap,ws,mode));
   rampl->Delete();
@@ -68,17 +61,15 @@ int CS_Gamma::CalculateWeights(Cluster_Amplitude *const ampl,
 			       Weight_Map &ws,const int mode)
 {
   Parton *const *cur(mode?NULL:p_shower->GetLast());
+  Flavour_Vector cf(1,p_shower->GetOld(0)->Flav());
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *li(ampl->Leg(i));
     for (size_t j(Max((size_t)2,i+1));j<ampl->Legs().size();++j) {
       Cluster_Leg *lj(ampl->Leg(j));
-      if (!p_rproc->Combinable(li->Id(),lj->Id())) continue;
-      const Flavour_Vector &cf(p_rproc->CombinedFlavour(li->Id()|lj->Id()));
       for (size_t f(0);f<cf.size();++f) {
 	for (size_t k(0);k<ampl->Legs().size();++k) {
 	  Cluster_Leg *lk(ampl->Leg(k));
 	  if (k==i || k==j) continue;
-	  if (!cf[f].Strong()) continue;/*QCD only so far*/
 	  if (!CheckColors(li,lj,lk,cf[f])) continue;
 	  if (cur) {
 	    if (((idmap.find(li->Id())->second|

@@ -55,6 +55,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
                                             string("AliasDecays.dat"));
   m_mass_smearing=dr.GetValue<int>("SOFT_MASS_SMEARING",1);
   m_spincorr=rpa->gen.SoftSC();
+  m_cluster=false;
 
   decaypath=rpa->gen.Variable("SHERPA_SHARE_PATH")+"/"+decaypath;
   My_In_File::OpenDB(decaypath);

@@ -730,7 +730,9 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
              <<", rel. diff. "<<(I+lme)/(I-lme)<<std::endl;
     msg->SetPrecision(6);
   }
-  if (m_checkborn) {
+  if (m_checkborn &&
+      (!m_checkpolesthreshold ||
+       !ATOOLS::IsEqual(m_Norm*p_dsij[0][0],p_loopme->ME_Born(),m_checkpolesthreshold))) {
     msg->SetPrecision(16);
     msg_Out()<<"Born check for process "<<Name()<<":"<<std::endl;
     msg_Out()<<"Born_Sherpa = "<<m_Norm*p_dsij[0][0]<<" vs. Born_OLE = "<<p_loopme->ME_Born()

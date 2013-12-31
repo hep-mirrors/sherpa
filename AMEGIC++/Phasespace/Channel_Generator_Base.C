@@ -13,7 +13,7 @@ using namespace std;
 
 Channel_Generator_Base::Channel_Generator_Base(int _nin,int _nout,
 					       Point * _plist) 
-  : nin(_nin), nout(_nout)
+  : nin(_nin), nout(_nout), m_valid(1)
 {
   Topology top;
   plist  = new Point[2*(nout+1)];

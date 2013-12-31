@@ -8,9 +8,13 @@ namespace COMIX {
   class Single_Dipole_Term: public PHASIC::Single_Process {
   protected:
 
+    Single_Process *p_proc;
+
     Amplitude *p_bg;
 
     ATOOLS::NLO_subevt *p_sub, *p_msub;
+
+    PHASIC::Process_Integrator *p_rsint;
 
     double m_w;
 
@@ -37,10 +41,14 @@ namespace COMIX {
 
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
 
-    void SetScaleSetter(PHASIC::Scale_Setter_Base *const scale)
+    inline void SetScaleSetter(PHASIC::Scale_Setter_Base *const scale)
     { p_scale=scale; }
-    void SetSelector(PHASIC::Combined_Selector *const selector)
-    { p_selector=selector; }
+
+    inline Amplitude *GetAmplitude() const { return p_bg; }
+
+    inline Single_Process *Process() const { return p_proc; }
+
+    inline NLO_subevt *Sub() const { return p_sub; }
 
   };// end of class Single_Dipole_Term
 

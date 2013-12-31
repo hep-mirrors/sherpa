@@ -16,7 +16,7 @@ typedef std::map<std::string,std::string> Decls;
 
   class Channel_Generator_Base {  //: public PHASIC::Single_Channel {
   protected:
-    int         nin,nout;
+    int         nin,nout,m_valid;
     Point     * plist;
     std::string GetMassIndex(std::string &str);
     std::string GetMassIndex(char &str);
@@ -28,6 +28,7 @@ typedef std::map<std::string,std::string> Decls;
     //void        SetName(std::string _name) { name = _name; }
     virtual std::string CreateChannelID(int) = 0;
     virtual int NumberOfChannels()         { return 1; }
+    inline int Valid() const { return m_valid; }
   };
 }  
 #endif

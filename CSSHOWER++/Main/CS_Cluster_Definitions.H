@@ -31,8 +31,12 @@ namespace CSSHOWER {
     ATOOLS::Cluster_Leg   *p_b;
     
     Shower *p_shower;
-    int     m_kmode, m_meweight;
+    int     m_kmode, m_meweight, m_pdfcheck;
 
+    Splitting_Function_Base *GetSF(const ATOOLS::Cluster_Leg *i,
+				   const ATOOLS::Cluster_Leg *j,
+				   const ATOOLS::Cluster_Leg *k,
+				   const ATOOLS::Flavour &mo,CS_Parameters &cs) const;
     void KernelWeight(const ATOOLS::Cluster_Leg *i,
 		      const ATOOLS::Cluster_Leg *j,
 		      const ATOOLS::Cluster_Leg *k,
@@ -48,13 +52,10 @@ namespace CSSHOWER {
     double Differential(ATOOLS::Cluster_Amplitude *const ampl,
 			const int mode) const;
 
-    ATOOLS::ColorID CombineColors
-    (const ATOOLS::Cluster_Leg *li,const ATOOLS::Cluster_Leg *lj,
-     const ATOOLS::Cluster_Leg *lk,const ATOOLS::Flavour &mo) const;
-
   public:
     
-    CS_Cluster_Definitions(Shower *const shower,const int kmode,const int meweight);
+    CS_Cluster_Definitions(Shower *const shower,const int kmode,
+			   const int meweight,const int pdfcheck);
 
     // CS cluster kperps
     double GetX(const ATOOLS::Cluster_Leg *l,
@@ -70,7 +71,7 @@ namespace CSSHOWER {
 		      const ATOOLS::Cluster_Leg *k,
 		      const ATOOLS::Flavour &mo=ATOOLS::Flavour(kf_none),
 		      ATOOLS::Mass_Selector *const ms=NULL,
-		      const int kin=-1,const int mode=0);
+		      const int kin=-1,const int mode=0,const int force=0);
 
     // CS cluster kinematics
     ATOOLS::Vec4D_Vector Combine(const ATOOLS::Cluster_Amplitude &ampl,

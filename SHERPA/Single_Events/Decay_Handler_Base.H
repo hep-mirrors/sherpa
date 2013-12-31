@@ -33,7 +33,7 @@ namespace SHERPA {
     PHASIC::Decay_Map* p_decaymap;
     ATOOLS::Blob_List* p_bloblist;
     ATOOLS::Cluster_Amplitude* p_ampl;
-    bool m_spincorr,m_decaychainend;
+    bool m_spincorr, m_decaychainend, m_cluster;
     int m_mass_smearing;
     size_t m_qedmode;
   public:

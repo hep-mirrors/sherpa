@@ -31,7 +31,7 @@ using namespace PDF;
 MCatNLO_Process::MCatNLO_Process
 (ME_Generators& gens,NLOTypeStringProcessMap_Map *pmap):
   m_gens(gens), p_bviproc(NULL), p_rsproc(NULL),
-  p_bproc(NULL), p_rproc(NULL),
+  p_bproc(NULL), p_rproc(NULL), p_ddproc(NULL),
   p_nlomc(NULL), p_ampl(NULL)
 {
   m_tinfo=0;
@@ -50,6 +50,7 @@ MCatNLO_Process::~MCatNLO_Process()
   if (p_ampl) p_ampl->Delete();
   if (p_rproc) delete p_rproc;
   if (p_bproc) delete p_bproc;
+  if (p_ddproc) delete p_ddproc;
   if (p_rsproc) delete p_rsproc;
   if (p_bviproc) delete p_bviproc;
 }
@@ -58,8 +59,6 @@ void MCatNLO_Process::Init(const Process_Info &pi,
 			  BEAM::Beam_Spectra_Handler *const beam,
 			   PDF::ISR_Handler *const isr,const int mode)
 {
-  if (m_gens.NewLibraries())
-    THROW(normal_exit,"New libraries created. Please compile.");
   Process_Info cpi(pi);
   cpi.m_fi.SetNLOType(nlo_type::born|nlo_type::loop|
 		      nlo_type::vsub|nlo_type::real|nlo_type::rsub);
@@ -77,14 +76,19 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   Process_Info spi(pi);
   ++spi.m_fi.m_nmax;
   spi.m_fi.SetNLOType(cpi.m_fi.NLOType());
+  // spi.m_megenerator=spi.m_rsmegenerator;
+  // // this doesn't work because you would reweight with amegic/comix in cs_gamma
   p_bproc=InitProcess(spi,nlo_type::lo,false);
-  p_rproc=InitProcess(spi,nlo_type::lo,true);
+  // spi.m_megenerator=pi.m_megenerator;
   p_bviproc=InitProcess(spi,nlo_type::born|nlo_type::loop|nlo_type::vsub,false);
-  spi.m_integrator=spi.m_rsintegrator;
-  p_rsproc=InitProcess(spi,nlo_type::real|nlo_type::rsub,true);
-  p_bviproc->FillProcessMap(p_apmap);
+  p_ddproc=InitProcess(spi,nlo_type::real|nlo_type::rsub,1);
+  spi.m_megenerator=spi.m_rsmegenerator;
+  p_rsproc=InitProcess(spi,nlo_type::real|nlo_type::rsub,1|2);
   p_rsproc->FillProcessMap(p_apmap);
-  p_bviproc->SetSProc(p_rsproc);
+  p_rproc=InitProcess(spi,nlo_type::lo,true);
+  p_bviproc->FillProcessMap(p_apmap);
+  p_ddproc->FillProcessMap(p_apmap);
+  p_bviproc->SetSProc(p_ddproc);
   p_bproc->SetLookUp(false);
   p_rproc->SetLookUp(false);
   p_bproc->SetParent(this);
@@ -99,6 +103,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   else msg_Info()<<METHOD<<"(): Set fixed order mode "<<m_fomode<<".\n";
   if (!m_fomode) {
     p_bviproc->SetMCMode(1);
+    p_ddproc->SetMCMode(2);
     p_rsproc->SetMCMode(2);
   }
   if (p_rsproc->Size()!=p_rproc->Size())
@@ -135,8 +140,8 @@ Process_Base* MCatNLO_Process::InitProcess
 
 bool MCatNLO_Process::InitSubtermInfo()
 {
-  for (size_t i(0);i<p_rsproc->Size();++i) {
-    NLO_subevtlist *subs((*p_rsproc)[i]->GetSubevtList());
+  for (size_t i(0);i<p_ddproc->Size();++i) {
+    NLO_subevtlist *subs((*p_ddproc)[i]->GetSubevtList());
     for (size_t j(0);j<subs->size()-1;++j) {
       NLO_subevt *sub((*subs)[j]);
       for (size_t ij(0);ij<sub->m_n;++ij)
@@ -267,12 +272,17 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   rproc->SetFixedScale(std::vector<double>());
   rproc->GetMEwgtinfo()->m_mur2=
     p_rsproc->Selected()->GetMEwgtinfo()->m_mur2;
-  rproc->Trigger(p);
   rproc->Integrator()->SetMomenta(p);
+  Color_Integrator *ci(&*rproc->Integrator()->ColorIntegrator()),
+    *rci(&*p_rsproc->Selected()->Integrator()->ColorIntegrator());
+  if (ci && rci) {
+    ci->SetI(rci->I());
+    ci->SetJ(rci->J());
+  }
   p_ampl=p_rsproc->Selected()->GetSubevtList()->back()->p_ampl;
   if (p_ampl) p_ampl = p_ampl->CopyAll();
   else {
-    p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(4096);
+    p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(p,4096);
   }
   if (p_ampl==NULL) {
     msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;
@@ -311,7 +321,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   Vec4D_Vector &p(p_bviproc->Selected()->Integrator()->Momenta());
   bproc->Trigger(p);
   p_ampl = dynamic_cast<Single_Process*>
-    (p_bviproc->Selected())->Cluster();
+    (p_bviproc->Selected())->Cluster(p);
   SortFlavours(p_ampl);
   p_ampl->SetProcs(p_apmap);
   p_ampl->SetIInfo(&m_iinfo);
@@ -340,11 +350,12 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     rproc->Integrator()->SetMomenta(*ampl);
     rproc->GetMEwgtinfo()->m_mur2=bproc->GetMEwgtinfo()->m_mur2;
     Cluster_Leg *lij(NULL);
-    for (size_t i(0);i<next->Legs().size();++i)
+    for (size_t i(0);i<next->Legs().size();++i) {
+      next->Leg(i)->SetStat(1);
       if (next->Leg(i)->K()) {
 	lij=next->Leg(i);
-	break;
       }
+    }
     std::vector<int> ids(ID(lij->Id()));
     size_t iid(1<<ids.front()), jid(1<<ids.back()), kid(lij->K());
     ids.push_back(ID(lij->K()).front());
@@ -362,7 +373,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     ampl->SetMuR2(next->MuR2());
     ampl->SetOrderQCD(next->OrderQCD()+1);
     ampl->Next()->SetNLO(4);
-    ampl->SetJF(NULL);
+    ampl->SetJF(ampl->Next()->JF<void>());
     next->SetKin(kt2.m_kin);
     while (ampl->Next()) {
       ampl=ampl->Next();
@@ -439,8 +450,12 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
 	->SelectionWeight(wmode);
     }
   }
-  for (Cluster_Amplitude *ampl(p_ampl);ampl;
-       ampl=ampl->Next()) ampl->SetNLO(1|ampl->NLO());
+  Mass_Selector *ms(Selected()->Generator());
+  for (Cluster_Amplitude *ampl(p_ampl);
+       ampl;ampl=ampl->Next()) {
+    ampl->SetNLO(1|ampl->NLO());
+    ampl->SetMS(ms);
+  }
   if (winfo && winfo->m_weight==0) {
     delete winfo;
     winfo=NULL;
@@ -448,8 +463,9 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
   if (winfo==NULL) return winfo;
 
   if (rpa->gen.HardSC() || (rpa->gen.SoftSC() && !Flavour(kf_tau).IsStable())) {
-    DEBUG_INFO("Calcing Differential for spin correlations:");
-    Selected()->Differential(*p_ampl, 6);
+    DEBUG_INFO("Calcing Differential for spin correlations using "
+	       <<Selected()->Generator()->Name()<<":");
+    while (Selected()->Differential(*p_ampl,1|2|4|128)==0.0);
   }
   return winfo;
 }
@@ -458,6 +474,7 @@ void MCatNLO_Process::InitPSHandler
 (const double &maxerror,const std::string eobs,const std::string efunc)
 {
   p_bviproc->InitPSHandler(maxerror,eobs,efunc);
+  p_ddproc->InitPSHandler(maxerror,eobs,efunc);
   p_rsproc->InitPSHandler(maxerror,eobs,efunc);
   p_rsproc->Integrator()->SetEnhanceFactor
     (p_rsproc->Integrator()->EnhanceFactor()*p_int->RSEnhanceFactor());
@@ -474,14 +491,15 @@ bool MCatNLO_Process::CalculateTotalXSec(const std::string &resultpath,
   Cluster_Amplitude *ampl(Cluster_Amplitude::New());
   for (int i(0);i<p.size();++i)
     ampl->CreateLeg(Vec4D(),Flavour(kf_jet));
-  SP(Phase_Space_Handler) psh(p_rsproc->Integrator()->PSHandler());
+  SP(Phase_Space_Handler) psh(p_ddproc->Integrator()->PSHandler());
   do {
-    psh->TestPoint(&p.front(),&p_rsproc->Info(),p_rsproc->Generator());
+    psh->TestPoint(&p.front(),&p_ddproc->Info(),p_ddproc->Generator());
     for (size_t i(0);i<p.size();++i) ampl->Leg(i)->SetMom(p[i]);
-    p_rsproc->Differential(*ampl,4);
+    p_ddproc->Differential(*ampl,4);
   } while (!InitSubtermInfo());
   ampl->Delete();
   bool res(p_bviproc->CalculateTotalXSec(resultpath,create));
+  psh=p_rsproc->Integrator()->PSHandler();
   psh->SetAbsError(psh->Error()*rpa->Picobarn()*
 		   dabs(p_bviproc->Integrator()->TotalResult()));
   if (!p_rsproc->CalculateTotalXSec(resultpath,create)) res=false;
@@ -495,12 +513,14 @@ void MCatNLO_Process::SetLookUp(const bool lookup)
 {
   m_lookup=lookup;
   p_bviproc->SetLookUp(lookup);
+  p_ddproc->SetLookUp(lookup);
   p_rsproc->SetLookUp(lookup);
 }
 
 void MCatNLO_Process::SetScale(const Scale_Setter_Arguments &scale)
 {
   p_bviproc->SetScale(scale);
+  p_ddproc->SetScale(scale);
   p_rsproc->SetScale(scale);
   p_rproc->SetScale(scale);
   p_bproc->SetScale(scale);
@@ -509,6 +529,7 @@ void MCatNLO_Process::SetScale(const Scale_Setter_Arguments &scale)
 void MCatNLO_Process::SetKFactor(const KFactor_Setter_Arguments &args)
 {
   p_bviproc->SetKFactor(args);
+  p_ddproc->SetKFactor(args);
   p_rsproc->SetKFactor(args);
   p_rproc->SetKFactor(args);
   p_bproc->SetKFactor(args);
@@ -517,6 +538,7 @@ void MCatNLO_Process::SetKFactor(const KFactor_Setter_Arguments &args)
 void MCatNLO_Process::SetFixedScale(const std::vector<double> &s)
 {
   p_bviproc->SetFixedScale(s);
+  p_ddproc->SetFixedScale(s);
   p_rsproc->SetFixedScale(s);
   p_rproc->SetFixedScale(s);
   p_bproc->SetFixedScale(s);
@@ -548,6 +570,7 @@ void MCatNLO_Process::SetClusterDefinitions
 void MCatNLO_Process::SetSelector(const Selector_Key &key)
 {
   p_bviproc->SetSelector(key);
+  p_ddproc->SetSelector(key);
   p_rsproc->SetSelector(key);
   p_rproc->SetSelector(key);
   p_bproc->SetSelector(key);
@@ -557,6 +580,7 @@ void MCatNLO_Process::SetShower(PDF::Shower_Base *const ps)
 {
   p_shower=ps;
   p_bviproc->SetShower(ps);
+  p_ddproc->SetShower(ps);
   p_rsproc->SetShower(ps);
   p_rproc->SetShower(ps);
   p_bproc->SetShower(ps);
