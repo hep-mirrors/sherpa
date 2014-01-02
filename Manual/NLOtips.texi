@@ -298,6 +298,6 @@ control the scale dependence coefficients, which can be enforced with
 option @option{USR_WGT_MODE=0;} in the @code{(run)} section of Sherpa's
 input file. 
 
-@strong{Note that the loop provider must support this option
+@strong{The loop provider must support this option
   or the scale dependence coefficients will be invalid!}
 
