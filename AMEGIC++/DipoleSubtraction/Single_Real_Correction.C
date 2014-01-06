@@ -88,7 +88,8 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
   m_newlib   = false;
 //   m_name+= "_REAL";
   if (m_pinfo.m_amegicmhv>0) {
-    if (m_pinfo.m_amegicmhv==10) p_tree_process = new Single_Process_External();
+    if (m_pinfo.m_amegicmhv==10 ||
+	m_pinfo.m_amegicmhv==11) p_tree_process = new Single_Process_External();
     else if (CF.MHVCalculable(m_pinfo)) p_tree_process = new Single_Process_MHV();
     if (m_pinfo.m_amegicmhv==2) return 0;
   }
