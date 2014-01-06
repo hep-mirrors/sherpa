@@ -21,17 +21,18 @@ To guarantee successful installation, the following tools should have been made
 available on the system:
 @itemize @bullet
   @item C++ and Fortran compilers (e.g. from the gcc suite)
-  @item @code{make}
-  @item @code{sqlite3} (including the -dev package if installed through a package manager)
+  @item make
+  @item @url{http://www.sqlite.org/,,SQLite 3} 
+    (including the -dev package if installed through a package manager)
 @end itemize
-If sqlite3 is installed in a non-standard location, please specify
+If SQLite is installed in a non-standard location, please specify
 the installation path using option @option{--with-sqlite3=/path/to/sqlite}.
-If sqlite3 is not installed on your system, the Sherpa configure script provides 
+If SQLite is not installed on your system, the Sherpa configure script provides 
 the fallback option of installing it into the same directory as Sherpa itself.
 To do so, please run configure with option @option{--with-sqlite3=install}
 (This may not work if you are cross-compiling using @option{--host}. 
-In this case, please install sqlite3 by yourself and reconfigure using
-@option{--with-sqlite3=/path/to/sqlite}).
+In this case, please @url{http://www.sqlite.org/download.html,,install SQLite}
+by yourself and reconfigure using @option{--with-sqlite3=/path/to/sqlite}).
 
 Compilation and installation proceed through the following commands:
 
