@@ -108,15 +108,15 @@ operator()(const Process_Info &pi) const
     try {
       msg_Info()<<"Trying BlackHat for "<<kfvector<<" ... "<<std::flush;
       ampl = BlackHat_Tree::Interface()->new_tree_ampl(kfvector);
-      msg_Out()<<"Cannot check whether tree process or not with public "
-               <<"BlackHat library.\nPlease reenable when suitable BlackHat "
-               <<"version is public.\n";
 #ifdef VIRTUAL_PREFACTOR
-      if (!ampl->is_born_LO()) {
+      if (ampl && !ampl->is_born_LO()) {
 	delete ampl;
 	ampl = BlackHat_Tree::Interface()->new_ampl(kfvector);
 	mode=1;
       }
+#else
+      msg_Out()<<"Cannot check LO process type with current BlackHat library.\n"
+               <<"Please retry with newer version.\n";
 #endif
     } catch (BH::BHerror err) {
       msg_Info()<<"not found."<<std::endl;
