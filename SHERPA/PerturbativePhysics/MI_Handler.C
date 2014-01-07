@@ -203,7 +203,7 @@ ATOOLS::Cluster_Amplitude *MI_Handler::ClusterConfiguration()
 		 xs->Flavours()[i]);
     Vec4D mom(i<2?-moms[i]:moms[i]);
     p_ampl->CreateLeg(mom,flav,col,id);
-    p_ampl->Legs().back()->SetStat(1);
+    p_ampl->Legs().back()->SetStat(0);
     p_ampl->Legs().back()->SetNMax(xs->Info().m_fi.m_nmax);
   }
   // set colour partners
