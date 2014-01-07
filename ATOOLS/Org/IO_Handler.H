@@ -5,6 +5,7 @@
 #include <fstream>
 #include <map>
 #include <vector>
+#include "ATOOLS/Org/My_File.H"
 
 namespace ATOOLS {  
 
@@ -13,8 +14,10 @@ namespace ATOOLS {
 
   //! responsible for writing out whole classes
   class IO_Handler {
-    std::fstream   m_file;
-    std::string    m_filename;
+    My_Out_File    m_outfile;
+    My_In_File     m_infile;
+    std::string    m_outfilename;
+    std::string    m_infilename;
 
     std::string    m_buffer;
     Variable_Map   m_vars;
@@ -74,10 +77,10 @@ namespace ATOOLS {
     template <class Type> 
     Type Input(const std::string name=std::string(""));
 
-
     // access
-    std::fstream & GetFstream() { return m_file; }
-    
+    std::ifstream & GetIFstream() { return *m_infile; }
+    std::ofstream & GetOFstream() { return *m_outfile; }
+
     unsigned long Nx() const { return m_nx; }
     unsigned long Ny() const { return m_ny; }
 

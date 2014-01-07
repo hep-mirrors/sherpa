@@ -117,17 +117,17 @@ int AMEGIC::Process_Group::InitAmplitude(Model_Base * model,Topology * top)
   m_oew=m_oqcd=0;
   m_mfname = "P"+ToString(m_nin)+"_"+ToString(m_nout)+"/"+m_name+".map";
 
-  string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_mfname;
+  string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_mfname;
   string buffer;
-  ifstream file;
-  file.open(name.c_str()); 
-  for (;file;) {
-    getline(file,buffer); 
+  My_In_File file(name);
+  file.Open();
+  for (;*file;) {
+    getline(*file,buffer);
     if (buffer.length()>0) {
       m_whitelist.insert(buffer);
     }
   }
-  file.close();
+  file.Close();
   if (m_whitelist.size()>0) m_mfname="";
 
   return true;
@@ -136,13 +136,18 @@ int AMEGIC::Process_Group::InitAmplitude(Model_Base * model,Topology * top)
 void AMEGIC::Process_Group::WriteMappingFile()
 {
   if (m_mfname==string("")) return;
-  std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_mfname;
-  fstream file;
-  file.open(name.c_str(),ios::out|ios::app); 
+  std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_mfname;
 
-  for (size_t i=0;i<m_procs.size();i++) file<<m_procs[i]->Name()<<endl;
-
-  file.close();
+  std::string str, tmp;
+  My_In_File in(name);
+  if (in.Open())
+    for (getline(*in,tmp);in->good(); getline(*in,tmp)) str+=tmp+"\n";
+  in.Close();
+  My_Out_File out(name);
+  out.Open();
+  *out<<str;
+  for (size_t i=0;i<m_procs.size();i++) *out<<m_procs[i]->Name()<<"\n";
+  out.Close();
 }
 
 bool AMEGIC::Process_Group::SetUpIntegrator()

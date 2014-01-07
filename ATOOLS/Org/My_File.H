@@ -81,6 +81,7 @@ namespace ATOOLS {
     static bool FileInDB(const std::string &name);
     static bool ExecDB(std::string file,
 		       const std::string &cmd);
+    static bool CopyInDB(std::string oldfile, std::string newfile);
 
   };// end of class My_File
 

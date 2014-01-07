@@ -105,10 +105,13 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 		 <<Flav()<<".\n"
 		 <<"   Will continue and hope for the best.\n";
       if(rewrite) {
+        PRINT_INFO("TODO: migrate to Decaydata.db");
+        /*
 	Move(path+file, path+"."+file+".old");
 	ofstream ostr( (path + file).c_str() );
 	Write(ostr);
 	ostr.close();
+        */
       }
       ScaleToWidth();
       return;

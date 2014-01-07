@@ -34,7 +34,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
     CSC.Init();
     int ncol((int)CSC.Nc);
     if (ncol!=3) pID+="_NC"+ToString(ncol);
-    std::string name=ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".col";
+    std::string name=ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+pID+".col";
     IO_Handler ioh;
     bool gc(ioh.SetFileNameRO(name)==0);
     if (gc&&force) {
@@ -624,7 +624,7 @@ string CFColor::MapFChain(vector<string> fstring_list)
 
 void CFColor::Output(string & dirname) {
   std::string name;
-  name=ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+dirname+".col";
+  name=ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+dirname+".col";
   IO_Handler ioh;
   ioh.SetFileName(name);
   ioh.Output("",mcount);          // no of ampls

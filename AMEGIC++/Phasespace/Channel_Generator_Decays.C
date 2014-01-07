@@ -37,11 +37,8 @@ int Channel_Generator_Decays::MakeChannel(int& echflag,int n,string& path,string
 
   if (echflag!=0) sprintf(name,"%s%c",name,'a'+extrachannelflag-1);
   
-  string filename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/")+
+  string filename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+path+string("/")+
                     string(name)+string(".C");
-  
-  ifstream from;
-  from.open((filename).c_str());
   
   int    rannum = 0;
 

@@ -24,7 +24,7 @@ void String_Library::UpdateConfigure(std::string pathID)
   unsigned int hit=pathID.find("/");
   string base=pathID.substr(0,hit);
   string subdirname=pathID.substr(hit+1);
-  string name=rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+base+cnf;
+  string name=rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+base+cnf;
   if (!IsFile(name)) {
     msg_Tracking()<<"   file "<<name<<" does not exist, create it."<<endl;
 
@@ -36,7 +36,7 @@ void String_Library::UpdateConfigure(std::string pathID)
     file<<"AM_INIT_AUTOMAKE"<<endl;
     file<<"AM_DISABLE_STATIC"<<endl;
     file<<"AC_PREFIX_DEFAULT("<<ATOOLS::rpa->gen.Variable("SHERPA_CPP_PATH")
-	<<"/Process)"<<endl;
+	<<"/Process/Amegic)"<<endl;
     file<<"m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])"<<endl;
     file<<"dnl Checks for programs."<<endl;
     file<<"AC_PROG_INSTALL"<<endl;
@@ -47,7 +47,7 @@ void String_Library::UpdateConfigure(std::string pathID)
     file<<"\t"<<subdirname<<"/Makefile "<<'\\'<<endl;
     file<<"\tMakefile )"<<endl;
 
-    CreateExtraFiles(rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+base);
+    CreateExtraFiles(rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+base);
   } 
   else {
     ifstream from(name.c_str());
@@ -67,7 +67,7 @@ void String_Library::UpdateConfigure(std::string pathID)
     Move(name+".tmp",name);
   }
   
-  name=rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+base+mkam;
+  name=rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+base+mkam;
   if (!IsFile(name)) {
     msg_Tracking()<<"   file "<<name<<" does not exist, create it."<<endl;
 
@@ -158,120 +158,6 @@ void String_Library::InitMakefile(string pathID)
 {
   UpdateConfigure(pathID);
   return;
-
-  string newMakefile = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID+string("/Makefile");
-
-  if (IsFile(newMakefile)) return;
-
-  Copy(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Dummy/Makefile",
-	   rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pathID+"/Makefile");
-
-  string pID;
-  pID=pathID;
-  for (short int i=pathID.length()-1;i>=0;i--) {
-    if (pathID[i]=='/') {
-      pID    = pathID.substr(i+1);
-      break;
-    }
-  }
- 
-
-    
-  ofstream to;  
-  ifstream from;
-  
-  from.open(newMakefile.c_str()); 
-  to.open((newMakefile+string(".tmp")).c_str());
-  
-  char buffer[buffersize];
-  
-  for(;from;) {
-    from.getline(buffer,buffersize);
-    
-    string buf = string(buffer);
-    
-    //change subdir structure  
-    Replace(buf,string("$(CURRENT_SHERPASYS)/"),string("$(CURRENT_SHERPASYS)/../"));
- 
-    //replace libDummy
-    Replace(buf,string("libDummy"),string("libProc_")+pID);
-    //kill Dummy.H & Dummy.C & Dummy.lo
-    Replace(buf,string("Dummy.C"),string(""));
-    Replace(buf,string("Dummy.H"),string(""));
-    Replace(buf,string("Dummy.lo"),string(""));
-    //DEP_FILES clear, include Line kill
-    Replace(buf,string("include $(DEPDIR)/Dummy.Plo"),string(""));
-    Replace(buf,string("$(DEPDIR)/Dummy.Plo"),string(""));
-    //subDir & SOURCES '/Dummy'
-    Replace(buf,string("/Dummy"),string("/")+pID);
-    //Replace Makefile:
-    Replace(buf,string("Makefile:"),string("Makefile.bla:"));
-    if (buf.find(string("depcomp"))==string::npos) to<<buf<<endl;
-  }
-  from.close();
-  to.close();
-  //copy back
-  Copy(newMakefile+string(".tmp"),newMakefile);
-  
-  //changing SUBDIRS from Process/Makefile
-  //======================================================================
-  ofstream to2;  
-  ifstream from2;
-  
-  from2.open((rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Makefile")).c_str());
-  to2.open((rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Makefile.tmp")).c_str());
-  
-  for(;from2;) {
-    from2.getline(buffer,buffersize);
-    string buf = string(buffer);
-    //replace Dummy in SUBDIRS with DUMMY Proc
-    int start=0;
-    SingleReplace(buf,string("Dummy"),string("Dummy ")+pathID,start);
-    to2<<buf<<endl;
-  }
-  from2.close();
-  to2.close();
-  //copy back
-  Copy(rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Makefile.tmp"),rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Makefile"));
-  
-
-  UpdateConfigure(pathID);
-
-
-  //proceed only if not dynamic linking:
-  if (m_mode==1) return;
-
-
-
-  //adding new library to linker
-  //============================
-  ofstream to3;  
-  ifstream from3;
-
-  from3.open("Makefile");
-  to3.open("Makefile.tmp");
-  
-  for(;from3;) {
-    from3.getline(buffer,buffersize);
-    string buf = string(buffer);
-    int pos = buf.find(string("libProcess"));
-    if (pos!=-1) {
-      if (buf.find(string("\\"))==string::npos) {
-	//no backslash
-	to3<<buffer<<"\\"<<endl;
-	to3<<"\t"<<"${exec_prefix}/lib/libProc_"<<pID<<".la"<<endl; 
-      }
-      else {
-	to3<<buffer<<endl;
-	to3<<"\t"<<"${exec_prefix}/lib/libProc_"<<pID<<".la \\"<<endl; 
-      }
-    }
-    else to3<<buffer<<endl;
-  }
-  from3.close();
-  to3.close();
-  //copy back
-  Copy(string("Makefile.tmp"),string("Makefile"));
 }
 
 void String_Library::Replace(string& buffer,const string& search,const string& replace)
@@ -400,5 +286,5 @@ void String_Library::AddToMakefile(string makefilename,string pathID,string file
   to.close();
 
   //copy back
-  Copy(makefilename+string(".tmp"),makefilename);
+  this->Copy(makefilename+string(".tmp"),makefilename);
 }

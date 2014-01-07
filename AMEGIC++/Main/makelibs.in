@@ -4,7 +4,7 @@
 # the bin - directory or adjust accordingly.
 #
 
-DIRS=`find Process/ -name P?_?`" "`find Process/ -name P?_??`
+DIRS=`find Process/Amegic/ -name P?_?`" "`find Process/Amegic/ -name P?_??`
 
 print_help(){
   echo "makelibs version 1.1" && echo && \
@@ -89,5 +89,5 @@ for J in $DIRS ; do
   fi
   if `! test "$POSTCLEAN" = "FALSE"` ; then make distclean ; fi
   fi
-  cd ../..
+  cd -
 done

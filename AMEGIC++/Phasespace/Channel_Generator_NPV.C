@@ -198,11 +198,8 @@ int Channel_Generator_NPV::MakeChannel(int& echflag,int n,string& path,string& p
   char name[22];
   sprintf(name,"C%i_%i",nout,n);
 
-  string filename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/")+
+  string filename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+path+string("/")+
                     string(name)+string(".C");
-  
-  ifstream from;
-  from.open((filename).c_str());
   
   int    rannum = 0;
 

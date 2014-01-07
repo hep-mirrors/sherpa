@@ -76,10 +76,10 @@ Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b,string nam
   IO_Handler ioh;
   ioh.SetFileNameRO(name);
 
-  ioh.GetFstream()>>momcount;
+  ioh.GetIFstream()>>momcount;
   for (int i=0;i<momcount;i++) {
     Momfunc mf;
-    ioh.GetFstream()>>mf;
+    ioh.GetIFstream()>>mf;
     Momlist.push_back(mf);    
   }
   Initialize();
@@ -92,11 +92,11 @@ Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b,string nam
 void Basic_Sfuncs::UpdateMasses(string name)
 {
   int cnt=0;
-  ifstream is;
-  is.open(name.c_str());
+  My_In_File is(name);
+  is.Open();
   string str;
-  for (;is;) {
-    getline(is,str); 
+  for (;*is;) {
+    getline(*is,str);
     if (str.find(string("fl"))==0) {
       int a=str.find("[");
       int b=str.find("]");
@@ -116,7 +116,7 @@ void Basic_Sfuncs::UpdateMasses(string name)
     }
   }
   if (cnt!=momcount) THROW(critical_error,"Missing flavour in *.map");
-  is.close();  
+  is.Close();
 }
 
 void Basic_Sfuncs::Output(string name)
@@ -125,7 +125,7 @@ void Basic_Sfuncs::Output(string name)
   IO_Handler ioh;
   ioh.SetFileName(name);
   ioh.Output("",momcount);
-  for (int i=0;i<momcount;i++) ioh.GetFstream()<<Momlist[i]<<endl;
+  for (int i=0;i<momcount;i++) ioh.GetOFstream()<<Momlist[i]<<endl;
   ioh.MatrixOutput<int>("",calc_st,momcount,momcount);
 }
 

@@ -5,7 +5,6 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include <fstream.h>
 #include <iostream.h>
 #include "ATOOLS/Math/MathTools.H"
 
@@ -241,10 +240,10 @@ void MomentumList::Print()
 bool MomentumList::Get(const char* file) 
 {
     std::string  line;
-    ifstream dat(file);
-    if (dat==NULL)
+    My_In_File dat(file);
+    if (!dat.Open())
 	THROW(fatal_error,"Error in opening a data file");
-    while (getline(dat,line)) {
+    while (getline(*dat,line)) {
 	if (line.find("%")!=std::string::npos) line=line.substr(0,line.find("%"));
 	if (line.find("p_[")!=std::string::npos) {
 	    size_t stpos(line.find("p_[")+2);
@@ -297,7 +296,7 @@ bool MomentumList::Get(const char* file)
 	    etha[1]= ToType<double>(line.substr(c1pos+1,endpos-c1pos-1));
 	}
     }
-    dat.close();
+    *dat.close();
     m_size=size();
     if (size()>0) return 1;
     return 0;

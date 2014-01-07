@@ -291,10 +291,11 @@ void Amplitude_Handler::StoreAmplitudeConfiguration(std::string path)
   IO_Handler ioh;
   ioh.SetFileName(name);
   ioh.Output("",int(graphs.size()));
-  std::ofstream cplfile((path+"/Couplings.dat").c_str());
+  My_Out_File cplfile(path+"/Couplings.dat");
+  cplfile.Open();
   for (size_t i=0;i<graphs.size();i++) {
-    cplfile<<i<<" "<<graphs[i]->GetOrderQCD()
-	   <<" "<<graphs[i]->GetOrderQED()<<"\n";
+    *cplfile<<i<<" "<<graphs[i]->GetOrderQCD()
+           <<" "<<graphs[i]->GetOrderQED()<<"\n";
     int size=graphs[i]->Size();
     int *nums= new int[size];
     for (int j=0;j<size;j++) nums[j]=(*graphs[i])[j]->GetNumber();
@@ -305,8 +306,8 @@ void Amplitude_Handler::StoreAmplitudeConfiguration(std::string path)
 
 void Amplitude_Handler::RestoreAmplitudes(std::string path)
 {
-  std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+path+"/Cluster.dat";
-  std::ifstream cplfile((rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+path+"/Couplings.dat").c_str());
+  std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+path+"/Cluster.dat";
+  My_In_File cplfile(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+path+"/Couplings.dat");
   IO_Handler ioh;
   ioh.SetFileNameRO(name);
   size_t cg = ioh.Input<int>("");
@@ -319,8 +320,8 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
   Amplitude_Base* ab;
   for (size_t i=0;i<graphs.size();i++) {
     int *nums, ci, oqcd, oqed;
-    if (cplfile.bad()) THROW(fatal_error,"Missing coupling data");
-    cplfile>>ci>>oqcd>>oqed;
+    if (!cplfile.Open()) THROW(fatal_error,"Missing coupling data");
+    *cplfile>>ci>>oqcd>>oqed;
     if (ci!=(int)i) THROW(fatal_error,"Invalid coupling data");
     nums=ioh.ArrayInput<int>("");
     int size=ioh.Nx();
@@ -341,11 +342,11 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
 void Amplitude_Handler::CompleteLibAmplitudes(int N,std::string pID,std::string lib,
 					      char emit,char spect,Flavour* fl)
 {
-  std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".map";
-  ifstream from;
-  from.open(name.c_str());
-  shand->Get_Generator()->ReadCouplings(from);
-  from.close();
+  std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+pID+".map";
+  My_In_File from(name);
+  from.Open();
+  shand->Get_Generator()->ReadCouplings(*from);
+  from.Close();
 
   Single_Amplitude* n = firstgraph;
   ngraph = 0;

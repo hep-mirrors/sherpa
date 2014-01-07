@@ -91,6 +91,7 @@ Amegic::Amegic():
 
 Amegic::~Amegic() 
 {
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (p_cluster) delete p_cluster;
 }
  
@@ -116,6 +117,11 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   int gauge(read.GetValue<int>("AMEGIC_DEFAULT_GAUGE",1));
   AMEGIC::Process_Base::SetGauge(gauge);
   if (gauge!=10) msg_Info()<<METHOD<<"(): Set gauge "<<gauge<<"."<<std::endl;
+
+  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
+  My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","begin");
+
   return true;
 }
 
@@ -198,6 +204,8 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
 
 int Amegic::PerformTests()
 {
+  My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
+
   int tests(Process_Group::PerformTests());
   if (NewLibs()) THROW(normal_exit,"New libraries created. Please compile.");
   for (size_t i(0);i<m_rsprocs.size();++i) 

@@ -11,41 +11,44 @@ IO_Handler::IO_Handler()
 {
   m_seps.push_back(';');
   m_coms.push_back('#');
-  m_filename=std::string(""); 
+  m_outfilename=m_infilename=std::string("");
 }
 
 IO_Handler::~IO_Handler() { 
-  if (!(m_filename==std::string(""))) {
-    m_file.close();
+  if (!(m_outfilename==std::string(""))) {
+    m_outfile.Close();
+  }
+  if (!(m_infilename==std::string(""))) {
+    m_infile.Close();
   }
 }
     
 // set output filename
 int IO_Handler::SetFileName(std::string _name) {
-  if (!(m_filename==std::string(""))) {
-    m_file.close();
+  if (!(m_outfilename==std::string(""))) {
+    m_outfile.Close();
   }
-  m_filename=_name;
-  m_file.open(m_filename.c_str(),ios::out);
+  m_outfilename=_name;
+  m_outfile.SetPath(m_outfilename);
 
-  if (!(m_file.good())) {
-    msg_Info()<<METHOD<<": "<<m_filename<<" not available."<<endl;
+  if (!(m_outfile.Open())) {
+    msg_Info()<<METHOD<<": "<<m_outfilename<<" not available."<<endl;
     return 0;
   }
-  m_file.precision(15);
+  m_outfile->precision(15);
   return 1;
 }
     
 // set input filename
 int IO_Handler::SetFileNameRO(string _name) {
-  if (!(m_filename==std::string(""))) {
-    m_file.close();
+  if (!(m_infilename==std::string(""))) {
+    m_infile.Close();
   }
-  m_filename=_name;
-  m_file.open(m_filename.c_str(),ios::in);
+  m_infilename=_name;
+  m_infile.SetPath(m_infilename);
 
-  if (!(m_file.good())) {
-    msg_Info()<<METHOD<<": "<<m_filename<<" not available."<<endl;
+  if (!(m_infile.Open())) {
+    msg_Info()<<METHOD<<": "<<m_infilename<<" not available."<<endl;
     return 0;
   }
   return 1;
@@ -78,8 +81,8 @@ void IO_Handler::AddComment(char c)
 // output file (compare rpa, etc.)
 template <class Type> 
 IO_Handler & IO_Handler::operator<<(const Type & value) {
-  m_file<<" filename = "<<m_filename<<endl;
-  m_file<<value;
+  *m_outfile<<" filename = "<<m_outfilename<<endl;
+  *m_outfile<<value;
 
   return *this;
 }
@@ -87,16 +90,16 @@ IO_Handler & IO_Handler::operator<<(const Type & value) {
 template <class Type> 
 void IO_Handler::MatrixOutput(const std::string name,Type ** const  values,const int nx, const int ny) {
   if (name!=std::string("")) 
-    m_file<<" "<<name<<" = "<<endl;
+    *m_outfile<<" "<<name<<" = "<<endl;
 
-  m_file<<"["<<nx<<";"<<ny<<"]";
-  m_file<<"{";
+  *m_outfile<<"["<<nx<<";"<<ny<<"]";
+  *m_outfile<<"{";
   if (nx>0) ArrayOutput("", values[0],ny,0);
   for (int i=1;i<nx;++i) {
-    m_file<<";"<<endl;
+    *m_outfile<<";"<<endl;
     ArrayOutput("", values[i],ny,0);
   }
-  m_file<<"}"<<endl;
+  *m_outfile<<"}"<<endl;
   m_nx=nx;
   m_ny=ny;  
 }
@@ -104,35 +107,29 @@ void IO_Handler::MatrixOutput(const std::string name,Type ** const  values,const
 template <class Type> 
 void IO_Handler::ArrayOutput(const std::string name,const Type * values,const int nx, bool writesize) {
   if (name!=std::string("")) 
-    m_file<<" "<<name<<" = "<<endl;
+    *m_outfile<<" "<<name<<" = "<<endl;
 
-  if (writesize) m_file<<"["<<nx<<"]";
-  m_file<<"{";
-  if (nx>0) m_file<<values[0];
+  if (writesize) *m_outfile<<"["<<nx<<"]";
+  *m_outfile<<"{";
+  if (nx>0) *m_outfile<<values[0];
   for (int i=1;i<nx;++i) {
     if (i%10==0)
-      m_file<<";"<<endl<<values[i];
+      *m_outfile<<";"<<endl<<values[i];
     else
-      m_file<<";"<<values[i];
+      *m_outfile<<";"<<values[i];
   }
-  m_file<<"}";
+  *m_outfile<<"}";
   if (writesize) {
-    m_file<<endl;
+    *m_outfile<<endl;
     m_nx=nx;
   }
 }
 template <class Type> 
 Type * IO_Handler::ArrayInput(const std::string name,int nx) {
   MyStrStream str; 
-//   if (m_buffer.length()==0) {
-//     getline(m_file,m_buffer); 
-//     if (m_buffer.length()==0) {
-//       getline(m_file,m_buffer); 
-//     }
-//   }
   do {
     if (m_buffer.length()==0) 
-      getline(m_file,m_buffer); 
+      getline(*m_infile,m_buffer);
     for (unsigned int i=0; i<m_coms.size();++i) {
       int beg = m_buffer.find(m_coms[i]);
       if (beg >=0) {
@@ -174,7 +171,7 @@ Type * IO_Handler::ArrayInput(const std::string name,int nx) {
 
     sit1=++sit2;
     if ((sit1==send)) {
-      getline(m_file,m_buffer); 
+      getline(*m_infile,m_buffer);
       sit1=m_buffer.begin();
       send=find(sit1,m_buffer.end(),'}');
     }
@@ -196,7 +193,7 @@ Type ** IO_Handler::MatrixInput(const std::string name,int nx, int ny) {
   MyStrStream str; 
   do {
     if (m_buffer.length()==0) 
-      getline(m_file,m_buffer); 
+      getline(*m_infile,m_buffer);
     for (unsigned int i=0; i<m_coms.size();++i) {
       int beg = m_buffer.find(m_coms[i]);
       if (beg >=0) {
@@ -227,7 +224,7 @@ Type ** IO_Handler::MatrixInput(const std::string name,int nx, int ny) {
   Type ** m = new Type*[nx];
   for(int i=0;i<nx;++i) {
     m[i]=ArrayInput<Type>("",ny);
-    if (i<nx-1) getline(m_file,m_buffer);
+    if (i<nx-1) getline(*m_infile,m_buffer);
   }
 
   m_buffer=string("");
@@ -241,9 +238,9 @@ Type ** IO_Handler::MatrixInput(const std::string name,int nx, int ny) {
 template <class Type> 
 void IO_Handler::Output(const std::string name,const Type & value) {
  if (name!=std::string("")) 
-   m_file<<" "<<name<<" = "<<value<<endl;
+   *m_outfile<<" "<<name<<" = "<<value<<endl;
  else
-   m_file<<value<<endl;
+   *m_outfile<<value<<endl;
 }
 
 template <class Type> 
@@ -253,7 +250,7 @@ Type IO_Handler::Input(const std::string name) {
   MyStrStream str; 
   do {
     if (m_buffer.length()==0) 
-      getline(m_file,m_buffer); 
+      getline(*m_infile,m_buffer);
     for (unsigned int i=0; i<m_coms.size();++i) {
       int beg = m_buffer.find(m_coms[i]);
       if (beg >=0) {
@@ -281,8 +278,8 @@ template <class Type>
 int IO_Handler::ValueInput(std::string name, Type & value) {
   if (m_vars.size()==0) {
     // create variable map
-    for (int i=0;m_file;++i) {       
-      getline(m_file,m_buffer);
+    for (int i=0;*m_infile;++i) {
+      getline(*m_infile,m_buffer);
       FillIn(m_buffer);
     }
   } 
@@ -336,7 +333,7 @@ void IO_Handler::Shorten(std::string& str) {
 // read in class from file 
 template <class Type> 
 IO_Handler & IO_Handler::operator>>(Type & value) {
-  m_file>>value;
+  *m_infile>>value;
   return *this;
 }
 

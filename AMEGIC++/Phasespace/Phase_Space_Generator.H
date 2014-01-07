@@ -23,7 +23,7 @@ namespace AMEGIC {
     bool  Search(std::ifstream &,std::string);
     bool  RSearch(std::ifstream &,std::string &);
     int   Search(std::string file,std::string search);
-    int   RSearch(std::string file,std::string &search);
+    int   RSearchInDB(std::string file,std::string &search);
     void  Copy(std::string,std::string);
     void  AddToMakefile(std::string Makefile,std::string pathID,std::string fileID);
     void  AddToMakefileAM(std::string, std::string, std::string);

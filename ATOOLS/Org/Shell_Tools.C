@@ -98,11 +98,11 @@ bool ATOOLS::Copy(const std::string &oldname,
     return stat;
   }
   if (!FileExists(oldname)) return false;
-  My_In_File oldfile("",oldname);
-  if (!oldfile.Open()) return false;
-  My_Out_File newfile("",newname);
-  if (!newfile.Open()) return false;
-  (*newfile)<<oldfile->rdbuf();
+  std::ifstream oldfile(oldname.c_str());
+  if (!oldfile.good()) return false;
+  std::ofstream newfile(newname.c_str());
+  if (!newfile.good()) return false;
+  newfile<<oldfile.rdbuf();
   return chmod(newname.c_str(),fst.st_mode)==0;
 }
 

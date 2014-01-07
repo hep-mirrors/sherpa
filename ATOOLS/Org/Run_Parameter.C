@@ -217,7 +217,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   if (libpath.length()>0 && libpath[0]=='/') gen.m_variables["SHERPA_LIB_PATH"]=libpath;
   else if (gen.m_variables["SHERPA_LIB_PATH"].length()==0) 
     gen.m_variables["SHERPA_LIB_PATH"]=gen.m_variables["SHERPA_CPP_PATH"]
-      +std::string("/Process/lib");
+      +std::string("/Process/Amegic/lib");
   if (gen.m_variables["SHERPA_DAT_PATH"].length()==0) {
     if (path.length()>0 && path[0]=='/') gen.m_variables["SHERPA_DAT_PATH"]=path;
     else gen.m_variables["SHERPA_DAT_PATH"]=gen.m_variables["SHERPA_RUN_PATH"]+"/"+path;

@@ -42,8 +42,8 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
     abort();
   }
 
-  string lmapname = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID+string("/fsrchannels");
-  string mapname  = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/fsrchannels.map");
+  string lmapname = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+pathID+string("/fsrchannels");
+  string mapname  = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+path+string("/fsrchannels.map");
 
   Data_Reader dr(" ",";","!","=");
   dr.AddComment("#");
@@ -61,25 +61,25 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   if (inttype==3) inttype=7;
   if (inttype>20) return 0;
 
-  if (IsFile(lmapname)) return 1-GetLibList(liblist);
+  if (My_In_File::FileInDB(lmapname)) return 1-GetLibList(liblist);
 
-  ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+path);
+  ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+path);
   int newchannels = 0;
   //int extrachannel = 0;
-  ofstream lmf;
-  lmf.open(lmapname.c_str());
+  My_Out_File lmf(lmapname);
+  lmf.Open();
   int cnt=0;
-  ofstream mf;
-  ifstream imf;
-  if (!IsFile(mapname)) {
-    mf.open(mapname.c_str(),ios::out);
-    mf.close();
+  My_Out_File mf(mapname);
+  My_In_File imf(mapname);
+  if (!My_In_File::FileInDB(mapname)) {
+    mf.Open();
+    mf.Close();
   }
   else {
     char buffer[buffersize];
-    imf.open(mapname.c_str());
-    for (;imf;cnt++) imf.getline(buffer,buffersize);
-    imf.close();
+    imf.Open();
+    for (;*imf;cnt++) imf->getline(buffer,buffersize);
+    imf.Close();
     cnt--;
   }
 
@@ -130,14 +130,14 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 	}
 	for (int k=0;k<cg->NumberOfChannels();k++) {
 	  string chID = cg->CreateChannelID(k);
-	  lmf<<chID<<endl;
-	  if (!RSearch(mapname,chID)) {
+	  *lmf<<chID<<endl;
+	  if (!RSearchInDB(mapname,chID)) {
 	    bool hit;
 	    do {
 	      if (nin==2) sprintf(procname,"C%i_%i",nout,cnt);
 	      else sprintf(procname,"CD%i_%i",nout,cnt);
-	      string help = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string(procname);
-	      hit = IsFile(help);
+	      string help = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+fsrp+string(procname);
+	      hit = My_In_File::FileInDB(help);
 	      if (hit) cnt++;
 	    } while (hit);
 	    
@@ -148,7 +148,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 		fsrpath = fsrpath0 + string(hlp);
 		fsrp = path+string("/")+fsrpath;
 	      }
-	      ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+fsrp);
+	      ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+fsrp);
 	      String_Library slib(1);
 	      slib.InitMakefile(fsrp);
 	    }
@@ -159,14 +159,20 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 	    if (nout==1) rannumber=1;
 	    if (!cg->Valid()) PRINT_INFO("Channel "<<procname<<" kicked because of decoupled particle");
 	    if (rannumber>0 && cg->Valid()) {
-	      string makefilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string("/Makefile.am");
+	      string makefilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+fsrp+string("/Makefile.am");
 	      AddToMakefileAM(makefilename,fsrp,procname);
 	      cnt++;
 	      newchannels = 1;
 	    }
-	    mf.open(mapname.c_str(),ios::out|ios::app);
-	    mf<<chID<<": "<<fsrpath<<"/"<<string(procname)<<endl;
-	    mf.close();
+            std::string mapstr, maptmp;
+            if (imf.Open())
+              for (getline(*imf,maptmp);imf->good(); getline(*imf,maptmp))
+                mapstr+=maptmp+"\n";
+            imf.Close();
+            mf.Open();
+            *mf<<mapstr;
+            *mf<<chID<<": "<<fsrpath<<"/"<<string(procname)<<endl;
+	    mf.Close();
 	  }
 	  else {
 	    if (!newchannels) {
@@ -182,7 +188,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
       }
     }
   }
-  lmf.close();
+  lmf.Close();
   return newchannels;
 }
 
@@ -203,7 +209,7 @@ void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,st
     file<<"CURRENT_SHERPASYS = "<<ATOOLS::rpa->gen.Variable("SHERPA_INC_PATH")<<endl;
     file<<"INCLUDES = -I$(CURRENT_SHERPASYS)"<<endl;
     file<<"DEFS     = "<<endl;
-    ofstream cgfile((rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pathID+"/CG.C").c_str());
+    ofstream cgfile((rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+pathID+"/CG.C").c_str());
     cgfile<<"#include \"PHASIC++/Channels/Channel_Generator.H\"\n"
 	  <<"#include \"PHASIC++/Channels/Multi_Channel.H\"\n"
 	  <<"#include \"PHASIC++/Process/Process_Base.H\"\n"
@@ -266,7 +272,7 @@ void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,st
 
     Move(makefilename+".tmp",makefilename);
     {
-      std::string fname=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pathID+"/CG.C";
+      std::string fname=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+pathID+"/CG.C";
       ifstream from(fname.c_str());
       ofstream to((fname+".tmp").c_str());
       bool first=true;
@@ -359,12 +365,12 @@ void  Phase_Space_Generator::AddToMakefile(string makefilename,string pathID,str
 
 bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
 {
-  string chlname   = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID + string("/fsrchannels");
-  string chmapname = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path   + string("/fsrchannels.map");
- 
- ifstream chlist;
-  chlist.open(chlname.c_str());
-  if (!IsFile(chmapname)) {
+  string chlname   = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+pathID + string("/fsrchannels");
+  string chmapname = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+path   + string("/fsrchannels.map");
+
+  My_In_File chlist(chlname);
+  chlist.Open();
+  if (!My_In_File::FileInDB(chmapname)) {
     msg_Error()<<"Error in Phase_Space_Generator:"
 		       <<chmapname<<" not found."<<endl;
     return 0;
@@ -372,17 +378,15 @@ bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
 
   char buffer[buffersize];
   string libname;
-  for(;chlist;) {
-    chlist.getline(buffer,buffersize);    
+  for(;*chlist;) {
+    chlist->getline(buffer,buffersize);
     libname = string(buffer);
-    if (chlist && libname[0]!='%') {
-      ifstream chmap(chmapname.c_str());
-      if (!RSearch(chmap,libname) || libname.find(": ")==string::npos) {
+    if (*chlist && libname[0]!='%') {
+      if (!RSearchInDB(chmapname,libname) || libname.find(": ")==string::npos) {
 	msg_Error()<<"Error in Phase_Space_Generator:"
 			   <<"Mapping for "<<libname<<" not found."<<endl;	
 	return 0;
       }
-      chmap.close();
 
       if (libname[0]!='%') {
 	int pos = libname.find(string(": "));
@@ -392,57 +396,9 @@ bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
       }
     }
   }
-  chlist.close();
+  chlist.Close();
   return 1;
 }
-/*bool Phase_Space_Generator::LoadChannels(ATOOLS::Flavour * fl,Multi_Channel * Ch,Process_Base * proc)
-{
-  string chlname   = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID + string("/fsrchannels");
-  string chmapname = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path   + string("/fsrchannels.map");
- 
- ifstream chlist;
-  chlist.open(chlname.c_str());
-  if (!IsFile(chmapname)) {
-    msg_Error()<<"Error in Phase_Space_Generator:"
-		       <<chmapname<<" not found."<<endl;
-    return 0;
-  }
-
-  char buffer[buffersize];
-  string libname;
-  for(;chlist;) {
-    chlist.getline(buffer,buffersize);    
-    libname = string(buffer);
-    if (chlist && libname[0]!='%') {
-      ifstream chmap(chmapname.c_str());
-      if (!RSearch(chmap,libname) || libname.find(string(": "))==string::npos) {
-	msg_Error()<<"Error in Phase_Space_Generator:"
-			   <<"Mapping for "<<libname<<" not found."<<endl;	
-	return 0;
-      }
-      chmap.close();
-
-      if (libname[0]!='%') {
-	int pos = libname.find(string(": "));
-	libname = libname.substr(pos+2);
-      
-	Single_Channel * sc = SetChannel(nin,nout,fl,libname);
-	if (sc==0) {
-	  msg_Error()<<"Phase_Space_Generator:"
-			     <<"Channels are not compiled and linked yet."<<endl
-			     <<"Type 'make install' and run again."<<endl;
-	  return 0;
-	}
-	else {
-	  sc->SetName(pID+string("--")+libname);
-	  Ch->Add(sc);
-	}
-      }
-    }
-  }
-  chlist.close();
-  return 1;
-  }*/
 
 bool Phase_Space_Generator::IsFile(string &filename)
 {
@@ -495,24 +451,13 @@ int  Phase_Space_Generator::Search(string file,string search)
   return 0;
 }
 
-int  Phase_Space_Generator::RSearch(string file,string &search)
-{  
+int  Phase_Space_Generator::RSearchInDB(string file,string &search)
+{
+  My_In_File from(file);
 
-  ifstream from;
-  //search name  
-  from.open(file.c_str());
-
-  char buffer[buffersize];
-
-  for(;from;) {
-    from.getline(buffer,buffersize);    
-    if (string(buffer).find(string(search))!=string::npos) {
-      search = string(buffer);
-      from.close();
-      return 1;
-    }
+  if (from.Open()) {
+    return RSearch(*from, search);
   }
-  from.close();
   return 0;
 }
 

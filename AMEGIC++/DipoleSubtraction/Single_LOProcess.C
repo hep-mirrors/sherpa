@@ -103,25 +103,25 @@ Single_LOProcess::~Single_LOProcess()
 void AMEGIC::Single_LOProcess::WriteAlternativeName(string aname) 
 {
   if (aname==m_name) return;
-  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".alt";
+  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".alt";
   if (FileExists(altname)) return;
-  std::ofstream to;
-  to.open(altname.c_str(),ios::out);
-  to<<aname<<" "<<m_sfactor<<endl;
+  My_Out_File to(altname);
+  to.Open();
+  *to<<aname<<" "<<m_sfactor<<endl;
   for (map<string,ATOOLS::Flavour>::const_iterator fit=p_ampl->GetFlavourmap().begin();fit!=p_ampl->GetFlavourmap().end();fit++)
-    to<<fit->first<<" "<<(long int)fit->second<<endl;
-  to.close();
+    *to<<fit->first<<" "<<(long int)fit->second<<endl;
+  to.Close();
 }
 
 bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,string procname)
 {
-  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+procname+".alt";
+  std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+procname+".alt";
   if (FileExists(altname)) {
     double factor;
     string name,dummy; 
-    ifstream from;
-    from.open(altname.c_str(),ios::in);
-    from>>name>>factor;
+    My_In_File from(altname);
+    from.Open();
+    *from>>name>>factor;
     m_sfactor *= factor;
     for (size_t j=0;j<links.size();j++) {
       if (links[j]->Name()==name) {
@@ -132,10 +132,10 @@ bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,s
 	m_ntchanmin=p_partner->NTchanMin();
 	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
 
-	while (from) {
+	while (*from) {
 	  string f1;
 	  long int f2;
-	  getline(from,dummy);
+	  getline(*from,dummy);
 	  if (dummy!="") {
 	    MyStrStream str;
 	    str<<dummy;
@@ -143,12 +143,12 @@ bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,s
 	    AddtoFlavmap(f1,Flavour(abs(f2),f2<0));
 	  }
 	}
-	from.close();
+	from.Close();
 	InitFlavmap(p_partner);
 	return true;
       }
     }
-    from.close();
+    from.Close();
     if (CheckAlternatives(links,name)) return true;
   }
   m_sfactor = 1.;
@@ -170,7 +170,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   for (size_t i=m_nin;i<m_nin+m_nout;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
 
   if (m_gen_str>1) {
-    ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
+    ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename);
   }
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
@@ -194,8 +194,8 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   }  
   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
   if (directload) {
-    string hstr=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_libname;
-    string hstr2=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+    string hstr=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_libname;
+    string hstr2=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";
     p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b,hstr,hstr2);  
   }
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
@@ -220,19 +220,19 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 	msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
 	  
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
-	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+links[j]->Name();
-	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+Name();
+	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+links[j]->Name();
+	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name();
 	  if (FileExists(mlname+string(".map"))) { 
-	    if (m_sfactor==1.) Copy(mlname+".map",mnname+".map");
+	    if (m_sfactor==1.) My_In_File::CopyInDB(mlname+".map",mnname+".map");
 	    else {
 	      UpdateMappingFile(mlname,cplmap);
 	      CreateMappingFile((Single_LOProcess*)links[j]);
 	    }
-	    Copy(mlname+".col",mnname+".col");
+	    My_In_File::CopyInDB(mlname+".col",mnname+".col");
 	    for (size_t i=0;i<m_nin+m_nout-1;i++) if (m_flavs[i].Strong()) {
 	      for (size_t j=i+1;j<m_nin+m_nout;j++) if (m_flavs[j].Strong()) {
 		string sij=string("_S")+ToString(i)+string("_")+ToString(j);
-		Copy(mlname+sij+".col",mnname+sij+".col");
+		My_In_File::CopyInDB(mlname+sij+".col",mnname+sij+".col");
 	      }
 	    }
 	  }
@@ -349,7 +349,7 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   model->GetCouplings(m_cpls);
   
   if (m_gen_str>1) {
-    ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename); 
+    ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename);
   }
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
@@ -387,8 +387,8 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
     return 0;
   }
   if (directload) {
-    string hstr=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_libname;
-    string hstr2=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+    string hstr=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_libname;
+    string hstr2=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";
     p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b,hstr,hstr2);
   }
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
@@ -657,7 +657,7 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
       gauge_test = string_test = 0;
     }
     else {
-      string searchfilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+testname+string("/V.H");
+      string searchfilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+m_ptypename+string("/")+testname+string("/V.H");
       if (FileExists(searchfilename)) {
       	msg_Error()<<"ERROR in Single_LOProcess::Tests()"<<std::endl
 		   <<"   No compiled & linked library found for process "<<testname<<std::endl
@@ -883,7 +883,6 @@ int Single_LOProcess::CheckLibraries(std::vector<double> * pfactors) {
   shand1      = new String_Handler(p_shand->Get_Generator());
   
   m_libnumb  = 0;
-  string proc = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/V");
   string testname;
   double M2s, helvalue;
 
@@ -959,7 +958,7 @@ void Single_LOProcess::WriteLibrary()
 {
   if (m_gen_str<2) return;
   string testname;
-  string newpath=rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/");
+  string newpath=rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/");
   for (;;) {
     testname    = CreateLibName()+string("_")+ToString(m_libnumb);
     if (!(FileExists(newpath+m_ptypename+string("/")+testname+string("/V.H")))) break;
@@ -992,7 +991,7 @@ std::string  Single_LOProcess::CreateLibName()
 
 void Single_LOProcess::CreateMappingFile(Single_LOProcess* partner) {
   if (m_gen_str<2) return;
-  std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+  std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";
   if (FileExists(outname)) {
     string MEname,PSname;
     FoundMappingFile(MEname,PSname);
@@ -1005,35 +1004,35 @@ void Single_LOProcess::CreateMappingFile(Single_LOProcess* partner) {
     return;
   }
 
-  std::ofstream to;
-  to.open(outname.c_str(),ios::out);
+  My_Out_File to(outname);
+  to.Open();
   if (Result()!=0.) {
-    to<<"ME: "<<m_libname<<endl
+    *to<<"ME: "<<m_libname<<endl
       <<"PS: "<<m_pslibname<<endl;
-    p_shand->Get_Generator()->WriteCouplings(to);
-    partner->WriteMomFlavs(to);
+    p_shand->Get_Generator()->WriteCouplings(*to);
+    partner->WriteMomFlavs(*to);
   }
   else {
-    to<<"ME: 0"<<endl
+    *to<<"ME: 0"<<endl
       <<"PS: 0"<<endl;
   }
-  to.close();
+  to.Close();
 }
 
 bool Single_LOProcess::FoundMappingFile(std::string & MEname, std::string & PSname) {
   
   std::string buf;
   int pos;
-  std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
+  std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";
   if (FileExists(outname)) {
-    ifstream from;
-    from.open(outname.c_str());
-    getline(from,buf);
+    My_In_File from(outname);
+    from.Open();
+    getline(*from,buf);
     pos = buf.find(string("ME:"));
     if (pos==-1) MEname = PSname = buf;
     else {
       MEname = buf.substr(pos+4);
-      getline(from,buf);
+      getline(*from,buf);
       pos = buf.find(string("PS:"));
       if (pos==-1) PSname = MEname;
       else PSname = buf.substr(pos+4);
@@ -1057,21 +1056,21 @@ void AMEGIC::Single_LOProcess::UpdateMappingFile(std::string name, map<string,Co
   std::string buf;
   int pos;
   name+=".map";
-  ifstream from;
-  from.open(name.c_str());
-  getline(from,buf);
+  My_In_File from(name);
+  from.Open();
+  getline(*from,buf);
   pos = buf.find(string("ME:"));
   if (pos==-1) m_libname = m_pslibname = buf;
   else {
     m_libname = buf.substr(pos+4);
-    getline(from,buf);
+    getline(*from,buf);
     pos = buf.find(string("PS:"));
     if (pos==-1) m_pslibname = m_libname;
     else m_pslibname = buf.substr(pos+4);
     if (m_pslibname==string("")) m_pslibname = m_libname;
   }
-  p_shand->Get_Generator()->ReadCouplings(from);
-  from.close();
+  p_shand->Get_Generator()->ReadCouplings(*from);
+  from.Close();
   p_shand->Get_Generator()->UpdateCouplings(cmap);
 }
 

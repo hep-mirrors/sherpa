@@ -93,7 +93,7 @@ bool My_File<FileType>::OpenDB(std::string file)
     msg_IODebugging()<<METHOD<<"(\""<<file<<"\"): Creating table.\n";
     int rc=sqlite3_exec(db,sql,Nothing,NULL,&zErrMsg);
     if(rc!=SQLITE_OK) {
-      msg_Debugging()<<METHOD<<"(): '"<<file
+      msg_IODebugging()<<METHOD<<"(): '"<<file
 		     <<"' returns '"<<zErrMsg<<"'."<<std::endl;
       sqlite3_free(zErrMsg);
       sqlite3_close(db);
@@ -118,7 +118,7 @@ bool My_File<FileType>::OpenDB(std::string file)
   msg_IODebugging()<<METHOD<<"(\""<<file<<"\"): {\n";
   int rc=sqlite3_exec(db,sql,ListFiles,(void*)&dbref,&zErrMsg);
   if(rc!=SQLITE_OK) {
-    msg_Debugging()<<METHOD<<"(): '"<<file
+    msg_IODebugging()<<METHOD<<"(): '"<<file
 		   <<"' returns '"<<zErrMsg<<"'."<<std::endl;
     sqlite3_free(zErrMsg);
     sqlite3_close(db);
@@ -137,13 +137,13 @@ My_File<FileType>::ExecDB(std::string file,const std::string &cmd)
   file+=".db";
   SQLDB_Map::iterator dbit(s_sqldbs.find(file));
   if (dbit==s_sqldbs.end()) return true;
-  msg_Debugging()<<METHOD<<"("<<file<<"): Executing '"<<cmd<<"'.\n";
+  msg_IODebugging()<<METHOD<<"("<<file<<"): Executing '"<<cmd<<"'.\n";
   char *zErrMsg=0, *sql = new char[cmd.length()+1];
   strcpy(sql,cmd.c_str());
   int rc=sqlite3_exec(dbit->second,sql,Nothing,NULL,&zErrMsg);
   delete [] sql;
   if(rc!=SQLITE_OK) {
-    msg_Debugging()<<METHOD<<"(): '"<<file
+    msg_IODebugging()<<METHOD<<"(): '"<<file
 		   <<"' returns '"<<zErrMsg<<"'."<<std::endl;
     sqlite3_free(zErrMsg);
     return false;
@@ -159,7 +159,7 @@ bool My_File<FileType>::CloseDB(std::string file)
   file+=".db";
   SQLDB_Map::iterator dbit(s_sqldbs.find(file));
   if (dbit==s_sqldbs.end()) return true;
-  msg_Debugging()<<METHOD<<"("<<file
+  msg_IODebugging()<<METHOD<<"("<<file
 		 <<"): Closing '"<<dbit->second<<"'.";
   int res=sqlite3_close(dbit->second);
   if (res!=SQLITE_OK)
@@ -211,6 +211,28 @@ My_File<FileType>::FileInDB(const std::string &name)
 {
   DataBase_Map::const_iterator sit(s_databases.find(name));
   if (sit!=s_databases.end()) return true;
+  return false;
+}
+
+template <class FileType> bool
+My_File<FileType>::CopyInDB(std::string oldfile, std::string newfile)
+{
+  DataBase_Map::const_iterator sit(s_databases.find(oldfile));
+  if (sit!=s_databases.end()) {
+    sqlite3 *db=sit->second.first;
+    msg_IODebugging()<<METHOD<<"(): '"<<oldfile<<"' found in '"<<db<<"'";
+    oldfile.erase(0,sit->second.second.length());
+    newfile.erase(0,sit->second.second.length());
+    char *zErrMsg=0;
+    std::string sql = "insert into path select '"+newfile+"',content from path where file='"+oldfile+"'";
+    int rc=sqlite3_exec(db,sql.c_str(),Nothing,NULL,&zErrMsg);
+    if(rc!=SQLITE_OK) {
+      msg_Error()<<METHOD<<"(): '"<<db<<"' returns '"
+		     <<zErrMsg<<"'."<<std::endl;
+      sqlite3_free(zErrMsg);
+    }
+    return true;
+  }
   return false;
 }
 

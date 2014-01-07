@@ -60,7 +60,7 @@ int AMEGIC::Single_Process_External::InitAmplitude(Model_Base * model,Topology* 
   m_newlib   = false;
   string ptypename;
   ptypename = "P"+ToString(m_nin)+"_"+ToString(m_nout);
-  ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/"+ptypename); 
+  ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+ptypename);
 
   m_Norm = SymmetryFactors() * m_pol.Spin_Average(m_nin,&m_flavs.front());
   int oew(m_oew), oqcd(m_oqcd);
