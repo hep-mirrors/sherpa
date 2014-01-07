@@ -56,41 +56,6 @@ Perturbative_Interface::~Perturbative_Interface()
   if (p_ampl) p_ampl->Delete();
 }
 
-bool Perturbative_Interface::
-SetColours(Cluster_Amplitude *ampl,Blob *const bl)
-{
-  if (!bl) return false;
-  if (!ampl) {
-    Particle * part;
-    for (size_t i(0);i<bl->NInP();++i) {
-      part = bl->InParticle(i); 
-      for (size_t j(1);j<3;j++) {
-	part->SetFlow(j,Max(0,int(part->GetFlow(j)-100)));
-      }
-    }
-    for (size_t i(0);i<bl->NOutP();++i) {
-      part = bl->OutParticle(i); 
-      for (size_t j(1);j<3;j++) {
-	part->SetFlow(j,Max(0,int(part->GetFlow(j)-100)));
-      }
-    }
-    return true;
-  }
-  while (ampl->Prev()) ampl=ampl->Prev();
-  for (size_t i(0);i<ampl->Legs().size();++i) {
-    Cluster_Leg *cl(ampl->Leg(i));
-    if (i<ampl->NIn()) {
-      bl->InParticle(i)->SetFlow(1,Max(0,cl->Col().m_j-100));
-      bl->InParticle(i)->SetFlow(2,Max(0,cl->Col().m_i-100));
-    }
-    else {
-      bl->OutParticle(i-ampl->NIn())->SetFlow(1,Max(0,cl->Col().m_i-100));
-      bl->OutParticle(i-ampl->NIn())->SetFlow(2,Max(0,cl->Col().m_j-100));
-    }
-  }
-  return true;
-}
-
 Return_Value::code Perturbative_Interface::
 DefineInitialConditions(ATOOLS::Blob *blob) 
 {
@@ -111,7 +76,6 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   msg_Indent();
   if (p_mi) {
     p_ampl=p_mi->ClusterConfiguration();
-    if (!SetColours(p_ampl,blob)) return Return_Value::New_Event;
     p_mi->Process()->Generator()->SetMassMode(1);
     int stat(p_mi->Process()->Generator()->ShiftMasses(p_ampl));
     if (stat<0) {
@@ -132,7 +96,6 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   }
   if (p_hd) {
     p_ampl=p_hd->ClusterConfiguration(blob);
-    if (!SetColours(p_ampl,blob)) return Return_Value::New_Event;
     if (!p_shower->GetShower()->PrepareShower(p_ampl))
       return Return_Value::New_Event;
     return Return_Value::Success;
@@ -142,10 +105,6 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     p_ampl=p_sc->ClusterConfiguration(blob);
     if (p_ampl==NULL) {
       msg_Out()<<METHOD<<": Soft_Collision_Handler has no amplitude.\n";
-      return Return_Value::New_Event;
-    }
-    if (!SetColours(NULL,blob)) {
-      msg_Out()<<METHOD<<": could not set colours.\n"; 
       return Return_Value::New_Event;
     }
     if (!p_shower->GetShower()->PrepareShower(p_ampl,true)) {
