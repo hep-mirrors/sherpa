@@ -308,6 +308,7 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
 {
   std::string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+path+"/Cluster.dat";
   My_In_File cplfile(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+path+"/Couplings.dat");
+  if (!cplfile.Open()) THROW(fatal_error,"Missing coupling data");
   IO_Handler ioh;
   ioh.SetFileNameRO(name);
   size_t cg = ioh.Input<int>("");
@@ -320,7 +321,6 @@ void Amplitude_Handler::RestoreAmplitudes(std::string path)
   Amplitude_Base* ab;
   for (size_t i=0;i<graphs.size();i++) {
     int *nums, ci, oqcd, oqed;
-    if (!cplfile.Open()) THROW(fatal_error,"Missing coupling data");
     *cplfile>>ci>>oqcd>>oqed;
     if (ci!=(int)i) THROW(fatal_error,"Invalid coupling data");
     nums=ioh.ArrayInput<int>("");

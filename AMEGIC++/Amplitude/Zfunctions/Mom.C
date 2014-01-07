@@ -296,7 +296,7 @@ bool MomentumList::Get(const char* file)
 	    etha[1]= ToType<double>(line.substr(c1pos+1,endpos-c1pos-1));
 	}
     }
-    *dat.close();
+    dat.Close();
     m_size=size();
     if (size()>0) return 1;
     return 0;
