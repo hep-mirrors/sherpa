@@ -19,9 +19,10 @@ dirtodb(){
 }
 
 if test $# -lt 2; then 
-  echo "usage: $0 <sherpa exe> <input file>";
+  echo "usage: $0 <sherpa exe> <input file> [<process path>]";
   exit 1;
 fi;
+pd=$PWD; test -z "$3" || pd=$PWD/$3; echo $0": proc dir is '"$pd"'";
 nt=$(mktemp -d -p$PWD); echo $0": temp dir is '"$nt"'";
 tp=$(grep NLO_QCD $2 | sed -e's/.*NLO_QCD_Part[ \t]*\(\w*\).*/\1/g');
 if test $tp = RS; then
@@ -32,7 +33,7 @@ if test $tp = RS; then
 fi;
 sed -e's/}(run)/  INIT_ONLY 1;\n}(run)/g' < $2 > $2.$tp;
 sed -e'/NLO_QCD/ d' < $2.$tp > $2.B;
-test -z "$3" && cp -r $PWD/Process/ $nt/ 2>&1;
+test -z "$4" && cp -r $pd/Process/ $nt/ 2>&1;
 $1 -f$2.B SHERPA_CPP_PATH=$nt;
 dbtodir $nt/Process/Comix;
 for i in $nt/Process/Comix/*.map; do
@@ -51,6 +52,6 @@ done;
 dirtodb $nt/Process/Comix;
 $1 -f$2.$tp SHERPA_CPP_PATH=$nt;
 echo -n $0": copying files ...";
-cp -ur $nt/Process $PWD/;
+cp -ur $nt/Process $pd;
 echo " done";
 rm -rf $nt;
