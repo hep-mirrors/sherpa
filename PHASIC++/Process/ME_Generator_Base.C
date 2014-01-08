@@ -26,7 +26,12 @@ void ME_Generator_Base::SetPSMasses(Data_Reader *const dr)
   std::vector<size_t> psmassive;
   std::vector<size_t> psmassless;
   dr->VectorFromFile(psmassive,"MASSIVE_PS");
-  dr->VectorFromFile(psmassless,"MASSLESS_PS");
+  if (!dr->VectorFromFile(psmassless,"MASSLESS_PS")) {
+    for (size_t i(0);i<Flavour(kf_quark).Size();++i)
+      psmassless.push_back(Flavour(kf_quark)[i].Kfcode());
+    psmassless.push_back((long int)Flavour(kf_gluon));
+    psmassless.push_back((long int)Flavour(kf_photon));
+  }
   bool massive=!((bool)dr->GetValue<int>("RESPECT_MASSIVE_FLAG",0));
   if (massive) {
     Flavour_Set tempflavs;
@@ -34,7 +39,7 @@ void ME_Generator_Base::SetPSMasses(Data_Reader *const dr)
       Flavour fl(psmassless[i],0);
       tempflavs.insert(fl);
       tempflavs.insert(fl.Bar());
-      msg_Info()<<METHOD<<"(): "<<m_name<<": Using massless PS for "<<fl<<".\n";
+      msg_Tracking()<<METHOD<<"(): "<<m_name<<": Using massless PS for "<<fl<<".\n";
     }
     // find m_psmass=allflavs-tempflavs
     for (size_t i(0);i<allflavs.size();++i) {
@@ -54,7 +59,7 @@ void ME_Generator_Base::SetPSMasses(Data_Reader *const dr)
       Flavour fl(psmassive[i],0);
       m_psmass.insert(fl);
       m_psmass.insert(fl.Bar());
-      msg_Info()<<METHOD<<"(): "<<m_name<<": Using massive PS for "<<fl<<".\n";
+      msg_Tracking()<<METHOD<<"(): "<<m_name<<": Using massive PS for "<<fl<<".\n";
     }
   }
   Flavour_Vector mf(m_psmass.begin(),m_psmass.end());
