@@ -541,6 +541,9 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
     }
     mk2=0.0;
   }
+  Poincare_Sequence lt(l->LT());
+  if (lt.size()) lt.Invert();
+  else {
   Kin_Args lp;
   if (mode&2) {
     if (mode&1) {
@@ -564,18 +567,20 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
       }
     }
   }
-  if (lp.m_lam.empty()) return;
+  lt=lp.m_lam;
+  }
+  if (lt.empty()) return;
   for (All_Singlets::const_iterator asit(p_all->begin());
        asit!=p_all->end();++asit) {
     for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-      Vec4D p(lp.m_lam*(*plit)->Momentum());
+      Vec4D p(lt*(*plit)->Momentum());
       if ((*plit)->GetType()==pst::IS &&
 	  IsZero(p.PPerp2())) p[1]=p[2]=0.0;
       if ((*plit)->Mass2()==0.0) p[0]=p.PSpat();
       (*plit)->SetMomentum(p);
       if ((*plit)->FixSpec()!=Vec4D()) {
-	(*plit)->SetFixSpec(lp.m_lam*(*plit)->FixSpec());
-	(*plit)->SetOldMomentum(lp.m_lam*(*plit)->OldMomentum());
+	(*plit)->SetFixSpec(lt*(*plit)->FixSpec());
+	(*plit)->SetOldMomentum(lt*(*plit)->OldMomentum());
       }
     }
   }
