@@ -49,7 +49,7 @@ FillBeamBlobs(Blob_List *const bloblist,
 	Particle *isr_init((*bit)->InParticle(i));
 	if (isr_init->ProductionBlob()!=NULL) continue;
 	int beam((*bit)->Beam());
-	if (beam<0) beam=isr_init->Momentum()[3]>0.0?0:1;
+	if (beam<0) beam=isr_init->Beam();
 	if (isr_init->Flav().Strong() && 
 	    isr_init->GetFlow(1)==0 && isr_init->GetFlow(2)==0) {
 	  delete p_beamblob[beam]; 
