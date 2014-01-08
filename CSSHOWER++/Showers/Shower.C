@@ -480,7 +480,7 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	if (p_actual->GetSplit()) {
 	  msg_Debugging()<<"Truncated shower veto\n";
 	  if (p_actual->GetSplit()->Stat()&2) {
-	    msg_Debugging()<<"Non-QCD splitting. Skip truncated shower veto\n";
+	    msg_Debugging()<<"Decay. Skip truncated shower veto\n";
 	  }
 	  else {
 	  if (!(p_actual->NLO()&8)) return false;
