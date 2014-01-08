@@ -28,6 +28,7 @@ int Cluster_Definitions_Base::ReCluster
   msg_Debugging()<<*ampl<<"\n";
   for (Cluster_Amplitude *campl(ampl->Next());
        campl;campl=campl->Next()) {
+    if (campl->Legs().size()<4) continue;
     Cluster_Leg *lij(NULL);
     for (size_t ij(0);ij<campl->Legs().size();++ij)
       if (campl->Leg(ij)->K()) {
