@@ -116,6 +116,10 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   p_ampl=p_me->Process()->Get<Single_Process>()->Cluster
     (p_me->Process()->Integrator()->Momenta(),m_cmode);
   if (p_ampl==NULL) return Return_Value::New_Event;
+  if (p_ampl->MS()==NULL)
+    p_ampl=p_me->Process()->Get<Single_Process>()->Cluster
+      (p_me->Process()->Integrator()->Momenta(),m_cmode|256);
+  if (p_ampl==NULL) return Return_Value::New_Event;
   p_me->Process()->Generator()->SetMassMode(1);
   int stat(p_me->Process()->Generator()->ShiftMasses(p_ampl));
   if (stat<0) {
