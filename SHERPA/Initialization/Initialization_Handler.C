@@ -90,65 +90,29 @@ void Initialization_Handler::SetFileNames()
   p_dataread->AddWordSeparator("\t");
   p_dataread->SetInputPath(m_path);
   p_dataread->SetInputFile(m_file);
-  m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
-  m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
-  m_isrdat[0]        = p_dataread->GetValue<string>("ISR_DATA_FILE",string("ISR.dat"));
-  m_isrdat[1]        = p_dataread->GetValue<string>("MI_ISR_DATA_FILE",m_isrdat[0]);
-  m_medat            = p_dataread->GetValue<string>("ME_DATA_FILE",string("ME.dat"));
-  m_midat            = p_dataread->GetValue<string>("MI_DATA_FILE",string("MI.dat"));
-  m_showerdat        = p_dataread->GetValue<string>("SHOWER_DATA_FILE",string("Shower.dat"));
-  m_beamremnantdat   = p_dataread->GetValue<string>("BEAMREMNANT_DATA_FILE",string("Beam.dat"));
-  m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
-  m_softcollisiondat = p_dataread->GetValue<string>("SOFTCOLLISIONS_DATA_FILE",string("SoftCollisions.dat"));
-  m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
-  m_softphotonsdat   = p_dataread->GetValue<string>("SOFT_PHOTON_DATA_FILE",string("Fragmentation.dat"));
-  m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
-  std::string integrationdat=p_dataread->GetValue<string>
-    ("INTEGRATION_DATA_FILE","Integration.dat");
-  m_processesdat=p_dataread->GetValue<string>
-    ("PROCESSFILE",string("Processes.dat"));
-  m_selectordat=p_dataread->
-    GetValue<string>("SELECTORFILE",string("Selector.dat"));
-
   std::string fname(m_file);
   if (fname.find("|")!=std::string::npos) 
     fname=fname.substr(0,fname.find("|"));
-  Read_Write_Base cf(1,0," ",";","!","=");
-  cf.SetAddCommandLine(false);
-  cf.SetInputPath(m_path);
-  cf.SetInputFile(fname+"|(beam){|}(beam)");
-  if (cf.RereadInFile()) m_beamremnantdat=m_beamdat=fname+"|(beam){|}(beam)";
-  cf.ClearFileBegin(); cf.ClearFileEnd();
-  cf.SetInputFile(fname+"|(isr){|}(isr)");
-  if (cf.RereadInFile()) m_isrdat[0]=m_isrdat[1]=fname+"|(isr){|}(isr)";
-  cf.ClearFileBegin(); cf.ClearFileEnd();
-  cf.SetInputFile(fname+"|(model){|}(model)");
-  if (cf.RereadInFile()) m_modeldat=fname+"|(model){|}(model)";
-  cf.ClearFileBegin(); cf.ClearFileEnd();
-  cf.SetInputFile(fname+"|(me){|}(me)");
-  if (cf.RereadInFile()) m_medat=fname+"|(me){|}(me)";
-  cf.ClearFileBegin(); cf.ClearFileEnd();
-  cf.SetInputFile(fname+"|(processes){|}(processes)");
-  if (cf.RereadInFile()) m_processesdat=fname+"|(processes){|}(processes)";
-  cf.ClearFileBegin(); cf.ClearFileEnd();
-  cf.SetInputFile(fname+"|(selector){|}(selector)");
-  if (cf.RereadInFile()) m_selectordat=fname+"|(selector){|}(selector)";
-  cf.ClearFileBegin(); cf.ClearFileEnd();
-  cf.SetInputFile(fname+"|(integration){|}(integration)");
-  if (cf.RereadInFile()) integrationdat=fname+"|(integration){|}(integration)";
-  cf.ClearFileBegin(); cf.ClearFileEnd();
-  cf.SetInputFile(fname+"|(mi){|}(mi)");
-  if (cf.RereadInFile()) m_midat=fname+"|(mi){|}(mi)";
-  cf.ClearFileBegin(); cf.ClearFileEnd();
-  cf.SetInputFile(fname+"|(shower){|}(shower)");
-  if (cf.RereadInFile()) m_showerdat=fname+"|(shower){|}(shower)";
-  cf.ClearFileBegin(); cf.ClearFileEnd();
-  cf.SetInputFile(fname+"|(fragmentation){|}(fragmentation)");
-  if (cf.RereadInFile()) m_fragmentationdat=m_hadrondecaysdat=
-    m_softphotonsdat=fname+"|(fragmentation){|}(fragmentation)";
-  cf.ClearFileBegin(); cf.ClearFileEnd();
-  cf.SetInputFile(fname+"|(analysis){|}(analysis)");
-  if (cf.RereadInFile()) m_analysisdat=fname+"|(analysis){|}(analysis)";
+  m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",fname+"|(model){|}(model)");
+  m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",fname+"|(beam){|}(beam)");
+  m_isrdat[0]        = p_dataread->GetValue<string>("ISR_DATA_FILE",fname+"|(isr){|}(isr)");
+  m_isrdat[1]        = p_dataread->GetValue<string>("MI_ISR_DATA_FILE",m_isrdat[0]);
+  m_medat            = p_dataread->GetValue<string>("ME_DATA_FILE",fname+"|(me){|}(me)");
+  m_midat            = p_dataread->GetValue<string>("MI_DATA_FILE",fname+"|(mi){|}(mi)");
+  m_showerdat        = p_dataread->GetValue<string>("SHOWER_DATA_FILE",fname+"|(shower){|}(shower)");
+  m_beamremnantdat   = p_dataread->GetValue<string>("BEAMREMNANT_DATA_FILE",fname+"|(beam){|}(beam)");
+  m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",fname+"|(fragmentation){|}(fragmentation)");
+  m_softcollisiondat = p_dataread->GetValue<string>("SOFTCOLLISIONS_DATA_FILE",string("SoftCollisions.dat"));
+  m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",fname+"|(fragmentation){|}(fragmentation)");
+  m_softphotonsdat   = p_dataread->GetValue<string>("SOFT_PHOTON_DATA_FILE",fname+"|(fragmentation){|}(fragmentation)");
+  m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",fname+"|(analysis){|}(analysis)");
+  if (FileExists("Analysis.dat")) m_analysisdat="Analysis.dat"; 
+  std::string integrationdat=p_dataread->GetValue<string>
+    ("INTEGRATION_DATA_FILE",fname+"|(integration){|}(integration)");
+  m_processesdat=p_dataread->GetValue<string>
+    ("PROCESSFILE",fname+"|(processes){|}(processes)");
+  m_selectordat=p_dataread->
+    GetValue<string>("SELECTORFILE",fname+"|(selector){|}(selector)");
 
   rpa->gen.SetVariable("MODEL_DATA_FILE",m_modeldat);
   rpa->gen.SetVariable("ME_DATA_FILE",m_medat);
