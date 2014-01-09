@@ -82,7 +82,7 @@ size_t Read_Write_Base::IsComment(const std::string &ch) const
 {
   for (String_Vector::const_iterator bit(m_comment.begin());
        bit!=m_comment.end();++bit) 
-    if (ch.substr(0,bit->length())==*bit) return bit->length();
+    if (ch.compare(0,bit->length(),*bit)==0) return bit->length();
   return false;
 }
 
@@ -90,7 +90,7 @@ size_t Read_Write_Base::IsWordSeparator(const std::string &ch) const
 {
   for (String_Vector::const_iterator bit(m_wordsep.begin());
        bit!=m_wordsep.end();++bit) 
-    if (ch.substr(0,bit->length())==*bit) return bit->length();
+    if (ch.compare(0,bit->length(),*bit)==0) return bit->length();
   return false;
 }
 
@@ -98,7 +98,7 @@ size_t Read_Write_Base::IsLineSeparator(const std::string &ch) const
 {
   for (String_Vector::const_iterator bit(m_linesep.begin());
        bit!=m_linesep.end();++bit) 
-    if (ch.substr(0,bit->length())==*bit) return bit->length();
+    if (ch.compare(0,bit->length(),*bit)==0) return bit->length();
   return false;
 }
 
@@ -308,7 +308,7 @@ std::string Read_Write_Base::ReplaceTags(std::string &expr) const
 
 std::string &Read_Write_Base::KillBlanks(std::string &buffer) const
 {
-  if (buffer==nullstring) return buffer;
+  if (buffer.length()==0) return buffer;
   bool hit=true;
   while (hit && buffer.length()>0) { 
     hit=false;
@@ -408,9 +408,22 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
   if (!m_filecontent[i].empty()&&mode==0) return true;
   SplitInFileName(i);
   std::string lastline, file(InputPath(i)+InputFile(i));
-  String_Vector &buffer(s_buffermap[file]);
+  file+="|";
+  for (size_t j(0);j<FileBegin().size();++j) file+="|"+FileBegin()[j];
+  file+="|";
+  for (size_t j(0);j<FileEnd().size();++j) file+="|"+FileEnd()[j];
+  file+="||";
+  bool inbuf(s_buffermap.find(file)!=s_buffermap.end());
+  String_Vector &cbuffer(s_buffermap[file]);
   msg_IODebugging()<<METHOD<<"(): ("<<this<<") checks buffer '"
-		 <<file<<"' -> ("<<&buffer<<")\n";
+		 <<file<<"' -> ("<<&cbuffer<<")\n";
+  if (inbuf) {
+    m_filecontent[i].clear();
+    for (size_t j(0);j<cbuffer.size();++j)
+      AddFileContent(cbuffer[j],i);
+  }
+  else {
+  String_Vector buffer;
   My_In_File &infile(InFile(i));
   if (mode&2 || buffer.empty()) {
     msg_IODebugging()<<METHOD<<"(): ("<<this<<") reads '"<<file
@@ -431,7 +444,6 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
   int filebegin=0;
   unsigned int occurrence=0;
   if (!buffer.empty()) {
-    String_Vector cbuffer;
     for (size_t ln(0);ln<buffer.size();++ln) {
       lastline=buffer[ln];
       if (lastline.length()==0) continue;
@@ -472,6 +484,8 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
     InterpreteBuffer(cbuffer);
     for (size_t j(0);j<cbuffer.size();++j)
       AddFileContent(cbuffer[j],i);
+    if (cbuffer.empty()) infile.SetMode(fom::error);
+  }
   }
   if (m_addcommandline && CommandLine().size()>0) {
     for (size_t j(0);j<CommandLine().size();++j)
@@ -486,7 +500,6 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
     msg_IODebugging()<<"\n";
   }
   msg_IODebugging()<<"}\n";
-  if (buffer.empty()) infile.SetMode(fom::error);
   return m_filecontent[i].size();
 }
 
@@ -500,6 +513,11 @@ void Read_Write_Base::CloseInFile(const unsigned int i,const int mode)
   m_filecontent[i].clear();
   if ((infile.Mode()&fom::permanent) && !mode) return;
   std::string file(InputPath(i)+InputFile(i));
+  file+="|";
+  for (size_t j(0);j<FileBegin().size();++j) file+="|"+FileBegin()[j];
+  file+="|";
+  for (size_t j(0);j<FileEnd().size();++j) file+="|"+FileEnd()[j];
+  file+="||";
   if (s_buffermap.find(file)!=s_buffermap.end()) {
     msg_IODebugging()<<METHOD<<"(): ("<<this<<") clears buffer '"
                    <<file<<"' -> ("<<&s_buffermap[file]<<")\n";
