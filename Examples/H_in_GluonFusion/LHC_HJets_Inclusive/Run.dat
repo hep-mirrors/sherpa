@@ -11,10 +11,7 @@
 
   % tags and settings for ME generators
   LOOPGEN0:=Internal;
-  LOOPGEN1:=LHOLE;
-  SHERPA_LDADD golem_olp;
-  LHOLE_CONTRACTFILE OLE_order.olc;
-  LHOLE_OLP GoSam;
+  LOOPGEN1:=MCFM;
   ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN0 LOOPGEN1;
   EVENT_GENERATION_MODE Weighted;
   RESULT_DIRECTORY Results.QCUT;
