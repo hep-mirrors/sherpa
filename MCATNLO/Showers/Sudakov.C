@@ -74,6 +74,13 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
       Single_Vertex *v(*vit);
       if (v->nleg>3 || !v->on) continue;
       if (sfs.find(FTrip(v->in[0],v->in[1],v->in[2]))!=sfs.end()) continue;
+      bool skip(false);
+      for (size_t i(0);i<m_disallowflav.size();++i)
+        for (size_t j(0);j<3;++j)
+          if (v->in[j].Kfcode()==m_disallowflav[i]) skip=true;
+      if (skip) msg_Debugging()<<"Manually removing "<<v->in[0]<<" -> "
+                               <<v->in[1]<<" "<<v->in[2]<<".\n";
+      if (skip) continue;
       sfs.insert(FTrip(v->in[0],v->in[1],v->in[2]));
       sfs.insert(FTrip(v->in[0],v->in[2],v->in[1]));
       msg_Debugging()<<"Add "<<v->in[0]<<" -> "<<v->in[1]<<" "<<v->in[2]<<" {\n";

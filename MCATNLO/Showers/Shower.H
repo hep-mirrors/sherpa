@@ -77,7 +77,6 @@ namespace MCATNLO {
     inline double Weight() const { return m_weight; }
 
     inline const ATOOLS::Flavour &ActiveFlav() const { return m_flav; }
-
   };
 }
 

@@ -29,6 +29,7 @@ namespace MCATNLO {
     std::vector<Splitting_Function_Base *> m_addsplittings;
     Shower *p_shower;
     std::vector<SFC_Getter*> m_cgets;
+    std::vector<size_t> m_disallowflav;
     void ProduceT();
     bool Veto(double,double);
     bool Splitting(double,double);
@@ -77,6 +78,9 @@ namespace MCATNLO {
 
     inline void SetShower(Shower *const shower) { p_shower=shower; }
     inline double Weight() const { return m_weight; }
+
+    inline void SetDisallowFlavour(const std::vector<size_t>& df)
+    { m_disallowflav=df; }
   };
   
   void Sudakov::GetSplittingParameters

@@ -25,9 +25,14 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   double is_as_fac = ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
   m_kscheme = dataread->GetValue<int>("NLO_CSS_KIN_SCHEME",1);
-  std::vector<std::vector<std::string> > helpsvv;
+  std::vector<size_t> disallowflavs;
+  dataread->VectorFromFile(disallowflavs,"NLO_CSS_DISALLOW_FLAVOUR");
+  if (disallowflavs.size())
+    msg_Info()<<METHOD<<"(): Disallow splittings involving "<<disallowflavs
+              <<" MC@NLO.\n";
   m_sudakov.SetShower(this);
   m_sudakov.SetMassThreshold(mth);
+  m_sudakov.SetDisallowFlavour(disallowflavs);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
   m_kinFF.SetSudakov(&m_sudakov);
