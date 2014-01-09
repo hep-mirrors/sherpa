@@ -44,10 +44,6 @@ namespace ATOOLS {
     
     fom::code m_mode;
 
-    static int Nothing(void *data,int argc,char **argv,char **name);
-    static int ListFiles(void *data,int argc,char **argv,char **name);
-    static int GetFile(void *data,int argc,char **argv,char **name);
-
   public:
 
     // constructor
