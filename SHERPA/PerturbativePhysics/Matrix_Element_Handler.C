@@ -134,7 +134,6 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
   if (storeresults) {
     My_In_File::OpenDB(m_respath+"/");
     My_In_File::ExecDB(m_respath+"/","PRAGMA cache_size = 100000");
-    My_In_File::ExecDB(m_respath+"/","CREATE INDEX idx_path ON path(file)");
   }
   bool okay(true);
   for (size_t i=0;i<m_procs.size();++i) {

@@ -60,7 +60,6 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
   decaypath=rpa->gen.Variable("SHERPA_SHARE_PATH")+"/"+decaypath;
   My_In_File::OpenDB(decaypath);
   My_In_File::ExecDB(decaypath,"PRAGMA cache_size = 100000");
-  My_In_File::ExecDB(decaypath,"CREATE INDEX idx_path ON path(file)");
   My_In_File::ExecDB(decaypath,"BEGIN");
   Hadron_Decay_Map * dmap = new Hadron_Decay_Map(this);
   dmap->ReadInConstants(decaypath, decayconstfile);

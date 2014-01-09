@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #include <typeinfo>
 #include <cstdlib>
@@ -89,16 +90,29 @@ bool My_File<FileType>::OpenDB(std::string file)
   file+=".db";
   if (s_sqldbs.find(file)!=s_sqldbs.end()) return true;
   sqlite3 *db=NULL;
-  if (!FileExists(file)) {
+  int dummy;
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()) {
+    MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
+  }
+  else {
+#endif
+  if (FileExists(file)) {
+#ifdef USING__MPI
+    MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
+#endif
+  }
+  else {
     int res=sqlite3_open(file.c_str(),&db);
     if (res!=SQLITE_OK) {
       msg_IODebugging()<<METHOD<<"(): '"<<file<<"' returns '"
 		       <<sqlite3_errmsg(db)<<"'."<<std::endl;
     }
-    char sql[100], *zErrMsg=0;
-    strcpy(sql,"create table path(file,content); begin");
+    char *zErrMsg=0;
+    std::string sql="create table path(file,content);";
+    sql+="create index idx_path on path(file); begin";
     msg_IODebugging()<<METHOD<<"(\""<<file<<"\"): Creating table.\n";
-    int rc=sqlite3_exec(db,sql,NULL,NULL,&zErrMsg);
+    int rc=sqlite3_exec(db,sql.c_str(),NULL,NULL,&zErrMsg);
     if(rc!=SQLITE_OK) {
       msg_IODebugging()<<METHOD<<"(): '"<<file
 		     <<"' returns '"<<zErrMsg<<"'."<<std::endl;
@@ -108,8 +122,14 @@ bool My_File<FileType>::OpenDB(std::string file)
     }
     s_sqldbs[file]=db;
     PrepareStatements(db);
+#ifdef USING__MPI
+    MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
+#endif
     return true;
   }
+#ifdef USING__MPI
+  }
+#endif
   int res=sqlite3_open(file.c_str(),&db);
   if (res!=SQLITE_OK) {
     msg_IODebugging()<<METHOD<<"(): '"<<file<<"' returns '"
