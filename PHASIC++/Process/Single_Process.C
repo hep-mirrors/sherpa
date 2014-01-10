@@ -26,11 +26,11 @@ Single_Process::Single_Process(): m_lastbxs(0.0), m_zero(false)
   Data_Reader read(" ",";","!","=");
   read.SetInputPath(rpa->GetPath());
   read.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  if (!read.ReadFromFile(m_nloct,"SP_NLOCT")) m_nloct=0;
-  else {
+  if (!read.ReadFromFile(m_nloct,"SP_NLOCT")) m_nloct=1;
+  if (!m_nloct) {
     static bool print(false);
     if (!print) msg_Info()
-      <<METHOD<<"(): Set NLO counterterm mode "<<m_nloct<<".\n";
+      <<METHOD<<"(): Switch off NLO counterterms.\n";
     print=true;
   }
 }
