@@ -28,7 +28,6 @@ int Cluster_Definitions_Base::ReCluster
   msg_Debugging()<<*ampl<<"\n";
   for (Cluster_Amplitude *campl(ampl->Next());
        campl;campl=campl->Next()) {
-    if (campl->Legs().size()<4) continue;
     Cluster_Leg *lij(NULL);
     for (size_t ij(0);ij<campl->Legs().size();++ij)
       if (campl->Leg(ij)->K()) {
@@ -45,6 +44,16 @@ int Cluster_Definitions_Base::ReCluster
       }
       if (cl->Id()==lij->K()) k=l;
     }
+    if ((lij->Stat()&4) &&
+	campl->Legs().size()<campl->NIn()+2) {
+      for (size_t l(0);l<campl->Legs().size();++l) {
+	Cluster_Leg *cl(campl->Leg(l));
+	if (cl!=lij) cl->SetMom(campl->Prev()->IdLeg(cl->Id())->Mom());
+      }
+      lij->SetMom(campl->Prev()->Leg(i)->Mom()+
+		  campl->Prev()->Leg(j)->Mom());
+    }
+    else {
     Vec4D_Vector p=Combine
       (*campl->Prev(),i,j,k,lij->Flav(),campl->MS(),
        campl->Kin(),(lij->Stat()&4)?1:0);
@@ -58,6 +67,7 @@ int Cluster_Definitions_Base::ReCluster
 	  campl->Leg(l)->SetMom(p[n++]);
 	  break;
 	}
+    }
     }
     msg_Debugging()<<*campl<<"\n";
   }
