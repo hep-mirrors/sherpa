@@ -41,7 +41,7 @@ Splitting_Tools(const leading::code & lead,const PTOrder::code & ptorder,
   m_pt2max(sqr(hadpars->Get(std::string("ptmax")))), 
   m_pt2max_factor(sqr(hadpars->Get(std::string("ptmax_factor")))), 
   m_lastpt2(-1.), 
-  m_tot(0),m_d(0),m_s(0),m_u(0),m_reject_y(0),m_reject_z(0),m_error(0)
+  m_tot(0),m_d(0),m_s(0),m_u(0),m_reject_y(0),m_reject_z(0)
 { 
   if (m_analyse) {
     m_histograms[std::string("Splitting_Trials")]        = new Histogram(0,0.,1000,500);
@@ -80,7 +80,6 @@ Splitting_Tools::~Splitting_Tools() {
     }
     m_histograms.clear();
   }
-  msg_Info()<<METHOD<<": "<<m_error<<" errors during run.\n";
   delete p_kernels;
 }
 
@@ -150,10 +149,9 @@ PrepareKinematics(Dipole * dip,const bool & first,const bool & enforce) {
   m_mom0   = m_mom1+m_mom3;
   m_Q2     = m_mom0.Abs2();
   if (m_Q2<0 || IsNan(m_Q2)) {
-    m_error++;
-    //msg_Error()<<"Error in "<<METHOD<<" cannot prepare kinematics for \n"
-    //	       <<"   "<<m_mom1<<" + "<<m_mom3<<" from \n";
-    //dip->Output();
+    msg_Error()<<"Error in "<<METHOD<<" cannot prepare kinematics for "
+	       <<"   "<<m_mom1<<" + "<<m_mom3<<" from \n";
+    dip->Output();
     return false;
   }
   m_Q      = sqrt(m_Q2);
@@ -201,18 +199,15 @@ bool Splitting_Tools::SelectFlavour(const bool & vetodiquark)
   if (m_glusplit) {
     m_flav = Flavour(kf_none);
     double maxmass((m_Q-m_m1)/2.);   ///sqrt(2.));
-    double sumwt(0.), ps(0.);
+    double sumwt(0.);
     
     for (FDIter fdit=p_options->begin();fdit!=p_options->end();fdit++) {
       if (vetodiquark && fdit->first.IsDiQuark()) continue;
       if (fdit->second->popweight>0. && fdit->second->massmin<maxmass) {
-	ps     = sqrt(1.-sqr(fdit->first.HadMass()/maxmass));
-	if (ps<0.) continue;
-	sumwt += fdit->second->popweight * ps;
+	sumwt += fdit->second->popweight;
       }
     }
     if (sumwt<=0) {
-      m_error++;
       msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
 		 <<"   no flavour can be picked for gluon splitting: Q = "
 		 <<m_Q<<", "<<"m_1 = "<<m_m1<<" "
@@ -223,9 +218,7 @@ bool Splitting_Tools::SelectFlavour(const bool & vetodiquark)
     for (FDIter fdit=p_options->begin();fdit!=p_options->end();fdit++) {
       if (vetodiquark && fdit->first.IsDiQuark()) continue;
       if (fdit->second->popweight>0. && fdit->second->massmin<maxmass) {
-	ps     = sqrt(1.-sqr(fdit->first.HadMass()/maxmass));
-	if (ps<0.) continue;
-	sumwt -= fdit->second->popweight * ps;
+	sumwt -= fdit->second->popweight;
       }
       if (sumwt<0.) {
 	m_flav = fdit->first;
@@ -261,6 +254,7 @@ DetermineSplitting(Dipole * dip1,const bool & first,const bool & vetodiquark) {
       if (m_analyse) {
 	m_histograms[std::string("Splitting_Trials")]->Insert(trials);
       }
+      //msg_Out()<<METHOD<<" yields kt = "<<m_kt<<" < "<<sqrt(m_kt2max)<<".\n";
       return true;
     }
   }
@@ -272,7 +266,7 @@ bool Splitting_Tools::
 ProduceKinematics(const bool & first,const bool & vetodiquark) {
   if (!SelectFlavour(vetodiquark)) return false;
   double s23min(m_m2_2+m_m3_2);
-  double s23max(m_Qt2); 
+  double s23max(m_Qt2); //s23max(sqr(m_m2+m_m3)+m_pt2max*m_pt2max_factor);
   double ymax(1.-2.*m_m1*(m_Q-m_m1)/m_Qt2);
   if (ymax>(s23max-s23min)/m_Qt2) ymax = (s23max-s23min)/m_Qt2;
   double ymin(2.*m_m2*m_m3/m_Qt2);
@@ -281,34 +275,46 @@ ProduceKinematics(const bool & first,const bool & vetodiquark) {
     if (ymin>ymax) ymin = ymax/10.;
   }
   double zmin,zmax;
-  double OneMinExpo(m_glusplit?0.:0.), expo(1.) ;//1.+sqrt(m_m3_2/m_pt2max);
+  double OneMinExpo(-1),rand;
   double masscor(m_glusplit?1.:Max(m_m3_2/m_pt2max,1.)*Max(m_m1_2/m_pt2max,1.));
   double exparg(m_pt2max_factor*m_pt2max/masscor);
 
   int trials(0);
   while ((trials++)<150) {
-    if (dabs(OneMinExpo)<=1.e-6)  
-      m_y = ymin * pow(ymax/ymin,ran->Get());
+    rand  = ATOOLS::ran->Get();
+    if (OneMinExpo<=0.)  
+      m_y = ymin * pow(ymax/ymin,rand);
     else 
       m_y = pow(pow(ymin,OneMinExpo) + 
-		ran->Get()*(pow(ymax,OneMinExpo)-pow(ymin,OneMinExpo)),
+		rand*(pow(ymax,OneMinExpo)-pow(ymin,OneMinExpo)),
 		1./OneMinExpo); 
     m_s23 = m_y*m_Qt2+s23min;
     FixZRange(zmin,zmax);
-    m_z   = p_kernels->SelectZ(zmin,zmax,expo,m_glusplit,m_leadsplit);
+    m_z   = p_kernels->SelectZ(zmin,zmax,1.,m_glusplit,m_leadsplit);
     m_kt2 = m_z*(1.-m_z)*m_s23-(1.-m_z)*m_m3_2-m_z*m_m2_2;
     double weight = (m_kt2<0.||m_kt2>m_kt2max)?0.:1.;
     weight *= (*p_as)(m_kt2,false)/p_as->MaxValue() * 
       (m_glusplit?m_kt2/m_s23<ran->Get():1.) * 
       (m_kt2>m_pt2max?exp(-sqr((m_kt2-m_pt2max)/exparg)):1.);
     if (weight<ran->Get()) continue;
-    m_phi = 2.0*M_PI*ran->Get();
+    m_phi = 2.0*M_PI*ATOOLS::ran->Get();
     m_kt  = sqrt(m_kt2);
     if (ConstructKinematics()) {
       m_lastpt2 = m_kt2;
       break;
     }
-    else return false;
+    else {
+      /*
+	msg_Error()<<METHOD<<" "<<p_split->m_flav<<" -> "<<m_flav
+	<<" ["<<p_split->m_info<<p_spect->m_info<<"]:"
+	<<"crash for Q^2 = "<<m_Q2<<" --> "
+	<<"s_23 = "<<m_s23<<", kt^2 = "<<m_kt2<<", z = "<<m_z
+	<<" in ["<<zmin<<", "<<zmax<<"] from "<<m_m3_2
+	<<"--> kt = "<<m_mom3.PPerp(m_mom2)<<"\n";
+	exit(1);
+      */
+      return false;
+    }
   }
   if (m_analyse) {
     m_histograms.find(std::string("Kinematics_Trials"))->second->Insert(trials);
@@ -318,13 +324,14 @@ ProduceKinematics(const bool & first,const bool & vetodiquark) {
 
 bool Splitting_Tools::ConstructKinematics() {
   if (IsNan(m_kt) || IsNan(m_z) || IsNan(m_y)) {
-    m_error++;
+    msg_Tracking()<<"Error in "<<METHOD
+		  <<"(kt = "<<m_kt<<", z = "<<m_z<<", y = "<<m_y<<").\n";
     return false;
   }
   double po(sqr(m_Q2-m_m23_2-m_m1_2)- 4.*m_m23_2*m_m1_2);
   double pn(sqr(m_Q2-m_s23-m_m1_2)  - 4.*m_s23*m_m1_2);
   if (po<0. || pn<0.) {
-    m_error++;
+    msg_Tracking()<<"Error in "<<METHOD<<"(po,n = "<<po<<", "<<pn<<").\n";
     return false;
   }
   po = sqrt(po);
@@ -346,7 +353,8 @@ bool Splitting_Tools::ConstructKinematics() {
   m_mom3 = k3;
   m_mom2 = m_mom0-m_mom1-m_mom3;
   if (IsNan(m_mom2.Abs2())) {
-    m_error++;
+    msg_Tracking()<<"Error in "<<METHOD<<"(kt2 = "<<m_kt2<<").\n"
+		  <<m_mom1<<"+"<<m_mom2<<"+"<<m_mom3<<".\n";
     return false;
   }
   if (m_analyse) AnalyseKinematics(m_mom3,m_mom2,m_mom1);
@@ -356,6 +364,7 @@ bool Splitting_Tools::ConstructKinematics() {
 
 bool Splitting_Tools::
 FixZRange(double & zmin,double & zmax) {
+  //double m2_2(IsZero(m_m2_2/m_s23)?m_mmin_2:m_m2_2), m2(sqrt(m2_2));
   double m2_2(m_m2_2), m2(sqrt(m2_2));
   double disc = sqr(m_s23-m2_2-m_m3_2)-sqr(2.*m2*m_m3);
   double mean = m_s23+m_m3_2-m2_2;
@@ -373,6 +382,8 @@ FixZRange(double & zmin,double & zmax) {
       zmin  = (mean - disc)/(2.*m_s23);
       zmax  = Min((mean + disc)/(2.*m_s23),1.-0.001);
     }
+    //if ((p_split->m_info=='L' || p_split->m_info=='B') &&
+    //	zmax>0.5) zmin = Max(0.5,zmin); 
   }
   if (IsNan(zmin) || IsNan(zmax)) {
     zmin = 0.01;
@@ -396,10 +407,10 @@ void Splitting_Tools::AftermathOfSplitting(Dipole * dip1) {
   if (p_split->m_flav.IsGluon()) {
     p_spect->m_mom    = m_mom1;
     if (p_spect->m_info=='L') {
-      swap = s12>s13; // s12/(s12+s13)>ran->Get());
+      swap = s12/(s12+s13)>0.5; // ran->Get());
     }
     else if (p_spect->m_flav==Flavour(kf_gluon)) {
-      swap = s12<s13; // s12/(s12+s13)<ran->Get());
+      swap = s12/(s12+s13)<0.5; // ran->Get());
     }
     p_out1 = new Proto_Particle(m_flav.Bar(),swap?m_mom3:m_mom2,'l');
     p_out2 = new Proto_Particle(m_flav,swap?m_mom2:m_mom3,'l');
