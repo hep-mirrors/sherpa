@@ -225,7 +225,7 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap)
   for (;rampl->Next();rampl=rampl->Next()) {
     bool dc(false);
     for (size_t i(0);i<rampl->Next()->Legs().size();++i)
-      if (rampl->Next()->Leg(i)->Stat()&4) dc=true;
+      if (rampl->Next()->Leg(i)->Stat()&2) dc=true;
     if (!dc) break;
   }
   bool smin(rampl->Legs().size()-rampl->NIn()==campl->Leg(0)->NMax());
