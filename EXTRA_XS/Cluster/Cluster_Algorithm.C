@@ -46,7 +46,7 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
 		 xs->Flavours()[i]);
     Vec4D mom(i<2?-moms[i]:moms[i]);
     p_ampl->CreateLeg(mom,flav,col,1<<idx);
-    p_ampl->Legs().back()->SetStat(1);
+    p_ampl->Legs().back()->SetStat(0);
     p_ampl->Legs().back()->SetNMax
       (xs->Info().m_fi.NMaxExternal());
   }
