@@ -11,6 +11,7 @@ printf "Building ${db} ("$(echo $files | wc -w)") ";
 (
 echo "begin transaction;"
 echo "create table path(file,content);"
+echo "create index idx_path on path(file);"
 for i in $files; do
   test -d $i && continue; printf "." 1>&2
   filename=$(echo $i | sed 's|'${dir}'||g;s|^/||g')
