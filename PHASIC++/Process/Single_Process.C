@@ -26,8 +26,8 @@ Single_Process::Single_Process(): m_lastbxs(0.0), m_zero(false)
   Data_Reader read(" ",";","!","=");
   read.SetInputPath(rpa->GetPath());
   read.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  if (!read.ReadFromFile(m_nloct,"SP_NLOCT")) m_nloct=1;
-  if (!m_nloct) {
+  m_nloct=read.GetValue<int>("SP_NLOCT",m_pinfo.m_ckkw&1);
+  if (!m_nloct && m_pinfo.m_ckkw&1) {
     static bool print(false);
     if (!print) msg_Info()
       <<METHOD<<"(): Switch off NLO counterterms.\n";
