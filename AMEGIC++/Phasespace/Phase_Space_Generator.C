@@ -157,7 +157,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 	    //cg->SetName(string(procname));
 	    rannumber    = cg->MakeChannel(k,cnt,fsrp,pID);
 	    if (nout==1) rannumber=1;
-	    if (!cg->Valid()) PRINT_INFO("Channel "<<procname<<" kicked because of decoupled particle");
+	    if (!cg->Valid() && msg_LevelIsTracking()) PRINT_INFO("Channel "<<procname<<" kicked because of decoupled particle");
 	    if (rannumber>0 && cg->Valid()) {
 	      string makefilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+fsrp+string("/Makefile.am");
 	      AddToMakefileAM(makefilename,fsrp,procname);
