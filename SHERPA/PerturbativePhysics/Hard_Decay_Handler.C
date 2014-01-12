@@ -26,6 +26,7 @@
 #include "EXTRA_XS/One2Three/Comix1to3.H"
 
 #include <iostream>
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
 #include <cstring>
@@ -67,7 +68,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   // also need to tell shower whats massive now
   // TODO: need to use the same mass-selector
   // for now, implement alike
-  SetDecayMasses(dr);
+  SetDecayMasses(&dr);
   m_qedmode=dr.GetValue<int>("HDH_QED_CORRECTIONS",1);
   if (m_qedmode && m_spincorr) m_qedmode=2;
   if (m_qedmode>0 && !m_usemass) {
@@ -180,47 +181,76 @@ Hard_Decay_Handler::~Hard_Decay_Handler()
   }
 }
 
-void Hard_Decay_Handler::SetDecayMasses(Data_Reader& dr)
+void Hard_Decay_Handler::SetDecayMasses(Data_Reader *const dr)
 {
   ATOOLS::Flavour_Vector allflavs(MODEL::s_model->IncludedFlavours());
-  std::vector<size_t> psmassive;
-  std::vector<size_t> psmassless;
-  dr.VectorFromFile(psmassive,"MASSIVE_PS");
-  dr.VectorFromFile(psmassless,"MASSLESS_PS");
-  m_usemass=!((bool)dr.GetValue<int>("RESPECT_MASSIVE_FLAG",0));
-  msg_Info()<<METHOD<<"(): Make decays massive: "<<m_usemass<<std::endl;
-  if (m_usemass) {
-    Flavour_Set tempflavs;
-    for (size_t i(0);i<psmassless.size();++i) {
-      Flavour fl(psmassless[i],0);
-      tempflavs.insert(fl);
-      tempflavs.insert(fl.Bar());
-      msg_Tracking()<<METHOD<<"(): Using massless decay for "
-                    <<fl<<".\n";
-    }
-    // find m_psmass=allflavs-tempflavs
+  std::vector<size_t> psmassive,psmassless;
+  std::vector<size_t> defpsmassive,defpsmassless;
+  dr->VectorFromFile(psmassive,"MASSIVE_PS");
+  dr->VectorFromFile(psmassless,"MASSLESS_PS");
+  bool respect=(bool)dr->GetValue<int>("RESPECT_MASSIVE_FLAG",0);
+  // check consistency
+  for (size_t i(0);i<psmassive.size();++i)
+    if (std::find(psmassless.begin(),psmassless.end(),psmassive[i])!=
+        psmassless.end()) THROW(fatal_error,"Inconsinstent input.");
+  for (size_t i(0);i<psmassless.size();++i)
+    if (Flavour(psmassless[i]).IsMassive())
+      THROW(fatal_error,"Cannot shower massive particle massless.");
+  // set defaults
+  // respect=0 -> def: dusgy massless, rest massive
+  // respect=1 -> def: only massive massive, rest massless
+  // TODO: need to fill in those that are massive already?
+  if (!respect) {
+    defpsmassless.push_back(kf_d);
+    defpsmassless.push_back(kf_u);
+    defpsmassless.push_back(kf_s);
+    defpsmassless.push_back(kf_gluon);
+    defpsmassless.push_back(kf_photon);
     for (size_t i(0);i<allflavs.size();++i) {
       if (allflavs[i].IsDummy()) continue;
-      bool enter(true);
-      for (Flavour_Set::const_iterator it(tempflavs.begin());
-           it!=tempflavs.end();++it) {
-        if (allflavs[i].Kfcode()==it->Kfcode()) { enter=false;break; }
-      }
-      if (enter) m_decmass.insert(allflavs[i]);
-      if (enter) msg_Tracking()<<METHOD<<"(): Using massive decay for "
-                               <<allflavs[i]<<".\n";
+      size_t kf(allflavs[i].Kfcode());
+      bool add(true);
+      for (size_t j(0);j<defpsmassive.size();++j)
+        if (kf==defpsmassive[j]) { add=false; break; }
+      for (size_t j(0);j<defpsmassless.size();++j)
+        if (kf==defpsmassless[j]) { add=false; break; }
+      if (add)  defpsmassive.push_back(kf);
     }
   }
   else {
-    for (size_t i(0);i<psmassive.size();++i) {
-      Flavour fl(psmassive[i],0);
-      m_decmass.insert(fl);
-      m_decmass.insert(fl.Bar());
-      msg_Tracking()<<METHOD<<"(): Using massive decay for "<<fl<<".\n";
+    for (size_t i(0);i<allflavs.size();++i) {
+      if (allflavs[i].IsDummy()) continue;
+      size_t kf(allflavs[i].Kfcode());
+      bool add(true);
+      for (size_t j(0);j<defpsmassive.size();++j)
+        if (kf==defpsmassive[j]) { add=false; break; }
+      for (size_t j(0);j<defpsmassless.size();++j)
+        if (kf==defpsmassless[j]) { add=false; break; }
+      if (add && allflavs[i].IsMassive())  defpsmassive.push_back(kf);
+      if (add && !allflavs[i].IsMassive()) defpsmassless.push_back(kf);
     }
   }
+  // then remove and add those specified manually
+  for (size_t i(0);i<psmassive.size();++i) {
+    defpsmassless.erase(std::remove(defpsmassless.begin(),defpsmassless.end(),
+                                    psmassive[i]),defpsmassless.end());
+    if (std::find(defpsmassive.begin(),defpsmassive.end(),psmassive[i])==
+        defpsmassive.end()) defpsmassive.push_back(psmassive[i]);
+  }
+  for (size_t i(0);i<psmassless.size();++i) {
+    defpsmassive.erase(std::remove(defpsmassive.begin(),defpsmassive.end(),
+                                   psmassless[i]),defpsmassive.end());
+    if (std::find(defpsmassless.begin(),defpsmassless.end(),psmassless[i])==
+        defpsmassless.end()) defpsmassless.push_back(psmassless[i]);
+  }
+  // fill massive ones into m_psmass
+  for (size_t i(0);i<defpsmassive.size();++i) {
+    Flavour fl(defpsmassive[i],0);
+    m_decmass.insert(fl);
+    m_decmass.insert(fl.Bar());
+  }
   Flavour_Vector mf(m_decmass.begin(),m_decmass.end());
-  msg_Info()<<METHOD<<"(): Massive decay flavours for: "<<mf<<std::endl;
+  msg_Info()<<METHOD<<"(): Massive decay flavours: "<<mf<<std::endl;
 }
 
 
