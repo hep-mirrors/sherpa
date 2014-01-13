@@ -175,7 +175,8 @@ void Decay_Handler_Base::TreatInitialBlob(ATOOLS::Blob* blob,
   std::vector<size_t> shuffled(daughters.size());
   for (size_t i=0; i<daughters.size(); ++i) shuffled[i]=i;
   for (size_t i=0; i<daughters.size(); ++i) {
-    if (abs(daughters[i]->Momentum().Abs2()-
+    if (!daughters[i]->Flav().Stable() &&
+	abs(daughters[i]->Momentum().Abs2()-
 	    sqr(daughters[i]->FinalMass()))>1e-6) {
       PRINT_INFO("Initial particle "<<daughters[i]->Flav()<<" not onshell: "
                  <<"p^2="<<daughters[i]->Momentum().Mass()
