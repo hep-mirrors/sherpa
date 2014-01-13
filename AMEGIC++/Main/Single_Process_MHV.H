@@ -59,8 +59,8 @@ namespace AMEGIC {
 
     const ATOOLS::Flavour_Vector &CombinedFlavour(const size_t &idij);
 
-  private:
     void           PolarizationNorm();
+  private:
 
     /*------------------------------------------------------------------------------
 

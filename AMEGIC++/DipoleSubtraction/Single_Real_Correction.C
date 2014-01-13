@@ -107,7 +107,10 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
 
   if (m_no_tree) {
     p_tree_process->Init();
-    p_tree_process->Get<AMEGIC::Single_Process>()->PolarizationNorm();
+    if (dynamic_cast<AMEGIC::Single_Process*>(p_tree_process))
+      p_tree_process->Get<AMEGIC::Single_Process>()->PolarizationNorm();
+    if (dynamic_cast<AMEGIC::Single_Process_MHV*>(p_tree_process))
+      p_tree_process->Get<AMEGIC::Single_Process_MHV>()->PolarizationNorm();
     status=1;
   }
   else {
