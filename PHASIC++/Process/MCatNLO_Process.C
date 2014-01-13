@@ -76,16 +76,16 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   Process_Info spi(pi);
   ++spi.m_fi.m_nmax;
   spi.m_fi.SetNLOType(cpi.m_fi.NLOType());
-  // spi.m_megenerator=spi.m_rsmegenerator;
-  // // this doesn't work because you would reweight with amegic/comix in cs_gamma
   p_bproc=InitProcess(spi,nlo_type::lo,false);
-  // spi.m_megenerator=pi.m_megenerator;
+  spi.m_megenerator=spi.m_rsmegenerator;
+  p_rproc=InitProcess(spi,nlo_type::lo,true);
+  spi.m_megenerator=pi.m_megenerator;
   p_bviproc=InitProcess(spi,nlo_type::born|nlo_type::loop|nlo_type::vsub,false);
   p_ddproc=InitProcess(spi,nlo_type::real|nlo_type::rsub,1);
+  spi.m_integrator=spi.m_rsintegrator;
   spi.m_megenerator=spi.m_rsmegenerator;
   p_rsproc=InitProcess(spi,nlo_type::real|nlo_type::rsub,1|2);
   p_rsproc->FillProcessMap(p_apmap);
-  p_rproc=InitProcess(spi,nlo_type::lo,true);
   p_bviproc->FillProcessMap(p_apmap);
   p_ddproc->FillProcessMap(p_apmap);
   p_bviproc->SetSProc(p_ddproc);
