@@ -21,3 +21,4 @@ localinc_HEADERS   = \
 			Process_Group.H 
 
 dist_pkgdata_SCRIPTS  =	makelibs
+dist_bin_SCRIPTS = make2scons

@@ -1,0 +1,32 @@
+#!/bin/bash
+
+make_scons() {
+libname=$(sed -n '/LTLIBRARIES/ {s/lib_LTLIBRARIES[ \t]*=[ \t]*lib\(.*\)[.]la[ \t]*/\1/g;p}' Makefile.am)
+sources=$(for i in *.C; do printf $i | sed "s/^/'/1;s/$/',/1"; done | sed 's/,$//1')
+echo "Import('env')
+lenv=env.Clone()
+proclib = lenv.SharedLibrary('${libname}',[${sources}])
+lenv.Install('\${libdir}',proclib)
+lenv.Alias('install',['\${libdir}'])" > SConscript
+}
+
+procdir="Process/Amegic/*";
+test -z "$1" || procdir=$1;
+
+basedir=$PWD;
+echo "import os
+vars = Variables()
+vars.Add(PathVariable('libdir','lib path',os.getcwd()+'/Process/Amegic/lib',PathVariable.PathIsDirCreate))
+vars.Add('CXX','The C++ Compiler')
+vars.Add('CXXFLAGS','The C++ Flags',['-g','-O2'])
+env = Environment(variables=vars,CPPPATH=['@INCLUDEDIR@'])
+" > SConstruct;
+printf "Processing ("$(echo $procdir/P?_* $procdir/fsr* | wc -w)") ";
+for i in $procdir/P?_* $procdir/fsr*; do
+  cd $i; printf ".";
+  make_scons;
+  subdir=$(printf $PWD | sed 's|'${basedir}'||1;s|/||1')
+  echo "SConscript('${subdir}/SConscript',exports='env')"  >> $basedir/SConstruct;
+  cd $basedir;
+done;
+echo " done";

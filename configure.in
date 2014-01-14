@@ -134,6 +134,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  EXTRA_XS/Makefile \
 	  AMEGIC++/Main/Makefile \
           AMEGIC++/Main/makelibs \
+          AMEGIC++/Main/make2scons \
 	  AMEGIC++/DipoleSubtraction/Makefile \
           AMEGIC++/Amplitude/Makefile \
           AMEGIC++/Amplitude/Zfunctions/Makefile \
