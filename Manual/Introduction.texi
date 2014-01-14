@@ -247,9 +247,8 @@ During the initialization run the matrix elements for a given set of
 processes, as well as their 
 specific phase-space mappings are created by @Amegic{}.
 Corresponding C++ sourcecode is written to disk and compiled
-by the user using the @kbd{makelibs} script.
-Alternatively, if @uref{http://www.scons.org/,,scons} is installed, 
-you may invoke @kbd{<prefix>/bin/make2scons} and run @kbd{scons}.
+by the user using the @kbd{makelibs} script or
+@uref{http://www.scons.org/,,scons}.
 The produced libraries are linked to the main program
 automatically in the next run and used to calculate cross
 sections and to generate weighted or unweighted events.

@@ -256,7 +256,7 @@ If AMEGIC++ is used, Sherpa requires an initialization run, where
 C++ source code is written to disk. This code must be compiled into dynamic libraries 
 by the user by running the @code{makelibs} script in the working directory.
 Alternatively, if @uref{http://www.scons.org/,,scons} is installed,
-you may invoke @kbd{<prefix>/bin/make2scons} and run @kbd{scons}.
+you may invoke @kbd{<prefix>/bin/make2scons} and run @kbd{scons install}.
 After this step Sherpa is run again for the actual cross section integrations and event generation.
 For more information on and examples of how to run Sherpa using AMEGIC++, see 
 @ref{Running Sherpa with AMEGIC++}.
@@ -600,6 +600,9 @@ purpose and created in the working directory, must be invoked by the user
 
 Note that the following tools have to be available for this step:
 @code{autoconf}, @code{automake} and @code{libtool}.
+
+Alternatively, if @uref{http://www.scons.org/,,scons} is installed, 
+you may invoke @kbd{<prefix>/bin/make2scons} and run @kbd{scons install}.
 
 Afterwards Sherpa can be restarted using the same command as
 before. In this run (the generation run) the cross sections of the hard
