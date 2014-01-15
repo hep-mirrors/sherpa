@@ -31,7 +31,7 @@ Phase_Space_Integrator::Phase_Space_Integrator()
   read.SetAllowUnits(true);
   if (!read.ReadFromFile(itmin,"PSI_ITMIN")) itmin=5000;
   else msg_Info()<<METHOD<<"(): Set n_{it,min} = "<<itmin<<".\n";
-  if (!read.ReadFromFile(itmax,"PSI_ITMAX")) itmax=50000;
+  if (!read.ReadFromFile(itmax,"PSI_ITMAX")) itmax=100*itmin;
   else msg_Info()<<METHOD<<"(): Set n_{it,max} = "<<itmax<<".\n";
   if (!read.ReadFromFile(nopt,"PSI_NOPT")) nopt=25;
   else msg_Info()<<METHOD<<"(): Set n_{opt} = "<<nopt<<".\n";
@@ -130,9 +130,8 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
   (psh->FSRIntegrator())->Reset();
   numberofchannels += psh->FSRIntegrator()->NChannels();
   msg_Tracking()<<"   Found "<<psh->FSRIntegrator()->NChannels()<<" FSR integrators."<<endl;
-  iter = iter0 = Max(itmin,Max((int)psh->Process()->ItMin(),Max(20*int(numberofchannels),5000)));
-  iter1      = Max(2*itmin,Max(2*(int)psh->Process()->ItMin(),Max(100*int(numberofchannels),10000)));
-  if (iter1>itmax) iter1=Max(iter0,itmax);
+  iter = iter0 = Min(itmax,Max(itmin,Max((int)psh->Process()->ItMin(),20*int(numberofchannels))));
+  iter1      = Min(2*itmax,Max(2*itmin,Max(2*(int)psh->Process()->ItMin(),100*int(numberofchannels))));
   int hlp = (iter1-1)/iter0+1;
   iter1   = hlp*iter0;
 
