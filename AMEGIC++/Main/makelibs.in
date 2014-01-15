@@ -12,6 +12,7 @@ print_help(){
   echo "         -n skip \"make distclean\" after compiling" && \
   echo "         -o install single module" && \
   echo "         -j [N] allow N compilations at once" && \
+  echo "         -s use scons to speed up compilation" && \
   echo "         -h display this help and exit" && echo
 }
 
@@ -21,13 +22,14 @@ defaults(){
 
 defaults;
 
-while getopts hcnoj: OPT
+while getopts hscnoj: OPT
 do
   case $OPT in
   c) CLEAN=TRUE ;;
   n) POSTCLEAN=FALSE ;;
   o) ONE=TRUE ;;
   j) JOBS=$OPTARG ;;
+  s) SCONS=TRUE ;;
   h) print_help && exit 0 ;;
   \?)
     shift `expr $OPTIND - 1`
@@ -54,6 +56,15 @@ if [ "$ONE" = "TRUE" ] ; then
       if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]  ; then exit ; fi
     fi
   done
+fi
+
+if [ "$SCONS" = "TRUE" ] ; then
+  @BINDIR@/make2scons x;
+  for J in $DIRS ; do
+    @BINDIR@/make2scons $J 1;
+  done
+  scons -j$JOBS install;
+  exit 0;
 fi
 
 if ! test -z "@CXX@"; then export CXX="@CXX@"; fi

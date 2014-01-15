@@ -14,6 +14,7 @@ procdir="Process/Amegic/*";
 test -z "$1" || procdir=$1;
 
 basedir=$PWD;
+if test -z "$2"; then
 echo "import os
 vars = Variables()
 vars.Add(PathVariable('libdir','lib path',os.getcwd()+'/Process/Amegic/lib',PathVariable.PathIsDirCreate))
@@ -21,6 +22,8 @@ vars.Add('CXX','The C++ Compiler')
 vars.Add('CXXFLAGS','The C++ Flags',['-O2'])
 env = Environment(variables=vars,CPPPATH=['@INCLUDEDIR@'])
 " > SConstruct;
+fi;
+test "$procdir" = "x" && exit 0;
 printf "Processing ("$(echo $procdir/P?_* $procdir/fsr* | wc -w)") ";
 for i in $procdir/P?_* $procdir/fsr*; do
   cd $i; printf ".";
