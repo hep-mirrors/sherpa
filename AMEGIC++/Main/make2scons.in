@@ -18,7 +18,7 @@ echo "import os
 vars = Variables()
 vars.Add(PathVariable('libdir','lib path',os.getcwd()+'/Process/Amegic/lib',PathVariable.PathIsDirCreate))
 vars.Add('CXX','The C++ Compiler')
-vars.Add('CXXFLAGS','The C++ Flags',['-g','-O2'])
+vars.Add('CXXFLAGS','The C++ Flags',['-O2'])
 env = Environment(variables=vars,CPPPATH=['@INCLUDEDIR@'])
 " > SConstruct;
 printf "Processing ("$(echo $procdir/P?_* $procdir/fsr* | wc -w)") ";
