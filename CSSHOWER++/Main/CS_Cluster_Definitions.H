@@ -3,6 +3,7 @@
 
 #include "PDF/Main/Cluster_Definitions_Base.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
+#include "ATOOLS/Math/Poincare.H"
 
 namespace CSSHOWER {
 
@@ -14,6 +15,7 @@ namespace CSSHOWER {
     int m_mode, m_kin, m_col, m_kmode;
     Splitting_Function_Base *p_sf;
     ATOOLS::Vec4D m_pk;
+    ATOOLS::Poincare_Sequence m_lt;
     CS_Parameters(const double &kt2,const double &z,
 		  const double &y,const double &phi,
 		  const double &x,const double &q2,

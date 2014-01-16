@@ -120,7 +120,7 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
 		 <<", phi = "<<l->Phi()<<", kin = "<<l->Kin()
 		 <<", kscheme = "<<c->KScheme()<<"\n\n";
   int stat=0;
-  if (c->KScheme() && !m_recdec) {
+  if (c->GetType()==pst::FS && c->KScheme() && !m_recdec) {
     stat=1;
     Poincare_Sequence lam;
     Vec4D newp(c->Momentum()), oldp(cpi+cpj);

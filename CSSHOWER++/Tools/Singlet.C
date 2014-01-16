@@ -3,7 +3,6 @@
 #include "CSSHOWER++/Showers/Sudakov.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
-#include "PHASIC++/Channels/CSS_Kinematics.H"
 #include "PDF/Main/Jet_Criterion.H"
 #include "ATOOLS/Math/ZAlign.H"
 #include "ATOOLS/Org/Message.H"
@@ -529,46 +528,8 @@ void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   Vec4D pa(l->Momentum()), pk(s->Momentum()), pi(r->Momentum());
   double ma2(l->Mass2()), mk2(s->Mass2());
   double mi2(r->Mass2()), mai2(f->Mass2());
-  if (f->KScheme()) {
-    mai2=(pa-pi).Abs2();
-    pk=f->FixSpec();
-    if (mode&2) {
-    // temporary !!!
-    pk=s->Momentum();
-    pk[1]=pk[2]=0.0;
-    pk[0]=dabs(pk[3]);
-    // end temporary
-    }
-    mk2=0.0;
-  }
   Poincare_Sequence lt(l->LT());
   if (lt.size()) lt.Invert();
-  else {
-  Kin_Args lp;
-  if (mode&2) {
-    if (mode&1) {
-      lp=ClusterIIDipole(ma2,mi2,mai2,mk2,pa,pi,pk,2|(((mode&4)?f:l)->Kin()?4:0));
-    }
-  }
-  else {
-    if (mode&1) {
-      Parton *b(NULL);
-      for (PLiter pit(f->GetSing()->begin());pit!=f->GetSing()->end();++pit)
-	if ((*pit)->GetType()==pst::IS && *pit!=f) {
-	  b=*pit;
-	  break;
-	}
-      if (b==NULL) THROW(fatal_error,"Corrupted singlet");
-      lp=ClusterIFDipole(ma2,mi2,mai2,mk2,b->Mass2(),pa,pi,pk,
-			 b->Momentum(),2|(((mode&4)?f:l)->Kin()?4:0));
-      if ((mode&8) && f->KScheme()) {
-	f->SetFixSpec(lp.m_lam*f->FixSpec());
-	f->SetOldMomentum(lp.m_lam*f->OldMomentum());
-      }
-    }
-  }
-  lt=lp.m_lam;
-  }
   if (lt.empty()) return;
   for (All_Singlets::const_iterator asit(p_all->begin());
        asit!=p_all->end();++asit) {

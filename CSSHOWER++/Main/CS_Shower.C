@@ -477,6 +477,8 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 			split->GetType()==pst::FS?split->GetFlavour():
 			split->GetFlavour().Bar(),p_ms,
 			split->Kin(),split->KScheme(),1));
+      cp.m_lt.Invert();
+      l->SetLT(cp.m_lt);
       l->SetTest(cp.m_kt2,cp.m_z,cp.m_y,cp.m_phi);
       if (split->KScheme()) split->SetFixSpec(cp.m_pk);
       msg_Debugging()<<"Set reco params: kt = "<<sqrt(cp.m_kt2)<<", z = "
@@ -498,7 +500,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 			(campl->Prev(),almap[l],almap[r],almap[s],
 			 split->GetType()==pst::FS?split->GetFlavour():
 			 split->GetFlavour().Bar(),p_ms,
-			 split->Kin(),split->KScheme()));
+			 split->Kin(),split->KScheme(),1));
       msg_Debugging()<<"New reco params: kt = "<<sqrt(ncp.m_kt2)<<", z = "
 		     <<ncp.m_z<<", y = "<<ncp.m_y<<", phi = "<<ncp.m_phi
 		     <<", kin = "<<ncp.m_kin<<"\n";
@@ -531,6 +533,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       s->SetFixSpec(oldfs);
       split->SetFixSpec(oldsf);
       split->SetOldMomentum(oldso);
+      l->SetLT(cp.m_lt);
       }
       l->SetOldMomentum(oldl);
       r->SetOldMomentum(oldr);
