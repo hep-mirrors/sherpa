@@ -120,6 +120,29 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     p_ampl=p_me->Process()->Get<Single_Process>()->Cluster
       (p_me->Process()->Integrator()->Momenta(),m_cmode|256);
   if (p_ampl==NULL) return Return_Value::New_Event;
+  m_weight=1.0;
+  if (p_me->Process()->Info().m_ckkw&1) {
+    if ((m_bbarmode&1) && p_me->HasNLO() &&
+        p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
+      Cluster_Amplitude *oampl=p_me->Process()->
+	Get<Single_Process>()->Cluster
+	(p_me->Process()->Integrator()->Momenta(),m_cmode);
+      if (!LocalKFactor(oampl)) {
+	DEBUG_INFO("didn't find process using original amplitude");
+	if (m_bbarmode&4) {
+	  Cluster_Amplitude *ampl=p_me->Process()->
+	    Get<Single_Process>()->Cluster
+	    (p_me->Process()->Integrator()->Momenta(),m_cmode|16|256|512);
+	  while (ampl->Prev()) ampl=ampl->Prev();
+	  if (!LocalKFactor(ampl))
+	    DEBUG_INFO("didn't find process using exclusive clustering");
+	  ampl->Delete();
+	}
+      }
+      while (oampl->Prev()) oampl=oampl->Prev();
+      oampl->Delete();
+    }
+  }
   p_me->Process()->Generator()->SetMassMode(1);
   int stat(p_me->Process()->Generator()->ShiftMasses(p_ampl));
   if (stat<0) {
@@ -162,30 +185,7 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     }
   }
   while (p_ampl->Prev()) p_ampl=p_ampl->Prev();
-  //if (!SetColours(p_ampl,blob)) return Return_Value::New_Event;
-  //if (!p_dec->SetColours(p_ampl,blob)) return Return_Value::New_Event;
-  m_weight=1.0;
   if (p_me->Process()->Info().m_ckkw&1) {
-    if ((m_bbarmode&1) && p_me->HasNLO() &&
-        p_me->Process()->Parent()->Info().m_fi.NLOType()==nlo_type::lo) {
-      Cluster_Amplitude *oampl=p_me->Process()->
-	Get<Single_Process>()->Cluster
-	(p_me->Process()->Integrator()->Momenta(),m_cmode);
-      if (!LocalKFactor(oampl)) {
-	DEBUG_INFO("didn't find process using original amplitude");
-	if (m_bbarmode&4) {
-	  Cluster_Amplitude *ampl=p_me->Process()->
-	    Get<Single_Process>()->Cluster
-	    (p_me->Process()->Integrator()->Momenta(),m_cmode|16|256|512);
-	  while (ampl->Prev()) ampl=ampl->Prev();
-	  if (!LocalKFactor(ampl))
-	    DEBUG_INFO("didn't find process using exclusive clustering");
-	  ampl->Delete();
-	}
-      }
-      while (oampl->Prev()) oampl=oampl->Prev();
-      oampl->Delete();
-    }
     blob->AddData("Sud_Weight",new Blob_Data<double>(m_weight));
     if (p_me->EventGenerationMode()!=0) {
       if (m_weight>=ran->Get()) m_weight=Max(1.0,m_weight);
