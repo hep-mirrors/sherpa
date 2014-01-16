@@ -1223,10 +1223,12 @@ bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
 		   <<" ("<<sqrt(dabs(m_p[i].Abs2()))<<")\n";
 #endif
   }
+#ifdef DEBUG__BG
   static double accu(sqrt(Accu()));
   if (!IsEqual(sum,Vec4D(),accu)) 
     msg_Error()<<METHOD<<"(): Four momentum not conserved. sum = "
 	       <<sum<<"."<<std::endl;
+#endif
   if (m_subs.empty()) return true;
   p_dinfo->SetStat(1);
   for (size_t i(0);i<m_cur[1].size();++i) m_cur[1][i]->SetP(m_p[i]);
