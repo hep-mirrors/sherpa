@@ -71,10 +71,10 @@ int ListFiles(void *data,int argc,char **argv,char **name)
 
 void PrepareStatements(sqlite3 *db)
 {
-  char sqlget[100];
+  char sqlget[41];
   sprintf(sqlget,"select content from path where file = ?1");
   sqlite3_stmt *stmt=NULL;
-  int rc=sqlite3_prepare_v2(db,sqlget,100,&stmt,NULL);
+  int rc=sqlite3_prepare_v2(db,sqlget,41,&stmt,NULL);
   if(rc!=SQLITE_OK)
     msg_IODebugging()<<METHOD<<"(): '"<<db<<"' returns '"
 		     <<sqlite3_errmsg(db)<<"'."<<std::endl;
