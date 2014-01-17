@@ -61,7 +61,7 @@ void C2_2::GenerateWeight(Vec4D* p,Cut_Data * cuts)
 
   weight = wt;
   if (m_onshell) {
-    weight/=M_PI/p23.Abs2();
+    weight/=M_PI*2.0;
     weight*=Flavour((kf_code)(25)).Mass()*Flavour((kf_code)(25)).Width()*M_PI;
   }
 }

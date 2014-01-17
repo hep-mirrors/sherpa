@@ -90,7 +90,7 @@ void Threshold_Uniform_V::GenerateWeight(const int mode)
       m_spkey<<1./CE.ThresholdWeight(m_sexp,m_mass,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -146,7 +146,7 @@ void Threshold_Forward_V::GenerateWeight(int mode)
       m_spkey<<1./CE.ThresholdWeight(m_sexp,m_mass,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -203,7 +203,7 @@ void Threshold_Backward_V::GenerateWeight(int mode)
       m_spkey<<1./CE.ThresholdWeight(m_sexp,m_mass,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -260,7 +260,7 @@ void Threshold_Central_V::GenerateWeight(int mode)
       m_spkey<<1./CE.ThresholdWeight(m_sexp,m_mass,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -316,7 +316,7 @@ void Resonance_Uniform_V::GenerateWeight(const int mode)
       m_spkey<<1./CE.MassivePropWeight(m_mass,m_width,1,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -374,7 +374,7 @@ void Resonance_Forward_V::GenerateWeight(int mode)
       m_spkey<<1./CE.MassivePropWeight(m_mass,m_width,1,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -433,7 +433,7 @@ void Resonance_Backward_V::GenerateWeight(int mode)
       m_spkey<<1./CE.MassivePropWeight(m_mass,m_width,1,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -492,7 +492,7 @@ void Resonance_Central_V::GenerateWeight(int mode)
       m_spkey<<1./CE.MassivePropWeight(m_mass,m_width,1,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -547,7 +547,7 @@ void Simple_Pole_Uniform_V::GenerateWeight(const int mode)
       m_spkey<<1./CE.MasslessPropWeight(m_exponent,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -604,7 +604,7 @@ void Simple_Pole_Forward_V::GenerateWeight(int mode)
       m_spkey<<1./CE.MasslessPropWeight(m_sexponent,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -662,7 +662,7 @@ void Simple_Pole_Backward_V::GenerateWeight(int mode)
       m_spkey<<1./CE.MasslessPropWeight(m_sexponent,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -720,7 +720,7 @@ void Simple_Pole_Central_V::GenerateWeight(int mode)
       m_spkey<<1./CE.MasslessPropWeight(m_exponent,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -782,7 +782,7 @@ void Leading_Log_Uniform_V::GenerateWeight(const int mode)
       m_spkey<<1./CE.LLPropWeight(1.-m_beta,pole,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -846,7 +846,7 @@ void Leading_Log_Forward_V::GenerateWeight(int mode)
       m_spkey<<1./CE.LLPropWeight(1.-m_beta,pole,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -910,7 +910,7 @@ void Leading_Log_Backward_V::GenerateWeight(int mode)
       m_spkey<<1./CE.LLPropWeight(1.-m_beta,pole,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -975,7 +975,7 @@ void Leading_Log_Central_V::GenerateWeight(int mode)
       m_spkey<<1./CE.LLPropWeight(1.-m_beta,pole,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -1046,7 +1046,7 @@ void LBS_Compton_Peak_Uniform_V::GenerateWeight(const int mode)
       m_spkey<<1./CE.LLPropWeight(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],help,m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -1120,7 +1120,7 @@ void LBS_Compton_Peak_Forward_V::GenerateWeight(int mode)
       m_spkey<<1./CE.LLPropWeight(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],help,m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -1195,7 +1195,7 @@ void LBS_Compton_Peak_Backward_V::GenerateWeight(int mode)
       m_spkey<<1./CE.LLPropWeight(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],help,m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
@@ -1269,7 +1269,7 @@ void LBS_Compton_Peak_Central_V::GenerateWeight(int mode)
       m_spkey<<1./CE.LLPropWeight(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],help,m_sgridkey[0]);
     }
   }
-  if (m_spkey[4]>0.0) m_spkey<<M_PI/m_spkey[4];
+  if (m_spkey[4]>0.0) m_spkey<<M_PI*2.0;
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
