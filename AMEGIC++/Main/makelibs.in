@@ -12,7 +12,7 @@ print_help(){
   echo "         -n skip \"make distclean\" after compiling" && \
   echo "         -o install single module" && \
   echo "         -j [N] allow N compilations at once" && \
-  echo "         -s use scons to speed up compilation" && \
+  echo "         -s force use of make" && \
   echo "         -h display this help and exit" && echo
 }
 
@@ -22,6 +22,7 @@ defaults(){
 
 defaults;
 
+which scons > /dev/null 2>&1 && SCONS=TRUE
 while getopts hscnoj: OPT
 do
   case $OPT in
@@ -29,7 +30,7 @@ do
   n) POSTCLEAN=FALSE ;;
   o) ONE=TRUE ;;
   j) JOBS=$OPTARG ;;
-  s) SCONS=TRUE ;;
+  s) SCONS=FALSE ;;
   h) print_help && exit 0 ;;
   \?)
     shift `expr $OPTIND - 1`
