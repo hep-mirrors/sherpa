@@ -186,13 +186,16 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
     msg_Debugging()<<"} -> sum = "<<sum<<"\n";
     newxs->Get<AMEGIC::Process_Base>()->SetTestMoms(p_testmoms);
     newxs->Get<AMEGIC::Process_Base>()->SetPrintGraphs(pi.m_gpath);
+    My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","begin");
     if (!newxs->Get<AMEGIC::Process_Base>()->
 	InitAmplitude(p_model,&top,m_umprocs,m_errprocs)) {
+      My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
       msg_Debugging()<<METHOD<<"(): Init failed for '"
 		     <<newxs->Name()<<"'\n";
       delete newxs;
       return NULL;
     }
+    My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
   }
   if (add) Add(newxs);
   else m_rsprocs.push_back(newxs);
