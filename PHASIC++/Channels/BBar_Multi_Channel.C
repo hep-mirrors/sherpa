@@ -104,12 +104,14 @@ bool BBar_Multi_Channel::OptimizationFinished()
 
 void BBar_Multi_Channel::WriteOut(std::string pid)
 { 
+  Multi_Channel::WriteOut(pid+"_BBMC");
   p_fsmc->WriteOut(pid);
   m_eeg.WriteOut(pid);
 }
     
 bool BBar_Multi_Channel::ReadIn(std::string pid)
 {
+  Multi_Channel::ReadIn(pid+"_BBMC");
   if (!p_fsmc->ReadIn(pid)) return false;
   if (!m_eeg.ReadIn(pid)) return false;
   return true;
