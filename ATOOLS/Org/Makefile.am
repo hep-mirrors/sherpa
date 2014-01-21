@@ -7,6 +7,8 @@ else
 GZIPEXTRADIST = Gzip_Stream.C Gzip_Stream.H
 endif
 
+MD5_EXCLUDE = CXXFLAGS_PACKAGES.H CXXFLAGS.H
+
 SVNTAG = ATOOLS/Org
 include ../../svn.make
 
