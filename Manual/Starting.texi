@@ -14,10 +14,15 @@ Sherpa is distributed as a tarred and gzipped file named
 working directory with
 
 @example
-@code{ tar -zxf SHERPA-MC-@value{VERSION}.tar.gz} .
+@code{ tar -zxf SHERPA-MC-@value{VERSION}.tar.gz}
 @end example
 
-To guarantee successful installation, the following tools should have been made
+Alternatively, it can also be accessed via SVN through the location specified
+on the download page. In that case, before continuing, it is necessary to
+construct the build scripts by running @code{autoreconf -i} once after checking
+out the SVN working copy.
+
+To guarantee successful installation, the following tools should be
 available on the system:
 @itemize @bullet
   @item C++ and Fortran compilers (e.g. from the gcc suite)
