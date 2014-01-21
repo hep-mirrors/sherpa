@@ -425,6 +425,7 @@ bool PS_Generator::Construct(Amplitude *const ampl)
     for (size_t j(0);j<m_cur[i].size();++j) {
       size_t cid(m_cur[i][j]->CId());
       double mass(i==1?m_cur[i][j]->Flav().Mass():m_cur[i][j]->Mass());
+      if (mass>rpa->gen.Ecms()) mass=0.0;
       if ((cid&3)==1 || (cid&3)==2) {
 	if (i==1) ismass+=mass;
 	mass=0.0;
