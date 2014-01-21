@@ -13,7 +13,7 @@
 namespace AHADIC {
   class Flavour_Sorting_Mass {
   public :
-    bool operator() (const ATOOLS::Flavour & fl1,const ATOOLS::Flavour & fl2) {
+    bool operator() (const ATOOLS::Flavour & fl1,const ATOOLS::Flavour & fl2) const {
       if (fl1.HadMass()>fl2.HadMass()) return true;
       return false;
     }
@@ -52,7 +52,7 @@ namespace AHADIC {
   class Flavour_Pair_Sorting_Mass {
   public :
     bool operator() (const Flavour_Pair & flpair1,
-		     const Flavour_Pair & flpair2) {
+		     const Flavour_Pair & flpair2) const {
       if (//(flpair1.first==flpair2.second.Bar() &&
 	  //flpair1.first==flpair2.second &&
 	  //flpair1.second==flpair2.first.Bar() &&
