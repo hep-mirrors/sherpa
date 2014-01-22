@@ -334,46 +334,28 @@ int Matrix_Element_Handler::InitializeProcesses
   */
   p_beam=beam; p_isr=isr; p_model=model;
   if (!m_gens.InitializeGenerators(model,beam,isr)) return false;
-#ifdef USING__Threading
   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
-#endif
   double btime(ATOOLS::rpa->gen.Timer().UserTime());
   BuildProcesses();
   if (msg_LevelIsTracking()) msg_Info()<<"Process initialization";
-#ifdef USING__Threading
   double retime(ATOOLS::rpa->gen.Timer().RealTime());
-#endif
   double etime(ATOOLS::rpa->gen.Timer().UserTime());
   size_t rss(GetCurrentRSS());
-#ifdef USING__Threading
   msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
 	    <<FormatTime(size_t(retime-rbtime))<<" / "
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
-#else
-  msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
-	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
-#endif
   if (m_procs.empty() && m_gens.size()>0)
     THROW(normal_exit,"No hard process found");
   msg_Info()<<METHOD<<"(): Performing tests "<<std::flush;
-#ifdef USING__Threading
   rbtime=retime;
-#endif
   btime=etime;
   int res(m_gens.PerformTests());
-#ifdef USING__Threading
   retime=ATOOLS::rpa->gen.Timer().RealTime();
-#endif
   etime=ATOOLS::rpa->gen.Timer().UserTime();
   rss=GetCurrentRSS();
-#ifdef USING__Threading
   msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
 	    <<FormatTime(size_t(retime-rbtime))<<" / "
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
-#else
-  msg_Info()<<" done ( "<<rss/(1<<20)<<" MB, "
-	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
-#endif
   msg_Debugging()<<METHOD<<"(): Processes {\n";
   msg_Debugging()<<"  m_procs:\n";
   for (size_t i(0);i<m_procs.size();++i) 
