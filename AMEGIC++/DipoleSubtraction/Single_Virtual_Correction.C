@@ -630,13 +630,13 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
   }
   if (!m_checkpolesthreshold ||
       !ATOOLS::IsEqual(doublepole,p2,m_checkpolesthreshold)) {
-    msg_Out()<<"Double poles do not cancel: "<<doublepole<<" vs. "<<p2
+    msg_Out()<<"Double poles: Sherpa = "<<doublepole<<" vs. OLP = "<<p2
              <<", rel. diff.: "<<(doublepole-p2)/(doublepole+p2)
              <<", ratio: "<<doublepole/p2<<std::endl;
   }
   if (!m_checkpolesthreshold ||
       !ATOOLS::IsEqual(singlepole,p1,m_checkpolesthreshold)) {
-    msg_Out()<<"Single poles do not cancel: "<<singlepole<<" vs. "<<p1
+    msg_Out()<<"Single poles: Sherpa = "<<singlepole<<" vs. OLP = "<<p1
              <<", rel. diff.: "<<(singlepole-p1)/(singlepole+p1)
              <<", ratio: "<<singlepole/p1<<std::endl;
   }
@@ -734,10 +734,10 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
       (!m_checkpolesthreshold ||
        !ATOOLS::IsEqual(m_Norm*p_dsij[0][0],p_loopme->ME_Born(),m_checkpolesthreshold))) {
     msg->SetPrecision(16);
-    msg_Out()<<"Born check for process "<<Name()<<":"<<std::endl;
-    msg_Out()<<"Born_Sherpa = "<<m_Norm*p_dsij[0][0]<<" vs. Born_OLE = "<<p_loopme->ME_Born()
-             <<", ratio "<<m_Norm*p_dsij[0][0]/p_loopme->ME_Born()
-             <<", rel. diff. "<<(m_Norm*p_dsij[0][0]-p_loopme->ME_Born())/(m_Norm*p_dsij[0][0]+p_loopme->ME_Born())<<std::endl;
+    msg_Out()<<"Born check: "
+	     <<"Sherpa = "<<m_Norm*p_dsij[0][0]<<" vs. OLE = "<<p_loopme->ME_Born()
+	     <<", rel. diff.: "<<(m_Norm*p_dsij[0][0]-p_loopme->ME_Born())/(m_Norm*p_dsij[0][0]+p_loopme->ME_Born())
+	     <<", ratio: "<<m_Norm*p_dsij[0][0]/p_loopme->ME_Born()<<std::endl;
     msg->SetPrecision(6);
   }
   m_lastb=p_dsij[0][0];
