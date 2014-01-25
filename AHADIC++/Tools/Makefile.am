@@ -5,14 +5,15 @@ include ../../svn.make
 
 libAhadicTools_la_SOURCES = \
                             SVN_Info.C \
+			    Proto_Particle.C \
 			    Cluster.C \
                             Constituents.C \
                             Hadron_Wave_Function.C \
                             Hadron_Multiplet.C \
                             Transitions.C \
-			    Dipole_Splitter.C \
-			    Splitting_Functions.C \
-			    Splitting_Tools.C \
+			    Splitter_Base.C \
+			    Gluon_Splitter.C \
+			    Cluster_Splitter.C \
 			    Dipole.C \
 			    Soft_Cluster_Handler.C \
 			    Hadron_Init.C \
@@ -22,10 +23,11 @@ localincdir = $(pkgincludedir)/AHADIC++/Tools
 
 localinc_HEADERS   = \
 		     Cluster.H \
+	  	     Proto_Particle.H \
                      Constituents.H \
-		     Dipole_Splitter.H \
-		     Splitting_Functions.H \
-		     Splitting_Tools.H \
+		     Splitter_Base.H \
+		     Gluon_Splitter.H \
+		     Cluster_Splitter.H \
 		     Dipole.H \
                      Hadron_Wave_Function.H \
                      Hadron_Multiplet.H \

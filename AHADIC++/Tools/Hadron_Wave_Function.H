@@ -28,18 +28,19 @@ namespace AHADIC {
     Hadron_Wave_Function * Anti();
     double WaveWeight(ATOOLS::Flavour,ATOOLS::Flavour);
 
-    double MultipletWeight()                           { return m_mpletwt;    }
-    void SetMultipletWeight(const double wt)           { m_mpletwt = wt;      }
-    void SetFlavour(ATOOLS::Flavour & flav)            { m_hadron  = flav;    }
-    ATOOLS::Flavour GetFlavour() const                 { return m_hadron;     }
-    int  KfCode() const                                { return m_kfcode;     }
-    void SetKfCode(const int _kfcode)                  { m_kfcode  = _kfcode; }
-    int  Spin() const                                  { return m_spin;       }
-    void SetSpin(const int _spin)                      { m_spin    = _spin;   }
-    WFcomponent * GetWaves()                           { return &m_waves;     }
-    bool ExistAnti()                                   { return m_barrable;   }
+    double MultipletWeight()                 { return m_mpletwt;    }
+    void SetMultipletWeight(const double wt) { m_mpletwt = wt;      }
+    void SetFlavour(ATOOLS::Flavour & flav)  { m_hadron  = flav;    }
+    ATOOLS::Flavour GetFlavour() const       { return m_hadron;     }
+    int  KfCode() const                      { return m_kfcode;     }
+    void SetKfCode(const int _kfcode)        { m_kfcode  = _kfcode; }
+    int  Spin() const                        { return m_spin;       }
+    void SetSpin(const int _spin)            { m_spin    = _spin;   }
+    WFcomponent * GetWaves()                 { return &m_waves;     }
+    bool ExistAnti()                         { return m_barrable;   }
 
-    friend std::ostream & operator<<(std::ostream & s, Hadron_Wave_Function & wf);
+    friend std::ostream & 
+    operator<<(std::ostream & s, Hadron_Wave_Function & wf);
   };
 
   typedef std::map<ATOOLS::Flavour,Hadron_Wave_Function *> Hadron_WF_Map; 

@@ -22,7 +22,7 @@ Cluster_Formation_Handler::Cluster_Formation_Handler(Cluster_List* clulist,
 						     bool ana) :
   m_single_cr(hadpars->Get(string("colour_reconnections"))==1), 
   m_double_cr(false),
-  p_gludecayer(new Gluon_Decayer(hadpars->GetSplitter(),ana)), 
+  p_gludecayer(new Gluon_Decayer(ana)), 
   p_cformer(new Cluster_Former()),
   p_recons(new Colour_Reconnections(2,1,hadpars->Get(string("pt02")))), 
   p_softclusters(hadpars->GetSoftClusterHandler()),
@@ -69,11 +69,14 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob) {
     m_partlists.clear();
     m_clulists.clear();
   }
-  //msg_Out()<<"\n\n\n\n"
-  //		<<"====================================================\n"
-  //		<<"====================================================\n"
-  //		<<"====================================================\n"
-  //		<<"In "<<METHOD<<": hadronize "<<blob->NInP()<<" partons.\n";
+  // Vec4D cms(0.,0.,0.,0.);
+  // for (size_t i=0;i<blob->NInP();i++) cms += blob->InParticle(i)->Momentum();
+  //  msg_Out()<<"\n\n\n\n"
+  // 	    <<"====================================================\n"
+  // 	    <<"====================================================\n"
+  // 	    <<"====================================================\n"
+  // 	    <<"In "<<METHOD<<": hadronize "<<blob->NInP()<<" partons "
+  // 	    <<"with E = "<<sqrt(cms.Abs2())<<".\n"<<(*blob)<<"\n";
   if (!ExtractSinglets(blob))      { Reset(); return -1; }
   if (!ShiftOnMassShells())        { Reset(); return -1; }
   if (!FormOriginalClusters())     { Reset(); return -1; }
@@ -82,8 +85,21 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob) {
   if (!ClustersToHadrons(blob))    { 
     Reset(); return -1; 
   }
-  msg_Tracking()<<METHOD<<":\n"<<(*p_clulist)<<"\n";
-  //msg_Out()<<(*blob)<<"\n";
+  // Vec4D blobmom(0.,0.,0.,0.);
+  // for (size_t i(0);i<blob->NOutP();i++) 
+  //   blobmom+=blob->OutParticle(i)->Momentum();
+  // msg_Out()<<"____________________________________________________\n"
+  //    	   <<"____________________________________________________\n"
+  //    	   <<"Cluster list after all merging etc.:\n"<<(*p_clulist)
+  //    	   <<"____________________________________________________\n"
+  //   	   <<"Blob momentum: "<<blobmom<<";\n"<<(*blob)<<"\n"
+  //    	   <<"____________________________________________________\n"
+  //    	   <<"____________________________________________________\n";
+  // msg_Out()<<"##################################################\n"
+  // 	   <<METHOD<<" was successful: "
+  // 	   <<p_clulist->size()<<" clusters left to decay.\n"
+  // 	   <<(*p_clulist)<<"\n"
+  // 	   <<"##################################################\n";
 
   return 1;
 }
@@ -114,7 +130,6 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
   Proto_Particle_List * pli(NULL);
   bool          construct(false);
   unsigned int  col1(0), col2(0);
-  leading::code leading(hadpars->GetSplitter()->Leading());
   Particle   * part(NULL);
   for (int i=0;i<blob->NInP();i++) {
     part = blob->InParticle(i); 
@@ -126,7 +141,7 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
 	Proto_Particle * copy = 
 	  new Proto_Particle(part->Flav(),part->Momentum(),
 			     (part->Info()=='B')?'B':'L');
-	SetInfoTagForPrimaryParticle(copy,leading);
+	SetInfoTagForPrimaryParticle(copy);
 	pli->push_back(copy);
 	col1 = part->GetFlow(1);
 	if (col1==col2) construct = false;
@@ -147,7 +162,7 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
       Proto_Particle * copy = 
 	new Proto_Particle(part->Flav(),part->Momentum(),
 			   part->Info()=='B'?'B':'L');
-      SetInfoTagForPrimaryParticle(copy,leading);
+      SetInfoTagForPrimaryParticle(copy);
       pli->push_back(copy);
       m_partlists.push_back(pli);
       construct = true;
@@ -157,25 +172,9 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
 }
 
 void Cluster_Formation_Handler::
-SetInfoTagForPrimaryParticle(Proto_Particle * proto,
-			     leading::code lead) const {
+SetInfoTagForPrimaryParticle(Proto_Particle * proto) const {
   if (proto->m_info=='B') return;
-  switch (lead) {
-  case leading::quarks_and_gluons:
-    break;
-  case leading::quarks_and_gluons2:
-    break;
-  case leading::only_quarks:
-    if (proto->m_flav.IsQuark() || proto->m_flav.IsDiQuark()) 
-      proto->m_info='L';
-    else 
-      proto->m_info='l';
-    break;
-  case leading::none:
-  default:
-    proto->m_info='l';
-    break;
-  }
+  proto->m_info=(proto->m_flav.IsQuark() || proto->m_flav.IsDiQuark())?'L':'l';
 }
 
 bool Cluster_Formation_Handler::ShiftOnMassShells() {
@@ -401,40 +400,7 @@ bool Cluster_Formation_Handler::MergeClusterListsIntoOne() {
 
 bool Cluster_Formation_Handler::ClustersToHadrons(Blob * blob)
 {
-#ifdef AHAmomcheck
-  Vec4D checkbef(0.,0.,0.,0.);
-  for (Cluster_Iterator cit=p_clulist->begin();cit!=p_clulist->end();cit++) {
-    checkbef += (*cit)->Momentum();
-  }
-#endif
-
-  if (!p_softclusters->TreatClusterList(p_clulist,blob)) {
-    msg_Error()<<"Error in "<<METHOD<<" : \n"
-	       <<"   Did not find a kinematically allowed solution for the "
-	       <<"cluster list.\n"
-	       <<"   Will trigger a new event.\n";
-    msg_Out()<<(*blob)<<"\n";
-    exit(1);
-    return false;
-  }
-
-#ifdef AHAmomcheck
-  Vec4D checkaft(0.,0.,0.,0.);
-  for (Cluster_Iterator cit=p_clulist->begin();cit!=p_clulist->end();cit++) {
-    checkaft += (*cit)->Momentum();
-  }
-  for (short int i=0;i<blob->NOutP();i++) {
-    checkaft += blob->OutParticle(i)->Momentum();
-  }
-  double Q2(dabs((checkbef-checkaft).Abs2()));
-  if (Q2>1.e-12 || IsNan(Q2)) {
-    msg_Error()<<METHOD<<" yields a momentum violation : \n"
-	       <<"   "<<checkbef<<" - "<<checkaft<<" --> "
-	       <<(checkbef-checkaft).Abs2()<<".\n";
-  }
-  else msg_Tracking()<<METHOD<<" conserves momentum:"
-		     <<checkbef<<" --> "<<checkaft<<".\n";
-#endif
+  if (!p_softclusters->TreatClusterList(p_clulist,blob)) return false;
 
   if (m_analyse) {
     Histogram * histomass, * histonumb;

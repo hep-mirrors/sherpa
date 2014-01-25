@@ -2,7 +2,6 @@
 #define AHADIC_Tools_Soft_Cluster_Handler_H
 
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
-#include "AHADIC++/Tools/Dipole_Splitter.H"
 #include "AHADIC++/Tools/Transitions.H"
 #include "AHADIC++/Tools/Cluster.H"
 #include "MODEL/Main/Strong_Coupling.H"
@@ -10,35 +9,14 @@
 #include <map>
 
 namespace AHADIC {
-  struct Trans_Weight {
-    enum code {
-      waveonly         = 3,
-      nonrelativistic  = 2,
-      relativistic     = 1
-    };
-  };
-
-  struct Decay_Weight {
-    enum code {
-      waves                   = 4,
-      phasespace_masses_waves = 3,
-      phasespace_waves        = 2,
-      phasespace              = 1,
-      off                     = 0
-    };
-  };
-
   class Soft_Cluster_Handler {
   private:
-    MODEL::Strong_Coupling * p_as;
-    Dipole_Splitter        * p_splitter;
     Single_Transitions     * p_singletransitions;
     Double_Transitions     * p_doubletransitions;
+    MODEL::Strong_Coupling * p_as;
     
-    Trans_Weight::code   m_tweightmode;
-    Decay_Weight::code   m_dweightmode;
     int                  m_HHdecaymode;
-    double               m_transitionoffset,m_decayoffset;
+    double               m_transoffset,m_decayoffset;
     double               m_kappa,m_lambda,m_chi;
     double               m_pt2min,m_pt2max,m_pt2maxfac;
     MODEL::asform::code  m_asform;
@@ -46,7 +24,7 @@ namespace AHADIC {
     Cluster_List *       m_clin;
 
     long int             m_transitions, m_dtransitions;
-    long int             m_decays, m_forceddecays, m_lists;
+    long int             m_decays, m_forceddecays, m_lists, m_update;
     bool                                      m_ana;
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
@@ -69,9 +47,6 @@ namespace AHADIC {
 			     const ATOOLS::Flavour had1,
 			     const ATOOLS::Flavour had2,
 			     const bool & constrained=false);
-    double        SelectPT2(const double & pt2max,const double & masscor,
-			    const bool & expo=true,const bool & beam=false);
-
 
     bool          CheckIfAllowed(Cluster_List * clin,double & E);
     bool          UpdateTransitions(Cluster_List * clin);  

@@ -1,8 +1,8 @@
 #ifndef AHADIC_Formation_Gluon_Decayer_H
 #define AHADIC_Formation_Gluon_Decayer_H
 
-#include "AHADIC++/Tools/Dipole_Splitter.H"
-#include "AHADIC++/Tools/Cluster.H"
+#include "AHADIC++/Tools/Gluon_Splitter.H"
+#include "AHADIC++/Tools/Dipole.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
@@ -10,15 +10,15 @@
 namespace AHADIC {
   class Gluon_Decayer {
   private:
-    Dipole_Splitter   * p_splitter;
-    double              m_pt2max, m_pt2max_factor, m_pt02;
-
-    FlavDecayMap        m_options;
-    DipoleList          m_dipoles;
+    Gluon_Splitter  * p_gsplitter;
+    double          m_pt2max, m_pt2max_factor, m_pt02;
+    FlavDecayMap    m_options;
+    DipoleList      m_dipoles;
 
     bool                                      m_analyse;
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
+    void    Init();
     bool    FillDipoleList(Proto_Particle_List * plin=NULL);
     void    UpdatePPList(Proto_Particle_List * plin=NULL);
     void    PrintDipoleList();
@@ -33,7 +33,7 @@ namespace AHADIC {
 
     long int m_tot, m_s, m_u, m_d, m_di0, m_di1;
   public:
-    Gluon_Decayer(Dipole_Splitter *,bool=false);
+    Gluon_Decayer(bool ana=false);
     ~Gluon_Decayer();
     bool DecayList(Proto_Particle_List * plin=NULL);
   };

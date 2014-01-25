@@ -43,8 +43,9 @@ namespace AHADIC {
     Hadron_Multiplet_Map  * p_multiplets;
 
     void ConstructWaveFunctions();
-    Hadron_Wave_Function * ConstructMesonWaveFunction(const int,const int,const int,
-						      const int,const int,const int);
+    Hadron_Wave_Function * 
+    ConstructMesonWaveFunction(const int,const int,const int,
+			       const int,const int,const int);
     Hadron_Wave_Function * ConstructBaryonWaveFunction(int,int,int,int,int);
     void ConstructAntiWaveFunctions();
     void CreateMultiplets();
@@ -64,7 +65,8 @@ namespace AHADIC {
       return NULL;
     }
 
-    void LookUpAngles(const int angular,const int spin,double & costh,double & sinth);
+    void LookUpAngles(const int angular,const int spin,
+		      double & costh,double & sinth);
 
     Hadron_Wave_Function * GetWaveFunction(ATOOLS::Flavour);
     void                   PrintWaveFunctions();

@@ -1,80 +1,9 @@
 #include "AHADIC++/Tools/Cluster.H"
-#include "AHADIC++/Tools/Hadronisation_Parameters.H"
-#include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Phys/Blob.H"
 #include <algorithm>
 
 using namespace AHADIC;
 using namespace ATOOLS;
-
-namespace AHADIC {
-  long int Cluster::s_cluster_count=0;
-  long int Cluster::s_cluster_number=0;
-
-  long int control::s_AHAparticles=0;
-  long int control::s_AHAprotoparticles=0;
-  long int control::s_AHAblobs=0;
-
-  std::list<Proto_Particle *>      Proto_Particle::s_actives;
-  std::list<Proto_Particle_List *> Proto_Particle_List::s_actives;
-  std::list<ListOfPPLs *>          ListOfPPLs::s_actives;
-  std::list<Cluster *>             Cluster::s_actives;
-  std::list<Cluster_List *>        Cluster_List::s_actives;
-}
-
-Proto_Particle::Proto_Particle(const Proto_Particle & pp) :
-  m_flav(pp.m_flav), m_mom(pp.m_mom), m_info(pp.m_info), 
-  m_mass(pp.m_mass), m_kt2max(pp.m_kt2max),
-  p_partner(pp.p_partner)
-{ 
-  control::s_AHAprotoparticles++; 
-  s_actives.push_back(this);
-}
-
-Proto_Particle::Proto_Particle(ATOOLS::Flavour flav,ATOOLS::Vec4D mom,char info) :
-  m_flav(flav), m_mom(mom), m_info(info), 
-  m_mass(hadpars->GetConstituents()->Mass(flav)), m_kt2max(0.), 
-  p_partner(NULL)
-{ 
-  control::s_AHAprotoparticles++; 
-  s_actives.push_back(this);
-}
-
-
-Proto_Particle::~Proto_Particle()
-{ 
-#ifdef memchecker
-  std::cout<<"### delete Proto_Particle: ("<<m_flav<<"/"<<this<<")."<<std::endl;
-#endif
-  control::s_AHAprotoparticles--; 
-  s_actives.remove(this);
-}
-
-bool Proto_Particle::CheckConsistency(std::ostream & s,std::string method) {
-  if (dabs(m_mass-hadpars->GetConstituents()->Mass(m_flav))>1.e-6 ||
-      dabs(m_mass-sqrt(m_mom.Abs2()))>1.e-6 ||
-      dabs(sqrt(m_mom.Abs2())-hadpars->GetConstituents()->Mass(m_flav))>1.e-6) {
-    s<<"Error in "<<METHOD<<" called by "<<method<<":"<<std::endl
-	 <<"   Masses and momenta not consistent for "<<m_flav<<"("<<m_mass<<"),"
-     <<" sqrt(mom^2) = "<<sqrt(m_mom.Abs2())
-     <<" & constituent mass = "<<hadpars->GetConstituents()->Mass(m_flav)<<"."<<std::endl;
-    return false;
-  }
-  return true;
-}
-
-std::ostream & AHADIC::operator<<(std::ostream & s, const Proto_Particle& proto) {
-  s<<"   "<<proto.m_info<<" : "<<proto.m_flav<<" "<<proto.m_mom
-   <<" "<<sqrt(ATOOLS::Max(0.,proto.m_mom.Abs2()))
-   <<", kt_max = "<<sqrt(ATOOLS::Max(0.,proto.m_kt2max))<<", "
-   <<"pt = "<<proto.m_mom.PPerp()<<", y = "<<proto.m_mom.Y()<<std::endl;
-  return s;
-}
-
-std::ostream & AHADIC::operator<<(std::ostream & s, const Proto_Particle_List & pl) {
-  s<<"Proto_Particle_List with "<<pl.size()<<" elements:"<<std::endl;
-  for (PPL_Const_Iterator pit=pl.begin(); pit!=pl.end(); ++pit) s<<(**pit)<<std::endl;
-  return s;
-}
 
 Cluster::Cluster(Vec4D mom,Flavour flav,bool active) :
   m_active(active), p_trip(NULL), p_anti(NULL), 
@@ -104,7 +33,7 @@ Cluster::Cluster(Proto_Particle * trip,Proto_Particle * anti) :
        (p_anti->m_flav.IsDiQuark() && !p_anti->m_flav.IsAnti()))) return;
 
   msg_Error()<<"Error in Cluster::Cluster"
-	     <<"("<<p_trip->m_flav<<","<<p_anti->m_flav<<") :"<<std::endl
+	     <<"("<<p_trip->m_flav<<","<<p_anti->m_flav<<") :\n"
 	     <<"   Cannot handle this colour structure, will ignore it."
 	     <<std::endl;
 }
@@ -113,7 +42,7 @@ Cluster::~Cluster()
 {
 #ifdef memchecker
   std::cout<<"*** delete Cluster: "<<m_number<<" with "
-	   <<" pps: ("<<p_trip<<"/"<<p_anti<<")."<<std::endl;
+	   <<" pps: ("<<p_trip<<"/"<<p_anti<<").\n";
 #endif
   s_cluster_count--;
   s_actives.remove(this);
@@ -129,7 +58,7 @@ void Cluster::Update()
        (p_anti->m_flav.IsDiQuark() && !p_anti->m_flav.IsAnti()))) return;
 
   msg_Error()
-    <<"Error in Cluster::Cluster("<<p_trip->m_flav<<","<<p_anti->m_flav<<") :\n"
+    <<"Error in Cluster::Cluster("<<p_trip->m_flav<<","<<p_anti->m_flav<<"):\n"
     <<"   Cannot handle this colour structure, will abort the run.\n"
     <<"   Please contact the Sherpa group for further assistance.";
   exit(0);
@@ -140,26 +69,29 @@ bool Cluster::CheckConsistency(std::ostream & s,std::string method) {
   if (p_trip)  passed = passed && p_trip->CheckConsistency(s,method);
   if (p_anti)  passed = passed && p_anti->CheckConsistency(s,method);
   if (!passed) {
-    s<<"Error in "<<METHOD<<" called by "<<method<<":"<<std::endl
+    s<<"Error in "<<METHOD<<" called by "<<method<<":\n"
      <<"   Masses and momenta not consistent for cluster "<<m_number<<": "
-     <<Mass2()<<" vs. "<<Momentum()<<" ("<<Momentum().Abs2()<<")"<<std::endl;
+     <<Mass2()<<" vs. "<<Momentum()<<" ("<<Momentum().Abs2()<<")\n";
   }
-  if (p_left)  passed = passed && p_left->CheckConsistency(s,method);
-  if (p_right) passed = passed && p_right->CheckConsistency(s,method);
-  if (p_left && p_right) {
-    Vec4D check(Momentum()-p_left->Momentum()-p_right->Momentum());
+  if (!m_clusters.empty()) {
+    Vec4D check(Momentum());
+    for (Cluster_Iterator cit=m_clusters.begin();cit!=m_clusters.end();cit++) {
+      passed = passed && (*cit)->CheckConsistency(s,method);
+      check -= (*cit)->Momentum();
+    }
     if (!IsZero(check.Abs2()) || !IsZero(check[0]/1.e6)) {
-      s<<"Error in "<<METHOD<<" called by "<<method<<":"<<std::endl
+      s<<"Error in "<<METHOD<<" called by "<<method<<":\n"
        <<"   Four-momentum not conserved: "<<check<<" ("<<check.Abs2()<<") "
-       <<"for "<<Momentum()<<"  ---> "<<std::endl
-       <<"   "<<p_left->Momentum()<<" + "<<p_right->Momentum()<<"."<<std::endl;
+       <<"for "<<Momentum()<<"  ---> \n"
+       <<"   "<<p_left->Momentum()<<" + "<<p_right->Momentum()<<".\n";
     }
   }
   return passed;   
 }
 
 Particle * Cluster::GetSelf() const { 
-  Particle * part(new Particle(-1,size()==1?m_decayproducts[0]:m_flav,m_momentum));
+  Particle * part(new Particle(-1,size()==1?
+			       m_decayproducts[0]:m_flav,m_momentum));
   part->SetNumber();
   part->SetInfo('P');
   part->SetStatus(part_status::active);
@@ -195,47 +127,46 @@ Blob * Cluster::ConstructDecayBlob()
   return blob;
 }
 
-void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
+void Cluster::RescaleMomentum(Vec4D newmom)
 {
   Poincare rest(m_momentum);
   Poincare back(newmom);
 
-  Vec4D_Vector save(3+int(p_left!=NULL)+int(p_right!=NULL));
+  Vec4D_Vector save(3+m_clusters.size());
   save[0] = m_momentum;
   if (p_trip!=NULL)   save[1] = p_trip->m_mom;
   if (p_anti!=NULL)   save[2] = p_anti->m_mom;
-  if (p_left!=NULL)   save[3] = p_trip->m_mom;
-  if (p_right!=NULL)  save[4] = p_anti->m_mom;
-
   if (p_trip!=NULL)   rest.Boost(p_trip->m_mom);
   if (p_trip!=NULL)   back.BoostBack(p_trip->m_mom);
   if (p_anti!=NULL)   rest.Boost(p_anti->m_mom);
   if (p_anti!=NULL)   back.BoostBack(p_anti->m_mom);
-  if (p_left!=NULL)   p_left->Boost(rest);
-  if (p_left!=NULL)   p_left->BoostBack(back);
-  if (p_right!=NULL)  p_right->Boost(rest);
-  if (p_right!=NULL)  p_right->BoostBack(back);
+  size_t i(3);
+  if (!m_clusters.empty()) {
+    for (Cluster_Iterator cit=m_clusters.begin();cit!=m_clusters.end();cit++) {
+      save[i++] = (*cit)->Momentum();
+      (*cit)->Boost(rest);
+      (*cit)->BoostBack(back);
+    }
+  }
   m_momentum = newmom;
-  //PRINT_VAR(m_momentum);
-  //PRINT_VAR(newmom);
-  //PRINT_VAR(p_trip->m_mom);
-  //PRINT_VAR(p_anti->m_mom);
-
-  Vec4D testmom = m_momentum-p_trip->m_mom-p_anti->m_mom;
+  Vec4D testmom(m_momentum-p_trip->m_mom-p_anti->m_mom);
   if (dabs(testmom.Abs2()/save[0][0])>1.e-6 || testmom[0]/save[0][0]>1.e-6) {
-    msg_Debugging()<<"Error in "<<METHOD<<":"<<std::endl
-	       <<"   From "<<save[0]<<" ("<<sqrt(Max(0.,save[0].Abs2()))<<") to "
-	       <<m_momentum<<" with "<<std::endl
+    msg_Debugging()<<"Error in "<<METHOD<<":\n"
+	       <<"   From "<<save[0]<<" ("
+		   <<sqrt(Max(0.,save[0].Abs2()))<<") to "
+	       <<m_momentum<<" with \n"
 	       <<"   "<<save[1]<<" ("<<save[1].Abs2()<<") + "
-	       <<save[2]<<" ("<<save[2].Abs2()<<")"<<std::endl;
+	       <<save[2]<<" ("<<save[2].Abs2()<<")\n";
     if (p_trip!=NULL) {
-      msg_Debugging()<<"  Trip: "<<p_trip->m_mom<<" ("<<p_trip->m_mom.Abs2()<<")";
+      msg_Debugging()<<"  Trip: "<<p_trip->m_mom
+		     <<" ("<<p_trip->m_mom.Abs2()<<")";
     }
     else { 
       msg_Debugging()<<"No triplet: "<<p_trip<<" ";
     }
     if (p_anti!=NULL) {
-      msg_Debugging()<<" Anti: "<<p_anti->m_mom<<" ("<<p_anti->m_mom.Abs2()<<")"<<std::endl;
+      msg_Debugging()<<" Anti: "<<p_anti->m_mom
+		     <<" ("<<p_anti->m_mom.Abs2()<<")\n";
     }
     else { 
       msg_Debugging()<<"No antitriplet: "<<p_anti<<" ";
@@ -244,31 +175,29 @@ void Cluster::RescaleMomentum(ATOOLS::Vec4D newmom)
     rest.Boost(m_momentum); 
     back.BoostBack(m_momentum);
     DEBUG_VAR(m_momentum);
-    msg_Debugging()<<" from "<<newmom<<" --> "<<m_momentum<<"."<<std::endl;
+    msg_Debugging()<<" from "<<newmom<<" --> "<<m_momentum<<".\n";
   }
   if (p_left!=NULL) {
-    msg_Error()<<"Maybe error in RescaleMomentum("<<save[0]<<" -> "<<m_momentum<<")"<<std::endl
-	       <<"   How about the left/right offsprings?"<<std::endl;
+    msg_Error()<<"Maybe error in RescaleMomentum("
+	       <<save[0]<<" -> "<<m_momentum<<")\n"
+	       <<"   How about the left/right offsprings?\n";
   }
 }
 
 void Cluster::BoostInCMSAndRotateOnZ() {
-  //PRINT_INFO(*this);
   if (p_trip==NULL) return;
   BoostInCMS();
-  //PRINT_INFO(*this);
 
-  m_rotate = ATOOLS::Poincare(p_trip->m_mom,ATOOLS::Vec4D(1.,ATOOLS::Vec3D::ZVEC));
-  ATOOLS::Vec4D copy0(p_trip->m_mom), copy1(p_anti->m_mom);
+  m_rotate = Poincare(p_trip->m_mom,
+			      Vec4D(1.,Vec3D::ZVEC));
+  Vec4D copy0(p_trip->m_mom), copy1(p_anti->m_mom);
   m_rotate.Rotate(copy0);
   m_rotate.Rotate(copy1);
-  //PRINT_INFO(*this);
   if (copy0[3]<copy1[3]) {
-    m_rotate = ATOOLS::Poincare(p_trip->m_mom,ATOOLS::Vec4D(1.,(-1.)*ATOOLS::Vec3D::ZVEC));
+    m_rotate = Poincare(p_trip->m_mom,Vec4D(1.,(-1.)*Vec3D::ZVEC));
   }
   m_hasrotate = true;
   Rotate(m_rotate);
-  //PRINT_INFO(*this);
 }
 
 void Cluster::RotateAndBoostBack() {
@@ -282,15 +211,14 @@ void Cluster::RotateAndBoostBack() {
 
 void Cluster::BoostInCMS() {
   if (m_hasboost || m_hasrotate) return;
-  //PRINT_INFO(this<<" "<<m_momentum);
-  m_boost = ATOOLS::Poincare(m_momentum);
+  m_boost = Poincare(m_momentum);
   m_boost.Boost(m_momentum);
-  //PRINT_INFO(this<<" "<<m_momentum);
   if (p_trip!=NULL) m_boost.Boost(p_trip->m_mom);
   if (p_anti!=NULL) m_boost.Boost(p_anti->m_mom);
-  if (p_left!=NULL)  p_left->Boost(m_boost);
-  if (p_right!=NULL) p_right->Boost(m_boost);
-
+  if (!m_clusters.empty()) {
+    for (Cluster_Iterator cit=m_clusters.begin();cit!=m_clusters.end();cit++) 
+      (*cit)->Boost(m_boost);
+  }
   m_hasboost = true;
 }
 
@@ -299,9 +227,10 @@ void Cluster::BoostBack() {
   m_boost.BoostBack(m_momentum);
   if (p_trip!=NULL) m_boost.BoostBack(p_trip->m_mom);
   if (p_anti!=NULL) m_boost.BoostBack(p_anti->m_mom);
-  if (p_left!=NULL)  p_left->BoostBack(m_boost);
-  if (p_right!=NULL) p_right->BoostBack(m_boost);
-
+  if (!m_clusters.empty()) {
+    for (Cluster_Iterator cit=m_clusters.begin();cit!=m_clusters.end();cit++) 
+      (*cit)->BoostBack(m_boost);
+  }
   m_hasboost = false;
 }
 
@@ -309,40 +238,48 @@ void Cluster::Boost(Poincare & boost) {
   boost.Boost(m_momentum);
   if (p_trip!=NULL) boost.Boost(p_trip->m_mom);
   if (p_anti!=NULL) boost.Boost(p_anti->m_mom);
-  if (p_left!=NULL)  p_left->Boost(boost);
-  if (p_right!=NULL) p_right->Boost(boost);
+  if (!m_clusters.empty()) {
+    for (Cluster_Iterator cit=m_clusters.begin();cit!=m_clusters.end();cit++) 
+      (*cit)->Boost(boost);
+  }
 }
 
 void Cluster::BoostBack(Poincare & boost) {
   boost.BoostBack(m_momentum);
   if (p_trip!=NULL) boost.BoostBack(p_trip->m_mom);
   if (p_anti!=NULL) boost.BoostBack(p_anti->m_mom);
-  if (p_left!=NULL)  p_left->BoostBack(boost);
-  if (p_right!=NULL) p_right->BoostBack(boost);
+  if (!m_clusters.empty()) {
+    for (Cluster_Iterator cit=m_clusters.begin();cit!=m_clusters.end();cit++) 
+      (*cit)->BoostBack(boost);
+  }
 }
 
 void Cluster::Rotate(Poincare & rotate) {
   rotate.Rotate(m_momentum);
   if (p_trip!=NULL) rotate.Rotate(p_trip->m_mom);
   if (p_anti!=NULL) rotate.Rotate(p_anti->m_mom);
-  if (p_left!=NULL)  p_left->Rotate(rotate);
-  if (p_right!=NULL) p_right->Rotate(rotate);
+  if (!m_clusters.empty()) {
+    for (Cluster_Iterator cit=m_clusters.begin();cit!=m_clusters.end();cit++) 
+      (*cit)->Rotate(rotate);
+  }
 }
 
 void Cluster::RotateBack(Poincare & rotate) {
   rotate.RotateBack(m_momentum);
   if (p_trip!=NULL) rotate.RotateBack(p_trip->m_mom);
   if (p_anti!=NULL) rotate.RotateBack(p_anti->m_mom);
-  if (p_left!=NULL)  p_left->RotateBack(rotate);
-  if (p_right!=NULL) p_right->RotateBack(rotate);
+  if (!m_clusters.empty()) {
+    for (Cluster_Iterator cit=m_clusters.begin();cit!=m_clusters.end();cit++) 
+      (*cit)->RotateBack(rotate);
+  }
 }
 
-void Cluster::BoostBack(ATOOLS::Vec4D & mom) {
+void Cluster::BoostBack(Vec4D & mom) {
   if (!m_hasboost) return;
   m_boost.BoostBack(mom);
 }
 
-void Cluster::RotateAndBoostBack(ATOOLS::Vec4D & mom) {
+void Cluster::RotateAndBoostBack(Vec4D & mom) {
   if (!m_hasboost || !m_hasrotate) return;
   m_rotate.RotateBack(mom);
   m_boost.BoostBack(mom);
@@ -358,41 +295,69 @@ void Cluster::Print() {
   if (m_decayproducts.size()>0) {
     for (size_t i=0;i<m_decayproducts.size();i++) 
       msg_Out()<<m_decayproducts[i]<<" ";
-    msg_Out()<<"."<<std::endl;
+    msg_Out()<<".\n";
     return;
   }
-  if (p_left!=NULL)  msg_Out()<<" (l) "<<p_left->m_number<<" ";
-  if (p_right!=NULL) msg_Out()<<" (r) "<<p_right->m_number;
-  msg_Out()<<std::endl;
-  if (p_left!=NULL) p_left->Print(); 
-  if (p_right!=NULL) p_right->Print(); 
+  if (!m_clusters.empty()) {
+    msg_Out()<<" ("<<m_clusters.size()<<"): { ";
+    for (Cluster_Iterator cit=m_clusters.begin();cit!=m_clusters.end();cit++) 
+      msg_Out()<<(*cit)->m_number<<" ";
+    msg_Out()<<"}\n";
+    for (Cluster_Iterator cit=m_clusters.begin();cit!=m_clusters.end();cit++) 
+      msg_Out()<<(**cit)<<"\n";
+  }
 }
 
 void Cluster::Delete() {
-  if (p_left!=NULL)  p_left->Delete();
-  if (p_right!=NULL) p_right->Delete();
+  while (!m_clusters.empty()) {
+    delete (m_clusters.front());
+    m_clusters.pop_front();
+  }
+}
 
+bool Cluster::EnsureMomentum() {
+  Vec4D check(Momentum());
+  for (Cluster_Iterator cit(m_clusters.begin());cit!=m_clusters.end();cit++)
+    check -= (*cit)->Momentum();
+  if (dabs(check.Abs2())>1.e-10 || dabs(check[0])>1.e-10 || 
+      dabs(check.PSpat())>1.e-10) {
+    // msg_Out()<<"*** "<<METHOD<<" yields "<<check<<" ("<<check.Abs2()<<") "
+    // 	     <<"for cluster "<<Number()<<"\n"<<(*this)
+    // 	     <<"********************************************************\n";
+    return false;
+  }
+  return true;
 }
 
 
 std::ostream& AHADIC::operator<<(std::ostream& str, const Cluster &cluster) {
-  str<<"-------------------------------------------------------------"<<std::endl
+  str<<"-------------------------------------------------------------\n"
      <<"Cluster ["<<cluster.m_flav<<", "<<cluster.m_number<<", "
      <<cluster.size()<<"] "
-     <<"("<<cluster.m_momentum<<","<<sqrt(cluster.m_momentum.Abs2())<<", "
-     <<cluster.m_momentum.Y()<<") ";
+     <<"("<<cluster.m_momentum<<", "
+     <<"mass = "<<sqrt(cluster.m_momentum.Abs2())<<", "
+     <<"y = "<<cluster.m_momentum.Y()<<") ";
   if (cluster.p_nbtrip!=NULL) str<<" [> "<<cluster.p_nbtrip->Number()<<"] ";
   if (cluster.p_nbanti!=NULL) str<<" [< "<<cluster.p_nbanti->Number()<<"] ";
-  str<<":"<<std::endl;
+  str<<":\n";
   if (cluster.p_trip!=NULL) str<<"  "<<(*cluster.p_trip);
   if (cluster.p_anti!=NULL) str<<"  "<<(*cluster.p_anti);
-  if (cluster.p_left!=NULL)  str<<"  ---- Left  ----> "<<std::endl<<(*cluster.p_left);
-  if (cluster.p_right!=NULL) str<<"  ---- Right ----> "<<std::endl<<(*cluster.p_right);
+  if (!cluster.m_clusters.empty()) {
+    msg_Out()<<" ("<<cluster.m_clusters.size()<<"): { ";
+    for (Cluster_Const_Iterator cit=cluster.m_clusters.begin();
+	 cit!=cluster.m_clusters.end();cit++) 
+      msg_Out()<<(*cit)->m_number<<" ";
+    msg_Out()<<"}\n";
+  }
+  else msg_Out()<<"\n";
   return str;
 }
 
 std::ostream & AHADIC::operator<<(std::ostream & s, const Cluster_List & cl) {
-  s<<"Cluster List with "<<cl.size()<<" elements:"<<std::endl;
+  Vec4D totmom(0.,0.,0.,0.);
+  for (Cluster_Const_Iterator cit=cl.begin(); cit!=cl.end(); ++cit) 
+    totmom += (*cit)->Momentum();
+  s<<"Cluster List with "<<cl.size()<<" elements, mom = "<<totmom<<":\n";
   for (Cluster_Const_Iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
     s<<**cit<<std::endl;
   }

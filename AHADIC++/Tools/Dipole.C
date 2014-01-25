@@ -12,7 +12,7 @@ namespace AHADIC {
 
 Dipole::Dipole(Proto_Particle * trip,Proto_Particle * anti) 
 {
-  ++s_cnt;
+  //++s_cnt;
   p_triplet    =trip;
   p_antitriplet=anti;
   m_mustdecay=(p_triplet->m_flav.IsGluon() || p_antitriplet->m_flav.IsGluon()); 
@@ -24,7 +24,7 @@ Dipole::Dipole(Proto_Particle * trip,Proto_Particle * anti)
 
 Dipole::~Dipole() 
 { 
-  --s_cnt;
+  //--s_cnt;
   s_actives.remove(this);
 }
 
@@ -45,9 +45,11 @@ bool Dipole::CheckConsistency(std::ostream & s,std::string method) {
 void Dipole::Update() 
 {
   if (p_triplet!=NULL && p_antitriplet!=NULL) {
-    m_mustdecay=(p_triplet->m_flav.IsGluon() || p_antitriplet->m_flav.IsGluon());
+    m_mustdecay=(p_triplet->m_flav.IsGluon() || 
+		 p_antitriplet->m_flav.IsGluon());
     m_mass2   =(p_triplet->m_mom+p_antitriplet->m_mom).Abs2();
-    m_massbar2= ATOOLS::sqr(sqrt(m_mass2)-(p_triplet->m_mass+p_antitriplet->m_mass));
+    m_massbar2= ATOOLS::sqr(sqrt(m_mass2)-
+			    (p_triplet->m_mass+p_antitriplet->m_mass));
   }
 }
 

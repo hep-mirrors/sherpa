@@ -53,11 +53,7 @@ namespace AHADIC {
   public :
     bool operator() (const Flavour_Pair & flpair1,
 		     const Flavour_Pair & flpair2) const {
-      if (//(flpair1.first==flpair2.second.Bar() &&
-	  //flpair1.first==flpair2.second &&
-	  //flpair1.second==flpair2.first.Bar() &&
-	  //flpair1.second==flpair2.first) ||
-      	  (flpair1.first==flpair2.first &&
+      if ((flpair1.first==flpair2.first &&
       	   flpair1.second==flpair2.second)) return false;
       if (ATOOLS::IsEqual(flpair1.first.HadMass()+flpair1.second.HadMass(),
 			  flpair2.first.HadMass()+flpair2.second.HadMass())) {
@@ -71,9 +67,9 @@ namespace AHADIC {
 
   typedef std::map<Flavour_Pair,double,
   		   Flavour_Pair_Sorting_Mass>         Double_Transition_List;
-  //typedef std::map<Flavour_Pair,double>               Double_Transition_List;
 
-  std::ostream & operator<<(std::ostream & s, const Double_Transition_List & dtl);
+  std::ostream & operator<<(std::ostream & s, 
+			    const Double_Transition_List & dtl);
 
   typedef Double_Transition_List::iterator            Double_Transition_Siter;
     

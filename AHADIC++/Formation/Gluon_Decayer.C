@@ -5,14 +5,19 @@
 
 using namespace AHADIC;
 using namespace ATOOLS;
+using namespace std;
 
 
-Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter,bool ana) :
-  p_splitter(splitter), 
-  m_pt2max(sqr(hadpars->Get(std::string("ptmax_factor"))*
-	       hadpars->Get(std::string("ptmax")))), 
+Gluon_Decayer::Gluon_Decayer(bool ana) :
+  p_gsplitter(new Gluon_Splitter()),
+  m_pt2max(sqr(hadpars->Get(string("ptmax_factor"))*
+	       hadpars->Get(string("ptmax")))), 
   m_analyse(ana),m_tot(0),m_s(0),m_u(0),m_d(0)
-{ 
+{
+  Init();
+}
+
+void Gluon_Decayer::Init() {
   double norm(0.);
   for (FlavCCMap_Iterator fdit=hadpars->GetConstituents()->CCMap.begin();
        fdit!=hadpars->GetConstituents()->CCMap.end();fdit++) {
@@ -24,39 +29,41 @@ Gluon_Decayer::Gluon_Decayer(Dipole_Splitter * splitter,bool ana) :
        fdit!=hadpars->GetConstituents()->CCMap.end();fdit++) {
     if (!fdit->first.IsAnti()) {
       decspec = new DecaySpecs;
-      decspec->popweight = hadpars->GetConstituents()->TotWeight(fdit->first)/norm;
+      decspec->popweight = hadpars->GetConstituents()->
+	TotWeight(fdit->first)/norm;
       decspec->massmin   = hadpars->GetConstituents()->Mass(fdit->first);
-      m_options.insert(std::make_pair(fdit->first,decspec));
+      m_options.insert(make_pair(fdit->first,decspec));
     }
   }
-  if (m_analyse) {
-    m_histograms[std::string("PT_Gluon")]          = new Histogram(0,0.,2.,100);
-    m_histograms[std::string("PT_Rescue")]         = new Histogram(0,0.,2.,100);
-    m_histograms[std::string("Flavour_Gluon")]     = new Histogram(0,0.,15.,15);
-    m_histograms[std::string("Flavour_Rescue")]    = new Histogram(0,0.,15.,15);
-    m_histograms[std::string("MergedMassBefore")]  = new Histogram(0,0.,15.,30);
-    m_histograms[std::string("MergedMassAfter")]   = new Histogram(0,0.,30.,60);
-    m_histograms[std::string("SelectedMass")]      = new Histogram(0,0.,20.,200);
+  if (m_options.empty()) {
+    msg_Error()<<"Error in "<<METHOD<<":\n"
+	       <<"   No decay channels found for gluons, will abort the run.\n"
+	       <<"   Please contact the Sherpa group for assistance.\n";
+    exit(0);
   }
 
-  p_splitter->SetOptions(&m_options);
-
-  if (m_options.empty()) {
-    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-	       <<"   No decay channels found for gluons, will abort the run."<<std::endl
-	       <<"   Please contact the Sherpa group for further assistance."<<std::endl;
-    exit(0);
+  if (m_analyse) {
+    m_histograms[string("PT_Gluon")]         = new Histogram(0,0.,2.,100);
+    m_histograms[string("PT_Rescue")]        = new Histogram(0,0.,2.,100);
+    m_histograms[string("Flavour_Gluon")]    = new Histogram(0,0.,15.,15);
+    m_histograms[string("Flavour_Rescue")]   = new Histogram(0,0.,15.,15);
+    m_histograms[string("MergedMassBefore")] = new Histogram(0,0.,15.,30);
+    m_histograms[string("MergedMassAfter")]  = new Histogram(0,0.,30.,60);
+    m_histograms[string("SelectedMass")]     = new Histogram(0,0.,20.,200);
   }
 }
 
 Gluon_Decayer::~Gluon_Decayer() {
+  if (p_gsplitter) delete p_gsplitter;
   if (m_analyse) {
     Histogram * histo;
-    std::string name;
-    for (std::map<std::string,Histogram *>::iterator hit=m_histograms.begin();
+    string name;
+    for (map<string,Histogram *>::iterator hit=m_histograms.begin();
 	 hit!=m_histograms.end();hit++) {
       histo = hit->second;
-      name  = std::string("Fragmentation_Analysis/")+hit->first+std::string(".dat");
+      name  = 
+	string("Fragmentation_Analysis/")+hit->first+
+	string(".dat");
       histo->Output(name);
       delete histo;
     }
@@ -105,7 +112,6 @@ bool Gluon_Decayer::FillDipoleList(Proto_Particle_List * plin)
     //  pt2dip = (*pit)->m_mom.PPerp2();
     //else
     pt2dip          = 2.*sqr(Min(pl,pl1))*(1.-costheta);
-    //pt2dip          = ((*pit)->m_mom+(*pit1)->m_mom).Abs2(); 
     (*pit)->m_kt2max  = Min((*pit)->m_kt2max,pt2dip);
     (*pit1)->m_kt2max = Min((*pit1)->m_kt2max,pt2dip);
     dip = new Dipole(*pit,*pit1);
@@ -120,10 +126,10 @@ bool Gluon_Decayer::FillDipoleList(Proto_Particle_List * plin)
       m_dipoles.push_back(dip);
     }
     else {
-      msg_Error()<<"ERROR in "<<METHOD<<":"<<std::endl
+      msg_Error()<<"ERROR in "<<METHOD<<":\n"
 		 <<"    Last flavour in list = "<<(*pit)->m_flav
-		 <<" but first flavour = "<<begin->m_flav<<"."<<std::endl
-		 <<"   Don't know what to do, try new event."<<std::endl;
+		 <<" but first flavour = "<<begin->m_flav<<".\n"
+		 <<"   Don't know what to do, try new event.\n";
       return false;
     }
   }
@@ -150,10 +156,10 @@ bool Gluon_Decayer::DecayDipoles() {
   do {
     dipiter = SelectDipole(); 
     if (dipiter==m_dipoles.end()) {
-      msg_Debugging()<<METHOD<<" : all dipoles done!"<<std::endl;
+      msg_Debugging()<<METHOD<<" : all dipoles done!\n";
       return true;
     }
-    if (!p_splitter->SplitDipole((*dipiter),true,false)) {
+    if (p_gsplitter && !(*p_gsplitter)((*dipiter),true,false)) {
       switch (Rescue(dipiter)) {
       case -1:
 	return false;
@@ -162,7 +168,8 @@ bool Gluon_Decayer::DecayDipoles() {
 	break;
       case 1:
 	if (m_analyse) {
-	  m_histograms[std::string("PT_Rescue")]->Insert(sqrt(p_splitter->PT2()));
+	  m_histograms[string("PT_Rescue")]->
+	    Insert(sqrt(0./*p_gsplitter->PT2()*/));
 	}
       default:
 	break;
@@ -170,7 +177,8 @@ bool Gluon_Decayer::DecayDipoles() {
     }
     else {
       if (m_analyse) {
-	m_histograms[std::string("PT_Gluon")]->Insert(sqrt(p_splitter->PT2()));
+	m_histograms[string("PT_Gluon")]->
+	  Insert(sqrt(0./*p_gsplitter->PT2()*/));
       }
       AfterSplit(dipiter);
     }
@@ -185,15 +193,19 @@ DipIter Gluon_Decayer::SelectDipole() {
   DipIter winner=m_dipoles.end();
   for (DipIter dip=m_dipoles.begin();dip!=m_dipoles.end();dip++) {
     if (!(*dip)->MustDecay()) continue;
-    stest = (*dip)->Triplet()->m_mom.PPerp2((*dip)->AntiTriplet()->m_mom);
-    if (winner==m_dipoles.end() || stest<smin) {
+    stest = ((*dip)->Triplet()->m_mom+(*dip)->AntiTriplet()->m_mom).Abs2();
+    if ((*dip)->Triplet()->m_info=='L' ||
+	(*dip)->Triplet()->m_info=='B') stest /= 1000.;
+    if ((*dip)->AntiTriplet()->m_info=='L' ||
+	(*dip)->AntiTriplet()->m_info=='B') stest /= 1000.;
+    if (winner==m_dipoles.end() || stest>smax) {
       smin   = stest;
       smax   = stest;
       winner = dip;
     }
   }
   if (m_analyse) {
-    m_histograms[std::string("SelectedMass")]->Insert(sqrt(smin));
+    m_histograms[string("SelectedMass")]->Insert(sqrt(smin));
   }
   return winner;
 }
@@ -204,7 +216,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
       (*dip)->AntiTriplet()->m_flav.IsGluon()) {
     if ((*dip)!=(*m_dipoles.rbegin())) {
       partner++;
-      if (p_splitter->SplitDipole((*partner),true,false)) {
+      if (p_gsplitter && (*p_gsplitter)((*partner),true,false)) {
 	AfterSplit(partner);
 	dip = partner;
 	return 1;
@@ -213,15 +225,15 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
     if (dip!=m_dipoles.begin()) {
       partner = dip;
       partner--;
-      if (p_splitter->SplitDipole((*partner),true,false)) {
+      if (p_gsplitter && (*p_gsplitter)((*partner),true,false)) {
 	AfterSplit(partner);
 	dip = partner;
 	return 1;
       }
     }
     if ((*dip)==(*m_dipoles.rbegin())) { 
-      dip1 = dip2 = dip; dip1--; 
-    }
+	dip1 = dip2 = dip; dip1--; 
+      }
     else if (dip==m_dipoles.begin()) { 
       dip1 = dip2 = dip; dip2++; 
     }
@@ -234,7 +246,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
   else if (!(*dip)->Triplet()->m_flav.IsGluon() &&
 	   (*dip)->AntiTriplet()->m_flav.IsGluon()) {
     partner++;
-    if (p_splitter->SplitDipole((*partner),true,false)) {
+    if (p_gsplitter && (*p_gsplitter)(*partner,true,false)) {
       AfterSplit(partner);
       dip = partner;
       return 1;
@@ -244,7 +256,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
   else if (!(*dip)->AntiTriplet()->m_flav.IsGluon() &&
 	   (*dip)->Triplet()->m_flav.IsGluon()) {
     partner--;
-    if (p_splitter->SplitDipole((*partner),true,false)) {
+    if (p_gsplitter && (*p_gsplitter)((*partner),true,false)) {
       AfterSplit(partner);
       dip = partner;
       return 1;
@@ -264,7 +276,7 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
 
 bool Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
   if (m_analyse) {
-    Histogram* histo(m_histograms[std::string("MergedMassBefore")]);
+    Histogram* histo(m_histograms[string("MergedMassBefore")]);
     histo->Insert(sqrt((*dip1)->Mass2()));
     histo->Insert(sqrt((*dip2)->Mass2()));
   }
@@ -275,16 +287,16 @@ bool Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
 #ifdef memchecker
   cout<<"### New Proto_Particle ("
 	   <<save1.Triplet()->m_flav<<"/"<<save1.Triplet()<<") from "
-	   <<METHOD<<"."<<std::endl;
+	   <<METHOD<<".\n";
   cout<<"### New Proto_Particle ("
 	   <<save1.AntiTriplet()->m_flav<<"/"<<save1.AntiTriplet()
-	   <<") from "<<METHOD<<"."<<std::endl;
+	   <<") from "<<METHOD<<".\n";
   cout<<"### New Proto_Particle ("
 	   <<save2.Triplet()->m_flav<<"/"<<save2.Triplet()<<") from "
-	   <<METHOD<<"."<<std::endl;
+	   <<METHOD<<".\n";
   cout<<"### New Proto_Particle ("
 	   <<save2.AntiTriplet()->m_flav<<"/"<<save2.AntiTriplet()
-	   <<") from "<<METHOD<<"."<<std::endl;
+	   <<") from "<<METHOD<<".\n";
 #endif
 
 
@@ -294,15 +306,17 @@ bool Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
   Q += pk = (*dip2)->AntiTriplet()->m_mom;
   double Q2   = Q.Abs2();
   double pij2 = (pi+pj).Abs2(), pjk2 = (pj+pk).Abs2();
-  double mij2 = sqr(hadpars->GetConstituents()->Mass((*dip1)->Triplet()->m_flav));
-  double mk2  = sqr(hadpars->GetConstituents()->Mass((*dip2)->AntiTriplet()->m_flav));
+  double mij2 = sqr(hadpars->GetConstituents()->
+		    Mass((*dip1)->Triplet()->m_flav));
+  double mk2  = sqr(hadpars->GetConstituents()->
+		    Mass((*dip2)->AntiTriplet()->m_flav));
   double mjk2(mk2), mi2(mij2);
   double aij  = (sqr(Q2-mij2-mk2)-4.*mij2*mk2);
   double bij  = (sqr(Q2-pij2-mk2)-4.*pij2*mk2);
   double ajk  = (sqr(Q2-mjk2-mi2)-4.*mjk2*mi2);
   double bjk  = (sqr(Q2-pjk2-mi2)-4.*pjk2*mi2);
   if (aij/bij<0. && ajk/bjk<0.) {
-    msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
+    msg_Error()<<"Error in "<<METHOD<<".\n"
 	       <<"   Cannot merge dipoles, kinematics does not work out.\n"
 	       <<"   Try new event.\n";
     return false;
@@ -327,7 +341,7 @@ bool Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
   }
 
   if (m_analyse) {
-    Histogram* histo((m_histograms.find(std::string("MergedMassAfter")))->second);
+    Histogram* histo((m_histograms.find(string("MergedMassAfter")))->second);
     histo->Insert(sqrt((*dip1)->Mass2()));
   }
 
@@ -360,7 +374,7 @@ void Gluon_Decayer::AfterSplit(DipIter dip) {
 
 void Gluon_Decayer::SplitIt(DipIter dipiter,Vec4D checkbef) {
   Proto_Particle * new1, * new2;
-  p_splitter->GetNewParticles(new1,new2);
+  if (p_gsplitter) p_gsplitter->GetNewParticles(new1,new2);
 
   if      (new2->m_flav==Flavour(kf_d)) m_d++;
   else if (new2->m_flav==Flavour(kf_u)) m_u++;
@@ -393,7 +407,6 @@ void Gluon_Decayer::SplitIt(DipIter dipiter,Vec4D checkbef) {
   }
   else {
     partner = dipiter;
-
     if (dip->IsSwitched()) {
       partner--;
       dip->SetTriplet(new2);
@@ -417,16 +430,16 @@ void Gluon_Decayer::PrintDipoleList()
   for (DipIter dip=m_dipoles.begin();dip!=m_dipoles.end();dip++) {
     msg_Out()
       <<"Dipole(must decay = "<<((*dip)->MustDecay())<<", "
-      <<sqrt((*dip)->Mass2())<<") : "<<std::endl
+      <<sqrt((*dip)->Mass2())<<") : \n"
       <<"  "<<(*dip)->Triplet()->m_flav<<"("<<(*dip)->Triplet()->m_mom<<"), "
       <<" "<<hadpars->GetConstituents()->Mass((*dip)->Triplet()->m_flav)
       <<" vs. "<<sqrt(Max((*dip)->Triplet()->m_mom.Abs2(),0.0))
-      <<" --> kt^2_max = "<<(*dip)->Triplet()->m_kt2max<<";"<<std::endl
+      <<" --> kt^2_max = "<<(*dip)->Triplet()->m_kt2max<<";\n"
       <<"  "<<(*dip)->AntiTriplet()->m_flav<<"("
       <<(*dip)->AntiTriplet()->m_mom<<"),"
       <<" "<<hadpars->GetConstituents()->Mass((*dip)->AntiTriplet()->m_flav)
       <<" vs. "<<sqrt(Max((*dip)->AntiTriplet()->m_mom.Abs2(),0.0))
-      <<" --> kt^2_max = "<<(*dip)->AntiTriplet()->m_kt2max<<"."<<std::endl;
+      <<" --> kt^2_max = "<<(*dip)->AntiTriplet()->m_kt2max<<".\n";
   }
 }
 
