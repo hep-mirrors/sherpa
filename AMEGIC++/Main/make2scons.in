@@ -23,9 +23,11 @@ vars.Add('CXXFLAGS','The C++ Flags',['-O2'])
 env = Environment(variables=vars,CPPPATH=['@INCLUDEDIR@'])
 env['ENV']['PATH']=os.environ['PATH']
 if env['PLATFORM']=='darwin':
-   env['ENV']['DYLD_LIBRARY_PATH']=os.environ['DYLD_LIBRARY_PATH']
+  if os.environ.has_key('DYLD_LIBRARY_PATH'):
+    env['ENV']['DYLD_LIBRARY_PATH']=os.environ['DYLD_LIBRARY_PATH']
 else:
-   env['ENV']['LD_LIBRARY_PATH']=os.environ['LD_LIBRARY_PATH']
+  if os.environ.has_key('LD_LIBRARY_PATH'):
+    env['ENV']['LD_LIBRARY_PATH']=os.environ['LD_LIBRARY_PATH']
 " > SConstruct;
 fi;
 test "$procdir" = "x" && exit 0;
