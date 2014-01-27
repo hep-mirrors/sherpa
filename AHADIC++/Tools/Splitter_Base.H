@@ -50,7 +50,7 @@ namespace AHADIC {
 
     Proto_Particle * p_split, * p_spect;
     LightCone        m_LC;
-    bool             m_swap, m_anti, m_leadspect, m_leadsplit;
+    bool             m_swap, m_anti, m_leadspect, m_leadsplit, m_isbeam;
     ATOOLS::Poincare m_boost, m_rotat;
     ATOOLS::Vec4D    m_splitmom,m_spectmom;
 

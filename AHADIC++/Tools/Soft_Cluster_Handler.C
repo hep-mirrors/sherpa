@@ -230,12 +230,12 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter,
   Flavour hadtrans(Flavour(kf_none));
 
   bool   direct((cluster->GetTrip()->m_info=='B' && 
-		 cluster->GetAnti()->m_info=='B') ||
-		(false && 
-		 cluster->GetTrip()->m_info=='L' && 
-		 cluster->GetAnti()->m_info=='L' &&
-		 ran->Get()<sqrt(4.*m_pt02/cluster->Mass2())));
+		 cluster->GetAnti()->m_info=='B'));
   double decayweight(DecayWeight(cluster,haddec1,haddec2,direct||mustdecay));
+  // if (direct) {
+  //   msg_Out()<<"Direct decay ("<<haddec1<<" + "<<haddec2<<") "
+  // 	     <<"for cluster \n"<<(*cluster)<<"\n";
+  // }
   bool mustgo(mustdecay || decayweight<0.);
   double transformweight(TransformWeight(cluster,hadtrans,lighter,mustgo));
   if (decayweight>0. || transformweight>0.) {
@@ -654,7 +654,7 @@ DecayWeight(Cluster * cluster,Flavour & had1,Flavour & had2,
        decit!=dtliter->second->end();decit++) {
     m1  = decit->first.first.HadMass();
     m2  = decit->first.second.HadMass();
-    if ((m1+m2<MC) && (enforce || (m1+m2<critM))) {
+    if ((m1+m2<MC) && (enforce || m1+m2<critM)) {
       wt = (sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2))) * 
 	    pow(sqr(m1+m2)/MC2,m_chi) * decit->second);
       if (wfweight>wfmax) {
@@ -672,7 +672,7 @@ DecayWeight(Cluster * cluster,Flavour & had1,Flavour & had2,
        decit!=dtliter->second->end();decit++) {
     m1    = decit->first.first.HadMass();
     m2    = decit->first.second.HadMass();
-    if ((m1+m2<MC) && (enforce || (m1+m2<critM))) {
+    if ((m1+m2<MC) && (enforce || m1+m2<critM)) {
       wt = (sqrt((MC2-sqr(m1+m2))*(MC2-sqr(m1-m2))) * 
 	    pow(sqr(m1+m2)/MC2,m_chi) * decit->second);
       disc -= wt;
@@ -703,9 +703,8 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
   do { 
     stheta = 1.-2.*ran->Get(); 
     pt2    = pl2*sqr(stheta);
-  } while (pt2>m_pt2max*m_pt2maxfac && 
-	   sqr(//m_pt02/(m_pt02+pt2*masscor)*
-	       (*p_as)(pt2,false)/p_as->MaxValue())<ran->Get());
+  } while (pt2>m_pt2max*m_pt2maxfac || 
+	   sqr((*p_as)(pt2,false)/p_as->MaxValue())<ran->Get());
   double pt     = sqrt(pt2);
   int sign      = cluster->GetTrip()->m_mom[3]<0?-1:1;
   double pl1    = sign*sqrt(sqr(E1)-sqr(pt)-m12);
@@ -733,7 +732,13 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
     blob->AddToOutParticles(left);
     blob->AddToOutParticles(right);
   }
-
+  // if (cluster->GetTrip()->m_info=='B' || cluster->GetAnti()->m_info=='B') {
+  //   msg_Out()<<"==========================================================\n"
+  // 	     <<"Cluster decay (pt = "<<pt<<") for cluster \n"<<(*cluster)<<"\n"
+  // 	     <<"==> "<<left->Momentum()<<" + "<<right->Momentum()<<" for "
+  // 	     <<left->Flav()<<" + "<<right->Flav()<<"\n"
+  // 	     <<"==========================================================\n";
+  // }
   if (m_ana) {
     Histogram* histo((m_histograms.find(std::string("PT_HH")))->second);
     histo->Insert(pt);

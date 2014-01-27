@@ -126,6 +126,7 @@ bool Gluon_Splitter::AcceptSystem(const double & pt2max) {
 }
 
 double Gluon_Splitter::FixExponent() {
+  if (m_isbeam) return m_etay_lead+1.;
   if (m_leadspect && p_spect->m_flav.IsQuark()) return m_etay_lead;
   return m_etay;
 }
@@ -156,7 +157,7 @@ void Gluon_Splitter::MakeParticles() {
   double m1((m_spectmom+pop->m_outmom[0]).Abs2());
   double m2((m_spectmom+pop->m_outmom[1]).Abs2());
   bool swap(/*ran->Get()>0.5);//*/m_leadspect?m1>m2:m2<m1);
-  char info(p_split->m_info=='B'?'B':'l');
+  char info(p_split->m_info=='B'||p_spect->m_info=='B'?'B':'l');
   p_out1 = new Proto_Particle(pop->m_flav.Bar(),pop->m_outmom[int(swap)],info);
   p_out2 = new Proto_Particle(pop->m_flav,pop->m_outmom[1-int(swap)],info);
   p_out1->p_partner = p_out2;

@@ -145,6 +145,8 @@ bool Cluster_Splitter::AcceptSystem(const double & pt2max) {
 pair<double,double> Cluster_Splitter::FixExponents() {
   pair<double,double> exponents(m_leadsplit?m_etax_lead:m_etax,
 				m_leadspect?m_etay_lead:m_etay);
+  if (m_isbeam) 
+    exponents.first = exponents.second = m_etax_lead+m_etay_lead+2;
   return exponents;
 }
 
@@ -248,12 +250,14 @@ void Cluster_Splitter::MakeSplitterAndSpectatorClusters(Cluster * cluster) {
   Proto_Particle * splitp, * spectp;
   Cluster * newcluster;
   p_trip = p_anti = NULL;
+  char info((cluster->GetTrip()->m_info=='B' || 
+	     cluster->GetAnti()->m_info=='B') ? 'B':'l');
   if (!m_swap) {
     // split = trip, spect = anti
     splitp = new Proto_Particle((*m_popsplit)->m_flav.Bar(),
-				(*m_popsplit)->m_outmom[m_popspliti],'l');
+				(*m_popsplit)->m_outmom[m_popspliti],info);
     spectp = new Proto_Particle((*m_popspect)->m_flav,
-				(*m_popspect)->m_outmom[m_popspecti],'l');
+				(*m_popspect)->m_outmom[m_popspecti],info);
     if (!Rearrange()) {
       newcluster = new Cluster(newsplit,splitp);
       newcluster->SetPrev(cluster);
@@ -272,17 +276,17 @@ void Cluster_Splitter::MakeSplitterAndSpectatorClusters(Cluster * cluster) {
     }
     if (m_popsplit!=m_popspect) {
       p_trip = new Proto_Particle((*m_popsplit)->m_flav,
-				  (*m_popsplit)->m_outmom[1-m_popspliti],'l');
+				  (*m_popsplit)->m_outmom[1-m_popspliti],info);
       p_anti = new Proto_Particle((*m_popspect)->m_flav.Bar(),
-				  (*m_popspect)->m_outmom[1-m_popspecti],'l');
+				  (*m_popspect)->m_outmom[1-m_popspecti],info);
     }
   }
   else {
     // split = anti, spect = trip
     splitp = new Proto_Particle((*m_popsplit)->m_flav,
-				(*m_popsplit)->m_outmom[m_popspliti],'l');
+				(*m_popsplit)->m_outmom[m_popspliti],info);
     spectp = new Proto_Particle((*m_popspect)->m_flav.Bar(),
-				(*m_popspect)->m_outmom[m_popspecti],'l');
+				(*m_popspect)->m_outmom[m_popspecti],info);
     if (!Rearrange()) {
       newcluster = new Cluster(splitp,newsplit);
       newcluster->SetPrev(cluster);
@@ -301,9 +305,9 @@ void Cluster_Splitter::MakeSplitterAndSpectatorClusters(Cluster * cluster) {
     }
     if (m_popsplit!=m_popspect) {
       p_trip = new Proto_Particle((*m_popspect)->m_flav,
-				  (*m_popspect)->m_outmom[1-m_popspecti],'l');
+				  (*m_popspect)->m_outmom[1-m_popspecti],info);
       p_anti = new Proto_Particle((*m_popsplit)->m_flav.Bar(),
-				  (*m_popsplit)->m_outmom[1-m_popspliti],'l');
+				  (*m_popsplit)->m_outmom[1-m_popspliti],info);
     }
   }
 }  

@@ -96,6 +96,7 @@ void Splitter_Base::DefineTags() {
 	     (flav.IsDiQuark() && flav.IsAnti()));
   m_leadspect = (p_spect->m_info=='L' || p_spect->m_info=='B');
   m_leadsplit = (p_split->m_info=='L' || p_split->m_info=='B');
+  m_isbeam    = (p_split->m_info=='B' || p_spect->m_info=='B');
 }
 
 void Splitter_Base::ConstructTrafos() {
