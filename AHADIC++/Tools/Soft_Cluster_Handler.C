@@ -392,8 +392,8 @@ ClusterAnnihilation(Cluster * cluster,Flavour & had1,Flavour & had2) {
   pair2.first = cluster2.GetTrip()->m_flav;
   pair2.first = cluster2.GetAnti()->m_flav;
   double mass(cluster->Mass());
-  double wt1(TransformWeight(&cluster1,had1,false,true));
-  double wt2(TransformWeight(&cluster2,had2,false,true));
+  double wt1(TransformWeight(&cluster1,had1,true,true));
+  double wt2(TransformWeight(&cluster2,had2,true,true));
   if (wt1<0. || wt2<0.) return false;
   bool lighter1(wt1>0.), lighter2(wt2>0.);
   while (had1.Mass()+had2.Mass()>mass && lighter1 && lighter2) {
