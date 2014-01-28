@@ -386,7 +386,13 @@ void Hadron_Decay_Channel::WriteOut(bool newfile) {
   } // if (read DC file)
   else {                                
     // if DC file exists
-    PRINT_INFO("TODO: migrate to Decaydata.db for "<<m_path+m_filename<<": "<<m_iwidth<<" "<<m_ideltawidth<<" "<<m_max);
+    PRINT_INFO("TODO: migrate to Decaydata.db for "<<m_path<<" "<<m_filename<<" :");
+    cout<<"<Result>"<<endl;
+    int oldprec=cout.precision(4);
+    cout<<"  "<<m_iwidth<<" "<<m_ideltawidth<<" "<<m_max<<";"<<endl;
+    cout.precision(oldprec);
+    cout<<"</Result>"<<endl;
+
     /* TODO migrate to Decaydata.db
     Move(m_path+m_filename, m_path+"."+m_filename+".old");
     ofstream to((m_path+m_filename).c_str(),ios::out);
