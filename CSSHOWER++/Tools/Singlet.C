@@ -263,7 +263,6 @@ ReestablishConnections(Parton * mother, Parton * daughter1, Parton * daughter2)
   Parton * parton;
   for (Parton_List::iterator pit=begin();pit!=end();pit++) {
     parton = (*pit);
-    if (parton->Connected()) continue;
     if (parton->GetLeft()==mother)  parton->SetLeft(daughter1);
     if (parton->GetRight()==mother) parton->SetRight(daughter2);
   }
