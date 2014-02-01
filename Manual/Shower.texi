@@ -75,6 +75,7 @@ as massless.
 @cindex CSS_MAXEM
 @cindex CSS_MASS_THRESHOLD
 @cindex CSS_EVOLUTION_SCHEME
+@cindex CSS_SCALE_SCHEME
 
 Sherpa's default shower module is based on @mycite{Schumann2007mg}.
 A new ordering parameter for initial state splitters was introduced 
@@ -110,7 +111,10 @@ to be used in the METS scale setter, cf. @ref{SCALES}.
 The evolution variable of the CS shower can be changed using 
 @option{CSS_EVOLUTION_SCHEME}. Two options are currently implemented,
 which correspond to transverse momentum ordering (option 0) and modified
-transverse momentum ordering (option 1). Additionally, the CS shower
+transverse momentum ordering (option 1). The scale at which the strong 
+coupling for gluon splitting into quarks is evaluated can be chosen
+with @option{CSS_SCALE_SCHEME}, where 0 corresponds to the ordering 
+parameter and 1 corresponds to invariant mass. Additionally, the CS shower
 allows to disable splittings at scales below the on-shell mass of heavy
 quarks. The upper limit for the corresponding heavy quark mass is set
 using @option{CSS_MASS_THRESHOLD}.
