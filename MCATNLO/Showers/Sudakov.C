@@ -165,6 +165,7 @@ void Sudakov::AddToMaps(Splitting_Function_Base * split,const int mode)
     return;
   }
   split->SetMassThreshold(m_mth);
+  split->SetScaleScheme(m_scs);
   split->SetPDF(p_pdf);
   if (mode) {
     m_addsplittings.push_back(split);

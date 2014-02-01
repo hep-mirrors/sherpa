@@ -600,6 +600,7 @@ double LF_VFF_FF::operator()
   double massless = (1.-2.*z*(1.-z));
   double longpol = 0.5;
   double scale = Q2*(1.0-mui2-muj2-muk2)*y;
+  if (p_sf->ScaleScheme()==1) scale=_scale;
   if (mui2==0. && muj2==0. && muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JFF(y,0.0,0.0,0.0,0.0);
@@ -664,6 +665,7 @@ double LF_VFF_FI::operator()
   double massless = ( (1.-2.*z*(1.-z))*(1.-0.5/z*CDIS(y,z)) + CDIS(z,y) );
   double longpol = 0.5;
   double scale = (Q2+p_ms->Mass2(m_flspec))*y/(1.0-y)-2.0*p_ms->Mass2(m_flavs[1]);
+  if (p_sf->ScaleScheme()==1) scale=_scale;
   if (muQ2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JFI(y,eta,scale,sub);

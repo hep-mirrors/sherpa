@@ -199,7 +199,7 @@ namespace MCATNLO {
     SF_Coupling *p_cf;
     cstp::code m_type;
     double m_lastint, m_symf, m_polfac, m_lpdf, m_mth;
-    int m_on, m_qcd;
+    int m_on, m_qcd, m_scs;
     std::vector<Parton*> m_specs;
     Parton *p_spec;
     PDF::PDF_Base **p_pdf;
@@ -272,6 +272,10 @@ namespace MCATNLO {
     inline double SymFac() const { return m_symf; }
 
     inline void SetMassThreshold(const double &mth) { m_mth=mth; }
+
+    inline void SetScaleScheme(const int &scs) { m_scs=scs; }
+
+    inline int ScaleScheme() const { return m_scs; }
 
     friend std::ostream& operator<<(std::ostream &,const Splitting_Function_Base &);
   };

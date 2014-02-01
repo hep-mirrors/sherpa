@@ -19,6 +19,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
 {
   int evol=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
   int kfmode = ToType<int>(rpa->gen.Variable("CSS_KFACTOR_SCHEME"));
+  int scs=ToType<int>(rpa->gen.Variable("CSS_SCALE_SCHEME"));
   double k0sqf = ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
   double k0sqi = ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
   double fs_as_fac = ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
@@ -32,6 +33,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
               <<" MC@NLO.\n";
   m_sudakov.SetShower(this);
   m_sudakov.SetMassThreshold(mth);
+  m_sudakov.SetScaleScheme(scs);
   m_sudakov.SetDisallowFlavour(disallowflavs);
   m_sudakov.InitSplittingFunctions(MODEL::s_model,kfmode);
   m_sudakov.SetCoupling(MODEL::s_model,k0sqi,k0sqf,is_as_fac,fs_as_fac);
