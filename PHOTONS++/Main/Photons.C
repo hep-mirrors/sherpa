@@ -142,8 +142,8 @@ bool Photons::AddRadiation(Blob * blob)
   m_success = dress.DoneSuccessfully();
   if (!blob->MomentumConserved()) {
     msg_Error()<<METHOD<<"(): Momentum not conserved after treatment: "
-               <<blob->CheckMomentumConservation()<<std::endl
-               <<*blob<<std::endl;
+               <<blob->CheckMomentumConservation()<<std::endl;
+    msg_Debugging()<<*blob<<std::endl;
     return m_success=false;
   }
   return m_success;
@@ -155,31 +155,35 @@ bool Photons::CheckStateBeforeTreatment(Blob * blob)
   DEBUG_FUNC(blob->ShortProcessName());
   if (!blob->MomentumConserved()) {
     msg_Error()<<METHOD<<"(): Momentum not conserved before treatment: "
-               <<blob->CheckMomentumConservation()<<std::endl
-               <<*blob<<std::endl;
+               <<blob->CheckMomentumConservation()<<std::endl;
+    msg_Debugging()<<*blob<<std::endl;
     return false;
   }
   bool rightmasses(true);
   for (size_t i(0);i<blob->NOutP();++i) {
     if (blob->OutParticle(i)->FinalMass()==0. &&
         blob->OutParticle(i)->Momentum().Mass()>1e-3) {
-      msg_Error()<<METHOD<<"(): "<<blob->OutParticle(i)->Flav().IDName()
-                         <<" not onshell: "
-                         <<blob->OutParticle(i)->Momentum().Mass()
-                         <<" vs "<<blob->OutParticle(i)->FinalMass()<<std::endl;
+      msg_Debugging()<<METHOD<<"(): "<<blob->OutParticle(i)->Flav().IDName()
+                             <<" not onshell: "
+                             <<blob->OutParticle(i)->Momentum().Mass()<<" vs "
+                             <<blob->OutParticle(i)->FinalMass()<<std::endl;
       rightmasses=false;
     }
     else if (blob->OutParticle(i)->FinalMass()!=0. &&
              !IsEqual(blob->OutParticle(i)->Momentum().Mass(),
                       blob->OutParticle(i)->FinalMass(),1e-3)) {
-      msg_Error()<<METHOD<<"(): "<<blob->OutParticle(i)->Flav().IDName()
-                         <<" not onshell: "
-                         <<blob->OutParticle(i)->Momentum().Mass()
-                         <<" vs "<<blob->OutParticle(i)->FinalMass()<<std::endl;
+      msg_Debugging()<<METHOD<<"(): "<<blob->OutParticle(i)->Flav().IDName()
+                             <<" not onshell: "
+                             <<blob->OutParticle(i)->Momentum().Mass()<<" vs "
+                             <<blob->OutParticle(i)->FinalMass()<<std::endl;
       rightmasses=false;
     }
   }
-  if (!rightmasses) return false;
+  if (!rightmasses) {
+    msg_Error()<<METHOD<<"(): Particle(s) not on their mass shell. Cannot cope."
+               <<std::endl;
+    return false;
+  }
   return true;
 }
 
