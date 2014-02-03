@@ -104,6 +104,11 @@ int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2)
   for (;plit!=end();++plit) if (*plit==mother) break;
   if (plit==end()) THROW(fatal_error,"Internal error");
 
+  if (mother->GetLeft()==part1->GetLeft()) part1->SetSoft(0,mother->KtSoft(0));
+  else if (mother->GetLeft()==part2->GetLeft()) part2->SetSoft(0,mother->KtSoft(0));
+  if (mother->GetRight()==part1->GetRight()) part1->SetSoft(1,mother->KtSoft(1));
+  else if (mother->GetRight()==part2->GetRight()) part2->SetSoft(1,mother->KtSoft(1));
+
   Flavour flav    = mother->GetFlavour(), flav1 = part1->GetFlavour(), flav2 = part2->GetFlavour();
 
   PLiter pos1,pos2;
@@ -393,108 +398,10 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
       daughter1->SetFlow(2,0);
     }
   }
-  if (mother->GetInvLeft() || mother->GetInvRight()) {
-    msg_Debugging()<<"         ---> output invs etc..\n";
-    if (mother->GetInvLeft())
-      msg_Debugging()<<"       (invleft -> left/right): "
-	//             <<"("<<mother->GetInvLeft()->GetFlavour()<<") "
-		     <<mother->GetInvLeft()->GetLeft()<<"/"
-		     <<mother->GetInvLeft()->GetRight()<<",\n";
-    if (mother->GetInvRight()) 
-      msg_Debugging()<<"       (invright -> left/right): "
-	//     <<"("<<mother->GetInvRight()->GetFlavour()<<") "
-		     <<mother->GetInvRight()->GetLeft()<<"/"
-		     <<mother->GetInvRight()->GetRight()<<",\n";
-    msg_Debugging()<<"   daughters = "<<daughter1<<"/"<<daughter2;
-    if (daughter1 || daughter2) {
-      msg_Debugging()<<", colours: ";
-      if (daughter1) 
-	msg_Debugging()<<" d1 ("<<daughter1->GetFlavour()<<" )"
-		       <<"["<<daughter1->GetFlow(1)<<", "<<daughter1->GetFlow(2)<<"]";
-      if (daughter2) 
-	msg_Debugging()<<" d2 ("<<daughter2->GetFlavour()<<" )"
-		       <<"["<<daughter2->GetFlow(1)<<", "<<daughter2->GetFlow(2)<<"]";
-      msg_Debugging()<<".\n";
-    }
-  }
-  else {
   daughter1->UpdateColours();
   daughter2->UpdateColours();
-  }
   for (iterator pit(begin());pit!=end();++pit)
     if (*pit==daughter1) *pit=mother;
-  if (mother->GetInvLeft() || mother->GetInvRight()) {
-    if (daughter1->GetFlow(2)==daughter2->GetFlow(1)) {
-      daughter1->SetLeft(mother->GetLeft());
-      daughter1->SetInvRight(mother->GetInvRight());
-      if (daughter1->GetFlow(2)!=0) {
-	daughter1->SetRight(daughter2);
-	daughter1->SetInvLeft(daughter2);
-	daughter2->SetLeft(daughter1);
-	daughter2->SetInvRight(daughter1);
-      }
-      daughter2->SetRight(mother->GetRight());
-      daughter2->SetInvLeft(mother->GetInvLeft());
-      if (mother->GetLeft()) {
-	mother->GetLeft()->SetRight(daughter1);
-	mother->GetLeft()->SetInvLeft(daughter1);
-      }
-      if (mother->GetRight()) {
-	mother->GetRight()->SetLeft(daughter2);
-	mother->GetRight()->SetInvRight(daughter2);
-      }
-      if (mother->GetInvLeft() && mother->GetInvLeft()==mother) 
-	mother->GetInvLeft()->SetLeft(daughter1);
-      if (mother->GetInvRight() && mother->GetInvRight()==mother)
-	mother->GetInvRight()->SetRight(daughter2);     
-    }
-    else if (daughter2->GetFlow(2)==daughter1->GetFlow(1)) {
-      daughter2->SetLeft(mother->GetLeft());
-      daughter2->SetInvRight(mother->GetInvRight());
-      if (daughter2->GetFlow(2)!=0) {
-	daughter2->SetRight(daughter1);
-	daughter2->SetInvLeft(daughter1);
-	daughter1->SetLeft(daughter2);
-	daughter1->SetInvRight(daughter2);
-      }
-      daughter1->SetRight(mother->GetRight());
-      daughter1->SetInvLeft(mother->GetInvLeft());
-      if (mother->GetLeft()) {
-	mother->GetLeft()->SetRight(daughter2);
-	mother->GetLeft()->SetInvLeft(daughter2);
-      }
-      if (mother->GetRight()) {
-	mother->GetRight()->SetLeft(daughter1);
-	mother->GetRight()->SetInvRight(daughter1);
-      }
-      if (mother->GetInvLeft() && mother->GetInvLeft()==mother)
-	mother->GetInvLeft()->SetLeft(daughter2);
-      if (mother->GetInvRight() && mother->GetInvRight()==mother)
-	mother->GetInvRight()->SetRight(daughter1);     
-    }
-    msg_Debugging()<<METHOD<<" for "<<mother<<"("<<mother->GetFlavour()<<"), "
-		   <<"["<<mother->GetFlow(1)<<", "<<mother->GetFlow(2)<<"];    "
-		   <<"{"<<mother->GetLeft()<<", "<<mother->GetRight()<<"};    "
-		   <<"{"<<mother->GetInvLeft()<<", "<<mother->GetInvRight()<<"};\n"
-		   <<"                        --> "
-		   <<daughter1<<"("<<daughter1->GetFlavour()<<"), "
-		   <<"["<<daughter1->GetFlow(1)<<", "<<daughter1->GetFlow(2)<<"];    "
-                    <<"{"<<daughter1->GetLeft()<<", "<<daughter1->GetRight()<<"};    "
-		   <<"{"<<daughter1->GetInvLeft()<<", "<<daughter1->GetInvRight()
-		   <<"};\n"
-		   <<"                          + "
-		   <<daughter2<<"("<<daughter2->GetFlavour()<<"), "
-		   <<"["<<daughter2->GetFlow(1)<<", "<<daughter2->GetFlow(2)<<"];    "
-		   <<"{"<<daughter2->GetLeft()<<", "<<daughter2->GetRight()<<"};    "
-                    <<"{"<<daughter2->GetInvLeft()<<", "<<daughter2->GetInvRight()
-		   <<"}.\n"
-		   <<"______________________________________________________________\n";
-    for (const_iterator it(begin());it!=end();++it) {
-      msg_Debugging()<<"   "<<(*it)<<" --> "
-		     <<"("<<(*it)->GetLeft()<<", "<<(*it)->GetRight()<<") <-- "
-		     <<"["<<(*it)->GetInvLeft()<<", "<<(*it)->GetInvRight()<<"].\n";
-    }
-  }
   return true;
 } 
 

@@ -4,8 +4,8 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/Message.H"
-#include <list>
 
 namespace CSSHOWER {
 
@@ -28,13 +28,12 @@ namespace CSSHOWER {
     int             m_beam,m_stat,m_kin,m_kscheme,m_col;
     double          m_kt_start, m_kt_veto, m_kt_test, m_kt_max;
     double          m_z_test, m_y_test, m_phi, m_weight, m_xBj, m_t;
+    double          m_kt_soft[2];
     Parton        * p_left, * p_right;
     Parton        * p_spect, * p_prev, * p_next;
     Singlet       * p_sing;
     size_t          m_id;
-    bool            m_connected;
     ATOOLS::Poincare_Sequence m_lt;
-    Parton        * p_invleft, * p_invright;
 
     std::vector<std::pair<double,double> > m_weights;
 
@@ -77,6 +76,7 @@ namespace CSSHOWER {
     inline size_t                  Id()          const;
     inline double                  KtMax()       const;
     inline double                  KtStart()     const;
+    inline double                  KtSoft(int i) const;
     inline double                  KtVeto()      const;
     inline double                  KtTest()      const;
     inline double                  ZTest()       const;
@@ -90,16 +90,14 @@ namespace CSSHOWER {
     inline Parton *                GetSpect();
     inline Parton *                GetPrev();
     inline Parton *                GetNext();
-    inline Parton *                GetInvLeft();
-    inline Parton *                GetInvRight();
     inline Singlet*                GetSing();
-    inline bool                    Connected()   const { return m_connected; }
 
     inline void SetFlavour(const ATOOLS::Flavour &);
     inline void SetMomentum(const ATOOLS::Vec4D &);
     inline void SetOldMomentum(const ATOOLS::Vec4D &p) { m_oldmom=p; }
     inline void SetFixSpec(const ATOOLS::Vec4D &p) { m_fixspec=p; }
     inline void SetStart(const double);
+    inline void SetSoft(int i,const double);
     inline void SetKtMax(const double);
     inline void SetVeto(const double);
     inline void SetKtTest(const double);
@@ -114,8 +112,6 @@ namespace CSSHOWER {
     void SetRightOf(Parton *);
     inline void SetLeft(Parton *);
     inline void SetRight(Parton *);
-    inline void SetInvLeft(Parton *);
-    inline void SetInvRight(Parton *);
     inline void SetSpect(Parton *);
     inline void SetPrev(Parton *);
     inline void SetNext(Parton *);
@@ -128,7 +124,6 @@ namespace CSSHOWER {
     inline void SetKin(int kin) { m_kin=kin; }
     inline void SetCol(int col) { m_col=col; }
     inline void SetId(size_t);
-    inline void SetConnected(const bool & c) { m_connected = c; }
     friend std::ostream& operator<<(std::ostream &,const Parton &);
   };
 
@@ -139,9 +134,9 @@ namespace CSSHOWER {
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.), m_kt_max(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
-    m_id(0), m_connected(true),
-    p_invleft(NULL), p_invright(NULL)
+    m_id(0)
   { 
+    m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
     m_flow.SetCode(1,0);
     m_flow.SetCode(2,0);
   }
@@ -151,10 +146,9 @@ namespace CSSHOWER {
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.), m_kt_max(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
-    m_id(0), m_connected(true),
-    p_invleft(NULL), p_invright(NULL)
-
+    m_id(0)
   {
+    m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
     m_flow.SetCode(1,0);
     m_flow.SetCode(2,0);
   }
@@ -165,10 +159,9 @@ namespace CSSHOWER {
     m_kt_start(0.), m_kt_veto(0.), m_kt_test(0.), m_kt_max(0.),
     m_z_test(1.), m_y_test(1.), m_phi(2.0*M_PI), m_weight(1.0), m_xBj(1.),
     p_left(NULL), p_right(NULL), p_spect(NULL), p_prev(NULL), p_next(NULL), p_sing(NULL), 
-    m_id(0), m_connected(true),
-    p_invleft(NULL), p_invright(NULL)
-
+    m_id(0)
   {
+    m_kt_soft[0]=m_kt_soft[1]=std::numeric_limits<double>::max();
     if (m_pst==pst::FS) {
       m_flow.SetCode(1,part->GetFlow(1));
       m_flow.SetCode(2,part->GetFlow(2));
@@ -193,6 +186,7 @@ namespace CSSHOWER {
     return m_flow.Code(index);
   }
   double                  Parton::KtStart()     const { return m_kt_start; }
+  double                  Parton::KtSoft(int i) const { return m_kt_soft[i]; }
   double                  Parton::KtMax()       const { return m_kt_max; }
   double                  Parton::KtVeto()      const { return m_kt_veto; }
   double                  Parton::KtTest()      const { return m_kt_test; }
@@ -206,8 +200,6 @@ namespace CSSHOWER {
   size_t                  Parton::Id()          const { return m_id; }
   Parton *                Parton::GetLeft()           { return p_left;  }
   Parton *                Parton::GetRight()          { return p_right; }
-  Parton *                Parton::GetInvLeft()        { return p_invleft;  }
-  Parton *                Parton::GetInvRight()       { return p_invright; }
   Parton *                Parton::GetSpect()          { return p_spect; }
   Parton *                Parton::GetPrev()           { return p_prev; }
   Parton *                Parton::GetNext()           { return p_next; }
@@ -215,6 +207,7 @@ namespace CSSHOWER {
   void Parton::SetFlavour(const ATOOLS::Flavour & fl) { m_flav      = fl; }
   void Parton::SetMomentum(const ATOOLS::Vec4D & mom) { m_mom      = mom; }
   void Parton::SetStart(const double kt)              { m_kt_start = kt; }
+  void Parton::SetSoft(int i,const double kt)         { m_kt_soft[i] = kt; }
   void Parton::SetKtMax(const double kt)              { m_kt_max   = kt; }
   void Parton::SetVeto(const double kt)               { m_kt_veto  = kt; }
   void Parton::SetKtTest(const double kt)             { m_kt_test  = kt; }
@@ -232,8 +225,6 @@ namespace CSSHOWER {
   void Parton::SetPhi(const double phi)               { m_phi      = phi; }
   void Parton::SetLeft(Parton * part)                 { p_left    = part; }  
   void Parton::SetRight(Parton * part)                { p_right   = part; }  
-  void Parton::SetInvLeft(Parton * part)              { p_invleft  = part; }  
-  void Parton::SetInvRight(Parton * part)             { p_invright = part; }  
   void Parton::SetSpect(Parton * part)                { p_spect    = part; }  
   void Parton::SetPrev(Parton * part)                 { p_prev    = part; }  
   void Parton::SetNext(Parton * part)                 { p_next    = part; }  

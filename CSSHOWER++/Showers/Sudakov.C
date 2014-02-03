@@ -235,8 +235,6 @@ bool Sudakov::Generate(Parton * split)
        split->GetLeft()==NULL) ||
       ((cc==8 || (split->GetType()==pst::FS?cc:-cc)==-3) &&
        split->GetRight()==NULL)) {
-    msg_Out()<<"Error in "<<METHOD<<": cannot split \n"<<(*split)<<"\n"
-	     <<"   connected = "<<split->Connected()<<"\n";
     THROW(fatal_error,"Invalid color flow.");
   }
   m_cfl  = split->GetFlavour();
@@ -334,6 +332,10 @@ bool Sudakov::Generate(Parton * split)
     ProduceT();
     SelectOne();
     split->SetSpect(p_spect=p_selected->SelectSpec());
+    if (p_spect==p_split->GetLeft() &&
+	m_kperp2>p_split->KtSoft(0)) continue;
+    if (p_spect==p_split->GetRight() &&
+	m_kperp2>p_split->KtSoft(1)) continue;
     m_flspec = p_spect->GetFlavour();
     m_z = Z();
     double k0sq(p_split->GetType()==pst::IS?m_k0sqi:m_k0sqf);

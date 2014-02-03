@@ -246,152 +246,7 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap)
 
 bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl,const bool & soft)
 {
-  if (soft) return PrepareShowerFromSoft(ampl);
   return PrepareStandardShower(ampl);
-}
-
-
-bool CS_Shower::EstablishRelations(Parton * parton,Cluster_Leg * leg,
-				   std::map<Cluster_Leg*,Parton*> & pmap) {
-  int no = leg->NumberOfSpectators();
-  if (no==0) return true;
-
-  size_t col1(parton->GetFlow(1)),col2(parton->GetFlow(2));
-  bool connect;
-  for (std::list<Cluster_Leg *>::iterator clit=leg->GetSpectators().begin();
-       clit!=leg->GetSpectators().end();clit++) {
-    connect = false;
-    Parton * spect = pmap[(*clit)];
-    if (col1!=0 && col1==spect->GetFlow(2)) {
-      if ((parton->GetLeft() && parton->GetLeft()!=spect) ||
-	  (spect->GetRight() && spect->GetRight()!=parton)) {
-	connect = true;
-      }
-      else {
-	parton->SetLeft(spect);
-	spect->SetRight(parton);
-	connect = true;
-      }
-    }
-    if (col2!=0 && col2==spect->GetFlow(1)) {
-      if ((parton->GetRight() && parton->GetRight()!=spect) ||
-	  (spect->GetLeft() && spect->GetLeft()!=parton)) {
-	connect = true;
-      }
-      else {
-	parton->SetRight(spect);
-	spect->SetLeft(parton);
-	connect = true;
-      }
-    }
-    if (!connect) { 
-      if (spect->GetLeft()==parton)       parton->SetRight(spect);
-      else if (spect->GetRight()==parton) parton->SetLeft(spect);
-      else {
-	if (!parton->GetLeft())       parton->SetLeft(spect);
-	else if (!parton->GetRight()) parton->SetRight(spect);
-      }
-    }
-  }
-  if (parton->GetFlavour().IsGluon()) {
-    if (parton->GetLeft()==NULL) {
-      msg_Debugging()<<METHOD<<": gluon "<<ATOOLS::ID(parton->Id())
-		     <<" with no left - use "
-		     <<ATOOLS::ID(parton->GetRight()->Id())<<" instead.\n";
-      parton->SetLeft(parton->GetRight());
-    }
-    if (parton->GetRight()==NULL) {
-      msg_Debugging()<<METHOD<<": gluon "<<ATOOLS::ID(parton->Id())
-		     <<" with no right - use "
-		     <<ATOOLS::ID(parton->GetLeft()->Id())<<" instead.\n";
-      parton->SetRight(parton->GetLeft());
-    }
-  }
-  if (parton->GetRight()) parton->GetRight()->SetInvRight(parton);
-  if (parton->GetLeft())  parton->GetLeft()->SetInvLeft(parton);
-  parton->SetStat(leg->Stat());
-  return true;
-}
-
-bool CS_Shower::PrepareShowerFromSoft(Cluster_Amplitude *const ampl)
-{
-  CleanUp();
-  p_rampl = ampl;
-  p_ms    = ampl->MS();
-  p_next->clear();
-  std::map<Parton*,Cluster_Leg*,partcomp> lmap;
-  std::map<Cluster_Leg*,Parton*> pmap;
-
-  Parton      * parton;
-  Cluster_Leg * leg;
-  Singlet *singlet(new Singlet());
-  singlet->SetMS(p_ms);
-  for (size_t i(0);i<ampl->Legs().size();++i) {
-    leg = ampl->Leg(i);
-    if (leg->Flav().IsHadron() && 
-	leg->Flav().Kfcode()!=kf_pomeron &&
-	leg->Flav().Kfcode()!=kf_reggeon && 
-	leg->Id()&((1<<ampl->NIn())-1)) continue;
-    bool is(leg->Id()&((1<<ampl->NIn())-1));
-    Particle p(1,is?leg->Flav().Bar():leg->Flav(),is?-leg->Mom():leg->Mom());
-    if (is) {
-      p.SetFlow(2,leg->Col().m_i);
-      p.SetFlow(1,leg->Col().m_j);
-    }
-    else {
-      p.SetFlow(1,leg->Col().m_i);
-      p.SetFlow(2,leg->Col().m_j);
-    }
-    parton       = new Parton(&p,is?pst::IS:pst::FS);
-    pmap[leg]    = parton;
-    lmap[parton] = leg;
-    parton->SetRFlow();
-    parton->SetKin(p_shower->KinScheme());
-    parton->SetId(leg->Id());
-    if (is) {
-      if (Vec3D(p.Momentum())*Vec3D(rpa->gen.PBeam(0))>0.) {
-	parton->SetBeam(0);
-      }
-      else { 
-	parton->SetBeam(1);
-      }
-    }
-    double kt2start(leg->KTStart());
-    parton->SetStart(kt2start);   // start scale of shower
-    parton->SetKtMax(sqr(rpa->gen.Ecms()));    // no jet veto below ktmax
-    parton->SetVeto(sqr(rpa->gen.Ecms()));     // irrelevant 
-    parton->SetConnected(leg->Connected());
-    parton->SetMass2(p_ms->Mass2(leg->Flav()));
-    singlet->push_back(parton);
-    parton->SetSing(singlet);
-  }
-  for (std::map<Parton*,Cluster_Leg*>::iterator pit=lmap.begin();
-       pit!=lmap.end();pit++) {
-    parton = pit->first;
-    leg    = pit->second;
-    if (!EstablishRelations(parton,leg,pmap)) {
-      for (size_t i(0);i<ampl->Legs().size();++i) {
-	msg_Debugging()<<(*ampl->Leg(i))<<"\n";
-      }
-      return false;
-    }
-  }
-  msg_Debugging()<<METHOD<<" for "<<lmap.size()<<" partons:\n";
-  for (std::map<Parton*,Cluster_Leg*>::iterator pit=lmap.begin();
-       pit!=lmap.end();pit++) {
-    parton = pit->first;
-    if (parton->GetType()==pst::IS) continue;
-    msg_Debugging()<<parton<<" ("<<parton->GetFlavour()<<") "
-		   <<"["<<parton->GetFlow(1)<<", "<<parton->GetFlow(2)<<"], "
-		   <<"{"<<parton->GetLeft()<<", "<<parton->GetRight()<<"}; "
-		   <<"{"<<parton->GetInvLeft()<<", "<<parton->GetInvRight()<<"};\n";
-  }
-  p_shower->SetMS(p_ms);
-
-  pmap.clear();
-  lmap.clear();
-  m_allsinglets.push_back(singlet);
-  return true;
 }
 
 bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
@@ -614,6 +469,8 @@ Singlet *CS_Shower::TranslateAmplitude
     parton->SetStart(m_respectq2?ampl->MuQ2():xit->second.second);
     if (m_respectq2)
       if (IsDecay(ampl,cl)) parton->SetStart(xit->second.second);
+    if (cl->KT2(0)>=0.0) parton->SetSoft(0,cl->KT2(0)); 
+    if (cl->KT2(1)>=0.0) parton->SetSoft(1,cl->KT2(1)); 
     parton->SetKtMax(xit->second.first);
     parton->SetVeto(ktveto2);
     singlet->push_back(parton);
@@ -696,6 +553,7 @@ void CS_Shower::SetColours(Cluster_Amplitude *const ampl)
   Flavour_Vector fl(ampl->Legs().size());
   for (int i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *l(ampl->Leg(i));
+    if (l->Col().m_i>=500 || l->Col().m_j>=500) return;
     moms[i]=i<ampl->NIn()?-l->Mom():l->Mom();
     fl[i]=i<ampl->NIn()?l->Flav().Bar():l->Flav();
   }

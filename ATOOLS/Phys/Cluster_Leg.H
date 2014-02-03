@@ -4,7 +4,6 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
-#include <list>
 
 #ifdef USING__Threading
 #include <pthread.h>
@@ -67,10 +66,7 @@ namespace ATOOLS {
     Flavour m_fl;
     ColorID m_c;
 
-    double  m_ktstart;
-
-    bool    m_connected;
-    std::list<Cluster_Leg *> m_spectators;
+    double  m_kt2[2];
 
     static ClusterLeg_PVector s_legs;
 
@@ -83,8 +79,8 @@ namespace ATOOLS {
 		       const Vec4D &p,const Flavour &fl,
 		       const ColorID &c=ColorID()):
       p_ampl(ampl), m_id(0), m_st(0), m_n(0), m_d(0), m_k(0),
-      m_p(p), m_fl(fl), m_c(c),
-      m_ktstart(0.), m_connected(true) {}
+      m_p(p), m_fl(fl), m_c(c)
+    { m_kt2[0]=m_kt2[1]=-1.0; }
 
     inline ~Cluster_Leg() {}
 
@@ -93,11 +89,6 @@ namespace ATOOLS {
     static Cluster_Leg *New(Cluster_Amplitude *const ampl,
 			    const Vec4D &p,const Flavour &fl,
 			    const ColorID &c=ColorID());
-    inline std::list<Cluster_Leg *> & GetSpectators() { return m_spectators; }
-    inline void AddToSpectators(Cluster_Leg * cl) 
-    { m_spectators.push_back(cl); }
-    inline int NumberOfSpectators() const { return m_spectators.size(); }
-
     void Delete();
 
     // inline functions
@@ -110,9 +101,7 @@ namespace ATOOLS {
     inline void SetMom(const Vec4D &p)     { m_p=p; }
     inline void SetFlav(const Flavour &fl) { m_fl=fl; }
 
-    inline void SetKTStart(const double &kt) { m_ktstart = kt; }
-
-    inline void SetConnected(const bool &c)  { m_connected = c; }
+    inline void SetKT2(const int i,const double &kt2) { m_kt2[i]=kt2; }
 
     inline Cluster_Amplitude *Amplitude() const { return p_ampl; }
 
@@ -125,9 +114,7 @@ namespace ATOOLS {
     inline size_t NMax() const { return m_n;  }
     inline size_t K() const    { return m_k;  }
 
-    inline double KTStart() const { return m_ktstart; }
-
-    inline bool Connected() const { return m_connected; }
+    inline double KT2(const int i) const { return m_kt2[i]; }
 
   };// end of class Cluster_Leg
 

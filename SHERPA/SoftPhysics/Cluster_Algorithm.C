@@ -220,10 +220,7 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
     Vec4D mom(-copy->Momentum());
     p_ampl->CreateLeg(mom,flav,col,id);
     Cluster_Leg * leg(p_ampl->Legs().back());
-    leg->SetNMax(blob->NOutP()+2);
-    leg->SetKTStart(0.);
-    leg->GetSpectators().clear();
-    leg->SetConnected(false);
+    leg->SetNMax(blob->NOutP());
   }
   while (!singlets.empty()) {
     ParticleList * sing=singlets.front();
@@ -245,10 +242,9 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       p_ampl->CreateLeg(mom,flav,col,id);
       Cluster_Leg * leg(p_ampl->Legs().back());
       leg->SetStat(0);
-      leg->SetKTStart(m_minkt2);
+      leg->SetKT2(0,m_minkt2);
+      leg->SetKT2(1,m_minkt2);
       leg->SetNMax(blob->NOutP()+3);
-      leg->GetSpectators().clear();
-      leg->SetConnected(false);
       sing->pop_front();
     }
     delete sing;
@@ -288,28 +284,11 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
 	kt2FS = Max(kt2FS,m_showerfac*m_minkt2);
       if (kt2FS<kt2min) kt2min = kt2FS;
       if (kt2FS>kt2max) kt2max = kt2FS;
-      if (j>2) {
-	do {
-	  split->AddToSpectators(spect);
-	  nconn--;
-	} while (nconn>0);
-	split->SetConnected(true);
-      }
-    }
-    if (split->NumberOfSpectators()<1+int(split->Flav().IsGluon())) {
-      int j(i);
-      for (size_t cnt(split->NumberOfSpectators());
-	   cnt<1+int(split->Flav().IsGluon());cnt++) {
-	while (j==i) { j = 2+int(ATOOLS::ran->Get()*(nlegs-2)); }
-	split->AddToSpectators(legs[j]);
-      }
-      if (!split->Connected()) {
-	kt2max = Min(m_minkt2/4.,split->Mom().PPerp2(m_rescvec));
-	kt2min = Min(m_tmax,split->Mom().PPerp2(m_rescvec));
-      }
     }
     if (kt2max>totmax) totmax = kt2max * exp(1.-dabs(ysplit));
-    split->SetKTStart(kt2max * exp(1.-dabs(0.3*ysplit)));
+    double minkt2=kt2max * exp(1.-dabs(0.3*ysplit));
+    split->SetKT2(0,minkt2);
+    split->SetKT2(1,minkt2);
     
     m_histomap[std::string("startvspt")]->Insert(split->Mom().PPerp(),kt2max);  
     m_histomap[std::string("vetovspt")]->Insert(split->Mom().PPerp(),kt2min);  
@@ -321,9 +300,21 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
 
   p_ampl->SetMS(this);
   p_ampl->SetKT2(totmax);
+  p_ampl->SetMuQ2(totmax);
   p_ampl->SetMuR2(totmax);
   p_ampl->SetMuF2(totmax);
   p_ampl->SetMu2(totmax);
+
+  for (size_t i(0);i<p_ampl->NIn();++i) {
+    Cluster_Leg *li(p_ampl->Leg(i));
+    li->SetKT2(0,0.0);
+    li->SetKT2(1,0.0);
+    for (size_t j(p_ampl->NIn());j<p_ampl->Legs().size();++j) {
+      Cluster_Leg *lj(p_ampl->Leg(j));
+      if (li->Col().m_j==lj->Col().m_i) lj->SetKT2(0,0.0);
+      if (li->Col().m_i==lj->Col().m_j) lj->SetKT2(1,0.0);
+    }
+  }
 
   return true;
 }

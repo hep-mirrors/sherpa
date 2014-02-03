@@ -22,14 +22,9 @@ namespace CSSHOWER {
     else                     str<<"                           ";
     str<<"  Colour partners ("
        <<part.p_left<<","<<part.p_right<<")"<<endl;
-    if (part.p_invleft || part.p_invright) {
-      str<<"   Inverse connections [";
-      if (part.p_invleft) str<<ATOOLS::ID(part.p_invleft->Id());
-      else str<<"(--)";
-      str<<", ";
-      if (part.p_invright) str<<ATOOLS::ID(part.p_invright->Id());
-      else str<<"(--)";
-      str<<"]"<<endl;
+    if (part.m_kt_soft[0]<std::numeric_limits<double>::max() ||
+	part.m_kt_soft[1]<std::numeric_limits<double>::max()) {
+      str<<"  k_T left : "<<sqrt(part.KtSoft(0))<<", k_T right : "<<sqrt(part.KtSoft(1))<<endl;
     }
     str<<"  k_T start : "<<sqrt(part.m_kt_start);
     str<<"  k_T test : "<<sqrt(part.m_kt_test);
@@ -147,35 +142,14 @@ double Parton::Weight(const double &scale)
   return weight;
 }
 
-void Parton::SetLeftOf(Parton * part) {
-  //msg_Out()<<"   "<<METHOD
-  //	   <<" for this ["<<m_flow.Code(1)<<", "<<m_flow.Code(2)<<"], "
-  //	   <<"part ["<<part->GetFlow(1)<<", "<<part->GetFlow(2)<<"]";
-  if (!m_connected) {
-    //msg_Out()<<" --> NOT CONNECTED.\n";
-    return;
-  }
-  //if (p_left) {
-  //msg_Out()<<", left ["<<p_left->GetFlow(1)<<", "<<p_left->GetFlow(2)<<"]";
-  //}
-  //msg_Out()<<".\n";
+void Parton::SetLeftOf(Parton * part)
+{
   part->SetLeft(p_left);
   if (p_left) p_left->SetRight(part);
 }
 
-void Parton::SetRightOf(Parton * part) {
-  //msg_Out()<<"   "<<METHOD
-  //	   <<" for this ["<<m_flow.Code(1)<<", "<<m_flow.Code(2)<<"], "
-  //	   <<"part ["<<part->GetFlow(1)<<", "<<part->GetFlow(2)<<"]";
-  if (!m_connected) {
-    //msg_Out()<<" --> NOT CONNECTED.\n";
-    return;
-  }
-  //if (p_right) {
-  //  msg_Out()<<", right ["<<p_right->GetFlow(1)<<", "
-  //<<p_right->GetFlow(2)<<"]";
-  //}
-  //msg_Out()<<".\n";
+void Parton::SetRightOf(Parton * part)
+{
   part->SetRight(p_right);
   if (p_right) p_right->SetLeft(part);
 }
