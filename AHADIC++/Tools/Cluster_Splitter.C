@@ -76,7 +76,7 @@ bool Cluster_Splitter::ConstructSystem(Cluster * cluster) {
       m_popped.push_back(new PoppedPair);
       do {
 	ConstructKinematics(exponents.first,exponents.second);
-	hit = SelectFlavour(m_popped.back()->m_sqq) &&  AcceptSystem(pt2max);
+	hit = SelectFlavour(m_popped.back()->m_sqq) && AcceptSystem(pt2max);
       } while (!hit && calls++<=1000);
       //msg_Out()<<METHOD<<" accepts with "
       //       <<m_popped.back()->m_kt2<<" < "<<m_pt2max<<".\n";
@@ -120,8 +120,8 @@ ConstructKinematics(const double & etax,const double & etay) {
     }
     else { 
       z      = SelectZ(m_mmin2/sqq,m_leadspect || m_leadsplit);
-      weight = exp(-sqq/(4.*m_pt02));
-      //weight = 1.;
+      //weight = exp(-sqq/(4.*m_pt02));
+      weight = 1.;
     }
     calls++;
   } while (weight<ran->Get() && calls<=1000);
@@ -141,6 +141,7 @@ bool Cluster_Splitter::AcceptSystem(const double & pt2max) {
   pop->m_kt2 = pop->m_z*(1.-pop->m_z)*pop->m_sqq-pop->m_mpop2;
   if (pop->m_kt2 < 0.)     return false;
   if (pop->m_kt2 > pt2max) return false;
+  return exp(-(pop->m_sqq-4.*pop->m_mpop2)/(4.*m_pt02)) > ran->Get();
   return (((*p_as)(pop->m_sqq,false)*(*p_as)(pop->m_kt2,false))/
 	  sqr(p_as->MaxValue())) > ran->Get();
 }

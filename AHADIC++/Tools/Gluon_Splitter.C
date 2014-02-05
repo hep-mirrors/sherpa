@@ -106,7 +106,7 @@ void Gluon_Splitter::ConstructKinematics(const double & etay) {
     delta  = (mminhat2*(1.-y))/(y*(1.-y-mspecthat2));
     z      = SelectZ(delta,m_leadspect);
     sqq    = y*m_LC.m_smandel*(1.-mspecthat2/(1.-y));
-    weight = exp(-sqq/(4.*m_pt02));
+    weight = 1.;//exp(-sqq/(4.*m_pt02));
     calls++;
   } while (weight<ran->Get() && calls<=100);
   if (calls<=100) {
@@ -122,7 +122,8 @@ bool Gluon_Splitter::AcceptSystem(const double & pt2max) {
     (m_LC.m_smandel-m_LC.m_mspect2/(1.-pop->m_y))-pop->m_mpop2;
   if (pop->m_kt2 < 0.)     return false;
   if (pop->m_kt2 > pt2max) return false;
-  return (*p_as)(pop->m_sqq,false)/p_as->MaxValue() > ran->Get();
+  return exp(-(pop->m_sqq-4.*pop->m_mpop2)/(4.*m_pt02)) > ran->Get();
+  //  return (*p_as)(pop->m_sqq,false)/p_as->MaxValue() > ran->Get();
 }
 
 double Gluon_Splitter::FixExponent() {
