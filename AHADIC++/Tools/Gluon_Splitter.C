@@ -106,7 +106,7 @@ void Gluon_Splitter::ConstructKinematics(const double & etay) {
     delta  = (mminhat2*(1.-y))/(y*(1.-y-mspecthat2));
     z      = SelectZ(delta,m_leadspect);
     sqq    = y*m_LC.m_smandel*(1.-mspecthat2/(1.-y));
-    weight = 1.;
+    weight = exp(-sqq/(4.*m_pt02));
     calls++;
   } while (weight<ran->Get() && calls<=100);
   if (calls<=100) {

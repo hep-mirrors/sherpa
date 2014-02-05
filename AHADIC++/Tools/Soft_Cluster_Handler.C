@@ -229,8 +229,9 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter,
   Flavour haddec1(Flavour(kf_none)), haddec2(Flavour(kf_none));
   Flavour hadtrans(Flavour(kf_none));
 
-  bool   direct((cluster->GetTrip()->m_info=='B' && 
-		 cluster->GetAnti()->m_info=='B'));
+  //bool   direct((cluster->GetTrip()->m_info=='B' &&
+  //		 cluster->GetAnti()->m_info=='B'));
+  bool direct = false;
   double decayweight(DecayWeight(cluster,haddec1,haddec2,direct||mustdecay));
   // if (direct) {
   //   msg_Out()<<"Direct decay ("<<haddec1<<" + "<<haddec2<<") "

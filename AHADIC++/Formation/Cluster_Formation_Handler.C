@@ -69,14 +69,14 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob) {
     m_partlists.clear();
     m_clulists.clear();
   }
-  // Vec4D cms(0.,0.,0.,0.);
-  // for (size_t i=0;i<blob->NInP();i++) cms += blob->InParticle(i)->Momentum();
-  //  msg_Out()<<"\n\n\n\n"
-  // 	    <<"====================================================\n"
-  // 	    <<"====================================================\n"
-  // 	    <<"====================================================\n"
-  // 	    <<"In "<<METHOD<<": hadronize "<<blob->NInP()<<" partons "
-  // 	    <<"with E = "<<sqrt(cms.Abs2())<<".\n"<<(*blob)<<"\n";
+   Vec4D cms(0.,0.,0.,0.);
+   for (size_t i=0;i<blob->NInP();i++) cms += blob->InParticle(i)->Momentum();
+   // msg_Out()<<"\n\n\n\n"
+   // 	    <<"====================================================\n"
+   // 	    <<"====================================================\n"
+   // 	    <<"====================================================\n"
+   // 	    <<"In "<<METHOD<<": hadronize "<<blob->NInP()<<" partons "
+   // 	    <<"with E = "<<sqrt(cms.Abs2())<<".\n"<<(*blob)<<"\n";
   if (!ExtractSinglets(blob))      { Reset(); return -1; }
   if (!ShiftOnMassShells())        { Reset(); return -1; }
   if (!FormOriginalClusters())     { Reset(); return -1; }
@@ -85,21 +85,21 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob) {
   if (!ClustersToHadrons(blob))    { 
     Reset(); return -1; 
   }
-  // Vec4D blobmom(0.,0.,0.,0.);
-  // for (size_t i(0);i<blob->NOutP();i++) 
-  //   blobmom+=blob->OutParticle(i)->Momentum();
+  //Vec4D blobmom(0.,0.,0.,0.);
+  //for (size_t i(0);i<blob->NOutP();i++) 
+  // blobmom+=blob->OutParticle(i)->Momentum();
   // msg_Out()<<"____________________________________________________\n"
-  //    	   <<"____________________________________________________\n"
-  //    	   <<"Cluster list after all merging etc.:\n"<<(*p_clulist)
-  //    	   <<"____________________________________________________\n"
-  //   	   <<"Blob momentum: "<<blobmom<<";\n"<<(*blob)<<"\n"
-  //    	   <<"____________________________________________________\n"
-  //    	   <<"____________________________________________________\n";
+  //	    <<"____________________________________________________\n"
+  //	    <<"Cluster list after all merging etc.:\n"<<(*p_clulist)
+  //	    <<"____________________________________________________\n"
+  //	    <<"Blob momentum: "<<blobmom<<";\n"<<(*blob)<<"\n"
+  //	    <<"____________________________________________________\n"
+  //	    <<"____________________________________________________\n";
   // msg_Out()<<"##################################################\n"
-  // 	   <<METHOD<<" was successful: "
-  // 	   <<p_clulist->size()<<" clusters left to decay.\n"
-  // 	   <<(*p_clulist)<<"\n"
-  // 	   <<"##################################################\n";
+  //  	   <<METHOD<<" was successful: "
+  //  	   <<p_clulist->size()<<" clusters left to decay.\n"
+  //  	   <<(*p_clulist)<<"\n"
+  //  	   <<"##################################################\n";
 
   return 1;
 }
@@ -140,7 +140,8 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
       if (part->GetFlow(2)==col1) {
 	Proto_Particle * copy = 
 	  new Proto_Particle(part->Flav(),part->Momentum(),
-			     (part->Info()=='B')?'B':'L');
+			     part->Info()=='B' ?'B':'L');
+	//if (dabs(part->Momentum().Y())>5.) copy->m_info='B';
 	SetInfoTagForPrimaryParticle(copy);
 	pli->push_back(copy);
 	col1 = part->GetFlow(1);

@@ -66,11 +66,11 @@ bool Cluster_Splitter::ConstructSystem(Cluster * cluster) {
   m_cms = p_split->m_mom + p_spect->m_mom;
   pair<double,double> exponents(FixExponents());
   bool hit;
-  double pt2max((m_leadsplit?1.:1.)*m_pt2max);
+  double pt2max(m_pt2max);
   if (m_leadsplit) pt2max *= m_pt2max/Max(m_pt2max,m_LC.m_msplit2);
   if (m_leadspect) pt2max *= m_pt2max/Max(m_pt2max,m_LC.m_mspect2);
   for (size_t i=0;i<10;i++) {
-    m_pairs = SelectNumberOfPairs(m_nmax);
+    m_pairs = m_isbeam?1:SelectNumberOfPairs(m_nmax);
     for (size_t i=0;i<m_pairs;i++) {
       long int calls(0);
       m_popped.push_back(new PoppedPair);
@@ -78,6 +78,8 @@ bool Cluster_Splitter::ConstructSystem(Cluster * cluster) {
 	ConstructKinematics(exponents.first,exponents.second);
 	hit = SelectFlavour(m_popped.back()->m_sqq) &&  AcceptSystem(pt2max);
       } while (!hit && calls++<=1000);
+      //msg_Out()<<METHOD<<" accepts with "
+      //       <<m_popped.back()->m_kt2<<" < "<<m_pt2max<<".\n";
       if (hit) {
 	m_sumx += m_popped.back()->m_x; 
 	m_sumy += m_popped.back()->m_y;
@@ -118,7 +120,8 @@ ConstructKinematics(const double & etax,const double & etay) {
     }
     else { 
       z      = SelectZ(m_mmin2/sqq,m_leadspect || m_leadsplit);
-      weight = 1.;
+      weight = exp(-sqq/(4.*m_pt02));
+      //weight = 1.;
     }
     calls++;
   } while (weight<ran->Get() && calls<=1000);
@@ -313,7 +316,7 @@ void Cluster_Splitter::MakeSplitterAndSpectatorClusters(Cluster * cluster) {
 }  
 
 bool Cluster_Splitter::Rearrange() {
-  if (m_pairs!=1) return false;
+  if (m_pairs!=1 || m_isbeam) return false;
   PoppedPair * pop(*m_popped.begin());
   double y1(log(((1.-m_sumx)*(1.-m_alphanew))/((1.-m_sumy)*m_betanew)));
   double y2(log(((1.-m_sumx)*m_alphanew)/((1.-m_sumy)*(1.-m_betanew))));
