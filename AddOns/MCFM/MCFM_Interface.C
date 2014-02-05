@@ -57,11 +57,11 @@ bool MCFM_Interface::Initialize
   std::ifstream procfile((rpa->gen.Variable("SHERPA_CPP_PATH")+"/process.DAT").c_str());
   if (!procfile.good())
     THROW(fatal_error,"MCFM's 'process.DAT' is missing. Consider copying it to this directory.");
-  msg_Info()<<METHOD<<"(): {\n";
+  DEBUG_FUNC("");
   nproc_.nproc=-1;
   // masses and widths
   nflav_.nflav=Flavour(kf_jet).Size()/2;
-  msg_Info()<<"  n_f = "<<nflav_.nflav<<"\n";
+  msg_Debugging()<<"n_f = "<<nflav_.nflav<<"\n";
   masses_.md=Flavour(kf_d).Mass();
   masses_.mu=Flavour(kf_u).Mass();
   masses_.ms=Flavour(kf_s).Mass();
@@ -139,8 +139,6 @@ bool MCFM_Interface::Initialize
   dummy.copy(pdlabel_.pdlabel,7);
   limits_.wsqmin = 1.e-6;
   limits_.wsqmax = 1.e99;
-
-  msg_Info()<<"}\n";
 
   verbose_.verbose = true;
   return true;

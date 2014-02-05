@@ -187,6 +187,7 @@ Virtual_ME2_Base *ATOOLS::Getter
 <Virtual_ME2_Base,Process_Info,MCFM_gg_hg>::
 operator()(const Process_Info &pi) const
 {
+  return NULL;
   if (pi.m_loopgenerator!="MCFM") return NULL;
   else msg_Out()<<".\n";
   if (MODEL::s_model->Name()!=std::string("SM+EHC") ||

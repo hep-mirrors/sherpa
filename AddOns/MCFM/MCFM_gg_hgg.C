@@ -344,20 +344,20 @@ operator()(const Process_Info &pi) const
   Flavour flh(pi.m_fi.m_ps[0].m_fl[0]);
   if (!flh==Flavour(kf_h0))                             return NULL;
 
-  msg_Out()<<"Check numbers: "
-	   <<fl.size()<<" external particles, "
-	   <<pi.m_fi.m_ps.size()<<" props";
+  msg_Debugging()<<"Check numbers: "
+                 <<fl.size()<<" external particles, "
+                 <<pi.m_fi.m_ps.size()<<" props";
   if (pi.m_fi.m_ps.size()==0) msg_Out()<<".\n";
   else {
     msg_Out()<<":\n";
     for (size_t i=0;i<pi.m_fi.m_ps.size();i++) {
-      msg_Out()<<"     "<<pi.m_fi.m_ps[i].m_ps.size()
-	       <<" final state particles for propagator "<<i<<" "
-	       <<"with flavour "<<pi.m_fi.m_ps[i].m_fl[0]<<".\n";
+      msg_Debugging()<<"     "<<pi.m_fi.m_ps[i].m_ps.size()
+                     <<" final state particles for propagator "<<i<<" "
+                     <<"with flavour "<<pi.m_fi.m_ps[i].m_fl[0]<<".\n";
       for (size_t j=0;j<pi.m_fi.m_ps[i].m_ps.size();j++) {
-	msg_Out()<<"     "<<pi.m_fi.m_ps[i].m_ps[j].m_ps.size()
-		 <<" final state particles for propagator "<<i<<"["<<j<<"] "
-		 <<"with flavour "<<pi.m_fi.m_ps[i].m_ps[j].m_fl[0]<<".\n";
+        msg_Debugging()<<"     "<<pi.m_fi.m_ps[i].m_ps[j].m_ps.size()
+                       <<" final state particles for propagator "<<i<<"["<<j<<"] "
+                       <<"with flavour "<<pi.m_fi.m_ps[i].m_ps[j].m_fl[0]<<".\n";
       }
     }
   }
@@ -464,7 +464,8 @@ operator()(const Process_Info &pi) const
     }
     nproc_.nproc=pID;
     chooser_();
-    msg_Info()<<"Initialise MCFM with nproc = "<<nproc_.nproc<<"\n";
+    msg_Info()<<"Initialise MCFM with nproc = "<<nproc_.nproc
+              <<" for "<<fl<<std::endl;
     return new MCFM_gg_hgg(pID,pi,fl);
   }
   return NULL;
