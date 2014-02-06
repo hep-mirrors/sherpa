@@ -127,7 +127,7 @@ ReadClusterToMesonParameters(Data_Reader & dataread) {
   m_parametermap[string("WidthExponent_C->H")]   =
     dataread.GetValue<double>("TRANSITION_EXPONENT2",0.00);
   m_parametermap[string("Offset_C->HH")]         =
-    dataread.GetValue<double>("DECAY_OFFSET",0.85);
+    dataread.GetValue<double>("DECAY_OFFSET",1.00);
   m_parametermap[string("MassExponent_C->HH")]   =
     dataread.GetValue<double>("DECAY_EXPONENT",2.00);
 }
@@ -220,7 +220,7 @@ void Hadronisation_Parameters::ReadMassParameters(Data_Reader & dataread)
   double bind0 = m_parametermap[string("Mass_bind0")]           = 
     dataread.GetValue<double>("M_BIND_0",0.05);
   double bind1 = m_parametermap[string("Mass_bind1")]           = 
-    dataread.GetValue<double>("M_BIND_1",0.3);
+    dataread.GetValue<double>("M_BIND_1",0.4);
   Flavour(kf_d).SetHadMass(mud);
   Flavour(kf_u).SetHadMass(mud);
   Flavour(kf_s).SetHadMass(ms);
