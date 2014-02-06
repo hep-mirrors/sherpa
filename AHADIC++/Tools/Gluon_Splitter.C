@@ -53,14 +53,13 @@ bool Gluon_Splitter::ConstructSystem() {
   if (m_LC.m_E-m_LC.m_mspect-sqrt(4.*m_mmin2)<0.) return false;
   double etay(FixExponent()),sqq;
   long int calls(0);
-  bool vetodi(false); //m_leadspect
   double pt2max((m_leadspect?1.:1.)*m_pt2max);
   if (m_leadspect) pt2max *= m_pt2max/Max(m_pt2max,m_LC.m_mspect2);
   m_popped.push_back(new PoppedPair);
   do { 
     ConstructKinematics(etay);
   } while (calls++<=100 && 
-	   (!SelectFlavour(m_popped.back()->m_sqq,vetodi) || 
+	   (!SelectFlavour(m_popped.back()->m_sqq,false) || 
 	    !AcceptSystem(pt2max)));
   if (calls>100) {
     Reset();
@@ -106,7 +105,7 @@ void Gluon_Splitter::ConstructKinematics(const double & etay) {
     delta  = (mminhat2*(1.-y))/(y*(1.-y-mspecthat2));
     z      = SelectZ(delta,m_leadspect);
     sqq    = y*m_LC.m_smandel*(1.-mspecthat2/(1.-y));
-    weight = 1.;//exp(-sqq/(4.*m_pt02));
+    weight = exp(-(sqq-4.*m_mmin2)/(4.*m_pt02));
     calls++;
   } while (weight<ran->Get() && calls<=100);
   if (calls<=100) {
@@ -122,8 +121,7 @@ bool Gluon_Splitter::AcceptSystem(const double & pt2max) {
     (m_LC.m_smandel-m_LC.m_mspect2/(1.-pop->m_y))-pop->m_mpop2;
   if (pop->m_kt2 < 0.)     return false;
   if (pop->m_kt2 > pt2max) return false;
-  return exp(-(pop->m_sqq-4.*pop->m_mpop2)/(4.*m_pt02)) > ran->Get();
-  //  return (*p_as)(pop->m_sqq,false)/p_as->MaxValue() > ran->Get();
+  return (*p_as)(pop->m_sqq,false)/p_as->MaxValue() > ran->Get();
 }
 
 double Gluon_Splitter::FixExponent() {

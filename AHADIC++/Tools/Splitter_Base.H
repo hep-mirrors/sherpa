@@ -46,7 +46,7 @@ namespace AHADIC {
     MODEL::Strong_Coupling * p_as;
     double       m_pt2max, m_pt02;
     FlavDecayMap m_options;
-    double       m_mmin, m_mmin2, m_sumwt;
+    double       m_mmin, m_mmin2, m_mmax, m_mmax2, m_sumwt;
 
     Proto_Particle * p_split, * p_spect;
     LightCone        m_LC;

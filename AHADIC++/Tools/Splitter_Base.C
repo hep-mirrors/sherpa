@@ -52,6 +52,10 @@ Splitter_Base::~Splitter_Base() {
 void Splitter_Base::Init() {
   double norm(0.);
   Constituents * constituents(hadpars->GetConstituents());
+  m_mmin = constituents->MinMass();
+  m_mmax = constituents->MaxMass();
+  m_mmin2 = ATOOLS::sqr(m_mmin);
+  m_mmax2 = ATOOLS::sqr(m_mmax);
   for (FlavCCMap_Iterator fdit=constituents->CCMap.begin();
        fdit!=constituents->CCMap.end();fdit++) {
     if (constituents->TotWeight(fdit->first)>norm)
@@ -73,12 +77,6 @@ void Splitter_Base::Init() {
 	       <<"   Please contact the Sherpa group for assistance.\n";
     exit(0);
   }
-  m_mmin = 1.e12;
-  for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
-    if (fdit->second->popweight>0. && fdit->second->massmin<m_mmin)
-      m_mmin = fdit->second->massmin;
-  }
-  m_mmin2 = ATOOLS::sqr(m_mmin);
   m_sumwt = CalculateSumWT();
 }
 

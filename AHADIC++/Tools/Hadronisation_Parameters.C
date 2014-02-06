@@ -129,7 +129,7 @@ ReadClusterToMesonParameters(Data_Reader & dataread) {
   m_parametermap[string("Offset_C->HH")]         =
     dataread.GetValue<double>("DECAY_OFFSET",1.00);
   m_parametermap[string("MassExponent_C->HH")]   =
-    dataread.GetValue<double>("DECAY_EXPONENT",2.00);
+    dataread.GetValue<double>("DECAY_EXPONENT",4.00);
 }
 
 void Hadronisation_Parameters::ReadMesonWeights(Data_Reader & dataread) 
@@ -189,9 +189,9 @@ void Hadronisation_Parameters::ReadPoppingParameters(Data_Reader & dataread)
   m_parametermap[string("Strange_fraction")]     =
     dataread.GetValue<double>("STRANGE_FRACTION",0.75);
   m_parametermap[string("Baryon_fraction")]      = 
-    dataread.GetValue<double>("BARYON_FRACTION",1.00);
+    dataread.GetValue<double>("BARYON_FRACTION",3.20);
   m_parametermap[string("Heavy_Baryon_Enhancement")]    = 
-    dataread.GetValue<double>("HEAVY_BARYON_ENHANCEMEMT",4.);
+    dataread.GetValue<double>("HEAVY_BARYON_ENHANCEMEMT",2.);
   m_parametermap[string("P_qs_by_P_qq")]       = 
     dataread.GetValue<double>("P_{QS}/P_{QQ}",0.30);
   m_parametermap[string("P_ss_by_P_qq")]       = 

@@ -29,7 +29,7 @@ namespace AHADIC {
   typedef FlavCCMap::iterator FlavCCMap_Iterator;
 
   class Constituents {
-    double m_minmass;
+    double m_minmass, m_maxmass;
   public:
     FlavCCMap CCMap;
     Constituents(bool=false);
@@ -37,6 +37,7 @@ namespace AHADIC {
 
     double Mass(const ATOOLS::Flavour & flav);
     double MinMass();
+    double MaxMass();
     double TotWeight(const ATOOLS::Flavour & flav);
     int    ISpin(ATOOLS::Flavour & flav);
 

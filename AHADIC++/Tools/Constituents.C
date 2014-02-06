@@ -6,7 +6,7 @@ using namespace AHADIC;
 using namespace ATOOLS;
 
 Constituents::Constituents(bool no_diquarks) :
-  m_minmass(100.)
+  m_minmass(100.),m_maxmass(0.)
 {
   // Light quarks and diquarks
   double total(0.),udfrac(1.), ud0(1.);
@@ -67,9 +67,11 @@ Constituents::Constituents(bool no_diquarks) :
 
   double massoffset(hadpars->Get("minmass2"));
   for (FlavCCMap_Iterator cmit=CCMap.begin(); cmit!=CCMap.end();cmit++) {
-    if (cmit->first!=Flavour(kf_gluon) &&
-	cmit->second->Mass()+massoffset<m_minmass) 
+    if (cmit->first==Flavour(kf_gluon)) continue;
+    if (cmit->second->Mass()+massoffset<m_minmass) 
       m_minmass = cmit->second->Mass()+massoffset;
+    if (cmit->second->Mass()+massoffset>m_maxmass) 
+      m_maxmass = cmit->second->Mass()+massoffset;
   }
 }
 
@@ -81,6 +83,7 @@ Constituents::~Constituents() {
 }
 
 double Constituents::MinMass() { return m_minmass; }
+double Constituents::MaxMass() { return m_maxmass; }
 
 double Constituents::Mass(const Flavour & flav) {
   FlavCCMap_Iterator     cmit = CCMap.find(flav);
