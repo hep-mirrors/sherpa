@@ -462,11 +462,13 @@ int AMEGIC::Single_Process::Tests()
 	if (p_hel->On(i)) {
 	  for (size_t j=i+1;j<p_hel->MaxHel();j++) {
 	    if (p_hel->On(j)) {
+#ifdef FuckUp_Helicity_Mapping
 	      if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
 		p_hel->SwitchOff(j);
 		p_hel->SetPartner(i,j);
 		p_hel->IncMultiplicity(i);
 	      }
+#endif
 	    }
 	  }
 	}
@@ -523,11 +525,13 @@ int AMEGIC::Single_Process::TestLib()
       if (p_hel->On(i)) {
 	for (size_t j=i+1;j<p_hel->MaxHel();j++) {
 	  if (p_hel->On(j)) {
+#ifdef FuckUp_Helicity_Mapping
 	    if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
 	      p_hel->SwitchOff(j);
 	      p_hel->SetPartner(i,j);
 	      p_hel->IncMultiplicity(i);
 	    }
+#endif
 	  }
 	}
       }

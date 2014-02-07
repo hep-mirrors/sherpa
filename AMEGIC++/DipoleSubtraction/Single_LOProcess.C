@@ -725,11 +725,13 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
 	if (p_hel->On(i)) {
 	  for (size_t j=i+1;j<p_hel->MaxHel();j++) {
 	    if (p_hel->On(j)) {
+#ifdef FuckUp_Helicity_Mapping
 	      if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
 		p_hel->SwitchOff(j);
 		p_hel->SetPartner(i,j);
 		p_hel->IncMultiplicity(i);
 	      }
+#endif
 	    }
 	  }
 	}
@@ -740,11 +742,13 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
 	if (p_hel->On(i)) {
 	  for (size_t j=i+1;j<p_hel->MaxHel();j++) {
 	    if (p_hel->On(j)) {
+#ifdef FuckUp_Helicity_Mapping
 	      if (ATOOLS::IsEqual(M_doub[i]*(*pfactors)[p_hel->GetEPol(i)-90],M_doub[j]*(*pfactors)[p_hel->GetEPol(j)-90])) {
 		p_hel->SwitchOff(j);
 		p_hel->SetPartner(i,j);
 		p_hel->IncMultiplicity(i);
 	      }
+#endif
 	    }
 	  }
 	}
@@ -753,11 +757,13 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
 	if (p_hel->On(i)) {
 	  for (size_t j=i+1;j<p_hel->MaxHel();j++) {
 	    if (p_hel->On(j)) {
+#ifdef FuckUp_Helicity_Mapping
 	      if (ATOOLS::IsEqual(M_doub[i],M_doub[j]) && p_hel->Multiplicity(i)==p_hel->Multiplicity(j)) {
 		p_hel->SwitchOff(j);
 		p_hel->SetPartner(i,j);
 		p_hel->IncMultiplicity(i,p_hel->GetEPol(j)*1024);
 	      }
+#endif
 	    }
 	  }
 	}
@@ -828,11 +834,13 @@ int Single_LOProcess::TestLib(std::vector<double> * pfactors)
 	if (p_hel->On(i)) {
 	  for (size_t j=i+1;j<p_hel->MaxHel();j++) {
 	    if (p_hel->On(j)) {
+#ifdef FuckUp_Helicity_Mapping
 	      if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
 		p_hel->SwitchOff(j);
 		p_hel->SetPartner(i,j);
 		p_hel->IncMultiplicity(i);
 	      }
+#endif
 	    }
 	  }
 	}
@@ -843,11 +851,13 @@ int Single_LOProcess::TestLib(std::vector<double> * pfactors)
 	if (p_hel->On(i)) {
 	  for (size_t j=i+1;j<p_hel->MaxHel();j++) {
 	    if (p_hel->On(j)) {
+#ifdef FuckUp_Helicity_Mapping
 	      if (ATOOLS::IsEqual(M_doub[i]*(*pfactors)[p_hel->GetEPol(i)-90],M_doub[j]*(*pfactors)[p_hel->GetEPol(j)-90])) {
 		p_hel->SwitchOff(j);
 		p_hel->SetPartner(i,j);
 		p_hel->IncMultiplicity(i);
 	      }
+#endif
 	    }
 	  }
 	}
@@ -856,11 +866,13 @@ int Single_LOProcess::TestLib(std::vector<double> * pfactors)
 	if (p_hel->On(i)) {
 	  for (size_t j=i+1;j<p_hel->MaxHel();j++) {
 	    if (p_hel->On(j)) {
+#ifdef FuckUp_Helicity_Mapping
 	      if (ATOOLS::IsEqual(M_doub[i],M_doub[j]) && p_hel->Multiplicity(i)==p_hel->Multiplicity(j)) {
 		p_hel->SwitchOff(j);
 		p_hel->SetPartner(i,j);
 		p_hel->IncMultiplicity(i,p_hel->GetEPol(j)*1024);
 	      }
+#endif
 	    }
 	  }
 	}
