@@ -32,7 +32,7 @@ void ME_Generator_Base::SetPSMasses(Data_Reader *const dr)
   // check consistency
   for (size_t i(0);i<psmassive.size();++i)
     if (std::find(psmassless.begin(),psmassless.end(),psmassive[i])!=
-        psmassless.end()) THROW(fatal_error,"Inconsinstent input.");
+        psmassless.end()) THROW(fatal_error,"Inconsistent input.");
   for (size_t i(0);i<psmassless.size();++i)
     if (Flavour(psmassless[i]).IsMassive())
       THROW(fatal_error,"Cannot shower massive particle massless.");
