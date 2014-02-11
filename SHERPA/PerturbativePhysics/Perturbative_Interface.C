@@ -79,15 +79,15 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     p_mi->Process()->Generator()->SetMassMode(1);
     int stat(p_mi->Process()->Generator()->ShiftMasses(p_ampl));
     if (stat<0) {
-      msg_Tracking()<<METHOD<<"(): Mass shift failed. Reject event."<<std::endl;
-      return Return_Value::New_Event;
+      msg_Tracking()<<METHOD<<"(): MI Mass shift failed. Reject event."<<std::endl;
+      return Return_Value::Retry_Event;
     }
     if (stat==1) {
       stat=p_mi->Shower()->GetShower()->
 	GetClusterDefinitions()->ReCluster(p_ampl);
       if (stat!=1) {
-	msg_Tracking()<<METHOD<<"(): Reclustering failed. Reject event.\n";
-	return Return_Value::New_Event;
+	msg_Tracking()<<METHOD<<"(): MI Reclustering failed. Reject event.\n";
+	return Return_Value::Retry_Event;
       }
     }
     if (!p_shower->GetShower()->PrepareShower(p_ampl))
@@ -146,14 +146,14 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   p_me->Process()->Generator()->SetMassMode(1);
   int stat(p_me->Process()->Generator()->ShiftMasses(p_ampl));
   if (stat<0) {
-    msg_Tracking()<<METHOD<<"(): Mass shift failed. Reject event."<<std::endl;
+    msg_Info()<<METHOD<<"(): ME Mass shift failed. Reject event."<<std::endl;
     return Return_Value::New_Event;
   }
   if (stat==1) {
     stat=p_me->Shower()->GetShower()->
       GetClusterDefinitions()->ReCluster(p_ampl);
     if (stat!=1) {
-      msg_Tracking()<<METHOD<<"(): Reclustering failed. Reject event."<<std::endl;
+      msg_Info()<<METHOD<<"(): ME Reclustering failed. Reject event."<<std::endl;
       return Return_Value::New_Event;
     }
   }
@@ -172,15 +172,15 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     while (ampl->Prev()) ampl=ampl->Prev();
     int stat(p_me->Process()->Generator()->ShiftMasses(ampl));
     if (stat<0) {
-      msg_Tracking()<<METHOD<<"(): Mass shift failed. Reject event."<<std::endl;
-      return Return_Value::New_Event;
+      msg_Tracking()<<METHOD<<"(): DH Mass shift failed. Reject event."<<std::endl;
+      return Return_Value::Retry_Event;
     }
     if (stat==1) {
       stat=p_me->Shower()->GetShower()->
 	GetClusterDefinitions()->ReCluster(ampl);
       if (stat!=1) {
-	msg_Tracking()<<METHOD<<"(): Reclustering failed. Reject event."<<std::endl;
-	return Return_Value::New_Event;
+	msg_Tracking()<<METHOD<<"(): DH Reclustering failed. Reject event."<<std::endl;
+	return Return_Value::Retry_Event;
       }
     }
   }
