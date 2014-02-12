@@ -146,14 +146,14 @@ DefineInitialConditions(ATOOLS::Blob *blob)
   p_me->Process()->Generator()->SetMassMode(1);
   int stat(p_me->Process()->Generator()->ShiftMasses(p_ampl));
   if (stat<0) {
-    msg_Info()<<METHOD<<"(): ME Mass shift failed. Reject event."<<std::endl;
+    msg_Tracking()<<METHOD<<"(): ME Mass shift failed. Reject event."<<std::endl;
     return Return_Value::New_Event;
   }
   if (stat==1) {
     stat=p_me->Shower()->GetShower()->
       GetClusterDefinitions()->ReCluster(p_ampl);
     if (stat!=1) {
-      msg_Info()<<METHOD<<"(): ME Reclustering failed. Reject event."<<std::endl;
+      msg_Tracking()<<METHOD<<"(): ME Reclustering failed. Reject event."<<std::endl;
       return Return_Value::New_Event;
     }
   }
