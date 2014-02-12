@@ -236,11 +236,11 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 	      }
 	    }
 	  }
+	  WriteAlternativeName(p_partner->Name());
 	}
 
 	p_mapproc = p_partner = (Single_LOProcess*)links[j];
 	InitFlavmap(p_partner);
-	WriteAlternativeName(p_partner->Name());
 	m_iresult = p_partner->Result()*m_sfactor;
 
 	Minimize();

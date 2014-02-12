@@ -183,10 +183,10 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
 	    }
             My_In_File::CopyInDB(mlname+".col",mnname+".col");
 	  }
+	  WriteAlternativeName(p_partner->Name());
 	}
 
 	p_mapproc = p_partner = (Single_Process*)links[j];
-	WriteAlternativeName(p_partner->Name());
 	m_iresult = p_partner->Result()*m_sfactor;
 	InitFlavmap(p_partner);
 
