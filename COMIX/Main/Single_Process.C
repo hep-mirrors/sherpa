@@ -266,6 +266,9 @@ bool COMIX::Single_Process::MapProcess()
       }
     THROW(fatal_error,"Map process '"+mapname+"' not found");
   }
+  std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
+		      +"/Process/Comix/"+m_name+".map");
+  if (!FileExists(ampfile)) {
   for (size_t i(0);i<p_umprocs->size();++i) {
     msg_Debugging()<<METHOD<<"(): Try mapping '"
 		   <<Name()<<"' -> '"<<(*p_umprocs)[i]->Name()<<"'\n";
@@ -311,6 +314,7 @@ bool COMIX::Single_Process::MapProcess()
       (*p_pmap)[m_name]=mapname;
       return true;
     }
+  }
   }
   if (msg_LevelIsTracking()) {
     msg_Tracking()<<ComixLogo()<<" initialized '"<<m_name<<"', ";
