@@ -45,14 +45,13 @@ namespace OpenLoops {
     if(stat(s_olprefix.c_str(),&st) != 0) s_olprefix = OPENLOOPS_PREFIX;
     s_olprefix = reader.GetValue<string>("OL_PREFIX", s_olprefix);
 
+    
     Data_Reader liblist(" ",";","#","=");
     liblist.SetAddCommandLine(false);
     liblist.SetInputFile(s_olprefix+"/lib/librarylist.info");
     vector<vector<string> > ollibs;
     liblist.MatrixFromFile(ollibs);
-    if (ollibs.size()==0) {
-      THROW(fatal_error, "Did not find "+s_olprefix+"/lib/librarylist.info");
-    }
+    if (ollibs.size()==0) ollibs.push_back(vector<string>(1,"openloops"));
     s_loader->AddPath(s_olprefix+"/lib");
     s_loader->AddPath(s_olprefix+"/proclib");
     for (size_t i=0; i<ollibs.size(); ++i) {
@@ -276,7 +275,17 @@ namespace OpenLoops {
       vector<vector<string> > content;
       reader.MatrixFromFile(content);
       for (size_t i=0; i<content.size(); ++i) {
-        if (content[i][1]==process) {
+
+        bool autoload=true;
+        if (content[i].size()>0 && content[i][0]=="options") {
+          for (size_t j=0; j<content[i].size(); ++j) {
+            if (content[i][j]=="autoload=0") {
+              autoload=false;
+            }
+          }
+        }
+
+        if (content[i].size()>2 && content[i][1]==process) {
           string match=MatchOptions(content[i], oew, oqcd, nloop);
           if (match=="0") {
             PRINT_INFO("Ignoring process with incompatible options.");
@@ -289,7 +298,7 @@ namespace OpenLoops {
           }
           string grouptag=content[i][0];
           string process_subid=content[i][2];
-          if (s_allowed_libs.size()>0) {
+          if (s_allowed_libs.size()>0 || autoload==false) {
             bool allowed=false;
             for (size_t i=0; i<s_allowed_libs.size(); ++i) {
               if (grouptag==s_allowed_libs[i]) allowed=true;
