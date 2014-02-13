@@ -199,7 +199,7 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
     m_evtlist[m_cnt2].rscale=sqrt((*signal)["Renormalization_Scale"]->Get<double>());
     m_evtlist[m_cnt2].alphas=MODEL::s_model->ScalarFunction("alpha_S",m_evtlist[m_cnt2].rscale*m_evtlist[m_cnt2].rscale);
     m_evtlist[m_cnt2].oqcd=(*signal)["OQCD"]->Get<int>();
-    if (type=="B") strcpy(m_evtlist[m_cnt2].type,"B");
+    if (type=="B" || type=="") strcpy(m_evtlist[m_cnt2].type,"B");
     else if (type=="V") strcpy(m_evtlist[m_cnt2].type,"V");
     else if (type=="I") strcpy(m_evtlist[m_cnt2].type,"I");
     else THROW(fatal_error,"Error in NLO type '"+type+"'");
