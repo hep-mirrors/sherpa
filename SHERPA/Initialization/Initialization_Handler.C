@@ -421,6 +421,9 @@ bool Initialization_Handler::InitializeTheIO()
   std::string format=p_dataread->GetValue<std::string>("EVENT_OUTPUT","None");
   std::vector<std::string> outputs;
   Data_Reader readline(",",";","#","");
+  std::string stag(rpa->gen.Variable("RNG_SEED"));
+  while (stag.find(' ')!=std::string::npos) stag.replace(stag.find(' '),1,"-");
+  readline.AddTag("RNG_SEED",stag);
   readline.SetString(format);
   readline.VectorFromString(outputs);
   for (size_t i=0; i<outputs.size(); ++i) {
