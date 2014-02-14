@@ -10,7 +10,6 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "ATOOLS/Org/Data_Reader.H"
-#include "ATOOLS/Org/My_MPI.H"
 #include <stdio.h>
 
 using namespace PHASIC;
@@ -95,14 +94,9 @@ void VHAAG::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG* ovl)
   dr.AddWordSeparator("\t");
   dr.SetInputPath(rpa->GetPath());
   dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  int size=dr.GetValue<std::string>("VHAAG_AUTOOPT","On")=="On"?1:2;
-#ifdef USING__MPI
-  size=MPI::COMM_WORLD.Get_size();
-#endif
   if (1) {
     if (p_sharedvegaslist[vs]==NULL) {
       p_sharedvegaslist[vs] = new Vegas(rannum,100,Name());
-      if (size<2) p_sharedvegaslist[vs]->SetAutoOptimize(Min(nout,5)*100);
       if (1) {
 	if (m_type<2) {
 	  for (int i=0;i<=nout-3;i++) p_sharedvegaslist[vs]->ConstChannel(2+3*i);
@@ -121,7 +115,6 @@ void VHAAG::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG* ovl)
   else  {
     m_ownvegas = true;
     p_vegas = new Vegas(rannum,100,Name());
-    if (size<2) p_vegas->SetAutoOptimize(500);
   } 
 
   m_s0=-1.;
@@ -145,17 +138,12 @@ VHAAG::~VHAAG()
 
 void VHAAG::MPISync()
 {
-#ifdef USING__MPI
   if (m_ownvegas) p_vegas->MPISync();
-#endif
 }
 
 void VHAAG::Optimize()
 {
-#ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_size()<2) return;
   if (m_ownvegas) p_vegas->Optimize();
-#endif
 }
 
 void VHAAG::AddPoint(double Value)
