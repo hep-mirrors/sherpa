@@ -392,6 +392,11 @@ void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode)
       return;
     }
   }  
+  if (IsEqual(sum,disc)) {
+    channels.back()->GeneratePoint(spkey,ykey,rans,mode);
+    m_lastdice = channels.size()-1;
+    return;
+  }
   msg_Error()<<"Multi_Channel::GeneratePoint(..): IS case ("<<this
 	     <<") No channel selected. \n"
 	     <<"   disc = "<<disc<<", sum = "<<sum<<std::endl;
