@@ -79,15 +79,30 @@ bool Jet_Finder::Trigger(const Vec4D_Vector &p)
 bool Jet_Finder::JetTrigger(const ATOOLS::Vec4D_Vector &p,
                             NLO_subevtlist *const subs)
 {
+  if (p.size()!=subs->back()->m_n) THROW(fatal_error,"Invalid call");
   p_ampl->SetProc(p_proc->Process());
-  for (size_t i(0);i<p.size();++i)
+  if (p_ampl->Legs().size()<subs->back()->m_n)
+    p_ampl->CreateLeg(Vec4D(),Flavour(kf_jet),ColorID());
+  else if (p_ampl->Legs().size()>subs->back()->m_n) {
+    p_ampl->Legs().back()->Delete();
+    p_ampl->Legs().pop_back();
+  }
+  size_t idij((1<<subs->back()->m_i)|(1<<subs->back()->m_j));
+  if (subs->back()->m_i==subs->back()->m_j) idij=0;
+  for (size_t i(0);i<p.size();++i) {
+    p_ampl->Leg(i)->SetFlav
+      ((int)i<m_nin?subs->back()->p_fl[i].Bar():subs->back()->p_fl[i]);
     p_ampl->Leg(i)->SetMom((int)i<m_nin?-p[i]:p[i]);
+    p_ampl->Leg(i)->SetId(subs->back()->p_id[i]);
+    p_ampl->Leg(i)->SetK(subs->back()->p_id[i]==idij?
+			 (1<<subs->back()->m_k):0);
+  }
   m_ycut=p_yccalc->Calculate()->Get<double>();
   if (!m_on) return true;
   msg_Debugging()<<METHOD<<"(): '"<<p_proc->Process()->Name()
 		 <<"' Q_cut = "<<sqrt(m_ycut*m_s)<<(m_on?" {":", off")<<"\n";
   p_ampl->Decays()=p_proc->Process()->Info().m_fi.GetDecayInfos();
-  bool res=p_jc->Jets(p_ampl,1);
+  bool res=p_jc->Jets(p_ampl,idij?0:1);
   msg_Debugging()<<"} -> "<<res<<"\n";
   return 1-m_sel_log->Hit(!res);
 }

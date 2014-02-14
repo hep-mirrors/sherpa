@@ -84,7 +84,6 @@ namespace COMIX {
     ATOOLS::NLO_subevtlist *GetSubevtList();
 
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);
-    void SetSelector(const PHASIC::Selector_Key &key);
     void SetShower(PDF::Shower_Base *const ps);
 
     size_t SetMCMode(const size_t mcmode);

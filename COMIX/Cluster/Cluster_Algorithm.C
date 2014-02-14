@@ -588,7 +588,7 @@ bool Cluster_Algorithm::Cluster
     for (size_t i(0);i<p_proc->NIn();++i) p[i]=-p[i];
   }
   if (p_bg==NULL) THROW(fatal_error,"Internal error 9");
-  Selector_Base *jf=p_proc->Selector()->GetSelector("Jetfinder");
+  Selector_Base *jf=p_xs->Selector()->GetSelector("Jetfinder");
   msg_Debugging()<<METHOD<<"(mode = "<<mode<<"): {\n";
   msg_Indent();
   m_id.clear();

@@ -622,17 +622,6 @@ void COMIX::Single_Process::SetScale(const Scale_Setter_Arguments &args)
   }
 }
 
-void COMIX::Single_Process::SetSelector(const Selector_Key &key)
-{
-  PHASIC::Single_Process::SetSelector(key);
-  NLO_subevtlist *subs(GetSubevtList());
-  if (subs) {
-    for (size_t i(0);i<subs->size()-1;++i)
-      static_cast<Single_Dipole_Term*>
-	((*subs)[i]->p_proc)->SetSelector(key);
-  }
-}
-
 void COMIX::Single_Process::SetShower(PDF::Shower_Base *const ps)
 {
   PHASIC::Single_Process::SetShower(ps);

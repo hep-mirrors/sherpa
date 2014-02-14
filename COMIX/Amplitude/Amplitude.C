@@ -1252,8 +1252,7 @@ bool Amplitude::JetTrigger
     Dipole_Kinematics *kin(m_scur[i]->Sub()->In().front()->Kin());
     Vec4D_Vector p(kin->Momenta());
     for (size_t j(0);j<m_nin;++j) p[j]=-p[j];
-    int ltrig(static_cast<PHASIC::Process_Base*>
-	      (m_subs[i]->p_proc)->Selector()->Trigger(p));
+    int ltrig(sel->JetTrigger(p,&tmp));
     kin->SetF(1.0);
     if (m_smth) {
       double a(m_smth>0.0?kin->KT2():kin->Y());
