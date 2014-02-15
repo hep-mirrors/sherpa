@@ -358,7 +358,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         yes)  if test -d "$HEPMC2DIR"; then
                 CONDITIONAL_HEPMC2DIR="$HEPMC2DIR"
                 CONDITIONAL_HEPMC2INCS="-I$HEPMC2DIR/include"
-                CONDITIONAL_HEPMC2LIBS="-L$HEPMC2DIR/lib -R$HEPMC2DIR/lib -lHepMC";
+                CONDITIONAL_HEPMC2LIBS="-L$HEPMC2DIR/lib -R$HEPMC2DIR/lib -L$HEPMC2DIR/lib64 -R$HEPMC2DIR/lib64 -lHepMC";
               else
                 AC_MSG_ERROR(\$HEPMC2DIR is not a valid path.);
               fi;
@@ -366,7 +366,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         *)    if test -d "${enableval}"; then
                 CONDITIONAL_HEPMC2DIR="${enableval}"
                 CONDITIONAL_HEPMC2INCS="-I${enableval}/include"
-                CONDITIONAL_HEPMC2LIBS="-L${enableval}/lib -R${enableval}/lib -lHepMC";
+                CONDITIONAL_HEPMC2LIBS="-L${enableval}/lib -R${enableval}/lib -L${enableval}/lib64 -R${enableval}/lib64 -lHepMC";
               else
                 AC_MSG_ERROR(${enableval} is not a valid path.);
               fi;
