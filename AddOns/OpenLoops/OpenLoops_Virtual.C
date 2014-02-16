@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Math/Poincare.H"
 
 
@@ -26,56 +27,22 @@ OpenLoops_Virtual::OpenLoops_Virtual(const Process_Info& pi,
   m_amp2(amp2), m_permutationfunc(permutationfunc),
   m_permutation(permutation), m_analyse(true)
 {
-  Data_Reader reader(" ",";","#","=");
-  m_write_points=reader.GetValue<int>("OL_WRITE_POINTS", 0);
-  if (m_write_points) {
-    m_points_file.open(string("points."+functag+".txt").c_str());
-  }
-  // There is a bool-bit: m_analyse that triggers the stability analysis.
-  // Here you can add more histograms for the stability analysis.  The arguments
-  // to initialise them are (0=lin, xmin, xmax, number of bins).  Since the
-  // histograms are put into a map, make sure the names differ!
-  // To insert values, see below.  The setup is also such that all histograms
-  // in the map are automatically written out in the subdirectory
-  // "$pwd/Stability_Analysis/", if it exists.
-  if (m_analyse) {
-    m_histograms[string("log_V_by_B")]     = new Histogram(0,-5.,2.,56);
-    m_histograms[string("log_V_by_B_reg")] = new Histogram(0,-5.,2.,56);
-    m_histograms[string("log_V_by_B_wt")]  = new Histogram(0,-5.,2.,56);
-  }
-
   m_oew=pi.m_oew;
   m_oqcd=pi.m_oqcd;
 }
 
 OpenLoops_Virtual::~OpenLoops_Virtual()
 {
-  if (m_write_points) {
-    m_points_file.close();
-  }
-  // Here the histograms are written out.  I'll add mean, right variance etc.
-  if (m_analyse) {
-    Histogram * histo;
-    string name;
-    for (map<string,Histogram *>::iterator hit=m_histograms.begin();
-	 hit!=m_histograms.end();hit++) {
-      histo = hit->second;
-      name  = string("Stability_Analysis/")+hit->first+string(".dat");
-      histo->Output(name);
-      delete histo;
-    }
-    m_histograms.clear();
-  }
 }
 
 
 void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta) {
   Vec4D_Vector m_moms(momenta);
 
-  double alpha_QED=AlphaQED();
-  double alpha_S=AlphaQCD();
-  s_interface->OpenLoopsInit(m_mur2, alpha_QED, alpha_S);
-
+  s_interface->SetParameter("alpha", AlphaQED());
+  s_interface->SetParameter("alphas", AlphaQCD());
+  s_interface->SetParameter("mu", sqrt(m_mur2));
+  
   double M2L0;
   vector<double> M2L1(3), M2L2(5), IRL1(3), IRL2(5);
 
@@ -95,33 +62,106 @@ void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta) {
   double B(M2L0), V_finite(M2L1[0]), V_eps(M2L1[1]), V_eps2(M2L1[2]);
 
   // factor which by Sherpa convention has to be divided out at this stage
-  double factor=B*alpha_S/2.0/M_PI;
+  double factor=B*AlphaQCD()/2.0/M_PI;
 
   m_born=B;
   m_res.Finite()=(V_finite/factor);
   m_res.IR()=(V_eps/factor);
   m_res.IR2()=(V_eps2/factor);
-
-  if (m_write_points) {
-    m_points_file<<"2 -> "<<m_flavs.size()-2<<" 1 "<<alpha_S<<" "<<sqrt(m_mur2)<<" "<<alpha_QED<<" "<<sqrt(m_mur2)<<endl;
-    for (size_t i=0; i<momenta.size(); ++i) {
-      m_points_file<<m_flavs[i].HepEvt();
-      for (size_t j=0; j<4; ++j) {
-        m_points_file<<" "<<momenta[i][j];
-      }
-      m_points_file<<endl;
-    }
-    m_points_file<<B<<" "<<V_finite<<" "<<V_eps<<" "<<V_eps2<<endl;
-  }
-  // Here the histograms are filled.  The syntax is with 
-  // Insert(xbin, value), where the value, by default is 1.
-  if (m_analyse) {
-    double logVbyB(log(dabs(V_finite/B))/log(10.));
-    m_histograms[string("log_V_by_B")]->Insert(logVbyB);    
-    m_histograms[string("log_V_by_B_wt")]->Insert(logVbyB,B);    
-    double logVbyBren(log(dabs(V_finite/(B+.00001*dabs(V_finite))))/log(10.));
-    m_histograms[string("log_V_by_B_reg")]->Insert(logVbyBren);    
-  }
 }
 
+}
+
+
+using namespace OpenLoops;
+
+void dummyamp2func(double* moms, double* M2L0, double* M2L1, double* IRL1, double* M2L2, double* IRL2)
+{ THROW(normal_exit, "Shopping list generated."); }
+void dummypermfunc(int* permutation)
+{ THROW(normal_exit, "Shopping list generated."); }
+
+DECLARE_VIRTUALME2_GETTER(OpenLoops_Virtual,"OpenLoops_Virtual")
+Virtual_ME2_Base *ATOOLS::Getter<Virtual_ME2_Base,Process_Info,OpenLoops_Virtual>::
+operator()(const Process_Info &pi) const
+{
+  DEBUG_FUNC(pi);
+  if (pi.m_loopgenerator!="OpenLoops") return NULL;
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
+  if (pi.m_fi.m_nloqcdtype!=nlo_type::loop) return NULL;
+  if (MODEL::s_model->Name()!="SM") return NULL;
+
+  Flavour_Vector flavs=pi.ExtractFlavours();
+  Flavour_Vector map_flavs=OpenLoops_Interface::MapFlavours(flavs);
+  msg_Tracking()<<endl<<flavs<<" --> "<<map_flavs<<endl;
+
+  vector<int> permutation;
+  string process=OpenLoops_Interface::GetProcessPermutation(map_flavs, permutation);
+  pair<string, string> groupsub=OpenLoops_Interface::ScanFiles(process, pi.m_oew, pi.m_oqcd-1, 1);
+  string grouptag=groupsub.first;
+  string subid=groupsub.second;
+  if (grouptag!="") {
+    // symbols in fortran are always defined as lower case
+    string lc_functag(grouptag+"_"+process+"_"+subid+"_");
+    for (size_t i(0);i<lc_functag.length();++i)
+      lc_functag[i]=tolower(lc_functag[i]);
+    vector<string> suffixes;
+    suffixes.push_back("1tL"); // deprecated
+    suffixes.push_back("1L"); // deprecated
+    suffixes.push_back("1ptL"); // deprecated
+    suffixes.push_back("0L"); // deprecated
+    suffixes.push_back("l");
+    suffixes.push_back("lt");
+    suffixes.push_back("lpt");
+    suffixes.push_back("ls");
+    suffixes.push_back("lp");
+    suffixes.push_back("lst");
+    suffixes.push_back("lps");
+    suffixes.push_back("lpst");
+    void *ampfunc, *permfunc;
+    for (size_t i=0; i<suffixes.size(); ++i) {
+      string libraryfile="openloops_"+grouptag+"_"+suffixes[i];
+      ampfunc=s_loader->GetLibraryFunction(libraryfile,"vamp2_"+lc_functag);
+      permfunc=s_loader->GetLibraryFunction(libraryfile,"set_permutation_"+lc_functag);
+      if (ampfunc!=NULL && permfunc!=NULL) break;
+    }
+    if (ampfunc==NULL || permfunc==NULL) {
+      PRINT_INFO("Didn't find functions");
+      return NULL;
+    }
+
+    msg_Info()<<endl;
+    PRINT_INFO("Initialising OpenLoops Virtual for "<<flavs<<": "<<lc_functag);
+    return new OpenLoops_Virtual(pi, flavs, (Amp2Func) ampfunc,
+                                 (PermutationFunc) permfunc, permutation, lc_functag);
+  }
+  else {
+    if (OpenLoops_Interface::s_generate_list) {
+      if (OpenLoops_Interface::s_shoppinglist.find(process)==OpenLoops_Interface::s_shoppinglist.end()) {
+        ofstream list("OL_list.m", ios::app);
+        list<<"(* "<<process<<" *)"<<endl;
+        list<<"SubProcess["<<OpenLoops_Interface::s_shoppinglist.size()+1<<"] = {\n"
+            <<" FeynArtsProcess -> {"
+            <<OpenLoops_Interface::s_particles[map_flavs[0].HepEvt()].m_faname<<", "
+            <<OpenLoops_Interface::s_particles[map_flavs[1].HepEvt()].m_faname<<"} -> {";
+        for (size_t i=2; i<map_flavs.size()-1; ++i) {
+          list<<OpenLoops_Interface::s_particles[map_flavs[i].HepEvt()].m_faname<<", ";
+        }
+        list<<OpenLoops_Interface::s_particles[map_flavs[map_flavs.size()-1].HepEvt()].m_faname<<"},\n"
+            <<" SelectCoupling -> (Exponent[#, gQCD] >= "<<pi.m_oqcd-1<<"+2*#2 &),\n"
+            <<" SortExternal -> True,\n"
+            <<" InsertFieldsOptions -> {Restrictions -> {ExcludeParticles -> {S[2|3], SV}, NoQuarkMixing}}";
+        if (OpenLoops_Interface::GetIntParameter("nf")!=6) {
+          list<<",\n SetParameters -> JoinOptions[{nf -> "<<OpenLoops_Interface::GetIntParameter("nf")<<"}]";
+        }
+        list<<"\n};\n"<<endl;
+        list.close();
+        PRINT_INFO("Generated list entry for "<<process);
+        OpenLoops_Interface::s_shoppinglist.insert(process);
+      }
+      return new OpenLoops_Virtual(pi, flavs, dummyamp2func,
+                                   dummypermfunc, permutation, "dummy");
+    }
+  }
+
+  return NULL;
 }

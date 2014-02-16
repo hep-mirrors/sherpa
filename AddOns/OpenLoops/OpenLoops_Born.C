@@ -2,10 +2,12 @@
 
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Library_Loader.H"
 
 using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
+using namespace std;
 
 namespace OpenLoops {
 
@@ -35,10 +37,8 @@ double OpenLoops_Born::Calc(const Vec4D_Vector& momenta)
 {
   Vec4D_Vector m_moms(momenta);
 
-  double alpha_QED=AlphaQED();
-  double alpha_S=AlphaQCD();
-  double mur2(10000.0);
-  s_interface->OpenLoopsInit(mur2, alpha_QED, alpha_S);
+  s_interface->SetParameter("alpha", AlphaQED());
+  s_interface->SetParameter("alphas", AlphaQCD());
 
   double M2L0;
   std::vector<double> M2L1(3), M2L2(5), IRL1(3), IRL2(5);
@@ -62,3 +62,61 @@ double OpenLoops_Born::Calc(const Vec4D_Vector& momenta)
 }
 
 }
+
+using namespace OpenLoops;
+
+DECLARE_TREEME2_GETTER(OpenLoops_Born,"OpenLoops_Born")
+Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,OpenLoops_Born>::
+operator()(const Process_Info &pi) const
+{
+  DEBUG_FUNC(pi);
+  if (pi.m_loopgenerator!="OpenLoops") return NULL;
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
+  if (pi.m_fi.m_nloqcdtype!=nlo_type::lo &&
+      pi.m_fi.m_nloqcdtype!=nlo_type::born &&
+      pi.m_fi.m_nloqcdtype!=nlo_type::real) return NULL;
+  if (MODEL::s_model->Name()!="SM") return NULL;
+
+  Flavour_Vector flavs=pi.ExtractFlavours();
+  Flavour_Vector map_flavs=OpenLoops_Interface::MapFlavours(flavs);
+  msg_Tracking()<<endl<<flavs<<" --> "<<map_flavs<<endl;
+
+  vector<int> permutation;
+  string process=OpenLoops_Interface::GetProcessPermutation(map_flavs, permutation);
+  pair<string, string> groupsub=OpenLoops_Interface::ScanFiles(process, pi.m_oew, pi.m_oqcd, 0);
+  string grouptag=groupsub.first;
+  string subid=groupsub.second;
+  if (grouptag!="") {
+    // symbols in fortran are always defined as lower case
+    string lc_functag(grouptag+"_"+process+"_"+subid+"_");
+    for (size_t i(0);i<lc_functag.length();++i)
+      lc_functag[i]=tolower(lc_functag[i]);
+    vector<string> suffixes;
+    suffixes.push_back("1sL"); // deprecated
+    suffixes.push_back("ls");
+    suffixes.push_back("lst");
+    suffixes.push_back("lps");
+    suffixes.push_back("lpst");
+    void *ampfunc, *permfunc;
+    for (size_t i=0; i<suffixes.size(); ++i) {
+      string libraryfile="openloops_"+grouptag+"_"+suffixes[i];
+      ampfunc=s_loader->GetLibraryFunction(libraryfile,"vamp2_"+lc_functag);
+      permfunc=s_loader->GetLibraryFunction(libraryfile,"set_permutation_"+lc_functag);
+      if (ampfunc!=NULL && permfunc!=NULL) break;
+    }
+    if (ampfunc==NULL || permfunc==NULL) {
+      PRINT_INFO("Didn't find functions");
+      return NULL;
+    }
+
+    msg_Info()<<endl;
+    PRINT_INFO("Initialising OpenLoops Born for "<<flavs<<": "<<lc_functag);
+    return new OpenLoops_Born(pi, flavs, (Amp2Func) ampfunc,
+                              (PermutationFunc) permfunc, permutation, lc_functag);
+  }
+  else {
+    return NULL;
+  }
+}
+
+

@@ -37,7 +37,11 @@ namespace OpenLoops {
 		    BEAM::Beam_Spectra_Handler *const beam,
 		    PDF::ISR_Handler *const isr);
 
-    void OpenLoopsInit(double mur2, double alpha_QED, double alpha_S);
+    static void SetParameter(const std::string & key, double value);
+    static void SetParameter(const std::string & key, int value);
+    static void SetParameter(const std::string & key, std::string value);
+    static double GetDoubleParameter(const std::string & key);
+    static int GetIntParameter(const std::string & key);
 
     static std::string GetProcessPermutation(const ATOOLS::Flavour_Vector& flavs_orig,
                                              std::vector<int>& permutation);
@@ -55,12 +59,11 @@ namespace OpenLoops {
 
     static std::string s_olprefix;
     static std::vector<std::string> s_allowed_libs;
-    static int s_pole_mode, s_amp_switch, s_amp_switch_rescue, s_nf, s_nq_nondecoupled;
     static bool s_generate_list;
-    static double s_overwrite_mb;
     static std::set<std::string> s_shoppinglist;
     static std::map<int, OpenLoops_Particle> s_particles;
   };
+
 
 }
 
@@ -70,25 +73,5 @@ typedef void (*Amp2Func)(double* moms, double* M2L0, double* M2L1, double* IRL1,
                          double* M2L2, double* IRL2);
 
 typedef void (*PermutationFunc)(int* permutation);
-
-extern "C" {
-
-  void parameters_init_(double* Mass_E, double* Mass_M, double* Mass_L,
-                        double* Mass_U, double* Mass_D, double* Mass_S,
-                        double* Mass_C, double* Width_C, double* Mass_B, double* Width_B, double* Mass_T, double* Width_T,
-                        double* Mass_W, double* Width_W, double* Mass_Z, double* Width_Z, double* Mass_H, double* Width_H,
-                        double* Coupl_Alpha_QED, double* Coupl_Alpha_QCD,
-                        int* last_switch, int* amp_switch, int* amp_switch_rescue, int* use_coli_cache,
-                        int* check_Ward_tree, int* check_Ward_loop, int* out_symmetry, int* leading_colour);
-
-
-  void loop_parameters_init_(double* renscale, double* fact_UV, double* fact_IR, double* pole1_UV, double* pole1_IR, double* pole2_IR,
-                             int* polenorm_swi, int* N_quarks, int* nq_nondecoupled,
-                             double* opp_rootsvalue, double* opp_limitvalue, double* opp_thrs, int* opp_idig, int* opp_scaloop,
-                             int* sam_isca, int* sam_verbosity, int* sam_itest, int* fermion_loops, int* nonfermion_loops,
-                             int* CT_on, int* R2_on, int* IR_on, int* polecheck, double* set_C_PV_threshold, double* set_D_PV_threshold, int* set_DD_red_mode);
-  void openloops_welcome_(char* str, int* len_str);
-  
-}
 
 #endif

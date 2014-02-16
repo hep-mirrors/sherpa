@@ -18,18 +18,29 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
+
+extern "C" {
+
+  void openloops_welcome_(char* str, int* len_str);
+
+  void loop_parameters_write_();
+
+  void ol_getparameter_double_c_(const char* key, double* val, int* err);
+  void ol_getparameter_int_c_(const char* key, int* val, int* err);
+  void ol_setparameter_double_c_(const char* key, double* val, int* err);
+  void ol_setparameter_int_c_(const char* key, int* val, int* err);
+  void ol_setparameter_string_c_(const char* key, const char* val, int* err);
+  void ol_parameters_flush_();
+
+}
+
+
 namespace OpenLoops {
 
   std::map<int, OpenLoops_Particle> OpenLoops_Interface::s_particles;
   std::string OpenLoops_Interface::s_olprefix;
   std::vector<std::string> OpenLoops_Interface::s_allowed_libs;
-  int OpenLoops_Interface::s_pole_mode;
-  int OpenLoops_Interface::s_amp_switch;
-  int OpenLoops_Interface::s_amp_switch_rescue;
-  int OpenLoops_Interface::s_nf;
-  int OpenLoops_Interface::s_nq_nondecoupled;
   bool OpenLoops_Interface::s_generate_list;
-  double OpenLoops_Interface::s_overwrite_mb;
   set<string> OpenLoops_Interface::s_shoppinglist;
 
   bool OpenLoops_Interface::Initialize(const string &path,const string &file,
@@ -39,64 +50,52 @@ namespace OpenLoops {
   {
     InitializeParticles();
 
+    // find OL installation prefix with several overwrite options
     struct stat st;
     Data_Reader reader(" ",";","#","=");
     s_olprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/OpenLoops";
     if(stat(s_olprefix.c_str(),&st) != 0) s_olprefix = OPENLOOPS_PREFIX;
     s_olprefix = reader.GetValue<string>("OL_PREFIX", s_olprefix);
+    msg_Info()<<"Initialising OpenLoops generator from "<<s_olprefix<<endl;
 
-    
-    Data_Reader liblist(" ",";","#","=");
-    liblist.SetAddCommandLine(false);
-    liblist.SetInputFile(s_olprefix+"/lib/librarylist.info");
-    vector<vector<string> > ollibs;
-    liblist.MatrixFromFile(ollibs);
-    if (ollibs.size()==0) ollibs.push_back(vector<string>(1,"openloops"));
+    // load library dynamically
     s_loader->AddPath(s_olprefix+"/lib");
     s_loader->AddPath(s_olprefix+"/proclib");
-    for (size_t i=0; i<ollibs.size(); ++i) {
-      if (!s_loader->LoadLibrary(ollibs[i][0])) {
-        THROW(fatal_error, "Failed to load OpenLoops library "+ollibs[i][0]);
-      }
+    if (!s_loader->LoadLibrary("openloops")) THROW(fatal_error, "Failed to load libopenloops.");
+
+    // set particle masses/widths
+    int tmparr[] = {kf_e, kf_mu, kf_tau, kf_u, kf_d, kf_s, kf_c, kf_b, kf_t, kf_Wplus, kf_Z, kf_h0};
+    vector<int> pdgids (tmparr, tmparr + sizeof(tmparr) / sizeof(tmparr[0]) );
+    int dummy;
+    for (size_t i=0; i<pdgids.size(); ++i) {
+      if (Flavour(pdgids[i]).Mass()>0.0) SetParameter("mass("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Mass());
+      if (Flavour(pdgids[i]).Width()>0.0) SetParameter("width("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Width());
     }
 
+    // set remaining OL parameters specified by user
+    vector<string> parameters;
+    reader.VectorFromFile(parameters,"OL_PARAMETERS");
+    for (size_t i=1; i<parameters.size(); i=i+2) SetParameter(parameters[i-1], parameters[i]);
+
     reader.VectorFromFile(s_allowed_libs, "OL_ALLOWED_LIBS");
-    s_pole_mode=reader.GetValue<int>("OL_POLE_MODE", 0);
-    s_amp_switch=reader.GetValue<int>("OL_AMP_SWITCH", 1);
-    s_amp_switch_rescue=reader.GetValue<int>("OL_AMP_SWITCH_RESCUE", 7);
-    s_nf=reader.GetValue<int>("OL_NF", 6);
-    s_nq_nondecoupled=reader.GetValue<int>("OL_RUNNING_FLAVOURS",Flavour(kf_quark).Size()/2);
     s_generate_list=reader.GetValue<size_t>("OL_GENERATE_LIST", false);
-    s_overwrite_mb=reader.GetValue<double>("OL_OVERWRITE_MB", -1.0);
-
-
-    OpenLoops_Virtual::SetInterface(this);
-    OpenLoops_Born::SetInterface(this);
+    if (s_allowed_libs.size()) PRINT_VAR(s_allowed_libs);
 
     int lenws=1200;
     char welcomestr[lenws];
     openloops_welcome_(welcomestr, &lenws);
     msg_Info()<<std::string(welcomestr,lenws)<<std::endl;
-    PRINT_INFO("Initialised OpenLoops generator:");
-    PRINT_VAR(s_olprefix);
-    PRINT_VAR(s_amp_switch);
-    PRINT_VAR(s_amp_switch_rescue);
-    PRINT_VAR(s_pole_mode);
-    PRINT_VAR(s_nf);
-    PRINT_VAR(s_nq_nondecoupled);
-    PRINT_VAR(s_allowed_libs);
-    PRINT_VAR(s_overwrite_mb);
+    loop_parameters_write_();
 
     MyStrStream cite;
     cite<<"The OpenLoops library~\\cite{Cascioli:2011va} of virtual"<<endl
-        <<"matrix elements has been used. "<<endl;
-    if (s_amp_switch==1 || s_amp_switch_rescue==1 ||
-        s_amp_switch==7 || s_amp_switch_rescue==7) {
-      cite<<"It is partly based on the tensor integral reduction described "<<endl
-          <<"in~\\cite{Denner:2002ii,Denner:2005nn,Denner:2010tr}."<<endl;
-    }
+        <<"matrix elements has been used. "<<endl
+        <<"It is partly based on the tensor integral reduction described "<<endl
+        <<"in~\\cite{Denner:2002ii,Denner:2005nn,Denner:2010tr}."<<endl;
     rpa->gen.AddCitation(1,cite.str());
 
+    OpenLoops_Virtual::SetInterface(this);
+    OpenLoops_Born::SetInterface(this);
     return true;
   }
 
@@ -135,71 +134,6 @@ namespace OpenLoops {
     s_particles[kf_gluon] = OpenLoops_Particle("g", "V[5]", 29);
   }
 
-  void OpenLoops_Interface::OpenLoopsInit(double mur2,
-                                          double alpha_QED, double alpha_S)
-  {
-    double Mass_E=Flavour(kf_e).Mass();
-    double Mass_M=Flavour(kf_mu).Mass();
-    double Mass_L=Flavour(kf_tau).Mass();
-    double Mass_U=Flavour(kf_u).Mass();
-    double Mass_D=Flavour(kf_d).Mass();
-    double Mass_S=Flavour(kf_s).Mass();
-    double Mass_C=Flavour(kf_c).Mass();
-    double Mass_B=s_overwrite_mb<0.0 ? Flavour(kf_b).Mass() : s_overwrite_mb;
-    double Mass_T=Flavour(kf_t).Mass();
-    double Mass_W=Flavour(kf_Wplus).Mass();
-    double Mass_Z=Flavour(kf_Z).Mass();
-    double Mass_H=Flavour(kf_h0).Mass();
-    double Width_C=Flavour(kf_c).Width();
-    double Width_B=Flavour(kf_b).Width();
-    double Width_T=Flavour(kf_t).Width();
-    double Width_W=Flavour(kf_Wplus).Width();
-    double Width_Z=Flavour(kf_Z).Width();
-    double Width_H=Flavour(kf_h0).Width();
-    int last_switch=1;
-    int amp_switch=s_amp_switch;
-    int amp_switch_rescue=s_amp_switch_rescue;
-    int use_coli_cache(true);
-    int check_Ward_tree=false;
-    int check_Ward_loop=false;
-    int out_symmetry=true;
-    int leading_colour=false;
-    parameters_init_(&Mass_E, &Mass_M, &Mass_L, &Mass_U, &Mass_D, &Mass_S, &Mass_C, &Width_C, &Mass_B, &Width_B, &Mass_T, &Width_T,
-                     &Mass_W, &Width_W, &Mass_Z, &Width_Z, &Mass_H, &Width_H, &alpha_QED, &alpha_S,
-                     &last_switch, &amp_switch, &amp_switch_rescue, &use_coli_cache,
-                     &check_Ward_tree, &check_Ward_loop, &out_symmetry, &leading_colour);
-
-
-    double renscale=sqrt(mur2);
-    double fact_UV=1.0;
-    double fact_IR=1.0;
-    double pole1_UV=0.0;
-    double pole1_IR=0.0;
-    double pole2_IR=0.0;
-    int polenorm_swi=0;
-    double opp_rootsvalue=1000.0;
-    double opp_limitvalue=0.01;
-    double opp_thrs=0.000001;
-    int opp_idig=0;
-    int opp_scaloop=2;
-    int sam_isca=2;
-    int sam_verbosity=0;
-    int sam_itest=0;
-    int fermion_loops=1;
-    int nonfermion_loops=1;
-    int CT_on=1;
-    int R2_on=1;
-    int IR_on=1;
-    int polemode=(s_pole_mode>0?1:0);
-    double set_C_PV_threshold=1.E-10;
-    double set_D_PV_threshold=1.E-10;
-    int set_DD_red_mode=2;
-    loop_parameters_init_(&renscale, &fact_UV, &fact_IR, &pole1_UV, &pole1_IR, &pole2_IR, &polenorm_swi, &s_nf, &s_nq_nondecoupled,
-                          &opp_rootsvalue, &opp_limitvalue, &opp_thrs, &opp_idig, &opp_scaloop,
-                          &sam_isca, &sam_verbosity, &sam_itest, &fermion_loops, &nonfermion_loops, &CT_on, &R2_on, &IR_on, &polemode,
-                          &set_C_PV_threshold, &set_D_PV_threshold, &set_DD_red_mode);
-  }
-
   std::string OpenLoops_Interface::MatchOptions(vector<string> options, int oew, int oqcd, int nloop) {
     for (size_t i=2; i<options.size(); ++i) {
       string option=options[i].substr(0, options[i].find("="));
@@ -228,16 +162,18 @@ namespace OpenLoops {
           }
         }
       }
-      if (option=="nf" && ToType<int>(value)!=s_nf) return "0";
-      if (option=="MD" && Flavour(kf_d).Mass()>0.0) return "0";
-      if (option=="MU" && Flavour(kf_u).Mass()>0.0) return "0";
-      if (option=="MS" && Flavour(kf_s).Mass()>0.0) return "0";
-      if (option=="MC" && Flavour(kf_c).Mass()>0.0) return "0";
-      if (option=="MB" && Flavour(kf_b).Mass()>0.0 && s_overwrite_mb<0.0) return "0";
-      if (option=="MT" && Flavour(kf_t).Mass()>0.0) return "0";
-      if (option=="ME" && Flavour(kf_e).Mass()>0.0) return "0";
-      if (option=="MM" && Flavour(kf_mu).Mass()>0.0) return "0";
-      if (option=="MT" && Flavour(kf_tau).Mass()>0.0) return "0";
+      const string nfs("nf");
+      double nfsv=GetIntParameter(nfs);
+      if (option=="nf" && ToType<int>(value)!=nfsv) return "0";
+      if (option=="MD" && (double)GetDoubleParameter("mass(1)")>0.0) return "0";
+      if (option=="MU" && (double)GetDoubleParameter("mass(2)")>0.0) return "0";
+      if (option=="MS" && (double)GetDoubleParameter("mass(3)")>0.0) return "0";
+      if (option=="MC" && (double)GetDoubleParameter("mass(4)")>0.0) return "0";
+      if (option=="MB" && (double)GetDoubleParameter("mass(5)")>0.0) return "0";
+      if (option=="MT" && (double)GetDoubleParameter("mass(6)")>0.0) return "0";
+      if (option=="ME" && (double)GetDoubleParameter("mass(11)")>0.0) return "0";
+      if (option=="MM" && (double)GetDoubleParameter("mass(13)")>0.0) return "0";
+      if (option=="MT" && (double)GetDoubleParameter("mass(15)")>0.0) return "0";
 
       if (option=="map") return value;
     }
@@ -422,165 +358,63 @@ namespace OpenLoops {
     return ret;
   }
 
-  void dummyamp2func(double* moms, double* M2L0, double* M2L1, double* IRL1,
-                     double* M2L2, double* IRL2)
-  {
-    THROW(normal_exit, "Shopping list generated.");
+  double OpenLoops_Interface::GetDoubleParameter(const std::string & key) {
+    int err(0);
+    double value;
+    ol_getparameter_double_c_(key.c_str(), &value, &err);
+    return value;
   }
-  
-  void dummypermfunc(int* permutation)
-  {
-    THROW(normal_exit, "Shopping list generated.");
+  int OpenLoops_Interface::GetIntParameter(const std::string & key) {
+    int err(0);
+    int value;
+    ol_getparameter_int_c_(key.c_str(), &value, &err);
+    return value;
+  }
+  template <class ValueType>
+  void HandleParameterStatus(int err, const std::string & key, ValueType value) {
+    if (err==0) {
+      msg_Info()<<"Setting OpenLoops parameter: "<<key<<" = "<<value<<endl;
+      ol_parameters_flush_();
+    }
+    else if (err==1) {
+      THROW(fatal_error, "Unknown OpenLoops parameter: "+key+" = "+ToString(value));
+    }
+    else if (err==2) {
+      THROW(fatal_error, "Error setting OpenLoops parameter: "+key+" = "+ToString(value));
+    }
+  }
+  void OpenLoops_Interface::SetParameter(const std::string & key, double value) {
+    int err(0);
+    ol_setparameter_double_c_(key.c_str(), &value, &err);
+    HandleParameterStatus(err, key, value);
+  }
+  void OpenLoops_Interface::SetParameter(const std::string & key, int value) {
+    int err(0);
+    ol_setparameter_int_c_(key.c_str(), &value, &err);
+    HandleParameterStatus(err, key, value);
+  }
+  void OpenLoops_Interface::SetParameter(const std::string & key, std::string value) {
+    int err(0);
+    ol_setparameter_string_c_(key.c_str(), value.c_str(), &err);
+    HandleParameterStatus(err, key, value);
   }
 
 }
 
 using namespace OpenLoops;
 
-  DECLARE_VIRTUALME2_GETTER(OpenLoops_Virtual,"OpenLoops_Virtual")
-  Virtual_ME2_Base *ATOOLS::Getter<Virtual_ME2_Base,Process_Info,OpenLoops_Virtual>::
-  operator()(const Process_Info &pi) const
-  {
-    DEBUG_FUNC(pi);
-    if (pi.m_loopgenerator!="OpenLoops") return NULL;
-    if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
-    if (pi.m_fi.m_nloqcdtype!=nlo_type::loop) return NULL;
-    if (MODEL::s_model->Name()!="SM") return NULL;
+DECLARE_GETTER(OpenLoops_Interface,"OpenLoops",ME_Generator_Base,ME_Generator_Key);
 
-    Flavour_Vector flavs=pi.ExtractFlavours();
-    Flavour_Vector map_flavs=OpenLoops_Interface::MapFlavours(flavs);
-    msg_Tracking()<<endl<<flavs<<" --> "<<map_flavs<<endl;
+ME_Generator_Base *ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,
+                                  OpenLoops_Interface>::
+operator()(const ME_Generator_Key &key) const
+{
+  return new OpenLoops::OpenLoops_Interface();
+}
 
-    vector<int> permutation;
-    string process=OpenLoops_Interface::GetProcessPermutation(map_flavs, permutation);
-    pair<string, string> groupsub=OpenLoops_Interface::ScanFiles(process, pi.m_oew, pi.m_oqcd-1, 1);
-    string grouptag=groupsub.first;
-    string subid=groupsub.second;
-    if (grouptag!="") {
-      // symbols in fortran are always defined as lower case
-      string lc_functag(grouptag+"_"+process+"_"+subid+"_");
-      for (size_t i(0);i<lc_functag.length();++i)
-        lc_functag[i]=tolower(lc_functag[i]);
-      vector<string> suffixes;
-      suffixes.push_back("1t");
-      suffixes.push_back("1");
-      suffixes.push_back("1pt");
-      suffixes.push_back("0");
-      void *ampfunc, *permfunc;
-      for (size_t i=0; i<suffixes.size(); ++i) {
-        string libraryfile="openloops_"+grouptag+"_"+suffixes[i]+"L";
-        ampfunc=s_loader->GetLibraryFunction(libraryfile,"vamp2_"+lc_functag);
-        permfunc=s_loader->GetLibraryFunction(libraryfile,"set_permutation_"+lc_functag);
-        if (ampfunc!=NULL && permfunc!=NULL) break;
-      }
-      if (ampfunc==NULL || permfunc==NULL) {
-        PRINT_INFO("Didn't find functions");
-        return NULL;
-      }
-
-      msg_Info()<<endl;
-      PRINT_INFO("Initialising OpenLoops Virtual for "<<flavs<<": "<<lc_functag);
-      return new OpenLoops_Virtual(pi, flavs, (Amp2Func) ampfunc,
-                                   (PermutationFunc) permfunc, permutation, lc_functag);
-    }
-    else {
-      if (OpenLoops_Interface::s_generate_list) {
-        if (OpenLoops_Interface::s_shoppinglist.find(process)==OpenLoops_Interface::s_shoppinglist.end()) {
-          ofstream list("OL_list.m", ios::app);
-          list<<"(* "<<process<<" *)"<<endl;
-          list<<"SubProcess["<<OpenLoops_Interface::s_shoppinglist.size()+1<<"] = {\n"
-              <<" FeynArtsProcess -> {"
-              <<OpenLoops_Interface::s_particles[map_flavs[0].HepEvt()].m_faname<<", "
-              <<OpenLoops_Interface::s_particles[map_flavs[1].HepEvt()].m_faname<<"} -> {";
-          for (size_t i=2; i<map_flavs.size()-1; ++i) {
-            list<<OpenLoops_Interface::s_particles[map_flavs[i].HepEvt()].m_faname<<", ";
-          }
-          list<<OpenLoops_Interface::s_particles[map_flavs[map_flavs.size()-1].HepEvt()].m_faname<<"},\n"
-              <<" SelectCoupling -> (Exponent[#, gQCD] >= "<<pi.m_oqcd-1<<"+2*#2 &),\n"
-              <<" SortExternal -> True,\n"
-              <<" InsertFieldsOptions -> {Restrictions -> {ExcludeParticles -> {S[2|3], SV}, NoQuarkMixing}}";
-          if (OpenLoops_Interface::s_nf!=6) {
-            list<<",\n SetParameters -> JoinOptions[{nf -> "<<OpenLoops_Interface::s_nf<<"}]";
-          }
-          list<<"\n};\n"<<endl;
-          list.close();
-          PRINT_INFO("Generated list entry for "<<process);
-          OpenLoops_Interface::s_shoppinglist.insert(process);
-        }
-        return new OpenLoops_Virtual(pi, flavs, dummyamp2func,
-                                     dummypermfunc, permutation, "dummy");
-      }
-    }
-
-    return NULL;
-  }
-
-
-
-
-
-  DECLARE_TREEME2_GETTER(OpenLoops_Born,"OpenLoops_Born")
-  Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,OpenLoops_Born>::
-  operator()(const Process_Info &pi) const
-  {
-    DEBUG_FUNC(pi);
-    if (pi.m_loopgenerator!="OpenLoops") return NULL;
-    if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
-    if (pi.m_fi.m_nloqcdtype!=nlo_type::lo &&
-        pi.m_fi.m_nloqcdtype!=nlo_type::born &&
-        pi.m_fi.m_nloqcdtype!=nlo_type::real) return NULL;
-    if (MODEL::s_model->Name()!="SM") return NULL;
-
-    Flavour_Vector flavs=pi.ExtractFlavours();
-    Flavour_Vector map_flavs=OpenLoops_Interface::MapFlavours(flavs);
-    msg_Tracking()<<endl<<flavs<<" --> "<<map_flavs<<endl;
-
-    vector<int> permutation;
-    string process=OpenLoops_Interface::GetProcessPermutation(map_flavs, permutation);
-    pair<string, string> groupsub=OpenLoops_Interface::ScanFiles(process, pi.m_oew, pi.m_oqcd, 0);
-    string grouptag=groupsub.first;
-    string subid=groupsub.second;
-    if (grouptag!="") {
-      // symbols in fortran are always defined as lower case
-      string lc_functag(grouptag+"_"+process+"_"+subid+"_");
-      for (size_t i(0);i<lc_functag.length();++i)
-        lc_functag[i]=tolower(lc_functag[i]);
-      vector<string> suffixes;
-      suffixes.push_back("1s");
-      void *ampfunc, *permfunc;
-      for (size_t i=0; i<suffixes.size(); ++i) {
-        string libraryfile="openloops_"+grouptag+"_"+suffixes[i]+"L";
-        ampfunc=s_loader->GetLibraryFunction(libraryfile,"vamp2_"+lc_functag);
-        permfunc=s_loader->GetLibraryFunction(libraryfile,"set_permutation_"+lc_functag);
-        if (ampfunc!=NULL && permfunc!=NULL) break;
-      }
-      if (ampfunc==NULL || permfunc==NULL) {
-        PRINT_INFO("Didn't find functions");
-        return NULL;
-      }
-
-      msg_Info()<<endl;
-      PRINT_INFO("Initialising OpenLoops Born for "<<flavs<<": "<<lc_functag);
-      return new OpenLoops_Born(pi, flavs, (Amp2Func) ampfunc,
-                                (PermutationFunc) permfunc, permutation, lc_functag);
-    }
-    else {
-      return NULL;
-    }
-  }
-
-  DECLARE_GETTER(OpenLoops_Interface,"OpenLoops",ME_Generator_Base,ME_Generator_Key);
-
-  ME_Generator_Base *ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,
-				    OpenLoops_Interface>::
-  operator()(const ME_Generator_Key &key) const
-  {
-    return new OpenLoops::OpenLoops_Interface();
-  }
-
-  void ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,OpenLoops_Interface>::
-  PrintInfo(ostream &str,const size_t width) const
-  { 
-    str<<"Interface to the OpenLoops loop ME generator"; 
-  }
+void ATOOLS::Getter<ME_Generator_Base,ME_Generator_Key,OpenLoops_Interface>::
+PrintInfo(ostream &str,const size_t width) const
+{ 
+  str<<"Interface to the OpenLoops loop ME generator"; 
+}
 
