@@ -1,0 +1,25 @@
+(run){
+  % general settings
+  EVENTS 5M;
+  % model parameters
+  ALPHAS(MZ) 0.1188;
+  ORDER_ALPHAS 1;
+  MASSIVE[4] 1;
+  MASSIVE[5] 1;
+  MASSIVE_PS 3 4 5;
+  % collider setup
+  BEAM_1  11; BEAM_ENERGY_1 7.;
+  BEAM_2 -11; BEAM_ENERGY_2 4.;
+}(run)
+
+(processes){
+  Process 11 -11 -> 93 93;
+  Order_EW 2;
+  End process;
+  Process 11 -11 -> 4 -4;
+  Order_EW 2;
+  End process;
+  Process 11 -11 -> 5 -5;
+  Order_EW 2;
+  End process;
+}(processes)

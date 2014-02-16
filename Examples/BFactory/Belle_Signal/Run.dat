@@ -1,0 +1,30 @@
+(run){
+  % general settings
+  EVENTS 5M;
+  % model parameters
+  ALPHAS(MZ) 0.1188;
+  ORDER_ALPHAS 1;
+  MASSIVE[4] 1;
+  MASSIVE[5] 1;
+  MASSIVE_PS 3 4 5;
+  ME_SIGNAL_GENERATORS Internal;
+  SCALES VAR{sqr(91.2)};
+  % collider setup
+  BEAM_1  11; BEAM_ENERGY_1 7.;
+  BEAM_2 -11; BEAM_ENERGY_2 4.;
+}(run)
+
+(processes){
+  #
+  # electron positron -> Y(4S) -> B+ B-
+  #
+  Process 11 -11 -> 300553[a];
+  Decay 300553[a] -> 521 -521;
+  End process;
+  #
+  # electron positron -> Y(4S) -> B0 B0bar
+  #
+  Process 11 -11 -> 300553[a];
+  Decay 300553[a] -> 511 -511;
+  End process;
+}(processes)
