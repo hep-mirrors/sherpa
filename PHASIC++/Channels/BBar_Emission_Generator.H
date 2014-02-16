@@ -23,6 +23,8 @@ namespace PHASIC {
       p_dip(dip), m_procs(procs), m_p(p), m_weight(weight) {}
   };// end of struct Dipole_Params
 
+  std::ostream &operator<<(std::ostream &ostr,const Dipole_Params &dp);
+
   class BBar_Emission_Generator {
   private:
 

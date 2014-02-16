@@ -319,3 +319,18 @@ void BBar_Emission_Generator::Print()
   }
   msg_Tracking()<<"----------------------------------------------\n";
 }
+
+namespace ATOOLS
+{
+  std::ostream &operator<<(std::ostream &ostr,const Dipole_Params &dp)
+  {
+    ostr<<*dp.p_dip<<"\n";
+    for (size_t i(0);i<dp.m_procs.size();++i)
+      ostr<<"  "<<dp.m_procs[i]->Name()<<"\n";
+    for (size_t i(0);i<dp.m_p.size();++i)
+      ostr<<"  "<<dp.m_p[i]<<"\n";
+    ostr<<"-> "<<dp.m_weight<<"\n";
+    return ostr;
+  }
+}
+
