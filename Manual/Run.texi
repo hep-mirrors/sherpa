@@ -212,6 +212,7 @@ The warning threshold defaults to @code{16MB}.
 @node BATCH_MODE
 @subsection BATCH_MODE
 @cindex BATCH_MODE
+@cindex EVENT_DISPLAY_INTERVAL
 Whether or not to run Sherpa in batch mode. The default is @option{1}, 
 meaning Sherpa does not attempt to save runtime information when catching 
 a signal or an exception. On the contrary, if option @option{0} is used, 
@@ -226,7 +227,7 @@ analysis results when catching an exception.
 of overwriting the previous one (default when using @ref{LOG_FILE}).
 @item @var{4} Sherpa increases the on-screen event counter in constant 
 steps of 100 instead of an increase relative to the current event 
-number.
+number. The interval length can be adjusted with @code{EVENT_DISPLAY_INTERVAL}.
 @end itemize
 The settings are additive such that multiple settings can be employed 
 at the same time.
