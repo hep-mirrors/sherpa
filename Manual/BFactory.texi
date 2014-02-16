@@ -1,0 +1,55 @@
+@node QCD continuum
+@subsection QCD continuum
+
+Example setup for QCD continuum production at the Belle/KEK collider.
+Please note, it does not include any hadronic resonance.
+@example
+@smallformat
+@verbatiminclude Examples/BFactory/Belle_QCDBackground/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item Asymmetric beam energies, photon ISR is switched on per default.
+@item Full mass effects of c and b quarks computed.
+@item Strong coupling constant value set to 0.1188 and two loop (NLO)
+       running.
+@end itemize
+
+@node Signal process
+@subsection Signal process
+
+Example setup for B-hadron pair production on the Y(4S) pole.
+@example
+@smallformat
+@verbatiminclude Examples/BFactory/Belle_Signal/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item Same setup as @ref{QCD continuum}, except for process specification.
+@item Production of both B0 and B+ pairs, in due proportion.
+@end itemize
+
+@node Single hadron decay chains
+@subsection Single hadron decay chains
+
+This setup is not a collider setup, but a simulation of a hadronic
+decay chain.
+@example
+@smallformat
+@verbatiminclude Examples/BFactory/BDecay/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item @code{EVENT_TYPE} is set to @code{HadronDecay}.
+@item @code{DECAYER} specifies the hadron flavour initialising the decay
+      chain.
+@item A place holder process is declared such that the Sherpa framework
+      can be initialised. That process will not be used.
+@end itemize
+

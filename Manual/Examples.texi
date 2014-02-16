@@ -14,6 +14,7 @@ of the main features of these examples.
 * TopsJets::
 * FONLO::
 * SoftQCD::
+* BFactories::
 * APIexamples::
 @end menu
 
@@ -90,6 +91,17 @@ of the main features of these examples.
 
 @include InclusiveCrossSections.texi
 @include MinimumBiasEvents.texi
+
+@node BFactories
+@section Setups for event production at B-factories
+
+@menu
+* QCD continuum::
+* Signal process::
+* Single hadron decay chains::
+@end menu
+
+@include BFactory.texi
 
 @node APIexamples
 @section Using the Python interface
