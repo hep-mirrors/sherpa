@@ -186,7 +186,7 @@ extern "C" void InitPDFLib()
   std::string path;
   if (read.ReadFromFile(path,"LHAPDF_GRID_PATH")) LHAPDF::setPaths(path);
   const std::vector<std::string>& sets(LHAPDF::availablePDFSets());
-  msg_Debugging()<<METHOD<<"(): LHAPDF paths: "<<LHAPDF::_paths()<<std::endl;
+  msg_Debugging()<<METHOD<<"(): LHAPDF paths: "<<LHAPDF::paths()<<std::endl;
   msg_Debugging()<<METHOD<<"(): LHAPDF sets: "<<sets<<std::endl;
   for (size_t i(0);i<sets.size();++i)
     p_get_lhapdf.push_back(new LHAPDF_Getter(sets[i]));
