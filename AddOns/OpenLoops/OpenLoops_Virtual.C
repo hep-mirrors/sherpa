@@ -148,12 +148,9 @@ operator()(const Process_Info &pi) const
           list<<OpenLoops_Interface::s_particles[map_flavs[i].HepEvt()].m_faname<<", ";
         }
         list<<OpenLoops_Interface::s_particles[map_flavs[map_flavs.size()-1].HepEvt()].m_faname<<"},\n"
-            <<" SelectCoupling -> (Exponent[#, gQCD] >= "<<pi.m_oqcd-1<<"+2*#2 &),\n"
+            <<" SelectCoupling -> (Exponent[#, gQCD] == "<<pi.m_oqcd-1<<"+2*#2 &),\n"
             <<" SortExternal -> True,\n"
             <<" InsertFieldsOptions -> {Restrictions -> {ExcludeParticles -> {S[2|3], SV}, NoQuarkMixing}}";
-        if (OpenLoops_Interface::GetIntParameter("nf")!=6) {
-          list<<",\n SetParameters -> JoinOptions[{nf -> "<<OpenLoops_Interface::GetIntParameter("nf")<<"}]";
-        }
         list<<"\n};\n"<<endl;
         list.close();
         PRINT_INFO("Generated list entry for "<<process);

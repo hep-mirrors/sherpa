@@ -89,9 +89,23 @@ namespace OpenLoops {
 
     MyStrStream cite;
     cite<<"The OpenLoops library~\\cite{Cascioli:2011va} of virtual"<<endl
-        <<"matrix elements has been used. "<<endl
-        <<"It is partly based on the tensor integral reduction described "<<endl
-        <<"in~\\cite{Denner:2002ii,Denner:2005nn,Denner:2010tr}."<<endl;
+        <<"matrix elements has been used. "<<endl;
+    if (GetIntParameter("redlib1")==1 || GetIntParameter("redlib1")==7 ||
+        GetIntParameter("redlib2")==1 || GetIntParameter("redlib2")==7) {
+      cite<<"It is partly based on the tensor integral reduction described "<<endl
+          <<"in~\\cite{Denner:2002ii,Denner:2005nn,Denner:2010tr}."<<endl;
+    }
+    if (GetIntParameter("redlib1")==5 || GetIntParameter("redlib2")==5) {
+      cite<<"It is partly based on the integrand reduction described "<<endl
+          <<"in~\\cite{Ossola:2007ax,vanHameren:2010cp}."<<endl;
+    }
+    if (GetIntParameter("redlib1")==6 || GetIntParameter("redlib2")==6) {
+      cite<<"It is partly based on the integrand reduction described "<<endl
+          <<"in~\\cite{Mastrolia:2010nb,vanHameren:2010cp}."<<endl;
+    }
+    if (GetIntParameter("redlib1")==8 || GetIntParameter("redlib2")==8) {
+      cite<<"It is partly based on the integrand reduction Ninja."<<endl;
+    }
     rpa->gen.AddCitation(1,cite.str());
 
     OpenLoops_Virtual::SetInterface(this);
