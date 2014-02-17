@@ -86,7 +86,6 @@ namespace OpenLoops {
     char welcomestr[lenws];
     openloops_welcome_(welcomestr, &lenws);
     msg_Info()<<std::string(welcomestr,lenws)<<std::endl;
-    loop_parameters_write_();
 
     MyStrStream cite;
     cite<<"The OpenLoops library~\\cite{Cascioli:2011va} of virtual"<<endl
@@ -374,7 +373,7 @@ namespace OpenLoops {
   template <class ValueType>
   void HandleParameterStatus(int err, const std::string & key, ValueType value) {
     if (err==0) {
-      msg_Tracking()<<"Setting OpenLoops parameter: "<<key<<" = "<<value<<endl;
+      msg_Debugging()<<"Setting OpenLoops parameter: "<<key<<" = "<<value<<endl;
     }
     else if (err==1) {
       THROW(fatal_error, "Unknown OpenLoops parameter: "+key+" = "+ToString(value));
