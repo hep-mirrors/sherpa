@@ -76,6 +76,7 @@ namespace OpenLoops {
     vector<string> parameters;
     reader.VectorFromFile(parameters,"OL_PARAMETERS");
     for (size_t i=1; i<parameters.size(); i=i+2) SetParameter(parameters[i-1], parameters[i]);
+    ol_parameters_flush_();
 
     reader.VectorFromFile(s_allowed_libs, "OL_ALLOWED_LIBS");
     s_generate_list=reader.GetValue<size_t>("OL_GENERATE_LIST", false);
@@ -374,7 +375,6 @@ namespace OpenLoops {
   void HandleParameterStatus(int err, const std::string & key, ValueType value) {
     if (err==0) {
       msg_Tracking()<<"Setting OpenLoops parameter: "<<key<<" = "<<value<<endl;
-      ol_parameters_flush_();
     }
     else if (err==1) {
       THROW(fatal_error, "Unknown OpenLoops parameter: "+key+" = "+ToString(value));
@@ -398,6 +398,10 @@ namespace OpenLoops {
     ol_setparameter_string_c_(key.c_str(), value.c_str(), &err);
     HandleParameterStatus(err, key, value);
   }
+  void OpenLoops_Interface::FlushParameters() {
+    ol_parameters_flush_();
+  }
+
 
 }
 

@@ -39,6 +39,7 @@ double OpenLoops_Born::Calc(const Vec4D_Vector& momenta)
 
   s_interface->SetParameter("alpha", AlphaQED());
   s_interface->SetParameter("alphas", AlphaQCD());
+  s_interface->FlushParameters();
 
   double M2L0;
   std::vector<double> M2L1(3), M2L2(5), IRL1(3), IRL2(5);

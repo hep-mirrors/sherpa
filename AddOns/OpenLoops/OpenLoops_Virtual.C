@@ -42,6 +42,7 @@ void OpenLoops_Virtual::Calc(const Vec4D_Vector& momenta) {
   s_interface->SetParameter("alpha", AlphaQED());
   s_interface->SetParameter("alphas", AlphaQCD());
   s_interface->SetParameter("mu", sqrt(m_mur2));
+  s_interface->FlushParameters();
   
   double M2L0;
   vector<double> M2L1(3), M2L2(5), IRL1(3), IRL2(5);

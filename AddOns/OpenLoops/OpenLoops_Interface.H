@@ -42,6 +42,7 @@ namespace OpenLoops {
     static void SetParameter(const std::string & key, std::string value);
     static double GetDoubleParameter(const std::string & key);
     static int GetIntParameter(const std::string & key);
+    static void FlushParameters();
 
     static std::string GetProcessPermutation(const ATOOLS::Flavour_Vector& flavs_orig,
                                              std::vector<int>& permutation);
