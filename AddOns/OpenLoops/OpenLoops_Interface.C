@@ -373,7 +373,7 @@ namespace OpenLoops {
   template <class ValueType>
   void HandleParameterStatus(int err, const std::string & key, ValueType value) {
     if (err==0) {
-      msg_Info()<<"Setting OpenLoops parameter: "<<key<<" = "<<value<<endl;
+      msg_Tracking()<<"Setting OpenLoops parameter: "<<key<<" = "<<value<<endl;
       ol_parameters_flush_();
     }
     else if (err==1) {
