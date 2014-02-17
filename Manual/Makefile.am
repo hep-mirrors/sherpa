@@ -14,6 +14,7 @@ Sherpa_TEXINFOS = \
 	ADD.texi \
 	AGC.texi \
 	Beam.texi \
+        BFactory.texi \
 	Bibliography.texi \
 	Commands.texi \
 	CrossSection.texi \

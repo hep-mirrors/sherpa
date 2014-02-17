@@ -7,6 +7,9 @@ nobase_dist_examples_DATA         =	\
 		API/Events/test.py.in \
 		API/MPIEvents/Run.dat \
 		API/MPIEvents/test.py.in \
+                BFactory/BDecay/Run.dat \
+                BFactory/Belle_QCDBackground/Run.dat \
+                BFactory/Belle_Signal/Run.dat \
 		Models/SM_ZPrime/Interaction_Model_SM_Zprime.C \
 		Models/SM_ZPrime/SM_Zprime.C \
 		Models/SM_ZPrime/Run.dat \
