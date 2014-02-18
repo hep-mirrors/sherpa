@@ -125,8 +125,8 @@ bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,
     if (f1.Kfcode()%2==0) std::swap<Flavour>(f1,f2);
   }
   double vf(sqr(std::abs(vij)));
-  m_q[0]=0.5/stw*sqr(vf);
-  m_q[1]=1.0/stw*sqr(vf*f1.Mass()/Flavour(kf_Wplus).Mass());
+  m_q[0]=0.5/stw*vf;
+  m_q[1]=1.0/stw*vf*sqr(f1.Mass()/Flavour(kf_Wplus).Mass());
   p_cpl=md->GetScalarFunction("alpha_QED");
   m_cplfac=1.0;
   double cqed((*p_cpl)(rpa->gen.CplScale()));
