@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <iostream>
 #include "AMEGIC++/Amplitude/CFColor.H"
 #include "AMEGIC++/Main/ColorSC.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -589,9 +587,7 @@ string CFColor::BuildTChain(vector<string>  string_list, bool & valid)
 	i--;
       }
       if (tmp_list[0][4]==tmp_list[tmp_list.size()-1][6]) {
-	char hi[2];
-	sprintf(hi,"%i",(int)tmp_list.size());
-	key += string(hi); 
+	key += ToString(tmp_list.size()); 
 	tmp_list.clear();
 	break;
       }
