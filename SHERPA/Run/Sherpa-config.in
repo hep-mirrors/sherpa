@@ -19,6 +19,8 @@ case $1 in
     echo -L@LIBDIR@ -lSherpaMain $hepmc2libs @AM_LDFLAGS@;;
   --cppflags)
     echo -I@INCLUDEDIR@;;
+  --cxx)
+    echo @CXX@;;
   *)
     echo "Sherpa-config: configuration tool for the Monte Carlo";
     echo "               event generator Sherpa: http://sherpa-mc.de";
