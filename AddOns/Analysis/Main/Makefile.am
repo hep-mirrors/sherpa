@@ -9,9 +9,11 @@ ANAMAIN_ADDS          =	\
 			Analysis_Handler.H
 
 if USING__Analysis
-pkglib_LTLIBRARIES       =	libSherpaAnalysis.la
+pkglib_LTLIBRARIES    =	libSherpaAnalysis.la
 
 libSherpaAnalysis_la_SOURCES  =	$(ANAMAIN_SOURCES)
+
+localinc_HEADERS      = $(ANAMAIN_ADDS)
 
 libSherpaAnalysis_la_LIBADD   =	-L../Tools \
 	-L../Triggers -L../Observables -L../Analyses \

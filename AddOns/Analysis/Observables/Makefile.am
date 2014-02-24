@@ -70,6 +70,8 @@ pkglib_LTLIBRARIES       =	libSherpaObservables.la
 
 libSherpaObservables_la_SOURCES       =	$(ANAOBS_SOURCES)
 
+localinc_HEADERS      = $(ANAOBS_ADDS)
+
 libSherpaObservables_la_CXXFLAGS = $(AM_CXXFLAGS)
 
 libSherpaObservables_la_CPPFLAGS = $(AM_CPPFLAGS)

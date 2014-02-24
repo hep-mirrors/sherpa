@@ -58,9 +58,11 @@ ANATRIGGER_ADDS       =	\
 			Primitive_Calorimeter.H
 
 if USING__Analysis
-pkglib_LTLIBRARIES	=	libSherpaAnalysisTrigger.la
+pkglib_LTLIBRARIES    =	libSherpaAnalysisTrigger.la
 
 libSherpaAnalysisTrigger_la_SOURCES   =	$(ANATRIGGER_SOURCES)
+
+localinc_HEADERS      = $(ANATRIGGER_ADDS)
 
 ANATRIGGER_EXTRA_DIST =	$(ANATRIGGER_ADDS)
 

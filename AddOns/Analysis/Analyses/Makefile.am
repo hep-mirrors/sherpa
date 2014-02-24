@@ -12,6 +12,8 @@ pkglib_LTLIBRARIES    =	libSherpaAnalyses.la
 
 libSherpaAnalyses_la_SOURCES  =	$(ANAANA_SOURCES)
 
+localinc_HEADERS      = $(ANAANA_ADDS)
+
 ANAANA_EXTRA_DIST = $(ANAANA_ADDS)
 else
 ANAANA_EXTRA_DIST = $(ANAANA_SOURCES) $(ANAANA_ADDS)

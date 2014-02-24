@@ -13,9 +13,11 @@ ANATOOLS_ADDS         =	\
 			Particle_Qualifier.H 
 
 if USING__Analysis
-pkglib_LTLIBRARIES       =	libSherpaAnalysisTools.la
+pkglib_LTLIBRARIES    =	libSherpaAnalysisTools.la
 
 libSherpaAnalysisTools_la_SOURCES     = $(ANATOOLS_SOURCES)
+
+localinc_HEADERS      = $(ANATOOLS_ADDS)
 
 libSherpaAnalysisTools_la_CXXFLAGS = $(AM_CXXFLAGS)
 
