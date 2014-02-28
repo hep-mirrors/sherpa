@@ -206,6 +206,7 @@ void FFV_Calculator<SType>::ConstructFFSDipole()
     t=-2.0*(pi*p_v->Kin()->PI())*x;
     p_v->Kin()->SetA(A+2.0*(1.0-x)/x);
   }
+  p_v->Kin()->CheckKT2Min(); 
   double At(A-B/2.0);
   p_v->Kin()->SetPhase(1.0/(2.0*A/B-1.0),0);
   p_v->Kin()->SetPhase(1.0/(2.0*A/B-1.0),1);
@@ -341,6 +342,7 @@ void FFV_Calculator<SType>::ConstructFVSDipole()
     t=-2.0*(p_v->Kin()->PI()*p_v->Kin()->PJ())*x;
     p_v->Kin()->SetA(A);
   }
+  p_v->Kin()->CheckKT2Min(); 
   for (size_t cp(0);cp<2;++cp) {
     CSpinorType *j(GetPol(p_v->JC()->P(),sqr(p_v->JC()->Mass()),cp));
     *j*=m_cpll;

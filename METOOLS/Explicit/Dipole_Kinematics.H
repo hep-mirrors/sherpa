@@ -13,7 +13,7 @@ namespace METOOLS {
 
     ATOOLS::Vec4D m_pi, m_pj, m_pk, m_Q;
 
-    int m_type, m_swap, m_trig, m_evol;
+    int m_type, m_swap, m_trig, m_evol, m_kt2c[2];
 
     double m_z, m_y, m_kt2, m_Q2, m_phase[2], m_res[3];
     double m_mi2, m_mj2, m_mij2, m_mk2, m_ym, m_yp, m_f, m_a;
@@ -40,6 +40,8 @@ namespace METOOLS {
 
     // member functions
     void Evaluate();
+
+    void CheckKT2Min();
 
     // inline functions
     inline Current *JI() const { return p_i; }

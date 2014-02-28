@@ -64,6 +64,7 @@ void FI_DipoleSplitting::SetMomenta(const Vec4D* mom )
     m_sff = 1./(1.-m_zi+(1.-m_xijk))+1./(1.-m_zj+(1.-m_xijk))-2.;
     m_av  = m_sff + m_zi*m_zj;
   }
+  if (m_kt2<m_k0sqf) m_av=1.0;
 }
 
 double FI_DipoleSplitting::GetValue()
@@ -179,6 +180,7 @@ void FI_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom )
     m_av  = m_sff;
     break;
   }
+  if (m_kt2<m_k0sqf) m_av=1.0;
 }
 
 double FI_MassiveDipoleSplitting::GetValue()
