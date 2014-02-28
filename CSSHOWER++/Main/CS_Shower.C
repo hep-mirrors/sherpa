@@ -98,6 +98,7 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
     }
     msg_Debugging()<<**sit;
     size_t pem(nem);
+    // if (sit==m_allsinglets.end()-1)
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
     m_weight*=p_shower->Weight();
     if ((*sit)->GetLeft()) {
@@ -228,7 +229,7 @@ void CS_Shower::GetKT2Min(Cluster_Amplitude *const ampl,KT2X_Map &kt2xmap)
       if (rampl->Next()->Leg(i)->Stat()&2) dc=true;
     if (!dc) break;
   }
-  bool smin(rampl->Legs().size()-rampl->NIn()==campl->Leg(0)->NMax());
+  bool smin(rampl->Legs().size()-rampl->NIn()==campl->Leg(0)->NMax()+1);
   for (KT2X_Map::iterator kit(kt2xmap.begin());kit!=kt2xmap.end();++kit)
     if (aset.find(kit->first)==aset.end()) {
       if (smin) kit->second.first=ckt2min;

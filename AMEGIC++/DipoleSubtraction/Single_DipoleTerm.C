@@ -92,7 +92,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   SortFlavours(lopi);
 
   if (lopi.m_amegicmhv>0) {
-    if (lopi.m_amegicmhv==11)
+    if (lopi.m_amegicmhv==12)
       p_LO_process = new Single_LOProcess_External(lopi, p_int->Beam(), p_int->ISR());
     else if (CF.MHVCalculable(lopi))
       p_LO_process = new Single_LOProcess_MHV(lopi, p_int->Beam(), p_int->ISR());
