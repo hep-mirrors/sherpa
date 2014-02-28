@@ -17,7 +17,7 @@
 (processes){
   Process 93 93 -> 22 22;
   NLO_QCD_Mode 1; NLO_QCD_Part BVIRS;
-  Order_EW 2; Enable_MHV 10;
+  Order_EW 2; Enable_MHV 12;
   Loop_Generator LGEN;
   Integrator PS2;
   RS_Integrator PS3;

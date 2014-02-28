@@ -63,7 +63,8 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
   }
   else if (nloqcd==nlo_type::lo || nloqcd==nlo_type::real) {
     if (pi.m_amegicmhv>0) {
-      if (pi.m_amegicmhv==10) return new Single_Process_External();
+      if (pi.m_amegicmhv==10 ||
+	  pi.m_amegicmhv==12) return new Single_Process_External();
       if (pi.m_amegicmhv==11) return new Single_Process_Combined();
       if (CF.MHVCalculable(pi)) return new Single_Process_MHV();
       if (pi.m_amegicmhv==2) return NULL;
