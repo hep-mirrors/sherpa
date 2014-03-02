@@ -90,7 +90,9 @@ void ME_Generator_Base::SetPSMasses(Data_Reader *const dr)
     m_psmass.insert(fl.Bar());
     msg_Tracking()<<METHOD<<"(): "<<m_name<<": Using massive PS for "<<fl<<".\n";
   }
-  Flavour_Vector mf(m_psmass.begin(),m_psmass.end());
+  Flavour_Vector mf;
+  for (Flavour_Set::iterator fit(m_psmass.begin());fit!=m_psmass.end();++fit)
+    if (fit->Mass(true)!=fit->Mass(false)) mf.push_back(*fit);
   msg_Info()<<METHOD<<"(): Massive PS flavours for "<<m_name<<": "
                     <<mf<<std::endl;
 }
