@@ -249,7 +249,9 @@ void Hard_Decay_Handler::SetDecayMasses(Data_Reader *const dr)
     m_decmass.insert(fl);
     m_decmass.insert(fl.Bar());
   }
-  Flavour_Vector mf(m_decmass.begin(),m_decmass.end());
+  Flavour_Vector mf;
+  for (Flavour_Set::iterator fit(m_decmass.begin());fit!=m_decmass.end();++fit)
+    if (fit->Mass(true)!=fit->Mass(false)) mf.push_back(*fit);
   msg_Info()<<METHOD<<"(): Massive decay flavours: "<<mf<<std::endl;
 }
 
