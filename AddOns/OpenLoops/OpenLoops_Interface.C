@@ -71,6 +71,7 @@ namespace OpenLoops {
       if (Flavour(pdgids[i]).Mass()>0.0) SetParameter("mass("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Mass());
       if (Flavour(pdgids[i]).Width()>0.0) SetParameter("width("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Width());
     }
+    SetParameter("nq_nondecoupled", (int) Flavour(kf_quark).Size()/2);
 
     // set remaining OL parameters specified by user
     vector<string> parameters;
