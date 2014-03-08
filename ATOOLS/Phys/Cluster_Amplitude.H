@@ -49,7 +49,7 @@ namespace ATOOLS {
     ClusterLeg_Vector m_legs;
     DecayInfo_Vector  m_decs;
 
-    size_t m_oew, m_oqcd, m_nin, m_new, m_ncl, m_kin, m_nlo;
+    size_t m_oew, m_oqcd, m_nin, m_new, m_ncl, m_kin, m_nlo, m_flag;
     double m_mur2, m_muf2, m_muq2, m_mu2, m_kt2, m_z, m_phi, m_lkf;
     CI_Map m_cmap;
 
@@ -126,6 +126,8 @@ namespace ATOOLS {
     inline void SetKin(const size_t &kin)   { m_kin=kin; }
     inline void SetNLO(const size_t &nlo)   { m_nlo=nlo; }
 
+    inline void SetFlag(const size_t &flag) { m_flag=flag; }
+
     inline void SetOrderEW(const size_t &oew)   { m_oew=oew;   }
     inline void SetOrderQCD(const size_t &oqcd) { m_oqcd=oqcd; }
 
@@ -152,6 +154,8 @@ namespace ATOOLS {
 
     inline size_t Kin() const  { return m_kin; }
     inline size_t NLO() const  { return m_nlo; }
+
+    inline size_t Flag() const { return m_flag; }
 
     inline size_t OrderEW() const  { return m_oew;  }
     inline size_t OrderQCD() const { return m_oqcd; }

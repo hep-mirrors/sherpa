@@ -713,6 +713,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     msg_Debugging()<<"1 to 2 case"<<std::endl;
     Cluster_Amplitude* copy=ampl->InitPrev();
     copy->CopyFrom(ampl);
+    copy->SetFlag(1);
     copy->SetMS(ampl->MS());
     Cluster_Leg *lij(ampl->IdLeg(idmother));
     copy->SetKT2(lij->Mom().Abs2());
@@ -786,6 +787,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     // propagator always combines daughters 1+2
     Cluster_Amplitude* step1=ampl->InitPrev();
     step1->CopyFrom(ampl);
+    step1->SetFlag(1);
     step1->SetMS(ampl->MS());
     Cluster_Leg *lij(ampl->IdLeg(idmother));
     step1->SetKT2(lij->Mom().Abs2());
@@ -861,6 +863,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
     
     Cluster_Amplitude* step2=step1->InitPrev();
     step2->CopyFrom(step1);
+    step2->SetFlag(1);
     step2->SetMS(step1->MS());
     for (size_t i=0; i<step1->Legs().size(); ++i)
       step1->Leg(i)->SetStat(step1->Leg(i)->Stat()|1);
@@ -932,6 +935,7 @@ void Hard_Decay_Handler::AddPhotonsClustering(Cluster_Amplitude*& ampl,
                 <<" with "<<daughter->Flav()<<" "<<ID(idmother)<<std::endl;
   Cluster_Amplitude* copy=ampl->InitPrev();
   copy->CopyFrom(ampl);
+  copy->SetFlag(1);
   copy->SetMS(ampl->MS());
   Cluster_Leg *lij(ampl->IdLeg(idmother));
   for (size_t i=0; i<ampl->Legs().size(); ++i)
