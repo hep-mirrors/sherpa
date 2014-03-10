@@ -19,7 +19,7 @@ All_Hadron_Multiplets::All_Hadron_Multiplets() :
 
 All_Hadron_Multiplets::~All_Hadron_Multiplets() 
 {
-  msg_Out()<<METHOD<<" for "<<p_wavefunctions->size()<<" wavefunctions.\n";
+  // msg_Out()<<METHOD<<" for "<<p_wavefunctions->size()<<" wavefunctions.\n";
   if (p_wavefunctions!=NULL && !p_wavefunctions->empty()) {
     for (Hadron_WF_Miter wfm=p_wavefunctions->begin();
 	 wfm!=p_wavefunctions->end();wfm++) {
