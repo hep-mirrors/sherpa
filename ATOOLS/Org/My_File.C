@@ -103,7 +103,10 @@ bool My_File<FileType>::OpenDB(std::string file)
 #endif
   }
   else {
-    int res=sqlite3_open(file.c_str(),&db);
+    int res=0;
+    if (s_sqlopenflag.length()==0) res=sqlite3_open(file.c_str(),&db);
+    else res=sqlite3_open_v2(file.c_str(),&db,SQLITE_OPEN_READWRITE|
+			     SQLITE_OPEN_CREATE,s_sqlopenflag.c_str());
     if (res!=SQLITE_OK) {
       msg_IODebugging()<<METHOD<<"(): '"<<file<<"' returns '"
 		       <<sqlite3_errmsg(db)<<"'."<<std::endl;
@@ -130,7 +133,10 @@ bool My_File<FileType>::OpenDB(std::string file)
 #ifdef USING__MPI
   }
 #endif
-  int res=sqlite3_open(file.c_str(),&db);
+  int res=0;
+  if (s_sqlopenflag.length()==0) res=sqlite3_open(file.c_str(),&db);
+  else res=sqlite3_open_v2(file.c_str(),&db,SQLITE_OPEN_READWRITE,
+			   s_sqlopenflag.c_str());
   if (res!=SQLITE_OK) {
     msg_IODebugging()<<METHOD<<"(): '"<<file<<"' returns '"
 		     <<sqlite3_errmsg(db)<<"'."<<std::endl;
@@ -429,6 +435,9 @@ const fom::code &My_File<FileType>::Mode() const
 { 
   return m_mode; 
 }
+
+template <class FileType>
+std::string My_File<FileType>::s_sqlopenflag="";
 
 namespace ATOOLS {
 
