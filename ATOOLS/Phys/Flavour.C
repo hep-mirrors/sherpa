@@ -447,27 +447,29 @@ void ATOOLS::OutputHadrons(std::ostream &str) {
 void ATOOLS::OutputParticles(std::ostream &str) {
   
   str<<" List of Particle Data \n";
-  str<<"      IDName";
-  str<<std::setw(10)<<"kfc";
-  str<<std::setw(14)<<"MASS[<kfc>]";
-  str<<std::setw(16)<<"WIDTH[<kfc>]";
-  str<<std::setw(16)<<"STABLE[<kfc>]";
-  str<<std::setw(16)<<"MASSIVE[<kfc>]";
-  str<<std::setw(16)<<"ACTIVE[<kfc>]\n";
+  str<<std::setw(8)<<"IDName";
+  str<<std::setw(8)<<"kfc";
+  str<<std::setw(13)<<"MASS[<kfc>]";
+  str<<std::setw(15)<<"WIDTH[<kfc>]";
+  str<<std::setw(15)<<"STABLE[<kfc>]";
+  str<<std::setw(15)<<"MASSIVE[<kfc>]";
+  str<<std::setw(15)<<"ACTIVE[<kfc>]";
+  str<<std::setw(16)<<"YUKAWA[<kfc>]\n";
 
   KFCode_ParticleInfo_Map::const_iterator kfit = s_kftable.begin();
   
   for (;kfit!=s_kftable.end();++kfit) {
     Flavour flav(kfit->first);
     if (flav.Size()==1 && flav.Kfcode()!=0 && !flav.IsDummy()) {
-      str<<std::setw(12)<<flav.IDName();
-      str<<std::setw(10)<<flav.Kfcode();
-      str<<std::setw(14)<<flav.Mass(true);
-      str<<std::setw(16)<<flav.Width();
-      str<<std::setw(16)<<flav.Stable();
-      str<<std::setw(16)<<flav.IsMassive();
+      str<<std::setw(8)<<flav.IDName();
+      str<<std::setw(8)<<flav.Kfcode();
+      str<<std::setw(13)<<flav.Mass(true);
+      str<<std::setw(15)<<flav.Width();
+      str<<std::setw(15)<<flav.Stable();
+      str<<std::setw(15)<<flav.IsMassive();
       str<<std::setw(15)<<flav.IsOn();
-      str<<"\n";    
+      str<<std::setw(15)<<flav.Yuk();
+      str<<"\n";
     }
   }
   str<<"\n";
