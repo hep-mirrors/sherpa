@@ -92,9 +92,9 @@ double Variable_Scale_Setter::Calculate
     m_scale[i]=m_calcs[i]->Calculate()->Get<double>();
   for (size_t i(m_calcs.size());i<stp::size;++i) m_scale[i]=m_scale[0];
   msg_Debugging()<<METHOD<<"(): Set {\n"
-		 <<"  Q     = "<<sqrt(m_scale[stp::res])<<"\n"
 		 <<"  \\mu_f = "<<sqrt(m_scale[stp::fac])<<"\n"
-		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n";
+		 <<"  \\mu_r = "<<sqrt(m_scale[stp::ren])<<"\n"
+		 <<"  \\mu_q = "<<sqrt(m_scale[stp::res])<<"\n";
   for (size_t i(2);i<m_calcs.size();++i)
     msg_Debugging()<<"  \\mu_"<<i<<" = "<<sqrt(m_scale[i])<<"\n";
   msg_Debugging()<<"} <- "<<(p_proc?p_proc->Name():"")<<"\n";
