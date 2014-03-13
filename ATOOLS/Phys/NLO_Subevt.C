@@ -162,7 +162,7 @@ namespace ATOOLS
                <<" {\n  fl: "<<flavs<<", id: "<<ids
                <<"\n  result = "<<sevt.m_result
                <<",  ME = "<<sevt.m_me<<" ("<<sevt.m_trig
-	       <<")\n  Q = "<<sqrt(sevt.m_mu2[stp::res])
+               <<")\n  \\mu_Q = "<<sqrt(sevt.m_mu2[stp::res])
 	       <<",  \\mu_F = "<<sqrt(sevt.m_mu2[stp::fac])
 	       <<", \\mu_R = "<<sqrt(sevt.m_mu2[stp::ren])
 	       <<", k_T = "<<sqrt(sevt.m_kt2)<<"\n}";
