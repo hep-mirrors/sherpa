@@ -131,7 +131,9 @@ operator()(const Process_Info &pi) const
     }
 
     msg_Info()<<endl;
-    PRINT_INFO("Initialising OpenLoops Virtual for "<<flavs<<": "<<lc_functag);
+    msg_Info()<<"Trying OpenLoops for "<<flavs;
+    msg_Debugging()<<" -> "<<lc_functag;
+    msg_Info()<<" ... "<<std::endl;
     return new OpenLoops_Virtual(pi, flavs, (Amp2Func) ampfunc,
                                  (PermutationFunc) permfunc, permutation, lc_functag);
   }
