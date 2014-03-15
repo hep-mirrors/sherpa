@@ -42,7 +42,7 @@ namespace CSSHOWER {
     bool   EvolveSinglet(Singlet *,const size_t &,size_t &);
     bool   PerformSplitting();
     bool   TrialEmission(double &,Parton *);
-    int    RemnantTest(Parton *const p);
+    int    RemnantTest(Parton *const p,const ATOOLS::Poincare_Sequence *lt);
     int    UpdateDaughters(Parton *const split,Parton *const newpB,
 			   Parton *const newpC,int mode);
     int MakeKinematics(Parton *const split,const ATOOLS::Flavour &fla,
