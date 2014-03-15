@@ -84,10 +84,6 @@ CS_Parameters CS_Cluster_Definitions::KT2
   double mij2=p_ms->Mass2(mo);
   if (kmode&1) {
     mij2=(pi+pj).Abs2();
-    pk*=(pi+pj).PSpat()/pk.PSpat();
-    pk[0]=pk[0]<0.0?-pk.PSpat():pk.PSpat();
-    if (IsZero(Q2,1.0e-3)) pk=pk*4.0;
-    mk2=0.0;
     kin=0;
   }
   Q2=(pi+pj+pk).Abs2();
@@ -114,7 +110,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	    lt.m_pk[0]<0.0 || lt.m_stat!=1) if (!force) return cs;
 	double kt2=p_shower->KinFI()->GetKT2(Q2,1.0-lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,1.0-lt.m_y,Q2,2,kin,kmode&1);
-	cs.m_pk=-lt.m_pk;
+	cs.m_pk=lt.m_pk;
       }
     }
   }
@@ -139,7 +135,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	    lt.m_pi[0]<0.0 || lt.m_z<0.0 || lt.m_stat!=1) if (!force) return cs;
 	double kt2=p_shower->KinII()->GetKT2(Q2,lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
 	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,lt.m_z,Q2,3,kin,kmode&1);
-	cs.m_pk=-lt.m_pk;
+	cs.m_pk=lt.m_pk;
 	cs.m_lt=lt.m_lam;
       }
     }
@@ -330,11 +326,6 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
   bool sk(true);
   if (kmode&1) {
     mij2=(pi+pj).Abs2();
-    pk*=(pi+pj).PSpat()/pk.PSpat();
-    pk[0]=pk[0]<0.0?-pk.PSpat():pk.PSpat();
-    if (IsZero((pi+pj+pk).Abs2(),1.0e-3)) pk=pk*4.0;
-    sk=false;
-    mk2=0.0;
     kin=0;
   }
   Kin_Args lt;

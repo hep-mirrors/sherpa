@@ -413,7 +413,6 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   for (All_Singlets::const_iterator asit(p_all->begin());
        asit!=p_all->end();++asit) {
     for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-      if (*plit==f || *plit==l || *plit==r || *plit==s) continue;
       if ((*plit)->FixSpec()!=Vec4D()) {
 	(*plit)->SetFixSpec(l->LT()*(*plit)->FixSpec());
 	(*plit)->SetOldMomentum(l->LT()*(*plit)->OldMomentum());

@@ -171,9 +171,11 @@ bool Remnant_Base::TestExtract(const ATOOLS::Flavour &flav,
 {
   double E(mom[0]), Eb(p_beam->Energy());
   if (E<0.0 || (E>Eb && !ATOOLS::IsEqual(E,Eb,1.0e-3))) {
+    if (m_laste!=E)
     msg_Error()<<"Remnant_Base::TestExtract("<<flav<<","<<E<<"): "
 		       <<"Constituent energy out of range E_b = "
 		       <<Eb<<"."<<std::endl;
+    m_laste=E;
     return false;
   }
   double erem=m_erem-(E+(m_lastemin=MinimalEnergy(flav)));

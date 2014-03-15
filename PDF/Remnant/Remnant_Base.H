@@ -47,7 +47,7 @@ namespace PDF {
     ATOOLS::Vec4D  m_pbeam;
 
     double m_erem, m_pzrem, m_lastemin, m_deltae, m_deltap;
-    double m_emin, m_scale;
+    double m_emin, m_scale, m_laste;
 
     bool m_active, m_initialized;
 

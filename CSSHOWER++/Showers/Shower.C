@@ -340,7 +340,8 @@ int Shower::MakeKinematics
     return stat;
   }
   Parton *pi(new Parton((stype&1)?fla:flb,
-			split->Momentum(),split->GetType()));
+			split->LT()*split->Momentum(),
+			split->GetType()));
   pi->SetMass2(mi2);
   pi->SetSing(split->GetSing());
   pi->SetId(split->Id());

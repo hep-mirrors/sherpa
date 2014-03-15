@@ -10,23 +10,11 @@ using namespace CSSHOWER;
 using namespace PHASIC;
 using namespace ATOOLS;
 
-void Kinematics_Base::SetFixVec(Parton *const p,Vec4D mom,
-				const Kin_Args &lt,const int mode) const
+void Kinematics_Base::SetFixVec(Parton *const p,Vec4D mom) const
 {
-  if (p->GetNext()) SetFixVec(p->GetNext(),mom,lt,mode|4);
+  if (p->GetNext()) SetFixVec(p->GetNext(),mom);
   if (p->FixSpec()==Vec4D()) return;
   Vec4D oldp(p->OldMomentum()), ref(p->FixSpec());
-  if ((mode&3)==3 || ((mode&1)==1 && lt.m_mode==0)) {
-    if (mode&4) {
-      Poincare_Sequence lam(lt.m_lam);
-      lam.Invert();
-      mom=lam*mom;
-    }
-    else {
-      oldp=lt.m_lam*oldp;
-      ref=lt.m_lam*ref;
-    }
-  }
   if (IsEqual(oldp,mom,rpa->gen.SqrtAccu())) {
     p->SetFixSpec(ref);
     p->SetOldMomentum(oldp);
@@ -42,8 +30,6 @@ void Kinematics_Base::SetFixVec(Parton *const p,Vec4D mom,
   lp*=1.0/lp.PSpat();
   Vec4D pl(0.0,(Vec3D(ref)*Vec3D(lp))*lp);
   Vec4D pn(0.0,(Vec3D(ref)*Vec3D(np))*np);
-  double D(oldp*ref), T(oldp.PSpat()), F(ref[0]);
-  double Q(mom[0]), P(mom.PSpat()), S(mom.Abs2());
   Poincare rot(oldp,mom);
   if (oldp.Abs2()>1.0e-3 && mom.Abs2()>1.0e-3) {
     Poincare oldcms(oldp), newcms(mom);
@@ -52,9 +38,21 @@ void Kinematics_Base::SetFixVec(Parton *const p,Vec4D mom,
     newcms.BoostBack(ref);
   }
   else {
-    double E((Q*D+P/T*(F*S-Q*D))/S);
-    ref=Vec4D(E,Vec3D(mom)*(Q*E-D)/(P*P));
-    ref+=pn+rot*pl;
+    double D(oldp*ref), Q(mom[0]), P(mom.PSpat());
+    double s((ref-pl-pn).Abs2()), S(mom.Abs2());
+    double E(P*sqrt(D*D-s*S)), sgn(Sign((Q*D+E)/(S*ref[0])));
+    ref=Vec4D(Q*D+sgn*E,Vec3D(mom)*(P*D+sgn*Q*sqrt(D*D-s*S))/P)/S;
+    ref+=rot*(pn+pl);
+    if (!IsEqual((ref+mom).Abs2(),(p->FixSpec()+oldp).Abs2(),
+		 rpa->gen.SqrtAccu())) {
+      msg_Error()<<METHOD<<"(): Reconstruction failed {\n"
+		 <<"  p_old = "<<oldp<<" "<<oldp.Abs2()<<"\n"
+		 <<"  p_new = "<<mom<<" "<<mom.Abs2()<<"\n"
+		 <<"  k_old = "<<p->FixSpec()<<" "<<p->FixSpec().Abs2()<<"\n"
+		 <<"  k_new = "<<ref<<" "<<ref.Abs2()<<"\n"
+		 <<"  s_old = "<<(p->FixSpec()+oldp).Abs2()
+		 <<", s_new = "<<(ref+mom).Abs2()<<"\n}"<<std::endl;
+    }
   }
   p->SetFixSpec(ref);
   p->SetOldMomentum(mom);
@@ -104,7 +102,6 @@ int Kinematics_FF::MakeKinematics
   if (mode && split->GetPrev() && split->GetPrev()->KScheme()) {
     mij2=p1.Abs2();
     p2=split->GetPrev()->FixSpec();
-    mk2=0.0;
     nospec=true;
   }
 
@@ -114,9 +111,9 @@ int Kinematics_FF::MakeKinematics
   if (ConstructFFDipole(mi2,mj2,mij2,mk2,p1,p2,ff)<0) return -1;
 
   split->SetMomentum(ff.m_pi);
-  if (mi2) SetFixVec(split,ff.m_pi,ff,0);
+  if (mi2) SetFixVec(split,ff.m_pi);
   if (!nospec) {
-    if (mk2) SetFixVec(spect,ff.m_pk,ff,0);
+    if (mk2) SetFixVec(spect,ff.m_pk);
     spect->SetMomentum(ff.m_pk);
   }
   else if (!IsEqual(ff.m_pk,p2,1.0e-3))
@@ -128,7 +125,7 @@ int Kinematics_FF::MakeKinematics
     pc->SetMass2(p_ms->Mass2(flj));
   }
   else {
-    if (mj2) SetFixVec(pc,ff.m_pj,ff,0);
+    if (mj2) SetFixVec(pc,ff.m_pj);
     pc->SetMomentum(ff.m_pj);
   }
 
@@ -178,7 +175,6 @@ int Kinematics_FI::MakeKinematics
   if (mode && split->GetPrev() && split->GetPrev()->KScheme()) {
     mij2=p1.Abs2();
     p2=split->GetPrev()->FixSpec();
-    ma2=0.0;
     nospec=true;
   }
   
@@ -189,9 +185,9 @@ int Kinematics_FI::MakeKinematics
   if (ConstructFIDipole(mi2,mj2,mij2,ma2,p1,p2,fi)<0) return -1;
 
   split->SetMomentum(fi.m_pi);
-  if (mi2) SetFixVec(split,fi.m_pi,fi,2);
+  if (mi2) SetFixVec(split,fi.m_pi);
   if (!nospec) {
-    if (ma2) SetFixVec(spect,fi.m_pk,fi,2);
+    if (ma2) SetFixVec(spect,fi.m_pk);
     spect->SetMomentum(fi.m_pk);
   }
   else if (!IsEqual(fi.m_pk,p2,1.0e-3))
@@ -203,7 +199,7 @@ int Kinematics_FI::MakeKinematics
     pc->SetMass2(p_ms->Mass2(flj));
   }
   else {
-    if (mj2) SetFixVec(pc,fi.m_pj,fi,2);
+    if (mj2) SetFixVec(pc,fi.m_pj);
     pc->SetMomentum(fi.m_pj);
   }
   
@@ -258,7 +254,6 @@ int Kinematics_IF::MakeKinematics
   if (mode && split->GetPrev() && split->GetPrev()->KScheme()) {
     mai2=p1.Abs2();
     p2=split->GetPrev()->FixSpec();
-    mk2=0.0;
     nospec=true;
   }
 
@@ -269,24 +264,20 @@ int Kinematics_IF::MakeKinematics
   if (ConstructIFDipole(ma2,mi2,mai2,mk2,mb2,p1,p2,b->Momentum(),ifp)<0) return -1;
 
   split->SetLT(ifp.m_lam);
-  split->SetMomentum(ifp.m_pi);
-  if (ma2) SetFixVec(split,ifp.m_pi,ifp,1);
-  if (nospec) {
-    Vec4D ps(ifp.m_lam*spect->Momentum());
-    if (mk2) SetFixVec(spect,ps,ifp,1);
-    spect->SetMomentum(ps);
-  }
-  else {
-    if (mk2) SetFixVec(spect,ifp.m_pk,ifp,1);
-    spect->SetMomentum(ifp.m_pk);
+  ifp.m_lam.Invert();
+  split->SetMomentum(ifp.m_lam*ifp.m_pi);
+  if (ma2) SetFixVec(split,split->Momentum());
+  if (!nospec) {
+    spect->SetMomentum(ifp.m_lam*ifp.m_pk);
+    if (mk2) SetFixVec(spect,spect->Momentum());
   }
   if (pc==NULL) {
-    pc = new Parton(fli,ifp.m_pj,pst::FS);
+    pc = new Parton(fli,ifp.m_lam*ifp.m_pj,pst::FS);
     pc->SetMass2(p_ms->Mass2(fli));
   }
   else {
-    if (mi2) SetFixVec(pc,ifp.m_pj,ifp,1);
-    pc->SetMomentum(ifp.m_pj);
+    pc->SetMomentum(ifp.m_lam*ifp.m_pj);
+    if (mi2) SetFixVec(pc,pc->Momentum());
   }
   
   return 1;
@@ -329,11 +320,7 @@ int Kinematics_II::MakeKinematics
   bool nospec(false);
   if (mode && split->GetPrev() && split->GetPrev()->KScheme()) {
     mai2=p1.Abs2();
-    // temporary !!!
-    p2[1]=p2[2]=0.0;
-    p2[0]=dabs(p2[3]);
-    // end temporary
-    mb2=0.0;
+    p2=split->GetPrev()->FixSpec();
     nospec=true;
   }
 
@@ -343,24 +330,20 @@ int Kinematics_II::MakeKinematics
   if (ConstructIIDipole(ma2,mi2,mai2,mb2,p1,p2,ii)<0) return -1;
 
   split->SetLT(ii.m_lam);
-  split->SetMomentum(ii.m_pi);
-  if (ma2) SetFixVec(split,ii.m_pi,ii,3);
-  if (nospec) {
-    Vec4D ps(ii.m_lam*spect->Momentum());
-    if (mb2) SetFixVec(spect,ps,ii,3);
-    spect->SetMomentum(ps);
-  }
-  else {
-    if (mb2) SetFixVec(spect,ii.m_pk,ii,3);
-    spect->SetMomentum(ii.m_pk);
+  ii.m_lam.Invert();
+  split->SetMomentum(ii.m_lam*ii.m_pi);
+  if (ma2) SetFixVec(split,split->Momentum());
+  if (!nospec) {
+    spect->SetMomentum(ii.m_lam*ii.m_pk);
+    if (mb2) SetFixVec(spect,spect->Momentum());
   }
   if (pc==NULL) {
-    pc = new Parton(newfl,ii.m_pj,pst::FS);
+    pc = new Parton(newfl,ii.m_lam*ii.m_pj,pst::FS);
     pc->SetMass2(p_ms->Mass2(newfl));
   }
   else {
-    if (mi2) SetFixVec(pc,ii.m_pj,ii,3);
-    pc->SetMomentum(ii.m_pj);
+    pc->SetMomentum(ii.m_lam*ii.m_pj);
+    if (mi2) SetFixVec(pc,pc->Momentum());
   }
 
   return 1;

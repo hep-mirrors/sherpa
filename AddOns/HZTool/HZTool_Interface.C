@@ -273,7 +273,7 @@ bool HZTool_Interface::Init()
 	for (size_t j(0);j<helpsvv[i].size();++j) {
 	  msg_Info()<<"Set up '"<<helpsvv[i][j]<<"' ... "<<std::flush;
 	  void *func(s_loader->GetLibraryFunction
-		     ("HZToolSherpa",helpsvv[i][j]+"_"));
+		     ("SherpaHZToolAnalysis",helpsvv[i][j]+"_"));
 	  if (func==NULL) {
 	    msg_Info()<<"not found."<<std::endl;
 	  }
