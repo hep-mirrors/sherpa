@@ -45,13 +45,22 @@ void Kinematics_Base::SetFixVec(Parton *const p,Vec4D mom) const
     ref+=rot*(pn+pl);
     if (!IsEqual((ref+mom).Abs2(),(p->FixSpec()+oldp).Abs2(),
 		 rpa->gen.SqrtAccu())) {
-      msg_Error()<<METHOD<<"(): Reconstruction failed {\n"
-		 <<"  p_old = "<<oldp<<" "<<oldp.Abs2()<<"\n"
-		 <<"  p_new = "<<mom<<" "<<mom.Abs2()<<"\n"
-		 <<"  k_old = "<<p->FixSpec()<<" "<<p->FixSpec().Abs2()<<"\n"
-		 <<"  k_new = "<<ref<<" "<<ref.Abs2()<<"\n"
-		 <<"  s_old = "<<(p->FixSpec()+oldp).Abs2()
-		 <<", s_new = "<<(ref+mom).Abs2()<<"\n}"<<std::endl;
+      Vec4D ref2=Vec4D(Q*D-sgn*E,Vec3D(mom)*(P*D-sgn*Q*sqrt(D*D-s*S))/P)/S;
+      ref2+=rot*(pn+pl);
+      if (dabs((ref2+mom).Abs2()-(p->FixSpec()+oldp).Abs2())<
+	  dabs((ref+mom).Abs2()-(p->FixSpec()+oldp).Abs2())) std::swap<Vec4D>(ref,ref2);
+      if (!IsEqual((ref+mom).Abs2(),(p->FixSpec()+oldp).Abs2(),
+		   rpa->gen.SqrtAccu())) {
+	msg_Error()<<METHOD<<"(): Reconstruction failed {\n"
+		   <<"  p_old  = "<<oldp<<" "<<oldp.Abs2()<<"\n"
+		   <<"  p_new  = "<<mom<<" "<<mom.Abs2()<<"\n"
+		   <<"  k_old  = "<<p->FixSpec()<<" "<<p->FixSpec().Abs2()<<"\n"
+		   <<"  k_new1 = "<<ref<<" "<<ref.Abs2()<<"\n"
+		   <<"  k_new2 = "<<ref2<<" "<<ref2.Abs2()<<"\n"
+		   <<"  s_old  = "<<(p->FixSpec()+oldp).Abs2()
+		   <<", s_new1 = "<<(ref+mom).Abs2()
+		   <<", s_new2 = "<<(ref2+mom).Abs2()<<"\n}"<<std::endl;
+      }
     }
   }
   p->SetFixSpec(ref);
