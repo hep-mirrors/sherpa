@@ -67,6 +67,7 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
     m_sff = m_xijk/(1.-m_xijk)+m_xijk*(1.-m_xijk);
     m_av  = m_sff + (1.0-m_xijk)/m_xijk;
   }
+  if (m_kt2<m_k0sqi) m_av=1.0;
 }
 
 double II_DipoleSplitting::GetValue()

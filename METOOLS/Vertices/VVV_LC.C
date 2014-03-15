@@ -151,6 +151,7 @@ void VVV_Calculator<SType>::ConstructSDipole()
     t=-2.0*(pi*p_v->Kin()->PI())*x;
     p_v->Kin()->SetA(Ai+Aj+2.0*(1.0-x)/x);
   }
+  p_v->Kin()->CheckKT2Min(); 
   double Ait(Ai-B/2.0), Ajt(Aj-B/2.0);
   p_v->Kin()->SetPhase(1.0/(2.0*Ai/B-1.0),0);
   p_v->Kin()->SetPhase(1.0/(2.0*Aj/B-1.0),1);

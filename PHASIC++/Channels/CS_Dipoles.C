@@ -189,8 +189,7 @@ ATOOLS::Vec4D_Vector FI_Dipole::GeneratePoint
   }
   else {
     double Q2(2.0*p[m_ijt]*p[m_kt]);
-    double xmax(Min(1.0-m_amin,Q2/(Q2+m_mij2-sqr(m_mi+m_mj))));
-    m_rn[0]=Channel_Basics::PeakedDist(0.0,m_xexp,m_xmin,xmax,1,rn[0]);
+    m_rn[0]=Channel_Basics::PeakedDist(0.0,m_xexp,m_xmin,1-m_amin,1,rn[0]);
     double eps((1-m_rn[0])*Q2+m_rn[0]*(m_mij2+m_mi2-m_mj2));
     double kap(sqrt(sqr(eps-2.0*m_rn[0]*m_mi2)-4.0*m_mi2*m_mj2));
     double zmin(0.5*(eps-kap)/((1-m_rn[0])*Q2+m_rn[0]*m_mij2));
@@ -253,14 +252,13 @@ double FI_Dipole::GenerateWeight
       (0.0,m_zexp,0.0,1.0,m_rn[1],1,m_rn[1]);
   }
   else {
-    double xmax(Min(1.0-m_amin,Q2/(Q2+m_mij2-sqr(m_mi+m_mj))));
     double eps((1-m_rn[0])*Q2+m_rn[0]*(m_mij2+m_mi2-m_mj2));
     double kap(sqrt(sqr(eps-2.0*m_rn[0]*m_mi2)-4.0*m_mi2*m_mj2));
     double zmin(0.5*(eps-kap)/((1-m_rn[0])*Q2+m_rn[0]*m_mij2));
     double zmax(0.5*(eps+kap)/((1-m_rn[0])*Q2+m_rn[0]*m_mij2));
     if (zmax>1.0 && IsEqual(zmax,1.0)) zmax=1.0;
     m_weight*=Channel_Basics::PeakedWeight
-      (0.0,m_xexp,m_xmin,Min(1.0-m_amin,xmax),m_rn[0],1,m_rn[0]);
+      (0.0,m_xexp,m_xmin,1.0-m_amin,m_rn[0],1,m_rn[0]);
     m_weight*=Channel_Basics::PeakedWeight
       (0.0,m_zexp,zmin,zmax,m_rn[1],1,m_rn[1]);
   }

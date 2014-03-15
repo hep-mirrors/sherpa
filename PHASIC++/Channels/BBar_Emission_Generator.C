@@ -24,16 +24,20 @@ BBar_Emission_Generator::BBar_Emission_Generator():
   m_opt(5)
 {
   Data_Reader read(" ",";","!","=");
+  read.AddComment("#");
   read.SetInputPath(rpa->GetPath());
   read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   if (!read.ReadFromFile(m_omode,"EEG_OMODE")) m_omode=2;
   else msg_Info()<<METHOD<<"(): Set mode "<<m_omode<<".\n";
   if (!read.ReadFromFile(m_opt,"EEG_OSTEP")) m_opt=5;
   else msg_Info()<<METHOD<<"(): Set steps "<<m_opt<<".\n";
-  if (!read.ReadFromFile(m_amin,"EEG_AMIN")) m_amin=1.0e-6;
-  else msg_Info()<<METHOD<<"(): Set \\alpha_{min} = "<<m_amin<<".\n";
   if (!read.ReadFromFile(m_Q2min,"EEG_Q2MIN")) m_Q2min=1.0e-6;
   else msg_Info()<<METHOD<<"(): Set Q^2_{min} = "<<m_Q2min<<".\n";
+  read.CloseInFile(0);
+  read.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+  if (!read.ReadFromFile(m_amin,"DIPOLE_AMIN"))
+    m_amin=Max(ATOOLS::Accu(),1.0e-8);
+  else msg_Info()<<METHOD<<"(): Set \\alpha_{min} = "<<m_amin<<".\n";
 }
 
 BBar_Emission_Generator::~BBar_Emission_Generator() 

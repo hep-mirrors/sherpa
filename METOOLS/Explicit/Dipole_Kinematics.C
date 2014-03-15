@@ -34,6 +34,8 @@ Dipole_Kinematics::Dipole_Kinematics
     m_type|=1;
   }
   m_evol=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
+  m_kt2c[0]=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
+  m_kt2c[1]=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
 }
 
 Dipole_Kinematics::~Dipole_Kinematics()
@@ -187,6 +189,11 @@ void Dipole_Kinematics::Evaluate()
 		 <<" vs. "<<p_info->AMin()<<" => stat = "
 		 <<((m_type==2?1.0-m_y:m_y)>=p_info->AMin())<<std::endl;
 #endif
+}
+
+void Dipole_Kinematics::CheckKT2Min()
+{
+  if (m_kt2<m_kt2c[m_type&1]) m_a=1.0;
 }
 
 std::ostream &METOOLS::operator<<

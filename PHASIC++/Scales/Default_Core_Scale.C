@@ -88,10 +88,9 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     }
   }
   else {// lh collision
-    std::string config(fl[0].IDName()+" "+fl[1].IDName()
-                       +" -> "+fl[2].IDName()+" "+fl[3].IDName());
-    THROW(not_implemented,"Please define your own core scale for "
-                           +config+" core configurations.");
+    msg_Debugging()<<"DIS like\n";
+    muq2=muf2=mur2=dabs((campl->Leg(fl[0].Strong()?1:0)->Mom()+
+			 campl->Leg(fl[2].Strong()?3:2)->Mom()).Abs2());
   }
   campl->Delete();
   msg_Debugging()<<"\\mu_f = "<<sqrt(muf2)<<"\n"

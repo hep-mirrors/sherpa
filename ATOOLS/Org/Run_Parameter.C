@@ -240,6 +240,9 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   dr.SetAllowUnits(false);
   s_loader->AddPath(rpa->gen.Variable("SHERPA_RUN_PATH"));
 
+  std::string sqlopenflag=dr.GetValue<std::string>("SQLITE_OPEN_FLAG","");
+  My_In_File::SetSQLOpenFlag(sqlopenflag);
+  My_Out_File::SetSQLOpenFlag(sqlopenflag);
   // read only if defined (no error message if not defined)
   long int seed;
   std::vector<long int> seeds;

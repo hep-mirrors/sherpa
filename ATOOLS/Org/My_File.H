@@ -44,6 +44,8 @@ namespace ATOOLS {
     
     fom::code m_mode;
 
+    static std::string s_sqlopenflag;
+
   public:
 
     // constructor
@@ -78,6 +80,9 @@ namespace ATOOLS {
     static bool ExecDB(std::string file,
 		       const std::string &cmd);
     static bool CopyInDB(std::string oldfile, std::string newfile);
+
+    inline static void SetSQLOpenFlag(const std::string &flag)
+    { s_sqlopenflag=flag; }
 
   };// end of class My_File
 

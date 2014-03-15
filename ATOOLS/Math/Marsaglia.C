@@ -41,8 +41,12 @@ void Marsaglia::Init(UL i1,UL i2,UL i3,UL i4)
 
 double Marsaglia::Get()
 {
+  // original: (KISS+SWB)/4294967295
+  // -> draws in interval [0,1] including exact 0. and 1.
+  // change to (KISS+SWB+1)/4294967297
+  // -> draws in interval [1/4294967297,4294967296/4294967297]
   return (KISS(m_z,m_w,m_jcong,m_jsr)
-	  +SWB(m_c,m_bro,m_x,m_y,m_t))*2.3283064370807973e-10;
+          +SWB(m_c,m_bro,m_x,m_y,m_t)+1.)*2.328306436e-10;
 }
 
 void Marsaglia::WriteStatus(std::ostream &str)
