@@ -158,8 +158,7 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
       l->SetFlavour(fli);
       l->SetMass2(mi2);
       if (stat>0 && !(mode&1)) stat=RemnantTest(s,NULL);
-      if (stat>0)
-	split->BoostAllFS(l,r,s,c,c->GetFlavour(),4|2);
+      if (stat>0) split->BoostAllFS(l,r,s);
     }
   }
   else {
@@ -168,16 +167,14 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
       l->SetFlavour(fli);
       l->SetMass2(mi2);
       if (stat>0 && !(mode&1)) stat=RemnantTest(l,&l->LT());
-      if (stat>0)
-	split->BoostAllFS(l,r,s,c,c->GetFlavour(),4|1);
+      if (stat>0) split->BoostAllFS(l,r,s);
     }
     else {
       stat=m_kinII.MakeKinematics(l,mi2,mj2,flj,r,1);
       l->SetFlavour(fli);
       l->SetMass2(mi2);
       if (stat>0 && !(mode&1)) stat=RemnantTest(l,&l->LT());
-      if (stat>0)
-	split->BoostAllFS(l,r,s,c,c->GetFlavour(),4|3);
+      if (stat>0) split->BoostAllFS(l,r,s);
     }
   }
   }
@@ -203,10 +200,7 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
     nres=ReconstructDaughters(r->GetSing(),mode,pi,pj);
   if (stat>0) {
     l->SetKin(ckin);
-    split->BoostBackAllFS
-      (l,r,s,c,c->GetFlavour(),
-       (s->GetType()==pst::IS?(c->GetType()==pst::IS?3:2):
-	(c->GetType()==pst::IS?1:0))|4);
+    split->BoostBackAllFS(l,r,s);
     l->SetKin(kin);
     l->SetMomentum(cpi);
     r->SetMomentum(cpj);
@@ -356,15 +350,13 @@ int Shower::MakeKinematics
   if (stype&1) pi->SetBeam(split->Beam());
   if (mode==0) SetSplitInfo(peo,pso,split,pi,pj,stype);
   split->GetSing()->AddParton(pj);
-  if (stype) split->GetSing()->BoostAllFS
-    (pi,pj,spect,split,split->GetFlavour(),stype);
+  if (stype) split->GetSing()->BoostAllFS(pi,pj,spect);
   Flavour fls(split->GetFlavour());
   if (mode!=0) split->SetFlavour(pi->GetFlavour());
   int ustat(UpdateDaughters(split,pi,pj,mode|fc));
   if (ustat<=0 || mode!=0 || fc!=0) {
     split->SetFlavour(fls);
-    if (stype) split->GetSing()->BoostBackAllFS
-      (pi,pj,spect,split,split->GetFlavour(),stype);
+    if (stype) split->GetSing()->BoostBackAllFS(pi,pj,spect);
     delete pi;
     pj->DeleteAll();
     split->SetMomentum(peo);

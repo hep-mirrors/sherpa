@@ -405,11 +405,9 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
   return true;
 } 
 
-void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
-			 const Flavour &mo,const int mode)
+void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s)
 {
   if (l->LT().empty()) return;
-  if (f==p_split && l==p_left && r==p_right) f=NULL;
   for (All_Singlets::const_iterator asit(p_all->begin());
        asit!=p_all->end();++asit) {
     for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
@@ -426,13 +424,9 @@ void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
   }
 }
 
-void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
-			     const Flavour &mo,const int mode)
+void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s)
 {
   if (p_all==NULL) return;
-  Vec4D pa(l->Momentum()), pk(s->Momentum()), pi(r->Momentum());
-  double ma2(l->Mass2()), mk2(s->Mass2());
-  double mi2(r->Mass2()), mai2(f->Mass2());
   Poincare_Sequence lt(l->LT());
   if (lt.size()) lt.Invert();
   if (lt.empty()) return;
