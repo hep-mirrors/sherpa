@@ -193,16 +193,14 @@ int Shower::MakeKinematics
   if (stype&1) pi->SetBeam(split->Beam());
   if (mode==0) SetSplitInfo(peo,pso,split,pi,pj,stype);
   split->GetSing()->push_back(pj);
-  if (stype) split->GetSing()->BoostAllFS
-    (pi,pj,spect,split,split->GetFlavour(),stype);
+  if (stype) split->GetSing()->BoostAllFS(split,pj,spect);
   Flavour fls(split->GetFlavour());
   if (mode!=0) split->SetFlavour(pi->GetFlavour());
   int ustat(UpdateDaughters(split,pi,pj,mode));
   split->GetSing()->pop_back();
   if (ustat<=0 || mode!=0) {
     split->SetFlavour(fls);
-    if (stype) split->GetSing()->BoostBackAllFS
-      (pi,pj,spect,split,split->GetFlavour(),stype);
+    if (stype) split->GetSing()->BoostBackAllFS(split,pj,spect);
     delete pi;
     delete pj;
     msg_Debugging()<<"Save history for\n"<<*split<<*spect<<"\n";

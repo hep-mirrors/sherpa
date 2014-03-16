@@ -297,51 +297,28 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
   return false;
 } 
 
-void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
-			 const Flavour &mo,const int mode)
+void Singlet::BoostAllFS(Parton *l,Parton *r,Parton *s)
 {
   if (l->LT().empty()) return;
   for (All_Singlets::const_iterator asit(p_all->begin());
        asit!=p_all->end();++asit) {
     for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-      if (*plit==f || *plit==l || *plit==r || *plit==s) continue;
+      if (*plit==l || *plit==r || *plit==s) continue;
       (*plit)->SetMomentum(l->LT()*(*plit)->Momentum());
     }
   }
 }
 
-void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
-			     const Flavour &mo,const int mode)
+void Singlet::BoostBackAllFS(Parton *l,Parton *r,Parton *s)
 {
   if (p_all==NULL) return;
-  Vec4D pa(l->Momentum()), pk(s->Momentum()), pi(r->Momentum());
-  double ma2(p_ms->Mass2(l->GetFlavour())), mk2(p_ms->Mass2(s->GetFlavour()));
-  double mi2(p_ms->Mass2(r->GetFlavour())), mai2(p_ms->Mass2(f->GetFlavour()));
-  Kin_Args lp;
-  if (mode&2) {
-    if (mode&1) {
-      lp=ClusterIIDipole(ma2,mi2,mai2,mk2,pa,pi,pk,2|(((mode&4)?f:l)->Kin()?4:0));
-    }
-  }
-  else {
-    if (mode&1) {
-      Parton *b(NULL);
-      for (PLiter pit(f->GetSing()->begin());pit!=f->GetSing()->end();++pit)
-	if ((*pit)->GetType()==pst::IS && *pit!=f) {
-	  b=*pit;
-	  break;
-	}
-      if (b==NULL) THROW(fatal_error,"Corrupted singlet");
-      double mb2(p_ms->Mass2(b->GetFlavour()));
-      lp=ClusterIFDipole(ma2,mi2,mai2,mk2,mb2,pa,pi,pk,
-			 b->Momentum(),2|(((mode&4)?f:l)->Kin()?4:0));
-    }
-  }
-  if (lp.m_lam.empty()) return;
+  Poincare_Sequence lt(l->LT());
+  if (lt.size()) lt.Invert();
+  if (lt.empty()) return;
   for (All_Singlets::const_iterator asit(p_all->begin());
        asit!=p_all->end();++asit) {
     for (PLiter plit((*asit)->begin());plit!=(*asit)->end();++plit) {
-      (*plit)->SetMomentum(lp.m_lam*(*plit)->Momentum());
+      (*plit)->SetMomentum(lt*(*plit)->Momentum());
     }
   }
 }
