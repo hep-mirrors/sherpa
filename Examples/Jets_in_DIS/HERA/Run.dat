@@ -1,0 +1,32 @@
+(run){
+  EVENTS 1M;
+  # technical parameters
+  NJET:=4; QCUT:=5; SDIS:=0.6;
+  LJET:=2,3; LGEN:=BlackHat;
+  ME_SIGNAL_GENERATOR Comix Amegic LGEN;
+  EVENT_GENERATION_MODE W;
+  RESPECT_MASSIVE_FLAG 1;
+  CSS_KIN_SCHEME 1;
+  # collider setup
+  BEAM_1 -11 27.5; BEAM_2 2212 820; 
+  PDF_SET_1 None;
+  # hadronization tune
+  PARJ(21) 0.432; PARJ(41) 1.05; PARJ(42) 1.0;
+  PARJ(47) 0.65; MSTJ(11) 5;
+  FRAGMENTATION Lund; DECAYMODEL Lund; 
+}(run);
+(processes){
+  Process -11 93 -> -11 93 93{NJET};
+  CKKW sqr(QCUT/E_CMS)/(1.0+sqr(QCUT/SDIS)/Abs2(p[2]-p[0]));
+  NLO_QCD_Mode MC@NLO {LJET};
+  Order_EW 2; Max_N_Quarks 6;
+  ME_Generator Amegic {LJET};
+  RS_ME_Generator Comix {LJET};
+  Loop_Generator LGEN;
+  PSI_ItMin 25000 {3};
+  Integration_Error 0.03 {3};
+  End process;
+}(processes);
+(selector){
+  Q2 -11 -11 4 1e12;
+}(selector)
