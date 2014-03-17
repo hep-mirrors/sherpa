@@ -55,11 +55,11 @@ void Spinor<Scalar>::Construct(const Vec4<Scalar> &p)
 {
   double pp(PPlus(p)), pm(PMinus(p));
   Complex rpp(csqrt(pp)), rpm(csqrt(pm)), pt(PT(p));
-  static double accu(sqrt(Accu()));
   m_u1=rpp;
   m_u2=rpm;
-  if (!(IsZero(pt.real(),accu) && IsZero(pt.imag(),accu)) &&
-      !(IsZero(rpp.real(),accu) && IsZero(rpp.imag(),accu))) { 
+  Scalar sv(dabs(p[0])*s_accu);
+  if ((dabs(pt.real())>sv || dabs(pt.imag())>sv) &&
+      (dabs(rpp.real())>sv || dabs(rpp.imag())>sv)) {
     m_u2=Complex(pt.real(),m_r>0?pt.imag():-pt.imag())/rpp;
   }
 #ifndef USING__old_phase_convention
