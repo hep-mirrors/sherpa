@@ -39,6 +39,7 @@ The following parameters are used to steer the process setup.
 * ME_Generator::            Tag to specifiy the tree ME generator.
 * Loop_Generator::          Tag to specifiy the loop ME generator.
 * Integrator::              Tag to specifiy the integrator.
+* PSI_ItMin::               Tag to set the number of points per optimization step.
 * End process::             The process setup end tag.
 @end menu
 
@@ -509,6 +510,10 @@ To use this Sherpa has to be linked to BlackHat during installation by using the
 @node Integrator
 @subsection Integrator
 Sets a process-specific integrator, see @ref{INTEGRATOR}.
+
+@node PSI_ItMin
+@subsection PSI_ItMin
+Sets the number of points per optimization step, see @ref{PSI_ITMIN}.
 
 @node End process
 @subsection End process

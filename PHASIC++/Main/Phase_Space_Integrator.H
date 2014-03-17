@@ -26,12 +26,12 @@ namespace PHASIC {
 
   public:
 
-    Phase_Space_Integrator();
+    Phase_Space_Integrator(Phase_Space_Handler*);
     
     ~Phase_Space_Integrator();
 
-    double Calculate(Phase_Space_Handler*,double,double,int); 
-    double CalculateDecay(Phase_Space_Handler*,double); 
+    double Calculate(double,double,int); 
+    double CalculateDecay(double); 
 
     //! Simple access methods.
     static long int MaxPoints();

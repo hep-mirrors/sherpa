@@ -18,7 +18,8 @@ using namespace std;
 
 long unsigned int Phase_Space_Integrator::nmax=
   std::numeric_limits<long unsigned int>::max();
-Phase_Space_Integrator::Phase_Space_Integrator()
+Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
+  psh(_psh)
 {
   Data_Reader read(" ",";","!","=");
   read.AddComment("#");
@@ -29,7 +30,8 @@ Phase_Space_Integrator::Phase_Space_Integrator()
     nmax=std::numeric_limits<long unsigned int>::max();
   else msg_Info()<<METHOD<<"(): Set n_{max} = "<<nmax<<".\n";
   read.SetAllowUnits(true);
-  if (!read.ReadFromFile(itmin,"PSI_ITMIN")) itmin=5000;
+  if (!read.ReadFromFile(itmin,"PSI_ITMIN"))
+    itmin=psh->Process()->Process()->Info().m_itmin;
   else msg_Info()<<METHOD<<"(): Set n_{it,min} = "<<itmin<<".\n";
   if (!read.ReadFromFile(itmax,"PSI_ITMAX")) itmax=100*itmin;
   else msg_Info()<<METHOD<<"(): Set n_{it,max} = "<<itmax<<".\n";
@@ -100,13 +102,12 @@ void Phase_Space_Integrator::MPISync()
   lrtime=ATOOLS::rpa->gen.Timer().RealTime();
 }
 
-double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxerror, double _maxabserror, int _fin_opt) 
+double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror, int _fin_opt) 
 {
   mn=mnstep=mncstep=0;
   maxerror=_maxerror;
   maxabserror=_maxabserror;
   fin_opt=_fin_opt;
-  psh=_psh;
   msg_Info()<<"Starting the calculation at "
 	    <<rpa->gen.Timer().StrFTime("%H:%M:%S")<<". Lean back and enjoy ... ."<<endl; 
   if (maxerror >= 1.) nmax = 1;
@@ -343,10 +344,8 @@ bool Phase_Space_Integrator::AddPoint(const double value)
     return false;
 }
 
-double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* _psh,
-                                              double maxerror) 
+double Phase_Space_Integrator::CalculateDecay(double maxerror) 
 { 
-  psh=_psh;
   mn=mnstep=mncstep=0;
   msg_Info()<<"Starting the calculation for a decay. Lean back and enjoy ... ."<<endl; 
   

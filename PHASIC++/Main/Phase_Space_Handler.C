@@ -175,7 +175,7 @@ double Phase_Space_Handler::Integrate()
       (p_process->TotalError()<dabs(m_error*p_process->TotalXS()) ||
        p_process->TotalError()<m_abserror)) 
     return p_process->TotalXS()*rpa->Picobarn();
-  p_integrator = new Phase_Space_Integrator();
+  p_integrator = new Phase_Space_Integrator(this);
   if (!InitIncoming()) return 0;
   if (MODEL::s_model->Name()==std::string("ADD") && p_isrhandler->On()==0 && p_beamhandler->On()==0) {
     if (rpa->gen.Ecms()>MODEL::s_model->ScalarConstant(std::string("M_cut"))) {
@@ -227,8 +227,8 @@ double Phase_Space_Handler::Integrate()
   p_fsrchannels->Print();
   m_dmode=0;
   double res(0.0);
-  if (m_nin==2) res=p_integrator->Calculate(this,m_error,m_abserror,m_fin_opt);
-  if (m_nin==1) res=p_integrator->CalculateDecay(this,m_error);
+  if (m_nin==2) res=p_integrator->Calculate(m_error,m_abserror,m_fin_opt);
+  if (m_nin==1) res=p_integrator->CalculateDecay(m_error);
   m_dmode=1;
 #ifdef USING__Threading
   if (m_uset) {
