@@ -21,13 +21,7 @@ vars.Add(PathVariable('libdir','lib path',os.getcwd()+'/Process/Amegic/lib',Path
 vars.Add('CXX','The C++ Compiler','@CXX@')
 vars.Add('CXXFLAGS','The C++ Flags',['-O2'])
 env = Environment(variables=vars,CPPPATH=['@INCLUDEDIR@'])
-env['ENV']['PATH']=os.environ['PATH']
-if env['PLATFORM']=='darwin':
-  if os.environ.has_key('DYLD_LIBRARY_PATH'):
-    env['ENV']['DYLD_LIBRARY_PATH']=os.environ['DYLD_LIBRARY_PATH']
-else:
-  if os.environ.has_key('LD_LIBRARY_PATH'):
-    env['ENV']['LD_LIBRARY_PATH']=os.environ['LD_LIBRARY_PATH']
+env['ENV']=os.environ
 " > SConstruct;
 fi;
 test "$procdir" = "x" && exit 0;
