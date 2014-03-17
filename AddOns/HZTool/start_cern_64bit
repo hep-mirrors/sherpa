@@ -4,32 +4,22 @@
 # if headers are missing on debian, try installing apt-file
 # and searching with 'apt-file search <filename>'
 
-if ! test -f index.html; then
+if ! test -f 2006_src.tar.gz; then
 
-  wget http://wwwasd.web.cern.ch/wwwasd/cernlib/download/2005_source/tar/
+  wget http://cernlib.web.cern.ch/cernlib/download/2006_source/tar/2006_src.tar.gz
 
-  for i in $(grep -oe'"src_[^>]*.gz"' index.html | cut -d'"' -f2); do
-    wget http://wwwasd.web.cern.ch/wwwasd/cernlib/download/2005_source/tar/$i;
-  done
-
-  wget http://www-zeuthen.desy.de/linear_collider/cernlib/new/cernlib.2005.corr.2009.06.13.tgz
-
-  list=`ls src_*.gz`
-
-  for ffile in $list
-  do
-    gunzip -c $ffile | tar xf -
-  done
-
-  tar -xzf cernlib.2005.corr.2009.06.13.tgz
+  tar -xzf 2006_src.tar.gz
 
   # -fPIC is essential for dynamic libs
-  sed -e's/\(.define.*CcCmd\s*gcc\)/\1 -fPIC/g
-s/\(.define.*FortranCmd\s*gfortran\)/\1 -fPIC -fno-automatic/g
-s/\(.define.*FortranCmd\s*g77\)/\1 -fPIC -fno-automatic/g' -i 2005/src/config/linux.cf
-  sed -e's/\(.define.*CcCmd\s*gcc\)/\1 -fPIC/g
-s/\(.define.*FortranCmd\s*gfortran\)/\1 -fPIC -fno-automatic/g
-s/\(.define.*FortranCmd\s*g77\)/\1 -fPIC -fno-automatic/g' -i 2005/src/config/linux-lp64.cf
+  sed -e's/-fugly-complex//g
+s/\(.define.*CcCmd\s*gcc\)/\1 -fPIC/g
+s/\(.define.*FortranCmd\s*\).*/\1 gfortran -fPIC -fno-automatic/g' -i 2006/src/config/linux.cf
+  sed -e's/-fugly-complex//g
+s/\(.define.*CcCmd\s*gcc\)/\1 -fPIC/g
+s/\(.define.*FortranCmd\s*\).*/\1 gfortran -fPIC -fno-automatic/g' -i 2006/src/config/linux-lp64.cf
+
+  # build only packlib and mathlib
+  sed -e's/^LIBDIRS=.*/LIBDIRS= packlib mathlib/g' -i 2006/src/Imakefile
 
 fi
 
@@ -37,7 +27,7 @@ fi
 # Depending on the system, other directories may need to be added to the PATH
 # e.g. for the build tools and alternative compilers.
 
-CERN_LEVEL=`gunzip -c src_Imakefile.tar.gz | tar tf - | awk -F/ '{print $1}'`
+CERN_LEVEL=2006
 
 CERN=`pwd`
 CERN_ROOT=$CERN/$CERN_LEVEL
@@ -77,7 +67,7 @@ cd $CERN_ROOT/lib
 # build shared libraries
 
 for i in *.a; do
-  rm -rf xxx; mkdir xxx; cd xxx;
+  mkdir xxx; cd xxx;
   cp ../$i .; ar -x $i;
   NN=$(echo $i | sed -e's/[.]a/.so/g');
   echo creating $NN;
@@ -86,5 +76,6 @@ for i in *.a; do
   cd ..;
   /sbin/ldconfig -l $NN.1.0
   if test -e $NN.1; then ln -sf $NN.1 $NN; fi
+  rm -rf xxx; 
 done
 

@@ -84,14 +84,16 @@ int Shower::SetXBj(Parton *const p) const
   return 1;
 }
 
-int Shower::RemnantTest(Parton *const p)
+int Shower::RemnantTest(Parton *const p,const Poincare_Sequence *lt)
 {
-  if (p->Momentum()[0]<0.0 || p->Momentum().Nan()) return -1;
-  if (p->Momentum()[0]>rpa->gen.PBeam(p->Beam())[0] &&
-      !IsEqual(p->Momentum()[0],rpa->gen.PBeam(p->Beam())[0],1.0e-6)) return -1;
+  Vec4D mom(p->Momentum());
+  if (lt) mom=(*lt)*mom;
+  if (mom[0]<0.0 || mom.Nan()) return -1;
+  if (mom[0]>rpa->gen.PBeam(p->Beam())[0] &&
+      !IsEqual(mom[0],rpa->gen.PBeam(p->Beam())[0],1.0e-6)) return -1;
   if (!m_sudakov.CheckPDF(GetXBj(p),p->GetFlavour(),p->Beam())) return -1;
   return p_isr->GetRemnant(p->Beam())->
-    TestExtract(p->GetFlavour(),p->Momentum())?1:-1;
+    TestExtract(p->GetFlavour(),mom)?1:-1;
 }
 
 int Shower::ReconstructDaughters(Singlet *const split,const int mode,
@@ -155,9 +157,8 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
       stat=m_kinFI.MakeKinematics(l,mi2,mj2,flj,r,1);
       l->SetFlavour(fli);
       l->SetMass2(mi2);
-      if (stat>0 && !(mode&1)) stat=RemnantTest(s);
-      if (stat>0)
-	split->BoostAllFS(l,r,s,c,c->GetFlavour(),4|2);
+      if (stat>0 && !(mode&1)) stat=RemnantTest(s,NULL);
+      if (stat>0) split->BoostAllFS(l,r,s);
     }
   }
   else {
@@ -165,17 +166,15 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
       stat=m_kinIF.MakeKinematics(l,mi2,mj2,flj,r,1);
       l->SetFlavour(fli);
       l->SetMass2(mi2);
-      if (stat>0 && !(mode&1)) stat=RemnantTest(l);
-      if (stat>0)
-	split->BoostAllFS(l,r,s,c,c->GetFlavour(),4|1);
+      if (stat>0 && !(mode&1)) stat=RemnantTest(l,&l->LT());
+      if (stat>0) split->BoostAllFS(l,r,s);
     }
     else {
       stat=m_kinII.MakeKinematics(l,mi2,mj2,flj,r,1);
       l->SetFlavour(fli);
       l->SetMass2(mi2);
-      if (stat>0 && !(mode&1)) stat=RemnantTest(l);
-      if (stat>0)
-	split->BoostAllFS(l,r,s,c,c->GetFlavour(),4|3);
+      if (stat>0 && !(mode&1)) stat=RemnantTest(l,&l->LT());
+      if (stat>0) split->BoostAllFS(l,r,s);
     }
   }
   }
@@ -201,10 +200,7 @@ int Shower::ReconstructDaughters(Singlet *const split,const int mode,
     nres=ReconstructDaughters(r->GetSing(),mode,pi,pj);
   if (stat>0) {
     l->SetKin(ckin);
-    split->BoostBackAllFS
-      (l,r,s,c,c->GetFlavour(),
-       (s->GetType()==pst::IS?(c->GetType()==pst::IS?3:2):
-	(c->GetType()==pst::IS?1:0))|4);
+    split->BoostBackAllFS(l,r,s);
     l->SetKin(kin);
     l->SetMomentum(cpi);
     r->SetMomentum(cpj);
@@ -325,9 +321,11 @@ int Shower::MakeKinematics
   }
   if (stat==1) {
     if (split->GetType()==pst::IS &&
-	RemnantTest(split)==-1) stat=-1;
+	RemnantTest(split,&split->LT())==-1) stat=-1;
     if (split->GetSpect()->GetType()==pst::IS &&
-	RemnantTest(split->GetSpect())==-1) stat=-1;
+	RemnantTest(split->GetSpect(),
+		    split->GetType()==pst::IS?
+		    &split->LT():NULL)==-1) stat=-1;
   }
   if (stat==-1) {
     split->SetMomentum(peo);
@@ -340,7 +338,8 @@ int Shower::MakeKinematics
     return stat;
   }
   Parton *pi(new Parton((stype&1)?fla:flb,
-			split->Momentum(),split->GetType()));
+			split->LT()*split->Momentum(),
+			split->GetType()));
   pi->SetMass2(mi2);
   pi->SetSing(split->GetSing());
   pi->SetId(split->Id());
@@ -351,15 +350,13 @@ int Shower::MakeKinematics
   if (stype&1) pi->SetBeam(split->Beam());
   if (mode==0) SetSplitInfo(peo,pso,split,pi,pj,stype);
   split->GetSing()->AddParton(pj);
-  if (stype) split->GetSing()->BoostAllFS
-    (pi,pj,spect,split,split->GetFlavour(),stype);
+  if (stype) split->GetSing()->BoostAllFS(pi,pj,spect);
   Flavour fls(split->GetFlavour());
   if (mode!=0) split->SetFlavour(pi->GetFlavour());
   int ustat(UpdateDaughters(split,pi,pj,mode|fc));
   if (ustat<=0 || mode!=0 || fc!=0) {
     split->SetFlavour(fls);
-    if (stype) split->GetSing()->BoostBackAllFS
-      (pi,pj,spect,split,split->GetFlavour(),stype);
+    if (stype) split->GetSing()->BoostBackAllFS(pi,pj,spect);
     delete pi;
     pj->DeleteAll();
     split->SetMomentum(peo);

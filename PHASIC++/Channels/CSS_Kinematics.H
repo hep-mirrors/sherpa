@@ -23,6 +23,8 @@ namespace PHASIC {
 		   const ATOOLS::Vec4D &n=ATOOLS::Vec4D(),
 		   const int mode=0):
       m_l(mode&&l[0]<0.0?-l:l), m_n(mode&&n[0]<0.0?-n:n) {}
+    inline ATOOLS::Vec4D SaneCMS() const
+    { return (m_l[0]<0.0?-m_l:m_l)+(m_n[0]<0.0?-m_n:m_n); }
   };// end of struct LN_Pair
 
   LN_Pair GetLN(const ATOOLS::Vec4D &pi,

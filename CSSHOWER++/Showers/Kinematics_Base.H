@@ -18,8 +18,7 @@ namespace CSSHOWER {
     virtual int MakeKinematics(Parton *const,const double &,
 			       const double &,const ATOOLS::Flavour &,
 			       Parton *&,const int mode=0) = 0;
-    void SetFixVec(Parton *const p,ATOOLS::Vec4D mom,
-		   const PHASIC::Kin_Args &lt,const int mode) const;
+    void SetFixVec(Parton *const p,ATOOLS::Vec4D mom) const;
     inline void SetMS(ATOOLS::Mass_Selector *const ms) { p_ms=ms; }
     inline ATOOLS::Mass_Selector *MS() const { return p_ms; }
     inline void SetEvolScheme(int evol) { m_evolscheme=evol; }

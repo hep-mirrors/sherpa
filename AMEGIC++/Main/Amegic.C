@@ -167,23 +167,6 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
 	m_flavs.push_back(newxs->Flavours()[i]);
     }
     Phase_Space_Handler::TestPoint(p_testmoms,&newxs->Info(),this);
-    Vec4D sum;
-    Poincare lab(Vec4D(sqrt(10.0),0.0,0.0,1.0));
-    msg_Debugging()<<"After boost:\n";
-    for (size_t i(0);i<nis+nfs;++i) {
-      lab.Boost(p_testmoms[i]);
-      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
-      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
-    }
-    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
-    Poincare rot(Vec4D::ZVEC,Vec4D(sqrt(14.0),1.0,2.0,3.0));
-    msg_Debugging()<<"After rotation {\n";
-    for (size_t i(0);i<nis+nfs;++i) {
-      rot.Rotate(p_testmoms[i]);
-      sum+=i<m_nin?-p_testmoms[i]:p_testmoms[i];
-      msg_Debugging()<<"  p["<<i<<"] = "<<p_testmoms[i]<<"\n";
-    }
-    msg_Debugging()<<"} -> sum = "<<sum<<"\n";
     newxs->Get<AMEGIC::Process_Base>()->SetTestMoms(p_testmoms);
     newxs->Get<AMEGIC::Process_Base>()->SetPrintGraphs(pi.m_gpath);
     My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","begin");

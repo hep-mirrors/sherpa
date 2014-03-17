@@ -343,7 +343,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       std::cout.precision(12);
       Vec4D oldfl(l->FixSpec()), oldfr(r->FixSpec()), oldfs(s->FixSpec());
       Vec4D oldsf(split->FixSpec()), oldso(split->OldMomentum());
-      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode|4|8);
+      sing->BoostBackAllFS(l,r,s);
       p_shower->ReconstructDaughters(sing,1);
       almap[l]->SetMom(almap[l]->Id()&3?-l->Momentum():l->Momentum());
       almap[r]->SetMom(almap[r]->Id()&3?-r->Momentum():r->Momentum());
@@ -390,7 +390,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
       l->SetOldMomentum(oldl);
       r->SetOldMomentum(oldr);
       s->SetOldMomentum(olds);
-      sing->BoostBackAllFS(l,r,s,split,split->GetFlavour(),cp.m_mode|4|8);
+      sing->BoostBackAllFS(l,r,s);
     }
     double kt2next(0.0);
     if (campl->Prev()) {

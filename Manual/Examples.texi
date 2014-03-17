@@ -12,6 +12,7 @@ of the main features of these examples.
 * Jets::
 * HJets::
 * TopsJets::
+* DIS::
 * FONLO::
 * SoftQCD::
 * BFactories::
@@ -71,6 +72,15 @@ of the main features of these examples.
 @include LHC_TTBar.texi
 @include LHC_TTW.texi
 
+
+@node DIS
+@section Deep-inelastic scattering
+
+@menu
+* HERA::
+@end menu
+
+@include HERA_DIS.texi
 
 @node FONLO
 @section Fixed-order next-to-leading order calculations

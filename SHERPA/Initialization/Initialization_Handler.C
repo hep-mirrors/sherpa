@@ -769,7 +769,13 @@ bool Initialization_Handler::InitializeTheAnalyses()
     }
     Analysis_Interface* ana=Analysis_Interface::Analysis_Getter_Function::GetObject
                             (analyses[i],Analysis_Arguments(m_path,m_analysisdat,outpath));
-    if (ana==NULL) THROW(fatal_error,"Cannot initialize Analysis "+analyses[i]);
+    if (ana==NULL) {
+      if (!s_loader->LoadLibrary("Sherpa"+analyses[i]+"Analysis")) 
+	THROW(missing_module,"Cannot load Analysis library '"+analyses[i]+"'.");
+      ana=Analysis_Interface::Analysis_Getter_Function::GetObject
+	(analyses[i],Analysis_Arguments(m_path,m_analysisdat,outpath));
+      if (ana==NULL) THROW(fatal_error,"Cannot initialize Analysis "+analyses[i]);
+    }
     m_analyses.push_back(ana);
   }
   return true;

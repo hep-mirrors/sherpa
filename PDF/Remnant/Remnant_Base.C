@@ -63,9 +63,9 @@ bool Remnant_Base::AdjustKinematics()
 	  p_partner->p_beam->OutMomentum())[0];
   m_pzrem=(p_beam->OutMomentum()+
 	   p_partner->p_beam->OutMomentum())[3];
-  if ((p_last[1]==NULL || p_last[0]==NULL) &&
-      (Type()==rtp::electron || p_partner->Type()==rtp::electron ||
-       Type()==rtp::intact || p_partner->Type()==rtp::intact)) return true;
+  if ((Type()==rtp::electron && (p_partner->Type()&rtp::qcd_remnant)) ||
+      ((Type()&rtp::qcd_remnant) && p_partner->Type()==rtp::electron) ||
+       Type()==rtp::intact || p_partner->Type()==rtp::intact) return true;
   for (size_t i=0;i<2;++i) {
     ATOOLS::Blob *cur=p_beamblob;
     if (i==1) cur=p_partner->p_beamblob;
@@ -171,9 +171,11 @@ bool Remnant_Base::TestExtract(const ATOOLS::Flavour &flav,
 {
   double E(mom[0]), Eb(p_beam->Energy());
   if (E<0.0 || (E>Eb && !ATOOLS::IsEqual(E,Eb,1.0e-3))) {
+    if (m_laste!=E)
     msg_Error()<<"Remnant_Base::TestExtract("<<flav<<","<<E<<"): "
 		       <<"Constituent energy out of range E_b = "
 		       <<Eb<<"."<<std::endl;
+    m_laste=E;
     return false;
   }
   double erem=m_erem-(E+(m_lastemin=MinimalEnergy(flav)));

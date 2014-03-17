@@ -705,7 +705,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
         *)  if test -d "${enableval}"; then
               if test -f "${enableval}/lib/libkernlib_noshift.a"; then
                 if test -f "${enableval}/lib/libkernlib_noshift.so"; then
-                  CONDITIONAL_CERNLIBLIBS="${enableval}/lib/libpacklib_noshift.so ${enableval}/lib/libmathlib.so ${enableval}/lib/libkernlib_noshift.so"
+                  CONDITIONAL_CERNLIBLIBS="-L${enableval}/lib -Wl,-rpath -Wl,${enableval}/lib -lpacklib_noshift -lmathlib -lkernlib_noshift -lXm"
                   cernlib=true;
                   AC_MSG_RESULT(${enableval});
 		else
@@ -715,7 +715,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
 		fi
               elif test -f "${enableval}/lib/libkernlib.a"; then
 	        if test -f "${enableval}/lib/libkernlib.so"; then
-                  CONDITIONAL_CERNLIBLIBS="${enableval}/lib/libpacklib.so ${enableval}/lib/libmathlib.so ${enableval}/lib/libkernlib.so"
+                  CONDITIONAL_CERNLIBLIBS="-L${enableval}/lib -Wl,-rpath -Wl,${enableval}/lib -lpacklib -lmathlib -lkernlib -lXm"
                   cernlib=true;
                   AC_MSG_RESULT(${enableval});
 		else

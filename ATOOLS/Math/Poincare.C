@@ -111,15 +111,19 @@ void Poincare::RotateBack(Vec4D& v) const
 void Poincare::Lambda(Vec4D& v) const
 {
   if (m_status!=3) THROW(fatal_error,"Invalid function call");
+  double m2=v.Abs2();
   v=v-2.0*(v*(m_beta+m_n))/(m_beta+m_n).Abs2()*(m_beta+m_n)
     +2.0*(v*m_beta)/m_beta.Abs2()*m_n;
+  v[0]=Sign(v[0])*sqrt(v.PSpat2()+m2);
 }
 
 void Poincare::LambdaBack(Vec4D& v) const
 {
   if (m_status!=3) THROW(fatal_error,"Invalid function call");
+  double m2=v.Abs2();
   v=v-2.0*(v*(m_beta+m_n))/(m_beta+m_n).Abs2()*(m_beta+m_n)
     +2.0*(v*m_n)/m_n.Abs2()*m_beta;
+  v[0]=Sign(v[0])*sqrt(v.PSpat2()+m2);
 }
 
 bool Poincare::CheckBoost()  const

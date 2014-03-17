@@ -1,6 +1,7 @@
 #include "PHASIC++/Channels/CSS_Kinematics.H"
 
 #include "ATOOLS/Math/ZAlign.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -14,30 +15,30 @@ double Kin_Args::s_uxeps=1.0e-3;
 LN_Pair PHASIC::GetLN
 (const Vec4D &pi,const Vec4D &pk,const int mode)
 {
-  double ecm(pi*pk), mi2(pi.Abs2());
-  double gam(ecm*ecm-mi2*pk.Abs2());
-  if (gam<0.0) return LN_Pair();
-  gam=ecm+Sign(ecm)*sqrt(gam);
-  Vec4D l(0.5/ecm*(gam*pi-mi2*pk));
-  return LN_Pair(l,pi+pk-l,mode);
+  double mi2(pi.Abs2()), mk2(pk.Abs2());
+  double eps(pi*pk), kap(eps*eps-mi2*mk2);
+  if (kap<0.0) return LN_Pair();
+  kap=Sign(eps)*sqrt(kap);
+  Vec4D l(((eps+kap)*pi-mi2*pk)/(2.0*kap));
+  Vec4D n(((eps+kap)*pk-mk2*pi)/(2.0*kap));
+  return LN_Pair(l,n,mode);
 }
 
 double PHASIC::ComputePhi
 (Vec4D pijt,Vec4D pkt,Vec4D pi,const int mode)
 {
-  LN_Pair ln(GetLN(pijt,pkt,1));
+  LN_Pair ln(GetLN((mode&1)?-pijt:pijt,(mode&2)?-pkt:pkt,0));
   Vec4D ktt(0.0,cross(Vec3D(ln.m_l),Vec3D(ln.m_n)));
-  Poincare cms(ln.m_l+ln.m_n);
+  Poincare cms(ln.SaneCMS());
   cms.Boost(ln.m_l);
   cms.Boost(pi);
   Poincare zax(ln.m_l,Vec4D::ZVEC);
-  if (mode!=3 && ktt.PSpat2()>1.0e-6) {
+  if (mode!=3 && ktt.PSpat2()>rpa->gen.SqrtAccu()) {
     zax.Rotate(ktt);
   }
   else {
     msg_Debugging()<<"Set fixed n_perp\n";
-    if (IsZero(ln.m_l[1],1.0e-6) &&
-	IsZero(ln.m_l[2],1.0e-6)) ln.m_l[1]=ln.m_l[2]=0.0;
+    if (IsZero(ln.m_l.PPerp2())) ln.m_l[1]=ln.m_l[2]=0.0;
     zax=Poincare(ln.m_l,Vec4D::ZVEC);
     ktt=Vec4D(0.0,1.0,1.0,0.0);
   }
@@ -81,7 +82,7 @@ int PHASIC::ConstructFFDipole
   Vec4D n_perp(0.0,cross(Vec3D(pij),Vec3D(pk)));
   Poincare cms(pij+pk);
   cms.Boost(rpij);
-  if (n_perp.PSpat2()<=1.0e-6) {
+  if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
     msg_Debugging()<<"Set fixed n_perp\n";
     n_perp=Vec4D(0.0,1.0,1.0,0.0);
     Poincare zrot(rpij,Vec4D::ZVEC);
@@ -165,17 +166,12 @@ int PHASIC::ConstructFIDipole
   fip.m_pk=pn/po*(pa-(Q*pa)/(Q2+kt2)*Ql)
     +(Q2+ma2-sij)/(2.0*(Q2+kt2))*Ql;
   fip.m_pi=fip.m_pj=fip.m_pk-Q;
-  Vec4D n_perp(0.0,cross(Vec3D(fip.m_pi),Vec3D(fip.m_pk)));
-  Poincare cms(fip.m_pi+fip.m_pk);
-  cms.Boost(fip.m_pi);
-  if (n_perp.PSpat2()<=1.0e-6) {
-    msg_Debugging()<<"Set fixed n_perp\n";
-    n_perp=Vec4D(0.0,1.0,1.0,0.0);
-    Poincare zrot(fip.m_pi,Vec4D::ZVEC);
-    zrot.RotateBack(n_perp);
-  }
+  LN_Pair ln(GetLN(fip.m_pi,-fip.m_pk,0));
+  Vec4D n_perp(0.0,cross(Vec3D(ln.m_l),Vec3D(ln.m_n)));
+  Poincare cms(ln.SaneCMS());
+  cms.Boost(ln.m_l);
   n_perp*=1.0/n_perp.PSpat();
-  Vec4D l_perp(0.0,cross(Vec3D(fip.m_pi),Vec3D(n_perp)));
+  Vec4D l_perp(0.0,cross(Vec3D(ln.m_l),Vec3D(n_perp)));
   l_perp*=1.0/l_perp.PSpat();
   double pnn(Sign(ecm)*sqrt(sqr(ecm)-4.0*sij*ma2)), gam(0.5*(ecm+pnn));
   double zt(ecm/pnn*(fip.m_z-ma2/gam*(sij+mi2-mj2)/ecm));
@@ -270,15 +266,15 @@ int PHASIC::ConstructIFDipole
     Vec4D pa(pn/po*(paj-(Q2+maj2-mk2)/(2.0*(Q2+kt2))*Ql)
 	     +(Q2+ma2-sjk)/(2.0*(Q2+kt2))*Ql);
     ifp.m_pk=ifp.m_pj=(ifp.m_pi=pa)-Q;
-    LN_Pair ln(GetLN(ifp.m_pj,ifp.m_pi,1));
+    LN_Pair ln(GetLN(ifp.m_pj,-ifp.m_pi,0));
     if (ln.m_l==Vec4D()) {
       msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;
       return -1;
     }
     Vec4D n_perp(0.0,cross(Vec3D(ln.m_l),Vec3D(ln.m_n)));
-    Poincare cms(ln.m_l+ln.m_n);
+    Poincare cms(ln.SaneCMS());
     cms.Boost(ln.m_l);
-    if (n_perp.PSpat2()<=1.0e-6) {
+    if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
       msg_Debugging()<<"Set fixed n_perp\n";
       n_perp=Vec4D(0.0,1.0,1.0,0.0);
       Poincare zrot(ln.m_l,Vec4D::ZVEC);
@@ -302,10 +298,10 @@ int PHASIC::ConstructIFDipole
     ifp.m_pk=ifp.m_pi-Q-ifp.m_pj;
   }
   else {
-    LN_Pair ln(GetLN(paj,pk,1));
+    LN_Pair ln(GetLN(-paj,pk,0));
     Vec4D n_perp(0.0,cross(Vec3D(ln.m_l),Vec3D(ln.m_n)));
     n_perp*=1.0/n_perp.PSpat();
-    Poincare cms(ln.m_l+ln.m_n);
+    Poincare cms(ln.SaneCMS());
     cms.Boost(ln.m_l);
     Vec4D l_perp(0.0,cross(Vec3D(ln.m_l),Vec3D(n_perp)));
     l_perp*=1.0/l_perp.PSpat();
@@ -429,18 +425,20 @@ int PHASIC::ConstructIIDipole
     return -1;
   }
   ktt=sqrt(ktt);
-  Vec4D pah(iip.m_pi);
+  Vec4D pah(-iip.m_pi);
   Poincare cms(iip.m_pi+iip.m_pk);
   cms.Boost(pah);
-  Poincare zrot(pah.Long(),Vec4D::ZVEC);
+  if (IsZero(pah.PPerp2())) pah[1]=pah[2]=0.0;
+  Poincare zrot(pah,Vec4D::ZVEC);
   Vec4D n_perp(0.0,1.0,1.0,0.0);
   zrot.RotateBack(n_perp);
   n_perp*=1.0/n_perp.PSpat();
   Vec4D l_perp(0.0,cross(Vec3D(pah),Vec3D(n_perp)));
   l_perp*=1.0/l_perp.PSpat();
-  iip.m_pj=(1.0-zt)/pn*(gam*iip.m_pi-ma2*iip.m_pk)+
-    (mj2+ktt*ktt)/(1.0-zt)/pn*(iip.m_pk-mb2/gam*iip.m_pi)+
-    ktt*(sin(iip.m_phi)*l_perp+cos(iip.m_phi)*n_perp);
+  iip.m_pj=ktt*(sin(iip.m_phi)*l_perp+cos(iip.m_phi)*n_perp);
+  cms.BoostBack(iip.m_pj);
+  iip.m_pj+=(1.0-zt)/pn*(gam*iip.m_pi-ma2*iip.m_pk)+
+    (mj2+ktt*ktt)/(1.0-zt)/pn*(iip.m_pk-mb2/gam*iip.m_pi);
   if (iip.m_mode==0) {
     Vec4D pbh(pb);
     iip.m_lam.push_back(iip.m_pi-iip.m_pj+pb);

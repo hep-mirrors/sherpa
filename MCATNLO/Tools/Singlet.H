@@ -36,10 +36,8 @@ namespace MCATNLO {
     int       SplitParton(Parton *, Parton *, Parton *);
     bool      ArrangeColours(Parton *, Parton *, Parton *);
 
-    void        BoostAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
-			   const ATOOLS::Flavour &mo,const int mode);
-    void        BoostBackAllFS(Parton *l,Parton *r,Parton *s,Parton *f,
-			       const ATOOLS::Flavour &mo,const int mode);
+    void        BoostAllFS(Parton *l,Parton *r,Parton *s);
+    void        BoostBackAllFS(Parton *l,Parton *r,Parton *s);
 
     bool JetVeto(Sudakov *const sud) const;
       
