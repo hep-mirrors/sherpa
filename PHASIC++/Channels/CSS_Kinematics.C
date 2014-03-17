@@ -1,6 +1,7 @@
 #include "PHASIC++/Channels/CSS_Kinematics.H"
 
 #include "ATOOLS/Math/ZAlign.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -32,13 +33,12 @@ double PHASIC::ComputePhi
   cms.Boost(ln.m_l);
   cms.Boost(pi);
   Poincare zax(ln.m_l,Vec4D::ZVEC);
-  if (mode!=3 && ktt.PSpat2()>1.0e-6) {
+  if (mode!=3 && ktt.PSpat2()>rpa->gen.SqrtAccu()) {
     zax.Rotate(ktt);
   }
   else {
     msg_Debugging()<<"Set fixed n_perp\n";
-    if (IsZero(ln.m_l[1],1.0e-6) &&
-	IsZero(ln.m_l[2],1.0e-6)) ln.m_l[1]=ln.m_l[2]=0.0;
+    if (IsZero(ln.m_l.PPerp2())) ln.m_l[1]=ln.m_l[2]=0.0;
     zax=Poincare(ln.m_l,Vec4D::ZVEC);
     ktt=Vec4D(0.0,1.0,1.0,0.0);
   }
@@ -82,7 +82,7 @@ int PHASIC::ConstructFFDipole
   Vec4D n_perp(0.0,cross(Vec3D(pij),Vec3D(pk)));
   Poincare cms(pij+pk);
   cms.Boost(rpij);
-  if (n_perp.PSpat2()<=1.0e-6) {
+  if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
     msg_Debugging()<<"Set fixed n_perp\n";
     n_perp=Vec4D(0.0,1.0,1.0,0.0);
     Poincare zrot(rpij,Vec4D::ZVEC);
@@ -274,7 +274,7 @@ int PHASIC::ConstructIFDipole
     Vec4D n_perp(0.0,cross(Vec3D(ln.m_l),Vec3D(ln.m_n)));
     Poincare cms(ln.SaneCMS());
     cms.Boost(ln.m_l);
-    if (n_perp.PSpat2()<=1.0e-6) {
+    if (n_perp.PSpat2()<=rpa->gen.SqrtAccu()) {
       msg_Debugging()<<"Set fixed n_perp\n";
       n_perp=Vec4D(0.0,1.0,1.0,0.0);
       Poincare zrot(ln.m_l,Vec4D::ZVEC);
@@ -428,6 +428,7 @@ int PHASIC::ConstructIIDipole
   Vec4D pah(-iip.m_pi);
   Poincare cms(iip.m_pi+iip.m_pk);
   cms.Boost(pah);
+  if (IsZero(pah.PPerp2())) pah[1]=pah[2]=0.0;
   Poincare zrot(pah,Vec4D::ZVEC);
   Vec4D n_perp(0.0,1.0,1.0,0.0);
   zrot.RotateBack(n_perp);
