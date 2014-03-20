@@ -37,7 +37,7 @@ Complex Unitarityfunc::Ucalc(const int & n)
   double nn(m_n), mm(m_m), lambda2(m_lambda2);
   if (n==3) { nn = m_n3; mm = m_m3; lambda2 = m_lambda2_3; }
   if (n==4) { nn = m_n4; mm = m_m4; lambda2 = m_lambda2_4; }
-  if (!nn>0.||!lambda2>0.) return Complex(1.,0.);
+  if (!(nn>0.)||!(lambda2>0.)) return Complex(1.,0.);
   Vec4D h = BS->Momentum(0);
   if (BS->Sign(1)==BS->Sign(0)) h+= BS->Momentum(1);
   double ff(pow(1.+pow(h.Abs2()/lambda2,mm),-nn));

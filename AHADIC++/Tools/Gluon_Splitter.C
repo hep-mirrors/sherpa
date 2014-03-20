@@ -40,7 +40,7 @@ SelectSplitter(Proto_Particle * part1,Proto_Particle * part2) {
   bool hit2(part2->m_info=='L' || part2->m_info=='B');
   if (q1 && q2) return false;
   // m_swap = true if anti-triplet splits
-  m_swap = (q1 && !q2 ||
+  m_swap = ((q1 && !q2) ||
 	    (!q1 && !q2 && 
 	     ((((hit1 && hit2) || (!hit1 && !hit2)) && ran->Get()<0.5))));
 

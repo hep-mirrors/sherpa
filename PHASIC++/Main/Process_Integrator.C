@@ -194,7 +194,7 @@ void Process_Integrator::InitWeightHistogram()
   }
 
   double av(dabs(TotalResult()));
-  if (!av>0.) {
+  if (!(av>0.)) {
     msg_Error()<<"Process_Integrator::InitWeightHistogram(): "
 		       <<"No valid result: "<<av<<std::endl;
     return;

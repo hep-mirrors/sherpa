@@ -304,7 +304,7 @@ double KP_Terms::Get(const double &x0,const double &x1,
     }
     pdfa->Calculate(eta0,muf);
     fa  = pdfa->GetXPDF(flav[0])/eta0;
-    if ((m_cemode && IsZero(fa,1.0e-16)) || !fa>0.) return 0.;
+    if ((m_cemode && IsZero(fa,1.0e-16)) || !(fa>0.)) return 0.;
     fag = pdfa->GetXPDF(gluon)/eta0;
     if (flav[0].IsQuark()) faq = fa;
     else {
@@ -334,7 +334,7 @@ double KP_Terms::Get(const double &x0,const double &x1,
     }
     pdfb->Calculate(eta1,muf);
     fb = pdfb->GetXPDF(flav[1])/eta1;
-    if ((m_cemode && IsZero(fb,1.0e-16)) || !fb>0.) return 0.;
+    if ((m_cemode && IsZero(fb,1.0e-16)) || !(fb>0.)) return 0.;
     fbg = pdfb->GetXPDF(gluon)/eta1;
     if (flav[1].IsQuark()) fbq = fb;
     else {
