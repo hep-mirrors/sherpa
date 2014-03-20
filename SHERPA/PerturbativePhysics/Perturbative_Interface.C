@@ -53,7 +53,11 @@ Perturbative_Interface::Perturbative_Interface
 
 Perturbative_Interface::~Perturbative_Interface() 
 {
-  if (p_ampl) p_ampl->Delete();
+  if (p_ampl) {
+    Cluster_Amplitude *campl(p_ampl);
+    while (campl->Prev()) campl=campl->Prev();
+    campl->Delete();
+  }
 }
 
 Return_Value::code Perturbative_Interface::
@@ -69,7 +73,9 @@ DefineInitialConditions(ATOOLS::Blob *blob)
     return Return_Value::Success;
   }
   if (p_ampl) {
-    p_ampl->Delete();
+    Cluster_Amplitude *campl(p_ampl);
+    while (campl->Prev()) campl=campl->Prev();
+    campl->Delete();
     p_ampl=NULL;
   }
   p_shower->CleanUp();
