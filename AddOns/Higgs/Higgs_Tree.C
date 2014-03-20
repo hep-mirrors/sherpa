@@ -437,7 +437,8 @@ std::vector<Tree_ME2_Base::Map_Info> Higgs_Tree::GetFlavourHelicityMap()
 	  hels.push_back(l);
 	  m_hmap[n].m_perm=perm;
 	  m_hmap[n].m_hels=hels;
-	  m_hmap[n].m_id=n++;
+	  m_hmap[n].m_id=n;
+	  ++n;
 	}
       }
     }

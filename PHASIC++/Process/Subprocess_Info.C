@@ -353,6 +353,7 @@ int Subprocess_Info::Combine
       int stat(psit->Combine(i,j,flij,cnt));
       if (stat<0) psit=m_ps.erase(psit)-1;
     }
+    return 1;
   }
 }
 
