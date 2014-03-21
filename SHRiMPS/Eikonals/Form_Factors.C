@@ -13,11 +13,11 @@ using namespace ATOOLS;
 Special_Functions SHRIMPS::SF;
 
 
-inline double Form_Factor::Norm_Argument::operator()(double q) { 
+double Form_Factor::Norm_Argument::operator()(double q) { 
   return 2.*M_PI*q*(*p_ff)(q); 
 }
 
-inline double Form_Factor::FT_Argument::operator()(double q) { 
+double Form_Factor::FT_Argument::operator()(double q) { 
   return 2.*M_PI*q*SF.Jn(0,q*m_b)*(*p_ff)(q); 
 }
 
