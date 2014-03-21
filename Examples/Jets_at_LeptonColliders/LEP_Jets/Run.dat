@@ -4,7 +4,6 @@
   % model parameters
   ALPHAS(MZ) 0.1188;
   ORDER_ALPHAS 1;
-  MASSIVE_PS 4 5;
   % collider setup
   BEAM_1  11; BEAM_ENERGY_1 45.6;
   BEAM_2 -11; BEAM_ENERGY_2 45.6;

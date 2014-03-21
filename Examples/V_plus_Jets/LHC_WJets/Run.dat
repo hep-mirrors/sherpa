@@ -1,7 +1,6 @@
 (run){
   % general setting
   EVENTS 1M; ERROR 0.99;
-  MASSIVE_PS 4 5;
 
   % scales, tags for scale variations
   SP_NLOCT 1; FSF:=1.; RSF:=1.; QSF:=1.;
