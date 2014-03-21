@@ -140,7 +140,7 @@ bool Scale_Setter_Base::SetHTYweightedParameters(std::string par,
 double Scale_Setter_Base::BeamThrust() const
 {
   double tauB(0.);
-  for (size_t i(m_nin);i<m_p.size();++i) tauB+=m_p[i][0]-abs(m_p[i][3]);
+  for (size_t i(m_nin);i<m_p.size();++i) tauB+=m_p[i][0]-dabs(m_p[i][3]);
   return tauB;
 }
 
