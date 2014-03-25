@@ -243,8 +243,8 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter,
     double totweight((Max(0.,decayweight)+Max(0.,transformweight))*0.9999999);
     if (mustdecay) {
       if (decayweight>0. && transformweight>0.) {
-	if (totweight*ran->Get()>decayweight) decayweight==0.;
-	else transformweight==0.;
+	if (totweight*ran->Get()>decayweight) decayweight=0.;
+	else transformweight=0.;
       }
       if (decayweight>0.) {
 	cluster->push_back(haddec1);

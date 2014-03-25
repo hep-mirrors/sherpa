@@ -193,7 +193,7 @@ METS_Scale_Setter::METS_Scale_Setter
 {
   m_scale.resize(2*stp::size);
   std::string tag(args.m_scale), core;
-  m_nproc=!p_proc->Info().m_fi.NLOType()==nlo_type::lo;
+  m_nproc=!(p_proc->Info().m_fi.NLOType()==nlo_type::lo);
   size_t pos(tag.find('['));
   if (pos!=std::string::npos) {
     tag=tag.substr(pos+1);

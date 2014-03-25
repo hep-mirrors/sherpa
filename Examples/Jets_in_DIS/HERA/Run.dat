@@ -1,7 +1,7 @@
 (run){
   EVENTS 1M;
   # technical parameters
-  NJET:=4; QCUT:=5; SDIS:=0.6;
+  NJET:=4; QCUT:=5; SDIS:=1.0;
   LJET:=2,3; LGEN:=BlackHat;
   ME_SIGNAL_GENERATOR Comix Amegic LGEN;
   EVENT_GENERATION_MODE W;
