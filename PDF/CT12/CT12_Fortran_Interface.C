@@ -55,21 +55,21 @@ namespace PDF {
                               "0.120", "0.121", "0.122", "0.123", "0.124",
                               "0.125", "0.126", "0.127", "0.128", "0.129",
                               "0.130"};
-      if (m_set==std::string("ct10nnlo")) {
+      if (m_set==std::string("ct10nn")) {
         cset = std::string("ct10nn."+num+".pds");
         m_asinfo.m_order=2;
         m_asinfo.m_asmz=0.118;
         m_lhef_number=11200+m_member;
       }
       for (size_t i=0; i<21; ++i) {
-        if (m_set==std::string("ct10nnlo.as"+asmz[i]) && m_member==0) {
+        if (m_set==std::string("ct10nn.as"+asmz[i]) && m_member==0) {
           cset = std::string("ct10nn.as"+asmz[i]+".pds");
           m_asinfo.m_order=2;
           m_asinfo.m_asmz=ToType<double>(asmz[i]);
           m_lhef_number=11260+i;
         }
       }
-      if (m_set==std::string("ct10nlo")) {
+      if (m_set==std::string("ct10n")) {
         cset = std::string("ct10n."+num+".pds");
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.118;
@@ -77,33 +77,33 @@ namespace PDF {
       }
       for (size_t i=0; i<21; ++i) {
         if (i==0 || i==1 || i==18 || i==19 || i==20) continue;
-        if (m_set==std::string("ct10nlo.as"+asmz[i]) && m_member==0) {
+        if (m_set==std::string("ct10n.as"+asmz[i]) && m_member==0) {
           cset = std::string("ct10n.as"+asmz[i]+".pds");
           m_asinfo.m_order=1;
           m_asinfo.m_asmz=ToType<double>(asmz[i]);
           m_lhef_number=11060+i;
         }
       }
-      if (m_set==std::string("ct10nlo.3f") && m_member==0) {
+      if (m_set==std::string("ct10nf3") && m_member==0) {
         cset = std::string("ct10nf3.pds");
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.1056;
         m_lhef_number=11080;
       }
-      if (m_set==std::string("ct10nlo.3f2") && m_member==0) {
+      if (m_set==std::string("ct10nf32") && m_member==0) {
         cset = std::string("ct10nf32.pds");
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.1056;
         m_lhef_number=11081;
         THROW(not_implemented,"An interface for this PDF is not yet provided.");
       }
-      if (m_set==std::string("ct10nlo.4f") && m_member==0) {
+      if (m_set==std::string("ct10nf4") && m_member==0) {
         cset = std::string("ct10nf4.pds");
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.1127;
         m_lhef_number=11082;
       }
-      if (m_set==std::string("ct10nlo.4f2") && m_member==0) {
+      if (m_set==std::string("ct10nf42") && m_member==0) {
         cset = std::string("ct10nf42.pds");
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.1127;
@@ -111,7 +111,7 @@ namespace PDF {
         THROW(not_implemented,"An interface for this PDF is not yet provided.");
       }
 
-      if (m_set==std::string("ct10wnlo")) {
+      if (m_set==std::string("ct10wn")) {
         cset = std::string("ct10wn."+num+".pds");
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.118;
@@ -119,33 +119,33 @@ namespace PDF {
       }
       for (size_t i=0; i<21; ++i) {
         if (i==0 || i==1 || i==18 || i==19 || i==20) continue;
-        if (m_set==std::string("ct10wnlo.as"+asmz[i]) && m_member==0) {
+        if (m_set==std::string("ct10wn.as"+asmz[i]) && m_member==0) {
           cset = std::string("ct10wn.as"+asmz[i]+".pds");
           m_asinfo.m_order=1;
           m_asinfo.m_asmz=ToType<double>(asmz[i]);
           m_lhef_number=11160+i;
         }
       }
-      if (m_set==std::string("ct10wnlo.3f") && m_member==0) {
+      if (m_set==std::string("ct10wnf3") && m_member==0) {
         cset = std::string("ct10wnf3.pds");
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.1056;
         m_lhef_number=11180;
       }
-      if (m_set==std::string("ct10wnlo.3f2") && m_member==0) {
+      if (m_set==std::string("ct10wnf32") && m_member==0) {
         cset = std::string("ct10wnf32.pds");
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.1056;
         m_lhef_number=11181;
         THROW(not_implemented,"An interface for this PDF is not yet provided.");
       }
-      if (m_set==std::string("ct10wnlo.4f") && m_member==0) {
+      if (m_set==std::string("ct10wnf4") && m_member==0) {
         cset = std::string("ct10wnf4.pds");
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.1127;
         m_lhef_number=11182;
       }
-      if (m_set==std::string("ct10wnlo.4f2") && m_member==0) {
+      if (m_set==std::string("ct10wnf42") && m_member==0) {
         cset = std::string("ct10wnf42.pds");
         m_asinfo.m_order=1;
         m_asinfo.m_asmz=0.1127;
@@ -256,18 +256,18 @@ void CT12_Getter::PrintInfo
 CT12_Getter *p_get_ct12[63];
 extern "C" void InitPDFLib()
 {
-  p_get_ct12[0]  = new CT12_Getter("ct10nnlo");
-  p_get_ct12[1]  = new CT12_Getter("ct10nlo");
-  p_get_ct12[2]  = new CT12_Getter("ct10nlo.3f");
-  p_get_ct12[3]  = new CT12_Getter("ct10nlo.3f2");
-  p_get_ct12[4]  = new CT12_Getter("ct10nlo.4f");
-  p_get_ct12[5]  = new CT12_Getter("ct10nlo.4f2");
+  p_get_ct12[0]  = new CT12_Getter("ct10nn");
+  p_get_ct12[1]  = new CT12_Getter("ct10n");
+  p_get_ct12[2]  = new CT12_Getter("ct10nf3");
+  p_get_ct12[3]  = new CT12_Getter("ct10nf32");
+  p_get_ct12[4]  = new CT12_Getter("ct10nf4");
+  p_get_ct12[5]  = new CT12_Getter("ct10nf42");
 
-  p_get_ct12[6]  = new CT12_Getter("ct10wnlo");
-  p_get_ct12[7]  = new CT12_Getter("ct10wnlo.3f");
-  p_get_ct12[8]  = new CT12_Getter("ct10wnlo.3f2");
-  p_get_ct12[9]  = new CT12_Getter("ct10wnlo.4f");
-  p_get_ct12[10] = new CT12_Getter("ct10wnlo.4f2");
+  p_get_ct12[6]  = new CT12_Getter("ct10wn");
+  p_get_ct12[7]  = new CT12_Getter("ct10wnf3");
+  p_get_ct12[8]  = new CT12_Getter("ct10wnf32");
+  p_get_ct12[9]  = new CT12_Getter("ct10wnf4");
+  p_get_ct12[10] = new CT12_Getter("ct10wnf42");
 
   std::string asmz[21] = {"0.110", "0.111", "0.112", "0.113", "0.114",
                           "0.115", "0.116", "0.117", "0.118", "0.119",
@@ -277,8 +277,8 @@ extern "C" void InitPDFLib()
   for (size_t i(0);i<21;++i) {
     p_get_ct12[10+i] = new CT12_Getter("ct10nnlo.as"+asmz[i]);
     if (i==0 || i==1 || i==18 || i==19 || i==20) continue;
-    p_get_ct12[29+i] = new CT12_Getter("ct10nlo.as"+asmz[i]);
-    p_get_ct12[45+i] = new CT12_Getter("ct10wnlo.as"+asmz[i]);
+    p_get_ct12[29+i] = new CT12_Getter("ct10n.as"+asmz[i]);
+    p_get_ct12[45+i] = new CT12_Getter("ct10wn.as"+asmz[i]);
   }
 }
 
