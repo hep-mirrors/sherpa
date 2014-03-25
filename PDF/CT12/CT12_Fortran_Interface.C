@@ -87,26 +87,28 @@ namespace PDF {
       if (m_set==std::string("ct10nlo.3f") && m_member==0) {
         cset = std::string("ct10nf3.pds");
         m_asinfo.m_order=1;
-        m_asinfo.m_asmz=0.118;
+        m_asinfo.m_asmz=0.1056;
         m_lhef_number=11080;
       }
       if (m_set==std::string("ct10nlo.3f2") && m_member==0) {
         cset = std::string("ct10nf32.pds");
         m_asinfo.m_order=1;
-        m_asinfo.m_asmz=0.118;
+        m_asinfo.m_asmz=0.1056;
         m_lhef_number=11081;
+        THROW(not_implemented,"An interface for this PDF is not yet provided.");
       }
       if (m_set==std::string("ct10nlo.4f") && m_member==0) {
         cset = std::string("ct10nf4.pds");
         m_asinfo.m_order=1;
-        m_asinfo.m_asmz=0.118;
+        m_asinfo.m_asmz=0.1127;
         m_lhef_number=11082;
       }
       if (m_set==std::string("ct10nlo.4f2") && m_member==0) {
         cset = std::string("ct10nf42.pds");
         m_asinfo.m_order=1;
-        m_asinfo.m_asmz=0.118;
+        m_asinfo.m_asmz=0.1127;
         m_lhef_number=11083;
+        THROW(not_implemented,"An interface for this PDF is not yet provided.");
       }
 
       if (m_set==std::string("ct10wnlo")) {
@@ -127,26 +129,28 @@ namespace PDF {
       if (m_set==std::string("ct10wnlo.3f") && m_member==0) {
         cset = std::string("ct10wnf3.pds");
         m_asinfo.m_order=1;
-        m_asinfo.m_asmz=0.118;
+        m_asinfo.m_asmz=0.1056;
         m_lhef_number=11180;
       }
       if (m_set==std::string("ct10wnlo.3f2") && m_member==0) {
         cset = std::string("ct10wnf32.pds");
         m_asinfo.m_order=1;
-        m_asinfo.m_asmz=0.118;
+        m_asinfo.m_asmz=0.1056;
         m_lhef_number=11181;
+        THROW(not_implemented,"An interface for this PDF is not yet provided.");
       }
       if (m_set==std::string("ct10wnlo.4f") && m_member==0) {
         cset = std::string("ct10wnf4.pds");
         m_asinfo.m_order=1;
-        m_asinfo.m_asmz=0.118;
+        m_asinfo.m_asmz=0.1127;
         m_lhef_number=11182;
       }
       if (m_set==std::string("ct10wnlo.4f2") && m_member==0) {
         cset = std::string("ct10wnf42.pds");
         m_asinfo.m_order=1;
-        m_asinfo.m_asmz=0.118;
+        m_asinfo.m_asmz=0.1127;
         m_lhef_number=11183;
+        THROW(not_implemented,"An interface for this PDF is not yet provided.");
       }
 
       if (cset=="") {
