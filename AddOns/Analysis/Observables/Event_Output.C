@@ -42,6 +42,7 @@ namespace ANALYSIS {
       m_wit(std::numeric_limits<size_t>::max())
     {
       m_splitt_flag=false;
+      if (reader==NULL) return;
       std::string outpath=reader->GetValue<std::string>("EVT_FILE_PATH",".");
       std::string format=reader->GetValue<std::string>("EVENT_FORMAT","None");
       std::vector<std::string> outputs;
