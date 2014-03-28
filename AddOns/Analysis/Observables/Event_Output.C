@@ -170,7 +170,7 @@ void ATOOLS::Getter<Primitive_Observable_Base,Argument_Matrix,Event_Output>::Pri
   str<<"{\n"
      <<std::setw(width+7)<<" "<<"InList  <triggeroutlist>\n"
      <<std::setw(width+7)<<" "<<"# event output settings cf. manual, e.g.:\n"
-     <<std::setw(width+7)<<" "<<"HEPMC2_GENEVENT_OUTPUT <filename>\n"
+     <<std::setw(width+7)<<" "<<"EVENT_FORMAT HepMC_GenEvent[<filename>]\n"
      <<std::setw(width+7)<<" "<<"FILE_SIZE <n>\n"
      <<std::setw(width+7)<<" "<<"EVT_FILE_PATH <path>\n"
      <<std::setw(width+4)<<" "<<"}";
