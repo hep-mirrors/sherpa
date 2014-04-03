@@ -26,6 +26,7 @@
   Process 93 93 -> 6 -6 24;
   NLO_QCD_Mode MC@NLO;
   ME_Generator Amegic;
+  RS_ME_Generator Comix;
   Loop_Generator LGEN;
   Order_EW 1;
   End process;

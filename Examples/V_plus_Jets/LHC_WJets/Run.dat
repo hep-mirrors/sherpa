@@ -32,6 +32,7 @@
   Order_EW 2; CKKW sqr(QCUT/E_CMS);
   NLO_QCD_Mode MC@NLO {LJET};
   ME_Generator Amegic {LJET};
+  RS_ME_Generator Comix {LJET};
   Loop_Generator LOOPGEN {LJET};
   Integration_Error 0.02 {4};
   Integration_Error 0.02 {5};

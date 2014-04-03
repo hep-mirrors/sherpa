@@ -37,6 +37,7 @@ The following parameters are used to steer the process setup.
 * NLO_EW_Part::             Tag to refine the setup of electroweak NLO processes.
 * Subdivide_Virtual::       Tag to split virtual contribution into pieces.
 * ME_Generator::            Tag to specifiy the tree ME generator.
+* RS_ME_Generator::         Tag to specifiy the real ME generator.
 * Loop_Generator::          Tag to specifiy the loop ME generator.
 * Integrator::              Tag to specifiy the integrator.
 * End process::             The process setup end tag.
@@ -490,6 +491,12 @@ sampling to reduce the overall computation time.
 @subsection ME_Generator
 Set a process specific nametag for the desired
 tree-ME generator, see @ref{ME_SIGNAL_GENERATOR}.
+
+@node RS_ME_Generator
+@subsection RS_ME_Generator
+Set a process specific nametag for the desired
+ME generator used for the real minus subtraction part
+of NLO calculations. See also @ref{ME_SIGNAL_GENERATOR}.
 
 @node Loop_Generator
 @subsection Loop_Generator
