@@ -497,7 +497,8 @@ tree-ME generator, see @ref{ME_SIGNAL_GENERATOR}.
 @node RS_ME_Generator
 @subsection RS_ME_Generator
 Set a process specific nametag for the desired
-real-subtracted-ME generator of an MC@@NLO process, see @ref{ME_SIGNAL_GENERATOR}.
+ME generator used for the real minus subtraction part
+of NLO calculations. See also @ref{ME_SIGNAL_GENERATOR}.
 
 @node Loop_Generator
 @subsection Loop_Generator

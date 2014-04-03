@@ -42,6 +42,7 @@
   Loop_Generator LOOPGEN1 {3};
   Loop_Generator LOOPGEN2 {4};
   ME_Generator Amegic {LJET};
+  RS_ME_Generator Comix {LJET};
   RS_Enhance_Factor 10;
   End process;
   %
@@ -50,6 +51,7 @@
   NLO_QCD_Mode MC@NLO {LMJET};
   Loop_Generator LOOPMGEN {2};
   ME_Generator Amegic {LMJET};
+  RS_ME_Generator Comix {LMJET};
   RS_Enhance_Factor 10;
   End process;
   %

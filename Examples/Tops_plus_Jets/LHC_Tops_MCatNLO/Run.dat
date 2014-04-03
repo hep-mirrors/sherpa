@@ -16,6 +16,7 @@
   NLO_QCD_Mode MC@NLO;
   NLO_QCD_Part BVIRS {LJET};
   ME_Generator Amegic {LJET};
+  RS_ME_Generator Comix {LJET};
   Loop_Generator LGEN;
   CKKW sqr(QCUT/E_CMS);
   Order_EW 0;
