@@ -275,6 +275,7 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
 	rpi.m_fi.SetNLOType(pi.m_fi.NLOType()&(nlo_type::real|nlo_type::rsub));
 	rpi.m_integrator=rpi.m_rsintegrator;
 	rpi.m_megenerator=rpi.m_rsmegenerator;
+	rpi.m_itmin=rpi.m_rsitmin;
 	if (m_rsadd) {
 	  if (pi.m_fi.m_nloqcdtype==nlo_type::lo) {
 	    rpi.m_fi.m_ps.push_back(Subprocess_Info(kf_photon,"",""));
@@ -556,6 +557,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vitmin,nf);
         }
+	if (cur[0]=="RS_PSI_ItMin") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vrsitmin,nf);
+        }
         pi.p_gens=&m_gens;
 	if (cur[0]=="End" && cur[1]=="process") break;
       }
@@ -722,6 +727,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	if (GetMPvalue(pbi.m_vrsint,nfs,pnid,ds)) cpi.m_rsintegrator=ds;
 	else cpi.m_rsintegrator=cpi.m_integrator;
 	if (GetMPvalue(pbi.m_vitmin,nfs,pnid,di)) cpi.m_itmin=di;
+	if (GetMPvalue(pbi.m_vrsitmin,nfs,pnid,di)) cpi.m_rsitmin=di;
 	std::vector<Process_Base*> proc=InitializeProcess(cpi,pmap);
 	for (size_t i(0);i<proc.size();i++) {
 	  if (proc[i]==NULL)

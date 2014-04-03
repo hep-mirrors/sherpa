@@ -50,7 +50,7 @@ namespace SHERPA {
 	m_vnlosubv, m_vmegen, m_vrsmegen, m_vloopgen, m_vint, m_vrsint,
 	 m_vgpath;
       MPIV_Map m_vnmaxq, m_vnminq, m_vamegicmhv,
-	m_vntchan, m_vmtchan, m_voqcd, m_voew, m_vitmin;
+	m_vntchan, m_vmtchan, m_voqcd, m_voew, m_vitmin, m_vrsitmin;
 
       std::string m_gycut;
       int m_cutcore;
