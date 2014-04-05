@@ -90,7 +90,7 @@ bool My_File<FileType>::OpenDB(std::string file)
   file+=".db";
   if (s_sqldbs.find(file)!=s_sqldbs.end()) return true;
   sqlite3 *db=NULL;
-  int dummy;
+  int dummy=0;
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_rank()) {
     MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
@@ -103,6 +103,9 @@ bool My_File<FileType>::OpenDB(std::string file)
 #endif
   }
   else {
+    size_t pos(file.rfind('/'));
+    if (pos!=std::string::npos &&
+	!MakeDir(file.substr(0,pos),true)) return false;
     int res=0;
     if (s_sqlopenflag.length()==0) res=sqlite3_open(file.c_str(),&db);
     else res=sqlite3_open_v2(file.c_str(),&db,SQLITE_OPEN_READWRITE|
