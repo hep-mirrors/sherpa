@@ -56,7 +56,7 @@ Sherpa::~Sherpa()
   delete ATOOLS::rpa;
   delete ATOOLS::ran;
 #ifdef USING__MPI
-  int dummy;
+  int dummy=0;
   MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
 #endif  
   delete ATOOLS::msg;
