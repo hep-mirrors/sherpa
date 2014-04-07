@@ -29,6 +29,8 @@ void PrintInfo()
   cout<<"                     further combination is not possible without the header"<<endl;
   cout<<endl;
   cout<<"          -rescale=<factor> rescale output by <factor>"<<endl;
+  cout<<endl;
+  cout<<"          -x remove input directories after combining"<<endl;
 }
 
 #include "ATOOLS/Org/Exception.H"
@@ -46,12 +48,13 @@ int main(int argc,char **argv)
     return 0;
   }
   int i=1;
-  int mode=0,noheader=0,check=0;
+  int mode=0,noheader=0,check=0,rm=0;
   double factor=1.;
   string filter("");
   while (argv[i][0]=='-') {
     string argstr=argv[i];
     if (argstr==string("-noheader")) noheader=1;
+    else if (argstr==string("-x")) rm=1;
     else if (argstr==string("-check")) check=1;
     else if (argstr==string("-m=add")) mode=1;
     else if (argstr==string("-m=opt")) mode=2;
@@ -213,6 +216,12 @@ int main(int argc,char **argv)
   }
   if (sc>0) cout<<"successfully combined "<<inlist.size()
 		<<" directories containing "<<sc<<" histograms"<<endl; 
+  if (rm>0) {
+    for (size_t i=0;i<inlist.size();++i) {
+      Remove(inlist[i]);
+    }
+    cout<<"removed "<<inlist.size()<<" files"<<endl;
+  }
   delete ATOOLS::msg;
   delete ATOOLS::exh;
 #ifdef USING__MPI
