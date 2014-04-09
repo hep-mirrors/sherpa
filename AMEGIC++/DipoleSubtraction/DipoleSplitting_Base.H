@@ -53,7 +53,8 @@ namespace AMEGIC {
 
     dpt::dipoltype m_type;
     ATOOLS::Vec4D m_pi,m_pj,m_pk,m_ptij,m_ptk;
-    int m_i,m_j,m_k,m_tij,m_tk,m_m,m_es,m_k0sqf,m_k0sqi;
+    int m_i,m_j,m_k,m_tij,m_tk,m_m,m_es;
+    double m_k0sqf,m_k0sqi;
     std::vector<ATOOLS::Vec4D> m_dpollist;
     std::vector<ATOOLS::Vec4D> m_mom;
     std::vector<double> m_pfactors;
