@@ -21,8 +21,8 @@
 
 MEProcess::MEProcess(SHERPA::Sherpa *a_Generator) :
   m_name(""), p_amp(ATOOLS::Cluster_Amplitude::New()),
-  p_gen(a_Generator), p_proc(NULL),
-  m_ncolinds(0), m_nin(0), m_nout(0)
+  p_gen(a_Generator), p_proc(NULL), m_ncolinds(0),
+  m_npsp(0), m_nin(0), m_nout(0)
 {
 }
 
@@ -40,54 +40,55 @@ bool MEProcess::HasColorIntegrator()
 void MEProcess::SetMomentumIndices(const std::vector<int> &pdgs)
 {
   if(pdgs.size()<m_nin+m_nout) 
-    THROW(fatal_error, "Number of pdg codes in vector does not match total number of external particles");
-  for (unsigned int i(0); i<m_nin; i++)
-    {
-      // find the first occurence of a flavour of type pdgs[i] among the external legs
-      bool found = false;
-      //std::cout << "Looking for pdgid " << (long int)(ATOOLS::Flavour(abs(pdgs[i]), pdgs[i]<0?false:true))<< std::endl;
-      for (unsigned int j(0); j < m_nin; j++)
-	{
-	  //std::cout << "Checking " << (long int)(p_amp->Leg(j)->Flav()) << std::endl;
-	  if(((long int)(p_amp->Leg(j)->Flav()))==((long int)(ATOOLS::Flavour(abs(pdgs[i]), pdgs[i]<0?false:true))))
-	    {
-	      //std::cout << "Found match, checking if already assigned" << std::endl;
-	      // if the index j is already assigned, continue searching
-	      if(std::find(m_mom_inds.begin(), m_mom_inds.end(), j) !=m_mom_inds.end())
-		continue;
-	      m_mom_inds.push_back(j);
-	      found=true;
-	      break;
-	    }
-	}
-      if(!found)
-	THROW(fatal_error, "Could not assign all pdg-ids in vector to external legs of cluster amplitude");
+    THROW(fatal_error, "Wrong number of pdg codes given.");
+  for (unsigned int i(0); i<m_nin; i++) {
+    // find the first occurence of a flavour of type pdgs[i] among the
+    // external legs
+    bool found = false;
+    for (unsigned int j(0); j < m_nin; j++) {
+      if(((long int)(p_amp->Leg(j)->Flav()))
+         ==((long int)(ATOOLS::Flavour(abs(pdgs[i]), pdgs[i]<0?false:true)))) {
+        // if the index j is already assigned, continue searching
+        if(std::find(m_mom_inds.begin(), m_mom_inds.end(), j)!=m_mom_inds.end())
+          continue;
+        m_mom_inds.push_back(j);
+        found=true;
+        break;
+      }
     }
-  for (unsigned int i(m_nin); i<m_nin+m_nout; i++)
-    {
-      // find the first occurence of a flavour of type pdgs[i] among the external legs
-      bool found = false;
-      //std::cout << "Looking for pdgid " << (long int)(ATOOLS::Flavour(abs(pdgs[i]), pdgs[i]<0?true:false))<< std::endl;
-      for (unsigned int j(m_nin); j < m_nin+m_nout; j++)
-	{
-	  //std::cout << "Checking " << (long int)(p_amp->Leg(j)->Flav()) << std::endl;
-	  if(((long int)(p_amp->Leg(j)->Flav()))==((long int)(ATOOLS::Flavour(abs(pdgs[i]), pdgs[i]<0?true:false))))
-	    {
-	      //std::cout << "Found match, checking if already assigned" << std::endl;
-	      // if the index j is already assigned, continue searching
-	      if(std::find(m_mom_inds.begin(), m_mom_inds.end(), j) !=m_mom_inds.end())
-		continue;
-	      m_mom_inds.push_back(j);
-	      found=true;
-	      break;
-	    }
-	}
-      if(!found)
-	THROW(fatal_error, "Could not assign all pdg-ids in vector to external legs of cluster amplitude");
-    }  
+    if(!found) THROW(fatal_error, "Could not assign pdg code.");
+  }
+  for (unsigned int i(m_nin); i<m_nin+m_nout; i++) {
+    // find the first occurence of a flavour of type pdgs[i] among the
+    // external legs
+    bool found = false;
+    for (unsigned int j(m_nin); j < m_nin+m_nout; j++) {
+      if(((long int)(p_amp->Leg(j)->Flav()))
+         ==((long int)(ATOOLS::Flavour(abs(pdgs[i]), pdgs[i]<0?true:false)))) {
+        // if the index j is already assigned, continue searching
+        if(std::find(m_mom_inds.begin(), m_mom_inds.end(), j)!=m_mom_inds.end())
+          continue;
+        m_mom_inds.push_back(j);
+        found=true;
+        break;
+      }
+    }
+    if(!found) THROW(fatal_error, "Could not assign pdg code.");
+  }
 }
 
-void MEProcess::SetMomenta()
+size_t MEProcess::NumberOfPoints()
+{
+  if (m_npsp>0) return m_npsp;
+  ATOOLS::Data_Reader reader(" ",";","!","=");
+  reader.AddComment("#");
+  reader.SetInputPath(ATOOLS::rpa->GetPath());
+  reader.SetInputFile(ATOOLS::rpa->gen.Variable("MOMENTA_DATA_FILE"));
+  m_npsp=reader.GetValue<size_t>("NUMBER_OF_POINTS",1);
+  return m_npsp;
+}
+
+void MEProcess::SetMomenta(size_t n)
 {
   ATOOLS::Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
@@ -97,9 +98,16 @@ void MEProcess::SetMomenta()
   if (!reader.MatrixFromFile(momdata,""))
     THROW(missing_input,"No data in "+ATOOLS::rpa->GetPath()
                         +ATOOLS::rpa->gen.Variable("MOMENTA_DATA_FILE")+"'.");
+  size_t begin(0),id(0);
   for (size_t nf(0);nf<momdata.size();++nf) {
     std::vector<std::string> &cur(momdata[nf]);
+    if (cur.size()==2 && cur[0]=="Point" &&
+        ATOOLS::ToType<int>(cur[1])==n) { begin=nf+1; break; }
+  }
+  for (size_t nf(begin);nf<momdata.size();++nf) {
+    std::vector<std::string> &cur(momdata[nf]);
     // either "flav mom" or "flav mom col"
+    if (cur.size()==2 && cur[0]=="End" && cur[1]=="point") break;
     if (cur.size()!=5 && cur.size()!=7) continue;
     int kf(ATOOLS::ToType<int>(cur[0]));
     ATOOLS::Vec4D p(ATOOLS::ToType<double>(cur[1]),
@@ -109,14 +117,15 @@ void MEProcess::SetMomenta()
     ATOOLS::ColorID col(0,0);
     if (cur.size()==7) col=ATOOLS::ColorID(ATOOLS::ToType<size_t>(cur[5]),
                                            ATOOLS::ToType<size_t>(cur[6]));
-    int kfamp(p_amp->Leg(nf)->Flav().Kfcode());
-    if (nf<m_nin) kfamp=-kfamp;
-    if (p_amp->Leg(nf)->Flav().IsAnti()) kfamp=-kfamp;
+    int kfamp(p_amp->Leg(id)->Flav().Kfcode());
+    if (id<m_nin) kfamp=-kfamp;
+    if (p_amp->Leg(id)->Flav().IsAnti()) kfamp=-kfamp;
     if (kf!=kfamp) THROW(fatal_error,"Wrong momentum ordering.");
-    if (nf<m_nin) p_amp->Leg(nf)->SetMom(-p);
-    else          p_amp->Leg(nf)->SetMom(p);
-    if (nf<m_nin) p_amp->Leg(nf)->SetCol(col.Conj());
-    else          p_amp->Leg(nf)->SetCol(col);
+    if (id<m_nin) p_amp->Leg(id)->SetMom(-p);
+    else          p_amp->Leg(id)->SetMom(p);
+    if (id<m_nin) p_amp->Leg(id)->SetCol(col.Conj());
+    else          p_amp->Leg(id)->SetCol(col);
+    id++;
   }
 }
 
@@ -154,7 +163,8 @@ void MEProcess::SetMomentum(const size_t &index, const ATOOLS::Vec4D &p)
 
 void MEProcess::AddInFlav(const int &id)
 {
-  p_amp->CreateLeg(ATOOLS::Vec4D(), ATOOLS::Flavour(id>0?id:-id, id>0 ? true : false));
+  p_amp->CreateLeg(ATOOLS::Vec4D(),
+                   ATOOLS::Flavour(id>0?id:-id, id>0 ? true : false));
   p_amp->SetNIn(p_amp->NIn()+1);
   m_inpdgs.push_back(id);
   m_nin+=1;
@@ -162,14 +172,17 @@ void MEProcess::AddInFlav(const int &id)
 
 void MEProcess::AddOutFlav(const int &id)
 {
-  p_amp->CreateLeg(ATOOLS::Vec4D(), ATOOLS::Flavour(id>0?id:-id, id>0 ? false : true));
+  p_amp->CreateLeg(ATOOLS::Vec4D(),
+                   ATOOLS::Flavour(id>0?id:-id, id>0 ? false : true));
   m_outpdgs.push_back(id);
   m_nout+=1;
 }
 
 void MEProcess::AddInFlav(const int &id, const int &col1, const int &col2)
 {
-  p_amp->CreateLeg(ATOOLS::Vec4D(), ATOOLS::Flavour(id>0?id:-id, id>0 ? false : true), ATOOLS::ColorID(col1, col2));
+  p_amp->CreateLeg(ATOOLS::Vec4D(),
+                   ATOOLS::Flavour(id>0?id:-id, id>0 ? false : true),
+                   ATOOLS::ColorID(col1, col2));
   p_amp->SetNIn(p_amp->NIn()+1);
   m_inpdgs.push_back(id);
   m_nin+=1;
@@ -177,7 +190,9 @@ void MEProcess::AddInFlav(const int &id, const int &col1, const int &col2)
 
 void MEProcess::AddOutFlav(const int &id, const int &col1, const int &col2)
 {
-  p_amp->CreateLeg(ATOOLS::Vec4D(), ATOOLS::Flavour(id>0?id:-id, id>0 ? false : true), ATOOLS::ColorID(col1, col2));
+  p_amp->CreateLeg(ATOOLS::Vec4D(),
+                   ATOOLS::Flavour(id>0?id:-id, id>0 ? false : true),
+                   ATOOLS::ColorID(col1, col2));
   m_outpdgs.push_back(id);
   m_nout+=1;
 }
@@ -186,7 +201,7 @@ double MEProcess::GenerateColorPoint()
 {
   SP(PHASIC::Color_Integrator) CI = (p_proc->Integrator()->ColorIntegrator());
   if (CI == 0)
-    THROW(fatal_error, "No color integrator. Make sure Comix is used and that the initialization method has already been called prior to calling this function");
+    THROW(fatal_error, "No color integrator. Make sure Comix is used.");
   CI->GeneratePoint();
   for (size_t i=0; i<p_amp->Legs().size(); ++i)
     p_amp->Leg(i)->SetCol(ATOOLS::ColorID(CI->I()[i],CI->J()[i]));
@@ -199,7 +214,7 @@ void MEProcess::SetColors()
   PHASIC::Int_Vector cj(p_amp->Legs().size());
   SP(PHASIC::Color_Integrator) CI = (p_proc->Integrator()->ColorIntegrator());
   if (CI==0)
-    THROW(fatal_error, "No color integrator. Make sure Comix is used and that the initialization method has already been called prior to calling this function");
+    THROW(fatal_error, "No color integrator. Make sure Comix is used.");
   CI->GeneratePoint();
   for (size_t i=0; i<p_amp->Legs().size(); ++i)
     {
@@ -229,7 +244,6 @@ void MEProcess::Initialize()
   for (unsigned int i = 0; i<p_amp->Legs().size(); i++) {
     if (p_amp->Leg(i)->Flav().Strong()) {
       int scharge = p_amp->Leg(i)->Flav().StrongCharge();
-      //std::cout << "Strong flavour " << p_amp->Leg(i)->Flav().Kfcode() << " with charge " << p_amp->Leg(i)->Flav().StrongCharge() << std::endl;
       if (scharge == 8)
         m_gluinds.push_back(i);
       else if (scharge == -3)
@@ -237,7 +251,7 @@ void MEProcess::Initialize()
       else if (scharge == 3)
         m_quainds.push_back(i);
       else
-        THROW(fatal_error, "External leg with strong charge other than 3, -3 or 8 detected, dunno what to do.");
+        THROW(fatal_error, "External leg with unknown strong charge detected.");
     }
   }
   m_ncolinds = 2*m_gluinds.size() + m_quabarinds.size() + m_quainds.size();
@@ -271,22 +285,11 @@ void MEProcess::Initialize()
     if (rb==r&&gb==g&&bb==b) m_colcombinations.push_back(combination);
   }
 
-  // for(int i(0); i<m_colcombinations.size(); i++)
-  //   {
-  //     std::cout << "One Combination:" <<std::endl;
-  //     for (int j(0); j<m_colcombinations[i].size()/2; j++)
-  // 	std::cout << m_colcombinations[i][j];
-  //     std::cout << std::endl;
-  //     for (int j(m_colcombinations[i].size()/2); j<m_colcombinations[i].size(); j++)
-  //     	std::cout << m_colcombinations[i][j];
-  //     std::cout <<std::endl;
-  //   }
-
   std::vector<int> allpdgs;
-  for(std::vector<int>::const_iterator it=m_inpdgs.begin(); it!=m_inpdgs.end(); it++)
-    allpdgs.push_back(*it);
-  for(std::vector<int>::const_iterator it=m_outpdgs.begin(); it!=m_outpdgs.end(); it++)
-    allpdgs.push_back(*it);
+  for (std::vector<int>::const_iterator it=m_inpdgs.begin();
+       it!=m_inpdgs.end(); it++)  allpdgs.push_back(*it);
+  for (std::vector<int>::const_iterator it=m_outpdgs.begin();
+       it!=m_outpdgs.end(); it++) allpdgs.push_back(*it);
   SetMomentumIndices(allpdgs);
 }
 
@@ -300,33 +303,29 @@ double MEProcess::CSMatrixElement(){
     return p_proc->Differential(*p_amp);
   ci->SetWOn(false);
   double r_csme(0.);
-  for(std::vector<std::vector<int> >::const_iterator it=m_colcombinations.begin(); it!=m_colcombinations.end(); ++it)
-    {
-      int ind(0);
-      int indbar(m_ncolinds/2);
-      for(std::vector<int>::const_iterator jt=m_gluinds.begin(); jt!=m_gluinds.end(); ++jt)
-	{
-	  p_amp->Leg(*jt)->SetCol(ATOOLS::ColorID((*it)[ind], (*it)[indbar]));
-	  ind+=1;
-	  indbar+=1;
-	}
-      for(std::vector<int>::const_iterator jt=m_quainds.begin(); jt!=m_quainds.end(); ++jt)
-	{
-	  p_amp->Leg(*jt)->SetCol(ATOOLS::ColorID((*it)[ind], 0));
-	  ind+=1;
-	} 
-      if(ind!=m_ncolinds/2)
-	THROW(fatal_error, "Internal Error");
-      for(std::vector<int>::const_iterator jt=m_quabarinds.begin(); jt!=m_quabarinds.end(); ++jt)
-	{
-	  p_amp->Leg(*jt)->SetCol(ATOOLS::ColorID(0,(*it)[indbar] ));
-	  indbar+=1;
-	}
-      if(indbar!=m_ncolinds)
-	THROW(fatal_error, "Internal Error");
-      SetColors();
-      r_csme+=p_proc->Differential(*p_amp);
+  std::vector<std::vector<int> >::const_iterator it;
+  std::vector<int>::const_iterator jt;
+  for(it=m_colcombinations.begin(); it!=m_colcombinations.end(); ++it) {
+    int ind(0);
+    int indbar(m_ncolinds/2);
+    for(jt=m_gluinds.begin(); jt!=m_gluinds.end(); ++jt) {
+      p_amp->Leg(*jt)->SetCol(ATOOLS::ColorID((*it)[ind], (*it)[indbar]));
+      ind+=1;
+      indbar+=1;
     }
+    for(jt=m_quainds.begin(); jt!=m_quainds.end(); ++jt) {
+      p_amp->Leg(*jt)->SetCol(ATOOLS::ColorID((*it)[ind], 0));
+      ind+=1;
+    }
+    for(jt=m_quabarinds.begin(); jt!=m_quabarinds.end(); ++jt) {
+      p_amp->Leg(*jt)->SetCol(ATOOLS::ColorID(0,(*it)[indbar] ));
+      indbar+=1;
+    }
+    if(ind!=m_ncolinds/2)  THROW(fatal_error, "Internal Error");
+    if(indbar!=m_ncolinds) THROW(fatal_error, "Internal Error");
+    SetColors();
+    r_csme+=p_proc->Differential(*p_amp);
+  }
   ci->SetWOn(true);
   return r_csme;
 }

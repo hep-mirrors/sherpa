@@ -33,7 +33,7 @@ private:
   std::vector<int>               m_inpdgs, m_outpdgs;
   std::vector<size_t>            m_mom_inds;
 
-  size_t m_nin,m_nout;
+  size_t m_npsp,m_nin,m_nout;
 
   void SetMomentumIndices(const std::vector<int> &pdgs);
 
@@ -49,7 +49,9 @@ public:
   void SetColors();
   void Initialize();
 
-  void SetMomenta();
+  size_t NumberOfPoints();
+
+  void SetMomenta(size_t n);
   void SetMomenta(const std::vector<double*> &p);
   void SetMomenta(const ATOOLS::Vec4D_Vector &p);
   void SetMomentum(const size_t &id, const double &E , const double &px,
