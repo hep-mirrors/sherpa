@@ -105,14 +105,13 @@ void Initialization_Handler::SetFileNames()
   m_softcollisiondat = p_dataread->GetValue<string>("SOFTCOLLISIONS_DATA_FILE",string("SoftCollisions.dat"));
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",fname+"|(fragmentation){|}(fragmentation)");
   m_softphotonsdat   = p_dataread->GetValue<string>("SOFT_PHOTON_DATA_FILE",fname+"|(fragmentation){|}(fragmentation)");
+  m_processesdat     = p_dataread->GetValue<string>("PROCESSFILE",fname+"|(processes){|}(processes)");
+  m_selectordat      = p_dataread->GetValue<string>("SELECTORFILE",fname+"|(selector){|}(selector)");
   m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",fname+"|(analysis){|}(analysis)");
-  if (FileExists("Analysis.dat")) m_analysisdat="Analysis.dat"; 
-  std::string integrationdat=p_dataread->GetValue<string>
-    ("INTEGRATION_DATA_FILE",fname+"|(integration){|}(integration)");
-  m_processesdat=p_dataread->GetValue<string>
-    ("PROCESSFILE",fname+"|(processes){|}(processes)");
-  m_selectordat=p_dataread->
-    GetValue<string>("SELECTORFILE",fname+"|(selector){|}(selector)");
+  if (FileExists("Analysis.dat")) m_analysisdat="Analysis.dat";
+  std::string integrationdat = p_dataread->GetValue<string>("INTEGRATION_DATA_FILE",fname+"|(integration){|}(integration)");
+  std::string momentadat     = p_dataread->GetValue<string>("MOMENTA_DATA_FILE",fname+"|(momenta){|}(momenta)");
+  if (FileExists("Momenta.dat")) momentadat="Momenta.dat";
 
   rpa->gen.SetVariable("MODEL_DATA_FILE",m_modeldat);
   rpa->gen.SetVariable("ME_DATA_FILE",m_medat);
@@ -120,6 +119,7 @@ void Initialization_Handler::SetFileNames()
   rpa->gen.SetVariable("SHOWER_DATA_FILE",m_showerdat);
   rpa->gen.SetVariable("INTEGRATION_DATA_FILE",integrationdat);
   rpa->gen.SetVariable("FRAGMENTATION_DATA_FILE",m_fragmentationdat);
+  rpa->gen.SetVariable("MOMENTA_DATA_FILE",momentadat);
 }
 
 

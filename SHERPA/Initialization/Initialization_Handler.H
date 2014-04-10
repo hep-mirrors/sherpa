@@ -44,6 +44,7 @@ namespace SHERPA {
     std::string m_softcollisiondat, m_softphotonsdat;
     std::string m_processesdat;
     std::string m_selectordat;
+    std::string m_momentadat;
 
     double              m_bunch_splimits[2];
     ATOOLS::Flavour     m_bunch_particles[2];
@@ -115,7 +116,7 @@ namespace SHERPA {
     Analysis_Vector              * GetAnalyses()                    { return &m_analyses;       }
     Output_Vector                * GetOutputs()                     { return &m_outputs;        }
     MODEL::Model_Base            * GetModel()                 const { return p_model;           }
-    PDF::ISR_Handler_Map              * GetISRHandlers()                 { return &m_isrhandlers;    }
+    PDF::ISR_Handler_Map         * GetISRHandlers()                 { return &m_isrhandlers;    }
     BEAM::Beam_Spectra_Handler   * GetBeamSpectraHandler()    const { return p_beamspectra;     }
     Hard_Decay_Handler           * GetHardDecayHandler()      const { return p_harddecays;      }
     const Shower_Handler_Map     & GetShowerHandlers()        const { return m_showerhandlers;   }
