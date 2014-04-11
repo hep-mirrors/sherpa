@@ -16,11 +16,6 @@ int main(int argc,char* argv[])
     Process.Initialize();
 
     for (size_t n(1);n<=Process.NumberOfPoints();++n) {
-      // generate one specific random color configuration
-      // (necessary if comix is used)
-      double fac(1.);
-      if (Process.HasColorIntegrator()) fac=Process.GenerateColorPoint();
-
       // set momenta from file
       Process.SetMomenta(n);
 
@@ -31,7 +26,7 @@ int main(int argc,char* argv[])
       double flux = Process.GetFlux();
 
       // get matrix elements
-      double me    = Process.MatrixElement()/fac;
+      double me    = Process.MatrixElement();
       double cs_me = Process.CSMatrixElement();
 
       // info strings
@@ -41,10 +36,8 @@ int main(int argc,char* argv[])
       msg_Out().precision(16);
       msg_Out()<<"Matrix element generator:                        "<<gen  <<std::endl;
       msg_Out()<<"Color-summed matrix element:                     "<<cs_me<<std::endl;
-      if (gen=="Comix") {
+      if (gen=="Comix")
         msg_Out()<<"Matrix element for specified color confiuration: "<<me <<std::endl;
-        msg_Out()<<"Number of colour configurations:                 "<<fac<<std::endl;
-      }
       msg_Out()<<"Flux:                                            "<<flux <<std::endl;
       msg_Out().precision(precision);
     }

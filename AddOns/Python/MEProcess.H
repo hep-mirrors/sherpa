@@ -69,6 +69,7 @@ public:
   inline ATOOLS::Flavour GetOutFlav(size_t i) { return GetFlav(i+m_nin); }
 
   inline ATOOLS::Cluster_Amplitude* GetAmp() { return p_amp; }
+  inline std::string Name() { return m_name; }
 };
 
 #endif

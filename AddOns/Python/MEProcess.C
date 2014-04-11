@@ -293,14 +293,20 @@ void MEProcess::Initialize()
   SetMomentumIndices(allpdgs);
 }
 
-double MEProcess::MatrixElement(){
-  return p_proc->Differential(*p_amp);
+double MEProcess::MatrixElement()
+{
+  if (!HasColorIntegrator()) return p_proc->Differential(*p_amp);
+  SP(PHASIC::Color_Integrator) ci(p_proc->Integrator()->ColorIntegrator());
+  ci->SetWOn(false);
+  double res(p_proc->Differential(*p_amp));
+  ci->SetWOn(true);
+  return res;
 }
 
-double MEProcess::CSMatrixElement(){
+double MEProcess::CSMatrixElement()
+{
+  if (!HasColorIntegrator()) return p_proc->Differential(*p_amp);
   SP(PHASIC::Color_Integrator) ci(p_proc->Integrator()->ColorIntegrator());
-  if(ci==0) // assume Amegic
-    return p_proc->Differential(*p_amp);
   ci->SetWOn(false);
   double r_csme(0.);
   std::vector<std::vector<int> >::const_iterator it;
