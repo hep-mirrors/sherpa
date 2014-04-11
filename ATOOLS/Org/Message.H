@@ -8,9 +8,6 @@
 #include <set>
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
-#ifdef USING__Threading
-#include <pthread.h>
-#endif
 
 namespace ATOOLS {
 
@@ -102,9 +99,6 @@ namespace ATOOLS {
     std::streambuf* m_basebuf;
     size_t m_indent;
     bool at_start;
-#ifdef USING__Threading
-    pthread_mutex_t m_mtx;
-#endif
 
     int_type overflow(int_type ch);
     inline int sync() { return m_basebuf->pubsync(); }

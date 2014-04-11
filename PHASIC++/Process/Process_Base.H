@@ -142,7 +142,6 @@ namespace PHASIC {
     virtual void SetGenerator(ME_Generator_Base *const gen);
     virtual void SetShower(PDF::Shower_Base *const ps);
     virtual void SetSelector(const Selector_Key &key);
-    virtual void SetUpThreading();
 
     virtual void InitCuts(Cut_Data *const cuts);
     virtual void BuildCuts(Cut_Data *const cuts);

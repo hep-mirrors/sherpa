@@ -64,16 +64,10 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase):
     else p_remnants[i] = new No_Remnant(i);
   }
   for (size_t i=0;i<2;++i) p_remnants[i]->SetPartner(p_remnants[1-i]);
-#ifdef USING__Threading
-  pthread_mutex_init(&m_mtx,NULL);
-#endif
 }
 
 ISR_Handler::~ISR_Handler() 
 {
-#ifdef USING__Threading
-  pthread_mutex_destroy(&m_mtx);
-#endif
   if (p_isrbase) {
     for (int i=0;i<2;i++) {
       if (p_isrbase[i]) delete p_isrbase[i];  
@@ -323,7 +317,6 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
     return 0.;
   if (PDF(1) && (Q22<PDF(1)->Q2Min() || Q22>PDF(1)->Q2Max()))
     return 0.;
-  MtxLock();
   m_mu2[mode&1]=Q12;
   m_mu2[1-(mode&1)]=Q22;
   int cmode(((mode&6)>>1)?((mode&6)>>1):m_mode);
@@ -332,24 +325,24 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
   switch (cmode) {
     case 3 :
       if (!p_isrbase[0]->PDF()->Contains(fl1) ||
-          !p_isrbase[1]->PDF()->Contains(fl2)) { MtxUnLock(); return 0.; }
+          !p_isrbase[1]->PDF()->Contains(fl2)) { return 0.; }
       if (x1>p_isrbase[0]->PDF()->RescaleFactor() ||
-          x2>p_isrbase[1]->PDF()->RescaleFactor()) { MtxUnLock(); return 0.; }
+          x2>p_isrbase[1]->PDF()->RescaleFactor()) { return 0.; }
       if (!(p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12,warn) &&
-	    p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22,warn))) { MtxUnLock(); return 0.; }
+	    p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22,warn))) { return 0.; }
       break;
     case 2 :
-      if (!p_isrbase[1]->PDF()->Contains(fl2)) { MtxUnLock(); return 0.; }
-      if (x2>p_isrbase[1]->PDF()->RescaleFactor()) { MtxUnLock(); return 0.; }
-      if (!p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22,warn)) { MtxUnLock(); return 0.; }
+      if (!p_isrbase[1]->PDF()->Contains(fl2)) { return 0.; }
+      if (x2>p_isrbase[1]->PDF()->RescaleFactor()) { return 0.; }
+      if (!p_isrbase[1]->CalculateWeight(x2,0.0,0.0,Q22,warn)) { return 0.; }
       break;
     case 1 :
-      if (!p_isrbase[0]->PDF()->Contains(fl1)) { MtxUnLock(); return 0.; }
-      if (x1>p_isrbase[0]->PDF()->RescaleFactor()) { MtxUnLock(); return 0.; }
-      if (!p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12,warn)) { MtxUnLock(); return 0.; }
+      if (!p_isrbase[0]->PDF()->Contains(fl1)) { return 0.; }
+      if (x1>p_isrbase[0]->PDF()->RescaleFactor()) { return 0.; }
+      if (!p_isrbase[0]->CalculateWeight(x1,0.0,0.0,Q12,warn)) { return 0.; }
       break;
-    case 0 : MtxUnLock(); break;
-    default : MtxUnLock(); return 0.;
+    case 0 : break;
+    default : return 0.;
   }
   if (cmode!=3 || (CheckRemnantKinematics(fl1,x1,0,false) &&
                     CheckRemnantKinematics(fl2,x2,1,false))) {
@@ -357,7 +350,6 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
     double f2=(cmode&2)?p_isrbase[1]->Weight(fl2):1.0;
     m_xf1[mode&1]=x1*f1;
     m_xf2[mode&1]=x2*f2;
-    MtxUnLock();
     msg_IODebugging()<<"  PDF1: "<<rpa->gen.Beam1()<<" -> "<<fl1<<" at ("<<x1
 		   <<","<<sqrt(Q12)<<") -> "<<om::bold<<f1<<om::reset<<"\n";
     msg_IODebugging()<<"  PDF2: "<<rpa->gen.Beam2()<<" -> "<<fl2<<" at ("<<x2
@@ -370,7 +362,6 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
       return pow(std::numeric_limits<double>::min(),0.25);
     return f1*f2*((mode&14)?1.0:flux);
   }
-  MtxUnLock();
   return 0.;
 }
 
@@ -421,18 +412,4 @@ ATOOLS::Blob_Data_Base* ISR_Handler::Info(const int frame) const
 {
   if (frame==0) return new ATOOLS::Blob_Data<std::vector<double> >(m_info_cms);
   return new ATOOLS::Blob_Data<std::vector<double> >(m_info_lab);
-}
-
-void ISR_Handler::MtxLock()
-{
-#ifdef USING__Threading
-  pthread_mutex_lock(&m_mtx);
-#endif
-}
-
-void ISR_Handler::MtxUnLock()
-{
-#ifdef USING__Threading
-  pthread_mutex_unlock(&m_mtx);
-#endif
 }

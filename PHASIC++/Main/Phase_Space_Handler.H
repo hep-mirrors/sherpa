@@ -7,9 +7,6 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <list>
-#ifdef USING__Threading
-#include <pthread.h>
-#endif
 
 namespace ATOOLS { 
   class Blob_Data_Base; 
@@ -113,16 +110,6 @@ namespace PHASIC {
     psm::code m_cmode;
 
     bool m_printpspoint;
-
-#ifdef USING__Threading
-    pthread_t m_met, m_pst;
-    size_t m_sig, m_uset;
-    pthread_mutex_t m_sme_mtx, m_sps_mtx, m_tme_mtx, m_tps_mtx;
-    pthread_cond_t m_sme_cnd, m_sps_cnd, m_tme_cnd, m_tps_cnd;
-
-    static void *CalculateME(void *arg);
-    static void *CalculatePS(void *arg);
-#endif
 
     double EnhanceFactor(Process_Base *const proc);
 

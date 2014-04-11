@@ -9,16 +9,10 @@ using namespace ATOOLS;
 
 ClusterAmplitude_PVector::ClusterAmplitude_PVector()
 {
-#ifdef USING__Threading
-  pthread_mutex_init(&m_mtx,NULL);
-#endif
 }
 
 ClusterAmplitude_PVector::~ClusterAmplitude_PVector()
 {
-#ifdef USING__Threading
-  pthread_mutex_destroy(&m_mtx);
-#endif
   while (!empty()) {
     Cluster_Amplitude *ampl(back());
     pop_back();
@@ -49,14 +43,11 @@ Cluster_Amplitude::~Cluster_Amplitude()
 Cluster_Amplitude *Cluster_Amplitude::New
 (Cluster_Amplitude *const prev)
 {
-  s_ampls.MtxLock();
   if (s_ampls.empty()) {
-    s_ampls.MtxUnLock();
     return new Cluster_Amplitude(prev);
   }
   Cluster_Amplitude *ca(s_ampls.back());
   s_ampls.pop_back();
-  s_ampls.MtxUnLock();
   ca->p_prev=prev;
   ca->p_next=NULL;
   ca->m_oew=ca->m_oqcd=0;
@@ -78,9 +69,7 @@ void Cluster_Amplitude::Delete()
   m_cmap.clear();
   if (p_prev) p_prev->p_next=NULL;
   p_prev=p_next=NULL;
-  s_ampls.MtxLock();
   s_ampls.push_back(this);
-  s_ampls.MtxUnLock();
 }
 
 void Cluster_Amplitude::CreateLeg

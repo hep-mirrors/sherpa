@@ -299,28 +299,22 @@ CSpinor<Scalar>::s_objects;
 template <class Scalar>
 CSpinor<Scalar> *CSpinor<Scalar>::New()
 {
-  s_objects.MtxLock();
   if (s_objects.empty()) {
-    s_objects.MtxUnLock();
     return new CSpinor();
   }
   CSpinor *v(s_objects.back());
   s_objects.pop_back();
-  s_objects.MtxUnLock();
   return v;
 }
 
 template <class Scalar>
 CSpinor<Scalar> *CSpinor<Scalar>::New(const CSpinor &s)
 {
-  s_objects.MtxLock();
   if (s_objects.empty()) {
-    s_objects.MtxUnLock();
     return new CSpinor(s);
   }
   CSpinor *v(s_objects.back());
   s_objects.pop_back();
-  s_objects.MtxUnLock();
   *v=s;
   return v;
 }
@@ -330,14 +324,11 @@ CSpinor<Scalar> *CSpinor<Scalar>::New
 (const int r,const int b,const int cr,const int ca,
  const size_t &h,const size_t &s,const int on)
 {
-  s_objects.MtxLock();
   if (s_objects.empty()) {
-    s_objects.MtxUnLock();
     return new CSpinor(r,b,cr,ca,h,s,on);
   }
   CSpinor *v(s_objects.back());
   s_objects.pop_back();
-  s_objects.MtxUnLock();
   v->m_r=r;
   v->m_b=b;
   v->m_on=on;
@@ -358,9 +349,7 @@ CObject *CSpinor<Scalar>::Copy() const
 template <class Scalar>
 void CSpinor<Scalar>::Delete()
 {
-  s_objects.MtxLock();
   s_objects.push_back(this);
-  s_objects.MtxUnLock();
 }
 
 namespace METOOLS {

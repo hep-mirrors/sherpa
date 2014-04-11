@@ -38,26 +38,14 @@ namespace ATOOLS {
   template <class _Type>
   class TermDelete_Vector:
     public std::vector<_Type*> {
-  private:
-
-#ifdef USING__Threading
-    pthread_mutex_t m_mtx;
-#endif
-
   public:
 
     TermDelete_Vector()
     {
-#ifdef USING__Threading
-      pthread_mutex_init(&m_mtx,NULL);
-#endif
     }
 
     ~TermDelete_Vector()
     {
-#ifdef USING__Threading
-      pthread_mutex_destroy(&m_mtx);
-#endif
       while (!this->empty()) {
 	delete this->back();
 	this->pop_back();
@@ -66,16 +54,10 @@ namespace ATOOLS {
 
     inline void MtxLock()
     {
-#ifdef USING__Threading
-      pthread_mutex_lock(&m_mtx);
-#endif
     }
 
     inline void MtxUnLock()
     {
-#ifdef USING__Threading
-      pthread_mutex_unlock(&m_mtx);
-#endif
     }
 
   };// end of class TermDelete_Vector
@@ -95,23 +77,18 @@ namespace ATOOLS {
 
     static DTerm *New(const double &val=0.0)
     {
-      s_terms.MtxLock();
       if (s_terms.empty()) {
-	s_terms.MtxUnLock();
 	return new DTerm(val);
       }
       DTerm *term(s_terms.back());
       s_terms.pop_back();
-      s_terms.MtxUnLock();
       term->m_this=val;
       return term;
     }
 
     void Delete()
     {
-      s_terms.MtxLock();
       s_terms.push_back(this);
-      s_terms.MtxUnLock();
     }
 
   };// end of class DTerm
@@ -131,23 +108,18 @@ namespace ATOOLS {
 
     static CTerm *New(const Complex &val=Complex(0.0,0.0))
     {
-      s_terms.MtxLock();
       if (s_terms.empty()) {
-	s_terms.MtxUnLock();
 	return new CTerm(val);
       }
       CTerm *term(s_terms.back());
       s_terms.pop_back();
-      s_terms.MtxUnLock();
       term->m_this=val;
       return term;
     }
 
     void Delete()
     {
-      s_terms.MtxLock();
       s_terms.push_back(this);
-      s_terms.MtxUnLock();
     }
 
   };// end of class CTerm
@@ -167,23 +139,18 @@ namespace ATOOLS {
 
     static DV4Term *New(const Vec4D &val)
     {
-      s_terms.MtxLock();
       if (s_terms.empty()) {
-	s_terms.MtxUnLock();
 	return new DV4Term(val);
       }
       DV4Term *term(s_terms.back());
       s_terms.pop_back();
-      s_terms.MtxUnLock();
       term->m_this=val;
       return term;
     }
 
     void Delete()
     {
-      s_terms.MtxLock();
       s_terms.push_back(this);
-      s_terms.MtxUnLock();
     }
 
   };// end of class DV4Term
@@ -203,23 +170,18 @@ namespace ATOOLS {
 
     static STerm *New(const std::string &val)
     {
-      s_terms.MtxLock();
       if (s_terms.empty()) {
-	s_terms.MtxUnLock();
 	return new STerm(val);
       }
       STerm *term(s_terms.back());
       s_terms.pop_back();
-      s_terms.MtxUnLock();
       term->m_this=val;
       return term;
     }
 
     void Delete()
     {
-      s_terms.MtxLock();
       s_terms.push_back(this);
-      s_terms.MtxUnLock();
     }
 
   };// end of class STerm

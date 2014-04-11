@@ -93,38 +93,20 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const tm::code modifier)
 indentbuf::indentbuf(std::streambuf* basebuf) :
   m_basebuf(basebuf), m_indent(0), at_start(true)
 {
-#ifdef USING__Threading
-  pthread_mutex_init(&m_mtx,NULL);
-#endif
 }
 
 indentbuf::~indentbuf()
 {
-#ifdef USING__Threading
-  pthread_mutex_destroy(&m_mtx);
-#endif
 }
 
 void indentbuf::Indent(size_t i)
 {
-#ifdef USING__Threading
-  pthread_mutex_lock(&m_mtx);
-#endif
   m_indent+=i;
-#ifdef USING__Threading
-  pthread_mutex_unlock(&m_mtx);
-#endif
 }
 
 void indentbuf::DeIndent(size_t i)
 {
-#ifdef USING__Threading
-  pthread_mutex_lock(&m_mtx);
-#endif
   if (m_indent>=i) m_indent-=i;
-#ifdef USING__Threading
-  pthread_mutex_unlock(&m_mtx);
-#endif
 }
 
 std::streambuf::int_type indentbuf::overflow(int_type ch)

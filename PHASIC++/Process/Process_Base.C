@@ -551,10 +551,6 @@ void Process_Base::SetShower(PDF::Shower_Base *const ps)
   p_shower=ps; 
 }
 
-void Process_Base::SetUpThreading()
-{
-}
-
 void Process_Base::FillOnshellConditions()
 {
   if (!Selector()) return;

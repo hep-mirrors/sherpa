@@ -553,17 +553,3 @@ void Beam_Spectra_Handler::SetLimits()
   m_xkey[1]=log(Upper1());
   m_xkey[3]=log(Upper2());
 }
-
-void Beam_Spectra_Handler::MtxLock()
-{
-#ifdef USING__Threading
-  pthread_mutex_lock(&m_mtx);
-#endif
-}
-
-void Beam_Spectra_Handler::MtxUnLock()
-{
-#ifdef USING__Threading
-  pthread_mutex_unlock(&m_mtx);
-#endif
-}

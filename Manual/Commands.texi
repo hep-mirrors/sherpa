@@ -68,9 +68,6 @@ Set output level for event generation @samp{<level>}, see @ref{OUTPUT}.
 @item -l <logfile>
 Set log file name @samp{<logfile>}, see @ref{LOG_FILE}.
 
-@item -j <threads>
-Set number of threads @samp{<threads>}, see @ref{Multi-threading}.
-
 @item -g
 Do not create result directory, see @ref{RESULT_DIRECTORY}.
 

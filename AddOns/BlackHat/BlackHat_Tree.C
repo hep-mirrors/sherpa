@@ -15,9 +15,6 @@ using namespace ATOOLS;
 BH::BH_interface *BLACKHAT::BlackHat_Tree::s_interface=NULL;
 MODEL::Model_Base *BLACKHAT::BlackHat_Tree::s_model=NULL;
 namespace BLACKHAT {
-#ifdef USING__Threading
-  static pthread_mutex_t s_mtx;
-#endif
 }
 
 BlackHat_Tree::BlackHat_Tree(const Process_Info& pi,
@@ -27,11 +24,6 @@ BlackHat_Tree::BlackHat_Tree(const Process_Info& pi,
 {
   m_oqcd=ampl->get_order_qcd()+(m_mode?2:0);
   m_oew=ampl->get_order_qed();
-#ifdef USING__Threading
-  static bool first(true);
-  if (first) pthread_mutex_init(&s_mtx,NULL);
-  first=false;
-#endif
 }
 
 BlackHat_Tree::~BlackHat_Tree()
@@ -63,18 +55,12 @@ double BlackHat_Tree::Calc(const Vec4D_Vector& momenta)
       moms[i][j]=momenta[i][j];
     }
   }
-#ifdef USING__Threading
-  pthread_mutex_lock(&s_mtx);
-#endif
   BH::BHinput input(moms,-1.0);
   s_interface->operator()(input);
   double res=p_ampl->get_born()*CouplingFactor(m_oqcd,m_oew);
   if (m_mode)
     res*=p_ampl->get_finite()*
       2.0*sqr(s_model->ScalarFunction("alpha_S")/(4.0*M_PI));
-#ifdef USING__Threading
-  pthread_mutex_unlock(&s_mtx);
-#endif
 
   return res;
 }

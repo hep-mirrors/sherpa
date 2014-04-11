@@ -46,49 +46,10 @@ PS_Generator::PS_Generator(Process_Base *const xs):
   m_chmass*=rpa->gen.Ecms();
   p_xs->ConstructPSVertices(this);
   AddSTCC();
-#ifdef USING__Threading
-  int helpi(0);
-  if (!read.ReadFromFile(helpi,"COMIX_PG_THREADS")) helpi=0;
-  else msg_Tracking()<<METHOD<<"(): Set number of threads "<<helpi<<".\n";
-  if (helpi>0) {
-    m_cts.resize(helpi);
-    for (size_t i(0);i<m_cts.size();++i) {
-      CDBG_PG_TID *tid(new CDBG_PG_TID(this));
-      m_cts[i] = tid;
-      pthread_cond_init(&tid->m_s_cnd,NULL);
-      pthread_cond_init(&tid->m_t_cnd,NULL);
-      pthread_mutex_init(&tid->m_s_mtx,NULL);
-      pthread_mutex_init(&tid->m_t_mtx,NULL);
-      pthread_mutex_lock(&tid->m_s_mtx);
-      pthread_mutex_lock(&tid->m_t_mtx);
-      tid->m_s=1;
-      int tec(0);
-      if ((tec=pthread_create(&tid->m_id,NULL,&TCalcJL,(void*)tid)))
-	THROW(fatal_error,"Cannot create thread "+ToString(i));
-    }
-  }
-#endif
 }
 
 PS_Generator::~PS_Generator()
 {
-#ifdef USING__Threading
-  for (size_t i(0);i<m_cts.size();++i) {
-    CDBG_PG_TID *tid(m_cts[i]);
-    tid->m_s=0;
-    pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
-    int tec(0);
-    if ((tec=pthread_join(tid->m_id,NULL)))
-      THROW(fatal_error,"Cannot join thread"+ToString(i));
-    pthread_mutex_unlock(&tid->m_t_mtx);
-    pthread_mutex_unlock(&tid->m_s_mtx);
-    pthread_mutex_destroy(&tid->m_t_mtx);
-    pthread_mutex_destroy(&tid->m_s_mtx);
-    pthread_cond_destroy(&tid->m_t_cnd);
-    pthread_cond_destroy(&tid->m_s_cnd);
-    delete tid;
-  }
-#endif
   CleanUp();
 }
 
@@ -130,61 +91,14 @@ void PS_Generator::SetColors(const Int_Vector &rc,
   }
 }
 
-#ifdef USING__Threading
-void *PS_Generator::TCalcJL(void *arg)
-{
-  CDBG_PG_TID *tid((CDBG_PG_TID*)arg);
-  while (true) {
-    // wait for generator to signal
-    pthread_mutex_lock(&tid->m_s_mtx);
-    pthread_mutex_unlock(&tid->m_s_mtx);
-    pthread_cond_signal(&tid->m_s_cnd);
-    if (tid->m_s==0) return NULL;
-    // worker routine
-    for (tid->m_i=tid->m_b;tid->m_i<tid->m_e;++tid->m_i) 
-      tid->p_psg->m_cur[tid->m_n][tid->m_i]->Evaluate();
-    // signal generator to continue
-    pthread_cond_wait(&tid->m_t_cnd,&tid->m_t_mtx);
-  }
-  return NULL;
-}
-#endif
-
 void PS_Generator::CalcJL()
 {
   for (size_t i(0);i<m_cur[1].size();++i) 
     m_cur[1][i]->ConstructJ(Vec4D(),0,m_cl[i][0],m_cl[i][1]);
   if (m_zmode>0) {
     for (size_t n(2);n<m_n;++n) {
-#ifdef USING__Threading
-      if (m_cts.empty()) {
-	for (size_t i(0);i<m_cur[n].size();++i) 
-	  m_cur[n][i]->Evaluate();
-      }
-      else {
-	// start calculator threads
-	size_t d(m_cur[n].size()/m_cts.size());
-	if (m_cur[n].size()%m_cts.size()>0) ++d;
-	for (size_t j(0), i(0);j<m_cts.size()&&i<m_cur[n].size();++j) {
-	  CDBG_PG_TID *tid(m_cts[j]);
-	  tid->m_n=n;
-	  tid->m_b=i;
-	  tid->m_e=Min(i+=d,m_cur[n].size());
-	  pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
-	}
-	// suspend calculator threads
-	for (size_t j(0), i(0);j<m_cts.size()&&i<m_cur[n].size();++j) {
-	  i+=d;
-	  CDBG_PG_TID *tid(m_cts[j]);
-	  pthread_mutex_lock(&tid->m_t_mtx);
-	  pthread_mutex_unlock(&tid->m_t_mtx);
-	  pthread_cond_signal(&tid->m_t_cnd);
-	}
-      }
-#else
       for (size_t i(0);i<m_cur[n].size();++i) 
 	m_cur[n][i]->Evaluate();
-#endif
     }
     for (size_t n(m_n-2);n>=2;--n)
       for (size_t i(0);i<m_cur[n].size();++i)

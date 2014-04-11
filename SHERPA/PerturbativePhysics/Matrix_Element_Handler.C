@@ -137,7 +137,6 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
   }
   bool okay(true);
   for (size_t i=0;i<m_procs.size();++i) {
-    m_procs[i]->SetUpThreading();
     m_procs[i]->SetLookUp(true);
     if (!m_procs[i]->CalculateTotalXSec(m_respath,false)) okay=false;
     m_procs[i]->SetLookUp(false);

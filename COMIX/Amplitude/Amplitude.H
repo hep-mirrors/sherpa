@@ -10,10 +10,6 @@
 #include "ATOOLS/Phys/NLO_Subevt.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
-#ifdef USING__Threading 
-#include <pthread.h> 
-#endif 
-
 namespace PHASIC {
   class Color_Integrator;
   class Helicity_Integrator;
@@ -48,22 +44,6 @@ namespace COMIX {
   typedef std::set<std::pair<size_t,size_t> >     Combination_Set;
   typedef std::map<size_t,ATOOLS::Flavour_Vector> CFlavVector_Map;
 
-#ifdef USING__Threading
-  class Amplitude;
-
-  struct CDBG_ME_TID {
-    pthread_t m_id;
-    Amplitude *p_ampl;
-    size_t m_s, m_n, m_b, m_e, m_i;
-    pthread_mutex_t m_s_mtx, m_t_mtx;
-    pthread_cond_t m_s_cnd, m_t_cnd;
-    CDBG_ME_TID(Amplitude *const ampl): 
-      p_ampl(ampl), m_s(2), m_b(0), m_e(0) {}
-  };// end of struct CDBG_ME_TID
-
-  typedef std::vector<CDBG_ME_TID*> CDBG_ME_TID_Vector; 
-#endif
- 
   class Amplitude {
   public:
 
@@ -121,12 +101,6 @@ namespace COMIX {
     std::vector<std::vector<long int> > m_affm;
 
     ATOOLS::NLO_subevt *p_sub;
-
-#ifdef USING__Threading 
-    CDBG_ME_TID_Vector m_cts;
-
-    static void *TCalcJL(void *arg);
-#endif 
 
     static size_t     MakeId(const Int_Vector &ids,const int t);
     static Int_Vector MakeId(const size_t &id,const size_t &n);

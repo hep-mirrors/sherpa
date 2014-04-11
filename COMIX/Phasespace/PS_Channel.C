@@ -72,78 +72,19 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   m_nr=3*nout-4;
   rannum=m_nr+m_n-2+1;
   rans=new double[rannum];
-#ifdef USING__Threading
-  int helpi(2);
-  if (!read.ReadFromFile(helpi,"COMIX_PS_THREADS")) helpi=2;
-  else msg_Tracking()<<METHOD<<"(): Set number of threads "<<helpi<<".\n";
-  if (nout<=4) helpi=0;
-  else if (nout<=6) helpi=Min(helpi,2);
-  if (helpi>0) {
-    m_cts.resize(helpi);
-    for (size_t i(0);i<m_cts.size();++i) {
-      CDBG_PS_TID *tid(new CDBG_PS_TID(this));
-      m_cts[i] = tid;
-      pthread_cond_init(&tid->m_s_cnd,NULL);
-      pthread_cond_init(&tid->m_t_cnd,NULL);
-      pthread_mutex_init(&tid->m_s_mtx,NULL);
-      pthread_mutex_init(&tid->m_t_mtx,NULL);
-      pthread_mutex_lock(&tid->m_s_mtx);
-      pthread_mutex_lock(&tid->m_t_mtx);
-      tid->m_s=1;
-      int tec(0);
-      if ((tec=pthread_create(&tid->m_id,NULL,&TGenerateWeight,(void*)tid)))
-	THROW(fatal_error,"Cannot create thread "+ToString(i));
-    }
-  }
-  pthread_mutex_init(&m_vgs_mtx,NULL);
-  pthread_mutex_init(&m_wvgs_mtx,NULL);
-#endif
 }
 
 PS_Channel::~PS_Channel()
 {
-#ifdef USING__Threading
-  pthread_mutex_destroy(&m_wvgs_mtx);
-  pthread_mutex_destroy(&m_vgs_mtx);
-  for (size_t i(0);i<m_cts.size();++i) {
-    CDBG_PS_TID *tid(m_cts[i]);
-    tid->m_s=0;
-    pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
-    int tec(0);
-    if ((tec=pthread_join(tid->m_id,NULL)))
-      THROW(fatal_error,"Cannot join thread"+ToString(i));
-    pthread_mutex_unlock(&tid->m_t_mtx);
-    pthread_mutex_unlock(&tid->m_s_mtx);
-    pthread_mutex_destroy(&tid->m_t_mtx);
-    pthread_mutex_destroy(&tid->m_s_mtx);
-    pthread_cond_destroy(&tid->m_t_cnd);
-    pthread_cond_destroy(&tid->m_s_cnd);
-    delete tid;
-  }
-#endif
   for (Vegas_Map::const_iterator vit(m_vmap.begin());
        vit!=m_vmap.end();++vit) delete vit->second;
   delete p_psid;
   delete p_cid;
 }
 
-#ifdef USING__Threading
-CDBG_PS_TID *PS_Channel::GetTId() const
-{
-  pthread_t tid(pthread_self());
-  for (size_t i(0);i<m_cts.size();++i)
-    if (pthread_equal(tid,m_cts[i]->m_id)) return m_cts[i];
-  return NULL;
-}
-#endif
-
 const std::string &PS_Channel::GetPSId(const size_t &id)
 {
   PSId_Map *psid(p_psid);
-#ifdef USING__Threading
-  CDBG_PS_TID *tid(GetTId());
-  if (tid) psid=tid->p_psid;
-#endif
   PSId_Map::const_iterator iit(psid->find(id));
   if (iit!=psid->end()) return iit->second;
   (*psid)[id]=PSId(id);
@@ -153,10 +94,6 @@ const std::string &PS_Channel::GetPSId(const size_t &id)
 const std::vector<int> &PS_Channel::GetCId(const size_t &id)
 {
   CId_Map *cid(p_cid);
-#ifdef USING__Threading
-  CDBG_PS_TID *tid(GetTId());
-  if (tid) cid=tid->p_cid;
-#endif
   CId_Map::const_iterator iit(cid->find(id));
   if (iit!=cid->end()) return iit->second;
   (*cid)[id]=ID(id);
@@ -196,37 +133,22 @@ PHASIC::Vegas *PS_Channel::GetPVegas
 (const Current *cur,const size_t &id)
 {
   if (cur!=NULL) {
-#ifdef USING__Threading
-    pthread_mutex_lock(&m_vgs_mtx);
-#endif
     Vegas *vgs(NULL);
     CVegas_Map::const_iterator vit(m_pcmap.find(cur));
     if (vit!=m_pcmap.end()) vgs=vit->second;
     else vgs=m_pcmap[cur]=GetVegas("P_"+cur->PSInfo());
-#ifdef USING__Threading
-    pthread_mutex_unlock(&m_vgs_mtx);
-#endif
     return vgs;
   }
-#ifdef USING__Threading
-  pthread_mutex_lock(&m_vgs_mtx);
-#endif
   Vegas *vgs(NULL);
   IVegas_Map::const_iterator vit(m_pimap.find(id));
   if (vit!=m_pimap.end()) vgs=vit->second;
   else vgs=m_pimap[id]=GetVegas("P_"+GetPSId(id));
-#ifdef USING__Threading
-  pthread_mutex_unlock(&m_vgs_mtx);
-#endif
   return vgs;
 }
 
 PHASIC::Vegas *PS_Channel::GetSVegas
 (const size_t &type,const Current *cur)
 {
-#ifdef USING__Threading
-  pthread_mutex_lock(&m_vgs_mtx);
-#endif
   Vegas *vgs(NULL);
   ICVegas_Map::const_iterator vit(m_sicmap.find(type));
   if (vit!=m_sicmap.end()) {
@@ -235,18 +157,12 @@ PHASIC::Vegas *PS_Channel::GetSVegas
   }
   if (vgs==NULL) vgs=m_sicmap[type][cur]=
     GetVegas("S_"+ToString(type)+"_"+cur->PSInfo());
-#ifdef USING__Threading
-  pthread_mutex_unlock(&m_vgs_mtx);
-#endif
   return vgs;
 }
 
 PHASIC::Vegas *PS_Channel::GetTVegas
 (const size_t &id,const Current *cur)
 {
-#ifdef USING__Threading
-  pthread_mutex_lock(&m_vgs_mtx);
-#endif
   Vegas *vgs(NULL);
   ICVegas_Map::const_iterator vit(m_ticmap.find(id));
   if (vit!=m_ticmap.end()) {
@@ -255,9 +171,6 @@ PHASIC::Vegas *PS_Channel::GetTVegas
   }
   if (vgs==NULL) vgs=m_ticmap[id][cur]=
     GetVegas("T_"+GetPSId(id)+"_"+cur->PSInfo());
-#ifdef USING__Threading
-  pthread_mutex_unlock(&m_vgs_mtx);
-#endif
   return vgs;
 }
 
@@ -316,14 +229,8 @@ double PS_Channel::PropWeight(const Current *cur,const size_t &id,
   else wgt=CE.MasslessPropWeight(sexp,smin,smax,s,rn);
   if (m_vmode&3) {
     Vegas *cvgs(GetPVegas(cur,id));
-#ifdef USING__Threading
-    pthread_mutex_lock(&m_wvgs_mtx);
-#endif
     m_wvgs.push_back(cvgs);
     m_wrns.push_back(rn);
-#ifdef USING__Threading
-    pthread_mutex_unlock(&m_wvgs_mtx);
-#endif
     wgt/=cvgs->GenerateWeight(&rn);
 #ifdef DEBUG__BG
     msg_Debugging()<<"    generate weight "<<m_wvgs.back()->Name()<<"\n";
@@ -419,14 +326,8 @@ double PS_Channel::TChannelWeight
 			       m_texp,ctmax,ctmin,1.0,0,rns[0],rns[1]));
   if (m_vmode&3) {
     Vegas *cvgs(GetTVegas(id,cur));
-#ifdef USING__Threading
-    pthread_mutex_lock(&m_wvgs_mtx);
-#endif
     m_wvgs.push_back(cvgs);
     m_wrns.push_back(rns[0]);
-#ifdef USING__Threading
-    pthread_mutex_unlock(&m_wvgs_mtx);
-#endif
     wgt/=cvgs->GenerateWeight(rns);
 #ifdef DEBUG__BG
     msg_Debugging()<<"    generate weight "<<m_wvgs.back()->Name()<<"\n";
@@ -493,14 +394,8 @@ double PS_Channel::SChannelWeight
   }
   if (m_vmode&3) {
     Vegas *cvgs(GetSVegas(type,cur));
-#ifdef USING__Threading
-    pthread_mutex_lock(&m_wvgs_mtx);
-#endif
     m_wvgs.push_back(cvgs);
     m_wrns.push_back(rns[0]);
-#ifdef USING__Threading
-    pthread_mutex_unlock(&m_wvgs_mtx);
-#endif
     wgt/=cvgs->GenerateWeight(rns);
 #ifdef DEBUG__BG
     msg_Debugging()<<"    generate weight "<<m_wvgs.back()->Name()<<"\n";
@@ -897,64 +792,14 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
   return true;
 }
 
-#ifdef USING__Threading
-void *PS_Channel::TGenerateWeight(void *arg)
-{
-  CDBG_PS_TID *tid((CDBG_PS_TID*)arg);
-  while (true) {
-    // wait for channel to signal
-    pthread_mutex_lock(&tid->m_s_mtx);
-    pthread_mutex_unlock(&tid->m_s_mtx);
-    pthread_cond_signal(&tid->m_s_cnd);
-    if (tid->m_s==0) return NULL;
-    // worker routine
-    for (tid->m_i=tid->m_b;tid->m_i<tid->m_e;++tid->m_i) 
-      if (!tid->p_psc->GenerateWeight
-	  ((PS_Current*)(*tid->p_psc->p_cur)
-	   [tid->m_n][tid->m_i]))
-	THROW(fatal_error,"Generate weight failed");
-    // signal channel to continue
-    pthread_cond_wait(&tid->m_t_cnd,&tid->m_t_mtx);
-  }
-  return NULL;
-}
-#endif
-
 bool PS_Channel::GenerateWeight()
 {
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"(): {\n";
 #endif
   for (size_t n(2);n<m_n;++n) {
-#ifdef USING__Threading
-    if (m_cts.empty()) {
-      for (size_t i(0);i<(*p_cur)[n].size();++i) 
-	if (!GenerateWeight((PS_Current*)(*p_cur)[n][i])) return 0.0;
-    }
-    else {
-      // start calculator threads
-      size_t d((*p_cur)[n].size()/m_cts.size());
-      if ((*p_cur)[n].size()%m_cts.size()>0) ++d;
-      for (size_t j(0), i(0);j<m_cts.size()&&i<(*p_cur)[n].size();++j) {
-	CDBG_PS_TID *tid(m_cts[j]);
-	tid->m_n=n;
-	tid->m_b=i;
-	tid->m_e=Min(i+=d,(*p_cur)[n].size());
-	pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
-      }
-      // suspend calculator threads
-      for (size_t j(0), i(0);j<m_cts.size()&&i<(*p_cur)[n].size();++j) {
-	i+=d;
-	CDBG_PS_TID *tid(m_cts[j]);
-	pthread_mutex_lock(&tid->m_t_mtx);
-	pthread_mutex_unlock(&tid->m_t_mtx);
-	pthread_cond_signal(&tid->m_t_cnd);
-      }
-    }
-#else
     for (size_t i(0);i<(*p_cur)[n].size();++i) 
       if (!GenerateWeight((PS_Current*)(*p_cur)[n][i])) return 0.0;
-#endif
   }
   weight=1.0/(*(*p_cur)[m_n-1].back()->J().front().
 	      Get<PS_Info>()->front())[0]/

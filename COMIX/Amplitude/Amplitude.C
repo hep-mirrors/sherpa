@@ -80,47 +80,10 @@ Amplitude::Amplitude():
   m_sccmur=read.GetValue("USR_WGT_MODE",1);
   m_smth=read.GetValue("NLO_SMEAR_THRESHOLD",0.0);
   m_smpow=read.GetValue("NLO_SMEAR_POWER",0.5);
-#ifdef USING__Threading
-  if (!read.ReadFromFile(helpi,"COMIX_ME_THREADS")) helpi=0;
-  else msg_Tracking()<<METHOD<<"(): Set number of threads "<<helpi<<".\n";
-  if (helpi>0) {
-    m_cts.resize(helpi);
-    for (size_t i(0);i<m_cts.size();++i) {
-      CDBG_ME_TID *tid(new CDBG_ME_TID(this));
-      m_cts[i] = tid;
-      pthread_cond_init(&tid->m_s_cnd,NULL);
-      pthread_cond_init(&tid->m_t_cnd,NULL);
-      pthread_mutex_init(&tid->m_s_mtx,NULL);
-      pthread_mutex_init(&tid->m_t_mtx,NULL);
-      pthread_mutex_lock(&tid->m_s_mtx);
-      pthread_mutex_lock(&tid->m_t_mtx);
-      tid->m_s=1;
-      int tec(0);
-      if ((tec=pthread_create(&tid->m_id,NULL,&TCalcJL,(void*)tid)))
-	THROW(fatal_error,"Cannot create thread "+ToString(i));
-    }
-  }
-#endif
 }
 
 Amplitude::~Amplitude()
 {
-#ifdef USING__Threading
-  for (size_t i(0);i<m_cts.size();++i) {
-    CDBG_ME_TID *tid(m_cts[i]);
-    tid->m_s=0;
-    pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
-    int tec(0);
-    if ((tec=pthread_join(tid->m_id,NULL)))
-      THROW(fatal_error,"Cannot join thread"+ToString(i));
-    pthread_mutex_unlock(&tid->m_t_mtx);
-    pthread_mutex_unlock(&tid->m_s_mtx);
-    pthread_mutex_destroy(&tid->m_t_mtx);
-    pthread_mutex_destroy(&tid->m_s_mtx);
-    pthread_cond_destroy(&tid->m_t_cnd);
-    pthread_cond_destroy(&tid->m_s_cnd);
-  }
-#endif
   if (p_dinfo) delete p_dinfo;
   CleanUp();
 }
@@ -1110,26 +1073,6 @@ bool Amplitude::Map(const Amplitude &ampl,Flavour_Map &flmap)
   return true;
 }
 
-#ifdef USING__Threading
-void *Amplitude::TCalcJL(void *arg)
-{
-  CDBG_ME_TID *tid((CDBG_ME_TID*)arg);
-  while (true) {
-    // wait for amplitude to signal
-    pthread_mutex_lock(&tid->m_s_mtx);
-    pthread_mutex_unlock(&tid->m_s_mtx);
-    pthread_cond_signal(&tid->m_s_cnd);
-    if (tid->m_s==0) return NULL;
-    // worker routine
-    for (tid->m_i=tid->m_b;tid->m_i<tid->m_e;++tid->m_i) 
-      tid->p_ampl->m_cur[tid->m_n][tid->m_i]->Evaluate();
-    // signal amplitude to continue
-    pthread_cond_wait(&tid->m_t_cnd,&tid->m_t_mtx);
-  }
-  return NULL;
-}
-#endif
-
 void Amplitude::CalcJL()
 {
   SetCouplings();
@@ -1137,35 +1080,8 @@ void Amplitude::CalcJL()
     m_cur[1][i]->ConstructJ(m_p[i],m_ch[i],m_cl[i][0],m_cl[i][1]);
   for (size_t i(m_n);i<m_cur[1].size();++i) m_cur[1][i]->Evaluate();
   for (size_t n(2);n<m_n;++n) {
-#ifdef USING__Threading
-    if (m_cts.empty()) {
-      for (size_t i(0);i<m_cur[n].size();++i) 
-	m_cur[n][i]->Evaluate();
-    }
-    else {
-      // start calculator threads
-      size_t d(m_cur[n].size()/m_cts.size());
-      if (m_cur[n].size()%m_cts.size()>0) ++d;
-      for (size_t j(0), i(0);j<m_cts.size()&&i<m_cur[n].size();++j) {
-	CDBG_ME_TID *tid(m_cts[j]);
-	tid->m_n=n;
-	tid->m_b=i;
-	tid->m_e=Min(i+=d,m_cur[n].size());
-	pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
-      }
-      // suspend calculator threads
-      for (size_t j(0), i(0);j<m_cts.size()&&i<m_cur[n].size();++j) {
-	i+=d;
-	CDBG_ME_TID *tid(m_cts[j]);
-	pthread_mutex_lock(&tid->m_t_mtx);
-	pthread_mutex_unlock(&tid->m_t_mtx);
-	pthread_cond_signal(&tid->m_t_cnd);
-      }
-    }
-#else
     for (size_t i(0);i<m_cur[n].size();++i)
       m_cur[n][i]->Evaluate();
-#endif
   }
 }
 

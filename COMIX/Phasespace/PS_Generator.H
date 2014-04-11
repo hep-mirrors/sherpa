@@ -3,10 +3,6 @@
 
 #include "COMIX/Amplitude/Amplitude.H"
 
-#ifdef USING__Threading 
-#include <pthread.h> 
-#endif 
-
 namespace PHASIC { class Cut_Data; }
 
 namespace COMIX {
@@ -14,22 +10,6 @@ namespace COMIX {
   class Process_Base;
 
   typedef std::vector<double> Double_Vector;
-
-#ifdef USING__Threading
-  class PS_Generator;
-
-  struct CDBG_PG_TID {
-    pthread_t m_id;
-    PS_Generator *p_psg;
-    size_t m_s, m_n, m_b, m_e, m_i;
-    pthread_mutex_t m_s_mtx, m_t_mtx;
-    pthread_cond_t m_s_cnd, m_t_cnd;
-    CDBG_PG_TID(PS_Generator *const psg): 
-      p_psg(psg), m_s(2), m_b(0), m_e(0) {}
-  };// end of struct CDBG_PG_TID
-
-  typedef std::vector<CDBG_PG_TID*> CDBG_PG_TID_Vector; 
-#endif
 
   class PS_Generator {
   public:
@@ -63,12 +43,6 @@ namespace COMIX {
     CB_Map  m_cbmap;
 
     TCC_Map m_tccs;
-
-#ifdef USING__Threading 
-    CDBG_PG_TID_Vector m_cts;
-
-    static void *TCalcJL(void *arg);
-#endif 
 
     void CleanUp();
     void CalcJL();

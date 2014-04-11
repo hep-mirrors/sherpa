@@ -5,10 +5,6 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
-#ifdef USING__Threading
-#include <pthread.h>
-#endif
-
 namespace ATOOLS {
 
   struct ColorID {
@@ -28,31 +24,11 @@ namespace ATOOLS {
   class Cluster_Leg;
 
   class ClusterLeg_PVector: public std::vector<Cluster_Leg*> {
-  private:
-
-#ifdef USING__Threading
-    pthread_mutex_t m_mtx;
-#endif
-
   public:
 
     ClusterLeg_PVector();
 
     ~ClusterLeg_PVector();
-
-    inline void MtxLock()
-    {
-#ifdef USING__Threading
-      pthread_mutex_lock(&m_mtx);
-#endif
-    }
-
-    inline void MtxUnLock()
-    {
-#ifdef USING__Threading
-      pthread_mutex_unlock(&m_mtx);
-#endif
-    }
 
   };// end of class ClusterLeg_PVector
 

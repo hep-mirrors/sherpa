@@ -291,10 +291,8 @@ Single_Process::BVI_Wgt Single_Process::BeamISRWeight
     }
   }
   if (p_int->Beam() && p_int->Beam()->On()) {
-    p_int->Beam()->MtxLock();
     p_int->Beam()->CalculateWeight(Q2);
     wgt*=p_int->Beam()->Weight();
-    p_int->Beam()->MtxUnLock();
   }
   return BVI_Wgt(wgt,ct);
 }

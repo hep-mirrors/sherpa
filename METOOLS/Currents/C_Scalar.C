@@ -49,28 +49,22 @@ bool CScalar<Scalar>::IsZero() const
 template <class Scalar>
 CScalar<Scalar> *CScalar<Scalar>::New()
 {
-  s_objects.MtxLock();
   if (s_objects.empty()) {
-    s_objects.MtxUnLock();
     return new CScalar();
   }
   CScalar *v(s_objects.back());
   s_objects.pop_back();
-  s_objects.MtxUnLock();
   return v;
 }
 
 template <class Scalar>
 CScalar<Scalar> *CScalar<Scalar>::New(const CScalar &s)
 {
-  s_objects.MtxLock();
   if (s_objects.empty()) {
-    s_objects.MtxUnLock();
     return new CScalar(s);
   }
   CScalar *v(s_objects.back());
   s_objects.pop_back();
-  s_objects.MtxUnLock();
   *v=s;
   return v;
 }
@@ -84,9 +78,7 @@ CObject *CScalar<Scalar>::Copy() const
 template <class Scalar>
 void CScalar<Scalar>::Delete()
 {
-  s_objects.MtxLock();
   s_objects.push_back(this);
-  s_objects.MtxUnLock();
 }
 
 namespace METOOLS {

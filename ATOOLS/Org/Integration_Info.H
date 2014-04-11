@@ -11,9 +11,6 @@ Please include the header 'Info_Key.H' instead.
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include <map>
 #include <vector>
-#ifdef USING__Threading
-#include <pthread.h> 
-#endif 
 
 namespace ATOOLS {
 
@@ -44,10 +41,6 @@ namespace ATOOLS {
 
     void AssignKey(Info_Key &key,const size_t doubles,const size_t vectors);
     void ReleaseKey(Info_Key &key);
-
-#ifdef USING__Threading
-    pthread_mutex_t m_mtx;
-#endif
 
     Double_Container &Doubles(const size_t valuekey);
     Vector_Container &Vectors(const size_t valuekey);

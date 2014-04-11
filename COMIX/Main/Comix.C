@@ -128,9 +128,6 @@ void Comix::PrintLogo(std::ostream &s)
   s<<"|     http://comix.freacafe.de     |\n";
   s<<"|   please cite  JHEP12(2008)039   |\n";
   s<<"+----------------------------------+\n";
-#ifdef USING__Threading
-  s<<"Comix was compiled for multithreading.\n";
-#endif
   rpa->gen.AddCitation
     (1,"Comix is published under \\cite{Gleisberg:2008fv}.");
 }

@@ -260,9 +260,7 @@ validated in @mycite{Hagiwara2005wg}.
 
 @uref{http://comix.freacafe.de,,Comix} is a multi-leg tree-level matrix element generator, based on 
 the color dressed Berends-Giele recursive relations @mycite{Duhr2006iq}.
-It employs a new algorithm to recursively compute phase-space weights and can
-be run in multithreaded mode to make better use of multicore processors
-and multiprocessor machines @mycite{Gleisberg2008fv}, see also @mycite{Gleisberg2008ft}.
+It employs a new algorithm to recursively compute phase-space weights.
 The module is a useful supplement to older matrix element generators like @Amegic{}
 in the high multiplicity regime. Due to the usage of colour sampling it is 
 particularly suited for an interface with parton shower simulations and can hence be

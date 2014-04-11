@@ -13,31 +13,11 @@ namespace ATOOLS {
 
   class ClusterAmplitude_PVector: 
     public std::vector<Cluster_Amplitude*> {
-  private:
-
-#ifdef USING__Threading
-    pthread_mutex_t m_mtx;
-#endif
-
   public:
 
     ClusterAmplitude_PVector();
 
     ~ClusterAmplitude_PVector();
-
-    inline void MtxLock()
-    {
-#ifdef USING__Threading
-      pthread_mutex_lock(&m_mtx);
-#endif
-    }
-
-    inline void MtxUnLock()
-    {
-#ifdef USING__Threading
-      pthread_mutex_unlock(&m_mtx);
-#endif
-    }
 
   };// end of class ClusterAmplitude_PVector
 

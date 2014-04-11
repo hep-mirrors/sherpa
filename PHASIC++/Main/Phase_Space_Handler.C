@@ -85,9 +85,6 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
     m_beamykey.Assign("y beam",3,0,p_info);
     p_beamhandler->AssignKeys(p_info);
   }
-#ifdef USING__Threading
-  m_uset=0;
-#endif
   m_nvec=m_nin+m_nout;
   p_lab.resize(m_nvec);
 }
@@ -198,30 +195,6 @@ double Phase_Space_Handler::Integrate()
   }
   msg_Debugging()<<"  FSR    : "<<p_fsrchannels->Name()<<" ("<<p_fsrchannels<<") "
 		 <<"  ("<<p_fsrchannels->Number()<<","<<p_fsrchannels->N()<<")"<<std::endl;
-#ifdef USING__Threading
-  if (m_nout>3 && (p_process->Process()->ThreadInfo()&1)) {
-  pthread_cond_init(&m_sme_cnd,NULL);
-  pthread_cond_init(&m_tme_cnd,NULL);
-  pthread_mutex_init(&m_sme_mtx,NULL);
-  pthread_mutex_init(&m_tme_mtx,NULL);
-  pthread_mutex_lock(&m_sme_mtx);
-  pthread_mutex_lock(&m_tme_mtx);
-  pthread_cond_init(&m_sps_cnd,NULL);
-  pthread_cond_init(&m_tps_cnd,NULL);
-  pthread_mutex_init(&m_sps_mtx,NULL);
-  pthread_mutex_init(&m_tps_mtx,NULL);
-  pthread_mutex_lock(&m_sps_mtx);
-  pthread_mutex_lock(&m_tps_mtx);
-  m_uset=1;
-  m_sig=1;
-  int tec(0);
-  if ((tec=pthread_create(&m_met,NULL,&CalculateME,(void*)this))) {
-    THROW(fatal_error,"Cannot create matrix element thread");
-  }
-  if ((tec=pthread_create(&m_pst,NULL,&CalculatePS,(void*)this)))
-    THROW(fatal_error,"Cannot create phase space thread");
-  }
-#endif
   if (p_beamchannels) p_beamchannels->Print();
   if (p_isrchannels) p_isrchannels->Print();
   p_fsrchannels->Print();
@@ -230,33 +203,6 @@ double Phase_Space_Handler::Integrate()
   if (m_nin==2) res=p_integrator->Calculate(m_error,m_abserror,m_fin_opt);
   if (m_nin==1) res=p_integrator->CalculateDecay(m_error);
   m_dmode=1;
-#ifdef USING__Threading
-  if (m_uset) {
-  m_uset=0;
-  m_sig=0;
-  int tec(0);
-  // terminate ps calc thread
-  pthread_cond_wait(&m_sps_cnd,&m_sps_mtx);
-  if ((tec=pthread_join(m_pst,NULL)))
-    THROW(fatal_error,"Cannot join phase space thread");
-  pthread_mutex_unlock(&m_tps_mtx);
-  pthread_mutex_unlock(&m_sps_mtx);
-  pthread_mutex_destroy(&m_tps_mtx);
-  pthread_mutex_destroy(&m_sps_mtx);
-  pthread_cond_destroy(&m_tps_cnd);
-  pthread_cond_destroy(&m_sps_cnd);
-  // terminate me calc thread
-  pthread_cond_wait(&m_sme_cnd,&m_sme_mtx);
-  if ((tec=pthread_join(m_met,NULL)))
-    THROW(fatal_error,"Cannot join matrix element thread");
-  pthread_mutex_unlock(&m_tme_mtx);
-  pthread_mutex_unlock(&m_sme_mtx);
-  pthread_mutex_destroy(&m_tme_mtx);
-  pthread_mutex_destroy(&m_sme_mtx);
-  pthread_cond_destroy(&m_tme_cnd);
-  pthread_cond_destroy(&m_sme_cnd);
-  }
-#endif
   return res;
 }
 
@@ -328,40 +274,6 @@ void Phase_Space_Handler::CalculatePS()
   m_psweight*=p_fsrchannels->Weight();
 }
 
-#ifdef USING__Threading
-void *Phase_Space_Handler::CalculateME(void *arg)
-{
-  Phase_Space_Handler *psh((Phase_Space_Handler*)arg);
-  while (true) {
-    // wait for psh to signal
-    pthread_mutex_lock(&psh->m_sme_mtx);
-    pthread_mutex_unlock(&psh->m_sme_mtx);
-    pthread_cond_signal(&psh->m_sme_cnd);
-    if (psh->m_sig==0) return NULL;
-    psh->CalculateME();
-    // signal psh to continue
-    pthread_cond_wait(&psh->m_tme_cnd,&psh->m_tme_mtx);
-  }
-  return NULL;
-}
-
-void *Phase_Space_Handler::CalculatePS(void *arg)
-{
-  Phase_Space_Handler *psh((Phase_Space_Handler*)arg);
-  while (true) {
-    // wait for psh to signal
-    pthread_mutex_lock(&psh->m_sps_mtx);
-    pthread_mutex_unlock(&psh->m_sps_mtx);
-    pthread_cond_signal(&psh->m_sps_cnd);
-    if (psh->m_sig==0) return NULL;
-    psh->CalculatePS();
-    // signal psh to continue
-    pthread_cond_wait(&psh->m_tps_cnd,&psh->m_tps_mtx);
-  }
-  return NULL;
-}
-#endif
-
 double Phase_Space_Handler::Differential(Process_Integrator *const process,
 					 const psm::code mode) 
 { 
@@ -420,31 +332,9 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
   m_result=0.0;
   if (process->Process()->Trigger(p_lab)) {
     Check4Momentum(p_lab);
-#ifdef USING__Threading
-    if (m_uset) {
-      // start me calc
-      pthread_cond_wait(&m_sme_cnd,&m_sme_mtx);
-      // start ps calc
-      pthread_cond_wait(&m_sps_cnd,&m_sps_mtx);
-      // wait for ps calc to finish
-      pthread_mutex_lock(&m_tps_mtx);
-      pthread_mutex_unlock(&m_tps_mtx);
-      pthread_cond_signal(&m_tps_cnd);
-      // wait for me calc to finish
-      pthread_mutex_lock(&m_tme_mtx);
-      pthread_mutex_unlock(&m_tme_mtx);
-      pthread_cond_signal(&m_tme_cnd);
-    }
-    else {
-      CalculatePS();
-      CalculateME();
-      if (m_result==0.) { return 0.;}
-    }
-#else
     CalculatePS();
     CalculateME();
     if (m_result==0.) { return 0.;}
-#endif
     if (m_printpspoint || msg_LevelIsDebugging()) {
       size_t precision(msg->Out().precision());
       msg->SetPrecision(15);

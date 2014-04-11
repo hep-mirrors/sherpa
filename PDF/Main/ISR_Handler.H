@@ -5,10 +5,6 @@
 #include "ATOOLS/Math/Poincare.H"
 #include "PDF/Main/ISR_Base.H"
 
-#ifdef USING__Threading
-#include <pthread.h> 
-#endif 
-
 namespace ATOOLS { class Blob_Data_Base; }
 namespace BEAM   { class Beam_Base;      }
 
@@ -52,15 +48,8 @@ namespace PDF {
 
     double m_xf1[2], m_xf2[2];
 
-#ifdef USING__Threading
-    pthread_mutex_t m_mtx;
-#endif
-
     bool CheckRemnantKinematics(const ATOOLS::Flavour &flav,
 				double &x,int beam,bool swaped);
-
-    void MtxLock();
-    void MtxUnLock();
 
   public:
 

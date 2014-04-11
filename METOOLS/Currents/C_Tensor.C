@@ -128,28 +128,22 @@ CAsT4<Scalar>::s_objects;
 template <class Scalar>
 CAsT4<Scalar> *CAsT4<Scalar>::New()
 {
-  s_objects.MtxLock();
   if (s_objects.empty()) {
-    s_objects.MtxUnLock();
     return new CAsT4();
   }
   CAsT4 *v(s_objects.back());
   s_objects.pop_back();
-  s_objects.MtxUnLock();
   return v;
 }
 
 template <class Scalar>
 CAsT4<Scalar> *CAsT4<Scalar>::New(const CAsT4 &s)
 {
-  s_objects.MtxLock();
   if (s_objects.empty()) {
-    s_objects.MtxUnLock();
     return new CAsT4(s);
   }
   CAsT4 *v(s_objects.back());
   s_objects.pop_back();
-  s_objects.MtxUnLock();
   *v=s;
   return v;
 }
@@ -163,9 +157,7 @@ CObject *CAsT4<Scalar>::Copy() const
 template <class Scalar>
 void CAsT4<Scalar>::Delete()
 {
-  s_objects.MtxLock();
   s_objects.push_back(this);
-  s_objects.MtxUnLock();
 }
 
 namespace METOOLS {
