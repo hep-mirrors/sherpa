@@ -2,7 +2,7 @@
 
 make_scons() {
 libname="Proc_"$(basename $(pwd))
-sources=$(for i in *.C; do printf $i | sed "s/^/'/1;s/$/',/1"; done | sed 's/,$//1')
+sources=$(for i in *.C; do printf $i | sed "s/^/'/1;s/$/',/1" | tr '\n' ' '; done | sed 's/,$//1')
 echo "Import('env')
 lenv=env.Clone()
 proclib = lenv.SharedLibrary('${libname}',[${sources}])
@@ -22,6 +22,8 @@ vars.Add('CXX','The C++ Compiler','@CXX@')
 vars.Add('CXXFLAGS','The C++ Flags',['-O2'])
 env = Environment(variables=vars,CPPPATH=['@INCLUDEDIR@'])
 env['ENV']=os.environ
+if env['PLATFORM']=='darwin':
+   env.Append( LINKFLAGS='-Wl,-undefined -Wl,dynamic_lookup' )
 " > SConstruct;
 fi;
 test "$procdir" = "x" && exit 0;
