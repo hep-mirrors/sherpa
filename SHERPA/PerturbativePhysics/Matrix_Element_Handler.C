@@ -727,6 +727,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	else cpi.m_rsintegrator=cpi.m_integrator;
 	if (GetMPvalue(pbi.m_vitmin,nfs,pnid,di)) cpi.m_itmin=di;
 	if (GetMPvalue(pbi.m_vrsitmin,nfs,pnid,di)) cpi.m_rsitmin=di;
+	else cpi.m_rsitmin=cpi.m_itmin;
 	std::vector<Process_Base*> proc=InitializeProcess(cpi,pmap);
 	for (size_t i(0);i<proc.size();i++) {
 	  if (proc[i]==NULL)
