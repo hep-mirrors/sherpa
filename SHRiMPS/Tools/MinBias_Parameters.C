@@ -26,15 +26,15 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   // form factors
   m_params["NGWstates"]   = dr->GetValue<int>("GW_States",2);
   m_params["FFpref"]      = 1./sqrt(m_params["NGWstates"]);
-  m_params["Lambda2"]     = dr->GetValue<double>("Lambda2",1.0);
-  m_params["beta02(mb)"]  = dr->GetValue<double>("beta_0^2",25.0);
+  m_params["Lambda2"]     = dr->GetValue<double>("Lambda2",1.5);
+  m_params["beta02(mb)"]  = dr->GetValue<double>("beta_0^2",20.0);
   m_params["beta0"]       = sqrt(1.e9*m_params["beta02(mb)"]/
 				 ATOOLS::rpa->Picobarn());
-  m_params["kappa"]       = dr->GetValue<double>("kappa",0.5);
+  m_params["kappa"]       = dr->GetValue<double>("kappa",0.6);
   m_params["xi"]          = dr->GetValue<double>("xi",0.2);
   // parameters of the eikonal
-  m_params["lambda"]      = dr->GetValue<double>("lambda",0.35);
-  m_params["Delta"]       = dr->GetValue<double>("Delta",0.25);
+  m_params["lambda"]      = dr->GetValue<double>("lambda",0.25);
+  m_params["Delta"]       = dr->GetValue<double>("Delta",0.35);
   // ladder generation
   m_params["NLaddersFix"] = dr->GetValue<int>("N_Ladders_Fix",-1);
   m_params["KTMin_Mode"]  = dr->GetValue<int>("KTMin_Mode",0);
@@ -42,17 +42,17 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   m_params["Q_as2"]       = dr->GetValue<double>("Q_as^2",1.0);
   m_params["Q12"]         = dr->GetValue<double>("Q_1^2",0.0);
   m_params["QN2"]         = dr->GetValue<double>("Q_N^2",0.0);
-  m_params["SingletWt"]   = dr->GetValue<double>("Chi_S",1.0);
+  m_params["SingletWt"]   = dr->GetValue<double>("Chi_S",0.5);
   m_params["Ddiff2"]      = dr->GetValue<double>("D_diff^2",0.0);
   m_params["kdiff"]       = dr->GetValue<double>("K_diff",0.0);
   // showering off soft stuff
   m_params["shower_mode"] = dr->GetValue<int>("Shower_Mode",3);
-  m_params["min_kt2"]     = dr->GetValue<double>("Shower_Min_KT2",1.0);
-  m_params["kt2_factor"]  = dr->GetValue<double>("KT2_Factor",1.0);
+  m_params["min_kt2"]     = dr->GetValue<double>("Shower_Min_KT2",0.5);
+  m_params["kt2_factor"]  = dr->GetValue<double>("KT2_Factor",4.0);
   m_params["diff_factor"] = dr->GetValue<double>("Diff_Factor",1.0);
   // rescatterings
   m_params["RescProb"]    = dr->GetValue<double>("RescProb",1.0);
-  m_params["RescProb1"]   = dr->GetValue<double>("RescProb1",0.0);
+  m_params["RescProb1"]   = dr->GetValue<double>("RescProb1",0.1);
   m_params["QRC2"]        = dr->GetValue<double>("Q_RC^2",1.0);
   m_params["ReconnProb"]  = dr->GetValue<double>("ReconnProb",-10.);
   m_params["Misha"]       = dr->GetValue<int>("Misha",1);
@@ -71,7 +71,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   else
     m_absorp = absorption::factorial;
 
-  std::string asf(dr->GetValue<std::string>("As_Form",std::string("IR0")));
+  std::string asf(dr->GetValue<std::string>("As_Form",std::string("smooth")));
   m_as_form = MODEL::asform::smooth;
   if (asf==std::string("constant"))    m_as_form = MODEL::asform::constant;
   else if (asf==std::string("frozen")) m_as_form = MODEL::asform::frozen;
@@ -114,7 +114,8 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   else
     m_ladderweight = ladder_weight::Regge;
 
-  std::string ktform(dr->GetValue<std::string>("KT_Form",std::string("IR0")));
+  std::string ktform(dr->GetValue<std::string>("KT_Form",
+					       std::string("smooth")));
   m_ktform = ktform::smooth;
   if (ktform==std::string("cut"))         m_ktform = ktform::cut;
   else if (ktform==std::string("IR0"))    m_ktform = ktform::IR0;
@@ -132,7 +133,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   else if (ordering==std::string("rap_only")) m_ordering = ordering::rap_only;
 
   std::string resktmin =
-    dr->GetValue<std::string>("Resc_KTMin",std::string("on"));
+    dr->GetValue<std::string>("Resc_KTMin",std::string("off"));
   if (resktmin==std::string("props"))
     m_resc_ktmin = resc_ktmin::props;
   else if (resktmin==std::string("on"))
@@ -141,7 +142,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
     m_resc_ktmin = resc_ktmin::off;
 
   std::string rescnosing =
-    dr->GetValue<std::string>("Resc_NoSinglet",std::string("off"));
+    dr->GetValue<std::string>("Resc_NoSinglet",std::string("on"));
   if (rescnosing==std::string("off"))
     m_resc_nosing = resc_nosing::off;
   else

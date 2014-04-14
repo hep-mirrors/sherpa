@@ -70,7 +70,7 @@ ResetCollision(Omega_ik * eikonal,const double & smin,const double & B) {
 
 void Rescatter_Handler::ResetRescatter(const bool & enforce) { 
   if (!m_rescatter) return;
-  m_Nfact = 1; m_Nresc = 1;
+  m_Nfact = 1; m_Nresc = 0;
   m_particles.clear(); 
   m_probpairs.clear(); 
 }
@@ -143,32 +143,35 @@ bool Rescatter_Handler::DealWithBlob(ATOOLS::Blob * blob) {
 void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
   if (!m_rescatter) return;
   double y1(part->Momentum().Y()),kt12(part->Momentum().PPerp2()),y2,kt22;
-  double sup,s12,prob;
+  double sup,s12,prob,ybar;
   int nbeam(dabs(y1)>m_Ylimit);
-  double expo(p_eikonal->EffectiveIntercept(m_b1,m_b2));
-  bool allowed;
+  double expo;
+  bool allowed, singlet;
   for (set<Particle *, partcomp>::iterator piter=m_particles.begin();
        piter!=m_particles.end();piter++) {
     allowed = true;
-    prob    = 1.;
     y2      = (*piter)->Momentum().Y();
+    singlet = false;
     for (list<pair<double,double> >::iterator sit=m_intervals.begin();
 	 sit!=m_intervals.end();sit++) {
       if ((y1<=sit->first && y2>=sit->second) ||
 	  (y2<=sit->first && y1>=sit->second)) {
-	prob = m_singprob;
-        continue;
+        singlet = true;
+	continue;
       }
     }
+    prob    = singlet?m_singprob:1.;
     if (prob<0.00000001 || !CanRescatter((*piter),part)) continue;
     s12   = Max(0.,((*piter)->Momentum()+part->Momentum()).Abs2());
     kt22  = (*piter)->Momentum().PPerp2();
     sup   = m_rescprob * SuppressionTerm(kt12,kt22);
-      prob *= p_eikonal->RescatterProbability(m_b1,m_b2,y1,y2,sup,
+    ybar  = (part->Momentum()+(*piter)->Momentum()).Y();
+    prob *= p_eikonal->RescatterProbability(m_b1,m_b2,y1,y2,sup,
 					    nbeam+int(dabs(y2)>m_Ylimit)); 
-    prob *= pow(s12/Max(s12,m_smin),1.+expo);
+    //expo  = 1.+3./M_PI*(*p_alphaS)(sqrt(kt12*kt22))*dabs(y1-y2);
+    expo  = (singlet?0.:1.)+p_eikonal->EffectiveIntercept(m_b1,m_b2,ybar);
+    prob *= pow(s12/Min(s12,m_smin),expo);
     prob /= double(m_Nfact);
-//     if (IsColourConnected((*piter),part)) prob *= 3.;
     if (m_analyse) m_histomap["Rescatter_wt"]->Insert(m_B,prob);
     PartPair partpair;
     partpair.first  = y1<y2?part:(*piter);

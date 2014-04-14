@@ -36,7 +36,7 @@ Final_State::Final_State(const int & test) :
 
 bool Final_State::FirstSinglet(const double & y1,const double & y2,
 			       const double & sup,const int & nbeam) {
-//  return false;
+  //  return false;
   if (p_ladder->IsRescatter() && m_resc_nosing==resc_nosing::on) return false;
   double wt1 = p_eikonal->SingletWeight(m_b1,m_b2,y1,y2,sup,nbeam); 
   double wt8 = p_eikonal->OctetWeight(m_b1,m_b2,y1,y2,sup,nbeam); 

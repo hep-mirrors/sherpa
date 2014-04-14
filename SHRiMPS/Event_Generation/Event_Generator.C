@@ -13,7 +13,9 @@ Event_Generator::Event_Generator(const run_mode::code & runmode,
   p_active(NULL),
   m_minkt2(MBpars("min_kt2")),
   m_done(false)
-{ }
+{ 
+  msg_Out()<<METHOD<<": "<<m_minkt2<<".\n";
+}
 
 Event_Generator::~Event_Generator() 
 {   

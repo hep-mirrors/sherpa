@@ -13,7 +13,7 @@ Ladder_Generator::
 Ladder_Generator(Parton_Luminosity * lumi,const int & test) :
   m_IS(Initial_State(lumi)), m_FS(Final_State(test)),
   m_originalY(MBpars("originalY")), m_cutoffY(MBpars("deltaY")), 
-  p_ladder(0), m_output(false),
+  p_ladder(0), m_output(true),
   m_Nprim(0),m_Nsec(0),m_Ndd_p(0),m_Ndd_s(0),m_Nsd_p(0),m_Nsd_s(0),
   m_Ncep_p(0),m_Ncep_s(0)
 {    
@@ -259,33 +259,18 @@ double Ladder_Generator::Weight(const double & isweight) {
   }
   double weight(1.);
   if (p_ladder->Size()>2) {
-    //double tmin(p_ladder->Mu2());
-    double tmin(Smin()/4.);
-    double that(dabs(p_ladder->That()));
     Flavour in1,in2,out1,out2;
     if (!p_ladder->ReconstructMEFlavours(in1,in2,out1,out2)) return 0.;
-    weight *=pow(tmin/(tmin+that),1.);
-    /*
-      double aslog(log(m_FS.AlphaS(Max(that,smin/4.))/m_FS.AlphaS(smin/4.)));
-      double colfac1(out1.IsGluon()?3.:4./3.);
-      double gamma1(out1.IsGluon()?-11./6.+10./9.:-3./2.);
-      double colfac2(out2.IsGluon()?3.:4./3.);
-      double gamma2(out2.IsGluon()?-11./6.+10./9.:-3./2.);
-      double term1(colfac1/(2.*M_PI)*(sqr(aslog)+gamma1*aslog));
-      double term2(colfac2/(2.*M_PI)*(sqr(aslog)+gamma2*aslog));
-      weight *= exp(-term1-term2);
-
-      if (p_ladder->IsHardDiffractive()) {
-      //double Yhat(p_ladder->Yhat());
-      double slad((p_ladder->GetIn1()->m_mom+p_ladder->GetIn2()->m_mom).Abs2());
-      //double shat(p_ladder->Shat()), uhat(dabs(p_ladder->Uhat()));
-      //double pt2(2.*that*uhat*shat/(shat*shat+uhat*uhat+that*that));
-      double pt2(4.*that*uhat*shat/(shat*shat+uhat*uhat+that*that));
-      weight *= sqr(m_FS.AlphaS(pt2)/m_FS.AlphaSMax());
-      }
-      //    else if (p_ladder->Size()==3) 
-      //	  weight *= m_FS.AlphaS(pt2)/m_FS.AlphaSMax();
-    */
+    double that(dabs(p_ladder->That()));
+    double tmin(p_ladder->Mu2());
+    //double s((p_ladder->GetIn1()->m_mom+p_ladder->GetIn2()->m_mom).Abs2());
+    //double tmin(Smin());
+    double expo(3.*m_FS.AlphaS(that)/M_PI*dabs(p_ladder->DeltaYhat()));
+    weight *= tmin/(tmin+that); //*Smin()/Max(Smin(),that);
+    weight *= pow(tmin/(tmin+that),expo);//*Smin()/Max(that,Smin())
+    if (p_ladder->IsHardDiffractive()) {
+      weight *= sqr(m_FS.AlphaS(that)/m_FS.AlphaSMax());
+    }
   }
   if (m_output) m_histograms[string("LadderWt")]->Insert(weight);
   return weight;

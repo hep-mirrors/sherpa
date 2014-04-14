@@ -48,8 +48,8 @@ namespace SHRIMPS {
     inline const double & XSec()   const { return m_xsec; } 
     inline double         Smin()   const { return p_active->Smin(); }
     inline double ShowerMinKT2() {
-      if (p_active) return ATOOLS::Max(p_active->Smin(),m_minkt2); 
-      return m_minkt2;
+      if (p_active) return p_active->Smin()*m_minkt2; 
+      return 0.;
     }
     inline bool IsLastRescatter() const {
       if (p_active) return p_active->IsLastRescatter();
