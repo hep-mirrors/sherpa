@@ -91,7 +91,7 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
       }
       masses[m_nth-1]=0.0;
       */
-      if (mo && m_as_MZ!=mo->m_as_MZ && m_pdf)
+      if (mo && !IsEqual(m_as_MZ,mo->m_as_MZ,1.e-4) && m_pdf)
 	THROW(fatal_error,"Cannot use PDF alphas to vary \\mu_R");
       if (mo==NULL || !IsEqual(m_as_MZ,mo->m_as_MZ)) {
       msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n"
