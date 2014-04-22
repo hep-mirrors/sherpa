@@ -87,10 +87,10 @@ namespace ATOOLS {
     inline ex::type           Type() const { return m_type; }
 
     %extend {
-      std::string __str__() {
+      PyObject* __str__() {
 	MyStrStream conv;
 	conv<<*self;
-	return conv.str();
+	return PyString_FromString(conv.str().c_str());
       };
     };
 
