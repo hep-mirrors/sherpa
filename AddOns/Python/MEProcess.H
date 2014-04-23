@@ -36,6 +36,7 @@ private:
   size_t m_npsp,m_nin,m_nout;
 
   void SetMomentumIndices(const std::vector<int> &pdgs);
+  PHASIC::Process_Base* FindProcess();
 
 public:
   MEProcess(SHERPA::Sherpa* Generator);

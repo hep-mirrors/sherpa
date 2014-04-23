@@ -225,22 +225,53 @@ void MEProcess::SetColors()
   CI->SetJ(cj);
 }
 
+PHASIC::Process_Base* MEProcess::FindProcess()
+{
+  SHERPA::Matrix_Element_Handler* me_handler = p_gen->GetInitHandler()->GetMatrixElementHandler();
+  PHASIC::Process_Base::SortFlavours(p_amp);
+  m_name = PHASIC::Process_Base::GenerateName(p_amp);
+  for (unsigned int i(0); i<me_handler->ProcMaps().size(); i++)
+    {
+      PHASIC::StringProcess_Map::const_iterator pit(me_handler->ProcMaps()[i]->find(PHASIC::nlo_type::lo)->second->find(m_name));
+      //FOR DEBUGGING PURPOSES
+      // std::cout << "Initialized Processes: " << std::endl;
+      // for (PHASIC::StringProcess_Map::const_iterator 
+      // 	     it(me_handler->ProcMaps()[i]->find(PHASIC::nlo_type::lo)->second->begin()); 
+      // 	   it !=me_handler->ProcMaps()[i]->find(PHASIC::nlo_type::lo)->second->end();
+      // 	   ++it)
+      // 	{
+      // 	  std::cout << "Process " << (it->first)<< std::endl;
+      // 	}
+      if(pit == me_handler->ProcMaps()[i]->find(PHASIC::nlo_type::lo)->second->end())
+	continue;
+      else{
+	return pit->second;
+      }
+    }
+  return NULL;
+}
+
 void MEProcess::Initialize()
 {
-  SHERPA::Matrix_Element_Handler* me_handler = p_gen->GetInitHandler()
-                                                    ->GetMatrixElementHandler();
-  PHASIC::Process_Vector procs = me_handler->AllProcesses();
-  if (procs.size()>1) THROW(fatal_error,"More than one process initialised.");
-  p_proc=procs[0];
-  m_name=p_proc->Name();
-  // fill cluster amplitude according to process
-  for (size_t i(0);i<p_proc->NIn()+p_proc->NOut();++i){
-    ATOOLS::Flavour fl=p_proc->Flavours()[i];
-    if (i<p_proc->NIn()) fl=fl.Bar();
-    p_amp->CreateLeg(ATOOLS::Vec4D(),fl);
-    m_inpdgs.push_back(fl.IsAnti()?-fl.Kfcode():fl.Kfcode());
+  p_proc = FindProcess();
+  // if no process was found, assume there is only
+  // one initialized in the run card and take that one
+  if(!p_proc){
+    SHERPA::Matrix_Element_Handler* me_handler = p_gen->GetInitHandler()
+      ->GetMatrixElementHandler();
+    PHASIC::Process_Vector procs = me_handler->AllProcesses();
+    if (procs.size()>1) THROW(fatal_error,"More than one process initialised.");
+    p_proc=procs[0];
+    // fill cluster amplitude according to process
+    for (size_t i(0);i<p_proc->NIn()+p_proc->NOut();++i){
+      ATOOLS::Flavour fl=p_proc->Flavours()[i];
+      if (i<p_proc->NIn()) fl=fl.Bar();
+      p_amp->CreateLeg(ATOOLS::Vec4D(),fl);
+      m_inpdgs.push_back(fl.IsAnti()?-fl.Kfcode():fl.Kfcode());
+    }
+    p_amp->SetNIn(m_nin=p_proc->NIn());
   }
-  p_amp->SetNIn(m_nin=p_proc->NIn());
+  m_name=p_proc->Name();
   for (unsigned int i = 0; i<p_amp->Legs().size(); i++) {
     if (p_amp->Leg(i)->Flav().Strong()) {
       int scharge = p_amp->Leg(i)->Flav().StrongCharge();
