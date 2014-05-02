@@ -23,7 +23,8 @@ namespace SHRIMPS {
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
 
     Omega_ik *                             p_eikonal;
-    int                                    m_Nresc, m_Nfact;
+    int                                    m_Nresc;
+    unsigned long int                      m_Nfact;
     std::set<ATOOLS::Blob *, blobcomp >    m_treatedblobs;
     std::set<ATOOLS::Particle *, partcomp> m_particles;
     std::list<std::pair<double, double> >  m_intervals;

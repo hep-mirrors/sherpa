@@ -170,7 +170,7 @@ void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
 					    nbeam+int(dabs(y2)>m_Ylimit)); 
     //expo  = 1.+3./M_PI*(*p_alphaS)(sqrt(kt12*kt22))*dabs(y1-y2);
     expo  = (singlet?0.:1.)+p_eikonal->EffectiveIntercept(m_b1,m_b2,ybar);
-    prob *= pow(s12/Min(s12,m_smin),expo);
+    prob *= pow(s12/Max(s12,m_smin),expo);
     prob /= double(m_Nfact);
     if (m_analyse) m_histomap["Rescatter_wt"]->Insert(m_B,prob);
     PartPair partpair;
