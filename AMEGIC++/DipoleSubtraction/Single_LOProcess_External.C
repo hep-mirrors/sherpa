@@ -252,7 +252,8 @@ int Single_LOProcess_External::Tests(std::vector<double> * pfactors) {
 		  <<"   Prepare gauge test and init helicity amplitudes. This may take some time."
 		  <<std::endl;
     if (m_emitgluon) p_MHVamp->SetSqMatrix((*pfactors)[1],p_testmoms[GetEmit()],(*p_epol)[0]);
-    p_MHVamp->Calc(p_testmoms);
+    M2=p_MHVamp->Calc(p_testmoms);
+    if (p_MHVamp->Calc()->NAmps())
     for (size_t i=0;i<p_hel->MaxHel();i++) { 
       if (p_hel->On(i) && p_hel->GetEPol(i)==90) {
 	helvalue = p_MHVamp->MSquare(i)*p_hel->PolarizationFactor(i); 
@@ -274,7 +275,8 @@ int Single_LOProcess_External::Tests(std::vector<double> * pfactors) {
   double * M_doub = new double[p_hel->MaxHel()];
  for (size_t i=0; i<p_hel->MaxHel(); ++i) M_doub[i]=0.;
  if (m_emitgluon) p_MHVamp->SetSqMatrix((*pfactors)[1],p_testmoms[GetEmit()],(*p_epol)[0]);
- p_MHVamp->Calc(p_testmoms);
+ M2g=p_MHVamp->Calc(p_testmoms);
+ if (p_MHVamp->Calc()->NAmps())
  for (size_t i=0; i<p_hel->MaxHel(); ++i) { 
      if (p_hel->On(i) && p_hel->GetEPol(i)==90) {
        M_doub[i]  = p_MHVamp->MSquare(i)*p_hel->PolarizationFactor(i); 
