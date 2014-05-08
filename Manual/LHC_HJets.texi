@@ -2,7 +2,8 @@
 @subsection H+jets production in gluon fusion
 
 This is an example setup for inclusive Higgs production through 
-gluon fusion at hadron colliders. The inclusive process is calculated 
+gluon fusion at hadron colliders used in @mycite{Hoeche2014lxa}.
+The inclusive process is calculated
 at next-to-leading order accuracy matched to the parton shower using 
 the MC@@NLO prescription detailed in @mycite{Hoeche2011fd}. The next 
 few higher jet multiplicities, calculated at next-to-leading order as well, 
@@ -16,7 +17,7 @@ to study the effect of incorporating higher-order matrix elements.
 
 @example
 @smallformat
-@verbatiminclude Examples/H_in_GluonFusion/LHC_HJets_Inclusive/Run.dat
+@verbatiminclude Examples/H_in_GluonFusion/LHC_HJets/Run.dat
 @end smallformat
 @end example
 
@@ -25,47 +26,20 @@ Things to notice:
 @item Any setting with the exception of the process and selector definitions 
 can be given in the @code{(run)@{...@}(run)} section of the run card.
 @item Tags (@code{FSF}, @code{RSF} and @code{QSF}) have been introduced for 
-easy scale variations. Tags are replaced throughout the entire run card by 
+easy scale variations. Tags are replaced throughout the entire run card by
 their defined value, see @ref{Tags}.
-@item All scales, i.e. the factorisation, renormalisation and resummation 
-scales are set to the above defined scale factors times the value determined 
-by the METS-clustering algorithm. The scale of the two powers of alpha_s 
-in the effective ggH-coupling are fixed to the Higgs mass. They can be varied 
-separately by setting @code{EHC_SCALE2}, cf. @ref{EHC}.
 @item Tags (@code{LJET}, @code{NJET} and @code{QCUT}) have been introduced 
 to be used in the process setup, defining the multiplicity of the MC@@NLO 
 subprocesses, the maximal number of extra jets, and the merging cut.
 @item The @code{LOOPGEN<i>} tag is used to name the providers of the one-loop 
 matrix elements for the respective multiplicities. For the two simplemost cases 
-Sherpa can provide it internally. In this case, the one-loop-program GoSam 
-is interfaced throught the BLHA interface for the H+2jet process.
-@item Contrary to the best LO shower setup, for NLO merging the shower is 
-setup in a crossing invariant way, employing the very same recoil scheme as 
-the MC@@NLO emission.
-@item As both Comix and Amegic are specified as matrix element generators 
-to be used, Amegic has to be specified to be used for all MC@@NLO 
-multiplicities using @code{ME_Generator Amegic @{LJET@}}.
-@item @code{Enhance_Factors} have been introduced to increase the statistical 
-quality for processes of higher multiplicity, cf. @ref{Enhance_Factor}.
-@item @code{RS_Enhance_Factors} have been introduced to increase the 
-statistical quality for the non-resummed parts of the MC@@NLO processes the
-respective multiplicity, cf. @ref{RS_Enhance_Factor}.
-@item To change the example to production at the Tevatron 
-simply change the beam settings to
-@verbatim
-  BEAM_1  2212; BEAM_ENERGY_1 980;
-  BEAM_2 -2212; BEAM_ENERGY_2 980;
-@end verbatim
+Sherpa can provide it internally. Additionally, MCFM is interfaced for the
+H+2jet process, cf. @ref{MCFM interface}.
 @item To enable the Higgs to decay to a pair of photons, for example, the 
-hard decays can be envoked. To this end simply add the following to your 
-run section
-@verbatim
-  % settings for hard decays
-  HARD_DECAYS On;
-  STORE_DECAY_RESULTS 1;
-  HDH_ONLY_DECAY {25,22,22}
-@end verbatim
+hard decays are invoked.
 For details on the hard decay handling and how to enable specific decay modes 
-see @ref{Hard decays}.
+see @ref{Hard decays}. As in the Higgs case the branching ratios calculated
+by Sherpa at the leading order receive large corrections a modified BR table
+to be read in by Sherpa is provided.
 @end itemize
  
