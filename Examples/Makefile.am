@@ -32,9 +32,10 @@ nobase_dist_examples_DATA         =	\
 		Jets_at_HadronColliders/LHC_Jets_MEPS/Run.dat \
 		Jets_at_LeptonColliders/LEP_Jets/Run.dat \
 		Jets_at_LeptonColliders/LEP_Jets/Run.NLO.dat \
-		H_in_GluonFusion/LHC_HInt_MCatNLO/Run.dat \
-		H_in_GluonFusion/LHC_HJets_Inclusive/Run.dat \
-		H_in_GluonFusion/LHC_HJets_DecayToPhotons/Run.dat \
+		Jets_in_DIS/HERA/Run.dat \
+		H_in_GluonFusion/LHC_HInterference/Run.dat \
+		H_in_GluonFusion/LHC_HJets/Run.dat \
+		H_in_GluonFusion/LHC_HJets/Results/Decays/h0 \
 		H_in_TTBar/LHC_TTH_MCatNLO/lib.f \
 		H_in_TTBar/LHC_TTH_MCatNLO/intlib.f \
 		H_in_TTBar/LHC_TTH_MCatNLO/libqq.f \

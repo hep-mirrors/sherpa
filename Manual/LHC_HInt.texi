@@ -13,13 +13,14 @@ and @mycite{Dixon2013haa}.
 
 @example
 @smallformat
-@verbatiminclude Examples/H_in_GluonFusion/LHC_HInt_MCatNLO/Run.dat
+@verbatiminclude Examples/H_in_GluonFusion/LHC_HInterference/Run.dat
 @end smallformat
 @end example
 
 Things to notice:
 @itemize
-@item All scales, i.e. the factorisation, renormalisation and resummation 
+@item This calculation is at fixed-order NLO.
+@item All scales, i.e. the factorisation, renormalisation and resummation
 scales are set to the invariant mass of the di-photon pair.
 @item Dedicated phase space generators are used by setting 
 @option{Integrator PS2;} and @option{RS_Integrator PS3;}, cf. @ref{Integrator}.

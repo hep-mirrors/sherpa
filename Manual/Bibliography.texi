@@ -702,7 +702,7 @@
 @mybibitem{GehrmannDeRidder2009dp,Geh09, A. Gehrmann-De Ridder and T. Gehrmann and E. W. N. Glover and G. Heinrich,NNLO moments of event shapes in e^+e^- annihilation,JHEP,05,(2009),106,[arXiv:0903.4658],arXiv:0903.4658}
 @mybibitem{Gehrmann2011wi,Geh11, T. Gehrmann and P. F. Monni,Antenna subtraction at NNLO with hadronic initial states: real-virtual initial-initial configurations,JHEP,1112,(2011),049,[arXiv:1107.4037],arXiv:1107.4037}
 @mybibitem{GehrmannDeRidder2011aa,Geh11a, A. Gehrmann-De Ridder and E.W.N. Glover and J. Pires,Real-Virtual corrections for gluon scattering at NNLO,JHEP,1202,(2012),141,[arXiv:1112.3613],arXiv:1112.3613}
-@mybibitem{Gehrmann2012yg,Geh12, T. Gehrmann and S. Hoche and F. Krauss and  M. Schonherr and F. Siegert,NLO QCD matrix elements + parton showers in e^+e^-tohadrons,,,,,arXiv:1207.5031,arXiv:1207.5031}
+@mybibitem{Gehrmann2012yg,Geh12, T. Gehrmann and S. Hoche and F. Krauss and  M. Schonherr and F. Siegert,NLO QCD matrix elements + parton showers in e^+e^- -> hadrons,JHEP,01,(2013),144,[arXiv:1207.5031],arXiv:1207.5031}
 @mybibitem{GehrmannDeRidder1997wx,Geh97, A. Gehrmann-De Ridder and T. Gehrmann and E. W. N. Glover,Radiative corrections to the photon + 1 jet rate at LEP,Phys. Lett.,B414,(1997),354-361,[hep-ph/9705305],hep-ph/9705305}
 @mybibitem{GehrmannDeRidder1998ba,Geh98, A. Gehrmann-De Ridder and E. W. N. Glover,Final state photon production at LEP,Eur. Phys. J.,C7,(1999),29-48,[hep-ph/9806316],hep-ph/9806316}
 @mybibitem{GellMann1954fq,Gel54, M. Gell-Mann and F.E. Low,Quantum electrodynamics at small distances,Phys.Rev.,95,(1954),1300-1312,,F+J+Phys.Rev.%2C95%2C1300}
@@ -800,13 +800,15 @@
 @mybibitem{Hoeche2009rj,Hoe09, S. Hoche and F. Krauss and S. Schumann and  F. Siegert,QCD matrix elements and truncated showers,JHEP,05,(2009),053,[arXiv:0903.1219],arXiv:0903.1219}
 @mybibitem{Hoeche2009xc,Hoe09a,S. Hoche and S. Schumann and F. Siegert,Hard photon production and matrix-element parton-shower merging,Phys. Rev.,D81,(2010),034026,[arXiv:0912.3501],arXiv:0912.3501}
 @mybibitem{Hoeche2010kg,Hoe10,S. Hoche and F. Krauss and M. Schonherr and F. Siegert,NLO matrix elements and truncated showers,JHEP,08,(2011),123,[arXiv:1009.1127],arXiv:1009.1127}
-@mybibitem{Hoeche2010pf,Hoe10a, S. Hoche and F. Krauss and M. Schonherr and F.  Siegert,Automating the POWHEG method in Sherpa,JHEP,04,(2011),024,[arXiv:1008.5399],arXiv:1008.5399}
-@mybibitem{Hoeche2010av,Hoe10b, S. Hoche and F. Krauss and M. Schonherr and F.  Siegert,Next-to-leading order matrix elements and truncated showers,,,,,arXiv:1009.1477,arXiv:1009.1477}
-@mybibitem{Hoeche2011fd,Hoe11, S. Hoche and F. Krauss and M. Schonherr and F.  Siegert,A critical appraisal of NLO+PS matching methods,JHEP,09,(2012),049,[arXiv:1111.1220],arXiv:1111.1220}
-@mybibitem{Hoeche2012ft,Hoe12, S. Hoche and F. Krauss and M. Schonherr and F.  Siegert,W+n-jet predictions with MC@NLO in Sherpa,,,,,arXiv:1201.5882,arXiv:1201.5882}
-@mybibitem{Hoeche2012yf,Hoe12a, S. Hoche and F. Krauss and M. Schonherr and F.  Siegert,QCD matrix elements + parton showers: The NLO case,,,,,arXiv:1207.5030,arXiv:1207.5030}
-@mybibitem{Hoeche2012fm,Hoe12b, S. Hoche and M. Schonherr,Uncertainties in NLO + parton shower matched simulations of inclusive jet and dijet production,,,,,arXiv:1208.2815,arXiv:1208.2815}
-@mybibitem{Hoeche2013mua,Hoe13, S. Hoeche and J. Huang and G. Luisoni and  M. Schoenherr and J. Winter,Zero and one jet combined NLO analysis of the top quark forward-backward asymmetry,,,,,arXiv:1306.2703,arXiv:1306.2703}
+@mybibitem{Hoeche2010pf,Hoe10a, S. Hoche and F. Krauss and M. Schonherr and F. Siegert,Automating the POWHEG method in Sherpa,JHEP,04,(2011),024,[arXiv:1008.5399],arXiv:1008.5399}
+@mybibitem{Hoeche2010av,Hoe10b, S. Hoche and F. Krauss and M. Schonherr and F. Siegert,Next-to-leading order matrix elements and truncated showers,,,,,arXiv:1009.1477,arXiv:1009.1477}
+@mybibitem{Hoeche2011fd,Hoe11, S. Hoche and F. Krauss and M. Schonherr and F. Siegert,A critical appraisal of NLO+PS matching methods,JHEP,09,(2012),049,[arXiv:1111.1220],arXiv:1111.1220}
+@mybibitem{Hoeche2012ft,Hoe12, S. Hoche and F. Krauss and M. Schonherr and F. Siegert,W+n-jet predictions at the Large Hadron Collider at next-to-leading order matched with a parton shower,Phys.Rev.Lett.,110,(2013),052001,[arXiv:1201.5882],arXiv:1201.5882}
+@mybibitem{Hoeche2012yf,Hoe12a, S. Hoche and F. Krauss and M. Schonherr and F. Siegert,QCD matrix elements + parton showers: The NLO case,JHEP,04,(2013),027,[arXiv:1207.5030],arXiv:1207.5030}
+@mybibitem{Hoeche2012fm,Hoe12b, S. Hoche and M. Schonherr,Uncertainties in NLO + parton shower matched simulations of inclusive jet and dijet production,Phys.Rev.,D86,(2012),094042,arXiv:1208.2815,arXiv:1208.2815}
+@mybibitem{Hoeche2013mua,Hoe13, S. Hoeche and J. Huang and G. Luisoni and  M. Schoenherr and J. Winter,Zero and one jet combined NLO analysis of the top quark forward-backward asymmetry,Phys.Rev.,D88,(2013),014040,arXiv:1306.2703,arXiv:1306.2703}
+@mybibitem{Hoeche2014lxa,Hoe14a, S. Hoeche and F. Krauss and M. Schoenherr,Uncertainties in MEPS@@NLO calculations of h+jets,,,,,arXiv:1401.7971,arXiv:1401.7971}
+@mybibitem{Hoeche2014rya,Hoe14b, S. Hoeche and F. Krauss and S. Pozzorini and M. Schoenherr and J. M. Thompson and K. C. Zapp,Triple vector boson production through Higgs-Strahlung with NLO multijet merging,,,,,arXiv:1403.7516,arXiv:1403.7516}
 @mybibitem{Hollik2011ps,Hol11, W. Hollik and D. Pagani,The electroweak contribution to the top quark forward-backward asymmetry at the Tevatron,Phys.Rev.,D84,(2011),093003,[arXiv:1107.2606],arXiv:1107.2606}
 @mybibitem{Hou1987ya,Hou87, G. W. S. Hou,Charmless Rare B Decays Heavy Quarks and a Fourth Generation,,,,,,}
 @mybibitem{Hou1987vd,Hou87a, W. S. Hou and A. Soni and H. Steger,Charmless Decays of Bottom Mesons and a Fourth Generation,Phys. Rev. Lett.,59,(1987),1521,,F+J+Phys. Rev. Lett.%2C59%2C1521}
@@ -897,6 +899,7 @@
 @mybibitem{Krauss2005re,Kra05a, F. Krauss and A. Schalicke and G. Soff,APACIC++ 2.0: A PArton Cascade In C++,Comput. Phys. Commun.,174,(2006),876-902,[hep-ph/0503087],hep-ph/0503087}
 @mybibitem{Krauss2010xx,Kra10, F. Krauss and T. Laubrich and F. Siegert,Simulation of hadron decays in Sherpa,,,,,,}
 @mybibitem{Krauss2010xy,Kra10a, F. Krauss and others,Sherpa's new hadronisation model,,,,,,}
+@mybibitem{Krauss2014yaa,Kra14, F. Krauss and P. Petrov and M. Schoenherr and M. Spannowsky,Measuring collinear W emissions inside jets,,,,,arXiv:1403.4788,arXiv:1403.4788}
 @mybibitem{Kramer1993jn,Kra93, M. Kramer and J. H. Kuhn and M. L. Stong and  P. M. Zerwas,Prospects of measuring the parity of Higgs particles,Z. Phys.,C64,(1994),21-30,[hep-ph/9404280],hep-ph/9404280}
 @mybibitem{Kramer1998bc,Kra98, G. Kramer and B. Potter,Low Q^2 jet production at HERA in next-to-leading order QCD,Eur. Phys. J.,C5,(1998),665-679,[hep-ph/9804352],hep-ph/9804352}
 @mybibitem{Kramer1999jr,Kra99, G. Kramer and B. Potter,Forward jet production at small x in next-to-leading order QCD,Phys. Lett.,B453,(1999),295-301,[hep-ph/9901314],hep-ph/9901314}

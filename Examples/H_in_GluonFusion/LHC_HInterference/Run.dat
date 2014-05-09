@@ -5,18 +5,21 @@
   AMEGIC_ALLOW_MAPPING 0;
   ME_SIGNAL_GENERATOR Amegic LGEN;
   SCALES VAR{Abs2(p[2]+p[3])};
-  # collider parameters
-  BEAM_1 2212; BEAM_ENERGY_1 4000;
-  BEAM_2 2212; BEAM_ENERGY_2 4000;
+
   # physics parameters
   YUKAWA[4] 1.42; YUKAWA[5] 4.8;
   YUKAWA[15] 1.777;
   EW_SCHEME 3;
+
+  # collider parameters
+  BEAM_1 2212; BEAM_ENERGY_1 4000;
+  BEAM_2 2212; BEAM_ENERGY_2 4000;
 }(run);
 
 (processes){
   Process 93 93 -> 22 22;
-  NLO_QCD_Mode 1; NLO_QCD_Part BVIRS;
+  NLO_QCD_Mode Fixed_Order;
+  NLO_QCD_Part BVIRS;
   Order_EW 2; Enable_MHV 12;
   Loop_Generator LGEN;
   Integrator PS2;
