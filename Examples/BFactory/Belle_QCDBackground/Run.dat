@@ -6,7 +6,7 @@
   ORDER_ALPHAS 1;
   MASSIVE[4] 1;
   MASSIVE[5] 1;
-  MASSIVE_PS 3 4 5;
+  MASSIVE_PS 3;
   % collider setup
   BEAM_1  11; BEAM_ENERGY_1 7.;
   BEAM_2 -11; BEAM_ENERGY_2 4.;

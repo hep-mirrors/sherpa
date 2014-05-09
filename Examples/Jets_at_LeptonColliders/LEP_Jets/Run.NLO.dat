@@ -3,26 +3,22 @@
   EVENTS 5M; ERROR 0.1;
 
   % tags and settings for scale definitions
-  SP_NLOCT 1; SCF:=1.0; FSF:=SCF; RSF:=SCF; QSF:=1.0;
+  SCF:=1.0; FSF:=SCF; RSF:=SCF; QSF:=1.0;
   SCALES METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
 
   % tags for process setup
   LJET:=2,3,4; NJET:=3; YCUT:=2.0;
   LMJET:=2; NMJET:=3; YMCUT:=2.0;
   NMMJET:=1; YMMCUT:=2.0;
-  EXCLUSIVE_CLUSTER_MODE 1;
-
-  % shower settings
-  CSS_KFACTOR_SCHEME 0;
 
   % tags and settings for ME generators
   LOOPGEN0:=Internal;
   LOOPGEN1:=<my-loop-gen-for-3j>;
   LOOPGEN2:=<my-loop-gen-for-4j>;
-  LOOPMGEN:=Internal;
+  LOOPMGEN:=<my=loop-gen-for-massive-2j>;
   ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN0 LOOPGEN1 LOOPGEN2 LOOPMGEN;
   EVENT_GENERATION_MODE Weighted;
-  INTEGRATOR 4;
+  AMEGIC_INTEGRATOR 4;
 
   % model parameters
   MODEL SM;
