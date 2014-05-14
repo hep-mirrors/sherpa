@@ -169,9 +169,8 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->AddData("Enhance",new Blob_Data<double>
 		(p_mehandler->Process()->Integrator()->EnhanceFactor()));
   blob->AddData("Factorisation_Scale",new Blob_Data<double>
-		(sqrt(winfo.m_muf12*winfo.m_muf22)));
-  blob->AddData("XF1",new Blob_Data<double>(winfo.m_xf1));
-  blob->AddData("XF2",new Blob_Data<double>(winfo.m_xf2));
+                (sqrt(winfo.m_pdf.m_muf12*winfo.m_pdf.m_muf22)));
+  blob->AddData("PDFInfo",new Blob_Data<PHASIC::PDF_Info>(winfo.m_pdf));
   blob->AddData("OQCD",new Blob_Data<int>
 		(p_mehandler->Process()->OrderQCD()));
   blob->AddData("OEW",new Blob_Data<int>

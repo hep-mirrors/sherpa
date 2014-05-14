@@ -393,22 +393,24 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   double value=Differential(cur,(psm::code)mode);
   if (value==0.0 || IsBad(value)) return NULL;
   cur->SetMomenta(p_lab);
-  double xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
+  int fl1(0), fl2(0);
+  double x1(0.0), x2(0.0), xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
   ME_wgtinfo* wgtinfo=p_active->Process()->GetMEwgtinfo();
-  {
-    dxs=m_result/m_psweight;
-    xf1=p_isrhandler->XF1(0);
-    xf2=p_isrhandler->XF2(0);
-    mu12=p_isrhandler->MuF2(0);
-    mu22=p_isrhandler->MuF2(1);
-    NLO_subevtlist* nlos=p_active->Process()->GetSubevtList();
-    if (wgtinfo) {
-      (*wgtinfo)*=m_psweight;
-      wgtinfo->m_x1=p_isrhandler->X1();
-      wgtinfo->m_x2=p_isrhandler->X2();
-    }
+  dxs=m_result/m_psweight;
+  fl1=p_active->Process()->Flavours()[0].HepEvt();
+  fl2=p_active->Process()->Flavours()[1].HepEvt();
+  x1=p_isrhandler->X1();
+  x2=p_isrhandler->X2();
+  xf1=p_isrhandler->XF1(0);
+  xf2=p_isrhandler->XF2(0);
+  mu12=p_isrhandler->MuF2(0);
+  mu22=p_isrhandler->MuF2(1);
+  if (wgtinfo) {
+    (*wgtinfo)*=m_psweight;
+    wgtinfo->m_x1=x1;
+    wgtinfo->m_x2=x2;
   }
-  return new Weight_Info(value,dxs,1.0,xf1,xf2,mu12,mu22);
+  return new Weight_Info(value,dxs,1.0,fl1,fl2,x1,x2,xf1,xf2,mu12,mu22);
 }
 
 void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
@@ -766,9 +768,12 @@ void Phase_Space_Handler::AddStats(const std::vector<double> &stats)
 }
 
 template Weight_Info &ATOOLS::Blob_Data_Base::Get<Weight_Info>();
+template PDF_Info &ATOOLS::Blob_Data_Base::Get<PDF_Info>();
 
 namespace ATOOLS {
-template <> Blob_Data<Weight_Info>::~Blob_Data() {}
+  template <> Blob_Data<Weight_Info>::~Blob_Data() {}
+  template class Blob_Data<Weight_Info>;
 
-template class Blob_Data<Weight_Info>;
+  template <> Blob_Data<PDF_Info>::~Blob_Data() {}
+  template class Blob_Data<PDF_Info>;
 }

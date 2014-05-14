@@ -46,18 +46,37 @@ namespace PHASIC {
   operator&(const psm::code &c1,const psm::code &c2)
   { return (psm::code)((int)c1&(int)c2); }
 
+  struct PDF_Info {
+    int m_fl1, m_fl2;
+    double m_x1, m_x2, m_muf12, m_muf22, m_xf1, m_xf2;
+    PDF_Info(const int &fl1=0, const int &fl2=0,
+             const double &x1=0.,const double &x2=0.,
+             const double &muf12=0.,const double &muf22=0.,
+             const double &xf1=0.,const double &xf2=0.) :
+      m_fl1(fl1), m_fl2(fl2), m_x1(x1), m_x2(x2),
+      m_muf12(muf12), m_muf22(muf22), m_xf1(xf1), m_xf2(xf2) {}
+  }; // end of struct PDF_Info
+
+  inline std::ostream & operator<<(std::ostream & s, const PHASIC::PDF_Info & pi)
+  {
+    s<<" pdf1 = ("<<pi.m_fl1<<","<<pi.m_x1<<","<<sqrt(pi.m_muf12)
+                  <<":"<<pi.m_xf1<<") , "
+     <<" pdf2 = ("<<pi.m_fl2<<","<<pi.m_x2<<","<<sqrt(pi.m_muf22)
+                  <<":"<<pi.m_xf2<<")";
+    return s;
+  }
+
   struct Weight_Info {
-    
-    double m_weight, m_dxs, m_ntrial, m_xf1, m_xf2, m_muf12, m_muf22;
-    
-    // constructor
+    PDF_Info m_pdf;
+    double m_weight, m_dxs, m_ntrial;
     Weight_Info(const double &weight=0.0,
                 const double &dxs=0.0,const double &ntrial=0.0,
-		const double &xf1=0.0,const double &xf2=0.0,
-		const double &muf12=0.0,const double &muf22=0.0):
+                const int &fl1=0, const int &fl2=0,
+                const double &x1=0.,const double &x2=0.,
+                const double &xf1=0.0,const double &xf2=0.0,
+                const double &muf12=0.0,const double &muf22=0.0):
       m_weight(weight), m_dxs(dxs), m_ntrial(ntrial),
-      m_xf1(xf1), m_xf2(xf2), m_muf12(muf12), m_muf22(muf22) {}
-
+      m_pdf(PDF_Info(fl1,fl2,x1,x2,muf12,muf22,xf1,xf2)) {}
   };// end of struct Weight_Info
 
   inline std::ostream & operator<<(std::ostream & s, const PHASIC::Weight_Info & wi)
