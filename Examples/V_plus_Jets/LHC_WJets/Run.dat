@@ -3,10 +3,10 @@
   EVENTS 1M; ERROR 0.99;
 
   % scales, tags for scale variations
-  SP_NLOCT 1; FSF:=1.; RSF:=1.; QSF:=1.;
+  FSF:=1.; RSF:=1.; QSF:=1.;
   SCALES METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
 
-  ## % extra tags for custom jet criterion
+  ## % optional: extra tags for custom jet criterion
   ## SHERPA_LDADD MyJetCriterion;
   ## JET_CRITERION FASTJET[A:antikt,R:0.4,y:5];
 
