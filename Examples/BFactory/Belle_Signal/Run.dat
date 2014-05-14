@@ -6,7 +6,7 @@
   ORDER_ALPHAS 1;
   MASSIVE[4] 1;
   MASSIVE[5] 1;
-  MASSIVE_PS 3 4 5;
+  MASSIVE_PS 3;
   ME_SIGNAL_GENERATORS Internal;
   SCALES VAR{sqr(91.2)};
   % collider setup

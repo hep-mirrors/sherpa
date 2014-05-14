@@ -1,6 +1,6 @@
 (run){
   EVENTS 100k;
-  EVENT_GENERATION_MODE W;
+  EVENT_GENERATION_MODE Weighted;
   LGEN:=BlackHat; ME_SIGNAL_GENERATOR Amegic LGEN;
   ### Analysis (please configure with --enable-rivet & --enable-hepmc2)
   ANALYSIS Rivet; ANALYSIS_OUTPUT Analysis/4HTp/BVI/;
@@ -18,18 +18,21 @@
 (processes){
   ### The Born piece
   Process 93 93 -> 90 91 93;
-  NLO_QCD_Mode 1; NLO_QCD_Part B;
+  NLO_QCD_Mode Fixed_Order;
+  NLO_QCD_Part B;
   Order_EW 2;
   End process;
   ### The virtual piece
   Process 93 93 -> 90 91 93;
-  NLO_QCD_Mode 1; NLO_QCD_Part V;
+  NLO_QCD_Mode Fixed_Order;
+  NLO_QCD_Part V;
   Loop_Generator LGEN;
   Order_EW 2;
   End process;
   ### The integrated subtraction piece
   Process 93 93 -> 90 91 93;
-  NLO_QCD_Mode 1; NLO_QCD_Part I;
+  NLO_QCD_Mode Fixed_Order;
+  NLO_QCD_Part I;
   Order_EW 2;
   End process;
 }(processes);

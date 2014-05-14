@@ -15,9 +15,9 @@ the MEPS@@NLO method - an extension of the CKKW method to NLO - as described
 in @mycite{Hoeche2012yf} and @mycite{Gehrmann2012yg}. Finally, even higher
 multiplicities, calculated at leading order, are merged on top of that.
 A few things to note are detailed below the example. The example can be
-converted a simple MENLOPS setup by setting @code{LJET:=2}, or an MEPS
+converted into a simple MENLOPS setup by setting @code{LJET:=2}, or an MEPS
 setup by setting @code{LJET:=0}, to study the effect of incorporating
-higher-order matrix elements. The number of additional LO jets can be varied
+full NLO matrix elements. The number of additional LO jets can be varied
 through @code{NJET}. Similarly, the merging cut can be changed through
 @code{QCUT}.
 
@@ -41,13 +41,16 @@ by the METS-clustering algorithm.
 to be used in the process setup, defining the multiplicity of the MC@@NLO
 subprocesses, the maximal number of extra jets, and the merging cut.
 @item The @code{LOOPGEN} tag is used to name the provider of the one-loop
-matrix elements for the respective multiplicities. For the simplemost case
-here Sherpa can provide it internally.
+matrix elements for the respective multiplicities. For complicated processes
+this needs external one-loop programs like BlackHat, GoSam or OpenLoops.
 @item tau leptons are set massive in order to exclude them from the massless
 lepton container (@code{90}).
 @item As both Comix and Amegic are specified as matrix element generators
 to be used, Amegic has to be specified to be used for all MC@@NLO
-multiplicities using @code{ME_Generator Amegic @{LJET@}}.
+multiplicities using @code{ME_Generator Amegic @{LJET@}}. Additionally, we
+specify @code{RS_ME_Generator Comix @{LJET@}} such that the subtracted
+real-emission bit of the NLO matrix elements is calculated more efficiently
+with Comix instead of Amegic.
 @item The @code{LOOSE_METS} scale setter, a simplified version of the
 @code{METS} scale setter, is used for the highest multiplicities (if
 @code{NJET} is set to @code{5} or @code{6}) to speed up the calculation.

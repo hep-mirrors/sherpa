@@ -1,9 +1,9 @@
-@node Tops in MC@@NLO
-@subsection Simulation of top quark pair production using MC@@NLO methods
+@node Top quark pair production
+@subsection Top quark pair production
 
 @example
 @smallformat
-@verbatiminclude Examples/Tops_plus_Jets/LHC_Tops_MCatNLO/Run.dat
+@verbatiminclude Examples/Tops_plus_Jets/LHC_Tops/Run.dat
 @end smallformat
 @end example
 
@@ -12,21 +12,6 @@ Things to notice:
 @item We use OpenLoops to compute the virtual corrections @mycite{Cascioli2011va}.
 @item We match matrix elements and parton showers using the MC@@NLO technique 
 for massive particles, as described in @mycite{Hoeche2013mua}.
-@item The scale is defined as in Appendix C of @mycite{Hoeche2013mua}.
-@end itemize
- 
-@node Tops plus Jets in MEPS
-@subsection Simulation of top quark pair production in association with jets using MEPS methods
-
-@example
-@smallformat
-@verbatiminclude Examples/Tops_plus_Jets/LHC_Tops_MEPS/Run.dat
-@end smallformat
-@end example
-
-Things to notice:
-@itemize
+@item A non-default METS core scale setter is used, cf. @ref{METS scale setting with multiparton core processes}
 @item We enable top decays through the internal decay module using @option{HARD_DECAYS 1}
-and @option{HARD_SPIN_CORRELATIONS 1}.
 @end itemize
- 
