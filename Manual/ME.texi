@@ -84,8 +84,7 @@ factorization scale and potential additional scales.
 * Custom scale implementation::
 * Predefined scale tags::
 * Scale schemes for NLO calculations::
-* Simple scale variations::
-* Scale variations in parton showered and merged samples::
+* Scale variations::
 * METS scale setting with multiparton core processes::
 @end menu
 
@@ -100,13 +99,21 @@ They can be set to different values using
 @verbatim
 SCALES <scale-setter>{<fac-scale-definition>}{<ren-scale-definition>}
 @end verbatim
-In next-to-leading order parton shower matched calculations a third 
-perturbative scale is present, the resummation or parton shower starting scale. 
-It is set using the third argument
+
+In parton shower matched/merged calculations a third perturbative scale
+is present, the resummation or parton shower starting scale. It can be
+set by the user in the third argument like
 @verbatim
 SCALES <scale-setter>{<fac-scale-definition>}{<ren-scale-definition>}{<res-scale-definition>}
 @end verbatim
-@b{Note: for all scales their squares have to be given.} See 
+If the final state of your hard scattering process contains QCD partons,
+their kinematics fix the resummation scale for subsequent emissions
+(cf. the description of the @option{METS} scale setter below).  If
+instead you want to specify your own resummation scale also in such a
+case, you have to set @code{CSS_RESPECT_Q2=1} and use the third argument
+to specify your resummation scale as above.
+
+@b{Note: for all scales their squares have to be given.} See
 @ref{Predefined scale tags} for some predefined scale tags.
 
 More than three scales can be set as well to be subsequently used, e.g.
@@ -379,66 +386,23 @@ of the NLO calculation any explicit reference to a parton momentum
 will lead to an inconsistent result.
 
 
-@node Simple scale variations
-@subsubsection Simple scale variations
+@node Scale variations
+@subsubsection Scale variations
 
-@cindex FACTORIZATION_SCALE_FACTOR
-@cindex RENORMALIZATION_SCALE_FACTOR
-@anchor{FACTORIZATION_SCALE_FACTOR}
-@anchor{RENORMALIZATION_SCALE_FACTOR}
-
-Simple scale variations can be done using the following parameters:
-@itemize
-@item `FACTORIZATION_SCALE_FACTOR' specifies a global factor which the squared
-factorisation scale (as specified above) is to be multiplied with when
-evaluating PDFs.
-
-Note: Shower starting scales are not affected by this factor, change the
-`SCALES' parameter to achieve that.
-@item `RENORMALIZATION_SCALE_FACTOR' specifies a global factor which the
-squared renormalisation scale (as specified above) is to be multiplied with
-when evaluating running couplings.
-
-Note: This affects also the running coupling used in the parton shower evolution.
-@end itemize
-
-@node Scale variations in parton showered and merged samples
-@subsubsection Scale variations in parton showered and merged samples
-
-@cindex CSS_SHOWER_SCALE2_FACTOR
-@cindex SP_NLOCT
-@anchor{CSS_SHOWER_SCALE2_FACTOR}
-@anchor{SP_NLOCT}
-
-When performing scale variations within parton showered samples 
-the naive @ref{FACTORIZATION_SCALE_FACTOR} and 
-@ref{RENORMALIZATION_SCALE_FACTOR} cannot be employed because they alter 
-the resummation behaviour of the parton shower and lead to an overestimate 
-of the associated uncertainty. Instead, the scales in the fixed-order 
-matrix element and the parton shower resummation should be varied separately. 
-This can be done for the matrix element by introducing the prefactor into 
-its scale definition, e.g.
+The factorisation and renormalisation scales in the fixed-order matrix
+elements can be varied separately simply by introducing a prefactor into
+the scale definition, e.g.
 @verbatim
 SCALES VAR{0.25*H_T2}{0.25*H_T2}
 @end verbatim
-for setting both the renormalisation and factorisation scales to H_T/2. The 
-parton shower scale is then varied by setting 
-@code{CSS_SHOWER_SCALE2_FACTOR=<factor>}. It redefines the reference value of 
-the strong coupling constant at @code{mZ} by its nuerical value at 
-@code{mZ*<factor>} leaving its running unchanged.
+for setting both the renormalisation and factorisation scales to H_T/2.
 
-In merged samples the METS scale setter has to be used. The scales in the 
-respective multijet matrix elements can then be varied via
+Similarly, the starting scale of the parton shower resummation in a
+ME+PS merged sample can be varied using the METS scale setter's third
+argument like:
 @verbatim
-SCALES METS{<muF-var-factor>*MU_F2}{<muR-var-factor>*MU_R2}
+SCALES METS{MU_F2}{MU_R2}{4.0*MU_Q2}
 @end verbatim
-In NLO-merged (MEPSatNLO) samples proper counterterms for compensating the 
-change of scale at NLO have to be introduced via @code{SP_NLOCT=1}. Also, 
-the resummation scale can be varied
-@verbatim
-SCALES METS{<muF-var-factor>*MU_F2}{<muR-var-factor>*MU_R2}{<muQ-var-factor>*MU_Q2}
-@end verbatim
-
 
 
 @node METS scale setting with multiparton core processes

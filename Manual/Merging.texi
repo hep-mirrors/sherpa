@@ -242,18 +242,4 @@ the most prominent mistakes are listed here:
 @item  The ME-PS merging implemented in Sherpa is not yet enabled for
   processes involving coloured supersymmetric particles.
 @end itemize
-A few more comments related to Sherpa's merging:
-@itemize @bullet
-@item  Factors can be given to vary the default choices for the
-  renormalization and factorization scales used in Sherpa
-  simulations. The corresponding keywords are
-  @ref{RENORMALIZATION_SCALE_FACTOR}
-  and @ref{FACTORIZATION_SCALE_FACTOR}, and they are multiplied
-  to the default mu_R^2 and mu_F^2 scales used for alpha_s
-  and PDF evaluations, respectively. By varying them in a certain
-  range around 1 (like [1/4,4]), an estimate for the uncertainty
-  of Sherpa merged predictions can be obtained conveniently. Note that
-  the application of the factors requires to re-compute the
-  parton-level cross sections.
-@end itemize
 
