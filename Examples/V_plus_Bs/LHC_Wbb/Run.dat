@@ -1,7 +1,7 @@
 (run){
   # generator parameters
   EVENTS 0; LGEN:=Wbb;
-  ME_SIGNAL_GENERATOR Amegic LGEN;
+  ME_SIGNAL_GENERATOR Comix Amegic LGEN;
   HARD_DECAYS 1; HARD_MASS_SMEARING 0;
   MASSIVE[5] 1; WIDTH[24] 0; STABLE[24] 0;
   HDH_ONLY_DECAY {24,12,-11};
@@ -17,13 +17,15 @@
 (processes){
   Process 93 93 -> 24 5 -5;
   NLO_QCD_Mode MC@NLO;
-  NLO_QCD_Part BVIRS;
+  ME_Generator Amegic;
+  RS_ME_Generator Comix;
   Loop_Generator LGEN;
   Order_EW 1;
   End process;
   Process 93 93 -> -24 5 -5;
   NLO_QCD_Mode MC@NLO;
-  NLO_QCD_Part BVIRS;
+  ME_Generator Amegic;
+  RS_ME_Generator Comix;
   Loop_Generator LGEN;
   Order_EW 1;
   End process;
