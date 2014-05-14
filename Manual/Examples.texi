@@ -64,8 +64,7 @@ of the main features of these examples.
 @section Top quark (pair) + jets production
 
 @menu
-* Tops in MC@@NLO::
-* Tops plus Jets in MEPS::
+* Top quark pair production::
 * Tops plus W in MC@@NLO::
 @end menu
 

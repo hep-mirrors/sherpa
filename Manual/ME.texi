@@ -431,7 +431,6 @@ scale setter.
 Core scale setter for processes involving top quarks. Implementation details 
 are described in Appendix C of @mycite{Hoeche2013mua}.
 @end table
-An example for defining a custom core scale is given in @ref{Tops in MC@@NLO}.
 
 @node COUPLING_SCHEME
 @subsection COUPLING_SCHEME
