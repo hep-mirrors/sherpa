@@ -3,6 +3,8 @@ examplesdir        = $(pkgdatadir)/Examples
 nobase_dist_examples_DATA         =	\
 		API/ME2/Run.dat \
 		API/ME2/test.py.in \
+		API/ME2/test.cpp \
+		API/ME2/Makefile \
 		API/Events/Run.dat \
 		API/Events/test.py.in \
 		API/MPIEvents/Run.dat \
