@@ -1,5 +1,5 @@
-@node ME2
-@subsection Computing matrix elements for idividual phase space points
+@node Matrix Element values through Python interface
+@subsection Computing matrix elements for idividual phase space points using the Python Interface
 Sherpa's Python interface (see @ref{Python Interface}) can be used to
 compute matrix elemtents for individual phase space points.  Access to a
 designated class ``MEProcess'' is provided by interface to compute
@@ -28,6 +28,49 @@ export LD_PRELOAD=<prefix>/lib/SHERPA-MC/libSherpaMain.so
 
 @example
 @smallformat
-@verbatiminclude Examples/API/ME2/test.py.in
+@verbatiminclude Examples/API/ME2-Python/test.py.in
 @end smallformat
 @end example
+
+@node Matrix Element values through C++ interface
+@subsection Computing matrix elements for idividual phase space points using the C++ Interface
+@cindex NUMBER_OF_POINTS
+@cindex MOMENTA_DATA_FILE
+
+Matrix elements values for user defined phase space points can also be
+quarried using a small C++ executable provided in @code{Examples/API/ME2}.
+It can be compiled using the provided @code{Makefile}. The test program is
+then run typing (note: the @code{LD_LIBRARY_PATH} must be set to include
+@code{<Sherpa-installation>/lib/SHERPA-MC})
+
+@verbatim
+./test <options>
+@end verbatim
+
+where the usual options for Sherpa are passed. An example run card, giving
+both the process and the requested phase space points looks like
+
+@example
+@smallformat
+@verbatiminclude Examples/API/ME2-CPP/Run.dat
+@end smallformat
+@end example
+
+Please note that both the process and the beam specifications need to be
+present in order for Sherpa to initialise properly. The momenta need to be
+given in the proper ordering employed in Sherpa, which can be read from the
+process name printed on screen. For each entry the sequence is the following
+
+@verbatim
+  <pdg-id> <E> <px> <py> <pz> [triplet-index antitriplet-index]
+@end verbatim
+
+with the colour indices ranging from 1..3 for both the triplet and the
+antitriplet index in the colour-flow basis. The colour information is only
+needed if Comix is used for the calculation as Comix then also gives the
+squared matrix element value for this colour cinfiguration. In any case, the
+colour-summed value is printed to screen.
+
+Alternatively, the momenta can be given in a separate file specified through
+@code{MOMENTA_DATA_FILE=<file>}.
+

@@ -29,7 +29,8 @@ Sherpa (see @ref{Command line}). Furthermore it illustrates how
 exceptions that Sherpa might throw can be taken care of. If a run card
 is present in the directory where the script is executed, the
 initialization of the generator causes Sherpa to compute the cross
-sections for the processes specified in the run card. See @ref{ME2} for
+sections for the processes specified in the run card. See
+@ref{Matrix Element values through Python interface} for
 an example that shows how to use the Python interface to compute matrix
 elements or @ref{Events} to see how the interface can be used to
 generate events in Python.
