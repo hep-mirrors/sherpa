@@ -16,6 +16,7 @@ of the main features of these examples.
 * FONLO::
 * SoftQCD::
 * BFactories::
+* MEvalues::
 * APIexamples::
 @end menu
 
@@ -112,15 +113,23 @@ of the main features of these examples.
 
 @include BFactory.texi
 
+@node MEvalues
+@section Calculating matrix element values for externally given configurations
+
+@menu
+* Matrix Element values through Python interface::
+* Matrix Element values through C++ interface::
+@end menu
+
+@include ME2.texi
+
 @node APIexamples
 @section Using the Python interface
 
 @menu
-* ME2::
 * Events::
 * MPIEvents::
 @end menu
 
-@include ME2.texi
 @include Events.texi
 @include MPIEvents.texi

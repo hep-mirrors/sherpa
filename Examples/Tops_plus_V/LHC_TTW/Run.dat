@@ -1,25 +1,29 @@
 (run){
-  EVENTS=10000
-  EVENT_GENERATION_MODE=Weighted
+  % general settings
+  EVENTS 10000;
 
-  BEAM_1=2212; BEAM_ENERGY_1=4000;
-  BEAM_2=2212; BEAM_ENERGY_2=4000;
+  % tags and settings for scale definitions
+  FSF:=1.0; RSF:=1.0; QSF:=1.0;
+  SCALES STRICT_METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
 
-  SCF:=1.0; QF:=1.0
-  LGEN:=OpenLoops
+  % tags and settings for ME generators
+  LGEN:=OpenLoops;
+  ME_SIGNAL_GENERATOR Comix Amegic LGEN;
+  EVENT_GENERATION_MODE Weighted;
 
-  ME_SIGNAL_GENERATOR=Comix Amegic LGEN
-  SCALES=METS{SCF*MU_F2}{SCF*MU_R2}{QF*MU_Q2}
+  % settings for hard decays
+  HARD_DECAYS On;
+  HDH_NO_DECAY {24,2,-1}|{24,4,-3}|{24,16,-15};
 
-  HARD_DECAYS=On
-  STABLE[6]=0; STABLE[24]=0
-  WIDTH[6]=0; WIDTH[24]=0
-  HDH_NO_DECAY={24,2,-1}|{24,4,-3}|{24,16,-15}
-  HARD_SPIN_CORRELATIONS=1
+  % model parameters
+  WIDTH[6] 0; WIDTH[24] 0;
 
-  # technical parameters
-  EXCLUSIVE_CLUSTER_MODE=1
-  AMEGIC_DEFAULT_GAUGE=10
+  % technical parameters
+  EXCLUSIVE_CLUSTER_MODE 1;
+
+  % collider setup
+  BEAM_1 2212; BEAM_ENERGY_1 4000;
+  BEAM_2 2212; BEAM_ENERGY_2 4000;
 }(run);
 
 (processes){
