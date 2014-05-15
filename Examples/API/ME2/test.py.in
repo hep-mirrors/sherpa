@@ -4,7 +4,7 @@ import sys
 sys.path.append('@PYLIBDIR@')
 import Sherpa
 
-# Add this to the execution arguments to prevent Sherpa from starting to integrate the cross section
+# Add this to the execution arguments to prevent Sherpa from starting the cross section integration
 sys.argv.append('INIT_ONLY=2')
 
 Generator=Sherpa.Sherpa()
@@ -25,9 +25,8 @@ try:
     if Process.HasColorIntegrator(): 
         Process.GenerateColorPoint();
 
-    # First argument corresponds to particle index 
-    # which in turn is determined by the order in which the 
-    # particles were added
+    # First argument corresponds to particle index:
+    # index 0 correspons to particle added first, index 1 is the particle added second, and so on...
     Process.SetMomentum(0, 45.6,0.,0.,45.6)
     Process.SetMomentum(1, 45.6,0.,0.,-45.6)
     Process.SetMomentum(2, 45.6,0.,45.6,0.)
@@ -38,4 +37,5 @@ try:
     print '\n'
 
 except Sherpa.Exception as exc:
+    print exc
     exit(1)
