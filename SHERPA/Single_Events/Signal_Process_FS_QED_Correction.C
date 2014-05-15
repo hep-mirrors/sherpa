@@ -42,11 +42,12 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
   reader.AddComment("#");
   reader.AddWordSeparator("\t");
   reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  m_qed            = (reader.GetValue<std::string>("ME_QED","On")=="On");
+  bool impliciteon = (reader.GetValue<std::string>("ME_QED","On")=="On");
   bool expliciteon = (reader.GetValue<std::string>("ME_QED","")=="On");
   // look whether there is any hadronisation following
   // if not, do not even put them on-shell -> switch everthing off
-  if (!m_qed) {
+  if (!impliciteon) {
+    m_qed = false;
     Data_Reader reader1(" ",";","!","=");
     reader1.AddComment("#");
     reader1.AddWordSeparator("\t");
@@ -54,16 +55,21 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
     m_on = (reader1.GetValue<std::string>("FRAGMENTATION","")!="Off");
   }
   // switch off if there are hard decays, have their own QED corrections,
-  // cannot tell here what has been corrected and what not
-  m_on = (!m_qed && (reader.GetValue<std::string>("HARD_DECAYS","Off")=="Off"));
+  // cannot tell here what has been corrected and what not -- OR --
+  // if NLO_Mode Fixed_Order, switch off completely, unless explicitely stated
+  if (!expliciteon &&
+      (p_mehandler->HasNLO()==1 ||
+       !(reader.GetValue<std::string>("HARD_DECAYS","Off")=="Off"))) {
+    m_on = false; m_qed = false;
+  }
+  msg_Debugging()<<"on="<<m_on<<" ,  qed="<<m_qed<<std::endl;
+
   // read in resonance finding parameters
   m_findresonances = (reader.GetValue<std::string>("ME_QED_CLUSTERING","On")
                                                                         =="On");
   m_resdist        = reader.GetValue<double>("ME_QED_CLUSTERING_THRESHOLD",1.);
-  // if NLO_Mode Fixed_Order, switch off completely, unless explicitely stated
-  if (p_mehandler->HasNLO()==1 && !expliciteon) { m_on = false; m_qed = false; }
 
-  if (m_qed) {
+  if (m_on && m_qed) {
     m_name += p_sphotons->SoftQEDGenerator();
   }
   else
