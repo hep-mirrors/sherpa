@@ -8,6 +8,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "MODEL/Main/Model_Base.H"
+#include "PHASIC++/Main/Phase_Space_Handler.H"
 
 #include "HepMC/GenEvent.h"
 #include "HepMC/GenVertex.h"
@@ -66,19 +67,12 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
                 +std::string("   Try 'EVENT_OUTPUT=HepMC_Short' instead."));
         }
         event.set_signal_process_vertex(vertex);
-        if((*blit)->NInP()==2) {
-          kf_code fl1=(*blit)->InParticle(0)->Flav().HepEvt();
-          kf_code fl2=(*blit)->InParticle(1)->Flav().HepEvt();
-          double x1=(*blit)->InParticle(0)->Momentum()[0]/rpa->gen.PBeam(0)[0];
-          double x2=(*blit)->InParticle(1)->Momentum()[0]/rpa->gen.PBeam(1)[0];
-          double q(0.0), p1(0.0), p2(0.0);
-          Blob_Data_Base *facscale((**blit)["Factorisation_Scale"]);
-	  if (facscale) q=sqrt(facscale->Get<double>());
-	  Blob_Data_Base *xf1((**blit)["XF1"]);
-          Blob_Data_Base *xf2((**blit)["XF2"]);
-          if (xf1) p1=xf1->Get<double>();
-          if (xf2) p2=xf2->Get<double>();
-	  HepMC::PdfInfo pdfinfo(fl1, fl2, x1, x2, q, p1, p2);
+        Blob_Data_Base *pdfinfodb((**blit)["PDFInfo"]);
+        if (pdfinfodb && (*blit)->NInP()==2) {
+          PHASIC::PDF_Info pi=pdfinfodb->Get<PHASIC::PDF_Info>();
+          double q(sqrt(sqrt(pi.m_muf12*pi.m_muf22)));
+          HepMC::PdfInfo pdfinfo(pi.m_fl1,pi.m_fl2,pi.m_x1,pi.m_x2,
+                                 q,pi.m_xf1,pi.m_xf2);
           event.set_pdf_info(pdfinfo);
         }
       }
@@ -179,20 +173,13 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
     }
     
     if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
-      if((*blit)->NInP()==2) {
-        kf_code fl1=(*blit)->InParticle(0)->Flav().HepEvt();
-        kf_code fl2=(*blit)->InParticle(1)->Flav().HepEvt();
-        double x1=(*blit)->InParticle(0)->Momentum()[0]/rpa->gen.PBeam(0)[0];
-        double x2=(*blit)->InParticle(1)->Momentum()[0]/rpa->gen.PBeam(1)[0];
-        double q(0.0), p1(0.0), p2(0.0);
-        Blob_Data_Base *facscale((**blit)["Factorisation_Scale"]);
-        if (facscale) q=sqrt(facscale->Get<double>());
-	Blob_Data_Base *xf1((**blit)["XF1"]);
-        Blob_Data_Base *xf2((**blit)["XF2"]);
-        if (xf1) p1=xf1->Get<double>();
-        if (xf2) p2=xf2->Get<double>();
-	HepMC::PdfInfo pdfinfo(fl1, fl2, x1, x2, q, p1, p2);
-	event.set_pdf_info(pdfinfo);
+      Blob_Data_Base *pdfinfodb((**blit)["PDFInfo"]);
+      if (pdfinfodb && (*blit)->NInP()==2) {
+        PHASIC::PDF_Info pi=pdfinfodb->Get<PHASIC::PDF_Info>();
+        double q(sqrt(sqrt(pi.m_muf12*pi.m_muf22)));
+        HepMC::PdfInfo pdfinfo(pi.m_fl1,pi.m_fl2,pi.m_x1,pi.m_x2,
+                               q,pi.m_xf1,pi.m_xf2);
+        event.set_pdf_info(pdfinfo);
       }
     }
   }
