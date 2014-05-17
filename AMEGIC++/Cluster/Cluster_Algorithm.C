@@ -695,6 +695,7 @@ void Cluster_Algorithm::ClusterSpecial4lLoop2()
     size_t id=(1<<i);
     if (i==winner) id+=(1<<emitted_idx);
     p_ampl->CreateLeg(clustered_moms[i],Flavour(kf_gluon),ColorID(color[i],color[1-i]),id);
+    p_ampl->Legs().back()->SetStat(1);
     p_ampl->Legs().back()->SetNMax(p_proc->Info().m_fi.NMaxExternal());
     if (i==winner) {
       p_ampl->Legs().back()->SetK(1<<(1-i));
@@ -703,6 +704,7 @@ void Cluster_Algorithm::ClusterSpecial4lLoop2()
   for (int i=2;i<p_proc->Flavours().size()-1;++i) {
     p_ampl->CreateLeg(clustered_moms[i],p_proc->Flavours()[i],ColorID(0,0),(1<<i));
     p_ampl->Legs().back()->SetNMax(p_proc->Info().m_fi.NMaxExternal());
+    p_ampl->Legs().back()->SetStat(1);
   }
   p_ampl->SetKin(win.m_kin);
   p_ampl->SetMuR2(ampl->MuR2());
