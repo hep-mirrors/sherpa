@@ -81,7 +81,12 @@ penalty in more complicated processes.
 The decay table and partial widths are calculated on-the-fly during the
 initialization phase of Sherpa from the given model and its particles and
 interaction vertices. To store these results in the @code{Results/Decays}
-directory, one has to specify @option{STORE_DECAY_RESULTS=1}.
+directory, one has to specify @option{STORE_DECAY_RESULTS=1}. In case
+existing decay tables are to be read in @option{STORE_DECAY_RESULTS=1}
+is to be specified as well. Please note, that Sherpa will delete decay
+channels present in the read in results but not in the present model with
+present parameters by default. To prevent Sherpa from updating the
+decay table files accordingly specify @option{STORE_DECAY_RESULTS=2}.
 
 @node DECAY_RESULT_DIRECTORY
 @subsection DECAY_RESULT_DIRECTORY

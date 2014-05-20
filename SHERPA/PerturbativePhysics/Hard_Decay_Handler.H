@@ -32,7 +32,8 @@ namespace SHERPA {
     std::string              m_path, m_file, m_resultdir, m_offshell;
     std::set<std::string>    m_disabled_channels;
     std::map<ATOOLS::Flavour,std::set<std::string> > m_forced_channels;
-    bool                     m_store_results, m_decay_tau, m_set_widths,
+    int                      m_store_results;
+    bool                     m_decay_tau, m_set_widths,
                              m_br_weights, m_usemass;
     ATOOLS::Flavour_Set      m_decmass;
     std::map<ATOOLS::Flavour, std::map<std::string, std::vector<double> > >
