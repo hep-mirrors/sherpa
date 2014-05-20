@@ -48,7 +48,7 @@ public:
 
 Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   p_newsublist(NULL), m_path(""), m_file(""), m_resultdir(""), m_offshell(""),
-  m_store_results(false), m_decay_tau(false), m_set_widths(false),
+  m_store_results(0), m_decay_tau(false), m_set_widths(false),
   m_br_weights(true), m_usemass(true)
 {
   Data_Reader dr(" ",";","!","=");
@@ -1095,8 +1095,8 @@ void Hard_Decay_Handler::ReadDecayTable(Flavour decayer)
 
 void Hard_Decay_Handler::WriteDecayTables()
 {
-  if (!m_store_results) return;
-  
+  if (!(m_store_results&1)) return;
+
   Decay_Map::iterator dmit;
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
     ofstream ostr((m_resultdir+"/Decays/"+dmit->first.ShellName()).c_str());
