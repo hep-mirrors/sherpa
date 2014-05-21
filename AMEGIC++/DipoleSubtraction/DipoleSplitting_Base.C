@@ -150,7 +150,7 @@ double DipoleSplitting_Base::Vijf(int type,int mode)
   case 2:
     return 5.-0.5*sqr(M_PI)-sqr(loga)+1.5*(m_alpha-1-loga)-(mode?0.5:0.);
   case 3:
-    return -16./9.-2./3.*(m_alpha-1-loga)-(mode?1./6.:0.);
+    return -16./9.-2./3.*(m_alpha-1-loga);
   case 4:
     return 50./9.-0.5*sqr(M_PI)-sqr(loga)+11./6.*(m_alpha-1-loga)-(mode?1./6.:0.);
   }
