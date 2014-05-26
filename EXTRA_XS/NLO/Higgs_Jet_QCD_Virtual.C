@@ -26,7 +26,6 @@ namespace EXTRAXS {
       for (size_t i(0); i<lq.Size(); ++i) if (!lq[i].IsMassive()) nlf++;
       m_nlf=nlf/2.;
       m_b0 = (NC*11.-2.*m_nlf)/6.;
-      m_drmode=1;
     }
 
     ~GGHG_QCD_Virtual() {}
@@ -51,7 +50,6 @@ namespace EXTRAXS {
       for (size_t i(0); i<lq.Size(); ++i) if (!lq[i].IsMassive()) nlf++;
       m_nlf=nlf/2.;
       m_b0 = (NC*11.-2.*m_nlf)/6.;
-      m_drmode=1;
     }
 
     ~QQHG_QCD_Virtual() {}
@@ -76,7 +74,6 @@ namespace EXTRAXS {
       for (size_t i(0); i<lq.Size(); ++i) if (!lq[i].IsMassive()) nlf++;
       m_nlf=nlf/2.;
       m_b0 = (NC*11.-2.*m_nlf)/6.;
-      m_drmode=1;
     }
 
     ~GQHQ_QCD_Virtual() {}
