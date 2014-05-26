@@ -113,7 +113,7 @@ MCFM_gg_hgg::MCFM_gg_hgg(const int & pID,const Process_Info& pi,
 
   p_p = new double[4*MCFM_NMX];
   p_msqv = new double[sqr(2*MCFM_NF+1)];
-  m_drmode=m_mode=1;
+  m_mode=1;
   SelectIndices();
 }
 
