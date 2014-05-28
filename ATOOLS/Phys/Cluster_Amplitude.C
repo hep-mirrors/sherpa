@@ -312,11 +312,15 @@ void Cluster_Amplitude::SetColours
     }
   }
   else {
-    if (li->Flav().Strong()) {
+    if (abs(li->Flav().StrongCharge())==3) {
       size_t nc(Flow::Counter());
       coli.m_i=colj.m_j=nc;
       if (li->Flav().StrongCharge()<0)
 	std::swap<ColorID>(coli,colj);
+    }
+    else {
+      colj.m_i=coli.m_j=Flow::Counter();
+      colj.m_j=coli.m_i=Flow::Counter();
     }
   }
   li->SetCol(coli);
