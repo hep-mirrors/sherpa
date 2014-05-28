@@ -33,7 +33,7 @@ Jet_Finder::Jet_Finder
   static bool mets(false);
   if (!mets) {
     mets=true;
-    rpa->gen.AddCitation(1,"Matrix element merging with truncated showers is "+
+    rpa->gen.AddCitation(1,"LO/LO matrix element merging with truncated showers (MEPS/CKKW) is "+
 			std::string("published under \\cite{Hoeche:2009rj}."));
   }
   p_ampl = Cluster_Amplitude::New();
@@ -146,8 +146,10 @@ operator()(const Selector_Key &key) const
   static bool menlots(false);
   if (!menlots && key.p_proc->Process()->Info().Has(nlo_type::real)) {
     menlots=true;
-    rpa->gen.AddCitation(1,"NLO matrix element merging with truncated showers is "+
+    rpa->gen.AddCitation(1,"NLO/LO matrix element merging with truncated showers (MENLOPS) is "+
 			 std::string("published under \\cite{Hoeche:2010kg}."));
+    rpa->gen.AddCitation(1,"NLO/NLO matrix element merging with truncated showers (MEPS@NLO) is "+
+                         std::string("published under \\cite{Hoeche:2012yf} and \\cite{Gehrmann:2012yg}."));
   }
   if (key.front().size()>1 && key[0][1]=="LO" && 
       !(key.front().size()>2 && key[0][2]=="CUT")) 
