@@ -201,15 +201,15 @@ void LesHouches_Interface::SetWidths() {
   for (size_t k=0;k<vds.size();++k) {
     if (vds[k].size()>0) {
       if (vds[k][0]=="DECAY") {
-       Flavour flav;    
-       flav.FromHepEvt(ATOOLS::ToType<int>(vds[k][1]));
-       if (flav!=Flavour(kf_Wplus) || flav!=Flavour(kf_Z)) {
-         flav.SetWidth(ATOOLS::ToType<double>(vds[k][2]));
-         msg_Tracking()<<"   Set width of "<<flav<<" to "<<flav.Width()<<std::endl;
-         else {
-           msg_Tracking()<<"   Do not change width of EW gauge bosons : "<<flav<<" at "<<flav.Width()<<std::endl;
-         }
-       }
+        Flavour flav;    
+        flav.FromHepEvt(ATOOLS::ToType<int>(vds[k][1]));
+        if (flav==Flavour(kf_Wplus) || flav==Flavour(kf_Z)) {
+          msg_Tracking()<<"   Do not change width of EW gauge bosons : "<<flav<<" at "<<flav.Width()<<std::endl;
+        }
+        else {
+          flav.SetWidth(ATOOLS::ToType<double>(vds[k][2]));
+          msg_Tracking()<<"   Set width of "<<flav<<" to "<<flav.Width()<<std::endl;
+        }
       }
     }
   }
