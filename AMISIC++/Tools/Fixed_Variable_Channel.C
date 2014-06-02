@@ -2,6 +2,7 @@
 
 #include "PHASIC++/Channels/Channel_Elements.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Math/Random.H"
 
 using namespace PHASIC;
 
@@ -24,9 +25,10 @@ GeneratePoint(ATOOLS::Vec4D *p,double *ran)
     double mt2=pt*pt+ms[2];
     if (Ehat/2.0>sqrt(mt2)) {
       weight=1.0/sqrt((Ehat*Ehat)/(4.*pt*pt)-1.0);
+      double pz(sqrt(Ehat*Ehat/4.0-mt2));
+      if (ATOOLS::ran->Get()<0.5) pz=-pz;
       p[2]=ATOOLS::Vec4D(Ehat/2.0,pt*cos(2.0*M_PI*ran[1]),
-			 pt*sin(2.0*M_PI*ran[1]),
-			 sqrt(Ehat*Ehat/4.0-mt2));
+                         pt*sin(2.0*M_PI*ran[1]),pz);
       m_trigger=true;
     }
     else {
