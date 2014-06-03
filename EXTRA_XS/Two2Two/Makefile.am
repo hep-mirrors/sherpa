@@ -5,6 +5,7 @@ include ../../svn.make
 
 libExtraXS2_2_la_SOURCES      =	SVN_Info.C \
 				XS_Drell_Yan.C \
+                                XS_DiPhoton.C \
 				XS_QCD.C \
 				XS_SQCD.C \
 				XS_4F.C \
