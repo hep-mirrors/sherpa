@@ -18,7 +18,7 @@ namespace EXTRAXS {
   class XS_PP_ffbar : public ME2_Base {
   private:
 
-    int     m_r;
+    int     m_r, m_qcd;
     double  m_cpl, m_m2;
 
   public:
@@ -36,6 +36,7 @@ XS_PP_ffbar::XS_PP_ffbar(const Process_Info& pi, const Flavour_Vector& fl):
 {
   m_sintt=2|4;
   m_r=fl[2].IsAnti();
+  m_qcd=fl[2].StrongCharge();
   m_cpl=sqr(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_QED"),
                                                    rpa->gen.CplScale()))
         *sqr(sqr(m_flavs[2].Charge()))
@@ -65,7 +66,8 @@ double XS_PP_ffbar::operator()(const Vec4D_Vector& mom)
 
 bool XS_PP_ffbar::SetColours(const Vec4D_Vector& mom)
 {
-  p_colours[2+m_r][0]=p_colours[3-m_r][1]=Flow::Counter();
+  size_t nc(m_qcd?Flow::Counter():0);
+  p_colours[2+m_r][0]=p_colours[3-m_r][1]=nc;
   return true;
 }
 
@@ -73,7 +75,8 @@ DECLARE_TREEME2_GETTER(XS_PP_ffbar,"XS_PP_ffbar")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_PP_ffbar>::
 operator()(const Process_Info &pi) const
 {
-  if (pi.m_fi.m_nloewtype!=nlo_type::lo || pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo ||
+      pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
   if (fl.size()!=4) return NULL;
   if (fl[0].IsPhoton() && fl[1].IsPhoton() &&
