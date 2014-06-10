@@ -390,7 +390,8 @@ int Cluster_Algorithm::Set2Colours(const int nquark,const int ngluon,
       m_colors[i][0+int(fl[i].IsAnti())] = 500;
     }
     else if (fl[i].StrongCharge()==8) {
-      m_colors[i][j] = 500; m_colors[i][1-j] = 501;
+      m_colors[i][i<2?j:1-j] = 500;
+      m_colors[i][i<2?1-j:j] = 501;
     }
     connected[j++]=i;
   }    
