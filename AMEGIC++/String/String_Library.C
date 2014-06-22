@@ -127,7 +127,7 @@ void String_Library::AddToMakefileAM(string makefilename,string pathID,string fi
     file<<"lib_LTLIBRARIES = libProc_"<<subdirname<<".la"<<endl;
     file<<"libProc_"<<subdirname<<"_la_SOURCES = "<<'\\'<<endl;
     file<<"\t"<<fileID<<".C"<<endl;
-    file<<"CURRENT_SHERPASYS = "<<ATOOLS::rpa->gen.Variable("SHERPA_INC_PATH")<<endl;
+    file<<"CURRENT_SHERPASYS ?= "<<ATOOLS::rpa->gen.Variable("SHERPA_INC_PATH")<<endl;
     file<<"INCLUDES = -I$(CURRENT_SHERPASYS)"<<endl;
     file<<"DEFS     = "<<endl;
     file<<"noinst_HEADERS = V.H"<<endl;
