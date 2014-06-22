@@ -13,6 +13,7 @@ print_help(){
   echo "         -o install single module" && \
   echo "         -j [N] allow N compilations at once" && \
   echo "         -s force use of make" && \
+  echo "         -i set include path" && \
   echo "         -h display this help and exit" && echo
 }
 
@@ -23,7 +24,7 @@ defaults(){
 defaults;
 
 which scons > /dev/null 2>&1 && SCONS=TRUE
-while getopts hscnoj: OPT
+while getopts hscnoji:: OPT
 do
   case $OPT in
   c) CLEAN=TRUE ;;
@@ -31,6 +32,7 @@ do
   o) ONE=TRUE ;;
   j) JOBS=$OPTARG ;;
   s) SCONS=FALSE ;;
+  i) IPATH=$OPTARG ;;
   h) print_help && exit 0 ;;
   \?)
     shift `expr $OPTIND - 1`
@@ -60,11 +62,12 @@ if [ "$ONE" = "TRUE" ] ; then
 fi
 
 if [ "$SCONS" = "TRUE" ] ; then
+  test -z "$IPATH" || IPATH="incdir="$IPATH
   @BINDIR@/make2scons x;
   for J in $DIRS ; do
     @BINDIR@/make2scons $J 1;
   done
-  scons -j$JOBS install;
+  scons -j$JOBS install $IPATH;
   exit 0;
 fi
 
@@ -86,6 +89,7 @@ if echo "@host@" | grep -q "i686"; then
     export LDFLAGS="$LDFLAGS -m32"
 fi
 
+test -z "$IPATH" || IPATH="CURRENT_SHERPASYS="$IPATH
 for J in $DIRS ; do
   echo "======================"
   echo "$J";
@@ -95,7 +99,7 @@ for J in $DIRS ; do
   autoreconf -fi
   ./configure --libdir='${prefix}/lib'
   if `test "$CLEAN" = "TRUE"` ; then make clean ; fi
-  if ! make install -j $JOBS; then
+  if ! make install -j $JOBS $IPATH; then
     echo "makeinstall: error: \"make install\" in $I failed"
     exit 1
   fi

@@ -20,7 +20,8 @@ vars = Variables()
 vars.Add(PathVariable('libdir','lib path',os.getcwd()+'/Process/Amegic/lib',PathVariable.PathIsDirCreate))
 vars.Add('CXX','The C++ Compiler','@CXX@')
 vars.Add('CXXFLAGS','The C++ Flags',['-O2'])
-env = Environment(variables=vars,CPPPATH=['@INCLUDEDIR@'])
+vars.Add(PathVariable('incdir','include path','@INCLUDEDIR@',PathVariable.PathIsDir))
+env = Environment(variables=vars,CPPPATH=['\${incdir}'])
 env['ENV']=os.environ
 " > SConstruct;
 fi;
