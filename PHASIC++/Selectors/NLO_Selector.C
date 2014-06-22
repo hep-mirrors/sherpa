@@ -51,7 +51,6 @@ namespace PHASIC {
   class PT2NLO_Selector : public Selector_Base {
     std::vector<double>  ptmin, ptmax;
     std::vector<ATOOLS::Flavour> flav1,flav2;
-    int     m_strong;
   public:
     PT2NLO_Selector(int,int,ATOOLS::Flavour *);
     ~PT2NLO_Selector();
@@ -507,8 +506,6 @@ PT2NLO_Selector::PT2NLO_Selector(int _nin,int _nout, Flavour * _fl):
   m_fl   = _fl;
   m_smin = 0.;
   m_smax = rpa->gen.Ecms()*rpa->gen.Ecms();
-  m_strong = 0;
-  if (m_nin==2) if (m_fl[0].Strong()&&m_fl[1].Strong()) m_strong = -1;
   
   m_sel_log = new Selector_Log(m_name);
 }
@@ -536,8 +533,6 @@ bool PT2NLO_Selector::Trigger(const Vec4D_Vector & mom)
 
 bool PT2NLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevtlist *const subs)
 {
-  if (m_strong==0) return 1;
-  if (m_strong==-1) {
     double ptij;
     for (size_t k=0;k<flav1.size();k++) {
       for (size_t i=m_nin;i<subs->back()->m_n;i++) {
@@ -553,9 +548,6 @@ bool PT2NLO_Selector::JetTrigger(const Vec4D_Vector &mom,ATOOLS::NLO_subevtlist 
       }
     }
     return 1;
-  }
-  msg_Error()<<"PTNLO_Selector::JetTrigger: IR unsave cut"<<std::endl;
-  return 0;
 }
 
 bool PT2NLO_Selector::NoJetTrigger(const Vec4D_Vector &mom)
@@ -589,7 +581,6 @@ void PT2NLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
 	   ((crit[0].Includes(m_fl[j])) && (crit[1].Includes(m_fl[i])) ) ) {
 	used=1;
 	MaxPTmin = _min;
-	if (m_fl[i].Strong()||m_fl[j].Strong()) m_strong = 1;
 	break;
       }
     }
