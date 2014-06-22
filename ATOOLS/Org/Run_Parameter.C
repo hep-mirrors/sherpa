@@ -208,10 +208,12 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 
   // set cpp path
   std::string cpppath=dr.GetValue<std::string>("SHERPA_CPP_PATH",std::string(""));
-  if (cpppath.length()>0 && cpppath[0]=='/') gen.m_variables["SHERPA_CPP_PATH"]=cpppath;
-  else if (path!=gen.m_variables["SHERPA_RUN_PATH"]) gen.m_variables["SHERPA_CPP_PATH"]=path;
-  else if (gen.m_variables["SHERPA_CPP_PATH"].length()==0) 
-    gen.m_variables["SHERPA_CPP_PATH"]=gen.m_variables["SHERPA_RUN_PATH"];
+  if (cpppath.length()==0 || cpppath[0]!='/') {
+    if (path!=gen.m_variables["SHERPA_RUN_PATH"]) gen.m_variables["SHERPA_CPP_PATH"]=path;
+    else if (gen.m_variables["SHERPA_CPP_PATH"].length()==0) 
+      gen.m_variables["SHERPA_CPP_PATH"]=gen.m_variables["SHERPA_RUN_PATH"];
+  }
+  if (cpppath.length()) gen.m_variables["SHERPA_CPP_PATH"]+=(cpppath[0]=='/'?"":"/")+cpppath;
   // set lib path
   std::string libpath=dr.GetValue<std::string>("SHERPA_LIB_PATH",std::string(""));
   if (libpath.length()>0 && libpath[0]=='/') gen.m_variables["SHERPA_LIB_PATH"]=libpath;
