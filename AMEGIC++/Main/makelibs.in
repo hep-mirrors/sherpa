@@ -24,7 +24,7 @@ defaults(){
 defaults;
 
 which scons > /dev/null 2>&1 && SCONS=TRUE
-while getopts hscnoji:: OPT
+while getopts hscnoj:i: OPT
 do
   case $OPT in
   c) CLEAN=TRUE ;;
