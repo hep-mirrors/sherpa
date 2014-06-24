@@ -163,6 +163,35 @@ Primitive_Observable_Base * Two_Particle_Mass::Copy() const
   return new Two_Particle_Mass(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
+namespace ANALYSIS {
+class PhiStar : public Two_Particle_Observable_Base {  
+public:
+  PhiStar(const ATOOLS::Flavour & flav1, const ATOOLS::Flavour & flav2,
+		       int type, double xmin, double xmax, int nbins, 
+		       const std::string & listname):
+    Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"PhiStar") { }
+  void Evaluate(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
+		double weight, double ncount) 
+  {
+    double eta1=mom1.Eta(), eta2=mom2.Eta(), dphi=mom1.DPhi(mom2);
+    double theta=tanh((eta1-eta2)/2), phistar = tan((M_PI-dphi)/2)*sin(theta);
+    p_histo->Insert(phistar,weight,ncount); 
+  }
+  void EvaluateNLOcontrib(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
+			  double weight, double ncount)
+  {
+    double eta1=mom1.Eta(), eta2=mom2.Eta(), dphi=mom1.DPhi(mom2);
+    double theta=tanh((eta1-eta2)/2), phistar = tan((M_PI-dphi)/2)*sin(theta);
+    p_histo->InsertMCB(phistar,weight,ncount); 
+  }
+  Primitive_Observable_Base * Copy() const
+  {
+    return new PhiStar(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+  }
+};
+}
+DEFINE_OBSERVABLE_GETTER(PhiStar,PhiStar_Getter,"PhiStar")
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(Two_Particle_PT,Two_Particle_PT_Getter,"PT2")
