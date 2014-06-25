@@ -60,7 +60,7 @@ MI_Base::~MI_Base()
   for (String_MI_Base_Map::iterator nbit=s_bases->begin();
        nbit!=s_bases->end();++nbit) {
     if (nbit->first==m_name) {
-      s_bases->erase(nbit--);
+      s_bases->erase(nbit);
       break;
     }
   }
