@@ -172,6 +172,7 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
 	m_sfactor = sqr(m_sfactor);
 	msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
 	  
+	bool found(true);
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
 	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+links[j]->Name();
 	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name();
@@ -183,12 +184,13 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
 	    }
             My_In_File::CopyInDB(mlname+".col",mnname+".col");
 	  }
-	  WriteAlternativeName(p_partner->Name());
+	  found=false;
 	}
 
 	p_mapproc = p_partner = (Single_Process*)links[j];
 	m_iresult = p_partner->Result()*m_sfactor;
 	InitFlavmap(p_partner);
+	if (!found) WriteAlternativeName(p_partner->Name());
 
 	Minimize();
 	return 1;
