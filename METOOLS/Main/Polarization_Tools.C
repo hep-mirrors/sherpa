@@ -26,9 +26,8 @@ Polarization_Vector::Polarization_Vector(Vec4D p, bool anti,
 Polarization_Vector::Polarization_Vector(Vec4D p, double m2, bool anti,
                                          bool out) : std::vector<Vec4C>()
 {
-  if(!IsZero(p.Abs2()-m2, 1e-6)) {
+  if(!IsZero((p.Abs2()-m2)/(fabs(p[0])+fabs(m2)), 1e-6)) {
     PRINT_INFO("Undefined for p.Abs2()="<<p.Abs2()<<" and m2="<<m2);
-    abort();
   }
   Init(p);
 }
