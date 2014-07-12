@@ -179,10 +179,10 @@ int PS_Generator::DecayType(const Current *jc,
       jc->Flav().Mass()!=0.0 ||
       ja->Flav().Mass()!=0.0 || jb->Flav().Mass()!=0.0) return 0;
   if (ja->Flav()==jc->Flav() &&
-      jb->Flav()==jc->Flav()) return 0;// temporary (->4)
+      jb->Flav()==jc->Flav()) return 2|4;
   if (ja->Flav()==jb->Flav().Bar()) return 0;// temporary (->1)
   if (ja->Flav()==jc->Flav()) return 2;
-  if (jb->Flav()==jc->Flav()) return 3;
+  if (jb->Flav()==jc->Flav()) return 4;
   return 0;
 }
 
@@ -259,7 +259,7 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 		bool vf(false);
 		for (size_t k(0);k<rin.size();++k) 
 		  if (vkey.p_a==rin[k]->JA() && vkey.p_b==rin[k]->JB() &&
-		      type==((PS_Vertex*)rin[k])->Type()) {
+		      (type&((PS_Vertex*)rin[k])->Type())) {
 		    vf=true;
 		    break;
 		  }
@@ -270,6 +270,14 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 		vtx->SetJB(vkey.p_b);
 		vtx->SetJC(vkey.p_c);
 		vtx->SetType(type);
+		if (type==(2|4)) {
+		  vtx->SetType(2);
+		  vtx = new PS_Vertex(vkey);
+		  vtx->SetJA(vkey.p_a);
+		  vtx->SetJB(vkey.p_b);
+		  vtx->SetJC(vkey.p_c);
+		  vtx->SetType(4);
+		}
 	      }
 	  }
 	}
@@ -301,7 +309,16 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 	      vtx->SetJA(vkey.p_a);
 	      vtx->SetJB(vkey.p_b);
 	      vtx->SetJC(vkey.p_c);
-	      vtx->SetType(DecayType(curs[n][j],ja,jb));
+	      int type(DecayType(curs[n][j],ja,jb));
+	      vtx->SetType(type);
+	      if (type==(2|4)) {
+		vtx->SetType(2);
+		vtx = new PS_Vertex(vkey);
+		vtx->SetJA(vkey.p_a);
+		vtx->SetJB(vkey.p_b);
+		vtx->SetJC(vkey.p_c);
+		vtx->SetType(4);
+	      }
 	    }
       }
       for (CB_MMap::const_iterator cit(m_cmap.lower_bound(curs[n][j]));

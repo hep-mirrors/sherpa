@@ -369,7 +369,7 @@ void PS_Channel::SChannelMomenta
   if (type==2) {
     CE.Anisotropic2Momenta(pa,s2,s1,p2,p1,cr[0],rns[1],m_aexp,ctmin,ctmax);
   }
-  else if (type==3) {
+  else if (type==4) {
     CE.Anisotropic2Momenta(pa,s1,s2,p1,p2,cr[0],rns[1],m_aexp,ctmin,ctmax);
   }
   else {
@@ -386,7 +386,7 @@ double PS_Channel::SChannelWeight
   if (type==2) {
     wgt=CE.Anisotropic2Weight(p2,p1,rns[0],rns[1],m_aexp,ctmin,ctmax);
   }
-  else if (type==3) {
+  else if (type==4) {
     wgt=CE.Anisotropic2Weight(p1,p2,rns[0],rns[1],m_aexp,ctmin,ctmax);
   }
   else {
