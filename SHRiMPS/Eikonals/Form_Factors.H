@@ -36,6 +36,7 @@ namespace SHRIMPS {
       Form_Factor * p_ff;
     public:
       Norm_Argument(Form_Factor * ff) : p_ff(ff) {}
+	  ~Norm_Argument(){;}
       double operator()(double q);
     };
 
@@ -46,6 +47,7 @@ namespace SHRIMPS {
     public:
       FT_Argument() {}
       FT_Argument(Form_Factor * ff) : p_ff(ff), m_b(0.) {}
+      ~FT_Argument();
       void   SetB(const double & b) { m_b = b; }
       double operator()(double q);
     };
@@ -78,7 +80,7 @@ namespace SHRIMPS {
     Form_Factor(const int & number,const int & test=0);
     Form_Factor(const ff_form::code & fff,const int & number,
 		const int & test=0);
-    inline ~Form_Factor() {}
+    virtual ~Form_Factor();
     
     void   Initialise(const std::vector<double> & params);
     double operator()(const double q2);

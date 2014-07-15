@@ -22,6 +22,9 @@ double Form_Factor::FT_Argument::operator()(double q) {
 }
 
 
+Form_Factor::FT_Argument::~FT_Argument(){
+	//empty
+}
 
 
 Form_Factor::Form_Factor(const int & number,const int & test) :
@@ -62,6 +65,11 @@ Form_Factor::Form_Factor(const ff_form::code & fff,const int & number,
     break;
   }
 }
+
+Form_Factor::~Form_Factor(){
+	//empty
+}
+
 
 void Form_Factor::Initialise(const std::vector<double> & params) {
   m_prefactor = params[0]; 
