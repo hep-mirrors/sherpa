@@ -558,16 +558,14 @@ TransformWeight(Cluster * cluster,Flavour & hadron,
   Single_Transition_Siter  start(stl->begin()),siter;
   if (lighter) {
     if (hadron!=Flavour(kf_none)) {
-      do {
-	if (start->first==hadron) {
-	  siter = start;
-	  siter--;
-	  if ((++siter)!=stl->end()) start++;
-	  else return 0.;
-	  break;
-	}
-	else start++;
-      } while (start!=stl->end());
+        siter=stl->find(hadron);
+        if (siter == stl->end()) {
+            return 0.;
+        }
+        else {
+            start=siter;
+            start++; // Jump to the next lightest hadron
+        }
     }
     else {
       for (siter=start;siter!=stl->end();siter++) {
