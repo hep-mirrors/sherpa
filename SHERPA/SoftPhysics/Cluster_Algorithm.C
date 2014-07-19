@@ -190,14 +190,14 @@ PTij2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pj) const
   }
   double ptij2 = Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-
 				 cos(pi.Phi()-pj.Phi()));
-  return m_showerfac*Min(pti2,ptij2);
+  return Min(m_showerfac*pti2,ptij2);
 }
 
 double Cluster_Algorithm::
 PTi2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pbeam) const
 {
   double t((pi+pbeam).Abs2());
-  return m_showerfac*t*Min(pi[0],pbeam[0])/Max(pi[0],pbeam[0]);
+  return t*Min(pi[0],pbeam[0])/Max(pi[0],pbeam[0]);
 }
 
 bool Cluster_Algorithm::Cluster(Blob *const blob)
@@ -266,29 +266,19 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
   for (size_t i=2;i<nlegs;i++) {
     split   = legs[i];
     ysplit  = dabs(split->Mom().Y());
-    kt2max  = Max(m_tmax,m_minkt2/4.);// 0.;//1.e10;
-    //if (ColorConnected(split->Col(),colbeam0)>0 || 
-    //	ColorConnected(split->Col(),colbeam1)>0) {
-    //  kt2min = Max(m_tmax,m_minkt2);
-    //}
-    //else {
-    kt2min = Max(m_tmax,m_minkt2);
-    //}
+    kt2max  = Max(m_tmax,m_minkt2);
     for (size_t j=nlegs;j>2;j--) {
       if (i==j-1) continue;
       spect = legs[j-1];
       int nconn(ColorConnected(split->Col(),spect->Col()));
       if (nconn==0) continue;
       kt2FS = PTij2(split->Mom(),spect->Mom());
-      if (!m_resc && (nlegs==4 || i==2 || i==nlegs-1)) 
-	kt2FS = Max(kt2FS,m_showerfac*m_minkt2);
       if (kt2FS<kt2min) kt2min = kt2FS;
       if (kt2FS>kt2max) kt2max = kt2FS;
     }
-    if (kt2max>totmax) totmax = kt2max * exp(1.-dabs(ysplit));
-    double minkt2=kt2max * exp(1.-dabs(0.3*ysplit));
-    split->SetKT2(0,minkt2);
-    split->SetKT2(1,minkt2);
+    if (kt2max>totmax) totmax = kt2max;
+    split->SetKT2(0,kt2max);
+    split->SetKT2(1,kt2max);
     
     m_histomap[std::string("startvspt")]->Insert(split->Mom().PPerp(),kt2max);  
     m_histomap[std::string("vetovspt")]->Insert(split->Mom().PPerp(),kt2min);  
