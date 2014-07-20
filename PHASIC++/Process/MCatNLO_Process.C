@@ -89,12 +89,12 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rsproc->FillProcessMap(p_apmap);
   p_bviproc->FillProcessMap(p_apmap);
   p_ddproc->FillProcessMap(p_apmap);
-  p_bviproc->SetSProc(p_ddproc);
   p_bproc->SetLookUp(false);
   p_rproc->SetLookUp(false);
   p_bproc->SetParent(this);
   p_rproc->SetParent(this);
   p_bproc->FillProcessMap(p_apmap);
+  p_rproc->FillProcessMap(p_apmap);
   Data_Reader read(" ",";","!","=");
   read.SetInputPath(rpa->GetPath());
   read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
@@ -103,6 +103,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   if (!read.ReadFromFile(m_fomode,"PP_FOMODE")) m_fomode=0;
   else msg_Info()<<METHOD<<"(): Set fixed order mode "<<m_fomode<<".\n";
   if (!m_fomode) {
+    p_bviproc->SetSProc(p_ddproc);
     p_bviproc->SetMCMode(1);
     p_ddproc->SetMCMode(2);
     p_rsproc->SetMCMode(2);

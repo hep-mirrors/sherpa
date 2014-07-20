@@ -10,6 +10,7 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -1217,7 +1218,7 @@ double Amplitude::KT2Trigger(NLO_subevt *const sub,const int mode)
 }
 
 void Amplitude::SetColors(const Int_Vector &rc,
-			       const Int_Vector &ac,const bool set)
+			  const Int_Vector &ac,const int set)
 {
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"():\n";
@@ -1230,9 +1231,21 @@ void Amplitude::SetColors(const Int_Vector &rc,
 		   <<", m_cl["<<i<<"][1] = "<<m_cl[i][1]<<"\n";
 #endif
   }
-  if (set) {
+  if (set==1) {
     Color_Calculator::SetCIMin(1);
     Color_Calculator::SetCIMax(0);
+  }
+  else if (set==-1) {
+    int cimin(std::numeric_limits<int>::max()), cimax(0);
+    for (size_t i(0);i<m_n;++i)
+      if (m_cl[i][0]) {
+	if (m_cl[i][0]<cimin) cimin=m_cl[i][0];
+	if (m_cl[i][0]>cimax) cimax=m_cl[i][0];
+      }
+    msg_Debugging()<<"cimin = "<<cimin
+		   <<", cimax = "<<cimax<<"\n";
+    Color_Calculator::SetCIMin(cimin);
+    Color_Calculator::SetCIMax(cimax);
   }
   else {
     Color_Calculator::SetCIMin(1);
@@ -1429,7 +1442,7 @@ double Amplitude::Differential(NLO_subevt *const sub)
 }
 
 double Amplitude::Differential
-(const Int_Vector &ci,const Int_Vector &cj,const bool set)
+(const Int_Vector &ci,const Int_Vector &cj,const int set)
 {
   SetColors(ci,cj,set);
   if (p_helint!=NULL && p_helint->On()) {

@@ -97,6 +97,8 @@ namespace PHASIC {
     void SetSProc(Process_Base *sproc);
     void SetBBarMC(BBar_Multi_Channel *mc);
 
+    int NaiveMapping(Process_Base *proc) const;
+
     virtual void FillProcessMap(NLOTypeStringProcessMap_Map *apmap);
 
     virtual void SetScale(const Scale_Setter_Arguments &args) = 0;

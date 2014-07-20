@@ -18,7 +18,6 @@ std::ostream &ATOOLS::operator<<(std::ostream &ostr,const fom::code &code)
   switch (code) {
   case fom::temporary: return ostr<<"temporary";
   case fom::permanent: return ostr<<"permanent";
-  case fom::error:     return ostr<<"error";
   case fom::unknown:   return ostr<<"unknown";
   }
   return ostr;

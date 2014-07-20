@@ -3,6 +3,7 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 #include "PHASIC++/Selectors/Jet_Finder.H"
 #include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Main/Process_Integrator.H"
 #include "PDF/Main/Jet_Criterion.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "PHASIC++/Process/Tree_ME2_Base.H"
@@ -24,7 +25,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
 		     MODEL::Model_Base *const model,
 		     Data_Reader *const _dataread) : 
   Shower_Base("CSS"), p_isr(_isr), 
-  p_shower(NULL), p_cluster(NULL), p_ampl(NULL)
+  p_shower(NULL), p_cluster(NULL), p_cs(NULL), p_ampl(NULL)
 {
   rpa->gen.AddCitation
     (1,"The Catani-Seymour subtraction based shower is published under \\cite{Schumann:2007mg}.");
@@ -45,8 +46,12 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   if (amode!=0) msg_Info()<<METHOD<<"(): Set exclusive cluster mode "<<amode<<".\n";
   int meweight=_dataread->GetValue<int>("CSS_MEWMODE",1);
   if (meweight!=1) msg_Info()<<METHOD<<"(): Set ME weight mode "<<meweight<<"\n";
+  int ckfmode=_dataread->GetValue<int>("CSS_CKFMODE",1);
+  if (ckfmode!=1) msg_Info()<<METHOD<<"(): Set cluster KF mode "<<ckfmode<<"\n";
   int pdfcheck=_dataread->GetValue<int>("CSS_PDFCHECK",1);
   if (pdfcheck!=1) msg_Info()<<METHOD<<"(): Set PDF check mode "<<pdfcheck<<"\n";
+  int csmode=_dataread->GetValue<int>("CSS_CSMODE",1);
+  if (csmode!=1) msg_Info()<<METHOD<<"(): Set color setter mode "<<csmode<<"\n";
   
   m_weightmode = int(_dataread->GetValue<int>("WEIGHT_MODE",1));
   
@@ -58,8 +63,10 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   
   p_next = new All_Singlets();
 
-  p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode,meweight,pdfcheck);
+  p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode,meweight,pdfcheck,ckfmode);
   p_cluster->SetAMode(amode);
+
+  if (csmode) p_cs = new Color_Setter(csmode);
 }
 
 CS_Shower::~CS_Shower() 
@@ -69,6 +76,7 @@ CS_Shower::~CS_Shower()
        xsit!=m_xsmap.end();++xsit) delete xsit->second;
   if (p_shower)      { delete p_shower; p_shower = NULL; }
   if (p_cluster)     { delete p_cluster; p_cluster = NULL; }
+  if (p_cs) delete p_cs;
   if (p_ampl) p_ampl->Delete();
   delete p_next;
 }
@@ -546,6 +554,7 @@ double CS_Shower::CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
 
 void CS_Shower::SetColours(Cluster_Amplitude *const ampl)
 {
+  bool cs(true);
   Vec4D_Vector moms(ampl->Legs().size());
   Flavour_Vector fl(ampl->Legs().size());
   for (int i(0);i<ampl->Legs().size();++i) {
@@ -553,6 +562,7 @@ void CS_Shower::SetColours(Cluster_Amplitude *const ampl)
     if (l->Col().m_i>=500 || l->Col().m_j>=500) return;
     moms[i]=i<ampl->NIn()?-l->Mom():l->Mom();
     fl[i]=i<ampl->NIn()?l->Flav().Bar():l->Flav();
+    if (moms[i][0]<fl[i].Mass()) cs=false;
   }
   Flav_ME_Map::const_iterator xit(m_xsmap.find(fl));
   if (xit==m_xsmap.end()) {
@@ -580,26 +590,28 @@ void CS_Shower::SetColours(Cluster_Amplitude *const ampl)
     }
   }
   else {
-    std::vector<int> tids, atids;
-    for (size_t i(0);i<ampl->Legs().size();++i)
-      if (ampl->Leg(i)->Flav().StrongCharge()>0) {
-	tids.push_back(i);
-	if (ampl->Leg(i)->Flav().StrongCharge()==8)
+    if (p_cs==NULL || !cs || !p_cs->SetColors(ampl)) {
+      std::vector<int> tids, atids;
+      for (size_t i(0);i<ampl->Legs().size();++i)
+	if (ampl->Leg(i)->Flav().StrongCharge()>0) {
+	  tids.push_back(i);
+	  if (ampl->Leg(i)->Flav().StrongCharge()==8)
+	    atids.push_back(i);
+	}
+	else if (ampl->Leg(i)->Flav().StrongCharge()<0) {
 	  atids.push_back(i);
+	}
+      while (true) {
+	std::random_shuffle(atids.begin(),atids.end(),*ran);
+	size_t i(0);
+	for (;i<atids.size();++i) if (atids[i]==tids[i]) break;
+	if (i==atids.size()) break;
       }
-      else if (ampl->Leg(i)->Flav().StrongCharge()<0) {
-	atids.push_back(i);
+      for (size_t i(0);i<tids.size();++i) {
+	int cl(Flow::Counter());
+	ampl->Leg(tids[i])->SetCol(ColorID(cl,ampl->Leg(tids[i])->Col().m_j));
+	ampl->Leg(atids[i])->SetCol(ColorID(ampl->Leg(atids[i])->Col().m_i,cl));
       }
-    while (true) {
-      std::random_shuffle(atids.begin(),atids.end(),*ran);
-      size_t i(0);
-      for (;i<atids.size();++i) if (atids[i]==tids[i]) break;
-      if (i==atids.size()) break;
-    }
-    for (size_t i(0);i<tids.size();++i) {
-      int cl(Flow::Counter());
-      ampl->Leg(tids[i])->SetCol(ColorID(cl,ampl->Leg(tids[i])->Col().m_j));
-      ampl->Leg(atids[i])->SetCol(ColorID(ampl->Leg(atids[i])->Col().m_i,cl));
     }
   }
   for (Cluster_Amplitude *campl(ampl->Prev());campl;campl=campl->Prev()) {

@@ -39,7 +39,6 @@ namespace AMEGIC {
 
     double m_rej, m_cnt, m_lfrac;
 
-    bool SetColors();
     void Convert();
 
     bool FillLegs(Leg * alegs, Point * root, int & l, int maxl);
@@ -48,20 +47,6 @@ namespace AMEGIC {
 
     void SetNMax(ATOOLS::Cluster_Amplitude *const ampl,
 		 const size_t &id,const size_t &nmax) const;
-
-    int SetDecayColours(const ATOOLS::Vec4D_Vector& p, ATOOLS::Flavour * fl,
-			int col1,int col2);
-    int SetColours(const ATOOLS::Vec4D_Vector& p,ATOOLS::Flavour * fl);
-    int Set4Colours(const int nquark,const int ngluon,
-		    const ATOOLS::Vec4D_Vector& p,ATOOLS::Flavour * fl);
-    int Set3Colours(const int nquark,const int ngluon,
-		    const ATOOLS::Vec4D_Vector& p,ATOOLS::Flavour * fl);
-    int Set2Colours(const int nquark,const int ngluon,
-		    const ATOOLS::Vec4D_Vector& p,ATOOLS::Flavour * fl);
-
-    int SetColours(EXTRAXS::ME2_Base * xs, 
-		   const ATOOLS::Vec4D_Vector& p, ATOOLS::Flavour * fl);
-    EXTRAXS::ME2_Base *GetXS(const ATOOLS::Flavour_Vector &fl);
 
     void ClusterSpecial4lLoop2();
 

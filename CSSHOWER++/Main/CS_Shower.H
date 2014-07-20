@@ -3,6 +3,7 @@
 
 #include "PDF/Main/Shower_Base.H"
 #include "CSSHOWER++/Main/CS_Cluster_Definitions.H"
+#include "CSSHOWER++/Main/Color_Setter.H"
 #include "CSSHOWER++/Showers/Shower.H"
 #include "ATOOLS/Phys/Blob_List.H"
 
@@ -41,6 +42,7 @@ namespace CSSHOWER {
     All_Singlets *p_next, *p_refs;
 
     ATOOLS::Mass_Selector *p_ms;
+    Color_Setter *p_cs;
 
     ATOOLS::Cluster_Amplitude *p_ampl, *p_rampl;
 

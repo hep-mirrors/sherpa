@@ -14,6 +14,8 @@ namespace MODEL { class Model_Base; }
 
 namespace PHASIC {
 
+  class ME_Generators;
+
   class ME_Generator_Base: public ATOOLS::Mass_Selector {
   private:
 
@@ -23,6 +25,8 @@ namespace PHASIC {
 
     ATOOLS::Flavour_Set m_psmass;
 
+    ME_Generators *p_gens;
+
   protected:
 
     void SetPSMasses(ATOOLS::Data_Reader *const dr);
@@ -31,7 +35,7 @@ namespace PHASIC {
 
     // constructor
     inline ME_Generator_Base(const std::string &name):
-      m_name(name), m_massmode(0) {}
+      m_name(name), m_massmode(0), p_gens(NULL) {}
 
     // destructor
     virtual ~ME_Generator_Base();
@@ -67,6 +71,10 @@ namespace PHASIC {
     inline void SetMassMode(const int mode) { m_massmode=mode; }
 
     inline int MassMode() { return m_massmode; }
+
+    inline void SetGenerators(ME_Generators *const gens) { p_gens=gens; }
+
+    inline ME_Generators *Generators() const { return p_gens; }
 
   };// end of class ME_Generator_Base
 

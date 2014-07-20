@@ -346,6 +346,8 @@ int Matrix_Element_Handler::InitializeProcesses
 	    <<FormatTime(size_t(etime-btime))<<" )."<<std::endl;
   if (m_procs.empty() && m_gens.size()>0)
     THROW(normal_exit,"No hard process found");
+  if (m_gens.NewLibraries())
+    THROW(normal_exit,"Source code created. Run './makelibs' to compile.");
   msg_Info()<<METHOD<<"(): Performing tests "<<std::flush;
   rbtime=retime;
   btime=etime;

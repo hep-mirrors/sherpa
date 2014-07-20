@@ -7,15 +7,19 @@
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Channels/BBar_Multi_Channel.H"
+#include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/Decay_Info.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 #include <algorithm>
 
 using namespace PHASIC;
+using namespace MODEL;
 using namespace ATOOLS;
 
 Process_Base::Process_Base():
@@ -660,7 +664,11 @@ void Process_Base::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
     if (apmap->find(nlot)==apmap->end())
       (*apmap)[nlot] = new StringProcess_Map();
     StringProcess_Map *cmap((*apmap)[nlot]);
-    if (cmap->find(fname)==cmap->end()) (*cmap)[fname]=this;
+    if (cmap->find(fname)!=cmap->end())
+      msg_Debugging()<<METHOD<<"(): replacing '"<<m_name<<"' "
+		     <<Demangle(typeid(*(*cmap)[fname]).name())
+		     <<" -> "<<Demangle(typeid(*this).name())<<"\n";
+    (*cmap)[fname]=this;
   }
 }
 
@@ -698,4 +706,68 @@ void Process_Base::SetBBarMC(BBar_Multi_Channel *mc)
   if (IsGroup())
     for (size_t i(0);i<Size();++i)
       (*this)[i]->SetBBarMC(mc);
+}
+
+int Process_Base::NaiveMapping(Process_Base *proc) const
+{
+  DEBUG_FUNC(Name()<<" -> "<<proc->Name());
+  Vertex_Table *vt(s_model->GetVertexTable());
+  std::map<Flavour,Flavour> fmap;
+  std::vector<Flavour> curf(m_flavs);
+  for (size_t i(0);i<curf.size();++i) fmap[curf[i]]=proc->m_flavs[i];
+  for (std::map<Flavour,Flavour>::const_iterator
+	 fit(fmap.begin());fit!=fmap.end();++fit)
+    DEBUG_VAR(fit->first<<" -> "<<fit->second);
+  for (size_t i(0);i<curf.size();++i) {
+    Flavour cf(curf[i]), mf(fmap[cf]);
+    if (cf==mf) continue;
+    const Vertex_List &vlc((*vt)[cf]), &vlm((*vt)[mf]);
+    DEBUG_VAR(cf<<" "<<vlc.size());
+    DEBUG_VAR(mf<<" "<<vlm.size());
+    if (vlc.size()!=vlm.size()) return 0;
+    for (size_t j(0);j<vlc.size();++j) {
+      msg_Indent();
+      DEBUG_VAR(*vlc[j]);
+      bool match(false);
+      for (size_t k(0);k<vlm.size();++k) {
+	msg_Indent();
+	DEBUG_VAR(*vlm[k]);
+	if (vlm[k]->Compare(vlc[j])==0) {
+	  msg_Indent();
+	  for (int n=1;n<vlc[j]->nleg;++n) {
+	    std::map<Flavour,Flavour>::
+	      const_iterator cit(fmap.find(vlc[j]->in[n]));
+	    if (cit==fmap.end()) {
+	      DEBUG_VAR(vlc[j]->in[n]<<" -> "<<vlm[k]->in[n]);
+	      if (vlc[j]->in[n].Mass()!=vlm[k]->in[n].Mass() ||
+		  vlc[j]->in[n].Width()!=vlm[k]->in[n].Width()) {
+		msg_Debugging()<<"m_"<<vlc[j]->in[n]
+			       <<" = "<<vlc[j]->in[n].Mass()
+			       <<" / m_"<<vlm[k]->in[n]
+			       <<" = "<<vlm[k]->in[n].Mass()<<"\n";
+		msg_Debugging()<<"w_"<<vlc[j]->in[n]
+			       <<" = "<<vlc[j]->in[n].Width()
+			       <<" / w_"<<vlm[k]->in[n]
+			       <<" = "<<vlm[k]->in[n].Width()<<"\n";
+		return 0;
+	      }
+	      fmap[vlc[j]->in[n]]=vlm[k]->in[n];
+	      curf.push_back(vlc[j]->in[n]);
+	    }
+	    else if (cit->second!=vlm[k]->in[n]) {
+	      DEBUG_VAR(cit->second<<" "<<vlm[k]->in[n]);
+	      return 0;
+	    }
+	  }
+	  DEBUG_VAR(*vlc[j]);
+	  DEBUG_VAR(*vlm[k]);
+	  match=true;
+	  break;
+	}
+      }
+      if (!match) return 0;
+    }
+  }
+  DEBUG_VAR("OK");
+  return 1;
 }

@@ -143,17 +143,12 @@ void AMEGIC::Single_Process_External::Minimize()
   m_oew       = p_partner->OrderEW();
 }
 
-double AMEGIC::Single_Process_External::Partonic(const Vec4D_Vector &_moms,const int mode) 
+double AMEGIC::Single_Process_External::Partonic(const Vec4D_Vector &moms,const int mode) 
 { 
   if (mode==1) return m_lastxs;
   if (!Selector()->Result()) return m_lastxs = 0.0;
   if (!(IsMapped() && LookUp())) {
-    p_partner->ScaleSetter()->CalculateScale(_moms);
-  }
-  Vec4D_Vector moms(_moms);
-  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
-    Poincare cms(moms[0]+moms[1]);
-    for (size_t i(0);i<moms.size();++i) cms.Boost(moms[i]);
+    p_partner->ScaleSetter()->CalculateScale(moms);
   }
   return DSigma(moms,m_lookup); 
 }

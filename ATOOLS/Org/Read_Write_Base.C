@@ -412,7 +412,7 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
   for (size_t j(0);j<FileBegin().size();++j) file+="|"+FileBegin()[j];
   file+="|";
   for (size_t j(0);j<FileEnd().size();++j) file+="|"+FileEnd()[j];
-  file+="||"+ToString(m_occurrence);
+  file+="||"+ToString(m_occurrence)+"||"+ToString(m_addcommandline);
   bool inbuf(s_buffermap.find(file)!=s_buffermap.end());
   String_Vector &cbuffer(s_buffermap[file]);
   msg_IODebugging()<<METHOD<<"(): ("<<this<<") checks buffer '"
@@ -484,7 +484,6 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
     InterpreteBuffer(cbuffer);
     for (size_t j(0);j<cbuffer.size();++j)
       AddFileContent(cbuffer[j],i);
-    if (cbuffer.empty()) infile.SetMode(fom::error);
   }
   }
   if (m_addcommandline && CommandLine().size()>0) {
@@ -517,7 +516,7 @@ void Read_Write_Base::CloseInFile(const unsigned int i,const int mode)
   for (size_t j(0);j<FileBegin().size();++j) file+="|"+FileBegin()[j];
   file+="|";
   for (size_t j(0);j<FileEnd().size();++j) file+="|"+FileEnd()[j];
-  file+="||"+ToString(m_occurrence);
+  file+="||"+ToString(m_occurrence)+"||"+ToString(m_addcommandline);
   if (s_buffermap.find(file)!=s_buffermap.end()) {
     msg_IODebugging()<<METHOD<<"(): ("<<this<<") clears buffer '"
                    <<file<<"' -> ("<<&s_buffermap[file]<<")\n";

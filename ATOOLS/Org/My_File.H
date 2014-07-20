@@ -18,7 +18,6 @@ namespace ATOOLS {
     enum code {
       temporary =  1,
       permanent =  2,
-      error     =  4,
       unknown   = 99
     };
 

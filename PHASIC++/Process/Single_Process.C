@@ -227,7 +227,7 @@ Single_Process::BVI_Wgt Single_Process::BeamISRWeight
        Q2,Q2,m_flavs[0],m_flavs[1]);
     int set(false);
     double LQ2(Q2);
-    if (ampls.size()) {
+    if (ampls.size() && (m_pinfo.m_ckkw&1)) {
       DEBUG_FUNC(m_name<<", \\mu_F = "<<sqrt(Q2)<<", mode = "<<mode);
       Cluster_Amplitude *ampl(ampls.front());
       msg_IODebugging()<<*ampl<<"\n";

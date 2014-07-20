@@ -33,7 +33,7 @@ namespace CSSHOWER {
     ATOOLS::Cluster_Leg   *p_b;
     
     Shower *p_shower;
-    int     m_kmode, m_meweight, m_pdfcheck;
+    int     m_kmode, m_meweight, m_pdfcheck, m_kfmode;
 
     Splitting_Function_Base *GetSF(const ATOOLS::Cluster_Leg *i,
 				   const ATOOLS::Cluster_Leg *j,
@@ -57,7 +57,8 @@ namespace CSSHOWER {
   public:
     
     CS_Cluster_Definitions(Shower *const shower,const int kmode,
-			   const int meweight,const int pdfcheck);
+			   const int meweight,const int pdfcheck,
+			   const int kfmode);
 
     // CS cluster kperps
     double GetX(const ATOOLS::Cluster_Leg *l,

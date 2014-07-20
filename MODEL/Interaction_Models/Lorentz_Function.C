@@ -20,6 +20,25 @@ Lorentz_Function::~Lorentz_Function()
   if (p_next) delete p_next;
 }
 
+bool Lorentz_Function::operator==(const Lorentz_Function &l) const
+{
+  if (m_type!=l.m_type) return false;
+  if (m_partarg[0]!=l.m_partarg[0]) return false;
+  if (m_partarg[1]!=l.m_partarg[1]) return false;
+  if (m_partarg[2]!=l.m_partarg[2]) return false;
+  if (m_partarg[3]!=l.m_partarg[3]) return false;
+  int noi=NofIndex();
+  if (noi!=l.NofIndex()) return false;
+  if (m_permlist.size()!=l.m_permlist.size()) return false;
+  for (size_t i=0;i<m_permlist.size();++i)
+    for (size_t j=0;j<noi;++j)
+      if (m_permlist[i][j]!=l.m_permlist[i][j]) return false; 
+  if (m_signlist!=l.m_signlist) return false;
+  if (((bool)p_next)^((bool)l.p_next)) return false;
+  if (p_next) return *p_next==*l.p_next;
+  return true;
+}
+
 void Lorentz_Function::SetParticleArg(int a,int b,int c,int d) 
 {
   m_partarg[0] = a;

@@ -6,6 +6,20 @@
 using namespace MODEL;
 using namespace ATOOLS;
 
+bool Color_Function::operator==(const Color_Function &c) const
+{
+  if (m_type!=c.m_type) return false;
+  if (m_partarg[0]!=c.m_partarg[0]) return false;
+  if (m_partarg[1]!=c.m_partarg[1]) return false;
+  if (m_partarg[2]!=c.m_partarg[2]) return false;
+  if (m_strarg[0]!=c.m_strarg[0]) return false;
+  if (m_strarg[1]!=c.m_strarg[1]) return false;
+  if (m_strarg[2]!=c.m_strarg[2]) return false;
+  if (((bool)p_next)^((bool)c.p_next)) return false;
+  if (p_next) return *p_next==*c.p_next;
+  return true;
+}
+
 Color_Function & Color_Function::operator=(const Color_Function & c)
 {
   if (this!=&c) {

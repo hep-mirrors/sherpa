@@ -133,10 +133,6 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Model_Base * model,Topology* 
   }
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
-  if (!FileExists(newpath+"/makelibs")) {
-    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
-	     newpath+"/makelibs");
-  }
 
   if (CheckAlternatives(links,Name())) return 1;
 
@@ -218,35 +214,11 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Model_Base * model,Topology* 
   int result(Tests());
   switch (result) {
     case 2 : 
-    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-      if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	if (CheckMapping(links[j])&&p_ampl->CheckEFMap()) {
-	  msg_Tracking()<<"AMEGIC::Single_Process_Combined::InitAmplitude : "<<std::endl
-			<<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
-			<<"   Map processes."<<std::endl;
-	  p_mapproc = p_partner = (Single_Process_Combined*)links[j];
-	  InitFlavmap(p_partner);
-	  break;
-	}
-      } 
-    }
     if (p_partner==this) links.push_back(this);
     Minimize();
     WriteAlternativeName(p_partner->Name());
     return 1;
   case 1 :
-    for (size_t j=0;j<links.size();j++) {
-      if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	if (CheckMapping(links[j])&&p_ampl->CheckEFMap()) {
-	  msg_Tracking()<<"AMEGIC::Single_Process_Combined::InitAmplitude : "<<std::endl
-			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
-	  p_mapproc = p_partner   = (Single_Process_Combined*)links[j];
-	  m_pslibname = links[j]->PSLibName();
-	  WriteAlternativeName(p_partner->Name());
-	  break;
-	}
-      } 
-    }
     if (Result()==0.) return -3;
     if (p_partner==this) links.push_back(this);
 
@@ -462,11 +434,13 @@ int AMEGIC::Single_Process_Combined::Tests()
 	if (p_hel->On(i)) {
 	  for (size_t j=i+1;j<p_hel->MaxHel();j++) {
 	    if (p_hel->On(j)) {
+#ifdef FuckUp_Helicity_Mapping
 	      if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
 		p_hel->SwitchOff(j);
 		p_hel->SetPartner(i,j);
 		p_hel->IncMultiplicity(i);
 	      }
+#endif
 	    }
 	  }
 	}
@@ -523,11 +497,13 @@ int AMEGIC::Single_Process_Combined::TestLib()
       if (p_hel->On(i)) {
 	for (size_t j=i+1;j<p_hel->MaxHel();j++) {
 	  if (p_hel->On(j)) {
+#ifdef FuckUp_Helicity_Mapping
 	    if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
 	      p_hel->SwitchOff(j);
 	      p_hel->SetPartner(i,j);
 	      p_hel->IncMultiplicity(i);
 	    }
+#endif
 	  }
 	}
       }
@@ -631,6 +607,9 @@ void AMEGIC::Single_Process_Combined::WriteLibrary()
   p_BS->Output(newpath+m_ptypename+string("/")+m_libname);
   p_ampl->StoreAmplitudeConfiguration(newpath+m_ptypename+string("/")+m_libname);
   m_newlib=true;
+  if (!FileExists(rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs"))
+    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+	 rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs");
   msg_Info()<<"AMEGIC::Single_Process_Combined::WriteLibrary : "<<std::endl
 	    <<"   Library for "<<m_name<<" has been written, name is "<<m_libname<<std::endl;
   sync();
@@ -776,17 +755,12 @@ void AMEGIC::Single_Process_Combined::Minimize()
   m_ntchanmin = p_partner->NTchanMin();
 }
 
-double AMEGIC::Single_Process_Combined::Partonic(const Vec4D_Vector &_moms,const int mode) 
+double AMEGIC::Single_Process_Combined::Partonic(const Vec4D_Vector &moms,const int mode) 
 { 
   if (mode==1) return m_lastxs;
   if (!Selector()->Result()) return m_lastxs = 0.0;
   if (!(IsMapped() && LookUp())) {
-    p_partner->ScaleSetter()->CalculateScale(_moms);
-  }
-  Vec4D_Vector moms(_moms);
-  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
-    Poincare cms(moms[0]+moms[1]);
-    for (size_t i(0);i<moms.size();++i) cms.Boost(moms[i]);
+    p_partner->ScaleSetter()->CalculateScale(moms);
   }
   return DSigma(moms,m_lookup); 
 }

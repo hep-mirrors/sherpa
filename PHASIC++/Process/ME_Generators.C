@@ -58,6 +58,7 @@ bool ME_Generators::InitializeGenerators(MODEL::Model_Base *model,
   p_model=model;
   for (ME_Generators::const_iterator mit=begin(); mit!=end(); ++mit) {
     if (!(*mit)->Initialize(m_path,m_file,model,beam,isr)) return false;
+    (*mit)->SetGenerators(this);
   }
   return true;
 }

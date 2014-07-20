@@ -133,6 +133,8 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   m_subevt.m_pname=GenerateName(cpi.m_ii,cpi.m_fi);
   m_subevt.m_pname=m_subevt.m_pname.substr(0,m_subevt.m_pname.rfind("__"));
 
+  p_LO_process->SetSubEvt(&m_subevt);
+
   m_dalpha = 1.;
   double helpd;
   m_dkt2max = std::numeric_limits<double>::max();
@@ -601,7 +603,8 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
 
   if (m_mcmode && p_dipole->MCSign()<0) df=-df;
 
-  m_lastxs = M2 * df * p_dipole->SPFac() * KFactor() * Norm();
+  m_lastxs = M2 * df * p_dipole->SPFac() * Norm();
+  if (m_lastxs) m_lastxs*=KFactor();
   m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
   m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);
   m_subevt.m_mu2[stp::ren] = p_scale->Scale(stp::ren);

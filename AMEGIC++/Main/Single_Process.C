@@ -77,7 +77,7 @@ bool AMEGIC::Single_Process::CheckAlternatives(vector<Process_Base *>& links,str
     from.Open();
     *from>>name>>factor;
     m_sfactor *= factor;
-    for (size_t j=0;j<links.size();j++) {
+    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
       if (links[j]->Name()==name) {
 	p_mapproc = p_partner = (Single_Process*)links[j];
 	m_iresult = p_partner->Result()*m_sfactor;
@@ -128,10 +128,6 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
   }
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
-  if (!FileExists(newpath+"/makelibs")) {
-    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
-	     newpath+"/makelibs");
-  }
 
   if (CheckAlternatives(links,Name())) return 1;
 
@@ -189,6 +185,8 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
 
 	p_mapproc = p_partner = (Single_Process*)links[j];
 	m_iresult = p_partner->Result()*m_sfactor;
+	for (std::map<string,Flavour>::const_iterator fit=p_ampl->GetFlavourmap().begin();
+	     fit!=p_ampl->GetFlavourmap().end();fit++) AddtoFlavmap(fit->first,fit->second);
 	InitFlavmap(p_partner);
 	if (!found) WriteAlternativeName(p_partner->Name());
 
@@ -219,36 +217,11 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
   int result(Tests());
   switch (result) {
     case 2 : 
-    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-	if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	if (CheckMapping(links[j])&&p_ampl->CheckEFMap()) {
-	  msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : "<<std::endl
-			<<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
-			<<"   Map processes."<<std::endl;
-	  p_mapproc = p_partner = (Single_Process*)links[j];
-	  InitFlavmap(p_partner);
-	  break;
-	}
-      } 
-    }
     if (p_partner==this) links.push_back(this);
     Minimize();
     WriteAlternativeName(p_partner->Name());
     return 1;
   case 1 :
-    for (size_t j=0;j<links.size();j++) {
-      if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	if (CheckMapping(links[j])&&p_ampl->CheckEFMap()) {
-	  msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : "<<std::endl
-			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
-	  p_mapproc = p_partner   = (Single_Process*)links[j];
-	  m_pslibname = links[j]->PSLibName();
-	  WriteAlternativeName(p_partner->Name());
-	  InitFlavmap(p_partner);
-	  break;
-	}
-      } 
-    }
     if (Result()==0.) return -3;
     if (p_partner==this) links.push_back(this);
 
@@ -273,7 +246,7 @@ int AMEGIC::Single_Process::InitAmplitude(Model_Base * model,Topology* top,
   case -3: return 0;
   default :
     msg_Error()<<"ERROR in AMEGIC::Single_Process::InitAmplitude : "<<std::endl
-	       <<"   Failed for "<<m_name<<"."<<endl;
+	       <<"   Failed for "<<m_name<<" with result "<<result<<"."<<endl;
     errs.push_back(this);
     return 0;
   }
@@ -432,7 +405,7 @@ int AMEGIC::Single_Process::Tests()
 		 <<"   Mapping file(1) : "<<abs(M2)<<endl
 		 <<"   Original    (2) : "<<abs(M2g)<<endl
 		 <<"   Cross check (T) : "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
-	return 0;
+	THROW(critical_error,"Check output above. Increase NUM_ACCURACY if you wish to skip this test.");
       }
       else {
 	msg_Out()<<"WARNING: Library cross check not satisfied: "
@@ -493,7 +466,7 @@ int AMEGIC::Single_Process::Tests()
 	msg_Out()<<"WARNING: String test not satisfied: "
 		 <<M2g<<" vs. "<<M2S<<"  difference:"<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
 	if (abs(M2g/M2S-1.)>rpa->gen.Accu()) {
-	  return 0;
+	  THROW(critical_error,"Check output above. Increase NUM_ACCURACY if you wish to skip this test.");
 	}
 	msg_Out()<<"         assuming numerical reasons, continuing "<<endl;
       }
@@ -638,6 +611,9 @@ void AMEGIC::Single_Process::WriteLibrary()
   p_BS->Output(newpath+m_ptypename+string("/")+m_libname);
   p_ampl->StoreAmplitudeConfiguration(newpath+m_ptypename+string("/")+m_libname);
   m_newlib=true;
+  if (!FileExists(rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs"))
+    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+	 rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs");
   msg_Info()<<"AMEGIC::Single_Process::WriteLibrary : "<<std::endl
 	    <<"   Library for "<<m_name<<" has been written, name is "<<m_libname<<std::endl;
   sync();

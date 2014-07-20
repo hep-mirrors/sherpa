@@ -6,6 +6,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Variable.H"
 #include "AddOns/Analysis/Tools/Particle_Qualifier.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Analysis_Handler
@@ -250,6 +251,9 @@ bool Analysis_Handler::ApproveTerminate()
 bool Analysis_Handler::WriteOut()
 {
   if (!m_write) return true;
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()==0)
+#endif
   if (OutputPath()[OutputPath().length()-1]=='/') {
     if (!MakeDir(OutputPath())) {
       msg_Error()<<"Analysis_Handler::Finish(..): "

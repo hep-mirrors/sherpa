@@ -16,8 +16,8 @@ using namespace PDF;
 using namespace ATOOLS;
 
 CS_Cluster_Definitions::CS_Cluster_Definitions
-(Shower *const shower,const int kmode,const int meweight,const int pdfcheck):
-  p_shower(shower), m_kmode(kmode), m_meweight(meweight), m_pdfcheck(pdfcheck) {}
+(Shower *const shower,const int kmode,const int meweight,const int pdfcheck,const int kfmode):
+  p_shower(shower), m_kmode(kmode), m_meweight(meweight), m_pdfcheck(pdfcheck), m_kfmode(kfmode) {}
 
 CParam CS_Cluster_Definitions::KPerp2
 (const Cluster_Amplitude &ampl,int i,int j,int k,
@@ -262,6 +262,7 @@ void CS_Cluster_Definitions::KernelWeight
   cs.m_mu2=Max(cs.m_kt2,cs.m_mode&1?
 	       p_shower->GetSudakov()->ISPT2Min():
 	       p_shower->GetSudakov()->FSPT2Min());
+  if (m_kfmode || !(kmode&16))
   cs.m_mu2*=cdip->Coupling()->CplFac(cs.m_mu2);
   if (!cdip->On()) cs.m_mu2=Max(cs.m_mu2,sqr(mo.Mass()));
   if (!(kmode&2)) return;

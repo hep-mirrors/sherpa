@@ -16,8 +16,8 @@ Data_Reader::Data_Reader():
 
 Data_Reader::~Data_Reader() 
 {
-  CloseInFile(0,true);
-  CloseInFile(1,true);
+  CloseInFile(0);
+  CloseInFile(1);
 }
 
 Data_Reader::Data_Reader(const std::string &wordsep,const std::string &linesep,

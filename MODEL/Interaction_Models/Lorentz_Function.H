@@ -51,6 +51,8 @@ namespace MODEL {
 
     Lorentz_Function &operator=(const Lorentz_Function &l);
 
+    bool operator==(const Lorentz_Function &l) const;
+
     inline int ParticleArg(int i) const { return m_partarg[i]; }
     inline const int* ParticleArg() const { return m_partarg; }
 

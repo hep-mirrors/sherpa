@@ -172,14 +172,14 @@ namespace COMIX {
 
     double Differential(NLO_subevt *const sub=NULL);
     double Differential(const Int_Vector &ci,const Int_Vector &cj,
-			const bool set=false);
+			const int set=0);
 
     bool Map(const Amplitude &ampl,ATOOLS::Flavour_Map &flmap);
     bool GaugeTest(const ATOOLS::Vec4D_Vector &moms,const int mode=0);
 
     bool SetMomenta(const ATOOLS::Vec4D_Vector &moms);
     void SetColors(const Int_Vector &rc,
-		   const Int_Vector &ac,const bool set=false);
+		   const Int_Vector &ac,const int set=0);
 
     bool JetTrigger(PHASIC::Combined_Selector *const sel,const int mode);
 

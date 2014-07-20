@@ -54,6 +54,8 @@ namespace MODEL {
 
     Color_Function & operator=(const Color_Function & c);
     ~Color_Function();
+
+    bool operator==(const Color_Function &c) const;
     
     void SetParticleArg(int a, int b,int c=-1) {
       m_partarg[0] = a;m_partarg[1] = b;

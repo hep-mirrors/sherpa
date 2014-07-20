@@ -25,6 +25,19 @@ Single_Vertex::~Single_Vertex()
   for (size_t i(0);i<Lorentz.size();++i) delete Lorentz[i];
 }
 
+int Single_Vertex::Compare(const Single_Vertex *v) const
+{
+  if (nleg!=v->nleg) return 1;
+  if (cpl.size()!=v->cpl.size()) return 2;
+  for (size_t i(0);i<cpl.size();++i)
+    if (cpl[i].Value()!=v->cpl[i].Value()) return 2;
+  for (size_t i(0);i<Lorentz.size();++i) {
+    if (!(Color[i]==v->Color[i])) return 3;
+    if (!(*Lorentz[i]==*v->Lorentz[i])) return 4;
+  }
+  return 0;
+}
+
 Complex Single_Vertex::Coupling(size_t i) const
 {
   return cpl[i].Value();

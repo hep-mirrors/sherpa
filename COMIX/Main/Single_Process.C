@@ -29,16 +29,20 @@ COMIX::Single_Process::Single_Process():
   COMIX::Process_Base(this),
   p_bg(NULL), p_map(NULL),
   p_loop(NULL), p_kpterms(NULL),
-  m_checkpoles(false)
+  m_checkpoles(false), m_allowmap(true)
 {
   int helpi;
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
   reader.SetInputPath(rpa->GetPath());
   reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+  if (reader.ReadFromFile(helpi,"COMIX_ALLOW_MAPPING")) {
+    m_allowmap=helpi;
+    msg_Tracking()<<"Set mapping mode "<<m_allowmap<<".\n";
+  }
   if (reader.ReadFromFile(helpi,"CHECK_POLES")) {
-    m_checkpoles = helpi;
-    msg_Tracking()<<"Set infrared poles check mode "<<m_checkpoles<<" .\n";
+    m_checkpoles=helpi;
+    msg_Tracking()<<"Set pole check mode "<<m_checkpoles<<".\n";
   }
 }
 
@@ -268,7 +272,7 @@ bool COMIX::Single_Process::MapProcess()
   }
   std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 		      +"/Process/Comix/"+m_name+".map");
-  if (!FileExists(ampfile)) {
+  if (!FileExists(ampfile) && m_allowmap) {
   for (size_t i(0);i<p_umprocs->size();++i) {
     msg_Debugging()<<METHOD<<"(): Try mapping '"
 		   <<Name()<<"' -> '"<<(*p_umprocs)[i]->Name()<<"'\n";

@@ -215,14 +215,15 @@ namespace ATOOLS {
     { m_useglobaltags=globaltags; }
 
     inline static void SetCommandLine(const std::string commandline)
-    { s_commandline.clear(); s_commandline.push_back(commandline); }
+    { s_buffermap.clear(); s_commandline.clear();
+      s_commandline.push_back(commandline); }
     inline static void SetCommandLine(const String_Vector &commandline)
-    { s_commandline=commandline; }
+    { s_buffermap.clear(); s_commandline=commandline; }
 
     inline static void AddCommandLine(const std::string commandline)
-    { s_commandline.push_back(commandline); }
+    { s_buffermap.clear(); s_commandline.push_back(commandline); }
     inline static void AddCommandLine(const String_Vector &commandline)
-    { s_commandline.insert(s_commandline.end(),
+    { s_buffermap.clear(); s_commandline.insert(s_commandline.end(),
 			   commandline.begin(),commandline.end()); }
   
     inline void SetIgnoreCase(const bool ignorecase)

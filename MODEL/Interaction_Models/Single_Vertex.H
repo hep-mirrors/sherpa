@@ -31,6 +31,7 @@ namespace MODEL {
     std::string PID() const;
 
     int CheckCoupling() const;
+    int Compare(const Single_Vertex *v) const;
     // operators
     Single_Vertex&       operator= (const Single_Vertex&);
     bool                 operator==(const Single_Vertex&);

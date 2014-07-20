@@ -40,7 +40,7 @@ namespace AMEGIC {
     
     void ExtractIndices(sknot*,CharNum_Map&);
     char DeliverIndex(CharNum_Map&,char&);
-    std::string BuildTChain(std::vector<std::string>,bool&);
+    std::string BuildTChain(std::vector<std::string>);
     std::string MapFChain(std::vector<std::string>);
     TFprod_Table t_table;
     TFprod_Table f_table;

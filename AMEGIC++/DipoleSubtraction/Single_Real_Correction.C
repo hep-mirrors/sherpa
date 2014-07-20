@@ -209,6 +209,9 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
       }
     }
   }
+  if (m_no_tree) {
+    if (m_subtermlist.empty() && m_subostermlist.empty()) return 0;
+  }
 
   if (p_mapproc && !p_partner->NewLibs()) Minimize();
 

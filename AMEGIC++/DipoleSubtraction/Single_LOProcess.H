@@ -36,6 +36,8 @@ namespace AMEGIC {
 
     std::vector<ATOOLS::Vec4D> m_epol;
 
+    ATOOLS::NLO_subevt *p_sub;
+
     Combination_Set m_ccombs;
     CFlavVector_Map m_cflavs;
 
@@ -86,9 +88,12 @@ namespace AMEGIC {
     void                AddChannels(std::list<std::string>*);
     bool                NewLibs() {return m_newlib;}
     bool                FoundMappingFile(std::string &,std::string &);
-    virtual int         InitAmplitude(MODEL::Model_Base *,Topology *,
+    int                 InitAmplitude(MODEL::Model_Base *,Topology *,
 				      std::vector<Process_Base *> &,
 				      std::vector<Process_Base *> &);
+    virtual int         InitAmplitude(MODEL::Model_Base *,Topology *,
+				      std::vector<Process_Base *> &,
+				      std::vector<Process_Base *> &,int);
     virtual int         InitAmplitude(MODEL::Model_Base *,Topology *,
 				      std::vector<Process_Base *> &,
 				      std::vector<Process_Base *> &,
@@ -110,6 +115,7 @@ namespace AMEGIC {
     inline size_t       GetEmit()  { return m_emit; }
     inline size_t       GetSpect() { return m_spect; }
     int                 PerformTests();
+    inline void         SetSubEvt(ATOOLS::NLO_subevt *sub) { p_sub=sub; }
     /*------------------------------------------------------------------------------
 
       Process management

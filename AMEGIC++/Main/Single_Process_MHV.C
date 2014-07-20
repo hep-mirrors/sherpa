@@ -76,10 +76,6 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Model_Base * model,Topology* top,
   }
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
-  if (!FileExists(newpath+"/makelibs")) {
-    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
-	     newpath+"/makelibs");
-  }
 
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
   p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
@@ -137,18 +133,6 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Model_Base * model,Topology* top,
   int result(Tests());
   switch (result) {
   case 1 :
-    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-      if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	if (CheckMapping(links[j])&&p_ampl->CheckEFMap()) {
-	  msg_Tracking()<<"AMEGIC::Single_Process_MHV::InitAmplitude : "<<std::endl
-			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
-	  p_mapproc = p_partner   = (Single_Process_MHV*)links[j];
-	  m_pslibname = links[j]->PSLibName();
-	  InitFlavmap(p_partner);
-	  break;
-	}
-      } 
-    }
     if (p_partner==this) links.push_back(this);
     msg_Info()<<".";
     
@@ -253,11 +237,13 @@ int AMEGIC::Single_Process_MHV::Tests()
     if (p_hel->On(i)) {
       for (size_t j=i+1;j<p_hel->MaxHel();j++) {
 	if (p_hel->On(j)) {
+#ifdef FuckUp_Helicity_Mapping
 	  if (ATOOLS::IsEqual(M_doub[i],M_doub[j])) {
 	    p_hel->SwitchOff(j);
 	    p_hel->SetPartner(i,j);
 	    p_hel->IncMultiplicity(i);
 	  }
+#endif
 	}
       }
     }
@@ -324,17 +310,12 @@ void AMEGIC::Single_Process_MHV::Minimize()
   m_oew       = p_partner->OrderEW();
 }
 
-double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &_moms,const int mode) 
+double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &moms,const int mode) 
 { 
   if (mode==1) return m_lastxs;
   if (!Selector()->Result()) return m_lastxs = 0.0;
   if (!(IsMapped() && LookUp())) {
-    p_partner->ScaleSetter()->CalculateScale(_moms,m_cmode);
-  }
-  Vec4D_Vector moms(_moms);
-  if (!(m_nin==2 && p_int->ISR() && p_int->ISR()->On())) {
-    Poincare cms(Vec4D(10.0,0.0,0.0,1.0));
-    for (size_t i(0);i<moms.size();++i) cms.Boost(moms[i]);
+    p_partner->ScaleSetter()->CalculateScale(moms,m_cmode);
   }
   return DSigma(moms,m_lookup); 
 }

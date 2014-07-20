@@ -55,7 +55,7 @@ Single_LOProcess_External::~Single_LOProcess_External()
 
 int Single_LOProcess_External::InitAmplitude(Model_Base * model,Topology* top,
 					vector<Process_Base *> & links,
-					vector<Process_Base *> & errs)
+					     vector<Process_Base *> & errs,int checkloopmap)
 {
   DEBUG_FUNC("");
   m_type = 21;
@@ -71,10 +71,6 @@ int Single_LOProcess_External::InitAmplitude(Model_Base * model,Topology* top,
   }
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
-  if (!FileExists(newpath+"/makelibs")) {
-    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
-	     newpath+"/makelibs");
-  }
 
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
   
@@ -135,10 +131,6 @@ int Single_LOProcess_External::InitAmplitude(Model_Base * model,Topology* top,
   }
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
-  if (!FileExists(newpath+"/makelibs")) {
-    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
-	     newpath+"/makelibs");
-  }
   int cnt=0;
   for (size_t i(0);i<m_pinfo.m_ii.m_ps.size();++i) {
     if (m_pinfo.m_ii.m_ps[i].m_tag==-1) {

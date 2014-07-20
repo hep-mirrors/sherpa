@@ -64,6 +64,13 @@ bool Library_Loader::RemoveLockFile(const std::string &lockname)
   return true;
 }
 
+void Library_Loader::UnloadLibrary(const std::string &name,void *module)
+{
+  std::map<std::string,void*>::iterator lit(m_libs.find(name));
+  if (lit!=m_libs.end()) m_libs.erase(lit);
+  dlclose(module);
+}
+
 void *Library_Loader::LoadLibrary(const std::string &name)
 {
   std::map<std::string,void*>::iterator lit(m_libs.find(name));
@@ -110,6 +117,27 @@ void *Library_Loader::GetLibraryFunction(const std::string &libname,
   msg_Debugging()<<"executing library function '"<<funcname
 		 <<"' from 'lib"<<libname<<LIB_SUFFIX<<"' ... "<<std::flush;
   void *module(LoadLibrary(libname));
+  if (module==NULL) return NULL;
+  void *func(dlsym(module,funcname.c_str()));
+  char *error(dlerror());
+  if (error!=NULL) {
+    msg_Debugging()<<"failed"<<std::endl;
+    msg_Error()<<error<<std::endl;
+    msg_Error()<<METHOD<<"(): Failed to load function '"
+	       <<funcname<<"'."<<std::endl;
+    return NULL;
+  }
+  msg_Debugging()<<"done"<<std::endl;
+  return func;
+}
+
+void *Library_Loader::GetLibraryFunction(const std::string &libname,
+					 const std::string &funcname,
+					 void *&module)
+{
+  msg_Debugging()<<"executing library function '"<<funcname
+		 <<"' from 'lib"<<libname<<LIB_SUFFIX<<"' ... "<<std::flush;
+  if (module==NULL) module=LoadLibrary(libname);
   if (module==NULL) return NULL;
   void *func(dlsym(module,funcname.c_str()));
   char *error(dlerror());

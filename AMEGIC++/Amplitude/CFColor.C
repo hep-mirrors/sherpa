@@ -242,9 +242,55 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 	    indices.insert(std::make_pair('-',1)); 
 	    indices.insert(std::make_pair('*',1)); 
 	    char c = 'V';
+
+	    std::string cs1=m1->CFColstring;
+	    std::string cs2=m2->CFColstringC;
+
+	    DEBUG_VAR(cs1<<" * "<<cs2);
+	    for (size_t pos(cs1.find("D["));
+		 pos!=string::npos;
+		 pos=cs1.find("D[",pos+2)) {
+	      char p1=cs1[pos+2];
+	      if (cs1.find(p1)==pos+2 &&
+		  cs1.find(p1,pos+3)==string::npos) {
+		int anti=0;
+		if (fl[int(p1-'i')].IsAnti() && int(p1-'i')>=2) anti=1;
+		else if (!fl[int(p1-'i')].IsAnti() && int(p1-'i')<2) anti=1;
+		if (anti) std::swap<char>(cs1[pos+2],cs1[pos+4]);
+	      }
+	      char p2=cs1[pos+4];
+	      if (cs1.find(p1)==pos+4 &&
+		  cs1.find(p1,pos+5)==string::npos) {
+		int anti=0;
+		if (fl[int(p2-'i')].IsAnti() && int(p2-'i')>=2) anti=1;
+		else if (!fl[int(p2-'i')].IsAnti() && int(p2-'i')<2) anti=1;
+		if (!anti) std::swap<char>(cs1[pos+4],cs1[pos+2]);
+	      }
+	    }
+	    for (size_t pos(cs2.find("D["));
+		 pos!=string::npos;
+		 pos=cs2.find("D[",pos+2)) {
+	      char p1=cs2[pos+2];
+	      if (cs2.find(p1)==pos+2 &&
+		  cs2.find(p1,pos+3)==string::npos) {
+		int anti=0;
+		if (fl[int(p1-'i')].IsAnti() && int(p1-'i')>=2) anti=1;
+		else if (!fl[int(p1-'i')].IsAnti() && int(p1-'i')<2) anti=1;
+		if (!anti) std::swap<char>(cs2[pos+2],cs2[pos+4]);
+	      }
+	      char p2=cs2[pos+4];
+	      if (cs2.find(p1)==pos+4 &&
+		  cs2.find(p1,pos+5)==string::npos) {
+		int anti=0;
+		if (fl[int(p2-'i')].IsAnti() && int(p2-'i')>=2) anti=1;
+		else if (!fl[int(p2-'i')].IsAnti() && int(p2-'i')<2) anti=1;
+		if (anti) std::swap<char>(cs2[pos+4],cs2[pos+2]);
+	      }
+	    }
+	    DEBUG_VAR(cs1<<" * "<<cs2);
 	    
-	    sknot* s1 = st.String2Tree(m1->CFColstring);
-	    sknot* s2 = st.String2Tree(m2->CFColstringC);
+	    sknot* s1 = st.String2Tree(cs1);
+	    sknot* s2 = st.String2Tree(cs2);
 	    
 	    
             //begin -- subtraction term specifics
@@ -282,9 +328,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 		    te=p1-2;
 		    break;
 		  case 'D': {
-		    te=2;
-		    if (fl[int(emit-'i')].IsAnti() && int(emit-'i')>=2) te=4;
-		    else if (!fl[int(emit-'i')].IsAnti() && int(emit-'i')<2) te=4;
+		    te=p1;
 		    break;
 		  }
 		  }
@@ -299,9 +343,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 		    ts=p2-2;
 		    break;
 		  case 'D': {
-		    ts=2;
-		    if (fl[int(spect-'i')].IsAnti() && int(spect-'i')>=2) ts=4;
-		    else if (!fl[int(spect-'i')].IsAnti() && int(spect-'i')<2) ts=4;
+		    ts=p2;
 		    break;
 		  }
 		  }
@@ -445,34 +487,25 @@ CFColor::CFColor(int N,Single_Amplitude* first,ATOOLS::Flavour * fl,char emit,ch
 		Complex value;
 		
 		if (string_list.size()>0) {
-		  bool valid = true;
-		  newaddend = BuildTChain(string_list,valid);
+		  newaddend = BuildTChain(string_list);
 		  string_list.clear();
 		  factor_list.clear();
 		  
-		  if (valid) {
-		    //lookup string key in map 
-		    TF_Iterator tit = t_table.find(newaddend);
-		    if (tit!=t_table.end()) value = total*t_table[newaddend];
-		    else {
-		      st.Sort(*it);
-		      ReplaceT(*it);
-		      st.Expand(*it);
-		      st.Linear(*it);
-		      ReplaceD(*it,*it);
-		      value = st.evalcolor(*it);
-		      t_table.insert(std::make_pair(newaddend,value/total));
-		    }
-		    Kabbala* newone = new Kabbala(newaddend,value);
-		    (*it)->value = newone;
-		    (*it)->op = 0;
-		  }
+		  //lookup string key in map 
+		  TF_Iterator tit = t_table.find(newaddend);
+		  if (tit!=t_table.end()) value = total*t_table[newaddend];
 		  else {
-		    //unvalid color structure, return zero 
-		    Kabbala* zero = new Kabbala(string("0"),Complex(0.,0.));
-		    (*it)->value = zero;
-		    (*it)->op = 0;
+		    st.Sort(*it);
+		    ReplaceT(*it);
+		    st.Expand(*it);
+		    st.Linear(*it);
+		    ReplaceD(*it,*it);
+		    value = st.evalcolor(*it);
+		    t_table.insert(std::make_pair(newaddend,value/total));
 		  }
+		  Kabbala* newone = new Kabbala(newaddend,value);
+		  (*it)->value = newone;
+		  (*it)->op = 0;
 		}
 		else {
 		  st.Sort(*it);
@@ -554,20 +587,15 @@ CFColor::~CFColor()
   if (map) delete [] map;
 }
 
-string CFColor::BuildTChain(vector<string>  string_list, bool & valid) 
+string CFColor::BuildTChain(vector<string>  string_list) 
 {
   string    key;
   Char_Map  translator;  
   char tmp,ca = 'A';
   vector<string> tmp_list;
   
-  size_t length = string_list.size();
-  //approximate length faculty
-  size_t nperm = pow((double)length,(int)(length-1));
-  
   //generate the traces  
   for(;;) {
-    nperm--;
     if (tmp_list.size()==0) {
       tmp = string_list[0][2];
       tmp_list.push_back(string_list[0]);
@@ -593,10 +621,6 @@ string CFColor::BuildTChain(vector<string>  string_list, bool & valid)
       }
     }
     if (string_list.size()==0) break; 
-    if (nperm==0) {
-      valid = false;
-      break; 
-    }
   }
   return key;
 }

@@ -74,6 +74,7 @@ NLO_subevt::~NLO_subevt()
     delete[] p_mom;
     delete[] p_id;
   }
+  if (p_ampl) p_ampl->Delete();
 }
 
 void NLO_subevt::CopyXSData(const NLO_subevt *sub)

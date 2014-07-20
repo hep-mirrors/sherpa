@@ -96,6 +96,7 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   }
   else m_dalpha_ii=m_dalpha;
   m_force_init=reader.GetValue("LOOP_ME_INIT",0);
+  m_checkloopmap=reader.GetValue("CHECK_LOOP_MAP",0);
   m_sccmur=reader.GetValue("USR_WGT_MODE",1);
   m_user_bvimode=reader.GetValue("NLO_BVI_MODE",0);
   m_cmur[0]=0.;
@@ -221,7 +222,7 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
 
   PolarizationNorm();
 
-  if (!p_LO_process->InitAmplitude(model,top,links,errs)) return 0;
+  if (!p_LO_process->InitAmplitude(model,top,links,errs,m_checkloopmap)) return 0;
   m_iresult = p_LO_process->Result();
   nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);
   m_oqcd = p_LO_process->OrderQCD()+
@@ -384,15 +385,10 @@ void Single_Virtual_Correction::Minimize()
   ------------------------------------------------------------------------------*/
 
 
-double Single_Virtual_Correction::Partonic(const ATOOLS::Vec4D_Vector &_moms,const int mode)
+double Single_Virtual_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const int mode)
 {
   if (mode==1) THROW(fatal_error,"Invalid call");
   if (!Selector()->Result()) return m_lastxs = m_lastdxs = 0.0;
-  Vec4D_Vector moms(_moms);
-  if (!(m_nin==2 && p_int->ISR() && p_int->ISR()->On())) {
-    Poincare cms(Vec4D(10.0,0.0,0.0,1.0));
-    for (size_t i(0);i<moms.size();++i) cms.Boost(moms[i]);
-  }
   return DSigma(moms,m_lookup,mode);
 }
 
@@ -738,6 +734,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
 	     <<"Sherpa = "<<m_Norm*p_dsij[0][0]<<" vs. OLE = "<<p_loopme->ME_Born()
 	     <<", rel. diff.: "<<(m_Norm*p_dsij[0][0]-p_loopme->ME_Born())/(m_Norm*p_dsij[0][0]+p_loopme->ME_Born())
 	     <<", ratio: "<<m_Norm*p_dsij[0][0]/p_loopme->ME_Born()<<std::endl;
+    msg_Out()<<"Virtual: OLE = "<<p_loopme->ME_Finite()<<std::endl;
     msg->SetPrecision(6);
   }
   m_lastb=p_dsij[0][0];
@@ -900,4 +897,10 @@ void Single_Virtual_Correction::MPISync()
 Flavour Single_Virtual_Correction::ReMap(const Flavour &fl,const size_t &id) const
 {
   return p_LO_process->ReMap(fl,id);
+}
+
+void Single_Virtual_Correction::FillProcessMap(NLOTypeStringProcessMap_Map *apmap)
+{
+  Process_Base::FillProcessMap(apmap);
+  p_LO_process->SetProcMap(apmap);
 }

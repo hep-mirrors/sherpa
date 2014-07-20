@@ -33,7 +33,7 @@ Single_LOProcess::Single_LOProcess(const Process_Info &pi,
                                    BEAM::Beam_Spectra_Handler *const beam,
                                    PDF::ISR_Handler *const isr) :   
   m_gen_str(2), m_emit(-1), m_spect(-1),
-  p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this)
+  p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), p_sub(NULL)
 {
   m_nin=pi.m_ii.NExternal();
   m_nout=pi.m_fi.NExternal();
@@ -123,7 +123,7 @@ bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,s
     from.Open();
     *from>>name>>factor;
     m_sfactor *= factor;
-    for (size_t j=0;j<links.size();j++) {
+    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
       if (links[j]->Name()==name) {
 	p_mapproc = p_partner = (Single_LOProcess*)links[j];
 	m_iresult = p_partner->Result()*m_sfactor;
@@ -161,6 +161,13 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 					    vector<Process_Base *> & links,
 					    vector<Process_Base *> & errs)
 {
+  THROW(fatal_error,"Invalid function call");
+}
+
+int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
+					    vector<Process_Base *> & links,
+					    vector<Process_Base *> & errs,int checkloopmap)
+{
   m_type = 20;
   if (!model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
   model->GetCouplings(m_cpls);
@@ -174,10 +181,6 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   }
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
-  if (!FileExists(newpath+"/makelibs")) {
-    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
-	     newpath+"/makelibs");
-  }
 
   if (CheckAlternatives(links,Name())) return 1;
 
@@ -214,6 +217,8 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   map<string,Complex> cplmap;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
     cplmap.clear();
+    if (checkloopmap && !NaiveMapping(links[j])) continue;
+    if (checkloopmap==2) continue;
     if (FlavCompare(links[j]) && p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor,cplmap)) {
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
 	m_sfactor = sqr(m_sfactor);
@@ -241,6 +246,8 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 	}
 
 	p_mapproc = p_partner = (Single_LOProcess*)links[j];
+	for (std::map<string,Flavour>::const_iterator fit=p_ampl->GetFlavourmap().begin();
+	     fit!=p_ampl->GetFlavourmap().end();fit++) AddtoFlavmap(fit->first,fit->second);
 	InitFlavmap(p_partner);
 	if (!found) WriteAlternativeName(p_partner->Name());
 	m_iresult = p_partner->Result()*m_sfactor;
@@ -255,20 +262,6 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 				  m_ptypename+string("/")+m_libname,127,127,&m_flavs.front());    
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 0;
     if (!TestLib()) return 0;
-    for (size_t j=0;j<links.size();j++) {
-      if (links[j]->Type()==Type()) {
-	if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result()*m_sfactor,Result())) {
-	  if (CheckMapping(links[j])) {
-	    msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : "<<std::endl
-			  <<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
-			  <<"   Map processes."<<std::endl;
-	    p_mapproc = p_partner = (Single_LOProcess*)links[j];
-	    InitFlavmap(p_partner);
-	    break;
-	  }
-	}
-      } 
-    }
     if (p_partner==this) links.push_back(this);
     msg_Info()<<".";
     Minimize();
@@ -284,34 +277,11 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   int result(Tests()); 
   switch (result) {
     case 2 : 
-    for (size_t j=0;j<links.size();j++) {
-      if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	if (CheckMapping(links[j])) {
-	  msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : "<<std::endl
-			<<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
-			<<"   Map processes."<<std::endl;
-	  p_mapproc = p_partner = (Single_LOProcess*)links[j];
-	  InitFlavmap(p_partner);
-	  break;
-	}
-      } 
-    }
     if (p_partner==this) links.push_back(this);
     Minimize();
     WriteAlternativeName(p_partner->Name());
     return 1;
   case 1 :
-    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-      if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : "<<std::endl
-		      <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
-	p_mapproc = p_partner   = (Single_LOProcess*)links[j];
-	InitFlavmap(p_partner);
-	m_pslibname = links[j]->PSLibName();
-	WriteAlternativeName(p_partner->Name());
-	break;
-      } 
-    }
     if (p_partner==this) links.push_back(this);
     if (CheckLibraries()) return 1;
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
@@ -334,7 +304,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   case -3: return -1;
   default :
     msg_Error()<<"ERROR in AMEGIC::Single_LOProcess::InitAmplitude : "<<std::endl
-	       <<"   Failed for "<<m_name<<"."<<endl;
+	       <<"   Failed for "<<m_name<<" with result "<<result<<"."<<endl;
     errs.push_back(this);
     return 0;
   }
@@ -355,10 +325,6 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   }
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
-  if (!FileExists(newpath+"/makelibs")) {
-    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
-	     newpath+"/makelibs");
-  }
 
   m_name+= "_S"+ToString((int)m_emit)+"_"+ToString((int)m_spect);
   if (m_flavs[m_emit].IsGluon()) {
@@ -410,32 +376,55 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
     return 0;
   }
 
+  map<string,Complex> cplmap;
+  for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
+    cplmap.clear();
+    if (FlavCompare(links[j]) && p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor,cplmap)) {
+      if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
+	Single_LOProcess *pp=dynamic_cast<Single_LOProcess*>(links[j]);
+	if (m_emit!=pp->m_emit || m_spect!=pp->m_spect ||
+	    p_sub->m_ijt!=pp->p_sub->m_ijt || p_sub->m_kt!=pp->p_sub->m_kt ||
+	    p_sub->m_i!=pp->p_sub->m_i || p_sub->m_j!=pp->p_sub->m_j || p_sub->m_k!=pp->p_sub->m_k) continue;
+	m_sfactor = sqr(m_sfactor);
+	msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
+	  
+	if (!FoundMappingFile(m_libname,m_pslibname)) {
+	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+links[j]->Name();
+	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name();
+	  if (FileExists(mlname+string(".map"))) { 
+	    if (m_sfactor==1.) My_In_File::CopyInDB(mlname+".map",mnname+".map");
+	    else {
+	      UpdateMappingFile(mlname,cplmap);
+	      CreateMappingFile((Single_LOProcess*)links[j]);
+	    }
+	    My_In_File::CopyInDB(mlname+".col",mnname+".col");
+	    for (size_t i=0;i<m_nin+m_nout-1;i++) if (m_flavs[i].Strong()) {
+	      for (size_t j=i+1;j<m_nin+m_nout;j++) if (m_flavs[j].Strong()) {
+		string sij=string("_S")+ToString(i)+string("_")+ToString(j);
+		My_In_File::CopyInDB(mlname+sij+".col",mnname+sij+".col");
+	      }
+	    }
+	  }
+	  WriteAlternativeName(p_partner->Name());
+	}
+
+	p_mapproc = p_partner = dynamic_cast<Single_LOProcess*>(links[j]);
+	for (std::map<string,Flavour>::const_iterator fit=p_ampl->GetFlavourmap().begin();
+	     fit!=p_ampl->GetFlavourmap().end();fit++) AddtoFlavmap(fit->first,fit->second);
+	InitFlavmap(p_partner);
+	m_iresult = p_partner->Result()*m_sfactor;
+
+	Minimize();
+	return 1;
+      }
+    }
+  }
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
 				  m_ptypename+string("/")+m_libname,
 				  m_emit,m_spect,&m_flavs.front());
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 1;
     if (!TestLib(pfactors)) return 0;
- 
-    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-      if (FlavCompare(links[j]) && ATOOLS::IsEqual(links[j]->Result()*m_sfactor,Result())) {
-	if (CompareTestMoms(links[j]->GetTestMoms())) {
-	  if (CheckMapping(links[j])) {
-	    map<string,Complex> cplmap; double sfactor;
-	    if (!p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),sfactor,cplmap)) continue;
-	    for (map<string,ATOOLS::Flavour>::const_iterator
-		   fit=p_ampl->GetFlavourmap().begin();fit!=p_ampl->GetFlavourmap().end();fit++)
-	      AddtoFlavmap(fit->first,fit->second);
-	    msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : "<<std::endl
-			  <<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
-			  <<"   Map processes."<<std::endl;
-	    p_mapproc = p_partner = (Single_LOProcess*)links[j];
-	    InitFlavmap(p_partner);
-	    break;
-	  }
-	}
-      } 
-    }
     if (p_partner==this) links.push_back(this);
     Minimize();
     return 1;
@@ -450,39 +439,13 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   int tr=Tests(pfactors);
   switch (tr) {
   case 2 : 
-//     for (size_t j=current_atom;j<links.size();j++) {
-//       if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
-// 	if (CheckMapping(links[j])) {
-// 	  msg_Tracking()<<"Single_LOProcess::InitAmplitude : "<<std::endl
-// 			<<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
-// 			<<"   Map processes."<<std::endl;
-// 	  p_mapproc = p_partner = (Single_LOProcess*)links[j];
-// 	  break;
-// 	}
-//       } 
-//     }
-//     if (p_partner==this) {
-//       links.push_back(this);
-//       totalsize++;
-//     }
-//     Minimize();
+    if (p_partner==this) links.push_back(this);
     return 1;
   case 1 :
   case 100 :
     if (Result()==0.) {
       CreateMappingFile(this);
       return 0;
-    }
-    for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
-      if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	if (CompareTestMoms(links[j]->GetTestMoms())) {
-	  msg_Tracking()<<"Single_LOProcess::InitAmplitude : "<<std::endl
-			<<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
-	  p_mapproc = p_partner   = (Single_LOProcess*)links[j];
-	  m_pslibname = links[j]->PSLibName();
-	  break;
-	}
-      } 
     }
     if (p_partner==this) links.push_back(this);
     
@@ -506,7 +469,7 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   case -3: return -3;
   default :
     msg_Error()<<"ERROR in Single_LOProcess::InitAmplitude : "<<std::endl
-	       <<"   Failed for "<<m_name<<"."<<endl;
+	       <<"   Failed for "<<m_name<<" with result "<<tr<<"."<<endl;
 //     errs.push_back(this);
     return -1;
   }
@@ -689,7 +652,7 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
 		 <<"   Mapping file(1) : "<<abs(M2)<<endl
 		 <<"   Original    (2) : "<<abs(M2g)<<endl
 		 <<"   Cross check (T) : "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
-// 	return 0;
+	THROW(critical_error,"Check output above. Increase NUM_ACCURACY if you wish to skip this test.");
       }
       else {
 	msg_Out()<<"WARNING: Library cross check not satisfied: "
@@ -793,7 +756,7 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
 	msg_Out()<<"WARNING: String test not satisfied: "
 		 <<M2g<<" vs. "<<M2S<<"  difference:"<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
 	if (abs(M2g/M2S-1.)>rpa->gen.Accu()) {
-	  return 0;
+	  THROW(critical_error,"Check output above. Increase NUM_ACCURACY if you wish to skip this test.");
 	}
 	msg_Out()<<"         assuming numerical reasons, continuing "<<endl;
       }
@@ -987,6 +950,9 @@ void Single_LOProcess::WriteLibrary()
   p_BS->Output(newpath+m_ptypename+string("/")+m_libname);
   p_ampl->StoreAmplitudeConfiguration(newpath+m_ptypename+string("/")+m_libname);
   m_newlib=true;
+  if (!FileExists(rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs"))
+    Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+	 rpa->gen.Variable("SHERPA_CPP_PATH")+"/makelibs");
   msg_Info()<<"AMEGIC::Single_Process::WriteLibrary : "<<std::endl
 	    <<"   Library for "<<m_name<<" has been written, name is "<<m_libname<<std::endl;
   sync();

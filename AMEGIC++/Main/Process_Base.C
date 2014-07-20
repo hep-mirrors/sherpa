@@ -8,6 +8,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PHASIC++/Channels/Single_Channel.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
@@ -208,6 +209,10 @@ ATOOLS::Flavour AMEGIC::Process_Base::ReMap(const ATOOLS::Flavour& f0,const std:
 
   else {
     DO_STACK_TRACE;
+    PRINT_VAR(this<<" "<<Name()<<" "<<Demangle(typeid(*this).name()));
+    PRINT_VAR(p_mapproc<<" "<<p_mapproc->Name()<<" "<<Demangle(typeid(*p_mapproc).name()));
+    PRINT_VAR(((Process_Base*)this)->Parent()<<" "<<((Process_Base*)this)->Parent()->Name());
+    PRINT_VAR(p_mapproc->Parent()<<" "<<p_mapproc->Parent()->Name());
     THROW(critical_error,"Flavour map incomplete!");
   }
   return f0;
@@ -231,6 +236,10 @@ ATOOLS::Flavour AMEGIC::Process_Base::ReMap
     if (ifl.IsBoson()) return ifl;
     else {
       DO_STACK_TRACE;
+      PRINT_VAR(this<<" "<<Name()<<" "<<Demangle(typeid(*this).name()));
+      PRINT_VAR(p_mapproc<<" "<<p_mapproc->Name()<<" "<<Demangle(typeid(*p_mapproc).name()));
+      PRINT_VAR(((Process_Base*)this)->Parent()<<" "<<((Process_Base*)this)->Parent()->Name());
+      PRINT_VAR(p_mapproc->Parent()<<" "<<p_mapproc->Parent()->Name());
       THROW(critical_error,"Flavour map incomplete!");
     }
   }

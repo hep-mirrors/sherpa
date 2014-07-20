@@ -94,6 +94,8 @@ void Variable_Core_Scale::SetScale
   if (mu2tag=="" || mu2tag=="0") THROW(fatal_error,"No scale specified");
   msg_Debugging()<<METHOD<<"(): Core scale '"<<mu2tag<<"' {\n";
   msg_Indent();
+  mu2calc.AddTag("H_TM2","1.0");
+  mu2calc.AddTag("H_T2","1.0");
   for (size_t i=0;i<n;++i) 
     mu2calc.AddTag("p["+ToString(i)+"]",ToString(Vec4D()));
   mu2calc.Interprete(mu2tag);
@@ -108,15 +110,40 @@ std::string Variable_Core_Scale::ReplaceTags(std::string &expr) const
 
 Term *Variable_Core_Scale::ReplaceTags(Term *term) const
 {
-  term->Set(p_ampl->Leg(term->Id()-100)->Mom());
+  if (term->Id()>=100) {
+    term->Set(p_ampl->Leg(term->Id()-100)->Mom());
+    return term;
+  }
+  switch (term->Id()) {
+  case 4: {
+    double htm(0.0);
+    for (size_t i(p_ampl->NIn());
+	 i<p_ampl->Legs().size();++i)
+      htm+=p_ampl->Leg(i)->Mom().MPerp();
+    term->Set(sqr(htm));
+    return term;
+  }
+  case 5: {
+    double ht(0.0);
+    for (size_t i(p_ampl->NIn());
+	 i<p_ampl->Legs().size();++i)
+      ht+=p_ampl->Leg(i)->Mom().PPerp();
+    term->Set(sqr(ht));
+    return term;
+  }
+  }
   return term;
 }
 
 void Variable_Core_Scale::AssignId(Term *term)
 {
+  if (term->Tag()=="H_TM2") term->SetId(4);
+  else if (term->Tag()=="H_T2") term->SetId(5);
+  else {
   term->SetId(100+ToType<int>
 	      (term->Tag().substr
 	       (2,term->Tag().length()-3)));
+  }
 }
 
 DECLARE_ND_GETTER(Variable_Core_Scale,"VAR",
