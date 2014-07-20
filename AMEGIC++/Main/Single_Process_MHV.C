@@ -323,16 +323,6 @@ double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &moms,const int m
 double AMEGIC::Single_Process_MHV::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool lookup)
 {
   m_lastxs = 0.;
-  if (m_nin==2) {
-    for (size_t i=0;i<m_nin+m_nout;i++) {
-      if (_moms[i][0]<m_flavs[i].Mass()) return 0.0;
-    }
-  }
-  if (m_nin==1) {
-    for (size_t i=m_nin;i<m_nin+m_nout;i++) {
-      if (_moms[i][0]<m_flavs[i].Mass()) return 0.0;
-    }
-  }
   if (p_partner == this) {
     m_lastxs = m_Norm * operator()((ATOOLS::Vec4D*)&_moms.front());
   }

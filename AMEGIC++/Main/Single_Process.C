@@ -771,23 +771,18 @@ double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms,const int mode
 double AMEGIC::Single_Process::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool lookup)
 {
   m_lastxs = 0.;
-  if (m_nin==2) {
-    for (size_t i=0;i<m_nin+m_nout;i++) {
-      if (_moms[i][0]<m_flavs[i].Mass()) return 0.0;
-    }
-  }
-  if (m_nin==1) {
-    for (size_t i=m_nin;i<m_nin+m_nout;i++) {
-      if (_moms[i][0]<m_flavs[i].Mass()) return 0.0;
-    }
+  Vec4D_Vector mom(_moms);
+  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+    Poincare cms=Poincare(mom[0]+mom[1]);
+    for (size_t i(0);i<mom.size();++i) cms.Boost(mom[i]);
   }
   if (p_partner == this) {
-    m_lastxs = m_Norm * operator()((ATOOLS::Vec4D*)&_moms.front());
+    m_lastxs = m_Norm * operator()((ATOOLS::Vec4D*)&mom.front());
   }
   else {
     if (lookup && p_partner->m_lookup)
       m_lastxs = p_partner->LastXS()*m_sfactor;
-    else m_lastxs = m_Norm * p_partner->operator()((ATOOLS::Vec4D*)&_moms.front())*m_sfactor;
+    else m_lastxs = m_Norm * p_partner->operator()((ATOOLS::Vec4D*)&mom.front())*m_sfactor;
   }
   return m_lastxs;
 }

@@ -395,16 +395,6 @@ double Single_Virtual_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,cons
 double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool lookup,const int mode)
 {
   m_lastxs = 0.;
-  if (m_nin==2) {
-    for (size_t i=0;i<m_nin+m_nout;i++) {
-      if (_moms[i][0]<m_flavs[i].Mass()) return 0.;
-    }
-  }
-  if (m_nin==1) {
-    for (size_t i=m_nin;i<m_nin+m_nout;i++) {
-      if (_moms[i][0]<m_flavs[i].Mass()) return 0.;
-    }
-  }
   double wgt(1.0);
   int bvimode(p_partner->m_bvimode);
   if (!lookup && m_user_bvimode!=0) {
@@ -650,7 +640,13 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   m_cmur[0]=0.;
   m_cmur[1]=0.;
 
-  p_LO_process->Calc_AllXS(p_int->Momenta(),&mom.front(),p_dsij,mode);
+  Vec4D_Vector _mom(mom);
+  Poincare cms;
+  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
+    cms=Poincare(_mom[0]+_mom[1]);
+    for (size_t i(0);i<_mom.size();++i) cms.Boost(_mom[i]);
+  }
+  p_LO_process->Calc_AllXS(p_int->Momenta(),&_mom.front(),p_dsij,mode);
   if (p_loopme && (m_bvimode&4)) {
     p_loopme->SetRenScale(p_scale->Scale(stp::ren,1));
     p_loopme->Calc(mom);
