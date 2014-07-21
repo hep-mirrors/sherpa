@@ -472,6 +472,12 @@ bool Initialization_Handler::InitializeTheModel()
   if (!read.ReadFromFile(name,"MODEL")) name="SM";
   p_model=Model_Base::Model_Getter_Function::
     GetObject(name,Model_Arguments(m_path,m_modeldat,true));
+  if (p_model==NULL) {
+    if (!s_loader->LoadLibrary("Sherpa"+name))
+      THROW(missing_module,"Cannot load output library Sherpa"+name+".");
+    p_model=Model_Base::Model_Getter_Function::
+      GetObject(name,Model_Arguments(m_path,m_modeldat,true));
+  }
   if (p_model==NULL) THROW(not_implemented,"Model not implemented");
   MODEL::s_model=p_model;
   return 1;

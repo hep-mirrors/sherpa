@@ -53,7 +53,7 @@ namespace SHERPA {
 
     const ATOOLS::Blob_List &GetBlobList() const;
 
-    double GetMEWeight(const ATOOLS::Cluster_Amplitude &ampl) const;
+    double GetMEWeight(const ATOOLS::Cluster_Amplitude &ampl,const int mode=0) const;
     
     inline Initialization_Handler * GetInitHandler() const 
     { return p_inithandler; }

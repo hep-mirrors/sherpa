@@ -42,6 +42,7 @@ SM_AGC::SM_AGC(std::string _dir,std::string _file,bool _elementary) :
 {
   p_sm = new Standard_Model(m_dir,m_file,false);
   if (m_elementary) {
+    CustomContainerInit();
     ATOOLS::OutputParticles(msg->Info());
     ATOOLS::OutputContainers(msg->Info());
   }

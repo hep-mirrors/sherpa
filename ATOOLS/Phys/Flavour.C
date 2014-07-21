@@ -206,6 +206,7 @@ std::string Flavour::TexName() const
 	idname.find("--")!=std::string::npos) barit = true;
     else name="\\bar ";
   }
+  if (p_info->m_idname!=p_info->m_texname) return name+p_info->m_texname;
 
   switch (Kfcode()) {
   case kf_pi : {name+=std::string("\\pi^{0}");break;}

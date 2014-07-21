@@ -13,8 +13,6 @@ Interaction_Model_sQCD::Interaction_Model_sQCD(MODEL::Model_Base * _model,
   Interaction_Model_Base("",_model,_cplscheme,_yukscheme)
 { 
   double scale = rpa->gen.CplScale();
-  g1       = Kabbala(string("g_1"),
-		     sqrt(4.*M_PI*ScalarFunction(string("alpha_QED"),scale)));
   g3    = Kabbala(string("g_3"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),scale)));
   PL    = Kabbala(string("P_L"),1.);

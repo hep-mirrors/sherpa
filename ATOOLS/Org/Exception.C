@@ -88,6 +88,7 @@ Exception::Exception(const ex::type type,const std::string info,
 Exception::~Exception() 
 {
   if (exh->m_exception==this) {
+    msg_Error()<<*this<<std::endl;
     exh->SetExitCode();
     exh->m_exception=NULL;
   }

@@ -989,7 +989,8 @@ std::string Matrix_Element_Handler::MakeString
 }
 
 double Matrix_Element_Handler::GetWeight
-(const Cluster_Amplitude &ampl,const nlo_type::code type) const
+(const Cluster_Amplitude &ampl,
+ const nlo_type::code type,const int mode) const
 {
   std::string name(Process_Base::GenerateName(&ampl));
   for (int i(0);i<m_pmaps.size();++i) {
@@ -1001,7 +1002,10 @@ double Matrix_Element_Handler::GetWeight
       ci->GeneratePoint();
       for (size_t j(0);j<ampl.Legs().size();++j)
 	ampl.Leg(j)->SetCol(ColorID(ci->I()[j],ci->J()[j]));
-      return pit->second->Differential(ampl);
+      if (mode&1) ci->SetWOn(false);
+      double res(pit->second->Differential(ampl));
+      ci->SetWOn(true);
+      return res;
     }
   }
   return 0.0;

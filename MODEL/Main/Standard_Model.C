@@ -160,8 +160,8 @@ Standard_Model::Standard_Model(string _dir,string _file,
   Model_Base(_dir,_file,_elementary), m_trivialextension(_trivialextension)
 {
   ParticleInit();
-  CustomContainerInit();
   if (m_elementary) {
+    CustomContainerInit();
     ATOOLS::OutputParticles(msg->Info());
     ATOOLS::OutputContainers(msg->Info());
   }

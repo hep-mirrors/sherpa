@@ -6,7 +6,7 @@
 
 namespace MODEL {  
   class Interaction_Model_sQCD : public Interaction_Model_Base {
-    ATOOLS::Kabbala g1,g3,PL,PR,M_I,root2,num_2;    
+    ATOOLS::Kabbala g3,PL,PR,M_I,root2,num_2;    
     ATOOLS::Kabbala K_Z_U(short int i,short int j);
     ATOOLS::Kabbala K_Z_D(short int i,short int j);
     int gen_sUp(ATOOLS::Flavour fl);

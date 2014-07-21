@@ -10,6 +10,7 @@
 
 namespace ATOOLS {
   class Particle_Qualifier_Base;
+  class NLO_subevt;
 }
 
 namespace ANALYSIS {
@@ -70,6 +71,8 @@ namespace ANALYSIS {
 
     Analysis_Handler *p_ana;
 
+    ATOOLS::NLO_subevt *p_sub, *p_real;
+
     std::string JetID(std::string name,std::string max) const;
     
     void Init();
@@ -124,6 +127,9 @@ namespace ANALYSIS {
     { return m_datacontainer; }
 
     inline Analysis_Handler *AnalysisHandler() const { return p_ana; }
+
+    inline ATOOLS::NLO_subevt *Sub() const { return p_sub; }
+    inline ATOOLS::NLO_subevt *Real() const { return p_real; }
 
   };// end of class Primitive_Analysis
 

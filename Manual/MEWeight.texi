@@ -1,0 +1,23 @@
+@node MEWeight
+@subsection Computing matrix elements for events in the HepMC event file format
+
+In this example an event file in the HepMC format is read using the
+small Python module 'PyHepMC'. For each event, the matrix element
+weight is then computed using the Sherpa interface. An event file can
+be created by running
+
+@verbatim
+  Sherpa EVENT_OUTPUT=HepMC_GenEvent[Events]
+@end verbatim
+
+with the run card present in the directory. Please note that the
+PyHepMC module has only been tested for HepMC files created by Sherpa.
+It is included here mainly to provide an example and to illustrate how
+Sherpa can be interfaced with other Python modules.
+
+@example
+@smallformat
+@verbatiminclude Examples/API/MEWeight/test.py.in
+@end smallformat
+@end example
+

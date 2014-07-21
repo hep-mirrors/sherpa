@@ -1797,8 +1797,14 @@ void Amplitude::WriteOutGraphs(const std::string &file) const
   str<<"\n  \\end{longtable}\n\n";
   if (!cvs.empty() && (m_pgmode&1)) {
     str<<"  \\begin{longtable}{c}\n";
-    for (std::set<std::string>::const_iterator vit(cvs.begin());
-	 vit!=cvs.end();++vit) str<<"    $"<<*vit<<"$\\\\\n";
+    for (std::set<std::string>::const_iterator
+	   vit(cvs.begin());vit!=cvs.end();++vit) {
+      std::string label(*vit);
+      for (size_t pos(label.find(",,"));
+	   pos!=std::string::npos;pos=label.find(",,",pos+1))
+	label.replace(pos,2,",");
+      str<<"    $"<<label<<"$\\\\\n";
+    }
     str<<"  \\end{longtable}\n\n";
   }
   str<<"\\end{fmffile}\n";

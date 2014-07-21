@@ -55,7 +55,7 @@ namespace SHERPA {
     bool InitializeTheEventHandler();
     long int NumberOfEvents() const;
     const ATOOLS::Blob_List &GetBlobList() const;
-    double GetMEWeight(const ATOOLS::Cluster_Amplitude &ampl) const;
+    double GetMEWeight(const ATOOLS::Cluster_Amplitude &ampl,const int mode=0) const;
     
   };
 }

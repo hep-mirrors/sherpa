@@ -37,6 +37,7 @@ SM_U1_B::SM_U1_B(std::string _dir,std::string _file,bool _elementary) :
   p_sm = new Standard_Model(m_dir,m_file,false);
   ParticleInit();
   if (m_elementary) {
+    CustomContainerInit();
     ATOOLS::OutputParticles(msg->Info());
     ATOOLS::OutputContainers(msg->Info());
   }

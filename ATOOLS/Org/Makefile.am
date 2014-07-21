@@ -49,6 +49,7 @@ localinc_HEADERS         =	\
 			STL_Tools.H \
 			RUsage.H \
 			Getter_Function.H \
+			Getter_Function.C \
 			My_MPI.H \
 			Exception.H \
 			Exception_Handler.H \

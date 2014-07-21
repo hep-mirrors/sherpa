@@ -493,9 +493,11 @@ bool COMIX::Single_Process::Tests()
   for (size_t i(0);i<ids.size();++i) {
     ids[i]=i;
     acts[i]=m_flavs[i].Strong();
-    if (!m_flavs[i].IsFermion()) types[i]=0;
-    else if (m_flavs[i].IsAnti()) types[i]=i<m_nin?1:-1;
-    else types[i]=i<m_nin?-1:1;
+    if (acts[i]) {
+      if (m_flavs[i].StrongCharge()==8) types[i]=0;
+      else if (m_flavs[i].IsAnti()) types[i]=i<m_nin?1:-1;
+      else types[i]=i<m_nin?-1:1;
+    }
   }
   if (!p_int->ColorIntegrator()->
       ConstructRepresentations(ids,types,acts)) return false;
@@ -506,9 +508,11 @@ bool COMIX::Single_Process::Tests()
   for (size_t i(0);i<dids.size();++i) {
     dids[i]=dinfos[i]->m_id;
     acts[i]=dinfos[i]->m_fl.Strong();
-    if (!dinfos[i]->m_fl.IsFermion()) types[i]=0;
-    else if (dinfos[i]->m_fl.IsAnti()) types[i]=-1;
-    else types[i]=1;
+    if (acts[i]) {
+      if (dinfos[i]->m_fl.StrongCharge()==8) types[i]=0;
+      else if (dinfos[i]->m_fl.IsAnti()) types[i]=-1;
+      else types[i]=1;
+    }
   }
   p_int->ColorIntegrator()->SetDecayIds(dids,types,acts);
   Phase_Space_Handler::TestPoint(&m_p.front(),&Info(),Generator(),1);

@@ -214,6 +214,7 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
 
 void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double value)
 {
+  p_sub=p_real=NULL;
   ++m_nevt;
   m_called.clear();
   if (IsNan(value)) {
@@ -352,11 +353,13 @@ bool Primitive_Analysis::DoAnalysisNLO(const Blob_List * const bl, const double 
   if (!info) return 0;
 
   NLO_subevtlist* nlos = info->Get<NLO_subevtlist*>();
+  p_real=nlos->back();
 
   // (*nlos)*=(*signal)["XS_Weight"]->Get<double>();
   double ncount=(*signal)["Trials"]->Get<double>();
 
   for (size_t j=0;j<nlos->size();j++) {
+    p_sub=(*nlos)[j];
     if ((*nlos)[j]->m_result==0.) continue;
     m_pls[finalstate_list]=(*nlos)[j]->CreateParticleList();
   

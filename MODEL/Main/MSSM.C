@@ -56,6 +56,7 @@ bool MSSM::ModelInit(const PDF::ISR_Handler_Map& isr)
   FillSpectrum(isr);
   
   if (m_elementary) {
+    CustomContainerInit();
     ATOOLS::OutputParticles(msg->Info());
     ATOOLS::OutputContainers(msg->Info());
   }

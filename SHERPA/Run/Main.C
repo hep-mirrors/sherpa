@@ -67,7 +67,6 @@ int main(int argc,char* argv[])
     }
   }
   catch (Exception exception) {
-    msg_Error()<<exception<<std::endl;
     std::terminate();
   }
   delete Generator;

@@ -191,6 +191,8 @@ void Cluster_Algorithm::CalculateMeasures
 	if (in[j]->Zero()) continue;
 	if (in[j]->JC()->Sub()) continue;
 	if (in[j]->JC()->Flav().IsDummy()) continue;
+	if (in[j]->OrderEW()>p_ampl->OrderEW() ||
+	    in[j]->OrderQCD()>p_ampl->OrderQCD()) continue;
 	if (find(ccurs.begin(),ccurs.end(),in[j]->JA())==ccurs.end()) continue;
 	if (find(ccurs.begin(),ccurs.end(),in[j]->JB())==ccurs.end()) continue;
 	size_t idi(in[j]->JA()->CId()), idj(in[j]->JB()->CId());
@@ -246,6 +248,8 @@ void Cluster_Algorithm::CalculateMeasures
 	if (mocur->Sub()) continue;
 	Flavour mofl(mocur->Flav().Bar());
 	if (mofl.IsDummy()) continue;
+	if (in[j]->OrderEW()>p_ampl->OrderEW() ||
+	    in[j]->OrderQCD()>p_ampl->OrderQCD()) continue;
 	size_t idi(fcur->CId()), idj(ccurs[i]->CId());
 	if (p_xs!=p_proc && step==2) {
 	  NLO_subevt *sub(p_proc->Get<Single_Dipole_Term>()->Sub());
@@ -561,6 +565,7 @@ void Cluster_Algorithm::PreCluster
 (Single_Process *const xs,Single_Dipole_Term *const dip,
  const Vec4D_Vector &p)
 {
+  if (p_clus==NULL) return;
   DEBUG_FUNC("");
   if (xs==NULL) THROW(fatal_error,"Internal error 7");
   p_proc=xs;
@@ -623,6 +628,7 @@ bool Cluster_Algorithm::Cluster
   p_ampl->SetMuF2(muf2);
   ClusterInfo_Map cinfo;
   msg_Debugging()<<"}\n";
+  if (p_clus==NULL) return true;
   KT2Info_Vector kt2ord
     (1,KT2_Info((1<<p_ampl->Legs().size())-1,0.0));
   const DecayInfo_Vector &decids(p_bg->DecayInfos());

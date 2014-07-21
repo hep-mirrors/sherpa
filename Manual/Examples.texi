@@ -86,7 +86,7 @@ of the main features of these examples.
 @section Fixed-order next-to-leading order calculations
 
 @menu
-* NTuple production::
+* NTuple production:: Production of Root NTuples with Sherpa
 @end menu
 
 @include NLO_NTuples.texi
@@ -127,8 +127,8 @@ of the main features of these examples.
 @section Using the Python interface
 
 @menu
-* Events::
-* MPIEvents::
+* Events:: Generating events
+* MPIEvents:: Generating events with MPI
 @end menu
 
 @include Events.texi

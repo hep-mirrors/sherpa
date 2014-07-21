@@ -138,6 +138,7 @@ void ATOOLS::Terminate()
 void Exception_Handler::Terminate() 
 {
   SetExitCode();
+  if (m_exception) msg_Error()<<*m_exception<<std::endl;
   if ((m_signal!=SIGTERM && m_signal!=SIGINT &&
        m_signal!=SIGXCPU && m_signal!=SIGPIPE) &&
       (m_exception==NULL || 

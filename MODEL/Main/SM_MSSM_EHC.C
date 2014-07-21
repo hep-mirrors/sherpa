@@ -38,6 +38,7 @@ SM_EHC::SM_EHC(std::string _dir,std::string _file,bool _elementary) :
   p_sm = new Standard_Model(m_dir,m_file,false);
   ParticleInit();
   if (m_elementary) {
+    CustomContainerInit();
     ATOOLS::OutputParticles(msg->Info());
     ATOOLS::OutputContainers(msg->Info());
   }
@@ -154,6 +155,7 @@ bool MSSM_EHC::ModelInit(const PDF::ISR_Handler_Map& isr)
   FillSpectrum(isr);
 
   if (m_elementary) {
+    CustomContainerInit();
     ATOOLS::OutputParticles(msg->Info());
     ATOOLS::OutputContainers(msg->Info());
   }

@@ -40,9 +40,9 @@ FeynRules_Model::FeynRules_Model(std::string _dir,std::string _file,bool _elemen
   Model_Base(_dir,_file,_elementary)
 {
   ParticleInit();
-  CustomContainerInit();
   if (m_elementary) {
     msg_Info()<<"\n";
+    CustomContainerInit();
     ATOOLS::OutputParticles(msg->Info());
     ATOOLS::OutputContainers(msg->Info());
   }

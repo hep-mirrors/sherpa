@@ -500,13 +500,16 @@ Cluster_Amplitude *Single_Process::Cluster
     if (mode&2048) return NULL;
   }
   PDF::Cluster_Definitions_Base* cd=p_shower->GetClusterDefinitions();
-  int amode=cd->AMode(), cmode=mode;
-  if (amode) cmode|=512;
-  if (mode&512) cd->SetAMode(1);
+  int amode=0, cmode=mode;
+  if (cd) {
+    amode=cd->AMode();
+    if (amode) cmode|=512;
+    if (mode&512) cd->SetAMode(1);
+  }
   p_gen->SetClusterDefinitions(cd);
   p_gen->PreCluster(this,p);
   Cluster_Amplitude* ampl(p_gen->ClusterConfiguration(this,p,cmode));
   if (ampl) ampl->Decays()=m_pinfo.m_fi.GetDecayInfos();
-  cd->SetAMode(amode);
+  if (cd) cd->SetAMode(amode);
   return ampl;
 }
