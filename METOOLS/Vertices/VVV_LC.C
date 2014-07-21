@@ -51,6 +51,7 @@ namespace METOOLS {
 
 }// end of namespace METOOLS
 
+#include "MODEL/Interaction_Models/Single_Vertex.H" 
 #include "ATOOLS/Org/Message.H"
 
 using namespace METOOLS;
@@ -63,6 +64,11 @@ VVV_Calculator<SType>::VVV_Calculator(const Vertex_Key &key):
   if (p_v->Kin()) m_mk2=sqr(m_mk=p_v->Kin()->JK()->Flav().Mass());
   bool nuc(p_v->Info() && p_v->Info()->Mode()&2);
   m_cpl=SComplex((nuc?1.0:p_v->Coupling(0))*p_cc->Coupling());
+  int a(key.p_mv->Lorentz[key.m_n]->ParticleArg(1));
+  int b(key.p_mv->Lorentz[key.m_n]->ParticleArg(2));
+  if ((a==2 && b==1) ||
+      (a==1 && b==0) ||
+      (a==0 && b==2)) m_cpl=-m_cpl;
 }
 
 template <typename SType>
@@ -199,11 +205,17 @@ void VVV_Calculator<SType>::ConstructSDipole()
     CVec4Type *j(GetPol(p,q,cp));
     *j*=m_cpl;
     j->SetH(cp+1);
+    if (Ait) {
     *j*=Ait;
     static_cast<Dipole_Color*>(p_cc)->AddJI(j,0);
-    *j*=Ajt/Ait;
+    *j*=1.0/Ait;
+    }
+    if (Ajt) {
+    *j*=Ajt;
     static_cast<Dipole_Color*>(p_cc)->AddJI(j,1);
-    *j*=2.0/t/Ajt;
+    *j*=1.0/Ajt;
+    }
+    *j*=2.0/t;
     p_cc->AddJ(j);
     p_v->SetZero(false);
   }
@@ -282,7 +294,7 @@ void VVV_Calculator<SType>::Evaluate()
   }
   if (p_v->JA()->Zero()||p_v->JB()->Zero()) return;
 #ifdef DEBUG__BG
-  msg_Debugging()<<*p_v->JA()<<"(+)"<<*p_v->JB()<<" VVV\n";
+  msg_Debugging()<<*p_v->JA()<<"(+)"<<*p_v->JB()<<" VVV, m_cpl = "<<m_cpl<<"\n";
   msg_Indent();
 #endif
   size_t i(0);
@@ -339,4 +351,4 @@ operator()(const Vertex_Key &key) const
 void ATOOLS::Getter<Lorentz_Calculator,Vertex_Key,
 		    VVV_Calculator<double> >::
 PrintInfo(std::ostream &str,const size_t width) const
-{ str<<"FFV vertex"; }
+{ str<<"VVV vertex"; }

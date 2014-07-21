@@ -83,7 +83,7 @@ namespace METOOLS {
     void AddJ(CObject *const j);
 
     virtual void ConstructJ(const ATOOLS::Vec4D &p,const int ch,
-			    const int cr,const int ca) = 0;
+			    const int cr,const int ca,const int mode) = 0;
     virtual void SetGauge(const ATOOLS::Vec4D &k) = 0;
 
     virtual void AddPropagator() = 0;

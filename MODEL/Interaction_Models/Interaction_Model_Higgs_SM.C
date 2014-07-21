@@ -140,48 +140,6 @@ void Interaction_Model_Higgs_SM::c_VVS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
 
-    // decomposed hhWW for comix
-    vertex[vanz].in[1] = Flavour(kf_h0_qsc).Bar();
-    vertex[vanz].in[2] = vertex[vanz].in[0] = flWplus;
-
-    vertex[vanz].cpl[0] = vertex[vanz].cpl[1] = M_I*g2*g2/num_2;
-    vertex[vanz].Str    = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
-    
-    vertex[vanz].Color.push_back(Color_Function(cf::None));  
-    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));     
-    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
-
-    vertex[vanz].on      = 1;
-    vertex[vanz].dec     = 3;
-    vertex.push_back(Single_Vertex());vanz++;
-
-    vertex[vanz].in[1] = Flavour(kf_h0_qsc).Bar();
-    vertex[vanz].in[2] = vertex[vanz].in[0] = flWplus.Bar();
-
-    vertex[vanz].cpl[0] = vertex[vanz].cpl[1] = M_I*g2*g2/num_2;
-    vertex[vanz].Str    = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
-    
-    vertex[vanz].Color.push_back(Color_Function(cf::None));  
-    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));     
-    vertex[vanz].Lorentz.back()->SetParticleArg(2,0);     
-
-    vertex[vanz].on      = 1;
-    vertex[vanz].dec     = 3;
-    vertex.push_back(Single_Vertex());vanz++;
-
-    vertex[vanz].in[0] = Flavour(kf_h0_qsc);
-    vertex[vanz].in[2] = (vertex[vanz].in[1] = flWplus).Bar();
-
-    vertex[vanz].cpl[0] = vertex[vanz].cpl[1] = M_I*g2*g2/num_2;
-    vertex[vanz].Str    = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
-    
-    vertex[vanz].Color.push_back(Color_Function(cf::None));  
-    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));     
-    vertex[vanz].Lorentz.back()->SetParticleArg(2,1);     
-
-    vertex[vanz].on      = 1;
-    vertex[vanz].dec     = 3;
-    vertex.push_back(Single_Vertex());vanz++;
   }
 
   Flavour flav = Flavour(kf_Z);
@@ -219,34 +177,6 @@ void Interaction_Model_Higgs_SM::c_VVS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
 
-    // decomposed hhZZ for comix
-    vertex[vanz].in[1] = Flavour(kf_h0_qsc).Bar();
-    vertex[vanz].in[0] = vertex[vanz].in[2] = flav;
-    
-    vertex[vanz].cpl[0] = vertex[vanz].cpl[1] = M_I*g2*g2/(costW*costW*num_2);
-    vertex[vanz].Str    = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
-    
-    vertex[vanz].Color.push_back(Color_Function(cf::None));  
-    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));     
-    vertex[vanz].Lorentz.back()->SetParticleArg(0,2);     
-
-    vertex[vanz].on      = 1;
-    vertex[vanz].dec     = 3;
-    vertex.push_back(Single_Vertex());vanz++;
-
-    vertex[vanz].in[0] = Flavour(kf_h0_qsc);
-    vertex[vanz].in[1] = vertex[vanz].in[2] = flav;
-    
-    vertex[vanz].cpl[0] = vertex[vanz].cpl[1] = M_I*g2*g2/(costW*costW*num_2);
-    vertex[vanz].Str    = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
-    
-    vertex[vanz].Color.push_back(Color_Function(cf::None));  
-    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("Gab",LF_Key()));     
-    vertex[vanz].Lorentz.back()->SetParticleArg(1,2);     
-
-    vertex[vanz].on      = 1;
-    vertex[vanz].dec     = 3;
-    vertex.push_back(Single_Vertex());vanz++;
   }
 }
 
@@ -285,46 +215,6 @@ void Interaction_Model_Higgs_SM::c_SSS(std::vector<Single_Vertex>& vertex,int& v
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
 
-    // decomposed hhhh / hhVV for comix
-    vertex[vanz].in[1] = Flavour(kf_h0_qsc);
-    vertex[vanz].in[0] = vertex[vanz].in[2] = flh;
-
-    vertex[vanz].cpl[0]  = vertex[vanz].cpl[1]  = -M_I;
-    vertex[vanz].Str     = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
-    
-    vertex[vanz].Color.push_back(Color_Function(cf::None));  
-    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));     
-
-    vertex[vanz].on      = 1;
-    vertex[vanz].dec     = 3;
-    vertex.push_back(Single_Vertex());vanz++;
-
-    vertex[vanz].in[0] = Flavour(kf_h0_qsc).Bar();
-    vertex[vanz].in[1] = vertex[vanz].in[2] = flh;
-
-    vertex[vanz].cpl[0]  = vertex[vanz].cpl[1]  = -M_I;
-    vertex[vanz].Str     = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
-    
-    vertex[vanz].Color.push_back(Color_Function(cf::None));  
-    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));     
-
-    vertex[vanz].on      = 1;
-    vertex[vanz].dec     = 3;
-    vertex.push_back(Single_Vertex());vanz++;
-
-    // decomposed hhhh for comix
-    vertex[vanz].in[0] = Flavour(kf_h0_qsc);
-    vertex[vanz].in[1] = vertex[vanz].in[2] = flh;
-
-    vertex[vanz].cpl[0]  = vertex[vanz].cpl[1]  = -M_I*yuk*yuk/(vev*vev);
-    vertex[vanz].Str     = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
-    
-    vertex[vanz].Color.push_back(Color_Function(cf::None));  
-    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("SSS",LF_Key()));     
-
-    vertex[vanz].on      = 1;
-    vertex[vanz].dec     = 3;
-    vertex.push_back(Single_Vertex());vanz++;
   }
 }
 
@@ -363,7 +253,6 @@ void Interaction_Model_Higgs_SM::c_SSSS(std::vector<Single_Vertex>& vertex,int& 
 
     vertex[vanz].on      = 1;
     vertex[vanz].oew     = 2;
-    vertex[vanz].dec     = -1;
     vertex.push_back(Single_Vertex());vanz++;
   }
 }
@@ -402,7 +291,6 @@ void Interaction_Model_Higgs_SM::c_SSVV(std::vector<Single_Vertex>& vertex,int& 
     
     vertex[vanz].on      = 1;
     vertex[vanz].oew     = 2;
-    vertex[vanz].dec     = -1;
     vertex.push_back(Single_Vertex());vanz++;
   }
 
@@ -431,7 +319,6 @@ void Interaction_Model_Higgs_SM::c_SSVV(std::vector<Single_Vertex>& vertex,int& 
     
     vertex[vanz].on      = 1;
     vertex[vanz].oew     = 2;
-    vertex[vanz].dec     = -1;
     vertex.push_back(Single_Vertex());vanz++;
   }
 }

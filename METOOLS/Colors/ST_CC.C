@@ -35,8 +35,7 @@ namespace METOOLS {
       m_ci.clear();
       m_cjk.clear();
       m_stat=true;
-      switch (m_ti) {
-      case 3:
+      if (m_ti==3 || m_tj==3) {
 	switch (m_tk) {
 	case -3:
 	  if ((*a)(0)!=(*b)(1)) {
@@ -77,55 +76,51 @@ namespace METOOLS {
 	  break;
 	default: THROW(fatal_error,"Invalid call");
 	}
-	break;
-      case 8:
-	switch (m_tj) {
+      }
+      else if (m_ti==-3 || m_tj==-3) {
+	switch (m_tk) {
+	case 3:
+	  if ((*a)(1)!=(*b)(0)) {
+	    m_ci.push_back(CInfo(0,(*a)(1),1,0,-3.0));
+	    m_cjk.push_back(CInfo((*b)(0),0,0,0));
+	  }
+	  else {
+	    for (size_t i(s_cimin);i<=s_cimax;++i) {
+	      m_ci.push_back(CInfo(0,i,1,0));
+	      m_cjk.push_back(CInfo(i,0,0,0));
+	    }
+	    m_ci.push_back(CInfo(0,(*a)(1),1,0,-3.0));
+	  }
+	  break;
 	case -3:
-	  switch (m_tk) {
-	  case 3:
-	    if ((*a)(1)!=(*b)(0)) {
-	      m_ci.push_back(CInfo(0,(*a)(1),1,0,-3.0));
-	      m_cjk.push_back(CInfo((*b)(0),0,0,0));
-	    }
-	    else {
-	      for (size_t i(s_cimin);i<=s_cimax;++i) {
-		m_ci.push_back(CInfo(0,i,1,0));
-		m_cjk.push_back(CInfo(i,0,0,0));
-	      }
-	      m_ci.push_back(CInfo(0,(*a)(1),1,0,-3.0));
-	    }
-	    break;
-	  case -3:
-	    m_cjk.push_back(CInfo(0,(*a)(1),1,0));
-	    m_cjk.push_back(CInfo(0,(*b)(1),1,1));
+	  m_cjk.push_back(CInfo(0,(*a)(1),1,0));
+	  m_cjk.push_back(CInfo(0,(*b)(1),1,1));
+	  m_ci.push_back(CInfo(0,(*b)(1),1,0));
+	  m_ci.push_back(CInfo(0,(*a)(1),1,1,-3.0));
+	  break;
+	case 8:
+	  if ((*a)(1)!=(*b)(0)) {
 	    m_ci.push_back(CInfo(0,(*b)(1),1,0));
-	    m_ci.push_back(CInfo(0,(*a)(1),1,1,-3.0));
-	    break;
-	  case 8:
-	    if ((*a)(1)!=(*b)(0)) {
-	      m_ci.push_back(CInfo(0,(*b)(1),1,0));
-	      m_cjk.push_back(CInfo((*b)(0),(*a)(1),1,0));
-	    }
-	    else {
-	      bool s((*b)(1)==(*b)(0));
-	      for (size_t i(s_cimin);i<=s_cimax;++i)
-		if (!(s && (int)i==(*b)(1))) {
-		  m_ci.push_back(CInfo(0,i,1,0));
-		  m_cjk.push_back(CInfo(i,(*b)(1),0,0));
-		}
-	      if (!s) {
-		m_ci.push_back(CInfo(0,(*b)(1),1,1));
-		m_cjk.push_back(CInfo((*b)(0),(*a)(1),1,1));
+	    m_cjk.push_back(CInfo((*b)(0),(*a)(1),1,0));
+	  }
+	  else {
+	    bool s((*b)(1)==(*b)(0));
+	    for (size_t i(s_cimin);i<=s_cimax;++i)
+	      if (!(s && (int)i==(*b)(1))) {
+		m_ci.push_back(CInfo(0,i,1,0));
+		m_cjk.push_back(CInfo(i,(*b)(1),0,0));
 	      }
+	    if (!s) {
+	      m_ci.push_back(CInfo(0,(*b)(1),1,1));
+	      m_cjk.push_back(CInfo((*b)(0),(*a)(1),1,1));
 	    }
-	    break;
-	  default: THROW(fatal_error,"Invalid call");
 	  }
 	  break;
 	default: THROW(fatal_error,"Invalid call");
 	}
-	break;
-      default: THROW(fatal_error,"Invalid call");
+      }
+      else {
+	THROW(fatal_error,"Invalid call");
       }
       return m_stat;
     }
@@ -137,6 +132,7 @@ namespace METOOLS {
       m_stat=p_cc->Evaluate(a,b);
       if (!m_stat) return false;
       switch (m_ti) {
+      case -3:
       case 3:
 	m_s=(*b)(0)==(*b)(1);
 	m_mj=(*b)(0)==(*c)(1);
@@ -159,12 +155,13 @@ namespace METOOLS {
 	  break;
 	default: THROW(fatal_error,"Invalid call");
 	}
-	if (m_stat) m_ci.push_back(CInfo((*a)(0),0,0,0));
+	if (m_stat) {
+	  if (m_ti>0) m_ci.push_back(CInfo((*a)(0),0,0,0));
+	  if (m_ti<0) m_ci.push_back(CInfo(0,(*a)(1),1,0));
+	}
 	break;
       case 8:
 	m_s=(*a)(0)==(*a)(1);
-	switch (m_tj) {
-	case -3:
 	  m_mj=(*a)(1)==(*c)(0);
 	  m_mi=(*a)(0)==(*c)(1);
 	  switch (m_tk) {
@@ -185,10 +182,10 @@ namespace METOOLS {
 	    break;
 	  default: THROW(fatal_error,"Invalid call");
 	  }
-	  if (m_stat) m_ci.push_back(CInfo(0,(*b)(1),1,0));
-	  break;
-	default: THROW(fatal_error,"Invalid call");
-	}
+	  if (m_stat) {
+	    if (m_tj>0) m_ci.push_back(CInfo((*b)(0),0,0,0));
+	    if (m_tj<0) m_ci.push_back(CInfo(0,(*b)(1),1,0));
+	  }
 	break;
       default: THROW(fatal_error,"Invalid call");
       }

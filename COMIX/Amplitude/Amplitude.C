@@ -25,7 +25,7 @@ static bool csscite(false);
 static const double invsqrttwo(1.0/sqrt(2.0));
 
 Amplitude::Amplitude():
-  p_model(NULL), m_nin(0), m_nout(0), m_n(0), m_nf(6), m_ngpl(3),
+  p_model(NULL), m_nin(0), m_nout(0), m_n(0), m_wfmode(0), m_ngpl(3),
   m_oew(99), m_oqcd(99), m_maxoew(99), m_maxoqcd(99),
   m_minntc(0), m_maxntc(99),
   m_pmode('D'), p_dinfo(new Dipole_Info()), p_colint(NULL), p_helint(NULL),
@@ -39,6 +39,9 @@ Amplitude::Amplitude():
   if (prec!="D") THROW(not_implemented,"Invalid precision mode");
   m_pmode=prec[0];
   int helpi(0);
+  if (!read.ReadFromFile(helpi,"COMIX_WF_MODE")) helpi=0;
+  else msg_Info()<<METHOD<<"(): Set wave function mode "<<helpi<<".\n";
+  m_wfmode=helpi;
   if (!read.ReadFromFile(helpi,"COMIX_PG_MODE")) helpi=0;
   else msg_Info()<<METHOD<<"(): Set print graph mode "<<helpi<<".\n";
   m_pgmode=helpi;
@@ -300,7 +303,7 @@ bool Amplitude::AddVIDipole
   svkey.p_dinfo=p_dinfo;
   svkey.p_k=s;
   svkey.p_kt=jkt;
-  MODEL::VMIterator_Pair vmp(p_model->GetVertex(svkey.ID(1)));
+  MODEL::VMIterator_Pair vmp(p_model->GetVertex(svkey.ID()));
   for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
        vit!=vmp.second;++vit) {
     svkey.p_mv=vit->second;
@@ -311,7 +314,7 @@ bool Amplitude::AddVIDipole
   }
   if (svkey.p_mv==NULL) {
     std::swap<Current*>(svkey.p_a,svkey.p_b);
-    vmp=p_model->GetVertex(svkey.ID(0));
+    vmp=p_model->GetVertex(svkey.ID());
     for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
 	 vit!=vmp.second;++vit) {
       svkey.p_mv=vit->second;
@@ -1078,7 +1081,7 @@ void Amplitude::CalcJL()
 {
   SetCouplings();
   for (size_t i(0);i<m_n;++i) 
-    m_cur[1][i]->ConstructJ(m_p[i],m_ch[i],m_cl[i][0],m_cl[i][1]);
+    m_cur[1][i]->ConstructJ(m_p[i],m_ch[i],m_cl[i][0],m_cl[i][1],m_wfmode);
   for (size_t i(m_n);i<m_cur[1].size();++i) m_cur[1][i]->Evaluate();
   for (size_t n(2);n<m_n;++n) {
     for (size_t i(0);i<m_cur[n].size();++i)

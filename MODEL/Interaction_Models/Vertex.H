@@ -20,7 +20,6 @@ namespace MODEL {
     int m_nvertex, m_n4vertex;       // number of single vertices included
     std::vector<Single_Vertex> m_v;  // list of 3-vertices 
     std::vector<Single_Vertex> m_v4; // list of 4-vertices 
-    std::vector<Single_Vertex> m_a;
     tscmap      m_cplmap;   
     
     void        CheckEqual(ATOOLS::Flavour**,short int&);
@@ -56,7 +55,8 @@ namespace MODEL {
 
     int  FindVertex(Single_Vertex*);
 
-    inline std::vector<Single_Vertex> &Vertices() { return m_a; }
+    inline std::vector<Single_Vertex> &Vertices(int set)
+    { return set?m_v4:m_v; }
   };
   
   std::ostream& operator<<(std::ostream&, const Vertex&);

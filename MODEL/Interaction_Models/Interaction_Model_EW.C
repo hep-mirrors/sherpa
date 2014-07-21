@@ -228,24 +228,6 @@ void Interaction_Model_EW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
 
   charge = Kabbala(string("Q_{")+flW.TexName()+string("}"),flW.Charge());
 
-  if (flW.IsOn()) {
-    // decomposed WWVV vertex for comix
-    vertex[vanz].in[0] = flW;
-    vertex[vanz].in[1] = Flavour(kf_Z_qgc).Bar();
-    vertex[vanz].in[2] = flW;
-  
-    vertex[vanz].cpl[0] = vertex[vanz].cpl[1] = M_I*g2;
-    vertex[vanz].Str = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
-    
-    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
-    
-    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("GaugeP4",LF_Key()));     
-    vertex[vanz].Lorentz.back()->SetParticleArg(0,1,2);     
-
-    vertex[vanz].on      = 1;
-    vertex[vanz].dec     = 1;
-    vertex.push_back(Single_Vertex());vanz++;
-  }
   if (flW.IsOn() && flP.IsOn()) {
 
     // photon WW
@@ -270,22 +252,6 @@ void Interaction_Model_EW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
 
-    // decomposed WWPV vertex for comix
-    vertex[vanz].in[0] = Flavour(kf_Wplus_qgc);
-    vertex[vanz].in[1] = Flavour(kf_photon);
-    vertex[vanz].in[2] = flW;
-  
-    vertex[vanz].cpl[0] = vertex[vanz].cpl[1] = M_I*g1*charge;
-    vertex[vanz].Str = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
-    
-    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
-    
-    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("GaugeP4",LF_Key()));     
-    vertex[vanz].Lorentz.back()->SetParticleArg(0,1,2);     
-
-    vertex[vanz].on      = 1;
-    vertex[vanz].dec     = 1;
-    vertex.push_back(Single_Vertex());vanz++;
   }
   if (flZ.IsOn()) {
     
@@ -311,22 +277,6 @@ void Interaction_Model_EW::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
     vertex[vanz].on      = 1;
     vertex.push_back(Single_Vertex());vanz++;
 
-    // decomposed WWZV vertex for comix
-    vertex[vanz].in[0] = Flavour(kf_Wplus_qgc);
-    vertex[vanz].in[1] = Flavour(kf_Z);
-    vertex[vanz].in[2] = flW;
-  
-    vertex[vanz].cpl[0] = vertex[vanz].cpl[1] = M_I*g2*charge*costW;
-    vertex[vanz].Str = (vertex[vanz].cpl[0]*PR+vertex[vanz].cpl[1]*PL).String();
-    
-    vertex[vanz].Color.push_back(Color_Function(cf::None));;     
-    
-    vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("GaugeP4",LF_Key()));     
-    vertex[vanz].Lorentz.back()->SetParticleArg(0,1,2);     
-
-    vertex[vanz].on      = 1;
-    vertex[vanz].dec     = 1;
-    vertex.push_back(Single_Vertex());vanz++;
   }
 }
 
@@ -362,7 +312,6 @@ void Interaction_Model_EW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
 
     vertex[vanz].on      = 1;
     vertex[vanz].oew     = 2;
-    vertex[vanz].dec     = -1;
     vertex.push_back(Single_Vertex());vanz++;
   }
 
@@ -391,7 +340,6 @@ void Interaction_Model_EW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
 
     vertex[vanz].on      = 1;
     vertex[vanz].oew     = 2;
-    vertex[vanz].dec     = -1;
     vertex.push_back(Single_Vertex());vanz++;
   }
   // Z - W - W - Z  
@@ -419,7 +367,6 @@ void Interaction_Model_EW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
 
     vertex[vanz].on      = 1;
     vertex[vanz].oew     = 2;
-    vertex[vanz].dec     = -1;
     vertex.push_back(Single_Vertex());vanz++;
   }
   
@@ -448,7 +395,6 @@ void Interaction_Model_EW::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
 
     vertex[vanz].on      = 1;
     vertex[vanz].oew     = 2;
-    vertex[vanz].dec     = -1;
     vertex.push_back(Single_Vertex());vanz++;
   }
 }

@@ -157,7 +157,7 @@ void Comix1to3::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   DEBUG_FUNC(momenta.size());
   if (anti) {
     for (size_t i(0);i<m_anticur.size();++i) {
-      m_anticur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,0,0);
+      m_anticur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,0,0,0);
       m_anticur[i]->Print();
     }
     m_antiscur->Evaluate();
@@ -165,7 +165,7 @@ void Comix1to3::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   }
   else {
     for (size_t i(0);i<m_cur.size();++i) {
-      m_cur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,0,0);
+      m_cur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,0,0,0);
       m_cur[i]->Print();
     }
     m_scur->Evaluate();

@@ -25,7 +25,7 @@ namespace METOOLS {
     CP(const Current_Key &key);
 
     void ConstructJ(const ATOOLS::Vec4D &p,const int ch,
-		    const int cr,const int ca);
+		    const int cr,const int ca,const int mode);
     void SetGauge(const ATOOLS::Vec4D &k);
 
     void AddPropagator();
@@ -60,7 +60,7 @@ CP<SType>::CP(const Current_Key &key):
 
 template <typename SType>
 void CP<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
-			   const int cr,const int ca)
+			   const int cr,const int ca,const int mode)
 {
 }
 

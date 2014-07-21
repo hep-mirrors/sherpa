@@ -94,7 +94,7 @@ void PS_Generator::SetColors(const Int_Vector &rc,
 void PS_Generator::CalcJL()
 {
   for (size_t i(0);i<m_cur[1].size();++i) 
-    m_cur[1][i]->ConstructJ(Vec4D(),0,m_cl[i][0],m_cl[i][1]);
+    m_cur[1][i]->ConstructJ(Vec4D(),0,m_cl[i][0],m_cl[i][1],0);
   if (m_zmode>0) {
     for (size_t n(2);n<m_n;++n) {
       for (size_t i(0);i<m_cur[n].size();++i) 

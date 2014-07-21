@@ -23,7 +23,7 @@ namespace METOOLS {
 
     SComplex m_cpl;
 
-    int m_dir, m_swap;
+    int m_dir;
     
   public:
     
@@ -54,12 +54,10 @@ SSV_Calculator<SType>::SSV_Calculator(const Vertex_Key &key):
   if (key.p_mv->Lorentz[key.m_n]->
       Type().find("SSV")==std::string::npos)
     THROW(not_implemented,"Invalid Lorentz structure");
+  m_cpl=SComplex(p_v->Coupling(0)*p_cc->Coupling());
   int a(key.p_mv->Lorentz[key.m_n]->ParticleArg(0));
   int b(key.p_mv->Lorentz[key.m_n]->ParticleArg(1));
-  m_swap=0;
-  if (m_dir==1) m_swap=a>b;
-  else m_swap=a<b;
-  m_cpl=SComplex(p_v->Coupling(0)*p_cc->Coupling());
+  if (a>b) m_cpl=-m_cpl;
 }
  
 template <typename SType>
@@ -92,7 +90,7 @@ void SSV_Calculator<SType>::Evaluate()
 	  msg_Debugging()<<"    "<<**bit<<"\n";
 #endif
 	  CVec4Type *j(CVec4Type::New(p[0],p[1],p[2],p[3]));
-	  *j*=(**ait)[0]*(**bit)[0]*SComplex(m_swap?-m_cpl:m_cpl);
+	  *j*=(**ait)[0]*(**bit)[0]*SComplex(m_cpl);
 	  j->SetH(p_v->H(i));
 	  j->SetS((*ait)->S()|(*bit)->S());
 	  p_cc->AddJ(j);
@@ -114,7 +112,7 @@ void SSV_Calculator<SType>::Evaluate()
 	  msg_Debugging()<<"    "<<**bit<<"\n";
 #endif
 	  CScalarType *j(CScalarType::New(**ait));
-	  *j*=SComplex(m_swap?-m_cpl:m_cpl)*(**bit*p);
+	  *j*=SComplex(m_cpl)*(**bit*p);
 	  j->SetH(p_v->H(i));
 	  j->SetS((*ait)->S()|(*bit)->S());
 	  p_cc->AddJ(j);
@@ -123,7 +121,7 @@ void SSV_Calculator<SType>::Evaluate()
     break;
   }
   case 2: {
-    CVec4Type p(-2.0*p_v->JB()->P()-p_v->JA()->P());
+    CVec4Type p(2.0*p_v->JB()->P()+p_v->JA()->P());
     const CVec4Type_Vector *ca(jait->Get<CVec4Type>());
     const CScalarType_Vector *cb(jbit->Get<CScalarType>());
     for (typename CVec4Type_Vector::const_iterator 
@@ -136,7 +134,7 @@ void SSV_Calculator<SType>::Evaluate()
 	  msg_Debugging()<<"    "<<**ait<<"\n";
 #endif
 	  CScalarType *j(CScalarType::New(**bit));
-	  *j*=SComplex(m_swap?-m_cpl:m_cpl)*(**ait*p);
+	  *j*=SComplex(m_cpl)*(**ait*p);
 	  j->SetH(p_v->H(i));
 	  j->SetS((*ait)->S()|(*bit)->S());
 	  p_cc->AddJ(j);

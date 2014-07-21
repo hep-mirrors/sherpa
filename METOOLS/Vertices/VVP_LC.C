@@ -35,6 +35,7 @@ namespace METOOLS {
 
 }// end of namespace METOOLS
 
+#include "MODEL/Interaction_Models/Single_Vertex.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -50,6 +51,11 @@ VVP_Calculator<SType>::VVP_Calculator(const Vertex_Key &key):
 	(key.p_a->Flav().IsVector()?0:2):1)
 {
   m_cpl=SComplex(p_v->Coupling(0)*p_cc->Coupling());
+  int a(key.p_mv->Lorentz[key.m_n]->ParticleArg(1));
+  int b(key.p_mv->Lorentz[key.m_n]->ParticleArg(2));
+  if ((a==2 && b==1) ||
+      (a==1 && b==0) ||
+      (a==0 && b==2)) m_cpl=-m_cpl;
 }
  
 template <typename SType>
@@ -58,7 +64,7 @@ void VVP_Calculator<SType>::Evaluate()
   p_v->SetZero();
   if (p_v->JA()->Zero()||p_v->JB()->Zero()) return;
 #ifdef DEBUG__BG
-  msg_Debugging()<<*p_v->JA()<<"(+)"<<*p_v->JB()<<" VVP("<<m_dir<<")\n";
+  msg_Debugging()<<*p_v->JA()<<"(+)"<<*p_v->JB()<<" VVP("<<m_dir<<"), m_cpl = "<<m_cpl<<"\n";
   msg_Indent();
 #endif
   size_t i(0);
@@ -99,7 +105,7 @@ void VVP_Calculator<SType>::Evaluate()
 	  msg_Debugging()<<"    "<<**ait<<"\n";
 	  msg_Debugging()<<"    "<<**bit<<"\n";
 #endif
-	  CVec4Type *j(CVec4Type::New((**ait***bit)*m_cpl));
+	  CVec4Type *j(CVec4Type::New(-(**ait***bit)*m_cpl));
 	  j->SetH(p_v->H(i));
 	  j->SetS((*ait)->S()|(*bit)->S());
 	  p_cc->AddJ(j);
@@ -119,7 +125,7 @@ void VVP_Calculator<SType>::Evaluate()
 	  msg_Debugging()<<"    "<<**bit<<"\n";
 	  msg_Debugging()<<"    "<<**ait<<"\n";
 #endif
-	  CVec4Type *j(CVec4Type::New((**bit***ait)*m_cpl));
+	  CVec4Type *j(CVec4Type::New(-(**bit***ait)*m_cpl));
 	  j->SetH(p_v->H(i));
 	  j->SetS((*ait)->S()|(*bit)->S());
 	  p_cc->AddJ(j);

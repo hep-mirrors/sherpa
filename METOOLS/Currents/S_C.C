@@ -16,8 +16,6 @@ namespace METOOLS {
 
   protected:
 
-    bool m_pseudo;
-
     SComplex m_cmass2;
 
     std::string CLabel() const;
@@ -27,7 +25,7 @@ namespace METOOLS {
     CS(const Current_Key &key);
 
     void ConstructJ(const ATOOLS::Vec4D &p,const int ch,
-		    const int cr,const int ca);
+		    const int cr,const int ca,const int mode);
     void SetGauge(const ATOOLS::Vec4D &k);
 
     void AddPropagator();
@@ -58,26 +56,19 @@ using namespace ATOOLS;
 
 template <typename SType>
 CS<SType>::CS(const Current_Key &key): 
-  Current(key), m_pseudo(false)
+  Current(key)
 {
-  switch (key.m_fl.Kfcode()) {
-  case kf_h0_qsc:
-    m_pseudo=true;
-    break;
-  default:
-    m_cmass2=SComplex(sqr(this->m_mass),-this->m_mass*this->m_width);
-    break;
-  }
+  m_cmass2=SComplex(sqr(this->m_mass),-this->m_mass*this->m_width);
 }
 
 template <typename SType>
 void CS<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
-			   const int cr,const int ca)
+			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
   this->ResetJ();
   if (ch==0) {
-    CScalarType *j(CScalarType::New(CScalarType(1.0,0,0)));
+    CScalarType *j(CScalarType::New(CScalarType(1.0,cr,ca,0,0)));
 #ifdef DEBUG__BG
     msg_Debugging()<<METHOD<<"(): '+' "<<this->m_id<<" "<<*j
 		   <<" "<<this->m_fl<<", m = "<<p.Mass()<<"\n";
@@ -95,7 +86,7 @@ template <typename SType>
 void CS<SType>::AddPropagator()
 {
   // add propagator for off-shell leg
-  SComplex prop(m_pseudo?M_I:M_I/(SType(this->m_p.Abs2())-m_cmass2));
+  SComplex prop(M_I/(SType(this->m_p.Abs2())-m_cmass2));
   if (this->m_osd) prop=SComplex(M_I);
 #ifdef DEBUG__BG
   msg_Debugging()<<"propagator: "<<prop<<" <- p^2 = "

@@ -44,23 +44,23 @@ namespace METOOLS {
     }
     inline CScalar(const CScalar &s): m_x(s.m_x)
     { 
-      m_h=s.m_h; m_s=s.m_s; m_c[0]=m_c[1]=0;
+      m_h=s.m_h; m_s=s.m_s; m_c[0]=s.m_c[0]; m_c[1]=s.m_c[1];
     }
     inline CScalar(const Scalar &x,
-		   const size_t &h=0,
-		   const size_t &s=0): m_x(x)
+		   const int cr=0,const int ca=0,
+		   const size_t &h=0,const size_t &s=0): m_x(x)
     { 
-      m_h=h; m_s=s; m_c[0]=m_c[1]=0;
+      m_h=h; m_s=s; m_c[0]=cr; m_c[1]=ca;
     }
     inline CScalar(const SComplex &x,
-		   const size_t &h=0,
-		   const size_t &s=0): m_x(x)
+		   const int cr=0,const int ca=0,
+		   const size_t &h=0,const size_t &s=0): m_x(x)
     { 
-      m_h=h; m_s=s; m_c[0]=m_c[1]=0;
+      m_h=h; m_s=s; m_c[0]=cr; m_c[1]=ca;
     }
     inline CScalar(const CScalar &s,const SComplex &c): m_x(s.m_x*c)
     {
-      m_h=s.m_h; m_s=s.m_s; m_c[0]=m_c[1]=0;
+      m_h=s.m_h; m_s=s.m_s; m_c[0]=s.m_c[0]; m_c[1]=s.m_c[1];
     }
 
     void Add(const CObject *c);
@@ -73,15 +73,15 @@ namespace METOOLS {
 
     inline CScalar operator+(const CScalar &s) const  
     { 
-      return CScalar(m_x+s.m_x,m_h,m_s); 
+      return CScalar(m_x+s.m_x,m_c[0],m_c[1],m_h,m_s); 
     }
     inline CScalar operator-(const CScalar &s) const
     { 
-      return CScalar(m_x-s.m_x,m_h,m_s); 
+      return CScalar(m_x-s.m_x,m_c[0],m_c[1],m_h,m_s); 
     }
     inline CScalar operator-() const
     { 
-      return CScalar(-m_x,m_h,m_s); 
+      return CScalar(-m_x,m_c[0],m_c[1],m_h,m_s); 
     }
 
     inline CScalar& operator+=(const CScalar &s) 
@@ -102,7 +102,7 @@ namespace METOOLS {
   
     inline CScalar Conj() const 
     {
-      return CScalar(std::conj(m_x),m_h,m_s);
+      return CScalar(std::conj(m_x),m_c[0],m_c[1],m_h,m_s);
     }
     inline SComplex Abs2() const 
     {

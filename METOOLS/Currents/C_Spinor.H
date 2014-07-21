@@ -63,17 +63,20 @@ namespace METOOLS {
 		   const ATOOLS::Vec4<Scalar> &p,
 		   const int cr=0,const int ca=0,
 		   const size_t &hh=0,const size_t &s=0,
-		   const Scalar &m2=-1.0): 
+		   const Scalar &m2=-1.0,const int ms=1): 
       m_r(r), m_b(b)
-    { m_h=hh; m_s=s; m_c[0]=cr; m_c[1]=ca; Construct(h,p,m2); }
+    { m_h=hh; m_s=s; m_c[0]=cr; m_c[1]=ca; Construct(h,p,m2,ms); }
     
     // member functions
     void Add(const CObject *c);
     void Divide(const double &d);
     void Invert();
 
-    void Construct(const int h,const ATOOLS::Vec4<Scalar> &p,Scalar m2=-1.0);
+    void Construct(const int h,const ATOOLS::Vec4<Scalar> &p,
+		   Scalar m2=-1.0,const int ms=1);
     bool SetOn();
+
+    CSpinor CConj() const;
 
     SComplex operator*(const CSpinor &s) const;
 

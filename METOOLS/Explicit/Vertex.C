@@ -111,7 +111,7 @@ void Vertex::Evaluate()
        lit!=m_lc.end();++lit) (*lit)->Evaluate();
   if (p_kin && !p_c->Zero()) {
     const CObject *c(p_kin->JK()->J().front().front());
-    p_kin->JKT()->ConstructJ(p_kin->JKT()->P(),0,(*c)(0),(*c)(1));
+    p_kin->JKT()->ConstructJ(p_kin->JKT()->P(),0,(*c)(0),(*c)(1),0);
   }
 }
 
@@ -119,12 +119,15 @@ void Vertex::FindPermutation()
 {
   m_fperm=0;
 #ifdef DEBUG__BG
-  msg_Debugging()<<METHOD<<"(): {\n";
+  msg_Debugging()<<METHOD<<"(): swap = "
+		 <<m_lc.front()->Swap()<<" {\n";
 #endif
+  Current *ja(p_a), *jb(p_b);
+  if (m_lc.front()->Swap()) std::swap<Current*>(ja,jb);
   Int_Vector id(p_c->Id()), fid(p_c->FId());
-  Int_Vector pid(p_a->Id()), pfid(p_a->FId());
-  pid.insert(pid.end(),p_b->Id().begin(),p_b->Id().end());
-  pfid.insert(pfid.end(),p_b->FId().begin(),p_b->FId().end());
+  Int_Vector pid(ja->Id()), pfid(ja->FId());
+  pid.insert(pid.end(),jb->Id().begin(),jb->Id().end());
+  pfid.insert(pfid.end(),jb->FId().begin(),jb->FId().end());
   if (p_e!=NULL) {
     pid.insert(pid.end(),p_e->Id().begin(),p_e->Id().end());
     pfid.insert(pfid.end(),p_e->FId().begin(),p_e->FId().end());
@@ -255,14 +258,17 @@ std::string Vertex::VLabel() const
     for (size_t pos;(pos=id.find("_"))!=std::string::npos && 
 	   id[pos-1]!='\\';id.replace(pos,1,"\\_"));
     std::string estr;
-    if (p_e!=NULL) estr=",,"+p_e->Flav().TexName();
+    if (p_e!=NULL) estr=","+p_e->Flav().TexName();
     label+=std::string(label.length()>0?"\\\\":"")+
-      "\\scriptstyle\\green T="+id+"("+p_a->Flav().TexName()+",,"+
-      p_b->Flav().TexName()+estr+",,"+p_c->Flav().TexName()+")";
+      "\\scriptstyle\\green T="+id+"("+p_a->Flav().TexName()+","+
+      p_b->Flav().TexName()+estr+","+p_c->Flav().TexName()+")";
   }
   if (s_vlmode&4)
     label+=std::string(label.length()>0?"\\\\":"")+
       "\\scriptstyle\\red C="+CVLabel();
+  for (size_t pos(label.find(','));
+       pos!=std::string::npos;pos=label.find(',',pos+2))
+    label.replace(pos,1,",,");
   return "decor.size=0ex,label=$\\begin{array}{c}"+label+"\\end{array}$";
 }
 

@@ -118,10 +118,6 @@ Flavour CS_Cluster_Definitions::ProperFlav(const Flavour &fl) const
   Flavour pfl(fl);
   switch (pfl.Kfcode()) {
   case kf_gluon_qgc: pfl=Flavour(kf_gluon); break;
-  case kf_h0_qsc: pfl=Flavour(kf_h0); break;
-  case kf_Z_qgc: pfl=Flavour(kf_Z); break;
-  case kf_Wplus_qgc: pfl=Flavour(kf_Wplus);
-    if (fl.IsAnti()) pfl=pfl.Bar(); break;
   default: break;
   }
   return pfl;

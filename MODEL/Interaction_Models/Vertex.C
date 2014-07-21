@@ -76,40 +76,6 @@ Vertex::Vertex(Interaction_Model_Base * _model)
 
 Vertex::~Vertex() { }
 
-class Order_KF_C {
-public:
-  bool operator()(const Flavour &a,const Flavour &b)
-  { return a.Kfcode()<b.Kfcode(); }
-};// end of class Order_KF_C
-
-class Order_Anti_C {
-public:
-  bool operator()(const Flavour &a,const Flavour &b)
-  { return a.IsAnti()<b.IsAnti(); }
-};// end of class Order_Anti_C
-
-class Sort_Order_Out_Flavour {
-public:
-  bool operator()(const Single_Vertex &a,const Single_Vertex &b)
-  {
-    Flavour_Vector fla(&a.in[1],&a.in[a.nleg]), flb(&b.in[1],&b.in[b.nleg]);
-    std::sort(fla.begin(),fla.end(),Order_Anti_C());
-    std::stable_sort(fla.begin(),fla.end(),Order_KF_C());
-    std::sort(flb.begin(),flb.end(),Order_Anti_C());
-    std::stable_sort(flb.begin(),flb.end(),Order_KF_C());
-    for (Flavour_Vector::const_iterator ait(fla.begin()), bit(flb.begin());
-	 ait!=fla.end();++ait,++bit) {
-      if (ait->IsAnti()<bit->IsAnti()) return true;
-      if (ait->IsAnti()>bit->IsAnti()) return false;
-      if (ait->Kfcode()<bit->Kfcode()) return true;
-      if (ait->Kfcode()>bit->Kfcode()) return false;
-    }
-    return false;
-  }
-};// end of class Sort_Order_Out_Flavour
-
-typedef std::set<Single_Vertex,Sort_Order_Out_Flavour> OSV_Map;
-
 // General Methods
 void Vertex::GenerateVertex()
 {
@@ -122,51 +88,36 @@ void Vertex::GenerateVertex()
     int hit = 1;
     if (hit) {
       //required by Interaction_Model_ADD due to small couplings
-      if (!m_v4[i].CheckCoupling()) m_v4[i].on = 0;
-      if(m_v4[i].nleg==4 && m_v4[i].on) {
-	OSV_Map svs;
-	int id[4]={1,2,3,4};
-	for (size_t k(0);k<4;++k) {
-	  if (SetVertex(m_v4[i],dummy,id[0],id[1],id[2],id[3],1)
-	      && svs.find(dummy)==svs.end()) { 
-	    m_a.push_back(dummy); 
-	    svs.insert(dummy); 
-	  }
-	  if (SetVertex(m_v4[i],dummy,-id[0],-id[3],-id[2],-id[1],1)
-	      && svs.find(dummy)==svs.end()) { 
-	    m_a.push_back(dummy); 
-	    svs.insert(dummy); 
-	  }
-	  int l=-id[0];
-	  for (size_t j(0);j<3;++j) id[j]=id[j+1];
-	  id[0]=-id[0];
-	  id[3]=l;
-	}
-	for (short int k=1;k<5;k++) {
-	  for (short int l=1;l<5;l++) {
-	    if (l!=k) {
-	      for (short int m=1;m<5;m++) {
-		if (m!=l && m!=k) {
-		  for (short int n=1;n<5;n++) {
-		    if (n!=l && n!=k && n!=m) {
-		      if (k!=1) k = -k;
-		      if (l==1) l = -l;
-		      if (m==1) m = -m;
-		      if (n==1) n = -n;
-		      if (SetVertex(m_v4[i],dummy,k,l,m,n)) {
-			m_v4.push_back(dummy);
-			m_n4vertex++;
+      m_v4[i].on = m_v4[i].CheckCoupling();
+      if (m_v4[i].on) { 
+	if(m_v4[i].nleg==4) {
+	  int id[4]={1,2,3,4};
+	  for (short int k=1;k<5;k++) {
+	    for (short int l=1;l<5;l++) {
+	      if (l!=k) {
+		for (short int m=1;m<5;m++) {
+		  if (m!=l && m!=k) {
+		    for (short int n=1;n<5;n++) {
+		      if (n!=l && n!=k && n!=m) {
+			if (k!=1) k = -k;
+			if (l==1) l = -l;
+			if (m==1) m = -m;
+			if (n==1) n = -n;
+			if (SetVertex(m_v4[i],dummy,k,l,m,n)) {
+			  m_v4.push_back(dummy);
+			  m_n4vertex++;
+			}
+			if (SetVertex(m_v4[i],dummy,-k,-l,-m,-n)) {
+			  m_v4.push_back(dummy);
+			  m_n4vertex++;
+			}
+			k = abs(k);l=abs(l);m=abs(m);n=abs(n);
 		      }
-		      if (SetVertex(m_v4[i],dummy,-k,-l,-m,-n)) {
-			m_v4.push_back(dummy);
-			m_n4vertex++;
-		      }
-		      k = abs(k);l=abs(l);m=abs(m);n=abs(n);
 		    }
 		  }
 		}
-	      }
-	    } 
+	      } 
+	    }
 	  }
 	}
       }
@@ -176,26 +127,9 @@ void Vertex::GenerateVertex()
     int hit = 1;
     if (hit) {
       //required by Interaction_Model_ADD due to small couplings
-      if (!m_v[i].CheckCoupling()) m_v[i].on = 0;
-      if (m_v[i].nleg==3 && m_v[i].on==1) {  
-	OSV_Map svs;
+      m_v[i].on = m_v[i].CheckCoupling();
+      if (m_v[i].nleg==3) {  
 	int id[3]={1,2,3};
-	for (size_t k(0);k<3;++k) {
-	  if (SetVertex(m_v[i],dummy,id[0],id[1],id[2],0,1)
-	      && svs.find(dummy)==svs.end()) { 
-	    m_a.push_back(dummy); 
-	    svs.insert(dummy); 
-	  }
-	  if (SetVertex(m_v[i],dummy,-id[0],-id[2],-id[1],0,1)
-	      && svs.find(dummy)==svs.end()) { 
-	    m_a.push_back(dummy); 
-	    svs.insert(dummy); 
-	  }
-	  int l=-id[0];
-	  for (size_t j(0);j<2;++j) id[j]=id[j+1];
-	  id[0]=-id[0];
-	  id[2]=l;
-	}
 	for (short int k=1;k<4;k++) {
 	  for (short int l=1;l<4;l++) {
 	    if (l!=k) {
@@ -309,14 +243,9 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
     if (i3<0) probe.in[3] = orig.in[-i3-1].Bar();
          else if (i3<99) probe.in[3] = orig.in[i3-1];
   }
-  if (mode==1) {
-    if (find(m_a.begin(), m_a.end(), probe)!=m_a.end()) return 0;
-  } 
-  else {
   if (CheckExistence(probe)==0) return 0;
   if (probe.nleg==3) {
     if (FermionRule(probe)==0) return 0;}
-  }
   int hc = 0;
 
   int cnt = 0;

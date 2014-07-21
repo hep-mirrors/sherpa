@@ -25,12 +25,12 @@ namespace METOOLS {
 
     SComplex m_cpll, m_cplr;
 
-    int m_dir, m_cl, m_cr;
+    int m_dir, m_cl, m_cr, m_maj, m_anti;
 
     double m_mi, m_mi2, m_mj, m_mj2, m_mk, m_mk2, m_mij, m_mij2;
 
-    void Evaluate(const CSpinorType &a,const CSpinorType &b,const size_t &h);
-    void Evaluate(const CSpinorType &a,const CVec4Type &b,const size_t &h);
+    void Evaluate(CSpinorType a,CSpinorType b,const size_t &h);
+    void Evaluate(CSpinorType a,const CVec4Type &b,const size_t &h);
 
     inline bool CalcLeft(const CSpinorType &a,
 			 const CSpinorType &b) 
@@ -44,9 +44,9 @@ namespace METOOLS {
     inline bool CalcRight(const CSpinorType &a) 
     { return a.B()<0 ? a.On()&1 : a.On()&2; }
 
-    CVec4Type *LorentzLeft(CSpinorType a,CSpinorType b);
-    CVec4Type *LorentzRight(CSpinorType a,CSpinorType b);
-    CVec4Type *LorentzLeftRight(CSpinorType a,CSpinorType b);
+    CVec4Type *LorentzLeft(const CSpinorType &a,const CSpinorType &b);
+    CVec4Type *LorentzRight(const CSpinorType &a,const CSpinorType &b);
+    CVec4Type *LorentzLeftRight(const CSpinorType &a,const CSpinorType &b);
 
     CSpinorType *LorentzLeft(const CSpinorType &a,const CVec4Type &b);
     CSpinorType *LorentzRight(const CSpinorType &a,const CVec4Type &b);
@@ -102,6 +102,8 @@ FFV_Calculator<SType>::FFV_Calculator(const Vertex_Key &key):
   m_mi(-1.0), m_mi2(-1.0), m_mj(-1.0), m_mj2(-1.0),
   m_mij(-1.0), m_mij2(-1.0), m_mk(-1.0), m_mk2(-1.0)
 {
+  m_anti=key.p_c->Flav().IsAnti();
+  m_maj=key.p_c->Flav().Majorana();
   if (p_v->Kin()) {
     if (p_v->Kin()->JI())
       m_mi2=sqr(m_mi=p_v->Kin()->JI()->Flav().Mass());
@@ -121,6 +123,14 @@ FFV_Calculator<SType>::FFV_Calculator(const Vertex_Key &key):
   }
   m_cl=m_cpll!=SComplex(0.0,0.0);
   m_cr=m_cplr!=SComplex(0.0,0.0);
+  if (m_dir==0) {
+    if (key.p_a->Flav().Majorana() &&
+	!key.p_b->Flav().Majorana() &&
+	!key.p_b->Flav().IsAnti()) m_swap=1;
+    if (key.p_b->Flav().Majorana() &&
+	!key.p_a->Flav().Majorana() &&
+	key.p_a->Flav().IsAnti()) m_swap=1;
+  }
 }
 
 template <typename SType> CVec4<SType> *
@@ -496,8 +506,13 @@ void FFV_Calculator<SType>::Evaluate()
 }
 
 template <typename SType> void FFV_Calculator<SType>::Evaluate
-(const CSpinorType &a,const CSpinorType &b,const size_t &h)
+(CSpinorType a,CSpinorType b,const size_t &h)
 {
+  if (m_swap) std::swap<CSpinorType>(a,b);
+  if (a.R() && a.B()>0) std::swap<CSpinorType>(a,b);
+  if (b.R() && b.B()<0) std::swap<CSpinorType>(a,b);
+  if (a.B()>0) a=a.CConj();
+  if (b.B()<0) b=b.CConj();
   bool cl(m_cl&&CalcLeft(a,b)), cr(m_cr&&CalcRight(a,b));
   if (!(cl || cr)) return;
   CVec4Type *j(NULL);
@@ -510,8 +525,9 @@ template <typename SType> void FFV_Calculator<SType>::Evaluate
 }
 
 template <typename SType> void FFV_Calculator<SType>::Evaluate
-(const CSpinorType &a,const CVec4Type &b,const size_t &h)
+(CSpinorType a,const CVec4Type &b,const size_t &h)
 {
+  if (!m_maj && (a.B()>0^m_anti)) a=a.CConj();
   bool cl(m_cl&&CalcLeft(a)), cr(m_cr&&CalcRight(a));
   if (!(cl || cr)) return;
   CSpinorType *j(NULL);
@@ -519,14 +535,15 @@ template <typename SType> void FFV_Calculator<SType>::Evaluate
   else if (cl) j=LorentzLeft(a,b);
   else if (cr) j=LorentzRight(a,b);
   j->SetH(h);
+  if (m_maj && j->B()<0) *j=j->CConj();
   p_cc->AddJ(j);
   p_v->SetZero(false);
 }
 
-template <typename SType> CVec4<SType> *
-FFV_Calculator<SType>::LorentzLeft(CSpinorType a,CSpinorType b)
+template <typename SType> CVec4<SType> *FFV_Calculator<SType>::
+LorentzLeft(const CSpinorType &a,const CSpinorType &b)
 {
-  if (a.B()>0) std::swap<CSpinorType>(a,b);
+  if (a.B()>0 || b.B()<0) THROW(fatal_error,"Wrong spinor type");
 #ifdef DEBUG__BG
   msg_Debugging()<<"<> L "<<a<<"\n";
   msg_Debugging()<<"     "<<b<<"\n";
@@ -541,10 +558,10 @@ FFV_Calculator<SType>::LorentzLeft(CSpinorType a,CSpinorType b)
   return j;
 }
 
-template <typename SType> CVec4<SType> *
-FFV_Calculator<SType>::LorentzRight(CSpinorType a,CSpinorType b)
+template <typename SType> CVec4<SType> *FFV_Calculator<SType>::
+LorentzRight(const CSpinorType &a,const CSpinorType &b)
 {
-  if (a.B()>0) std::swap<CSpinorType>(a,b);
+  if (a.B()>0 || b.B()<0) THROW(fatal_error,"Wrong spinor type");
 #ifdef DEBUG__BG
   msg_Debugging()<<"<> R "<<a<<"\n";
   msg_Debugging()<<"     "<<b<<"\n";
@@ -559,10 +576,10 @@ FFV_Calculator<SType>::LorentzRight(CSpinorType a,CSpinorType b)
   return j;
 }
 
-template <typename SType> CVec4<SType> *
-FFV_Calculator<SType>::LorentzLeftRight(CSpinorType a,CSpinorType b)
+template <typename SType> CVec4<SType> *FFV_Calculator<SType>::
+LorentzLeftRight(const CSpinorType &a,const CSpinorType &b)
 {
-  if (a.B()>0) std::swap<CSpinorType>(a,b);
+  if (a.B()>0 || b.B()<0) THROW(fatal_error,"Wrong spinor type");
 #ifdef DEBUG__BG
   msg_Debugging()<<"<> LR "<<a<<"\n";
   msg_Debugging()<<"      "<<b<<"\n";
@@ -591,7 +608,7 @@ FFV_Calculator<SType>::LorentzLeft(const CSpinorType &a,
     msg_Debugging()<<"<|g L "<<a<<"\n";
     msg_Debugging()<<"      "<<b<<"\n";
 #endif
-    CSpinorType *j(CSpinorType::New(a.R(),a.B(),0,0,0,a.S()|b.S(),1));
+    CSpinorType *j(CSpinorType::New(m_maj?0:a.R(),a.B(),0,0,0,a.S()|b.S(),1));
     SComplex jp(PPlus(b)), jm(PMinus(b)), jt(PT(b)), jtc(PTC(b));
     (*j)[0]=(a[2]*jp+a[3]*jt)*m_cpll;
     (*j)[1]=(a[2]*jtc+a[3]*jm)*m_cpll;
@@ -603,7 +620,7 @@ FFV_Calculator<SType>::LorentzLeft(const CSpinorType &a,
     msg_Debugging()<<"g|> L "<<a<<"\n";
     msg_Debugging()<<"      "<<b<<"\n";
 #endif
-    CSpinorType *j(CSpinorType::New(a.R(),a.B(),0,0,0,a.S()|b.S(),2));
+    CSpinorType *j(CSpinorType::New(m_maj?0:a.R(),a.B(),0,0,0,a.S()|b.S(),2));
     SComplex jp(PPlus(b)), jm(PMinus(b)), jt(PT(b)), jtc(PTC(b));
     (*j)[1]=(*j)[0]=SComplex(0.0,0.0);
     (*j)[2]=(a[0]*jp+a[1]*jtc)*m_cpll;
@@ -626,7 +643,7 @@ FFV_Calculator<SType>::LorentzRight(const CSpinorType &a,
     msg_Debugging()<<"<|g R "<<a<<"\n";
     msg_Debugging()<<"      "<<b<<"\n";
 #endif
-    CSpinorType *j(CSpinorType::New(a.R(),a.B(),0,0,0,a.S()|b.S(),2));
+    CSpinorType *j(CSpinorType::New(m_maj?0:a.R(),a.B(),0,0,0,a.S()|b.S(),2));
     SComplex jp(PPlus(b)), jm(PMinus(b)), jt(PT(b)), jtc(PTC(b));
     (*j)[1]=(*j)[0]=SComplex(0.0,0.0);
     (*j)[2]=(a[0]*jm-a[1]*jt)*m_cplr;
@@ -638,7 +655,7 @@ FFV_Calculator<SType>::LorentzRight(const CSpinorType &a,
     msg_Debugging()<<"g|> R "<<a<<"\n";
     msg_Debugging()<<"      "<<b<<"\n";
 #endif
-    CSpinorType *j(CSpinorType::New(a.R(),a.B(),0,0,0,a.S()|b.S(),1));
+    CSpinorType *j(CSpinorType::New(m_maj?0:a.R(),a.B(),0,0,0,a.S()|b.S(),1));
     SComplex jp(PPlus(b)), jm(PMinus(b)), jt(PT(b)), jtc(PTC(b));
     (*j)[0]=(a[2]*jm-a[3]*jtc)*m_cplr;
     (*j)[1]=(-a[2]*jt+a[3]*jp)*m_cplr;
@@ -661,7 +678,7 @@ FFV_Calculator<SType>::LorentzLeftRight(const CSpinorType &a,
     msg_Debugging()<<"<|g LR "<<a<<"\n";
     msg_Debugging()<<"       "<<b<<"\n";
 #endif
-    CSpinorType *j(CSpinorType::New(a.R(),a.B(),0,0,0,a.S()|b.S(),3));
+    CSpinorType *j(CSpinorType::New(m_maj?0:a.R(),a.B(),0,0,0,a.S()|b.S(),3));
     SComplex jp(PPlus(b)), jm(PMinus(b)), jt(PT(b)), jtc(PTC(b));
     (*j)[0]=(a[2]*jp+a[3]*jt)*m_cpll;
     (*j)[1]=(a[2]*jtc+a[3]*jm)*m_cpll;
@@ -674,7 +691,7 @@ FFV_Calculator<SType>::LorentzLeftRight(const CSpinorType &a,
     msg_Debugging()<<"g|> LR "<<a<<"\n";
     msg_Debugging()<<"       "<<b<<"\n";
 #endif
-    CSpinorType *j(CSpinorType::New(a.R(),a.B(),0,0,0,a.S()|b.S(),3));
+    CSpinorType *j(CSpinorType::New(m_maj?0:a.R(),a.B(),0,0,0,a.S()|b.S(),3));
     SComplex jp(PPlus(b)), jm(PMinus(b)), jt(PT(b)), jtc(PTC(b));
     (*j)[0]=(a[2]*jm-a[3]*jtc)*m_cplr;
     (*j)[1]=(-a[2]*jt+a[3]*jp)*m_cplr;

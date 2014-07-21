@@ -1,5 +1,6 @@
 #include "METOOLS/Explicit/Lorentz_Calculator.H"
 
+#include "MODEL/Interaction_Models/Single_Vertex.H"
 #include "METOOLS/Explicit/Vertex.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -12,7 +13,7 @@ namespace METOOLS {
 
     const CObject *p_a, *p_b;
 
-    int m_type, m_singlet, m_match;
+    int m_type, m_singlet, m_match, m_n[4];
 
   public:
 
@@ -20,6 +21,9 @@ namespace METOOLS {
       Color_Calculator(key), m_singlet(false), m_match(true)
     {
       m_cpl=Complex(sqrt(0.5),0.0);
+      m_n[0]=key.p_mv->Color[key.m_n].ParticleArg(0);
+      m_n[1]=key.p_mv->Color[key.m_n].ParticleArg(1);
+      m_n[2]=key.p_mv->Color[key.m_n].ParticleArg(2);
       Flavour fla(key.p_a?key.p_a->Flav():Flavour(kf_gluon));
       Flavour flb(key.p_b?key.p_b->Flav():Flavour(kf_gluon));
       if (key.p_a==NULL && key.p_b==NULL)
@@ -81,9 +85,45 @@ namespace METOOLS {
       return m_stat;
     }
 
+    bool Evaluate(const CObject *a,
+		  const CObject *b,const CObject *e)
+    {
+      if (m_n[0]==0) {
+	m_type=1;
+	return Evaluate(m_n[1]==1?a:(m_n[1]==2?b:e),
+			m_n[2]==1?a:(m_n[2]==2?b:e));
+      }
+      if (m_n[2]==0) {
+	m_type=3;
+	return Evaluate(m_n[1]==1?a:(m_n[1]==2?b:e),
+			m_n[0]==1?a:(m_n[0]==2?b:e));
+      }
+      if (m_n[1]==0) {
+	m_type=4;
+	return Evaluate(m_n[2]==1?a:(m_n[2]==2?b:e),
+			m_n[0]==1?a:(m_n[0]==2?b:e));
+      }
+      m_type=0;
+      const CObject *g(m_n[0]==1?a:(m_n[0]==2?b:e));
+      const CObject *q(m_n[1]==1?a:(m_n[1]==2?b:e));
+      const CObject *p(m_n[2]==1?a:(m_n[2]==2?b:e));
+      m_singlet=(*g)(0)==(*g)(1) && (*q)(0)==(*p)(1);
+      m_match=(*q)(0)==(*g)(1) && (*g)(0)==(*p)(1);
+      m_stat=m_singlet || m_match;
+      return m_stat;
+    }
+
     void AddJ(CObject *const j)
     {
       switch (m_type) {
+      case 0:
+	(*j)(0)=(*j)(1)=0;
+	if (m_singlet) {
+	  if (m_match) j->Divide(3.0/2.0);
+	  else j->Divide(-3.0);
+	}
+	p_v->AddJ(j);
+	return;
       case 1:
 	(*j)(0)=(*p_a)(0);
 	(*j)(1)=(*p_b)(1);

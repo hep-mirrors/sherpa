@@ -402,7 +402,8 @@ void Model_Base::InitMEInfo()
   bool hasndec(false);
   std::set<Flavour> fls;
   msg_Debugging()<<"\n  add vertices\n\n";
-  std::vector<Single_Vertex> &all(p_vertex->Vertices());
+  for (int set=0;set<2;++set) {
+    std::vector<Single_Vertex> &all(p_vertex->Vertices(set));
   for (size_t i=0;i<all.size();++i) {
     if (all[i].on) {
       m_vmap.insert(VMap_Key(all[i].PID(),&all[i]));
@@ -425,6 +426,7 @@ void Model_Base::InitMEInfo()
 		 <<", C1 = "<<all[i].Coupling(1)<<"\n";
       }
     }
+  }
   }
   if (hasndec) m_vinfo|=1;
   msg_Debugging()<<"\n  add particles\n\n";

@@ -14,13 +14,14 @@ double CSpinor<Scalar>::s_accu(1.0e-12);
 template <class Scalar> std::ostream &
 METOOLS::operator<<(std::ostream &ostr,const CSpinor<Scalar> &s)
 {
-  return ostr<<(s.B()>0?(s.R()>0?"|u(":"|v("):(s.R()>0?"<u(":"<v("))<<s.On()
+  return ostr<<(s.B()>0?(s.R()>=0?(s.R()==0?"|X(":"|u("):"|v("):
+		(s.R()>=0?(s.R()==0?"<X(":"<u("):"<v("))<<s.On()
 	     <<"),"<<s.H()<<","<<s.S()<<";"<<s(0)<<","<<s(1)<<";"
 	     <<s[0]<<","<<s[1]<<","<<s[2]<<","<<s[3]<<(s.B()>0?">":"|");
 } 
 
 template <class Scalar> void CSpinor<Scalar>::
-Construct(const int h,const Vec4<Scalar> &p,Scalar m2)
+Construct(const int h,const Vec4<Scalar> &p,Scalar m2,const int ms)
 {
   if (Abs(p[1])==0.0 && Abs(p[2])==0.0 && Abs(p[3])==0.0) {
     SComplex rte(csqrt(p[0]));
@@ -48,7 +49,7 @@ Construct(const int h,const Vec4<Scalar> &p,Scalar m2)
     Spinor<Scalar> sh(1,ph); 
     m_u[2]=sh[0]; 
     m_u[3]=sh[1]; 
-    m_on=2; 
+    m_on=2;
   } 
   else {// u-(p,m) / v+(p,m) 
     Spinor<Scalar> sh(-1,ph); 
@@ -59,7 +60,7 @@ Construct(const int h,const Vec4<Scalar> &p,Scalar m2)
   } 
   if (m2<0.0) m2=p.Abs2();
   if (!ATOOLS::IsZero(m2)) {
-    Scalar sgn(m_r>0?Scalar(1.0):Scalar(-1.0));
+    Scalar sgn((m_r>0)^(ms<0)?Scalar(1.0):Scalar(-1.0));
     Scalar omp(sqrt((p[0]+ph[0])/(2.0*ph[0])));
     Scalar omm(sqrt((p[0]-ph[0])/(2.0*ph[0])));
     size_t r((m_r>0)^(h<0)?0:2);
@@ -69,6 +70,7 @@ Construct(const int h,const Vec4<Scalar> &p,Scalar m2)
     m_u[3-r]*=omp;
     m_on=3;
   }
+  if (abs(m_r)==2) m_r=0;
   if (m_b<0) {
     m_b=1;
     *this=Bar();
@@ -87,8 +89,22 @@ template <class Scalar> bool CSpinor<Scalar>::SetOn()
 template <class Scalar> std::complex<Scalar> 
 CSpinor<Scalar>::operator*(const CSpinor<Scalar> &s) const
 { 
-  if (s.m_b==m_b) THROW(fatal_error,"Equal spinor type");
+  if (s.m_b==m_b) { 
+    if (m_r==0 && s.m_r==0) 
+      return (*this)*s.CConj();
+    THROW(fatal_error,"Equal spinor type");
+  }
   return m_u[0]*s.m_u[0]+m_u[1]*s.m_u[1]+m_u[2]*s.m_u[2]+m_u[3]*s.m_u[3];
+}
+
+template <class Scalar>
+CSpinor<Scalar> CSpinor<Scalar>::CConj() const
+{ 
+  if (m_b<0)
+  return CSpinor(-m_r,-m_b,m_u[1],-m_u[0],-m_u[3],m_u[2],
+		 m_c[0],m_c[1],m_h,m_s,m_on);
+  return CSpinor(-m_r,-m_b,-m_u[1],m_u[0],m_u[3],-m_u[2],
+		 m_c[0],m_c[1],m_h,m_s,m_on);
 }
 
 template <class Scalar>

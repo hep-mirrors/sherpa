@@ -10,6 +10,7 @@ libMEToolsColors_la_SOURCES           =	\
 					T_CC.C \
 					F_CC.C \
 					FF_CC.C \
+					TT_CC.C \
 					ST_CC.C \
 					SF_CC.C
 

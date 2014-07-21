@@ -7,7 +7,7 @@ namespace METOOLS {
   class D_Calculator: public Color_Calculator {
   private:
 
-    const CObject *p_a, *p_b;
+    const CObject *p_a, *p_b, *p_c;
 
     int m_type;
 
@@ -18,6 +18,10 @@ namespace METOOLS {
     {
       m_type=key.p_a->Flav().Strong()-
 	key.p_b->Flav().Strong();
+      if (key.p_e) m_type=
+	  (key.p_a->Flav().Strong()?2:0)|
+	  (key.p_b->Flav().Strong()?4:0)|
+	  (key.p_e->Flav().Strong()?8:0);
     }
 
     std::string Label() const
@@ -37,16 +41,44 @@ namespace METOOLS {
       return m_stat;
     }
 
+    bool Evaluate(const CObject *a,const CObject *b,
+		  const CObject *c)
+    {
+      p_a=a;
+      p_b=b;
+      p_c=c;
+      if (m_type==6) {
+	m_stat=(*a)(0)==(*b)(1) && (*a)(1)==(*b)(0);
+	return m_stat;
+      }
+      else if (m_type==10) {
+	m_stat=(*a)(0)==(*c)(1) && (*a)(1)==(*c)(0);
+	return m_stat;
+      }
+      else if (m_type==12) {
+	m_stat=(*b)(0)==(*c)(1) && (*b)(1)==(*c)(0);
+	return m_stat;
+      }
+      m_stat=true;
+      return m_stat;
+    }
+
     void AddJ(CObject *const j)
     {
       switch (m_type) {
       case -1:
+      case 4:
 	(*j)(0)=(*p_b)(0);
 	(*j)(1)=(*p_b)(1);
 	break;
       case 1:
+      case 2:
 	(*j)(0)=(*p_a)(0);
 	(*j)(1)=(*p_a)(1);
+	break;
+      case 8:
+	(*j)(0)=(*p_c)(0);
+	(*j)(1)=(*p_c)(1);
 	break;
       }
       if ((*j)(0) && (*j)(0)==(*j)(1)) {

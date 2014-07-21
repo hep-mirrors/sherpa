@@ -22,7 +22,7 @@ namespace COMIX {
 
     // member functions
     void ConstructJ(const ATOOLS::Vec4D &p,const int ch,
-		    const int cr,const int ca);
+		    const int cr,const int ca,const int mode);
     void SetGauge(const ATOOLS::Vec4D &k);
 
     void AddPropagator();

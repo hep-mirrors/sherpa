@@ -2,12 +2,11 @@
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
-
-// #define NODEC_FOURVS 1
 
 DECLARE_GETTER(Interaction_Model_QCD,"pure_QCD",
 	       Interaction_Model_Base,Interaction_Model_Arguments);
@@ -31,6 +30,9 @@ Interaction_Model_QCD::Interaction_Model_QCD(MODEL::Model_Base * _model,
 					     std::string _cplscheme,std::string _yukscheme) :
   Interaction_Model_Base("pure_QCD",_model,_cplscheme,_yukscheme)
 { 
+  Data_Reader read(" ",";","#","=");
+  m_dec_g4 = read.GetValue<int>("DECOMPOSE_4G_VERTEX",1);
+
   g3  = Kabbala(string("g_3"),sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale())));
   PL  = Kabbala(string("P_L"),1.);
   PR  = Kabbala(string("P_R"),1.);
@@ -97,7 +99,7 @@ void Interaction_Model_QCD::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
   vertex[vanz].oew           = 0;
   vertex.push_back(Single_Vertex());vanz++;
 
-#ifndef NODEC_FOURVS
+  if (m_dec_g4) {
   // decomposed 4-gluon vertex
   kcpl0 = Kabbala(-g3);
 
@@ -119,7 +121,7 @@ void Interaction_Model_QCD::c_VVV(std::vector<Single_Vertex>& vertex,int& vanz)
   vertex[vanz].oew           = 0;
   vertex[vanz].dec           = 1;
   vertex.push_back(Single_Vertex());vanz++;
-#endif
+  }
   }
 }
 
@@ -161,9 +163,9 @@ void Interaction_Model_QCD::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
   vertex[vanz].on              = 1;
   vertex[vanz].oqcd            = 2;
   vertex[vanz].oew             = 0;
-#ifndef NODEC_FOURVS
+  if (m_dec_g4) {
   vertex[vanz].dec             = -1;
-#endif
+  }
   vertex.push_back(Single_Vertex());vanz++;
   }  
 }

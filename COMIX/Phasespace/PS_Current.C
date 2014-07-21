@@ -16,7 +16,7 @@ void PS_Current::SetSCC(Current *const scc)
 }
 
 void PS_Current::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
-			    const int cr,const int ca)
+			    const int cr,const int ca,const int mode)
 {
   m_p=p;
   ResetJ();

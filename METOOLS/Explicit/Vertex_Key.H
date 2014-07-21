@@ -27,6 +27,7 @@ namespace METOOLS {
 
     std::string m_p;
     size_t      m_n;
+    mutable int m_d;
 
     mutable Vertex *p_v;
 

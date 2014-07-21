@@ -128,6 +128,32 @@ void Interaction_Model_SM_EHC::c_VVVV(std::vector<Single_Vertex>& vertex,int& va
   vertex[vanz].oew     = 1;
   vertex.push_back(Single_Vertex());vanz++;
 
+  // 2 gluon higgs -> tensor
+  vertex[vanz].nleg    = 4;
+  for (short int i=0;i<3;i++) vertex[vanz].in[i] = flg;
+  vertex[vanz].in[3] = flh;
+  vertex[vanz].in[0] = Flavour(kf_gluon_qgc);
+  
+  kcpl0 = g3*ghgg; 
+  kcpl1 = kcpl0; 
+
+  vertex[vanz].cpl[0]  = kcpl0;
+  vertex[vanz].cpl[1]  = kcpl1;
+  vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+  
+  vertex[vanz].Color.push_back(Color_Function(cf::F));     
+  vertex[vanz].Color.back().SetParticleArg(0,2,1);     
+  vertex[vanz].Color.back().SetStringArg('0','2','1');     
+
+  vertex[vanz].Lorentz.push_back(LF_Getter::GetObject("BoxP4",LF_Key()));     
+  vertex[vanz].Lorentz.back()->SetParticleArg(0,1,2);     
+
+  vertex[vanz].on      = 1;
+  vertex[vanz].oqcd    = 3;
+  vertex[vanz].oew     = 1;
+  vertex[vanz].dec     = 3;
+  vertex.push_back(Single_Vertex());vanz++;
+
   Flavour flsh(kf_shgluon);
   kcpl0 = M_I*g3*g3*ghgg; 
   kcpl1 = kcpl0; 
@@ -162,6 +188,7 @@ void Interaction_Model_SM_EHC::c_VVVV(std::vector<Single_Vertex>& vertex,int& va
   vertex[vanz].t               = 1;
   vertex[vanz].oqcd            = 4;
   vertex[vanz].oew             = 1;
+  vertex[vanz].dec             = -1;
   vertex.push_back(Single_Vertex());vanz++;
 }
 
@@ -256,6 +283,7 @@ void Interaction_Model_SM_EHC::c_VVS(std::vector<Single_Vertex>& vertex,int& van
     vertex[vanz].t       = -1;
     vertex[vanz].oqcd    = 0;
     vertex[vanz].oew     = 0;
+    vertex[vanz].dec     = -1;
     vertex.push_back(Single_Vertex());vanz++;
   }
 }

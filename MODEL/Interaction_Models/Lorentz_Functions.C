@@ -715,6 +715,33 @@ public:
   }
 };
 DEFINE_LF_GETTER(LF_Box,"Box","")
+class LF_BoxP4: public Lorentz_Function {
+public:
+  LF_BoxP4(): Lorentz_Function("BoxP4") {}
+  int NofIndex() const { return 3; }
+  void InitPermutation() 
+  {
+    Lorentz_Function::InitPermutation(); 
+    AddPermutation( 1,0,1,2);
+    AddPermutation(-1,0,2,1);  
+    AddPermutation(-1,1,0,2);
+    AddPermutation(-1,2,1,0);  
+    AddPermutation( 1,1,2,0);
+    AddPermutation( 1,2,0,1);  
+  }
+  std::string String(int shortversion) const 
+  {
+    // G[0,1]
+    return "B["+Str(0)+","+Str(1)+","+Str(2)+"]";
+  }
+  Lorentz_Function *GetCopy() const 
+  {
+    Lorentz_Function *copy(new LF_BoxP4());
+    *copy=*this;
+    return copy;
+  }
+};
+DEFINE_LF_GETTER(LF_BoxP4,"BoxP4","")
 class LF_C4GS: public Lorentz_Function {
 public:
   LF_C4GS(): Lorentz_Function("C4GS") {}

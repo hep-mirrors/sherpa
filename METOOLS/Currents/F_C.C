@@ -25,7 +25,7 @@ namespace METOOLS {
     CF(const Current_Key &key);
 
     void ConstructJ(const ATOOLS::Vec4D &p,const int ch,
-		    const int cr,const int ca);
+		    const int cr,const int ca,const int mode);
     void SetGauge(const ATOOLS::Vec4D &k);
 
     void AddPropagator();
@@ -68,17 +68,23 @@ CF<SType>::CF(const Current_Key &key):
 
 template <typename SType>
 void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
-			   const int cr,const int ca)
+			   const int cr,const int ca,const int mode)
 {
   this->m_p=p;
   this->ResetJ();
+  bool anti(this->m_fl.IsAnti());
+  if (this->m_fl.Majorana()) anti=(mode&1)?this->m_dir<0:this->m_dir>0;
   if (ch>=0) {
-    CSpinorType j(this->m_fl.IsAnti()^(this->m_dir>0)?
-		  CSpinorType(-1,-this->m_dir,1,p,
-			      cr,ca,0,0,sqr(this->m_mass)):
-		  CSpinorType(1,this->m_dir,1,p,
-			      cr,ca,0,0,sqr(this->m_mass)));
-    j.SetH(this->m_fl.IsAnti()^(this->m_dir>0)?1:0);
+    CSpinorType j(anti^(this->m_dir>0)?
+		  CSpinorType(this->m_fl.Majorana()?-2:-1,-this->m_dir,
+			      this->m_fl.Majorana()?(mode?1:-1):1,
+			      p,cr,ca,0,0,sqr(this->m_mass),
+			      this->m_fl.MassSign()):
+		  CSpinorType(this->m_fl.Majorana()?2:1,this->m_dir,
+			      this->m_fl.Majorana()?(mode?-1:1):1,
+			      p,cr,ca,0,0,sqr(this->m_mass),
+			      this->m_fl.MassSign()));
+    j.SetH(this->m_dir>0?1:0);
 #ifdef DEBUG__BG
     msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"+ "<<this->m_id
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
@@ -90,12 +96,16 @@ void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
       (p_sub->In().front()->Color().front())->AddJJK(c);
   }
   if (ch<=0) {
-    CSpinorType j(this->m_fl.IsAnti()^(this->m_dir>0)?
-		  CSpinorType(-1,-this->m_dir,-1,p,
-			      cr,ca,0,0,sqr(this->m_mass)):
-		  CSpinorType(1,this->m_dir,-1,p,
-			      cr,ca,0,0,sqr(this->m_mass)));
-    j.SetH(this->m_fl.IsAnti()^(this->m_dir>0)?0:1);
+    CSpinorType j(anti^(this->m_dir>0)?
+		  CSpinorType(this->m_fl.Majorana()?-2:-1,-this->m_dir,
+			      this->m_fl.Majorana()?(mode?-1:1):-1,
+			      p,cr,ca,0,0,sqr(this->m_mass),
+			      this->m_fl.MassSign()):
+		  CSpinorType(this->m_fl.Majorana()?2:1,this->m_dir,
+			      this->m_fl.Majorana()?(mode?1:-1):-1,
+			      p,cr,ca,0,0,sqr(this->m_mass),
+		              this->m_fl.MassSign()));
+    j.SetH(this->m_dir>0?0:1);
 #ifdef DEBUG__BG
     msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"- "<<this->m_id
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
@@ -139,20 +149,21 @@ void CF<SType>::AddPropagator()
     CSpinorType j((*jit)->R(),(*jit)->B(),(**jit)(0),(**jit)(1),
 		  (*jit)->H(),(*jit)->S(),
 		  ((*jit)->On()&1)<<1|((*jit)->On()&2)>>1);
-    if ((*jit)->B()>0) {
-      j[0]=pm*(**jit)[2]-ptc*(**jit)[3];
-      j[1]=-pt*(**jit)[2]+pp*(**jit)[3];
-      j[2]=pp*(**jit)[0]+ptc*(**jit)[1];
-      j[3]=pt*(**jit)[0]+pm*(**jit)[1];
+    if ((*jit)->B()>0) {// S(-p)
+      j[0]=-pm*(**jit)[2]+ptc*(**jit)[3];
+      j[1]=pt*(**jit)[2]-pp*(**jit)[3];
+      j[2]=-pp*(**jit)[0]-ptc*(**jit)[1];
+      j[3]=-pt*(**jit)[0]-pm*(**jit)[1];
     }
-    else {
+    else {// S(p)
       j[0]=(**jit)[2]*pp+(**jit)[3]*pt;
       j[1]=(**jit)[2]*ptc+(**jit)[3]*pm;
       j[2]=(**jit)[0]*pm-(**jit)[1]*pt;
       j[3]=-(**jit)[0]*ptc+(**jit)[1]*pp;
     }
-    if ((*jit)->B()>0) **jit=(this->m_msv?j-**jit*m_cmass:j)*prop;
-    else **jit=-(this->m_msv?j+**jit*m_cmass:j)*prop;
+    if (m_fl.MassSign()>=0)
+      **jit=(this->m_msv?j+**jit*m_cmass:j)*prop;
+    else **jit=(this->m_msv?j-**jit*m_cmass:j)*prop;
   }
   }
 }

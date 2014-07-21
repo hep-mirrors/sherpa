@@ -16,6 +16,8 @@ libMEToolsVertices_la_SOURCES         =	\
 					SSVV_LC.C \
                                         TAUPI_LC.C \
 					Triangle_LC.C \
+					Box_LC.C \
+					BoxP_LC.C \
 					VVVV_LC.C
 
 localinc_HEADERS      =	

@@ -14,7 +14,7 @@ Vertex_Key::Vertex_Key
  Vertex *const v,Color_Calculator *const cc,
  Lorentz_Calculator *const lc): 
   p_a(a), p_b(b), p_c(c), p_e(e), p_k(NULL), p_kt(NULL),
-  p_model(model), p_mv(mv), m_p(p), m_n(0), p_v(v),
+  p_model(model), p_mv(mv), m_p(p), m_n(0), m_d(0), p_v(v),
   p_cc(cc), p_lc(lc), p_dinfo(NULL)
 {
 }
