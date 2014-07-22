@@ -255,16 +255,16 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 	      for (CB_MMap::const_iterator bit(m_cmap.lower_bound(jb));
 		   bit!=m_cmap.upper_bound(jb);++bit) {
 		Vertex_Key vkey(ait->second,bit->second,NULL,cit->second,NULL);
-		int type(DecayType(cit->second,ait->second,bit->second));
+		int type(DecayType(cit->second,ait->second,bit->second)), mtype(0);
 		bool vf(false);
 		for (size_t k(0);k<rin.size();++k)
 		  if (vkey.p_a==rin[k]->JA() && vkey.p_b==rin[k]->JB() &&
 		      (type==((PS_Vertex*)rin[k])->Type() ||
 		       (type&((PS_Vertex*)rin[k])->Type()))) {
+		    mtype|=((PS_Vertex*)rin[k])->Type();
 		    vf=true;
-		    break;
 		  }
-		if (vf || v3.find(vkey)!=v3.end()) continue;
+		if ((vf && type==mtype) || v3.find(vkey)!=v3.end()) continue;
 		v3.insert(vkey);
 		PS_Vertex *vtx(new PS_Vertex(vkey));
 		vtx->SetJA(vkey.p_a);
