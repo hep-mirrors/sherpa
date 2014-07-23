@@ -42,17 +42,10 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
   Flavour *sfl;
   if (ndecays>0) {
     sfl = new Flavour[pinfo->Nmax(nin)];
-    sfl[0] = fl[0];
-    sfl[1] = fl[1];
-    pinfo->GetFlavList(sfl+nin);
   }
   else sfl=fl;
 
-  //core process
-  gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,_orderQCD,_orderEW,_ntchan,BS,shand,create_4V);
-  subgraphlist[0] = gen->Matching();
-  gen->GetOrders(_orderEW,_orderQCD);
-  delete gen;
+  int orderEW(0), orderQCD(0);
 
   //decay processes
   for (int i=1;i<=ndecays;i++) {
@@ -69,10 +62,27 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
     }
     int ew,qcd;
     gen->GetOrders(ew,qcd);
-    _orderEW  += ew;
-    _orderQCD += qcd;
+    orderEW  += ew;
+    orderQCD += qcd;
     delete gen;
   }
+  if (_orderEW<99) _orderEW-=orderEW;
+  if (_orderQCD<99) _orderQCD-=orderQCD;
+
+  if (ndecays>0) {
+    sfl[0] = fl[0];
+    sfl[1] = fl[1];
+    pinfo->GetFlavList(sfl+nin);
+  }
+
+  //core process
+  gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,_orderQCD,_orderEW,_ntchan,BS,shand,create_4V);
+  subgraphlist[0] = gen->Matching();
+  gen->GetOrders(_orderEW,_orderQCD);
+  delete gen;
+
+  _orderEW+=orderEW;
+  _orderQCD+=orderQCD;
 
   if (msg_LevelIsTracking()) {
     msg_Out()<<"Amplitude_Handler::Amplitude_Handler:"<<endl;
