@@ -50,7 +50,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   if (ckfmode!=1) msg_Info()<<METHOD<<"(): Set cluster KF mode "<<ckfmode<<"\n";
   int pdfcheck=_dataread->GetValue<int>("CSS_PDFCHECK",1);
   if (pdfcheck!=1) msg_Info()<<METHOD<<"(): Set PDF check mode "<<pdfcheck<<"\n";
-  int csmode=_dataread->GetValue<int>("CSS_CSMODE",1);
+  int csmode=_dataread->GetValue<int>("CSS_CSMODE",0);
   if (csmode!=1) msg_Info()<<METHOD<<"(): Set color setter mode "<<csmode<<"\n";
   
   m_weightmode = int(_dataread->GetValue<int>("WEIGHT_MODE",1));
