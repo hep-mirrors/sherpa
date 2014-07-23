@@ -289,7 +289,8 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
       }
     }
   }
-  if (blob->Type()==btp::Hadron_Decay)
+  if (blob->Type()==btp::Hadron_Decay &&
+      !(blob->Has(blob_status::needs_showers)))
     blob->SetStatus(blob_status::needs_extraQED);
 
   SetMasses(blob, true);
