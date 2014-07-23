@@ -289,6 +289,8 @@ Decay_Matrix* Decay_Handler_Base::FillDecayTree(Blob * blob, Spin_Density* s0)
       }
     }
   }
+  if (blob->Type()==btp::Hadron_Decay)
+    blob->SetStatus(blob_status::needs_extraQED);
 
   SetMasses(blob, true);
   BoostAndStretch(blob, labmom);
@@ -498,6 +500,7 @@ bool Decay_Handler_Base::AttachExtraQED(Blob* blob, size_t mode)
 {
   DEBUG_FUNC("qedmode="<<m_qedmode
              <<", shower="<<blob->Has(blob_status::needs_showers)
+             <<", qed="<<blob->Has(blob_status::needs_extraQED)
              <<", mode="<<mode
              <<", process="<<blob->ShortProcessName());
   if (!blob->Has(blob_status::needs_extraQED)) return false;
