@@ -784,6 +784,25 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
               else
                 AC_MSG_ERROR(Header zlib.h and/or library libz not found. Configure without --disable-gzip or install zlib (and its devel package, e.g. zlib-devel, zlib-dev or zlib1g-dev) if you want compressed output.);
               fi;;
+	*) if test -d "${enableval}"; then
+             ZLIB_OLD_LDFLAGS=$LDFLAGS; ZLIB_OLD_CPPFLAGS=$CPPFLAGS;
+             LDFLAGS="$LDFLAGS -L${enableval}/lib"
+             CPPFLAGS="$CPPFLAGS -I${enableval}/include"
+             AC_CHECK_LIB(z,inflateEnd,zlib_cv_libz=yes,zlib_cv_libz=no)
+             AC_CHECK_HEADER(zlib.h,zlib_cv_zlib_h=yes,zlib_cv_zlib_h=no)
+             if test "$zlib_cv_libz" = "yes" && test "$zlib_cv_zlib_h" = "yes"
+             then
+               zlib=true;
+               CONDITIONAL_GZIPLIBS="-Wl,-rpath -Wl,${enableval}/lib -L${enableval}/lib -lz"
+               CONDITIONAL_GZIPINCS="-I${enableval}/include"
+	       AC_MSG_RESULT(Using zlib from ${enableval})
+             else
+               AC_MSG_ERROR(Header zlib.h and/or library libz not found. Configure without --disable-gzip or install zlib.);
+             fi
+             LDFLAGS="$ZLIB_OLD_LDFLAGS"; CPPFLAGS="$ZLIB_OLD_CPPFLAGS";
+           else
+             AC_MSG_ERROR(no such directory '${enableval}');
+           fi;;
       esac ],
     [ zlib=false ]
   )
@@ -792,6 +811,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   fi
   AM_CONDITIONAL(GZIP_SUPPORT, test "$zlib" = "true")
   AC_SUBST(CONDITIONAL_GZIPLIBS)
+  AC_SUBST(CONDITIONAL_GZIPINCS)
 
   AC_ARG_ENABLE(
     pythia,
