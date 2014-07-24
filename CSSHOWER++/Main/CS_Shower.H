@@ -44,7 +44,7 @@ namespace CSSHOWER {
     ATOOLS::Mass_Selector *p_ms;
     Color_Setter *p_cs;
 
-    ATOOLS::Cluster_Amplitude *p_ampl, *p_rampl;
+    ATOOLS::Cluster_Amplitude *p_rampl;
 
     Flav_ME_Map m_xsmap;
 

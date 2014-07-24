@@ -25,7 +25,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
 		     MODEL::Model_Base *const model,
 		     Data_Reader *const _dataread) : 
   Shower_Base("CSS"), p_isr(_isr), 
-  p_shower(NULL), p_cluster(NULL), p_cs(NULL), p_ampl(NULL)
+  p_shower(NULL), p_cluster(NULL), p_cs(NULL)
 {
   rpa->gen.AddCitation
     (1,"The Catani-Seymour subtraction based shower is published under \\cite{Schumann:2007mg}.");
@@ -77,7 +77,6 @@ CS_Shower::~CS_Shower()
   if (p_shower)      { delete p_shower; p_shower = NULL; }
   if (p_cluster)     { delete p_cluster; p_cluster = NULL; }
   if (p_cs) delete p_cs;
-  if (p_ampl) p_ampl->Delete();
   delete p_next;
 }
 
