@@ -188,7 +188,7 @@ void Cluster_Algorithm::CalculateMeasures
     for (size_t i(0);i<curs.size();++i) {
       const Vertex_Vector &in(curs[i]->In()); 
       for (size_t j(0);j<in.size();++j) {
-	if (in[j]->Zero()) continue;
+	if (in[j]->Zero() || in[j]->JE()) continue;
 	if (in[j]->JC()->Sub()) continue;
 	if (in[j]->JC()->Flav().IsDummy()) continue;
 	if (in[j]->OrderEW()>p_ampl->OrderEW() ||
@@ -240,7 +240,7 @@ void Cluster_Algorithm::CalculateMeasures
   }
   const Vertex_Vector &in(fcur->In()); 
   for (size_t j(0);j<in.size();++j) {
-    if (in[j]->Zero()) continue;
+    if (in[j]->Zero() || in[j]->JE()) continue;
     for (size_t i(1);i<ccurs.size();++i) {
       if (in[j]->JA()==ccurs[i] || in[j]->JB()==ccurs[i]) {
 	if (ccurs[i]->CId()&2) continue;
