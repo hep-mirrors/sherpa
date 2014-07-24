@@ -129,10 +129,11 @@ Hadron_Decay_Handler::FillOnshellDecay(Blob *blob, Spin_Density* sigma)
 void Hadron_Decay_Handler::CreateDecayBlob(Particle* inpart)
 {
   DEBUG_FUNC(inpart->RefFlav());
-  if(inpart->DecayBlob()) abort();
+  if(inpart->DecayBlob()) THROW(fatal_error,"Decay blob already exists.");
   if(!Decays(inpart->Flav())) return;
   if(inpart->Time()==0.0) inpart->SetTime();
   Blob* blob = p_bloblist->AddBlob(btp::Hadron_Decay);
+  blob->SetStatus(blob_status::needs_extraQED);
   blob->AddToInParticles(inpart);
   SetPosition(blob);
   blob->SetTypeSpec("Sherpa");
