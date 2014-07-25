@@ -25,6 +25,8 @@ Cluster_Algorithm::Cluster_Algorithm(ATOOLS::Mass_Selector *const ms):
   p_ms(ms), p_ampl(NULL), p_clus(NULL),
   m_lfrac(0.0)
 {
+  Data_Reader read(" ",";","#","=");
+  m_corecheck=read.GetValue<int>("COMIX_CLUSTER_CORE_CHECK",0);
 }
 
 Cluster_Algorithm::~Cluster_Algorithm()
@@ -742,6 +744,7 @@ bool Cluster_Algorithm::Cluster
 	msg_Debugging()<<"reject ordering\n";
       }
       else if ((m_wmode&512) && (m_wmode&4096) && step==2) {
+	if (!CheckCore(p_ampl)) continue;
 	msg_Debugging()<<"no valid combination -> classify as RS core\n";
 	p_ampl->SetProc(p_xs);
 	p_ampl->SetKT2((p_xs->IsMapped()?p_xs->MapProc():p_xs)
@@ -752,6 +755,7 @@ bool Cluster_Algorithm::Cluster
       p_ampl->DeleteNext();
     }
     else if (nocl.empty()) {
+      if (!CheckCore(p_ampl)) continue;
       msg_Debugging()<<"no valid combination -> classify as core\n";
       p_ampl->SetProc(p_xs);
       p_ampl->SetKT2((p_xs->IsMapped()?p_xs->MapProc():p_xs)
@@ -762,6 +766,7 @@ bool Cluster_Algorithm::Cluster
   } while (oldsize<nocl.size());
   if (complete==1) return false;
   if (m_wmode&512) {
+    if (!CheckCore(p_ampl)) return false;
     msg_Debugging()<<"no valid combination -> classify as core\n";
     p_ampl->SetProc(p_xs);
     p_ampl->SetKT2((p_xs->IsMapped()?p_xs->MapProc():p_xs)
@@ -772,6 +777,17 @@ bool Cluster_Algorithm::Cluster
   if (order) msg_Debugging()<<"trying unordered configurations\n";
   }
   return false;
+}
+
+bool Cluster_Algorithm::CheckCore(ATOOLS::Cluster_Amplitude *const ampl) const
+{
+  if (!m_corecheck) return true;
+  PHASIC::Process_Base::SortFlavours(ampl);
+  std::string name(PHASIC::Process_Base::GenerateName(ampl));
+  StringProcess_Map *pm((*p_xs->AllProcs())[nlo_type::lo]);
+  StringProcess_Map::const_iterator pit(pm->find(name));
+  if (pit==pm->end()) msg_Debugging()<<"invalid core configuration\n";
+  return pit!=pm->end();
 }
 
 void Cluster_Algorithm::SetNMax(Cluster_Amplitude *const ampl,

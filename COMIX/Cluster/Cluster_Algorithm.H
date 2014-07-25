@@ -68,7 +68,7 @@ namespace COMIX {
 
     SizeT_Map m_id;
 
-    size_t m_wmode;
+    size_t m_wmode, m_corecheck;
     double m_lfrac;
 
     ATOOLS::ColorID GetColor(Current *const j,
@@ -105,6 +105,8 @@ namespace COMIX {
     KT2Info_Vector UpdateKT2(const KT2Info_Vector &kt2ord,
 			     const Cluster_Amplitude *ampl,
 			     const int mode=0) const;
+
+    bool CheckCore(ATOOLS::Cluster_Amplitude *const ampl) const;
 
   public:
 
