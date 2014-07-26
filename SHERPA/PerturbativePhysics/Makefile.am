@@ -17,3 +17,5 @@ localinc_HEADERS          =	\
 			Shower_Handler.H \
 			Perturbative_Interface.H \
 			Hard_Decay_Handler.H
+
+libSherpaPerturbativePhysics_la_CPPFLAGS = @CONDITIONAL_GZIPINCS@
