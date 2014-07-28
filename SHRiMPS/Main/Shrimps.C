@@ -266,6 +266,7 @@ void Shrimps::GenerateXsecs() {
     Elastics.push_back(62.5);
     Elastics.push_back(546.);
     Elastics.push_back(1800.);
+    Elastics.push_back(7000.);
 
     std::vector<double> xsectot, xsecinel,xsecelas;
     
