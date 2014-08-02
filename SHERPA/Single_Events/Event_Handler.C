@@ -363,7 +363,7 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
       return false;
     case 2:
       InitialiseSeedBlob(ATOOLS::btp::Hadron_Decay,
-                         ATOOLS::blob_status::needs_minBias);
+                         ATOOLS::blob_status::needs_hadrondecays);
       mother_in_part=new Particle(1, mother_flav, mom);
       mother_part=new Particle(1, mother_flav, mom);
       mother_part->SetTime();
