@@ -362,7 +362,7 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
     case 3:
       return false;
     case 2:
-      InitialiseSeedBlob(ATOOLS::btp::Soft_Collision,
+      InitialiseSeedBlob(ATOOLS::btp::Hadron_Decay,
                          ATOOLS::blob_status::needs_minBias);
       mother_in_part=new Particle(1, mother_flav, mom);
       mother_part=new Particle(1, mother_flav, mom);
