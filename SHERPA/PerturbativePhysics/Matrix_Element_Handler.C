@@ -45,7 +45,7 @@ Matrix_Element_Handler::Matrix_Element_Handler
   read.SetInputFile(m_file);
   if (!read.ReadFromFile(m_respath,"RESULT_DIRECTORY")) m_respath="Results";
   m_respath=ShortenPathName(m_respath);
-  if (rpa->gen.Variable("PATH_PIECE")!="")
+  if (m_respath[0]!='/' && rpa->gen.Variable("PATH_PIECE")!="")
     m_respath=rpa->gen.Variable("PATH_PIECE")+"/"+m_respath;
   std::string evtm;
   if (!read.ReadFromFile(evtm,"EVENT_GENERATION_MODE")) evtm="PartiallyUnweighted";
