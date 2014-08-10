@@ -1,14 +1,39 @@
-run){
-  EVENTS              = 1000000
+(run){
+  EVENTS              = 50k
   OUTPUT              = 2
   EVENT_TYPE          = MinimumBias 
   SOFT_COLLISIONS     = Shrimps
-  Shrimps_Mode        = Inelastic
+  Shrimps_Mode        = Inelastic 
 
   ANALYSIS            = Rivet
 
-  ANALYSIS_OUTPUT     = Shrimps.7TeV
+  ANALYSIS_OUTPUT     = test9
+
+  ALPHAS(MZ) 0.118;
+  ORDER_ALPHAS 1;
+  CSS_FS_PT2MIN       1.00
   MAX_PROPER_LIFETIME = 10.
+
+  deltaY    =  1.5;
+  Lambda2   =  1.7;
+  beta_0^2  =  20.0;
+  kappa     =  0.6;
+  xi        =  0.2;
+  lambda    =  0.3;
+  Delta     =  0.4;
+
+  Q_0^2           = 0.25;
+  Chi_S           = 1.0;
+  Shower_Min_KT2  = 4.0;
+  Diff_Factor     = 1.0;
+  KT2_Factor      = 4.0;
+  RescProb        = 1.0;
+  RescProb1       = 1.0;
+  Q_RC^2          = 0.25;
+  ReconnProb      = -35.;
+  Resc_KTMin      = off;
+
+  Misha           = 0
 }(run)
 
 (beam){
@@ -18,11 +43,12 @@ run){
 
 (analysis){
   BEGIN_RIVET {
-  -a DIFFMASS ATLAS_2010_S8918562 ATLAS_2010_S8894728 ATLAS_2011_S8994773 ATLAS_2012_I1084540 TOTEM_2012_DNDETA ATLAS_2011_I919017 CMS_2011_S8978280 CMS_2011_S9120041 CMS_2011_S9215166 #CMS_2010_S8547297 CMS_2010_S8656010 CMS_2011_S8884919 CMS_QCD_10_024
+  -a ATLAS_2010_S8918562 ATLAS_2010_S8894728 ATLAS_2011_S8994773 ATLAS_2012_I1084540 TOTEM_2012_DNDETA ATLAS_2011_I919017 CMS_2011_S8978280 CMS_2011_S9120041 CMS_2011_S9215166 CMS_2010_S8547297 CMS_2010_S8656010 CMS_2011_S8884919 CMS_QCD_10_024
   } END_RIVET
 }(analysis)
 
 (me){
   ME_SIGNAL_GENERATOR = None
 }(me)
+
 

@@ -28,6 +28,7 @@ Final_State::Final_State(const int & test) :
   m_nprimlad(1), 
   m_d2(MBpars("Ddiff2")), m_kdiff(MBpars("kdiff")), 
   m_Ylimit(MBpars("originalY")-MBpars("deltaY")),
+  m_singletwt(MBpars("SingletWt")),
   m_test(test), m_analyse(false)
 {
   if (m_analyse) InitHistograms();
@@ -38,7 +39,7 @@ bool Final_State::FirstSinglet(const double & y1,const double & y2,
 			       const double & sup,const int & nbeam) {
   //  return false;
   if (p_ladder->IsRescatter() && m_resc_nosing==resc_nosing::on) return false;
-  double wt1 = p_eikonal->SingletWeight(m_b1,m_b2,y1,y2,sup,nbeam); 
+  double wt1 = p_eikonal->SingletWeight(m_b1,m_b2,y1,y2,sup,nbeam)/m_singletwt; 
   double wt8 = p_eikonal->OctetWeight(m_b1,m_b2,y1,y2,sup,nbeam); 
   if (wt1>(wt1+wt8)*ran->Get()) {
     p_ladder->GetPropsBegin()->m_col = colour_type::singlet;
@@ -46,6 +47,44 @@ bool Final_State::FirstSinglet(const double & y1,const double & y2,
     return true;
   }
   return false;
+}
+
+  void Final_State::UpdateTwoOutgoings(const size_t pos,const bool singlet) {
+  Vec4D mom[2], cms(0.,0.,0.,0.);
+  LadderMap * emissions(p_ladder->GetEmissions());
+  LadderMap::iterator lit(emissions->begin());
+  double deltay(0.);
+  bool hit=false;
+  for (size_t i=0;i<emissions->size();i++) {
+    if (hit==true) {
+      cms    += mom[1] = lit->second.m_mom;
+      deltay -= lit->first;
+      break;
+    }
+    if (i==pos) {
+      cms    += mom[0] = lit->second.m_mom;
+      deltay += lit->first;
+      hit     = true;
+    }
+    lit++;
+  }
+  double shat((mom[0]+mom[1]).Abs2()), Ehat(sqrt(shat)), expo(1.);
+  double kt  = sqrt(SelectKT2(shat/4.,0.,m_Q02,1.+expo)); 
+  double phi = 2.*M_PI*ran->Get();
+  Vec4D  ktvec = kt*Vec4D(0.,cos(phi),sin(phi),0.);
+  Poincare boost(cms);
+  for (size_t i=0;i<2;i++) boost.Boost(mom[i]);
+  Poincare rotate(mom[0][3]>0.?mom[0]:mom[1],Vec4D(1.,0.,0.,1.));
+  for (size_t i=0;i<2;i++) {
+    rotate.Rotate(mom[i]);
+    mom[i]   += ktvec;
+    mom[i][3] = (mom[i][3]>0.?1.:-1.)*sqrt(sqr(mom[i][0])-sqr(kt));
+    ktvec  *= -1.;
+    rotate.RotateBack(mom[i]);
+    boost.BoostBack(mom[i]);  
+    cms -= mom[i];
+  }
+  if (cms[0]>1.e-6) msg_Error()<<"Error in "<<METHOD<<": "<<cms<<"\n";
 }
 
 double Final_State::
@@ -61,8 +100,8 @@ operator()(Ladder * ladder,const double & Deltay,
   m_minusiter = p_emissions->end(); m_minusiter--;
 
   double y0(m_plusiter->first), y1(m_minusiter->first);
-  m_q02min = Q02MinEstimate(y0,y1);
-  m_lastwt = 1.;
+  m_q02min   = Q02MinEstimate(y0,y1);
+  m_lastwt   = 1.;
   m_recombwt = 1.;
   int nbeam(int(dabs(p_ladder->GetIn1()->m_mom.Y())>m_Ylimit)+
 	    int(dabs(p_ladder->GetIn2()->m_mom.Y())>m_Ylimit));
@@ -70,17 +109,6 @@ operator()(Ladder * ladder,const double & Deltay,
     m_firstsing++;
     if (m_analyse) 
       m_histomap[std::string("Delta_final")]->Insert(1./dabs(y0-y1)); 
-    p_ladder->GetProps()->begin()->m_col = colour_type::singlet;
-    p_ladder->SetDiffractive(true);
-    if (MBpars.LadderWeight()==ladder_weight::Regge) {
-      double colfac(3.);
-      double q02_2(p_ladder->GetPropsBegin()->m_q2);
-      double qt02_2(p_ladder->GetPropsBegin()->m_qt2);
-      double mu02_2(Q02((y0+y1)/2.));
-      double rarg(mu02_2/(dabs(q02_2)+mu02_2));
-      double expo(colfac*p_alphaS->MaxValue()*dabs(y0-y1)/M_PI); 
-      m_lastwt  = pow(rarg,expo);
-    }
   }
   else {
     m_pprop    = -p_ladder->GetIn1()->m_mom;
@@ -100,6 +128,22 @@ operator()(Ladder * ladder,const double & Deltay,
     m_kt1max2   = 0.;
     m_Deltay    = Deltay;
     m_lastwt    = GenerateEmissions();
+
+  }
+  if (p_ladder->GetEmissions()->size()==2) {
+    bool sing(p_ladder->GetPropsBegin()->m_col==colour_type::singlet);
+    //if (sing || p_ladder->IsRescatter()) 
+    UpdateTwoOutgoings(0,sing);
+    double q02_2(p_ladder->GetPropsBegin()->m_q2);
+    m_lastwt *= pow((*p_alphaS)(q02_2)/p_alphaS->MaxValue(),(sing?4:2));
+    if (MBpars.LadderWeight()==ladder_weight::Regge) {
+      double colfac(3.);
+      double qt02_2(p_ladder->GetPropsBegin()->m_qt2);
+      double mu02_2(Q02((y0+y1)/2.));
+      double rarg(mu02_2/(dabs(q02_2)+mu02_2));
+      double expo(colfac*(*p_alphaS)(q02_2)*dabs(y0-y1)/M_PI); 
+      m_lastwt *= pow(rarg,expo);
+    }
   }
   return m_lastwt;
 }

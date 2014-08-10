@@ -18,7 +18,7 @@ namespace SHRIMPS {
     MODEL::Strong_Coupling * p_alphaS;
     double                   m_Q02,m_Q12,m_Q02eff,m_QN2,m_q02min;
     double                   m_kt1cut2,m_kt1min2,m_kt1max2;
-    double                   m_d2, m_kdiff, m_Ylimit;
+    double                   m_d2, m_kdiff, m_Ylimit, m_singletwt;
     int                      m_test;
     int                      m_nprimlad;
 
@@ -47,6 +47,7 @@ namespace SHRIMPS {
     double GenerateEmissions();
     bool   FirstSinglet(const double & y1,const double & y2,
 			const double & sup,const int & nbeam);
+    void   UpdateTwoOutgoings(const size_t pos=0,const bool singlet=true);
     bool   OneEmission(LadderMap::iterator & split,LadderMap::iterator & spect,
 		       double & kt2);
     bool   SelectSplitterAndSpectator(LadderMap::iterator & split,
