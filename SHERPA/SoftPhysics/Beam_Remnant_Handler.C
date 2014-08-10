@@ -104,7 +104,6 @@ FillBunchBlobs(Blob_List *const  bloblist,
       flag=true;
     }
   }
-  return Return_Value::Success;
   return (flag?Return_Value::Success:Return_Value::Nothing);
 }
 
