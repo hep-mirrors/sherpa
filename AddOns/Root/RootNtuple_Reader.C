@@ -316,20 +316,25 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   int id1, id2;
   double x1, x2;
   while (currentid==m_evtid) {
+    Vec4D sum;
     Vec4D *moms = new Vec4D[2+p_vars->m_nparticle];
     Flavour *flav = new Flavour[2+p_vars->m_nparticle];
     for (int i=0;i<p_vars->m_nparticle;i++) {
       moms[i+2]=Vec4D(p_vars->p_E[i],p_vars->p_px[i],
 		      p_vars->p_py[i],p_vars->p_pz[i]);
       flav[i+2]=Flavour(abs(p_vars->p_kf[i]),p_vars->p_kf[i]<0);
+      sum+=moms[i+2];
     }
+    
     m_nlos.push_back(new NLO_subevt(p_vars->m_nparticle+2,NULL,flav,moms));
     m_nlos.back()->m_result=p_vars->m_wgt2;
     id1=p_vars->m_id1;
     id2=p_vars->m_id2;
-    double sf(m_ecms/rpa->gen.Ecms());
-    x1=p_vars->m_x1*sf;
-    x2=p_vars->m_x2*sf;
+    // double sf(m_ecms/rpa->gen.Ecms());
+    // x1=p_vars->m_x1*sf;
+    // x2=p_vars->m_x2*sf;
+    x1=sum.PPlus()/rpa->gen.PBeam(0).PPlus();
+    x2=sum.PMinus()/rpa->gen.PBeam(1).PMinus();
     if (m_calc) {
       Vec4D_Vector p(2+p_vars->m_nparticle);
       for (int i=0;i<p_vars->m_nparticle;++i) {
