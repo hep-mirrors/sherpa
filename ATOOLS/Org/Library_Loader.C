@@ -18,8 +18,9 @@ Library_Loader *ATOOLS::s_loader(NULL);
 
 Library_Loader::Library_Loader(): m_wait(3600), m_check(true)
 {
-  m_paths=EnvironmentVariable(LD_PATH_NAME);
   m_paths.push_back(rpa->gen.Variable("SHERPA_LIBRARY_PATH"));
+  const std::vector<std::string> &paths(EnvironmentVariable(LD_PATH_NAME));
+  m_paths.insert(m_paths.end(),paths.begin(),paths.end());
 }
 
 bool Library_Loader::CreateLockFile(const std::string &lockname)
