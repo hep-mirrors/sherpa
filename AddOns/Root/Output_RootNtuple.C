@@ -163,6 +163,27 @@ void Output_RootNtuple::PrepareTerminate()
   msg_Info()<<"                          "<<m_sum/m_c1<<" +/- "<<sqrt((m_sq/m_c1-sqr(m_sum/m_c1))/(m_c1-1.))<<" pb  (before reweighting) \n"<<endl; 
 }
 
+void Output_RootNtuple::AddDecayProducts(Particle *part,int &np) 
+{
+  DEBUG_FUNC(*part);
+  if (part->DecayBlob()) {
+    for (size_t i(0);i<part->DecayBlob()->NOutP();++i)
+      AddDecayProducts(part->DecayBlob()->OutParticle(i),np);
+    return;
+  }
+  DEBUG_VAR("Adding "<<*part);
+  ++np;
+  int kfc=part->Flav().Kfcode(); 
+  if (part->Flav().IsAnti()) kfc=-kfc;
+  if (m_fcnt>=m_flavlist.size()) {
+    m_flavlist.resize(m_flavlist.size()+3*m_avsize);
+    m_momlist.resize(m_momlist.size()+3*m_avsize);
+  }
+  m_flavlist[m_fcnt]=kfc;
+  m_momlist[m_fcnt]=part->Momentum();
+  ++m_fcnt;
+}
+
 void Output_RootNtuple::Output(Blob_List* blobs, const double weight) 
 {
   Blob* signal=0, *shower=0;
@@ -224,8 +245,11 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
     int np=0;
     for (int i=0;i<blob->NOutP();i++) {
       Particle *part=blob->OutParticle(i);
-      if (part->DecayBlob() &&
-	  part->DecayBlob()->Type()==btp::Signal_Process) continue;
+      if (part->DecayBlob()) {
+	if (m_mode==1 && part->DecayBlob()->Type()==btp::Signal_Process) continue;
+	AddDecayProducts(part,np);
+	continue;
+      }
       ++np;
       int kfc=part->Flav().Kfcode(); 
       if (part->Flav().IsAnti()) kfc=-kfc;

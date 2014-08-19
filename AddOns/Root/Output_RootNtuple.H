@@ -61,6 +61,7 @@ namespace SHERPA {
     std::vector<ATOOLS::Vec4D> m_momlist;
     void StoreEvt();
     void MPISync();
+    void AddDecayProducts(ATOOLS::Particle *part,int &np);
   public:
     Output_RootNtuple(const Output_Arguments &args);
     ~Output_RootNtuple();
