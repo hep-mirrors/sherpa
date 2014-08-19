@@ -171,7 +171,7 @@ void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
     //expo  = 1.+3./M_PI*(*p_alphaS)(sqrt(kt12*kt22))*dabs(y1-y2);
     expo  = (singlet?0.:1.)+p_eikonal->EffectiveIntercept(m_b1,m_b2,ybar);
     prob *= pow(s12/Max(s12,m_smin),expo);
-    prob /= double(m_Nfact);
+    prob /= sqrt(double(m_Nfact));
     if (m_analyse) m_histomap["Rescatter_wt"]->Insert(m_B,prob);
     PartPair partpair;
     partpair.first  = y1<y2?part:(*piter);
@@ -208,6 +208,8 @@ SelectRescatter(Particle *& part1,Particle *& part2) {
   if (!m_rescatter || m_probpairs.empty()) return false;
   while (!m_probpairs.empty()) {
     if (m_probpairs.begin()->first>ran->Get()) {
+      //msg_Out()<<METHOD<<" allows rescatter for prob = "
+      //       <<m_probpairs.begin()->first<<".\n";
       part1   = m_probpairs.begin()->second.first;
       part2   = m_probpairs.begin()->second.second;
       DeleteProbPairs(part1,part2);
