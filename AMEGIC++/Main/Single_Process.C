@@ -33,7 +33,6 @@ using namespace std;
 AMEGIC::Single_Process::Single_Process():
   m_gen_str(2), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_psgen(0), p_partner(this)
 {
-  m_lastk=1.0;
 }
 
 AMEGIC::Single_Process::~Single_Process()

@@ -51,7 +51,7 @@ Single_LOProcess::Single_LOProcess(const Process_Info &pi,
     if (m_rsmap[m_nin+i]>=0) m_srmap[m_rsmap[m_nin+i]]=m_nin+i;
   }
 
-  PHASIC::Process_Base::Init(pi, beam, isr, 1);
+  PHASIC::Process_Base::Init(pi, beam, isr, 0);
   AMEGIC::Process_Base::Init();
   m_newlib   = false;
   m_pslibname = m_libname = ToString(m_nin)+"_"+ToString(m_nout);
