@@ -261,6 +261,7 @@ void Decay_Channel::CalculateWidth()
       oldvalue = value;
     }
     opt++;
+    p_channels->MPISync();
     p_channels->Optimize(0.01);
 
     if (simple) break;          // this way error=0
