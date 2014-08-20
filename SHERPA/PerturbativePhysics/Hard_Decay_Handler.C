@@ -122,31 +122,13 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   // initialize them sorted by masses:
   Decay_Map::iterator dmit;
   Vertex_Table offshell;
-  msg_Info()<<"Initialising hard decay tables."<<endl;
-  size_t i(0);
+  DEBUG_INFO("Initialising hard decay tables: two-body decays.");
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
-    offshell.insert(make_pair(dmit->first,Vertex_List()));
-    msg_Tracking()<<"  Initialising two-body decays. Step "
-		  <<++i<<"/"<<p_decaymap->size()<<" ("<<dmit->first<<")            "
-		  <<endl;
     InitializeDirectDecays(dmit->second.at(0));
   }
-  i=0;
-  if (p_decaymap->size()) msg_Tracking()<<endl;
+  DEBUG_INFO("Initialising hard decay tables: three-body decays.");
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
-    msg_Tracking()<<"  Initialising three-body decays. Step "
-		  <<++i<<"/"<<p_decaymap->size()<<" ("<<dmit->first<<")            "
-		  <<endl;
-    if (m_offshell=="None") {
-      PRINT_INFO("Warning: Ignoring offshell decays as requested.");
-    }
-    else if (m_offshell=="Threshold") {
-      RefineDecaysThreshold(dmit->second.at(0));
-    }
-    else if (m_offshell=="ByWidth") {
-      RefineDecaysByWidth(dmit->second.at(0));
-    }
-    else THROW(fatal_error, "Parameter RESOLVE_DECAYS set to wrong value.");
+    InitializeOffshellDecays(dmit->second.at(0));
 
     // force/disable specified decay channels
     for (size_t i=0;i<dmit->second.at(0)->size();++i) {
@@ -289,45 +271,15 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
   if (m_set_widths) dt->Flav().SetWidth(dt->TotalWidth());
 }
 
-void Hard_Decay_Handler::RefineDecaysThreshold(Decay_Table* dt) {
-  DEBUG_FUNC(dt->Flav()<<" "<<dt->size());
-  size_t dtsize=dt->size();
-  for (size_t i=0;i<dtsize;++i) {
-    Decay_Channel* dc=dt->at(i);
-    if (!dc) THROW(fatal_error,"Could not retrieve decay table.");
-    msg_Debugging()<<*dc<<std::endl;
-    double outmass=0.0;
-    for (size_t j=1; j<dc->Flavs().size(); ++j)
-      outmass+=this->Mass(dc->Flavs()[j]);
-    msg_Debugging()<<this->Mass(dt->Flav())<<" vs "<<outmass<<std::endl;
-    if (this->Mass(dt->Flav())>outmass) continue;
-
-    vector<Decay_Channel*> new_dcs=ResolveDecay(dc);
-    for (size_t j=0; j<new_dcs.size(); ++j) {
-      dt->AddDecayChannel(new_dcs[j]);
-    }
-    if (new_dcs.size()>0) {
-      dc->SetActive(-1);
-      for (size_t j=0; j<new_dcs.size(); ++j) {
-        DEBUG_INFO("Adding "<<*new_dcs[j]);
-      }
-    }
-    else {
-      for (size_t j=0; j<new_dcs.size(); ++j) {
-        new_dcs[j]->SetActive(-1);
-      }
-    }
-  }
-}
-
-void Hard_Decay_Handler::RefineDecaysByWidth(Decay_Table* dt) {
+void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
   DEBUG_FUNC(dt->Flav()<<" "<<dt->size());
   size_t dtsize=dt->size();
   for (size_t i=0;i<dtsize;++i) {
     Decay_Channel* dc=dt->at(i);
     DEBUG_VAR(*dc);
     vector<Decay_Channel*> new_dcs=ResolveDecay(dc);
-    double sum_resolved_widths=0.0;
+
+    // check for duplicates
     for (size_t j=0; j<new_dcs.size(); ++j) {
       Decay_Channel* dup=dt->GetDecayChannel(new_dcs[j]->Flavs());
       if (dup) {
@@ -344,26 +296,50 @@ void Hard_Decay_Handler::RefineDecaysByWidth(Decay_Table* dt) {
         new_dcs[j]->ResetChannels();
         delete new_dcs[j];
         new_dcs[j]=NULL;
-        sum_resolved_widths-=dup->Width();
         CalculateWidth(dup);
-        sum_resolved_widths+=dup->Width();
       }
       else {
-        sum_resolved_widths+=new_dcs[j]->Width();
         dt->AddDecayChannel(new_dcs[j]);
       }
     }
-    DEBUG_INFO("resolved="<<sum_resolved_widths<<" vs. "<<dc->Width());
 
-    if (sum_resolved_widths>dc->Width()) {
+    if (TriggerOffshell(dc, new_dcs)) {
       dc->SetActive(-1);
+      for (size_t j=0; j<new_dcs.size(); ++j) {
+        if (new_dcs[j]) DEBUG_INFO("Adding "<<*new_dcs[j]);
+      }
     }
     else {
+      DEBUG_INFO("Keeping factorised.");
       for (size_t j=0; j<new_dcs.size(); ++j) {
         if (new_dcs[j]) new_dcs[j]->SetActive(-1);
       }
     }
   }
+}
+
+bool Hard_Decay_Handler::TriggerOffshell(Decay_Channel* dc, vector<Decay_Channel*> new_dcs) {
+  DEBUG_FUNC(dc->Name()<<"... "<<new_dcs.size());
+
+  if (m_offshell=="Threshold") {
+    double outmass=0.0;
+    for (size_t j=1; j<dc->Flavs().size(); ++j)
+      outmass+=this->Mass(dc->Flavs()[j]);
+    DEBUG_INFO(this->Mass(dc->Flavs()[0])<<" vs "<<outmass);
+    return (this->Mass(dc->Flavs()[0])<outmass);
+  }
+  else if (m_offshell=="ByWidth") {
+    double sum_resolved_widths=0.0;
+    for (size_t i=0; i<new_dcs.size(); ++i) {
+      if (new_dcs[i]) sum_resolved_widths+=new_dcs[i]->Width();
+    }
+    return (sum_resolved_widths>dc->Width());
+  }
+  else if (m_offshell=="None") {
+    return false;
+  }
+  else THROW(fatal_error, "Parameter RESOLVE_DECAYS set to wrong value.");
+  return false;
 }
 
 vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
@@ -424,6 +400,7 @@ vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
       Rambo* rambo = new Rambo(1,dc->NOut(),&dc->Flavs().front(),this);
       dc->Channels()->Add(rambo);
       dc->Channels()->Reset();
+      // TODO: add (additional) channel with BW for resolved resonance
 
       if (CalculateWidth(dc)) new_dcs.push_back(dc);
       else delete dc;

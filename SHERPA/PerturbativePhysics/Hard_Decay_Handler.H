@@ -43,8 +43,8 @@ namespace SHERPA {
 
     void SetDecayMasses(ATOOLS::Data_Reader *const dr);
     void InitializeDirectDecays(PHASIC::Decay_Table* dt);
-    void RefineDecaysThreshold(PHASIC::Decay_Table* dt);
-    void RefineDecaysByWidth(PHASIC::Decay_Table* dt);
+    void InitializeOffshellDecays(PHASIC::Decay_Table* dt);
+    bool TriggerOffshell(PHASIC::Decay_Channel* dc, std::vector<PHASIC::Decay_Channel*> new_dcs);
     std::vector<PHASIC::Decay_Channel*> ResolveDecay(PHASIC::Decay_Channel* dc);
     bool ProperVertex(MODEL::Single_Vertex* sv);
     
