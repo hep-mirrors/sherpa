@@ -22,7 +22,6 @@ namespace AMEGIC {
     Polarisation            m_pol;
     bool                    m_newlib;
     double                  m_iresult;
-    int                     m_libnumb;
     int                     m_emit,m_spect,m_type;
 
     Helicity              * p_hel;
@@ -99,7 +98,6 @@ namespace AMEGIC {
 				      std::vector<Process_Base *> &,
 				      std::vector<ATOOLS::Vec4D>*,std::vector<double>*);
     bool                SetUpIntegrator();
-    void                WriteMomFlavs(std::ofstream& to) { p_BS->WriteMomFlavs(to); }
     String_Handler    * GetStringHandler();
     Amplitude_Handler * GetAmplitudeHandler();
     Helicity *          GetHelicity();

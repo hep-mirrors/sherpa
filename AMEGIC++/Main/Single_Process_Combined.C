@@ -645,7 +645,6 @@ void AMEGIC::Single_Process_Combined::CreateMappingFile(Single_Process_Combined*
   *to<<"ME: "<<m_libname<<endl
     <<"PS: "<<m_pslibname<<endl;
   p_shand->Get_Generator()->WriteCouplings(*to);
-  partner->WriteMomFlavs(*to);
   to.Close();
 }
 

@@ -222,6 +222,16 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
 
   PolarizationNorm();
 
+  string sfname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name()+".sym";
+  if (FileExists(sfname)) {
+    My_In_File in(sfname);
+    if (!in.Open()) THROW(fatal_error,"Cannot open "+sfname);
+    double symf;
+    *in>>symf;
+    m_Norm*=symf;
+    in.Close();
+  }
+
   if (!p_LO_process->InitAmplitude(model,top,links,errs,m_checkloopmap)) return 0;
   m_iresult = p_LO_process->Result();
   nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);
@@ -348,9 +358,10 @@ bool Single_Virtual_Correction::SetUpIntegrator()
 bool Single_Virtual_Correction::CreateChannelLibrary()
 {
   if (!p_LO_process || p_LO_process->NumberOfDiagrams()==0) return 1;
+  if (p_LO_process->Partner()!=p_LO_process) return true;
   p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
   bool newch  = 0;
-  if (m_nin>=1)  newch = p_psgen->Construct(p_channellibnames,m_ptypename,m_pslibname,&m_flavs.front(),p_LO_process); 
+  if (m_nin>=1)  newch = p_psgen->Construct(p_channellibnames,m_ptypename,p_LO_process->PSLibName(),&m_flavs.front(),p_LO_process); 
   if (newch>0) return 0;
   return 1;
 }

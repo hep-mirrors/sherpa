@@ -107,8 +107,8 @@ void *Library_Loader::LoadLibrary(const std::string &name)
     }
   }
   msg_Debugging()<<"} failed"<<std::endl;
-  msg_Error()<<METHOD<<"(): Failed to load library 'lib"
-	     <<name<<LIB_SUFFIX<<"'."<<std::endl;
+  msg_Info()<<METHOD<<"(): Failed to load library 'lib"
+	    <<name<<LIB_SUFFIX<<"'."<<std::endl;
   return NULL;
 }
 

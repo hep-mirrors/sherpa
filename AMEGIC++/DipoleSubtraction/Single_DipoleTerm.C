@@ -57,11 +57,12 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   bool val=DetermineType();
   if (!val) return;
 
-  m_LOpij = m_nin+m_nout-2;
-  if (m_pi<m_nin) m_LOpij = m_pi;
+  m_LOpij = m_pi;
+  size_t m_LOpj=m_pj;
   m_LOpk  = m_pk;
-  if (m_pi<m_pk&&m_pi>=m_nin) m_LOpk--;
-  if (m_pj<m_pk) m_LOpk--;
+
+  if (m_pi>m_nin && m_flavs[m_pi].IsGluon() && m_flavs[m_pj].IsQuark())
+    std::swap<size_t>(m_LOpij,m_LOpj);
 
   //Construct LO Process
   Process_Info lopi=m_pinfo;
@@ -71,25 +72,26 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   if (tag!=m_nin+m_nout) {
     THROW(fatal_error, "Internal error");
   }
+  if (m_LOpij<m_nin) lopi.m_ii.m_ps[m_LOpij].m_tag=-1;
+  else lopi.m_fi.m_ps[m_LOpij-m_nin].m_tag=-1;
+  if (m_LOpk<m_nin) lopi.m_ii.m_ps[m_LOpk].m_tag=-2;
+  else lopi.m_fi.m_ps[m_LOpk-m_nin].m_tag=-2;
 
   if (m_pi<m_nin) {
-    lopi.m_ii.m_ps[m_pi]=Subprocess_Info(m_flij,m_pinfo.m_ii.m_ps[m_pi].m_id,
-					 m_pinfo.m_ii.m_ps[m_pi].m_pol);
-    lopi.m_ii.m_ps[m_pi].m_tag=-1;
-    lopi.m_fi.m_ps.erase(FindInInfo(lopi.m_fi, m_pj-m_nin));
+    lopi.m_ii.m_ps[m_pi].m_fl=m_flij;
   }
   else {
-    lopi.m_fi.m_ps.erase(FindInInfo(lopi.m_fi, m_pi-m_nin));
-    lopi.m_fi.m_ps.erase(FindInInfo(lopi.m_fi, m_pj-m_nin-1));
-    vector<Subprocess_Info>::iterator part=FindInInfo(m_pinfo.m_fi, m_pi-m_nin);
-    lopi.m_fi.m_ps.push_back(Subprocess_Info(m_flij,part->m_id, part->m_pol));
-    lopi.m_fi.m_ps.back().m_tag=-1;
+    lopi.m_fi.m_ps[m_LOpij-m_nin].m_fl=m_flij;
   }
-  if (m_LOpk<m_nin) lopi.m_ii.m_ps[m_LOpk].m_tag=-2;
-  else FindInInfo(lopi.m_fi, m_LOpk-m_nin)->m_tag=-2;
-  DEBUG_VAR(lopi);
-  Flavour f0(lopi.m_ii.m_ps[0].m_fl);
-  SortFlavours(lopi);
+  bool found(false);
+  for (std::vector<Subprocess_Info>::iterator
+	 it(lopi.m_fi.m_ps.begin());it!=lopi.m_fi.m_ps.end();++it)
+    if (it->m_tag==m_LOpj) {
+      lopi.m_fi.m_ps.erase(it);
+      found=true;
+      break;
+    }
+  if (!found) THROW(fatal_error,"WOOF!");
 
   if (lopi.m_amegicmhv>0) {
     if (lopi.m_amegicmhv==12)
@@ -306,28 +308,6 @@ bool Single_DipoleTerm::DetermineType() {
 
   if (m_ftype==0) m_valid=false;
   return m_valid;
-}
-
-vector<Subprocess_Info>::iterator
-Single_DipoleTerm::FindInInfo(Subprocess_Info& fi, int idx) const
-{
-  // Find particle #idx in the given final state tree
-  // and make sure it is not part of a decay for the time being
-  int cnt=0;
-  for (size_t i=0; i<fi.m_ps.size(); ++i) {
-    cnt+=fi.m_ps[i].NExternal();
-    if (idx<cnt) {
-      if (fi.m_ps[i].NExternal()==1) {
-        return fi.m_ps.begin()+i;
-      }
-      else {
-        THROW(not_implemented,
-              "Dipole subtraction for coloured particles in decays not implemented yet.");
-      }
-    }
-  }
-  THROW(fatal_error, "Internal Error");
-  return fi.m_ps.end();
 }
 
 void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms,const ATOOLS::Poincare &cms)

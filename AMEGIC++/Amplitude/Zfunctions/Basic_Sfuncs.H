@@ -41,8 +41,6 @@ namespace AMEGIC {
     double    angle;
     //! mass of the particle, described by the vector (polarizations only)
     double    mass;
-    //! for complex mass scheme(polarizations only): \f$ m^2+i\Gamma m\f$
-    Complex   cplxmass2;
     //! type of the vector
     mt::momtype type;
     //! kf code
@@ -68,7 +66,6 @@ namespace AMEGIC {
 	mom     = m.mom;
 	mom_img = m.mom_img;
 	mass    = m.mass;
-	cplxmass2    = m.cplxmass2;
 	angle   = m.angle;
 	type    = m.type;
 	kfc     = m.kfc;
@@ -96,7 +93,6 @@ namespace AMEGIC {
     void CalcMomlist();
     void CalcS(int i, int j);
     void PrecalcS();
-    void UpdateMasses(std::string);
     inline static int R1() { return ATOOLS::Spinor<double>::R1(); }
     inline static int R2() { return ATOOLS::Spinor<double>::R2(); }
     inline static int R3() { return ATOOLS::Spinor<double>::R3(); }
@@ -111,7 +107,6 @@ namespace AMEGIC {
     Basic_Sfuncs(int,int, ATOOLS::Flavour*,int*,std::string,std::string);
     ~Basic_Sfuncs();
     void Output(std::string name);
-    void WriteMomFlavs(std::ofstream& os);
 
     int    BuildMomlist(Pfunc_List&); 
     int    BuildTensorPolarisations(int); 

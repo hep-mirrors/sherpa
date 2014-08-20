@@ -16,7 +16,7 @@ using namespace std;
 std::ostream& AMEGIC::operator<<(std::ostream& os, const Momfunc& mf) {
   os<<mf.type<<";"<<mf.argnum;
   for (int i=0;i<mf.argnum;i++) os<<","<<mf.arg[i];
-  os<<","<<mf.angle<<","<<0<<","<<0<<";";
+  os<<","<<mf.angle<<","<<mf.kfc<<";";
   return os;
 }
 
@@ -44,12 +44,9 @@ std::istream& AMEGIC::operator>>(std::istream& is, Momfunc& mf) {
   mf.angle = ToType<double>(in.substr(0,pos));
   if (pos!=std::string::npos) in=in.substr(pos+1);
   else in="";
-  pos=in.find(",");
-  mf.mass = ToType<double>(in.substr(0,pos));
-  if (pos!=std::string::npos) in=in.substr(pos+1);
-  else in="";
   pos=in.find(";");
-  mf.cplxmass2 = ToType<Complex>(in.substr(0,pos+1));
+  mf.kfc=Flavour(ToType<long int>(in.substr(0,pos+1)));
+  mf.mass=Flavour(mf.kfc).Mass();
   return is;
 }
 
@@ -86,37 +83,6 @@ Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b,string nam
   for (int i=0;i<momcount;i++) delete[] calc_st[i];
   delete[] calc_st;
   calc_st = ioh.MatrixInput<int>("",momcount,momcount);
-  UpdateMasses(name2);
-}
-
-void Basic_Sfuncs::UpdateMasses(string name)
-{
-  int cnt=0;
-  My_In_File is(name);
-  is.Open();
-  string str;
-  for (;*is;) {
-    getline(*is,str);
-    if (str.find(string("fl"))==0) {
-      int a=str.find("[");
-      int b=str.find("]");
-      int idx = ToType<int>(str.substr(a+1,a-b-1));
-      if (idx<momcount) {
-	cnt++;
-	a = str.find("=");
-	kf_code kfc = ToType<int>(str.substr(a+1));
-	Momlist[idx].kfc = kfc;
-	Flavour flav(kfc);
-	Momlist[idx].mass = flav.Mass();
-	if (idx>=nmom) Momlist[idx].cplxmass2 = Complex(sqr(flav.Mass()),-flav.Width()*flav.Mass());
-      }
-      else {
-	THROW(critical_error,"Inconsistent flavour entry in *.map");
-      }
-    }
-  }
-  if (cnt!=momcount) THROW(critical_error,"Missing flavour in *.map");
-  is.Close();
 }
 
 void Basic_Sfuncs::Output(string name)
@@ -127,13 +93,6 @@ void Basic_Sfuncs::Output(string name)
   ioh.Output("",momcount);
   for (int i=0;i<momcount;i++) ioh.GetOFstream()<<Momlist[i]<<endl;
   ioh.MatrixOutput<int>("",calc_st,momcount,momcount);
-}
-
-void Basic_Sfuncs::WriteMomFlavs(ofstream& os)
-{
-  for (int i=0;i<momcount;i++) {
-    os<<"fl["<<i<<"]="<<Momlist[i].kfc<<endl;
-  }
 }
 
 Basic_Sfuncs::~Basic_Sfuncs() 
@@ -426,15 +385,11 @@ int Basic_Sfuncs::BuildPolarisations(int momindex, Flavour fl)
     return 0;
   }
   double Mass = fl.Mass();
-  Complex Mass2= Complex(sqr(Mass),0.);
-  if(!ATOOLS::IsZero(fl.Width()))
-      Mass2-=Complex(0.,fl.Width()*Mass);
   Momfunc* Mom = new Momfunc;
   Mom->argnum = 2;
   Mom->arg    = new int[Mom->argnum];
   Mom->arg[1] = momindex;
   Mom->mass  = Mass;
-  Mom->cplxmass2 = Mass2;
   Mom->kfc = fl.Kfcode(); 
 
   if (GetPolNumber(momindex,mt::p_lh,0,1)==-1) {
@@ -580,7 +535,11 @@ void Basic_Sfuncs::CalcMomlist()
  
       if(ATOOLS::IsZero(Momlist[j].mass))Momlist[j].mom=Vec4D(0.,0.,0.,0.);
       else {
-	  help=sqrt((Complex(1.,0.)-Momlist[j].cplxmass2/ps)/Momlist[j].cplxmass2);
+	Flavour fl(Momlist[j].kfc);
+	double Mass = fl.Mass();
+	Complex Mass2= Complex(sqr(Mass),0.);
+	if(!ATOOLS::IsZero(fl.Width())) Mass2-=Complex(0.,fl.Width()*Mass);
+	help=sqrt((Complex(1.,0.)-Mass2/ps)/Mass2);
 	  Momlist[j].mom=real(help)*mom;
 	  Momlist[j].mom_img=imag(help)*mom;
       }

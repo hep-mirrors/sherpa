@@ -970,7 +970,7 @@ int Amplitude_Handler::CompareAmplitudes(Amplitude_Handler* c_ampl, double & sf,
       return 0;
     }
     if (i==0) sf = factor;
-    else if(!ATOOLS::IsEqual(sf,factor)) {
+    else if(sf!=factor) {
       m_flavourmap.clear();
       return 0;
     }
@@ -992,6 +992,7 @@ int Amplitude_Handler::SingleCompare(Point* p1,Point* p2, double & sf, map<strin
   }
   //Flavour equal....
   if (p1->fl.Mass()!=p2->fl.Mass()) return 0;
+  if (p1->fl.Width()!=p2->fl.Width()) return 0;
   if (p1->fl.Spin()!=p2->fl.Spin()) return 0;
 
   //outgoing number equal
@@ -1012,17 +1013,11 @@ int Amplitude_Handler::SingleCompare(Point* p1,Point* p2, double & sf, map<strin
   if (p1->Color->Type()!=p2->Color->Type()) return 0;
   
   //Couplings equal
-  //if (p1->ncpl!=p2->ncpl) return 0;
-  Complex ratio = Complex(0.,0.);
-  for (int i=0;i<2;i++) {
-    if (ratio==Complex(0.,0.) && p2->v->Coupling(i)!=Complex(0.,0.)) ratio = p1->v->Coupling(i)/p2->v->Coupling(i);
-    if (!ATOOLS::IsEqual(p2->v->Coupling(i)*ratio,p1->v->Coupling(i))) return 0;
-    if (!ATOOLS::IsEqual(p2->cpl[i],p1->cpl[i])) {
-      string help=ToString(p2->cpl[i]);
-      if (cplmap.find(help)==cplmap.end()) cplmap[help]=p1->cpl[i];
-    } 
+  if (p1->v->cpl.size()!=p2->v->cpl.size()) return 0;
+  for (int i=0;i<p1->v->cpl.size();i++) {
+    if (p1->v->Coupling(i)!=p2->v->Coupling(i)) return 0;
+    if (p1->cpl[i]!=p2->cpl[i]) return 0;
   }
-  sf *= abs(ratio);
   // return 1 if equal and 0 if different
 
   {

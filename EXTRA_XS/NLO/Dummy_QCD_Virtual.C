@@ -23,6 +23,7 @@ namespace EXTRAXS {
     void Calc(const ATOOLS::Vec4D_Vector& momenta);
 
   };
+  class Dummy_QCD_Virtual2 { };
 }
 
 using namespace EXTRAXS;
@@ -55,6 +56,36 @@ operator()(const Process_Info &pi) const
     if (helpvd.size()>3) eps2=helpvd[3];
     Flavour_Vector fl(pi.ExtractFlavours());
     msg_Info()<<om::bold<<om::green<<"Caution: Using Dummy_QCD_Virtual for "
+              <<fl<<om::reset<<std::endl;
+    return new Dummy_QCD_Virtual(pi,fl,eps2,eps,fin);
+  }
+  return NULL;
+}
+
+DECLARE_VIRTUALME2_GETTER(Dummy_QCD_Virtual2,"Dummy_QCD_Virtual2")
+Virtual_ME2_Base *ATOOLS::Getter
+<Virtual_ME2_Base,Process_Info,Dummy_QCD_Virtual2>::
+operator()(const Process_Info &pi) const
+{
+  if (pi.m_loopgenerator.find("Dummy")!=0) return NULL;
+  std::string args(pi.m_loopgenerator);
+  size_t pos(args.find('['));
+  if (pos!=std::string::npos) args=args.substr(pos+1);
+  pos=args.rfind(']');
+  if (pos!=std::string::npos) args=args.substr(0,pos);
+  Data_Reader read(",",";","!","=");
+  read.SetString(args);
+  std::vector<double> helpvd;
+  if (!read.VectorFromString(helpvd,"")) return NULL;
+  if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
+  if (pi.m_fi.m_nloqcdtype&nlo_type::loop) {
+    double eps2(0.3), eps(0.3), fin(0.3);
+    if (helpvd.size()>0) fin=helpvd[0];
+    if (helpvd.size()>1) eps=helpvd[1];
+    if (helpvd.size()>2) eps2=helpvd[2];
+    Flavour_Vector fl(pi.ExtractFlavours());
+    msg_Info()<<om::bold<<om::green<<"Caution: Using dummy virtual ( e2 = "
+	      <<eps2<<", e = "<<eps<<", f = "<<fin<<" ) for "
               <<fl<<om::reset<<std::endl;
     return new Dummy_QCD_Virtual(pi,fl,eps2,eps,fin);
   }

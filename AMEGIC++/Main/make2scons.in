@@ -28,8 +28,8 @@ if env['PLATFORM']=='darwin':
 " > SConstruct;
 fi;
 test "$procdir" = "x" && exit 0;
-printf "Processing ("$(echo $procdir/P?_* $procdir/fsr* | wc -w)") ";
-for i in $procdir/P?_* $procdir/fsr*; do
+printf "Processing ("$(echo $procdir/?_?__* $procdir/fsr* | wc -w)") ";
+for i in $procdir/?_?__* $procdir/fsr*; do
   test -d $i || continue;
   cd $i; printf ".";
   make_scons;

@@ -78,7 +78,6 @@ namespace AMEGIC {
 				      std::vector<Process_Base *> &,
 				      std::vector<Process_Base *> &);
     bool                SetUpIntegrator();
-    void                WriteMomFlavs(std::ofstream& to) { p_BS->WriteMomFlavs(to); }
     String_Handler    * GetStringHandler()             { return p_shand;}
     Amplitude_Handler * GetAmplitudeHandler()          { return p_ampl;}
     Helicity *          GetHelicity()                  { return p_hel; }    

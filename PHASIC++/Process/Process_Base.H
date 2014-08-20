@@ -27,8 +27,6 @@ namespace METOOLS { class Spin_Amplitudes; }
 
 namespace PHASIC {
 
-  typedef std::map<int,int> FMMap;
-
   class Process_Integrator;
   class Phase_Space_Handler;
   class Combined_Selector;
@@ -76,9 +74,8 @@ namespace PHASIC {
 
     NLOTypeStringProcessMap_Map *p_apmap;
 
-    static void SortFlavours(Subprocess_Info &info,FMMap *const fmm=0);
-    static void SortFlavours(std::vector<ATOOLS::Cluster_Leg*> &legs,
-			     FMMap *const fmm=0);
+    static void SortFlavours(Subprocess_Info &info);
+    static void SortFlavours(std::vector<ATOOLS::Cluster_Leg*> &legs);
 
   public:
 

@@ -166,7 +166,7 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
     if (m_flavs[i].Strong()) partlist.push_back(i);
   }
   for (size_t i=0;i<partlist.size();i++) {
-    for (size_t j=0;j<partlist.size();j++) {
+    for (size_t j=i+1;j<partlist.size();j++) {
       for (size_t k=0;k<partlist.size();k++) if (k!=i&&k!=j&&i!=j) {
 	Single_DipoleTerm *pdummy = new Single_DipoleTerm(cinfo,partlist[i],partlist[j],partlist[k],p_int);
 	if (pdummy->IsValid()) {

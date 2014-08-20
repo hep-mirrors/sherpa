@@ -54,7 +54,6 @@ Single_LOProcess::Single_LOProcess(const Process_Info &pi,
   PHASIC::Process_Base::Init(pi, beam, isr, 1);
   AMEGIC::Process_Base::Init();
   m_newlib   = false;
-  m_libnumb  = 0;
   m_pslibname = m_libname = ToString(m_nin)+"_"+ToString(m_nout);
   if (m_gen_str>1) m_ptypename = "P"+m_libname;
   else m_ptypename = "N"+m_libname;
@@ -145,6 +144,7 @@ bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,s
 	}
 	from.Close();
 	InitFlavmap(p_partner);
+	FillCombinations();
 	return true;
       }
     }
@@ -237,7 +237,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 	    My_In_File::CopyInDB(mlname+".col",mnname+".col");
 	    for (size_t i=0;i<m_nin+m_nout-1;i++) if (m_flavs[i].Strong()) {
 	      for (size_t j=i+1;j<m_nin+m_nout;j++) if (m_flavs[j].Strong()) {
-		string sij=string("_S")+ToString(i)+string("_")+ToString(j);
+		string sij=string("__S")+ToString(i)+string("_")+ToString(j);
 		My_In_File::CopyInDB(mlname+sij+".col",mnname+sij+".col");
 	      }
 	    }
@@ -249,6 +249,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 	for (std::map<string,Flavour>::const_iterator fit=p_ampl->GetFlavourmap().begin();
 	     fit!=p_ampl->GetFlavourmap().end();fit++) AddtoFlavmap(fit->first,fit->second);
 	InitFlavmap(p_partner);
+	FillCombinations();
 	if (!found) WriteAlternativeName(p_partner->Name());
 	m_iresult = p_partner->Result()*m_sfactor;
 
@@ -263,6 +264,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 0;
     if (!TestLib()) return 0;
     if (p_partner==this) links.push_back(this);
+    FillCombinations();
     msg_Info()<<".";
     Minimize();
     return 1;
@@ -272,6 +274,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 			     top,p_BS,m_ptypename+string("/")+m_name,127,127);
   m_pol.Add_Extern_Polarisations(p_BS,&m_flavs.front(),p_hel);
   p_BS->Initialize();
+  FillCombinations();
 
 
   int result(Tests()); 
@@ -326,7 +329,7 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
   ATOOLS::MakeDir(newpath);
 
-  m_name+= "_S"+ToString((int)m_emit)+"_"+ToString((int)m_spect);
+  m_name+= "__S"+ToString((int)m_emit)+"_"+ToString((int)m_spect);
   if (m_flavs[m_emit].IsGluon()) {
     p_pl[m_emit]=Pol_Info();
     p_pl[m_emit].Init(2);
@@ -400,7 +403,7 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 	    My_In_File::CopyInDB(mlname+".col",mnname+".col");
 	    for (size_t i=0;i<m_nin+m_nout-1;i++) if (m_flavs[i].Strong()) {
 	      for (size_t j=i+1;j<m_nin+m_nout;j++) if (m_flavs[j].Strong()) {
-		string sij=string("_S")+ToString(i)+string("_")+ToString(j);
+		string sij=string("__S")+ToString(i)+string("_")+ToString(j);
 		My_In_File::CopyInDB(mlname+sij+".col",mnname+sij+".col");
 	      }
 	    }
@@ -412,6 +415,7 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 	for (std::map<string,Flavour>::const_iterator fit=p_ampl->GetFlavourmap().begin();
 	     fit!=p_ampl->GetFlavourmap().end();fit++) AddtoFlavmap(fit->first,fit->second);
 	InitFlavmap(p_partner);
+	FillCombinations();
 	m_iresult = p_partner->Result()*m_sfactor;
 
 	Minimize();
@@ -426,6 +430,7 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 1;
     if (!TestLib(pfactors)) return 0;
     if (p_partner==this) links.push_back(this);
+    FillCombinations();
     Minimize();
     return 1;
   }
@@ -435,6 +440,7 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 			     m_emit,m_spect);
   m_pol.Add_Extern_Polarisations(p_BS,&m_flavs.front(),p_hel);
   p_BS->Initialize();
+  FillCombinations();
 
   int tr=Tests(pfactors);
   switch (tr) {
@@ -580,7 +586,7 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
 
   if (gauge_test) {
     if (!ATOOLS::IsEqual(M2,M2g)) {
-      msg_Out()<<"WARNING:  Gauge test not satisfied: "
+      msg_Info()<<"WARNING:  Gauge test not satisfied: "
 	       <<M2<<" vs. "<<M2g<<" : "<<dabs(M2/M2g-1.)*100.<<"%"<<endl
 	       <<"Gauge(1): "<<abs(M2)<<endl
 	       <<"Gauge(2): "<<abs(M2g)<<endl;
@@ -647,7 +653,7 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
     }
     if (!ATOOLS::IsEqual(M2,M2g)) {
       if (abs(M2/M2g-1.)>rpa->gen.Accu()) {
-	msg_Out()<<"WARNING: Library cross check not satisfied: "
+	msg_Info()<<"WARNING: Library cross check not satisfied: "
 		 <<M2<<" vs. "<<M2g<<"  difference:"<<abs(M2/M2g-1.)*100.<<"%"<<endl
 		 <<"   Mapping file(1) : "<<abs(M2)<<endl
 		 <<"   Original    (2) : "<<abs(M2g)<<endl
@@ -655,7 +661,7 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
 	THROW(critical_error,"Check output above. Increase NUM_ACCURACY if you wish to skip this test.");
       }
       else {
-	msg_Out()<<"WARNING: Library cross check not satisfied: "
+	msg_Info()<<"WARNING: Library cross check not satisfied: "
 		 <<M2<<" vs. "<<M2g<<"  difference:"<<abs(M2/M2g-1.)*100.<<"%"<<endl
 		 <<"   assuming numerical reasons with small numbers, continuing "<<endl;
       }
@@ -753,12 +759,12 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
       }
       M2S *= sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS));
       if (!ATOOLS::IsEqual(M2g,M2S)) {
-	msg_Out()<<"WARNING: String test not satisfied: "
+	msg_Info()<<"WARNING: String test not satisfied: "
 		 <<M2g<<" vs. "<<M2S<<"  difference:"<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
 	if (abs(M2g/M2S-1.)>rpa->gen.Accu()) {
 	  THROW(critical_error,"Check output above. Increase NUM_ACCURACY if you wish to skip this test.");
 	}
-	msg_Out()<<"         assuming numerical reasons, continuing "<<endl;
+	msg_Info()<<"         assuming numerical reasons, continuing "<<endl;
       }
       return 1+fmfbnl;
     }
@@ -859,12 +865,11 @@ int Single_LOProcess::CheckLibraries(std::vector<double> * pfactors) {
   String_Handler * shand1;
   shand1      = new String_Handler(p_shand->Get_Generator());
   
-  m_libnumb  = 0;
   string testname;
   double M2s, helvalue;
 
   for (;;) {
-    testname  = CreateLibName()+string("_")+ToString(m_libnumb);
+    testname  = CreateLibName();
     if (shand1->SearchValues(m_gen_str,testname,p_BS)) {
       shand1->Calculate();
       
@@ -890,7 +895,6 @@ int Single_LOProcess::CheckLibraries(std::vector<double> * pfactors) {
       }
     } 
     else break;
-    ++m_libnumb;
   }
   if (shand1) { delete shand1; shand1 = 0; }
   return 0;
@@ -934,18 +938,14 @@ int Single_LOProcess::CheckStrings(Single_LOProcess* tproc,std::vector<double> *
 void Single_LOProcess::WriteLibrary() 
 {
   if (m_gen_str<2) return;
-  string testname;
   string newpath=rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/");
-  for (;;) {
-    testname    = CreateLibName()+string("_")+ToString(m_libnumb);
-    if (!(FileExists(newpath+m_ptypename+string("/")+testname+string("/V.H")))) break;
-    ++m_libnumb;
-  }
-  m_libname = testname;
+  m_libname = CreateLibName();
   if (p_partner==this) m_pslibname = m_libname;
                   else m_pslibname = p_partner->PSLibName();
+  if (!FileExists(newpath+m_ptypename+string("/")+m_libname+string("/V.H"))) {
   ATOOLS::MakeDir(newpath+m_ptypename+"/"+m_libname); 
   p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
+  }
   CreateMappingFile(this);
   p_BS->Output(newpath+m_ptypename+string("/")+m_libname);
   p_ampl->StoreAmplitudeConfiguration(newpath+m_ptypename+string("/")+m_libname);
@@ -960,12 +960,12 @@ void Single_LOProcess::WriteLibrary()
 
 std::string  Single_LOProcess::CreateLibName()
 {
-  string name=m_ptypename;
-  name+="_"+ToString(p_ampl->GetGraphNumber());
-  name+="_"+ToString(p_shand->NumberOfCouplings());
-  name+="_"+ToString(p_shand->NumberOfZfuncs());
-  name+="_"+ToString(p_hel->MaxHel());
-  name+="_"+ToString(p_BS->MomlistSize());
+  std::string name(m_name);
+  size_t bpos(name.find("__QCD("));
+  if (bpos!=std::string::npos) {
+    size_t epos(name.find(')',bpos));
+    if (epos!=std::string::npos) name.erase(bpos,epos-bpos+1);
+  }
   return name;
 }
 
@@ -990,7 +990,6 @@ void Single_LOProcess::CreateMappingFile(Single_LOProcess* partner) {
     *to<<"ME: "<<m_libname<<endl
       <<"PS: "<<m_pslibname<<endl;
     p_shand->Get_Generator()->WriteCouplings(*to);
-    partner->WriteMomFlavs(*to);
   }
   else {
     *to<<"ME: 0"<<endl
@@ -1276,6 +1275,35 @@ void AMEGIC::Single_LOProcess::FillCombinations()
 #ifdef DEBUG__Fill_Combinations
   msg_Debugging()<<METHOD<<"(): '"<<m_name<<"' {\n";
 #endif
+  std::string fname=rpa->gen.Variable("SHERPA_CPP_PATH")
+    +"/Process/Amegic/"+m_ptypename+"/"+m_name+".clu";
+  if (FileExists(fname)) {
+    My_In_File from(fname);
+    if (!from.Open()) THROW(critical_error,"No clu for "+m_name);
+    size_t size(0);
+    *from>>size;
+    for (size_t i(0);i<size;++i) {
+      size_t ida(0), idb(0);
+      *from>>ida>>idb;
+      m_ccombs.insert(std::pair<size_t,size_t>(ida,idb));
+    }
+    *from>>size;
+    for (size_t i(0);i<size;++i) {
+      size_t id(0), fsize(0);
+      *from>>id>>fsize;
+      m_cflavs[id].resize(fsize);
+      for (size_t j(0);j<fsize;++j) {
+	long int fl(0);
+	*from>>fl;
+	m_cflavs[id][j]=Flavour(abs(fl),fl<0);
+      }
+    }
+    std::string eof;
+    *from>>eof;
+    if (eof!="eof") THROW(critical_error,"Corrupted clu for "+m_name);
+    from.Close();
+    return;
+  }
   size_t nd(NumberOfDiagrams());
   for (size_t i(0);i<nd;++i) {
     Point *p(Diagram(i));
@@ -1288,13 +1316,27 @@ void AMEGIC::Single_LOProcess::FillCombinations()
 		 <<" combinations\n";
   msg_Debugging()<<"}\n";
 #endif
+  My_Out_File to(fname);
+  to.Open();
+  *to<<m_ccombs.size()<<"\n";
+  for (Combination_Set::const_iterator
+	 cit(m_ccombs.begin());cit!=m_ccombs.end();++cit)
+    *to<<cit->first<<" "<<cit->second<<"\n";
+  *to<<m_cflavs.size()<<"\n";
+  for (CFlavVector_Map::const_iterator
+	 cit(m_cflavs.begin());cit!=m_cflavs.end();++cit) {
+    *to<<cit->first<<" "<<cit->second.size();
+    for (Flavour_Vector::const_iterator fit(cit->second.begin());
+	 fit!=cit->second.end();++fit) *to<<" "<<(long int)*fit;
+    *to<<"\n";
+  }
+  *to<<"eof\n";
+  to.Close();
 }
 
 bool AMEGIC::Single_LOProcess::Combinable
 (const size_t &idi,const size_t &idj)
 {
-  if (p_partner!=this) return p_partner->Combinable(idi,idj);
-  if (m_ccombs.empty()) FillCombinations();
   Combination_Set::const_iterator 
     cit(m_ccombs.find(std::pair<size_t,size_t>(idi,idj)));
   return cit!=m_ccombs.end();
@@ -1303,8 +1345,6 @@ bool AMEGIC::Single_LOProcess::Combinable
 const Flavour_Vector &AMEGIC::Single_LOProcess::
 CombinedFlavour(const size_t &idij)
 {
-  if (p_partner!=this) return p_partner->CombinedFlavour(idij);
-  if (m_cflavs.empty()) FillCombinations();
   CFlavVector_Map::const_iterator fit(m_cflavs.find(idij));
   if (fit==m_cflavs.end()) THROW(fatal_error,"Invalid request");
   return fit->second;
