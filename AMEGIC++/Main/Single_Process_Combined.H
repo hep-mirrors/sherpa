@@ -70,7 +70,6 @@ namespace AMEGIC {
     int                 CheckLibraries();
     int                 CheckStrings(Single_Process_Combined*);
     void                WriteLibrary();
-    std::string         CreateLibName();
     void                CreateMappingFile(Single_Process_Combined*);
     void                UpdateMappingFile(std::string,std::map<std::string,Complex> &); 
     bool                CreateChannelLibrary();

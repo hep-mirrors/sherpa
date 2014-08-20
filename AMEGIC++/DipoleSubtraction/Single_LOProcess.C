@@ -958,17 +958,6 @@ void Single_LOProcess::WriteLibrary()
   sync();
 }
 
-std::string  Single_LOProcess::CreateLibName()
-{
-  std::string name(m_name);
-  size_t bpos(name.find("__QCD("));
-  if (bpos!=std::string::npos) {
-    size_t epos(name.find(')',bpos));
-    if (epos!=std::string::npos) name.erase(bpos,epos-bpos+1);
-  }
-  return name;
-}
-
 void Single_LOProcess::CreateMappingFile(Single_LOProcess* partner) {
   if (m_gen_str<2) return;
   std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";

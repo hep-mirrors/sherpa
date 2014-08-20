@@ -627,17 +627,6 @@ void AMEGIC::Single_Process::WriteLibrary()
   sync();
 }
 
-std::string  AMEGIC::Single_Process::CreateLibName()
-{
-  std::string name(m_name);
-  size_t bpos(name.find("__QCD("));
-  if (bpos!=std::string::npos) {
-    size_t epos(name.find(')',bpos));
-    if (epos!=std::string::npos) name.erase(bpos,epos-bpos+1);
-  }
-  return name;
-}
-
 void AMEGIC::Single_Process::CreateMappingFile(Single_Process* partner) {
   if (m_gen_str<2) return;
   std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";

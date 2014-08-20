@@ -48,6 +48,7 @@ namespace AMEGIC {
 
     // member functions
     void Init();
+    std::string         CreateLibName();
     virtual int  InitAmplitude(MODEL::Model_Base *,Topology *,
 			       std::vector<Process_Base *> &,
 			       std::vector<Process_Base *> &) = 0;

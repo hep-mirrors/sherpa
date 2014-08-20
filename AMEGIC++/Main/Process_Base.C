@@ -259,3 +259,19 @@ bool AMEGIC::Process_Base::FlavCompare(PHASIC::Process_Base *const proc)
     if (m_flavs[i].IsAnti()!=proc->Flavours()[i].IsAnti()) flavsok=false;
   return flavsok;
 }
+
+std::string  AMEGIC::Process_Base::CreateLibName()
+{
+  std::string name(m_name);
+  size_t bpos(name.find("__QCD("));
+  if (bpos!=std::string::npos) {
+    size_t epos(name.find(')',bpos));
+    if (epos!=std::string::npos) name.erase(bpos,epos-bpos+1);
+  }
+  for (size_t i(0);(i=name.find('-',i))!=std::string::npos;name.replace(i,1,"m"));
+  for (size_t i(0);(i=name.find('+',i))!=std::string::npos;name.replace(i,1,"p"));
+  for (size_t i(0);(i=name.find('~',i))!=std::string::npos;name.replace(i,1,"x"));
+  for (size_t i(0);(i=name.find('(',i))!=std::string::npos;name.replace(i,1,"_"));
+  for (size_t i(0);(i=name.find(')',i))!=std::string::npos;name.replace(i,1,"_"));
+  return name;
+}

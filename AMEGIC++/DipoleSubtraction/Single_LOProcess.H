@@ -76,7 +76,6 @@ namespace AMEGIC {
     void                WriteLibrary();
     bool                FoundLib(std::string& pID);
   protected:
-    std::string         CreateLibName();
     void                CreateMappingFile(Single_LOProcess*);
     void                UpdateMappingFile(std::string,std::map<std::string,Complex> &); 
     void                WriteAlternativeName(std::string aname);

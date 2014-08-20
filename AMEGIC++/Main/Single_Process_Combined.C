@@ -615,17 +615,6 @@ void AMEGIC::Single_Process_Combined::WriteLibrary()
   sync();
 }
 
-std::string  AMEGIC::Single_Process_Combined::CreateLibName()
-{
-  string name=m_ptypename;
-  name+="_"+ToString(p_ampl->GetGraphNumber());
-  name+="_"+ToString(p_shand->NumberOfCouplings());
-  name+="_"+ToString(p_shand->NumberOfZfuncs());
-  name+="_"+ToString(p_hel->MaxHel());
-  name+="_"+ToString(p_BS->MomlistSize());
-  return name;
-}
-
 void AMEGIC::Single_Process_Combined::CreateMappingFile(Single_Process_Combined* partner) {
   if (m_gen_str<2) return;
   std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";
