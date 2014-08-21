@@ -18,6 +18,7 @@
 #include "PHASIC++/Decays/Color_Function_Decay.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PHASIC++/Channels/Rambo.H"
+#include "PHASIC++/Channels/Decay_Dalitz.H"
 #include "METOOLS/Main/Spin_Structure.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
@@ -276,7 +277,6 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
   size_t dtsize=dt->size();
   for (size_t i=0;i<dtsize;++i) {
     Decay_Channel* dc=dt->at(i);
-    DEBUG_VAR(*dc);
     vector<Decay_Channel*> new_dcs=ResolveDecay(dc);
 
     // check for duplicates
@@ -306,7 +306,7 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
     if (TriggerOffshell(dc, new_dcs)) {
       dc->SetActive(-1);
       for (size_t j=0; j<new_dcs.size(); ++j) {
-        if (new_dcs[j]) DEBUG_INFO("Adding "<<*new_dcs[j]);
+        if (new_dcs[j]) DEBUG_INFO("Adding "<<new_dcs[j]->Name());
       }
     }
     else {
@@ -344,7 +344,7 @@ bool Hard_Decay_Handler::TriggerOffshell(Decay_Channel* dc, vector<Decay_Channel
 
 vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
 {
-  DEBUG_FUNC(*dc1);
+  DEBUG_FUNC(dc1->Name());
   vector<Decay_Channel*> new_dcs;
   const std::vector<ATOOLS::Flavour> flavs1(dc1->Flavs());
   for (size_t j=1;j<flavs1.size();++j) {
@@ -366,9 +366,10 @@ vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
       dc->AddDecayProduct(flavs1[3-j]);
       dc->AddDecayProduct(sv->in[1]);
       dc->AddDecayProduct(sv->in[2]);
-      DEBUG_FUNC("trying "<<*dc);
+      DEBUG_FUNC("trying "<<dc->Name());
       // TODO what about W+ -> b t -> b W b -> b b ... two diagrams, factor 2, ...?
-      // TODO what about W' -> b t -> b W b ... two diagrams, factor 2, ...?
+      // TODO what about identical particles like W' -> b t -> b W b ... two diagrams, factor 2, ...?
+      // TODO what about W -> W gamma -> l v gamma?
       for (size_t l=1; l<4; ++l) {
         if (dc->Flavs()[l]==flavs1[3-j]) nonprop=l;
       }
@@ -383,6 +384,7 @@ vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
       DEBUG_VAR(flavs1[j]);
       Comix1to3* diagram=new Comix1to3(dc->Flavs(),flavs1[j],
                                        nonprop, propi, propj);
+
       Color_Function_Decay* col1=new Color_Function_Decay(*dc1->GetDiagrams()[0].second);
       DEBUG_VAR(*col1);
       Color_Function_Decay col2(sv->Color[0]);
@@ -399,7 +401,16 @@ vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
       dc->Channels()->SetNout(dc->NOut());
       Rambo* rambo = new Rambo(1,dc->NOut(),&dc->Flavs().front(),this);
       dc->Channels()->Add(rambo);
+
+      Decay_Dalitz* dalitz = new Decay_Dalitz(&dc->Flavs().front(),
+                                              flavs1[j].Mass(), flavs1[j].Width(),
+                                              nonprop, propi, propj, this);
+      dc->Channels()->Add(dalitz);
+
       dc->Channels()->Reset();
+
+
+
       // TODO: add (additional) channel with BW for resolved resonance
 
       if (CalculateWidth(dc)) new_dcs.push_back(dc);
@@ -421,8 +432,7 @@ bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
   for (size_t l=1; l<dc->Flavs().size(); ++l)
     outmass+=this->Mass(dc->Flavs()[l]);
   if (this->Mass(dc->Flavs()[0])>outmass) {
-    DEBUG_INFO("Starting calculation of widths now.");
-    DEBUG_INFO(*dc);
+    DEBUG_FUNC("Starting calculation of "<<dc->Name()<<" width now.");
     if (m_store_results && m_read.find(dc->Flavs()[0])!=m_read.end()) {
       if (m_read[dc->Flavs()[0]].find(dc->IDCode())!=
           m_read[dc->Flavs()[0]].end()) {
