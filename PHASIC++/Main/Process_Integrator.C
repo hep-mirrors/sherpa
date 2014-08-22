@@ -50,6 +50,8 @@ bool Process_Integrator::Initialize
   p_momenta.resize(m_nin+m_nout);
   p_beamhandler=beamhandler;
   p_isrhandler=isrhandler;
+  if (p_proc->Info().m_fi.m_nloqcdtype!=nlo_type::lo) m_smode=0;
+  if (p_proc->Info().m_fi.m_nloewtype!=nlo_type::lo) m_smode=0;
   Data_Reader read(" ",";","!","=");
   m_swmode=read.GetValue<int>("SELECTION_WEIGHT_MODE", 0);
   static bool minit(false);
