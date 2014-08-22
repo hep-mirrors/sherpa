@@ -270,9 +270,9 @@ bool Single_Real_Correction::SetUpIntegrator()
 void Single_Real_Correction::SetLookUp(const bool lookup)
 {
   m_lookup=lookup; 
-  if (p_tree_process) p_tree_process->SetLookUp(lookup);
+  if (p_tree_process) p_tree_process->SetLookUp(false);
   for (size_t i=0;i<m_subtermlist.size();i++) 
-    m_subtermlist[i]->SetLookUp(lookup);
+    m_subtermlist[i]->SetLookUp(false);
 }
 
 void Single_Real_Correction::Minimize()
