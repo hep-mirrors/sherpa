@@ -32,5 +32,6 @@ localinc_HEADERS      =	\
 
 libPhasicSelectors_la_LIBADD = \
 		@CONDITIONAL_FASTJETLIBS@
-        
-INCLUDES      = @CONDITIONAL_FASTJETINCS@
+
+libPhasicSelectors_la_CPPFLAGS = $(AM_CPPFLAGS) \
+		@CONDITIONAL_FASTJETINCS@
