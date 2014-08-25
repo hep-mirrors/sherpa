@@ -556,6 +556,8 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     // msg_Out()<<".\n";
     bdbmeweight->Set<double>(brfactor*bdbmeweight->Get<double>());
   }
+  Blob_Data_Base * wgtinfo((*blob)["ME_wgtinfo"]);
+  if (wgtinfo) *wgtinfo->Get<ME_wgtinfo*>()*=brfactor;
   NLO_subevtlist* sublist(NULL);
   Blob_Data_Base * bdb((*blob)["NLO_subeventlist"]);
   if (bdb) sublist=bdb->Get<NLO_subevtlist*>();
