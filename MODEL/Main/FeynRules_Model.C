@@ -171,6 +171,9 @@ void FeynRules_Model::ParticleInit() {
 
 void FeynRules_Model::FillSpectrum(const PDF::ISR_Handler_Map& isr) {
   RunSpectrumGenerator(isr);
+
+  string widthscheme = p_dataread->GetValue<string>("WIDTH_SCHEME","CMS");
+  p_numbers->insert(make_pair(string("WidthScheme"), widthscheme=="CMS"));
 }
 
 void FeynRules_Model::RunSpectrumGenerator(const PDF::ISR_Handler_Map& isr) {
