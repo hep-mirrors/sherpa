@@ -48,14 +48,14 @@ public:
 };
 
 Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
-  p_newsublist(NULL), m_path(""), m_file(""), m_resultdir(""), m_offshell(""),
+  p_newsublist(NULL), m_path(path), m_file(file), m_resultdir(""), m_offshell(""),
   m_store_results(0), m_decay_tau(false), m_set_widths(false),
   m_br_weights(true), m_usemass(true)
 {
   Data_Reader dr(" ",";","!","=");
   dr.AddWordSeparator("\t");
-  dr.SetInputPath(path);
-  dr.SetInputFile(file);
+  dr.SetInputPath(m_path);
+  dr.SetInputFile(m_file);
   m_mass_smearing=dr.GetValue<int>("HARD_MASS_SMEARING",1);
   m_spincorr=rpa->gen.HardSC();
   /*
@@ -76,28 +76,12 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
     THROW(fatal_error,std::string("QED corrections to hard decays only ")
                       +std::string("available in massive mode."));
   }
-  std::string r=dr.GetValue<std::string>("DECAY_RESULT_DIRECTORY","");
-  m_resultdir=(r==""?dr.GetValue<std::string>("RESULT_DIRECTORY","Results"):r);
+  m_resultdir=dr.GetValue<std::string>("DECAY_RESULT_DIRECTORY",
+                                       dr.GetValue<std::string>("RESULT_DIRECTORY","Results")+"/Decays");
   if (m_store_results) {
-    MakeDir(m_resultdir+"/Decays/", true);
+    MakeDir(m_resultdir, true);
   }
   m_offshell=dr.GetValue<std::string>("RESOLVE_DECAYS", "Threshold");
-
-  Data_Reader nodecayreader("|", ";", "#");
-  nodecayreader.SetString(dr.GetValue<std::string>("HDH_NO_DECAY", ""));
-  vector<string> disabled_channels;
-  nodecayreader.VectorFromString(disabled_channels);
-  for (size_t i=0; i<disabled_channels.size(); ++i)
-    m_disabled_channels.insert(disabled_channels[i]);
-  nodecayreader.SetString(dr.GetValue<std::string>("HDH_ONLY_DECAY", ""));
-  vector<string> forced_channels;
-  nodecayreader.VectorFromString(forced_channels);
-  for (size_t i=0; i<forced_channels.size(); ++i) {
-    string fc(forced_channels[i]);
-    size_t bracket(fc.find("{")), comma(fc.find(","));
-    int kfc(atoi((fc.substr(bracket+1,comma-bracket-1)).c_str()));
-    m_forced_channels[Flavour(abs(kfc), kfc<0)].insert(fc);
-  }
 
   DEBUG_FUNC("");
   p_decaymap = new Decay_Map(this);
@@ -130,26 +114,14 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   DEBUG_INFO("Initialising hard decay tables: three-body decays.");
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
     InitializeOffshellDecays(dmit->second.at(0));
-
-    // force/disable specified decay channels
-    for (size_t i=0;i<dmit->second.at(0)->size();++i) {
-      Decay_Channel* dc=dmit->second.at(0)->at(i);
-      if (dc->Active()<1) continue;
-      string idc(dc->IDCode());
-      size_t bracket(idc.find("{")), comma(idc.find(","));
-      int kfc(atoi((idc.substr(bracket+1,comma-bracket-1)).c_str()));
-      Flavour dec(abs(kfc), kfc<0);
-      if (m_disabled_channels.count(idc) ||
-	  (m_forced_channels.find(dec)!=m_forced_channels.end() &&
-           m_forced_channels[dec].size() &&
-	   !m_forced_channels[dec].count(idc))) 
-	dc->SetActive(0);
-    }
-
-    dmit->second.at(0)->UpdateWidth();
-    if (m_set_widths)
-      dmit->second.at(0)->Flav().SetWidth(dmit->second.at(0)->TotalWidth());
   }
+  DEBUG_INFO("Initialising hard decay tables: customizing decay tables.");
+  CustomizeDecayTables();
+
+  if (m_set_widths)
+    for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
+      dmit->second.at(0)->Flav().SetWidth(dmit->second.at(0)->TotalWidth());
+    }
 
   if (p_decaymap->size()) msg_Info()<<endl<<*p_decaymap<<endl;
   WriteDecayTables();
@@ -316,7 +288,98 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
       }
     }
   }
+  dt->UpdateWidth();
+  if (m_set_widths) dt->Flav().SetWidth(dt->TotalWidth());
 }
+
+
+void Hard_Decay_Handler::CustomizeDecayTables()
+{
+  Data_Reader dr(" ",";","!","=");
+  dr.AddWordSeparator("\t");
+  dr.SetInputPath(m_path);
+  dr.SetInputFile(m_file);
+  Data_Reader nodecayreader("|", ";", "#");
+  nodecayreader.SetString(dr.GetValue<std::string>("HDH_NO_DECAY", ""));
+  vector<string> disabled_channels;
+  nodecayreader.VectorFromString(disabled_channels);
+  for (size_t i=0; i<disabled_channels.size(); ++i)
+    m_disabled_channels.insert(disabled_channels[i]);
+  nodecayreader.SetString(dr.GetValue<std::string>("HDH_ONLY_DECAY", ""));
+  vector<string> forced_channels;
+  nodecayreader.VectorFromString(forced_channels);
+  for (size_t i=0; i<forced_channels.size(); ++i) {
+    string fc(forced_channels[i]);
+    size_t bracket(fc.find("{")), comma(fc.find(","));
+    int kfc(atoi((fc.substr(bracket+1,comma-bracket-1)).c_str()));
+    m_forced_channels[Flavour(abs(kfc), kfc<0)].insert(fc);
+  }
+  for (Decay_Map::iterator dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
+    for (size_t i=0;i<dmit->second.at(0)->size();++i) {
+      Decay_Channel* dc=dmit->second.at(0)->at(i);
+      if (dc->Active()<1) continue;
+      string idc(dc->IDCode());
+      size_t bracket(idc.find("{")), comma(idc.find(","));
+      int kfc(atoi((idc.substr(bracket+1,comma-bracket-1)).c_str()));
+      Flavour dec(abs(kfc), kfc<0);
+      if (m_disabled_channels.count(idc) ||
+	  (m_forced_channels.find(dec)!=m_forced_channels.end() &&
+           m_forced_channels[dec].size() &&
+	   !m_forced_channels[dec].count(idc))) {
+	dc->SetActive(0);
+      }
+    }
+  }
+
+  Data_Reader extwidthreader("|", ";", "#");
+  extwidthreader.SetString(dr.GetValue<std::string>("HDH_EXTERNAL_WIDTHS", ""));
+  vector<string> extwidths;
+  extwidthreader.VectorFromString(extwidths);
+  for (size_t w=0; w<extwidths.size(); ++w) {
+    Data_Reader splitter(":", ";", "#");
+    splitter.SetString(extwidths[w]);
+    vector<string> tmp;
+    splitter.VectorFromString(tmp);
+    double customwidth=ToType<double>(tmp[1]);
+
+    string idc = tmp[0].substr(tmp[0].find("{")+1,
+                               tmp[0].find("}")-tmp[0].find("{")-1);
+    splitter.SetWordSeparator(",");
+    splitter.SetString(idc);
+    splitter.VectorFromString(tmp);
+    Flavour_Vector flavs;
+    for (size_t i=0; i<tmp.size(); ++i) {
+      int kfc(ToType<int>(tmp[i]));
+      flavs.push_back(Flavour(abs(kfc), kfc<0));
+    }
+    Decay_Table* dt = p_decaymap->FindDecay(flavs[0]);
+    if (dt) {
+      Decay_Channel* dc=NULL;
+      for (Decay_Table::iterator it=dt->begin(); it!=dt->end(); ++it) {
+        if ((*it)->IDCode()=="{"+idc+"}") {
+          dc=(*it);
+          break;
+        }
+      }
+      if (dc==NULL) {
+        dc=new Decay_Channel(flavs[0], this);
+        for (int j=1; j<flavs.size(); ++j) dc->AddDecayProduct(flavs[j]);
+        dc->SetActive(0);
+        dt->AddDecayChannel(dc);
+      }
+      dc->SetWidth(customwidth);
+      dc->SetDeltaWidth(0.0);
+    }
+    else {
+      PRINT_INFO("Ignoring custom decay channel without decay table: "<<idc);
+    }
+  }
+
+  for (Decay_Map::iterator dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
+    dmit->second.at(0)->UpdateWidth();
+  }
+}
+
 
 bool Hard_Decay_Handler::TriggerOffshell(Decay_Channel* dc, vector<Decay_Channel*> new_dcs) {
   DEBUG_FUNC(dc->Name()<<"... "<<new_dcs.size());
@@ -399,19 +462,11 @@ vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
       dc->SetChannels(new Multi_Channel(""));
       dc->Channels()->SetNin(1);
       dc->Channels()->SetNout(dc->NOut());
-      Rambo* rambo = new Rambo(1,dc->NOut(),&dc->Flavs().front(),this);
-      dc->Channels()->Add(rambo);
-
-      Decay_Dalitz* dalitz = new Decay_Dalitz(&dc->Flavs().front(),
-                                              flavs1[j].Mass(), flavs1[j].Width(),
-                                              nonprop, propi, propj, this);
-      dc->Channels()->Add(dalitz);
-
+      dc->Channels()->Add(new Rambo(1,dc->NOut(),&dc->Flavs().front(),this));
+      dc->Channels()->Add(new Decay_Dalitz(&dc->Flavs().front(),
+                                           flavs1[j].Mass(), flavs1[j].Width(),
+                                           nonprop, propi, propj, this));
       dc->Channels()->Reset();
-
-
-
-      // TODO: add (additional) channel with BW for resolved resonance
 
       if (CalculateWidth(dc)) new_dcs.push_back(dc);
       else delete dc;
@@ -471,7 +526,7 @@ bool Hard_Decay_Handler::ProperVertex(MODEL::Single_Vertex* sv)
 
   if (sv->nleg!=3) return false; // TODO
 
-  // ignore radiation graphs. should we?
+  // TODO: ignore radiation graphs. should we?
   for (int i=1; i<sv->nleg; ++i) {
     if (sv->in[i].Kfcode()==sv->in[0].Kfcode()) {
       return false;
@@ -1065,7 +1120,7 @@ void Hard_Decay_Handler::ReadDecayTable(Flavour decayer)
   reader.AddComment("#");
   reader.AddComment("//");
   reader.AddWordSeparator("\t");
-  reader.SetInputPath(m_resultdir+"/Decays/");
+  reader.SetInputPath(m_resultdir);
   reader.SetInputFile(decayer.ShellName());
   
   vector<vector<string> > file;
@@ -1090,12 +1145,15 @@ void Hard_Decay_Handler::WriteDecayTables()
 
   Decay_Map::iterator dmit;
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
-    ofstream ostr((m_resultdir+"/Decays/"+dmit->first.ShellName()).c_str());
-    ostr<<"# Decay table for "<<dmit->first<<endl<<endl;
+    ofstream ostr((m_resultdir+"/"+dmit->first.ShellName()).c_str());
+    ostr<<"# Decay table for "<<dmit->first<<endl;
+    ostr<<"# IDCode                   \tWidth     \tDeltaWidth \tMaximum"<<endl<<endl;
     Decay_Table::iterator dtit;
     for (dtit=dmit->second[0]->begin(); dtit!=dmit->second[0]->end(); ++dtit) {
-      ostr<<(*dtit)->IDCode()<<"\t"<<(*dtit)->IWidth()<<"\t"
-          <<(*dtit)->IDeltaWidth()<<"\t"<<(*dtit)->Max()<<endl;
+      ostr<<setw(25)<<left<<(*dtit)->IDCode()<<"\t"
+          <<setw(12)<<left<<(*dtit)->IWidth()<<"\t"
+          <<setw(12)<<left<<(*dtit)->IDeltaWidth()<<"\t"
+          <<setw(12)<<left<<(*dtit)->Max()<<endl;
     }
     ostr.close();
   }
