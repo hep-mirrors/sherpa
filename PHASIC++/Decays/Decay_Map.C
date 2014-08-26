@@ -50,6 +50,32 @@ Decay_Table* Decay_Map::FindDecay(const ATOOLS::Flavour & decayer)
   return it->second[count];
 }
 
+pair<Decay_Table*, Decay_Channel*> Decay_Map::FindDecayChannel(string idcode,
+                                                               bool create)
+{
+  stringstream ss(idcode);
+  string item;
+  Flavour_Vector flavs;
+  while (getline(ss, item, ',')) {
+    int kfc(ToType<int>(item));
+    flavs.push_back(Flavour(abs(kfc), kfc<0));
+  }
+  Decay_Table* dt = FindDecay(flavs[0]);
+  if (dt) {
+    for (Decay_Table::iterator it=dt->begin(); it!=dt->end(); ++it) {
+      if ((*it)->IDCode()==idcode) return make_pair(dt, (*it));
+    }
+    if (create) {
+      Decay_Channel* dc = new Decay_Channel(flavs[0], p_ms);
+      for (int j=1; j<flavs.size(); ++j) dc->AddDecayProduct(flavs[j]);
+      dc->SetActive(0);
+      dt->AddDecayChannel(dc);
+      return make_pair(dt, dc);
+    }
+    else return make_pair(dt, (Decay_Channel*) NULL);
+  }
+  else return make_pair((Decay_Table*) NULL, (Decay_Channel*) NULL);
+}
 
 void Decay_Map::ResetCounters()
 {

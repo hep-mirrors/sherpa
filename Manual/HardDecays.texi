@@ -21,8 +21,8 @@ Furthermore any cuts or scale definitions are not affected by decays
 and operate only on the inclusively produced particles before decays.
 
 @menu
-* HDH_NO_DECAY::
-* HDH_ONLY_DECAY::
+* HDH_STATUS::
+* HDH_WIDTH::
 * HARD_SPIN_CORRELATIONS::
 * STORE_DECAY_RESULTS::
 * DECAY_RESULT_DIRECTORY::
@@ -33,36 +33,63 @@ and operate only on the inclusively produced particles before decays.
 * DECAY_TAU_HARD::
 @end menu
 
-@node HDH_NO_DECAY
-@subsection HDH_NO_DECAY
-@cindex HDH_NO_DECAY
+@node HDH_STATUS
+@subsection HDH_STATUS
+@cindex HDH_STATUS[<idcode>]
 
-This option allows to disable an explicit list of decay channels. For example,
-to disable the hadronic decay channels of the W boson one would use:
+This option allows to explicitly force or disable a decay channel identified
+by its ID code (which can be found in the decay table printed to screen during
+the run).
+The status can take the following values:
+@table @option
+@item HDH_STATUS[<idcode>]=-1
+Decay channel is disabled and does not contribute to total width.
+@item HDH_STATUS[<idcode>]=0
+Decay channel is disabled but contributes to total width.
+@item HDH_STATUS[<idcode>]=1 (default)
+Decay channel is enabled.
+@item HDH_STATUS[<idcode>]=2
+Decay channel is forced.
+@end table
+For example, to disable the hadronic decay channels of the W boson one would use:
 @verbatim
-HDH_NO_DECAY={24,2,-1}|{24,4,-3}|{-24,-2,1}|{-24,-4,3}
+HDH_STATUS[24,2,-1]=0
+HDH_STATUS[24,4,-3]=0
+HDH_STATUS[-24,-2,1]=0
+HDH_STATUS[-24,-4,3]=0
 @end verbatim
-Note that the ordering of the decay products in each channel is important and
+In the same way, the bottom decay mode of the Higgs could be forced using:
+@verbatim
+HDH_STATUS[25,5,-5]=2
+@end verbatim
+
+Note that the ordering of the decay products in @option{<idcode>} is important and
 has to be identical to the ordering in the decay table printed to screen.
 Multiple decay channels (also for different decaying particles and
-antiparticles) can be specified using the @option{|} (pipe) symbol as separator.
-Spaces are not allowed anywere in the list.
+antiparticles) can be specified as separate lines. It is also possible to
+request multiple forced decay channels for the same particle, all other channels
+will then automatically be disabled.
 
-@node HDH_ONLY_DECAY
-@subsection HDH_ONLY_DECAY
-@cindex HDH_ONLY_DECAY
 
-This option allows to restrict the decay channels of a particle to the
-explicitly given list. For example, to allow only the bottom-decay mode of the
-Higgs one would use
+@node HDH_WIDTH
+@subsection HDH_WIDTH
+@cindex HDH_WIDTH[<idcode>]
+
+This option allows to overwrite the calculated partial width (in GeV) of a given decay
+channel, and even to add new inactive channels which contribute to the total
+width. This is useful to adjust the branching ratios, which are used for the
+relative contributions of different channels and also influence the cross
+section during event generation, as well as the total width which is used for
+the lineshape of the resonance.
+
+An example to set (/add) the partial widths of the @code{H->bb}, @code{H->cc},
+@code{H->gg} and @code{H->yy} channels would read:
 @verbatim
-HDH_ONLY_DECAY={25,5,-5}
+HDH_WIDTH[25,5,-5]=0.00236
+HDH_WIDTH[25,4,-4]=0.000119
+HDH_WIDTH[25,21,21]=0.00035
+HDH_WIDTH[25,22,22]=0.0000094
 @end verbatim
-Note that the ordering of the decay products in each channel is important and
-has to be identical to the ordering in the decay table printed to screen.
-Multiple decay channels (also for different decaying particles and
-antiparticles) can be specified using the @option{|} (pipe) symbol as separator.
-Spaces are not allowed anywere in the list.
 
 @node HARD_SPIN_CORRELATIONS
 @subsection HARD_SPIN_CORRELATIONS

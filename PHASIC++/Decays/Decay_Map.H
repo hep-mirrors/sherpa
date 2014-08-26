@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Phys/Flavour.H"
 #include "PHASIC++/Decays/Decay_Table.H"
+#include "PHASIC++/Decays/Decay_Channel.H"
 
 namespace ATOOLS {
   class Mass_Selector;
@@ -60,6 +61,14 @@ namespace PHASIC {
      * in this event. (cf. Decay_Map::m_counters)
      */
     Decay_Table* FindDecay(const ATOOLS::Flavour& decayer);
+
+    /**
+     * @param idcode IDCode() of the wanted decay channel
+     * 
+     * @return The decay channel and its decay table.
+     */
+    std::pair<Decay_Table*, Decay_Channel*> FindDecayChannel(std::string idcode,
+                                                             bool create=false);
 
     /**
      * Resets the counters (cf. Decay_Map::m_counters) for flavour types.

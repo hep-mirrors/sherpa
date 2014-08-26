@@ -31,6 +31,7 @@ namespace PHASIC {
     virtual ~Decay_Table();
     void AddDecayChannel(Decay_Channel *);
     void RemoveDecayChannel(size_t i);
+    void SetChannelStatus(Decay_Channel* dc, int status);
     void Output();
     void UpdateWidth();
     void UpdateWidth(Decay_Channel * dc,const double &width);

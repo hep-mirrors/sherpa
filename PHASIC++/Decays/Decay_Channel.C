@@ -124,7 +124,7 @@ namespace PHASIC {
     os<<setw(10)<<dc.m_width;
     if (dc.m_deltawidth>0.) os<<"("<<setw(10)<<dc.m_deltawidth<<")";
     os<<" GeV";
-    if (dc.Active()!=1) {
+    if (dc.Active()<1) {
       os<<" [disabled]";
     }
     if (msg_LevelIsTracking()) {
@@ -147,11 +147,10 @@ string Decay_Channel::Name() const
 
 string Decay_Channel::IDCode() const
 {
-  string code="{"+ToString(m_flavours[0].HepEvt());
+  string code=ToString(m_flavours[0].HepEvt());
   for (size_t i=1; i<m_flavours.size(); ++i) {
     code+=","+ToString(m_flavours[i].HepEvt());
   }
-  code+="}";
   return code;
 }
 

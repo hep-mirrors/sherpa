@@ -43,6 +43,19 @@ void Decay_Table::RemoveDecayChannel(size_t i)
   erase(begin()+i);
 }
 
+void Decay_Table::SetChannelStatus(Decay_Channel* dc, int status)
+{
+  if (status>1) {
+    for (size_t i=0;i<size();i++) {
+      if (at(i)->Active()==1) at(i)->SetActive(0);
+    }
+    dc->SetActive(2);
+  }
+  else {
+    dc->SetActive(status);
+  }
+}
+
 void Decay_Table::Output() {
   msg_Out()<<(*this);
 }

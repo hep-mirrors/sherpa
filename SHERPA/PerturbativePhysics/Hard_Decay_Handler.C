@@ -295,84 +295,37 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
 
 void Hard_Decay_Handler::CustomizeDecayTables()
 {
-  Data_Reader dr(" ",";","!","=");
-  dr.AddWordSeparator("\t");
+  Data_Reader dr(" ", ";", "#", "=");
   dr.SetInputPath(m_path);
   dr.SetInputFile(m_file);
-  Data_Reader nodecayreader("|", ";", "#");
-  nodecayreader.SetString(dr.GetValue<std::string>("HDH_NO_DECAY", ""));
-  vector<string> disabled_channels;
-  nodecayreader.VectorFromString(disabled_channels);
-  for (size_t i=0; i<disabled_channels.size(); ++i)
-    m_disabled_channels.insert(disabled_channels[i]);
-  nodecayreader.SetString(dr.GetValue<std::string>("HDH_ONLY_DECAY", ""));
-  vector<string> forced_channels;
-  nodecayreader.VectorFromString(forced_channels);
-  for (size_t i=0; i<forced_channels.size(); ++i) {
-    string fc(forced_channels[i]);
-    size_t bracket(fc.find("{")), comma(fc.find(","));
-    int kfc(atoi((fc.substr(bracket+1,comma-bracket-1)).c_str()));
-    m_forced_channels[Flavour(abs(kfc), kfc<0)].insert(fc);
-  }
-  for (Decay_Map::iterator dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
-    for (size_t i=0;i<dmit->second.at(0)->size();++i) {
-      Decay_Channel* dc=dmit->second.at(0)->at(i);
-      if (dc->Active()<1) continue;
-      string idc(dc->IDCode());
-      size_t bracket(idc.find("{")), comma(idc.find(","));
-      int kfc(atoi((idc.substr(bracket+1,comma-bracket-1)).c_str()));
-      Flavour dec(abs(kfc), kfc<0);
-      if (m_disabled_channels.count(idc) ||
-	  (m_forced_channels.find(dec)!=m_forced_channels.end() &&
-           m_forced_channels[dec].size() &&
-	   !m_forced_channels[dec].count(idc))) {
-	dc->SetActive(0);
-      }
+  dr.AddIgnore("[");
+  dr.AddIgnore("]");
+  vector<vector<string> > helpsvv;
+  dr.MatrixFromFile(helpsvv,"HDH_STATUS");
+  for (size_t i=0;i<helpsvv.size();++i) {
+    if (helpsvv[i].size()==2) {
+      pair<Decay_Table*, Decay_Channel*> match=p_decaymap->FindDecayChannel(helpsvv[i][0]);
+      int status=ToType<int>(helpsvv[i][1]);
+      if (match.first && match.second) match.first->SetChannelStatus(match.second,status);
+      else PRINT_INFO("Ignoring unknown decay channel: "<<helpsvv[i][0]);
     }
+    else THROW(fatal_error,"Wrong input format.");
   }
 
-  Data_Reader extwidthreader("|", ";", "#");
-  extwidthreader.SetString(dr.GetValue<std::string>("HDH_EXTERNAL_WIDTHS", ""));
-  vector<string> extwidths;
-  extwidthreader.VectorFromString(extwidths);
-  for (size_t w=0; w<extwidths.size(); ++w) {
-    Data_Reader splitter(":", ";", "#");
-    splitter.SetString(extwidths[w]);
-    vector<string> tmp;
-    splitter.VectorFromString(tmp);
-    double customwidth=ToType<double>(tmp[1]);
-
-    string idc = tmp[0].substr(tmp[0].find("{")+1,
-                               tmp[0].find("}")-tmp[0].find("{")-1);
-    splitter.SetWordSeparator(",");
-    splitter.SetString(idc);
-    splitter.VectorFromString(tmp);
-    Flavour_Vector flavs;
-    for (size_t i=0; i<tmp.size(); ++i) {
-      int kfc(ToType<int>(tmp[i]));
-      flavs.push_back(Flavour(abs(kfc), kfc<0));
-    }
-    Decay_Table* dt = p_decaymap->FindDecay(flavs[0]);
-    if (dt) {
-      Decay_Channel* dc=NULL;
-      for (Decay_Table::iterator it=dt->begin(); it!=dt->end(); ++it) {
-        if ((*it)->IDCode()=="{"+idc+"}") {
-          dc=(*it);
-          break;
-        }
+  dr.MatrixFromFile(helpsvv,"HDH_WIDTH");
+  for (size_t i=0;i<helpsvv.size();++i) {
+    if (helpsvv[i].size()==2) {
+      pair<Decay_Table*, Decay_Channel*> match=p_decaymap->FindDecayChannel(helpsvv[i][0], true);
+      double externalwidth=ToType<double>(helpsvv[i][1]);
+      if (match.first) {
+        match.second->SetWidth(externalwidth);
+        match.second->SetDeltaWidth(0.0);
       }
-      if (dc==NULL) {
-        dc=new Decay_Channel(flavs[0], this);
-        for (int j=1; j<flavs.size(); ++j) dc->AddDecayProduct(flavs[j]);
-        dc->SetActive(0);
-        dt->AddDecayChannel(dc);
+      else {
+        PRINT_INFO("Ignoring custom decay channel without decay table: "<<helpsvv[i][0]);
       }
-      dc->SetWidth(customwidth);
-      dc->SetDeltaWidth(0.0);
     }
-    else {
-      PRINT_INFO("Ignoring custom decay channel without decay table: "<<idc);
-    }
+    else THROW(fatal_error,"Wrong input format.");
   }
 
   for (Decay_Map::iterator dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
