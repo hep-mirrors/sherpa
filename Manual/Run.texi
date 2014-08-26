@@ -7,7 +7,7 @@ The following parameters describe general run information. They may be set in th
 * EVENTS::            Number of events to generate.
 * EVENT_TYPE::        Type of events to generate
 * TUNE::              Parameter tunes.
-* OUTPUT::            Output level.
+* OUTPUT::            Screen output level.
 * LOG_FILE::          Log file.
 * RANDOM_SEED::       Seed for random number generator.
 * EVENT_SEED_MODE::   Setting predefined seeds.
@@ -79,7 +79,9 @@ assess MPI uncertainties.
 @subsection OUTPUT
 @cindex OUTPUT
 @cindex EVT_OUTPUT
-This parameter specifies the output level (verbosity) of the program.
+This parameter specifies the screen output level (verbosity) of the program.
+If you are looking for event file output options please refer to section
+@ref{Event output formats}.
 @*
 It can alternatively be set on the command line through option
 @option{-O}, see @ref{Command line}. A different output level can be 
@@ -100,7 +102,7 @@ The value can be any sum of the following:
 8: Debugging messages (even more output).
 @end itemize
 
-E.g. OUTPUT=3 would display information, events and errors.
+E.g. @option{OUTPUT=3} would display information, events and errors.
 
 @node LOG_FILE
 @subsection LOG_FILE
