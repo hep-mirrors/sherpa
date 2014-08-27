@@ -288,15 +288,15 @@ void AMEGIC::Single_Virtual_Correction::AddPoint(const double &value)
 #ifdef USING__MPI
   ++m_mn;
   if (value==0.0) return;
-  m_mbsum+=value*m_lastb/last;
-  m_mvsum+=value*m_lastv/last;
-  m_misum+=value*(m_lasti+m_lastkp)/last;
+  m_mbsum+=sqr(value*m_lastb/last);
+  m_mvsum+=sqr(value*m_lastv/last);
+  m_misum+=sqr(value*(m_lasti+m_lastkp)/last);
 #else
   ++m_n;
   if (value==0.0) return;
-  m_bsum+=value*m_lastb/last;
-  m_vsum+=value*m_lastv/last;
-  m_isum+=value*(m_lasti+m_lastkp)/last;
+  m_bsum+=sqr(value*m_lastb/last);
+  m_vsum+=sqr(value*m_lastv/last);
+  m_isum+=sqr(value*(m_lasti+m_lastkp)/last);
 #endif
 }
 
@@ -399,28 +399,30 @@ void Single_Virtual_Correction::Minimize()
 double Single_Virtual_Correction::Partonic(const ATOOLS::Vec4D_Vector &moms,const int mode)
 {
   if (mode==1) THROW(fatal_error,"Invalid call");
-  if (!Selector()->Result()) return m_lastxs = m_lastdxs = 0.0;
+  if (!Selector()->Result()) return m_lastxs = m_lastdxs = m_lastbxs = 0.0;
   return DSigma(moms,m_lookup,mode);
 }
 
 double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool lookup,const int mode)
 {
-  m_lastxs = 0.;
+  m_lastxs = m_lastdxs = m_lastbxs = 0.;
   double wgt(1.0);
   int bvimode(p_partner->m_bvimode);
   if (!lookup && m_user_bvimode!=0) {
-    double sum(m_bsum+dabs(m_isum)+dabs(m_vsum)), disc(sum*ran->Get());
-    if (disc>m_bsum+dabs(m_isum)) {
+    double sum(((m_user_bvimode&1)?dabs(m_bsum):0.0)+
+	       ((m_user_bvimode&2)?dabs(m_isum):0.0)+
+	       ((m_user_bvimode&4)?dabs(m_vsum):0.0)), disc(sum*ran->Get());
+    if (disc>dabs(m_bsum)+dabs(m_isum)) {
       p_partner->m_bvimode=4;
       wgt=sum/dabs(m_vsum);
     }
-    else if (disc>m_bsum) {
+    else if (disc>dabs(m_bsum)) {
       p_partner->m_bvimode=2;
       wgt=sum/dabs(m_isum);
     }
     else {
       p_partner->m_bvimode=1;
-      wgt=sum/m_bsum;
+      wgt=sum/dabs(m_bsum);
     }
   }
   if (p_partner == this) {
