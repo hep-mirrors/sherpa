@@ -103,12 +103,17 @@ void LHAPDF_Fortran_Interface::CalculateSpec(double x,double Q2) {
 }
 
 double LHAPDF_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl) {
-  int kfc = m_anti*int(infl);
-  if (LHAPDF::hasPhoton() && kfc == kf_photon) kfc=7;
-  else if (kfc == kf_gluon) kfc=0;
-  else if (kfc<-6 || kfc>6) {
-    msg_Out()<<"WARNING in LHAPDF_Fortran_Interface::GetXPDF("<<infl<<") not supported by this PDF!"<<std::endl;
-    return 0.;
+  int kfc;
+  if (int(infl) == kf_gluon) {
+    kfc=0;
+  } else if (LHAPDF::hasPhoton() && int(infl) == kf_photon) {
+    kfc=7;
+  } else {
+    kfc=m_anti*int(infl);
+    if (kfc<-6 || kfc>6) {
+      msg_Out()<<"WARNING in LHAPDF_Fortran_Interface::GetXPDF("<<infl<<") not supported by this PDF!"<<std::endl;
+      return 0.;
+    }
   }
   return m_rescale*m_fv[6+kfc];
 }
