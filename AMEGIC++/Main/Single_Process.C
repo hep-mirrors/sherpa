@@ -727,7 +727,7 @@ bool AMEGIC::Single_Process::SetUpIntegrator()
 
 bool AMEGIC::Single_Process::CreateChannelLibrary()
 {
-  if (p_partner!=this) return true;
+  if (p_partner!=this || p_psgen) return true;
   p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
   bool newch  = 0;
   if (m_nin>=1)  newch = p_psgen->Construct(p_channellibnames,m_ptypename,m_pslibname,&m_flavs.front(),this); 
