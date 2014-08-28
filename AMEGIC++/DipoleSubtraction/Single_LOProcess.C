@@ -42,9 +42,9 @@ Single_LOProcess::Single_LOProcess(const Process_Info &pi,
   reader.AddComment("#");
   reader.SetInputPath(rpa->GetPath());
   reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  int ord=reader.GetValue<int>("AMEGIC_SORT_LOPROCESS",0);
+  int ord=reader.GetValue<int>("AMEGIC_SORT_LOPROCESS",1);
   static bool print(false);
-  if (!print && ord) {
+  if (!print && !ord) {
     print=true;
     msg_Info()<<METHOD<<"(): "<<om::red
 	      <<"Sorting flavors!\n"<<om::reset;    
