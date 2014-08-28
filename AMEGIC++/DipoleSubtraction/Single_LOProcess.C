@@ -37,22 +37,35 @@ Single_LOProcess::Single_LOProcess(const Process_Info &pi,
 {
   m_nin=pi.m_ii.NExternal();
   m_nout=pi.m_fi.NExternal();
+
+  Data_Reader reader(" ",";","!","=");
+  reader.AddComment("#");
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+  int ord=reader.GetValue<int>("AMEGIC_SORT_LOPROCESS",0);
+  static bool print(false);
+  if (!print && ord) {
+    print=true;
+    msg_Info()<<METHOD<<"(): "<<om::red
+	      <<"Sorting flavors!\n"<<om::reset;    
+  }
+  PHASIC::Process_Base::Init(pi, beam, isr, ord?0:1);
+  AMEGIC::Process_Base::Init();
+
   m_rsmap.resize(m_nin+m_nout);
   m_srmap.resize(m_nin+m_nout+1,-1);
   for (size_t i(0);i<m_nin;++i) {
-    m_rsmap[i]=pi.m_ii.m_ps[i].m_tag;
+    m_rsmap[i]=m_pinfo.m_ii.m_ps[i].m_tag;
     if (m_rsmap[i]>=0) m_srmap[m_rsmap[i]]=i;
   }
   vector<int> fi_tags;
-  pi.m_fi.GetTags(fi_tags);
+  m_pinfo.m_fi.GetTags(fi_tags);
   if (fi_tags.size()!=m_nout) THROW(fatal_error, "Internal error.");
   for (size_t i(0);i<m_nout;++i) {
     m_rsmap[m_nin+i]=fi_tags[i];
     if (m_rsmap[m_nin+i]>=0) m_srmap[m_rsmap[m_nin+i]]=m_nin+i;
   }
 
-  PHASIC::Process_Base::Init(pi, beam, isr, 0);
-  AMEGIC::Process_Base::Init();
   m_newlib   = false;
   m_pslibname = m_libname = ToString(m_nin)+"_"+ToString(m_nout);
   if (m_gen_str>1) m_ptypename = "P"+m_libname;
