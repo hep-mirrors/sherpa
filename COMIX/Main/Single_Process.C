@@ -158,6 +158,7 @@ bool COMIX::Single_Process::Initialize
 	THROW(not_implemented,"No virtual ME for this process");
       }
       p_loop->SetCouplings(m_cpls);
+      p_loop->SetNorm(1.0/(isf*fsf));
       if (m_wgtinfo.m_nx==0) m_wgtinfo.AddMEweights(2);
     }
     p_bg->SetLoopME(p_loop);

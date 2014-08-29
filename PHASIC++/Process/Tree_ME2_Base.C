@@ -12,7 +12,7 @@ using namespace MODEL;
 Tree_ME2_Base::Tree_ME2_Base(const Process_Info &pi,
                              const Flavour_Vector &flavs):
   m_pinfo(pi), m_flavs(flavs), p_aqcd(NULL), p_aqed(NULL),
-  m_namps(0)
+  m_namps(0), m_norm(1.0)
 {
 }
 

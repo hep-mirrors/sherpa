@@ -176,6 +176,7 @@ void Single_Virtual_Correction::SelectLoopProcess()
       THROW(not_implemented, "Couldn't find virtual ME for this process.");
     }
     p_loopme->SetCouplings(*p_LO_process->CouplingMap());
+    p_loopme->SetNorm(m_Norm);
   }
 }
 
@@ -612,11 +613,11 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
   }
   doublepole*=m_Norm*p_kpterms->Coupling();
   singlepole*=m_Norm*p_kpterms->Coupling();
-  double p1(p_loopme->ME_E1()*p_kpterms->Coupling()),
-         p2(p_loopme->ME_E2()*p_kpterms->Coupling());
+  double p1(m_Norm*p_loopme->ME_E1()*p_kpterms->Coupling()),
+         p2(m_Norm*p_loopme->ME_E2()*p_kpterms->Coupling());
   if (p_loopme->Mode()==0) {
-    p1*=m_Norm*p_dsij[0][0];
-    p2*=m_Norm*p_dsij[0][0];
+    p1*=p_dsij[0][0];
+    p2*=p_dsij[0][0];
   }
   size_t precision(msg->Out().precision());
   msg->SetPrecision(16);

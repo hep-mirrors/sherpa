@@ -24,6 +24,7 @@ namespace PHASIC {
     MODEL::Coupling_Data* p_aqcd, * p_aqed;
 
     size_t m_namps;
+    double m_norm;
 
   public:
 
@@ -60,6 +61,8 @@ namespace PHASIC {
                                     const PHASIC::Process_Info& pi);
 
     inline size_t NAmps() const { return m_namps; }
+
+    inline void SetNorm(const double &norm) { m_norm=norm; }
 
   };
 

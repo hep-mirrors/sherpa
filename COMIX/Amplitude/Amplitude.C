@@ -1403,19 +1403,24 @@ bool Amplitude::EvaluateAll()
       csum+=ccsum;
     }
     if (p_loop) {
-      double cw(p_loop->Mode()?1.0:m_res);
+      double cw(p_loop->Mode()?1.0/m_sf:m_res);
       if (p_loop->Mode() && p_loop->ColMode()==0)
-         cw*=3.0/p_colint->GlobalWeight();
+         cw*=1.0/p_colint->GlobalWeight();
       if (p_dinfo->Mode()&8) {
 	double e1p(-m_cmur[0]/m_res/asf), e2p(-m_cmur[1]/m_res/asf);
-	if (!IsEqual(e2p,p_loop->ME_E2()))
+	double e1l(p_loop->ME_E1()), e2l(p_loop->ME_E2());
+	if (p_loop->Mode()) {
+	  e1l/=p_loop->ME_Born()*m_sf;
+	  e2l/=p_loop->ME_Born()*m_sf;
+	}
+	if (!IsEqual(e2p,e2l))
 	  msg_Error()<<METHOD<<"(): Double pole does not match. V -> "
-		     <<p_loop->ME_E2()<<", I -> "<<e2p<<", rel. diff. "
-		     <<(e2p/p_loop->ME_E2()-1.0)<<".\n";
-	if (!IsEqual(e1p,p_loop->ME_E1()))
+		     <<e2l<<", I -> "<<e2p<<", rel. diff. "
+		     <<(e2p/e2l-1.0)<<".\n";
+	if (!IsEqual(e1p,e1l))
 	  msg_Error()<<METHOD<<"(): Single pole does not match. V -> "
-		     <<p_loop->ME_E1()<<", I -> "<<e1p<<", rel. diff. "
-		     <<(e1p/p_loop->ME_E1()-1.0)<<".\n";
+		     <<e1l<<", I -> "<<e1p<<", rel. diff. "
+		     <<(e1p/e1l-1.0)<<".\n";
       }
       csum+=cw*asf*p_loop->ME_Finite();
       if (m_sccmur) {

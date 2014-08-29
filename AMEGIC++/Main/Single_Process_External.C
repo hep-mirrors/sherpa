@@ -70,6 +70,7 @@ int AMEGIC::Single_Process_External::InitAmplitude(Model_Base * model,Topology* 
   if (!p_me2) return 0;
   p_me2->SetCouplings(m_cpls);
   p_me2->FillCombinations(m_ccombs,m_cflavs);
+  p_me2->SetNorm(m_Norm);
   
   m_oew=oew;
   m_oqcd=oqcd;
