@@ -359,7 +359,7 @@ bool Single_Virtual_Correction::SetUpIntegrator()
 bool Single_Virtual_Correction::CreateChannelLibrary()
 {
   if (!p_LO_process || p_LO_process->NumberOfDiagrams()==0) return 1;
-  if (p_LO_process->Partner()!=p_LO_process) return true;
+  if (p_LO_process->Partner()!=p_LO_process || p_psgen) return true;
   p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
   bool newch  = 0;
   if (m_nin>=1)  newch = p_psgen->Construct(p_channellibnames,m_ptypename,p_LO_process->PSLibName(),&m_flavs.front(),p_LO_process); 
