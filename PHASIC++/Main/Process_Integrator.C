@@ -28,7 +28,7 @@ static int s_genresdir(0);
 Process_Integrator::Process_Integrator(Process_Base *const proc):
   p_proc(proc), p_pshandler(NULL),
   p_beamhandler(NULL), p_isrhandler(NULL),
-  m_nin(0), m_nout(0), m_smode(1), m_swmode(0),
+  m_nin(0), m_nout(0), m_smode(0), m_swmode(0),
   m_threshold(0.), m_enhancefac(1.0), m_maxeps(0.0), m_rsfac(1.0),
   m_n(0), m_itmin(0), m_max(0.), m_totalxs(0.), 
   m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), m_ssum(0.), 
@@ -50,8 +50,6 @@ bool Process_Integrator::Initialize
   p_momenta.resize(m_nin+m_nout);
   p_beamhandler=beamhandler;
   p_isrhandler=isrhandler;
-  if (p_proc->Info().m_fi.m_nloqcdtype!=nlo_type::lo) m_smode=0;
-  if (p_proc->Info().m_fi.m_nloewtype!=nlo_type::lo) m_smode=0;
   Data_Reader read(" ",";","!","=");
   m_swmode=read.GetValue<int>("SELECTION_WEIGHT_MODE", 0);
   static bool minit(false);

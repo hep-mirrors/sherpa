@@ -406,7 +406,6 @@ void Process_Base::SortFlavours
     else {
       if (dec[i]) continue;
       fl.push_back(ampl->Leg(i));
-      int kfc(ampl->Leg(i)->Flav().Kfcode());
     }
   if (mode&1) SortFlavours(il);
   for (size_t i(0);i<cs.size();++i) {

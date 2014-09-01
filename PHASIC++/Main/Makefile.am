@@ -18,3 +18,5 @@ localinc_HEADERS      =	\
 		 	Process_Integrator.H \
 			Phase_Space_Handler.H \
 			Phase_Space_Integrator.H
+
+dist_bin_SCRIPTS = plot_stats.sh

@@ -35,7 +35,7 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   else msg_Info()<<METHOD<<"(): Set n_{it,min} = "<<itmin<<".\n";
   if (!read.ReadFromFile(itmax,"PSI_ITMAX")) itmax=100*itmin;
   else msg_Info()<<METHOD<<"(): Set n_{it,max} = "<<itmax<<".\n";
-  if (!read.ReadFromFile(nopt,"PSI_NOPT")) nopt=25;
+  if (!read.ReadFromFile(nopt,"PSI_NOPT")) nopt=-1;
   else msg_Info()<<METHOD<<"(): Set n_{opt} = "<<nopt<<".\n";
   if (!read.ReadFromFile(ndecopt,"PSI_NDECOPT")) ndecopt=10;
   else msg_Info()<<METHOD<<"(): Set n_{opt,dec} = "<<ndecopt<<".\n";
@@ -136,7 +136,8 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror, 
   int hlp = (iter1-1)/iter0+1;
   iter1   = hlp*iter0;
 
-  maxopt    = (5/hlp+21)*iter1;
+  if (nopt<0) maxopt    = (5/hlp+21)*iter1;
+  else maxopt=nopt*iter1;
   ncontrib = psh->FSRIntegrator()->ValidN();
   if (ncontrib/iter0>=6) iter=iter1;
 
