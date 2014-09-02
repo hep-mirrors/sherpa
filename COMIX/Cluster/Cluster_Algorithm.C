@@ -92,6 +92,10 @@ ColorID_Vector Cluster_Algorithm::Connected
     }
     return cij;
   }
+  if (cj.m_i && cj.m_j) {
+    cij.push_back(cj);
+    return cij;
+  }
   return cij;
 }
 
@@ -143,7 +147,7 @@ CParam Cluster_Algorithm::GetMeasure
   bool ismo(idi&((1<<p_xs->NIn())-1));
   Flavour mmofl(p_xs->ReMap(ismo?mofl.Bar():mofl,0));
   if (ismo) mmofl=mmofl.Bar();
-  if (p_ampl->Legs().size()>p_ampl->NIn()+2) {
+  if (p_ampl->Legs().size()>p_ampl->NIn()+m_nmin) {
     int nlo((m_wmode&4096) && p_ampl->Prev()==NULL);
     kt2[idi][idj][idk][mofl]=
       p_clus->KPerp2(*p_ampl,i,j,k,mmofl,p_ms,
@@ -420,10 +424,10 @@ bool Cluster_Algorithm::ClusterStep
   if (win==cinfo.end()) return false;
   Cluster_Key wkey(win->first);
   Cluster_Info winfo(win->second);
-  if (p_xs==p_proc || step>2)
+  if (p_xs==p_proc || step>m_nmin)
     nocl[winfo]=win->second.m_kt2.m_kt2-p_ampl->KT2();
   if (!CombineWinner(winfo,ccurs,fcur,cinfo)) return false;
-  if (p_ampl->Legs().size()==p_ampl->NIn()+2) {
+  if (p_ampl->Legs().size()==p_ampl->NIn()+m_nmin) {
     bool match(false);
     if (p_ampl->NIn()==1) {
       if (ccurs.size()!=2) THROW(fatal_error,"Internal error 3");
@@ -450,7 +454,7 @@ bool Cluster_Algorithm::ClusterStep
     }
   }
   Vec4D_Vector p;
-  if (p_ampl->Legs().size()>p_ampl->NIn()+2) {
+  if (p_ampl->Legs().size()>p_ampl->NIn()+m_nmin) {
     p=p_clus->Combine(*p_ampl,cid[m_id[wkey.first]],
 		      cid[m_id[wkey.second]],cid[winfo.m_k],
 		      winfo.m_mofl,p_ms,winfo.m_kt2.m_kin,
@@ -467,7 +471,7 @@ bool Cluster_Algorithm::ClusterStep
       return false;
     }
   }
-  else if (p_ampl->Legs().size()==p_ampl->NIn()+2) {
+  else if (p_ampl->Legs().size()==p_ampl->NIn()+m_nmin) {
     p.push_back(p_ampl->Leg(0)->Mom());
     if (p_ampl->NIn()==1) {
       p.push_back(p_ampl->Leg(0)->Mom());
@@ -597,6 +601,7 @@ bool Cluster_Algorithm::Cluster
   if (p_bg==NULL) THROW(fatal_error,"Internal error 9");
   Selector_Base *jf=p_xs->Selector()->GetSelector("Jetfinder");
   msg_Debugging()<<METHOD<<"(mode = "<<mode<<"): {\n";
+  m_nmin=Min((size_t)2,p_proc->Info().m_fi.NMinExternal());
   msg_Indent();
   m_id.clear();
   p_bg->ResetZero();
@@ -679,7 +684,7 @@ KT2Info_Vector Cluster_Algorithm::UpdateKT2
   }
   if ((split->Stat()!=3 &&
        split->Flav().Strong()) ||
-      ampl->Legs().size()==ampl->NIn()+2) {
+      ampl->Legs().size()==ampl->NIn()+m_nmin) {
     nkt2ord[li].second=(mode?ampl->Next():ampl)->KT2();
     msg_Debugging()<<"set last k_T = "<<sqrt(nkt2ord[li].second)
 		   <<" for "<<ID(nkt2ord[li].first)
@@ -694,6 +699,12 @@ bool Cluster_Algorithm::Cluster
  const int complete)
 {
   if (p_ampl->Legs().size()==p_ampl->NIn()+1) {
+    if (m_nmin==1 && CheckCore(p_ampl)) {
+      p_ampl->SetProc(p_xs);
+      p_ampl->SetKT2((p_xs->IsMapped()?p_xs->MapProc():p_xs)
+		     ->ScaleSetter()->CoreScale(p_ampl).m_mu2);
+      return true;
+    }
     if (p_ampl->Prev()) {
       p_ampl=p_ampl->Prev();
       p_ampl->DeleteNext();
@@ -721,7 +732,7 @@ bool Cluster_Algorithm::Cluster
 	nnkt2ord=nkt2ord;
       }
       if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo,nnkt2ord,complete)) {
-  	if (ampl->Legs().size()==ampl->NIn()+2) {
+  	if (ampl->Legs().size()==ampl->NIn()+m_nmin) {
 	  kt2ord=nkt2ord;
 	  return true;
 	}
@@ -743,7 +754,7 @@ bool Cluster_Algorithm::Cluster
 	}
 	msg_Debugging()<<"reject ordering\n";
       }
-      else if ((m_wmode&512) && (m_wmode&4096) && step==2) {
+      else if ((m_wmode&512) && (m_wmode&4096) && step==m_nmin) {
 	if (!CheckCore(p_ampl)) continue;
 	msg_Debugging()<<"no valid combination -> classify as RS core\n";
 	p_ampl->SetProc(p_xs);
