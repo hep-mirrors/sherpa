@@ -273,5 +273,7 @@ std::string  AMEGIC::Process_Base::CreateLibName()
   for (size_t i(0);(i=name.find('~',i))!=std::string::npos;name.replace(i,1,"x"));
   for (size_t i(0);(i=name.find('(',i))!=std::string::npos;name.replace(i,1,"_"));
   for (size_t i(0);(i=name.find(')',i))!=std::string::npos;name.replace(i,1,"_"));
+  for (size_t i(0);(i=name.find('[',i))!=std::string::npos;name.replace(i,1,"I"));
+  for (size_t i(0);(i=name.find(']',i))!=std::string::npos;name.replace(i,1,"I"));
   return name;
 }
