@@ -2,6 +2,7 @@
 #include "AMEGIC++/String/String_Output.H"
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace AMEGIC;
@@ -245,7 +246,18 @@ typedef Values* (*Lib_Getter_Function)(Basic_Sfuncs*);
 
 Values* String_Handler::Set_Values(std::string& pID,Basic_Sfuncs* BS)
 {
+  static int s_mode(-1);
+  if (s_mode<0) {
+    Data_Reader reader(" ",";","#","=");
+    s_mode=reader.GetValue<int>("AMEGIC_LIBRARY_MODE",0);
+  }  
   s_loader->AddPath(rpa->gen.Variable("SHERPA_LIB_PATH"));
+  if (s_mode==1) {
+    Lib_Getter_Function gf = (Lib_Getter_Function)s_loader->GetLibraryFunction
+      ("Proc_P"+pID.substr(1,pID.find("__")-1),"Getter_"+pID);
+    if (gf==NULL) return NULL;
+    return gf(BS);
+  }
   Lib_Getter_Function gf = (Lib_Getter_Function)s_loader->GetLibraryFunction
     ("Proc_"+pID.substr(1),"Getter_"+pID);
   if (gf==NULL) return NULL;

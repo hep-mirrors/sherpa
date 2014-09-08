@@ -2,7 +2,7 @@
 
 make_scons() {
 libname="Proc_"$(basename $(pwd))
-sources=$(for i in *.C; do printf $i | sed "s/^/'/1;s/$/',/1" | tr '\n' ' '; done | sed 's/,$//1')
+sources=$(for i in $*; do printf $i | sed "s/^/'/1;s/$/',/1" | tr '\n' ' '; done | sed 's/,$//1')
 echo "Import('env')
 lenv=env.Clone()
 proclib = lenv.SharedLibrary('${libname}',[${sources}])
@@ -32,9 +32,23 @@ printf "Processing ("$(echo $procdir/?_?__* $procdir/fsr* | wc -w)") ";
 for i in $procdir/?_?__* $procdir/fsr*; do
   test -d $i || continue;
   cd $i; printf ".";
-  make_scons;
+  make_scons *.C
   subdir=$(printf $PWD | sed 's|'${basedir}'||1;s|/||1')
-  echo "SConscript('${subdir}/SConscript',exports='env')"  >> $basedir/SConstruct;
+  if test $2 -eq 1; then
+    echo "SConscript('${subdir}/SConscript',exports='env')"  >> $basedir/SConstruct;
+  fi
   cd $basedir;
 done;
+if test $2 -eq 2 && test -d $procdir; then
+  cd $procdir; printf ".";
+  make_scons $(find . -name \*.C | grep -v fsrchannels)
+  subdir=$(printf $PWD | sed 's|'${basedir}'||1;s|/||1')
+  echo "SConscript('${subdir}/SConscript',exports='env')"  >> $basedir/SConstruct;
+  if test -d fsr*; then
+    cd fsr*; printf ".";
+    subdir=$(printf $PWD | sed 's|'${basedir}'||1;s|/||1')
+    echo "SConscript('${subdir}/SConscript',exports='env')"  >> $basedir/SConstruct;
+  fi
+  cd $basedir;
+fi
 echo " done";

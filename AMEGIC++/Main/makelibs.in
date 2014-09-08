@@ -12,6 +12,7 @@ print_help(){
   echo "         -n skip \"make distclean\" after compiling" && \
   echo "         -o install single module" && \
   echo "         -j [N] allow N compilations at once" && \
+  echo "         -m create one library per multiplicity" && \
   echo "         -s force use of make" && \
   echo "         -i set include path" && \
   echo "         -h display this help and exit" && echo
@@ -19,18 +20,20 @@ print_help(){
 
 defaults(){
   JOBS=2
+  LIBMODE=1
 }
 
 defaults;
 
 which scons > /dev/null 2>&1 && SCONS=TRUE
-while getopts hscnoj:i: OPT
+while getopts hsmcnoj:i: OPT
 do
   case $OPT in
   c) CLEAN=TRUE ;;
   n) POSTCLEAN=FALSE ;;
   o) ONE=TRUE ;;
   j) JOBS=$OPTARG ;;
+  m) LIBMODE=2 ;;
   s) SCONS=FALSE ;;
   i) IPATH=$OPTARG ;;
   h) print_help && exit 0 ;;
@@ -65,7 +68,7 @@ if [ "$SCONS" = "TRUE" ] ; then
   test -z "$IPATH" || IPATH="incdir="$IPATH
   @BINDIR@/make2scons x;
   for J in $DIRS ; do
-    @BINDIR@/make2scons $J 1;
+    @BINDIR@/make2scons $J $LIBMODE;
   done
   scons -j$JOBS install $IPATH;
   exit 0;
