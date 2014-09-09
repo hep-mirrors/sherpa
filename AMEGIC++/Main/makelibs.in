@@ -12,7 +12,7 @@ print_help(){
   echo "         -n skip \"make distclean\" after compiling" && \
   echo "         -o install single module" && \
   echo "         -j [N] allow N compilations at once" && \
-  echo "         -m create one library per multiplicity" && \
+  echo "         -m create one library per process" && \
   echo "         -s force use of make" && \
   echo "         -i set include path" && \
   echo "         -h display this help and exit" && echo
@@ -20,7 +20,7 @@ print_help(){
 
 defaults(){
   JOBS=2
-  LIBMODE=1
+  LIBMODE=2
 }
 
 defaults;
@@ -33,7 +33,7 @@ do
   n) POSTCLEAN=FALSE ;;
   o) ONE=TRUE ;;
   j) JOBS=$OPTARG ;;
-  m) LIBMODE=2 ;;
+  m) LIBMODE=1 ;;
   s) SCONS=FALSE ;;
   i) IPATH=$OPTARG ;;
   h) print_help && exit 0 ;;

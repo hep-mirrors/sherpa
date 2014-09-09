@@ -249,7 +249,7 @@ Values* String_Handler::Set_Values(std::string& pID,Basic_Sfuncs* BS)
   static int s_mode(-1);
   if (s_mode<0) {
     Data_Reader reader(" ",";","#","=");
-    s_mode=reader.GetValue<int>("AMEGIC_LIBRARY_MODE",0);
+    s_mode=reader.GetValue<int>("AMEGIC_LIBRARY_MODE",1);
   }  
   s_loader->AddPath(rpa->gen.Variable("SHERPA_LIB_PATH"));
   if (s_mode==1) {
