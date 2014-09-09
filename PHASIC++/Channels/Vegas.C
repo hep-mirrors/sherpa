@@ -25,9 +25,9 @@ Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
     dr.AddWordSeparator("\t");
     dr.SetInputPath(rpa->GetPath());
     dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-    s_on = dr.GetValue<std::string>("VEGAS","On")=="On"?1:0;
+    s_on = dr.GetValue<int>("VEGAS_MODE",2);
   }
-  m_on=s_on;
+  m_on=s_on?1:0;
   if (s_onext>-1) m_on=s_onext;
   m_dim  = dim;
   m_nopt = 0;
@@ -38,8 +38,9 @@ Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
   m_mcevt = 0;
   m_name = name;
   m_mode=0;
-  m_nd = ndx;
-  m_sint=m_scnt=0;
+  m_nd=(s_on&2)?10:ndx;
+  m_sint=(s_on&2)?1:0;
+  m_scnt=0;
   m_alpha = 1.;
   m_autooptimize = -1;
   m_cmode = m_omode = 1;
