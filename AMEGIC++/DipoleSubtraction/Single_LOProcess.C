@@ -467,7 +467,6 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   case 1 :
   case 100 :
     if (Result()==0.) {
-      THROW(fatal_error,"Mapped SLOP 3");
       CreateMappingFile(this);
       return 0;
     }
