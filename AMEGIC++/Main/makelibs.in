@@ -98,6 +98,24 @@ for J in $DIRS ; do
   echo "$J";
   echo "======================"
   cd $J 
+  test -f Makefile.am.orig || cp Makefile.am Makefile.am.orig
+  test -f configure.in.orig || cp configure.in configure.in.orig
+  if test $LIBMODE -eq 1; then
+    cp configure.in.orig configure.in
+    diff -q Makefile.am Makefile.am.orig || cp Makefile.am.orig Makefile.am
+  elif test $LIBMODE -eq 2; then
+    sed -r '/[1-2]_[0-9*]__/ d' < configure.in.orig > configure.in
+    libname="Proc_"$(basename $(pwd))
+    sources=$(for i in $(find . -name \*.C | grep -v fsrchannels); do printf $i | sed 's/$/ /1' | tr '\n' ' '; done)
+    echo "AUTOMAKE_OPTIONS = subdir-objects
+lib_LTLIBRARIES = lib${libname}.la
+lib${libname}_la_SOURCES = ${sources}
+CURRENT_SHERPASYS ?= @INCLUDEDIR@
+INCLUDES = -I\$(CURRENT_SHERPASYS)" > Makefile.am.new
+    fsrdir=$(find . -name fsrchannels*)
+    test -d $fsrdir && echo "SUBDIRS = ${fsrdir}" >> Makefile.am.new
+    diff -q Makefile.am Makefile.am.new || mv Makefile.am.new Makefile.am
+  fi
   if test -f configure.in; then
   autoreconf -fi
   ./configure --libdir='${prefix}/lib'
