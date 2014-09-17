@@ -84,7 +84,9 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
     lopi.m_ii.m_ps[m_pi].m_fl=m_flij;
   }
   else {
-    lopi.m_fi.m_ps[m_LOpij-m_nin].m_fl=m_flij;
+    Flavour_Vector flavs(lopi.m_fi.GetExternal());
+    flavs[m_LOpij-m_nin]=m_flij;
+    lopi.m_fi.SetExternal(flavs);
   }
   bool found(false);
   for (std::vector<Subprocess_Info>::iterator

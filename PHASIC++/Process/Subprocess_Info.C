@@ -80,7 +80,7 @@ size_t Subprocess_Info::NTotalExternal() const
 void Subprocess_Info::SetExternal(const std::vector<ATOOLS::Flavour> &fl,size_t &n)
 {
   if (m_ps.empty()) m_fl=fl[n++];
-  else for (size_t i(0);i<m_ps.size();++i) m_ps[i].SetExternal(fl);
+  else for (size_t i(0);i<m_ps.size();++i) m_ps[i].SetExternal(fl,n);
 }
 
 void Subprocess_Info::SetExternal(const std::vector<ATOOLS::Flavour> &fl)
