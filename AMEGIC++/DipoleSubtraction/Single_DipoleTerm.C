@@ -69,13 +69,16 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
   for (size_t i(0);i<m_nin;++i) lopi.m_ii.m_ps[i].m_tag=i;
   int tag=m_nin;
   lopi.m_fi.SetTags(tag);
+  std::vector<int> tags;
+  lopi.m_fi.GetTags(tags);
   if (tag!=m_nin+m_nout) {
     THROW(fatal_error, "Internal error");
   }
   if (m_LOpij<m_nin) lopi.m_ii.m_ps[m_LOpij].m_tag=-1;
-  else lopi.m_fi.m_ps[m_LOpij-m_nin].m_tag=-1;
+  else tags[m_LOpij-m_nin]=-1;
   if (m_LOpk<m_nin) lopi.m_ii.m_ps[m_LOpk].m_tag=-2;
-  else lopi.m_fi.m_ps[m_LOpk-m_nin].m_tag=-2;
+  else tags[m_LOpk-m_nin]=-2;
+  lopi.m_fi.SetTags(tags);
 
   if (m_pi<m_nin) {
     lopi.m_ii.m_ps[m_pi].m_fl=m_flij;

@@ -326,6 +326,18 @@ void Subprocess_Info::SetTags(int& start)
   }
 }
 
+void Subprocess_Info::SetTags(const std::vector<int>& tags)
+{
+  int n=0;
+  SetTags(tags,n);
+}
+
+void Subprocess_Info::SetTags(const std::vector<int>& tags,int &n)
+{
+  if (m_ps.size()==0) m_tag=tags[n++];
+  else for (size_t i=0;i<m_ps.size();++i) m_ps[i].SetTags(tags,n);
+}
+
 void Subprocess_Info::GetTags(std::vector<int>& tags) const
 {
   if (m_ps.size()==0) {

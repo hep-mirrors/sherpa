@@ -53,6 +53,8 @@ namespace PHASIC {
     size_t GetDecayInfos(ATOOLS::DecayInfo_Vector &ids,size_t &n,bool init);
     void DeleteDecayInfos();
 
+    void SetTags(const std::vector<int>& tags,int &n);
+
   public:
 
     Subprocess_Info(const ATOOLS::Flavour &fl=ATOOLS::Flavour(kf_none),
@@ -93,6 +95,7 @@ namespace PHASIC {
     void SetNLOType(nlo_type::code nlotype);
 
     void SetTags(int& start);
+    void SetTags(const std::vector<int>& tags);
     void GetTags(std::vector<int>& tags) const;
 
     int Combine(const size_t &i,const size_t &j,
