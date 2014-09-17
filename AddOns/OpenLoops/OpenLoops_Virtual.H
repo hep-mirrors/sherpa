@@ -1,37 +1,22 @@
 #ifndef OpenLoops_Virtual_H
 #define OpenLoops_Virtual_H
 
-#include "AddOns/OpenLoops/OpenLoops_Interface.H"
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
-#include "ATOOLS/Math/Histogram.H"
-#include <iostream>
-#include <fstream>
 
 namespace OpenLoops {
 
   class OpenLoops_Virtual : public PHASIC::Virtual_ME2_Base {
 
-    Amp2Func m_amp2;
-    PermutationFunc m_permutationfunc;
-    std::vector<int> m_permutation;
-    static OpenLoops_Interface* s_interface;
-    int m_oew, m_oqcd;
-    int m_write_points;
-    std::ofstream m_points_file;
+    int m_ol_id;
 
-    bool     m_analyse;
-    std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
   public:
 
     OpenLoops_Virtual(const PHASIC::Process_Info& pi,
                       const ATOOLS::Flavour_Vector& flavs,
-                      Amp2Func amp2,
-                      PermutationFunc permutationfunc,
-                      std::vector<int> permutation,
-                      std::string functag);
+                      int ol_id);
 
-    ~OpenLoops_Virtual();
+    ~OpenLoops_Virtual() {}
   
     inline bool SetColours(const ATOOLS::Vec4D_Vector& momenta) {
       return true;
@@ -42,11 +27,6 @@ namespace OpenLoops {
     }
   
     void Calc(const ATOOLS::Vec4D_Vector& momenta);
-
-    inline static void SetInterface(OpenLoops_Interface* interface)
-    {
-      s_interface=interface;
-    }
 
   };
 
