@@ -18,4 +18,4 @@ localinc_HEADERS          =	\
 			Perturbative_Interface.H \
 			Hard_Decay_Handler.H
 
-libSherpaPerturbativePhysics_la_CPPFLAGS = @CONDITIONAL_GZIPINCS@
+libSherpaPerturbativePhysics_la_CPPFLAGS = $(AM_CPPFLAGS) @CONDITIONAL_GZIPINCS@
