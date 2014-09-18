@@ -392,7 +392,6 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
     return 0;
   }
 
-  /*
   map<string,Complex> cplmap;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
     cplmap.clear();
@@ -437,7 +436,6 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
       }
     }
   }
-  */
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
 				  m_ptypename+string("/")+m_libname,
@@ -445,7 +443,6 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 1;
     if (!TestLib(pfactors)) return 0;
     if (p_partner==this) links.push_back(this);
-    else THROW(fatal_error,"Mapped SLOP 1");
     FillCombinations();
     Minimize();
     return 1;
@@ -462,7 +459,6 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   switch (tr) {
   case 2 : 
     if (p_partner==this) links.push_back(this);
-    else THROW(fatal_error,"Mapped SLOP 2");
     return 1;
   case 1 :
   case 100 :
@@ -471,7 +467,6 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
       return 0;
     }
     if (p_partner==this) links.push_back(this);
-    else THROW(fatal_error,"Mapped SLOP 4");
     
     if (CheckLibraries(pfactors)) return 1;
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
@@ -480,11 +475,9 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
       }      
     }
     if (p_partner!=this) links.push_back(this);
-    if (p_partner!=this) THROW(fatal_error,"Mapped SLOP 5");
     
     if (m_gen_str<2) return 1;
     if (p_partner!=this) {
-      THROW(fatal_error,"Mapped SLOP 6");
       msg_Tracking()<<"Single_LOProcess::InitAmplitude : "<<std::endl
 		    <<"   Strings of process "<<m_name<<" and partner "
 		    <<p_partner->Name()<<" did not fit."<<std::endl

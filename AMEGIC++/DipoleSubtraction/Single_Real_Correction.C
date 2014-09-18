@@ -158,7 +158,6 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
   m_realevt.p_proc = this;
   m_realevt.p_real = &m_realevt;
 
-  if (p_tree_process==p_tree_process->Partner()) {
   Process_Info cinfo(m_pinfo);
   cinfo.m_fi.m_nloqcdtype&=(nlo_type::code)~nlo_type::real;
   cinfo.m_fi.m_nloewtype&=(nlo_type::code)~nlo_type::real;
@@ -212,7 +211,6 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
   }
   if (m_no_tree) {
     if (m_subtermlist.empty() && m_subostermlist.empty()) return 0;
-  }
   }
 
   if (p_mapproc && !p_partner->NewLibs()) Minimize();
