@@ -73,6 +73,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   ATOOLS::s_loader->SetCheck(p_dataread->GetValue<int>("CHECK_LIBLOCK",0));
 
   rpa->Init(m_path,m_file,argc,argv);
+  CheckVersion();
   LoadLibraries();
   ShowParameterSyntax();
   ran->InitExternal(m_path,m_file);
@@ -170,6 +171,59 @@ Initialization_Handler::~Initialization_Handler()
   }
   String_Vector dummy;
   Read_Write_Base::SetCommandLine(dummy);
+}
+
+void Initialization_Handler::CheckVersion()
+{
+  std::vector<std::string> versioninfo;
+  p_dataread->VectorFromFile(versioninfo,"SHERPA_VERSION");
+  if (!versioninfo.size()) return;
+  std::string currentversion(ToString(SHERPA_VERSION)+"."
+                                      +ToString(SHERPA_SUBVERSION));
+  if (versioninfo.size()==1 && versioninfo[0]!=currentversion) {
+    THROW(normal_exit,"Run card request Sherpa "+versioninfo[0]
+                      +". This is Sherpa "+currentversion);
+  }
+  else if (versioninfo.size()==2) {
+    if (versioninfo[0]==currentversion || versioninfo[1]==currentversion) return;
+    size_t min1(versioninfo[0].find(".",0)),
+           min2(versioninfo[0].find(".",min1+1)),
+           max1(versioninfo[1].find(".",0)),
+           max2(versioninfo[1].find(".",max1+1)),
+           cur1(currentversion.find(".",0)),
+           cur2(currentversion.find(".",max1+1));
+    size_t minmajvers(ToType<size_t>(versioninfo[0].substr(0,min1))),
+           minminvers(ToType<size_t>(versioninfo[0].substr(min1+1,min2))),
+           minbugvers(ToType<size_t>(versioninfo[0].substr(min2+1))),
+           maxmajvers(ToType<size_t>(versioninfo[1].substr(0,max1))),
+           maxminvers(ToType<size_t>(versioninfo[1].substr(max1+1,max2))),
+           maxbugvers(ToType<size_t>(versioninfo[1].substr(max2+1))),
+           curmajvers(ToType<size_t>(currentversion.substr(0,max1))),
+           curminvers(ToType<size_t>(currentversion.substr(max1+1,max2))),
+           curbugvers(ToType<size_t>(currentversion.substr(max2+1)));
+    if (!(CompareVersions(minmajvers,minminvers,minbugvers,
+                          curmajvers,curminvers,curbugvers)
+          *CompareVersions(curmajvers,curminvers,curbugvers,
+                           maxmajvers,maxminvers,maxbugvers)))
+      THROW(normal_exit,"Run card request Sherpa "+versioninfo[0]
+                        +"-"+versioninfo[1]
+                        +". This is Sherpa "+currentversion);
+  }
+  else THROW(not_implemented,"SHERPA_VERSION information not recognised.");
+}
+
+bool Initialization_Handler::CompareVersions
+(const size_t& a1,const size_t& b1,const size_t& c1,
+ const size_t& a2,const size_t& b2,const size_t& c2)
+{
+  if (a1<a2) return true;
+  if (a1==a2) {
+    if (b1<b2) return true;
+    if (b1==b2) {
+      if (c1<=c2) return true;
+    }
+  }
+  return false;
 }
 
 void Initialization_Handler::LoadLibraries() const

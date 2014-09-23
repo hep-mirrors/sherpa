@@ -70,6 +70,9 @@ namespace SHERPA {
     Analysis_Vector              m_analyses;
     Output_Vector                m_outputs;
     void ShowParameterSyntax();
+    void CheckVersion();
+    bool CompareVersions(const size_t& a1,const size_t& b1,const size_t& c1,
+                         const size_t& a2,const size_t& b2,const size_t& c2);
     void LoadLibraries() const;
   private :
     bool InitializeTheIO();
