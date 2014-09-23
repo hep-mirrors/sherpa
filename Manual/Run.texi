@@ -5,7 +5,8 @@ The following parameters describe general run information. They may be set in th
 
 @menu
 * EVENTS::            Number of events to generate.
-* EVENT_TYPE::        Type of events to generate
+* EVENT_TYPE::        Type of events to generate.
+* SHERPA_VERSION::    Sherpa version that can run this run card.
 * TUNE::              Parameter tunes.
 * OUTPUT::            Screen output level.
 * LOG_FILE::          Log file.
@@ -56,6 +57,13 @@ Alternatively there are two more specialised modes, namely:
         @code{HadronDecay}, which allows to simulate the decays of a specific
         hadron.          
 @end itemize
+
+@node SHERPA_VERSION
+@subsection SHERPA_VERSION
+@cindex SHERPA_VERSION
+This parameter ties a run card to a specific Sherpa version, e.g.
+@code{2.2.0}. If two parameters are given they are interpreted as
+a range of Sherpa versions.
 
 @node TUNE
 @subsection TUNE
