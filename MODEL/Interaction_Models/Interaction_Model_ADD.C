@@ -31,6 +31,7 @@ Interaction_Model_ADD::Interaction_Model_ADD(MODEL::Model_Base * _model,
   m_tensors=true;
   p_moqcd     = new Interaction_Model_QCD(p_model,_cplscheme,_yukscheme); 
   p_moew      = new Interaction_Model_EW(p_model,_cplscheme,_yukscheme); 
+  p_mosmh     = new Interaction_Model_Higgs_SM(p_model,_cplscheme,_yukscheme); 
   p_moqcdgrav = new Interaction_Model_QCD_Grav(p_model,_cplscheme,_yukscheme); 
   p_moewgrav  = new Interaction_Model_EW_Grav(p_model,_cplscheme,_yukscheme); 
 }
@@ -52,12 +53,12 @@ void Interaction_Model_ADD::c_VVVV(std::vector<Single_Vertex>& vertex,int& vanz)
   p_moew->c_VVVV(vertex,vanz);
 }
 
-void Interaction_Model_ADD::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz) {p_moew->c_FFS(vertex,vanz);}
-void Interaction_Model_ADD::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz) {p_moew->c_VVS(vertex,vanz);}
-void Interaction_Model_ADD::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz) {p_moew->c_SSS(vertex,vanz);}
+void Interaction_Model_ADD::c_FFS(std::vector<Single_Vertex>& vertex,int& vanz) {p_mosmh->c_FFS(vertex,vanz);}
+void Interaction_Model_ADD::c_VVS(std::vector<Single_Vertex>& vertex,int& vanz) {p_mosmh->c_VVS(vertex,vanz);}
+void Interaction_Model_ADD::c_SSS(std::vector<Single_Vertex>& vertex,int& vanz) {p_mosmh->c_SSS(vertex,vanz);}
 
-void Interaction_Model_ADD::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz) { p_moew->c_SSSS(vertex,vanz); }
-void Interaction_Model_ADD::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz) { p_moew->c_SSVV(vertex,vanz); }
+void Interaction_Model_ADD::c_SSSS(std::vector<Single_Vertex>& vertex,int& vanz) { p_mosmh->c_SSSS(vertex,vanz); }
+void Interaction_Model_ADD::c_SSVV(std::vector<Single_Vertex>& vertex,int& vanz) { p_mosmh->c_SSVV(vertex,vanz); }
 
 void Interaction_Model_ADD::c_FFT(std::vector<Single_Vertex>& vertex,int& vanz)
 {
@@ -91,6 +92,7 @@ Interaction_Model_ADD::~Interaction_Model_ADD()
 {
   delete  p_moqcd;
   delete  p_moew;
+  delete  p_mosmh;
   delete  p_moqcdgrav;
   delete  p_moewgrav;
 }

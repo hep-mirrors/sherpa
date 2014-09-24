@@ -3,6 +3,7 @@
 
 #include "MODEL/Interaction_Models/Interaction_Model_QCD.H"
 #include "MODEL/Interaction_Models/Interaction_Model_EW.H"
+#include "MODEL/Interaction_Models/Interaction_Model_Higgs_SM.H"
 #include "MODEL/Interaction_Models/Interaction_Model_QCD_Grav.H"
 #include "MODEL/Interaction_Models/Interaction_Model_EW_Grav.H"
 
@@ -10,6 +11,7 @@ namespace MODEL {
   class Interaction_Model_ADD : public Interaction_Model_Base {
     Interaction_Model_QCD       * p_moqcd;
     Interaction_Model_EW        * p_moew;
+    Interaction_Model_Higgs_SM  * p_mosmh;
     Interaction_Model_QCD_Grav  * p_moqcdgrav;
     Interaction_Model_EW_Grav   * p_moewgrav;
   public:
