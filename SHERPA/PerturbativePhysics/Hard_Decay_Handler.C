@@ -104,7 +104,6 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   
   // initialize them sorted by masses:
   Decay_Map::iterator dmit;
-  Vertex_Table offshell;
   DEBUG_INFO("Initialising hard decay tables: two-body decays.");
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
     InitializeDirectDecays(dmit->second.at(0));
@@ -247,35 +246,29 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
   for (size_t i=0;i<dtsize;++i) {
     Decay_Channel* dc=dt->at(i);
     vector<Decay_Channel*> new_dcs=ResolveDecay(dc);
-
-    // check for duplicates
-    for (size_t j=0; j<new_dcs.size(); ++j) {
-      Decay_Channel* dup=dt->GetDecayChannel(new_dcs[j]->Flavs());
-      if (dup) {
-        DEBUG_INFO("Duplicate for "<<*dup);
-        for (vector<Spin_Amplitudes*>::const_iterator it=new_dcs[j]->GetDiagrams().begin();
-             it!=new_dcs[j]->GetDiagrams().end(); ++it) {
-          dup->AddDiagram(*it);
-        }
-        for (vector<Single_Channel*>::const_iterator it=new_dcs[j]->Channels()->Channels().begin();
-             it!=new_dcs[j]->Channels()->Channels().end(); ++it) {
-          dup->AddChannel(*it);
-        }
-        new_dcs[j]->ResetDiagrams();
-        new_dcs[j]->ResetChannels();
-        delete new_dcs[j];
-        new_dcs[j]=NULL;
-        CalculateWidth(dup);
-      }
-      else {
-        dt->AddDecayChannel(new_dcs[j]);
-      }
-    }
-
     if (TriggerOffshell(dc, new_dcs)) {
       dc->SetActive(-1);
       for (size_t j=0; j<new_dcs.size(); ++j) {
-        if (new_dcs[j]) DEBUG_INFO("Adding "<<new_dcs[j]->Name());
+        // check for duplicates
+        Decay_Channel* dup=dt->GetDecayChannel(new_dcs[j]->Flavs());
+        if (dup && dup->Active()>=0) {
+          DEBUG_INFO("Adding new diagram to "<<*dup);
+          for (size_t k=0; k<new_dcs[j]->GetDiagrams().size(); ++k) {
+            dup->AddDiagram(new_dcs[j]->GetDiagrams()[k]);
+          }
+          for (size_t k=0; k<new_dcs[j]->Channels()->Channels().size(); ++k) {
+            dup->AddChannel(new_dcs[j]->Channels()->Channels()[k]);
+          }
+          new_dcs[j]->ResetDiagrams();
+          new_dcs[j]->ResetChannels();
+          delete new_dcs[j];
+          new_dcs[j]=NULL;
+          CalculateWidth(dup);
+        }
+        else {
+          DEBUG_INFO("Adding "<<new_dcs[j]->Name());
+          dt->AddDecayChannel(new_dcs[j]);
+        }
       }
     }
     else {
