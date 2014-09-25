@@ -9,13 +9,11 @@
 #include "METOOLS/Main/Spin_Structure.H"
 #include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 #include "METOOLS/SpinCorrelations/Spin_Density.H"
-#include "PHASIC++/Decays/Color_Function_Decay.H"
 #include <algorithm>
 
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace METOOLS;
-using namespace MODEL;
 using namespace std;
 
 Decay_Channel::Decay_Channel(const Flavour & _flin,
@@ -30,8 +28,7 @@ Decay_Channel::Decay_Channel(const Flavour & _flin,
 Decay_Channel::~Decay_Channel()
 {
   for (size_t i(0); i<m_diagrams.size(); ++i) {
-    delete m_diagrams[i].first;
-    delete m_diagrams[i].second;
+    delete m_diagrams[i];
   }
   if (p_channels) delete p_channels;
   if (p_amps) delete p_amps;
@@ -76,28 +73,8 @@ void Decay_Channel::AddDecayProduct(const ATOOLS::Flavour& flout,
   m_minmass += p_ms->Mass(flout);
 }
 
-void Decay_Channel::AddDiagram(METOOLS::Spin_Amplitudes* amp,
-                               Color_Function_Decay* col) {
-  DEBUG_FUNC(*col);
-  m_diagrams.push_back(make_pair(amp, col));
-  size_t index=m_diagrams.size()-1;
-
-  DEBUG_INFO("Add one column to all existing rows");
-  if (m_colormatrix.size()!=index) THROW(fatal_error,"Wrong size of cols.");
-  for (size_t i=0; i<m_colormatrix.size(); ++i) {
-    if (m_colormatrix[i].size()!=index) THROW(fatal_error,"Wrong size of cols");
-    DEBUG_INFO("Contracting "<<*m_diagrams[i].second<<" with "<<*col);
-    m_colormatrix[i].push_back(m_diagrams[i].second->Contract(*col));
-    DEBUG_VAR(m_colormatrix[i].back());
-  }
-
-  DEBUG_INFO("Add an additional row");
-  m_colormatrix.resize(m_colormatrix.size()+1);
-  for (size_t i=0; i<m_diagrams.size(); ++i) {
-    DEBUG_INFO("Contracting "<<*col<<" with "<<*m_diagrams[i].second);
-    m_colormatrix.back().push_back(col->Contract(*m_diagrams[i].second));
-    DEBUG_VAR(m_colormatrix.back().back());
-  }
+void Decay_Channel::AddDiagram(METOOLS::Spin_Amplitudes* amp) {
+  m_diagrams.push_back(amp);
 }
 
 void Decay_Channel::AddChannel(PHASIC::Single_Channel* chan)
@@ -126,11 +103,6 @@ namespace PHASIC {
     os<<" GeV";
     if (dc.Active()<1) {
       os<<" [disabled]";
-    }
-    if (msg_LevelIsTracking()) {
-      for (size_t i(0); i<dc.GetDiagrams().size(); ++i) {
-        os<<" "<<setw(10)<<*dc.GetDiagrams()[i].second;
-      }
     }
     return os;
   }
@@ -241,8 +213,7 @@ void Decay_Channel::CalculateWidth()
 
   long int n=0;
   int      opt=0;
-  double   value, oldvalue=0., sum=0., sum2=0., result=1., disc;
-  bool     simple=false;
+  double   value, sum=0., sum2=0., result=1., disc;
   m_ideltawidth=1.0;
 
   std::vector<Vec4D> momenta(1+NOut());
@@ -256,14 +227,11 @@ void Decay_Channel::CalculateWidth()
       if (value>m_max) {
         m_max = value;
       }
-      if (value!=0. && value==oldvalue) { simple = true; break; }
-      oldvalue = value;
     }
     opt++;
     p_channels->MPISync();
     p_channels->Optimize(0.01);
 
-    if (simple) break;          // this way error=0
     n      = opt*iter;
     result = sum/n;
     disc   = sqr(sum/n)/((sum2/n - sqr(sum/n))/(n-1));
@@ -286,7 +254,7 @@ double Decay_Channel::Differential(ATOOLS::Vec4D_Vector& momenta, bool anti,
   labboost.Boost(momenta[0]);
   Channels()->GeneratePoint(&momenta.front(),NULL);
   Channels()->GenerateWeight(&momenta.front(),NULL);
-  
+
   labboost.Invert();
   for (size_t i(0); i<momenta.size(); ++i) labboost.Boost(momenta[i]);
   double dsigma_lab=ME2(momenta, anti, sigma, p);
@@ -300,44 +268,42 @@ double Decay_Channel::ME2(const ATOOLS::Vec4D_Vector& momenta, bool anti,
   if (GetDiagrams().size()<1) return 0.0;
 
   for(size_t i(0); i<GetDiagrams().size(); ++i) {
-    GetDiagrams()[i].first->Calculate(momenta, anti);
+    GetDiagrams()[i]->Calculate(momenta, anti);
   }
 
-  Complex sumijlambda_AiAjCiCj(0.0,0.0);
+  Complex sumijlambda_AiAj(0.0,0.0);
 
   if (sigma) {
-    for (size_t i(0); i<m_diagrams.size(); ++i) DEBUG_VAR(*m_diagrams[i].first);
+    for (size_t i(0); i<m_diagrams.size(); ++i) DEBUG_VAR(*m_diagrams[i]);
     if (p_amps) delete p_amps;
     vector<int> spin_i(p.size(), -1), spin_j(p.size(), -1);
-    p_amps=new Amplitude2_Tensor(p,0,m_diagrams,m_colormatrix,spin_i, spin_j);
+    p_amps=new Amplitude2_Tensor(p,0,m_diagrams,spin_i, spin_j);
     DEBUG_VAR(*p_amps);
-    sumijlambda_AiAjCiCj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
+    sumijlambda_AiAj=(*sigma)*p_amps->ReduceToMatrix(sigma->Particle());
   }
   else {
     for (size_t i(0); i<GetDiagrams().size(); ++i) {
-      Spin_Amplitudes* Ai=GetDiagrams()[i].first;
+      Spin_Amplitudes* Ai=GetDiagrams()[i];
       for (size_t j(0); j<GetDiagrams().size(); ++j) { // 0?
-        Spin_Amplitudes* Aj=GetDiagrams()[j].first;
+        Spin_Amplitudes* Aj=GetDiagrams()[j];
   
         // for debugging:
         if (Ai->size()!=Aj->size())
           THROW(fatal_error,"Trying to multiply two amplitudes with different "+
                 string("number of helicity combinations."));
   
-        Complex sumlambda_AiAj(0.0,0.0);
         for (size_t lambda=0; lambda<Ai->size(); ++lambda) {
-          sumlambda_AiAj+=(*Ai)[lambda]*conj((*Aj)[lambda]);
+          sumijlambda_AiAj+=(*Ai)[lambda]*conj((*Aj)[lambda]);
         }
-        sumijlambda_AiAjCiCj+=sumlambda_AiAj*ColorMatrix()[i][j];
       }
     }
   }
-  if (!IsZero(sumijlambda_AiAjCiCj.imag(),1.0e-6)) {
+  if (!IsZero(sumijlambda_AiAj.imag(),1.0e-6)) {
     PRINT_INFO("Sum-Squaring matrix element yielded imaginary part.");
-    PRINT_VAR(sumijlambda_AiAjCiCj);
+    PRINT_VAR(sumijlambda_AiAj);
   }
 
-  double value=sumijlambda_AiAjCiCj.real();
+  double value=sumijlambda_AiAj.real();
   value /= double(GetDecaying().IntSpin()+1);
   if (GetDecaying().StrongCharge())
     value/=double(abs(GetDecaying().StrongCharge()));

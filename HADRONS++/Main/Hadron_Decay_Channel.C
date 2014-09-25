@@ -5,7 +5,6 @@
 #include "HADRONS++/Current_Library/Current_Base.H"
 #include "HADRONS++/PS_Library/HD_PS_Base.H"
 #include "PHASIC++/Decays/Decay_Table.H"
-#include "PHASIC++/Decays/Color_Function_Decay.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/Vector.H"
@@ -135,8 +134,7 @@ bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     vector<int> decayindices(n);
     for(int i=0;i<n;i++) decayindices[i]=i;
     HD_ME_Base* me=new Generic(m_physicalflavours,decayindices,"Generic");
-    PHASIC::Color_Function_Decay* col=new PHASIC::Color_Function_Decay();
-    AddDiagram(me, col);
+    AddDiagram(me);
     AddPSChannel( string("Isotropic"), 1., m_startmd);
     msg_Tracking()<<"Calculating width for "<<Name()<<":\n";
     CalculateWidth();
@@ -212,8 +210,7 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
       Complex factor = Complex(ToType<double>(ip.Interprete(me_svv[i][0])),
                                ToType<double>(ip.Interprete(me_svv[i][1])));
       me->SetFactor(factor);
-      PHASIC::Color_Function_Decay* col=new PHASIC::Color_Function_Decay();
-      AddDiagram(me, col);
+      AddDiagram(me);
       nr_of_mes++;
     }
     if(me_svv[i].size()==4) {
@@ -258,8 +255,7 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
       me->SetCurrent1(current1);
       me->SetCurrent2(current2);
       me->SetFactor(factor);
-      PHASIC::Color_Function_Decay* col=new PHASIC::Color_Function_Decay();
-      AddDiagram(me, col);
+      AddDiagram(me);
       nr_of_mes++;
     }
   }
@@ -270,8 +266,7 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
     vector<int> decayindices(n);
     for(int i=0;i<n;i++) decayindices[i]=i;
     HD_ME_Base* me=new Generic(m_physicalflavours,decayindices,"Generic");
-    PHASIC::Color_Function_Decay* col=new PHASIC::Color_Function_Decay();
-    AddDiagram(me, col);
+    AddDiagram(me);
   }
 }
 
@@ -432,7 +427,7 @@ bool Hadron_Decay_Channel::SetColorFlow(ATOOLS::Blob* blob)
     Particle_Vector outparts=blob->GetOutParticles();
     if(m_diagrams.size()>0) {
       // try if the matrix element knows how to set the color flow
-      HD_ME_Base* firstme=(HD_ME_Base*) m_diagrams[0].first;
+      HD_ME_Base* firstme=(HD_ME_Base*) m_diagrams[0];
       bool anti=blob->InParticle(0)->Flav().IsAnti();
       if(firstme->SetColorFlow(outparts,n_q,n_g,anti)) return true;
     }
@@ -559,7 +554,7 @@ void Hadron_Decay_Channel::LatexOutput(std::ostream& f, double totalwidth)
   }
   f<<"\\\\"<<endl;
   if((m_diagrams.size()>0 &&
-      ((HD_ME_Base*) m_diagrams[0].first)->Name()!="Generic")) {
+      ((HD_ME_Base*) m_diagrams[0])->Name()!="Generic")) {
     sprintf( helpstr, "%.4f", IWidth()/totalwidth*100. );
     f<<" & "<<helpstr;
     if( IDeltaWidth() > 0. ) {
@@ -569,7 +564,7 @@ void Hadron_Decay_Channel::LatexOutput(std::ostream& f, double totalwidth)
     f<<" \\% ";
   }
   for(size_t i=0;i<m_diagrams.size();i++) {
-    HD_ME_Base* me=(HD_ME_Base*) m_diagrams[i].first;
+    HD_ME_Base* me=(HD_ME_Base*) m_diagrams[i];
     if(me->Name()=="Current_ME") {
       Current_ME* cme=(Current_ME*) me;
       f<<"\\verb;"<<cme->GetCurrent1()->Name()

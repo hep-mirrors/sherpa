@@ -7,13 +7,6 @@
 #include "METOOLS/Main/Spin_Structure.H"
 #include "ATOOLS/Phys/Particle.H"
 
-namespace PHASIC {
-  class Color_Function_Decay;
-  typedef 
-  std::vector<std::pair<METOOLS::Spin_Amplitudes*,Color_Function_Decay*> >
-  DiagColVec;
-}
-
 namespace METOOLS {
   class Decay_Matrix;
 
@@ -28,7 +21,6 @@ namespace METOOLS {
                               const std::vector<int> &permutation,
                               size_t level,
                               const std::vector<Spin_Amplitudes> &diagrams,
-                              const std::vector<std::vector<Complex> > &cmatrix,
                               std::vector<int> &spin_i, std::vector<int> &spin_j,
                               double factor) const;
 
@@ -36,15 +28,13 @@ namespace METOOLS {
     Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts, size_t level);
     Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts,
                       size_t level,
-                      const PHASIC::DiagColVec& diagrams,
-                      const std::vector<std::vector<Complex> >& colormatrix,
+                      const std::vector<Spin_Amplitudes*>& diagrams,
                       std::vector<int>& spin_i,
                       std::vector<int>& spin_j);
     Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts,
                       const std::vector<int>& permutation,
                       size_t level,
                       const std::vector<Spin_Amplitudes>& diagrams,
-                      const std::vector<std::vector<Complex> >& cmatrix,
                       std::vector<int>& spin_i, std::vector<int>& spin_j);
     ~Amplitude2_Tensor();
 

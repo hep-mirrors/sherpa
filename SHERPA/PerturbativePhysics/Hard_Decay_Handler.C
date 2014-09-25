@@ -14,8 +14,6 @@
 
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Interaction_Models/Single_Vertex.H"
-#include "MODEL/Interaction_Models/Color_Function.H"
-#include "PHASIC++/Decays/Color_Function_Decay.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PHASIC++/Channels/Rambo.H"
 #include "PHASIC++/Channels/Decay_Dalitz.H"
@@ -226,9 +224,8 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
     Decay_Channel* dc=new Decay_Channel(inflav, this);
     for (int j=1; j<sv->nleg; ++j) dc->AddDecayProduct(sv->in[j]);
 
-    assert(sv->Color.size()==1);
     Comix1to2* diagram=new Comix1to2(dc->Flavs());
-    dc->AddDiagram(diagram,new Color_Function_Decay(sv->Color[0]));
+    dc->AddDiagram(diagram);
 
     dc->SetChannels(new Multi_Channel(""));
     dc->Channels()->SetNin(1);
@@ -256,9 +253,9 @@ void Hard_Decay_Handler::InitializeOffshellDecays(Decay_Table* dt) {
       Decay_Channel* dup=dt->GetDecayChannel(new_dcs[j]->Flavs());
       if (dup) {
         DEBUG_INFO("Duplicate for "<<*dup);
-        for (DiagColVec::const_iterator it=new_dcs[j]->GetDiagrams().begin();
+        for (vector<Spin_Amplitudes*>::const_iterator it=new_dcs[j]->GetDiagrams().begin();
              it!=new_dcs[j]->GetDiagrams().end(); ++it) {
-          dup->AddDiagram(it->first, it->second);
+          dup->AddDiagram(*it);
         }
         for (vector<Single_Channel*>::const_iterator it=new_dcs[j]->Channels()->Channels().begin();
              it!=new_dcs[j]->Channels()->Channels().end(); ++it) {
@@ -395,30 +392,22 @@ vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
       }
 
       assert(dc1->GetDiagrams().size()==1);
-      assert(sv->Color.size()==1);
       DEBUG_VAR(dc->Flavs());
       DEBUG_VAR(flavs1[j]);
       Comix1to3* diagram=new Comix1to3(dc->Flavs(),flavs1[j],
                                        nonprop, propi, propj);
 
-      Color_Function_Decay* col1=new Color_Function_Decay(*dc1->GetDiagrams()[0].second);
-      DEBUG_VAR(*col1);
-      Color_Function_Decay col2(sv->Color[0]);
-      DEBUG_VAR(col2);
-      vector<int> bumps = col1->Multiply(col2);
-      DEBUG_VAR(*col1);
-      DEBUG_INFO("Contracting "<<0+bumps[0]<<" with "<<j);
-      col1->Contract(0+bumps[0],j);
-      DEBUG_VAR(*col1);
-      dc->AddDiagram(diagram, col1);
+      dc->AddDiagram(diagram);
 
       dc->SetChannels(new Multi_Channel(""));
       dc->Channels()->SetNin(1);
       dc->Channels()->SetNout(dc->NOut());
       dc->Channels()->Add(new Rambo(1,dc->NOut(),&dc->Flavs().front(),this));
-      dc->Channels()->Add(new Decay_Dalitz(&dc->Flavs().front(),
-                                           flavs1[j].Mass(), flavs1[j].Width(),
-                                           nonprop, propi, propj, this));
+      if (flavs1[j].Width()>0.0) {
+        dc->Channels()->Add(new Decay_Dalitz(&dc->Flavs().front(),
+                                             flavs1[j].Mass(), flavs1[j].Width(),
+                                             nonprop, propi, propj, this));
+      }
       dc->Channels()->Reset();
 
       if (CalculateWidth(dc)) new_dcs.push_back(dc);
@@ -829,7 +818,7 @@ void Hard_Decay_Handler::AddDecayClustering(ATOOLS::Cluster_Amplitude*& ampl,
       DEBUG_VAR(*dc);
     }
     else THROW(fatal_error, "Internal error.");
-    Comix1to3* amp=dynamic_cast<Comix1to3*>(dc->GetDiagrams()[0].first);
+    Comix1to3* amp=dynamic_cast<Comix1to3*>(dc->GetDiagrams()[0]);
     if (!amp) THROW(fatal_error, "Internal error.");
     Flavour prop_flav=amp->Prop();
     Vec4D momd2=RecombinedMomentum(daughters[1],photons,stat2);

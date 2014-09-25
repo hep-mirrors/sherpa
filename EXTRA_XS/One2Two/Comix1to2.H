@@ -5,6 +5,10 @@ namespace METOOLS {
   class Vertex;
 }
 
+namespace PHASIC {
+  class Color_Integrator;
+}
+
 namespace EXTRAXS {
 
   class Comix1to2 : public METOOLS::Spin_Amplitudes {
@@ -17,6 +21,8 @@ namespace EXTRAXS {
     METOOLS::Vertex *m_antiv1;
 
     std::vector<size_t> m_nhel;
+
+    PHASIC::Color_Integrator* p_ci;
 
     size_t NHel(const ATOOLS::Flavour& fl);
     METOOLS::Vertex* GetVertex(METOOLS::Current* cur1,

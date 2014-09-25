@@ -217,7 +217,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     vector<Particle*> partsonly(parts.size());
     for (size_t i=0; i<parts.size(); ++i) partsonly[i]=parts[i].first;
     if (p_atensor) delete p_atensor;
-    p_atensor=new Amplitude2_Tensor(partsonly, permutation, 0, amps, cols,
+    p_atensor=new Amplitude2_Tensor(partsonly, permutation, 0, amps,
                                     spin_i, spin_j);
     DEBUG_VAR(*p_atensor);
     blob->AddData("ATensor",new Blob_Data<Amplitude2_Tensor*>(p_atensor));

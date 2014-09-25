@@ -4,11 +4,13 @@
 #include "METOOLS/Explicit/Vertex.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "PHASIC++/Main/Color_Integrator.H"
 #include <assert.h>
 
 using namespace EXTRAXS;
 using namespace ATOOLS;
 using namespace METOOLS;
+using namespace PHASIC;
 using namespace std;
 
 Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
@@ -103,6 +105,22 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
   m_antifcur->InitPols(pols2);
   m_antifcur->HM().resize(m_n);
   for (size_t i(0);i<m_n;++i) m_antifcur->HM()[i]=i;
+
+  p_ci=new Color_Integrator();
+  Idx_Vector cids(4,0);
+  Int_Vector acts(4,0), types(4,0);
+  for (size_t i(0);i<flavs.size();++i) {
+    cids[i]=i;
+    acts[i]=flavs[i].Strong();
+    if (acts[i]) {
+      if (flavs[i].StrongCharge()==8) types[i]=0;
+      else if (flavs[i].IsAnti()) types[i]=(i==0?1:-1);
+      else types[i]=(i==0?-1:1);
+    }
+  }
+  if (!p_ci->ConstructRepresentations(cids,types,acts)) {
+    THROW(fatal_error, "Internal error.");
+  }
 }
 
 Comix1to3::~Comix1to3()
@@ -155,9 +173,10 @@ Vertex* Comix1to3::GetVertex(Current* cur1, Current* cur2, Current* prop) {
 
 void Comix1to3::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   DEBUG_FUNC(momenta.size());
+  p_ci->GeneratePoint();
   if (anti) {
     for (size_t i(0);i<m_anticur.size();++i) {
-      m_anticur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,0,0,0);
+      m_anticur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci->I()[i],p_ci->J()[i],0);
       m_anticur[i]->Print();
     }
     m_antiscur->Evaluate();
@@ -165,7 +184,7 @@ void Comix1to3::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   }
   else {
     for (size_t i(0);i<m_cur.size();++i) {
-      m_cur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,0,0,0);
+      m_cur[i]->ConstructJ(i==0?-momenta[i]:momenta[i],0,p_ci->I()[i],p_ci->J()[i],0);
       m_cur[i]->Print();
     }
     m_scur->Evaluate();
@@ -180,6 +199,10 @@ void Comix1to3::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   }
   else {
     m_fcur->Contract<double>(*m_cur.front(),fill,*this,0);
+  }
+
+  for (size_t i=0; i<size(); ++i) {
+    (*this)[i] *= sqrt(p_ci->GlobalWeight());
   }
 }
 

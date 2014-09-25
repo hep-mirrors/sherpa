@@ -19,11 +19,6 @@ namespace METOOLS {
 namespace PHASIC {
   class Multi_Channel;
   class Single_Channel;
-  class Color_Function_Decay;
-
-  typedef 
-  std::vector<std::pair<METOOLS::Spin_Amplitudes*,Color_Function_Decay*> >
-  DiagColVec;
 
   class Decay_Channel {
     
@@ -32,7 +27,7 @@ namespace PHASIC {
      * and calculate the corresponding ME and PS weights.
      * The ME weights (\b not squared) for each helicity saved in
      * Decay_Channel::m_diagrams are then summed for all available diagrams and
-     * helicities taking into account the color factors, symmetry factor and
+     * helicities taking into account the symmetry factor and
      * averaging over the incoming helicity states.
      * So far, this Differential method does not care about spin correlations
      * it merely sums up all absolute squared entries of those
@@ -72,8 +67,7 @@ namespace PHASIC {
     int m_active;
 
     std::vector<ATOOLS::Flavour> m_flavours;
-    DiagColVec m_diagrams;
-    std::vector<std::vector<Complex> > m_colormatrix;
+    std::vector<METOOLS::Spin_Amplitudes*> m_diagrams;
     PHASIC::Multi_Channel* p_channels;
     METOOLS::Amplitude2_Tensor* p_amps;
     /**
@@ -89,7 +83,6 @@ namespace PHASIC {
                       const double& b, const double& c) const;
 
   public :
-    //Decay_Channel() {}
     Decay_Channel(const ATOOLS::Flavour &, const ATOOLS::Mass_Selector* ms);
     virtual ~Decay_Channel();
     void AddDecayProduct(const ATOOLS::Flavour & flout,const bool & sort=true);
@@ -112,9 +105,6 @@ namespace PHASIC {
 
     double GenerateMass(const double& max, const double &width) const;
     double SymmetryFactor();
-    inline const std::vector<std::vector<Complex> >& ColorMatrix() {
-      return m_colormatrix;
-    }
 
     inline int NOut() const { return m_flavours.size()-1; }
     inline const std::vector<ATOOLS::Flavour>& Flavs() const{return m_flavours;}
@@ -122,8 +112,9 @@ namespace PHASIC {
     inline const ATOOLS::Flavour& GetDecayProduct(size_t i) const {
       return m_flavours[i+1];
     }
-    inline const DiagColVec& GetDiagrams() const { return m_diagrams; }
-    void AddDiagram(METOOLS::Spin_Amplitudes* amp, Color_Function_Decay* c);
+    inline const std::vector<METOOLS::Spin_Amplitudes*>& GetDiagrams() const
+    { return m_diagrams; }
+    void AddDiagram(METOOLS::Spin_Amplitudes* amp);
     inline PHASIC::Multi_Channel* Channels() const { return p_channels; }
     inline void SetChannels(PHASIC::Multi_Channel* chans) { p_channels=chans; }
     void AddChannel(PHASIC::Single_Channel* chan);
