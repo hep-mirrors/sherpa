@@ -391,3 +391,15 @@ by starting multiple instances of Sherpa with different random seed, cf.
 @ref{RANDOM_SEED}. However, both the internal analysis module and the Root
 NTuple writeout can be used with MPI. Note that these require substantial 
 data transfer.
+
+Please note that the process information contained in the @code{Process}
+directory for both Amegic and Comix needs to be generated without
+MPI parallelization first. Therefore, first run
+@verbatim
+Sherpa -f <run-card> INIT_ONLY=1
+@end verbatim
+and, in case of using Amegic, compile the libraries. Then start your
+parallized integration, e.g.
+@verbatim
+mpirun -n <n> Sherpa -f <run-card>
+@end verbatim
