@@ -100,6 +100,8 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   read.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
   if (!read.ReadFromFile(m_hpsmode,"PP_HPSMODE")) m_hpsmode=8;
   else msg_Info()<<METHOD<<"(): Set H event shower mode "<<m_hpsmode<<".\n";
+  if (!read.ReadFromFile(m_kfacmode,"PP_KFACTOR_MODE")) m_kfacmode=0;
+  else msg_Info()<<METHOD<<"(): Set K-factor mode "<<m_kfacmode<<".\n";
   if (!read.ReadFromFile(m_fomode,"PP_FOMODE")) m_fomode=0;
   else msg_Info()<<METHOD<<"(): Set fixed order mode "<<m_fomode<<".\n";
   if (!m_fomode) {
@@ -108,10 +110,20 @@ void MCatNLO_Process::Init(const Process_Info &pi,
     p_ddproc->SetMCMode(2);
     p_rsproc->SetMCMode(2);
   }
-  if (p_rsproc->Size()!=p_rproc->Size())
+  if (p_rsproc->Size()!=p_rproc->Size()) {
+    for (size_t i(0);i<p_rproc->Size();++i)
+      msg_Debugging()<<"["<<i<<"]R : "<<(*p_rproc)[i]->Name()<<std::endl;
+    for (size_t i(0);i<p_rsproc->Size();++i)
+      msg_Debugging()<<"["<<i<<"]RS:  "<<(*p_rsproc)[i]->Name()<<std::endl;
     THROW(fatal_error,"R and RS have different size");
-  if (p_bproc->Size()!=p_bviproc->Size())
+  }
+  if (p_bproc->Size()!=p_bviproc->Size()) {
+    for (size_t i(0);i<p_bproc->Size();++i)
+      msg_Debugging()<<"["<<i<<"]B:   "<<(*p_bproc)[i]->Name()<<std::endl;
+    for (size_t i(0);i<p_bviproc->Size();++i)
+      msg_Debugging()<<"["<<i<<"]BVI: "<<(*p_bviproc)[i]->Name()<<std::endl;
     THROW(fatal_error,"B and BVI have different size");
+  }
   for (size_t i(0);i<p_rsproc->Size();++i)
     if ((*p_rsproc)[i]->Flavours()!=(*p_rproc)[i]->Flavours())
       THROW(fatal_error,"Ordering differs in R and RS");
@@ -233,9 +245,13 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   bviproc->BBarMC()->GenerateEmissionPoint(ampl,rm);
   double bvi(bviproc->Differential(ampl,rm));
   double s(bvi/b*(1.0-rs/r)), h(rs/r);
+  if      (m_kfacmode==1) h=0.;
+  else if (m_kfacmode==2) s=0.;
+  else if (m_kfacmode==3) { s=bvi/b; h=0.; }
+  else THROW(fatal_error,"Unknown Kfactor mode.");
   msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
 		 <<" -> S = "<<s<<", H = "<<h<<"\n";
-  double sw(1.0/(1.0+dabs(h/s)));
+  double sw(dabs(s)/(dabs(s)+dabs(h)));
   if (sw>ran->Get()) {
     msg_Debugging()<<"S selected ( w = "<<s/sw<<" )\n";
     for (Cluster_Amplitude *campl(ampl.Next());
