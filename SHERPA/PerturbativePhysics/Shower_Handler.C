@@ -26,7 +26,8 @@ Shower_Handler::Shower_Handler
 		       <std::string>("JET_CRITERION",m_name));
   p_shower = PDF::Shower_Getter::GetObject
     (m_name,PDF::Shower_Key(model,p_isr,&dataread));
-  if (p_shower==NULL && s_loader->LoadLibrary("Sherpa"+m_name)) {
+  if (p_shower==NULL && m_name!="None" &&
+      s_loader->LoadLibrary("Sherpa"+m_name)) {
     p_shower = PDF::Shower_Getter::GetObject
       (m_name,PDF::Shower_Key(model,p_isr,&dataread));
   }
