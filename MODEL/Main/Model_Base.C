@@ -348,13 +348,13 @@ double Model_Base::ScalarFunction(const std::string _name,double _t) {
 
 double Model_Base::ScalarFunction(const std::string _name) {
   if (p_functions->empty()) {
-    msg_Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
+    msg_Error()<<"Error in Model_Base::ScalarFunction("<<_name<<") : "<<std::endl
 	       <<"   No functions stored in model "<<m_name<<". Return 0.\n";
     return 0.;
   }
   if (p_functions->count(_name)>0) return (*(*p_functions)[_name])();
 
-  msg_Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
+  msg_Error()<<"Error in Model_Base::ScalarFunction("<<_name<<") : "<<std::endl
 	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
   return 0.;
 }
