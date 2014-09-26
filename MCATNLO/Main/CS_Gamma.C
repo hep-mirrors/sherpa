@@ -206,7 +206,8 @@ Trial_Weight CS_Gamma::TrialWeight(Cluster_Amplitude *const ampl)
   p_ms=ampl->MS();
   p_shower->SetMS(p_ms);
   Weight_Map ws(CalculateWeight(ampl,0));
-  if (ws.empty()) THROW(fatal_error,"Invalid amplitude");
+  if (ws.empty()) THROW(fatal_error,"Invalid amplitude for "
+                                    +PHASIC::Process_Base::GenerateName(ampl));
   Parton *const *cur(p_shower->GetLast());
   size_t idij(0), idk(0);
   double wgt(0.0);
