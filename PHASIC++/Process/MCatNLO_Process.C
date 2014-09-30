@@ -244,10 +244,11 @@ double MCatNLO_Process::LocalKFactor(const Cluster_Amplitude &ampl)
   if (b==0.0) return 0.0;
   bviproc->BBarMC()->GenerateEmissionPoint(ampl,rm);
   double bvi(bviproc->Differential(ampl,rm));
-  double s(bvi/b*(1.0-rs/r)), h(rs/r);
-  if      (m_kfacmode==1) h=0.;
-  else if (m_kfacmode==2) s=0.;
-  else if (m_kfacmode==3) { s=bvi/b; h=0.; }
+  double s(0.), h(0.);
+  if      (m_kfacmode==0) { s=bvi/b*(1.0-rs/r); h=rs/r; }
+  else if (m_kfacmode==1) { s=bvi/b*(1.0-rs/r); h=0; }
+  else if (m_kfacmode==2) { s=0;                h=rs/r; }
+  else if (m_kfacmode==3) { s=bvi/b;            h=0.; }
   else THROW(fatal_error,"Unknown Kfactor mode.");
   msg_Debugging()<<"BVI = "<<bvi<<", B = "<<b
 		 <<" -> S = "<<s<<", H = "<<h<<"\n";
