@@ -205,7 +205,7 @@ void Standard_Model::ParticleInit() {
   s_kftable[kf_photon] = new Particle_Info(kf_photon,.0,.0,0,0,0,2,-1,1,1,0,"P","\\gamma");
   s_kftable[kf_Z]      = new Particle_Info(kf_Z,91.188,2.49,0,0,0,2,-1,1,0,1,"Z","Z");
   s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.419,2.06,3,0,0,2,0,1,0,1,"W+","W^+");
-  s_kftable[kf_h0]     = new Particle_Info(kf_h0,126.,0.00421,0,0,0,0,-1,1,0,1,"h0","h_0");
+  s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.,0.00407,0,0,0,0,-1,1,0,1,"h0","h_0");
   if (m_trivialextension==2) {
     s_kftable[kf_D4]   = new Particle_Info(kf_D4,500.,38.0,-1,-1,3,1,0,1,0,1,"D_4","D_4");
     s_kftable[kf_U4]   = new Particle_Info(kf_U4,500.,38.2,2,1,3,1,0,1,0,1,"U_4","U_4");
