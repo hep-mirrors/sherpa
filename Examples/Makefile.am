@@ -36,6 +36,9 @@ nobase_dist_examples_DATA         =	\
 		Jets_at_LeptonColliders/LEP_Jets/Run.dat \
 		Jets_at_LeptonColliders/LEP_Jets/Run.NLO.dat \
 		Jets_in_DIS/HERA/Run.dat \
+		H_in_AssociatedProduction/LHC_WHJets/Run.dat \
+                H_in_AssociatedProduction/LHC_ZHJets/Run.dat \
+                H_in_AssociatedProduction/LHC_Hll_MCatNLO/Run.dat \
 		H_in_GluonFusion/LHC_HInterference/Run.dat \
 		H_in_GluonFusion/LHC_HJets/Run.dat \
 		H_in_GluonFusion/LHC_HJets/Results/Decays/h0 \
