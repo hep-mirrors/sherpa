@@ -26,36 +26,36 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   // form factors
   m_params["NGWstates"]   = dr->GetValue<int>("GW_States",2);
   m_params["FFpref"]      = 1./sqrt(m_params["NGWstates"]);
-  m_params["Lambda2"]     = dr->GetValue<double>("Lambda2",1.5);
+  m_params["Lambda2"]     = dr->GetValue<double>("Lambda2",1.7);
   m_params["beta02(mb)"]  = dr->GetValue<double>("beta_0^2",20.0);
   m_params["beta0"]       = sqrt(1.e9*m_params["beta02(mb)"]/
 				 ATOOLS::rpa->Picobarn());
   m_params["kappa"]       = dr->GetValue<double>("kappa",0.6);
   m_params["xi"]          = dr->GetValue<double>("xi",0.2);
   // parameters of the eikonal
-  m_params["lambda"]      = dr->GetValue<double>("lambda",0.25);
-  m_params["Delta"]       = dr->GetValue<double>("Delta",0.35);
+  m_params["lambda"]      = dr->GetValue<double>("lambda",0.3);
+  m_params["Delta"]       = dr->GetValue<double>("Delta",0.4);
   // ladder generation
   m_params["NLaddersFix"] = dr->GetValue<int>("N_Ladders_Fix",-1);
   m_params["KTMin_Mode"]  = dr->GetValue<int>("KTMin_Mode",0);
-  m_params["Q02"]         = dr->GetValue<double>("Q_0^2",1.0);
+  m_params["Q02"]         = dr->GetValue<double>("Q_0^2",0.5789);
   m_params["Q_as2"]       = dr->GetValue<double>("Q_as^2",1.0);
   m_params["Q12"]         = dr->GetValue<double>("Q_1^2",0.0);
   m_params["QN2"]         = dr->GetValue<double>("Q_N^2",0.0);
-  m_params["SingletWt"]   = dr->GetValue<double>("Chi_S",0.5);
+  m_params["SingletWt"]   = dr->GetValue<double>("Chi_S",0.6031);
   m_params["Ddiff2"]      = dr->GetValue<double>("D_diff^2",0.0);
   m_params["kdiff"]       = dr->GetValue<double>("K_diff",0.0);
   // showering off soft stuff
   m_params["shower_mode"] = dr->GetValue<int>("Shower_Mode",3);
-  m_params["min_kt2"]     = dr->GetValue<double>("Shower_Min_KT2",0.5);
-  m_params["kt2_factor"]  = dr->GetValue<double>("KT2_Factor",4.0);
+  m_params["min_kt2"]     = dr->GetValue<double>("Shower_Min_KT2",2.008);
+  m_params["kt2_factor"]  = dr->GetValue<double>("KT2_Factor",0.8878);
   m_params["diff_factor"] = dr->GetValue<double>("Diff_Factor",1.0);
   // rescatterings
-  m_params["RescProb"]    = dr->GetValue<double>("RescProb",1.0);
-  m_params["RescProb1"]   = dr->GetValue<double>("RescProb1",0.1);
-  m_params["QRC2"]        = dr->GetValue<double>("Q_RC^2",1.0);
-  m_params["ReconnProb"]  = dr->GetValue<double>("ReconnProb",-10.);
-  m_params["Misha"]       = dr->GetValue<int>("Misha",1);
+  m_params["RescProb"]    = dr->GetValue<double>("RescProb",5.042);
+  m_params["RescProb1"]   = dr->GetValue<double>("RescProb1",0.5405);
+  m_params["QRC2"]        = dr->GetValue<double>("Q_RC^2",0.7231);
+  m_params["ReconnProb"]  = dr->GetValue<double>("ReconnProb",-15.03);
+  m_params["Misha"]       = dr->GetValue<int>("Misha",0);
 
   std::string ffform = 
     dr->GetValue<std::string>("FF_Form",std::string("dipole"));
