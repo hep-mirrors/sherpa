@@ -126,9 +126,9 @@ which allows the following settings:
 The parameters of the differential equations for the parton densities are
 
 @itemize @bullet
-@item @code{Delta} (default 0.196): perturbative Pomeron intercept
+@item @code{Delta} (default 0.4): perturbative Pomeron intercept
 @item @code{lambda} (default 0.3): triple Pomeron coupling
-@item @code{deltaY} (default 1.0): rapidity interval excluded from evolution
+@item @code{deltaY} (default 1.5): rapidity interval excluded from evolution
 @end itemize
 
 The form factors are of the form @*
@@ -137,33 +137,41 @@ exp[-xi (1 +/- kappa)q_T^2/Lambda^2]/[1 + (1 +/- kappa)q_T^2/Lambda^2]^2} @*
 with the parameters
 
 @itemize @bullet
-@item @code{Lambda2} (default @math{0.97 GeV^2})
-@item @code{beta_0^2} (default 24.8 mb)
-@item @code{kappa} (default 0.538)
-@item @code{xi} (default 0.145)
+@item @code{Lambda2} (default @math{1.7 GeV^2})
+@item @code{beta_0^2} (default 20.0 mb)
+@item @code{kappa} (default 0.6)
+@item @code{xi} (default 0.2)
 @end itemize
 
 @subsubsection Parameters for event generation
 @cindex Q_0^2
 @cindex Q_as^2
 @cindex Chi_S
+@cindex Shower_Min_KT2
 @cindex KT2_Factor
 @cindex RescProb
 @cindex RescProb1
+@cindex Resc_KTMin
+@cindex ReconnProb
+@cindex Q_RC^2
 
 The parameters related to the generation of inelastic events are
 
 @itemize @bullet
-@item @code{Q_0^2} (default @math{1.0 GeV^2}): factor scaling the infra-red
+@item @code{Q_0^2} (default @math{0.58 GeV^2}): factor scaling the infra-red
 scale of ladder emissions
 @item @code{Q_as^2} (default @math{1.0 GeV^2}): infra-red scale of the strong
 coupling
-@item @code{Chi_S} (default 1.0): factor scaling probability for singlet
+@item @code{Chi_S} (default 0.60): factor scaling probability for singlet
 propagators in ladders
-@item @code{KT2_Factor} (default 1.0): factor scaling the parton shower starting
+@item @code{Shower_Min_KT2} (default 2.0 GeV^2): minimum shower starting scale
+@item @code{KT2_Factor} (default 0.89): factor scaling the parton shower starting
 scale
-@item @code{RescProb} (default 1.0): parameter controlling probability for
+@item @code{RescProb} (default 5.0): parameter controlling probability for
 rescattering
-@item @code{RescProb1} (default 0.0): factor scaling rescatter
+@item @code{RescProb1} (default 0.54): factor scaling rescatter
 probility over singlet propagators
+@item @code{Resc_KTMin} (default 'off'): require minimum kt in rescattering (switch)
+@item @code{ReconnProb} (default -15.0): parameter regulating the strength of colour reconnections (logarithmic)
+@item @code{Q_RC^2} (default 0.72 GeV^2): regulator entering distance measure in colour reconnections
 @end itemize
