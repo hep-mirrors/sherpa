@@ -1,0 +1,41 @@
+(run){
+  EVENTS              = 50k
+  OUTPUT              = 2
+  EVENT_TYPE          = MinimumBias 
+  SOFT_COLLISIONS     = Shrimps
+  Shrimps_Mode        = Inelastic 
+
+  ALPHAS(MZ) 0.118;
+  ORDER_ALPHAS 1;
+  CSS_FS_PT2MIN       1.00
+  MAX_PROPER_LIFETIME = 10.
+
+  deltaY    =  1.5;
+  Lambda2   =  1.7;
+  beta_0^2  =  20.0;
+  kappa     =  0.6;
+  xi        =  0.2;
+  lambda    =  0.3;
+  Delta     =  0.4;
+
+  Q_0^2           = 0.58;
+  Chi_S           = 0.60;
+  Shower_Min_KT2  = 2.0;
+  KT2_Factor      = 0.89;
+  RescProb        = 5.04;
+  RescProb1       = 0.54;
+  Q_RC^2          = 0.72;
+  ReconnProb      = -15.;
+  Resc_KTMin      = off;
+}(run)
+
+(beam){
+  BEAM_1 =  2212; BEAM_ENERGY_1 = 3500.;
+  BEAM_2 =  2212; BEAM_ENERGY_2 = 3500.;
+}(beam)
+
+(me){
+  ME_SIGNAL_GENERATOR = None
+}(me)
+
+

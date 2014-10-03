@@ -3,6 +3,14 @@
   EVENT_TYPE          = MinimumBias 
   SOFT_COLLISIONS     = Shrimps
   Shrimps_Mode        = Xsecs
+
+  deltaY    =  1.5;
+  Lambda2   =  1.7;
+  beta_0^2  =  20.0;
+  kappa     =  0.6;
+  xi        =  0.2;
+  lambda    =  0.3;
+  Delta     =  0.4;
 }(run)
 
 (beam){
