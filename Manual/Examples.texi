@@ -53,11 +53,13 @@ of the main features of these examples.
 @menu
 * LHC_HInt::
 * LHC_HJets::
+* LHC_VHJets::
 * LHC_HTTBar::
 @end menu
 
 @include LHC_HInt.texi
 @include LHC_HJets.texi
+@include LHC_VHJets.texi
 @include LHC_TTH.texi
 
 

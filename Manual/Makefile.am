@@ -39,6 +39,7 @@ Sherpa_TEXINFOS = \
 	LHC_TTH.texi \
 	LHC_TTW.texi \
 	LHC_Vbb.texi \
+	LHC_VHJets.texi \
 	LHC_WJets.texi \
 	LHC_ZJets.texi \
 	NLO_NTuples.texi \
