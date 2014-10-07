@@ -105,6 +105,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
           PDF/CT10/Makefile \
           PDF/MSTW/Makefile \
 	  PDF/MRST/Makefile \
+	  PDF/NNPDF/Makefile \
 	  PDF/CTEQ/Makefile \
 	  PDF/GRV/Makefile \
 	  PDF/Remnant/Makefile \
