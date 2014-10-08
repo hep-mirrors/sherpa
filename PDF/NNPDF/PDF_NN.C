@@ -89,7 +89,6 @@ PDF_NNPDF::PDF_NNPDF
     if      (i==0)
       m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
           =p_pdf->GetMDown();
-          //=p_pdf->info().get_entry_as<double>("MDown");
     else if (i==1)
       m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
           =p_pdf->GetMUp();
