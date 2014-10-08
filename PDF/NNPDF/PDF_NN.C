@@ -77,6 +77,36 @@ PDF_NNPDF::PDF_NNPDF
   m_q2max=pow(p_pdf->GetQMax(),2);
   m_asinfo.m_order=p_pdf->GetOrderAlphaS();
   m_asinfo.m_asmz =p_pdf->GetAlphaSMz();
+  
+  // Quark masses
+  int nf(p_pdf->GetNFL());
+  //int nf(p_pdf->info().get_entry_as<int>("NumFlavors"));
+  if (nf<0) m_asinfo.m_flavs.resize(5);
+  else      m_asinfo.m_flavs.resize(nf);
+  // for now assume thresholds are equal to masses, as does LHAPDF-6.0.0
+  for (size_t i(0);i<m_asinfo.m_flavs.size();++i) {
+    m_asinfo.m_flavs[i]=PDF_Flavour((kf_code)i+1);
+    if      (i==0)
+      m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
+          =p_pdf->GetMDown();
+          //=p_pdf->info().get_entry_as<double>("MDown");
+    else if (i==1)
+      m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
+          =p_pdf->GetMUp();
+    else if (i==2)
+      m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
+          =p_pdf->GetMStrange();
+    else if (i==3)
+      m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
+          =p_pdf->GetMCharm();
+    else if (i==4)
+      m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
+          =p_pdf->GetMBottom();
+    else if (i==5)
+      m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
+          =p_pdf->GetMTop();
+  }
+
 }
 
 PDF_NNPDF::~PDF_NNPDF()

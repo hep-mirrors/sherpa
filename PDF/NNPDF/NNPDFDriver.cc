@@ -189,8 +189,7 @@ void NNPDFDriver::readPDFSet(string const& grid, int const& rep)
       
       if (f.fail())
 	{
-	  //cout << "In LHAPDF6 --- Error: cannot open file " << grid << endl;
-	  cout << "In LHAPDF6 --- Error: cannot open file " << file.str() << endl;
+	  cout << "In NNPDFDriver::readPDFSet fLHAPDF6 --- Error: cannot open file " << file.str() << endl;
 	  exit(-1);
 	}
 
@@ -206,57 +205,6 @@ void NNPDFDriver::readPDFSet(string const& grid, int const& rep)
           if (tmp.find("Flavors: [") != string::npos) 	  
 	    if (tmp.find("22") != string::npos) { fHasPhoton = true;  fNFL++; }
 	 
-	  //if (tmp.find("NumMembers:") != string::npos)
-	    //{
-	      //split(splitstring,tmp);
-	      //fMem = atof(splitstring[1].c_str())-1;
-	    //}
-	  //if (tmp.find("AlphaS_MZ:") != string::npos)
-	    //{
-	      //split(splitstring,tmp);
-              //fAlphas = atof(splitstring[1].c_str());
-	    //}
-	  //if (tmp.find("XMin:") != string::npos)
-	    //{
-	      //split(splitstring,tmp);
-	      //if ( fabs(atof(splitstring[1].c_str()) - XMINGRID) > 1e-10)
-		//{
-		  //cout << "Problem with XMINGRID" << endl;
-		  //exit(-1);
-		//}
-              //// HS
-              //fxmin = atof(splitstring[1].c_str());
-		  // HS
-          //if (tmp.find("XMax:") != string::npos)
-            //{
-	      //split(splitstring,tmp);
-              //fxmax = atof(splitstring[1].c_str());
-            //}
-	  //if (tmp.find("QMin:") != string::npos)
-	    //{
-	      //split(splitstring,tmp);
-              //// HS
-              //fQmin = atof(splitstring[1].c_str());
-	    //}
-	  //// HS
-          //if (tmp.find("QMax:") != string::npos)
-            //{
-	      //split(splitstring,tmp);
-              //fQmax = atof(splitstring[1].c_str());
-            //}    //}
-          // HS
-          //if (tmp.find("MZ:") != string::npos)
-            //{
-	      //split(splitstring,tmp);
-              //fMz = atof(splitstring[1].c_str());
-            //}
-          //// HS
-          //if (tmp.find("AlphaS_OrderQCD:") != string::npos)
-            //{
-	      //split(splitstring,tmp);
-              //forder = atoi(splitstring[1].c_str());
-            //}
-	  
           
           if (hasKey(tmp, "NumMembers:")) fMem = readInt(tmp, "NumMembers:") -1;
 
@@ -292,7 +240,6 @@ void NNPDFDriver::readPDFSet(string const& grid, int const& rep)
 
       if (fSingleMem)
 	{
-          //cout << "SingleMem" << endl;
 	  stringstream file("");
 	  if (rep < 10)
 	    file << grid << "/" << name << "_000" << rep << ".dat";

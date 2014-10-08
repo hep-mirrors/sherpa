@@ -114,9 +114,16 @@ class NNPDFDriver {
   // Get MZ
   double GetMz() { return fMz; }
 
+  // Accessors to quark masses
+  double GetMDown()    { return fMDown;}
+  double GetMUp()      { return fMUp;}
+  double GetMStrange() { return fMStrange;}
+  double GetMCharm()   { return fMCharm;}
+  double GetMBottom()  { return fMBottom;}
+  double GetMTop()     { return fMTop;}
+
   // Get order alphas
   int GetOrderAlphaS() { return forder; }
-
 
   //! Returns true if the set contains the photon PDF
   bool hasPhoton() { return fHasPhoton; }
