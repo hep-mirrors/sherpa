@@ -91,7 +91,7 @@ int Shower::RemnantTest(Parton *const p,const Poincare_Sequence *lt)
   if (mom[0]<0.0 || mom.Nan()) return -1;
   if (mom[0]>rpa->gen.PBeam(p->Beam())[0] &&
       !IsEqual(mom[0],rpa->gen.PBeam(p->Beam())[0],1.0e-6)) return -1;
-  if (!m_sudakov.CheckPDF(GetXBj(p),p->GetFlavour(),p->Beam())) return -1;
+  if (!m_sudakov.CheckPDF(mom[0]/rpa->gen.PBeam(p->Beam())[0],p->GetFlavour(),p->Beam())) return -1;
   return p_isr->GetRemnant(p->Beam())->
     TestExtract(p->GetFlavour(),mom)?1:-1;
 }
