@@ -28,11 +28,10 @@ double OpenLoops_Born::Calc(const Vec4D_Vector& momenta)
   
   double result;
   if (m_amptype==1) OpenLoops_Interface::EvaluateTree(m_ol_id, momenta, result);
-  if (m_amptype==2) OpenLoops_Interface::EvaluateLoop2(m_ol_id, momenta, result);
+  if (m_amptype==12) OpenLoops_Interface::EvaluateLoop2(m_ol_id, momenta, result);
 
   // OL returns ME2 including 1/symfac, but Calc is supposed to return it
   // without 1/symfac, thus multiplying with symfac here
-  
   return m_symfac*result;
 }
 
