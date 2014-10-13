@@ -15,6 +15,8 @@ All_Hadron_Multiplets::All_Hadron_Multiplets() :
   ConstructAntiWaveFunctions();
   CreateMultiplets();
   AddMultipletWeights();
+  //PrintWaveFunctions();
+  //exit(0);
 }
 
 All_Hadron_Multiplets::~All_Hadron_Multiplets() 
