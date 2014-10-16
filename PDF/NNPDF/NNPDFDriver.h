@@ -23,12 +23,6 @@
  *
  *  // with fl = [-6,7], LHAPDF format
  *
- *    or
- *
- *  pdf->xfx(x,Q); // -> returns double*
- *
- *  // with double* index from [0,13], always in the LHAPDF format
- *
  */
 
 #pragma once
@@ -48,6 +42,7 @@ class NNPDFDriver {
   static const int fN = 4;
 
   int fNFL;           //! Total flavour number
+  int fNFlavors;     // Number of flavours read from info
   int fNX;            //! Total number of x points in the grid
   vector<int> fNQ2;   //! Total number of Q2 points in the grid (subgrids)
   int fMem;           //! Total number of Members
@@ -60,7 +55,8 @@ class NNPDFDriver {
   vector<double****>  fPDFGrid;   //! PDF grid
   bool fHasPhoton;    //! bool with photon information
   bool fSingleMem;    //! bool which determines the constructor
-  bool fLHAPDF6;      //! bool which determines the grid version
+  //bool fLHAPDF6;      //! bool which determines the grid version
+  double *fXpdf;      //! array with doubles
   // Metainfo read from .info
   double fxmin; // xmin accessor
   double fxmax; // xmax accessor
@@ -87,14 +83,12 @@ class NNPDFDriver {
   void initPDF(int irep);
 
   //! returns the x*pdf of flavour id = [-6,7], LHA order.
-  double xfx(double const& x, double const& Q, int const& id);
-
-  //! returns the x*pdf array with all LHA order.
-  double xfx(double const& x, double const& Q);
-  //double* xfx(double const& x, double const& Q);
+  // Change w.r.t. vanilla code: use Q^2 instead of calculating it for each call 
+  double xfx(double const& X, double const& Q2_glob, int const& ID);
 
   //! Get NFL method, returns total number of flavours
-  int GetNFL() { return fNFL; }
+  int GetNFL() { return fNFL; } // Number of flavours in the grid (includes top)
+  int GetNFlavors() { return fNFlavors; } // Number of flavours in the pdf file (no top)
 
   //! Get AlphaS method, returns the alphas at Mz
   double GetAlphaSMz() { return fAlphas; }
@@ -135,8 +129,6 @@ class NNPDFDriver {
   /// Reads the PDF from file
   void readPDFSet(string const&, int const&);
   /// Apply the interpolation algorithm
-  double xfxevolve(double,double,int = -10);
-  //double* xfxevolve(double,double,int = -10);
   /// Performs the 2D polynomial interpolation
   void lh_polin2(double[],double[],double[][fN],
 		 double,double,double&,double&);
