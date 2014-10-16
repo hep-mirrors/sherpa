@@ -18,6 +18,8 @@ namespace PDF {
 
     int    m_anti;
     double m_x, m_Q2;
+    std::map<int, double> m_xfx;
+    std::map<int, bool>   m_calculated;
 
   public:
 
@@ -56,31 +58,31 @@ PDF_NNPDF::PDF_NNPDF
   p_pdf = new NNPDFDriver(m_path+"/"+file, m_member); // Path to the file to load
   
   m_bunch=bunch; // This is the beam
-  m_type="NNPDF"; // A wild guess
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
-  for (int i=1;i<6;i++) {
-    m_partons.insert(Flavour((kf_code)(i)));
-    m_partons.insert(Flavour((kf_code)(i)).Bar());
+  m_type="NNPDF"; // A wild guess
+  // initialise all book-keep arrays etc.
+  // This is copied from LHAPDF_CPP_Interface.C
+  std::vector<int> kfcs;
+  kfcs.push_back(-kf_t);
+  kfcs.push_back(-kf_b);
+  kfcs.push_back(-kf_c);
+  kfcs.push_back(-kf_s);
+  kfcs.push_back(-kf_u);
+  kfcs.push_back(-kf_d);
+  kfcs.push_back(kf_d);
+  kfcs.push_back(kf_u);
+  kfcs.push_back(kf_s);
+  kfcs.push_back(kf_c);
+  kfcs.push_back(kf_b);
+  kfcs.push_back(kf_t);
+  kfcs.push_back(kf_gluon);
+  for (int i=0;i<kfcs.size();i++)  {
+    m_partons.insert(Flavour(abs(kfcs[i]),kfcs[i]<0));
+    m_xfx[kfcs[i]]=0.;
+    m_calculated[kfcs[i]]=false;
   }
-  m_partons.insert(Flavour(kf_gluon));
-  m_partons.insert(Flavour(kf_jet));
-  m_partons.insert(Flavour(kf_quark));
-  m_partons.insert(Flavour(kf_quark).Bar());
-  // Use NNPDFdriver's hasPhoton method to decide whether a set has a photon PDF
-  if (p_pdf->hasPhoton()) m_partons.insert(Flavour(kf_photon));
-
-
-  // Read more stuff from .info
-  m_xmin=p_pdf->GetXMin(); 
-  m_xmax=p_pdf->GetXMax(); 
-  m_q2min=pow(p_pdf->GetQMin(),2);
-  m_q2max=pow(p_pdf->GetQMax(),2);
-  m_asinfo.m_order=p_pdf->GetOrderAlphaS();
-  m_asinfo.m_asmz =p_pdf->GetAlphaSMz();
-  
   // Quark masses
-  int nf(p_pdf->GetNFL());
-  //int nf(p_pdf->info().get_entry_as<int>("NumFlavors"));
+  int nf(p_pdf->GetNFlavors());
   if (nf<0) m_asinfo.m_flavs.resize(5);
   else      m_asinfo.m_flavs.resize(nf);
   // for now assume thresholds are equal to masses, as does LHAPDF-6.0.0
@@ -106,6 +108,14 @@ PDF_NNPDF::PDF_NNPDF
           =p_pdf->GetMTop();
   }
 
+  // Read more stuff from .info
+  m_xmin=p_pdf->GetXMin(); 
+  m_xmax=p_pdf->GetXMax(); 
+  m_q2min=pow(p_pdf->GetQMin(),2);
+  m_q2max=pow(p_pdf->GetQMax(),2);
+  m_asinfo.m_order=p_pdf->GetOrderAlphaS();
+  m_asinfo.m_asmz =p_pdf->GetAlphaSMz();
+
 }
 
 PDF_NNPDF::~PDF_NNPDF()
@@ -121,11 +131,12 @@ PDF_Base *PDF_NNPDF::GetCopy()
   return copy;
 }
 
-// More like set, but ok - TODO: some way to to the m_calculated bit
-void PDF_NNPDF::CalculateSpec(double x,double Q2)
+// This is resets the x and Q^2 infromation and erases all calculated values
+void PDF_NNPDF::CalculateSpec(double x, double Q2)
 {
-  // TODO: Marek wants some more efficiency here using m_calculated
-  m_x=x;
+  for (std::map<int,bool>::iterator it=m_calculated.begin();
+       it!=m_calculated.end();++it) it->second=false;
+  m_x=x/m_rescale;
   m_Q2=Q2;
 }
 
@@ -133,17 +144,17 @@ void PDF_NNPDF::CalculateSpec(double x,double Q2)
 // Return x*f(x) for flavour infl
 double PDF_NNPDF::GetXPDF(const ATOOLS::Flavour infl) 
 {
-  // TODO: isn't this implemented in the driver?
-  //if(m_x<m_xmin) m_x=m_xmin;
-  //if (m_x/m_rescale>m_xmax || m_rescale<0.0) return 0.0;
- 
-  // Some bizarre logic about flavours  
-  int kfc=m_anti*int(infl);
-  if (abs(kfc)==kf_gluon) kfc=0;
-  else if (abs(kfc)==kf_photon) kfc=13;
-  // Get xfx from NNPDFdriver, apply m_rescale (TODO, where is m_rescale set?)
-  // TODO: get rid of sqrt in the following?
-  return m_rescale*p_pdf->xfx(m_x/m_rescale, sqrt(m_Q2), kfc);
+  int kfc = m_anti*int(infl);
+
+  int kfc_nn(kfc);
+
+  // nn pdf requires 0 for gluons
+  if (kfc==21) kfc_nn = 0;
+  if (!m_calculated[kfc]) {
+    m_xfx[kfc]=p_pdf->xfx(m_x, m_Q2, kfc_nn);
+    m_calculated[kfc]=true; // This is the caching bit
+  }
+  return m_rescale*m_xfx[kfc];
 }
 
 DECLARE_PDF_GETTER(NNPDF_Getter);
@@ -153,7 +164,6 @@ PDF_Base *NNPDF_Getter::operator()
   (const Parameter_Type &args) const
 {
   if (!args.m_bunch.IsHadron()) return NULL;
-  //int set=args.p_read->GetValue<int>("PDF_SET_VERSION",1); // 1 is the default value I think this is not needed
   int ibeam=args.m_ibeam;
   int member = args.p_read->GetValue<int>("PDF_SET_MEMBER", 0); // 0 is the default value
   std::string gfile;
@@ -184,7 +194,7 @@ void NNPDF_Getter::PrintInfo
   str<<"NNPDF fit, see arXiv"; // TODO: change to proper reference
 }
 
-NNPDF_Getter *p_get_nnpdf[2]; // TODO: wtf? // TODO: find out number of things
+NNPDF_Getter *p_get_nnpdf[2]; // TODO: find out number of things
 
 
 extern "C" void InitPDFLib()
