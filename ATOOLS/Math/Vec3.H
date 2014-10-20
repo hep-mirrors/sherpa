@@ -62,9 +62,16 @@ namespace ATOOLS {
     }
 
     inline Vec3<Scalar>& operator+=(const Vec3<Scalar>& v) {
-      m_x[0] += v[0];
-      m_x[1] += v[1];
-      m_x[2] += v[2];
+      m_x[0] += v[1];
+      m_x[1] += v[2];
+      m_x[2] += v[3];
+      return *this;
+    }
+
+    inline Vec3<Scalar>& operator-=(const Vec3<Scalar>& v) {
+      m_x[0] -= v[1];
+      m_x[1] -= v[2];
+      m_x[2] -= v[3];
       return *this;
     }
 
@@ -85,6 +92,10 @@ namespace ATOOLS {
       m_x[1] *= scal;
       m_x[2] *= scal;
       return *this;
+    }
+
+    inline Vec3<Scalar> operator-() const {
+      return Vec3<Scalar>(-m_x[0],-m_x[1],-m_x[2]);
     }
 
     template<typename Scalar2> inline Vec3<PROMOTE(Scalar,Scalar2)>
