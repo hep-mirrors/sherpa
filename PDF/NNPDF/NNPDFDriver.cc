@@ -357,7 +357,8 @@ double NNPDFDriver::xfx(double const&X, double const& Q2_glob, int const& ID)
   double Q2 = Q2_glob;
   double x  = X;
 
-  int id    = ID+6;
+  int id    = ID; // 0 is anti top, 6 is gluon, 12 is top
+  //int id    = ID+6;
   int sub   = 0;
 
   for (size_t i = 0; i < fNQ2.size(); i++)

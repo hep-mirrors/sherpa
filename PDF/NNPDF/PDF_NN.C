@@ -17,6 +17,9 @@ namespace PDF {
     std::string m_path, m_file;
 
     int    m_anti;
+    int m_lookup[28];
+
+
     double m_x, m_Q2;
     std::map<int, double> m_xfx;
     std::map<int, bool>   m_calculated;
@@ -79,7 +82,7 @@ PDF_NNPDF::PDF_NNPDF
   for (int i=0;i<kfcs.size();i++)  {
     m_partons.insert(Flavour(abs(kfcs[i]),kfcs[i]<0));
     m_xfx[kfcs[i]]=0.;
-    m_calculated[kfcs[i]]=false;
+    //m_calculated[kfcs[i]]=false;
   }
   // Quark masses
   int nf(p_pdf->GetNFlavors());
@@ -116,6 +119,21 @@ PDF_NNPDF::PDF_NNPDF
   m_asinfo.m_order=p_pdf->GetOrderAlphaS();
   m_asinfo.m_asmz =p_pdf->GetAlphaSMz();
 
+  // Hopefully efficient lookup table
+  // 0 entspricht -6, also anti top
+  // 1 entspricht -5, also anti bottom
+  // ...
+  // 12 entspricht 6, also top
+  // LHAPDF5 style: 6 entspraeche 0, also gluon, aber sherpa nimmt gluons als 21
+  for (int i=0;i<13;++i) {
+    m_lookup[i] = i;
+
+  }
+  for (int i=13;i<27;++i) {
+    m_lookup[i] = -1; // A safety, NNPDFdriver expects a number between 0 and 12
+  }
+  m_lookup[27] = 6; // The gluon in LHAPDF5/NNPDFDriver convention
+
 }
 
 PDF_NNPDF::~PDF_NNPDF()
@@ -134,8 +152,8 @@ PDF_Base *PDF_NNPDF::GetCopy()
 // This is resets the x and Q^2 infromation and erases all calculated values
 void PDF_NNPDF::CalculateSpec(double x, double Q2)
 {
-  for (std::map<int,bool>::iterator it=m_calculated.begin();
-       it!=m_calculated.end();++it) it->second=false;
+  //for (std::map<int,bool>::iterator it=m_calculated.begin();
+       //it!=m_calculated.end();++it) it->second=false;
   m_x=x/m_rescale;
   m_Q2=Q2;
 }
@@ -144,17 +162,15 @@ void PDF_NNPDF::CalculateSpec(double x, double Q2)
 // Return x*f(x) for flavour infl
 double PDF_NNPDF::GetXPDF(const ATOOLS::Flavour infl) 
 {
+  // Parton flavour IDs
   int kfc = m_anti*int(infl);
-
-  int kfc_nn(kfc);
-
-  // nn pdf requires 0 for gluons
-  if (kfc==21) kfc_nn = 0;
-  if (!m_calculated[kfc]) {
-    m_xfx[kfc]=p_pdf->xfx(m_x, m_Q2, kfc_nn);
-    m_calculated[kfc]=true; // This is the caching bit
-  }
-  return m_rescale*m_xfx[kfc];
+  // Hopefully efficient lookup --- relate 21 to 0
+  int kfc_nn(m_lookup[kfc+6]); // kfc runs from -6 to 6 and also 21
+                               // While the driver wants 
+                               // numbers from 0 to 12 to access
+                               // array elements
+  
+  return m_rescale*p_pdf->xfx(m_x, m_Q2, kfc_nn);;
 }
 
 DECLARE_PDF_GETTER(NNPDF_Getter);
@@ -194,7 +210,7 @@ void NNPDF_Getter::PrintInfo
   str<<"NNPDF fit, see arXiv"; // TODO: change to proper reference
 }
 
-NNPDF_Getter *p_get_nnpdf[2]; // TODO: find out number of things
+NNPDF_Getter *p_get_nnpdf[2];
 
 
 extern "C" void InitPDFLib()
