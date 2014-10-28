@@ -37,7 +37,7 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
   // s-channel for prop (i,j)
   Current_Key ckey(prop,MODEL::s_model,2);
   m_scur = Current_Getter::GetObject("D"+ckey.Type(),ckey);
-  Int_Vector isfs(2), ids(2), pols(2);
+  METOOLS::Int_Vector isfs(2), ids(2), pols(2);
   isfs[0]=flavs[propi].IsFermion();
   isfs[1]=flavs[propj].IsFermion();
   pols[0]=m_spins[ids[0]=propi];
@@ -48,7 +48,7 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
   // final current (1,2,3)
   ckey=Current_Key(flavs[0],MODEL::s_model,1);
   m_fcur = Current_Getter::GetObject("D"+ckey.Type(),ckey);
-  Int_Vector isfs2(3), ids2(3), pols2(3);
+  METOOLS::Int_Vector isfs2(3), ids2(3), pols2(3);
   isfs2[0]=flavs[1].IsFermion();
   isfs2[1]=flavs[2].IsFermion();
   isfs2[2]=flavs[3].IsFermion();
@@ -108,7 +108,7 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
 
   p_ci=new Color_Integrator();
   Idx_Vector cids(4,0);
-  Int_Vector acts(4,0), types(4,0);
+  METOOLS::Int_Vector acts(4,0), types(4,0);
   for (size_t i(0);i<flavs.size();++i) {
     cids[i]=i;
     acts[i]=flavs[i].Strong();

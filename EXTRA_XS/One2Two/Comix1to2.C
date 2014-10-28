@@ -33,7 +33,7 @@ Comix1to2::Comix1to2(const vector<Flavour>& flavs) :
   // final current (1,2)
   Current_Key ckey(flavs[0],MODEL::s_model,1);
   m_fcur = Current_Getter::GetObject("D"+ckey.Type(),ckey);
-  Int_Vector isfs(2), ids(2), pols(2);
+  METOOLS::Int_Vector isfs(2), ids(2), pols(2);
   isfs[0]=flavs[1].IsFermion();
   isfs[1]=flavs[2].IsFermion();
   pols[0]=m_spins[ids[0]=1];
@@ -73,7 +73,7 @@ Comix1to2::Comix1to2(const vector<Flavour>& flavs) :
 
   p_ci=new Color_Integrator();
   Idx_Vector cids(3,0);
-  Int_Vector acts(3,0), types(3,0);
+  METOOLS::Int_Vector acts(3,0), types(3,0);
   for (size_t i(0);i<flavs.size();++i) {
     cids[i]=i;
     acts[i]=flavs[i].Strong();
