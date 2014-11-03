@@ -207,7 +207,7 @@ PDF_Base *NNPDF_Getter::operator()
 void NNPDF_Getter::PrintInfo
 (std::ostream &str,const size_t width) const
 {
-  str<<"NNPDF fit, see arXiv"; // TODO: change to proper reference
+  str<<"NNPDF fit, see arXiv:1410.8849 [hep-ph]";
 }
 
 NNPDF_Getter *p_get_nnpdf[2];
