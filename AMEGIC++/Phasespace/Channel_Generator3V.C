@@ -185,7 +185,6 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
   }
 
   chf	<<"    Vegas* p_vegas;"<<endl
-	<<"    bool m_optfinished;"<<endl
 	<<"  public:"<<endl
 	<<"    "<<name<<"(int,int,Flavour*,Integration_Info * const);"<<endl
 	<<"    ~"<<name<<"();"<<endl
@@ -194,8 +193,7 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
 	<<"    void   AddPoint(double);"<<endl
 	<<"    void   MPISync()                 { p_vegas->MPISync(); }"<<endl
 	<<"    void   Optimize()                { p_vegas->Optimize(); } "<<endl
-	<<"    void   EndOptimize()             { p_vegas->EndOptimize(); m_optfinished=1; } "<<endl
-	<<"    bool   OptimizationFinished()    { return m_optfinished; } "<<endl
+	<<"    void   EndOptimize()             { p_vegas->EndOptimize(); } "<<endl
 	<<"    void   WriteOut(std::string pId) { p_vegas->WriteOut(pId); } "<<endl
 	<<"    void   ReadIn(std::string pId)   { p_vegas->ReadIn(pId); } "<<endl
         <<"    void   ISRInfo(int &,double &,double &);"<<endl
@@ -247,8 +245,7 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
 	<<"{"<<endl
 	<<"  name = std::string(\""<<name<<"\");"<<endl
 	<<"  rannum = "<<rannumber<<";"<<endl
-	<<"  rans  = new double[rannum];"<<endl
-	<<"  m_optfinished=0;"<<endl;
+	<<"  rans  = new double[rannum];"<<endl;
   if (tcount>0) {
     chf	<<"  m_amct  = 1.;"<<endl
 	<<"  m_alpha = .9;"<<endl
