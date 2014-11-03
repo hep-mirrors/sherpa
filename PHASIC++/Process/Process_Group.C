@@ -194,7 +194,7 @@ void Process_Group::SetLookUp(const bool lookup)
 }
 
 bool Process_Group::CheckFlavours
-(const Subprocess_Info &ii,const Subprocess_Info &fi) const
+(const Subprocess_Info &ii,const Subprocess_Info &fi,int mode) const
 {
   std::vector<Flavour> cfl;
   for (size_t i(0);i<ii.m_ps.size();++i) cfl.push_back(ii.m_ps[i].m_fl);
@@ -206,13 +206,13 @@ bool Process_Group::CheckFlavours
     if (abs(cfl[i].StrongCharge())!=8)
       strong+=i<nin?-cfl[i].StrongCharge():cfl[i].StrongCharge();
     quarks+=cfl[i].IsQuark();
-    if (quarks>m_pinfo.m_nmaxq) {
+    if (mode==0 && quarks>m_pinfo.m_nmaxq) {
       msg_Debugging()<<METHOD<<"(): '"<<GenerateName(ii,fi)<<"': n_q > "
 		     <<m_pinfo.m_nmaxq<<". Skip process.\n";
       return false;
     }
   }
-  if (quarks<m_pinfo.m_nminq) {
+  if (mode==0 && quarks<m_pinfo.m_nminq) {
     msg_Debugging()<<METHOD<<"(): '"<<GenerateName(ii,fi)<<"': n_q < "
 		   <<m_pinfo.m_nminq<<". Skip process.\n";
     return false;
@@ -223,7 +223,7 @@ bool Process_Group::CheckFlavours
     if (fi.m_ps[i].m_ps.empty()) continue;
     Subprocess_Info cii;
     cii.m_ps.push_back(fi.m_ps[i]);
-    if (!CheckFlavours(cii,fi.m_ps[i])) {
+    if (!CheckFlavours(cii,fi.m_ps[i],1)) {
       res=false;
       break;
     }

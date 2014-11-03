@@ -14,7 +14,8 @@ namespace PHASIC {
 
     Process_Base *GetProcess(const std::string &name);
 
-    bool CheckFlavours(const Subprocess_Info &ii,const Subprocess_Info &fi) const;
+    bool CheckFlavours(const Subprocess_Info &ii,
+		       const Subprocess_Info &fi,int mode=0) const;
     void SetFlavour(Subprocess_Info &cii,Subprocess_Info &cfi,
 		    const ATOOLS::Flavour &fl,const size_t i) const;
     bool ConstructProcesses(Process_Info pi,const size_t &ci);
