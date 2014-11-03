@@ -1013,6 +1013,11 @@ void PS_Channel::EndOptimize()
   }
 } 
 
+bool PS_Channel::OptimizationFinished()
+{
+  return m_omode==0;
+}
+
 void PS_Channel::ISRInfo(int &type,double &mass,double &width) 
 {
   type=0; 

@@ -154,6 +154,7 @@ namespace COMIX {
     void MPISync();
     void Optimize();
     void EndOptimize();
+    bool OptimizationFinished();
 
     void WriteOut(std::string pid);
     void ReadIn(std::string pid);
