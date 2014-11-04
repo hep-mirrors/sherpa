@@ -235,14 +235,16 @@ void CS_Cluster_Definitions::KernelWeight
   Splitting_Function_Base *cdip(GetSF(i,j,k,mo,cs));
   if (cdip==NULL) {
     cs.m_ws=cs.m_wk=-1.0;
-    if (m_pdfcheck && (cs.m_mode&1)) {
-      int beam=i->Id()&1?0:1;
-      if (!p_shower->ISR()->PDF(beam)->Contains(mo)) {
-	msg_Debugging()<<"Not in PDF: "<<mo<<".\n";
-	cs.m_kmode=-1;
-      }
-    }
     return;
+  }
+  if (m_pdfcheck && (cs.m_mode&1)) {
+    int beam=i->Id()&1?0:1;
+    if (!p_shower->ISR()->PDF(beam)->Contains(mo)) {
+      msg_Debugging()<<"Not in PDF: "<<mo<<".\n";
+      cs.m_ws=cs.m_wk=-1.0;
+      cs.m_kmode=-1;
+      return;
+    }
   }
   Flavour fls((k->Id()&3)?ProperFlav(k->Flav()).Bar():ProperFlav(k->Flav()));
   if (!(kmode&32) && !cdip->Coupling()->AllowSpec(fls)) {
@@ -266,14 +268,6 @@ void CS_Cluster_Definitions::KernelWeight
     else cs.m_wk=sqrt(std::numeric_limits<double>::min());
     cs.m_ws=1.0/cs.m_wk;
     msg_Debugging()<<"No Kernel. Set weight "<<cs.m_ws<<".\n";
-    if (m_pdfcheck && (cs.m_mode&1)) {
-      int beam=i->Id()&1?0:1;
-      if (p_shower->ISR()->PDF(beam) &&
-	  !p_shower->ISR()->PDF(beam)->Contains(mo)) {
-	msg_Debugging()<<"Not in PDF: "<<mo<<".\n";
-	cs.m_kmode=-1;
-      }
-    }
   }
   else {
   double scale=cs.m_kt2, eta=1.0;
