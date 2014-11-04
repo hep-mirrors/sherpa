@@ -1,9 +1,11 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 
 #include "PHASIC++/Scales/Tag_Setter.H"
+#include "PHASIC++/Scales/Core_Scale_Setter.H"
 #include "PHASIC++/Process/Process_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
@@ -12,6 +14,8 @@ namespace PHASIC {
 
   class Variable_Scale_Setter: public Scale_Setter_Base {
   protected:
+
+    Core_Scale_Setter *p_core;
 
     std::vector<ATOOLS::Algebra_Interpreter*> m_calcs;
 
@@ -28,6 +32,8 @@ namespace PHASIC {
 
     void SetScale(const std::string &mu2tag,
 		  ATOOLS::Algebra_Interpreter &mu2calc);
+
+    PDF::CParam CoreScale(ATOOLS::Cluster_Amplitude *const ampl) const;
 
   };// end of class Scale_Setter_Base
 
@@ -57,7 +63,20 @@ Variable_Scale_Setter::Variable_Scale_Setter
 (const Scale_Setter_Arguments &args):
   Scale_Setter_Base(args), m_tagset(this)
 {
-  std::string tag(args.m_scale);
+  std::string tag(args.m_scale), core;
+  size_t pos(tag.find("VAR["));
+  if (pos!=std::string::npos) {
+    tag=tag.substr(pos+4);
+    pos=tag.find(']');
+    if (pos==std::string::npos) 
+      THROW(fatal_error,"Invalid scale '"+args.m_scale+"'");
+    core=tag.substr(0,pos);
+    tag=tag.substr(pos+1);
+  }
+  Data_Reader read(" ",";","!","=");
+  if (core=="" && !read.ReadFromFile(core,"CORE_SCALE")) core="DEFAULT";
+  p_core=Core_Scale_Getter::GetObject(core,Core_Scale_Arguments(p_proc,core));
+  if (p_core==NULL) THROW(fatal_error,"Invalid core scale '"+core+"'");
   while (true) {
     size_t pos(tag.find('{'));
     if (pos==std::string::npos) {
@@ -83,6 +102,7 @@ Variable_Scale_Setter::Variable_Scale_Setter
 Variable_Scale_Setter::~Variable_Scale_Setter()
 {
   for (size_t i(0);i<m_calcs.size();++i) delete m_calcs[i];
+  delete p_core;
 }
 
 double Variable_Scale_Setter::Calculate
@@ -114,3 +134,12 @@ void Variable_Scale_Setter::SetScale
   msg_Debugging()<<"}\n";
 }
 
+PDF::CParam Variable_Scale_Setter::CoreScale(Cluster_Amplitude *const ampl) const
+{
+  ampl->SetProc(p_proc);
+  PDF::CParam kt2(p_core->Calculate(ampl));
+  ampl->SetKT2(kt2.m_kt2);
+  ampl->SetMu2(kt2.m_mu2);
+  ampl->SetMuQ2(kt2.m_op2);
+  return kt2;
+}
