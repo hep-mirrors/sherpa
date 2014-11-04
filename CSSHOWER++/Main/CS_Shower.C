@@ -44,7 +44,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   if (m_respectq2!=1) msg_Info()<<METHOD<<"(): Set respect Q2 mode "<<m_respectq2<<"\n";
   int amode(_dataread->GetValue<int>("EXCLUSIVE_CLUSTER_MODE",0));
   if (amode!=0) msg_Info()<<METHOD<<"(): Set exclusive cluster mode "<<amode<<".\n";
-  int meweight=_dataread->GetValue<int>("CSS_MEWMODE",1);
+  int meweight=_dataread->GetValue<int>("CSS_MEWMODE",0);
   if (meweight!=1) msg_Info()<<METHOD<<"(): Set ME weight mode "<<meweight<<"\n";
   int ckfmode=_dataread->GetValue<int>("CSS_CKFMODE",1);
   if (ckfmode!=1) msg_Info()<<METHOD<<"(): Set cluster KF mode "<<ckfmode<<"\n";

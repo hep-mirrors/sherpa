@@ -142,8 +142,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
   }
   cs.m_col=col;
   KernelWeight(i,j,k,mo,cs,kmode);
-  if (cs.m_wk>0.0 &&
-      (((m_meweight&1) && (kmode&2)) || (kmode&4))) {
+  if (cs.m_wk>0.0 && ((m_meweight&1) && (kmode&2))) {
     Cluster_Amplitude *campl(Cluster_Amplitude::New());
     campl->SetProcs(ampl->Procs<void>());
     campl->Decays()=ampl->Decays();
