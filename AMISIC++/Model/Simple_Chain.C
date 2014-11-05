@@ -241,7 +241,7 @@ void Simple_Chain::InitializeProcessList(const Flavour& in1,
   pi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(out2,"",""));
   pi.m_oew=0;
   pi.m_oqcd=2;
-  pi.m_scale="MPI";
+  pi.m_scale=p_read->GetValue<std::string>("MPI_SCALE","MPI");
   pi.m_coupling="Alpha_QCD 1";
   pi.m_kfactor="NO";
   pi.m_mpiprocess=true;
