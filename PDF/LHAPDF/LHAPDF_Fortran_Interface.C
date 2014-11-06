@@ -66,7 +66,7 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_q2min=LHAPDF::getQ2min(m_member);
   m_q2max=LHAPDF::getQ2max(m_member);
   
-  for (int i=1;i<m_asinfo.m_flavs.size();i++) {
+  for (int i=1;i<=m_asinfo.m_flavs.size();i++) {
     m_partons.insert(Flavour((kf_code)(i)));
     m_partons.insert(Flavour((kf_code)(i)).Bar());
   }
