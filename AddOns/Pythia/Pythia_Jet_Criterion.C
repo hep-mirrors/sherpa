@@ -2,6 +2,10 @@
 
 #include "PHASIC++/Selectors/Jet_Finder.H"
 #include "PHASIC++/Channels/CSS_Kinematics.H"
+#include "PHASIC++/Process/Process_Base.H"
+#include "PHASIC++/Main/Process_Integrator.H"
+#include "PDF/Main/ISR_Handler.H"
+#include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -43,6 +47,11 @@ namespace PYTHIA {
 		li->Flav().Strong() && lj->Flav().Strong()) {
 	      if (i<ampl->NIn()) li->SetMom(-li->Mom());
 	      if (k<ampl->NIn()) lk->SetMom(-lk->Mom());
+	      Flavour mofl2(li->Flav().Bar());
+	      if (mofl2.IsGluon()) mofl2=lj->Flav().Bar();
+	      if (mofl2==lj->Flav()) mofl2=Flavour(kf_gluon);
+	      if (i<ampl->NIn() && !ampl->Proc<Process_Base>()->
+		  Integrator()->ISR()->PDF(i)->Contains(mofl2)) continue;
 	      double q2ijk(pT2pythia(ampl,*li,*lj,*lk,i<ampl->NIn()?-1:1));
 	      msg_Debugging()<<"Q_{"<<ID(li->Id())<<ID(lj->Id())
 			     <<","<<ID(lk->Id())<<"} = "<<sqrt(q2ijk)<<"\n";
