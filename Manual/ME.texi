@@ -328,14 +328,14 @@ at @code{p[6]}.
 @item H_T2
 Square of the scalar sum of the transverse momenta of all final state particles.
 
-@item H_TY2[fac:<factor>,exp:<exponent>]
+@item H_TY2(<factor>,<exponent>)
 Square of the scalar sum of the transverse momenta of all final state particles 
 weighted by their rapidity distance from the final state boost vector. Thus, 
 takes the form
 @verbatim
   H_T^{(Y)} = sum_i pT_i exp [ fac |y-yboost|^exp ]
 @end verbatim
-Typical values to use would by @code{fac:0.3} and @code{exp:1}.
+Typical values to use would by @code{0.3} and @code{1}.
 
 @comment @item TAU_B2
 @comment Square of the beam thrust.

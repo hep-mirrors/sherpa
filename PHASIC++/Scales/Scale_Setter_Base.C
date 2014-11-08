@@ -23,8 +23,7 @@ Scale_Setter_Base::Scale_Setter_Base
   p_proc(args.p_proc), p_caller(p_proc),
   p_model(args.p_model), p_cpls(args.p_cpls), p_subs(NULL),
   m_scale(stp::size), m_coupling(args.m_coupling),
-  m_nin(args.m_nin), m_nout(args.m_nout), 
-  m_htyfac(0.3), m_htyexp(1.)
+  m_nin(args.m_nin), m_nout(args.m_nout)
 {
   for (size_t i(0);i<stp::size;++i) m_scale[i]=rpa->gen.CplScale();
   if (p_proc) {
@@ -113,28 +112,6 @@ Vec4D Scale_Setter_Base::PSum() const
   Vec4D sum(0.0,0.0,0.0,0.0);
   for (size_t i(m_nin);i<m_p.size();++i) sum+=m_p[i];
   return sum;
-}
-
-double Scale_Setter_Base::HTYweighted() const
-{
-  Vec4D psum(0.,0.,0.,0.);
-  for (size_t i(m_nin);i<m_p.size();++i) psum+=m_p[i];
-  double yboost((psum/(double)(m_p.size()-m_nin)).Y());
-  double hty(0.0);
-  for (size_t i(m_nin);i<m_p.size();++i) 
-    hty+=m_p[i].PPerp()*exp(m_htyfac*pow(abs(m_p[i].Y()-yboost),m_htyexp));
-  return hty;
-}
-
-bool Scale_Setter_Base::SetHTYweightedParameters(std::string par, 
-                                                 std::string val)
-{
-  DEBUG_FUNC(par<<" -> "<<val);
-  if      (par=="fac") m_htyfac=ToType<double>(val);
-  else if (par=="exp") m_htyexp=ToType<double>(val);
-  else                 THROW(fatal_error,"Unknown parameters.");
-  msg_Debugging()<<"fac: "<<m_htyfac<<" ,  exp: "<<m_htyexp<<std::endl;
-  return true;
 }
 
 double Scale_Setter_Base::BeamThrust() const

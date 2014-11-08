@@ -49,8 +49,6 @@ namespace PHASIC {
 
     size_t m_nin, m_nout;
 
-    double m_htyfac, m_htyexp;
-
     ATOOLS::ClusterAmplitude_Vector m_ampls;
 
     virtual void PreCalc(const ATOOLS::Vec4D_Vector &p,
@@ -72,9 +70,6 @@ namespace PHASIC {
 
     ATOOLS::Vec4D PSum() const;
 
-    double HTYweighted() const;
-    bool   SetHTYweightedParameters(std::string par, std::string val);
-    
     double BeamThrust() const;
 
     double CalculateScale(const ATOOLS::Vec4D_Vector &p,const size_t mode=0);
