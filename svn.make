@@ -20,6 +20,7 @@ SVN_Info.C: SVN_Info.C.in
 	  if svn info $(top_srcdir) > /dev/null 2>&1; then \
 	    url=$$(svn info $(srcdir) | awk '{ if ($$1=="URL:") { \
 	      split($$2,a,"/sherpa/"); \
+	      if (length(a[2])==0) split($$2,a,"/svn/"); \
 	      sub("'$$cur'","",a[2]); print a[2]; } }'); \
 	    rev=$$(svnversion $(srcdir)); \
 	  else \
