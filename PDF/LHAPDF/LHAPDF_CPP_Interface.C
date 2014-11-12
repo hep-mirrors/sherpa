@@ -56,7 +56,12 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
     // TODO: get alphaS info
     m_asinfo.m_order=p_pdf->info().get_entry_as<int>("AlphaS_OrderQCD");
     int nf(p_pdf->info().get_entry_as<int>("NumFlavors"));
-    if (nf<0) m_asinfo.m_flavs.resize(5);
+    if (nf<0) {
+      Data_Reader read(" ",";","#","=");
+      int nf(read.GetValue<int>("LHAPDF_NUMBER_OF_FLAVOURS",5));
+      msg_Info()<<METHOD<<"(): No nf info. Set nf = "<<nf<<"\n";
+      m_asinfo.m_flavs.resize(nf);
+    }
     else      m_asinfo.m_flavs.resize(nf);
     // for now assume thresholds are equal to masses, as does LHAPDF-6.0.0
     for (size_t i(0);i<m_asinfo.m_flavs.size();++i) {
