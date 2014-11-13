@@ -205,6 +205,7 @@ namespace ATOOLS {
   };// end of class Blob
 
 
+  typedef std::vector<ATOOLS::Blob *> Blob_Vector;
   typedef std::map<int,ATOOLS::Blob *> Int_Blob_Map;
   typedef std::map<ATOOLS::Particle *,ATOOLS::Blob *> Particle_Blob_Map;
 

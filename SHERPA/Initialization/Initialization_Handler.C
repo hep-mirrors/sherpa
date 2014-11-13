@@ -800,7 +800,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 bool Initialization_Handler::InitializeTheSoftPhotons()
 {
   if (p_softphotons) { delete p_softphotons; p_softphotons = NULL; }
-  p_softphotons = new Soft_Photon_Handler(m_path,m_softphotonsdat);
+  p_softphotons = new Soft_Photon_Handler(m_path,m_softphotonsdat,p_mehandler);
   if (p_harddecays) p_harddecays->SetSoftPhotonHandler(p_softphotons);
   if (p_hdhandler)  p_hdhandler->SetSoftPhotonHandler(p_softphotons);
   msg_Info()<<"Initialized the Soft_Photon_Handler."<<endl;

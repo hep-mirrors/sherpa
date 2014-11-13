@@ -10,6 +10,7 @@ namespace ATOOLS {
   class Blob;
   class Flavour;
   class Particle;
+  typedef std::vector<Blob *> Blob_Vector;
   typedef std::vector<Particle* > Particle_Vector;
 }
 
@@ -25,45 +26,15 @@ namespace MODEL {
 
 namespace SHERPA {
 
-  typedef std::vector<ATOOLS::Blob *> Blob_Vector;
-  typedef std::vector<const PHASIC::Subprocess_Info *> SubInfoVector;
-
   class Signal_Process_FS_QED_Correction: public Event_Phase_Handler {
   private :
     bool                      m_on;
     bool                      m_qed;
-    bool                      m_findresonances;
-    double                    m_resdist;
     Matrix_Element_Handler  * p_mehandler;
     Soft_Photon_Handler     * p_sphotons;
 
-    std::map<std::string,SubInfoVector>      m_proc_lep_map;
-    std::map<std::string,MODEL::Vertex_List> m_proc_restab_map;
-
     bool            PutOnMassShell(const ATOOLS::Particle_Vector&);
-    ATOOLS::Flavour DetermineGenericResonance(const ATOOLS::Particle_Vector&);
-    ATOOLS::Vec4D   MomentumSum(const ATOOLS::Particle_Vector&);
 
-    void FindSubProcessInfosContainingLeptons(const PHASIC::Process_Info&,
-                                              SubInfoVector&);
-    void FindSubProcessInfosContainingLeptons(const PHASIC::Subprocess_Info&,
-                                              SubInfoVector&);
-    void FindProcessPossibleResonances(const ATOOLS::Flavour_Vector&,
-                                       MODEL::Vertex_List&);
-    bool FindResonances(ATOOLS::Particle_Vector&,
-                        std::vector<ATOOLS::Particle_Vector>&,
-                        ATOOLS::Flavour_Vector&,
-                        const MODEL::Vertex_List&);
-
-    Blob_Vector BuildResonantBlobs(ATOOLS::Particle_Vector&);
-
-    bool    ContainsNoAmbiguities(const ATOOLS::Particle_Vector&);
-    void    FillBlob(ATOOLS::Blob *,
-                     const PHASIC::Subprocess_Info&,
-                     ATOOLS::Particle_Vector&);
-    void    FillBlob(ATOOLS::Blob *,
-                     const ATOOLS::Flavour&,
-                     ATOOLS::Particle_Vector&);
   public :
 
     // constructor

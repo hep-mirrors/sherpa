@@ -13,7 +13,8 @@ libSherpaSoftPhysics_la_SOURCES	      =	\
 					Hadron_Decay_Handler.C \
 					Lund_Decay_Handler.C \
 					Soft_Photon_Handler.C \
-					Cluster_Algorithm.C
+					Cluster_Algorithm.C \
+					Resonance_Finder.C
 
 localinc_HEADERS      =	\
 			Primordial_KPerp.H \
@@ -24,4 +25,5 @@ localinc_HEADERS      =	\
 			Hadron_Decay_Handler.H \
                         Lund_Decay_Handler.H \
 			Soft_Photon_Handler.H \
-			Cluster_Algorithm.H
+			Cluster_Algorithm.H \
+			Resonance_Finder.H
