@@ -165,7 +165,8 @@ void Vertex::GenerateVertex()
 	}
 	else {
 	  if (m_cplmap[hstr]!=m_v[i].Coupling(j)) {
-	    msg_Error()<<"coupling ID not unique: "<<m_v[i].cpl[j].String()<<endl;
+	    msg_Error()<<"coupling ID not unique (3): "
+		       <<m_v[i].cpl[j].String()<<endl;
 	    abort();
 	  }
 	}
@@ -182,8 +183,11 @@ void Vertex::GenerateVertex()
 	}
 	else {
 	  if (m_cplmap[hstr]!=m_v4[i].Coupling(j)) {
-	    msg_Error()<<"coupling ID not unique: "<<m_v[i].cpl[j].String()
-		       <<" vs. "<<hstr<<endl;
+	    msg_Error()<<"ERROR in "<<METHOD<<": coupling ID not unique (4): "
+		       <<m_v[i].cpl[j].String()
+		       <<" vs. "<<hstr<<endl
+		       <<"for "<<m_v4[i].in[0]<<" -> "<<m_v4[i].in[1]<<" "
+		       <<m_v4[i].in[2]<<" "<<m_v4[i].in[3]<<".\n";
 	    abort();
 	  }
 	}

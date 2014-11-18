@@ -7,7 +7,7 @@
 
   ANALYSIS            = Rivet
 
-  ANALYSIS_OUTPUT     = test9
+  ANALYSIS_OUTPUT     = test6
 
   ALPHAS(MZ) 0.118;
   ORDER_ALPHAS 1;
@@ -15,22 +15,22 @@
   MAX_PROPER_LIFETIME = 10.
 
   deltaY    =  1.5;
-  Lambda2   =  1.7;
-  beta_0^2  =  20.0;
+  Lambda2   =  1.376;
+  beta_0^2  =  18.76;
   kappa     =  0.6;
   xi        =  0.2;
-  lambda    =  0.3;
-  Delta     =  0.4;
+  lambda    =  0.2151;
+  Delta     =  0.3052;
 
-  Q_0^2           = 0.25;
+  Q_0^2           = 2.25;
   Chi_S           = 1.0;
   Shower_Min_KT2  = 4.0;
-  Diff_Factor     = 1.0;
+  Diff_Factor     = 4.0;
   KT2_Factor      = 4.0;
-  RescProb        = 1.0;
-  RescProb1       = 1.0;
-  Q_RC^2          = 0.25;
-  ReconnProb      = -35.;
+  RescProb        = 2.0;
+  RescProb1       = 0.5;
+  Q_RC^2          = 0.9;
+  ReconnProb      = -25.;
   Resc_KTMin      = off;
 
   Misha           = 0
@@ -43,7 +43,7 @@
 
 (analysis){
   BEGIN_RIVET {
-  -a ATLAS_2010_S8918562 ATLAS_2010_S8894728 ATLAS_2011_S8994773 ATLAS_2012_I1084540 TOTEM_2012_DNDETA ATLAS_2011_I919017 CMS_2011_S8978280 CMS_2011_S9120041 CMS_2011_S9215166 CMS_2010_S8547297 CMS_2010_S8656010 CMS_2011_S8884919 CMS_QCD_10_024
+  -a ATLAS_2010_S8918562 ATLAS_2010_S8894728 ATLAS_2011_S8994773 ATLAS_2012_I1084540 TOTEM_2012_DNDETA ATLAS_2011_I919017 CMS_2011_S8978280 CMS_2011_S9120041 CMS_2011_S9215166 CMS_2010_S8656010 CMS_2011_S8884919 CMS_QCD_10_024
   } END_RIVET
 }(analysis)
 

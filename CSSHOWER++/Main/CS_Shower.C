@@ -270,7 +270,7 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
   std::map<Parton*,Cluster_Leg*> almap;
   std::map<Cluster_Leg*,Parton*> apmap;
   for (Cluster_Amplitude *campl(ampl);campl;campl=campl->Next()) {
-    msg_Debugging()<<*campl<<"\n";
+    msg_Out()<<*campl<<"\n";
     Parton *split(NULL);
     std::map<Parton*,Cluster_Leg*> lmap;
     std::map<Cluster_Leg*,Parton*> pmap;
@@ -553,21 +553,29 @@ double CS_Shower::CplFac(const ATOOLS::Flavour &fli,const ATOOLS::Flavour &flj,
 
 void CS_Shower::SetColours(Cluster_Amplitude *const ampl)
 {
+  msg_Out()<<"======================================================== in\n"
+	   <<"======================================================== in\n"
+	   <<"======================================================== in\n"
+	   <<"In "<<METHOD;
   bool cs(true);
   Vec4D_Vector moms(ampl->Legs().size());
   Flavour_Vector fl(ampl->Legs().size());
   for (int i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *l(ampl->Leg(i));
-    if (l->Col().m_i>=500 || l->Col().m_j>=500) return;
+    if (l->Col().m_i>=500 || l->Col().m_j>=500) {
+      msg_Out()<<" -------------------------------------> already colours.\n";
+      return;
+    }
     moms[i]=i<ampl->NIn()?-l->Mom():l->Mom();
     fl[i]=i<ampl->NIn()?l->Flav().Bar():l->Flav();
     if (moms[i][0]<fl[i].Mass()) cs=false;
   }
   Flav_ME_Map::const_iterator xit(m_xsmap.find(fl));
   if (xit==m_xsmap.end()) {
+    msg_Out()<<" ---> no process immediately found, try to fix it.\n";
     Process_Info pi;
-    pi.m_oqcd=2;
-    pi.m_oew=0;
+    pi.m_oqcd=ampl->OrderQCD();
+    pi.m_oew=ampl->OrderEW();
     for (size_t i(0);i<ampl->NIn();++i)
       pi.m_ii.m_ps.push_back(Subprocess_Info(fl[i]));
     for (size_t i(ampl->NIn());i<fl.size();++i)
@@ -580,6 +588,7 @@ void CS_Shower::SetColours(Cluster_Amplitude *const ampl)
     }
   }
   if (xit!=m_xsmap.end()) {
+    msg_Out()<<" ---> process found.\n";
     bool test(xit->second->SetColours(moms));
     for (size_t i(0);i<fl.size();++i) {
       ColorID c(xit->second->Colours()[i][0],
@@ -589,6 +598,7 @@ void CS_Shower::SetColours(Cluster_Amplitude *const ampl)
     }
   }
   else {
+    msg_Out()<<" --> go to last ditch attempt.\n";
     if (p_cs==NULL || !cs || !p_cs->SetColors(ampl)) {
       std::vector<int> tids, atids;
       for (size_t i(0);i<ampl->Legs().size();++i)
@@ -635,6 +645,9 @@ void CS_Shower::SetColours(Cluster_Amplitude *const ampl)
     }
     Cluster_Amplitude::SetColours(lij,li,lj);
   }
+  msg_Out()<<"======================================================== out\n"
+	   <<"======================================================== out\n"
+	   <<"======================================================== out\n";
 }
 
 double CS_Shower::Qij2(const ATOOLS::Vec4D &pi,const ATOOLS::Vec4D &pj,

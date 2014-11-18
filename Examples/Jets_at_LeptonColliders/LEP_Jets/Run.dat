@@ -1,17 +1,48 @@
 (run){
   % general settings
   EVENTS 5M; NJET:=3;
-  % model parameters
+  YCUT:=2.5; SCF:=1.0;
+  EXCLUSIVE_CLUSTER_MODE 1;
+  ALPHAS(MZ)=0.1176;
+  SCALES METS{SCF*MU_F2}{SCF*MU_R2};
+  ANALYSIS Rivet;
+   % model parameters
   ALPHAS(MZ) 0.1188;
   ORDER_ALPHAS 1;
   % collider setup
   BEAM_1  11; BEAM_ENERGY_1 45.6;
   BEAM_2 -11; BEAM_ENERGY_2 45.6;
+  %ANALYSIS Rivet;
+  RESULT_DIRECTORY=Results.YCUT
+  %ANALYSIS_OUTPUT=Analysis.YCUT
+  MASSIVE[5] = 1
 }(run)
 
 (processes){
   Process 11 -11 -> 93 93 93{NJET};
-  CKKW pow(10,-2.25);
+  CKKW pow(10,-YCUT);
+  Enhance_Factor 4 {4};
+  Enhance_Factor 2 {5};
+  Order_EW 2;
+  End process;
+
+  Process 11 -11 -> 5 -5 93{NJET};
+  CKKW pow(10,-YCUT);
+  Enhance_Factor 4 {4};
+  Enhance_Factor 2 {5};
+  Order_EW 2;
+  End process;
+
+  Process 11 -11 -> 5 -5 5 -5 93{1};
+  CKKW pow(10,-YCUT);
+  Enhance_Factor 4 {4};
+  Enhance_Factor 2 {5};
   Order_EW 2;
   End process;
 }(processes)
+
+(analysis){
+  BEGIN_RIVET {
+   -a MC_XS ALEPH_1991_S2435284 ALEPH_1996_S3486095 ALEPH_1999_S4193598 ALEPH_2002_S4823664 ALEPH_2004_S5765862 DELPHI_1995_S3137023 DELPHI_1996_S3430090 DELPHI_1999_S3960137 DELPHI_2000_S4328825 DELPHI_2002_069_CONF_603 DELPHI_2003_WUD_03_11 JADE_OPAL_2000_S4300807 OPAL_1994_S2927284 OPAL_1996_S3257789 OPAL_1998_S3780481 OPAL_2002_S5361494 OPAL_2001_S4553896 OPAL_2004_S6132243 SLD_1996_S3398250 SLD_1999_S3743934 SLD_2002_S4869273 SLD_2004_S5693039
+ } END_RIVET;
+}(analysis)
