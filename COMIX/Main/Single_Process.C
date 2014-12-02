@@ -391,12 +391,16 @@ double COMIX::Single_Process::Partonic
     m_w=p_int->ColorIntegrator()->GlobalWeight();
     if (p_int->HelicityIntegrator()!=NULL) 
       m_w*=p_int->HelicityIntegrator()->Weight();
-    m_w*=sp->KFactor();
+    // here happens the kfactor magic
+    double kf(sp->KFactor());
+    m_w*=kf;
     m_dxs*=m_w;
     if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
       const NLO_subevtlist &rsubs(sp->p_bg->SubEvts());
-      for (size_t i(0);i<rsubs.size()-1;++i)
+      for (size_t i(0);i<rsubs.size()-1;++i) {
 	rsubs[i]->Mult(sp->p_bg->KT2Trigger(rsubs[i],m_mcmode));
+	rsubs[i]->Mult(sp->KFactorSetter()->KFactor(*rsubs[i])/kf);
+      }
       if (p_map==NULL) p_bg->SubEvts().MultME(m_w);
       else {
 	for (size_t i(0);i<rsubs.size();++i)

@@ -1,6 +1,7 @@
 #ifndef PHASIC_Scales_KFactor_Setter_Base_H
 #define PHASIC_Scales_KFactor_Setter_Base_H
 
+#include "ATOOLS/Org/Exception.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 
 namespace PHASIC {
@@ -21,7 +22,7 @@ namespace PHASIC {
   protected:
 
     Process_Base *p_proc;
-
+    
     double m_weight;
 
     bool m_on;
@@ -32,7 +33,12 @@ namespace PHASIC {
 
     virtual ~KFactor_Setter_Base();
 
+    // compute KFactor according to kinematics and flavours of p_proc
     virtual double KFactor() = 0;
+    // compute KFactor according to kinematics and flavours of NLO subevent
+    virtual double KFactor(const ATOOLS::NLO_subevt& evt) {
+      THROW(not_implemented, "No NLO (R-S) version of this method implemented");
+    }
 
     inline Process_Base *Process() const { return p_proc; }
 

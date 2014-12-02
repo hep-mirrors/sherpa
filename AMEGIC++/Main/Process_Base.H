@@ -91,6 +91,7 @@ namespace AMEGIC {
     ATOOLS::Flavour ReMap(const ATOOLS::Flavour &fl,const size_t &id) const;
     inline static void SetGauge(const int gauge) { s_gauge=gauge; }
     inline void SetSubevtList(ATOOLS::NLO_subevtlist *subs) { p_subevtlist=subs; }
+    ATOOLS::NLO_subevtlist *GetRSSubevtList() { return p_subevtlist; }
 
     virtual Process_Base *GetReal();
 
@@ -103,7 +104,6 @@ namespace AMEGIC {
     bool           FlavCompare(PHASIC::Process_Base *const proc);
     void           InitFlavmap(const Process_Base * proc);
     void           AddtoFlavmap(const std::string&,const ATOOLS::Flavour&);
-    ATOOLS::NLO_subevtlist *GetRSSubevtList() { return p_subevtlist; }
 
   };
 

@@ -422,7 +422,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
     double real = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
     m_realevt.m_me += real;
     m_realevt.m_mewgt += real;
-    if (IsBad(m_realevt.m_me)) res=false;
+    if (IsBad(m_realevt.m_me) || real == 0. ) res=false;
   }
   for (size_t i(0);i<m_subevtlist.size();++i) {
     if (m_subevtlist[i]->m_trig==false || !res)

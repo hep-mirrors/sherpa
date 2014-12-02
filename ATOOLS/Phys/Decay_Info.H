@@ -21,6 +21,7 @@ namespace ATOOLS {
     { m_subsequentdecays=sdi; }
     inline const DecayInfo_Vector& SubsequentDecayInfos()
     { return m_subsequentdecays; }
+    inline bool operator<(const Decay_Info &rhs) const { return (m_id<rhs.m_id); }
   };// end of struct Decay_Info
 
 

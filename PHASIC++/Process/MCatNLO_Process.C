@@ -484,8 +484,11 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
   if (rpa->gen.HardSC() || (rpa->gen.SoftSC() && !Flavour(kf_tau).IsStable())) {
     DEBUG_INFO("Calcing Differential for spin correlations using "
 	       <<Selected()->Generator()->Name()<<":");
-    while (Selected()->Differential(*p_ampl,1|2|4|128)==0.0);
-  }
+    if (Selected()->Integrator()->ColorIntegrator()!=NULL)
+      while (Selected()->Differential(*p_ampl,1|2|4|128)==0.0);
+    else
+      Selected()->Differential(*p_ampl,1|2|4|128);
+    }
   return winfo;
 }
 

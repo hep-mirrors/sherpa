@@ -139,6 +139,7 @@ void Cluster_Amplitude::CombineLegs
        clit!=m_legs.end();++clit) {
     if (*clit==i || *clit==j) {
       *clit = Cluster_Leg::New(this,i->Mom()+j->Mom(),fl,col);
+      (*clit)->SetId( (i->Id() | j->Id()) );
       i->Delete();
       j->Delete();
       for (++clit;clit!=m_legs.end();++clit)

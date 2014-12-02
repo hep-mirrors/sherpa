@@ -47,7 +47,7 @@ operator()(const Process_Info &pi) const
   if (pi.m_loopgenerator!="OpenLoops") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
-  if (MODEL::s_model->Name()!="SM") return NULL;
+  if (MODEL::s_model->Name()!="SM" && MODEL::s_model->Name()!="SM+EHC") return NULL;
 
   OpenLoops_Interface::SetParameter("coupling_qcd_0", (int) pi.m_oqcd);
   OpenLoops_Interface::SetParameter("coupling_qcd_1", 0);

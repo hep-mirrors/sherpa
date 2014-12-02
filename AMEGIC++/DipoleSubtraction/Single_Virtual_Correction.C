@@ -755,10 +755,11 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
   m_lasti=I;
   m_lastv=lme;
   M2+=I+lme;
+  double kfactor(KFactor());
   if ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::born) &&
       (m_bvimode&1)) {
     M2+=p_dsij[0][0];
-    m_lastbxs=p_dsij[0][0];
+    m_lastbxs=p_dsij[0][0] * kfactor;
   }
   if (!(M2>0.) && !(M2<0.) && !(M2==0.)) {
     msg->SetPrecision(16);
@@ -771,7 +772,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     msg_Error()<<"}\n";
     msg->SetPrecision(6);
   }
-  return M2 * KFactor();
+  return M2 * kfactor;
 }
 
 void Single_Virtual_Correction::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,
