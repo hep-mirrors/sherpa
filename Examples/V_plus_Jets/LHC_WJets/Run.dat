@@ -1,7 +1,6 @@
 (run){
   % general setting
   EVENTS 1M; ERROR 0.99;
-  MI_HANDLER = None;
 
   % scales, tags for scale variations
   FSF:=1.; RSF:=1.; QSF:=1.;
@@ -12,7 +11,7 @@
   ## JET_CRITERION FASTJET[A:antikt,R:0.4,y:5];
 
   % tags for process setup
-  NJET:=0; LJET:=0; QCUT:=20.;
+  NJET:=4; LJET:=2,3,4; QCUT:=20.;
 
   % me generator settings
   ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN;
