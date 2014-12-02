@@ -2,17 +2,28 @@
   % general settings
   EVENTS 5M; ERROR 0.1;
 
+  % tags and settings for scale definitions
+  SCF:=1.0; FSF:=SCF; RSF:=SCF; QSF:=1.0;
+  SCALES METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
+
   % tags for process setup
-  LJET:=2,3; NJET:=2; YCUT:=2.0;
+  LJET:=2,3,4; NJET:=3; YCUT:=2.0;
+  LMJET:=2; NMJET:=3; YMCUT:=2.0;
+  NMMJET:=1; YMMCUT:=2.0;
 
   % tags and settings for ME generators
-  LOOPGEN:=Dummy
-  ME_SIGNAL_GENERATOR Amegic LOOPGEN;
+  LOOPGEN0:=Internal;
+  LOOPGEN1:=<my-loop-gen-for-3j>;
+  LOOPGEN2:=<my-loop-gen-for-4j>;
+  LOOPMGEN:=<my=loop-gen-for-massive-2j>;
+  ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN0 LOOPGEN1 LOOPGEN2 LOOPMGEN;
   EVENT_GENERATION_MODE Weighted;
+  AMEGIC_INTEGRATOR 4;
 
   % model parameters
   MODEL SM;
   ALPHAS(MZ) 0.118;
+  MASSIVE[5] 1;
 
   % collider setup
   BEAM_1  11; BEAM_ENERGY_1 45.6;
@@ -20,10 +31,28 @@
 }(run);
 
 (processes){
-  Process 11 -11 -> 93 93;
-  Order_EW 2; 
-  NLO_QCD_Mode MC@NLO;
-  Loop_Generator LOOPGEN;
+  Process 11 -11 -> 93 93 93{NJET};
+  Order_EW 2; CKKW pow(10,-YCUT);
+  NLO_QCD_Mode MC@NLO {LJET};
+  Loop_Generator LOOPGEN0 {2};
+  Loop_Generator LOOPGEN1 {3};
+  Loop_Generator LOOPGEN2 {4};
   ME_Generator Amegic {LJET};
+  RS_ME_Generator Comix {LJET};
+  RS_Enhance_Factor 10;
+  End process;
+  %
+  Process 11 -11 -> 5 -5 93{NMJET};
+  Order_EW 2; CKKW pow(10,-YMCUT);
+  NLO_QCD_Mode MC@NLO {LMJET};
+  Loop_Generator LOOPMGEN {2};
+  ME_Generator Amegic {LMJET};
+  RS_ME_Generator Comix {LMJET};
+  RS_Enhance_Factor 10;
+  End process;
+  %
+  Process 11 -11 -> 5 5 -5 -5 93{NMMJET};
+  Order_EW 2; CKKW pow(10,-YMMCUT);
+  Cut_Core 1;
   End process;
 }(processes);
