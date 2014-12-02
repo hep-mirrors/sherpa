@@ -1,4 +1,5 @@
 #include "PHASIC++/Scales/Core_Scale_Setter.H"
+
 #include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -6,9 +7,11 @@
 #include "ATOOLS/Org/Message.H"
 
 namespace PHASIC {
-  class TZj_Core_Scale: public Core_Scale_Setter {
+
+  class SingleTop_Core_Scale: public Core_Scale_Setter {
   public:
-    TZj_Core_Scale(const Core_Scale_Arguments &args):
+
+    SingleTop_Core_Scale(const Core_Scale_Arguments &args):
       Core_Scale_Setter(args) {}
 
     PDF::CParam Calculate(ATOOLS::Cluster_Amplitude *const ampl);
@@ -20,7 +23,7 @@ namespace PHASIC {
 using namespace PHASIC;
 using namespace ATOOLS;
 
-PDF::CParam TZj_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
+PDF::CParam SingleTop_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 {
   double shat(2.0*ampl->Leg(0)->Mom()*ampl->Leg(1)->Mom());
   double that(2.0*ampl->Leg(0)->Mom()*ampl->Leg(2)->Mom());
@@ -71,6 +74,11 @@ PDF::CParam TZj_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
 	   (f[0].Strong() && f[1].Kfcode()==24)) {
     muf2 = mur2 = muq2 = that*uhat/shat;
   }
+  // pure QCD process
+  else if (f[0].Strong() && f[0].QuarkFamily()!=3 &&
+	   f[1].Strong() && f[1].QuarkFamily()!=3) {
+    muf2 = mur2 = muq2 = that*uhat/shat;    
+  }
   if (muf2<0.) {
     msg_Out()<<METHOD<<": found something unexpected: "
 	     <<f[0]<<" "<<f[1]<<" --> "<<f[2]<<" "<<f[3]<<",\n"
@@ -86,19 +94,20 @@ PDF::CParam TZj_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   return PDF::CParam(muf2,muq2,0.0,mur2,-1);
 }
 
-DECLARE_ND_GETTER(TZj_Core_Scale,"TZj",
+DECLARE_ND_GETTER(SingleTop_Core_Scale,"SingleTop",
 		  Core_Scale_Setter,Core_Scale_Arguments,true);
 
 Core_Scale_Setter *ATOOLS::Getter
-<Core_Scale_Setter,Core_Scale_Arguments,TZj_Core_Scale>::
+<Core_Scale_Setter,Core_Scale_Arguments,SingleTop_Core_Scale>::
 operator()(const Core_Scale_Arguments &args) const
 {
-  return new TZj_Core_Scale(args);
+  // check for oew == 2 or so, to force single top!
+  return new SingleTop_Core_Scale(args);
 }
 
 void ATOOLS::Getter<Core_Scale_Setter,Core_Scale_Arguments,
-		    TZj_Core_Scale>::
+		    SingleTop_Core_Scale>::
 PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"tVj~ core scale"; 
+  str<<"single top core scale"; 
 }
