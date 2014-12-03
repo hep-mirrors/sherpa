@@ -361,22 +361,11 @@ double Phase_Space_Integrator::CalculateDecay(double maxerror)
   
   (psh->FSRIntegrator())->Reset();
 
-  double oldvalue = 0.;
-
   for (n=1;n<=nmax;n++) {
-    do { value = psh->Differential(); }
-    while (dabs(value) > 1./ATOOLS::Accu());
-    
-    //new SS
+    value = psh->Differential();
     psh->AddPoint(value);
     
     if (value>max) max = value;
-
-    if (value!=0. && value==oldvalue) {
-      MPISync();
-      break;
-    }
-    oldvalue = value;
     
     if (!(n%iter)) {
       MPISync();
@@ -396,7 +385,7 @@ double Phase_Space_Integrator::CalculateDecay(double maxerror)
                 <<(psh->Process())->TotalResult()
                 <<" GeV"<<om::reset<<" +- ( "<<om::red
                 <<(psh->Process())->TotalVar()
-                <<" GeV = "<<error*100<<" %"<<om::reset<<" ) "<<endl;
+                <<" GeV = "<<error*100<<" %"<<om::reset<<" ) "<<n<<endl;
       if (error<maxerror) break;
     }
   }
