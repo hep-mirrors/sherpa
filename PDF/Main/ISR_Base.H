@@ -31,10 +31,6 @@ namespace PDF {
     inline const std::string     Type() const    { return m_type;  }
     inline const ATOOLS::Flavour Flavour() const { return m_bunch; }
 
-    inline bool Collinear(const double kp2) const { return p_pdf->Collinear(kp2); }
-
-    inline double Cut(const std::string &type) const { return p_pdf->Cut(type); }
-
     inline double Exponent() const { return m_exponent; }
     inline double XMax() const     { return m_xmax;     } 
 

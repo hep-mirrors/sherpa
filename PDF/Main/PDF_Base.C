@@ -31,19 +31,9 @@ double PDF_Base::AlphaSPDF(const double &q2)
   return -1.0;
 }
 
-bool PDF_Base::Collinear(const double kp2) const
-{
-  return true;
-}
-
 PDF_Base *PDF_Base::GetBasicPDF() 
 {
   return this;
-}
-
-double PDF_Base::Cut(const std::string &type)
-{
-  return 0.0;
 }
 
 void PDF_Base::SetBounds()

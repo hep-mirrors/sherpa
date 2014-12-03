@@ -73,9 +73,6 @@ namespace PDF {
     virtual ~PDF_Base();
 
     // member functions
-    virtual bool   Collinear(const double kp2) const;
-    virtual double Cut(const std::string &type);
-    
     void   Calculate(double x,double Q2);
     virtual double GetXPDF(const ATOOLS::Flavour flavour) = 0;
     virtual double AlphaSPDF(const double &q2);
