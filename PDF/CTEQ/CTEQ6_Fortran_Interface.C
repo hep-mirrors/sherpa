@@ -142,13 +142,13 @@ PDF_Base *CTEQ6_Fortran_Interface::GetCopy()
 void CTEQ6_Fortran_Interface::CalculateSpec(double x,double _Q2) 
 {
   for (size_t i=0;i<11;++i) m_calculated[i]=false;
-  m_x=x/m_rescale;
+  m_x=x;
   m_Q=sqrt(_Q2);
 }
 
 double CTEQ6_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl) 
 {
-  if ((m_x>m_xmax && m_rescale<1.) || m_rescale<0.) return 0.;
+  if (m_x>m_xmax) return 0.;
   int cteqindex;
   switch (infl.Kfcode()) {
   case kf_gluon: cteqindex=0;                  break;

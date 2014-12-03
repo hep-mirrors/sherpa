@@ -72,11 +72,11 @@ void PDF_MRST04QED::CalculateSpec(double x,double Q2)
 {
   m_overscaled=false;
   if(x<m_xmin) x=m_xmin;
-  if (x/m_rescale>m_xmax || m_rescale<0.) {
+  if (x>m_xmax) {
     m_overscaled=true;
     return;
   }
-  mrstqed(x/m_rescale,Q2,m_mode,p_xpdfv[1],p_xpdfv[0],p_xpdf[1],
+  mrstqed(x,Q2,m_mode,p_xpdfv[1],p_xpdfv[0],p_xpdf[1],
 	  p_xpdf[0],p_xpdf[2],p_xpdf[3],p_xpdf[4],p_xpdf[5],p_xpdf[6]);
 }
 
@@ -86,20 +86,20 @@ double PDF_MRST04QED::GetXPDF(const ATOOLS::Flavour infl)
   if (m_overscaled) return 0.;
   int kfc=m_anti*int(infl);
   switch (kfc) {
-  case  kf_d : return Max(m_rescale*(p_xpdfv[0]+p_xpdf[0]),0.0);
-  case -kf_d : return Max(m_rescale*p_xpdf[0],0.0); 
-  case  kf_u : return Max(m_rescale*(p_xpdfv[1]+p_xpdf[1]),0.0);
-  case -kf_u : return Max(m_rescale*p_xpdf[1],0.0); 
+  case  kf_d : return m_rescale*(p_xpdfv[0]+p_xpdf[0]);
+  case -kf_d : return m_rescale*p_xpdf[0]; 
+  case  kf_u : return m_rescale*(p_xpdfv[1]+p_xpdf[1]);
+  case -kf_u : return m_rescale*p_xpdf[1]; 
   case  kf_s :
-  case -kf_s : return Max(m_rescale*p_xpdf[2],0.0);
+  case -kf_s : return m_rescale*p_xpdf[2];
   case  kf_c : 
-  case -kf_c : return Max(m_rescale*p_xpdf[3],0.0);
+  case -kf_c : return m_rescale*p_xpdf[3];
   case  kf_b : 
-  case -kf_b : return Max(m_rescale*p_xpdf[4],0.0);
+  case -kf_b : return m_rescale*p_xpdf[4];
   case  kf_gluon :
-  case -kf_gluon : return Max(m_rescale*p_xpdf[5],0.0); 
+  case -kf_gluon : return m_rescale*p_xpdf[5]; 
   case  kf_photon :
-  case -kf_photon : return Max(m_rescale*p_xpdf[6],0.0); 
+  case -kf_photon : return m_rescale*p_xpdf[6]; 
   default: return 0.;
   }
 }

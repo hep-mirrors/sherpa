@@ -90,6 +90,7 @@ void PDF_Base::Calculate(double x,double Q2)
 void PDF_Base::SingleExtract(const ATOOLS::Flavour flavour,const double x) 
 {
   m_rescale-=x;
+  if (m_rescale<0.0) m_rescale=0.0;
   m_extracted.push_back(std::pair<ATOOLS::Flavour,double>(flavour,x));
   for (std::vector<PDF_Base*>::iterator cit(m_copies.begin());
        cit!=m_copies.end();++cit) {
