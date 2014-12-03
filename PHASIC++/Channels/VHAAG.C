@@ -118,6 +118,8 @@ void VHAAG::Initialize(int _nin,int _nout,std::vector<int> perm, VHAAG* ovl)
   } 
 
   m_s0=-1.;
+  double s0fix(0.0);
+  if (dr.ReadFromFile(s0fix,"VHAAG_FIXED_S0")) m_s0=s0fix;
 }
 
 VHAAG::~VHAAG()
