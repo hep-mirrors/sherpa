@@ -68,7 +68,9 @@ bool Final_State::FirstSinglet(const double & y1,const double & y2,
     }
     lit++;
   }
-  double shat((mom[0]+mom[1]).Abs2()), Ehat(sqrt(shat)), expo(1.);
+  // look here!
+  double shat((mom[0]+mom[1]).Abs2()), Ehat(sqrt(shat));
+  double expo(p_ladder->IsRescatter()?3.:1.);
   double kt  = sqrt(SelectKT2(shat/4.,0.,m_Q02,1.+expo)); 
   double phi = 2.*M_PI*ran->Get();
   Vec4D  ktvec = kt*Vec4D(0.,cos(phi),sin(phi),0.);
@@ -85,6 +87,15 @@ bool Final_State::FirstSinglet(const double & y1,const double & y2,
     cms -= mom[i];
   }
   if (cms[0]>1.e-6) msg_Error()<<"Error in "<<METHOD<<": "<<cms<<"\n";
+  Vec4D inmom = p_ladder->GetIn1()->m_mom, diff(0.,0.,0.,0.);
+  if (dabs((inmom-mom[0]).Abs2())<dabs((inmom-mom[1]).Abs2()))
+    diff = inmom-mom[0];
+  else 
+    diff = inmom-mom[1];
+  m_propiter = p_ladder->GetPropsBegin();
+  m_propiter->m_q   = diff;
+  m_propiter->m_q2  = m_propiter->m_q.Abs2();
+  m_propiter->m_qt2 = m_propiter->m_q.PPerp2();
 }
 
 double Final_State::
@@ -128,20 +139,18 @@ operator()(Ladder * ladder,const double & Deltay,
     m_kt1max2   = 0.;
     m_Deltay    = Deltay;
     m_lastwt    = GenerateEmissions();
-
   }
-  if (p_ladder->GetEmissions()->size()==2) {
+  if (p_ladder->GetEmissions()->size()==2) {// && !p_ladder->IsRescatter()) {
     bool sing(p_ladder->GetPropsBegin()->m_col==colour_type::singlet);
-    //if (sing || p_ladder->IsRescatter()) 
     UpdateTwoOutgoings(0,sing);
-    double q02_2(p_ladder->GetPropsBegin()->m_q2);
-    m_lastwt *= pow((*p_alphaS)(q02_2)/p_alphaS->MaxValue(),(sing?4:2));
+    double qt2_2(p_ladder->GetPropsBegin()->m_qt2);
+    m_lastwt *= pow((*p_alphaS)(qt2_2)/p_alphaS->MaxValue(),(sing?4:2));
     if (MBpars.LadderWeight()==ladder_weight::Regge) {
       double colfac(3.);
-      double qt02_2(p_ladder->GetPropsBegin()->m_qt2);
       double mu02_2(Q02((y0+y1)/2.));
-      double rarg(mu02_2/(dabs(q02_2)+mu02_2));
-      double expo(colfac*(*p_alphaS)(q02_2)*dabs(y0-y1)/M_PI); 
+      double q2_2(p_ladder->GetPropsBegin()->m_qt2);
+      double rarg(mu02_2/(dabs(q2_2)+mu02_2));
+      double expo(colfac*(*p_alphaS)(qt2_2)*dabs(y0-y1)/M_PI); 
       m_lastwt *= pow(rarg,expo);
     }
   }
@@ -186,18 +195,18 @@ double Final_State::GenerateEmissions() {
     }
   } while (run);
 
-  if (p_ladder->GetEmissions()->size()==2) {
-    if (MBpars.LadderWeight()==ladder_weight::Regge) {
-      double colfac(3.);
-      double qt02_2(p_ladder->GetPropsBegin()->m_qt2);
-      double q02_2(p_ladder->GetPropsBegin()->m_q2);
-      double mu02_2(Q02((m_k0.Y()+m_k2.Y())/2.));
-      double rarg(mu02_2/(dabs(q02_2)+mu02_2));
-      double expo(colfac*(*p_alphaS)(dabs(q02_2))*
-		  dabs(m_k2.Y()-m_k0.Y())/M_PI); 
-      m_lastwt  = pow(rarg,expo);
-    }
-  }
+  // if (p_ladder->GetEmissions()->size()==2) {
+  //   if (MBpars.LadderWeight()==ladder_weight::Regge) {
+  //     double colfac(3.);
+  //     double qt02_2(p_ladder->GetPropsBegin()->m_qt2);
+  //     double q02_2(p_ladder->GetPropsBegin()->m_q2);
+  //     double mu02_2(Q02((m_k0.Y()+m_k2.Y())/2.));
+  //     double rarg(mu02_2/(dabs(q02_2)+mu02_2));
+  //     double expo(colfac*(*p_alphaS)(dabs(q02_2))*
+  // 		  dabs(m_k2.Y()-m_k0.Y())/M_PI); 
+  //     m_lastwt  = pow(rarg,expo);
+  //   }
+  // }
   
   double Delta = 
     double(p_ladder->Size()-1)/
