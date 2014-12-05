@@ -751,11 +751,11 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     msg_Out()<<"Virtual: OLE = "<<p_loopme->ME_Finite()<<std::endl;
     msg->SetPrecision(6);
   }
-  m_lastb=p_dsij[0][0];
-  m_lasti=I;
-  m_lastv=lme;
-  M2+=I+lme;
   double kfactor(KFactor());
+  m_lastb=p_dsij[0][0] * kfactor;
+  m_lasti=I            * kfactor;
+  m_lastv=lme          * kfactor;
+  M2+=I+lme;
   if ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::born) &&
       (m_bvimode&1)) {
     M2+=p_dsij[0][0];
