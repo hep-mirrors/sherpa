@@ -84,7 +84,7 @@ void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			      this->m_fl.Majorana()?(mode?-1:1):1,
 			      p,cr,ca,0,0,sqr(this->m_mass),
 			      this->m_fl.MassSign()));
-    j.SetH(this->m_dir>0?1:0);
+    j.SetH(anti^(this->m_dir>0)?1:0);
 #ifdef DEBUG__BG
     msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"+ "<<this->m_id
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
@@ -105,7 +105,7 @@ void CF<SType>::ConstructJ(const ATOOLS::Vec4D &p,const int ch,
 			      this->m_fl.Majorana()?(mode?1:-1):-1,
 			      p,cr,ca,0,0,sqr(this->m_mass),
 		              this->m_fl.MassSign()));
-    j.SetH(this->m_dir>0?0:1);
+    j.SetH(anti^(this->m_dir>0)?0:1);
 #ifdef DEBUG__BG
     msg_Debugging()<<METHOD<<"(): "<<(this->m_dir>0?'I':'O')<<"- "<<this->m_id
 		   <<" "<<j<<" "<<(this->m_dir>0?this->m_fl.Bar():this->m_fl)
