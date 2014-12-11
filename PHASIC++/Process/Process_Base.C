@@ -312,6 +312,7 @@ void Process_Base::Init(const Process_Info &pi,
   p_int->SetISRThreshold(Max(massin,massout));
   p_int->Initialize(beamhandler,isrhandler);
   m_symfac=m_pinfo.m_fi.FSSymmetryFactor();
+  m_name+=pi.m_addname;
 }
 
 std::string Process_Base::GenerateName(const Subprocess_Info &info) 

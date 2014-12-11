@@ -21,7 +21,7 @@ namespace PHASIC {
     size_t m_nminq, m_nmaxq, m_ckkw, m_nmax, m_itmin, m_rsitmin;
     size_t m_nlomode, m_amegicmhv, m_ntchan, m_mtchan;
 
-    std::string m_scale, m_coupling, m_kfactor, m_gpath;
+    std::string m_scale, m_coupling, m_kfactor, m_gpath, m_addname;
     std::string m_megenerator, m_rsmegenerator, m_loopgenerator;
 
     std::string m_selectorfile, m_integrator, m_rsintegrator;

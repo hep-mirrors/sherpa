@@ -24,6 +24,7 @@ The following parameters are used to steer the process setup.
 * Min_N_TChannels::         Tag to request a minimum number of t-channels.
 * Max_N_TChannels::         Tag to request a maximum number of t-channels.
 * Print_Graphs::            Tag to enable writeout of feynman graphs.
+* Name_Suffix::             Tag to set a unique name suffix.
 * Integration_Error::       Tag to set a specific integration error.
 * Max_Epsilon::             Tag to set a specific epsilon for overweighting.
 * Enhance_Factor::          Tag to set an enhance factor.
@@ -286,6 +287,10 @@ using the command
 @end verbatim
 which creates an html page in the graphs directory that can be viewed 
 in a web browser.
+
+@node Name_Suffix
+@subsection Name_Suffix
+Defines a unique name suffix for the process.
 
 @node Integration_Error
 @subsection Integration_Error
