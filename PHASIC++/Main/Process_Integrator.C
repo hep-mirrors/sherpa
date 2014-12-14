@@ -589,6 +589,17 @@ void Process_Integrator::SetISRThreshold(const double threshold)
   m_threshold=threshold;
 }
 
+void Process_Integrator::StoreBackupResults()
+{
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()) return;
+#endif
+  if (!FileExists(m_resultpath+".db")) return;
+  if (!Copy(m_resultpath+".db",m_resultpath+".db.bak",true))
+    msg_Error()<<METHOD<<"(): Copy error. "
+	       <<strerror(errno)<<"."<<std::endl;
+}
+
 void Process_Integrator::StoreResults(const int mode)
 {
   MPISync();
@@ -604,6 +615,7 @@ void Process_Integrator::StoreResults(const int mode)
   WriteOutHistogram(m_resultpath+"/"+p_proc->Generator()->Name()+"/WD_"+fname);
   p_pshandler->WriteOut(m_resultpath+"/"+p_proc->Generator()->Name()+"/MC_"+fname);
   My_In_File::ExecDB(m_resultpath+"/","commit");
+  StoreBackupResults();
 }
 
 void Process_Integrator::ReadResults()
