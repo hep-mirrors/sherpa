@@ -20,6 +20,7 @@ libPhasicScales_la_SOURCES    =	\
 				QCD_Core_Scale.C \
 				TTBar_Core_Scale.C \
 				TZj_Core_Scale.C \
+				SingleTop_Core_Scale.C \
 				WBF_Core_Scale.C \
 				QQSinglet_Core_Scale.C \
 				HTPrime_Core_Scale.C \

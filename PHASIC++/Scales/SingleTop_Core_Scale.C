@@ -72,13 +72,16 @@ PDF::CParam SingleTop_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   // W in initial state
   else if ((f[0].Kfcode()==24 && f[1].Strong()) ||
 	   (f[0].Strong() && f[1].Kfcode()==24)) {
-    muf2 = mur2 = muq2 = that*uhat/shat;
+    muf2 = mur2 = muq2 = dabs(that*uhat)/shat;
   }
   // pure QCD process
   else if (f[0].Strong() && f[0].QuarkFamily()!=3 &&
 	   f[1].Strong() && f[1].QuarkFamily()!=3) {
-    muf2 = mur2 = muq2 = that*uhat/shat;    
+    muf2 = mur2 = muq2 = dabs(that*uhat)/shat;    
   }
+  else if ((f[0].Strong() && f[1].Strong()) && 
+          (f[0].Kfcode()==5 || f[1].Kfcode()==5))
+    muf2 = mur2 = muq2 = dabs(that*uhat)/shat;    
   if (muf2<0.) {
     msg_Out()<<METHOD<<": found something unexpected: "
 	     <<f[0]<<" "<<f[1]<<" --> "<<f[2]<<" "<<f[3]<<",\n"
