@@ -1179,8 +1179,8 @@ bool XS_f1f2b_f3f4b::SetColours()
       p_colours[2][1-m_anti]=p_colours[3][m_anti] = Flow::Counter();
     }
     else{
-      p_colours[1][1-m_anti]=p_colours[0][0] = Flow::Counter();
-      p_colours[2][m_anti]=p_colours[3][1] = Flow::Counter();
+      p_colours[1][1-m_anti]=p_colours[0][m_anti] = Flow::Counter();
+      p_colours[2][m_anti]=p_colours[3][1-m_anti] = Flow::Counter();
     }
     //m_scale[PHASIC::stp::fac] = m_scale[PHASIC::stp::ren] = dabs(s);
   }
