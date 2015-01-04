@@ -418,7 +418,7 @@ void PS_Generator::AddSTCC()
 #ifdef DEBUG__BG
   DEBUG_FUNC("");
 #endif
-  for (size_t n(2);n<m_n-2;++n) {
+  for (size_t n(2);n<m_n-1;++n) {
     size_t oldsize(m_cur[n].size());
     for (size_t j(0);j<oldsize;++j) {
       if (((PS_Current*)m_cur[n][j])->SCC()) continue;
@@ -446,7 +446,7 @@ void PS_Generator::AddExtraCurrent
 (Current *const cur,const size_t &n,
  const double &m,const double &w,Current *const scc)
 {
-  AddCurrent(cur,cur->Flav(),n,1,m,w);
+  AddCurrent(cur,cur->Flav(),n,1,m,w,scc);
 #ifdef DEBUG__BG
   msg_Debugging()<<"  Add "<<m_cur[n].back()->PSInfo()
 		 <<(scc?" ("+scc->PSInfo()+") ":"")<<" {\n";
