@@ -284,7 +284,8 @@ bool Resonance_Finder::FindResonances
                      <<vlist[it->second[2]]->in[0]<<" -> "
                      <<vlist[it->second[2]]->in[1]<<" "
                      <<vlist[it->second[2]]->in[2]
-                     <<", |m-M|/W="<<it->first<<std::endl;
+                     <<", |m-M|/W="<<it->first
+                     <<" (max: "<<m_resdist<<")"<<std::endl;
   }
   Particle_Vector usedparts;
   for (std::map<double,std::vector<size_t> >::const_iterator it=restab.begin();
