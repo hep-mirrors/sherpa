@@ -9,6 +9,7 @@ using namespace std;
 EvtReadin_Phase::EvtReadin_Phase(Event_Reader_Base * evtreader) :
   p_evtreader(evtreader), m_path(evtreader->GetPath())
 {
+  m_name = std::string("Event read-in");
   m_type = eph::Read_In;
 }    
 
