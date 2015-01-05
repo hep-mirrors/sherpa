@@ -319,6 +319,10 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     Vec4D sum;
     Vec4D *moms = new Vec4D[2+p_vars->m_nparticle];
     Flavour *flav = new Flavour[2+p_vars->m_nparticle];
+    moms[0]=Vec4D(0.,0.,0.,0.);
+    moms[1]=Vec4D(0.,0.,0.,0.);
+    flav[0]=Flavour(kf_none);
+    flav[1]=Flavour(kf_none);
     for (int i=0;i<p_vars->m_nparticle;i++) {
       moms[i+2]=Vec4D(p_vars->p_E[i],p_vars->p_px[i],
 		      p_vars->p_py[i],p_vars->p_pz[i]);
