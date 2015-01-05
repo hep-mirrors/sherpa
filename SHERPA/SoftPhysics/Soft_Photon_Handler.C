@@ -60,14 +60,17 @@ bool Soft_Photon_Handler::AddRadiation(Particle_Vector& leps, Blob_Vector& blobs
   // build effective verteces for resonant production
   // use subprocess infos if possible
   p_clusterer->BuildResonantBlobs(leps,blobs);
+  bool photonsadded(false);
   // add radiation
   for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
     // do nothing if no resonance determined
     if ((*it)->InParticle(0)->Flav().Kfcode()!=kf_none) {
       (*it)->SetStatus(blob_status::needs_extraQED);
       if (!AddRadiation(*it)) return false;
+      photonsadded+=m_photonsadded;
     }
   }
+  m_photonsadded=photonsadded;
   for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
     msg_Debugging()<<**it<<endl;
     (*it)->DeleteInParticles();
