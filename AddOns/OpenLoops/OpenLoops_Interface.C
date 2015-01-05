@@ -109,8 +109,9 @@ namespace OpenLoops {
         <<"matrix elements has been used. "<<endl;
     if (GetIntParameter("redlib1")==1 || GetIntParameter("redlib1")==7 ||
         GetIntParameter("redlib2")==1 || GetIntParameter("redlib2")==7) {
-      cite<<"It is partly based on the tensor integral reduction described "<<endl
-          <<"in~\\cite{Denner:2002ii,Denner:2005nn,Denner:2010tr}."<<endl;
+      cite<<"It is partly based on the tensor integral reduction "
+          <<"described in~\\cite{Denner:2002ii,Denner:2005nn,"
+          <<"Denner:2010tr,Denner:2014gla}."<<endl;
     }
     if (GetIntParameter("redlib1")==5 || GetIntParameter("redlib2")==5) {
       cite<<"It is partly based on the integrand reduction described "<<endl
@@ -121,7 +122,8 @@ namespace OpenLoops {
           <<"in~\\cite{Mastrolia:2010nb,vanHameren:2010cp}."<<endl;
     }
     if (GetIntParameter("redlib1")==8 || GetIntParameter("redlib2")==8) {
-      cite<<"It is partly based on the integrand reduction Ninja."<<endl;
+      cite<<"It is partly based on the integrand reduction described "<<endl
+         <<"in~\\cite{vanDeurzen:2013saa,Peraro:2014cba}."<<endl;
     }
     rpa->gen.AddCitation(1,cite.str());
 
