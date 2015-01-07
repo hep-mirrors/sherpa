@@ -67,7 +67,7 @@ namespace OpenLoops {
     s_loader->AddPath(s_olprefix+"/proclib");
     if (!s_loader->LoadLibrary("openloops")) THROW(fatal_error, "Failed to load libopenloops.");
 
-    ol_set_init_error_fatal(0);
+    ol_set_init_error_fatal(1);
 
     // set particle masses/widths
     int tmparr[] = {kf_e, kf_mu, kf_tau, kf_u, kf_d, kf_s, kf_c, kf_b, kf_t, kf_Wplus, kf_Z, kf_h0};
@@ -100,7 +100,7 @@ namespace OpenLoops {
     reader.VectorFromFile(parameters,"OL_PARAMETERS");
     for (size_t i=1; i<parameters.size(); i=i+2) SetParameter(parameters[i-1], parameters[i]);
 
-    char welcomestr[700];
+    char welcomestr[GetIntParameter("welcome_length")];
     ol_welcome(welcomestr);
     msg_Info()<<std::string(welcomestr)<<std::endl;
 
