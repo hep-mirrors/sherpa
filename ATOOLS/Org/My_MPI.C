@@ -15,7 +15,9 @@ My_MPI *ATOOLS::mpi(NULL);
 
 My_MPI::My_MPI()
 {
+#ifdef USING__MPI
   p_comm=&MPI::COMM_WORLD;
+#endif
 }
 
 My_MPI::~My_MPI()
