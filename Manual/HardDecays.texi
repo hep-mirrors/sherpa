@@ -158,10 +158,11 @@ BR, you can set the option @option{HDH_BR_WEIGHTS=0}.
 @subsection HARD_MASS_SMEARING
 @cindex HARD_MASS_SMEARING
 
-If @option{HARD_MASS_SMEARING=1} is specified, the kinematic mass of the unstable
+With the default of @option{HARD_MASS_SMEARING=1} the kinematic mass of the unstable
 propagator is distributed according to a Breit-Wigner shape a posteriori. All
 matrix elements are still calculated in the narrow-width approximation with
 onshell particles. Only the kinematics are affected.
+To keep all intermediate particles onshell use @option{HARD_MASS_SMEARING=0}.
 
 @node RESOLVE_DECAYS
 @subsection RESOLVE_DECAYS
