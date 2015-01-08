@@ -126,62 +126,24 @@ void Multi_Channel::MPISync()
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    int rank=mpi->HasMPISend()?mpi->MPISend().Get_rank():0;
     int cn=2*channels.size()+2;
     double *values = new double[cn];
-    if (mpi->HasMPIRecv()) {
-      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
-	mpi->MPIRecv().Recv(values,cn,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
-	for (size_t i=0;i<channels.size();++i) {
-	  channels[i]->AddMPIVars(values[i],
-				  values[channels.size()+i]);
-	}
-	mn_points+=values[cn-2];
-	mn_contrib+=values[cn-1];
-      }
-      if (rank) {
-	for (size_t i=0;i<channels.size();++i) {
-	  values[i]=channels[i]->MRes1();
-	  values[channels.size()+i]=channels[i]->MRes2();
-	}
-	values[cn-2]=mn_points;
-	values[cn-1]=mn_contrib;
-	mpi->MPISend().Send(values,cn,MPI::DOUBLE,0,rank);
-	mpi->MPISend().Recv(values,cn,MPI::DOUBLE,0,size+rank);
-	for (size_t i=0;i<channels.size();++i) {
-	  channels[i]->SetMPIVars(values[i],
-				  values[channels.size()+i]);
-	}
-	mn_points=values[cn-2];
-	mn_contrib=values[cn-1];
-      }
-      for (size_t i=0;i<channels.size();++i) {
-	values[i]=channels[i]->MRes1();
-	values[channels.size()+i]=channels[i]->MRes2();
-      }
-      values[cn-2]=mn_points;
-      values[cn-1]=mn_contrib;
-      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
-	mpi->MPIRecv().Send(values,cn,MPI::DOUBLE,tag,size+tag);
-      }
+    double *rvalues = new double[cn];
+    for (size_t i=0;i<channels.size();++i) {
+      values[i]=channels[i]->MRes1();
+      values[channels.size()+i]=channels[i]->MRes2();
     }
-    else {
-      for (size_t i=0;i<channels.size();++i) {
-	values[i]=channels[i]->MRes1();
-	values[channels.size()+i]=channels[i]->MRes2();
-      }
-      values[cn-2]=mn_points;
-      values[cn-1]=mn_contrib;
-      mpi->MPISend().Send(values,cn,MPI::DOUBLE,0,rank);
-      mpi->MPISend().Recv(values,cn,MPI::DOUBLE,0,size+rank);
-      for (size_t i=0;i<channels.size();++i) {
-	channels[i]->SetMPIVars(values[i],
-				values[channels.size()+i]);
-      }
-      mn_points=values[cn-2];
-      mn_contrib=values[cn-1];
+    values[cn-2]=mn_points;
+    values[cn-1]=mn_contrib;
+    mpi->MPIComm()->Allreduce(values,rvalues,cn,MPI::DOUBLE,MPI::SUM);
+    for (size_t i=0;i<channels.size();++i) {
+      channels[i]->SetMPIVars(rvalues[i],
+			      rvalues[channels.size()+i]);
     }
+    mn_points=rvalues[cn-2];
+    mn_contrib=rvalues[cn-1];
     delete [] values;
+    delete [] rvalues;
   }
   for (size_t i=0;i<channels.size();++i) {
     channels[i]->CopyMPIValues();

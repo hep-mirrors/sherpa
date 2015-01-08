@@ -511,54 +511,18 @@ void Process_Integrator::MPISync()
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    int rank=mpi->HasMPISend()?mpi->MPISend().Get_rank():0;
-    double val[5];
-    if (mpi->HasMPIRecv()) {
-      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
-	mpi->MPIRecv().Recv(&val,5,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
-	m_msn+=val[0];
-	m_mssum+=val[2];
-	m_mssumsqr+=val[3];
-	m_max=ATOOLS::Max(m_max,val[4]);
-	m_smax=ATOOLS::Max(m_smax,val[1]);
-      }
-      if (rank) {
-	val[0]=m_msn;
-	val[2]=m_mssum;
-	val[3]=m_mssumsqr;
-	val[4]=m_max;
-	val[1]=m_smax;
-	mpi->MPISend().Send(&val,5,MPI::DOUBLE,0,rank);
-	mpi->MPISend().Recv(&val,5,MPI::DOUBLE,0,size+rank);
-	m_msn=val[0];
-	m_mssum=val[2];
-	m_mssumsqr=val[3];
-	m_max=val[4];
-	m_smax=val[1];
-      }
-      val[0]=m_msn;
-      val[2]=m_mssum;
-      val[3]=m_mssumsqr;
-      val[4]=m_max;
-      val[1]=m_smax;
-      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
-	mpi->MPIRecv().Send(&val,5,MPI::DOUBLE,tag,size+tag);
-      }
-    }
-    else {
-      val[0]=m_msn;
-      val[2]=m_mssum;
-      val[3]=m_mssumsqr;
-      val[4]=m_max;
-      val[1]=m_smax;
-      mpi->MPISend().Send(&val,5,MPI::DOUBLE,0,rank);
-      mpi->MPISend().Recv(&val,5,MPI::DOUBLE,0,size+rank);
-      m_msn=val[0];
-      m_mssum=val[2];
-      m_mssumsqr=val[3];
-      m_max=val[4];
-      m_smax=val[1];
-    }
+    double val[5], rval[5];
+    val[0]=m_msn;
+    val[2]=m_mssum;
+    val[3]=m_mssumsqr;
+    val[4]=m_max;
+    val[1]=m_smax;
+    mpi->MPIComm()->Allreduce(&val,&rval,5,MPI::DOUBLE,MPI::SUM);
+    m_msn=rval[0];
+    m_mssum=rval[2];
+    m_mssumsqr=rval[3];
+    m_max=rval[4];
+    m_smax=rval[1];
   }
   m_sn+=m_msn;
   m_ssum+=m_mssum;

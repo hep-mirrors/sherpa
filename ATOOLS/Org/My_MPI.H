@@ -15,10 +15,8 @@ namespace ATOOLS {
   class My_MPI {
   private:
 
-    bool m_hassend, m_hasrecv;
-
 #ifdef USING__MPI
-    MPI::Intracomm m_send, m_recv;
+    MPI::Intracomm *p_comm;
 #endif
 
     void SetMPIRecv(std::vector<int> r);
@@ -31,12 +29,8 @@ namespace ATOOLS {
 
     void SetUpSendRecv(Data_Reader *const read);
 
-    bool HasMPISend() const;
-    bool HasMPIRecv() const;
-
 #ifdef USING__MPI
-    inline MPI::Intracomm &MPISend() { return m_send; }
-    inline MPI::Intracomm &MPIRecv() { return m_recv; }
+    inline MPI::Intracomm *MPIComm() { return p_comm; }
 #endif
 
   };// end of class My_MPI

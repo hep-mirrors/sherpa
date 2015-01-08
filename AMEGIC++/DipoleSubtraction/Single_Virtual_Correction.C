@@ -858,48 +858,16 @@ void Single_Virtual_Correction::MPISync()
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    int rank=mpi->HasMPISend()?mpi->MPISend().Get_rank():0;
-    double val[4];
-    if (mpi->HasMPIRecv()) {
-      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
-	mpi->MPIRecv().Recv(&val,4,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
-	m_mn+=val[0];
-	m_mbsum+=val[1];
-	m_mvsum+=val[2];
-	m_misum+=val[3];
-      }
-      if (rank) {
-	val[0]=m_mn;
-	val[1]=m_mbsum;
-	val[2]=m_mvsum;
-	val[3]=m_misum;
-	mpi->MPISend().Send(&val,4,MPI::DOUBLE,0,rank);
-	mpi->MPISend().Recv(&val,4,MPI::DOUBLE,0,size+rank);
-	m_mn=val[0];
-	m_mbsum=val[1];
-	m_mvsum=val[2];
-	m_misum=val[3];
-      }
-      val[0]=m_mn;
-      val[1]=m_mbsum;
-      val[2]=m_mvsum;
-      val[3]=m_misum;
-      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
-	mpi->MPIRecv().Send(&val,4,MPI::DOUBLE,tag,size+tag);
-      }
-    }
-    else {
-      val[0]=m_mn;
-      val[1]=m_mbsum;
-      val[2]=m_mvsum;
-      val[3]=m_misum;
-      mpi->MPISend().Send(&val,4,MPI::DOUBLE,0,rank);
-      mpi->MPISend().Recv(&val,4,MPI::DOUBLE,0,size+rank);
-      m_mn=val[0];
-      m_mbsum=val[1];
-      m_mvsum=val[2];
-      m_misum=val[3];
-    }
+    double val[4], rval[4];
+    val[0]=m_mn;
+    val[1]=m_mbsum;
+    val[2]=m_mvsum;
+    val[3]=m_misum;
+    mpi->MPIComm()->Allreduce(&val,&rval,4,MPI::DOUBLE,MPI::SUM);
+    m_mn=rval[0];
+    m_mbsum=rval[1];
+    m_mvsum=rval[2];
+    m_misum=rval[3];
   }
   m_n+=m_mn;
   m_bsum+=m_mbsum;

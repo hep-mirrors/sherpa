@@ -882,52 +882,23 @@ void PS_Channel::MPISync()
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    int rank=mpi->HasMPISend()?mpi->MPISend().Get_rank():0, cn=0;
+    int cn=0;
     for (size_t n(2);n<m_n;++n)
       for (size_t i(0);i<(*p_cur)[n].size();++i)
 	cn+=3*(*p_cur)[n][i]->In().size();
     double *val = new double[cn];
-    if (mpi->HasMPIRecv()) {
-      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
-	mpi->MPIRecv().Recv(val,cn,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
-	for (size_t cv(0), n(2);n<m_n;++n)
-	  for (size_t i(0);i<(*p_cur)[n].size();++i)
-	    for (size_t j(0);j<(*p_cur)[n][i]->In().size();++j)
-	      ((PS_Vertex *)(*p_cur)[n][i]->In()[j])->AddMPIVars(&val[3*cv++]);
-      }
-      if (rank) {
-	for (size_t cv(0), n(2);n<m_n;++n)
-	  for (size_t i(0);i<(*p_cur)[n].size();++i)
-	    for (size_t j(0);j<(*p_cur)[n][i]->In().size();++j)
-	      ((PS_Vertex *)(*p_cur)[n][i]->In()[j])->GetMPIVars(&val[3*cv++]);
-	mpi->MPISend().Send(val,cn,MPI::DOUBLE,0,rank);
-	mpi->MPISend().Recv(val,cn,MPI::DOUBLE,0,size+rank);
-	for (size_t cv(0), n(2);n<m_n;++n)
-	  for (size_t i(0);i<(*p_cur)[n].size();++i)
-	    for (size_t j(0);j<(*p_cur)[n][i]->In().size();++j)
-	      ((PS_Vertex *)(*p_cur)[n][i]->In()[j])->SetMPIVars(&val[3*cv++]);
-      }
-      for (size_t cv(0), n(2);n<m_n;++n)
-      	for (size_t i(0);i<(*p_cur)[n].size();++i)
-      	  for (size_t j(0);j<(*p_cur)[n][i]->In().size();++j)
-      	    ((PS_Vertex *)(*p_cur)[n][i]->In()[j])->GetMPIVars(&val[3*cv++]);
-      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
-	mpi->MPIRecv().Send(val,cn,MPI::DOUBLE,tag,size+tag);
-      }
-    }
-    else {
-      for (size_t cv(0), n(2);n<m_n;++n)
-      	for (size_t i(0);i<(*p_cur)[n].size();++i)
-      	  for (size_t j(0);j<(*p_cur)[n][i]->In().size();++j)
-      	    ((PS_Vertex *)(*p_cur)[n][i]->In()[j])->GetMPIVars(&val[3*cv++]);
-      mpi->MPISend().Send(val,cn,MPI::DOUBLE,0,rank);
-      mpi->MPISend().Recv(val,cn,MPI::DOUBLE,0,size+rank);
-      for (size_t cv(0), n(2);n<m_n;++n)
-      	for (size_t i(0);i<(*p_cur)[n].size();++i)
-      	  for (size_t j(0);j<(*p_cur)[n][i]->In().size();++j)
-      	    ((PS_Vertex *)(*p_cur)[n][i]->In()[j])->SetMPIVars(&val[3*cv++]);
-    }
+    double *rval = new double[cn];
+    for (size_t cv(0), n(2);n<m_n;++n)
+      for (size_t i(0);i<(*p_cur)[n].size();++i)
+	for (size_t j(0);j<(*p_cur)[n][i]->In().size();++j)
+	  ((PS_Vertex *)(*p_cur)[n][i]->In()[j])->GetMPIVars(&val[3*cv++]);
+    mpi->MPIComm()->Allreduce(val,rval,cn,MPI::DOUBLE,MPI::SUM);
+    for (size_t cv(0), n(2);n<m_n;++n)
+      for (size_t i(0);i<(*p_cur)[n].size();++i)
+	for (size_t j(0);j<(*p_cur)[n][i]->In().size();++j)
+	  ((PS_Vertex *)(*p_cur)[n][i]->In()[j])->SetMPIVars(&rval[3*cv++]);
     delete [] val;
+    delete [] rval;
   }
   for (size_t n(2);n<m_n;++n)
     for (size_t i(0);i<(*p_cur)[n].size();++i)

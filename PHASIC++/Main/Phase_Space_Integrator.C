@@ -53,42 +53,14 @@ void Phase_Space_Integrator::MPISync()
   psh->MPISync();
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    int rank=mpi->HasMPISend()?mpi->MPISend().Get_rank():0;
-    double values[3];
-    if (mpi->HasMPIRecv()) {
-      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
-	mpi->MPIRecv().Recv(&values,3,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
-	mn+=values[0];
-	mnstep+=values[1];
-	mncstep+=values[2];
-      }
-      if (rank) {
-	values[0]=mn;
-	values[1]=mnstep;
-	values[2]=mncstep;
-	mpi->MPISend().Send(&values,3,MPI::DOUBLE,0,rank);
-	mpi->MPISend().Recv(&values,3,MPI::DOUBLE,0,size+rank);
-	mn=values[0];
-	mnstep=values[1];
-	mncstep=values[2];
-      }
-      values[0]=mn;
-      values[1]=mnstep;
-      values[2]=mncstep;
-      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
-	mpi->MPIRecv().Send(&values,3,MPI::DOUBLE,tag,size+tag);
-      }
-    }
-    else {
-      values[0]=mn;
-      values[1]=mnstep;
-      values[2]=mncstep;
-      mpi->MPISend().Send(&values,3,MPI::DOUBLE,0,rank);
-      mpi->MPISend().Recv(&values,3,MPI::DOUBLE,0,size+rank);
-      mn=values[0];
-      mnstep=values[1];
-      mncstep=values[2];
-    }
+    double values[3], rvalues[3];
+    values[0]=mn;
+    values[1]=mnstep;
+    values[2]=mncstep;
+    mpi->MPIComm()->Allreduce(&values,&rvalues,3,MPI::DOUBLE,MPI::SUM);
+    mn=rvalues[0];
+    mnstep=rvalues[1];
+    mncstep=rvalues[2];
   }
   n+=mn;
   nstep+=mnstep;

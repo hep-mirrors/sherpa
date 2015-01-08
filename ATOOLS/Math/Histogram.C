@@ -438,50 +438,20 @@ void Histogram::MPISync()
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    int rank=mpi->HasMPISend()?mpi->MPISend().Get_rank():0;
     int cn=m_depth*m_nbin+2;
     double *values = new double[cn];
-    if (mpi->HasMPIRecv()) {
-      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
-	mpi->MPIRecv().Recv(values,cn,MPI::DOUBLE,MPI::ANY_SOURCE,tag);
-	for (int j(0);j<m_depth;++j)
-	  for (int i(0);i<m_nbin;++i) m_mvalues[j][i]+=values[j*m_nbin+i];
-	m_mfills+=values[cn-2];
-	m_mpsfills+=values[cn-1];
-      }
-      if (rank) {
-	for (int j(0);j<m_depth;++j)
-	  for (int i(0);i<m_nbin;++i) values[j*m_nbin+i]=m_mvalues[j][i];
-	values[cn-2]=m_mfills;
-	values[cn-1]=m_mpsfills;
-	mpi->MPISend().Send(values,cn,MPI::DOUBLE,0,rank);
-	mpi->MPISend().Recv(values,cn,MPI::DOUBLE,0,size+rank);
-	for (int j(0);j<m_depth;++j)
-	  for (int i(0);i<m_nbin;++i) m_mvalues[j][i]=values[j*m_nbin+i];
-	m_mfills=values[cn-2];
-	m_mpsfills=values[cn-1];
-      }
-      for (int j(0);j<m_depth;++j)
-	for (int i(0);i<m_nbin;++i) values[j*m_nbin+i]=m_mvalues[j][i];
-      values[cn-2]=m_mfills;
-      values[cn-1]=m_mpsfills;
-      for (int tag=1;tag<mpi->MPIRecv().Get_size();++tag) {
-	mpi->MPIRecv().Send(values,cn,MPI::DOUBLE,tag,size+tag);
-      }
-    }
-    else {
-      for (int j(0);j<m_depth;++j)
-	for (int i(0);i<m_nbin;++i) values[j*m_nbin+i]=m_mvalues[j][i];
-      values[cn-2]=m_mfills;
-      values[cn-1]=m_mpsfills;
-      mpi->MPISend().Send(values,cn,MPI::DOUBLE,0,rank);
-      mpi->MPISend().Recv(values,cn,MPI::DOUBLE,0,size+rank);
-      for (int j(0);j<m_depth;++j)
-	for (int i(0);i<m_nbin;++i) m_mvalues[j][i]=values[j*m_nbin+i];
-      m_mfills=values[cn-2];
-      m_mpsfills=values[cn-1];
-    }
+    double *rvalues = new double[cn];
+    for (int j(0);j<m_depth;++j)
+      for (int i(0);i<m_nbin;++i) values[j*m_nbin+i]=m_mvalues[j][i];
+    values[cn-2]=m_mfills;
+    values[cn-1]=m_mpsfills;
+    mpi->MPIComm()->Allreduce(values,rvalues,cn,MPI::DOUBLE,MPI::SUM);
+    for (int j(0);j<m_depth;++j)
+      for (int i(0);i<m_nbin;++i) m_mvalues[j][i]=rvalues[j*m_nbin+i];
+    m_mfills=rvalues[cn-2];
+    m_mpsfills=rvalues[cn-1];
     delete [] values;
+    delete [] rvalues;
   }
   for (int i(0);i<m_nbin;++i) {
     m_yvalues[i]+=m_mvalues[0][i];
