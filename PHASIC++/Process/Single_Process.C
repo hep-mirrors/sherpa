@@ -349,7 +349,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   if (GetSubevtList()==NULL) {
     if (m_zero) return 0.0;
     Scale_Setter_Base *scs(ScaleSetter(1));
-    scs->SetCaller(this);
+    scs->SetCaller(Proc());
     if (Partonic(p,0)==0.0) return 0.0;
     if (m_wgtinfo.m_nx==0) m_wgtinfo.m_w0 = m_lastxs;
     m_wgtinfo*=flux;

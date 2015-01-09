@@ -208,6 +208,7 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
   if (!p_LO_process)
     p_LO_process = new Single_LOProcess(m_pinfo, p_int->Beam(), p_int->ISR());
   p_LO_process->SetTestMoms(p_testmoms);
+  p_proc=p_LO_process;
 
   int massive(0);
   if (m_dalpha_ii!=m_dalpha ||
@@ -434,7 +435,10 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
     if (lookup) {
       m_lastdxs = p_partner->LastDXS()*m_sfactor;
     }
-    else m_lastdxs = p_partner->operator()(_moms,mode)*m_sfactor;
+    else {
+      p_LO_process->Integrator()->SetMomenta(p_int->Momenta());
+      m_lastdxs = p_partner->operator()(_moms,mode)*m_sfactor;
+    }
     m_lastbxs = p_partner->m_lastbxs*m_sfactor;
     m_lastb=p_partner->m_lastb*m_sfactor;
     m_lastv=p_partner->m_lastv*m_sfactor;

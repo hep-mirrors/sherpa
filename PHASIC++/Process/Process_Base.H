@@ -47,7 +47,7 @@ namespace PHASIC {
   class Process_Base {
   protected:
 
-    Process_Base       *p_parent, *p_selected, *p_mapproc, *p_sproc;
+    Process_Base       *p_parent, *p_selected, *p_mapproc, *p_sproc, *p_proc;
     Process_Integrator *p_int;
     Combined_Selector  *p_selector;
     Cut_Data           *p_cuts;
@@ -221,6 +221,7 @@ namespace PHASIC {
     inline ME_Generator_Base *Generator() const { return p_gen; }
 
     inline Process_Base *MapProc() const  { return p_mapproc; }
+    inline Process_Base *Proc() const     { return p_proc;    }
 
     inline Cut_Data          * Cuts() const { return p_cuts; }
     inline Combined_Selector * Selector() const 
