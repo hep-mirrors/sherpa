@@ -8,11 +8,11 @@ SVN_Info.C: SVN_Info.C.in
 	  if test -f $(srcdir)/$@; then \
 	    cp $(srcdir)/$@ $@.tmp; chmod u+rw $@.tmp; \
 	  else \
-	    echo "*********************************************"; \
-	    echo "* Incomplete sources and no SVN information *"; \
-	    echo "* This copy of Sherpa will not be supported *"; \
-	    echo "* Please contact info@sherpa-mc.de for help *"; \
-	    echo "*********************************************"; \
+	    echo "***************************************************"; \
+	    echo "* Incomplete sources and no SVN information. This *"; \
+	    echo "* copy of Sherpa will not be supported. Please    *"; \
+	    echo "* contact sherpa@projects.hepforge.org for help.  *"; \
+	    echo "***************************************************"; \
 	    exit 1; \
 	  fi; \
 	else \

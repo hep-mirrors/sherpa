@@ -29,7 +29,7 @@ AC_DEFUN([SHERPA_SETUP_BUILDSYSTEM],
       echo "checking for architecture...  unknown"
       echo "hosts system type $build not yet supported, assuming unix behaviour."
       echo "possible failure due to unknown compiler/linker characteristics."
-      echo "please inform us about build results at info@sherpa-mc.de"
+      echo "please inform us about build results at sherpa@projects.hepforge.org"
       echo "(will continue in 10 seconds)"
       sleep 10
       if test "x$LDFLAGS" = "x"; then
