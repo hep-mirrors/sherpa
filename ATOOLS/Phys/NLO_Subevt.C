@@ -156,7 +156,7 @@ namespace ATOOLS
     ATOOLS::Flavour_Vector flavs;
     for (size_t i(0);i<sevt.m_n;++i) {
       flavs.push_back(sevt.p_fl[i]);
-      ids.push_back(sevt.p_id[i]);
+      if (sevt.p_id) ids.push_back(sevt.p_id[i]);
     }
     return ostr<<sevt.m_pname<<" "<<(Dip_ID)(sevt)
 	       <<", idx "<<sevt.m_idx

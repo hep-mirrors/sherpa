@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Phys/Particle_List.H"
 #include "ATOOLS/Phys/Decay_Info.H"
+#include "PHASIC++/Process/Subprocess_Info.H"
 
 namespace ATOOLS {
 
@@ -137,7 +138,10 @@ namespace ATOOLS {
   std::ostream &operator<<(std::ostream &ostr,const NLO_subevt &sevt);
 
   class NLO_subevtlist: public std::vector<NLO_subevt*> { 
+  private:
+    PHASIC::nlo_type::code m_type;
   public:
+    inline NLO_subevtlist() : m_type(PHASIC::nlo_type::lo) {}
 
     void Mult(const double &scal);
     void MultME(const double &scal);
@@ -145,6 +149,8 @@ namespace ATOOLS {
 
     NLO_subevtlist& operator*=(const double scal);
 
+    inline PHASIC::nlo_type::code Type() { return m_type; }
+    inline void SetType(PHASIC::nlo_type::code type) { m_type=type; }
   };// end of class NLO_subevtlist
 
 }// end of namespace ATOOLS
