@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Blob.H"
+#include "PHASIC++/Process/Subprocess_Info.H"
 
 
 #include <map>
@@ -16,14 +17,48 @@ namespace HepMC {
   class GenEvent;
   class GenVertex;
   class GenParticle;
+  class WeightContainer;
 }
 
 namespace ATOOLS {
   class Blob_List;
   class Particle;
+  class ME_wgtinfo;
+  class NLO_subevtlist;
+}
+
+namespace PHASIC {
+  class PDF_Info;
 }
 
 namespace SHERPA {
+
+  class EventInfo {
+  private:
+    size_t m_usenamedweights;
+    ATOOLS::Blob * p_sp;
+    int    m_oqcd, m_oew;
+    double m_wgt, m_mewgt, m_wgtnorm, m_ntrials, m_mur2, m_muf12, m_muf22;
+    double m_alphas, m_alpha;
+    PHASIC::nlo_type::code m_type;
+    ATOOLS::ME_wgtinfo * p_wgtinfo;
+    PHASIC::PDF_Info * p_pdfinfo;
+    ATOOLS::NLO_subevtlist * p_subevtlist;
+
+    bool ReadIn(ATOOLS::Blob_Data_Base * &db, std::string name, bool abort);
+
+  public:
+    EventInfo(ATOOLS::Blob * sp, const double &wgt);
+    EventInfo(const EventInfo &evtinfo);
+    ~EventInfo() {}
+    bool WriteTo(HepMC::GenEvent &evt);
+    inline const ATOOLS::NLO_subevtlist * SubEvtList() { return p_subevtlist; }
+    inline void SetWeight(const double &wgt)     { m_wgt=wgt; }
+    inline void SetMEWeight(const double &mewgt) { m_mewgt=mewgt; }
+    inline void SetMuR2(const double &mur2)      { m_mur2=mur2; }
+    inline void SetMuF12(const double &muf12)    { m_muf12=muf12; }
+    inline void SetMuF22(const double &muf22)    { m_muf22=muf22; }
+  };
 
   class HepMC2_Interface {
   private :
@@ -56,6 +91,7 @@ namespace SHERPA {
                            HepMC::GenEvent& event,
                            double weight=1.0);
     bool Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs, double weight=1.0);
+    bool SubEvtList2ShortHepMC(EventInfo &evtinfo);
 
     // inline functions
     inline HepMC::GenEvent* GenEvent() { return p_event; }

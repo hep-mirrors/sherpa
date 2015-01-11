@@ -15,12 +15,109 @@
 #include "HepMC/GenParticle.h"
 #include "HepMC/SimpleVector.h"
 #include "HepMC/PdfInfo.h"
+#include "HepMC/WeightContainer.h"
 #ifdef USING__HEPMC2__UNITS
 #include "HepMC/Units.h"
 #endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
+
+EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt) :
+  m_usenamedweights(false), p_sp(sp),
+  m_oqcd(0), m_oew(0), m_wgt(wgt),
+  m_mewgt(0.), m_wgtnorm(0.), m_ntrials(0.),
+  m_mur2(0.), m_muf12(0.), m_muf22(0.),
+  m_alphas(0.), m_alpha(0.), m_type(PHASIC::nlo_type::lo),
+  p_wgtinfo(NULL), p_pdfinfo(NULL), p_subevtlist(NULL)
+{
+  if (p_sp) {
+    DEBUG_FUNC(*p_sp);
+    Blob_Data_Base *db;
+    ReadIn(db,"MEWeight",true);
+    m_mewgt=db->Get<double>();
+    ReadIn(db,"Weight_Norm",true);
+    m_wgtnorm=db->Get<double>();
+    ReadIn(db,"Trials",true);
+    m_ntrials=db->Get<double>();
+    ReadIn(db,"Renormalization_Scale",true);
+    m_mur2=db->Get<double>();
+    m_alphas=MODEL::s_model->ScalarFunction("alpha_S",m_mur2);
+    m_alpha=MODEL::s_model->ScalarFunction("alpha_QED");
+    ReadIn(db,"OQCD",true);
+    m_oqcd=db->Get<int>();
+    ReadIn(db,"OEW",true);
+    m_oew=db->Get<int>();
+    ReadIn(db,"ME_wgtinfo",true);
+    p_wgtinfo=db->Get<ME_wgtinfo*>();
+    ReadIn(db,"PDFInfo",true);
+    p_pdfinfo=&db->Get<PHASIC::PDF_Info>();
+    m_muf12=p_pdfinfo->m_muf12;
+    m_muf22=p_pdfinfo->m_muf22;
+    ReadIn(db,"NLO_subeventlist",false);
+    if (db) p_subevtlist=db->Get<NLO_subevtlist*>();
+    if (p_subevtlist) m_type=p_subevtlist->Type();
+  }
+}
+
+EventInfo::EventInfo(const EventInfo &evtinfo) :
+  m_usenamedweights(evtinfo.m_usenamedweights),
+  p_sp(evtinfo.p_sp),
+  m_oqcd(evtinfo.m_oqcd), m_oew(evtinfo.m_oew),
+  m_wgt(0.), m_mewgt(0.), m_wgtnorm(0.),
+  m_ntrials(evtinfo.m_ntrials),
+  m_mur2(0.), m_muf12(0.), m_muf22(0.),
+  m_alphas(0.), m_alpha(0.), m_type(evtinfo.m_type),
+  p_wgtinfo(evtinfo.p_wgtinfo), p_pdfinfo(evtinfo.p_pdfinfo),
+  p_subevtlist(evtinfo.p_subevtlist)
+{
+}
+
+bool EventInfo::ReadIn(ATOOLS::Blob_Data_Base* &db,std::string name,bool abort)
+{
+  db=(*p_sp)[name];
+  if (abort && !db) THROW(fatal_error,name+" information missing.");
+}
+
+bool EventInfo::WriteTo(HepMC::GenEvent &evt)
+{
+  DEBUG_FUNC("");
+  HepMC::WeightContainer wc;
+  if (m_usenamedweights) {
+    THROW(not_implemented,"Named HepMC weights not implemented yet.");
+  }
+  else {
+    wc.push_back(m_wgt);
+    wc.push_back(m_mewgt);
+    wc.push_back(m_wgtnorm);
+    wc.push_back(m_ntrials);
+    wc.push_back(m_mur2);
+    wc.push_back(m_muf12);
+    wc.push_back(m_muf22);
+    wc.push_back(m_oqcd);
+    wc.push_back(m_oew);
+    if (p_wgtinfo) {
+      wc.push_back(p_wgtinfo->m_w0);
+      wc.push_back(p_wgtinfo->m_nx);
+      wc.push_back(p_wgtinfo->m_y1);
+      wc.push_back(p_wgtinfo->m_y2);
+      for (int i=0;i<p_wgtinfo->m_nx;i++) {
+        wc.push_back(p_wgtinfo->p_wx[i]);
+      }
+    }
+  }
+  evt.weights()=wc;
+  if (p_pdfinfo) {
+    double q(sqrt(sqrt(p_pdfinfo->m_muf12*p_pdfinfo->m_muf22)));
+    HepMC::PdfInfo pdfinfo(p_pdfinfo->m_fl1,p_pdfinfo->m_fl2,
+                           p_pdfinfo->m_x1,p_pdfinfo->m_x2,
+                           q,p_pdfinfo->m_xf1,p_pdfinfo->m_xf2);
+    evt.set_pdf_info(pdfinfo);
+  }
+  evt.set_alphaQCD(m_alphas);
+  evt.set_alphaQED(m_alpha);
+  return true;
+}
 
 HepMC2_Interface::HepMC2_Interface():
   p_event(NULL)
@@ -36,6 +133,7 @@ HepMC2_Interface::~HepMC2_Interface()
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
                                     HepMC::GenEvent& event, double weight)
 {
+  DEBUG_FUNC("");
 #ifdef USING__HEPMC2__UNITS
   event.use_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
@@ -44,6 +142,8 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   size_t decid(11);
   std::map<size_t,size_t> decids;
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
+  EventInfo evtinfo(sp,weight);
+  evtinfo.WriteTo(event);
   if (sp) {
     Blob_Data_Base *info((*sp)["Decay_Info"]);
     if (info) {
@@ -67,14 +167,6 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
                 +std::string("   Try 'EVENT_OUTPUT=HepMC_Short' instead."));
         }
         event.set_signal_process_vertex(vertex);
-        Blob_Data_Base *pdfinfodb((**blit)["PDFInfo"]);
-        if (pdfinfodb && (*blit)->NInP()==2) {
-          PHASIC::PDF_Info pi=pdfinfodb->Get<PHASIC::PDF_Info>();
-          double q(sqrt(sqrt(pi.m_muf12*pi.m_muf22)));
-          HepMC::PdfInfo pdfinfo(pi.m_fl1,pi.m_fl2,pi.m_x1,pi.m_x2,
-                                 q,pi.m_xf1,pi.m_xf2);
-          event.set_pdf_info(pdfinfo);
-        }
       }
       else if ((*blit)->Type()==ATOOLS::btp::Beam || 
 	       (*blit)->Type()==ATOOLS::btp::Bunch) {
@@ -91,23 +183,6 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   if (beamparticles.size()==2) {
     event.set_beam_particles(beamparticles[0],beamparticles[1]);
   }
-  std::vector<double> weights;
-  weights.push_back(weight);
-  if (sp) {
-    Blob_Data_Base *info((*sp)["MEWeight"]);
-    if (!info) THROW(fatal_error,"Missing weight info.");
-    double meweight(info->Get<double>());
-    weights.push_back(meweight);
-    Blob_Data_Base *ofni((*sp)["Weight_Norm"]);
-    if (!ofni) THROW(fatal_error,"Missing weight normalisation.");
-    double weightnorm(ofni->Get<double>());
-    weights.push_back(weightnorm);
-    ofni=(*sp)["Trials"];
-    if (!ofni) THROW(fatal_error,"Missing nof trials.");
-    double trials(ofni->Get<double>());
-    weights.push_back(trials);
-  }
-  event.weights()=weights;
   return true;
 }
 
@@ -118,22 +193,14 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   event.use_units(HepMC::Units::GEV,
                   HepMC::Units::MM);
 #endif
+  Blob *sp(blobs->FindFirst(btp::Signal_Process));
+  EventInfo evtinfo(sp,weight);
+  // when subevtlist, fill hepmc-subevtlist
+  if (evtinfo.SubEvtList()) return SubEvtList2ShortHepMC(evtinfo);
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
+  evtinfo.WriteTo(event);
   HepMC::GenVertex * vertex=new HepMC::GenVertex();
   std::vector<HepMC::GenParticle*> beamparticles;
-  std::vector<std::pair<HepMC::FourVector,int> > beamparts,
-                                                 remnantparts1, remnantparts2;
-  Blob *sp(blobs->FindFirst(btp::Signal_Process));
-  NLO_subevtlist* subevtlist(NULL);
-  ME_wgtinfo* wgtinfo(0);
-  
-  if (sp) {
-    Blob_Data_Base* seinfo=(*sp)["ME_wgtinfo"];
-    if (seinfo) wgtinfo=seinfo->Get<ME_wgtinfo*>();
-   
-    Blob_Data_Base * bdb((*sp)["NLO_subeventlist"]);
-    if (bdb) subevtlist=bdb->Get<NLO_subevtlist*>();
-  }
   for (ATOOLS::Blob_List::iterator blit=blobs->begin();
        blit!=blobs->end();++blit) {
     Blob* blob=*blit;
@@ -143,12 +210,11 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         ATOOLS::Vec4D mom  = parton->Momentum();
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
         HepMC::GenParticle* inpart = 
-	  new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),2);
+          new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),2);
         vertex->add_particle_in(inpart);
         // distinct because SHRIMPS has no bunches for some reason
         if (blob->Type()==btp::Beam || blob->Type()==btp::Bunch) {
           beamparticles.push_back(inpart);
-          beamparts.push_back(std::make_pair(momentum,parton->Flav().HepEvt()));
         }
       }
     }
@@ -160,26 +226,6 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         HepMC::GenParticle* outpart = 
 	  new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),1);
         vertex->add_particle_out(outpart);
-        if (blob->Type()==btp::Beam) {
-          if      (mom[3]>0) 
-	    remnantparts1.push_back(std::make_pair(momentum,
-						   parton->Flav().HepEvt()));
-          else if (mom[3]<0) 
-	    remnantparts2.push_back(std::make_pair(momentum,
-						   parton->Flav().HepEvt()));
-          else THROW(fatal_error,"Ill defined beam remnants.");
-        }
-      }
-    }
-    
-    if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
-      Blob_Data_Base *pdfinfodb((**blit)["PDFInfo"]);
-      if (pdfinfodb && (*blit)->NInP()==2) {
-        PHASIC::PDF_Info pi=pdfinfodb->Get<PHASIC::PDF_Info>();
-        double q(sqrt(sqrt(pi.m_muf12*pi.m_muf22)));
-        HepMC::PdfInfo pdfinfo(pi.m_fl1,pi.m_fl2,pi.m_x1,pi.m_x2,
-                               q,pi.m_xf1,pi.m_xf2);
-        event.set_pdf_info(pdfinfo);
       }
     }
   }
@@ -187,208 +233,49 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   if (beamparticles.size()==2) {
     event.set_beam_particles(beamparticles[0],beamparticles[1]);
   }
-  std::vector<double> weights; weights.push_back(weight);
-  if (sp && !subevtlist) {
-    Blob_Data_Base *info;
-    info=((*sp)["MEWeight"]);
-    if (!info) THROW(fatal_error,"Missing weight info.");
-    double meweight(info->Get<double>());
-    weights.push_back(meweight);
-    info=((*sp)["Weight_Norm"]);
-    if (!info) THROW(fatal_error,"Missing weight normalisation.");
-    double weightnorm(info->Get<double>());
-    weights.push_back(weightnorm);
-    info=(*sp)["Trials"];
-    if (!info) THROW(fatal_error,"Missing nof trials.");
-    double trials(info->Get<double>());
-    weights.push_back(trials);
-    //alphaS value && power
-    double rscale2 = (*sp)["Renormalization_Scale"]->Get<double>();
-    double alphaS = MODEL::s_model->ScalarFunction("alpha_S",rscale2);
-    event.set_alphaQCD(alphaS);
-    double aSpower = ((*sp)["OQCD"])->Get<int>();
-    weights.push_back(aSpower);
-    
-    if (wgtinfo) {
-      //dump weight_0
-      weights.push_back(wgtinfo->m_w0);
-      //dump number of usr weights
-      weights.push_back(wgtinfo->m_nx);
-      //store xprimes
-      weights.push_back(wgtinfo->m_y1);
-      weights.push_back(wgtinfo->m_y2);
-      //fill in usr weights
-      for (int i=0;i<wgtinfo->m_nx;i++) {
-	weights.push_back(wgtinfo->p_wx[i]);
-      }
-    }
-  }
-  
-  event.weights()=weights;
+  evtinfo.WriteTo(event);
 
-  if (subevtlist) {
-    // build GenEvent for all subevts (where only the signal is available)
-    // use stored beam & remnant particles from above
-    // sub->m_flip==1 -> momenta need to be inverted for analyses
-    for (size_t i(0);i<subevtlist->size();++i) {
-      NLO_subevt * sub((*subevtlist)[i]);
-      if (sub->m_result==0.) continue;
-      HepMC::GenVertex * subvertex(new HepMC::GenVertex());
-      HepMC::GenEvent * subevent(new HepMC::GenEvent());
-      // assume that only 2->(n-2) processes
-      HepMC::GenParticle *beam[2];
-      if (beamparts.size()==2) {
-        for (size_t j(0);j<beamparts.size();++j) {
-          beam[j] = new HepMC::GenParticle(beamparts[j].first,
-                                           beamparts[j].second,2);
-          subvertex->add_particle_in(beam[j]);
-        }
-      }
-      else {
-        const ATOOLS::Vec4D *mom(sub->p_mom);
-        const ATOOLS::Flavour *fl(sub->p_fl);
-        for (size_t j(0);j<2;++j) {
-          HepMC::FourVector momentum;
-          momentum.set( mom[j][1], mom[j][2], mom[j][3],mom[j][0]);
-          ATOOLS::Flavour flc(fl[j]);
-          HepMC::GenParticle* inpart
-              = new HepMC::GenParticle(momentum,flc.HepEvt(),2);
-          subvertex->add_particle_in(inpart);
-        }
-      }
-      const ATOOLS::Vec4D *mom(sub->p_mom);
-      const ATOOLS::Flavour *fl(sub->p_fl);
-      for (size_t j(2);j<(*subevtlist)[i]->m_n;++j) {
-        HepMC::FourVector momentum;
-	momentum.set( mom[j][1], mom[j][2], mom[j][3],mom[j][0]);
-        ATOOLS::Flavour flc(fl[j]);
-        HepMC::GenParticle* outpart
-            = new HepMC::GenParticle(momentum,flc.HepEvt(),1);
-        subvertex->add_particle_out(outpart);
-      }
-      // if beamremnants are present:
-      // scale beam remnants of real event for energy momentum conservation :
-      //   flavours might not add up properly for sub events,
-      //   but who cares. they go down the beam pipe.
-      // also assume they are all massless :
-      //   this will give momentum conservation violations
-      //   which are collider dependent only
-      //
-      //   for real event (as constructed in BRH) :
-      //
-      //     P = p + \sum r_i  with  P^2 = m^2  and  r_i^2 = p^2 = 0
-      //
-      //     further  P  = ( P^0 , 0 , 0 , P^z )
-      //              p  = (  p  , 0 , 0 ,  p  )
-      //             r_i = ( r_i , 0 , 0 , r_i )
-      //
-      //     => P^0 = p + \sum r_i
-      //        P^z = \sqrt{(P^0)^2 - m^2} <  p + \sum r_i
-      //
-      // in a mass-symmetric collider, the excess is the same for both beams
-      // ensuring momentum conservation
-      //
-      //   for sub event (constructed here):
-      //
-      //     P = p~ + \sum r_i~ = p~ + \sum u*r_i
-      //
-      //     where u = ( P^0 - p^0~ ) / \sum r_i^0
-      //
-      //     again, the r_i~ = u*r_i are constructed such that
-      //
-      //     => P^0 = p~ + \sum u*r_i
-      //        P^z = \sqrt{(P^0)^2 - m^2} <  p~ + \sum u*r_i =  p + \sum r_i
-      //
-      //     leading to the same momentum conservation violations per beam
-      //
-      if (remnantparts1.size()!=0 && remnantparts2.size()!=0) {
-        double res1(0.),res2(0.);
-        for (size_t j(0);j<remnantparts1.size();++j) {
-          res1+=remnantparts1[j].first.e();
-        }
-        for (size_t j(0);j<remnantparts2.size();++j) {
-          res2+=remnantparts2[j].first.e();
-        }
-        ATOOLS::Vec4D hardparton[2];
-        for (size_t j(0);j<2;++j) {
-	  hardparton[j]=ATOOLS::Vec4D(mom[j][0],Vec3D( mom[j]));
-        }
-        // incoming partons might need to be flipped due to particle sorting
-        bool flip(hardparton[0][3]<0);
-        double u1((beamparts[0].first.e()-hardparton[flip?1:0][0])/res1);
-        double u2((beamparts[1].first.e()-hardparton[flip?0:1][0])/res2);
-        // filling
-        for (size_t j(0);j<remnantparts1.size();++j) {
-          HepMC::FourVector momentum(u1*remnantparts1[j].first.px(),
-                                     u1*remnantparts1[j].first.py(),
-                                     u1*remnantparts1[j].first.pz(),
-                                     u1*remnantparts1[j].first.e());
-          HepMC::GenParticle* outpart
-              = new HepMC::GenParticle(momentum,remnantparts1[j].second,1);
-          subvertex->add_particle_out(outpart);
-        }
-        for (size_t j(0);j<remnantparts2.size();++j) {
-          HepMC::FourVector momentum(u2*remnantparts2[j].first.px(),
-                                     u2*remnantparts2[j].first.py(),
-                                     u2*remnantparts2[j].first.pz(),
-                                     u2*remnantparts2[j].first.e());
-          HepMC::GenParticle* outpart
-              = new HepMC::GenParticle(momentum,remnantparts2[j].second,1);
-          subvertex->add_particle_out(outpart);
-        }
-        if (beamparticles.size()==2) {
-          subevent->set_beam_particles(beam[0],beam[1]);
-        }
-      }
-      subevent->add_vertex(subvertex);
-      // not enough info in subevents to set PDFInfo properly,
-      // so set only flavours, x1, x2, and q from the Signal_Process
-      HepMC::PdfInfo subpdfinfo(*event.pdf_info());
-      double q = sqrt(sub->m_mu2[stp::fac]);
-      if (q!=0. && q != subpdfinfo.scalePDF()) 
-        subpdfinfo.set_scalePDF(q);
-      if (sub->m_xf1) subpdfinfo.set_pdf1(sub->m_xf1);
-      if (sub->m_xf2) subpdfinfo.set_pdf2(sub->m_xf2);
-      subevent->set_pdf_info(subpdfinfo);
-      // add weight
-      std::vector<double> subweight; subweight.push_back(sub->m_result);
-      Blob_Data_Base *info;
-      info=((*sp)["MEWeight"]);
-      if (!info) THROW(fatal_error,"Missing weight info.");
-      double meweight(info->Get<double>());
-      subweight.push_back(meweight);
-      info=((*sp)["Weight_Norm"]);
-      if (!info) THROW(fatal_error,"Missing weight normalisation.");
-      double weightnorm(info->Get<double>());
-      subweight.push_back(weightnorm);
-      info=(*sp)["Trials"];
-      if (!info) THROW(fatal_error,"Missing nof trials.");
-      double trials(info->Get<double>());
-      subweight.push_back(trials);
-      //alphaS value && power
-      double alphaS = MODEL::s_model->ScalarFunction("alpha_S",sub->m_mu2[stp::ren]);
-      subevent->set_alphaQCD(alphaS);
-      double aSpower = ((*sp)["OQCD"])->Get<int>();
-      subweight.push_back(aSpower);
-      subweight.push_back(sub->m_mewgt);
-      
-      if (wgtinfo) {
-	//dump number of usr weights
-	subweight.push_back(wgtinfo->m_nx);
-	//store xprimes
-	subweight.push_back(wgtinfo->m_y1);
-	subweight.push_back(wgtinfo->m_y2);
-	//fill in usr weights
-	for (int i=0;i<wgtinfo->m_nx;i++) {
-	  subweight.push_back(wgtinfo->p_wx[i]);
-	}
-      }
-      //
-      subevent->weights()=subweight;
-      // set the event number (could be used to identify correlated events)
-      subevent->set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
-      m_subeventlist.push_back(subevent);
+  return true;
+}
+
+bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
+{
+  // build GenEvent for all subevts (where only the signal is available)
+  // purely partonic, no beam information, may add, if needed
+  for (size_t i(0);i<evtinfo.SubEvtList()->size();++i) {
+    EventInfo subevtinfo(evtinfo);
+    const NLO_subevt * sub((*evtinfo.SubEvtList())[i]);
+    if (sub->m_result==0.) continue;
+    HepMC::GenVertex * subvertex(new HepMC::GenVertex());
+    HepMC::GenEvent * subevent(new HepMC::GenEvent());
+    // set the event number (could be used to identify correlated events)
+    subevent->set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
+    // assume that only 2->(n-2) processes
+    for (size_t j(0);j<2;++j) {
+      HepMC::FourVector momentum(sub->p_mom[j][1],sub->p_mom[j][2],
+                                 sub->p_mom[j][3],sub->p_mom[j][0]);
+      HepMC::GenParticle* inpart =
+        new HepMC::GenParticle(momentum,sub->p_fl[j].HepEvt(),2);
+      subvertex->add_particle_in(inpart);
     }
+    for (size_t j(2);j<sub->m_n;++j) {
+      HepMC::FourVector momentum(sub->p_mom[j][1],sub->p_mom[j][2],
+                                 sub->p_mom[j][3],sub->p_mom[j][0]);
+      HepMC::GenParticle* outpart =
+        new HepMC::GenParticle(momentum,sub->p_fl[j].HepEvt(),1);
+      subvertex->add_particle_out(outpart);
+    }
+    subevent->add_vertex(subvertex);
+    // not enough info in subevents to set PDFInfo properly,
+    // so set flavours and x1, x2 from the Signal_Process
+    // reset muR, muF
+    subevtinfo.SetWeight(sub->m_result);
+    subevtinfo.SetMEWeight(sub->m_mewgt);
+    subevtinfo.SetMuR2(sub->m_mu2[stp::ren]);
+    subevtinfo.SetMuF12(sub->m_mu2[stp::fac]);
+    subevtinfo.SetMuF22(sub->m_mu2[stp::fac]);
+    subevtinfo.WriteTo(*subevent);
+    m_subeventlist.push_back(subevent);
   }
   return true;
 }
