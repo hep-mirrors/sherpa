@@ -26,7 +26,8 @@ namespace PDF {
 
   public:
 
-    PDF_NNPDF(const ATOOLS::Flavour &bunch,const std::string &file,int set); 
+    PDF_NNPDF(const ATOOLS::Flavour &bunch,const std::string &file,
+              const std::string &set,int member);
 
     ~PDF_NNPDF(); 
 
@@ -52,11 +53,13 @@ using namespace ATOOLS;
 
 PDF_NNPDF::PDF_NNPDF
 (const ATOOLS::Flavour &bunch,
- const std::string &bfile,int set):
+ const std::string &bfile,
+ const std::string &set,int member):
   m_path(rpa->gen.Variable("SHERPA_SHARE_PATH")),
   m_file(bfile), m_anti(1)
 {
-  m_member=set;
+  m_set=set;
+  m_member=member;
   std::string file(m_file);
   p_pdf = new NNPDFDriver(m_path+"/"+file, m_member); // Path to the file to load
   
@@ -144,7 +147,7 @@ PDF_NNPDF::~PDF_NNPDF()
 // Necessary?
 PDF_Base *PDF_NNPDF::GetCopy() 
 {
-  PDF_Base *copy = new PDF_NNPDF(m_bunch,m_file,m_member);
+  PDF_Base *copy = new PDF_NNPDF(m_bunch,m_file,m_set,m_member);
   m_copies.push_back(copy);
   return copy;
 }
@@ -170,7 +173,7 @@ double PDF_NNPDF::GetXPDF(const ATOOLS::Flavour infl)
                                // numbers from 0 to 12 to access
                                // array elements
   
-  return m_rescale*p_pdf->xfx(m_x, m_Q2, kfc_nn);;
+  return m_rescale*p_pdf->xfx(m_x, m_Q2, kfc_nn);
 }
 
 DECLARE_PDF_GETTER(NNPDF_Getter);
@@ -201,7 +204,7 @@ PDF_Base *NNPDF_Getter::operator()
     std::cerr << "Requested PDF_SET " << m_key << " not available --- exiting!" << std::endl;
     std::cerr << "Run Sherpa with SHOW_PDF_SETS=1" << std::endl;
   }
-  return new PDF_NNPDF(args.m_bunch, gfile, member);
+  return new PDF_NNPDF(args.m_bunch, gfile, m_key, member);
 }
 
 void NNPDF_Getter::PrintInfo

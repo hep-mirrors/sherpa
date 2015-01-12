@@ -32,8 +32,9 @@ using namespace ATOOLS;
 
 LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
 						   const std::string _set,const int _member) :
-  m_set(_set), m_anti(1)
+  m_anti(1)
 {
+  m_set=set;
   m_smember=_member;
   m_type="LHA["+m_set+"]";
 

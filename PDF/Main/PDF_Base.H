@@ -46,6 +46,7 @@ namespace PDF {
 
     std::string m_type;    
 
+    std::string m_set;
     int m_member;
     int m_lhef_number;
 
@@ -112,6 +113,7 @@ namespace PDF {
 
     inline PDF_AS_Info ASInfo() const { return m_asinfo; }
 
+    inline std::string Set() const { return m_set; }
     inline int Member() const { return m_member; }
 
     int LHEFNumber() const { return m_lhef_number; }

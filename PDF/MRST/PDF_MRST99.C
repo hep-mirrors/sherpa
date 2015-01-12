@@ -12,15 +12,17 @@ c_mrst * PDF_MRST99::p_proton = NULL;
 
 
 PDF_MRST99::PDF_MRST99(const ATOOLS::Flavour _bunch,
-		       const int _set) :
-  m_set(_set), m_path(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/MRST99Grid")
+                       const int _member) :
+  m_path(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/MRST99Grid")
 {
-  if ((m_set<1)||(m_set>12)) {
-    msg_Error()<<"Error in PDF_MRST99::PDF_MRST99 : Wrong set : "<<m_set<<std::endl
+  m_set="MRST99";
+  m_member=_member;
+  if ((m_member<1)||(m_member>12)) {
+    msg_Error()<<"Error in "<<METHOD<<" : Wrong member : "<<m_member<<std::endl
 	       <<"    will continue with set 1."<<std::endl;
-    m_set  = 1;
+    m_member  = 1;
   }
-  m_type=std::string("MRST99")+ATOOLS::ToString(m_set);
+  m_type="MRST99["+ATOOLS::ToString(m_member)+"]";
   m_bunch  = _bunch;
   m_anti   = 1;
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti = -1;
@@ -45,7 +47,7 @@ PDF_MRST99::PDF_MRST99(const ATOOLS::Flavour _bunch,
 
 PDF_Base *PDF_MRST99::GetCopy() 
 {
-  PDF_Base *copy = new PDF_MRST99(m_bunch,m_set);
+  PDF_Base *copy = new PDF_MRST99(m_bunch,m_member);
   m_copies.push_back(copy);
   return copy;
 }
@@ -57,7 +59,7 @@ void PDF_MRST99::CalculateSpec(double x,double Q2)
     m_overscaled=true;
     return;
   }
-  p_proton->mrst99(x,Q2,m_set);
+  p_proton->mrst99(x,Q2,m_member);
   m_content = p_proton->cont;
 }
 

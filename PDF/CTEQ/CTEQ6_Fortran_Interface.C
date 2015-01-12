@@ -23,7 +23,7 @@ void errmsg_() {
 
 CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
 						 const std::string _set,const int _member):
-  m_set(_set), m_anti(1) 
+  m_anti(1)
 {
   m_member=_member;
   m_xmin=1.e-6;
@@ -31,6 +31,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_q2min=.5;
   m_q2max=1.e12;
 
+  m_set=_set;
   m_type=m_set;
   m_bunch = _bunch;
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;

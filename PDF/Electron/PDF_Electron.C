@@ -20,6 +20,7 @@ PDF_Electron::PDF_Electron(const Flavour _bunch,const int _izetta,const int _ord
   m_q2min=0.25;
   m_q2max=1.e14;
 
+  m_set    = "PDFE";
   m_bunch  = _bunch;
   m_partons.insert(m_bunch);
   m_type   = std::string("PDF_")+std::string(m_bunch.IDName());

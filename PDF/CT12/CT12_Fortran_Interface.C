@@ -24,7 +24,6 @@ namespace PDF {
 
   class CT12_Fortran_Interface : public PDF_Base {
   private:
-    std::string m_set;
     int         m_anti;
     double      m_f[11], m_x, m_Q;
     bool        m_calculated[11];
@@ -33,13 +32,14 @@ namespace PDF {
 
     CT12_Fortran_Interface(const ATOOLS::Flavour bunch,
                            std::string set, int member) :
-      m_set(set), m_anti(1)
+      m_anti(1)
     {
       m_xmin=1.e-8;
       m_xmax=1.;
       m_q2min=1.69;
       m_q2max=1.e10;
 
+      m_set=set;
       m_type=m_set;
       m_bunch=bunch;
       m_member=member;

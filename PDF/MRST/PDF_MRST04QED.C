@@ -39,7 +39,8 @@ PDF_MRST04QED::PDF_MRST04QED(const ATOOLS::Flavour bunch):
   m_anti(1),
   m_mode(1)
 {
-  m_type=std::string("MRST04QED");
+  m_set="MRST04QED";
+  m_type=m_set;
   m_bunch=bunch;
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   for (int i=1;i<6;i++) {

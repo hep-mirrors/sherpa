@@ -15,9 +15,9 @@ using namespace PDF;
 using namespace ATOOLS;
 
 PDF_Base::PDF_Base():
-  m_type("none"), m_member(0), m_exponent(1.),
-  m_rescale(1.) {
-
+  m_type("none"), m_set(""), m_member(0), m_exponent(1.),
+  m_rescale(1.)
+{
   Data_Reader dr(" ",";","!","=");
   m_lhef_number = dr.GetValue<int>("LHEF_PDF_NUMBER",-1);
 }

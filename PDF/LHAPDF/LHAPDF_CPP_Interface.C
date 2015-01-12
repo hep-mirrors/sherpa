@@ -13,7 +13,6 @@ namespace PDF {
   class LHAPDF_CPP_Interface : public PDF_Base {
   private:
     LHAPDF::PDF * p_pdf;
-    std::string   m_set;
     int           m_smember;
     int           m_anti;
     std::map<int, double> m_xfx;
@@ -40,8 +39,9 @@ using namespace ATOOLS;
 LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
                                            const std::string _set,
                                            const int _member) :
-  m_set(_set), m_anti(1)
+  p_pdf(NULL), m_anti(1)
 {
+  m_set=_set;
   m_smember=_member;
   m_type="LHA["+m_set+"]";
 
