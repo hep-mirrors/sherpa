@@ -575,8 +575,11 @@ bool Initialization_Handler::InitializeThePDFs()
       deflib="GRVSherpa";
       defset[beam]="GRV";
     }
-    m_pdflibs.insert(dataread.GetValue<std::string>("PDF_LIBRARY",deflib));
+    std::vector<std::string> pdflibs;
     std::string mpilib, beamlib;
+    dataread.VectorFromFile(pdflibs,"PDF_LIBRARY");
+    if (pdflibs.size()==0) m_pdflibs.insert(deflib);
+    for (size_t i(0);i<pdflibs.size();++i) m_pdflibs.insert(pdflibs[i]);
     if (dataread.ReadFromFile(mpilib,"PDF_LIBRARY_MPI"))
       m_pdflibs.insert(mpilib);
     if (dataread.ReadFromFile(beamlib,"PDF_LIBRARY_"+ToString(beam+1)))
