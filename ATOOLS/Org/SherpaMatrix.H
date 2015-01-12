@@ -19,7 +19,7 @@ class SherpaMatrix : public ParameterBase< std::vector< std::vector <T> > > {
            : ParameterBase<std::vector< std::vector <T> > >(name, cur, def,allowChangeAfterLock) {
            }
                        
-        bool isDefault() {
+        virtual bool isDefault() {
             // Element-wise comparison
             bool dec=true;
             for (unsigned int i=0;i<this->getDefault().size();i++) {

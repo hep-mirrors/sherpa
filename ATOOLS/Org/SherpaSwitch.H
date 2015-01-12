@@ -26,6 +26,9 @@ class SherpaSwitch : public ParameterBase<T> {
         }
         return dec;
     }
+    virtual bool isDefault() {
+        return (this->get() == this->getDefault());
+    }
     void print() {
         std::cout << "Switch '" << this->name() << "' (type '" << std::string(typeid(T).name()) << "') current value: "  << this->get();
         if (this->isDefault()) { std::cout << " at default value --- "; }

@@ -21,7 +21,7 @@ class SherpaVector : public ParameterBase<std::vector<T> > {
                assert(cur.size() == def.size());
            }
                        
-        bool isDefault() {
+        virtual bool isDefault() {
             // Element-wise comparison
             bool dec=true;
             for (unsigned int i=0;i<this->getDefault().size();i++) {

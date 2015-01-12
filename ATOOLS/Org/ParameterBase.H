@@ -16,6 +16,7 @@ public:
     template<class T> const T& getDefault() const; //to be implimented after Parameter
     template<class T> const T& name() const; //to be implimented after Parameter
     template<class T, class U> void setValue(const U& rhs); //to be implimented after Parameter
+    virtual bool isDefault() = 0; // Abstract method
 };
 
 template <typename T>
@@ -39,24 +40,24 @@ public:
     void unlock() {m_locked=false;}
     bool isLocked() {return m_locked;}
     std::string name() { return m_name; }
-    bool isDefault() {
-        bool dec = true;
-        std::string ttype = std::string(typeid(T).name());
-        if (ttype == "d") {
-            if (fabs(boost::lexical_cast<double>(m_value) - boost::lexical_cast<double>(m_default)) > 1e-15) {
-             dec = false;
-            }
-        }
-        if (ttype == "f") {
-            if (fabs(boost::lexical_cast<double>(m_value) - boost::lexical_cast<double>(m_default)) > 1e-7) {
-             dec = false;
-            }
-        }
-        else {
-            dec = boost::lexical_cast<std::string>(m_value) == boost::lexical_cast<std::string>(m_default);
-        }
-        return dec;
-    };
+    //virtual bool isDefault() {
+        //bool dec = true;
+        //std::string ttype = std::string(typeid(T).name());
+        //if (ttype == "d") {
+            //if (fabs(boost::lexical_cast<double>(m_value) - boost::lexical_cast<double>(m_default)) > 1e-15) {
+             //dec = false;
+            //}
+        //}
+        //if (ttype == "f") {
+            //if (fabs(boost::lexical_cast<float>(m_value) - boost::lexical_cast<float>(m_default)) > 1e-7) {
+             //dec = false;
+            //}
+        //}
+        //else {
+            //dec = boost::lexical_cast<std::string>(m_value) == boost::lexical_cast<std::string>(m_default);
+        //}
+        //return dec;
+    //};
 private:
     T m_value;
     T m_default;

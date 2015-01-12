@@ -33,6 +33,24 @@ class SherpaParameter : public ParameterBase<T> {
             }
             std::cout << std::endl;
         }
+        virtual bool isDefault() {
+            bool dec = true;
+            std::string ttype = std::string(typeid(T).name());
+            if (ttype == "d") {
+                if (fabs(boost::lexical_cast<double>(this->get()) - boost::lexical_cast<double>(this->getDefault())) > 1e-15) {
+                 dec = false;
+                }
+            }
+            if (ttype == "f") {
+                if (fabs(boost::lexical_cast<float>(this->get()) - boost::lexical_cast<float>(this->getDefault())) > 1e-7) {
+                 dec = false;
+                }
+            }
+            else {
+                dec = boost::lexical_cast<std::string>(this->get()) == boost::lexical_cast<std::string>(this->getDefault());
+            }
+            return dec;
+        };
     private:
         double m_min;
         double m_max;
