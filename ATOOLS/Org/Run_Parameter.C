@@ -298,9 +298,11 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   getrlimit(RLIMIT_AS,&lims);
   double slim(getpmem());
 #ifdef USING__LHAPDF
+#ifndef USING__LHAPDF6
   if (slim+400000000.0 < double((1<<32)-1)) {
     slim+=400000000.0;
   }
+#endif
 #endif
   msg_Tracking()<<METHOD<<"(): Getting memory limit: "
 		<<slim/double(1<<30)<<" GB."<<std::endl;

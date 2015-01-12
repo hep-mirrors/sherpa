@@ -6,7 +6,7 @@ pkglib_LTLIBRARIES       = libLHAPDFSherpa.la
 if LHAPDF_SUPPORT
 libLHAPDFSherpa_la_SOURCES    = \
 				SVN_Info.C
-if LHAPDF_NATIVE_CPP
+if LHAPDF6_SUPPORT
 libLHAPDFSherpa_la_SOURCES += \
 				LHAPDF_CPP_Interface.C
 else

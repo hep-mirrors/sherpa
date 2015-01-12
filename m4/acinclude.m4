@@ -641,12 +641,15 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   if test "$lhapdf" = "true" ; then
     AC_DEFINE_UNQUOTED([LHAPDF_PATH], "$CONDITIONAL_LHAPDFDIR", [LHAPDF directory])
     AC_DEFINE([USING__LHAPDF], "1", [using LHAPDF])
+    if test [ "$lhapdfversion" -ge "6" ] ; then
+      AC_DEFINE(USING__LHAPDF6, "1", [using LHAPDF6])
+    fi
   fi
   AC_SUBST(CONDITIONAL_LHAPDFDIR)
   AC_SUBST(CONDITIONAL_LHAPDFLIBS)
   AC_SUBST(CONDITIONAL_LHAPDFINCS)
   AM_CONDITIONAL(LHAPDF_SUPPORT, test "$lhapdf" = "true")
-  AM_CONDITIONAL(LHAPDF_NATIVE_CPP, test [ "$lhapdfversion" -ge "6" ])
+  AM_CONDITIONAL(LHAPDF6_SUPPORT, test [ "$lhapdfversion" -ge "6" ])
 
   AC_ARG_ENABLE(
     hztool,

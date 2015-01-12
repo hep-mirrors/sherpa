@@ -19,6 +19,9 @@
 /* using LHAPDF */
 #undef USING__LHAPDF
 
+/* using LHAPDF v6*/
+#undef USING__LHAPDF6
+
 /* hztool found */
 #undef USING__HZTOOL
 
@@ -28,7 +31,7 @@
 /* using LHAPDF */
 #undef LHAPDF_PATH
 
-/* using native C++ wrapper */
+/* using native C++ wrapper in v5*/
 #undef LHAPDF__NATIVE__WRAPPER
 
 /* using ROOT */
