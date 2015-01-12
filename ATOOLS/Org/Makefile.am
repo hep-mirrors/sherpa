@@ -73,6 +73,11 @@ localinc_HEADERS         =	\
 			Node.H \
 			Node.C \
 			$(GZIPSTREAMHEADERS) \
+			ParameterBase.H \
+			SherpaParameter.H \
+			SherpaSwitch.H \
+			SherpaVector.H \
+			SherpaMatrix.H \
 			binreloc.h
 
 libToolsOrg_la_LIBADD = @CONDITIONAL_GZIPLIBS@ @SQLITE3_LDFLAGS@
