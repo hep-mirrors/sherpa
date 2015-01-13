@@ -50,7 +50,8 @@ PDF_MSTW::PDF_MSTW
   m_file(bfile), m_anti(1)
 {
   m_set="MSTW";
-  m_member=member;
+  // default set is member=1
+  m_member=(member==0?1:member);
   m_type="MSTW";
   m_bunch=bunch;
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
@@ -114,10 +115,7 @@ PDF_Base *MSTW_Getter::operator()
   (const Parameter_Type &args) const
 {
   if (!args.m_bunch.IsHadron()) return NULL;
-  int set=args.p_read->GetValue<int>("PDF_SET_VERSION",1);
-  int ibeam=args.m_ibeam;
-  set=args.p_read->GetValue<int>("PDF_SET_VERSION_"+ToString(ibeam+1),set);
-  return new PDF_MSTW(args.m_bunch,m_key,set);
+  return new PDF_MSTW(args.m_bunch,args.m_set,args.m_member);
 }
 
 void MSTW_Getter::PrintInfo

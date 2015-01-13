@@ -16,7 +16,8 @@ PDF_MRST99::PDF_MRST99(const ATOOLS::Flavour _bunch,
   m_path(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/MRST99Grid")
 {
   m_set="MRST99";
-  m_member=_member;
+  // default set is member=1
+  m_member=(_member==0?1:_member);
   if ((m_member<1)||(m_member>12)) {
     msg_Error()<<"Error in "<<METHOD<<" : Wrong member : "<<m_member<<std::endl
 	       <<"    will continue with set 1."<<std::endl;
@@ -92,10 +93,7 @@ PDF_Base *MRST99_Getter::operator()
   (const Parameter_Type &args) const
 {
   if (!args.m_bunch.IsHadron()) return NULL;
-  int mode=args.p_read->GetValue<int>("PDF_SET_VERSION",1);
-  int ibeam=args.m_ibeam;
-  mode=args.p_read->GetValue<int>("PDF_SET_VERSION_"+ToString(ibeam+1),mode);
-  return new PDF_MRST99(args.m_bunch,mode);
+  return new PDF_MRST99(args.m_bunch,args.m_member);
 }
 
 void MRST99_Getter::PrintInfo

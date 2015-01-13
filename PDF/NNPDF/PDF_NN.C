@@ -3,6 +3,7 @@
 
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Exception.H"
 #include "NNPDFDriver.h"
 
 // This is all copied from the MSTW code
@@ -183,28 +184,20 @@ PDF_Base *NNPDF_Getter::operator()
   (const Parameter_Type &args) const
 {
   if (!args.m_bunch.IsHadron()) return NULL;
-  int ibeam=args.m_ibeam;
-  int member = args.p_read->GetValue<int>("PDF_SET_MEMBER", 0); // 0 is the default value
   std::string gfile;
-  if (m_key == "NNPDF30NLO") {
+  if (args.m_set == "NNPDF30NLO") {
     gfile = std::string("NNPDF30_nlo_as_0118");
-    if (member>100 || member <0) {
-      std::cerr << "Error, PDF_SET_MEMBER not in [0,100] --- exiting!" << std::endl;
-      exit(1);
-    }
+    if (args.m_member>100 || args.m_member <0)
+      THROW(fatal_error,"PDF_SET_MEMBER out of range [0,100].");
   }
-  else if (m_key == "NNPDF30NNLO") {
+  else if (args.m_set == "NNPDF30NNLO") {
     gfile = std::string("NNPDF30_nnlo_as_0118");
-    if (member>100 || member <0) {
-      std::cerr << "Error, PDF_SET_MEMBER not in [0,100] --- exiting!" << std::endl;
-      exit(1);
+    if (args.m_member>100 || args.m_member <0) {
+      THROW(fatal_error,"PDF_SET_MEMBER out of range [0,100].");
     }
   }
-  else {
-    std::cerr << "Requested PDF_SET " << m_key << " not available --- exiting!" << std::endl;
-    std::cerr << "Run Sherpa with SHOW_PDF_SETS=1" << std::endl;
-  }
-  return new PDF_NNPDF(args.m_bunch, gfile, m_key, member);
+  else THROW(not_implemented,"Requested PDF_SET not available.");
+  return new PDF_NNPDF(args.m_bunch, gfile, args.m_set, args.m_member);
 }
 
 void NNPDF_Getter::PrintInfo

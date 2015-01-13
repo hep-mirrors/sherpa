@@ -13,9 +13,13 @@ namespace PDF {
     ATOOLS::Flavour m_bunch;
     ATOOLS::Data_Reader *p_read;
     int m_ibeam;
+    std::string m_set;
+    int m_member;
     PDF_Arguments(const ATOOLS::Flavour &bunch,
-		  ATOOLS::Data_Reader *const read, int ibeam):
-      m_bunch(bunch), p_read(read), m_ibeam(ibeam) {}
+                  ATOOLS::Data_Reader *const read, int ibeam,
+                  std::string set, int member):
+      m_bunch(bunch), p_read(read), m_ibeam(ibeam),
+      m_set(set), m_member(member) {}
   };// end of struct PDF_Arguments
 
   struct PDF_Flavour: public ATOOLS::Flavour {

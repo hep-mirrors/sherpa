@@ -628,14 +628,17 @@ bool Initialization_Handler::InitializeThePDFs()
       std::string specialset;
       if (dataread.ReadFromFile(specialset,"PDF_SET_"+ToString(j+1)))
 	set=specialset;
+      int member = dataread.GetValue<int>("PDF_SET_VERSION",0);
+      member = dataread.GetValue<int>("PDF_SET_VERSION_"+ToString(j+1),member);
       if (id==isr::hard_subprocess) {
         std::string mpiset;
         if (dataread.ReadFromFile(mpiset,"PDF_SET_MPI")) {
           set=mpiset;
+          member=0;
         }
       }
       pdfbase = PDF_Base::PDF_Getter_Function::GetObject
-	(set,PDF_Arguments(m_bunch_particles[j],&dataread, j));
+        (set,PDF_Arguments(m_bunch_particles[j],&dataread, j, set, member));
       if (i==0) rpa->gen.SetPDF(j,pdfbase);
       if (m_bunch_particles[j].IsHadron() && pdfbase==NULL)
 	THROW(critical_error,"PDF '"+set+"' does not exist in any of the loaded"

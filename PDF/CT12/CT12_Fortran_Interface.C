@@ -240,10 +240,7 @@ PDF_Base *CT12_Getter::operator()
   (const Parameter_Type &args) const
 {
   if (!args.m_bunch.IsHadron()) return NULL;
-  int member=args.p_read->GetValue<int>("PDF_SET_VERSION",0);
-  int ibeam=args.m_ibeam;
-  member=args.p_read->GetValue<int>("PDF_SET_VERSION_"+ToString(ibeam+1),member);
-  return new CT12_Fortran_Interface(args.m_bunch,m_key,member);
+  return new CT12_Fortran_Interface(args.m_bunch,args.m_set,args.m_member);
 }
 
 void CT12_Getter::PrintInfo
