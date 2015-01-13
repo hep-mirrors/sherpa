@@ -49,8 +49,6 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
   static std::set<std::string> s_init;
   if (s_init.find(m_set)==s_init.end()) {
-    if (m_smember!=0)
-      msg_Info()<<METHOD<<"(): Init member "<<m_smember<<"."<<std::endl;
     m_member=abs(m_smember);
     p_pdf = LHAPDF::mkPDF(m_set,m_smember);
     // TODO: get alphaS info
