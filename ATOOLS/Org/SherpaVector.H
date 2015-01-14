@@ -32,7 +32,7 @@ class SherpaVector : public ParameterBase<std::vector<T> > {
         void print() {
             std::cout << "Vector '" << this->name() ;
             if (this->isDefault()) {
-                std::cout << " at default value [ ";
+                std::cout << " is at default value [ ";
                 for (unsigned int i=0;i<this->get().size();i++) {std::cout << this->get()[i] << " ";}
                 std::cout << "]" <<std::endl;
             }
