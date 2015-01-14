@@ -7,7 +7,7 @@
 #include <vector>
 #include <cmath>
 #include "ATOOLS/Org/ParameterBase.H"
-#include "ATOOLS/Org/boost/assign/std/vector.hpp" // for 'operator+=()'
+#include "ATOOLS/Org/boost/assign/std/vector.hpp" // For 'operator+=()'
 
 using namespace boost::assign; // Bring 'operator+=()' into scope
 
