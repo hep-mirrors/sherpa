@@ -9,7 +9,7 @@
 #include "ATOOLS/Org/ParameterBase.H"
 #include "ATOOLS/Org/boost/assign/std/vector.hpp" // for 'operator+=()'
 
-using namespace boost::assign; // bring 'operator+=()' into scope
+using namespace boost::assign; // Bring 'operator+=()' into scope
 
 // Vectors, such as selectors
 template <typename T>
