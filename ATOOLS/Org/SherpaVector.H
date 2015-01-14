@@ -29,6 +29,7 @@ class SherpaVector : public ParameterBase<std::vector<T> > {
             }
             return dec;
         };
+                       
         void print() {
             std::cout << "Vector '" << this->name() ;
             if (this->isDefault()) {
