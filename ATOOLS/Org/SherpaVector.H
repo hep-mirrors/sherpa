@@ -11,7 +11,6 @@
 
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-
 // Vectors, such as selectors
 template <typename T>
 class SherpaVector : public ParameterBase<std::vector<T> > {
