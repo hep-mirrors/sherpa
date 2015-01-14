@@ -72,6 +72,13 @@ void Library_Loader::UnloadLibrary(const std::string &name,void *module)
   dlclose(module);
 }
 
+bool Library_Loader::LibraryIsLoaded(const std::string &name)
+{
+  std::map<std::string,void*>::iterator lit(m_libs.find(name));
+  if (lit!=m_libs.end()) return true;
+  return false;
+}
+
 void *Library_Loader::LoadLibrary(const std::string &name)
 {
   std::map<std::string,void*>::iterator lit(m_libs.find(name));

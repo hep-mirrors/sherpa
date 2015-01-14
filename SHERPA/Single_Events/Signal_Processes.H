@@ -11,10 +11,13 @@ namespace METOOLS {
 
 namespace SHERPA {
 
+  class Scale_Variations;
+
   class Signal_Processes: public Event_Phase_Handler {
   private:
 
     Matrix_Element_Handler *p_mehandler;
+    Scale_Variations       *p_scalevars;
     PDF::Remnant_Base      *p_remnants[2];
     METOOLS::Amplitude2_Tensor* p_atensor;
 

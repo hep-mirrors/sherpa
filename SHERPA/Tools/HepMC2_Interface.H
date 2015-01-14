@@ -33,6 +33,9 @@ namespace PHASIC {
 
 namespace SHERPA {
 
+  class Scale_Variation;
+  typedef std::map<std::string, Scale_Variation *> NamedScaleVariationMap;
+
   class EventInfo {
   private:
     size_t m_usenamedweights;
@@ -44,6 +47,7 @@ namespace SHERPA {
     ATOOLS::ME_wgtinfo * p_wgtinfo;
     PHASIC::PDF_Info * p_pdfinfo;
     ATOOLS::NLO_subevtlist * p_subevtlist;
+    NamedScaleVariationMap * p_nsvmap;
 
     bool ReadIn(ATOOLS::Blob_Data_Base * &db, std::string name, bool abort);
 

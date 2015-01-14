@@ -9,6 +9,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "SHERPA/Tools/Scale_Variations.H"
 
 #include "HepMC/GenEvent.h"
 #include "HepMC/GenVertex.h"
@@ -29,7 +30,8 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt) :
   m_mewgt(0.), m_wgtnorm(0.), m_ntrials(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
   m_alphas(0.), m_alpha(0.), m_type(PHASIC::nlo_type::lo),
-  p_wgtinfo(NULL), p_pdfinfo(NULL), p_subevtlist(NULL)
+  p_wgtinfo(NULL), p_pdfinfo(NULL), p_subevtlist(NULL),
+  p_nsvmap(NULL)
 {
   if (p_sp) {
     DEBUG_FUNC(*p_sp);
@@ -57,6 +59,8 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt) :
     ReadIn(db,"NLO_subeventlist",false);
     if (db) p_subevtlist=db->Get<NLO_subevtlist*>();
     if (p_subevtlist) m_type=p_subevtlist->Type();
+    ReadIn(db,"ScaleVariations",false);
+    if (db) p_nsvmap=db->Get<NamedScaleVariationMap*>();
   }
 }
 
@@ -81,10 +85,19 @@ bool EventInfo::ReadIn(ATOOLS::Blob_Data_Base* &db,std::string name,bool abort)
 
 bool EventInfo::WriteTo(HepMC::GenEvent &evt)
 {
-  DEBUG_FUNC("");
+  DEBUG_FUNC("named weights: "<<m_usenamedweights);
   HepMC::WeightContainer wc;
   if (m_usenamedweights) {
-    THROW(not_implemented,"Named HepMC weights not implemented yet.");
+    wc[0]=m_wgt;
+    wc[1]=m_mewgt;
+    wc[2]=m_wgtnorm;
+    wc[3]=m_ntrials;
+    if (p_nsvmap) {
+      for (NamedScaleVariationMap::const_iterator it(p_nsvmap->begin());
+           it!=p_nsvmap->end();++it) {
+        wc[it->first]=it->second->Value();
+      }
+    }
   }
   else {
     wc.push_back(m_wgt);

@@ -13,6 +13,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Math/Random.H"
 #include "MODEL/Main/Running_AlphaS.H"
+#include "SHERPA/Tools/Scale_Variations.H"
 
 using namespace SHERPA;
 using namespace METOOLS;
@@ -21,7 +22,8 @@ using namespace PHASIC;
 using namespace std;
 
 Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler) :
-  p_mehandler(mehandler), p_atensor(NULL), m_overweight(0.0)
+  p_mehandler(mehandler), p_scalevars(new Scale_Variations()),
+  p_atensor(NULL), m_overweight(0.0)
 {
   m_name="Signal_Processes";
   m_type=eph::Perturbative;
@@ -36,6 +38,7 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler) :
 
 Signal_Processes::~Signal_Processes()
 {
+  if (p_scalevars) delete p_scalevars;
   if (p_atensor) delete p_atensor;
 }
 
@@ -161,24 +164,29 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     if (m_overweight<0.0) m_overweight=0.0;
     else weight/=m_overweight+1.0;
   }
+  p_scalevars->ComputeVariations(winfo,proc);
   blob->AddData("Weight",new Blob_Data<double>(weight));
   blob->AddData("MEWeight",new Blob_Data<double>(winfo.m_dxs));
   blob->AddData("Weight_Norm",new Blob_Data<double>
 		(p_mehandler->Sum()*rpa->Picobarn()));
   blob->AddData("Trials",new Blob_Data<double>(winfo.m_ntrial));
   blob->AddData("Enhance",new Blob_Data<double>
-		(p_mehandler->Process()->Integrator()->EnhanceFactor()));
+                (proc->Integrator()->EnhanceFactor()));
   blob->AddData("Factorisation_Scale",new Blob_Data<double>
                 (sqrt(winfo.m_pdf.m_muf12*winfo.m_pdf.m_muf22)));
   blob->AddData("PDFInfo",new Blob_Data<PHASIC::PDF_Info>(winfo.m_pdf));
   blob->AddData("OQCD",new Blob_Data<int>
-		(p_mehandler->Process()->OrderQCD()));
+                (proc->OrderQCD()));
   blob->AddData("OEW",new Blob_Data<int>
-		(p_mehandler->Process()->OrderEW()));
+                (proc->OrderEW()));
   blob->AddData("NLOQCDType",new Blob_Data<std::string>
-		(ToString(p_mehandler->Process()->Info().m_fi.m_nloqcdtype)));
+                (ToString(proc->Info().m_fi.m_nloqcdtype)));
   blob->AddData("NLOEWType",new Blob_Data<std::string>
-		(ToString(p_mehandler->Process()->Info().m_fi.m_nloewtype)));
+                (ToString(proc->Info().m_fi.m_nloewtype)));
+
+  NamedScaleVariationMap* nsvm=p_scalevars->GetNamedScalesMap();
+  if (nsvm) blob->AddData("ScaleVariations",
+                          new Blob_Data<NamedScaleVariationMap*>(nsvm));
 
   ME_wgtinfo* wgtinfo=proc->GetMEwgtinfo();
   if (wgtinfo) {
