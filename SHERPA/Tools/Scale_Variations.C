@@ -161,7 +161,7 @@ Scale_Variations::Scale_Variations() :
         }
 #else
         THROW(not_implemented,"Full set reweightings only work with LHAPDF6."
-                              +" Otherwise specify separately.");
+	      +std::string(" Otherwise specify separately."));
 #endif
       }
     }
