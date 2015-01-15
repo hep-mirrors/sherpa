@@ -8,6 +8,7 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "SHERPA/Tools/Scale_Variations.H"
@@ -25,8 +26,9 @@
 using namespace SHERPA;
 using namespace ATOOLS;
 
-EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt) :
-  m_usenamedweights(false), p_sp(sp),
+EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
+                     bool namedweights) :
+  m_usenamedweights(namedweights), p_sp(sp),
   m_oqcd(0), m_oew(0), m_wgt(wgt),
   m_mewgt(0.), m_wgtnorm(0.), m_ntrials(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
@@ -89,10 +91,12 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt)
   DEBUG_FUNC("named weights: "<<m_usenamedweights);
   HepMC::WeightContainer wc;
   if (m_usenamedweights) {
-    wc[0]=m_wgt;
-    wc[1]=m_mewgt;
-    wc[2]=m_wgtnorm;
-    wc[3]=m_ntrials;
+    // fill standard entries to ensure backwards compatability
+    wc["Weight"]=m_wgt;
+    wc["MEWeight"]=m_mewgt;
+    wc["WeightNormalisation"]=m_wgtnorm;
+    wc["NTrials"]=m_ntrials;
+    // fill scale variations map into weight container
     if (p_nsvmap) {
       for (NamedScaleVariationMap::const_iterator it(p_nsvmap->begin());
            it!=p_nsvmap->end();++it) {
@@ -160,8 +164,12 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt)
 }
 
 HepMC2_Interface::HepMC2_Interface():
-  p_event(NULL)
+  m_usenamedweights(false), p_event(NULL)
 {
+  Data_Reader reader(" ",";","!","=");
+  reader.AddComment("#");
+  reader.AddWordSeparator("\t");
+  m_usenamedweights=reader.GetValue<int>("HEPMC_USE_NAMED_WEIGHTS",true);
 }
 
 HepMC2_Interface::~HepMC2_Interface()
@@ -182,7 +190,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   size_t decid(11);
   std::map<size_t,size_t> decids;
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
-  EventInfo evtinfo(sp,weight);
+  EventInfo evtinfo(sp,weight,m_usenamedweights);
   evtinfo.WriteTo(event);
   if (sp) {
     Blob_Data_Base *info((*sp)["Decay_Info"]);
@@ -234,7 +242,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
                   HepMC::Units::MM);
 #endif
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
-  EventInfo evtinfo(sp,weight);
+  EventInfo evtinfo(sp,weight,m_usenamedweights);
   // when subevtlist, fill hepmc-subevtlist
   if (evtinfo.SubEvtList()) return SubEvtList2ShortHepMC(evtinfo);
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
@@ -273,7 +281,6 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
   if (beamparticles.size()==2) {
     event.set_beam_particles(beamparticles[0],beamparticles[1]);
   }
-  evtinfo.WriteTo(event);
 
   return true;
 }

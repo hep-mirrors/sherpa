@@ -63,7 +63,6 @@ Scale_Variation::Scale_Variation(const double &muR2fac, const double &muF2fac,
 Scale_Variation::~Scale_Variation()
 {
   if (m_deletepdfs) {
-    msg_Out()<<"deleting PDFs:"<<p_pdf1->Type()<<" "<<p_pdf2->Type()<<std::endl;
     if (p_pdf1) { delete p_pdf1; p_pdf1=NULL; }
     if (p_pdf2) { delete p_pdf2; p_pdf1=NULL; }
   }
@@ -173,10 +172,8 @@ Scale_Variations::Scale_Variations() :
 Scale_Variations::~Scale_Variations()
 {
   if (p_nsvmap) {
-    msg_Out()<<"deleting "<<p_nsvmap<<std::endl;
     for (NamedScaleVariationMap::iterator it=p_nsvmap->begin();
          it!=p_nsvmap->end();++it) {
-      msg_Out()<<"deleting "<<*it->second<<std::endl;
       delete it->second;
     }
     delete p_nsvmap;
