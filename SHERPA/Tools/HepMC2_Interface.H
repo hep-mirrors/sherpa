@@ -49,7 +49,7 @@ namespace SHERPA {
     bool ReadIn(ATOOLS::Blob_Data_Base * &db, std::string name, bool abort);
 
   public:
-    EventInfo(ATOOLS::Blob * sp, const double &wgt);
+    EventInfo(ATOOLS::Blob * sp, const double &wgt, bool namedweights);
     EventInfo(const EventInfo &evtinfo);
     ~EventInfo() {}
     bool WriteTo(HepMC::GenEvent &evt);
@@ -63,6 +63,7 @@ namespace SHERPA {
 
   class HepMC2_Interface {
   private :
+    bool m_usenamedweights;
 
     std::map<ATOOLS::Blob*,HepMC::GenVertex *> m_blob2genvertex;
     std::map<ATOOLS::Particle*,HepMC::GenParticle *> m_particle2genparticle;
