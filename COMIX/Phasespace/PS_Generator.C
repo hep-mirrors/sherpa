@@ -45,6 +45,7 @@ PS_Generator::PS_Generator(Process_Base *const xs):
   else msg_Info()<<METHOD<<"(): Set channel mass threshold "<<m_chmass<<".\n";
   m_chmass*=rpa->gen.Ecms();
   p_xs->ConstructPSVertices(this);
+  AddSC();
   AddSTCC();
 }
 
@@ -202,7 +203,41 @@ public:
 
 };
 
-bool PS_Generator::Construct(Amplitude *const ampl)
+void PS_Generator::AddSubChannel
+(NLO_subevtlist *const subs,const Vertex_Key &vkey)
+{
+  if (subs==NULL || subs->empty()) return;
+  NLO_subevt *csub(NULL);
+  for (int l=0;l<2;++l) {
+    Current *ja(l?vkey.p_b:vkey.p_a);
+    Current *jb(l?vkey.p_a:vkey.p_b);
+    if (ja->Id().size()>1) continue;
+    size_t ii(ja->Id().front()), jj(jb->Id().front());
+    if (jb->Id().size()>1) {
+      size_t idj=(1<<m_n)-1-(1<<ii)-jb->CId();
+      if (IdCount(idj)>1) {
+	idj=(1<<m_n)-1-vkey.p_c->CId();
+	if (IdCount(idj)>1) continue;
+      }
+      jj=ID(idj).front();
+    }
+    for (size_t k(0);k<subs->size()-1;++k)
+      if ((ii==(*subs)[k]->m_i && jj==(*subs)[k]->m_j) ||
+	  (jj==(*subs)[k]->m_i && ii==(*subs)[k]->m_j)) {
+	csub=(*subs)[k];
+	break;
+      }
+    if (csub) break;
+  }
+  if (csub==NULL) return;
+  PS_Vertex *vtx(new PS_Vertex(vkey));
+  vtx->SetJA(vkey.p_a);
+  vtx->SetJB(vkey.p_b);
+  vtx->SetJC(vkey.p_c);
+  vtx->SetDip(csub);
+}
+
+bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 {
   m_pmsinit=0;
   Current_Matrix curs(ampl->Currents());
@@ -279,6 +314,7 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 		  vtx->SetJC(vkey.p_c);
 		  vtx->SetType(4);
 		}
+		AddSubChannel(subs,vkey);
 	      }
 	  }
 	}
@@ -320,6 +356,7 @@ bool PS_Generator::Construct(Amplitude *const ampl)
 		vtx->SetJC(vkey.p_c);
 		vtx->SetType(4);
 	      }
+	      AddSubChannel(subs,vkey);
 	    }
       }
       for (CB_MMap::const_iterator cit(m_cmap.lower_bound(curs[n][j]));
@@ -413,12 +450,37 @@ bool PS_Generator::Construct(Amplitude *const ampl)
   return true;
 }
 
-void PS_Generator::AddSTCC()
+void PS_Generator::AddSC()
 {
 #ifdef DEBUG__BG
   DEBUG_FUNC("");
 #endif
   for (size_t n(2);n<m_n-1;++n) {
+    size_t oldsize(m_cur[n].size());
+    for (size_t j(0);j<oldsize;++j) {
+      if (((PS_Current*)m_cur[n][j])->Dip()) continue;
+      for (size_t i(0);i<m_cur[n][j]->NIn();++i) {
+	NLO_subevt *dip(((PS_Vertex*)m_cur[n][j]->In()[i])->Dip());
+	if (dip) {
+ 	  delete m_cur[n][j]->In()[i];
+	  ((Vertex_Vector*)&m_cur[n][j]->In())->erase
+	    (((Vertex_Vector*)&m_cur[n][j]->In())->begin()+i);
+	  AddExtraCurrent(m_cur[n][j],n,m_cur[n][j]->Flav().Mass(),
+			  m_cur[n][j]->Flav().Width());
+	  ((PS_Current*)m_cur[n].back())->SetDip(dip);
+	  break;
+	}
+      }
+    }
+  }
+}
+
+void PS_Generator::AddSTCC()
+{
+#ifdef DEBUG__BG
+  DEBUG_FUNC("");
+#endif
+  for (size_t n(2);n<m_n;++n) {
     size_t oldsize(m_cur[n].size());
     for (size_t j(0);j<oldsize;++j) {
       if (((PS_Current*)m_cur[n][j])->SCC()) continue;
@@ -458,6 +520,8 @@ void PS_Generator::AddExtraCurrent
     vtx->SetJA(vkey.p_a);
     vtx->SetJB(vkey.p_b);
     vtx->SetJC(vkey.p_c);
+    vtx->SetDip(((PS_Vertex*)in[i])->Dip());
+    vtx->SetType(((PS_Vertex*)in[i])->Type());
 #ifdef DEBUG__BG
     msg_Debugging()<<"    "<<*vtx<<"\n";
 #endif
@@ -475,6 +539,8 @@ void PS_Generator::AddExtraCurrent
     vtx->SetJA(vkey.p_a);
     vtx->SetJB(vkey.p_b);
     vtx->SetJC(vkey.p_c);
+    vtx->SetDip(((PS_Vertex*)out[i])->Dip());
+    vtx->SetType(((PS_Vertex*)out[i])->Type());
 #ifdef DEBUG__BG
     msg_Debugging()<<"    "<<*vtx<<"\n";
 #endif

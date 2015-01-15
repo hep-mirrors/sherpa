@@ -171,6 +171,7 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
      <<"  class "<<name<<" : public Single_Channel {"<<endl;
 
   //actual Channel
+  chf <<"    double m_salpha;"<<endl;
   if (tcount>0) chf <<"    double m_amct,m_alpha,m_ctmax,m_ctmin;"<<endl;
   if (m_idc.size()>0) {
     chf <<"    Info_Key ";
@@ -246,10 +247,11 @@ int Channel_Generator_UniV::MakeChannel(int& echflag,int n,string& path,string& 
 	<<"{"<<endl
 	<<"  name = std::string(\""<<name<<"\");"<<endl
 	<<"  rannum = "<<rannumber<<";"<<endl
-	<<"  rans  = new double[rannum];"<<endl;
+	<<"  rans  = new double[rannum];"<<endl
+	<<"  m_salpha = ToType<double>(rpa->gen.Variable(\"AMEGIC_SCHANNEL_ALPHA\"));"<<endl;
   if (tcount>0) {
     chf	<<"  m_amct  = 1.0+ToType<double>(rpa->gen.Variable(\"AMEGIC_CHANNEL_EPSILON\"));"<<endl
-	<<"  m_alpha = ToType<double>(rpa->gen.Variable(\"AMEGIC_CHANNEL_ALPHA\"));"<<endl
+	<<"  m_alpha = ToType<double>(rpa->gen.Variable(\"AMEGIC_TCHANNEL_ALPHA\"));"<<endl
 	<<"  m_ctmax = 1.;"<<endl
 	<<"  m_ctmin = -1.;"<<endl;
   }
@@ -673,7 +675,7 @@ void Channel_Generator_UniV::GenerateMassChain(int flag,Point* p,Point* clmp,int
     hi = (p->fl).Kfcode();
     if (flag>=0) sf<<"  Flavour fl"<<mummy<<" = "<<"Flavour((kf_code)("<<hi<<"));"<<endl;
   } 
-  string mlexp(".5");
+  string mlexp("m_salpha");
   if (dth) mlexp=string("1.");
   string thexp("1.5");
   dth=false;

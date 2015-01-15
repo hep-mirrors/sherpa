@@ -11,7 +11,7 @@ PS_Vertex::PS_Vertex(const Vertex_Key &key):
   m_alpha(1.0), m_oldalpha(1.0), m_weight(1.0),
   m_np(0.0), m_sum(0.0), m_sum2(0.0),
   m_mnp(0.0), m_msum(0.0), m_msum2(0.0),
-  m_type(0) {}
+  m_type(0), p_dip(NULL) {}
 
 void PS_Vertex::Evaluate()
 {

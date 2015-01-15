@@ -16,8 +16,8 @@ bool ISR_Channels::MakeChannels()
   Channel_Info ci;
   int    type;
   double mass,width;
-  double thmin=0.,thmax=0.;
-  thmin=thmax=sqrt(p_psh->Cuts()->Smin());
+  std::set<double> ths;
+  ths.insert(sqrt(p_psh->Cuts()->Smin()));
   Multi_Channel *fsr(p_psh->FSRIntegrator());
   std::vector<int> ts(fsr->Number(),0);
   std::vector<double> ms(fsr->Number(),0.0), ws(fsr->Number(),0.0);
@@ -35,9 +35,7 @@ bool ISR_Channels::MakeChannels()
 	(type==1 && (ATOOLS::IsZero(mass) || ATOOLS::IsZero(width))) ||
 	(type==2 && ATOOLS::IsZero(mass))) continue;
     if (type==2) {
-      if (thmax==0.) { thmax=mass; thmin=mass; }
-      thmin = ATOOLS::Min(thmin,mass);
-      thmax = ATOOLS::Max(thmax,mass);
+      ths.insert(mass);
       continue;
     }
     for (double yexp=-1.;yexp<=1.0;yexp+=1.) {
@@ -54,19 +52,16 @@ bool ISR_Channels::MakeChannels()
     ci.parameters.clear();
     }
   }
-  if (thmax>0.) {
+  if (ths.size()) {
+    for (std::set<double>::const_iterator thit(ths.begin());thit!=ths.end();++thit)
     for (double yexp=-1.;yexp<=1.0;yexp+=1.) {
     ci.type = 2;
-    (ci.parameters).push_back(thmax);
+    (ci.parameters).push_back(*thit);
     (ci.parameters).push_back(2.);
     if (p_psh->Flavs()[0].IsLepton() || 
 	p_psh->Flavs()[1].IsLepton()) (ci.parameters).push_back(yexp);
     else (ci.parameters).push_back(yexp);
     m_isrparams.push_back(ci);
-    if (thmin<thmax) {
-      (ci.parameters)[0]=thmin;
-      m_isrparams.push_back(ci);
-    }
     ci.parameters.clear();
     }
   }

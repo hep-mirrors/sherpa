@@ -561,7 +561,7 @@ void COMIX::Single_Process::ConstructPSVertices(PS_Generator *ps)
 {
   if (m_psset.find(ps)!=m_psset.end()) return;
   m_psset.insert(ps);
-  if (p_bg!=NULL) ps->Construct(p_bg);
+  if (p_bg!=NULL) ps->Construct(p_bg,GetSubevtList());
   else p_map->ConstructPSVertices(ps);
 }
 

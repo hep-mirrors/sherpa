@@ -3,6 +3,8 @@
 
 #include "COMIX/Phasespace/PS_Vertex.H"
 
+namespace ATOOLS { class NLO_subevt; }
+
 namespace COMIX {
 
   class PS_Current: public Current {
@@ -14,11 +16,13 @@ namespace COMIX {
 
     Current *p_scc;
 
+    ATOOLS::NLO_subevt *p_dip;
+
   public:
 
     // constructor
     inline PS_Current(const Current_Key &key):
-      Current(key), p_scc(0) { m_j.resize(1); }
+      Current(key), p_scc(NULL), p_dip(NULL) { m_j.resize(1); }
 
     // member functions
     void ConstructJ(const ATOOLS::Vec4D &p,const int ch,
@@ -33,11 +37,15 @@ namespace COMIX {
 
     void SetSCC(Current *const scc);
 
+    void SetDip(ATOOLS::NLO_subevt *const sub);
+
     // inline functions
     inline void SetMass(const double & mass)   { m_mass=mass;   }
     inline void SetWidth(const double & width) { m_width=width; }
 
     inline Current *SCC() const { return p_scc; }
+
+    inline ATOOLS::NLO_subevt *Dip() const { return p_dip; }
 
   };// end of class PS_Current
 

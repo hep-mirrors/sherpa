@@ -110,8 +110,10 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
   SetPSMasses(&read);
-  double alpha=read.GetValue<double>("AMEGIC_CHANNEL_ALPHA",0.4);
-  rpa->gen.SetVariable("AMEGIC_CHANNEL_ALPHA",ToString(alpha));
+  double alpha=read.GetValue<double>("AMEGIC_TCHANNEL_ALPHA",0.9);
+  rpa->gen.SetVariable("AMEGIC_TCHANNEL_ALPHA",ToString(alpha));
+  double salpha=read.GetValue<double>("AMEGIC_SCHANNEL_ALPHA",1.1);
+  rpa->gen.SetVariable("AMEGIC_SCHANNEL_ALPHA",ToString(salpha));
   double eps=read.GetValue<double>("AMEGIC_CHANNEL_EPSILON",0.0);
   rpa->gen.SetVariable("AMEGIC_CHANNEL_EPSILON",ToString(eps));
   int gauge(read.GetValue<int>("AMEGIC_DEFAULT_GAUGE",1));

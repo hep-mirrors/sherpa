@@ -20,8 +20,6 @@ namespace COMIX {
 
     typedef std::map<size_t,Current_Vector> TCC_Map;
 
-    void AddSTCC();
-
   private:
 
     Process_Base *p_xs;
@@ -47,6 +45,8 @@ namespace COMIX {
     void CleanUp();
     void CalcJL();
 
+    void AddSubChannel(NLO_subevtlist *const subs,const Vertex_Key &vkey);
+
     bool AddCurrent(Current *const ref,const ATOOLS::Flavour &fl,
 		    const size_t &n,const int mode=0,
 		    const double &m=0.0,const double &w=0.0,
@@ -58,6 +58,9 @@ namespace COMIX {
     int DecayType(const Current *jc,
 		  const Current *ja,const Current *jb) const;
 
+    void AddSTCC();
+    void AddSC();
+
   public:
     
     // constructor
@@ -67,7 +70,8 @@ namespace COMIX {
     ~PS_Generator();
 
     // member functions
-    bool Construct(Amplitude *const ampl);
+    bool Construct(Amplitude *const ampl,
+		   ATOOLS::NLO_subevtlist *const subs);
     void SetPrefMasses(PHASIC::Cut_Data *const cuts);
 
     bool Evaluate();

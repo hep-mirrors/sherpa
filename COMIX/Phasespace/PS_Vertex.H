@@ -6,6 +6,8 @@
 
 using namespace METOOLS;
 
+namespace ATOOLS { class NLO_subevt; }
+
 namespace COMIX {
 
   typedef std::vector<PS_Info*> PS_Info_Vector;
@@ -18,6 +20,8 @@ namespace COMIX {
     double m_mnp, m_msum, m_msum2;
 
     int m_type;
+
+    ATOOLS::NLO_subevt *p_dip;
 
   public:
 
@@ -67,6 +71,10 @@ namespace COMIX {
     { m_mnp+=v[0]; m_msum+=v[1]; m_msum2+=v[2]; }
     inline void SetMPIVars(const double *v)
     { m_mnp=v[0]; m_msum=v[1]; m_msum2=v[2]; }
+
+    inline void SetDip(ATOOLS::NLO_subevt *const d) { p_dip=d; }
+
+    inline ATOOLS::NLO_subevt *Dip() const { return p_dip; }
 
   };// end of class PS_Vertex
 

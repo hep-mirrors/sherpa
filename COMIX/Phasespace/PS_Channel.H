@@ -12,6 +12,7 @@ namespace COMIX {
 
   class Process_Base;
   class PS_Current;
+  class PS_Vertex;
 
   typedef std::vector<PHASIC::Vegas*>          Vegas_Vector;
   typedef std::map<std::string,PHASIC::Vegas*> Vegas_Map;
@@ -19,6 +20,9 @@ namespace COMIX {
   typedef std::map<const Current*,PHASIC::Vegas*> CVegas_Map;
   typedef std::map<size_t,PHASIC::Vegas*>         IVegas_Map;
   typedef std::map<size_t,CVegas_Map>             ICVegas_Map;
+
+  typedef std::map<ATOOLS::NLO_subevt*,CVegas_Map>  SCVegas_Map;
+  typedef std::map<ATOOLS::NLO_subevt*,ICVegas_Map> SICVegas_Map;
 
   typedef std::map<size_t,std::string> PSId_Map;
 
@@ -35,9 +39,10 @@ namespace COMIX {
     Vertex_Vector  m_vtc;
     Vegas_Map      m_vmap;
 
-    CVegas_Map  m_pcmap;
-    IVegas_Map  m_pimap;
-    ICVegas_Map m_sicmap, m_ticmap;
+    SCVegas_Map  m_pcmap;
+    IVegas_Map   m_pimap;
+    ICVegas_Map  m_sicmap;
+    SICVegas_Map m_ticmap;
 
     PHASIC::Cut_Data *p_cuts;
 
@@ -47,7 +52,7 @@ namespace COMIX {
     Vegas_Vector  m_vgs, m_wvgs;
 
     size_t m_n, m_nr, m_num, m_lid, m_rid;
-    double m_texp, m_sexp, m_thexp, m_mfac;
+    double m_texp, m_stexp, m_sexp, m_thexp, m_mfac;
     double m_aexp, m_srbase;
 
     int m_bmode, m_omode, m_tmode, m_vmode, m_zmode, m_czmode;
@@ -68,10 +73,9 @@ namespace COMIX {
 
     void FillMoms(const size_t &aid,Int_Vector &cur,size_t n);
 
-    double PropMomenta(const Current *cur,const size_t &id,
-		       const double &smin,const double &smax,
-		       const double *rn);
-    double PropWeight(const Current *cur,const size_t &id,
+    double PropMomenta(const PS_Current *cur,const size_t &id,
+		       const double &smin,const double &smax,const double *rn);
+    double PropWeight(const PS_Current *cur,const size_t &id,
 		      const double &smin,const double &smax,const double &s);
 
     void TChannelBounds(const size_t &aid,const size_t &lid,
@@ -82,28 +86,30 @@ namespace COMIX {
 			      double &ctmin,double &ctmax,
 			      const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
 			      const double &s1,const double &s2,const int mode);
-    void TChannelMomenta(Current *cur,const size_t &id,const size_t &aid,
+    void TChannelMomenta(PS_Current *cur,ATOOLS::NLO_subevt *const dip,
+			 const size_t &id,const size_t &aid,
 			 const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
 			 ATOOLS::Vec4D &p1,ATOOLS::Vec4D &p2,
 			 const double &s1,const double &s2,
 			 const double *rns);
-    double TChannelWeight(Current *cur,const size_t &id,const size_t &aid,
+    double TChannelWeight(PS_Current *cur,ATOOLS::NLO_subevt *const dip,
+			  const size_t &id,const size_t &aid,
 			  const ATOOLS::Vec4D &pa,const ATOOLS::Vec4D &pb,
 			  ATOOLS::Vec4D &p1,ATOOLS::Vec4D &p2);
 
     void SChannelBounds(const size_t &id,const size_t &lid,
 			double &ctmin,double &ctmax);
-    void SChannelMomenta(Current *cur,const int type,
+    void SChannelMomenta(PS_Current *cur,const int type,
 			 const ATOOLS::Vec4D &pa,ATOOLS::Vec4D &p1,
 			 ATOOLS::Vec4D &p2,const double &s1,
 			 const double &s2,const double *rns);
-    double SChannelWeight(Current *cur,const int type,
+    double SChannelWeight(PS_Current *cur,const int type,
 			  ATOOLS::Vec4D &p1,ATOOLS::Vec4D &p2);
 
-    bool GeneratePoint(Current *const ja,Current *const jb,
-		       Current *const jc,Vertex *const v,size_t &nr);
-    double GenerateWeight(Current *const ja,Current *const jb,
-			  Current *const jc,Vertex *const v,size_t &nr);
+    bool GeneratePoint(PS_Current *const ja,PS_Current *const jb,
+		       PS_Current *const jc,PS_Vertex *const v,size_t &nr);
+    double GenerateWeight(PS_Current *const ja,PS_Current *const jb,
+			  PS_Current *const jc,PS_Vertex *const v,size_t &nr);
     
     bool GenerateWeight(PS_Current *const cur);
     bool GenerateWeight();
@@ -121,9 +127,10 @@ namespace COMIX {
 
     PHASIC::Vegas *GetVegas(const std::string &tag,int ni=-1);
 
-    PHASIC::Vegas *GetPVegas(const Current *cur,const size_t &id);
-    PHASIC::Vegas *GetSVegas(const size_t &id,const Current *cur);
-    PHASIC::Vegas *GetTVegas(const size_t &id,const Current *cur);
+    PHASIC::Vegas *GetPVegas(const PS_Current *cur,const size_t &id);
+    PHASIC::Vegas *GetSVegas(const size_t &id,const PS_Current *cur);
+    PHASIC::Vegas *GetTVegas(const size_t &id,const PS_Current *cur,
+			     ATOOLS::NLO_subevt *const dip);
 
   public :
 

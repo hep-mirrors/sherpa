@@ -102,6 +102,7 @@ namespace ATOOLS {
     Particle_List *CreateParticleList() const;
 
     std::string IDString(const int mode=0) const;
+    std::string PSInfo() const;
 
     inline void Mult(const double &scal)
     { m_result*=scal; m_me*=scal; m_mewgt*=scal; }

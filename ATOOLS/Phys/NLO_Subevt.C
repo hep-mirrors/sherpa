@@ -91,6 +91,11 @@ std::string NLO_subevt::IDString(const int mode) const
   return tag;
 }
 
+std::string NLO_subevt::PSInfo() const
+{
+  return "["+ToString(m_i)+","+ToString(m_j)+","+ToString(m_k)+"]";
+}
+
 NLO_subevtlist &NLO_subevtlist::operator*=(const double scal)
 {
   for (const_iterator it=begin();it!=end();it++) {
