@@ -203,13 +203,13 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
 
   Blob *blob=signal;
   if (m_mode==1) blob=shower;
-  Blob_Data_Base* seinfo=(*signal)["ME_wgtinfo"];
-  ME_wgtinfo* wgtinfo(0);
-  if (seinfo) wgtinfo=seinfo->Get<ME_wgtinfo*>();
+  Blob_Data_Base* seinfo=(*signal)["MEWeightInfo"];
+  ME_Weight_Info* wgtinfo(NULL);
+  if (seinfo) wgtinfo=seinfo->Get<ME_Weight_Info*>();
   seinfo=(*signal)["NLO_subeventlist"];
   std::string type((*signal)["NLOQCDType"]->Get<std::string>());
   
-  if (!seinfo) {
+  if (!seinfo) { // BVI type events
     if (m_evtlist.size()<=m_cnt2)
       m_evtlist.resize(m_evtlist.size()+m_avsize);
     m_evtlist[m_cnt2].weight=(*signal)["Weight"]->Get<double>();
@@ -230,9 +230,17 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
       m_evtlist[m_cnt2].x2=wgtinfo->m_x2;
       m_evtlist[m_cnt2].y1=wgtinfo->m_y1;
       m_evtlist[m_cnt2].y2=wgtinfo->m_y2;
-      m_evtlist[m_cnt2].nuwgt=wgtinfo->m_nx;
-      for (int i=0;i<m_evtlist[m_cnt2].nuwgt;i++) 
-	m_evtlist[m_cnt2].uwgt[i]=wgtinfo->p_wx[i];
+      size_t nren(wgtinfo->m_type&mewgttype::muR?wgtinfo->m_wren.size():0),
+             nfac(wgtinfo->m_type&mewgttype::muF?wgtinfo->m_wfac.size():0);
+      m_evtlist[m_cnt2].nuwgt=nren+nfac;
+      if (wgtinfo->m_type&mewgttype::muR) {
+        for (size_t i(0);i<nren;++i)
+          m_evtlist[m_cnt2].uwgt[i]=wgtinfo->m_wren[i];
+      }
+      if (wgtinfo->m_type&mewgttype::muF) {
+        for (size_t i(0);i<nfac;++i)
+          m_evtlist[m_cnt2].uwgt[nren+i]=wgtinfo->m_wfac[i];
+      }
     }
     for (int inp=0, i=0;i<blob->NInP();i++) {
     Particle *part=blob->InParticle(i);
@@ -264,7 +272,7 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
     m_evtlist[m_cnt2].nparticle=np;
     ++m_cnt2;
   }
-  else {
+  else { // RS-type events
     NLO_subevtlist* nlos = seinfo->Get<NLO_subevtlist*>();
     double tweight=0.;
     for (size_t j=0;j<nlos->size();j++) {

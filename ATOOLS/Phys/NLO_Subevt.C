@@ -6,42 +6,6 @@
 
 using namespace ATOOLS;
 
-ME_wgtinfo::ME_wgtinfo():
-  m_nx(0), m_w0(0.0), p_wx(NULL),
-  m_y1(1.0), m_y2(1.0), m_mur2(0.0) {}
-
-ME_wgtinfo::~ME_wgtinfo()
-{
-  if (m_nx>0) delete [] p_wx;
-}
-
-ME_wgtinfo &ME_wgtinfo::operator*=(const double &scal)
-{
-  m_w0*=scal;
-  for (int i=0;i<m_nx;i++) p_wx[i]*=scal;
-  return *this;
-}
-
-void ME_wgtinfo::Flip()
-{
-  std::swap<double>(m_x1,m_x2);
-  std::swap<double>(m_y1,m_y2);
-  if (m_nx>=10) for (int i=0;i<4;i++) std::swap<double>(p_wx[i+2],p_wx[i+6]);
-  if (m_nx>=18) for (int i=0;i<4;i++) std::swap<double>(p_wx[i+10],p_wx[i+14]);
-}
-
-void ME_wgtinfo::AddMEweights(int n)
-{
-  m_nx=n;
-  p_wx=new double[m_nx];
-  for (int i=0;i<m_nx;i++) p_wx[i]=0.;
-}
-
-namespace ATOOLS {
-  template <> Blob_Data<ME_wgtinfo*>::~Blob_Data() {}
-  template class Blob_Data<ME_wgtinfo*>;
-}
-
 bool IDip_ID::operator<(const IDip_ID &di) const
 {
   if (m_ijt<di.m_ijt) return true;

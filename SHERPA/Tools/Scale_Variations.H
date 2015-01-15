@@ -8,7 +8,8 @@
 #include "ATOOLS/Phys/Flavour.H"
 
 namespace ATOOLS {
-  class ME_wgtinfo;
+  struct ME_Weight_Info;
+  struct Weight_Info;
 }
 
 namespace PDF {
@@ -16,7 +17,6 @@ namespace PDF {
 }
 
 namespace PHASIC {
-  struct Weight_Info;
   class Process_Base;
 }
 
@@ -79,7 +79,7 @@ namespace SHERPA {
     } m_params;
 
     void ResetValues();
-    void ExtractParameters(const PHASIC::Weight_Info &winfo,
+    void ExtractParameters(const ATOOLS::Weight_Info &winfo,
                            PHASIC::Process_Base * proc);
     bool Calculate(Scale_Variation * sv);
     double Calculate(const double& B, const double& V, const double& I,
@@ -97,7 +97,7 @@ namespace SHERPA {
     Scale_Variations();
     ~Scale_Variations();
 
-    bool ComputeVariations(const PHASIC::Weight_Info &winfo,
+    bool ComputeVariations(const ATOOLS::Weight_Info &winfo,
                            PHASIC::Process_Base * proc);
 
     inline NamedScaleVariationMap * GetNamedScalesMap() const

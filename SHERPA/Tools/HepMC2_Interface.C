@@ -4,6 +4,7 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
@@ -50,10 +51,10 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt) :
     m_oqcd=db->Get<int>();
     ReadIn(db,"OEW",true);
     m_oew=db->Get<int>();
-    ReadIn(db,"ME_wgtinfo",true);
-    p_wgtinfo=db->Get<ME_wgtinfo*>();
+    ReadIn(db,"MEWeightInfo",true);
+    p_wgtinfo=db->Get<ME_Weight_Info*>();
     ReadIn(db,"PDFInfo",true);
-    p_pdfinfo=&db->Get<PHASIC::PDF_Info>();
+    p_pdfinfo=&db->Get<ATOOLS::PDF_Info>();
     m_muf12=p_pdfinfo->m_muf12;
     m_muf22=p_pdfinfo->m_muf22;
     ReadIn(db,"NLO_subeventlist",false);
@@ -110,12 +111,38 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt)
     wc.push_back(m_oqcd);
     wc.push_back(m_oew);
     if (p_wgtinfo) {
+      //dump weight_0
       wc.push_back(p_wgtinfo->m_w0);
-      wc.push_back(p_wgtinfo->m_nx);
+      //dump number of usr weights
+      size_t nentries(0);
+      if (p_wgtinfo->m_type&mewgttype::muR) nentries+=2;
+      if (p_wgtinfo->m_type&mewgttype::muF) nentries+=16;
+      wc.push_back(nentries);
+      //store xprimes
       wc.push_back(p_wgtinfo->m_y1);
       wc.push_back(p_wgtinfo->m_y2);
-      for (int i=0;i<p_wgtinfo->m_nx;i++) {
-        wc.push_back(p_wgtinfo->p_wx[i]);
+      //fill in usr weights
+      if (p_wgtinfo->m_type&mewgttype::muR) {
+        for (size_t i=0;i<p_wgtinfo->m_wren.size();++i) {
+          wc.push_back(p_wgtinfo->m_wren[i]);
+        }
+      }
+      if (p_wgtinfo->m_type&mewgttype::muF) {
+        for (size_t i=0;i<p_wgtinfo->m_wfac.size();++i) {
+          wc.push_back(p_wgtinfo->m_wfac[i]);
+        }
+      }
+      if (p_wgtinfo->m_dadsinfos.size()) {
+        wc.push_back((p_wgtinfo->m_dadsinfos.size()));
+        for (size_t i(0);i<p_wgtinfo->m_dadsinfos.size();++i) {
+          wc.push_back(p_wgtinfo->m_dadsinfos[i].m_wgt);
+          wc.push_back(p_wgtinfo->m_dadsinfos[i].m_pdf.m_x1);
+          wc.push_back(p_wgtinfo->m_dadsinfos[i].m_pdf.m_x2);
+          wc.push_back(p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl1);
+          wc.push_back(p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl2);
+          wc.push_back(p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf12);
+          wc.push_back(p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf22);
+        }
       }
     }
   }

@@ -24,7 +24,8 @@ libToolsPhys_la_SOURCES       =	\
 				Color.C \
 				Spinor.C \
 				Fastjet_Helpers.C \
-				Momenta_Stretcher.C
+				Momenta_Stretcher.C \
+				Weight_Info.C
 
 localinc_HEADERS      =	\
 			Ordering.H \
@@ -46,7 +47,8 @@ localinc_HEADERS      =	\
 			Color.H \
 			Spinor.H \
 			Fastjet_Helpers.H \
-			Momenta_Stretcher.H
+			Momenta_Stretcher.H \
+			Weight_Info.H
 
 libToolsPhys_la_LIBADD = @CONDITIONAL_FASTJETLIBS@
 

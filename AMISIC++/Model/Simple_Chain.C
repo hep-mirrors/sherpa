@@ -16,6 +16,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 
 // #define DEBUG__Simple_Chain
 
@@ -513,7 +514,7 @@ bool Simple_Chain::CreateMomenta()
     if (fsr==NULL) THROW(fatal_error, "Internal error.");
     fsr->SetTrigger(false);
     while (++pstrials<m_maxtrials) {
-      PHASIC::Weight_Info *data=p_xs->
+      ATOOLS::Weight_Info *data=p_xs->
 	OneEvent(0,PHASIC::psm::no_lim_isr);
       if (data!=NULL) {
 	weight=data->m_weight;
@@ -571,7 +572,7 @@ bool Simple_Chain::CreateMomenta()
 		SetISRRange();
 		p_isr->SetLimits(m_spkey.Doubles(),m_ykey.Doubles(),
 				 m_xkey.Doubles());
-		PHASIC::Weight_Info *info=
+		ATOOLS::Weight_Info *info=
 		  p_xs->OneEvent(0,PHASIC::psm::no_lim_isr|
 				 PHASIC::psm::no_gen_isr);
 		if (info) delete info;

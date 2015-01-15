@@ -8,6 +8,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/ME_Generators.H"
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 
 #include <map> 
 
@@ -71,7 +72,7 @@ namespace SHERPA {
     std::string m_path, m_file, m_processfile, m_selectorfile, m_respath;
     int         m_eventmode, m_seedmode, m_hasnlo, m_rsadd;
 
-    PHASIC::Weight_Info m_evtinfo;
+    ATOOLS::Weight_Info m_evtinfo;
 
     Shower_Handler   *p_shower;
     PDF::NLOMC_Base  *p_nlomc;
@@ -146,7 +147,7 @@ namespace SHERPA {
 
     inline int EventGenerationMode() const { return m_eventmode; }
 
-    inline PHASIC::Weight_Info WeightInfo() const { return m_evtinfo; }
+    inline ATOOLS::Weight_Info WeightInfo() const { return m_evtinfo; }
 
     inline BEAM::Beam_Spectra_Handler *GetBeam() const { return p_beam; }
     inline PDF::ISR_Handler           *GetISR() const  { return p_isr;  }

@@ -12,8 +12,6 @@ namespace PHASIC {
     bool   m_zero;
     int    m_nloct;
 
-    ATOOLS::ME_wgtinfo m_wgtinfo;
-
     struct BVI_Wgt {
       double m_w, m_c;
       inline BVI_Wgt(const double &w=1.0,
@@ -29,7 +27,7 @@ namespace PHASIC {
     size_t Size() const;
     Process_Base *operator[](const size_t &i);
 
-    Weight_Info *OneEvent(const int wmode,const int mode=0);
+    ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0);
 
     double KFactor() const;
 
@@ -52,8 +50,6 @@ namespace PHASIC {
 
     void SetScale(const Scale_Setter_Arguments &args);
     void SetKFactor(const KFactor_Setter_Arguments &args);
-
-    ATOOLS::ME_wgtinfo *GetMEwgtinfo();
 
     ATOOLS::Cluster_Amplitude *Cluster(const ATOOLS::Vec4D_Vector &p,
 				       const size_t &mode=0);

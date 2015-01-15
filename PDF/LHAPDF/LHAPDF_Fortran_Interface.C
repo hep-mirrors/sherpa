@@ -116,7 +116,7 @@ double LHAPDF_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl) {
   } else {
     kfc=m_anti*int(infl);
     if (kfc<-6 || kfc>6) {
-      msg_Out()<<"WARNING in LHAPDF_Fortran_Interface::GetXPDF("<<infl<<") not supported by this PDF!"<<std::endl;
+      msg_Out()<<"WARNING in "<<METHOD<<"("<<infl<<") not supported by this PDF!"<<std::endl;
       return 0.;
     }
   }

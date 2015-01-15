@@ -7,18 +7,6 @@
 
 namespace ATOOLS {
 
-  class ME_wgtinfo {
-  public: 
-    int m_nx;
-    double m_w0, *p_wx;
-    double m_x1, m_x2, m_y1, m_y2, m_mur2;
-    ME_wgtinfo();
-    ~ME_wgtinfo();
-    ME_wgtinfo& operator*=(const double &scal);
-    void Flip();
-    void AddMEweights(int n);
-  };
-
   struct IDip_ID {
     size_t m_ijt, m_kt;
   public:

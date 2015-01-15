@@ -57,7 +57,7 @@ namespace PHASIC {
     void SetAlpha(const double &aff,const double &afi=-1.0,
 		  const double &aif=-1.0,const double &aii=-1.0);
 
-    void FillMEwgts(ATOOLS::ME_wgtinfo &wgt);
+    void FillMEwgts(ATOOLS::ME_Weight_Info &wgt);
 
     void SetDSij(const std::vector<std::vector<double> > &ds);
 

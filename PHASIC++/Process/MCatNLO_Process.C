@@ -23,6 +23,7 @@
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 
 using namespace ATOOLS;
 using namespace PHASIC;
@@ -303,6 +304,7 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   else {
     p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(p,4096);
   }
+  p_selected->Selected()->SetMEwgtinfo(*p_rsproc->Selected()->GetMEwgtinfo());
   if (p_ampl==NULL) {
     msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;
     return 0.0;
@@ -415,6 +417,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
     }
     msg_Debugging()<<"R selected via Sudakov "<<*p_ampl
 		   <<" ( w = "<<p_nlomc->Weight()<<" )\n";
+    p_selected->Selected()->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
     return p_nlomc->Weight();
   }
   p_selected=p_bproc;
@@ -425,6 +428,7 @@ double MCatNLO_Process::OneSEvent(const int wmode)
   bproc->Integrator()->SetMomenta(*p_ampl);
   msg_Debugging()<<"B selected "<<*p_ampl
 		 <<" ( w = "<<p_nlomc->Weight()<<" )\n";
+  p_selected->Selected()->SetMEwgtinfo(*p_bviproc->Selected()->GetMEwgtinfo());
   return stat?p_nlomc->Weight():0.0;
 }
 
@@ -438,11 +442,15 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
     p_selected=p_bviproc;
     winfo=p_bviproc->OneEvent(wmode,mode);
     if (winfo && m_fomode==0) {
-      winfo->m_weight*=OneSEvent(wmode);
-      winfo->m_weight*=p_bproc->Selected()
-	->Integrator()->SelectionWeight(wmode)/
-	p_bviproc->Selected()->Integrator()
-	->SelectionWeight(wmode);
+      double oneSEventWeight(OneSEvent(wmode));
+      double selectionWeightRatio(
+        p_bproc->Selected()->Integrator()->SelectionWeight(wmode)/
+        p_bviproc->Selected()->Integrator()->SelectionWeight(wmode)
+        );
+      winfo->m_weight*=oneSEventWeight;
+      winfo->m_weight*=selectionWeightRatio;
+      *(p_selected->Selected()->GetMEwgtinfo())*=oneSEventWeight;
+      *(p_selected->Selected()->GetMEwgtinfo())*=selectionWeightRatio;
       double lkf(p_bviproc->Selected()->Last()/
 		 p_bviproc->Selected()->LastB());
       for (Cluster_Amplitude *ampl(p_ampl);
@@ -462,11 +470,15 @@ Weight_Info *MCatNLO_Process::OneEvent(const int wmode,const int mode)
     p_selected=p_rsproc;
     winfo=p_rsproc->OneEvent(wmode,mode);
     if (winfo && m_fomode==0) {
-      winfo->m_weight*=OneHEvent(wmode);
-      winfo->m_weight*=p_rproc->Selected()
-	->Integrator()->SelectionWeight(wmode)/
-	p_rsproc->Selected()->Integrator()
-	->SelectionWeight(wmode);
+      double oneHEventWeight(OneHEvent(wmode));
+      double selectionWeightRatio(
+        p_rproc->Selected()->Integrator()->SelectionWeight(wmode)/
+        p_rsproc->Selected()->Integrator()->SelectionWeight(wmode)
+        );
+      winfo->m_weight*=oneHEventWeight;
+      winfo->m_weight*=selectionWeightRatio;
+      *(p_selected->Selected()->GetMEwgtinfo())*=oneHEventWeight;
+      *(p_selected->Selected()->GetMEwgtinfo())*=selectionWeightRatio;
     }
   }
   Mass_Selector *ms(Selected()->Generator());

@@ -8,6 +8,7 @@
 #include "METOOLS/Explicit/Vertex.H"
 #include "MODEL/Main/Coupling_Data.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
 namespace PHASIC {
@@ -199,7 +200,7 @@ namespace COMIX {
     void PrintStatistics(std::ostream &str,const int mode=0) const;
 
     double Coupling(const int mode) const;
-    void   FillMEWeights(ATOOLS::ME_wgtinfo &wgtinfo) const;
+    void   FillMEWeights(ATOOLS::ME_Weight_Info &wgtinfo) const;
 
     double KT2Trigger(ATOOLS::NLO_subevt *const sub,const int mode);
 

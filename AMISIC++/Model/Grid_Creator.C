@@ -10,6 +10,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 
 using namespace AMISIC;
 using namespace ATOOLS;
@@ -184,7 +185,7 @@ bool Grid_Creator::UpdateHistogram(PHASIC::Process_Base *const process)
     return true;
   }
   Amisic_Histogram_Type *histo=(*p_histograms)[process->Name()];
-  PHASIC::Weight_Info *info=process->OneEvent(0);
+  ATOOLS::Weight_Info *info=process->OneEvent(0);
   const ATOOLS::Vec4D_Vector &p=process->Integrator()->Momenta();
   double value=(*p_variable)(&p[0]);
   for (size_t i=1;i<4;++i) value=ATOOLS::Max(value,(*p_variable)(&p[i]));

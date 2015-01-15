@@ -7,6 +7,7 @@
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Math/Random.H"
 #include "PHASIC++/Decays/Decay_Map.H"
 #include "PHASIC++/Decays/Decay_Table.H"
@@ -546,8 +547,8 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
     // msg_Out()<<".\n";
     bdbmeweight->Set<double>(brfactor*bdbmeweight->Get<double>());
   }
-  Blob_Data_Base * wgtinfo((*blob)["ME_wgtinfo"]);
-  if (wgtinfo) *wgtinfo->Get<ME_wgtinfo*>()*=brfactor;
+  Blob_Data_Base * wgtinfo((*blob)["MEWeightInfo"]);
+  if (wgtinfo) *wgtinfo->Get<ME_Weight_Info*>()*=brfactor;
   NLO_subevtlist* sublist(NULL);
   Blob_Data_Base * bdb((*blob)["NLO_subeventlist"]);
   if (bdb) sublist=bdb->Get<NLO_subevtlist*>();

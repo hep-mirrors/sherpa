@@ -24,6 +24,7 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Smart_Pointer.C"
 #include "ATOOLS/Org/My_MPI.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -395,7 +396,7 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   cur->SetMomenta(p_lab);
   int fl1(0), fl2(0);
   double x1(0.0), x2(0.0), xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
-  ME_wgtinfo* wgtinfo=p_active->Process()->GetMEwgtinfo();
+  ME_Weight_Info* wgtinfo=p_active->Process()->GetMEwgtinfo();
   dxs=m_result/m_psweight;
   fl1=p_active->Process()->Flavours()[0].HepEvt();
   fl2=p_active->Process()->Flavours()[1].HepEvt();
@@ -767,13 +768,3 @@ void Phase_Space_Handler::AddStats(const std::vector<double> &stats)
   m_stats.push_back(nstats); 
 }
 
-template Weight_Info &ATOOLS::Blob_Data_Base::Get<Weight_Info>();
-template PDF_Info &ATOOLS::Blob_Data_Base::Get<PDF_Info>();
-
-namespace ATOOLS {
-  template <> Blob_Data<Weight_Info>::~Blob_Data() {}
-  template class Blob_Data<Weight_Info>;
-
-  template <> Blob_Data<PDF_Info>::~Blob_Data() {}
-  template class Blob_Data<PDF_Info>;
-}

@@ -23,11 +23,8 @@ namespace HepMC {
 namespace ATOOLS {
   class Blob_List;
   class Particle;
-  class ME_wgtinfo;
+  class ME_Weight_Info;
   class NLO_subevtlist;
-}
-
-namespace PHASIC {
   class PDF_Info;
 }
 
@@ -44,8 +41,8 @@ namespace SHERPA {
     double m_wgt, m_mewgt, m_wgtnorm, m_ntrials, m_mur2, m_muf12, m_muf22;
     double m_alphas, m_alpha;
     PHASIC::nlo_type::code m_type;
-    ATOOLS::ME_wgtinfo * p_wgtinfo;
-    PHASIC::PDF_Info * p_pdfinfo;
+    ATOOLS::ME_Weight_Info * p_wgtinfo;
+    ATOOLS::PDF_Info * p_pdfinfo;
     ATOOLS::NLO_subevtlist * p_subevtlist;
     NamedScaleVariationMap * p_nsvmap;
 

@@ -142,7 +142,7 @@ bool COMIX::Single_Process::Initialize
 			  p_bg->DInfo()->AMax(2),
 			  p_bg->DInfo()->AMax(1),
 			  p_bg->DInfo()->AMax(3));
-      m_wgtinfo.AddMEweights(18);
+      m_mewgtinfo.m_type=mewgttype::muR|mewgttype::muF;
     }
     if (smode&16) {
       smode&=~16;
@@ -159,7 +159,7 @@ bool COMIX::Single_Process::Initialize
       }
       p_loop->SetCouplings(m_cpls);
       p_loop->SetNorm(1.0/(isf*fsf));
-      if (m_wgtinfo.m_nx==0) m_wgtinfo.AddMEweights(2);
+      m_mewgtinfo.m_type=mewgttype::muR;
     }
     p_bg->SetLoopME(p_loop);
     nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);
@@ -193,7 +193,7 @@ bool COMIX::Single_Process::Initialize
 
 void COMIX::Single_Process::MapSubEvts(const int mode)
 {
-  m_wgtinfo.AddMEweights(p_map->m_wgtinfo.m_nx);
+  m_mewgtinfo.m_type=p_map->m_mewgtinfo.m_type;
   m_subs.resize(p_map->p_bg->SubEvts().size());
   const NLO_subevtlist &subs(p_bg->SubEvts());
   const NLO_subevtlist &rsubs(p_map->p_bg->SubEvts());
@@ -239,7 +239,7 @@ bool COMIX::Single_Process::MapProcess()
 			      p_map->p_bg->DInfo()->AMax(2),
 			      p_map->p_bg->DInfo()->AMax(1),
 			      p_map->p_bg->DInfo()->AMax(3));
-	  m_wgtinfo.AddMEweights(18);
+	  m_mewgtinfo.m_type=mewgttype::muR|mewgttype::muF;
 	}
 	msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"<<mapname<<"'.\n";
 	std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
@@ -410,10 +410,10 @@ double COMIX::Single_Process::Partonic
     }
   }
   double kpterms(m_w*GetKPTerms(m_flavs,mode));
-  if (m_wgtinfo.m_nx) {
-    FillMEWeights(m_wgtinfo);
-    m_wgtinfo*=m_w;
-    m_wgtinfo.m_w0=m_dxs;
+  if (m_mewgtinfo.m_wren.size() || m_mewgtinfo.m_wfac.size()) {
+    FillMEWeights(m_mewgtinfo);
+    m_mewgtinfo*=m_w;
+    m_mewgtinfo.m_w0=m_dxs;
   }
   return m_lastxs=m_dxs+kpterms;
 }
@@ -454,7 +454,7 @@ double COMIX::Single_Process::GetKPTerms
   return p_kpterms->Get(m_x[0],m_x[1],eta0,eta1,fl,mode);
 }
 
-void COMIX::Single_Process::FillMEWeights(ME_wgtinfo &wgtinfo) const
+void COMIX::Single_Process::FillMEWeights(ME_Weight_Info &wgtinfo) const
 {
   wgtinfo.m_y1=m_x[0];
   wgtinfo.m_y2=m_x[1];

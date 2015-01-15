@@ -537,11 +537,6 @@ NLO_subevtlist *Process_Base::GetRSSubevtList()
   return NULL;
 }
 
-ME_wgtinfo *Process_Base::GetMEwgtinfo()
-{
-  return NULL;
-}
-
 void Process_Base::InitCuts(Cut_Data *const cuts)
 {
   cuts->Init(m_nin,m_flavs);

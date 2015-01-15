@@ -63,7 +63,7 @@ namespace PHASIC {
     size_t Size() const;
     Process_Base *operator[](const size_t &i);
 
-    Weight_Info *OneEvent(const int wmode,const int mode=0);
+    ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0);
 
     double Differential(const ATOOLS::Vec4D_Vector &p);
 

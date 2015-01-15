@@ -324,7 +324,7 @@ void BBar_Emission_Generator::Print()
   msg_Tracking()<<"----------------------------------------------\n";
 }
 
-namespace ATOOLS
+namespace PHASIC
 {
   std::ostream &operator<<(std::ostream &ostr,const Dipole_Params &dp)
   {

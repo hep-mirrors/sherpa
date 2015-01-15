@@ -5,11 +5,11 @@
 #include "ATOOLS/Org/Library_Loader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Blob.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "PDF/Main/PDF_Base.H"
-#include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Process/Process_Base.H"
 
 #if defined USING__LHAPDF && defined USING__LHAPDF6
@@ -189,10 +189,10 @@ void Scale_Variations::ResetValues()
        it!=p_nsvmap->end();++it) it->second->SetValue(0.);
 }
 
-void Scale_Variations::ExtractParameters(const PHASIC::Weight_Info &winfo,
+void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
                                          PHASIC::Process_Base * proc)
 {
-  const ME_wgtinfo * const mewgt(proc->GetMEwgtinfo());
+  const ME_Weight_Info * const mewgt(proc->GetMEwgtinfo());
   m_params.oqcd=proc->OrderQCD();
   m_params.oew=proc->OrderEW();
   m_params.x1=winfo.m_pdf.m_x1;
@@ -312,7 +312,7 @@ double Scale_Variations::Calculate
   return 0.;
 }
 
-bool Scale_Variations::ComputeVariations(const PHASIC::Weight_Info &winfo,
+bool Scale_Variations::ComputeVariations(const ATOOLS::Weight_Info &winfo,
                                          PHASIC::Process_Base * proc)
 {
   DEBUG_FUNC(proc);

@@ -38,7 +38,7 @@ namespace PHASIC {
     void DeSelect();
     bool SelectOne(const int mode);
 
-    Weight_Info *OneEvent(const int wmode,const int mode=0);
+    ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0);
 
     double Differential(const ATOOLS::Vec4D_Vector &p);
 

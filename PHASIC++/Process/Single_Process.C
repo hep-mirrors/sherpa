@@ -147,7 +147,7 @@ double Single_Process::NLOCounterTerms() const
 		 <<"/\\pi * "<<Beta0()<<" * log("<<sqrt(mur2)<<"/"
 		 <<sqrt(lmur2)<<") -> "<<ct<<"\n";
   }
-  double z[2]={m_wgtinfo.m_y1,m_wgtinfo.m_y2};
+  double z[2]={m_mewgtinfo.m_y1,m_mewgtinfo.m_y2};
   for (size_t i(0);i<2;++i)
     ct+=CollinearCounterTerms
       (i,m_flavs[i],p_int->Momenta()[i],z[i],muf2,lmuf2);
@@ -342,7 +342,7 @@ void Single_Process::BeamISRWeight
 
 double Single_Process::Differential(const Vec4D_Vector &p)
 {
-  m_wgtinfo.m_w0=m_lastb=m_last=0.0;
+  m_mewgtinfo.m_w0=m_lastb=m_last=0.0;
   p_int->SetMomenta(p);
   if (IsMapped()) p_mapproc->Integrator()->SetMomenta(p);
   double flux=0.25/sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
@@ -351,9 +351,10 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     Scale_Setter_Base *scs(ScaleSetter(1));
     scs->SetCaller(Proc());
     if (Partonic(p,0)==0.0) return 0.0;
-    if (m_wgtinfo.m_nx==0) m_wgtinfo.m_w0 = m_lastxs;
-    m_wgtinfo*=flux;
-    m_wgtinfo.m_mur2=scs->Scale(stp::ren);
+    if (m_mewgtinfo.m_type==mewgttype::none) m_mewgtinfo.m_w0 = m_lastxs;
+    m_mewgtinfo*=flux;
+    m_mewgtinfo.m_muf2=scs->Scale(stp::fac);
+    m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
     if (m_lastxs==0.0) return m_last=0.0;
     m_last=m_lastxs;
     if (m_nloct && m_pinfo.Has(nlo_type::born))
@@ -364,13 +365,44 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     m_last=(m_last-m_lastbxs*bviw.m_c)*bviw.m_w;
     m_lastb=m_lastbxs*bviw.m_w;
     if (p_mc==NULL) return m_last;
+    // calculate DADS for MC@NLO
+    m_mewgtinfo.m_dadsinfos.clear();
     Dipole_Params dps(p_mc->Active(this));
     for (size_t i(0);i<dps.m_procs.size();++i) {
       Process_Base *cp(dps.m_procs[i]);
       size_t mcmode(cp->SetMCMode(m_mcmode));
       bool lookup(cp->LookUp());
       cp->SetLookUp(false);
-      m_last-=cp->Differential(dps.m_p)*dps.m_weight;
+      double dadswgt(cp->Differential(dps.m_p)*dps.m_weight);
+      double dads_w0(cp->GetMEwgtinfo()->m_w0*dps.m_weight);
+      std::vector<double> x(2, -1.0);
+      for (size_t j(0);j<2;++j) {
+        double xj = dps.m_p[j][3]/rpa->gen.PBeam(j)[3];
+        if (xj > 1.0) {
+          // The divisor and dividend from x1 and x2 have rounding
+          // errors as high as 0.001 ... So if there is no branching,
+          // the result of the division might in fact be a little
+          // more than 1.0. Therefore we apply an upper limit here.
+          if (msg_LevelIsDebugging()) {
+            std::streamsize precision(msg->Out().precision());
+            msg_Out()<<"Should fill DADS info with x"<<j+1<<"=";
+            msg->SetPrecision(12);
+            msg_Out()<<x[j];
+            msg->SetPrecision(precision);
+            msg_Out()<<". Enforcing upper limit (1.0)."<<std::endl;
+          }
+          xj = 1.0;
+        }
+        x[j] = xj;
+      }
+      DADS_Info dads(-dads_w0,
+                     cp->Flavours()[0],cp->Flavours()[1],
+                     x[0],x[1],
+                     0.,0.,
+                     cp->Integrator()->ISR()->MuF2(0),
+                     cp->Integrator()->ISR()->MuF2(1));
+      m_mewgtinfo.m_dadsinfos.push_back(dads);
+      m_last-=dadswgt;
       cp->SetLookUp(lookup);
       cp->SetMCMode(mcmode);
     }
@@ -378,6 +410,14 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   }
   Partonic(p,0);
   NLO_subevtlist *subs(GetSubevtList());
+  for (size_t i=0;i<subs->size();++i) {
+    m_mewgtinfo.m_w0+=(*subs)[i]->m_mewgt;
+  }
+  m_mewgtinfo*=flux;
+  Scale_Setter_Base *scs(ScaleSetter(1));
+  scs->SetCaller(this);
+  m_mewgtinfo.m_muf2=scs->Scale(stp::fac);
+  m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
   BeamISRWeight(subs,0);
   for (size_t i=0;i<subs->size();++i) {
     m_last+=(*subs)[i]->m_result;
@@ -468,11 +508,6 @@ CombinedFlavour(const size_t &idij)
 {
   static Flavour_Vector fls(1,kf_none);
   return fls;
-}
-
-ATOOLS::ME_wgtinfo *Single_Process::GetMEwgtinfo()
-{
-  return &m_wgtinfo; 
 }
 
 ATOOLS::Flavour Single_Process::ReMap

@@ -185,7 +185,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       }
     }
     if (proc==NULL) THROW(fatal_error,"No process selected");
-    PHASIC::Weight_Info *info=proc->OneEvent(m_eventmode);
+    ATOOLS::Weight_Info *info=proc->OneEvent(m_eventmode);
     p_proc=proc->Selected();
     if (p_proc->Generator()==NULL)
       THROW(fatal_error,"No generator for process '"+p_proc->Name()+"'");

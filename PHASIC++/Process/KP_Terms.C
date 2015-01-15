@@ -361,13 +361,16 @@ double KP_Terms::Get(const double &x0,const double &x1,
   return res;
 }
 
-void KP_Terms::FillMEwgts(ATOOLS::ME_wgtinfo &wgtinfo)
+void KP_Terms::FillMEwgts(ATOOLS::ME_Weight_Info &wgtinfo)
 {
-  if (wgtinfo.m_nx<18) return;
-  for (int i=0;i<4;i++) wgtinfo.p_wx[i+2]=m_kpca[i];
-  for (int i=0;i<4;i++) wgtinfo.p_wx[i+6]=m_kpcb[i];
-  for (int i=0;i<4;i++) wgtinfo.p_wx[i+10]=m_kpca[i+4];
-  for (int i=0;i<4;i++) wgtinfo.p_wx[i+14]=m_kpcb[i+4];
+  if (wgtinfo.m_wfac.size()==16) {
+    for (int i=0;i<4;i++) {
+      wgtinfo.m_wfac[i]=m_kpca[i];
+      wgtinfo.m_wfac[i+4]=m_kpcb[i];
+      wgtinfo.m_wfac[i+8]=m_kpca[i+4];
+      wgtinfo.m_wfac[i+12]=m_kpcb[i+4];
+    }
+  }
 }
 
 void KP_Terms::SetDSij(const std::vector<std::vector<double> > &ds)

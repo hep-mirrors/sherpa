@@ -142,7 +142,7 @@ namespace AMEGIC {
     double         Get_KPterms(PDF::PDF_Base *pdfa, PDF::PDF_Base *pdfb,
 			       const double&,const double&,ATOOLS::Flavour_Vector&); 
     void           CheckPoleCancelation(const ATOOLS::Vec4D*);
-    void           FillMEwgts(ATOOLS::ME_wgtinfo&);
+    void           FillMEwgts(ATOOLS::ME_Weight_Info&);
     void           EndOptimize();
 
   };

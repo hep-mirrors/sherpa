@@ -273,8 +273,9 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
       for (size_t j=0;j<p_LO_process->PartonList().size();j++) p_dsij[i][j]=0.;
     }
   }
-  if (m_pinfo.m_fi.m_nloqcdtype&&nlo_type::vsub) m_wgtinfo.AddMEweights(18);
-  else if (m_pinfo.m_fi.m_nloqcdtype&&nlo_type::loop) m_wgtinfo.AddMEweights(2);
+  m_mewgtinfo.m_type=mewgttype::muR;
+  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub)
+    m_mewgtinfo.m_type|=mewgttype::muF;
   Minimize();
   if (p_partner==this && Result()>0.) SetUpIntegrator();
   return 1;
@@ -458,9 +459,9 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
   if (p_partner != this) kpterm*=m_sfactor;
   m_lastkp=kpterm;
 
-  m_wgtinfo.m_w0 = m_lastdxs/m_sfactor;
-  p_partner->FillMEwgts(m_wgtinfo); 
-  m_wgtinfo*=m_Norm*m_sfactor;
+  m_mewgtinfo.m_w0 = m_lastdxs/m_sfactor;
+  p_partner->FillMEwgts(m_mewgtinfo);
+  m_mewgtinfo*=m_Norm*m_sfactor;
 
   p_partner->m_bvimode=bvimode;
 
@@ -848,13 +849,13 @@ void Single_Virtual_Correction::SetSelectorOn(const bool on)
   p_LO_process->SetSelectorOn(on);
 }
 
-void Single_Virtual_Correction::FillMEwgts(ATOOLS::ME_wgtinfo& wgtinfo)
+void Single_Virtual_Correction::FillMEwgts(ATOOLS::ME_Weight_Info& wgtinfo)
 {
   wgtinfo.m_y1=m_x0;
   wgtinfo.m_y2=m_x1;
-  if (wgtinfo.m_nx<2) return;
-  for (int i=0;i<2;i++) wgtinfo.p_wx[i]=m_cmur[i];
-  p_kpterms->FillMEwgts(wgtinfo);
+  if (wgtinfo.m_wren.size()==2)
+    for (size_t i=0;i<2;i++) wgtinfo.m_wren[i]=m_cmur[i];
+  if (p_kpterms) p_kpterms->FillMEwgts(wgtinfo);
 }
 
 void Single_Virtual_Correction::MPISync()

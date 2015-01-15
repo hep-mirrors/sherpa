@@ -41,7 +41,7 @@ namespace COMIX {
 
     double GetKPTerms(const ATOOLS::Flavour_Vector &fl,const int mode);
 
-    void FillMEWeights(ATOOLS::ME_wgtinfo &wgtinfo) const;
+    void FillMEWeights(ATOOLS::ME_Weight_Info &wgtinfo) const;
 
   public:
 

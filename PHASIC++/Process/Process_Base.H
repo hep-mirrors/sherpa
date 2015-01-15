@@ -7,6 +7,7 @@
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 
 namespace ATOOLS { 
   class Cluster_Leg;
@@ -31,8 +32,6 @@ namespace PHASIC {
   class Phase_Space_Handler;
   class Combined_Selector;
   class ME_Generator_Base;
-
-  struct Weight_Info;
 
   class Process_Base;
   class BBar_Multi_Channel;
@@ -66,6 +65,8 @@ namespace PHASIC {
     ATOOLS::Flavour_Vector m_flavs;
     Process_Info           m_pinfo;
     ATOOLS::DecayInfo_Vector m_decins;
+
+    ATOOLS::ME_Weight_Info m_mewgtinfo;
 
     double m_last, m_lastb, m_symfac;
     bool   m_lookup, m_use_biweight;
@@ -111,7 +112,7 @@ namespace PHASIC {
     virtual size_t Size() const = 0;
     virtual Process_Base *operator[](const size_t &i) = 0;
 
-    virtual Weight_Info *OneEvent(const int wmode,const int mode=0) = 0;
+    virtual ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0) = 0;
 
     virtual double Differential(const ATOOLS::Vec4D_Vector &p) = 0;
     virtual double Differential(const ATOOLS::Cluster_Amplitude &ampl,
@@ -149,7 +150,6 @@ namespace PHASIC {
 
     virtual ATOOLS::NLO_subevtlist *GetSubevtList();
     virtual ATOOLS::NLO_subevtlist *GetRSSubevtList();
-    virtual ATOOLS::ME_wgtinfo     *GetMEwgtinfo();
 
     virtual void SetRBMap(ATOOLS::Cluster_Amplitude *ampl);
     virtual void InitPSHandler(const double &maxerror,
@@ -193,6 +193,10 @@ namespace PHASIC {
 
     inline ATOOLS::DecayInfo_Vector       &DecayInfos()       {return m_decins;}
     inline const ATOOLS::DecayInfo_Vector &DecayInfos() const {return m_decins;}
+
+    inline ATOOLS::ME_Weight_Info *GetMEwgtinfo() { return &m_mewgtinfo; }
+    inline void SetMEwgtinfo(const ATOOLS::ME_Weight_Info i) { m_mewgtinfo=i; }
+
 
     inline Process_Integrator *Integrator() const { return p_int; }
 

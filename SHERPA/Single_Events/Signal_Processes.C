@@ -157,7 +157,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     blob->AddData("Resummation_Scale",new Blob_Data<double>(ampl->MuQ2()));
   }
   if (ampl) ampl->Delete();
-  PHASIC::Weight_Info winfo(p_mehandler->WeightInfo());
+  ATOOLS::Weight_Info winfo(p_mehandler->WeightInfo());
   double weight(winfo.m_weight);
   if (p_mehandler->EventGenerationMode()==1) {
     m_overweight=p_mehandler->WeightFactor()-1.0;
@@ -174,7 +174,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
                 (proc->Integrator()->EnhanceFactor()));
   blob->AddData("Factorisation_Scale",new Blob_Data<double>
                 (sqrt(winfo.m_pdf.m_muf12*winfo.m_pdf.m_muf22)));
-  blob->AddData("PDFInfo",new Blob_Data<PHASIC::PDF_Info>(winfo.m_pdf));
+  blob->AddData("PDFInfo",new Blob_Data<ATOOLS::PDF_Info>(winfo.m_pdf));
   blob->AddData("OQCD",new Blob_Data<int>
                 (proc->OrderQCD()));
   blob->AddData("OEW",new Blob_Data<int>
@@ -188,9 +188,9 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   if (nsvm) blob->AddData("ScaleVariations",
                           new Blob_Data<NamedScaleVariationMap*>(nsvm));
 
-  ME_wgtinfo* wgtinfo=proc->GetMEwgtinfo();
+  ME_Weight_Info* wgtinfo=proc->GetMEwgtinfo();
   if (wgtinfo) {
-    blob->AddData("ME_wgtinfo",new Blob_Data<ME_wgtinfo*>(wgtinfo));
+    blob->AddData("MEWeightInfo",new Blob_Data<ME_Weight_Info*>(wgtinfo));
     blob->AddData("Renormalization_Scale",new Blob_Data<double>(wgtinfo->m_mur2));
   }
   NLO_subevtlist* nlos=proc->GetSubevtList();

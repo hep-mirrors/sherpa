@@ -1586,10 +1586,10 @@ double Amplitude::Coupling(const int mode) const
   return cpl->Default()*cpl->Factor();
 }
 
-void Amplitude::FillMEWeights(ME_wgtinfo &wgtinfo) const
+void Amplitude::FillMEWeights(ME_Weight_Info &wgtinfo) const
 {
-  if (wgtinfo.m_nx<2) return;
-  for (int i=0;i<2;i++) wgtinfo.p_wx[i]=m_cmur[i];
+  if (wgtinfo.m_wren.size()==2)
+    for (size_t i=0;i<2;i++) wgtinfo.m_wren[i]=m_cmur[i];
 }
 
 void Amplitude::SetGauge(const size_t &n)
