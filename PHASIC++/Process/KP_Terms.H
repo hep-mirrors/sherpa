@@ -17,6 +17,7 @@ namespace PHASIC {
 
   class KP_Terms {
   private:
+    int m_imode;
 
     Process_Base    *p_proc;
     Flavour_Kernels *p_flkern;
@@ -66,6 +67,7 @@ namespace PHASIC {
     inline Flavour_Kernels *FlavKern() const { return p_flkern;   }
     inline Massive_Kernels *MassKern() const { return p_masskern; }
 
+    inline void SetIMode(int imode) { m_imode=imode; }
   };// end of class KP_Terms
 
 };// end of namespace PHASIC

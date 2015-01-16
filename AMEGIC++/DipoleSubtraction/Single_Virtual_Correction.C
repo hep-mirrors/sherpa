@@ -216,6 +216,7 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
       m_dalpha_fi!=m_dalpha ||
       m_dalpha_ff!=m_dalpha) massive=1;
   p_kpterms = new KP_Terms(this,massive|(m_kpcemode?2:0));
+  p_kpterms->SetIMode(m_imode);
   p_flkern=p_kpterms->FlavKern();
   p_masskern=p_kpterms->MassKern();
   if (!p_masskern) p_kpterms->SetAlpha(m_dalpha);
@@ -544,7 +545,7 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::Vec4D *mom)
 
 void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, double x1, double eta0, double eta1, double weight) 
 {
-  if (m_imode && !(m_imode&2)) return;
+  if (m_imode && !(m_imode&2 || m_imode&4)) return;
   p_kpterms->SetDSij(p_dsij);
   p_kpterms->Calculate(p_int->Momenta(),x0,x1,eta0,eta1,-weight*p_dipole->SPFac()/(16.0*sqr(M_PI)));
 }
@@ -553,7 +554,7 @@ double Single_Virtual_Correction::Get_KPterms(PDF_Base *pdfa, PDF_Base *pdfb,
 					      const double &eta0,const double &eta1,
 					      ATOOLS::Flavour_Vector& flav) 
 {
-  if (m_imode && !(m_imode&2)) return 0.;
+  if (m_imode && !(m_imode&2 || m_imode&4)) return 0.;
   if ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub)==0) return 0.;
   int mode(pdfa==p_int->ISR()->PDF(0)?0:1);
   return p_kpterms->Get(m_x0,m_x1,eta0,eta1,flav,mode) * KFactor();
