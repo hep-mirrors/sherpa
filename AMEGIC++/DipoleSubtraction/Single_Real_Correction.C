@@ -400,6 +400,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
 
   if (!m_no_tree)
   if (res) {
+  p_tree_process->ScaleSetter()->SetCaller(p_tree_process);
   m_realevt.m_mu2[stp::fac]=p_tree_process->ScaleSetter()->CalculateScale(_mom,m_cmode);
   m_realevt.m_mu2[stp::ren]=p_tree_process->ScaleSetter()->Scale(stp::ren);
   m_realevt.m_mu2[stp::res]=p_tree_process->ScaleSetter()->Scale(stp::res);
