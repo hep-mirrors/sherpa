@@ -415,9 +415,10 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   }
   m_mewgtinfo*=flux;
   Scale_Setter_Base *scs(ScaleSetter(1));
-  scs->SetCaller(this);
-  m_mewgtinfo.m_muf2=scs->Scale(stp::fac);
-  m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
+  if (scs!=NULL) {
+    m_mewgtinfo.m_muf2=scs->Scale(stp::fac);
+    m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
+  }
   BeamISRWeight(subs,0);
   for (size_t i=0;i<subs->size();++i) {
     m_last+=(*subs)[i]->m_result;
