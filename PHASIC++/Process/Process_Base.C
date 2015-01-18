@@ -186,14 +186,6 @@ public:
   { return a->Flav().Kfcode()<b->Flav().Kfcode(); }
 };// end of class Order_KF
 
-class Order_IsoWeak {
-public:
-  bool operator()(const Subprocess_Info &a,const Subprocess_Info &b)
-  { return a.m_fl.IsDowntype() && b.m_fl.IsUptype(); }
-  bool operator()(const Cluster_Leg *a,const Cluster_Leg *b)
-  { return a->Flav().IsDowntype() && b->Flav().IsUptype(); }
-};// end of class Order_IsoWeak
-
 class Order_Anti {
 public:
   bool operator()(const Subprocess_Info &a,const Subprocess_Info &b)
@@ -266,7 +258,6 @@ void Process_Base::SortFlavours(Subprocess_Info &info)
 	     !info.m_ps[i].m_fl.IsAnti()) heaviest=info.m_ps[i].m_fl;
   }
   std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_KF());
-  std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_IsoWeak());
   std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Anti());
   std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_SVFT());
   if (heaviest.IsAnti())  
@@ -365,7 +356,6 @@ void Process_Base::SortFlavours(std::vector<Cluster_Leg*> &legs)
 	     !legs[i]->Flav().IsAnti()) heaviest=legs[i]->Flav();
   }
   std::stable_sort(legs.begin(),legs.end(),Order_KF());
-  std::stable_sort(legs.begin(),legs.end(),Order_IsoWeak());
   std::stable_sort(legs.begin(),legs.end(),Order_Anti());
   std::stable_sort(legs.begin(),legs.end(),Order_SVFT());
   if (heaviest.IsAnti()) 
