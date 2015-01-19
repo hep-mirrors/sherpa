@@ -128,22 +128,20 @@ void Multi_Channel::MPISync()
   if (size>1) {
     int cn=2*channels.size()+2;
     double *values = new double[cn];
-    double *rvalues = new double[cn];
     for (size_t i=0;i<channels.size();++i) {
       values[i]=channels[i]->MRes1();
       values[channels.size()+i]=channels[i]->MRes2();
     }
     values[cn-2]=mn_points;
     values[cn-1]=mn_contrib;
-    mpi->MPIComm()->Allreduce(values,rvalues,cn,MPI::DOUBLE,MPI::SUM);
+    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,cn,MPI::DOUBLE,MPI::SUM);
     for (size_t i=0;i<channels.size();++i) {
-      channels[i]->SetMPIVars(rvalues[i],
-			      rvalues[channels.size()+i]);
+      channels[i]->SetMPIVars(values[i],
+			      values[channels.size()+i]);
     }
-    mn_points=rvalues[cn-2];
-    mn_contrib=rvalues[cn-1];
+    mn_points=values[cn-2];
+    mn_contrib=values[cn-1];
     delete [] values;
-    delete [] rvalues;
   }
   for (size_t i=0;i<channels.size();++i) {
     channels[i]->CopyMPIValues();

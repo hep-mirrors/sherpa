@@ -53,14 +53,14 @@ void Phase_Space_Integrator::MPISync()
   psh->MPISync();
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    double values[3], rvalues[3];
+    double values[3];
     values[0]=mn;
     values[1]=mnstep;
     values[2]=mncstep;
-    mpi->MPIComm()->Allreduce(&values,&rvalues,3,MPI::DOUBLE,MPI::SUM);
-    mn=rvalues[0];
-    mnstep=rvalues[1];
-    mncstep=rvalues[2];
+    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&values,3,MPI::DOUBLE,MPI::SUM);
+    mn=values[0];
+    mnstep=values[1];
+    mncstep=values[2];
   }
   n+=mn;
   nstep+=mnstep;

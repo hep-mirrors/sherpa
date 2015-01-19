@@ -906,18 +906,16 @@ void PS_Channel::MPISync()
       for (size_t i(0);i<(*p_cur)[n].size();++i)
 	cn+=3*(*p_cur)[n][i]->In().size();
     double *val = new double[cn];
-    double *rval = new double[cn];
     for (size_t cv(0), n(2);n<m_n;++n)
       for (size_t i(0);i<(*p_cur)[n].size();++i)
 	for (size_t j(0);j<(*p_cur)[n][i]->In().size();++j)
 	  ((PS_Vertex *)(*p_cur)[n][i]->In()[j])->GetMPIVars(&val[3*cv++]);
-    mpi->MPIComm()->Allreduce(val,rval,cn,MPI::DOUBLE,MPI::SUM);
+    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,val,cn,MPI::DOUBLE,MPI::SUM);
     for (size_t cv(0), n(2);n<m_n;++n)
       for (size_t i(0);i<(*p_cur)[n].size();++i)
 	for (size_t j(0);j<(*p_cur)[n][i]->In().size();++j)
-	  ((PS_Vertex *)(*p_cur)[n][i]->In()[j])->SetMPIVars(&rval[3*cv++]);
+	  ((PS_Vertex *)(*p_cur)[n][i]->In()[j])->SetMPIVars(&val[3*cv++]);
     delete [] val;
-    delete [] rval;
   }
   for (size_t n(2);n<m_n;++n)
     for (size_t i(0);i<(*p_cur)[n].size();++i)

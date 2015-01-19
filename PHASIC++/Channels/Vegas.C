@@ -155,7 +155,6 @@ void Vegas::MPISync()
   if (size>1) {
     int cn=3*m_dim*m_nd+2;
     double *values = new double[cn];
-    double *rvalues = new double[cn];
     for (int i=0;i<m_dim;i++) {
       for (int j=0;j<m_nd;j++) {
 	values[i*m_nd+j]=p_md[i][j];
@@ -165,18 +164,17 @@ void Vegas::MPISync()
     }
     values[cn-2]=m_mnevt;
     values[cn-1]=m_mcevt;
-    mpi->MPIComm()->Allreduce(values,rvalues,cn,MPI::DOUBLE,MPI::SUM);
+    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,cn,MPI::DOUBLE,MPI::SUM);
     for (int i=0;i<m_dim;i++) {
       for (int j=0;j<m_nd;j++) {
-	p_md[i][j]=rvalues[i*m_nd+j];
-	p_mdi[i][j]=rvalues[(m_dim+i)*m_nd+j];
-	p_mhit[i][j]=rvalues[(2*m_dim+i)*m_nd+j];
+	p_md[i][j]=values[i*m_nd+j];
+	p_mdi[i][j]=values[(m_dim+i)*m_nd+j];
+	p_mhit[i][j]=values[(2*m_dim+i)*m_nd+j];
       }
     }
-    m_mnevt=rvalues[cn-2];
-    m_mcevt=rvalues[cn-1];
+    m_mnevt=values[cn-2];
+    m_mcevt=values[cn-1];
     delete [] values;
-    delete [] rvalues;
   }
   for (int i=0;i<m_dim;i++) {
     for (int j=0;j<m_nd;j++) {

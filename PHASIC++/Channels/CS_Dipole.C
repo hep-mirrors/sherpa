@@ -106,14 +106,14 @@ void CS_Dipole::MPISync()
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    double val[3], rval[3];
+    double val[3];
     val[0]=m_mnp;
     val[1]=m_msum;
     val[2]=m_msum2;
-    mpi->MPIComm()->Allreduce(&val,&rval,3,MPI::DOUBLE,MPI::SUM);
-    m_mnp=rval[0];
-    m_msum=rval[1];
-    m_msum2=rval[2];
+    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&val,3,MPI::DOUBLE,MPI::SUM);
+    m_mnp=val[0];
+    m_msum=val[1];
+    m_msum2=val[2];
   }
   m_np+=m_mnp;
   m_sum+=m_msum;

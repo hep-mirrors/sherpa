@@ -864,16 +864,16 @@ void Single_Virtual_Correction::MPISync()
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    double val[4], rval[4];
+    double val[4];
     val[0]=m_mn;
     val[1]=m_mbsum;
     val[2]=m_mvsum;
     val[3]=m_misum;
-    mpi->MPIComm()->Allreduce(&val,&rval,4,MPI::DOUBLE,MPI::SUM);
-    m_mn=rval[0];
-    m_mbsum=rval[1];
-    m_mvsum=rval[2];
-    m_misum=rval[3];
+    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&val,4,MPI::DOUBLE,MPI::SUM);
+    m_mn=val[0];
+    m_mbsum=val[1];
+    m_mvsum=val[2];
+    m_misum=val[3];
   }
   m_n+=m_mn;
   m_bsum+=m_mbsum;

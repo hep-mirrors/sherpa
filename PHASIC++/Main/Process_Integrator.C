@@ -511,18 +511,19 @@ void Process_Integrator::MPISync()
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size>1) {
-    double val[5], rval[5];
-    val[0]=m_msn;
-    val[2]=m_mssum;
-    val[3]=m_mssumsqr;
-    val[4]=m_max;
-    val[1]=m_smax;
-    mpi->MPIComm()->Allreduce(&val,&rval,5,MPI::DOUBLE,MPI::SUM);
-    m_msn=rval[0];
-    m_mssum=rval[2];
-    m_mssumsqr=rval[3];
-    m_max=rval[4];
-    m_smax=rval[1];
+    double sval[3], mval[2];
+    sval[0]=m_msn;
+    sval[1]=m_mssum;
+    sval[2]=m_mssumsqr;
+    mval[0]=m_max;
+    mval[1]=m_smax;
+    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&sval,3,MPI::DOUBLE,MPI::SUM);
+    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&mval,2,MPI::DOUBLE,MPI::MAX);
+    m_msn=sval[0];
+    m_mssum=sval[1];
+    m_mssumsqr=sval[2];
+    m_max=mval[0];
+    m_smax=mval[1];
   }
   m_sn+=m_msn;
   m_ssum+=m_mssum;
