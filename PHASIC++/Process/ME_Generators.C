@@ -51,10 +51,34 @@ ME_Generators::~ME_Generators()
   }
 }
 
+bool ME_Generators::LoadGenerator(const std::string &name)
+{
+  for (size_t i(0);i<size();++i)
+    if (at(i)->Name()==name) return true;
+  push_back(ME_Generator_Getter::GetObject(name,ME_Generator_Key()));
+  if (back()==NULL) {
+    msg_Info()<<METHOD<<"(): Try loading '"<<name
+	      <<"' from 'libSherpa"<<name<<"'."<<std::endl;
+    if (s_loader->LoadLibrary("Sherpa"+name))
+      back()=ME_Generator_Getter::GetObject(name,ME_Generator_Key());
+  }
+  if (back()==NULL) {
+    msg_Error()<<METHOD<<"(): ME generator '"<<name
+	       <<"' not found. Ignoring it."<<std::endl;
+    pop_back();
+    return false;
+  }
+  if (!back()->Initialize(m_path,m_file,p_model,p_beam,p_isr)) return false;
+  back()->SetGenerators(this);
+  return true;
+}
+
 bool ME_Generators::InitializeGenerators(MODEL::Model_Base *model,
                                          BEAM::Beam_Spectra_Handler *beam,
                                          PDF::ISR_Handler *isr)
 {
+  p_isr=isr;
+  p_beam=beam;
   p_model=model;
   for (ME_Generators::const_iterator mit=begin(); mit!=end(); ++mit) {
     if (!(*mit)->Initialize(m_path,m_file,model,beam,isr)) return false;

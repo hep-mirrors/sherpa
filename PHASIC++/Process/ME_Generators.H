@@ -20,6 +20,9 @@ namespace PHASIC   {
     std::string m_path, m_file;
     MODEL::Model_Base *p_model;
 
+    BEAM::Beam_Spectra_Handler *p_beam;
+    PDF::ISR_Handler           *p_isr;
+
   public:
 
     ME_Generators(const std::string &path,const std::string &file);
@@ -30,6 +33,9 @@ namespace PHASIC   {
                               PDF::ISR_Handler *isr);
     int PerformTests();
     bool NewLibraries();
+
+    bool LoadGenerator(const std::string &name);
+
     Process_Base* InitializeProcess(const Process_Info &pi, bool add);
 
     inline MODEL::Model_Base *Model() const { return p_model; }
