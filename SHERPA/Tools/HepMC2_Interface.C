@@ -91,6 +91,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt)
   DEBUG_FUNC("named weights: "<<m_usenamedweights);
   HepMC::WeightContainer wc;
   if (m_usenamedweights) {
+#ifdef HEPMC_HAS_NAMED_WEIGHTS
     // fill standard entries to ensure backwards compatability
     wc["Weight"]=m_wgt;
     wc["MEWeight"]=m_mewgt;
@@ -103,6 +104,9 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt)
         wc[it->first]=it->second->Value();
       }
     }
+#else
+    THROW(fatal_error,"Asked for named weights, but HepMC version too old.");
+#endif
   }
   else {
     wc.push_back(m_wgt);
@@ -169,7 +173,9 @@ HepMC2_Interface::HepMC2_Interface():
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
   reader.AddWordSeparator("\t");
+#ifdef HEPMC_HAS_NAMED_WEIGHTS
   m_usenamedweights=reader.GetValue<int>("HEPMC_USE_NAMED_WEIGHTS",true);
+#endif
 }
 
 HepMC2_Interface::~HepMC2_Interface()
