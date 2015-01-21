@@ -685,7 +685,7 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
 	cstp::code et((i<ampl->NIn()||j<ampl->NIn())?
 		      (k<ampl->NIn()?cstp::II:cstp::IF):
 		      (k<ampl->NIn()?cstp::FI:cstp::FF));
-	if ((mode==0 && lk->Flav().Strong() &&
+	if ((lk->Flav().Strong() &&
 	     li->Flav().Strong() && lj->Flav().Strong()) ||
 	    p_shower->GetSudakov()->HasKernel(fi,fj,fk,et)) {
 	  double q2ijk(Qij2(li->Mom(),lj->Mom(),lk->Mom(),
