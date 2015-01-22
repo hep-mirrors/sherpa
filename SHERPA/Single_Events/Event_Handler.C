@@ -437,7 +437,7 @@ void Event_Handler::MPISync()
     values[0]=m_mn;
     values[1]=m_msum;
     values[2]=m_msumsqr;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,4,MPI::DOUBLE,MPI::SUM);
+    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,3,MPI::DOUBLE,MPI::SUM);
     mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&m_maxweight,1,MPI::DOUBLE,MPI::MAX);
     m_mn=values[0];
     m_msum=values[1];
