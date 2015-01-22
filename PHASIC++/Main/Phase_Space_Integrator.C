@@ -57,7 +57,7 @@ void Phase_Space_Integrator::MPISync()
     values[0]=mn;
     values[1]=mnstep;
     values[2]=mncstep;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&values,3,MPI::DOUBLE,MPI::SUM);
+    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,values,3,MPI::DOUBLE,MPI::SUM);
     mn=values[0];
     mnstep=values[1];
     mncstep=values[2];

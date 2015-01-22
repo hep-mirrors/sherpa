@@ -869,7 +869,7 @@ void Single_Virtual_Correction::MPISync()
     val[1]=m_mbsum;
     val[2]=m_mvsum;
     val[3]=m_misum;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&val,4,MPI::DOUBLE,MPI::SUM);
+    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,val,4,MPI::DOUBLE,MPI::SUM);
     m_mn=val[0];
     m_mbsum=val[1];
     m_mvsum=val[2];

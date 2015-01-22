@@ -517,8 +517,8 @@ void Process_Integrator::MPISync()
     sval[2]=m_mssumsqr;
     mval[0]=m_max;
     mval[1]=m_smax;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&sval,3,MPI::DOUBLE,MPI::SUM);
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&mval,2,MPI::DOUBLE,MPI::MAX);
+    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,sval,3,MPI::DOUBLE,MPI::SUM);
+    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,mval,2,MPI::DOUBLE,MPI::MAX);
     m_msn=sval[0];
     m_mssum=sval[1];
     m_mssumsqr=sval[2];

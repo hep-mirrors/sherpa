@@ -110,7 +110,7 @@ void CS_Dipole::MPISync()
     val[0]=m_mnp;
     val[1]=m_msum;
     val[2]=m_msum2;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&val,3,MPI::DOUBLE,MPI::SUM);
+    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,val,3,MPI::DOUBLE,MPI::SUM);
     m_mnp=val[0];
     m_msum=val[1];
     m_msum2=val[2];
