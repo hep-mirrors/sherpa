@@ -104,6 +104,9 @@ namespace SHERPA {
     inline std::vector<HepMC::GenEvent*> GenSubEventList()
     { return m_subeventlist; }
 
+    inline void SetHepMCNamedWeights(bool x) { m_usenamedweights=x; }
+    inline bool HepMCNamedWeights()          { return m_usenamedweights; }
+
     void DeleteGenSubEventList();
 
   };// end of class HepMC2_Interface

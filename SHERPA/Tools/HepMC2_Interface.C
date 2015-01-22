@@ -104,6 +104,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt)
         wc[it->first]=it->second->Value();
       }
     }
+    if (p_subevtlist) wc["NLO_Type"]=32;
 #else
     THROW(fatal_error,"Asked for named weights, but HepMC version too old.");
 #endif
