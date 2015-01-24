@@ -164,10 +164,7 @@ AttachShowers(Blob * blob,Blob_List * bloblist,
     Cluster_Amplitude *ampl(interface->Amplitude());
     while (ampl->Next()) ampl=ampl->Next();
     msg_Debugging()<<*ampl<<"\n";
-    for (size_t i(ampl->NIn());i<ampl->Legs().size();++i)
-      if (ampl->Leg(i)->Flav().Strong()) 
-	scale=Max(scale,ampl->Leg(i)->Mom().PPerp());
-    if (scale==0.0) scale=(ampl->Leg(0)->Mom()+ampl->Leg(1)->Mom()).Mass();
+    scale=sqrt(ampl->MuQ2());
     blob->AddData("MI_Scale",new Blob_Data<double>(scale));
     msg_Debugging()<<"} -> p_T = "<<scale<<"\n";
   }
