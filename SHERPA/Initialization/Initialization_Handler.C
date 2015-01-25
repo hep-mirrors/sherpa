@@ -719,7 +719,7 @@ bool Initialization_Handler::InitializeTheShowers()
     Shower_Handler_Map::iterator it=m_showerhandlers.find(isrtypes[i]);
     if (it!=m_showerhandlers.end()) delete it->second;
     m_showerhandlers[isrtypes[i]]=new Shower_Handler
-        (m_path, m_showerdat, p_model, m_isrhandlers[isrtypes[i]]);
+      (m_path, m_showerdat, p_model, m_isrhandlers[isrtypes[i]],i);
   }
   as->SetActiveAs(isr::hard_process);
   msg_Info()<<"Initialized the Shower_Handler."<<endl;

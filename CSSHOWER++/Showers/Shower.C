@@ -14,7 +14,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Shower::Shower(PDF::ISR_Handler * isr,const int qed,
-	       Data_Reader *const dataread) : 
+	       Data_Reader *const dataread,int type) : 
   p_actual(NULL), m_sudakov(isr,qed), p_isr(isr)
 {
   int evol=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
@@ -25,6 +25,13 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   double fs_as_fac=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   double is_as_fac=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
+  if (type) {
+    kfmode=dataread->GetValue<int>("MI_CSS_KFACTOR_SCHEME",0);
+    k0sqf=dataread->GetValue<double>("MI_CSS_FS_PT2MIN",1.0);
+    k0sqi=dataread->GetValue<double>("MI_CSS_IS_PT2MIN",4.0);
+    fs_as_fac=dataread->GetValue<double>("MI_CSS_FS_AS_FAC",0.66);
+    is_as_fac=dataread->GetValue<double>("MI_CSS_IS_AS_FAC",0.66);
+  }
   m_use_bbw   = dataread->GetValue<int>("CSS_USE_BBW",1);
   m_kscheme   = dataread->GetValue<int>("CSS_KIN_SCHEME",0);
   m_noem      = dataread->GetValue<int>("CSS_NOEM",0);

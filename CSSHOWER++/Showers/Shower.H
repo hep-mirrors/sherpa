@@ -50,7 +50,7 @@ namespace CSSHOWER {
 		       const int mode,const int fc);
  public:
     Shower(PDF::ISR_Handler * isr,const int qed,
-	   ATOOLS::Data_Reader *const dataread);
+	   ATOOLS::Data_Reader *const dataread,int type);
     ~Shower();
     bool   EvolveShower(Singlet *,const size_t &,size_t &);
     int    ReconstructDaughters(Singlet *const split,const int mode,

@@ -33,7 +33,7 @@ namespace CSSHOWER {
   private:
  
     PDF::ISR_Handler * p_isr;
-    int m_weightmode, m_kmode, m_respectq2;
+    int m_weightmode, m_kmode, m_respectq2, m_type;
     size_t m_maxem, m_nem, m_recocheck;
     
     Shower          * p_shower;
@@ -75,7 +75,7 @@ namespace CSSHOWER {
 
     // constructor 
     CS_Shower(PDF::ISR_Handler *const isr, MODEL::Model_Base *const model,
-	      ATOOLS::Data_Reader *const dataread); 
+	      ATOOLS::Data_Reader *const dataread,const int type); 
 
     // destructor
     ~CS_Shower();

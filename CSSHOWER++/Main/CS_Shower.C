@@ -23,7 +23,7 @@ using namespace ATOOLS;
 
 CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
 		     MODEL::Model_Base *const model,
-		     Data_Reader *const _dataread) : 
+		     Data_Reader *const _dataread,const int type) : 
   Shower_Base("CSS"), p_isr(_isr), 
   p_shower(NULL), p_cluster(NULL), p_cs(NULL)
 {
@@ -59,7 +59,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   if (_qed==1) {
     s_kftable[kf_photon]->SetResummed();
   }
-  p_shower = new Shower(_isr,_qed,_dataread);
+  p_shower = new Shower(_isr,_qed,_dataread,type);
   
   p_next = new All_Singlets();
 
@@ -750,7 +750,7 @@ DECLARE_GETTER(CS_Shower,"CSS",Shower_Base,Shower_Key);
 Shower_Base *Getter<Shower_Base,Shower_Key,CS_Shower>::
 operator()(const Shower_Key &key) const
 {
-  return new CS_Shower(key.p_isr,key.p_model,key.p_read);
+  return new CS_Shower(key.p_isr,key.p_model,key.p_read,key.m_type);
 }
 
 void Getter<Shower_Base,Shower_Key,CS_Shower>::

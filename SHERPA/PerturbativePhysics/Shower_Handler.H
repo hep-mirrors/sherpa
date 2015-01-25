@@ -26,7 +26,8 @@ namespace SHERPA {
 
     //constructor
     Shower_Handler(const std::string &dir,const std::string &file,
-		   MODEL::Model_Base *const model,PDF::ISR_Handler *const isr);
+		   MODEL::Model_Base *const model,PDF::ISR_Handler *const isr,
+		   const int type);
 
     // destructor
     ~Shower_Handler();

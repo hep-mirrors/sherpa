@@ -13,7 +13,7 @@ using namespace ATOOLS;
 
 Shower_Handler::Shower_Handler
 (const std::string &dir,const std::string &file,
- MODEL::Model_Base *const model,PDF::ISR_Handler *const isr):
+ MODEL::Model_Base *const model,PDF::ISR_Handler *const isr,const int type):
   p_shower(NULL), p_isr(isr)
 {
   Data_Reader dataread(" ",";","!","=");
@@ -25,11 +25,11 @@ Shower_Handler::Shower_Handler
   rpa->gen.SetVariable("JET_CRITERION",dataread.GetValue
 		       <std::string>("JET_CRITERION",m_name));
   p_shower = PDF::Shower_Getter::GetObject
-    (m_name,PDF::Shower_Key(model,p_isr,&dataread));
+    (m_name,PDF::Shower_Key(model,p_isr,&dataread,type));
   if (p_shower==NULL && m_name!="None" &&
       s_loader->LoadLibrary("Sherpa"+m_name)) {
     p_shower = PDF::Shower_Getter::GetObject
-      (m_name,PDF::Shower_Key(model,p_isr,&dataread));
+      (m_name,PDF::Shower_Key(model,p_isr,&dataread,type));
   }
   if (p_shower==NULL) msg_Info()<<METHOD<<"(): No shower selected."<<std::endl;
 }
