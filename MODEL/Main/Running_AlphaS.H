@@ -51,10 +51,11 @@ namespace MODEL {
 
     // constructor
     One_Running_AlphaS(const double as_MZ,const double m2_MZ,
-		   const int order=0, const int thmode=1,
+                       const int order=0, const int thmode=1,
 		       PDF::PDF_Base *const pdf=NULL,
 		       One_Running_AlphaS *const mo=NULL);
-    
+    One_Running_AlphaS(PDF::PDF_Base *const pdf);
+
     // destructor
     ~One_Running_AlphaS();
 
@@ -102,6 +103,7 @@ namespace MODEL {
 
     // member functions
     void SetActiveAs(PDF::isr::id id);
+    One_Running_AlphaS * GetAs(PDF::isr::id id);
     inline PDF::isr::id ActiveAs() { return m_active; }
 
     // proxy member functions

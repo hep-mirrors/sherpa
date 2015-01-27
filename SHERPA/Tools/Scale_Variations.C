@@ -49,14 +49,15 @@ using namespace SHERPA;
 
 Scale_Variation::Scale_Variation(const double &muR2fac, const double &muF2fac,
                                  PDF::PDF_Base * pdf1, PDF::PDF_Base * pdf2,
-                                 bool deletepdfs) :
-  m_deletepdfs(deletepdfs),
+                                 MODEL::One_Running_AlphaS * as,
+                                 bool deletepdfs, bool deleteas) :
+  m_deletepdfs(deletepdfs), m_deleteas(deleteas),
   m_muR2fac(muR2fac), m_muF2fac(muF2fac), m_val(0.),
   p_pdf1(pdf1), p_pdf2(pdf2),
   m_pdf1id(pdf1->LHEFNumber()), m_pdf2id(pdf2->LHEFNumber()),
   m_pdf1set(pdf1->Set()), m_pdf2set(pdf2->Set()),
   m_pdf1setmember(pdf1->Member()), m_pdf2setmember(pdf2->Member()),
-  m_name(GenerateName())
+  p_as(as), m_name(GenerateName())
 {
 }
 
@@ -65,6 +66,9 @@ Scale_Variation::~Scale_Variation()
   if (m_deletepdfs) {
     if (p_pdf1) { delete p_pdf1; p_pdf1=NULL; }
     if (p_pdf2) { delete p_pdf2; p_pdf1=NULL; }
+  }
+  if (m_deleteas) {
+    if (p_as) { delete p_as; p_as=NULL; }
   }
 }
 
@@ -110,13 +114,17 @@ Scale_Variations::Scale_Variations() :
       // only use nominal PDF
       Scale_Variation * scvar(new Scale_Variation(muR2fac,muF2fac,
                                                   rpa->gen.PDF(0),
-                                                  rpa->gen.PDF(1),false));
+                                                  rpa->gen.PDF(1),
+                                                  MODEL::as->
+                                                  GetAs(PDF::isr::hard_process),
+                                                  false,false));
       (*p_nsvmap)[scvar->Name()]=scvar;
     }
     else {
       // switch to other PDFs, only works with LHAPDF6
       // only then can initialise full set of error PDFs at once,
       // otherwise need to be given explicitly
+      // for each PDF, extract PDF_AS_Info and init new One_Running_AlphaS
       std::string pdfname(cur,pos2+1,std::string::npos);
       bool fullset(false);
       if (pdfname.find("[all]")!=std::string::npos) fullset=true;
@@ -131,10 +139,14 @@ Scale_Variations::Scale_Variations() :
         PDF::PDF_Arguments pa2(rpa->gen.Bunch(1),&reader,1,pdfname,member);
         pdf1=PDF::PDF_Base::PDF_Getter_Function::GetObject(pdfname,pa1);
         pdf2=PDF::PDF_Base::PDF_Getter_Function::GetObject(pdfname,pa2);
+        MODEL::One_Running_AlphaS * as
+            = new MODEL::One_Running_AlphaS(pdf1);
         if (!pdf1 || !pdf2)
           THROW(fatal_error,"PDF set "+pdfname+" not available.");
+        if (!as)
+          THROW(fatal_error,"AlphaS for "+pdfname+" could not be initialised.");
         Scale_Variation * scvar(new Scale_Variation(muR2fac,muF2fac,
-                                                    pdf1,pdf2,true));
+                                                    pdf1,pdf2,as,true,true));
         (*p_nsvmap)[scvar->Name()]=scvar;
       }
       else {
@@ -154,8 +166,10 @@ Scale_Variations::Scale_Variations() :
           PDF::PDF_Arguments pa2(rpa->gen.Bunch(1),&reader,1,pdfname,j);
           pdf1=PDF::PDF_Base::PDF_Getter_Function::GetObject(pdfname,pa1);
           pdf2=PDF::PDF_Base::PDF_Getter_Function::GetObject(pdfname,pa2);
+          MODEL::One_Running_AlphaS * as
+              = new MODEL::One_Running_AlphaS(pdf1);
           Scale_Variation * scvar(new Scale_Variation(muR2fac,muF2fac,
-                                                      pdf1,pdf2,true));
+                                                      pdf1,pdf2,as,true,true));
           (*p_nsvmap)[scvar->Name()]=scvar;
         }
 #else
@@ -254,7 +268,7 @@ bool Scale_Variations::Calculate(Scale_Variation * sv)
       <<"pdf1 = ("<<fl1<<","<<x1<<","<<sqrt(muF12new)<<") = "<<fa<<" , "
       <<"pdf2 = ("<<fl2<<","<<x2<<","<<sqrt(muF22new)<<") = "<<fb<<")\n";
   // see, what to do about PDF alpha-s
-  double asf=pow((*MODEL::as)(muR2new)/(*MODEL::as)(muR2),oqcd);
+  double asf=pow((*sv->AlphaS())(muR2new)/(*MODEL::as)(muR2),oqcd);
   msg_Debugging()<<"asf="<<asf<<std::endl;
   if (m_params.type==mewgttype::none) { // B,R,S
     msg_Debugging()<<"B,R,S event: new wgt="<<B*asf*fa*fb<<std::endl;

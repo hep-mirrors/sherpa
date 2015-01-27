@@ -202,7 +202,6 @@ Rivet_Interface::~Rivet_Interface()
     delete it->second;
     m_rivet.erase(it);
   }
-  msg_Out()<<METHOD<<"(): m_rivet has "<<m_rivet.size()<<" elements left.\n";
 }
 
 void Rivet_Interface::ExtractVariations

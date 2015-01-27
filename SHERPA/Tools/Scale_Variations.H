@@ -8,6 +8,10 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Weight_Info.H"
 
+namespace MODEL {
+  class One_Running_AlphaS;
+}
+
 namespace PDF {
   class PDF_Base;
 }
@@ -20,12 +24,13 @@ namespace SHERPA {
 
   class Scale_Variation {
   private:
-    bool m_deletepdfs;
+    bool m_deletepdfs,m_deleteas;
     double m_muR2fac,m_muF2fac,m_val;
     PDF::PDF_Base *p_pdf1,*p_pdf2;
     int m_pdf1id,m_pdf2id;
     std::string m_pdf1set,m_pdf2set;
     int m_pdf1setmember,m_pdf2setmember;
+    MODEL::One_Running_AlphaS *p_as;
     std::string m_name;
 
     std::string GenerateName();
@@ -33,7 +38,8 @@ namespace SHERPA {
   public:
     Scale_Variation(const double &muR2fac, const double &muF2fac,
                     PDF::PDF_Base * pdf1, PDF::PDF_Base * pdf2,
-                    bool deletepdfs);
+                    MODEL::One_Running_AlphaS * as,
+                    bool deletepdfs, bool deleteas);
     ~Scale_Variation();
 
     inline double MuR2Fac() const { return m_muR2fac; }
@@ -47,6 +53,8 @@ namespace SHERPA {
 
     inline PDF::PDF_Base * PDF1() { return p_pdf1; }
     inline PDF::PDF_Base * PDF2() { return p_pdf2; }
+
+    inline MODEL::One_Running_AlphaS * AlphaS() { return p_as; }
 
     inline std::string Name() const { return m_name; }
 
