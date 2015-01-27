@@ -6,11 +6,7 @@
 #include <vector>
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Phys/Flavour.H"
-
-namespace ATOOLS {
-  struct ME_Weight_Info;
-  struct Weight_Info;
-}
+#include "ATOOLS/Phys/Weight_Info.H"
 
 namespace PDF {
   class PDF_Base;
@@ -70,29 +66,19 @@ namespace SHERPA {
     NamedScaleVariationMap * p_nsvmap;
 
     struct Parameters {
-      double B,V,I,DADS,renterm,facterm1,facterm2;
+      double B,VI,KP,RS,DADS,renterm,facterm1,facterm2;
       double muR2,muF12,muF22;
       double x1,x2,x1p,x2p,x1DADS,x2DADS;
+      std::vector<double> wren,wfac;
       double oqcd,oew;
-      std::vector<double> kpwgts;
       ATOOLS::Flavour fl1,fl2;
+      ATOOLS::mewgttype::code type;
     } m_params;
 
     void ResetValues();
     void ExtractParameters(const ATOOLS::Weight_Info &winfo,
                            PHASIC::Process_Base * proc);
     bool Calculate(Scale_Variation * sv);
-    double Calculate(const double& B, const double& V, const double& I,
-                     const std::vector<double>& wgts,
-                     const ATOOLS::Flavour& fl1, const ATOOLS::Flavour& fl2,
-                     PDF::PDF_Base * pdf1, PDF::PDF_Base * pdf2,
-                     const double& x1, const double& x2,
-                     const double& x1p, const double& x2p,
-                     const double& muR2,
-                     const double& muF12, const double& muF22,
-                     const double& muR2fac,const double& muF2fac,
-                     const double& oqcd, const double& oew,
-                     const size_t& mode);
   public:
     Scale_Variations();
     ~Scale_Variations();

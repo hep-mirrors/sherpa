@@ -225,7 +225,8 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
     else if (type=="I") strcpy(m_evtlist[m_cnt2].type,"I");
     else THROW(fatal_error,"Error in NLO type '"+type+"'");
     if (wgtinfo) {
-      m_evtlist[m_cnt2].wgt0=wgtinfo->m_w0;
+      if      (type=="B" || type=="")  m_evtlist[m_cnt2].wgt0=wgtinfo->m_B;
+      else if (type=="V" || type=="I") m_evtlist[m_cnt2].wgt0=wgtinfo->m_VI;
       m_evtlist[m_cnt2].x1=wgtinfo->m_x1;
       m_evtlist[m_cnt2].x2=wgtinfo->m_x2;
       m_evtlist[m_cnt2].y1=wgtinfo->m_y1;

@@ -413,7 +413,10 @@ double COMIX::Single_Process::Partonic
   if (m_mewgtinfo.m_wren.size() || m_mewgtinfo.m_wfac.size()) {
     FillMEWeights(m_mewgtinfo);
     m_mewgtinfo*=m_w;
-    m_mewgtinfo.m_w0=m_dxs;
+//    PRINT_INFO("TODO: fix decomposition B and VI");
+    m_mewgtinfo.m_B=m_dxs;
+    m_mewgtinfo.m_VI=m_dxs;
+    m_mewgtinfo.m_KP=kpterms;
   }
   return m_lastxs=m_dxs+kpterms;
 }

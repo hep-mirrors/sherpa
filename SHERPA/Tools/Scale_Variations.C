@@ -102,7 +102,6 @@ Scale_Variations::Scale_Variations() :
 #endif
   for (size_t i(0);i<vars.size();++i) {
     std::string cur(vars[i]);
-    msg_Debugging()<<cur<<std::endl;
     size_t pos1(cur.find(",",0));
     double muR2fac(ToType<double>(std::string(cur,0,pos1)));
     size_t pos2(cur.find(",",pos1+1));
@@ -166,7 +165,7 @@ Scale_Variations::Scale_Variations() :
       }
     }
   }
-  msg_Debugging()<<*p_nsvmap<<std::endl;
+  msg_Debugging()<<*p_nsvmap;
 }
 
 Scale_Variations::~Scale_Variations()
@@ -189,66 +188,95 @@ void Scale_Variations::ResetValues()
 void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
                                          PHASIC::Process_Base * proc)
 {
+  DEBUG_FUNC(proc->Name());
   const ME_Weight_Info * const mewgt(proc->GetMEwgtinfo());
   m_params.oqcd=proc->OrderQCD();
   m_params.oew=proc->OrderEW();
   m_params.x1=winfo.m_pdf.m_x1;
   m_params.x2=winfo.m_pdf.m_x2;
-  m_params.x1p=mewgt->m_y1;
-  m_params.x2p=mewgt->m_y2;
+  m_params.fl1=Flavour(abs(winfo.m_pdf.m_fl1),winfo.m_pdf.m_fl1<0);
+  m_params.fl2=Flavour(abs(winfo.m_pdf.m_fl2),winfo.m_pdf.m_fl2<0);
+  if (mewgt) {
+    m_params.B=mewgt->m_B;
+    m_params.VI=mewgt->m_VI;
+    m_params.KP=mewgt->m_KP;
+    m_params.RS=mewgt->m_RS;
+    m_params.x1=mewgt->m_x1;
+    m_params.x2=mewgt->m_x2;
+    m_params.x1p=mewgt->m_y1;
+    m_params.x2p=mewgt->m_y2;
+    m_params.wren=mewgt->m_wren;
+    m_params.wfac=mewgt->m_wfac;
+    m_params.type=mewgt->m_type;
+    m_params.muR2=mewgt->m_mur2;
+    m_params.muF12=mewgt->m_muf2;
+    m_params.muF22=mewgt->m_muf2;
+    msg_Debugging()<<"wgt="<<winfo.m_weight
+                   <<" -> "<<winfo.m_pdf.m_xf1/winfo.m_pdf.m_x1
+                   <<" * "<<winfo.m_pdf.m_xf2/winfo.m_pdf.m_x2
+                   <<" * "<<m_params.B
+                   <<" = "<<winfo.m_pdf.m_xf1/winfo.m_pdf.m_x1
+                            *winfo.m_pdf.m_xf2/winfo.m_pdf.m_x2*m_params.B
+                   <<std::endl;
+    msg_Debugging()
+        <<"pdf1 = ("<<m_params.fl1<<","<<m_params.x1<<","<<sqrt(m_params.muF12)
+        <<") = "<<winfo.m_pdf.m_xf1/winfo.m_pdf.m_x1<<" , "
+        <<"pdf2 = ("<<m_params.fl2<<","<<m_params.x2<<","<<sqrt(m_params.muF22)
+        <<") = "<<winfo.m_pdf.m_xf2/winfo.m_pdf.m_x2<<"\n";
+  }
 }
 
 bool Scale_Variations::Calculate(Scale_Variation * sv)
 {
-  return true;
-}
-
-double Scale_Variations::Calculate
-(const double& B, const double& V,
- const double& I, const std::vector<double>& wgts,
- const Flavour& fl1, const Flavour& fl2,
- PDF::PDF_Base * pdf1, PDF::PDF_Base * pdf2,
- const double& x1, const double& x2,
- const double& x1p, const double& x2p,
- const double& muR2,
- const double& muF12, const double& muF22,
- const double& muR2fac, const double& muF2fac,
- const double& oqcd, const double& oew,
- const size_t& mode)
-{
-  DEBUG_FUNC("mode="<<mode);
+  DEBUG_FUNC("factors (muR/muF)=("<<sv->MuR2Fac()<<","<<sv->MuF2Fac()<<"), "
+             <<"pdf="<<sv->PdfId());
+  // fetch stored input
+  const double &B(m_params.B), &VI(m_params.VI), &KP(m_params.KP),
+               &x1(m_params.x1), &x2(m_params.x2),
+               &x1p(m_params.x1p), &x2p(m_params.x2p),
+               &muR2(m_params.muR2),
+               &muF12(m_params.muF12), &muF22(m_params.muF22),
+               &oqcd(m_params.oqcd), &oew(m_params.oew);
+  const Flavour &fl1(m_params.fl1), &fl2(m_params.fl2);
   // calculate new event weight
-  double muR2new(muR2*muR2fac);
-  double muF12new(muF12*muF2fac),muF22new(muF22*muF2fac);
-  pdf1->Calculate(x1,muF12new);
-  pdf2->Calculate(x2,muF22new);
-  double fa=pdf1->GetXPDF(fl1)/x1;
-  double fb=pdf2->GetXPDF(fl2)/x2;
+  double muR2new(muR2*sv->MuR2Fac());
+  double muF12new(muF12*sv->MuF2Fac()),muF22new(muF22*sv->MuF2Fac());
+  msg_Debugging()<<"B="<<B<<", VI="<<VI<<", KP="<<KP<<std::endl;
+  msg_Debugging()<<"muR: "<<muR2<<" -> "<<muR2new<<" , "
+                 <<"muF1: "<<muF12<<" -> "<<muF12new<<" , "
+                 <<"muF2: "<<muF22<<" -> "<<muF22new<<std::endl;
+  msg_Debugging()<<"oqcd="<<oqcd<<", oew="<<oew<<std::endl;
+  sv->PDF1()->Calculate(x1,muF12new);
+  sv->PDF2()->Calculate(x2,muF22new);
+  double fa=sv->PDF1()->GetXPDF(fl1)/x1;
+  double fb=sv->PDF2()->GetXPDF(fl2)/x2;
   msg_Debugging()
-      <<"pdf1 = ("<<fl1<<","<<x1<<","<<sqrt(muF12new)<<":"<<x1*fa<<") , "
-      <<"pdf2 = ("<<fl2<<","<<x2<<","<<sqrt(muF22new)<<":"<<x2*fb<<")\n";
+      <<"pdf1 = ("<<fl1<<","<<x1<<","<<sqrt(muF12new)<<") = "<<fa<<" , "
+      <<"pdf2 = ("<<fl2<<","<<x2<<","<<sqrt(muF22new)<<") = "<<fb<<")\n";
+  // see, what to do about PDF alpha-s
   double asf=pow((*MODEL::as)(muR2new)/(*MODEL::as)(muR2),oqcd);
   msg_Debugging()<<"asf="<<asf<<std::endl;
-  if (mode==0) { // B,R,S
+  if (m_params.type==mewgttype::none) { // B,R,S
     msg_Debugging()<<"B,R,S event: new wgt="<<B*asf*fa*fb<<std::endl;
-    return B*asf*fa*fb;
+    sv->SetValue(B*asf*fa*fb);
+    return true;
   }
-  else if (mode==1) { // B,V,I
-    if (wgts.size()<2) THROW(fatal_error,"Not enough weight information.");
+  else { // B,VI,KP
+    if (m_params.wren.size()<2) THROW(fatal_error,"Not enough weight information.");
     std::vector<double> w(9,0.);
     // B term (if only born order already the correct one)
-    double asfborn(wgts[0]==0.?asf:pow(asf,(oqcd-1.)/oqcd));
+    double asfborn(m_params.wren[0]==0.?asf:pow(asf,(oqcd-1.)/oqcd));
     double bnew(B?B*asfborn*fa*fb:0.);
     msg_Debugging()<<" -> "<<bnew<<std::endl;
     // VI terms
-    double lr=log(muR2fac), lf=log(muF2fac);
-    w[0]=V+I+wgts[0]*lr+wgts[1]*0.5*sqr(lr);
+    double lr=log(sv->MuR2Fac()), lf=log(sv->MuF2Fac());
+    w[0]=VI+m_params.wren[0]*lr+m_params.wren[1]*0.5*ATOOLS::sqr(lr);
     msg_Debugging()<<"VI = "<<w[0]*fa*fb;
     // KP terms
     double w0(w[0]*fa*fb);
-    if (wgts.size()>=18) {
-      for (int i(1);i<9;++i) {
-        w[i]=wgts[i+1]+wgts[i+9]*lf;
+    if (m_params.wfac.size()==16) {
+      for (int i(0);i<8;++i) {
+        w[i]=m_params.wfac[i]+m_params.wfac[i+8]*lf;
       }
       double faq(0.0), faqx(0.0), fag(0.0), fagx(0.0);
       double fbq(0.0), fbqx(0.0), fbg(0.0), fbgx(0.0);
@@ -256,19 +284,19 @@ double Scale_Variations::Calculate
       if (w[1]!=0. || w[2]!=0. || w[3]!=0. || w[4]!=0.) {
         if (fl1.IsQuark()) {
           faq=fa;
-          fag=pdf1->GetXPDF(gluon)/x1;
-          pdf1->Calculate(x1/x1p,muF12new);
-          faqx=pdf1->GetXPDF(fl1)/x1;
-          fagx=pdf1->GetXPDF(gluon)/x1;
+          fag=sv->PDF1()->GetXPDF(gluon)/x1;
+          sv->PDF1()->Calculate(x1/x1p,muF12new);
+          faqx=sv->PDF1()->GetXPDF(fl1)/x1;
+          fagx=sv->PDF1()->GetXPDF(gluon)/x1;
         }
         else if (fl1.IsGluon()) {
           fag=fa;
           for (size_t i=0;i<quark.Size();++i)
-            faq+=pdf1->GetXPDF(quark[i])/x1;
-          pdf1->Calculate(x1/x1p,muF12new);
-          fagx=pdf1->GetXPDF(fl1)/x1;
+            faq+=sv->PDF1()->GetXPDF(quark[i])/x1;
+          sv->PDF1()->Calculate(x1/x1p,muF12new);
+          fagx=sv->PDF1()->GetXPDF(fl1)/x1;
           for (size_t i=0;i<quark.Size();++i)
-            faqx+=pdf1->GetXPDF(quark[i])/x1;
+            faqx+=sv->PDF1()->GetXPDF(quark[i])/x1;
         }
         else THROW(not_implemented,
                    std::string("Change of scales not implemented for ")
@@ -277,42 +305,40 @@ double Scale_Variations::Calculate
       if (w[5]!=0. || w[6]!=0. || w[7]!=0. || w[8]!=0.) {
         if (fl2.IsQuark()) {
           fbq=fb;
-          fbg=pdf2->GetXPDF(gluon)/x2;
-          pdf2->Calculate(x2/x2p,muF22new);
-          fbqx=pdf2->GetXPDF(fl2)/x2;
-          fbgx=pdf2->GetXPDF(gluon)/x2;
+          fbg=sv->PDF2()->GetXPDF(gluon)/x2;
+          sv->PDF2()->Calculate(x2/x2p,muF22new);
+          fbqx=sv->PDF2()->GetXPDF(fl2)/x2;
+          fbgx=sv->PDF2()->GetXPDF(gluon)/x2;
         }
         else if (fl2.IsGluon()) {
           fbg=fb;
           for (size_t i=0;i<quark.Size();++i)
-            fbq+=pdf2->GetXPDF(quark[i])/x2;
-          pdf2->Calculate(x2/x2p,muF22new);
-          fbgx=pdf2->GetXPDF(fl2)/x2;
+            fbq+=sv->PDF2()->GetXPDF(quark[i])/x2;
+          sv->PDF2()->Calculate(x2/x2p,muF22new);
+          fbgx=sv->PDF2()->GetXPDF(fl2)/x2;
           for (size_t i=0;i<quark.Size();++i)
-            fbqx+=pdf2->GetXPDF(quark[i])/x2;
+            fbqx+=sv->PDF2()->GetXPDF(quark[i])/x2;
         }
         else THROW(not_implemented,
                    std::string("Change of scales not implemented for ")
                    +ToString(fl2));
       }
+      w0+=KP;
       w0+=(faq*w[1]+faqx*w[2]+fag*w[3]+fagx*w[4])*fb;
       w0+=(fbq*w[5]+fbqx*w[6]+fbg*w[7]+fbgx*w[8])*fa;
       msg_Debugging()<<" -> "<<w0;
     }
-    else
     msg_Debugging()<<" -> "<<w0*asf<<std::endl;
-    return bnew+w0*asf;
+    sv->SetValue(bnew+w0*asf);
+    return true;
   }
-  else {
-    THROW(not_implemented,"Invalid option");
-  }
-  return 0.;
+  return false;
 }
 
 bool Scale_Variations::ComputeVariations(const ATOOLS::Weight_Info &winfo,
                                          PHASIC::Process_Base * proc)
 {
-  DEBUG_FUNC(proc);
+  DEBUG_FUNC(proc->Name());
   if (!m_on) return true;
   ResetValues();
   ExtractParameters(winfo,proc);

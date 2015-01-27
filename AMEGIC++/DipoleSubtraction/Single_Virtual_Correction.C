@@ -460,7 +460,9 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
   if (p_partner != this) kpterm*=m_sfactor;
   m_lastkp=kpterm;
 
-  m_mewgtinfo.m_w0 = m_lastdxs/m_sfactor;
+  m_mewgtinfo.m_B = m_lastbxs/m_sfactor;
+  m_mewgtinfo.m_VI = (m_lastv+m_lasti)/m_sfactor;
+  m_mewgtinfo.m_KP = m_lastkp/m_sfactor;
   p_partner->FillMEwgts(m_mewgtinfo);
   m_mewgtinfo*=m_Norm*m_sfactor;
 

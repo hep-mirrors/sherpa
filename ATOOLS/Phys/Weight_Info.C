@@ -21,7 +21,10 @@ namespace ATOOLS {
 
 ME_Weight_Info &ME_Weight_Info::operator*=(const double &scal)
 {
-  m_w0*=scal;
+  m_B*=scal;
+  m_VI*=scal;
+  m_KP*=scal;
+  m_RS*=scal;
   if (m_type&mewgttype::muR)
     for (size_t i(0);i<m_wren.size();++i) m_wren[i]*=scal;
   if (m_type&mewgttype::muF)
@@ -30,3 +33,17 @@ ME_Weight_Info &ME_Weight_Info::operator*=(const double &scal)
   return *this;
 }
 
+std::ostream & operator<<(std::ostream & s,
+                          const ATOOLS::ME_Weight_Info & mwi)
+{
+  s<<"type="<<mwi.m_type<<", B="<<mwi.m_B<<", VI="<<mwi.m_VI<<", KP="<<mwi.m_KP
+                        <<", RS="<<mwi.m_RS<<std::endl;
+  s<<"muR2="<<mwi.m_mur2<<", muF2="<<mwi.m_muf2
+   <<", x1="<<mwi.m_x1<<", x2="<<mwi.m_x2
+   <<", x1p="<<mwi.m_y1<<", x2p="<<mwi.m_y2<<std::endl;
+  s<<"wren="<<mwi.m_wren<<std::endl;
+  s<<"wfac="<<mwi.m_wfac<<std::endl;
+  for (size_t i(0);i<mwi.m_dadsinfos.size();++i)
+    s<<mwi.m_dadsinfos[i]<<std::endl;
+  return s;
+}

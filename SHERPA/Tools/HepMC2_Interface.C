@@ -104,6 +104,54 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt)
         wc[it->first]=it->second->Value();
       }
     }
+    if (p_wgtinfo) {
+      wc["Reweight_B"]=p_wgtinfo->m_B;
+      wc["Reweight_VI"]=p_wgtinfo->m_VI;
+      wc["Reweight_KP"]=p_wgtinfo->m_KP;
+      wc["Reweight_RS"]=p_wgtinfo->m_RS;
+      wc["Reweight_KP_x1p"]=p_wgtinfo->m_y1;
+      wc["Reweight_KP_x2p"]=p_wgtinfo->m_y2;
+      wc["Reweight_MuR2"]=p_wgtinfo->m_mur2;
+      wc["Reweight_MuF2"]=p_wgtinfo->m_muf2;
+      if (p_wgtinfo->m_type&mewgttype::muR) {
+        for (size_t i=0;i<p_wgtinfo->m_wren.size();++i) {
+          wc["Reweight_VI_wren"+ToString(i)]=p_wgtinfo->m_wren[i];
+        }
+      }
+      if (p_wgtinfo->m_type&mewgttype::muF) {
+        for (size_t i=0;i<p_wgtinfo->m_wfac.size();++i) {
+          wc["Reweight_KP_wfac"+ToString(i)]=p_wgtinfo->m_wfac[i];
+        }
+      }
+      if (p_wgtinfo->m_dadsinfos.size()) {
+        wc.push_back((p_wgtinfo->m_dadsinfos.size()));
+        for (size_t i(0);i<p_wgtinfo->m_dadsinfos.size();++i) {
+          wc["Reweight_DADS_"+ToString(i)+"_Weight"]
+              =p_wgtinfo->m_dadsinfos[i].m_wgt;
+          wc["Reweight_DADS_"+ToString(i)+"_x1"]
+              =p_wgtinfo->m_dadsinfos[i].m_pdf.m_x1;
+          wc["Reweight_DADS_"+ToString(i)+"_x2"]
+              =p_wgtinfo->m_dadsinfos[i].m_pdf.m_x2;
+          wc["Reweight_DADS_"+ToString(i)+"_fl1"]
+              =p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl1;
+          wc["Reweight_DADS_"+ToString(i)+"_fl2"]
+              =p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl2;
+          wc["Reweight_DADS_"+ToString(i)+"_MuR2"]
+              =p_wgtinfo->m_dadsinfos[i].m_mur2;
+          if (p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf12
+              ==p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf22) {
+            wc["Reweight_DADS_"+ToString(i)+"_MuF2"]
+                =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf12;
+          }
+          else {
+            wc["Reweight_DADS_"+ToString(i)+"_MuF12"]
+                =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf12;
+            wc["Reweight_DADS_"+ToString(i)+"_MuF22"]
+                =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf22;
+          }
+        }
+      }
+    }
     if (p_subevtlist) wc["NLO_Type"]=32;
 #else
     THROW(fatal_error,"Asked for named weights, but HepMC version too old.");
@@ -121,7 +169,10 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt)
     wc.push_back(m_oew);
     if (p_wgtinfo) {
       //dump weight_0
-      wc.push_back(p_wgtinfo->m_w0);
+      wc.push_back(p_wgtinfo->m_B);
+      wc.push_back(p_wgtinfo->m_VI);
+      wc.push_back(p_wgtinfo->m_KP);
+      wc.push_back(p_wgtinfo->m_RS);
       //dump number of usr weights
       size_t nentries(0);
       if (p_wgtinfo->m_type&mewgttype::muR) nentries+=2;
@@ -168,7 +219,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt)
   return true;
 }
 
-HepMC2_Interface::HepMC2_Interface():
+HepMC2_Interface::HepMC2_Interface() :
   m_usenamedweights(false), p_event(NULL)
 {
   Data_Reader reader(" ",";","!","=");

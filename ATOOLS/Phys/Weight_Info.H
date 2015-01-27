@@ -71,31 +71,43 @@ namespace ATOOLS {
 
   struct DADS_Info {
   public:
-    double   m_wgt;
+    double   m_wgt, m_mur2;
     PDF_Info m_pdf;
     DADS_Info(const double &wgt,
               const int &fl1=0, const int &fl2=0,
               const double &x1=0.,const double &x2=0.,
               const double &xf1=0.,const double &xf2=0.,
-              const double &muf12=0.,const double &muf22=0.):
-    m_wgt(wgt), m_pdf(PDF_Info(fl1,fl2,x1,x2,muf12,muf22,xf1,xf2)) {}
+              const double &mur2=0.,const double &muf2=0.):
+    m_wgt(wgt), m_mur2(mur2),
+    m_pdf(PDF_Info(fl1,fl2,x1,x2,muf2,muf2,xf1,xf2)) {}
   };
+
+  inline std::ostream & operator<<(std::ostream & s,
+                                   const ATOOLS::DADS_Info & dadsi)
+  {
+    s<<"DADS: wgt="<<dadsi.m_wgt<<", muR2="<<dadsi.m_mur2<<", "
+     <<dadsi.m_pdf;
+    return s;
+  }
 
   struct ME_Weight_Info {
   public:
     mewgttype::code m_type;
-    double m_w0;
+    double m_B, m_VI, m_KP, m_RS;
     std::vector<double> m_wren,m_wfac;
     double m_x1, m_x2, m_y1, m_y2, m_mur2, m_muf2;
     std::vector<DADS_Info> m_dadsinfos;
     ME_Weight_Info():
       m_type(mewgttype::none),
-      m_w0(0.0), m_wren(2,0.0), m_wfac(16,0.0),
+      m_B(0.0), m_VI(0.0), m_KP(0.0), m_RS(0.0),
+      m_wren(2,0.0), m_wfac(16,0.0),
       m_x1(1.0), m_x2(1.0), m_y1(1.0), m_y2(1.0),
       m_mur2(0.0), m_muf2(0.0) {}
     ME_Weight_Info& operator*=(const double &scal);
   };
 
+  std::ostream & operator<<(std::ostream & s,
+                            const ATOOLS::ME_Weight_Info & mwi);
 }
 
 #endif
