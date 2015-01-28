@@ -64,7 +64,6 @@ namespace SHERPARIVET {
     std::vector<std::string> m_analyses;
 
     size_t m_nevt;
-    double m_sum_of_weights;
     bool   m_finished;
     bool   m_splitjetconts, m_splitSH, m_splitcoreprocs, m_usehepmcshort,
            m_ignorebeams, m_usehepmcnamedweights, m_printsummary;
@@ -175,7 +174,7 @@ Rivet_Interface::Rivet_Interface(const std::string &inpath,
                                  const std::string &tag) :
   Analysis_Interface("Rivet"),
   m_inpath(inpath), m_infile(infile), m_outpath(outpath), m_tag(tag),
-  m_nevt(0), m_sum_of_weights(0.0), m_finished(false),
+  m_nevt(0), m_finished(false),
   m_ignoreblobs(ignoreblobs), m_usehepmcnamedweights(false),
   m_printsummary(true)
 {
@@ -416,7 +415,6 @@ bool Rivet_Interface::Init()
       if (m_analyses[i]==std::string("MC_XS")) break;
       if (i==m_analyses.size()-1) m_analyses.push_back(std::string("MC_XS"));
     }
-    m_sum_of_weights=0.0;
 
     for (size_t i=0; i<m_ignoreblobs.size(); ++i) {
       m_hepmc2.Ignore(m_ignoreblobs[i]);
@@ -519,10 +517,17 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 
 bool Rivet_Interface::Finish()
 {
+  std::string ending("");
+#ifdef USING__RIVET__YODA
+  ending=".yoda";
+#else
+  ending=".aida";
+#endif
   for (RivetScaleVariationMap::iterator mit(m_rivet.begin());
        mit!=m_rivet.end();++mit) {
+    std::string out=m_outpath+(mit->first!=""?"."+mit->first:"");
+    PRINT_FUNC(out+ending);
     if (m_printsummary) {
-      PRINT_FUNC("");
       std::string output("**  Total XS for "+mit->first
                          +std::string(" = ( ")
                          +ToString(mit->second->TotalXS())
@@ -537,17 +542,10 @@ bool Rivet_Interface::Finish()
 #ifdef USING__RIVET__SETSOW
       it->second->setSumOfWeights(mit->second->SumOfWeights());
 #endif
-      std::string out=m_outpath;
-      std::string scalename(mit->first);
-      if (scalename!="") out+="."+scalename;
       if (it->first.first!="") out+="."+it->first.first;
       if (it->first.second!=0) out+=".j"+ToString(it->first.second);
       it->second->finalize();
-#ifdef USING__RIVET__YODA
-      it->second->writeData(out+".yoda");
-#else
-      it->second->writeData(out+".aida");
-#endif
+      it->second->writeData(out+ending);
     }
   }
   m_finished=true;
@@ -558,10 +556,23 @@ void Rivet_Interface::ShowSyntax(const int i)
 {
   if (!msg_LevelIsInfo() || i==0) return;
   msg_Out()<<METHOD<<"(): {\n\n"
-      <<"   BEGIN_RIVET {\n\n"
-      <<"     -a <ana_1> <ana_2>   analyses to run\n";
-  msg_Out()<<"\n   } END_RIVET\n\n"
-      <<"}"<<std::endl;
+    <<"   BEGIN_RIVET {\n\n"
+    <<"     <Option> <Value>     optional parameters\n"
+    <<"     -a <ana_1> <ana_2>   analyses to run\n"
+    <<"\n   } END_RIVET\n\n"
+    <<"   Options:\n"
+    <<"     JETCONTS <0|1>       perform additional separate analyses for \n"
+    <<"                          each matrix element multiplicity\n"
+    <<"     SPLITCOREPROCS <0|1> perform additional separate analyses for \n"
+    <<"                          each different core process\n"
+    <<"     SPLITSH <0|1>        perform additional separate analyses for \n"
+    <<"                          S-MC@NLO S- and H- events\n"
+    <<"     IGNOREBEAMS <0|1>    tell Rivet to ignore beam information\n"
+    <<"     USE_HEPMC_SHORT <0|1> use shortened HepMC event format\n"
+    <<"     USE_HEPMC_NAMED WEIGHTS <1|0> use named HepMC weights,\n"
+    <<"                          mandatory for scale variations\n"
+    <<"     PRINT_SUMMARY <1|0>  print cross section summary at the end\n"
+    <<"}"<<std::endl;
 }
 
 DECLARE_GETTER(Rivet_Interface,"Rivet",
