@@ -179,7 +179,7 @@ Scale_Variations::Scale_Variations() :
       }
     }
   }
-  msg_Debugging()<<*p_nsvmap;
+  msg_Info()<<*p_nsvmap;
 }
 
 Scale_Variations::~Scale_Variations()
@@ -228,8 +228,8 @@ void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
     msg_Debugging()<<"wgt="<<winfo.m_weight
                    <<" -> "<<winfo.m_pdf.m_xf1/winfo.m_pdf.m_x1
                    <<" * "<<winfo.m_pdf.m_xf2/winfo.m_pdf.m_x2
-                   <<" * "<<m_params.B
-                   <<" = "<<winfo.m_pdf.m_xf1/winfo.m_pdf.m_x1
+                   <<" * ( "<<m_params.B<<" + "<<m_params.VI<<" + "<<m_params.KP
+                   <<" ) = "<<winfo.m_pdf.m_xf1/winfo.m_pdf.m_x1
                             *winfo.m_pdf.m_xf2/winfo.m_pdf.m_x2*m_params.B
                    <<std::endl;
     msg_Debugging()
@@ -237,6 +237,9 @@ void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
         <<") = "<<winfo.m_pdf.m_xf1/winfo.m_pdf.m_x1<<" , "
         <<"pdf2 = ("<<m_params.fl2<<","<<m_params.x2<<","<<sqrt(m_params.muF22)
         <<") = "<<winfo.m_pdf.m_xf2/winfo.m_pdf.m_x2<<"\n";
+    msg_Debugging()<<"type="<<m_params.type
+                   <<", wren="<<m_params.wren
+                   <<", wfac="<<m_params.wfac<<std::endl;
   }
 }
 
@@ -276,74 +279,70 @@ bool Scale_Variations::Calculate(Scale_Variation * sv)
     return true;
   }
   else { // B,VI,KP
-    if (m_params.wren.size()<2) THROW(fatal_error,"Not enough weight information.");
-    std::vector<double> w(9,0.);
+    std::vector<double> w(8,0.);
     // B term (if only born order already the correct one)
     double asfborn(m_params.wren[0]==0.?asf:pow(asf,(oqcd-1.)/oqcd));
-    double bnew(B?B*asfborn*fa*fb:0.);
-    msg_Debugging()<<" -> "<<bnew<<std::endl;
+    double Bnew(B*asfborn*fa*fb);
+    msg_Debugging()<<"new B = "<<Bnew<<std::endl;
     // VI terms
     double lr=log(sv->MuR2Fac()), lf=log(sv->MuF2Fac());
-    w[0]=VI+m_params.wren[0]*lr+m_params.wren[1]*0.5*ATOOLS::sqr(lr);
-    msg_Debugging()<<"VI = "<<w[0]*fa*fb;
+    double VInew(VI+m_params.wren[0]*lr+m_params.wren[1]*0.5*ATOOLS::sqr(lr));
+    VInew*=asf*fa*fb;
+    msg_Debugging()<<"new VI = "<<VInew<<std::endl;
     // KP terms
-    double w0(w[0]*fa*fb);
-    if (m_params.wfac.size()==16) {
-      for (int i(0);i<8;++i) {
-        w[i]=m_params.wfac[i]+m_params.wfac[i+8]*lf;
+    double KPnew(0.);
+    for (int i(0);i<8;++i) w[i]=m_params.wfac[i]+m_params.wfac[i+8]*lf;
+    double faq(0.0), faqx(0.0), fag(0.0), fagx(0.0);
+    double fbq(0.0), fbqx(0.0), fbg(0.0), fbgx(0.0);
+    Flavour quark(kf_quark), gluon(kf_gluon);
+    if (w[0]!=0. || w[1]!=0. || w[2]!=0. || w[3]!=0.) {
+      if (fl1.IsQuark()) {
+        faq=fa;
+        fag=sv->PDF1()->GetXPDF(gluon)/x1;
+        sv->PDF1()->Calculate(x1/x1p,muF12new);
+        faqx=sv->PDF1()->GetXPDF(fl1)/x1;
+        fagx=sv->PDF1()->GetXPDF(gluon)/x1;
       }
-      double faq(0.0), faqx(0.0), fag(0.0), fagx(0.0);
-      double fbq(0.0), fbqx(0.0), fbg(0.0), fbgx(0.0);
-      Flavour quark(kf_quark), gluon(kf_gluon);
-      if (w[1]!=0. || w[2]!=0. || w[3]!=0. || w[4]!=0.) {
-        if (fl1.IsQuark()) {
-          faq=fa;
-          fag=sv->PDF1()->GetXPDF(gluon)/x1;
-          sv->PDF1()->Calculate(x1/x1p,muF12new);
-          faqx=sv->PDF1()->GetXPDF(fl1)/x1;
-          fagx=sv->PDF1()->GetXPDF(gluon)/x1;
-        }
-        else if (fl1.IsGluon()) {
-          fag=fa;
-          for (size_t i=0;i<quark.Size();++i)
-            faq+=sv->PDF1()->GetXPDF(quark[i])/x1;
-          sv->PDF1()->Calculate(x1/x1p,muF12new);
-          fagx=sv->PDF1()->GetXPDF(fl1)/x1;
-          for (size_t i=0;i<quark.Size();++i)
-            faqx+=sv->PDF1()->GetXPDF(quark[i])/x1;
-        }
-        else THROW(not_implemented,
-                   std::string("Change of scales not implemented for ")
-                   +ToString(fl1));
+      else if (fl1.IsGluon()) {
+        fag=fa;
+        for (size_t i=0;i<quark.Size();++i)
+          faq+=sv->PDF1()->GetXPDF(quark[i])/x1;
+        sv->PDF1()->Calculate(x1/x1p,muF12new);
+        fagx=sv->PDF1()->GetXPDF(fl1)/x1;
+        for (size_t i=0;i<quark.Size();++i)
+          faqx+=sv->PDF1()->GetXPDF(quark[i])/x1;
       }
-      if (w[5]!=0. || w[6]!=0. || w[7]!=0. || w[8]!=0.) {
-        if (fl2.IsQuark()) {
-          fbq=fb;
-          fbg=sv->PDF2()->GetXPDF(gluon)/x2;
-          sv->PDF2()->Calculate(x2/x2p,muF22new);
-          fbqx=sv->PDF2()->GetXPDF(fl2)/x2;
-          fbgx=sv->PDF2()->GetXPDF(gluon)/x2;
-        }
-        else if (fl2.IsGluon()) {
-          fbg=fb;
-          for (size_t i=0;i<quark.Size();++i)
-            fbq+=sv->PDF2()->GetXPDF(quark[i])/x2;
-          sv->PDF2()->Calculate(x2/x2p,muF22new);
-          fbgx=sv->PDF2()->GetXPDF(fl2)/x2;
-          for (size_t i=0;i<quark.Size();++i)
-            fbqx+=sv->PDF2()->GetXPDF(quark[i])/x2;
-        }
-        else THROW(not_implemented,
-                   std::string("Change of scales not implemented for ")
-                   +ToString(fl2));
-      }
-      w0+=KP;
-      w0+=(faq*w[1]+faqx*w[2]+fag*w[3]+fagx*w[4])*fb;
-      w0+=(fbq*w[5]+fbqx*w[6]+fbg*w[7]+fbgx*w[8])*fa;
-      msg_Debugging()<<" -> "<<w0;
+      else THROW(not_implemented,
+                 std::string("Change of scales not implemented for ")
+                 +ToString(fl1));
     }
-    msg_Debugging()<<" -> "<<w0*asf<<std::endl;
-    sv->SetValue(bnew+w0*asf);
+    if (w[4]!=0. || w[5]!=0. || w[6]!=0. || w[7]!=0.) {
+      if (fl2.IsQuark()) {
+        fbq=fb;
+        fbg=sv->PDF2()->GetXPDF(gluon)/x2;
+        sv->PDF2()->Calculate(x2/x2p,muF22new);
+        fbqx=sv->PDF2()->GetXPDF(fl2)/x2;
+        fbgx=sv->PDF2()->GetXPDF(gluon)/x2;
+      }
+      else if (fl2.IsGluon()) {
+        fbg=fb;
+        for (size_t i=0;i<quark.Size();++i)
+          fbq+=sv->PDF2()->GetXPDF(quark[i])/x2;
+        sv->PDF2()->Calculate(x2/x2p,muF22new);
+        fbgx=sv->PDF2()->GetXPDF(fl2)/x2;
+        for (size_t i=0;i<quark.Size();++i)
+          fbqx+=sv->PDF2()->GetXPDF(quark[i])/x2;
+      }
+      else THROW(not_implemented,
+                 std::string("Change of scales not implemented for ")
+                 +ToString(fl2));
+    }
+    KPnew+=(faq*w[0]+faqx*w[1]+fag*w[2]+fagx*w[3])*fb;
+    KPnew+=(fbq*w[4]+fbqx*w[5]+fbg*w[6]+fbgx*w[7])*fa;
+    KPnew*=asf;
+    msg_Debugging()<<"new KP = "<<KPnew<<std::endl;
+    msg_Debugging()<<"B,V,I event: new wgt="<<Bnew+VInew+KPnew<<std::endl;
+    sv->SetValue(Bnew+VInew+KPnew);
     return true;
   }
   return false;
