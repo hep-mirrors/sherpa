@@ -69,6 +69,15 @@ namespace ATOOLS {
                                            const mewgttype::code c2)
   { return c1=(mewgttype::code)((int)c1&(int)c2); }
 
+  inline std::ostream & operator<<(std::ostream & s,
+                                   const mewgttype::code & type)
+  {
+    if (type==mewgttype::none) s<<"none";
+    if (type==mewgttype::muR)  s<<"muR";
+    if (type==mewgttype::muF)  s<<"muF";
+    return s;
+  }
+
   struct DADS_Info {
   public:
     double   m_wgt, m_mur2;

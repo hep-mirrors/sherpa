@@ -38,6 +38,7 @@ namespace SHERPARIVET {
     std::string m_name;
     Rivet_Map   m_rivetmap;
     double      m_wgt,m_n,m_sum,m_sum2,m_tempn,m_tempsum;
+    std::vector<double> m_rswgts;
   public:
     Rivet_Scale_Variation(std::string name="");
     ~Rivet_Scale_Variation();
@@ -52,7 +53,10 @@ namespace SHERPARIVET {
 
     inline std::string Name()         const { return m_name; }
     inline double      Weight()       const { return m_wgt; }
+    inline double      Weight(size_t i) const { return m_rswgts[i]; }
     inline double      SumOfWeights() const { return m_sum; }
+
+    inline void ResetRSWeights() { m_rswgts.clear(); }
   };
 
   typedef std::map<std::string, Rivet_Scale_Variation *> RivetScaleVariationMap;
@@ -75,8 +79,11 @@ namespace SHERPARIVET {
 
     void ExtractVariations(const HepMC::GenEvent& evt,
                            const std::vector<HepMC::GenEvent*>& subevents);
+    void ExtractVariations(const HepMC::GenEvent& evt);
     void SetEventWeight(const Rivet_Scale_Variation* rsv,
-                        HepMC::GenEvent& evt);
+                        HepMC::GenEvent& evt,
+                        const int& idx=-1);
+    void ResetRivetScaleVariationMapRSWeights();
 
     Rivet::AnalysisHandler* GetRivet(Rivet_Map& rm, std::string proc,
                                      int jetcont);
@@ -110,7 +117,8 @@ using namespace Rivet;
 
 Rivet_Scale_Variation::Rivet_Scale_Variation(std::string name) :
   m_name(name), m_rivetmap(),
-  m_wgt(0.), m_n(0.), m_sum(0.), m_sum2(0.), m_tempn(0.), m_tempsum(0.)
+  m_wgt(0.), m_n(0.), m_sum(0.), m_sum2(0.), m_tempn(0.), m_tempsum(0.),
+  m_rswgts(0,0.)
 {
 }
 
@@ -125,14 +133,15 @@ void Rivet_Scale_Variation::AddPoint(const double& wgt, const double& n,
                                      size_t xsmode)
 {
   DEBUG_FUNC("wgt="<<wgt<<", n="<<n<<", mode="<<xsmode);
-  m_wgt=wgt;
   if      (xsmode==0) {
+    m_wgt=wgt;
     m_n+=n;
     m_sum+=wgt;
     m_sum2+=ATOOLS::sqr(wgt);
   }
   else if (xsmode==1) {
     if (m_tempn>0 && m_tempn!=n) THROW(fatal_error,"Inconsistent ntrial.");
+    m_rswgts.push_back(wgt);
     m_tempn=n;
     m_tempsum+=wgt;
   }
@@ -206,7 +215,18 @@ Rivet_Interface::~Rivet_Interface()
 void Rivet_Interface::ExtractVariations
 (const HepMC::GenEvent& evt,const std::vector<HepMC::GenEvent*>& subevents)
 {
-  DEBUG_FUNC(subevents.size());
+  DEBUG_FUNC("# of subevts: "<<subevents.size());
+  if (subevents.size()) {
+    for (size_t i(0);i<subevents.size();++i) {
+      ExtractVariations(*subevents[i]);
+    }
+  }
+  else ExtractVariations(evt);
+}
+
+void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
+{
+  DEBUG_FUNC("");
   // lookup all evt-wgts with name "MUR<fac>_MUF<fac>_PDF<id>"
   // at the moment the only way to do that is to filter the printout
   const HepMC::WeightContainer& wc=evt.weights();
@@ -259,13 +279,20 @@ void Rivet_Interface::ExtractVariations
 }
 
 void Rivet_Interface::SetEventWeight(const Rivet_Scale_Variation* rsv,
-                                     HepMC::GenEvent& evt)
+                                     HepMC::GenEvent& evt, const int& idx)
 {
-  DEBUG_FUNC(rsv->Name()<<": "<<rsv->Weight());
-  evt.weights()=HepMC::WeightContainer(std::vector<double>(1,rsv->Weight()));
+  double wgt(idx<0?rsv->Weight():rsv->Weight(idx));
+  DEBUG_FUNC(rsv->Name()<<": "<<wgt);
+  evt.weights()=HepMC::WeightContainer(std::vector<double>(1,wgt));
 #ifdef HEPMC_HAS_CROSS_SECTION
   evt.cross_section()->set_cross_section(rsv->TotalXS(),rsv->TotalErr());
 #endif
+}
+
+void Rivet_Interface::ResetRivetScaleVariationMapRSWeights()
+{
+  for (RivetScaleVariationMap::iterator rit(m_rivet.begin());
+       rit!=m_rivet.end();++rit) rit->second->ResetRSWeights();
 }
 
 AnalysisHandler* Rivet_Interface::GetRivet(Rivet_Map& rm, std::string proc,
@@ -427,6 +454,7 @@ bool Rivet_Interface::Init()
 
 bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
 {
+  DEBUG_FUNC("");
   Particle_List pl=bl->ExtractParticles(1);
   for (Particle_List::iterator it=pl.begin(); it!=pl.end(); ++it) {
     if ((*it)->Momentum().Nan()) {
@@ -459,12 +487,11 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
                    <<it->second->RivetMap().size()<<" histograms."<<std::endl;
     Rivet_Map& rivetmap(it->second->RivetMap());
     if (subevents.size()) {
+      it->second->SynchroniseCrossSection();
       for (size_t i(0);i<subevents.size();++i) {
-        SetEventWeight(it->second,*subevents[i]);
+        SetEventWeight(it->second,*subevents[i],i);
         GetRivet(rivetmap,"", 0)->analyze(*subevents[i]);
       }
-      m_hepmc2.DeleteGenSubEventList();
-      it->second->SynchroniseCrossSection();
     }
     else {
       SetEventWeight(it->second,event);
@@ -504,7 +531,10 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
       }
     }
   }
-  if (subevents.size()) m_hepmc2.DeleteGenSubEventList();
+  if (subevents.size()) {
+    ResetRivetScaleVariationMapRSWeights();
+    m_hepmc2.DeleteGenSubEventList();
+  }
 
   ++m_nevt;
   for (RivetScaleVariationMap::iterator it(m_rivet.begin());

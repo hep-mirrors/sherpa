@@ -52,7 +52,7 @@ namespace SHERPA {
     EventInfo(ATOOLS::Blob * sp, const double &wgt, bool namedweights);
     EventInfo(const EventInfo &evtinfo);
     ~EventInfo() {}
-    bool WriteTo(HepMC::GenEvent &evt);
+    bool WriteTo(HepMC::GenEvent &evt, const int& idx=-1);
     inline const ATOOLS::NLO_subevtlist * SubEvtList() { return p_subevtlist; }
     inline void SetWeight(const double &wgt)     { m_wgt=wgt; }
     inline void SetMEWeight(const double &mewgt) { m_mewgt=mewgt; }

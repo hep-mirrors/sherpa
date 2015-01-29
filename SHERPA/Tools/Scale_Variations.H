@@ -26,6 +26,7 @@ namespace SHERPA {
   private:
     bool m_deletepdfs,m_deleteas;
     double m_muR2fac,m_muF2fac,m_val;
+    std::vector<double> m_RSvals;
     PDF::PDF_Base *p_pdf1,*p_pdf2;
     int m_pdf1id,m_pdf2id;
     std::string m_pdf1set,m_pdf2set;
@@ -44,7 +45,9 @@ namespace SHERPA {
 
     inline double MuR2Fac() const { return m_muR2fac; }
     inline double MuF2Fac() const { return m_muF2fac; }
-    inline double Value() const  { return m_val; }
+
+    inline double Value() const                 { return m_val; }
+    inline double Value(const size_t& i) const  { return m_RSvals[i]; }
 
     inline int    Pdf1Id() const  { return m_pdf1id; }
     inline int    Pdf2Id() const  { return m_pdf2id; }
@@ -58,8 +61,11 @@ namespace SHERPA {
 
     inline std::string Name() const { return m_name; }
 
-    inline void SetValue(const double &val) { m_val=val; }
+    inline void SetValue(const double &val)                { m_val=val; }
+    inline void SetValue(const size_t& i,const double &vl) { m_RSvals[i]=vl; }
 
+    inline void DeleteRSValues()                   { m_RSvals.clear(); }
+    inline void InitialisRSValues(const size_t& n) { m_RSvals.resize(n,0.); }
   };
 
   typedef std::map<std::string, Scale_Variation *> NamedScaleVariationMap;
@@ -74,11 +80,12 @@ namespace SHERPA {
     NamedScaleVariationMap * p_nsvmap;
 
     struct Parameters {
-      double B,VI,KP,RS,DADS,renterm,facterm1,facterm2;
+      double B,VI,KP,DADS,renterm,facterm1,facterm2;
       double muR2,muF12,muF22;
       double x1,x2,x1p,x2p,x1DADS,x2DADS;
-      std::vector<double> wren,wfac;
-      double oqcd,oew;
+      std::vector<double> rswgts,rsmuR2s,rsmuF2s;
+      std::vector<double> renwgts,kpwgts;
+      size_t oqcd,oew;
       ATOOLS::Flavour fl1,fl2;
       ATOOLS::mewgttype::code type;
     } m_params;
@@ -86,7 +93,21 @@ namespace SHERPA {
     void ResetValues();
     void ExtractParameters(const ATOOLS::Weight_Info &winfo,
                            PHASIC::Process_Base * proc);
-    bool Calculate(Scale_Variation * sv);
+    bool Calculate(Scale_Variation * sv,
+                   PHASIC::Process_Base * proc);
+    double Calculate(const double& B, const double& VI,
+                     const double& x1, const double& x2,
+                     const double& x1p, const double& x2p,
+                     const double& muR2,
+                     const double& muF12, const double& muF22,
+                     const double& muR2fac, const double& muF2fac,
+                     const size_t& oqcd, const size_t& oew,
+                     const ATOOLS::Flavour& fl1, const ATOOLS::Flavour& fl2,
+                     PDF::PDF_Base * pdf1, PDF::PDF_Base * pdf2,
+                     MODEL::One_Running_AlphaS * as,
+                     const std::vector<double>& renwgts,
+                     const std::vector<double>& kpwgts,
+                     const ATOOLS::mewgttype::code type);
   public:
     Scale_Variations();
     ~Scale_Variations();

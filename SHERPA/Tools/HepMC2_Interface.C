@@ -75,8 +75,8 @@ EventInfo::EventInfo(const EventInfo &evtinfo) :
   m_ntrials(evtinfo.m_ntrials),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
   m_alphas(0.), m_alpha(0.), m_type(evtinfo.m_type),
-  p_wgtinfo(evtinfo.p_wgtinfo), p_pdfinfo(evtinfo.p_pdfinfo),
-  p_subevtlist(evtinfo.p_subevtlist)
+  p_wgtinfo(NULL), p_pdfinfo(evtinfo.p_pdfinfo),
+  p_subevtlist(evtinfo.p_subevtlist), p_nsvmap(evtinfo.p_nsvmap)
 {
 }
 
@@ -86,9 +86,9 @@ bool EventInfo::ReadIn(ATOOLS::Blob_Data_Base* &db,std::string name,bool abort)
   if (abort && !db) THROW(fatal_error,name+" information missing.");
 }
 
-bool EventInfo::WriteTo(HepMC::GenEvent &evt)
+bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
 {
-  DEBUG_FUNC("named weights: "<<m_usenamedweights);
+  DEBUG_FUNC("use named weights: "<<m_usenamedweights);
   HepMC::WeightContainer wc;
   if (m_usenamedweights) {
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
@@ -98,13 +98,15 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt)
     wc["WeightNormalisation"]=m_wgtnorm;
     wc["NTrials"]=m_ntrials;
     // fill scale variations map into weight container
+    msg_Debugging()<<"#named wgts: "<<p_nsvmap->size()<<std::endl;
     if (p_nsvmap) {
       for (NamedScaleVariationMap::const_iterator it(p_nsvmap->begin());
            it!=p_nsvmap->end();++it) {
-        wc[it->first]=it->second->Value();
+        if (idx==-1) wc[it->first]=it->second->Value();
+        else         wc[it->first]=it->second->Value(idx);
       }
     }
-    if (p_wgtinfo) {
+    if (p_wgtinfo && p_wgtinfo->m_type!=mewgttype::none) {
       wc["Reweight_B"]=p_wgtinfo->m_B;
       wc["Reweight_VI"]=p_wgtinfo->m_VI;
       wc["Reweight_KP"]=p_wgtinfo->m_KP;
@@ -115,12 +117,12 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt)
       wc["Reweight_MuF2"]=p_wgtinfo->m_muf2;
       if (p_wgtinfo->m_type&mewgttype::muR) {
         for (size_t i=0;i<p_wgtinfo->m_wren.size();++i) {
-          wc["Reweight_VI_wren"+ToString(i)]=p_wgtinfo->m_wren[i];
+          wc["Reweight_VI_wren_"+ToString(i)]=p_wgtinfo->m_wren[i];
         }
       }
       if (p_wgtinfo->m_type&mewgttype::muF) {
         for (size_t i=0;i<p_wgtinfo->m_wfac.size();++i) {
-          wc["Reweight_KP_wfac"+ToString(i)]=p_wgtinfo->m_wfac[i];
+          wc["Reweight_KP_wfac_"+ToString(i)]=p_wgtinfo->m_wfac[i];
         }
       }
       if (p_wgtinfo->m_dadsinfos.size()) {
@@ -345,6 +347,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
 
 bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
 {
+  DEBUG_FUNC("subevts: "<<evtinfo.SubEvtList()->size());
   // build GenEvent for all subevts (where only the signal is available)
   // purely partonic, no beam information, may add, if needed
   for (size_t i(0);i<evtinfo.SubEvtList()->size();++i) {
@@ -379,7 +382,8 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
     subevtinfo.SetMuR2(sub->m_mu2[stp::ren]);
     subevtinfo.SetMuF12(sub->m_mu2[stp::fac]);
     subevtinfo.SetMuF22(sub->m_mu2[stp::fac]);
-    subevtinfo.WriteTo(*subevent);
+    subevtinfo.WriteTo(*subevent,i);
+    if (msg_LevelIsDebugging()) subevent->print(msg_Out());
     m_subeventlist.push_back(subevent);
   }
   return true;
