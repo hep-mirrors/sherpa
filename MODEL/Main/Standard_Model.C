@@ -194,7 +194,7 @@ void Standard_Model::ParticleInit() {
   s_kftable[kf_s]      = new Particle_Info(kf_s,0.2,.0,-1,-1,3,1,0,1,1,0,"s","s");
   s_kftable[kf_c]      = new Particle_Info(kf_c,1.42,.0,2,1,3,1,0,1,1,0,"c","c");
   s_kftable[kf_b]      = new Particle_Info(kf_b,4.8,.0,-1,-1,3,1,0,1,1,0,"b","b");
-  s_kftable[kf_t]      = new Particle_Info(kf_t,173.,2.,2,1,3,1,0,1,0,1,"t","t");
+  s_kftable[kf_t]      = new Particle_Info(kf_t,173.21,2.0,2,1,3,1,0,1,0,1,"t","t");
   s_kftable[kf_e]      = new Particle_Info(kf_e,0.000511,.0,-3,-1,0,1,0,1,1,0,"e-","e^-");
   s_kftable[kf_nue]    = new Particle_Info(kf_nue,.0,.0,0,1,0,1,0,1,1,0,"nu_e","\\nu_e");
   s_kftable[kf_mu]     = new Particle_Info(kf_mu,.105,.0,-3,-1,0,1,0,1,1,0,"mu-","\\mu^-");
@@ -203,8 +203,8 @@ void Standard_Model::ParticleInit() {
   s_kftable[kf_nutau]  = new Particle_Info(kf_nutau,.0,.0,0,1,0,1,0,1,1,0,"nu_tau","\\nu_\\tau");
   s_kftable[kf_gluon]  = new Particle_Info(kf_gluon,.0,.0,0,0,8,2,-1,1,1,0,"G","g");
   s_kftable[kf_photon] = new Particle_Info(kf_photon,.0,.0,0,0,0,2,-1,1,1,0,"P","\\gamma");
-  s_kftable[kf_Z]      = new Particle_Info(kf_Z,91.188,2.49,0,0,0,2,-1,1,0,1,"Z","Z");
-  s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.419,2.06,3,0,0,2,0,1,0,1,"W+","W^+");
+  s_kftable[kf_Z]      = new Particle_Info(kf_Z,91.1876,2.4952,0,0,0,2,-1,1,0,1,"Z","Z");
+  s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.385,2.085,3,0,0,2,0,1,0,1,"W+","W^+");
   s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.,0.00407,0,0,0,0,-1,1,0,1,"h0","h_0");
   if (m_trivialextension==2) {
     s_kftable[kf_D4]   = new Particle_Info(kf_D4,500.,38.0,-1,-1,3,1,0,1,0,1,"D_4","D_4");
@@ -311,8 +311,7 @@ void Standard_Model::FillSpectrum(const PDF::ISR_Handler_Map& isr)
 
 
   double Q2aS      = p_dataread->GetValue<double>("Q2_AS",1.);
-  string asf  = p_dataread->GetValue<string>("As_Form",
-						       string("smooth"));
+  string asf  = p_dataread->GetValue<string>("As_Form",string("smooth"));
   asform::code as_form(asform::smooth);
   if (asf==string("constant"))    as_form = asform::constant;
   else if (asf==string("frozen")) as_form = asform::frozen;
