@@ -121,7 +121,8 @@ PDF_NNPDF::PDF_NNPDF
   m_q2min=pow(p_pdf->GetQMin(),2);
   m_q2max=pow(p_pdf->GetQMax(),2);
   m_asinfo.m_order=p_pdf->GetOrderAlphaS();
-  m_asinfo.m_asmz =p_pdf->GetAlphaSMz();
+  m_asinfo.m_asmz=p_pdf->GetAlphaSMz();
+  m_asinfo.m_mz2=sqr(p_pdf->GetMz());
 
   // Hopefully efficient lookup table
   // 0 entspricht -6, also anti top

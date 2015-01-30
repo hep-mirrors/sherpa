@@ -99,7 +99,7 @@ namespace PDF {
       if (iset==0) {
         THROW(fatal_error, "PDF set "+m_set+" ("+ToString(m_member)+") not found.");
       }
-  
+      m_asinfo.m_mz2=sqr(91.1876);
 
       char buffer[1024];
       char * err = getcwd(buffer,1024);

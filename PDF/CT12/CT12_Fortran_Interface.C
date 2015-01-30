@@ -152,6 +152,7 @@ namespace PDF {
         m_lhef_number=11183;
         THROW(not_implemented,"An interface for this PDF is not yet provided.");
       }
+      m_asinfo.m_mz2=sqr(91.1876);
 
       if (cset=="") {
         THROW(fatal_error,"PDF set "+m_set

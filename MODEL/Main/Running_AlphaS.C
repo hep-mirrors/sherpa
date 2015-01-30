@@ -82,6 +82,7 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
         if (mo==NULL) {
           m_order=info.m_order;
           m_as_MZ=info.m_asmz;
+          m_m2_MZ=(info.m_mz2>0.?info.m_mz2:m_m2_MZ);
         }
         if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)==1) m_pdf=1;
         /*
@@ -168,14 +169,14 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
     double fac=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
     if (fac!=1.0) msg_Info()<<METHOD<<"(): Setting scale factor "<<fac<<"\n";
     msg_Indent();
-    p_sas = new One_Running_AlphaS((*this)(fac*m2_MZ),m2_MZ,order,thmode,aspdf,this);
+    p_sas = new One_Running_AlphaS((*this)(fac*m_m2_MZ),m_m2_MZ,m_order,thmode,p_pdf,this);
   }
 }
 
 One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
   m_order(0), m_pdf(0), m_nth(0), m_mzset(0),
-  m_CF(4./3.), m_CA(3.), m_as_MZ(0.), m_m2_MZ(0.), m_cutq2(0.),
-  p_thresh(NULL), p_pdf(pdf), p_sas(NULL)
+  m_CF(4./3.), m_CA(3.), m_as_MZ(0.), m_m2_MZ(Flavour(kf_Z).Mass()),
+  m_cutq2(0.), p_thresh(NULL), p_pdf(pdf), p_sas(NULL)
 {
   //------------------------------------------------------------
   // SM thresholds for strong interactions, i.e. QCD
@@ -208,6 +209,7 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
     if (info.m_order>=0) {
       m_order=info.m_order;
       m_as_MZ=info.m_asmz;
+      m_m2_MZ=(info.m_mz2>0.?info.m_mz2:m_m2_MZ);
       if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)==1) m_pdf=1;
       msg_Tracking()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n"
                     <<"  perturbative order "<<m_order
@@ -494,7 +496,7 @@ double One_Running_AlphaS::operator[](double q2)
 double One_Running_AlphaS::operator()(double q2)
 {
   if (m_pdf) return p_pdf->AlphaSPDF(q2);
-  double as;
+  double as(0.);
   if (q2<0.) q2=-q2;
   int i = m_mzset-1;
   if (q2<=m_m2_MZ) {

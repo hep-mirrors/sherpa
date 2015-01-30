@@ -30,9 +30,9 @@ namespace PDF {
 
   struct PDF_AS_Info {
     int m_order;
-    double m_asmz;
+    double m_asmz,m_mz2;
     std::vector<PDF_Flavour> m_flavs;
-    inline PDF_AS_Info(): m_order(-1), m_asmz(0.0) {}
+    inline PDF_AS_Info(): m_order(-1), m_asmz(0.0), m_mz2(0.0) {}
   };// end of struct PDF_AS_Info
 
   class PDF_Base {

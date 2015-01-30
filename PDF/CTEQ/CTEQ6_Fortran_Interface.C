@@ -105,7 +105,8 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
     m_asinfo.m_asmz=0.118;
     path+="CTEQ6Grid";
   }
-  
+  m_asinfo.m_mz2=sqr(91.1876);
+
   char buffer[1024];
   char * err = getcwd(buffer,1024);
   if (err==NULL) {

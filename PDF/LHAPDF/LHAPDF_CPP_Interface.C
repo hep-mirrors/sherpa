@@ -84,6 +84,7 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
             =p_pdf->info().get_entry_as<double>("MTop");
     }
     m_asinfo.m_asmz=p_pdf->info().get_entry_as<double>("AlphaS_MZ");
+    m_asinfo.m_mz2=sqr(p_pdf->info().get_entry_as<double>("MZ"));
   }
 
   // get x,Q2 ranges from PDF

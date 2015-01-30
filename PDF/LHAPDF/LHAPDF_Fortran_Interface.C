@@ -59,7 +59,9 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
       m_asinfo.m_flavs[i].m_mass=LHAPDF::getQMass(i+1);
       m_asinfo.m_flavs[i].m_thres=LHAPDF::getThreshold(i+1);
     }
-    m_asinfo.m_asmz=AlphaSPDF(sqr(Flavour(kf_Z).Mass()));
+    // m_Z cannot be queried, use Sherpa's
+    m_asinfo.m_mz2=sqr(Flavour(kf_Z).Mass());
+    m_asinfo.m_asmz=AlphaSPDF(m_asinfo.m_mz2);
   }
 
   m_xmin=LHAPDF::getXmin(m_member);
