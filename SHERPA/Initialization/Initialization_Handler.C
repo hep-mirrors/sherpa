@@ -769,7 +769,9 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   std::string frag=dr.GetValue<string>("FRAGMENTATION",string("Ahadic"));
   if (frag=="Off" || frag=="None" || frag=="0") return true;
 
-  string decmodel = dr.GetValue<string>("DECAYMODEL",string("Hadrons"));
+  std::string defdecmodel("Hadrons");
+  if (frag=="Lund") defdecmodel="Lund";
+  string decmodel = dr.GetValue<string>("DECAYMODEL",defdecmodel);
   msg_Tracking()<<"Decaymodel = "<<decmodel<<std::endl;
   if (decmodel=="Off" || decmodel=="None" || decmodel=="0") return true;
   else if (decmodel==std::string("Hadrons")) {
