@@ -172,17 +172,18 @@ double Splitting_Function_Base::MEPSWeight
   case cstp::IF:
     return (8.0*M_PI)/((Q2+mk2)*y)/p_lf->JIF(z,y,eta,scale,sub);
   case cstp::II:
-    return (8.0*M_PI)/(Q2*y)/p_lf->JII(z,y,eta,scale,sub);
+    return (8.0*M_PI)/(Q2*y)/p_lf->JII(z-y,y,eta,scale,sub);
   case cstp::none: break;
   }
   return 0.0;
 }
 
 double Splitting_Function_Base::operator()
-  (const double z,const double y,const double eta,
+  (const double iz,const double y,const double eta,
    const double scale,const double Q2,const Color_Info &ci,
    Cluster_Amplitude *const sub)
 {
+  double z(m_type==cstp::II?iz-y:iz);
   double sf((*p_lf)(z,y,eta,scale,Q2,sub));
   if (sf/p_lf->AsymmetryFactor(z,y,Q2)<0.0) return 0.0;
   if (sf<0.0 && sub==NULL) sf=-sf; 
@@ -322,12 +323,12 @@ double SF_Lorentz::JIF(const double &z,const double &y,const double &eta,
 
 double SF_Lorentz::JII(const double &z,const double &y,const double &eta,
 		       const double &scale,const Cluster_Amplitude *const sub) const
-{ 
+{
   if (sub) return 1.0/z;
   double fresh = p_sf->GetXPDF(scale,eta/z,m_flavs[0],m_beam);
   double old = p_sf->GetXPDF(scale,eta,m_flavs[1],m_beam);
   if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
-  return fresh/old;
+  return fresh/old*z/(z+y);
 }
 
 void Splitting_Function_Base::ResetLastInt()

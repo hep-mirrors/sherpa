@@ -393,7 +393,7 @@ bool Sudakov::Generate(Parton * split)
 				    (*m_splitter)->GetFlavourB(),
 				    (*m_splitter)->GetFlavourC());
       x   = split->Xbj();
-      if (m_y<0.0 || m_y>1.0-m_z || m_z<x) continue;
+      if (m_y<0.0 || m_y>1.0 || m_z-m_y<x) continue;
     }
       break;
   default:

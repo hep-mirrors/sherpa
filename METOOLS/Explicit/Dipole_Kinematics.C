@@ -145,10 +145,10 @@ void Dipole_Kinematics::Evaluate()
     p_kt->SetP(m_pi+m_pj+m_pk-pajt);
     m_y=-pjpa/papb;
     if (m_evol==0) {
-      m_kt2=m_Q2*m_y/m_z*(1.0-m_z);
+      m_kt2=m_Q2*m_y/m_z*(1.0-m_z-m_y);
     }
     else {
-      m_kt2=m_Q2*m_y/m_z*(1.0-m_z);
+      m_kt2=m_Q2*m_y/m_z*(1.0-m_z-m_y);
       if (p_j->Flav().IsFermion()) m_kt2=m_Q2*m_y/m_z;
     }
     for (size_t i(0);i<m_cur.size();++i) {

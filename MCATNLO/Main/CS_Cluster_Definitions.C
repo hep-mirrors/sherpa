@@ -92,7 +92,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	if (ii.m_pi.PPlus()>sum.PPlus() || ii.m_z<0.0 ||
 	    ii.m_pi.PMinus()>sum.PMinus() || ii.m_stat!=1) return cs;
 	double kt2=p_shower->KinII()->GetKT2(Q2,ii.m_y,ii.m_z,mi2,mj2,mk2,mo,j->Flav());
-	cs=CS_Parameters(kt2,ii.m_z,ii.m_y,ii.m_phi,ii.m_z,Q2,3,kin);
+	cs=CS_Parameters(kt2,ii.m_z+ii.m_y,ii.m_y,ii.m_phi,ii.m_z,Q2,3,kin);
       }
     }
   }
@@ -178,8 +178,8 @@ void CS_Cluster_Definitions::KernelWeight
   if (!(m_mode&1)) return;
   double scale=cs.m_kt2, eta=1.0;
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
-  else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
-  else if (cs.m_mode==3) eta=GetX(i,cdip)*cs.m_z;
+  else if (cs.m_mode==2) eta=GetX(k,cdip)*cs.m_x;
+  else if (cs.m_mode==3) eta=GetX(i,cdip)*cs.m_x;
   Color_Info ci(i->Col(),j->Col(),k->Col());
   cs.m_wk=(*cdip)(cs.m_z,cs.m_y,eta,scale,Q2,ci);
   if (cs.m_wk<=0.0 || IsBad(cs.m_wk) || 
