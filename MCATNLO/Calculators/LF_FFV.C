@@ -401,7 +401,7 @@ double LF_FFV_II::OverEstimated(const double z,const double y)
 
 double LF_FFV_II::Z()
 {
-  return 1./m_zmax-(1./m_zmax-1.)*pow((1.-m_zmin*m_zmax)/(1.-m_zmax),ATOOLS::ran->Get());
+  return 1./m_zmax-(1./m_zmax-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin*m_zmax),ATOOLS::ran->Get());
 }
 
 double LF_FVF_FF::operator()
