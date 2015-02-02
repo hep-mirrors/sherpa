@@ -80,14 +80,21 @@ namespace SHERPA {
     NamedScaleVariationMap * p_nsvmap;
 
     struct Parameters {
-      double B,VI,KP,DADS,renterm,facterm1,facterm2;
+      double B,VI,KP,renterm,facterm1,facterm2;
       double muR2,muF12,muF22;
-      double x1,x2,x1p,x2p,x1DADS,x2DADS;
+      double x1,x2,x1p,x2p;
       std::vector<double> rswgts,rsmuR2s,rsmuF2s;
       std::vector<double> renwgts,kpwgts;
       size_t oqcd,oew;
       ATOOLS::Flavour fl1,fl2;
       ATOOLS::mewgttype::code type;
+      struct DADS {
+        double wgt;
+        double muR2,muF12,muF22;
+        double x1,x2;
+        ATOOLS::Flavour fl1,fl2;
+      };
+      std::vector<DADS> m_dads;
     } m_params;
 
     void ResetValues();
