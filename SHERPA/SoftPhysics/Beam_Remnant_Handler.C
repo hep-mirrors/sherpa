@@ -10,7 +10,7 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
 		     Soft_Collision_Handler *const softcollisions):
   p_parametrised(NULL), 
   p_shrimps(softcollisions?softcollisions->GetShrimps():NULL),
-  p_beam(beam), m_fill(true)
+  p_beam(beam), m_fill(1)
 {
   Data_Reader read(" ",";","!","=");
   read.AddComment("#");

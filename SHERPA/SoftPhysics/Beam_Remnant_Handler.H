@@ -27,6 +27,8 @@ namespace SHERPA {
     ~Beam_Remnant_Handler();
     ATOOLS::Return_Value::code FillBeamAndBunchBlobs(ATOOLS::Blob_List *const);
     void CleanUp(const size_t & mode=0);
+
+    inline const int Fill() const { return m_fill; }
   };// end of class Beam_Remnant_Handler
 
 }// end of namespace SHERPA

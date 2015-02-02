@@ -7,7 +7,7 @@ using namespace std;
 Beam_Remnants::Beam_Remnants(Beam_Remnant_Handler * _beamremnant) :
   p_beamremnanthandler(_beamremnant)
 {
-  m_name = std::string("Beam_Remnants");
+  m_name = "Beam_Remnants"+std::string(p_beamremnanthandler->Fill()?"":":None");
   m_type = eph::Hadronization;
 }
 
