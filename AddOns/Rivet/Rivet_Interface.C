@@ -283,7 +283,7 @@ void Rivet_Interface::SetEventWeight(const Rivet_Scale_Variation* rsv,
 {
   double wgt(idx<0?rsv->Weight():rsv->Weight(idx));
   DEBUG_FUNC(rsv->Name()<<": "<<wgt);
-  evt.weights()=HepMC::WeightContainer(std::vector<double>(1,wgt));
+  evt.weights()[0]=wgt;
 #ifdef HEPMC_HAS_CROSS_SECTION
   evt.cross_section()->set_cross_section(rsv->TotalXS(),rsv->TotalErr());
 #endif
