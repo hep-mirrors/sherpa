@@ -200,6 +200,7 @@ void Scale_Variations::ResetValues()
     it->second->SetValue(0.);
     it->second->DeleteRSValues();
   }
+  m_params.m_dads.clear();
 }
 
 void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
@@ -228,6 +229,19 @@ void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
     m_params.muR2=mewgt->m_mur2;
     m_params.muF12=mewgt->m_muf2;
     m_params.muF22=mewgt->m_muf2;
+    m_params.m_dads.resize(mewgt->m_dadsinfos.size());
+    for (size_t i(0);i<mewgt->m_dadsinfos.size();++i) {
+      m_params.m_dads[i].wgt=mewgt->m_dadsinfos[i].m_wgt;
+      m_params.m_dads[i].muR2=mewgt->m_dadsinfos[i].m_mur2;
+      m_params.m_dads[i].muF12=mewgt->m_dadsinfos[i].m_pdf.m_muf12;
+      m_params.m_dads[i].muF22=mewgt->m_dadsinfos[i].m_pdf.m_muf22;
+      m_params.m_dads[i].x1=mewgt->m_dadsinfos[i].m_pdf.m_x1;
+      m_params.m_dads[i].x2=mewgt->m_dadsinfos[i].m_pdf.m_x2;
+      m_params.m_dads[i].fl1=Flavour(abs(mewgt->m_dadsinfos[i].m_pdf.m_fl1),
+                                     mewgt->m_dadsinfos[i].m_pdf.m_fl1<0);
+      m_params.m_dads[i].fl2=Flavour(abs(mewgt->m_dadsinfos[i].m_pdf.m_fl2),
+                                     mewgt->m_dadsinfos[i].m_pdf.m_fl2<0);
+    }
   }
   if (sevtlist) {
     for (NamedScaleVariationMap::iterator it=p_nsvmap->begin();
@@ -303,7 +317,7 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
   // calculate new event weight
   double muR2new(muR2*muR2fac);
   double muF12new(muF12*muF2fac),muF22new(muF22*muF2fac);
-  msg_Debugging()<<"B="<<B<<", VI="<<VI<<std::endl;
+  msg_Debugging()<<"B = "<<B<<", VI = "<<VI<<std::endl;
   msg_Debugging()<<"muR: "<<muR2<<" -> "<<muR2new<<" , "
                  <<"muF1: "<<muF12<<" -> "<<muF12new<<" , "
                  <<"muF2: "<<muF22<<" -> "<<muF22new<<std::endl;
@@ -314,18 +328,23 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
   double fb=pdf2->GetXPDF(fl2)/x2;
   msg_Debugging()
       <<"pdf1 = ("<<fl1<<","<<x1<<","<<sqrt(muF12new)<<") = "<<fa<<" , "
-      <<"pdf2 = ("<<fl2<<","<<x2<<","<<sqrt(muF22new)<<") = "<<fb<<")\n";
+      <<"pdf2 = ("<<fl2<<","<<x2<<","<<sqrt(muF22new)<<") = "<<fb<<"\n";
   // reset MODEL::as to hard process
   MODEL::as->SetActiveAs(PDF::isr::hard_process);
-  double asf=pow((*as)(muR2new)/(*MODEL::as)(muR2),oqcd);
-  msg_Debugging()<<"asf="<<asf<<std::endl;
+  double asnew((*as)(muR2new)),asold((*MODEL::as)(muR2));
   if (type==mewgttype::none) { // B,R,S
+    double asf=pow(asnew/asold,oqcd);
+    msg_Debugging()<<"asf = "<<asf<<std::endl;
     msg_Debugging()<<"B,R,S event: new wgt="<<B*asf*fa*fb<<std::endl;
     return B*asf*fa*fb;
   }
   else { // B,VI,KP
     // B term (if only born order already the correct one)
-    double asfborn((renwgts[0]==0.&&renwgts[1]==0.)?asf:pow(asf,(oqcd-1)/oqcd));
+    double asf=pow(asnew/asold,oqcd);
+    double asfborn((renwgts[0]==0.&&renwgts[1]==0.)?asf:
+                                                    pow(asnew/asold,oqcd-1));
+    msg_Debugging()<<"asf(B) = "<<asfborn<<std::endl;
+    msg_Debugging()<<"asf(VI,KP) = "<<asf<<std::endl;
     double Bnew(B*asfborn*fa*fb);
     msg_Debugging()<<"new B = "<<Bnew<<std::endl;
     // VI terms
@@ -387,8 +406,23 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
     KPnew+=(fbq*w[4]+fbqx*w[5]+fbg*w[6]+fbgx*w[7])*fa;
     KPnew*=asf;
     msg_Debugging()<<"new KP = "<<KPnew<<std::endl;
+    // DADS terms
+    double DADSnew(0.);
+    for (size_t i(0);m_params.m_dads.size();++i) {
+      double DADSinew(0.);
+      if (m_params.m_dads[i].wgt!=0) {
+        pdf1->Calculate(m_params.m_dads[i].x1,m_params.m_dads[i].muF12*muF2fac);
+        pdf2->Calculate(m_params.m_dads[i].x2,m_params.m_dads[i].muF22*muF2fac);
+        double fa=pdf1->GetXPDF(fl1)/x1;
+        double fb=pdf2->GetXPDF(fl2)/x2;
+        DADSinew=fa*fb*asf*m_params.m_dads[i].wgt;
+      }
+      msg_Debugging()<<"new DADS_"<<i<<" = "<<DADSinew<<std::endl;
+      DADSnew+=DADSinew;
+    }
+    msg_Debugging()<<"new DADS = "<<DADSnew<<std::endl;
     msg_Debugging()<<"B,V,I event: new wgt="<<Bnew+VInew+KPnew<<std::endl;
-    return Bnew+VInew+KPnew;
+    return Bnew+VInew+KPnew+DADSnew;
   }
   return 0.;
 }
