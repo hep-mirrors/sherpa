@@ -97,6 +97,9 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
     wc["MEWeight"]=m_mewgt;
     wc["WeightNormalisation"]=m_wgtnorm;
     wc["NTrials"]=m_ntrials;
+    // additional entries for LO/LOPS reweighting
+    // x1,x2,muf2 can be found in PdfInfo; alphaS,alphaQED in their infos
+    wc["MuR2"]=m_mur2;
     // fill scale variations map into weight container
     msg_Debugging()<<"#named wgts: "<<p_nsvmap->size()<<std::endl;
     if (p_nsvmap) {
@@ -140,17 +143,10 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
               =p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl2;
           wc["Reweight_DADS_"+ToString(i)+"_MuR2"]
               =p_wgtinfo->m_dadsinfos[i].m_mur2;
-          if (p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf12
-              ==p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf22) {
-            wc["Reweight_DADS_"+ToString(i)+"_MuF2"]
-                =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf12;
-          }
-          else {
-            wc["Reweight_DADS_"+ToString(i)+"_MuF12"]
-                =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf12;
-            wc["Reweight_DADS_"+ToString(i)+"_MuF22"]
-                =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf22;
-          }
+          wc["Reweight_DADS_"+ToString(i)+"_MuF12"]
+              =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf12;
+          wc["Reweight_DADS_"+ToString(i)+"_MuF22"]
+              =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf22;
         }
       }
     }
