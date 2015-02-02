@@ -390,17 +390,17 @@ double LF_FFV_II::OverIntegrated
 {
   m_zmin = zmin; m_zmax = zmax; 
   m_Jmax = m_flavs[0].Kfcode()<3?5.:1.;
-  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * log((1.-zmin)/(1.-zmax)) * m_Jmax;
+  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * log((1.-zmin*zmax)/(1.-zmax)) * m_Jmax;
 }
 
 double LF_FFV_II::OverEstimated(const double z,const double y)
 {
-  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z) * m_Jmax;
+  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1./m_zmax-z) * m_Jmax;
 }
 
 double LF_FFV_II::Z()
 {
-  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran->Get());
+  return 1./m_zmax-(1./m_zmax-1.)*pow((1.-m_zmin*m_zmax)/(1.-m_zmax),ATOOLS::ran->Get());
 }
 
 double LF_FVF_FF::operator()

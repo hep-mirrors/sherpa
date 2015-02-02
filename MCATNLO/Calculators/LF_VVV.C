@@ -438,18 +438,17 @@ double LF_VVV1_II::OverIntegrated
 {
   m_zmin = zmin; m_zmax = zmax;
   m_Jmax = 1.;
-  return 4.*p_cf->MaxCoupling(0) * log((1.-m_zmin)*m_zmax/(m_zmin*(1.-m_zmax))) * m_Jmax;
+  return 4.*p_cf->MaxCoupling(0) * log((1.-zmin*zmax)/(1.-zmax)) * m_Jmax;
 }
 
 double LF_VVV1_II::OverEstimated(const double z,const double y)
 {
-  return 4.*p_cf->MaxCoupling(0) * ( 1./(z*(1.-z)) ) * m_Jmax;
+  return 4.*p_cf->MaxCoupling(0) * ( 1./(1./m_zmax-z-y) ) * m_Jmax;
 }
 
 double LF_VVV1_II::Z()
 {
-  return 1./(1. + ((1.-m_zmin)/m_zmin) *
-             pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), ATOOLS::ran->Get()));
+  return 1./m_zmax-(1./m_zmax-1.)*pow((1.-m_zmin*m_zmax)/(1.-m_zmax),ATOOLS::ran->Get());
 }
 
 double LF_VVV2_II::operator()
