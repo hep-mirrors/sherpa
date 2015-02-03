@@ -33,8 +33,8 @@ ME_Weight_Info &ME_Weight_Info::operator*=(const double &scal)
   return *this;
 }
 
-std::ostream & operator<<(std::ostream & s,
-                          const ATOOLS::ME_Weight_Info & mwi)
+std::ostream & ATOOLS::operator<<(std::ostream & s,
+                                  const ATOOLS::ME_Weight_Info & mwi)
 {
   s<<"type="<<mwi.m_type<<", B="<<mwi.m_B<<", VI="<<mwi.m_VI<<", KP="<<mwi.m_KP
                         <<", RS="<<mwi.m_RS<<std::endl;
