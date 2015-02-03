@@ -155,6 +155,8 @@ void LHAPDF_CPP_Interface::CalculateSpec(double x,double Q2) {
 
 double LHAPDF_CPP_Interface::GetXPDF(const ATOOLS::Flavour infl) {
   int kfc = m_anti*int(infl);
+  if (int(infl)==kf_gluon || int(infl)==kf_photon)
+    kfc = int(infl);
   if (!m_calculated[kfc]) {
     m_xfx[kfc]=p_pdf->xfxQ2(kfc,m_x,m_Q2);
     m_calculated[kfc]=true;
