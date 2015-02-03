@@ -22,8 +22,9 @@ namespace PDF {
 
     PDF_Base * GetCopy();
 
-    void   CalculateSpec(double,double);
-    double GetXPDF(const ATOOLS::Flavour); 
+    void   CalculateSpec(const double&,const double&);
+    double GetXPDF(const ATOOLS::Flavour&);
+    double GetXPDF(const kf_code&,bool);
 
   };// end of class PDF_MRST01LO
 

@@ -61,9 +61,9 @@ namespace PDF {
 
     std::vector<std::pair<ATOOLS::Flavour,double> > m_extracted;
 
-    void SingleExtract(const ATOOLS::Flavour flavour,const double x);
+    void SingleExtract(const ATOOLS::Flavour& flavour,const double& x);
     void SingleReset();
-    virtual void CalculateSpec(double x,double Q2) = 0;
+    virtual void CalculateSpec(const double& x,const double& Q2) = 0;
 
   private:
 
@@ -79,8 +79,11 @@ namespace PDF {
 
     // member functions
     void   Calculate(double x,double Q2);
-    virtual double GetXPDF(const ATOOLS::Flavour flavour) = 0;
+    virtual double GetXPDF(const ATOOLS::Flavour& flavour) = 0;
+    virtual double GetXPDF(const kf_code& kf, bool anti) = 0;
     virtual double AlphaSPDF(const double &q2);
+
+    inline  double GetXPDF(const int& id) { return GetXPDF(abs(id),id<0); }
 
     virtual PDF_Base *GetCopy() = 0;
     virtual PDF_Base *GetBasicPDF();
@@ -105,7 +108,7 @@ namespace PDF {
 
     inline PDF_Base *operator->() { return GetBasicPDF(); }
 
-    inline void Extract(const ATOOLS::Flavour flavour,const double x)
+    inline void Extract(const ATOOLS::Flavour& flavour,const double& x)
     { GetBasicPDF()->SingleExtract(flavour,x); }
     inline void Reset()
     { GetBasicPDF()->SingleReset(); }

@@ -136,14 +136,14 @@ namespace PDF {
     }
 
 
-    void   CalculateSpec(double x, double Q2) {
+    void   CalculateSpec(const double& x, const double& Q2) {
       for (size_t i=0;i<11;++i) m_calculated[i]=false;
       m_x=x;
       m_Q=sqrt(Q2);
     }
 
 
-    double GetXPDF(const ATOOLS::Flavour infl) {
+    double GetXPDF(const ATOOLS::Flavour& infl) {
       if (m_x>m_xmax) return 0.;
       if (!(m_x>=0.0 && m_x<=1.0)) {
         PRINT_INFO("PDF called with x="<<m_x);
@@ -163,6 +163,25 @@ namespace PDF {
       return m_rescale*m_f[5-cteqindex];     
     }
 
+    double GetXPDF(const kf_code& kf, bool anti) {
+      if (m_x>m_xmax) return 0.;
+      if (!(m_x>=0.0 && m_x<=1.0)) {
+        PRINT_INFO("PDF called with x="<<m_x);
+        return 0.;
+      }
+      int cteqindex;
+      switch (kf) {
+      case kf_gluon: cteqindex=0;                    break;
+      case kf_d:     cteqindex=m_anti*(anti?-2:2);   break;
+      case kf_u:     cteqindex=m_anti*(anti?-1:1);   break;
+      default:       cteqindex=m_anti*(anti?-kf:kf); break;
+      }
+      if (!m_calculated[5-cteqindex]) {
+        m_f[5-cteqindex]=ct10pdf_(cteqindex,m_x,m_Q)*m_x;
+        m_calculated[5-cteqindex]=true;
+      }
+      return m_rescale*m_f[5-cteqindex];
+    }
   };
 
 }

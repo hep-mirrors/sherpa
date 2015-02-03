@@ -23,9 +23,10 @@ namespace PDF {
     ~LHAPDF_CPP_Interface();
     PDF_Base * GetCopy();
 
-    void   CalculateSpec(double,double);
+    void   CalculateSpec(const double&,const double&);
     double AlphaSPDF(const double &);
-    double GetXPDF(const ATOOLS::Flavour);
+    double GetXPDF(const ATOOLS::Flavour&);
+    double GetXPDF(const kf_code&, bool);
 
     void SetPDFMember();
 
@@ -146,17 +147,28 @@ void LHAPDF_CPP_Interface::SetPDFMember()
   }
 }
 
-void LHAPDF_CPP_Interface::CalculateSpec(double x,double Q2) {
+void LHAPDF_CPP_Interface::CalculateSpec(const double& x,const double& Q2) {
   for (std::map<int,bool>::iterator it=m_calculated.begin();
        it!=m_calculated.end();++it) it->second=false;
   m_x=x;
   m_Q2=Q2;
 }
 
-double LHAPDF_CPP_Interface::GetXPDF(const ATOOLS::Flavour infl) {
+double LHAPDF_CPP_Interface::GetXPDF(const ATOOLS::Flavour& infl) {
   int kfc = m_anti*int(infl);
   if (int(infl)==kf_gluon || int(infl)==kf_photon)
     kfc = int(infl);
+  if (!m_calculated[kfc]) {
+    m_xfx[kfc]=p_pdf->xfxQ2(kfc,m_x,m_Q2);
+    m_calculated[kfc]=true;
+  }
+  return m_rescale*m_xfx[kfc];
+}
+
+double LHAPDF_CPP_Interface::GetXPDF(const kf_code& kf, bool anti) {
+  int kfc = m_anti*(anti?-kf:kf);
+  if (kf==kf_gluon || kf==kf_photon)
+    kfc = kf;
   if (!m_calculated[kfc]) {
     m_xfx[kfc]=p_pdf->xfxQ2(kfc,m_x,m_Q2);
     m_calculated[kfc]=true;

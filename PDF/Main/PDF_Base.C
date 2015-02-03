@@ -46,7 +46,7 @@ void PDF_Base::SetPDFMember()
 {
 }
 
-void PDF_Base::Calculate(double x,double Q2) 
+void PDF_Base::Calculate(double x,double Q2)
 {
   if(Q2<m_q2min) {
     static double lasterr(-1.0);
@@ -87,7 +87,7 @@ void PDF_Base::Calculate(double x,double Q2)
   return CalculateSpec(x,Q2);
 }
 
-void PDF_Base::SingleExtract(const ATOOLS::Flavour flavour,const double x) 
+void PDF_Base::SingleExtract(const ATOOLS::Flavour& flavour,const double& x)
 {
   m_rescale-=x;
   if (m_rescale<0.0) m_rescale=0.0;

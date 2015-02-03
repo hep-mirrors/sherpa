@@ -103,13 +103,13 @@ void LHAPDF_Fortran_Interface::SetPDFMember()
   }
 }
 
-void LHAPDF_Fortran_Interface::CalculateSpec(double x,double Q2) {
+void LHAPDF_Fortran_Interface::CalculateSpec(const double& x,const double& Q2) {
   double Q = sqrt(Q2);
   if (LHAPDF::hasPhoton()) m_fv=LHAPDF::xfxphoton(x,Q);
   else                     m_fv=LHAPDF::xfx(x,Q);
 }
 
-double LHAPDF_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl) {
+double LHAPDF_Fortran_Interface::GetXPDF(const ATOOLS::Flavour& infl) {
   int kfc;
   if (int(infl) == kf_gluon) {
     kfc=0;
@@ -121,6 +121,17 @@ double LHAPDF_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl) {
       msg_Out()<<"WARNING in "<<METHOD<<"("<<infl<<") not supported by this PDF!"<<std::endl;
       return 0.;
     }
+  }
+  return m_rescale*m_fv[6+kfc];
+}
+
+double LHAPDF_Fortran_Interface::GetXPDF(const kf_code& kf, bool anti) {
+  int kfc(m_anti*(anti?-kf:kf));
+  if (kf == kf_gluon) kfc=0;
+  else if (LHAPDF::hasPhoton() && kf == kf_photon) kfc=7;
+  if (kfc<-6 || kfc>(LHAPDF::hasPhoton()?7:6)) {
+    msg_Out()<<"WARNING in "<<METHOD<<"("<<infl<<") not supported by this PDF!"<<std::endl;
+    return 0.;
   }
   return m_rescale*m_fv[6+kfc];
 }

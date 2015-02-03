@@ -25,8 +25,9 @@ namespace PDF {
 
     PDF_Base * GetCopy();
 
-    void   CalculateSpec(double,double);
-    double GetXPDF(const ATOOLS::Flavour); 
+    void   CalculateSpec(const double&,const double&);
+    double GetXPDF(const ATOOLS::Flavour&);
+    double GetXPDF(const kf_code&,bool);
 
   };// end of class PDF_MSTW
 
@@ -93,20 +94,30 @@ PDF_Base *PDF_MSTW::GetCopy()
   return copy;
 }
 
-void PDF_MSTW::CalculateSpec(double x,double Q2)
+void PDF_MSTW::CalculateSpec(const double& x,const double& Q2)
 {
   m_x=x;
   m_Q2=Q2;
 }
 
 
-double PDF_MSTW::GetXPDF(const ATOOLS::Flavour infl) 
+double PDF_MSTW::GetXPDF(const ATOOLS::Flavour& infl)
 {
   if(m_x<m_xmin) m_x=m_xmin;
   if (m_x>m_xmax) return 0.0;
   int kfc=m_anti*int(infl);
   if (abs(kfc)==kf_gluon) kfc=0;
   else if (abs(kfc)==kf_photon) kfc=13;
+  return m_rescale*p_pdf->parton(kfc,m_x,sqrt(m_Q2));
+}
+
+double PDF_MSTW::GetXPDF(const kf_code& kf, bool anti)
+{
+  if(m_x<m_xmin) m_x=m_xmin;
+  if (m_x>m_xmax) return 0.0;
+  int kfc=m_anti*(anti?-kf:kf);
+  if      (kf==kf_gluon)  kfc=0;
+  else if (kf==kf_photon) kfc=13;
   return m_rescale*p_pdf->parton(kfc,m_x,sqrt(m_Q2));
 }
 

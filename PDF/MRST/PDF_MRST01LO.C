@@ -63,7 +63,7 @@ PDF_Base *PDF_MRST01LO::GetCopy()
   return copy;
 }
 
-void PDF_MRST01LO::CalculateSpec(double x,double Q2)
+void PDF_MRST01LO::CalculateSpec(const double& x,const double& Q2)
 {
   m_overscaled=false;
   if (x>m_xmax) {
@@ -75,7 +75,7 @@ void PDF_MRST01LO::CalculateSpec(double x,double Q2)
 }
 
 
-double PDF_MRST01LO::GetXPDF(const ATOOLS::Flavour infl) 
+double PDF_MRST01LO::GetXPDF(const ATOOLS::Flavour& infl)
 {
   if (m_overscaled) return 0.;
   int kfc=m_anti*int(infl);
@@ -92,6 +92,27 @@ double PDF_MRST01LO::GetXPDF(const ATOOLS::Flavour infl)
   case -kf_b : return m_rescale*p_xpdf[4];
   case  kf_gluon : 
   case -kf_gluon :return m_rescale*p_xpdf[5]; 
+  default: return 0.;
+  }
+}
+
+double PDF_MRST01LO::GetXPDF(const kf_code& kf, bool anti)
+{
+  if (m_overscaled) return 0.;
+  int kfc=m_anti*(anti?-kf:kf);
+  switch (kfc) {
+  case  kf_d : return m_rescale*(p_xpdfv[0]+p_xpdf[0]);
+  case -kf_d : return m_rescale*p_xpdf[0];
+  case  kf_u : return m_rescale*(p_xpdfv[1]+p_xpdf[1]);
+  case -kf_u : return m_rescale*p_xpdf[1];
+  case  kf_s :
+  case -kf_s : return m_rescale*p_xpdf[2];
+  case  kf_c :
+  case -kf_c : return m_rescale*p_xpdf[3];
+  case  kf_b :
+  case -kf_b : return m_rescale*p_xpdf[4];
+  case  kf_gluon :
+  case -kf_gluon :return m_rescale*p_xpdf[5];
   default: return 0.;
   }
 }

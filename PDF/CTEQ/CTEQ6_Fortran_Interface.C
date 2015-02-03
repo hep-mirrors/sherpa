@@ -141,14 +141,14 @@ PDF_Base *CTEQ6_Fortran_Interface::GetCopy()
   return copy;
 }
 
-void CTEQ6_Fortran_Interface::CalculateSpec(double x,double _Q2) 
+void CTEQ6_Fortran_Interface::CalculateSpec(const double& x, const double& _Q2)
 {
   for (size_t i=0;i<11;++i) m_calculated[i]=false;
   m_x=x;
   m_Q=sqrt(_Q2);
 }
 
-double CTEQ6_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl) 
+double CTEQ6_Fortran_Interface::GetXPDF(const ATOOLS::Flavour& infl)
 {
   if (m_x>m_xmax) return 0.;
   int cteqindex;
@@ -163,6 +163,23 @@ double CTEQ6_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl)
     m_calculated[5-cteqindex]=true;
   }
   return m_rescale*m_f[5-cteqindex];     
+}
+
+double CTEQ6_Fortran_Interface::GetXPDF(const kf_code& kf, bool anti)
+{
+  if (m_x>m_xmax) return 0.;
+  int cteqindex;
+  switch (kf) {
+  case kf_gluon: cteqindex=0;                    break;
+  case kf_d:     cteqindex=m_anti*(anti?-2:2);   break;
+  case kf_u:     cteqindex=m_anti*(anti?-1:1);   break;
+  default:       cteqindex=m_anti*(anti?-kf:kf); break;
+  }
+  if (!m_calculated[5-cteqindex]) {
+    m_f[5-cteqindex]=ctq6pdf_(cteqindex,m_x,m_Q)*m_x;
+    m_calculated[5-cteqindex]=true;
+  }
+  return m_rescale*m_f[5-cteqindex];
 }
 
 void CTEQ6_Fortran_Interface::Error()

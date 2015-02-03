@@ -34,8 +34,9 @@ namespace PDF {
 
     PDF_Base * GetCopy();
 
-    void   CalculateSpec(double,double);
-    double GetXPDF(const ATOOLS::Flavour); 
+    void   CalculateSpec(const double&,const double&);
+    double GetXPDF(const ATOOLS::Flavour&);
+    double GetXPDF(const kf_code&,bool);
 
   };// end of class PDF_NNPDF
 
@@ -155,7 +156,7 @@ PDF_Base *PDF_NNPDF::GetCopy()
 }
 
 // This is resets the x and Q^2 infromation and erases all calculated values
-void PDF_NNPDF::CalculateSpec(double x, double Q2)
+void PDF_NNPDF::CalculateSpec(const double& x, const double& Q2)
 {
   //for (std::map<int,bool>::iterator it=m_calculated.begin();
        //it!=m_calculated.end();++it) it->second=false;
@@ -165,7 +166,7 @@ void PDF_NNPDF::CalculateSpec(double x, double Q2)
 
 
 // Return x*f(x) for flavour infl
-double PDF_NNPDF::GetXPDF(const ATOOLS::Flavour infl) 
+double PDF_NNPDF::GetXPDF(const ATOOLS::Flavour& infl)
 {
   // Parton flavour IDs
   int kfc = m_anti*int(infl);
@@ -175,6 +176,19 @@ double PDF_NNPDF::GetXPDF(const ATOOLS::Flavour infl)
                                // numbers from 0 to 12 to access
                                // array elements
   
+  return m_rescale*p_pdf->xfx(m_x, m_Q2, kfc_nn);
+}
+
+double PDF_NNPDF::GetXPDF(const kf_code& kf, bool anti)
+{
+  // Parton flavour IDs
+  int kfc=m_anti*(anti?-kf:kf);
+  // Hopefully efficient lookup --- relate 21 to 0
+  int kfc_nn(m_lookup[kfc+6]); // kfc runs from -6 to 6 and also 21
+                               // While the driver wants
+                               // numbers from 0 to 12 to access
+                               // array elements
+
   return m_rescale*p_pdf->xfx(m_x, m_Q2, kfc_nn);
 }
 

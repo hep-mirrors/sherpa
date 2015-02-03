@@ -13,8 +13,9 @@ namespace PDF {
     GRVph_Fortran_Interface(const ATOOLS::Flavour);
     PDF_Base * GetCopy();
 
-    void   CalculateSpec(double,double);
-    double GetXPDF(const ATOOLS::Flavour );
+    void   CalculateSpec(const double&, const double&);
+    double GetXPDF(const ATOOLS::Flavour&);
+    double GetXPDF(const kf_code&, bool);
 
     double GetXMin()   { return 1.e-5; }
     double GetXMax()   { return 1.; }

@@ -14,9 +14,10 @@ namespace PDF {
     ~PDF_Electron() {}
     PDF_Base * GetCopy();
 
-    void   CalculateSpec(double,double);
-    double GetXPDF(const ATOOLS::Flavour );
-    
+    void   CalculateSpec(const double&,const double&);
+    double GetXPDF(const ATOOLS::Flavour&);
+    double GetXPDF(const kf_code&, bool);
+
     bool EWOn() { return true; }
 
   };

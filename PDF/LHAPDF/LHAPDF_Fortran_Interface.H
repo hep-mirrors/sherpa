@@ -15,9 +15,10 @@ namespace PDF {
     LHAPDF_Fortran_Interface(const ATOOLS::Flavour,std::string,int);
     PDF_Base * GetCopy();
 
-    void   CalculateSpec(double,double);
+    void   CalculateSpec(const double&,const double&);
     double AlphaSPDF(const double &);
-    double GetXPDF(const ATOOLS::Flavour);
+    double GetXPDF(const ATOOLS::Flavour&);
+    double GetXPDF(const kf_code&,bool);
 
     void SetPDFMember();
 

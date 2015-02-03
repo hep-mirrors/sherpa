@@ -53,7 +53,7 @@ PDF_Base *PDF_MRST99::GetCopy()
   return copy;
 }
 
-void PDF_MRST99::CalculateSpec(double x,double Q2) 
+void PDF_MRST99::CalculateSpec(const double& x,const double& Q2)
 {
   m_overscaled=false;
   if (x>m_xmax) {
@@ -65,7 +65,7 @@ void PDF_MRST99::CalculateSpec(double x,double Q2)
 }
 
 
-double PDF_MRST99::GetXPDF(const ATOOLS::Flavour infl) 
+double PDF_MRST99::GetXPDF(const ATOOLS::Flavour& infl)
 {
   if (m_overscaled) return 0.;
   int kfc=m_anti*int(infl);
@@ -83,6 +83,28 @@ double PDF_MRST99::GetXPDF(const ATOOLS::Flavour infl)
   case kf_gluon : 
   // pseudo anti gluon for anti-proton
   case -kf_gluon :return m_rescale*m_content.glu; 
+  default: return 0.;
+  }
+}
+
+double PDF_MRST99::GetXPDF(const kf_code& kf, bool anti)
+{
+  if (m_overscaled) return 0.;
+  int kfc=m_anti*(anti?-kf:kf);
+  switch (kfc) {
+  case  kf_d : return m_rescale*(m_content.dnv + m_content.dsea);
+  case -kf_d : return m_rescale*m_content.dsea;
+  case  kf_u : return m_rescale*(m_content.upv + m_content.usea);
+  case -kf_u : return m_rescale*m_content.usea;
+  case  kf_s :
+  case -kf_s : return m_rescale*m_content.str;
+  case  kf_c :
+  case -kf_c : return m_rescale*m_content.chm;
+  case  kf_b :
+  case -kf_b : return m_rescale*m_content.bot;
+  case kf_gluon :
+  // pseudo anti gluon for anti-proton
+  case -kf_gluon :return m_rescale*m_content.glu;
   default: return 0.;
   }
 }
