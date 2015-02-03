@@ -73,8 +73,9 @@ namespace ATOOLS {
                                    const mewgttype::code & type)
   {
     if (type==mewgttype::none) s<<"none";
-    if (type==mewgttype::muR)  s<<"muR";
-    if (type==mewgttype::muF)  s<<"muF";
+    else if (type==mewgttype::muR)  s<<"muR";
+    else if (type==mewgttype::muF)  s<<"muF";
+    else if ((type&mewgttype::muR)&&(type&mewgttype::muF))  s<<"muR|muF";
     return s;
   }
 
