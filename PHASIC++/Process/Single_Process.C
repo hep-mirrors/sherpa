@@ -343,8 +343,10 @@ void Single_Process::BeamISRWeight
 
 double Single_Process::Differential(const Vec4D_Vector &p)
 {
+  DEBUG_FUNC(Name()<<", RS:"<<GetSubevtList());
   m_mewgtinfo.m_B=m_mewgtinfo.m_VI=m_mewgtinfo.m_KP=m_mewgtinfo.m_RS=
     m_lastb=m_last=0.0;
+  m_mewgtinfo.m_dadsinfos.clear();
   p_int->SetMomenta(p);
   if (IsMapped()) p_mapproc->Integrator()->SetMomenta(p);
   double flux=0.25/sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
@@ -357,6 +359,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     m_mewgtinfo*=flux;
     m_mewgtinfo.m_muf2=scs->Scale(stp::fac);
     m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
+    msg_Debugging()<<m_mewgtinfo;
     if (m_lastxs==0.0) return m_last=0.0;
     m_last=m_lastxs;
     if (m_nloct && m_pinfo.Has(nlo_type::born))
@@ -367,24 +370,24 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     m_last=(m_last-m_lastbxs*bviw.m_c)*bviw.m_w;
     m_lastb=m_lastbxs*bviw.m_w;
     if (p_mc==NULL) return m_last;
-    // calculate DADS for MC@NLO
-    m_mewgtinfo.m_dadsinfos.clear();
+    // calculate DADS for MC@NLO, one PS point, many dipoles
     Dipole_Params dps(p_mc->Active(this));
+    std::vector<double> x(2,-1.0);
+    for (size_t j(0);j<2;++j) x[j]=Min(dps.m_p[j][3]/rpa->gen.PBeam(j)[3],1.);
     for (size_t i(0);i<dps.m_procs.size();++i) {
       Process_Base *cp(dps.m_procs[i]);
       size_t mcmode(cp->SetMCMode(m_mcmode));
       bool lookup(cp->LookUp());
       cp->SetLookUp(false);
       double dadswgt(cp->Differential(dps.m_p)*dps.m_weight);
-      double dadsmewgt(cp->GetMEwgtinfo()->m_RS*dps.m_weight);
-      std::vector<double> x(2,-1.0);
-      for (size_t j(0);j<2;++j) x[j]=Min(dps.m_p[j][3]/rpa->gen.PBeam(j)[3],1.);
+      double dadsmewgt(cp->GetMEwgtinfo()->m_B*dps.m_weight);
       DADS_Info dads(-dadsmewgt,
                      cp->Flavours()[0],cp->Flavours()[1],
                      x[0],x[1],
                      0.,0.,
                      cp->ScaleSetter()->Scale(stp::ren),
                      cp->ScaleSetter()->Scale(stp::fac));
+      msg_Debugging()<<dads<<std::endl;
       m_mewgtinfo.m_dadsinfos.push_back(dads);
       m_last-=dadswgt;
       cp->SetLookUp(lookup);
