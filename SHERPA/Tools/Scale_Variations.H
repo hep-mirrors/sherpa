@@ -77,6 +77,7 @@ namespace SHERPA {
   class Scale_Variations {
   private:
     bool m_on,m_loadlhapdf;
+    ATOOLS::Flavour m_gluon,m_quark;
     NamedScaleVariationMap * p_nsvmap;
 
     struct Parameters {
@@ -86,15 +87,15 @@ namespace SHERPA {
       std::vector<double> rswgts,rsmuR2s,rsmuF2s;
       std::vector<double> renwgts,kpwgts;
       size_t oqcd,oew;
-      ATOOLS::Flavour fl1,fl2;
+      int fl1,fl2;
       ATOOLS::mewgttype::code type;
       struct DADS {
         double wgt;
         double muR2,muF12,muF22;
         double x1,x2;
-        ATOOLS::Flavour fl1,fl2;
+        int fl1,fl2;
       };
-      std::vector<DADS> m_dads;
+      std::vector<DADS> dads;
     } m_params;
 
     void ResetValues();
@@ -109,7 +110,7 @@ namespace SHERPA {
                      const double& muF12, const double& muF22,
                      const double& muR2fac, const double& muF2fac,
                      const size_t& oqcd, const size_t& oew,
-                     const ATOOLS::Flavour& fl1, const ATOOLS::Flavour& fl2,
+                     const int& fl1, const int& fl2,
                      PDF::PDF_Base * pdf1, PDF::PDF_Base * pdf2,
                      MODEL::One_Running_AlphaS * as,
                      const std::vector<double>& renwgts,

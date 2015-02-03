@@ -305,6 +305,9 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(p,4096);
   }
   p_selected->Selected()->SetMEwgtinfo(*p_rsproc->Selected()->GetMEwgtinfo());
+  // rsproc has entry in m_RS, while rproc should have it in m_B
+  std::swap(p_selected->Selected()->GetMEwgtinfo()->m_B,
+            p_selected->Selected()->GetMEwgtinfo()->m_RS);
   if (p_ampl==NULL) {
     msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;
     return 0.0;

@@ -86,7 +86,9 @@ std::string Scale_Variation::GenerateName()
 }
 
 Scale_Variations::Scale_Variations() :
-  m_on(false), m_loadlhapdf(true), p_nsvmap(new NamedScaleVariationMap())
+  m_on(false), m_loadlhapdf(true),
+  m_quark(Flavour(kf_quark)), m_gluon(Flavour(kf_gluon)),
+  p_nsvmap(new NamedScaleVariationMap())
 {
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
@@ -200,7 +202,7 @@ void Scale_Variations::ResetValues()
     it->second->SetValue(0.);
     it->second->DeleteRSValues();
   }
-  m_params.m_dads.clear();
+  m_params.dads.clear();
 }
 
 void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
@@ -213,8 +215,8 @@ void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
   m_params.oew=proc->OrderEW();
   m_params.x1=winfo.m_pdf.m_x1;
   m_params.x2=winfo.m_pdf.m_x2;
-  m_params.fl1=Flavour(abs(winfo.m_pdf.m_fl1),winfo.m_pdf.m_fl1<0);
-  m_params.fl2=Flavour(abs(winfo.m_pdf.m_fl2),winfo.m_pdf.m_fl2<0);
+  m_params.fl1=winfo.m_pdf.m_fl1;
+  m_params.fl2=winfo.m_pdf.m_fl2;
   if (mewgt) {
     m_params.B=mewgt->m_B;
     m_params.VI=mewgt->m_VI;
@@ -229,18 +231,16 @@ void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
     m_params.muR2=mewgt->m_mur2;
     m_params.muF12=mewgt->m_muf2;
     m_params.muF22=mewgt->m_muf2;
-    m_params.m_dads.resize(mewgt->m_dadsinfos.size());
+    m_params.dads.resize(mewgt->m_dadsinfos.size());
     for (size_t i(0);i<mewgt->m_dadsinfos.size();++i) {
-      m_params.m_dads[i].wgt=mewgt->m_dadsinfos[i].m_wgt;
-      m_params.m_dads[i].muR2=mewgt->m_dadsinfos[i].m_mur2;
-      m_params.m_dads[i].muF12=mewgt->m_dadsinfos[i].m_pdf.m_muf12;
-      m_params.m_dads[i].muF22=mewgt->m_dadsinfos[i].m_pdf.m_muf22;
-      m_params.m_dads[i].x1=mewgt->m_dadsinfos[i].m_pdf.m_x1;
-      m_params.m_dads[i].x2=mewgt->m_dadsinfos[i].m_pdf.m_x2;
-      m_params.m_dads[i].fl1=Flavour(abs(mewgt->m_dadsinfos[i].m_pdf.m_fl1),
-                                     mewgt->m_dadsinfos[i].m_pdf.m_fl1<0);
-      m_params.m_dads[i].fl2=Flavour(abs(mewgt->m_dadsinfos[i].m_pdf.m_fl2),
-                                     mewgt->m_dadsinfos[i].m_pdf.m_fl2<0);
+      m_params.dads[i].wgt=mewgt->m_dadsinfos[i].m_wgt;
+      m_params.dads[i].muR2=mewgt->m_dadsinfos[i].m_mur2;
+      m_params.dads[i].muF12=mewgt->m_dadsinfos[i].m_pdf.m_muf12;
+      m_params.dads[i].muF22=mewgt->m_dadsinfos[i].m_pdf.m_muf22;
+      m_params.dads[i].x1=mewgt->m_dadsinfos[i].m_pdf.m_x1;
+      m_params.dads[i].x2=mewgt->m_dadsinfos[i].m_pdf.m_x2;
+      m_params.dads[i].fl1=mewgt->m_dadsinfos[i].m_pdf.m_fl1;
+      m_params.dads[i].fl2=mewgt->m_dadsinfos[i].m_pdf.m_fl2;
     }
   }
   if (sevtlist) {
@@ -305,7 +305,7 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
                                    const double& muF12, const double& muF22,
                                    const double& muR2fac, const double& muF2fac,
                                    const size_t& oqcd, const size_t& oew,
-                                   const Flavour& fl1, const Flavour& fl2,
+                                   const int& fl1, const int& fl2,
                                    PDF::PDF_Base * pdf1, PDF::PDF_Base * pdf2,
                                    MODEL::One_Running_AlphaS * as,
                                    const std::vector<double>& renwgts,
@@ -321,7 +321,7 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
   msg_Debugging()<<"muR: "<<muR2<<" -> "<<muR2new<<" , "
                  <<"muF1: "<<muF12<<" -> "<<muF12new<<" , "
                  <<"muF2: "<<muF22<<" -> "<<muF22new<<std::endl;
-  msg_Debugging()<<"oqcd="<<oqcd<<", oew="<<oew<<std::endl;
+  msg_Debugging()<<"oqcd: "<<oqcd<<", oew: "<<oew<<std::endl;
   pdf1->Calculate(x1,muF12new);
   pdf2->Calculate(x2,muF22new);
   double fa=pdf1->GetXPDF(fl1)/x1;
@@ -358,44 +358,45 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
     for (int i(0);i<8;++i) w[i]=kpwgts[i]+kpwgts[i+8]*lf;
     double faq(0.0), faqx(0.0), fag(0.0), fagx(0.0);
     double fbq(0.0), fbqx(0.0), fbg(0.0), fbgx(0.0);
-    Flavour quark(kf_quark), gluon(kf_gluon);
     if (w[0]!=0. || w[1]!=0. || w[2]!=0. || w[3]!=0.) {
-      if (fl1.IsQuark()) {
+      Flavour flav1(abs(fl1),fl1<0);
+      if (flav1.IsQuark()) {
         faq=fa;
-        fag=pdf1->GetXPDF(gluon)/x1;
+        fag=pdf1->GetXPDF(m_gluon)/x1;
         pdf1->Calculate(x1/x1p,muF12new);
         faqx=pdf1->GetXPDF(fl1)/x1;
-        fagx=pdf1->GetXPDF(gluon)/x1;
+        fagx=pdf1->GetXPDF(m_gluon)/x1;
       }
-      else if (fl1.IsGluon()) {
+      else if (flav1.IsGluon()) {
         fag=fa;
-        for (size_t i=0;i<quark.Size();++i)
-          faq+=pdf1->GetXPDF(quark[i])/x1;
+        for (size_t i=0;i<m_quark.Size();++i)
+          faq+=pdf1->GetXPDF(m_quark[i])/x1;
         pdf1->Calculate(x1/x1p,muF12new);
         fagx=pdf1->GetXPDF(fl1)/x1;
-        for (size_t i=0;i<quark.Size();++i)
-          faqx+=pdf1->GetXPDF(quark[i])/x1;
+        for (size_t i=0;i<m_quark.Size();++i)
+          faqx+=pdf1->GetXPDF(m_quark[i])/x1;
       }
       else THROW(not_implemented,
                  std::string("Change of scales not implemented for ")
                  +ToString(fl1));
     }
     if (w[4]!=0. || w[5]!=0. || w[6]!=0. || w[7]!=0.) {
-      if (fl2.IsQuark()) {
+      Flavour flav2(abs(fl2),fl2<0);
+      if (flav2.IsQuark()) {
         fbq=fb;
-        fbg=pdf2->GetXPDF(gluon)/x2;
+        fbg=pdf2->GetXPDF(m_gluon)/x2;
         pdf2->Calculate(x2/x2p,muF22new);
         fbqx=pdf2->GetXPDF(fl2)/x2;
-        fbgx=pdf2->GetXPDF(gluon)/x2;
+        fbgx=pdf2->GetXPDF(m_gluon)/x2;
       }
-      else if (fl2.IsGluon()) {
+      else if (flav2.IsGluon()) {
         fbg=fb;
-        for (size_t i=0;i<quark.Size();++i)
-          fbq+=pdf2->GetXPDF(quark[i])/x2;
+        for (size_t i=0;i<m_quark.Size();++i)
+          fbq+=pdf2->GetXPDF(m_quark[i])/x2;
         pdf2->Calculate(x2/x2p,muF22new);
         fbgx=pdf2->GetXPDF(fl2)/x2;
-        for (size_t i=0;i<quark.Size();++i)
-          fbqx+=pdf2->GetXPDF(quark[i])/x2;
+        for (size_t i=0;i<m_quark.Size();++i)
+          fbqx+=pdf2->GetXPDF(m_quark[i])/x2;
       }
       else THROW(not_implemented,
                  std::string("Change of scales not implemented for ")
@@ -408,20 +409,21 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
     msg_Debugging()<<"new KP = "<<KPnew<<std::endl;
     // DADS terms
     double DADSnew(0.);
-    for (size_t i(0);m_params.m_dads.size();++i) {
+    for (size_t i(0);i<m_params.dads.size();++i) {
       double DADSinew(0.);
-      if (m_params.m_dads[i].wgt!=0) {
-        pdf1->Calculate(m_params.m_dads[i].x1,m_params.m_dads[i].muF12*muF2fac);
-        pdf2->Calculate(m_params.m_dads[i].x2,m_params.m_dads[i].muF22*muF2fac);
-        double fa=pdf1->GetXPDF(fl1)/x1;
-        double fb=pdf2->GetXPDF(fl2)/x2;
-        DADSinew=fa*fb*asf*m_params.m_dads[i].wgt;
+      if (m_params.dads[i].wgt!=0.) {
+        pdf1->Calculate(m_params.dads[i].x1,m_params.dads[i].muF12*muF2fac);
+        pdf2->Calculate(m_params.dads[i].x2,m_params.dads[i].muF22*muF2fac);
+        double fadads=pdf1->GetXPDF(m_params.dads[i].fl1)/m_params.dads[i].x1;
+        double fbdads=pdf2->GetXPDF(m_params.dads[i].fl2)/m_params.dads[i].x2;
+        DADSinew=fadads*fbdads*asf*m_params.dads[i].wgt;
       }
       msg_Debugging()<<"new DADS_"<<i<<" = "<<DADSinew<<std::endl;
       DADSnew+=DADSinew;
     }
     msg_Debugging()<<"new DADS = "<<DADSnew<<std::endl;
-    msg_Debugging()<<"B,V,I event: new wgt="<<Bnew+VInew+KPnew<<std::endl;
+    msg_Debugging()<<"B,V,I event: new wgt="<<Bnew+VInew+KPnew+DADSnew
+                   <<std::endl;
     return Bnew+VInew+KPnew+DADSnew;
   }
   return 0.;
