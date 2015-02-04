@@ -165,6 +165,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
     wc.push_back(m_muf22);
     wc.push_back(m_oqcd);
     wc.push_back(m_oew);
+    wc.push_back(p_subevtlist?32:0);
     if (p_wgtinfo) {
       //dump weight_0
       wc.push_back(p_wgtinfo->m_B);
