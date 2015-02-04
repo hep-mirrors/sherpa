@@ -555,7 +555,8 @@ bool Rivet_Interface::Finish()
 #endif
   for (RivetScaleVariationMap::iterator mit(m_rivet.begin());
        mit!=m_rivet.end();++mit) {
-    std::string out=m_outpath+(mit->first!=""?"."+mit->first:"");
+    std::string out=m_outpath;
+    if (mit->first!="" && mit->first!="central") out += "."+mit->first;
     PRINT_FUNC(out+ending);
     if (m_printsummary) {
       std::string output("**  Total XS for "+mit->first
