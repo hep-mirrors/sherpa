@@ -572,10 +572,11 @@ bool Rivet_Interface::Finish()
 #ifdef USING__RIVET__SETSOW
       it->second->setSumOfWeights(mit->second->SumOfWeights());
 #endif
-      if (it->first.first!="") out+="."+it->first.first;
-      if (it->first.second!=0) out+=".j"+ToString(it->first.second);
+      std::string jout=out;
+      if (it->first.first!="") jout+="."+it->first.first;
+      if (it->first.second!=0) jout+=".j"+ToString(it->first.second);
       it->second->finalize();
-      it->second->writeData(out+ending);
+      it->second->writeData(jout+ending);
     }
   }
   m_finished=true;
