@@ -106,13 +106,16 @@ namespace ATOOLS {
     double m_B, m_VI, m_KP, m_RS;
     std::vector<double> m_wren,m_wfac;
     double m_x1, m_x2, m_y1, m_y2, m_mur2, m_muf2;
+    int m_fl1, m_fl2;
+    size_t m_oqcd, m_oew;
     std::vector<DADS_Info> m_dadsinfos;
     ME_Weight_Info():
       m_type(mewgttype::none),
       m_B(0.0), m_VI(0.0), m_KP(0.0), m_RS(0.0),
       m_wren(2,0.0), m_wfac(16,0.0),
       m_x1(1.0), m_x2(1.0), m_y1(1.0), m_y2(1.0),
-      m_mur2(0.0), m_muf2(0.0) {}
+      m_mur2(0.0), m_muf2(0.0), m_fl1(0), m_fl2(0),
+      m_oqcd(0), m_oew(0) {}
     ME_Weight_Info& operator*=(const double &scal);
   };
 

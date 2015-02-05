@@ -39,6 +39,8 @@ std::ostream & ATOOLS::operator<<(std::ostream & s,
   s<<"type="<<mwi.m_type<<", B="<<mwi.m_B<<", VI="<<mwi.m_VI<<", KP="<<mwi.m_KP
                         <<", RS="<<mwi.m_RS<<std::endl;
   s<<"muR2="<<mwi.m_mur2<<", muF2="<<mwi.m_muf2
+   <<", oqcd="<<mwi.m_oqcd<<", oew="<<mwi.m_oew
+   <<", fl1="<<mwi.m_fl1<<", fl2="<<mwi.m_fl2
    <<", x1="<<mwi.m_x1<<", x2="<<mwi.m_x2
    <<", x1p="<<mwi.m_y1<<", x2p="<<mwi.m_y2<<std::endl;
   s<<"wren="<<mwi.m_wren<<std::endl;

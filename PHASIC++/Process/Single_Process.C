@@ -347,6 +347,10 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   m_mewgtinfo.m_B=m_mewgtinfo.m_VI=m_mewgtinfo.m_KP=m_mewgtinfo.m_RS=
     m_lastb=m_last=0.0;
   m_mewgtinfo.m_dadsinfos.clear();
+  m_mewgtinfo.m_oqcd=OrderQCD();
+  m_mewgtinfo.m_oew=OrderEW();
+  m_mewgtinfo.m_fl1=(int)(Flavours()[0]);
+  m_mewgtinfo.m_fl2=(int)(Flavours()[1]);
   p_int->SetMomenta(p);
   if (IsMapped()) p_mapproc->Integrator()->SetMomenta(p);
   double flux=0.25/sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());

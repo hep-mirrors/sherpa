@@ -211,37 +211,34 @@ void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
   DEBUG_FUNC(proc->Name());
   const ME_Weight_Info * const mewgt(proc->GetMEwgtinfo());
   const NLO_subevtlist * const sevtlist(proc->GetSubevtList());
-  m_params.oqcd=proc->OrderQCD();
-  m_params.oew=proc->OrderEW();
-  m_params.x1=winfo.m_pdf.m_x1;
-  m_params.x2=winfo.m_pdf.m_x2;
-  m_params.fl1=winfo.m_pdf.m_fl1;
-  m_params.fl2=winfo.m_pdf.m_fl2;
-  if (mewgt) {
-    m_params.B=mewgt->m_B;
-    m_params.VI=mewgt->m_VI;
-    m_params.KP=mewgt->m_KP;
-    m_params.x1=mewgt->m_x1;
-    m_params.x2=mewgt->m_x2;
-    m_params.x1p=mewgt->m_y1;
-    m_params.x2p=mewgt->m_y2;
-    m_params.renwgts=mewgt->m_wren;
-    m_params.kpwgts=mewgt->m_wfac;
-    m_params.type=mewgt->m_type;
-    m_params.muR2=mewgt->m_mur2;
-    m_params.muF12=mewgt->m_muf2;
-    m_params.muF22=mewgt->m_muf2;
-    m_params.dads.resize(mewgt->m_dadsinfos.size());
-    for (size_t i(0);i<mewgt->m_dadsinfos.size();++i) {
-      m_params.dads[i].wgt=mewgt->m_dadsinfos[i].m_wgt;
-      m_params.dads[i].muR2=mewgt->m_dadsinfos[i].m_mur2;
-      m_params.dads[i].muF12=mewgt->m_dadsinfos[i].m_pdf.m_muf12;
-      m_params.dads[i].muF22=mewgt->m_dadsinfos[i].m_pdf.m_muf22;
-      m_params.dads[i].x1=mewgt->m_dadsinfos[i].m_pdf.m_x1;
-      m_params.dads[i].x2=mewgt->m_dadsinfos[i].m_pdf.m_x2;
-      m_params.dads[i].fl1=mewgt->m_dadsinfos[i].m_pdf.m_fl1;
-      m_params.dads[i].fl2=mewgt->m_dadsinfos[i].m_pdf.m_fl2;
-    }
+  if (!mewgt) THROW(fatal_error,"No ME_Weight_Info found.");
+  m_params.B=mewgt->m_B;
+  m_params.VI=mewgt->m_VI;
+  m_params.KP=mewgt->m_KP;
+  m_params.oqcd=mewgt->m_oqcd;
+  m_params.oew=mewgt->m_oew;
+  m_params.fl1=mewgt->m_fl1;
+  m_params.fl2=mewgt->m_fl2;
+  m_params.x1=mewgt->m_x1;
+  m_params.x2=mewgt->m_x2;
+  m_params.x1p=mewgt->m_y1;
+  m_params.x2p=mewgt->m_y2;
+  m_params.renwgts=mewgt->m_wren;
+  m_params.kpwgts=mewgt->m_wfac;
+  m_params.type=mewgt->m_type;
+  m_params.muR2=mewgt->m_mur2;
+  m_params.muF12=mewgt->m_muf2;
+  m_params.muF22=mewgt->m_muf2;
+  m_params.dads.resize(mewgt->m_dadsinfos.size());
+  for (size_t i(0);i<mewgt->m_dadsinfos.size();++i) {
+    m_params.dads[i].wgt=mewgt->m_dadsinfos[i].m_wgt;
+    m_params.dads[i].muR2=mewgt->m_dadsinfos[i].m_mur2;
+    m_params.dads[i].muF12=mewgt->m_dadsinfos[i].m_pdf.m_muf12;
+    m_params.dads[i].muF22=mewgt->m_dadsinfos[i].m_pdf.m_muf22;
+    m_params.dads[i].x1=mewgt->m_dadsinfos[i].m_pdf.m_x1;
+    m_params.dads[i].x2=mewgt->m_dadsinfos[i].m_pdf.m_x2;
+    m_params.dads[i].fl1=mewgt->m_dadsinfos[i].m_pdf.m_fl1;
+    m_params.dads[i].fl2=mewgt->m_dadsinfos[i].m_pdf.m_fl2;
   }
   if (sevtlist) {
     for (NamedScaleVariationMap::iterator it=p_nsvmap->begin();
@@ -314,6 +311,8 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
 {
   DEBUG_FUNC("factors (muR/muF)=("<<muR2fac<<","<<muF2fac<<"), "
              <<"pdf1="<<pdf1->LHEFNumber()<<", pdf2="<<pdf2->LHEFNumber());
+  size_t precision(msg->Out().precision());
+  if (msg_LevelIsDebugging()) msg->SetPrecision(16);
   // calculate new event weight
   double muR2new(muR2*muR2fac);
   double muF12new(muF12*muF2fac),muF22new(muF22*muF2fac);
@@ -336,6 +335,7 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
     double asf=pow(asnew/asold,oqcd);
     msg_Debugging()<<"asf = "<<asf<<std::endl;
     msg_Debugging()<<"B,R,S event: new wgt="<<B*asf*fa*fb<<std::endl;
+    if (msg_LevelIsDebugging()) msg->SetPrecision(precision);
     return B*asf*fa*fb;
   }
   else { // B,VI,KP
@@ -418,14 +418,16 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
         double fbdads=pdf2->GetXPDF(m_params.dads[i].fl2)/m_params.dads[i].x2;
         DADSinew=fadads*fbdads*asf*m_params.dads[i].wgt;
       }
-      msg_Debugging()<<"new DADS_"<<i<<" = "<<DADSinew<<std::endl;
+      msg_Debugging()<<"  new DADS_"<<i<<" = "<<DADSinew<<std::endl;
       DADSnew+=DADSinew;
     }
     msg_Debugging()<<"new DADS = "<<DADSnew<<std::endl;
     msg_Debugging()<<"B,V,I event: new wgt="<<Bnew+VInew+KPnew+DADSnew
                    <<std::endl;
+    if (msg_LevelIsDebugging()) msg->SetPrecision(precision);
     return Bnew+VInew+KPnew+DADSnew;
   }
+  if (msg_LevelIsDebugging()) msg->SetPrecision(precision);
   return 0.;
 }
 
