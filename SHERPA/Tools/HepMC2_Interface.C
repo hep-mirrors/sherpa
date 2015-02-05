@@ -100,6 +100,8 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
     // additional entries for LO/LOPS reweighting
     // x1,x2,muf2 can be found in PdfInfo; alphaS,alphaQED in their infos
     wc["MuR2"]=m_mur2;
+    wc["OQCD"]=m_oqcd;
+    wc["OEW"]=m_oew;
     // fill scale variations map into weight container
     msg_Debugging()<<"#named wgts: "<<p_nsvmap->size()<<std::endl;
     if (p_nsvmap) {
