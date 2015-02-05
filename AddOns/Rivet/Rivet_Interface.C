@@ -208,8 +208,8 @@ Rivet_Interface::~Rivet_Interface()
   for (RivetScaleVariationMap::iterator it(m_rivet.begin());
        it!=m_rivet.end();++it) {
     delete it->second;
-    m_rivet.erase(it);
   }
+  m_rivet.clear();
 }
 
 void Rivet_Interface::ExtractVariations
