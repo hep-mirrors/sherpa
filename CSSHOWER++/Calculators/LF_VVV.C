@@ -373,7 +373,7 @@ double LF_VVV1_II::OverIntegrated
 
 double LF_VVV1_II::OverEstimated(const double z,const double y)
 {
-  return 4.0*p_cf->MaxCoupling(0) * (1.-z)/(sqr(1.-z)+(1./m_zmax-1.)) * m_Jmax;
+  return 4.*p_cf->MaxCoupling(0) * (1.-z)/(sqr(1.-z)+(1./m_zmax-1.)) * m_Jmax;
 }
 
 double LF_VVV1_II::Z()

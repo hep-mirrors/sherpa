@@ -396,7 +396,7 @@ double LF_FFV_II::OverIntegrated
 
 double LF_FFV_II::OverEstimated(const double z,const double y)
 {
-  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (1.-z+y)/(sqr(1.-z+y)+(1./m_zmax-1.)) * m_Jmax;
+  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (1.-z)/(sqr(1.-z)+(1./m_zmax-1.)) * m_Jmax;
 }
 
 double LF_FFV_II::Z()
