@@ -243,8 +243,8 @@ void Simple_Chain::InitializeProcessList(const Flavour& in1,
   pi.m_oew=0;
   pi.m_oqcd=2;
   pi.m_scale=p_read->GetValue<std::string>("MPI_SCALE","MPI");
+  pi.m_kfactor=p_read->GetValue<std::string>("MPI_KFACTOR","NO");
   pi.m_coupling="Alpha_QCD 1";
-  pi.m_kfactor="NO";
   pi.m_mpiprocess=true;
   p_processes.push_back(new Semihard_QCD(p_read));
   p_processes.back()->Init(pi,p_beam,p_isr);

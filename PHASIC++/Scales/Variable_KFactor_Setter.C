@@ -118,6 +118,10 @@ Term *Variable_KFactor_Setter::ReplaceTags(Term *term) const
     term->Set((double)p_proc->OrderEW());
     return term;
   default:
+    if (term->Id()>=1000) {
+      term->Set(p_proc->ScaleSetter()->Momenta()[term->Id()-1000]);
+      return term;
+    }
     term->Set(p_proc->ScaleSetter()->Scales()[term->Id()-100]);
     return term;
   }
@@ -132,6 +136,11 @@ void Variable_KFactor_Setter::AssignId(Term *term)
   else if (term->Tag()=="S_TOT") term->SetId(4);
   else if (term->Tag()=="Order_QCD") term->SetId(11);
   else if (term->Tag()=="Order_EW") term->SetId(12);
+  else if (term->Tag().find("p[")==0) {
+    term->SetId(1000+ToType<int>
+		(term->Tag().substr
+		 (2,term->Tag().length()-3)));
+  }
   else {
     term->SetId(100+ToType<int>
 		(term->Tag().substr
@@ -155,6 +164,8 @@ void Variable_KFactor_Setter::SetKFactor(const std::string &kftag)
     (fatal_error,"Process "+p_proc->Name()+" has no scale setter");
   for (size_t i(0);i<p_proc->ScaleSetter()->Scales().size();++i)
     p_calc->AddTag("MU_"+ToString(i)+"2","1.0");
+  for (size_t i(0);i<p_proc->NIn()+p_proc->NOut();++i)
+    p_calc->AddTag("p["+ToString(i)+"]",ToString(Vec4D()));
   std::string res=p_calc->Interprete(kftag);
   msg_Debugging()<<"} -> "<<res<<"\n";
 }
