@@ -357,7 +357,7 @@ bool Sudakov::Generate(Parton * split)
 				    (*m_splitter)->GetFlavourB(),
 				    (*m_splitter)->GetFlavourC());
       x   = split->Xbj();
-      if (m_y<0.0 || m_y>1.0 || m_z-m_y<x) continue;
+      if (m_y<0.0 || m_y>1.0-m_z || m_z<x) continue;
     }
       break;
   default:
@@ -505,6 +505,12 @@ bool Sudakov::Splitting(double Q2,double x) {
   double cplscale(m_kperp2);
   switch (m_scalescheme) {
   case 0:
+    if (m_kperp2*p_selected->Coupling()->CplFac(m_kperp2)>
+	p_split->GetSing()->MuR2()) {
+      p_selected->Coupling()->SetKFMode(-1);    
+      cplscale=p_split->GetSing()->MuR2();
+    }
+    break;
   case 1:
     if (m_kperp2*p_selected->Coupling()->CplFac(m_kperp2)>
 	p_split->GetSing()->MuR2()) {

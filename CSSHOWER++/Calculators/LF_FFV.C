@@ -380,7 +380,7 @@ double LF_FFV_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./(1.-z+y) - (1.+z) )
+  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./(1.-z) - (1.+z) )
     + p_cf->Coupling(scale,1) * 0.5 * ( 1. - z );
   return value * JII(z,y,eta,scale);
 }
@@ -390,17 +390,17 @@ double LF_FFV_II::OverIntegrated
 {
   m_zmin = zmin; m_zmax = zmax; 
   m_Jmax = m_flavs[0].Kfcode()<3?5.:1.;
-  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * 0.5*log(1.+sqr(1.-zmin)*zmax/(1.-zmax)) * m_Jmax;
+  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * log((1.-zmin)/(1.-zmax)) * m_Jmax;
 }
 
 double LF_FFV_II::OverEstimated(const double z,const double y)
 {
-  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1)) * (1.-z)/(sqr(1.-z)+(1./m_zmax-1.)) * m_Jmax;
+  return (4.0*p_cf->MaxCoupling(0) + 0.5*p_cf->MaxCoupling(1))/(1.-z) * m_Jmax;
 }
 
 double LF_FFV_II::Z()
 {
-  return 1.-sqrt((1./m_zmax-1.)*(pow(1.+sqr(1.-m_zmin)*m_zmax/(1.-m_zmax),ATOOLS::ran->Get())-1.));
+  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran->Get());
 }
 
 double LF_FVF_FF::operator()

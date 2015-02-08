@@ -31,16 +31,16 @@ void II_DipoleSplitting::SetMomenta(const Vec4D *mom)
 
   m_Q2 = (-m_pi+m_pj-m_pk).Abs2();
   if (m_es==0) {
-    m_kt2 = m_Q2*(1.-m_xijk-m_vi)/m_xijk*m_vi;
+    m_kt2 = m_Q2*(1.-m_xijk)/m_xijk*m_vi;
   }
   else {
   m_kt2 = m_Q2/m_xijk*m_vi;
   switch (m_ft) {
   case 1:
-    m_kt2*=(1.-m_xijk-m_vi);
+    m_kt2*=(1.-m_xijk);
     break;
   case 4:
-    m_kt2*=(1.-m_xijk-m_vi);
+    m_kt2*=(1.-m_xijk);
     break;
   }
   }

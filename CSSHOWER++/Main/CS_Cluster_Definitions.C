@@ -134,7 +134,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
 	    (i==ampl->Leg(1) && lt.m_pi[3]>0.0) ||
 	    lt.m_pi[0]<0.0 || lt.m_z<0.0 || lt.m_stat!=1) if (!force) return cs;
 	double kt2=p_shower->KinII()->GetKT2(Q2,lt.m_y,lt.m_z,mi2,mj2,mk2,mo,j->Flav());
-	cs=CS_Parameters(kt2,lt.m_z+lt.m_y,lt.m_y,lt.m_phi,lt.m_z,Q2,3,kin,kmode&1);
+	cs=CS_Parameters(kt2,lt.m_z,lt.m_y,lt.m_phi,lt.m_z,Q2,3,kin,kmode&1);
 	cs.m_pk=lt.m_pk;
 	cs.m_lt=lt.m_lam;
       }
@@ -272,8 +272,8 @@ void CS_Cluster_Definitions::KernelWeight
   else {
   double scale=cs.m_kt2, eta=1.0;
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
-  else if (cs.m_mode==2) eta=GetX(k,cdip)*cs.m_x;
-  else if (cs.m_mode==3) eta=GetX(i,cdip)*cs.m_x;
+  else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
+  else if (cs.m_mode==3) eta=GetX(i,cdip)*cs.m_z;
   cs.m_wk=(*cdip)(cs.m_z,cs.m_y,eta,-1.0,Q2)*
     cdip->MEPSWeight(cs.m_z,cs.m_y,eta,-1.0,Q2);
   cs.m_wk*=cdip->SymFac();

@@ -140,7 +140,7 @@ double Splitting_Function_Base::MEPSWeight
   case cstp::IF:
     return (8.0*M_PI)/((Q2+mk2)*y)/p_lf->JIF(z,y,eta,scale);
   case cstp::II:
-    return (8.0*M_PI)/(Q2*y)/p_lf->JII(z-y,y,eta,scale);
+    return (8.0*M_PI)/(Q2*y)/p_lf->JII(z,y,eta,scale);
   case cstp::none: break;
   }
   return 0.0;
@@ -290,16 +290,15 @@ double SF_Lorentz::JIF(const double &z,const double &y,const double &eta,
   return fresh/old;
 }
 
-double SF_Lorentz::JII(const double &iz,const double &y,const double &eta,
+double SF_Lorentz::JII(const double &z,const double &y,const double &eta,
 		       const double &scale) const
 { 
-  double z=iz-y;
   if (scale<0.0) return 1.0/z;
   double scalea(scale), scaleb(scale);
   double fresh = p_sf->GetXPDF(scalea,eta/z,m_flavs[0],m_beam);
   double old = p_sf->GetXPDF(scaleb,eta,m_flavs[1],m_beam);
   if (fresh<0.0 || old<0.0 || IsZero(old,s_pdfcut) || IsZero(fresh,s_pdfcut)) return 0.; 
-  return fresh/old*z/(z+y);
+  return fresh/old;
 }
 
 void Splitting_Function_Base::ResetLastInt()

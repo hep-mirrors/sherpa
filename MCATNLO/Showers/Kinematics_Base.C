@@ -199,9 +199,9 @@ double Kinematics_II::GetKT2(const double &Q2,const double &y,const double &z,
 {
   double pipj=(Q2-ma2-mi2-mb2)*y/z;
   if (m_evolscheme==0) {
-    return pipj*(1.0-z-y)-mi2-sqr(1.0-z-y)*ma2;
+    return pipj*(1.0-z)-mi2-sqr(1.0-z)*ma2;
   }
-  double kt2=pipj*(1.0-z-y);
+  double kt2=pipj*(1.0-z);
   if (flc.IsFermion()) kt2=pipj;
   return kt2;
 }
@@ -213,10 +213,10 @@ double Kinematics_II::GetY(const double &Q2,const double &kt2,const double &z,
 {
   if (!force && (z<=0.0 || z>=1.0 || Q2<=ma2+mi2+mb2)) return -1.0;
   if (m_evolscheme==0) {
-    return z/(1.0+(Q2-ma2-mb2-mi2)/((kt2+mi2)/(1.0-z)+(1.0-z)*ma2));
+    return z/(Q2-ma2-mb2-mi2)*((kt2+mi2)/(1.0-z)+(1.0-z)*ma2);
   }
-  if (flc.IsFermion()) return z/(1.0+(Q2-ma2-mb2-mi2)/kt2);
-  return z/(1.0+(Q2-ma2-mb2-mi2)/(kt2/(1.0-z)));
+  if (flc.IsFermion()) return z/(Q2-ma2-mb2-mi2)*kt2;
+  return z/(Q2-ma2-mb2-mi2)*kt2/(1.0-z);
 }
 
 int Kinematics_II::MakeKinematics
@@ -231,7 +231,7 @@ int Kinematics_II::MakeKinematics
 
   double y=GetY((p1+p2).Abs2(),split->KtTest(),split->ZTest(),ma2,mi2,mb2,
 		split->GetFlavour(),newfl,1);
-  Kin_Args ii(y,split->ZTest()-y,split->Phi(),split->Kin());
+  Kin_Args ii(y,split->ZTest(),split->Phi(),split->Kin());
   if (ConstructIIDipole(ma2,mi2,mai2,mb2,p1,p2,ii)<0) return -1;
 
   split->SetLT(ii.m_lam);
