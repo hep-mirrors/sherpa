@@ -130,7 +130,7 @@ double LHAPDF_Fortran_Interface::GetXPDF(const kf_code& kf, bool anti) {
   if (kf == kf_gluon) kfc=0;
   else if (LHAPDF::hasPhoton() && kf == kf_photon) kfc=7;
   if (kfc<-6 || kfc>(LHAPDF::hasPhoton()?7:6)) {
-    msg_Out()<<"WARNING in "<<METHOD<<"("<<infl<<") not supported by this PDF!"<<std::endl;
+    msg_Out()<<"WARNING in "<<METHOD<<"("<<kf<<") not supported by this PDF!"<<std::endl;
     return 0.;
   }
   return m_rescale*m_fv[6+kfc];
