@@ -295,8 +295,9 @@ for the desired file base name. The following formats are currently available:
 @item HepMC_GenEvent
 Generates output in HepMC::IO_GenEvent format. The HepMC::GenEvent::m_weights 
 weight vector stores the following items: @code{[0]} event weight, @code{[1]} 
-combined matrix element and phase space weight (missing only PDF information, 
-thus directly suitable for PDF reweighting), @code{[2]} event weight 
+combined matrix element and PDF weight (missing only phase space weight
+information, thus directly suitable for evaluating the matrix element value of
+the given configuration), @code{[2]} event weight
 normalisation (in case of unweighted events event weights of ~ +/-1 
 can be obtained by (event weight)/(event weight normalisation)), and 
 @code{[3]} number of trials. The total cross section of the simulated event sample
