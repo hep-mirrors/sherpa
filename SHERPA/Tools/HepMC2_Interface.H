@@ -59,6 +59,8 @@ namespace SHERPA {
     inline void SetMuR2(const double &mur2)      { m_mur2=mur2; }
     inline void SetMuF12(const double &muf12)    { m_muf12=muf12; }
     inline void SetMuF22(const double &muf22)    { m_muf22=muf22; }
+    void SetAlphaS();
+    void SetAlpha();
   };
 
   class HepMC2_Interface {

@@ -47,8 +47,8 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
     m_ntrials=db->Get<double>();
     ReadIn(db,"Renormalization_Scale",true);
     m_mur2=db->Get<double>();
-    m_alphas=MODEL::s_model->ScalarFunction("alpha_S",m_mur2);
-    m_alpha=MODEL::s_model->ScalarFunction("alpha_QED");
+    SetAlphaS();
+    SetAlpha();
     ReadIn(db,"OQCD",true);
     m_oqcd=db->Get<int>();
     ReadIn(db,"OEW",true);
@@ -220,6 +220,16 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
   return true;
 }
 
+void EventInfo::SetAlphaS()
+{
+  m_alphas=MODEL::s_model->ScalarFunction("alpha_S",m_mur2);
+}
+
+void EventInfo::SetAlpha()
+{
+  m_alpha=MODEL::s_model->ScalarFunction("alpha_QED");
+}
+
 HepMC2_Interface::HepMC2_Interface() :
   m_usenamedweights(false), p_event(NULL)
 {
@@ -375,12 +385,14 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
     subevent->add_vertex(subvertex);
     // not enough info in subevents to set PDFInfo properly,
     // so set flavours and x1, x2 from the Signal_Process
-    // reset muR, muF
+    // reset muR, muF, alphaS, alpha
     subevtinfo.SetWeight(sub->m_result);
     subevtinfo.SetMEWeight(sub->m_mewgt);
     subevtinfo.SetMuR2(sub->m_mu2[stp::ren]);
     subevtinfo.SetMuF12(sub->m_mu2[stp::fac]);
     subevtinfo.SetMuF22(sub->m_mu2[stp::fac]);
+    subevtinfo.SetAlphaS();
+    subevtinfo.SetAlpha();
     subevtinfo.WriteTo(*subevent,i);
     if (msg_LevelIsDebugging()) subevent->print(msg_Out());
     m_subeventlist.push_back(subevent);
