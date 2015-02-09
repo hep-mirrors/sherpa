@@ -38,7 +38,8 @@ namespace SHERPA {
     size_t m_usenamedweights;
     ATOOLS::Blob * p_sp;
     int    m_oqcd, m_oew;
-    double m_wgt, m_mewgt, m_wgtnorm, m_ntrials, m_mur2, m_muf12, m_muf22;
+    double m_wgt, m_mewgt, m_wgtnorm, m_ntrials, m_pswgt, m_pwgt;
+    double m_mur2, m_muf12, m_muf22;
     double m_alphas, m_alpha;
     PHASIC::nlo_type::code m_type;
     ATOOLS::ME_Weight_Info * p_wgtinfo;
@@ -54,11 +55,12 @@ namespace SHERPA {
     ~EventInfo() {}
     bool WriteTo(HepMC::GenEvent &evt, const int& idx=-1);
     inline const ATOOLS::NLO_subevtlist * SubEvtList() { return p_subevtlist; }
-    inline void SetWeight(const double &wgt)     { m_wgt=wgt; }
-    inline void SetMEWeight(const double &mewgt) { m_mewgt=mewgt; }
-    inline void SetMuR2(const double &mur2)      { m_mur2=mur2; }
-    inline void SetMuF12(const double &muf12)    { m_muf12=muf12; }
-    inline void SetMuF22(const double &muf22)    { m_muf22=muf22; }
+    inline void SetWeight(const double &wgt)          { m_wgt=wgt; }
+    inline void SetMEWeight(const double &mewgt)      { m_mewgt=mewgt; }
+    inline void SetPartonicWeight(const double& pwgt) { m_pwgt=pwgt; }
+    inline void SetMuR2(const double &mur2)           { m_mur2=mur2; }
+    inline void SetMuF12(const double &muf12)         { m_muf12=muf12; }
+    inline void SetMuF22(const double &muf22)         { m_muf22=muf22; }
     void SetAlphaS();
     void SetAlpha();
   };

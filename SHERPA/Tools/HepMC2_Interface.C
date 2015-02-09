@@ -31,6 +31,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
   m_usenamedweights(namedweights), p_sp(sp),
   m_oqcd(0), m_oew(0), m_wgt(wgt),
   m_mewgt(0.), m_wgtnorm(0.), m_ntrials(0.),
+  m_pswgt(0.), m_pwgt(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
   m_alphas(0.), m_alpha(0.), m_type(PHASIC::nlo_type::lo),
   p_wgtinfo(NULL), p_pdfinfo(NULL), p_subevtlist(NULL),
@@ -41,6 +42,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
     Blob_Data_Base *db;
     ReadIn(db,"MEWeight",true);
     m_mewgt=db->Get<double>();
+    m_pswgt=m_wgt/m_mewgt;
     ReadIn(db,"Weight_Norm",true);
     m_wgtnorm=db->Get<double>();
     ReadIn(db,"Trials",true);
@@ -72,7 +74,7 @@ EventInfo::EventInfo(const EventInfo &evtinfo) :
   p_sp(evtinfo.p_sp),
   m_oqcd(evtinfo.m_oqcd), m_oew(evtinfo.m_oew),
   m_wgt(0.), m_mewgt(0.), m_wgtnorm(0.),
-  m_ntrials(evtinfo.m_ntrials),
+  m_ntrials(evtinfo.m_ntrials), m_pswgt(evtinfo.m_pswgt), m_pwgt(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
   m_alphas(0.), m_alpha(0.), m_type(evtinfo.m_type),
   p_wgtinfo(NULL), p_pdfinfo(evtinfo.p_pdfinfo),
@@ -97,6 +99,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
     wc["MEWeight"]=m_mewgt;
     wc["WeightNormalisation"]=m_wgtnorm;
     wc["NTrials"]=m_ntrials;
+    wc["PSWeight"]=m_pswgt;
     // additional entries for LO/LOPS reweighting
     // x1,x2,muf2 can be found in PdfInfo; alphaS,alphaQED in their infos
     wc["MuR2"]=m_mur2;
@@ -112,107 +115,76 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       }
     }
     size_t nt(0);
-    if (p_wgtinfo && p_wgtinfo->m_type!=mewgttype::none) {
+    if (p_wgtinfo) {
       wc["Reweight_B"]=p_wgtinfo->m_B;
-      if (p_wgtinfo->m_B) nt|=1;
-      wc["Reweight_VI"]=p_wgtinfo->m_VI;
-      if (p_wgtinfo->m_VI) nt|=2;
-      wc["Reweight_KP"]=p_wgtinfo->m_KP;
-      if (p_wgtinfo->m_KP) nt|=4;
-      wc["Reweight_KP_x1p"]=p_wgtinfo->m_y1;
-      wc["Reweight_KP_x2p"]=p_wgtinfo->m_y2;
-      wc["Reweight_MuR2"]=p_wgtinfo->m_mur2;
-      wc["Reweight_MuF2"]=p_wgtinfo->m_muf2;
-      if (p_wgtinfo->m_type&mewgttype::muR) {
-        for (size_t i=0;i<p_wgtinfo->m_wren.size();++i) {
-          wc["Reweight_VI_wren_"+ToString(i)]=p_wgtinfo->m_wren[i];
+      if (p_wgtinfo->m_type!=mewgttype::none) {
+        if (p_wgtinfo->m_B) nt|=1;
+        wc["Reweight_B"]=p_wgtinfo->m_B;
+        wc["Reweight_VI"]=p_wgtinfo->m_VI;
+        if (p_wgtinfo->m_VI) nt|=2;
+        wc["Reweight_KP"]=p_wgtinfo->m_KP;
+        if (p_wgtinfo->m_KP) nt|=4;
+        wc["Reweight_KP_x1p"]=p_wgtinfo->m_y1;
+        wc["Reweight_KP_x2p"]=p_wgtinfo->m_y2;
+        wc["Reweight_MuR2"]=p_wgtinfo->m_mur2;
+        wc["Reweight_MuF2"]=p_wgtinfo->m_muf2;
+        if (p_wgtinfo->m_type&mewgttype::muR) {
+          for (size_t i=0;i<p_wgtinfo->m_wren.size();++i) {
+            wc["Reweight_VI_wren_"+ToString(i)]=p_wgtinfo->m_wren[i];
+          }
         }
-      }
-      if (p_wgtinfo->m_type&mewgttype::muF) {
-        for (size_t i=0;i<p_wgtinfo->m_wfac.size();++i) {
-          wc["Reweight_KP_wfac_"+ToString(i)]=p_wgtinfo->m_wfac[i];
+        if (p_wgtinfo->m_type&mewgttype::muF) {
+          for (size_t i=0;i<p_wgtinfo->m_wfac.size();++i) {
+            wc["Reweight_KP_wfac_"+ToString(i)]=p_wgtinfo->m_wfac[i];
+          }
         }
-      }
-      if (p_wgtinfo->m_dadsinfos.size()) {
-        wc.push_back((p_wgtinfo->m_dadsinfos.size()));
-        for (size_t i(0);i<p_wgtinfo->m_dadsinfos.size();++i) {
-          wc["Reweight_DADS_"+ToString(i)+"_Weight"]
-              =p_wgtinfo->m_dadsinfos[i].m_wgt;
-          wc["Reweight_DADS_"+ToString(i)+"_x1"]
-              =p_wgtinfo->m_dadsinfos[i].m_pdf.m_x1;
-          wc["Reweight_DADS_"+ToString(i)+"_x2"]
-              =p_wgtinfo->m_dadsinfos[i].m_pdf.m_x2;
-          wc["Reweight_DADS_"+ToString(i)+"_fl1"]
-              =p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl1;
-          wc["Reweight_DADS_"+ToString(i)+"_fl2"]
-              =p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl2;
-          wc["Reweight_DADS_"+ToString(i)+"_MuR2"]
-              =p_wgtinfo->m_dadsinfos[i].m_mur2;
-          wc["Reweight_DADS_"+ToString(i)+"_MuF12"]
-              =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf12;
-          wc["Reweight_DADS_"+ToString(i)+"_MuF22"]
-              =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf22;
+        if (p_wgtinfo->m_dadsinfos.size()) {
+          nt|=8;
+          wc["Reweight_DADS_N"]=p_wgtinfo->m_dadsinfos.size();
+          for (size_t i(0);i<p_wgtinfo->m_dadsinfos.size();++i) {
+            wc["Reweight_DADS_"+ToString(i)+"_Weight"]
+                =p_wgtinfo->m_dadsinfos[i].m_wgt;
+            if (p_wgtinfo->m_dadsinfos[i].m_wgt) {
+              wc["Reweight_DADS_"+ToString(i)+"_x1"]
+                  =p_wgtinfo->m_dadsinfos[i].m_pdf.m_x1;
+              wc["Reweight_DADS_"+ToString(i)+"_x2"]
+                  =p_wgtinfo->m_dadsinfos[i].m_pdf.m_x2;
+              wc["Reweight_DADS_"+ToString(i)+"_fl1"]
+                  =p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl1;
+              wc["Reweight_DADS_"+ToString(i)+"_fl2"]
+                  =p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl2;
+              wc["Reweight_DADS_"+ToString(i)+"_MuR2"]
+                  =p_wgtinfo->m_dadsinfos[i].m_mur2;
+              wc["Reweight_DADS_"+ToString(i)+"_MuF12"]
+                  =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf12;
+              wc["Reweight_DADS_"+ToString(i)+"_MuF22"]
+                  =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf22;
+            }
+          }
         }
       }
     }
     if (p_subevtlist) {
       nt|=32;
-      wc["Reweight_RS"]=m_mewgt;
+      wc["Reweight_RS"]=m_pwgt;
     }
-    wc["NLO_Type"]=nt;
+    wc["Reweight_Type"]=nt;
 #else
     THROW(fatal_error,"Asked for named weights, but HepMC version too old.");
 #endif
   }
   else {
+    // only offer basic event record for unnamed weights
     wc.push_back(m_wgt);
     wc.push_back(m_mewgt);
     wc.push_back(m_wgtnorm);
     wc.push_back(m_ntrials);
+    wc.push_back(m_pswgt);
     wc.push_back(m_mur2);
     wc.push_back(m_muf12);
     wc.push_back(m_muf22);
     wc.push_back(m_oqcd);
     wc.push_back(m_oew);
-    wc.push_back(p_subevtlist?32:0);
-    if (p_wgtinfo) {
-      //dump weight_0
-      wc.push_back(p_wgtinfo->m_B);
-      wc.push_back(p_wgtinfo->m_VI);
-      wc.push_back(p_wgtinfo->m_KP);
-      wc.push_back(p_wgtinfo->m_RS);
-      //dump number of usr weights
-      size_t nentries(0);
-      if (p_wgtinfo->m_type&mewgttype::muR) nentries+=2;
-      if (p_wgtinfo->m_type&mewgttype::muF) nentries+=16;
-      wc.push_back(nentries);
-      //store xprimes
-      wc.push_back(p_wgtinfo->m_y1);
-      wc.push_back(p_wgtinfo->m_y2);
-      //fill in usr weights
-      if (p_wgtinfo->m_type&mewgttype::muR) {
-        for (size_t i=0;i<p_wgtinfo->m_wren.size();++i) {
-          wc.push_back(p_wgtinfo->m_wren[i]);
-        }
-      }
-      if (p_wgtinfo->m_type&mewgttype::muF) {
-        for (size_t i=0;i<p_wgtinfo->m_wfac.size();++i) {
-          wc.push_back(p_wgtinfo->m_wfac[i]);
-        }
-      }
-      if (p_wgtinfo->m_dadsinfos.size()) {
-        wc.push_back((p_wgtinfo->m_dadsinfos.size()));
-        for (size_t i(0);i<p_wgtinfo->m_dadsinfos.size();++i) {
-          wc.push_back(p_wgtinfo->m_dadsinfos[i].m_wgt);
-          wc.push_back(p_wgtinfo->m_dadsinfos[i].m_pdf.m_x1);
-          wc.push_back(p_wgtinfo->m_dadsinfos[i].m_pdf.m_x2);
-          wc.push_back(p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl1);
-          wc.push_back(p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl2);
-          wc.push_back(p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf12);
-          wc.push_back(p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf22);
-        }
-      }
-    }
   }
   evt.weights()=wc;
   if (p_pdfinfo) {
@@ -394,7 +366,7 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
     // so set flavours and x1, x2 from the Signal_Process
     // reset muR, muF, alphaS, alpha
     subevtinfo.SetWeight(sub->m_result);
-    subevtinfo.SetMEWeight(sub->m_mewgt);
+    subevtinfo.SetPartonicWeight(sub->m_mewgt);
     subevtinfo.SetMuR2(sub->m_mu2[stp::ren]);
     subevtinfo.SetMuF12(sub->m_mu2[stp::fac]);
     subevtinfo.SetMuF22(sub->m_mu2[stp::fac]);
