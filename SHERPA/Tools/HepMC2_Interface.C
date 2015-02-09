@@ -119,7 +119,6 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       if (p_wgtinfo->m_VI) nt|=2;
       wc["Reweight_KP"]=p_wgtinfo->m_KP;
       if (p_wgtinfo->m_KP) nt|=4;
-      wc["Reweight_RS"]=p_wgtinfo->m_RS;
       wc["Reweight_KP_x1p"]=p_wgtinfo->m_y1;
       wc["Reweight_KP_x2p"]=p_wgtinfo->m_y2;
       wc["Reweight_MuR2"]=p_wgtinfo->m_mur2;
@@ -156,7 +155,10 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
         }
       }
     }
-    if (p_subevtlist) nt|=32;
+    if (p_subevtlist) {
+      nt|=32;
+      wc["Reweight_RS"]=m_mewgt;
+    }
     wc["NLO_Type"]=nt;
 #else
     THROW(fatal_error,"Asked for named weights, but HepMC version too old.");
