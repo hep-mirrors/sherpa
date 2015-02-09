@@ -199,7 +199,7 @@ void Standard_Model::ParticleInit() {
   s_kftable[kf_nue]    = new Particle_Info(kf_nue,.0,.0,0,1,0,1,0,1,1,0,"nu_e","\\nu_e");
   s_kftable[kf_mu]     = new Particle_Info(kf_mu,.105,.0,-3,-1,0,1,0,1,1,0,"mu-","\\mu^-");
   s_kftable[kf_numu]   = new Particle_Info(kf_numu,.0,.0,0,1,0,1,0,1,1,0,"nu_mu","\\nu_\\mu");
-  s_kftable[kf_tau]    = new Particle_Info(kf_tau,1.777,2.36E-12,-3,-1,0,1,0,1,0,0,"tau-","\\tau^-");
+  s_kftable[kf_tau]    = new Particle_Info(kf_tau,1.777,2.26735e-12,-3,-1,0,1,0,1,0,0,"tau-","\\tau^-");
   s_kftable[kf_nutau]  = new Particle_Info(kf_nutau,.0,.0,0,1,0,1,0,1,1,0,"nu_tau","\\nu_\\tau");
   s_kftable[kf_gluon]  = new Particle_Info(kf_gluon,.0,.0,0,0,8,2,-1,1,1,0,"G","g");
   s_kftable[kf_photon] = new Particle_Info(kf_photon,.0,.0,0,0,0,2,-1,1,1,0,"P","\\gamma");
