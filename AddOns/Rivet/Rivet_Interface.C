@@ -227,15 +227,31 @@ void Rivet_Interface::ExtractVariations
 void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
 {
   DEBUG_FUNC("");
-  // lookup all evt-wgts with name "MUR<fac>_MUF<fac>_PDF<id>"
-  // at the moment the only way to do that is to filter the printout
-  const HepMC::WeightContainer& wc=evt.weights();
-  MyStrStream str;
-  wc.print(str);
-
+  const HepMC::WeightContainer& wc(evt.weights());
   std::map<std::string,double> wgtmap;
   double ntrials(0.);
   size_t xstype(0);
+#ifdef HEPMC_HAS_NAMED_WEIGHTS
+#ifdef HEPMC_HAS_WORKING_NAMED_WEIGHTS // replace by final HepMC-2.07 variable
+  std::vector<std::string> keys(wc.keys());
+  msg_Debugging()<<keys<<std::endl;
+  for (size_t i(0);i<keys.size();++i) {
+    std::string cur(keys[i]);
+    if (cur.find("MUR")!=std::string::npos &&
+        cur.find("MUF")!=std::string::npos &&
+        cur.find("PDF")!=std::string::npos) {
+      wgtmap[cur]=wc[cur];
+    }
+    else if (cur=="Weight")  wgtmap["central"]=wc[cur];
+    else if (cur=="NTrials") ntrials=wc[cur];
+    else if (cur=="NLO_Type" && wc[cur]==32) xstype=1;
+  }
+#else
+  // lookup all evt-wgts with name "MUR<fac>_MUF<fac>_PDF<id>"
+  // at the moment the only way to do that is to filter the printout
+  MyStrStream str;
+  wc.print(str);
+
   // need a temp object first, as we need to get ntrials first
   while (str) {
     double wgt(0.);
@@ -253,8 +269,14 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
     }
     else if (cur=="Weight")  wgtmap["central"]=wgt;
     else if (cur=="NTrials") ntrials=wgt;
-    else if (cur=="NLO_Type" && wgt==32) xstype=1;
+    else if (cur=="Reweight_Type" && wgt==32) xstype=1;
   }
+#endif /* HEPMC_HAS_WORKING_NAMED_WEIGHTS */
+#else
+  wgtmap["central"]=wc[0];
+  ntrials=wc[3];
+  xstype=(wc[9]==32?1:0);
+#endif /* HEPMC_HAS_NAMED_WEIGHTS */
   if (msg_LevelIsDebugging()) {
     for (std::map<std::string,double>::iterator wit(wgtmap.begin());
          wit!=wgtmap.end();++wit)
