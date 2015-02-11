@@ -210,13 +210,15 @@ void EventInfo::SetAlpha()
 }
 
 HepMC2_Interface::HepMC2_Interface() :
-  m_usenamedweights(false), p_event(NULL)
+  m_usenamedweights(false), p_event(NULL), m_hepmctree(false)
 {
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
   reader.AddWordSeparator("\t");
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
   m_usenamedweights=reader.GetValue<int>("HEPMC_USE_NAMED_WEIGHTS",true);
+  // Switch for disconnection of 1,2,3 vertices from PS vertices
+  m_hepmctree=reader.GetValue<int>("HEPMC_TREE_LIKE", false);
 #endif
 }
 
@@ -226,61 +228,6 @@ HepMC2_Interface::~HepMC2_Interface()
   DeleteGenSubEventList();
 }
 
-bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
-                                    HepMC::GenEvent& event, double weight)
-{
-  DEBUG_FUNC("");
-#ifdef USING__HEPMC2__UNITS
-  event.use_units(HepMC::Units::GEV,
-                  HepMC::Units::MM);
-#endif
-  event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
-  size_t decid(11);
-  std::map<size_t,size_t> decids;
-  Blob *sp(blobs->FindFirst(btp::Signal_Process));
-  EventInfo evtinfo(sp,weight,m_usenamedweights);
-  evtinfo.WriteTo(event);
-  if (sp) {
-    Blob_Data_Base *info((*sp)["Decay_Info"]);
-    if (info) {
-      DecayInfo_Vector decs(info->Get<DecayInfo_Vector>());
-      for (size_t i(0);i<decs.size();++i) decids[decs[i]->m_id]=++decid;
-    }
-  }
-  m_blob2genvertex.clear();
-  m_particle2genparticle.clear();
-  HepMC::GenVertex * vertex;
-  std::vector<HepMC::GenParticle*> beamparticles;
-  for (ATOOLS::Blob_List::iterator blit=blobs->begin();
-       blit!=blobs->end();++blit) {
-    if (Sherpa2HepMC(*(blit),vertex,decids)) {
-      event.add_vertex(vertex);
-      if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
-        if ((**blit)["NLO_subeventlist"]) {
-          THROW(fatal_error,"Events containing correlated subtraction events"
-                +std::string(" cannot be translated into the full HepMC event")
-                +std::string(" format.\n")
-                +std::string("   Try 'EVENT_OUTPUT=HepMC_Short' instead."));
-        }
-        event.set_signal_process_vertex(vertex);
-      }
-      else if ((*blit)->Type()==ATOOLS::btp::Beam || 
-	       (*blit)->Type()==ATOOLS::btp::Bunch) {
-        for (HepMC::GenVertex::particles_in_const_iterator 
-	       pit=vertex->particles_in_const_begin();
-             pit!=vertex->particles_in_const_end(); ++pit) {
-          if ((*pit)->production_vertex()==NULL) {
-            beamparticles.push_back(*pit);
-          }
-        }
-      }
-    }
-  }
-  if (beamparticles.size()==2) {
-    event.set_beam_particles(beamparticles[0],beamparticles[1]);
-  }
-  return true;
-}
 
 bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
                                          HepMC::GenEvent& event, double weight)
@@ -379,6 +326,24 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
   return true;
 }
 
+
+bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
+                                         double weight)
+{
+  if (blobs->empty()) {
+    msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
+               <<"   Empty list - nothing to translate into HepMC."<<std::endl
+               <<"   Continue run ... ."<<std::endl;
+    return true;
+  }
+  if (p_event!=NULL) delete p_event;
+  DeleteGenSubEventList();
+  p_event = new HepMC::GenEvent();
+  return Sherpa2ShortHepMC(blobs, *p_event, weight);
+}
+
+// HS: Short-hand that takes a blob list, creates a new GenEvent and
+// calls the actual Sherpa2HepMC
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
 				    double weight)
 {
@@ -396,21 +361,98 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   return Sherpa2HepMC(blobs, *p_event, weight);
 }
 
-bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
-                                         double weight)
+// The actual code --- calls the Blob to GenVertex code
+bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
+                                    HepMC::GenEvent& event, double weight)
 {
-  if (blobs->empty()) {
-    msg_Error()<<"Error in "<<METHOD<<"."<<std::endl
-               <<"   Empty list - nothing to translate into HepMC."<<std::endl
-               <<"   Continue run ... ."<<std::endl;
-    return true;
+  DEBUG_FUNC("");
+#ifdef USING__HEPMC2__UNITS
+  event.use_units(HepMC::Units::GEV,
+                  HepMC::Units::MM);
+#endif
+  // Signal Process blob --- there is only one
+  Blob *sp(blobs->FindFirst(btp::Signal_Process));
+  // Meta info
+  event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
+  EventInfo evtinfo(sp,weight,m_usenamedweights);
+  evtinfo.WriteTo(event);
+  // Book keeping of 
+  size_t decid(11);
+  std::map<size_t,size_t> decids;
+  if (sp) {
+    Blob_Data_Base *info((*sp)["Decay_Info"]);
+    if (info) {
+      DecayInfo_Vector decs(info->Get<DecayInfo_Vector>());
+      for (size_t i(0);i<decs.size();++i) {
+          decids[decs[i]->m_id]=++decid;
+      }
+    }
   }
-  if (p_event!=NULL) delete p_event;
-  DeleteGenSubEventList();
-  p_event = new HepMC::GenEvent();
-  return Sherpa2ShortHepMC(blobs, *p_event, weight);
+  m_blob2genvertex.clear();
+  m_particle2genparticle.clear();
+  HepMC::GenVertex * vertex;
+  std::vector<HepMC::GenParticle*> beamparticles;
+  for (ATOOLS::Blob_List::iterator blit=blobs->begin();
+       blit!=blobs->end();++blit) {
+    if (Sherpa2HepMC(*(blit),vertex,decids)) { // Call the Blob to vertex code, changes vertex 4l above
+      event.add_vertex(vertex);
+      if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
+        if ((**blit)["NLO_subeventlist"]) {
+          THROW(fatal_error,"Events containing correlated subtraction events"
+                +std::string(" cannot be translated into the full HepMC event")
+                +std::string(" format.\n")
+                +std::string("   Try 'EVENT_OUTPUT=HepMC_Short' instead."));
+        }
+        event.set_signal_process_vertex(vertex);
+      }
+      // Find beam particles
+      else if ((*blit)->Type()==ATOOLS::btp::Beam || 
+	       (*blit)->Type()==ATOOLS::btp::Bunch) {
+        for (HepMC::GenVertex::particles_in_const_iterator 
+	       pit=vertex->particles_in_const_begin();
+             pit!=vertex->particles_in_const_end(); ++pit) {
+          if ((*pit)->production_vertex()==NULL) {
+            beamparticles.push_back(*pit);
+          }
+        }
+      }
+    }
+  } // End Blob_List loop
+  if (beamparticles.size()==2) {
+    event.set_beam_particles(beamparticles[0],beamparticles[1]);
+  }
+
+
+  // Disconnect ME, MPI and hard decay vertices from PS vertices to get a tree-like record
+  // --- manipulates the final GenEvent
+  if (m_hepmctree) {
+      DEBUG_INFO("HEPMC_TREE_LIKE true --- straighten to tree enabled (disconnect 1,2,3 vertices)");
+      //Iterate over all vertices to find PS vertices
+      int vtx_id = -1;
+      for (HepMC::GenEvent::vertex_const_iterator vit=event.vertices_begin(); vit!=event.vertices_end(); ++vit) {
+          // PS Vertex?
+          if ((*vit)->id()==4) {
+              // Loop over incoming particles
+              for (HepMC::GenVertex::particles_in_const_iterator pin=(*vit)->particles_in_const_begin();
+                      pin!=(*vit)->particles_in_const_end(); ++pin) {
+                  vtx_id = (*pin)->production_vertex()->id();
+                  // Disconnect incoming particle from production vertex of type (1,2,3)
+                  if (vtx_id==1 || vtx_id==2 || vtx_id==3 ) (*pin)->production_vertex()->set_id(0);
+              }
+              // Loop over outgoing particles
+              for (HepMC::GenVertex::particles_out_const_iterator pout=(*vit)->particles_out_const_begin();
+                      pout!=(*vit)->particles_out_const_end(); ++pout) {
+                  vtx_id = (*pout)->production_vertex()->id();
+                  // Disconnect outgoing particle from end (decay) vertex of type (1,2,3)
+                  if (vtx_id==1 || vtx_id==2 || vtx_id==3 ) (*pout)->end_vertex()->set_id(0);
+              }
+          }
+      }
+  }
+  return true;
 }
 
+// HS: this converts a Blob to GenVertex
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob, 
 				    HepMC::GenVertex *& vertex,
 				    const std::map<size_t,size_t> &decids)
@@ -426,9 +468,9 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,
     HepMC::FourVector position(pos[1],pos[2],pos[3],pos[0]);
     vertex = new HepMC::GenVertex(position,blob->Id());
     vertex->weights().push_back(1.);
-    if (blob->Type()==btp::Signal_Process)      vertex->set_id(1);
-    else if (blob->Type()==btp::Hard_Collision) vertex->set_id(2);
-    else if (blob->Type()==btp::Hard_Decay)     vertex->set_id(3);
+    if (blob->Type()==btp::Signal_Process)      vertex->set_id(1); // signal
+    else if (blob->Type()==btp::Hard_Collision) vertex->set_id(2); // MPI vertices
+    else if (blob->Type()==btp::Hard_Decay)     vertex->set_id(3); // decays
     else if (blob->Type()==btp::Shower || 
 	     blob->Type()==btp::QED_Radiation)  vertex->set_id(4);
     else if (blob->Type()==btp::Fragmentation)  vertex->set_id(5);
@@ -477,41 +519,55 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,
   return okay;
 }
 
+// HS: Sherpa Particle to HepMC::Genparticle --- fills m_particle2genparticle
+// and changes the pointer reference particle ('new')
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle *& particle,
 				    const std::map<size_t,size_t> &decids)
 {
+  // HS: do nothing if parton has already been converted  
   int count = m_particle2genparticle.count(parton);
   if (count>0) {
     particle = m_particle2genparticle[parton];
     return true;
   }
 
+  // Translate momentum vector
   ATOOLS::Vec4D mom  = parton->Momentum();
   HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
+
   int status=11;
+  // Assign status 1 to stable blobs (those without decays)
+  // or for that Rivet specific bit, set the particle stable (1)
+  // if its DecayBlob has been cut out
   if (parton->DecayBlob()==NULL ||
       m_ignoreblobs.count(parton->DecayBlob()->Type())!=0) {
     status=1;
   }
+  // Non-stable particles --- what about Hard_Decay?
   else {
     if (parton->DecayBlob()->Type()==ATOOLS::btp::Hadron_Decay ||
         parton->DecayBlob()->Type()==ATOOLS::btp::Hadron_Mixing) {
       status=2;
     }
+    // Set all particles going in/out of ME to status 3
     else if (parton->DecayBlob()->Type()==ATOOLS::btp::Signal_Process ||
              (parton->ProductionBlob() &&
               parton->ProductionBlob()->Type()==ATOOLS::btp::Signal_Process)) {
       status=3;
     }
+    // E - gamma collider specific
     else if (parton->DecayBlob()->Type()==ATOOLS::btp::Bunch) {
       status=4;
     }
-    else {
+    else { // i.e. Hard_Decay, Hard_Collision, Soft_Collision, QElastic_Collision
+           // Shower, QED_Radiation, Beam, Fragmentation, Cluster_Formation,
+           // Cluster_Decay, Hadron_To_Parton, Unspecified
       status=11;
       for (std::map<size_t,size_t>::const_iterator did(decids.begin());
 	   did!=decids.end();++did) if (did->first&parton->MEId()) status=did->second;
     }
   }
+  // particle is actually a reference to a pointer, this line changes the reference
   particle = new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),status);
   for (int i=1;i<3;i++) {
     if (parton->GetFlow(i)>0) particle->set_flow(i,parton->GetFlow(i));
