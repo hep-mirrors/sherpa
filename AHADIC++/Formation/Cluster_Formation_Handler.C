@@ -26,7 +26,7 @@ Cluster_Formation_Handler::Cluster_Formation_Handler(Cluster_List* clulist,
   p_cformer(new Cluster_Former()),
   p_recons(new Colour_Reconnections(2,1,hadpars->Get(string("pt02")))), 
   p_softclusters(hadpars->GetSoftClusterHandler()),
-  p_clulist(clulist), m_analyse(ana)
+  p_clulist(clulist), m_analyse(true)
 { 
   if (m_analyse) {
     m_histograms[string("Cluster_Mass_Formation")]     = new Histogram(0,0.,100.,200);
@@ -34,6 +34,8 @@ Cluster_Formation_Handler::Cluster_Formation_Handler(Cluster_List* clulist,
     m_histograms[string("Cluster_Mass_Transformed")]   = new Histogram(0,0.,100.,200);
     m_histograms[string("Cluster_Number_Formation")]   = new Histogram(0,0.,20.,20);
     m_histograms[string("Cluster_Number_Transformed")] = new Histogram(0,0.,20.,20);
+    m_histograms[string("Forward_Number")] = new Histogram(0,0.,20.,20);
+    m_histograms[string("Central_Number")] = new Histogram(0,0.,20.,20);
   }
 }
 
@@ -63,6 +65,10 @@ Cluster_Formation_Handler::~Cluster_Formation_Handler() {
 int Cluster_Formation_Handler::FormClusters(Blob * blob) {
 
   if (blob==NULL) return 1;
+  //msg_Out()<<"##################################################\n"
+  //  	   <<"##################################################\n"
+  //  	   <<"##################################################\n"
+  // 	   <<(*blob)<<"\n";
   if (!m_partlists.empty() || !m_clulists.empty()) {
     // This might introduce a tiny (!) memory leak, but should fix a
     // double free error when retrying the event.
@@ -85,22 +91,23 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob) {
   if (!ClustersToHadrons(blob))    { 
     Reset(); return -1; 
   }
-  //Vec4D blobmom(0.,0.,0.,0.);
-  //for (size_t i(0);i<blob->NOutP();i++) 
-  // blobmom+=blob->OutParticle(i)->Momentum();
+  Vec4D blobmom(0.,0.,0.,0.);
+  for (size_t i(0);i<blob->NOutP();i++) 
+    blobmom+=blob->OutParticle(i)->Momentum();
   // msg_Out()<<"____________________________________________________\n"
-  //	    <<"____________________________________________________\n"
-  //	    <<"Cluster list after all merging etc.:\n"<<(*p_clulist)
-  //	    <<"____________________________________________________\n"
-  //	    <<"Blob momentum: "<<blobmom<<";\n"<<(*blob)<<"\n"
-  //	    <<"____________________________________________________\n"
-  //	    <<"____________________________________________________\n";
-  // msg_Out()<<"##################################################\n"
-  //  	   <<METHOD<<" was successful: "
+  // 	   <<"____________________________________________________\n"
+  // 	   <<"Cluster list after all merging etc.:\n"<<(*p_clulist)
+  // 	   <<"____________________________________________________\n"
+  // 	   <<"Blob momentum: "<<blobmom<<";\n"<<(*blob)<<"\n"
+  // 	   <<"____________________________________________________\n"
+  // 	   <<"____________________________________________________\n";
+  //msg_Out()<<METHOD<<" was successful: "
   //  	   <<p_clulist->size()<<" clusters left to decay.\n"
-  //  	   <<(*p_clulist)<<"\n"
-  //  	   <<"##################################################\n";
+  //  	   <<(*p_clulist)<<"\n";
+  //if (blob->NOutP()>0) msg_Out()<<(*blob);
+  //msg_Out()<<"##################################################\n";
 
+  msg_Out()<<METHOD<<":"<<(*blob)<<"\n";
   return 1;
 }
 
@@ -131,6 +138,8 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
   bool          construct(false);
   unsigned int  col1(0), col2(0);
   Particle   * part(NULL);
+  // bool over(false), under(false);
+  // int Nover(0), id, Nunder(0);
   for (int i=0;i<blob->NInP();i++) {
     part = blob->InParticle(i); 
     if ((part->Status()!=part_status::active && 
@@ -141,7 +150,17 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
 	Proto_Particle * copy = 
 	  new Proto_Particle(part->Flav(),part->Momentum(),
 			     part->Info()=='B' ?'B':'L');
-	//if (dabs(part->Momentum().Y())>5.) copy->m_info='B';
+	// if (part->Info()!='B' && part->Momentum().PPerp()>10.) {
+	//   if (dabs(part->Momentum().Y())>3.) { 
+	//     over = true;
+	//     id = part->Number();
+	//     Nover++;
+	//   }
+	//   else if (dabs(part->Momentum().Y())<1.) {
+	//     under = true;
+	//     Nunder++;
+	//   }
+	// } 
 	SetInfoTagForPrimaryParticle(copy);
 	pli->push_back(copy);
 	col1 = part->GetFlow(1);
@@ -169,6 +188,18 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
       construct = true;
     }
   }
+  for (LPPL_Iterator pli=m_partlists.begin();pli!=m_partlists.end();pli++)
+    msg_Out()<<(**pli)<<"\n";
+  // if (ana) { 
+  //   if (over) {
+  //     msg_Out()<<"\n\n"<<Nover<<" interesting particles: "<<id<<"\n"
+  // 	       <<(*blob)<<"\n"<<"\n";
+  //     m_histograms[string("Forward_Number")]->Insert(Nover);
+  //   }
+  //   if (under) {
+  //     m_histograms[string("Central_Number")]->Insert(Nunder);
+  //   }
+  // }
   return true;
 }
 
@@ -325,10 +356,12 @@ bool Cluster_Formation_Handler::FormOriginalClusters()
   while (!m_partlists.empty()) {
     pplit=m_partlists.begin();
     msg_Tracking()<<"======= "<<METHOD<<" for :\n"<<(**pplit)<<"\n";
+    msg_Out()<<"========== before gluon splitting:\n"<<(**pplit)<<"\n";
     if(p_gludecayer->DecayList(*pplit)) {
+      msg_Out()<<"========== after gluon splitting:\n"<<(**pplit)<<"\n";
       clist = new Cluster_List;
       p_cformer->ConstructClusters(*pplit,clist);
-      msg_Tracking()<<"======= "<<METHOD<<" for :\n"<<(*clist)<<"\n";
+      msg_Out()<<"========== cluster list :\n"<<(*clist)<<"\n";
       m_clulists.push_back(clist);
       pplit=m_partlists.erase(pplit);
     }
@@ -401,6 +434,7 @@ bool Cluster_Formation_Handler::MergeClusterListsIntoOne() {
 
 bool Cluster_Formation_Handler::ClustersToHadrons(Blob * blob)
 {
+  msg_Out()<<METHOD<<" for: \n"<<(*p_clulist)<<"\n";
   if (!p_softclusters->TreatClusterList(p_clulist,blob)) return false;
 
   if (m_analyse) {

@@ -61,7 +61,8 @@ Soft_Cluster_Handler::~Soft_Cluster_Handler()
 bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
 {
   if (clin->size()==1) {
-    return (TreatSingleCluster(*clin->begin()) &&
+    msg_Out()<<METHOD<<" for cluster list with one cluster only!\n";
+    return (TreatSingleCluster(*clin->begin(),true) &&
 	    AttachHadronsToBlob(clin,blob));
   }
   if (!CheckListForTreatment(clin)) return true;
@@ -88,14 +89,16 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
   return (ShiftMomenta(clin) && AttachHadronsToBlob(clin,blob));
 }
 
-bool Soft_Cluster_Handler::TreatSingleCluster(Cluster * cluster)
+bool Soft_Cluster_Handler::TreatSingleCluster(Cluster * cluster,bool mustdecay)
 {
-  switch (CheckCluster(cluster,true,false)) {
+  switch (CheckCluster(cluster,true,mustdecay)) {
   case 2:  break;
   case 1:  cluster->push_back(Flavour(kf_photon)); break;
   case 0:  break;
+  case -1: abort();
   default: break;
   }
+  msg_Out()<<METHOD<<";\n"<<(*cluster)<<"\n";
   return true;
 }
 
@@ -228,67 +231,43 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter,
 
   Flavour haddec1(Flavour(kf_none)), haddec2(Flavour(kf_none));
   Flavour hadtrans(Flavour(kf_none));
-
-  //bool   direct((cluster->GetTrip()->m_info=='B' &&
-  //		 cluster->GetAnti()->m_info=='B'));
-  bool direct = false;
-  double decayweight(DecayWeight(cluster,haddec1,haddec2,direct||mustdecay));
-  // if (direct) {
-  //   msg_Out()<<"Direct decay ("<<haddec1<<" + "<<haddec2<<") "
-  // 	     <<"for cluster \n"<<(*cluster)<<"\n";
-  // }
-  bool mustgo(mustdecay || decayweight<0.);
-  double transformweight(TransformWeight(cluster,hadtrans,lighter,mustgo));
-  if (decayweight>0. || transformweight>0.) {
-    double totweight((Max(0.,decayweight)+Max(0.,transformweight))*0.9999999);
-    if (mustdecay) {
-      if (decayweight>0. && transformweight>0.) {
-	if (totweight*ran->Get()>decayweight) decayweight=0.;
-	else transformweight=0.;
-      }
-      if (decayweight>0.) {
-	cluster->push_back(haddec1);
-	cluster->push_back(haddec2);
-      }
-      else if (transformweight>0.) {
-	cluster->push_back(hadtrans);
-	cluster->push_back(Flavour(kf_photon));
-      }
-      else {
-	cluster->clear();
-	return 0;
-      }
-      m_decays      += 1;
-      if (mustdecay)
+  double decayweight(DecayWeight(cluster,haddec1,haddec2,mustdecay));
+  double transformweight(TransformWeight(cluster,hadtrans,lighter,mustdecay));
+  msg_Out()<<METHOD<<"("<<mustdecay<<") yields "
+	   <<"dec = "<<decayweight<<"("<<haddec1<<" "<<haddec2<<"), "
+	   <<"trans = "<<transformweight<<"("<<hadtrans<<").\n"
+	   <<(*cluster)<<"\n";
+	   
+  if (mustdecay) {
+    if (decayweight>0.) {
+      cluster->push_back(haddec1);
+      cluster->push_back(haddec2);
+      m_decays++;
       return 2;
     }
-    if (transformweight<=0. || decayweight/totweight>ran->Get()) {
+    else if (transformweight>0.) {
+      cluster->push_back(hadtrans);
+      cluster->push_back(Flavour(kf_photon));
+      m_decays++;
+      return 2;
+    }
+    cluster->clear();
+    return -1;
+  }
+  if (decayweight>0. || transformweight>0.) {
+    double totweight((Max(0.,decayweight)+Max(0.,transformweight))*0.9999999);
+    if (decayweight>0. && 
+	(totweight*ran->Get()>decayweight || transformweight==0.)) {
       m_decays      += 1;
       cluster->push_back(haddec1);
       cluster->push_back(haddec2);
-      m_dtransitions += 1;
       return 2;
     }
     if (transformweight>0.) {
-      cluster->push_back(hadtrans);
-      if (hadtrans.Mass() < cluster->Mass()) {
-        cluster->push_back(Flavour(kf_photon));
-	m_transitions += 1;
-        return 2;
-      }
       m_transitions += 1;
+      cluster->push_back(hadtrans);
       return 1;
     }
-  }
-  else if (decayweight<0. && transformweight>0.) {
-    cluster->push_back(hadtrans);
-    if (hadtrans.Mass() < cluster->Mass()) {
-      cluster->push_back(Flavour(kf_photon));
-      m_transitions += 1;
-      return 2;
-    }
-    m_transitions += 1;
-    return 1;
   }
   cluster->clear();
   return 0;

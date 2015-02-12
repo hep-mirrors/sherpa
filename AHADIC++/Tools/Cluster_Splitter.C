@@ -33,6 +33,7 @@ bool Cluster_Splitter::operator()(Cluster * cluster) {
     if (m_ana) Analysis();
     Reset();
     if (!cluster->EnsureMomentum()) return EnforceMomentum(cluster);
+    //msg_Out()<<(*cluster)<<"\n";
     return true;
   }
   UndoTrafos();
@@ -66,6 +67,7 @@ bool Cluster_Splitter::ConstructSystem(Cluster * cluster) {
   m_cms = p_split->m_mom + p_spect->m_mom;
   pair<double,double> exponents(FixExponents());
   bool hit;
+  //msg_Out()<<METHOD<<": pt^2_max = "<<m_pt2max<<".\n";
   double pt2max(m_pt2max);
   if (m_leadsplit) pt2max *= m_pt2max/Max(m_pt2max,m_LC.m_msplit2);
   if (m_leadspect) pt2max *= m_pt2max/Max(m_pt2max,m_LC.m_mspect2);
@@ -107,7 +109,8 @@ ConstructKinematics(const double & etax,const double & etay) {
   do {
     x       = SelectY(xmin,xmax,etax,offsetx);
     ymin    = sqqmin/(x*m_LC.m_smandel); 
-    ymax    = 1.-mspect2hat-m_sumy;
+    ymax    = Min(Max(x,ymin*4.),1.-mspect2hat-m_sumy);
+    //ymax    = 1.-mspect2hat-m_sumy;
     offsety = offsetx/x;
     y       = SelectY(ymin,ymax,etay,offsety);
     sqq     = x*y*m_LC.m_smandel;
@@ -183,6 +186,8 @@ MakePairKinematics(PoppedPair * pop,Vec4D & test,Vec4D & test1) {
   double kt(sqrt(pop->m_kt2));
   double phi(2.*M_PI*ran->Get());
   Vec4D  kperp(0.,kt*cos(phi),kt*sin(phi),0.);
+  //msg_Out()<<METHOD<<": sqq = "<<pop->m_sqq<<", z = "<<pop->m_z<<", "
+  //	   <<"kt = "<<kt<<", phi = "<<phi<<"\n";
   test += pop->m_outmom[0]  = 
     pop->m_x*pop->m_z*m_LC.m_pA + 
     pop->m_y*(1.-pop->m_z)*m_LC.m_pB + kperp;
@@ -191,6 +196,7 @@ MakePairKinematics(PoppedPair * pop,Vec4D & test,Vec4D & test1) {
     pop->m_y*pop->m_z*m_LC.m_pB - kperp;
   m_sumx += pop->m_x;
   m_sumy += pop->m_y;
+  //msg_Out()<<pop->m_outmom[0]<<" + "<<pop->m_outmom[1]<<"\n";
   for (size_t i(0);i<2;i++) {
     m_rotat.RotateBack(pop->m_outmom[i]);
     m_boost.BoostBack(pop->m_outmom[i]);

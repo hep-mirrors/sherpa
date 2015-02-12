@@ -159,7 +159,7 @@ double Splitter_Base::SelectY(const double & ymin,const double & ymax,
     y  = logdist?
       ylow * pow(yup/ylow,ran->Get()):
       pow(pow(ylow,etap)+ran->Get()*(pow(yup,etap)-pow(ylow,etap)),1./etap);
-  } while (wt<ran->Get());
+  } while (pow(1.-y,2.)<ran->Get());
   return y-offset;
 }
 

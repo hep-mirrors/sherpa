@@ -29,7 +29,7 @@ namespace AHADIC {
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
 
-    bool          TreatSingleCluster(Cluster *);
+    bool          TreatSingleCluster(Cluster *,bool=false);
     bool          CheckListForTreatment(Cluster_List *);
     int           CheckCluster(Cluster *,bool,bool=false);
 
