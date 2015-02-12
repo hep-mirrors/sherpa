@@ -376,25 +376,14 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
   EventInfo evtinfo(sp,weight,m_usenamedweights);
   evtinfo.WriteTo(event);
-  // Book keeping of 
-  size_t decid(11);
-  std::map<size_t,size_t> decids;
-  if (sp) {
-    Blob_Data_Base *info((*sp)["Decay_Info"]);
-    if (info) {
-      DecayInfo_Vector decs(info->Get<DecayInfo_Vector>());
-      for (size_t i(0);i<decs.size();++i) {
-          decids[decs[i]->m_id]=++decid;
-      }
-    }
-  }
+  
   m_blob2genvertex.clear();
   m_particle2genparticle.clear();
   HepMC::GenVertex * vertex;
   std::vector<HepMC::GenParticle*> beamparticles;
   for (ATOOLS::Blob_List::iterator blit=blobs->begin();
        blit!=blobs->end();++blit) {
-    if (Sherpa2HepMC(*(blit),vertex,decids)) { // Call the Blob to vertex code, changes vertex 4l above
+    if (Sherpa2HepMC(*(blit),vertex)) { // Call the Blob to vertex code, changes vertex 4l above
       event.add_vertex(vertex);
       if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
         if ((**blit)["NLO_subeventlist"]) {
@@ -454,8 +443,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
 
 // HS: this converts a Blob to GenVertex
 bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob, 
-				    HepMC::GenVertex *& vertex,
-				    const std::map<size_t,size_t> &decids)
+				    HepMC::GenVertex *& vertex)
 {
   if (m_ignoreblobs.count(blob->Type())) return false;
   int count = m_blob2genvertex.count(blob);
@@ -485,13 +473,13 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,
   bool okay = 1;
   HepMC::GenParticle * _particle;
   for (int i=0;i<blob->NInP();i++) {
-    if (Sherpa2HepMC(blob->InParticle(i),_particle,decids)) {
+    if (Sherpa2HepMC(blob->InParticle(i),_particle)) {
       vertex->add_particle_in(_particle);
     }
     else okay = 0;
   }
   for (int i=0;i<blob->NOutP();i++) {
-    if (Sherpa2HepMC(blob->OutParticle(i),_particle,decids)) {
+    if (Sherpa2HepMC(blob->OutParticle(i),_particle)) {
       vertex->add_particle_out(_particle);
     }
     else okay = 0;
@@ -521,8 +509,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,
 
 // HS: Sherpa Particle to HepMC::Genparticle --- fills m_particle2genparticle
 // and changes the pointer reference particle ('new')
-bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle *& particle,
-				    const std::map<size_t,size_t> &decids)
+bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle *& particle)
 {
   // HS: do nothing if parton has already been converted  
   int count = m_particle2genparticle.count(parton);
@@ -558,13 +545,6 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle
     // E - gamma collider specific
     else if (parton->DecayBlob()->Type()==ATOOLS::btp::Bunch) {
       status=4;
-    }
-    else { // i.e. Hard_Decay, Hard_Collision, Soft_Collision, QElastic_Collision
-           // Shower, QED_Radiation, Beam, Fragmentation, Cluster_Formation,
-           // Cluster_Decay, Hadron_To_Parton, Unspecified
-      status=11;
-      for (std::map<size_t,size_t>::const_iterator did(decids.begin());
-	   did!=decids.end();++did) if (did->first&parton->MEId()) status=did->second;
     }
   }
   // particle is actually a reference to a pointer, this line changes the reference

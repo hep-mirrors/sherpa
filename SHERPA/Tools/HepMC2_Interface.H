@@ -88,8 +88,8 @@ namespace SHERPA {
     // member functions
     bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs, HepMC::GenEvent& event, double weight=1.0);
     bool Sherpa2HepMC(ATOOLS::Blob_List *const blobs,                         double weight=1.0);
-    bool Sherpa2HepMC(ATOOLS::Blob *,     HepMC::GenVertex *&,   const std::map<size_t,size_t> &decids);
-    bool Sherpa2HepMC(ATOOLS::Particle *, HepMC::GenParticle *&, const std::map<size_t,size_t> &decids);
+    bool Sherpa2HepMC(ATOOLS::Blob *,     HepMC::GenVertex *& ); 
+    bool Sherpa2HepMC(ATOOLS::Particle *, HepMC::GenParticle *&);
 
     bool Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
                            HepMC::GenEvent& event,
