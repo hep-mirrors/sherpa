@@ -309,6 +309,7 @@ suggestion (@url{http://phystev.in2p3.fr/wiki/2013:groups:tools:hepmc})
 of indicating interaction types through the GenVertex type-flag.  Multiple
 event weights will also be enabled as soon as a similar standard has been
 defined.
+To write out a tree-like event record, the optional CL option @option{HEPMC_TREE_LIKE=1} should be used.
 @item HepMC_Short
 Generates output in HepMC::IO_GenEvent format, however, only incoming beams and 
 outgoing particles are stored. Intermediate and decayed particles are not 
