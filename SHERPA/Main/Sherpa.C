@@ -208,8 +208,9 @@ bool Sherpa::GenerateOneEvent(bool reset)
         THROW(normal_exit,"Debug event written.");
       }
       rpa->gen.SetNumberOfGeneratedEvents(rpa->gen.NumberOfGeneratedEvents()+1);
+      Blob_List *blobs(p_eventhandler->GetBlobs()); // HS debug
       if (msg_LevelIsEvents()) {
-	Blob_List *blobs(p_eventhandler->GetBlobs());
+	//Blob_List *blobs(p_eventhandler->GetBlobs());
 	if (!blobs->empty()) {
 	  msg_Out()<<"  -------------------------------------------------  "<<std::endl;
 	  for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) 
@@ -218,6 +219,26 @@ bool Sherpa::GenerateOneEvent(bool reset)
 	}
 	else msg_Out()<<"  ******** Empty event ********  "<<std::endl;
       }
+
+      for (Blob_List::const_iterator bit=blobs->begin(); bit!=blobs->end();++bit) {
+          double currQ = (*bit)->CheckChargeConservation();
+          if (fabs(currQ)>1e-12) {
+              msg_Error() << "Charge conservation failed, aborting: " << currQ << "\n";
+              msg_Error() << (**bit) << "\n";
+              abort();
+          }
+      }
+      //double totalcharge=0.;
+      //Particle_List plist = blobs->ExtractParticles(1);
+      //for (size_t i=0; i<plist.size(); ++i) {
+        //totalcharge += plist[i]->Flav().Charge();
+      //}
+      //if (fabs(totalcharge)>1e-12) {
+        //PRINT_INFO("totalcharge = "<<totalcharge);
+        //PRINT_VAR(*blobs);
+        //abort();
+      //}
+
       return 1;
     }
     return 0;
