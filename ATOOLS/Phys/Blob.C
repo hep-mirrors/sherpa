@@ -370,6 +370,20 @@ Vec4D Blob::CheckMomentumConservation() const {
   return sump;
 }
 
+double Blob::CheckChargeConservation() const {
+  double Qin=0.0;
+  double Qout=0.0;
+  for (Particle_Vector::const_iterator part = m_inparticles.begin();
+       part != m_inparticles.end(); ++part) {
+    Qin += (*part)->Flav().Charge();
+  }
+  for (Particle_Vector::const_iterator part = m_outparticles.begin();
+       part != m_outparticles.end(); ++part) {
+    Qout += (*part)->Flav().Charge();
+  }
+  return Qout - Qin;
+}
+
 std::string Blob::ShortProcessName() {
   std::string str("");
   for (size_t i(0);i<NInP();++i)  str+=InParticle(i)->Flav().IDName()+" ";
