@@ -49,19 +49,24 @@ bool Library_Loader::CreateLockFile(const std::string &lockname)
     }
   }
   msg_Debugging()<<" not found"<<std::endl;
-  }
   msg_Debugging()<<"creating lock file '"<<lockname<<"' ... "<<std::flush;
   std::ofstream *lock(new std::ofstream(lockname.c_str()));
   delete lock;
   msg_Debugging()<<" done"<<std::endl;
+  }
   return true;
 }
 
 bool Library_Loader::RemoveLockFile(const std::string &lockname)
 {
+  if (!m_check) {
+    msg_Debugging()<<"not checking lock file"<<std::endl;
+  }
+  else {
   msg_Debugging()<<"deleting lock file '"<<lockname<<"' ... "<<std::flush;
   remove(lockname.c_str());
   msg_Debugging()<<" done"<<std::endl;
+  }
   return true;
 }
 
