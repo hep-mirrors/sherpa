@@ -365,9 +365,11 @@ The output can be further customized using the following options:
 
 @table @option
 @item FILE_SIZE
-Number of events per file (default: 1000).
+Number of events per file (default: unlimited).
 @item NTUPLE_SIZE
 File size per NTuple file (default: unlimited).
+This option is deprecated. It may lead to errors in the subsequent 
+processing of NTuple files. Please use @option{FILE_SIZE} instead.
 @item EVT_FILE_PATH
 Directory where the files will be stored.
 @item OUTPUT_PRECISION
