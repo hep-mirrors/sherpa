@@ -20,7 +20,7 @@ namespace SHERPA {
     double fscale,rscale;
     double alphas;
     long int id;
-    int nparticle;
+    int ncount, nparticle;
     int kf1,kf2;
     int nuwgt;
     double uwgt[18]; 
@@ -33,7 +33,7 @@ namespace SHERPA {
 #ifdef USING__ROOT
     static const Int_t s_kMaxParticle = 100;
     UInt_t m_id;
-    Int_t m_nparticle;
+    Int_t m_ncount, m_nparticle;
     Float_t p_px[s_kMaxParticle];
     Float_t p_py[s_kMaxParticle];
     Float_t p_pz[s_kMaxParticle];
@@ -52,7 +52,7 @@ namespace SHERPA {
 #endif
     std::string m_basename, m_ext, m_treename;
     size_t m_cnt2,m_cnt3,m_fcnt,m_evt,m_idcnt;
-    size_t m_filesize,m_avsize,m_total,m_mode;
+    size_t m_filesize,m_avsize,m_total,m_mode,m_exact;
     double m_sum,m_s2,m_s3,m_c1,m_c2;
     double m_sq,m_sq2,m_sq3,m_fsq;
     double m_alphas;
@@ -63,7 +63,7 @@ namespace SHERPA {
     void MPISync();
     void AddDecayProducts(ATOOLS::Particle *part,int &np);
   public:
-    Output_RootNtuple(const Output_Arguments &args);
+    Output_RootNtuple(const Output_Arguments &args,int exact=0);
     ~Output_RootNtuple();
     void Header();
     void Footer();
@@ -71,6 +71,8 @@ namespace SHERPA {
     void Output(ATOOLS::Blob_List* blobs, double weight);
     void PrepareTerminate();
   };
+
+  class Output_ERootNtuple {};
 
 }
 

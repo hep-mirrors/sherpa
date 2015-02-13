@@ -8,19 +8,26 @@ ROOTIN_SOURCES = RootNtuple_Reader.C
 ROOTIN_ADDS = RootNtuple_Reader.H
 
 if ROOT_SUPPORT
-pkglib_LTLIBRARIES    =	libSherpaRootOutput.la libSherpaRootInput.la
+pkglib_LTLIBRARIES    =	libSherpaRootOutput.la libSherpaERootOutput.la \
+		libSherpaRootInput.la libSherpaERootInput.la
 
 libSherpaRootOutput_la_SOURCES        =	$(ROOTOUT_SOURCES)
+libSherpaERootOutput_la_SOURCES       =	$(ROOTOUT_SOURCES)
 
 libSherpaRootOutput_la_LIBADD         =	@CONDITIONAL_ROOTLIBS@
+libSherpaERootOutput_la_LIBADD        =	@CONDITIONAL_ROOTLIBS@
 
 libSherpaRootOutput_la_CPPFLAGS       =	$(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
+libSherpaERootOutput_la_CPPFLAGS      =	$(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
 
 libSherpaRootInput_la_SOURCES         =	$(ROOTIN_SOURCES)
+libSherpaERootInput_la_SOURCES        =	$(ROOTIN_SOURCES)
 
 libSherpaRootInput_la_LIBADD          =	@CONDITIONAL_ROOTLIBS@
+libSherpaERootInput_la_LIBADD         =	@CONDITIONAL_ROOTLIBS@
 
 libSherpaRootInput_la_CPPFLAGS        =	$(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
+libSherpaERootInput_la_CPPFLAGS       =	$(AM_CPPFLAGS) @CONDITIONAL_ROOTINCS@
 
 ROOT_EXTRA_DIST = $(ROOTOUT_ADDS) $(ROOTIN_ADDS)
 else

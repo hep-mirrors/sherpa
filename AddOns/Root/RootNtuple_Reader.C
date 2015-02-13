@@ -43,7 +43,7 @@ namespace SHERPA {
 #ifdef USING__ROOT
     static const Int_t s_kMaxParticle = 100;
     UInt_t m_id;
-    Int_t m_nparticle;
+    Int_t m_ncount, m_nparticle;
     Float_t p_px[s_kMaxParticle];
     Float_t p_py[s_kMaxParticle];
     Float_t p_pz[s_kMaxParticle];
@@ -61,8 +61,8 @@ namespace SHERPA {
   };
 }
 
-RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args) :
-  Event_Reader_Base(args), 
+RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact) :
+  Event_Reader_Base(args), m_exact(exact),
   m_evtid(0), m_subevtid(0), m_evtcnt(0), m_entries(0), m_evtpos(0),
   p_isr(args.p_isr), m_sargs(NULL,"","")
 {
@@ -141,6 +141,7 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args) :
     THROW(fatal_error,"Missing input");
   }
   p_vars->p_f->SetBranchAddress("id",&p_vars->m_id);
+  if (m_exact) p_vars->p_f->SetBranchAddress("ncount",&p_vars->m_ncount);
   p_vars->p_f->SetBranchAddress("nparticle",&p_vars->m_nparticle);
   p_vars->p_f->SetBranchAddress("px",p_vars->p_px);
   p_vars->p_f->SetBranchAddress("py",p_vars->p_py);
@@ -414,7 +415,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   signalblob->AddData("Weight",new Blob_Data<double>(m_weight));
   signalblob->AddData("MEWeight",new Blob_Data<double>
 		      (p_vars->m_nuwgt?p_vars->m_mewgt:p_vars->m_mewgt2));
-  signalblob->AddData("Trials",new Blob_Data<double>(1.));
+  signalblob->AddData("Trials",new Blob_Data<double>(m_exact?p_vars->m_ncount:1.0));
   signalblob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(&m_nlos));
   signalblob->AddData("Weight_Norm",new Blob_Data<double>(1.0));
   signalblob->AddData("OQCD",new Blob_Data<int>(p_vars->m_oqcd));
@@ -434,6 +435,23 @@ operator()(const Input_Arguments &args) const
 
 void ATOOLS::Getter
 <Event_Reader_Base,Input_Arguments,RootNtuple_Reader>::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"Root NTuple input";
+}
+
+DECLARE_GETTER(ERootNtuple_Reader,"ERoot",
+	       Event_Reader_Base,Input_Arguments);
+
+Event_Reader_Base *ATOOLS::Getter
+<Event_Reader_Base,Input_Arguments,ERootNtuple_Reader>::
+operator()(const Input_Arguments &args) const
+{
+  return new RootNtuple_Reader(args,1);
+}
+
+void ATOOLS::Getter
+<Event_Reader_Base,Input_Arguments,ERootNtuple_Reader>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"Root NTuple input";
