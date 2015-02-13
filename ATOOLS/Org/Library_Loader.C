@@ -25,10 +25,7 @@ Library_Loader::Library_Loader(): m_wait(3600), m_check(false)
 
 bool Library_Loader::CreateLockFile(const std::string &lockname)
 {
-  if (!m_check) {
-    msg_Debugging()<<"not checking lock file"<<std::endl;
-  }
-  else {
+  if (m_check) {
   msg_Debugging()<<"checking lock file '"<<lockname<<"' ... "<<std::flush;
   struct stat buffer;
   if (!stat(lockname.c_str(),&buffer)) {
@@ -59,10 +56,7 @@ bool Library_Loader::CreateLockFile(const std::string &lockname)
 
 bool Library_Loader::RemoveLockFile(const std::string &lockname)
 {
-  if (!m_check) {
-    msg_Debugging()<<"not checking lock file"<<std::endl;
-  }
-  else {
+  if (m_check) {
   msg_Debugging()<<"deleting lock file '"<<lockname<<"' ... "<<std::flush;
   remove(lockname.c_str());
   msg_Debugging()<<" done"<<std::endl;
