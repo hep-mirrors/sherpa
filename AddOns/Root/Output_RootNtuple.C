@@ -344,7 +344,7 @@ void Output_RootNtuple::ChangeFile()
 {
   StoreEvt();
 #ifdef USING__ROOT
-  p_t3->AutoSave();
+  p_f=p_t3->ChangeFile(p_f);
 #endif
 }
 
