@@ -171,6 +171,7 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
     break;
   }
   
+  msg_Out()<<METHOD<<" formed clusters:\n"<<(*blob)<<".\n";
   switch (p_cdechandler->DecayClusters(blob)) {
   case -1 : 
     msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl

@@ -62,12 +62,20 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
 {
   if (clin->size()==1) {
     msg_Out()<<METHOD<<" for cluster list with one cluster only!\n";
-    return (TreatSingleCluster(*clin->begin(),true) &&
-	    AttachHadronsToBlob(clin,blob));
+    if (TreatSingleCluster(*clin->begin(),true))
+      return AttachHadronsToBlob(clin,blob);
+    if (EnforcedDecay(*clin->begin(),blob,true,clin)) {
+      AttachHadronsToBlob(clin,blob);
+      msg_Out()<<METHOD<<" enforces decay of cluster:\n"<<(*blob)<<",\n"
+	       <<"   cluster list has "<<clin->size()<<" elements left.\n";
+      return true;
+    }
   }
+  msg_Out()<<METHOD<<" for "<<clin->size()<<" clusters.\n";
   if (!CheckListForTreatment(clin)) return true;
   m_lists++;
   double E(-1.);
+  msg_Out()<<METHOD<<" checking if all decays/transitions are allowed.\n";
   if (!CheckIfAllowed(clin,E)) {
     do {
       if (!UpdateTransitions(clin)) {
@@ -95,7 +103,7 @@ bool Soft_Cluster_Handler::TreatSingleCluster(Cluster * cluster,bool mustdecay)
   case 2:  break;
   case 1:  cluster->push_back(Flavour(kf_photon)); break;
   case 0:  break;
-  case -1: abort();
+  case -1: return false;
   default: break;
   }
   msg_Out()<<METHOD<<";\n"<<(*cluster)<<"\n";
@@ -139,6 +147,7 @@ AttachHadronsToBlob(Cluster_List * clin,Blob * blob)
   Cluster * cluster;
   while (cit!=clin->end()) {
     cluster = (*cit);
+    msg_Out()<<METHOD<<" for "<<cluster->size()<<".\n";
     switch (cluster->size()) {
     case 1:
       part = cluster->GetSelf();
@@ -233,7 +242,7 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter,
   Flavour hadtrans(Flavour(kf_none));
   double decayweight(DecayWeight(cluster,haddec1,haddec2,mustdecay));
   double transformweight(TransformWeight(cluster,hadtrans,lighter,mustdecay));
-  msg_Out()<<METHOD<<"("<<mustdecay<<") yields "
+  msg_Out()<<METHOD<<"("<<mustdecay<<lighter<<") yields "
 	   <<"dec = "<<decayweight<<"("<<haddec1<<" "<<haddec2<<"), "
 	   <<"trans = "<<transformweight<<"("<<hadtrans<<").\n"
 	   <<(*cluster)<<"\n";
@@ -261,9 +270,21 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster,bool lighter,
       m_decays      += 1;
       cluster->push_back(haddec1);
       cluster->push_back(haddec2);
+      msg_Out()<<METHOD<<" yields decay to "<<haddec1<<" + "<<haddec2<<".\n";
       return 2;
     }
     if (transformweight>0.) {
+      m_transitions += 1;
+      cluster->push_back(hadtrans);
+      msg_Out()<<METHOD<<" yields transition to "<<hadtrans<<".\n";
+      return 1;
+    }
+  }
+  else {
+    if (transformweight<=0. && hadtrans!=Flavour(kf_none)) {
+      transformweight = TransformWeight(cluster,hadtrans,false,true);
+      msg_Out()<<METHOD<<" tries to force it for\n"<<(*cluster)<<"\n";
+      msg_Out()<<"Gotcha: "<<transformweight<<", "<<hadtrans<<"!\n";
       m_transitions += 1;
       cluster->push_back(hadtrans);
       return 1;
@@ -358,6 +379,7 @@ ClusterAnnihilation(Cluster * cluster,Flavour & had1,Flavour & had2) {
   kf_code kfc11(kfc1/1000),kfc12((kfc1-kfc11*1000)/100);
   kf_code kfc21(kfc2/1000),kfc22((kfc2-kfc21*1000)/100);
   Flavour fl1(kfc11), fl2(kfc12), fl3(kfc21), fl4(kfc22);
+  msg_Out()<<METHOD<<"("<<fl1<<", "<<fl2<<") & ("<<fl3<<", "<<fl4<<").\n";
   fl1 = fl1.Bar();
   fl2 = fl2.Bar();
   Proto_Particle *pp1(new Proto_Particle(fl1,cluster->GetTrip()->m_mom/2.,'l'));
@@ -365,7 +387,7 @@ ClusterAnnihilation(Cluster * cluster,Flavour & had1,Flavour & had2) {
   Proto_Particle *pp3(new Proto_Particle(fl3,cluster->GetAnti()->m_mom/2.,'l'));
   Proto_Particle *pp4(new Proto_Particle(fl4,cluster->GetAnti()->m_mom/2.,'l'));
   bool order(ran->Get()>0.5?true:false);
-  Cluster cluster1((order?pp3:pp4),pp1), cluster2((!order?pp4:pp3),pp2);
+  Cluster cluster1((order?pp3:pp4),pp1), cluster2((order?pp4:pp3),pp2);
   Flavour_Pair pair1, pair2;
   pair1.first = cluster1.GetTrip()->m_flav;
   pair1.first = cluster1.GetAnti()->m_flav;
@@ -401,6 +423,7 @@ EnforcedDecay(Cluster * cluster, Blob * blob,const bool & constrained,
   if (weight<=0.) {
     if (cluster->GetTrip()->m_flav.IsDiQuark() && 
 	cluster->GetAnti()->m_flav.IsDiQuark()) {
+      msg_Out()<<METHOD<<": must annihilate cluster.\n";
       if (!ClusterAnnihilation(cluster,had1,had2)) return false;
     }
     else {
@@ -416,8 +439,8 @@ EnforcedDecay(Cluster * cluster, Blob * blob,const bool & constrained,
     m_forceddecays++;m_decays--;
   }
 
-  FixHHDecay(cluster,blob,had1,had2,constrained);
-  m_decays++;
+  cluster->push_back(had1);
+  cluster->push_back(had2);
   return true;
 }
 
@@ -523,6 +546,7 @@ TransformWeight(Cluster * cluster,Flavour & hadron,
   double MC(cluster->Mass());
   double critM(p_singletransitions->GetLightestMass(fpair)*(1.-m_transoffset)+
 	       p_singletransitions->GetHeaviestMass(fpair)*m_transoffset);
+  msg_Out()<<METHOD<<" for M = "<<MC<<" (crit = "<<critM<<")\n";
   if (!enforce && MC>critM) {
     hadron = Flavour(kf_none);
     return 0.;
@@ -564,6 +588,11 @@ TransformWeight(Cluster * cluster,Flavour & hadron,
       wt *= siter->second;
     }
     totweight += wt;
+  }
+  msg_Out()<<METHOD<<" with totweight = "<<totweight<<".\n";
+  for (siter=start;siter!=stl->end();siter++) {
+    msg_Out()<<siter->first<<" yields "<<siter->second<<"  --> "
+	     <<TransformKin(MC,siter->first,enforce)<<".\n";
   }
 
   double disc(totweight * 0.9999999999*ran->Get());

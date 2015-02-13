@@ -26,6 +26,7 @@ int Cluster_Decay_Handler::DecayClusters(Blob * blob)
 {
   Cluster * cluster;
   Cluster_Iterator cit(p_clulist->begin());
+  msg_Out()<<METHOD<<" with "<<p_clulist->size()<<" clusters.\n";
   while (!p_clulist->empty()) {
     cluster = p_clulist->front();
     if (!cluster->Active()) return -1;
