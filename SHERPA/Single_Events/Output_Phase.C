@@ -45,8 +45,8 @@ Return_Value::code Output_Phase::Treat(Blob_List *bloblist,double &weight)
       (*it)->Output(bloblist,weight);
     }
   if (rpa->gen.NumberOfGeneratedEvents()>0 &&
-      rpa->gen.NumberOfGeneratedEvents()%m_wit==0 &&
-      rpa->gen.NumberOfGeneratedEvents()<rpa->gen.NumberOfEvents()) 
+      (rpa->gen.NumberOfGeneratedEvents()+1)%m_wit==0 &&
+      (rpa->gen.NumberOfGeneratedEvents()+1)<rpa->gen.NumberOfEvents()) 
     for (Output_Vector::iterator it=p_outputs->begin(); 
 	 it!=p_outputs->end(); ++it)
       (*it)->ChangeFile();
