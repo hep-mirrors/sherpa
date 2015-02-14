@@ -44,6 +44,7 @@ Output_RootNtuple::Output_RootNtuple(const Output_Arguments &args,int exact):
   if (m_exact) m_avsize=Max((size_t)1,m_avsize/size);
 #endif
   m_total=0;
+  m_csumsqr=m_csum=m_cn=0.;
   m_sum=m_s2=m_s3=m_c1=m_c2=0.;
   m_sq=m_fsq=m_sq2=m_sq3=0.;
 #ifdef USING__ROOT
@@ -161,7 +162,11 @@ void Output_RootNtuple::PrepareTerminate()
   ATOOLS::exh->RemoveTerminatorObject(this);
 #endif
   if (m_exact) {
-    msg_Info()<<"ROOTNTUPLE_OUTPUT stored: "<<m_sum/m_c1<<" +/- "<<sqrt((m_sq/m_c1-sqr(m_sum/m_c1))/(m_c1-1.))<<" pb\n";
+    double xs=m_csum/m_cn;
+    double err=sqrt((m_csumsqr/m_cn-sqr(m_csum/m_cn))/(m_cn-1.));
+    msg_Info()<<METHOD<<"(): '"<<p_f->GetName()
+	      <<"' stores "<<xs<<" pb +- ( "<<err<<" pb = "
+	      <<dabs((int(10000.0*err/xs))/100.0)<<" % )\n";
     return;
   }
   msg_Info()<<"ROOTNTUPLE_OUTPUT stored: "<<m_s2/m_c2<<" +/- "<<sqrt((m_sq2/m_c2-sqr(m_s2/m_c2))/(m_c2-1.))<<" pb  (reweighted 1) \n"; 
@@ -205,6 +210,7 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
   int ncount=(*signal)["Trials"]->Get<double>();
   m_evt+=ncount;
   m_c1+=ncount;
+  m_cn+=ncount;
   m_cnt3++;
   m_idcnt++;
 
@@ -222,6 +228,8 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
     m_evtlist[m_cnt2].weight=(*signal)["Weight"]->Get<double>();
     m_evtlist[m_cnt2].ncount=ncount;
     m_sum+=m_evtlist[m_cnt2].weight;
+    m_csum+=m_evtlist[m_cnt2].weight;
+    m_csumsqr+=sqr(m_evtlist[m_cnt2].weight);
     m_fsq+=sqr(m_evtlist[m_cnt2].weight);
     m_evtlist[m_cnt2].id=m_idcnt;
     m_evtlist[m_cnt2].fscale=sqrt((*signal)["Factorisation_Scale"]->Get<double>());
@@ -334,6 +342,8 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
       delete pl;
     }
     m_sum+=tweight;
+    m_csum+=tweight;
+    m_csumsqr+=sqr(tweight);
     m_fsq+=sqr(tweight);
   }
   
@@ -345,6 +355,12 @@ void Output_RootNtuple::ChangeFile()
   StoreEvt();
 #ifdef USING__ROOT
   if (p_t3==NULL) return;
+  double xs=m_csum/m_cn;
+  double err=sqrt((m_csumsqr/m_cn-sqr(m_csum/m_cn))/(m_cn-1.));
+  msg_Info()<<METHOD<<"(): '"<<p_f->GetName()
+	    <<"' stores "<<xs<<" pb +- ( "<<err<<" pb = "
+	    <<dabs((int(10000.0*err/xs))/100.0)<<" % )\n";
+  m_csumsqr=m_csum=m_cn=0.0;
   p_f=p_t3->ChangeFile(p_f);
 #endif
 }
@@ -387,6 +403,9 @@ void Output_RootNtuple::MPISync()
 	m_fsq+=vals[4];
 	m_sum+=vals[5];
 	m_c1+=vals[2];
+	m_csumsqr+=vals[4];
+	m_csum+=vals[5];
+	m_cn+=vals[2];
       }
     }
     else {

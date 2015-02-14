@@ -55,6 +55,7 @@ namespace SHERPA {
     size_t m_filesize,m_avsize,m_total,m_mode,m_exact;
     double m_sum,m_s2,m_s3,m_c1,m_c2;
     double m_sq,m_sq2,m_sq3,m_fsq;
+    double m_csumsqr,m_csum,m_cn;
     double m_alphas;
     std::vector<rntuple_evt2> m_evtlist;
     std::vector<int> m_flavlist;    
