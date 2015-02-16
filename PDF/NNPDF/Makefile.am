@@ -18,5 +18,5 @@ NNPDF3archive = nnpdf30.tar.gz
 nobase_dist_pkgdata_DATA         =	$(NNPDF3archive)
 
 install-data-hook:
-	tar xzf $(NNPDF3archive) -C $(DESTDIR)$(pkgdatadir)
+	tar xzf $(srcdir)/$(NNPDF3archive) -C $(DESTDIR)$(pkgdatadir)
 
