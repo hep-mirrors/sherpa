@@ -538,7 +538,7 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
       }
     }
   }
-  if (p_model->VInfo()&1)
+  if (p_model->MaxLegs(ckey.m_fl)>3)
     for (size_t i(1);i<n-1;++i) {
       for (size_t j(1);j<n-i;++j) {
 	for (size_t k(0);k<m_cur[i].size();++k) {

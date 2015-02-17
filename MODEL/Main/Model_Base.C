@@ -20,7 +20,7 @@ Model_Base::Model_Base(std::string _dir,std::string _file,bool _elementary) :
   p_model(NULL), m_dir(_dir), m_file(_file), m_elementary(_elementary), 
   p_dataread(NULL), p_numbers(NULL), p_constants(NULL), p_complexconstants(NULL), 
   p_functions(NULL), p_matrices(NULL), p_spectrumgenerator(NULL), p_vertex(NULL), 
-  p_vertextable(NULL), m_vinfo(0)
+  p_vertextable(NULL)
 {
   p_dataread = new Data_Reader(" ",";","!","=");
   p_dataread->AddComment("#");
@@ -407,9 +407,13 @@ void Model_Base::InitMEInfo()
     if (all[i].on) {
       m_vmap.insert(VMap_Key(all[i].PID(),&all[i]));
       m_vtable[all[i].in[0]].push_back(&all[i]);
-      if (all[i].nleg>3) {
-	if (all[i].dec<0) m_vinfo|=2;
-	else hasndec=true;
+      if (all[i].dec>=0) {
+	for (size_t k=0;k<all[i].nleg;++k) {
+	  Flavour fl(all[i].in[k]);
+	  if (m_maxlegs.find(fl)==m_maxlegs.end()) m_maxlegs[fl]=0;
+	  if (all[i].nleg>m_maxlegs[fl])
+	    m_maxlegs[fl.Bar()]=m_maxlegs[fl]=all[i].nleg;
+	}
       }
       for (int j(0);j<all[i].nleg;++j) fls.insert(all[i].in[j]);
       if (msg_LevelIsDebugging()) {
@@ -427,7 +431,6 @@ void Model_Base::InitMEInfo()
     }
   }
   }
-  if (hasndec) m_vinfo|=1;
   msg_Debugging()<<"\n  add particles\n\n";
   for (std::set<Flavour>::const_iterator 
 	 fit(fls.begin());fit!=fls.end();++fit) {

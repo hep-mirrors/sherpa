@@ -69,7 +69,7 @@ namespace MODEL {
     Vertex_Map                m_vmap;
     ATOOLS::Flavour_Vector    m_fls;
 
-    int m_vinfo;
+    std::map<ATOOLS::Flavour,size_t> m_maxlegs;
 
     void CustomContainerInit();
 
@@ -143,7 +143,9 @@ namespace MODEL {
     inline VMIterator_Pair GetVertex(const std::string &key) const
     { return VMIterator_Pair(m_vmap.lower_bound(key),m_vmap.upper_bound(key)); }
 
-    inline int VInfo() const { return m_vinfo; }
+    inline size_t MaxLegs(const ATOOLS::Flavour &fl) const
+    { std::map<ATOOLS::Flavour,size_t>::const_iterator
+	it(m_maxlegs.find(fl)); return it==m_maxlegs.end()?0:it->second; }
 
   };
 
