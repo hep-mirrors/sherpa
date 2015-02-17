@@ -35,7 +35,7 @@ namespace SHERPA {
 
   class EventInfo {
   private:
-    size_t m_usenamedweights;
+    size_t m_usenamedweights, m_minimalweights;
     ATOOLS::Blob * p_sp;
     int    m_oqcd, m_oew;
     double m_wgt, m_mewgt, m_wgtnorm, m_ntrials, m_pswgt, m_pwgt;
@@ -50,7 +50,8 @@ namespace SHERPA {
     bool ReadIn(ATOOLS::Blob_Data_Base * &db, std::string name, bool abort);
 
   public:
-    EventInfo(ATOOLS::Blob * sp, const double &wgt, bool namedweights);
+    EventInfo(ATOOLS::Blob * sp, const double &wgt,
+              bool namedweights, bool minimalweights);
     EventInfo(const EventInfo &evtinfo);
     ~EventInfo() {}
     bool WriteTo(HepMC::GenEvent &evt, const int& idx=-1);
@@ -67,8 +68,7 @@ namespace SHERPA {
 
   class HepMC2_Interface {
   private :
-    bool m_usenamedweights;
-    bool m_hepmctree;
+    bool m_usenamedweights, m_minimalweights, m_hepmctree;
 
     std::map<ATOOLS::Blob*,HepMC::GenVertex *> m_blob2genvertex;
     std::map<ATOOLS::Particle*,HepMC::GenParticle *> m_particle2genparticle;
@@ -107,8 +107,12 @@ namespace SHERPA {
     inline std::vector<HepMC::GenEvent*> GenSubEventList()
     { return m_subeventlist; }
 
-    inline void SetHepMCNamedWeights(bool x) { m_usenamedweights=x; }
-    inline bool HepMCNamedWeights()          { return m_usenamedweights; }
+    inline void SetHepMCNamedWeights(bool x)   { m_usenamedweights=x; }
+    inline bool HepMCNamedWeights()            { return m_usenamedweights; }
+    inline void SetHepMCMinimalWeights(bool x) { m_minimalweights=x; }
+    inline bool HepMCMinimalWeights()          { return m_minimalweights; }
+    inline void SetHepMCTreeLike(bool x)       { m_hepmctree=x; }
+    inline bool HepMCTreeLike()                { return m_hepmctree; }
 
     void DeleteGenSubEventList();
 

@@ -27,8 +27,9 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
-                     bool namedweights) :
-  m_usenamedweights(namedweights), p_sp(sp),
+                     bool namedweights, bool minimalweights) :
+  m_usenamedweights(namedweights),
+  m_minimalweights(minimalweights), p_sp(sp),
   m_oqcd(0), m_oew(0), m_wgt(wgt),
   m_mewgt(0.), m_wgtnorm(0.), m_ntrials(0.),
   m_pswgt(0.), m_pwgt(0.),
@@ -47,23 +48,25 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
     m_wgtnorm=db->Get<double>();
     ReadIn(db,"Trials",true);
     m_ntrials=db->Get<double>();
-    ReadIn(db,"Renormalization_Scale",true);
-    m_mur2=db->Get<double>();
-    SetAlphaS();
-    SetAlpha();
-    ReadIn(db,"OQCD",true);
-    m_oqcd=db->Get<int>();
-    ReadIn(db,"OEW",true);
-    m_oew=db->Get<int>();
-    ReadIn(db,"MEWeightInfo",true);
-    p_wgtinfo=db->Get<ME_Weight_Info*>();
     ReadIn(db,"PDFInfo",true);
     p_pdfinfo=&db->Get<ATOOLS::PDF_Info>();
     m_muf12=p_pdfinfo->m_muf12;
     m_muf22=p_pdfinfo->m_muf22;
-    ReadIn(db,"NLO_subeventlist",false);
-    if (db) p_subevtlist=db->Get<NLO_subevtlist*>();
-    if (p_subevtlist) m_type=p_subevtlist->Type();
+    if (!m_minimalweights) {
+      ReadIn(db,"Renormalization_Scale",true);
+      m_mur2=db->Get<double>();
+      SetAlphaS();
+      SetAlpha();
+      ReadIn(db,"OQCD",true);
+      m_oqcd=db->Get<int>();
+      ReadIn(db,"OEW",true);
+      m_oew=db->Get<int>();
+      ReadIn(db,"MEWeightInfo",true);
+      p_wgtinfo=db->Get<ME_Weight_Info*>();
+      ReadIn(db,"NLO_subeventlist",false);
+      if (db) p_subevtlist=db->Get<NLO_subevtlist*>();
+      if (p_subevtlist) m_type=p_subevtlist->Type();
+    }
     ReadIn(db,"ScaleVariations",false);
     if (db) p_nsvmap=db->Get<NamedScaleVariationMap*>();
   }
@@ -71,6 +74,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
 
 EventInfo::EventInfo(const EventInfo &evtinfo) :
   m_usenamedweights(evtinfo.m_usenamedweights),
+  m_minimalweights(evtinfo.m_minimalweights),
   p_sp(evtinfo.p_sp),
   m_oqcd(evtinfo.m_oqcd), m_oew(evtinfo.m_oew),
   m_wgt(0.), m_mewgt(0.), m_wgtnorm(0.),
@@ -99,12 +103,69 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
     wc["MEWeight"]=m_mewgt;
     wc["WeightNormalisation"]=m_wgtnorm;
     wc["NTrials"]=m_ntrials;
-    wc["PSWeight"]=m_pswgt;
-    // additional entries for LO/LOPS reweighting
-    // x1,x2,muf2 can be found in PdfInfo; alphaS,alphaQED in their infos
-    wc["MuR2"]=m_mur2;
-    wc["OQCD"]=m_oqcd;
-    wc["OEW"]=m_oew;
+    if (!m_minimalweights) {
+      wc["PSWeight"]=m_pswgt;
+      // additional entries for LO/LOPS reweighting
+      // x1,x2,muf2 can be found in PdfInfo; alphaS,alphaQED in their infos
+      wc["MuR2"]=m_mur2;
+      wc["OQCD"]=m_oqcd;
+      wc["OEW"]=m_oew;
+      size_t nt(0);
+      if (p_wgtinfo) {
+        wc["Reweight_B"]=p_wgtinfo->m_B;
+        if (p_wgtinfo->m_type!=mewgttype::none) {
+          if (p_wgtinfo->m_B) nt|=1;
+          wc["Reweight_B"]=p_wgtinfo->m_B;
+          wc["Reweight_VI"]=p_wgtinfo->m_VI;
+          if (p_wgtinfo->m_VI) nt|=2;
+          wc["Reweight_KP"]=p_wgtinfo->m_KP;
+          if (p_wgtinfo->m_KP) nt|=4;
+          wc["Reweight_KP_x1p"]=p_wgtinfo->m_y1;
+          wc["Reweight_KP_x2p"]=p_wgtinfo->m_y2;
+          wc["Reweight_MuR2"]=p_wgtinfo->m_mur2;
+          wc["Reweight_MuF2"]=p_wgtinfo->m_muf2;
+          if (p_wgtinfo->m_type&mewgttype::muR) {
+            for (size_t i=0;i<p_wgtinfo->m_wren.size();++i) {
+              wc["Reweight_VI_wren_"+ToString(i)]=p_wgtinfo->m_wren[i];
+            }
+          }
+          if (p_wgtinfo->m_type&mewgttype::muF) {
+            for (size_t i=0;i<p_wgtinfo->m_wfac.size();++i) {
+              wc["Reweight_KP_wfac_"+ToString(i)]=p_wgtinfo->m_wfac[i];
+            }
+          }
+          if (p_wgtinfo->m_dadsinfos.size()) {
+            nt|=8;
+            wc["Reweight_DADS_N"]=p_wgtinfo->m_dadsinfos.size();
+            for (size_t i(0);i<p_wgtinfo->m_dadsinfos.size();++i) {
+              wc["Reweight_DADS_"+ToString(i)+"_Weight"]
+                  =p_wgtinfo->m_dadsinfos[i].m_wgt;
+              if (p_wgtinfo->m_dadsinfos[i].m_wgt) {
+                wc["Reweight_DADS_"+ToString(i)+"_x1"]
+                    =p_wgtinfo->m_dadsinfos[i].m_pdf.m_x1;
+                wc["Reweight_DADS_"+ToString(i)+"_x2"]
+                    =p_wgtinfo->m_dadsinfos[i].m_pdf.m_x2;
+                wc["Reweight_DADS_"+ToString(i)+"_fl1"]
+                    =p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl1;
+                wc["Reweight_DADS_"+ToString(i)+"_fl2"]
+                    =p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl2;
+                wc["Reweight_DADS_"+ToString(i)+"_MuR2"]
+                    =p_wgtinfo->m_dadsinfos[i].m_mur2;
+                wc["Reweight_DADS_"+ToString(i)+"_MuF12"]
+                    =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf12;
+                wc["Reweight_DADS_"+ToString(i)+"_MuF22"]
+                    =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf22;
+              }
+            }
+          }
+        }
+      }
+      if (p_subevtlist) {
+        nt|=32;
+        wc["Reweight_RS"]=m_pwgt;
+      }
+      wc["Reweight_Type"]=nt;
+    }
     // fill scale variations map into weight container
     msg_Debugging()<<"#named wgts: "<<p_nsvmap->size()<<std::endl;
     if (p_nsvmap) {
@@ -114,61 +175,6 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
         else         wc[it->first]=it->second->Value(idx);
       }
     }
-    size_t nt(0);
-    if (p_wgtinfo) {
-      wc["Reweight_B"]=p_wgtinfo->m_B;
-      if (p_wgtinfo->m_type!=mewgttype::none) {
-        if (p_wgtinfo->m_B) nt|=1;
-        wc["Reweight_B"]=p_wgtinfo->m_B;
-        wc["Reweight_VI"]=p_wgtinfo->m_VI;
-        if (p_wgtinfo->m_VI) nt|=2;
-        wc["Reweight_KP"]=p_wgtinfo->m_KP;
-        if (p_wgtinfo->m_KP) nt|=4;
-        wc["Reweight_KP_x1p"]=p_wgtinfo->m_y1;
-        wc["Reweight_KP_x2p"]=p_wgtinfo->m_y2;
-        wc["Reweight_MuR2"]=p_wgtinfo->m_mur2;
-        wc["Reweight_MuF2"]=p_wgtinfo->m_muf2;
-        if (p_wgtinfo->m_type&mewgttype::muR) {
-          for (size_t i=0;i<p_wgtinfo->m_wren.size();++i) {
-            wc["Reweight_VI_wren_"+ToString(i)]=p_wgtinfo->m_wren[i];
-          }
-        }
-        if (p_wgtinfo->m_type&mewgttype::muF) {
-          for (size_t i=0;i<p_wgtinfo->m_wfac.size();++i) {
-            wc["Reweight_KP_wfac_"+ToString(i)]=p_wgtinfo->m_wfac[i];
-          }
-        }
-        if (p_wgtinfo->m_dadsinfos.size()) {
-          nt|=8;
-          wc["Reweight_DADS_N"]=p_wgtinfo->m_dadsinfos.size();
-          for (size_t i(0);i<p_wgtinfo->m_dadsinfos.size();++i) {
-            wc["Reweight_DADS_"+ToString(i)+"_Weight"]
-                =p_wgtinfo->m_dadsinfos[i].m_wgt;
-            if (p_wgtinfo->m_dadsinfos[i].m_wgt) {
-              wc["Reweight_DADS_"+ToString(i)+"_x1"]
-                  =p_wgtinfo->m_dadsinfos[i].m_pdf.m_x1;
-              wc["Reweight_DADS_"+ToString(i)+"_x2"]
-                  =p_wgtinfo->m_dadsinfos[i].m_pdf.m_x2;
-              wc["Reweight_DADS_"+ToString(i)+"_fl1"]
-                  =p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl1;
-              wc["Reweight_DADS_"+ToString(i)+"_fl2"]
-                  =p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl2;
-              wc["Reweight_DADS_"+ToString(i)+"_MuR2"]
-                  =p_wgtinfo->m_dadsinfos[i].m_mur2;
-              wc["Reweight_DADS_"+ToString(i)+"_MuF12"]
-                  =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf12;
-              wc["Reweight_DADS_"+ToString(i)+"_MuF22"]
-                  =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf22;
-            }
-          }
-        }
-      }
-    }
-    if (p_subevtlist) {
-      nt|=32;
-      wc["Reweight_RS"]=m_pwgt;
-    }
-    wc["Reweight_Type"]=nt;
 #else
     THROW(fatal_error,"Asked for named weights, but HepMC version too old.");
 #endif
@@ -179,12 +185,15 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
     wc.push_back(m_mewgt);
     wc.push_back(m_wgtnorm);
     wc.push_back(m_ntrials);
-    wc.push_back(m_pswgt);
-    wc.push_back(m_mur2);
-    wc.push_back(m_muf12);
-    wc.push_back(m_muf22);
-    wc.push_back(m_oqcd);
-    wc.push_back(m_oew);
+    if (!m_minimalweights) {
+      wc.push_back(m_pswgt);
+      wc.push_back(m_mur2);
+      wc.push_back(m_muf12);
+      wc.push_back(m_muf22);
+      wc.push_back(m_oqcd);
+      wc.push_back(m_oew);
+      wc.push_back(p_subevtlist?32:0);
+    }
   }
   evt.weights()=wc;
   if (p_pdfinfo) {
@@ -210,16 +219,18 @@ void EventInfo::SetAlpha()
 }
 
 HepMC2_Interface::HepMC2_Interface() :
-  m_usenamedweights(false), p_event(NULL), m_hepmctree(false)
+  m_usenamedweights(false), m_minimalweights(false),
+  m_hepmctree(false), p_event(NULL)
 {
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
   reader.AddWordSeparator("\t");
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
   m_usenamedweights=reader.GetValue<int>("HEPMC_USE_NAMED_WEIGHTS",true);
-  // Switch for disconnection of 1,2,3 vertices from PS vertices
-  m_hepmctree=reader.GetValue<int>("HEPMC_TREE_LIKE", false);
 #endif
+  m_minimalweights=reader.GetValue<int>("HEPMC_MINIMAL_WEIGHTS",false);
+  // Switch for disconnection of 1,2,3 vertices from PS vertices
+  m_hepmctree=reader.GetValue<int>("HEPMC_TREE_LIKE",false);
 }
 
 HepMC2_Interface::~HepMC2_Interface()
@@ -237,7 +248,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
                   HepMC::Units::MM);
 #endif
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
-  EventInfo evtinfo(sp,weight,m_usenamedweights);
+  EventInfo evtinfo(sp,weight,m_usenamedweights,m_minimalweights);
   // when subevtlist, fill hepmc-subevtlist
   if (evtinfo.SubEvtList()) return SubEvtList2ShortHepMC(evtinfo);
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
@@ -320,7 +331,6 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
     subevtinfo.SetAlphaS();
     subevtinfo.SetAlpha();
     subevtinfo.WriteTo(*subevent,i);
-    if (msg_LevelIsDebugging()) subevent->print(msg_Out());
     m_subeventlist.push_back(subevent);
   }
   return true;
@@ -374,7 +384,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   // Meta info
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
-  EventInfo evtinfo(sp,weight,m_usenamedweights);
+  EventInfo evtinfo(sp,weight,m_usenamedweights,m_minimalweights);
   evtinfo.WriteTo(event);
   
   m_blob2genvertex.clear();
@@ -383,7 +393,8 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   std::vector<HepMC::GenParticle*> beamparticles;
   for (ATOOLS::Blob_List::iterator blit=blobs->begin();
        blit!=blobs->end();++blit) {
-    if (Sherpa2HepMC(*(blit),vertex)) { // Call the Blob to vertex code, changes vertex 4l above
+    // Call the Blob to vertex code, changes vertex pointer above
+    if (Sherpa2HepMC(*(blit),vertex)) {
       event.add_vertex(vertex);
       if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
         if ((**blit)["NLO_subeventlist"]) {
@@ -412,31 +423,37 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   }
 
 
-  // Disconnect ME, MPI and hard decay vertices from PS vertices to get a tree-like record
-  // --- manipulates the final GenEvent
+  // Disconnect ME, MPI and hard decay vertices from PS vertices to get a
+  // tree-like record --- manipulates the final GenEvent
   if (m_hepmctree) {
-      DEBUG_INFO("HEPMC_TREE_LIKE true --- straighten to tree enabled (disconnect 1,2,3 vertices)");
-      //Iterate over all vertices to find PS vertices
-      int vtx_id = -1;
-      for (HepMC::GenEvent::vertex_const_iterator vit=event.vertices_begin(); vit!=event.vertices_end(); ++vit) {
-          // PS Vertex?
-          if ((*vit)->id()==4) {
-              // Loop over incoming particles
-              for (HepMC::GenVertex::particles_in_const_iterator pin=(*vit)->particles_in_const_begin();
-                      pin!=(*vit)->particles_in_const_end(); ++pin) {
-                  vtx_id = (*pin)->production_vertex()->id();
-                  // Disconnect incoming particle from production vertex of type (1,2,3)
-                  if (vtx_id==1 || vtx_id==2 || vtx_id==3 ) (*pin)->production_vertex()->set_id(0);
-              }
-              // Loop over outgoing particles
-              for (HepMC::GenVertex::particles_out_const_iterator pout=(*vit)->particles_out_const_begin();
-                      pout!=(*vit)->particles_out_const_end(); ++pout) {
-                  vtx_id = (*pout)->production_vertex()->id();
-                  // Disconnect outgoing particle from end (decay) vertex of type (1,2,3)
-                  if (vtx_id==1 || vtx_id==2 || vtx_id==3 ) (*pout)->end_vertex()->set_id(0);
-              }
-          }
+    DEBUG_INFO("HEPMC_TREE_LIKE true --- straighten to "
+               <<"tree enabled (disconnect 1,2,3 vertices)");
+    // Iterate over all vertices to find PS vertices
+    int vtx_id = -1;
+    for (HepMC::GenEvent::vertex_const_iterator vit=event.vertices_begin();
+       vit!=event.vertices_end(); ++vit) {
+      // PS Vertex?
+      if ((*vit)->id()==4) {
+        // Loop over incoming particles
+        for (HepMC::GenVertex::particles_in_const_iterator pin
+               =(*vit)->particles_in_const_begin();
+             pin!=(*vit)->particles_in_const_end(); ++pin) {
+          vtx_id = (*pin)->production_vertex()->id();
+          // Disconnect incoming particle from production vertex of type (1,2,3)
+          if (vtx_id==1 || vtx_id==2 || vtx_id==3 )
+            (*pin)->production_vertex()->set_id(0);
+        }
+        // Loop over outgoing particles
+        for (HepMC::GenVertex::particles_out_const_iterator pout
+               =(*vit)->particles_out_const_begin();
+             pout!=(*vit)->particles_out_const_end(); ++pout) {
+          vtx_id = (*pout)->production_vertex()->id();
+          // Disconnect outgoing particle from end/decay vertex of type (1,2,3)
+          if (vtx_id==1 || vtx_id==2 || vtx_id==3 )
+            (*pout)->end_vertex()->set_id(0);
+        }
       }
+    }
   }
   return true;
 }
@@ -457,12 +474,12 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,
     vertex = new HepMC::GenVertex(position,blob->Id());
     vertex->weights().push_back(1.);
     if (blob->Type()==btp::Signal_Process)      vertex->set_id(1); // signal
-    else if (blob->Type()==btp::Hard_Collision) vertex->set_id(2); // MPI vertices
-    else if (blob->Type()==btp::Hard_Decay)     vertex->set_id(3); // decays
+    else if (blob->Type()==btp::Hard_Collision) vertex->set_id(2); // mpi
+    else if (blob->Type()==btp::Hard_Decay)     vertex->set_id(3); // hard-decay
     else if (blob->Type()==btp::Shower || 
-	     blob->Type()==btp::QED_Radiation)  vertex->set_id(4);
-    else if (blob->Type()==btp::Fragmentation)  vertex->set_id(5);
-    else if (blob->Type()==btp::Hadron_Decay)   vertex->set_id(6);
+             blob->Type()==btp::QED_Radiation)  vertex->set_id(4); // PS/QED
+    else if (blob->Type()==btp::Fragmentation)  vertex->set_id(5); // frag
+    else if (blob->Type()==btp::Hadron_Decay)   vertex->set_id(6); // had-decay
       //{  
       //if ((*blob)["Partonic"]!=NULL) vertex->set_id(-6);
       //else vertex->set_id(6);
@@ -486,30 +503,31 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,
   }
   m_blob2genvertex.insert(std::make_pair(blob,vertex));
   if (!okay) {
-    msg_Error()<<"Error in HepMC2_Interface::Sherpa2HepMC(Blob,Vertex)."<<std::endl
-		       <<"   Continue event generation with new event."<<std::endl;
+    msg_Error()<<"Error in HepMC2_Interface::Sherpa2HepMC(Blob,Vertex).\n"
+               <<"    Continue event generation with new event."<<std::endl;
   }
   if (msg_LevelIsDebugging()) {
     ATOOLS::Vec4D check = blob->CheckMomentumConservation();
     double test         = ATOOLS::Vec3D(check).Abs();
     if (ATOOLS::dabs(1.-vertex->check_momentum_conservation()/test)>1.e-5 &&
-	ATOOLS::dabs(test)>1.e-5)
-      {
-	msg_Error()<<"ERROR in "<<METHOD<<std::endl
-			   <<"   Momentum not conserved. Continue."<<std::endl
-			   <<"ERROR in Blob -> Vertex : "<<vertex->check_momentum_conservation()
-			   <<" <- "<<test<<" "<<check
-			   <<std::endl<<(*blob)<<std::endl;
-	vertex->print(std::cout);
-	std::cout<<"--------------------------------------------------------"<<std::endl;
-      }
+        ATOOLS::dabs(test)>1.e-5) {
+      msg_Error()<<"ERROR in "<<METHOD<<std::endl
+                 <<"    Momentum not conserved. Continue."<<std::endl
+                 <<"ERROR in Blob -> Vertex : "
+                 <<vertex->check_momentum_conservation()
+                 <<" <- "<<test<<" "<<check
+                 <<std::endl<<(*blob)<<std::endl;
+      vertex->print(msg_Error());
+      msg_Error()<<"-----------------------------------------------"<<std::endl;
+    }
   }
   return okay;
 }
 
 // HS: Sherpa Particle to HepMC::Genparticle --- fills m_particle2genparticle
 // and changes the pointer reference particle ('new')
-bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle *& particle)
+bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,
+                                    HepMC::GenParticle *& particle)
 {
   // HS: do nothing if parton has already been converted  
   int count = m_particle2genparticle.count(parton);
@@ -547,7 +565,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle
       status=4;
     }
   }
-  // particle is actually a reference to a pointer, this line changes the reference
+  // particle is actually a reference to a pointer, this changes the reference
   particle = new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),status);
   for (int i=1;i<3;i++) {
     if (parton->GetFlow(i)>0) particle->set_flow(i,parton->GetFlow(i));
