@@ -64,7 +64,8 @@ namespace AHADIC {
     bool          TreatClusterDecay(Cluster_List *,ATOOLS::Blob *);
     bool          EnforcedDecay(Cluster * cluster,ATOOLS::Blob * blob,
 				const bool & constrained,
-				Cluster_List * clin=0);
+				Cluster_List * clin=0,
+				const bool & attach=false);
   };
 
   /*!

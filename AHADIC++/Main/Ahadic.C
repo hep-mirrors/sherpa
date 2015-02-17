@@ -228,7 +228,7 @@ bool Ahadic::SanityCheck(Blob * blob,double norm2) {
 	       <<"/ parts = "<<control::s_AHAparticles<<" vs. "<<blob->NOutP()
 	       <<"   : "<<checkmom<<" ("<<sqrt(Max(0.,checkmom.Abs2()))<<")\n"
 	       <<(*blob)<<endl;
-    exit(0);
+    abort();
     return false;
   }
   msg_Tracking()<<"Passed "<<METHOD<<" with "

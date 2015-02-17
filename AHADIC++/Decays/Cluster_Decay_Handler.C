@@ -45,7 +45,12 @@ int Cluster_Decay_Handler::DecayClusters(Blob * blob)
       }
     }
     else {
-      if (!p_softclusters->EnforcedDecay(cluster,blob,true)) return -1;
+      msg_Out()<<METHOD<<" --> EnforcedDecay of\n"<<(*cluster)<<"\n";
+      if (!p_softclusters->EnforcedDecay(cluster,blob,true,NULL,true)) 
+	return -1;
+      msg_Out()<<"Found "<<cluster->size()<<" hadrons: "
+	       <<(*cluster)[0]<<" + "<<(*cluster)[1]<<".\n";
+      msg_Out()<<"Success:\n"<<(*blob)<<"\n\n\n";
     }
     delete (p_clulist->front()->GetTrip());
     delete (p_clulist->front()->GetAnti());

@@ -23,6 +23,7 @@ bool Cluster_Part::TestDecay(Cluster * const cluster)
   m_att++;
   if (p_csplitter && !(*p_csplitter)(cluster)) {
     m_fails++;
+    msg_Out()<<METHOD<<" fails for\n"<<(*cluster)<<"\n";
     return false;
   }
   return true;

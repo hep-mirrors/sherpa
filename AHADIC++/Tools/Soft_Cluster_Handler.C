@@ -64,7 +64,7 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
     msg_Out()<<METHOD<<" for cluster list with one cluster only!\n";
     if (TreatSingleCluster(*clin->begin(),true))
       return AttachHadronsToBlob(clin,blob);
-    if (EnforcedDecay(*clin->begin(),blob,true,clin)) {
+    if (EnforcedDecay(*clin->begin(),blob,true,clin,false)) {
       AttachHadronsToBlob(clin,blob);
       msg_Out()<<METHOD<<" enforces decay of cluster:\n"<<(*blob)<<",\n"
 	       <<"   cluster list has "<<clin->size()<<" elements left.\n";
@@ -133,7 +133,10 @@ bool Soft_Cluster_Handler::TreatClusterDecay(Cluster_List * clin, Blob * blob)
       return false;
     }
     clin->clear();
-    return EnforcedDecay(cluster,blob,true,clin);
+    msg_Out()<<METHOD<<" --> EnforcedDecay for \n"<<(*cluster)<<"\n";
+    return EnforcedDecay(cluster,blob,true,clin,false);
+    // probably better:   
+    // if (!EnforcedDecay(cluster,blob,true,clin) return false;
   }  
   return (UpdateClusterDecayKinematics((*clin->begin())->GetPrev()) &&
 	  AttachHadronsToBlob(clin,blob));
@@ -417,7 +420,7 @@ ClusterAnnihilation(Cluster * cluster,Flavour & had1,Flavour & had2) {
 
 bool Soft_Cluster_Handler::
 EnforcedDecay(Cluster * cluster, Blob * blob,const bool & constrained,
-	      Cluster_List * clin) {
+	      Cluster_List * clin,const bool & attach) {
   Flavour had1,had2;
   double weight(DecayWeight(cluster,had1,had2,true)), weight1(-1.);
   if (weight<=0.) {
@@ -439,8 +442,12 @@ EnforcedDecay(Cluster * cluster, Blob * blob,const bool & constrained,
     m_forceddecays++;m_decays--;
   }
 
+  msg_Out()<<METHOD<<" --> "<<had1<<" + "<<had2<<"\n";
   cluster->push_back(had1);
   cluster->push_back(had2);
+  if (attach) {
+    FixHHDecay(cluster,blob,had1,had2,constrained);
+  }
   return true;
 }
 
