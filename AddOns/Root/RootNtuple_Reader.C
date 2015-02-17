@@ -64,7 +64,7 @@ namespace SHERPA {
 RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact) :
   Event_Reader_Base(args), m_exact(exact),
   m_evtid(0), m_subevtid(0), m_evtcnt(0), m_entries(0), m_evtpos(0),
-  p_isr(args.p_isr), m_sargs(NULL,"","")
+  p_isr(args.p_isr), m_sargs(NULL,"",""), m_xf1(0.), m_xf2(0.)
 {
   std::string filename=m_path+m_file+".root";
   msg_Out()<<" Reading from "<<filename<<"\n";
@@ -217,7 +217,7 @@ bool RootNtuple_Reader::ReadInEntry()
 }
 
 double RootNtuple_Reader::CalculateWeight
-(const double &mur2,const double &muf2,const int mode) const
+(const double &mur2,const double &muf2,const int mode)
 {
 #ifdef USING__ROOT
   Flavour fl1((kf_code)abs(p_vars->m_id1),p_vars->m_id1<0);
@@ -225,8 +225,10 @@ double RootNtuple_Reader::CalculateWeight
   double sf(m_ecms/rpa->gen.Ecms());
   p_isr->PDF(0)->Calculate(p_vars->m_x1*sf,muf2);
   p_isr->PDF(1)->Calculate(p_vars->m_x2*sf,muf2);
-  double fa=p_isr->PDF(0)->GetXPDF(fl1)/p_vars->m_x1;
-  double fb=p_isr->PDF(1)->GetXPDF(fl2)/p_vars->m_x2;
+  m_xf1=p_isr->PDF(0)->GetXPDF(fl1);
+  m_xf2=p_isr->PDF(1)->GetXPDF(fl2);
+  double fa=m_xf1/p_vars->m_x1;
+  double fb=m_xf2/p_vars->m_x2;
   double asf=pow((*MODEL::as)(mur2)/p_vars->m_as,p_vars->m_oqcd);
   if (mode==0) {
     return p_vars->m_mewgt*asf*fa*fb;
@@ -314,8 +316,9 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   
 #ifdef USING__ROOT
   size_t currentid=m_evtid;
-  int id1, id2;
-  double x1, x2;
+  int id1(0), id2(0);
+  double x1(1.), x2(1.);
+  double muR2(0.), muF2(0.);
   while (currentid==m_evtid) {
     Vec4D sum;
     Vec4D *moms = new Vec4D[2+p_vars->m_nparticle];
@@ -333,6 +336,8 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     
     m_nlos.push_back(new NLO_subevt(p_vars->m_nparticle+2,NULL,flav,moms));
     m_nlos.back()->m_result=p_vars->m_wgt2;
+    m_nlos.back()->m_mu2[stp::fac]=sqr(p_vars->m_muf);
+    m_nlos.back()->m_mu2[stp::ren]=sqr(p_vars->m_mur);
     id1=p_vars->m_id1;
     id2=p_vars->m_id2;
     // double sf(m_ecms/rpa->gen.Ecms());
@@ -366,9 +371,9 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       }
       Scale_Setter_Base *scale(m_scales[p_vars->m_nparticle]);
       scale->CalculateScale(p);
-      double weight=CalculateWeight
-	(scale->Scale(stp::ren),scale->Scale(stp::fac),
-	 p_vars->m_nuwgt?1:2);
+      muR2=m_nlos.back()->m_mu2[stp::ren]=scale->Scale(stp::ren);
+      muF2=m_nlos.back()->m_mu2[stp::fac]=scale->Scale(stp::fac);
+      double weight=CalculateWeight(muR2,muF2,p_vars->m_nuwgt?1:2);
       m_nlos.back()->m_result=weight;
       m_weight+=weight;
       if (m_check) {
@@ -410,6 +415,10 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     signalblob->AddToOutParticles(part);
   }
 #endif
+  m_pdfinfo=PDF_Info(fl1,fl2,x1,x2,muF2,muF2,m_xf1,m_xf2);
+  bool onemoreas(p_vars->m_type[0]=='V' || p_vars->m_type[0]=='I');
+  int oew(m_nlos.back()->m_n-2+(onemoreas?1:0)-p_vars->m_oqcd);
+  if (oew<0) THROW(fatal_error,"Error in computing O(\\alpha).");
   signalblob->SetStatus(blob_status::needs_beams);
   signalblob->SetWeight(m_weight);
   signalblob->AddData("Weight",new Blob_Data<double>(m_weight));
@@ -419,7 +428,11 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   signalblob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(&m_nlos));
   signalblob->AddData("Weight_Norm",new Blob_Data<double>(1.0));
   signalblob->AddData("OQCD",new Blob_Data<int>(p_vars->m_oqcd));
-  m_evtcnt++;  
+  signalblob->AddData("OEW",new Blob_Data<int>(oew));
+  signalblob->AddData("Renormalization_Scale", new Blob_Data<double>(muR2));
+  signalblob->AddData("Factorization_Scale", new Blob_Data<double>(muF2));
+  signalblob->AddData("PDFInfo", new Blob_Data<ATOOLS::PDF_Info>(m_pdfinfo));
+  m_evtcnt++;
   return 1;
 }
 

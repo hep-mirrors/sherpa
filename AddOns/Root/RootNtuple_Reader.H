@@ -6,6 +6,7 @@
 #include "SHERPA/Tools/Event_Reader_Base.H"
 #include "PHASIC++/Scales/Scale_Setter_Base.H"
 #include "ATOOLS/Phys/NLO_Subevt.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 #include <vector>
 
 namespace PDF { class ISR_Handler; }
@@ -23,17 +24,18 @@ namespace SHERPA {
     int                m_check,m_calc,m_exact;
     size_t             m_evtid,m_subevtid,m_evtcnt,m_entries,m_evtpos;
     ATOOLS::NLO_subevtlist m_nlos;
+    ATOOLS::PDF_Info   m_pdfinfo;
     PHASIC::Scale_Setter_Arguments m_sargs;
     std::map<int,PHASIC::Process_Base*> m_procs;
     std::map<int,PHASIC::Scale_Setter_Base*> m_scales;
     PDF::ISR_Handler *p_isr;
-    double m_ecms;
+    double m_ecms, m_xf1, m_xf2;
     std::string m_treename;
 
     void               CloseFile();
     bool               ReadInEntry();
     bool               ReadInFullEvent(ATOOLS::Blob_List *);
-    double CalculateWeight(const double &mur2,const double &muf2,const int mode) const;
+    double CalculateWeight(const double &mur2,const double &muf2,const int mode);
   public:
     RootNtuple_Reader(const Input_Arguments &args,int exact=0);
     ~RootNtuple_Reader();
