@@ -31,6 +31,7 @@ and operate only on the inclusively produced particles before decays.
 * HARD_MASS_SMEARING::
 * RESOLVE_DECAYS::
 * DECAY_TAU_HARD::
+* Decay table integration settings::
 @end menu
 
 @node HDH_STATUS
@@ -191,3 +192,19 @@ also the hadronic modes. If @option{DECAY_TAU_HARD=1} is specified, the tau
 lepton will be decayed in the hard decay handler, which only takes leptonic and
 partonic decay modes into account. Note, that in this case the tau needs to also
 be set massive with @option{MASSIVE[15]=1}.
+
+@node Decay table integration settings
+@subsection Decay table integration settings
+@cindex HDH_INT_ACCURACY
+@cindex HDH_INT_TARGET_MODE
+@cindex HDH_INT_NITER
+
+Three parameters can be used to steer the accuracy and time consumption of the
+calculation of the partial widths in the decay table:
+@option{HDH_INT_ACCURACY=0.01} specifies a relative accuracy for the
+integration. The corresponding target reference is either the given total width
+of the decaying particle (@option{HDH_INT_TARGET_MODE=0}, default) or the
+calculated partial decay width (@option{HDH_INT_TARGET_MODE=1}).
+The option @option{HDH_INT_NITER=2500} can be used to change the number of
+points per integration iteration, and thus also the minimal number of points to
+be used in an integration.

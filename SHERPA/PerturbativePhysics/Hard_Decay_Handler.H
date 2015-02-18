@@ -41,6 +41,8 @@ namespace SHERPA {
                              m_read;
     PDF::Cluster_Definitions_Base *p_clus;
     ATOOLS::NLO_subevtlist *p_newsublist;
+    double                   m_int_accuracy;
+    int                      m_int_niter, m_int_target_mode;
 
     void SetDecayMasses(ATOOLS::Data_Reader *const dr);
     void InitializeDirectDecays(PHASIC::Decay_Table* dt);

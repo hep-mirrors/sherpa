@@ -205,20 +205,23 @@ double Decay_Channel::SymmetryFactor()
   return m_symfac;
 }
 
-void Decay_Channel::CalculateWidth()
+void Decay_Channel::CalculateWidth(double acc, double ref, int iter)
 {
   p_channels->Reset();
-  long int iter = p_channels->Number()*5000*int(pow(2.,int(NOut())-2));
   int maxopt    = p_channels->Number()*int(pow(2.,2*(int(NOut())-2)));
 
   long int n=0;
   int      opt=0;
   double   value, sum=0., sum2=0., result=1., disc;
-  m_ideltawidth=1.0;
 
+  double flux(1./(2.*p_ms->Mass(GetDecaying())));
   std::vector<Vec4D> momenta(1+NOut());
   momenta[0] = Vec4D(p_ms->Mass(GetDecaying()),0.,0.,0.);
-  while(opt<maxopt && m_ideltawidth/result>0.005) {
+  ref/=flux;
+  double crit = (ref>0.0?ref:result);
+  m_ideltawidth=crit;
+
+  while(opt<maxopt && m_ideltawidth>acc*crit) {
     for (n=1;n<iter+1;n++) {
       value = Differential(momenta, false, NULL);
       sum  += value;
@@ -236,9 +239,9 @@ void Decay_Channel::CalculateWidth()
     result = sum/n;
     disc   = sqr(sum/n)/((sum2/n - sqr(sum/n))/(n-1));
     if (disc!=0.0) m_ideltawidth  = result/sqrt(abs(disc));
+    crit = (ref>0.0?ref:result);
   }
 
-  double flux(1./(2.*p_ms->Mass(GetDecaying())));
   m_iwidth  = flux*sum/n;
   m_ideltawidth *= flux;
   disc   = sqr(m_iwidth)/((sum2*sqr(flux)/n - sqr(m_iwidth))/(n-1));

@@ -124,7 +124,7 @@ namespace PHASIC {
 
     void Output() const;
 
-    void CalculateWidth();
+    void CalculateWidth(double acc=0.01, double ref=0.0, int iter=2500);
     void GenerateKinematics(ATOOLS::Vec4D_Vector& momenta, bool anti,
                         METOOLS::Spin_Density* sigma=NULL,
                         const std::vector<ATOOLS::Particle*>& p=

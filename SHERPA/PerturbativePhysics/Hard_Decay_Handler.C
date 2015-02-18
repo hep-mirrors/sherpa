@@ -65,6 +65,11 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   m_br_weights=dr.GetValue<int>("HDH_BR_WEIGHTS",1);
   m_decay_tau=dr.GetValue<int>("DECAY_TAU_HARD",0);
   m_set_widths=dr.GetValue<int>("HDH_SET_WIDTHS",0);
+
+  m_int_accuracy=dr.GetValue<double>("HDH_INT_ACCURACY", 0.01);
+  m_int_niter=dr.GetValue<int>("HDH_INT_NITER", 2500);
+  m_int_target_mode=dr.GetValue<int>("HDH_INT_TARGET_MODE", 0);
+
   // also need to tell shower whats massive now
   // TODO: need to use the same mass-selector
   // for now, implement alike
@@ -105,11 +110,11 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   
   // initialize them sorted by masses:
   Decay_Map::iterator dmit;
-  DEBUG_INFO("Initialising hard decay tables: two-body decays.");
+  PRINT_INFO("Initialising hard decay tables: two-body decays.");
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
     InitializeDirectDecays(dmit->second.at(0));
   }
-  DEBUG_INFO("Initialising hard decay tables: three-body decays.");
+  PRINT_INFO("Initialising hard decay tables: three-body decays.");
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
     InitializeOffshellDecays(dmit->second.at(0));
   }
@@ -434,12 +439,16 @@ bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
       }
       else {
         msg_Tracking()<<"    Integrating "<<dc->Name()<<endl;
-        dc->CalculateWidth();
+        dc->CalculateWidth(m_int_accuracy,
+                           m_int_target_mode==0 ? dc->Flavs()[0].Width() : 0.0,
+                           m_int_niter);
       }
     }
     else {
       msg_Tracking()<<"    Integrating "<<dc->Name()<<endl;
-      dc->CalculateWidth();
+      dc->CalculateWidth(m_int_accuracy,
+                         m_int_target_mode==0 ? dc->Flavs()[0].Width() : 0.0,
+                         m_int_niter);
     }
   }
   else {
