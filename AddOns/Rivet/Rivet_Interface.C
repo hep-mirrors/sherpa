@@ -70,7 +70,8 @@ namespace SHERPARIVET {
     size_t m_nevt;
     bool   m_finished;
     bool   m_splitjetconts, m_splitSH, m_splitcoreprocs, m_usehepmcshort,
-           m_ignorebeams, m_usehepmcnamedweights, m_printsummary;
+           m_ignorebeams, m_usehepmcnamedweights, m_usehepmcfullweightinfo,
+           m_usehepmctreelike, m_printsummary;
 
     RivetScaleVariationMap         m_rivet;
     SHERPA::HepMC2_Interface       m_hepmc2;
@@ -185,6 +186,7 @@ Rivet_Interface::Rivet_Interface(const std::string &inpath,
   m_inpath(inpath), m_infile(infile), m_outpath(outpath), m_tag(tag),
   m_nevt(0), m_finished(false),
   m_ignoreblobs(ignoreblobs), m_usehepmcnamedweights(false),
+  m_usehepmcfullweightinfo(false), m_usehepmctreelike(false),
   m_printsummary(true)
 {
   if (m_outpath[m_outpath.size()-1]=='/')
@@ -242,7 +244,7 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
         cur.find("PDF")!=std::string::npos) {
       wgtmap[cur]=wc[cur];
     }
-    else if (cur=="Weight")  wgtmap["central"]=wc[cur];
+    else if (cur=="Weight")  wgtmap["nominal"]=wc[cur];
     else if (cur=="NTrials") ntrials=wc[cur];
     else if (cur=="NLO_Type" && wc[cur]==32) xstype=1;
   }
@@ -267,15 +269,15 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
         cur.find("PDF")!=std::string::npos) {
       wgtmap[cur]=wgt;
     }
-    else if (cur=="Weight")  wgtmap["central"]=wgt;
+    else if (cur=="Weight")  wgtmap["nominal"]=wgt;
     else if (cur=="NTrials") ntrials=wgt;
     else if (cur=="Reweight_Type" && wgt==32) xstype=1;
   }
 #endif /* HEPMC_HAS_WORKING_NAMED_WEIGHTS */
 #else
-  wgtmap["central"]=wc[0];
+  wgtmap["nominal"]=wc[0];
   ntrials=wc[3];
-  xstype=(wc[9]==32?1:0);
+  xstype=((wc.size()>10&&wc[10]==32)?1:0);
 #endif /* HEPMC_HAS_NAMED_WEIGHTS */
   if (msg_LevelIsDebugging()) {
     for (std::map<std::string,double>::iterator wit(wgtmap.begin());
@@ -453,6 +455,8 @@ bool Rivet_Interface::Init()
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
     m_usehepmcnamedweights=reader.GetValue<int>("HEPMC_NAMED_WEIGHTS",1);
 #endif
+    m_usehepmcnamedweights=reader.GetValue<int>("HEPMC_FULL_WEIGHT_INFO",0);
+    m_usehepmcnamedweights=reader.GetValue<int>("HEPMC_TREE_LIKE",0);
     m_printsummary=reader.GetValue<int>("PRINT_SUMMARY",1);
     m_ignorebeams=reader.GetValue<int>("IGNOREBEAMS", 0);
 
@@ -468,8 +472,10 @@ bool Rivet_Interface::Init()
     for (size_t i=0; i<m_ignoreblobs.size(); ++i) {
       m_hepmc2.Ignore(m_ignoreblobs[i]);
     }
-    // switch on if needed
-    if (m_usehepmcnamedweights) m_hepmc2.SetHepMCNamedWeights(true);
+    // set HepMC modus operandi
+    m_hepmc2.SetHepMCNamedWeights(m_usehepmcnamedweights);
+    m_hepmc2.SetHepMCMinimalWeights(!m_usehepmcfullweightinfo);
+    m_hepmc2.SetHepMCTreeLike(m_usehepmctreelike);
   }
   return true;
 }
@@ -578,7 +584,7 @@ bool Rivet_Interface::Finish()
   for (RivetScaleVariationMap::iterator mit(m_rivet.begin());
        mit!=m_rivet.end();++mit) {
     std::string out=m_outpath;
-    if (mit->first!="" && mit->first!="central") out += "."+mit->first;
+    if (mit->first!="" && mit->first!="nominal") out += "."+mit->first;
     PRINT_FUNC(out+ending);
     if (m_printsummary) {
       std::string output("**  Total XS for "+mit->first

@@ -25,6 +25,7 @@ namespace SHERPA {
     size_t             m_evtid,m_subevtid,m_evtcnt,m_entries,m_evtpos;
     ATOOLS::NLO_subevtlist m_nlos;
     ATOOLS::PDF_Info   m_pdfinfo;
+    ATOOLS::ME_Weight_Info m_mewgtinfo;
     PHASIC::Scale_Setter_Arguments m_sargs;
     std::map<int,PHASIC::Process_Base*> m_procs;
     std::map<int,PHASIC::Scale_Setter_Base*> m_scales;

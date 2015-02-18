@@ -167,8 +167,8 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       wc["Reweight_Type"]=nt;
     }
     // fill scale variations map into weight container
-    msg_Debugging()<<"#named wgts: "<<p_nsvmap->size()<<std::endl;
     if (p_nsvmap) {
+      msg_Debugging()<<"#named wgts: "<<p_nsvmap->size()<<std::endl;
       for (NamedScaleVariationMap::const_iterator it(p_nsvmap->begin());
            it!=p_nsvmap->end();++it) {
         if (idx==-1) wc[it->first]=it->second->Value();
@@ -228,7 +228,7 @@ HepMC2_Interface::HepMC2_Interface() :
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
   m_usenamedweights=reader.GetValue<int>("HEPMC_USE_NAMED_WEIGHTS",true);
 #endif
-  m_minimalweights=reader.GetValue<int>("HEPMC_MINIMAL_WEIGHTS",false);
+  m_minimalweights=reader.GetValue<int>("HEPMC_MINIMAL_WEIGHTS",true);
   // Switch for disconnection of 1,2,3 vertices from PS vertices
   m_hepmctree=reader.GetValue<int>("HEPMC_TREE_LIKE",false);
 }

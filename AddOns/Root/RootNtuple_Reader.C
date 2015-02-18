@@ -298,6 +298,7 @@ double RootNtuple_Reader::CalculateWeight
 
 bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs) 
 {
+  m_mewgtinfo.Reset();
   if (!m_nlos.empty()) {
     for (size_t i=0;i<m_nlos.size();i++) {
       delete[] m_nlos[i]->p_fl;
@@ -306,7 +307,9 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     }
     m_nlos.clear();
   }
+
   if (m_evtid==0) if (!ReadInEntry()) return 0;
+
   Blob         *signalblob=blobs->FindFirst(btp::Signal_Process);
   m_weight = 0.;
   signalblob->SetTypeSpec("NLO");
@@ -416,9 +419,11 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   }
 #endif
   m_pdfinfo=PDF_Info(fl1,fl2,x1,x2,muF2,muF2,m_xf1,m_xf2);
-  bool onemoreas(p_vars->m_type[0]=='V' || p_vars->m_type[0]=='I');
+  // only reliable in SM,
+  // HEFT breaks this, counting Yukawa's separately breaks this, etc.
+  bool onemoreas(p_vars->m_type[0]=='V' || p_vars->m_type[0]=='I' ||
+                 p_vars->m_type[0]=='S');
   int oew(m_nlos.back()->m_n-2+(onemoreas?1:0)-p_vars->m_oqcd);
-  if (oew<0) THROW(fatal_error,"Error in computing O(\\alpha).");
   signalblob->SetStatus(blob_status::needs_beams);
   signalblob->SetWeight(m_weight);
   signalblob->AddData("Weight",new Blob_Data<double>(m_weight));
@@ -432,6 +437,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   signalblob->AddData("Renormalization_Scale", new Blob_Data<double>(muR2));
   signalblob->AddData("Factorization_Scale", new Blob_Data<double>(muF2));
   signalblob->AddData("PDFInfo", new Blob_Data<ATOOLS::PDF_Info>(m_pdfinfo));
+  signalblob->AddData("MEWeightInfo",new Blob_Data<ATOOLS::ME_Weight_Info*>(&m_mewgtinfo));
   m_evtcnt++;
   return 1;
 }
