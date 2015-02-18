@@ -453,10 +453,11 @@ bool Rivet_Interface::Init()
       THROW(fatal_error, "Internal error.");
     }
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
-    m_usehepmcnamedweights=reader.GetValue<int>("HEPMC_NAMED_WEIGHTS",1);
+    m_usehepmcnamedweights=reader.GetValue<int>("USE_HEPMC_NAMED_WEIGHTS",1);
 #endif
-    m_usehepmcnamedweights=reader.GetValue<int>("HEPMC_FULL_WEIGHT_INFO",0);
-    m_usehepmcnamedweights=reader.GetValue<int>("HEPMC_TREE_LIKE",0);
+    m_usehepmcfullweightinfo=reader.GetValue<int>("USE_HEPMC_FULL_WEIGHT_INFO",
+                                                  0);
+    m_usehepmctreelike=reader.GetValue<int>("USE_HEPMC_TREE_LIKE",0);
     m_printsummary=reader.GetValue<int>("PRINT_SUMMARY",1);
     m_ignorebeams=reader.GetValue<int>("IGNOREBEAMS", 0);
 
