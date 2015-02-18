@@ -44,8 +44,7 @@ namespace ATOOLS {
   inline std::ostream & operator<<(std::ostream & s,
                                    const ATOOLS::Weight_Info & wi)
   {
-    s<<" w = "<<wi.m_weight<<std::endl;
-    return s;
+    return s<<" w = "<<wi.m_weight<<std::endl;
   }
 
   struct mewgttype {
@@ -79,6 +78,43 @@ namespace ATOOLS {
     return s;
   }
 
+  struct Cluster_Step {
+  public:
+    double m_t,m_xa,m_xb;
+    int m_fla,m_flb;
+    Cluster_Step(const double& t, const double& xa, const double& xb,
+                 const int& fla, const int& flb) :
+      m_t(t), m_xa(xa), m_xb(xb), m_fla(fla), m_flb(flb) {}
+  };
+
+  inline std::ostream & operator<<(std::ostream & s,
+                                   const ATOOLS::Cluster_Step & cs)
+  {
+    return s<<"("<<cs.m_t<<";"<<cs.m_fla<<","<<cs.m_xa<<"|"
+           <<cs.m_flb<<","<<cs.m_xb<<")";
+  }
+
+  struct Cluster_Sequence_Info {
+  public:
+    double m_wgt, m_ct;
+    double m_pdfratio;
+    std::vector<Cluster_Step> m_txfl;
+
+    Cluster_Sequence_Info(const double &w=1.0,const double &c=0.0,
+                          const double &r=0.0) :
+      m_wgt(w), m_ct(c), m_pdfratio(r) {}
+    inline void AddSplitting(const double& t,
+                             const double& xa, const double& xb,
+                             const int& fla, const int& flb)
+    { m_txfl.push_back(Cluster_Step(t,xa,xb,fla,flb)); }
+    inline void AddWeight(const double& w)      { m_wgt*=w; }
+    inline void AddCounterTerm(const double& c) { m_ct*=c; }
+    inline void AddPDFRatio(const double& r)    { m_pdfratio*=r; }
+  };
+
+  std::ostream & operator<<(std::ostream & s,
+                            const ATOOLS::Cluster_Sequence_Info & csi);
+
   struct DADS_Info {
   public:
     double   m_wgt, m_mur2;
@@ -108,6 +144,7 @@ namespace ATOOLS {
     double m_x1, m_x2, m_y1, m_y2, m_mur2, m_muf2;
     int m_fl1, m_fl2;
     size_t m_oqcd, m_oew;
+    Cluster_Sequence_Info m_clusseqinfo;
     std::vector<DADS_Info> m_dadsinfos;
     ME_Weight_Info():
       m_type(mewgttype::none),
@@ -115,8 +152,9 @@ namespace ATOOLS {
       m_wren(2,0.0), m_wfac(16,0.0),
       m_x1(1.0), m_x2(1.0), m_y1(1.0), m_y2(1.0),
       m_mur2(0.0), m_muf2(0.0), m_fl1(0), m_fl2(0),
-      m_oqcd(0), m_oew(0) {}
+      m_oqcd(0), m_oew(0), m_clusseqinfo() {}
     ME_Weight_Info& operator*=(const double &scal);
+    void Reset();
   };
 
   std::ostream & operator<<(std::ostream & s,

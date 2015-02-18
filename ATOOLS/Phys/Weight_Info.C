@@ -19,6 +19,18 @@ namespace ATOOLS {
   template class Blob_Data<ME_Weight_Info*>;
 }
 
+std::ostream & ATOOLS::operator<<(std::ostream & s,
+                                  const ATOOLS::Cluster_Sequence_Info & csi)
+{
+  s<<"Cluster sequence: wgt="<<csi.m_wgt<<", counter term="<<csi.m_ct;
+  if (csi.m_pdfratio!=0.) s<<", PDF ratio="<<csi.m_pdfratio;
+  if (!csi.m_txfl.size()) s<<", no cluster steps";
+  else                    s<<", steps: ";
+  for (size_t i(0);i<csi.m_txfl.size();++i)
+    s<<csi.m_txfl[i]<<" ";
+  return s;
+}
+
 ME_Weight_Info &ME_Weight_Info::operator*=(const double &scal)
 {
   m_B*=scal;
@@ -33,6 +45,19 @@ ME_Weight_Info &ME_Weight_Info::operator*=(const double &scal)
   return *this;
 }
 
+void ME_Weight_Info::Reset()
+{
+  m_B=m_VI=m_KP=m_RS=0.;
+  m_dadsinfos.clear();
+  m_clusseqinfo=Cluster_Sequence_Info(1.,0.);
+  m_x1=m_x2=m_y1=m_y2=1.;
+  m_oqcd=m_oew=0;
+  m_fl1=m_fl2=0;
+  m_mur2=m_muf2=0.;
+  if (m_type&mewgttype::muR) for (size_t i(0);i<m_wren.size();++i) m_wren[i]=0.;
+  if (m_type&mewgttype::muF) for (size_t i(0);i<m_wfac.size();++i) m_wfac[i]=0.;
+}
+
 std::ostream & ATOOLS::operator<<(std::ostream & s,
                                   const ATOOLS::ME_Weight_Info & mwi)
 {
@@ -43,9 +68,10 @@ std::ostream & ATOOLS::operator<<(std::ostream & s,
    <<", fl1="<<mwi.m_fl1<<", fl2="<<mwi.m_fl2
    <<", x1="<<mwi.m_x1<<", x2="<<mwi.m_x2
    <<", x1p="<<mwi.m_y1<<", x2p="<<mwi.m_y2<<std::endl;
-  s<<"wren="<<mwi.m_wren<<std::endl;
-  s<<"wfac="<<mwi.m_wfac<<std::endl;
+  if (mwi.m_type&mewgttype::muR) s<<"wren="<<mwi.m_wren<<std::endl;
+  if (mwi.m_type&mewgttype::muF) s<<"wfac="<<mwi.m_wfac<<std::endl;
   for (size_t i(0);i<mwi.m_dadsinfos.size();++i)
     s<<mwi.m_dadsinfos[i]<<std::endl;
+  s<<mwi.m_clusseqinfo<<std::endl;
   return s;
 }
