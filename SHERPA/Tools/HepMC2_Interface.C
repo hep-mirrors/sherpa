@@ -425,6 +425,10 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
 
   // Disconnect ME, MPI and hard decay vertices from PS vertices to get a
   // tree-like record --- manipulates the final GenEvent
+  // Can't use ->set_production_vertex/set_end_vertex as they are private
+  // Need to use GenVertex::remove_particle(Pointer to particle)
+  // But: iterator loses validity when calling GenVertex::remove_particle in the particle loop
+  // Hence: fill vector with pointers and call GenVertex::remove_particle 
   if (m_hepmctree) {
     DEBUG_INFO("HEPMC_TREE_LIKE true --- straighten to "
                <<"tree enabled (disconnect 1,2,3 vertices)");
@@ -432,8 +436,21 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
     int vtx_id = -1;
     for (HepMC::GenEvent::vertex_const_iterator vit=event.vertices_begin();
        vit!=event.vertices_end(); ++vit) {
-      // PS Vertex?
+
+      // Is this a PS Vertex?
       if ((*vit)->id()==4) {
+        std::vector<HepMC::GenParticle*> remove;
+        //// Loop over outgoing particles
+        for (HepMC::GenVertex::particles_out_const_iterator pout
+               =(*vit)->particles_out_const_begin();
+             pout!=(*vit)->particles_out_const_end(); ++pout) {
+            if ( (*pout)->end_vertex() ) {
+              vtx_id = (*pout)->end_vertex()->id(); //
+              // Disconnect outgoing particle from end/decay vertex of type (1,2,3)
+              if (vtx_id==1 || vtx_id==2 || vtx_id==3 )
+                  remove.push_back((*pout));
+            }
+        }
         // Loop over incoming particles
         for (HepMC::GenVertex::particles_in_const_iterator pin
                =(*vit)->particles_in_const_begin();
@@ -441,19 +458,14 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
           vtx_id = (*pin)->production_vertex()->id();
           // Disconnect incoming particle from production vertex of type (1,2,3)
           if (vtx_id==1 || vtx_id==2 || vtx_id==3 )
-            (*pin)->production_vertex()->set_id(0);
+                  remove.push_back((*pin));
         }
-        // Loop over outgoing particles
-        for (HepMC::GenVertex::particles_out_const_iterator pout
-               =(*vit)->particles_out_const_begin();
-             pout!=(*vit)->particles_out_const_end(); ++pout) {
-          vtx_id = (*pout)->production_vertex()->id();
-          // Disconnect outgoing particle from end/decay vertex of type (1,2,3)
-          if (vtx_id==1 || vtx_id==2 || vtx_id==3 )
-            (*pout)->end_vertex()->set_id(0);
+        // Iterate over Genparticle pointers to remove from current vertex (*vit)
+        for (unsigned int nrem=0;nrem<remove.size();++nrem) {
+            (*vit)->remove_particle(remove[nrem]);
         }
-      }
-    }
+      } // Close if statement (vertex id==4)
+    } // Close loop over vertices
   }
   return true;
 }
