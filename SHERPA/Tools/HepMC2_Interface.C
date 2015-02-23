@@ -63,10 +63,10 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
       m_oew=db->Get<int>();
       ReadIn(db,"MEWeightInfo",true);
       p_wgtinfo=db->Get<ME_Weight_Info*>();
-      ReadIn(db,"NLO_subeventlist",false);
-      if (db) p_subevtlist=db->Get<NLO_subevtlist*>();
-      if (p_subevtlist) m_type=p_subevtlist->Type();
     }
+    ReadIn(db,"NLO_subeventlist",false);
+    if (db) p_subevtlist=db->Get<NLO_subevtlist*>();
+    if (p_subevtlist) m_type=p_subevtlist->Type();
     ReadIn(db,"ScaleVariations",false);
     if (db) p_nsvmap=db->Get<NamedScaleVariationMap*>();
   }
@@ -166,6 +166,10 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       }
       wc["Reweight_Type"]=nt;
     }
+    else {
+      // if using minimal weights still dump if RS
+      if (p_subevtlist) wc["Reweight_Type"]=32;
+    }
     // fill scale variations map into weight container
     if (p_nsvmap) {
       msg_Debugging()<<"#named wgts: "<<p_nsvmap->size()<<std::endl;
@@ -192,8 +196,8 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       wc.push_back(m_muf22);
       wc.push_back(m_oqcd);
       wc.push_back(m_oew);
-      wc.push_back(p_subevtlist?32:0);
     }
+    wc.push_back(p_subevtlist?32:0);
   }
   evt.weights()=wc;
   if (p_pdfinfo) {

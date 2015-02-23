@@ -277,7 +277,7 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
 #else
   wgtmap["nominal"]=wc[0];
   ntrials=wc[3];
-  xstype=((wc.size()>10&&wc[10]==32)?1:0);
+  xstype=(((wc.size()==5&&wc[4]==32)||(wc.size()==11&&wc[10]==32))?1:0);
 #endif /* HEPMC_HAS_NAMED_WEIGHTS */
   if (msg_LevelIsDebugging()) {
     for (std::map<std::string,double>::iterator wit(wgtmap.begin());
