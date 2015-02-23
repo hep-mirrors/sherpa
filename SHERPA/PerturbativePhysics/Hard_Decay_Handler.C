@@ -110,15 +110,15 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string path, std::string file) :
   
   // initialize them sorted by masses:
   Decay_Map::iterator dmit;
-  PRINT_INFO("Initialising hard decay tables: two-body decays.");
+  msg_Debugging()<<"Initialising hard decay tables: two-body decays.\n";
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
     InitializeDirectDecays(dmit->second.at(0));
   }
-  PRINT_INFO("Initialising hard decay tables: three-body decays.");
+  msg_Debugging()<<"Initialising hard decay tables: three-body decays.\n";
   for (dmit=p_decaymap->begin(); dmit!=p_decaymap->end(); ++dmit) {
     InitializeOffshellDecays(dmit->second.at(0));
   }
-  DEBUG_INFO("Initialising hard decay tables: customizing decay tables.");
+  msg_Debugging()<<"Initialising hard decay tables: customizing decay tables.\n";
   CustomizeDecayTables();
 
   if (m_set_widths)
