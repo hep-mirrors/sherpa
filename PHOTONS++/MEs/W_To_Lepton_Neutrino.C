@@ -1,5 +1,10 @@
 #include "PHOTONS++/MEs/W_To_Lepton_Neutrino.H"
 #include "ATOOLS/Math/Poincare.H"
+#include "ATOOLS/Math/Vector.H"
+#include "ATOOLS/Math/Tensor.H"
+#include "ATOOLS/Math/Tensor_Build.H"
+#include "ATOOLS/Math/Tensor_Contractions.H"
+#include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "METOOLS/Main/XYZFuncs.H"
@@ -144,9 +149,13 @@ Complex W_To_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int i) {
   Vec4C epsW   = Polarization_Vector(m_moms[0])[m_spins[0]];
   Vec4C epsP   = conj(Polarization_Vector(m_moms[3])[m_spins[3]]);
   Vec4D q      = m_moms[1]+m_moms[3];       // fermion propagator momenta
-  Vec4D Q      = m_moms[0]+m_moms[3];       // boson propagator momenta
+  double q2    = q.Abs2();
+  Vec4D Q      = m_moms[0]-m_moms[3];       // boson propagator momenta
+  double Q2    = Q.Abs2();
   double m     = m_masses[1];               // fermion mass/propagator pole
+  double m2    = sqr(m);
   double M     = m_masses[0];               // boson mass/propagator pole
+  double M2    = sqr(M);
   m_moms[4]    = m_moms[5] = q;             // enter those into m_moms
   m_flavs[4]   = m_flavs[1];                // set to corresponding particle/antiparticle
   m_flavs[5]   = m_flavs[1].Bar();
@@ -155,11 +164,7 @@ Complex W_To_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int i) {
   Complex r1 = Complex(0.,0.);
   Complex r2 = Complex(0.,0.);
   Complex r3 = Complex(0.,0.);
-  Complex r4 = Complex(0.,0.);
-  Complex r5 = Complex(0.,0.);
-  Complex r6 = Complex(0.,0.);
-  Complex r7 = Complex(0.,0.);
-  Complex r8 = Complex(0.,0.);
+  Lorentz_Ten3C ten31,ten32,ten33,ten34,ten35;
   for (unsigned int s=0; s<=1; s++) {
     r1 += XYZ.X(1,m_spins[1],epsP,4,s,1.,1.)
           *XYZ.X(4,s,epsW,2,m_spins[2],m_cR,m_cL);
@@ -168,20 +173,27 @@ Complex W_To_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int i) {
   }
   Vec4D p = m_moms[0];
   Vec4D k = m_moms[3];
-  r3 = XYZ.X(1,m_spins[1],epsW,2,m_spins[2],m_cR,m_cL);
-  r4 = XYZ.X(1,m_spins[1],p+k,2,m_spins[2],m_cR,m_cL);
-  r5 = XYZ.X(1,m_spins[1],epsP,2,m_spins[2],m_cR,m_cL);
-  r6 = r7 = r8 = XYZ.X(1,m_spins[1],p-k,2,m_spins[2],m_cR,m_cL);
-  r1 *= (1.+m/sqrt(q*q))/(q*q-m*m);
-  r2 *= (1.-m/sqrt(q*q))/(q*q-m*m);
-  r3 *= (epsP*(-2.*p+k))/(Q*Q-M*M);
-  r4 *= (epsW*epsP)/(Q*Q-M*M);
-  r5 *= (epsW*(p-2.*k))/(Q*Q-M*M);
-  r6 *= -(epsW*(p-k))*(epsP*(-2.*p+k))/(Q*Q-M*M);
-  r7 *= -(epsW*epsP)*((p-k)*(p+k))/(Q*Q-M*M);
-  r8 *= -(epsW*(p-2.*k))*(epsP*(p-k))/(Q*Q-M*M);
+  // index ordering sigma(1),mu(2),lambda(3)
+  // g^\sigma\mu(2p-k)^\lambda
+  ten31 = BuildTensor(MetricTensor(),2.*p-k);
+  // g^\sigma\lambda(2k-p)^\mu
+  ten32 = BuildTensor(MetricTensor(),2.*k-p); ten32 = ten32.Transpose(2,3);
+  // -2 g^\mu\lambda k^\sigma
+  ten33 = -2.*BuildTensor(MetricTensor(),k);  ten33 = ten33.Transpose(1,3);
+  // -1/M2 (p-k)^\sigma(p-k)^\mu(2p-k)^\lambda
+  ten34 = -1./M2*BuildTensor(p-k,p-k,2.*p-k);
+  // -1/M2 (p-k)^\sigma(2k-p)^\mu(p-k)^\lambda
+  ten35 = -1./M2*BuildTensor(p-k,2.*k-p,p-k);
+  Lorentz_Ten3C ten = ten31+ten32+ten33+ten34+ten35;
+  // v^\sigma = L^\sigma\mu\lambda epsW_\mu epsP_\lambda
+  Vec4C v3 = Contraction(Contraction(ten,3,epsP),2,epsW);
+  r3 = XYZ.X(1,m_spins[1],v3,2,m_spins[2],m_cR,m_cL);
 
-  return (m_i*m_e*m_e)/(2.*m_sqrt2*m_sW)*(r1+r2+r3+r4+r5+r6+r7+r8);
+  r1 *= (1.+m/sqrt(q2))/(q2-m2);
+  r2 *= (1.-m/sqrt(q2))/(q2-m2);
+  r3 *= -1./(Q2-M2);
+
+  return (m_i*m_e*m_e)/(2.*m_sqrt2*m_sW)*(r1+r2+r3);
 }
 
 Complex W_To_Lepton_Neutrino::InfraredSubtractedME_1_15(unsigned int i) {
@@ -238,7 +250,6 @@ double W_To_Lepton_Neutrino::GetBeta_1_1(unsigned int a) {
   // spin avarage over initial state
   sum = (1./3.)*sum;
   sum = 1./(16.*M_PI*M_PI*M_PI)*sum - Smod(a)*GetBeta_0_0();
-//   msg_Out()<<sum<<endl;
   return sum;
 }
 
