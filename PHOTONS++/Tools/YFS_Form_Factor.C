@@ -99,13 +99,27 @@ YFS_Form_Factor::YFS_Form_Factor(const Particle * part1, const Particle * part2,
   else if (part1->DecayBlob() == part2->DecayBlob())       m_t1t2 = +1.;
   else                                                     m_t1t2 = 0.;
 
-  //roots of p_x^2
-  m_x1  = - (m_p1.Abs2() - m_p2.Abs2()
-              + 2.*sqrt((m_p1*m_p2)*(m_p1*m_p2)-(m_p1.Abs2()*m_p2.Abs2())))
-                / (m_p1-m_p2).Abs2();
-  m_x2  = - (m_p1.Abs2() - m_p2.Abs2()
-              - 2.*sqrt((m_p1*m_p2)*(m_p1*m_p2)-(m_p1.Abs2()*m_p2.Abs2())))
-                / (m_p1-m_p2).Abs2();
+  // roots of p_x^2, special case for (p1-p2)^2=0
+  if (abs((m_p1-m_p2).Abs2()) > 1E-6) {
+    m_x1  = - (m_p1.Abs2() - m_p2.Abs2()
+                + 2.*sqrt((m_p1*m_p2)*(m_p1*m_p2)-(m_p1.Abs2()*m_p2.Abs2())))
+                  / (m_p1-m_p2).Abs2();
+    m_x2  = - (m_p1.Abs2() - m_p2.Abs2()
+                - 2.*sqrt((m_p1*m_p2)*(m_p1*m_p2)-(m_p1.Abs2()*m_p2.Abs2())))
+                  / (m_p1-m_p2).Abs2();
+    if (abs(1.+m_x1) < 1E-10) {
+      msg_Error()<<METHOD<<"() error: case should not appear !!!"<<endl;
+    }
+    if (abs(1.+m_x2) < 1E-10) {
+      // expansion for (p1-p2)<~0 => x2>~-1
+      double p22(m_p2.Abs2());
+      double x(m_p1.Abs2()*m_p2.Abs2()/sqr(m_p1*m_p2));
+      double r(m_p1*m_p2);
+      m_x2  = - 1. + (2.*p22-r*(-0.5*x+0.125*x*x-0.0625*x*x*x))
+                      / (m_p1-m_p2).Abs2();
+    }
+  }
+  else m_x1=m_x2=0.;
 
   //roots of p_x^'2
   if (m_t1t2 == +1.){
@@ -134,15 +148,22 @@ YFS_Form_Factor::~YFS_Form_Factor()
 // private members
 
 // Y = 2 alpha (Re B + B~)
+//   = - alpha/pi Z_iZ_j theta_itheta_j
+//     * [ log(E_iE_j/omega^2)
+//         + (pipj)/2 * ( theta_itheta_j \int_-1^1 dx log(px'^2/lambda^2)/px'^2
+//                        + \int_-1^1 dx log(px^2/lambda^2)/px^2 )
+//         - (pipj)/2 * \int_-1^1 dx log(Ex^2/omega^2)/px^2
+//         + 1/4 * \int_-1^1 dx log(px'^2/m1m2)
+//         + G(1) + G(-1) - (pipj) * \int_-1^1 dx G(x)/px^2 ]             (C.44)
 double YFS_Form_Factor::Y() {
   return -Photons::s_alpha/M_PI*m_Z1*m_Z2*m_t1t2
            *(log((m_p1[0]*m_p2[0])/(m_ks*m_ks))
-             + (1./2.)*(m_p1*m_p2)*IntP1() - (1./2.)*(m_p1*m_p2)*IntE()
-             + (1./4.)*IntP2()
+             + 0.5*(m_p1*m_p2)*IntP1() - 0.5*(m_p1*m_p2)*IntE()
+             + 0.25*IntP2()
              + G(1.) + G(-1.) - (m_p1*m_p2)*IntG());
 }
 
-// t1t2 * int dx ln (px'²/lambda²)/px'² + int dx ln (px²/lambda²)/px²
+// t1t2 * int dx ln (px'²/lambda²)/px'² + int dx ln (px²/lambda²)/px²     (C.47)
 double YFS_Form_Factor::IntP1() {
   if (m_t1t2 == -1.) {
     return 0.;
@@ -161,13 +182,14 @@ double YFS_Form_Factor::IntP1() {
     return 0.;
 }
 
-// int dx ln(Ex²/omega²)/px²
+// int dx ln(Ex²/omega²)/px²                                              (C.61)
 double YFS_Form_Factor::IntE() {
   // E1 = E2
-  if (abs(m_p1[0]-m_p2[0]) < 1E-6)
+  if (abs(m_p1[0]-m_p2[0]) < 1E-6) {
     return 8./((m_p1-m_p2).Abs2()*(m_x1-m_x2))
            *log((m_p1[0]+m_p2[0])/(2*m_ks))
            *log(abs(((1.-m_x1)*(1.+m_x2))/((1.+m_x1)*(1.-m_x2))));
+  }
   else {
     // (p1-p2)^2 < 0
     if ((m_p1-m_p2).Abs2() < -1E-6) {
@@ -203,11 +225,11 @@ double YFS_Form_Factor::IntE() {
       }
       // m12 > 2(p1*p2)-m2^2
       else if ((m_m1*m_m1) > (2.*(m_p1*m_p2)-m_m2*m_m2)) {
-        msg_Out()<<"!!! error: case should not appear because of ordering of particles !!!"<<endl;
+        msg_Error()<<METHOD<<"() error: case should not appear !!!"<<endl;
         return 0.;
       }
       else {
-        msg_Out()<<"!!! error: case should not appear !!!"<<endl;
+        msg_Error()<<METHOD<<"() error: case should not appear !!!"<<endl;
         return 0.;
       }
     }
@@ -223,7 +245,7 @@ double YFS_Form_Factor::IntE() {
                     -xE*log((xE-1.)/(xE+1.))-log(xE*xE-1.)-2.);
         }
         else {
-          msg_Out()<<"!!! error: case should not appear !!!"<<endl;
+          msg_Error()<<METHOD<<"(): error: case should not appear !!!"<<endl;
           return 0.;
         }
       }
@@ -254,12 +276,12 @@ double YFS_Form_Factor::IntE() {
                       + DiLog(yp/(yp-1.)) - DiLog(yp/(yp-1.-2.*xi)));
           }
           else {
-            msg_Out()<<"!!! error: case should not appear !!!"<<endl;
+            msg_Error()<<METHOD<<"(): error: case should not appear !!!"<<endl;
             return 0.;
           }
         }
         else {
-          msg_Out()<<"!!! error: case should not appear !!!"<<endl;
+          msg_Error()<<METHOD<<"(): error: case should not appear !!!"<<endl;
           return 0.;
         }
       }
@@ -267,7 +289,7 @@ double YFS_Form_Factor::IntE() {
   }
 }
 
-// int dx ln (px²/m1m2)
+// int dx ln (px'²/m1m2)                                                  (C.55)
 double YFS_Form_Factor::IntP2() {
   if(m_t1t2 == +1.)
     return 2.*log((m_p1+m_p2).Abs2()/(4.*m_m1*m_m2))
@@ -295,7 +317,7 @@ double YFS_Form_Factor::IntP2() {
     }
   }
   else {
-    msg_Out()<<"!!! error:case should not appear !!!"<<endl;
+    msg_Error()<<METHOD<<"(): error: case should not appear !!!"<<endl;
     return 0.;
   }
 }
@@ -311,7 +333,8 @@ double YFS_Form_Factor::G(double x) {
   return r;
 }
 
-// Function for evaluating IntG() for dipole of different masses in its rest frame
+// Function for evaluating IntG() for dipole of different masses in its
+// rest frame
 double YFS_Form_Factor::GFunc(double x) {
   double xE = (m_p2[0]+m_p1[0])/(m_p2[0]-m_p1[0]);
   double xD = 2.*Vec3D(m_p1).Abs()/(m_p2[0]-m_p1[0]);

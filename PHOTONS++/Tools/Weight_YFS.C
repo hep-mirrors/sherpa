@@ -11,9 +11,11 @@ using namespace std;
 Weight_YFS::Weight_YFS
 (const Particle_Vector& newdip, const Particle_Vector& olddip,
  const double& omegaB, const double& nbar) {
+  DEBUG_FUNC("\\Omega_min="<<omegaB);
   m_Y         = YFS_Form_Factor(newdip,omegaB).Get();     // in dipole-CMS
   m_Ymax      = YFS_Form_Factor(olddip,omegaB).Get();     // in dipole-CMS
   m_nbar      = nbar;
+  msg_Debugging()<<"Y="<<m_Y<<", Ymax="<<m_Ymax<<", nbar="<<nbar<<std::endl;
   CalculateWeight();
   CalculateMax();
 }
