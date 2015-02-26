@@ -99,8 +99,8 @@ YFS_Form_Factor::YFS_Form_Factor(const Particle * part1, const Particle * part2,
   else if (part1->DecayBlob() == part2->DecayBlob())       m_t1t2 = +1.;
   else                                                     m_t1t2 = 0.;
 
-  // roots of p_x^2, special case for (p1-p2)^2=0
-  if (abs((m_p1-m_p2).Abs2()) > 1E-6) {
+  // roots of p_x^2, special case for (p1-p2)^2=0 needed only for W->lnu
+  if (!(m_t1t2==-1 && abs((m_p1-m_p2).Abs2()) < 1E-6)) {
     m_x1  = - (m_p1.Abs2() - m_p2.Abs2()
                 + 2.*sqrt((m_p1*m_p2)*(m_p1*m_p2)-(m_p1.Abs2()*m_p2.Abs2())))
                   / (m_p1-m_p2).Abs2();
@@ -156,6 +156,7 @@ YFS_Form_Factor::~YFS_Form_Factor()
 //         + 1/4 * \int_-1^1 dx log(px'^2/m1m2)
 //         + G(1) + G(-1) - (pipj) * \int_-1^1 dx G(x)/px^2 ]             (C.44)
 double YFS_Form_Factor::Y() {
+  msg_Debugging()<<IntP1()<<" "<<IntE()<<" "<<IntP2()<<" "<<IntG()<<std::endl;
   return -Photons::s_alpha/M_PI*m_Z1*m_Z2*m_t1t2
            *(log((m_p1[0]*m_p2[0])/(m_ks*m_ks))
              + 0.5*(m_p1*m_p2)*IntP1() - 0.5*(m_p1*m_p2)*IntE()
@@ -167,7 +168,7 @@ double YFS_Form_Factor::Y() {
 double YFS_Form_Factor::IntP1() {
   if (m_t1t2 == -1.) {
     return 0.;
-    }
+  }
   else if (m_t1t2 == +1.) {
     double A(0.);
     if (m_xx1*m_xx2 >= 0.) 
@@ -178,8 +179,9 @@ double YFS_Form_Factor::IntP1() {
                  -log(abs(m_x2))*(DiLog((m_x2-1.)/m_x2)-DiLog((m_x2+1.)/m_x2)));
     return (A+B);
   }
-  else
+  else {
     return 0.;
+  }
 }
 
 // int dx ln(Ex²/omega²)/px²                                              (C.61)
