@@ -159,7 +159,6 @@ ATOOLS::Contraction(const Lorentz_Ten3<Scal1>& ten, int i, const Vec4<Scal2>& v)
      t = ten;
   else
     return Lorentz_Ten2<PROMOTE(Scal1,Scal2)>();
-  cout<<t<<endl;
   return Lorentz_Ten2<PROMOTE(Scal1,Scal2)>(
             t.at(0,0,0)*v[0]-t.at(0,0,1)*v[1]-t.at(0,0,2)*v[2]-t.at(0,0,3)*v[3],
             t.at(1,0,0)*v[0]-t.at(1,0,1)*v[1]-t.at(1,0,2)*v[2]-t.at(1,0,3)*v[3],
