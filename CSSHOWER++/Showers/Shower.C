@@ -25,7 +25,9 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
   double fs_as_fac=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   double is_as_fac=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
   double mth=ToType<double>(rpa->gen.Variable("CSS_MASS_THRESHOLD"));
+  m_franksfudgefactor2=1.0;
   if (type) {
+    m_franksfudgefactor2=dataread->GetValue<double>("CSS_FRANKS_FUDGE_FACTOR_2",1.0);
     kfmode=dataread->GetValue<int>("MI_CSS_KFACTOR_SCHEME",0);
     k0sqf=dataread->GetValue<double>("MI_CSS_FS_PT2MIN",1.0);
     k0sqi=dataread->GetValue<double>("MI_CSS_IS_PT2MIN",4.0);
@@ -230,6 +232,11 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
   DEBUG_FUNC("");
   newpB->SetStart(split->KtTest());
   newpC->SetStart(split->KtTest());
+  if (newpB->GetType()==pst::IS && m_franksfudgefactor2!=1.0) {
+    DEBUG_VAR(m_franksfudgefactor2<<" makes it "<<
+	      sqrt(newpC->KtStart()*m_franksfudgefactor2));
+    newpC->SetStart(newpC->KtStart()*m_franksfudgefactor2);
+  }
   newpB->SetKtMax(split->KtMax());
   newpC->SetKtMax(split->KtMax());
   newpB->SetVeto(split->KtVeto());
