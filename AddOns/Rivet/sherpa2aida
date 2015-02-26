@@ -127,12 +127,12 @@ class SherpaHistogram2D:
 
     def write_datapoint(self, f, xval, xerr, yval, yerr, zval, zerr):
         if opts.REPLACE_NANS:
-	    xval=ReplaceNaN(xval,0)
-	    xerr=ReplaceNaN(xerr,0)
-	    yval=ReplaceNaN(yval,0)
-	    yerr=ReplaceNaN(yerr,0)
-	    yval=ReplaceNaN(zval,0)
-	    yerr=ReplaceNaN(zerr,0)
+            xval=ReplaceNaN(xval,0)
+            xerr=ReplaceNaN(xerr,0)
+            yval=ReplaceNaN(yval,0)
+            yerr=ReplaceNaN(yerr,0)
+            zval=ReplaceNaN(zval,0)
+            zerr=ReplaceNaN(zerr,0)
         f.write('    <dataPoint>\n')
         f.write('      <measurement errorPlus="%e" value="%e" errorMinus="%e"/>\n' %(xerr, xval, xerr))
         f.write('      <measurement errorPlus="%e" value="%e" errorMinus="%e"/>\n' %(yerr, yval, yerr))
