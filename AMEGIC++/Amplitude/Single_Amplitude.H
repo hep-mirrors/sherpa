@@ -30,7 +30,7 @@ namespace AMEGIC {
     Single_Amplitude(int*,int,Process_Tags*,Single_Amplitude**,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*);
     ~Single_Amplitude(); 
     void PrintGraph(); 
-    void Zprojecting(ATOOLS::Flavour*,int,bool);
+    void Zprojecting(ATOOLS::Flavour*,int,bool,bool);
     void FillCoupling(String_Handler*);
     void MPolconvert(int,int);
     void Prop_Replace(ATOOLS::Flavour,int,int,int);

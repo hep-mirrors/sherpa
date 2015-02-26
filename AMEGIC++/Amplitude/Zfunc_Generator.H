@@ -15,6 +15,7 @@ namespace AMEGIC {
   typedef std::vector<SP(Zfunc_Calc)> ZF_Vector;
 
   class Zfunc_Generator {
+    bool  cutvecprop;
     Zfunc_List zlist;
     static ZF_Vector zcalc;
     Basic_Sfuncs* BS;
@@ -38,7 +39,7 @@ namespace AMEGIC {
     void SetPropDirection(int,int,const std::vector<MODEL::Lorentz_Function*> &,int*,
 			          const std::vector<MODEL::Lorentz_Function*> &,int*);
   public:
-    Zfunc_Generator(Basic_Sfuncs* _BS) : BS(_BS) {}
+    Zfunc_Generator(bool cvp, Basic_Sfuncs* _BS) : cutvecprop(cvp), BS(_BS) {}
     ~Zfunc_Generator();
     
     void  Set_In(Zfunc*,int,Point*,Point*,Point*);

@@ -24,8 +24,10 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
 				     int & _orderQCD,int & _orderEW,int & _ntchan,
 				     MODEL::Coupling_Map *const cpls,
 				     Basic_Sfuncs* BS,String_Handler* _shand, 
-				     std::string print_graph,bool create_4V) 
-  : shand(_shand),CFCol_Matrix(0),Mi(0), m_print_graph(print_graph)
+				     std::string print_graph,bool create_4V,
+				     bool cutvecprop)
+  : m_cutvecprop(cutvecprop), shand(_shand), CFCol_Matrix(0), Mi(0),
+    m_print_graph(print_graph)
 {
   groupname = "Amplitude_Handler";
   int ndecays=pinfo->Ndecays();
@@ -186,7 +188,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
   ngraph = 0;
   while (n) { 
     ++ngraph;
-    n->Zprojecting(fl,ngraph,true);
+    n->Zprojecting(fl,ngraph,true,m_cutvecprop);
     //n->FillCoupling(shand); 
 
     if (n->on) {
