@@ -52,6 +52,11 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   if (pdfcheck!=1) msg_Info()<<METHOD<<"(): Set PDF check mode "<<pdfcheck<<"\n";
   int csmode=_dataread->GetValue<int>("CSS_CSMODE",0);
   if (csmode!=1) msg_Info()<<METHOD<<"(): Set color setter mode "<<csmode<<"\n";
+  m_franksfudgefactor=1.0;
+  if (type) {
+    m_franksfudgefactor=_dataread->GetValue<double>("CSS_FRANKS_FUDGE_FACTOR",1);
+    if (m_franksfudgefactor!=1) msg_Info()<<METHOD<<"(): Set Franks fudge factor "<<m_franksfudgefactor<<"\n";
+  }
   
   m_weightmode = int(_dataread->GetValue<int>("WEIGHT_MODE",1));
   
@@ -471,6 +476,7 @@ Singlet *CS_Shower::TranslateAmplitude
     if (is) parton->SetBeam(i);
     KT2X_Map::const_iterator xit(kt2xmap.find(cl->Id()));
     parton->SetStart(m_respectq2?ampl->MuQ2():xit->second.second);
+    if (!is) parton->SetStart(parton->KtStart()*m_franksfudgefactor);
     if (m_respectq2)
       if (IsDecay(ampl,cl)) parton->SetStart(xit->second.second);
     if (cl->KT2(0)>=0.0) parton->SetSoft(0,cl->KT2(0)); 
