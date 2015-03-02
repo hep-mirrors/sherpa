@@ -342,9 +342,11 @@ void Standard_Model::FixEWParameters() {
   string widthscheme = p_dataread->GetValue<string>("WIDTH_SCHEME","CMS");
   p_numbers->insert(make_pair(string("WidthScheme"), widthscheme=="CMS"));
   int ewscheme = p_dataread->GetValue<int>("EW_SCHEME",1);
+  std::string ewschemestring("");
 
   switch (ewscheme) {
   case 0:
+    ewschemestring="user defined (input: all parameters)";
     // all SM parameters given explicitly
     MW         = Flavour(kf_Wplus).Mass();
     MZ         = Flavour(kf_Z).Mass();
@@ -366,6 +368,7 @@ void Standard_Model::FixEWParameters() {
     }
     break;
   case 1:
+    ewschemestring="mass scheme (input: 1/ALPHAQED(0), MASS[23], MASS[24], MASS[25])";
     // SM parameters given by alphaQED0, M_W, M_Z, M_H
     MW         = Flavour(kf_Wplus).Mass();
     MZ         = Flavour(kf_Z).Mass();
@@ -391,6 +394,7 @@ void Standard_Model::FixEWParameters() {
     }
     break;
   case 2:
+    ewschemestring="vev scheme (input: 1/ALPHAQED(0), VEV, SIN2THETAW, MASS[25])";
     // SM parameters given by alphaQED0, sinthetaW, v, M_H
     alphaQED0   = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
     aqed       = new Running_AlphaQED(alphaQED0);
@@ -412,6 +416,7 @@ void Standard_Model::FixEWParameters() {
     }
     break;
   case 3:
+    ewschemestring="Gmu scheme (input: GF, MASS[23], MASS[24], MASS[25])";
     //gmu scheme
     GF         = p_dataread->GetValue<double>("GF",1.16639e-5);
     MW         = Flavour(kf_Wplus).Mass();
@@ -440,6 +445,35 @@ void Standard_Model::FixEWParameters() {
     THROW(not_implemented, "Unknown EW_SCHEME="+ToString(ewscheme));
     break;
   }
+  msg_Info()<<std::endl<<" Electroweak parameters"<<std::endl
+            <<"  Width scheme:             "<<widthscheme<<std::endl
+            <<"  Electroweak input scheme: "<<ewschemestring<<std::endl;
+  msg_Info()<<std::setw(27)<<"Parameter"
+            <<std::setw(27)<<"Value"<<std::endl;
+  msg_Info()<<std::setw(27)<<"1/\\alpha_{QED}(0)"
+            <<std::setw(27)<<1./alphaQED0<<std::endl;
+  msg_Info()<<std::setw(27)<<"1/\\alpha_{QED}(default)"
+            <<std::setw(27)<<1./(aqed->AqedFixed())<<std::endl;
+  msg_Info()<<std::setw(27)<<"G_F"
+            <<std::setw(27)<<GF<<std::endl;
+  if (widthscheme=="CMS") {
+    msg_Info()<<std::setw(27)<<"vev"
+              <<std::setw(27)<<cvev<<std::endl;
+    msg_Info()<<std::setw(27)<<"\\sin^2(\\theta_W)"
+              <<std::setw(27)<<csin2thetaW<<std::endl;
+    msg_Info()<<std::setw(27)<<"\\lambda_h"
+              <<std::setw(27)<<clambdaH<<std::endl;
+  }
+  else {
+    msg_Info()<<std::setw(27)<<"vev"
+              <<std::setw(27)<<vev<<std::endl;
+    msg_Info()<<std::setw(27)<<"\\sin^2(\\theta_W)"
+              <<std::setw(27)<<sin2thetaW<<std::endl;
+    msg_Info()<<std::setw(27)<<"\\lambda_h"
+              <<std::setw(27)<<lambdaH<<std::endl;
+  }
+  msg_Info()<<std::endl;
+
 
   Flavour(kf_Wplus).SetMass(MW);
   Flavour(kf_Z).SetMass(MZ);
