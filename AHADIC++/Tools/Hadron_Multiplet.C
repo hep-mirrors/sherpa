@@ -221,8 +221,8 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
       pos1 = fl1; pos2 = fl2; pos3 = fl3; 
     }
     else
-      msg_Out()<<METHOD<<" did not find a combination for "
-	       <<"["<<fl3<<" "<<fl2<<" "<<fl1<<"], spin = "<<spin<<"\n";
+      msg_Tracking()<<METHOD<<" did not find a combination for "
+                    <<"["<<fl3<<" "<<fl2<<" "<<fl1<<"], spin = "<<spin<<"\n";
   }
   else if (spin==4) {
     // Decuplet
@@ -249,8 +249,8 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
       pos1 = fl3; pos2 = fl2; pos3 = fl1;
     }
     else
-      msg_Out()<<METHOD<<" did not find a combination for "
-	       <<"["<<fl3<<" "<<fl2<<" "<<fl1<<"], spin = "<<spin<<"\n";
+      msg_Tracking()<<METHOD<<" did not find a combination for "
+                    <<"["<<fl3<<" "<<fl2<<" "<<fl1<<"], spin = "<<spin<<"\n";
   }
 
   if (pos1<0 || pos2<0 || pos3<0 || wf<0) {

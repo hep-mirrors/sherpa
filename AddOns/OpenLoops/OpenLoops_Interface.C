@@ -91,7 +91,6 @@ namespace OpenLoops {
     }
     else {
       SetParameter("ckmorder", 0);
-      PRINT_INFO("setting ckmorder to 0");
     }
     SetParameter("install_path", s_olprefix.c_str());
 
