@@ -82,34 +82,37 @@ namespace ATOOLS {
   public:
     double m_t,m_xa,m_xb;
     int m_fla,m_flb;
+    double m_pdfrationumerator, m_pdfratiodenominator;
     Cluster_Step(const double& t, const double& xa, const double& xb,
                  const int& fla, const int& flb) :
-      m_t(t), m_xa(xa), m_xb(xb), m_fla(fla), m_flb(flb) {}
+      m_t(t), m_xa(xa), m_xb(xb), m_fla(fla), m_flb(flb),
+      m_pdfrationumerator(1.), m_pdfratiodenominator(1.) {}
   };
 
   inline std::ostream & operator<<(std::ostream & s,
                                    const ATOOLS::Cluster_Step & cs)
   {
     return s<<"("<<cs.m_t<<";"<<cs.m_fla<<","<<cs.m_xa<<"|"
-           <<cs.m_flb<<","<<cs.m_xb<<")";
+                              <<cs.m_flb<<","<<cs.m_xb<<")";
   }
 
   struct Cluster_Sequence_Info {
   public:
     double m_wgt, m_ct;
-    double m_pdfratio;
     std::vector<Cluster_Step> m_txfl;
 
     Cluster_Sequence_Info(const double &w=1.0,const double &c=0.0,
                           const double &r=0.0) :
-      m_wgt(w), m_ct(c), m_pdfratio(r) {}
+      m_wgt(w), m_ct(c) {}
     inline void AddSplitting(const double& t,
                              const double& xa, const double& xb,
                              const int& fla, const int& flb)
     { m_txfl.push_back(Cluster_Step(t,xa,xb,fla,flb)); }
     inline void AddWeight(const double& w)      { m_wgt*=w; }
     inline void AddCounterTerm(const double& c) { m_ct*=c; }
-    inline void AddPDFRatio(const double& r)    { m_pdfratio*=r; }
+    inline void AddPDFRatio(const double& n,const double& d)
+    { m_txfl.back().m_pdfrationumerator=n;
+      m_txfl.back().m_pdfratiodenominator=d; }
   };
 
   std::ostream & operator<<(std::ostream & s,

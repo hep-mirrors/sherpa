@@ -23,7 +23,6 @@ std::ostream & ATOOLS::operator<<(std::ostream & s,
                                   const ATOOLS::Cluster_Sequence_Info & csi)
 {
   s<<"Cluster sequence: wgt="<<csi.m_wgt<<", counter term="<<csi.m_ct;
-  if (csi.m_pdfratio!=0.) s<<", PDF ratio="<<csi.m_pdfratio;
   if (!csi.m_txfl.size()) s<<", no cluster steps";
   else                    s<<", steps: ";
   for (size_t i(0);i<csi.m_txfl.size();++i)

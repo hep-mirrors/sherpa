@@ -76,7 +76,7 @@ namespace SHERPA {
 
   class Scale_Variations {
   private:
-    bool m_on,m_loadlhapdf;
+    bool m_on,m_loadlhapdf,m_ckkw;
     ATOOLS::Flavour m_gluon,m_quark;
     NamedScaleVariationMap * p_nsvmap;
 
@@ -89,13 +89,8 @@ namespace SHERPA {
       size_t oqcd,oew;
       int fl1,fl2;
       ATOOLS::mewgttype::code type;
-      struct DADS {
-        double wgt;
-        double muR2,muF12,muF22;
-        double x1,x2;
-        int fl1,fl2;
-      };
-      std::vector<DADS> dads;
+      std::vector<ATOOLS::DADS_Info> dads;
+      ATOOLS::Cluster_Sequence_Info csi;
     } m_params;
 
     void ResetValues();
@@ -104,6 +99,7 @@ namespace SHERPA {
     bool Calculate(Scale_Variation * sv,
                    PHASIC::Process_Base * proc);
     double Calculate(const double& B, const double& VI,
+                     const ATOOLS::Cluster_Sequence_Info& csi,
                      const double& x1, const double& x2,
                      const double& x1p, const double& x2p,
                      const double& muR2,
@@ -115,7 +111,12 @@ namespace SHERPA {
                      MODEL::One_Running_AlphaS * as,
                      const std::vector<double>& renwgts,
                      const std::vector<double>& kpwgts,
-                     const ATOOLS::mewgttype::code type);
+                     const ATOOLS::mewgttype::code& type,
+                     const std::vector<ATOOLS::DADS_Info>& dads);
+    double PDFRatioFactor(const double& fa, const double& fb,
+                          const ATOOLS::Cluster_Sequence_Info& csi,
+                          const double& muF2fac,
+                          PDF::PDF_Base * pdf1, PDF::PDF_Base * pdf2);
   public:
     Scale_Variations();
     ~Scale_Variations();

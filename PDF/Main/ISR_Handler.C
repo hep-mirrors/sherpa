@@ -293,6 +293,10 @@ void ISR_Handler::SetLimits(Double_Vector &spkey,Double_Vector &ykey,
 double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
 			   double Q12,double Q22,Flavour fl1,Flavour fl2,int warn)
 {
+  // mode&1 -> swap beams
+  // mode&2 -> override m_mode and only calc left beam
+  // mode&4 -> override m_mode and only calc right beam
+  // mode&8 -> do not include flux
   if (m_mode==0) return 0.25/sqrt(sqr(p1*p2)-p1.Abs2()*p2.Abs2());
   msg_IODebugging()<<METHOD<<"(mode = "<<mode<<")\n";
   if (fl1.Size()>1 || fl2.Size()>1)
@@ -305,8 +309,8 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
     std::swap<Vec4D>(p1,p2);
     std::swap<double>(Q12,Q22);
   }
-  x1=Min(1.0,p1.PPlus()/p_beam[0]->OutMomentum().PPlus());
-  x2=Min(1.0,p2.PMinus()/p_beam[1]->OutMomentum().PMinus());
+  x1=CalcX(p1);
+  x2=CalcX(p2);
   msg_IODebugging()<<"  "<<p1<<" from "<<p_beam[0]->OutMomentum()<<" -> "
 		 <<p1.PPlus()<<" / "<<p_beam[0]->
     OutMomentum().PPlus()<<" = "<<x1<<std::endl;
@@ -354,15 +358,25 @@ double ISR_Handler::Weight(const int mode,Vec4D p1,Vec4D p2,
 		   <<","<<sqrt(Q12)<<") -> "<<om::bold<<f1<<om::reset<<"\n";
     msg_IODebugging()<<"  PDF2: "<<rpa->gen.Beam2()<<" -> "<<fl2<<" at ("<<x2
 		   <<","<<sqrt(Q22)<<") -> "<<om::bold<<f2<<om::reset<<"\n";
-    double flux=0.25/sqrt(sqr(p1*p2)-p1.Abs2()*p2.Abs2());
-    msg_IODebugging()<<"  Flux: "<<flux<<", Weight: "
-		     <<f1*f2*((mode&14)?1.0:flux)<<std::endl;
+    msg_IODebugging()<<"  Flux: "<<((mode&14)?1.0:Flux(p1,p2))<<", Weight: "
+                     <<f1*f2*((mode&14)?1.0:Flux(p1,p2))<<std::endl;
     if (IsBad(f1*f2)) return 0.0;
     if (s_nozeropdf && f1*f2==0.0)
       return pow(std::numeric_limits<double>::min(),0.25);
-    return f1*f2*((mode&14)?1.0:flux);
+    return f1*f2*((mode&14)?1.0:Flux(p1,p2));
   }
   return 0.;
+}
+
+double ISR_Handler::Flux(const Vec4D& p1, const Vec4D& p2)
+{
+  return 0.25/sqrt(sqr(p1*p2)-p1.Abs2()*p2.Abs2());
+}
+
+double ISR_Handler::CalcX(const ATOOLS::Vec4D& p)
+{
+  if (p[3]>0.) return Min(1.0,p.PPlus()/p_beam[0]->OutMomentum().PPlus());
+  else         return Min(1.0,p.PMinus()/p_beam[1]->OutMomentum().PMinus());
 }
 
 bool ISR_Handler::BoostInCMS(Vec4D *p,const size_t n) 

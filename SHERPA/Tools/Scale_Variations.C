@@ -86,7 +86,7 @@ std::string Scale_Variation::GenerateName()
 }
 
 Scale_Variations::Scale_Variations() :
-  m_on(false), m_loadlhapdf(true),
+  m_on(false), m_loadlhapdf(true), m_ckkw(false),
   m_quark(Flavour(kf_quark)), m_gluon(Flavour(kf_gluon)),
   p_nsvmap(new NamedScaleVariationMap())
 {
@@ -203,6 +203,7 @@ void Scale_Variations::ResetValues()
     it->second->DeleteRSValues();
   }
   m_params.dads.clear();
+  m_params.csi=Cluster_Sequence_Info(1.,0.,0.);
 }
 
 void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
@@ -229,18 +230,10 @@ void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
   m_params.muR2=mewgt->m_mur2;
   m_params.muF12=mewgt->m_muf2;
   m_params.muF22=mewgt->m_muf2;
-  m_params.dads.resize(mewgt->m_dadsinfos.size());
-  for (size_t i(0);i<mewgt->m_dadsinfos.size();++i) {
-    m_params.dads[i].wgt=mewgt->m_dadsinfos[i].m_wgt;
-    m_params.dads[i].muR2=mewgt->m_dadsinfos[i].m_mur2;
-    m_params.dads[i].muF12=mewgt->m_dadsinfos[i].m_pdf.m_muf12;
-    m_params.dads[i].muF22=mewgt->m_dadsinfos[i].m_pdf.m_muf22;
-    m_params.dads[i].x1=mewgt->m_dadsinfos[i].m_pdf.m_x1;
-    m_params.dads[i].x2=mewgt->m_dadsinfos[i].m_pdf.m_x2;
-    m_params.dads[i].fl1=mewgt->m_dadsinfos[i].m_pdf.m_fl1;
-    m_params.dads[i].fl2=mewgt->m_dadsinfos[i].m_pdf.m_fl2;
-  }
+  m_params.dads=mewgt->m_dadsinfos;
+  m_params.csi=mewgt->m_clusseqinfo;
   if (sevtlist) {
+    msg_Debugging()<<"contains "<<sevtlist->size()<<" subevents"<<std::endl;
     for (NamedScaleVariationMap::iterator it=p_nsvmap->begin();
          it!=p_nsvmap->end();++it) {
       it->second->InitialisRSValues(sevtlist->size());
@@ -249,22 +242,28 @@ void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
     m_params.rsmuR2s.resize(sevtlist->size(),0.);
     m_params.rsmuF2s.resize(sevtlist->size(),0.);
     for (size_t i(0);i<sevtlist->size();++i) {
+      msg_Debugging()<<i<<": "<<(*sevtlist)[i]->m_mewgt<<" GeV = "
+                     <<(*sevtlist)[i]->m_mewgt*rpa->Picobarn()<<" pb\n";
       m_params.rswgts[i]=(*sevtlist)[i]->m_mewgt;
       m_params.rsmuR2s[i]=(*sevtlist)[i]->m_mu2[stp::ren];
       m_params.rsmuF2s[i]=(*sevtlist)[i]->m_mu2[stp::ren];
     }
   }
+  m_ckkw=m_params.csi.m_txfl.size();
 }
 
 bool Scale_Variations::Calculate(Scale_Variation * sv,
                                  PHASIC::Process_Base * proc)
 {
   if (proc->GetSubevtList()) {
+    // NLO RS
     NLO_subevtlist * subs(proc->GetSubevtList());
     std::vector<double> dummy;
+    std::vector<DADS_Info> dadsdummy;
+    Cluster_Sequence_Info csidummy;
     for (size_t i(0);i<subs->size();++i) {
       NLO_subevt * sub((*subs)[i]);
-      sv->SetValue(i,Calculate(m_params.rswgts[i],0.,
+      sv->SetValue(i,Calculate(m_params.rswgts[i],0.,csidummy,
                                m_params.x1,m_params.x2,
                                0.,0.,
                                m_params.rsmuR2s[i],
@@ -275,11 +274,13 @@ bool Scale_Variations::Calculate(Scale_Variation * sv,
                                sv->PDF1(),sv->PDF2(),
                                sv->AlphaS(),
                                dummy,dummy,
-                               mewgttype::none));
+                               mewgttype::none,
+                               dadsdummy));
     }
   }
   else {
-    sv->SetValue(Calculate(m_params.B,m_params.VI,
+    // LO, LOPS, MEPS, NLOPS, NLO BVI
+    sv->SetValue(Calculate(m_params.B,m_params.VI,m_params.csi,
                            m_params.x1,m_params.x2,
                            m_params.x1p,m_params.x2p,
                            m_params.muR2,
@@ -290,12 +291,14 @@ bool Scale_Variations::Calculate(Scale_Variation * sv,
                            sv->PDF1(),sv->PDF2(),
                            sv->AlphaS(),
                            m_params.renwgts,m_params.kpwgts,
-                           m_params.type));
+                           m_params.type,
+                           m_params.dads));
   }
   return true;
 }
 
 double Scale_Variations::Calculate(const double& B, const double& VI,
+                                   const Cluster_Sequence_Info& csi,
                                    const double& x1, const double& x2,
                                    const double& x1p, const double& x2p,
                                    const double& muR2,
@@ -307,7 +310,8 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
                                    MODEL::One_Running_AlphaS * as,
                                    const std::vector<double>& renwgts,
                                    const std::vector<double>& kpwgts,
-                                   const ATOOLS::mewgttype::code type)
+                                   const ATOOLS::mewgttype::code& type,
+                                   const std::vector<ATOOLS::DADS_Info>& dads)
 {
   DEBUG_FUNC("factors (muR/muF)=("<<muR2fac<<","<<muF2fac<<"), "
              <<"pdf1="<<pdf1->LHEFNumber()<<", pdf2="<<pdf2->LHEFNumber());
@@ -321,22 +325,24 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
                  <<"muF1: "<<muF12<<" -> "<<muF12new<<" , "
                  <<"muF2: "<<muF22<<" -> "<<muF22new<<std::endl;
   msg_Debugging()<<"oqcd: "<<oqcd<<", oew: "<<oew<<std::endl;
+  msg_Debugging()<<"cluster sequence: "<<csi.m_txfl.size()<<" steps"<<std::endl;
   pdf1->Calculate(x1,muF12new);
   pdf2->Calculate(x2,muF22new);
-  double fa=pdf1->GetXPDF(fl1)/x1;
-  double fb=pdf2->GetXPDF(fl2)/x2;
+  double fa(pdf1->GetXPDF(fl1)/x1);
+  double fb(pdf2->GetXPDF(fl2)/x2);
   msg_Debugging()
       <<"pdf1 = ("<<fl1<<","<<x1<<","<<sqrt(muF12new)<<") = "<<fa<<" , "
       <<"pdf2 = ("<<fl2<<","<<x2<<","<<sqrt(muF22new)<<") = "<<fb<<"\n";
+  double pdffac(PDFRatioFactor(fa,fb,csi,muF2fac,pdf1,pdf2));
   // reset MODEL::as to hard process
   MODEL::as->SetActiveAs(PDF::isr::hard_process);
   double asnew((*as)(muR2new)),asold((*MODEL::as)(muR2));
   if (type==mewgttype::none) { // B,R,S
     double asf=pow(asnew/asold,oqcd);
     msg_Debugging()<<"asf = "<<asf<<std::endl;
-    msg_Debugging()<<"B,R,S event: new wgt="<<B*asf*fa*fb<<std::endl;
+    msg_Debugging()<<"B,R,S event: new wgt="<<B*asf*fa*fb*pdffac<<std::endl;
     if (msg_LevelIsDebugging()) msg->SetPrecision(precision);
-    return B*asf*fa*fb;
+    return B*asf*fa*fb*pdffac;
   }
   else { // B,VI,KP
     // B term (if only born order already the correct one)
@@ -345,12 +351,12 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
                                                     pow(asnew/asold,oqcd-1));
     msg_Debugging()<<"asf(B) = "<<asfborn<<std::endl;
     msg_Debugging()<<"asf(VI,KP) = "<<asf<<std::endl;
-    double Bnew(B*asfborn*fa*fb);
+    double Bnew(B*asfborn*fa*fb*pdffac);
     msg_Debugging()<<"new B = "<<Bnew<<std::endl;
     // VI terms
     double lr=log(muR2fac);
     double VInew(VI+renwgts[0]*lr+renwgts[1]*0.5*ATOOLS::sqr(lr));
-    VInew*=asf*fa*fb;
+    VInew*=asf*pdffac;
     msg_Debugging()<<"new VI = "<<VInew<<std::endl;
     // KP terms
     double lf=log(muF2fac);
@@ -405,18 +411,18 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
     double KPnew(0.);
     KPnew+=(faq*w[0]+faqx*w[1]+fag*w[2]+fagx*w[3])*fb;
     KPnew+=(fbq*w[4]+fbqx*w[5]+fbg*w[6]+fbgx*w[7])*fa;
-    KPnew*=asf;
+    KPnew*=asf*pdffac;
     msg_Debugging()<<"new KP = "<<KPnew<<std::endl;
     // DADS terms
     double DADSnew(0.);
-    for (size_t i(0);i<m_params.dads.size();++i) {
+    for (size_t i(0);i<dads.size();++i) {
       double DADSinew(0.);
-      if (m_params.dads[i].wgt!=0.) {
-        pdf1->Calculate(m_params.dads[i].x1,m_params.dads[i].muF12*muF2fac);
-        pdf2->Calculate(m_params.dads[i].x2,m_params.dads[i].muF22*muF2fac);
-        double fadads=pdf1->GetXPDF(m_params.dads[i].fl1)/m_params.dads[i].x1;
-        double fbdads=pdf2->GetXPDF(m_params.dads[i].fl2)/m_params.dads[i].x2;
-        DADSinew=fadads*fbdads*asf*m_params.dads[i].wgt;
+      if (dads[i].m_wgt!=0.) {
+        pdf1->Calculate(dads[i].m_pdf.m_x1,dads[i].m_pdf.m_muf12*muF2fac);
+        pdf2->Calculate(dads[i].m_pdf.m_x2,dads[i].m_pdf.m_muf22*muF2fac);
+        double fadads=pdf1->GetXPDF(dads[i].m_pdf.m_fl1)/dads[i].m_pdf.m_x1;
+        double fbdads=pdf2->GetXPDF(dads[i].m_pdf.m_fl2)/dads[i].m_pdf.m_x2;
+        DADSinew=fadads*fbdads*asf*dads[i].m_wgt*pdffac;
       }
       msg_Debugging()<<"  new DADS_"<<i<<" = "<<DADSinew<<std::endl;
       DADSnew+=DADSinew;
@@ -430,6 +436,61 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
   if (msg_LevelIsDebugging()) msg->SetPrecision(precision);
   return 0.;
 }
+
+double Scale_Variations::PDFRatioFactor
+(const double& fa, const double& fb, const ATOOLS::Cluster_Sequence_Info& csi,
+ const double& muF2fac, PDF::PDF_Base * pdf1, PDF::PDF_Base * pdf2)
+{
+  DEBUG_FUNC("ckkw="<<m_ckkw<<", #steps="<<csi.m_txfl.size());
+  if (!m_ckkw) return 1.;
+  // want to calculate (i=0 -> core, i=N -> ext)
+  // wn-ext * [\prod_{i=0}^{N-1} wn_i/wd_i]
+  // = [wn-ext * \prod_{i=1}^{N-1} wn_i/wd_i * 1/wd_0] * wn-core
+  // = [\prod_{i=1}^N wn_i/wd_{i-1}] * wn-core
+  // and vary only wn-core, but have varied fa*fb = wn-ext so far
+
+  // this computes wn-ext * \prod_{i=1}^{N-1} wn_i/wd_i * 1/wd_0
+  // multiply wn-ext by 1/fa*fb*flux to cancel factor coming from outside
+  double fac(csi.m_txfl[0].m_pdfrationumerator/(fa*fb));
+  double t(std::numeric_limits<double>::max());
+  msg_Debugging()<<"pdffac="<<fac<<std::endl;
+  bool lastoneordered(false);
+  for (size_t i(1);i<csi.m_txfl.size();++i) {
+    msg_Debugging()<<i<<": "<<csi.m_txfl[i];
+    if (i<2 || t<csi.m_txfl[i].m_t) {
+      msg_Debugging()<<": "<<csi.m_txfl[i].m_pdfrationumerator
+                     <<" / "<<csi.m_txfl[i].m_pdfratiodenominator;
+      fac*=(csi.m_txfl[i].m_pdfrationumerator/
+            csi.m_txfl[i].m_pdfratiodenominator);
+      t=csi.m_txfl[i].m_t;
+      if (i==csi.m_txfl.size()-1) lastoneordered=true;
+    }
+    else msg_Debugging()<<": Skip. Unordered history "
+                        <<sqrt(t)<<" > "<<sqrt(csi.m_txfl[i].m_t)<<std::endl;
+    else t=std::numeric_limits<double>::max();
+    msg_Debugging()<<std::endl;
+  }
+  msg_Debugging()<<"pdffac="<<fac<<std::endl;
+  // multiply with new wn-core if last step was ordered
+  if (lastoneordered) {
+    msg_Debugging()<<"last step ordered, apply new core PDF:"<<std::endl;
+    double x1(csi.m_txfl.back().m_xa),x2(csi.m_txfl.back().m_xb);
+    pdf1->Calculate(x1,t*muF2fac);
+    pdf2->Calculate(x2,t*muF2fac);
+    double fcorea(pdf1->GetXPDF(csi.m_txfl.back().m_fla)/x1);
+    double fcoreb(pdf2->GetXPDF(csi.m_txfl.back().m_flb)/x2);
+    msg_Debugging()
+        <<"  pdf1 = ("<<csi.m_txfl.back().m_fla<<","<<x1<<","
+        <<sqrt(t*muF2fac)<<") = "<<fcorea<<" , "
+        <<"  pdf2 = ("<<csi.m_txfl.back().m_fla<<","<<x2<<","
+        <<sqrt(t*muF2fac)<<") = "<<fcoreb<<"\n";
+    fac*=fcorea*fcoreb;
+  }
+  else msg_Debugging()<<"last step unordered, no core PDF variation"<<std::endl;
+  msg_Debugging()<<"pdffac="<<fac<<std::endl;
+  return fac;
+}
+
 
 bool Scale_Variations::ComputeVariations(const ATOOLS::Weight_Info &winfo,
                                          PHASIC::Process_Base * proc)

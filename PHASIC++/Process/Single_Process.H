@@ -12,13 +12,6 @@ namespace PHASIC {
     bool   m_zero;
     int    m_nloct;
 
-    struct BVI_Wgt {
-      double m_w, m_c;
-      inline BVI_Wgt(const double &w=1.0,
-		     const double &c=0.0):
-	m_w(w), m_c(c) {}
-    };
-
   public:
 
     Single_Process();
@@ -35,10 +28,10 @@ namespace PHASIC {
     double CollinearCounterTerms
     (const int i,const ATOOLS::Flavour &fl,const ATOOLS::Vec4D &p,
      const double &z,const double &t1,const double &t2) const;
-    double GetX(const ATOOLS::Vec4D &p,const int i) const;
 
-    BVI_Wgt BeamISRWeight(const double &Q2,const int mode,
-			  const ATOOLS::ClusterAmplitude_Vector &ampls) const;
+    ATOOLS::Cluster_Sequence_Info BeamISRWeight
+    (const double &Q2,const int mode,
+     const ATOOLS::ClusterAmplitude_Vector &ampls) const;
     void BeamISRWeight(ATOOLS::NLO_subevtlist *const subs,
 		       const int mode) const;
 

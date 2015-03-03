@@ -12,10 +12,14 @@
 #include "PDF/Main/Cluster_Definitions_Base.H"
 #include "BEAM/Main/Beam_Spectra_Handler.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Phys/Weight_Info.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "METOOLS/Explicit/Collinear_Splitting_Tools.H"
+#include "MODEL/Main/Coupling_Data.H"
+#include "MODEL/Main/Running_AlphaS.H"
 
 using namespace PHASIC;
 using namespace MODEL;
@@ -72,55 +76,6 @@ namespace PHASIC {
     return 11.0/6.0*3.0-2.0/3.0*0.5*(Flavour(kf_jet).Size()/2);
   }
 
-  double Hab(const Flavour &a,const Flavour &b)
-  {
-    if (a.IsQuark()) {
-      if (b.IsQuark()) return a==b?4.0/3.0*3.0/2.0:0.0;
-      return 0.0;
-    }
-    else {
-      if (b.IsQuark()) return 0.0;
-      return 11.0/6.0*3.0-2.0/3.0*0.5*(Flavour(kf_jet).Size()/2);
-    }
-  }
-
-  double FPab(const Flavour &a,const Flavour &b,const double &z)
-  {
-    if (a.IsQuark()) {
-      if (b.IsQuark()) return a==b?-4.0/3.0*(1.0+z):0.0;
-      return 4.0/3.0*(1.0+sqr(1.0-z))/z;
-    }
-    else {
-      if (b.IsQuark()) return 1.0/2.0*(z*z+sqr(1.0-z));
-      return 3.0*2.0*((1.0-z)/z-1.0+z*(1.0-z));
-    }
-  }
-
-  double SPab(const Flavour &a,const Flavour &b,const double &z)
-  {
-    if (a.IsQuark()) {
-      if (b.IsQuark()) return a==b?4.0/3.0*2.0/(1.0-z):0.0;
-      return 0.0;
-    }
-    else {
-      if (b.IsQuark()) return 0.0;
-      return 3.0*2.0/(1.0-z);
-    }
-  }
-
-  double IPab(const Flavour &a,const Flavour &b,const double &x)
-  {
-    if (a.IsQuark()) {
-      if (b.IsQuark() && a==b)
-	return 4.0/3.0*2.0*log(1.0/(1.0-x));
-      return 0.0;
-    }
-    else {
-      if (b.IsQuark()) return 0.0;
-      return 3.0*2.0*log(1.0/(1.0-x));
-    }
-  }
-
 }
 
 double Single_Process::NLOCounterTerms() const
@@ -142,9 +97,12 @@ double Single_Process::NLOCounterTerms() const
   double as(cpl->Default()*cpl->Factor());
   double ct(0.0);
   if (!IsEqual(mur2,lmur2)) {
-    if (m_oqcd>1) ct-=double(m_oqcd-1)*as/(2.0*M_PI)*Beta0()*log(mur2/lmur2);
-    msg_Debugging()<<"\\alpha_s term: "<<(m_oqcd-1)<<" * "<<as
-                   <<"/\\pi * "<<Beta0()<<" * log("<<sqrt(mur2)<<"/"
+    if (m_oqcd>1) ct-=double(m_oqcd-1)*as/M_PI*MODEL::as->Beta0(lmur2)
+                                      *log(mur2/lmur2);
+    msg_Debugging()<<"\\alpha_s term (nf="<<MODEL::as->Nf(lmur2)<<"): "
+                   <<(m_oqcd-1)<<" * "<<as
+                   <<"/2\\pi * "<<MODEL::as->Beta0(lmur2)
+                   <<" * log("<<sqrt(mur2)<<"/"
                    <<sqrt(lmur2)<<") -> "<<ct<<"\n";
   }
   double z[2]={m_mewgtinfo.m_y1,m_mewgtinfo.m_y2};
@@ -153,12 +111,6 @@ double Single_Process::NLOCounterTerms() const
       (i,m_flavs[i],p_int->Momenta()[i],z[i],muf2,lmuf2);
   msg_Debugging()<<"C = "<<ct<<"\n";
   return ct;
-}
-
-double Single_Process::GetX(const ATOOLS::Vec4D &p,const int i) const
-{
-  if (i==0) return p.PPlus()/p_int->Beam()->GetBeam(0)->OutMomentum().PPlus();
-  return p.PMinus()/p_int->Beam()->GetBeam(1)->OutMomentum().PMinus();
 }
 
 double Single_Process::CollinearCounterTerms
@@ -174,7 +126,7 @@ double Single_Process::CollinearCounterTerms
   msg_Debugging()<<"\\mu_R = "<<sqrt(p_scale->Scale(stp::ren))<<"\n";
   MODEL::Coupling_Data *cpl(m_cpls.Get("Alpha_QCD"));
   double as(cpl->Default()*cpl->Factor());
-  double ct(0.0), lt(log(t1/t2)), x(GetX(p,i));
+  double ct(0.0), lt(log(t1/t2)), x(p_int->ISR()->CalcX(p));
   msg_Debugging()<<as<<"/(2\\pi) * log("<<sqrt(t1)<<"/"
 		 <<sqrt(t2)<<") = "<<as/(2.0*M_PI)*lt<<"\n";
   Flavour jet(kf_jet);
@@ -187,11 +139,11 @@ double Single_Process::CollinearCounterTerms
   msg_Debugging()<<"Beam "<<i<<": z = "<<z<<", f_{"<<fl
 		 <<"}("<<x<<","<<sqrt(lmuf2)<<") = "<<fb<<" {\n";
   for (size_t j(0);j<jet.Size();++j) {
-    double Pf(FPab(jet[j],fl,z));
-    double Ps(SPab(jet[j],fl,z));
+    double Pf(METOOLS::FPab(jet[j],fl,z));
+    double Ps(METOOLS::SPab(jet[j],fl,z));
     if (Pf+Ps==0.0) continue;
-    double Pi(IPab(jet[j],fl,x));
-    double H(Hab(jet[j],fl));
+    double Pi(METOOLS::IPab(jet[j],fl,x));
+    double H(METOOLS::Hab(jet[j],fl));
     double fa=p_int->ISR()->Weight
       (1<<(i+1),p/z,p/z,lmuf2,lmuf2,jet[j],jet[j],0);
     double fc=p_int->ISR()->Weight
@@ -213,45 +165,56 @@ double Single_Process::CollinearCounterTerms
   return ct;
 }
 
-Single_Process::BVI_Wgt Single_Process::BeamISRWeight
+ATOOLS::Cluster_Sequence_Info Single_Process::BeamISRWeight
 (const double& Q2,const int imode,
  const ClusterAmplitude_Vector &ampls) const
 {
   int mode(imode&1);
+  if (mode) msg_Out()<<"Flipped initial states.\n";
   if (!m_use_biweight) return 1.;
-  double wgt(1.0), ct(0.0);
   if (m_nin==1) return 0.5/p_int->Momenta()[0].Mass();
   else if (m_nin>2) THROW(not_implemented,"More than two incoming particles.");
+  Cluster_Sequence_Info csi;
   if (p_int->ISR()) {
-    wgt*=p_int->ISR()->Weight
-      (mode,p_int->Momenta()[0],p_int->Momenta()[1],
-       Q2,Q2,m_flavs[0],m_flavs[1]);
-    int set(false);
-    double LQ2(Q2);
+    // external PDFs contain flux
+    double pdfext(p_int->ISR()->Weight(mode,p_int->Momenta()[0],
+                                            p_int->Momenta()[1],
+                                            Q2,Q2,m_flavs[0],m_flavs[1]));
+    double flux(p_int->ISR()->Flux(p_int->Momenta()[0],p_int->Momenta()[1]));
+    msg_Debugging()<<"Flux = "<<flux<<std::endl;
+    msg_Debugging()<<"PDF(fla="<<m_flavs[0]
+                   <<", xa="<<p_int->ISR()->CalcX(p_int->Momenta()[0])
+                   <<", ta="<<Q2<<") * "
+                   <<"PDF(flb="<<m_flavs[1]
+                   <<", xb="<<p_int->ISR()->CalcX(p_int->Momenta()[1])
+                   <<", tb="<<Q2<<") -> "<<pdfext/flux<<std::endl;
+    csi.AddWeight(pdfext);
     if (ampls.size() && (m_pinfo.m_ckkw&1)) {
-      DEBUG_FUNC(m_name<<", \\mu_F = "<<sqrt(Q2)<<", mode = "<<mode);
+      DEBUG_FUNC(m_name<<", \\mu_F = "<<sqrt(Q2)<<", mode = "<<mode
+                 <<", #ampls="<<ampls.size());
+      // add outer splitting
+      csi.AddSplitting(Q2,p_int->ISR()->CalcX(p_int->Momenta()[mode]),
+                          p_int->ISR()->CalcX(p_int->Momenta()[1-mode]),
+                          m_flavs[mode],m_flavs[1-mode]);
+      csi.AddPDFRatio(pdfext/flux,1.);
       Cluster_Amplitude *ampl(ampls.front());
       msg_IODebugging()<<*ampl<<"\n";
       if (imode&2) {
 	ampl=ampl->Next();
 	msg_IODebugging()<<*ampl<<"\n";
       }
+      int set(false);
+      double LQ2(Q2);
       for (;ampl;ampl=ampl->Next()) {
-	double rn[2]={ran->Get(),ran->Get()};
-	if (IsEqual(LQ2,ampl->Next()?ampl->KT2():ampl->MuF2())) continue;
-	msg_IODebugging()<<*ampl<<"\n";
+        // skip: decays, equal scales, unordered configs, quarks below threshold
+        // add into ClusterSteps everything but decays
+        msg_IODebugging()<<*ampl<<"\n";
 	if (ampl->Next()) {
 	  if (ampl->Next()->Splitter()->Stat()==3) {
-	    msg_Debugging()<<"Skip decay "<<
+	    msg_Debugging()<<"Skip. Decay "<<
 	      ID(ampl->Next()->Splitter()->Id())<<"\n";
 	    continue;
 	  }
-	}
-	if (set && LQ2>ampl->KT2()) {
-	  msg_Debugging()<<"Skip unordering "<<
-	    sqrt(LQ2)<<" > "<<sqrt(ampl->KT2())<<"\n";
-	  LQ2=sqrt(std::numeric_limits<double>::max());
-	  continue;
 	}
 	Flavour f1(ampl->Leg(0)->Flav().Bar());
 	Flavour f2(ampl->Leg(1)->Flav().Bar());
@@ -259,10 +222,29 @@ Single_Process::BVI_Wgt Single_Process::BeamISRWeight
 	  f1=ReMap(f1,ampl->Leg(0)->Id());
 	  f2=ReMap(f2,ampl->Leg(1)->Id());
 	}
-	if (LQ2<sqr(2.0*f1.Mass(true)) || LQ2<sqr(2.0*f2.Mass(true))) continue;
-	msg_Debugging()<<"PDF ratio "<<f1<<"("<<ampl->Leg(0)->Flav().Bar()
-		       <<"),"<<f2<<"("<<ampl->Leg(1)->Flav().Bar()
-		       <<") at "<<sqrt(LQ2);
+	csi.AddSplitting(ampl->KT2(),
+			 p_int->ISR()->CalcX(-ampl->Leg(0)->Mom()),
+			 p_int->ISR()->CalcX(-ampl->Leg(1)->Mom()),
+			 f1,f2);
+	if (IsEqual(LQ2,ampl->Next()?ampl->KT2():ampl->MuF2())) {
+	  msg_Debugging()<<"Skip. Scales equal: t_i="<<LQ2
+			 <<", t_{i+1}="<<(ampl->Next()?ampl->KT2():ampl->MuF2())
+			 <<std::endl;
+	  continue;
+	}
+	if (set && LQ2>ampl->KT2()) {
+	  msg_Debugging()<<"Skip. Unordered history "<<
+	    sqrt(LQ2)<<" > "<<sqrt(ampl->KT2())<<"\n";
+	  LQ2=sqrt(std::numeric_limits<double>::max());
+	  continue;
+	}
+	if (LQ2<sqr(2.0*f1.Mass(true)) || LQ2<sqr(2.0*f2.Mass(true))) {
+	  msg_Debugging()<<"Skip. Quarks below threshold: t="<<LQ2
+			 <<" vs. "<<sqr(2.0*f1.Mass(true))
+			 <<" / "<<sqr(2.0*f2.Mass(true))<<std::endl;
+	  continue;
+	}
+	// denominators
 	double wd1=p_int->ISR()->Weight
 	  (mode|2,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
 	double wd2=p_int->ISR()->Weight
@@ -270,32 +252,56 @@ Single_Process::BVI_Wgt Single_Process::BeamISRWeight
 	double LLQ2=LQ2;
 	LQ2=ampl->KT2();
 	if (ampl->Next()==NULL) LQ2=ampl->MuF2();
-	set=true;
+	// numerators
 	double wn1=p_int->ISR()->Weight
 	  (mode|2,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
 	double wn2=p_int->ISR()->Weight
 	  (mode|4,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
-	if (!IsZero(wn1) && !IsZero(wd1)) wgt*=wn1/wd1;
-	if (!IsZero(wn2) && !IsZero(wd2)) wgt*=wn2/wd2;
-	msg_Debugging()<<" / "<<sqrt(LQ2)<<" -> "
-		       <<wn1/wd1<<" * "<<wn2/wd2<<" ( "<<wgt<<" )\n";
+	if (!IsZero(wn1) && !IsZero(wd1)) csi.AddWeight(wn1/wd1);
+	if (!IsZero(wn2) && !IsZero(wd2)) csi.AddWeight(wn2/wd2);
+	// book-keep PDF ratios excl.
+	//   a) first one correcting outer PDF from muF to t
+	//   b) last numerator taken at muF (this one is to be varied)
+	// use the following identity with i=0 -> core and i=N -> ext
+	// wn-ext * [\prod_{i=0}^{N-1} wn_i/wd_i]
+	// = [wn-ext * \prod_{i=1}^{N-1} wn_i/wd_i * 1/wd_0] * wn-core
+	// = [\prod_{i=1}^N wn_i/wd_{i-1}] * wn-core
+	if (ampl->Next()!=NULL) csi.AddPDFRatio((wn1*wn2),(wd1*wd2));
+	else                    csi.AddPDFRatio(1.,(wd1*wd2));
+	msg_Debugging()<<"* [  "
+		       <<"PDF(fla="<<f1
+		       <<", xa="<<p_int->ISR()->CalcX(-ampl->Leg(0)->Mom())
+		       <<", ta="<<LQ2<<") * "
+		       <<"PDF(flb="<<f2
+		       <<", xb="<<p_int->ISR()->CalcX(-ampl->Leg(1)->Mom())
+		       <<", tb="<<LQ2<<") -> "<<wn1*wn2<<"\n"
+		       <<"   / "
+		       <<"PDF(fla="<<f1
+		       <<", xa="<<p_int->ISR()->CalcX(-ampl->Leg(0)->Mom())
+		       <<", ta="<<LLQ2<<") * "
+		       <<"PDF(flb="<<f2
+		       <<", xb="<<p_int->ISR()->CalcX(-ampl->Leg(1)->Mom())
+		       <<", tb="<<LLQ2<<") -> "<<wd1*wd2
+		       <<" ] = "<<wn1*wn2/wd1/wd2<<std::endl;
 	if (m_pinfo.Has(nlo_type::born)) {
+	  double rn[2]={ran->Get(),ran->Get()};
 	  for (int i(0);i<2;++i) {
 	    if (i==0 && (IsZero(wn1) || IsZero(wd1))) continue;
 	    if (i==1 && (IsZero(wn2) || IsZero(wd2))) continue;
 	    Vec4D p(-ampl->Leg(i)->Mom());
-	    double x(GetX(p,i)), z(x+(1.0-x)*rn[i]);
-	    ct+=CollinearCounterTerms(i,i?f2:f1,p,z,LQ2,LLQ2);
+	    double x(p_int->ISR()->CalcX(p)), z(x+(1.0-x)*rn[i]);
+	    csi.AddCounterTerm(CollinearCounterTerms(i,i?f2:f1,p,z,LQ2,LLQ2));
 	  }
 	}
+	set=true;
       }
     }
   }
   if (p_int->Beam() && p_int->Beam()->On()) {
     p_int->Beam()->CalculateWeight(Q2);
-    wgt*=p_int->Beam()->Weight();
+    csi.AddWeight(p_int->Beam()->Weight());
   }
-  return BVI_Wgt(wgt,ct);
+  return csi;
 }
 
 void Single_Process::BeamISRWeight
@@ -312,14 +318,14 @@ void Single_Process::BeamISRWeight
 	ClusterAmplitude_Vector ampls(sub->p_ampl?1:0,sub->p_ampl);
 	if (ampls.size()) ampls.front()->SetProc(sub->p_proc);
         sub->m_result=sub->m_me*
-	  BeamISRWeight(sub->m_mu2[stp::fac],mode|2,ampls).m_w;
+          BeamISRWeight(sub->m_mu2[stp::fac],mode|2,ampls).m_wgt;
 	sub->m_xf1=p_int->ISR()->XF1(0);
 	sub->m_xf2=p_int->ISR()->XF2(0);
 	++nscales;
       }
     }
     if (nscales<subs->size() && m_pinfo.m_nlomode==1) {
-      double lumi(BeamISRWeight(muf2,mode,ClusterAmplitude_Vector()).m_w);
+      double lumi(BeamISRWeight(muf2,mode,ClusterAmplitude_Vector()).m_wgt);
       for (size_t i(0);i<subs->size();++i) {
 	if ((*subs)[i]->m_me==0.0) (*subs)[i]->m_result=0.0;
 	if (IsEqual((*subs)[i]->m_mu2[stp::fac],muf2) &&
@@ -336,7 +342,7 @@ void Single_Process::BeamISRWeight
       ClusterAmplitude_Vector ampls(1,(*subs)[i]->p_ampl);
       if (ampls.size()) ampls.front()->SetProc((*subs)[i]->p_proc);
       (*subs)[i]->m_result=(*subs)[i]->m_me*
-	BeamISRWeight((*subs)[i]->m_mu2[stp::fac],mode,ampls).m_w;
+        BeamISRWeight((*subs)[i]->m_mu2[stp::fac],mode,ampls).m_wgt;
     }
   }
 }
@@ -344,16 +350,15 @@ void Single_Process::BeamISRWeight
 double Single_Process::Differential(const Vec4D_Vector &p)
 {
   DEBUG_FUNC(Name()<<", RS:"<<GetSubevtList());
-  m_mewgtinfo.m_B=m_mewgtinfo.m_VI=m_mewgtinfo.m_KP=m_mewgtinfo.m_RS=
-    m_lastb=m_last=0.0;
-  m_mewgtinfo.m_dadsinfos.clear();
+  m_lastb=m_last=0.0;
+  m_mewgtinfo.Reset();
   m_mewgtinfo.m_oqcd=OrderQCD();
   m_mewgtinfo.m_oew=OrderEW();
   m_mewgtinfo.m_fl1=(int)(Flavours()[0]);
   m_mewgtinfo.m_fl2=(int)(Flavours()[1]);
   p_int->SetMomenta(p);
   if (IsMapped()) p_mapproc->Integrator()->SetMomenta(p);
-  double flux=0.25/sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
+  double flux(p_int->ISR()->Flux(p[0],p[1]));
   if (GetSubevtList()==NULL) {
     if (m_zero) return 0.0;
     Scale_Setter_Base *scs(ScaleSetter(1));
@@ -363,16 +368,17 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     m_mewgtinfo*=flux;
     m_mewgtinfo.m_muf2=scs->Scale(stp::fac);
     m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
-    msg_Debugging()<<m_mewgtinfo;
     if (m_lastxs==0.0) return m_last=0.0;
     m_last=m_lastxs;
     if (m_nloct && m_pinfo.Has(nlo_type::born))
       m_last+=m_lastbxs*NLOCounterTerms();
-    BVI_Wgt bviw=BeamISRWeight
+    ATOOLS::Cluster_Sequence_Info bviw=BeamISRWeight
       (scs->Scale(stp::fac),0,scs->Amplitudes().size()?
        scs->Amplitudes():ClusterAmplitude_Vector());
-    m_last=(m_last-m_lastbxs*bviw.m_c)*bviw.m_w;
-    m_lastb=m_lastbxs*bviw.m_w;
+    m_mewgtinfo.m_clusseqinfo=bviw;
+    msg_Debugging()<<m_mewgtinfo;
+    m_last=(m_last-m_lastbxs*bviw.m_ct)*bviw.m_wgt;
+    m_lastb=m_lastbxs*bviw.m_wgt;
     if (p_mc==NULL) return m_last;
     // calculate DADS for MC@NLO, one PS point, many dipoles
     Dipole_Params dps(p_mc->Active(this));
