@@ -358,7 +358,7 @@ void Sherpa::DrawLogo(const int mode)
 	    <<"                                                                             "<<std::endl
 	    <<"     Please visit also our homepage                                          "<<std::endl
 	    <<"                                                                             "<<std::endl
-	    <<"       http://www.sherpa-mc.de                                               "<<std::endl
+	    <<"       http://sherpa.hepforge.org                                            "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"     for news, bugreports, updates and new releases.                         "<<std::endl
 	    <<"                                                                             "<<std::endl
