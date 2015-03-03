@@ -52,11 +52,11 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
     p_pdfinfo=&db->Get<ATOOLS::PDF_Info>();
     m_muf12=p_pdfinfo->m_muf12;
     m_muf22=p_pdfinfo->m_muf22;
+    ReadIn(db,"Renormalization_Scale",true);
+    m_mur2=db->Get<double>();
+    SetAlphaS();
+    SetAlpha();
     if (!m_minimalweights) {
-      ReadIn(db,"Renormalization_Scale",true);
-      m_mur2=db->Get<double>();
-      SetAlphaS();
-      SetAlpha();
       ReadIn(db,"OQCD",true);
       m_oqcd=db->Get<int>();
       ReadIn(db,"OEW",true);
