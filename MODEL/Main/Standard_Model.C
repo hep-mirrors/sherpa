@@ -540,6 +540,22 @@ void Standard_Model::FixCKM() {
       }
     }
     p_matrices->insert(make_pair(string("L_CKM"),L_CKM));
+    bool output = p_dataread->GetValue<int>("OUTPUT_MIXING",0);
+    if (output) {
+      unsigned int os(25);
+      msg_Out()<<"quark mixing matrix:\n";
+      for (int i=0;i<3;++i)
+        msg_Out()<<setw(os)<<CKM[i][0]<<setw(os)<<CKM[i][1]
+                 <<setw(os)<<CKM[i][2]
+                 <<"\n";
+      msg_Out()<<"\n";
+      msg_Out()<<"lepton mixing matrix:\n";
+      for (int i=0;i<3;++i)
+        msg_Out()<<setw(os)<<L_CKM[i][0]<<setw(os)<<L_CKM[i][1]
+                 <<setw(os)<<L_CKM[i][2]
+                 <<"\n";
+      msg_Out()<<"\n";
+    }
   }
   else {
     CMatrix V4(4);   
