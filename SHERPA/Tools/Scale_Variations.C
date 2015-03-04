@@ -16,6 +16,8 @@
 #include "LHAPDF/LHAPDF.h"
 #endif
 
+#include <limits>
+
 namespace SHERPA {
   std::ostream& operator<<(std::ostream &s,const Scale_Variation &sv)
   {
