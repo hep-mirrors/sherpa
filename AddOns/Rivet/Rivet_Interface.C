@@ -594,9 +594,9 @@ bool Rivet_Interface::Finish()
       std::string namestr(m_rivet.size()>1?" for "+mit->first:"");
       std::string output(std::string("**  Total XS")+namestr
                          +std::string(" = ( ")
-                         +ToString(mit->second->TotalXS())
+                         +ToString(mit->second->TotalXS(),6)
                          +std::string(" +- ")
-                         +ToString(mit->second->TotalErr())
+                         +ToString(mit->second->TotalErr(),6)
                          +std::string(" ) pb **"));
       std::string astline(output.size(),'*');
       msg_Info()<<astline<<"\n"<<output<<"\n"<<astline<<std::endl;
