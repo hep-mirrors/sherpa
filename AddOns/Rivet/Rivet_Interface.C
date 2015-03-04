@@ -69,9 +69,9 @@ namespace SHERPARIVET {
 
     size_t m_nevt;
     bool   m_finished;
-    bool   m_splitjetconts, m_splitSH, m_splitcoreprocs, m_usehepmcshort,
-           m_ignorebeams, m_usehepmcnamedweights, m_usehepmcfullweightinfo,
-           m_usehepmctreelike, m_printsummary;
+    bool   m_splitjetconts, m_splitSH, m_splitcoreprocs, m_splitvariations,
+           m_ignorebeams, m_usehepmcshort, m_usehepmcnamedweights,
+           m_usehepmcfullweightinfo, m_usehepmctreelike, m_printsummary;
 
     RivetScaleVariationMap         m_rivet;
     SHERPA::HepMC2_Interface       m_hepmc2;
@@ -185,6 +185,8 @@ Rivet_Interface::Rivet_Interface(const std::string &inpath,
   Analysis_Interface("Rivet"),
   m_inpath(inpath), m_infile(infile), m_outpath(outpath), m_tag(tag),
   m_nevt(0), m_finished(false),
+  m_splitjetconts(false), m_splitSH(false),
+  m_splitcoreprocs(false), m_splitvariations(true),
   m_ignoreblobs(ignoreblobs), m_usehepmcnamedweights(false),
   m_usehepmcfullweightinfo(false), m_usehepmctreelike(false),
   m_printsummary(true)
@@ -239,9 +241,9 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
   msg_Debugging()<<keys<<std::endl;
   for (size_t i(0);i<keys.size();++i) {
     std::string cur(keys[i]);
-    if (cur.find("MUR")!=std::string::npos &&
-        cur.find("MUF")!=std::string::npos &&
-        cur.find("PDF")!=std::string::npos) {
+    if (m_splitvariations && cur.find("MUR")!=std::string::npos &&
+                             cur.find("MUF")!=std::string::npos &&
+                             cur.find("PDF")!=std::string::npos) {
       wgtmap[cur]=wc[cur];
     }
     else if (cur=="Weight")  wgtmap["nominal"]=wc[cur];
@@ -264,9 +266,9 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
     // name is between leading bracket and ","
     wgt=ToType<double>(cur.substr(cur.find(",")+1,cur.find(")")-1));
     cur=cur.substr(1,cur.find(",")-1);
-    if (cur.find("MUR")!=std::string::npos &&
-        cur.find("MUF")!=std::string::npos &&
-        cur.find("PDF")!=std::string::npos) {
+    if (m_splitvariations && cur.find("MUR")!=std::string::npos &&
+                             cur.find("MUF")!=std::string::npos &&
+                             cur.find("PDF")!=std::string::npos) {
       wgtmap[cur]=wgt;
     }
     else if (cur=="Weight")  wgtmap["nominal"]=wgt;
@@ -448,6 +450,7 @@ bool Rivet_Interface::Init()
     m_splitjetconts=reader.GetValue<int>("JETCONTS", 0);
     m_splitSH=reader.GetValue<int>("SPLITSH", 0);
     m_splitcoreprocs=reader.GetValue<int>("SPLITCOREPROCS", 0);
+    m_splitvariations=reader.GetValue<int>("SPLITVARIATIONS", 1);
     m_usehepmcshort=reader.GetValue<int>("USE_HEPMC_SHORT", 0);
     if (m_usehepmcshort && m_tag!="RIVET") {
       THROW(fatal_error, "Internal error.");
@@ -588,7 +591,8 @@ bool Rivet_Interface::Finish()
     if (mit->first!="" && mit->first!="nominal") out += "."+mit->first;
     PRINT_FUNC(out+ending);
     if (m_printsummary) {
-      std::string output("**  Total XS for "+mit->first
+      std::string namestr(m_rivet.size()>1?" for "+mit->first:"");
+      std::string output(std::string("**  Total XS")+namestr
                          +std::string(" = ( ")
                          +ToString(mit->second->TotalXS())
                          +std::string(" +- ")
