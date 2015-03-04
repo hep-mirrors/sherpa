@@ -158,6 +158,22 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
               }
             }
           }
+          if (p_wgtinfo->m_clusseqinfo.m_txfl.size()) {
+            nt|=16;
+            wc["Reweight_ClusterStep_N"]=p_wgtinfo->m_clusseqinfo.m_txfl.size();
+            for (size_t i(0);i<p_wgtinfo->m_clusseqinfo.m_txfl.size();++i) {
+              wc["Reweight_ClusterStep_"+ToString(i)+"_t"]
+                  =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_t;
+              wc["Reweight_ClusterStep_"+ToString(i)+"_x1"]
+                  =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_xa;
+              wc["Reweight_ClusterStep_"+ToString(i)+"_x2"]
+                  =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_xb;
+              wc["Reweight_ClusterStep_"+ToString(i)+"_fl1"]
+                  =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_fla;
+              wc["Reweight_ClusterStep_"+ToString(i)+"_fl2"]
+                  =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_flb;
+            }
+          }
         }
       }
       if (p_subevtlist) {
