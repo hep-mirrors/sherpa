@@ -98,18 +98,19 @@ namespace ATOOLS {
 
   struct Cluster_Sequence_Info {
   public:
-    double m_wgt, m_ct;
+    double m_pdfwgt, m_flux, m_ct;
     std::vector<Cluster_Step> m_txfl;
 
-    Cluster_Sequence_Info(const double &w=1.0,const double &c=0.0,
-                          const double &r=0.0) :
-      m_wgt(w), m_ct(c) {}
+    Cluster_Sequence_Info(const double &w=1.0, const double &f=1.0,
+                          const double &c=0.0, const double &r=0.0) :
+      m_pdfwgt(w), m_flux(f), m_ct(c) {}
     inline void AddSplitting(const double& t,
                              const double& xa, const double& xb,
                              const int& fla, const int& flb)
     { m_txfl.push_back(Cluster_Step(t,xa,xb,fla,flb)); }
-    inline void AddWeight(const double& w)      { m_wgt*=w; }
-    inline void AddCounterTerm(const double& c) { m_ct*=c; }
+    inline void AddFlux(const double& f)        { m_flux*=f; }
+    inline void AddWeight(const double& w)      { m_pdfwgt*=w; }
+    inline void AddCounterTerm(const double& c) { m_ct+=c; }
     inline void AddPDFRatio(const double& n,const double& d)
     { m_txfl.back().m_pdfrationumerator=n;
       m_txfl.back().m_pdfratiodenominator=d; }

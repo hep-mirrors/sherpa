@@ -130,7 +130,7 @@ double Single_Process::CollinearCounterTerms
   msg_Debugging()<<as<<"/(2\\pi) * log("<<sqrt(t1)<<"/"
 		 <<sqrt(t2)<<") = "<<as/(2.0*M_PI)*lt<<"\n";
   Flavour jet(kf_jet);
-  double fb=p_int->ISR()->Weight(1<<(i+1),p,p,lmuf2,lmuf2,fl,fl,0);
+  double fb=p_int->ISR()->PDFWeight(1<<(i+1),p,p,lmuf2,lmuf2,fl,fl,0);
   if (IsZero(fb,th)) {
     msg_Tracking()<<METHOD<<"(): Zero xPDF ( f_{"<<fl<<"}("
 		  <<x<<","<<sqrt(lmuf2)<<") = "<<fb<<" ). Skip.\n";
@@ -144,9 +144,9 @@ double Single_Process::CollinearCounterTerms
     if (Pf+Ps==0.0) continue;
     double Pi(METOOLS::IPab(jet[j],fl,x));
     double H(METOOLS::Hab(jet[j],fl));
-    double fa=p_int->ISR()->Weight
+    double fa=p_int->ISR()->PDFWeight
       (1<<(i+1),p/z,p/z,lmuf2,lmuf2,jet[j],jet[j],0);
-    double fc=p_int->ISR()->Weight
+    double fc=p_int->ISR()->PDFWeight
       (1<<(i+1),p,p,lmuf2,lmuf2,jet[j],jet[j],0);
     msg_Debugging()<<"  P_{"<<jet[j]<<","<<fl
 		   <<"}("<<z<<") = {F="<<Pf<<",S="<<Ps
@@ -177,17 +177,15 @@ ATOOLS::Cluster_Sequence_Info Single_Process::BeamISRWeight
   Cluster_Sequence_Info csi;
   if (p_int->ISR()) {
     // external PDFs contain flux
-    double pdfext(p_int->ISR()->Weight(mode,p_int->Momenta()[0],
-                                            p_int->Momenta()[1],
-                                            Q2,Q2,m_flavs[0],m_flavs[1]));
-    double flux(p_int->ISR()->Flux(p_int->Momenta()[0],p_int->Momenta()[1]));
-    msg_Debugging()<<"Flux = "<<flux<<std::endl;
+    double pdfext(p_int->ISR()->PDFWeight(mode,p_int->Momenta()[0],
+                                               p_int->Momenta()[1],
+                                               Q2,Q2,m_flavs[0],m_flavs[1]));
     msg_Debugging()<<"PDF(fla="<<m_flavs[0]
                    <<", xa="<<p_int->ISR()->CalcX(p_int->Momenta()[0])
                    <<", ta="<<Q2<<") * "
                    <<"PDF(flb="<<m_flavs[1]
                    <<", xb="<<p_int->ISR()->CalcX(p_int->Momenta()[1])
-                   <<", tb="<<Q2<<") -> "<<pdfext/flux<<std::endl;
+                   <<", tb="<<Q2<<") -> "<<pdfext<<std::endl;
     csi.AddWeight(pdfext);
     if (ampls.size() && (m_pinfo.m_ckkw&1)) {
       DEBUG_FUNC(m_name<<", \\mu_F = "<<sqrt(Q2)<<", mode = "<<mode
@@ -196,7 +194,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::BeamISRWeight
       csi.AddSplitting(Q2,p_int->ISR()->CalcX(p_int->Momenta()[mode]),
                           p_int->ISR()->CalcX(p_int->Momenta()[1-mode]),
                           m_flavs[mode],m_flavs[1-mode]);
-      csi.AddPDFRatio(pdfext/flux,1.);
+      csi.AddPDFRatio(pdfext,1.);
       Cluster_Amplitude *ampl(ampls.front());
       msg_IODebugging()<<*ampl<<"\n";
       if (imode&2) {
@@ -205,6 +203,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::BeamISRWeight
       }
       int set(false);
       double LQ2(Q2);
+      double pdfnum(pdfext), pdfden(pdfext);
       for (;ampl;ampl=ampl->Next()) {
         // skip: decays, equal scales, unordered configs, quarks below threshold
         // add into ClusterSteps everything but decays
@@ -230,6 +229,8 @@ ATOOLS::Cluster_Sequence_Info Single_Process::BeamISRWeight
 	  msg_Debugging()<<"Skip. Scales equal: t_i="<<LQ2
 			 <<", t_{i+1}="<<(ampl->Next()?ampl->KT2():ampl->MuF2())
 			 <<std::endl;
+	  if (ampl->Next()!=NULL) csi.AddPDFRatio(pdfnum,pdfden);
+	  else                    csi.AddPDFRatio(1.,pdfden);
 	  continue;
 	}
 	if (set && LQ2>ampl->KT2()) {
@@ -245,17 +246,17 @@ ATOOLS::Cluster_Sequence_Info Single_Process::BeamISRWeight
 	  continue;
 	}
 	// denominators
-	double wd1=p_int->ISR()->Weight
+	double wd1=p_int->ISR()->PDFWeight
 	  (mode|2,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
-	double wd2=p_int->ISR()->Weight
+	double wd2=p_int->ISR()->PDFWeight
 	  (mode|4,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
 	double LLQ2=LQ2;
 	LQ2=ampl->KT2();
 	if (ampl->Next()==NULL) LQ2=ampl->MuF2();
 	// numerators
-	double wn1=p_int->ISR()->Weight
+	double wn1=p_int->ISR()->PDFWeight
 	  (mode|2,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
-	double wn2=p_int->ISR()->Weight
+	double wn2=p_int->ISR()->PDFWeight
 	  (mode|4,-ampl->Leg(0)->Mom(),-ampl->Leg(1)->Mom(),LQ2,LQ2,f1,f2,0);
 	if (!IsZero(wn1) && !IsZero(wd1)) csi.AddWeight(wn1/wd1);
 	if (!IsZero(wn2) && !IsZero(wd2)) csi.AddWeight(wn2/wd2);
@@ -266,8 +267,10 @@ ATOOLS::Cluster_Sequence_Info Single_Process::BeamISRWeight
 	// wn-ext * [\prod_{i=0}^{N-1} wn_i/wd_i]
 	// = [wn-ext * \prod_{i=1}^{N-1} wn_i/wd_i * 1/wd_0] * wn-core
 	// = [\prod_{i=1}^N wn_i/wd_{i-1}] * wn-core
-	if (ampl->Next()!=NULL) csi.AddPDFRatio((wn1*wn2),(wd1*wd2));
-	else                    csi.AddPDFRatio(1.,(wd1*wd2));
+	pdfnum=wn1*wn2;
+	pdfden=wd1*wd2;
+	if (ampl->Next()!=NULL) csi.AddPDFRatio(pdfnum,pdfden);
+	else                    csi.AddPDFRatio(1.,pdfden);
 	msg_Debugging()<<"* [  "
 		       <<"PDF(fla="<<f1
 		       <<", xa="<<p_int->ISR()->CalcX(-ampl->Leg(0)->Mom())
@@ -308,6 +311,7 @@ void Single_Process::BeamISRWeight
 (NLO_subevtlist *const subs,const int mode) const
 {
   double muf2(subs->back()->m_mu2[stp::fac]);
+  double flux(p_int->ISR()->Flux(p_int->Momenta()[0],p_int->Momenta()[1]));
   if (m_nin==2 && p_int->ISR()) {
     size_t nscales(0);
     for (size_t i(0);i<subs->size();++i) {
@@ -317,15 +321,17 @@ void Single_Process::BeamISRWeight
 	   m_pinfo.m_nlomode!=1) && sub->m_me!=0.0) {
 	ClusterAmplitude_Vector ampls(sub->p_ampl?1:0,sub->p_ampl);
 	if (ampls.size()) ampls.front()->SetProc(sub->p_proc);
-        sub->m_result=sub->m_me*
-          BeamISRWeight(sub->m_mu2[stp::fac],mode|2,ampls).m_wgt;
+	sub->m_result=sub->m_me
+		      *BeamISRWeight(sub->m_mu2[stp::fac],mode|2,ampls).m_pdfwgt
+		      *flux;
 	sub->m_xf1=p_int->ISR()->XF1(0);
 	sub->m_xf2=p_int->ISR()->XF2(0);
 	++nscales;
       }
     }
     if (nscales<subs->size() && m_pinfo.m_nlomode==1) {
-      double lumi(BeamISRWeight(muf2,mode,ClusterAmplitude_Vector()).m_wgt);
+      double lumi(BeamISRWeight(muf2,mode,ClusterAmplitude_Vector()).m_pdfwgt);
+      lumi*=flux;
       for (size_t i(0);i<subs->size();++i) {
 	if ((*subs)[i]->m_me==0.0) (*subs)[i]->m_result=0.0;
 	if (IsEqual((*subs)[i]->m_mu2[stp::fac],muf2) &&
@@ -342,7 +348,7 @@ void Single_Process::BeamISRWeight
       ClusterAmplitude_Vector ampls(1,(*subs)[i]->p_ampl);
       if (ampls.size()) ampls.front()->SetProc((*subs)[i]->p_proc);
       (*subs)[i]->m_result=(*subs)[i]->m_me*
-        BeamISRWeight((*subs)[i]->m_mu2[stp::fac],mode,ampls).m_wgt;
+        BeamISRWeight((*subs)[i]->m_mu2[stp::fac],mode,ampls).m_pdfwgt*flux;
     }
   }
 }
@@ -372,13 +378,14 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     m_last=m_lastxs;
     if (m_nloct && m_pinfo.Has(nlo_type::born))
       m_last+=m_lastbxs*NLOCounterTerms();
-    ATOOLS::Cluster_Sequence_Info bviw=BeamISRWeight
+    ATOOLS::Cluster_Sequence_Info csi=BeamISRWeight
       (scs->Scale(stp::fac),0,scs->Amplitudes().size()?
        scs->Amplitudes():ClusterAmplitude_Vector());
-    m_mewgtinfo.m_clusseqinfo=bviw;
+    csi.AddFlux(flux);
+    m_mewgtinfo.m_clusseqinfo=csi;
     msg_Debugging()<<m_mewgtinfo;
-    m_last=(m_last-m_lastbxs*bviw.m_ct)*bviw.m_wgt;
-    m_lastb=m_lastbxs*bviw.m_wgt;
+    m_last=(m_last-m_lastbxs*csi.m_ct)*csi.m_pdfwgt*csi.m_flux;
+    m_lastb=m_lastbxs*csi.m_pdfwgt*csi.m_flux;
     if (p_mc==NULL) return m_last;
     // calculate DADS for MC@NLO, one PS point, many dipoles
     Dipole_Params dps(p_mc->Active(this));

@@ -331,9 +331,11 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
   double fa(pdf1->GetXPDF(fl1)/x1);
   double fb(pdf2->GetXPDF(fl2)/x2);
   msg_Debugging()
-      <<"pdf1 = ("<<fl1<<","<<x1<<","<<sqrt(muF12new)<<") = "<<fa<<" , "
-      <<"pdf2 = ("<<fl2<<","<<x2<<","<<sqrt(muF22new)<<") = "<<fb<<"\n";
+      <<"pdf1 = ("<<fl1<<","<<x1<<","<<sqrt(muF12new)<<") = "<<fa<<"\n"
+      <<"pdf2 = ("<<fl2<<","<<x2<<","<<sqrt(muF22new)<<") = "<<fb<<std::endl;
+  msg_Debugging()<<"fa*fb="<<fa*fb<<std::endl;
   double pdffac(PDFRatioFactor(fa,fb,csi,muF2fac,pdf1,pdf2));
+  msg_Debugging()<<"fa*fb*pdffac="<<fa*fb*pdffac<<std::endl;
   // reset MODEL::as to hard process
   MODEL::as->SetActiveAs(PDF::isr::hard_process);
   double asnew((*as)(muR2new)),asold((*MODEL::as)(muR2));
@@ -443,12 +445,14 @@ double Scale_Variations::PDFRatioFactor
 {
   DEBUG_FUNC("ckkw="<<m_ckkw<<", #steps="<<csi.m_txfl.size());
   if (!m_ckkw) return 1.;
+  // if no cluster history, something is wrong
+  if (csi.m_txfl.size()<2) THROW(fatal_error,"Insufficient cluster history.");
   // want to calculate (i=0 -> core, i=N -> ext)
   // wn-ext * [\prod_{i=0}^{N-1} wn_i/wd_i]
   // = [wn-ext * \prod_{i=1}^{N-1} wn_i/wd_i * 1/wd_0] * wn-core
   // = [\prod_{i=1}^N wn_i/wd_{i-1}] * wn-core
   // and vary only wn-core, but have varied fa*fb = wn-ext so far
-
+  // -------------------------------------------------------------------
   // this computes wn-ext * \prod_{i=1}^{N-1} wn_i/wd_i * 1/wd_0
   // multiply wn-ext by 1/fa*fb*flux to cancel factor coming from outside
   double fac(csi.m_txfl[0].m_pdfrationumerator/(fa*fb));
@@ -481,9 +485,10 @@ double Scale_Variations::PDFRatioFactor
     double fcoreb(pdf2->GetXPDF(csi.m_txfl.back().m_flb)/x2);
     msg_Debugging()
         <<"  pdf1 = ("<<csi.m_txfl.back().m_fla<<","<<x1<<","
-        <<sqrt(t*muF2fac)<<") = "<<fcorea<<" , "
+        <<sqrt(t*muF2fac)<<") = "<<fcorea<<"\n"
         <<"  pdf2 = ("<<csi.m_txfl.back().m_fla<<","<<x2<<","
-        <<sqrt(t*muF2fac)<<") = "<<fcoreb<<"\n";
+        <<sqrt(t*muF2fac)<<") = "<<fcoreb<<std::endl;
+    msg_Debugging()<<"fa*fb="<<fcorea*fcoreb<<std::endl;
     fac*=fcorea*fcoreb;
   }
   else msg_Debugging()<<"last step unordered, no core PDF variation"<<std::endl;

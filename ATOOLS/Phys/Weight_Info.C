@@ -22,7 +22,8 @@ namespace ATOOLS {
 std::ostream & ATOOLS::operator<<(std::ostream & s,
                                   const ATOOLS::Cluster_Sequence_Info & csi)
 {
-  s<<"Cluster sequence: wgt="<<csi.m_wgt<<", counter term="<<csi.m_ct;
+  s<<"Cluster sequence: pdfwgt="<<csi.m_pdfwgt<<", flux="<<csi.m_flux
+   <<", counter term="<<csi.m_ct;
   if (!csi.m_txfl.size()) s<<", no cluster steps";
   else                    s<<", steps: ";
   for (size_t i(0);i<csi.m_txfl.size();++i)
