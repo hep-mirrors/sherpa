@@ -72,9 +72,9 @@ namespace PDF {
     bool MakeISR(const double &sp,const double &y,
 		 ATOOLS::Vec4D_Vector &p,const ATOOLS::Flavour_Vector &flavs);
 
-    double Weight(const int mode,
-		  ATOOLS::Vec4D p1,ATOOLS::Vec4D p2,double Q12,double Q22,
-		  ATOOLS::Flavour fl1,ATOOLS::Flavour fl2,int warn=1);
+    double PDFWeight(const int mode,
+                     ATOOLS::Vec4D p1,ATOOLS::Vec4D p2,double Q12,double Q22,
+                     ATOOLS::Flavour fl1,ATOOLS::Flavour fl2,int warn=1);
     double Flux(const ATOOLS::Vec4D& p1, const ATOOLS::Vec4D& p2);
     double CalcX(const ATOOLS::Vec4D& p);
 
