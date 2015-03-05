@@ -28,7 +28,7 @@ Dipole_FI::Dipole_FI(const Particle_Vector_Vector& pvv) {
   for (unsigned int i=0; i<m_neutraloutparticles.size(); i++)
     m_mN.push_back(m_neutraloutparticles[i]->FinalMass());
   m_omegaMax = Min(m_omegaMax,
-                   Photons::s_reducemax * DetermineMaximumPhotonEnergy());
+                   Photons::s_reducemaxenergy * DetermineMaximumPhotonEnergy());
   // set running alpha_QED to squared mass of incomming parton
   // -> taken at maximal scale
   Photons::SetAlphaQED(sqr(m_M));
@@ -102,14 +102,15 @@ void Dipole_FI::AddRadiation() {
       }
       msg_Debugging()<<"n:    "<<m_n<<endl;
       if (m_n != 0) {
+        // if n=0, momenta stay same, all weights at unity
         CorrectMomenta();
         if (m_u < 0.|| m_u > 1.) continue;
         // m_newdipole, m_newspectator, m_K, m_P and m_PN are in (p+P)-CMS
         // m_plddipole, m_oldspectator. m_Q and m_QN are in (p+Q)-CMS
         CalculateWeights();
       }
-      // if no photon generated, event always accepted
-      else break;
+      // optionally increase maximum
+      m_genmaxweight *= Photons::s_increasemaxweight;
       if (ran->Get()*m_genmaxweight < m_genweight)   genreject = false;
       msg_Debugging()<<"-> "<<(genreject?"reject":"accept")<<std::endl;
       // accept new particle momenta if event accepted

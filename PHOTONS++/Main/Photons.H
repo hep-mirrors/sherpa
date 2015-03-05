@@ -2,10 +2,14 @@
 #define PHOTONS_Main_Photons_H
 
 #include "MODEL/Main/Running_AlphaQED.H"
+#include "PHOTONS++/Main/Dipole_Type.H"
 
 namespace ATOOLS {
   class Blob;
   class Data_Reader;
+#ifdef PHOTONS_DEBUG
+  class Histogram_2D;
+#endif
 }
 
 namespace PHOTONS {
@@ -17,7 +21,7 @@ namespace PHOTONS {
   public:
     Photons(ATOOLS::Data_Reader* reader=NULL);
     Photons();
-    ~Photons() {};
+    ~Photons();
     bool AddRadiation(ATOOLS::Blob *);
     bool CheckStateBeforeTreatment(ATOOLS::Blob *);
 
@@ -42,10 +46,26 @@ namespace PHOTONS {
     static int                  s_nmin;
     static double               s_drcut;
     static bool                 s_strict;
-    static double               s_reducemax;
+    static double               s_increasemaxweight;
+    static double               s_reducemaxenergy;
     static bool                 s_checkfirst;
     static int                  s_ffrecscheme;
     static int                  s_firecscheme;
+#ifdef PHOTONS_DEBUG
+    static std::string          s_histo_base_name;
+    static ATOOLS::Histogram_2D s_histo_dipole;
+    static ATOOLS::Histogram_2D s_histo_jacobianM;
+    static ATOOLS::Histogram_2D s_histo_jacobianL;
+    static ATOOLS::Histogram_2D s_histo_higher;
+    static ATOOLS::Histogram_2D s_histo_yfs;
+    static ATOOLS::Histogram_2D s_histo_total;
+    static ATOOLS::Histogram_2D s_histo_t_dipole;
+    static ATOOLS::Histogram_2D s_histo_t_jacobianM;
+    static ATOOLS::Histogram_2D s_histo_t_jacobianL;
+    static ATOOLS::Histogram_2D s_histo_t_higher;
+    static ATOOLS::Histogram_2D s_histo_t_yfs;
+    static ATOOLS::Histogram_2D s_histo_t_total;
+#endif
   };
 
 

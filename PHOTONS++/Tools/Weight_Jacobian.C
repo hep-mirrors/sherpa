@@ -84,6 +84,7 @@ Weight_Jacobian_Mapping::~Weight_Jacobian_Mapping() {
 }
 
 void Weight_Jacobian_Mapping::CalculateWeight() {
+  DEBUG_FUNC("");
   Vec3D Q         = Vec3D(0.,0.,0.);
   Vec3D P         = Vec3D(0.,0.,0.);
   Vec3D QN        = Vec3D(0.,0.,0.);
@@ -92,14 +93,19 @@ void Weight_Jacobian_Mapping::CalculateWeight() {
   double sump     = 0.;
   double prod     = 1.;
   int N           = m_newdipole.size() + m_newspectator.size();
+  // for Q -> sum_i^n q_i corrected to P -> sum_i p_i + gamma(s)
+  // w = u^(3n-4)
+  //     * (vec(P)^2/P^0 - sum_1^n vec(p_i)^2/p_i^0)/
+  //       (vec(P)*vec(Q)/P^0 - sum_1^n vec(p_i)vec(q_i)/p_i^0)
+  //     * prod_1^n (q_i^0/p_i^0)
+  // sum over final state particles
   for (unsigned int i=0; i<m_newdipole.size(); i++) {
     // exclude initial state particle (in initial-final dipoles at position 0)
     if (!((m_dtype == Dipole_Type::fi) && (i == 0))) {
-      sumq = sumq - (Vec3D(m_olddipole[i]->Momentum())
-                      *Vec3D(m_olddipole[i]->Momentum()))
+      sumq = sumq - Vec3D(m_olddipole[i]->Momentum()).Sqr()
                       /m_olddipole[i]->Momentum()[0];
-      sump = sump - (Vec3D(m_newdipole[i]->Momentum())
-                      *Vec3D(m_olddipole[i]->Momentum()))
+      sump = sump - Vec3D(m_newdipole[i]->Momentum())
+                      *Vec3D(m_olddipole[i]->Momentum())
                       /m_newdipole[i]->Momentum()[0];
       prod = prod * m_olddipole[i]->Momentum()[0]
                       /m_newdipole[i]->Momentum()[0];
@@ -108,17 +114,17 @@ void Weight_Jacobian_Mapping::CalculateWeight() {
     }
   }
   for (unsigned int i=0; i<m_newspectator.size(); i++) {
-    sumq = sumq - (Vec3D(m_oldspectator[i]->Momentum())
-                    *Vec3D(m_oldspectator[i]->Momentum()))
+    sumq = sumq - Vec3D(m_oldspectator[i]->Momentum()).Sqr()
                     /m_oldspectator[i]->Momentum()[0];
-    sump = sump - (Vec3D(m_newspectator[i]->Momentum())
-                    *Vec3D(m_oldspectator[i]->Momentum()))
+    sump = sump - Vec3D(m_newspectator[i]->Momentum())
+                    *Vec3D(m_oldspectator[i]->Momentum())
                     /m_newspectator[i]->Momentum()[0];
     prod = prod * m_oldspectator[i]->Momentum()[0]
                     /m_newspectator[i]->Momentum()[0];
     QN = QN + Vec3D(m_oldspectator[i]->Momentum());
     PN = PN + Vec3D(m_newspectator[i]->Momentum());
   }
+  // add initial state term
   if (m_dtype == Dipole_Type::ff) {
     sumq = sumq + (QN*QN)/sqrt(m_M*m_M + QN*QN);
     sump = sump + ((PN+m_K)*QN)/sqrt(m_M*m_M + (PN+m_K)*(PN+m_K));
@@ -132,7 +138,9 @@ void Weight_Jacobian_Mapping::CalculateWeight() {
   else {
     prod = 0.;
   }
-  m_weight = pow(m_u,3.*N-4.) * prod * sumq/sump;
+  msg_Debugging()<<pow(m_u,3.*N-4.)<<" * "<<sumq/sump<<" * "<<prod
+                 <<" = "<<pow(m_u,3.*N-4.)*sumq/sump*prod<<std::endl;
+  m_weight = pow(m_u,3.*N-4.) * sumq/sump * prod;
 }
 
 void Weight_Jacobian_Mapping::CalculateMax() {

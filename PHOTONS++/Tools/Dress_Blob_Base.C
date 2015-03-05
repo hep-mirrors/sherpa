@@ -18,6 +18,10 @@
 
 #include <iomanip>
 
+#ifdef PHOTONS_DEBUG
+#include "ATOOLS/Math/Histogram_2D.H"
+#endif
+
 using namespace PHOTONS;
 using namespace ATOOLS;
 using namespace std;
@@ -109,22 +113,70 @@ void Dress_Blob_Base::CalculateWeights()
   m_genmaxweight    = mwdipole * mwjacobianM * mwjacobianL * mwhigher * mwyfs;
 
 #ifdef PHOTONS_DEBUG
-  msg_Debugging()<<"weights:    "<<std::setw(10)<<wdipole
-                                 <<std::setw(10)<<wjacobianM
-                                 <<std::setw(10)<<wjacobianL
-                                 <<std::setw(10)<<whigher
-                                 <<std::setw(10)<<wyfs<<" : "
-                                 <<std::setw(10)<<m_genweight<<endl;
-  msg_Debugging()<<"maxweights: "<<std::setw(10)<<mwdipole
-                                 <<std::setw(10)<<mwjacobianM
-                                 <<std::setw(10)<<mwjacobianL
-                                 <<std::setw(10)<<mwhigher
-                                 <<std::setw(10)<<mwyfs<<" : "
-                                 <<std::setw(10)<<m_genmaxweight<<endl;
+  if (IsNan(wdipole) || IsNan(mwdipole) ||
+      IsNan(wjacobianM) || IsNan(mwjacobianM) ||
+      IsNan(wjacobianL) || IsNan(mwjacobianL) ||
+      IsNan(whigher) || IsNan(mwhigher) ||
+      IsNan(wyfs) || IsNan(mwyfs) ||
+      IsNan(m_genweight) || IsNan(m_genmaxweight) || IsNan((double)m_n)) {
+    msg_Error()<<METHOD<<"(): Encountered nan weight\n"
+               <<"weights:    "
+               <<std::setw(12)<<wdipole
+               <<std::setw(12)<<wjacobianM
+               <<std::setw(12)<<wjacobianL
+               <<std::setw(12)<<whigher
+               <<std::setw(12)<<wyfs<<" : "
+               <<std::setw(12)<<m_genweight<<std::endl
+               <<"maxweights: "
+               <<std::setw(12)<<mwdipole
+               <<std::setw(12)<<mwjacobianM
+               <<std::setw(12)<<mwjacobianL
+               <<std::setw(12)<<mwhigher
+               <<std::setw(12)<<mwyfs<<" : "
+               <<std::setw(12)<<m_genmaxweight<<std::endl;
+    wdipole=wjacobianM=wjacobianL=whigher=wyfs=0.;
+    mwdipole=mwjacobianM=mwjacobianL=mwhigher=mwyfs=1.;
+    m_genweight=0.; m_genmaxweight=1.;
+  }
+  Photons::s_histo_dipole.Insert(wdipole/mwdipole,m_n);
+  Photons::s_histo_jacobianM.Insert(wjacobianM/mwjacobianM,m_n);
+  Photons::s_histo_jacobianL.Insert(wjacobianL/mwjacobianL,m_n);
+  Photons::s_histo_higher.Insert(whigher/mwhigher,m_n);
+  Photons::s_histo_yfs.Insert(wyfs/mwyfs,m_n);
+  Photons::s_histo_total.Insert(m_genweight/m_genmaxweight,m_n);
+  Vec4D sump(0.,0.,0.,0.);
+  for (size_t i(0);i<m_softphotons.size();++i)
+   sump+=m_softphotons[i]->Momentum();
+  Poincare dec(m_newdipole[0]->Momentum());
+  dec.Boost(sump);
+  Vec4D test(m_newdipole[0]->Momentum()); dec.Boost(test);
+  double t(sump[0]);
+  Photons::s_histo_t_dipole.Insert(wdipole/mwdipole,t);
+  Photons::s_histo_t_jacobianM.Insert(wjacobianM/mwjacobianM,t);
+  Photons::s_histo_t_jacobianL.Insert(wjacobianL/mwjacobianL,t);
+  Photons::s_histo_t_higher.Insert(whigher/mwhigher,t);
+  Photons::s_histo_t_yfs.Insert(wyfs/mwyfs,t);
+  Photons::s_histo_t_total.Insert(m_genweight/m_genmaxweight,t);
+
+  msg_Debugging()<<"weights:    "<<std::setw(12)<<wdipole
+                                 <<std::setw(12)<<wjacobianM
+                                 <<std::setw(12)<<wjacobianL
+                                 <<std::setw(12)<<whigher
+                                 <<std::setw(12)<<wyfs<<" : "
+                                 <<std::setw(12)<<m_genweight<<endl;
+  msg_Debugging()<<"maxweights: "<<std::setw(12)<<mwdipole
+                                 <<std::setw(12)<<mwjacobianM
+                                 <<std::setw(12)<<mwjacobianL
+                                 <<std::setw(12)<<mwhigher
+                                 <<std::setw(12)<<mwyfs<<" : "
+                                 <<std::setw(12)<<m_genmaxweight<<endl;
+  msg_Debugging()<<"max. weight factor: "<<Photons::s_increasemaxweight<<endl;
 #endif
-  if (Photons::s_strict && m_genweight > m_genmaxweight) {
-    msg_Tracking()<<"weight: "<<m_genweight<<" > maxweight: "<<m_genmaxweight
-                   <<"  ... event will be rejected. Retrying ... "<<endl;
+  if (Photons::s_strict &&
+      m_genweight > m_genmaxweight*Photons::s_increasemaxweight) {
+    msg_Tracking()<<"weight: "<<m_genweight<<" > maxweight: "
+                  <<m_genmaxweight*Photons::s_increasemaxweight
+                  <<"  ... event will be rejected. Retrying ... "<<endl;
     for (unsigned int i=0; i<m_softphotons.size(); i++)
       msg_Debugging()<<*m_softphotons[i]<<endl;
     m_genweight = 0.;

@@ -43,6 +43,8 @@ Weight_Higher_Order_Corrections::~Weight_Higher_Order_Corrections() {
 double Weight_Higher_Order_Corrections::RealCorrectionsOrder(int order) {
   if (order == 0)  return 0.;
   else if (order == 1) {
+    msg_Debugging()<<"calc for "<<m_softphotons.size()<<" "
+                   <<m_newdipole.size()<<std::endl;
     double sum = 0;
     for (unsigned int i=0; i<m_softphotons.size(); i++) {
       double summ(0.);
@@ -70,10 +72,9 @@ double Weight_Higher_Order_Corrections::RealCorrectionsOrder(int order) {
       }
       sum = sum + summ/Smod(i);
     }
-    double r = -sum;
-    return r;
+    return -sum;
   }
-  else  return 0.;
+  return 0.;
 }
 
 double Weight_Higher_Order_Corrections::VirtualCorrectionsOrder(int order) {
@@ -206,12 +207,20 @@ void Weight_Higher_Order_Corrections::CalculateWeightAndMaxWithME() {
   for (unsigned int j=0; j<m_n; j++) {
     for (unsigned int i=0; i<j; i++) {
       Sum_2_2 = Sum_2_2 + p_pme->GetBeta_2_2(i,j)
-                          /(p_pme->Smod(i)*p_pme->Smod(i));
+                          /(p_pme->Smod(i)*p_pme->Smod(j));
     }
   }
-  msg_Debugging()<<p_pme->Name()<<"  "<<B_0_0<<"  "<<B_0_1<<"  "<<B_0_2
-                                <<"  "<<Sum_1_1<<"  "<<Sum_1_2<<"  "<<Sum_2_2
-                                <<std::endl;
+  if (msg_LevelIsDebugging()) {
+    std::string name(p_pme->Name());
+    std::string space(name.size(),' ');
+    msg_Out()<<name <<"  \\beta_0^0 = "<<B_0_0<<std::endl
+             <<space<<"  \\beta_0^1 = "<<B_0_1<<std::endl
+             <<space<<"  \\beta_0^2 = "<<B_0_2<<std::endl
+             <<space<<"  \\sum_i[\\beta_1^1(i)/S(i)] = "<<Sum_1_1<<std::endl
+             <<space<<"  \\sum_i[\\beta_1^2(i)/S(i)] = "<<Sum_1_2<<std::endl
+             <<space<<"  \\sum_i\\sum_j[\\beta_2^2(i,j)/S(i)S(j)] = "<<Sum_2_2
+             <<std::endl;
+  }
 
   m_weight    = 1. + 1./B_0_0*( B_0_1 + B_0_2 + Sum_1_1 + Sum_1_2 + Sum_2_2 );
   m_maxweight = 1. + 1./B_0_0*( B_0_1 + B_0_2 );

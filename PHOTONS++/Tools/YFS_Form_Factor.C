@@ -156,7 +156,6 @@ YFS_Form_Factor::~YFS_Form_Factor()
 //         + 1/4 * \int_-1^1 dx log(px'^2/m1m2)
 //         + G(1) + G(-1) - (pipj) * \int_-1^1 dx G(x)/px^2 ]             (C.44)
 double YFS_Form_Factor::Y() {
-  msg_Debugging()<<IntP1()<<" "<<IntE()<<" "<<IntP2()<<" "<<IntG()<<std::endl;
   return -Photons::s_alpha/M_PI*m_Z1*m_Z2*m_t1t2
            *(log((m_p1[0]*m_p2[0])/(m_ks*m_ks))
              + 0.5*(m_p1*m_p2)*IntP1() - 0.5*(m_p1*m_p2)*IntE()
@@ -395,7 +394,7 @@ double YFS_Form_Factor::GFunc(double x) {
   return (r1+r2+r3+r4+r5+r6);
 }
 
-// int dx G(x)/px²
+// int dx G(x)/px²                                                        (C.88)
 double YFS_Form_Factor::IntG() {
   // if dipole in its CMS
   if ((Vec3D(m_p1)+Vec3D(m_p2)).Abs() < 1E-3) {

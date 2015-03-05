@@ -67,5 +67,5 @@ void Weight_Dipole::CalculateMax() {
 }
 
 double Weight_Dipole::SMod(const Vec4D& p1, const Vec4D& p2, const Vec4D& k) {
-  return ((p1/(p1*k)-p2/(p2*k))*(p1/(p1*k)-p2/(p2*k)));
+  return (p1/(p1*k)-p2/(p2*k)).Abs2();
 }

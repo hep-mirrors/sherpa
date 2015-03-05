@@ -6,6 +6,10 @@
 #include "ATOOLS/Phys/Blob.H"
 #include "PHOTONS++/Main/Define_Dipole.H"
 
+#ifdef PHOTONS_DEBUG
+#include "ATOOLS/Math/Histogram_2D.H"
+#include "ATOOLS/Org/Shell_Tools.H"
+#endif
 
 using namespace PHOTONS;
 using namespace ATOOLS;
@@ -22,13 +26,43 @@ int    PHOTONS::Photons::s_nmax          = std::numeric_limits<int>::max();
 int    PHOTONS::Photons::s_nmin          = 0;
 double PHOTONS::Photons::s_drcut         = 1000.;
 bool   PHOTONS::Photons::s_strict        = false;
-double PHOTONS::Photons::s_reducemax     = 1.;
+double PHOTONS::Photons::s_reducemaxenergy   = 1.;
+double PHOTONS::Photons::s_increasemaxweight = 1.;
 bool   PHOTONS::Photons::s_checkfirst    = false;
 int    PHOTONS::Photons::s_ffrecscheme   = 0;
 int    PHOTONS::Photons::s_firecscheme   = 0;
 
 double PHOTONS::Photons::s_alpha                = 0.;
 bool   PHOTONS::Photons::s_userunningparameters = false;
+
+#ifdef PHOTONS_DEBUG
+std::string  PHOTONS::Photons::s_histo_base_name("weights");
+Histogram_2D PHOTONS::Photons::s_histo_dipole
+                = Histogram_2D(101,1e-6,1e4,100,-0.5,10.5,11);
+Histogram_2D PHOTONS::Photons::s_histo_jacobianM
+                = Histogram_2D(101,1e-6,1e4,100,-0.5,10.5,11);
+Histogram_2D PHOTONS::Photons::s_histo_jacobianL
+                = Histogram_2D(101,1e-6,1e4,100,-0.5,10.5,11);
+Histogram_2D PHOTONS::Photons::s_histo_higher
+                = Histogram_2D(101,1e-6,1e4,100,-0.5,10.5,11);
+Histogram_2D PHOTONS::Photons::s_histo_yfs
+                = Histogram_2D(101,1e-6,1e4,100,-0.5,10.5,11);
+Histogram_2D PHOTONS::Photons::s_histo_total
+                = Histogram_2D(101,1e-6,1e4,100,-0.5,10.5,11);
+Histogram_2D PHOTONS::Photons::s_histo_t_dipole
+                = Histogram_2D(111,1e-6,1e4,100,1e-6,1e2,20);
+Histogram_2D PHOTONS::Photons::s_histo_t_jacobianM
+                = Histogram_2D(111,1e-6,1e4,100,1e-6,1e2,20);
+Histogram_2D PHOTONS::Photons::s_histo_t_jacobianL
+                = Histogram_2D(111,1e-6,1e4,100,1e-6,1e2,20);
+Histogram_2D PHOTONS::Photons::s_histo_t_higher
+                = Histogram_2D(111,1e-6,1e4,100,1e-6,1e2,20);
+Histogram_2D PHOTONS::Photons::s_histo_t_yfs
+                = Histogram_2D(111,1e-6,1e4,100,1e-6,1e2,20);
+Histogram_2D PHOTONS::Photons::s_histo_t_total
+                = Histogram_2D(111,1e-6,1e4,100,1e-6,1e2,20);
+#endif
+
 
 // member functions of class Photons
 
@@ -60,11 +94,16 @@ Photons::Photons(Data_Reader* reader) :
   s_nmin          = reader->GetValue<int>("YFS_MINEM",0);
   s_drcut         = reader->GetValue<double>("YFS_DRCUT",1000.);
   s_strict        = reader->GetValue<int>("YFS_STRICTNESS",0);
-  s_reducemax     = reader->GetValue<double>("YFS_REDUCE_MAXIMUM",1.);
+  s_reducemaxenergy = reader->GetValue<double>("YFS_REDUCE_MAXIMUM_ENERGY",1.);
+  s_increasemaxweight = reader->GetValue<double>("YFS_INCREASE_MAXIMUM_WEIGHT",1.);
   s_checkfirst    = (bool)reader->GetValue<double>("YFS_CHECK_FIRST",0);
   s_ffrecscheme   = reader->GetValue<int>("YFS_FF_RECOIL_SCHEME",2);
   s_firecscheme   = reader->GetValue<int>("YFS_FI_RECOIL_SCHEME",0);
   s_accu          = sqrt(rpa->gen.Accu());
+#ifdef PHOTONS_DEBUG
+  s_histo_base_name = reader->GetValue<std::string>("YFS_HISTO_BASE_NAME",
+                                                    "weights");
+#endif
   m_success       = true;
   m_photonsadded  = false;
   msg_Debugging()<<METHOD<<"(){\n"
@@ -74,7 +113,8 @@ Photons::Photons(Data_Reader* reader) :
 		 <<" ,  nmin: "<<s_nmin
 		 <<" ,  strict: "<<s_strict
 		 <<" ,  dRcut: "<<s_drcut
-		 <<" ,  reducemax: "<<s_reducemax
+		 <<" ,  reducemaxenergy: "<<s_reducemaxenergy
+		 <<" ,  increasemaxweight: "<<s_increasemaxweight
 		 <<" ,  IR cut-off: "<<(s_mode>0?s_ircutoff:0)
 		 <<" in frame "<<irframe<<" ("<<s_ircutoffframe<<")"
 		 <<" ,  UV cut-off: "<<s_uvcutoff
@@ -98,7 +138,8 @@ Photons::Photons() :
   s_nmin          = 0;
   s_drcut         = 1000.;
   s_strict        = false;
-  s_reducemax     = 1.;
+  s_reducemaxenergy = 1.;
+  s_increasemaxweight = 1.;
   s_checkfirst    = false;
   s_ffrecscheme   = 0;
   s_firecscheme   = 0;
@@ -113,7 +154,8 @@ Photons::Photons() :
 		 <<" ,  nmin: "<<s_nmin
 		 <<" ,  strict: "<<s_strict
 		 <<" ,  dRcut: "<<s_drcut
-		 <<" ,  reducemax: "<<s_reducemax
+		 <<" ,  reducemaxenergy: "<<s_reducemaxenergy
+		 <<" ,  increasemaxweight: "<<s_increasemaxweight
 		 <<" ,  IR cut-off: "<<(s_mode>0?s_ircutoff:0)
 		 <<" in frame "<<s_ircutoffframe
 		 <<" ,  UV cut-off: "<<s_uvcutoff
@@ -121,6 +163,38 @@ Photons::Photons() :
 		 <<" ,  FF recoil scheme: "<<s_ffrecscheme
 		 <<" ,  FI recoil scheme: "<<s_firecscheme
 		 <<"\n}"<<std::endl;
+}
+
+Photons::~Photons()
+{
+#ifdef PHOTONS_DEBUG
+  size_t pos(s_histo_base_name.find_last_of("/"));
+  if (pos!=std::string::npos) MakeDir(s_histo_base_name.substr(0,pos));
+  s_histo_dipole.Finalize();
+  s_histo_dipole.Output(s_histo_base_name+"-dipole-n.dat");
+  s_histo_jacobianM.Finalize();
+  s_histo_jacobianM.Output(s_histo_base_name+"-jacobianM-n.dat");
+  s_histo_jacobianL.Finalize();
+  s_histo_jacobianL.Output(s_histo_base_name+"-jacobianL-n.dat");
+  s_histo_higher.Finalize();
+  s_histo_higher.Output(s_histo_base_name+"-higher-n.dat");
+  s_histo_yfs.Finalize();
+  s_histo_yfs.Output(s_histo_base_name+"-yfs-n.dat");
+  s_histo_total.Finalize();
+  s_histo_total.Output(s_histo_base_name+"-total-n.dat");
+  s_histo_t_dipole.Finalize();
+  s_histo_t_dipole.Output(s_histo_base_name+"-dipole-t.dat");
+  s_histo_t_jacobianM.Finalize();
+  s_histo_t_jacobianM.Output(s_histo_base_name+"-jacobianM-t.dat");
+  s_histo_t_jacobianL.Finalize();
+  s_histo_t_jacobianL.Output(s_histo_base_name+"-jacobianL-t.dat");
+  s_histo_t_higher.Finalize();
+  s_histo_t_higher.Output(s_histo_base_name+"-higher-t.dat");
+  s_histo_t_yfs.Finalize();
+  s_histo_t_yfs.Output(s_histo_base_name+"-yfs-t.dat");
+  s_histo_t_total.Finalize();
+  s_histo_t_total.Output(s_histo_base_name+"-total-t.dat");
+#endif
 }
 
 bool Photons::AddRadiation(Blob * blob)

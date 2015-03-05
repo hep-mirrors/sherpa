@@ -36,7 +36,7 @@ Dipole_FF::Dipole_FF(const Particle_Vector_Vector& pvv) {
     sum = sum + m_mN[i];
   }
   m_omegaMax  = Min(m_omegaMax,
-                    Photons::s_reducemax * (m_M/2.) * ( m_M/sum - sum/m_M ));
+                    Photons::s_reducemaxenergy*(m_M/2.)*( m_M/sum - sum/m_M ));
   if (m_omegaMax<0.) m_omegaMax = m_omegaMin;
   // set running alpha_QED to squared mass of incomming parton
   // -> taken at maximal scale
@@ -122,8 +122,8 @@ void Dipole_FF::AddRadiation() {
         if (m_u < 0.|| m_u > 1.) continue;
         CalculateWeights();
       }
-      // if no photon generated, event always accepted
-      else break;
+      // optionally increase maximum
+      m_genmaxweight *= Photons::s_increasemaxweight;
       if (ran->Get()*m_genmaxweight < m_genweight)   genreject = false;
       msg_Debugging()<<"-> "<<(genreject?"reject":"accept")<<std::endl;
       // accept new particle momenta if event accepted
