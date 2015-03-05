@@ -458,7 +458,7 @@ bool Rivet_Interface::Init()
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
     m_usehepmcnamedweights=reader.GetValue<int>("USE_HEPMC_NAMED_WEIGHTS",1);
 #endif
-    m_usehepmcfullweightinfo=reader.GetValue<int>("USE_HEPMC_FULL_WEIGHT_INFO",
+    m_usehepmcfullweightinfo=reader.GetValue<int>("USE_HEPMC_EXTENDED_WEIGHTS",
                                                   0);
     m_usehepmctreelike=reader.GetValue<int>("USE_HEPMC_TREE_LIKE",0);
     m_printsummary=reader.GetValue<int>("PRINT_SUMMARY",1);
@@ -478,7 +478,7 @@ bool Rivet_Interface::Init()
     }
     // set HepMC modus operandi
     m_hepmc2.SetHepMCNamedWeights(m_usehepmcnamedweights);
-    m_hepmc2.SetHepMCMinimalWeights(!m_usehepmcfullweightinfo);
+    m_hepmc2.SetHepMCExtendedWeights(m_usehepmcfullweightinfo);
     m_hepmc2.SetHepMCTreeLike(m_usehepmctreelike);
   }
   return true;

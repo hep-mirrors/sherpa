@@ -27,9 +27,9 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
-                     bool namedweights, bool minimalweights) :
+                     bool namedweights, bool extendedweights) :
   m_usenamedweights(namedweights),
-  m_minimalweights(minimalweights), p_sp(sp),
+  m_extendedweights(extendedweights), p_sp(sp),
   m_oqcd(0), m_oew(0), m_wgt(wgt),
   m_mewgt(0.), m_wgtnorm(0.), m_ntrials(0.),
   m_pswgt(0.), m_pwgt(0.),
@@ -56,7 +56,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
     m_mur2=db->Get<double>();
     SetAlphaS();
     SetAlpha();
-    if (!m_minimalweights) {
+    if (m_extendedweights) {
       ReadIn(db,"OQCD",true);
       m_oqcd=db->Get<int>();
       ReadIn(db,"OEW",true);
@@ -74,7 +74,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
 
 EventInfo::EventInfo(const EventInfo &evtinfo) :
   m_usenamedweights(evtinfo.m_usenamedweights),
-  m_minimalweights(evtinfo.m_minimalweights),
+  m_extendedweights(evtinfo.m_extendedweights),
   p_sp(evtinfo.p_sp),
   m_oqcd(evtinfo.m_oqcd), m_oew(evtinfo.m_oew),
   m_wgt(0.), m_mewgt(0.), m_wgtnorm(0.),
@@ -95,7 +95,7 @@ bool EventInfo::ReadIn(ATOOLS::Blob_Data_Base* &db,std::string name,bool abort)
 bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
 {
   DEBUG_FUNC("use named weights: "<<m_usenamedweights
-             <<", minimal weights: "<<m_minimalweights);
+             <<", extended weights: "<<m_extendedweights);
   HepMC::WeightContainer wc;
   if (m_usenamedweights) {
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
@@ -104,7 +104,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
     wc["MEWeight"]=m_mewgt;
     wc["WeightNormalisation"]=m_wgtnorm;
     wc["NTrials"]=m_ntrials;
-    if (!m_minimalweights) {
+    if (m_extendedweights) {
       wc["PSWeight"]=m_pswgt;
       // additional entries for LO/LOPS reweighting
       // x1,x2,muf2 can be found in PdfInfo; alphaS,alphaQED in their infos
@@ -206,7 +206,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
     wc.push_back(m_mewgt);
     wc.push_back(m_wgtnorm);
     wc.push_back(m_ntrials);
-    if (!m_minimalweights) {
+    if (m_extendedweights) {
       wc.push_back(m_pswgt);
       wc.push_back(m_mur2);
       wc.push_back(m_muf12);
@@ -240,7 +240,7 @@ void EventInfo::SetAlpha()
 }
 
 HepMC2_Interface::HepMC2_Interface() :
-  m_usenamedweights(false), m_minimalweights(false),
+  m_usenamedweights(false), m_extendedweights(false),
   m_hepmctree(false), p_event(NULL)
 {
   Data_Reader reader(" ",";","!","=");
@@ -249,7 +249,7 @@ HepMC2_Interface::HepMC2_Interface() :
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
   m_usenamedweights=reader.GetValue<int>("HEPMC_USE_NAMED_WEIGHTS",true);
 #endif
-  m_minimalweights=reader.GetValue<int>("HEPMC_MINIMAL_WEIGHTS",true);
+  m_extendedweights=reader.GetValue<int>("HEPMC_EXTENDED_WEIGHTS",false);
   // Switch for disconnection of 1,2,3 vertices from PS vertices
   m_hepmctree=reader.GetValue<int>("HEPMC_TREE_LIKE",false);
 }
@@ -269,7 +269,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
                   HepMC::Units::MM);
 #endif
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
-  EventInfo evtinfo(sp,weight,m_usenamedweights,m_minimalweights);
+  EventInfo evtinfo(sp,weight,m_usenamedweights,m_extendedweights);
   // when subevtlist, fill hepmc-subevtlist
   if (evtinfo.SubEvtList()) return SubEvtList2ShortHepMC(evtinfo);
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
@@ -405,7 +405,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
   // Meta info
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
-  EventInfo evtinfo(sp,weight,m_usenamedweights,m_minimalweights);
+  EventInfo evtinfo(sp,weight,m_usenamedweights,m_extendedweights);
   evtinfo.WriteTo(event);
   
   m_blob2genvertex.clear();
