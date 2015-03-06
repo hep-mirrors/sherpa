@@ -98,7 +98,7 @@ Photons::Photons(Data_Reader* reader) :
   s_increasemaxweight = reader->GetValue<double>("YFS_INCREASE_MAXIMUM_WEIGHT",1.);
   s_checkfirst    = (bool)reader->GetValue<double>("YFS_CHECK_FIRST",0);
   s_ffrecscheme   = reader->GetValue<int>("YFS_FF_RECOIL_SCHEME",2);
-  s_firecscheme   = reader->GetValue<int>("YFS_FI_RECOIL_SCHEME",0);
+  s_firecscheme   = reader->GetValue<int>("YFS_FI_RECOIL_SCHEME",2);
   s_accu          = sqrt(rpa->gen.Accu());
 #ifdef PHOTONS_DEBUG
   s_histo_base_name = reader->GetValue<std::string>("YFS_HISTO_BASE_NAME",
