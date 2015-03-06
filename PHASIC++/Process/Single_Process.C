@@ -27,16 +27,6 @@ using namespace ATOOLS;
 
 Single_Process::Single_Process(): m_lastbxs(0.0), m_zero(false)
 {
-  Data_Reader read(" ",";","!","=");
-  read.SetInputPath(rpa->GetPath());
-  read.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  m_nloct=read.GetValue<int>("SP_NLOCT",m_pinfo.m_ckkw&1);
-  if (!m_nloct && m_pinfo.m_ckkw&1) {
-    static bool print(false);
-    if (!print) msg_Info()
-      <<METHOD<<"(): Switch off NLO counterterms.\n";
-    print=true;
-  }
 }
 
 Single_Process::~Single_Process()
@@ -376,7 +366,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
     if (m_lastxs==0.0) return m_last=0.0;
     m_last=m_lastxs;
-    if (m_nloct && m_pinfo.Has(nlo_type::born))
+    if (m_pinfo.Has(nlo_type::born))
       m_last+=m_lastbxs*NLOCounterTerms();
     ATOOLS::Cluster_Sequence_Info csi=BeamISRWeight
       (scs->Scale(stp::fac),0,scs->Amplitudes().size()?
@@ -388,6 +378,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     m_lastb=m_lastbxs*csi.m_pdfwgt*csi.m_flux;
     if (p_mc==NULL) return m_last;
     // calculate DADS for MC@NLO, one PS point, many dipoles
+    msg_Debugging()<<"Calculating DADS terms"<<std::endl;
     Dipole_Params dps(p_mc->Active(this));
     std::vector<double> x(2,-1.0);
     for (size_t j(0);j<2;++j) x[j]=Min(dps.m_p[j][3]/rpa->gen.PBeam(j)[3],1.);

@@ -10,7 +10,6 @@ namespace PHASIC {
 
     double m_lastxs, m_lastbxs;
     bool   m_zero;
-    int    m_nloct;
 
   public:
 
