@@ -93,21 +93,26 @@ bool Cluster_Algorithm::Cluster
     SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,
             p_proc->Info().m_fi.NMaxExternal());
 
+    // Ad-Hoc clustering for loop-induced gg -> non-coloured particles
     size_t np=p_proc->Flavours().size();
-    if (
-        (np==7 && p_proc->OrderQCD()==3 && p_proc->OrderEW()==4 &&
-         p_proc->Flavours()[2].IsLepton() && p_proc->Flavours()[3].IsLepton() &&
-         p_proc->Flavours()[4].IsLepton() && p_proc->Flavours()[5].IsLepton())
-        &&
-        ((p_proc->Flavours()[0].IsGluon() && p_proc->Flavours()[1].IsGluon() &&
-          p_proc->Flavours()[np-1].IsGluon()) ||
-         (p_proc->Flavours()[0].IsGluon() && p_proc->Flavours()[1].IsQuark() &&
-          p_proc->Flavours()[np-1].IsQuark()) ||
-         (p_proc->Flavours()[0].IsQuark() && p_proc->Flavours()[1].IsGluon() &&
-          p_proc->Flavours()[np-1].IsQuark())
-         )) {
+    bool non_col(true);
+    for(size_t i(2); i<np-1; i++){
+      if(p_proc->Flavours()[i].StrongCharge()){
+	non_col = false;
+	break;
+      }
+    bool gg((p_proc->Flavours()[0].IsGluon() && p_proc->Flavours()[1].IsGluon() &&
+	     p_proc->Flavours().back().IsGluon()) ||
+	    (p_proc->Flavours()[0].IsGluon() && p_proc->Flavours()[1].IsQuark() &&
+	     p_proc->Flavours().back().IsQuark()) ||
+	    (p_proc->Flavours()[0].IsQuark() && p_proc->Flavours()[1].IsGluon() &&
+	     p_proc->Flavours().back().IsQuark()));
+    bool loop_ind((p_proc->OrderQCD()+p_proc->OrderEW())==np);
+    if (non_col && gg && loop_ind){
       ClusterSpecial4lLoop2();
     }
+    // End Ad-Hoc clustering
+    
     msg_Debugging()<<*p_ampl<<"\n";
     while (p_ampl->Prev()) {
       p_ampl=p_ampl->Prev();
