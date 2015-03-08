@@ -101,6 +101,7 @@ bool Cluster_Algorithm::Cluster
 	non_col = false;
 	break;
       }
+    }
     bool gg((p_proc->Flavours()[0].IsGluon() && p_proc->Flavours()[1].IsGluon() &&
 	     p_proc->Flavours().back().IsGluon()) ||
 	    (p_proc->Flavours()[0].IsGluon() && p_proc->Flavours()[1].IsQuark() &&
