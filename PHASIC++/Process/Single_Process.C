@@ -366,7 +366,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
     if (m_lastxs==0.0) return m_last=0.0;
     m_last=m_lastxs;
-    if (m_pinfo.Has(nlo_type::born))
+    if (m_pinfo.m_ckkw&1 && m_pinfo.Has(nlo_type::born))
       m_last+=m_lastbxs*NLOCounterTerms();
     ATOOLS::Cluster_Sequence_Info csi=BeamISRWeight
       (scs->Scale(stp::fac),0,scs->Amplitudes().size()?
