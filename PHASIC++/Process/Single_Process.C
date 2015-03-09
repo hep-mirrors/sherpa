@@ -59,15 +59,6 @@ double Single_Process::KFactor() const
   return 1.0;
 }
 
-namespace PHASIC {
-
-  double Beta0()
-  {
-    return 11.0/6.0*3.0-2.0/3.0*0.5*(Flavour(kf_jet).Size()/2);
-  }
-
-}
-
 double Single_Process::NLOCounterTerms() const
 {
   static double th(1.0e-12);
@@ -86,14 +77,30 @@ double Single_Process::NLOCounterTerms() const
   MODEL::Coupling_Data *cpl(m_cpls.Get("Alpha_QCD"));
   double as(cpl->Default()*cpl->Factor());
   double ct(0.0);
-  if (!IsEqual(mur2,lmur2)) {
-    if (m_oqcd>1) ct-=double(m_oqcd-1)*as/M_PI*MODEL::as->Beta0(lmur2)
-                                      *log(mur2/lmur2);
-    msg_Debugging()<<"\\alpha_s term (nf="<<MODEL::as->Nf(lmur2)<<"): "
-                   <<(m_oqcd-1)<<" * "<<as
-                   <<"/2\\pi * "<<MODEL::as->Beta0(lmur2)
-                   <<" * log("<<sqrt(mur2)<<"/"
-                   <<sqrt(lmur2)<<") -> "<<ct<<"\n";
+  if (!IsEqual(mur2,lmur2) && m_oqcd>1) {
+    // if flavour threshold between lmur2 and mur2 split beta0*log(mur2/lmur2)
+    // into regions with constant nf
+    std::vector<double> thrs(MODEL::as->Thresholds(lmur2,mur2));
+    msg_Debugging()<<"Flavour thresholds in range ["<<mur2<<","<<lmur2<<"]: "
+                   <<thrs<<std::endl;
+    thrs.push_back((lmur2>mur2)?lmur2:mur2);
+    thrs.insert(thrs.begin(),(lmur2>mur2)?mur2:lmur2);
+    double betalog(0.);
+    msg_Debugging()<<"\\sum_{\\mu_{th}} \\beta_0(nf(\\mu_i)) "
+                   <<"log(\\mu_{i+1}/\\mu_i) = "<<std::endl;
+    for (size_t i(0);i<thrs.size()-1;++i) {
+      msg_Debugging()<<(i==0?"    ":"  + ")<<MODEL::as->Beta0(thrs[i+1])
+                     <<" * "<<log(thrs[i+1]/thrs[i])<<"  (nf="
+                     <<MODEL::as->Nf(thrs[i+1])<<", "<<thrs[i]<<".."<<thrs[i+1]
+                     <<") \n";
+      betalog+=MODEL::as->Beta0(thrs[i+1])*log(thrs[i+1]/thrs[i]);
+    }
+    if (lmur2>mur2) betalog*=-1.;
+    msg_Debugging()<<"  = "<<betalog<<std::endl;
+    ct-=double(m_oqcd-1)*as/M_PI*betalog;
+    msg_Debugging()<<"\\alpha_s term: "<<(m_oqcd-1)<<" * "<<as
+                   <<"/2\\pi * \\sum_{\\mu_{th}} \\beta_0(n_f(\\mu_i)) "
+                   <<"log(\\mu_{i+1}/\\mu_i) = "<<-ct<<"\n";
   }
   double z[2]={m_mewgtinfo.m_y1,m_mewgtinfo.m_y2};
   for (size_t i(0);i<2;++i)
