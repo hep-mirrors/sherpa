@@ -5,6 +5,8 @@
 #include "ATOOLS/Math/Function_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 
+#include <vector>
+
 namespace PDF { struct PDF_Base; }
 
 namespace MODEL {
@@ -65,7 +67,7 @@ namespace MODEL {
     double AlphaS(const double q2);
     void   SelfTest();
 
-    double ShowerCutQ2();    
+    double ShowerCutQ2();
 
     // inline functions
     inline int    Order()                { return m_order;      }
@@ -74,7 +76,9 @@ namespace MODEL {
     inline double Beta2(const double q2) { return Beta2(Nf(q2)); }
     inline double Beta3(const double q2) { return Beta3(Nf(q2)); }
     inline double AsMZ()                 { return m_as_MZ;      }
+
     int    Nf(const double q2);
+    std::vector<double> Thresholds(double q12,double q22);
 
     inline double CutQ2() { return m_cutq2; }    
 
@@ -117,6 +121,8 @@ namespace MODEL {
     inline double Beta3(const double q2)  { return p_active->Beta3(q2); }
     inline double AsMZ()                  { return p_active->AsMZ(); }
     inline int    Nf(const double q2)     { return p_active->Nf(q2); }
+    inline std::vector<double> Thresholds(double q12,double q22)
+                                          { return p_active->Thresholds(q12,q22); }
     inline double CutQ2()                 { return p_active->CutQ2(); }
     inline double ShowerCutQ2()           { return p_active->ShowerCutQ2(); }
     inline double BoundedAlphaS(const double &q2) { return p_active->BoundedAlphaS(q2); }

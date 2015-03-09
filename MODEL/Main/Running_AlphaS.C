@@ -320,7 +320,7 @@ double One_Running_AlphaS::Lambda2(const int nr) {
   double & beta0   = p_thresh[nr].beta0;
   double * b       = p_thresh[nr].b;
   double & lambda2 = p_thresh[nr].lambda2;
-  
+
   // calculate beta coefficients
   beta0 = Beta0(nf);
   b[1]  = Beta1(nf)/beta0;
@@ -522,14 +522,28 @@ double  One_Running_AlphaS::AlphaS(const double q2){
   return operator()(q2);
 }
 
-int One_Running_AlphaS::Nf(const double sc)
+int One_Running_AlphaS::Nf(const double q2)
 {
-  double q2(sc);
   for (int i=0;i<=m_nth;++i) {
     if (q2<=p_thresh[i].high_scale && q2>p_thresh[i].low_scale )
       return p_thresh[i].nf;
   }
   return m_nth;
+}
+
+std::vector<double> One_Running_AlphaS::Thresholds(double q12,double q22)
+{
+  if (q12>q22) std::swap(q12,q22);
+  std::vector<double> thrs;
+  int nf(0);
+  for (int i=0;i<=m_nth;++i) {
+    if (q12<=p_thresh[i].low_scale && p_thresh[i].low_scale<q22 &&
+        p_thresh[i].nf>nf) {
+      thrs.push_back(p_thresh[i].low_scale);
+    }
+    nf=p_thresh[i].nf;
+  }
+  return thrs;
 }
 
 void One_Running_AlphaS::SelfTest() {
