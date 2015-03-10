@@ -4,7 +4,7 @@ dir=${1%/}
 db=${dir}.db
 
 rm -f ${db}
-files=$(find ${dir})
+files=$(find ${dir} | grep -v '.svn')
 
 printf "Building ${db} ("$(echo $files | wc -w)") ";
 
