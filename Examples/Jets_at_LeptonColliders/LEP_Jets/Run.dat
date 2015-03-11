@@ -1,5 +1,5 @@
 (run){
-#  ANALYSIS Rivet
+##  ANALYSIS Rivet
   % general settings
   EVENTS 5M; NJET:=3;
   % model parameters
