@@ -271,8 +271,16 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 
 #ifdef USING__MPI
   int rank=MPI::COMM_WORLD.Get_rank();
-  for (int i(0);i<4;++i)
-    if (gen.m_seeds[i]>0) gen.m_seeds[i]*=rank+1;
+  if (dr.GetValue("MPI_SEED_MODE",0)==0) {
+    msg_Info()<<METHOD<<"(): Seed mode '*'\n";
+    for (int i(0);i<4;++i)
+      if (gen.m_seeds[i]>0) gen.m_seeds[i]*=rank+1;
+  }
+  else {
+    msg_Info()<<METHOD<<"(): Seed mode '+'\n";
+    for (int i(0);i<4;++i)
+      if (gen.m_seeds[i]>0) gen.m_seeds[i]+=rank;
+  }
 #endif
 
   std::string seedstr;
