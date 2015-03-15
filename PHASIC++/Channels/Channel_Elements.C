@@ -746,7 +746,6 @@ double Channel_Elements::WeightYForward(const double yexponent,const double tau,
     if (!(wt>0) && !(wt<0) && wt!=0) {
       msg_Error()<<"WeightYForward produces a nan!"<<endl
 			 <<ymax<<" "<<ymin<<" "<<yexponent<<" "<<yinfo[2]<<" "<<xinfo[3]<<endl;
-      abort();
     }
   return wt;
 }
@@ -796,9 +795,8 @@ double Channel_Elements::WeightYBackward(const double yexponent,const double tau
   double wt = Channel_Basics::PeakedWeight(-ymin-xinfo[1],yexponent,-ymax,-ymin,-yinfo[2],-1,ran)* 
     pow(-ymin-xinfo[1]+yinfo[2],yexponent);
     if (!(wt>0) && !(wt<0) && wt!=0) {
-      msg_Error()<<"WeightYForward produces a nan!"<<endl
+      msg_Error()<<"WeightYBackward produces a nan!"<<endl
 			 <<ymax<<" "<<ymin<<" "<<yexponent<<" "<<yinfo[2]<<" "<<xinfo[3]<<endl;
-      abort();
     }
   return wt;
 }

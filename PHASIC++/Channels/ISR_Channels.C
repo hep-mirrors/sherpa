@@ -38,7 +38,7 @@ bool ISR_Channels::MakeChannels()
       ths.insert(mass);
       continue;
     }
-    for (double yexp=-1.;yexp<=1.0;yexp+=1.) {
+    for (double yexp=-.999;yexp<=1.0;yexp+=.999) {
     ci.type = type;
     (ci.parameters).push_back(mass);
     if (type==1) (ci.parameters).push_back(width);
@@ -54,7 +54,7 @@ bool ISR_Channels::MakeChannels()
   }
   if (ths.size()) {
     for (std::set<double>::const_iterator thit(ths.begin());thit!=ths.end();++thit)
-    for (double yexp=-1.;yexp<=1.0;yexp+=1.) {
+    for (double yexp=-.999;yexp<=1.0;yexp+=.999) {
     ci.type = 2;
     (ci.parameters).push_back(*thit);
     (ci.parameters).push_back(2.);
@@ -101,7 +101,7 @@ bool ISR_Channels::MakeChannels()
   else {
     // default : 1/s'
     for (double sexp=0.5;sexp<=1.5;sexp+=0.5) {
-      for (double yexp=-1.;yexp<=1.0;yexp+=1.) {
+      for (double yexp=-.999;yexp<=1.0;yexp+=.999) {
 	ci.type = 0;
 	(ci.parameters).push_back(sexp);
 	(ci.parameters).push_back(yexp);
