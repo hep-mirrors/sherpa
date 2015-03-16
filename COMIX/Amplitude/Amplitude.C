@@ -1299,7 +1299,7 @@ bool Amplitude::EvaluateAll()
 #endif
     csum+=(m_ress[j]*std::conj(m_ress[j])).real();
   }
-  m_res=csum/m_sf;
+  m_born=m_res=csum/m_sf;
   m_cmur[1]=m_cmur[0]=csum=0.0;
   if (p_dinfo->Mode()) {
     double asf(cpl->Default()*cpl->Factor()/(2.0*M_PI));
@@ -1312,7 +1312,7 @@ bool Amplitude::EvaluateAll()
       m_p[1]=-m_p[1];
     }
     if (p_dinfo->Mode()==1) {
-      if (!m_trig) m_res=0.0;
+      if (!m_trig) m_born=m_res=0.0;
       m_subs.back()->m_me=m_subs.back()->m_mewgt=m_res;
     }
     if (p_dinfo->Mode()&2) m_dsij[0][0]=m_res;
@@ -1433,7 +1433,7 @@ bool Amplitude::EvaluateAll()
 	m_cmur[1]+=cw*asf*p_loop->ScaleDependenceCoefficient(2);
       }
     }
-    if ((p_dinfo->Mode()&18) && !(p_dinfo->Mode()&4)) m_res=0.0;
+    if ((p_dinfo->Mode()&18) && !(p_dinfo->Mode()&4)) m_born=m_res=0.0;
   }
 #ifdef DEBUG__BG
   msg_Debugging()<<"m_res = "<<m_res<<", csum = "<<csum
@@ -1588,8 +1588,10 @@ double Amplitude::Coupling(const int mode) const
 
 void Amplitude::FillMEWeights(ME_Weight_Info &wgtinfo) const
 {
-  if (wgtinfo.m_wren.size()==2)
-    for (size_t i=0;i<2;i++) wgtinfo.m_wren[i]=m_cmur[i];
+  if (wgtinfo.m_wren.size()<2) return;
+  for (size_t i=0;i<2;i++) wgtinfo.m_wren[i]=m_cmur[i];
+  wgtinfo.m_B=m_born;
+  wgtinfo.m_VI=m_res-m_born;
 }
 
 void Amplitude::SetGauge(const size_t &n)

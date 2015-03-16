@@ -142,7 +142,7 @@ bool COMIX::Single_Process::Initialize
 			  p_bg->DInfo()->AMax(2),
 			  p_bg->DInfo()->AMax(1),
 			  p_bg->DInfo()->AMax(3));
-      m_mewgtinfo.m_type=mewgttype::muR|mewgttype::muF;
+      m_mewgtinfo.m_type|=mewgttype::muR|mewgttype::muF;
     }
     if (smode&16) {
       smode&=~16;
@@ -159,7 +159,7 @@ bool COMIX::Single_Process::Initialize
       }
       p_loop->SetCouplings(m_cpls);
       p_loop->SetNorm(1.0/(isf*fsf));
-      m_mewgtinfo.m_type=mewgttype::muR;
+      m_mewgtinfo.m_type|=mewgttype::muR;
     }
     p_bg->SetLoopME(p_loop);
     nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);
@@ -193,7 +193,6 @@ bool COMIX::Single_Process::Initialize
 
 void COMIX::Single_Process::MapSubEvts(const int mode)
 {
-  m_mewgtinfo.m_type=p_map->m_mewgtinfo.m_type;
   m_subs.resize(p_map->p_bg->SubEvts().size());
   const NLO_subevtlist &subs(p_bg->SubEvts());
   const NLO_subevtlist &rsubs(p_map->p_bg->SubEvts());
@@ -232,6 +231,7 @@ bool COMIX::Single_Process::MapProcess()
 	p_mapproc=p_map=(*p_umprocs)[i];
 	m_oew=p_map->m_oew;
 	m_oqcd=p_map->m_oqcd;
+	m_mewgtinfo.m_type=p_map->m_mewgtinfo.m_type;
 	if (p_map->p_kpterms) {
 	  p_kpterms = new KP_Terms
 	    (p_map,p_map->p_kpterms->MassKern()?1:0);
@@ -239,7 +239,6 @@ bool COMIX::Single_Process::MapProcess()
 			      p_map->p_bg->DInfo()->AMax(2),
 			      p_map->p_bg->DInfo()->AMax(1),
 			      p_map->p_bg->DInfo()->AMax(3));
-	  m_mewgtinfo.m_type=mewgttype::muR|mewgttype::muF;
 	}
 	msg_Tracking()<<"Mapped '"<<m_name<<"' -> '"<<mapname<<"'.\n";
 	std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
@@ -391,7 +390,6 @@ double COMIX::Single_Process::Partonic
     m_w=p_int->ColorIntegrator()->GlobalWeight();
     if (p_int->HelicityIntegrator()!=NULL) 
       m_w*=p_int->HelicityIntegrator()->Weight();
-    // here happens the kfactor magic
     double kf(sp->KFactor());
     m_w*=kf;
     m_dxs*=m_w;
@@ -413,9 +411,6 @@ double COMIX::Single_Process::Partonic
   if (m_mewgtinfo.m_wren.size() || m_mewgtinfo.m_wfac.size()) {
     FillMEWeights(m_mewgtinfo);
     m_mewgtinfo*=m_w;
-//    PRINT_INFO("TODO: fix decomposition B and VI");
-    m_mewgtinfo.m_B=m_dxs;
-    m_mewgtinfo.m_VI=m_dxs;
     m_mewgtinfo.m_KP=kpterms;
   }
   return m_lastxs=m_dxs+kpterms;

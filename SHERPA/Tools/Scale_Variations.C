@@ -360,7 +360,7 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
     // VI terms
     double lr=log(muR2fac);
     double VInew(VI+renwgts[0]*lr+renwgts[1]*0.5*ATOOLS::sqr(lr));
-    VInew*=asf*pdffac;
+    VInew*=asf*fa*fb*pdffac;
     msg_Debugging()<<"new VI = "<<VInew<<std::endl;
     // KP terms
     double lf=log(muF2fac);
