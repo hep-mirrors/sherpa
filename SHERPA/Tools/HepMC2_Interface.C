@@ -196,8 +196,10 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       }
       wc["Reweight_Type"]=p_wgtinfo->m_type;
     }
-    // if using minimal weights still dump event type
-    wc["Reweight_Type"]=(p_subevtlist?64:0);
+    else {
+      // if using minimal weights still dump event type if RS need correls
+      if (p_subevtlist) wc["Reweight_Type"]=64;
+    }
     // fill scale variations map into weight container
     if (p_nsvmap) {
       msg_Debugging()<<"#named wgts: "<<p_nsvmap->size()<<std::endl;
