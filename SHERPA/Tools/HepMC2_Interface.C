@@ -69,6 +69,9 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
     if (p_subevtlist) m_type=p_subevtlist->Type();
     ReadIn(db,"ScaleVariations",false);
     if (db) p_nsvmap=db->Get<NamedScaleVariationMap*>();
+    if (p_nsvmap && !m_usenamedweights)
+      THROW(fatal_error,"Scale variations cannot be written to HepMC without "
+            +std::string("using named weights. Try HEPMC_USE_NAMED_WEIGHTS=1"));
   }
 }
 
@@ -247,7 +250,7 @@ HepMC2_Interface::HepMC2_Interface() :
   reader.AddComment("#");
   reader.AddWordSeparator("\t");
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
-  m_usenamedweights=reader.GetValue<int>("HEPMC_USE_NAMED_WEIGHTS",true);
+  m_usenamedweights=reader.GetValue<int>("HEPMC_USE_NAMED_WEIGHTS",false);
 #endif
   m_extendedweights=reader.GetValue<int>("HEPMC_EXTENDED_WEIGHTS",false);
   // Switch for disconnection of 1,2,3 vertices from PS vertices
