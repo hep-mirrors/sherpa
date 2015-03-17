@@ -308,6 +308,14 @@ double MCatNLO_Process::OneHEvent(const int wmode)
   // rsproc has entry in m_RS, while rproc should have it in m_B
   std::swap(p_selected->Selected()->GetMEwgtinfo()->m_B,
             p_selected->Selected()->GetMEwgtinfo()->m_RS);
+  // append rda-info for scale variations, set type to H event
+  for (size_t i(0);i<p_rsproc->Selected()->GetSubevtList()->size();++i) {
+    NLO_subevt * sub((*p_rsproc->Selected()->GetSubevtList())[i]);
+    RDA_Info rda(sub->m_mewgt,sub->m_mu2[stp::ren],
+                 sub->m_mu2[stp::fac],sub->m_mu2[stp::fac]);
+    p_selected->Selected()->GetMEwgtinfo()->m_rdainfos.push_back(rda);
+  }
+  p_selected->Selected()->GetMEwgtinfo()->m_type=mewgttype::H;
   if (p_ampl==NULL) {
     msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;
     return 0.0;

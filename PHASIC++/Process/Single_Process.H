@@ -30,9 +30,9 @@ namespace PHASIC {
 
     ATOOLS::Cluster_Sequence_Info BeamISRWeight
     (const double &Q2,const int mode,
-     const ATOOLS::ClusterAmplitude_Vector &ampls) const;
+     const ATOOLS::ClusterAmplitude_Vector &ampls);
     void BeamISRWeight(ATOOLS::NLO_subevtlist *const subs,
-		       const int mode) const;
+                       const int mode);
 
     double Differential(const ATOOLS::Vec4D_Vector &p);
 

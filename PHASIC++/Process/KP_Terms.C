@@ -83,7 +83,7 @@ void KP_Terms::Calculate
   if (sa) {
     double w=1.-eta0;
     int type=m_flavs[0].IntSpin();
-    if (!m_imode || m_imode&2) {
+    if (m_imode&2) {
     m_kpca[0]=-w*p_flkern->Kb1(type,x0)+p_flkern->Kb2(type)-p_flkern->Kb4(type,eta0);
     m_kpca[1]=w*(p_flkern->Kb1(type,x0)+p_flkern->Kb3(type,x0));
     m_kpca[2]=-w*p_flkern->Kb1(type+2,x0)+p_flkern->Kb2(type+2)-p_flkern->Kb4(type+2,eta0);
@@ -153,7 +153,7 @@ void KP_Terms::Calculate
     }
     }
     
-    if (!m_imode || m_imode&4) {
+    if (m_imode&4) {
     double asum=0.,fsum=0.;
     for (size_t i=1;i<m_plist.size();i++) {
       fsum+=m_dsij[0][i];
@@ -174,7 +174,7 @@ void KP_Terms::Calculate
   if (sb) {
     double w=1.-eta1;
     int type=m_flavs[1].IntSpin();
-    if (!m_imode || m_imode&2) {
+    if (m_imode&2) {
     m_kpcb[0]=-w*p_flkern->Kb1(type,x1)+p_flkern->Kb2(type)-p_flkern->Kb4(type,eta1);
     m_kpcb[1]=w*(p_flkern->Kb1(type,x1)+p_flkern->Kb3(type,x1));
     m_kpcb[2]=-w*p_flkern->Kb1(type+2,x1)+p_flkern->Kb2(type+2)-p_flkern->Kb4(type+2,eta1);
@@ -244,7 +244,7 @@ void KP_Terms::Calculate
     }
     }
 
-    if (!m_imode || m_imode&4) {
+    if (m_imode&4) {
     double asum=0.,fsum=0.;
     for (size_t i=0;i<m_plist.size();i++) if (i!=pls-1) {
       fsum+=m_dsij[pls-1][i];

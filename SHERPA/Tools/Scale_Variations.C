@@ -49,6 +49,9 @@ namespace SHERPA {
 using namespace ATOOLS;
 using namespace SHERPA;
 
+typedef void (*PDF_Init_Function)();
+typedef void (*PDF_Exit_Function)();
+
 Scale_Variation::Scale_Variation(const double &muR2fac, const double &muF2fac,
                                  PDF::PDF_Base * pdf1, PDF::PDF_Base * pdf2,
                                  MODEL::One_Running_AlphaS * as,
@@ -103,7 +106,14 @@ Scale_Variations::Scale_Variations() :
   if (!m_on) return;
   PRINT_FUNC(vars.size());
 #if defined USING__LHAPDF && defined USING__LHAPDF6
-  // assume that LHAPDF is already loaded and interface initialised
+  // check whether LHAPDF is already loaded, if not load and init interface
+  if (!ATOOLS::s_loader->LibraryIsLoaded("LHAPDFSherpa")) {
+    s_loader->AddPath(std::string(LHAPDF_PATH)+"/lib");
+    ATOOLS::s_loader->LoadLibrary("LHAPDF");
+    void *init(s_loader->GetLibraryFunction("LHAPDFSherpa","InitPDFLib"));
+    if (init==NULL) THROW(fatal_error,"Cannot load PDF library LHAPDFSherpa");
+    ((PDF_Init_Function)init)();
+  }
   std::string path;
   if (reader.ReadFromFile(path,"LHAPDF_GRID_PATH")) LHAPDF::setPaths(path);
   const std::vector<std::string>& avsets(LHAPDF::availablePDFSets());
@@ -215,6 +225,8 @@ void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
   const ME_Weight_Info * const mewgt(proc->GetMEwgtinfo());
   const NLO_subevtlist * const sevtlist(proc->GetSubevtList());
   if (!mewgt) THROW(fatal_error,"No ME_Weight_Info found.");
+  msg_Debugging()<<*mewgt<<std::endl;
+  m_params.type=mewgt->m_type;
   m_params.B=mewgt->m_B;
   m_params.VI=mewgt->m_VI;
   m_params.KP=mewgt->m_KP;
@@ -228,14 +240,15 @@ void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
   m_params.x2p=mewgt->m_y2;
   m_params.renwgts=mewgt->m_wren;
   m_params.kpwgts=mewgt->m_wfac;
-  m_params.type=mewgt->m_type;
   m_params.muR2=mewgt->m_mur2;
   m_params.muF12=mewgt->m_muf2;
   m_params.muF22=mewgt->m_muf2;
   m_params.dads=mewgt->m_dadsinfos;
+  m_params.rda=mewgt->m_rdainfos;
   m_params.csi=mewgt->m_clusseqinfo;
   if (sevtlist) {
-    msg_Debugging()<<"contains "<<sevtlist->size()<<" subevents"<<std::endl;
+    msg_Debugging()<<"NLO RS event contains "<<sevtlist->size()
+                   <<" subevents"<<std::endl;
     for (NamedScaleVariationMap::iterator it=p_nsvmap->begin();
          it!=p_nsvmap->end();++it) {
       it->second->InitialisRSValues(sevtlist->size());
@@ -244,11 +257,9 @@ void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
     m_params.rsmuR2s.resize(sevtlist->size(),0.);
     m_params.rsmuF2s.resize(sevtlist->size(),0.);
     for (size_t i(0);i<sevtlist->size();++i) {
-      msg_Debugging()<<i<<": "<<(*sevtlist)[i]->m_mewgt<<" GeV = "
-                     <<(*sevtlist)[i]->m_mewgt*rpa->Picobarn()<<" pb\n";
       m_params.rswgts[i]=(*sevtlist)[i]->m_mewgt;
       m_params.rsmuR2s[i]=(*sevtlist)[i]->m_mu2[stp::ren];
-      m_params.rsmuF2s[i]=(*sevtlist)[i]->m_mu2[stp::ren];
+      m_params.rsmuF2s[i]=(*sevtlist)[i]->m_mu2[stp::fac];
     }
   }
   m_ckkw=m_params.csi.m_txfl.size();
@@ -257,63 +268,64 @@ void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
 bool Scale_Variations::Calculate(Scale_Variation * sv,
                                  PHASIC::Process_Base * proc)
 {
+  DEBUG_FUNC("event type: "<<m_params.type);
   if (proc->GetSubevtList()) {
     // NLO RS
-    NLO_subevtlist * subs(proc->GetSubevtList());
-    std::vector<double> dummy;
+    std::vector<double> renwgtsdummy,kpwgtsdummy;
     std::vector<DADS_Info> dadsdummy;
+    std::vector<RDA_Info> rdadummy;
     Cluster_Sequence_Info csidummy;
-    for (size_t i(0);i<subs->size();++i) {
-      NLO_subevt * sub((*subs)[i]);
-      sv->SetValue(i,Calculate(m_params.rswgts[i],0.,csidummy,
+    for (size_t i(0);i<proc->GetSubevtList()->size();++i) {
+      sv->SetValue(i,Calculate(mewgttype::none,
+                               m_params.rswgts[i],0.,
+                               renwgtsdummy,kpwgtsdummy,
+                               dadsdummy,rdadummy,csidummy,
                                m_params.x1,m_params.x2,
                                0.,0.,
+                               m_params.fl1,m_params.fl2,
                                m_params.rsmuR2s[i],
                                m_params.rsmuF2s[i],m_params.rsmuF2s[i],
                                sv->MuR2Fac(),sv->MuF2Fac(),
                                m_params.oqcd,m_params.oew,
-                               m_params.fl1,m_params.fl2,
                                sv->PDF1(),sv->PDF2(),
-                               sv->AlphaS(),
-                               dummy,dummy,
-                               mewgttype::none,
-                               dadsdummy));
+                               sv->AlphaS()));
     }
   }
   else {
-    // LO, LOPS, MEPS, NLOPS, NLO BVI
-    sv->SetValue(Calculate(m_params.B,m_params.VI,m_params.csi,
+    // LO, LOPS, MEPS, MC@NLO S, NLO BVI
+    sv->SetValue(Calculate(m_params.type,
+                           m_params.B,m_params.VI,
+                           m_params.renwgts,m_params.kpwgts,
+                           m_params.dads,m_params.rda,m_params.csi,
                            m_params.x1,m_params.x2,
                            m_params.x1p,m_params.x2p,
+                           m_params.fl1,m_params.fl2,
                            m_params.muR2,
                            m_params.muF12,m_params.muF22,
                            sv->MuR2Fac(),sv->MuF2Fac(),
                            m_params.oqcd,m_params.oew,
-                           m_params.fl1,m_params.fl2,
                            sv->PDF1(),sv->PDF2(),
-                           sv->AlphaS(),
-                           m_params.renwgts,m_params.kpwgts,
-                           m_params.type,
-                           m_params.dads));
+                           sv->AlphaS()));
   }
   return true;
 }
 
-double Scale_Variations::Calculate(const double& B, const double& VI,
+double Scale_Variations::Calculate(const ATOOLS::mewgttype::code& type,
+                                   const double& B, const double& VI,
+                                   const std::vector<double>& renwgts,
+                                   const std::vector<double>& kpwgts,
+                                   const std::vector<ATOOLS::DADS_Info>& dads,
+                                   const std::vector<ATOOLS::RDA_Info>& rda,
                                    const Cluster_Sequence_Info& csi,
                                    const double& x1, const double& x2,
                                    const double& x1p, const double& x2p,
+                                   const int& fl1, const int& fl2,
                                    const double& muR2,
                                    const double& muF12, const double& muF22,
                                    const double& muR2fac, const double& muF2fac,
                                    const size_t& oqcd, const size_t& oew,
-                                   const int& fl1, const int& fl2,
                                    PDF::PDF_Base * pdf1, PDF::PDF_Base * pdf2,
-                                   MODEL::One_Running_AlphaS * as,
-                                   const std::vector<double>& renwgts,
-                                   const std::vector<double>& kpwgts,
-                                   const ATOOLS::mewgttype::code& type,
-                                   const std::vector<ATOOLS::DADS_Info>& dads)
+                                   MODEL::One_Running_AlphaS * as)
 {
   DEBUG_FUNC("factors (muR/muF)=("<<muR2fac<<","<<muF2fac<<"), "
              <<"pdf1="<<pdf1->LHEFNumber()<<", pdf2="<<pdf2->LHEFNumber());
@@ -328,6 +340,8 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
                  <<"muF2: "<<muF22<<" -> "<<muF22new<<std::endl;
   msg_Debugging()<<"oqcd: "<<oqcd<<", oew: "<<oew<<std::endl;
   msg_Debugging()<<"cluster sequence: "<<csi.m_txfl.size()<<" steps"<<std::endl;
+  // build type minus METS
+  mewgttype::code nometstype=((type&mewgttype::METS)?type^mewgttype::METS:type);
   pdf1->Calculate(x1,muF12new);
   pdf2->Calculate(x2,muF22new);
   double fa(pdf1->GetXPDF(fl1)/x1);
@@ -341,14 +355,36 @@ double Scale_Variations::Calculate(const double& B, const double& VI,
   // reset MODEL::as to hard process
   MODEL::as->SetActiveAs(PDF::isr::hard_process);
   double asnew((*as)(muR2new)),asold((*MODEL::as)(muR2));
-  if (type==mewgttype::none) { // B,R,S
+  if (nometstype==mewgttype::none) { // B,R,S
     double asf=pow(asnew/asold,oqcd);
     msg_Debugging()<<"asf = "<<asf<<std::endl;
     msg_Debugging()<<"B,R,S event: new wgt="<<B*asf*fa*fb*pdffac<<std::endl;
     if (msg_LevelIsDebugging()) msg->SetPrecision(precision);
     return B*asf*fa*fb*pdffac;
   }
-  else { // B,VI,KP
+  else if (nometstype==mewgttype::H) { // H
+    double RDAnew(0.);
+    for (size_t i(0);i<rda.size();++i) {
+      double RDAinew(0.);
+      if (rda[i].m_wgt!=0.) {
+        double asrdainew((*as)(rda[i].m_mur2*muR2fac)),
+               asrdaiold((*MODEL::as)(rda[i].m_mur2));
+        double asfrdai=pow(asrdainew/asrdaiold,oqcd);
+        msg_Debugging()<<"asf = "<<asfrdai<<std::endl;
+        pdf1->Calculate(x1,rda[i].m_muf12*muF2fac);
+        pdf2->Calculate(x2,rda[i].m_muf22*muF2fac);
+        double farda=pdf1->GetXPDF(fl1)/x1;
+        double fbrda=pdf2->GetXPDF(fl2)/x2;
+        RDAinew=farda*fbrda*asfrdai*rda[i].m_wgt*pdffac;
+      }
+      msg_Debugging()<<"  new RDA_"<<i<<" = "<<RDAinew<<std::endl;
+      RDAnew+=RDAinew;
+    }
+    msg_Debugging()<<"H event: new wgt="<<RDAnew<<std::endl;
+    if (msg_LevelIsDebugging()) msg->SetPrecision(precision);
+    return RDAnew;
+  }
+  else { // B,VI,KP,DADS
     // B term (if only born order already the correct one)
     double asf=pow(asnew/asold,oqcd);
     double asfborn((renwgts[0]==0.&&renwgts[1]==0.)?asf:

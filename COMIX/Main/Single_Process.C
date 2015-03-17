@@ -112,6 +112,12 @@ bool COMIX::Single_Process::Initialize
   std::vector<Flavour> flavs(m_nin+m_nout);
   for (size_t i(0);i<m_nin+m_nout;++i) flavs[i]=m_flavs[i];
   int smode(0);
+  // smode: 0 - nothing
+  //        1 - RS
+  //        2 - I
+  //        4 - B
+  //        8 - checkpoles
+  //       16 - V
   if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) smode=1;
   if (m_pinfo.m_fi.NLOType()&nlo_type::vsub) {
     smode=2;
@@ -142,7 +148,8 @@ bool COMIX::Single_Process::Initialize
 			  p_bg->DInfo()->AMax(2),
 			  p_bg->DInfo()->AMax(1),
 			  p_bg->DInfo()->AMax(3));
-      m_mewgtinfo.m_type|=mewgttype::muR|mewgttype::muF;
+      m_mewgtinfo.m_type|=mewgttype::VI|mewgttype::KP;
+      if (smode&4) m_mewgtinfo.m_type|=mewgttype::B;
     }
     if (smode&16) {
       smode&=~16;
@@ -159,7 +166,7 @@ bool COMIX::Single_Process::Initialize
       }
       p_loop->SetCouplings(m_cpls);
       p_loop->SetNorm(1.0/(isf*fsf));
-      m_mewgtinfo.m_type|=mewgttype::muR;
+      m_mewgtinfo.m_type|=mewgttype::VI;
     }
     p_bg->SetLoopME(p_loop);
     nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);

@@ -17,7 +17,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "METOOLS/Explicit/Collinear_Splitting_Tools.H"
+#include "METOOLS/Explicit/NLO_Counter_Terms.H"
 #include "MODEL/Main/Coupling_Data.H"
 #include "MODEL/Main/Running_AlphaS.H"
 
@@ -77,35 +77,20 @@ double Single_Process::NLOCounterTerms() const
   MODEL::Coupling_Data *cpl(m_cpls.Get("Alpha_QCD"));
   double as(cpl->Default()*cpl->Factor());
   double ct(0.0);
-  if (!IsEqual(mur2,lmur2) && m_oqcd>1) {
-    // if flavour threshold between lmur2 and mur2 split beta0*log(mur2/lmur2)
-    // into regions with constant nf
-    std::vector<double> thrs(MODEL::as->Thresholds(lmur2,mur2));
-    msg_Debugging()<<"Flavour thresholds in range ["<<mur2<<","<<lmur2<<"]: "
-                   <<thrs<<std::endl;
-    thrs.push_back((lmur2>mur2)?lmur2:mur2);
-    thrs.insert(thrs.begin(),(lmur2>mur2)?mur2:lmur2);
-    double betalog(0.);
-    msg_Debugging()<<"\\sum_{\\mu_{th}} \\beta_0(nf(\\mu_i)) "
-                   <<"log(\\mu_{i+1}/\\mu_i) = "<<std::endl;
-    for (size_t i(0);i<thrs.size()-1;++i) {
-      msg_Debugging()<<(i==0?"    ":"  + ")<<MODEL::as->Beta0(thrs[i+1])
-                     <<" * "<<log(thrs[i+1]/thrs[i])<<"  (nf="
-                     <<MODEL::as->Nf(thrs[i+1])<<", "<<thrs[i]<<".."<<thrs[i+1]
-                     <<") \n";
-      betalog+=MODEL::as->Beta0(thrs[i+1])*log(thrs[i+1]/thrs[i]);
-    }
-    if (lmur2>mur2) betalog*=-1.;
-    msg_Debugging()<<"  = "<<betalog<<std::endl;
-    ct-=double(m_oqcd-1)*as/M_PI*betalog;
-    msg_Debugging()<<"\\alpha_s term: "<<(m_oqcd-1)<<" * "<<as
-                   <<"/2\\pi * \\sum_{\\mu_{th}} \\beta_0(n_f(\\mu_i)) "
-                   <<"log(\\mu_{i+1}/\\mu_i) = "<<-ct<<"\n";
-  }
+  ct-=METOOLS::AlphaSCounterTerm
+      (lmur2,mur2,as,MODEL::as->GetAs(PDF::isr::hard_process),m_oqcd-1);
   double z[2]={m_mewgtinfo.m_y1,m_mewgtinfo.m_y2};
+  // new
+  for (size_t i(0);i<2;++i) {
+    if (!(p_int->ISR() && p_int->ISR()->On()&(1<<i))) continue;
+    ct-=METOOLS::CollinearCounterTerms
+        (m_flavs[i],p_int->ISR()->CalcX(p_int->Momenta()[i]),z[i],as,
+         lmuf2,muf2,lmuf2,p_int->ISR()->PDF(i));
+  }
+  // old
   for (size_t i(0);i<2;++i)
-    ct+=CollinearCounterTerms
-      (i,m_flavs[i],p_int->Momenta()[i],z[i],muf2,lmuf2);
+    msg_Debugging()<<CollinearCounterTerms
+      (i,m_flavs[i],p_int->Momenta()[i],z[i],lmuf2,muf2)<<std::endl;
   msg_Debugging()<<"C = "<<ct<<"\n";
   return ct;
 }
@@ -127,7 +112,7 @@ double Single_Process::CollinearCounterTerms
   msg_Debugging()<<as<<"/(2\\pi) * log("<<sqrt(t1)<<"/"
 		 <<sqrt(t2)<<") = "<<as/(2.0*M_PI)*lt<<"\n";
   Flavour jet(kf_jet);
-  double fb=p_int->ISR()->PDFWeight(1<<(i+1),p,p,lmuf2,lmuf2,fl,fl,0);
+  double fb=p_int->ISR()->PDFWeight((1<<(i+1))|8,p,p,lmuf2,lmuf2,fl,fl,0);
   if (IsZero(fb,th)) {
     msg_Tracking()<<METHOD<<"(): Zero xPDF ( f_{"<<fl<<"}("
 		  <<x<<","<<sqrt(lmuf2)<<") = "<<fb<<" ). Skip.\n";
@@ -152,8 +137,8 @@ double Single_Process::CollinearCounterTerms
 		   <<", f_{"<<jet[j]<<"}("<<x<<","
 		   <<sqrt(lmuf2)<<") = "<<fc<<"\n";
     if (IsZero(fa,th)||IsZero(fc,th)) {
-      msg_Tracking()<<METHOD<<"(): Zero xPDF. Skip.\n";
-      return 0.0;
+      msg_Tracking()<<METHOD<<"(): Zero xPDF. No contrib from "<<j
+                    <<". Skip .\n";
     }
     ct+=as/(2.0*M_PI)*lt*
       ((fa/z*Pf+(fa/z-fc)*Ps)*(1.0-x)+fc*(H-Pi))/fb;
@@ -164,7 +149,7 @@ double Single_Process::CollinearCounterTerms
 
 ATOOLS::Cluster_Sequence_Info Single_Process::BeamISRWeight
 (const double& Q2,const int imode,
- const ClusterAmplitude_Vector &ampls) const
+ const ClusterAmplitude_Vector &ampls)
 {
   int mode(imode&1);
   if (mode) msg_Out()<<"Flipped initial states.\n";
@@ -187,6 +172,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::BeamISRWeight
     if (ampls.size() && (m_pinfo.m_ckkw&1)) {
       DEBUG_FUNC(m_name<<", \\mu_F = "<<sqrt(Q2)<<", mode = "<<mode
                  <<", #ampls="<<ampls.size());
+      m_mewgtinfo.m_type|=mewgttype::METS;
       // add outer splitting
       csi.AddSplitting(Q2,p_int->ISR()->CalcX(p_int->Momenta()[mode]),
                           p_int->ISR()->CalcX(p_int->Momenta()[1-mode]),
@@ -290,7 +276,8 @@ ATOOLS::Cluster_Sequence_Info Single_Process::BeamISRWeight
 	    if (i==1 && (IsZero(wn2) || IsZero(wd2))) continue;
 	    Vec4D p(-ampl->Leg(i)->Mom());
 	    double x(p_int->ISR()->CalcX(p)), z(x+(1.0-x)*rn[i]);
-	    csi.AddCounterTerm(CollinearCounterTerms(i,i?f2:f1,p,z,LQ2,LLQ2));
+	    csi.AddCounterTerm(CollinearCounterTerms(i,i?f2:f1,p,z,LQ2,LLQ2),
+			       z,i);
 	  }
 	}
 	set=true;
@@ -305,7 +292,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::BeamISRWeight
 }
 
 void Single_Process::BeamISRWeight
-(NLO_subevtlist *const subs,const int mode) const
+(NLO_subevtlist *const subs,const int mode)
 {
   double muf2(subs->back()->m_mu2[stp::fac]);
   double flux(p_int->ISR()->Flux(p_int->Momenta()[0],p_int->Momenta()[1]));
@@ -386,6 +373,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     if (p_mc==NULL) return m_last;
     // calculate DADS for MC@NLO, one PS point, many dipoles
     msg_Debugging()<<"Calculating DADS terms"<<std::endl;
+    m_mewgtinfo.m_type|=mewgttype::DADS;
     Dipole_Params dps(p_mc->Active(this));
     std::vector<double> x(2,-1.0);
     for (size_t j(0);j<2;++j) x[j]=Min(dps.m_p[j][3]/rpa->gen.PBeam(j)[3],1.);

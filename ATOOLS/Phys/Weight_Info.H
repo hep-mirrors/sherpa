@@ -49,9 +49,14 @@ namespace ATOOLS {
 
   struct mewgttype {
     enum code {
-      none    = 0,
-      muR     = 1,
-      muF     = 2
+      none = 0,
+      B    = 1,
+      VI   = 2,
+      KP   = 4,
+      DADS = 8,
+      METS = 16,
+      H    = 32,
+      RS   = 64
     };
   };
 
@@ -64,28 +69,23 @@ namespace ATOOLS {
   inline mewgttype::code operator&(const mewgttype::code c1,
                                    const mewgttype::code c2)
   { return (mewgttype::code)((int)c1&(int)c2); }
+  inline mewgttype::code operator^(const mewgttype::code c1,
+                                   const mewgttype::code c2)
+  { return (mewgttype::code)((int)c1^(int)c2); }
   inline const mewgttype::code &operator&=(mewgttype::code &c1,
                                            const mewgttype::code c2)
   { return c1=(mewgttype::code)((int)c1&(int)c2); }
 
-  inline std::ostream & operator<<(std::ostream & s,
-                                   const mewgttype::code & type)
-  {
-    if (type==mewgttype::none) s<<"none";
-    else if (type==mewgttype::muR)  s<<"muR";
-    else if (type==mewgttype::muF)  s<<"muF";
-    else if ((type&mewgttype::muR)&&(type&mewgttype::muF))  s<<"muR|muF";
-    return s;
-  }
+  std::ostream & operator<<(std::ostream & s,const mewgttype::code & type);
 
   struct Cluster_Step {
   public:
-    double m_t,m_xa,m_xb;
+    double m_t,m_xa,m_xb,m_xap,m_xbp;
     int m_fla,m_flb;
     double m_pdfrationumerator, m_pdfratiodenominator;
     Cluster_Step(const double& t, const double& xa, const double& xb,
                  const int& fla, const int& flb) :
-      m_t(t), m_xa(xa), m_xb(xb), m_fla(fla), m_flb(flb),
+      m_t(t), m_xa(xa), m_xb(xb), m_xap(1.), m_xbp(1.), m_fla(fla), m_flb(flb),
       m_pdfrationumerator(1.), m_pdfratiodenominator(1.) {}
   };
 
@@ -110,7 +110,11 @@ namespace ATOOLS {
     { m_txfl.push_back(Cluster_Step(t,xa,xb,fla,flb)); }
     inline void AddFlux(const double& f)        { m_flux*=f; }
     inline void AddWeight(const double& w)      { m_pdfwgt*=w; }
-    inline void AddCounterTerm(const double& c) { m_ct+=c; }
+    inline void AddCounterTerm(const double& c,
+                               const double& xp, size_t i)
+    { m_ct+=c;
+      if (i==0) m_txfl.back().m_xap=xp;
+      if (i==1) m_txfl.back().m_xbp=xp; }
     inline void AddPDFRatio(const double& n,const double& d)
     { m_txfl.back().m_pdfrationumerator=n;
       m_txfl.back().m_pdfratiodenominator=d; }
@@ -140,6 +144,22 @@ namespace ATOOLS {
     return s;
   }
 
+  struct RDA_Info {
+  public:
+    double m_wgt, m_mur2, m_muf12, m_muf22;
+    RDA_Info(const double &wgt,const double &mur2,
+             const double &muf12,const double &muf22):
+    m_wgt(wgt), m_mur2(mur2), m_muf12(muf12), m_muf22(muf22) {}
+  };
+
+  inline std::ostream & operator<<(std::ostream & s,
+                                   const ATOOLS::RDA_Info & rdai)
+  {
+    s<<"RDA: wgt="<<rdai.m_wgt<<", muR2="<<rdai.m_mur2
+     <<", muF12="<<rdai.m_muf12<<", muF22="<<rdai.m_muf22;
+    return s;
+  }
+
   struct ME_Weight_Info {
   public:
     mewgttype::code m_type;
@@ -150,6 +170,7 @@ namespace ATOOLS {
     size_t m_oqcd, m_oew;
     Cluster_Sequence_Info m_clusseqinfo;
     std::vector<DADS_Info> m_dadsinfos;
+    std::vector<RDA_Info> m_rdainfos;
     ME_Weight_Info():
       m_type(mewgttype::none),
       m_B(0.0), m_VI(0.0), m_KP(0.0), m_RS(0.0),

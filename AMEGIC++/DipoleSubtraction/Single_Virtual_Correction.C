@@ -99,7 +99,7 @@ Single_Virtual_Correction::Single_Virtual_Correction() :
   m_checkloopmap=reader.GetValue("CHECK_LOOP_MAP",0);
   m_sccmur=reader.GetValue("USR_WGT_MODE",1);
   m_user_bvimode=reader.GetValue("NLO_BVI_MODE",0);
-  m_imode=reader.GetValue<int>("NLO_IMODE",0);
+  m_imode=reader.GetValue<int>("NLO_IMODE",7);
   m_cmur[0]=0.;
   m_cmur[1]=0.;
 
@@ -274,9 +274,11 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
       for (size_t j=0;j<p_LO_process->PartonList().size();j++) p_dsij[i][j]=0.;
     }
   }
-  m_mewgtinfo.m_type=mewgttype::muR;
+  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::born)
+    m_mewgtinfo.m_type|=mewgttype::B;
+  m_mewgtinfo.m_type|=mewgttype::VI;
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub)
-    m_mewgtinfo.m_type|=mewgttype::muF;
+    m_mewgtinfo.m_type|=mewgttype::KP;
   Minimize();
   if (p_partner==this && Result()>0.) SetUpIntegrator();
   return 1;
@@ -518,7 +520,7 @@ double Single_Virtual_Correction::Calc_Imassive(const ATOOLS::Vec4D *mom)
 
 double Single_Virtual_Correction::Calc_I(const ATOOLS::Vec4D *mom) 
 {
-  if (m_imode && !(m_imode&1)) return 0.;
+  if (!(m_imode&1)) return 0.;
   if (p_masskern) return Calc_Imassive(mom);
 
   double res=0.;
@@ -547,7 +549,7 @@ double Single_Virtual_Correction::Calc_I(const ATOOLS::Vec4D *mom)
 
 void Single_Virtual_Correction::Calc_KP(const ATOOLS::Vec4D *mom, double x0, double x1, double eta0, double eta1, double weight) 
 {
-  if (m_imode && !(m_imode&2 || m_imode&4)) return;
+  if (!(m_imode&2 || m_imode&4)) return;
   p_kpterms->SetDSij(p_dsij);
   p_kpterms->Calculate(p_int->Momenta(),x0,x1,eta0,eta1,-weight*p_dipole->SPFac()/(16.0*sqr(M_PI)));
 }
@@ -556,7 +558,7 @@ double Single_Virtual_Correction::Get_KPterms(PDF_Base *pdfa, PDF_Base *pdfb,
 					      const double &eta0,const double &eta1,
 					      ATOOLS::Flavour_Vector& flav) 
 {
-  if (m_imode && !(m_imode&2 || m_imode&4)) return 0.;
+  if (!(m_imode&2 || m_imode&4)) return 0.;
   if ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub)==0) return 0.;
   int mode(pdfa==p_int->ISR()->PDF(0)?0:1);
   return p_kpterms->Get(m_x0,m_x1,eta0,eta1,flav,mode) * KFactor();

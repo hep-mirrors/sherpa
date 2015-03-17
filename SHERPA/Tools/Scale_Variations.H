@@ -90,6 +90,7 @@ namespace SHERPA {
       int fl1,fl2;
       ATOOLS::mewgttype::code type;
       std::vector<ATOOLS::DADS_Info> dads;
+      std::vector<ATOOLS::RDA_Info> rda;
       ATOOLS::Cluster_Sequence_Info csi;
     } m_params;
 
@@ -98,21 +99,28 @@ namespace SHERPA {
                            PHASIC::Process_Base * proc);
     bool Calculate(Scale_Variation * sv,
                    PHASIC::Process_Base * proc);
-    double Calculate(const double& B, const double& VI,
+    double Calculate(const ATOOLS::mewgttype::code& type,
+                     const double& B, const double& VI,
+                     const std::vector<double>& renwgts,
+                     const std::vector<double>& kpwgts,
+                     const std::vector<ATOOLS::DADS_Info>& dads,
+                     const std::vector<ATOOLS::RDA_Info>& rda,
                      const ATOOLS::Cluster_Sequence_Info& csi,
                      const double& x1, const double& x2,
                      const double& x1p, const double& x2p,
+                     const int& fl1, const int& fl2,
                      const double& muR2,
                      const double& muF12, const double& muF22,
                      const double& muR2fac, const double& muF2fac,
                      const size_t& oqcd, const size_t& oew,
-                     const int& fl1, const int& fl2,
                      PDF::PDF_Base * pdf1, PDF::PDF_Base * pdf2,
-                     MODEL::One_Running_AlphaS * as,
-                     const std::vector<double>& renwgts,
-                     const std::vector<double>& kpwgts,
-                     const ATOOLS::mewgttype::code& type,
-                     const std::vector<ATOOLS::DADS_Info>& dads);
+                     MODEL::One_Running_AlphaS * as);
+    double ReweightLO();
+    double ReweightBVI();
+    double ReweightKP();
+    double ReweightDADS();
+    double ReweightNLOCT();
+    double ReweightH();
     double PDFRatioFactor(const double& fa, const double& fb,
                           const ATOOLS::Cluster_Sequence_Info& csi,
                           const double& muF2fac,

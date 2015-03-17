@@ -114,32 +114,28 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       wc["MuR2"]=m_mur2;
       wc["OQCD"]=m_oqcd;
       wc["OEW"]=m_oew;
-      size_t nt(0);
       if (p_wgtinfo) {
         wc["Reweight_B"]=p_wgtinfo->m_B;
         if (p_wgtinfo->m_type!=mewgttype::none) {
-          if (p_wgtinfo->m_B) nt|=1;
           wc["Reweight_B"]=p_wgtinfo->m_B;
           wc["Reweight_VI"]=p_wgtinfo->m_VI;
-          if (p_wgtinfo->m_VI) nt|=2;
           wc["Reweight_KP"]=p_wgtinfo->m_KP;
-          if (p_wgtinfo->m_KP) nt|=4;
           wc["Reweight_KP_x1p"]=p_wgtinfo->m_y1;
           wc["Reweight_KP_x2p"]=p_wgtinfo->m_y2;
           wc["Reweight_MuR2"]=p_wgtinfo->m_mur2;
           wc["Reweight_MuF2"]=p_wgtinfo->m_muf2;
-          if (p_wgtinfo->m_type&mewgttype::muR) {
+          if (p_wgtinfo->m_type&mewgttype::VI) {
             for (size_t i=0;i<p_wgtinfo->m_wren.size();++i) {
               wc["Reweight_VI_wren_"+ToString(i)]=p_wgtinfo->m_wren[i];
             }
           }
-          if (p_wgtinfo->m_type&mewgttype::muF) {
+          if (p_wgtinfo->m_type&mewgttype::KP) {
             for (size_t i=0;i<p_wgtinfo->m_wfac.size();++i) {
               wc["Reweight_KP_wfac_"+ToString(i)]=p_wgtinfo->m_wfac[i];
             }
           }
-          if (p_wgtinfo->m_dadsinfos.size()) {
-            nt|=8;
+          if (p_wgtinfo->m_type&mewgttype::DADS &&
+              p_wgtinfo->m_dadsinfos.size()) {
             wc["Reweight_DADS_N"]=p_wgtinfo->m_dadsinfos.size();
             for (size_t i(0);i<p_wgtinfo->m_dadsinfos.size();++i) {
               wc["Reweight_DADS_"+ToString(i)+"_Weight"]
@@ -163,8 +159,8 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
             }
           }
         }
-        if (p_wgtinfo->m_clusseqinfo.m_txfl.size()) {
-          nt|=16;
+        if (p_wgtinfo->m_type&mewgttype::METS &&
+            p_wgtinfo->m_clusseqinfo.m_txfl.size()) {
           wc["Reweight_ClusterStep_N"]=p_wgtinfo->m_clusseqinfo.m_txfl.size();
           for (size_t i(0);i<p_wgtinfo->m_clusseqinfo.m_txfl.size();++i) {
             wc["Reweight_ClusterStep_"+ToString(i)+"_t"]
@@ -179,17 +175,29 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
                 =p_wgtinfo->m_clusseqinfo.m_txfl[i].m_flb;
           }
         }
+        if (p_wgtinfo->m_type&mewgttype::H) {
+          wc["Reweight_RDA_N"]=p_wgtinfo->m_rdainfos.size();
+          for (size_t i(0);i<p_wgtinfo->m_rdainfos.size();++i) {
+            wc["Reweight_RDA_"+ToString(i)+"_Weight"]
+                =p_wgtinfo->m_rdainfos[i].m_wgt;
+            if (p_wgtinfo->m_rdainfos[i].m_wgt) {
+              wc["Reweight_RDA_"+ToString(i)+"_MuR2"]
+                  =p_wgtinfo->m_rdainfos[i].m_mur2;
+              wc["Reweight_RDA_"+ToString(i)+"_MuF12"]
+                  =p_wgtinfo->m_rdainfos[i].m_muf12;
+              wc["Reweight_RDA_"+ToString(i)+"_MuF22"]
+                  =p_wgtinfo->m_rdainfos[i].m_muf22;
+            }
+          }
+        }
       }
       if (p_subevtlist) {
-        nt|=32;
         wc["Reweight_RS"]=m_pwgt;
       }
-      wc["Reweight_Type"]=nt;
+      wc["Reweight_Type"]=p_wgtinfo->m_type;
     }
-    else {
-      // if using minimal weights still dump if RS
-      if (p_subevtlist) wc["Reweight_Type"]=32;
-    }
+    // if using minimal weights still dump event type
+    wc["Reweight_Type"]=(p_subevtlist?64:0);
     // fill scale variations map into weight container
     if (p_nsvmap) {
       msg_Debugging()<<"#named wgts: "<<p_nsvmap->size()<<std::endl;
@@ -217,7 +225,7 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       wc.push_back(m_oqcd);
       wc.push_back(m_oew);
     }
-    wc.push_back(p_subevtlist?32:0);
+    wc.push_back(p_subevtlist?64:0);
   }
   evt.weights()=wc;
   if (p_pdfinfo) {

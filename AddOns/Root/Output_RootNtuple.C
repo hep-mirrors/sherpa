@@ -247,14 +247,14 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
       m_evtlist[m_cnt2].x2=wgtinfo->m_x2;
       m_evtlist[m_cnt2].y1=wgtinfo->m_y1;
       m_evtlist[m_cnt2].y2=wgtinfo->m_y2;
-      size_t nren(wgtinfo->m_type&mewgttype::muR?wgtinfo->m_wren.size():0),
-             nfac(wgtinfo->m_type&mewgttype::muF?wgtinfo->m_wfac.size():0);
+      size_t nren(wgtinfo->m_type&mewgttype::VI?wgtinfo->m_wren.size():0),
+             nfac(wgtinfo->m_type&mewgttype::KP?wgtinfo->m_wfac.size():0);
       m_evtlist[m_cnt2].nuwgt=nren+nfac;
-      if (wgtinfo->m_type&mewgttype::muR) {
+      if (wgtinfo->m_type&mewgttype::VI) {
         for (size_t i(0);i<nren;++i)
           m_evtlist[m_cnt2].uwgt[i]=wgtinfo->m_wren[i];
       }
-      if (wgtinfo->m_type&mewgttype::muF) {
+      if (wgtinfo->m_type&mewgttype::KP) {
         for (size_t i(0);i<nfac;++i)
           m_evtlist[m_cnt2].uwgt[nren+i]=wgtinfo->m_wfac[i];
       }
@@ -308,7 +308,8 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
       m_evtlist[m_cnt2].alphas=MODEL::s_model->ScalarFunction("alpha_S", m_evtlist[m_cnt2].rscale*m_evtlist[m_cnt2].rscale);
       m_evtlist[m_cnt2].oqcd=(*signal)["OQCD"]->Get<int>();
       if (type!="RS") THROW(fatal_error,"Error in NLO type");
-      strcpy(m_evtlist[m_cnt2].type,"R"); 
+      if ((*nlos)[j]->p_real==(*nlos)[j]) strcpy(m_evtlist[m_cnt2].type,"R");
+      else                                strcpy(m_evtlist[m_cnt2].type,"S");
 
       if (wgtinfo) {
 	m_evtlist[m_cnt2].x1=wgtinfo->m_x1;
