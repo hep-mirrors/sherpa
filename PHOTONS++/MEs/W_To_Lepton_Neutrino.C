@@ -126,7 +126,7 @@ double W_To_Lepton_Neutrino::Smod(unsigned int kk) {
   double Zj = -1.;
   int    ti = -1;
   int    tj = +1;
-  return m_alpha/(4.*M_PI*M_PI)*Zi*Zj*ti*tj*(pi/(pi*k)-pj/(pj*k)).Abs2();
+  return m_alpha/(4.*M_PI*M_PI)*Zi*Zj*ti*tj*(/*pi/(pi*k)*/-pj/(pj*k)).Abs2();
 }
 
 Complex W_To_Lepton_Neutrino::InfraredSubtractedME_0_0() {
@@ -161,10 +161,18 @@ Complex W_To_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int i) {
   m_flavs[5]   = m_flavs[1].Bar();
   XYZFunc XYZ(6,m_moms,m_flavs,false);
   m_flavs[4] = m_flavs[5] = Flavour(kf_none);
+  // two diagrams
+  // M_1 = -ie^2/(2sqrt(2)sW) * 1/((pl+k)^2-m^2)
+  //       * ubar(l)gamma^mu(-pl-k+m)gamma^nu P_L v(nu) eps_nu^W eps_mu^y*
+  // M_2 = ie/(2sqrt(2)sW) * 1/(pW-k)^2-M^2)
+  //       * ubar(l)gamma_rho P_L v(nu)
+  //       * [-2g^{rho,nu}pW^mu + g^{rho,mu}pW^nu
+  //          + g^{nu,mu}k^rho + 1/M^2(pW-k)^rho pW^nu pW^mu]
+  //       * eps_nu^W eps_mu^y*
   Complex r1 = Complex(0.,0.);
   Complex r2 = Complex(0.,0.);
   Complex r3 = Complex(0.,0.);
-  Lorentz_Ten3C ten31,ten32,ten33,ten34,ten35;
+  Lorentz_Ten3C ten31,ten32,ten33,ten34;
   for (unsigned int s=0; s<=1; s++) {
     r1 += XYZ.X(1,m_spins[1],epsP,4,s,1.,1.)
           *XYZ.X(4,s,epsW,2,m_spins[2],m_cR,m_cL);
@@ -173,18 +181,16 @@ Complex W_To_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int i) {
   }
   Vec4D p = m_moms[0];
   Vec4D k = m_moms[3];
-  // index ordering sigma(1),mu(2),lambda(3)
-  // g^\sigma\mu(2p-k)^\lambda
-  ten31 = BuildTensor(MetricTensor(),2.*p-k);
-  // g^\sigma\lambda(2k-p)^\mu
-  ten32 = BuildTensor(MetricTensor(),2.*k-p); ten32 = ten32.Transpose(2,3);
-  // -2 g^\mu\lambda k^\sigma
-  ten33 = -2.*BuildTensor(MetricTensor(),k);  ten33 = ten33.Transpose(1,3);
-  // -1/M2 (p-k)^\sigma(p-k)^\mu(2p-k)^\lambda
-  ten34 = -1./M2*BuildTensor(p-k,p-k,2.*p-k);
-  // -1/M2 (p-k)^\sigma(2k-p)^\mu(p-k)^\lambda
-  ten35 = -1./M2*BuildTensor(p-k,2.*k-p,p-k);
-  Lorentz_Ten3C ten = ten31+ten32+ten33+ten34+ten35;
+  // index ordering rho(1),nu(2),mu(3)
+  // -2g^{rho,nu}pW^mu
+  ten31 = BuildTensor(MetricTensor(),-2.*p);
+  // g^{rho,mu}pW^nu
+  ten32 = BuildTensor(MetricTensor(),p).Transpose(2,3);
+  // g^{nu,mu}k^rho
+  ten33 = BuildTensor(MetricTensor(),k).Transpose(1,3);
+  // 1/M^2(pW-k)^rho pW^nu pW^mu
+  ten34 = -1./M2*BuildTensor(p-k,p,p);
+  Lorentz_Ten3C ten = ten31+ten32+ten33+ten34;
   // v^\sigma = L^\sigma\mu\lambda epsW_\mu epsP_\lambda
   Vec4C v3 = Contraction(Contraction(ten,3,epsP),2,epsW);
   r3 = XYZ.X(1,m_spins[1],v3,2,m_spins[2],m_cR,m_cL);
@@ -193,7 +199,7 @@ Complex W_To_Lepton_Neutrino::InfraredSubtractedME_1_05(unsigned int i) {
   r2 *= (1.-m/sqrt(q2))/(q2-m2);
   r3 *= -1./(Q2-M2);
 
-  return (m_i*m_e*m_e)/(2.*m_sqrt2*m_sW)*(r1+r2+r3);
+  return (m_i*m_e*m_e)/(2.*m_sqrt2*m_sW)*(r1+r2/*+r3*/);
 }
 
 Complex W_To_Lepton_Neutrino::InfraredSubtractedME_1_15(unsigned int i) {
