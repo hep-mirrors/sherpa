@@ -72,6 +72,7 @@ namespace SHERPARIVET {
     bool   m_splitjetconts, m_splitSH, m_splitcoreprocs, m_splitvariations,
            m_ignorebeams, m_usehepmcshort, m_usehepmcnamedweights,
            m_usehepmcfullweightinfo, m_usehepmctreelike, m_printsummary;
+    size_t m_xsoutputprecision;
 
     RivetScaleVariationMap         m_rivet;
     SHERPA::HepMC2_Interface       m_hepmc2;
@@ -189,7 +190,7 @@ Rivet_Interface::Rivet_Interface(const std::string &inpath,
   m_splitcoreprocs(false), m_splitvariations(true),
   m_ignoreblobs(ignoreblobs), m_usehepmcnamedweights(false),
   m_usehepmcfullweightinfo(false), m_usehepmctreelike(false),
-  m_printsummary(true)
+  m_printsummary(true), m_xsoutputprecision(6)
 {
   if (m_outpath[m_outpath.size()-1]=='/')
     m_outpath=m_outpath.substr(0,m_outpath.size()-1);
@@ -464,6 +465,8 @@ bool Rivet_Interface::Init()
     m_printsummary=reader.GetValue<int>("PRINT_SUMMARY",1);
     m_ignorebeams=reader.GetValue<int>("IGNOREBEAMS", 0);
 
+    m_xsoutputprecision=reader.GetValue<int>("XS_OUTPUT_PRECISION", 6);
+
     reader.SetIgnore("");
     Log::setLevel("Rivet", reader.GetValue<int>("-l", 20));
     reader.SetUseGlobalTags(false);
@@ -594,9 +597,9 @@ bool Rivet_Interface::Finish()
       std::string namestr(m_rivet.size()>1?" for "+mit->first:"");
       std::string output(std::string("**  Total XS")+namestr
                          +std::string(" = ( ")
-                         +ToString(mit->second->TotalXS(),6)
+                         +ToString(mit->second->TotalXS(),m_xsoutputprecision)
                          +std::string(" +- ")
-                         +ToString(mit->second->TotalErr(),6)
+                         +ToString(mit->second->TotalErr(),m_xsoutputprecision)
                          +std::string(" ) pb **"));
       std::string astline(output.size(),'*');
       msg_Info()<<astline<<"\n"<<output<<"\n"<<astline<<std::endl;
