@@ -52,7 +52,10 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
     reader1.AddComment("#");
     reader1.AddWordSeparator("\t");
     reader1.SetInputFile(rpa->gen.Variable("FRAGMENTATION_DATA_FILE"));
-    m_on = (reader1.GetValue<std::string>("FRAGMENTATION","")!="Off");
+    string fragmentation_model(reader1.GetValue<string>("FRAGMENTATION",""));
+    m_on = (fragmentation_model!="Off"  &&
+            fragmentation_model!="None" &&
+            fragmentation_model!="0");
   }
   // switch off if there are hard decays, have their own QED corrections,
   // cannot tell here what has been corrected and what not -- OR --
