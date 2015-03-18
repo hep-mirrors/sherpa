@@ -576,12 +576,12 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                CONDITIONAL_ROOTDIR=$ROOTSYS
                CONDITIONAL_ROOTINCS="-I$ROOTSYS/include -I$($ROOTSYS/bin/root-config --incdir)";
                CONDITIONAL_ROOTLIBS="-L$ROOTSYS/lib $($ROOTSYS/bin/root-config --glibs)"
-               CONDITIONAL_ROOTFLAGS=-Wno-long-long
+               CONDITIONAL_ROOTFLAGS="$($ROOTSYS/bin/root-config --cflags)"
              elif test -x "`which root-config`"; then
                CONDITIONAL_ROOTDIR=`root-config --prefix`;
                CONDITIONAL_ROOTINCS=-I`root-config --incdir`;
                CONDITIONAL_ROOTLIBS=`root-config --glibs`;
-               CONDITIONAL_ROOTFLAGS=-Wno-long-long
+               CONDITIONAL_ROOTFLAGS=`root-config --cflags`;
                 if ! test -d "$CONDITIONAL_ROOTDIR"; then
                   AC_MSG_ERROR(root-config --prefix returned a path that is not available. Please check your ROOT installation and set \$ROOTSYS manually.);
                 fi
@@ -593,7 +593,7 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
                CONDITIONAL_ROOTDIR="${enableval}"
                CONDITIONAL_ROOTINCS="-I${enableval}/include -I${enableval}/include/root";
                CONDITIONAL_ROOTLIBS="-L${enableval}/lib $(${enableval}/bin/root-config --glibs)";
-               CONDITIONAL_ROOTFLAGS="-Wno-long-long"
+               CONDITIONAL_ROOTFLAGS="$(${enableval}/bin/root-config --cflags)";
              else
                AC_MSG_ERROR(${enableval} is not a valid path.);
              fi;
