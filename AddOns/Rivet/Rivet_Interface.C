@@ -249,7 +249,7 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
     }
     else if (cur=="Weight")  wgtmap["nominal"]=wc[cur];
     else if (cur=="NTrials") ntrials=wc[cur];
-    else if (cur=="NLO_Type" && wc[cur]==32) xstype=1;
+    else if (cur=="Reweight_Type" && wc[cur]&64) xstype=1;
   }
 #else
   // lookup all evt-wgts with name "MUR<fac>_MUF<fac>_PDF<id>"
@@ -274,13 +274,13 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
     }
     else if (cur=="Weight")  wgtmap["nominal"]=wgt;
     else if (cur=="NTrials") ntrials=wgt;
-    else if (cur=="Reweight_Type" && wgt==32) xstype=1;
+    else if (cur=="Reweight_Type" && ((int)wgt)&64) xstype=1;
   }
 #endif /* HEPMC_HAS_WORKING_NAMED_WEIGHTS */
 #else
   wgtmap["nominal"]=wc[0];
   ntrials=wc[3];
-  xstype=(((wc.size()==5&&wc[4]==32)||(wc.size()==11&&wc[10]==32))?1:0);
+  xstype=(((wc.size()==5&&wc[4]&64)||(wc.size()==11&&wc[10]&64))?1:0);
 #endif /* HEPMC_HAS_NAMED_WEIGHTS */
   if (msg_LevelIsDebugging()) {
     for (std::map<std::string,double>::iterator wit(wgtmap.begin());
@@ -308,6 +308,7 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
 void Rivet_Interface::SetEventWeight(const Rivet_Scale_Variation* rsv,
                                      HepMC::GenEvent& evt, const int& idx)
 {
+  msg_Debugging()<<"idx="<<idx<<std::endl;
   double wgt(idx<0?rsv->Weight():rsv->Weight(idx));
   DEBUG_FUNC(rsv->Name()<<": "<<wgt);
   evt.weights()[0]=wgt;
@@ -522,6 +523,7 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
                    <<it->second->RivetMap().size()<<" histograms."<<std::endl;
     Rivet_Map& rivetmap(it->second->RivetMap());
     if (subevents.size()) {
+      msg_Debugging()<<"#subevts: "<<subevents.size()<<std::endl;
       it->second->SynchroniseCrossSection();
       for (size_t i(0);i<subevents.size();++i) {
         SetEventWeight(it->second,*subevents[i],i);
