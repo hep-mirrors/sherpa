@@ -376,20 +376,17 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     m_mewgtinfo.m_type|=mewgttype::DADS;
     Dipole_Params dps(p_mc->Active(this));
     std::vector<double> x(2,-1.0);
-    for (size_t j(0);j<2;++j) x[j]=Min(dps.m_p[j][3]/rpa->gen.PBeam(j)[3],1.);
+    for (size_t j(0);j<2;++j) x[j]=Min(p_int->ISR()->CalcX(dps.m_p[j]),1.);
     for (size_t i(0);i<dps.m_procs.size();++i) {
       Process_Base *cp(dps.m_procs[i]);
       size_t mcmode(cp->SetMCMode(m_mcmode));
       bool lookup(cp->LookUp());
       cp->SetLookUp(false);
       double dadswgt(cp->Differential(dps.m_p)*dps.m_weight);
+      msg_Debugging()<<"DADS_"<<i<<" = "<<-dadswgt<<std::endl;
       double dadsmewgt(cp->GetMEwgtinfo()->m_B*dps.m_weight);
-      DADS_Info dads(-dadsmewgt,
-                     cp->Flavours()[0],cp->Flavours()[1],
-                     x[0],x[1],
-                     0.,0.,
-                     cp->ScaleSetter()->Scale(stp::ren),
-                     cp->ScaleSetter()->Scale(stp::fac));
+      DADS_Info dads(-dadsmewgt,x[0],x[1],
+                     cp->Flavours()[0],cp->Flavours()[1]);
       msg_Debugging()<<dads<<std::endl;
       m_mewgtinfo.m_dadsinfos.push_back(dads);
       m_last-=dadswgt;

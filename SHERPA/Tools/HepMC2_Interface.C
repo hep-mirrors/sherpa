@@ -142,19 +142,13 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
                   =p_wgtinfo->m_dadsinfos[i].m_wgt;
               if (p_wgtinfo->m_dadsinfos[i].m_wgt) {
                 wc["Reweight_DADS_"+ToString(i)+"_x1"]
-                    =p_wgtinfo->m_dadsinfos[i].m_pdf.m_x1;
+                    =p_wgtinfo->m_dadsinfos[i].m_x1;
                 wc["Reweight_DADS_"+ToString(i)+"_x2"]
-                    =p_wgtinfo->m_dadsinfos[i].m_pdf.m_x2;
+                    =p_wgtinfo->m_dadsinfos[i].m_x2;
                 wc["Reweight_DADS_"+ToString(i)+"_fl1"]
-                    =p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl1;
+                    =p_wgtinfo->m_dadsinfos[i].m_fl1;
                 wc["Reweight_DADS_"+ToString(i)+"_fl2"]
-                    =p_wgtinfo->m_dadsinfos[i].m_pdf.m_fl2;
-                wc["Reweight_DADS_"+ToString(i)+"_MuR2"]
-                    =p_wgtinfo->m_dadsinfos[i].m_mur2;
-                wc["Reweight_DADS_"+ToString(i)+"_MuF12"]
-                    =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf12;
-                wc["Reweight_DADS_"+ToString(i)+"_MuF22"]
-                    =p_wgtinfo->m_dadsinfos[i].m_pdf.m_muf22;
+                    =p_wgtinfo->m_dadsinfos[i].m_fl2;
               }
             }
           }

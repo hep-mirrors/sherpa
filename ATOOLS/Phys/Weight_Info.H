@@ -125,22 +125,19 @@ namespace ATOOLS {
 
   struct DADS_Info {
   public:
-    double   m_wgt, m_mur2;
-    PDF_Info m_pdf;
+    double   m_wgt, m_x1, m_x2;
+    int      m_fl1, m_fl2;
     DADS_Info(const double &wgt,
-              const int &fl1=0, const int &fl2=0,
-              const double &x1=0.,const double &x2=0.,
-              const double &xf1=0.,const double &xf2=0.,
-              const double &mur2=0.,const double &muf2=0.):
-    m_wgt(wgt), m_mur2(mur2),
-    m_pdf(PDF_Info(fl1,fl2,x1,x2,muf2,muf2,xf1,xf2)) {}
+              const double &x1,const double &x2,
+              const int &fl1, const int &fl2):
+    m_wgt(wgt), m_x1(x1), m_x2(x2), m_fl1(fl1), m_fl2(fl2) {}
   };
 
   inline std::ostream & operator<<(std::ostream & s,
                                    const ATOOLS::DADS_Info & dadsi)
   {
-    s<<"DADS: wgt="<<dadsi.m_wgt<<", muR2="<<dadsi.m_mur2<<", "
-     <<dadsi.m_pdf;
+    s<<"DADS: wgt="<<dadsi.m_wgt<<", x1="<<dadsi.m_x1<<", x2="<<dadsi.m_x2
+     <<", fl1="<<dadsi.m_fl1<<", fl1="<<dadsi.m_fl2;
     return s;
   }
 

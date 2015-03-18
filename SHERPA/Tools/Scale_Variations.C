@@ -330,7 +330,7 @@ double Scale_Variations::Calculate(const ATOOLS::mewgttype::code& type,
   DEBUG_FUNC("factors (muR/muF)=("<<muR2fac<<","<<muF2fac<<"), "
              <<"pdf1="<<pdf1->LHEFNumber()<<", pdf2="<<pdf2->LHEFNumber());
   size_t precision(msg->Out().precision());
-  if (msg_LevelIsDebugging()) msg->SetPrecision(16);
+  if (msg_LevelIsDebugging()) msg->SetPrecision(15);
   // calculate new event weight
   double muR2new(muR2*muR2fac);
   double muF12new(muF12*muF2fac),muF22new(muF22*muF2fac);
@@ -458,11 +458,12 @@ double Scale_Variations::Calculate(const ATOOLS::mewgttype::code& type,
     for (size_t i(0);i<dads.size();++i) {
       double DADSinew(0.);
       if (dads[i].m_wgt!=0.) {
-        pdf1->Calculate(dads[i].m_pdf.m_x1,dads[i].m_pdf.m_muf12*muF2fac);
-        pdf2->Calculate(dads[i].m_pdf.m_x2,dads[i].m_pdf.m_muf22*muF2fac);
-        double fadads=pdf1->GetXPDF(dads[i].m_pdf.m_fl1)/dads[i].m_pdf.m_x1;
-        double fbdads=pdf2->GetXPDF(dads[i].m_pdf.m_fl2)/dads[i].m_pdf.m_x2;
-        DADSinew=fadads*fbdads*asf*dads[i].m_wgt*pdffac;
+        // muR, muF must be same as in B
+        pdf1->Calculate(dads[i].m_x1,muF12new);
+        pdf2->Calculate(dads[i].m_x2,muF22new);
+        double fadadsi=pdf1->GetXPDF(dads[i].m_fl1)/dads[i].m_x1;
+        double fbdadsi=pdf2->GetXPDF(dads[i].m_fl2)/dads[i].m_x2;
+        DADSinew=fadadsi*fbdadsi*asf*dads[i].m_wgt*pdffac;
       }
       msg_Debugging()<<"  new DADS_"<<i<<" = "<<DADSinew<<std::endl;
       DADSnew+=DADSinew;
