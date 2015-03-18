@@ -308,7 +308,6 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
 void Rivet_Interface::SetEventWeight(const Rivet_Scale_Variation* rsv,
                                      HepMC::GenEvent& evt, const int& idx)
 {
-  msg_Debugging()<<"idx="<<idx<<std::endl;
   double wgt(idx<0?rsv->Weight():rsv->Weight(idx));
   DEBUG_FUNC(rsv->Name()<<": "<<wgt);
   evt.weights()[0]=wgt;
@@ -523,7 +522,6 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
                    <<it->second->RivetMap().size()<<" histograms."<<std::endl;
     Rivet_Map& rivetmap(it->second->RivetMap());
     if (subevents.size()) {
-      msg_Debugging()<<"#subevts: "<<subevents.size()<<std::endl;
       it->second->SynchroniseCrossSection();
       for (size_t i(0);i<subevents.size();++i) {
         SetEventWeight(it->second,*subevents[i],i);
