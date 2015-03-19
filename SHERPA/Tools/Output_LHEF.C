@@ -19,7 +19,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Output_LHEF::Output_LHEF(const Output_Arguments &args):
-  Output_Base("LHEF")
+  Output_Base("LHEF"), m_xs(0.0), m_xserr(0.0), m_max(0.0)
 {
   m_basename=args.m_outpath+"/"+args.m_outfile;
   m_ext=".lhe";
