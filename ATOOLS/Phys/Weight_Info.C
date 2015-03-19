@@ -63,6 +63,11 @@ ME_Weight_Info &ME_Weight_Info::operator*=(const double &scal)
 
 void ME_Weight_Info::Reset()
 {
+  // undo DADS, METS, H settings as they are set event-by-event outside the
+  // ME generators
+  if (m_type&mewgttype::DADS) m_type^=mewgttype::DADS;
+  if (m_type&mewgttype::METS) m_type^=mewgttype::METS;
+  if (m_type&mewgttype::H)    m_type^=mewgttype::H;
   m_B=m_VI=m_KP=m_RS=0.;
   m_dadsinfos.clear();
   m_rdainfos.clear();

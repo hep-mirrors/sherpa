@@ -69,12 +69,15 @@ namespace ATOOLS {
   inline mewgttype::code operator&(const mewgttype::code c1,
                                    const mewgttype::code c2)
   { return (mewgttype::code)((int)c1&(int)c2); }
-  inline mewgttype::code operator^(const mewgttype::code c1,
-                                   const mewgttype::code c2)
-  { return (mewgttype::code)((int)c1^(int)c2); }
   inline const mewgttype::code &operator&=(mewgttype::code &c1,
                                            const mewgttype::code c2)
   { return c1=(mewgttype::code)((int)c1&(int)c2); }
+  inline mewgttype::code operator^(const mewgttype::code c1,
+                                   const mewgttype::code c2)
+  { return (mewgttype::code)((int)c1^(int)c2); }
+  inline const mewgttype::code &operator^=(mewgttype::code &c1,
+                                           const mewgttype::code c2)
+  { return c1=(mewgttype::code)((int)c1^(int)c2); }
 
   std::ostream & operator<<(std::ostream & s,const mewgttype::code & type);
 

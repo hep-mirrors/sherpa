@@ -254,6 +254,7 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
 #else
   // lookup all evt-wgts with name "MUR<fac>_MUF<fac>_PDF<id>"
   // at the moment the only way to do that is to filter the printout
+  // accuracy limited to print out accu of 6 digits, must suffice
   MyStrStream str;
   wc.print(str);
 
