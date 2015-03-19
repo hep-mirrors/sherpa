@@ -335,9 +335,9 @@ double Scale_Variations::Calculate(const ATOOLS::mewgttype::code& type,
   double muR2new(muR2*muR2fac);
   double muF12new(muF12*muF2fac),muF22new(muF22*muF2fac);
   msg_Debugging()<<"B = "<<B<<", VI = "<<VI<<std::endl;
-  msg_Debugging()<<"muR: "<<muR2<<" -> "<<muR2new<<" , "
-                 <<"muF1: "<<muF12<<" -> "<<muF12new<<" , "
-                 <<"muF2: "<<muF22<<" -> "<<muF22new<<std::endl;
+  msg_Debugging()<<"\\mu_R^2: "<<muR2<<" -> "<<muR2new<<" , "
+                 <<"\\mu_F1^2: "<<muF12<<" -> "<<muF12new<<" , "
+                 <<"\\mu_F2^2: "<<muF22<<" -> "<<muF22new<<std::endl;
   msg_Debugging()<<"oqcd: "<<oqcd<<", oew: "<<oew<<std::endl;
   msg_Debugging()<<"cluster sequence: "<<csi.m_txfl.size()<<" steps"<<std::endl;
   // build type minus METS
@@ -387,8 +387,8 @@ double Scale_Variations::Calculate(const ATOOLS::mewgttype::code& type,
   else { // B,VI,KP,DADS
     // B term (if only born order already the correct one)
     double asf=pow(asnew/asold,oqcd);
-    double asfborn((renwgts[0]==0.&&renwgts[1]==0.)?asf:
-                                                    pow(asnew/asold,oqcd-1));
+    double asfborn((type&mewgttype::VI||type&mewgttype::KP)?
+                   pow(asnew/asold,oqcd-1):asf);
     msg_Debugging()<<"asf(B) = "<<asfborn<<std::endl;
     msg_Debugging()<<"asf(VI,KP) = "<<asf<<std::endl;
     double Bnew(B*asfborn*fa*fb*pdffac);
