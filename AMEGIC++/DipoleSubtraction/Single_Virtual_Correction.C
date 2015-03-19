@@ -276,8 +276,10 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
   }
   if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::born)
     m_mewgtinfo.m_type|=mewgttype::B;
-  m_mewgtinfo.m_type|=mewgttype::VI;
-  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub)
+  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::loop ||
+      (m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub && m_imode&1))
+    m_mewgtinfo.m_type|=mewgttype::VI;
+  if (m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub && (m_imode&2 || m_imode&4))
     m_mewgtinfo.m_type|=mewgttype::KP;
   Minimize();
   if (p_partner==this && Result()>0.) SetUpIntegrator();
@@ -858,7 +860,7 @@ void Single_Virtual_Correction::FillMEwgts(ATOOLS::ME_Weight_Info& wgtinfo)
 {
   wgtinfo.m_y1=m_x0;
   wgtinfo.m_y2=m_x1;
-  if (wgtinfo.m_wren.size()==2)
+  if (wgtinfo.m_type&mewgttype::VI)
     for (size_t i=0;i<2;i++) wgtinfo.m_wren[i]=m_cmur[i];
   if (p_kpterms) p_kpterms->FillMEwgts(wgtinfo);
 }
