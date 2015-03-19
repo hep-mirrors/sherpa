@@ -372,7 +372,7 @@ double KP_Terms::Get(const double &x0,const double &x1,
 
 void KP_Terms::FillMEwgts(ATOOLS::ME_Weight_Info &wgtinfo)
 {
-  if (wgtinfo.m_wfac.size()==16) {
+  if (wgtinfo.m_type&mewgttype::KP) {
     for (int i=0;i<4;i++) {
       wgtinfo.m_wfac[i]=m_kpca[i];
       wgtinfo.m_wfac[i+4]=m_kpcb[i];
