@@ -562,7 +562,7 @@ double LF_FVF_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./(z+y) - 2. +z+y )
+  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./z - 2. +z )
     + p_cf->Coupling(scale,1) * 0.5 * z;
   return value * JII(z,y,eta,scale);
 }

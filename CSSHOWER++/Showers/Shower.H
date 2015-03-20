@@ -29,7 +29,7 @@ namespace CSSHOWER {
 
     std::map<std::string,double,ATOOLS::String_Sort> m_efac;
 
-    double m_weight, m_franksfudgefactor2;
+    double m_weight;
 
     void   ResetScales(const double &kt2);
     void   SetSplitInfo(const ATOOLS::Vec4D &psplit,

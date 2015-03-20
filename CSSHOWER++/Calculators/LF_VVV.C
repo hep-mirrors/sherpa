@@ -359,7 +359,7 @@ double LF_VVV1_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double value = 4.0 * p_cf->Coupling(scale,0) * ( z/(1.-z) + (1.-z-y)/(z+y)/2.0);
+  double value = 4.0 * p_cf->Coupling(scale,0) * ( z/(1.-z) + (1.-z)/z/2.0);
   return value * JII(z,y,eta,scale);
 }
 
@@ -386,7 +386,7 @@ double LF_VVV2_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double value = 4.0 * p_cf->Coupling(scale,0) * ( (z+y)*(1.-z-y) + (1.-z-y)/(z+y)/2.0);
+  double value = 4.0 * p_cf->Coupling(scale,0) * ( z*(1.-z) + (1.-z)/z/2.0);
   return value * JII(z,y,eta,scale);
 }
 
