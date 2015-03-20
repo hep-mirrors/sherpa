@@ -3,9 +3,16 @@
 make_scons() {
 libname="Proc_"$(basename $(pwd))
 sources=$(for i in $*; do printf $i | sed "s/^/'/1;s/$/',/1" | tr '\n' ' '; done | sed 's/,$//1')
-echo "Import('env')
+echo "import os
+Import('env')
 lenv=env.Clone()
-proclib = lenv.SharedLibrary('${libname}',[${sources}])
+procobj = lenv.SharedObject([${sources}])
+proclib = lenv.SharedLibrary('${libname}',[])
+Depends(proclib,procobj)
+with open('${libname}.rsp',\"w\") as f:
+    for o in procobj:
+        f.write ('%s\n' %os.path.abspath(str(o)).replace('\\\\','/'))
+lenv.Append(LINKFLAGS=['@%s' % os.path.abspath('${libname}.rsp')])
 lenv.Install('\${libdir}',proclib)
 lenv.Alias('install',['\${libdir}'])" > SConscript
 }
