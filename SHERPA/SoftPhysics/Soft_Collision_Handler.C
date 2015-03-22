@@ -71,10 +71,10 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List * blobs,
   int outcome;
   switch (m_mode) {
   case 1: 
-    weight = 1.;
     //msg_Out()<<"#################################"<<std::endl
     //	     <<METHOD<<"("<<blobs->size()<<")"<<std::endl;
     outcome = p_shrimps->GenerateEvent(blobs);
+    weight = blobs->Weight();
     //msg_Out()<<(*blobs)<<"\n";
     //msg_Out()<<"####################### yields "<<outcome<<"."<<std::endl
     //	     <<"#################################"<<std::endl<<std::endl;
