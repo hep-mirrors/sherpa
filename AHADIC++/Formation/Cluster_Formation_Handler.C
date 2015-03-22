@@ -107,7 +107,7 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob) {
   //if (blob->NOutP()>0) msg_Out()<<(*blob);
   //msg_Out()<<"##################################################\n";
 
-  msg_Out()<<METHOD<<":"<<(*blob)<<"\n";
+  //msg_Out()<<METHOD<<":"<<(*blob)<<"\n";
   return 1;
 }
 
@@ -188,8 +188,8 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
       construct = true;
     }
   }
-  for (LPPL_Iterator pli=m_partlists.begin();pli!=m_partlists.end();pli++)
-    msg_Out()<<(**pli)<<"\n";
+  //for (LPPL_Iterator pli=m_partlists.begin();pli!=m_partlists.end();pli++)
+   // msg_Out()<<(**pli)<<"\n";
   // if (ana) { 
   //   if (over) {
   //     msg_Out()<<"\n\n"<<Nover<<" interesting particles: "<<id<<"\n"
@@ -355,13 +355,13 @@ bool Cluster_Formation_Handler::FormOriginalClusters()
 
   while (!m_partlists.empty()) {
     pplit=m_partlists.begin();
-    msg_Tracking()<<"======= "<<METHOD<<" for :\n"<<(**pplit)<<"\n";
-    msg_Out()<<"========== before gluon splitting:\n"<<(**pplit)<<"\n";
+   // msg_Tracking()<<"======= "<<METHOD<<" for :\n"<<(**pplit)<<"\n";
+   // msg_Out()<<"========== before gluon splitting:\n"<<(**pplit)<<"\n";
     if(p_gludecayer->DecayList(*pplit)) {
-      msg_Out()<<"========== after gluon splitting:\n"<<(**pplit)<<"\n";
+      //msg_Out()<<"========== after gluon splitting:\n"<<(**pplit)<<"\n";
       clist = new Cluster_List;
       p_cformer->ConstructClusters(*pplit,clist);
-      msg_Out()<<"========== cluster list :\n"<<(*clist)<<"\n";
+     // msg_Out()<<"========== cluster list :\n"<<(*clist)<<"\n";
       m_clulists.push_back(clist);
       pplit=m_partlists.erase(pplit);
     }
@@ -434,7 +434,7 @@ bool Cluster_Formation_Handler::MergeClusterListsIntoOne() {
 
 bool Cluster_Formation_Handler::ClustersToHadrons(Blob * blob)
 {
-  msg_Out()<<METHOD<<" for: \n"<<(*p_clulist)<<"\n";
+ // msg_Out()<<METHOD<<" for: \n"<<(*p_clulist)<<"\n";
   if (!p_softclusters->TreatClusterList(p_clulist,blob)) return false;
 
   if (m_analyse) {
