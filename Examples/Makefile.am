@@ -41,7 +41,6 @@ nobase_dist_examples_DATA         =	\
                 H_in_AssociatedProduction/LHC_Hll_MCatNLO/Run.dat \
 		H_in_GluonFusion/LHC_HInterference/Run.dat \
 		H_in_GluonFusion/LHC_HJets/Run.dat \
-		H_in_GluonFusion/LHC_HJets/Results/Decays/h0 \
 		H_in_TTBar/LHC_TTH_MCatNLO/lib.f \
 		H_in_TTBar/LHC_TTH_MCatNLO/intlib.f \
 		H_in_TTBar/LHC_TTH_MCatNLO/libqq.f \
