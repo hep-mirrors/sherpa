@@ -234,7 +234,7 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
   DEBUG_FUNC("");
   const HepMC::WeightContainer& wc(evt.weights());
   std::map<std::string,double> wgtmap;
-  double ntrials(0.);
+  double ntrials(1.);
   size_t xstype(0);
 #ifdef HEPMC_HAS_NAMED_WEIGHTS
 #ifdef HEPMC_HAS_WORKING_NAMED_WEIGHTS // replace by final HepMC-2.07 variable

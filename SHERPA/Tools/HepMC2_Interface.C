@@ -31,7 +31,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
   m_usenamedweights(namedweights),
   m_extendedweights(extendedweights), p_sp(sp),
   m_oqcd(0), m_oew(0), m_wgt(wgt),
-  m_mewgt(0.), m_wgtnorm(0.), m_ntrials(0.),
+  m_mewgt(0.), m_wgtnorm(wgt), m_ntrials(1.),
   m_pswgt(0.), m_pwgt(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
   m_alphas(0.), m_alpha(0.), m_type(PHASIC::nlo_type::lo),
@@ -41,19 +41,21 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
   if (p_sp) {
     DEBUG_FUNC(*p_sp);
     Blob_Data_Base *db;
-    ReadIn(db,"MEWeight",true);
-    m_mewgt=db->Get<double>();
+    ReadIn(db,"MEWeight",false);
+    if (db) m_mewgt=db->Get<double>();
     m_pswgt=m_wgt/m_mewgt;
     ReadIn(db,"Weight_Norm",true);
     m_wgtnorm=db->Get<double>();
     ReadIn(db,"Trials",true);
     m_ntrials=db->Get<double>();
-    ReadIn(db,"PDFInfo",true);
-    p_pdfinfo=&db->Get<ATOOLS::PDF_Info>();
-    m_muf12=p_pdfinfo->m_muf12;
-    m_muf22=p_pdfinfo->m_muf22;
-    ReadIn(db,"Renormalization_Scale",true);
-    m_mur2=db->Get<double>();
+    ReadIn(db,"PDFInfo",false);
+    if (db) {
+      p_pdfinfo=&db->Get<ATOOLS::PDF_Info>();
+      m_muf12=p_pdfinfo->m_muf12;
+      m_muf22=p_pdfinfo->m_muf22;
+    }
+    ReadIn(db,"Renormalization_Scale",false);
+    if (db) m_mur2=db->Get<double>();
     SetAlphaS();
     SetAlpha();
     if (m_extendedweights) {
@@ -69,7 +71,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
     if (p_subevtlist) m_type=p_subevtlist->Type();
     ReadIn(db,"ScaleVariations",false);
     if (db) p_nsvmap=db->Get<NamedScaleVariationMap*>();
-    if (p_nsvmap->size()!=0 && !m_usenamedweights)
+    if (p_nsvmap && p_nsvmap->size()!=0 && !m_usenamedweights)
       THROW(fatal_error,"Scale variations cannot be written to HepMC without "
             +std::string("using named weights. Try HEPMC_USE_NAMED_WEIGHTS=1"));
   }
@@ -276,6 +278,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
                   HepMC::Units::MM);
 #endif
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
+  if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
   EventInfo evtinfo(sp,weight,m_usenamedweights,m_extendedweights);
   // when subevtlist, fill hepmc-subevtlist
   if (evtinfo.SubEvtList()) return SubEvtList2ShortHepMC(evtinfo);
@@ -410,6 +413,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs,
 #endif
   // Signal Process blob --- there is only one
   Blob *sp(blobs->FindFirst(btp::Signal_Process));
+  if (!sp) sp=blobs->FindFirst(btp::Hard_Collision);
   // Meta info
   event.set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
   EventInfo evtinfo(sp,weight,m_usenamedweights,m_extendedweights);

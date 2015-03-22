@@ -87,6 +87,8 @@ int Event_Generator::MinimumBiasEvent(ATOOLS::Blob_List * blobs) {
     m_thisevent=p_cross->SelectCollisionMode();
   if (blobs->size()==1) {
     (*blobs)[0]->AddData("Weight",new ATOOLS::Blob_Data<double>(m_xsec));
+    (*blobs)[0]->AddData("Weight_Norm",new ATOOLS::Blob_Data<double>(m_xsec));
+    (*blobs)[0]->AddData("Trials",new ATOOLS::Blob_Data<double>(1.));
   }
   switch (m_thisevent) {
   case run_mode::elastic_events:

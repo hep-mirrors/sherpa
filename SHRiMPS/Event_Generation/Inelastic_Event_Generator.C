@@ -303,7 +303,11 @@ CreateBlob(Blob_List * blobs,const double & xsec) {
   blob->SetPosition(pos);
   Blob_Data_Base *winfo((*blob)["Weight"]);
   if (!winfo) blob->AddData("Weight",new ATOOLS::Blob_Data<double>(1.));
-  
+  Blob_Data_Base *wninfo((*blob)["Weight_Norm"]);
+  if (!wninfo) blob->AddData("Weight_Norm",new ATOOLS::Blob_Data<double>(1.));
+  Blob_Data_Base *tinfo((*blob)["Trials"]);
+  if (!tinfo) blob->AddData("Trials",new ATOOLS::Blob_Data<double>(1.));
+
   Particle * part;
   for (LadderMap::iterator liter=p_ladder->GetEmissionsBegin();
        liter!=p_ladder->GetEmissionsEnd();liter++) {
