@@ -12,7 +12,7 @@ extension of the CKKW method to NLO - as described in @mycite{Hoeche2012yf}
 and @mycite{Gehrmann2012yg}. Finally, even higher multiplicities, calculated 
 at leading order, are merged on top of that. A few things to note are 
 detailed below the example. The example can be converted a simple MENLOPS 
-setup by setting @code{LJET:=2}, or an MEPS setup by setting @code{LJET:=0}, 
+setup by setting @code{LJET:=1}, or an MEPS setup by setting @code{LJET:=0}, 
 to study the effect of incorporating higher-order matrix elements.
 
 @example
