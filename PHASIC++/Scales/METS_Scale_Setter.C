@@ -750,12 +750,11 @@ void METS_Scale_Setter::KT2
   if (cs.p_dec) mij2=(pi+pj).Abs2();
   if (li->Flav().Strong() && lj->Flav().Strong() &&
       cs.m_fl.Strong()) cs.m_oqcd=1;
-  cs.m_op2=cs.m_kt2;
   if ((li->Id()&3)==0) {
     if ((lj->Id()&3)==0) {
       if ((lk->Id()&3)==0) {
 	Kin_Args ffp(ClusterFFDipole(mi2,mj2,mij2,mk2,pi,pj,pk,3));
-	double kt2=2.0*(pi*pj)*ffp.m_z*(1.0-ffp.m_z)
+	double kt2=cs.m_kt2=2.0*(pi*pj)*ffp.m_z*(1.0-ffp.m_z)
 	  -sqr(1.0-ffp.m_z)*mi2-sqr(ffp.m_z)*mj2;
 	if (ffp.m_stat<0) kt2=-1.0;
  	cs.SetParams(kt2,ffp.m_z,ffp.m_y,ffp.m_pi,ffp.m_pk,ffp.m_lam);
@@ -764,7 +763,7 @@ void METS_Scale_Setter::KT2
       }
       else {
 	Kin_Args fip(ClusterFIDipole(mi2,mj2,mij2,mk2,pi,pj,-pk,3));
-	double kt2=2.0*(pi*pj)*fip.m_z*(1.0-fip.m_z)
+	double kt2=cs.m_kt2=2.0*(pi*pj)*fip.m_z*(1.0-fip.m_z)
 	  -sqr(1.0-fip.m_z)*mi2-sqr(fip.m_z)*mj2;
 	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
 	if ((cs.m_k==0 && fip.m_pk[3]<0.0) ||
@@ -781,7 +780,7 @@ void METS_Scale_Setter::KT2
     if ((lj->Id()&3)==0) {
       if ((lk->Id()&3)==0) {
 	Kin_Args ifp(ClusterIFDipole(mi2,mj2,mij2,mk2,0.0,-pi,pj,pk,pk,3|4));
-	double kt2=-2.0*(pi*pj)*(1.0-ifp.m_z)-mj2-sqr(1.0-ifp.m_z)*mi2;
+	double kt2=cs.m_kt2=-2.0*(pi*pj)*(1.0-ifp.m_z)-mj2-sqr(1.0-ifp.m_z)*mi2;
 	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
 	if ((cs.m_i==0 && ifp.m_pi[3]<0.0) ||
 	    (cs.m_i==1 && ifp.m_pi[3]>0.0) ||
@@ -793,7 +792,7 @@ void METS_Scale_Setter::KT2
       }
       else {
 	Kin_Args iip(ClusterIIDipole(mi2,mj2,mij2,mk2,-pi,pj,-pk,3));
-	double kt2=-2.0*(pi*pj)*(1.0-iip.m_z)-mj2-sqr(1.0-iip.m_z)*mi2;
+	double kt2=cs.m_kt2=-2.0*(pi*pj)*(1.0-iip.m_z)-mj2-sqr(1.0-iip.m_z)*mi2;
 	Vec4D sum(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
 	if ((cs.m_i==0 && iip.m_pi[3]<0.0) ||
 	    (cs.m_i==1 && iip.m_pi[3]>0.0) ||
@@ -805,6 +804,7 @@ void METS_Scale_Setter::KT2
       }
     }
   }
+  cs.m_op2=1.0/cs.m_kt2;
 }
   
 bool METS_Scale_Setter::Combine(Cluster_Amplitude &ampl,int i,int j,int k,
