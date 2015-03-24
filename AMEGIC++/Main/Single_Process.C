@@ -757,12 +757,12 @@ void AMEGIC::Single_Process::Minimize()
 
 double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms,const int mode) 
 { 
-  if (mode==1) return m_lastxs;
-  if (!Selector()->Result()) return m_lastxs = 0.0;
+  if (mode==1) return m_mewgtinfo.m_B=m_lastxs;
+  if (!Selector()->Result()) return m_mewgtinfo.m_B=m_lastxs=0.0;
   if (!(IsMapped() && LookUp())) {
     p_partner->ScaleSetter()->CalculateScale(_moms,m_cmode);
   }
-  return DSigma(_moms,m_lookup); 
+  return m_mewgtinfo.m_B=DSigma(_moms,m_lookup);
 }
 
 double AMEGIC::Single_Process::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool lookup)

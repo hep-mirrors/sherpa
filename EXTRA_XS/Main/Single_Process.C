@@ -94,19 +94,20 @@ bool Single_Process::Initialize()
 double Single_Process::Partonic(const ATOOLS::Vec4D_Vector& momenta,
 				const int mode) 
 {
-  if (mode==1) return m_lastxs;
-  if (m_nlotype==nlo_type::lo && !Selector()->Result()) return m_lastxs=0.0;
+  if (mode==1) return m_mewgtinfo.m_B=m_lastxs;
+  if (m_nlotype==nlo_type::lo && !Selector()->Result())
+    return m_mewgtinfo.m_B=m_lastxs=0.0;
   
   p_scale->CalculateScale(momenta);
   if (p_born_me2) {
-    m_lastxs=(*p_born_me2)(momenta);
+    m_mewgtinfo.m_B=m_lastxs=(*p_born_me2)(momenta)*KFactor();
   }
   else if (p_virtual_me2) {
     p_virtual_me2->SetRenScale(p_scale->Scale(stp::ren));
     p_virtual_me2->Calc(momenta);
-    m_lastxs=p_virtual_me2->Result().GetFinite();
+    m_mewgtinfo.m_VI=m_lastxs=p_virtual_me2->Result().GetFinite()*KFactor();
   }
-  return m_lastxs*=KFactor();
+  return m_lastxs;
 }
 
 bool EXTRAXS::Single_Process::FillIntegrator

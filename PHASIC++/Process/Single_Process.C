@@ -354,7 +354,6 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     Scale_Setter_Base *scs(ScaleSetter(1));
     scs->SetCaller(Proc());
     if (Partonic(p,0)==0.0) return 0.0;
-    if (m_mewgtinfo.m_type==mewgttype::none) m_mewgtinfo.m_B = m_lastxs;
     m_mewgtinfo*=flux;
     m_mewgtinfo.m_muf2=scs->Scale(stp::fac);
     m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
