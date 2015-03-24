@@ -186,11 +186,12 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
             }
           }
         }
+        wc["Reweight_Type"]=p_wgtinfo->m_type;
       }
       if (p_subevtlist) {
         wc["Reweight_RS"]=m_pwgt;
+        wc["Reweight_Type"]=64|(p_wgtinfo?p_wgtinfo->m_type:0);
       }
-      wc["Reweight_Type"]=p_wgtinfo->m_type;
     }
     else {
       // if using minimal weights still dump event type if RS need correls
