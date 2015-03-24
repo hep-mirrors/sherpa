@@ -49,3 +49,14 @@ double ME2_Base::CouplingFactor(const int oqcd,const int oew) const
   if (p_aqed && oew) fac*=pow(p_aqed->Factor(),oew);
   return fac;
 }
+
+int ME2_Base::OrderQCD(const int &id)
+{
+  return m_oqcd;
+}
+
+int ME2_Base::OrderEW(const int &id)
+{
+  return m_oew;
+}
+

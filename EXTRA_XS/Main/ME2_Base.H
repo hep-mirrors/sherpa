@@ -25,6 +25,9 @@ namespace EXTRAXS {
     virtual double operator()(const ATOOLS::Vec4D_Vector& momenta) = 0;
     virtual bool SetColours(const ATOOLS::Vec4D_Vector& momenta);
 
+    int OrderQCD(const int &id=-1);
+    int OrderEW(const int &id=-1);
+
     inline int **Colours() const { return p_colours; }
     inline size_t SIntType() const { return m_sintt; }
 
