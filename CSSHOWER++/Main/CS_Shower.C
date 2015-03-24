@@ -95,18 +95,42 @@ int CS_Shower::PerformShowers(const size_t &maxem,size_t &nem)
 	if (m_respectq2) (*it)->SetStart(Min((*it)->KtStart(),(*it)->GetPrev()->KtStart()));
 	else (*it)->SetStart((*it)->GetPrev()->KtStart());
       }
+    std::map<int,int> colmap;   
     if (ls && (ls->GetSplit()->Stat()&2)) {
-      Parton *l(ls->GetLeft()), *r(ls->GetRight());
-      msg_Debugging()<<"Decay. Reset color connections.\n";
-      if (l->GetLeft()) l->SetLeft(r);
-      if (l->GetRight()) l->SetRight(r);
-      if (r->GetLeft()) r->SetLeft(l);
-      if (r->GetRight()) r->SetRight(l);
+      msg_Debugging()<<"Decay. Set color connections.\n";
+      Parton *d[2]={ls->GetLeft(),ls->GetRight()};
+      for (int j=0;j<2;++j) {
+	if (d[1-j]->GetFlow(1) || d[1-j]->GetFlow(2)) continue;
+	for (int i=1;i<=2;++i) {
+	  if (d[j]->GetFlow(i)==0) continue;
+	  int nc=Flow::Counter();
+	  colmap[nc]=d[j]->GetFlow(i);
+	  d[j]->SetFlow(i,nc);
+	  d[1-j]->SetFlow(3-i,nc);
+	  if (i==1) d[j]->SetLeft(d[1-j]);
+	  else d[j]->SetRight(d[1-j]);
+	}
+      }
     }
     msg_Debugging()<<**sit;
     size_t pem(nem);
     if (!p_shower->EvolveShower(*sit,maxem,nem)) return 0;
     m_weight*=p_shower->Weight();
+    if (colmap.size()) {
+      msg_Debugging()<<"Decay. Reset color connections.\n";
+      for (Singlet::iterator
+	     it((*sit)->begin());it!=(*sit)->end();++it) {
+	for (int i=1;i<=2;++i)
+	  if (colmap.find((*it)->GetFlow(i))!=colmap.end()) {
+	    if (!(*it)->GetFlavour().Strong()) {
+	      (*it)->SetFlow(i,0);
+	      continue;
+	    }
+	    (*it)->SetFlow(i,colmap[(*it)->GetFlow(i)]);
+	    (*it)->UpdateColours();
+	  }
+      }
+    }
     if ((*sit)->GetLeft()) {
       p_shower->ReconstructDaughters(*sit,1);
     }
