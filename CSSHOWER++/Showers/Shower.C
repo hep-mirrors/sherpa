@@ -273,7 +273,7 @@ int Shower::UpdateDaughters(Parton *const split,Parton *const newpB,
 void Shower::ResetScales(const double &kt2)
 {
   for (PLiter pit(p_actual->begin());pit!=p_actual->end();++pit)
-    (*pit)->SetStart(kt2);
+    if ((*pit)->KtStart()>kt2) (*pit)->SetStart(kt2);
   m_last[0]=m_last[1]=m_last[2]=NULL;
 }
 
