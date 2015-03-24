@@ -176,6 +176,7 @@ Type * IO_Handler::ArrayInput(const std::string name,int nx) {
       send=find(sit1,m_buffer.end(),'}');
     }
     sit2=send;
+    if (sit1<send)
     for (unsigned int i=0;i<m_seps.size();++i) {
       string::iterator si=find(sit1,send,m_seps[i]);
       if (si<sit2) sit2=si;
