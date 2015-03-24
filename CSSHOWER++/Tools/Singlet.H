@@ -25,8 +25,6 @@ namespace CSSHOWER {
     double m_kt2_next, m_lkf;
     int m_nlo;
     ATOOLS::DecayInfo_Vector m_decs;
-    void ReestablishConnections(Parton * mother, 
-				Parton * daughter1, Parton * daughter2);
   public :
     Singlet() : 
       p_split(NULL), p_left(NULL), p_right(NULL), p_spec(NULL),

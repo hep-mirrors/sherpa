@@ -262,17 +262,6 @@ bool Singlet::RearrangeColours(Parton * mother, Parton * daughter1, Parton * dau
 }
 
 
-void Singlet::
-ReestablishConnections(Parton * mother, Parton * daughter1, Parton * daughter2)
-{
-  Parton * parton;
-  for (Parton_List::iterator pit=begin();pit!=end();pit++) {
-    parton = (*pit);
-    if (parton->GetLeft()==mother)  parton->SetLeft(daughter1);
-    if (parton->GetRight()==mother) parton->SetRight(daughter2);
-  }
-}
-
 bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daughter2)
 {
   daughter1->SetSing(this);
@@ -289,7 +278,6 @@ bool Singlet::ArrangeColours(Parton * mother, Parton * daughter1, Parton * daugh
   daughter2->SetFlow(2,0);
   Flavour mo(mother->GetFlavour()), d1(daughter1->GetFlavour()), d2(daughter2->GetFlavour());
   if (mother->GetType()==pst::IS) { mo=mo.Bar(); d1=d1.Bar(); }
-  ReestablishConnections(mother,daughter1,daughter2);
   if (mo.StrongCharge()==-3) {
     if (d1.StrongCharge()==-3) {
       if (d2.StrongCharge()==8) {

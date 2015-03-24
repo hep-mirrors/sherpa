@@ -230,11 +230,9 @@ namespace CSSHOWER {
   void Parton::SetNext(Parton * part)                 { p_next    = part; }  
   void Parton::SetSing(Singlet* sing)                 { p_sing    = sing; }  
   void Parton::SetFlow(const int index, const int code) {
-    if ((!m_flav.IsDiQuark()) && (!m_flav.Strong())) return;
     m_flow.SetCode(index,code);
   }
   void Parton::SetMEFlow(const int index, const int code) {
-    if ((!m_flav.IsDiQuark()) && (!m_flav.Strong())) return;
     m_meflow.SetCode(index,code);
   }
   void Parton::SetRFlow() {
