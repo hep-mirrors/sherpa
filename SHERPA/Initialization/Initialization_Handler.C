@@ -547,7 +547,8 @@ bool Initialization_Handler::InitializeTheBeams()
   dataread.SetInputPath(m_path);
   dataread.SetInputFile(m_beamdat);
   p_beamspectra        = new Beam_Spectra_Handler(&dataread);
-  msg_Info()<<"Initialized the beams "<<p_beamspectra->Type()<<endl;
+  p_beamspectra->Output();
+  
   return 1;
 }
 
