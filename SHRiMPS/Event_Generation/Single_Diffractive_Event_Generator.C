@@ -37,9 +37,9 @@ Single_Diffractive_Event_Generator(Sigma_SD * sigma,Beam_Remnant_Handler * beams
 
   // Assume pp/ppbar collisions only
   if(s_kftable.find(kf_N_1440)==s_kftable.end()) // if not initialised
-    s_kftable[kf_N_1440]=new Particle_Info(kf_N_1440_plus,1.44,0.35,0,0,1,1,0,"N(1440)","N(1440)");
+    s_kftable[kf_N_1440]=new Particle_Info(kf_N_1440_plus,1.44,0.35,0,1,1,0,"N(1440)","N(1440)");
   if(s_kftable.find(kf_N_1440_plus)==s_kftable.end()) // if not initialised
-    s_kftable[kf_N_1440_plus]=new Particle_Info(kf_N_1440_plus,1.44,0.35,3,0,1,1,0,"N(1440)+","N(1440)+");
+    s_kftable[kf_N_1440_plus]=new Particle_Info(kf_N_1440_plus,1.44,0.35,3,1,1,0,"N(1440)+","N(1440)+");
 
 
   if (m_beam1==ATOOLS::Flavour(kf_p_plus))            

@@ -41,6 +41,7 @@ namespace COMIX {
 
     void Add(const CObject *c);
     void Divide(const double &d);
+    void Multiply(const Complex &c);
     void Conjugate();
     void Invert();
 

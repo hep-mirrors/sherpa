@@ -246,7 +246,7 @@ void EventInfo::SetAlphaS()
 
 void EventInfo::SetAlpha()
 {
-  m_alpha=MODEL::s_model->ScalarFunction("alpha_QED");
+  m_alpha=MODEL::s_model->ScalarConstant("alpha_QED");
 }
 
 HepMC2_Interface::HepMC2_Interface() :
@@ -296,7 +296,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         ATOOLS::Vec4D mom  = parton->Momentum();
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
         HepMC::GenParticle* inpart = 
-          new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),2);
+	  new HepMC::GenParticle(momentum,(long int)parton->Flav(),2);
         vertex->add_particle_in(inpart);
         // distinct because SHRIMPS has no bunches for some reason
         if (blob->Type()==btp::Beam || blob->Type()==btp::Bunch) {
@@ -310,7 +310,7 @@ bool HepMC2_Interface::Sherpa2ShortHepMC(ATOOLS::Blob_List *const blobs,
         ATOOLS::Vec4D mom  = parton->Momentum();
         HepMC::FourVector momentum(mom[1],mom[2],mom[3],mom[0]);
         HepMC::GenParticle* outpart = 
-	  new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),1);
+	  new HepMC::GenParticle(momentum,(long int)parton->Flav(),1);
         vertex->add_particle_out(outpart);
       }
     }
@@ -341,14 +341,14 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
       HepMC::FourVector momentum(sub->p_mom[j][1],sub->p_mom[j][2],
                                  sub->p_mom[j][3],sub->p_mom[j][0]);
       HepMC::GenParticle* inpart =
-        new HepMC::GenParticle(momentum,sub->p_fl[j].HepEvt(),2);
+        new HepMC::GenParticle(momentum,(long int)sub->p_fl[j],2);
       subvertex->add_particle_in(inpart);
     }
     for (size_t j(2);j<sub->m_n;++j) {
       HepMC::FourVector momentum(sub->p_mom[j][1],sub->p_mom[j][2],
                                  sub->p_mom[j][3],sub->p_mom[j][0]);
       HepMC::GenParticle* outpart =
-        new HepMC::GenParticle(momentum,sub->p_fl[j].HepEvt(),1);
+        new HepMC::GenParticle(momentum,(long int)sub->p_fl[j],1);
       subvertex->add_particle_out(outpart);
     }
     subevent->add_vertex(subvertex);
@@ -610,8 +610,7 @@ bool HepMC2_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,
       status=4;
     }
   }
-  // particle is actually a reference to a pointer, this changes the reference
-  particle = new HepMC::GenParticle(momentum,parton->Flav().HepEvt(),status);
+  particle = new HepMC::GenParticle(momentum,(long int)parton->Flav(),status);
   for (int i=1;i<3;i++) {
     if (parton->GetFlow(i)>0) particle->set_flow(i,parton->GetFlow(i));
   }

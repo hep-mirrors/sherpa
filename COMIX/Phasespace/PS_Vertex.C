@@ -7,7 +7,7 @@ using namespace COMIX;
 using namespace ATOOLS;
 
 PS_Vertex::PS_Vertex(const Vertex_Key &key):
-  Vertex(Vertex_Key(NULL,NULL,NULL,NULL,NULL)), 
+  Vertex(Vertex_Key(Current_Vector(),NULL,NULL)), 
   m_alpha(1.0), m_oldalpha(1.0), m_weight(1.0),
   m_np(0.0), m_sum(0.0), m_sum2(0.0),
   m_mnp(0.0), m_msum(0.0), m_msum2(0.0),
@@ -16,16 +16,16 @@ PS_Vertex::PS_Vertex(const Vertex_Key &key):
 void PS_Vertex::Evaluate()
 {
   m_zero=true;
-  if (p_a->Zero()||p_b->Zero()) return;
+  if (m_j[0]->Zero()||m_j[1]->Zero()) return;
 #ifdef DEBUG__BG
-  msg_Debugging()<<*p_a<<"(+)"<<*p_b<<"\n";
+  msg_Debugging()<<*m_j[0]<<"(+)"<<*m_j[1]<<"\n";
   msg_Indent();
 #endif
-  int sca(p_a->Flav().StrongCharge());
-  int scb(p_b->Flav().StrongCharge());
+  int sca(m_j[0]->Flav().StrongCharge());
+  int scb(m_j[1]->Flav().StrongCharge());
   if (sca==0) {
-    const PS_Info_Vector *ca(p_a->J().front().Get<PS_Info>());
-    const PS_Info_Vector *cb(p_b->J().front().Get<PS_Info>());
+    const PS_Info_Vector *ca(m_j[0]->J().front().Get<PS_Info>());
+    const PS_Info_Vector *cb(m_j[1]->J().front().Get<PS_Info>());
     for (PS_Info_Vector::const_iterator 
 	   ait(ca->begin());ait!=ca->end();++ait)
       for (PS_Info_Vector::const_iterator 
@@ -35,8 +35,8 @@ void PS_Vertex::Evaluate()
       }
   }
   else if (scb==0) {
-    const PS_Info_Vector *ca(p_a->J().front().Get<PS_Info>());
-    const PS_Info_Vector *cb(p_b->J().front().Get<PS_Info>());
+    const PS_Info_Vector *ca(m_j[0]->J().front().Get<PS_Info>());
+    const PS_Info_Vector *cb(m_j[1]->J().front().Get<PS_Info>());
     for (PS_Info_Vector::const_iterator 
 	   ait(ca->begin());ait!=ca->end();++ait)
       for (PS_Info_Vector::const_iterator 
@@ -47,9 +47,9 @@ void PS_Vertex::Evaluate()
   }
   else if (abs(sca)==3 && abs(scb)==3) {
     const PS_Info_Vector *ca
-      ((sca<0?p_b:p_a)->J().front().Get<PS_Info>());
+      ((sca<0?m_j[1]:m_j[0])->J().front().Get<PS_Info>());
     const PS_Info_Vector *cb
-      ((sca<0?p_a:p_b)->J().front().Get<PS_Info>());
+      ((sca<0?m_j[0]:m_j[1])->J().front().Get<PS_Info>());
     for (PS_Info_Vector::const_iterator 
 	   ait(ca->begin());ait!=ca->end();++ait)
       for (PS_Info_Vector::const_iterator 
@@ -65,9 +65,9 @@ void PS_Vertex::Evaluate()
   }
   else if (abs(sca)==3 || abs(scb)==3) {
     const PS_Info_Vector *ca
-      ((abs(scb)==3?p_b:p_a)->J().front().Get<PS_Info>());
+      ((abs(scb)==3?m_j[1]:m_j[0])->J().front().Get<PS_Info>());
     const PS_Info_Vector *cb
-      ((abs(scb)==3?p_a:p_b)->J().front().Get<PS_Info>());
+      ((abs(scb)==3?m_j[0]:m_j[1])->J().front().Get<PS_Info>());
     if ((abs(scb)==3?scb:sca)<0) {
       for (PS_Info_Vector::const_iterator 
 	     ait(ca->begin());ait!=ca->end();++ait)
@@ -100,8 +100,8 @@ void PS_Vertex::Evaluate()
     }
   }
   else {
-    const PS_Info_Vector *ca(p_a->J().front().Get<PS_Info>());
-    const PS_Info_Vector *cb(p_b->J().front().Get<PS_Info>());
+    const PS_Info_Vector *ca(m_j[0]->J().front().Get<PS_Info>());
+    const PS_Info_Vector *cb(m_j[1]->J().front().Get<PS_Info>());
     for (PS_Info_Vector::const_iterator 
 	   ait(ca->begin());ait!=ca->end();++ait)
 	for (PS_Info_Vector::const_iterator 

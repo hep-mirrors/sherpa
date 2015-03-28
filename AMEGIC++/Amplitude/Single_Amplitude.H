@@ -7,7 +7,7 @@
 #include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
 #include "AMEGIC++/Amplitude/Zfunc.H"
 #include "AMEGIC++/String/String_Handler.H"
-#include "MODEL/Interaction_Models/Color_Function.H"
+#include "MODEL/Main/Color_Function.H"
 #include "AMEGIC++/Amplitude/Single_Amplitude_Base.H"
 
 namespace AMEGIC {
@@ -40,11 +40,9 @@ namespace AMEGIC {
 
     void    AddSpinorDirection(const int&,const int&);    
     
-    void    SetOrderQED();
-    void    SetOrderQCD();
+    void SetOrder();
 
-    int     GetOrderQED();
-    int     GetOrderQCD();
+    const std::vector<int> &GetOrder();
     
   };
 }

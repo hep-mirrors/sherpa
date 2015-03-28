@@ -76,8 +76,8 @@ bool Single_Process::Initialize()
     if (p_born_me2!=NULL) {
       DEBUG_INFO("found");
       p_born_me2->SetCouplings(m_cpls);
-      m_oqcd=p_born_me2->OrderQCD();
-      m_oew=p_born_me2->OrderEW();
+      m_maxcpl[0]=m_mincpl[0]=p_born_me2->OrderQCD();
+      m_maxcpl[1]=m_mincpl[1]=p_born_me2->OrderEW();
       return true;
     }
     else {

@@ -23,7 +23,7 @@ namespace AMEGIC {
   class FullAmplitude_MHV_Base {
   protected:
 
-    MODEL::Interaction_Model_Base *p_model;
+    MODEL::Model_Base *p_model;
     MODEL::Coupling_Map * m_cpls; 
     
     PermStore* p_permstore;	

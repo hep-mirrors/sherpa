@@ -240,8 +240,8 @@ void Simple_Chain::InitializeProcessList(const Flavour& in1,
   pi.m_ii.m_ps.push_back(PHASIC::Subprocess_Info(in2,"",""));
   pi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(out1,"",""));
   pi.m_fi.m_ps.push_back(PHASIC::Subprocess_Info(out2,"",""));
-  pi.m_oew=0;
-  pi.m_oqcd=2;
+  pi.m_maxcpl[1]=pi.m_mincpl[1]=0;
+  pi.m_maxcpl[0]=pi.m_mincpl[0]=4;
   pi.m_scale=p_read->GetValue<std::string>("MPI_SCALE","MPI");
   pi.m_kfactor=p_read->GetValue<std::string>("MPI_KFACTOR","NO");
   pi.m_coupling="Alpha_QCD 1";
@@ -285,7 +285,7 @@ bool Simple_Chain::SetUpInterface()
 void Simple_Chain::CalculateSigmaND()
 {
   if(s_kftable.find(111)==s_kftable.end()) // if not initialized yet
-    s_kftable[111]=new Particle_Info(111,0.134976,7.8486e-09,0,0,0,1,0,"pi","pi");
+    s_kftable[111]=new Particle_Info(111,0.134976,7.8486e-09,0,0,1,0,"pi","pi");
   double eps=0.0808, eta=-0.4525, X=21.70, Y=56.08, b=2.3;
   if (p_isr->Flav(0).IsAnti()^p_isr->Flav(1).IsAnti()) Y=98.39;
   double s=sqr(rpa->gen.Ecms());

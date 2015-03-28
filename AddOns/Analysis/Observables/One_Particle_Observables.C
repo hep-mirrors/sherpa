@@ -67,7 +67,7 @@ One_Particle_Observable_Base::One_Particle_Observable_Base(const Flavour & flav,
   m_flav(flav)
 {
   MyStrStream str;
-  str<<name<<m_flav<<".dat";
+  str<<name<<m_flav.ShellName()<<".dat";
   str>>m_name;
 
   if (listname!=std::string("")) m_listname = listname;

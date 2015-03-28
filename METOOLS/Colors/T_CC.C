@@ -1,8 +1,8 @@
 #include "METOOLS/Explicit/Lorentz_Calculator.H"
 
-#include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "MODEL/Main/Single_Vertex.H"
 #include "METOOLS/Explicit/Vertex.H"
-#include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Org/Message.H"
 
 using namespace ATOOLS;
 
@@ -13,7 +13,7 @@ namespace METOOLS {
 
     const CObject *p_a, *p_b;
 
-    int m_type, m_singlet, m_match, m_n[4];
+    int m_type, m_singlet, m_match, m_n[3];
 
   public:
 
@@ -21,25 +21,16 @@ namespace METOOLS {
       Color_Calculator(key), m_singlet(false), m_match(true)
     {
       m_cpl=Complex(sqrt(0.5),0.0);
-      m_n[0]=key.p_mv->Color[key.m_n].ParticleArg(0);
-      m_n[1]=key.p_mv->Color[key.m_n].ParticleArg(1);
-      m_n[2]=key.p_mv->Color[key.m_n].ParticleArg(2);
-      Flavour fla(key.p_a?key.p_a->Flav():Flavour(kf_gluon));
-      Flavour flb(key.p_b?key.p_b->Flav():Flavour(kf_gluon));
-      if (key.p_a==NULL && key.p_b==NULL)
-	THROW(fatal_error,"Invalid key");
-      if (fla.StrongCharge()==3) {
-	if (flb.StrongCharge()==-3) m_type=1;
-	else m_type=3;
-      }
-      else if (fla.StrongCharge()==-3) {
-	if (flb.StrongCharge()==3) m_type=2;
-	else m_type=4;
-      }
-      else {
-	if (flb.StrongCharge()==3) m_type=5;
-	else m_type=6;
-      }
+      int n[3]={key.p_mv->Color[key.m_n].ParticleArg(0),
+		key.p_mv->Color[key.m_n].ParticleArg(1),
+		key.p_mv->Color[key.m_n].ParticleArg(2)};
+      for (int i(0);i<key.p_mv->id.size();++i)
+	for (int j(0);j<3;++j)
+	  if (key.p_mv->id[i]+1==n[j]) m_n[j]=i;
+      m_type=0;
+      if (m_n[0]==key.p_mv->id.size()-1) m_type=1;
+      if (m_n[2]==key.p_mv->id.size()-1) m_type=2;
+      if (m_n[1]==key.p_mv->id.size()-1) m_type=4;
     }
 
     std::string Label() const
@@ -47,69 +38,38 @@ namespace METOOLS {
       return "T";
     }
 
-    bool Evaluate(const CObject *a,const CObject *b)
+    bool Evaluate(const CObject_Vector &j)
     {
-      p_a=a; 
-      p_b=b;
       switch (m_type) {
+      case 0: {
+	const CObject *g(j[m_n[0]]), *q(j[m_n[1]]), *p(j[m_n[2]]);
+	m_singlet=(*g)(0)==(*g)(1) && (*q)(0)==(*p)(1);
+	m_match=(*q)(0)==(*g)(1) && (*g)(0)==(*p)(1);
+	m_stat=m_singlet || m_match;
+	return m_stat;
+      }
       case 1:
-	m_singlet=(*a)(0)==(*b)(1) && (*a)(0)<=s_cimax;
+	p_a=j[m_n[1]]; 
+	p_b=j[m_n[2]];
+	m_singlet=(*p_a)(0)==(*p_b)(1) && (*p_a)(0)<=s_cimax;
 	m_stat=true;
 	return m_stat;
       case 2:
-	m_singlet=(*a)(1)==(*b)(0) && (*a)(1)<=s_cimax;
-	m_stat=true;
-	return m_stat;
-      case 3:
-	m_singlet=(*b)(0)==(*b)(1) && (*b)(0)>0 && (*b)(0)<=s_cimax;
-	m_match=(*a)(0)==(*b)(1);
+	p_a=j[m_n[1]]; 
+	p_b=j[m_n[0]];
+	m_singlet=(*p_b)(0)==(*p_b)(1) && (*p_b)(0)>0 && (*p_b)(0)<=s_cimax;
+	m_match=(*p_a)(0)==(*p_b)(1);
 	m_stat=m_singlet || m_match;
 	return m_stat;
       case 4:
-	m_singlet=(*b)(0)==(*b)(1) && (*b)(0)>0 && (*b)(0)<=s_cimax;
-	m_match=(*a)(1)==(*b)(0);
-	m_stat=m_singlet || m_match;
-	return m_stat;
-      case 5:
-	m_singlet=(*a)(0)==(*a)(1) && (*a)(0)>0 && (*a)(0)<=s_cimax;
-	m_match=(*b)(0)==(*a)(1);
-	m_stat=m_singlet || m_match;
-	return m_stat;
-      case 6:
-	m_singlet=(*a)(0)==(*a)(1) && (*a)(0)>0 && (*a)(0)<=s_cimax;
-	m_match=(*b)(1)==(*a)(0);
+	p_a=j[m_n[2]]; 
+	p_b=j[m_n[0]];
+	m_singlet=(*p_b)(0)==(*p_b)(1) && (*p_b)(0)>0 && (*p_b)(0)<=s_cimax;
+	m_match=(*p_a)(1)==(*p_b)(0);
 	m_stat=m_singlet || m_match;
 	return m_stat;
       }
       m_stat=false;
-      return m_stat;
-    }
-
-    bool Evaluate(const CObject *a,
-		  const CObject *b,const CObject *e)
-    {
-      if (m_n[0]==0) {
-	m_type=1;
-	return Evaluate(m_n[1]==1?a:(m_n[1]==2?b:e),
-			m_n[2]==1?a:(m_n[2]==2?b:e));
-      }
-      if (m_n[2]==0) {
-	m_type=3;
-	return Evaluate(m_n[1]==1?a:(m_n[1]==2?b:e),
-			m_n[0]==1?a:(m_n[0]==2?b:e));
-      }
-      if (m_n[1]==0) {
-	m_type=4;
-	return Evaluate(m_n[2]==1?a:(m_n[2]==2?b:e),
-			m_n[0]==1?a:(m_n[0]==2?b:e));
-      }
-      m_type=0;
-      const CObject *g(m_n[0]==1?a:(m_n[0]==2?b:e));
-      const CObject *q(m_n[1]==1?a:(m_n[1]==2?b:e));
-      const CObject *p(m_n[2]==1?a:(m_n[2]==2?b:e));
-      m_singlet=(*g)(0)==(*g)(1) && (*q)(0)==(*p)(1);
-      m_match=(*q)(0)==(*g)(1) && (*g)(0)==(*p)(1);
-      m_stat=m_singlet || m_match;
       return m_stat;
     }
 
@@ -129,10 +89,6 @@ namespace METOOLS {
 	(*j)(1)=(*p_b)(1);
 	break;
       case 2:
-	(*j)(0)=(*p_b)(0);
-	(*j)(1)=(*p_a)(1);
-	break;
-      case 3:
 	if (m_match) (*j)(0)=(*p_b)(0);
 	else (*j)(0)=(*p_a)(0);
 	break;
@@ -140,24 +96,16 @@ namespace METOOLS {
 	if (m_match) (*j)(1)=(*p_b)(1);
 	else (*j)(1)=(*p_a)(1);
 	break;
-      case 5:
-	if (m_match) (*j)(0)=(*p_a)(0);
-	else (*j)(0)=(*p_b)(0);
-	break;
-      case 6:
-	if (m_match) (*j)(1)=(*p_a)(1);
-	else (*j)(1)=(*p_b)(1);
-	break;
       }
       if (m_singlet) {
-	if (m_type<3) {
+	if (m_type==1) {
 #ifndef USING__Explicit_OneOverNC_Sum
 	  if (p_v->JC()->Out().empty())
 #endif
 	  {
 	    CObject *c(j->Copy()), *d(NULL);
 	    c->Divide(-3.0);
-	    int cr((*(m_type==1?p_a:p_b))(0));
+	    int cr((*p_a)(0));
 	    for (size_t i(s_cimin);i<=s_cimax;++i) {
 	      if ((int)i==cr) continue;
 	      (*c)(0)=(*c)(1)=i;

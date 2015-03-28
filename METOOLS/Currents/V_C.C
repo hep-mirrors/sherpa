@@ -215,7 +215,7 @@ void CV<SType>::AddPropagator()
 #endif
   for (size_t i(0);i<m_j.size();++i) {
   CVec4Type_Vector *j(m_j[i].template Get<CVec4Type>());
-  if (!this->m_fl.Strong()) {
+  if (!this->m_fl.IsGluon()) {
     if (!this->m_msv)
       for (typename CVec4Type_Vector::iterator 
 	     jit(j->begin());jit!=j->end();++jit)

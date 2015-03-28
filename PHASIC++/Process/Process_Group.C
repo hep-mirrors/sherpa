@@ -86,8 +86,14 @@ void Process_Group::Add(Process_Base *const proc)
   if (m_procmap.find(proc->Name())!=m_procmap.end())
     THROW(critical_error,"Doubled process '"+proc->Name()+"'");
   m_procmap[proc->Name()]=proc;
-  m_oew=Max(m_oew,proc->OrderEW());
-  m_oqcd=Max(m_oqcd,proc->OrderQCD());
+  if (m_maxcpl.size()<proc->MaxOrders().size()) {
+    m_maxcpl.resize(proc->MaxOrders().size(),0);
+    m_mincpl.resize(proc->MinOrders().size(),99);
+  }
+  for (size_t i(0);i<m_maxcpl.size();++i) {
+    m_maxcpl[i]=Max(m_maxcpl[i],proc->MaxOrder(i));
+    m_mincpl[i]=Min(m_mincpl[i],proc->MinOrder(i));
+  }
   if (m_nin>0 && m_nout>0 &&
       (m_nin!=proc->NIn() || m_nout!=proc->NOut())) {
     msg_Error()<<METHOD<<"(): Cannot add process '"

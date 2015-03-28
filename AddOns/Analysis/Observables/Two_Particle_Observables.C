@@ -72,7 +72,7 @@ Two_Particle_Observable_Base::Two_Particle_Observable_Base(const Flavour & flav1
 {
   m_listname=listname;
   MyStrStream str;
-  str<<name<<m_flav1<<m_flav2<<".dat";
+  str<<name<<m_flav1.ShellName()<<m_flav2.ShellName()<<".dat";
   str>>m_name;
   m_blobtype = std::string("");
   m_blobdisc = false;

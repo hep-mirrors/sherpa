@@ -1,7 +1,6 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "MODEL/Main/Model_Base.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "ATOOLS/Org/Message.H"
 
 #include "EXTRA_XS/Main/ME2_Base.H"
@@ -49,8 +48,8 @@ XS_ee_ffbar::XS_ee_ffbar(const Process_Info& pi, const Flavour_Vector& fl)
   MZ2    = sqr(ATOOLS::Flavour(kf_Z).Mass());
   GZ2    = sqr(ATOOLS::Flavour(kf_Z).Width());
  
-  alpha  = MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms()));
-  sin2tw = MODEL::s_model->ScalarConstant(string("sin2_thetaW"));
+  alpha  = MODEL::s_model->ScalarConstant("alpha_QED");
+  sin2tw = std::abs(MODEL::s_model->ComplexConstant(string("csin2_thetaW")));
   if (ATOOLS::Flavour(kf_Z).IsOn()) 
     kappa  = 1./(4.*sin2tw*(1.-sin2tw));
   else
@@ -124,97 +123,8 @@ operator()(const Process_Info &pi) const
        fl[1]==fl[0].Bar()) ||   
       (fl[0].IsLepton() && fl[1]==fl[0].Bar() && fl[2].IsQuark() && 
        fl[3]==fl[2].Bar())) {
-    if ((pi.m_oqcd==0 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
+    if (pi.m_mincpl[1]==2 && pi.m_maxcpl[1]==2) {
       return new XS_ee_ffbar(pi, fl);
-    }
-  }
-  return NULL;
-}
-
-
-namespace EXTRAXS {
-
-  class XS_Charged_Drell_Yan : public ME2_Base {  // == XS_ffbar_ee but not XS_ffbar_f'fbar' !
-  private:
-
-    bool   barred;
-    double kappa,sin2tw,MW2,GW2,alpha;
-    double term;
-    double colfac;
-
-  public:
-
-    XS_Charged_Drell_Yan(const Process_Info& pi, const Flavour_Vector& fl);
-
-    double operator()(const ATOOLS::Vec4D_Vector& mom);
-  };
-}
-
-XS_Charged_Drell_Yan::XS_Charged_Drell_Yan(const Process_Info& pi, const Flavour_Vector& fl)
-  : ME2_Base(pi, fl)
-{
-  DEBUG_INFO("now entered EXTRAXS::XS_Charged_Drell_Yan ...");
-
-  m_sintt=1;
-  m_oew=2;
-  m_oqcd=0;
-
-  MW2    = sqr(ATOOLS::Flavour(kf_Wplus).Mass());
-  GW2    = sqr(ATOOLS::Flavour(kf_Wplus).Width());
-
-  alpha  = MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms()));
-  sin2tw = MODEL::s_model->ScalarConstant(string("sin2_thetaW"));
-  kappa  = 1./(2.*sin2tw);
-
-  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  if (fl[0].IsLepton() && fl[1].IsLepton()) {
-    barred = fl[2].IsAnti();
-    p_colours[2][barred] = p_colours[3][1-barred] = 500;
-    colfac = 3.;
-  }
-
-  if (fl[0].IsQuark() && fl[1].IsQuark())  {
-    barred = fl[0].IsAnti();
-    p_colours[0][barred] = p_colours[1][1-barred] = 500;
-    colfac  = 1./3.;
-  }
-  if (fl[2].IntCharge()+fl[3].IntCharge()>0) {
-    m_cfls[12].push_back(kf_Wplus);
-    m_cfls[3].push_back(Flavour(kf_Wplus).Bar());
-  }
-  else {
-    m_cfls[3].push_back(kf_Wplus);
-    m_cfls[12].push_back(Flavour(kf_Wplus).Bar());
-  }
-}
-
-double XS_Charged_Drell_Yan::operator()(const ATOOLS::Vec4D_Vector& mom) {
-  double s=(mom[0]+mom[1]).Abs2();
-  double u=(mom[0]-mom[3]).Abs2();
-
-  term = sqr(kappa)/((sqr(s-MW2)+MW2*GW2)) * (u*u);
-  return sqr(4.*M_PI*alpha) * CouplingFactor(0,2) * colfac * term;
-}
-
-
-DECLARE_TREEME2_GETTER(XS_Charged_Drell_Yan,"XS_Charged_Drell_Yan") // Charged Drell-Yan
-Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_Charged_Drell_Yan>::
-operator()(const Process_Info &pi) const
-{
-  if (pi.m_fi.NLOType()!=nlo_type::lo && pi.m_fi.NLOType()!=nlo_type::born) return NULL;
-  Flavour_Vector fl=pi.ExtractFlavours();
-  if (fl.size()!=4) return NULL;
-  for (size_t i(0);i<fl.size();++i) if (fl[i].Mass()!=0.) return NULL;
-  if (!ATOOLS::Flavour(kf_Wplus).IsOn()) return NULL;
-  if (MODEL::s_model->ComplexMatrixElement(string("CKM"),0,0)!=Complex(1.0,0.0))
-    return NULL;
-  if ((fl[2].IsLepton() && fl[2]!=fl[3].Bar() &&
-       fl[2].LeptonFamily()==fl[3].LeptonFamily() &&
-       !fl[2].IsAnti() && fl[3].IsAnti() &&
-       fl[0].IsQuark() && fl[0]!=fl[1].Bar() &&
-       fl[0].QuarkFamily()==fl[1].QuarkFamily())) {
-    if ((pi.m_oqcd==0 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
-      return new XS_Charged_Drell_Yan(pi, fl);
     }
   }
   return NULL;

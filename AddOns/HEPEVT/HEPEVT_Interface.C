@@ -140,7 +140,7 @@ void HEPEVT_Interface::ConvertParticle
   MD_Info &cmd(mdmap[sc==2?NULL:cp]=MD_Info(n));
   hepevt.jmohep[n][0]=hepevt.jmohep[n][1]=0;
   hepevt.jdahep[n][0]=hepevt.jdahep[n][1]=0;
-  hepevt.idhep[n]=cp->Flav().HepEvt();
+  hepevt.idhep[n]=(long int) cp->Flav();
   for (short int j=1;j<4;++j) 
     hepevt.phep[n][j-1]=cp->Momentum()[j];
   hepevt.phep[n][3]=cp->Momentum()[0];

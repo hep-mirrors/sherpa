@@ -11,7 +11,6 @@
 #include "PHASIC++/Main/Helicity_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -112,12 +111,6 @@ bool COMIX::Single_Process::Initialize
   std::vector<Flavour> flavs(m_nin+m_nout);
   for (size_t i(0);i<m_nin+m_nout;++i) flavs[i]=m_flavs[i];
   int smode(0);
-  // smode: 0 - nothing
-  //        1 - RS
-  //        2 - I
-  //        4 - B
-  //        8 - checkpoles
-  //       16 - V
   if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) smode=1;
   if (m_pinfo.m_fi.NLOType()&nlo_type::vsub) {
     smode=2;
@@ -127,9 +120,12 @@ bool COMIX::Single_Process::Initialize
     smode|=16;
     if (m_checkpoles) smode|=8;
   }
+  std::vector<int> mincpl(m_pinfo.m_mincpl.size());
+  std::vector<int> maxcpl(m_pinfo.m_maxcpl.size());
+  for (size_t i(0);i<mincpl.size();++i) mincpl[i]=m_pinfo.m_mincpl[i]*2;
+  for (size_t i(0);i<maxcpl.size();++i) maxcpl[i]=m_pinfo.m_maxcpl[i]*2;
   if (p_bg->Initialize(m_nin,m_nout,flavs,isf,fsf,&*p_model,
-		       &m_cpls,smode,m_pinfo.m_oew,m_pinfo.m_oqcd,
-		       m_pinfo.m_maxoew,m_pinfo.m_maxoqcd,
+		       &m_cpls,smode,maxcpl,mincpl,
 		       m_pinfo.m_ntchan,m_pinfo.m_mtchan,m_name)) {
     if (smode&1) {
       NLO_subevtlist *subs(GetSubevtList());
@@ -155,9 +151,13 @@ bool COMIX::Single_Process::Initialize
       smode&=~16;
       Process_Info cinfo(m_pinfo);
       cinfo.m_fi.m_nloqcdtype=nlo_type::loop;
-      cinfo.m_oew=p_bg->MaxOrderEW()+
+      cinfo.m_maxcpl[1]=p_bg->MaxCpl()[1]+
 	((cinfo.m_fi.m_nloewtype&nlo_type::loop)?1:0);
-      cinfo.m_oqcd=p_bg->MaxOrderQCD()+
+      cinfo.m_mincpl[1]=p_bg->MinCpl()[1]+
+	((cinfo.m_fi.m_nloewtype&nlo_type::loop)?1:0);
+      cinfo.m_maxcpl[0]=p_bg->MaxCpl()[0]+
+	((cinfo.m_fi.m_nloqcdtype&nlo_type::loop)?1:0);
+      cinfo.m_mincpl[0]=p_bg->MinCpl()[0]+
 	((cinfo.m_fi.m_nloqcdtype&nlo_type::loop)?1:0);
       p_loop = PHASIC::Virtual_ME2_Base::GetME2(cinfo);
       if (p_loop==NULL) {
@@ -170,8 +170,14 @@ bool COMIX::Single_Process::Initialize
     }
     p_bg->SetLoopME(p_loop);
     nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);
-    m_oew=p_bg->MaxOrderEW()+((m_pinfo.m_fi.m_nloewtype&nlot)?1:0);
-    m_oqcd=p_bg->MaxOrderQCD()+((m_pinfo.m_fi.m_nloqcdtype&nlot)?1:0);
+    m_maxcpl[1]=p_bg->MaxCpl()[1]
+      +((m_pinfo.m_fi.m_nloewtype&nlot)?1:0);
+    m_mincpl[1]=p_bg->MinCpl()[1]
+      +((m_pinfo.m_fi.m_nloewtype&nlot)?1:0);
+    m_maxcpl[0]=p_bg->MaxCpl()[0]
+      +((m_pinfo.m_fi.m_nloqcdtype&nlot)?1:0);
+    m_mincpl[0]=p_bg->MinCpl()[0]
+      +((m_pinfo.m_fi.m_nloqcdtype&nlot)?1:0);
     (*pmap)[m_name]=m_name;
     return true;
   }
@@ -236,8 +242,8 @@ bool COMIX::Single_Process::MapProcess()
     for (size_t i(0);i<p_umprocs->size();++i)
       if ((*p_umprocs)[i]->Name()==mapname) {
 	p_mapproc=p_map=(*p_umprocs)[i];
-	m_oew=p_map->m_oew;
-	m_oqcd=p_map->m_oqcd;
+	m_maxcpl=p_map->m_maxcpl;
+	m_mincpl=p_map->m_mincpl;
 	m_mewgtinfo.m_type=p_map->m_mewgtinfo.m_type;
 	if (p_map->p_kpterms) {
 	  p_kpterms = new KP_Terms
@@ -487,7 +493,7 @@ bool COMIX::Single_Process::Tests()
            rpa->gen.Variable("SHERPA_CPP_PATH")+script);
     m_gpath+=std::string("/Comix");
     MakeDir(m_gpath,448);
-    p_bg->WriteOutGraphs(m_gpath+"/"+m_name+".tex");
+    p_bg->WriteOutGraphs(m_gpath+"/"+ShellName(m_name)+".tex");
   }
   if (p_int->HelicityScheme()==hls::sample) {
     p_int->SetHelicityIntegrator(new Helicity_Integrator());

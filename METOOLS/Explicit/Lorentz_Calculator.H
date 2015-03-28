@@ -12,15 +12,12 @@ namespace METOOLS {
 
     Vertex *p_v;
 
-    Color_Calculator *p_cc;
-
-    int m_swap;
+    std::vector<int> m_r;
 
   public:
 
     // constructor
-    inline Lorentz_Calculator(const Vertex_Key &key): 
-      p_v(key.p_v), p_cc(key.p_cc), m_swap(0) {}
+    Lorentz_Calculator(const Vertex_Key &key);
 
     // destructor
     virtual ~Lorentz_Calculator();
@@ -28,9 +25,9 @@ namespace METOOLS {
     // member functions
     virtual std::string Label() const = 0;
 
-    virtual void Evaluate() = 0;
+    virtual CObject *Evaluate(const CObject_Vector &j) = 0;
 
-    inline int Swap() const { return m_swap; }
+    virtual void Evaluate();
 
   };// end of class Lorentz_Calculator
 

@@ -9,7 +9,6 @@
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Poincare.H"

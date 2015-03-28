@@ -9,7 +9,7 @@
 #include "ATOOLS/Phys/Particle.H"
 
 #include "MODEL/Main/Model_Base.H"
-#include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "MODEL/Main/Single_Vertex.H"
 
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/Process_Info.H"
@@ -64,7 +64,7 @@ void Resonance_Finder::ScanModelForEWResonances()
 void Resonance_Finder::FindProcessPossibleResonances
 (const Flavour_Vector& fv, MODEL::Vertex_List& vlist)
 {
-  const Vertex_Table * vtab(s_model->GetVertexTable());
+  const Vertex_Table *vtab(s_model->VertexTable());
   Flavour_Vector fslep;
   for (size_t i(2);i<fv.size();++i)
     if (!fv[i].Strong()) fslep.push_back(fv[i]);
@@ -75,8 +75,8 @@ void Resonance_Finder::FindProcessPossibleResonances
         bool on(true);
         double m(it->first.Mass());
         Single_Vertex * v(it->second[i]);
-        for (size_t j(1);j<v->nleg;++j) {
-          if (!v->on || v->dec)        { on=false; break; }
+        for (size_t j(1);j<v->in.size();++j) {
+          if (v->dec)        { on=false; break; }
           if (v->in[j]==v->in[0])      { on=false; break; }
           if (v->in[j].IsDummy())      { on=false; break; }
           if ((m-=v->in[j].Mass())<0.) { on=false; break; }
@@ -260,7 +260,7 @@ bool Resonance_Finder::FindResonances
       for (size_t k(0);k<vlist.size();++k) {
         double mdist(abs((pv[i]->Momentum()+pv[j]->Momentum()).Mass()
                          -vlist[k]->in[0].Mass())/vlist[k]->in[0].Width());
-        if (vlist[k]->nleg==3 &&
+        if (vlist[k]->in.size()==3 &&
             ((pv[i]->Flav()==vlist[k]->in[1] &&
               pv[j]->Flav()==vlist[k]->in[2]) ||
              (pv[i]->Flav()==vlist[k]->in[2] &&

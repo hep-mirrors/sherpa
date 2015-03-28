@@ -12,6 +12,7 @@ namespace AMEGIC {
   class Process_Base;
   class Amplitude_Handler;
   class Helicity;
+  class Amegic_Model;
 
   class Process_Group: public Amegic_Base, public PHASIC::Process_Group {
     
@@ -20,7 +21,7 @@ namespace AMEGIC {
     Topology * p_top;
     ATOOLS::Vec4D* p_testmoms;
     
-    MODEL::Model_Base* p_model;
+    Amegic_Model* p_model;
     std::string m_mfname;
 
     std::vector<AMEGIC::Process_Base *> m_umprocs, m_errprocs;
@@ -45,7 +46,7 @@ namespace AMEGIC {
     AMEGIC::Process_Base *Partner() const;
 
     bool SetUpIntegrator();
-    int  InitAmplitude(MODEL::Model_Base *model,Topology *top);
+    int  InitAmplitude(Amegic_Model *model,Topology *top);
 
     Amplitude_Handler *GetAmplitudeHandler(); 
     Helicity *GetHelicity();

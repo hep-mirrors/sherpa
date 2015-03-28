@@ -10,12 +10,6 @@ using namespace ATOOLS;
 
 Function_Base::~Function_Base() {}
 
-void Function_Base::SetDefault(double _m_defval)    
-{ m_defval=_m_defval; }
-
-void Function_Base::SetType(std::string _m_type) 
-{ m_type=_m_type; }
-
 void Function_Base::SetParameters(double *parameters)    
 { return; }
 

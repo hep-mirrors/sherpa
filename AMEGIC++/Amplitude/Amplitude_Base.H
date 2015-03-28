@@ -45,10 +45,8 @@ namespace AMEGIC {
 
     virtual void BuildGlobalString(int*,int,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*);
 
-    virtual void  SetOrderQED(int);
-    virtual void  SetOrderQCD(int);
-    virtual int   GetOrderQED();
-    virtual int   GetOrderQCD();
+    virtual void DefineOrder(const std::vector<int> &o);
+    virtual const std::vector<int> &GetOrder();
   };
 }
 #endif

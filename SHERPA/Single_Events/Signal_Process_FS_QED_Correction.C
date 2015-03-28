@@ -12,7 +12,7 @@
 #include "ATOOLS/Phys/Momenta_Stretcher.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "MODEL/Main/Model_Base.H"
-#include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "MODEL/Main/Single_Vertex.H"
 
 
 using namespace SHERPA;

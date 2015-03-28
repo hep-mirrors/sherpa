@@ -15,14 +15,7 @@ namespace METOOLS {
       return "None";
     }
 
-    bool Evaluate(const CObject *a,const CObject *b)
-    {
-      m_stat=true;
-      return true;
-    }
-
-    bool Evaluate(const CObject *a,const CObject *b,
-		  const CObject *e)
+    bool Evaluate(const CObject_Vector &j)
     {
       m_stat=true;
       return true;
@@ -30,6 +23,7 @@ namespace METOOLS {
 
     void AddJ(CObject *const j)
     {
+      (*j)(0)=(*j)(1)=0;
       p_v->AddJ(j);
     }
 

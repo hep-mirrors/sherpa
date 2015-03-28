@@ -82,8 +82,8 @@ bool AMEGIC::Single_Process_Combined::CheckAlternatives(vector<Process_Base *>& 
       if (links[j]->Name()==name) {
 	p_mapproc = p_partner = (Single_Process_Combined*)links[j];
 	m_iresult = p_partner->Result()*m_sfactor;
-	m_oqcd=p_partner->OrderQCD();
-	m_oew=p_partner->OrderEW();
+	m_maxcpl=p_partner->MaxOrders();
+	m_mincpl=p_partner->MinOrders();
 	m_ntchanmin=p_partner->NTchanMin();
 	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
 
@@ -110,13 +110,13 @@ bool AMEGIC::Single_Process_Combined::CheckAlternatives(vector<Process_Base *>& 
   return false;
 }
 
-int AMEGIC::Single_Process_Combined::InitAmplitude(Model_Base * model,Topology* top,
+int AMEGIC::Single_Process_Combined::InitAmplitude(Amegic_Model * model,Topology* top,
 					  vector<Process_Base *> & links,
 					  vector<Process_Base *> & errs)
 {
   Init();
-  model->GetCouplings(m_cpls);
-  if (!model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
+  model->p_model->GetCouplings(m_cpls);
+  if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
   m_newlib   = false;
   m_libnumb  = 0;
   m_pslibname = m_libname = ToString(m_nin)+"_"+ToString(m_nout);
@@ -155,13 +155,11 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Model_Base * model,Topology* 
   }
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
   p_BS->Setk0(s_gauge);
-  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
-  int oew(m_oew), oqcd(m_oqcd), ntchanmin(m_ntchanmin);
+  p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
+  int ntchanmin(m_ntchanmin);
   bool cvp(reader.GetValue<int>("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",1));
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,oqcd,oew,ntchanmin,
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp);
-  m_oew=oew;
-  m_oqcd=oqcd;
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"AMEGIC::Single_Process_Combined::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return 0;
@@ -199,6 +197,8 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Model_Base * model,Topology* 
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
 				  m_ptypename+string("/")+m_libname);    
+    m_maxcpl=p_ampl->MaxCpl();
+    m_mincpl=p_ampl->MinCpl();
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 0;
     if (!TestLib()) return 0;
     links.push_back(this);
@@ -512,7 +512,7 @@ int AMEGIC::Single_Process_Combined::TestLib()
   }
   delete[] M_doub;
   m_iresult = M2 * sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS));
-  if (m_iresult>0.) return 1;
+  if (m_iresult>0. || m_iresult<0.) return 1;
   return 0;
 }
 
@@ -739,8 +739,8 @@ void AMEGIC::Single_Process_Combined::Minimize()
   if (p_psgen)    {delete p_psgen; p_psgen=0;}
   if (p_me2)      {delete p_me2; p_me2=0;}
 
-  m_oqcd      = p_partner->OrderQCD();
-  m_oew       = p_partner->OrderEW();
+  m_maxcpl    = p_partner->MaxOrders();
+  m_mincpl    = p_partner->MinOrders();
   m_ntchanmin = p_partner->NTchanMin();
 }
 

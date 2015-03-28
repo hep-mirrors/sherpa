@@ -132,7 +132,7 @@ void Primitive_Observable_Base::SetFlavInfo(int _nout,const Vec4D * _moms,const 
 
 void Primitive_Observable_Base::Output(const std::string & pname) {
   if (p_histo) {
-    ATOOLS::MakeDir(pname); 
+    ATOOLS::MakeDir(pname);
     p_histo->Output((pname+std::string("/")+m_name).c_str());
   }
 }

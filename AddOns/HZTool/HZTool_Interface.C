@@ -118,7 +118,7 @@ void HZTool_Interface::ConvertParticle
   int n=hepevt.nhep;
   hepevt.jmohep[n][0]=hepevt.jmohep[n][1]=0;
   hepevt.jdahep[n][0]=hepevt.jdahep[n][1]=0;
-  hepevt.idhep[n]=cp->Flav().HepEvt();
+  hepevt.idhep[n]=(long int) cp->Flav();
   for (short int j=1;j<4;++j) 
     hepevt.phep[n][j-1]=cp->Momentum()[j];
   hepevt.phep[n][3]=cp->Momentum()[0];
@@ -144,7 +144,7 @@ void HZTool_Interface::CheckParticle
       hepevtp.jdahep[n][0]!=0 ||
       hepevtp.jdahep[n][1]!=0)
     THROW(fatal_error,"HZFILHEP error JMO/DAHEP");
-  if (hepevtp.idhep[n]!=cp->Flav().HepEvt())
+  if (hepevtp.idhep[n]!=(long int) cp->Flav())
     THROW(fatal_error,"HZFILHEP error IDHEP");
   static double cacc(1.0e-6);
   for (short int j=1;j<4;++j)

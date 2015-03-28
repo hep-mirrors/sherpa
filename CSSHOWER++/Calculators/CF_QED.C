@@ -1,6 +1,6 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 
-#include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "MODEL/Main/Single_Vertex.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Exception.H"
@@ -46,7 +46,7 @@ bool CF_QED::SetCoupling(MODEL::Model_Base *md,
 {
   p_cpl=md->GetScalarFunction("alpha_QED");
   m_cplfac=1.0;
-  m_cplmax.push_back((*p_cpl)(rpa->gen.CplScale())*m_q);
+  m_cplmax.push_back((*p_cpl)(sqr(rpa->gen.Ecms()))*m_q);
   m_cplmax.push_back(0.0);
   return true;
 }

@@ -59,8 +59,10 @@ namespace PHASIC {
     Scale_Setter_Base   *p_scale;
     KFactor_Setter_Base *p_kfactor;
 
-    size_t      m_nin, m_nout, m_oqcd, m_oew, m_tinfo, m_mcmode, m_cmode;
+    size_t      m_nin, m_nout, m_tinfo, m_mcmode, m_cmode;
     std::string m_name;
+
+    std::vector<int> m_maxcpl, m_mincpl;
 
     ATOOLS::Flavour_Vector m_flavs;
     Process_Info           m_pinfo;
@@ -96,6 +98,8 @@ namespace PHASIC {
     void SetBBarMC(BBar_Multi_Channel *mc);
 
     int NaiveMapping(Process_Base *proc) const;
+
+    std::string ShellName(std::string name="") const;
 
     virtual void FillProcessMap(NLOTypeStringProcessMap_Map *apmap);
 
@@ -180,11 +184,19 @@ namespace PHASIC {
 
     inline const std::string &Name() const { return m_name; }
 
-    inline void SetOrderQCD(const size_t &oqcd) { m_oqcd=oqcd; }
-    inline void SetOrderEW(const size_t &oew)   { m_oew=oew;   }
+    inline void SetMaxOrders(const std::vector<int> &o) { m_maxcpl=o; }
+    inline void SetMinOrders(const std::vector<int> &o) { m_mincpl=o; }
 
-    inline size_t OrderQCD() const { return m_oqcd; }
-    inline size_t OrderEW() const  { return m_oew;  }
+    inline void SetMaxOrder(const size_t &id,const int o)
+    { if (m_maxcpl.size()<=id) m_maxcpl.resize(id+1,0); m_maxcpl[id]=o; }
+    inline void SetMinOrder(const size_t &id,const int o)
+    { if (m_mincpl.size()<=id) m_mincpl.resize(id+1,0); m_mincpl[id]=o; }
+
+    inline const std::vector<int> &MaxOrders() const { return m_maxcpl; }
+    inline const std::vector<int> &MinOrders() const { return m_mincpl; }
+
+    inline int MaxOrder(const size_t &id) const { return m_maxcpl[id]; }
+    inline int MinOrder(const size_t &id) const { return m_mincpl[id]; }
 
     PDF::Shower_Base *Shower() const { return p_shower; }
 

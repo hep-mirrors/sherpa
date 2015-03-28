@@ -2,10 +2,10 @@
 #define AMEGIC_Amplitude_Zfunctions_Zfunc_Calc_H
 
 #include <vector>
+#include "MODEL/Main/Model_Base.H"
 #include "AMEGIC++/Amplitude/Zfunctions/Basic_Func.H"
-#include "MODEL/Interaction_Models/Lorentz_Function.H"
+#include "AMEGIC++/Amplitude/Lorentz_Function.H"
 #include "ATOOLS/Org/Getter_Function.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "ATOOLS/Org/Smart_Pointer.H"
 
 #define Scalar_Args
@@ -20,9 +20,9 @@ namespace AMEGIC {
   struct ZFCalc_Key {
     Virtual_String_Generator *p_sgen;
     Basic_Sfuncs *p_bs;
-    MODEL::Interaction_Model_Base *p_model;
+    MODEL::Model_Base *p_model;
     ZFCalc_Key(Virtual_String_Generator *const sgen,Basic_Sfuncs *const bs,
-	       MODEL::Interaction_Model_Base *const model):
+	       MODEL::Model_Base *const model):
       p_sgen(sgen), p_bs(bs), p_model(model) {}
   };
 
@@ -101,7 +101,7 @@ namespace AMEGIC {
   DECLARE_GETTER(CLASS,TAG,Zfunc_Calc,ZFCalc_Key);			\
   Zfunc_Calc *ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::		\
   operator()(const ZFCalc_Key &key) const				\
-  { if (key.p_model && !key.p_model->HasLoops()) return NULL;		\
+  { if (key.p_model && key.p_model->Name()!="HEFT") return NULL;	\
     return new CLASS(key.p_sgen,key.p_bs); }				\
   void ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::			\
   PrintInfo(std::ostream &str,const size_t width) const			\
@@ -110,7 +110,7 @@ namespace AMEGIC {
   DECLARE_GETTER(CLASS,TAG,Zfunc_Calc,ZFCalc_Key);			\
   Zfunc_Calc *ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::		\
   operator()(const ZFCalc_Key &key) const				\
-  { if (key.p_model && !key.p_model->HasTensors()) return NULL;		\
+  { if (key.p_model && key.p_model->Name()!="ADD") return NULL;	\
     return new CLASS(key.p_sgen,key.p_bs); }				\
   void ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::			\
   PrintInfo(std::ostream &str,const size_t width) const			\
@@ -119,7 +119,7 @@ namespace AMEGIC {
   DECLARE_GETTER(CLASS,TAG,Zfunc_Calc,ZFCalc_Key);			\
   Zfunc_Calc *ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::		\
   operator()(const ZFCalc_Key &key) const				\
-  { if (key.p_model && !key.p_model->HasAGCs()) return NULL;		\
+  { if (key.p_model && key.p_model->Name()!="AGC") return NULL;	\
     return new CLASS(key.p_sgen,key.p_bs); }				\
   void ATOOLS::Getter<Zfunc_Calc,ZFCalc_Key,CLASS>::			\
   PrintInfo(std::ostream &str,const size_t width) const			\

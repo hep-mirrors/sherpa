@@ -2,7 +2,6 @@
 #include "ATOOLS/Phys/Flow.H"
 #include "ATOOLS/Math/Random.H"
 #include "MODEL/Main/Model_Base.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "EXTRA_XS/Main/ME2_Base.H"
 
 using namespace EXTRAXS;
@@ -49,7 +48,8 @@ operator()(const Process_Info &pi) const
 	fl[2].IsFermion() && fl[3].IsFermion())) return NULL;
 
   if (MODEL::s_model->Name()=="QCD") return NULL;
-  if (pi.m_oqcd!=0 || pi.m_oew!=2) return NULL;
+  if (pi.m_maxcpl[0]!=0 || pi.m_maxcpl[1]!=2 ||
+      pi.m_mincpl[0]!=0 || pi.m_mincpl[1]!=2) return NULL;
   if (!(ATOOLS::Flavour(kf_Z).IsOn() ||
 	ATOOLS::Flavour(kf_photon).IsOn())) return NULL;
   if ((fl[0].Charge()!=0. && ATOOLS::Flavour(kf_photon).IsOn()) ||
@@ -66,11 +66,11 @@ XS_f1f1_f1f1::XS_f1f1_f1f1(const Process_Info& pi, const Flavour_Vector& fl):
   m_anti(int(fl[0].IsAnti())),
   m_mz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Mass())),
   m_wz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Width())),
-  m_sin2tw(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
+  m_sin2tw(std::abs(MODEL::s_model->ComplexConstant(std::string("csin2_thetaW")))),m_cos2tw(1.-m_sin2tw),
   m_eq(fl[0].Charge()),
   m_y3f((2.*int(fl[0].IsUptype())-1)/2.),
   m_v(m_y3f-2.*m_eq*m_sin2tw), m_a(m_y3f),
-  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms()))),
+  m_aqed(MODEL::s_model->ScalarConstant("alpha_QED")),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw))
 {
   //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
@@ -181,7 +181,8 @@ operator()(const Process_Info &pi) const
   if (!(fl[0].IsFermion() && fl[1].IsFermion() && 
 	fl[2].IsFermion() && fl[3].IsFermion())) return NULL;
   if (MODEL::s_model->Name()=="QCD") return NULL;
-  if (pi.m_oqcd!=0 || pi.m_oew!=2) return NULL;
+  if (pi.m_maxcpl[0]!=0 || pi.m_maxcpl[1]!=2 ||
+      pi.m_mincpl[0]!=0 || pi.m_mincpl[1]!=2) return NULL;
   if (!(ATOOLS::Flavour(kf_Z).IsOn() ||
 	ATOOLS::Flavour(kf_photon).IsOn())) return NULL;
   if ((fl[0].Charge()!=0. && ATOOLS::Flavour(kf_photon).IsOn()) ||
@@ -197,11 +198,11 @@ XS_f1f1b_f1f1b::XS_f1f1b_f1f1b(const Process_Info& pi, const Flavour_Vector& fl)
   m_anti1(int(fl[0].IsAnti())),m_anti2(int(fl[2].IsAnti())),
   m_mz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Mass())),
   m_wz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Width())),
-  m_sin2tw(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
+  m_sin2tw(std::abs(MODEL::s_model->ComplexConstant(std::string("csin2_thetaW")))),m_cos2tw(1.-m_sin2tw),
   m_eq(fl[0].Charge()),
   m_y3f((2.*int(fl[0].IsUptype())-1)/2.),
   m_v(m_y3f-2.*m_eq*m_sin2tw), m_a(m_y3f),
-  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms()))),
+  m_aqed(MODEL::s_model->ScalarConstant("alpha_QED")),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw))
 {
   //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
@@ -329,7 +330,8 @@ operator()(const Process_Info &pi) const
         fl[2].IsFermion() && fl[3].IsFermion())) return NULL;
   
   if (MODEL::s_model->Name()=="QCD") return NULL;
-  if (pi.m_oqcd!=0 || pi.m_oew!=2) return NULL;
+  if (pi.m_maxcpl[0]!=0 || pi.m_maxcpl[1]!=2 ||
+      pi.m_mincpl[0]!=0 || pi.m_mincpl[1]!=2) return NULL;
   if ((fl[0].Charge()!=0. && fl[2].Charge()!=0. &&
        ATOOLS::Flavour(kf_photon).IsOn()) ||
       (ATOOLS::Flavour(kf_Wplus).IsOn() && 
@@ -354,7 +356,7 @@ XS_f1f1b_f2f2b::XS_f1f1b_f2f2b(const Process_Info& pi, const Flavour_Vector& fl)
   m_wz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Width())),
   m_mw2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Mass())),
   m_ww2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Width())),
-  m_sin2tw(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
+  m_sin2tw(std::abs(MODEL::s_model->ComplexConstant(std::string("csin2_thetaW")))),m_cos2tw(1.-m_sin2tw),
   m_eq1(fl[0].Charge()),
   m_eq2(fl[2].Charge()),
   m_y3f1((2.*int(fl[0].IsUptype())-1)/2.),
@@ -362,7 +364,7 @@ XS_f1f1b_f2f2b::XS_f1f1b_f2f2b(const Process_Info& pi, const Flavour_Vector& fl)
   m_v1(m_y3f1-2.*m_eq1*m_sin2tw), m_a1(m_y3f1),
   m_v2(m_y3f2-2.*m_eq2*m_sin2tw), m_a2(m_y3f2),
   m_ckm(Complex(0.,0.)),
-  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms()))),
+  m_aqed(MODEL::s_model->ScalarConstant("alpha_QED")),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw)),
   m_pref_W((4.*M_PI*m_aqed)/(4.*m_sin2tw))
 {
@@ -502,7 +504,8 @@ operator()(const Process_Info &pi) const
 
   if (fl[0]==fl[1] && fl[2]==fl[3]) return NULL;
   if (MODEL::s_model->Name()=="QCD") return NULL;
-  if (pi.m_oqcd!=0 || pi.m_oew!=2) return NULL;
+  if (pi.m_maxcpl[0]!=0 || pi.m_maxcpl[1]!=2 ||
+      pi.m_mincpl[0]!=0 || pi.m_mincpl[1]!=2) return NULL;
   if (!(ATOOLS::Flavour(kf_Z).IsOn() ||
         ATOOLS::Flavour(kf_photon).IsOn() ||
         ATOOLS::Flavour(kf_Wplus).IsOn())) return NULL;
@@ -530,7 +533,7 @@ XS_f1f2_f1f2::XS_f1f2_f1f2(const Process_Info& pi, const Flavour_Vector& fl) :
   m_wz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Width())),
   m_mw2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Mass())),
   m_ww2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Width())),
-  m_sin2tw(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
+  m_sin2tw(std::abs(MODEL::s_model->ComplexConstant(std::string("csin2_thetaW")))),m_cos2tw(1.-m_sin2tw),
   m_eq1(std::pow(-1.,m_anti) * fl[0].Charge()),
   m_eq2(std::pow(-1.,m_anti) * fl[1].Charge()),
   m_y3f1((2.*int(fl[0].IsUptype())-1)/2.),
@@ -538,7 +541,7 @@ XS_f1f2_f1f2::XS_f1f2_f1f2(const Process_Info& pi, const Flavour_Vector& fl) :
   m_v1(m_y3f1-2.*m_eq1*m_sin2tw), m_a1(m_y3f1),
   m_v2(m_y3f2-2.*m_eq2*m_sin2tw), m_a2(m_y3f2),
   m_ckm(Complex(0.,0.)),
-  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms()))),
+  m_aqed(MODEL::s_model->ScalarConstant("alpha_QED")),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw)),
   m_pref_W((4.*M_PI*m_aqed)/(4.*m_sin2tw))
 {
@@ -689,7 +692,8 @@ operator()(const Process_Info &pi) const
 
   if (fl[0]==fl[1].Bar()) return NULL;
   if (MODEL::s_model->Name()=="QCD") return NULL;
-  if (pi.m_oqcd!=0 || pi.m_oew!=2) return NULL;
+  if (pi.m_maxcpl[0]!=0 || pi.m_maxcpl[1]!=2 ||
+      pi.m_mincpl[0]!=0 || pi.m_mincpl[1]!=2) return NULL;
   if (!(ATOOLS::Flavour(kf_Z).IsOn() ||
         ATOOLS::Flavour(kf_photon).IsOn() ||
         ATOOLS::Flavour(kf_Wplus).IsOn())) return NULL;
@@ -717,7 +721,7 @@ XS_f1f2b_f1f2b::XS_f1f2b_f1f2b(const Process_Info& pi, const Flavour_Vector& fl)
   m_wz2(ATOOLS::sqr(ATOOLS::Flavour(kf_Z).Width())),
   m_mw2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Mass())),
   m_ww2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Width())),
-  m_sin2tw(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
+  m_sin2tw(std::abs(MODEL::s_model->ComplexConstant(std::string("csin2_thetaW")))),m_cos2tw(1.-m_sin2tw),
   m_eq1(fl[0].Charge()),
   m_eq2(fl[1].Charge()),
   m_y3f1((2.*int(fl[0].IsUptype())-1)/2.),
@@ -725,7 +729,7 @@ XS_f1f2b_f1f2b::XS_f1f2b_f1f2b(const Process_Info& pi, const Flavour_Vector& fl)
   m_v1(m_y3f1-2.*m_eq1*m_sin2tw), m_a1(m_y3f1),
   m_v2(m_y3f2-2.*m_eq2*m_sin2tw), m_a2(m_y3f2),
   m_ckm(Complex(0.,0.)),
-  m_aqed(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms()))),
+  m_aqed(MODEL::s_model->ScalarConstant("alpha_QED")),
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw)),
   m_pref_W((4.*M_PI*m_aqed)/(4.*m_sin2tw))
 {
@@ -871,7 +875,8 @@ operator()(const Process_Info &pi) const
 	+int(fl[1]==fl[3])+int(fl[2]==fl[3]))>1)
     return NULL;
   if (MODEL::s_model->Name()=="QCD") return NULL;
-  if (pi.m_oqcd!=0 || pi.m_oew!=2) return NULL;
+  if (pi.m_maxcpl[0]!=0 || pi.m_maxcpl[1]!=2 ||
+      pi.m_mincpl[0]!=0 || pi.m_mincpl[1]!=2) return NULL;
   if (!ATOOLS::Flavour(kf_Wplus).IsOn()) return NULL;
   if (fl[0].IsUptype()) {
     if (fl[2].IsDowntype() && 
@@ -901,8 +906,8 @@ XS_f1f2_f3f4::XS_f1f2_f3f4(const Process_Info& pi, const Flavour_Vector& fl) :
   m_anti(int(fl[0].IsAnti())), m_rev(false),
   m_mw2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Mass())),
   m_ww2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Width())),
-  m_pref_W((4.*M_PI*MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms())))/
-           (2.*MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")))),
+  m_pref_W((4.*M_PI*MODEL::s_model->ScalarConstant("alpha_QED"))/
+           (2.*std::abs(MODEL::s_model->ComplexConstant(std::string("csin2_thetaW"))))),
   m_ckm1(Complex(0.,0.)), m_ckm2(Complex(0.,0.))
 {
   //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
@@ -1011,7 +1016,8 @@ operator()(const Process_Info &pi) const
   if (fl.size()!=4) return NULL;
 
   if (MODEL::s_model->Name()=="QCD") return NULL;
-  if (pi.m_oqcd!=0 || pi.m_oew!=2) return NULL;
+  if (pi.m_maxcpl[0]!=0 || pi.m_maxcpl[1]!=2 ||
+      pi.m_mincpl[0]!=0 || pi.m_mincpl[1]!=2) return NULL;
   if (!ATOOLS::Flavour(kf_Wplus).IsOn()) return NULL;
   if (fl[0].IntCharge()+fl[1].IntCharge()!= fl[2].IntCharge()+fl[3].IntCharge())
     return NULL;
@@ -1083,8 +1089,8 @@ XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const Process_Info& pi, const Flavour_Vector& fl)
   m_anti(int(fl[0].IsAnti())), m_rev(false), m_schannel(true),
   m_mw2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Mass())),
   m_ww2(ATOOLS::sqr(ATOOLS::Flavour(kf_Wplus).Width())),
-  m_pref_W((4.*M_PI*MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms())))/
-           (2.*MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")))),
+  m_pref_W((4.*M_PI*MODEL::s_model->ScalarConstant("alpha_QED"))/
+           (2.*std::abs(MODEL::s_model->ComplexConstant(std::string("csin2_thetaW"))))),
   m_ckm1(Complex(0.,0.)), m_ckm2(Complex(0.,0.))
 {
   //for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;

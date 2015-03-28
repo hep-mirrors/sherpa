@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
+#include "blackhat/BH_interface.h"
 #include "blackhat/BH_error.h"
 
 using namespace BLACKHAT;
@@ -31,21 +32,6 @@ BlackHat_Tree::~BlackHat_Tree()
   // if (p_ampl) delete p_ampl;
 }
 
-void BlackHat_Tree::SetCouplings(const MODEL::Coupling_Map& cpls)
-{
-  Tree_ME2_Base::SetCouplings(cpls);
-  if (p_aqcd) m_asfac=p_aqcd->Default()/s_model->ScalarFunction("alpha_S");
-  if (p_aqed) m_afac=p_aqed->Default()/s_model->ScalarFunction("alpha_QED");
-}
-
-double BlackHat_Tree::CouplingFactor(const int oqcd,const int oew) const
-{
-  double fac(1.0);
-  if (p_aqcd && oqcd) fac*=pow(m_asfac*p_aqcd->Factor(),oqcd);
-  if (p_aqed && oew) fac*=pow(m_afac*p_aqed->Factor(),oew);
-  return fac;
-}
-
 double BlackHat_Tree::Calc(const Vec4D_Vector& momenta)
 {
   std::vector<std::vector<double> > moms
@@ -55,13 +41,17 @@ double BlackHat_Tree::Calc(const Vec4D_Vector& momenta)
       moms[i][j]=momenta[i][j];
     }
   }
+  s_interface->set("alpha_S",AlphaQCD());
+  s_interface->set("alpha_QED",AlphaQED());
   BH::BHinput input(moms,-1.0);
   s_interface->operator()(input);
-  double res=p_ampl->get_born()*CouplingFactor(m_oqcd,m_oew);
-  if (m_mode)
-    res*=p_ampl->get_finite()*
-      2.0*sqr(s_model->ScalarFunction("alpha_S")/(4.0*M_PI));
-
+  double res=p_ampl->get_born();
+  if (m_mode) {
+    res*=p_ampl->get_finite();
+#ifndef INCLUDE_COUPLINGS_IN_VIRTUAL
+    res*=2.0*sqr(AlphaQCD()/(4.0*M_PI));
+#endif
+  }
   return res;
 }
 
@@ -73,6 +63,21 @@ int BlackHat_Tree::OrderQCD(const int &id)
 int BlackHat_Tree::OrderEW(const int &id)
 {
   return m_oew;
+}
+
+void BlackHat_Tree::AddCouplings
+(const Process_Info &pi,
+ std::vector<std::vector<std::pair<std::string,int> > > &couplings,
+ std::vector<std::pair<std::string,int> > cpls,size_t i)
+{
+  if (i==pi.m_mincpl.size()) {
+    couplings.push_back(cpls);
+    return;
+  }
+  for (size_t j(pi.m_mincpl[i]);j<=pi.m_maxcpl[i];++j) {
+    cpls[i].second=j;
+    AddCouplings(pi,couplings,cpls,i+1);
+  }
 }
 
 DECLARE_TREEME2_GETTER(BlackHat_Tree,"BlackHat_Tree")
@@ -88,16 +93,31 @@ operator()(const Process_Info &pi) const
       pi.m_fi.m_nloqcdtype==nlo_type::real) {
     Flavour_Vector fl=pi.ExtractFlavours();
     std::vector<int> kfvector;
-    for (size_t i=0; i<fl.size(); ++i) kfvector.push_back(fl[i].HepEvt());
+    for (size_t i=0; i<fl.size(); ++i) kfvector.push_back((long int) fl[i]);
     int mode=0;
     BH::BH_Ampl* ampl=NULL;
     try {
       msg_Info()<<"Trying BlackHat for "<<kfvector<<" ... "<<std::flush;
+      std::vector<std::pair<std::string,int> > cpls;
+      cpls.push_back(std::pair<std::string,int>("alpha_QCD",0));
+      cpls.push_back(std::pair<std::string,int>("alpha_QED",0));
+      if (MODEL::s_model->Name()=="HEFT")
+	cpls.push_back(std::pair<std::string,int>("YUK2",0));
+      std::vector<std::vector<std::pair<std::string,int> > > couplings;
+      BlackHat_Tree::AddCouplings(pi,couplings,cpls);
+#ifdef INCLUDE_COUPLINGS_IN_VIRTUAL
+      ampl = BlackHat_Tree::Interface()->new_tree_ampl(kfvector,couplings);
+#else
       ampl = BlackHat_Tree::Interface()->new_tree_ampl(kfvector);
+#endif
 #ifdef VIRTUAL_PREFACTOR
       if (ampl && !ampl->is_born_LO()) {
 	delete ampl;
+#ifdef INCLUDE_COUPLINGS_IN_VIRTUAL
+	ampl = BlackHat_Tree::Interface()->new_ampl(kfvector,couplings);
+#else
 	ampl = BlackHat_Tree::Interface()->new_ampl(kfvector);
+#endif
 	mode=1;
       }
 #else

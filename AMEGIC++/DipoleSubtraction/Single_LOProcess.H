@@ -86,13 +86,13 @@ namespace AMEGIC {
     void                AddChannels(std::list<std::string>*);
     bool                NewLibs() {return m_newlib;}
     bool                FoundMappingFile(std::string &,std::string &);
-    int                 InitAmplitude(MODEL::Model_Base *,Topology *,
+    int                 InitAmplitude(Amegic_Model *,Topology *,
 				      std::vector<Process_Base *> &,
 				      std::vector<Process_Base *> &);
-    virtual int         InitAmplitude(MODEL::Model_Base *,Topology *,
+    virtual int         InitAmplitude(Amegic_Model *,Topology *,
 				      std::vector<Process_Base *> &,
 				      std::vector<Process_Base *> &,int);
-    virtual int         InitAmplitude(MODEL::Model_Base *,Topology *,
+    virtual int         InitAmplitude(Amegic_Model *,Topology *,
 				      std::vector<Process_Base *> &,
 				      std::vector<Process_Base *> &,
 				      std::vector<ATOOLS::Vec4D>*,std::vector<double>*);

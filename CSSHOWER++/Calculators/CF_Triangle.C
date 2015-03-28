@@ -1,7 +1,6 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 
-#include "MODEL/Interaction_Models/Single_Vertex.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "MODEL/Main/Single_Vertex.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Exception.H"
@@ -30,16 +29,10 @@ bool CF_GGH::SetCoupling(MODEL::Model_Base *md,
 			 const double &k0sqi,const double &k0sqf,
 			 const double &isfac,const double &fsfac)
 {
-  double vev;
-  if(md->GetInteractionModel()->ScalarNumber(std::string("WidthScheme"))==0)
-    vev=md->GetInteractionModel()->ScalarConstant(std::string("vev"));
-  else vev=std::abs(md->GetInteractionModel()->ComplexConstant(std::string("cvev")));
-  double asggh(md->GetInteractionModel()->
-	       ScalarFunction(std::string("alpha_S"),
-			      sqr(Flavour(kf_h0).Mass())));
-  double cpl(md->GetInteractionModel()->
-	     ScalarConstant(std::string("h0_gg_fac"))*
-	     asggh/(2.0*M_PI*vev));
+  double vev(std::abs(md->ComplexConstant("vev")));
+  double asggh(md->ScalarFunction(std::string("alpha_S"),
+				  sqr(Flavour(kf_h0).Mass())));
+  double cpl(asggh/(2.0*M_PI*vev));
   DEBUG_VAR(cpl);
   m_cplfac=1.0;
   m_cplmax.push_back(cpl*cpl);

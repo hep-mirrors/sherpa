@@ -37,8 +37,8 @@ namespace ATOOLS {
     Kabbala& operator*=(const Complex& c);
     Kabbala& operator/=(const Kabbala& k);
     
-    Complex Value()  const {return rishbon;} 
-    std::string  String() const {return shem;}
+    const Complex &Value() const {return rishbon;} 
+    const std::string &String() const {return shem;}
    
     void SetValue(Complex val) {rishbon = val;}
     void SetString(std::string str) {shem    = str;} 

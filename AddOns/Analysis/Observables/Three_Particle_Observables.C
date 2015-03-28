@@ -75,7 +75,7 @@ Three_Particle_Observable_Base(const Flavour & flav1,const Flavour & flav2,
 {
   m_listname=listname;
   MyStrStream str;
-  str<<name<<m_flav1<<m_flav2<<m_flav3<<".dat";
+  str<<name<<m_flav1.ShellName()<<m_flav2.ShellName()<<m_flav3.ShellName()<<".dat";
   str>>m_name;
   m_blobtype = std::string("");
   m_blobdisc = false;

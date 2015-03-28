@@ -38,12 +38,6 @@ namespace ATOOLS {
       if (anti && p_info->m_majorana==0) m_anti=anti; }
 
     // member functions
-    int  Ctq() const;
-    void FromCtq(const int code);
-
-    int HepEvt() const;
-    void FromHepEvt(long int code);
-
     std::string IDName() const;
     std::string ShellName() const;
     std::string TexName() const;
@@ -77,20 +71,10 @@ namespace ATOOLS {
 
     inline bool IsAnti() const { return m_anti; }
 
-    inline void SetIntCharge(const int icharge) const 
-    { p_info->m_icharge=icharge; }
-
     inline int    IntCharge() const
     { int iq(p_info->m_icharge); return m_anti?-iq:iq;     }
     inline double Charge() const
     { double c(p_info->m_icharge/3.0); return m_anti?-c:c; }
-    inline bool   Electromagnetic() const
-    { return p_info->m_icharge!=0&&!IsDiQuark(); }
-
-    inline double IsoWeak() const 
-    { double c(p_info->m_isoweak/2.0); return m_anti?-c:c; }
-    inline bool Weak() const 
-    { return p_info->m_isoweak!=0&&!IsDiQuark(); }
 
     inline int  StrongCharge() const 
     { int c(p_info->m_strong); return m_anti?-c:c; }
@@ -129,9 +113,6 @@ namespace ATOOLS {
     { p_info->m_mass=mass;  }
     inline void SetHadMass(const double &hmass) const 
     { p_info->m_hmass=hmass;  }
-
-    inline void SetMassSign(const int ms) const 
-    { p_info->m_masssign=ms; }
 
     inline bool IsMassive() const 
     { return p_info->m_mass?p_info->m_massive:0; }
@@ -178,12 +159,6 @@ namespace ATOOLS {
     inline int QuarkFamily() const 
     { if (IsQuark()) return (Kfcode()+1)/2; return 0; }
 
-    inline int LeptonNumber() 
-    { if (IsLepton()||IsSlepton()||IsSneutrino()) return m_anti?-1:1; return 0; }
-    inline double BaryonNumber() 
-    { if (IsQuark()||IsSquark()) return m_anti?-1./3.:1./3.; return 0.; 
-    if (abs(StrongCharge())==3) return 1./double(StrongCharge()); }
-
     inline bool IsPhoton() const { return Kfcode()==kf_photon;   }
     inline bool IsLepton() const { return Kfcode()>10&&Kfcode()<19; }
 
@@ -192,39 +167,12 @@ namespace ATOOLS {
     { return Kfcode()==kf_gluon||Kfcode()==kf_shgluon; }
     inline bool IsJet() const   { return Kfcode()==kf_jet; }
 
-    inline bool IsChargino() const 
-    { return (Kfcode()==kf_Chargino1||Kfcode()==kf_Chargino2) && IntSpin()==1; }
-    inline bool IsNeutralino() const 
-    { return (Kfcode()==kf_Neutralino1||Kfcode()==kf_Neutralino2||
-	      Kfcode()==kf_Neutralino3||Kfcode()==kf_Neutralino4) && IntSpin()==1; }
-    inline bool IsSlepton() const 
-    { return ((Kfcode()>1000010&&Kfcode()<1000017)||
-	(Kfcode()>2000010&&Kfcode()<2000017)) && IntSpin()==0; }
-    inline bool IsSneutrino() const 
-    { return Kfcode()>1000010&&Kfcode()<1000017&&Kfcode()%2==0&&IntSpin()==0; }
-
-    inline bool IsSquark() const 
-    { return Strong()&&(StrongCharge()==3 || StrongCharge()==-3)&&IntSpin()==0&&!Majorana(); }
-    inline bool IsGluino() const 
-    { return Kfcode()==kf_Gluino; }
-
-    inline bool IsIno() const    
-    { return IsGluino()||IsNeutralino()||IsChargino(); }
-
-    inline bool IsUptype() const   { return p_info->m_isoweak==1;  }
-    inline bool IsDowntype() const { return p_info->m_isoweak==-1; }
-
-    inline bool IsSusy() const 
-    { return 1000000<Kfcode()&&Kfcode()<3000000; }
-
     inline bool IsKK() const 
     { if (Kfcode()==kf_graviton || Kfcode()==kf_gscalar) return 1;
       return 0; }
     inline int KKGeneration() const 
     { if (!IsKK()) return 0; 
       return (Kfcode()-1000000*(Kfcode()/1000000))/100000; }
-    inline bool Is5VDummy() const 
-    { return Kfcode()==kf_shgluon; }   
 
     inline bool IsDummy() const 
     { return p_info->m_dummy; }   
@@ -236,8 +184,6 @@ namespace ATOOLS {
       return m_anti<f.m_anti;
     }
     
-    static kf_code PdgToSherpa(const unsigned long& pdg);
-
     %extend {
       std::string __str__() {
 	MyStrStream conv;

@@ -25,7 +25,7 @@ Scale_Setter_Base::Scale_Setter_Base
   m_scale(stp::size), m_coupling(args.m_coupling),
   m_nin(args.m_nin), m_nout(args.m_nout)
 {
-  for (size_t i(0);i<stp::size;++i) m_scale[i]=rpa->gen.CplScale();
+  for (size_t i(0);i<stp::size;++i) m_scale[i]=sqr(rpa->gen.Ecms());
   if (p_proc) {
     m_nin=p_proc->NIn();
     m_nout=p_proc->NOut();
@@ -52,7 +52,8 @@ void Scale_Setter_Base::SetCouplings()
     Coupling_Map::iterator cit(p_cpls->lower_bound(helpsvv[i][0]));
     Coupling_Map::iterator eit(p_cpls->upper_bound(helpsvv[i][0]));
     if (cit!=eit) {
-      size_t idx(ToType<size_t>(helpsvv[i][1]));
+      int idx(ToType<int>(helpsvv[i][1]));
+      if (idx<0) continue;
       if (idx>=m_scale.size())
 	THROW(fatal_error,"Index too large for "+helpsvv[i][0]+".");
       for (;cit!=eit;++cit) {

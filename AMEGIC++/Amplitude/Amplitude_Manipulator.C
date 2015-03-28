@@ -1,4 +1,5 @@
 #include "AMEGIC++/Amplitude/Amplitude_Manipulator.H"
+#include "AMEGIC++/Main/Tools.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 
@@ -156,14 +157,14 @@ void Amplitude_Manipulator::GetFermionLine(Point* pcurr,Point*& pbegin,Point*& p
     return;
   }     
 
-  if (fl[pbegin->number].IsAnti() && fl[pbegin->number].IsChargino() && fl[pend->number].Majorana()) {
+  if (fl[pbegin->number].IsAnti() && IsChargino(fl[pbegin->number]) && fl[pend->number].Majorana()) {
     Point* h = pbegin;
     pbegin   = pend;
     pend     = h;
     return;
   }
   
-  if (!fl[pend->number].IsAnti() && fl[pend->number].IsChargino() && fl[pbegin->number].Majorana()) {
+  if (!fl[pend->number].IsAnti() && IsChargino(fl[pend->number]) && fl[pbegin->number].Majorana()) {
     Point* h = pbegin;
     pbegin   = pend;
     pend     = h;
@@ -171,13 +172,13 @@ void Amplitude_Manipulator::GetFermionLine(Point* pcurr,Point*& pbegin,Point*& p
     }
   
   if (fl[pend->number].IsAnti() && fl[pbegin->number].Majorana() && 
-      fl[pend->number].IsChargino()) return;
+      IsChargino(fl[pend->number])) return;
   
-  if (!fl[pbegin->number].IsAnti() && fl[pbegin->number].IsChargino() &&
-      fl[pend->number].IsAnti() && fl[pend->number].IsChargino()) return;
+  if (!fl[pbegin->number].IsAnti() && IsChargino(fl[pbegin->number]) &&
+      fl[pend->number].IsAnti() && IsChargino(fl[pend->number])) return;
   
-  if (fl[pbegin->number].IsAnti() && fl[pbegin->number].IsChargino() &&
-      !fl[pend->number].IsAnti() && fl[pend->number].IsChargino()) {
+  if (fl[pbegin->number].IsAnti() && IsChargino(fl[pbegin->number]) &&
+      !fl[pend->number].IsAnti() && IsChargino(fl[pend->number])) {
     Point* h = pbegin;
     pbegin   = pend;
     pend     = h;
@@ -189,7 +190,7 @@ void Amplitude_Manipulator::GetFermionLine(Point* pcurr,Point*& pbegin,Point*& p
   if (fl[pend->number].IsAnti() && !fl[pend->number].Majorana()) return;
   if ( (fl[pbegin->number].IsAnti()  && !fl[pbegin->number].Majorana()) ||
        (!fl[pend->number].IsAnti()   && !fl[pend->number].Majorana() && 
-	!fl[pend->number].IsChargino()) ) {
+	!IsChargino(fl[pend->number])) ) {
     Point* h = pbegin;
     pbegin   = pend;
     pend     = h;
@@ -463,8 +464,8 @@ int Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
   int majoflag = 0;
   int chinum = 0;
   if (!pb->fl.Majorana() && !pe->fl.Majorana()) {
-    if (pb->fl.IsChargino()) chinum++;
-    if (pe->fl.IsChargino()) chinum++;
+    if (IsChargino(pb->fl)) chinum++;
+    if (IsChargino(pe->fl)) chinum++;
     if (chinum!=1) {
     if (b[pb->number]==-1 && b[pe->number]==-1 &&
 	((!pb->fl.IsAnti() && !pe->fl.IsAnti()) ||

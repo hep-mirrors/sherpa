@@ -1,10 +1,11 @@
 #include "AMEGIC++/Main/Point.H"
 
+#include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Org/Message.H"
 
 using namespace AMEGIC;
 using namespace MODEL;
-
+using namespace ATOOLS;
 
 Point::Point(const Point& copy) { 
   extrafl = 0;
@@ -224,21 +225,16 @@ std::ostream & operator<<(std::ostream & s, const Point & p)
   return s;
 }
 
-int Point::FindQCDOrder(int & oqcd) {
- if (!this) return oqcd;
-  if (v) oqcd+=v->oqcd;
-  left->FindQCDOrder(oqcd);
-  right->FindQCDOrder(oqcd);
-  if (middle) middle->FindQCDOrder(oqcd);
-  return oqcd;
+void Point::FindOrder(std::vector<int> &order)
+{
+  if (!this) return;
+  if (v) {
+    if (order.size()<v->order.size())
+      order.resize(v->order.size(),0);
+    for (size_t i(0);i<v->order.size();++i)
+      order[i]+=v->order[i];
+  }
+  left->FindOrder(order);
+  right->FindOrder(order);
+  if (middle) middle->FindOrder(order);
 }
-
-int Point::FindQEDOrder(int & oqed) {
-if (!this) return oqed;
-  if (v) oqed+=v->oew;
-  left->FindQEDOrder(oqed);
-  right->FindQEDOrder(oqed);
-  if (middle) middle->FindQEDOrder(oqed);
-  return oqed;
-}
-

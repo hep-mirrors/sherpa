@@ -5,7 +5,7 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace MODEL;
 
-DEFINE_ZFCALC_GETTER(V4_Calc,"V4","v4 calculator")
+DEFINE_ZFCALC_GETTER(V4_Calc,"VVVV","v4 calculator")
 
 V4_Calc::V4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
   Basic_Func(_sgen,_BS), 
@@ -15,19 +15,19 @@ V4_Calc::V4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   Basic_Mfunc(_sgen,_BS), 
   Basic_Vfunc(_sgen,_BS) 
 { 
-  type="V4";
+  type="VVVV";
   ncoupl=9;narg=8;pn=4;
-  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
-  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
-  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
-  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
-  lorentzlist.push_back(LF_Getter::GetObject("Gauge4",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("FFV",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("FFV",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("FFV",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("FFV",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("VVVV",LF_Key()));
   for (short int i=0;i<4;i++) lorentzlist[i]->SetParticleArg(i);
   lorentzlist[4]->SetParticleArg(0,1,2,3);     
 }
 
 Kabbala V4_Calc::Massless()
-{ return 2*Z(0,1)*Z(2,3)-Z(0,2)*Z(1,3)-Z(0,3)*Z(1,2);}
+{ return Z(0,2)*Z(1,3)+Z(0,3)*Z(1,2)-2*Z(0,1)*Z(2,3);}
 
 
 Kabbala V4_Calc::Do() 

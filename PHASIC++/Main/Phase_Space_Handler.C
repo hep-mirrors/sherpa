@@ -398,8 +398,8 @@ Weight_Info *Phase_Space_Handler::OneEvent(Process_Base *const proc,int mode)
   double x1(0.0), x2(0.0), xf1(0.0), xf2(0.0), mu12(0.0), mu22(0.0), dxs(0.0);
   ME_Weight_Info* wgtinfo=p_active->Process()->GetMEwgtinfo();
   dxs=m_result/m_psweight;
-  fl1=p_active->Process()->Flavours()[0].HepEvt();
-  fl2=p_active->Process()->Flavours()[1].HepEvt();
+  fl1=(long int)p_active->Process()->Flavours()[0];
+  fl2=(long int)p_active->Process()->Flavours()[1];
   x1=p_isrhandler->X1();
   x2=p_isrhandler->X2();
   xf1=p_isrhandler->XF1(0);

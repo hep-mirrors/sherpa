@@ -34,10 +34,10 @@ namespace AMEGIC {
   private :
     int         Tests(std::vector<double>* =NULL);
   public:
-    int         InitAmplitude(MODEL::Model_Base *,Topology *,
+    int         InitAmplitude(Amegic_Model *,Topology *,
 			      std::vector<Process_Base *> &,
 			      std::vector<Process_Base *> &,int);
-    int         InitAmplitude(MODEL::Model_Base *,Topology *,
+    int         InitAmplitude(Amegic_Model *,Topology *,
 			      std::vector<Process_Base *> &,
 			      std::vector<Process_Base *> &,
 			      std::vector<ATOOLS::Vec4D>*,std::vector<double>*);

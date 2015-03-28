@@ -154,7 +154,7 @@ bool Single_OSTerm::DetermineType() {
   if (!m_flj.IsQuark()) return m_valid=false;
   int kfj = m_flj.Kfcode();
   bool anti = m_flj.IsAnti();
-  if (m_fli.IsGluino() || m_fli.IsNeutralino()) {
+  if (IsGluino(m_fli) || IsNeutralino(m_fli)) {
     if (m_switch==0) {
       m_flij = Flavour((kf_code)(1000000+kfj));
     }
@@ -164,7 +164,7 @@ bool Single_OSTerm::DetermineType() {
     else return m_valid = false;
     if (anti) m_flij = m_flij.Bar();
   }
-  else if (m_fli.IsSquark()){
+  else if (IsSquark(m_fli)){
     if (((m_fli.Kfcode() - 1000000)==m_flj.Kfcode()) ||
          ((m_fli.Kfcode() - 2000000)==m_flj.Kfcode())) {
         if ((m_fli.IsAnti() && m_flj.IsAnti()) || 
@@ -292,7 +292,7 @@ void Single_OSTerm::PrintLOmom()
 
 
 
-int Single_OSTerm::InitAmplitude(Model_Base *model,Topology* top,
+int Single_OSTerm::InitAmplitude(Amegic_Model *model,Topology* top,
 				    vector<Process_Base *> & links,
 				    vector<Process_Base *> & errs)
 {
@@ -329,8 +329,10 @@ int Single_OSTerm::InitAmplitude(Model_Base *model,Topology* top,
   m_subevt.p_id=&m_sids.front();
   m_subevt.m_pname = GenerateName(p_os_process->Info().m_ii,p_os_process->Info().m_fi);
 
-  SetOrderQCD(p_os_process->OrderQCD());
-  SetOrderEW(p_os_process->OrderEW());
+  SetMaxOrders(p_os_process->MaxOrders());
+  SetMinOrders(p_os_process->MinOrders());
+  SetMaxOrder(0,p_os_process->MaxOrder(0)+2);
+  SetMinOrder(0,p_os_process->MinOrder(0)+2);
   return 1;
 }
 

@@ -34,9 +34,7 @@ namespace METOOLS {
     // member functions
     virtual std::string Label() const = 0;
 
-    virtual bool Evaluate(const CObject *a,const CObject *b);
-    virtual bool Evaluate(const CObject *a,const CObject *b,
-			  const CObject *e);
+    virtual bool Evaluate(const CObject_Vector &j);
     virtual void AddJ(CObject *const c) = 0;
 
     inline static void SetCIMin(const size_t &cimin) { s_cimin=cimin; }

@@ -77,7 +77,7 @@ double Higgs_Tree::Calc(const Vec4D_Vector &p)
   DEBUG_FUNC(this<<", m_mode = "<<m_mode);
   double muR=p_aqcd->Scale();
   if (muR>0.0) muR=sqrt(muR);
-  else muR=sqrt(rpa->gen.CplScale());
+  else muR=rpa->gen.Ecms();
   mu_sq=sqr(muR);
   alpha0=s_model->ScalarConstant("alpha_QED(0)");
   msg_Debugging()<<"\\mu_R = "<<muR<<" -> alpha = "

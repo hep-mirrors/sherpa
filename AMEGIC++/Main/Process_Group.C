@@ -113,11 +113,10 @@ bool AMEGIC::Process_Group::Initialize(PHASIC::Process_Base *const proc)
   return res;
 }
 
-int AMEGIC::Process_Group::InitAmplitude(Model_Base * model,Topology * top)
+int AMEGIC::Process_Group::InitAmplitude(Amegic_Model * model,Topology * top)
 {
   p_model=model;
   p_top=top;
-  m_oew=m_oqcd=0;
   m_mfname = "P"+ToString(m_nin)+"_"+ToString(m_nout)+"/"+m_name+".map";
 
   string name = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_mfname;

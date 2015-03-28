@@ -119,9 +119,9 @@ string Decay_Channel::Name() const
 
 string Decay_Channel::IDCode() const
 {
-  string code=ToString(m_flavours[0].HepEvt());
+  string code=ToString((long int)m_flavours[0]);
   for (size_t i=1; i<m_flavours.size(); ++i) {
-    code+=","+ToString(m_flavours[i].HepEvt());
+    code+=","+ToString((long int)m_flavours[i]);
   }
   return code;
 }

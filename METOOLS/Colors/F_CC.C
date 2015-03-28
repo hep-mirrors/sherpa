@@ -1,9 +1,7 @@
 #include "METOOLS/Explicit/Lorentz_Calculator.H"
 
+#include "MODEL/Main/Single_Vertex.H"
 #include "METOOLS/Explicit/Vertex.H"
-#include "MODEL/Interaction_Models/Single_Vertex.H"
-#include "MODEL/Interaction_Models/Color_Function.H"
-#include "ATOOLS/Org/Message.H"
 
 namespace METOOLS {
 
@@ -21,22 +19,16 @@ namespace METOOLS {
       Color_Calculator(key), m_mode(0)
     { 
       m_cpl=Complex(0.0,sqrt(0.5));
-      m_n[0]=key.m_d?0:key.p_mv->Color[key.m_n].ParticleArg(0);
-      m_n[1]=key.m_d?1:key.p_mv->Color[key.m_n].ParticleArg(1);
-      m_n[2]=key.m_d?2:key.p_mv->Color[key.m_n].ParticleArg(2);
-      m_mode=(m_n[0]>0 && m_n[1]>0 && m_n[2]>0)?1:0;
-      if (m_n[1]==0) {
-	int n(m_n[0]);
-	m_n[0]=m_n[1];
-	m_n[1]=m_n[2];
-	m_n[2]=n;
-      }
-      if (m_n[2]==0) {
-	int n(m_n[0]);
-	m_n[0]=m_n[2];
-	m_n[2]=m_n[1];
-	m_n[1]=n;
-      }
+      for (int i(0);i<key.p_mv->id.size();++i)
+	for (int j(0);j<3;++j)
+	  if (key.p_mv->id[i]+1==
+	      key.p_mv->Color[key.m_n].ParticleArg(j)) m_n[j]=i;
+      m_mode=m_n[0]+1==key.p_mv->id.size() ||
+	m_n[1]+1==key.p_mv->id.size() ||
+	m_n[2]+1==key.p_mv->id.size();
+      if (m_mode)
+	while (m_n[2]+1!=key.p_mv->id.size())
+	  for (int l(m_n[2]),i(2);i>=0;--i) m_n[i]=i?m_n[i-1]:l;
     }
 
     std::string Label() const
@@ -44,44 +36,44 @@ namespace METOOLS {
       return "F";
     }
 
-    bool Evaluate(const CObject *a,const CObject *b)
+    bool Evaluate(const CObject_Vector &j)
     {
-      p_a=m_n[1]==1?a:b;
-      p_b=m_n[2]==1?a:b;
+      p_a=j[m_n[0]];
+      p_b=j[m_n[1]];
       m_mab=(*p_a)(0)==(*p_b)(1);
       m_mba=(*p_a)(1)==(*p_b)(0);
       m_stat=(m_mab||m_mba)&&
 	!((*p_a)(0)==(*p_a)(1) && (*p_b)(0)==(*p_b)(1));
-      return m_stat;
-    }
-
-    bool Evaluate(const CObject *a,const CObject *b,const CObject *e)
-    {
-      p_a=m_n[1]==1?a:(m_n[1]==2?b:e);
-      p_b=m_n[2]==1?a:(m_n[2]==2?b:e);
-      m_mab=(*p_a)(0)==(*p_b)(1);
-      m_mba=(*p_a)(1)==(*p_b)(0);
-      m_stat=(m_mab||m_mba)&&
-	!((*p_a)(0)==(*p_a)(1) && (*p_b)(0)==(*p_b)(1));
+      if (m_mode==0 && m_stat) {
+	const CObject *c=j[m_n[2]];
+	if (m_mab) m_mab=(*p_b)(0)==(*c)(1) && (*c)(0)==(*p_a)(1);
+	if (m_mba) m_mba=(*p_b)(1)==(*c)(0) && (*c)(1)==(*p_a)(0);
+	m_stat=m_mab||m_mba;
+      }
       return m_stat;
     }
 
     void AddJ(CObject *const j)
     {
-      if (m_mab) {
-	if (m_mba) {
-	  CObject *c(j->Copy());
-	  (*c)(0)=(*p_a)(0);
-	  (*c)(1)=(*p_b)(1);
-	  p_v->AddJ(c);
-	}
-	(*j)(0)=(*p_b)(0);
-	(*j)(1)=(*p_a)(1);
-	j->Invert();
+      if (m_mode==0) {
+	if (m_mab) j->Invert();
       }
       else {
-	(*j)(0)=(*p_a)(0);
-	(*j)(1)=(*p_b)(1);
+	if (m_mab) {
+	  if (m_mba) {
+	    CObject *c(j->Copy());
+	    (*c)(0)=(*p_a)(0);
+	    (*c)(1)=(*p_b)(1);
+	    p_v->AddJ(c);
+	  }
+	  (*j)(0)=(*p_b)(0);
+	  (*j)(1)=(*p_a)(1);
+	  j->Invert();
+	}
+	else {
+	  (*j)(0)=(*p_a)(0);
+	  (*j)(1)=(*p_b)(1);
+	}
       }
       p_v->AddJ(j);
     }

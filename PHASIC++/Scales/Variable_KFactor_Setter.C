@@ -112,10 +112,10 @@ Term *Variable_KFactor_Setter::ReplaceTags(Term *term) const
     term->Set(sqr(rpa->gen.Ecms()));
     return term;
   case 11:
-    term->Set((double)p_proc->OrderQCD());
+    term->Set((double)p_proc->MaxOrder(0));
     return term;
   case 12:
-    term->Set((double)p_proc->OrderEW());
+    term->Set((double)p_proc->MaxOrder(1));
     return term;
   default:
     if (term->Id()>=1000) {

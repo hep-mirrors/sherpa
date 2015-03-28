@@ -1,7 +1,6 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 
-#include "MODEL/Interaction_Models/Single_Vertex.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#include "MODEL/Main/Single_Vertex.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Exception.H"
@@ -67,7 +66,7 @@ bool CF_EW_FFZ::SetCoupling(MODEL::Model_Base *md,
 			    const double &k0sqi,const double &k0sqf,
 			    const double &isfac,const double &fsfac)
 {
-  double stw(md->GetInteractionModel()->ScalarConstant("sin2_thetaW"));
+  double stw(std::abs(md->ComplexConstant("csin2_thetaW")));
   Flavour ffl(p_lf->FlB().IsFermion()?p_lf->FlB():p_lf->FlC());
   if (!ffl.IsFermion()) THROW(fatal_error,"Internal error");
   if (ffl.IsAnti()) ffl=ffl.Bar();
@@ -76,7 +75,7 @@ bool CF_EW_FFZ::SetCoupling(MODEL::Model_Base *md,
   m_q[1]=2.0/stw*sqr(af*ffl.Mass()/Flavour(kf_Wplus).Mass());
   p_cpl=md->GetScalarFunction("alpha_QED");
   m_cplfac=1.0;
-  double cqed((*p_cpl)(rpa->gen.CplScale()));
+  double cqed((*p_cpl)(sqr(rpa->gen.Ecms())));
   m_cplmax.push_back(cqed*m_q[0]);
   m_cplmax.push_back(cqed*m_q[1]);
   return true;
@@ -110,7 +109,7 @@ bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,
 			    const double &k0sqi,const double &k0sqf,
 			    const double &isfac,const double &fsfac)
 {
-  double stw(md->GetInteractionModel()->ScalarConstant("sin2_thetaW"));
+  double stw(std::abs(md->ComplexConstant("csin2_thetaW")));
   Complex vij(Complex(1.0,0.0));
   Flavour f1(p_lf->FlB()), f2(p_lf->FlC());
   if (!f1.IsFermion()) f1=p_lf->FlA();
@@ -119,7 +118,7 @@ bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,
     if (f1.IsDowntype()) std::swap<Flavour>(f1,f2);
     int i((int)(f1.Kfcode())), j((int)(f2.Kfcode()));
     if (md->Name().find("SM")==std::string::npos) vij=1.0;
-    else vij=md->ComplexMatrixElement("CKM",i/2-1,(j-1)/2);
+    // else vij=md->ComplexMatrixElement("CKM",i/2-1,(j-1)/2);
   }
   else {
     if (f1.Kfcode()%2==0) std::swap<Flavour>(f1,f2);
@@ -129,7 +128,7 @@ bool CF_EW_FFW::SetCoupling(MODEL::Model_Base *md,
   m_q[1]=1.0/stw*vf*sqr(f1.Mass()/Flavour(kf_Wplus).Mass());
   p_cpl=md->GetScalarFunction("alpha_QED");
   m_cplfac=1.0;
-  double cqed((*p_cpl)(rpa->gen.CplScale()));
+  double cqed((*p_cpl)(sqr(rpa->gen.Ecms())));
   m_cplmax.push_back(cqed*m_q[0]);
   m_cplmax.push_back(cqed*m_q[1]);
   return m_q[0]>0.0;

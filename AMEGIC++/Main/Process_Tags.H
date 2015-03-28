@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Phys/Flavour.H"
 #include "AMEGIC++/Main/Pol_Info.H"
+#include "AMEGIC++/Main/Tools.H"
 #include "PHASIC++/Process/Process_Info.H"
 #include <vector>
 #include <map>

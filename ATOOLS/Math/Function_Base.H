@@ -20,8 +20,6 @@ namespace ATOOLS {
     virtual ~Function_Base();
 
     // setters
-    virtual void SetDefault(double _m_defvalue);
-    virtual void SetType(std::string _m_type);
     virtual void SetParameters(double *parameters);
 
     Function *GetAIFunction();
@@ -39,7 +37,13 @@ namespace ATOOLS {
     double WDBSolve(const double &y,const double &xmin,const double &xmax,
 		    const double &precision=1.0e-12,const int maxit=100);
 
+    inline void SetType(const std::string &type) { m_type=type; }
+
     inline std::string Name() const { return m_name; }
+
+    inline void SetDefault(const double &defval) { m_defval=defval; }
+
+    inline double Default() const { return m_defval; }
     
   };
 

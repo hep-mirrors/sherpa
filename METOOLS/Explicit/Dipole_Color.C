@@ -2,7 +2,7 @@
 
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Explicit/Vertex.H"
-#include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "MODEL/Main/Single_Vertex.H"
 
 #define COMPILE__Getter_Function
 #define PARAMETER_TYPE METOOLS::Vertex_Key

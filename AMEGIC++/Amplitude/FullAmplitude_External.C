@@ -1,6 +1,5 @@
 #include "AMEGIC++/Amplitude/FullAmplitude_External.H"
 
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
 #include "AMEGIC++/Main/ColorSC.H"
 #include "AMEGIC++/Main/Helicity.H"
@@ -19,7 +18,7 @@ using namespace ATOOLS;
 FullAmplitude_External::FullAmplitude_External
 (const Process_Info &info,Model_Base *model,Coupling_Map *const cpls,
  Helicity *hel,const size_t &emit,const size_t &spect): 
-  p_model(model->GetInteractionModel()),
+  p_model(model),
   m_emit(emit), m_spect(spect)
 { 
   DEBUG_FUNC("");

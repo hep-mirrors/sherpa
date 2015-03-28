@@ -19,9 +19,9 @@ using namespace std;
 PHOTONS_ME_Base::PHOTONS_ME_Base(const Particle_Vector_Vector& pvv) :
   m_alpha(Photons::s_alpha),
   m_e(sqrt(4.*M_PI*m_alpha)),
-  m_sW(sqrt(MODEL::s_model->ScalarConstant("sin2_thetaW"))),
-  m_cW(sqrt(MODEL::s_model->ScalarConstant("cos2_thetaW"))),
-  m_GF(MODEL::s_model->ScalarConstant("GF")),
+  m_sW(sqrt(std::abs(MODEL::s_model->ComplexConstant("csin2_thetaW")))),
+  m_cW(sqrt(std::abs(MODEL::s_model->ComplexConstant("ccos2_thetaW")))),
+  m_GF(1.16639e-5),
   m_sqrt2(1.41421356237),
   m_i(Complex(0.,1.)),
   p_boost(NULL), p_rot(NULL),

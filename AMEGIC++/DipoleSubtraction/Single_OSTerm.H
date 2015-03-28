@@ -68,7 +68,7 @@ namespace AMEGIC {
   public:
     void                AddChannels(std::list<std::string>*);
     bool                NewLibs() {return p_os_process->NewLibs();}
-    int                 InitAmplitude(MODEL::Model_Base *,Topology *,
+    int                 InitAmplitude(Amegic_Model *,Topology *,
 				      std::vector<Process_Base *> &,
 				      std::vector<Process_Base *> &);
     bool                SetUpIntegrator();

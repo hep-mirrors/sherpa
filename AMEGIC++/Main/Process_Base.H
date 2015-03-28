@@ -3,6 +3,7 @@
 
 #include "AMEGIC++/Main/Polarisation.H"
 #include "AMEGIC++/Main/Amegic_Base.H"
+#include "AMEGIC++/Amplitude/Vertex.H"
 #include "PHASIC++/Process/Single_Process.H"
 
 namespace MODEL { class Model_Base; }
@@ -49,7 +50,7 @@ namespace AMEGIC {
     // member functions
     void Init();
     std::string         CreateLibName();
-    virtual int  InitAmplitude(MODEL::Model_Base *,Topology *,
+    virtual int  InitAmplitude(Amegic_Model *,Topology *,
 			       std::vector<Process_Base *> &,
 			       std::vector<Process_Base *> &) = 0;
 

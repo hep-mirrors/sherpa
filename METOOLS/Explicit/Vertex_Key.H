@@ -20,7 +20,8 @@ namespace METOOLS {
 
   struct Vertex_Key {
 
-    Current  *p_a, *p_b, *p_c, *p_e, *p_k, *p_kt;
+    Current *p_c, *p_k, *p_kt;
+    std::vector<Current*> m_j;
 
     MODEL::Model_Base    *p_model;
     MODEL::Single_Vertex *p_mv;
@@ -37,7 +38,7 @@ namespace METOOLS {
     Dipole_Info *p_dinfo;
 
     Vertex_Key
-    (Current *const a,Current *const b,Current *const e,
+    (const std::vector<Current*> &j,
      Current *const c,MODEL::Model_Base *const model,
      MODEL::Single_Vertex *const mv=NULL,const std::string &p="",
      Vertex *const v=NULL,Color_Calculator *const cc=NULL,
@@ -45,18 +46,11 @@ namespace METOOLS {
 
     std::string Type() const;
 
-    std::string ID(const int dir=0) const;
+    std::string ID() const;
 
-    ATOOLS::Flavour FlA() const;
-    ATOOLS::Flavour FlB() const;
-
-    Vertex_Key SwapAB() const;
-    Vertex_Key SwapBE() const;
-    Vertex_Key SwapEA() const;
+    ATOOLS::Flavour Fl(const size_t &i) const;
 
     Current *J(const size_t &i) const;
-
-    bool operator<(const Vertex_Key &k) const;
 
   };// end of struct Vertex_Key
 

@@ -33,8 +33,7 @@ namespace AMEGIC {
     Amplitude_Base* GetAmplitude(const int n) {return (n==amplnumber) ? this : 0;}
     int GetNumber() { return amplnumber; }
 
-    int GetOrderQED();
-    int GetOrderQCD();
+    const std::vector<int> &GetOrder();
   };
 }
 #endif

@@ -104,7 +104,8 @@ operator()(const Process_Info &pi) const
     if (fl.size()!=5) return NULL;
     if (fl[0]==Flavour(kf_e) && fl[1]==Flavour(kf_e).Bar() &&
         fl[2].IsGluon() && fl[3].IsQuark() && fl[4].IsQuark()) {
-      if ((pi.m_oqcd==2 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
+      if (pi.m_maxcpl[0]==1 && pi.m_maxcpl[1]==2 &&
+	  pi.m_mincpl[0]==1 && pi.m_mincpl[1]==2) {
         return new ee3jet_QCD_Virtual(pi, fl);
       }
     }

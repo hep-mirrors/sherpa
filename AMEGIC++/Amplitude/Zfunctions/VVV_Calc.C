@@ -17,10 +17,10 @@ VVV_Calc::VVV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
 { 
   type="VVV";
   ncoupl=10;narg=6;pn=3;
-  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
-  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
-  lorentzlist.push_back(LF_Getter::GetObject("Gamma",LF_Key()));
-  lorentzlist.push_back(LF_Getter::GetObject("Gauge3",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("FFV",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("FFV",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("FFV",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("VVV",LF_Key()));
   for (short int i=0;i<3;i++) lorentzlist[i]->SetParticleArg(i);
   lorentzlist[3]->SetParticleArg(0,1,2);     
 }

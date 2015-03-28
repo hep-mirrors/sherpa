@@ -323,7 +323,7 @@ Return_Value::code Lund_Interface::PerformDecay(Blob * blob)
   if (pydat1.mstu[24-1]!=0) {
     msg_Tracking()<<"ERROR in "<<METHOD<<" : "<<std::endl
 	       <<"   PYDECY call results in error code : "<<pydat1.mstu[24-1]<<std::endl
-	       <<"   for decay of "<<fl<<" ("<<fl.HepEvt()<<" -> "<<idhep<<")"<<std::endl;
+                  <<"   for decay of "<<fl<<" ("<<(long int) fl<<" -> "<<idhep<<")"<<std::endl;
     if (pydat1.mstu[23-1]<int(rpa->gen.NumberOfGeneratedEvents()/100) ||
 	rpa->gen.NumberOfGeneratedEvents()<200) {
       msg_Tracking()<<"   Up to now: "<<pydat1.mstu[23-1]<<" errors, try new event."<<std::endl;
@@ -711,8 +711,6 @@ Flavour Lund_Interface::IdhepToSherpa(long int idhep) {
   kf_code kfc = (kf_code) abs(idhep);
   if (abs(idhep)==91) kfc=kf_cluster;
   else if (abs(idhep)==92) kfc=kf_string;
-  else if (abs(idhep)==13122) kfc=23122;
-  else if (abs(idhep)==23122) kfc=13122;
 
   return Flavour(kfc, idhep<0);
 }
@@ -723,8 +721,6 @@ long int Lund_Interface::SherpaToIdhep(const Flavour& flav) {
   long int idhep=flav.Kfcode();
   if (idhep==kf_cluster) idhep=91;
   else if (idhep==kf_string) idhep=92;
-  else if (idhep==23122) idhep=13122;
-  else if (idhep==13122) idhep=23122;
 
   return (flav.IsAnti() ? -idhep : idhep);
 }

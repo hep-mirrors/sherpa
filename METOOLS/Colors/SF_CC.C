@@ -1,5 +1,6 @@
 #include "METOOLS/Explicit/Dipole_Color.H"
 
+#include "MODEL/Main/Single_Vertex.H"
 #include "METOOLS/Explicit/Vertex.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -20,7 +21,7 @@ namespace METOOLS {
       m_cpl=p_cc->Coupling();
       if (key.p_c->Flav().StrongCharge()!=8)
 	THROW(fatal_error,"Invalid call");
-      m_ti=key.p_a->Flav().StrongCharge();
+      m_ti=key.Fl(0).StrongCharge();
       m_tk=key.p_k->Flav().StrongCharge();
       if (m_ti!=8) m_cpl/=sqrt(6.0);
     }
@@ -30,8 +31,9 @@ namespace METOOLS {
       return "S-F";
     }
 
-    bool Evaluate(const CObject *a,const CObject *b)
+    bool Evaluate(const CObject_Vector &j)
     {
+      if (j.size()==2) {
       m_ci.clear();
       m_cjk.clear();
       m_stat=true;
@@ -39,61 +41,61 @@ namespace METOOLS {
       case 8:
 	switch (m_tk) {
 	case -3:
-	  if ((*a)(0)!=(*b)(1)) {
-	    m_ci.push_back(CInfo((*a)(0),(*b)(1),1,0));
-	    m_cjk.push_back(CInfo(0,(*a)(1),1,0));
+	  if ((*j[0])(0)!=(*j[1])(1)) {
+	    m_ci.push_back(CInfo((*j[0])(0),(*j[1])(1),1,0));
+	    m_cjk.push_back(CInfo(0,(*j[0])(1),1,0));
 	  }
 	  else {
-	    bool s((*a)(0)==(*a)(1));
+	    bool s((*j[0])(0)==(*j[0])(1));
 	    for (size_t i(s_cimin);i<=s_cimax;++i)
-	      if (!(s && (int)i==(*a)(0))) {
-		m_ci.push_back(CInfo(i,(*a)(1),0,0));
+	      if (!(s && (int)i==(*j[0])(0))) {
+		m_ci.push_back(CInfo(i,(*j[0])(1),0,0));
 		m_cjk.push_back(CInfo(0,i,1,0));
 	      }
-	    if (!s) m_ci.push_back(CInfo((*a)(0),(*b)(1),1,0));
+	    if (!s) m_ci.push_back(CInfo((*j[0])(0),(*j[1])(1),1,0));
 	  }
 	  break;
 	case 3:
-	  if ((*a)(1)!=(*b)(0)) {
-	    m_ci.push_back(CInfo((*b)(0),(*a)(1),0,0));
-	    m_cjk.push_back(CInfo((*a)(0),0,0,0));
+	  if ((*j[0])(1)!=(*j[1])(0)) {
+	    m_ci.push_back(CInfo((*j[1])(0),(*j[0])(1),0,0));
+	    m_cjk.push_back(CInfo((*j[0])(0),0,0,0));
 	  }
 	  else {
-	    bool s((*a)(1)==(*a)(0));
+	    bool s((*j[0])(1)==(*j[0])(0));
 	    for (size_t i(s_cimin);i<=s_cimax;++i)
-	      if (!(s && (int)i==(*a)(1))) {
-		m_ci.push_back(CInfo((*a)(0),i,1,0));
+	      if (!(s && (int)i==(*j[0])(1))) {
+		m_ci.push_back(CInfo((*j[0])(0),i,1,0));
 		m_cjk.push_back(CInfo(i,0,0,0));
 	      }
-	    if (!s) m_ci.push_back(CInfo((*b)(0),(*a)(1),0,0));
+	    if (!s) m_ci.push_back(CInfo((*j[1])(0),(*j[0])(1),0,0));
 	  }
 	  break;
 	case 8:
-	  if ((*a)(1)!=(*b)(0)) {
-	    m_ci.push_back(CInfo((*b)(0),(*a)(1),0,0));
-	    m_cjk.push_back(CInfo((*a)(0),(*b)(1),0,0));
+	  if ((*j[0])(1)!=(*j[1])(0)) {
+	    m_ci.push_back(CInfo((*j[1])(0),(*j[0])(1),0,0));
+	    m_cjk.push_back(CInfo((*j[0])(0),(*j[1])(1),0,0));
 	  }
 	  else {
-	    bool s((*a)(0)==(*a)(1));
+	    bool s((*j[0])(0)==(*j[0])(1));
 	    for (size_t i(s_cimin);i<=s_cimax;++i)
-	      if (!(s && (int)i==(*a)(0))) {
-		m_ci.push_back(CInfo((*a)(0),i,1,0));
-		m_cjk.push_back(CInfo(i,(*b)(1),0,0));
+	      if (!(s && (int)i==(*j[0])(0))) {
+		m_ci.push_back(CInfo((*j[0])(0),i,1,0));
+		m_cjk.push_back(CInfo(i,(*j[1])(1),0,0));
 	      }
-	    if (!s) m_ci.push_back(CInfo((*b)(0),(*a)(1),0,0));
+	    if (!s) m_ci.push_back(CInfo((*j[1])(0),(*j[0])(1),0,0));
 	  }
-	  if ((*a)(0)!=(*b)(1)) {
-	    m_ci.push_back(CInfo((*a)(0),(*b)(1),1,1));
-	    m_cjk.push_back(CInfo((*b)(0),(*a)(1),1,1));
+	  if ((*j[0])(0)!=(*j[1])(1)) {
+	    m_ci.push_back(CInfo((*j[0])(0),(*j[1])(1),1,1));
+	    m_cjk.push_back(CInfo((*j[1])(0),(*j[0])(1),1,1));
 	  }
 	  else {
-	    bool s((*a)(1)==(*a)(0));
+	    bool s((*j[0])(1)==(*j[0])(0));
 	    for (size_t i(s_cimin);i<=s_cimax;++i)
-	      if (!(s && (int)i==(*a)(1))) {
-		m_ci.push_back(CInfo(i,(*a)(1),0,1));
-		m_cjk.push_back(CInfo((*b)(0),i,1,1));
+	      if (!(s && (int)i==(*j[0])(1))) {
+		m_ci.push_back(CInfo(i,(*j[0])(1),0,1));
+		m_cjk.push_back(CInfo((*j[1])(0),i,1,1));
 	      }
-	    if (!s) m_ci.push_back(CInfo((*a)(0),(*b)(1),1,1));
+	    if (!s) m_ci.push_back(CInfo((*j[0])(0),(*j[1])(1),1,1));
 	  }
 	  break;
 	default: THROW(fatal_error,"Invalid call");
@@ -102,36 +104,33 @@ namespace METOOLS {
       default: THROW(fatal_error,"Invalid call");
       }
       return m_stat;
-    }
-
-    bool Evaluate(const CObject *a,const CObject *b,const CObject *c)
-    {
+      }
       m_ci.clear();
       m_cjk.clear();
-      m_stat=p_cc->Evaluate(a,b);
+      m_stat=p_cc->Evaluate(j);
       if (!m_stat) return false;
       switch (m_ti) {
       case 8:
-	m_ci.push_back(CInfo((*a)(0),(*a)(1),1,0));
-	m_ci.push_back(CInfo((*b)(0),(*b)(1),0,1));
+	m_ci.push_back(CInfo((*j[0])(0),(*j[0])(1),1,0));
+	m_ci.push_back(CInfo((*j[1])(0),(*j[1])(1),0,1));
 	switch (m_tk) {
 	case 3:
-	  if ((*b)(1)==(*c)(0)) m_cjk.push_back(CInfo((*b)(0),0,0,0));
-	  if ((*b)(1)==(*b)(0)) m_cjk.push_back(CInfo((*c)(0),0,0,0,-3.0));
-	  if ((*a)(1)==(*c)(0)) m_cjk.push_back(CInfo((*a)(0),0,0,1));
-	  if ((*a)(1)==(*a)(0)) m_cjk.push_back(CInfo((*c)(0),0,0,1,-3.0));
+	  if ((*j[1])(1)==(*j[2])(0)) m_cjk.push_back(CInfo((*j[1])(0),0,0,0));
+	  if ((*j[1])(1)==(*j[1])(0)) m_cjk.push_back(CInfo((*j[2])(0),0,0,0,-3.0));
+	  if ((*j[0])(1)==(*j[2])(0)) m_cjk.push_back(CInfo((*j[0])(0),0,0,1));
+	  if ((*j[0])(1)==(*j[0])(0)) m_cjk.push_back(CInfo((*j[2])(0),0,0,1,-3.0));
 	  break;
 	case -3:
-	  if ((*b)(0)==(*c)(1)) m_cjk.push_back(CInfo(0,(*b)(1),1,0));
-	  if ((*b)(0)==(*b)(1)) m_cjk.push_back(CInfo(0,(*c)(1),1,0,-3.0));
-	  if ((*a)(0)==(*c)(1)) m_cjk.push_back(CInfo(0,(*a)(1),1,1));
-	  if ((*a)(0)==(*a)(1)) m_cjk.push_back(CInfo(0,(*c)(1),1,1,-3.0));
+	  if ((*j[1])(0)==(*j[2])(1)) m_cjk.push_back(CInfo(0,(*j[1])(1),1,0));
+	  if ((*j[1])(0)==(*j[1])(1)) m_cjk.push_back(CInfo(0,(*j[2])(1),1,0,-3.0));
+	  if ((*j[0])(0)==(*j[2])(1)) m_cjk.push_back(CInfo(0,(*j[0])(1),1,1));
+	  if ((*j[0])(0)==(*j[0])(1)) m_cjk.push_back(CInfo(0,(*j[2])(1),1,1,-3.0));
 	  break;
 	case 8:
-	  if ((*b)(0)==(*c)(1)) m_cjk.push_back(CInfo((*c)(0),(*b)(1),1,0));
-	  if ((*c)(0)==(*b)(1)) m_cjk.push_back(CInfo((*b)(0),(*c)(1),0,0));
-	  if ((*a)(0)==(*c)(1)) m_cjk.push_back(CInfo((*c)(0),(*a)(1),1,1));
-	  if ((*c)(0)==(*a)(1)) m_cjk.push_back(CInfo((*a)(0),(*c)(1),0,1));
+	  if ((*j[1])(0)==(*j[2])(1)) m_cjk.push_back(CInfo((*j[2])(0),(*j[1])(1),1,0));
+	  if ((*j[2])(0)==(*j[1])(1)) m_cjk.push_back(CInfo((*j[1])(0),(*j[2])(1),0,0));
+	  if ((*j[0])(0)==(*j[2])(1)) m_cjk.push_back(CInfo((*j[2])(0),(*j[0])(1),1,1));
+	  if ((*j[2])(0)==(*j[0])(1)) m_cjk.push_back(CInfo((*j[0])(0),(*j[2])(1),0,1));
 	  break;
 	default: THROW(fatal_error,"Invalid call");
 	}
@@ -139,63 +138,63 @@ namespace METOOLS {
       case -3: {
 	switch (m_tk) {
 	case 3: {
-	  if ((*a)(1)!=(*c)(0)) {
-	    m_ci.push_back(CInfo((*c)(0),(*a)(1),0,0));
-	    m_cjk.push_back(CInfo((*b)(0),0,0,0));
+	  if ((*j[0])(1)!=(*j[2])(0)) {
+	    m_ci.push_back(CInfo((*j[2])(0),(*j[0])(1),0,0));
+	    m_cjk.push_back(CInfo((*j[1])(0),0,0,0));
 	  }
 	  else {
-	    bool s((*b)(0)==(*c)(0));
+	    bool s((*j[1])(0)==(*j[2])(0));
 	    for (size_t i(s_cimin);i<=s_cimax;++i)
-	      if (!(s && (int)i==(*b)(0))) {
-		m_ci.push_back(CInfo((*b)(0),i,1,0));
+	      if (!(s && (int)i==(*j[1])(0))) {
+		m_ci.push_back(CInfo((*j[1])(0),i,1,0));
 		m_cjk.push_back(CInfo(i,0,0,0));
 	      }
-	    if (!s) m_ci.push_back(CInfo((*c)(0),(*a)(1),0,0));
+	    if (!s) m_ci.push_back(CInfo((*j[2])(0),(*j[0])(1),0,0));
 	  }
 	  break;
 	}
 	case -3: {
-	  if ((*b)(0)!=(*c)(1)) {
-	    m_ci.push_back(CInfo((*b)(0),(*c)(1),1,0));
-	    m_cjk.push_back(CInfo(0,(*a)(1),1,0));
+	  if ((*j[1])(0)!=(*j[2])(1)) {
+	    m_ci.push_back(CInfo((*j[1])(0),(*j[2])(1),1,0));
+	    m_cjk.push_back(CInfo(0,(*j[0])(1),1,0));
 	  }
 	  else {
-	    bool s((*a)(1)==(*c)(1));
+	    bool s((*j[0])(1)==(*j[2])(1));
 	    for (size_t i(s_cimin);i<=s_cimax;++i)
-	      if (!(s && (int)i==(*a)(1))) {
-		m_ci.push_back(CInfo(i,(*a)(1),0,0));
+	      if (!(s && (int)i==(*j[0])(1))) {
+		m_ci.push_back(CInfo(i,(*j[0])(1),0,0));
 		m_cjk.push_back(CInfo(0,i,1,0));
 	      }
-	    if (!s) m_ci.push_back(CInfo((*b)(0),(*c)(1),1,0));
+	    if (!s) m_ci.push_back(CInfo((*j[1])(0),(*j[2])(1),1,0));
 	  }
 	  break;
 	}
 	case 8: {
-	  if ((*a)(1)!=(*c)(0)) {
-	    m_ci.push_back(CInfo((*c)(0),(*a)(1),0,0));
-	    m_cjk.push_back(CInfo((*b)(0),(*c)(1),0,0));
+	  if ((*j[0])(1)!=(*j[2])(0)) {
+	    m_ci.push_back(CInfo((*j[2])(0),(*j[0])(1),0,0));
+	    m_cjk.push_back(CInfo((*j[1])(0),(*j[2])(1),0,0));
 	  }
 	  else {
-	    bool s((*b)(0)==(*c)(0));
+	    bool s((*j[1])(0)==(*j[2])(0));
 	    for (size_t i(s_cimin);i<=s_cimax;++i)
-	      if (!(s && (int)i==(*b)(0))) {
-		m_ci.push_back(CInfo((*b)(0),i,1,0));
-		m_cjk.push_back(CInfo(i,(*c)(1),0,0));
+	      if (!(s && (int)i==(*j[1])(0))) {
+		m_ci.push_back(CInfo((*j[1])(0),i,1,0));
+		m_cjk.push_back(CInfo(i,(*j[2])(1),0,0));
 	      }
-	    if (!s) m_ci.push_back(CInfo((*c)(0),(*a)(1),0,0));
+	    if (!s) m_ci.push_back(CInfo((*j[2])(0),(*j[0])(1),0,0));
 	  }
-	  if ((*b)(0)!=(*c)(1)) {
-	    m_ci.push_back(CInfo((*b)(0),(*c)(1),1,1));
-	    m_cjk.push_back(CInfo((*c)(0),(*a)(1),1,1));
+	  if ((*j[1])(0)!=(*j[2])(1)) {
+	    m_ci.push_back(CInfo((*j[1])(0),(*j[2])(1),1,1));
+	    m_cjk.push_back(CInfo((*j[2])(0),(*j[0])(1),1,1));
 	  }
 	  else {
-	    bool s((*a)(1)==(*c)(1));
+	    bool s((*j[0])(1)==(*j[2])(1));
 	    for (size_t i(s_cimin);i<=s_cimax;++i)
-	      if (!(s && (int)i==(*a)(1))) {
-		m_ci.push_back(CInfo(i,(*a)(1),0,1));
-		m_cjk.push_back(CInfo((*c)(0),i,1,1));
+	      if (!(s && (int)i==(*j[0])(1))) {
+		m_ci.push_back(CInfo(i,(*j[0])(1),0,1));
+		m_cjk.push_back(CInfo((*j[2])(0),i,1,1));
 	      }
-	    if (!s) m_ci.push_back(CInfo((*b)(0),(*c)(1),1,1));
+	    if (!s) m_ci.push_back(CInfo((*j[1])(0),(*j[2])(1),1,1));
 	  }
 	  break;
 	}

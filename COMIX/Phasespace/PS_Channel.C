@@ -482,9 +482,9 @@ bool PS_Channel::GeneratePoint
   for (size_t i(0);i<v.size() && nr<m_nr;++i) {
     if (v[i]==NULL) continue;
     size_t cid(v[i]->JC()->CId());
-    size_t aid(v[i]->JA()->CId()), bid(v[i]->JB()->CId());
+    size_t aid(v[i]->J(0)->CId()), bid(v[i]->J(1)->CId());
     if (aid==id || bid==id || cid==id || (1<<m_n)-1-cid==id) {
-      PS_Current *ja((PS_Current*)v[i]->JA()), *jb((PS_Current*)v[i]->JB());
+      PS_Current *ja((PS_Current*)v[i]->J(0)), *jb((PS_Current*)v[i]->J(1));
       PS_Current *jc((PS_Current*)v[i]->JC());
       if (aid==id) { 
 	std::swap<size_t>(aid,cid);
@@ -517,9 +517,9 @@ bool PS_Channel::GeneratePoint(Vertex_Vector v)
       msg_Debugging()<<" "<<lid<<" "<<*v[i]<<"\n";
 #endif
       size_t cid(v[i]->JC()->CId());
-      size_t aid(v[i]->JA()->CId()), bid(v[i]->JB()->CId());
+      size_t aid(v[i]->J(0)->CId()), bid(v[i]->J(1)->CId());
       if (aid==lid || bid==lid || cid==lid) {
-	PS_Current *ja((PS_Current*)v[i]->JA()), *jb((PS_Current*)v[i]->JB());
+	PS_Current *ja((PS_Current*)v[i]->J(0)), *jb((PS_Current*)v[i]->J(1));
 	PS_Current *jc((PS_Current*)v[i]->JC());
 	if (bid==lid) {
 	  std::swap<size_t>(aid,bid);
@@ -591,8 +591,8 @@ bool PS_Channel::GenerateChannel
   msg_Debugging()<<"  "<<*cur<<" <- ("<<vtcs.size()<<") "
 		 <<std::flush<<*vtx<<"\n";
 #endif
-  if (v.size()<m_n-2 && !GenerateChannel(vtx->JA(),v)) return false;
-  if (v.size()<m_n-2 && !GenerateChannel(vtx->JB(),v)) return false;
+  if (v.size()<m_n-2 && !GenerateChannel(vtx->J(0),v)) return false;
+  if (v.size()<m_n-2 && !GenerateChannel(vtx->J(1),v)) return false;
 #ifdef DEBUG__BG
   msg_Debugging()<<"}\n";
 #endif
@@ -729,7 +729,7 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
     PS_Vertex *v((PS_Vertex *)cur->In()[i]);
     if (!Zero(v) && v->Alpha()>0.0) {
       size_t nr(0);
-      PS_Current *ja((PS_Current*)v->JA()), *jb((PS_Current*)v->JB());
+      PS_Current *ja((PS_Current*)v->J(0)), *jb((PS_Current*)v->J(1));
       PS_Current *jc(cur);
       size_t aid(ja->CId()), bid(jb->CId()), cid(jc->CId());
       double cw((*ja->J().front().Get<PS_Info>()->front())[0]*
@@ -779,9 +779,9 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
       wgt+=v->Alpha()*v->Weight();
       asum+=v->Alpha();
 #ifdef DEBUG__BG
-      msg_Debugging()<<"    w = "<<1.0/(*v->JA()->J().front().
+      msg_Debugging()<<"    w = "<<1.0/(*v->J(0)->J().front().
 					Get<PS_Info>()->front())[0]
-		     <<" * "<<1.0/(*v->JB()->J().front().
+		     <<" * "<<1.0/(*v->J(1)->J().front().
 				   Get<PS_Info>()->front())[0]
 		     <<" * "<<cw/v->Weight()<<" = "<<1.0/v->Weight()
 		     <<", a = "<<v->Alpha()<<"\n";
@@ -794,8 +794,8 @@ bool PS_Channel::GenerateWeight(PS_Current *const cur)
       PS_Vertex *v((PS_Vertex*)cur->In()[i]);
       if (!Zero(v) && v->Alpha()>0.0) {
 #ifdef DEBUG__BG
-	msg_Debugging()<<"    V_{"<<PSId(v->JA()->CId())
-		       <<","<<PSId(v->JB()->CId())
+	msg_Debugging()<<"    V_{"<<PSId(v->J(0)->CId())
+		       <<","<<PSId(v->J(1)->CId())
 		       <<"}: set w = "<<v->Weight()/wgt<<"\n";
 #endif
 	if (wgt>0.0) v->SetWeight(v->Weight()/wgt);
@@ -841,11 +841,11 @@ void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts)
   for (size_t n(2);n<p_cur->size();++n)
     for (size_t i(0);i<(*p_cur)[n].size();++i) {
       Current *cur((*p_cur)[n][i]);
-      if (cur->In().empty() || cur->In().front()->JE())
+      if (cur->In().empty() || cur->In().front()->J().size()>2)
 	THROW(fatal_error,"Internal error");
       m_p[(1<<m_n)-1-cur->CId()]=
-	-(m_p[cur->CId()]=m_p[cur->In().front()->JA()->CId()]
-	  +m_p[cur->In().front()->JB()->CId()]);
+	-(m_p[cur->CId()]=m_p[cur->In().front()->J(0)->CId()]
+	  +m_p[cur->In().front()->J(1)->CId()]);
 #ifdef DEBUG__BG
 	msg_Debugging()<<"  -p_"<<PSId((1<<m_n)-1-cur->CId())
 		       <<" = p_"<<PSId(cur->CId())
@@ -869,8 +869,8 @@ void PS_Channel::AddPoint(double value)
 	  PS_Vertex *v((PS_Vertex *)(*p_cur)[n][i]->In()[j]);
 	  if (!Zero(v)) v->AddPoint(value);
 #ifdef DEBUG__BG
-	  msg_Debugging()<<"    V_{"<<PSId(v->JA()->CId())
-			 <<","<<PSId(v->JB()->CId())<<"}: <w> = "
+	  msg_Debugging()<<"    V_{"<<PSId(v->J(0)->CId())
+			 <<","<<PSId(v->J(1)->CId())<<"}: <w> = "
 			 <<v->Mean()<<" +- "<<v->Sigma()<<"\n";
 #endif
 	}
@@ -960,8 +960,8 @@ void PS_Channel::Optimize()
 	  if (v->Alpha()!=1.0) {
 	    printed=true;
 	    double re(int(v->Sigma()/v->Mean()*10000)/100.0);
-	    msg_Tracking()<<"  V_{"<<std::setw(6)<<PSId(v->JA()->CId())
-			  <<","<<std::setw(6)<<PSId(v->JB()->CId())
+	    msg_Tracking()<<"  V_{"<<std::setw(6)<<PSId(v->J(0)->CId())
+			  <<","<<std::setw(6)<<PSId(v->J(1)->CId())
 			  <<"}: w' = "<<std::setw(15)<<std::right
 			  <<v->Mean()/wmean<<" +- "<<std::setw(6)<<re
 			  <<" %  =>  a = "<<std::setw(15)<<v->OldAlpha()

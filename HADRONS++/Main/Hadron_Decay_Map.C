@@ -262,7 +262,7 @@ void Hadron_Decay_Map::ReadFixedTables(const string& path, const string& file)
       pair<SDtMMapIt, SDtMMapIt> found=m_fixed_tables.equal_range(table_id);
       for (SDtMMapIt it=found.first; it!=found.second; ++it) {
         if (it->second->Flav()==decayerflav) {
-          THROW(fatal_error, "Duplicate decayer "+ToString(decayerflav.HepEvt())
+          THROW(fatal_error, "Duplicate decayer "+ToString((long int)decayerflav)
                 +" for fixed decay table ID="+table_id);
         }
       }

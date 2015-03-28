@@ -53,7 +53,7 @@ XS_gqllq_CSS_approx::XS_gqllq_CSS_approx
   pico.m_fi.m_nloqcdtype=nlo_type::lo;
   p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
   if (!p_bornme) THROW(fatal_error,"no born me found.");
-  m_alphasdef = (*MODEL::as)(rpa->gen.CplScale());
+  m_alphasdef = MODEL::as->Default();
   PRINT_INFO("initialised XS_gqllq_CSS_approx2");
 }
 
@@ -140,7 +140,8 @@ operator()(const Process_Info &pi) const
   if (fl[1].IsQuark()  && fl[4]==fl[1] &&
       fl[0].IsGluon()  &&
       fl[2].IsLepton() && fl[3]==fl[2].Bar()) {
-    if ((pi.m_oqcd==1 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
+    if (pi.m_maxcpl[0]==1 && pi.m_maxcpl[1]==2 &&
+	pi.m_mincpl[0]==1 && pi.m_mincpl[1]==2) {
       return new XS_gqllq_CSS_approx(pi,fl);
     }
   }
@@ -177,7 +178,7 @@ XS_qqllg_CSS_approx::XS_qqllg_CSS_approx
   pico.m_fi.m_ps.erase(pico.m_fi.m_ps.end()-1);
   pico.m_fi.m_nloqcdtype=nlo_type::lo;
   p_bornme = dynamic_cast<ME2_Base*>(PHASIC::Tree_ME2_Base::GetME2(pico));
-  m_alphasdef = (*MODEL::as)(rpa->gen.CplScale());
+  m_alphasdef = MODEL::as->Default();
   PRINT_INFO("initialised XS_qqllg_CSS_approx2");
 }
 
@@ -262,7 +263,8 @@ operator()(const Process_Info &pi) const
   if (fl[0].IsQuark()  && fl[1]==fl[0].Bar() &&
       fl[4].IsGluon()  &&
       fl[2].IsLepton() && fl[3]==fl[2].Bar()) {
-    if ((pi.m_oqcd==1 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
+    if (pi.m_maxcpl[0]==1 && pi.m_maxcpl[1]==2 &&
+	pi.m_mincpl[0]==1 && pi.m_mincpl[1]==2) {
       return new XS_qqllg_CSS_approx(pi,fl);
     }
   }

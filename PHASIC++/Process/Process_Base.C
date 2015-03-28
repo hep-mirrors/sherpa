@@ -7,7 +7,7 @@
 #include "PHASIC++/Selectors/Combined_Selector.H"
 #include "PHASIC++/Process/Single_Process.H"
 #include "PHASIC++/Channels/BBar_Multi_Channel.H"
-#include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "MODEL/Main/Single_Vertex.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/Decay_Info.H"
@@ -28,8 +28,8 @@ Process_Base::Process_Base():
   p_int(new Process_Integrator(this)), p_selector(NULL),
   p_cuts(NULL), p_gen(NULL), p_shower(NULL), p_mc(NULL),
   p_scale(NULL), p_kfactor(NULL),
-  m_nin(0), m_nout(0), 
-  m_oqcd(0), m_oew(0), m_tinfo(1), m_mcmode(0), m_cmode(0),
+  m_nin(0), m_nout(0), m_maxcpl(2,99), m_mincpl(2,0), 
+  m_tinfo(1), m_mcmode(0), m_cmode(0),
   m_lookup(false), m_use_biweight(true), p_apmap(NULL)
 {
   m_last=m_lastb=0.0;
@@ -639,7 +639,7 @@ void Process_Base::SetBBarMC(BBar_Multi_Channel *mc)
 int Process_Base::NaiveMapping(Process_Base *proc) const
 {
   DEBUG_FUNC(Name()<<" -> "<<proc->Name());
-  Vertex_Table *vt(s_model->GetVertexTable());
+  const Vertex_Table *vt(s_model->VertexTable());
   std::map<Flavour,Flavour> fmap;
   std::vector<Flavour> curf(m_flavs);
   for (size_t i(0);i<curf.size();++i) fmap[curf[i]]=proc->m_flavs[i];
@@ -649,7 +649,8 @@ int Process_Base::NaiveMapping(Process_Base *proc) const
   for (size_t i(0);i<curf.size();++i) {
     Flavour cf(curf[i]), mf(fmap[cf]);
     if (cf==mf) continue;
-    const Vertex_List &vlc((*vt)[cf]), &vlm((*vt)[mf]);
+    const Vertex_List &vlc(vt->find(cf)->second);
+    const Vertex_List &vlm(vt->find(mf)->second);
     DEBUG_VAR(cf<<" "<<vlc.size());
     DEBUG_VAR(mf<<" "<<vlm.size());
     if (vlc.size()!=vlm.size()) return 0;
@@ -662,7 +663,7 @@ int Process_Base::NaiveMapping(Process_Base *proc) const
 	DEBUG_VAR(*vlm[k]);
 	if (vlm[k]->Compare(vlc[j])==0) {
 	  msg_Indent();
-	  for (int n=1;n<vlc[j]->nleg;++n) {
+	  for (int n=1;n<vlc[j]->NLegs();++n) {
 	    std::map<Flavour,Flavour>::
 	      const_iterator cit(fmap.find(vlc[j]->in[n]));
 	    if (cit==fmap.end()) {
@@ -698,4 +699,17 @@ int Process_Base::NaiveMapping(Process_Base *proc) const
   }
   DEBUG_VAR("OK");
   return 1;
+}
+
+std::string Process_Base::ShellName(std::string name) const
+{
+  if (name.length()==0) name=m_name;
+  for (size_t i(0);(i=name.find('-',i))!=std::string::npos;name.replace(i,1,"m"));
+  for (size_t i(0);(i=name.find('+',i))!=std::string::npos;name.replace(i,1,"p"));
+  for (size_t i(0);(i=name.find('~',i))!=std::string::npos;name.replace(i,1,"x"));
+  for (size_t i(0);(i=name.find('(',i))!=std::string::npos;name.replace(i,1,"_"));
+  for (size_t i(0);(i=name.find(')',i))!=std::string::npos;name.replace(i,1,"_"));
+  for (size_t i(0);(i=name.find('[',i))!=std::string::npos;name.replace(i,1,"I"));
+  for (size_t i(0);(i=name.find(']',i))!=std::string::npos;name.replace(i,1,"I"));
+  return name;
 }

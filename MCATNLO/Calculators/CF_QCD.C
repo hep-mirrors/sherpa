@@ -1,6 +1,6 @@
 #include "MCATNLO/Showers/Splitting_Function_Base.H"
 
-#include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "MODEL/Main/Single_Vertex.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"

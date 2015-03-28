@@ -10,6 +10,10 @@ void PS_Info::Divide(const double &d)
 {
 }
 
+void PS_Info::Multiply(const Complex &c)
+{
+}
+
 void PS_Info::Conjugate()
 {
 }

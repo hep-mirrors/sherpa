@@ -3,7 +3,7 @@
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Explicit/Vertex.H"
 #include "MODEL/Main/Model_Base.H"
-#include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "MODEL/Main/Single_Vertex.H"
 #include "PHASIC++/Main/Color_Integrator.H"
 
 using namespace EXTRAXS;
@@ -101,25 +101,28 @@ Comix1to2::~Comix1to2()
 
 Vertex* Comix1to2::GetVertex(Current* cur1, Current* cur2, Current* prop) {
   Vertex* v1(NULL);
-  Vertex_Key vkey(cur1,cur2,NULL,prop,MODEL::s_model);
+  Current_Vector curs(2);
+  curs[0]=cur1;
+  curs[1]=cur2;
+  Vertex_Key vkey(curs,prop,MODEL::s_model);
   MODEL::VMIterator_Pair keyrange(MODEL::s_model->GetVertex(vkey.ID()));
-  if (keyrange.first!=keyrange.second && keyrange.first->second->on) {
+  if (keyrange.first!=keyrange.second) {
     vkey.p_mv=keyrange.first->second;//fixme!!
     vkey.m_p=std::string(1,'D');
     v1=new Vertex(vkey);
   }
   else {
-    vkey=Vertex_Key(cur2,cur1,NULL,prop,MODEL::s_model);
+    std::swap<Current*>(curs[0],curs[1]);
+    vkey=Vertex_Key(curs,prop,MODEL::s_model);
     keyrange=MODEL::s_model->GetVertex(vkey.ID());
-    if (keyrange.first!=keyrange.second && keyrange.first->second->on) {
+    if (keyrange.first!=keyrange.second) {
       vkey.p_mv=MODEL::s_model->GetVertex(vkey.ID()).first->second;//fixme!!
       vkey.m_p=std::string(1,'D');
       v1=new Vertex(vkey);
     }
     else THROW(fatal_error, "vertex not found: "+vkey.ID());
   }
-  v1->SetJA(vkey.p_a);
-  v1->SetJB(vkey.p_b);
+  v1->AddJ(vkey.m_j);
   v1->SetJC(prop);
   return v1;
 }

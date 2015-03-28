@@ -87,8 +87,8 @@ void Output_LHEF::Header()
   //run info to be dumped here
   Flavour Beam1 = rpa->gen.Beam1();
   Flavour Beam2 = rpa->gen.Beam2();
-  int IDBMUP1 = Beam1.HepEvt();
-  int IDBMUP2 = Beam2.HepEvt();
+  int IDBMUP1 = (long int)Beam1;
+  int IDBMUP2 = (long int)Beam2;
   double EBMUP1 = rpa->gen.PBeam(0)[0];
   double EBMUP2 = rpa->gen.PBeam(1)[0];
   
@@ -155,7 +155,7 @@ void Output_LHEF::Output(Blob_List* blobs, const double weight)
 		 <<std::setw(18)<<AQEDUP<<" "
 		 <<std::setw(18)<<AQCDUP<<std::endl;
       for (int i=0;i<(*blit)->NInP();i++)
-	m_outstream<<std::setw(8)<<(*blit)->InParticle(i)->Flav().HepEvt()<<" -1  0  0 "
+	m_outstream<<std::setw(8)<<(long int)(*blit)->InParticle(i)->Flav()<<" -1  0  0 "
 		   <<std::setw(4)<<(*blit)->InParticle(i)->GetFlow(1)<<" "
 		   <<std::setw(4)<<(*blit)->InParticle(i)->GetFlow(2)<<" "
 		   <<std::setw(18)<<(*blit)->InParticle(i)->Momentum()[1]<<" "
@@ -165,7 +165,7 @@ void Output_LHEF::Output(Blob_List* blobs, const double weight)
 		   <<std::setw(18)<<(*blit)->InParticle(i)->FinalMass()<<" "
 		   <<" 0  9"<<std::endl;
       for (int i=0;i<(*blit)->NOutP();i++)
-	m_outstream<<std::setw(8)<<(*blit)->OutParticle(i)->Flav().HepEvt()<<"  1  1  2 "
+	m_outstream<<std::setw(8)<<(long int)(*blit)->OutParticle(i)->Flav()<<"  1  1  2 "
 		   <<std::setw(4)<<(*blit)->OutParticle(i)->GetFlow(1)<<" "
 		   <<std::setw(4)<<(*blit)->OutParticle(i)->GetFlow(2)<<" "
 		   <<std::setw(18)<<(*blit)->OutParticle(i)->Momentum()[1]<<" "

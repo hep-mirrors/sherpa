@@ -53,8 +53,8 @@ bool Cluster_Algorithm::Cluster
     p_ampl->SetMS(p_ms);
     p_ampl->SetJF(p_proc->Selector()->GetSelector("Jetfinder"));
     p_ampl->SetNIn(p_proc->NIn());
-    p_ampl->SetOrderEW(p_proc->OrderEW());
-    p_ampl->SetOrderQCD(p_proc->OrderQCD());
+    p_ampl->SetOrderEW(p_proc->MaxOrder(1)/2);
+    p_ampl->SetOrderQCD(p_proc->MaxOrder(0)/2);
     std::vector<size_t> tids, atids;
     for (int i(0);i<pb->NIn()+pb->NOut();++i) {
       Flavour flav(i<pb->NIn()?p_proc->Flavours()[i].Bar():
@@ -108,7 +108,7 @@ bool Cluster_Algorithm::Cluster
 	     p_proc->Flavours().back().IsQuark()) ||
 	    (p_proc->Flavours()[0].IsQuark() && p_proc->Flavours()[1].IsGluon() &&
 	     p_proc->Flavours().back().IsQuark()));
-    bool loop_ind((p_proc->OrderQCD()+p_proc->OrderEW())==np);
+    bool loop_ind((p_proc->MaxOrder(0)/2+p_proc->MaxOrder(1)/2)==np);
     if (non_col && gg && loop_ind){
       ClusterSpecial4lLoop2();
     }
@@ -226,8 +226,8 @@ void Cluster_Algorithm::Convert()
   p_ampl->SetMS(p_ms);
   p_ampl->SetJF(jf);
   p_ampl->SetNIn(p_proc->NIn());
-  p_ampl->SetOrderEW(p_proc->OrderEW());
-  p_ampl->SetOrderQCD(p_proc->OrderQCD());
+  p_ampl->SetOrderEW(p_proc->MaxOrder(1)/2);
+  p_ampl->SetOrderQCD(p_proc->MaxOrder(0)/2);
   PHASIC::Process_Base *pb(p_proc->IsMapped()?
 			   p_proc->MapProc():p_proc);
   double muf2(pb->ScaleSetter()->Scale(stp::fac));
@@ -337,8 +337,8 @@ void Cluster_Algorithm::ClusterSpecial4lLoop2()
   p_ampl->SetMS(p_ms);
   p_ampl->SetJF(p_proc->Selector()->GetSelector("Jetfinder"));
   p_ampl->SetNIn(p_proc->NIn());
-  p_ampl->SetOrderEW(p_proc->OrderEW());
-  p_ampl->SetOrderQCD(p_proc->OrderQCD()-1);
+  p_ampl->SetOrderEW(p_proc->MaxOrder(1)/2);
+  p_ampl->SetOrderQCD(p_proc->MaxOrder(0)/2-1);
   ampl->SetKT2(win.m_kt2);
   ampl->SetMu2(win.m_mu2);
 

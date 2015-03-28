@@ -31,6 +31,12 @@ void CScalar<Scalar>::Divide(const double &d)
 }
 
 template <class Scalar>
+void CScalar<Scalar>::Multiply(const Complex &c)
+{
+  m_x*=SComplex(c);
+}
+
+template <class Scalar>
 void CScalar<Scalar>::Invert()
 {
   m_x=-m_x;

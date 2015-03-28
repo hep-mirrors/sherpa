@@ -478,8 +478,8 @@ bool Check_External_Flavours::ValidProcess(int _nin,Flavour * _in,
   for (int i=0;i<_nin;i++) {
     chin   += _in[i].IntCharge();
     sin   += _in[i].IntSpin();
-    bin   += _in[i].BaryonNumber();
-    lin   += _in[i].LeptonNumber();
+    bin   += BaryonNumber(_in[i]);
+    lin   += LeptonNumber(_in[i]);
     qin   += _in[i].StrongCharge();
     qfin  += int(pow(-1.,_in[i].IsAnti())*pow(10.,_in[i].QuarkFamily()-1));
     lfin  += int(pow(-1.,_in[i].IsAnti())*pow(10.,_in[i].LeptonFamily()-1));
@@ -487,8 +487,8 @@ bool Check_External_Flavours::ValidProcess(int _nin,Flavour * _in,
   for (int i=0;i<_nout;i++) {
     chout  += _out[i].IntCharge();
     sout  += _out[i].IntSpin();
-    bout  += _out[i].BaryonNumber();
-    lout  += _out[i].LeptonNumber();
+    bout  += BaryonNumber(_out[i]);
+    lout  += LeptonNumber(_out[i]);
     qout  += _out[i].StrongCharge();
     qfout += int(pow(-1.,_out[i].IsAnti())*pow(10.,_out[i].QuarkFamily()-1));
     lfout += int(pow(-1.,_out[i].IsAnti())*pow(10.,_out[i].LeptonFamily()-1));

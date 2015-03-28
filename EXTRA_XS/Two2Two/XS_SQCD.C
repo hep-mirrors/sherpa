@@ -3,7 +3,6 @@
 
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "MODEL/Main/Model_Base.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 
 namespace EXTRAXS {
 
@@ -216,7 +215,8 @@ using namespace ATOOLS;
 	  SuperPartner(flavours[2],flavours[1]))) &&
 	((abs(flavours[2].Kfcode())>2000000 && abs(flavours[3].Kfcode())>2000000) ||
 	 (abs(flavours[2].Kfcode())<2000000 && abs(flavours[3].Kfcode())<2000000))) { 
-      if (pi.m_oqcd==2 && pi.m_oew==0) {
+      if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
+	  pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
 	return new XS_q1q2_sQ1sQ2(pi,flavours); 
       }
     }
@@ -229,8 +229,7 @@ XS_q1q2_sQ1sQ2::XS_q1q2_sQ1sQ2(const Process_Info &pi,const Flavour_Vector &fl):
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_p=fl[1].IsAnti();
-  m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
+  m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_r = !SuperPartner(fl[2],fl[0]);
 }
@@ -289,7 +288,8 @@ bool XS_q1q2_sQ1sQ2::SetColours(const ATOOLS::Vec4D_Vector &p)
 	  SuperPartner(flavours[2],flavours[1]))) &&
 	((abs(flavours[2].Kfcode())>2000000 && abs(flavours[3].Kfcode())<2000000) ||
 	 (abs(flavours[2].Kfcode())<2000000 && abs(flavours[3].Kfcode())>2000000))) { 
-      if (pi.m_oqcd==2 && pi.m_oew==0) {
+      if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
+	  pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
 	return new XS_q1q2_sQ1LsQ2R(pi,flavours); 
       }
     }
@@ -302,8 +302,7 @@ XS_q1q2_sQ1LsQ2R::XS_q1q2_sQ1LsQ2R(const PHASIC::Process_Info &pi,const ATOOLS::
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_p=fl[1].IsAnti();
-  m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
+  m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_msq32=sqr(fl[2].Mass());
   m_msq42=sqr(fl[3].Mass());
@@ -370,7 +369,8 @@ bool XS_q1q2_sQ1LsQ2R::SetColours(const ATOOLS::Vec4D_Vector &p)
 	  SuperPartner(flavours[2],flavours[1]))) &&
 	((abs(flavours[2].Kfcode())>2000000 && abs(flavours[3].Kfcode())>2000000) ||
 	 (abs(flavours[2].Kfcode())<2000000 && abs(flavours[3].Kfcode())<2000000))) { 
-      if (pi.m_oqcd==2 && pi.m_oew==0) {
+      if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
+	  pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
 	return new XS_q1qbar2_sQ1sQbar2(pi,flavours); 
       }
     }
@@ -383,8 +383,7 @@ XS_q1qbar2_sQ1sQbar2::XS_q1qbar2_sQ1sQbar2(const Process_Info &pi,const Flavour_
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_p=fl[1].IsAnti();
-  m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
+  m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_msq32=sqr(fl[2].Mass());
   m_msq42=sqr(fl[3].Mass());
@@ -427,7 +426,8 @@ bool XS_q1qbar2_sQ1sQbar2::SetColours(const ATOOLS::Vec4D_Vector &p)
     if (flavours[0].IsQuark() && flavours[1]==flavours[0].Bar() &&
 	flavours[2].IsSquark() && flavours[3]==flavours[2].Bar() &&
 	!SuperPartner(flavours[2],flavours[0])) { 
-      if (pi.m_oqcd==2 && pi.m_oew==0) {
+      if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
+	  pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
 	return new XS_q1qbar1_sQ2sQbar2(pi,flavours); 
       }
     }
@@ -440,8 +440,7 @@ XS_q1qbar1_sQ2sQbar2::XS_q1qbar1_sQ2sQbar2(const PHASIC::Process_Info &pi,const 
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
   m_p=1-m_a;
-  m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
+  m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
   m_msquark2=sqr(fl[2].Mass());
   m_r = !(fl[0].IsAnti() == fl[2].IsAnti());
 }
@@ -480,7 +479,8 @@ bool XS_q1qbar1_sQ2sQbar2::SetColours(const ATOOLS::Vec4D_Vector &p)
     if (flavours[0].IsQuark() && flavours[2].IsSquark() && 
 	flavours[1]==flavours[0] && flavours[2]==flavours[3] &&
 	SuperPartner(flavours[2],flavours[0])) { 
-      if (pi.m_oqcd==2 && pi.m_oew==0) {
+      if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
+	  pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
 	return new XS_q1q1_sQ1sQ1(pi,flavours); 
       }
     }
@@ -492,8 +492,7 @@ XS_q1q1_sQ1sQ1::XS_q1q1_sQ1sQ1(const Process_Info &pi,const Flavour_Vector &fl):
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
-  m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
+  m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
   m_msquark2=sqr(fl[2].Mass());
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
 }
@@ -555,7 +554,8 @@ bool XS_q1q1_sQ1sQ1::SetColours(const ATOOLS::Vec4D_Vector &p)
 	SuperPartner(flavours[3],flavours[0]) && 
 	((abs(flavours[2].Kfcode())<2000000 && abs(flavours[3].Kfcode())>2000000) ||
 	 (abs(flavours[2].Kfcode())>2000000 && abs(flavours[3].Kfcode())<2000000))) { 
-      if (pi.m_oqcd==2 && pi.m_oew==0) {
+      if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
+	  pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
 	return new XS_q1q1_sQ1LsQ1R(pi,flavours); 
       }
     }
@@ -567,8 +567,7 @@ XS_q1q1_sQ1LsQ1R::XS_q1q1_sQ1LsQ1R(const Process_Info &pi,const Flavour_Vector &
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_a=fl[0].IsAnti();
-  m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
+  m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
   m_msq32=sqr(fl[2].Mass());
   m_msq42=sqr(fl[3].Mass());
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
@@ -633,7 +632,8 @@ bool XS_q1q1_sQ1LsQ1R::SetColours(const ATOOLS::Vec4D_Vector &p)
 	  SuperPartner(flavours[3],flavours[1])) ||
 	 (SuperPartner(flavours[3],flavours[0])  && 
 	  SuperPartner(flavours[2],flavours[1])))) { 
-      if (pi.m_oqcd==2 && pi.m_oew==0) {
+      if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
+	  pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
 	return new XS_q1qbar1_sQ1sQbar1(pi,flavours); 
       }
     }
@@ -647,8 +647,7 @@ XS_q1qbar1_sQ1sQbar1::XS_q1qbar1_sQ1sQbar1(const Process_Info &pi,const Flavour_
   m_a=fl[0].IsAnti();
   m_p=1-m_a;
   m_r=!SuperPartner(fl[2],fl[0]);
-  m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
+  m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
   m_msquark2=sqr(fl[2].Mass());
 }
@@ -707,7 +706,8 @@ bool XS_q1qbar1_sQ1sQbar1::SetColours(const ATOOLS::Vec4D_Vector &p)
     if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
     if (flavours[0].IsQuark() && flavours[1]==flavours[0].Bar() &&
 	flavours[2].IsGluino() && flavours[3].IsGluino()) { 
-      if (pi.m_oqcd==2 && pi.m_oew==0) {
+      if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
+	  pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
 	return new XS_q1qbar1_GluinoGluino(pi,flavours); 
       }
     }
@@ -723,8 +723,7 @@ XS_q1qbar1_GluinoGluino::XS_q1qbar1_GluinoGluino(const Process_Info &pi,const Fl
   int flav = abs(fl[0].Kfcode());
   m_msqL2=sqr(Flavour((kf_code)(1000000+flav)).Mass());
   m_msqR2=sqr(Flavour((kf_code)(2000000+flav)).Mass());
-  m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
+  m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
 }
 
 double XS_q1qbar1_GluinoGluino::operator()(const ATOOLS::Vec4D_Vector &p)
@@ -799,7 +798,8 @@ bool XS_q1qbar1_GluinoGluino::SetColours(const ATOOLS::Vec4D_Vector &p)
     if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
     if (flavours[0].IsGluon() && flavours[1].IsGluon() && 
 	flavours[2].IsSquark() && flavours[3]==flavours[2].Bar()) { 
-      if (pi.m_oqcd==2 && pi.m_oew==0) {
+      if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
+	  pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
 	return new XS_gg_sQ1sQbar1(pi,flavours); 
       }
     }
@@ -811,8 +811,7 @@ XS_gg_sQ1sQbar1::XS_gg_sQ1sQbar1(const Process_Info &pi,const Flavour_Vector &fl
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_r=fl[2].IsAnti();
-  m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
+  m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
   m_msquark2=sqr(fl[2].Mass());
 }
 
@@ -882,7 +881,8 @@ bool XS_gg_sQ1sQbar1::SetColours(const ATOOLS::Vec4D_Vector &p)
 	((flavours[1].IsQuark() && flavours[0].IsGluon()) && 
 	 ((SuperPartner(flavours[2],flavours[1]) && flavours[3].IsGluino()) || 
 	  (SuperPartner(flavours[3],flavours[1]) && flavours[2].IsGluino()))))  { 
-      if (pi.m_oqcd==2 && pi.m_oew==0) {
+      if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
+	  pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
 	return new XS_q1g_sQ1Gluino(pi,flavours); 
       }
     }
@@ -909,8 +909,7 @@ XS_q1g_sQ1Gluino::XS_q1g_sQ1Gluino(const Process_Info &pi,const Flavour_Vector &
   m_p=1-m_a;
   m_msquark2=sqr(fl[m_finq].Mass());
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
-  m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
+  m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
 }
 
 double XS_q1g_sQ1Gluino::operator()(const ATOOLS::Vec4D_Vector &p)
@@ -974,7 +973,8 @@ bool XS_q1g_sQ1Gluino::SetColours(const ATOOLS::Vec4D_Vector &p)
     if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
     if (flavours[0].IsGluon()  && flavours[1].IsGluon() &&
 	flavours[2].IsGluino() && flavours[3].IsGluino()) { 
-      if (pi.m_oqcd==2 && pi.m_oew==0) {
+      if (pi.m_maxcpl[0]==2 && pi.m_maxcpl[1]==0 &&
+	  pi.m_mincpl[0]==2 && pi.m_mincpl[1]==0) {
 	return new XS_gg_GluinoGluino(pi,flavours); 
       }
     }
@@ -985,8 +985,7 @@ XS_gg_GluinoGluino::XS_gg_GluinoGluino(const Process_Info &pi,const Flavour_Vect
   ME2_Base(pi,fl) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  m_g3=sqrt(4.*M_PI*MODEL::s_model->GetInteractionModel()->
-	    ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()));
+  m_g3=sqrt(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_S"));
   m_mgluino2=sqr(Flavour(kf_Gluino).Mass());
 }
 

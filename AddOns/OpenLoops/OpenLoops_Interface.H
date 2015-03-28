@@ -12,6 +12,7 @@ namespace OpenLoops {
                              public ATOOLS::Terminator_Object {
 
     static std::string s_olprefix;
+    static bool        s_ignore_model;
 
   public :
     OpenLoops_Interface() : ME_Generator_Base("OpenLoops") {}

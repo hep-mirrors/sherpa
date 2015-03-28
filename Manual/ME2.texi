@@ -13,11 +13,7 @@ all external particles.
 If AMEGIC++ is used as the matrix element generator, executing the
 script will result in AMEGIC++ writing out libraries and exiting.
 After compiling the libraries using @code{./makelibs}, the script must
-be executed again in order to obtain the matrix element. On some
-systems, this might result in a termination with errors of the form
-@verbatim
-Library_Loader::LoadLibrary(): ./Process/lib/libProc_P2_2_2_6_24_16_5_0.so: undefined symbol: _ZN6AMEGIC10Basic_Func1XEiii
-@end verbatim
+be executed again in order to obtain the matrix element.
 
 If this is the case, the library libSherpaMain.so must be preloaded,
 which can be achieved on a linux system via setting LD_PRELOAD

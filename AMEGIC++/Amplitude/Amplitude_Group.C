@@ -363,8 +363,7 @@ Complex Amplitude_Group::Zvalue(int ihel,int* signlist) {
   return M;
 }
 
-int Amplitude_Group::GetOrderQED() 
-{return graphs.front()->GetOrderQED();}
-
-int Amplitude_Group::GetOrderQCD() 
-{return graphs.front()->GetOrderQCD();}
+const std::vector<int> &Amplitude_Group::GetOrder() 
+{
+  return graphs.front()->GetOrder();
+}

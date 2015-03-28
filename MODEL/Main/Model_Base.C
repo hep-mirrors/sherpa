@@ -1,15 +1,24 @@
 #include "MODEL/Main/Model_Base.H"
 
-#include "MODEL/Main/Spectrum_Generator_Base.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
+#define COMPILE__Getter_Function
+#define OBJECT_TYPE MODEL::Model_Base
+#define PARAMETER_TYPE MODEL::Model_Arguments
+#include "ATOOLS/Org/Getter_Function.C"
+
+#include "MODEL/Main/Single_Vertex.H"
+#include "MODEL/Main/Running_AlphaS.H"
+#include "MODEL/Main/Strong_Coupling.H"
+#include "MODEL/Main/Running_Fermion_Mass.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
-#include "MODEL/Interaction_Models/Vertex.H"
 #include "ATOOLS/Org/Exception.H"
+
+#include <algorithm>
 
 using namespace MODEL;
 using namespace ATOOLS;
+using std::string;
 
 namespace MODEL 
 {
@@ -17,21 +26,24 @@ namespace MODEL
 }
 
 Model_Base::Model_Base(std::string _dir,std::string _file,bool _elementary) :
-  p_model(NULL), m_dir(_dir), m_file(_file), m_elementary(_elementary), 
+  m_dir(_dir), m_file(_file), m_elementary(_elementary), 
   p_dataread(NULL), p_numbers(NULL), p_constants(NULL), p_complexconstants(NULL), 
-  p_functions(NULL), p_matrices(NULL), p_spectrumgenerator(NULL), p_vertex(NULL), 
-  p_vertextable(NULL)
+  p_functions(NULL)
 {
   p_dataread = new Data_Reader(" ",";","!","=");
   p_dataread->AddComment("#");
   p_dataread->AddWordSeparator("\t");
   p_dataread->SetInputPath(m_dir);
   p_dataread->SetInputFile(m_file);
+
+  p_numbers          = new MODEL::ScalarNumbersMap();
+  p_constants        = new MODEL::ScalarConstantsMap();
+  p_complexconstants = new MODEL::ComplexConstantsMap();
+  p_functions        = new MODEL::ScalarFunctionsMap();
 }
 
 Model_Base::~Model_Base() 
 {
-  delete p_model;
   if (p_numbers!=NULL) delete p_numbers;
   if (p_functions!=NULL) {
     while (!p_functions->empty()) {
@@ -42,23 +54,79 @@ Model_Base::~Model_Base()
   }
   if (p_constants!=NULL)         delete p_constants;
   if (p_complexconstants!=NULL)  delete p_complexconstants;
-  if (p_matrices!=NULL)          delete p_matrices;
   if (p_dataread!=NULL)          delete p_dataread;
-  if (p_spectrumgenerator!=NULL) delete p_spectrumgenerator;
-  if (p_vertex!=NULL)            delete p_vertex;
-  if (p_vertextable!=NULL)       delete p_vertextable;
 }
 
-void Model_Base::GetCouplings(Coupling_Map &cpls) const
+void Model_Base::RotateVertices()
+{
+  int nv=m_v.size(); 
+  for (int i=0;i<nv;++i) {
+    std::vector<size_t> id(m_v[i].id);
+    if (m_v[i].dec>=0) {
+      for (size_t k=0;k<m_v[i].in.size();++k) {
+	Flavour fl(m_v[i].in[k]);
+	if (m_maxlegs.find(fl)==m_maxlegs.end()) m_maxlegs[fl]=0;
+	if (id.size()>m_maxlegs[fl]) m_maxlegs[fl]=id.size();
+      }
+    }
+    if (m_v[i].dec&2) continue;
+    for (size_t k=0;k<id.size()-1;++k) {
+      for (int lid=id[id.size()-1], l=id.size()-1;l>=0;--l) id[l]=l?id[l-1]:lid;
+      Single_Vertex v(m_v[i]);
+      for (int j=0;j<v.in.size();++j) v.in[j]=m_v[i].in[v.id[j]=id[j]];
+      std::vector<Single_Vertex>::iterator vit(find(m_v.begin(),m_v.end(),v));
+      while (vit!=m_v.end() && vit->order!=v.order) vit=find(vit+1,m_v.end(),v);
+      if (vit==m_v.end()) m_v.push_back(v);
+    }
+  }
+}
+
+void Model_Base::GetCouplings(Coupling_Map &cpls)
 {
   DEBUG_FUNC(&cpls);
   for (ScalarFunctionsMap::const_iterator
 	 cit(p_functions->begin());cit!=p_functions->end();++cit) {
     std::string tag(cit->second->Name());
     cpls.insert(std::make_pair(tag,new Coupling_Data
-      (cit->second,tag,p_model->ScalarFunction(cit->first,rpa->gen.CplScale()))));
+      (cit->second,tag,ScalarConstant(cit->first))));
     msg_Debugging()<<"  '"<<tag<<"' -> ("<<cpls.lower_bound(tag)->second<<")"
 		   <<*cpls.lower_bound(tag)->second<<"\n";
+  }
+}
+
+// to be called in ModelInit 
+void Model_Base::SetAlphaQCD(const PDF::ISR_Handler_Map& isr)
+{
+  int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",1);
+  int    th_alphaS	= p_dataread->GetValue<int>("THRESHOLD_ALPHAS",1);
+  double alphaS         = p_dataread->GetValue<double>("ALPHAS(MZ)",0.118);
+  double MZ2            = sqr(Flavour(kf_Z).Mass());
+  as = new Running_AlphaS(alphaS,MZ2,order_alphaS,th_alphaS,isr);
+  p_constants->insert(make_pair(string("alpha_S"),alphaS));
+  p_functions->insert(make_pair(string("alpha_S"),as));
+  double Q2aS      = p_dataread->GetValue<double>("Q2_AS",1.);
+  string asf  = p_dataread->GetValue<string>("As_Form",string("smooth"));
+  asform::code as_form(asform::smooth);
+  if (asf==string("constant"))    as_form = asform::constant;
+  else if (asf==string("frozen")) as_form = asform::frozen;
+  else if (asf==string("smooth")) as_form = asform::smooth;
+  else if (asf==string("IR0"))    as_form = asform::IR0;
+  else if (asf==string("GDH"))    as_form = asform::GDH_inspired;
+  Strong_Coupling * strong_cpl(new Strong_Coupling(as,as_form,Q2aS));
+  p_functions->insert(make_pair(string("strong_cpl"),strong_cpl));
+  p_constants->insert(make_pair(string("strong_cpl"),alphaS));
+}
+
+// to be called in ModelInit 
+void Model_Base::SetRunningFermionMasses()
+{
+  for (size_t i=0;i<17; ++i) {
+    if (i==7) i=11;
+    Flavour yfl((kf_code)i);
+    if (yfl.Yuk()==0.0) continue;
+    Running_Fermion_Mass *rfm(new Running_Fermion_Mass(yfl, yfl.Yuk(), as));
+    p_functions->insert(make_pair("m"+yfl.IDName(),rfm));
+    p_constants->insert(make_pair("m"+yfl.IDName(),yfl.Yuk()));
   }
 }
 
@@ -66,12 +134,8 @@ void Model_Base::ShowSyntax(const size_t i)
 {
   if (!msg_LevelIsInfo() || i==0) return;
   msg_Out()<<METHOD<<"(): {\n\n"
-	   <<"   // available model implementations (specified through MODEL=<value>)\n\n";
+	   <<"   // available model implementations (specified by MODEL=<value>)\n\n";
   Model_Getter_Function::PrintGetterInfo(msg->Out(),25);
-  msg_Out()<<"\n   // available sets of interaction vertices (specified through SIGNAL_MODEL=<value> in ME.dat)\n"
-	   <<"   // default given by MODEL switch\n\n";
-  Interaction_Model_Base::Interaction_Model_Getter_Function::
-    PrintGetterInfo(msg->Out(),25);
   msg_Out()<<"\n}"<<std::endl;
 }
 
@@ -207,6 +271,65 @@ void Model_Base::ReadParticleData() {
   }
 }
 
+void Model_Base::AddStandardContainers()
+{
+  s_kftable[kf_resummed] = new
+    Particle_Info(kf_resummed,0.,0.,0,1,2,1,1,1,0,"r","r",0,1);
+  s_kftable[kf_fermion] = new
+    Particle_Info(kf_fermion,0.,0., 0,0,1,0,1,1,0,"f","f",1,1);
+  s_kftable[kf_jet] = new
+    Particle_Info(kf_jet,0.,0.,0,1, 2,1,1,1,0,"j","j",1,1);
+  s_kftable[kf_quark] = new
+    Particle_Info(kf_quark,0.,0.,0,1,1,0,1,1,0,"Q","Q",1,1);
+  s_kftable[kf_lepton] = new
+    Particle_Info(kf_lepton,0.,0.,-3,0,1,0,1,1,0,"l","l",1,1);
+  s_kftable[kf_neutrino] = new
+    Particle_Info(kf_neutrino,0.,0.,0,0, 1,0,1,1,0,"v","v",1,1);
+  s_kftable[kf_resummed]->Clear();
+  s_kftable[kf_fermion]->Clear();
+  s_kftable[kf_jet]->Clear();
+  s_kftable[kf_quark]->Clear();
+  s_kftable[kf_lepton]->Clear();
+  s_kftable[kf_neutrino]->Clear();
+  double jet_mass_threshold=p_dataread->GetValue<double>("JET_MASS_THRESHOLD", 10.0);
+  for (int i=1;i<7;i++) {
+    Flavour addit((kf_code)i);
+    if ((addit.Mass()==0.0 || !addit.IsMassive()) && addit.IsOn()) {
+      if (addit.Mass(true)<=jet_mass_threshold) {
+        s_kftable[kf_jet]->Add(addit);
+        s_kftable[kf_jet]->Add(addit.Bar());
+        s_kftable[kf_quark]->Add(addit);
+        s_kftable[kf_quark]->Add(addit.Bar());
+        s_kftable[kf_fermion]->Add(addit);
+        s_kftable[kf_fermion]->Add(addit.Bar());
+      }
+      else {
+        msg_Info()<<"Ignoring "<<addit<<" due to JET_MASS_THRESHOLD.\n";
+      }
+    }
+  }
+  s_kftable[kf_jet]->Add(Flavour(kf_gluon));
+  s_kftable[kf_jet]->SetResummed();
+  for (int i=11;i<17;i+=2) {
+    Flavour addit((kf_code)i);
+    if ((addit.Mass()==0.0 || !addit.IsMassive()) && addit.IsOn()) {
+      s_kftable[kf_lepton]->Add(addit);
+      s_kftable[kf_lepton]->Add(addit.Bar());
+      s_kftable[kf_fermion]->Add(addit);
+      s_kftable[kf_fermion]->Add(addit.Bar());
+    }
+  }
+  for (int i=12;i<17;i+=2) {
+    Flavour addit((kf_code)i);
+    if ((addit.Mass()==0.0) && addit.IsOn()) {
+      s_kftable[kf_neutrino]->Add(addit);
+      s_kftable[kf_neutrino]->Add(addit.Bar());
+      s_kftable[kf_fermion]->Add(addit);
+      s_kftable[kf_fermion]->Add(addit.Bar());
+    }
+  }
+}
+
 void Model_Base::CustomContainerInit()
 {
   DEBUG_FUNC("");
@@ -231,7 +354,6 @@ void Model_Base::CustomContainerInit()
       (nkf,ppread.StringValue<double>("m",0.0),//Mass
        ppread.StringValue<double>("W",0.0),//Width
        ppread.StringValue<int>("C",0),//ICharge
-       ppread.StringValue<int>("I",0),//Isoweak
        ppread.StringValue<int>("Q",0),//Strong
        ppread.StringValue<int>("S",0),//Spin
        ppread.StringValue<int>("M",0),//Majorana
@@ -250,27 +372,21 @@ void Model_Base::CustomContainerInit()
 
 void Model_Base::InitializeInteractionModel()
 {
-  Data_Reader read(" ",";","!","=");
-  read.AddComment("#");
-  read.AddWordSeparator("\t");
-  read.SetInputPath(m_dir);
-  read.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  std::string modeltype   = read.GetValue<std::string>("SIGNAL_MODEL",m_name);
-  std::string cplscheme   = read.GetValue<std::string>("COUPLING_SCHEME","Running_alpha_S");
-  std::string massscheme  = read.GetValue<std::string>("YUKAWA_MASSES","Running");
-  
-  p_model = Interaction_Model_Base::Interaction_Model_Getter_Function::GetObject
-    (modeltype,Interaction_Model_Arguments(this,cplscheme,massscheme));
-  
-  if (p_model==NULL) THROW(not_implemented,"Interaction model not implemented");
-
-  p_vertex        = new Vertex(p_model);
-  p_vertextable   = new Vertex_Table;
-  for (int i=0;i<p_vertex->MaxNumber();++i) {
-    if ((*p_vertex)[i]->on) {
-      (*p_vertextable)[(*p_vertex)[i]->in[0]].push_back((*p_vertex)[i]);
-    }
+  InitVertices();
+  for (std::vector<Single_Vertex>::iterator
+	 vit(m_v.begin());vit!=m_v.end();) {
+    for (size_t i(0);i<vit->cpl.size();++i)
+      if (vit->cpl[i].Value().real()==0.0 &&
+	  vit->cpl[i].Value().imag()==0.0) {
+	vit->cpl.erase(vit->cpl.begin()+i);
+	vit->Color.erase(vit->Color.begin()+i);
+	vit->Lorentz.erase(vit->Lorentz.begin()+i);
+      }
+    if (vit->cpl.empty()) vit=m_v.erase(vit);
+    else ++vit;
   }
+  m_ov=m_v;
+  RotateVertices();
   InitMEInfo();
 }
 
@@ -345,50 +461,6 @@ double Model_Base::ScalarFunction(const std::string _name,double _t) {
 }
 
 
-double Model_Base::ScalarFunction(const std::string _name) {
-  if (p_functions->empty()) {
-    msg_Error()<<"Error in Model_Base::ScalarFunction("<<_name<<") : "<<std::endl
-	       <<"   No functions stored in model "<<m_name<<". Return 0.\n";
-    return 0.;
-  }
-  if (p_functions->count(_name)>0) return (*(*p_functions)[_name])();
-
-  msg_Error()<<"Error in Model_Base::ScalarFunction("<<_name<<") : "<<std::endl
-	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
-  return 0.;
-}
-
-
-CMatrix Model_Base::ComplexMatrix(const std::string _name) {
-  if (p_matrices->empty()) {
-    msg_Error()<<"Error in Model_Base::ComplexMatrix("<<_name<<") : "<<std::endl
-	       <<"   No matrices stored in model "<<m_name<<". Return 0."<<std::endl;
-    return CMatrix(1);
-  }
-  if (p_matrices->count(_name)>0) return (*p_matrices)[_name];
-
-  msg_Error()<<"Error in Model_Base::ComplexMatrix("<<_name<<") : "<<std::endl
-	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
-  return CMatrix(1);
-}
-
-
-Complex Model_Base::ComplexMatrixElement(const std::string _name,const int _i,const int _j) {
-  if (p_matrices->empty()) {
-    msg_Error()<<"Error in Model_Base::ComplexMatrixElement("<<_name<<")("<<_i<<","<<_j<<") : "<<std::endl
-	       <<"   No matrices stored in model "<<m_name<<". Return 0."<<std::endl;
-    return 0;
-  }
-  if (p_matrices->count(_name)>0) {
-    int rank = (*p_matrices)[_name].Rank();
-    if (_i<rank && _j<rank && 0<=_i && 0<=_j) return (*p_matrices)[_name][_i][_j];
-  }
-
-  msg_Error()<<"Error in Model_Base::ComplexMatrixElement("<<_name<<")("<<_i<<","<<_j<<") : "<<std::endl
-	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
-  return 0;
-}
-
 bool Model_Base::CheckFlavours(int nin, int nout, Flavour* flavs)
 {
   return true;
@@ -398,39 +470,27 @@ void Model_Base::InitMEInfo()
 {
   msg_Debugging()<<METHOD<<"(): {\n";
   m_fls.clear();
-  bool hasndec(false);
   std::set<Flavour> fls;
   msg_Debugging()<<"\n  add vertices\n\n";
-  for (int set=0;set<2;++set) {
-    std::vector<Single_Vertex> &all(p_vertex->Vertices(set));
-  for (size_t i=0;i<all.size();++i) {
-    if (all[i].on) {
+    std::vector<Single_Vertex> &all(m_v);
+    for (size_t i=0;i<all.size();++i) {
       m_vmap.insert(VMap_Key(all[i].PID(),&all[i]));
-      m_vtable[all[i].in[0]].push_back(&all[i]);
-      if (all[i].dec>=0) {
-	for (size_t k=0;k<all[i].nleg;++k) {
-	  Flavour fl(all[i].in[k]);
-	  if (m_maxlegs.find(fl)==m_maxlegs.end()) m_maxlegs[fl]=0;
-	  if (all[i].nleg>m_maxlegs[fl])
-	    m_maxlegs[fl.Bar()]=m_maxlegs[fl]=all[i].nleg;
-	}
-      }
-      for (int j(0);j<all[i].nleg;++j) fls.insert(all[i].in[j]);
+      m_vtable[all[i].in[0].Bar()].push_back(&all[i]);
+      for (int j(0);j<all[i].NLegs();++j) fls.insert(all[i].in[j]);
       if (msg_LevelIsDebugging()) {
 	msg_Debugging()
-	  <<"  "<<all[i].PID()<<" ("<<all[i].oew
-	  <<","<<all[i].oqcd<<") "<<(all[i].dec>0?'{':(all[i].dec<0?'(':'['))
-	  <<all[i].Lorentz.front()->Type()<<","<<all[i].Color[0].PID();
+	  <<"  "<<all[i].PID()<<" ["<<all[i].id[0];
+	for (size_t j(1);j<all[i].id.size();++j) msg_Out()<<","<<all[i].id[j];
+	msg_Out()<<"] "<<all[i].order<<" "<<(all[i].dec>0?'{':(all[i].dec<0?'(':'['))
+		 <<all[i].Lorentz.front()<<","<<all[i].Color[0].PID();
 	for (size_t j(1);j<all[i].Lorentz.size();++j)
-	  msg_Out()<<"|"<<all[i].Lorentz[j]->Type()
-		   <<","<<all[i].Color[j].PID();
-	msg_Out()<<(all[i].dec>0?'}':(all[i].dec<0?')':']'))
-		 <<", C0 = "<<all[i].Coupling(0)
-		 <<", C1 = "<<all[i].Coupling(1)<<"\n";
+	  msg_Out()<<"|"<<all[i].Lorentz[j]<<","<<all[i].Color[j].PID();
+	msg_Out()<<(all[i].dec>0?'}':(all[i].dec<0?')':']'));
+	for (size_t l(0);l<all[i].cpl.size();++l)
+	    msg_Out()<<", C"<<l<<" = "<<all[i].Coupling(l);
+	msg_Out()<<"\n";
       }
     }
-  }
-  }
   msg_Debugging()<<"\n  add particles\n\n";
   for (std::set<Flavour>::const_iterator 
 	 fit(fls.begin());fit!=fls.end();++fit) {
@@ -438,4 +498,19 @@ void Model_Base::InitMEInfo()
       msg_Debugging()<<"  "<<*fit<<"\n";
   }
   msg_Debugging()<<"\n}\n";
+}
+
+int Model_Base::MaxNumber() const
+{
+  return m_v.size();
+}
+
+const std::vector<Single_Vertex> &Model_Base::Vertices() const
+{
+  return m_v;
+}
+
+const std::vector<Single_Vertex> &Model_Base::OriginalVertices() const
+{
+  return m_ov;
 }

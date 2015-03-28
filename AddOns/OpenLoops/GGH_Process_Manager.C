@@ -39,12 +39,14 @@ Process_Base* GGH_Process_Manager::InitializeProcess(const ATOOLS::Cluster_Ampli
   }
 
   // set coupling orders correctly
-  pi.m_oew = 1;
-  pi.m_oqcd = 0;
+  pi.m_maxcpl[1] = pi.m_mincpl[1] = 1;
+  pi.m_maxcpl[0] = pi.m_mincpl[0] = 0;
   Flavour_Vector flav_vec = pi.ExtractFlavours();
   for(Flavour_Vector::const_iterator it=flav_vec.begin(); it!=flav_vec.end(); ++it)
-    if (it->Strong())
-      pi.m_oqcd+=1;
+    if (it->Strong()) {
+      pi.m_maxcpl[0]+=1;
+      pi.m_mincpl[0]+=1;
+    }
 
   if(external){
     // set weirdly abused mhv-flag to get external (i.e. OpenLoops) proc
@@ -61,7 +63,7 @@ Process_Base* GGH_Process_Manager::InitializeProcess(const ATOOLS::Cluster_Ampli
 
   // set selector, kfactor, and scale setter
   proc->SetSelector(Selector_Key(NULL, NULL, true));
-  proc->SetScale(Scale_Setter_Arguments(MODEL::s_model,"VAR{"+ATOOLS::ToString(rpa->gen.CplScale())+"}","Alpha_QCD 1"));
+  proc->SetScale(Scale_Setter_Arguments(MODEL::s_model,"VAR{sqr("+ATOOLS::ToString(rpa->gen.Ecms())+")}","Alpha_QCD 1"));
   proc->SetKFactor(KFactor_Setter_Arguments("NO"));
   
   //proc->Get<COMIX::Process_Base>()->Tests();

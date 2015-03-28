@@ -26,7 +26,7 @@ void InitialiseGenerator(int argc, char *argv[])
     cout<<"Usage: ./FullDecay DECAYER=<PDG_CODE> [...]"<<endl;
     THROW(normal_exit,"you didn't specify the decaying particle by PDG code.");
   }
-  mother_flav.FromHepEvt(mother_kf);
+  mother_flav=Flavour(mother_kf);
   mother_flav.SetStable(false);
   rpa->gen.SetEcms(mother_flav.HadMass());
   msg_Info()<<"Welcome. I am decaying a "<<mother_flav<<endl;

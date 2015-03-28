@@ -1,7 +1,5 @@
 
 MCFM_SOURCES  =	\
-		MCFM_gg_h.C \
-		MCFM_gg_hg.C \
 		MCFM_gg_hgg.C \
 		MCFM_Interface.C
 

@@ -1,96 +1,39 @@
 #include "METOOLS/Explicit/Lorentz_Calculator.H"
-
-#include "METOOLS/Explicit/Vertex.H"
 #include "METOOLS/Currents/C_Scalar.H"
-#include "ATOOLS/Org/MyStrStream.H"
+#include "METOOLS/Explicit/Vertex.H"
+#include "MODEL/Main/Single_Vertex.H"
+
+using namespace ATOOLS;
 
 namespace METOOLS {
 
   template <typename SType>
   class SSS_Calculator: public Lorentz_Calculator {
   public:
-
-    typedef std::complex<SType> SComplex;
-
+    
     typedef CScalar<SType> CScalarType;
-    typedef std::vector<CScalarType*> CScalarType_Vector;
 
-  private:
+    SSS_Calculator(const Vertex_Key &key):
+      Lorentz_Calculator(key) {}
 
-    SComplex m_cpl;
+    std::string Label() const { return "SSS"; }
 
-  public:
-    
-    SSS_Calculator(const Vertex_Key &key);
-    
-    std::string Label() const;
-
-    void Evaluate();
+    CObject *Evaluate(const CObject_Vector &jj)
+    {
+      const CScalarType &a(*jj[0]->Get<CScalarType>());
+      const CScalarType &b(*jj[1]->Get<CScalarType>());
+      CScalarType *j(CScalarType::New(a*b));
+      j->SetS(a.S()|b.S());
+      return j;
+    }
 
   };// end of class SSS_Calculator
 
-}// end of namespace METOOLS
-
-#include "ATOOLS/Org/Message.H"
-
-using namespace METOOLS;
-using namespace ATOOLS;
-
-template <typename SType>
-SSS_Calculator<SType>::SSS_Calculator(const Vertex_Key &key): 
-  Lorentz_Calculator(key) 
-{
-  m_cpl=SComplex(p_v->Coupling(0)*p_cc->Coupling());
-}
-
-template <typename SType>
-std::string SSS_Calculator<SType>::Label() const
-{
-  return "SSS["+ToString(m_cpl)+"]";
-}
-
-template <typename SType>
-void SSS_Calculator<SType>::Evaluate()
-{
-  p_v->SetZero();
-  if (p_v->JA()->Zero()||p_v->JB()->Zero()) return;
-#ifdef DEBUG__BG
-  msg_Debugging()<<*p_v->JA()<<"(+)"<<*p_v->JB()<<" SSS\n";
-  msg_Indent();
-#endif
-  size_t i(0);
-  const CObject_Matrix &cca(p_v->JA()->J()), &ccb(p_v->JB()->J());
-  for (typename CObject_Matrix::const_iterator 
-	 jait(cca.begin());jait!=cca.end();++jait) {
-    const CScalarType_Vector *ca(jait->Get<CScalarType>());
-    for (typename CObject_Matrix::const_iterator 
-	   jbit(ccb.begin());jbit!=ccb.end();++jbit,++i) {
-      const CScalarType_Vector *cb(jbit->Get<CScalarType>());
-      for (typename CScalarType_Vector::const_iterator 
-	     bit(cb->begin());bit!=cb->end();++bit)
-	for (typename CScalarType_Vector::const_iterator 
-	       ait(ca->begin());ait!=ca->end();++ait)
-	  if (p_cc->Evaluate(*ait,*bit)) {
-#ifdef DEBUG__BG
-	    msg_Debugging()<<"    "<<**ait<<"\n";
-	    msg_Debugging()<<"    "<<**bit<<"\n";
-#endif
-	    CScalarType *j(CScalarType::New(**ait***bit));
-	    *j*=SComplex(m_cpl);
-	    j->SetH(p_v->H(i));
-	    j->SetS((*ait)->S()|(*bit)->S());
-	    p_cc->AddJ(j);
-	    p_v->SetZero(false);
-	  }
-    }
-  }
-}
-
-namespace METOOLS {
-
   template class SSS_Calculator<double>;
 
-}
+}// end of namespace METOOLS
+
+using namespace METOOLS;
 
 DECLARE_GETTER(SSS_Calculator<double>,"DSSS",
 	       Lorentz_Calculator,Vertex_Key);

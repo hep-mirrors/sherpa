@@ -254,17 +254,17 @@ bool Single_DipoleTerm::DetermineType() {
     if (m_fli==Flavour(kf_gluon)) {
       m_flij = m_flj;
       if (m_flj==m_fli) m_ftype = 4;
-      else if (!m_fli.IsSusy()) m_ftype = 2;
-      else if (m_fli.IsGluino()) m_ftype = 6;
-      else if (m_fli.IsSquark()) m_ftype = 8;
+      else if (!IsSusy(m_fli)) m_ftype = 2;
+      else if (IsGluino(m_fli)) m_ftype = 6;
+      else if (IsSquark(m_fli)) m_ftype = 8;
       else THROW(fatal_error,"SUSY particle in dipole term, but not squark or gluino");
     }
     else if (m_flj==Flavour(kf_gluon)) {
       m_flij = m_fli;
       if (m_flj==m_fli) m_ftype = 4;
-      else if (!m_fli.IsSusy()) m_ftype = 1;
-      else if (m_fli.IsGluino()) m_ftype = 5;
-      else if (m_fli.IsSquark()) m_ftype = 7;
+      else if (!IsSusy(m_fli)) m_ftype = 1;
+      else if (IsGluino(m_fli)) m_ftype = 5;
+      else if (IsSquark(m_fli)) m_ftype = 7;
       else THROW(fatal_error,"SUSY particle in dipole term, but not squark or gluino");
     }
     else if (m_flj==m_fli.Bar()) {
@@ -272,7 +272,7 @@ bool Single_DipoleTerm::DetermineType() {
 	m_ftype = 0;
 	break;
       }
-      if (!m_fli.IsSusy()) m_ftype = 3;
+      if (!IsSusy(m_fli)) m_ftype = 3;
       else {
         m_ftype = 0;
         break;
@@ -367,7 +367,7 @@ void Single_DipoleTerm::PrintLOmom()
 
 
 
-int Single_DipoleTerm::InitAmplitude(Model_Base *model,Topology* top,
+int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
 				    vector<Process_Base *> & links,
 				    vector<Process_Base *> & errs)
 {
@@ -414,8 +414,10 @@ int Single_DipoleTerm::InitAmplitude(Model_Base *model,Topology* top,
     m_valid=0;
     return status;
   }
-  SetOrderQCD(p_LO_process->OrderQCD()+1);
-  SetOrderEW(p_LO_process->OrderEW());
+  SetMaxOrders(p_LO_process->MaxOrders());
+  SetMinOrders(p_LO_process->MinOrders());
+  SetMaxOrder(0,p_LO_process->MaxOrder(0)+2);
+  SetMinOrder(0,p_LO_process->MinOrder(0)+2);
 
   p_dipole->SetCoupling(((Single_LOProcess*)p_LO_process->Partner())->CouplingMap());
   p_dipole->SetAlpha(m_dalpha);

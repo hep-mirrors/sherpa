@@ -18,7 +18,7 @@ void Eta_PPV::SetModelParameters(GeneralModel md)
   double f8_by_fpi = md("f_8/f_pi",1.30); 
   double f0_by_fpi = md("f_8/f_pi",1.04);
   double theta     = md("Theta",-20./180.*M_PI);
-  double e(sqrt(4.*M_PI*s_model->ScalarConstant(std::string("alpha_QED(0)"))));
+  double e(sqrt(4.*M_PI*s_model->ScalarConstant(std::string("alpha_QED"))));
   m_global = 3.*e/(12.*sqrt(3.)*sqr(M_PI)*pow(m_fP,3));
   if (m_flavs[p_i[0]]==Flavour(kf_eta)) 
     m_global *= (1./f8_by_fpi*cos(theta)-sqrt(2.)/f0_by_fpi*sin(theta));
@@ -125,7 +125,7 @@ void Eta_PVV::SetModelParameters(GeneralModel md)
   m_Gomega         = md("Gamma_Rho",Flavour(kf_omega_782).Width());
   m_mrho2          = sqr(m_mrho);
   m_momega2        = sqr(m_momega);
-  double alpha     = s_model->ScalarConstant(std::string("alpha_QED(0)"));
+  double alpha     = s_model->ScalarConstant(std::string("alpha_QED"));
   double g2        = m_mrho2/(2.*sqr(m_fP)); 
   m_g_rhoG         = 2.*sqrt(4.*M_PI*alpha*g2)*sqr(m_fP);
 

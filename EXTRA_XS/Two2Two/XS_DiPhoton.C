@@ -37,8 +37,7 @@ XS_PP_ffbar::XS_PP_ffbar(const Process_Info& pi, const Flavour_Vector& fl):
   m_sintt=2|4;
   m_r=fl[2].IsAnti();
   m_qcd=fl[2].StrongCharge();
-  m_cpl=sqr(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_QED"),
-                                                   rpa->gen.CplScale()))
+  m_cpl=sqr(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_QED"))
         *sqr(sqr(m_flavs[2].Charge()))
         *(m_flavs[2].Strong()?3.0:1.0);
   m_m2=sqr(m_flavs[2].Mass());
@@ -83,7 +82,8 @@ operator()(const Process_Info &pi) const
   if (fl[0].IsPhoton() && fl[1].IsPhoton() &&
       fl[2].IsFermion() && fl[2].Charge() &&
       fl[3]==fl[2].Bar()) {
-    if (pi.m_oqcd==0 && pi.m_oew==2) {
+    if (pi.m_maxcpl[0]==0 && pi.m_maxcpl[1]==2 &&
+	pi.m_mincpl[0]==0 && pi.m_mincpl[1]==2) {
       return new XS_PP_ffbar(pi,fl);
     }
   }

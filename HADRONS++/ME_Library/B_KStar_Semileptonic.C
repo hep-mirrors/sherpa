@@ -18,8 +18,8 @@ void B_KStar_Semileptonic::SetModelParameters( GeneralModel _md )
   double Vts  = _md("Vts", Tools::Vts);
   m_Vtb  = _md("Vtb", Tools::Vtb);
   m_Vub = _md("Vub", Tools::Vub);
-  double GF   = _md("GF", s_model->ScalarConstant(string("GF")) );
-  double alpha   = _md("alpha", s_model->ScalarConstant(string("alpha_QED(0)")) );
+  double GF   = _md("GF", 1.16639e-5 );
+  double alpha   = _md("alpha", s_model->ScalarConstant(string("alpha_QED")) );
   m_global = GF * alpha * Vts * m_Vtb * m_mB / 2.0 / sqrt(2.0) / M_PI;
   m_LD    = bool(int(_md("LD",1.0)+0.5));
   m_C1    = _md("C1",   -0.248);

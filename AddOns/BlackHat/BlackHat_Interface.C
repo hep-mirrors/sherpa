@@ -75,12 +75,13 @@ bool BlackHat_Interface::Initialize
     p_interface->set("Z_width",Flavour(kf_Z).Width());
     p_interface->set("W_mass",Flavour(kf_Wplus).Mass());
     p_interface->set("W_width",Flavour(kf_Wplus).Width());
-    double sin_th_2=model->ScalarConstant(std::string("sin2_thetaW"));
-    if (model->ScalarNumber(std::string("WidthScheme"))==1)
-      sin_th_2=std::abs(model->ComplexConstant(std::string("csin2_thetaW")));
+    p_interface->set("H_mass",Flavour(kf_h0).Mass());
+    p_interface->set("H_width",Flavour(kf_h0).Width());
+    double sin_th_2=std::abs(model->ComplexConstant(std::string("csin2_thetaW")));
     p_interface->set("sin_th_2",sin_th_2);
-    p_interface->set("alpha_S",model->ScalarFunction(std::string("alpha_S")));
-    p_interface->set("alpha_QED",model->ScalarFunction(std::string("alpha_QED")));
+    p_interface->set("alpha_S",model->ScalarConstant("alpha_S"));
+    p_interface->set("alpha_QED",model->ScalarConstant("alpha_QED"));
+    p_interface->set("YUK2",1.0/std::abs(sqr(model->ComplexConstant("cvev"))));
     msg_Info()<<"}"<<std::endl;
     BlackHat_Tree::SetInterface(p_interface);
     BlackHat_Virtual::SetInterface(p_interface);

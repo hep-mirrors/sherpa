@@ -14,7 +14,8 @@ namespace AMEGIC {
 
     std::string  m_path, m_file;
 
-    MODEL::Model_Base *p_model;
+    MODEL::Model_Base *p_mmodel;
+    Amegic_Model      *p_amodel;
 
     Cluster_Algorithm *p_cluster;
 
@@ -82,7 +83,7 @@ void Amegic::DrawLogo(std::ostream &ostr)
 }
 
 Amegic::Amegic(): 
-  ME_Generator_Base("Amegic"), p_model(NULL), p_cluster(NULL)
+  ME_Generator_Base("Amegic"), p_mmodel(NULL), p_amodel(NULL), p_cluster(NULL)
 {
   DrawLogo(msg->Info());
   p_testmoms=NULL;
@@ -93,6 +94,7 @@ Amegic::~Amegic()
 {
   My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/");
   if (p_cluster) delete p_cluster;
+  delete p_amodel;
 }
  
 bool Amegic::Initialize(const std::string &path,const std::string &file,
@@ -100,7 +102,8 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
 			BEAM::Beam_Spectra_Handler *const beamhandler,
 			PDF::ISR_Handler *const isrhandler)
 {
-  p_model=model;
+  p_mmodel=model;
+  p_amodel = new Amegic_Model(model);
   m_path=path;
   m_file=file;
   p_int->SetBeam(beamhandler);
@@ -139,7 +142,7 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
     newxs->SetGenerator(this);
     newxs->Init(pi,p_int->Beam(),p_int->ISR());
     if (!newxs->Get<AMEGIC::Process_Group>()->
-	InitAmplitude(p_model,&top)) {
+	InitAmplitude(p_amodel,&top)) {
       msg_Debugging()<<METHOD<<"(): Init failed for '"
 		     <<newxs->Name()<<"'\n";
       delete newxs;
@@ -190,7 +193,7 @@ PHASIC::Process_Base *Amegic::InitializeProcess(const PHASIC::Process_Info &pi,
     newxs->Get<AMEGIC::Process_Base>()->SetPrintGraphs(pi.m_gpath);
     My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","begin");
     if (!newxs->Get<AMEGIC::Process_Base>()->
-	InitAmplitude(p_model,&top,m_umprocs,m_errprocs)) {
+	InitAmplitude(p_amodel,&top,m_umprocs,m_errprocs)) {
       My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
       msg_Debugging()<<METHOD<<"(): Init failed for '"
 		     <<newxs->Name()<<"'\n";

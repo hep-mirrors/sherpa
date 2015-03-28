@@ -1,6 +1,6 @@
 #include "METOOLS/Explicit/Vertex.H"
 
-#include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "MODEL/Main/Single_Vertex.H"
 #include "METOOLS/Explicit/Dipole_Kinematics.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -37,22 +37,18 @@ namespace METOOLS {
 size_t Vertex::s_vlmode(0);
 
 Vertex::Vertex(const Vertex_Key &key): 
-  p_a(NULL), p_b(NULL), p_c(NULL), p_e(NULL),
+  p_v(key.p_mv), p_c(NULL),
   p_info(key.p_dinfo), p_kin(NULL),
   m_sign(false), m_act(true), 
-  m_fperm(0), m_oew(0), m_oqcd(0),
+  m_fperm(0), m_order(2,0),
   m_icplfac(1.0)
 {
   if (key.p_mv==NULL) return;
   if (p_info)
     p_kin = new Dipole_Kinematics
-      (p_info,key.p_a,key.p_b,key.p_k,key.p_c,key.p_kt);
+      (p_info,key.m_j[0],key.m_j[1],key.p_k,key.p_c,key.p_kt);
   key.p_v=this;
-  m_oew=key.p_mv->oew;
-  m_oqcd=key.p_mv->oqcd;
-  m_cpl.resize(key.p_mv->cpl.size());
-  for (size_t i(0);i<key.p_mv->cpl.size();++i) 
-    m_cpl[i]=key.p_mv->cpl[i].Value();
+  m_order=key.p_mv->order;
   Vertex_Key ckey(key);
   for (ckey.m_n=0;ckey.m_n<key.p_mv->Lorentz.size();++ckey.m_n) {
     std::string ctag(ToString(ckey.p_mv->Color[ckey.m_n].PID()));
@@ -71,12 +67,13 @@ Vertex::Vertex(const Vertex_Key &key):
 	    ctag+"'");
     }
     ckey.p_cc=m_cc.back();
+    std::string skey(key.p_dinfo?"X":"");
     m_lc.push_back(LC_Getter::GetObject
-		   (ckey.m_p+ckey.p_mv->Lorentz[ckey.m_n]->Type(),ckey));
+		   (ckey.m_p+skey+ckey.p_mv->Lorentz[ckey.m_n],ckey));
     if (m_lc.back()==NULL) {
       msg_Out()<<*ckey.p_mv<<std::endl;
       THROW(fatal_error,"Lorentz calculator not implemented '"+
-	    ckey.m_p+ckey.p_mv->Lorentz[ckey.m_n]->Type()+"'");
+	    ckey.m_p+ckey.p_mv->Lorentz[ckey.m_n]+"'");
     }
   }
 }
@@ -87,31 +84,58 @@ Vertex::~Vertex()
     delete m_lc[i];
     delete m_cc[i];
   }
-  if (p_a!=NULL) p_a->DetachOut(this);
-  if (p_b!=NULL) p_b->DetachOut(this);
-  if (p_e!=NULL) p_e->DetachOut(this);
+  for (size_t i(0);i<m_j.size();++i)
+    if (m_j[i]!=NULL) m_j[i]->DetachOut(this);
   if (p_kin) delete p_kin;
-}
-
-Current *Vertex::J(const size_t &i) const
-{
-  switch (i) {
-  case 0: return p_a;
-  case 1: return p_b;
-  case 2: return p_e;
-  default: THROW(fatal_error,"Invalid index "+ToString(i));
-  }
-  return NULL;
 }
 
 void Vertex::Evaluate()
 {
+  SetZero();
   if (p_kin && !p_kin->Trig()) return;
-  for (LC_Vector::const_iterator lit(m_lc.begin());
-       lit!=m_lc.end();++lit) (*lit)->Evaluate();
-  if (p_kin && !p_c->Zero()) {
-    const CObject *c(p_kin->JK()->J().front().front());
-    p_kin->JKT()->ConstructJ(p_kin->JKT()->P(),0,(*c)(0),(*c)(1),0);
+  for (Current_Vector::const_iterator jit(m_j.begin());
+       jit!=m_j.end();++jit) if ((*jit)->Zero()) return;
+  if (p_kin) {
+    for (LC_Vector::const_iterator lit(m_lc.begin());
+	 lit!=m_lc.end();++lit) (*lit)->Evaluate();
+    if (!p_c->Zero()) {
+      const CObject *c(p_kin->JK()->J().front().front());
+      p_kin->JKT()->ConstructJ(p_kin->JKT()->P(),0,(*c)(0),(*c)(1),0);
+    }
+    return;
+  }
+#ifdef DEBUG__BG
+  msg_Debugging()<<METHOD<<"():\n";
+  msg_Indent();
+#endif
+  size_t hid(0);
+  for (SizeT_Vector::iterator i(m_hjc.begin());i!=m_hjc.end();++i) *i=0;
+  for (size_t j(0);j<m_hjj.size();++j) m_hjj[j]=&m_j[j]->J().front();
+  for (size_t hc(m_hjc.size()-1);m_hjc[0]<m_j[0]->J().size();) {
+    if(m_hjc[hc]==m_j[hc]->J().size()){m_hjc[hc--]=0;++m_hjc[hc];continue;}
+    m_hjj[hc]=&m_j[hc]->J()[m_hjc[hc]];if(hc<m_hjc.size()-1){++hc;continue;}
+    for (SizeT_Vector::iterator i(m_cjc.begin());i!=m_cjc.end();++i) *i=0;
+    bool zero(false);
+    for (size_t i(0);i<m_cjj.size();++i)
+      if (m_hjj[i]->empty()) {zero=true;break;}
+      else m_cjj[i]=m_hjj[i]->front();
+    if (zero) {++m_hjc[hc];++hid;continue;}
+    for (size_t cc(m_cjc.size()-1);m_cjc[0]<m_hjj[0]->size();) {
+      if (m_cjc[cc]==m_hjj[cc]->size()){m_cjc[cc--]=0;++m_cjc[cc];continue;}
+      m_cjj[cc]=(*m_hjj[cc])[m_cjc[cc]];if(cc<m_cjc.size()-1){++cc;continue;}
+      for (size_t k(0);k<m_cc.size();++k)
+	if (m_cc[k]->Evaluate(m_cjj)) {
+	  CObject *j(m_lc[k]->Evaluate(m_cjj));
+	  if (j==NULL) continue;
+	  j->Multiply(p_v->Coupling(k)*m_cc[k]->Coupling());
+	  j->SetH(H(hid));
+	  m_cc[k]->AddJ(j);
+	  SetZero(false);
+	}
+      ++m_cjc[cc];
+    }
+    ++m_hjc[hc];
+    ++hid;
   }
 }
 
@@ -119,18 +143,13 @@ void Vertex::FindPermutation()
 {
   m_fperm=0;
 #ifdef DEBUG__BG
-  msg_Debugging()<<METHOD<<"(): swap = "
-		 <<m_lc.front()->Swap()<<" {\n";
+  msg_Debugging()<<METHOD<<"(): {\n";
 #endif
-  Current *ja(p_a), *jb(p_b);
-  if (m_lc.front()->Swap()) std::swap<Current*>(ja,jb);
   Int_Vector id(p_c->Id()), fid(p_c->FId());
-  Int_Vector pid(ja->Id()), pfid(ja->FId());
-  pid.insert(pid.end(),jb->Id().begin(),jb->Id().end());
-  pfid.insert(pfid.end(),jb->FId().begin(),jb->FId().end());
-  if (p_e!=NULL) {
-    pid.insert(pid.end(),p_e->Id().begin(),p_e->Id().end());
-    pfid.insert(pfid.end(),p_e->FId().begin(),p_e->FId().end());
+  Int_Vector pid(m_j[0]->Id()), pfid(m_j[0]->FId());
+  for (size_t i(1);i<m_j.size();++i) {
+    pid.insert(pid.end(),m_j[i]->Id().begin(),m_j[i]->Id().end());
+    pfid.insert(pfid.end(),m_j[i]->FId().begin(),m_j[i]->FId().end());
   }
 #ifdef DEBUG__BG
   msg_Debugging()<<"  pid = "<<pid<<", pfid = "<<pfid<<"\n";
@@ -164,51 +183,31 @@ void Vertex::InitPols()
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"() {\n";
 #endif
+  m_hjc.resize(m_j.size(),0);
+  m_cjc.resize(m_j.size());
+  m_hjj.resize(m_j.size());
+  m_cjj.resize(m_j.size());
   m_h.clear();
-  if (p_e) {
-    for (size_t i(0);i<p_a->H().N();++i) {
-      const Int_Vector &ca(p_a->H()(i));
-      for (size_t j(0);j<p_b->H().N();++j) {
-	const Int_Vector cb(p_b->H()(j));
-	for (size_t k(0);k<p_e->H().N();++k) {
-	  Int_Vector ch(p_e->H()(k)), id(p_e->Id());
-	  for (size_t m(0);m<p_b->Id().size();++m) {
-	    Int_Vector::iterator cit(ch.begin()), iit(id.begin());
-	    for (;iit<id.end();++iit,++cit) if (p_b->Id()[m]<*iit) break;
-	    id.insert(iit,p_b->Id()[m]);
-	    ch.insert(cit,cb[m]);
-	  }
-	  for (size_t m(0);m<p_a->Id().size();++m) {
-	    Int_Vector::iterator cit(ch.begin()), iit(id.begin());
-	    for (;iit<id.end();++iit,++cit) if (p_a->Id()[m]<*iit) break;
-	    id.insert(iit,p_a->Id()[m]);
-	    ch.insert(cit,ca[m]);
-	  }
-#ifdef DEBUG__BG
-	  msg_Debugging()<<"  "<<ch<<" -> "<<p_c->H()(ch)<<"\n";
-#endif
-	  m_h.push_back(p_c->H()(ch));
-	}
+  std::vector<Int_Vector> hjj(m_j.size());
+  for (size_t i(0);i<hjj.size();++i) hjj[i]=m_j[i]->H()(0);
+  for (size_t hc(m_hjc.size()-1);m_hjc[0]<m_j[0]->H().N();) {
+    if(m_hjc[hc]==m_j[hc]->H().N()){m_hjc[hc--]=0;++m_hjc[hc];continue;}
+    hjj[hc]=m_j[hc]->H()(m_hjc[hc]);if(hc<m_hjc.size()-1){++hc;continue;}
+    Int_Vector ch(hjj.back()), id(m_j.back()->Id());
+    for (size_t i(0);i<hjj.size()-1;++i) {
+      for (size_t m(0);m<hjj[i].size();++m) {
+	Int_Vector::iterator cit(ch.begin()), iit(id.begin());
+	for (;iit<id.end();++iit,++cit) if (m_j[i]->Id()[m]<*iit) break;
+	id.insert(iit,m_j[i]->Id()[m]);
+	ch.insert(cit,hjj[i][m]);
       }
     }
-  }
-  else {
-    for (size_t i(0);i<p_a->H().N();++i) {
-      const Int_Vector &ca(p_a->H()(i));
-      for (size_t j(0);j<p_b->H().N();++j) {
-	Int_Vector ch(p_b->H()(j)), id(p_b->Id());
-	for (size_t m(0);m<p_a->Id().size();++m) {
-	  Int_Vector::iterator cit(ch.begin()), iit(id.begin());
-	  for (;iit<id.end();++iit,++cit) if (p_a->Id()[m]<*iit) break;
-	  id.insert(iit,p_a->Id()[m]);
-	  ch.insert(cit,ca[m]);
-	}
 #ifdef DEBUG__BG
-	msg_Debugging()<<"  "<<ch<<" -> "<<p_c->H()(ch)<<"\n";
+    msg_Debugging()<<"  ["<<m_h.size()<<"]: j = "<<m_hjc
+		   <<", h = "<<ch<<" -> id = "<<p_c->H()(ch)<<"\n";
 #endif
-	m_h.push_back(p_c->H()(ch));
-      }
-    }
+    m_h.push_back(p_c->H()(ch));
+    ++m_hjc[hc];
   }
 #ifdef DEBUG__BG
   msg_Debugging()<<"}\n";
@@ -225,20 +224,25 @@ bool Vertex::Map(const Vertex &v)
 		 <<"|"<<(v.m_lc.size()?GetName(*v.m_lc.front()):"")
 		 <<" "<<v.VId()<<" "<<v.CVLabel()<<"\n";
 #endif
-  for (size_t i(0);i<m_cc.size();++i)
+  for (size_t i(0);i<m_cc.size();++i) {
     if (typeid(*m_cc[i])!=typeid(*v.m_cc[i])) return false;
-  for (size_t i(0);i<m_lc.size();++i)
     if (typeid(*m_lc[i])!=typeid(*v.m_lc[i])) return false;
-  if (VId()!=v.VId()) return false;
-  return CVLabel()==v.CVLabel();
+    if (p_v->cpl[i].Value()!=v.p_v->cpl[i].Value()) return false;
+  }
+  return VId()==v.VId();
+}
+
+void Vertex::AddJ(const Current_Vector &j)
+{
+  for (size_t i(0);i<j.size();++i) AddJ(j[i]);
 }
 
 std::string Vertex::VId() const
 {
-  std::string estr;
-  if (p_e!=NULL) estr="_"+ToString(p_e->CId());
-  return "v_"+ToString(p_a->CId())+"_"
-    +ToString(p_b->CId())+estr+"_"+ToString(p_c->CId());
+  std::string estr("v");
+  for (size_t i(0);i<m_j.size();++i)
+    estr+="_"+ToString(m_j[i]->CId());
+  return estr+"_"+ToString(p_c->CId());
 }
 
 std::string Vertex::CVLabel() const
@@ -257,11 +261,10 @@ std::string Vertex::VLabel() const
     std::string id(GetName(*m_cc.front())+"_"+GetName(*m_lc.front(),1));
     for (size_t pos;(pos=id.find("_"))!=std::string::npos && 
 	   id[pos-1]!='\\';id.replace(pos,1,"\\_"));
-    std::string estr;
-    if (p_e!=NULL) estr=","+p_e->Flav().TexName();
     label+=std::string(label.length()>0?"\\\\":"")+
-      "\\scriptstyle\\green T="+id+"("+p_a->Flav().TexName()+","+
-      p_b->Flav().TexName()+estr+","+p_c->Flav().TexName()+")";
+      "\\scriptstyle\\green T="+id+"("+m_j[0]->Flav().TexName();
+    for (size_t i(1);i<m_j.size();++i) label+=","+m_j[i]->Flav().TexName();
+    label+=")";
   }
   if (s_vlmode&4)
     label+=std::string(label.length()>0?"\\\\":"")+
@@ -276,34 +279,29 @@ void Vertex::CollectGraphs(Graph_Node *graph) const
 {
   graph->push_back("    \\fmfv{"+VLabel()+"}{"+VId()+"}");
   graph->push_back("    %% "+VId());
-  p_a->CollectGraphs(graph);
-  p_b->CollectGraphs(graph);
-  if (p_e!=NULL) p_e->CollectGraphs(graph);
+  for (size_t i(0);i<m_j.size();++i) m_j[i]->CollectGraphs(graph);
 }
 
 std::ostream &METOOLS::operator<<(std::ostream &str,const Vertex &v)
 {
-  if (v.JA()!=NULL) {
-    str<<'{'<<v.JA()->Type()<<','<<v.JA()->Flav()<<'}'<<v.JA()->Id();
-    if (v.JA()->Sub()) str<<"S["<<v.JA()->Sub()->Id()
-			  <<v.JA()->Sub()->Sub()->Id()<<"]";
-  }
-  if (v.JB()!=NULL) {
-    str<<"(+){"<<v.JB()->Type()<<','<<v.JB()->Flav()<<'}'<<v.JB()->Id();
-    if (v.JB()->Sub()) str<<"S["<<v.JB()->Sub()->Id()
-			  <<v.JB()->Sub()->Sub()->Id()<<"]";
-  }
-  if (v.JE()!=NULL) {
-    str<<"(+){"<<v.JE()->Type()<<','<<v.JE()->Flav()<<'}'<<v.JE()->Id();
-    if (v.JE()->Sub()) str<<"S["<<v.JE()->Sub()->Id()
-			  <<v.JE()->Sub()->Sub()->Id()<<"]";
+  for (size_t i(0);i<v.J().size();++i) {
+    if (i) str<<"(+)";
+    str<<'{'<<v.J(i)->Type()<<','<<v.J(i)->Flav()<<'}'<<v.J(i)->Id();
+    if (v.J(i)->Sub()) str<<"S["<<v.J(i)->Sub()->Id()
+			  <<v.J(i)->Sub()->Sub()->Id()<<"]";
   }
   if (v.JC()!=NULL) {
     str<<"-";
-    if (v.Color().size() && v.Lorentz().size()) str<<"'"<<
-      GetName(*v.Color().front())<<"|"<<GetName(*v.Lorentz().front())<<"'";
-    str<<"("<<v.OrderEW()<<","<<v.OrderQCD()<<")->{"
-       <<v.JC()->Type()<<','<<v.JC()->Flav()<<'}'<<v.JC()->Id();
+    if (v.Color().size() && v.Lorentz().size()) {
+      str<<"'"<<GetName(*v.Color().front())
+	 <<"*"<<GetName(*v.Lorentz().front());
+      for (size_t i(1);i<v.Color().size();++i)
+	str<<"+"<<GetName(*v.Color()[i])
+	   <<"*"<<GetName(*v.Lorentz()[i]);
+      str<<"'";
+    }
+    str<<v.Order()<<"->{"<<v.JC()->Type()
+       <<','<<v.JC()->Flav()<<'}'<<v.JC()->Id();
   }
   if (v.Kin()) str<<" D["<<v.Kin()->JK()->Id()
 		  <<","<<v.Kin()->Type()<<"]";

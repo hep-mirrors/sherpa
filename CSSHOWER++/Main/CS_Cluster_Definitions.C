@@ -147,9 +147,9 @@ CS_Parameters CS_Cluster_Definitions::KT2
     campl->SetProcs(ampl->Procs<void>());
     campl->Decays()=ampl->Decays();
     campl->SetNIn(ampl->NIn());
-    campl->SetMuR2(rpa->gen.CplScale());
-    campl->SetMuF2(rpa->gen.CplScale());
-    campl->SetMuQ2(rpa->gen.CplScale());
+    campl->SetMuR2(sqr(rpa->gen.Ecms()));
+    campl->SetMuF2(sqr(rpa->gen.Ecms()));
+    campl->SetMuQ2(sqr(rpa->gen.Ecms()));
     for (size_t l(0), m(0);m<ampl->Legs().size();++m) {
       Cluster_Leg *lm(ampl->Leg(m));
       if (lm==j) continue;

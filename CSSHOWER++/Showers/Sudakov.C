@@ -3,7 +3,7 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 #include "CSSHOWER++/Tools/Singlet.H"
 #include "CSSHOWER++/Showers/Shower.H"
-#include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "MODEL/Main/Single_Vertex.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/My_Limits.H"
@@ -69,13 +69,13 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
   msg_Debugging()<<METHOD<<"(): Init splitting functions {\n";
   msg_Indent();
   std::set<FTrip> sfs;
-  Vertex_Table *vtab(md->GetVertexTable());
+  const Vertex_Table *vtab(md->VertexTable());
   for (Vertex_Table::const_iterator
 	 vlit=vtab->begin();vlit!=vtab->end();++vlit) {
     for (Vertex_List::const_iterator 
 	   vit=vlit->second.begin();vit!=vlit->second.end();++vit) {
       Single_Vertex *v(*vit);
-      if (v->nleg>3 || !v->on) continue;
+      if (v->NLegs()>3) continue;
       if (sfs.find(FTrip(v->in[0],v->in[1],v->in[2]))!=sfs.end()) continue;
       sfs.insert(FTrip(v->in[0],v->in[1],v->in[2]));
       sfs.insert(FTrip(v->in[0],v->in[2],v->in[1]));

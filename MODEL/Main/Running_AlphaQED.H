@@ -15,7 +15,6 @@ namespace MODEL {
 
     double operator()(double); 
     double AqedThomson()  { return m_alpha0; }
-    double AqedFixed()    { return m_defval; }
   };
 
   extern Running_AlphaQED * aqed;

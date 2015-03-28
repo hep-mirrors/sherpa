@@ -16,7 +16,6 @@
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
 #include "PDF/Main/ISR_Handler.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -372,7 +371,7 @@ double METS_Scale_Setter::Calculate(const Vec4D_Vector &momenta,const size_t &mo
     ops[ampl->Legs().size()-4].push_back
       (std::pair<size_t,double>(m_decids[i]->m_id,0.0));
   double kt2core(ampl->Legs().size()>4?0.0:CoreScale(ampl).m_kt2);
-  ampl->SetOrderQCD(p_caller->OrderQCD());
+  ampl->SetOrderQCD(p_caller->MaxOrder(0));
   while (ampl->Legs().size()>4) {
     msg_Debugging()<<"Actual = "<<*ampl<<"\n";
     std::set<CS_Params> &trials(alltrials[ampl->Legs().size()-5]);
@@ -681,7 +680,7 @@ double METS_Scale_Setter::SetScales
     else {
       mur2=pow(mur2,1.0/oqcd);
       as=pow(as,1.0/oqcd);
-      mur2=MODEL::as->WDBSolve(as,m_rsf*mum2,m_rsf*1.01*rpa->gen.CplScale());
+      mur2=MODEL::as->WDBSolve(as,m_rsf*mum2,m_rsf*1.01*sqr(rpa->gen.Ecms()));
       if (!IsEqual((*MODEL::as)(mur2),as))
 	msg_Error()<<METHOD<<"(): Failed to determine \\mu."<<std::endl; 
     }

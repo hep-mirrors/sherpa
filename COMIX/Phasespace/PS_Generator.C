@@ -154,8 +154,7 @@ bool PS_Generator::AddCurrent
   cur->SetDirection(ref->Direction());
   cur->SetCut(ref->Cut());
   cur->SetOnShell(ref->OnShell());
-  cur->SetOrderEW(ref->OrderEW());
-  cur->SetOrderQCD(ref->OrderQCD());
+  // cur->SetOrder(ref->Order());
   cur->SetNTChannel(ref->NTChannel());
   cur->SetSCC(scc);
   m_cur[n].push_back(cur);
@@ -192,10 +191,10 @@ public:
 
   bool operator()(const Vertex_Key &ka,const Vertex_Key &kb) const
   {
-    if (ka.p_a<kb.p_a) return true;
-    if (ka.p_a>kb.p_a) return false;
-    if (ka.p_b<kb.p_b) return true;
-    if (ka.p_b>kb.p_b) return false;
+    if (ka.m_j.front()<kb.m_j.front()) return true;
+    if (ka.m_j.front()>kb.m_j.front()) return false;
+    if (ka.m_j.back()<kb.m_j.back()) return true;
+    if (ka.m_j.back()>kb.m_j.back()) return false;
     if (ka.p_c<kb.p_c) return true;
     if (ka.p_c>kb.p_c) return false;
     return false;
@@ -209,12 +208,11 @@ void PS_Generator::AddSubChannel
   if (subs==NULL || subs->empty()) return;
   NLO_subevt *csub(NULL);
   for (int l=0;l<2;++l) {
-    Current *ja(l?vkey.p_b:vkey.p_a);
-    Current *jb(l?vkey.p_a:vkey.p_b);
-    if (ja->Id().size()>1) continue;
-    size_t ii(ja->Id().front()), jj(jb->Id().front());
-    if (jb->Id().size()>1) {
-      size_t idj=(1<<m_n)-1-(1<<ii)-jb->CId();
+    if (vkey.m_j[l]->Id().size()>1) continue;
+    size_t ii(vkey.m_j[l]->Id().front());
+    size_t jj(vkey.m_j[1-l]->Id().front());
+    if (vkey.m_j[1-l]->Id().size()>1) {
+      size_t idj=(1<<m_n)-1-(1<<ii)-vkey.m_j[1-l]->CId();
       if (IdCount(idj)>1) {
 	idj=(1<<m_n)-1-vkey.p_c->CId();
 	if (IdCount(idj)>1) continue;
@@ -231,8 +229,7 @@ void PS_Generator::AddSubChannel
   }
   if (csub==NULL) return;
   PS_Vertex *vtx(new PS_Vertex(vkey));
-  vtx->SetJA(vkey.p_a);
-  vtx->SetJB(vkey.p_b);
+  vtx->AddJ(vkey.m_j);
   vtx->SetJC(vkey.p_c);
   vtx->SetDip(csub);
 }
@@ -263,8 +260,7 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 	    (n==1 ||
 	     (m_cur[n][i]->Flav().Mass()==curs[n][j]->Flav().Mass() &&
 	      m_cur[n][i]->Flav().Width()==curs[n][j]->Flav().Width() &&
-	      m_cur[n][i]->OrderEW()==curs[n][j]->OrderEW() &&
-	      m_cur[n][i]->OrderQCD()==curs[n][j]->OrderQCD() &&
+	      // m_cur[n][i]->Order()==curs[n][j]->Order() &&
 	      m_cur[n][i]->NTChannel()==curs[n][j]->NTChannel()))) {
 	  Current *ref(m_cbmap[m_cur[n][i]]);
 	  for (CB_MMap::const_iterator cit(m_cmap.lower_bound(ref));
@@ -281,19 +277,22 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 	  const Vertex_Vector &in(curs[n][j]->In());
 	  const Vertex_Vector &rin(cit->second->In());
 	  for (size_t i(0);i<in.size();++i) {
-	    if (curs[n][j]->In()[i]->JE()) continue;
-	    Current *ja(curs[n][j]->In()[i]->JA());
-	    Current *jb(curs[n][j]->In()[i]->JB());
+	    if (curs[n][j]->In()[i]->J().size()>2) continue;
+	    Current *ja(curs[n][j]->In()[i]->J(0));
+	    Current *jb(curs[n][j]->In()[i]->J(1));
 	    if (ja->PSInfo()<jb->PSInfo()) std::swap<Current*>(ja,jb);
 	    for (CB_MMap::const_iterator ait(m_cmap.lower_bound(ja));
 		 ait!=m_cmap.upper_bound(ja);++ait)
 	      for (CB_MMap::const_iterator bit(m_cmap.lower_bound(jb));
 		   bit!=m_cmap.upper_bound(jb);++bit) {
-		Vertex_Key vkey(ait->second,bit->second,NULL,cit->second,NULL);
+		Current_Vector jj(2);
+		jj[0]=ait->second;
+		jj[1]=bit->second;
+		Vertex_Key vkey(jj,cit->second,NULL);
 		int type(DecayType(cit->second,ait->second,bit->second)), mtype(0);
 		bool vf(false);
 		for (size_t k(0);k<rin.size();++k)
-		  if (vkey.p_a==rin[k]->JA() && vkey.p_b==rin[k]->JB() &&
+		  if (jj[0]==rin[k]->J(0) && jj[1]==rin[k]->J(1) &&
 		      (type==((PS_Vertex*)rin[k])->Type() ||
 		       (type&((PS_Vertex*)rin[k])->Type()))) {
 		    mtype|=((PS_Vertex*)rin[k])->Type();
@@ -302,15 +301,13 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 		if ((vf && type==mtype) || v3.find(vkey)!=v3.end()) continue;
 		v3.insert(vkey);
 		PS_Vertex *vtx(new PS_Vertex(vkey));
-		vtx->SetJA(vkey.p_a);
-		vtx->SetJB(vkey.p_b);
+		vtx->AddJ(vkey.m_j);
 		vtx->SetJC(vkey.p_c);
 		vtx->SetType(type);
 		if (type==(2|4)) {
 		  vtx->SetType(2);
 		  vtx = new PS_Vertex(vkey);
-		  vtx->SetJA(vkey.p_a);
-		  vtx->SetJB(vkey.p_b);
+		  vtx->AddJ(vkey.m_j);
 		  vtx->SetJC(vkey.p_c);
 		  vtx->SetType(4);
 		}
@@ -320,6 +317,14 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 	}
 	continue;
       }
+      const Vertex_Vector &in(curs[n][j]->In());
+      bool valid(in.empty());
+      for (size_t i(0);i<in.size();++i)
+	if (in[i]->J().size()<3) {
+	  valid=true;
+	  break;
+	}
+      if (!valid) continue;
       curs[n][j]->Print();
       if (curs[n][j]->Flav().Width()<s_pwmin &&
 	  !curs[n][j]->Cut() && curs[n][j]->Flav().Mass()>0.0 &&
@@ -327,11 +332,10 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 	AddCurrent(curs[n][j],curs[n][j]->Flav(),n,1);
       else AddCurrent(curs[n][j],curs[n][j]->Flav(),n);
       std::set<Vertex_Key,CB_PSSort> v3;
-      const Vertex_Vector &in(curs[n][j]->In());
       for (size_t i(0);i<in.size();++i) {
-	if (curs[n][j]->In()[i]->JE()) continue;
-	Current *ja(curs[n][j]->In()[i]->JA());
-	Current *jb(curs[n][j]->In()[i]->JB());
+	if (curs[n][j]->In()[i]->J().size()>2) continue;
+	Current *ja(curs[n][j]->In()[i]->J(0));
+	Current *jb(curs[n][j]->In()[i]->J(1));
 	if (ja->PSInfo()<jb->PSInfo()) std::swap<Current*>(ja,jb);
 	for (CB_MMap::const_iterator ait(m_cmap.lower_bound(ja));
 	     ait!=m_cmap.upper_bound(ja);++ait)
@@ -339,20 +343,21 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 	       bit!=m_cmap.upper_bound(jb);++bit)
 	    for (CB_MMap::const_iterator cit(m_cmap.lower_bound(curs[n][j]));
 		 cit!=m_cmap.upper_bound(curs[n][j]);++cit) {
-	      Vertex_Key vkey(ait->second,bit->second,NULL,cit->second,NULL);
+	      Current_Vector jj(2);
+	      jj[0]=ait->second;
+	      jj[1]=bit->second;
+	      Vertex_Key vkey(jj,cit->second,NULL);
 	      if (v3.find(vkey)!=v3.end()) continue;
 	      v3.insert(vkey);
 	      PS_Vertex *vtx(new PS_Vertex(vkey));
-	      vtx->SetJA(vkey.p_a);
-	      vtx->SetJB(vkey.p_b);
+	      vtx->AddJ(vkey.m_j);
 	      vtx->SetJC(vkey.p_c);
 	      int type(DecayType(curs[n][j],ja,jb));
 	      vtx->SetType(type);
 	      if (type==(2|4)) {
 		vtx->SetType(2);
 		vtx = new PS_Vertex(vkey);
-		vtx->SetJA(vkey.p_a);
-		vtx->SetJB(vkey.p_b);
+		vtx->AddJ(vkey.m_j);
 		vtx->SetJC(vkey.p_c);
 		vtx->SetType(4);
 	      }
@@ -400,8 +405,8 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 	mass=0.0;
       }
       for (size_t k(0);k<m_cur[i][j]->In().size();++k)
-	mass=Max(mass,mmin[m_cur[i][j]->In()[k]->JA()->CId()]+
-		 mmin[m_cur[i][j]->In()[k]->JB()->CId()]);
+	mass=Max(mass,mmin[m_cur[i][j]->In()[k]->J(0)->CId()]+
+		 mmin[m_cur[i][j]->In()[k]->J(1)->CId()]);
       if (mmin.find(cid)==mmin.end()) mmin[cid]=mass;
       else mmin[cid]=Max(mmin[cid],mass);
       if (i==m_n-1) {
@@ -515,10 +520,9 @@ void PS_Generator::AddExtraCurrent
 #endif
   const Vertex_Vector &in(cur->In());
   for (size_t i(0);i<in.size();++i) {
-    Vertex_Key vkey(in[i]->JA(),in[i]->JB(),NULL,m_cur[n].back(),NULL);
+    Vertex_Key vkey(in[i]->J(),m_cur[n].back(),NULL);
     PS_Vertex *vtx(new PS_Vertex(vkey));
-    vtx->SetJA(vkey.p_a);
-    vtx->SetJB(vkey.p_b);
+    vtx->AddJ(vkey.m_j);
     vtx->SetJC(vkey.p_c);
     vtx->SetDip(((PS_Vertex*)in[i])->Dip());
     vtx->SetType(((PS_Vertex*)in[i])->Type());
@@ -531,13 +535,12 @@ void PS_Generator::AddExtraCurrent
 #endif
   const Vertex_Vector &out(cur->Out());
   for (size_t i(0);i<out.size();++i) {
-    Current *ja(out[i]->JA()), *jb(out[i]->JB());
-    if (ja==cur) ja=m_cur[n].back();
-    else jb=m_cur[n].back();
-    Vertex_Key vkey(ja,jb,NULL,out[i]->JC(),NULL);
+    Current_Vector j(out[i]->J());
+    if (j[0]==cur) j[0]=m_cur[n].back();
+    else j[1]=m_cur[n].back();
+    Vertex_Key vkey(j,out[i]->JC(),NULL);
     PS_Vertex *vtx(new PS_Vertex(vkey));
-    vtx->SetJA(vkey.p_a);
-    vtx->SetJB(vkey.p_b);
+    vtx->AddJ(vkey.m_j);
     vtx->SetJC(vkey.p_c);
     vtx->SetDip(((PS_Vertex*)out[i])->Dip());
     vtx->SetType(((PS_Vertex*)out[i])->Type());
@@ -571,8 +574,8 @@ void PS_Generator::SetPrefMasses(Cut_Data *const cuts)
       }
       if ((cid&3)==1 || (cid&3)==2) mass=0.0;
       for (size_t k(0);k<m_cur[n][j]->In().size();++k) {
-	mass=Max(mass,mmin[m_cur[n][j]->In()[k]->JA()->CId()]+
-		 mmin[m_cur[n][j]->In()[k]->JB()->CId()]);
+	mass=Max(mass,mmin[m_cur[n][j]->In()[k]->J(0)->CId()]+
+		 mmin[m_cur[n][j]->In()[k]->J(1)->CId()]);
       }
       if (mmin.find(cid)==mmin.end()) mmin[cid]=mass;
       else mmin[cid]=Max(mmin[cid],mass);

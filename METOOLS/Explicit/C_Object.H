@@ -1,6 +1,7 @@
 #ifndef METOOLS_Explicit_C_Object_H
 #define METOOLS_Explicit_C_Object_H
 
+#include "ATOOLS/Math/MyComplex.H"
 #include <iostream>
 #include <vector>
 
@@ -28,6 +29,7 @@ namespace METOOLS {
 
     virtual void Add(const CObject *c) = 0;
     virtual void Divide(const double &d) = 0;
+    virtual void Multiply(const Complex &c) = 0;
     virtual void Invert() = 0;
 
     virtual bool IsZero() const = 0;
@@ -46,9 +48,14 @@ namespace METOOLS {
     inline bool operator==(const CObject &o) const
     { return m_c[0]==o.m_c[0] && m_c[1]==o.m_c[1] && m_s==o.m_s; }
 
+    template <typename CType> inline CType *Get()
+    { return static_cast<CType*>((void*)this); }
+
   };// end of class CObject
 
   struct CObject_Vector: public std::vector<CObject*> {
+
+    CObject_Vector(const size_t &n=0): std::vector<CObject*>(n) {}
 
     template <typename CType> inline std::vector<CType*> *Get()
     { return static_cast<std::vector<CType*>*>((void*)this); }

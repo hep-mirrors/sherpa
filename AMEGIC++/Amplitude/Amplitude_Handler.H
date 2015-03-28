@@ -1,9 +1,10 @@
 #ifndef AMEGIC_Amplitude_Amplitude_Handler_H
 #define AMEGIC_Amplitude_Amplitude_Handler_H
 
-#include "MODEL/Main/Model_Base.H"
+#include "AMEGIC++/Main/Tools.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "AMEGIC++/Main/Polarisation.H"
+#include "AMEGIC++/Amplitude/Vertex.H"
 #include "AMEGIC++/Amplitude/Zfunctions/Basic_Sfuncs.H"
 #include "AMEGIC++/String/String_Handler.H"
 #include "ATOOLS/Math/MyComplex.H"
@@ -38,6 +39,9 @@ namespace AMEGIC {
 
     std::map<std::string,ATOOLS::Flavour> m_flavourmap;
     std::vector<size_t> m_hm;
+    std::vector<int> m_maxcpl, m_mincpl, m_aon;
+    std::vector<std::vector<std::vector<int> > > m_cplmatrix;
+    std::vector<std::vector<int> > m_on;
 
     int  PropProject(Amplitude_Base*,int);
     int  CompareZfunc(Amplitude_Base*,Zfunc*,Amplitude_Base*,Zfunc*);
@@ -55,7 +59,9 @@ namespace AMEGIC {
     
   public:
     Amplitude_Handler(int,ATOOLS::Flavour *,int *,Process_Tags*,
-		      MODEL::Model_Base *,Topology *,int &,int &,int &,MODEL::Coupling_Map *const cpls,
+		      Amegic_Model *,Topology *,
+		      std::vector<int> &,std::vector<int> &,
+		      int &,MODEL::Coupling_Map *const cpls,
 		      Basic_Sfuncs *,String_Handler *,std::string print_graph="", bool create_4V=true,
 		      bool cutvecprop=true);
     ~Amplitude_Handler();
@@ -92,6 +98,8 @@ namespace AMEGIC {
     int    CompareAmplitudes(Amplitude_Handler*,double &, std::map<std::string,Complex> &);
     std::map<std::string,ATOOLS::Flavour>& GetFlavourmap() { return m_flavourmap; }
     bool   CheckEFMap();
+    std::vector<int> MaxCpl() const;
+    std::vector<int> MinCpl() const;
   };
 
     //! The alternative color matrix, for more details see CFColor.

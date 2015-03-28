@@ -28,7 +28,7 @@ char METOOLS::ParticleType(const Flavour &fl)
 }
 
 Current::Current(const Current_Key &key):
-  m_fl(key.m_fl), m_key(0), m_oew(0), m_oqcd(0), m_cid(0), m_ntc(0),
+  m_fl(key.m_fl), m_key(0), m_order(2,0), m_cid(0), m_ntc(0),
   m_mass(m_fl.Mass()), m_width(m_fl.Width()), 
   m_msv(!IsZero(m_mass)), m_zero(true),
   m_dir(0), m_cut(0), m_osd(0), p_sub(NULL) {}
@@ -37,9 +37,7 @@ Current::~Current()
 {
   ResetJ();
   for (Vertex_Vector::const_iterator vit(m_out.begin());
-       vit!=m_out.end();++vit)
-    if ((*vit)->JA()==this) (*vit)->SetJA(NULL);
-    else if ((*vit)->JB()==this) (*vit)->SetJB(NULL);
+       vit!=m_out.end();++vit) (*vit)->ClearJ();
   for (Vertex_Vector::const_iterator vit(m_in.begin());
        vit!=m_in.end();++vit) delete *vit;
 }
@@ -79,8 +77,8 @@ std::string Current::PSInfo() const
   if (m_psinfo!="") return m_psinfo;
   std::string idt;
   for (size_t i(0);i<m_id.size();++i) m_psinfo+=ToString(m_id[i]);
-  if (m_oew>0) m_psinfo+="_W"+ToString(m_oew);
-  if (m_oqcd>0) m_psinfo+="_S"+ToString(m_oqcd);
+  if (m_order[1]>0) m_psinfo+="_W"+ToString(m_order[1]);
+  if (m_order[0]>0) m_psinfo+="_S"+ToString(m_order[0]);
   if (m_ntc>0) m_psinfo+="_T"+ToString(m_ntc);
   if (m_mass==0.0 && m_width==0.0) return m_psinfo;
   return m_psinfo+="["+ToString(m_mass)+","+ToString(m_width)+"]";
@@ -176,8 +174,9 @@ void Current::Evaluate()
   if (p_sub==NULL || m_id.size()>
       (p_sub->Sub()->In().front()->Info()->Mode()==1?2:1)) {
     // calculate outgoing momentum
-    m_p=(*vit)->JA()->P()+(*vit)->JB()->P();
-    if ((*vit)->JE()) m_p+=(*vit)->JE()->P();
+    m_p=Vec4D();
+    for (Current_Vector::const_iterator jit((*vit)->J().begin());
+	 jit!=(*vit)->J().end();++jit) m_p+=(*jit)->P();
   }
   // calculate subcurrents
   for (;vit!=m_in.end();++vit) (*vit)->Evaluate();
@@ -223,7 +222,7 @@ void Current::Print() const
   std::string id(m_id.empty()?"<no entry>":ToString(m_id.front()));
   for (size_t i(1);i<m_id.size();++i) id+=","+ToString(m_id[i]);
   msg_Debugging()<<'['<<id<<"]"<<m_fid<<"{"<<m_id.size()<<","
-		 <<m_key<<"}("<<m_oew<<","<<m_oqcd<<"|"<<m_ntc<<")("
+		 <<m_key<<"}("<<m_order<<"|"<<m_ntc<<")("
 		 <<(m_dir<=0?Flav():Flav().Bar())<<")"
 		 <<(m_dir==0?"":m_dir>0?"I":"O")<<(m_cut?"c":"")
 		 <<(p_sub?"S["+ToString(p_sub->Id())+

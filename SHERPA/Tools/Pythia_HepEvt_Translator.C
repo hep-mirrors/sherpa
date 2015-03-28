@@ -52,7 +52,6 @@ void Pythia_HepEvt_Translator::HepEvt2Particles()
     m_convertH2S.clear();
   }
 
-  Flavour flav;
   for (int pos=0;pos<m_nhep;pos++) {
     if (abs(p_idhep[pos])==9902210) return;
     //cout<<pos<<": stat,id "<<p_isthep[pos]<<","<<p_idhep[pos]
@@ -61,7 +60,7 @@ void Pythia_HepEvt_Translator::HepEvt2Particles()
     //	     <<"    mom: "<<p_phep[5*pos+3]<<" "<<p_phep[5*pos+0]<<" "<<p_phep[5*pos+1]
     //	     <<" "<<p_phep[5*pos+2]<<" "<<p_phep[5*pos+4]<<endl;
 
-    flav.FromHepEvt(p_idhep[pos]);
+    Flavour flav(p_idhep[pos]);
     Vec4D momentum     = Vec4D(p_phep[3+pos*5],p_phep[0+pos*5],p_phep[1+pos*5],p_phep[2+pos*5]);
     Particle * newpart = new Particle(pos+1,flav,momentum);
     newpart->SetFinalMass(p_phep[4+pos*5]);

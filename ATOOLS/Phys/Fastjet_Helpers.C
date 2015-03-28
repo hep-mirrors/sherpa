@@ -36,7 +36,7 @@ namespace ATOOLS {
   fastjet::PseudoJet MakePseudoJet(const Flavour& flav, const Vec4D& mom)
   {
     fastjet::PseudoJet ret(mom[1],mom[2],mom[3],mom[0]);
-    ret.set_user_index(flav.HepEvt());
+    ret.set_user_index((long int) flav);
     return ret;
   }
 

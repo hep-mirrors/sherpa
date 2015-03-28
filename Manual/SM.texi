@@ -43,13 +43,6 @@ parameter, whose default is @option{1}. The following options are provided:
   
     all EW parameters are calculated out of the W, Z and Higgs masses and
     @code{1/ALPHAQED(default)} using tree-level relations.
-  @item  Case @code{2}:
-  
-    all EW parameters are calculated out of @code{1/ALPHAQED(default)}, 
-    @code{SIN2THETAW}, @code{VEV} and the Higgs mass using tree-level relations.
-
-    Note that this mode can not be used with the complex mass scheme
-    (cf. below).
   @item  Case @code{3}:
   
     this choice corresponds to the G_mu-scheme. The EW parameters are 

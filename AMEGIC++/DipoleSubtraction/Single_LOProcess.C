@@ -139,8 +139,8 @@ bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,s
       if (links[j]->Name()==name) {
 	p_mapproc = p_partner = (Single_LOProcess*)links[j];
 	m_iresult = p_partner->Result()*m_sfactor;
-	m_oqcd=p_partner->OrderQCD();
-	m_oew=p_partner->OrderEW();
+	m_maxcpl=p_partner->MaxOrders();
+	m_mincpl=p_partner->MinOrders();
 	m_ntchanmin=p_partner->NTchanMin();
 	msg_Tracking()<<"Found Alternative process: "<<m_name<<" "<<name<<endl;
 
@@ -170,20 +170,20 @@ bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,s
 
 
 
-int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
+int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 					    vector<Process_Base *> & links,
 					    vector<Process_Base *> & errs)
 {
   THROW(fatal_error,"Invalid function call");
 }
 
-int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
+int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 					    vector<Process_Base *> & links,
 					    vector<Process_Base *> & errs,int checkloopmap)
 {
   m_type = 20;
-  if (!model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
-  model->GetCouplings(m_cpls);
+  if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
+  model->p_model->GetCouplings(m_cpls);
 
   m_partonlist.clear();
   for (size_t i=0;i<m_nin;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
@@ -216,13 +216,11 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   }
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
   p_BS->Setk0(s_gauge);
-  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
-  int oew(m_oew), oqcd(m_oqcd), ntchanmin(m_ntchanmin);
+  p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
+  int ntchanmin(m_ntchanmin);
   bool cvp(reader.GetValue<int>("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",1));
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,oqcd,oew,ntchanmin,
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp);
-  m_oew=oew;
-  m_oqcd=oqcd;
   m_ntchanmin=ntchanmin;
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
@@ -275,6 +273,8 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
 				  m_ptypename+string("/")+m_libname,127,127,&m_flavs.front());    
+    m_maxcpl=p_ampl->MaxCpl();
+    m_mincpl=p_ampl->MinCpl();
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 0;
     if (!TestLib()) return 0;
     if (p_partner==this) links.push_back(this);
@@ -329,13 +329,13 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   return 1;
 }
 
-int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
+int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 				    vector<Process_Base *> & links,
 				    vector<Process_Base *> & errs,
 				    std::vector<ATOOLS::Vec4D>* epol,std::vector<double> * pfactors)
 {
   m_type = 10;
-  model->GetCouplings(m_cpls);
+  model->p_model->GetCouplings(m_cpls);
   
   if (m_gen_str>1) {
     ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename);
@@ -379,15 +379,13 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
   else p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  
   p_BS->Setk0(s_gauge);
   p_BS->SetEPol(&m_epol); 
-  p_shand  = new String_Handler(m_gen_str,p_BS,model->GetVertex()->GetCouplings());
+  p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
 
  
-  int oew(m_oew), oqcd(m_oqcd), ntchanmin(m_ntchanmin);
+  int ntchanmin(m_ntchanmin);
   bool cvp(reader.GetValue<int>("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",1));
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,oqcd,oew,ntchanmin,
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp);
-  m_oew=oew;
-  m_oqcd=oqcd;
   m_ntchanmin=ntchanmin;
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"Single_LOProcess::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
@@ -442,6 +440,8 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
 				  m_ptypename+string("/")+m_libname,
 				  m_emit,m_spect,&m_flavs.front());
+    m_maxcpl=p_ampl->MaxCpl();
+    m_mincpl=p_ampl->MinCpl();
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 1;
     if (!TestLib(pfactors)) return 0;
     if (p_partner==this) links.push_back(this);
@@ -455,6 +455,8 @@ int Single_LOProcess::InitAmplitude(Model_Base * model,Topology* top,
 			     m_emit,m_spect);
   m_pol.Add_Extern_Polarisations(p_BS,&m_flavs.front(),p_hel);
   p_BS->Initialize();
+  m_maxcpl=p_ampl->MaxCpl();
+  m_mincpl=p_ampl->MinCpl();
   FillCombinations();
 
   int tr=Tests(pfactors);
@@ -1095,8 +1097,8 @@ void Single_LOProcess::Minimize()
   if (p_shand)    {delete p_shand;p_shand=0;}
   if (p_ampl)     {delete p_ampl; p_ampl=0;}
 
-  m_oqcd      = p_partner->OrderQCD();
-  m_oew       = p_partner->OrderEW();
+  m_maxcpl    = p_partner->MaxOrders();
+  m_mincpl    = p_partner->MinOrders();
   m_ntchanmin = p_partner->NTchanMin();
 }
 

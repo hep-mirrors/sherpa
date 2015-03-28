@@ -64,8 +64,18 @@ void AMEGIC::Process_Base::Init()
   for (size_t i(0);i<m_pinfo.m_ii.m_ps.size();++i)
     p_pl[i]=ExtractPolInfo(m_pinfo.m_ii.m_ps[i]);
   p_pinfo->GetTotalPolList(p_pl+NIn());
-  SetOrderQCD(m_pinfo.m_oqcd);
-  SetOrderEW(m_pinfo.m_oew);
+  m_mincpl.resize(m_pinfo.m_mincpl.size());
+  for (size_t i(0);i<m_mincpl.size();++i) {
+    m_mincpl[i]=m_pinfo.m_mincpl[i];
+    if (m_mincpl[i]!=m_pinfo.m_mincpl[i])
+      THROW(not_implemented,"Non-integer couplings not supported by Amegic");
+  }
+  m_maxcpl.resize(m_pinfo.m_maxcpl.size());
+  for (size_t i(0);i<m_maxcpl.size();++i) {
+    m_maxcpl[i]=m_pinfo.m_maxcpl[i];
+    if (m_maxcpl[i]!=m_pinfo.m_maxcpl[i])
+      THROW(not_implemented,"Non-integer couplings not supported by Amegic");
+  }
   SetNTchanmin(m_pinfo.m_ntchan);
   p_b    = new int[NIn()+NOut()];
   for (size_t i=0;i<NIn();i++) p_b[i] = -1; 
@@ -268,12 +278,5 @@ std::string  AMEGIC::Process_Base::CreateLibName()
     size_t epos(name.find(')',bpos));
     if (epos!=std::string::npos) name.erase(bpos,epos-bpos+1);
   }
-  for (size_t i(0);(i=name.find('-',i))!=std::string::npos;name.replace(i,1,"m"));
-  for (size_t i(0);(i=name.find('+',i))!=std::string::npos;name.replace(i,1,"p"));
-  for (size_t i(0);(i=name.find('~',i))!=std::string::npos;name.replace(i,1,"x"));
-  for (size_t i(0);(i=name.find('(',i))!=std::string::npos;name.replace(i,1,"_"));
-  for (size_t i(0);(i=name.find(')',i))!=std::string::npos;name.replace(i,1,"_"));
-  for (size_t i(0);(i=name.find('[',i))!=std::string::npos;name.replace(i,1,"I"));
-  for (size_t i(0);(i=name.find(']',i))!=std::string::npos;name.replace(i,1,"I"));
-  return name;
+  return ShellName(name);
 }

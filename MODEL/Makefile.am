@@ -1,1 +1,1 @@
-SUBDIRS    = Main Interaction_Models
+SUBDIRS    = Main SM HEFT TauPi UFO

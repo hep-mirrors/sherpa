@@ -22,7 +22,7 @@ namespace MCFM {
     double                * p_p, *p_msqv;
     MODEL::Running_AlphaS * p_as;
     double                  m_vev,m_mh2,m_Gh2,m_mZ2,m_GZ2,m_mW2,m_GW2;
-    double                  m_ehcscale2,m_cplcorr,m_normcorr;
+    double                  m_cplcorr,m_normcorr;
     double                  m_cpl_llrr,m_cpl_lrrl;
     void SelectIndices();
   public:
@@ -59,15 +59,14 @@ MCFM_gg_hgg::MCFM_gg_hgg(const int & pID,const Process_Info& pi,
   Virtual_ME2_Base(pi,flavs), m_stable(flavs.size()==5?true:false), m_pID(pID),
   p_as((MODEL::Running_AlphaS *)
        MODEL::s_model->GetScalarFunction(std::string("alpha_S"))),
-  m_vev(MODEL::s_model->ScalarConstant(std::string("vev"))),
+  m_vev(std::abs(MODEL::s_model->ComplexConstant(std::string("cvev")))),
   m_mh2(sqr(Flavour(kf_h0).Mass())),
   m_Gh2(sqr(Flavour(kf_h0).Width())),
   m_mZ2(sqr(Flavour(kf_Z).Mass())),
   m_GZ2(sqr(Flavour(kf_Z).Width())),
   m_mW2(sqr(Flavour(kf_Wplus).Mass())),
   m_GW2(sqr(Flavour(kf_Wplus).Width())),
-  m_ehcscale2(MODEL::s_model->ScalarConstant(std::string("EHC_SCALE2"))),
-  m_cplcorr(sqr((*p_as)(m_ehcscale2)/(12.*m_vev) *
+  m_cplcorr(sqr(MODEL::s_model->ScalarConstant(std::string("alpha_S"))/(12.*m_vev) *
 		MODEL::s_model->ScalarConstant(std::string("h0_gg_fac"))/
 		(2./3.))),
   m_normcorr(4.*9.)
@@ -88,13 +87,13 @@ MCFM_gg_hgg::MCFM_gg_hgg(const int & pID,const Process_Info& pi,
     case 273:
       m_cplcorr *= 
         m_mW2*
-        pow(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_QED"))/
-            MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")),3.);
+        pow(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_QED")/
+            std::abs(MODEL::s_model->ComplexConstant("csin2_thetaW")),3.);
       break;
     case 274:
       double charge1(m_flavs[2].Charge()),charge2(m_flavs[4].Charge());
       double isow1(m_flavs[2].IsoWeak()),isow2(m_flavs[4].IsoWeak());
-      double sinsqW(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW")));
+      double sinsqW(std::abs(MODEL::s_model->ComplexConstant("csin2_thetaW")));
       couplz_(sinsqW);
       double sin2W(2.*sqrt(sinsqW*(1.-sinsqW)));
       double l1(2.*(isow1-charge1*sinsqW)/sin2W);
@@ -105,7 +104,7 @@ MCFM_gg_hgg::MCFM_gg_hgg(const int & pID,const Process_Info& pi,
       m_cpl_lrrl = sqr(l1*r2)+sqr(r1*l2);
       m_cplcorr *= 
         4.*m_mZ2*sinsqW*sinsqW/(1.-sinsqW)*
-        pow(4.*M_PI*MODEL::s_model->ScalarFunction(std::string("alpha_QED"))/
+        pow(4.*M_PI*MODEL::s_model->ScalarConstant("alpha_QED")/
             sinsqW,3.);
       break;
     }
@@ -333,7 +332,7 @@ Virtual_ME2_Base *ATOOLS::Getter
 operator()(const Process_Info &pi) const
 {
   if (pi.m_loopgenerator!="MCFM")                       return NULL;
-  if (MODEL::s_model->Name()!=std::string("SM+EHC") ||
+  if (MODEL::s_model->Name()!=std::string("HEFT") ||
       Flavour(kf_b).Yuk()>0. ||
       !Flavour(kf_h0).IsOn())                           return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo)                return NULL;

@@ -52,8 +52,7 @@ namespace AMEGIC {
     Amplitude_Base* GetAmplitude(const int n);
     void BuildGlobalString(int*,int,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*);
     
-    int GetOrderQED();
-    int GetOrderQCD();
+    const std::vector<int> &GetOrder();
    
   };
 

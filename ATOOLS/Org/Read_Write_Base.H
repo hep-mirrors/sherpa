@@ -127,6 +127,8 @@ namespace ATOOLS {
     size_t IsWordSeparator(const std::string &ch) const;
     size_t IsLineSeparator(const std::string &ch) const;
 
+    size_t Find(std::string input,std::string parameter) const;
+
     // setters
     inline void SetBlank(const char blank)
     { m_blank.clear(); m_blank.push_back(blank); }

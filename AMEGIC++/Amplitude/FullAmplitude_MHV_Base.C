@@ -4,7 +4,6 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Math/MathTools.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include <iostream>
 
 using namespace ATOOLS;
@@ -22,7 +21,7 @@ static map<string,FullAmplitude_MHV_Base*> s_ampmap;
 // constructor
 
 FullAmplitude_MHV_Base::FullAmplitude_MHV_Base(Model_Base *model,MODEL::Coupling_Map *const cpls,int np,int *pl): 
-  p_model(model->GetInteractionModel()),m_cpls(cpls),
+  p_model(model),m_cpls(cpls),
   p_permstore(0), p_permutation(0), p_calc(0), m_colorstore(0), m_ampstore(0), m_ampstore2(0), p_norm(1), colorflag(false),
   n_part(np), m_plist(0), m_perm(0), m_permgl(0), m_emit(0), m_spect(0), m_dptgluon(false), m_A(1.), m_conv(1.), m_phase2(1.,0.)
 { 
@@ -34,7 +33,7 @@ FullAmplitude_MHV_Base::FullAmplitude_MHV_Base(Model_Base *model,MODEL::Coupling
   }
   m_perm= new int[np]; 
   p_calc = new MHVCalculator(n_part,m_plist);
-  m_cpl=pow(4.*M_PI*p_model->ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()),(double)np-2.);
+  m_cpl=pow(4.*M_PI*p_model->ScalarConstant("alpha_S"),(double)np-2.);
   m_oqcd = (double)n_part-2;
   m_oqed = (double)0;
 } 
@@ -1235,8 +1234,8 @@ double FullAmplitude_MHV_Q4::ResultDPT()
 FullAmplitude_MHV_Q2L2::FullAmplitude_MHV_Q2L2(Model_Base *model,MODEL::Coupling_Map *const cpls,int np,int *pl): 
   FullAmplitude_MHV_Base(model,cpls,np,pl), m_qlist(0), m_llist(0)
 { 
-  m_cpl=pow(4.*M_PI*p_model->ScalarFunction(std::string("alpha_S"),rpa->gen.CplScale()),(double)n_part-4.);
-  m_cpl*=4*pow(4.*M_PI*p_model->ScalarFunction(std::string("alpha_QED"),rpa->gen.CplScale()),(double)2.);
+  m_cpl=pow(4.*M_PI*p_model->ScalarConstant("alpha_S"),(double)n_part-4.);
+  m_cpl*=4*pow(4.*M_PI*p_model->ScalarConstant("alpha_QED"),(double)2.);
   p_norm=pow((double)2.,(int)n_part-4);
   p_permutation = new Permutation(n_part-4);
   maxn= p_permutation->MaxNumber();
@@ -1351,13 +1350,8 @@ bool FullAmplitude_MHV_Q2L2::AmpStore(MomentumList* BS)
   double q_lepton(m_flist[m_llist[2]]->Charge());
   Complex sintw, costw;
   
-  if(p_model->ScalarNumber(std::string("WidthScheme"))==0){
-    sintw = sqrt(p_model->ScalarConstant(std::string("sin2_thetaW")));
-    costw = sqrt(1-p_model->ScalarConstant(std::string("sin2_thetaW")));
-  }else{
-    sintw = sqrt(p_model->ScalarConstant(std::string("csin2_thetaW")));
-    costw = sqrt(1-p_model->ScalarConstant(std::string("csin2_thetaW")));
-  }
+  sintw = sqrt(p_model->ScalarConstant(std::string("csin2_thetaW")));
+  costw = sqrt(1-p_model->ScalarConstant(std::string("csin2_thetaW")));
   
   Pfunc pf(3);
   pf.arg[1]=m_llist[1];	
@@ -1381,10 +1375,11 @@ bool FullAmplitude_MHV_Q2L2::AmpStore(MomentumList* BS)
 
   // W exchange
   else if (m_flist[m_llist[1]]->LeptonFamily()==m_flist[m_llist[2]]->LeptonFamily() && m_hlist[m_llist[2]]<0 && m_hlist[m_qlist[2]]<0) {
-    Complex ckm=p_model->ComplexMatrixElement(std::string("CKM"),m_flist[m_qlist[2]]->QuarkFamily()-1,m_flist[m_qlist[1]]->QuarkFamily()-1);
-    q_w=Complex((BS->Momentum(pn)).Abs2(),0.);
-    q_w/= q_w-pow(Flavour(kf_Wplus).Mass(),2)+Complex(0.,1.)*Flavour(kf_Wplus).Width()*Flavour(kf_Wplus).Mass();
-    q_w*= ckm/(2.*pow(sintw,2));
+    THROW(not_implemented,"Implement me!");
+    // Complex ckm=p_model->ComplexMatrixElement(std::string("CKM"),m_flist[m_qlist[2]]->QuarkFamily()-1,m_flist[m_qlist[1]]->QuarkFamily()-1);
+    // q_w=Complex((BS->Momentum(pn)).Abs2(),0.);
+    // q_w/= q_w-pow(Flavour(kf_Wplus).Mass(),2)+Complex(0.,1.)*Flavour(kf_Wplus).Width()*Flavour(kf_Wplus).Mass();
+    // q_w*= ckm/(2.*pow(sintw,2));
   }
 
   Complex q_eff(q_em-q_w);

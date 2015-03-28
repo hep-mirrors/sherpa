@@ -1,6 +1,6 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 
-#include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "MODEL/Main/Single_Vertex.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 

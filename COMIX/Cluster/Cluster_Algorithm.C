@@ -194,23 +194,23 @@ void Cluster_Algorithm::CalculateMeasures
     for (size_t i(0);i<curs.size();++i) {
       const Vertex_Vector &in(curs[i]->In()); 
       for (size_t j(0);j<in.size();++j) {
-	if (in[j]->Zero() || in[j]->JE()) continue;
+	if (in[j]->Zero() || in[j]->J().size()>2) continue;
 	if (in[j]->JC()->Sub()) continue;
 	if (in[j]->JC()->Flav().IsDummy()) continue;
-	if (in[j]->OrderEW()>p_ampl->OrderEW() ||
-	    in[j]->OrderQCD()>p_ampl->OrderQCD()) continue;
-	if (find(ccurs.begin(),ccurs.end(),in[j]->JA())==ccurs.end()) continue;
-	if (find(ccurs.begin(),ccurs.end(),in[j]->JB())==ccurs.end()) continue;
-	size_t idi(in[j]->JA()->CId()), idj(in[j]->JB()->CId());
+	if (in[j]->Order()[1]>p_ampl->OrderEW() ||
+	    in[j]->Order()[0]>p_ampl->OrderQCD()) continue;
+	if (find(ccurs.begin(),ccurs.end(),in[j]->J(0))==ccurs.end()) continue;
+	if (find(ccurs.begin(),ccurs.end(),in[j]->J(1))==ccurs.end()) continue;
+	size_t idi(in[j]->J(0)->CId()), idj(in[j]->J(1)->CId());
 	if (p_xs!=p_proc && step==2) {
 	  NLO_subevt *sub(p_proc->Get<Single_Dipole_Term>()->Sub());
 	  if (!(m_id[idi]==(1<<sub->m_i) && m_id[idj]==(1<<sub->m_j)) &&
 	      !(m_id[idj]==(1<<sub->m_i) && m_id[idi]==(1<<sub->m_j))) continue;
 	}
 	msg_Debugging()<<ID(m_id[idi])<<"&"<<ID(m_id[idj])<<": "
-		       <<in[j]->JA()->Flav()<<","<<in[j]->JB()->Flav()
-		       <<" -> "<<in[j]->JC()->Flav()<<" ["
-		       <<in[j]->OrderEW()<<","<<in[j]->OrderQCD()<<"] {\n";
+		       <<in[j]->J(0)->Flav()<<","<<in[j]->J(1)->Flav()
+		       <<" -> "<<in[j]->JC()->Flav()<<" "
+		       <<in[j]->Order()<<" {\n";
 	{
 	msg_Indent();
 	const ColorID_Vector &coli(m_cols.find(m_id[idi])->second);
@@ -233,8 +233,8 @@ void Cluster_Algorithm::CalculateMeasures
 				     in[j]->JC()->Cut(),step));
 	      cinfo.insert(ClusterInfo_Pair
 			   (Cluster_Key(l?idi:idj,l?idj:idi),
-			    Cluster_Info(in[j],idk,ckt2,in[j]->OrderEW(),
-					 in[j]->OrderQCD(),
+			    Cluster_Info(in[j],idk,ckt2,in[j]->Order(1),
+					 in[j]->Order(0),
 					 in[j]->JC()->Flav(),colij)));
 	    }
 	  }
@@ -246,16 +246,16 @@ void Cluster_Algorithm::CalculateMeasures
   }
   const Vertex_Vector &in(fcur->In()); 
   for (size_t j(0);j<in.size();++j) {
-    if (in[j]->Zero() || in[j]->JE()) continue;
+    if (in[j]->Zero() || in[j]->J().size()>2) continue;
     for (size_t i(1);i<ccurs.size();++i) {
-      if (in[j]->JA()==ccurs[i] || in[j]->JB()==ccurs[i]) {
+      if (in[j]->J(0)==ccurs[i] || in[j]->J(1)==ccurs[i]) {
 	if (ccurs[i]->CId()&2) continue;
-	Current *mocur(in[j]->JA()==ccurs[i]?in[j]->JB():in[j]->JA());
+	Current *mocur(in[j]->J(0)==ccurs[i]?in[j]->J(1):in[j]->J(0));
 	if (mocur->Sub()) continue;
 	Flavour mofl(mocur->Flav().Bar());
 	if (mofl.IsDummy()) continue;
-	if (in[j]->OrderEW()>p_ampl->OrderEW() ||
-	    in[j]->OrderQCD()>p_ampl->OrderQCD()) continue;
+	if (in[j]->Order()[1]>p_ampl->OrderEW() ||
+	    in[j]->Order()[0]>p_ampl->OrderQCD()) continue;
 	size_t idi(fcur->CId()), idj(ccurs[i]->CId());
 	if (p_xs!=p_proc && step==2) {
 	  NLO_subevt *sub(p_proc->Get<Single_Dipole_Term>()->Sub());
@@ -264,8 +264,7 @@ void Cluster_Algorithm::CalculateMeasures
 	}
 	msg_Debugging()<<ID(m_id[idi])<<"&"<<ID(m_id[idj])<<": "
 		       <<fcur->Flav()<<","<<ccurs[i]->Flav()<<" -> "
-		       <<mocur->Flav()<<" ["<<in[j]->OrderEW()
-		       <<","<<in[j]->OrderQCD()<<"] {\n";
+		       <<mocur->Flav()<<" "<<in[j]->Order()<<" {\n";
 	{
 	  msg_Indent();
 	  ColorID_Vector coli(m_cols.find(m_id[idi])->second);
@@ -287,8 +286,8 @@ void Cluster_Algorithm::CalculateMeasures
 				       idk,mofl,kt2,cid,0,step));
 		cinfo.insert(ClusterInfo_Pair
 			     (Cluster_Key(l?idi:idj,l?idj:idi),
-			      Cluster_Info(in[j],idk,ckt2,in[j]->OrderEW(),
-					   in[j]->OrderQCD(),mofl,colij)));
+			      Cluster_Info(in[j],idk,ckt2,in[j]->Order(1),
+					   in[j]->Order(0),mofl,colij)));
 	      }
 	    }
 	  }
@@ -306,9 +305,9 @@ bool Cluster_Algorithm::CombineWinner
 {
   Vertex *v(ci.p_v);
   if (v->JC()!=fcur) {
-    Current *ja(v->JA()), *jb(v->JB());
+    Current *ja(v->J(0)), *jb(v->J(1));
     m_id[v->JC()->CId()]=m_id[ja->CId()]+m_id[jb->CId()];
-    if (v->JA()->Id().front()>v->JB()->Id().front()) 
+    if (v->J(0)->Id().front()>v->J(1)->Id().front()) 
       std::swap<Current*>(ja,jb);
     int found(0);
     for (Current_Vector::iterator 
@@ -326,8 +325,8 @@ bool Cluster_Algorithm::CombineWinner
 	break;
       }
     if (found!=3) THROW(fatal_error,"Invalid clustering");
-    msg_Debugging()<<"combine "<<ID(m_id[v->JA()->CId()])
-		   <<"&"<<ID(m_id[v->JB()->CId()])<<" -> "
+    msg_Debugging()<<"combine "<<ID(m_id[v->J(0)->CId()])
+		   <<"&"<<ID(m_id[v->J(1)->CId()])<<" -> "
 		   <<ID(m_id[v->JC()->CId()])<<" <-> "<<ID(ci.m_k)<<"\n";
   }
   else {
@@ -337,15 +336,15 @@ bool Cluster_Algorithm::CombineWinner
       if (*cit==v->JC()) {
 	Current_Vector::iterator fit(ccurs.begin());
 	for (;fit!=ccurs.end();++fit) {
-	  if (*fit==v->JA()) {
-	    m_id[v->JB()->CId()]=m_id[v->JC()->CId()]+m_id[v->JA()->CId()];
-	    fcur=*cit=v->JB();
+	  if (*fit==v->J(0)) {
+	    m_id[v->J(1)->CId()]=m_id[v->JC()->CId()]+m_id[v->J(0)->CId()];
+	    fcur=*cit=v->J(1);
 	    found=true;
 	    break;
 	  }
-	  if (*fit==v->JB()) {
-	    m_id[v->JA()->CId()]=m_id[v->JC()->CId()]+m_id[v->JB()->CId()];
-	    fcur=*cit=v->JA();
+	  if (*fit==v->J(1)) {
+	    m_id[v->J(0)->CId()]=m_id[v->JC()->CId()]+m_id[v->J(1)->CId()];
+	    fcur=*cit=v->J(0);
 	    found=true;
 	    break;
 	  }
@@ -355,8 +354,8 @@ bool Cluster_Algorithm::CombineWinner
       }
     if (!found) THROW(fatal_error,"Invalid clustering");
     msg_Debugging()<<"combine "<<ID(m_id[v->JC()->CId()])
-		   <<" -> "<<ID(m_id[v->JA()->CId()])<<"&"
-		   <<ID(m_id[v->JB()->CId()])<<" <-> "<<ID(ci.m_k)<<"\n";
+		   <<" -> "<<ID(m_id[v->J(0)->CId()])<<"&"
+		   <<ID(m_id[v->J(1)->CId()])<<" <-> "<<ID(ci.m_k)<<"\n";
   }
   return true;
 }
@@ -439,8 +438,8 @@ bool Cluster_Algorithm::ClusterStep
     for (size_t i(0);i<in.size();++i) {
       size_t ncm(0);
       for (size_t j(0);j<ccurs.size();++j) {
-	if (ccurs[j]==in[i]->JA() ||
-	    ccurs[j]==in[i]->JB()) ++ncm;
+	if (ccurs[j]==in[i]->J(0) ||
+	    ccurs[j]==in[i]->J(1)) ++ncm;
       }
       if (ncm==2) {
 	match=true;
@@ -496,8 +495,8 @@ bool Cluster_Algorithm::ClusterStep
   p_ampl->SetKT2(winfo.m_kt2.m_kt2);
   p_ampl->SetMu2(winfo.m_kt2.m_mu2);
   p_ampl->SetJF(ampl->JF<Selector_Base>());
-  p_ampl->SetOrderEW(ampl->OrderEW()-winfo.p_v->OrderEW());
-  p_ampl->SetOrderQCD(ampl->OrderQCD()-winfo.p_v->OrderQCD());
+  p_ampl->SetOrderEW(ampl->OrderEW()-winfo.p_v->Order(1));
+  p_ampl->SetOrderQCD(ampl->OrderQCD()-winfo.p_v->Order(0));
   p_ampl->SetKin(winfo.m_kt2.m_kin);
   p_ampl->SetProcs(ampl->Procs<void>());
   p_ampl->Decays()=ampl->Decays();
@@ -611,8 +610,8 @@ bool Cluster_Algorithm::Cluster
   p_ampl->SetMS(p_ms);
   p_ampl->SetJF(jf);
   p_ampl->SetNIn(p_proc->NIn());
-  p_ampl->SetOrderEW(p_bg->MaxOrderEW());
-  p_ampl->SetOrderQCD(p_bg->MaxOrderQCD());
+  p_ampl->SetOrderEW(p_bg->MaxCpl()[1]/2);
+  p_ampl->SetOrderQCD(p_bg->MaxCpl()[0]/2);
   p_ampl->SetProcs(p_xs->AllProcs());
   p_ampl->Decays()=p_bg->DecayInfos();
   PHASIC::Process_Base *pb(p_proc->IsMapped()?p_proc->MapProc():p_proc);

@@ -1,0 +1,86 @@
+#!@PYTHON@
+
+from importlib import import_module
+from sys import path as sys_path
+from os import path as os_path
+from os import makedirs
+from argparse import ArgumentParser
+from subprocess import call
+
+sys_path.append('@PYLIBDIR@')
+
+from ufo_interface import s_lorentz, write_model
+from ufo_interface.templates import sconstruct_template
+
+arg_parser = ArgumentParser()
+arg_parser.add_argument("ufo_path", help = "Path of the input UFO model directory")
+arg_parser.add_argument("-j", "--ncore", default=1, help = "Number of processes in compilation")
+arg_parser.add_argument("-c", "--cxxflags", help = "CXX flags")
+arg_parser.add_argument("-m", "--modelflags",
+			default = "-g -O0 -fno-var-tracking",
+			help = "CXX flags for the model file")
+arg_parser.add_argument("-o", "--optimize", 
+                        action="store_true",
+                        help = "Optimize Lorentz calculators for massless spinors")
+
+# extract path to ufo model as well as name of model from first positional argument
+args = arg_parser.parse_args()
+arg_path = args.ufo_path
+model_path, model_name = os_path.split((arg_path.rstrip('/')))
+
+# make contents of ufo model available
+sys_path.append(model_path)
+
+# try to import the model to check if UFO path is ok
+try:
+    import ufo_interface as u_int
+    model = import_module(model_name)
+
+except ImportError as err:
+    print "Could not import UFO model from input path \"{0}\", make sure this is a path to a valid UFO model".format(arg_path)
+    exit(1)
+
+# make an output directory
+out_dir = '{0}/.sherpa'.format(arg_path)
+if not os_path.exists(out_dir):
+    makedirs(out_dir)
+elif not os_path.isdir(out_dir):
+    print "Could not write to output path \"{0}\", file with the same name existing".format(out_dir)
+    exit(1)
+
+class modelobj:
+      def __init__(self,name):
+      	  self.name=name
+      def __repr__(self):
+	  return "env.SharedObject('{0}',CXXFLAGS='{1}')".format(self.name,args.modelflags)
+
+sources = []
+# write model
+model_file_name = 'Model.C'
+model_out_path = os_path.join(out_dir, model_file_name)
+write_model(model, model_name, model_out_path)
+sources.append(modelobj(model_file_name))
+
+# write lorentz calculators
+optimize = args.optimize
+for lor in [s_lorentz(l) for l in model.all_lorentz]:
+    if not lor.has_ghosts():
+        lor.write(out_dir,optimize)
+        sources.append(lor.c_name())
+
+
+# write SConstruct file
+sconstruct_file_path = os_path.join(out_dir, 'SConstruct')
+lib_name = 'Sherpa{0}'.format(model_name)
+with open(sconstruct_file_path, 'w') as sconstruct_file:
+    sconstruct_file.write(sconstruct_template.substitute(libname = lib_name,
+                                                         sources = sources))
+# compile and install
+sconsargs = ['scons','-C',out_dir,'-j{0}'.format(args.ncore), 'install'] 
+if (isinstance(args.cxxflags, basestring)):
+    sconsargs.append('CXXFLAGS={0}'.format(args.cxxflags))
+if (args.ncore>1):
+    sconsargs.append('-j{0}'.format(args.ncore))
+call(sconsargs)
+
+exit(0)

@@ -51,7 +51,7 @@ namespace AMEGIC {
     void                AddChannels(std::list<std::string>*);
     bool                NewLibs() {return 0;}
     bool                FoundMappingFile(std::string &,std::string &);
-    int                 InitAmplitude(MODEL::Model_Base *,Topology *,
+    int                 InitAmplitude(Amegic_Model *,Topology *,
 				      std::vector<Process_Base *> &,
 				      std::vector<Process_Base *> &);
     bool                SetUpIntegrator();

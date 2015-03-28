@@ -44,12 +44,12 @@ void Virtual_ME2_Base::SetCouplings(const MODEL::Coupling_Map& cpls)
 
 double Virtual_ME2_Base::AlphaQCD() const
 {
-  return p_aqcd ? p_aqcd->Default()*p_aqcd->Factor() : s_model->ScalarFunction("alpha_S");
+  return p_aqcd ? p_aqcd->Default()*p_aqcd->Factor() : s_model->ScalarConstant("alpha_S");
 }
 
 double Virtual_ME2_Base::AlphaQED() const
 {
-  return p_aqed ? p_aqed->Default()*p_aqed->Factor() : s_model->ScalarFunction("alpha_QED");
+  return p_aqed ? p_aqed->Default()*p_aqed->Factor() : s_model->ScalarConstant("alpha_QED");
 }
 
 typedef ATOOLS::Getter_Function<Virtual_ME2_Base, PHASIC::Process_Info>

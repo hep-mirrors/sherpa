@@ -1,0 +1,19 @@
+import os, distutils.spawn
+vars = Variables('.SConstruct')
+vars.Add(PathVariable('sherpa','path to sherpa','@SHERPAPREFIX@',PathVariable.PathIsDir))
+vars.Add(PathVariable('libdir','lib path','@LIBDIR@',PathVariable.PathIsDirCreate))
+env = Environment(variables=vars,CPPPATH=['@INCLUDEDIR@'],LIBPATH=['@LIBDIR@'],RPATH=['@LIBDIR@'])
+vars.Add('CXX','The C++ Compiler','g++ -Wl,--no-as-needed')
+vars.Add('CXXFLAGS','The C++ Flags',['-g','-O2'])
+vars.Update(env)
+Help(vars.GenerateHelpText(env))
+vars.Save('.SConstruct',env)
+
+env['ENV']=os.environ
+if env['PLATFORM']=='darwin':
+   env.Append( LINKFLAGS='-Wl,-undefined -Wl,dynamic_lookup' )
+
+modellib = env.SharedLibrary('${libname}',${sources},LIBS=['ModelUFO'])
+env.Install('$${libdir}',modellib)
+env.Alias('install',['$${libdir}'])
+

@@ -14,7 +14,8 @@
 #include "PHASIC++/Decays/Decay_Channel.H"
 
 #include "MODEL/Main/Model_Base.H"
-#include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "MODEL/Main/Single_Vertex.H"
+#include "MODEL/Main/Color_Function.H"
 #include "PHASIC++/Channels/Multi_Channel.H"
 #include "PHASIC++/Channels/Rambo.H"
 #include "PHASIC++/Channels/Decay_Dalitz.H"
@@ -227,7 +228,7 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
     if (!ProperVertex(sv)) continue;
     msg_Debugging()<<"  "<<i<<": "<<*sv<<std::endl;
     Decay_Channel* dc=new Decay_Channel(inflav, this);
-    for (int j=1; j<sv->nleg; ++j) dc->AddDecayProduct(sv->in[j]);
+    for (int j=1; j<sv->NLegs(); ++j) dc->AddDecayProduct(sv->in[j]);
 
     Comix1to2* diagram=new Comix1to2(dc->Flavs());
     dc->AddDiagram(diagram);
@@ -464,15 +465,15 @@ bool Hard_Decay_Handler::CalculateWidth(Decay_Channel* dc)
 
 bool Hard_Decay_Handler::ProperVertex(MODEL::Single_Vertex* sv)
 {
-  if (!sv->on || sv->dec) return false;
+  if (sv->dec) return false;
 
-  for (int i(0); i<sv->nleg; ++i)
+  for (int i(0); i<sv->NLegs(); ++i)
     if (sv->in[i].IsDummy()) return false;
 
-  if (sv->nleg!=3) return false; // TODO
+  if (sv->NLegs()!=3) return false; // TODO
 
   // TODO: ignore radiation graphs. should we?
-  for (int i=1; i<sv->nleg; ++i) {
+  for (int i=1; i<sv->NLegs(); ++i) {
     if (sv->in[i].Kfcode()==sv->in[0].Kfcode()) {
       return false;
     }

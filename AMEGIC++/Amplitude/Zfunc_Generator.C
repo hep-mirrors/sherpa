@@ -6,7 +6,6 @@
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -27,7 +26,7 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
 {
   if (ngraph!=1) return;
   zcalc.clear();
-  ZFCalc_Key key(_sgen,_BS,MODEL::s_model->GetInteractionModel());
+  ZFCalc_Key key(_sgen,_BS,MODEL::s_model);
   ZFCalc_Getter::Getter_List zfclist(ZFCalc_Getter::GetGetters());
   for (ZFCalc_Getter::Getter_List::const_iterator 
 	 git(zfclist.begin());git!=zfclist.end();++git) {
@@ -124,17 +123,17 @@ void Zfunc_Generator::Convert(Point* p)
     }
     if(!LFDetermine_Zfunc(Zh,p,pf,pb)){
       Point* ph1 = pb;
-      if (ph1->left->fl.Is5VDummy()) { 
+      if (ph1->left->fl.Kfcode()==kf_shgluon) { 
 	if (ph1->right->fl.IsScalar() || ph1->right->m==1 || !ph1->right->left) ph1=ph1->left;
 	else if (ph1->right->left->fl.IsFermion()) ph1=ph1->left;
       }
-      if (ph1->right->fl.Is5VDummy()) { 
+      if (ph1->right->fl.Kfcode()==kf_shgluon) { 
 	if (ph1->left->fl.IsScalar() || ph1->left->m==1 || !ph1->left->left) ph1=ph1->right;
 	else if (ph1->left->left->fl.IsFermion()) ph1=ph1->right;
       }
       Point* ph=ph1->right;
       if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
-	     (ph->fl.IsVector() && ph->number<99) || ph->m==1 || ph->fl.Is5VDummy())
+	     (ph->fl.IsVector() && ph->number<99) || ph->m==1 || ph->fl.Kfcode()==kf_shgluon)
 	  &&ph->left)
 	if(!(ph->left->fl.IsFermion())||ph->middle){
 	  ph->m=1;
@@ -143,7 +142,7 @@ void Zfunc_Generator::Convert(Point* p)
 	}
       ph=ph1->left;
       if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
-	     (ph->fl.IsVector() && ph->number<99) || ph->m==1 || ph->fl.Is5VDummy())
+	     (ph->fl.IsVector() && ph->number<99) || ph->m==1 || ph->fl.Kfcode()==kf_shgluon)
 	  &&ph->left)
 	if(!(ph->left->fl.IsFermion())||ph->middle){
 	  ph->m=1;
@@ -153,7 +152,7 @@ void Zfunc_Generator::Convert(Point* p)
       if(ph1->middle){
 	ph=ph1->middle;
 	if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
-	       (ph->fl.IsVector() && ph->number<99) || ph->m==1 || ph->fl.Is5VDummy())
+	       (ph->fl.IsVector() && ph->number<99) || ph->m==1 || ph->fl.Kfcode()==kf_shgluon)
 	    &&ph->left)
 	  if(!(ph->left->fl.IsFermion())||ph->middle){
 	    ph->m=1;
@@ -223,7 +222,7 @@ void Zfunc_Generator::LFPrint(const vector<Lorentz_Function*> &lflist)
 
 std::string Zfunc_Generator::LFEff(const std::string &type)
 { 
-  return (type=="Pol") ? "Gamma" : type;
+  return (type=="Pol") ? "FFV" : type;
 }
 
 int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
@@ -506,7 +505,7 @@ void Zfunc_Generator::SetPropDirection(int Nargs,int incoming,
   int start = -1;
   //works only for incoming vectors!!!!
   for (size_t i=0;i<lfpointer.size();i++) {
-    if (LFEff(lfpointer[i]->Type())=="Gamma") {
+    if (LFEff(lfpointer[i]->Type())=="FFV") {
       for (short int k=0;k<lfpointer[i]->NofIndex();k++) {
 	if (lfpointer[i]->ParticleArg(k)==incoming) {
 	  start = i;

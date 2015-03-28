@@ -183,7 +183,7 @@ void Single_Virtual_Correction::SelectLoopProcess()
 
 
 
-int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
+int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
 				      vector<Process_Base *> & links,
 				      vector<Process_Base *> & errs)
 {
@@ -191,7 +191,7 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
   if (m_user_bvimode!=0) m_bvimode=m_user_bvimode;
   else m_bvimode=7;
   m_eoreset = (m_bvimode!=7);
-  if (!model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
+  if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
 
   m_pslibname = ToString(m_nin)+"_"+ToString(m_nout);
   m_ptypename = "P"+m_pslibname;
@@ -238,13 +238,19 @@ int Single_Virtual_Correction::InitAmplitude(Model_Base * model,Topology* top,
 
   if (!p_LO_process->InitAmplitude(model,top,links,errs,m_checkloopmap)) return 0;
   m_iresult = p_LO_process->Result();
+  m_pinfo.m_mincpl.resize(m_mincpl.size());
+  m_pinfo.m_maxcpl.resize(m_maxcpl.size());
+  for (size_t i(0);i<m_mincpl.size();++i) m_pinfo.m_mincpl[i]=m_mincpl[i];
+  for (size_t i(0);i<m_maxcpl.size();++i) m_pinfo.m_maxcpl[i]=m_maxcpl[i];
   nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);
-  m_oqcd = p_LO_process->OrderQCD()+
-    ((m_pinfo.m_fi.m_nloqcdtype&nlot)?1:0);
-  m_oew = p_LO_process->OrderEW()+
-    ((m_pinfo.m_fi.m_nloewtype&nlot)?1:0);
-  m_pinfo.m_oqcd=m_oqcd;
-  m_pinfo.m_oew=m_oew;
+  m_maxcpl[0] = p_LO_process->MaxOrder(0)+
+    ((m_pinfo.m_fi.m_nloqcdtype&nlot)?2:0);
+  m_mincpl[0] = p_LO_process->MinOrder(0)+
+    ((m_pinfo.m_fi.m_nloqcdtype&nlot)?2:0);
+  m_maxcpl[1] = p_LO_process->MaxOrder(1)+
+    ((m_pinfo.m_fi.m_nloewtype&nlot)?2:0);
+  m_mincpl[1] = p_LO_process->MinOrder(1)+
+    ((m_pinfo.m_fi.m_nloewtype&nlot)?2:0);
 
   p_dipole->SetCoupling(p_LO_process->CouplingMap());
   p_kpterms->SetCoupling(p_LO_process->CouplingMap());
@@ -394,8 +400,8 @@ void Single_Virtual_Correction::Minimize()
   if (p_kpterms)    { delete p_kpterms; p_kpterms=0;}
   if (p_loopme)     { delete p_loopme; p_loopme=0;}
 
-  m_oqcd      = p_partner->OrderQCD();
-  m_oew       = p_partner->OrderEW();
+  m_maxcpl     = p_partner->MaxOrders();
+  m_mincpl     = p_partner->MinOrders();
 }
 
 /*------------------------------------------------------------------------------
@@ -489,8 +495,8 @@ double Single_Virtual_Correction::Calc_Imassive(const ATOOLS::Vec4D *mom)
                    *mom[p_LO_process->PartonList()[k]];
       double mi=m_flavs[p_LO_process->PartonList()[i]].Mass();
       double mk=m_flavs[p_LO_process->PartonList()[k]].Mass();
-      bool susyi = m_flavs[p_LO_process->PartonList()[i]].IsSusy();
-      bool susyk = m_flavs[p_LO_process->PartonList()[k]].IsSusy();
+      bool susyi = IsSusy(m_flavs[p_LO_process->PartonList()[i]]);
+      bool susyk = IsSusy(m_flavs[p_LO_process->PartonList()[k]]);
 
       p_masskern->Calculate(typei,mur,sik,mi,mk,
                             p_LO_process->PartonList()[i]<m_nin,
@@ -602,8 +608,8 @@ void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
                      *mom[p_LO_process->PartonList()[k]];
         double mi=m_flavs[p_LO_process->PartonList()[i]].Mass();
         double mk=m_flavs[p_LO_process->PartonList()[k]].Mass();
-        bool susyi = m_flavs[p_LO_process->PartonList()[i]].IsSusy();
-        bool susyk = m_flavs[p_LO_process->PartonList()[k]].IsSusy();
+        bool susyi = IsSusy(m_flavs[p_LO_process->PartonList()[i]]);
+        bool susyk = IsSusy(m_flavs[p_LO_process->PartonList()[k]]);
 
         p_masskern->Calculate(typei,mur,sik,mi,mk,
                               p_LO_process->PartonList()[i]<m_nin,
@@ -712,7 +718,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     if (p_loopme->Mode()==0) {
       lme = p_dsij[0][0]*p_kpterms->Coupling()*p_loopme->ME_Finite();
       if (m_sccmur) {
-      m_cmur[0]+=(p_loopme->ME_E1()+(OrderQCD()-1)*p_dipole->G2())*
+      m_cmur[0]+=(p_loopme->ME_E1()+(MaxOrder(0)-1)*p_dipole->G2())*
 	p_dsij[0][0]*p_kpterms->Coupling();
       m_cmur[1]+=p_loopme->ME_E2()*p_dsij[0][0]*p_kpterms->Coupling();
       }
@@ -727,7 +733,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
       lme = p_kpterms->Coupling()*p_loopme->ME_Finite();
       if (m_sccmur) {
       m_cmur[0]+=p_kpterms->Coupling()*
-	(p_loopme->ME_E1()+(OrderQCD()-1)*p_dipole->G2());
+	(p_loopme->ME_E1()+(MaxOrder(0)-1)*p_dipole->G2());
       m_cmur[1]+=p_kpterms->Coupling()*p_loopme->ME_E2();
       }
       else {

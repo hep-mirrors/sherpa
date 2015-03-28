@@ -77,12 +77,12 @@ Single_Real_Correction::~Single_Real_Correction()
 
   ------------------------------------------------------------------------------*/
 
-int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
+int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
 					vector<Process_Base *> & links,
 					vector<Process_Base *> & errs)
 {
   Init();
-  if (!model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
+  if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
 
   m_valid    = true;
   m_newlib   = false;
@@ -116,8 +116,8 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
   else {
   status = p_tree_process->InitAmplitude(model,top,links,errs);
 
-  SetOrderQCD(p_tree_process->OrderQCD());
-  SetOrderEW(p_tree_process->OrderEW());
+  m_maxcpl=p_tree_process->MaxOrders();
+  m_mincpl=p_tree_process->MinOrders();
   if (p_tree_process->Partner()->NewLibs()) m_newlib = 1;
 
   m_iresult=p_tree_process->Result();
@@ -189,7 +189,7 @@ int Single_Real_Correction::InitAmplitude(Model_Base * model,Topology* top,
     Process_Info sinfo(m_pinfo);
     sinfo.m_fi.m_nloqcdtype=nlo_type::lo;
     sinfo.m_fi.m_nloewtype=nlo_type::lo;
-    for (size_t i=0;i<m_flavs.size();i++) if (m_flavs[i].IsSusy()){
+    for (size_t i=0;i<m_flavs.size();i++) if (IsSusy(m_flavs[i])){
       for (size_t j=0;j<partlist.size();j++) if (i!=partlist[j]) {
         for (size_t swit=0;swit<5;swit++) {
   	  Single_OSTerm *pdummy = new Single_OSTerm(sinfo,i,partlist[j],swit,p_int);

@@ -46,20 +46,6 @@ namespace AMEGIC {
     ATOOLS::Kabbala Do();
   };
 
-class VVSS4_Calc : public Zfunc_Calc, 
-		   public Basic_Zfunc,
-		   public Basic_Xfunc,
-		   public Basic_Mfunc,
-		   public Basic_Vfunc {
-  public:
-    VVSS4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS); 
-    ~VVSS4_Calc() {}
-#ifdef Scalar_Args
-    int GetScalarNumb() { return 2; }
-#endif
-    ATOOLS::Kabbala Do();
-  };
-
   class SSV_Calc : public Zfunc_Calc, 
 		   public Basic_Xfunc,
 		   public Basic_Mfunc,
@@ -128,204 +114,34 @@ class VVSS4_Calc : public Zfunc_Calc,
     ATOOLS::Kabbala Do();
   };
 
-  class G4_Calc : public Zfunc_Calc, 
+  class G4A_Calc : public Zfunc_Calc, 
 		  public Basic_Zfunc,
 		  public Basic_Xfunc,
 		  public Basic_Vfunc {
   public:
-    G4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
-    ~G4_Calc() {}
+    G4A_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    ~G4A_Calc() {}
     ATOOLS::Kabbala Do(); 
   };
 
-  /*class VVVV_Calc : public Zfunc_Calc, 
-		    public Basic_Zfunc,
-		    public Basic_Xfunc,
-		    public Basic_Mfunc,
-		    public Basic_Vfunc {
-    ATOOLS::Kabbala GGGG();
-    ATOOLS::Kabbala Triple_M1(const int &,const int &,const int &,const int &,const int &);
-    ATOOLS::Kabbala Triple_M2(const int &,const int &,const int &,const int &,const int &);
-    ATOOLS::Kabbala Double_M1(const int &,const int &,const int &,const int &,const int &);
-    ATOOLS::Kabbala Double_M2(const int &,const int &,const int &,const int &,const int &);
-    ATOOLS::Kabbala Double_M3(const int &,const int &,const int &,const int &,const int &);
-    ATOOLS::Kabbala Single_M (const int &,const int &,const int &,const int &,const int &);
-  public:
-    VVVV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
-    ~VVVV_Calc() {}
-    ATOOLS::Kabbala Do();
-    };*/
-
-  /*class V5_Calc : public Zfunc_Calc, 
+  class G4B_Calc : public Zfunc_Calc, 
 		  public Basic_Zfunc,
 		  public Basic_Xfunc,
-		  public Basic_Mfunc,
 		  public Basic_Vfunc {
-    ATOOLS::Kabbala G5();
-    ATOOLS::Kabbala ZXXX1(const int&,const int&,const int&,
-		  const int&,const int&,const int&,
-		  const int&);
-    ATOOLS::Kabbala ZXXX2(const int&,const int&,const int&,
-		  const int&,const int&,const int&,
-		  const int&);
-    ATOOLS::Kabbala ZXXX3(const int&,const int&,const int&,
-		  const int&,const int&,const int&,
-		  const int&);
   public:
-    V5_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
-    ~V5_Calc() {}
-    ATOOLS::Kabbala Do();
-    };*/
-
-  /*class V4V3_Calc : public Zfunc_Calc, 
-		    public Basic_Zfunc,
-		    public Basic_Xfunc,
-		    public Basic_Vfunc,
-		    public Basic_Mfunc {
-    ATOOLS::Kabbala ZXX(const int&,const int&,const int&,const int&);
-    ATOOLS::Kabbala G4G3();
-  public:
-    V4V3_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
-    ~V4V3_Calc() {}
-    ATOOLS::Kabbala Do();
-    };*/
-
-
-  class FFT_Calc : public Zfunc_Calc, 
-		   public Basic_Yfunc,
-		   public Basic_Xfunc,
-		   public Basic_Vfunc {
-  public:
-    FFT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS); 
-    ~FFT_Calc() {}
-    ATOOLS::Kabbala Do();
-    void SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
-		 Point *const p,Point *const pf,Point *&pb,
-		 int *lfnumb,int *canumb);
+    G4B_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    ~G4B_Calc() {}
+    ATOOLS::Kabbala Do(); 
   };
 
-  class VVT_Calc : public Zfunc_Calc, 
-		   public Basic_Zfunc,
-		   public Basic_Xfunc,
-		   public Basic_Vfunc {
+  class G4C_Calc : public Zfunc_Calc, 
+		  public Basic_Zfunc,
+		  public Basic_Xfunc,
+		  public Basic_Vfunc {
   public:
-    VVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS); 
-    ~VVT_Calc() {}
-    ATOOLS::Kabbala Do();
-    void SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
-		 Point *const p,Point *const pf,Point *&pb,
-		 int *lfnumb,int *canumb);
-  };
-
-  class SST_Calc : public Zfunc_Calc, 
-		   public Basic_Vfunc {
-  public:
-    SST_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS); 
-    ~SST_Calc() {}
-    ATOOLS::Kabbala Do();
-    void SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
-		 Point *const p,Point *const pf,Point *&pb,
-		 int *lfnumb,int *canumb);
-  };
-
-  class FFVT_Calc : public Zfunc_Calc, 
-		    public Basic_Xfunc,
-		    public Basic_Zfunc,
-		    public Basic_Mfunc,
-		    public Basic_Vfunc {
-  public:
-    FFVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
-    ~FFVT_Calc() {}
-    ATOOLS::Kabbala Do();
-    void SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
-		 Point *const p,Point *const pf,Point *&pb,
-		 int *lfnumb,int *canumb);
-  };
-
-  class VVVT_Calc : public Zfunc_Calc, 
-		   public Basic_Zfunc,
-		   public Basic_Xfunc,
-		   public Basic_Vfunc {
-  public:
-    VVVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
-    ~VVVT_Calc() {}
-    ATOOLS::Kabbala Do();
-    void SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
-		 Point *const p,Point *const pf,Point *&pb,
-		 int *lfnumb,int *canumb);
-  };
-
-  class SSST_Calc : public Zfunc_Calc, 
-		   public Basic_Vfunc {
-  public:
-    SSST_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
-    ~SSST_Calc() {}
-#ifdef Scalar_Args
-    int GetScalarNumb() { return 3; }
-#endif
-    ATOOLS::Kabbala Do();
-    void SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
-		 Point *const p,Point *const pf,Point *&pb,
-		 int *lfnumb,int *canumb);
-  };
-
-  class FFGS_Calc : public Zfunc_Calc, 
-		   public Basic_Yfunc,
-		   public Basic_Xfunc {
-  public:
-    FFGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
-    ~FFGS_Calc() {}
-#ifdef Scalar_Args
-    int GetScalarNumb() {return 1;}
-#endif
-    ATOOLS::Kabbala Do();
-    void SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
-		 Point *const p,Point *const pf,Point *&pb,
-		 int *lfnumb,int *canumb);
-  };
-
-  class VVGS_Calc : public Zfunc_Calc, 
-		   public Basic_Zfunc,
-		   public Basic_Xfunc,
-		   public Basic_Vfunc {
-  public:
-    VVGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
-    ~VVGS_Calc() {}
-    ATOOLS::Kabbala Do();
-    void SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
-		 Point *const p,Point *const pf,Point *&pb,
-		 int *lfnumb,int *canumb);
-  };
-
-  class SSGS_Calc : public Zfunc_Calc, 
-		   public Basic_Vfunc {
-  public:
-    SSGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
-    ~SSGS_Calc() {}
-#ifdef Scalar_Args
-    int GetScalarNumb() {return 1;} 
-#endif
-    ATOOLS::Kabbala Do();
-    void SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
-		 Point *const p,Point *const pf,Point *&pb,
-		 int *lfnumb,int *canumb);
-  };
-  
-  class FFVGS_Calc : public Zfunc_Calc, 
-		     public Basic_Zfunc,
-		     public Basic_Xfunc,
-		     public Basic_Mfunc,
-		     public Basic_Vfunc {
-  public:
-    FFVGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS); 
-    ~FFVGS_Calc() {}
-#ifdef Scalar_Args
-    int GetScalarNumb() {return 1;}
-#endif
-    ATOOLS::Kabbala Do();
-    void SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
-		 Point *const p,Point *const pf,Point *&pb,
-		 int *lfnumb,int *canumb);
+    G4C_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    ~G4C_Calc() {}
+    ATOOLS::Kabbala Do(); 
   };
 
   class Triangle_Calc : public Zfunc_Calc, 
@@ -354,58 +170,44 @@ class VVSS4_Calc : public Zfunc_Calc,
     ATOOLS::Kabbala Do();
   };
 
-  class Pentagon_Calc : public Zfunc_Calc, 
+  class PentagonA_Calc : public Zfunc_Calc, 
 			public Basic_Zfunc,
 			public Basic_Xfunc,
 			public Basic_Vfunc {
   public:
-    Pentagon_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
-    ~Pentagon_Calc() {}
+    PentagonA_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    ~PentagonA_Calc() {}
 #ifdef Scalar_Args
     int GetScalarNumb() { return 1; }
 #endif
     ATOOLS::Kabbala Do();
   };
 
-  class PseudoTriangle_Calc : public Zfunc_Calc, 
-			      public Basic_Zfunc,
-			      public Basic_Xfunc,
-			      public Basic_Vfunc,
-			      public Basic_Epsilonfunc {
+  class PentagonB_Calc : public Zfunc_Calc, 
+			public Basic_Zfunc,
+			public Basic_Xfunc,
+			public Basic_Vfunc {
   public:
-    PseudoTriangle_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
-    ~PseudoTriangle_Calc() {}
+    PentagonB_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    ~PentagonB_Calc() {}
 #ifdef Scalar_Args
     int GetScalarNumb() { return 1; }
 #endif
     ATOOLS::Kabbala Do();
   };
 
-  class PseudoBox_Calc : public Zfunc_Calc, 
-			 public Basic_Zfunc,
-			 public Basic_Xfunc,
-			 public Basic_Vfunc,
-			 public Basic_Epsilonfunc {
+  class PentagonC_Calc : public Zfunc_Calc, 
+			public Basic_Zfunc,
+			public Basic_Xfunc,
+			public Basic_Vfunc {
   public:
-    PseudoBox_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
-    ~PseudoBox_Calc() {}
+    PentagonC_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    ~PentagonC_Calc() {}
 #ifdef Scalar_Args
     int GetScalarNumb() { return 1; }
 #endif
     ATOOLS::Kabbala Do();
   };
 
-  class SSVgen_Calc : public Zfunc_Calc,
-		      public Basic_Xfunc,
-		      public Basic_Mfunc,
-		      public Basic_Vfunc {
-  public:
-    SSVgen_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
-    ~SSVgen_Calc() {}
-    ATOOLS::Kabbala Do();
-    void SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
-		 Point *const p,Point *const pf,Point *&pb,
-		 int *lfnumb,int *canumb);
-  };
 }
 #endif

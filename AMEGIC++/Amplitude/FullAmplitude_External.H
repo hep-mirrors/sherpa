@@ -17,7 +17,7 @@ namespace AMEGIC {
     PHASIC::Tree_ME2_Base *p_calc;
     ATOOLS::Flavour_Vector m_fls;
 
-    MODEL::Interaction_Model_Base *p_model;
+    MODEL::Model_Base *p_model;
 
     size_t m_nin, m_oqcd, m_oew, m_emit, m_spect;
     double m_A;

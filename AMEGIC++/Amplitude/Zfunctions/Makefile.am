@@ -9,8 +9,7 @@ libZfunctions_la_SOURCES = SVN_Info.C Basic_Func.C Basic_Sfuncs.C Basic_Pfunc.C 
 			   Basic_Zfunc.C \
 			   Basic_Epsilonfunc.C Unitarityfunc.C \
 			   G4_Calc.C V4_Calc.C \
-			   AnomalousV3_Calc.C AnomalousV4_Calc.C \
-			   VVV_Calc.C ZLED_Calc.C Loops_Calc.C\
+			   VVV_Calc.C Loops_Calc.C \
 			   Zfunc_Calc.C \
 			   Calculator.C \
                            Mom.C MHVCalculator.C 

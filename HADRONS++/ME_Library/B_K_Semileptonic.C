@@ -12,7 +12,7 @@ using namespace std;
 
 void B_K_Semileptonic::SetModelParameters( GeneralModel _md )
 { 
-  double GF = _md("GF",s_model->ScalarConstant(string("GF")));
+  double GF = _md("GF",1.16639e-5);
   double alpha = _md("alpha",1./129.);
   double Vts = _md("Vts",Tools::Vts);
   m_Vtb = _md("Vtb",Tools::Vtb);

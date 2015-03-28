@@ -70,6 +70,7 @@ namespace METOOLS {
     // member functions
     void Add(const CObject *c);
     void Divide(const double &d);
+    void Multiply(const Complex &c);
     void Invert();
 
     void Construct(const int h,const ATOOLS::Vec4<Scalar> &p,

@@ -479,7 +479,7 @@ void HepEvt_Interface::Particle2HepEvt(Particle * const _part,int & _nhep)
 {
   int number = m_convertS2H.count(_part);
   if (number>0) return;
-  p_idhep[_nhep]    = _part->Flav().HepEvt();
+  p_idhep[_nhep]    = (long int)_part->Flav();
   p_jmohep[2*_nhep] = p_jmohep[2*_nhep+1] = 0; 
   p_jdahep[2*_nhep] = p_jdahep[2*_nhep+1] = 0; 
         

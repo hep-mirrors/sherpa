@@ -360,7 +360,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
 	Flavour fl2((kf_code)abs(p_vars->m_id2),p_vars->m_id2<0);
 	pi.m_ii.m_ps.push_back(Subprocess_Info(fl1));
 	pi.m_ii.m_ps.push_back(Subprocess_Info(fl2));
-	pi.m_oqcd=p_vars->m_oqcd;
+	pi.m_maxcpl[0]=pi.m_mincpl[0]=p_vars->m_oqcd;
 	for (int i=0;i<p_vars->m_nparticle;++i)
 	  pi.m_fi.m_ps.push_back(Subprocess_Info(flav[i+2]));
 	m_sargs.p_proc=m_procs[p_vars->m_nparticle] = new Dummy_Process();

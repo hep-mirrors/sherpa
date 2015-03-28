@@ -43,6 +43,7 @@ extern "C" {
 namespace OpenLoops {
 
   std::string OpenLoops_Interface::s_olprefix;
+  bool        OpenLoops_Interface::s_ignore_model;
 
   OpenLoops_Interface::~OpenLoops_Interface()
   {
@@ -57,6 +58,9 @@ namespace OpenLoops {
     // find OL installation prefix with several overwrite options
     struct stat st;
     Data_Reader reader(" ",";","#","=");
+    s_ignore_model = reader.GetValue<int>("OL_IGNORE_MODEL",0);
+    if(s_model->Name()!="SM" && (!s_ignore_model) )
+      THROW(fatal_error, "OpenLoops can only be used in the standard model");
     s_olprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/OpenLoops";
     if(stat(s_olprefix.c_str(),&st) != 0) s_olprefix = OPENLOOPS_PREFIX;
     s_olprefix = reader.GetValue<string>("OL_PREFIX", s_olprefix);
@@ -77,16 +81,16 @@ namespace OpenLoops {
       if (Flavour(pdgids[i]).Width()>0.0) SetParameter("width("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Width());
     }
 
-    if (s_model->ComplexMatrixElement("CKM", 0,2)!=Complex(0.0,0.0) ||
-        s_model->ComplexMatrixElement("CKM", 2,0)!=Complex(0.0,0.0)) {
+    if (s_model->ComplexConstant("CKM_0_2")!=Complex(0.0,0.0) ||
+        s_model->ComplexConstant("CKM_2_0")!=Complex(0.0,0.0)) {
       SetParameter("ckmorder", 3);
     }
-    else if (s_model->ComplexMatrixElement("CKM", 1,2)!=Complex(0.0,0.0) ||
-        s_model->ComplexMatrixElement("CKM", 2,1)!=Complex(0.0,0.0)) {
+    else if (s_model->ComplexConstant("CKM_1_2")!=Complex(0.0,0.0) ||
+        s_model->ComplexConstant("CKM_2_1")!=Complex(0.0,0.0)) {
       SetParameter("ckmorder", 2);
     }
-    else if (s_model->ComplexMatrixElement("CKM", 0,1)!=Complex(0.0,0.0) ||
-        s_model->ComplexMatrixElement("CKM", 1,0)!=Complex(0.0,0.0)) {
+    else if (s_model->ComplexConstant("CKM_0_1")!=Complex(0.0,0.0) ||
+        s_model->ComplexConstant("CKM_1_0")!=Complex(0.0,0.0)) {
       SetParameter("ckmorder", 1);
     }
     else {
@@ -136,12 +140,12 @@ namespace OpenLoops {
     string procname;
 
     Flavour_Vector isflavs(is.GetExternal());
-    for (size_t i=0; i<isflavs.size(); ++i) procname += ToString(isflavs[i].HepEvt()) + " ";
+    for (size_t i=0; i<isflavs.size(); ++i) procname += ToString((long int) isflavs[i]) + " ";
 
     procname += "-> ";
 
     Flavour_Vector fsflavs(fs.GetExternal());
-    for (size_t i=0; i<fsflavs.size(); ++i) procname += ToString(fsflavs[i].HepEvt()) + " ";
+    for (size_t i=0; i<fsflavs.size(); ++i) procname += ToString((long int) fsflavs[i]) + " ";
 
     return ol_register_process(procname.c_str(), amptype);
   }

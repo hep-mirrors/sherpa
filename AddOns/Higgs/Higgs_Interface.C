@@ -45,7 +45,6 @@ namespace HIGGS {
 
 #include "Wrappers.H"
 #include "MODEL/Main/Model_Base.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
@@ -85,7 +84,7 @@ bool Higgs_Interface::Initialize
   // double ehc_scale2=p_model->ScalarConstant("EHC_SCALE2");
   // DEBUG_VAR(sqrt(ehc_scale2));
   // alpha0=p_model->ScalarFunction("alpha_QED",ehc_scale2);
-  // alpha0=p_model->GetInteractionModel()->ScalarFunction("alpha_QED",rpa->gen.CplScale());
+  // alpha0=p_model->GetInteractionModel()->ScalarConstant("alpha_QED");
   // DEBUG_VAR(1.0/alpha0);
   m_u=Flavour(kf_u).Mass(true);
   m_d=Flavour(kf_d).Mass(true);

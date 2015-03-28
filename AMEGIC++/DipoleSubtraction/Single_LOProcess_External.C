@@ -53,14 +53,14 @@ Single_LOProcess_External::~Single_LOProcess_External()
 
 
 
-int Single_LOProcess_External::InitAmplitude(Model_Base * model,Topology* top,
+int Single_LOProcess_External::InitAmplitude(Amegic_Model * model,Topology* top,
 					vector<Process_Base *> & links,
 					     vector<Process_Base *> & errs,int checkloopmap)
 {
   DEBUG_FUNC("");
   m_type = 21;
-  if (!model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
-  model->GetCouplings(m_cpls);
+  if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
+  model->p_model->GetCouplings(m_cpls);
   
   m_partonlist.clear();
   for (size_t i=0;i<m_nin;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
@@ -78,13 +78,13 @@ int Single_LOProcess_External::InitAmplitude(Model_Base * model,Topology* top,
 
   Process_Info pi(m_pinfo);
   pi.m_fi.m_nloqcdtype=nlo_type::born;
-  p_MHVamp = new FullAmplitude_External(pi,model,&m_cpls,p_hel,0,0); 
+  p_MHVamp = new FullAmplitude_External(pi,model->p_model,&m_cpls,p_hel,0,0); 
   if (p_MHVamp->Status()==0) {
     msg_Tracking()<<"Single_LOProcess_External::InitAmplitude : No process for "<<m_name<<"."<<endl;
     return 0;
   }
-  m_oew=p_MHVamp->OrderEW();
-  m_oqcd=p_MHVamp->OrderQCD();
+  m_maxcpl[1]=m_mincpl[1]=p_MHVamp->OrderEW();
+  m_maxcpl[0]=m_mincpl[0]=p_MHVamp->OrderQCD();
   p_MHVamp->Calc()->FillCombinations(m_ccombs,m_cflavs);
 
   //////////////////////////////////////////////
@@ -117,14 +117,14 @@ int Single_LOProcess_External::InitAmplitude(Model_Base * model,Topology* top,
 }
 
 
-int Single_LOProcess_External::InitAmplitude(Model_Base * model,Topology* top,
+int Single_LOProcess_External::InitAmplitude(Amegic_Model * model,Topology* top,
 					vector<Process_Base *> & links,
 					vector<Process_Base *> & errs,
 					std::vector<ATOOLS::Vec4D>* epol,std::vector<double> * pfactors)
 {
   m_type = 11;
-  if (!model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
-  model->GetCouplings(m_cpls);
+  if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
+  model->p_model->GetCouplings(m_cpls);
   
   if (m_gen_str>1) {
     ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename);
@@ -174,13 +174,13 @@ int Single_LOProcess_External::InitAmplitude(Model_Base * model,Topology* top,
 
   Process_Info pi(m_pinfo);
   pi.m_fi.m_nloqcdtype=nlo_type::born;
-  p_MHVamp = new FullAmplitude_External(pi,model,&m_cpls,p_hel,m_emit,m_spect); 
+  p_MHVamp = new FullAmplitude_External(pi,model->p_model,&m_cpls,p_hel,m_emit,m_spect); 
   if (p_MHVamp->Status()==0) {
     msg_Tracking()<<"Single_LOProcess_External::InitAmplitude : No process for "<<m_name<<"."<<endl;
     return 0;
   }
-  m_oew=p_MHVamp->OrderEW();
-  m_oqcd=p_MHVamp->OrderQCD();
+  m_maxcpl[1]=m_mincpl[1]=p_MHVamp->OrderEW();
+  m_maxcpl[0]=m_mincpl[0]=p_MHVamp->OrderQCD();
   p_MHVamp->Calc()->FillCombinations(m_ccombs,m_cflavs);
 
   //////////////////////////////////////////////

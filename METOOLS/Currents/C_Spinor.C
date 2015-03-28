@@ -89,11 +89,7 @@ template <class Scalar> bool CSpinor<Scalar>::SetOn()
 template <class Scalar> std::complex<Scalar> 
 CSpinor<Scalar>::operator*(const CSpinor<Scalar> &s) const
 { 
-  if (s.m_b==m_b) { 
-    if (m_r==0 && s.m_r==0) 
-      return (*this)*s.CConj();
-    THROW(fatal_error,"Equal spinor type");
-  }
+  if (s.m_b==m_b) return (*this)*s.CConj();
   return m_u[0]*s.m_u[0]+m_u[1]*s.m_u[1]+m_u[2]*s.m_u[2]+m_u[3]*s.m_u[3];
 }
 
@@ -270,6 +266,11 @@ template <class Scalar>
 void CSpinor<Scalar>::Add(const CObject *c)
 {
   const CSpinor *s(static_cast<const CSpinor*>(c));
+  if (s->m_b!=m_b) {
+    CSpinor cc(s->CConj());
+    Add(&cc);
+    return;
+  }
   m_on|=s->m_on;
   if (m_on&1) {
   m_u[0]+=s->m_u[0]; 
@@ -288,6 +289,15 @@ void CSpinor<Scalar>::Divide(const double &d)
   m_u[1]/=Scalar(d); 
   m_u[2]/=Scalar(d); 
   m_u[3]/=Scalar(d);
+}
+
+template <class Scalar>
+void CSpinor<Scalar>::Multiply(const Complex &c)
+{
+  m_u[0]*=SComplex(c);
+  m_u[1]*=SComplex(c); 
+  m_u[2]*=SComplex(c); 
+  m_u[3]*=SComplex(c);
 }
 
 template <class Scalar>

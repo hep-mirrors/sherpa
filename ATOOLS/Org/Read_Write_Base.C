@@ -155,6 +155,12 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,
   return pos;
 }
 
+size_t Read_Write_Base::Find(std::string input,std::string parameter) const
+{
+  size_t dummy;
+  return Find(input, parameter, dummy);
+}
+
 char Read_Write_Base::PrevChar(String_Vector &buffer,
 			       int &line,int &pos) const
 {

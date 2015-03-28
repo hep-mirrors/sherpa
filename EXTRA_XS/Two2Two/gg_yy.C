@@ -2,7 +2,6 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "MODEL/Main/Model_Base.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 
 #include "EXTRA_XS/Main/ME2_Base.H"
 
@@ -33,8 +32,8 @@ namespace EXTRAXS {
     m_oew=2;
     m_oqcd=2;
     m_sintt=1;
-    double alphaqed2 = sqr(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_QED",sqr(rpa->gen.Ecms())));
-    double alphas2 = sqr(MODEL::s_model->GetInteractionModel()->ScalarFunction("alpha_S",sqr(rpa->gen.Ecms())));
+    double alphaqed2 = sqr(MODEL::s_model->ScalarConstant("alpha_QED"));
+    double alphas2 = sqr(MODEL::s_model->ScalarConstant("alpha_S"));
 
     for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
 

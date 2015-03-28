@@ -50,30 +50,26 @@ AMEGIC::Single_Process_External::~Single_Process_External()
   ------------------------------------------------------------------------------*/
 
 
-int AMEGIC::Single_Process_External::InitAmplitude(Model_Base * model,Topology* top,
+int AMEGIC::Single_Process_External::InitAmplitude(Amegic_Model * model,Topology* top,
 					 vector<Process_Base *> & links,
 					 vector<Process_Base *> & errs)
 {
   Init();
-  model->GetCouplings(m_cpls);
-  if (!model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
+  model->p_model->GetCouplings(m_cpls);
+  if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
   m_newlib   = false;
   string ptypename;
   ptypename = "P"+ToString(m_nin)+"_"+ToString(m_nout);
   ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+ptypename);
 
   m_Norm = SymmetryFactors() * m_pol.Spin_Average(m_nin,&m_flavs.front());
-  int oew(m_oew), oqcd(m_oqcd);
   m_pn=m_flavs.size();
-  if (oqcd==99) oqcd=m_pn-m_oew-2;  
   p_me2 = Tree_ME2_Base::GetME2(m_pinfo);
   if (!p_me2) return 0;
   p_me2->SetCouplings(m_cpls);
   p_me2->FillCombinations(m_ccombs,m_cflavs);
   p_me2->SetNorm(m_Norm);
   
-  m_oew=oew;
-  m_oqcd=oqcd;
   std::vector<Vec4D> tmoms(p_testmoms,&p_testmoms[m_nin+m_nout]);
   m_iresult=p_me2->Calc(tmoms);
   if (m_iresult==0. && !m_keep_zero_procs) return 0;
@@ -140,8 +136,8 @@ void AMEGIC::Single_Process_External::Minimize()
     p_me2=NULL;
   }
 
-  m_oqcd      = p_partner->OrderQCD();
-  m_oew       = p_partner->OrderEW();
+  m_maxcpl = p_partner->MaxOrders();
+  m_mincpl = p_partner->MinOrders();
 }
 
 double AMEGIC::Single_Process_External::Partonic(const Vec4D_Vector &moms,const int mode) 

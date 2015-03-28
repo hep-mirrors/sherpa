@@ -76,7 +76,7 @@ Four_Particle_Observable_Base::Four_Particle_Observable_Base
 	       <<std::endl;
   }
   MyStrStream str;
-  str<<name<<flavs[0]<<flavs[1]<<flavs[2]<<flavs[3]<<".dat";
+  str<<name<<flavs[0].ShellName()<<flavs[1].ShellName()<<flavs[2].ShellName()<<flavs[3].ShellName()<<".dat";
   str>>m_name;
   Flavour fl;
   for(size_t i=0; i<4; i++) {

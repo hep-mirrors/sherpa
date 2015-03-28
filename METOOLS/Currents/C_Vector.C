@@ -47,6 +47,15 @@ void CVec4<Scalar>::Divide(const double &d)
 }
 
 template <class Scalar>
+void CVec4<Scalar>::Multiply(const Complex &c)
+{
+  m_x[0]*=SComplex(c);
+  m_x[1]*=SComplex(c); 
+  m_x[2]*=SComplex(c); 
+  m_x[3]*=SComplex(c);
+}
+
+template <class Scalar>
 void CVec4<Scalar>::Invert()
 {
   m_x[0]=-m_x[0]; 

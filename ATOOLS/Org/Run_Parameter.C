@@ -420,9 +420,6 @@ void Run_Parameter::Gen::WriteCitationInfo()
 void  Run_Parameter::Gen::SetEcms(double _ecms)     { 
   m_ecms    = _ecms;
 }
-void  Run_Parameter::Gen::SetCplScale(double _cplscale)     { 
-  m_cplscale = _cplscale;
-}
 void  Run_Parameter::Gen::SetPBeam(short unsigned int i,Vec4D pbeam) { 
   m_pbeam[i]=pbeam;
 }

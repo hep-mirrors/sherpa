@@ -88,19 +88,19 @@ bool MCFM_Interface::Initialize
   breit_.mass3=breit_.width3=0.;
   // ew params 
   ewscheme_.ewscheme = 3;
-  ewinput_.aemmz_inp = model->ScalarFunction(std::string("alpha_QED"));
-  ewinput_.gf_inp    = model->ScalarConstant(std::string("GF"));
-  ewinput_.xw_inp    = model->ScalarConstant(std::string("sin2_thetaW"));
-  ewinput_.wmass_inp = model->ScalarConstant(std::string("MW"));
-  ewinput_.zmass_inp = model->ScalarConstant(std::string("MZ"));
+  ewinput_.aemmz_inp = model->ScalarConstant(std::string("alpha_QED"));
+  ewinput_.gf_inp    = 1.0/sqrt(2.0)/std::abs(sqr(model->ComplexConstant("cvev")));
+  ewinput_.xw_inp    = std::abs(model->ComplexConstant(std::string("csin2_thetaW")));
+  ewinput_.wmass_inp = Flavour(kf_Wplus).Mass();
+  ewinput_.zmass_inp = Flavour(kf_Z).Mass();
   // ckm elements
   // must check the syntax for off-diag elements.
-  cabib_.Vud=model->ComplexMatrixElement(std::string("CKM"),0,0).real();
-  cabib_.Vus=model->ComplexMatrixElement(std::string("CKM"),0,1).real();
-  cabib_.Vub=model->ComplexMatrixElement(std::string("CKM"),0,2).real();
-  cabib_.Vcd=model->ComplexMatrixElement(std::string("CKM"),1,0).real();
-  cabib_.Vcs=model->ComplexMatrixElement(std::string("CKM"),1,1).real();
-  cabib_.Vcb=model->ComplexMatrixElement(std::string("CKM"),1,2).real();
+  cabib_.Vud=model->ComplexConstant(std::string("CKM_0_0")).real();
+  cabib_.Vus=model->ComplexConstant(std::string("CKM_0_1")).real();
+  cabib_.Vub=model->ComplexConstant(std::string("CKM_0_2")).real();
+  cabib_.Vcd=model->ComplexConstant(std::string("CKM_1_0")).real();
+  cabib_.Vcs=model->ComplexConstant(std::string("CKM_1_1")).real();
+  cabib_.Vcb=model->ComplexConstant(std::string("CKM_1_2")).real();
   //msg_Out()<<"Check this:"
   //	   <<cabib_.Vud<<" "<<cabib_.Vus<<" "<<cabib_.Vub<<std::endl
   //	   <<"           "
@@ -109,7 +109,7 @@ bool MCFM_Interface::Initialize
   scale_.scale       = ewinput_.zmass_inp;
   scale_.musq        = sqr(scale_.scale);
   nlooprun_.nlooprun = MODEL::as->Order()+1;
-  couple_.amz        = model->ScalarFunction(std::string("alpha_S"));
+  couple_.amz        = model->ScalarConstant(std::string("alpha_S"));
 
   if (model->Name()==std::string("SM+AGC")){
     anomcoup_.delg1_z  = model->ScalarConstant(std::string("g1_Z"))-1;
@@ -131,7 +131,7 @@ bool MCFM_Interface::Initialize
   
   if (!zerowidth_.zerowidth) limits_.bbsqmin = 1.; 
 
-  qcdcouple_.as      = model->ScalarFunction(std::string("alpha_S"));
+  qcdcouple_.as      = model->ScalarConstant(std::string("alpha_S"));
   qcdcouple_.gsq     = 4.*M_PI*qcdcouple_.as;
   qcdcouple_.ason2pi = qcdcouple_.as/(2.*M_PI);
   qcdcouple_.ason4pi = qcdcouple_.as/(4.*M_PI);

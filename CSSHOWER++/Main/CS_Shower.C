@@ -592,8 +592,8 @@ void CS_Shower::SetColours(Cluster_Amplitude *const ampl)
   Flav_ME_Map::const_iterator xit(m_xsmap.find(fl));
   if (xit==m_xsmap.end()) {
     Process_Info pi;
-    pi.m_oqcd=ampl->OrderQCD();
-    pi.m_oew=ampl->OrderEW();
+    pi.m_maxcpl[0]=pi.m_mincpl[0]=ampl->OrderQCD();
+    pi.m_maxcpl[1]=pi.m_mincpl[1]=ampl->OrderEW();
     for (size_t i(0);i<ampl->NIn();++i)
       pi.m_ii.m_ps.push_back(Subprocess_Info(fl[i]));
     for (size_t i(ampl->NIn());i<fl.size();++i)

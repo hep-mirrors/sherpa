@@ -65,6 +65,7 @@ namespace METOOLS {
 
     void Add(const CObject *c);
     void Divide(const double &d);
+    void Multiply(const Complex &c);
     void Invert();
 
     inline SComplex &operator[](const int i) { return m_x;    }

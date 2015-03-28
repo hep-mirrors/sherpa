@@ -29,11 +29,11 @@ namespace ATOOLS {
 
     kf_code m_kfc;
     double  m_mass, m_hmass, m_yuk, m_width, m_dg, m_dm, m_qoverp2;
-    int     m_icharge, m_isoweak, m_strong, m_resummed, m_priority;
+    int     m_icharge, m_strong, m_resummed, m_priority;
     int     m_spin, m_stable, m_masssign, m_dummy, m_majorana, m_formfactor;
     bool    m_on, m_massive, m_hadron, m_isgroup;
 
-    std::string m_idname, m_texname;
+    std::string m_idname, m_antiname;
 
     PFlavour_Vector m_content;
 
@@ -42,24 +42,24 @@ namespace ATOOLS {
     // default constructor
     inline Particle_Info(): 
       m_kfc(kf_none), m_mass(0.0), m_hmass(0.0), m_yuk(-1.0), m_width(0.0),
-      m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(0), m_isoweak(0),
+      m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(0),
       m_strong(0), m_resummed(0), m_priority(0), m_spin(0), m_stable(1),
       m_masssign(0), m_dummy(1), m_majorana(0), m_formfactor(0), m_on(0),
       m_massive(0), m_hadron(0), m_isgroup(0) {}
     Particle_Info(const Particle_Info &info);
     Particle_Info(const kf_code &kfc,const double &mass,const double &width,
-		  const int icharge,const int isoweak,const int strong,
+		  const int icharge,const int strong,
 		  const int spin,const int majorana,const bool on,
 		  const int stable,bool massive,const std::string &idname,
-		  const std::string &texname,const bool dummy=0, 
+		  const std::string &antiname,const bool dummy=0, 
 		  const bool isgroup=false);
     Particle_Info(const kf_code &kfc,const double &mass,const double &width, 
-		  const int icharge,const int isoweak,const int spin,
+		  const int icharge,const int spin,
 		  const bool on,const int stable,const std::string &idname,
-		  const std::string &texname);
+		  const std::string &antiname);
     Particle_Info(const kf_code &kfc,const double &mass,const int icharge,
                   const int spin,const int formfactor,const std::string &idname,
-                  const std::string &texname);
+                  const std::string &antiname);
 
     ~Particle_Info();
 
@@ -87,7 +87,6 @@ namespace ATOOLS {
     ~KF_Table();
 
     kf_code KFFromIDName(const std::string &idname) const;
-    kf_code KFFromTexName(const std::string &texname) const;
 
   };// end of class KF_Table
 
@@ -107,22 +106,23 @@ namespace ATOOLS {
     inline Flavour(Particle_Info &info,const bool &anti=0): 
       p_info(&info), m_anti(0)
     { if (anti && p_info->m_majorana==0) m_anti=anti; }
-    inline Flavour(const kf_code &kfc=kf_none,const bool &anti=0): 
+    
+    inline Flavour(const long int &kfc=kf_none):
+      p_info(NULL), m_anti(0)
+    { KFCode_ParticleInfo_Map::iterator it(s_kftable.find(abs(kfc)));
+      if (it!=s_kftable.end()) p_info=it->second; else return;
+      if (kfc<0 && p_info->m_majorana==0) m_anti=1; }
+    
+    inline Flavour(const kf_code &kfc,const bool &anti):
       p_info(NULL), m_anti(0)
     { KFCode_ParticleInfo_Map::iterator it(s_kftable.find(kfc));
       if (it!=s_kftable.end()) p_info=it->second; else return;
       if (anti && p_info->m_majorana==0) m_anti=anti; }
+    
     inline Flavour(const Flavour &fl): 
       p_info(fl.p_info), m_anti(fl.m_anti) {}
 
     // member functions
-    int  Ctq() const;
-    void FromCtq(const int code);
-
-    int HepEvt() const;
-    void FromHepEvt(long int code);
-    void FromHadron(long int code);
-
     std::string IDName() const;
     std::string ShellName() const;
     std::string TexName() const;
@@ -168,20 +168,14 @@ namespace ATOOLS {
 
     inline bool IsAnti() const { return m_anti; }
 
-    inline void SetIntCharge(const int icharge) const 
-    { p_info->m_icharge=icharge; }
-
     inline int    IntCharge() const
     { int iq(p_info->m_icharge); return m_anti?-iq:iq;     }
     inline double Charge() const
     { double c(p_info->m_icharge/3.0); return m_anti?-c:c; }
-    inline bool   Electromagnetic() const
-    { return p_info->m_icharge!=0&&!IsDiQuark(); }
 
     inline double IsoWeak() const 
-    { double c(p_info->m_isoweak/2.0); return m_anti?-c:c; }
-    inline bool Weak() const 
-    { return p_info->m_isoweak!=0&&!IsDiQuark(); }
+    { double c((p_info->m_kfc<7 || (p_info->m_kfc>10 && p_info->m_kfc<17))
+	       ?((p_info->m_kfc%2)?-0.5:0.5):0); return m_anti?-c:c; }
 
     inline int  StrongCharge() const 
     { int c(p_info->m_strong); return m_anti?-c:c; }
@@ -220,12 +214,11 @@ namespace ATOOLS {
     { p_info->m_massive=on; }
 
     inline void SetMass(const double &mass) const 
-    { p_info->m_mass=mass;  }
+    { p_info->m_mass=dabs(mass);  
+      p_info->m_masssign = mass < 0.0 ? -1 : 1; }
+
     inline void SetHadMass(const double &hmass) const 
     { p_info->m_hmass=hmass;  }
-
-    inline void SetMassSign(const int ms) const 
-    { p_info->m_masssign=ms; }
 
     inline bool IsMassive() const 
     { return p_info->m_mass?p_info->m_massive:0; }
@@ -272,12 +265,6 @@ namespace ATOOLS {
     inline int QuarkFamily() const 
     { if (IsQuark()) return (Kfcode()+1)/2; return 0; }
 
-    inline int LeptonNumber() 
-    { if (IsLepton()||IsSlepton()||IsSneutrino()) return m_anti?-1:1; return 0; }
-    inline double BaryonNumber() 
-    { if (IsQuark()||IsSquark()) return m_anti?-1./3.:1./3.; return 0.; 
-    if (abs(StrongCharge())==3) return 1./double(StrongCharge()); }
-
     inline bool IsPhoton() const { return Kfcode()==kf_photon;   }
     inline bool IsLepton() const { return Kfcode()>10&&Kfcode()<19; }
 
@@ -286,30 +273,8 @@ namespace ATOOLS {
     { return Kfcode()==kf_gluon||Kfcode()==kf_shgluon; }
     inline bool IsJet() const   { return Kfcode()==kf_jet; }
 
-    inline bool IsChargino() const 
-    { return (Kfcode()==kf_Chargino1||Kfcode()==kf_Chargino2) && IntSpin()==1; }
-    inline bool IsNeutralino() const 
-    { return (Kfcode()==kf_Neutralino1||Kfcode()==kf_Neutralino2||
-	      Kfcode()==kf_Neutralino3||Kfcode()==kf_Neutralino4) && IntSpin()==1; }
-    inline bool IsSlepton() const 
-    { return ((Kfcode()>1000010&&Kfcode()<1000017)||
-	(Kfcode()>2000010&&Kfcode()<2000017)) && IntSpin()==0; }
-    inline bool IsSneutrino() const 
-    { return Kfcode()>1000010&&Kfcode()<1000017&&Kfcode()%2==0&&IntSpin()==0; }
-
-    inline bool IsSquark() const 
-    { return Strong()&&(StrongCharge()==3 || StrongCharge()==-3)&&IntSpin()==0&&!Majorana(); }
-    inline bool IsGluino() const 
-    { return Kfcode()==kf_Gluino; }
-
-    inline bool IsIno() const    
-    { return IsGluino()||IsNeutralino()||IsChargino(); }
-
-    inline bool IsUptype() const   { return p_info->m_isoweak==1;  }
-    inline bool IsDowntype() const { return p_info->m_isoweak==-1; }
-
-    inline bool IsSusy() const 
-    { return 1000000<Kfcode()&&Kfcode()<3000000; }
+    inline bool IsUptype() const   { return IsoWeak()>0; }
+    inline bool IsDowntype() const { return IsoWeak()<0; }
 
     inline bool IsKK() const 
     { if (Kfcode()==kf_graviton || Kfcode()==kf_gscalar) return 1;
@@ -317,8 +282,6 @@ namespace ATOOLS {
     inline int KKGeneration() const 
     { if (!IsKK()) return 0; 
       return (Kfcode()-1000000*(Kfcode()/1000000))/100000; }
-    inline bool Is5VDummy() const 
-    { return Kfcode()==kf_shgluon; }   
 
     inline bool IsDummy() const 
     { return p_info->m_dummy; }   
@@ -330,8 +293,6 @@ namespace ATOOLS {
       return m_anti<f.m_anti;
     }
     
-    static kf_code PdgToSherpa(const unsigned long& pdg);
-
   };// end of class Flavour
 
   typedef std::vector<Flavour> Flavour_Vector;

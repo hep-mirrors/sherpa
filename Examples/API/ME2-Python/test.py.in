@@ -12,18 +12,12 @@ try:
     Generator.InitializeTheRun(len(sys.argv),sys.argv)
     Process=Sherpa.MEProcess(Generator)
 
-    # if MPI.COMM_WORLD.Get_rank()>0:
-    #    exit(1)
-
     # Incoming flavors must be added first!
     Process.AddInFlav(11);
     Process.AddInFlav(-11);
     Process.AddOutFlav(1);
     Process.AddOutFlav(-1);
     Process.Initialize();
-
-    if Process.HasColorIntegrator(): 
-        Process.GenerateColorPoint();
 
     # First argument corresponds to particle index:
     # index 0 correspons to particle added first, index 1 is the particle added second, and so on...

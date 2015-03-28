@@ -47,11 +47,10 @@ operator()(const Process_Info &pi) const
   if (pi.m_loopgenerator!="OpenLoops") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo && pi.m_fi.m_nloewtype!=nlo_type::real) return NULL;
   if (pi.m_fi.m_nloqcdtype!=nlo_type::lo && pi.m_fi.m_nloqcdtype!=nlo_type::real) return NULL;
-  if (MODEL::s_model->Name()!="SM" && MODEL::s_model->Name()!="SM+EHC") return NULL;
 
-  OpenLoops_Interface::SetParameter("coupling_qcd_0", (int) pi.m_oqcd);
+  OpenLoops_Interface::SetParameter("coupling_qcd_0", (int) pi.m_maxcpl[0]);
   OpenLoops_Interface::SetParameter("coupling_qcd_1", 0);
-  OpenLoops_Interface::SetParameter("coupling_ew_0", (int) pi.m_oew);
+  OpenLoops_Interface::SetParameter("coupling_ew_0", (int) pi.m_maxcpl[1]);
   OpenLoops_Interface::SetParameter("coupling_ew_1", 0);
 
   int born_types[2] = {1, 12};

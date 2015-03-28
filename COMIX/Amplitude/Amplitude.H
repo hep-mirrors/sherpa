@@ -68,16 +68,18 @@ namespace COMIX {
 
     size_t m_nin, m_nout;
     size_t m_n, m_wfmode, m_pgmode, m_ngpl, m_sccmur;
-    size_t m_oew, m_oqcd, m_maxoew, m_maxoqcd;
     size_t m_minntc, m_maxntc;
     char   m_pmode;
 
-    Spin_Structure<DComplex> m_ress, m_rress, m_cress;
+    std::vector<int> m_maxcpl, m_mincpl;
+
+    std::vector<Spin_Structure<DComplex> > m_ress, m_cress;
+    std::vector<std::pair<size_t,size_t> > m_on, m_son;
 
     std::vector<std::vector<double> >     m_dsij;
     std::map<size_t,std::pair<int,int> >  m_dsm;
 
-    std::vector<double> m_dsf;
+    std::vector<std::pair<size_t,double> > m_dsf;
 
     double m_res, m_born, m_cmur[2];
     double m_smth, m_smpow;
@@ -107,6 +109,7 @@ namespace COMIX {
     static Int_Vector MakeId(const size_t &id,const size_t &n);
 
     void CleanUp();
+    void Prune();
     void FillCombinations();
     void ConstructNLOEvents();
     void ConstructDSijMap();
@@ -115,7 +118,7 @@ namespace COMIX {
     bool MatchIndices(const Int_Vector &ids,const Vertex_Key &vkey) const;
     Vertex *AddCurrent(const Current_Key &ckey,Vertex_Key &vkey,
 		       const size_t &n,const int dec,
-		       size_t &oewmax,size_t &oqcdmax,
+		       std::vector<int> &maxcpl,std::vector<int> &mincpl,
 		       std::map<std::string,Current*> &curs);
     void AddCurrent(const Int_Vector &ids,const size_t &n,
 		    const ATOOLS::Flavour &fl,const int dir);
@@ -134,6 +137,8 @@ namespace COMIX {
 		   MODEL::Model_Base *const model,
 		   MODEL::Coupling_Map *const cpls);
 
+    bool ConstructCouplings(MODEL::Coupling_Map *const cpls);
+    bool CheckOrders();
     bool ConstructChirs();
 
     void SetGauge(const size_t &n);
@@ -161,8 +166,8 @@ namespace COMIX {
 		    const double &isf,const double &fsf,
 		    MODEL::Model_Base *const model,
 		    MODEL::Coupling_Map *const cpls,const int smode,
-		    const size_t &oew,const size_t &oqcd,
-		    const size_t &maxoew,const size_t &maxoqcd,
+		    const std::vector<int> &maxcpl,
+		    const std::vector<int> &mincpl,
 		    const size_t &minntc,const size_t &maxntc,
 		    const std::string &name);
 
@@ -218,8 +223,8 @@ namespace COMIX {
     inline double FSSymmetryFactor() const { return m_fsf;      }
     inline double ISSymmetryFactor() const { return m_sf/m_fsf; }
 
-    inline size_t MaxOrderEW() const  { return m_maxoew;  }
-    inline size_t MaxOrderQCD() const { return m_maxoqcd; }
+    inline const std::vector<int> &MaxCpl() const { return m_maxcpl; }
+    inline const std::vector<int> &MinCpl() const { return m_mincpl; }
 
     inline void SetMinNTChannel(const size_t &ntc) { m_minntc=ntc; }
 

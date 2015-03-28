@@ -9,6 +9,7 @@
 namespace METOOLS {
 
   typedef std::vector<Complex> Complex_Vector;
+  typedef std::vector<Complex_Vector> Complex_Matrix;
 
   class Dipole_Info;
   class Dipole_Kinematics;
@@ -16,7 +17,10 @@ namespace METOOLS {
   class Vertex {
   protected:
 
-    Current *p_a, *p_b, *p_c, *p_e;
+    MODEL::Single_Vertex *p_v;
+
+    Current_Vector  m_j;
+    Current        *p_c;
 
     Dipole_Info       *p_info;
     Dipole_Kinematics *p_kin;
@@ -24,13 +28,17 @@ namespace METOOLS {
     LC_Vector m_lc;
     CC_Vector m_cc;
 
-    Complex_Vector m_cpl;
-    SizeT_Vector   m_h;
+    SizeT_Vector m_h, m_hjc, m_cjc;
 
     bool   m_sign, m_act, m_zero;
-    size_t m_fperm, m_oew, m_oqcd;
+    size_t m_fperm;
+
+    std::vector<int> m_order;
 
     double m_icplfac;
+
+    std::vector<const CObject_Vector*> m_hjj;
+    CObject_Vector m_cjj;
 
     static size_t s_vlmode;
 
@@ -60,22 +68,19 @@ namespace METOOLS {
 
     void CollectGraphs(Graph_Node *graph) const;
 
-    Current *J(const size_t &i) const;
+    void AddJ(const Current_Vector &j);
 
     // inline functions
-    inline void SetJA(Current *const a) 
-    { p_a=a; if (a!=NULL) a->AttachOut(this); }
-    inline void SetJB(Current *const b) 
-    { p_b=b; if (b!=NULL) b->AttachOut(this); }
-    inline void SetJE(Current *const e) 
-    { p_e=e; if (e!=NULL) e->AttachOut(this); }
+    inline void AddJ(Current *const j) 
+    { if (j) { m_j.push_back(j); j->AttachOut(this); } }
+    inline Current *J(const size_t &i) const { return m_j[i]; }
+    inline const Current_Vector &J() const { return m_j; }
+
     inline void SetJC(Current *const c,const bool a=true) 
     { p_c=c; if (c!=NULL && a) c->AttachIn(this); }
-
-    inline Current *JA() const { return p_a; }
-    inline Current *JB() const { return p_b; }
-    inline Current *JE() const { return p_e; }
     inline Current *JC() const { return p_c; }
+
+    inline void ClearJ() { m_j.clear(); }
 
     inline Dipole_Info       *Info() const { return p_info; }
     inline Dipole_Kinematics *Kin() const  { return p_kin;  }
@@ -99,8 +104,8 @@ namespace METOOLS {
 
     inline size_t FPerm() const { return m_fperm; }
 
-    inline size_t OrderEW() const  { return m_oew;  }
-    inline size_t OrderQCD() const { return m_oqcd; }
+    inline const std::vector<int> &Order() const { return m_order; }
+    inline int Order(const size_t &id) const { return m_order[id]; }
 
     inline static void SetVLMode(const size_t &mode) { s_vlmode=mode; }
 
@@ -109,10 +114,9 @@ namespace METOOLS {
     inline const LC_Vector &Lorentz() const { return m_lc; }
     inline const CC_Vector &Color() const   { return m_cc; }
 
-    inline const Complex &Coupling(const size_t &i) const 
-    { return m_cpl[i]; }
-
     inline size_t H(const size_t &i) const { return m_h[i]; }
+
+    inline MODEL::Single_Vertex *V() const { return p_v; }
 
   };// end of class Vertex
   

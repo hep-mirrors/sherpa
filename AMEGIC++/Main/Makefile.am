@@ -13,7 +13,7 @@ libAmegic_la_SOURCES = \
 			Process_Group.C Amegic.C
 
 localinc_HEADERS   = \
-			ColorSC.H \
+			Tools.H	ColorSC.H \
 			Helicity.H Topology.H Polarisation.H Pol_Info.H Point.H \
 			Process_Tags.H Amegic_Base.H Process_Base.H \
 			Single_Process.H Single_Process_MHV.H  Single_Process_External.H \

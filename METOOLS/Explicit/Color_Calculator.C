@@ -13,14 +13,7 @@ size_t Color_Calculator::s_cimax(3);
 
 Color_Calculator::~Color_Calculator() {}
 
-bool Color_Calculator::Evaluate(const CObject *a,const CObject *b)
-{
-  THROW(fatal_error,"Pure virtual method called");
-  return false;
-}
-
-bool Color_Calculator::Evaluate(const CObject *a,const CObject *b,
-				const CObject *e)
+bool Color_Calculator::Evaluate(const CObject_Vector &j)
 {
   THROW(fatal_error,"Pure virtual method called");
   return false;

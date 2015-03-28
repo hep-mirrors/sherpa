@@ -77,7 +77,7 @@ Six_Particle_Observable_Base::Six_Particle_Observable_Base
     msg_Error()<<"number of flavours is: "<<flavs.size()<<std::endl;
   }
   MyStrStream str;
-  str<<name<<flavs[0]<<flavs[1]<<flavs[2]<<flavs[3]<<flavs[4]<<flavs[5]<<".dat";
+  str<<name<<flavs[0].ShellName()<<flavs[1].ShellName()<<flavs[2].ShellName()<<flavs[3].ShellName()<<flavs[4].ShellName()<<flavs[5].ShellName()<<".dat";
   str>>m_name;
   Flavour fl;
   for(size_t i=0; i<6; i++) {

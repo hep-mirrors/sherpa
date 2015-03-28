@@ -401,8 +401,10 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     return true;
   }
   PHASIC::Phase_Space_Handler::GetInfo();
+  if (rpa->gen.NumberOfEvents()>0) {
   okay = okay && InitializeTheFragmentation();
   okay = okay && InitializeTheSoftCollisions();
+  }
   okay = okay && InitializeTheShowers();
   okay = okay && InitializeTheMatrixElements();
   okay = okay && InitializeTheBeamRemnants();
@@ -517,7 +519,6 @@ bool Initialization_Handler::InitializeTheModel()
   if (!beamer.VectorFromFile(_beam2,"BEAM_2")) _beam2.resize(2,0.0);
   double beam1 = beamer.GetValue<double>("BEAM_ENERGY_1",_beam1[1]);
   double beam2 = beamer.GetValue<double>("BEAM_ENERGY_2",_beam2[1]);
-  rpa->gen.SetCplScale(4.*beam1*beam2);
   Data_Reader read(" ",";","!","=");
   read.AddWordSeparator("\t");
   read.SetInputPath(m_path);
@@ -528,7 +529,7 @@ bool Initialization_Handler::InitializeTheModel()
     GetObject(name,Model_Arguments(m_path,m_modeldat,true));
   if (p_model==NULL) {
     if (!s_loader->LoadLibrary("Sherpa"+name))
-      THROW(missing_module,"Cannot load output library Sherpa"+name+".");
+      THROW(missing_module,"Cannot load model library Sherpa"+name+".");
     p_model=Model_Base::Model_Getter_Function::
       GetObject(name,Model_Arguments(m_path,m_modeldat,true));
   }

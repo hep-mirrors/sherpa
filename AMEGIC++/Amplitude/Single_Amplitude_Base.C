@@ -1,4 +1,5 @@
 #include "AMEGIC++/Amplitude/Single_Amplitude_Base.H"
+#include "AMEGIC++/Main/Tools.H"
 #include "AMEGIC++/Amplitude/Pfunc.H"
 #include "AMEGIC++/Amplitude/Zfunc.H"
 #include "AMEGIC++/Amplitude/Zfunctions/Zfunc_Calc.H"
@@ -128,16 +129,16 @@ int Single_Amplitude_Base::FillArgs(Zfunc* z, int* args, vector<int>* iz, vector
       if(z->p_arguments[i]<99) {
 	if (((fl[z->p_arguments[i]].Majorana() || 
 	      //final-state line
-	      (fl[z->p_arguments[i]].IsChargino() && b[z->p_arguments[i]]==1 && !fl[z->p_arguments[i]].IsAnti()) ||
+	      (IsChargino(fl[z->p_arguments[i]]) && b[z->p_arguments[i]]==1 && !fl[z->p_arguments[i]].IsAnti()) ||
 	      //initial-state line
-	      (fl[z->p_arguments[i]].IsChargino() && b[z->p_arguments[i]]==-1 && fl[z->p_arguments[i]].IsAnti())
+	      (IsChargino(fl[z->p_arguments[i]]) && b[z->p_arguments[i]]==-1 && fl[z->p_arguments[i]].IsAnti())
 	      )
 	     && i%2!=0 ) || 
 	    ((
 	      //final-state line
-	      (fl[z->p_arguments[i]].IsChargino() && b[z->p_arguments[i]]==1 && fl[z->p_arguments[i]].IsAnti()) || 
+	      (IsChargino(fl[z->p_arguments[i]]) && b[z->p_arguments[i]]==1 && fl[z->p_arguments[i]].IsAnti()) || 
 	      //initial state line
-	      (fl[z->p_arguments[i]].IsChargino() && b[z->p_arguments[i]]==-1 && !fl[z->p_arguments[i]].IsAnti()))
+	      (IsChargino(fl[z->p_arguments[i]]) && b[z->p_arguments[i]]==-1 && !fl[z->p_arguments[i]].IsAnti()))
 	     
 	     && i%2==0)) //args[2*i].spinortype = Spinor::v;
 	  {
@@ -421,7 +422,7 @@ Kabbala Single_Amplitude_Base::GetProp(Zfunc* z)
 	if((p->fl).Kfcode()!=z->p_propagators[i].kfcode) pc = -1;
       }
  
-      if (pc==iabs(z->p_propagators[i].numb) && !p->fl.Is5VDummy()) {
+      if (pc==iabs(z->p_propagators[i].numb) && p->fl.Kfcode()!=kf_shgluon) {
 	if(z->GetOp()==0 && p->on==1)break;
 	if (p->haspol && p->fl.IsVector()) sign*=-1;
 	Pols*= bpf.P(p);
@@ -611,18 +612,12 @@ Complex Single_Amplitude_Base::Zvalue(int ihel,int* signlist)
   return value.Value();
 }
 
-void Single_Amplitude_Base::SetOrderQCD(int oqcd) {
-  m_oqcd=oqcd;
+void Single_Amplitude_Base::DefineOrder(const std::vector<int> &o)
+{
+  m_order=o;
 }
 
-void Single_Amplitude_Base::SetOrderQED(int oqed) {
-  m_oqed=oqed;
-}
-
-int Single_Amplitude_Base::GetOrderQCD() {
-  return m_oqcd;
-}
-
-int Single_Amplitude_Base::GetOrderQED() {
-  return m_oqed;
+const std::vector<int> &Single_Amplitude_Base::GetOrder()
+{
+  return m_order;
 }

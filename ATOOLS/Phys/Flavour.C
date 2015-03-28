@@ -20,12 +20,12 @@ Particle_Info::Particle_Info(const Particle_Info &info):
   m_kfc(info.m_kfc), m_mass(info.m_mass), m_hmass(info.m_hmass),
   m_yuk(info.m_yuk), m_width(info.m_width),
   m_dg(info.m_dg), m_dm(info.m_dm), m_qoverp2(info.m_qoverp2), 
-  m_icharge(info.m_icharge), m_isoweak(info.m_isoweak), 
+  m_icharge(info.m_icharge),
   m_strong(info.m_strong), m_resummed(info.m_resummed), m_priority(info.m_priority),
   m_spin(info.m_spin), m_stable(info.m_stable), 
   m_masssign(info.m_masssign), m_dummy(info.m_dummy), m_majorana(info.m_majorana), 
   m_formfactor(0), m_on(info.m_on), m_massive(info.m_massive), m_hadron(info.m_hadron),
-  m_isgroup(info.m_isgroup), m_idname(info.m_idname), m_texname(info.m_texname)
+  m_isgroup(info.m_isgroup), m_idname(info.m_idname), m_antiname(info.m_antiname)
 {
   m_content.resize(info.m_content.size());
   for (size_t i(0);i<info.m_content.size();++i) 
@@ -34,41 +34,41 @@ Particle_Info::Particle_Info(const Particle_Info &info):
 
 Particle_Info::Particle_Info
 (const kf_code &kfc, const double &mass, const double &width,
- const int icharge, const int isoweak, const int strong,
+ const int icharge, const int strong,
  const int spin, const int majorana, const bool on,
  const int stable, bool massive, const std::string &idname,
- const std::string &texname, const bool dummy, const bool isgroup):
+ const std::string &antiname, const bool dummy, const bool isgroup):
   m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(-1.0), m_width(width),
   m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(icharge),
-  m_isoweak(isoweak), m_strong(strong), m_resummed(0), m_priority(0), m_spin(spin), 
+  m_strong(strong), m_resummed(0), m_priority(0), m_spin(spin), 
   m_stable(stable), m_masssign(1), m_dummy(dummy), m_majorana(majorana), 
   m_formfactor(0), m_on(on), m_massive(massive), m_hadron(0), 
-  m_isgroup(isgroup), m_idname(idname), m_texname(texname)
+  m_isgroup(isgroup), m_idname(idname), m_antiname(antiname)
 {
   m_content.push_back(new Flavour(*this));
 }
 
 Particle_Info::Particle_Info
 (const kf_code &kfc,const double &mass,const double &width,
- const int icharge,const int isoweak,const int spin,const bool on,
- const int stable,const std::string &idname,const std::string &texname):
+ const int icharge,const int spin,const bool on,
+ const int stable,const std::string &idname,const std::string &antiname):
   m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(-1.0), m_width(width),
-  m_icharge(icharge), m_isoweak(isoweak), m_strong(0), m_resummed(0), m_priority(0), 
+  m_icharge(icharge), m_strong(0), m_resummed(0), m_priority(0), 
   m_spin(spin), m_stable(stable), m_masssign(1), m_dummy(0), m_majorana(0), 
   m_formfactor(0), m_on(on), m_massive(1), m_hadron(1), m_isgroup(0), 
-  m_idname(texname), m_texname(texname)
+  m_idname(idname), m_antiname(antiname)
 {
   m_content.push_back(new Flavour(*this));
 }
 
 Particle_Info::Particle_Info
 (const kf_code &kfc,const double &mass, const int icharge, const int spin,
- const int formfactor, const std::string &idname, const std::string &texname):
+ const int formfactor, const std::string &idname, const std::string &antiname):
   m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(-1.0), m_width(0), 
-  m_icharge(icharge), m_isoweak(0), m_strong(0), m_resummed(0), m_priority(0), m_spin(0), 
+  m_icharge(icharge), m_strong(0), m_resummed(0), m_priority(0), m_spin(0), 
   m_stable(1), m_masssign(1), m_dummy(0), m_majorana(0), 
   m_formfactor(formfactor), m_on(1), m_massive(1), m_hadron(1), m_isgroup(0), 
-  m_idname(idname), m_texname(texname)
+  m_idname(idname), m_antiname(antiname)
 {
   m_content.push_back(new Flavour(*this));
 }
@@ -149,53 +149,14 @@ kf_code KF_Table::KFFromIDName(const std::string &idname) const
   return kf_none;
 }
 
-kf_code KF_Table::KFFromTexName(const std::string &texname) const
-{
-  for(const_iterator kfit(begin());
-      kfit!=end();++kfit) 
-    if (kfit->second->m_texname==texname) return kfit->first;
-  return kf_none;
-}
-
-int Flavour::Ctq() const
-{
-  long int code(*this);
-  if (IsGluon()) return 0;
-  return code+6;
-}
-
-void Flavour::FromCtq(const int code)
-{
-  m_anti=code<6;
-  if (code==6) p_info=s_kftable[kf_gluon];
-  else p_info=s_kftable[(kf_code)abs(code-6)];
-}
-
-int Flavour::HepEvt() const
-{
-  switch (Kfcode()) {
-  case kf_a_0_1450:      return 10111;
-  case kf_a_0_1450_plus: return m_anti?-10211:10211;
-  case kf_f_0_1370:      return 10221;
-  case kf_f_0_1710:      return 10331;
-  case kf_a_0_980:       return 9000111;
-  case kf_a_0_980_plus:  return m_anti?-9000211:9000211;
-  case kf_f_0_980:       return 9010221;
-  case 13122:            return 23122;
-  case 23122:            return 13122;
-  }
-  return (long int)*this;
-}
-
-void Flavour::FromHepEvt(long int code) 
-{
-  m_anti=code<0;
-  code=(kf_code)abs(code);
-  p_info=s_kftable[PdgToSherpa(code)];
-}
-
 std::string Flavour::TexName() const 
 {
+  if (!IsHadron()) {
+    std::string name(IDName());
+    size_t pos(0);
+    while ((pos=name.find("~"))!=std::string::npos) name.replace(pos,1,"x");
+    return name;
+  }
   if (IsPhoton()) return std::string("\\gamma");
   std::string name, idname(IDName());
   bool barit(false);
@@ -206,7 +167,6 @@ std::string Flavour::TexName() const
 	idname.find("--")!=std::string::npos) barit = true;
     else name="\\bar ";
   }
-  if (p_info->m_idname!=p_info->m_texname) return name+p_info->m_texname;
 
   switch (Kfcode()) {
   case kf_pi : {name+=std::string("\\pi^{0}");break;}
@@ -216,7 +176,6 @@ std::string Flavour::TexName() const
   case kf_D : {name+=std::string("D^{0}"); break;}
   case kf_B : {name+=std::string("B^{0}"); break;}
   default :
-    //if (IsHadron()) {
     name+=IDName();
     if (barit) {
       if (name.find("++")!=std::string::npos)      name=StringReplace(name, "++", "--");
@@ -256,31 +215,9 @@ std::string Flavour::TexName() const
     name=StringReplace(name, "Omega", "\\Omega ");
     name=StringReplace(name, "U\\psi lon", "\\Upsilon ");
     name=StringReplace(name, " _", "_");
-    //}
-    //else {
-    //  name+=p_info->m_texname;
-    //}
     if (IsAnti() && name[name.length()-1]=='b') name.erase(name.length()-1);
     break;
   }
-  /*
-    if (m_anti && (!SelfAnti())) {
-    name+="}";
-    switch (Kfcode()) {
-    case kf_pi : {name=std::string("\\pi^{0}");break;}
-    case kf_pi_plus : {name=std::string("\\pi^{-}");break;}
-    case kf_K : {name=std::string("\\bar K^{0}");break;}
-    case kf_K_plus : {name=std::string("K^{-}");break;}
-    case kf_K_L : {name=std::string("K_{L}");break;}
-    case kf_K_S : {name=std::string("K_{S}");break;}
-    case kf_D_plus : {name=std::string("D^{-}"); break;}
-    case kf_B_plus : {name=std::string("B^{-}"); break;}
-    case kf_rho_770_plus : {name=std::string("\\rho_{(770)}^{-}"); break;}
-    case kf_rho_1450_plus : {name=std::string("\\rho_{(1450)}^{-}"); break;}
-    case kf_rho_1700_plus : {name=std::string("\\rho_{(1700)}^{-}"); break;}
-    }
-    }
-  */
   return name;
 }
 
@@ -300,26 +237,13 @@ std::string Flavour::ShellName() const
   while ((pos=name.find("/"))!=std::string::npos) name.replace(pos,1,"");
   while ((pos=name.find("'"))!=std::string::npos) name.replace(pos,1,"prime");
   while ((pos=name.find("*"))!=std::string::npos) name.replace(pos,1,"star");
+  while ((pos=name.find("~"))!=std::string::npos) name.replace(pos,1,"tilde");
   return name;
 }
 
 std::string Flavour::IDName() const 
 {
-  std::string name(p_info->m_idname);
-  if (Kfcode()==kf_e || Kfcode()==kf_mu || Kfcode()==kf_tau) {
-    name.erase(name.length()-1,1);
-    if (IsAnti()) name+="+";
-    else name+="-";      
-  }
-  else {
-    if (Kfcode()==kf_Hplus || Kfcode()==kf_Wplus) {
-      name.erase(name.length()-1,1);
-      if (IsAnti()) name+="-";
-      else name+="+";      
-    }
-    else if (IsAnti()) name+="b"; 
-  }
-  return name;
+  return m_anti?p_info->m_antiname:p_info->m_idname;
 }
 
 bool Flavour::IsDiQuark() const 
@@ -394,24 +318,6 @@ bool Flavour::IsStable() const
   return false;
 }
 
-kf_code Flavour::PdgToSherpa(const unsigned long& pdg)
-{
-  switch (pdg) {
-  case 10111:   return kf_a_0_1450; break;
-  case 10211:   return kf_a_0_1450_plus; break;
-  case 10221:   return kf_f_0_1370; break;
-  case 10331:   return kf_f_0_1710; break;
-  case 13122:   return 23122; break;
-  case 23122:   return 13122; break;
-  case 9000111: return kf_a_0_980; break;
-  case 9000211: return kf_a_0_980_plus; break;
-  case 9010221: return kf_f_0_980; break; 
-  case 91:      return kf_cluster; break;
-  case 92:      return kf_string; break;
-  default:      return pdg; break;
-  }
-}
-
 std::ostream &ATOOLS::operator<<(std::ostream &os,const Flavour &fl)
 {
   return os<<fl.IDName();
@@ -461,6 +367,7 @@ void ATOOLS::OutputParticles(std::ostream &str) {
   
   for (;kfit!=s_kftable.end();++kfit) {
     Flavour flav(kfit->first);
+    if (flav.IsDiQuark() || flav.IsHadron()) continue;
     if (flav.Size()==1 && flav.Kfcode()!=0 && !flav.IsDummy()) {
       str<<std::setw(8)<<flav.IDName();
       str<<std::setw(8)<<flav.Kfcode();

@@ -94,44 +94,12 @@ int Singlet::SplitParton(Parton * mother, Parton * part1, Parton * part2)
   part1->SetSing(this);
   part2->SetSing(this);
 
-  if (mother->GetType()==pst::IS) {
-    if ((flav.IsGluon()  || flav.IsGluino())  && 
-	(flav1.IsQuark() || flav1.IsSquark()) && flav1.IsAnti() && 
-	(flav2.IsQuark() || flav2.IsSquark())) {  
-      std::swap<PLiter>(pos1,pos2);
-    }
-    else if ((flav.IsQuark()  || flav.IsSquark())   && !flav.IsAnti()  && 
-	     (flav1.IsQuark() || flav1.IsSquark()) && !flav1.IsAnti() && 
-	     (flav2.IsGluon() || flav2.IsGluino())) {
-      std::swap<PLiter>(pos1,pos2);
-    }
-    else if ((flav.IsQuark()  || flav.IsSquark())  && flav.IsAnti()   && 
-	     (flav2.IsQuark() || flav2.IsSquark()) && !flav2.IsAnti() && 
-	     (flav1.IsGluon() || flav1.IsGluino())) {
-      std::swap<PLiter>(pos1,pos2);
-    }
-  }
-  if (mother->GetType()==pst::FS) {
-    if ((flav.IsQuark()  || flav.IsSquark()) && 
-	(flav2.IsQuark() || flav2.IsSquark())) {
-      if (!flav2.IsAnti()) std::swap<PLiter>(pos1,pos2);
-    }
-    else if ((flav.IsQuark()  || flav.IsSquark()) && 
-	     (flav1.IsQuark() || flav1.IsSquark())) {
-      if (flav1.IsAnti()) std::swap<PLiter>(pos1,pos2);
-    }
-    else if ((flav.IsGluon()  || flav.IsGluino()) && 
-	     (flav1.IsQuark() || flav1.IsSquark())) {
-      if (!flav1.IsAnti()) std::swap<PLiter>(pos1,pos2);
-    }
-  }
-  
   plit++;
   m_dels.push_back(mother);
   plit = erase(plit);
-  if ((flav.IsGluon()  || flav.IsGluino()) && 
-      (flav1.IsQuark() || flav1.IsSquark()) && 
-      (flav2.IsQuark() || flav2.IsSquark())) { return 1; }
+  if (flav.StrongCharge()==8 && 
+      abs(flav1.StrongCharge())==3 && 
+      abs(flav2.StrongCharge())==3) { return 1; }
   return 0;
 }
 

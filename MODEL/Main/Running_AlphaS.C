@@ -577,6 +577,7 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,
                                const int order, const int thmode,
                                const PDF::ISR_Handler_Map &isr)
 {
+  m_defval=as_MZ;
   m_type  = std::string("Running Coupling");
   m_name  = "Alpha_QCD";
   for (ISR_Handler_Map::const_iterator it=isr.begin(); it!=isr.end(); ++it) {

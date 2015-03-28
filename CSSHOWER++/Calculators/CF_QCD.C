@@ -1,6 +1,6 @@
 #include "CSSHOWER++/Showers/Splitting_Function_Base.H"
 
-#include "MODEL/Interaction_Models/Single_Vertex.H"
+#include "MODEL/Main/Single_Vertex.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -73,7 +73,7 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
 double CF_QCD::Coupling(const double &scale,const int pol)
 {
   if (pol!=0) return 0.0;
-  if (scale<0.0) return (*p_cpl)(rpa->gen.CplScale())*m_q;
+  if (scale<0.0) return (*p_cpl)(sqr(rpa->gen.Ecms()))*m_q;
   double scl(CplFac(scale)*scale);
   if (scl<p_cpl->ShowerCutQ2()) return 0.0;
   double cpl=(*p_cpl)[scl]*m_q;

@@ -78,7 +78,7 @@ double Single_Process::NLOCounterTerms() const
   double as(cpl->Default()*cpl->Factor());
   double ct(0.0);
   ct-=METOOLS::AlphaSCounterTerm
-      (lmur2,mur2,as,MODEL::as->GetAs(PDF::isr::hard_process),m_oqcd-1);
+      (lmur2,mur2,as,MODEL::as->GetAs(PDF::isr::hard_process),m_maxcpl[0]-1);
   double z[2]={m_mewgtinfo.m_y1,m_mewgtinfo.m_y2};
   // new
   for (size_t i(0);i<2;++i) {
@@ -342,8 +342,8 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   DEBUG_FUNC(Name()<<", RS:"<<GetSubevtList());
   m_lastb=m_last=0.0;
   m_mewgtinfo.Reset();
-  m_mewgtinfo.m_oqcd=OrderQCD();
-  m_mewgtinfo.m_oew=OrderEW();
+  m_mewgtinfo.m_oqcd=MaxOrder(0)/2;
+  m_mewgtinfo.m_oew=MaxOrder(1)/2;
   m_mewgtinfo.m_fl1=(int)(Flavours()[0]);
   m_mewgtinfo.m_fl2=(int)(Flavours()[1]);
   p_int->SetMomenta(p);
@@ -367,8 +367,10 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     csi.AddFlux(flux);
     m_mewgtinfo.m_clusseqinfo=csi;
     msg_Debugging()<<m_mewgtinfo;
-    m_last=(m_last-m_lastbxs*csi.m_ct)*csi.m_pdfwgt*csi.m_flux;
-    m_lastb=m_lastbxs*csi.m_pdfwgt*csi.m_flux;
+    m_last=(m_last-m_lastbxs*csi.m_ct)*
+      (m_use_biweight?csi.m_pdfwgt*csi.m_flux:1.0);
+    m_lastb=m_lastbxs*
+      (m_use_biweight?csi.m_pdfwgt*csi.m_flux:1.0);
     if (p_mc==NULL) return m_last;
     // calculate DADS for MC@NLO, one PS point, many dipoles
     msg_Debugging()<<"Calculating DADS terms"<<std::endl;

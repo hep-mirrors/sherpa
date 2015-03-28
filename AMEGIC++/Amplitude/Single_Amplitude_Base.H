@@ -33,7 +33,7 @@ namespace AMEGIC {
     void    GroupZfuncs();
   public:
     int sign;
-    int m_oqed,m_oqcd;
+    std::vector<int> m_order;
     Single_Amplitude_Base(int*,int,Basic_Sfuncs*,ATOOLS::Flavour* ,String_Handler*); 
     Single_Amplitude_Base(String_Handler*,int); 
     virtual ~Single_Amplitude_Base();
@@ -54,10 +54,8 @@ namespace AMEGIC {
     Amplitude_Base* GetAmplitude(const int n);
     int GetNumber() { return amplnumber; }
     
-    void    SetOrderQED(int);
-    void    SetOrderQCD(int);
-    virtual int     GetOrderQED();
-    virtual int     GetOrderQCD();
+    void DefineOrder(const std::vector<int> &o);
+    const std::vector<int> &GetOrder();
 
   };
 

@@ -23,8 +23,6 @@ namespace BLACKHAT {
     size_t m_oqcd, m_oew, m_mode;
     double m_asfac, m_afac;
 
-    double CouplingFactor(const int oqcd,const int oew) const;
-
   public:
 
     BlackHat_Tree(const PHASIC::Process_Info& pi,
@@ -35,7 +33,10 @@ namespace BLACKHAT {
 
     double Calc(const ATOOLS::Vec4D_Vector& momenta);
 
-    void SetCouplings(const MODEL::Coupling_Map& cpls);
+    static void AddCouplings
+    (const PHASIC::Process_Info &pi,
+     std::vector<std::vector<std::pair<std::string,int> > > &couplings,
+     std::vector<std::pair<std::string,int> > cpls,size_t i=0);
 
     int OrderQCD(const int &id=-1);
     int OrderEW(const int &id=-1);

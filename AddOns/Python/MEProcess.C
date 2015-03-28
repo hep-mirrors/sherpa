@@ -30,8 +30,6 @@ MEProcess::~MEProcess()
 {
 }
 
-// TO BE REMOVED IN FINAL VERSION OR TO BE REPLACED BY PROPER METHOD TO
-// DETERMINE WHICH ME GENERATOR IS USED
 bool MEProcess::HasColorIntegrator()
 {
   return (p_proc->Integrator()->ColorIntegrator() != 0);
@@ -231,22 +229,10 @@ PHASIC::Process_Base* MEProcess::FindProcess()
   PHASIC::Process_Base::SortFlavours(p_amp);
   m_name = PHASIC::Process_Base::GenerateName(p_amp);
   for (unsigned int i(0); i<me_handler->ProcMaps().size(); i++)
-    {
-      PHASIC::StringProcess_Map::const_iterator pit(me_handler->ProcMaps()[i]->find(PHASIC::nlo_type::lo)->second->find(m_name));
-      //FOR DEBUGGING PURPOSES
-      // std::cout << "Initialized Processes: " << std::endl;
-      // for (PHASIC::StringProcess_Map::const_iterator 
-      // 	     it(me_handler->ProcMaps()[i]->find(PHASIC::nlo_type::lo)->second->begin()); 
-      // 	   it !=me_handler->ProcMaps()[i]->find(PHASIC::nlo_type::lo)->second->end();
-      // 	   ++it)
-      // 	{
-      // 	  std::cout << "Process " << (it->first)<< std::endl;
-      // 	}
-      if(pit == me_handler->ProcMaps()[i]->find(PHASIC::nlo_type::lo)->second->end())
-	continue;
-      else{
-	return pit->second;
-      }
+    for (PHASIC::NLOTypeStringProcessMap_Map::const_iterator sit(me_handler->ProcMaps()[i]->begin());
+	 sit!=me_handler->ProcMaps()[i]->end();++sit) {
+      PHASIC::StringProcess_Map::const_iterator pit(sit->second->find(m_name));
+      if (pit!=sit->second->end()) return pit->second;
     }
   return NULL;
 }
@@ -322,6 +308,8 @@ void MEProcess::Initialize()
   for (std::vector<int>::const_iterator it=m_outpdgs.begin();
        it!=m_outpdgs.end(); it++) allpdgs.push_back(*it);
   SetMomentumIndices(allpdgs);
+  if (p_proc->Integrator()->ColorIntegrator()!=NULL)
+    p_proc->Integrator()->ColorIntegrator()->GeneratePoint();
 }
 
 double MEProcess::MatrixElement()
@@ -336,7 +324,7 @@ double MEProcess::MatrixElement()
 
 double MEProcess::CSMatrixElement()
 {
-  if (!HasColorIntegrator()) return p_proc->Differential(*p_amp);
+  if (!HasColorIntegrator()) return p_proc->Differential(*p_amp,1|4);
   SP(PHASIC::Color_Integrator) ci(p_proc->Integrator()->ColorIntegrator());
   ci->SetWOn(false);
   double r_csme(0.);
@@ -361,7 +349,7 @@ double MEProcess::CSMatrixElement()
     if(ind!=m_ncolinds/2)  THROW(fatal_error, "Internal Error");
     if(indbar!=m_ncolinds) THROW(fatal_error, "Internal Error");
     SetColors();
-    r_csme+=p_proc->Differential(*p_amp);
+    r_csme+=p_proc->Differential(*p_amp,1|4);
   }
   ci->SetWOn(true);
   return r_csme;

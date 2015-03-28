@@ -56,13 +56,15 @@ operator()(const Process_Info &pi) const
          fl[0].IsQuark()  && fl[1]==fl[0].Bar()) ||   
         (fl[0].IsLepton() && fl[1]==fl[0].Bar() &&
          fl[2].IsQuark()  && fl[3]==fl[2].Bar())) {
-      if ((pi.m_oqcd==1 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
+      if (pi.m_maxcpl[0]==0 && pi.m_maxcpl[1]==2 &&
+	  pi.m_mincpl[0]==0 && pi.m_mincpl[1]==2) {
         return new DY_QCD_Virtual(pi, fl);
       }
     }
     if ((fl[2].IsLepton() && fl[3].LeptonFamily()==fl[2].LeptonFamily() &&
          fl[0].IsQuark()  && fl[1].QuarkFamily()==fl[0].QuarkFamily())) {
-      if ((pi.m_oqcd==1 || pi.m_oqcd==99) && (pi.m_oew==2 || pi.m_oew==99)) {
+      if (pi.m_maxcpl[0]==0 && pi.m_maxcpl[1]==2 &&
+	  pi.m_mincpl[0]==0 && pi.m_mincpl[1]==2) {
         return new DY_QCD_Virtual(pi, fl);
       }
     }

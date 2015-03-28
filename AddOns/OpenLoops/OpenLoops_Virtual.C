@@ -1,7 +1,6 @@
 #include "OpenLoops_Virtual.H"
 
 #include "AddOns/OpenLoops/OpenLoops_Interface.H"
-#include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/MyStrStream.H"
@@ -60,14 +59,13 @@ operator()(const Process_Info &pi) const
   DEBUG_FUNC(pi);
   if (pi.m_loopgenerator!="OpenLoops") return NULL;
   if ((pi.m_fi.m_nloewtype==nlo_type::loop) != (pi.m_fi.m_nloqcdtype!=nlo_type::loop)) return NULL;
-  if (MODEL::s_model->Name()!="SM") return NULL;
 
   OpenLoops_Interface::SetParameter
-    ("coupling_qcd_0", (int) pi.m_oqcd-(pi.m_fi.m_nloqcdtype==nlo_type::loop));
+    ("coupling_qcd_0", (int) pi.m_maxcpl[0]-(pi.m_fi.m_nloqcdtype==nlo_type::loop));
   OpenLoops_Interface::SetParameter
     ("coupling_qcd_1", (int) pi.m_fi.m_nloqcdtype==nlo_type::loop);
   OpenLoops_Interface::SetParameter
-    ("coupling_ew_0", (int) pi.m_oew-(pi.m_fi.m_nloewtype==nlo_type::loop));
+    ("coupling_ew_0", (int) pi.m_maxcpl[1]-(pi.m_fi.m_nloewtype==nlo_type::loop));
   OpenLoops_Interface::SetParameter
     ("coupling_ew_1", (int) pi.m_fi.m_nloewtype==nlo_type::loop);
   

@@ -29,6 +29,11 @@ namespace BLACKHAT {
     double Eps_Scheme_Factor(const ATOOLS::Vec4D_Vector& mom);
     double ScaleDependenceCoefficient(const int i);
 
+    static void AddCouplings
+    (const PHASIC::Process_Info &pi,
+     std::vector<std::vector<std::pair<std::string,int> > > &couplings,
+     std::vector<std::pair<std::string,int> > cpls,size_t i=0);
+
     inline static void SetInterface(BH::BH_interface *const bh) { s_interface=bh; }
     inline static void SetModel(MODEL::Model_Base *const md) { s_model=md; }
 

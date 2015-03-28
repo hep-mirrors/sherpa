@@ -54,8 +54,10 @@ namespace METOOLS {
     Polarization_Index m_h;
     SizeT_Vector       m_hm;
 
-    size_t m_key, m_oew, m_oqcd, m_cid, m_ntc;
+    size_t m_key, m_cid, m_ntc;
     char   m_type;
+
+    std::vector<int> m_order;
 
     double m_mass, m_width;
     bool   m_msv, m_zero;
@@ -119,8 +121,7 @@ namespace METOOLS {
     inline void SetFId(const Int_Vector &fid) { m_fid=fid; }
     inline void SetKey(const size_t &key)     { m_key=key; }
 
-    inline void SetOrderEW(const size_t &oew)   { m_oew=oew;   }
-    inline void SetOrderQCD(const size_t &oqcd) { m_oqcd=oqcd; }
+    inline void SetOrder(const std::vector<int> &o) { m_order=o; }
     inline void SetNTChannel(const size_t &ntc) { m_ntc=ntc;   }
 
     inline void SetDirection(const int &dir) { m_dir=dir; }
@@ -143,8 +144,9 @@ namespace METOOLS {
     inline size_t            CId() const  { return m_cid;  }
     inline size_t            Key() const  { return m_key;  }
 
-    inline size_t OrderEW() const   { return m_oew;  }
-    inline size_t OrderQCD() const  { return m_oqcd; }
+    inline const std::vector<int> &Order() const { return m_order; }
+    inline int Order(const size_t &id) const { return m_order[id]; }
+
     inline size_t NTChannel() const { return m_ntc;  }
 
     inline int Direction() const { return m_dir; }

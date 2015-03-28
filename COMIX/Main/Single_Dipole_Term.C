@@ -10,7 +10,6 @@
 #include "PHASIC++/Main/Helicity_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Scales/KFactor_Setter_Base.H"
-#include "MODEL/Interaction_Models/Interaction_Model_Base.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Data_Reader.H"

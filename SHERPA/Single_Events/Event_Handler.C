@@ -339,8 +339,7 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
   if (!read.ReadFromFile(mother_kf,"DECAYER")) {
     THROW(fatal_error,"Didn't find DECAYER=<PDG_CODE> in parameters.");
   }
-  Flavour mother_flav;
-  mother_flav.FromHepEvt(mother_kf);
+  Flavour mother_flav(mother_kf);
   mother_flav.SetStable(false);
   rpa->gen.SetEcms(mother_flav.HadMass());
 

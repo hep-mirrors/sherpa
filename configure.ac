@@ -110,8 +110,13 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  PDF/GRV/Makefile \
 	  PDF/Remnant/Makefile \
 	  PDF/Makefile \
-	  MODEL/Interaction_Models/Makefile \
 	  MODEL/Main/Makefile \
+	  MODEL/SM/Makefile \
+	  MODEL/HEFT/Makefile \
+	  MODEL/TauPi/Makefile \
+	  MODEL/UFO/Makefile \
+	  MODEL/UFO/Sherpa-generate-model \
+	  MODEL/UFO/sconstruct_template \
 	  MODEL/Makefile \
 	  MCATNLO/Tools/Makefile \
 	  MCATNLO/Calculators/Makefile \

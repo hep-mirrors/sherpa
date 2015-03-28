@@ -15,10 +15,9 @@ The following parameters are used to steer the process setup.
 * Couplings::               Tag to set process-specific couplings.
 * CKKW::                    Tag to setup multijet merging.
 * Selector_File::           Tag to specify a specific selector file.
-* Order_EW::                Tag to fix the electroweak order.
-* Max_Order_EW::            Tag to fix the maximum electroweak order.
-* Order_QCD::               Tag to fix the QCD order.
-* Max_Order_QCD::           Tag to fix the maximum QCD order.
+* Order::                   Tag to fix the coupling order.
+* Max_Order::               Tag to fix the maximum coupling order.
+* Min_Order::               Tag to fix the minimum coupling order.
 * Min_N_Quarks::            Tag to set the minimum number of quarks.
 * Max_N_Quarks::            Tag to set the maximum number of quarks.
 * Min_N_TChannels::         Tag to request a minimum number of t-channels.
@@ -212,43 +211,40 @@ Examples are
 Sets a process-specific selector file name.
 
 
-@node Order_EW
-@subsection Order_EW
-Sets a process-specific electroweak order.
-The given number is exclusive, i.e. only matrix elements
-with exactly the given order in the electroweak coupling
-are generated.
+@node Order
+@subsection Order
+Sets a process-specific coupling order.
+Orders are counted at the amplitude squared level. 
+For example, the process 1 -1 -> 2 -2 would have
+orders (4,0), (2,2) and (0,4). The first number always
+refers to QCD, the second to electroweak. The third
+and following numbers are model specific.
 
 Note that for decay chains this setting applies to
 the full process, see @ref{Decay} and @ref{DecayOS}.
 
 
-@node Max_Order_EW
-@subsection Max_Order_EW
-Sets a process-specific maximum electroweak order.
-The given number is inclusive, i.e. matrix elements
-with up to the given order in the electroweak coupling
-are generated.
+@node Max_Order
+@subsection Max_Order
+Sets a process-specific maximum coupling order.
+Orders are counted at the amplitude squared level. 
+For example, the process 1 -1 -> 2 -2 would have
+orders (2,0), (1,1) and (0,2). The first number always
+refers to QCD, the second to electroweak. The third
+and following numbers are model specific.
 
 Note that for decay chains this setting applies to
 the full process, see @ref{Decay} and @ref{DecayOS}.
 
 
-@node Order_QCD
-@subsection Order_QCD
-Sets a process-specific QCD order.
-The given number is exclusive, i.e. only matrix elements
-with exactly the given order in the strong coupling are generated.
-
-Note that for decay chains this setting applies to
-the full process, see @ref{Decay} and @ref{DecayOS}.
-
-
-@node Max_Order_QCD
-@subsection Max_Order_QCD
-Sets a process-specific maximum QCD order.
-The given number is inclusive, i.e. matrix elements
-with up to the given order in the strong coupling are generated.
+@node Min_Order
+@subsection Min_Order
+Sets a process-specific minimum coupling order.
+Orders are counted at the amplitude squared level. 
+For example, the process 1 -1 -> 2 -2 would have
+orders (2,0), (1,1) and (0,2). The first number always
+refers to QCD, the second to electroweak. The third
+and following numbers are model specific.
 
 Note that for decay chains this setting applies to
 the full process, see @ref{Decay} and @ref{DecayOS}.
