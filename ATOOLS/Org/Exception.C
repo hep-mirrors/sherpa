@@ -49,6 +49,13 @@ void Terminator_Object::PrepareTerminate()
 	     <<"]: Virtual function called !"<<std::endl;
 }
 
+Exception::Exception(const std::string info):
+  m_type(ex::fatal_error),
+  m_info(info)
+{
+  exh->m_exception=this;
+}
+
 Exception::Exception(const ex::type type,const std::string info):
   m_type(type),
   m_info(info)

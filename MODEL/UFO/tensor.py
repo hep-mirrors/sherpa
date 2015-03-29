@@ -11,7 +11,7 @@ class tensor(object):
         self._elementary = True if (self._toplevel_key is None) else False
         if self._elementary:
             assert(len(self._array)) == 1
-        self.check()
+        #self.check()
 
     def __repr__(self):
         return "{0} {1} {2}".format(self.__class__ , self._toplevel_key, (self._array).__repr__())
@@ -92,7 +92,7 @@ class tensor(object):
                 tens.__getitem__({key:i}).__setitem__({},value.__getitem__({key:i}))
 
         assert(self[indices]==value)
-        self.check()
+        #self.check()
 
     # return list of all keys
     def keys(self):

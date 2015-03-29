@@ -1,4 +1,5 @@
 //%module Exception
+%include <std_string.i>
 %{
 #include <ATOOLS/Org/Message.H>
 #include <ATOOLS/Org/Exception.H>
@@ -67,11 +68,7 @@ namespace ATOOLS {
   public:
 
     // constructors
-    Exception(const ex::type type,const std::string info);
-    Exception(const ex::type type,const std::string info,
-	      std::string cmethod);
-    Exception(const ex::type type,const std::string info,
-	      const std::string cclass,const std::string cmethod);
+    Exception(const std::string info);
 
     // destructor
     ~Exception();
@@ -85,7 +82,7 @@ namespace ATOOLS {
     
     inline const std::string &Info() const { return m_info; }
     inline ex::type           Type() const { return m_type; }
-
+    
     %extend {
       PyObject* __str__() {
 	MyStrStream conv;

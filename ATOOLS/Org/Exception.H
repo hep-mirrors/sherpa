@@ -67,6 +67,7 @@ namespace ATOOLS {
   public:
 
     // constructors
+    Exception(const std::string info);
     Exception(const ex::type type,const std::string info);
     Exception(const ex::type type,const std::string info,
 	      std::string cmethod);

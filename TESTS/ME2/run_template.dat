@@ -1,0 +1,23 @@
+(run){
+  ME_SIGNAL_GENERATOR   Comix;
+  FRAGMENTATION         Off;
+  SHOWER_GENERATOR      None;
+  PDF_SET               None;
+  
+  SHERPA_LDADD          PhasicProcess ToolsOrg ToolsPhys ToolsMath ModelMain METoolsExplicit METoolsCurrents PDF;
+  
+  MODEL                 ${model};
+
+  SCALES                VAR{sqr(E_CMS)};
+  COUPLINGS             Alpha_QCD -1;
+  WIDTH_SCHEME          Fixed;
+
+  BEAM_1                ${in_flav0};
+  BEAM_ENERGY_1         ${en};
+  BEAM_2                ${in_flav1};
+  BEAM_ENERGY_2         ${en};
+}(run);
+
+(processes){
+${process_string}
+}(processes)
