@@ -76,6 +76,8 @@ namespace AMEGIC {
 			std::vector<int>,int,Basic_Sfuncs *,String_Handler *,bool=true);
     ~Amplitude_Generator(); 
     Single_Amplitude* Matching();
+
+    inline const std::vector<int> &Order() const { return order; }
   };
 }
 #endif

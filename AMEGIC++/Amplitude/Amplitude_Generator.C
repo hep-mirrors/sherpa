@@ -754,6 +754,7 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
       f1 = f1->Next;
     }
   }
+  order=hitmax;
   msg_Tracking()<<"Kicked number of diagrams (Amplitude_Generator::CountOrders()) "<<count<<endl;
 }
 

@@ -208,8 +208,6 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
 				  m_ptypename+string("/")+m_libname);    
-    m_maxcpl=p_ampl->MaxCpl();
-    m_mincpl=p_ampl->MinCpl();
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) {
       m_newlib=true;
       return 1;

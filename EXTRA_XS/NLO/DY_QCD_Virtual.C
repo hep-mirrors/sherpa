@@ -63,8 +63,8 @@ operator()(const Process_Info &pi) const
     }
     if ((fl[2].IsLepton() && fl[3].LeptonFamily()==fl[2].LeptonFamily() &&
          fl[0].IsQuark()  && fl[1].QuarkFamily()==fl[0].QuarkFamily())) {
-      if (pi.m_maxcpl[0]==0 && pi.m_maxcpl[1]==2 &&
-	  pi.m_mincpl[0]==0 && pi.m_mincpl[1]==2) {
+      if (pi.m_maxcpl[0]==1 && pi.m_maxcpl[1]==2 &&
+	  pi.m_mincpl[0]==1 && pi.m_mincpl[1]==2) {
         return new DY_QCD_Virtual(pi, fl);
       }
     }

@@ -52,10 +52,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
   }
   else sfl=fl;
 
-  //core process
-  gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,m_maxcpl,_ntchan,BS,shand,create_4V);
-  subgraphlist[0] = gen->Matching();
-  delete gen;
+  std::vector<int> order;
 
   //decay processes
   for (int i=1;i<=ndecays;i++) {
@@ -70,8 +67,13 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
       ndecays = 0;
       subgraphlist[0] = NULL;
     }
+    std::vector<int> corder=gen->Order();
+    if (corder.size()>order.size()) order.resize(corder.size(),0);
+    for (size_t i(0);i<corder.size();++i) order[i]+=corder[i];
     delete gen;
   }
+  if (order.size()>_maxcpl.size()) _maxcpl.resize(order.size(),99);
+  for (size_t i(0);i<order.size();++i) _maxcpl[i]-=order[i];
 
   if (ndecays>0) {
     sfl[0] = fl[0];
@@ -82,7 +84,12 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
   //core process
   gen = new Amplitude_Generator(nin+pinfo->Nout(),sfl,b,model,top,m_maxcpl,_ntchan,BS,shand,create_4V);
   subgraphlist[0] = gen->Matching();
+  _maxcpl=gen->Order();
   delete gen;
+
+  if (order.size()>_maxcpl.size()) _maxcpl.resize(order.size(),0);
+  for (size_t i(0);i<order.size();++i) _maxcpl[i]+=order[i];
+  _mincpl=_maxcpl;
 
   if (msg_LevelIsTracking()) {
     msg_Out()<<"Amplitude_Handler::Amplitude_Handler:"<<endl;

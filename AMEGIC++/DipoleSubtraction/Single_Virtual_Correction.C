@@ -173,7 +173,6 @@ void Single_Virtual_Correction::SelectLoopProcess()
     loop_pi.m_fi.m_nloqcdtype=nlo_type::loop;
     p_loopme=PHASIC::Virtual_ME2_Base::GetME2(loop_pi);  
     if (!p_loopme) {
-      PRINT_VAR(loop_pi);
       THROW(not_implemented, "Couldn't find virtual ME for this process.");
     }
     p_loopme->SetCouplings(*p_LO_process->CouplingMap());
@@ -238,19 +237,19 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
 
   if (!p_LO_process->InitAmplitude(model,top,links,errs,m_checkloopmap)) return 0;
   m_iresult = p_LO_process->Result();
+  nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);
+  m_maxcpl[0] = p_LO_process->MaxOrder(0)+
+    ((m_pinfo.m_fi.m_nloqcdtype&nlot)?1:0);
+  m_mincpl[0] = p_LO_process->MinOrder(0)+
+    ((m_pinfo.m_fi.m_nloqcdtype&nlot)?1:0);
+  m_maxcpl[1] = p_LO_process->MaxOrder(1)+
+    ((m_pinfo.m_fi.m_nloewtype&nlot)?1:0);
+  m_mincpl[1] = p_LO_process->MinOrder(1)+
+    ((m_pinfo.m_fi.m_nloewtype&nlot)?1:0);
   m_pinfo.m_mincpl.resize(m_mincpl.size());
   m_pinfo.m_maxcpl.resize(m_maxcpl.size());
   for (size_t i(0);i<m_mincpl.size();++i) m_pinfo.m_mincpl[i]=m_mincpl[i];
   for (size_t i(0);i<m_maxcpl.size();++i) m_pinfo.m_maxcpl[i]=m_maxcpl[i];
-  nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);
-  m_maxcpl[0] = p_LO_process->MaxOrder(0)+
-    ((m_pinfo.m_fi.m_nloqcdtype&nlot)?2:0);
-  m_mincpl[0] = p_LO_process->MinOrder(0)+
-    ((m_pinfo.m_fi.m_nloqcdtype&nlot)?2:0);
-  m_maxcpl[1] = p_LO_process->MaxOrder(1)+
-    ((m_pinfo.m_fi.m_nloewtype&nlot)?2:0);
-  m_mincpl[1] = p_LO_process->MinOrder(1)+
-    ((m_pinfo.m_fi.m_nloewtype&nlot)?2:0);
 
   p_dipole->SetCoupling(p_LO_process->CouplingMap());
   p_kpterms->SetCoupling(p_LO_process->CouplingMap());

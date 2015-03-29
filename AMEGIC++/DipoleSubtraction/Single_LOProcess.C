@@ -273,8 +273,6 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
 				  m_ptypename+string("/")+m_libname,127,127,&m_flavs.front());    
-    m_maxcpl=p_ampl->MaxCpl();
-    m_mincpl=p_ampl->MinCpl();
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 0;
     if (!TestLib()) return 0;
     if (p_partner==this) links.push_back(this);
@@ -440,8 +438,6 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
 				  m_ptypename+string("/")+m_libname,
 				  m_emit,m_spect,&m_flavs.front());
-    m_maxcpl=p_ampl->MaxCpl();
-    m_mincpl=p_ampl->MinCpl();
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 1;
     if (!TestLib(pfactors)) return 0;
     if (p_partner==this) links.push_back(this);
@@ -455,8 +451,6 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 			     m_emit,m_spect);
   m_pol.Add_Extern_Polarisations(p_BS,&m_flavs.front(),p_hel);
   p_BS->Initialize();
-  m_maxcpl=p_ampl->MaxCpl();
-  m_mincpl=p_ampl->MinCpl();
   FillCombinations();
 
   int tr=Tests(pfactors);

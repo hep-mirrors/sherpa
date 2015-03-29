@@ -126,8 +126,7 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Amegic_Model * model,Topology* top
 
   p_ampl->FillPointlist();
   p_BS->Initialize();
-  m_maxcpl=p_ampl->MaxCpl();
-  m_mincpl=p_ampl->MinCpl();
+
 
   int result(Tests());
   switch (result) {
