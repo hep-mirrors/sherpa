@@ -59,6 +59,29 @@ VVS_Calc::VVS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   lorentzlist[2]->SetParticleArg(0,1);
 }
 
+DEFINE_ZFCALC_GETTER(VVSS4_Calc,"VVSS4","vvss4 calculator")
+
+VVSS4_Calc::VVSS4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
+  Basic_Func(_sgen,_BS), 
+  Zfunc_Calc(_sgen,_BS),
+  Basic_Zfunc(_sgen,_BS), 
+  Basic_Xfunc(_sgen,_BS), 
+  Basic_Mfunc(_sgen,_BS), 
+  Basic_Vfunc(_sgen,_BS) 
+{ 
+  type="VVSS4";
+  ncoupl=5;narg=4;pn=2;
+#ifdef Scalar_Args
+  narg=6;
+#endif
+  lorentzlist.push_back(LF_Getter::GetObject("FFV",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("FFV",LF_Key()));
+  lorentzlist.push_back(LF_Getter::GetObject("VVSS",LF_Key()));
+  lorentzlist[0]->SetParticleArg(0);
+  lorentzlist[1]->SetParticleArg(1);
+  lorentzlist[2]->SetParticleArg(0,1);
+}
+
 DEFINE_ZFCALC_GETTER(SSV_Calc,"SSV","ssv calculator")
 
 SSV_Calc::SSV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
@@ -156,6 +179,12 @@ void Z_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
 }
 
 Kabbala VVS_Calc::Do() 
+{
+  Kabbala prefactor = sgen->GetEnumber(coupl[4]);
+  return prefactor*(-M(1)*X(0,1)*X(1,1)+X(0,0)*(-M(0)*X(1,0)+M(0)*M(1)*V(0,1)*X(1,1))+Z(1,0));
+}
+
+Kabbala VVSS4_Calc::Do() 
 {
   Kabbala prefactor = sgen->GetEnumber(coupl[4]);
   return prefactor*(-M(1)*X(0,1)*X(1,1)+X(0,0)*(-M(0)*X(1,0)+M(0)*M(1)*V(0,1)*X(1,1))+Z(1,0));

@@ -46,6 +46,20 @@ namespace AMEGIC {
     ATOOLS::Kabbala Do();
   };
 
+class VVSS4_Calc : public Zfunc_Calc, 
+		   public Basic_Zfunc,
+		   public Basic_Xfunc,
+		   public Basic_Mfunc,
+		   public Basic_Vfunc {
+  public:
+    VVSS4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS); 
+    ~VVSS4_Calc() {}
+#ifdef Scalar_Args
+    int GetScalarNumb() { return 2; }
+#endif
+    ATOOLS::Kabbala Do();
+  };
+
   class SSV_Calc : public Zfunc_Calc, 
 		   public Basic_Xfunc,
 		   public Basic_Mfunc,
