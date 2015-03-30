@@ -3,6 +3,7 @@ import sys
 from math import sqrt
 sys.path.append('@PYLIBDIR@')
 sys.argv.append('INIT_ONLY=2')
+sys.argv.append('OUTPUT=0')
 @LOADMPIFORPY@
 import Sherpa
 
