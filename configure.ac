@@ -38,8 +38,10 @@ if test "$mpi" = "true"; then
   AC_DEFINE([USING__MPI], "1", [using MPI])
   AX_PROG_CXX_MPI([test "$mpi" = "true"], [use_mpi=yes],
     [AC_MSG_FAILURE([MPI compiler not found.])])
+  AS_AC_EXPAND(LOADMPIFORPY,from mpi4py import MPI)
 else
   AC_PROG_CXX
+  AS_AC_EXPAND(LOADMPIFORPY,)
 fi
 AM_CONDITIONAL(USING__MPI, test "$mpi" = "true" )
 
@@ -202,6 +204,7 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  Examples/API/ME2-Python/test.py \
 	  Examples/API/Events/test.py \
 	  Examples/API/MPIEvents/test.py \
+	  TESTS/ME2/sh_template.py \
 	  AddOns/Python/Makefile \
 	  AddOns/Analysis/Tools/Makefile \
 	  AddOns/Analysis/Main/Makefile \
