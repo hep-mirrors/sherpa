@@ -553,7 +553,7 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
 	 m_subevt.p_ampl->Leg(m_pj));
       for (Cluster_Amplitude *campl(m_subevt.p_ampl->Next());campl;campl=campl->Next()) {
 	for (size_t i(0);i<campl->Legs().size();++i) {
-	  if (p_partner!=this) {
+	  if (p_LO_process->Partner()!=p_LO_process) {
 	    Flavour fl(campl->Leg(i)->Flav());
 	    fl=ReMap(i<m_nin?fl.Bar():fl,campl->Leg(i)->Id());
 	    campl->Leg(i)->SetFlav(i<m_nin?fl.Bar():fl);
