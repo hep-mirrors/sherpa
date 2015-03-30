@@ -700,6 +700,11 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	  read.SetString(ds);
 	  read.VectorFromString(cpi.m_maxcpl,"");
 	  cpi.m_mincpl=cpi.m_maxcpl;
+	  for (size_t i(0);i<cpi.m_maxcpl.size();++i)
+	    if (cpi.m_maxcpl[i]<0) {
+	      cpi.m_mincpl[i]=0;
+	      cpi.m_maxcpl[i]=99;
+	    }
 	}
 	size_t maxsize(Min(cpi.m_mincpl.size(),cpi.m_maxcpl.size()));
 	for (size_t i(0);i<maxsize;++i)

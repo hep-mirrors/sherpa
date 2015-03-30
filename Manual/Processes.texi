@@ -214,11 +214,13 @@ Sets a process-specific selector file name.
 @node Order
 @subsection Order
 Sets a process-specific coupling order.
-Orders are counted at the amplitude squared level. 
+Orders are counted at the amplitude level. 
 For example, the process 1 -1 -> 2 -2 would have
-orders (4,0), (2,2) and (0,4). The first number always
+orders (2,0), (1,1) and (0,2). The first number always
 refers to QCD, the second to electroweak. The third
-and following numbers are model specific.
+and following numbers are model specific. Half-integer
+orders are so far supported only by Comix.
+A negative entry can be used as a wildcard.
 
 Note that for decay chains this setting applies to
 the full process, see @ref{Decay} and @ref{DecayOS}.
@@ -227,11 +229,12 @@ the full process, see @ref{Decay} and @ref{DecayOS}.
 @node Max_Order
 @subsection Max_Order
 Sets a process-specific maximum coupling order.
-Orders are counted at the amplitude squared level. 
+Orders are counted at the amplitude level. 
 For example, the process 1 -1 -> 2 -2 would have
 orders (2,0), (1,1) and (0,2). The first number always
 refers to QCD, the second to electroweak. The third
-and following numbers are model specific.
+and following numbers are model specific. Half-integer
+orders are so far supported only by Comix.
 
 Note that for decay chains this setting applies to
 the full process, see @ref{Decay} and @ref{DecayOS}.
@@ -240,11 +243,12 @@ the full process, see @ref{Decay} and @ref{DecayOS}.
 @node Min_Order
 @subsection Min_Order
 Sets a process-specific minimum coupling order.
-Orders are counted at the amplitude squared level. 
+Orders are counted at the amplitude level. 
 For example, the process 1 -1 -> 2 -2 would have
 orders (2,0), (1,1) and (0,2). The first number always
 refers to QCD, the second to electroweak. The third
-and following numbers are model specific.
+and following numbers are model specific. Half-integer
+orders are so far supported only by Comix.
 
 Note that for decay chains this setting applies to
 the full process, see @ref{Decay} and @ref{DecayOS}.
