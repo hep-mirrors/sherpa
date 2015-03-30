@@ -22,6 +22,9 @@ def write_run_card(proc):
                                         model=proc._model._name,
                                         process_string=proc_string))
 
+def write_param_card(proc):
+    copyfile(proc._model._param_card,
+             path.join(proc.test_dir_name(),'param_card.dat'))
 
 def write_sh_script(proc):
     f_path = path.join(proc.test_dir_name(),'run_sh.py')
@@ -47,7 +50,6 @@ def mg_prepare(proc):
     write_mg_card(proc,dir_path)
     # generate/copy makefile, param_card, executable src
     copyfile('Makefile',path.join(dir_path,'Makefile'))
-    copyfile(proc._model._param_card,path.join(dir_path,'param_card.dat'))
     with open(path.join(dir_path,'run_mg.cc'),'w') as f:
         f.write(mg_template.substitute(cms=proc._cms,
                                        in_flav0=proc._in_ids[0],
@@ -84,6 +86,7 @@ def mg_run(proc):
 
 for proc in procs:
     # mg_prepare(proc)
+    write_param_card(proc)
     # mg_generate(proc)
     # mg_compile(proc)
     # mg_run(proc)
