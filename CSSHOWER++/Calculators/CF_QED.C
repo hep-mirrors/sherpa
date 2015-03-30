@@ -18,7 +18,7 @@ namespace CSSHOWER {
   public:
 
     inline CF_QED(const SF_Key &key):
-      SF_Coupling(key), m_cfl(key.p_v->in[0])
+      SF_Coupling(key), m_cfl(key.p_v->in[0].Bar())
     {
       if (key.m_type==cstp::IF || key.m_type==cstp::II)
 	m_cfl=key.p_v->in[key.m_mode==0?1:2];

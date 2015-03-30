@@ -32,7 +32,7 @@ double SF_Lorentz::s_kappa=2.0/3.0;
 SF_Lorentz::SF_Lorentz(const SF_Key &key):
   p_ms(key.p_ms), p_cf(key.p_cf), m_col(0)
 {
-  m_flavs[0]=key.p_v->in[0];
+  m_flavs[0]=key.p_v->in[0].Bar();
   if (key.m_mode==0) {
     m_flavs[1]=key.p_v->in[1];
     m_flavs[2]=key.p_v->in[2];
@@ -373,9 +373,9 @@ bool Splitting_Function_Base::PureQCD() const
 std::string SF_Key::ID(const int mode) const
 {
   if ((m_mode==1)^(mode==1))
-    return "{"+ToString(p_v->in[0])+"}{"
+    return "{"+ToString(p_v->in[0].Bar())+"}{"
       +ToString(p_v->in[2])+"}{"+ToString(p_v->in[1])+"}";
-  return "{"+ToString(p_v->in[0])+"}{"
+  return "{"+ToString(p_v->in[0].Bar())+"}{"
     +ToString(p_v->in[1])+"}{"+ToString(p_v->in[2])+"}";
 }
 
@@ -384,8 +384,8 @@ namespace MCATNLO {
   std::ostream &operator<<(std::ostream &str,const SF_Key &k)
   {
     if (k.m_mode==0) 
-      return str<<k.m_type<<" "<<k.p_v->in[0]<<"->"<<k.p_v->in[1]<<","<<k.p_v->in[2];
-    return str<<k.m_type<<" "<<k.p_v->in[0]<<"->"<<k.p_v->in[2]<<","<<k.p_v->in[1];
+      return str<<k.m_type<<" "<<k.p_v->in[0].Bar()<<"->"<<k.p_v->in[1]<<","<<k.p_v->in[2];
+    return str<<k.m_type<<" "<<k.p_v->in[0].Bar()<<"->"<<k.p_v->in[2]<<","<<k.p_v->in[1];
   }
 
   std::ostream& operator<<(std::ostream& str, const Splitting_Function_Base &base) {

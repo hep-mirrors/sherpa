@@ -76,21 +76,21 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
 	   vit=vlit->second.begin();vit!=vlit->second.end();++vit) {
       Single_Vertex *v(*vit);
       if (v->NLegs()>3) continue;
-      if (sfs.find(FTrip(v->in[0],v->in[1],v->in[2]))!=sfs.end()) continue;
-      sfs.insert(FTrip(v->in[0],v->in[1],v->in[2]));
-      sfs.insert(FTrip(v->in[0],v->in[2],v->in[1]));
-      msg_Debugging()<<"Add "<<v->in[0]<<" -> "<<v->in[1]<<" "<<v->in[2]<<" {\n";
+      if (sfs.find(FTrip(v->in[0].Bar(),v->in[1],v->in[2]))!=sfs.end()) continue;
+      sfs.insert(FTrip(v->in[0].Bar(),v->in[1],v->in[2]));
+      sfs.insert(FTrip(v->in[0].Bar(),v->in[2],v->in[1]));
+      msg_Debugging()<<"Add "<<v->in[0].Bar()<<" -> "<<v->in[1]<<" "<<v->in[2]<<" {\n";
       {
 	msg_Indent();
 	int dmode(0);
-	if (v->in[2]==v->in[0]) dmode=1;
-	else if (v->in[1]!=v->in[0] && 
+	if (v->in[2]==v->in[0].Bar()) dmode=1;
+	else if (v->in[1]!=v->in[0].Bar() && 
 		 v->in[1].IsAnti() && !v->in[2].IsAnti()) dmode=1;
 	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FF,kfmode,m_ewmode,1)));
 	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FF,kfmode,m_ewmode,-1)));
 	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FI,kfmode,m_ewmode,1)));
 	Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::FI,kfmode,m_ewmode,-1)));
-	if (v->in[0].Mass()<100.0 && v->in[1].Mass()<100.0 && v->in[2].Mass()<100.0) {
+	if (v->in[0].Bar().Mass()<100.0 && v->in[1].Mass()<100.0 && v->in[2].Mass()<100.0) {
   	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::IF,kfmode,m_ewmode,1)));
   	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::IF,kfmode,m_ewmode,-1)));
  	  Add(new Splitting_Function_Base(SF_Key(p_rms,v,dmode,cstp::II,kfmode,m_ewmode,1)));
@@ -101,7 +101,7 @@ void Sudakov::InitSplittingFunctions(MODEL::Model_Base *md,const int kfmode)
 	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FF,kfmode,m_ewmode,-1)));
 	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FI,kfmode,m_ewmode,1)));
 	  AddToMaps(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::FI,kfmode,m_ewmode,-1)));
-	  if (v->in[0].Mass()<100.0 && v->in[1].Mass()<100.0 && v->in[2].Mass()<100.0) {
+	  if (v->in[0].Bar().Mass()<100.0 && v->in[1].Mass()<100.0 && v->in[2].Mass()<100.0) {
   	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::IF,kfmode,m_ewmode,1)));
   	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::IF,kfmode,m_ewmode,-1)));
  	    Add(new Splitting_Function_Base(SF_Key(p_rms,v,1-dmode,cstp::II,kfmode,m_ewmode,1)));
