@@ -144,7 +144,12 @@ class s_lorentz():
 
         num_ext = self.n_ext()
         assert(out_key in range(num_ext))
-        return { i:(i+(num_ext-1-out_key))%(num_ext) for i in range(num_ext)}
+        # Python 2.7 or later:
+        # return { i:(i+(num_ext-1-out_key))%(num_ext) for i in range(num_ext)}
+        ret = dict()
+        for i in range(num_ext):
+            ret[i] = (i+(num_ext-1-out_key))%(num_ext)
+        return ret
 
     # are external momenta required for writing out
     # lorentz coupling structure: determine from UFO string

@@ -1,6 +1,6 @@
 #!@PYTHON@
 
-from importlib import import_module
+from imp import find_module,load_module
 from sys import path as sys_path
 from os import path as os_path
 from os import makedirs
@@ -28,13 +28,10 @@ args = arg_parser.parse_args()
 arg_path = args.ufo_path
 model_path, model_name = os_path.split((arg_path.rstrip('/')))
 
-# make contents of ufo model available
-sys_path.append(model_path)
-
 # try to import the model to check if UFO path is ok
 try:
-    import ufo_interface as u_int
-    model = import_module(model_name)
+    f, pathn, desc = find_module(model_name, [model_path])
+    model = load_module(model_name, f, pathn, desc)
 
 except ImportError as err:
     print "Could not import UFO model from input path \"{0}\", make sure this is a path to a valid UFO model".format(arg_path)
