@@ -31,6 +31,9 @@ Analysis_Handler::Analysis_Handler():
   Analysis_Interface("Internal"),
   m_weighted(0), m_write(false)
 {
+  if(s_kftable.find(kf_bjet)==s_kftable.end()) // if not initialized yet
+  s_kftable[kf_bjet] = new
+    Particle_Info(kf_bjet,0.,0.,0,1, 2,1,1,1,0,"bj","bj",1,1);
 }
 
 Analysis_Handler::~Analysis_Handler()
