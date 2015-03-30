@@ -17,7 +17,7 @@
 
 (processes){
   Process 93 93 -> 11 -11
-  Order_EW 2;
+  Order (-1,2);
   Print_Graphs Graphs;
   End process
 }(processes)

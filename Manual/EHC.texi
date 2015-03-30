@@ -8,7 +8,7 @@
 
 The EHC describes the effective coupling of gluons and photons to Higgs bosons
 via a top-quark loop, and a W-boson loop in case of photons. This supplement 
-to the Standard Model can be invoked by specifying @code{MODEL = SM+EHC} in 
+to the Standard Model can be invoked by specifying @code{MODEL = HEFT} in 
 the @code{(model)} section of the steering file or the model data file 
 @code{Model.dat}, respectively.
 

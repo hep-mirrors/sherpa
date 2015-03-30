@@ -24,7 +24,7 @@
 
 (processes){
   Process 93 93 -> 90 90 93{NJET};
-  Order_EW 2; CKKW sqr(QCUT/E_CMS);
+  Order (-1,2); CKKW sqr(QCUT/E_CMS);
   NLO_QCD_Mode MC@NLO {LJET};
   ME_Generator Amegic {LJET};
   RS_ME_Generator Comix {LJET};

@@ -29,7 +29,7 @@
 
 (processes){
   Process 93 93 -> 11 -11 25;
-  Order_EW 3;
+  Order (-1,3);
   NLO_QCD_Mode MC@NLO;
   Loop_Generator LOOPGEN;
   ME_Generator Amegic;

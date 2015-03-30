@@ -20,7 +20,7 @@
   Process -11 93 -> -11 93 93{NJET};
   CKKW sqr(QCUT/E_CMS)/(1.0+sqr(QCUT/SDIS)/Abs2(p[2]-p[0]));
   NLO_QCD_Mode MC@NLO {LJET};
-  Order_EW 2; Max_N_Quarks 6;
+  Order (-1,2); Max_N_Quarks 6;
   ME_Generator Amegic {LJET};
   RS_ME_Generator Comix {LJET};
   Loop_Generator LGEN;

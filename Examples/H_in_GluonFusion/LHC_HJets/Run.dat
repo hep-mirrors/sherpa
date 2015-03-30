@@ -22,7 +22,7 @@
   HDH_BR_WEIGHTS 0;
 
   % model parameters
-  MODEL SM+EHC
+  MODEL HEFT
   MASS[25] 126.; WIDTH[25] 0.;
 
   % collider setup
@@ -32,7 +32,7 @@
 
 (processes){
   Process 93 93 -> 25 93{NJET};
-  Order_EW 1; CKKW sqr(QCUT/E_CMS);
+  Order (-1,-1,1); CKKW sqr(QCUT/E_CMS);
   NLO_QCD_Mode MC@NLO {LJET}; 
   Loop_Generator LOOPGEN0 {1,2};
   Loop_Generator LOOPGEN1 {3};

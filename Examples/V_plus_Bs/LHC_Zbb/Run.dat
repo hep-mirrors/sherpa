@@ -20,7 +20,7 @@
   ME_Generator Amegic;
   RS_ME_Generator Comix;
   Loop_Generator LGEN;
-  Order_EW 1;
+  Order (-1,1);
   End process;
 }(processes);
 

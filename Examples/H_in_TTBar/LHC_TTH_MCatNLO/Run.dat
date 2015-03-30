@@ -21,6 +21,6 @@
   Process 93 93 -> 25 6 -6;
   NLO_QCD_Mode MC@NLO;
   Loop_Generator LGEN;
-  Order_EW 1;
+  Order (-1,1);
   End process;
 }(processes);
