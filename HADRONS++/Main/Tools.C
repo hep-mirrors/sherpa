@@ -67,7 +67,6 @@ double Tools::OffShellMassWidth( double s, double Mass2, double Width, double ms
 
 bool Tools::ExtractFlavours(std::vector<int> & helpkfc,std::string help)
 {
-  if (help==std::string("SPECTATORS")) return false;
   helpkfc.clear();    
   size_t pos = help.find("{");
   bool             hit;

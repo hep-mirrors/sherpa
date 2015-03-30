@@ -58,6 +58,7 @@ Particle_Info::Particle_Info
   m_formfactor(0), m_on(on), m_massive(1), m_hadron(1), m_isgroup(0), 
   m_idname(idname), m_antiname(antiname)
 {
+  m_antiname=m_idname+"b";
   m_content.push_back(new Flavour(*this));
 }
 
@@ -70,6 +71,7 @@ Particle_Info::Particle_Info
   m_formfactor(formfactor), m_on(1), m_massive(1), m_hadron(1), m_isgroup(0), 
   m_idname(idname), m_antiname(antiname)
 {
+  m_antiname=m_idname+"b";
   m_content.push_back(new Flavour(*this));
 }
 

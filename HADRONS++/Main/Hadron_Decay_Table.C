@@ -38,35 +38,29 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
     abort();
   }
 
-  bool haspartonics(false);
-  std::vector<int> specs;
-  std::vector<double> specweights;
-  for (size_t i=0;i<helpsvv.size();i++) {
-    if (helpsvv[i].size()!=3 && helpsvv[i][0]==string("SPECTATORS")) {
-      haspartonics = true;
-      Tools::ExtractSpecs(helpsvv[i][1],specs,specweights);
-      msg_Tracking()<<METHOD<<": found spectators for "<<m_flin<<": ";
-      for (size_t j=0;j<specs.size();j++) msg_Tracking()<<specs[j]<<" ";
-      msg_Tracking()<<"\n";
-    }
-  }
-
   int nchannels(0), rewrite(0);
   vector<int>      helpkfc;
   double           BR, dBR, totBR(0.);
   string           origin;
-  Flavour          flav;
-  Hadron_Decay_Channel* hdc;
+  bool haspartonics(false);
+  std::vector<int> specs;
+  std::vector<double> specweights;
   for (size_t i=0;i<helpsvv.size();i++) {
     if ( helpsvv[i][0] == string("NO_ANTI") )
       continue;
-    if (helpsvv[i].size()>1 && Tools::ExtractFlavours(helpkfc,helpsvv[i][0])) {
+    if (helpsvv[i].size()!=3 && helpsvv[i][0]==string("SPECTATORS")) {
+      haspartonics = true;
+      Tools::ExtractSpecs(helpsvv[i][1],specs,specweights);
+      DEBUG_INFO("found spectators for "<<m_flin);
+      for (size_t j=0;j<specs.size();j++) DEBUG_VAR(specs[j]);
+    }
+    else if (helpsvv[i].size()>1 && Tools::ExtractFlavours(helpkfc,helpsvv[i][0])) {
       Tools::ExtractBRInfo(helpsvv[i][1], BR, dBR, origin);
-      hdc = new Hadron_Decay_Channel(Flav(),p_ms,path);
+      Hadron_Decay_Channel* hdc = new Hadron_Decay_Channel(Flav(),p_ms,path);
       int charge = Flav().IntCharge();
       double mass = Flav().HadMass();
       for (size_t j=0;j<helpkfc.size();++j) {
-        flav = Flavour(abs(helpkfc[j]));
+        Flavour flav = Flavour(abs(helpkfc[j]));
         if (helpkfc[j]<0) flav = flav.Bar();
         hdc->AddDecayProduct(flav);
 	charge-=flav.IntCharge();
@@ -76,7 +70,7 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 	msg_Tracking()<<"Found too low mass.";
 	BR = 0.; dBR = 0.; continue; 
       }
-      if (haspartonics) totBR += BR;
+      totBR += BR;
       hdc->SetWidth(BR*Flav().Width());
       hdc->SetDeltaWidth(dBR*Flav().Width());
       hdc->SetOrigin(origin);
@@ -94,9 +88,8 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
       nchannels++;
     }
   }
-  if (Flav().IsC_Hadron()) 
-    msg_Tracking()<<METHOD<<" for "<<om::green<<Flav()<<om::reset<<": "
-	     <<"total BR = "<<om::green<<totBR<<om::reset<<".\n";
+
+  DEBUG_VAR(totBR);
   if (haspartonics) {
     PHASIC::Decay_Table * dectable(NULL);
     if (!Flav().IsB_Hadron() && !Flav().IsC_Hadron()) {
@@ -104,24 +97,14 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 		 <<"   No suitable partonic decay table found for "
 		 <<Flav()<<".\n"
 		 <<"   Will continue and hope for the best.\n";
-      if(rewrite) {
-        PRINT_INFO("TODO: migrate to Decaydata.db");
-        /*
-	Move(path+file, path+"."+file+".old");
-	ofstream ostr( (path + file).c_str() );
-	Write(ostr);
-	ostr.close();
-        */
-      }
       ScaleToWidth();
       return;
     }
     double  totspec(0.);
-    Flavour spec;
     for (size_t k=0;k<specs.size();k++) totspec+=specweights[k];
     for (size_t k=0;k<specs.size();k++) {
       bool isAnti(false);
-      spec = Flavour(abs(specs[k]));
+      Flavour spec = Flavour(abs(specs[k]));
       if (specs[k]<0) spec = spec.Bar();
       if ((spec.IsQuark() && !spec.IsAnti()) ||
 	  (spec.IsDiQuark() && spec.IsAnti())) isAnti=true;
@@ -160,38 +143,28 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 	  msg_Tracking()<<".\n";
 	  continue;
 	}
-	hdc = new Hadron_Decay_Channel(Flav(),p_ms,path);
+	Hadron_Decay_Channel* hdc = new Hadron_Decay_Channel(Flav(),p_ms,path);
 	hdc->AddDecayProduct(spec,false);
-	std::string filename=m_flin.IDName();
-	if (filename.find("_{s}")!=string::npos) 
-	  filename = StringReplace(filename, "_{s}", "s");
-	if (filename.find("-_{b}")!=string::npos) 
-	  filename = StringReplace(filename, "-_{b}", "b-");
-	if (filename.find("_{b}")!=string::npos) 
-	  filename = StringReplace(filename, "_{b}", "b");
-	if (filename.find("++_{c}")!=string::npos) 
-	  filename = StringReplace(filename, "++_{c}", "c++");
-	if (filename.find("+_{c}")!=string::npos) 
-	  filename = StringReplace(filename, "+_{c}", "c+");
-	if (filename.find("_{c}")!=string::npos) 
-	  filename = StringReplace(filename, "_{c}", "c");
-	if (filename.find("_fict")!=string::npos) 
-	  filename = StringReplace(filename, "_fict", "");
-	filename += "_"+spec.IDName();
+	std::string filename=m_flin.ShellName();
+	filename += "_"+spec.ShellName();
 	msg_Tracking()<<"   Add partonic decay: "<<Flav()<<" --> ";
 	for (size_t j=0;j<(*dectable)[i]->NOut();j++) {
-	  flav = (*dectable)[i]->GetDecayProduct(j);
+	  Flavour flav = (*dectable)[i]->GetDecayProduct(j);
 	  if (isAnti) flav=flav.Bar();
 	  msg_Tracking()<<flav<<" ";
 	  hdc->AddDecayProduct(flav,false);
 	  charge   -= flav.IntCharge();
 	  mass     -= flav.HadMass();
-	  filename += flav.IDName();
+	  filename += flav.ShellName();
 	}
 	hdc->SetWidth(BR*partWidth);
 	hdc->SetDeltaWidth(0.);
 	hdc->SetOrigin("");
 	filename += ".dat";
+        // temporary hack to avoid filename changes in Decaydata.db
+        filename = StringReplace(filename, "ve", "nu_e");
+        filename = StringReplace(filename, "vmu", "nu_mu");
+        filename = StringReplace(filename, "vtau", "nu_tau");
 	msg_Tracking()<<"  ---> "<<filename<<".\n";
 	hdc->SetFileName(filename);
 	AddDecayChannel(hdc);
@@ -208,9 +181,6 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
     ostr.Close();
   }
   ScaleToWidth();
-  if (Flav().IsC_Hadron()) 
-    msg_Tracking()<<"   --> after rescaling: "
-		  <<om::green<<totBR<<om::reset<<".\n";
 }
 
 
