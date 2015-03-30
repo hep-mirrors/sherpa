@@ -403,31 +403,31 @@ void Hadron_Init::Init() {
   */
   // Diquarks - not exactly particles but we need them ##########################################
   if(s_kftable.find(1103)==s_kftable.end()) { // if not initialized in Beam
-    s_kftable[1103]=new Particle_Info(1103,0.77133,0,-2,-3,2,0,0,1,0,"dd_1","dd_1");
-    s_kftable[2101]=new Particle_Info(2101,0.57933,0,1,-3,0,0,0,1,0,"ud_0","ud_0");
-    s_kftable[2103]=new Particle_Info(2103,0.77133,0,1,-3,2,0,0,1,0,"ud_1","ud_1");
-    s_kftable[2203]=new Particle_Info(2203,0.77133,0,4,-3,2,0,0,1,0,"uu_1","uu_1");
-    s_kftable[3101]=new Particle_Info(3101,0.80473,0,-2,-3,0,0,0,1,0,"sd_0","sd_0");
-    s_kftable[3103]=new Particle_Info(3103,0.92953,0,-2,-3,2,0,0,1,0,"sd_1","sd_1");
-    s_kftable[3201]=new Particle_Info(3201,0.80473,0,1,-3,0,0,0,1,0,"su_0","su_0");
-    s_kftable[3203]=new Particle_Info(3203,0.92953,0,1,-3,2,0,0,1,0,"su_1","su_1");
-    s_kftable[3303]=new Particle_Info(3303,1.09361,0,-2,-3,2,0,0,1,0,"ss_1","ss_1");
-    s_kftable[4101]=new Particle_Info(4101,1.96908,0,1,-3,0,0,0,1,0,"cd_0","cd_0");
-    s_kftable[4103]=new Particle_Info(4103,2.00808,0,1,-3,2,0,0,1,0,"cd_1","cd_1");
-    s_kftable[4201]=new Particle_Info(4201,1.96908,0,4,-3,0,0,0,1,0,"cu_0","cu_0");
-    s_kftable[4203]=new Particle_Info(4203,2.00808,0,4,-3,2,0,0,1,0,"cu_1","cu_1");
-    s_kftable[4301]=new Particle_Info(4301,2.15432,0,1,-3,0,0,0,1,0,"cs_0","cs_0");
-    s_kftable[4303]=new Particle_Info(4303,2.17967,0,1,-3,2,0,0,1,0,"cs_1","cs_1");
-    s_kftable[4403]=new Particle_Info(4403,3.27531,0,4,-3,2,0,0,1,0,"cc_1","cc_1");
-    s_kftable[5101]=new Particle_Info(5101,5.38897,0,-2,-3,0,0,0,1,0,"bd_0","bd_0");
-    s_kftable[5103]=new Particle_Info(5103,5.40145,0,-2,-3,2,0,0,1,0,"bd_1","bd_1");
-    s_kftable[5201]=new Particle_Info(5201,5.38897,0,1,-3,0,0,0,1,0,"bu_0","bu_0");
-    s_kftable[5203]=new Particle_Info(5203,5.40145,0,1,-3,2,0,0,1,0,"bu_1","bu_1");
-    s_kftable[5301]=new Particle_Info(5301,5.56725,0,-2,-3,0,0,0,1,0,"bs_0","bs_0");
-    s_kftable[5303]=new Particle_Info(5303,5.57536,0,-2,-3,2,0,0,1,0,"bs_1","bs_1");
-    s_kftable[5401]=new Particle_Info(5401,6.67143,0,1,-3,0,0,0,1,0,"bc_0","bc_0");
-    s_kftable[5403]=new Particle_Info(5403,6.67397,0,1,-3,2,0,0,1,0,"bc_1","bc_1");
-    s_kftable[5503]=new Particle_Info(5503,10.07354,0,-2,-3,2,0,0,1,0,"bb_1","bb_1");
+    s_kftable[1103]=new Particle_Info(1103,0.77133,0,-2,-3,2,0,0,1,1,"dd_1","dd_1");
+    s_kftable[2101]=new Particle_Info(2101,0.57933,0,1,-3,0,0,0,1,1,"ud_0","ud_0");
+    s_kftable[2103]=new Particle_Info(2103,0.77133,0,1,-3,2,0,0,1,1,"ud_1","ud_1");
+    s_kftable[2203]=new Particle_Info(2203,0.77133,0,4,-3,2,0,0,1,1,"uu_1","uu_1");
+    s_kftable[3101]=new Particle_Info(3101,0.80473,0,-2,-3,0,0,0,1,1,"sd_0","sd_0");
+    s_kftable[3103]=new Particle_Info(3103,0.92953,0,-2,-3,2,0,0,1,1,"sd_1","sd_1");
+    s_kftable[3201]=new Particle_Info(3201,0.80473,0,1,-3,0,0,0,1,1,"su_0","su_0");
+    s_kftable[3203]=new Particle_Info(3203,0.92953,0,1,-3,2,0,0,1,1,"su_1","su_1");
+    s_kftable[3303]=new Particle_Info(3303,1.09361,0,-2,-3,2,0,0,1,1,"ss_1","ss_1");
+    s_kftable[4101]=new Particle_Info(4101,1.96908,0,1,-3,0,0,0,1,1,"cd_0","cd_0");
+    s_kftable[4103]=new Particle_Info(4103,2.00808,0,1,-3,2,0,0,1,1,"cd_1","cd_1");
+    s_kftable[4201]=new Particle_Info(4201,1.96908,0,4,-3,0,0,0,1,1,"cu_0","cu_0");
+    s_kftable[4203]=new Particle_Info(4203,2.00808,0,4,-3,2,0,0,1,1,"cu_1","cu_1");
+    s_kftable[4301]=new Particle_Info(4301,2.15432,0,1,-3,0,0,0,1,1,"cs_0","cs_0");
+    s_kftable[4303]=new Particle_Info(4303,2.17967,0,1,-3,2,0,0,1,1,"cs_1","cs_1");
+    s_kftable[4403]=new Particle_Info(4403,3.27531,0,4,-3,2,0,0,1,1,"cc_1","cc_1");
+    s_kftable[5101]=new Particle_Info(5101,5.38897,0,-2,-3,0,0,0,1,1,"bd_0","bd_0");
+    s_kftable[5103]=new Particle_Info(5103,5.40145,0,-2,-3,2,0,0,1,1,"bd_1","bd_1");
+    s_kftable[5201]=new Particle_Info(5201,5.38897,0,1,-3,0,0,0,1,1,"bu_0","bu_0");
+    s_kftable[5203]=new Particle_Info(5203,5.40145,0,1,-3,2,0,0,1,1,"bu_1","bu_1");
+    s_kftable[5301]=new Particle_Info(5301,5.56725,0,-2,-3,0,0,0,1,1,"bs_0","bs_0");
+    s_kftable[5303]=new Particle_Info(5303,5.57536,0,-2,-3,2,0,0,1,1,"bs_1","bs_1");
+    s_kftable[5401]=new Particle_Info(5401,6.67143,0,1,-3,0,0,0,1,1,"bc_0","bc_0");
+    s_kftable[5403]=new Particle_Info(5403,6.67397,0,1,-3,2,0,0,1,1,"bc_1","bc_1");
+    s_kftable[5503]=new Particle_Info(5503,10.07354,0,-2,-3,2,0,0,1,1,"bb_1","bb_1");
   }
   // Other objects that may show up in an event record #########################################
   s_kftable[kf_cluster] = new
