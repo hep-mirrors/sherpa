@@ -234,7 +234,7 @@ METS_Scale_Setter::METS_Scale_Setter
   m_rproc=p_proc->Info().Has(nlo_type::real);
   m_sproc=p_proc->Info().Has(nlo_type::rsub);
   m_vproc=p_proc->Info().Has(nlo_type::vsub);
-  if (m_nproc) m_mode=2;
+  // if (m_nproc) m_mode=2;
   m_cmode=ToType<int>(rpa->gen.Variable("METS_CLUSTER_MODE"));
   Data_Reader read(" ",";","!","=");
   m_cmoders=read.GetValue<int>("METS_CLUSTER_MODE_RS",1);
