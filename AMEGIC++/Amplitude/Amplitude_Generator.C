@@ -25,7 +25,7 @@ using namespace std;
 
 Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
 					 Amegic_Model * _model,Topology * _top,
-					 std::vector<int> _order,int _ntchan_min,
+					 std::vector<double> _order,int _ntchan_min,
 					 Basic_Sfuncs* _BS,String_Handler* _shand, bool create_4V) 
   : fl(_fl), b(_b), p_model(_model), top(_top), 
     N(_no), order(_order), ntchan_min(_ntchan_min),
@@ -720,7 +720,7 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
   Single_Amplitude* f1 = first;
   Single_Amplitude* f2;
   int count=0;
-  std::vector<int> hitmax;
+  std::vector<double> hitmax;
   while (f1) {
     std::vector<int> hit;
     f1->GetPointlist()->FindOrder(hit);
@@ -732,7 +732,7 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
       hitmax.resize(hit.size(),0);
     for (size_t i(0);i<Min(hit.size(),hitmax.size());++i)
       if (order.size()<=i || hit[i]<order[i])
-	hitmax[i]=Max(hitmax[i],hit[i]);
+	hitmax[i]=Max(hitmax[i],(double)hit[i]);
     if (!valid ||
 	!CheckTChannels(f1->GetPointlist())) {
       ++count;

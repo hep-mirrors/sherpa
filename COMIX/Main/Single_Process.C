@@ -151,13 +151,13 @@ bool COMIX::Single_Process::Initialize
       smode&=~16;
       Process_Info cinfo(m_pinfo);
       cinfo.m_fi.m_nloqcdtype=nlo_type::loop;
-      cinfo.m_maxcpl[1]=p_bg->MaxCpl()[1]+
+      cinfo.m_maxcpl[1]=p_bg->MaxCpl()[1]/2.0+
 	((cinfo.m_fi.m_nloewtype&nlo_type::loop)?1:0);
-      cinfo.m_mincpl[1]=p_bg->MinCpl()[1]+
+      cinfo.m_mincpl[1]=p_bg->MinCpl()[1]/2.0+
 	((cinfo.m_fi.m_nloewtype&nlo_type::loop)?1:0);
-      cinfo.m_maxcpl[0]=p_bg->MaxCpl()[0]+
+      cinfo.m_maxcpl[0]=p_bg->MaxCpl()[0]/2.0+
 	((cinfo.m_fi.m_nloqcdtype&nlo_type::loop)?1:0);
-      cinfo.m_mincpl[0]=p_bg->MinCpl()[0]+
+      cinfo.m_mincpl[0]=p_bg->MinCpl()[0]/2.0+
 	((cinfo.m_fi.m_nloqcdtype&nlo_type::loop)?1:0);
       p_loop = PHASIC::Virtual_ME2_Base::GetME2(cinfo);
       if (p_loop==NULL) {
@@ -170,13 +170,13 @@ bool COMIX::Single_Process::Initialize
     }
     p_bg->SetLoopME(p_loop);
     nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);
-    m_maxcpl[1]=p_bg->MaxCpl()[1]
+    m_maxcpl[1]=p_bg->MaxCpl()[1]/2.0
       +((m_pinfo.m_fi.m_nloewtype&nlot)?1:0);
-    m_mincpl[1]=p_bg->MinCpl()[1]
+    m_mincpl[1]=p_bg->MinCpl()[1]/2.0
       +((m_pinfo.m_fi.m_nloewtype&nlot)?1:0);
-    m_maxcpl[0]=p_bg->MaxCpl()[0]
+    m_maxcpl[0]=p_bg->MaxCpl()[0]/2.0
       +((m_pinfo.m_fi.m_nloqcdtype&nlot)?1:0);
-    m_mincpl[0]=p_bg->MinCpl()[0]
+    m_mincpl[0]=p_bg->MinCpl()[0]/2.0
       +((m_pinfo.m_fi.m_nloqcdtype&nlot)?1:0);
     (*pmap)[m_name]=m_name;
     return true;

@@ -39,7 +39,8 @@ namespace AMEGIC {
 
     std::map<std::string,ATOOLS::Flavour> m_flavourmap;
     std::vector<size_t> m_hm;
-    std::vector<int> m_maxcpl, m_mincpl, m_aon;
+    std::vector<double> m_maxcpl, m_mincpl;
+    std::vector<int> m_aon;
     std::vector<std::vector<std::vector<int> > > m_cplmatrix;
     std::vector<std::vector<int> > m_on;
 
@@ -60,7 +61,7 @@ namespace AMEGIC {
   public:
     Amplitude_Handler(int,ATOOLS::Flavour *,int *,Process_Tags*,
 		      Amegic_Model *,Topology *,
-		      std::vector<int> &,std::vector<int> &,
+		      std::vector<double> &,std::vector<double> &,
 		      int &,MODEL::Coupling_Map *const cpls,
 		      Basic_Sfuncs *,String_Handler *,std::string print_graph="", bool create_4V=true,
 		      bool cutvecprop=true);
@@ -98,8 +99,6 @@ namespace AMEGIC {
     int    CompareAmplitudes(Amplitude_Handler*,double &, std::map<std::string,Complex> &);
     std::map<std::string,ATOOLS::Flavour>& GetFlavourmap() { return m_flavourmap; }
     bool   CheckEFMap();
-    std::vector<int> MaxCpl() const;
-    std::vector<int> MinCpl() const;
   };
 
     //! The alternative color matrix, for more details see CFColor.

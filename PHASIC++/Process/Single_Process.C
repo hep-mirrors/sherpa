@@ -342,8 +342,8 @@ double Single_Process::Differential(const Vec4D_Vector &p)
   DEBUG_FUNC(Name()<<", RS:"<<GetSubevtList());
   m_lastb=m_last=0.0;
   m_mewgtinfo.Reset();
-  m_mewgtinfo.m_oqcd=MaxOrder(0)/2;
-  m_mewgtinfo.m_oew=MaxOrder(1)/2;
+  m_mewgtinfo.m_oqcd=MaxOrder(0);
+  m_mewgtinfo.m_oew=MaxOrder(1);
   m_mewgtinfo.m_fl1=(int)(Flavours()[0]);
   m_mewgtinfo.m_fl2=(int)(Flavours()[1]);
   p_int->SetMomenta(p);

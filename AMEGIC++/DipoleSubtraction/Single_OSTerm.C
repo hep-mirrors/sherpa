@@ -331,8 +331,8 @@ int Single_OSTerm::InitAmplitude(Amegic_Model *model,Topology* top,
 
   SetMaxOrders(p_os_process->MaxOrders());
   SetMinOrders(p_os_process->MinOrders());
-  SetMaxOrder(0,p_os_process->MaxOrder(0)+2);
-  SetMinOrder(0,p_os_process->MinOrder(0)+2);
+  SetMaxOrder(0,p_os_process->MaxOrder(0)+1);
+  SetMinOrder(0,p_os_process->MinOrder(0)+1);
   return 1;
 }
 

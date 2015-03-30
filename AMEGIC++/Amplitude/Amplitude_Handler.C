@@ -21,8 +21,8 @@ using namespace std;
 
 Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinfo,
 				     Amegic_Model * model,Topology* top,
-				     std::vector<int> & _maxcpl,
-				     std::vector<int> & _mincpl,int & _ntchan,
+				     std::vector<double> & _maxcpl,
+				     std::vector<double> & _mincpl,int & _ntchan,
 				     MODEL::Coupling_Map *const cpls,
 				     Basic_Sfuncs* BS,String_Handler* _shand, 
 				     std::string print_graph,bool create_4V,
@@ -61,13 +61,13 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Process_Tags* pinf
 //     pi->Print();cout<<endl;
     sfl[0] = *(pi->p_fl);
     pi->GetFlavList(sfl+1);
-    gen = new Amplitude_Generator(1+pi->Nout(),sfl,b_dec,model,top,std::vector<int>(2,99),-99,BS,shand);
+    gen = new Amplitude_Generator(1+pi->Nout(),sfl,b_dec,model,top,std::vector<double>(2,99),-99,BS,shand);
     subgraphlist[i] = gen->Matching();
     if (subgraphlist[i]==NULL) {
       ndecays = 0;
       subgraphlist[0] = NULL;
     }
-    std::vector<int> corder=gen->Order();
+    std::vector<double> corder=gen->Order();
     if (corder.size()>order.size()) order.resize(corder.size(),0);
     for (size_t i(0);i<corder.size();++i) order[i]+=corder[i];
     delete gen;
@@ -297,32 +297,6 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
 
 //   probabs = new double[graphs.size()];
   Mi      = new Complex[graphs.size()];
-}
-
-std::vector<int> Amplitude_Handler::MaxCpl() const
-{
-  std::vector<int> maxcpl;
-  for (size_t i=0;i<graphs.size();i++)
-    for (size_t j=0;j<graphs.size();j++) {
-      if (maxcpl.size()<m_cplmatrix[i][j].size())
-	maxcpl.resize(m_cplmatrix[i][j].size(),0);
-      for (size_t k=0;k<m_cplmatrix[i][j].size();++k)
-	maxcpl[k]=Max(maxcpl[k],m_cplmatrix[i][j][k]);
-    }
-  return maxcpl;
-}
-
-std::vector<int> Amplitude_Handler::MinCpl() const
-{
-  std::vector<int> mincpl;
-  for (size_t i=0;i<graphs.size();i++)
-    for (size_t j=0;j<graphs.size();j++) {
-      if (mincpl.size()<m_cplmatrix[i][j].size())
-	mincpl.resize(m_cplmatrix[i][j].size(),99);
-      for (size_t k=0;k<m_cplmatrix[i][j].size();++k)
-	mincpl[k]=Min(mincpl[k],m_cplmatrix[i][j][k]);
-    }
-  return mincpl;
 }
 
 void Amplitude_Handler::StoreAmplitudeConfiguration(std::string path)

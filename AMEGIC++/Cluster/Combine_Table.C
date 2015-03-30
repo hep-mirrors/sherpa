@@ -170,7 +170,7 @@ Combine_Table::Combine_Table(AMEGIC::Process_Base *const proc,
 			     PDF::Cluster_Definitions_Base *clus,
 			     Vec4D *moms, Combine_Table *up,
 			     ATOOLS::DecayInfo_Vector *const decids):
-  p_ms(ms), m_nstrong(proc->MaxOrder(0)/2), m_nlegs(0), m_nampl(0),
+  p_ms(ms), m_nstrong(proc->MaxOrder(0)), m_nlegs(0), m_nampl(0),
   m_graph_winner(0), 
   p_up(up), p_legs(0), p_clus(clus), p_moms(moms),
   p_hard(NULL), p_hardc(NULL), p_channel(NULL), p_scale(NULL), m_rscale(-1.0),

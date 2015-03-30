@@ -175,7 +175,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   blob->AddData("Factorisation_Scale",new Blob_Data<double>
                 (sqrt(winfo.m_pdf.m_muf12*winfo.m_pdf.m_muf22)));
   blob->AddData("PDFInfo",new Blob_Data<ATOOLS::PDF_Info>(winfo.m_pdf));
-  blob->AddData("Orders",new Blob_Data<std::vector<int> >
+  blob->AddData("Orders",new Blob_Data<std::vector<double> >
 		(p_mehandler->Process()->MaxOrders()));
   blob->AddData("NLOQCDType",new Blob_Data<std::string>
                 (ToString(proc->Info().m_fi.m_nloqcdtype)));

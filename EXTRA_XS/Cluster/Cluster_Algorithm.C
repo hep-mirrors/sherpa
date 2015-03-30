@@ -59,8 +59,8 @@ bool Cluster_Algorithm::Cluster(Single_Process *const xs)
   PDF::CParam kt2(xs->ScaleSetter()->CoreScale(p_ampl));
   p_ampl->SetKT2(kt2.m_kt2);
   p_ampl->SetMu2(kt2.m_mu2);
-  p_ampl->SetOrderEW(xs->MaxOrder(1)/2);
-  p_ampl->SetOrderQCD(xs->MaxOrder(0)/2);
+  p_ampl->SetOrderEW(xs->MaxOrder(1));
+  p_ampl->SetOrderQCD(xs->MaxOrder(0));
   msg_Debugging()<<*p_ampl<<"\n";
   return true;
 }

@@ -62,7 +62,7 @@ namespace PHASIC {
     size_t      m_nin, m_nout, m_tinfo, m_mcmode, m_cmode;
     std::string m_name;
 
-    std::vector<int> m_maxcpl, m_mincpl;
+    std::vector<double> m_maxcpl, m_mincpl;
 
     ATOOLS::Flavour_Vector m_flavs;
     Process_Info           m_pinfo;
@@ -184,19 +184,19 @@ namespace PHASIC {
 
     inline const std::string &Name() const { return m_name; }
 
-    inline void SetMaxOrders(const std::vector<int> &o) { m_maxcpl=o; }
-    inline void SetMinOrders(const std::vector<int> &o) { m_mincpl=o; }
+    inline void SetMaxOrders(const std::vector<double> &o) { m_maxcpl=o; }
+    inline void SetMinOrders(const std::vector<double> &o) { m_mincpl=o; }
 
-    inline void SetMaxOrder(const size_t &id,const int o)
+    inline void SetMaxOrder(const size_t &id,const double o)
     { if (m_maxcpl.size()<=id) m_maxcpl.resize(id+1,0); m_maxcpl[id]=o; }
-    inline void SetMinOrder(const size_t &id,const int o)
+    inline void SetMinOrder(const size_t &id,const double o)
     { if (m_mincpl.size()<=id) m_mincpl.resize(id+1,0); m_mincpl[id]=o; }
 
-    inline const std::vector<int> &MaxOrders() const { return m_maxcpl; }
-    inline const std::vector<int> &MinOrders() const { return m_mincpl; }
+    inline const std::vector<double> &MaxOrders() const { return m_maxcpl; }
+    inline const std::vector<double> &MinOrders() const { return m_mincpl; }
 
-    inline int MaxOrder(const size_t &id) const { return m_maxcpl[id]; }
-    inline int MinOrder(const size_t &id) const { return m_mincpl[id]; }
+    inline double MaxOrder(const size_t &id) const { return m_maxcpl[id]; }
+    inline double MinOrder(const size_t &id) const { return m_mincpl[id]; }
 
     PDF::Shower_Base *Shower() const { return p_shower; }
 

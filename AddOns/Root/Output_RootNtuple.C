@@ -235,7 +235,7 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
     m_evtlist[m_cnt2].fscale=sqrt((*signal)["Factorisation_Scale"]->Get<double>());
     m_evtlist[m_cnt2].rscale=sqrt((*signal)["Renormalization_Scale"]->Get<double>());
     m_evtlist[m_cnt2].alphas=MODEL::s_model->ScalarFunction("alpha_S",m_evtlist[m_cnt2].rscale*m_evtlist[m_cnt2].rscale);
-    m_evtlist[m_cnt2].oqcd=(*signal)["Orders"]->Get<std::vector<int> >()[0];
+    m_evtlist[m_cnt2].oqcd=(*signal)["Orders"]->Get<std::vector<double> >()[0];
     if (type=="B" || type=="") strcpy(m_evtlist[m_cnt2].type,"B");
     else if (type=="V") strcpy(m_evtlist[m_cnt2].type,"V");
     else if (type=="I") strcpy(m_evtlist[m_cnt2].type,"I");
@@ -306,7 +306,7 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
       m_evtlist[m_cnt2].fscale=sqrt((*nlos)[j]->m_mu2[stp::fac]);
       m_evtlist[m_cnt2].rscale=sqrt((*nlos)[j]->m_mu2[stp::ren]);
       m_evtlist[m_cnt2].alphas=MODEL::s_model->ScalarFunction("alpha_S", m_evtlist[m_cnt2].rscale*m_evtlist[m_cnt2].rscale);
-      m_evtlist[m_cnt2].oqcd=(*signal)["Orders"]->Get<std::vector<int> >()[0];
+      m_evtlist[m_cnt2].oqcd=(*signal)["Orders"]->Get<std::vector<double> >()[0];
       if (type!="RS") THROW(fatal_error,"Error in NLO type");
       if ((*nlos)[j]->p_real==(*nlos)[j]) strcpy(m_evtlist[m_cnt2].type,"R");
       else                                strcpy(m_evtlist[m_cnt2].type,"S");

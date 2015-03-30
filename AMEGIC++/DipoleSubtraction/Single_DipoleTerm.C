@@ -416,8 +416,8 @@ int Single_DipoleTerm::InitAmplitude(Amegic_Model *model,Topology* top,
   }
   SetMaxOrders(p_LO_process->MaxOrders());
   SetMinOrders(p_LO_process->MinOrders());
-  SetMaxOrder(0,p_LO_process->MaxOrder(0)+2);
-  SetMinOrder(0,p_LO_process->MinOrder(0)+2);
+  SetMaxOrder(0,p_LO_process->MaxOrder(0)+1);
+  SetMinOrder(0,p_LO_process->MinOrder(0)+1);
 
   p_dipole->SetCoupling(((Single_LOProcess*)p_LO_process->Partner())->CouplingMap());
   p_dipole->SetAlpha(m_dalpha);
