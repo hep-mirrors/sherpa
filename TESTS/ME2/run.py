@@ -94,7 +94,7 @@ for proc in procs:
     write_sh_script(proc)
     call_sh_script(proc)
 
-print "\n All ME test for {0} processes passed\n".format(len(procs))
+print "\n All ME tests for {0} processes passed\n".format(len(procs))
     
 exit(0)
     
