@@ -77,7 +77,7 @@ void Resonance_Finder::FindProcessPossibleResonances
         Single_Vertex * v(it->second[i]);
         for (size_t j(1);j<v->in.size();++j) {
           if (v->dec)        { on=false; break; }
-          if (v->in[j]==v->in[0])      { on=false; break; }
+          if (v->in[j]==v->in[0].Bar()){ on=false; break; }
           if (v->in[j].IsDummy())      { on=false; break; }
           if ((m-=v->in[j].Mass())<0.) { on=false; break; }
           bool flavfound(false);
@@ -281,7 +281,7 @@ bool Resonance_Finder::FindResonances
     for (std::map<double,std::vector<size_t> >::const_iterator
          it=restab.begin();it!=restab.end();++it)
       msg_Debugging()<<it->second[0]<<it->second[1]<<it->second[2]<<": "
-                     <<vlist[it->second[2]]->in[0]<<" -> "
+                     <<vlist[it->second[2]]->in[0].Bar()<<" -> "
                      <<vlist[it->second[2]]->in[1]<<" "
                      <<vlist[it->second[2]]->in[2]
                      <<", |m-M|/W="<<it->first
@@ -297,10 +297,10 @@ bool Resonance_Finder::FindResonances
     if (!valid) continue;
     usedparts.push_back(pv[it->second[0]]);
     usedparts.push_back(pv[it->second[1]]);
-    msg_Debugging()<<"constructing decay: "<<vlist[it->second[2]]->in[0]<<" -> "
+    msg_Debugging()<<"constructing decay: "<<vlist[it->second[2]]->in[0].Bar()<<" -> "
                                            <<vlist[it->second[2]]->in[1]<<" "
                                            <<vlist[it->second[2]]->in[2]<<"\n";
-    rfl.push_back(vlist[it->second[2]]->in[0]);
+    rfl.push_back(vlist[it->second[2]]->in[0].Bar());
     Particle_Vector parts;
     parts.push_back(pv[it->second[0]]);
     parts.push_back(pv[it->second[1]]);
