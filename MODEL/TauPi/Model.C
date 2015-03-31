@@ -60,6 +60,7 @@ PrintInfo(ostream &str,const size_t width) const
      <<setw(width+7)<<" "<<"- ALPHAS(MZ) (strong coupling at MZ)\n"
      <<setw(width+7)<<" "<<"- ORDER_ALPHAS (0,1,2 -> 1, 2, 3-loop running)\n"
      <<setw(width+7)<<" "<<"- 1/ALPHAQED(0) (alpha QED Thompson limit)\n"
+     <<setw(width+7)<<" "<<"- ALPHAQED_DEFAULT_SCALE (scale for alpha_QED default)\n"
      <<setw(width+7)<<" "<<"- SIN2THETAW (weak mixing angle)\n"
      <<setw(width+7)<<" "<<"- VEV (Higgs vev)\n"
      <<setw(width+7)<<" "<<"- CKMORDER (0,1,2,3 - order of CKM expansion in Cabibbo angle)\n"
@@ -158,8 +159,8 @@ void Standard_Model_TauPi::FixEWParameters()
     // all SM parameters given explicitly
     alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
     aqed=new Running_AlphaQED(alphaQED0);
-    aqed->SetDefault((*aqed)(p_dataread->GetValue<double>
-			     ("ALPHAQED_DEFAULT_SCALE",sqr(MZ))));
+    aqed->SetDefault(alphaQED0=(*aqed)(p_dataread->GetValue<double>
+				       ("ALPHAQED_DEFAULT_SCALE",sqr(MZ))));
     csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23);
     ccos2thetaW=1.-csin2thetaW;
     cvev=p_dataread->GetValue<double>("VEV",246.);
@@ -169,8 +170,8 @@ void Standard_Model_TauPi::FixEWParameters()
     // SM parameters given by alphaQED0, M_W, M_Z, M_H
     alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
     aqed=new Running_AlphaQED(alphaQED0);
-    aqed->SetDefault((*aqed)(p_dataread->GetValue<double>
-			     ("ALPHAQED_DEFAULT_SCALE",sqr(MZ))));
+    aqed->SetDefault(alphaQED0=(*aqed)(p_dataread->GetValue<double>
+				       ("ALPHAQED_DEFAULT_SCALE",sqr(MZ))));
     ccos2thetaW=sqr(MW/MZ);
     csin2thetaW=1.-ccos2thetaW;
     cvev=2.*MW*sqrt(csin2thetaW/(4.*M_PI*aqed->Default()));
