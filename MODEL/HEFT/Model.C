@@ -104,12 +104,12 @@ void HEFT::ParticleInit()
   s_kftable[kf_tau]    = new Particle_Info(kf_tau,1.777,2.36E-12,-3,0,1,0,1,0,0,"tau-","tau+", "\\tau^{-}", "\\tau^{+}");
   s_kftable[kf_nutau]  = new Particle_Info(kf_nutau,.0,.0,0,0,1,0,1,1,0,"vtau","vtaub", "\\nu_{\\tau}", "\\bar{\\nu}_{\\tau}");
   s_kftable[kf_gluon]  = new Particle_Info(kf_gluon,.0,.0,0,8,2,-1,1,1,0,"G","G", "G", "G");
-  s_kftable[kf_photon] = new Particle_Info(kf_photon,.0,.0,0,0,2,-1,1,1,0,"P","P","P","P");
+  s_kftable[kf_photon] = new Particle_Info(kf_photon,.0,.0,0,0,2,-1,1,1,0,"P","P","\\gamma","\\gamma");
   s_kftable[kf_Z]      = new Particle_Info(kf_Z,91.188,2.49,0,0,2,-1,1,1,1,"Z","Z","Z","Z");
   s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.419,2.06,3,0,2,0,1,1,1,"W+","W-","W^{+}","W^{-}");
-  s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.,0.00407,0,0,0,-1,1,1,1,"h0","h0","h0","h0");
-  s_kftable[kf_shgluon] = new Particle_Info(kf_shgluon,0.0,0.0,0,8,2,-1,1,1,0,"GS","GS","GS","GS",1);
-  s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G4","G4",1);
+  s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.,0.00407,0,0,0,-1,1,1,1,"h0","h0","h_{0}","h_{0}");
+  s_kftable[kf_shgluon] = new Particle_Info(kf_shgluon,0.0,0.0,0,8,2,-1,1,1,0,"GS","GS","G_{S}","G_{S}",1);
+  s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G_{4}","G_{4}",1);
   ReadParticleData();
   AddStandardContainers();
 }
