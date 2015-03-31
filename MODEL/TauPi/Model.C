@@ -158,6 +158,8 @@ void Standard_Model_TauPi::FixEWParameters()
     // all SM parameters given explicitly
     alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
     aqed=new Running_AlphaQED(alphaQED0);
+    aqed->SetDefault((*aqed)(p_dataread->GetValue<double>
+			     ("ALPHAQED_DEFAULT_SCALE",sqr(MZ))));
     csin2thetaW=p_dataread->GetValue<double>("SIN2THETAW",0.23);
     ccos2thetaW=1.-csin2thetaW;
     cvev=p_dataread->GetValue<double>("VEV",246.);
@@ -167,6 +169,8 @@ void Standard_Model_TauPi::FixEWParameters()
     // SM parameters given by alphaQED0, M_W, M_Z, M_H
     alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
     aqed=new Running_AlphaQED(alphaQED0);
+    aqed->SetDefault((*aqed)(p_dataread->GetValue<double>
+			     ("ALPHAQED_DEFAULT_SCALE",sqr(MZ))));
     ccos2thetaW=sqr(MW/MZ);
     csin2thetaW=1.-ccos2thetaW;
     cvev=2.*MW*sqrt(csin2thetaW/(4.*M_PI*aqed->Default()));

@@ -11,8 +11,7 @@
 @cindex ETA
 @cindex RHO
 @cindex ALPHAS(MZ)
-@cindex 1/ALPHAQED(default)
-@cindex ALPHAS(default)
+@cindex ALPHAQED_DEFAULT_SCALE
 @cindex ORDER_ALPHAS
 @cindex USE_PDF_ALPHAS
 @cindex WIDTH_SCHEME
@@ -28,10 +27,11 @@ parameter, whose default is @option{1}. The following options are provided:
   
     all EW parameters are explicitly given.
     Here the W, Z and Higgs masses are taken as inputs, and
-    the parameters @code{1/ALPHAQED(default)}, @code{SIN2THETAW}, @code{VEV}
-    and @code{LAMBDA} have to be specified as well. While 
-    @code{1/ALPHAQED(default)} corresponds to the fine structure constant,
-    (which by default is not running), the parameters @code{SIN2THETAW}, 
+    the parameters @code{1/ALPHAQED(0)}, @code{SIN2THETAW}, @code{VEV}
+    and @code{LAMBDA} have to be specified. The fine structure constant
+    does not run by default. It is evaluated at scale @code{ALPHAQED_DEFAULT_SCALE},
+    which defaults to the Z mass squared (note that this scale has to be specified
+    in GeV squared). The parameters @code{SIN2THETAW}, 
     @code{VEV}, and @code{LAMBDA} thereby specify the weak mixing angle,
     the Higgs field vacuum expectation value, and the Higgs quartic
     coupling respectively.
@@ -41,8 +41,8 @@ parameter, whose default is @option{1}. The following options are provided:
     scheme (cf. below).
   @item  Case @code{1}:
   
-    all EW parameters are calculated out of the W, Z and Higgs masses and
-    @code{1/ALPHAQED(default)} using tree-level relations.
+    all EW parameters are calculated from the W, Z and Higgs masses and
+    @code{1/ALPHAQED(0)} using tree-level relations.
   @item  Case @code{3}:
   
     this choice corresponds to the G_mu-scheme. The EW parameters are 
@@ -78,15 +78,12 @@ at hand involves hadron collisions and thus PDFs, the value of the
 strong coupling constant is automatically set consistent with the PDF fit
 and can not be changed by the user. If Sherpa is compiled with LHAPDF
 support, it is also possible to use the alphaS evolution provided
-in LHAPDF by specifying @code{USE_PDF_ALPHAS=1}.
-For this fine structure constant there is also the option to provide
-a fixed value that can be used in calculations of matrix elements
-in case running of the coupling is disabled (cf. @ref{COUPLINGS}). The keyword
-is @code{ALPHAS(default)}. When using
-a running strong coupling, the order of the perturbative expansion 
-used can be set through @code{ORDER_ALPHAS}, where the default @option{0}
-corresponds to one-loop running and @code{1},@code{2},@code{3} 
-to 2,3,4-loops, respectively.  
+in LHAPDF by specifying @code{USE_PDF_ALPHAS=1}. The perturbative order
+of the running of the strong coupling can be set via @code{ORDER_ALPHAS},
+where the default @option{0} corresponds to one-loop running and 
+@code{1},@code{2},@code{3} to 2,3,4-loops, respectively. If the setup
+at hand involves PDFs, this parameter is set consistent with the information
+provided by the PDF set.
 
 If unstable particles (e.g. W/Z bosons) appear as intermediate propagators
 in the process, Sherpa uses the complex mass scheme to construct MEs
