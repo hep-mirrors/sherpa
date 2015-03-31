@@ -24,7 +24,7 @@ namespace MODEL{
   protected:
     void ParticleInit()
     {
-      ATOOLS::s_kftable[kf_none] = new ATOOLS::Particle_Info(kf_none,-1,0,0,0,0,-1,0,1,0,"no_particle","no particle",1,1);
+      ATOOLS::s_kftable[kf_none] = new ATOOLS::Particle_Info(kf_none,-1,0,0,0,0,-1,0,1,0,"no_particle","no_particle","no_particle","no_particle",1,1);
       ${particle_init}
       
       double jet_mass_threshold=MODEL::Model_Base::p_dataread->GetValue<double>("JET_MASS_THRESHOLD", 10.0);

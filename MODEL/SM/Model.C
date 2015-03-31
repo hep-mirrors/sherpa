@@ -85,27 +85,27 @@ Standard_Model::Standard_Model(string _dir,string _file) :
 
 void Standard_Model::ParticleInit()
 {
-  s_kftable[kf_none] = new ATOOLS::Particle_Info(kf_none,-1,0,0,0,0,-1,0,1,0,"no_particle","no particle",1,1);
+  s_kftable[kf_none] = new ATOOLS::Particle_Info(kf_none,-1,0,0,0,0,-1,0,1,0,"no_particle","no_particle","no_particle", "no_particle", 1,1);
   //add SM particles
-  //kf_code,mass,width,charge,strong,spin,majorana,take,stable,massive,idname,tex_name
-  s_kftable[kf_d]      = new Particle_Info(kf_d,0.01,.0,-1,3,1,0,1,1,0,"d","db");
-  s_kftable[kf_u]      = new Particle_Info(kf_u,0.005,.0,2,3,1,0,1,1,0,"u","ub");
-  s_kftable[kf_s]      = new Particle_Info(kf_s,0.2,.0,-1,3,1,0,1,1,0,"s","sb");
-  s_kftable[kf_c]      = new Particle_Info(kf_c,1.42,.0,2,3,1,0,1,1,0,"c","cb");
-  s_kftable[kf_b]      = new Particle_Info(kf_b,4.8,.0,-1,3,1,0,1,1,0,"b","bb");
-  s_kftable[kf_t]      = new Particle_Info(kf_t,173.,2.,2,3,1,0,1,1,1,"t","tb");
-  s_kftable[kf_e]      = new Particle_Info(kf_e,0.000511,.0,-3,0,1,0,1,1,0,"e-","e+");
-  s_kftable[kf_nue]    = new Particle_Info(kf_nue,.0,.0,0,0,1,0,1,1,0,"ve","veb");
-  s_kftable[kf_mu]     = new Particle_Info(kf_mu,.105,.0,-3,0,1,0,1,1,0,"mu-","mu+");
-  s_kftable[kf_numu]   = new Particle_Info(kf_numu,.0,.0,0,0,1,0,1,1,0,"vmu","vmub");
-  s_kftable[kf_tau]    = new Particle_Info(kf_tau,1.777,2.36E-12,-3,0,1,0,1,0,0,"tau-","tau+");
-  s_kftable[kf_nutau]  = new Particle_Info(kf_nutau,.0,.0,0,0,1,0,1,1,0,"vtau","vtaub");
-  s_kftable[kf_gluon]  = new Particle_Info(kf_gluon,.0,.0,0,8,2,-1,1,1,0,"G","G");
-  s_kftable[kf_photon] = new Particle_Info(kf_photon,.0,.0,0,0,2,-1,1,1,0,"P","P");
-  s_kftable[kf_Z]      = new Particle_Info(kf_Z,91.188,2.49,0,0,2,-1,1,1,1,"Z","Z");
-  s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.419,2.06,3,0,2,0,1,1,1,"W+","W-");
-  s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.,0.00407,0,0,0,-1,1,1,1,"h0","h0");
-  s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4",1);
+  //kf_code,mass,width,charge,strong,spin,majorana,take,stable,massive,idname,antiname,texname,antitexname
+  s_kftable[kf_d]      = new Particle_Info(kf_d,0.01,.0,-1,3,1,0,1,1,0,"d","db", "d", "\\bar{d}");
+  s_kftable[kf_u]      = new Particle_Info(kf_u,0.005,.0,2,3,1,0,1,1,0,"u","ub", "u", "\\bar{u}");
+  s_kftable[kf_s]      = new Particle_Info(kf_s,0.2,.0,-1,3,1,0,1,1,0,"s","sb", "s", "\\bar{s}");
+  s_kftable[kf_c]      = new Particle_Info(kf_c,1.42,.0,2,3,1,0,1,1,0,"c","cb", "c", "\\bar{c}");
+  s_kftable[kf_b]      = new Particle_Info(kf_b,4.8,.0,-1,3,1,0,1,1,0,"b","bb", "b", "\\bar{b}");
+  s_kftable[kf_t]      = new Particle_Info(kf_t,173.,2.,2,3,1,0,1,1,1,"t","tb", "t", "\\bar{t}");
+  s_kftable[kf_e]      = new Particle_Info(kf_e,0.000511,.0,-3,0,1,0,1,1,0,"e-","e+", "e^{-}", "e^{+}");
+  s_kftable[kf_nue]    = new Particle_Info(kf_nue,.0,.0,0,0,1,0,1,1,0,"ve","veb", "\\nu_{e}", "\\bar{\\nu}_{e}");
+  s_kftable[kf_mu]     = new Particle_Info(kf_mu,.105,.0,-3,0,1,0,1,1,0,"mu-","mu+", "\\mu^{-}", "\\mu^{+}");
+  s_kftable[kf_numu]   = new Particle_Info(kf_numu,.0,.0,0,0,1,0,1,1,0,"vmu","vmub", "\\nu_{\\mu}", "\\bar{\\nu}_{\\mu}");
+  s_kftable[kf_tau]    = new Particle_Info(kf_tau,1.777,2.36E-12,-3,0,1,0,1,0,0,"tau-","tau+", "\\tau^{-}", "\\tau^{+}");
+  s_kftable[kf_nutau]  = new Particle_Info(kf_nutau,.0,.0,0,0,1,0,1,1,0,"vtau","vtaub", "\\nu_{\\tau}", "\\bar{\\nu}_{\\tau}");
+  s_kftable[kf_gluon]  = new Particle_Info(kf_gluon,.0,.0,0,8,2,-1,1,1,0,"G","G", "G", "G");
+  s_kftable[kf_photon] = new Particle_Info(kf_photon,.0,.0,0,0,2,-1,1,1,0,"P","P","P","P");
+  s_kftable[kf_Z]      = new Particle_Info(kf_Z,91.188,2.49,0,0,2,-1,1,1,1,"Z","Z","Z","Z");
+  s_kftable[kf_Wplus]  = new Particle_Info(kf_Wplus,80.419,2.06,3,0,2,0,1,1,1,"W+","W-","W^{+}","W^{-}");
+  s_kftable[kf_h0]     = new Particle_Info(kf_h0,125.,0.00407,0,0,0,-1,1,1,1,"h0","h0","h0","h0");
+  s_kftable[kf_gluon_qgc] = new Particle_Info(kf_gluon_qgc,0.0,0.0,0,8,4,-1,1,1,0,"G4","G4","G4","G4",1);
   ReadParticleData();
   AddStandardContainers();
 }

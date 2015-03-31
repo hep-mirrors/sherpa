@@ -25,7 +25,8 @@ Particle_Info::Particle_Info(const Particle_Info &info):
   m_spin(info.m_spin), m_stable(info.m_stable), 
   m_masssign(info.m_masssign), m_dummy(info.m_dummy), m_majorana(info.m_majorana), 
   m_formfactor(0), m_on(info.m_on), m_massive(info.m_massive), m_hadron(info.m_hadron),
-  m_isgroup(info.m_isgroup), m_idname(info.m_idname), m_antiname(info.m_antiname)
+  m_isgroup(info.m_isgroup), m_idname(info.m_idname), m_antiname(info.m_antiname),
+  m_texname(info.m_texname), m_antitexname(info.m_antitexname)
 {
   m_content.resize(info.m_content.size());
   for (size_t i(0);i<info.m_content.size();++i) 
@@ -37,13 +38,15 @@ Particle_Info::Particle_Info
  const int icharge, const int strong,
  const int spin, const int majorana, const bool on,
  const int stable, bool massive, const std::string &idname,
- const std::string &antiname, const bool dummy, const bool isgroup):
+ const std::string &antiname, const std::string& texname,
+ const std::string &antitexname, const bool dummy, const bool isgroup):
   m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(-1.0), m_width(width),
   m_dg(0.0), m_dm(0.0), m_qoverp2(1.0), m_icharge(icharge),
   m_strong(strong), m_resummed(0), m_priority(0), m_spin(spin), 
   m_stable(stable), m_masssign(1), m_dummy(dummy), m_majorana(majorana), 
   m_formfactor(0), m_on(on), m_massive(massive), m_hadron(0), 
-  m_isgroup(isgroup), m_idname(idname), m_antiname(antiname)
+  m_isgroup(isgroup), m_idname(idname), m_antiname(antiname),
+  m_texname(texname), m_antitexname(antitexname)  
 {
   m_content.push_back(new Flavour(*this));
 }
@@ -58,7 +61,9 @@ Particle_Info::Particle_Info
   m_formfactor(0), m_on(on), m_massive(1), m_hadron(1), m_isgroup(0), 
   m_idname(idname), m_antiname(antiname)
 {
+  m_texname=m_idname;
   m_antiname=m_idname+"b";
+  m_antitexname=m_antiname;
   m_content.push_back(new Flavour(*this));
 }
 
@@ -71,7 +76,9 @@ Particle_Info::Particle_Info
   m_formfactor(formfactor), m_on(1), m_massive(1), m_hadron(1), m_isgroup(0), 
   m_idname(idname), m_antiname(antiname)
 {
+  m_texname=m_idname;
   m_antiname=m_idname+"b";
+  m_antitexname=m_antiname;
   m_content.push_back(new Flavour(*this));
 }
 

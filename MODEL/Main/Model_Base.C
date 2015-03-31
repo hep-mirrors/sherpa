@@ -274,17 +274,17 @@ void Model_Base::ReadParticleData() {
 void Model_Base::AddStandardContainers()
 {
   s_kftable[kf_resummed] = new
-    Particle_Info(kf_resummed,0.,0.,0,1,2,1,1,1,0,"r","r",0,1);
+    Particle_Info(kf_resummed,0.,0.,0,1,2,1,1,1,0,"r","r","r","r",0,1);
   s_kftable[kf_fermion] = new
-    Particle_Info(kf_fermion,0.,0., 0,0,1,0,1,1,0,"f","f",1,1);
+    Particle_Info(kf_fermion,0.,0., 0,0,1,0,1,1,0,"f","f","f","f",1,1);
   s_kftable[kf_jet] = new
-    Particle_Info(kf_jet,0.,0.,0,1, 2,1,1,1,0,"j","j",1,1);
+    Particle_Info(kf_jet,0.,0.,0,1, 2,1,1,1,0,"j","j","j","j",1,1);
   s_kftable[kf_quark] = new
-    Particle_Info(kf_quark,0.,0.,0,1,1,0,1,1,0,"Q","Q",1,1);
+    Particle_Info(kf_quark,0.,0.,0,1,1,0,1,1,0,"Q","Q","Q","Q",1,1);
   s_kftable[kf_lepton] = new
-    Particle_Info(kf_lepton,0.,0.,-3,0,1,0,1,1,0,"l","l",1,1);
+    Particle_Info(kf_lepton,0.,0.,-3,0,1,0,1,1,0,"l","l","l","l",1,1);
   s_kftable[kf_neutrino] = new
-    Particle_Info(kf_neutrino,0.,0.,0,0, 1,0,1,1,0,"v","v",1,1);
+    Particle_Info(kf_neutrino,0.,0.,0,0, 1,0,1,1,0,"v","v","v","v",1,1);
   s_kftable[kf_resummed]->Clear();
   s_kftable[kf_fermion]->Clear();
   s_kftable[kf_jet]->Clear();
@@ -357,7 +357,7 @@ void Model_Base::CustomContainerInit()
        ppread.StringValue<int>("Q",0),//Strong
        ppread.StringValue<int>("S",0),//Spin
        ppread.StringValue<int>("M",0),//Majorana
-       1,1,0,helpsvv[i][1],helpsvv[i][1]);
+       1,1,0,helpsvv[i][1],helpsvv[i][1],helpsvv[i][1],helpsvv[i][1]);
     s_kftable[nkf]->m_priority=ppread.StringValue<int>("P",0);
     s_kftable[nkf]->Clear();
     for (size_t j(2);j<helpsvv[i].size();++j) {

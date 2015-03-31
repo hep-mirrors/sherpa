@@ -33,7 +33,7 @@ namespace ATOOLS {
     int     m_spin, m_stable, m_masssign, m_dummy, m_majorana, m_formfactor;
     bool    m_on, m_massive, m_hadron, m_isgroup;
 
-    std::string m_idname, m_antiname;
+    std::string m_idname, m_antiname, m_texname, m_antitexname;
 
     PFlavour_Vector m_content;
 
@@ -51,7 +51,8 @@ namespace ATOOLS {
 		  const int icharge,const int strong,
 		  const int spin,const int majorana,const bool on,
 		  const int stable,bool massive,const std::string &idname,
-		  const std::string &antiname,const bool dummy=0, 
+		  const std::string &antiname, const std::string &texname,
+		  const std::string &antitexname ,const bool dummy=0, 
 		  const bool isgroup=false);
     Particle_Info(const kf_code &kfc,const double &mass,const double &width, 
 		  const int icharge,const int spin,

@@ -47,7 +47,9 @@ def write_model(model, model_name, model_file_name):
                       str(0)+", "+                                                # stable
                       str(massive)+", "+                                          # massive
                       "\""+str(s_part.name())+"\", "+                             # name
-                      "\""+str(s_part.antiname())+"\");")                         # anti_name
+                      "\""+str(s_part.antiname())+"\", "+                         # antiname
+                      "\""+str(s_part.texname())+"\", "+                          # texname
+                      "\""+str(s_part.antitexname())+"\");")                      # antitexname
 
         if s_part.width().is_external():
             para_init += "\n    ATOOLS::Flavour("+str(s_part.kf_code())+").SetWidth("+s_part.width().name()+");"
