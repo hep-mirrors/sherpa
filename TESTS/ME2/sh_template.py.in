@@ -2,15 +2,13 @@
 import sys
 from math import sqrt
 sys.path.append('@PYLIBDIR@')
+if len(sys.argv)<2: raise RuntimeError('Too few arguments given')
 sys.argv.append('INIT_ONLY=2')
 sys.argv.append('OUTPUT=0')
 @LOADMPIFORPY@
 import Sherpa
 
 n_flav = len(${in_flavs})+len(${out_flavs})
-
-if len(sys.argv)<2:
-    raise RuntimeError('Too few arguments given')
 
 me_fname = sys.argv.pop(1)
 devs = []
