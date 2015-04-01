@@ -264,7 +264,7 @@ void CS_Cluster_Definitions::KernelWeight
   if (!cdip->On()) cs.m_mu2=Max(cs.m_mu2,sqr(mo.Mass()));
   if (!(kmode&2)) return;
   if (!cdip->On()) {
-    if (AMode()==1) cs.m_wk=-1.0;
+    if (AMode()==1 || (kmode&4)) cs.m_wk=-1.0;
     else cs.m_wk=sqrt(std::numeric_limits<double>::min());
     cs.m_ws=1.0/cs.m_wk;
     msg_Debugging()<<"No Kernel. Set weight "<<cs.m_ws<<".\n";
