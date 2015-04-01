@@ -75,11 +75,9 @@ class s_particle:
     def antiname(self):
         return self.ufo_particle.antiname
 
-    def texname(self):
-        return self.ufo_particle.texname
-
     def antitexname(self):
-        return self.ufo_particle.antitexname
+        # replace backslahes by escaped backslashes
+        return self.ufo_particle.antitexname.replace(r"\ ".rstrip(), r"\\")
 
     def texname(self):
         # replace backslahes by escaped backslashes
