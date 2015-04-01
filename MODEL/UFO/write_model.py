@@ -31,8 +31,9 @@ def write_model(model, model_name, model_file_name):
 
     # fill particle list
     for s_part in [ s_particle(p) for p in model.all_particles ]:
+        kfcode = s_part.kf_code()
         # don't explicitly need to add antiparticles
-        if s_part.kf_code() < 0: 
+        if kfcode < 0: 
             continue
         massive = 0 if (s_part.ufo_particle.mass is model.parameters.ZERO) else 1
         part_init += ("\n    ATOOLS::s_kftable["+str(s_part.kf_code())+"] = new ATOOLS::Particle_Info("+ 
@@ -51,14 +52,11 @@ def write_model(model, model_name, model_file_name):
                       "\""+str(s_part.texname())+"\", "+                          # texname
                       "\""+str(s_part.antitexname())+"\");")                      # antitexname
 
-        if s_part.width().is_external():
-            para_init += "\n    ATOOLS::Flavour("+str(s_part.kf_code())+").SetWidth("+s_part.width().name()+");"
-        else:
-            para_init += "\n    ATOOLS::Flavour("+str(s_part.kf_code())+").SetWidth("+s_part.width().cpp_value()+");"
-        if s_part.mass().is_external():
-            para_init += "\n    ATOOLS::Flavour("+str(s_part.kf_code())+").SetMass("+s_part.mass().name()+");"
-        else:
-            para_init += "\n    ATOOLS::Flavour("+str(s_part.kf_code())+").SetMass("+s_part.mass().cpp_value()+");"
+        wstring = s_part.width().name() if s_part.width().is_external() else s_part.width().cpp_value()
+        mstring = s_part.mass().name()  if s_part.mass().is_external()  else s_part.mass().cpp_value()
+        para_init += "\n    ATOOLS::Flavour({0}).SetWidth({1});".format(kfcode,wstring)
+        para_init += "\n    ATOOLS::Flavour({0}).SetMass({1});".format(kfcode,mstring)
+        para_init += "\n    ATOOLS::Flavour({0}).SetHadMass({1});".format(kfcode,mstring)
 
     # coupling initialization and calculation
     for coup in model.all_couplings:
