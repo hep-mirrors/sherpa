@@ -19,13 +19,29 @@ using namespace std;
 PHOTONS_ME_Base::PHOTONS_ME_Base(const Particle_Vector_Vector& pvv) :
   m_alpha(Photons::s_alpha),
   m_e(sqrt(4.*M_PI*m_alpha)),
-  m_sW(sqrt(std::abs(MODEL::s_model->ComplexConstant("csin2_thetaW")))),
-  m_cW(sqrt(std::abs(MODEL::s_model->ComplexConstant("ccos2_thetaW")))),
   m_GF(1.16639e-5),
   m_sqrt2(1.41421356237),
   m_i(Complex(0.,1.)),
   p_boost(NULL), p_rot(NULL),
-  m_pvv_zero(pvv) {}
+  m_pvv_zero(pvv)
+{
+  double  MW  = Flavour(kf_Wplus).Mass();
+  double  MZ  = Flavour(kf_Z).Mass();
+  double  MH  = Flavour(kf_h0).Mass();
+  double  GH  = Flavour(kf_h0).Width();
+  double  GW  = Flavour(kf_Wplus).Width();
+  double  GZ  = Flavour(kf_Z).Width();
+  Complex I   = Complex(0.,1.);
+  Complex sw2 = 1.-sqr(MW/MZ);
+  Complex cw2 = 1.-sw2;
+  if (MODEL::s_model->ScalarNumber("WidthScheme")) {
+    Complex muW2(MW*(MW-I*GW)), muZ2(MZ*(MZ-I*GZ)), muH2(MH*(MH-I*GH));
+    sw2=muW2/muZ2;
+    cw2=1.-cw2;
+  }
+  m_sW = sqrt(std::abs(sw2));
+  m_cW = sqrt(std::abs(cw2));
+}
 
 PHOTONS_ME_Base::~PHOTONS_ME_Base() {
   if (p_boost) delete p_boost;
