@@ -493,13 +493,6 @@ bool Shower::EvolveSinglet(Singlet * act,const size_t &maxem,size_t &nem)
 	  else msg_Debugging()<<"Skip truncated shower veto\n";
 	  }
 	}
-	msg_Debugging()<<"Disable jet veto\n";
-	Singlet *sing(p_actual);
-	sing->SetJF(NULL);
-	while (sing->GetLeft()) {
-	  sing=sing->GetLeft()->GetSing();
-	  sing->SetJF(NULL);
-	}
       }
       if (m_noem) continue;
       msg_Debugging()<<"nem = "<<nem+1<<" vs. maxem = "<<maxem<<"\n";
