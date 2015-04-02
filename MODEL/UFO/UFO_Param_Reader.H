@@ -13,7 +13,7 @@ namespace UFO{
   class UFO_Param_Reader{
 
   public:
-    UFO_Param_Reader(const std::string& filename, const std::string& path=std::string("./"));
+    UFO_Param_Reader(const std::string& filepath);
     ~UFO_Param_Reader();
 
     template<class Read_Type> Read_Type GetEntry(const std::string& block, const unsigned int& n, const unsigned int& m);

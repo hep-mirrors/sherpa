@@ -5,6 +5,7 @@
   PDF_SET               None;
   
   SHERPA_LDADD          PhasicProcess ToolsOrg ToolsPhys ToolsMath ModelMain METoolsExplicit METoolsCurrents PDF;
+  UFO_PARAM_CARD        param_card.dat
   
   MODEL                 ${model};
 

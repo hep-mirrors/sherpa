@@ -17,7 +17,7 @@ namespace UFO{
     ATOOLS::Data_Reader* run_read = new ATOOLS::Data_Reader(" ",";","#","=");
     run_read->SetInputPath(path);
     run_read->SetInputFile(file);
-    p_dataread = new UFO::UFO_Param_Reader(run_read->GetValue<std::string>("PARAM_CARD",std::string("param_card.dat")));
+    p_dataread = new UFO::UFO_Param_Reader(run_read->GetValue<std::string>("UFO_PARAM_CARD",""));
     delete run_read;
   }
 

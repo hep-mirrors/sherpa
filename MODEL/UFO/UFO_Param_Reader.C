@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Read_Write_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 
 #include <assert.h>
 #include <vector>
@@ -15,9 +16,25 @@ using std::string;
 using std::vector;
 using std::stringstream;
 
-UFO_Param_Reader::UFO_Param_Reader(const string& filename, const string& path)
+UFO_Param_Reader::UFO_Param_Reader(const string& filepath)
 {
-  p_dataread = new ATOOLS::Data_Reader(" ",";","#","="); 
+  // if filepath not explicitly given, use run card
+  bool given(filepath!="");
+  string file_path = given ? filepath :ATOOLS::rpa->gen.Variable("RUN_DATA_FILE");
+  string filename(""), path("");
+  // split filepath into path and name
+  size_t pos(file_path.find_last_of("/"));
+  if (pos!=std::string::npos){
+    path=file_path.substr(0,pos+1);
+    filename=file_path.substr(pos+1);
+  }
+  else{
+    path=string("./");
+    filename=file_path;
+  }
+  if (filename.find("|")!=std::string::npos) 
+      filename=filename.substr(0,filename.find("|"));
+  p_dataread = new ATOOLS::Data_Reader(" ",";","#","=");
   p_dataread->AddWordSeparator("\t");
   p_dataread->SetInputPath(path);
   p_dataread->SetInputFile(filename);
@@ -41,8 +58,8 @@ UFO_Param_Reader::GetEntry(const string& block, const unsigned int& n, const uns
   for(vector< vector<string> >::const_iterator it = vals.begin(); it != vals.end(); ++it)
     {
       for(vector<string>::const_iterator jt = it->begin(); jt != it->end(); ++jt)
-	  if (p_dataread->Find(*jt, "block") != string::npos)
-	    NotFound(block, n, m);
+	if (p_dataread->Find(*jt, "block") != string::npos)
+	  NotFound(block, n, m);
       if (it->size() < 3)
 	continue;
       if (ATOOLS::ToType<int>((*it)[0]) == n && ATOOLS::ToType<int>((*it)[1]) == m)
@@ -56,7 +73,7 @@ UFO_Param_Reader::GetEntry(const string& block, const unsigned int& n)
 {
   string lc_block(block);
   for (size_t i=0;i<lc_block.length();++i) lc_block[i]=tolower(lc_block[i]);
-  // width specifications don't follow UFO conventions for some reason, 
+  // width specifications don't follow UFO conventions for some reason
   if (lc_block == "decay") 
     return GetWidth<Read_Type>(n);
   p_dataread->SetFileBegin(string("block ").append(block));
