@@ -24,7 +24,7 @@ GeneratePoint(ATOOLS::Vec4D *p,double *ran)
     pt=m_value;
     double mt2=pt*pt+ms[2];
     if (Ehat/2.0>sqrt(mt2)) {
-      weight=1.0/sqrt((Ehat*Ehat)/(4.*pt*pt)-1.0);
+      weight=1.0/sqrt((Ehat*Ehat)/(4.*pt*pt)-1.0)*pt/Ehat;
       double pz(sqrt(Ehat*Ehat/4.0-mt2));
       if (ATOOLS::ran->Get()<0.5) pz=-pz;
       p[2]=ATOOLS::Vec4D(Ehat/2.0,pt*cos(2.0*M_PI*ran[1]),
