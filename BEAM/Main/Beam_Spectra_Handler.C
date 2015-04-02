@@ -382,12 +382,12 @@ void Beam_Spectra_Handler::InitializeFlav(kf_code flav)
     bool initialize_diquarks(false);
     if (flav==kf_p_plus) {
       s_kftable[flav]=
-        new Particle_Info(kf_p_plus,0.938272,0,3,1,1,1,"P+","P-");
+        new Particle_Info(kf_p_plus,0.938272,0,3,1,1,1,"P+","P^{+}");
       initialize_diquarks=true;
     }
     else if (flav==kf_n) {
       s_kftable[flav]=
-        new Particle_Info(kf_n,0.939566,7.424e-28,0,0,1,1,"n","nb");
+        new Particle_Info(kf_n,0.939566,7.424e-28,0,0,1,1,"n","n");
       initialize_diquarks=true;
     }
     else if (flav==kf_e) {

@@ -54,16 +54,15 @@ Particle_Info::Particle_Info
 Particle_Info::Particle_Info
 (const kf_code &kfc,const double &mass,const double &width,
  const int icharge,const int spin,const bool on,
- const int stable,const std::string &idname,const std::string &antiname):
+ const int stable,const std::string &idname,const std::string &texname):
   m_kfc(kfc), m_mass(mass), m_hmass(mass), m_yuk(-1.0), m_width(width),
   m_icharge(icharge), m_strong(0), m_resummed(0), m_priority(0), 
   m_spin(spin), m_stable(stable), m_masssign(1), m_dummy(0), m_majorana(0), 
   m_formfactor(0), m_on(on), m_massive(1), m_hadron(1), m_isgroup(0), 
-  m_idname(idname), m_antiname(antiname)
+  m_idname(idname), m_texname(texname)
 {
-  m_texname=m_idname;
   m_antiname=m_idname+"b";
-  m_antitexname=m_antiname;
+  m_antitexname="\\overline{"+m_antiname+"}";
   m_content.push_back(new Flavour(*this));
 }
 
@@ -76,9 +75,8 @@ Particle_Info::Particle_Info
   m_formfactor(formfactor), m_on(1), m_massive(1), m_hadron(1), m_isgroup(0), 
   m_idname(idname), m_antiname(antiname)
 {
-  m_texname=m_idname;
   m_antiname=m_idname+"b";
-  m_antitexname=m_antiname;
+  m_antitexname="\\overline{"+m_antiname+"}";
   m_content.push_back(new Flavour(*this));
 }
 

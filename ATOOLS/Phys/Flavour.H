@@ -57,10 +57,10 @@ namespace ATOOLS {
     Particle_Info(const kf_code &kfc,const double &mass,const double &width, 
 		  const int icharge,const int spin,
 		  const bool on,const int stable,const std::string &idname,
-		  const std::string &antiname);
+		  const std::string &texname);
     Particle_Info(const kf_code &kfc,const double &mass,const int icharge,
                   const int spin,const int formfactor,const std::string &idname,
-                  const std::string &antiname);
+                  const std::string &texname);
 
     ~Particle_Info();
 
