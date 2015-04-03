@@ -16,8 +16,6 @@ namespace PHASIC {
     public ATOOLS::Tag_Replacer {
   private:
 
-    KFactor_Setter_Base *p_setter;
-
     ATOOLS::Algebra_Interpreter *p_calc;
 
     std::string m_kftag;

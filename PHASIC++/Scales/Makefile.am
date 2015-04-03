@@ -15,7 +15,6 @@ libPhasicScales_la_SOURCES    =	\
 				Variable_Scale_Setter.C \
 				Variable_Core_Scale.C \
 				Fastjet_Scale_Setter.C \
-				MPI_Scale_Setter.C \
 				QCD_Scale_Setter.C \
 				QCD_Core_Scale.C \
 				TTBar_Core_Scale.C \

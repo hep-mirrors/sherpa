@@ -8,20 +8,21 @@
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
-namespace PHASIC {
+namespace AMISIC {
 
-  class MPI_Scale_Setter: public Scale_Setter_Base {
+  class MPI_Scale_Setter: public PHASIC::Scale_Setter_Base {
   public:
 
-    MPI_Scale_Setter(const Scale_Setter_Arguments &args);
+    MPI_Scale_Setter(const PHASIC::Scale_Setter_Arguments &args);
 
     double Calculate(const std::vector<ATOOLS::Vec4D> &p,
 		     const size_t &mode);
 
   };// end of class Scale_Setter_Base
 
-}// end of namespace PHASIC
+}// end of namespace AMISIC
 
+using namespace AMISIC;
 using namespace PHASIC;
 using namespace ATOOLS;
 
