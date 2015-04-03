@@ -227,6 +227,11 @@ Kin_Args PHASIC::ClusterIFDipole
     }
     res.m_pk=sqrt(po/pn)*(pk-(Q*pk)/Q2*Q)-(Q2+mk2-maj2)/(2.0*Q2)*Q;
     res.m_pi=Q+res.m_pk;
+    if (dabs(res.m_pk.Abs2()-mk2)>rpa->gen.SqrtAccu() ||
+	dabs(res.m_pi.Abs2()-maj2)>rpa->gen.SqrtAccu()) {
+      msg_Debugging()<<METHOD<<"(): Unstable point. Using scheme 1.\n";
+      return ClusterIFDipole(ma2,mj2,maj2,mk2,mb2,pa,pj,pk,pb,mode|4);
+    }
     ZAlign lam(res.m_pi,pb,maj2,mb2);
     if (lam.Status()<0) {
       msg_Debugging()<<METHOD<<"(): Invalid kinematics."<<std::endl;

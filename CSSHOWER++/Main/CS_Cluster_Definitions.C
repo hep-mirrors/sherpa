@@ -342,6 +342,7 @@ ATOOLS::Vec4D_Vector  CS_Cluster_Definitions::Combine
     else after[l]=lt.m_lam*ampl.Leg(m)->Mom();
     ++l;
   }
+  if (ampl.Next()) ampl.Next()->SetKin(lt.m_mode&1);
   return after;
 }
 
