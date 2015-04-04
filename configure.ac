@@ -204,7 +204,6 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  Examples/API/ME2-Python/test.py \
 	  Examples/API/Events/test.py \
 	  Examples/API/MPIEvents/test.py \
-	  TESTS/ME2/sh_template.py \
 	  AddOns/Python/Makefile \
 	  AddOns/Analysis/Tools/Makefile \
 	  AddOns/Analysis/Main/Makefile \

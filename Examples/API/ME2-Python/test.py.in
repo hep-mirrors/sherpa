@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-## from mpi4py import MPI
+@LOADMPIFORPY@
 import sys
 sys.path.append('@PYLIBDIR@')
 import Sherpa
