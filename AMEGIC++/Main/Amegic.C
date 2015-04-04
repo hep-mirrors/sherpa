@@ -115,7 +115,9 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   SetPSMasses(&read);
   double alpha=read.GetValue<double>("AMEGIC_TCHANNEL_ALPHA",0.9);
   rpa->gen.SetVariable("AMEGIC_TCHANNEL_ALPHA",ToString(alpha));
-  double salpha=read.GetValue<double>("AMEGIC_SCHANNEL_ALPHA",1.1);
+  double salpha=read.GetValue<double>
+    ("AMEGIC_SCHANNEL_ALPHA",
+     (rpa->gen.Beam1().IsHadron()&&rpa->gen.Beam2().IsHadron())?1.1:0.5);
   rpa->gen.SetVariable("AMEGIC_SCHANNEL_ALPHA",ToString(salpha));
   double eps=read.GetValue<double>("AMEGIC_CHANNEL_EPSILON",0.0);
   rpa->gen.SetVariable("AMEGIC_CHANNEL_EPSILON",ToString(eps));
