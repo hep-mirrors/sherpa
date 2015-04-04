@@ -248,6 +248,8 @@ int Single_Virtual_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
     ((m_pinfo.m_fi.m_nloewtype&nlot)?1:0);
   m_pinfo.m_mincpl.resize(m_mincpl.size());
   m_pinfo.m_maxcpl.resize(m_maxcpl.size());
+  p_LO_process->SetMinOrders(m_mincpl);
+  p_LO_process->SetMaxOrders(m_maxcpl);
   for (size_t i(0);i<m_mincpl.size();++i) m_pinfo.m_mincpl[i]=m_mincpl[i];
   for (size_t i(0);i<m_maxcpl.size();++i) m_pinfo.m_maxcpl[i]=m_maxcpl[i];
 
