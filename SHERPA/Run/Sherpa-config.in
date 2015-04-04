@@ -8,6 +8,10 @@ case $1 in
   --libs)
     hepmc2libs=$(echo "@CONDITIONAL_HEPMC2LIBS@" | cut -d " " -f 1,3);
     echo -L@LIBDIR@ -lSherpaMain $hepmc2libs;;
+  --python-libs)
+    echo @PYLIBDIR@;;
+  --load-mpi4py)
+    echo @LOADMPIFORPY@;;
   --incdir)
     echo @INCLUDEDIR@;;
   --libdir)
