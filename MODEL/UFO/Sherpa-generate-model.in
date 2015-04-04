@@ -25,7 +25,7 @@ arg_parser.add_argument("-o", "--optimize",
 
 # extract path to ufo model as well as name of model from first positional argument
 args = arg_parser.parse_args()
-arg_path = args.ufo_path
+arg_path = os_path.dirname(args.ufo_path)
 model_path, model_name = os_path.split((arg_path.rstrip('/')))
 
 # try to import the model to check if UFO path is ok
