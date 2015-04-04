@@ -14,4 +14,5 @@ libAmisicTools_la_SOURCES     = \
 localinc_HEADERS          = \
 			Amisic_Histogram.H \
 			Fixed_Variable_Channel.H \
+			MPI_KFactor_Setter.H \
 			Semihard_QCD.H 

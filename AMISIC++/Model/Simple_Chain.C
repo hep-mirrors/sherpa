@@ -5,6 +5,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "EXTRA_XS/Main/Single_Process.H"
 #include "AMISIC++/Tools/Semihard_QCD.H"
+#include "AMISIC++/Tools/MPI_KFactor_Setter.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/My_Limits.H"
@@ -243,7 +244,7 @@ void Simple_Chain::InitializeProcessList(const Flavour& in1,
   pi.m_maxcpl[1]=pi.m_mincpl[1]=0;
   pi.m_maxcpl[0]=pi.m_mincpl[0]=2;
   pi.m_scale=p_read->GetValue<std::string>("MPI_SCALE","MPI");
-  pi.m_kfactor=p_read->GetValue<std::string>("MPI_KFACTOR","MPI{2.15}");
+  pi.m_kfactor=p_read->GetValue<std::string>("MPI_KFACTOR","MPI");
   pi.m_coupling="Alpha_QCD 1";
   pi.m_mpiprocess=true;
   p_processes.push_back(new Semihard_QCD(p_read));
@@ -407,10 +408,13 @@ bool Simple_Chain::Initialize()
   std::string xsfile=std::string("XS.dat");
   p_read->ReadFromFile(xsfile,"XS_FILE");
   SetInputFile(xsfile,1);
-  double stop, exponent, scale;
-  if (!p_read->ReadFromFile(stop,"SCALE_MIN")) stop=2.44;
+  double stop, exponent, scale, pt0, pt0exp;
+  if (!p_read->ReadFromFile(pt0,"TURNOFF")) pt0=1.7;
+  if (!p_read->ReadFromFile(stop,"SCALE_MIN")) stop=1.7;
+  if (!p_read->ReadFromFile(pt0exp,"TURNOFF_EXPONENT")) pt0exp=0.244;
   if (!p_read->ReadFromFile(exponent,"RESCALE_EXPONENT")) exponent=0.244;
-  if (!p_read->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1800.0;
+  if (!p_read->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1960.0;
+  MPI_KFactor_Setter::SetPT0(pt0*pow(m_ecms/scale,exponent));
   stop*=pow(m_ecms/scale,exponent);
   SetStop(stop,0);
   SetStop(stop,4); 
