@@ -50,7 +50,9 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   dr.AddWordSeparator("\t");
   dr.SetInputPath(rpa->GetPath());
   dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
-  int inttype  = dr.GetValue<int>("AMEGIC_INTEGRATOR",6);
+  int inttype  = dr.GetValue<int>
+    ("AMEGIC_INTEGRATOR",
+     (rpa->gen.Beam1().IsHadron()&&rpa->gen.Beam2().IsHadron())?6:7);
   if (proc->Info().Has(nlo_type::real)) {
     inttype  = dr.GetValue<int>("AMEGIC_RS_INTEGRATOR",7);
   }
