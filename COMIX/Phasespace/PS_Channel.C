@@ -57,10 +57,9 @@ PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
   else msg_Info()<<METHOD<<"(): Set t-channel exp "<<m_texp<<".\n";
   if (!read.ReadFromFile(m_stexp,"CDXS_STEXP")) m_stexp=1.0e-3;
   else msg_Info()<<METHOD<<"(): Set t-channel sub exp "<<m_stexp<<".\n";
-  if (!read.ReadFromFile(m_sexp,"CDXS_SEXP"))
-    m_sexp=(rpa->gen.Beam1().IsHadron()&&rpa->gen.Beam2().IsHadron())?1.1:0.5;
+  if (!read.ReadFromFile(m_sexp,"CDXS_SEXP")) m_sexp=0.75;
   else msg_Info()<<METHOD<<"(): Set s-channel exp "<<m_sexp<<".\n";
-  if (!read.ReadFromFile(m_srbase,"CDXS_SRBASE")) m_srbase=1.0;
+  if (!read.ReadFromFile(m_srbase,"CDXS_SRBASE")) m_srbase=1.05;
   else msg_Info()<<METHOD<<"(): Set s-channel exp scale "<<m_srbase<<".\n";
   if (!read.ReadFromFile(m_aexp,"CDXS_AEXP")) m_aexp=0.9;
   else msg_Info()<<METHOD<<"(): Set aniso s-channel exp "<<m_aexp<<".\n";
