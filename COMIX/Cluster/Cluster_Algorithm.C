@@ -640,22 +640,22 @@ bool Cluster_Algorithm::Cluster
   const DecayInfo_Vector &decids(p_bg->DecayInfos());
   for (size_t i(0);i<decids.size();++i)
     kt2ord.push_back(std::make_pair(decids[i]->m_id,0.0));
-  // if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo,kt2ord,
-  // 	       (m_wmode&512)?1:((m_wmode&16384)?1:0))) {
-  //   if (!(m_wmode&512)) {
-  //   KT2Info_Vector kt2ord
-  //     (1,KT2_Info((1<<p_ampl->Legs().size())-1,0.0));
-  //   const DecayInfo_Vector &decids(p_bg->DecayInfos());
-  //   for (size_t i(0);i<decids.size();++i)
-  //     kt2ord.push_back(std::make_pair(decids[i]->m_id,0.0));
-  //   msg_Debugging()<<"trying all unordered configurations\n";
-  //   if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo,kt2ord,0))
+  if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo,kt2ord,
+	       (m_wmode&512)?1:((m_wmode&16384)?1:0))) {
+    if (!(m_wmode&512)) {
+    KT2Info_Vector kt2ord
+      (1,KT2_Info((1<<p_ampl->Legs().size())-1,0.0));
+    const DecayInfo_Vector &decids(p_bg->DecayInfos());
+    for (size_t i(0);i<decids.size();++i)
+      kt2ord.push_back(std::make_pair(decids[i]->m_id,0.0));
+    msg_Debugging()<<"trying all unordered configurations\n";
+    if (!Cluster(2,Vertex_Set(),ccurs,fcur,cinfo,kt2ord,0))
       msg_Debugging()<<"no valid combination -> classify as core\n";
       p_ampl->SetProc(p_xs);
       p_ampl->SetKT2((p_xs->IsMapped()?p_xs->MapProc():p_xs)
 		     ->ScaleSetter()->CoreScale(p_ampl).m_mu2);
-  //   }
-  // }
+    }
+  }
   size_t nmax(p_proc->Info().m_fi.NMaxExternal());
   SetNMax(p_ampl,(1<<ccurs.size())-1,nmax);
   msg_Debugging()<<"Final configuration:\n";
