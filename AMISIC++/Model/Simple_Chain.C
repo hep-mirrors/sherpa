@@ -409,11 +409,11 @@ bool Simple_Chain::Initialize()
   p_read->ReadFromFile(xsfile,"XS_FILE");
   SetInputFile(xsfile,1);
   double stop, exponent, scale, pt0, pt0exp;
-  if (!p_read->ReadFromFile(pt0,"TURNOFF")) pt0=1.7;
-  if (!p_read->ReadFromFile(stop,"SCALE_MIN")) stop=1.7;
+  if (!p_read->ReadFromFile(pt0,"TURNOFF")) pt0=0.0;
+  if (!p_read->ReadFromFile(stop,"SCALE_MIN")) stop=2.44;
   if (!p_read->ReadFromFile(pt0exp,"TURNOFF_EXPONENT")) pt0exp=0.244;
   if (!p_read->ReadFromFile(exponent,"RESCALE_EXPONENT")) exponent=0.244;
-  if (!p_read->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1960.0;
+  if (!p_read->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1800.0;
   MPI_KFactor_Setter::SetPT0(pt0*pow(m_ecms/scale,exponent));
   stop*=pow(m_ecms/scale,exponent);
   SetStop(stop,0);
