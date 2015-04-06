@@ -75,21 +75,17 @@ Note: To set properties of hadrons, you can use the same switches (except for
 @menu
 * SM::		   Standard Model
 * MSSM::	   Minimal Supersymmetric Standard Model
-* ADD::		   ADD Model of Large Extra Dimensions
-* AGC::		   Anomalous Gauge Couplings
-* THDM::	   Two Higgs Doublet Model
-* EHC::		   Effective Higgs Couplings
-* 4thGen::	   Fourth Generation
-* FeynRules::	   FeynRules model 
+* MUED::	   Minimal Universal Extra Dimensions
+* QAGC::           Quartic Anomalous Gauge Couplings
+* HEFT::	   Effective Higgs Couplings
+* FeynRules::	   Other FeynRules models 
 @end menu
 
 
 
 @include SM.texi
 @include MSSM.texi
-@include ADD.texi
+@include MUED.texi
 @include AGC.texi
-@include THDM.texi
 @include EHC.texi
-@include 4thGen.texi
 @include FeynRules.texi

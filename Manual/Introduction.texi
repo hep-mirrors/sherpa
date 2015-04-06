@@ -53,19 +53,15 @@ collisions:
 @end itemize
 
 
-The list of physics processes that come with 
-@Sherpa{} covers particle production at 
-tree level in the Standard Model and in models beyond the Standard Model: 
-The complete set of Feynman rules for the MSSM has been implemented
-according to @mycite{Rosiek1989rs}, @mycite{Rosiek1995kg}, including 
-general mixing matrices for inter-generational squark and slepton mixing. 
-Among other interaction models the ADD model of Large Extra Dimensions has been 
-made available, too @mycite{Gleisberg2003ue}.  Furthermore, anomalous gauge couplings 
-@mycite{Hagiwara1986vm}, a model with an extended Higgs sector @mycite{Dedes2008bf}, and a 
-version of the Two-Higgs Doublet Model are available.  
+The list of physics processes that can be simulated with @Sherpa{} covers all reactions 
+in the Standard Model and many theories beyond. Sherpa is shipped with support for the MSSM, 
+Anomalous Gauge Couplings, and Minimal UED. Other models can be implemented either using Sherpa's 
+own model syntax, or by using the generic interface @mycite{Hoeche2014kca} to the UFO output 
+@mycite{Degrande2011ua} of @uref{https://feynrules.irmp.ucl.ac.be/,,FeynRules} 
+@mycite{Christensen2008py},@mycite{Christensen2009jx}.
 The 
-@Sherpa{} program owes this versatility to the inbuilt matrix-element generators, AMEGIC++ and 
-@uref{http://comix.freacafe.de,,Comix},
+@Sherpa{} program owes this versatility to the two inbuilt matrix-element generators, 
+AMEGIC++ and @uref{http://comix.freacafe.de,,Comix},
 and to it's phase-space generator Phasic @mycite{Krauss2001iv}, which automatically 
 calculate and integrate tree-level amplitudes for the implemented models.  This 
 feature enables Sherpa 

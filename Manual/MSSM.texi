@@ -1,15 +1,12 @@
 @node MSSM
 @subsection Minimal Supersymmetric Standard Model
-@cindex SLHA_INPUT
 
-To use the MSSM within Sherpa (cf. @mycite{Hagiwara2005wg}) 
-the MODEL switch has to be set to @option{MSSM}. Further, the
-parameter spectrum has to be fed in. To achieve this files that conform to the
-SUSY-Les-Houches-Accord @mycite{Skands2003cj} are used. The actual SLHA file
-name has to be specified by @code{SLHA_INPUT} and has to reside in the current
-run directory, i.e. @code{PATH}. From this file the full low-scale MSSM spectrum
-is read, including sparticle masses, mixing angles etc. In addition information
-provided on the total particle's widths is read from the input file. Note that
-the setting of masses and widths through the SLHA input is superior to setting
-through @code{MASS[<id>]} and @code{WIDTH[<id>]}.
+The MSSM is implemented via UFO, cf. 
+@uref{https://feynrules.irmp.ucl.ac.be/wiki/MSSM}.
+In order to use this model, Sherpa must be installed with python support,
+using @option{--enable-pyext}, as described in @xref{Installation}.
+Once installed, the model is made available to Sherpa by running
+@verbatim
+  Sherpa-generate-model MODEL/MSSM
+@end verbatim
 

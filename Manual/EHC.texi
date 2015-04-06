@@ -1,4 +1,4 @@
-@node EHC
+@node HEFT
 @subsection Effective Higgs Couplings
 @cindex FINITE_TOP_MASS
 @cindex FINITE_W_MASS
@@ -6,7 +6,7 @@
 @cindex DEACTIVATE_GGH
 @cindex EHC_SCALE2
 
-The EHC describes the effective coupling of gluons and photons to Higgs bosons
+The HEFT describes the effective coupling of gluons and photons to Higgs bosons
 via a top-quark loop, and a W-boson loop in case of photons. This supplement 
 to the Standard Model can be invoked by specifying @code{MODEL = HEFT} in 
 the @code{(model)} section of the steering file or the model data file 

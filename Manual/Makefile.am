@@ -9,9 +9,8 @@ MAKEFLAGS=-j1
 info_TEXINFOS = Sherpa.texi
 
 Sherpa_TEXINFOS = \
-	4thGen.texi \
+	MUED.texi \
 	API.texi \
-	ADD.texi \
 	AGC.texi \
 	Beam.texi \
         BFactory.texi \
@@ -67,7 +66,6 @@ Sherpa_TEXINFOS = \
 	SM.texi \
 	SoftQED.texi \
 	Starting.texi \
-	THDM.texi \
 	Tips.texi \
 	version.texi
 

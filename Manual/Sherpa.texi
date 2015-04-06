@@ -13,7 +13,7 @@
 
 @titlepage
 @title Sherpa Manual Version @value{VERSION}
-@author The Sherpa Team, see @uref{http://www.sherpa-mc.de}
+@author The Sherpa Team, see @uref{http://sherpa.hepforge.org}
 
 @page
 @vskip 0pt plus 1filll
@@ -84,7 +84,7 @@ In this case, follow the instructions given in
 
 If this does not help, contact the Sherpa team (see the 
 Sherpa Team section of the website 
-@uref{http://www.sherpa-mc.de,,http://www.sherpa-mc.de}), providing 
+@uref{http://sherpa.hepforge.org,,sherpa.hepforge.org}), providing 
 all information on your setup. Please include
 @enumerate
 @item A complete tarred and gzipped set of the @option{.dat} 

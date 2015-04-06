@@ -1,11 +1,12 @@
-@node QAGC
-@subsection Quartic Anomalous Gauge Couplings
+@node MUED
+@subsection Minimal Universal Extra Dimensions
 
-Anomalous quartic gauge couplings are implemented via UFO, 
-cf. @uref{https://feynrules.irmp.ucl.ac.be/wiki/AnomalousGaugeCoupling}.
+The Minimal Universal Extra Dimensions is implemented via UFO, cf. 
+@uref{https://feynrules.irmp.ucl.ac.be/wiki/MUED}.
 In order to use this model, Sherpa must be installed with python support,
 using @option{--enable-pyext}, as described in @xref{Installation}.
 Once installed, the model is made available to Sherpa by running
 @verbatim
-  Sherpa-generate-model MODEL/QAGC
+  Sherpa-generate-model MODEL/MUED
 @end verbatim
+

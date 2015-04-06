@@ -555,6 +555,7 @@
 @mybibitem{Deak2011ga,Dea11, M. Deak and F. Hautmann and H. Jung and K. Kutak,Forward Jets and Energy Flow in Hadronic Collisions,Eur.Phys.J.,C72,(2012),1982,[arXiv:1112.6354],arXiv:1112.6354}
 @mybibitem{Dechambre2011py,Dec11, A. Dechambre and O. Kepka and C. Royon and  R. Staszewski,Uncertainties on exclusive diffractive Higgs and jets production at the LHC,Phys.Rev.,D83,(2011),054013,[arXiv:1101.1439],arXiv:1101.1439}
 @mybibitem{Dedes2008bf,Ded08, A. Dedes and T. Figy and S. Hoche and  F. Krauss and T. E. J. Underwood,Searching for Nambu-Goldstone Bosons at the LHC,JHEP,11,(2008),036,[arXiv:0807.4666],arXiv:0807.4666}
+@mybibitem{Degrande2011ua,Deg11a, C. Degrande and C. Duhr and B. Fuks and D. Grellscheid and O. Mattelaer and T. Reiter,UFO - The Universal FeynRules Output,Comput. Phys. Commun.,138,(2012),1201,[arXiv:1108.2040],arXiv:1108.2040}
 @mybibitem{DelDuca2003uz,Del03, V. Del Duca and F. Maltoni and Z. Nagy and  Z. Trocsanyi,QCD radiative corrections to prompt diphoton production in association with a jet at hadron colliders,JHEP,04,(2003),059,[hep-ph/0303012],hep-ph/0303012}
 @mybibitem{Delgado2011tp,Del11, R. M. D. Delgado and J. R. Forshaw and S. Marzani and M. H. Seymour,The dijet cross section with a jet veto,JHEP,08,(2011),157,[arXiv:1107.2084],arXiv:1107.2084}
 @mybibitem{DelPozo1993th,Del93, L. A. Del Pozo,Tests of QCD from Jet and Hadron Production at LEP,,,,,,}
@@ -809,6 +810,7 @@
 @mybibitem{Hoeche2013mua,Hoe13, S. Hoeche and J. Huang and G. Luisoni and  M. Schoenherr and J. Winter,Zero and one jet combined NLO analysis of the top quark forward-backward asymmetry,Phys.Rev.,D88,(2013),014040,arXiv:1306.2703,arXiv:1306.2703}
 @mybibitem{Hoeche2014lxa,Hoe14a, S. Hoeche and F. Krauss and M. Schoenherr,Uncertainties in MEPS@@NLO calculations of h+jets,,,,,arXiv:1401.7971,arXiv:1401.7971}
 @mybibitem{Hoeche2014rya,Hoe14b, S. Hoeche and F. Krauss and S. Pozzorini and M. Schoenherr and J. M. Thompson and K. C. Zapp,Triple vector boson production through Higgs-Strahlung with NLO multijet merging,,,,,arXiv:1403.7516,arXiv:1403.7516}
+@mybibitem{Hoeche2014kca,Hoe14c, S. Hoeche and S. Kuttimalai and S. Schumann and F. Siegert,Beyond Standard Model calculations with Sherpa,Eur. Phys. J.,C75,(2015),135,[arXiv:1412.6478],arXiv:1412.6478}
 @mybibitem{Hollik2011ps,Hol11, W. Hollik and D. Pagani,The electroweak contribution to the top quark forward-backward asymmetry at the Tevatron,Phys.Rev.,D84,(2011),093003,[arXiv:1107.2606],arXiv:1107.2606}
 @mybibitem{Hou1987ya,Hou87, G. W. S. Hou,Charmless Rare B Decays Heavy Quarks and a Fourth Generation,,,,,,}
 @mybibitem{Hou1987vd,Hou87a, W. S. Hou and A. Soni and H. Steger,Charmless Decays of Bottom Mesons and a Fourth Generation,Phys. Rev. Lett.,59,(1987),1521,,F+J+Phys. Rev. Lett.%2C59%2C1521}
