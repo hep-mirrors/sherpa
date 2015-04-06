@@ -37,7 +37,7 @@ Proto_Particle(Flavour flav,Vec4D mom,char info) :
   p_partner(NULL)
 { 
   if (!(flav.IsGluon() || flav.IsDiQuark())) {
-    if (flav.IsQuark() && flav.Kfcode()!=6) {
+    if (flav.IsQuark() && flav.Kfcode()>5) {
       std::cerr<<"Error in Proto_Particle::Proto_Particle():\n"
 	       <<"   Tried to form a cluster particle from a "<<flav<<".\n"
 	       <<"   Please make sure that heavy coloured objects decay "

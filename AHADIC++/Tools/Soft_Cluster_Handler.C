@@ -548,6 +548,8 @@ TransformWeight(Cluster * cluster,Flavour & hadron,
   Flavour_Pair fpair;
   fpair.first  = cluster->GetTrip()->m_flav;
   fpair.second = cluster->GetAnti()->m_flav;
+
+  if (fpair.first.IsDiQuark() && fpair.second.IsDiQuark()) return 0.;
   if (p_singletransitions->GetTransitions()->find(fpair)==
       p_singletransitions->GetTransitions()->end()) {
     msg_Error()<<"Error in "<<METHOD<<" for cluster\n"
@@ -556,8 +558,6 @@ TransformWeight(Cluster * cluster,Flavour & hadron,
 	       <<"   Will return 0 and hope for the best.\n";
     return 0.;
   }
-
-  if (fpair.first.IsDiQuark() && fpair.second.IsDiQuark()) return 0.;
 
   double MC(cluster->Mass());
   double critM(p_singletransitions->GetLightestMass(fpair)*(1.-m_transoffset)+
