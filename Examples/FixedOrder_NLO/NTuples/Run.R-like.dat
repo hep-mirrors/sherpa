@@ -21,7 +21,7 @@
   NLO_QCD_Mode Fixed_Order;
   NLO_QCD_Part RS;
   Integration_Error 0.0275;
-  Order_EW 2;
+  Order (-1,2);
   End process;
 }(processes);
 (selector){
