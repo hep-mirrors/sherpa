@@ -36,6 +36,14 @@ Proto_Particle(Flavour flav,Vec4D mom,char info) :
   m_mass(hadpars->GetConstituents()->Mass(flav)), m_kt2max(0.), 
   p_partner(NULL)
 { 
+  if (!(flav.IsGluon() || flav.IsDiQuark() ||
+	(flav.IsQuark() && flav.Kfcode()!=6))) {
+    std::cerr<<"Error in Proto_Particle::Proto_Particle("
+	     <<flav<<"): \n"
+	     <<"   Tried to form a cluster particle from a top quark.\n"
+	     <<"   Will exit the run.\n";
+    exit(0);
+  }
   control::s_AHAprotoparticles++; 
   s_actives.push_back(this);
 }

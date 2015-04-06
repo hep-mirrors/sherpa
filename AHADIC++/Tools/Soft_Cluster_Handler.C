@@ -548,6 +548,15 @@ TransformWeight(Cluster * cluster,Flavour & hadron,
   Flavour_Pair fpair;
   fpair.first  = cluster->GetTrip()->m_flav;
   fpair.second = cluster->GetAnti()->m_flav;
+  if (p_singletransitions->GetTransitions()->find(fpair)==
+      p_singletransitions->GetTransitions()->end()) {
+    msg_Error()<<"Error in "<<METHOD<<" for cluster\n"
+	       <<(*cluster)
+	       <<"   illegal flavour combination.\n"
+	       <<"   Will return 0 and hope for the best.\n";
+    return 0.;
+  }
+
   if (fpair.first.IsDiQuark() && fpair.second.IsDiQuark()) return 0.;
 
   double MC(cluster->Mass());
@@ -637,6 +646,13 @@ DecayWeight(Cluster * cluster,Flavour & had1,Flavour & had2,
   flpair.second = cluster->GetAnti()->m_flav;
   Double_Transition_Miter dtliter = 
     p_doubletransitions->GetTransitions()->find(flpair);
+  if (dtliter==p_doubletransitions->GetTransitions()->end()) {
+    msg_Error()<<"Error in "<<METHOD<<" for cluster\n"
+	       <<(*cluster)
+	       <<"   illegal flavour combination.\n"
+	       <<"   Will return 0 and hope for the best.\n";
+    return 0.;
+  }
   double MC(cluster->Mass()),MC2(MC*MC);
   
   if (p_doubletransitions->GetLightestMass(flpair)>MC && enforce) {
