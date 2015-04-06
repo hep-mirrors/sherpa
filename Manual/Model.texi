@@ -74,18 +74,18 @@ Note: To set properties of hadrons, you can use the same switches (except for
 @anchor{Models available in Sherpa}
 @menu
 * SM::		   Standard Model
+* HEFT::	   Effective Higgs Couplings
 * MSSM::	   Minimal Supersymmetric Standard Model
 * MUED::	   Minimal Universal Extra Dimensions
 * QAGC::           Quartic Anomalous Gauge Couplings
-* HEFT::	   Effective Higgs Couplings
 * FeynRules::	   Other FeynRules models 
 @end menu
 
 
 
 @include SM.texi
+@include EHC.texi
 @include MSSM.texi
 @include MUED.texi
 @include AGC.texi
-@include EHC.texi
 @include FeynRules.texi
