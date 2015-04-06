@@ -104,11 +104,11 @@ void PDF_MSTW::CalculateSpec(const double& x,const double& Q2)
 double PDF_MSTW::GetXPDF(const ATOOLS::Flavour& infl)
 {
   if(m_x<m_xmin) m_x=m_xmin;
-  if (m_x>m_xmax) return 0.0;
+  if (m_x/m_rescale>m_xmax || m_rescale<0.0) return 0.0;
   int kfc=m_anti*int(infl);
   if (abs(kfc)==kf_gluon) kfc=0;
   else if (abs(kfc)==kf_photon) kfc=13;
-  return m_rescale*p_pdf->parton(kfc,m_x,sqrt(m_Q2));
+  return m_rescale*p_pdf->parton(kfc,m_x/m_rescale,sqrt(m_Q2));
 }
 
 double PDF_MSTW::GetXPDF(const kf_code& kf, bool anti)

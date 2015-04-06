@@ -74,11 +74,11 @@ void PDF_MRST04QED::CalculateSpec(const double& x,const double& Q2)
   m_overscaled=false;
   double xx(x);
   if(xx<m_xmin) xx=m_xmin;
-  if (xx>m_xmax) {
+  if (xx/m_rescale>m_xmax || m_rescale<0.) {
     m_overscaled=true;
     return;
   }
-  mrstqed(xx,Q2,m_mode,p_xpdfv[1],p_xpdfv[0],p_xpdf[1],
+  mrstqed(xx/m_rescale,Q2,m_mode,p_xpdfv[1],p_xpdfv[0],p_xpdf[1],
 	  p_xpdf[0],p_xpdf[2],p_xpdf[3],p_xpdf[4],p_xpdf[5],p_xpdf[6]);
 }
 

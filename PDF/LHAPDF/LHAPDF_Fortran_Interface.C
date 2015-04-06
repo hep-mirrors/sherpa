@@ -104,6 +104,7 @@ void LHAPDF_Fortran_Interface::SetPDFMember()
 }
 
 void LHAPDF_Fortran_Interface::CalculateSpec(const double& x,const double& Q2) {
+  x/=m_rescale;
   double Q = sqrt(Q2);
   if (LHAPDF::hasPhoton()) m_fv=LHAPDF::xfxphoton(x,Q);
   else                     m_fv=LHAPDF::xfx(x,Q);

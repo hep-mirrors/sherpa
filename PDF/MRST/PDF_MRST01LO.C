@@ -66,11 +66,11 @@ PDF_Base *PDF_MRST01LO::GetCopy()
 void PDF_MRST01LO::CalculateSpec(const double& x,const double& Q2)
 {
   m_overscaled=false;
-  if (x>m_xmax) {
+  if (x/m_rescale>m_xmax || m_rescale<0.) {
     m_overscaled=true;
     return;
   }
-  mrstlo(x,Q2,m_mode,p_xpdfv[1],p_xpdfv[0],p_xpdf[1],
+  mrstlo(x/m_rescale,Q2,m_mode,p_xpdfv[1],p_xpdfv[0],p_xpdf[1],
 	 p_xpdf[0],p_xpdf[2],p_xpdf[3],p_xpdf[4],p_xpdf[5]);
 }
 

@@ -56,11 +56,11 @@ PDF_Base *PDF_MRST99::GetCopy()
 void PDF_MRST99::CalculateSpec(const double& x,const double& Q2)
 {
   m_overscaled=false;
-  if (x>m_xmax) {
+  if (x/m_rescale>m_xmax || m_rescale<0.) {
     m_overscaled=true;
     return;
   }
-  p_proton->mrst99(x,Q2,m_member);
+  p_proton->mrst99(x/m_rescale,Q2,m_member);
   m_content = p_proton->cont;
 }
 

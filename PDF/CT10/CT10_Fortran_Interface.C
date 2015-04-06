@@ -138,13 +138,13 @@ namespace PDF {
 
     void   CalculateSpec(const double& x, const double& Q2) {
       for (size_t i=0;i<11;++i) m_calculated[i]=false;
-      m_x=x;
+      m_x=x/m_rescale;
       m_Q=sqrt(Q2);
     }
 
 
     double GetXPDF(const ATOOLS::Flavour& infl) {
-      if (m_x>m_xmax) return 0.;
+      if (m_x>m_xmax || m_rescale<0.) return 0.;
       if (!(m_x>=0.0 && m_x<=1.0)) {
         PRINT_INFO("PDF called with x="<<m_x);
         return 0.;

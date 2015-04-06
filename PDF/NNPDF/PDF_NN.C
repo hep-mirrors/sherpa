@@ -160,7 +160,7 @@ void PDF_NNPDF::CalculateSpec(const double& x, const double& Q2)
 {
   //for (std::map<int,bool>::iterator it=m_calculated.begin();
        //it!=m_calculated.end();++it) it->second=false;
-  m_x=x;
+  m_x=x/m_rescale;
   m_Q2=Q2;
 }
 
