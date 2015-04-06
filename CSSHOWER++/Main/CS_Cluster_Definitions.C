@@ -239,7 +239,8 @@ void CS_Cluster_Definitions::KernelWeight
   }
   if (m_pdfcheck && (cs.m_mode&1)) {
     int beam=i->Id()&1?0:1;
-    if (!p_shower->ISR()->PDF(beam)->Contains(mo)) {
+    if (p_shower->ISR()->PDF(beam) &&
+	!p_shower->ISR()->PDF(beam)->Contains(mo)) {
       msg_Debugging()<<"Not in PDF: "<<mo<<".\n";
       cs.m_ws=cs.m_wk=-1.0;
       cs.m_kmode=-1;
