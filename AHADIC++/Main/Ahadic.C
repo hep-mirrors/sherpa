@@ -55,6 +55,10 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
     if ((*blit)->Has(blob_status::needs_hadronization) &&
 	(*blit)->Type()==btp::Fragmentation) {
       blob   = (*blit);
+      //msg_Out()<<"====================================================\n"
+      //       <<"====================================================\n"
+      //       <<"====================================================\n"
+      //       <<(*blob)<<"\n";
       moveon = false;
       Reset();
       for (short int i=0;i<m_maxtrials;i++) {
@@ -196,9 +200,12 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
   }
   assert(m_clulist.empty());
 
-  if (blob->CheckMomentumConservation().Abs2()>1.e-6) 
-    msg_Error()<<"Error in "<<METHOD<<": blob seem to be fishy.\n"
+  if (blob->CheckMomentumConservation().Abs2()>1.e-6) {
+    msg_Error()<<"Error in "<<METHOD<<": blob seem to be fishy: "
+	       <<blob->CheckMomentumConservation()<<"\n"
 	       <<(*blob)<<"\n";
+    exit(1);
+  }
   return Return_Value::Success;
 }
 

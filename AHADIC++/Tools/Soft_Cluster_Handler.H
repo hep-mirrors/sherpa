@@ -28,44 +28,29 @@ namespace AHADIC {
     bool                                      m_ana;
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
-
-    bool          TreatSingleCluster(Cluster *,bool=false);
     bool          CheckListForTreatment(Cluster_List *);
-    int           CheckCluster(Cluster *,bool,bool=false);
+    int           CheckCluster(Cluster *);
 
-    double        TransformWeight(Cluster *,ATOOLS::Flavour &,
-				  const bool & lighter=false,
+    double        TransformWeight(Cluster * cluster,ATOOLS::Flavour & flav,
 				  const bool & enforce=false);
     double        TransformKin(const double MC,const ATOOLS::Flavour & flav,
-			       const bool & enforce=false);
+			       const bool & enforce);
 
-    double        DecayWeight(Cluster *,ATOOLS::Flavour &,ATOOLS::Flavour &,
-			      const bool & enforce=false);
-    bool          ClusterAnnihilation(Cluster * cluster,
-				      ATOOLS::Flavour &,ATOOLS::Flavour &);
+    double        DecayWeight(Cluster * cluster,
+			      ATOOLS::Flavour & had1,ATOOLS::Flavour & had2);
+    bool          Annihilation(Cluster * cluster,
+			       ATOOLS::Flavour & had1,ATOOLS::Flavour & had2);
     void          FixHHDecay(Cluster * cluster,ATOOLS::Blob * blob,
 			     const ATOOLS::Flavour had1,
 			     const ATOOLS::Flavour had2,
 			     const bool & constrained=false);
 
-    bool          CheckIfAllowed(Cluster_List * clin,double & E);
-    bool          UpdateTransitions(Cluster_List * clin);  
-    bool          EnforcedTransition(Cluster_List * clin);
-    bool          ShiftMomenta(Cluster_List *);
-    bool          TryLocalCompensation(Cluster_List *);
-    bool          ForceMomenta(Cluster_List *);
-    bool          UpdateClusterDecayKinematics(Cluster * cluster);
     bool          AttachHadronsToBlob(Cluster_List * clin,ATOOLS::Blob * blob);
     ATOOLS::Vec4D SumMomentum(Cluster_List * clin);
   public:
     Soft_Cluster_Handler(bool ana=false);
     ~Soft_Cluster_Handler();
     bool          TreatClusterList(Cluster_List *,ATOOLS::Blob *);
-    bool          TreatClusterDecay(Cluster_List *,ATOOLS::Blob *);
-    bool          EnforcedDecay(Cluster * cluster,ATOOLS::Blob * blob,
-				const bool & constrained,
-				Cluster_List * clin=0,
-				const bool & attach=false);
   };
 
   /*!

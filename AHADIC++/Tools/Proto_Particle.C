@@ -36,7 +36,7 @@ Proto_Particle(Flavour flav,Vec4D mom,char info) :
   m_mass(hadpars->GetConstituents()->Mass(flav)), m_kt2max(0.), 
   p_partner(NULL)
 { 
-  if (!(flav.IsGluon() || flav.IsDiQuark())) {
+  if (!flav.IsGluon() && !flav.IsDiQuark()) {
     if (flav.IsQuark() && flav.Kfcode()>5) {
       std::cerr<<"Error in Proto_Particle::Proto_Particle():\n"
 	       <<"   Tried to form a cluster particle from a "<<flav<<".\n"

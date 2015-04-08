@@ -91,23 +91,18 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob) {
   if (!ClustersToHadrons(blob))    { 
     Reset(); return -1; 
   }
-  Vec4D blobmom(0.,0.,0.,0.);
-  for (size_t i(0);i<blob->NOutP();i++) 
+  /*
+    Vec4D blobmom(0.,0.,0.,0.);
+    for (size_t i(0);i<blob->NOutP();i++) 
     blobmom+=blob->OutParticle(i)->Momentum();
-  // msg_Out()<<"____________________________________________________\n"
-  // 	   <<"____________________________________________________\n"
-  // 	   <<"Cluster list after all merging etc.:\n"<<(*p_clulist)
-  // 	   <<"____________________________________________________\n"
-  // 	   <<"Blob momentum: "<<blobmom<<";\n"<<(*blob)<<"\n"
-  // 	   <<"____________________________________________________\n"
-  // 	   <<"____________________________________________________\n";
-  //msg_Out()<<METHOD<<" was successful: "
-  //  	   <<p_clulist->size()<<" clusters left to decay.\n"
-  //  	   <<(*p_clulist)<<"\n";
-  //if (blob->NOutP()>0) msg_Out()<<(*blob);
-  //msg_Out()<<"##################################################\n";
-
-  //msg_Out()<<METHOD<<":"<<(*blob)<<"\n";
+    msg_Out()<<"____________________________________________________\n"
+    <<"____________________________________________________\n"
+    <<"Cluster list after all merging etc.:\n"<<(*p_clulist)
+    <<"____________________________________________________\n"
+    <<"Blob momentum: "<<blobmom<<";\n"<<(*blob)<<"\n"
+    <<"____________________________________________________\n"
+    <<"____________________________________________________\n";
+  */
   return 1;
 }
 
@@ -434,7 +429,7 @@ bool Cluster_Formation_Handler::MergeClusterListsIntoOne() {
 
 bool Cluster_Formation_Handler::ClustersToHadrons(Blob * blob)
 {
- // msg_Out()<<METHOD<<" for: \n"<<(*p_clulist)<<"\n";
+  //msg_Out()<<"====== "<<METHOD<<" for: \n"<<(*p_clulist)<<"\n";
   if (!p_softclusters->TreatClusterList(p_clulist,blob)) return false;
 
   if (m_analyse) {

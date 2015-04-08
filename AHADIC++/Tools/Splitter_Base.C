@@ -159,7 +159,7 @@ double Splitter_Base::SelectY(const double & ymin,const double & ymax,
     y  = logdist?
       ylow * pow(yup/ylow,ran->Get()):
       pow(pow(ylow,etap)+ran->Get()*(pow(yup,etap)-pow(ylow,etap)),1./etap);
-  } while (pow(1.-y,2.)<ran->Get());
+  } while (wt<ran->Get()); // was pow(1.-y,2) before
   return y-offset;
 }
 
@@ -167,7 +167,7 @@ double Splitter_Base::SelectZ(const double & delta,const bool & lead) {
   double zmin(0.5*(1.-sqrt(1.-delta))), zmax(0.5*(1.+sqrt(1.-delta))), z;
   do {
     z = zmin+ran->Get()*sqrt(1.-delta);
-  } while (4.*z*(1.-z) < ran->Get()); // 1.-2.*z*(1.-z)  
+  } while (1.-2.*z*(1.-z) < ran->Get()); // was 4.*z*(1.-z) before 
   return z;
 }
 

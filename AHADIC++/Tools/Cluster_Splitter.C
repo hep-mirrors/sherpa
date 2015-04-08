@@ -80,8 +80,6 @@ bool Cluster_Splitter::ConstructSystem(Cluster * cluster) {
 	ConstructKinematics(exponents.first,exponents.second);
 	hit = SelectFlavour(m_popped.back()->m_sqq) &&  AcceptSystem(pt2max);
       } while (!hit && calls++<=1000);
-      //msg_Out()<<METHOD<<" accepts with "
-      //       <<m_popped.back()->m_kt2<<" < "<<m_pt2max<<".\n";
       if (hit) {
 	m_sumx += m_popped.back()->m_x; 
 	m_sumy += m_popped.back()->m_y;
@@ -109,8 +107,8 @@ ConstructKinematics(const double & etax,const double & etay) {
   do {
     x       = SelectY(xmin,xmax,etax,offsetx);
     ymin    = sqqmin/(x*m_LC.m_smandel); 
-    ymax    = Min(Max(x,ymin*4.),1.-mspect2hat-m_sumy);
-    //ymax    = 1.-mspect2hat-m_sumy;
+    //was before: ymax    = Min(Max(x,ymin*4.),1.-mspect2hat-m_sumy);
+    ymax    = 1.-mspect2hat-m_sumy;
     offsety = offsetx/x;
     y       = SelectY(ymin,ymax,etay,offsety);
     sqq     = x*y*m_LC.m_smandel;

@@ -31,8 +31,9 @@ int Cluster_Decay_Handler::DecayClusters(Blob * blob)
     cluster = p_clulist->front();
     if (!cluster->Active()) return -1;
     if (p_clus->TestDecay(cluster)) {
+      //msg_Out()<<METHOD<<": decay ok for\n"<<(*cluster);
       Cluster_List * clist(cluster->GetClusters());
-      if (!p_softclusters->TreatClusterDecay(clist,blob)) {
+      if (!p_softclusters->TreatClusterList(clist,blob)) {
 	msg_Error()<<"Error in "<<METHOD<<" : \n"
 		   <<"   Did not find a kinematically allowed "
 		   <<"solution for the cluster list.\n"
@@ -45,12 +46,14 @@ int Cluster_Decay_Handler::DecayClusters(Blob * blob)
       }
     }
     else {
-      //msg_Out()<<METHOD<<" --> EnforcedDecay of\n"<<(*cluster)<<"\n";
-      if (!p_softclusters->EnforcedDecay(cluster,blob,true,NULL,true)) 
-	return -1;
-      //msg_Out()<<"Found "<<cluster->size()<<" hadrons: "
-	       //<<(*cluster)[0]<<" + "<<(*cluster)[1]<<".\n";
-      //msg_Out()<<"Success:\n"<<(*blob)<<"\n\n\n";
+      //if (cluster==NULL) msg_Out()<<"Aha.\n";
+      //msg_Out()<<"Enter soft cluster treatment with \n"<<(*cluster);
+      Cluster_List clist;
+      clist.push_back(cluster);
+      if (!p_softclusters->TreatClusterList(&clist,blob)) {
+	msg_Error()<<"Error in "<<METHOD<<".\n";
+	exit(1);
+      }
     }
     delete (p_clulist->front()->GetTrip());
     delete (p_clulist->front()->GetAnti());
