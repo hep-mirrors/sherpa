@@ -129,6 +129,7 @@ bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     ProcessResult(result_svv);
   }
   else { // if DC file does not exist yet
+    PRINT_INFO("Decay channel file in "<<m_path<<"/"<<m_filename<<" does not exist yet. Will use Isotropic decay.");
     msg_Tracking()<<"No DC file yet in :"<<m_path<<"/"<<m_filename<<".\n";
     int n=NOut()+1;
     vector<int> decayindices(n);
