@@ -2,11 +2,7 @@
 #define MODEL__UFO__UFO_Param_Reader_H
 
 #include <string>
-
-namespace ATOOLS
-{
-  class Data_Reader;
-}
+#include <vector>
 
 namespace UFO{
 
@@ -14,17 +10,19 @@ namespace UFO{
 
   public:
     UFO_Param_Reader(const std::string& filepath);
-    ~UFO_Param_Reader();
+    ~UFO_Param_Reader() {};
 
     template<class Read_Type> Read_Type GetEntry(const std::string& block, const unsigned int& n, const unsigned int& m);
     template<class Read_Type> Read_Type GetEntry(const std::string& block, const unsigned int& n);
 
   private:
-    ATOOLS::Data_Reader* p_dataread;
+    std::vector< std::vector<std::string> > m_lines;
+    int m_use_runcard; // use run card for ufo input instead of separate param_card.dat
     template<class Read_Type> Read_Type GetWidth(const unsigned int& n);
-    void NotFound(const std::string& block, const unsigned int& n, const unsigned int& m);
-    void NotFound(const std::string& block, const unsigned int& n);
-    
+    static void NotFound(const std::string& block, const unsigned int& n, const unsigned int& m);
+    static void NotFound(const std::string& block, const unsigned int& n);
+    static bool IgnoreCaseCompare(const std::string& a, const std::string& b);
+    std::vector< std::vector<std::string> >::const_iterator FindBlock(const std::string& block);
   };
 }
 
