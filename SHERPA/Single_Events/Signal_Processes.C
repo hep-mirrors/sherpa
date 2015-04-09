@@ -23,7 +23,7 @@ using namespace std;
 
 Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler) :
   p_mehandler(mehandler), p_scalevars(new Scale_Variations()),
-  p_atensor(NULL), m_overweight(0.0)
+  m_overweight(0.0)
 {
   m_name="Signal_Processes";
   m_type=eph::Perturbative;
@@ -39,7 +39,6 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler) :
 Signal_Processes::~Signal_Processes()
 {
   if (p_scalevars) delete p_scalevars;
-  if (p_atensor) delete p_atensor;
 }
 
 Return_Value::code Signal_Processes::Treat(Blob_List * bloblist, double & weight)
@@ -222,11 +221,10 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
     vector<int> spin_i(parts.size(), -1), spin_j(parts.size(), -1);
     vector<Particle*> partsonly(parts.size());
     for (size_t i=0; i<parts.size(); ++i) partsonly[i]=parts[i].first;
-    if (p_atensor) delete p_atensor;
-    p_atensor=new Amplitude2_Tensor(partsonly, permutation, 0, amps,
-                                    spin_i, spin_j);
-    DEBUG_VAR(*p_atensor);
-    blob->AddData("ATensor",new Blob_Data<Amplitude2_Tensor*>(p_atensor));
+    Amplitude2_Tensor* atensor = new Amplitude2_Tensor
+      (partsonly, permutation, 0, amps, spin_i, spin_j);
+    DEBUG_VAR(*atensor);
+    blob->AddData("ATensor",new Blob_Data<SP(METOOLS::Amplitude2_Tensor)>(atensor));
   }
   return success;
 }

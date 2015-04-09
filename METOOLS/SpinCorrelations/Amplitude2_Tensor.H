@@ -24,7 +24,7 @@ namespace METOOLS {
                               std::vector<int> &spin_i, std::vector<int> &spin_j,
                               double factor) const;
 
-    public:
+  public:
     Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts, size_t level);
     Amplitude2_Tensor(const std::vector<ATOOLS::Particle*>& parts,
                       size_t level,
@@ -36,6 +36,7 @@ namespace METOOLS {
                       size_t level,
                       const std::vector<Spin_Amplitudes>& diagrams,
                       std::vector<int>& spin_i, std::vector<int>& spin_j);
+    Amplitude2_Tensor(const Amplitude2_Tensor& other);
     ~Amplitude2_Tensor();
 
     void Contract(const Amplitude2_Matrix* D);
@@ -44,6 +45,7 @@ namespace METOOLS {
     void Multiply(const Complex& factor);
     Complex Trace() const;
     bool Contains(const ATOOLS::Particle* part) const;
+    void UpdateParticlePointers(const std::map<ATOOLS::Particle*,ATOOLS::Particle*>& pmap);
 
     inline const std::vector<Amplitude2_Tensor*> Next() const {return *p_next;}
 
@@ -53,7 +55,6 @@ namespace METOOLS {
     static bool SortCrit(const std::pair<ATOOLS::Particle*, size_t>& p1,
                          const std::pair<ATOOLS::Particle*, size_t>& p2);
   };
-
 
 }
 

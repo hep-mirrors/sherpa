@@ -5,6 +5,9 @@
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/Smart_Pointer.H"
+
+#include "METOOLS/SpinCorrelations/Amplitude2_Tensor.H"
 
 using namespace ATOOLS;
 
@@ -454,6 +457,31 @@ Blob_List Blob_List::Copy() const
       if (np->ProductionBlob()) THROW(fatal_error,"Internal error");
       nb->AddToOutParticles(np);
     }
+  }
+
+  // adjust p_originalpart pointers after copying
+  for (size_t i=0; i<copy.size(); ++i) {
+    Blob* nb=copy[i];
+    for (int j=0;j<nb->NInP();++j) {
+      std::map<Particle*,Particle*>::iterator pit(pmap.find(nb->InParticle(j)->OriginalPart()));
+      if (pit!=pmap.end()) nb->InParticle(j)->SetOriginalPart(pit->second);
+      else nb->InParticle(j)->SetOriginalPart(nb->InParticle(j));
+    }
+    for (int j=0;j<nb->NOutP();++j) {
+      std::map<Particle*,Particle*>::iterator pit(pmap.find(nb->OutParticle(j)->OriginalPart()));
+      if (pit!=pmap.end()) nb->OutParticle(j)->SetOriginalPart(pit->second);
+      else nb->OutParticle(j)->SetOriginalPart(nb->OutParticle(j));
+    }
+  }
+
+  // adjust particle pointers in amplitude tensor
+  Blob* signal=copy.FindFirst(btp::Signal_Process);
+  Blob_Data_Base* data = (*signal)["ATensor"];
+  if (data) {
+    SP(METOOLS::Amplitude2_Tensor) origamps = data->Get<SP(METOOLS::Amplitude2_Tensor)>();
+    SP(METOOLS::Amplitude2_Tensor) newamps(new METOOLS::Amplitude2_Tensor(*origamps));
+    newamps->UpdateParticlePointers(pmap);
+    data->Set(newamps);
   }
   return copy;
 }

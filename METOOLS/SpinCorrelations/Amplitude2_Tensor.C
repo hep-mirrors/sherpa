@@ -4,6 +4,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Smart_Pointer.C"
 
 using namespace METOOLS;
 using namespace ATOOLS;
@@ -96,6 +97,21 @@ Amplitude2_Tensor::Amplitude2_Tensor(const vector<ATOOLS::Particle*>& parts,
   }
 }
 
+
+Amplitude2_Tensor::Amplitude2_Tensor(const Amplitude2_Tensor& other)
+{
+  m_value=other.m_value;
+  m_nhel=other.m_nhel;
+  p_part=other.p_part;
+
+  if (other.p_next) {
+    p_next=new vector<Amplitude2_Tensor*>(m_nhel*m_nhel);
+    for (size_t i=0; i<p_next->size(); ++i) {
+      (*p_next)[i]=new Amplitude2_Tensor(*(other.p_next->at(i)));
+    }
+  }
+  else p_next=NULL;
+}
 
 Complex Amplitude2_Tensor::ContractRemaining
 (const std::vector<ATOOLS::Particle*>& parts,
@@ -279,6 +295,20 @@ bool Amplitude2_Tensor::Contains(const ATOOLS::Particle* part) const
   return false;
 }
 
+void Amplitude2_Tensor::UpdateParticlePointers(const std::map<Particle*,Particle*>& pmap)
+{
+  if (p_part) {
+    std::map<Particle*,Particle*>::const_iterator pit(pmap.find(p_part));
+    if (pit!=pmap.end()) p_part=pit->second;
+    else THROW(fatal_error, "Could not update particle pointer.");
+  }
+  if (p_next) {
+    for (size_t i(0);i<p_next->size();++i) {
+      (*p_next)[i]->UpdateParticlePointers(pmap);
+    }
+  }
+}
+
 void Amplitude2_Tensor::Print(std::ostream& ostr, string label) const
 {
   if (m_value!=Complex(-1.0,0.0)) {
@@ -308,9 +338,12 @@ bool Amplitude2_Tensor::SortCrit(const pair<Particle*, size_t>& p1,
   return p1.first->RefFlav().IsStable()<p2.first->RefFlav().IsStable();
 }
 
+
 namespace ATOOLS {
-  template <> Blob_Data<METOOLS::Amplitude2_Tensor*>::~Blob_Data() {}
-  template class Blob_Data<METOOLS::Amplitude2_Tensor*>;
-  template METOOLS::Amplitude2_Tensor*&
-  Blob_Data_Base::Get<METOOLS::Amplitude2_Tensor*>();
+  template class SP(METOOLS::Amplitude2_Tensor);
+
+  template <> Blob_Data<SP(METOOLS::Amplitude2_Tensor)>::~Blob_Data() {}
+  template class Blob_Data<SP(METOOLS::Amplitude2_Tensor)>;
+  template SP(METOOLS::Amplitude2_Tensor)&
+    Blob_Data_Base::Get<SP(METOOLS::Amplitude2_Tensor)>();
 }
