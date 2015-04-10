@@ -476,12 +476,14 @@ Blob_List Blob_List::Copy() const
 
   // adjust particle pointers in amplitude tensor
   Blob* signal=copy.FindFirst(btp::Signal_Process);
-  Blob_Data_Base* data = (*signal)["ATensor"];
-  if (data) {
-    SP(METOOLS::Amplitude2_Tensor) origamps = data->Get<SP(METOOLS::Amplitude2_Tensor)>();
-    SP(METOOLS::Amplitude2_Tensor) newamps(new METOOLS::Amplitude2_Tensor(*origamps));
-    newamps->UpdateParticlePointers(pmap);
-    data->Set(newamps);
+  if (signal) {
+    Blob_Data_Base* data = (*signal)["ATensor"];
+    if (data) {
+      SP(METOOLS::Amplitude2_Tensor) origamps = data->Get<SP(METOOLS::Amplitude2_Tensor)>();
+      SP(METOOLS::Amplitude2_Tensor) newamps(new METOOLS::Amplitude2_Tensor(*origamps));
+      newamps->UpdateParticlePointers(pmap);
+      data->Set(newamps);
+    }
   }
   return copy;
 }
