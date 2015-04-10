@@ -16,6 +16,7 @@ Soft_Cluster_Handler::Soft_Cluster_Handler(bool ana) :
   p_as((Strong_Coupling*)s_model->GetScalarFunction("strong_cpl")),
   m_transoffset(hadpars->Get(std::string("Offset_C->H"))), 
   m_decayoffset(hadpars->Get(std::string("Offset_C->HH"))), 
+  m_minmass(2.1*hadpars->GetConstituents()->MinMass()),
   m_kappa(hadpars->Get(std::string("MassExponent_C->H"))), 
   m_lambda(hadpars->Get(std::string("WidthExponent_C->H"))), 
   m_chi(hadpars->Get(std::string("MassExponent_C->HH"))), 
@@ -283,7 +284,8 @@ DecayWeight(Cluster * cluster,Flavour & had1,Flavour & had2)
   }
   double critM(p_doubletransitions->GetLightestMass(flpair)*(1.-m_decayoffset)+
 	       p_doubletransitions->GetHeaviestMass(flpair)*m_decayoffset);
-  if (MC>critM) {
+  if (MC>critM &&
+      MC>cluster->GetTrip()->m_mass+cluster->GetAnti()->m_mass+m_minmass) {
     had1 = had2 = Flavour(kf_none);
     return 0.;
   }

@@ -16,7 +16,7 @@ namespace AHADIC {
     MODEL::Strong_Coupling * p_as;
     
     int                  m_HHdecaymode;
-    double               m_transoffset,m_decayoffset;
+    double               m_transoffset,m_decayoffset,m_minmass;
     double               m_kappa,m_lambda,m_chi;
     double               m_pt2min,m_pt2max,m_pt2maxfac;
     MODEL::asform::code  m_asform;
