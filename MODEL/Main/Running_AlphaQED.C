@@ -1,6 +1,7 @@
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Math/MathTools.H"
 
 #include <iostream>
@@ -49,6 +50,7 @@ double Running_AlphaQED::operator()(double t)
 
 double Running_AlphaQED::PiGamma(const Flavour & fl,double scale) {
   double mass2  = sqr(fl.Mass(true)); // onshell mass
+  if(mass2==0.) THROW(fatal_error, "Cannot evolve QED coupling with zero fermion masses");    
   double mqs    = mass2/scale;
   if (scale==0.) return 0.;
   if (4.*mqs<1.e-3) return (-5./3.-log(mqs));
