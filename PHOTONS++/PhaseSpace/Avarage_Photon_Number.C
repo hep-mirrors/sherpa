@@ -50,19 +50,21 @@ void Avarage_Photon_Number::CalculateAvaragePhotonNumber() {
       double aj       = betaj*sin(alpha);
       double bi       = betai*cos(alpha);
       double bj       = betaj*cos(alpha);
+      double intterm  = InterferenceTerm(ai,aj,bi,bj);
       double dipoleij = Photons::s_alpha/M_PI*Zi*Zj*titj
 			  *log(m_omegaMax/m_omegaMin)
-                          *(2.-(1.-ai*aj+bi*bj)*InterferenceTerm(ai,aj,bi,bj));
+			  *(2.-(1.-ai*aj+bi*bj)*intterm);
 #ifdef PHOTONS_DEBUG
       msg_Debugging()<<"ana: "<<dipoleij<<endl;
       msg_Debugging()<<"alpha/pi*ZiZjtitj: "
                      <<Photons::s_alpha/M_PI*Zi*Zj*titj<<endl;
       msg_Debugging()<<"log(Emax/Emin): "<<log(m_omegaMax/m_omegaMin)<<endl;
       msg_Debugging()<<"int: "
-                     <<(1-ai*aj+bi*bj)*InterferenceTerm(ai,aj,bi,bj)<<endl;
+                     <<(1-ai*aj+bi*bj)*intterm<<endl;
       msg_Debugging()<<"Emax,Emin: "<<m_omegaMax<<" ,  "<<m_omegaMin<<endl;
 #endif
-      m_nbars.push_back(IdPairNbar(IdPair(i,j),dipoleij));
+      if (intterm!=0.) m_nbars.push_back(IdPairNbar(IdPair(i,j),dipoleij));
+      else             m_nbars.push_back(IdPairNbar(IdPair(i,j),0.));
       sum += dipoleij;
     }
   }
@@ -89,9 +91,14 @@ double Avarage_Photon_Number::InterferenceTerm
   double Ej = aj*aj+bj*bj;
   double rooti = sqrt(B*B*Ci-A*B*Di+A*A*Ei);
   double rootj = sqrt(B*B*Cj-A*B*Dj+A*A*Ej);
-  // avoid divergences in A+-B when alpha = 0 and beta1=1 and beta2=0.3333 
+  // avoid divergences in A+-B when alpha = 0 and beta1=1 and beta2=0.3333
   if (ai/bi < 1E-4) // ai/bi = tan(alpha)
     return 1./(bi+bj)*log(((1.+bi)*(1.+bj))/((1.-bi)*(1.-bj)));
+  // avoid nan's (brute force sofar)
+  else if (!(2.*sqrt(Ci-Di+Ei)+(B*(2.*Ci-Di)-A*(Di-2.*Ei))/rooti>0) ||
+           !(2.*sqrt(Cj-Dj+Ej)+(B*(2.*Cj-Dj)-A*(Dj-2.*Ej))/rootj>0) ||
+           !(2.*sqrt(Ci+Di+Ei)+(B*(2.*Ci+Di)-A*(Di+2.*Ei))/rooti>0) ||
+           !(2.*sqrt(Cj+Dj+Ej)+(B*(2.*Cj+Dj)-A*(Dj+2.*Ej))/rootj>0)) return 0.;
   else
     return bi*bj*(1./(bj*rooti)
                   *log(abs((A+B)/(A-B))
