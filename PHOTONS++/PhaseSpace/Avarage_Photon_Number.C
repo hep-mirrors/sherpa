@@ -50,7 +50,16 @@ void Avarage_Photon_Number::CalculateAvaragePhotonNumber() {
       double aj       = betaj*sin(alpha);
       double bi       = betai*cos(alpha);
       double bj       = betaj*cos(alpha);
-      double intterm  = InterferenceTerm(ai,aj,bi,bj);
+      double intterm  = 0.;
+      if (IsZero(alpha,2.e-4)) {
+        intterm = log(((1.+betai)*(1.+betaj))/((1.-betai)*(1.-betaj)))
+                  /(betai+betaj);
+        msg_Debugging()<<"back-to-back pair discovered: "<<intterm
+                       <<" <-> "<<InterferenceTerm(ai,aj,bi,bj)<<std::endl;
+      }
+      else {
+        intterm = InterferenceTerm(ai,aj,bi,bj);
+      }
       double dipoleij = Photons::s_alpha/M_PI*Zi*Zj*titj
 			  *log(m_omegaMax/m_omegaMin)
 			  *(2.-(1.-ai*aj+bi*bj)*intterm);
