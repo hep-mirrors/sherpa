@@ -69,7 +69,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(string path, string fragfile) :
   dmap->Read(decaypath, decayfile, true);
   dmap->Read(decaypath, aliasdecayfile);
   dmap->Initialise();
-  dmap->ReadFixedTables(decaypath, "FixedDecays.dat");
+  dmap->ReadFixedTables("./", "FixedDecays.dat");
   p_decaymap=dmap;
   
   p_mixinghandler = new Mixing_Handler();

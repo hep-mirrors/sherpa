@@ -95,6 +95,8 @@ namespace HADRONS {
      */
     void ClearFixedDecayTables();
 
+    virtual PHASIC::Decay_Table* FindDecay(const ATOOLS::Flavour& decayer);
+
     //@{
     /// Getter/setter method.
     inline const Mixing_Handler* MixingHandler() const {return p_mixinghandler;}

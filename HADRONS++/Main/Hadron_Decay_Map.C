@@ -350,3 +350,15 @@ void Hadron_Decay_Map::CreateBooklet(std::string & name)
   f<<"\\end{document}"<<endl;
   f.close();
 }
+
+Decay_Table* Hadron_Decay_Map::FindDecay(const ATOOLS::Flavour & decayer)
+{
+  // first check, whether a fixed decaytable has been requested for this decayer
+  for (size_t i=0; i<m_fixed_next_tables.size(); ++i) {
+    if (m_fixed_next_tables[i]->Flav().Kfcode()==decayer.Kfcode()) {
+      return m_fixed_next_tables[i];
+    }
+  }
+
+  return Decay_Map::FindDecay(decayer);
+}

@@ -60,7 +60,7 @@ namespace PHASIC {
      * of which the n'th will be chosen for the n'th particle of that Flavour
      * in this event. (cf. Decay_Map::m_counters)
      */
-    Decay_Table* FindDecay(const ATOOLS::Flavour& decayer);
+    virtual Decay_Table* FindDecay(const ATOOLS::Flavour& decayer);
 
     /**
      * @param idcode IDCode() of the wanted decay channel
