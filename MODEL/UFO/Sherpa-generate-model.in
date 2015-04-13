@@ -12,18 +12,31 @@ sys_path.append('@PYLIBDIR@')
 from ufo_interface import s_lorentz, write_model
 from ufo_interface.templates import sconstruct_template
 
+class modelobj:
+      def __init__(self,name, flags):
+          self._flags=flags
+      	  self._name=name
+      def __repr__(self):
+	  return "env.SharedObject('{0}',CXXFLAGS='{1}')".format(self._name,self._flags)
+
 arg_parser = ArgumentParser()
-arg_parser.add_argument("ufo_path", help = "Path of the input UFO model directory")
-arg_parser.add_argument("-j", "--ncore", default=1, help = "Number of processes in compilation")
-arg_parser.add_argument("-c", "--cxxflags", help = "CXX flags")
+arg_parser.add_argument("ufo_path",
+                        help = "Path of the input UFO model directory")
+arg_parser.add_argument("-j", "--ncore",
+                        default=1,
+                        help = "Number of processes in compilation")
+arg_parser.add_argument("-c", "--cxxflags",
+                        help = "CXX flags")
 arg_parser.add_argument("-m", "--modelflags",
 			default = "-g -O0 -fno-var-tracking",
 			help = "CXX flags for the model file")
+arg_parser.add_argument("-l", "--lorentzflags",
+			default = "-g -O2",
+			help = "CXX flags for the lorentz calculators")
 arg_parser.add_argument("-o", "--optimize", 
                         action="store_true",
                         help = "Optimize Lorentz calculators for massless spinors")
 
-# extract path to ufo model as well as name of model from first positional argument
 args = arg_parser.parse_args()
 arg_path = os_path.abspath(args.ufo_path)
 model_path, model_name = os_path.split((arg_path.rstrip('/')))
@@ -45,25 +58,19 @@ elif not os_path.isdir(out_dir):
     print "Could not write to output path \"{0}\", file with the same name existing".format(out_dir)
     exit(1)
 
-class modelobj:
-      def __init__(self,name):
-      	  self.name=name
-      def __repr__(self):
-	  return "env.SharedObject('{0}',CXXFLAGS='{1}')".format(self.name,args.modelflags)
-
 sources = []
 # write model
 model_file_name = 'Model.C'
 model_out_path = os_path.join(out_dir, model_file_name)
 write_model(model, model_name, model_out_path)
-sources.append(modelobj(model_file_name))
+sources.append(modelobj(model_file_name, args.modelflags))
 
 # write lorentz calculators
 optimize = args.optimize
 for lor in [s_lorentz(l) for l in model.all_lorentz]:
     if not lor.has_ghosts():
         lor.write(out_dir,optimize)
-        sources.append(lor.c_name())
+        sources.append(modelobj(lor.c_name(), args.lorentzflags))
 
 
 # write SConstruct file

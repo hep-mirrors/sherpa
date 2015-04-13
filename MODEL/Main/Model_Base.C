@@ -74,9 +74,7 @@ void Model_Base::RotateVertices()
       for (int lid=id[id.size()-1], l=id.size()-1;l>=0;--l) id[l]=l?id[l-1]:lid;
       Single_Vertex v(m_v[i]);
       for (int j=0;j<v.in.size();++j) v.in[j]=m_v[i].in[v.id[j]=id[j]];
-      std::vector<Single_Vertex>::iterator vit(find(m_v.begin(),m_v.end(),v));
-      while (vit!=m_v.end() && vit->order!=v.order) vit=find(vit+1,m_v.end(),v);
-      if (vit==m_v.end()) m_v.push_back(v);
+      if(find(m_v.begin(),m_v.end(),v)==m_v.end()) m_v.push_back(v);
     }
   }
 }

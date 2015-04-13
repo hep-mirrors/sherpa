@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <sstream>
+
 using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
@@ -41,7 +43,11 @@ std::string Single_Vertex::PID() const
 
 bool Single_Vertex::operator==(const Single_Vertex& probe) 
 {
-  return in==probe.in;
+  return (in==probe.in &&
+	  cpl==probe.cpl &&
+	  order==probe.order &&
+	  Color==probe.Color &&
+	  Lorentz==probe.Lorentz);
 }
 
 namespace MODEL{ 
