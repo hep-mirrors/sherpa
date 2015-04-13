@@ -25,7 +25,7 @@ Soft_Cluster_Handler::Soft_Cluster_Handler(bool ana) :
   m_pt02(hadpars->Get(std::string("pt02"))), 
   m_transitions(0), m_dtransitions(0), m_decays(0), 
   m_forceddecays(0), m_lists(0), m_update(0),
-  m_ana(ana)
+  m_ana(ana), m_out(false)
 {
   if (m_ana) {
     m_histograms[string("PT_HH")]  = new Histogram(0,0.,10.,100);
@@ -53,17 +53,19 @@ Soft_Cluster_Handler::~Soft_Cluster_Handler()
 
 bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
 {
-  //msg_Out()<<"#######################################################"
-  //	   <<"#######################################################\n"
-  //	   <<"###### "<<METHOD<<"("<<clin->size()<<" clusters):\n";
+  // if (m_out) 
+  //   msg_Out()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
+  // 	     <<"++++++ "<<METHOD<<"("<<clin->size()<<" clusters):\n";
   // checks for transitions to hadrons and attaches them, if neccessary
-  if (!CheckListForTreatment(clin)) {
-    //msg_Out()<<"###### No hadrons produced.  Just continue.\n"
-    //	     <<"#######################################################"
-    //	     <<"#######################################################\n";
-    return true;
+  if (!CheckListForTreatment(clin) && m_out) {
+    // msg_Out()<<"++++++ No hadrons produced.  Just continue.\n"
+    // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+    // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+    return false;
   }
-  //msg_Out()<<"###### Hadrons produced, attach to blob.\n";
+  // if (m_out) 
+  //   msg_Out()<<"++++++ Hadrons produced, will attach to blob.\n";
   return AttachHadronsToBlob(clin,blob);
 }
 
@@ -82,16 +84,21 @@ bool Soft_Cluster_Handler::CheckListForTreatment(Cluster_List * clin) {
 }
 
 int Soft_Cluster_Handler::CheckCluster(Cluster * cluster) {
-  //msg_Out()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  //	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
-  //	   <<"++++++ "<<METHOD<<" for:\n"<<(*cluster);
+  // if (m_out) 
+  //   msg_Out()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
+  // 	     <<"++++++ "<<METHOD<<" for:\n"<<(*cluster);
   cluster->clear();
   Flavour haddec1(Flavour(kf_none)), haddec2(Flavour(kf_none));
   Flavour hadtrans(Flavour(kf_none));
   double decayweight(DecayWeight(cluster,haddec1,haddec2));
   double transweight(TransformWeight(cluster,hadtrans));
-  //msg_Out()<<"++++++ "<<METHOD<<"(dec = "<<decayweight<<", "
-  //	   <<"trans = "<<transweight<<").\n";
+  // if (m_out) 
+  //   msg_Out()<<"++++++ "<<METHOD<<"["<<cluster->Mass()<<" "
+  // 	     <<"("<<cluster->GetTrip()->m_flav<<" + "
+  // 	     <<cluster->GetAnti()->m_flav<<"] --> "
+  // 	     <<"(dec = "<<decayweight<<", "
+  // 	     <<"trans = "<<transweight<<").\n";
   if (decayweight>0.) {
     if (transweight>0.) {
       double totweight(decayweight+transweight);
@@ -100,20 +107,22 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster) {
 	cluster->push_back(haddec1);
 	cluster->push_back(haddec2);
 	m_decays      += 1;
-	//msg_Out()<<"++++++ decays to "<<haddec1<<" + "<<haddec2<<".\n"
-	//	 <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	//	 <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	//	 <<"\n\n";
+	// if (m_out) 
+	//   msg_Out()<<"++++++ decays to "<<haddec1<<" + "<<haddec2<<".\n"
+	// 	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	// 	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	// 	   <<"\n\n";
 	return 2;
       }
       else {
 	// competition between decay and transition - transition wins
 	cluster->push_back(hadtrans);
 	cluster->push_back(Flavour(kf_photon));
-	//msg_Out()<<"++++++ decays to "<<hadtrans<<" + photon.\n"
-	//	 <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	//	 <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	//	 <<"\n\n";
+	// if (m_out) 
+	//   msg_Out()<<"++++++ decays to "<<hadtrans<<" + photon.\n"
+	// 	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	// 	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	// 	   <<"\n\n";
 	m_transitions += 1;
 	return 2;
       }
@@ -122,9 +131,11 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster) {
       // regular decay, and no simple transition open - so no competition
       cluster->push_back(haddec1);
       cluster->push_back(haddec2);
-      //msg_Out()<<"++++++ decays to "<<haddec1<<" + "<<haddec2<<".\n"
-      //       <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-      //       <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
+      // if (m_out) 
+      // 	msg_Out()<<"++++++ decays to "<<haddec1<<" + "<<haddec2<<".\n"
+      // 		 <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+      // 		 <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+      // 		 <<"\n\n";
       m_decays      += 1;
       return 2;
     }
@@ -134,16 +145,18 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster) {
     if (transweight<=0.) transweight = TransformWeight(cluster,hadtrans,true);
     cluster->push_back(hadtrans);
     cluster->push_back(Flavour(kf_photon));
-    //msg_Out()<<"++++++ decays to "<<hadtrans<<" + photon.\n"
-    //	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    //	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
+    // if (m_out) 
+    //   msg_Out()<<"++++++ decays to "<<hadtrans<<" + photon.\n"
+    // 	       <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+    // 	       <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
     m_transitions += 1;
     return 2;
   }
   // no decay and no transition: both weight equal 0.
-  //msg_Out()<<"++++++ no decay.\n"
-  //	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  //	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
+  // if (m_out) 
+  //   msg_Out()<<"++++++ no decay.\n"
+  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
   cluster->clear();
   return 0;
 }
@@ -172,9 +185,11 @@ AttachHadronsToBlob(Cluster_List * clin,Blob * blob)
       break;
     }
   }
-  //msg_Out()<<"###### "<<METHOD<<" was successful.\n"
-  //	   <<"#######################################################"
-  //	   <<"#######################################################\n";
+  // if (m_out) 
+  //   msg_Out()<<"++++++ "<<METHOD<<" was successful:"
+  // 	     <<blob->CheckMomentumConservation()<<"\n"
+  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
   return true;
 }
 
@@ -230,16 +245,16 @@ TransformWeight(Cluster * cluster,Flavour & hadron,const bool & enforce)
       break;
     }
   }
-  return wt/(16.*M_PI*MC);
+  return totweight/(16.*M_PI*MC)/137.;
 }
 
 double Soft_Cluster_Handler::
 TransformKin(const double MC,const Flavour & flav,const bool & enforce) {
   double mass2(sqr(flav.HadMass()));
-  double width2(sqr(Max(flav.Width(),1.e-6)));
+  double width2(sqr(Max(flav.Width(),1.e-8)));
   return
     pow(sqr(mass2)/(sqr(MC*MC-mass2) + mass2*width2),m_kappa) * 
-    pow(mass2*width2/(sqr(MC*MC-mass2) + mass2*width2),m_lambda);
+    pow(mass2*width2/(sqr(MC*MC-mass2) + mass2*width2),1.+m_lambda);
 }
 
 
@@ -326,7 +341,7 @@ DecayWeight(Cluster * cluster,Flavour & had1,Flavour & had2)
       }
     }
   }
-  return wt/(16.*M_PI*MC*MC*MC);
+  return totweight/(16.*M_PI*MC*MC*MC);
 }
 
 
@@ -408,13 +423,13 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
     blob->AddToOutParticles(left);
     blob->AddToOutParticles(right);
   }
-  // if (cluster->GetTrip()->m_info=='B' || cluster->GetAnti()->m_info=='B') {
-  //   msg_Out()<<"==========================================================\n"
-  // 	     <<"Cluster decay (pt = "<<pt<<") for cluster \n"<<(*cluster)<<"\n"
-  // 	     <<"==> "<<left->Momentum()<<" + "<<right->Momentum()<<" for "
+  //if (cluster->GetTrip()->m_info=='B' || cluster->GetAnti()->m_info=='B') {
+  //  msg_Out()<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
+  // 	     <<"Cluster decay (pt + "<<pt<<") for cluster \n"<<(*cluster)<<"\n"
+  // 	     <<"++> "<<left->Momentum()<<" + "<<right->Momentum()<<" for "
   // 	     <<left->Flav()<<" + "<<right->Flav()<<"\n"
-  // 	     <<"==========================================================\n";
-  // }
+  // 	     <<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+  //}
   if (m_ana) {
     Histogram* histo((m_histograms.find(std::string("PT_HH")))->second);
     histo->Insert(pt);

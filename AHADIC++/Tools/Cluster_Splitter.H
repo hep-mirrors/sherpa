@@ -18,6 +18,8 @@ namespace AHADIC {
     size_t m_popspliti, m_popspecti;
     Proto_Particle * p_trip, * p_anti;
 
+    long int m_fourmom_err, m_kt2_err, m_LC_err, m_flav_err;
+
     size_t SelectNumberOfPairs(const size_t & nmax);
     bool   SelectSplitter(Proto_Particle * part1,Proto_Particle * part2);
     std::pair<double,double> FixExponents();

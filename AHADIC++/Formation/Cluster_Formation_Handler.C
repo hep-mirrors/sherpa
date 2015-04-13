@@ -91,18 +91,18 @@ int Cluster_Formation_Handler::FormClusters(Blob * blob) {
   if (!ClustersToHadrons(blob))    { 
     Reset(); return -1; 
   }
-  /*
-    Vec4D blobmom(0.,0.,0.,0.);
-    for (size_t i(0);i<blob->NOutP();i++) 
-    blobmom+=blob->OutParticle(i)->Momentum();
-    msg_Out()<<"____________________________________________________\n"
-    <<"____________________________________________________\n"
-    <<"Cluster list after all merging etc.:\n"<<(*p_clulist)
-    <<"____________________________________________________\n"
-    <<"Blob momentum: "<<blobmom<<";\n"<<(*blob)<<"\n"
-    <<"____________________________________________________\n"
-    <<"____________________________________________________\n";
-  */
+  
+  // Vec4D blobmom(0.,0.,0.,0.);
+  // for (size_t i(0);i<blob->NOutP();i++) 
+  //   blobmom+=blob->OutParticle(i)->Momentum();
+  // msg_Out()<<"____________________________________________________\n"
+  // 	   <<"____________________________________________________\n"
+  // 	   <<"Cluster list after all merging etc.:\n"<<(*p_clulist)
+  // 	   <<"____________________________________________________\n"
+  // 	   <<"Blob momentum: "<<blobmom<<";\n"<<(*blob)<<"\n"
+  // 	   <<"____________________________________________________\n"
+  // 	   <<"____________________________________________________\n";
+  
   return 1;
 }
 

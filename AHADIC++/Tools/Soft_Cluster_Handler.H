@@ -25,7 +25,7 @@ namespace AHADIC {
 
     long int             m_transitions, m_dtransitions;
     long int             m_decays, m_forceddecays, m_lists, m_update;
-    bool                                      m_ana;
+    bool                 m_ana, m_out;
     std::map<std::string,ATOOLS::Histogram *> m_histograms;
 
     bool          CheckListForTreatment(Cluster_List *);

@@ -55,10 +55,10 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
     if ((*blit)->Has(blob_status::needs_hadronization) &&
 	(*blit)->Type()==btp::Fragmentation) {
       blob   = (*blit);
-      //msg_Out()<<"====================================================\n"
-      //       <<"====================================================\n"
-      //       <<"====================================================\n"
-      //       <<(*blob)<<"\n";
+      // msg_Out()<<"====================================================\n"
+      // 	  <<"====================================================\n"
+      // 	  <<"====================================================\n"
+      // 	  <<(*blob)<<"\n";
       moveon = false;
       Reset();
       for (short int i=0;i<m_maxtrials;i++) {
@@ -175,7 +175,6 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
     break;
   }
   
-  //msg_Out()<<METHOD<<" formed clusters:\n"<<(*blob)<<".\n";
   switch (p_cdechandler->DecayClusters(blob)) {
   case -1 : 
     msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl

@@ -173,29 +173,40 @@ double Splitter_Base::SelectZ(const double & delta,const bool & lead) {
 
 bool Splitter_Base::SelectFlavour(const double & sqq,const bool & vetodi) {
   Flavour flav(kf_none);
-  double sumwt(CalculateSumWT(sqrt(sqq/4.),vetodi));
-  double mmax(1.e12), m2;
+  double mmax(sqrt(sqq/4.)), m2, sumwt;
   long int calls(0);
   while (calls<100) {
-    flav = Flavour(kf_none);
-    calls++;
-    sumwt *= ran->Get();
-    for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
-      if (fdit->second->popweight>0. && fdit->second->massmin<mmax &&
-	  !(vetodi && fdit->first.IsDiQuark())) 
-	sumwt -= fdit->second->popweight;
-      if (sumwt<0.) {
-	flav  = fdit->first;
-	m2    = sqr(fdit->second->massmin);
-	break;
+    sumwt = CalculateSumWT(mmax,vetodi);
+    if (sumwt>1.e-12) {
+      flav = Flavour(kf_none);
+      calls++;
+      sumwt *= ran->Get();
+      for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
+	if (fdit->second->popweight>0. && fdit->second->massmin<mmax &&
+	    !(vetodi && fdit->first.IsDiQuark())) 
+	  sumwt -= fdit->second->popweight;
+	if (sumwt<0.) {
+	  flav  = fdit->first;
+	  m2    = sqr(fdit->second->massmin);
+	  break;
+	}
       }
+      if (PoppedMassPossible(m2)) break;
+      mmax = sqrt(m2);
     }
-    if (PoppedMassPossible(m2)) break;
-    else mmax = sqrt(m2);
-    sumwt = CalculateSumWT(mmax);
-    if (sumwt<=1.e-12) calls=100;
+    else {
+      for (FDIter fdit=m_options.begin();fdit!=m_options.end();fdit++) {
+	if (vetodi && fdit->first.IsDiQuark()) continue;
+      }    
+      calls = 100;
+    }
   }
-  if (calls>=100) return false;
+  if (calls>=100) {
+    //msg_Out()<<"      --> "<<METHOD<<" failed, too many calls.\n"
+    //	     <<"      --> sumwt = "<<sumwt<<" for minimal mass = "
+    //	     <<sqrt(sqq/4.)<<".\n";
+    return false;
+  }
   m_popped.back()->m_flav  = flav.IsDiQuark()?flav.Bar():flav; 
   m_popped.back()->m_mpop2 = 
     sqr(hadpars->GetConstituents()->Mass(m_popped.back()->m_flav)); 

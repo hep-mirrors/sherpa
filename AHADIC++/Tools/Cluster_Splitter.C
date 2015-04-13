@@ -32,8 +32,9 @@ bool Cluster_Splitter::operator()(Cluster * cluster) {
   if (ConstructLightC() && ConstructSystem(cluster)) {
     if (m_ana) Analysis();
     Reset();
-    if (!cluster->EnsureMomentum()) return EnforceMomentum(cluster);
-    //msg_Out()<<(*cluster)<<"\n";
+    if (!cluster->EnsureMomentum() && !EnforceMomentum(cluster)) {
+      return false;
+    }
     return true;
   }
   UndoTrafos();
@@ -67,7 +68,6 @@ bool Cluster_Splitter::ConstructSystem(Cluster * cluster) {
   m_cms = p_split->m_mom + p_spect->m_mom;
   pair<double,double> exponents(FixExponents());
   bool hit;
-  //msg_Out()<<METHOD<<": pt^2_max = "<<m_pt2max<<".\n";
   double pt2max(m_pt2max);
   if (m_leadsplit) pt2max *= m_pt2max/Max(m_pt2max,m_LC.m_msplit2);
   if (m_leadspect) pt2max *= m_pt2max/Max(m_pt2max,m_LC.m_mspect2);
@@ -88,7 +88,11 @@ bool Cluster_Splitter::ConstructSystem(Cluster * cluster) {
     }
     if (hit) break;
   }
-  if (!hit) return false;
+  if (!hit) {
+    //msg_Out()<<"      --> "<<METHOD<<" failed for m_min = "
+    //	     <<sqrt(m_mmin2)<<".\n";
+    return false;
+  }
   MakeKinematics();
   MakeClusters(cluster);
   return true;
@@ -120,7 +124,7 @@ ConstructKinematics(const double & etax,const double & etay) {
       weight = 0.;
     }
     else { 
-      z      = SelectZ(m_mmin2/sqq,m_leadspect || m_leadsplit);
+      z      = SelectZ(4.*m_mmin2/sqq,m_leadspect || m_leadsplit);
       weight = exp(-(sqq-sqqmin)/(4.*m_pt02));
       //weight = 1.;
     }
@@ -140,8 +144,11 @@ ConstructKinematics(const double & etax,const double & etay) {
 bool Cluster_Splitter::AcceptSystem(const double & pt2max) {
   PoppedPair * pop(m_popped.back());
   pop->m_kt2 = pop->m_z*(1.-pop->m_z)*pop->m_sqq-pop->m_mpop2;
-  if (pop->m_kt2 < 0.)     return false;
-  if (pop->m_kt2 > pt2max) return false;
+  if (pop->m_kt2 < 0. || pop->m_kt2 > pt2max) {
+    //msg_Out()<<"      --> "<<METHOD<<" kt2 veto: "<<pop->m_kt2
+    //	     <<" from s = "<<pop->m_sqq<<", z = "<<pop->m_z<<".\n";
+    return false;
+  }
   return (((*p_as)(pop->m_sqq,false)*(*p_as)(pop->m_kt2,false))/
 	  sqr(p_as->MaxValue())) > ran->Get();
 }
@@ -184,8 +191,6 @@ MakePairKinematics(PoppedPair * pop,Vec4D & test,Vec4D & test1) {
   double kt(sqrt(pop->m_kt2));
   double phi(2.*M_PI*ran->Get());
   Vec4D  kperp(0.,kt*cos(phi),kt*sin(phi),0.);
-  //msg_Out()<<METHOD<<": sqq = "<<pop->m_sqq<<", z = "<<pop->m_z<<", "
-  //	   <<"kt = "<<kt<<", phi = "<<phi<<"\n";
   test += pop->m_outmom[0]  = 
     pop->m_x*pop->m_z*m_LC.m_pA + 
     pop->m_y*(1.-pop->m_z)*m_LC.m_pB + kperp;
@@ -194,7 +199,6 @@ MakePairKinematics(PoppedPair * pop,Vec4D & test,Vec4D & test1) {
     pop->m_y*pop->m_z*m_LC.m_pB - kperp;
   m_sumx += pop->m_x;
   m_sumy += pop->m_y;
-  //msg_Out()<<pop->m_outmom[0]<<" + "<<pop->m_outmom[1]<<"\n";
   for (size_t i(0);i<2;i++) {
     m_rotat.RotateBack(pop->m_outmom[i]);
     m_boost.BoostBack(pop->m_outmom[i]);
@@ -368,19 +372,34 @@ void Cluster_Splitter::SelectPartners() {
 bool Cluster_Splitter::PoppedMassPossible(const double & m2) {
   PoppedPair * pop(m_popped.back());
   pop->m_kt2 = pop->m_z*(1.-pop->m_z)*pop->m_sqq-m2;
-  if (pop->m_kt2<0.) return false;
+  if (pop->m_kt2<0.) {
+    //if (m2<=1.001*m_mmin2)
+    //msg_Out()<<"      --> "<<METHOD<<"(sqq = "<<pop->m_sqq<<", "
+    //	       <<"z = "<<pop->m_z<<" --> "<<pop->m_kt2<<").\n";
+    return false;
+  }
   double sumx = m_sumx+pop->m_x;
   double sumy = m_sumy+pop->m_y;
   double snew((1.-sumx)*(1.-sumy)*m_LC.m_smandel);
-  if (snew<sqr(m_LC.m_mspect+m_LC.m_msplit)) return false;
-  if (sumx>1. || sumy>1.)                    return false;
-  if (!AlphaBeta(snew,m_alphanew,m_betanew)) return false;
+  if (snew<sqr(m_LC.m_mspect+m_LC.m_msplit) ||
+      sumx>1. || sumy>1.||
+      !AlphaBeta(snew,m_alphanew,m_betanew)) {
+    //msg_Out()<<"      --> "<<METHOD<<" testing LC's failed.\n";
+    return false;
+  }
   Vec4D tsplit((1.-sumx)*(1.-m_alphanew)*m_LC.m_pA+
 	       (1.-sumy)*m_betanew*m_LC.m_pB);
   Vec4D tspect((1.-sumx)*m_alphanew*m_LC.m_pA+
 	       (1.-sumy)*(1.-m_betanew)*m_LC.m_pB);
-  if (dabs(tsplit.Abs2()/m_LC.m_msplit2-1.)>1.e-8) return false;
-  if (dabs(tspect.Abs2()/m_LC.m_mspect2-1.)>1.e-8) return false;
+  if (dabs(tsplit.Abs2()/m_LC.m_msplit2-1.)>1.e-6 ||
+      dabs(tspect.Abs2()/m_LC.m_mspect2-1.)>1.e-6) {
+    //msg_Out()<<"      --> "<<METHOD<<" failed: "
+    //	     <<dabs(tsplit.Abs2())<<"/"<<m_LC.m_msplit2
+    //	     <<" -> "<<dabs(tsplit.Abs2()/m_LC.m_msplit2-1.)<<" and "
+    //	     <<dabs(tspect.Abs2())<<"/"<<m_LC.m_mspect2
+    //	     <<" -> "<<dabs(tspect.Abs2()/m_LC.m_mspect2-1.)<<".\n";
+    return false;
+  }
   return true;
 }
 
@@ -399,6 +418,13 @@ bool Cluster_Splitter::EnforceMomentum(Cluster * cluster) {
        cit!=cluster->GetClusters()->end();cit++) {
     summom += (*cit)->Momentum();
   }
+  //msg_Out()<<"      --> "<<METHOD<<" for \n"
+  //	   <<summom<<" vs. "<<cluster->Momentum()<<" --> "
+  //	   <<(summom-cluster->Momentum())<<".\n";
+  //for (Cluster_Iterator cit(cluster->GetClusters()->begin());
+  //   cit!=cluster->GetClusters()->end();cit++) {
+  //msg_Out()<<(**cit);
+  //}
   Poincare rest(summom);
   Poincare back(cluster->Momentum());
   for (Cluster_Iterator cit(cluster->GetClusters()->begin());
@@ -406,5 +432,6 @@ bool Cluster_Splitter::EnforceMomentum(Cluster * cluster) {
     (*cit)->Boost(rest);
     (*cit)->BoostBack(back);
   }
-  return cluster->EnsureMomentum();
+  if (!cluster->EnsureMomentum()) exit(1);
+  return true;
 }
