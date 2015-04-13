@@ -28,6 +28,7 @@ dist_ufo_PYTHON = \
         lorentz_calc_template.C \
         lorentz_structures.py \
         model_template.C \
+	run_card_template \
         py_to_cpp.py \
         s_coupling.py \
         s_lorentz.py \
@@ -39,6 +40,7 @@ dist_ufo_PYTHON = \
         tensor.py \
         test.py \
         ufo_exception.py \
-        write_model.py
+        write_model.py \
+	write_run_card.py
 
 endif

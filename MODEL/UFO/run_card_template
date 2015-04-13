@@ -1,0 +1,27 @@
+(run){
+MODEL ${model_name};
+ME_SIGNAL_GENERATOR Comix;
+SCALES VAR{Abs2(p[0]+p[1])};
+
+# uncomment to disable underlying event simulation:
+# MI_HANDLER None;
+
+# uncomment to disable hadronization:
+# FRAGMENTATION Off;
+
+# uncomment to disable shower:
+# SHOWER_GENERATOR None;
+
+# LHC beam setup:
+BEAM_1 2212; BEAM_ENERGY_1 6500;
+BEAM_2 2212; BEAM_ENERGY_2 6500;
+}(run)
+
+(processes){
+Process 93 93 -> <REPLACE_ME>;
+End process;
+}(processes)
+
+(ufo){
+${ufo_params}
+}(ufo)

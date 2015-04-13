@@ -7,3 +7,4 @@ lorentz_calc_template = Template(pkg_resources.resource_string(__name__, "lorent
 
 sconstruct_template = Template(pkg_resources.resource_string(__name__, "sconstruct_template"))
 
+run_card_template = Template(pkg_resources.resource_string(__name__, "run_card_template"))

@@ -9,7 +9,7 @@ from subprocess import call
 
 sys_path.append('@PYLIBDIR@')
 
-from ufo_interface import s_lorentz, write_model
+from ufo_interface import s_lorentz, write_model, write_run_card
 from ufo_interface.templates import sconstruct_template
 
 class modelobj:
@@ -86,5 +86,8 @@ if (isinstance(args.cxxflags, basestring)):
 if (args.ncore>1):
     sconsargs.append('-j{0}'.format(args.ncore))
 call(sconsargs)
+
+# write example run card to working dir
+write_run_card(model, model_name)
 
 exit(0)

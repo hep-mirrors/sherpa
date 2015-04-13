@@ -33,3 +33,7 @@ class s_parameter():
             
     def cpp_value(self):
         return py_to_cpp(str(self.ufo_parameter.value))
+
+    def raw_value(self):
+        return self.ufo_parameter.value
+    

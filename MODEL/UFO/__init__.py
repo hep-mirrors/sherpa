@@ -6,6 +6,7 @@ from s_lorentz import s_lorentz
 from ufo_exception import ufo_exception
 from colour_converter import colour_translate
 from write_model import write_model
+from write_run_card import write_run_card
 from lorentz_structures import *
 from py_to_cpp import *
 import templates
