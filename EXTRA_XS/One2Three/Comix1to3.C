@@ -145,12 +145,8 @@ Vertex* Comix1to3::GetVertex(Current* cur1, Current* cur2, Current* prop) {
   DEBUG_VAR(vkey.ID());
   if (keyrange.first!=keyrange.second) {
     vkey.p_mv=keyrange.first->second;//fixme?
-    std::vector<MODEL::Color_Function> origcols(vkey.p_mv->Color);
-    vkey.p_mv->Color.clear();
-    vkey.p_mv->Color.push_back(MODEL::cf::None);
     vkey.m_p=std::string(1,'D');
     v1=new Vertex(vkey);
-    vkey.p_mv->Color=origcols;
   }
   else {
     std::swap<Current*>(curs[0],curs[1]);
@@ -159,12 +155,8 @@ Vertex* Comix1to3::GetVertex(Current* cur1, Current* cur2, Current* prop) {
     keyrange=MODEL::s_model->GetVertex(vkey.ID());
     if (keyrange.first!=keyrange.second) {
       vkey.p_mv=keyrange.first->second;//fixme?
-      std::vector<MODEL::Color_Function> origcols(vkey.p_mv->Color);
-      vkey.p_mv->Color.clear();
-      vkey.p_mv->Color.push_back(MODEL::cf::None);
       vkey.m_p=std::string(1,'D');
       v1=new Vertex(vkey);
-      vkey.p_mv->Color=origcols;
     }
     else THROW(fatal_error, "vertex not found: "+vkey.ID());
   }
