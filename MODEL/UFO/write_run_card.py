@@ -1,7 +1,7 @@
 from ufo_interface import s_parameter
 from ufo_interface.templates import run_card_template
 
-def write_run_card(model, model_name):
+def write_run_card(model, model_name, run_card_path):
 
     ext_params = [s_parameter(param) for param in  model.all_parameters if (s_parameter(param).is_external())]
     blocks     = dict()
@@ -23,5 +23,5 @@ def write_run_card(model, model_name):
         for param in blocks["decay"]:
             ufo_params += "\ndecay {0} {1}".format(param.lha_indices()[0], str(param.raw_value()))
         
-    with open("Run.dat", "w") as outfile:
+    with open(run_card_path, "w") as outfile:
         outfile.write(run_card_template.substitute(model=model, model_name=model_name, ufo_params=ufo_params))

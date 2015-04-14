@@ -41,6 +41,7 @@ dist_ufo_PYTHON = \
         test.py \
         ufo_exception.py \
         write_model.py \
-	write_run_card.py
+	write_run_card.py \
+	message.py
 
 endif

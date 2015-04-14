@@ -5,12 +5,13 @@ from sys import path as sys_path
 from os import path as os_path
 from os import makedirs
 from argparse import ArgumentParser
-from subprocess import call
+from subprocess import check_output
 
 sys_path.append('@PYLIBDIR@')
 
 from ufo_interface import s_lorentz, write_model, write_run_card
 from ufo_interface.templates import sconstruct_template
+from ufo_interface.message import error, progress
 
 class modelobj:
       def __init__(self,name, flags):
@@ -47,7 +48,7 @@ try:
     model = load_module(model_name, f, pathn, desc)
 
 except ImportError as err:
-    print "Could not import UFO model from input path \"{0}\", make sure this is a path to a valid UFO model".format(args.ufo_path)
+    error("Could not import UFO model from input path \"{0}\", make sure this is a path to a valid UFO model".format(args.ufo_path))
     exit(1)
 
 # make an output directory
@@ -55,11 +56,12 @@ out_dir = '{0}/.sherpa'.format(arg_path)
 if not os_path.exists(out_dir):
     makedirs(out_dir)
 elif not os_path.isdir(out_dir):
-    print "Could not write to output path \"{0}\", file with the same name existing".format(out_dir)
+    error("Could not write to output path \"{0}\", file with the same name existing".format(out_dir))
     exit(1)
 
 sources = []
 # write model
+progress("Generating model source code")
 model_file_name = 'Model.C'
 model_out_path = os_path.join(out_dir, model_file_name)
 write_model(model, model_name, model_out_path)
@@ -68,9 +70,10 @@ sources.append(modelobj(model_file_name, args.modelflags))
 # write lorentz calculators
 optimize = args.optimize
 for lor in [s_lorentz(l) for l in model.all_lorentz]:
-    if not lor.has_ghosts():
-        lor.write(out_dir,optimize)
-        sources.append(modelobj(lor.c_name(), args.lorentzflags))
+      if not lor.has_ghosts():
+            progress("Generating source code for lorentz calculator '{0}'".format(lor.name()))
+            lor.write(out_dir,optimize)
+            sources.append(modelobj(lor.c_name(), args.lorentzflags))
 
 
 # write SConstruct file
@@ -80,14 +83,21 @@ with open(sconstruct_file_path, 'w') as sconstruct_file:
     sconstruct_file.write(sconstruct_template.substitute(libname = lib_name,
                                                          sources = sources))
 # compile and install
+progress("Compiling sources using scons")
 sconsargs = ['scons','-C',out_dir,'-j{0}'.format(args.ncore), 'install'] 
 if (isinstance(args.cxxflags, basestring)):
     sconsargs.append('CXXFLAGS={0}'.format(args.cxxflags))
 if (args.ncore>1):
     sconsargs.append('-j{0}'.format(args.ncore))
-call(sconsargs)
+progress(check_output(sconsargs))
 
 # write example run card to working dir
-write_run_card(model, model_name)
+run_card_path="Run.dat"
+while(os_path.exists(run_card_path)):
+      run_card_path="_"+run_card_path
+progress("Writing example run card '{0}' to working directory".format(run_card_path))
+write_run_card(model, model_name, run_card_path)
+
+progress("Finished generating model '{0}'\nPlease cite Eur.Phys.J. C, 75 3 (2015) 137\nif you make use Sherpa's BSM features".format(model_name))
 
 exit(0)
