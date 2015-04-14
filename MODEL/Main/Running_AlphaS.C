@@ -37,7 +37,7 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
 				       One_Running_AlphaS *const mo) : 
   m_order(order), m_pdf(0),
   m_as_MZ(as_MZ), m_m2_MZ(m2_MZ),
-  p_pdf(aspdf), p_sas(NULL)
+  p_pdf(aspdf), p_sas(this)
 {
   p_thresh  = NULL;
 
@@ -167,9 +167,11 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
 
   if (mo==NULL) {
     double fac=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
-    if (fac!=1.0) msg_Info()<<METHOD<<"(): Setting scale factor "<<fac<<"\n";
-    msg_Indent();
-    p_sas = new One_Running_AlphaS((*this)(fac*m_m2_MZ),m_m2_MZ,m_order,thmode,p_pdf,this);
+    if (fac!=1.0) {
+      msg_Info()<<METHOD<<"(): Setting scale factor "<<fac<<"\n";
+      msg_Indent();
+      p_sas = new One_Running_AlphaS((*this)(fac*m_m2_MZ),m_m2_MZ,m_order,thmode,p_pdf,this);
+    }
   }
 }
 
@@ -283,7 +285,7 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
 One_Running_AlphaS::~One_Running_AlphaS()
 {
   if (p_thresh!=0) { delete [] p_thresh; p_thresh = NULL; }
-  if (p_sas) delete p_sas;
+  if (p_sas && p_sas!=this) delete p_sas;
 }
 
 double One_Running_AlphaS::Beta0(const int nf) {
