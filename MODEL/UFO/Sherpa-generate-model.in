@@ -98,6 +98,6 @@ while(os_path.exists(run_card_path)):
 progress("Writing example run card '{0}' to working directory".format(run_card_path))
 write_run_card(model, model_name, run_card_path)
 
-progress("Finished generating model '{0}'\nPlease cite Eur.Phys.J. C, 75 3 (2015) 137\nif you make use Sherpa's BSM features".format(model_name))
+progress("Finished generating model '{0}'\nPlease cite Eur.Phys.J. C, 75 3 (2015) 137\nif you make use of Sherpa's BSM features".format(model_name))
 
 exit(0)
