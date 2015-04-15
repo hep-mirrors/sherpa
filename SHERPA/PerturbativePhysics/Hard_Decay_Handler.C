@@ -220,11 +220,21 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
   DEBUG_FUNC(dt->Flav());
   Flavour inflav=dt->Flav();
   Vertex_Table::const_iterator vlit=s_model->VertexTable()->find(inflav);
-  const Vertex_List& vertexlist(vlit->second);
+  const Vertex_List& vlist(vlit->second);
+  // temporary hack:
+  // prepare reduced vertex list, not containing duplicates
+  // in the sense of having identical external flavours
+  Vertex_List reduced_vlist;
+  for (Vertex_List::const_iterator vit=vlist.begin();vit!=vlist.end();++vit){
+    Vertex_List::const_iterator vjt=reduced_vlist.begin();
+    for(;vjt!=reduced_vlist.end(); ++vjt)
+      if((*vjt)->in == (*vit)->in) break;
+    if(vjt==reduced_vlist.end()) reduced_vlist.push_back(*vit);
+  }
 
   msg_Debugging()<<"Vertices:"<<std::endl;
-  for (size_t i=0;i<vertexlist.size();i++) {
-    Single_Vertex* sv=vertexlist[i];
+  for (size_t i=0;i<reduced_vlist.size();i++) {
+    Single_Vertex* sv=reduced_vlist[i];
     if (!ProperVertex(sv)) continue;
     msg_Debugging()<<"  "<<i<<": "<<*sv<<std::endl;
     Decay_Channel* dc=new Decay_Channel(inflav, this);
@@ -369,9 +379,20 @@ vector<Decay_Channel*> Hard_Decay_Handler::ResolveDecay(Decay_Channel* dc1)
     }
     if (ignore) continue;
     Vertex_Table::const_iterator it=s_model->VertexTable()->find(flavs1[j]);
-    const Vertex_List& vertexlist(it->second);
-    for (size_t k=0;k<vertexlist.size();k++) {
-      Single_Vertex* sv = vertexlist[k];
+    const Vertex_List& vlist(it->second);
+    // temporary hack:
+    // prepare reduced vertex list, not containing duplicates
+    // in the sense of having identical external flavours
+    Vertex_List reduced_vlist;
+    for (Vertex_List::const_iterator vit=vlist.begin();vit!=vlist.end();++vit){
+      Vertex_List::const_iterator vjt=reduced_vlist.begin();
+      for(;vjt!=reduced_vlist.end(); ++vjt)
+        if((*vjt)->in == (*vit)->in) break;
+      if(vjt==reduced_vlist.end()) reduced_vlist.push_back(*vit);
+    }
+
+    for (size_t k=0;k<reduced_vlist.size();k++) {
+      Single_Vertex* sv = reduced_vlist[k];
       if (!ProperVertex(sv)) continue;
       // TODO so far special case 1->3 only
       Decay_Channel* dc=new Decay_Channel(flavs1[0], this);

@@ -59,11 +59,11 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
   m_fcur->SetFId(isfs2);
   m_fcur->FindPermutations();
   // connect (2) & (3) into (2,3)
-  m_v1=GetVertex(m_cur[propi], m_cur[propj], m_scur);
-  DEBUG_VAR(*m_v1);
+  m_v1=METOOLS::Vertex::ConstructVertices(m_cur[propi], m_cur[propj], m_scur);
+  DEBUG_VAR(m_v1.size());
   // connect (1) & (2,3) into (1,2,3)
-  m_v2=GetVertex(m_cur[nonprop],m_scur,m_fcur);
-  DEBUG_VAR(*m_v2);
+  m_v2=METOOLS::Vertex::ConstructVertices(m_cur[nonprop],m_scur,m_fcur);
+  DEBUG_VAR(m_v2.size());
   m_scur->Print();
   m_fcur->Print();
   m_scur->InitPols(pols);
@@ -94,11 +94,11 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
   m_antifcur->SetFId(isfs2);
   m_antifcur->FindPermutations();
   // connect (2) & (3) into (2,3)
-  m_antiv1=GetVertex(m_anticur[propi], m_anticur[propj], m_antiscur);
-  DEBUG_VAR(*m_antiv1);
+  m_antiv1=METOOLS::Vertex::ConstructVertices(m_anticur[propi], m_anticur[propj], m_antiscur);
+  DEBUG_VAR(m_antiv1.size());
   // connect (1) & (2,3) into (1,2,3)
-  m_antiv2=GetVertex(m_anticur[nonprop],m_antiscur,m_antifcur);
-  DEBUG_VAR(*m_antiv2);
+  m_antiv2=METOOLS::Vertex::ConstructVertices(m_anticur[nonprop],m_antiscur,m_antifcur);
+  DEBUG_VAR(m_antiv2.size());
   m_antiscur->Print();
   m_antifcur->Print();
   m_antiscur->InitPols(pols);
@@ -134,37 +134,6 @@ Comix1to3::~Comix1to3()
   delete m_fcur;
   delete m_antifcur;
 }
-
-Vertex* Comix1to3::GetVertex(Current* cur1, Current* cur2, Current* prop) {
-  Vertex* v1(NULL);
-  Current_Vector curs(2);
-  curs[0]=cur1;
-  curs[1]=cur2;
-  Vertex_Key vkey(curs,prop,MODEL::s_model);
-  MODEL::VMIterator_Pair keyrange(MODEL::s_model->GetVertex(vkey.ID()));
-  DEBUG_VAR(vkey.ID());
-  if (keyrange.first!=keyrange.second) {
-    vkey.p_mv=keyrange.first->second;//fixme?
-    vkey.m_p=std::string(1,'D');
-    v1=new Vertex(vkey);
-  }
-  else {
-    std::swap<Current*>(curs[0],curs[1]);
-    vkey=Vertex_Key(curs,prop,MODEL::s_model);
-    DEBUG_VAR(vkey.ID());
-    keyrange=MODEL::s_model->GetVertex(vkey.ID());
-    if (keyrange.first!=keyrange.second) {
-      vkey.p_mv=keyrange.first->second;//fixme?
-      vkey.m_p=std::string(1,'D');
-      v1=new Vertex(vkey);
-    }
-    else THROW(fatal_error, "vertex not found: "+vkey.ID());
-  }
-  v1->AddJ(vkey.m_j);
-  v1->SetJC(prop);
-  return v1;
-}
-      
 
 void Comix1to3::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   DEBUG_FUNC(momenta.size());

@@ -120,7 +120,7 @@ namespace MODEL {
     inline ATOOLS::Flavour_Vector IncludedFlavours() const { return m_fls; }
 
     inline VMIterator_Pair GetVertex(const std::string &key) const
-    { return VMIterator_Pair(m_vmap.lower_bound(key),m_vmap.upper_bound(key)); }
+    { return m_vmap.equal_range(key); }
 
   };
 

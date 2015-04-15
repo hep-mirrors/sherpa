@@ -42,7 +42,8 @@ Comix1to2::Comix1to2(const vector<Flavour>& flavs) :
   m_fcur->SetFId(isfs);
   m_fcur->FindPermutations();
   // connect (1) & (2) into (1,2)
-  m_v1=GetVertex(m_cur[1], m_cur[2], m_fcur);
+  m_v1=METOOLS::Vertex::ConstructVertices(m_cur[1], m_cur[2], m_fcur);
+  DEBUG_VAR(m_v1.size());
   m_fcur->InitPols(pols);
   m_fcur->Print();
   m_fcur->HM().resize(m_n);
@@ -65,7 +66,8 @@ Comix1to2::Comix1to2(const vector<Flavour>& flavs) :
   m_antifcur->SetFId(isfs);
   m_antifcur->FindPermutations();
   // connect (1) & (2) into (1,2)
-  m_antiv1=GetVertex(m_anticur[1], m_anticur[2], m_antifcur);
+  m_antiv1=METOOLS::Vertex::ConstructVertices(m_anticur[1], m_anticur[2], m_antifcur);
+  DEBUG_VAR(m_antiv1.size());
   m_antifcur->InitPols(pols);
   m_antifcur->Print();
   m_antifcur->HM().resize(m_n);
@@ -98,35 +100,6 @@ Comix1to2::~Comix1to2()
   delete m_fcur;
   delete m_antifcur;
 }
-
-Vertex* Comix1to2::GetVertex(Current* cur1, Current* cur2, Current* prop) {
-  Vertex* v1(NULL);
-  Current_Vector curs(2);
-  curs[0]=cur1;
-  curs[1]=cur2;
-  Vertex_Key vkey(curs,prop,MODEL::s_model);
-  MODEL::VMIterator_Pair keyrange(MODEL::s_model->GetVertex(vkey.ID()));
-  if (keyrange.first!=keyrange.second) {
-    vkey.p_mv=keyrange.first->second;//fixme!!
-    vkey.m_p=std::string(1,'D');
-    v1=new Vertex(vkey);
-  }
-  else {
-    std::swap<Current*>(curs[0],curs[1]);
-    vkey=Vertex_Key(curs,prop,MODEL::s_model);
-    keyrange=MODEL::s_model->GetVertex(vkey.ID());
-    if (keyrange.first!=keyrange.second) {
-      vkey.p_mv=MODEL::s_model->GetVertex(vkey.ID()).first->second;//fixme!!
-      vkey.m_p=std::string(1,'D');
-      v1=new Vertex(vkey);
-    }
-    else THROW(fatal_error, "vertex not found: "+vkey.ID());
-  }
-  v1->AddJ(vkey.m_j);
-  v1->SetJC(prop);
-  return v1;
-}
-     
 
 void Comix1to2::Calculate(const ATOOLS::Vec4D_Vector& momenta, bool anti) {
   p_ci->GeneratePoint();
