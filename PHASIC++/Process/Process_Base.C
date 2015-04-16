@@ -224,14 +224,6 @@ public:
   { return a->Flav().Mass()>b->Flav().Mass(); }
 };// end of class Order_Mass
 
-class Order_InvMass {
-public:
-  int operator()(const Subprocess_Info &a,const Subprocess_Info &b) 
-  { return a.m_fl.Mass()<b.m_fl.Mass(); }
-  int operator()(const Cluster_Leg *a,const Cluster_Leg *b) 
-  { return a->Flav().Mass()<b->Flav().Mass(); }
-};// end of class Order_InvMass
-
 class Order_Coupling {
 public:
   int operator()(const Subprocess_Info &a,const Subprocess_Info &b) 
@@ -260,9 +252,7 @@ void Process_Base::SortFlavours(Subprocess_Info &info)
   std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_KF());
   std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Anti());
   std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_SVFT());
-  if (heaviest.IsAnti())  
-    std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_InvMass());
-  else std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Mass());
+  std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Mass());
   std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Coupling());
   std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Priority());
   for (size_t i(0);i<info.m_ps.size();++i) SortFlavours(info.m_ps[i]);
@@ -358,9 +348,7 @@ void Process_Base::SortFlavours(std::vector<Cluster_Leg*> &legs)
   std::stable_sort(legs.begin(),legs.end(),Order_KF());
   std::stable_sort(legs.begin(),legs.end(),Order_Anti());
   std::stable_sort(legs.begin(),legs.end(),Order_SVFT());
-  if (heaviest.IsAnti()) 
-    std::stable_sort(legs.begin(),legs.end(),Order_InvMass());
-  else std::stable_sort(legs.begin(),legs.end(),Order_Mass());
+  std::stable_sort(legs.begin(),legs.end(),Order_Mass());
   std::stable_sort(legs.begin(),legs.end(),Order_Coupling());
   std::stable_sort(legs.begin(),legs.end(),Order_Priority());
 }
