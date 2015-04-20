@@ -108,8 +108,8 @@ void Initialization_Handler::SetFileNames()
   m_softphotonsdat   = p_dataread->GetValue<string>("SOFT_PHOTON_DATA_FILE",fname+"|(fragmentation){|}(fragmentation)");
   m_processesdat     = p_dataread->GetValue<string>("PROCESSFILE",fname+"|(processes){|}(processes)");
   m_selectordat      = p_dataread->GetValue<string>("SELECTORFILE",fname+"|(selector){|}(selector)");
-  m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",fname+"|(analysis){|}(analysis)");
-  if (FileExists("Analysis.dat")) m_analysisdat="Analysis.dat";
+  m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",FileExists("Analysis.dat")?
+						    "Analysis.dat":fname+"|(analysis){|}(analysis)");
   std::string integrationdat = p_dataread->GetValue<string>("INTEGRATION_DATA_FILE",fname+"|(integration){|}(integration)");
   std::string momentadat     = p_dataread->GetValue<string>("MOMENTA_DATA_FILE",fname+"|(momenta){|}(momenta)");
   if (FileExists("Momenta.dat")) momentadat="Momenta.dat";
