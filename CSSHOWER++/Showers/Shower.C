@@ -33,7 +33,7 @@ Shower::Shower(PDF::ISR_Handler * isr,const int qed,
     is_as_fac=dataread->GetValue<double>("MI_CSS_IS_AS_FAC",0.66);
   }
   m_use_bbw   = dataread->GetValue<int>("CSS_USE_BBW",1);
-  m_kscheme   = dataread->GetValue<int>("CSS_KIN_SCHEME",0);
+  m_kscheme   = dataread->GetValue<int>("CSS_KIN_SCHEME",1);
   m_noem      = dataread->GetValue<int>("CSS_NOEM",0);
   m_recdec    = dataread->GetValue<int>("CSS_RECO_DECAYS",0);
   std::vector<std::vector<std::string> > helpsvv;
