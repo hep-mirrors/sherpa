@@ -697,6 +697,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	}
 	if (GetMPvalue(pbi.m_vcpl,nfs,pnid,ds)) {
 	  Data_Reader read(",",";",")","(");
+	  while (ds.find("*")!=std::string::npos) ds.replace(ds.find("*"),1,"-1");
 	  read.SetString(ds);
 	  read.VectorFromString(cpi.m_maxcpl,"");
 	  cpi.m_mincpl=cpi.m_maxcpl;
