@@ -383,7 +383,7 @@ included in the setup are the following:
 In the @code{(processes)} part of the steering file this translates into
 @verbatim
   Process 93 93 -> 11 -11 93{4}
-  Order_EW 2;
+  Order (*,2);
   CKKW sqr(30/E_CMS)
   End process;
 @end verbatim
@@ -557,7 +557,7 @@ with the results plus integration errors written to the screen.
 For the example, the @code{(processes)} section alters to
 @verbatim
   Process : 21 1 -> 11 -11 1
-  Order_EW 2
+  Order (*,2);
   End process
 @end verbatim
 and under the assumption to start afresh, the initialization procedure has

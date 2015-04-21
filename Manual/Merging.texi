@@ -165,7 +165,7 @@ pointed out.
   assuming N=3, this reads:
 @verbatim
     Process 93 93 -> 90 90 93{3}
-    Order_EW 2
+    Order (*,2)
 @end verbatim
   N is given in the curly brackets belonging to the @code{93}, the
   code for QCD partons. Note, that it is mandatory to fix the order of

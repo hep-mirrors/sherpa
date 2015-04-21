@@ -166,12 +166,12 @@ during read-in. An example tag definition could read
 and then be used in the (me) and (processes) sections like
 @verbatim
   (me){
-    RESULT_DIRECTORY = Result_QCUT/
+    RESULT_DIRECTORY Result_QCUT;
   }(me)
   (processes){
-    Process 93 93 -> 11 -11 93{NJET}
-    Order_EW 2;
-    CKKW sqr(QCUT/E_CMS)
+    Process 93 93 -> 11 -11 93{NJET};
+    Order (*,2);
+    CKKW sqr(QCUT/E_CMS);
     End process;
   }(processes)
 @end verbatim

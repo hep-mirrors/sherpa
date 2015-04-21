@@ -65,7 +65,7 @@ of the two jets present at Born level.
 Things to notice:
 @itemize @bullet
 @item
-@code{Order_EW} is set to @option{0}. This
+@code{Order} is set to @option{(*,0)}. This
 ensures that all final state jets are produced via 
 the strong interaction.
 
