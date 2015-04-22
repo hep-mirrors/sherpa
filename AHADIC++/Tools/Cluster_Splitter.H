@@ -9,6 +9,7 @@ namespace AHADIC {
   private:
     size_t m_nmax;
     double m_etax, m_etax_lead, m_etay, m_etay_lead;
+    bool   m_added;
 
     size_t m_pairs;
     double m_alphanew,m_betanew;

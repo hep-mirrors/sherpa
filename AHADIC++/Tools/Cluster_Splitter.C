@@ -57,7 +57,6 @@ SelectSplitter(Proto_Particle * part1,Proto_Particle * part2) {
   bool hit2(part2->m_info=='L' || part2->m_info=='B');
   m_swap = ((hit2 && !hit1) ||
   	    (((hit1 && hit2) || (!hit1 && !hit2)) && ran->Get()<0.5));
-  //m_swap = ran->Get()>0.5;
 
   p_split = m_swap?part2:part1;
   p_spect = m_swap?part1:part2;
@@ -71,6 +70,11 @@ bool Cluster_Splitter::ConstructSystem(Cluster * cluster) {
   double pt2max(m_pt2max);
   if (m_leadsplit) pt2max *= m_pt2max/Max(m_pt2max,m_LC.m_msplit2);
   if (m_leadspect) pt2max *= m_pt2max/Max(m_pt2max,m_LC.m_mspect2);
+  m_added = true; //!(m_LC.m_msplit2>m_pt02 || m_LC.m_mspect2>m_pt02);
+  //msg_Out()<<METHOD<<": "
+  //	   <<p_split->m_flav<<" ("<<m_LC.m_msplit2<<") / "
+  //	   <<p_spect->m_flav<<" ("<<m_LC.m_mspect2<<") "
+  //	   <<"--> m_added = "<<m_added<<".\n";
   for (size_t i=0;i<10;i++) {
     m_pairs = m_isbeam?1:SelectNumberOfPairs(m_nmax);
     for (size_t i=0;i<m_pairs;i++) {
@@ -78,7 +82,8 @@ bool Cluster_Splitter::ConstructSystem(Cluster * cluster) {
       m_popped.push_back(new PoppedPair);
       do {
 	ConstructKinematics(exponents.first,exponents.second);
-	hit = SelectFlavour(m_popped.back()->m_sqq) &&  AcceptSystem(pt2max);
+	hit = (SelectFlavour(m_popped.back()->m_sqq-(m_added?m_pt02:0.)) &&  
+	       AcceptSystem(pt2max));
       } while (!hit && calls++<=1000);
       if (hit) {
 	m_sumx += m_popped.back()->m_x; 
@@ -89,8 +94,6 @@ bool Cluster_Splitter::ConstructSystem(Cluster * cluster) {
     if (hit) break;
   }
   if (!hit) {
-    //msg_Out()<<"      --> "<<METHOD<<" failed for m_min = "
-    //	     <<sqrt(m_mmin2)<<".\n";
     return false;
   }
   MakeKinematics();
@@ -100,7 +103,7 @@ bool Cluster_Splitter::ConstructSystem(Cluster * cluster) {
 
 void Cluster_Splitter::
 ConstructKinematics(const double & etax,const double & etay) {
-  double sqqmin(4.*m_mmin2);
+  double sqqmin(4.*m_mmin2+(m_added?m_pt02:0.));
   double msplit2hat(m_LC.m_msplit2/m_LC.m_smandel); 
   double mspect2hat(m_LC.m_mspect2/m_LC.m_smandel); 
   double xmin(sqqmin/m_LC.m_smandel);
@@ -111,7 +114,6 @@ ConstructKinematics(const double & etax,const double & etay) {
   do {
     x       = SelectY(xmin,xmax,etax,offsetx);
     ymin    = sqqmin/(x*m_LC.m_smandel); 
-    //was before: ymax    = Min(Max(x,ymin*4.),1.-mspect2hat-m_sumy);
     ymax    = 1.-mspect2hat-m_sumy;
     offsety = offsetx/x;
     y       = SelectY(ymin,ymax,etay,offsety);
@@ -126,7 +128,6 @@ ConstructKinematics(const double & etax,const double & etay) {
     else { 
       z      = SelectZ(4.*m_mmin2/sqq,m_leadspect || m_leadsplit);
       weight = exp(-(sqq-sqqmin)/(4.*m_pt02));
-      //weight = 1.;
     }
     calls++;
   } while (weight<ran->Get() && calls<=1000);
@@ -145,8 +146,6 @@ bool Cluster_Splitter::AcceptSystem(const double & pt2max) {
   PoppedPair * pop(m_popped.back());
   pop->m_kt2 = pop->m_z*(1.-pop->m_z)*pop->m_sqq-pop->m_mpop2;
   if (pop->m_kt2 < 0. || pop->m_kt2 > pt2max) {
-    //msg_Out()<<"      --> "<<METHOD<<" kt2 veto: "<<pop->m_kt2
-    //	     <<" from s = "<<pop->m_sqq<<", z = "<<pop->m_z<<".\n";
     return false;
   }
   return (((*p_as)(pop->m_sqq,false)*(*p_as)(pop->m_kt2,false))/

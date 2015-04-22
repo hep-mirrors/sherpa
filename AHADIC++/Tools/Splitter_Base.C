@@ -167,7 +167,10 @@ double Splitter_Base::SelectZ(const double & delta,const bool & lead) {
   double zmin(0.5*(1.-sqrt(1.-delta))), zmax(0.5*(1.+sqrt(1.-delta))), z;
   do {
     z = zmin+ran->Get()*sqrt(1.-delta);
-  } while (1.-2.*z*(1.-z) < ran->Get()); // was 4.*z*(1.-z) before 
+  } while (1.-2.*z*(1.-z) < ran->Get()); 
+  // no structure: flat
+  // splitting function: 1.-2.*z*(1.-z)
+  // anti splitting[expo] pow(4*z*(1-z),expo)
   return z;
 }
 
