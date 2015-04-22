@@ -478,7 +478,7 @@ double Single_DipoleTerm::Partonic(const Vec4D_Vector &_moms,const int mode)
     cms=Poincare(pp[0]+pp[1]);
     for (size_t i(0);i<pp.size();++i) cms.Boost(pp[i]);
   }
-  return operator()(&pp.front(),cms,mode);
+  return m_mewgtinfo.m_B=operator()(&pp.front(),cms,mode);
 }
 
 double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poincare &cms,const int _mode)
