@@ -140,22 +140,26 @@ namespace ATOOLS {
                                    const ATOOLS::DADS_Info & dadsi)
   {
     s<<"DADS: wgt="<<dadsi.m_wgt<<", x1="<<dadsi.m_x1<<", x2="<<dadsi.m_x2
-     <<", fl1="<<dadsi.m_fl1<<", fl1="<<dadsi.m_fl2;
+     <<", fl1="<<dadsi.m_fl1<<", fl2="<<dadsi.m_fl2;
     return s;
   }
 
   struct RDA_Info {
   public:
     double m_wgt, m_mur2, m_muf12, m_muf22;
+    size_t m_i,m_j,m_k;
     RDA_Info(const double &wgt,const double &mur2,
-             const double &muf12,const double &muf22):
-    m_wgt(wgt), m_mur2(mur2), m_muf12(muf12), m_muf22(muf22) {}
+             const double &muf12,const double &muf22,
+             const size_t &i,const size_t &j, const size_t &k):
+    m_wgt(wgt), m_mur2(mur2), m_muf12(muf12), m_muf22(muf22),
+    m_i(i) ,m_j(j) ,m_k(k) {}
   };
 
   inline std::ostream & operator<<(std::ostream & s,
                                    const ATOOLS::RDA_Info & rdai)
   {
-    s<<"RDA: wgt="<<rdai.m_wgt<<", muR2="<<rdai.m_mur2
+    s<<"RDA("<<rdai.m_i<<","<<rdai.m_j<<","<<rdai.m_k<<"): "
+     <<"wgt="<<rdai.m_wgt<<", muR2="<<rdai.m_mur2
      <<", muF12="<<rdai.m_muf12<<", muF22="<<rdai.m_muf22;
     return s;
   }

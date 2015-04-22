@@ -37,7 +37,7 @@ namespace SHERPA {
   private:
     size_t m_usenamedweights, m_extendedweights;
     ATOOLS::Blob * p_sp;
-    int    m_oqcd, m_oew;
+    std::vector<double> m_orders;
     double m_wgt, m_mewgt, m_wgtnorm, m_ntrials, m_pswgt, m_pwgt;
     double m_mur2, m_muf12, m_muf22;
     double m_alphas, m_alpha;

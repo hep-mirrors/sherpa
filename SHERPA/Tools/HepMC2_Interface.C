@@ -30,7 +30,7 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
                      bool namedweights, bool extendedweights) :
   m_usenamedweights(namedweights),
   m_extendedweights(extendedweights), p_sp(sp),
-  m_oqcd(0), m_oew(0), m_wgt(wgt),
+  m_wgt(wgt),
   m_mewgt(0.), m_wgtnorm(wgt), m_ntrials(1.),
   m_pswgt(0.), m_pwgt(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
@@ -59,10 +59,8 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
     SetAlphaS();
     SetAlpha();
     if (m_extendedweights) {
-      ReadIn(db,"OQCD",true);
-      m_oqcd=db->Get<int>();
-      ReadIn(db,"OEW",true);
-      m_oew=db->Get<int>();
+      ReadIn(db,"Orders",true);
+      m_orders=db->Get<std::vector<double> >();
       ReadIn(db,"MEWeightInfo",true);
       p_wgtinfo=db->Get<ME_Weight_Info*>();
     }
@@ -81,7 +79,7 @@ EventInfo::EventInfo(const EventInfo &evtinfo) :
   m_usenamedweights(evtinfo.m_usenamedweights),
   m_extendedweights(evtinfo.m_extendedweights),
   p_sp(evtinfo.p_sp),
-  m_oqcd(evtinfo.m_oqcd), m_oew(evtinfo.m_oew),
+  m_orders(evtinfo.m_orders),
   m_wgt(0.), m_mewgt(0.), m_wgtnorm(0.),
   m_ntrials(evtinfo.m_ntrials), m_pswgt(evtinfo.m_pswgt), m_pwgt(0.),
   m_mur2(0.), m_muf12(0.), m_muf22(0.),
@@ -114,44 +112,41 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       // additional entries for LO/LOPS reweighting
       // x1,x2,muf2 can be found in PdfInfo; alphaS,alphaQED in their infos
       wc["MuR2"]=m_mur2;
-      wc["OQCD"]=m_oqcd;
-      wc["OEW"]=m_oew;
+      wc["OQCD"]=m_orders[0];
+      wc["OEW"]=m_orders[1];
       if (p_wgtinfo) {
         wc["Reweight_B"]=p_wgtinfo->m_B;
-        if (p_wgtinfo->m_type!=mewgttype::none) {
-          wc["Reweight_B"]=p_wgtinfo->m_B;
+        wc["Reweight_MuR2"]=p_wgtinfo->m_mur2;
+        wc["Reweight_MuF2"]=p_wgtinfo->m_muf2;
+        if (p_wgtinfo->m_type&mewgttype::VI) {
           wc["Reweight_VI"]=p_wgtinfo->m_VI;
+          for (size_t i=0;i<p_wgtinfo->m_wren.size();++i) {
+            wc["Reweight_VI_wren_"+ToString(i)]=p_wgtinfo->m_wren[i];
+          }
+        }
+        if (p_wgtinfo->m_type&mewgttype::KP) {
           wc["Reweight_KP"]=p_wgtinfo->m_KP;
           wc["Reweight_KP_x1p"]=p_wgtinfo->m_y1;
           wc["Reweight_KP_x2p"]=p_wgtinfo->m_y2;
-          wc["Reweight_MuR2"]=p_wgtinfo->m_mur2;
-          wc["Reweight_MuF2"]=p_wgtinfo->m_muf2;
-          if (p_wgtinfo->m_type&mewgttype::VI) {
-            for (size_t i=0;i<p_wgtinfo->m_wren.size();++i) {
-              wc["Reweight_VI_wren_"+ToString(i)]=p_wgtinfo->m_wren[i];
-            }
+          for (size_t i=0;i<p_wgtinfo->m_wfac.size();++i) {
+            wc["Reweight_KP_wfac_"+ToString(i)]=p_wgtinfo->m_wfac[i];
           }
-          if (p_wgtinfo->m_type&mewgttype::KP) {
-            for (size_t i=0;i<p_wgtinfo->m_wfac.size();++i) {
-              wc["Reweight_KP_wfac_"+ToString(i)]=p_wgtinfo->m_wfac[i];
-            }
-          }
-          if (p_wgtinfo->m_type&mewgttype::DADS &&
-              p_wgtinfo->m_dadsinfos.size()) {
-            wc["Reweight_DADS_N"]=p_wgtinfo->m_dadsinfos.size();
-            for (size_t i(0);i<p_wgtinfo->m_dadsinfos.size();++i) {
-              wc["Reweight_DADS_"+ToString(i)+"_Weight"]
-                  =p_wgtinfo->m_dadsinfos[i].m_wgt;
-              if (p_wgtinfo->m_dadsinfos[i].m_wgt) {
-                wc["Reweight_DADS_"+ToString(i)+"_x1"]
-                    =p_wgtinfo->m_dadsinfos[i].m_x1;
-                wc["Reweight_DADS_"+ToString(i)+"_x2"]
-                    =p_wgtinfo->m_dadsinfos[i].m_x2;
-                wc["Reweight_DADS_"+ToString(i)+"_fl1"]
-                    =p_wgtinfo->m_dadsinfos[i].m_fl1;
-                wc["Reweight_DADS_"+ToString(i)+"_fl2"]
-                    =p_wgtinfo->m_dadsinfos[i].m_fl2;
-              }
+        }
+        if (p_wgtinfo->m_type&mewgttype::DADS &&
+            p_wgtinfo->m_dadsinfos.size()) {
+          wc["Reweight_DADS_N"]=p_wgtinfo->m_dadsinfos.size();
+          for (size_t i(0);i<p_wgtinfo->m_dadsinfos.size();++i) {
+            wc["Reweight_DADS_"+ToString(i)+"_Weight"]
+                =p_wgtinfo->m_dadsinfos[i].m_wgt;
+            if (p_wgtinfo->m_dadsinfos[i].m_wgt) {
+              wc["Reweight_DADS_"+ToString(i)+"_x1"]
+                  =p_wgtinfo->m_dadsinfos[i].m_x1;
+              wc["Reweight_DADS_"+ToString(i)+"_x2"]
+                  =p_wgtinfo->m_dadsinfos[i].m_x2;
+              wc["Reweight_DADS_"+ToString(i)+"_fl1"]
+                  =p_wgtinfo->m_dadsinfos[i].m_fl1;
+              wc["Reweight_DADS_"+ToString(i)+"_fl2"]
+                  =p_wgtinfo->m_dadsinfos[i].m_fl2;
             }
           }
         }
@@ -183,6 +178,10 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
                   =p_wgtinfo->m_rdainfos[i].m_muf12;
               wc["Reweight_RDA_"+ToString(i)+"_MuF22"]
                   =p_wgtinfo->m_rdainfos[i].m_muf22;
+              wc["Reweight_RDA_"+ToString(i)+"_Dipole"]
+                  =10000*p_wgtinfo->m_rdainfos[i].m_i
+                    +100*p_wgtinfo->m_rdainfos[i].m_j
+                        +p_wgtinfo->m_rdainfos[i].m_k;
             }
           }
         }
@@ -221,8 +220,8 @@ bool EventInfo::WriteTo(HepMC::GenEvent &evt, const int& idx)
       wc.push_back(m_mur2);
       wc.push_back(m_muf12);
       wc.push_back(m_muf22);
-      wc.push_back(m_oqcd);
-      wc.push_back(m_oew);
+      wc.push_back(m_orders[0]);
+      wc.push_back(m_orders[1]);
     }
     wc.push_back(p_subevtlist?64:0);
   }
