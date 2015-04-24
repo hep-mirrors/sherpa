@@ -272,8 +272,8 @@
 #define      kf_B_1_H                     20513
 #define      kf_B_1_H_plus                20523
 #define      kf_B_s1_H                    20533
-#define      kf_B_c1_H                    20533
-#define      kf_chi_c1_1P                 20543
+#define      kf_B_c1_H                    20543
+#define      kf_chi_c1_1P                 20443
 #define      kf_chi_b1_1P                 20553
 #define      kf_K_2_1820                  20315
 #define      kf_K_2_1820_plus             20325
