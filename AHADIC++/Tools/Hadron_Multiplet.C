@@ -404,10 +404,14 @@ All_Hadron_Multiplets::ConstructBaryonWaveFunction(int lp,int spin,
 void All_Hadron_Multiplets::ConstructAntiWaveFunctions() 
 {
   Hadron_Wave_Function * anti; 
+  Hadron_WF_Map temps;
   for (Hadron_WF_Miter wfm=p_wavefunctions->begin();wfm!=p_wavefunctions->end();wfm++) {
     anti = wfm->second->Anti();
-    if (anti!=NULL) (*p_wavefunctions)[wfm->first.Bar()] = anti;
+    if (anti!=NULL) {
+      temps[wfm->first.Bar()] = anti;
+    }
   } 
+  p_wavefunctions->insert(temps.begin(),temps.end());
 }
 
 void All_Hadron_Multiplets::LookUpAngles(const int angular,const int spin,double & costh,double & sinth)
