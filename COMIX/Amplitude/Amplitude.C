@@ -551,6 +551,7 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
     return;
   }
   if (n==1) curs[""]=cur;
+  else delete cur;
   Int_Vector isfs(ids.size()), pols(ids.size());
   for (size_t i(0);i<ids.size();++i) {
     isfs[i]=m_fl[ids[i]].IsFermion();
