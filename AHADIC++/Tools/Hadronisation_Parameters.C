@@ -87,11 +87,11 @@ double Hadronisation_Parameters::Get(string keyword)
 void Hadronisation_Parameters::
 ReadGluonSplittingParameters(Data_Reader & dataread) {
   m_parametermap[string("pt02")]                 = 
-    dataread.GetValue<double>("PT^2_0",1.00);
+    dataread.GetValue<double>("PT^2_0",1.562);
   m_parametermap[string("G2QQ_Exponent")]        = 
-    dataread.GetValue<double>("G2QQ_EXPONENT",0.50);
+    dataread.GetValue<double>("G2QQ_EXPONENT",1.08);
   m_parametermap[string("G2QQ_LeadExponent")]    = 
-    dataread.GetValue<double>("G2QQ_LEADEXPONENT",1.00);
+    dataread.GetValue<double>("G2QQ_LEADEXPONENT",0.00);
   m_parametermap[string("ptmax")]                = 
     dataread.GetValue<double>("PT_MAX",1.00);
   m_parametermap[string("ptmax_factor")]         = 
@@ -103,13 +103,13 @@ ReadClusterDecayParameters(Data_Reader & dataread) {
   m_parametermap[string("MaxNumberOfPairs")]  =
     dataread.GetValue<int>("MAX_PAIRS",1);
   m_parametermap[string("SplitExponent")]     = 
-    dataread.GetValue<double>("SPLIT_EXPONENT",0.90);
+    dataread.GetValue<double>("SPLIT_EXPONENT",0.1608);
   m_parametermap[string("SplitLeadExponent")] = 
-    dataread.GetValue<double>("SPLIT_LEADEXPONENT",2.00);
+    dataread.GetValue<double>("SPLIT_LEADEXPONENT",8);
   m_parametermap[string("SpectExponent")]     = 
-    dataread.GetValue<double>("SPECT_EXPONENT",0.0);
+    dataread.GetValue<double>("SPECT_EXPONENT",1.739);
   m_parametermap[string("SpectLeadExponent")] = 
-    dataread.GetValue<double>("SPECT_LEADEXPONENT",0.5);
+    dataread.GetValue<double>("SPECT_LEADEXPONENT",8);
 }
 
 void Hadronisation_Parameters::
@@ -127,9 +127,9 @@ ReadClusterToMesonParameters(Data_Reader & dataread) {
   m_parametermap[string("WidthExponent_C->H")]   =
     dataread.GetValue<double>("TRANSITION_EXPONENT2",-0.32);
   m_parametermap[string("Offset_C->HH")]         =
-    dataread.GetValue<double>("DECAY_OFFSET",1.00);
+    dataread.GetValue<double>("DECAY_OFFSET",1.202);
   m_parametermap[string("MassExponent_C->HH")]   =
-    dataread.GetValue<double>("DECAY_EXPONENT",6.00);
+    dataread.GetValue<double>("DECAY_EXPONENT",2.132);
 }
 
 void Hadronisation_Parameters::ReadMesonWeights(Data_Reader & dataread) 
@@ -187,7 +187,7 @@ void Hadronisation_Parameters::ReadMesonWeights(Data_Reader & dataread)
 void Hadronisation_Parameters::ReadPoppingParameters(Data_Reader & dataread) 
 {
   m_parametermap[string("Strange_fraction")]     =
-    dataread.GetValue<double>("STRANGE_FRACTION",0.63);
+    dataread.GetValue<double>("STRANGE_FRACTION",0.6049);
   m_parametermap[string("Baryon_fraction")]      = 
     dataread.GetValue<double>("BARYON_FRACTION",1.00);
   m_parametermap[string("Heavy_Baryon_Enhancement")]    = 

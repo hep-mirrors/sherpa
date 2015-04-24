@@ -898,7 +898,7 @@ void Initialization_Handler::SetGlobalVariables()
   int evol = sdr.GetValue<int>("CSS_EVOLUTION_SCHEME",1);
   int kfmode = sdr.GetValue<int>("CSS_KFACTOR_SCHEME",1);
   int scs = sdr.GetValue<int>("CSS_SCALE_SCHEME",0);
-  double k0sqf = sdr.GetValue<double>("CSS_FS_PT2MIN",1.0);
+  double k0sqf = sdr.GetValue<double>("CSS_FS_PT2MIN",0.2259);
   double k0sqi = sdr.GetValue<double>("CSS_IS_PT2MIN",4.78);
   double fs_as_fac = sdr.GetValue<double>("CSS_FS_AS_FAC",0.66);
   double is_as_fac = sdr.GetValue<double>("CSS_IS_AS_FAC",0.50);
