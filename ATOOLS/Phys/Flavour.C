@@ -248,6 +248,55 @@ std::string Flavour::ShellName() const
   return name;
 }
 
+// Shell names used to recover decay data file
+// names. Used by HADRONS::Hadron_Decay_Table
+std::string Flavour::LegacyShellName() const
+{
+  if(!m_anti){
+    switch (Kfcode()){
+    case      kf_d:      return "d";
+    case      kf_u:      return "u";
+    case      kf_s:      return "s";
+    case      kf_c:      return "c";
+    case      kf_b:      return "b";
+    case      kf_t:      return "t";
+    case      kf_e:      return "e-";
+    case      kf_nue:    return "nu_e";
+    case      kf_mu:     return "mu-";
+    case      kf_numu:   return "nu_mu";
+    case      kf_tau:    return "tau-";
+    case      kf_nutau:  return "nu_tau";
+    case      kf_gluon:  return "G";
+    case      kf_photon: return "P";
+    case      kf_Z:      return "Z";
+    case      kf_Wplus:  return "W+";
+    case      kf_h0:     return "h0";
+    }
+  }
+  else{
+    switch (Kfcode()){
+    case      kf_d:      return "db";
+    case      kf_u:      return "ub";
+    case      kf_s:      return "sb";
+    case      kf_c:      return "cb";
+    case      kf_b:      return "bb";
+    case      kf_t:      return "tb";
+    case      kf_e:      return "e+";
+    case      kf_nue:    return "nu_eb";
+    case      kf_mu:     return "mu+";
+    case      kf_numu:   return "nu_mub";
+    case      kf_tau:    return "tau+";
+    case      kf_nutau:  return "nu_taub";
+    case      kf_gluon:  return "G";
+    case      kf_photon: return "P";
+    case      kf_Z:      return "Z";
+    case      kf_Wplus:  return "W-";
+    case      kf_h0:     return "h0";
+    }
+  }
+  return ShellName();
+}
+
 std::string Flavour::IDName() const 
 {
   return m_anti?p_info->m_antiname:p_info->m_idname;

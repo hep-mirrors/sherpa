@@ -126,6 +126,7 @@ namespace ATOOLS {
     // member functions
     std::string IDName() const;
     std::string ShellName() const;
+    std::string LegacyShellName() const;
     std::string TexName() const;
     std::string RootName() const;
 

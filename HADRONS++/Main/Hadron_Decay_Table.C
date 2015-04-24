@@ -145,8 +145,8 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 	}
 	Hadron_Decay_Channel* hdc = new Hadron_Decay_Channel(Flav(),p_ms,path);
 	hdc->AddDecayProduct(spec,false);
-	std::string filename=m_flin.ShellName();
-	filename += "_"+spec.ShellName();
+	std::string filename=m_flin.LegacyShellName();
+	filename += "_"+spec.LegacyShellName();
 	msg_Tracking()<<"   Add partonic decay: "<<Flav()<<" --> ";
 	for (size_t j=0;j<(*dectable)[i]->NOut();j++) {
 	  Flavour flav = (*dectable)[i]->GetDecayProduct(j);
@@ -155,16 +155,12 @@ void Hadron_Decay_Table::Read(std::string path, std::string file)
 	  hdc->AddDecayProduct(flav,false);
 	  charge   -= flav.IntCharge();
 	  mass     -= flav.HadMass();
-	  filename += flav.ShellName();
+	  filename += flav.LegacyShellName();
 	}
 	hdc->SetWidth(BR*partWidth);
 	hdc->SetDeltaWidth(0.);
 	hdc->SetOrigin("");
 	filename += ".dat";
-        // temporary hack to avoid filename changes in Decaydata.db
-        filename = StringReplace(filename, "ve", "nu_e");
-        filename = StringReplace(filename, "vmu", "nu_mu");
-        filename = StringReplace(filename, "vtau", "nu_tau");
 	msg_Tracking()<<"  ---> "<<filename<<".\n";
 	hdc->SetFileName(filename);
 	AddDecayChannel(hdc);
