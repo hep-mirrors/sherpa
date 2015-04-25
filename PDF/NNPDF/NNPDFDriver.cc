@@ -215,7 +215,10 @@ void NNPDFDriver::readPDFSet(string const& grid, int const& rep)
       if (hasKey(tmp, "XMax:")) fxmax = readDouble(tmp, "XMax:");
       if (hasKey(tmp, "QMin:")) fQmin = readDouble(tmp, "QMin:");
       if (hasKey(tmp, "QMax:")) fQmax = readDouble(tmp, "QMax:");
-      if (hasKey(tmp, "MZ:")) fMz = readDouble(tmp, "MZ:");
+      if (hasKey(tmp, "MZ:") and !hasKey(tmp, "AlphaS_MZ:")  ) { // Not that great workaround for apparently
+        fMz = readDouble(tmp, "MZ:");                            // slightly imperfect hadKey method
+                                                                 // needs imrpovement in the future
+      }
       if (hasKey(tmp, "AlphaS_OrderQCD:")) forder = readInt(tmp, "AlphaS_OrderQCD:");
 
       if (hasKey(tmp, "MDown"))    fMDown    = readDouble(tmp, "MDown");
