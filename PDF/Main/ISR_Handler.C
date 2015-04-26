@@ -318,10 +318,14 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
   msg_IODebugging()<<"  "<<p2<<" from "<<p_beam[1]->OutMomentum()<<" -> "
 		 <<p2.PMinus()<<" / "<<p_beam[1]->
     OutMomentum().PMinus()<<" = "<<x2<<std::endl;
-  if (PDF(0) && (Q12<PDF(0)->Q2Min() || Q12>PDF(0)->Q2Max()))
+  if (PDF(0) && (Q12<PDF(0)->Q2Min() || Q12>PDF(0)->Q2Max())) {
+    msg_IODebugging()<<"  Q_1^2 out of bounds"<<std::endl;
     return 0.;
-  if (PDF(1) && (Q22<PDF(1)->Q2Min() || Q22>PDF(1)->Q2Max()))
+  }
+  if (PDF(1) && (Q22<PDF(1)->Q2Min() || Q22>PDF(1)->Q2Max())) {
+    msg_IODebugging()<<"  Q_2^2 out of bounds"<<std::endl;
     return 0.;
+  }
   m_mu2[mode&1]=Q12;
   m_mu2[1-(mode&1)]=Q22;
   int cmode(((mode&6)>>1)?((mode&6)>>1):m_mode);
