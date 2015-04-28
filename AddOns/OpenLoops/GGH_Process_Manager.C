@@ -39,8 +39,10 @@ Process_Base* GGH_Process_Manager::InitializeProcess(const ATOOLS::Cluster_Ampli
   }
 
   // set coupling orders correctly
-  pi.m_maxcpl[1] = pi.m_mincpl[1] = 1;
+  pi.m_maxcpl.resize(3);
   pi.m_maxcpl[0] = pi.m_mincpl[0] = 0;
+  pi.m_maxcpl[1] = pi.m_mincpl[1] = 0;
+  pi.m_maxcpl[2] = pi.m_mincpl[2] = 1;
   Flavour_Vector flav_vec = pi.ExtractFlavours();
   for(Flavour_Vector::const_iterator it=flav_vec.begin(); it!=flav_vec.end(); ++it)
     if (it->Strong()) {
@@ -51,6 +53,9 @@ Process_Base* GGH_Process_Manager::InitializeProcess(const ATOOLS::Cluster_Ampli
   if(external){
     // set weirdly abused mhv-flag to get external (i.e. OpenLoops) proc
     pi.m_amegicmhv = 10;
+    // order counting in OpenLoops is different
+    pi.m_maxcpl[1] = pi.m_mincpl[1] = 1;
+    pi.m_maxcpl[2] = pi.m_mincpl[2] = 0;
     pi.m_loopgenerator = "OpenLoops";
   }
   DEBUG_VAR(pi);
