@@ -14,12 +14,12 @@
 
 (processes){
   Process 11 -11 -> 93 93;
-  Order (-1,2);
+  Order (*,2);
   End process;
   Process 11 -11 -> 4 -4;
-  Order (-1,2);
+  Order (*,2);
   End process;
   Process 11 -11 -> 5 -5;
-  Order (-1,2);
+  Order (*,2);
   End process;
 }(processes)

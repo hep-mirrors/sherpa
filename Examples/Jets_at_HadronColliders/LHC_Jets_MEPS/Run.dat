@@ -7,7 +7,7 @@
 
 (processes){
   Process 93 93 -> 93 93 93{3}
-  Order (-1,0);
+  Order (*,0);
   CKKW sqr(20/E_CMS)
   Integration_Error 0.02;
   End process;

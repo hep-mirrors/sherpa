@@ -32,6 +32,6 @@
   ME_Generator Amegic;
   RS_ME_Generator Comix;
   Loop_Generator LGEN;
-  Order (-1,1);
+  Order (*,1);
   End process;
 }(processes);

@@ -20,14 +20,14 @@
   ME_Generator Amegic;
   RS_ME_Generator Comix;
   Loop_Generator LGEN;
-  Order (-1,1);
+  Order (*,1);
   End process;
   Process 93 93 -> -24 5 -5;
   NLO_QCD_Mode MC@NLO;
   ME_Generator Amegic;
   RS_ME_Generator Comix;
   Loop_Generator LGEN;
-  Order (-1,1);
+  Order (*,1);
   End process;
 }(processes);
 

@@ -20,7 +20,7 @@
   Process 93 93 -> 22 22;
   NLO_QCD_Mode Fixed_Order;
   NLO_QCD_Part BVIRS;
-  Order (-1,2); Enable_MHV 12;
+  Order (*,2); Enable_MHV 12;
   Loop_Generator LGEN;
   Integrator PS2;
   RS_Integrator PS3;

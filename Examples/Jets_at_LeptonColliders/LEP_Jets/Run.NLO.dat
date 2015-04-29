@@ -32,7 +32,7 @@
 
 (processes){
   Process 11 -11 -> 93 93 93{NJET};
-  Order (-1,2); CKKW pow(10,-YCUT);
+  Order (*,2); CKKW pow(10,-YCUT);
   NLO_QCD_Mode MC@NLO {LJET};
   Loop_Generator LOOPGEN0 {2};
   Loop_Generator LOOPGEN1 {3};
@@ -43,7 +43,7 @@
   End process;
   %
   Process 11 -11 -> 5 -5 93{NMJET};
-  Order (-1,2); CKKW pow(10,-YMCUT);
+  Order (*,2); CKKW pow(10,-YMCUT);
   NLO_QCD_Mode MC@NLO {LMJET};
   Loop_Generator LOOPMGEN {2};
   ME_Generator Amegic {LMJET};
@@ -52,7 +52,7 @@
   End process;
   %
   Process 11 -11 -> 5 5 -5 -5 93{NMMJET};
-  Order (-1,2); CKKW pow(10,-YMMCUT);
+  Order (*,2); CKKW pow(10,-YMMCUT);
   Cut_Core 1;
   End process;
 }(processes);
