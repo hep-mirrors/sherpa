@@ -55,6 +55,7 @@ namespace CSSHOWER {
 }
 
 using namespace CSSHOWER;
+using namespace MODEL;
 using namespace ATOOLS;
 
 bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
@@ -149,40 +150,22 @@ DECLARE_GETTER(CF_QCD_Getter,"SF_QCD_Fill",
 void *ATOOLS::Getter<void,SFC_Filler_Key,CF_QCD_Getter>::
 operator()(const SFC_Filler_Key &key) const
 {
-  if (!Flavour(kf_gluon).IsOn()) return NULL;
-  std::string gtag("{"+Flavour(kf_gluon).IDName()+"}");
-  key.p_gets->push_back(new CF_QCD_Getter(gtag+gtag+gtag));
-  for (int i(1);i<=6;++i) {
-    Flavour f((kf_code)i);
-    if (!f.IsOn()) continue;
-    std::string qtag("{"+f.IDName()+"}");
-    std::string qbtag ("{"+f.Bar().IDName()+"}");
-    key.p_gets->push_back(new CF_QCD_Getter(gtag+qtag+qbtag));
-    key.p_gets->push_back(new CF_QCD_Getter(qbtag+qbtag+gtag));
-    key.p_gets->push_back(new CF_QCD_Getter(qtag+qtag+gtag));
-  }
-  if (MODEL::s_model->Name().find("MSSM")==std::string::npos) return NULL;
-  std::string sgtag("{"+Flavour(kf_Gluino).IDName()+"}");
-  key.p_gets->push_back(new CF_QCD_Getter(sgtag+sgtag+gtag));
-  key.p_gets->push_back(new CF_QCD_Getter(sgtag+gtag+sgtag));
-  key.p_gets->push_back(new CF_QCD_Getter(gtag+sgtag+sgtag));
-  for (int i(1);i<=6;++i) {
-    Flavour f((kf_code)(1000000+i));
-    if (!f.IsOn()) continue;
-    std::string qtag("{"+f.IDName()+"}");
-    std::string qbtag ("{"+f.Bar().IDName()+"}");
-    key.p_gets->push_back(new CF_QCD_Getter(gtag+qtag+qbtag));
-    key.p_gets->push_back(new CF_QCD_Getter(qbtag+qbtag+gtag));
-    key.p_gets->push_back(new CF_QCD_Getter(qtag+qtag+gtag));
-  }
-  for (int i(1);i<=6;++i) {
-    Flavour f((kf_code)(2000000+i));
-    if (!f.IsOn()) continue;
-    std::string qtag("{"+f.IDName()+"}");
-    std::string qbtag ("{"+f.Bar().IDName()+"}");
-    key.p_gets->push_back(new CF_QCD_Getter(gtag+qtag+qbtag));
-    key.p_gets->push_back(new CF_QCD_Getter(qbtag+qbtag+gtag));
-    key.p_gets->push_back(new CF_QCD_Getter(qtag+qtag+gtag));
+  DEBUG_FUNC("model = "<<key.p_md->Name());
+  const Vertex_Table *vtab(key.p_md->VertexTable());
+  for (Vertex_Table::const_iterator
+	 vlit=vtab->begin();vlit!=vtab->end();++vlit) {
+    for (Vertex_List::const_iterator 
+	   vit=vlit->second.begin();vit!=vlit->second.end();++vit) {
+      Single_Vertex *v(*vit);
+      if (v->NLegs()>3) continue;
+      if (v->Color.front().Type()!=cf::T &&
+	  v->Color.front().Type()!=cf::F) continue;
+      msg_Debugging()<<"Add "<<v->in[0].Bar()<<" -> "<<v->in[1]<<" "<<v->in[2]<<" {\n";
+      std::string atag("{"+v->in[0].Bar().IDName()+"}");
+      std::string btag("{"+v->in[1].IDName()+"}");
+      std::string ctag("{"+v->in[2].IDName()+"}");
+      key.p_gets->push_back(new CF_QCD_Getter(atag+btag+ctag));
+    }
   }
   return NULL;
 }
