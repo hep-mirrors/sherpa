@@ -39,7 +39,7 @@ void Gluon_Decayer::Init() {
     msg_Error()<<"Error in "<<METHOD<<":\n"
 	       <<"   No decay channels found for gluons, will abort the run.\n"
 	       <<"   Please contact the Sherpa group for assistance.\n";
-    exit(0);
+    abort();
   }
 
   if (m_analyse) {

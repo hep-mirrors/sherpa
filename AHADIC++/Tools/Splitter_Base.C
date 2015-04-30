@@ -75,7 +75,7 @@ void Splitter_Base::Init() {
     msg_Error()<<"Error in "<<METHOD<<":\n"
 	       <<"   No decay channels found for gluons, will abort the run.\n"
 	       <<"   Please contact the Sherpa group for assistance.\n";
-    exit(0);
+    abort();
   }
   m_sumwt = CalculateSumWT();
 }

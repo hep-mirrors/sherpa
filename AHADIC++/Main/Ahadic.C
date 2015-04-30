@@ -144,7 +144,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
   // 	       <<"=======================================================\n"
   // 	       <<(*blob)<<"\n";
   //     msg_Out()<<" nan momentum: "<<blob->OutParticle(i)->Momentum()<<"\n";
-  //     exit(0);
+  //     abort();
   //   }
   // }
   return Return_Value::Success;
@@ -200,10 +200,10 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
   assert(m_clulist.empty());
 
   if (blob->CheckMomentumConservation().Abs2()>1.e-6) {
-    msg_Error()<<"Error in "<<METHOD<<": blob seem to be fishy: "
-	       <<blob->CheckMomentumConservation()<<"\n"
-	       <<(*blob)<<"\n";
-    exit(1);
+    msg_Error()<<METHOD<<"(): Momentum imbalance: "
+	       <<blob->CheckMomentumConservation()<<"\n";
+    msg_Debugging()<<(*blob)<<"\n";
+    return Return_Value::Retry_Event;
   }
   return Return_Value::Success;
 }

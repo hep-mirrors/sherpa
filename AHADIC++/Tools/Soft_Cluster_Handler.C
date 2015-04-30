@@ -287,7 +287,7 @@ DecayWeight(Cluster * cluster,Flavour & had1,Flavour & had2)
 	msg_Error()<<"ERROR in "<<METHOD<<":\n"
 		   <<"   Found cluster that MUST annihilate, but couldn't.\n"
 		   <<"   Will return -1 and hope for the best.\n";
-	exit(1);
+	abort();
 	return -1;
       }
     }

@@ -61,7 +61,7 @@ void Cluster::Update()
     <<"Error in Cluster::Cluster("<<p_trip->m_flav<<","<<p_anti->m_flav<<"):\n"
     <<"   Cannot handle this colour structure, will abort the run.\n"
     <<"   Please contact the Sherpa group for further assistance.";
-  exit(0);
+  abort();
 }
 
 bool Cluster::CheckConsistency(std::ostream & s,std::string method) {

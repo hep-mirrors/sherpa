@@ -19,7 +19,7 @@ Gluon_Splitter::Gluon_Splitter() :
 bool Gluon_Splitter::
 operator()(Dipole * dip,const bool & first,const bool & vetodiquark) {
   Reset();
-  if (!SelectSplitter(dip->Triplet(),dip->AntiTriplet())) exit(0);
+  if (!SelectSplitter(dip->Triplet(),dip->AntiTriplet())) abort();
   DefineTags();
   dip->SetSwitched(!m_swap);
   ConstructTrafos();

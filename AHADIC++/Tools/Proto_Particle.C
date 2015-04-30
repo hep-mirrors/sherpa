@@ -43,7 +43,7 @@ Proto_Particle(Flavour flav,Vec4D mom,char info) :
 	       <<"   Please make sure that heavy coloured objects decay "
 	       <<"before they enter hadronization.\n"
 	       <<"   Will exit the run.\n";
-      exit(0);
+      abort();
     }
   }
   control::s_AHAprotoparticles++; 
