@@ -8,7 +8,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 
 KP_Terms::KP_Terms(Process_Base *const proc,const int mode):
-  m_imode(0),
+  m_imode(6),
   p_proc(proc), p_flkern(new Flavour_Kernels()), p_masskern(NULL)
 {
   SetNC(3.0);
