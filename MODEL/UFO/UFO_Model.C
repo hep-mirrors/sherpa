@@ -28,6 +28,16 @@ namespace UFO{
     delete p_dataread;
   }
 
+  void UFO_Model::SetHadMass(const kf_code &kf,const double &m)
+  {
+    if (ATOOLS::s_kftable.find(kf)==ATOOLS::s_kftable.end())
+      THROW(fatal_error,"SM particle not in model");
+    if (ATOOLS::s_kftable[kf]->m_mass) return;
+    ATOOLS::s_kftable[kf]->m_mass=m;
+    ATOOLS::s_kftable[kf]->m_hmass=m;
+    ATOOLS::s_kftable[kf]->m_massive=0;
+  }
+
   bool UFO_Model::ModelInit(const PDF::ISR_Handler_Map& isr)
   { 
     std::string widthscheme = MODEL::Model_Base::p_dataread->GetValue<std::string>("WIDTH_SCHEME","Fixed");

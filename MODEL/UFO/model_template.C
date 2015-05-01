@@ -46,6 +46,15 @@ namespace MODEL{
       ${param_init}
       msg_Debugging() << std::setprecision(6);
       ReadParticleData();
+      SetHadMass(kf_d,0.01);
+      SetHadMass(kf_u,0.005);
+      SetHadMass(kf_s,0.2);
+      SetHadMass(kf_c,1.42);
+      SetHadMass(kf_b,4.8);
+      SetHadMass(kf_t,173.21);
+      SetHadMass(kf_e,0.000511);
+      SetHadMass(kf_mu,.105);
+      SetHadMass(kf_tau,1.777);
       AddStandardContainers();
     }
     ${declarations}
