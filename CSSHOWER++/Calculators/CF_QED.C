@@ -38,6 +38,7 @@ namespace CSSHOWER {
 }
 
 using namespace CSSHOWER;
+using namespace MODEL;
 using namespace ATOOLS;
 
 bool CF_QED::SetCoupling(MODEL::Model_Base *md,
@@ -101,17 +102,23 @@ DECLARE_GETTER(CF_QED_Getter,"SF_QED_Fill",
 void *ATOOLS::Getter<void,SFC_Filler_Key,CF_QED_Getter>::
 operator()(const SFC_Filler_Key &key) const
 {
-  if (!Flavour(kf_photon).IsOn()) return NULL;
-  std::string ptag("{"+Flavour(kf_photon).IDName()+"}");
-  for (int i(1);i<=16;++i) {
-    if (i==7) i=11;
-    Flavour f((kf_code)i);
-    if (!f.IsOn() || f.IntCharge()==0) continue;
-    std::string qtag("{"+f.IDName()+"}");
-    std::string qbtag ("{"+f.Bar().IDName()+"}");
-    key.p_gets->push_back(new CF_QED_Getter(ptag+qtag+qbtag));
-    key.p_gets->push_back(new CF_QED_Getter(qbtag+qbtag+ptag));
-    key.p_gets->push_back(new CF_QED_Getter(qtag+qtag+ptag));
+  DEBUG_FUNC("model = "<<key.p_md->Name());
+  const Vertex_Table *vtab(key.p_md->VertexTable());
+  for (Vertex_Table::const_iterator
+	 vlit=vtab->begin();vlit!=vtab->end();++vlit) {
+    for (Vertex_List::const_iterator 
+	   vit=vlit->second.begin();vit!=vlit->second.end();++vit) {
+      Single_Vertex *v(*vit);
+      if (v->NLegs()>3) continue;
+      if (!((v->in[0].IsPhoton() && (v->in[1].IsFermion()||v->in[1].IsScalar()) && v->in[1].Charge()) ||
+	    (v->in[1].IsPhoton() && (v->in[2].IsFermion()||v->in[2].IsScalar()) && v->in[2].Charge()) ||
+	    (v->in[2].IsPhoton() && (v->in[0].IsFermion()||v->in[0].IsScalar()) && v->in[0].Charge()))) continue;
+      msg_Debugging()<<"Add "<<v->in[0].Bar()<<" -> "<<v->in[1]<<" "<<v->in[2]<<" {\n";
+      std::string atag("{"+v->in[0].Bar().IDName()+"}");
+      std::string btag("{"+v->in[1].IDName()+"}");
+      std::string ctag("{"+v->in[2].IDName()+"}");
+      key.p_gets->push_back(new CF_QED_Getter(atag+btag+ctag));
+    }
   }
   return NULL;
 }
