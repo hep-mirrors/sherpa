@@ -35,8 +35,10 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   else msg_Info()<<METHOD<<"(): Set n_{it,min} = "<<itmin<<".\n";
   if (!read.ReadFromFile(itmax,"PSI_ITMAX")) itmax=100*itmin;
   else msg_Info()<<METHOD<<"(): Set n_{it,max} = "<<itmax<<".\n";
-  if (!read.ReadFromFile(nopt,"PSI_NOPT")) nopt=-1;
+  if (!read.ReadFromFile(nopt,"PSI_NOPT")) nopt=15;
   else msg_Info()<<METHOD<<"(): Set n_{opt} = "<<nopt<<".\n";
+  if (!read.ReadFromFile(maxopt,"PSI_MAXOPT")) maxopt=4;
+  else msg_Info()<<METHOD<<"(): Set n_{maxopt} = "<<maxopt<<".\n";
   if (!read.ReadFromFile(ndecopt,"PSI_NDECOPT")) ndecopt=10;
   else msg_Info()<<METHOD<<"(): Set n_{opt,dec} = "<<ndecopt<<".\n";
   addtime=0.0;
@@ -108,18 +110,14 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror, 
   int hlp = (iter1-1)/iter0+1;
   iter1   = hlp*iter0;
 
-  if (nopt<0) maxopt    = (5/hlp+21)*iter1;
-  else maxopt=nopt*iter1;
   ncontrib = psh->FSRIntegrator()->ValidN();
   if (ncontrib/iter0>=6) iter=iter1;
 
-  endopt = 1;
 #ifdef USING__MPI
   nlo=0;
 #else
   nlo=psh->FSRIntegrator()->ValidN();
 #endif
-  if (ncontrib>maxopt) endopt=2;
 
   addtime = 0.0;
 #if (defined USING__Threading)
@@ -128,7 +126,6 @@ double Phase_Space_Integrator::Calculate(double _maxerror, double _maxabserror, 
   lotime = starttime = ATOOLS::rpa->gen.Timer().UserTime();
   if (psh->Stats().size()>0)
     addtime=psh->Stats().back()[6];
-  totalopt  = maxopt+8.*iter1;
 
   nstep = ncstep = 0;
 
@@ -183,12 +180,12 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 #else
     ncontrib = psh->FSRIntegrator()->ValidN();
 #endif
-    if ( ncontrib!=nlo && ncontrib>0 && ((ncontrib%optiter)==0 || ncontrib==maxopt)) {
+    if ( ncontrib!=nlo && ncontrib>0 && ((ncontrib%optiter)==0)) {
       MPISync();
       bool optimized=false;
       bool fotime = false;
-      msg_Tracking()<<" n="<<ncontrib<<"  iter="<<iter<<"  maxopt="<<maxopt<<endl;
-      if ((ncontrib<=maxopt) && (endopt<2)) {
+      msg_Tracking()<<" n="<<ncontrib<<"  iter="<<iter<<endl;
+      if (psh->Stats().size()<nopt) {
 	psh->Optimize();
 	if (ncontrib%iter1==0) {
 	  (psh->Process())->OptimizeResult();
@@ -200,24 +197,15 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	  }
 	}
 	fotime = true;
-	if ((psh->FSRIntegrator())->OptimizationFinished()) { 
-	  if (!(psh->ISRIntegrator()) || ncontrib/iter1>=8) { 
-	    maxopt=ncontrib;
-	  }
-	}
 	optimized=true;
       }
-      else {
+      else if (psh->Stats().size()==nopt) {
 	(psh->Process())->ResetMax(0);
-      }
-      if ((ncontrib>=maxopt) && (endopt<2)) {
 	psh->EndOptimize();
 	int oiter=iter;
 	if (psh->UpdateIntegrators()) iter=iter0;
 	else iter*=2;
 	optiter*=iter/(double)oiter;
-	maxopt += 4*iter;
-	endopt++;
 	(psh->Process())->ResetMax(1);
 	(psh->Process())->InitWeightHistogram();
 	(psh->Process())->EndOptimize();
@@ -225,17 +213,16 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	rlotime = ATOOLS::rpa->gen.Timer().RealTime();
 #endif
 	lotime = ATOOLS::rpa->gen.Timer().UserTime();
-	return false;
       }
 
 #if (defined USING__Threading)
       double rtime = ATOOLS::rpa->gen.Timer().RealTime();
       double rtimeest=0.;
-      rtimeest = totalopt/double(ncontrib)*(rtime-rstarttime);
+      rtimeest = (5*iter0+(nopt-5)*iter1+2*maxopt*iter1)/double(ncontrib)*(rtime-rstarttime);
 #endif
       double time = ATOOLS::rpa->gen.Timer().UserTime();
       double timeest=0.;
-      timeest = totalopt/double(ncontrib)*(time-starttime);
+      timeest = (5*iter0+(nopt-5)*iter1+2*maxopt*iter1)/double(ncontrib)*(time-starttime);
       if (!fotime) {
 	if (fin_opt==1) {
 	  timeest = ATOOLS::Max(timeest,(psh->Process())->RemainTimeFactor(maxerror)*
@@ -308,11 +295,10 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 	if (MPI::COMM_WORLD.Get_rank()==0) optiter+=iter-(iter/size)*size;
 #endif
       }
-      bool allowbreak = true;
-      if (fin_opt==1 && (endopt<2||ncontrib<maxopt)) allowbreak = false;
-      if (allowbreak && 
-	  (dabs(error)<maxerror ||
-	   dabs(psh->Process()->TotalVar()*rpa->Picobarn())<maxabserror)) return true;
+      bool wannabreak = dabs(error)<maxerror ||
+        dabs(psh->Process()->TotalVar()*rpa->Picobarn())<maxabserror;
+      if (fin_opt==0 && nopt>psh->Stats().size() && wannabreak) nopt=psh->Stats().size();
+      if (psh->Stats().size()>=nopt+maxopt) return true;
     }
     return false;
 }
@@ -323,8 +309,6 @@ double Phase_Space_Integrator::CalculateDecay(double maxerror)
   msg_Info()<<"Starting the calculation for a decay. Lean back and enjoy ... ."<<endl; 
   
   optiter = iter = 20000;
-
-  maxopt    = iter*ndecopt;
 
   long unsigned int n;
   double value;
@@ -341,11 +325,11 @@ double Phase_Space_Integrator::CalculateDecay(double maxerror)
     
     if (!(n%iter)) {
       MPISync();
-      if (n<=maxopt) {
+      if (psh->Stats().size()<=ndecopt) {
 	psh->Optimize();
 	(psh->Process())->OptimizeResult();
       }
-      if (n==maxopt) {
+      if (psh->Stats().size()==ndecopt) {
 	psh->EndOptimize();
 	optiter = iter = 50000;
       }

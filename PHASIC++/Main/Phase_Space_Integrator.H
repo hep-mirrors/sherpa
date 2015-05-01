@@ -11,12 +11,11 @@ namespace PHASIC {
   private:
 
     int             iter,iter0,iter1,nopt,ndecopt,optiter,itmin,itmax;
-    long unsigned int        maxopt;
     static long unsigned int nmax;
 
-    double starttime, lotime, totalopt, addtime, lrtime;
+    double starttime, lotime, addtime, lrtime;
     double value, maxerror, maxabserror, rstarttime, rlotime;
-    long unsigned int n, ncontrib, endopt, nlo, fin_opt, nstep, ncstep;
+    long unsigned int n, ncontrib, maxopt, nlo, fin_opt, nstep, ncstep;
     long int mn, mnstep, mncstep;
     size_t lastrss;
 
