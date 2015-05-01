@@ -439,3 +439,35 @@ PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"vvv lorentz functions";
 }
+
+DECLARE_GETTER(LF_VVV1_II,"VVV1",SF_Lorentz,SF_Key);
+
+SF_Lorentz *ATOOLS::Getter<SF_Lorentz,SF_Key,LF_VVV1_II>::
+operator()(const Parameter_Type &args) const
+{
+  if (args.m_col==1) {
+  switch (args.m_type) {
+  case cstp::FF: return new LF_VVV1_FF(args);
+  case cstp::FI: return new LF_VVV1_FI(args);
+  case cstp::IF: return new LF_VVV1_IF(args);
+  case cstp::II: return new LF_VVV1_II(args);
+  case cstp::none: break;
+  }
+  }
+  else {
+  switch (args.m_type) {
+  case cstp::FF: return new LF_VVV2_FF(args);
+  case cstp::FI: return new LF_VVV2_FI(args);
+  case cstp::IF: return new LF_VVV2_IF(args);
+  case cstp::II: return new LF_VVV2_II(args);
+  case cstp::none: break;
+  }
+  }
+  return NULL;
+}
+
+void ATOOLS::Getter<SF_Lorentz,SF_Key,LF_VVV1_II>::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"vvv lorentz functions";
+}
