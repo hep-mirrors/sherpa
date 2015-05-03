@@ -200,6 +200,7 @@ Cluster_Amplitude* GGH_KFactor_Setter::GetAmpl() const {
 
 void GGH_KFactor_Setter::SetNextAmplitude() {
   p_next_ampl = p_proc->ScaleSetter(1)->Amplitudes().front()->Next();
+  Process_Base::SortFlavours(p_next_ampl);
 }
 
 bool GGH_KFactor_Setter::ContainsDecays(const Process_Base& proc) const {
