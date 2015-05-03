@@ -1,0 +1,18 @@
+This is an example for event generation in the MSSM using Sherpa's UFO
+support. In the corresponding Example directory
+@code{<prefix>/share/SHERPA-MC/Examples/UFO_MSSM/}, you will find a directory
+@code{MSSM} that contains the UFO output for the MSSM
+(@uref{https://feynrules.irmp.ucl.ac.be/wiki/MSSM}). To run the example,
+generate the model as described in @ref{UFO Model Interface} by
+executing
+@verbatim
+cd <prefix>/share/SHERPA-MC/Examples/UFO_MSSM/
+<prefix>/bin/Sherpa-generate-model MSSM
+@end verbatim
+An example run card will be written to the working directory. Use this
+run card as a template to generate events.
+ 
+@c Local Variables:
+@c mode: texinfo
+@c TeX-master: t
+@c End:
