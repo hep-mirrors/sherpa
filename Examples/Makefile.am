@@ -60,5 +60,6 @@ nobase_dist_examples_DATA         =	\
 		H_in_TTBar/LHC_TTH_MCatNLO/SConstruct \
 		H_in_TTBar/LHC_TTH_MCatNLO/Run.dat \
 		Tops_plus_Jets/LHC_Tops/Run.dat \
-		Tops_plus_V/LHC_TTW/Run.dat
+		Tops_plus_V/LHC_TTW/Run.dat \
+		UFO_MSSM/MSSM/*.py
 

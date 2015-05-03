@@ -12,6 +12,7 @@ of the main features of these examples.
 * Jets::
 * HJets::
 * TopsJets::
+* MSSM/UFO::
 * DIS::
 * FONLO::
 * SoftQCD::
@@ -74,6 +75,10 @@ of the main features of these examples.
 @include LHC_TTBar.texi
 @include LHC_TTW.texi
 
+@node MSSM/UFO
+@section Event generation in the MSSM using UFO
+
+@include MSSM.texi
 
 @node DIS
 @section Deep-inelastic scattering
