@@ -6,7 +6,7 @@
 The handler for decays of particles produced in the hard scattering process
 (e.g. W, Z, top, Higgs) can be enabled using the @option{HARD_DECAYS=1} switch.
 Which (anti)particles should be treated as unstable is determined by the
-@option{STABLE[<id>]} switch described in @ref{Model Parameters}.
+@option{STABLE[<id>]} switch described in @ref{Models}.
 
 This decay module can also be used on top of NLO matrix elements, but it does
 not include any NLO corrections in the decay matrix elements themselves.

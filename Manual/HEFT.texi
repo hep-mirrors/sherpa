@@ -1,0 +1,25 @@
+@node HEFT
+@subsection Effective Higgs Couplings
+@cindex FINITE_TOP_MASS
+@cindex FINITE_W_MASS
+@cindex DEACTIVATE_PPH
+@cindex DEACTIVATE_GGH
+
+The HEFT describes the effective coupling of gluons and photons to Higgs bosons
+via a top-quark loop, and a W-boson loop in case of photons. This supplement 
+to the Standard Model can be invoked by specifying @code{MODEL = HEFT} in 
+the @code{(model)} section of the run card.
+
+The effective coupling of gluons to the Higgs boson, g_ggH, can be
+calculated either for a finite top-quark mass or in the limit of an
+infinitely heavy top using the switch @code{FINITE_TOP_MASS=1} or
+@code{FINITE_TOP_MASS=0}, respectively. Similarily, the
+photon-photon-Higgs coupling, g_ppH, can be calculated both for finite
+top and/or W masses or in the infinite mass limit using the switches
+@code{FINITE_TOP_MASS} and @code{FINITE_W_MASS}. The default
+choice for both is the infinite mass limit in either case.
+
+Either one of these couplings can be switched off using the 
+@code{DEACTIVATE_GGH=1} and @code{DEACTIVATE_PPH=1} switches. 
+Both default to 0.
+

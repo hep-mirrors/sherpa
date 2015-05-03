@@ -36,6 +36,7 @@
 * Command line::       Sherpa's command line options
 * Input structure::    How to specify parameters for a Sherpa run
 * Parameters::         The complete list of parameters
+* Models::             Model input for the simulations
 @sp 1
 * Tips and Tricks::    Advanced usage tips
 * Customization::      Extending Sherpa 
@@ -62,6 +63,7 @@
 @include Commands.texi
 @include Input.texi
 @include Parameters.texi
+@include Models.texi
 @include Tips.texi
 @include Customization.texi
 @include Examples.texi
@@ -137,3 +139,8 @@ document under the terms of the GNU General Public License.
 @printindex cp
 
 @bye
+
+@c Local Variables:
+@c mode: texinfo
+@c TeX-master: "Sherpa"
+@c End:

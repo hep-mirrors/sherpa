@@ -9,9 +9,7 @@ MAKEFLAGS=-j1
 info_TEXINFOS = Sherpa.texi
 
 Sherpa_TEXINFOS = \
-	MUED.texi \
 	API.texi \
-	AGC.texi \
 	Beam.texi \
         BFactory.texi \
 	Bibliography.texi \
@@ -19,10 +17,10 @@ Sherpa_TEXINFOS = \
 	CrossSection.texi \
 	Customization.texi \
 	CustomScale.texi \
-	EHC.texi \
+	HEFT.texi \
 	Events.texi \
 	Examples.texi \
-	FeynRules.texi \
+	UFO.texi \
 	Fragmentation.texi \
 	HardDecays.texi \
 	InclusiveCrossSections.texi \
@@ -49,9 +47,8 @@ Sherpa_TEXINFOS = \
 	MI.texi \
 	MinBias.texi \
 	MinimumBiasEvents.texi \
-	Model.texi \
+	Models.texi \
 	MPIEvents.texi \
-	MSSM.texi \
 	NewModel.texi \
 	NLOtips.texi \
 	OLE.texi \

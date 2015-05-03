@@ -316,7 +316,7 @@ Some general switches which relate to hadron decays can be adjusted in the
   directory (@code{<prefix>/share/SHERPA-MC/Decaydata}) will be used.
 @item  Hadron properties like mass, width, stable/unstable and active can be set
   in full analogy to the settings for fundamental particles
-  in the @code{(model)} section (cf. @ref{Model Parameters}).
+  in the @code{(model)} section (cf. @ref{Models}).
 @item @anchor{SOFT_MASS_SMEARING} 
       @code{SOFT_MASS_SMEARING = [0,1,2]} (default: 1) 
   Determines whether particles entering the hadron decay event

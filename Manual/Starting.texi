@@ -318,7 +318,7 @@ If physics parameters change, the cross sections have to be recomputed.
 The new results should either be stored in a new directory or the 
 @code{<result>} directory may be re-used once it has been emptied.
 Parameters which require a recomputation are any parameters affecting 
-the @ref{Model Parameters}, @ref{Matrix Elements} or @ref{Selectors}.
+the @ref{Models}, @ref{Matrix Elements} or @ref{Selectors}.
 Standard examples are changing the magnitude of couplings,
 renormalisation or factorisation scales, changing the PDF or
 centre-of-mass energy, or, applying different cuts at the parton
