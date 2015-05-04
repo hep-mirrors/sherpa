@@ -22,8 +22,9 @@ The following parameters describe general run information. They may be set in th
 * SHERPA_CPP_PATH::   The C++ code generation path.
 * SHERPA_LIB_PATH::   The runtime library path.
 
-* Event output formats:: Event output in different formats.
-* MPI parallelization::  MPI parallelization with Sherpa.
+* Event output formats::     Event output in different formats.
+* Scale and PDF variations:: On-the-fly scale and PDF variations.
+* MPI parallelization::      MPI parallelization with Sherpa.
 @end menu
 
 
@@ -307,13 +308,32 @@ the event generation run, and it can serve as a cross-check on the consistency
 of the HepMC event file.  Note that Sherpa conforms to the Les Houches 2013
 suggestion (@url{http://phystev.in2p3.fr/wiki/2013:groups:tools:hepmc}) 
 of indicating interaction types through the GenVertex type-flag.  Multiple
-event weights will also be enabled as soon as a similar standard has been
-defined.
-To write out a tree-like event record, the optional CL option @option{HEPMC_TREE_LIKE=1} should be used.
+event weights can also be enabled with HepMC versions >2.06, cf. 
+@ref{Scale and PDF variations}. The following additional customisations 
+can be used
+
+@code{HEPMC_USE_NAMED_WEIGHTS=<0|1>} 
+Enable filling weights with an associated name. The nominal event weight 
+has the key @code{Weight}. @code{MEWeight}, @code{WeightNormalisation} and 
+@code{NTrials} provide additional information for each event as described 
+above. Needs HepMC version >2.06.
+
+@code{HEPMC_EXTENDED_WEIGHTS=<0|1>}
+Write additional event weight information needed for a posteriori reweighting 
+into the WeightContainer, cf. @ref{Structure of HepMC Output}. Necessitates 
+the use of @code{HEPMC_USE_NAMED_WEIGHTS}.
+
+@code{HEPMC_TREE_LIKE=<0|1>}
+Force the event record to be stricly tree-like. Please note that this removes 
+some information from the matrix-element-parton-shower interplay which would 
+be otherwise stored.
+
 @item HepMC_Short
 Generates output in HepMC::IO_GenEvent format, however, only incoming beams and 
 outgoing particles are stored. Intermediate and decayed particles are not 
-listed. The event weights stored as the same as above.
+listed. The event weights stored as the same as above, and 
+@code{HEPMC_USE_NAMED_WEIGHTS} and @code{HEPMC_EXTENDED_WEIGHTS} can be used to 
+customise.
 @item Delphes_GenEvent
 Generates output in @url{http://root.cern.ch,,Root} format, which can be passed to
 @uref{http://cp3.irmp.ucl.ac.be/projects/delphes,,Delphes} for analyses.
@@ -379,6 +399,49 @@ Steers the precision of all numbers written to file.
 For all output formats except ROOT and Delphes, events can be written directly 
 to gzipped files instead of plain text. The option @option{--enable-gzip} 
 must be given during installation to enable this feature.
+
+@node Scale and PDF variations
+@subsection Scale and PDF variations
+Sherpa can compute alternative event weights for different scale and 
+PDF choices on-the-fly, resulting in alternative weights for the generated 
+event. The can be evoked with the following syntax
+@verbatim
+SCALE_VARIATIONS <muR-fac-1>,<muF-fac-1>[,<PDF-1>]  <muR-fac-1>,<muF-fac-1>[,<PDF-1>] ...
+@end verbatim
+The key word @code{SCALE_VARIATIONS} takes a space separated list of 
+variation factors for the nominal renormalisation and factorisation scale 
+loaded @code{PDF_LIBRARY}s can be used. Specific PDF members can be 
+specified by appending the PDF set name with @code{/<member-id>}. The 
+short-hand appendix @code{[all]} will provide the variations for all 
+members of the given set (only works with LHAPDF6). Please note: scales 
+are, as always in Sherpa, given in their quadratic form. Thus, a variation 
+of factor 4 of the squared scale [GeV^2] means a variation of factor 2 on the 
+scale itself [GeV].
+
+PDF variations on their own can also be invoked by giving the list of 
+PDF sets to be reweighted to to @code{PDF_VARIATIONS}.
+
+Thus, a complete variation using the PDF4LHC convention would read
+@verbatim
+  SCALE_VARIATIONS 0.25,0.25 0.25,1. 1.,0.25 1.,1. 1.,4. 4.,1. 4.,4.;
+  PDF_VARIATIONS CT10nlo[all] MMHT2014nlo68cl[all] NNPDF30_nlo_as_0118[all];
+@end verbatim
+Please note, this syntax will create 7+53+51+101=212 additional weights
+for each event.
+
+The additional event weights can then be written into the event output. 
+However, this currently only supported for @code{HepMC_GenEvent} and 
+@code{HepMC_Short} with versions >2.06 and @code{HEPMC_USE_NAMED_WEIGHTS=1}. 
+The alternative event weights follow the Les Houches naming convention 
+for such variations, ie. they are named @code{MUR<fac>_MUF<fac>_PDF<id>}.
+When using Sherpa's interface to Rivet, @ref{Rivet analyses}, separate 
+instances of Rivet, one for each alternative event weight in addition to 
+the nominal one, are instantiated leading to one set of histograms each.
+They are again named using the @code{MUR<fac>_MUF<fac>_PDF<id>} convention.
+
+@b{Important:} The on-the-fly reweighting currently works for LO, LOPS, 
+MEPS, NLO, NLOPS type of calculations, but not yet for MENLOPS and MEPS@@NLO 
+type calculations.
 
 @node MPI parallelization
 @subsection MPI parallelization

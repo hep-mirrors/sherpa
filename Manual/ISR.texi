@@ -45,7 +45,7 @@ They can be configured with the following parameters.
 
 @table @code
 @item PDF_LIBRARY
-Switches between different interfaces to PDFs. If the two colliding beams
+Takes a space separated list of PDF interfaces to load. If the two colliding beams
 are of different type, e.g. protons and electrons or photons and electrons,
 it is possible to specify two different PDF libraries using @anchor{PDF_LIBRARY_1}
 @option{PDF_LIBRARY_1} and @anchor{PDF_LIBRARY_2} @option{PDF_LIBRARY_2}. 
