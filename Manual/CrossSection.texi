@@ -1,5 +1,5 @@
 @node Cross section
-@chapter Cross section
+@chapter Total cross section and differential observables
 
 To determine the total cross section, in particular in the context of
 ME+PS merging with Sherpa, the final output of the event generation
@@ -16,10 +16,11 @@ determined during event generation. It, therefore, might differ
 substantially from the errors quoted during the integration step,
 and it can be reduced simply by generating more events.
 
-In contrast to plain fixed order results, Sherpa's total cross section
+In contrast to plain fixed order results, Sherpa's total cross section 
+in multijet merging setups (MEPS, MENLOPS, MEPS@@NLO) 
 is composed of values from various fixed order processes, namely
-those which are combined by applying the ME+PS merging, see @ref{Merging ME and PS}.
-In this context, it is important to note that
+those which are combined by applying the multijet merging, see 
+@ref{Merging ME and PS}. In this context, it is important to note that
 
 @b{The exclusive higher order tree-level cross sections determined during the
 integration step are meaningless by themselves, only the inclusive cross section 
@@ -27,8 +28,9 @@ printed at the end of the event generation run is to be used.}
 
 This value has the same formal accuracy as a fixed order result for the 
 inclusive reaction (e.g. pp->Z in @ref{Running Sherpa}), but it might still differ 
-by a significant amount, see @mycite{Hoeche2009rj} and @mycite{Lonnblad2012ng} for details. 
-Depending on jet definitions, process etc., the merged cross section may be either 
+by a significant amount, see @mycite{Hoeche2009rj}, @mycite{Lonnblad2012ng} 
+and @mycite{Hoeche2012yf} for details. Depending on jet definitions, process 
+etc., the merged cross section may be either 
 larger or smaller than the fixed order cross section.
 
 @strong{Sherpa total cross sections have leading order accuracy when the generator
@@ -42,3 +44,35 @@ and this is why Sherpa's cross section is not a better approximation to higher-o
 cross sections. On the other hand, shape observables (especially jet transverse momenta 
 and the like) are typically dominated by logarithmic corrections. 
 If they are concerned, Sherpa can be expected to perform reasonably well.
+
+@section Differential cross sections from single events
+
+To calculate the expectation value of an observable defined through a series 
+of cuts and requirements each event produced by Sherpa has to be evaluated 
+whether it meets the required criteria. The expectation value is then given 
+by
+@verbatim
+<O> = 1/N_trial * \sum_i^n w_i(\Phi_i) O(\Phi_i) .
+@end verbatim
+Therein the @code{w_i(\Phi_i)} are the weight of the event with the phase 
+space configuration @code{\Phi_i} and @code{O(\Phi_i)} is the value of 
+the observable at this point. @code{N_trial = \sum_i^n n_trial,i} is the sum 
+of number of trials @code{n_trial,i} of all events. A good cross check is 
+to reproduce the inclusive cross section as quoted by Sherpa (see above).
+
+In case of unweighted events one might want to rescale the uniform 
+event weight to unity using @code{w_norm}. The above equation then reads
+@verbatim
+<O> = w_norm/N_trial * \sum_i^n w_i(\Phi_i)/w_norm O(\Phi_i) .
+@end verbatim
+wherein @code{w_i(\Phi_i)/w_norm = 1}, ie. the sum simply counts 
+how many events pass the observable's selection criteria. If however, 
+@code{PartiallyUnweighted} event weights or @code{Enhance_Factor} or 
+@code{Enhance_Observable} are used, this is no longer the case and the 
+full form needs to be used.
+
+All required quantities, @code{w_i}, @code{w_norm} and @code{n_trial,i}, 
+accompany each event and are written e.g. into the HepMC output 
+(cf. @ref{Event output formats}).
+
+
