@@ -410,7 +410,9 @@ SCALE_VARIATIONS <muR-fac-1>,<muF-fac-1>[,<PDF-1>]  <muR-fac-1>,<muF-fac-1>[,<PD
 @end verbatim
 The key word @code{SCALE_VARIATIONS} takes a space separated list of 
 variation factors for the nominal renormalisation and factorisation scale 
-loaded @code{PDF_LIBRARY}s can be used. Specific PDF members can be 
+and an associated PDF set. Any set present in any of the PDF library interfaces
+loaded through @code{PDF_LIBRARY} can be used. If no PDF set is given it 
+defaults to the nominal one. Specific PDF members can be 
 specified by appending the PDF set name with @code{/<member-id>}. The 
 short-hand appendix @code{[all]} will provide the variations for all 
 members of the given set (only works with LHAPDF6). Please note: scales 
@@ -430,7 +432,7 @@ Please note, this syntax will create 7+53+51+101=212 additional weights
 for each event.
 
 The additional event weights can then be written into the event output. 
-However, this currently only supported for @code{HepMC_GenEvent} and 
+However, this is currently only supported for @code{HepMC_GenEvent} and 
 @code{HepMC_Short} with versions >2.06 and @code{HEPMC_USE_NAMED_WEIGHTS=1}. 
 The alternative event weights follow the Les Houches naming convention 
 for such variations, ie. they are named @code{MUR<fac>_MUF<fac>_PDF<id>}.
@@ -438,6 +440,12 @@ When using Sherpa's interface to Rivet, @ref{Rivet analyses}, separate
 instances of Rivet, one for each alternative event weight in addition to 
 the nominal one, are instantiated leading to one set of histograms each.
 They are again named using the @code{MUR<fac>_MUF<fac>_PDF<id>} convention.
+
+The user must also be aware that, of course, the cross section of the 
+event sample, changes when using an alternative event weight as compared 
+to the nominal one. Any histograming therefore haas to account for this 
+and recompute the total cross section as the sum of weights devided by the 
+number of trials, cf. @ref{Cross section}.
 
 @b{Important:} The on-the-fly reweighting currently works for LO, LOPS, 
 MEPS, NLO, NLOPS type of calculations, but not yet for MENLOPS and MEPS@@NLO 
