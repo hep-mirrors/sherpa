@@ -220,7 +220,7 @@ orders (2,0), (1,1) and (0,2). The first number always
 refers to QCD, the second to electroweak. The third
 and following numbers are model specific. Half-integer
 orders are so far supported only by Comix.
-An asterisk or a negative entry can be used as a wildcard.
+An asterisk can be used as a wildcard.
 
 Note that for decay chains this setting applies to
 the full process, see @ref{Decay} and @ref{DecayOS}.
