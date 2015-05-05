@@ -73,7 +73,8 @@ the strong interaction.
 an @code{NJetFinder} selector is used to 
 set a resolution criterion for the two jets of the core process.
 This is necessary because the `CKKW' tag does not apply any cuts to the core
-process, but only to the extra-jet matrix elements, see @ref{Merging ME and PS}.
+process, but only to the extra-jet matrix elements, see 
+@ref{Multijet merged event generation with Sherpa}.
 This cut is applied only to the 2->2 process using the @code{@{2@}}
 specification, since the higher-order matrix elements should only be cut by
 the ME+PS separation criterion.

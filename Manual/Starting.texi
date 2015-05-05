@@ -4,6 +4,7 @@
 @menu
 * Installation::                           How to install Sherpa
 * Running Sherpa::                         How to run the event generator
+* Cross section determination::            How cross sections are determined
 @end menu
 
 @node Installation
@@ -540,6 +541,7 @@ default; for details on how to store the events see
 
 
 @subsection Parton-level event generation with Sherpa
+@anchor{Parton-level event generation with Sherpa}
 
 Sherpa has its own tree-level matrix-element generators called AMEGIC++ and Comix. 
 Furthermore, with the module PHASIC++, sophisticated and
@@ -549,7 +551,7 @@ of the way Monte Carlo integration is accomplished, this immediately
 allows for parton-level event generation. Taking the @code{LHC_ZJets}
 setup, users have to modify just a few settings in @code{Run.dat} and
 would arrive at a parton-level generation for the process gluon down-quark to electron 
-antineutrino and up-quark, to name an example. When, for instance, the
+positron and down-quark, to name an example. When, for instance, the
 options ``@code{EVENTS=0 OUTPUT=2}'' are added to the command line,
 a pure cross-section integration for that process would be obtained
 with the results plus integration errors written to the screen.
@@ -574,6 +576,32 @@ parton-level event generation with Sherpa. These changes read
 Z -> e- e+ decay. Additionally, the non-perturbative intrinsic transverse 
 momentum may be wished to not be taken into account, therefore set 
 @code{BEAM_REMNANTS=0;}.
+
+@subsection Multijet merged event generation with Sherpa
+@anchor{Multijet merged event generation with Sherpa}
+
+For a large fraction of LHC final states, the application of
+reconstruction algorithms leads to the identification of several
+hard jets. Calculations therefore need to describe as accurately as 
+possible both the hard jet production as well as the subsequent 
+evolution and the interplay of multiple such topologies. Several 
+scales determine the evolution of the event. 
+
+Various such merging schemes have been proposed: 
+@mycite{Catani2001cc}, @mycite{Lonnblad2001iq}, @mycite{Mangano2001xp}, 
+@mycite{Krauss2002up}, @mycite{Mangano2006rw}, @mycite{Lavesson2008ah}, 
+@mycite{Hoeche2009rj}, @mycite{Hamilton2009ne}, @mycite{Hamilton2010wh},
+@mycite{Hoeche2010kg}, @mycite{Lonnblad2011xx}, @mycite{Hoeche2012yf}, 
+@mycite{Gehrmann2012yg}, @mycite{Lonnblad2012ng}, @mycite{Lonnblad2012ix}. 
+Comparisons of the older approaches can be found e.g. in @mycite{Hoche2006ph},
+@mycite{Alwall2007fs}. The currently most advanced treatment at tree-level, 
+detailed in @mycite{Hoeche2009rj}, @mycite{Hoeche2009xc}, @mycite{Carli2009cg}, 
+is implemented in Sherpa.
+
+How to setup a multijet merged calculation is detailed in most @ref{Examples}, 
+eg. @ref{LHC_WJets}, @ref{LHC_ZJets} or @ref{TopsJets}.
+
+
 
 @subsection Running Sherpa with AMEGIC++
 @anchor{Running Sherpa with AMEGIC++}
@@ -607,11 +635,79 @@ Note that the following tools have to be available for this step:
 @code{autoconf}, @code{automake} and @code{libtool}.
 
 Alternatively, if @uref{http://www.scons.org/,,scons} is installed, 
-you may invoke @kbd{<prefix>/bin/make2scons} and run @kbd{scons install}.
+you may invoke @kbd{<prefix>/bin/make2scons} and run @kbd{scons install}. 
+If scons was detected during the compilation of Sherpa, also makelibs uses 
+@code{scons} per default (can be forced to use @code{autotools} by 
+@kbd{./makelibs -s}.
 
 Afterwards Sherpa can be restarted using the same command as
 before. In this run (the generation run) the cross sections of the hard
 processes are evaluated. Simultaneously the
 integration over phase space is optimized to arrive at an
 efficient event generation.
+
+@node Cross section determination
+@section Cross section determination
+
+To determine the total cross section, in particular in the context of
+multijet merging with Sherpa, the final output of the event generation
+run should be used, e.g.
+@verbatim
++-----------------------------------------------------+
+|                                                     |
+|  Total XS is 1612.17 pb +- ( 8.48908 pb = 0.52 % )  |
+|                                                     |
++-----------------------------------------------------+
+@end verbatim
+Note that the Monte Carlo error quoted for the total cross section is
+determined during event generation. It, therefore, might differ
+substantially from the errors quoted during the integration step,
+and it can be reduced simply by generating more events.
+
+In contrast to plain fixed order results, Sherpa's total cross section 
+in multijet merging setups (MEPS, MENLOPS, MEPS@@NLO) 
+is composed of values from various fixed order processes, namely
+those which are combined by applying the multijet merging, see 
+@ref{Multijet merged event generation with Sherpa}. In this context, it 
+is important to note:
+
+@b{The higher multiplicity tree-level cross sections determined during the
+   integration step are meaningless by themselves, only the inclusive cross 
+   section printed at the end of the event generation run is to be used.}
+
+@b{Sherpa total cross sections have leading order accuracy when the generator
+   is run in LO merging mode (MEPS), in NLO merging (MENLOPS, MEPS@@NLO) mode 
+   they have NLO accuracy.}
+
+
+@subsection Differential cross sections from single events
+
+To calculate the expectation value of an observable defined through a series 
+of cuts and requirements each event produced by Sherpa has to be evaluated 
+whether it meets the required criteria. The expectation value is then given 
+by
+@verbatim
+<O> = 1/N_trial * \sum_i^n w_i(\Phi_i) O(\Phi_i) .
+@end verbatim
+Therein the @code{w_i(\Phi_i)} are the weight of the event with the phase 
+space configuration @code{\Phi_i} and @code{O(\Phi_i)} is the value of 
+the observable at this point. @code{N_trial = \sum_i^n n_trial,i} is the sum 
+of number of trials @code{n_trial,i} of all events. A good cross check is 
+to reproduce the inclusive cross section as quoted by Sherpa (see above).
+
+In case of unweighted events one might want to rescale the uniform 
+event weight to unity using @code{w_norm}. The above equation then reads
+@verbatim
+<O> = w_norm/N_trial * \sum_i^n w_i(\Phi_i)/w_norm O(\Phi_i) .
+@end verbatim
+wherein @code{w_i(\Phi_i)/w_norm = 1}, ie. the sum simply counts 
+how many events pass the observable's selection criteria. If however, 
+@code{PartiallyUnweighted} event weights or @code{Enhance_Factor} or 
+@code{Enhance_Observable} are used, this is no longer the case and the 
+full form needs to be used.
+
+All required quantities, @code{w_i}, @code{w_norm} and @code{n_trial,i}, 
+accompany each event and are written e.g. into the HepMC output 
+(cf. @ref{Event output formats}).
+
 

@@ -84,7 +84,7 @@ factorization scale and potential additional scales.
 * Custom scale implementation::
 * Predefined scale tags::
 * Scale schemes for NLO calculations::
-* Scale variations::
+* Explicit scale variations::
 * METS scale setting with multiparton core processes::
 @end menu
 
@@ -255,7 +255,7 @@ on equal footing with the tags of @ref{Predefined scale tags} to define
 the final scale.
 
 @code{METS} is the default scale scheme in Sherpa, since it is employed
-for truncated shower merging, see @ref{Merging ME and PS}, both at 
+for truncated shower merging, see @ref{Multijet merged event generation with Sherpa}, both at 
 leading and next-to-leading order. Thus, Sherpa's default is
 @verbatim
 SCALES METS{MU_F2}{MU_R2}{MU_Q2}
@@ -386,8 +386,8 @@ of the NLO calculation any explicit reference to a parton momentum
 will lead to an inconsistent result.
 
 
-@node Scale variations
-@subsubsection Scale variations
+@node Explicit scale variations
+@subsubsection Explicit scale variations
 
 The factorisation and renormalisation scales in the fixed-order matrix
 elements can be varied separately simply by introducing a prefactor into

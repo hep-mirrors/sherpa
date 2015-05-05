@@ -1,0 +1,150 @@
+@node Scale variations
+@chapter A posteriori scale variations
+
+There are several ways to compute the effects of changing the scales 
+and PDFs of any event produced by Sherpa. They can computed explicitly, 
+cf. @ref{Explicit scale variations}, on-the-fly, cf. 
+@ref{Scale and PDF variations} (restricted to multiplicative factors), or 
+reconstructed a posteriori. The latter method needs plenty of additional 
+information in the event record and is (depending on the actual calculation) 
+available in two formats:
+
+@menu
+* A posteriori scale and PDF variations using the HepMC GenEvent Output::
+* A posteriori scale and PDF variations using the ROOT NTuple Output::
+@end menu
+
+@node A posteriori scale and PDF variations using the HepMC GenEvent Output
+@section A posteriori scale and PDF variations using the HepMC GenEvent Output
+
+
+@node A posteriori scale and PDF variations using the ROOT NTuple Output
+@section A posteriori scale and PDF variations using the ROOT NTuple Output
+@cindex USR_WGT_MODE
+
+The generated events can be stored in a ROOT NTuple file, see 
+@ref{Event output formats}. The internal ROOT Tree has the following Branches:
+@table @samp
+ @item id 
+ Event ID to identify correlated real sub-events.
+ @item nparticle 
+ Number of outgoing partons.
+ @item E/px/py/pz
+ Momentum components of the partons.
+ @item kf
+ Parton PDG code.
+ @item weight
+ Event weight, if sub-event is treated independently.
+ @item weight2
+ Event weight, if correlated sub-events are treated as single event.
+ @item me_wgt
+ ME weight (w/o PDF), corresponds to 'weight'.
+ @item me_wgt2 
+ ME weight (w/o PDF), corresponds to 'weight2'.
+ @item id1
+ PDG code of incoming parton 1.
+ @item id2
+ PDG code of incoming parton 2.
+ @item fac_scale
+ Factorisation scale.
+ @item ren_scale
+ Renormalisation scale.
+ @item x1
+ Bjorken-x of incoming parton 1.
+ @item x2
+ Bjorken-x of incoming parton 2.
+ @item x1p
+ x' for I-piece of incoming parton 1.
+ @item x2p
+ x' for I-piece of incoming parton 2.
+ @item nuwgt
+ Number of additional ME weights for loops and integrated subtraction terms.
+ @item usr_wgt[nuwgt]
+ Additional ME weights for loops and integrated subtraction terms.
+@end table
+
+@subsection Computing (differential) cross sections of real correction events with statistical errors
+
+Real correction events and their counter-events from subtraction terms are 
+highly correlated and exhibit large cancellations. Although a treatment of 
+sub-events as independent events leads to the correct cross section the 
+statistical error would be greatly overestimated. In order to get a realistic 
+statistical error sub-events belonging to the same event must be combined 
+before added to the total cross section or a histogram bin of a differential 
+cross section. Since in general each sub-event comes with it's own set of four 
+momenta the following treatment becomes necessary:
+@enumerate
+@item An event here refers to a full real correction event that may contain 
+several sub-events. All entries with the same id belong to the same event. 
+Step 2 has to be repeated for each event.
+@item Each sub-event must be checked separately whether it passes possible 
+phase space cuts. Then for each observable add up @code{weight2} of all 
+sub-events that go into the same histogram bin. These sums x_id are the 
+quantities to enter the actual histogram.
+@item To compute statistical errors each bin must store the sum over all 
+@code{x_id} and the sum over all @code{x_id^2}. The cross section in the bin is 
+given by @code{<x> = 1/N \sum x_id}, where @code{N} is the number of events 
+(not sub-events). The @code{1-\sigma} statistical error for the bin is
+@code{\sqrt@{ (<x^2>-<x>^2)/(N-1) @} }
+@end enumerate
+Note: The main difference between @code{weight} and @code{weight2} is that they 
+refer to a different counting of events. While @code{weight} corresponds to 
+each event entry (sub-event) counted separately, @code{weight2} counts events 
+as defined in step 1 of the above procedure. For NLO pieces other than the real 
+correction @code{weight} and @code{weight2} are identical.
+
+@subsection Computation of cross sections with new PDF's
+
+@strong{Born and real pieces:}
+
+Notation:
+
+@code{f_a(x_a) = PDF 1 applied on parton a,
+      F_b(x_b) = PDF 2 applied on parton b.}
+
+The total cross section weight is given by
+
+@code{weight = me_wgt f_a(x_a)F_b(x_b).}
+
+@strong{Loop piece and integrated subtraction terms:}
+
+The weights here have an explicit dependence on the renormalization
+and factorization scales.
+
+To take care of the renormalization scale dependence (other than via 
+@code{alpha_S}) the weight @code{w_0} is defined as
+
+@code{ w_0 = me_wgt + usr_wgts[0] log((\mu_R^new)^2/(\mu_R^old)^2)
+                     + usr_wgts[1] 1/2 [log((\mu_R^new)^2/(\mu_R^old)^2)]^2.}
+
+To address the factorization scale dependence the weights @code{w_1,...,w_8} 
+are given by 
+
+@code{w_i = usr_wgts[i+1] + usr_wgts[i+9] log((\mu_F^new)^2/(\mu_F^old)^2).}
+
+The full cross section weight can be calculated as
+
+@code{weight = w_0 f_a(x_a)F_b(x_b)
+	       + (f_a^1 w_1 + f_a^2 w_2 + f_a^3 w_3 + f_a^4 w_4) F_b(x_b)
+	       + (F_b^1 w_5 + F_b^2 w_6 + F_b^3 w_7 + F_b^4 w_8) f_a(x_a)}
+
+where
+
+@code{f_a^1 = f_a(x_a) (a=quark), \sum_q f_q(x_a) (a=gluon),
+      f_a^2 = f_a(x_a/x'_a)/x'_a (a=quark), \sum_q f_q(x_a/x'_a)x'_a (a=gluon),
+      f_a^3 = f_g(x_a),
+      f_a^4 = f_g(x_a/x'_a)/x'_a.}
+
+The scale dependence coefficients @code{usr_wgts[0]} and @code{usr_wgts[1]} 
+are normally obtained from the finite part of the virtual correction by
+removing renormalization terms and universal terms from dipole subtraction.
+This may be undesirable, especially when the loop provider splits up
+the calculation of the virtual correction into several pieces, like
+leading and sub-leading color. In this case the loop provider should 
+control the scale dependence coefficients, which can be enforced with
+option @option{USR_WGT_MODE=0;} in the @code{(run)} section of Sherpa's
+input file. 
+
+@strong{The loop provider must support this option
+  or the scale dependence coefficients will be invalid!}
+

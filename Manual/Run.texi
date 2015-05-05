@@ -320,7 +320,7 @@ above. Needs HepMC version >2.06.
 
 @code{HEPMC_EXTENDED_WEIGHTS=<0|1>}
 Write additional event weight information needed for a posteriori reweighting 
-into the WeightContainer, cf. @ref{Structure of HepMC Output}. Necessitates 
+into the WeightContainer, cf. @ref{A posteriori scale and PDF variations using the HepMC GenEvent Output}. Necessitates 
 the use of @code{HEPMC_USE_NAMED_WEIGHTS}.
 
 @code{HEPMC_TREE_LIKE=<0|1>}
@@ -374,7 +374,7 @@ suited to communicate enough information for meaningful parton showering
 on top of multiparton final states.
 @item Root
 Generates output in ROOT ntuple format @strong{for NLO event generation only}. 
-For details on the ntuple format, see @ref{Structure of ROOT NTuple Output}.
+For details on the ntuple format, see @ref{A posteriori scale and PDF variations using the ROOT NTuple Output}.
 This output option is available only if Sherpa was linked to ROOT during 
 installation by using the configure option @code{--enable-root=/path/to/root}.
 ROOT ntuples can be read back into Sherpa and analyzed using the option
@@ -445,7 +445,7 @@ The user must also be aware that, of course, the cross section of the
 event sample, changes when using an alternative event weight as compared 
 to the nominal one. Any histograming therefore haas to account for this 
 and recompute the total cross section as the sum of weights devided by the 
-number of trials, cf. @ref{Cross section}.
+number of trials, cf. @ref{Cross section determination}.
 
 @b{Important:} The on-the-fly reweighting currently works for LO, LOPS, 
 MEPS, NLO, NLOPS type of calculations, but not yet for MENLOPS and MEPS@@NLO 

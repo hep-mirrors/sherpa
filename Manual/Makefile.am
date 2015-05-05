@@ -14,7 +14,6 @@ Sherpa_TEXINFOS = \
         BFactory.texi \
 	Bibliography.texi \
 	Commands.texi \
-	CrossSection.texi \
 	Customization.texi \
 	CustomScale.texi \
 	HEFT.texi \
@@ -41,7 +40,6 @@ Sherpa_TEXINFOS = \
 	LHC_ZJets.texi \
 	NLO_NTuples.texi \
 	Macros.texi \
-	Merging.texi \
 	ME.texi \
 	ME2.texi \
 	MI.texi \
@@ -57,6 +55,7 @@ Sherpa_TEXINFOS = \
 	Processes.texi \
 	RNG.texi \
 	Run.texi \
+	ScaleVars.texi \
 	Selector.texi \
 	Sherpa.texi \
 	Shower.texi \
