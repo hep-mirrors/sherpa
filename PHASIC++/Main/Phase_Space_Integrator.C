@@ -298,7 +298,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
       bool wannabreak = dabs(error)<maxerror ||
         dabs(psh->Process()->TotalVar()*rpa->Picobarn())<maxabserror;
       if (fin_opt==0 && nopt>psh->Stats().size() && wannabreak) nopt=psh->Stats().size();
-      if (psh->Stats().size()>=nopt+maxopt) return true;
+      if (wannabreak && psh->Stats().size()>=nopt+maxopt) return true;
     }
     return false;
 }
