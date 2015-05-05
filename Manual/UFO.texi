@@ -15,10 +15,10 @@ and installs the corresponding library, making it available for event
 generation. Python, SCons, and the UFO model directory are not required
 for event generation once the above command has finished.
 
-An example run card will be written to the working while the model is
-generated with @code{Sherpa-generate-model}. This run card shows the
-syntax for the respective model parameters and can be used as a
-template. It is also possible to use an external parameter card by
+An example run card will be written to the working directory while the
+model is generated with @code{Sherpa-generate-model}. This run card
+shows the syntax for the respective model parameters and can be used as
+a template. It is also possible to use an external parameter card by
 specifying the path to the card with the switch @option{UFO_PARAM_CARD}
 in the @code{(run)@{...@}(run)} section of the run card. Relative and
 absolute file paths are allowed. This option allows it to use the native
@@ -29,7 +29,7 @@ Note that the SM switches @option{MASS[<id>]}, @option{YUKAWA[<id>]},
 etc. have no effect in UFO models as the UFO model completely defines
 all particle properties and their relation to the independent model
 parameters. Sherpa does however use internal default values for the
-Standard Model fermions masses in parts of the simulation other than the
+Standard Model fermion masses in parts of the simulation other than the
 hard process if they are massless in the UFO model. This is necessary
 for a meaningful simulation. In the hard process however, the UFO model
 masses are always respected.
