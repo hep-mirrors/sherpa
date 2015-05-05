@@ -441,6 +441,23 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vmincpl,nf);
 	}
+	if (cur[0]=="Order_EW") {
+          THROW(fatal_error,
+                std::string("You are using the obsolete setting:\n")
+                +"    'Order_EW "+MakeString(cur,1)+"'\n"+
+                +"  Please refer to the Sherpa manual for how to transition "
+                +"to the new 'Order (<qcd>, <ew>[, ...])' syntax, e.g. using:\n"
+                +"    'Order (*,"+MakeString(cur,1)+")'");
+        }
+	if (cur[0]=="Max_Order_EW" ||
+            cur[0]=="Max_Order_QCD" ||
+            cur[0]=="Order_QCD") {
+          THROW(fatal_error,
+                std::string("You are using an obsolete (Max_)Order_* setting) ")
+                +"in your processes section. Please refer to the Sherpa manual "
+                +"for how to transition to the new "
+                +"'Order (<qcd>, <ew>[, ...])' syntax.");
+        }
 	if (cur[0]=="Cut_Core") pbi.m_cutcore=ToType<int>(cur[1]);
 	if (cur[0]=="CKKW") {
 	  if (p_shower==NULL || p_shower->GetShower()==NULL)
