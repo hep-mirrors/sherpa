@@ -1,5 +1,5 @@
 @node SM
-@subsection Standard Model
+@subsubsection Standard Model
 @cindex 1/ALPHAQED(0)
 @cindex SIN2THETAW
 @cindex VEV

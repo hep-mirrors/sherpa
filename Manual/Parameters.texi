@@ -16,6 +16,7 @@ performed in all inputs, see @ref{Tags}.
 * Run Parameters::    List of general parameters
 * Beam Parameters::   List of beam parameters
 * ISR Parameters::    List of initial state radiation parameters
+* Models::            Interaction models for the hard process
 * Matrix Elements::   Matrix element related settings
 * Processes::         Syntax of the process setup
 * Selectors::         Syntax of parton level cuts
@@ -31,6 +32,7 @@ performed in all inputs, see @ref{Tags}.
 @include Run.texi
 @include Beam.texi
 @include ISR.texi
+@include Models.texi
 @include ME.texi
 @include Processes.texi
 @include Selector.texi

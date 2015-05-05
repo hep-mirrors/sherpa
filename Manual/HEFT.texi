@@ -1,5 +1,5 @@
 @node HEFT
-@subsection Effective Higgs Couplings
+@subsubsection Effective Higgs Couplings
 @cindex FINITE_TOP_MASS
 @cindex FINITE_W_MASS
 @cindex DEACTIVATE_PPH
