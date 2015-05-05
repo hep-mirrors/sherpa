@@ -97,6 +97,7 @@ void Gluon_Splitter::ConstructKinematics(const double & etay) {
 		 (2.*m_LC.m_smandel));
   double lambda(Lambda(m_LC.m_smandel,4.*m_mmin2,m_LC.m_mspect2));
   double ymin(central-lambda),ymax(central+lambda);
+  //if (ymin<0.5 && ymax>0.5) ymax = 0.5;
   double offset(m_pt02/m_LC.m_smandel);
   long int calls(0);
   double y,z,sqq,delta,weight;
@@ -143,6 +144,21 @@ void Gluon_Splitter::MakeKinematics() {
     pop->m_y*(1.-pop->m_z)*m_LC.m_pB + 
     (1.-beta)*pop->m_z*m_LC.m_pA - kperp;
   m_spectmom = (1.-pop->m_y)*m_LC.m_pB + beta*m_LC.m_pA;
+
+  // if ((p_spect->m_flav==Flavour(kf_b)||
+  //      p_spect->m_flav==Flavour(kf_b).Bar()) &&
+  //     dabs(m_spectmom[3]/p_spect->m_mom[3])<0.95) {
+  //   msg_Out()<<"\n\n\n"
+  // 	     <<"GOTCHA! ==================================================\n"
+  // 	     <<METHOD<<" for "<<pop->m_flav<<", "
+  // 	     <<"y = "<<pop->m_y<<", z = "<<pop->m_z
+  // 	     <<" and kt = "<<kt<<":\n"
+  // 	     <<p_spect->m_mom<<" ---> "<<m_spectmom<<" from "
+  // 	     <<"beta = "<<beta<<" & \n"
+  // 	     <<"   light cone = "<<m_LC.m_pA<<"/"<<m_LC.m_pB<<",\n"
+  // 	     <<"   split = "<<p_split->m_mom<<".\n"
+  // 	     <<"==========================================================\n";
+  // }
   for (size_t i(0);i<2;i++) {
     m_rotat.RotateBack(pop->m_outmom[i]);
     m_boost.BoostBack(pop->m_outmom[i]);

@@ -8,7 +8,7 @@ namespace AHADIC {
   class Cluster_Splitter : public Splitter_Base {
   private:
     size_t m_nmax;
-    double m_etax, m_etax_lead, m_etay, m_etay_lead;
+    double m_etax, m_etax_lead, m_etay, m_etay_lead, m_pt2min;
     bool   m_added;
 
     size_t m_pairs;

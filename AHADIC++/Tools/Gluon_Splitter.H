@@ -7,7 +7,7 @@
 namespace AHADIC {
   class Gluon_Splitter : public Splitter_Base {
   private:
-    double m_etay, m_etay_lead;
+    double m_etay, m_etay_lead, m_pt2min;
     Proto_Particle * p_out1, * p_out2;
 
     bool   SelectSplitter(Proto_Particle * part1,Proto_Particle * part2);

@@ -160,6 +160,11 @@ double Splitter_Base::SelectY(const double & ymin,const double & ymax,
       ylow * pow(yup/ylow,ran->Get()):
       pow(pow(ylow,etap)+ran->Get()*(pow(yup,etap)-pow(ylow,etap)),1./etap);
   } while (wt<ran->Get()); // was pow(1.-y,2) before
+  //if (y-offset>0.5) {
+  //  msg_Out()<<METHOD<<" for eta = "<<eta<<" in "
+  //	     <<"["<<ymin<<", "<<ymax<<"] --> "
+  //	     <<"["<<ylow<<", "<<yup<<"] --> y = "<<(y-offset)<<".\n";
+  //}
   return y-offset;
 }
 
@@ -213,6 +218,7 @@ bool Splitter_Base::SelectFlavour(const double & sqq,const bool & vetodi) {
   m_popped.back()->m_flav  = flav.IsDiQuark()?flav.Bar():flav; 
   m_popped.back()->m_mpop2 = 
     sqr(hadpars->GetConstituents()->Mass(m_popped.back()->m_flav)); 
+  if (flav==Flavour(kf_b)) msg_Out()<<"Popped a b!\n";
   return true;
 }
 

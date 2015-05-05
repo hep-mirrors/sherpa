@@ -389,12 +389,11 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
   double E1((M2+m12-m22)/(2.*M)), pl2(sqr(E1)-m12);
   bool isbeam(false);
   double stheta, pt2;
-  double masscor((cluster->GetTrip()->m_flav.HadMass() *
-		  cluster->GetAnti()->m_flav.HadMass())/m_pt02);
+  double masscor(m_pt02/Max(m_pt02,m12) * m_pt02/Max(m_pt02,m22));
   do { 
     stheta = 1.-2.*ran->Get(); 
     pt2    = pl2*sqr(stheta);
-  } while (pt2>m_pt2max*m_pt2maxfac || 
+  } while (pt2>m_pt2max*m_pt2maxfac*masscor || 
 	   sqr((*p_as)(pt2,false)/p_as->MaxValue())<ran->Get());
   double pt     = sqrt(pt2);
   int sign      = cluster->GetTrip()->m_mom[3]<0?-1:1;
@@ -405,6 +404,16 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
 
   if (p1[0]<0. || p2[0]<0.) throw Return_Value::Retry_Event;
 
+  // if (cluster->GetTrip()->m_flav==Flavour(kf_b) ||
+  //     cluster->GetAnti()->m_flav==Flavour(kf_b).Bar()) {
+  //   msg_Out()<<"\n\n\n"
+  //            <<"======================================================\n"
+  // 	     <<METHOD<<" for M = "<<M<<", sign = "<<sign<<", pt = "<<pt<<":\n"
+  // 	     <<(*cluster)
+  // 	     <<"   "<<cluster->Momentum()<<" --> \n"
+  // 	     <<"   "<<p1<<" ("<<had1<<") + "<<p2<<" ("<<had2<<")\n."
+  // 	     <<"======================================================\n";
+  // }
   cluster->RotateAndBoostBack(p1);
   cluster->RotateAndBoostBack(p2);
   cluster->RotateAndBoostBack();
@@ -418,6 +427,7 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
   right->SetInfo('P');
   right->SetFinalMass(had2.HadMass());
   control::s_AHAparticles+=2;
+
 
   if (blob!=NULL) {
     blob->AddToOutParticles(left);

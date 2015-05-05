@@ -70,11 +70,14 @@ bool Cluster_Splitter::ConstructSystem(Cluster * cluster) {
   double pt2max(m_pt2max);
   if (m_leadsplit) pt2max *= m_pt2max/Max(m_pt2max,m_LC.m_msplit2);
   if (m_leadspect) pt2max *= m_pt2max/Max(m_pt2max,m_LC.m_mspect2);
-  m_added = true; //!(m_LC.m_msplit2>m_pt02 || m_LC.m_mspect2>m_pt02);
-  //msg_Out()<<METHOD<<": "
-  //	   <<p_split->m_flav<<" ("<<m_LC.m_msplit2<<") / "
-  //	   <<p_spect->m_flav<<" ("<<m_LC.m_mspect2<<") "
-  //	   <<"--> m_added = "<<m_added<<".\n";
+  m_pt2min = m_pt02 * 
+    m_pt02/Max(m_pt02,m_LC.m_msplit2) * 
+    m_pt02/Max(m_pt02,m_LC.m_mspect2);
+  m_added  = true; 
+  //!(p_spect->m_flav==Flavour(kf_b)||
+  //	       p_spect->m_flav==Flavour(kf_b).Bar()||
+  //	       p_split->m_flav==Flavour(kf_b)||
+  //	       p_split->m_flav==Flavour(kf_b).Bar()); //false; //true; 
   for (size_t i=0;i<10;i++) {
     m_pairs = m_isbeam?1:SelectNumberOfPairs(m_nmax);
     for (size_t i=0;i<m_pairs;i++) {
@@ -82,7 +85,7 @@ bool Cluster_Splitter::ConstructSystem(Cluster * cluster) {
       m_popped.push_back(new PoppedPair);
       do {
 	ConstructKinematics(exponents.first,exponents.second);
-	hit = (SelectFlavour(m_popped.back()->m_sqq-(m_added?m_pt02:0.)) &&  
+	hit = (SelectFlavour(m_popped.back()->m_sqq-(m_added?m_pt2min:0.)) &&  
 	       AcceptSystem(pt2max));
       } while (!hit && calls++<=1000);
       if (hit) {
@@ -103,18 +106,27 @@ bool Cluster_Splitter::ConstructSystem(Cluster * cluster) {
 
 void Cluster_Splitter::
 ConstructKinematics(const double & etax,const double & etay) {
-  double sqqmin(4.*m_mmin2+(m_added?m_pt02:0.));
+  bool   spectHF(p_spect->m_flav==Flavour(kf_b)||
+		 p_spect->m_flav==Flavour(kf_b).Bar());
+  bool   splitHF(p_split->m_flav==Flavour(kf_b)||
+		 p_split->m_flav==Flavour(kf_b).Bar());
+  double sqqmin(4.*m_mmin2+(m_added?m_pt2min:0.));
   double msplit2hat(m_LC.m_msplit2/m_LC.m_smandel); 
   double mspect2hat(m_LC.m_mspect2/m_LC.m_smandel); 
-  double xmin(sqqmin/m_LC.m_smandel);
+  double xarg(sqqmin/m_LC.m_smandel);
+  double xmin(xarg);//?sqrt(xarg):xarg));
   double xmax(1.-m_LC.m_msplit2/m_LC.m_smandel-m_sumx);
-  double offsetx(m_pt02/m_LC.m_smandel),offsety;
+  double disc(Max(xmax/2.,4.*sqrt(xarg)));
+  if (xmax>disc & xmin<disc) xmax = disc;
+  double offsetx(m_pt2min/m_LC.m_smandel),offsety;
   double ymin,ymax,x,y,z,sqq,weight;
   long int calls(0);
   do {
     x       = SelectY(xmin,xmax,etax,offsetx);
     ymin    = sqqmin/(x*m_LC.m_smandel); 
+    if (spectHF && ymin>disc) continue;
     ymax    = 1.-mspect2hat-m_sumy;
+    if (ymax>disc & ymin<disc) ymax = disc;
     offsety = offsetx/x;
     y       = SelectY(ymin,ymax,etay,offsety);
     sqq     = x*y*m_LC.m_smandel;
@@ -133,6 +145,12 @@ ConstructKinematics(const double & etax,const double & etay) {
   } while (weight<ran->Get() && calls<=1000);
   PoppedPair * pop(m_popped.back());
   if (calls<=1000) {
+    //if (p_spect->m_flav==Flavour(kf_b)||p_spect->m_flav==Flavour(kf_b).Bar()||
+    //	p_split->m_flav==Flavour(kf_b)||p_split->m_flav==Flavour(kf_b).Bar()) {
+    //  msg_Out()<<METHOD<<" for x = "<<x<<" in ["<<xmin<<", "<<xmax<<"] and "
+    //	       <<"y = "<<y<<" in ["<<ymin<<", "<<ymax<<"] with offsets "
+    //	       <<offsetx<<" & "<<offsety<<".\n";
+    //}
     pop->m_x = x; pop->m_y = y; pop->m_z = z; pop->m_sqq = sqq;
   }
   else {
@@ -178,6 +196,26 @@ MakeSplitterAndSpectatorMoms(Vec4D & test,Vec4D & test1) {
   test += m_spectmom = 
     (1.-m_sumx)*m_alphanew*m_LC.m_pA+
     (1.-m_sumy)*(1.-m_betanew)*m_LC.m_pB;
+  // if (((p_spect->m_flav==Flavour(kf_b)||
+  // 	p_spect->m_flav==Flavour(kf_b).Bar())&&
+  //      dabs(m_spectmom[3]/p_spect->m_mom[3])<0.75) ||
+  //     ((p_split->m_flav==Flavour(kf_b)||
+  // 	p_split->m_flav==Flavour(kf_b).Bar())&&
+  //      dabs(m_splitmom[3]/p_split->m_mom[3])<0.75)) {
+  //   msg_Out()<<"\n\n\n"
+  // 	     <<"GOTCHA!!! ================================================\n"
+  // 	     <<METHOD<<" for "<<(*m_popped.begin())->m_flav<<", "
+  // 	     <<"x = "<<(*m_popped.begin())->m_x<<", "
+  // 	     <<"y = "<<(*m_popped.begin())->m_y<<", "
+  // 	     <<"z = "<<(*m_popped.begin())->m_z<<", "
+  // 	     <<" and kt = "<<sqrt((*m_popped.begin())->m_kt2)<<":\n"
+  // 	     <<"spect ("<<p_spect->m_flav<<"): "
+  // 	     <<p_spect->m_mom<<" ---> "<<m_spectmom<<";\n"
+  // 	     <<"split ("<<p_split->m_flav<<"): "
+  // 	     <<p_split->m_mom<<" ---> "<<m_splitmom<<"\n"
+  // 	     <<"   from light cone = "<<m_LC.m_pA<<"/"<<m_LC.m_pB<<".\n"
+  // 	     <<"==========================================================\n";
+  // }
   m_rotat.RotateBack(m_splitmom);
   m_rotat.RotateBack(m_spectmom);
   m_boost.BoostBack(m_splitmom);
