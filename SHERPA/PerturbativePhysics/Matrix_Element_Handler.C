@@ -810,8 +810,6 @@ void Matrix_Element_Handler::BuildSingleProcessList
       }
     }
   }
-  if (pi.m_ckkw && rpa->gen.NumberOfEvents()==0)
-    THROW(fatal_error,"Number of events cannot be zero in CKKW mode");
   for (size_t i(0);i<procs.size();++i) {
     Process_Info &cpi(procs[i]->Info());
     Selector_Key skey(NULL,new Data_Reader(),true);
