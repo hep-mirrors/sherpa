@@ -19,7 +19,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Output_LHEF::Output_LHEF(const Output_Arguments &args):
-  Output_Base("LHEF"), m_xs(0.0), m_xserr(0.0), m_max(0.0)
+  Output_Base("LHEF"), m_xs(1.0), m_xserr(1.0), m_max(1.0)
 {
   m_basename=args.m_outpath+"/"+args.m_outfile;
   m_ext=".lhe";
@@ -97,8 +97,8 @@ void Output_LHEF::Header()
   int NPRUP = 1;
   int PDFGUP1 = 0;
   int PDFGUP2 = 0;
-  int PDFSUP1 = dr.GetValue<int>("LHEF_PDF_NUMBER_1",rpa->gen.PDF(0)->LHEFNumber());
-  int PDFSUP2 = dr.GetValue<int>("LHEF_PDF_NUMBER_2",rpa->gen.PDF(1)->LHEFNumber());
+  int PDFSUP1 = dr.GetValue<int>("LHEF_PDF_NUMBER_1",rpa->gen.PDF(0)?rpa->gen.PDF(0)->LHEFNumber():-1);
+  int PDFSUP2 = dr.GetValue<int>("LHEF_PDF_NUMBER_2",rpa->gen.PDF(1)?rpa->gen.PDF(1)->LHEFNumber():-1);
 
   m_outstream<<std::setprecision(10);
   m_outstream<<std::setw(6)<<IDBMUP1<<" "
