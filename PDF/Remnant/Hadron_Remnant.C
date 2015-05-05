@@ -143,6 +143,7 @@ bool Hadron_Remnant::GenerateKinematics()
   for (unsigned int j=0;j<m_companions.size();++j) {
     double E=xmap[m_companions[j]]*m_pbeam[0];
     double m=m_companions[j]->Flav().Mass();
+    if (p_partner->Type()==rtp::electron) m=0.0;
     double pmax=(1.0-1.0e-12)*sqrt(E*E-m*m);
     double xperp=Min(xperptot,pmax/ptot.PPerp());
     xperptot-=xperp;
