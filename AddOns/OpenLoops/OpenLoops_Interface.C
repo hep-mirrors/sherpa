@@ -43,7 +43,6 @@ extern "C" {
 namespace OpenLoops {
 
   std::string OpenLoops_Interface::s_olprefix;
-  bool        OpenLoops_Interface::s_ignore_model;
 
   OpenLoops_Interface::~OpenLoops_Interface()
   {
@@ -58,9 +57,6 @@ namespace OpenLoops {
     // find OL installation prefix with several overwrite options
     struct stat st;
     Data_Reader reader(" ",";","#","=");
-    s_ignore_model = reader.GetValue<int>("OL_IGNORE_MODEL",0);
-    if(s_model->Name()!="SM" && (!s_ignore_model) )
-      THROW(fatal_error, "OpenLoops can only be used in the standard model");
     s_olprefix = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/OpenLoops";
     if(stat(s_olprefix.c_str(),&st) != 0) s_olprefix = OPENLOOPS_PREFIX;
     s_olprefix = reader.GetValue<string>("OL_PREFIX", s_olprefix);
@@ -72,6 +68,9 @@ namespace OpenLoops {
     if (!s_loader->LoadLibrary("openloops")) THROW(fatal_error, "Failed to load libopenloops.");
 
     ol_set_init_error_fatal(0);
+
+    // tell OL about the current model
+    SetParameter("model", MODEL::s_model->Name());
 
     // set particle masses/widths
     int tmparr[] = {kf_e, kf_mu, kf_tau, kf_u, kf_d, kf_s, kf_c, kf_b, kf_t, kf_Wplus, kf_Z, kf_h0};
