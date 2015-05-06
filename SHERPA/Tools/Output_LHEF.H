@@ -18,6 +18,7 @@ namespace SHERPA {
 #else
     std::ofstream     m_outstream;
 #endif    
+    int m_bntp;
   public:
     Output_LHEF(const Output_Arguments &args);
     ~Output_LHEF();

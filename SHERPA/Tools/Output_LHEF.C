@@ -24,6 +24,7 @@ Output_LHEF::Output_LHEF(const Output_Arguments &args):
   m_basename=args.m_outpath+"/"+args.m_outfile;
   m_ext=".lhe";
   int precision       = args.p_reader->GetValue<int>("OUTPUT_PRECISION",12);
+  m_bntp=args.p_reader->GetValue<int>("LHEF_BNTP",0);
 #ifdef USING__GZIP
   m_ext += ".gz";
 #endif
@@ -135,6 +136,7 @@ void Output_LHEF::Output(Blob_List* blobs, const double weight)
     m_outstream<<"' mur2='"<<mur2;
   }
   m_outstream<<"'>"<<std::endl;
+  Poincare cms(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
   for (Blob_List::const_iterator blit=blobs->begin();blit!=blobs->end();++blit){
     if ((*blit)->Type()==ATOOLS::btp::Signal_Process) {
       //LHE event information
@@ -154,26 +156,32 @@ void Output_LHEF::Output(Blob_List* blobs, const double weight)
 		 <<std::setw(18)<<SCALUP<<" "
 		 <<std::setw(18)<<AQEDUP<<" "
 		 <<std::setw(18)<<AQCDUP<<std::endl;
-      for (int i=0;i<(*blit)->NInP();i++)
+      for (int i=0;i<(*blit)->NInP();i++) {
+	Vec4D p((*blit)->InParticle(i)->Momentum());
+	if (m_bntp) cms.Boost(p);
 	m_outstream<<std::setw(8)<<(long int)(*blit)->InParticle(i)->Flav()<<" -1  0  0 "
 		   <<std::setw(4)<<(*blit)->InParticle(i)->GetFlow(1)<<" "
 		   <<std::setw(4)<<(*blit)->InParticle(i)->GetFlow(2)<<" "
-		   <<std::setw(18)<<(*blit)->InParticle(i)->Momentum()[1]<<" "
-		   <<std::setw(18)<<(*blit)->InParticle(i)->Momentum()[2]<<" "
-		   <<std::setw(18)<<(*blit)->InParticle(i)->Momentum()[3]<<" "
-		   <<std::setw(18)<<(*blit)->InParticle(i)->Momentum()[0]<<" "
+		   <<std::setw(18)<<p[1]<<" "
+		   <<std::setw(18)<<p[2]<<" "
+		   <<std::setw(18)<<p[3]<<" "
+		   <<std::setw(18)<<p[0]<<" "
 		   <<std::setw(18)<<(*blit)->InParticle(i)->FinalMass()<<" "
 		   <<" 0  9"<<std::endl;
-      for (int i=0;i<(*blit)->NOutP();i++)
+      }
+      for (int i=0;i<(*blit)->NOutP();i++) {
+	Vec4D p((*blit)->OutParticle(i)->Momentum());
+	if (m_bntp) cms.Boost(p);
 	m_outstream<<std::setw(8)<<(long int)(*blit)->OutParticle(i)->Flav()<<"  1  1  2 "
 		   <<std::setw(4)<<(*blit)->OutParticle(i)->GetFlow(1)<<" "
 		   <<std::setw(4)<<(*blit)->OutParticle(i)->GetFlow(2)<<" "
-		   <<std::setw(18)<<(*blit)->OutParticle(i)->Momentum()[1]<<" "
-		   <<std::setw(18)<<(*blit)->OutParticle(i)->Momentum()[2]<<" "
-		   <<std::setw(18)<<(*blit)->OutParticle(i)->Momentum()[3]<<" "
-		   <<std::setw(18)<<(*blit)->OutParticle(i)->Momentum()[0]<<" "
+		   <<std::setw(18)<<p[1]<<" "
+		   <<std::setw(18)<<p[2]<<" "
+		   <<std::setw(18)<<p[3]<<" "
+		   <<std::setw(18)<<p[0]<<" "
 		   <<std::setw(18)<<(*blit)->OutParticle(i)->FinalMass()<<" "
 		   <<" 0  9"<<std::endl;
+      }
       m_outstream<<std::resetiosflags(std::ios::fixed);
     }
   }
