@@ -13,7 +13,8 @@ namespace UFO{
     UFO_Model(std::string path, std::string file, bool elementary);
     ~UFO_Model();
     bool ModelInit(const PDF::ISR_Handler_Map& isr);
-    void SetHadMass(const kf_code &kf,const double &m);
+    void SetSMMass(const kf_code &kf,const double &m);
+    void SetSMMasses();
 
   protected:
 

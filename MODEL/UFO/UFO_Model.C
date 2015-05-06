@@ -28,7 +28,11 @@ namespace UFO{
     delete p_dataread;
   }
 
-  void UFO_Model::SetHadMass(const kf_code &kf,const double &m)
+  // Overwrite masses of SM particles if they are
+  // zero in UFO. Necessary for hadronization,
+  // running couplings etc. Respect zero UFO masses
+  // at ME level by setting 'massive' to zero.
+  void UFO_Model::SetSMMass(const kf_code &kf,const double &m)
   {
     if (ATOOLS::s_kftable.find(kf)==ATOOLS::s_kftable.end())
       THROW(fatal_error,"SM particle not in model");
@@ -36,6 +40,18 @@ namespace UFO{
     ATOOLS::s_kftable[kf]->m_mass=m;
     ATOOLS::s_kftable[kf]->m_hmass=m;
     ATOOLS::s_kftable[kf]->m_massive=0;
+  }
+
+  void UFO_Model::SetSMMasses(){
+    SetSMMass(kf_d,0.01);
+    SetSMMass(kf_u,0.005);
+    SetSMMass(kf_s,0.2);
+    SetSMMass(kf_c,1.42);
+    SetSMMass(kf_b,4.8);
+    SetSMMass(kf_t,173.21);
+    SetSMMass(kf_e,0.000511);
+    SetSMMass(kf_mu,.105);
+    SetSMMass(kf_tau,1.777);
   }
 
   bool UFO_Model::ModelInit(const PDF::ISR_Handler_Map& isr)
