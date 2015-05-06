@@ -120,15 +120,30 @@ ConstructKinematics(const double & etax,const double & etay) {
   if (xmax>disc & xmin<disc) xmax = disc;
   double offsetx(m_pt2min/m_LC.m_smandel),offsety;
   double ymin,ymax,x,y,z,sqq,weight;
+  if (spectHF && !splitHF) {
+    ymin    = xarg;
+    ymax    = 1.-m_LC.m_mspect2/m_LC.m_smandel-m_sumx;
+    offsety = m_pt2min/m_LC.m_smandel;
+  }
   long int calls(0);
   do {
-    x       = SelectY(xmin,xmax,etax,offsetx);
-    ymin    = sqqmin/(x*m_LC.m_smandel); 
-    if (spectHF && ymin>disc) continue;
-    ymax    = 1.-mspect2hat-m_sumy;
-    if (ymax>disc & ymin<disc) ymax = disc;
-    offsety = offsetx/x;
-    y       = SelectY(ymin,ymax,etay,offsety);
+    if (spectHF && !splitHF) {
+      y       = SelectY(ymin,ymax,etay,offsety);
+      xmin    = sqqmin/(y*m_LC.m_smandel); 
+      xmax    = 1.-msplit2hat-m_sumx;
+      if (xmax>disc & xmin<disc) xmax = disc;
+      offsetx = offsety/y;
+      x       = SelectY(xmin,xmax,etax,offsetx);
+    }
+    else {
+      x       = SelectY(xmin,xmax,etax,offsetx);
+      ymin    = sqqmin/(x*m_LC.m_smandel); 
+      if (spectHF && ymin>disc) continue;
+      ymax    = 1.-mspect2hat-m_sumy;
+      if (ymax>disc & ymin<disc) ymax = disc;
+      offsety = offsetx/x;
+      y       = SelectY(ymin,ymax,etay,offsety);
+    }
     sqq     = x*y*m_LC.m_smandel;
     if (sqq<sqqmin || 
 	1.-(m_sumx+x)<m_LC.m_msplit2/m_LC.m_smandel ||
