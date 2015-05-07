@@ -42,6 +42,10 @@ args = arg_parser.parse_args()
 arg_path = os_path.abspath(args.ufo_path)
 model_path, model_name = os_path.split((arg_path.rstrip('/')))
 
+if model_name in ["SM", "HEFT", "TauPi"]:
+      error("Model name {0} conflicts with built-in model. Please rename your UFO model directory.".format(model_name))
+      exit(1)
+
 # try to import the model to check if UFO path is ok
 try:
     f, pathn, desc = find_module(model_name, [model_path])

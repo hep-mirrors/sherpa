@@ -102,6 +102,8 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
 			BEAM::Beam_Spectra_Handler *const beamhandler,
 			PDF::ISR_Handler *const isrhandler)
 {
+  if((model->Name()!="SM")&&(model->Name()!="HEFT"))
+    THROW(fatal_error, "AMEGIC can only be used in built-in models 'SM' and 'HEFT'. Please use Comix instead.");
   p_mmodel=model;
   p_amodel = new Amegic_Model(model);
   m_path=path;
