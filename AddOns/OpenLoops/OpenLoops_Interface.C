@@ -75,6 +75,10 @@ namespace OpenLoops {
 
     ol_set_init_error_fatal(0);
 
+    // set OL verbosity
+    std::string ol_verbosity = reader.GetValue<std::string>("OL_VERBOSITY","0");
+    SetParameter("verbose",ol_verbosity);
+
     // tell OL about the current model and check whether accepted
     if (!s_ignore_model) SetParameter("model", MODEL::s_model->Name());
 
@@ -84,7 +88,16 @@ namespace OpenLoops {
     for (size_t i=0; i<pdgids.size(); ++i) {
       if (Flavour(pdgids[i]).Mass()>0.0) SetParameter("mass("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Mass());
       if (Flavour(pdgids[i]).Width()>0.0) SetParameter("width("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Width());
+      if (pdgids[i]<20 && Flavour(pdgids[i]).Yuk()>0.0 &&
+          Flavour(pdgids[i]).Mass()!=Flavour(pdgids[i]).Yuk()) {
+        SetParameter("yuk("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Yuk());
+        if (MODEL::s_model->ScalarNumber(std::string("YukawaScheme"))==1)
+          SetParameter("muy("+ToString(pdgids[i])+")", Flavour(kf_h0).Mass(true));
+        else
+          SetParameter("muy("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Yuk());
+      }
     }
+
 
     if (s_model->ComplexConstant("CKM_0_2")!=Complex(0.0,0.0) ||
         s_model->ComplexConstant("CKM_2_0")!=Complex(0.0,0.0)) {
