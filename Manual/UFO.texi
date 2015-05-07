@@ -38,6 +38,9 @@ For an example UFO setup, see @ref{MSSM/UFO}. For more details on the
 Sherpa interface to FeynRules please consult
 @mycite{Christensen2009jx},@mycite{Hoeche2014kca}.
 
+Please note that AMEGIC can only be used for the built-in models (SM and
+HEFT). The use of UFO models is only supported by Comix.
+
 @c @node MSSM
 @c @subsection Minimal Supersymmetric Standard Model
 

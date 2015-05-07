@@ -6,7 +6,11 @@ The main switch @code{MODEL} in the @code{(run)@{...@}(run)} section of
 the run card sets the model that Sherpa uses throughout the simulation
 run. The default is @option{SM}, the built-in Standard Model
 implementation of Sherpa. For BSM simulations, Sherpa offers an option
-to use the Universal FeynRules Output Format (UFO) @mycite{Degrande2011ua}.
+to use the Universal FeynRules Output Format (UFO)
+@mycite{Degrande2011ua}.
+
+Please note: AMEGIC can only be used for the built-in models (SM and
+HEFT). For anything else, please use Comix.
 
 @menu
 * Built-in Models::    SM and Higgs Effective Theory
