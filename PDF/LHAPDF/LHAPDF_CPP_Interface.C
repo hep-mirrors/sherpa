@@ -28,6 +28,7 @@ namespace PDF {
     double GetXPDF(const ATOOLS::Flavour&);
     double GetXPDF(const kf_code&, bool);
 
+    void SetAlphaSInfo();
     void SetPDFMember();
 
   };
@@ -52,40 +53,6 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   if (s_init.find(m_set)==s_init.end()) {
     m_member=abs(m_smember);
     p_pdf = LHAPDF::mkPDF(m_set,m_smember);
-    // TODO: get alphaS info
-    m_asinfo.m_order=p_pdf->info().get_entry_as<int>("AlphaS_OrderQCD");
-    int nf(p_pdf->info().get_entry_as<int>("NumFlavors"));
-    if (nf<0) {
-      Data_Reader read(" ",";","#","=");
-      int nf(read.GetValue<int>("LHAPDF_NUMBER_OF_FLAVOURS",5));
-      msg_Info()<<METHOD<<"(): No nf info. Set nf = "<<nf<<"\n";
-      m_asinfo.m_flavs.resize(nf);
-    }
-    else      m_asinfo.m_flavs.resize(nf);
-    // for now assume thresholds are equal to masses, as does LHAPDF-6.0.0
-    for (size_t i(0);i<m_asinfo.m_flavs.size();++i) {
-      m_asinfo.m_flavs[i]=PDF_Flavour((kf_code)i+1);
-      if      (i==0)
-        m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
-            =p_pdf->info().get_entry_as<double>("MDown");
-      else if (i==1)
-        m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
-            =p_pdf->info().get_entry_as<double>("MUp");
-      else if (i==2)
-        m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
-            =p_pdf->info().get_entry_as<double>("MStrange");
-      else if (i==3)
-        m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
-            =p_pdf->info().get_entry_as<double>("MCharm");
-      else if (i==4)
-        m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
-            =p_pdf->info().get_entry_as<double>("MBottom");
-      else if (i==5)
-        m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
-            =p_pdf->info().get_entry_as<double>("MTop");
-    }
-    m_asinfo.m_asmz=p_pdf->info().get_entry_as<double>("AlphaS_MZ");
-    m_asinfo.m_mz2=sqr(p_pdf->info().get_entry_as<double>("MZ"));
   }
 
   // get x,Q2 ranges from PDF
@@ -120,6 +87,45 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   if (p_pdf->hasFlavor(kf_gluon)) m_partons.insert(Flavour(kf_jet));
 
   m_lhef_number = p_pdf->lhapdfID();
+}
+
+void LHAPDF_CPP_Interface::SetAlphaSInfo()
+{
+  if (m_asinfo.m_order>=0) return;
+  // TODO: get alphaS info
+  m_asinfo.m_order=p_pdf->info().get_entry_as<int>("AlphaS_OrderQCD");
+  int nf(p_pdf->info().get_entry_as<int>("NumFlavors"));
+  if (nf<0) {
+    Data_Reader read(" ",";","#","=");
+    int nf(read.GetValue<int>("LHAPDF_NUMBER_OF_FLAVOURS",5));
+    msg_Info()<<METHOD<<"(): No nf info. Set nf = "<<nf<<"\n";
+    m_asinfo.m_flavs.resize(nf);
+  }
+  else      m_asinfo.m_flavs.resize(nf);
+  // for now assume thresholds are equal to masses, as does LHAPDF-6.0.0
+  for (size_t i(0);i<m_asinfo.m_flavs.size();++i) {
+    m_asinfo.m_flavs[i]=PDF_Flavour((kf_code)i+1);
+    if      (i==0)
+      m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
+	=p_pdf->info().get_entry_as<double>("MDown");
+    else if (i==1)
+      m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
+	=p_pdf->info().get_entry_as<double>("MUp");
+    else if (i==2)
+      m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
+	=p_pdf->info().get_entry_as<double>("MStrange");
+    else if (i==3)
+      m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
+	=p_pdf->info().get_entry_as<double>("MCharm");
+    else if (i==4)
+      m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
+	=p_pdf->info().get_entry_as<double>("MBottom");
+    else if (i==5)
+      m_asinfo.m_flavs[i].m_mass=m_asinfo.m_flavs[i].m_thres
+	=p_pdf->info().get_entry_as<double>("MTop");
+  }
+  m_asinfo.m_asmz=p_pdf->info().get_entry_as<double>("AlphaS_MZ");
+  m_asinfo.m_mz2=sqr(p_pdf->info().get_entry_as<double>("MZ"));
 }
 
 LHAPDF_CPP_Interface::~LHAPDF_CPP_Interface()

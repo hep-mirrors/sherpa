@@ -90,6 +90,7 @@ namespace PDF {
 
     void SetBounds();
 
+    virtual void SetAlphaSInfo();
     virtual void SetPDFMember();
 
     static void ShowSyntax(const size_t i);

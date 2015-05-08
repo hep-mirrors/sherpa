@@ -56,6 +56,26 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
   p_thresh        = new AsDataSet[m_nth+1]; 
   double * masses = new double[m_nth];
   
+  Data_Reader dataread(" ",";","!","=");
+  dataread.AddComment("#");
+  dataread.AddWordSeparator("\t");
+  int pdfas(dataread.GetValue<int>("USE_PDF_ALPHAS",0));
+  if (pdfas&4) {
+    std::string set = dataread.GetValue<std::string>("ALPHAS_PDF_SET","CT10nlo");
+    int member = dataread.GetValue<int>("ALPHAS_PDF_SET_VERSION",0);
+    if (s_kftable.find(kf_p_plus)==s_kftable.end()) s_kftable[kf_p_plus] =
+      new Particle_Info(kf_p_plus,0.938272,0,3,1,1,1,"P+","P^{+}");
+    p_pdf = PDF_Base::PDF_Getter_Function::GetObject
+      (set,PDF_Arguments(Flavour(kf_p_plus),&dataread,0, set, member));
+    msg_Info()<<METHOD<<"(): Using alphas from "<<set<<" ("<<member<<")"<<std::endl;
+  }
+  if (p_pdf && (pdfas&2)) {
+    p_pdf->SetAlphaSInfo();
+    const PDF::PDF_AS_Info &info(p_pdf->ASInfo());
+    if (info.m_order>=0)
+      for (int i(0);i<info.m_flavs.size();++i)
+	info.m_flavs[i].SetMass(info.m_flavs[i].m_mass);
+  }
   int count = 0;
   for(KFCode_ParticleInfo_Map::const_iterator kfit(s_kftable.begin());
       kfit!=s_kftable.end()&&kfit->first<=21;++kfit) {
@@ -67,9 +87,6 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
   }
 
   if (p_pdf) {
-    Data_Reader dataread(" ",";","!","=");
-    dataread.AddComment("#");
-    dataread.AddWordSeparator("\t");
     if (dataread.GetValue<int>("OVERRIDE_PDF_INFO",0)==1) {
       msg_Error()<<om::bold<<METHOD<<"(): "<<om::reset<<om::red
 		 <<"Overriding \\alpha_s information from PDF. "
@@ -84,7 +101,7 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
           m_as_MZ=info.m_asmz;
           m_m2_MZ=(info.m_mz2>0.?info.m_mz2:m_m2_MZ);
         }
-        if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)==1) m_pdf=1;
+        if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)&1) m_pdf=1;
         /*
         m_nth=info.m_flavs.size()+1;
         for (int i(0);i<m_nth;++i) {

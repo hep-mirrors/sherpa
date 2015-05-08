@@ -42,6 +42,10 @@ void PDF_Base::SetBounds()
   m_rq2max=m_q2max;
 }
 
+void PDF_Base::SetAlphaSInfo()
+{
+}
+
 void PDF_Base::SetPDFMember()
 {
 }
