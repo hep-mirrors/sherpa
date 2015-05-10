@@ -16,6 +16,8 @@ cmath_dictionary = {
     "cos": "cos",
     "sin": "sin",
     "tan": "tan",
+    "acos": "acos",
+    "asin": "asin",
     "atan": "atan",
     "sqrt": "sqrt",
     "pi": "M_PI",
