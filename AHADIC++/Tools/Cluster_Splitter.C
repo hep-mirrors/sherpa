@@ -126,6 +126,7 @@ ConstructKinematics(const double & etax,const double & etay) {
     offsety = m_pt2min/m_LC.m_smandel;
   }
   long int calls(0);
+  weight=0;
   do {
     if (spectHF && !splitHF) {
       y       = SelectY(ymin,ymax,etay,offsety);
