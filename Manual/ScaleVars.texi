@@ -17,13 +17,25 @@ available in two formats:
 @node A posteriori scale and PDF variations using the HepMC GenEvent Output
 @section A posteriori scale and PDF variations using the HepMC GenEvent Output
 
+Events generated in a LO, LOPS, NLO, NLOPS or MEPS@@LO calculation can be 
+written out in the HepMC format including all infomation to carry out 
+arbitrary scale variations a posteriori. For this feature HepMC of at least 
+version 2.06 is necessary and both @code{HEPMC_USE_NAMED_WEIGHTS=1} and 
+@code{HEPMC_EXTENDED_WEIGHTS=1} have to enabled. Detailed instructions on 
+how to use this information to construct the new event weight can be found 
+here @url{https://sherpa.hepforge.org/doc/ScaleVariations-Sherpa-2.2.0.pdf}. 
+@b{Plaes note:} For MENLOPS and MEPS@@NLO calculations this feature is not 
+available yet.
 
 @node A posteriori scale and PDF variations using the ROOT NTuple Output
 @section A posteriori scale and PDF variations using the ROOT NTuple Output
 @cindex USR_WGT_MODE
 
-The generated events can be stored in a ROOT NTuple file, see 
-@ref{Event output formats}. The internal ROOT Tree has the following Branches:
+Events generated at fixed-order LO and NLO can be stored in ROOT NTuples
+that allow arbitrary a posteriori scale and PDF variations, see 
+@ref{Event output formats}. An example for writing and reading in such 
+ROOT NTuples can be found here: @ref{NTuple production}.
+The internal ROOT Tree has the following Branches:
 @table @samp
  @item id 
  Event ID to identify correlated real sub-events.
@@ -79,7 +91,7 @@ several sub-events. All entries with the same id belong to the same event.
 Step 2 has to be repeated for each event.
 @item Each sub-event must be checked separately whether it passes possible 
 phase space cuts. Then for each observable add up @code{weight2} of all 
-sub-events that go into the same histogram bin. These sums x_id are the 
+sub-events that go into the same histogram bin. These sums @code{x_id} are the 
 quantities to enter the actual histogram.
 @item To compute statistical errors each bin must store the sum over all 
 @code{x_id} and the sum over all @code{x_id^2}. The cross section in the bin is 
