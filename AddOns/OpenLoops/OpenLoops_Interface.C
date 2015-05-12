@@ -44,6 +44,7 @@ namespace OpenLoops {
 
   std::string OpenLoops_Interface::s_olprefix     = std::string("");
   bool        OpenLoops_Interface::s_ignore_model = false;
+  bool        OpenLoops_Interface::s_exit_on_error= true;
 
   OpenLoops_Interface::~OpenLoops_Interface()
   {
@@ -59,6 +60,7 @@ namespace OpenLoops {
     struct stat st;
     Data_Reader reader(" ",";","#","=");
     s_ignore_model = reader.GetValue<int>("OL_IGNORE_MODEL",0);
+    s_exit_on_error = reader.GetValue<int>("OL_EXIT_ON_ERROR",1);
     if (s_ignore_model) msg_Info()<<METHOD<<"(): OpenLoops will use the "
                                   <<"Standard Model even if you set a "
                                   <<"different model without warning."
@@ -230,10 +232,14 @@ namespace OpenLoops {
       msg_Debugging()<<"Setting OpenLoops parameter: "<<key<<" = "<<value<<endl;
     }
     else if (err==1) {
-      THROW(fatal_error, "Unknown OpenLoops parameter: "+key+" = "+ToString(value));
+      std::string errorstring("Unknown OpenLoops parameter: "+key+" = "+ToString(value));
+      if (OpenLoops_Interface::ExitOnError()) THROW(fatal_error, errorstring)
+      else                                    msg_Error()<<errorstring<<std::endl;
     }
     else if (err==2) {
-      THROW(fatal_error, "Error setting OpenLoops parameter: "+key+" = "+ToString(value));
+      std::string errorstring("Error setting OpenLoops parameter: "+key+" = "+ToString(value));
+      if (OpenLoops_Interface::ExitOnError()) THROW(fatal_error, errorstring)
+      else                                    msg_Error()<<errorstring<<std::endl;
     }
   }
   void OpenLoops_Interface::SetParameter(const std::string & key, double value) {

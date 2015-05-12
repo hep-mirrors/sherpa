@@ -13,6 +13,7 @@ namespace OpenLoops {
 
     static std::string s_olprefix;
     static bool        s_ignore_model;
+    static bool        s_exit_on_error;
 
   public :
     OpenLoops_Interface() : ME_Generator_Base("OpenLoops") {}
@@ -38,6 +39,7 @@ namespace OpenLoops {
     static void SetParameter(const std::string & key, std::string value);
     static double GetDoubleParameter(const std::string & key);
     static int GetIntParameter(const std::string & key);
+    static bool ExitOnError() { return s_exit_on_error; }
 
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     { return NULL; }
