@@ -53,6 +53,7 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   if (s_init.find(m_set)==s_init.end()) {
     m_member=abs(m_smember);
     p_pdf = LHAPDF::mkPDF(m_set,m_smember);
+    SetAlphaSInfo();
   }
 
   // get x,Q2 ranges from PDF
