@@ -139,7 +139,7 @@ ConstructKinematics(const double & etax,const double & etay) {
     else {
       x       = SelectY(xmin,xmax,etax,offsetx);
       ymin    = sqqmin/(x*m_LC.m_smandel); 
-      if (spectHF && ymin>disc) continue;
+      //if (spectHF && ymin>disc) continue;
       ymax    = 1.-mspect2hat-m_sumy;
       if (ymax>disc & ymin<disc) ymax = disc;
       offsety = offsetx/x;
