@@ -90,13 +90,15 @@ namespace OpenLoops {
     for (size_t i=0; i<pdgids.size(); ++i) {
       if (Flavour(pdgids[i]).Mass()>0.0) SetParameter("mass("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Mass());
       if (Flavour(pdgids[i]).Width()>0.0) SetParameter("width("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Width());
-      if (pdgids[i]<20 && Flavour(pdgids[i]).Yuk()>0.0 &&
+      if (Flavour(pdgids[i]).IsFermion() && Flavour(pdgids[i]).Yuk()>0.0 &&
           Flavour(pdgids[i]).Mass()!=Flavour(pdgids[i]).Yuk()) {
         SetParameter("yuk("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Yuk());
-        if (MODEL::s_model->ScalarNumber(std::string("YukawaScheme"))==1)
-          SetParameter("muy("+ToString(pdgids[i])+")", Flavour(kf_h0).Mass(true));
-        else
-          SetParameter("muy("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Yuk());
+        if (Flavour(pdgids[i]).IsQuark()) { // not supported/needed for leptons
+          if (MODEL::s_model->ScalarNumber(std::string("YukawaScheme"))==1)
+            SetParameter("muy("+ToString(pdgids[i])+")", Flavour(kf_h0).Mass(true));
+          else
+            SetParameter("muy("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Yuk());
+        }
       }
     }
 
