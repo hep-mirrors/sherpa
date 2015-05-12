@@ -153,10 +153,9 @@ Scale_Variations::Scale_Variations() :
         PDF::PDF_Arguments pa2(rpa->gen.Bunch(1),&reader,1,pdfname,member);
         pdf1=PDF::PDF_Base::PDF_Getter_Function::GetObject(pdfname,pa1);
         pdf2=PDF::PDF_Base::PDF_Getter_Function::GetObject(pdfname,pa2);
-        MODEL::One_Running_AlphaS * as
-            = new MODEL::One_Running_AlphaS(pdf1);
         if (!pdf1 || !pdf2)
           THROW(fatal_error,"PDF set "+pdfname+" not available.");
+        MODEL::One_Running_AlphaS * as = new MODEL::One_Running_AlphaS(pdf1);
         if (!as)
           THROW(fatal_error,"AlphaS for "+pdfname+" could not be initialised.");
         Scale_Variation * scvar(new Scale_Variation(muR2fac,muF2fac,
