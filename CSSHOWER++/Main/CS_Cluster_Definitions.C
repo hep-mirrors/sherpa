@@ -254,9 +254,9 @@ void CS_Cluster_Definitions::KernelWeight
     return;
   }
   double Q2=dabs((i->Mom()+j->Mom()+k->Mom()).Abs2());
-  if (Q2<cs.m_mode&1?
-      p_shower->GetSudakov()->ISPT2Min():
-      p_shower->GetSudakov()->FSPT2Min()) {
+  if (Q2<(cs.m_mode&1?
+	  p_shower->GetSudakov()->ISPT2Min():
+	  p_shower->GetSudakov()->FSPT2Min())) {
     msg_Debugging()<<"Small Q2 "<<Q2<<"\n";
     cs.m_ws=cs.m_wk=-1.0;
     return;
