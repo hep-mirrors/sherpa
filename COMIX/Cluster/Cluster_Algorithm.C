@@ -710,6 +710,7 @@ bool Cluster_Algorithm::Cluster
       p_ampl->SetProc(p_xs);
       p_ampl->SetKT2((p_xs->IsMapped()?p_xs->MapProc():p_xs)
 		     ->ScaleSetter()->CoreScale(p_ampl).m_mu2);
+      if (p_ampl->Prev()) kt2ord=UpdateKT2(kt2ord,p_ampl->Prev(),1);
       return true;
     }
     if (p_ampl->Prev()) {
@@ -761,7 +762,7 @@ bool Cluster_Algorithm::Cluster
 	}
 	msg_Debugging()<<"reject ordering\n";
       }
-      else if ((m_wmode&512) && (m_wmode&4096) && step==m_nmin) {
+      else if ((m_wmode&512) && (m_wmode&4096) && step==2) {
 	if (!CheckCore(p_ampl)) continue;
 	msg_Debugging()<<"no valid combination -> classify as RS core\n";
 	p_ampl->SetProc(p_xs);
