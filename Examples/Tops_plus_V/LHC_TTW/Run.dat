@@ -13,7 +13,9 @@
 
   % settings for hard decays
   HARD_DECAYS On;
-  HDH_NO_DECAY {24,2,-1}|{24,4,-3}|{24,16,-15};
+  HDH_STATUS[24,2,-1]=0;
+  HDH_STATUS[24,4,-3]=0;
+  HDH_STATUS[24,16,-15]=0;
 
   % model parameters
   WIDTH[6] 0; WIDTH[24] 0;

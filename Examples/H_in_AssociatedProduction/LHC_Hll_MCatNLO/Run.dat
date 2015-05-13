@@ -19,7 +19,7 @@
   % hard decays setup, specify allowed decay channels
   % h->bb
   HARD_DECAYS On;
-  HDH_ONLY_DECAY {25,5,-5};
+  HDH_STATUS[25,5,-5]=2;
   HDH_BR_WEIGHTS 0;
 
   % collider setup

@@ -27,7 +27,22 @@
   % hard decays setup, specify allowed decay channels, ie.:
   % h->Wenu, h->Wmunu, h->Wtaunu, W->enu, W->munu, W->taunu, tau->enunu, tau->mununu + cc
   HARD_DECAYS On;
-  HDH_ONLY_DECAY {25,24,-12,11}|{25,24,-14,13}|{25,24,-16,15}|{25,-24,12,-11}|{25,-24,14,-13}|{25,-24,16,-15}|{24,12,-11}|{24,14,-13}|{24,16,-15}|{-24,-12,11}|{-24,-14,13}|{-24,-16,15}|{15,16,-12,11}|{15,16,-14,13}|{-15,-16,12,-11}|{-15,-16,14,-13};
+  HDH_STATUS[25,24,-12,11]=2;
+  HDH_STATUS[25,24,-14,13]=2;
+  HDH_STATUS[25,24,-16,15]=2;
+  HDH_STATUS[25,-24,12,-11]=2;
+  HDH_STATUS[25,-24,14,-13]=2;
+  HDH_STATUS[25,-24,16,-15]=2;
+  HDH_STATUS[24,12,-11]=2;
+  HDH_STATUS[24,14,-13]=2;
+  HDH_STATUS[24,16,-15]=2;
+  HDH_STATUS[-24,-12,11]=2;
+  HDH_STATUS[-24,-14,13]=2;
+  HDH_STATUS[-24,-16,15]=2;
+  HDH_STATUS[15,16,-12,11]=2;
+  HDH_STATUS[15,16,-14,13]=2;
+  HDH_STATUS[-15,-16,12,-11]=2;
+  HDH_STATUS[-15,-16,14,-13]=2;
   DECAY_TAU_HARD 1;
   HDH_BR_WEIGHTS 0;
 
