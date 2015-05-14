@@ -177,7 +177,7 @@ bool Simple_Chain::ReadInData()
   m_heavy_flavour = reader->GetValue<int>("MI_HEAVY_FLAVOUR",1);
   if (!reader->ReadFromFile(m_error,"PS_ERROR")) m_error=1.e-2;
   if (!reader->ReadFromFile(m_pathextra,"PATH_EXTRA")) m_pathextra="";
-  m_sigma_nd_fac = reader->GetValue<double>("SIGMA_ND_FACTOR",0.335);
+  m_sigma_nd_fac = reader->GetValue<double>("SIGMA_ND_FACTOR", 0.3142);
   m_resdir = reader->GetValue<std::string>("MI_RESULT_DIRECTORY","");
   m_ressuffix = reader->GetValue<std::string>("MI_RESULT_DIRECTORY_SUFFIX","");
   GeneratePathName();
@@ -409,8 +409,8 @@ bool Simple_Chain::Initialize()
   p_read->ReadFromFile(xsfile,"XS_FILE");
   SetInputFile(xsfile,1);
   double stop, exponent, scale, pt0, pt0exp;
-  if (!p_read->ReadFromFile(pt0,"TURNOFF")) pt0=0.0;
-  if (!p_read->ReadFromFile(stop,"SCALE_MIN")) stop=2.44;
+  if (!p_read->ReadFromFile(pt0,"TURNOFF")) pt0=0.7549;
+  if (!p_read->ReadFromFile(stop,"SCALE_MIN")) stop=2.895;
   if (!p_read->ReadFromFile(pt0exp,"TURNOFF_EXPONENT")) pt0exp=0.244;
   if (!p_read->ReadFromFile(exponent,"RESCALE_EXPONENT")) exponent=0.244;
   if (!p_read->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1800.0;
@@ -432,8 +432,8 @@ bool Simple_Chain::Initialize()
   if (!p_read->ReadFromFile(function,"PROFILE_FUNCTION")) {
     function="Double_Gaussian";
     if (!p_read->VectorFromFile(parameters,"PROFILE_PARAMETERS")) {
-      parameters.push_back(0.76);
-      parameters.push_back(0.58);
+      parameters.push_back(0.8243);
+      parameters.push_back(0.9515);
     }
   }
   else {
