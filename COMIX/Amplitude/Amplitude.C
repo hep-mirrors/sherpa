@@ -1504,7 +1504,7 @@ bool Amplitude::ConstructChirs()
   for (size_t i(0);i<m_scur.size();++i) {
     Dipole_Kinematics *kin(m_scur[i]->Sub()->In().front()->Kin());
     Current *last(NULL);
-    for (size_t j(1);j<m_cur.back().size();++j) {
+    for (size_t j(0);j<m_cur.back().size();++j) {
       if (m_cur.back()[j]->Sub()!=m_scur[i]) continue;
       last=m_cur.back()[j];
       last->HM().resize(m_ress.front().size(),0);
