@@ -87,10 +87,17 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
       muq2=muf2=mur2=(campl->Leg(0)->Mom()+campl->Leg(1)->Mom()).Abs2();
     }
   }
-  else {// lh collision
-    msg_Debugging()<<"DIS like\n";
-    muq2=muf2=mur2=dabs((campl->Leg(fl[0].Strong()?1:0)->Mom()+
-			 campl->Leg(fl[2].Strong()?3:2)->Mom()).Abs2());
+  else {
+    if (!fl[0].Strong() && !fl[2].Strong()) {
+      msg_Debugging()<<"DIS like\n";
+      muq2=muf2=mur2=dabs((campl->Leg(fl[0].Strong()?1:0)->Mom()+
+			   campl->Leg(fl[2].Strong()?3:2)->Mom()).Abs2());
+    }
+    else {
+      msg_Debugging()<<"QCD Compton like\n";
+      muq2=muf2=mur2=dabs(sqrt(campl->Leg(2)->Mom().MPerp2()*
+			       campl->Leg(3)->Mom().MPerp2()));
+    }
   }
   campl->Delete();
   msg_Debugging()<<"\\mu_f = "<<sqrt(muf2)<<"\n"
