@@ -35,9 +35,9 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   else msg_Info()<<METHOD<<"(): Set n_{it,min} = "<<itmin<<".\n";
   if (!read.ReadFromFile(itmax,"PSI_ITMAX")) itmax=100*itmin;
   else msg_Info()<<METHOD<<"(): Set n_{it,max} = "<<itmax<<".\n";
-  if (!read.ReadFromFile(nopt,"PSI_NOPT")) nopt=15;
+  if (!read.ReadFromFile(nopt,"PSI_NOPT")) nopt=25;
   else msg_Info()<<METHOD<<"(): Set n_{opt} = "<<nopt<<".\n";
-  if (!read.ReadFromFile(maxopt,"PSI_MAXOPT")) maxopt=4;
+  if (!read.ReadFromFile(maxopt,"PSI_MAXOPT")) maxopt=5;
   else msg_Info()<<METHOD<<"(): Set n_{maxopt} = "<<maxopt<<".\n";
   if (!read.ReadFromFile(ndecopt,"PSI_NDECOPT")) ndecopt=10;
   else msg_Info()<<METHOD<<"(): Set n_{opt,dec} = "<<ndecopt<<".\n";
