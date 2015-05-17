@@ -8,9 +8,11 @@ libExtraXS_la_SOURCES =	\
 			Single_Process.C \
 			Process_Group.C \
 			Simple_XS.C \
+			ME_Tools.C \
 			ME2_Base.C
 
 localinc_HEADERS      =	\
 			Single_Process.H \
 			Process_Group.H \
+			ME_Tools.H \
 			ME2_Base.H

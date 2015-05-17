@@ -118,10 +118,6 @@ namespace METOOLS {
 
     inline MODEL::Single_Vertex *V() const { return p_v; }
 
-    static std::vector<Vertex*> ConstructVertices(Current* cur1,
-                                                  Current* cur2,
-                                                  Current* prop);
-
   };// end of class Vertex
   
   std::ostream &operator<<(std::ostream &str,const Vertex &v);

@@ -2,6 +2,7 @@
 
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Explicit/Vertex.H"
+#include "EXTRA_XS/Main/ME_Tools.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "PHASIC++/Main/Color_Integrator.H"
@@ -59,10 +60,10 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
   m_fcur->SetFId(isfs2);
   m_fcur->FindPermutations();
   // connect (2) & (3) into (2,3)
-  m_v1=METOOLS::Vertex::ConstructVertices(m_cur[propi], m_cur[propj], m_scur);
+  m_v1=ConstructVertices(m_cur[propi], m_cur[propj], m_scur);
   DEBUG_VAR(m_v1.size());
   // connect (1) & (2,3) into (1,2,3)
-  m_v2=METOOLS::Vertex::ConstructVertices(m_cur[nonprop],m_scur,m_fcur);
+  m_v2=ConstructVertices(m_cur[nonprop],m_scur,m_fcur);
   DEBUG_VAR(m_v2.size());
   m_scur->Print();
   m_fcur->Print();
@@ -94,10 +95,10 @@ Comix1to3::Comix1to3(const vector<Flavour>& flavs, const Flavour& prop,
   m_antifcur->SetFId(isfs2);
   m_antifcur->FindPermutations();
   // connect (2) & (3) into (2,3)
-  m_antiv1=METOOLS::Vertex::ConstructVertices(m_anticur[propi], m_anticur[propj], m_antiscur);
+  m_antiv1=ConstructVertices(m_anticur[propi], m_anticur[propj], m_antiscur);
   DEBUG_VAR(m_antiv1.size());
   // connect (1) & (2,3) into (1,2,3)
-  m_antiv2=METOOLS::Vertex::ConstructVertices(m_anticur[nonprop],m_antiscur,m_antifcur);
+  m_antiv2=ConstructVertices(m_anticur[nonprop],m_antiscur,m_antifcur);
   DEBUG_VAR(m_antiv2.size());
   m_antiscur->Print();
   m_antifcur->Print();

@@ -282,43 +282,6 @@ void Vertex::CollectGraphs(Graph_Node *graph) const
   for (size_t i(0);i<m_j.size();++i) m_j[i]->CollectGraphs(graph);
 }
 
-std::vector<Vertex*> Vertex::ConstructVertices(Current* cur1,
-                                               Current* cur2,
-                                               Current* prop)
-{
-  std::vector<Vertex*> ret;
-  Current_Vector curs(2);
-  curs[0]=cur1;
-  curs[1]=cur2;
-
-  // try first rotation
-  Vertex_Key vkey(curs,prop,MODEL::s_model);
-  MODEL::VMIterator_Pair keyrange(MODEL::s_model->GetVertex(vkey.ID()));
-  for (MODEL::Vertex_Map::const_iterator it=keyrange.first; it!=keyrange.second; ++it) {
-    vkey.p_mv=it->second;
-    vkey.m_p=std::string(1,'D');
-    ret.push_back(new Vertex(vkey));
-    ret.back()->AddJ(vkey.m_j);
-    ret.back()->SetJC(prop);
-  }
-
-  //try second rotation
-  std::swap<Current*>(curs[0],curs[1]);
-  vkey=Vertex_Key(curs,prop,MODEL::s_model);
-  keyrange=MODEL::s_model->GetVertex(vkey.ID());
-  for (MODEL::Vertex_Map::const_iterator it=keyrange.first; it!=keyrange.second; ++it) {
-    vkey.p_mv=it->second;//fixme!!
-    vkey.m_p=std::string(1,'D');
-    ret.push_back(new Vertex(vkey));
-    ret.back()->AddJ(vkey.m_j);
-    ret.back()->SetJC(prop);
-  }
-
-  if (ret.size()==0) THROW(fatal_error, "vertex not found: "+vkey.ID());
-
-  return ret;
-}
-
 std::ostream &METOOLS::operator<<(std::ostream &str,const Vertex &v)
 {
   for (size_t i(0);i<v.J().size();++i) {

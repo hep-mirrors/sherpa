@@ -2,6 +2,7 @@
 
 #include "METOOLS/Explicit/Current.H"
 #include "METOOLS/Explicit/Vertex.H"
+#include "EXTRA_XS/Main/ME_Tools.H"
 #include "MODEL/Main/Model_Base.H"
 #include "MODEL/Main/Single_Vertex.H"
 #include "PHASIC++/Main/Color_Integrator.H"
@@ -42,7 +43,7 @@ Comix1to2::Comix1to2(const vector<Flavour>& flavs) :
   m_fcur->SetFId(isfs);
   m_fcur->FindPermutations();
   // connect (1) & (2) into (1,2)
-  m_v1=METOOLS::Vertex::ConstructVertices(m_cur[1], m_cur[2], m_fcur);
+  m_v1=ConstructVertices(m_cur[1], m_cur[2], m_fcur);
   DEBUG_VAR(m_v1.size());
   m_fcur->InitPols(pols);
   m_fcur->Print();
@@ -66,7 +67,7 @@ Comix1to2::Comix1to2(const vector<Flavour>& flavs) :
   m_antifcur->SetFId(isfs);
   m_antifcur->FindPermutations();
   // connect (1) & (2) into (1,2)
-  m_antiv1=METOOLS::Vertex::ConstructVertices(m_anticur[1], m_anticur[2], m_antifcur);
+  m_antiv1=ConstructVertices(m_anticur[1], m_anticur[2], m_antifcur);
   DEBUG_VAR(m_antiv1.size());
   m_antifcur->InitPols(pols);
   m_antifcur->Print();
