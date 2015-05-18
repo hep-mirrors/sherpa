@@ -23,7 +23,7 @@
 
   % model parameters
   MODEL HEFT
-  MASS[25] 126.; WIDTH[25] 0.;
+  MASS[25] 125.; WIDTH[25] 0.;
 
   % collider setup
   BEAM_1 2212; BEAM_ENERGY_1 4000;
@@ -40,3 +40,9 @@
   RS_ME_Generator Comix {LJET};
   End process;
 }(processes);
+
+(analysis){
+  BEGIN_RIVET {
+    -a MC_HJETS_STABLE_CUTS ATLAS_2014_I1307756;
+  } END_RIVET
+}(analysis);
