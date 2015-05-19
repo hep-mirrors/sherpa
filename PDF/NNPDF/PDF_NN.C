@@ -19,6 +19,7 @@ namespace PDF {
 
     int    m_anti;
     int m_lookup[28];
+    int m_prefix;
 
 
     double m_x, m_Q2;
@@ -28,7 +29,7 @@ namespace PDF {
   public:
 
     PDF_NNPDF(const ATOOLS::Flavour &bunch,const std::string &file,
-              const std::string &set,int member);
+              const std::string &set,int member, int prefix);
 
     ~PDF_NNPDF(); 
 
@@ -56,12 +57,14 @@ using namespace ATOOLS;
 PDF_NNPDF::PDF_NNPDF
 (const ATOOLS::Flavour &bunch,
  const std::string &bfile,
- const std::string &set,int member):
+ const std::string &set,int member, int prefix):
   m_path(rpa->gen.Variable("SHERPA_SHARE_PATH")),
   m_file(bfile), m_anti(1)
 {
   m_set=set;
   m_member=member;
+  m_prefix=prefix;
+  m_lhef_number=prefix+member;
   std::string file(m_file);
   p_pdf = new NNPDFDriver(m_path+"/"+file, m_member); // Path to the file to load
   
@@ -150,7 +153,7 @@ PDF_NNPDF::~PDF_NNPDF()
 // Necessary?
 PDF_Base *PDF_NNPDF::GetCopy() 
 {
-  PDF_Base *copy = new PDF_NNPDF(m_bunch,m_file,m_set,m_member);
+  PDF_Base *copy = new PDF_NNPDF(m_bunch,m_file,m_set,m_member,m_prefix);
   m_copies.push_back(copy);
   return copy;
 }
@@ -175,7 +178,7 @@ double PDF_NNPDF::GetXPDF(const ATOOLS::Flavour& infl)
                                // While the driver wants 
                                // numbers from 0 to 12 to access
                                // array elements
-  
+ 
   return m_rescale*p_pdf->xfx(m_x, m_Q2, kfc_nn);
 }
 
@@ -200,19 +203,22 @@ PDF_Base *NNPDF_Getter::operator()
 {
   if (!args.m_bunch.IsHadron()) return NULL;
   std::string gfile;
+  int pdfsetprefix=-1;
   if (args.m_set == "NNPDF30NLO") {
     gfile = std::string("NNPDF30_nlo_as_0118");
+    pdfsetprefix=260000;
     if (args.m_member>100 || args.m_member <0)
       THROW(fatal_error,"PDF_SET_MEMBER out of range [0,100].");
   }
   else if (args.m_set == "NNPDF30NNLO") {
     gfile = std::string("NNPDF30_nnlo_as_0118");
+    pdfsetprefix=261000;
     if (args.m_member>100 || args.m_member <0) {
       THROW(fatal_error,"PDF_SET_MEMBER out of range [0,100].");
     }
   }
   else THROW(not_implemented,"Requested PDF_SET not available.");
-  return new PDF_NNPDF(args.m_bunch, gfile, args.m_set, args.m_member);
+  return new PDF_NNPDF(args.m_bunch, gfile, args.m_set, args.m_member, pdfsetprefix);
 }
 
 void NNPDF_Getter::PrintInfo
