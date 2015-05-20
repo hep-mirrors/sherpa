@@ -275,8 +275,8 @@ namespace ATOOLS {
     { return Kfcode()==kf_gluon||Kfcode()==kf_shgluon; }
     inline bool IsJet() const   { return Kfcode()==kf_jet; }
 
-    inline bool IsUptype() const   { return IsoWeak()>0; }
-    inline bool IsDowntype() const { return IsoWeak()<0; }
+    inline bool IsUptype() const   { return IsAnti()?IsoWeak()<0:IsoWeak()>0; }
+    inline bool IsDowntype() const { return IsAnti()?IsoWeak()>0:IsoWeak()<0; }
 
     inline bool IsKK() const 
     { if (Kfcode()==kf_graviton || Kfcode()==kf_gscalar) return 1;
