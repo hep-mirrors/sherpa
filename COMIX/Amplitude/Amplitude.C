@@ -680,7 +680,6 @@ bool Amplitude::Construct(const Flavour_Vector &flavs)
 	cit=--m_scur.erase(cit);
       }
   }
-  FillCombinations();
   msg_Debugging()<<METHOD<<"(): Amplitude statistics (n="
 		 <<m_n<<") {\n  level currents vertices\n"<<std::right;
   size_t csum(0), vsum(0), scsum(0), svsum(0);
@@ -1645,6 +1644,7 @@ bool Amplitude::Construct
   if (!Construct(flavs)) return false;
   if (!CheckOrders()) return false;
   if (!ConstructChirs()) return false;
+  FillCombinations();
   m_sid.resize(m_cur.back().size(),0);
   if (p_dinfo->Mode()==1) ConstructNLOEvents();
   if (p_dinfo->Mode()&2) ConstructDSijMap();
