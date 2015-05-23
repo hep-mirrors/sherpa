@@ -4,6 +4,7 @@
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "ATOOLS/Phys/Flow.H"
 #include "MODEL/Main/Model_Base.H"
+#include "MODEL/UFO/UFO_Model.H"
 
 #include "EXTRA_XS/Main/ME2_Base.H"
 
@@ -75,6 +76,7 @@ Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_PP_ffbar>::
 operator()(const Process_Info &pi) const
 {
   return NULL;
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo ||
       pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();

@@ -62,6 +62,7 @@ namespace AMEGIC {
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "MODEL/UFO/UFO_Model.H"
 
 using namespace AMEGIC;
 using namespace PHASIC;
@@ -102,8 +103,8 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
 			BEAM::Beam_Spectra_Handler *const beamhandler,
 			PDF::ISR_Handler *const isrhandler)
 {
-  if((model->Name()!="SM")&&(model->Name()!="HEFT"))
-    THROW(fatal_error, "AMEGIC can only be used in built-in models 'SM' and 'HEFT'. Please use Comix instead.");
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model))
+    THROW(fatal_error, "AMEGIC can only be used in built-in models. Please use Comix for UFO models.");
   p_mmodel=model;
   p_amodel = new Amegic_Model(model);
   m_path=path;

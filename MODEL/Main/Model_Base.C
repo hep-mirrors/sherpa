@@ -389,73 +389,32 @@ void Model_Base::InitializeInteractionModel()
 }
 
 int Model_Base::ScalarNumber(const std::string _name) {
-  if (p_numbers->empty()) {
-    msg_Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
-	       <<"   No numbers stored in model "<<m_name<<". Return 0."<<std::endl;
-    return 0;
-  }
   if (p_numbers->count(_name)>0) return (*p_numbers)[_name];
-
-  msg_Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
-	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
-  return 0;
+  THROW(fatal_error, "Key "+_name+" not found");
 }
 
 
 double Model_Base::ScalarConstant(const std::string _name) {
-  if (p_constants->empty()) {
-    msg_Error()<<"Error in Model_Base::ScalarConstant("<<_name<<") : "<<std::endl
-	       <<"   No constants stored in model "<<m_name<<". Return 0."<<std::endl;
-    return 0.;
-  }
   if (p_constants->count(_name)>0) return (*p_constants)[_name];
-
-  msg_Error()<<"Error in Model_Base::ScalarConstant("<<_name<<") : "<<std::endl
-	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
-  return 0.;
+  THROW(fatal_error, "Key "+_name+" not found");
 }
 
 
 Complex Model_Base::ComplexConstant(const std::string _name) {
-  if (p_complexconstants->empty()) {
-    msg_Error()<<"Error in Model_Base::ComplexConstant("<<_name<<") : "<<std::endl
-	       <<"   No constants stored in model "<<m_name<<". Return 0."<<std::endl;
-    return 0.;
-  }
   if (p_complexconstants->count(_name)>0) return (*p_complexconstants)[_name];
-
-  msg_Error()<<"Error in Model_Base::ComplexConstant("<<_name<<") : "<<std::endl
-	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
-  return Complex(0.,0.);
+  THROW(fatal_error, "Key "+_name+" not found");
 }
 
 
 Function_Base * Model_Base::GetScalarFunction(const std::string _name) {
-  if (p_functions->empty()) {
-    msg_Error()<<"Error in Model_Base::ScalarFunction("<<_name<<") : "<<std::endl
-	       <<"   No functions stored in model "<<m_name<<". Return 0."<<std::endl;
-    return NULL;
-  }
   if (p_functions->count(_name)>0) return (*p_functions)[_name];
-
-  msg_Error()<<"Error in Model_Base::ScalarFunction("<<_name<<") : "<<std::endl
-	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
-  return NULL;
+  THROW(fatal_error, "Key "+_name+" not found");
 }
 
 
 double Model_Base::ScalarFunction(const std::string _name,double _t) {
-  if (p_functions->empty()) {
-    msg_Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
-	       <<"   No functions stored in model "<<m_name<<". Return 0\n.";
-    return 0.;
-  }
-  if (p_functions->count(_name)>0) {
-    return (*(*p_functions)[_name])(_t);
-  }
-  msg_Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
-	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
-  return 0.;
+  if (p_functions->count(_name)>0) return (*(*p_functions)[_name])(_t);
+  THROW(fatal_error, "Key "+_name+" not found");
 }
 
 

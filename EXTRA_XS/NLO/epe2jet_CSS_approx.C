@@ -4,6 +4,7 @@
 #include "EXTRA_XS/Main/ME2_Base.H"
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Model_Base.H"
+#include "MODEL/UFO/UFO_Model.H"
 #include "PHASIC++/Process/Process_Info.H"
 #include "ATOOLS/Org/Data_Reader.H"
 
@@ -120,6 +121,7 @@ Tree_ME2_Base *ATOOLS::Getter
 <Tree_ME2_Base,Process_Info,XS_egeqq_CSS_approx>::
 operator()(const Process_Info &pi) const
 {
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   Data_Reader read(" ",";","!","=");
   if (read.GetValue<int>("EXTRAXS_CSS_APPROX_ME",0)==0) return NULL;
   if (pi.m_fi.NLOType()!=nlo_type::lo) return NULL;
@@ -275,6 +277,7 @@ Tree_ME2_Base *ATOOLS::Getter
 <Tree_ME2_Base,Process_Info,XS_eqegq_CSS_approx>::
 operator()(const Process_Info &pi) const
 {
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   Data_Reader read(" ",";","!","=");
   if (read.GetValue<int>("EXTRAXS_CSS_APPROX_ME",0)==0) return NULL;
   if (pi.m_fi.NLOType()!=nlo_type::lo) return NULL;

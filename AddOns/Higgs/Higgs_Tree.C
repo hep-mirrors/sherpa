@@ -5,6 +5,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
+#include "MODEL/UFO/UFO_Model.H"
 
 #include "Wrappers.H"
 #include "dilog.h"
@@ -451,6 +452,7 @@ Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,Higgs_Tree>::
 operator()(const Process_Info &pi) const
 {
   DEBUG_FUNC(pi);
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_loopgenerator!="Higgs") return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo) return NULL;
   if (pi.m_fi.m_nloqcdtype==nlo_type::lo ||

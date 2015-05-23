@@ -5,6 +5,7 @@
 #include "MODEL/Main/Running_AlphaQED.H"
 #include "MODEL/Main/Model_Base.H"
 #include "PHASIC++/Process/Process_Base.H"
+#include "MODEL/UFO/UFO_Model.H"
 
 #include "EXTRA_XS/Main/ME2_Base.H"
 
@@ -37,6 +38,7 @@ DECLARE_TREEME2_GETTER(XS_q1q2_q1q2,"1XS_q1q2_q1q2")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1q2_q1q2>::
 operator()(const Process_Info &pi) const
 {
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo ||
       pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -140,6 +142,7 @@ DECLARE_TREEME2_GETTER(XS_q1qbar1_q2qbar2,"1XS_q1qbar1_q2qbar2")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1qbar1_q2qbar2>::
 operator()(const Process_Info &pi) const
 {
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo ||
       pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -222,6 +225,7 @@ DECLARE_TREEME2_GETTER(XS_q1q1_q1q1,"1XS_q1q1_q1q1")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1q1_q1q1>::
 operator()(const Process_Info &pi) const
 {
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo ||
       pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -323,6 +327,7 @@ DECLARE_TREEME2_GETTER(XS_q1qbar1_q1qbar1,"1XS_q1qbar1_q1qbar1")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1qbar1_q1qbar1>::
 operator()(const Process_Info &pi) const
 {
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo ||
       pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -436,6 +441,7 @@ DECLARE_TREEME2_GETTER(XS_q1qbar1_gg,"1XS_q1qbar1_gg")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1qbar1_gg>::
 operator()(const Process_Info &pi) const
 {
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo ||
       pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -547,6 +553,7 @@ DECLARE_TREEME2_GETTER(XS_gg_q1qbar1,"1XS_gg_q1qbar1")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_gg_q1qbar1>::
 operator()(const Process_Info &pi) const
 {
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo ||
       pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -657,6 +664,7 @@ DECLARE_TREEME2_GETTER(XS_q1g_q1g,"1XS_q1g_q1g")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_q1g_q1g>::
 operator()(const Process_Info &pi) const
 {
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo ||
       pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
@@ -794,6 +802,7 @@ DECLARE_TREEME2_GETTER(XS_gg_gg,"1XS_gg_gg")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_gg_gg>::
 operator()(const Process_Info &pi) const
 {
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.m_nloewtype!=nlo_type::lo ||
       pi.m_fi.m_nloqcdtype!=nlo_type::lo) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();

@@ -2,6 +2,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "MODEL/Main/Model_Base.H"
 #include "ATOOLS/Org/Message.H"
+#include "MODEL/UFO/UFO_Model.H"
 
 #include "EXTRA_XS/Main/ME2_Base.H"
 
@@ -116,6 +117,7 @@ DECLARE_TREEME2_GETTER(XS_ee_ffbar,"XS_ee_ffbar")
 Tree_ME2_Base *ATOOLS::Getter<Tree_ME2_Base,Process_Info,XS_ee_ffbar>::
 operator()(const Process_Info &pi) const
 {
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model)) return NULL;
   if (pi.m_fi.NLOType()!=nlo_type::lo && pi.m_fi.NLOType()!=nlo_type::born) return NULL;
   Flavour_Vector fl=pi.ExtractFlavours();
   if (fl.size()!=4) return NULL;

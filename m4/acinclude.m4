@@ -214,7 +214,9 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   MODELDIR="\${top_srcdir}/MODEL"
   MODELBUILDDIR="\${top_builddir}/MODEL"
   MODELLIBS="-L\${MODELBUILDDIR}/Main \	
-             -lModelMain"
+             -lModelMain \
+	     -L\${MODELBUILDDIR}/UFO \
+	     -lModelUFO"
   AC_SUBST(MODELDIR)
   AC_SUBST(MODELBUILDDIR)
   AC_SUBST(MODELLIBS)

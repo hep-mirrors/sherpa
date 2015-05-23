@@ -6,7 +6,7 @@
 
 namespace UFO{
 
-  class UFO_Model : public MODEL::Model_Base 
+  class UFO_Model : public MODEL::Model_Base
   {
   public:
     
@@ -25,8 +25,8 @@ namespace UFO{
     const Complex im(const Complex& arg);
     const Complex complex(double real, double imag);
 
-    virtual void ParamInit() {    std::cout << "ParamInit" << std::endl;}
-    virtual void ParticleInit() {    std::cout << "ParticleInit" << std::endl;}
+    virtual void ParamInit()    {}
+    virtual void ParticleInit() {}
 
   };
 
