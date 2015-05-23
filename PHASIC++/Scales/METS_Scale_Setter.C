@@ -281,7 +281,6 @@ double METS_Scale_Setter::CalculateStrict
     proc->Shower()->GetClusterDefinitions();
   proc->Generator()->SetClusterDefinitions(cd);
   int camode(cd->AMode()?512:0);
-  if (m_nproc) camode|=512;
   if (m_rproc) camode|=4096;
   if (m_cmoders&1) {
     if (m_rproc) camode|=1;
