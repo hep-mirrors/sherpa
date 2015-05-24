@@ -27,7 +27,7 @@ PDF::CParam QCD_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   double s(2.0*ampl->Leg(0)->Mom()*ampl->Leg(1)->Mom());
   double t(2.0*ampl->Leg(0)->Mom()*ampl->Leg(2)->Mom());
   double u(2.0*ampl->Leg(0)->Mom()*ampl->Leg(3)->Mom());
-  double muf2(-1.0/(1.0/s+1.0/t+1.0/u)), mur2(muf2), q2(muf2);
+  double muf2(-1.0/(1.0/s+1.0/t+1.0/u)/sqrt(2.0)), mur2(muf2), q2(muf2);
   msg_Debugging()<<METHOD<<"(): Set {\n"
 		 <<"  \\mu_f = "<<sqrt(muf2)<<"\n"
 		 <<"  \\mu_r = "<<sqrt(mur2)<<"\n"
