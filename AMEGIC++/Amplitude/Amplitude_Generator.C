@@ -731,7 +731,7 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
     if (hit.size()>hitmax.size())
       hitmax.resize(hit.size(),0);
     for (size_t i(0);i<Min(hit.size(),hitmax.size());++i)
-      if (order.size()<=i || hit[i]<order[i])
+      if (order.size()<=i || hit[i]<=order[i])
 	hitmax[i]=Max(hitmax[i],(double)hit[i]);
     if (!valid ||
 	!CheckTChannels(f1->GetPointlist())) {
