@@ -75,13 +75,17 @@ bool BlackHat_Interface::Initialize
     p_interface->set("Z_width",Flavour(kf_Z).Width());
     p_interface->set("W_mass",Flavour(kf_Wplus).Mass());
     p_interface->set("W_width",Flavour(kf_Wplus).Width());
+#ifdef INCLUDE_COUPLINGS_IN_VIRTUAL
     p_interface->set("H_mass",Flavour(kf_h0).Mass());
     p_interface->set("H_width",Flavour(kf_h0).Width());
+#endif
     double sin_th_2=std::abs(model->ComplexConstant(std::string("csin2_thetaW")));
     p_interface->set("sin_th_2",sin_th_2);
     p_interface->set("alpha_S",model->ScalarConstant("alpha_S"));
     p_interface->set("alpha_QED",model->ScalarConstant("alpha_QED"));
+#ifdef INCLUDE_COUPLINGS_IN_VIRTUAL
     p_interface->set("YUK2",1.0/std::abs(sqr(model->ComplexConstant("cvev"))));
+#endif
     msg_Info()<<"}"<<std::endl;
     BlackHat_Tree::SetInterface(p_interface);
     BlackHat_Virtual::SetInterface(p_interface);
