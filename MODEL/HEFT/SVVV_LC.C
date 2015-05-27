@@ -33,9 +33,9 @@ namespace METOOLS {
     CObject *Evaluate(const CObject_Vector &jj)
     {
       if (p_v->V()->id.back()==0) {
-	const CVec4Type &a(*jj[0]->Get<CVec4Type>());
-	const CVec4Type &b(*jj[1]->Get<CVec4Type>());
-	const CVec4Type &c(*jj[2]->Get<CVec4Type>()); 
+	const CVec4Type &a(*jj[0]->template Get<CVec4Type>());
+	const CVec4Type &b(*jj[1]->template Get<CVec4Type>());
+	const CVec4Type &c(*jj[2]->template Get<CVec4Type>()); 
 	Vec4D pa(p_v->J(0)->P()), pb(p_v->J(1)->P()), pc(p_v->J(2)->P());
 	CScalarType *j(CScalarType::New
 		       ((a*b)*(c*(pa-pb))+
@@ -44,9 +44,9 @@ namespace METOOLS {
 	j->SetS(a.S()|b.S()|c.S());
 	return j;
       }
-      const CVec4Type &a(*jj[m_n[1]]->Get<CVec4Type>());
-      const CVec4Type &b(*jj[m_n[2]]->Get<CVec4Type>());
-      const CScalarType &e(*jj[m_n[0]]->Get<CScalarType>()); 
+      const CVec4Type &a(*jj[m_n[1]]->template Get<CVec4Type>());
+      const CVec4Type &b(*jj[m_n[2]]->template Get<CVec4Type>());
+      const CScalarType &e(*jj[m_n[0]]->template Get<CScalarType>()); 
       Vec4D pa(p_v->J(m_n[1])->P()), pb(p_v->J(m_n[2])->P());
       Vec4D pe(p_v->J(m_n[0])->P());
       CVec4Type *j(CVec4Type::New
