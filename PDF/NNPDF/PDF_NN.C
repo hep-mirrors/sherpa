@@ -207,8 +207,9 @@ PDF_Base *NNPDF_Getter::operator()
   if (args.m_set == "NNPDF30NLO") {
     gfile = std::string("NNPDF30_nlo_as_0118");
     pdfsetprefix=260000;
-    if (args.m_member>100 || args.m_member <0)
+    if (args.m_member>100 || args.m_member <0) {
       THROW(fatal_error,"PDF_SET_MEMBER out of range [0,100].");
+    }
   }
   else if (args.m_set == "NNPDF30NNLO") {
     gfile = std::string("NNPDF30_nnlo_as_0118");
