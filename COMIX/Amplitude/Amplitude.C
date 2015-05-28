@@ -1714,7 +1714,8 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
       while (!p_colint->GeneratePoint());
       SetColors(p_colint->I(),p_colint->J());
       if (!GaugeTest(moms,1)) return false;
-      if (m_res!=0.0) cnt=false;
+      double res(m_born?m_born:m_res);
+      if (res!=0.0) cnt=false;
       if (cnt) {
 	if (++nt>100) 
 	  msg_Error()<<METHOD<<"(): Zero result. Redo gauge test."<<std::endl;
@@ -1732,20 +1733,21 @@ bool Amplitude::GaugeTest(const Vec4D_Vector &moms,const int mode)
   SetGauge(1);
   SetMomenta(moms);
   if (!EvaluateAll()) return false;
-  double res(m_res);
+  double res(m_born?m_born:m_res);
   if (m_pmode=='D') Spinor<double>::ResetGauge();
   SetGauge(0);
   SetMomenta(moms);
   if (!EvaluateAll()) return false;
+  double res2(m_born?m_born:m_res);
   msg_Debugging()<<METHOD<<"(): {\n";
-  msg_Debugging()<<"  \\sigma_{tot} = "<<m_res<<" vs. "<<res
-		 <<" -> dev. "<<m_res/res-1.0<<"\n";
-  if (!IsEqual(m_res,res)) {
+  msg_Debugging()<<"  \\sigma_{tot} = "<<res<<" vs. "<<res2
+                 <<" -> dev. "<<res2/res-1.0<<"\n";
+  if (!IsEqual(res2,res)) {
     msg_Error().precision(12);
     msg_Error()<<"\n"<<METHOD<<"(): Large deviation {\n      "
-	       <<std::setw(18)<<std::right<<m_res<<"\n   vs "
+               <<std::setw(18)<<std::right<<res2<<"\n   vs "
 	       <<std::setw(18)<<res<<"\n   => "<<std::setw(18)
-	       <<(m_res/res-1.0)<<"\n}"<<std::left<<std::endl;
+	       <<(res2/res-1.0)<<"\n}"<<std::left<<std::endl;
     msg_Error().precision(6);
     return true;
   }
