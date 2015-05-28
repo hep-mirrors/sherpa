@@ -354,6 +354,8 @@ double Scale_Variations::Calculate(const ATOOLS::mewgttype::code& type,
   // reset MODEL::as to hard process
   MODEL::as->SetActiveAs(PDF::isr::hard_process);
   double asnew((*as)(muR2new)),asold((*MODEL::as)(muR2));
+  msg_Debugging()<<"asold="<<asold<<std::endl;
+  msg_Debugging()<<"asnew="<<asnew<<std::endl;
   if (nometstype==mewgttype::none) { // B,R,S
     double asf=pow(asnew/asold,oqcd);
     msg_Debugging()<<"asf = "<<asf<<std::endl;
@@ -403,49 +405,51 @@ double Scale_Variations::Calculate(const ATOOLS::mewgttype::code& type,
     for (int i(0);i<8;++i) w[i]=kpwgts[i]+kpwgts[i+8]*lf;
     double faq(0.0), faqx(0.0), fag(0.0), fagx(0.0);
     double fbq(0.0), fbqx(0.0), fbg(0.0), fbgx(0.0);
-    if (w[0]!=0. || w[1]!=0. || w[2]!=0. || w[3]!=0.) {
-      Flavour flav1(abs(fl1),fl1<0);
-      if (flav1.IsQuark()) {
-        faq=fa;
-        fag=pdf1->GetXPDF(m_gluon)/x1;
-        pdf1->Calculate(x1/x1p,muF12new);
-        faqx=pdf1->GetXPDF(fl1)/x1;
-        fagx=pdf1->GetXPDF(m_gluon)/x1;
+    if (fa>0. && fb>0.) {
+      if (w[0]!=0. || w[1]!=0. || w[2]!=0. || w[3]!=0.) {
+        Flavour flav1(abs(fl1),fl1<0);
+        if (flav1.IsQuark()) {
+          faq=fa;
+          fag=pdf1->GetXPDF(m_gluon)/x1;
+          pdf1->Calculate(x1/x1p,muF12new);
+          faqx=pdf1->GetXPDF(fl1)/x1;
+          fagx=pdf1->GetXPDF(m_gluon)/x1;
+        }
+        else if (flav1.IsGluon()) {
+          fag=fa;
+          for (size_t i=0;i<m_quark.Size();++i)
+            faq+=pdf1->GetXPDF(m_quark[i])/x1;
+          pdf1->Calculate(x1/x1p,muF12new);
+          fagx=pdf1->GetXPDF(fl1)/x1;
+          for (size_t i=0;i<m_quark.Size();++i)
+            faqx+=pdf1->GetXPDF(m_quark[i])/x1;
+        }
+        else THROW(not_implemented,
+                   std::string("Change of scales not implemented for ")
+                   +ToString(fl1));
       }
-      else if (flav1.IsGluon()) {
-        fag=fa;
-        for (size_t i=0;i<m_quark.Size();++i)
-          faq+=pdf1->GetXPDF(m_quark[i])/x1;
-        pdf1->Calculate(x1/x1p,muF12new);
-        fagx=pdf1->GetXPDF(fl1)/x1;
-        for (size_t i=0;i<m_quark.Size();++i)
-          faqx+=pdf1->GetXPDF(m_quark[i])/x1;
+      if (w[4]!=0. || w[5]!=0. || w[6]!=0. || w[7]!=0.) {
+        Flavour flav2(abs(fl2),fl2<0);
+        if (flav2.IsQuark()) {
+          fbq=fb;
+          fbg=pdf2->GetXPDF(m_gluon)/x2;
+          pdf2->Calculate(x2/x2p,muF22new);
+          fbqx=pdf2->GetXPDF(fl2)/x2;
+          fbgx=pdf2->GetXPDF(m_gluon)/x2;
+        }
+        else if (flav2.IsGluon()) {
+          fbg=fb;
+          for (size_t i=0;i<m_quark.Size();++i)
+            fbq+=pdf2->GetXPDF(m_quark[i])/x2;
+          pdf2->Calculate(x2/x2p,muF22new);
+          fbgx=pdf2->GetXPDF(fl2)/x2;
+          for (size_t i=0;i<m_quark.Size();++i)
+            fbqx+=pdf2->GetXPDF(m_quark[i])/x2;
+        }
+        else THROW(not_implemented,
+                   std::string("Change of scales not implemented for ")
+                   +ToString(fl2));
       }
-      else THROW(not_implemented,
-                 std::string("Change of scales not implemented for ")
-                 +ToString(fl1));
-    }
-    if (w[4]!=0. || w[5]!=0. || w[6]!=0. || w[7]!=0.) {
-      Flavour flav2(abs(fl2),fl2<0);
-      if (flav2.IsQuark()) {
-        fbq=fb;
-        fbg=pdf2->GetXPDF(m_gluon)/x2;
-        pdf2->Calculate(x2/x2p,muF22new);
-        fbqx=pdf2->GetXPDF(fl2)/x2;
-        fbgx=pdf2->GetXPDF(m_gluon)/x2;
-      }
-      else if (flav2.IsGluon()) {
-        fbg=fb;
-        for (size_t i=0;i<m_quark.Size();++i)
-          fbq+=pdf2->GetXPDF(m_quark[i])/x2;
-        pdf2->Calculate(x2/x2p,muF22new);
-        fbgx=pdf2->GetXPDF(fl2)/x2;
-        for (size_t i=0;i<m_quark.Size();++i)
-          fbqx+=pdf2->GetXPDF(m_quark[i])/x2;
-      }
-      else THROW(not_implemented,
-                 std::string("Change of scales not implemented for ")
-                 +ToString(fl2));
     }
     double KPnew(0.);
     KPnew+=(faq*w[0]+faqx*w[1]+fag*w[2]+fagx*w[3])*fb;

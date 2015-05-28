@@ -281,6 +281,7 @@ double KP_Terms::Get(const double &x0,const double &x1,
 		     const ATOOLS::Flavour_Vector &flav,
 		     const int mode)
 {
+  DEBUG_FUNC("");
   bool sa=flav[0].Strong();
   bool sb=flav[1].Strong();
   PDF::PDF_Base *pdfa(p_proc->Integrator()->ISR()->PDF(mode));
@@ -313,7 +314,14 @@ double KP_Terms::Get(const double &x0,const double &x1,
     }
     pdfa->Calculate(eta0,muf);
     fa  = pdfa->GetXPDF(flav[0])/eta0;
-    if ((m_cemode && IsZero(fa,1.0e-16)) || !(fa>0.)) return 0.;
+    if (m_cemode && IsZero(fa,1.0e-16)) {
+      msg_Tracking()<<METHOD<<"(): fa is zero, fa = "<<fa<<std::endl;
+      return 0.;
+    }
+    if (!(fa>0.)) {
+      msg_Tracking()<<METHOD<<"(): fa is not pos. definite, fa = "<<fa<<std::endl;
+      return 0.;
+    }
     fag = pdfa->GetXPDF(gluon)/eta0;
     if (flav[0].IsQuark()) faq = fa;
     else {
@@ -343,7 +351,14 @@ double KP_Terms::Get(const double &x0,const double &x1,
     }
     pdfb->Calculate(eta1,muf);
     fb = pdfb->GetXPDF(flav[1])/eta1;
-    if ((m_cemode && IsZero(fb,1.0e-16)) || !(fb>0.)) return 0.;
+    if (m_cemode && IsZero(fb,1.0e-16)) {
+      msg_Tracking()<<METHOD<<"(): fb is zero, fb = "<<fb<<std::endl;
+      return 0.;
+    }
+    if (!(fb>0.)) {
+      msg_Tracking()<<METHOD<<"(): fb is not pos. definite, fb = "<<fb<<std::endl;
+      return 0.;
+    }
     fbg = pdfb->GetXPDF(gluon)/eta1;
     if (flav[1].IsQuark()) fbq = fb;
     else {
