@@ -273,8 +273,6 @@ void Model_Base::AddStandardContainers()
 {
   s_kftable[kf_resummed] = new
     Particle_Info(kf_resummed,0.,0.,0,1,2,1,1,1,0,"r","r","r","r",0,1);
-  s_kftable[kf_fermion] = new
-    Particle_Info(kf_fermion,0.,0., 0,0,1,0,1,1,0,"f","f","f","f",1,1);
   s_kftable[kf_jet] = new
     Particle_Info(kf_jet,0.,0.,0,1, 2,1,1,1,0,"j","j","j","j",1,1);
   s_kftable[kf_quark] = new
@@ -283,8 +281,9 @@ void Model_Base::AddStandardContainers()
     Particle_Info(kf_lepton,0.,0.,-3,0,1,0,1,1,0,"l","l","l","l",1,1);
   s_kftable[kf_neutrino] = new
     Particle_Info(kf_neutrino,0.,0.,0,0, 1,0,1,1,0,"v","v","v","v",1,1);
+  s_kftable[kf_lepton]->m_priority=2;
+  s_kftable[kf_neutrino]->m_priority=1;
   s_kftable[kf_resummed]->Clear();
-  s_kftable[kf_fermion]->Clear();
   s_kftable[kf_jet]->Clear();
   s_kftable[kf_quark]->Clear();
   s_kftable[kf_lepton]->Clear();
@@ -298,8 +297,6 @@ void Model_Base::AddStandardContainers()
         s_kftable[kf_jet]->Add(addit.Bar());
         s_kftable[kf_quark]->Add(addit);
         s_kftable[kf_quark]->Add(addit.Bar());
-        s_kftable[kf_fermion]->Add(addit);
-        s_kftable[kf_fermion]->Add(addit.Bar());
       }
       else {
         msg_Info()<<"Ignoring "<<addit<<" due to JET_MASS_THRESHOLD.\n";
@@ -313,8 +310,11 @@ void Model_Base::AddStandardContainers()
     if ((addit.Mass()==0.0 || !addit.IsMassive()) && addit.IsOn()) {
       s_kftable[kf_lepton]->Add(addit);
       s_kftable[kf_lepton]->Add(addit.Bar());
-      s_kftable[kf_fermion]->Add(addit);
-      s_kftable[kf_fermion]->Add(addit.Bar());
+      if (s_kftable[i]->m_priority)
+	msg_Error()<<METHOD<<"(): Changing "<<addit<<" sort priority: "
+		   <<s_kftable[i]->m_priority<<" -> "
+		   <<s_kftable[kf_lepton]->m_priority<<std::endl;
+      s_kftable[i]->m_priority=s_kftable[kf_lepton]->m_priority;
     }
   }
   for (int i=12;i<17;i+=2) {
@@ -322,8 +322,11 @@ void Model_Base::AddStandardContainers()
     if ((addit.Mass()==0.0) && addit.IsOn()) {
       s_kftable[kf_neutrino]->Add(addit);
       s_kftable[kf_neutrino]->Add(addit.Bar());
-      s_kftable[kf_fermion]->Add(addit);
-      s_kftable[kf_fermion]->Add(addit.Bar());
+      if (s_kftable[i]->m_priority)
+	msg_Error()<<METHOD<<"(): Changing "<<addit<<" sort priority: "
+		   <<s_kftable[i]->m_priority<<" -> "
+		   <<s_kftable[kf_neutrino]->m_priority<<std::endl;
+      s_kftable[i]->m_priority=s_kftable[kf_neutrino]->m_priority;
     }
   }
 }
@@ -362,6 +365,11 @@ void Model_Base::CustomContainerInit()
       msg_Debugging()<<" "<<helpsvv[i][j];
       long int kfc(ToType<long int>(helpsvv[i][j]));
       s_kftable[nkf]->Add(Flavour((kf_code)abs(kfc),kfc<0));
+      if (s_kftable[kfc]->m_priority)
+	msg_Error()<<METHOD<<"(): Changing "<<Flavour(kfc)<<" sort priority: "
+		   <<s_kftable[kfc]->m_priority<<" -> "
+		   <<s_kftable[nkf]->m_priority<<std::endl;
+      s_kftable[kfc]->m_priority=s_kftable[nkf]->m_priority;
     }
     s_kftable[nkf]->SetIsGroup(true);
     msg_Debugging()<<" }\n";
