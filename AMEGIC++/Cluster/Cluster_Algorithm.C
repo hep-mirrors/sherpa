@@ -197,7 +197,7 @@ void Cluster_Algorithm::CreateTables
     m_decids=p_proc->DecayInfos();
     p_combi = new Combine_Table(p_proc,p_ms,p_clus,amoms,0,&m_decids);
     p_combi->FillTable(legs,nlegs,nampl);   
-    p_ct = p_combi->CalcJet(nlegs,NULL,mode,(mode&512)?1:((mode&16384)?1:0)); 
+    p_ct = p_combi->CalcJet(nlegs,NULL,mode,(mode&512)?1:0); 
     if (p_ct==NULL && !(mode&512)) {
       msg_Debugging()<<"trying unordered configuration (top level)\n";
       p_ct = p_combi->CalcJet(nlegs,NULL,mode,0); 
@@ -205,7 +205,7 @@ void Cluster_Algorithm::CreateTables
   }
   else {
     // use the existing combination table and determine best combination sheme
-    p_ct = p_combi->CalcJet(nlegs,amoms,mode,(mode&512)?1:((mode&16384)?1:0));
+    p_ct = p_combi->CalcJet(nlegs,amoms,mode,(mode&512)?1:0);
     if (p_ct==NULL && !(mode&512)) {
       msg_Debugging()<<"trying unordered configuration (top level)\n";
       p_ct = p_combi->CalcJet(nlegs,NULL,mode,0); 
