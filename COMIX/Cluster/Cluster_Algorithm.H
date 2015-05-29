@@ -68,7 +68,7 @@ namespace COMIX {
 
     SizeT_Map m_id;
 
-    size_t m_wmode, m_corecheck, m_nocluster, m_nmin;
+    size_t m_wmode, m_corecheck, m_nocluster, m_ofirst, m_nmin;
     double m_lfrac;
 
     ATOOLS::ColorID GetColor(Current *const j,
@@ -91,13 +91,14 @@ namespace COMIX {
 			   const SizeT_Map &cid);
     bool CombineWinner(const Cluster_Info &ci,Current_Vector &ccurs,
 		       Current *&fcur,ClusterInfo_Map &cinfo);
+    bool CheckOrdering(KT2Info_Vector &kt2ord,KT2Info_Vector &nkt2ord) const;
     bool ClusterStep(const size_t &step,Vertex_Set &nocl,
 		     Current_Vector &ccurs,Current *&fcur,
 		     ClusterInfo_Map &cinfo,Double_Map &kt2);
     bool Cluster(const size_t &step,const Vertex_Set &nocl,
 		 const Current_Vector &ccurs,Current *const fcur,
 		 const ClusterInfo_Map &cinfo,KT2Info_Vector &kt2ord,
-		 const int complete);
+		 const int ord);
 
     void SetNMax(ATOOLS::Cluster_Amplitude *const ampl,
 		 const size_t &id,const size_t &nmax) const;
