@@ -76,7 +76,7 @@ namespace SHERPA {
 
   class Scale_Variations {
   private:
-    bool m_on,m_loadlhapdf,m_ckkw;
+    bool m_on,m_loadlhapdf,m_ckkw,m_kpnegativepdf;
     ATOOLS::Flavour m_gluon,m_quark;
     NamedScaleVariationMap * p_nsvmap;
 

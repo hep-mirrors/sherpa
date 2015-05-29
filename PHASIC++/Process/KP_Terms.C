@@ -2,6 +2,7 @@
 
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 
 using namespace PHASIC;
@@ -36,6 +37,18 @@ KP_Terms::KP_Terms(Process_Base *const proc,const int mode):
     if (p_proc->Flavours()[i].Strong()) m_plist.push_back(i);
   for (int i=0;i<8;i++) m_kpca[i]=0.;
   for (int i=0;i<8;i++) m_kpcb[i]=0.;
+
+  // read whether we should accept PDFs that are not positive definite
+  Data_Reader reader(" ",";","!","=");
+  reader.AddComment("#");
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+  int helpi;
+  m_negativepdf = false;
+  if (reader.ReadFromFile(helpi,"KP_ACCEPT_NEGATIVE_PDF")) {
+    m_negativepdf = helpi;
+    msg_Tracking()<<"Set KP-term accepts negative PDF "<<m_negativepdf<<" . "<<std::endl;
+  }
 }
 
 KP_Terms::~KP_Terms()
@@ -318,7 +331,7 @@ double KP_Terms::Get(const double &x0,const double &x1,
       msg_Tracking()<<METHOD<<"(): fa is zero, fa = "<<fa<<std::endl;
       return 0.;
     }
-    if (!(fa>0.)) {
+    if (!m_negativepdf && !(fa>0.)) {
       msg_Tracking()<<METHOD<<"(): fa is not pos. definite, fa = "<<fa<<std::endl;
       return 0.;
     }
@@ -355,7 +368,7 @@ double KP_Terms::Get(const double &x0,const double &x1,
       msg_Tracking()<<METHOD<<"(): fb is zero, fb = "<<fb<<std::endl;
       return 0.;
     }
-    if (!(fb>0.)) {
+    if (!m_negativepdf && !(fb>0.)) {
       msg_Tracking()<<METHOD<<"(): fb is not pos. definite, fb = "<<fb<<std::endl;
       return 0.;
     }

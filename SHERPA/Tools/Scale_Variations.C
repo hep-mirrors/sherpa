@@ -91,7 +91,7 @@ std::string Scale_Variation::GenerateName()
 }
 
 Scale_Variations::Scale_Variations() :
-  m_on(false), m_loadlhapdf(true), m_ckkw(false),
+  m_on(false), m_loadlhapdf(true), m_ckkw(false), m_kpnegativepdf(false),
   m_quark(Flavour(kf_quark)), m_gluon(Flavour(kf_gluon)),
   p_nsvmap(new NamedScaleVariationMap())
 {
@@ -118,6 +118,18 @@ Scale_Variations::Scale_Variations() :
   if (reader.ReadFromFile(path,"LHAPDF_GRID_PATH")) LHAPDF::setPaths(path);
   const std::vector<std::string>& avsets(LHAPDF::availablePDFSets());
 #endif
+
+  // read whether we should accept PDFs that are not positive definite
+  Data_Reader me_reader(" ",";","!","=");
+  me_reader.AddComment("#");
+  me_reader.SetInputPath(rpa->GetPath());
+  me_reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+  int helpi;
+  if (me_reader.ReadFromFile(helpi,"KP_ACCEPT_NEGATIVE_PDF")) {
+    m_kpnegativepdf = helpi;
+    msg_Tracking()<<"Set reweighted KP-term accepts negative PDF "<<m_kpnegativepdf<<" . "<<std::endl;
+  }
+
   for (size_t i(0);i<vars.size();++i) {
     std::string cur(vars[i]);
     size_t pos1(cur.find(",",0));
@@ -405,7 +417,7 @@ double Scale_Variations::Calculate(const ATOOLS::mewgttype::code& type,
     for (int i(0);i<8;++i) w[i]=kpwgts[i]+kpwgts[i+8]*lf;
     double faq(0.0), faqx(0.0), fag(0.0), fagx(0.0);
     double fbq(0.0), fbqx(0.0), fbg(0.0), fbgx(0.0);
-    if (fa>0. && fb>0.) {
+    if (m_kpnegativepdf || (fa>0. && fb>0.)) {
       if (w[0]!=0. || w[1]!=0. || w[2]!=0. || w[3]!=0.) {
         Flavour flav1(abs(fl1),fl1<0);
         if (flav1.IsQuark()) {
