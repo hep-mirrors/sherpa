@@ -607,6 +607,8 @@ bool Cluster_Algorithm::Cluster
   p_bg->ResetZero();
   Current_Vector ccurs(p_bg->Currents()[1]);
   Current *fcur(p_bg->Currents().back().front());
+  for (size_t i(0);fcur->Sub();fcur=p_bg->Currents().back()[++i]);
+  if (fcur->Sub()) THROW(fatal_error,"No real current found");
   p_ampl = Cluster_Amplitude::New();
   p_ampl->SetMS(p_ms);
   p_ampl->SetJF(jf);
