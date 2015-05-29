@@ -61,5 +61,14 @@ nobase_dist_examples_DATA         =	\
 		H_in_TTBar/LHC_TTH_MCatNLO/Run.dat \
 		Tops_plus_Jets/LHC_Tops/Run.dat \
 		Tops_plus_V/LHC_TTW/Run.dat \
-		UFO_MSSM/MSSM/*.py
-
+		UFO_MSSM/MSSM/__init__.py \
+		UFO_MSSM/MSSM/build_restrict.py \
+		UFO_MSSM/MSSM/coupling_orders.py \
+		UFO_MSSM/MSSM/couplings.py \
+		UFO_MSSM/MSSM/function_library.py \
+		UFO_MSSM/MSSM/lorentz.py \
+		UFO_MSSM/MSSM/object_library.py \
+		UFO_MSSM/MSSM/parameters.py \
+		UFO_MSSM/MSSM/particles.py \
+		UFO_MSSM/MSSM/vertices.py \
+		UFO_MSSM/MSSM/write_param_card.py
