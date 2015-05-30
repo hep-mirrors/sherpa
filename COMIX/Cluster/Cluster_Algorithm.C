@@ -756,8 +756,9 @@ bool Cluster_Algorithm::Cluster
 	    p_ampl->DeleteNext();
 	    continue;
 	  }
-	if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo,nkt2ord,1) ||
-	    (ord==0 && Cluster(step+1,nocl,nccurs,nfcur,ncinfo,nkt2ord,0)))
+	if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo,nkt2ord,m_ofirst))
+	  return true;
+	if (m_ofirst && Cluster(step+1,nocl,nccurs,nfcur,ncinfo,nkt2ord,0))
 	  return true;
 	p_ampl=ampl;
 	p_ampl->DeleteNext();
