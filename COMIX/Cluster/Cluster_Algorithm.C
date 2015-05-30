@@ -123,8 +123,7 @@ ColorID_Vector Cluster_Algorithm::Connected
 
 CParam Cluster_Algorithm::GetMeasure
 (const size_t &idi,const size_t &idj,const size_t &idk,
- const ATOOLS::Flavour &mofl,Double_Map &kt2,const SizeT_Map &cid,
- int cut,const size_t &step)
+ const ATOOLS::Flavour &mofl,Double_Map &kt2,const SizeT_Map &cid,int cut)
 {
   Double_Map::const_iterator iit(kt2.find(idi));
   if (iit!=kt2.end()) {
@@ -153,8 +152,7 @@ CParam Cluster_Algorithm::GetMeasure
 		     (m_wmode&1024)||nlo?1:-1,
 		     (p_xs->Parent()->Info().m_fi.
 		      m_nloqcdtype!=PHASIC::nlo_type::lo?16:0)|
-		     ((m_wmode&4096) && step==2?32:0)|
-		     ((cut||!mmofl.Strong())?1:0)|(nlo?4:0));
+		     ((cut||!mmofl.Strong())?1:0)|(nlo?32:0));
   }
   else {
     p_ampl->SetProc(p_xs);
@@ -229,7 +227,7 @@ void Cluster_Algorithm::CalculateMeasures
 	    if (colij.size()) {
 	      CParam ckt2(GetMeasure(m_id[l?idi:idj],m_id[l?idj:idi],idk,
 				     in[j]->JC()->Flav(),kt2,cid,
-				     in[j]->JC()->Cut(),step));
+				     in[j]->JC()->Cut()));
 	      cinfo.insert(ClusterInfo_Pair
 			   (Cluster_Key(l?idi:idj,l?idj:idi),
 			    Cluster_Info(in[j],idk,ckt2,in[j]->Order(1),
@@ -282,7 +280,7 @@ void Cluster_Algorithm::CalculateMeasures
 		Connected(l?coli:colj,l?colj:coli,colk,mofl);
 	      if (colij.size()) {
 		CParam ckt2(GetMeasure(m_id[l?idi:idj],m_id[l?idj:idi],
-				       idk,mofl,kt2,cid,0,step));
+				       idk,mofl,kt2,cid,0));
 		cinfo.insert(ClusterInfo_Pair
 			     (Cluster_Key(l?idi:idj,l?idj:idi),
 			      Cluster_Info(in[j],idk,ckt2,in[j]->Order(1),

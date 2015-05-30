@@ -548,7 +548,7 @@ CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit,int mode)
        (mode&1024)||((mode&4096)&&p_up==NULL)?1:-1,
        (cit->second.m_dec>10||!cit->second.m_mo.Strong()?1:0)|
        (p_proc->Parent()->Info().m_fi.m_nloqcdtype!=PHASIC::nlo_type::lo?16:0)|
-       ((mode&4096)&&p_up==NULL?4:0));
+       ((mode&4096)&&p_up==NULL?32:0));
     msg_Debugging()<<"Calculate m_perp("<<cit->first.m_i<<"["
 		   <<p_legs[0][cit->first.m_i].Flav()<<"],"
 		   <<cit->first.m_j<<"["<<p_legs[0][cit->first.m_j].Flav()<<"],"

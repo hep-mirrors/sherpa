@@ -82,8 +82,7 @@ namespace COMIX {
     
     PDF::CParam GetMeasure(const size_t &idi,const size_t &idj,
 			   const size_t &idk,const ATOOLS::Flavour &mofl,
-			   Double_Map &kt2,const SizeT_Map &cid,
-			   int cut,const size_t &step);
+			   Double_Map &kt2,const SizeT_Map &cid,int cut);
 
     void CalculateMeasures(const size_t &step,const Vertex_Set &nocl,
 			   const Current_Vector &curs,Current *const fcur,
