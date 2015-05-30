@@ -153,7 +153,7 @@ CParam Cluster_Algorithm::GetMeasure
 		     (m_wmode&1024)||nlo?1:-1,
 		     (p_xs->Parent()->Info().m_fi.
 		      m_nloqcdtype!=PHASIC::nlo_type::lo?16:0)|
-		     (p_xs!=p_proc && step==2?32:0)|
+		     ((m_wmode&4096) && step==2?32:0)|
 		     ((cut||!mmofl.Strong())?1:0)|(nlo?4:0));
   }
   else {
