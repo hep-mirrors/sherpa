@@ -16,8 +16,8 @@ using namespace PDF;
 using namespace ATOOLS;
 
 CS_Cluster_Definitions::CS_Cluster_Definitions
-(Shower *const shower,const int kmode,const int meweight,const int pdfcheck,const int kfmode):
-  p_shower(shower), m_kmode(kmode), m_meweight(meweight), m_pdfcheck(pdfcheck), m_kfmode(kfmode) {}
+(Shower *const shower,const int kmode,const int pdfcheck,const int kfmode):
+  p_shower(shower), m_kmode(kmode), m_pdfcheck(pdfcheck), m_kfmode(kfmode) {}
 
 CParam CS_Cluster_Definitions::KPerp2
 (const Cluster_Amplitude &ampl,int i,int j,int k,
@@ -142,67 +142,7 @@ CS_Parameters CS_Cluster_Definitions::KT2
   }
   cs.m_col=col;
   KernelWeight(i,j,k,mo,cs,kmode);
-  if (cs.m_wk>0.0 && ((m_meweight&1) && (kmode&2))) {
-    Cluster_Amplitude *campl(Cluster_Amplitude::New());
-    campl->SetProcs(ampl->Procs<void>());
-    campl->Decays()=ampl->Decays();
-    campl->SetNIn(ampl->NIn());
-    campl->SetMuR2(sqr(rpa->gen.Ecms()));
-    campl->SetMuF2(sqr(rpa->gen.Ecms()));
-    campl->SetMuQ2(sqr(rpa->gen.Ecms()));
-    for (size_t l(0), m(0);m<ampl->Legs().size();++m) {
-      Cluster_Leg *lm(ampl->Leg(m));
-      if (lm==j) continue;
-      if (lm==i) campl->CreateLeg((i->Id()&3)?-lt.m_pi:lt.m_pi,mo);
-      else if (lm==k) campl->CreateLeg((k->Id()&3)?-lt.m_pk:lt.m_pk,lm->Flav());
-      else campl->CreateLeg(lt.m_lam*ampl->Leg(m)->Mom(),lm->Flav());
-      ++l;
-    }
-#ifndef DEBUG__Differential
-    int olv(msg->Level());
-    msg->SetLevel(2);
-#endif
-    double me=Differential(campl,kmode);
-#ifndef DEBUG__Differential
-    msg->SetLevel(olv);
-#endif
-    if (me) cs.m_ws/=me;
-    else cs.m_ws=-1.0;
-    campl->Delete();
-    msg_Debugging()<<"ME = "<<me<<" -> "<<1.0/cs.m_ws<<" ("
-		   <<(cs.m_ws>0.0?sqrt(cs.m_ws):-sqrt(-cs.m_ws))<<")\n";
-  }
   return cs;
-}
-
-double CS_Cluster_Definitions::Differential
-(Cluster_Amplitude *const ampl,const int kmode) const
-{
-  NLOTypeStringProcessMap_Map *procs
-    (ampl->Procs<NLOTypeStringProcessMap_Map>());
-  if (procs==NULL) return 1.0;
-  nlo_type::code type=nlo_type::lo;
-  if (procs->find(type)==procs->end()) return 0.0;
-  Process_Base::SortFlavours(ampl);
-  int rm(ampl->Leg(0)->Mom()[3]<0.0?0:1024);
-  std::string pname(Process_Base::GenerateName(ampl));
-  StringProcess_Map::const_iterator pit((*(*procs)[type]).find(pname));
-  if (pit==(*(*procs)[type]).end()) return 0.0;
-  int cm(pit->second->NOut()>pit->second->Info().m_fi.NMinExternal()?1|64:0);
-  if (kmode&4) cm&=~1;
-  if (!(m_meweight&2)) {
-    SP(Color_Integrator) colint
-      (pit->second->Integrator()->ColorIntegrator());
-    if (!(colint==NULL)) {
-      while (!colint->GeneratePoint());
-      Int_Vector ni(colint->I()), nj(colint->J());
-      for (size_t i(0);i<ampl->Legs().size();++i)
-	ampl->Leg(i)->SetCol(ColorID(ni[i],nj[i]));
-    }
-  }
-  double meps=pit->second->Differential(*ampl,cm|2|4|((m_meweight&2)?64:0)|rm);
-  meps*=pit->second->SymFac();
-  return meps;
 }
 
 double CS_Cluster_Definitions::GetX

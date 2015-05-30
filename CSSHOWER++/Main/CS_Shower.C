@@ -44,8 +44,6 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   if (m_respectq2!=1) msg_Info()<<METHOD<<"(): Set respect Q2 mode "<<m_respectq2<<"\n";
   int amode(_dataread->GetValue<int>("EXCLUSIVE_CLUSTER_MODE",0));
   if (amode!=0) msg_Info()<<METHOD<<"(): Set exclusive cluster mode "<<amode<<".\n";
-  int meweight=_dataread->GetValue<int>("CSS_MEWMODE",0);
-  if (meweight!=1) msg_Info()<<METHOD<<"(): Set ME weight mode "<<meweight<<"\n";
   int ckfmode=_dataread->GetValue<int>("CSS_CKFMODE",1);
   if (ckfmode!=1) msg_Info()<<METHOD<<"(): Set cluster KF mode "<<ckfmode<<"\n";
   int pdfcheck=_dataread->GetValue<int>("CSS_PDFCHECK",1);
@@ -63,7 +61,7 @@ CS_Shower::CS_Shower(PDF::ISR_Handler *const _isr,
   
   p_next = new All_Singlets();
 
-  p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode,meweight,pdfcheck,ckfmode);
+  p_cluster = new CS_Cluster_Definitions(p_shower,m_kmode,pdfcheck,ckfmode);
   p_cluster->SetAMode(amode);
 
   if (csmode) p_cs = new Color_Setter(csmode);
@@ -711,7 +709,7 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
 		      (k<ampl->NIn()?cstp::FI:cstp::FF));
 	if ((lk->Flav().Strong() &&
 	     li->Flav().Strong() && lj->Flav().Strong()) ||
-	    (mode==0 && p_shower->GetSudakov()->HasKernel(fi,fj,fk,et))) {
+	    (p_shower->GetSudakov()->HasKernel(fi,fj,fk,et))) {
 	  double q2ijk(Qij2(li->Mom(),lj->Mom(),lk->Mom(),
 			    li->Flav(),lj->Flav()));
  	  msg_Debugging()<<"Q_{"<<ID(li->Id())<<ID(lj->Id())
