@@ -51,6 +51,9 @@ namespace CSSHOWER {
 		     const ATOOLS::Cluster_Leg *lk,
 		     const ATOOLS::Flavour &mo) const;
 
+    double Differential(ATOOLS::Cluster_Amplitude *const ampl,
+			const int mode) const;
+
   public:
     
     CS_Cluster_Definitions(Shower *const shower,const int kmode,

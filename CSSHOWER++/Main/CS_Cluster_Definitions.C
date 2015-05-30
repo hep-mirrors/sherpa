@@ -142,7 +142,54 @@ CS_Parameters CS_Cluster_Definitions::KT2
   }
   cs.m_col=col;
   KernelWeight(i,j,k,mo,cs,kmode);
+  if (cs.m_wk>0.0 && (kmode&32)) {
+    Cluster_Amplitude *campl(Cluster_Amplitude::New());
+    campl->SetProcs(ampl->Procs<void>());
+    campl->Decays()=ampl->Decays();
+    campl->SetNIn(ampl->NIn());
+    campl->SetMuR2(sqr(rpa->gen.Ecms()));
+    campl->SetMuF2(sqr(rpa->gen.Ecms()));
+    campl->SetMuQ2(sqr(rpa->gen.Ecms()));
+    for (size_t l(0), m(0);m<ampl->Legs().size();++m) {
+      Cluster_Leg *lm(ampl->Leg(m));
+      if (lm==j) continue;
+      if (lm==i) campl->CreateLeg((i->Id()&3)?-lt.m_pi:lt.m_pi,mo);
+      else if (lm==k) campl->CreateLeg((k->Id()&3)?-lt.m_pk:lt.m_pk,lm->Flav());
+      else campl->CreateLeg(lt.m_lam*ampl->Leg(m)->Mom(),lm->Flav());
+      ++l;
+    }
+#ifndef DEBUG__Differential
+    int olv(msg->Level());
+    msg->SetLevel(2);
+#endif
+    double me=Differential(campl,kmode);
+#ifndef DEBUG__Differential
+    msg->SetLevel(olv);
+#endif
+    if (me) cs.m_ws/=me;
+    else cs.m_ws=-1.0;
+    campl->Delete();
+    msg_Debugging()<<"ME = "<<me<<" -> "<<1.0/cs.m_ws<<" ("
+		   <<(cs.m_ws>0.0?sqrt(cs.m_ws):-sqrt(-cs.m_ws))<<")\n";
+  }
   return cs;
+}
+
+double CS_Cluster_Definitions::Differential
+(Cluster_Amplitude *const ampl,const int kmode) const
+{
+  NLOTypeStringProcessMap_Map *procs
+    (ampl->Procs<NLOTypeStringProcessMap_Map>());
+  if (procs==NULL) return 1.0;
+  nlo_type::code type=nlo_type::lo;
+  if (procs->find(type)==procs->end()) return 0.0;
+  Process_Base::SortFlavours(ampl);
+  int rm(ampl->Leg(0)->Mom()[3]<0.0?0:1024);
+  std::string pname(Process_Base::GenerateName(ampl));
+  StringProcess_Map::const_iterator pit((*(*procs)[type]).find(pname));
+  if (pit==(*(*procs)[type]).end()) return 0.0;
+  double meps=pit->second->Differential(*ampl,64|rm);
+  return meps;
 }
 
 double CS_Cluster_Definitions::GetX
@@ -222,7 +269,8 @@ void CS_Cluster_Definitions::KernelWeight
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
   else if (cs.m_mode==3) eta=GetX(i,cdip)*cs.m_z;
-  cs.m_wk=(*cdip)(cs.m_z,cs.m_y,eta,-1.0,Q2)*Q2/cs.m_kt2;
+  cs.m_wk=(*cdip)(cs.m_z,cs.m_y,eta,-1.0,Q2)*
+    cdip->MEPSWeight(cs.m_z,cs.m_y,eta,-1.0,Q2);
   cs.m_wk*=cdip->SymFac();
   if (cs.m_wk<=0.0 || IsBad(cs.m_wk))
     cs.m_wk=sqrt(std::numeric_limits<double>::min());
