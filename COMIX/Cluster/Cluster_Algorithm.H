@@ -96,7 +96,7 @@ namespace COMIX {
     bool Cluster(const size_t &step,const Vertex_Set &nocl,
 		 const Current_Vector &ccurs,Current *const fcur,
 		 const ClusterInfo_Map &cinfo,KT2Info_Vector &kt2ord,
-		 const int ord);
+		 const int complete);
 
     void SetNMax(ATOOLS::Cluster_Amplitude *const ampl,
 		 const size_t &id,const size_t &nmax) const;

@@ -709,7 +709,7 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
 		      (k<ampl->NIn()?cstp::FI:cstp::FF));
 	if ((lk->Flav().Strong() &&
 	     li->Flav().Strong() && lj->Flav().Strong()) ||
-	    (p_shower->GetSudakov()->HasKernel(fi,fj,fk,et))) {
+	    p_shower->GetSudakov()->HasKernel(fi,fj,fk,et)) {
 	  double q2ijk(Qij2(li->Mom(),lj->Mom(),lk->Mom(),
 			    li->Flav(),lj->Flav()));
  	  msg_Debugging()<<"Q_{"<<ID(li->Id())<<ID(lj->Id())
