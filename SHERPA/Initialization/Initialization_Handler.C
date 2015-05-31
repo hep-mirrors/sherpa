@@ -1053,8 +1053,6 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
   dr.SetInputFile("global.dat");
   std::vector<std::vector<std::string> > helpsvv;
   if (dr.MatrixFromFile(helpsvv,"")) {
-    msg_Out()<<METHOD<<"(): Reading parameters from '"
-	     <<rpa->gen.Variable("HOME")<<"/.sherpa/global.dat'."<<std::endl;
     helpsv2.resize(helpsvv.size());
     for (size_t i(0);i<helpsvv.size();++i) {
       helpsv2[i]=helpsvv[i][0];
