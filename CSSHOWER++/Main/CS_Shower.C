@@ -690,6 +690,7 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
   msg_Debugging()<<"noem = "<<ID(noem)<<", nospec = "<<ID(nospec)<<"\n";
   double q2min(std::numeric_limits<double>::max());
   size_t imin(0), jmin(0), kmin(0);
+  Vec4D_Vector pmin;
   Flavour mofl;
   for (size_t i(0);i<ampl->Legs().size();++i) {
     Cluster_Leg *li(ampl->Leg(i));
@@ -720,10 +721,23 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
 	  }
 	  else {
 	    if (q2ijk<q2min) {
-	      q2min=q2ijk;
 	      mofl=Flavour(kf_gluon);
 	      if (li->Flav().IsGluon()) mofl=lj->Flav();
 	      if (lj->Flav().IsGluon()) mofl=li->Flav();
+	      int beam=li->Id()&1?0:1;
+	      if (p_shower->ISR()->PDF(beam) &&
+		  !p_shower->ISR()->PDF(beam)->Contains(mofl)) {
+		msg_Debugging()<<"Not in PDF: "<<mofl<<".\n";
+		continue;
+	      }
+	      Vec4D_Vector p=p_cluster->Combine
+		(*ampl,i,j,k,mofl,ampl->MS(),1);
+	      if (p.empty()) {
+		msg_Debugging()<<"Combine failed.\n";
+		continue;
+	      }
+	      q2min=q2ijk;
+	      pmin=p;
 	      imin=i;
 	      jmin=j;
 	      kmin=k;
@@ -738,7 +752,7 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
     }
   }
   if (mode!=0 && imin!=jmin) {
-    Vec4D_Vector p=p_cluster->Combine(*ampl,imin,jmin,kmin,mofl,ampl->MS(),1);
+    Vec4D_Vector p=pmin;
     if (p.empty()) {
       msg_Error()<<METHOD<<"(): Combine failed. Use R configuration."<<std::endl;
       return JetVeto(ampl,0);
