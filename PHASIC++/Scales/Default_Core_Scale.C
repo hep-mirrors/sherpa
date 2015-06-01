@@ -41,8 +41,8 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     Vec4D ewsum;
     for (size_t i(0);i<campl->Legs().size();++i)
       if (!campl->Leg(i)->Flav().Strong()) ewsum+=campl->Leg(i)->Mom();
-      else q+=campl->Leg(i)->Mom().MPerp();
-    q+=ewsum.MPerp();
+      else q+=sqrt(dabs(campl->Leg(i)->Mom().MPerp2()));
+    q+=sqrt(dabs(ewsum.MPerp2()));
     campl->Delete();
     return PDF::CParam(q*q/4.0,q*q/4.0,0.0,q*q/4.0,-1);
   }
