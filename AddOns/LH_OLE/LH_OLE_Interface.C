@@ -114,10 +114,7 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
         lhfile.AddParameter("Z_width                  "+ToString(Flavour(kf_Z).Width()));
         lhfile.AddParameter("W_mass                   "+ToString(Flavour(kf_Wplus).Mass()));
         lhfile.AddParameter("W_width                  "+ToString(Flavour(kf_Wplus).Width()));
-        std::string sin_th_2(ToString(MODEL::s_model->ScalarConstant(std::string("sin2_thetaW"))));
-        if (MODEL::s_model->ScalarNumber(std::string("WidthScheme")))
-          sin_th_2=ToString(ToString(MODEL::s_model->ScalarConstant(std::string("csin2_thetaW"))));
-        lhfile.AddParameter("sin_th_2                 "+sin_th_2);
+        lhfile.AddParameter("sin_th_2                 "+ToString(std::abs(MODEL::s_model->ComplexConstant(std::string("csin2_thetaW")))));
         lhfile.AddParameter("H_mass                   "+ToString(Flavour(kf_h0).Mass()));
         lhfile.AddParameter("H_width                  "+ToString(Flavour(kf_h0).Width()));
         lhfile.AddParameter("top_mass                 "+ToString(Flavour(kf_t).Mass()));
