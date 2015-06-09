@@ -3,7 +3,7 @@
 SHERPA_PREFIX ?= $(shell Sherpa-config --prefix)
 
 
-SOURCES=SM_Zprime.C Interaction_Model_SM_Zprime.C
+SOURCES=Model.C
 
 CC=g++
 CXXFLAGS=-g -O2 -pedantic -Wall -fPIC -DPIC

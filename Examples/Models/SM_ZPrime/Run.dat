@@ -6,13 +6,13 @@
   SHERPA_LDADD SMZprime;
 
   % model parameters
-  MODEL SM+Zprime;
+  MODEL SMZprime;
   MASS[32] 1000.; WIDTH[32] 50.;
   Zp_cpl_L 0.3; Zp_cpl_R 0.6;
 
   % collider setup
-  BEAM_1 = 2212;  BEAM_ENERGY_1 = 7000.;
-  BEAM_2 = 2212;  BEAM_ENERGY_2 = 7000.;
+  BEAM_1 2212;  BEAM_ENERGY_1 7000.;
+  BEAM_2 2212;  BEAM_ENERGY_2 7000.;
 }(run)
 
 (processes){
