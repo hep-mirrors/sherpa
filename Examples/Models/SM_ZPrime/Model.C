@@ -127,7 +127,6 @@ void Standard_Model_Zprime::ParticleZprimeInit()
   // add Zprime
   // kf_code,mass,width,3*charge,strong,spin,majorana,take,stable,massive,idname,antiname,texname,antitexname
   s_kftable[kf_Zp] = new Particle_Info(kf_Zp,1000.,10.,0,0,2,-1,1,0,1,"Zprime","Zprime","Z^{\\prime}","Z^{\\prime}");
-
 }
 
 bool Standard_Model_Zprime::ModelInit(const PDF::ISR_Handler_Map& isr)
@@ -297,6 +296,7 @@ void Standard_Model_Zprime::InitVertices()
   InitQEDVertices();
   InitQCDVertices();
   InitEWVertices();
+  InitZprimeVertices();
 }
 
 void Standard_Model_Zprime::InitQEDVertices()
@@ -623,59 +623,43 @@ void Standard_Model_Zprime::InitZprimeVertices()
   Kabbala alphaLR("\\alpha_{LR}",sqrt(2./3.));
 
   // create FFV vertices with Z' if it's on
-  Flavour flZprime(kf_Zp);
-  if (flZprime.IsOn()) {
-    // parse through all fermions that couple to Z' and create vertices
-    std::vector<kf_code> fermions;
-    fermions.push_back(kf_d);
-    fermions.push_back(kf_u);
-    fermions.push_back(kf_s);
-    fermions.push_back(kf_c);
-    fermions.push_back(kf_b);
-    fermions.push_back(kf_t);
-    fermions.push_back(kf_e);
-    fermions.push_back(kf_nue);
-    fermions.push_back(kf_mu);
-    fermions.push_back(kf_numu);
-    fermions.push_back(kf_tau);
-    fermions.push_back(kf_nutau);
+  if (Flavour(kf_Zp).IsOn()) {
+    for (short int i=1;i<17;++i) {
+      // parse through all fermions that couple to Z' and create vertices
+      if (i==7) i=11;
+      Flavour flav((kf_code)i);
+      if (!flav.IsOn()) continue;
+      Kabbala B = Kabbala(string("B_{")+flav.TexName()+string("}"),
+                          flav.IsQuark()?(flav.IsAnti()?-1./3.:1./3.):0.);
+      Kabbala L = Kabbala(string("L_{")+ flav.TexName()+string("}"),
+                          flav.IsLepton()?(flav.IsAnti()?-1:1):0.);
+      Kabbala Y3R = Kabbala(string("YR_{")+flav.TexName()+string("}"),
+                            flav.IsoWeak());
 
-    for (size_t i(0);i<fermions.size();++i) {
-      // initialize the currently parsed fermion
-      Flavour fl = Flavour(fermions[i]);
-      if (fl.IsOn()) {
-        Kabbala B = Kabbala(string("B_{")+fl.TexName()+string("}"),
-                            fl.IsQuark()?(fl.IsAnti()?-1./3.:1./3.):0.);
-        Kabbala L = Kabbala(string("L_{")+ fl.TexName()+string("}"),
-                            fl.IsLepton()?(fl.IsAnti()?-1:1):0.);
-        Kabbala Y3R = Kabbala(string("YR_{")+fl.TexName()+string("}"),
-                              fl.IsoWeak());
-
-        // create the vertex for that particular fermion and a Z'.
-        // Right-handed neutrinos will not take part in any interaction.
-        Kabbala kcpl0;
-        if (fermions[i]==kf_nue || fermions[i]==kf_numu ||
-            fermions[i]==kf_nutau) {
-          kcpl0 = Kabbala("0.0", 0.);
-        }
-        else {
-          kcpl0 = -I * g2 * (Y3R * alphaLR + (L-B)/(alphaLR*2));
-        }
-        Kabbala kcpl1 = -I * g2 * (L-B) / (alphaLR*2);
-
-        // set couplings and particle info for current vertex
-        m_v.push_back(Single_Vertex());
-        m_v.back().AddParticle(fl.Bar());
-        m_v.back().AddParticle(fl);
-        m_v.back().AddParticle(flZprime);
-        m_v.back().Color.push_back
-          (fl.IsQuark()?Color_Function(cf::D,1,2):Color_Function(cf::None));
-        m_v.back().Lorentz.push_back("FFVL");
-        m_v.back().Lorentz.push_back("FFVR");
-        m_v.back().cpl.push_back(kcpl0);
-        m_v.back().cpl.push_back(kcpl1);
-        m_v.back().order[1]=1;
-      };
-    };
-  };
+      // create the vertex for that particular fermion and a Z'.
+      // Right-handed neutrinos will not take part in any interaction.
+      Kabbala kcpl0;
+      if (flav.Kfcode()==kf_nue || flav.Kfcode()==kf_numu ||
+          flav.Kfcode()==kf_nutau)
+        kcpl0 = Kabbala("0.0", 0.);
+      else
+        kcpl0 = -I * g2 * (Y3R * alphaLR + (L-B)/(alphaLR*2));
+      Kabbala kcpl1 = -I * g2 * (L-B) / (alphaLR*2);
+      m_v.push_back(Single_Vertex());
+      m_v.back().AddParticle(flav.Bar());
+      m_v.back().AddParticle(flav);
+      m_v.back().AddParticle(Flavour(kf_Zp));
+      m_v.back().Color.push_back
+        (i>6?Color_Function(cf::None):
+         Color_Function(cf::D,1,2));
+      m_v.back().Color.push_back
+        (i>6?Color_Function(cf::None):
+         Color_Function(cf::D,1,2));
+      m_v.back().Lorentz.push_back("FFVL");
+      m_v.back().Lorentz.push_back("FFVR");
+      m_v.back().cpl.push_back(kcpl0);
+      m_v.back().cpl.push_back(kcpl1);
+      m_v.back().order[1]=1;
+    }
+  }
 }
