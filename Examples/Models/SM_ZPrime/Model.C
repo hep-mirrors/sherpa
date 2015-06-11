@@ -314,7 +314,7 @@ void Standard_Model_Zprime::InitQEDVertices()
       m_v.back().AddParticle(flav);
       m_v.back().AddParticle(Flavour(kf_photon));
       m_v.back().Color.push_back
-	(i>6?Color_Function(cf::None):
+        (i>10?Color_Function(cf::None):
 	 Color_Function(cf::D,1,2));
       m_v.back().Lorentz.push_back("FFV");
       m_v.back().cpl.push_back(cpl*Q);
@@ -403,7 +403,7 @@ void Standard_Model_Zprime::InitEWVertices()
 	m_v.back().AddParticle(flav2);
 	m_v.back().AddParticle(Flavour(kf_Wplus).Bar());
 	m_v.back().Color.push_back
-	  (i>6?Color_Function(cf::None):
+	  (i>10?Color_Function(cf::None):
 	   Color_Function(cf::D,1,2));
 	m_v.back().Lorentz.push_back("FFVL");
 	m_v.back().cpl.push_back(cpl*ckm);
@@ -413,7 +413,7 @@ void Standard_Model_Zprime::InitEWVertices()
 	m_v.back().AddParticle(flav1);
 	m_v.back().AddParticle(Flavour(kf_Wplus));
 	m_v.back().Color.push_back
-	  (i>6?Color_Function(cf::None):
+	  (i>10?Color_Function(cf::None):
 	   Color_Function(cf::D,1,2));
 	m_v.back().Lorentz.push_back("FFVL");
 	m_v.back().cpl.push_back(cpl*ckm);
@@ -433,10 +433,10 @@ void Standard_Model_Zprime::InitEWVertices()
       m_v.back().AddParticle(flav);
       m_v.back().AddParticle(Flavour(kf_Z));
       m_v.back().Color.push_back
-	(i>6?Color_Function(cf::None):
+        (i>10?Color_Function(cf::None):
 	 Color_Function(cf::D,1,2));
       m_v.back().Color.push_back
-	(i>6?Color_Function(cf::None):
+        (i>10?Color_Function(cf::None):
 	 Color_Function(cf::D,1,2));
       m_v.back().Lorentz.push_back("FFVL");
       m_v.back().Lorentz.push_back("FFVR");
@@ -452,7 +452,7 @@ void Standard_Model_Zprime::InitEWVertices()
       Flavour flav((kf_code)i);
       if (!flav.IsOn() || flav.Yuk()==0.0) continue;
       double m=(ScalarNumber("YukawaScheme")==0)?flav.Yuk():
-	ScalarFunction("m"+flav.IDName(),sqr(Flavour(kf_h0).Mass(true)));
+        ScalarFunction("m"+flav.IDName(),sqr(Flavour(kf_h0).Mass(true)));
       Kabbala M;
       if (ScalarNumber("WidthScheme")!=0)
         M=Kabbala("M_{"+flav.TexName()+"}(m_h^2)",
@@ -463,7 +463,7 @@ void Standard_Model_Zprime::InitEWVertices()
       m_v.back().AddParticle(flav);
       m_v.back().AddParticle(Flavour(kf_h0));
       m_v.back().Color.push_back
-	(i>6?Color_Function(cf::None):
+        (i>10?Color_Function(cf::None):
 	 Color_Function(cf::D,1,2));
       m_v.back().Lorentz.push_back("FFS");
       m_v.back().cpl.push_back(cpl*M);
@@ -613,10 +613,6 @@ void Standard_Model_Zprime::InitZprimeVertices()
                                                sqr(rpa->gen.Ecms()))));
   Kabbala g2("g_1/\\cos\\theta_W", g1.Value()/costW.Value());
 
-  Kabbala PL("P_L",1.);
-  Kabbala PR("P_R",1.);
-  Kabbala M_I("i",Complex(0.,1.));
-
   // the parameter specifying the LR model
   // - sqrt(2.) will describe a totally LR-symm model
   // - sqrt(2./3.) describes an E6-inspired model
@@ -650,10 +646,10 @@ void Standard_Model_Zprime::InitZprimeVertices()
       m_v.back().AddParticle(flav);
       m_v.back().AddParticle(Flavour(kf_Zp));
       m_v.back().Color.push_back
-        (i>6?Color_Function(cf::None):
+        (i>10?Color_Function(cf::None):
          Color_Function(cf::D,1,2));
       m_v.back().Color.push_back
-        (i>6?Color_Function(cf::None):
+        (i>10?Color_Function(cf::None):
          Color_Function(cf::D,1,2));
       m_v.back().Lorentz.push_back("FFVL");
       m_v.back().Lorentz.push_back("FFVR");
