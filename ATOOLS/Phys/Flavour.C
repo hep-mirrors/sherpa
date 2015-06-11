@@ -158,13 +158,7 @@ kf_code KF_Table::KFFromIDName(const std::string &idname) const
 
 std::string Flavour::TexName() const 
 {
-  if (!IsHadron()) {
-    std::string name(IDName());
-    size_t pos(0);
-    while ((pos=name.find("~"))!=std::string::npos) name.replace(pos,1,"x");
-    return name;
-  }
-  if (IsPhoton()) return std::string("\\gamma");
+  if (!IsHadron()) return m_anti?p_info->m_antitexname:p_info->m_texname;
   std::string name, idname(IDName());
   bool barit(false);
   if (m_anti && (!SelfAnti()) && IsHadron()) { 
