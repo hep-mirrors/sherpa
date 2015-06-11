@@ -97,8 +97,8 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
       lhfile.AddParameter("CorrectionType           QCD");
       if (m_drmode==1) lhfile.AddParameter("IRregularisation         DRED");
       else lhfile.AddParameter("IRregularisation         CDR");
-      lhfile.AddParameter("AlphasPower              "+ToString(pi.m_maxcpl[0]/2-1));
-      lhfile.AddParameter("AlphaPower               "+ToString(pi.m_maxcpl[1]/2));
+      lhfile.AddParameter("AlphasPower              "+ToString(pi.m_maxcpl[0]-1));
+      lhfile.AddParameter("AlphaPower               "+ToString(pi.m_maxcpl[1]));
       lhfile.AddParameter("OperationMode            CouplingsStrippedOff");
       std::string widthscheme("FixedWidthScheme");
       if (MODEL::s_model->ScalarNumber(std::string("WidthScheme")))
