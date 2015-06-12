@@ -1,0 +1,47 @@
+(run){
+  % general settings
+  EVENTS 5M; ERROR 0.1;
+
+  % tags and settings for scale definitions
+  FSF:=1.0; RSF:=1.0; QSF:=1.0;
+  SCALES STRICT_METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
+
+  % tags for process setup
+  LJET:=1,2; NJET:=1; QCUT:=30.;
+
+  % tags and settings for ME generators
+  ME_SIGNAL_GENERATOR Amegic Internal OpenLoops;
+  EVENT_GENERATION_MODE Weighted;
+
+  % settings for hard decays
+  HARD_DECAYS On;
+  HDH_STATUS[25,22,22] 2;
+  HDH_BR_WEIGHTS 0;
+
+  % model parameters
+  MODEL HEFT
+  MASS[25] 125.; WIDTH[25] 0.;
+
+  % collider setup
+  BEAM_1 2212; BEAM_ENERGY_1 6500;
+  BEAM_2 2212; BEAM_ENERGY_2 6500;
+
+  % finite top mass effects
+  KFACTOR GGH;
+  OL_IGNORE_MODEL 1;
+  OL_PARAMETERS preset 3 allowed_libs pph2tt,pphj2tt,pphjj2tt psp_tolerance 1.0e-7;
+}(run);
+
+(processes){
+  Process 93 93 -> 25 93{NJET};
+  Order (*,0,1); CKKW sqr(QCUT/E_CMS);
+  NLO_QCD_Mode MC@NLO {LJET};
+  Loop_Generator Internal;
+  End process;
+}(processes);
+
+(analysis){
+  BEGIN_RIVET {
+    -a MC_HJETS_STABLE_CUTS ATLAS_2014_I1307756;
+  } END_RIVET
+}(analysis);
