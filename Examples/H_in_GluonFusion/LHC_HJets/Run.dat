@@ -22,7 +22,7 @@
   HDH_BR_WEIGHTS 0;
 
   % model parameters
-  MODEL HEFT
+  MODEL HEFT;
   MASS[25] 125.; WIDTH[25] 0.;
 
   % collider setup

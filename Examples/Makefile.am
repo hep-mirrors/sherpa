@@ -30,6 +30,10 @@ nobase_dist_examples_DATA         =	\
 		V_plus_Bs/LHC_Wbb/Run.dat \
 		V_plus_Bs/LHC_Wbb/Analysis.dat \
 		V_plus_Bs/LHC_Zbb/Run.dat \
+		VV_plus_Jets/LHC_WqqZvv/Run.dat \
+		VV_plus_Jets/LHC_gg_llll/Run.dat \
+		VV_plus_Jets/LHC_llvv/Run.dat \
+		VV_plus_Jets/LHC_llvvjj_ss_EW6/Run.dat \
 		Jets_at_HadronColliders/LHC_Jets_MCatNLO/Run.dat \
 		Jets_at_HadronColliders/LHC_Jets_MEPS/Run.dat \
 		Jets_at_LeptonColliders/LEP_Jets/Run.dat \
@@ -40,6 +44,7 @@ nobase_dist_examples_DATA         =	\
                 H_in_AssociatedProduction/LHC_Hll_MCatNLO/Run.dat \
 		H_in_GluonFusion/LHC_HInterference/Run.dat \
 		H_in_GluonFusion/LHC_HJets/Run.dat \
+		H_in_GluonFusion/LHC_HJets_Finite_MTop/Run.dat \
 		H_in_TTBar/LHC_TTH_MCatNLO/lib.f \
 		H_in_TTBar/LHC_TTH_MCatNLO/intlib.f \
 		H_in_TTBar/LHC_TTH_MCatNLO/libqq.f \
