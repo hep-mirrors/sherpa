@@ -1,8 +1,12 @@
 (run){
+  % general settings
+  EVENTS 1M;
+
   % scales, tags for scale variations
   FSF:=1.; RSF:=1.; QSF:=1.;
   SCALES METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
-  CORE_SCALE VAR{Abs2(p[2]+p[3])/4.0}
+  CORE_SCALE VAR{Abs2(p[2]+p[3])/4.0};
+  EXCLUSIVE_CLUSTER_MODE 1;
 
   % tags for process setup
   NJET:=3; LJET:=2,3; QCUT:=30.;
@@ -11,25 +15,21 @@
   ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN;
   EVENT_GENERATION_MODE Weighted;
   LOOPGEN:=OpenLoops;
-  EXCLUSIVE_CLUSTER_MODE=1
 
   % decay setup
-  HARD_DECAYS=1
-  STABLE[24]=0
-  WIDTH[24]=0
-  STABLE[23]=0
-  WIDTH[23]=0
-  HDH_STATUS[24,2,-1]=2
-  HDH_STATUS[24,4,-3]=2
-  HDH_STATUS[-24,-2,1]=2
-  HDH_STATUS[-24,-4,3]=2
-  HDH_STATUS[23,12,-12]=2
-  HDH_STATUS[23,14,-14]=2
-  HDH_STATUS[23,16,-16]=2
+  HARD_DECAYS On;
+  WIDTH[23] 0; WIDTH[24] 0;
+  HDH_STATUS[24,2,-1] 2;
+  HDH_STATUS[24,4,-3] 2;
+  HDH_STATUS[-24,-2,1] 2;
+  HDH_STATUS[-24,-4,3] 2;
+  HDH_STATUS[23,12,-12] 2;
+  HDH_STATUS[23,14,-14] 2;
+  HDH_STATUS[23,16,-16] 2;
 
   % collider setup
-  BEAM_1 2212; BEAM_ENERGY_1 = 4000.;
-  BEAM_2 2212; BEAM_ENERGY_2 = 4000.;
+  BEAM_1 2212; BEAM_ENERGY_1 6500.;
+  BEAM_2 2212; BEAM_ENERGY_2 6500.;
 }(run)
 
 (processes){

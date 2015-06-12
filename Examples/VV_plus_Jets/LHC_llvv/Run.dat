@@ -1,4 +1,7 @@
 (run){
+  % general settings
+  EVENTS 1M;
+
   % scales, tags for scale variations
   FSF:=1.; RSF:=1.; QSF:=1.;
   SCALES METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
@@ -10,16 +13,17 @@
   ME_SIGNAL_GENERATOR Comix Amegic LOOPGEN;
   EVENT_GENERATION_MODE Weighted;
   LOOPGEN:=OpenLoops;
-  EXCLUSIVE_CLUSTER_MODE=1;
-  METS_CLUSTER_MODE=16;
+  EXCLUSIVE_CLUSTER_MODE 1;
+  METS_CLUSTER_MODE 16;
 
   % define parton container without b-quarks to
   % remove any processes with top contributions
   PARTICLE_CONTAINER 901 lightflavs 1 -1 2 -2 3 -3 4 -4 21;
+  NLO_CSS_DISALLOW_FLAVOUR 5;
 
   % collider setup
-  BEAM_1 2212; BEAM_ENERGY_1 = 4000.;
-  BEAM_2 2212; BEAM_ENERGY_2 = 4000.;
+  BEAM_1 2212; BEAM_ENERGY_1 6500.;
+  BEAM_2 2212; BEAM_ENERGY_2 6500.;
 }(run)
 
 (processes){

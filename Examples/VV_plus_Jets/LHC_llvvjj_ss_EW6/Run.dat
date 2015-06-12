@@ -1,4 +1,7 @@
 (run){
+  % general settings
+  EVENTS 1M;
+
   % choose EW Gmu input scheme
   EW_SCHEME 3;
 
@@ -7,20 +10,20 @@
 
   %scales, tags for scale variations
   FSF:=1.0; RSF:=1.0; QSF:=1.0;
-  EXCLUSIVE_CLUSTER_MODE=1;
   SCALES=STRICT_METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
   CORE_SCALE=VAR{Abs2(p[2]+p[3]+p[4]+p[5])};
+  EXCLUSIVE_CLUSTER_MODE 1;
 
   %solves problem with dipole QED modeling
-  ME_QED_CLUSTERING_THRESHOLD=5;
+  ME_QED_CLUSTERING_THRESHOLD 10;
 
   % improve integration performance
-  PSI_ITMIN=25000;
+  PSI_ITMIN 25000;
   INTEGRATION_ERROR 0.05;
 
   % collider setup
-  BEAM_1 2212; BEAM_ENERGY_1 = 4000.;
-  BEAM_2 2212; BEAM_ENERGY_2 = 4000.;
+  BEAM_1 2212; BEAM_ENERGY_1 6500.;
+  BEAM_2 2212; BEAM_ENERGY_2 6500.;
 }(run)
 
 
