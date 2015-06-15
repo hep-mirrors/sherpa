@@ -26,8 +26,8 @@
   MASS[25] 125.; WIDTH[25] 0.;
 
   % collider setup
-  BEAM_1 2212; BEAM_ENERGY_1 4000;
-  BEAM_2 2212; BEAM_ENERGY_2 4000;  
+  BEAM_1 2212; BEAM_ENERGY_1 6500;
+  BEAM_2 2212; BEAM_ENERGY_2 6500;  
 }(run);
 
 (processes){

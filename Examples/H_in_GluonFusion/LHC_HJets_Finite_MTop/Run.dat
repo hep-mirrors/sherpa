@@ -40,8 +40,3 @@
   End process;
 }(processes);
 
-(analysis){
-  BEGIN_RIVET {
-    -a MC_HJETS_STABLE_CUTS ATLAS_2014_I1307756;
-  } END_RIVET
-}(analysis);
