@@ -30,11 +30,12 @@ nobase_dist_examples_DATA         =	\
 		V_plus_Bs/LHC_Wbb/Run.dat \
 		V_plus_Bs/LHC_Wbb/Analysis.dat \
 		V_plus_Bs/LHC_Zbb/Run.dat \
-		VV_plus_Jets/LHC_WqqZvv/Run.dat \
-		VV_plus_Jets/LHC_gg_llll/Run.dat \
-		VV_plus_Jets/LHC_llvv/Run.dat \
-		VV_plus_Jets/LHC_llvvjj_ss_EW6/Run.dat \
-		Jets_at_HadronColliders/LHC_Jets_MCatNLO/Run.dat \
+		VV_plus_Jets/LHC_2l2nuJets/Run.dat \
+		VV_plus_Jets/LHC_2l2nuJets_GluonInitiated/Run.dat \
+		VV_plus_Jets/LHC_4lJets/Run.dat \
+		VV_plus_Jets/LHC_4lJets_GluonInitiated/Run.dat \
+		VV_plus_Jets/LHC_WqqZnunuJets/Run.dat \
+		VV_plus_Jets/LHC_2l2nu2jJets_SameSign/Run.dat \
 		Jets_at_HadronColliders/LHC_Jets_MEPS/Run.dat \
 		Jets_at_LeptonColliders/LEP_Jets/Run.dat \
 		Jets_at_LeptonColliders/LEP_Jets/Run.NLO.dat \

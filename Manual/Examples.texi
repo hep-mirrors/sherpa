@@ -12,6 +12,7 @@ of the main features of these examples.
 * Jets::
 * HJets::
 * TopsJets::
+* VVJets::
 * MSSM/UFO::
 * DIS::
 * FONLO::
@@ -74,6 +75,20 @@ of the main features of these examples.
 
 @include LHC_TTBar.texi
 @include LHC_TTW.texi
+
+@node VVJets
+@section Vector boson pairs + jets production
+
+@menu
+* Dilepton missing energy and jets production::
+* Dilepton missing energy and jets production (gluon initiated)::
+* Four lepton and jets production::
+* Four lepton and jets production (gluon initiated)::
+* WZ production with jets production::
+* Same sign dilepton missing energy and jets production::
+@end menu
+
+@include LHC_VVJets.texi
 
 @node MSSM/UFO
 @section Event generation in the MSSM using UFO

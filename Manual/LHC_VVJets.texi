@@ -1,0 +1,90 @@
+@node Dilepton missing energy and jets production
+@subsection Dilepton, missing energy and jets production
+
+@example
+@smallformat
+@verbatiminclude Examples/VV_plus_Jets/LHC_2l2nuJets/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item 
+@end itemize
+
+
+@node Dilepton missing energy and jets production (gluon initiated)
+@subsection Dilepton, missing energy and jets production (gluon initiated)
+
+@example
+@smallformat
+@verbatiminclude Examples/VV_plus_Jets/LHC_2l2nuJets_GluonInitiated/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item 
+@end itemize
+
+
+@node Four lepton and jets production
+@subsection Four lepton and jets production
+
+@example
+@smallformat
+@verbatiminclude Examples/VV_plus_Jets/LHC_4lJets/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item 
+@end itemize
+
+
+@node Four lepton and jets production (gluon initiated)
+@subsection Four lepton and jets production (gluon initiated)
+
+@example
+@smallformat
+@verbatiminclude Examples/VV_plus_Jets/LHC_4lJets_GluonInitiated/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item 
+@end itemize
+
+
+@node WZ production with jets production
+@subsection WZ production with jets production
+
+@example
+@smallformat
+@verbatiminclude Examples/VV_plus_Jets/LHC_WqqZnunuJets/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item 
+@end itemize
+
+
+@node Same sign dilepton missing energy and jets production
+@subsection Same sign dilepton, missing energy and jets production
+
+@example
+@smallformat
+@verbatiminclude Examples/VV_plus_Jets/LHC_2l2nu2jJets_SameSign/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item 
+@end itemize
+
+
