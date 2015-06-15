@@ -7,7 +7,7 @@
   SCALES STRICT_METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
 
   % tags for process setup
-  LJET:=1,2,3; NJET:=1; QCUT:=30.;
+  LJET:=1,2,3; NJET:=2; QCUT:=30.;
 
   % tags and settings for ME generators
   LOOPGEN0:=Internal;
