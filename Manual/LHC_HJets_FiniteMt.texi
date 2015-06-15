@@ -1,0 +1,28 @@
+@node LHC_HJets_FiniteMt
+@subsection H+jets production in gluon fusion with finite top mass effects
+
+This is example is similar to @ref{LHC_HJets} but with finite top quark
+mass taken into account as described in @mycite{Buschmann:2014sia} for
+all merged jet multiplicities. Mass effects in the virtual corrections are
+treated in an approximate way. In case of the tree-level contributions,
+including real emission corrections, no approximations are made
+concerning the mass effects.
+
+@example
+@smallformat
+@verbatiminclude Examples/H_in_GluonFusion/LHC_HJets_Finite_MTop/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item One-loop matrix elements from OpenLoops @mycite{Cascioli2011va}
+are used in order to correct for top mass effects. Sherpa must therefore
+be compiled with OpenLoops support to run this example. Also, the
+OpenLoops process libraries listed in the run card must be installed.
+@item The maximum jet multiplicities that can be merged in this setup
+are limited by the availability of loop matrix elements used to correct
+for finite top mass effects. 
+@item The comments in @ref{LHC_HJets} apply here as well.
+@end itemize
+ 
