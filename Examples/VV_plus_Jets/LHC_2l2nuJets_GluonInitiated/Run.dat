@@ -27,7 +27,7 @@
 
 
 (processes){
-  Process 93 93 -> 90 90 90 90 93{1};
+  Process 93 93 -> 90 90 91 91 93{1};
   CKKW sqr(QCUT/E_CMS);
   Order (2,4) {4};
   Order (3,4) {5};

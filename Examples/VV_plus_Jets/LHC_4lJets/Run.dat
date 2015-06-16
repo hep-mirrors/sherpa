@@ -16,18 +16,13 @@
   EXCLUSIVE_CLUSTER_MODE 1;
   METS_CLUSTER_MODE 16;
 
-  % define parton container without b-quarks to
-  % remove any processes with top contributions
-  PARTICLE_CONTAINER 901 lightflavs 1 -1 2 -2 3 -3 4 -4 21;
-  NLO_CSS_DISALLOW_FLAVOUR 5;
-
   % collider setup
   BEAM_1 2212; BEAM_ENERGY_1 6500.;
   BEAM_2 2212; BEAM_ENERGY_2 6500.;
 }(run)
 
 (processes){
-  Process 901 901 -> 90 91 90 91 901{NJET};
+  Process 93 93 -> 90 90 90 90 93{NJET};
   Order (*,4); CKKW sqr(QCUT/E_CMS);
   NLO_QCD_Mode MC@NLO {LJET};
   ME_Generator Amegic {LJET};
