@@ -104,7 +104,7 @@ Scale_Variations::Scale_Variations() :
   for (size_t i(0);i<pdfs.size();++i) vars.push_back("1.,1.,"+pdfs[i]);
   if (vars.size()) m_on=true;
   if (!m_on) return;
-  PRINT_FUNC(vars.size());
+  PRINT_FUNC(vars.size()<<" variations");
 #if defined USING__LHAPDF && defined USING__LHAPDF6
   // check whether LHAPDF is already loaded, if not load and init interface
   if (!ATOOLS::s_loader->LibraryIsLoaded("LHAPDFSherpa")) {
