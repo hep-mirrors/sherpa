@@ -117,6 +117,8 @@ Scale_Variations::Scale_Variations() :
   std::string path;
   if (reader.ReadFromFile(path,"LHAPDF_GRID_PATH")) LHAPDF::setPaths(path);
   const std::vector<std::string>& avsets(LHAPDF::availablePDFSets());
+  int lhapdfverb(LHAPDF::verbosity());
+  LHAPDF::setVerbosity(0);
 #endif
 
   // read whether we should accept PDFs that are not positive definite
@@ -205,6 +207,9 @@ Scale_Variations::Scale_Variations() :
     }
   }
   msg_Info()<<*p_nsvmap;
+#if defined USING__LHAPDF && defined USING__LHAPDF6
+  LHAPDF::setVerbosity(lhapdfverb);
+#endif
 }
 
 Scale_Variations::~Scale_Variations()
