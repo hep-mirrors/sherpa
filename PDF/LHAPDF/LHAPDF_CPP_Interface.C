@@ -3,6 +3,7 @@
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Math/Random.H"
 #include "PDF/Main/PDF_Base.H"
 #include "ATOOLS/Phys/Flavour.H"
@@ -88,6 +89,8 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   if (p_pdf->hasFlavor(kf_gluon)) m_partons.insert(Flavour(kf_jet));
 
   m_lhef_number = p_pdf->lhapdfID();
+
+  rpa->gen.AddCitation(1,"LHAPDF6 is published under \\cite{Buckley:2014ana}.");
 }
 
 void LHAPDF_CPP_Interface::SetAlphaSInfo()

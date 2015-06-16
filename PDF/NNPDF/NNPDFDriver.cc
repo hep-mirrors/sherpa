@@ -248,8 +248,8 @@ void NNPDFDriver::readPDFSet(string const& grid, int const& rep)
     gfile << grid << "/" << name << "_" << rep << ".dat";
 
   // Some status/debug message
-  cout <<"NNPDFDriver 1.0.5, opening file " << gfile.str().c_str() << " to read PDF data " << endl;
-  cout << "The NNPDF collaboration:   arXiv:1410.8849 [hep-ph]" << endl;
+  // cout <<"NNPDFDriver 1.0.5, opening file " << gfile.str().c_str() << " to read PDF data " << endl;
+  // cout << "The NNPDF collaboration:   arXiv:1410.8849 [hep-ph]" << endl;
   fstream g;
   g.open(gfile.str().c_str(), ios::in);
   

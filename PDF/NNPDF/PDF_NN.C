@@ -143,6 +143,7 @@ PDF_NNPDF::PDF_NNPDF
   }
   m_lookup[27] = 6; // The gluon in LHAPDF5/NNPDFDriver convention
 
+  rpa->gen.AddCitation(1,"NNPDF 3.0 is published under \\cite{Ball:2014uwa}.");
 }
 
 PDF_NNPDF::~PDF_NNPDF()
