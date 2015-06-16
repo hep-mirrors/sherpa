@@ -17,7 +17,8 @@
   LOOPGEN:=OpenLoops;
   AMEGIC_ALLOW_MAPPING 0;
   % the following phase space libraries have to be generated with the
-  % corresponding qq->llll setup first
+  % corresponding qq->llll setup (RUNDATA=Run.tree.dat) first;
+  % they will appear in Process/Amegic/lib/libProc_fsrchannels*.so
   SHERPA_LDADD Proc_fsrchannels4 Proc_fsrchannels5;
 
   % collider setup
