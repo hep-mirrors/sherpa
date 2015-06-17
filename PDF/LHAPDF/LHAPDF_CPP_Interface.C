@@ -53,7 +53,10 @@ LHAPDF_CPP_Interface::LHAPDF_CPP_Interface(const ATOOLS::Flavour _bunch,
   static std::set<std::string> s_init;
   if (s_init.find(m_set)==s_init.end()) {
     m_member=abs(m_smember);
+    int lhapdfverb(LHAPDF::verbosity());
+    LHAPDF::setVerbosity(msg_LevelIsDebugging()?lhapdfverb:0);
     p_pdf = LHAPDF::mkPDF(m_set,m_smember);
+    LHAPDF::setVerbosity(lhapdfverb);
     SetAlphaSInfo();
   }
 
