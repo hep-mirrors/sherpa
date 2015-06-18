@@ -811,6 +811,7 @@
 @mybibitem{Hoeche2014lxa,Hoe14a, S. Hoeche and F. Krauss and M. Schoenherr,Uncertainties in MEPS@@NLO calculations of h+jets,,,,,arXiv:1401.7971,arXiv:1401.7971}
 @mybibitem{Hoeche2014rya,Hoe14b, S. Hoeche and F. Krauss and S. Pozzorini and M. Schoenherr and J. M. Thompson and K. C. Zapp,Triple vector boson production through Higgs-Strahlung with NLO multijet merging,,,,,arXiv:1403.7516,arXiv:1403.7516}
 @mybibitem{Hoeche2014kca,Hoe14c, S. Hoeche and S. Kuttimalai and S. Schumann and F. Siegert,Beyond Standard Model calculations with Sherpa,Eur. Phys. J.,C75,(2015),135,[arXiv:1412.6478],arXiv:1412.6478}
+@mybibitem{Hoche2015sya,Hoe15, S. Hoeche and S. Prestel,The midpoint between dipole and parton showers,,,,,arXiv:1506.05057,arXiv:1506.05057}
 @mybibitem{Hollik2011ps,Hol11, W. Hollik and D. Pagani,The electroweak contribution to the top quark forward-backward asymmetry at the Tevatron,Phys.Rev.,D84,(2011),093003,[arXiv:1107.2606],arXiv:1107.2606}
 @mybibitem{Hou1987ya,Hou87, G. W. S. Hou,Charmless Rare B Decays Heavy Quarks and a Fourth Generation,,,,,,}
 @mybibitem{Hou1987vd,Hou87a, W. S. Hou and A. Soni and H. Steger,Charmless Decays of Bottom Mesons and a Fourth Generation,Phys. Rev. Lett.,59,(1987),1521,,F+J+Phys. Rev. Lett.%2C59%2C1521}

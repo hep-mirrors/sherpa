@@ -160,6 +160,12 @@ AC_OUTPUT(ATOOLS/Math/Makefile \
 	  CSSHOWER++/Showers/Makefile \
 	  CSSHOWER++/Main/Makefile \
 	  CSSHOWER++/Makefile \
+	  DIRE/Tools/Makefile \
+	  DIRE/Shower/Makefile \
+	  DIRE/Gauge/Makefile \
+	  DIRE/Lorentz/Makefile \
+	  DIRE/Main/Makefile \
+	  DIRE/Makefile \
 	  AMISIC++/Tools/Makefile \
 	  AMISIC++/Model/Makefile \
 	  AMISIC++/Main/Makefile \

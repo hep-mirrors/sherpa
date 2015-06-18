@@ -257,6 +257,7 @@ void Cluster_Algorithm::Convert()
     p_ampl->SetNIn(ampl->NIn());
     ampl->SetKT2(kt2qcd);
     ampl->SetMu2(mu2);
+    ampl->SetIdNew(ampl->Leg(jwin)->Id());
     for (int i(0);i<ct_tmp->NLegs();++i) {
       size_t id(ampl->Leg(i<jwin?i:i+1)->Id());
       Flavour flav(i<pb->NIn()?ct_tmp->Flav(i).Bar():ct_tmp->Flav(i));

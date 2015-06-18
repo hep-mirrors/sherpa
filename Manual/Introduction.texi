@@ -291,6 +291,19 @@ are always adjacent in colour space. The dipole functions for the
 various cases, taken in four dimensions and averaged over spins,
 are used as shower splitting kernels.
 
+@item DIRE 
+
+This is the module hosting Sherpa's alternative parton shower @mycite{Hoche2015sya}.
+In the Dire model, the ordering variable exhibits a symmetry in emitter and 
+spectator momenta, such that the dipole-like picture of the evolution 
+can be re-interpreted as a dipole picture in the soft limit. At the same time, 
+the splitting functions are regularized in the soft anti-collinear region 
+using partial fractioning of the soft eikonal in the Catani-Seymour approach 
+@mycite{Catani1996vz}, @mycite{Catani2002hc}. They are then modified to satisfy
+the sum rules in the collinear limit. This leads to an invariant formulation 
+of the parton-shower algorithm, which is in complete analogy to the standard 
+DGLAP case, but generates the correct soft anomalous dimension at one-loop order.
+
 @item AMISIC++ 
 
 AMISIC++ contains classes for the simulation of multiple parton

@@ -185,6 +185,14 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   AC_SUBST(CSSBUILDDIR)
   AC_SUBST(CSSLIBS)
   
+  DIREDIR="\${top_srcdir}/DIRE"
+  DIREBUILDDIR="\${top_builddir}/DIRE"
+  DIRELIBS="-L\${DIREBUILDDIR}/Tools -L\${DIREBUILDDIR}/Shower -L\${DIREBUILDDIR}/Gauge -L\${DIREBUILDDIR}/Lorentz -L\${DIREBUILDDIR}/Main \
+		-lDireTools -lDireShower -lDireGauge -lDireLorentz -lDireMain"
+  AC_SUBST(DIREDIR)
+  AC_SUBST(DIREBUILDDIR)
+  AC_SUBST(DIRELIBS)
+  
 
   COMIXDIR="\${top_srcdir}/COMIX"
   COMIXBUILDDIR="\${top_builddir}/COMIX"

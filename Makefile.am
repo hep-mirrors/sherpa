@@ -12,6 +12,7 @@ SUBDIRS       = \
 		AMEGIC++ \
 		COMIX \
 		CSSHOWER++ \
+		DIRE \
 		AMISIC++ \
 		AHADIC++ \
 		HADRONS++ \

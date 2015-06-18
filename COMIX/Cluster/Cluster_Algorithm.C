@@ -480,6 +480,7 @@ bool Cluster_Algorithm::ClusterStep
   Cluster_Amplitude *ampl(p_ampl);
   ampl->SetKT2(winfo.m_kt2.m_kt2);
   ampl->SetMu2(winfo.m_kt2.m_mu2);
+  ampl->SetIdNew(m_id[wkey.second]);
   p_ampl=p_ampl->InitNext();
   p_ampl->SetMS(p_ms);
   p_ampl->SetNIn(ampl->NIn());
