@@ -83,24 +83,57 @@ relative contributions of different channels and also influence the cross
 section during event generation, as well as the total width which is used for
 the lineshape of the resonance.
 
-An example to set (/add) the partial widths of the @code{H->bb}, @code{H->cc},
-@code{H->gg} and @code{H->yy} channels would read:
+An example to set (/add) the partial widths of the @code{H->ff}, @code{H->gg}
+and @code{H->yy} channels can be seen in the following. The values have been
+taken from
+@uref{https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageBR3,,LHCHXSWG})
+for @code{MASS[25]=125} and @code{WIDTH[25]=0.00407}:
+
 @verbatim
-HDH_WIDTH[25,5,-5]=0.00236
-HDH_WIDTH[25,4,-4]=0.000119
-HDH_WIDTH[25,21,21]=0.00035
-HDH_WIDTH[25,22,22]=0.0000094
+HDH_WIDTH[25,5,-5]=2.35e-3
+HDH_WIDTH[25,15,-15]=2.57e-4
+HDH_WIDTH[25,13,-13]=8.91e-7
+HDH_WIDTH[25,4,-4]=1.18e-4
+HDH_WIDTH[25,3,-3]=1.00e-6
+HDH_WIDTH[25,21,21]=3.49e-4
+HDH_WIDTH[25,22,22]=9.28e-6
 @end verbatim
+
+Another example, setting the leptonic and hadronic decay channels of W and Z
+bosons to the PDG values, would be specified as follows:
+@verbatim
+HDH_WIDTH[24,2,-1]=0.7041
+HDH_WIDTH[24,4,-3]=0.7041
+HDH_WIDTH[24,12,-11]=0.2256
+HDH_WIDTH[24,14,-13]=0.2256
+HDH_WIDTH[24,16,-15]=0.2256
+HDH_WIDTH[-24,-2,1]=0.7041
+HDH_WIDTH[-24,-4,3]=0.7041
+HDH_WIDTH[-24,-12,11]=0.2256
+HDH_WIDTH[-24,-14,13]=0.2256
+HDH_WIDTH[-24,-16,15]=0.2256
+HDH_WIDTH[23,1,-1]=0.3828
+HDH_WIDTH[23,2,-2]=0.2980
+HDH_WIDTH[23,3,-3]=0.3828
+HDH_WIDTH[23,4,-4]=0.2980
+HDH_WIDTH[23,5,-5]=0.3828
+HDH_WIDTH[23,11,-11]=0.0840
+HDH_WIDTH[23,12,-12]=0.1663
+HDH_WIDTH[23,13,-13]=0.0840
+HDH_WIDTH[23,14,-14]=0.1663
+HDH_WIDTH[23,15,-15]=0.0840
+HDH_WIDTH[23,16,-16]=0.1663
+@end verbatim
+
 
 @node HARD_SPIN_CORRELATIONS
 @subsection HARD_SPIN_CORRELATIONS
 @cindex HARD_SPIN_CORRELATIONS
 
-By default, all decays are done in a factorised manner, i.e. there are no
-correlations between the production and decay matrix elements of an unstable
-particle. It is possible to enable spin correlations by specifying
-@option{HARD_SPIN_CORRELATIONS=1}, which might come with a small performance
-penalty in more complicated processes.
+Spin correlations between the hard scattering process and the following decay
+processes are enabled by default. If you want to disable them, e.g. for spin
+correlation studies, you can specify the option
+@option{HARD_SPIN_CORRELATIONS=0}.
 
 @node STORE_DECAY_RESULTS
 @subsection STORE_DECAY_RESULTS
