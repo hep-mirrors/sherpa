@@ -910,19 +910,19 @@ void Amplitude::ConstructDSijMap()
   }
   m_dsf.resize(m_cur.back().size(),
 	       std::pair<size_t,double>(-1,ifp%2?-1.0:1.0));
-  for (size_t j(1);j<m_cur.back().size();++j) {
+  for (size_t j(0);j<m_cur.back().size();++j) {
     if (m_cur.back()[j]->Sub()==NULL) continue;
     m_dsm[j]=std::pair<int,int>
       (plist[m_cur.back()[j]->Sub()->Sub()->Id().front()],
        plist[m_cur.back()[j]->Sub()->Id().front()]);
-    Flavour ffl(m_cur.back()[j]->Sub()->Flav());
-    if (!ffl.IsFermion()) continue;
     for (size_t i(0);i<m_cur.back().size();++i)
       if (m_cur.back()[i]->Sub()==NULL &&
 	  m_cur.back()[i]->Order()==m_cur.back()[j]->Order()) {
 	m_dsf[j].first=i;
 	break;
       }
+    Flavour ffl(m_cur.back()[j]->Sub()->Flav());
+    if (!ffl.IsFermion()) continue;
     int idx(m_cur.back()[j]->Sub()->Id().front());
     if (ffl.IsAnti()) {
       for (int i(0);i<idx;++i)
