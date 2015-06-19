@@ -297,6 +297,8 @@ void Cluster_Algorithm::Convert()
   p_ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
   SetNMax(p_ampl,(1<<(p_proc->NIn()+p_proc->NOut()))-1,nmax);
   while (p_ampl->Prev()) {
+    Cluster_Amplitude *ampl(p_ampl->Prev());
+    ampl->Decays()=p_proc->Info().m_fi.GetDecayInfos();
     msg_Debugging()<<*p_ampl<<"\n";
     p_ampl=p_ampl->Prev();
   }
