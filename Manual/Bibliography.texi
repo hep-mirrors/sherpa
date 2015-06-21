@@ -1177,4 +1177,4 @@
 @mybibitem{Zarnecki2002qr,Zar02, A. F. Zarnecki,CompAZ: Parametrization of the luminosity spectra for the photon collider,Acta Phys. Polon.,B34,(2003),2741-2758,[hep-ex/0207021],hep-ex/0207021}
 @mybibitem{ktclus,a, M. H. Seymour,,,,,,,}
 @mybibitem{Beazley2003,Bea03,D. M. Beazley, Automated scientific software scripting with SWIG,Future Generation Computer Systems,19,(2003),599-609,,}
-@mybibitem{Buschmann:2014sia,Bu03,M. Buschmann and others, Mass Effects in the Higgs-Gluon Coupling: Boosted vs Off-Shell Production, JHEP, 1502, (2015),038, [hep-ph/1410.5806]}
+@mybibitem{Buschmann2014sia,Bu03,M. Buschmann and others, Mass Effects in the Higgs-Gluon Coupling: Boosted vs Off-Shell Production, JHEP, 1502, (2015),038, [hep-ph/1410.5806]}
