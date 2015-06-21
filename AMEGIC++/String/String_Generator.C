@@ -682,6 +682,7 @@ Kabbala* String_Generator::GetKabbala(const string& str)
 
 void String_Generator::WriteCouplings(ofstream& os)
 {
+  os.precision(16);
   for (int i=0;i<NumberOfCouplings();i++) {
     int cnt=0;
     for (map<string,Complex>::iterator mit=p_couplmap->begin();mit!=p_couplmap->end();mit++) {
@@ -698,6 +699,7 @@ void String_Generator::WriteCouplings(ofstream& os)
  
 int String_Generator::ReadCouplings(ifstream& is)
 {
+  is.precision(16);
   if (!is) return 0;
   p_couplings->clear();
   string str;
