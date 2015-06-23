@@ -21,7 +21,8 @@ namespace SHERPA {
   class Sherpa: public ATOOLS::Terminator_Object {
   private:
     std::string   m_path;
-    long int      m_trials, m_debugstep, m_debuginterval;
+    long int      m_trials, m_debugstep, m_debuginterval, m_displayinterval;
+    double        m_evt_starttime;
 
     Initialization_Handler * p_inithandler;
     Event_Handler          * p_eventhandler;

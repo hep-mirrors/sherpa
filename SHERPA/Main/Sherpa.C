@@ -42,6 +42,8 @@ Sherpa::Sherpa() :
   m_trials = 100;
   m_debuginterval = 0;
   m_debugstep = -1;
+  m_displayinterval = 100;
+  m_evt_starttime = -1.0;
   exh->AddTerminatorObject(this);
 }
 
@@ -135,6 +137,9 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
       m_debugstep=debugstep;
       ran->ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
     }
+
+    m_displayinterval=read.GetValue<int>("EVENT_DISPLAY_INTERVAL",100);
+    
     return res;
   }
   msg_Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl
@@ -180,6 +185,9 @@ bool Sherpa::InitializeTheEventHandler()
   if (!anas->empty()) p_eventhandler->AddEventPhase(new Analysis_Phase(anas));
   if (!outs->empty()) p_eventhandler->AddEventPhase(new Output_Phase(outs,p_eventhandler));
   p_eventhandler->PrintGenericEventStructure();
+
+  msg->SetLevel(p_inithandler->DataReader()->GetValue<int>("EVT_OUTPUT",msg->Level()));
+
   return 1;
 }
 
@@ -193,6 +201,9 @@ bool Sherpa::GenerateOneEvent(bool reset)
     if (m_debugstep>=0) {
       ran->ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
     }
+
+    if (m_evt_starttime<0.0) m_evt_starttime=rpa->gen.Timer().RealTime();
+    
     if (reset) p_eventhandler->Reset();
     if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
       if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
@@ -208,9 +219,8 @@ bool Sherpa::GenerateOneEvent(bool reset)
         THROW(normal_exit,"Debug event written.");
       }
       rpa->gen.SetNumberOfGeneratedEvents(rpa->gen.NumberOfGeneratedEvents()+1);
-      Blob_List *blobs(p_eventhandler->GetBlobs()); // HS debug
+      Blob_List *blobs(p_eventhandler->GetBlobs());
       if (msg_LevelIsEvents()) {
-	//Blob_List *blobs(p_eventhandler->GetBlobs());
 	if (!blobs->empty()) {
 	  msg_Out()<<"  -------------------------------------------------  "<<std::endl;
 	  for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) 
@@ -228,17 +238,32 @@ bool Sherpa::GenerateOneEvent(bool reset)
               abort();
           }
       }
-      //double totalcharge=0.;
-      //Particle_List plist = blobs->ExtractParticles(1);
-      //for (size_t i=0; i<plist.size(); ++i) {
-        //totalcharge += plist[i]->Flav().Charge();
-      //}
-      //if (fabs(totalcharge)>1e-12) {
-        //PRINT_INFO("totalcharge = "<<totalcharge);
-        //PRINT_VAR(*blobs);
-        //abort();
-      //}
 
+      int i=rpa->gen.NumberOfGeneratedEvents();
+      int nevt=rpa->gen.NumberOfEvents();
+      msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
+      int exp;
+      for (exp=5; i/int(pow(10,exp))==0; --exp) {}
+      if (((rpa->gen.BatchMode()&4 && i%m_displayinterval==0) ||
+           (!(rpa->gen.BatchMode()&4) && i%int(pow(10,exp))==0)) &&
+          i<rpa->gen.NumberOfEvents()) {
+        double diff=rpa->gen.Timer().RealTime()-m_evt_starttime;
+        msg_Info()<<"  Event "<<i<<" ( "
+                  <<FormatTime(size_t(diff))<<" elapsed / "
+                  <<FormatTime(size_t((nevt-i)/(double)i*diff))
+                  <<" left ) -> ETA: "<<rpa->gen.Timer().
+          StrFTime("%a %b %d %H:%M",time_t((nevt-i)/(double)i*diff))<<"  ";
+        double xs(GetEventHandler()->TotalXSMPI());
+        double err(GetEventHandler()->TotalErrMPI());
+        if (!(rpa->gen.BatchMode()&2)) msg_Info()<<"\n  ";
+        msg_Info()<<"XS = "<<xs<<" pb +- ( "<<err<<" pb = "
+                  <<((int(err/xs*10000))/100.0)<<" % )  ";
+        if (!(rpa->gen.BatchMode()&2))
+          msg_Info()<<mm(1,mm::up);
+        if (rpa->gen.BatchMode()&2) { msg_Info()<<std::endl; }
+        else { msg_Info()<<bm::cr<<std::flush; }
+      }
+      
       return 1;
     }
     return 0;
@@ -287,7 +312,14 @@ void Sherpa::PrepareTerminate()
 }
 
 bool Sherpa::SummarizeRun() 
-{ 
+{
+  if (rpa->gen.NumberOfEvents()>0) {
+    msg_Info()<<"  Event "<<rpa->gen.NumberOfEvents()<<" ( "
+              <<size_t(rpa->gen.Timer().RealTime()-m_evt_starttime)
+              <<" s total ) = "
+              << rpa->gen.NumberOfEvents()*3600*24/((size_t) rpa->gen.Timer().RealTime()-m_evt_starttime)
+              <<" evts/day                    "<<std::endl;
+  }
   p_eventhandler->Finish(); 
   return true; 
 }
