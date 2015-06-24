@@ -19,11 +19,12 @@
   HARD_DECAYS On;
   STORE_DECAY_RESULTS 2;
   HDH_ONLY_DECAY {25,22,22};
+  HDH_BR_WEIGHTS 0;
 
   % model parameters
   MODEL SM+EHC
-  MASSIVE[5] 1; MASSIVE[15] 1;
-  MASS[25] 126.; WIDTH[25] 0.;
+  MASSIVE[15] 1;
+  MASS[25] 125.; WIDTH[25] 0.;
   STABLE[23] 0; STABLE[24] 0; STABLE[25] 0;
 
   % collider setup
