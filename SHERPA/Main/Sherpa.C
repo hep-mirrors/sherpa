@@ -313,7 +313,7 @@ void Sherpa::PrepareTerminate()
 
 bool Sherpa::SummarizeRun() 
 {
-  if (rpa->gen.NumberOfEvents()>0) {
+  if (p_eventhandler) {
     msg_Info()<<"  Event "<<rpa->gen.NumberOfEvents()<<" ( "
               <<size_t(rpa->gen.Timer().RealTime()-m_evt_starttime)
               <<" s total ) = "
