@@ -61,7 +61,7 @@ namespace DIRE {
     {
       double V=2.0*s.m_z/(sqr(s.m_z)+s.m_t/s.m_Q2)-(2.0-s.m_z);
       if (s.m_mk2==0.0) return V;
-      V-=2.0*s.m_mk2/(s.m_Q2+s.m_mk2)*s.m_y/(1.0-s.m_y);
+      V-=2.0*s.m_mk2/s.m_Q2*s.m_y/(1.0-s.m_y);
       return V;
     }
 

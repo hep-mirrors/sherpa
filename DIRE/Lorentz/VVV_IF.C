@@ -30,7 +30,7 @@ namespace DIRE {
 	A*=1.0+p_sk->GF()->K(s);
       }
       if (s.m_mk2==0.0) return A+B;
-      B-=s.m_mk2/(s.m_Q2+s.m_mk2)*s.m_y/(1.0-s.m_y);
+      B-=s.m_mk2/s.m_Q2*s.m_y/(1.0-s.m_y);
       return A+B;
     }
 
