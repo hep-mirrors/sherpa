@@ -1,14 +1,20 @@
 #include "SHERPA/Main/Sherpa.H"
 #include "SHERPA/Initialization/Initialization_Handler.H"
+#include "ATOOLS/Org/CXXFLAGS.H"
+#include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "AddOns/Python/MEProcess.H"
 
 int main(int argc,char* argv[])
 {
+#ifdef USING__MPI
+  MPI::Init(argc,argv);
+#endif
+  SHERPA::Sherpa *Generator(new SHERPA::Sherpa());
+  // initialize the framework
   try {
-    // initialize the framework
-    SHERPA::Sherpa *Generator(new SHERPA::Sherpa());
     Generator->InitializeTheRun(argc,argv);
 
     // create a MEProcess instance
@@ -41,16 +47,14 @@ int main(int argc,char* argv[])
       msg_Out()<<"Flux:                                            "<<flux <<std::endl;
       msg_Out().precision(precision);
     }
-
-    delete Generator;
   }
-  catch(ATOOLS::Exception a) {
-    msg_Error()<<a<<std::endl;
+  catch(ATOOLS::Exception exception) {
     std::terminate();
   }
-  catch(char const* a) {
-    std::cout << a << std::endl;
-    exit(1);
-  }
+  delete Generator;
+#ifdef USING__MPI
+  MPI::Finalize();
+#endif
+  return 0;
 }
 
