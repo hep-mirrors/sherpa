@@ -95,7 +95,7 @@ files leading to the crash. Use the status recovery directory
 @chapter Authors
 
 Sherpa was written by the Sherpa Team, see 
-@uref{http://www.sherpa-mc.de,,http://www.sherpa-mc.de}.
+@uref{http://sherpa.hepforge.org,,sherpa.hepforge.org}.
 
 
 @node Copying

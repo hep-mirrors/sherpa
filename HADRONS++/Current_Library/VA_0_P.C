@@ -53,6 +53,6 @@ void ATOOLS::Getter<Current_Base,ME_Parameters,VA_0_P>::
 PrintInfo(std::ostream &st,const size_t width) const {
   st<<"Example: $ 0 \\rightarrow \\pi $ \n\n"
     <<"Order: 0 = Pseudoscalar \n\n"
-    <<"Reference: http://sherpa-mc.de/dokuwiki/\\_media/publications/theses/diplom\\_laubrich.pdf \n"
+    <<"Reference: https://sherpa.hepforge.org/olddokuwiki/data/media/publications/theses/diplom\\__laubrich.pdf \n"
     <<std::endl;
 }

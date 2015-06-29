@@ -27,7 +27,7 @@ case $1 in
     echo @CXX@;;
   *)
     echo "Sherpa-config: configuration tool for the Monte Carlo";
-    echo "               event generator Sherpa: http://sherpa-mc.de";
+    echo "               event generator Sherpa: http://sherpa.hepforge.org";
     echo "Options:";
     echo "  Sherpa-config --version : returns Sherpa version";
     echo "  Sherpa-config --prefix  : returns the installation path";

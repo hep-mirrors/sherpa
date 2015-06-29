@@ -566,6 +566,6 @@ PrintInfo(std::ostream &st,const size_t width) const {
     <<"  \\begin{itemize} \n"
     <<"    \\item Kuehn-Santamaria (default) \n"
     <<"  \\end{itemize} \n"
-    <<"Reference: http://sherpa-mc.de/dokuwiki/\\_media/publications/theses/diplom\\_laubrich.pdf \n"
+    <<"Reference: https://sherpa.hepforge.org/olddokuwiki/data/media/publications/theses/diplom\\__laubrich.pdf \n"
     <<std::endl;
 }

@@ -853,6 +853,6 @@ PrintInfo(std::ostream &st,const size_t width) const {
     <<"    \\item {\\tt FORM\\_FACTOR = 1 :} Kuehn-Santamaria \n"
     <<"    \\item {\\tt FORM\\_FACTOR = 2 :} Resonance Chiral Theory \n"
     <<"  \\end{itemize} \n"
-    <<"Reference: http://sherpa-mc.de/dokuwiki/\\_media/publications/theses/diplom\\_laubrich.pdf \n"
+    <<"Reference: https://sherpa.hepforge.org/olddokuwiki/data/media/publications/theses/diplom\\__laubrich.pdf \n"
     <<std::endl;
 }
