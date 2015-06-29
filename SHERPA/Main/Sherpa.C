@@ -375,8 +375,8 @@ void Sherpa::DrawLogo(const int mode)
 	    <<"     SHERPA version "<<SHERPA_VERSION<<"."<<SHERPA_SUBVERSION<<" ("<<SHERPA_NAME<<")"<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"     Authors:        Stefan Hoeche, Frank Krauss, Silvan Kuttimalai,         "<<std::endl
-	    <<"                     Marek Schoenherr, Steffen Schumann, Frank Siegert,      "<<std::endl
-            <<"                     Korinna Zapp."<<std::endl
+	    <<"                     Marek Schoenherr, Holger Schulz, Steffen Schumann,      "<<std::endl
+	    <<"                     Frank Siegert, Korinna Zapp."<<std::endl
 	    <<"     Former Authors: Timo Fischer, Tanju Gleisberg, Hendrik Hoeth,           "<<std::endl
 	    <<"                     Ralf Kuhn, Thomas Laubrich, Andreas Schaelicke,         "<<std::endl
 	    <<"                     Jan Winter                                              "<<std::endl
