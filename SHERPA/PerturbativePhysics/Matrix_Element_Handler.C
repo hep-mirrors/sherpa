@@ -404,6 +404,11 @@ void Matrix_Element_Handler::BuildProcesses()
     THROW(missing_input,"No data in "+m_path+m_processfile+"'.");
   for (size_t nf(0);nf<procdata.size();++nf) {
     std::vector<std::string> &cur(procdata[nf]);
+    if(cur.size()==0) continue;
+    if(cur[0].find("Order(")!=std::string::npos)
+      THROW(fatal_error,
+	    std::string("Syntax error in coupling order specification: '"+cur[0]+"'\n")
+	    +"   Whitespace between 'Order' and brackets is mandatory");
     if (cur.size()<2) continue;
     if (cur[0]=="Process") {
       Process_Info pi;
