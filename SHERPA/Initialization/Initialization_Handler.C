@@ -1089,7 +1089,8 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
         Read_Write_Base::AddCommandLine(key+" = "+value+"; ");
       }
       if (key=="TUNE") {
-        SetTuneParameters(value);
+        THROW(not_implemented,"Currently TUNE is not supported.");
+        //SetTuneParameters(value);
       }
     }
     else {
@@ -1099,6 +1100,7 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
   rpa->gen.SetVariable("RUN_DATA_FILE",m_file);
 }
 
+/// Disabled for release 2.2.0
 void Initialization_Handler::SetTuneParameters(const std::string tune)
 {
   std::vector<std::string> tuneparams;
