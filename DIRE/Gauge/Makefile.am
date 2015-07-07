@@ -7,6 +7,6 @@ include ../../svn.make
 libDireGauge_la_SOURCES = \
 	SVN_Info.C \
 	GGG.C \
-	GqQ.C \
+	GqQbar.C \
 	qqG.C \
-	QQG.C
+	QbarQbarG.C
