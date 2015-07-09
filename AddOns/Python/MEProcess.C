@@ -37,17 +37,20 @@ bool MEProcess::HasColorIntegrator()
 
 void MEProcess::SetMomentumIndices(const std::vector<int> &pdgs)
 {
+  // fill vector m_mom_inds, such that there is a correspondence
+  // p_ampl->Leg(m_mom_inds[i]) <--> pdgs[i]
   DEBUG_FUNC(m_nin<<"->"<<m_nout<<": "<<pdgs);
   if(pdgs.size()<m_nin+m_nout) 
     THROW(fatal_error, "Wrong number of pdg codes given.");
-  for (size_t i(0); i<m_nin; i++) {
-    // find the first occurence of a flavour of type pdgs[i] among the
-    // external legs
+  for (size_t i(0); i<m_nin+m_nout; i++) {
+    // find first occurence of flavour 'pdgs[i]' among external legs
+    ATOOLS::Flavour flav(abs(pdgs[i]),pdgs[i]<0?true:false);
     bool found = false;
-    for (size_t j(0); j<m_nin; j++) {
-      if (p_amp->Leg(j)->Flav().Bar()
-          ==ATOOLS::Flavour(abs(pdgs[i]),pdgs[i]<0?false:true)) {
-        // if the index j is already assigned, continue searching
+    for (size_t j(0); j<m_nin+m_nout; j++) {
+      ATOOLS::Flavour thisflav(j<m_nin?p_amp->Leg(j)->Flav().Bar():p_amp->Leg(j)->Flav());
+      if (thisflav==flav) {
+	msg_Debugging()<< flav <<" <-> "<< thisflav <<std::endl;
+        // if the index j is already assigned, continue
         if (std::find(m_mom_inds.begin(),m_mom_inds.end(),j)!=m_mom_inds.end())
           continue;
         m_mom_inds.push_back(j);
@@ -55,26 +58,7 @@ void MEProcess::SetMomentumIndices(const std::vector<int> &pdgs)
         break;
       }
     }
-    if(!found) THROW(fatal_error, "Could not assign IS pdg code.");
-  }
-  for (size_t i(m_nin); i<m_nin+m_nout; i++) {
-    // find the first occurence of a flavour of type pdgs[i] among the
-    // external legs
-    bool found = false;
-    for (size_t j(m_nin); j<m_nin+m_nout; j++) {
-      msg_Debugging()<<ATOOLS::Flavour(abs(pdgs[i]),pdgs[i]<0?true:false)
-                     <<" <-> "<<p_amp->Leg(j)->Flav().Bar()<<std::endl;
-      if (p_amp->Leg(j)->Flav()
-          ==ATOOLS::Flavour(abs(pdgs[i]),pdgs[i]<0?true:false)) {
-        // if the index j is already assigned, continue searching
-        if (std::find(m_mom_inds.begin(),m_mom_inds.end(),j)!=m_mom_inds.end())
-          continue;
-        m_mom_inds.push_back(j);
-        found=true;
-        break;
-      }
-    }
-    if(!found) THROW(fatal_error, "Could not assign FS pdg code.");
+    if(!found) THROW(fatal_error, "Could not map pdg codes.");
   }
   msg_Debugging()<<m_mom_inds<<std::endl;
 }
