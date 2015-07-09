@@ -47,7 +47,7 @@ namespace SHERPA {
     ATOOLS::NLO_subevtlist * p_subevtlist;
     NamedScaleVariationMap * p_nsvmap;
 
-    bool ReadIn(ATOOLS::Blob_Data_Base * &db, std::string name, bool abort);
+    void ReadIn(ATOOLS::Blob_Data_Base * &db, std::string name, bool abort);
 
   public:
     EventInfo(ATOOLS::Blob * sp, const double &wgt,

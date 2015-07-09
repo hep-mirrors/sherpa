@@ -55,7 +55,7 @@ namespace METOOLS {
 	j->SetS(a.S()|e.S()|b.S());
 	return j;
       }
-
+      return NULL;
     }
 
   };// end of class VVSS_Calculator

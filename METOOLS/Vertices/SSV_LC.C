@@ -46,7 +46,7 @@ namespace METOOLS {
 	j->SetS(a.S()|b.S());
 	return j;
       }
-
+      return NULL;
     }
 
   };// end of class SSV_Calculator
