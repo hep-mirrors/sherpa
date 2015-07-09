@@ -98,6 +98,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
       msg_IODebugging()<<"}\n";
     }
   }
+  return true;
 }
 
 void Shower::AddKernel(Kernel *const k)
