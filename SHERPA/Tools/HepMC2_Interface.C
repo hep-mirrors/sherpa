@@ -89,7 +89,7 @@ EventInfo::EventInfo(const EventInfo &evtinfo) :
 {
 }
 
-bool EventInfo::ReadIn(ATOOLS::Blob_Data_Base* &db,std::string name,bool abort)
+void EventInfo::ReadIn(ATOOLS::Blob_Data_Base* &db,std::string name,bool abort)
 {
   db=(*p_sp)[name];
   if (abort && !db) THROW(fatal_error,name+" information missing.");

@@ -59,6 +59,7 @@ UFO_Param_Reader::GetEntry(const string& block,
       return ToType<Read_Type>((*line)[2]);
   }
   NotFound(block, n);
+  return Read_Type();
 }
 
 template<class Read_Type> Read_Type 
@@ -74,6 +75,7 @@ UFO_Param_Reader::GetEntry(const string& block, const unsigned int& n)
     if (ToType<int>((*line)[0]) == n) return ToType<Read_Type>((*line)[1]);
   }
   NotFound(block, n);
+  return Read_Type();
 }
 
 template<class Read_Type> Read_Type
@@ -85,6 +87,7 @@ UFO_Param_Reader::GetWidth(const unsigned int& n)
       return ToType<Read_Type>((*line)[2]);
   }
   NotFound(string("decay"),n);
+  return Read_Type();
 }
 
 vector< vector<string> >::const_iterator UFO_Param_Reader::FindBlock(const string& block){
@@ -93,7 +96,8 @@ vector< vector<string> >::const_iterator UFO_Param_Reader::FindBlock(const strin
     if(ret->size()<2) continue;
     if(IgnoreCaseCompare((*ret)[1],block)) return ret;
   }
-  THROW(fatal_error, "Block "+block+" not found")
+  THROW(fatal_error, "Block "+block+" not found");
+  return ret;
 }
 
 bool UFO_Param_Reader::IgnoreCaseCompare(const std::string& a, const std::string& b){
