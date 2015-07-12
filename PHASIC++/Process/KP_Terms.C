@@ -15,7 +15,6 @@ KP_Terms::KP_Terms(Process_Base *const proc,const int mode):
   SetNC(3.0);
   m_flavs=p_proc->Flavours();
   m_massive=mode&1;
-  m_cemode=mode&2;
   size_t fsgluons(0);
   for (size_t i=p_proc->NIn();i<m_flavs.size();i++) {
     if (m_flavs[i].Strong()&&m_flavs[i].IsMassive()) m_massive=1;
@@ -38,12 +37,18 @@ KP_Terms::KP_Terms(Process_Base *const proc,const int mode):
   for (int i=0;i<8;i++) m_kpca[i]=0.;
   for (int i=0;i<8;i++) m_kpcb[i]=0.;
 
-  // read whether we should accept PDFs that are not positive definite
   Data_Reader reader(" ",";","!","=");
   reader.AddComment("#");
   reader.SetInputPath(rpa->GetPath());
   reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
   int helpi;
+  // read whether we should check PDFs for enough energy to produce parton
+  m_cemode = false;
+  if (reader.ReadFromFile(helpi,"KP_CHECK_ENERGY")) {
+    m_cemode = helpi;
+    msg_Tracking()<<"Set KP-term energy check mode "<<m_cemode<<" . "<<std::endl;
+  }
+  // read whether we should accept PDFs that are not positive definite
   m_negativepdf = false;
   if (reader.ReadFromFile(helpi,"KP_ACCEPT_NEGATIVE_PDF")) {
     m_negativepdf = helpi;
