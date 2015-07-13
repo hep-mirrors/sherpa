@@ -25,16 +25,20 @@ case $1 in
     echo -I@INCLUDEDIR@;;
   --cxx)
     echo @CXX@;;
+  --fc)
+    echo @FC@;;
   *)
     echo "Sherpa-config: configuration tool for the Monte Carlo";
     echo "               event generator Sherpa: http://sherpa.hepforge.org";
     echo "Options:";
-    echo "  Sherpa-config --version : returns Sherpa version";
-    echo "  Sherpa-config --prefix  : returns the installation path";
-    echo "  Sherpa-config --incdir  : returns the path of Sherpa headers";
-    echo "  Sherpa-config --libs    : returns the linker line to link with Sherpa";
-    echo "  Sherpa-config --datadir : returns the path of Sherpa data (like Decaydata, PDFs)";
-    echo "  Sherpa-config --ldflags : returns the LDFLAGS used for Sherpa";
-    echo "  Sherpa-config --cppflags : returns the preprocessor FLAGS needed for Sherpa headers";;
+    echo "  Sherpa-config --version  : returns Sherpa version";
+    echo "  Sherpa-config --prefix   : returns the installation path";
+    echo "  Sherpa-config --incdir   : returns the path of Sherpa headers";
+    echo "  Sherpa-config --libs     : returns the linker line to link with Sherpa";
+    echo "  Sherpa-config --datadir  : returns the path of Sherpa data (like Decaydata, PDFs)";
+    echo "  Sherpa-config --ldflags  : returns the LDFLAGS used for Sherpa";
+    echo "  Sherpa-config --cppflags : returns the preprocessor FLAGS needed for Sherpa headers";
+    echo "  Sherpa-config --cxx      : returns the C++ compiler used";
+    echo "  Sherpa-config --fc       : returns the FORTRAN compiler used";;
 esac
 
