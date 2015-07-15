@@ -406,7 +406,7 @@ Sherpa can compute alternative event weights for different scale and
 PDF choices on-the-fly, resulting in alternative weights for the generated 
 event. The can be evoked with the following syntax
 @verbatim
-SCALE_VARIATIONS <muR-fac-1>,<muF-fac-1>[,<PDF-1>]  <muR-fac-1>,<muF-fac-1>[,<PDF-1>] ...
+SCALE_VARIATIONS <muR-fac-1>,<muF-fac-1>[,<PDF-1>]  <muR-fac-2>,<muF-fac-2>[,<PDF-2>] ...
 @end verbatim
 The key word @code{SCALE_VARIATIONS} takes a space separated list of 
 variation factors for the nominal renormalisation and factorisation scale 
