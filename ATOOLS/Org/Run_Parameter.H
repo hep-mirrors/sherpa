@@ -24,7 +24,7 @@ namespace ATOOLS {
     void AnalyseEnvironment();
     
     class Gen {  // general parameters
-      int                 m_analysis, m_cutscheme;
+      int                 m_cutscheme;
       //std::string         m_runtime;
       long int            m_nevents, m_ngenevents;
       long int            m_seeds[4];
@@ -44,7 +44,6 @@ namespace ATOOLS {
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
       inline long   NumberOfGeneratedEvents()             { return m_ngenevents; }
-      inline int    Analysis()                            { return m_analysis; }
       inline int    CutScheme()                           { return m_cutscheme; }
       inline void   SetNumberOfEvents(long N)             { m_nevents    = N; }
       inline double Ecms()                                { return m_ecms; }

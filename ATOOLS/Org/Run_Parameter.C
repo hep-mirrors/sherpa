@@ -105,7 +105,6 @@ SVN_Info::~SVN_Info()
 Run_Parameter::Run_Parameter() 
 {
   AnalyseEnvironment();
-  gen.m_analysis   = 0;
   gen.m_nevents   = 0;
   gen.m_cutscheme = 0;
   gen.m_ecms      = gen.m_accu = gen.m_sqrtaccu = 0.;
@@ -236,7 +235,6 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 			    gen.m_variables["SHERPA_LIB_PATH"]).c_str(),1);
 #endif
   MakeDir(gen.m_variables["HOME"]+"/.sherpa/",true);
-  gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
   dr.SetAllowUnits(true);
   gen.m_nevents            = dr.GetValue<long int>("EVENTS",100);
   dr.SetAllowUnits(false);

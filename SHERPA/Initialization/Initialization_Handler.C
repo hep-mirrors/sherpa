@@ -820,14 +820,12 @@ bool Initialization_Handler::InitializeTheSoftPhotons()
 bool Initialization_Handler::InitializeTheAnalyses()
 {
   std::string outpath=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT","Analysis/");
-  std::string analysis=p_dataread->GetValue<std::string>("ANALYSIS","0");
   std::vector<std::string> analyses;
-  Data_Reader readline(",",";","#","");
-  readline.SetString(analysis);
-  readline.VectorFromString(analyses);
+  p_dataread->VectorFromFile(analyses,"ANALYSIS");
   for (size_t i=0; i<analyses.size(); ++i) {
-    if (analyses[i]=="0") continue;
+    if (analyses[i]=="0") analyses[i]="None";
     if (analyses[i]=="1") analyses[i]="Internal";
+    if (analyses[i]=="None") continue;
     if (analyses[i]=="Internal")
       if (!s_loader->LoadLibrary("SherpaAnalysis")) 
         THROW(missing_module,"Cannot load Analysis library (--enable-analysis).");
