@@ -75,6 +75,21 @@ void Event_Handler::PrintGenericEventStructure()
   msg_Out()<<"----------------------------------------------------------\n"
 	    <<"-- SHERPA generates events with the following structure --\n"
 	    <<"----------------------------------------------------------\n";
+  msg_Out()<<"Event generation   : ";
+  switch (ToType<size_t>(rpa->gen.Variable("EVENT_GENERATION_MODE"))) {
+  case 0:
+    msg_Out()<<"Weighted"<<std::endl;
+    break;
+  case 1:
+    msg_Out()<<"Unweighted"<<std::endl;
+    break;
+  case 2:
+    msg_Out()<<"Partially unweighted"<<std::endl;
+    break;
+  default:
+    msg_Out()<<"Unknown"<<std::endl;
+    break;
+  }
   if (!p_phases->empty()) {
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       msg_Out()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
