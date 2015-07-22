@@ -7,6 +7,8 @@
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Getter_Function.H"
 
+#include <limits>
+
 namespace ATOOLS { class Data_Reader; }
 
 namespace PHASIC {
@@ -74,7 +76,9 @@ namespace PHASIC {
   public :
 
     inline Selector_Base(const std::string &name): 
-      m_name(name), m_sel_log(NULL), p_proc(NULL) {}
+      m_name(name), m_sel_log(NULL), p_proc(NULL),
+      m_n(0), m_nin(0), m_nout(0), m_fl(NULL),
+      m_smin(0.), m_smax(std::numeric_limits<double>::max()) {}
 
     virtual ~Selector_Base();
 
