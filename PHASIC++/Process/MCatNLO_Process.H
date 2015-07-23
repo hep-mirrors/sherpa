@@ -32,7 +32,7 @@ namespace PHASIC {
     //! Book-keeping variables for last RS, B, VI contributions
     double m_lastrs, m_lastb, m_lastvi;
     //! Switches for the behaviour of this class
-    int    m_fomode, m_hpsmode, m_kfacmode
+    int    m_fomode, m_hpsmode, m_kfacmode;
     //! Book-keeping to track whether event was S or H
     bool   m_wassevent;
 
