@@ -5,8 +5,8 @@
   % scales, tags for scale variations
   FSF:=1.; RSF:=1.; QSF:=1.;
   SCALES METS{FSF*MU_F2}{RSF*MU_R2}{QSF*MU_Q2};
-  CORE_SCALE QCD;
-  METS_BBAR_MODE 5;
+  EXCLUSIVE_CLUSTER_MODE 1;
+  CORE_SCALE VAR{0.25*(sqr(172.5)+0.5*(PPerp2(p[2])+PPerp2(p[3])))};
 
   % tags for process setup
   NJET:=3; LJET:=2,3; QCUT:=20.;
