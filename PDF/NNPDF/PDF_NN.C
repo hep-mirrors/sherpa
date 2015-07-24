@@ -70,7 +70,7 @@ PDF_NNPDF::PDF_NNPDF
   
   m_bunch=bunch; // This is the beam
   if (m_bunch==Flavour(kf_p_plus).Bar()) m_anti=-1;
-  m_type="NNPDF"; // A wild guess
+  m_type=set;
   // initialise all book-keep arrays etc.
   // This is copied from LHAPDF_CPP_Interface.C
   std::vector<int> kfcs;
