@@ -158,7 +158,7 @@ ATOOLS::Cluster_Sequence_Info Single_Process::BeamISRWeight
   else if (m_nin>2) THROW(not_implemented,"More than two incoming particles.");
   Cluster_Sequence_Info csi;
   if (p_int->ISR()) {
-    // external PDFs contain flux
+    // external PDFs
     double pdfext(p_int->ISR()->PDFWeight(mode,p_int->Momenta()[0],
                                                p_int->Momenta()[1],
                                                Q2,Q2,m_flavs[0],m_flavs[1]));
@@ -291,52 +291,6 @@ ATOOLS::Cluster_Sequence_Info Single_Process::BeamISRWeight
   return csi;
 }
 
-void Single_Process::BeamISRWeight
-(NLO_subevtlist *const subs,const int mode)
-{
-  double muf2(subs->back()->m_mu2[stp::fac]);
-  double flux(p_int->ISR()->Flux(p_int->Momenta()[0],p_int->Momenta()[1]));
-  if (m_nin==2 && p_int->ISR()) {
-    size_t nscales(0);
-    for (size_t i(0);i<subs->size();++i) {
-      NLO_subevt *sub((*subs)[i]);
-      if (sub->m_me==0.0) sub->m_result=0.0;
-      if ((!IsEqual(sub->m_mu2[stp::fac],muf2) ||
-	   m_pinfo.m_nlomode!=1) && sub->m_me!=0.0) {
-	ClusterAmplitude_Vector ampls(sub->p_ampl?1:0,sub->p_ampl);
-	if (ampls.size()) ampls.front()->SetProc(sub->p_proc);
-	sub->m_result=sub->m_me
-		      *BeamISRWeight(sub->m_mu2[stp::fac],mode|2,ampls).m_pdfwgt
-		      *flux;
-	sub->m_xf1=p_int->ISR()->XF1(0);
-	sub->m_xf2=p_int->ISR()->XF2(0);
-	++nscales;
-      }
-    }
-    if (nscales<subs->size() && m_pinfo.m_nlomode==1) {
-      double lumi(BeamISRWeight(muf2,mode,ClusterAmplitude_Vector()).m_pdfwgt);
-      lumi*=flux;
-      for (size_t i(0);i<subs->size();++i) {
-	if ((*subs)[i]->m_me==0.0) (*subs)[i]->m_result=0.0;
-	if (IsEqual((*subs)[i]->m_mu2[stp::fac],muf2) &&
-	    (*subs)[i]->m_me!=0.0) {
-          (*subs)[i]->m_result=(*subs)[i]->m_me*lumi;
-	  (*subs)[i]->m_xf1=p_int->ISR()->XF1(0);
-	  (*subs)[i]->m_xf2=p_int->ISR()->XF2(0);
-        }
-      }
-    }
-  }
-  else {
-    for (size_t i(0);i<subs->size();++i) {
-      ClusterAmplitude_Vector ampls(1,(*subs)[i]->p_ampl);
-      if (ampls.size()) ampls.front()->SetProc((*subs)[i]->p_proc);
-      (*subs)[i]->m_result=(*subs)[i]->m_me*
-        BeamISRWeight((*subs)[i]->m_mu2[stp::fac],mode,ampls).m_pdfwgt*flux;
-    }
-  }
-}
-
 double Single_Process::Differential(const Vec4D_Vector &p)
 {
   DEBUG_FUNC(Name()<<", RS:"<<GetSubevtList());
@@ -396,23 +350,48 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     }
     return m_last;
   }
-  Partonic(p,0);
-  NLO_subevtlist *subs(GetSubevtList());
-  for (size_t i=0;i<subs->size();++i) {
-    m_mewgtinfo.m_RS+=(*subs)[i]->m_mewgt;
+  else {
+    Partonic(p,0);
+    NLO_subevtlist *subs(GetSubevtList());
+    for (size_t i(0);i<subs->size();++i) {
+      NLO_subevt *sub((*subs)[i]);
+      if (sub->m_me==0.0) sub->m_result=0.0;
+      if (m_mewgtinfo.m_type&mewgttype::H) {
+        RDA_Info rda(sub->m_mewgt,sub->m_mu2[stp::ren],
+                     sub->m_mu2[stp::fac],sub->m_mu2[stp::fac],
+                     sub->m_i,sub->m_j,sub->m_k);
+        m_mewgtinfo.m_rdainfos.push_back(rda);
+        msg_Debugging()<<i<<": wgt="<<m_mewgtinfo.m_rdainfos.back().m_wgt
+                       <<std::endl;
+      }
+      if (sub->m_me!=0.0) {
+        ClusterAmplitude_Vector ampls(sub->p_ampl?1:0,sub->p_ampl);
+        if (ampls.size()) ampls.front()->SetProc(sub->p_proc);
+        ATOOLS::Cluster_Sequence_Info csi=BeamISRWeight
+                                          (sub->m_mu2[stp::fac],2,ampls);
+        msg_Debugging()<<"fa*fb="<<csi.m_pdfwgt<<std::endl;
+        csi.AddFlux(flux);
+        if (m_mewgtinfo.m_type&mewgttype::H)
+          m_mewgtinfo.m_rdainfos.back().m_csi=csi;
+        sub->m_result=sub->m_me*csi.m_pdfwgt*csi.m_flux;
+        sub->m_mewgt*=flux;
+        sub->m_xf1=p_int->ISR()->XF1(0);
+        sub->m_xf2=p_int->ISR()->XF2(0);
+      }
+    }
+    Scale_Setter_Base *scs(ScaleSetter(1));
+    if (scs!=NULL) {
+      m_mewgtinfo.m_muf2=scs->Scale(stp::fac);
+      m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
+    }
+    m_mewgtinfo*=flux;
+    for (size_t i=0;i<subs->size();++i) {
+      m_last+=(*subs)[i]->m_result;
+    }
+    return m_last;
   }
-  m_mewgtinfo*=flux;
-  Scale_Setter_Base *scs(ScaleSetter(1));
-  if (scs!=NULL) {
-    m_mewgtinfo.m_muf2=scs->Scale(stp::fac);
-    m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
-  }
-  BeamISRWeight(subs,0);
-  for (size_t i=0;i<subs->size();++i) {
-    m_last+=(*subs)[i]->m_result;
-    (*subs)[i]->m_mewgt*=flux;
-  }
-  return m_last;
+  THROW(fatal_error,"Internal error.");
+  return 0.;
 }
 
 bool Single_Process::CalculateTotalXSec(const std::string &resultpath,

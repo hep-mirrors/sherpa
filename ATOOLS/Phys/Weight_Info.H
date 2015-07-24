@@ -29,8 +29,8 @@ namespace ATOOLS {
   }
 
   struct Weight_Info {
-    PDF_Info m_pdf;
     double m_weight, m_dxs, m_ntrial;
+    PDF_Info m_pdf;
     Weight_Info(const double &weight=0.0,
                 const double &dxs=0.0,const double &ntrial=0.0,
                 const int &fl1=0, const int &fl2=0,
@@ -105,7 +105,7 @@ namespace ATOOLS {
     std::vector<Cluster_Step> m_txfl;
 
     Cluster_Sequence_Info(const double &w=1.0, const double &f=1.0,
-                          const double &c=0.0, const double &r=0.0) :
+                          const double &c=0.0) :
       m_pdfwgt(w), m_flux(f), m_ct(c) {}
     inline void AddSplitting(const double& t,
                              const double& xa, const double& xb,
@@ -147,12 +147,13 @@ namespace ATOOLS {
   struct RDA_Info {
   public:
     double m_wgt, m_mur2, m_muf12, m_muf22;
+    Cluster_Sequence_Info m_csi;
     size_t m_i,m_j,m_k;
     RDA_Info(const double &wgt,const double &mur2,
              const double &muf12,const double &muf22,
              const size_t &i,const size_t &j, const size_t &k):
     m_wgt(wgt), m_mur2(mur2), m_muf12(muf12), m_muf22(muf22),
-    m_i(i) ,m_j(j) ,m_k(k) {}
+    m_csi(), m_i(i), m_j(j), m_k(k) {}
   };
 
   inline std::ostream & operator<<(std::ostream & s,
@@ -160,14 +161,15 @@ namespace ATOOLS {
   {
     s<<"RDA("<<rdai.m_i<<","<<rdai.m_j<<","<<rdai.m_k<<"): "
      <<"wgt="<<rdai.m_wgt<<", muR2="<<rdai.m_mur2
-     <<", muF12="<<rdai.m_muf12<<", muF22="<<rdai.m_muf22;
+     <<", muF12="<<rdai.m_muf12<<", muF22="<<rdai.m_muf22
+     <<"\n            "<<rdai.m_csi;
     return s;
   }
 
   struct ME_Weight_Info {
   public:
     mewgttype::code m_type;
-    double m_B, m_VI, m_KP, m_RS;
+    double m_B, m_VI, m_KP;
     std::vector<double> m_wren,m_wfac;
     double m_x1, m_x2, m_y1, m_y2, m_mur2, m_muf2;
     int m_fl1, m_fl2;
@@ -177,7 +179,7 @@ namespace ATOOLS {
     std::vector<RDA_Info> m_rdainfos;
     ME_Weight_Info():
       m_type(mewgttype::none),
-      m_B(0.0), m_VI(0.0), m_KP(0.0), m_RS(0.0),
+      m_B(0.0), m_VI(0.0), m_KP(0.0),
       m_wren(2,0.0), m_wfac(16,0.0),
       m_x1(1.0), m_x2(1.0), m_y1(1.0), m_y2(1.0),
       m_mur2(0.0), m_muf2(0.0), m_fl1(0), m_fl2(0),
