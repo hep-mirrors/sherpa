@@ -59,9 +59,10 @@ Scale_Variation::Scale_Variation(const double &muR2fac, const double &muF2fac,
   m_deletepdfs(deletepdfs), m_deleteas(deleteas),
   m_muR2fac(muR2fac), m_muF2fac(muF2fac), m_val(0.), m_RSvals(0,0.),
   p_pdf1(pdf1), p_pdf2(pdf2),
-  m_pdf1id(pdf1->LHEFNumber()), m_pdf2id(pdf2->LHEFNumber()),
-  m_pdf1set(pdf1->Set()), m_pdf2set(pdf2->Set()),
-  m_pdf1setmember(pdf1->Member()), m_pdf2setmember(pdf2->Member()),
+  m_pdf1id(pdf1?pdf1->LHEFNumber():-1), m_pdf2id(pdf2?pdf2->LHEFNumber():-1),
+  m_pdf1set(pdf1?pdf1->Set():""), m_pdf2set(pdf2?pdf2->Set():""),
+  m_pdf1setmember(pdf1?pdf1->Member():0),
+  m_pdf2setmember(pdf2?pdf2->Member():0),
   p_as(as), m_name(GenerateName())
 {
 }
@@ -278,7 +279,7 @@ void Scale_Variations::ExtractParameters(const ATOOLS::Weight_Info &winfo,
       m_params.rsmuF2s[i]=(*sevtlist)[i]->m_mu2[stp::fac];
     }
   }
-  m_ckkw=m_params.csi.m_txfl.size();
+  m_ckkw=m_params.type&mewgttype::METS;
 }
 
 bool Scale_Variations::Calculate(Scale_Variation * sv,
@@ -356,6 +357,12 @@ double Scale_Variations::Calculate(const ATOOLS::mewgttype::code& type,
                  <<"\\mu_F2^2: "<<muF22<<" -> "<<muF22new<<std::endl;
   msg_Debugging()<<"oqcd: "<<oqcd<<", oew: "<<oew<<std::endl;
   msg_Debugging()<<"cluster sequence: "<<csi.m_txfl.size()<<" steps"<<std::endl;
+  msg_Debugging()<<"RDA: "<<rda.size()<<" terms"<<std::endl;
+  if (msg_LevelIsDebugging()) {
+    for (size_t i(0);i<rda.size();++i)
+    msg_Debugging()<<i<<": wgt="<<rda[i].m_wgt<<", cluster sequence: "
+                   <<rda[i].m_csi.m_txfl.size()<<" steps"<<std::endl;
+  }
   // build type minus METS
   mewgttype::code nometstype=((type&mewgttype::METS)?type^mewgttype::METS:type);
   pdf1->Calculate(x1,muF12new);
@@ -366,7 +373,7 @@ double Scale_Variations::Calculate(const ATOOLS::mewgttype::code& type,
       <<"pdf1 = ("<<fl1<<","<<x1<<","<<sqrt(muF12new)<<") = "<<fa<<"\n"
       <<"pdf2 = ("<<fl2<<","<<x2<<","<<sqrt(muF22new)<<") = "<<fb<<std::endl;
   msg_Debugging()<<"fa*fb="<<fa*fb<<std::endl;
-  double pdffac(PDFRatioFactor(fa,fb,csi,muF2fac,pdf1,pdf2));
+  double pdffac(PDFRatioFactor(fa,fb,csi,muF2fac,pdf1,pdf2,rda.size()));
   msg_Debugging()<<"fa*fb*pdffac="<<fa*fb*pdffac<<std::endl;
   // reset MODEL::as to hard process
   MODEL::as->SetActiveAs(PDF::isr::hard_process);
@@ -388,12 +395,16 @@ double Scale_Variations::Calculate(const ATOOLS::mewgttype::code& type,
         double asrdainew((*as)(rda[i].m_mur2*muR2fac)),
                asrdaiold((*MODEL::as)(rda[i].m_mur2));
         double asfrdai=pow(asrdainew/asrdaiold,oqcd);
-        msg_Debugging()<<"asf = "<<asfrdai<<std::endl;
         pdf1->Calculate(x1,rda[i].m_muf12*muF2fac);
         pdf2->Calculate(x2,rda[i].m_muf22*muF2fac);
-        double farda=pdf1->GetXPDF(fl1)/x1;
-        double fbrda=pdf2->GetXPDF(fl2)/x2;
-        RDAinew=farda*fbrda*asfrdai*rda[i].m_wgt*pdffac;
+        double fardai=pdf1->GetXPDF(fl1)/x1;
+        double fbrdai=pdf2->GetXPDF(fl2)/x2;
+        double pdffacrdai(PDFRatioFactor(fardai,fbrdai,rda[i].m_csi,muF2fac,
+                                         pdf1,pdf2));
+        msg_Debugging()<<"fa*fb="<<fardai*fbrdai<<std::endl;
+        msg_Debugging()<<"fa*fb*pdffac="<<fardai*fbrdai*pdffacrdai<<std::endl;
+        msg_Debugging()<<"asf = "<<asfrdai<<std::endl;
+        RDAinew=fardai*fbrdai*pdffacrdai*asfrdai*rda[i].m_wgt;
       }
       msg_Debugging()<<"  new RDA_"<<i<<" = "<<RDAinew<<std::endl;
       RDAnew+=RDAinew;
@@ -502,10 +513,12 @@ double Scale_Variations::PDFRatioFactor
 (const double& fa, const double& fb, const ATOOLS::Cluster_Sequence_Info& csi,
  const double& muF2fac, PDF::PDF_Base * pdf1, PDF::PDF_Base * pdf2, bool skip)
 {
-  DEBUG_FUNC("ckkw="<<m_ckkw<<", #steps="<<csi.m_txfl.size());
   if (!m_ckkw || skip) return 1.;
+  DEBUG_FUNC("#steps="<<csi.m_txfl.size());
   // if no cluster history, something is wrong
   if (csi.m_txfl.size()<2) THROW(fatal_error,"Insufficient cluster history.");
+  // if first two steps are at same t, return 1
+  if (IsEqual(csi.m_txfl[0].m_t,csi.m_txfl[1].m_t)) return 1.;
   // want to calculate (i=0 -> core, i=N -> ext)
   // wn-ext * [\prod_{i=0}^{N-1} wn_i/wd_i]
   // = [wn-ext * \prod_{i=1}^{N-1} wn_i/wd_i * 1/wd_0] * wn-core
@@ -513,7 +526,7 @@ double Scale_Variations::PDFRatioFactor
   // and vary only wn-core, but have varied fa*fb = wn-ext so far
   // -------------------------------------------------------------------
   // this computes wn-ext * \prod_{i=1}^{N-1} wn_i/wd_i * 1/wd_0
-  // multiply wn-ext by 1/fa*fb*flux to cancel factor coming from outside
+  // multiply wn-ext by 1/fa*fb to cancel factor coming from outside
   double fac(csi.m_txfl[0].m_pdfrationumerator/(fa*fb));
   double t(std::numeric_limits<double>::max());
   msg_Debugging()<<"pdffac="<<fac<<std::endl;
@@ -528,9 +541,11 @@ double Scale_Variations::PDFRatioFactor
       t=csi.m_txfl[i].m_t;
       if (i==csi.m_txfl.size()-1) lastoneordered=true;
     }
-    else msg_Debugging()<<": Skip. Unordered history "
-                        <<sqrt(t)<<" > "<<sqrt(csi.m_txfl[i].m_t)<<std::endl;
-    else t=std::numeric_limits<double>::max();
+    else {
+      msg_Debugging()<<": Skip. Unordered history "
+                     <<sqrt(t)<<" > "<<sqrt(csi.m_txfl[i].m_t)<<std::endl;
+      t=std::numeric_limits<double>::max();
+    }
     msg_Debugging()<<std::endl;
   }
   msg_Debugging()<<"pdffac="<<fac<<std::endl;

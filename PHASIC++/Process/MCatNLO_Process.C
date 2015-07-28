@@ -131,6 +131,9 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   for (size_t i(0);i<p_bviproc->Size();++i)
     if ((*p_bviproc)[i]->Flavours()!=(*p_bproc)[i]->Flavours())
       THROW(fatal_error,"Ordering differs in B and BVI");
+
+  for (size_t i(0);i<p_rsproc->Size();++i)
+    (*p_rsproc)[i]->GetMEwgtinfo()->m_type=mewgttype::H;
 }
 
 Process_Base* MCatNLO_Process::InitProcess
@@ -305,18 +308,6 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     p_ampl = dynamic_cast<Single_Process*>(rproc)->Cluster(p,4096);
   }
   p_selected->Selected()->SetMEwgtinfo(*p_rsproc->Selected()->GetMEwgtinfo());
-  // rsproc has entry in m_RS, while rproc should have it in m_B
-  std::swap(p_selected->Selected()->GetMEwgtinfo()->m_B,
-            p_selected->Selected()->GetMEwgtinfo()->m_RS);
-  // append rda-info for scale variations, set type to H event
-  for (size_t i(0);i<p_rsproc->Selected()->GetSubevtList()->size();++i) {
-    NLO_subevt * sub((*p_rsproc->Selected()->GetSubevtList())[i]);
-    RDA_Info rda(sub->m_mewgt,sub->m_mu2[stp::ren],
-                 sub->m_mu2[stp::fac],sub->m_mu2[stp::fac],
-                 sub->m_i,sub->m_j,sub->m_k);
-    p_selected->Selected()->GetMEwgtinfo()->m_rdainfos.push_back(rda);
-  }
-  p_selected->Selected()->GetMEwgtinfo()->m_type=mewgttype::H;
   if (p_ampl==NULL) {
     msg_Error()<<METHOD<<"(): No valid clustering. Skip event."<<std::endl;
     return 0.0;
@@ -334,7 +325,10 @@ double MCatNLO_Process::OneHEvent(const int wmode)
     for (Cluster_Amplitude *ampl(p_ampl);
 	 ampl;ampl=ampl->Next()) ampl->SetJF(jf);
     bool res(static_cast<Jet_Finder*>(jf)->JC()->Jets(p_ampl));
-    if (res) return 0.0;
+    if (res) {
+      msg_Debugging()<<"--- Jet veto ---\n";
+      return 0.0;
+    }
   }
   return 1.0;
 }
