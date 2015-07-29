@@ -176,7 +176,7 @@ void HEFT::FixEWParameters()
     break;
   }
   case 3: {
-    //gmu scheme
+    //gmu scheme -- inputs GF, M_W, M_Z, M_H
     double GF=p_dataread->GetValue<double>("GF",1.16639e-5);
     csin2thetaW=1.-sqr(MW/MZ);
     ccos2thetaW=1.-csin2thetaW;
