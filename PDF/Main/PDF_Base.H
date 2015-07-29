@@ -35,6 +35,8 @@ namespace PDF {
     inline PDF_AS_Info(): m_order(-1), m_asmz(0.0), m_mz2(0.0) {}
   };// end of struct PDF_AS_Info
 
+  std::ostream &operator<<(std::ostream &ostr,const PDF_AS_Info &asi);
+
   class PDF_Base {
   public:
 

@@ -14,6 +14,12 @@
 using namespace PDF;
 using namespace ATOOLS;
 
+std::ostream &PDF::operator<<(std::ostream &ostr,const PDF::PDF_AS_Info &asi)
+{
+  return ostr<<"\\alpha_s of order="<<asi.m_order
+             <<" with \\alpha_s(\\mu="<<sqrt(asi.m_mz2)<<")="<<asi.m_asmz;
+}
+
 PDF_Base::PDF_Base():
   m_type("none"), m_set(""), m_member(0), m_exponent(1.),
   m_rescale(1.)
