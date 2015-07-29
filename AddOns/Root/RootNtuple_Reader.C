@@ -42,7 +42,7 @@ namespace SHERPA {
   struct RootNTupleReader_Variables {
 #ifdef USING__ROOT
     static const Int_t s_kMaxParticle = 100;
-    UInt_t m_id;
+    Int_t m_id;
     Int_t m_ncount, m_nparticle;
     Float_t p_px[s_kMaxParticle];
     Float_t p_py[s_kMaxParticle];
@@ -54,7 +54,7 @@ namespace SHERPA {
     Double_t m_x1,m_x2,m_x1p,m_x2p,m_mur,m_muf,m_as;
     Int_t m_id1,m_id2,m_nuwgt;
     Double_t p_uwgt[18];
-    Short_t m_oqcd;
+    Char_t m_oqcd;
     Char_t m_type[2];
     TChain* p_f;
 #endif
