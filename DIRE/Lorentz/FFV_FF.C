@@ -73,9 +73,7 @@ namespace DIRE {
       if (vijj<0.0 || vijk<0.0) return 0.0;
       vijj=sqrt(vijj)/(s.m_y+2.0*nui2);
       vijk=sqrt(vijk)/(1.0-s.m_y);
-      double zm=1.0-0.5*(1.0-y)*(1.0+vijj*vijk);
-      double zp=1.0-0.5*(1.0-y)*(1.0-vijj*vijk);
-      double V=vijk*(1.0-2.0*(z*(1.0-z)-2.0*zp*zm));
+      double V=1/vijk*(1.0-2.0*z*(1.0-z)+nui2/(s.m_y/2.0+nui2));
       V/=1.0+2.0*nui2/s.m_y;
       return V;
     }

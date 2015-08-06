@@ -27,9 +27,7 @@ namespace DIRE {
       double nuk2(s.m_mk2/s.m_Q2), vijk=sqr(1.0-y)-4.0*y*nuk2;
       if (vijk<0.0) return 0.0;
       vijk=sqrt(vijk)/(1.0-y);
-      double zm=1.0-0.5*(1.0-y)*(1.0+vijk);
-      double zp=1.0-0.5*(1.0-y)*(1.0-vijk);
-      B1=(-2.0+(zp-z)*(z-zm))/vijk;
+      B1=(-2.0+z*(1.0-z))/vijk;
       return A1*(1.0+p_sk->GF()->K(s))+B1;
     }
 
