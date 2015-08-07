@@ -38,6 +38,7 @@ namespace METOOLS {
       if (m_type==0) {
 	p_b=j[m_n[1]];
 	m_stat=(*p_a)(0)==(*p_b)(1) && (*p_a)(1)==(*p_b)(0);
+	if (!m_stat) m_stat=(*p_a)(0)==(*p_a)(1) && (*p_b)(0)==(*p_b)(1);
 	return m_stat;
       }
       m_stat=true;
@@ -61,6 +62,12 @@ namespace METOOLS {
 	    c=d;
 	  }
 	  j->Divide(3.0/2.0);
+	}
+      }
+      else {
+	if ((*p_a)(0)==(*p_a)(1)) {
+	  if ((*p_a)(0)!=(*p_b)(1)) j->Divide(-3.0);
+	  else j->Divide(3.0/2.0);
 	}
       }
       p_v->AddJ(j);
