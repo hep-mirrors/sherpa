@@ -91,7 +91,7 @@ void KP_Terms::Calculate
   bool sa=m_flavs[0].Strong();
   bool sb=m_flavs[1].Strong();
   if (!sa && !sb) return;
-  if ((sa && x0<eta0) || (sb && x1<eta1)) return 0.; 
+  if ((sa && x0<eta0) || (sb && x1<eta1)) return; 
   size_t pls=1;
   if (sa&&sb) pls++;
   double muf = p_proc->ScaleSetter()->Scale(stp::fac,1);
@@ -307,7 +307,7 @@ double KP_Terms::Get(const double &x0,const double &x1,
   if (sa && (pdfa==NULL || !pdfa->Contains(flav[0]))) return 0.0;
   if (sb && (pdfb==NULL || !pdfb->Contains(flav[1]))) return 0.0;
   if (!sa && !sb) return 0.;
-  if (x0<eta0 || x1<eta1) return 0.; 
+  if ((sa && x0<eta0) || (sb && x1<eta1)) return 0.; 
   size_t pls=1;
   if (sa&&sb) pls++;
   Flavour gluon(kf_gluon);
