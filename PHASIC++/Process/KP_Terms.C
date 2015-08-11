@@ -91,7 +91,7 @@ void KP_Terms::Calculate
   bool sa=m_flavs[0].Strong();
   bool sb=m_flavs[1].Strong();
   if (!sa && !sb) return;
-  if (x0<eta0 || x1<eta1) return; 
+  if ((sa && x0<eta0) || (sb && x1<eta1)) return 0.; 
   size_t pls=1;
   if (sa&&sb) pls++;
   double muf = p_proc->ScaleSetter()->Scale(stp::fac,1);
