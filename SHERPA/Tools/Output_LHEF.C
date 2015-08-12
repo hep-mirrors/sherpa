@@ -146,6 +146,7 @@ void Output_LHEF::Output(Blob_List* blobs, const double weight)
       double SCALUP = sqrt((*(*blit))["Factorisation_Scale"]->Get<double>());
       if ((*(*blit))["Resummation_Scale"])
 	SCALUP=sqrt((*(*blit))["Resummation_Scale"]->Get<double>());
+      if (SCALUP==0.0) SCALUP=sqrt((*(*blit))["Renormalization_Scale"]->Get<double>());
       double AQEDUP = -1.;
       double AQCDUP = mur2?(*MODEL::as)(mur2):-1.0;
       m_outstream<<std::setprecision(10);
