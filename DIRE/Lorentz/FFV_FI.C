@@ -65,11 +65,7 @@ namespace DIRE {
       double V=1.0-2.0*s.m_z*(1.0-s.m_z);
       if (s.m_mi2==0.0 && s.m_mj2==0.0) return V;
       double nui2(s.m_mi2/s.m_Q2*s.m_y);
-      double viji=sqr(1.0-s.m_y)-4.0*nui2*nui2;
-      if (viji<0.0 || s.m_y>1.0) return false;
-      viji=sqrt(viji)/(1.0-s.m_y+2.0*nui2);
-      double zm=0.5*(1.0-viji), zp=0.5*(1.0+viji);
-      V=1.0-2.0*(zp-s.m_z)*(s.m_z-zm);
+      V=1.0-2.0*s.m_z*(1.0-s.m_z)+nui2/((1.0-s.m_y)/2.0+nui2);
       return V;
     }
 

@@ -68,10 +68,8 @@ namespace DIRE {
 	return V;
       }
       double nui2(s.m_mi2/s.m_Q2), nuk2(s.m_mk2/s.m_Q2);
-      double vijj=sqr(s.m_y)-4.0*nui2*nui2;
       double vijk=sqr(1.0-s.m_y)-4.0*(s.m_y+2.0*nui2)*nuk2;
-      if (vijj<0.0 || vijk<0.0) return 0.0;
-      vijj=sqrt(vijj)/(s.m_y+2.0*nui2);
+      if (vijk<0.0) return 0.0;
       vijk=sqrt(vijk)/(1.0-s.m_y);
       double V=1/vijk*(1.0-2.0*z*(1.0-z)+nui2/(s.m_y/2.0+nui2));
       V/=1.0+2.0*nui2/s.m_y;
