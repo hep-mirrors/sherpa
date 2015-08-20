@@ -41,12 +41,20 @@ double Lorentz_IF::PDFEstimate(const Splitting &s) const
 
 int Lorentz_IF::Construct(Splitting &s,const int mode) const
 {
-  Kin_Args ff(s.m_y,s.m_x,s.m_phi,1);
+  Parton *b(NULL);
+  if (s.m_kin==0)
+    for (size_t i(0);i<s.p_c->Ampl()->size();++i)
+      if ((*s.p_c->Ampl())[i]->Beam()==3-s.p_c->Beam()) {
+	b=(*s.p_c->Ampl())[i];
+	break;
+      }
+  Kin_Args ff(s.m_y,s.m_x,s.m_phi,s.m_kin);
   if (ConstructIFDipole
-      (s.m_mi2,s.m_mj2,s.m_mij2,s.m_mk2,0.0,
-       -s.p_c->Mom(),s.p_s->Mom(),Vec4D(),ff)<0)
+      (s.m_mi2,s.m_mj2,s.m_mij2,s.m_mk2,b?p_ms->Mass2(b->Flav()):0.0,
+       -s.p_c->Mom(),s.p_s->Mom(),b?-b->Mom():Vec4D(),ff)<0)
     return -1;
   ff.m_pi=-ff.m_pi;
+  if (b && p_sk->PS()->RemnantTest(s.p_c,ff.m_pi)<0) return -1; 
   return Update(s,ff,mode);
 }
 

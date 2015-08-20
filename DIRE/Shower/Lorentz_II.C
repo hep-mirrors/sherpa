@@ -41,7 +41,7 @@ double Lorentz_II::PDFEstimate(const Splitting &s) const
 
 int Lorentz_II::Construct(Splitting &s,const int mode) const
 {
-  Kin_Args ff(s.m_y,s.m_x,s.m_phi,1);
+  Kin_Args ff(s.m_y,s.m_x,s.m_phi,s.m_kin);
   if (ConstructIIDipole
       (s.m_mi2,s.m_mj2,s.m_mij2,
        s.m_mk2,-s.p_c->Mom(),-s.p_s->Mom(),ff)<0)

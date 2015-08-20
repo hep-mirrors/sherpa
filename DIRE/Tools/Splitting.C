@@ -17,7 +17,7 @@ namespace DIRE {
   std::ostream &operator<<(std::ostream &s,const Splitting &p)
   {
     s<<"["<<(p.p_c?p.p_c->Id():0)<<"<->"<<(p.p_s?p.p_s->Id():0)
-     <<"](c="<<p.m_cm<<",kfac="<<p.m_kfac
+     <<"](c="<<p.m_cm<<",kin="<<p.m_kin<<",kfac="<<p.m_kfac
      <<"){t="<<p.m_t<<",z="<<p.m_z<<",phi="<<p.m_phi<<"|";
     if (p.m_ci.size()) s<<p.m_ci[0]<<p.m_cj[0];
     for (size_t i(1);i<p.m_ci.size();++i) s<<";"<<p.m_ci[i]<<p.m_cj[i];

@@ -20,7 +20,7 @@ namespace DIRE {
     double m_eta, m_t0, m_t1;
     Color_Vector m_ci, m_cj;
     int m_h[3];
-    int m_type, m_cm, m_cpl, m_kfac, m_clu;
+    int m_type, m_cm, m_kin, m_cpl, m_kfac, m_clu;
     Weight m_w;
 
     Splitting(Parton *const c=NULL,Parton *const s=NULL,
@@ -31,7 +31,7 @@ namespace DIRE {
       m_Q2(0.0), m_x(0.0), m_y(0.0),
       m_mij2(0.0), m_mi2(0.0), m_mj2(0.0), m_mk2(0.0),
       m_eta(0.0), m_t0(0.0), m_t1(0.0),
-      m_type(-1), m_cm(-1), m_cpl(0), m_kfac(0), m_clu(0),
+      m_type(-1), m_cm(-1), m_kin(1), m_cpl(0), m_kfac(0), m_clu(0),
       m_w(0,0,0)
     { m_h[2]=m_h[1]=m_h[0]=0; }
 

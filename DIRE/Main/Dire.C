@@ -251,7 +251,7 @@ bool Dire::PrepareShower
       int type((ic<campl->NIn()?1:0)|(kc<campl->NIn()?2:0));
       Splitting s=p_clus->KT2
 	     (campl->Leg(ic),campl->Leg(jc),campl->Leg(kc),
-	      lij->Flav(),type,1|(swap?2:0),ws,mu2);
+	      lij->Flav(),campl->Kin(),type,1|(swap?2:0),ws,mu2);
       s.p_s=lmap[lampl->IdLeg(lij->K())];
       s.p_c=lmap[lij];
       (*----m_ampls.end())->SetSplit(s);
@@ -335,13 +335,15 @@ void Dire::RecoCheck(Amplitude *const a,int swap) const
   double ws, mu2;
   Splitting s=p_clus->KT2
     (ampl->Leg(ic),ampl->Leg(jc),ampl->Leg(kc),
-     a->Split().p_c->Flav(),a->Split().m_type,1|(swap?2:0),ws,mu2);
+     a->Split().p_c->Flav(),a->Split().m_kin,
+     a->Split().m_type,1|(swap?2:0),ws,mu2);
   ampl->Delete();
   std::cout.precision(12);
   msg_Debugging()<<"New reco params: t = "<<s.m_t
 		 <<", z = "<<s.m_z<<", phi = "<<s.m_phi<<"\n";
   msg_Debugging()<<"            vs.: t = "<<a->Split().m_t<<", z = "
-		 <<a->Split().m_z<<", phi = "<<a->Split().m_phi<<"\n";
+		 <<a->Split().m_z<<", phi = "<<a->Split().m_phi
+		 <<", kin = "<<a->Split().m_kin<<"\n";
   if (!IsEqual(s.m_t,a->Split().m_t,1.0e-6) || 
       !IsEqual(s.m_z,a->Split().m_z,1.0e-6) || 
       !IsEqual(s.m_phi,a->Split().m_phi,1.0e-6) ||
@@ -351,7 +353,8 @@ void Dire::RecoCheck(Amplitude *const a,int swap) const
     msg_Error()<<"Faulty reco params: t = "<<s.m_t
 	       <<", z = "<<s.m_z<<", phi = "<<s.m_phi<<"\n";
     msg_Error()<<"               vs.: t = "<<a->Split().m_t<<", z = "
-	       <<a->Split().m_z<<", phi = "<<a->Split().m_phi<<"\n";
+	       <<a->Split().m_z<<", phi = "<<a->Split().m_phi
+	       <<", kin = "<<a->Split().m_kin<<"\n\n";
     msg_Error()<<"  "<<pi<<" "<<pj<<" "<<pk<<"\n";
     msg_Error()<<"  "<<ampl->Leg(ic)->Mom()
 	       <<" "<<ampl->Leg(jc)->Mom()

@@ -60,6 +60,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
   m_tmin[1]=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
   m_cplfac[0]=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   m_cplfac[1]=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
+  m_kin=read->GetValue<int>("CSS_KIN_SCHEME",1);
   m_kfac=read->GetValue<int>("CSS_KFACTOR_SCHEME",1);
   m_cpl=read->GetValue<int>("CSS_COUPLING_SCHEME",1);
   m_pdfmin=read->GetValue<double>("CSS_PDF_MIN",1.0e-6);
@@ -209,6 +210,7 @@ Splitting Shower::GeneratePoint(Parton &p,const double &t)
 	  if (psum[j][i]>=disc) {
 	    win.p_s=(*p.Ampl())[splits[j][i]];
 	    win.SetType();
+	    win.m_kin=m_kin;
 	    win.m_kfac=m_kfac;
 	    win.m_cpl=m_cpl;
 	    win.m_t1=t;
@@ -267,4 +269,12 @@ Kernel *Shower::GetKernel(const Splitting &s,const int mode) const
   if (it==eit->second.end()) return NULL;
   if (s.p_s==NULL || it->second->GF()->Allowed(s)) return it->second;
   return NULL;
+}
+
+int Shower::RemnantTest(Parton *const c,const Vec4D &p)
+{
+  Vec4D pb(rpa->gen.PBeam(c->Beam()-1));
+  if (p[0]<0.0 || p.Nan()) return -1;
+  if (p[0]>pb[0] && !IsEqual(p[0],pb[0],1.0e-6)) return -1;
+  return 1;
 }

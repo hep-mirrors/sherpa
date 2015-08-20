@@ -43,7 +43,7 @@ namespace DIRE {
     double m_tmin[2], m_cplfac[2];
     double m_weight, m_oef, m_pdfmin;
 
-    int m_kfac, m_cpl;
+    int m_kin, m_kfac, m_cpl;
 
     unsigned int m_maxem;
 
@@ -70,6 +70,8 @@ namespace DIRE {
 		   const ATOOLS::Flavour &fl,const int b) const;
 
     Kernel *GetKernel(const Splitting &s,const int mode) const;
+
+    int RemnantTest(Parton *const c,const ATOOLS::Vec4D &p);
 
     inline MODEL::Model_Base *Model() const { return p_model; }
 
