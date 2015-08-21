@@ -151,6 +151,14 @@ int Shower::Evolve(Amplitude &a,double &w,unsigned int &nem)
 		   <<" ("<<m_weight<<")\n";
     if (++nem>=m_maxem) break;
   }
+  double cw(1.0);
+  for (size_t i(0);i<a.size();++i) {
+    cw*=a[i]->GetWeight(0.0);
+    a[i]->ClearWeights();
+  }
+  m_weight*=cw;
+  msg_Debugging()<<a<<" -> w = "<<cw
+		 <<" ("<<m_weight<<")\n";
   return 1;
 }
 
