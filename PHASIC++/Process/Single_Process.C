@@ -53,9 +53,9 @@ Weight_Info *Single_Process::OneEvent(const int wmode,const int mode)
   return p_int->PSHandler()->OneEvent(this,mode);
 }
 
-double Single_Process::KFactor() const
+double Single_Process::KFactor(const int mode) const
 {
-  if (p_kfactor) return p_kfactor->KFactor();
+  if (p_kfactor) return p_kfactor->KFactor(mode);
   return 1.0;
 }
 

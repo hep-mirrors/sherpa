@@ -21,7 +21,7 @@ namespace PHASIC {
 
     ATOOLS::Weight_Info *OneEvent(const int wmode,const int mode=0);
 
-    double KFactor() const;
+    double KFactor(const int mode=0) const;
 
     double NLOCounterTerms() const;
     double CollinearCounterTerms

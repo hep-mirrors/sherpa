@@ -147,6 +147,7 @@ double AMEGIC::Single_Process_External::Partonic(const Vec4D_Vector &moms,const 
   if (!(IsMapped() && LookUp())) {
     p_partner->ScaleSetter()->CalculateScale(moms);
   }
+  m_mewgtinfo.m_K=p_partner->LastK();
   return m_mewgtinfo.m_B=DSigma(moms,m_lookup);
 }
 

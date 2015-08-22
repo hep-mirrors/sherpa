@@ -30,11 +30,17 @@ Single_Dipole_Term::Single_Dipole_Term
   p_gen=rs->Generator();
   Process_Info info(rs->Info());
   info.Combine(sub->m_i,sub->m_j,msub->p_fl[sub->m_ijt]);
+  info.m_fi.m_nloqcdtype&=~nlo_type::real;
+  info.m_fi.m_nloewtype&=~nlo_type::real;
   Init(info,rs->Integrator()->Beam(),rs->Integrator()->ISR());
   p_rsint=rs->Integrator();
-  m_name.erase(m_name.length()-3,1);
   m_name+="_RS"+ToString(sub->m_i)+"_"
     +ToString(sub->m_j)+"_"+ToString(sub->m_k);
+  m_maxcpl=rs->MaxOrders();
+  m_mincpl=rs->MinOrders();
+  int type((rs->Info().m_fi.m_nloqcdtype&nlo_type::real)?0:1);
+  --m_maxcpl[type];
+  --m_mincpl[type];
 }
 
 Single_Dipole_Term::~Single_Dipole_Term()

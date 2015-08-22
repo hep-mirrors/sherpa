@@ -7,7 +7,7 @@ namespace PHASIC {
 
     No_KFactor_Setter(const KFactor_Setter_Arguments &args);
 
-    double KFactor();
+    double KFactor(const int mode=0);
     double KFactor(const ATOOLS::NLO_subevt& evt);
 
   };// end of class No_KFactor_Setter
@@ -38,7 +38,7 @@ No_KFactor_Setter::No_KFactor_Setter
 (const KFactor_Setter_Arguments &args):
   KFactor_Setter_Base(args) {}
 
-double No_KFactor_Setter::KFactor() 
+double No_KFactor_Setter::KFactor(const int mode) 
 {
   return m_weight=1.0;
 }

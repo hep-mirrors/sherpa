@@ -18,10 +18,10 @@ namespace SHERPA {
     double weight,wgt0;
     double x1,x2,y1,y2;
     double fscale,rscale;
-    double alphas;
+    double alphas, kfac;
     long int id;
     int ncount, nparticle;
-    int kf1,kf2;
+    int kf1,kf2,f1,f2;
     int nuwgt;
     double uwgt[18]; 
     int oqcd;
@@ -38,6 +38,10 @@ namespace SHERPA {
     Float_t p_py[s_kMaxParticle];
     Float_t p_pz[s_kMaxParticle];
     Float_t p_E[s_kMaxParticle];
+    Double_t p_pxd[s_kMaxParticle];
+    Double_t p_pyd[s_kMaxParticle];
+    Double_t p_pzd[s_kMaxParticle];
+    Double_t p_Ed[s_kMaxParticle];
     Int_t p_kf[s_kMaxParticle];
 
     Double_t m_wgt,m_wgt2,m_mewgt,m_mewgt2;
@@ -46,17 +50,17 @@ namespace SHERPA {
     Short_t m_oqcd;
     Char_t m_type[2];
     Double_t m_x1,m_x2,m_y1,m_y2,m_fscale,m_rscale;
-    Int_t m_id1, m_id2;
+    Int_t m_id1, m_id2, m_id1p, m_id2p;
     TFile* p_f;
     TTree* p_t3;
 #endif
     std::string m_basename, m_ext, m_treename;
     size_t m_cnt2,m_cnt3,m_fcnt,m_evt,m_idcnt;
-    size_t m_filesize,m_avsize,m_total,m_mode,m_exact;
+    size_t m_filesize,m_avsize,m_total,m_mode,m_exact,m_ftype;
     double m_sum,m_s2,m_s3,m_c1,m_c2;
     double m_sq,m_sq2,m_sq3,m_fsq;
     double m_csumsqr,m_csum,m_cn;
-    double m_alphas;
+    double m_alphas, m_kfac;
     std::vector<rntuple_evt2> m_evtlist;
     std::vector<int> m_flavlist;    
     std::vector<ATOOLS::Vec4D> m_momlist;
@@ -64,7 +68,7 @@ namespace SHERPA {
     void MPISync();
     void AddDecayProducts(ATOOLS::Particle *part,int &np);
   public:
-    Output_RootNtuple(const Output_Arguments &args,int exact=0);
+    Output_RootNtuple(const Output_Arguments &args,int exact=0,int ftype=0);
     ~Output_RootNtuple();
     void Header();
     void Footer();
@@ -74,6 +78,7 @@ namespace SHERPA {
   };
 
   class Output_ERootNtuple {};
+  class Output_EDRootNtuple {};
 
 }
 

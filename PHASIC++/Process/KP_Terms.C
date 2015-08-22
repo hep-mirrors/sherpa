@@ -49,7 +49,7 @@ KP_Terms::KP_Terms(Process_Base *const proc,const int mode):
     msg_Tracking()<<"Set KP-term energy check mode "<<m_cemode<<" . "<<std::endl;
   }
   // read whether we should accept PDFs that are not positive definite
-  m_negativepdf = false;
+  m_negativepdf = true;
   if (reader.ReadFromFile(helpi,"KP_ACCEPT_NEGATIVE_PDF")) {
     m_negativepdf = helpi;
     msg_Tracking()<<"Set KP-term accepts negative PDF "<<m_negativepdf<<" . "<<std::endl;

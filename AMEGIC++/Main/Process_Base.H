@@ -30,7 +30,7 @@ namespace AMEGIC {
     ATOOLS::Vec4D* p_testmoms;
 
     double         m_Norm;
-    double         m_sfactor, m_lastdxs;
+    double         m_sfactor, m_lastdxs, m_lastk;
 
     std::map<ATOOLS::Flavour,ATOOLS::Flavour> m_eflmap;
     std::map<std::string,ATOOLS::Flavour> m_fmap;
@@ -97,6 +97,9 @@ namespace AMEGIC {
     virtual Process_Base *GetReal();
 
     inline int EOReset() const { return m_eoreset; }
+
+    inline double LastK() const { return m_lastk; }
+
   protected:
     double         SymmetryFactors();
     double         SBSymmetryFactor(ATOOLS::Flavour* flout,size_t nout);

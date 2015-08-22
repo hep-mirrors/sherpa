@@ -33,6 +33,7 @@ using namespace std;
 AMEGIC::Single_Process::Single_Process():
   m_gen_str(2), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_psgen(0), p_partner(this)
 {
+  m_lastk=1.0;
 }
 
 AMEGIC::Single_Process::~Single_Process()
@@ -761,6 +762,7 @@ double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms,const int mode
   if (!(IsMapped() && LookUp())) {
     p_partner->ScaleSetter()->CalculateScale(_moms,m_cmode);
   }
+  m_mewgtinfo.m_K=p_partner->LastK();
   return m_mewgtinfo.m_B=DSigma(_moms,m_lookup);
 }
 
@@ -826,7 +828,8 @@ double AMEGIC::Single_Process::operator()(const ATOOLS::Vec4D* mom)
     p_shand->Complete(p_hel);
     p_ampl->ClearCalcList();
   }
-  return M2 * sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS)) * KFactor();
+  m_lastk=KFactor();
+  return M2 * sqr(m_pol.Massless_Norm(m_nin+m_nout,&m_flavs.front(),p_BS)) * m_lastk;
 }
 
 void AMEGIC::Single_Process::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,

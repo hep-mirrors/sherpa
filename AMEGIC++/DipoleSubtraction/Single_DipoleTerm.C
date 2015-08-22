@@ -585,13 +585,15 @@ double Single_DipoleTerm::operator()(const ATOOLS::Vec4D * mom,const ATOOLS::Poi
   if (!(df>0.)&& !(df<0.)) {
     m_subevt.m_me = m_subevt.m_mewgt = 0.;
     m_subevt.m_trig = false;
+    m_subevt.m_K = 1.0;
     return m_lastxs=(m_mcmode&1)?0.0:df;
   }
 
   if (m_mcmode && p_dipole->MCSign()<0) df=-df;
 
   m_lastxs = M2 * df * p_dipole->SPFac() * Norm();
-  if (m_lastxs) m_lastxs*=KFactor();
+  if (m_lastxs) m_lastxs*=m_lastk=KFactor();
+  m_subevt.m_K = m_lastk;
   m_subevt.m_me = m_subevt.m_mewgt = -m_lastxs;
   m_subevt.m_mu2[stp::fac] = p_scale->Scale(stp::fac);
   m_subevt.m_mu2[stp::ren] = p_scale->Scale(stp::ren);

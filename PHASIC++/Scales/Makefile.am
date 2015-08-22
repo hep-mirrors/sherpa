@@ -24,6 +24,8 @@ libPhasicScales_la_SOURCES    =	\
 				QQSinglet_Core_Scale.C \
 				HTPrime_Core_Scale.C \
 				METS_Scale_Setter.C \
+				MINLO_Scale_Setter.C \
+				MINLO_KFactor_Setter.C \
 				Variable_KFactor_Setter.C \
 				No_KFactor_Setter.C
 
@@ -31,6 +33,7 @@ localinc_HEADERS      =	\
 			Scale_Setter_Base.H \
 			Core_Scale_Setter.H \
 			KFactor_Setter_Base.H \
+			MINLO_Scale_Setter.H \
 			Tag_Setter.H
 
 libPhasicScales_la_LIBADD     =	@CONDITIONAL_FASTJETLIBS@

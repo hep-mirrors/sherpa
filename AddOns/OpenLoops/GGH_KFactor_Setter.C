@@ -50,7 +50,7 @@ GGH_KFactor_Setter::~GGH_KFactor_Setter()
   if(p_ampl) p_ampl->Delete();
 }
 
-double GGH_KFactor_Setter::KFactor() 
+double GGH_KFactor_Setter::KFactor(const int mode) 
 {
   if(!m_on) return 1.;
   const Vec4D_Vector& p = GetMomenta();

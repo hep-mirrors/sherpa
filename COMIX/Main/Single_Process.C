@@ -127,12 +127,19 @@ bool COMIX::Single_Process::Initialize
   if (p_bg->Initialize(m_nin,m_nout,flavs,isf,fsf,&*p_model,
 		       &m_cpls,smode,maxcpl,mincpl,
 		       m_pinfo.m_ntchan,m_pinfo.m_mtchan,m_name)) {
+    nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);
+    m_maxcpl[1]=p_bg->MaxCpl()[1]/2.0+((m_pinfo.m_fi.m_nloewtype&nlot)?1:0);
+    m_mincpl[1]=p_bg->MinCpl()[1]/2.0+((m_pinfo.m_fi.m_nloewtype&nlot)?1:0);
+    m_maxcpl[0]=p_bg->MaxCpl()[0]/2.0+((m_pinfo.m_fi.m_nloqcdtype&nlot)?1:0);
+    m_mincpl[0]=p_bg->MinCpl()[0]/2.0+((m_pinfo.m_fi.m_nloqcdtype&nlot)?1:0);
     if (smode&1) {
       NLO_subevtlist *subs(GetSubevtList());
       for (size_t i(0);i<subs->size()-1;++i)
 	(*subs)[i]->p_proc =
 	  new Single_Dipole_Term(this,(*subs)[i],(*subs)[i]);
       subs->back()->p_proc=this;
+      for (size_t i(0);i<subs->size();++i)
+	(*subs)[i]->p_real=subs->back();
     }
     if (smode&2) {
       int massive(0);
@@ -169,15 +176,6 @@ bool COMIX::Single_Process::Initialize
       m_mewgtinfo.m_type|=mewgttype::VI;
     }
     p_bg->SetLoopME(p_loop);
-    nlo_type::code nlot(nlo_type::loop|nlo_type::vsub);
-    m_maxcpl[1]=p_bg->MaxCpl()[1]/2.0
-      +((m_pinfo.m_fi.m_nloewtype&nlot)?1:0);
-    m_mincpl[1]=p_bg->MinCpl()[1]/2.0
-      +((m_pinfo.m_fi.m_nloewtype&nlot)?1:0);
-    m_maxcpl[0]=p_bg->MaxCpl()[0]/2.0
-      +((m_pinfo.m_fi.m_nloqcdtype&nlot)?1:0);
-    m_mincpl[0]=p_bg->MinCpl()[0]/2.0
-      +((m_pinfo.m_fi.m_nloqcdtype&nlot)?1:0);
     (*pmap)[m_name]=m_name;
     return true;
   }
@@ -233,6 +231,8 @@ void COMIX::Single_Process::MapSubEvts(const int mode)
     m_subs[i]->m_pname=static_cast<PHASIC::Process_Base*>
       (m_subs[i]->p_proc)->Name();
   }
+  for (size_t i(0);i<m_subs.size();++i)
+    m_subs[i]->p_real=m_subs.back();
 }
 
 bool COMIX::Single_Process::MapProcess()
@@ -404,15 +404,21 @@ double COMIX::Single_Process::Partonic
     m_w=p_int->ColorIntegrator()->GlobalWeight();
     if (p_int->HelicityIntegrator()!=NULL) 
       m_w*=p_int->HelicityIntegrator()->Weight();
-    double kf(sp->KFactor());
+    int isb(m_dxs==sp->p_bg->Born());
+    double kb(sp->p_bg->Born()?sp->KFactor(1):1.0);
+    double kf(m_mewgtinfo.m_K=isb?kb:sp->KFactor());
+    m_mewgtinfo.m_B=sp->p_bg->Born()*kb/kf;
+    m_dxs+=sp->p_bg->Born()*(kb/kf-1.0);
     m_w*=kf;
     m_dxs*=m_w;
     if (m_pinfo.m_fi.NLOType()&nlo_type::rsub) {
       const NLO_subevtlist &rsubs(sp->p_bg->SubEvts());
       for (size_t i(0);i<rsubs.size()-1;++i) {
 	rsubs[i]->Mult(sp->p_bg->KT2Trigger(rsubs[i],m_mcmode));
-	rsubs[i]->Mult(sp->KFactorSetter()->KFactor(*rsubs[i])/kf);
+	rsubs[i]->m_K=sp->KFactorSetter()->KFactor(*rsubs[i]);
+	rsubs[i]->Mult(rsubs[i]->m_K/kf);
       }
+      rsubs.back()->m_K=kf;
       if (p_map==NULL) p_bg->SubEvts().MultME(m_w);
       else {
 	for (size_t i(0);i<rsubs.size();++i)
@@ -422,11 +428,9 @@ double COMIX::Single_Process::Partonic
     }
   }
   double kpterms(m_w*GetKPTerms(m_flavs,mode));
-  if (m_mewgtinfo.m_wren.size() || m_mewgtinfo.m_wfac.size()) {
-    FillMEWeights(m_mewgtinfo);
-    m_mewgtinfo*=m_w;
-    m_mewgtinfo.m_KP=kpterms;
-  }
+  FillMEWeights(m_mewgtinfo);
+  m_mewgtinfo*=m_w;
+  m_mewgtinfo.m_KP=kpterms;
   return m_lastxs=m_dxs+kpterms;
 }
 

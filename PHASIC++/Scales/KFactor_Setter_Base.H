@@ -34,11 +34,9 @@ namespace PHASIC {
     virtual ~KFactor_Setter_Base();
 
     // compute KFactor according to kinematics and flavours of p_proc
-    virtual double KFactor() = 0;
+    virtual double KFactor(const int mode=0) = 0;
     // compute KFactor according to kinematics and flavours of NLO subevent
-    virtual double KFactor(const ATOOLS::NLO_subevt& evt) {
-      THROW(not_implemented, "No NLO (R-S) version of this method implemented");
-    }
+    virtual double KFactor(const ATOOLS::NLO_subevt& evt);
 
     inline Process_Base *Process() const { return p_proc; }
 

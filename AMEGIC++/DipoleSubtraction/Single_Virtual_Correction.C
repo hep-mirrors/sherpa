@@ -473,6 +473,7 @@ double Single_Virtual_Correction::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool 
   m_mewgtinfo.m_KP = m_lastkp/m_sfactor;
   p_partner->FillMEwgts(m_mewgtinfo);
   m_mewgtinfo*=m_Norm*m_sfactor;
+  m_mewgtinfo.m_K = p_partner->LastK();
 
   p_partner->m_bvimode=bvimode;
 
@@ -567,7 +568,7 @@ double Single_Virtual_Correction::Get_KPterms(PDF_Base *pdfa, PDF_Base *pdfb,
   if (!(m_imode&2 || m_imode&4)) return 0.;
   if ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub)==0) return 0.;
   int mode(pdfa==p_int->ISR()->PDF(0)?0:1);
-  return p_kpterms->Get(m_x0,m_x1,eta0,eta1,flav,mode) * KFactor();
+  return p_kpterms->Get(m_x0,m_x1,eta0,eta1,flav,mode) * p_partner->LastK();
 }
 
 void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
@@ -767,16 +768,19 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     msg_Out()<<"Virtual: OLE = "<<p_loopme->ME_Finite()<<std::endl;
     msg->SetPrecision(6);
   }
-  double kfactor(KFactor());
-  m_lastb=p_dsij[0][0] * kfactor;
-  m_lasti=I            * kfactor;
-  m_lastv=lme          * kfactor;
-  M2+=I+lme;
+  double kfactor1(KFactor(1));
+  double kfactor(m_lastk=KFactor());
+  m_lastb=p_dsij[0][0] * kfactor1;
+  m_lasti=I            *= kfactor;
+  m_lastv=lme          *= kfactor;
   if ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::born) &&
       (m_bvimode&1)) {
-    M2+=p_dsij[0][0];
-    m_lastbxs=p_dsij[0][0] * kfactor;
+    M2+=m_lastbxs=m_lastb;
+    m_lastk=kfactor1;
   }
+  if (((m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub) && (m_bvimode&2)) ||
+      ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::loop) && (m_bvimode&4)))
+    M2+=I+lme;
   if (!(M2>0.) && !(M2<0.) && !(M2==0.)) {
     msg->SetPrecision(16);
     msg_Error()<<METHOD<<"("<<Name()<<"){\n  M2 = nan.\n  eta0 = "<<eta0
@@ -788,7 +792,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     msg_Error()<<"}\n";
     msg->SetPrecision(6);
   }
-  return M2 * kfactor;
+  return M2;
 }
 
 void Single_Virtual_Correction::FillAmplitudes(vector<METOOLS::Spin_Amplitudes>& amps,
@@ -867,6 +871,8 @@ void Single_Virtual_Correction::FillMEwgts(ATOOLS::ME_Weight_Info& wgtinfo)
   if (wgtinfo.m_type&mewgttype::VI)
     for (size_t i=0;i<2;i++) wgtinfo.m_wren[i]=m_cmur[i];
   if (p_kpterms) p_kpterms->FillMEwgts(wgtinfo);
+  for (size_t i=0;i<wgtinfo.m_wren.size();++i) wgtinfo.m_wren[i]*=m_lastk;
+  for (size_t i=0;i<wgtinfo.m_wfac.size();++i) wgtinfo.m_wfac[i]*=m_lastk;
 }
 
 void Single_Virtual_Correction::MPISync()

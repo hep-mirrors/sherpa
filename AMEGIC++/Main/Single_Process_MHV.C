@@ -32,6 +32,7 @@ AMEGIC::Single_Process_MHV::Single_Process_MHV():
   m_gen_str(2), m_ownamps(false), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_psgen(0),  
   p_MHVamp(0), p_momlist(0), p_partner(this)
 {
+  m_lastk=1.0;
 }
 
 AMEGIC::Single_Process_MHV::~Single_Process_MHV()
@@ -315,6 +316,7 @@ double AMEGIC::Single_Process_MHV::Partonic(const Vec4D_Vector &moms,const int m
   if (!(IsMapped() && LookUp())) {
     p_partner->ScaleSetter()->CalculateScale(moms,m_cmode);
   }
+  m_mewgtinfo.m_K=p_partner->LastK();
   return m_mewgtinfo.m_B=DSigma(moms,m_lookup);
 }
 
@@ -348,7 +350,8 @@ double AMEGIC::Single_Process_MHV::operator()(const ATOOLS::Vec4D* mom)
 	  M2       += helvalue;
       }
   }
-  return M2*p_MHVamp->ParticlesNorm() * KFactor();
+  m_lastk=KFactor();
+  return M2*p_MHVamp->ParticlesNorm() * m_lastk;
 }
 
 

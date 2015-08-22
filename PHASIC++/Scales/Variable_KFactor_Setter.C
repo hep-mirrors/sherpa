@@ -20,6 +20,9 @@ namespace PHASIC {
 
     std::string m_kftag;
 
+    ATOOLS::Vec4D_Vector m_p;
+    std::vector<double>  m_mu2;
+
     void SetKFactor(const std::string &kftag);
 
   public:
@@ -28,7 +31,8 @@ namespace PHASIC {
 
     ~Variable_KFactor_Setter();
 
-    double KFactor();
+    double KFactor(const int mode=0);
+    double KFactor(const ATOOLS::NLO_subevt &evt);
 
     std::string   ReplaceTags(std::string &expr) const;    
     ATOOLS::Term *ReplaceTags(ATOOLS::Term *term) const;    
@@ -83,9 +87,19 @@ Variable_KFactor_Setter::~Variable_KFactor_Setter()
   delete p_calc;
 }
 
-double Variable_KFactor_Setter::KFactor() 
+double Variable_KFactor_Setter::KFactor(const int mode) 
 {
   if (!m_on) return 1.0;
+  m_p=p_proc->ScaleSetter()->Momenta();
+  m_mu2=p_proc->ScaleSetter()->Scales();
+  return m_weight=p_calc->Calculate()->Get<double>();
+}
+
+double Variable_KFactor_Setter::KFactor(const ATOOLS::NLO_subevt &sub)
+{
+  if (!m_on) return 1.0;
+  m_p=Vec4D_Vector(sub.p_mom,&sub.p_mom[sub.m_n]);
+  m_mu2=sub.m_mu2;
   return m_weight=p_calc->Calculate()->Get<double>();
 }
 
@@ -117,10 +131,10 @@ Term *Variable_KFactor_Setter::ReplaceTags(Term *term) const
     return term;
   default:
     if (term->Id()>=1000) {
-      term->Set(p_proc->ScaleSetter()->Momenta()[term->Id()-1000]);
+      term->Set(m_p[term->Id()-1000]);
       return term;
     }
-    term->Set(p_proc->ScaleSetter()->Scales()[term->Id()-100]);
+    term->Set(m_mu2[term->Id()-100]);
     return term;
   }
   return term;

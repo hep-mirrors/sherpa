@@ -14,7 +14,7 @@ namespace AMISIC {
 
     MPI_KFactor_Setter(const PHASIC::KFactor_Setter_Arguments &args);
 
-    double KFactor();
+    double KFactor(const int mode=0);
 
     inline static void SetPT0(const double &pt0) { s_pt0=pt0; }
 

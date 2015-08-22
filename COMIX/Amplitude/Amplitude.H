@@ -251,6 +251,8 @@ namespace COMIX {
     inline const std::vector<std::vector<double> > &DSij() const
     { return m_dsij; }
 
+    inline double Born() const { return m_born; }
+
   };// end of class Amplitude
 
 }// end of namespace COMIX

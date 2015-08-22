@@ -127,7 +127,7 @@ Scale_Variations::Scale_Variations() :
   me_reader.AddComment("#");
   me_reader.SetInputPath(rpa->GetPath());
   me_reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  int helpi;
+  int helpi=true;
   if (me_reader.ReadFromFile(helpi,"KP_ACCEPT_NEGATIVE_PDF")) {
     m_kpnegativepdf = helpi;
     msg_Tracking()<<"Set reweighted KP-term accepts negative PDF "<<m_kpnegativepdf<<" . "<<std::endl;

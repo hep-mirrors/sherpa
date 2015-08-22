@@ -25,3 +25,8 @@ void KFactor_Setter_Base::ShowSyntax(const size_t i)
   KFactor_Getter_Function::PrintGetterInfo(msg->Out(),25);
   msg_Out()<<"\n}"<<std::endl;
 }
+
+double KFactor_Setter_Base::KFactor(const ATOOLS::NLO_subevt& evt)
+{
+  THROW(not_implemented, "No NLO (R-S) version of this method implemented");
+}

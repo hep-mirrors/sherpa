@@ -82,7 +82,7 @@ std::ostream & ATOOLS::operator<<(std::ostream & s,
                                   const ATOOLS::ME_Weight_Info & mwi)
 {
   s<<"type="<<mwi.m_type<<", B="<<mwi.m_B<<", VI="<<mwi.m_VI<<", KP="<<mwi.m_KP
-                        <<std::endl;
+   <<", K="<<mwi.m_K<<std::endl;
   s<<"muR2="<<mwi.m_mur2<<", muF2="<<mwi.m_muf2
    <<", oqcd="<<mwi.m_oqcd<<", oew="<<mwi.m_oew
    <<", fl1="<<mwi.m_fl1<<", fl2="<<mwi.m_fl2

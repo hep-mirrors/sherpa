@@ -294,7 +294,7 @@ void Single_Real_Correction::Minimize()
     for (size_t i=0;i<m_subtermlist.size();++i)
       m_subevtlist[i]->p_proc=m_subtermlist[i];
   m_subevtlist.back()->p_proc=this;
-  for (size_t i=0;i<m_subevtlist.size()-1;++i)
+  for (size_t i=0;i<m_subevtlist.size();++i)
     m_subevtlist[i]->p_real=m_subevtlist.back();
 }
 
@@ -395,6 +395,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
   m_subevtlist.push_back(&m_realevt);
   m_realevt.m_me = m_realevt.m_mewgt = 0.0;
   m_realevt.m_trig = false;
+  m_realevt.m_K = 1.0;
 
   bool trg(false);
 
@@ -423,6 +424,7 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
     double real = p_tree_process->operator()(&mom.front())*p_tree_process->Norm();
     m_realevt.m_me += real;
     m_realevt.m_mewgt += real;
+    m_realevt.m_K = p_tree_process->LastK();
     if (IsBad(m_realevt.m_me) || real == 0. ) res=false;
   }
   for (size_t i(0);i<m_subevtlist.size();++i) {

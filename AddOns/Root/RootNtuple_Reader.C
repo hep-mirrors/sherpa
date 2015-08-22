@@ -14,6 +14,8 @@
 
 #ifdef USING__ROOT
 #include "TChain.h"
+#include "TFile.h"
+#include "TLeaf.h"
 #endif
 
 using namespace SHERPA;
@@ -23,10 +25,39 @@ using namespace std;
 
 namespace SHERPA {
 
+  bool RR_Process_Info::operator<(const RR_Process_Info pi) const
+  {
+    if (m_type[0]<pi.m_type[0]) return true;
+    if (m_type[0]>pi.m_type[0]) return false;
+    if (m_fl.size()<pi.m_fl.size()) return true;
+    if (m_fl.size()>pi.m_fl.size()) return false;
+    return m_fl<pi.m_fl;
+  }
+
+  std::ostream &operator<<(std::ostream &s,const RR_Process_Info &pi)
+  {
+    return s<<"{"<<pi.m_type<<","<<pi.m_fl.size()<<","<<pi.m_fl<<"}";
+  }
+
   class Dummy_Process: public PHASIC::Process_Base {
   public:
-    void SetScale(const Scale_Setter_Arguments &args) {}
-    void SetKFactor(const KFactor_Setter_Arguments &args) {}
+    void SetScale(const Scale_Setter_Arguments &args)
+    {
+      Scale_Setter_Arguments cargs(args);
+      cargs.p_proc=this;
+      p_scale = Scale_Setter_Base::Scale_Getter_Function::
+	GetObject(cargs.m_scale,cargs);
+      if (p_scale==NULL) THROW(fatal_error,"Invalid scale scheme");
+    }
+    void SetKFactor(const KFactor_Setter_Arguments &args)
+    {
+      KFactor_Setter_Arguments cargs(args);
+      cargs.p_proc=this;
+      m_pinfo.m_kfactor=cargs.m_kfac;
+      p_kfactor = KFactor_Setter_Base::KFactor_Getter_Function::
+	GetObject(cargs.m_kfac,cargs);
+      if (p_kfactor==NULL) THROW(fatal_error,"Invalid kfactor scheme");
+    }
     size_t Size() const { return 0; }
     Process_Base *operator[](const size_t &i) { return NULL; }
 
@@ -48,11 +79,15 @@ namespace SHERPA {
     Float_t p_py[s_kMaxParticle];
     Float_t p_pz[s_kMaxParticle];
     Float_t p_E[s_kMaxParticle];
+    Double_t p_pxd[s_kMaxParticle];
+    Double_t p_pyd[s_kMaxParticle];
+    Double_t p_pzd[s_kMaxParticle];
+    Double_t p_Ed[s_kMaxParticle];
     Int_t p_kf[s_kMaxParticle];
 
     Double_t m_wgt,m_wgt2,m_mewgt,m_mewgt2;
-    Double_t m_x1,m_x2,m_x1p,m_x2p,m_mur,m_muf,m_as;
-    Int_t m_id1,m_id2,m_nuwgt;
+    Double_t m_x1,m_x2,m_x1p,m_x2p,m_mur,m_muf,m_as,m_kfac;
+    Int_t m_id1,m_id2,m_id1p,m_id2p,m_nuwgt;
     Double_t p_uwgt[18];
     Char_t m_oqcd;
     Char_t m_type[2];
@@ -61,10 +96,10 @@ namespace SHERPA {
   };
 }
 
-RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact) :
-  Event_Reader_Base(args), m_exact(exact),
+RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int ftype) :
+  Event_Reader_Base(args), m_ftype(ftype),
   m_evtid(0), m_subevtid(0), m_evtcnt(0), m_entries(0), m_evtpos(0),
-  p_isr(args.p_isr), m_sargs(NULL,"",""), m_xf1(0.), m_xf2(0.)
+  p_isr(args.p_isr), m_sargs(NULL,"",""), m_kargs(""), m_xf1(0.), m_xf2(0.)
 {
   std::string filename=m_path+m_file+".root";
   msg_Out()<<" Reading from "<<filename<<"\n";
@@ -78,12 +113,14 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact) :
   args.p_reader->RereadInFile();
   std::string scale=args.p_reader->GetValue<std::string>
     ("SCALES","VAR{sqr("+ToString(rpa->gen.Ecms())+")}");
+  std::string kfactor=args.p_reader->GetValue<std::string>("KFACTOR","NO");
   std::vector<std::string> helpsv;
   if (!args.p_reader->VectorFromFile(helpsv,"COUPLINGS")) helpsv.push_back("Alpha_QCD 1");
   std::string coupling(helpsv.size()?helpsv[0]:"");
   for (size_t i(1);i<helpsv.size();++i) coupling+=" "+helpsv[i];
   m_sargs=Scale_Setter_Arguments(args.p_model,scale,coupling);
   m_sargs.m_nin=2;
+  m_kargs=KFactor_Setter_Arguments(kfactor);
 #ifdef USING__ROOT
   p_vars = new RootNTupleReader_Variables();
   p_vars->p_f=new TChain(m_treename.c_str());
@@ -141,17 +178,34 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact) :
     THROW(fatal_error,"Missing input");
   }
   p_vars->p_f->SetBranchAddress("id",&p_vars->m_id);
-  if (m_exact) p_vars->p_f->SetBranchAddress("ncount",&p_vars->m_ncount);
+  p_vars->m_ncount=1.0;
+  if (p_vars->p_f->GetBranch("ncount")) {
+    p_vars->p_f->SetBranchAddress("ncount",&p_vars->m_ncount);
+    msg_Info()<<METHOD<<"(): Using exact event recovery."<<std::endl;
+  }
   p_vars->p_f->SetBranchAddress("nparticle",&p_vars->m_nparticle);
-  p_vars->p_f->SetBranchAddress("px",p_vars->p_px);
-  p_vars->p_f->SetBranchAddress("py",p_vars->p_py);
-  p_vars->p_f->SetBranchAddress("pz",p_vars->p_pz);
-  p_vars->p_f->SetBranchAddress("E",p_vars->p_E);
+  m_ftype=p_vars->p_f->GetLeaf("E")->GetTypeName()[0]=='D';
+  if (m_ftype) {
+    msg_Info()<<METHOD<<"(): Found float type double."<<std::endl;
+    p_vars->p_f->SetBranchAddress("px",p_vars->p_pxd);
+    p_vars->p_f->SetBranchAddress("py",p_vars->p_pyd);
+    p_vars->p_f->SetBranchAddress("pz",p_vars->p_pzd);
+    p_vars->p_f->SetBranchAddress("E",p_vars->p_Ed);
+  }
+  else {
+    p_vars->p_f->SetBranchAddress("px",p_vars->p_px);
+    p_vars->p_f->SetBranchAddress("py",p_vars->p_py);
+    p_vars->p_f->SetBranchAddress("pz",p_vars->p_pz);
+    p_vars->p_f->SetBranchAddress("E",p_vars->p_E);
+  }
 
   p_vars->p_f->SetBranchAddress("kf",p_vars->p_kf);
   p_vars->p_f->SetBranchAddress("weight",&p_vars->m_wgt);
   p_vars->p_f->SetBranchAddress("weight2",&p_vars->m_wgt2);
   p_vars->p_f->SetBranchAddress("alphas",&p_vars->m_as);
+  p_vars->m_kfac=1.0;
+  if (p_vars->p_f->GetBranch("kfactor"))
+    p_vars->p_f->SetBranchAddress("kfactor",&p_vars->m_kfac);
   p_vars->p_f->SetBranchAddress("me_wgt",&p_vars->m_mewgt);
   p_vars->p_f->SetBranchAddress("me_wgt2",&p_vars->m_mewgt2);
   p_vars->p_f->SetBranchAddress("ren_scale",&p_vars->m_mur);
@@ -162,6 +216,12 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact) :
   p_vars->p_f->SetBranchAddress("x2p",&p_vars->m_x2p);
   p_vars->p_f->SetBranchAddress("id1",&p_vars->m_id1);
   p_vars->p_f->SetBranchAddress("id2",&p_vars->m_id2);
+  p_vars->m_id1p=0;
+  if (p_vars->p_f->GetBranch("id1p"))
+    p_vars->p_f->SetBranchAddress("id1p",&p_vars->m_id1p);
+  p_vars->m_id2p=0;
+  if (p_vars->p_f->GetBranch("id2p"))
+    p_vars->p_f->SetBranchAddress("id2p",&p_vars->m_id2p);
   p_vars->p_f->SetBranchAddress("nuwgt",&p_vars->m_nuwgt);
   p_vars->p_f->SetBranchAddress("usr_wgts",p_vars->p_uwgt);
   p_vars->p_f->SetBranchAddress("alphasPower",&p_vars->m_oqcd);
@@ -177,16 +237,14 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact) :
 
 RootNtuple_Reader::~RootNtuple_Reader()
 {
-  for (std::map<int,PHASIC::Process_Base*>::iterator
+  for (std::map<RR_Process_Info,PHASIC::Process_Base*>::iterator
 	 sit(m_procs.begin());sit!=m_procs.end();++sit) delete sit->second;
-  for (std::map<int,PHASIC::Scale_Setter_Base*>::iterator
-	 sit(m_scales.begin());sit!=m_scales.end();++sit) delete sit->second;
 }
 
 
 void RootNtuple_Reader::CloseFile() {
 #ifdef USING__ROOT
-  delete p_vars->p_f;
+  delete p_vars->p_f->GetCurrentFile();
   delete p_vars;
 #endif
 }
@@ -326,13 +384,17 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     Vec4D sum;
     Vec4D *moms = new Vec4D[2+p_vars->m_nparticle];
     Flavour *flav = new Flavour[2+p_vars->m_nparticle];
-    moms[0]=Vec4D(0.,0.,0.,0.);
-    moms[1]=Vec4D(0.,0.,0.,0.);
-    flav[0]=Flavour(kf_none);
-    flav[1]=Flavour(kf_none);
+    id1=p_vars->m_id1p?p_vars->m_id1p:p_vars->m_id1;
+    id2=p_vars->m_id2p?p_vars->m_id2p:p_vars->m_id2;
+    flav[0]=Flavour((long int)id1);
+    flav[1]=Flavour((long int)id2);
     for (int i=0;i<p_vars->m_nparticle;i++) {
-      moms[i+2]=Vec4D(p_vars->p_E[i],p_vars->p_px[i],
-		      p_vars->p_py[i],p_vars->p_pz[i]);
+      if (m_ftype)
+	moms[i+2]=Vec4D(p_vars->p_Ed[i],p_vars->p_pxd[i],
+			p_vars->p_pyd[i],p_vars->p_pzd[i]);
+      else
+	moms[i+2]=Vec4D(p_vars->p_E[i],p_vars->p_px[i],
+			p_vars->p_py[i],p_vars->p_pz[i]);
       flav[i+2]=Flavour(abs(p_vars->p_kf[i]),p_vars->p_kf[i]<0);
       sum+=moms[i+2];
     }
@@ -341,42 +403,39 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     m_nlos.back()->m_result=p_vars->m_wgt2;
     m_nlos.back()->m_mu2[stp::fac]=sqr(p_vars->m_muf);
     m_nlos.back()->m_mu2[stp::ren]=sqr(p_vars->m_mur);
-    id1=p_vars->m_id1;
-    id2=p_vars->m_id2;
     // double sf(m_ecms/rpa->gen.Ecms());
     // x1=p_vars->m_x1*sf;
     // x2=p_vars->m_x2*sf;
     x1=sum.PPlus()/rpa->gen.PBeam(0).PPlus();
     x2=sum.PMinus()/rpa->gen.PBeam(1).PMinus();
+    moms[0]=x1*rpa->gen.PBeam(0);
+    moms[1]=x2*rpa->gen.PBeam(1);
     if (m_calc) {
-      Vec4D_Vector p(2+p_vars->m_nparticle);
-      for (int i=0;i<p_vars->m_nparticle;++i) {
-	p[2+i]=Vec4D(p_vars->p_E[i],p_vars->p_px[i],
-		     p_vars->p_py[i],p_vars->p_pz[i]);
-      }
-      if (m_scales.find(p_vars->m_nparticle)==m_scales.end()) {
+      Vec4D_Vector p(moms,&moms[p_vars->m_nparticle+2]);
+      RR_Process_Info info(p_vars->m_type,p_vars->m_nparticle+2,flav);
+      if (m_procs.find(info)==m_procs.end()) {
 	Process_Info pi;
-	Flavour fl1((kf_code)abs(p_vars->m_id1),p_vars->m_id1<0);
-	Flavour fl2((kf_code)abs(p_vars->m_id2),p_vars->m_id2<0);
-	pi.m_ii.m_ps.push_back(Subprocess_Info(fl1));
-	pi.m_ii.m_ps.push_back(Subprocess_Info(fl2));
+	pi.m_fi.m_nloqcdtype=ToType<nlo_type::code>(p_vars->m_type);
+	pi.m_ii.m_ps.push_back(Subprocess_Info(flav[0]));
+	pi.m_ii.m_ps.push_back(Subprocess_Info(flav[1]));
 	pi.m_maxcpl[0]=pi.m_mincpl[0]=p_vars->m_oqcd;
 	for (int i=0;i<p_vars->m_nparticle;++i)
 	  pi.m_fi.m_ps.push_back(Subprocess_Info(flav[i+2]));
-	m_sargs.p_proc=m_procs[p_vars->m_nparticle] = new Dummy_Process();
+	m_sargs.p_proc=m_procs[info] = new Dummy_Process();
 	m_sargs.p_proc->Init(pi,NULL,NULL);
+	m_sargs.p_proc->SetMaxOrder
+	  (0,p_vars->m_oqcd-(p_vars->m_type[0]=='S'?1:0));
 	m_sargs.m_nout=p_vars->m_nparticle;
-	m_scales[p_vars->m_nparticle] =
-	  Scale_Setter_Base::Scale_Getter_Function::
-	  GetObject(m_sargs.m_scale,m_sargs);
-	if (m_scales[p_vars->m_nparticle]==NULL)
-	  THROW(fatal_error,"Invalid scale scheme");
+	m_sargs.p_proc->SetScale(m_sargs);
+	m_sargs.p_proc->SetKFactor(m_kargs);
       }
-      Scale_Setter_Base *scale(m_scales[p_vars->m_nparticle]);
+      Scale_Setter_Base *scale(&*m_procs[info]->ScaleSetter());
+      KFactor_Setter_Base *kfac(&*m_procs[info]->KFactorSetter());
       scale->CalculateScale(p);
       muR2=m_nlos.back()->m_mu2[stp::ren]=scale->Scale(stp::ren);
       muF2=m_nlos.back()->m_mu2[stp::fac]=scale->Scale(stp::fac);
       double weight=CalculateWeight(muR2,muF2,p_vars->m_nuwgt?1:2);
+      weight*=kfac->KFactor(p_vars->m_type[0]=='B'?1:0)/p_vars->m_kfac;
       m_nlos.back()->m_result=weight;
       m_weight+=weight;
       if (m_check) {
@@ -392,6 +451,9 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     else if (m_check) {
       double weight=CalculateWeight
 	(sqr(p_vars->m_mur),sqr(p_vars->m_muf),p_vars->m_nuwgt?1:2);
+      RR_Process_Info info(p_vars->m_type,p_vars->m_nparticle+2,flav);
+      KFactor_Setter_Base *kfac(&*m_procs[info]->KFactorSetter());
+      weight*=kfac->KFactor(p_vars->m_type[0]=='B'?1:0)/p_vars->m_kfac;
       m_weight+=weight;
       msg_Debugging()<<METHOD<<"(): "<<p_vars->m_type<<" computed "
 		     <<weight<<", stored "<<p_vars->m_wgt2
@@ -406,10 +468,8 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     }
     if (!ReadInEntry()) m_evtid=0;
   }  
-  Flavour fl1((kf_code)abs(id1),id1<0);
-  Flavour fl2((kf_code)abs(id2),id2<0);
-  Particle *part1=new Particle(0,fl1,x1*rpa->gen.PBeam(0));
-  Particle *part2=new Particle(1,fl2,x2*rpa->gen.PBeam(1));
+  Particle *part1=new Particle(0,m_nlos.back()->p_fl[0],x1*rpa->gen.PBeam(0));
+  Particle *part2=new Particle(1,m_nlos.back()->p_fl[1],x2*rpa->gen.PBeam(1));
   signalblob->AddToInParticles(part1);
   signalblob->AddToInParticles(part2);
   for (size_t i=2;i<m_nlos.back()->m_n;++i) {
@@ -418,7 +478,8 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     signalblob->AddToOutParticles(part);
   }
 #endif
-  m_pdfinfo=PDF_Info(fl1,fl2,x1,x2,muF2,muF2,m_xf1,m_xf2);
+  m_pdfinfo=PDF_Info(Flavour(p_vars->m_id1),Flavour(p_vars->m_id2),
+		     x1,x2,muF2,muF2,m_xf1,m_xf2);
   // only reliable in SM,
   // HEFT breaks this, counting Yukawa's separately breaks this, etc.
   bool onemoreas(p_vars->m_type[0]=='V' || p_vars->m_type[0]=='I' ||
@@ -429,7 +490,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   signalblob->AddData("Weight",new Blob_Data<double>(m_weight));
   signalblob->AddData("MEWeight",new Blob_Data<double>
 		      (p_vars->m_nuwgt?p_vars->m_mewgt:p_vars->m_mewgt2));
-  signalblob->AddData("Trials",new Blob_Data<double>(m_exact?p_vars->m_ncount:1.0));
+  signalblob->AddData("Trials",new Blob_Data<double>(p_vars->m_ncount));
   signalblob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(&m_nlos));
   signalblob->AddData("Weight_Norm",new Blob_Data<double>(1.0));
   signalblob->AddData("OQCD",new Blob_Data<int>(p_vars->m_oqcd));
@@ -471,6 +532,23 @@ operator()(const Input_Arguments &args) const
 
 void ATOOLS::Getter
 <Event_Reader_Base,Input_Arguments,ERootNtuple_Reader>::
+PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"Root NTuple input";
+}
+
+DECLARE_GETTER(EDRootNtuple_Reader,"EDRoot",
+	       Event_Reader_Base,Input_Arguments);
+
+Event_Reader_Base *ATOOLS::Getter
+<Event_Reader_Base,Input_Arguments,EDRootNtuple_Reader>::
+operator()(const Input_Arguments &args) const
+{
+  return new RootNtuple_Reader(args,1,1);
+}
+
+void ATOOLS::Getter
+<Event_Reader_Base,Input_Arguments,EDRootNtuple_Reader>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"Root NTuple input";

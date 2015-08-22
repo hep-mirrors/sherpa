@@ -38,7 +38,7 @@ MPI_KFactor_Setter::MPI_KFactor_Setter
   msg_Debugging()<<METHOD<<"(): p_{T,0} = "<<s_pt0<<".\n";
 }
 
-double MPI_KFactor_Setter::KFactor() 
+double MPI_KFactor_Setter::KFactor(const int mode) 
 {
   double pt2=p_proc->ScaleSetter()->Momenta()[2].PPerp2(), mt2=pt2+sqr(s_pt0);
   return m_weight=sqr(pt2/mt2*(*MODEL::as)(mt2)/(*MODEL::as)(pt2));

@@ -45,6 +45,7 @@ void NLO_subevt::CopyXSData(const NLO_subevt *sub)
 {
   m_me=sub->m_me;
   m_mewgt=sub->m_mewgt;
+  m_K=sub->m_K;
   for (size_t i(0);i<m_mu2.size();++i) m_mu2[i]=sub->m_mu2[i];
   m_result=0.0;
   if (p_ampl) {
@@ -132,7 +133,8 @@ namespace ATOOLS
                <<" {\n  fl: "<<flavs<<", id: "<<ids
                <<"\n  result = "<<sevt.m_result
                <<",  ME = "<<sevt.m_me<<" ("<<sevt.m_trig
-               <<")\n  \\mu_Q = "<<sqrt(sevt.m_mu2[stp::res])
+	       <<"), K = "<<sevt.m_K
+               <<"\n  \\mu_Q = "<<sqrt(sevt.m_mu2[stp::res])
 	       <<",  \\mu_F = "<<sqrt(sevt.m_mu2[stp::fac])
 	       <<", \\mu_R = "<<sqrt(sevt.m_mu2[stp::ren])
 	       <<", k_T = "<<sqrt(sevt.m_kt2)<<"\n}";

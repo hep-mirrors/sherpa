@@ -25,7 +25,7 @@ namespace PHASIC {
     virtual ~GGH_KFactor_Setter();
     
     // Default KFactor method
-    double KFactor();
+    double KFactor(const int mode=0);
     // KFactor for Comix, not yet tested or validated
     double KFactor(const ATOOLS::NLO_subevt& evt);
 
