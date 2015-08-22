@@ -506,6 +506,10 @@ void Matrix_Element_Handler::BuildProcesses()
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vaddname,nf);
 	}
+	if (cur[0]=="Special") {
+	  std::string cb(MakeString(cur,1));
+	  ExtractMPvalues(cb,pbi.m_vspecial,nf);
+	}
 	if (cur[0]=="Enable_MHV") {
 	  std::string cb(MakeString(cur,1));
 	  ExtractMPvalues(cb,pbi.m_vamegicmhv,nf);
@@ -747,6 +751,7 @@ void Matrix_Element_Handler::BuildSingleProcessList
 	if (GetMPvalue(pbi.m_vmtchan,nfs,pnid,di)) cpi.m_mtchan=di;
 	if (GetMPvalue(pbi.m_vgpath,nfs,pnid,ds)) cpi.m_gpath=ds;
 	if (GetMPvalue(pbi.m_vaddname,nfs,pnid,ds)) cpi.m_addname=ds;
+	if (GetMPvalue(pbi.m_vspecial,nfs,pnid,ds)) cpi.m_special=ds;
 	if (GetMPvalue(pbi.m_vnloqcdmode,nfs,pnid,ds)) {
 	  if      (ds=="Fixed_Order" || ds=="1") pi.m_nlomode=cpi.m_nlomode=1;
 	  else if (ds=="MC@NLO"      || ds=="3") pi.m_nlomode=cpi.m_nlomode=3;

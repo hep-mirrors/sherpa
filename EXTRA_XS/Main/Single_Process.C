@@ -49,7 +49,7 @@ bool Single_Process::Initialize()
   }
   
   // can't do any BSM
-  if (m_pinfo.m_mpiprocess==false && MODEL::s_model->Name()!="SM") {
+  if (m_pinfo.m_special!="MPI_Process" && MODEL::s_model->Name()!="SM") {
     DEBUG_INFO("Requested BSM, Internal can't cope, it's too dumb...");
     return false;
   }

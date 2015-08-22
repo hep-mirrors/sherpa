@@ -23,11 +23,8 @@ namespace PHASIC {
     size_t m_nlomode, m_amegicmhv, m_ntchan, m_mtchan;
 
     std::string m_scale, m_coupling, m_kfactor, m_gpath, m_addname;
-    std::string m_megenerator, m_rsmegenerator, m_loopgenerator;
-
+    std::string m_megenerator, m_rsmegenerator, m_loopgenerator, m_special;
     std::string m_selectorfile, m_integrator, m_rsintegrator;
-
-    bool m_mpiprocess;
 
     ME_Generators* p_gens;
 
@@ -42,7 +39,7 @@ namespace PHASIC {
       m_ckkw(0), m_nmax(0), m_itmin(5000), m_rsitmin(5000),
       m_nlomode(0), m_amegicmhv(1), m_ntchan(0), m_mtchan(99),
       m_scale("VAR"), m_kfactor("NO"), m_loopgenerator("Internal"),
-      m_selectorfile(""), m_mpiprocess(false), p_gens(NULL) {}
+      m_selectorfile(""), p_gens(NULL) {}
 
     ATOOLS::Flavour_Vector ExtractFlavours() const;
     bool Has(nlo_type::code nlotype) const;

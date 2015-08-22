@@ -172,6 +172,7 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
   map<string,Complex> cplmap;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
     cplmap.clear();
+    if (m_pinfo.m_special.find("MapOff")!=std::string::npos) continue;
     if (FlavCompare(links[j]) && p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor,cplmap)) {
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
 	m_sfactor = sqr(m_sfactor);

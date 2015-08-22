@@ -16,7 +16,8 @@ std::ostream &PHASIC::operator<<(std::ostream &ostr,const Process_Info &info)
     ostr<<"  scale = '"<<info.m_scale<<"', kfactor = '"<<info.m_kfactor<<"'\n";
     ostr<<"  megenerator = '"<<info.m_megenerator
 	<<"',  loopgenerator = '"<<info.m_loopgenerator<<"'\n  selectorfile = '"
-        <<info.m_selectorfile<<"', mpi process = "<<info.m_mpiprocess<<"\n";
+        <<info.m_selectorfile<<"'\n";
+    if (info.m_special!="") ostr<<"  special = "<<info.m_special<<"\n";
     ostr<<"  gpath = '"<<info.m_gpath
 	<<"', min t-channels = "<<info.m_ntchan
 	<<"', max t-channels = "<<info.m_mtchan<<"\n";

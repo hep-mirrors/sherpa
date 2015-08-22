@@ -285,7 +285,8 @@ bool COMIX::Single_Process::MapProcess()
   }
   std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 		      +"/Process/Comix/"+m_name+".map");
-  if (!FileExists(ampfile) && m_allowmap) {
+  if (!FileExists(ampfile) && m_allowmap &&
+      m_pinfo.m_special.find("MapOff")==std::string::npos) {
   for (size_t i(0);i<p_umprocs->size();++i) {
     msg_Debugging()<<METHOD<<"(): Try mapping '"
 		   <<Name()<<"' -> '"<<(*p_umprocs)[i]->Name()<<"'\n";
