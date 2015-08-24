@@ -171,6 +171,10 @@ maximal absolute (pseudo-)rapidity (default infinity), @code{<b-mode>} sets
 the B-tagging mode (default 0). For details see
 @ref{Scale setters}.
 
+The option @option{FastjetVeto} allows to use the 
+@uref{http://www.fastjet.fr,,FastJet} plugin to apply
+jet veto cuts. The syntax is identical to option @option{FastjetFinder}.
+
 @node Universal selector
 @subsection Universal selector
 @cindex SHOW_VARIABLE_SYNTAX
