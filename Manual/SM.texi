@@ -32,22 +32,19 @@ parameter, whose default is @option{1}. The following options are provided:
   
     all EW parameters are explicitly given.
     Here the W, Z and Higgs masses are taken as inputs, and
-    the parameters @code{1/ALPHAQED(0)}, @code{SIN2THETAW}, @code{VEV}
-    and @code{LAMBDA} have to be specified. The fine structure constant
-    does not run by default. It is evaluated at scale @code{ALPHAQED_DEFAULT_SCALE},
-    which defaults to the Z mass squared (note that this scale has to be specified
-    in GeV squared). The parameters @code{SIN2THETAW}, 
-    @code{VEV}, and @code{LAMBDA} thereby specify the weak mixing angle,
-    the Higgs field vacuum expectation value, and the Higgs quartic
-    coupling respectively.
+    the parameters @code{1/ALPHAQED(0)}, @code{ALPHAQED_DEFAULT_SCALE}
+    (cf. below), @code{SIN2THETAW} (weak mixing angle), @code{VEV} (Higgs field
+    vacuum expectation value) and @code{LAMBDA} (Higgs quartic coupling) have
+    to be specified.
 
     Note that this mode allows to violate the tree-level relations between
-    some of the parameters and can thus not be used with the complex mass
-    scheme (cf. below).
+    some of the parameters and might thus lead to gauge violations in some
+    regions of phase space.
   @item  Case @code{1}:
   
     all EW parameters are calculated from the W, Z and Higgs masses and
-    @code{1/ALPHAQED(0)} using tree-level relations.
+    @code{1/ALPHAQED(0)} + @code{ALPHAQED_DEFAULT_SCALE} (cf. below) using
+    tree-level relations.
   @item  Case @code{3}:
   
     this choice corresponds to the G_mu-scheme. The EW parameters are 
@@ -55,9 +52,11 @@ parameter, whose default is @option{1}. The following options are provided:
     boson mass M_H and the Fermi constant @code{GF} using tree-level relations.
   @end itemize
 
-The electro-weak coupling is by default not running. If its running has been
-enabled (cf. @ref{COUPLINGS}), one can specify its value at zero momentum
-transfer as input value by @code{1/ALPHAQED(0)}.
+The electro-weak coupling is by default not running, unless its running has been
+enabled (cf. @ref{COUPLINGS}). In EW schemes 0 and 1, the squared scale at which
+the fixed EW coupling is to be evaluated can be specified by
+@code{ALPHAQED_DEFAULT_SCALE}, which defaults to the Z mass squared (note that
+this scale has to be specified in GeV squared).
 
 To account for quark mixing the CKM matrix elements have to be assigned. 
 For this purpose the Wolfenstein parametrization @mycite{Wolfenstein1983yz} is
