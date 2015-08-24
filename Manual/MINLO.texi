@@ -1,0 +1,26 @@
+@node MINLO
+@subsection MINLO
+@cindex MINLO
+
+The following runcard shows how to implement the MINLO procedure 
+from @mycite{Hamilton2012np}. A few things to note are detailed below.
+MINLO can also be applied when reading NTuples, see @ref{NTuple production}.
+In this case, the scale and kfactor definition must be included in the @option{(run)}
+section of the input card, see @ref{SCALES} and @ref{KFACTOR}.
+
+@example
+@smallformat
+@verbatiminclude Examples/FixedOrder_NLO/MINLO/Run.dat
+@end smallformat
+@end example
+
+Things to notice:
+@itemize
+@item The R parameter of the flavor-based kT clustering algorithm can be changed
+using @code{MINLO_DELTA_R}.
+@item The parameter @code{MINLO_SUDAKOV_MODE=0/1} defines whether to include power
+corrections stemming from the finite parts in the integral over branching probabilites.
+It defaults to 1.
+@item The parameter @code{MINLO_SUDAKOV_PRECISION} defines the precision target for
+integration of the Sudakov exponent. It defaults to @code{1e-4}.
+@end itemize

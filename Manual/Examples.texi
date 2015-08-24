@@ -111,9 +111,11 @@ of the main features of these examples.
 
 @menu
 * NTuple production:: Production of Root NTuples with Sherpa
+* MINLO:: MINLO scale setting
 @end menu
 
 @include NLO_NTuples.texi
+@include MINLO.texi
 
 @node SoftQCD
 @section Soft QCD: Minimum Bias and Cross Sections

@@ -1,0 +1,19 @@
+(run){
+  EVENTS 1M; NLO_Mode 1;
+  EVENT_GENERATION_MODE W;
+  BEAM_1 2212 4000; BEAM_2 2212 4000;
+  CORE_SCALE VAR{Abs2(p[2]+p[3])+0.25*sqr(sqrt(H_T2)-PPerp(p[2])-PPerp(p[3])+PPerp(p[2]+p[3]))};
+}(run);
+(processes){
+  Process 93 93 -> 11 -12 93;
+  NLO_QCD_Mode Fixed_Order;
+  Scales MINLO; KFactor MINLO;
+  ME_Generator Amegic;
+  Loop_Generator BlackHat;
+  Order (*,2);
+  End process;
+}(processes);
+(selector){
+  Mass 11 -12 2 E_CMS;
+  FastjetFinder antikt 1 1 0 0.4;
+}(selector);

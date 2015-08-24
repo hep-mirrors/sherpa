@@ -5,7 +5,7 @@
   ### Analysis (please configure with --enable-rivet & --enable-hepmc2)
   ANALYSIS Rivet; ANALYSIS_OUTPUT Analysis/4HTp/BVI/;
   ### NTuple output (please configure with '--enable-root')
-  EVENT_INPUT Root[NTuple_B-like];
+  EVENT_INPUT ERoot[NTuple_B-like];
 
   BEAM_1 2212; BEAM_ENERGY_1 3500;
   BEAM_2 2212; BEAM_ENERGY_2 3500;
@@ -20,20 +20,20 @@
   Process 93 93 -> 90 91 93;
   NLO_QCD_Mode Fixed_Order;
   NLO_QCD_Part B;
-  Order_EW 2;
+  Order (*,2);
   End process;
   ### The virtual piece
   Process 93 93 -> 90 91 93;
   NLO_QCD_Mode Fixed_Order;
   NLO_QCD_Part V;
   Loop_Generator LGEN;
-  Order_EW 2;
+  Order (*,2);
   End process;
   ### The integrated subtraction piece
   Process 93 93 -> 90 91 93;
   NLO_QCD_Mode Fixed_Order;
   NLO_QCD_Part I;
-  Order_EW 2;
+  Order (*,2);
   End process;
 }(processes);
 (selector){
