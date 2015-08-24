@@ -22,6 +22,7 @@ libPhasicSelectors_la_SOURCES =	\
 				MinSelector.C \
 				Selector_Bias.C \
 				Fastjet_Finder.C \
+				Fastjet_Veto.C \
 				Fastjet_Selector.C
 
 localinc_HEADERS      =	\
