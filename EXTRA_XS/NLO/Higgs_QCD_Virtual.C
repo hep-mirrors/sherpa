@@ -1,5 +1,6 @@
 #include "PHASIC++/Process/Virtual_ME2_Base.H"
 #include "MODEL/Main/Model_Base.H"
+#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
 
@@ -14,7 +15,7 @@ namespace EXTRAXS {
   class Higgs_QCD_Virtual : public Virtual_ME2_Base {
     double m_fac, m_pij, m_b0, m_finiteconst;
   public:
-    Higgs_QCD_Virtual(const Process_Info& pi, const Flavour_Vector& flavs) :
+    Higgs_QCD_Virtual(const Process_Info& pi, const Flavour_Vector& flavs, int con) :
       Virtual_ME2_Base(pi, flavs)
     {
       Flavour lq(kf_quark);
@@ -29,7 +30,7 @@ namespace EXTRAXS {
       else if (flavs[1].IsGluon()) {
         m_fac = CA;
         m_pij = 2.0*M_PI*m_b0/CA;
-        m_finiteconst = sqr(M_PI) + 11.0/3.0;
+        m_finiteconst = sqr(M_PI) + (con?0.0:11.0/3.0);
       }
       else THROW(fatal_error, "Internal Error.");
     }
@@ -69,7 +70,9 @@ operator()(const Process_Info &pi) const
       for (size_t i=2; i<fl.size(); ++i) {
         if (fl[i].Strong()) return NULL;
       }
-      return new Higgs_QCD_Virtual(pi, fl);
+      Data_Reader read(" ",";","#","=");
+      int con=read.GetValue<int>("HNLO_COEFF_MODE",0);
+      return new Higgs_QCD_Virtual(pi, fl, con);
     }
   }
   return NULL;

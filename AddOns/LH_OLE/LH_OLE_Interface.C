@@ -22,9 +22,9 @@ extern "C" void OLP_Option(const char * assignment, int* success);
   class LH_OLE_Interface : public Virtual_ME2_Base {
     size_t m_pn;
     bool m_active, m_needcmsboost, m_gosammode;
-    int m_OLE_id;
+    int m_OLE_id, m_oqcd, m_oqed;
     double* p_momenta;
-    double p_result[4];
+    double p_result[4], m_Norm;
     static int s_oleinit;
     int m_nf;
   public:
@@ -48,6 +48,9 @@ LH_OLE_Interface::LH_OLE_Interface(const Process_Info& pi,
   m_needcmsboost(false), m_gosammode(false), 
   m_OLE_id(-1), p_momenta(NULL), m_nf(0)
 {
+  m_Norm = pi.m_ii.ISSymmetryFactor()*pi.m_fi.FSSymmetryFactor();
+  m_oqcd = pi.m_maxcpl[0];
+  m_oqed = pi.m_maxcpl[1];
   if (!m_active) return;
   m_mode = 0;
   m_drmode = 1;
@@ -220,6 +223,11 @@ void LH_OLE_Interface::Calc(const Vec4D_Vector& pp) {
   m_res.IR()     = p_result[1]/p_result[3];
   // 1/epsIR2
   m_res.IR2()    = p_result[0]/p_result[3];
+  // Born
+  m_born         = p_result[3]/m_Norm;
+  // couplings
+  m_born*=pow(4.0*M_PI*MODEL::s_model->ScalarFunction("alpha_S",m_mur2),m_oqcd-1);
+  m_born*=pow(4.0*M_PI*MODEL::s_model->ScalarConstant("alpha_QED"),m_oqed);
 }
 
 bool LH_OLE_Interface::SetColours(const ATOOLS::Vec4D_Vector& momenta) {
