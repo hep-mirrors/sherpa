@@ -20,7 +20,7 @@ namespace std {
   {
     str<<"(";
     if (v.size()>0) str<<v[0];
-    else str<<"<no entry>";
+    else str<<"none";
     for (size_t i=1;i<v.size();++i) str<<","<<v[i];
     return str<<")";
   }
@@ -30,7 +30,7 @@ namespace std {
   {
     str<<"(";
     if (v.size()>0) str<<v[0];
-    else str<<"<no entry>";
+    else str<<"none";
     for (size_t i=1;i<v.size();++i) str<<","<<(unsigned short int)(v[i]);
     return str<<")";
   }
@@ -40,7 +40,7 @@ namespace std {
   {
     str<<"(";
     if (v.size()>0) str<<v[0];
-    else str<<"<no entry>";
+    else str<<"none";
     for (size_t i=1;i<v.size();++i) str<<","<<(short int)(v[i]);
     return str<<")";
   }
