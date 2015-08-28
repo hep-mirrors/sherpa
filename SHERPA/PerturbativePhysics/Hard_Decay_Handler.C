@@ -220,7 +220,7 @@ void Hard_Decay_Handler::InitializeDirectDecays(Decay_Table* dt)
   DEBUG_FUNC(dt->Flav());
   Flavour inflav=dt->Flav();
   Vertex_Table::const_iterator vlit=s_model->VertexTable()->find(inflav);
-  const Vertex_List& vlist(vlit->second);
+  const Vertex_List& vlist=(vlit!=s_model->VertexTable()->end()) ? (vlit->second) : Vertex_List();
   // temporary hack:
   // prepare reduced vertex list, not containing duplicates
   // in the sense of having identical external flavours
