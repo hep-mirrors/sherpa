@@ -350,7 +350,7 @@ double KP_Terms::Get(const double &x0,const double &x1,
     if (m_massive) {
       for (size_t i=0;i<m_xpa.size();i++) if (m_xpa[i].xp>eta0) {
 	pdfa->Calculate(eta0/m_xpa[i].xp,muf);
-	g2massq+=m_xpa[i].kpc*pdfa->GetXPDF(flav[0])/eta0/fa;
+	if (fa) g2massq+=m_xpa[i].kpc*pdfa->GetXPDF(flav[0])/eta0/fa;
       }
     }    
   }
@@ -387,18 +387,18 @@ double KP_Terms::Get(const double &x0,const double &x1,
     if (m_massive) {
       for (size_t i=0;i<m_xpb.size();i++) if (m_xpb[i].xp>eta1) {
 	pdfb->Calculate(eta1/m_xpb[i].xp,muf);
-	g2massq+=m_xpb[i].kpc*pdfb->GetXPDF(flav[1])/eta1/fb;
+	if (fb) g2massq+=m_xpb[i].kpc*pdfb->GetXPDF(flav[1])/eta1/fb;
       }
     }    
   }
 
   double res=g2massq;
   if (sa) {
-    res+= (m_kpca[0]*faq+m_kpca[1]*faqx+m_kpca[2]*fag+m_kpca[3]*fagx)/fa;
+    if (fa) res+= (m_kpca[0]*faq+m_kpca[1]*faqx+m_kpca[2]*fag+m_kpca[3]*fagx)/fa;
   }
   
   if (sb) {
-    res+= (m_kpcb[0]*fbq+m_kpcb[1]*fbqx+m_kpcb[2]*fbg+m_kpcb[3]*fbgx)/fb;
+    if (fb) res+= (m_kpcb[0]*fbq+m_kpcb[1]*fbqx+m_kpcb[2]*fbg+m_kpcb[3]*fbgx)/fb;
   }
   return res;
 }
