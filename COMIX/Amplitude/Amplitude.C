@@ -1673,9 +1673,11 @@ void Amplitude::FillAmplitudes
 {
   cols.push_back(std::vector<Complex>(1,1.0));
   amps.push_back(Spin_Amplitudes(m_fl,Complex(0.0,0.0)));
-  for (size_t j(0);j<m_ress.size();++j)
-    for (size_t i(0);i<m_ress[j].size();++i)
-      amps.back().Insert(Complex(m_ress[j][i]),m_ress[j](i));
+  for (size_t i(0);i<m_ress.front().size();++i) {
+    Complex sum(m_ress.front()[i]);
+    for (size_t j(1);j<m_ress.size();++j) sum+=m_ress[j][i];
+    amps.back().Insert(sum,m_ress.front()(i));
+  }
 }
 
 double Amplitude::Coupling(const int mode) const
