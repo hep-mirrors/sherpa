@@ -478,7 +478,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     signalblob->AddToOutParticles(part);
   }
 #endif
-  m_pdfinfo=PDF_Info(Flavour(p_vars->m_id1),Flavour(p_vars->m_id2),
+  m_pdfinfo=PDF_Info((long int)p_vars->m_id1,(long int)p_vars->m_id2,
 		     x1,x2,muF2,muF2,m_xf1,m_xf2);
   // only reliable in SM,
   // HEFT breaks this, counting Yukawa's separately breaks this, etc.
