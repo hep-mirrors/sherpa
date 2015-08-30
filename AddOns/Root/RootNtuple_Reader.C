@@ -422,7 +422,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
 	for (int i=0;i<p_vars->m_nparticle;++i)
 	  pi.m_fi.m_ps.push_back(Subprocess_Info(flav[i+2]));
 	m_sargs.p_proc=m_procs[info] = new Dummy_Process();
-	m_sargs.p_proc->Init(pi,NULL,NULL);
+	m_sargs.p_proc->Init(pi,NULL,NULL,1);
 	m_sargs.p_proc->SetMaxOrder
 	  (0,p_vars->m_oqcd-(p_vars->m_type[0]=='S'?1:0));
 	m_sargs.m_nout=p_vars->m_nparticle;
