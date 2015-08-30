@@ -380,6 +380,8 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   int id1(0), id2(0);
   double x1(1.), x2(1.);
   double muR2(0.), muF2(0.);
+  Vec4D bm[2]={rpa->gen.PBeam(0),rpa->gen.PBeam(1)};
+  for (int i(0);i<2;++i) bm[i][3]=bm[i][3]<0.0?-bm[i][0]:bm[i][0];
   while (currentid==m_evtid) {
     Vec4D sum;
     Vec4D *moms = new Vec4D[2+p_vars->m_nparticle];
@@ -408,8 +410,8 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     // x2=p_vars->m_x2*sf;
     x1=sum.PPlus()/rpa->gen.PBeam(0).PPlus();
     x2=sum.PMinus()/rpa->gen.PBeam(1).PMinus();
-    moms[0]=x1*rpa->gen.PBeam(0);
-    moms[1]=x2*rpa->gen.PBeam(1);
+    moms[0]=x1*bm[0];
+    moms[1]=x2*bm[1];
     if (m_calc) {
       Vec4D_Vector p(moms,&moms[p_vars->m_nparticle+2]);
       RR_Process_Info info(p_vars->m_type,p_vars->m_nparticle+2,flav);
@@ -468,8 +470,8 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     }
     if (!ReadInEntry()) m_evtid=0;
   }  
-  Particle *part1=new Particle(0,m_nlos.back()->p_fl[0],x1*rpa->gen.PBeam(0));
-  Particle *part2=new Particle(1,m_nlos.back()->p_fl[1],x2*rpa->gen.PBeam(1));
+  Particle *part1=new Particle(0,m_nlos.back()->p_fl[0],x1*bm[0]);
+  Particle *part2=new Particle(1,m_nlos.back()->p_fl[1],x2*bm[1]);
   signalblob->AddToInParticles(part1);
   signalblob->AddToInParticles(part2);
   for (size_t i=2;i<m_nlos.back()->m_n;++i) {
