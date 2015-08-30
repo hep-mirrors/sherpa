@@ -53,14 +53,15 @@ Output_RootNtuple::Output_RootNtuple
   p_f=NULL;
 #ifdef USING__MPI
   rntuple_evt2 dummye[1];
-  MPI_Datatype typee[21]={MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,
+  MPI_Datatype typee[22]={MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,
 			  MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,
 			  MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,
-			  MPI_DOUBLE,MPI_LONG,MPI_INT,MPI_INT,
+			  MPI_DOUBLE,MPI_DOUBLE,
+			  MPI_LONG,MPI_INT,MPI_INT,
 			  MPI_INT,MPI_INT,MPI_INT,MPI_INT,
 			  MPI_INT,MPI_DOUBLE,MPI_INT,MPI_CHAR};
-  int blocklene[21]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,18,1,2};
-  MPI_Aint basee, dispe[21];
+  int blocklene[22]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,18,1,2};
+  MPI_Aint basee, dispe[22];
   MPI_Get_address(&dummye[0],&basee);
   MPI_Get_address(&dummye[0].weight,dispe+0);
   MPI_Get_address(&dummye[0].wgt0,dispe+1);
@@ -72,19 +73,20 @@ Output_RootNtuple::Output_RootNtuple
   MPI_Get_address(&dummye[0].rscale,dispe+7);
   MPI_Get_address(&dummye[0].alphas,dispe+8);
   MPI_Get_address(&dummye[0].kfac,dispe+9);
-  MPI_Get_address(&dummye[0].id,dispe+10);
-  MPI_Get_address(&dummye[0].ncount,dispe+11);
-  MPI_Get_address(&dummye[0].nparticle,dispe+12);
-  MPI_Get_address(&dummye[0].kf1,dispe+13);
-  MPI_Get_address(&dummye[0].kf2,dispe+14);
-  MPI_Get_address(&dummye[0].f1,dispe+15);
-  MPI_Get_address(&dummye[0].f2,dispe+16);
-  MPI_Get_address(&dummye[0].nuwgt,dispe+17);
-  MPI_Get_address(dummye[0].uwgt,dispe+18);
-  MPI_Get_address(&dummye[0].oqcd,dispe+19);
-  MPI_Get_address(dummye[0].type,dispe+20);
-  for (size_t i=0;i<21;++i) dispe[i]-=basee;
-  MPI_Type_create_struct(21,blocklene,dispe,typee,&MPI_rntuple_evt2);
+  MPI_Get_address(&dummye[0].psw,dispe+10);
+  MPI_Get_address(&dummye[0].id,dispe+11);
+  MPI_Get_address(&dummye[0].ncount,dispe+12);
+  MPI_Get_address(&dummye[0].nparticle,dispe+13);
+  MPI_Get_address(&dummye[0].kf1,dispe+14);
+  MPI_Get_address(&dummye[0].kf2,dispe+15);
+  MPI_Get_address(&dummye[0].f1,dispe+16);
+  MPI_Get_address(&dummye[0].f2,dispe+17);
+  MPI_Get_address(&dummye[0].nuwgt,dispe+18);
+  MPI_Get_address(dummye[0].uwgt,dispe+19);
+  MPI_Get_address(&dummye[0].oqcd,dispe+20);
+  MPI_Get_address(dummye[0].type,dispe+21);
+  for (size_t i=0;i<22;++i) dispe[i]-=basee;
+  MPI_Type_create_struct(22,blocklene,dispe,typee,&MPI_rntuple_evt2);
   MPI_Type_commit(&MPI_rntuple_evt2);
   Vec4D dummyv[1];
   MPI_Datatype typev[1]={MPI_DOUBLE};
@@ -127,6 +129,7 @@ void Output_RootNtuple::Header()
   }
   p_t3->Branch("alphas",&m_alphas,"alphas/D");
   if (m_exact) p_t3->Branch("kfactor",&m_kfac,"kfactor/D");
+  if (m_exact) p_t3->Branch("ps_wgt",&m_psw,"ps_wgt/D");
   p_t3->Branch("kf",p_kf,"kf[nparticle]/I");
   p_t3->Branch("weight",&m_wgt,"weight/D");
   p_t3->Branch("weight2",&m_wgt2,"weight2/D");
@@ -252,6 +255,7 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
     m_evtlist[m_cnt2].rscale=sqrt((*signal)["Renormalization_Scale"]->Get<double>());
     m_evtlist[m_cnt2].alphas=MODEL::s_model->ScalarFunction("alpha_S",m_evtlist[m_cnt2].rscale*m_evtlist[m_cnt2].rscale);
     m_evtlist[m_cnt2].kfac=wgtinfo->m_K;
+    m_evtlist[m_cnt2].psw=m_evtlist[m_cnt2].weight/(*signal)["MEWeight"]->Get<double>();
     m_evtlist[m_cnt2].oqcd=(*signal)["Orders"]->Get<std::vector<double> >()[0];
     if (type=="B" || type=="") strcpy(m_evtlist[m_cnt2].type,"B");
     else if (type=="V") strcpy(m_evtlist[m_cnt2].type,"V");
@@ -324,6 +328,7 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
       m_evtlist[m_cnt2].rscale=sqrt((*nlos)[j]->m_mu2[stp::ren]);
       m_evtlist[m_cnt2].alphas=MODEL::s_model->ScalarFunction("alpha_S", m_evtlist[m_cnt2].rscale*m_evtlist[m_cnt2].rscale);
       m_evtlist[m_cnt2].kfac=(*nlos)[j]->m_K;
+      m_evtlist[m_cnt2].psw=m_evtlist[m_cnt2].weight/(*signal)["MEWeight"]->Get<double>();
       m_evtlist[m_cnt2].oqcd=(*signal)["Orders"]->Get<std::vector<double> >()[0];
       if (type!="RS") THROW(fatal_error,"Error in NLO type");
       if ((*nlos)[j]->p_real==(*nlos)[j]) strcpy(m_evtlist[m_cnt2].type,"R");
@@ -484,6 +489,7 @@ void Output_RootNtuple::StoreEvt()
     m_nparticle=m_evtlist[i].nparticle;
     m_alphas=m_evtlist[i].alphas;
     m_kfac=m_evtlist[i].kfac;
+    m_psw=m_evtlist[i].psw;
     m_oqcd=m_evtlist[i].oqcd;
     strcpy(m_type,m_evtlist[i].type);
     for (size_t j=0;j<m_evtlist[i].nparticle;j++) {

@@ -18,7 +18,7 @@ namespace SHERPA {
     double weight,wgt0;
     double x1,x2,y1,y2;
     double fscale,rscale;
-    double alphas, kfac;
+    double alphas, kfac, psw;
     long int id;
     int ncount, nparticle;
     int kf1,kf2,f1,f2;
@@ -60,7 +60,7 @@ namespace SHERPA {
     double m_sum,m_s2,m_s3,m_c1,m_c2;
     double m_sq,m_sq2,m_sq3,m_fsq;
     double m_csumsqr,m_csum,m_cn;
-    double m_alphas, m_kfac;
+    double m_alphas, m_kfac, m_psw;
     std::vector<rntuple_evt2> m_evtlist;
     std::vector<int> m_flavlist;    
     std::vector<ATOOLS::Vec4D> m_momlist;
