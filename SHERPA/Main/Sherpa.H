@@ -23,6 +23,7 @@ namespace SHERPA {
     std::string   m_path;
     long int      m_trials, m_debugstep, m_debuginterval, m_displayinterval;
     double        m_evt_starttime;
+    int m_showtrials;
 
     Initialization_Handler * p_inithandler;
     Event_Handler          * p_eventhandler;

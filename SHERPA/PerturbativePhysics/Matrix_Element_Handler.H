@@ -169,6 +169,8 @@ namespace SHERPA {
 		     const PHASIC::nlo_type::code type,
 		     const int mode) const;
 
+    inline int SeedMode() const { return m_seedmode; }
+
   };// end of class Matrix_Element_Handler
 
 }// end of namespace SHERPA

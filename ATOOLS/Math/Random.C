@@ -190,6 +190,7 @@ void ATOOLS::Random::ReadInStatus(const char * filename)
 	(myinstream)>>iy>>idum2;
 	for (int i=0;i<NTAB;++i) (myinstream)>>iv[i];
       myinstream.close();
+      EraseLastIncrementedSeed();
     } 
     else msg_Error()<<"ERROR in Random::ReadInStatus : "<<filename<<" not found!!"<<endl;
   }
@@ -254,7 +255,12 @@ void ATOOLS::Random::RestoreStatus()
 void ATOOLS::Random:: ResetToLastIncrementedSeed()
 {
   m_nsinceinit=0;
-  ReadInStatus(m_lastincrementedseed,0);
+  std::ifstream is;
+  is.copyfmt(m_lastincrementedseed);
+  is.clear(m_lastincrementedseed.rdstate());
+  is.std::ios::rdbuf(m_lastincrementedseed.rdbuf());
+  is.seekg(0);
+  ReadInStatus(is,0);
 }
 
 
@@ -380,6 +386,16 @@ size_t ATOOLS::Random::ReadInStatus4(std::istream &is,const size_t &idx)
 void ATOOLS::Random::SaveStatus4() { *p_ran4[1]=*p_ran4[0]; }
 void ATOOLS::Random::RestoreStatus4() { *p_ran4[0]=*p_ran4[1]; }
 
+void ATOOLS::Random::FastForward(const size_t &n)
+{
+  if (p_external || activeGenerator==4 || m_increment==0)
+    THROW(fatal_error,"Invalid call");
+  for (size_t i(0);i<n;++i) {
+    ResetToLastIncrementedSeed();
+    for (size_t i(0);i<m_increment;++i) Get();
+  }
+}
+
 double ATOOLS::Random::Get()   
 {
   if (p_external) return p_external->Get();
@@ -390,7 +406,10 @@ double ATOOLS::Random::Get()
   else                    rng=Ran2(&m_id);
   if (activeGenerator!=4 && m_increment && m_nsinceinit==m_increment) {
     EraseLastIncrementedSeed();
-    WriteOutStatus(m_lastincrementedseed,0);
+    std::ofstream os;
+    os.std::ios::rdbuf(m_lastincrementedseed.rdbuf());
+    os.seekp(0);
+    WriteOutStatus(os,0);
   }
   return rng;
 }

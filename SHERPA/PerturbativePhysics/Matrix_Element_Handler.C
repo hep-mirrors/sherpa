@@ -173,7 +173,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   for (size_t i(0);i<m_procs.size();++i)
     m_sum+=m_procs[i]->Integrator()->SelectionWeight(m_eventmode);
   for (size_t n(1);true;++n) {
-    if (m_seedmode==3 && rpa->gen.NumberOfGeneratedEvents())
+    if (m_seedmode==3)
       ran->ResetToLastIncrementedSeed();
     double disc(m_sum*ran->Get()), csum(0.0);
     Process_Base *proc(NULL);

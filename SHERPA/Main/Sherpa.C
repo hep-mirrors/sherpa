@@ -39,7 +39,7 @@ Sherpa::Sherpa() :
   ATOOLS::ran = new Random(1234);
   ATOOLS::rpa = new Run_Parameter();
   ATOOLS::s_loader = new Library_Loader();
-  m_trials = 100;
+  m_trials = 0;
   m_debuginterval = 0;
   m_debugstep = -1;
   m_displayinterval = 100;
@@ -118,6 +118,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
     if (initonly==1) THROW(normal_exit,"Initialization complete.");
     if (initonly==2) return true;
     if (!p_inithandler->CalculateTheHardProcesses()) return false;
+    m_showtrials=read.GetValue<int>("SHOW_NTRIALS",0);
     bool res(true);
     if (statuspath!="") {
       res=exh->ReadInStatus(statuspath);
@@ -135,7 +136,6 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
     long int debugstep(-1);
     if (read.ReadFromFile(debugstep,"DEBUG_STEP")) {
       m_debugstep=debugstep;
-      ran->ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
     }
 
     m_displayinterval=read.GetValue<int>("EVENT_DISPLAY_INTERVAL",100);
@@ -187,6 +187,7 @@ bool Sherpa::InitializeTheEventHandler()
   p_eventhandler->PrintGenericEventStructure();
 
   msg->SetLevel(p_inithandler->DataReader()->GetValue<int>("EVT_OUTPUT",msg->Level()));
+  ran->EraseLastIncrementedSeed();
 
   return 1;
 }
@@ -195,11 +196,19 @@ bool Sherpa::InitializeTheEventHandler()
 bool Sherpa::GenerateOneEvent(bool reset) 
 {
     if(m_debuginterval>0 && rpa->gen.NumberOfGeneratedEvents()%m_debuginterval==0){
-      std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
-      ran->WriteOutStatus(("random."+fname).c_str());
+      if (p_inithandler->GetMatrixElementHandler()->SeedMode()!=3 ||
+	  rpa->gen.NumberOfGeneratedEvents()==0) {
+	std::string fname=ToString(rpa->gen.NumberOfGeneratedEvents())+".dat";
+	ran->WriteOutStatus(("random."+fname).c_str());
+      }
     }
     if (m_debugstep>=0) {
-      ran->ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
+      if (p_inithandler->GetMatrixElementHandler()->SeedMode()!=3)
+	ran->ReadInStatus(("random."+ToString(m_debugstep)+".dat").c_str());
+      else {
+	ran->ReadInStatus("random.0.dat");
+	ran->FastForward(m_debugstep);
+      }
     }
 
     if (m_evt_starttime<0.0) m_evt_starttime=rpa->gen.Timer().RealTime();
@@ -219,6 +228,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
         THROW(normal_exit,"Debug event written.");
       }
       rpa->gen.SetNumberOfGeneratedEvents(rpa->gen.NumberOfGeneratedEvents()+1);
+      m_trials+=p_inithandler->GetMatrixElementHandler()->WeightInfo().m_ntrial;
       Blob_List *blobs(p_eventhandler->GetBlobs());
       if (msg_LevelIsEvents()) {
 	if (!blobs->empty()) {
@@ -248,7 +258,7 @@ bool Sherpa::GenerateOneEvent(bool reset)
            (!(rpa->gen.BatchMode()&4) && i%int(pow(10,exp))==0)) &&
           i<rpa->gen.NumberOfEvents()) {
         double diff=rpa->gen.Timer().RealTime()-m_evt_starttime;
-        msg_Info()<<"  Event "<<i<<" ( "
+        msg_Info()<<"  Event "<<i<<(m_showtrials?"("+ToString(m_trials)+")":"")<<" ( "
                   <<FormatTime(size_t(diff))<<" elapsed / "
                   <<FormatTime(size_t((nevt-i)/(double)i*diff))
                   <<" left ) -> ETA: "<<rpa->gen.Timer().

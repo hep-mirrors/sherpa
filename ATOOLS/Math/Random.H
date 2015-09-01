@@ -78,6 +78,7 @@ namespace ATOOLS {
     size_t ReadInStatus(std::istream &is,const size_t &idx);
     void SaveStatus();
     void RestoreStatus();
+    void FastForward(const size_t &n);
     void ResetToLastIncrementedSeed();
     inline void EraseLastIncrementedSeed() 
     { m_lastincrementedseed.str(std::string()); }
