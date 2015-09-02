@@ -323,10 +323,6 @@ void RapidityNLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
 	       <<crit.size()<<endl;
     return;
   }
-  if (_min != -_max) {
-    msg_Error()<<"Asymetric cuts not allowed in RapidityNLO_Selector::SetRange : "<<endl;
-    return;
-  }
 
   flav.push_back(crit[0]);
   ymin.push_back(_min);
@@ -443,10 +439,6 @@ void PseudoRapidityNLO_Selector::SetRange(std::vector<Flavour> crit,double _min,
   if (crit.size() != 1) {
     msg_Error()<<"Wrong number of arguments in PseudoRapidityNLO_Selector::SetRange : "
 	       <<crit.size()<<endl;
-    return;
-  }
-  if (_min != -_max) {
-    msg_Error()<<"Asymetric cuts not allowed in PseudoRapidityNLO_Selector::SetRange : "<<endl;
     return;
   }
 
