@@ -351,6 +351,12 @@ void Model_Base::CustomContainerInit()
     Data_Reader ppread("|",";","#",":");
     ppread.SetAddCommandLine(false);
     ppread.SetString(props);
+    std::string name(helpsvv[i][1]), barname(name);
+    if (name.find('|')!=std::string::npos) {
+      name=name.substr(0,name.find('|'));
+      barname=barname.substr(barname.find('|')+1);
+    }
+    if (barname==name && ppread.StringValue<int>("M",0)==0) barname+="b";
     s_kftable[nkf] = new Particle_Info
       (nkf,ppread.StringValue<double>("m",0.0),//Mass
        ppread.StringValue<double>("W",0.0),//Width
@@ -358,7 +364,7 @@ void Model_Base::CustomContainerInit()
        ppread.StringValue<int>("Q",0),//Strong
        ppread.StringValue<int>("S",0),//Spin
        ppread.StringValue<int>("M",0),//Majorana
-       1,1,0,helpsvv[i][1],helpsvv[i][1],helpsvv[i][1],helpsvv[i][1]);
+       1,1,0,name,barname,name,barname);
     s_kftable[nkf]->m_priority=ppread.StringValue<int>("P",0);
     s_kftable[nkf]->Clear();
     for (size_t j(2);j<helpsvv[i].size();++j) {
