@@ -582,8 +582,10 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
   int switchhit = 0;
   for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (M_doub[i]==0.) {
+#ifdef FuckUp_Helicity_Mapping
       p_hel->SwitchOff(i);
       switchhit++;
+#endif
     }
   }
   msg_Tracking()<<"Single_LOProcess::Tests for "<<m_name<<std::endl
@@ -807,7 +809,9 @@ int Single_LOProcess::TestLib(std::vector<double> * pfactors)
   } 
   for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (M_doub[i]==0.) {
+#ifdef FuckUp_Helicity_Mapping
       p_hel->SwitchOff(i);
+#endif
     }
   }
 

@@ -344,8 +344,10 @@ int AMEGIC::Single_Process::Tests()
   int switchhit = 0;
   for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (M_doub[i]==0.) {
+#ifdef FuckUp_Helicity_Mapping
       p_hel->SwitchOff(i);
       switchhit++;
+#endif
     }
   }
   msg_Tracking()<<"AMEGIC::Single_Process::Tests for "<<m_name<<std::endl
@@ -506,7 +508,9 @@ int AMEGIC::Single_Process::TestLib()
   } 
   for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (M_doub[i]==0.) {
+#ifdef FuckUp_Helicity_Mapping
      p_hel->SwitchOff(i);
+#endif
     }
   }
   if (!(rpa->gen.SoftSC()||rpa->gen.HardSC())) {
