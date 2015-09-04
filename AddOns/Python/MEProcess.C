@@ -120,7 +120,7 @@ void MEProcess::SetMomenta(size_t n)
     if (cur.size()==7) col=ATOOLS::ColorID(ATOOLS::ToType<size_t>(cur[5]),
                                            ATOOLS::ToType<size_t>(cur[6]));
     int kfamp(p_amp->Leg(id)->Flav().Kfcode());
-    if (id<m_nin) kfamp=-kfamp;
+    if (id<m_nin && !p_amp->Leg(id)->Flav().SelfAnti()) kfamp=-kfamp;
     if (p_amp->Leg(id)->Flav().IsAnti()) kfamp=-kfamp;
     if (kf!=kfamp) THROW(fatal_error,"Wrong momentum ordering.");
     if (id<m_nin) p_amp->Leg(id)->SetMom(-p);
