@@ -79,6 +79,8 @@ namespace PHASIC {
     void AddPoint(const double &value,const double &ewgt,const int mode);
     void Optimize();
     void EndOptimize();
+    void MPICollect(std::vector<double> &sv,size_t &i);
+    void MPIReturn(std::vector<double> &sv,size_t &i);
     void MPISync();
     void Reset();
 

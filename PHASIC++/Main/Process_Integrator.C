@@ -505,25 +505,51 @@ void Process_Integrator::SetPSHandler(const SP(Phase_Space_Handler) &pshandler)
       (*p_proc)[i]->Integrator()->SetPSHandler(pshandler);
 } 
 
-void Process_Integrator::MPISync()
+void Process_Integrator::MPICollect
+(std::vector<double> &sv,std::vector<double> &mv,size_t &i)
+{
+  sv.resize(3*(i+1));
+  mv.resize(2*(i+1));
+  sv[3*i+0]=m_msn;
+  sv[3*i+1]=m_mssum;
+  sv[3*i+2]=m_mssumsqr;
+  mv[2*i+0]=m_max;
+  mv[2*i+1]=m_smax;
+  ++i;
+  if (p_proc->IsGroup())
+    for (size_t j(0);j<p_proc->Size();++j)
+      (*p_proc)[j]->Integrator()->MPICollect(sv,mv,i);
+}
+
+void Process_Integrator::MPIReturn
+(std::vector<double> &sv,std::vector<double> &mv,size_t &i)
+{
+  m_msn=sv[3*i+0];
+  m_mssum=sv[3*i+1];
+  m_mssumsqr=sv[3*i+2];
+  m_max=mv[2*i+0];
+  m_smax=mv[2*i+1];
+  ++i;
+  if (p_proc->IsGroup())
+    for (size_t j(0);j<p_proc->Size();++j)
+      (*p_proc)[j]->Integrator()->MPIReturn(sv,mv,i);
+}
+
+void Process_Integrator::MPISync(const int mode)
 {
   if (p_whisto) p_whisto->MPISync();
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
-  if (size>1) {
-    double sval[3], mval[2];
-    sval[0]=m_msn;
-    sval[1]=m_mssum;
-    sval[2]=m_mssumsqr;
-    mval[0]=m_max;
-    mval[1]=m_smax;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,sval,3,MPI::DOUBLE,MPI::SUM);
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,mval,2,MPI::DOUBLE,MPI::MAX);
-    m_msn=sval[0];
-    m_mssum=sval[1];
-    m_mssumsqr=sval[2];
-    m_max=mval[0];
-    m_smax=mval[1];
+  if (mode==0) {
+    size_t i(0), j(0);
+    std::vector<double> sv, mv;
+    MPICollect(sv,mv,i);
+    if (MPI::COMM_WORLD.Get_size()) {
+      mpi->MPIComm()->Allreduce
+	(MPI_IN_PLACE,&sv[0],sv.size(),MPI::DOUBLE,MPI::SUM);
+      mpi->MPIComm()->Allreduce
+	(MPI_IN_PLACE,&mv[0],mv.size(),MPI::DOUBLE,MPI::MAX);
+    }
+    MPIReturn(sv,mv,j);
   }
   m_sn+=m_msn;
   m_ssum+=m_mssum;
@@ -533,7 +559,7 @@ void Process_Integrator::MPISync()
   p_proc->MPISync();
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
-      (*p_proc)[i]->Integrator()->MPISync();
+      (*p_proc)[i]->Integrator()->MPISync(1);
 }
 
 void Process_Integrator::OptimizeResult()

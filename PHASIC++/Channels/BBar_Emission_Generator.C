@@ -14,6 +14,7 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Data_Writer.H"
 #include "PHASIC++/Channels/Vegas.H"
+#include "ATOOLS/Org/My_MPI.H"
 
 using namespace ATOOLS;
 using namespace PHASIC;
@@ -277,6 +278,17 @@ void BBar_Emission_Generator::EndOptimize()
 
 void BBar_Emission_Generator::MPISync()
 {
+#ifdef USING__MPI
+  size_t i(0), j(0);
+  std::vector<double> sv;
+  for (size_t i(0);i<m_dipoles.size();++i)
+    m_dipoles[i]->MPICollect(sv,i);
+  if (MPI::COMM_WORLD.Get_size())
+    mpi->MPIComm()->Allreduce
+      (MPI_IN_PLACE,&sv[0],sv.size(),MPI::DOUBLE,MPI::SUM);
+  for (size_t i(0);i<m_dipoles.size();++i)
+    m_dipoles[i]->MPIReturn(sv,j);
+#endif
   for (size_t i(0);i<m_dipoles.size();++i)
     m_dipoles[i]->MPISync();
 } 

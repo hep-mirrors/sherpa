@@ -14,6 +14,7 @@
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/ISR_Handler.H"
 #include <algorithm>
@@ -93,8 +94,25 @@ void Process_Base::EndOptimize()
 {
 }
 
+void Process_Base::MPICollect(std::vector<double> &sv,size_t &i)
+{
+}
+
+void Process_Base::MPIReturn(std::vector<double> &sv,size_t &i)
+{
+}
+
 void Process_Base::MPISync()
 {
+#ifdef USING__MPI
+  size_t i(0), j(0);
+  std::vector<double> sv;
+  MPICollect(sv,i);
+  if (MPI::COMM_WORLD.Get_size()>1)
+    mpi->MPIComm()->Allreduce
+      (MPI_IN_PLACE,&sv[0],sv.size(),MPI::DOUBLE,MPI::SUM);
+  MPIReturn(sv,j);
+#endif
 }
 
 void Process_Base::SetFixedScale(const std::vector<double> &s)
