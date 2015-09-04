@@ -65,8 +65,8 @@ void Read_Write_Base::SplitInFileName(const size_t &i)
   size_t se(name.find(m_namesplit,sb+1));
   if (se==std::string::npos) return;
   SetInputFile(name.substr(0,sb),i);
-  m_filebegin.push_back(name.substr(sb+1,se-sb-1));
-  m_fileend.push_back(name.substr(se+1));
+  m_filebegin=String_Vector(1,name.substr(sb+1,se-sb-1));
+  m_fileend=String_Vector(1,name.substr(se+1));
   msg_IODebugging()<<METHOD<<"(): Set '"<<m_filebegin.back()
 		 <<"'->'"<<m_fileend.back()<<"'.\n"; 
 }
@@ -400,6 +400,17 @@ void Read_Write_Base::AddFileContent(std::string line,const unsigned int i)
   }
 }
 
+void Read_Write_Base::AddCommandLine(const std::string commandline)
+{
+  s_commandline.push_back(commandline);
+}
+
+void Read_Write_Base::AddCommandLine(const String_Vector &commandline)
+{
+  s_commandline.insert(s_commandline.end(),
+		       commandline.begin(),commandline.end());
+}  
+
 bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
 {  
   if (InputPath(i)+InputFile(i)==nullstring) {
@@ -422,7 +433,7 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
   bool inbuf(s_buffermap.find(file)!=s_buffermap.end());
   String_Vector &cbuffer(s_buffermap[file]);
   msg_IODebugging()<<METHOD<<"(): ("<<this<<") checks buffer '"
-		 <<file<<"' -> ("<<&cbuffer<<")\n";
+		   <<file<<"' -> "<<inbuf<<"("<<&cbuffer<<")\n";
   if (inbuf) {
     m_filecontent[i].clear();
     for (size_t j(0);j<cbuffer.size();++j)
@@ -511,8 +522,8 @@ bool Read_Write_Base::OpenInFile(const unsigned int i,const int mode)
 void Read_Write_Base::CloseInFile(const unsigned int i,const int mode)
 { 
   msg_IODebugging()<<METHOD<<"(): ("<<this<<") closes file '"
-		 <<InputPath(i)+InputFile(i)<<"', mode = "
-		 <<InFileMode(i)<<"\n";
+		   <<InputPath(i)+InputFile(i)<<"', file mode = "
+		   <<InFileMode(i)<<", mode = "<<mode<<"\n";
   My_In_File &infile(InFile(i));
   if (infile()==NULL) return;
   m_filecontent[i].clear();

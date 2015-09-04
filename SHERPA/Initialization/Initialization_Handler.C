@@ -58,7 +58,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   p_fragmentation(NULL), p_softcollisions(NULL), p_hdhandler(NULL), 
   p_mihandler(NULL), p_softphotons(NULL), p_evtreader(NULL)
 {
-  m_path=std::string("./");
+  m_path=std::string("");
   m_file=std::string("Run.dat");
 
   ExtractCommandLineParameters(argc, argv);
@@ -169,8 +169,6 @@ Initialization_Handler::~Initialization_Handler()
     if (exit==NULL) THROW(fatal_error,"Cannot unload PDF library "+*pdflib);
     ((PDF_Exit_Function)exit)();
   }
-  String_Vector dummy;
-  Read_Write_Base::SetCommandLine(dummy);
 }
 
 void Initialization_Handler::CheckVersion()
@@ -1043,25 +1041,14 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
   m_path="";
 
   std::vector<std::string> helpsv2;
-  // Add parameters from possible global.dat to command line
   Data_Reader dr(" ",";","!","=");
   dr.AddWordSeparator("\t");
   dr.AddComment("#");
-  dr.SetInputPath(rpa->gen.Variable("HOME")+"/.sherpa/");
-  dr.SetInputFile("global.dat");
-  std::vector<std::vector<std::string> > helpsvv;
-  if (dr.MatrixFromFile(helpsvv,"")) {
-    helpsv2.resize(helpsvv.size());
-    for (size_t i(0);i<helpsvv.size();++i) {
-      helpsv2[i]=helpsvv[i][0];
-      for (size_t j(1);j<helpsvv[i].size();++j) helpsv2[i]+=" "+helpsvv[i][j];
-    }
-  }
   // Add parameters from Run.dat to command line
   // (this makes it possible to overwrite particle properties in Run.dat)
   dr.SetInputPath(m_path);
   dr.SetInputFile(m_file);
-  dr.RereadInFile();
+  std::vector<std::vector<std::string> > helpsvv;
   if (dr.MatrixFromFile(helpsvv,"")) {
     size_t oldsize(helpsv2.size());
     helpsv2.resize(oldsize+helpsvv.size());

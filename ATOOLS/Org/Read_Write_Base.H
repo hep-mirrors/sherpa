@@ -129,6 +129,9 @@ namespace ATOOLS {
 
     size_t Find(std::string input,std::string parameter) const;
 
+    static void AddCommandLine(const std::string commandline);
+    static void AddCommandLine(const String_Vector &commandline);
+
     // setters
     inline void SetBlank(const char blank)
     { m_blank.clear(); m_blank.push_back(blank); }
@@ -177,30 +180,6 @@ namespace ATOOLS {
     inline void AddIgnore(const String_Vector &ignore)
     { m_ignore.insert(m_ignore.end(),ignore.begin(),ignore.end()); }
 
-    inline void ClearFileBegin()
-    { m_filebegin.clear(); }
-    inline void SetFileBegin(const std::string filebegin)
-    { m_filebegin.clear(); m_filebegin.push_back(filebegin); }
-    inline void SetFileBegin(const String_Vector &filebegin)
-    { m_filebegin=filebegin; }
-    inline void AddFileBegin(const std::string filebegin)
-    { m_filebegin.push_back(filebegin); }
-    inline void AddFileBegin(const String_Vector &filebegin)
-    { m_filebegin.insert(m_filebegin.end(),
-			 filebegin.begin(),filebegin.end()); }
-
-    inline void ClearFileEnd()
-    { m_fileend.clear(); }
-    inline void SetFileEnd(const std::string fileend)
-    { m_fileend.clear(); m_fileend.push_back(fileend); }
-    inline void SetFileEnd(const String_Vector &fileend)
-    { m_fileend=fileend; }
-    inline void AddFileEnd(const std::string fileend)
-    { m_fileend.push_back(fileend); }
-    inline void AddFileEnd(const String_Vector &fileend)
-    { m_fileend.insert(m_fileend.end(),
-		       fileend.begin(),fileend.end()); }
-
     inline void SetOccurrence(const size_t occurrence)
     { m_occurrence=occurrence; }
 
@@ -216,18 +195,6 @@ namespace ATOOLS {
     inline void SetUseGlobalTags(const bool globaltags)
     { m_useglobaltags=globaltags; }
 
-    inline static void SetCommandLine(const std::string commandline)
-    { s_buffermap.clear(); s_commandline.clear();
-      s_commandline.push_back(commandline); }
-    inline static void SetCommandLine(const String_Vector &commandline)
-    { s_buffermap.clear(); s_commandline=commandline; }
-
-    inline static void AddCommandLine(const std::string commandline)
-    { s_buffermap.clear(); s_commandline.push_back(commandline); }
-    inline static void AddCommandLine(const String_Vector &commandline)
-    { s_buffermap.clear(); s_commandline.insert(s_commandline.end(),
-			   commandline.begin(),commandline.end()); }
-  
     inline void SetIgnoreCase(const bool ignorecase)
     { m_ignorecase=ignorecase; }
     inline void SetIgnoreBlanks(const bool ignoreblanks)
