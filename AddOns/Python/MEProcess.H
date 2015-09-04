@@ -21,7 +21,7 @@ namespace PHASIC{
 class MEProcess{
   
 private:
-  
+
   std::string m_name;
   ATOOLS::Cluster_Amplitude* p_amp;
   SHERPA::Sherpa*            p_gen;
@@ -58,6 +58,7 @@ public:
   void SetMomentum(const size_t &id, const double &E , const double &px,
                                      const double &py, const double &pz);
   void SetMomentum(const size_t &id, const ATOOLS::Vec4D &p);
+  void SetColor   (const size_t &id, const ATOOLS::ColorID &col);
 
   double MatrixElement();
   double CSMatrixElement();

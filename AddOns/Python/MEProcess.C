@@ -101,16 +101,17 @@ void MEProcess::SetMomenta(size_t n)
                     ATOOLS::ToType<double>(cur[3]),
                     ATOOLS::ToType<double>(cur[4]));
     ATOOLS::ColorID col(0,0);
+    // Flavours were added in the order given by p_proc->Flavours()
+    // Momenta need to be given in same order.
+    if (kf!=(long int)p_proc->Flavours()[id]){
+      std::stringstream err;
+      err << "Momenta must be listed flavour-ordered in run card: " << p_proc->Flavours();
+      THROW(fatal_error, err.str());
+    }
     if (cur.size()==7) col=ATOOLS::ColorID(ATOOLS::ToType<size_t>(cur[5]),
                                            ATOOLS::ToType<size_t>(cur[6]));
-    int kfamp(p_amp->Leg(id)->Flav().Kfcode());
-    if (id<m_nin) kfamp=-kfamp;
-    if (p_amp->Leg(id)->Flav().IsAnti()) kfamp=-kfamp;
-    if (kf!=kfamp) THROW(fatal_error,"Wrong momentum ordering.");
-    if (id<m_nin) p_amp->Leg(id)->SetMom(-p);
-    else          p_amp->Leg(id)->SetMom(p);
-    if (id<m_nin) p_amp->Leg(id)->SetCol(col.Conj());
-    else          p_amp->Leg(id)->SetCol(col);
+    SetMomentum(id,p);
+    SetColor(id,col);
     id++;
   }
 }
@@ -147,12 +148,19 @@ void MEProcess::SetMomentum(const size_t &index, const ATOOLS::Vec4D &p)
   else             p_amp->Leg(m_mom_inds[index])->SetMom(p);
 }
 
+void MEProcess::SetColor(const size_t &index, const ATOOLS::ColorID& col)
+{
+  if (index<m_nin) p_amp->Leg(m_mom_inds[index])->SetCol(col.Conj());
+  else             p_amp->Leg(m_mom_inds[index])->SetCol(col);
+}
+
 void MEProcess::AddInFlav(const int &id)
 {
   DEBUG_FUNC(id);
   p_amp->CreateLeg(ATOOLS::Vec4D(),
                    ATOOLS::Flavour(id>0?id:-id, id>0 ? true : false));
   p_amp->SetNIn(p_amp->NIn()+1);
+  PHASIC::Process_Base::SortFlavours(p_amp);
   m_inpdgs.push_back(id);
   m_nin+=1;
 }
@@ -162,6 +170,7 @@ void MEProcess::AddOutFlav(const int &id)
   DEBUG_FUNC(id);
   p_amp->CreateLeg(ATOOLS::Vec4D(),
                    ATOOLS::Flavour(id>0?id:-id, id>0 ? false : true));
+  PHASIC::Process_Base::SortFlavours(p_amp);
   m_outpdgs.push_back(id);
   m_nout+=1;
 }
@@ -173,6 +182,7 @@ void MEProcess::AddInFlav(const int &id, const int &col1, const int &col2)
                    ATOOLS::Flavour(id>0?id:-id, id>0 ? false : true),
                    ATOOLS::ColorID(col1, col2));
   p_amp->SetNIn(p_amp->NIn()+1);
+  PHASIC::Process_Base::SortFlavours(p_amp);
   m_inpdgs.push_back(id);
   m_nin+=1;
 }
@@ -183,6 +193,7 @@ void MEProcess::AddOutFlav(const int &id, const int &col1, const int &col2)
   p_amp->CreateLeg(ATOOLS::Vec4D(),
                    ATOOLS::Flavour(id>0?id:-id, id>0 ? false : true),
                    ATOOLS::ColorID(col1, col2));
+  PHASIC::Process_Base::SortFlavours(p_amp);
   m_outpdgs.push_back(id);
   m_nout+=1;
 }
@@ -218,7 +229,6 @@ void MEProcess::SetColors()
 PHASIC::Process_Base* MEProcess::FindProcess()
 {
   SHERPA::Matrix_Element_Handler* me_handler = p_gen->GetInitHandler()->GetMatrixElementHandler();
-  PHASIC::Process_Base::SortFlavours(p_amp);
   m_name = PHASIC::Process_Base::GenerateName(p_amp);
   for (unsigned int i(0); i<me_handler->ProcMaps().size(); i++)
     for (PHASIC::NLOTypeStringProcessMap_Map::const_iterator sit(me_handler->ProcMaps()[i]->begin());
@@ -243,15 +253,10 @@ void MEProcess::Initialize()
     p_proc=procs[0];
     msg_Debugging()<<"Process: "<<p_proc->Name()<<std::endl;
     // fill cluster amplitude according to process
-    m_nin=p_proc->NIn();
-    m_nout=p_proc->NOut();
     for (size_t i(0);i<p_proc->Flavours().size();++i) {
-      ATOOLS::Flavour fl=p_proc->Flavours()[i];
-      if (i<m_nin) fl=fl.Bar();
-      p_amp->CreateLeg(ATOOLS::Vec4D(),fl);
-      m_inpdgs.push_back(fl.IsAnti()?-fl.Kfcode():fl.Kfcode());
+      if(i<p_proc->NIn()) AddInFlav((long int)p_proc->Flavours()[i]);
+      else               AddOutFlav((long int)p_proc->Flavours()[i]);
     }
-    p_amp->SetNIn(m_nin);
   }
   m_name=p_proc->Name();
   for (unsigned int i = 0; i<p_amp->Legs().size(); i++) {
