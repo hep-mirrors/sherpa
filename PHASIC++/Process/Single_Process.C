@@ -330,6 +330,7 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     msg_Debugging()<<"Calculating DADS terms"<<std::endl;
     m_mewgtinfo.m_type|=mewgttype::DADS;
     Dipole_Params dps(p_mc->Active(this));
+    if (dps.p_dip==NULL) return m_last;
     std::vector<double> x(2,-1.0);
     for (size_t j(0);j<2;++j) x[j]=Min(p_int->ISR()->CalcX(dps.m_p[j]),1.);
     for (size_t i(0);i<dps.m_procs.size();++i) {

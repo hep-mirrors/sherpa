@@ -129,6 +129,7 @@ bool BBar_Emission_Generator::InitDipoles
 Dipole_Params BBar_Emission_Generator::Active
 (Process_Base *const bviproc) const
 {
+  if (p_active==NULL) return Dipole_Params();
   return Dipole_Params(p_active,m_pmap.find(p_active)
 		       ->second.find(bviproc)->second,
 		       m_p,m_weight);
