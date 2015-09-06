@@ -96,14 +96,21 @@ void Process_Base::EndOptimize()
 
 void Process_Base::MPICollect(std::vector<double> &sv,size_t &i)
 {
+  if (IsGroup())
+    for (size_t j(0);j<Size();++j)
+      (*this)[j]->MPICollect(sv,i);
 }
 
 void Process_Base::MPIReturn(std::vector<double> &sv,size_t &i)
 {
+  if (IsGroup())
+    for (size_t j(0);j<Size();++j)
+      (*this)[j]->MPIReturn(sv,i);
 }
 
-void Process_Base::MPISync()
+void Process_Base::MPISync(const int mode)
 {
+  if (mode) return;
 #ifdef USING__MPI
   size_t i(0), j(0);
   std::vector<double> sv;

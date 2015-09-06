@@ -894,8 +894,9 @@ void Single_Virtual_Correction::MPIReturn(std::vector<double> &sv,size_t &i)
   i+=4;
 }
 
-void Single_Virtual_Correction::MPISync()
+void Single_Virtual_Correction::MPISync(const int mode)
 {
+  Process_Base::MPISync(mode);
 #ifdef USING__MPI
   m_n+=m_mn;
   m_bsum+=m_mbsum;

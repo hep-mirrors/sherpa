@@ -63,7 +63,7 @@ namespace AMEGIC {
     void WriteOut(const std::string &pid);
     void MPICollect(std::vector<double> &sv,size_t &i);
     void MPIReturn(std::vector<double> &sv,size_t &i);
-    void MPISync();
+    void MPISync(const int mode=0);
 
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);

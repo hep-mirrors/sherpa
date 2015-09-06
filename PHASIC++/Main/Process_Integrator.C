@@ -556,7 +556,7 @@ void Process_Integrator::MPISync(const int mode)
   m_ssumsqr+=m_mssumsqr;
   m_msn=m_mssum=m_mssumsqr=0.0;
 #endif
-  p_proc->MPISync();
+  p_proc->MPISync(mode);
   if (p_proc->IsGroup())
     for (size_t i(0);i<p_proc->Size();++i)
       (*p_proc)[i]->Integrator()->MPISync(1);
@@ -593,7 +593,7 @@ void Process_Integrator::StoreBackupResults()
 
 void Process_Integrator::StoreResults(const int mode)
 {
-  MPISync();
+  if (m_msn) MPISync();
   if (m_resultpath.length()==0) return;
   if (m_totalxs!=0.0 && mode==0) return;
   SetTotal(0); 

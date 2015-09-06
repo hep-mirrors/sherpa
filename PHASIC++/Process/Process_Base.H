@@ -129,7 +129,7 @@ namespace PHASIC {
     virtual void EndOptimize();
     virtual void MPICollect(std::vector<double> &sv,size_t &i);
     virtual void MPIReturn(std::vector<double> &sv,size_t &i);
-    virtual void MPISync();
+    virtual void MPISync(const int mode=0);
 
     virtual bool IsGroup() const;
 
