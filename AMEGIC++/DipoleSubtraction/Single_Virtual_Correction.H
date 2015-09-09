@@ -47,7 +47,7 @@ namespace AMEGIC {
 
     double m_bsum, m_vsum, m_isum, m_n;
     double m_mbsum, m_mvsum, m_misum, m_mn;
-    double m_lastb, m_lastv, m_lasti, m_lastkp;
+    double m_lastb, m_lastv, m_lasti, m_lastkp, m_lastki;
     /*------------------------------------------------------------------------------
 
       Constructors

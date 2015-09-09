@@ -568,7 +568,7 @@ double Single_Virtual_Correction::Get_KPterms(PDF_Base *pdfa, PDF_Base *pdfb,
   if (!(m_imode&2 || m_imode&4)) return 0.;
   if ((m_pinfo.m_fi.m_nloqcdtype&nlo_type::vsub)==0) return 0.;
   int mode(pdfa==p_int->ISR()->PDF(0)?0:1);
-  return p_kpterms->Get(m_x0,m_x1,eta0,eta1,flav,mode) * p_partner->LastK();
+  return p_kpterms->Get(m_x0,m_x1,eta0,eta1,flav,mode) * p_partner->m_lastki;
 }
 
 void Single_Virtual_Correction::CheckPoleCancelation(const ATOOLS::Vec4D *mom)
@@ -769,7 +769,7 @@ double Single_Virtual_Correction::operator()(const ATOOLS::Vec4D_Vector &mom,con
     msg->SetPrecision(6);
   }
   double kfactor1(KFactor(1));
-  double kfactor(m_lastk=KFactor());
+  double kfactor(m_lastki=m_lastk=KFactor());
   m_lastb=p_dsij[0][0] * kfactor1;
   m_lasti=I            *= kfactor;
   m_lastv=lme          *= kfactor;
