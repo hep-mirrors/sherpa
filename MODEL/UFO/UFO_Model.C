@@ -6,6 +6,8 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Running_AlphaQED.H"
 
+#include <cmath>
+
 namespace UFO{
 
   UFO_Model::UFO_Model(std::string path, std::string file, bool elementary) : Model_Base(path, file, elementary) 
@@ -74,19 +76,14 @@ namespace UFO{
     std::string widthscheme = MODEL::Model_Base::p_dataread->GetValue<std::string>("WIDTH_SCHEME","Fixed");
     p_numbers->insert(make_pair(std::string("WidthScheme"), widthscheme=="CMS"));
 
-    SetAlphaQCD(isr);
     // set default value to UFO input such that
     // we recover standard cross sections for fixed QCD coupling
-    double alphaSU = p_dataread->GetEntry<double>("SMINPUTS",3);
-    MODEL::as->SetDefault(alphaSU);
+    SetAlphaQCD(isr,p_dataread->GetEntry<double>("SMINPUTS",3));
 
-    double alphaU = 1./p_dataread->GetEntry<double>("SMINPUTS",1);
-    double alpha  = 1./MODEL::Model_Base::p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
-    MODEL::aqed = new MODEL::Running_AlphaQED(alpha);
-    MODEL::aqed->SetDefault(alphaU);
-    p_functions->insert(make_pair(std::string("alpha_QED"),MODEL::aqed));
-    p_constants->insert(make_pair(std::string("alpha_QED"),alphaU));
-
+    // set default value to UFO input such that
+    // we recover standard cross sections for fixed QED coupling
+    SetAlphaQED(1./p_dataread->GetEntry<double>("SMINPUTS",1));
+    
     return true;
   }
 

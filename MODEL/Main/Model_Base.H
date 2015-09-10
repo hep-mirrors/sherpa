@@ -80,8 +80,10 @@ namespace MODEL {
     void AddStandardContainers();
     void InitMEInfo();
 
-    // to be called in ModelInit 
-    void SetAlphaQCD(const PDF::ISR_Handler_Map& isr);
+    // to be called in ModelInit
+    void SetAlphaQED(const double& aqed_def);
+    void SetAlphaQCD(const PDF::ISR_Handler_Map& isr, const double& alphaS);
+    void SetAlphaQEDByScale(const double& scale2);
     void SetRunningFermionMasses();
     
   public:

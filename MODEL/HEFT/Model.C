@@ -120,7 +120,7 @@ bool HEFT::ModelInit(const PDF::ISR_Handler_Map& isr)
   FixEWParameters();  
   FixCKM();
   FixEFT();
-  SetAlphaQCD(isr);
+  SetAlphaQCD(isr,p_dataread->GetValue<double>("ALPHAS(MZ)",0.118));
   SetRunningFermionMasses();
   ATOOLS::OutputParticles(msg->Info());
   ATOOLS::OutputContainers(msg->Info());

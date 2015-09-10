@@ -116,7 +116,7 @@ bool Standard_Model_TauPi::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
   FixEWParameters();  
   FixCKM();
-  SetAlphaQCD(isr);
+  SetAlphaQCD(isr,p_dataread->GetValue<double>("ALPHAS(MZ)",0.118));
   SetRunningFermionMasses();
   p_constants->insert(make_pair(string("F_PI"),
                                 p_dataread->GetValue<double>("F_PI",0.0924)));

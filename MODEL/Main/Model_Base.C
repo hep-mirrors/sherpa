@@ -9,6 +9,7 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/Main/Strong_Coupling.H"
 #include "MODEL/Main/Running_Fermion_Mass.H"
+#include "MODEL/Main/Running_AlphaQED.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
@@ -92,12 +93,29 @@ void Model_Base::GetCouplings(Coupling_Map &cpls)
   }
 }
 
-// to be called in ModelInit 
-void Model_Base::SetAlphaQCD(const PDF::ISR_Handler_Map& isr)
+// To be called in ModelInit, default value will be set to aqed_def argument
+void Model_Base::SetAlphaQED(const double& aqed_def){
+  double alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
+  aqed=new Running_AlphaQED(alphaQED0);
+  p_functions->insert(make_pair(std::string("alpha_QED"),aqed));
+  p_constants->insert(make_pair(std::string("alpha_QED"),aqed_def));
+
+}
+
+// To be called in ModelInit, default will be set to AlphaQED at scale2
+void Model_Base::SetAlphaQEDByScale(const double& scale2){
+  double alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);;
+  aqed=new Running_AlphaQED(alphaQED0);
+  aqed->SetDefault((*aqed)(scale2));
+  p_functions->insert(make_pair(std::string("alpha_QED"),aqed));
+  p_constants->insert(make_pair(std::string("alpha_QED"),aqed->Default()));
+}
+
+// To be called in ModelInit, alphaS argument is alphaS input at MZ
+void Model_Base::SetAlphaQCD(const PDF::ISR_Handler_Map& isr, const double& alphaS)
 {
   int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",1);
   int    th_alphaS	= p_dataread->GetValue<int>("THRESHOLD_ALPHAS",1);
-  double alphaS         = p_dataread->GetValue<double>("ALPHAS(MZ)",0.118);
   double MZ2            = sqr(Flavour(kf_Z).Mass());
   as = new Running_AlphaS(alphaS,MZ2,order_alphaS,th_alphaS,isr);
   p_constants->insert(make_pair(string("alpha_S"),alphaS));
@@ -115,7 +133,7 @@ void Model_Base::SetAlphaQCD(const PDF::ISR_Handler_Map& isr)
   p_constants->insert(make_pair(string("strong_cpl"),alphaS));
 }
 
-// to be called in ModelInit 
+// To be called in ModelInit 
 void Model_Base::SetRunningFermionMasses()
 {
   for (size_t i=0;i<17; ++i) {
