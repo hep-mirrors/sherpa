@@ -92,7 +92,7 @@ std::string Scale_Variation::GenerateName()
 }
 
 Scale_Variations::Scale_Variations() :
-  m_on(false), m_loadlhapdf(true), m_ckkw(false), m_kpnegativepdf(false),
+  m_on(false), m_loadlhapdf(true), m_ckkw(false), m_kpnegativepdf(true),
   m_quark(Flavour(kf_quark)), m_gluon(Flavour(kf_gluon)),
   p_nsvmap(new NamedScaleVariationMap())
 {
@@ -127,7 +127,7 @@ Scale_Variations::Scale_Variations() :
   me_reader.AddComment("#");
   me_reader.SetInputPath(rpa->GetPath());
   me_reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  int helpi=true;
+  int helpi;
   if (me_reader.ReadFromFile(helpi,"KP_ACCEPT_NEGATIVE_PDF")) {
     m_kpnegativepdf = helpi;
     msg_Tracking()<<"Set reweighted KP-term accepts negative PDF "<<m_kpnegativepdf<<" . "<<std::endl;
