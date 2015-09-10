@@ -66,7 +66,7 @@ void ME_Weight_Info::Reset()
   // ME generators
   if (m_type&mewgttype::DADS) m_type^=mewgttype::DADS;
   if (m_type&mewgttype::METS) m_type^=mewgttype::METS;
-  m_B=m_VI=m_KP=0.;
+  m_B=m_VI=m_KP=m_K=0.;
   m_dadsinfos.clear();
   m_rdainfos.clear();
   m_clusseqinfo=Cluster_Sequence_Info(1.,0.);
