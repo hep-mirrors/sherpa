@@ -235,6 +235,7 @@ bool Sudakov::Generate(Parton * split)
        split->GetLeft()==NULL) ||
       ((cc==8 || (split->GetType()==pst::FS?cc:-cc)==-3) &&
        split->GetRight()==NULL)) {
+    msg_Out()<<METHOD<<":\n"<<(*split)<<".\n";
     THROW(fatal_error,"Invalid color flow.");
   }
   m_cfl  = split->GetFlavour();
