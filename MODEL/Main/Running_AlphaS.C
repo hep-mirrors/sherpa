@@ -220,24 +220,21 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
   Data_Reader dataread(" ",";","!","=");
   dataread.AddComment("#");
   dataread.AddWordSeparator("\t");
-  if (dataread.GetValue<int>("OVERRIDE_PDF_INFO",0)==1) {
+  if (dataread.GetValue<int>("OVERRIDE_PDF_INFO",0)==1)
     THROW(fatal_error,"Cannot override PDF info.");
-  }
-  else {
-    const PDF::PDF_AS_Info &info(p_pdf->ASInfo());
-    if (info.m_order>=0) {
-      m_order=info.m_order;
-      m_as_MZ=info.m_asmz;
-      m_m2_MZ=(info.m_mz2>0.?info.m_mz2:m_m2_MZ);
-      if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)==1) m_pdf=1;
-      msg_Tracking()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n"
-                    <<"  perturbative order "<<m_order
-                    <<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
-      msg_Tracking()<<"\n  quark masses = { ";
-      for (int i(0);i<m_nth-1;++i) msg_Tracking()<<sqrt(masses[i])<<" ";
-      msg_Tracking()<<"}"<<std::endl;
-      msg_Tracking()<<"\n}"<<std::endl;
-    }
+  const PDF::PDF_AS_Info &info(p_pdf->ASInfo());
+  if (info.m_order>=0) {
+    m_order=info.m_order;
+    m_as_MZ=info.m_asmz;
+    m_m2_MZ=(info.m_mz2>0.?info.m_mz2:m_m2_MZ);
+    if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)==1) m_pdf=1;
+    msg_Tracking()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n"
+                  <<"  perturbative order "<<m_order
+                  <<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
+    msg_Tracking()<<"\n  quark masses = { ";
+    for (int i(0);i<m_nth-1;++i) msg_Tracking()<<sqrt(masses[i])<<" ";
+    msg_Tracking()<<"}"<<std::endl;
+    msg_Tracking()<<"\n}"<<std::endl;
   }
 
   std::vector<double> sortmass(&masses[0],&masses[m_nth]);
