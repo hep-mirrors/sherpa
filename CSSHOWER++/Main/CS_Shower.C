@@ -277,8 +277,6 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl,const bool & soft)
 
 bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 {
-  //msg_Out()<<METHOD<<":\n"
-  //	   <<"=========================================================\n";
   CleanUp();
   DEBUG_FUNC("");
   for (Cluster_Amplitude *campl(ampl);
@@ -294,12 +292,11 @@ bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
   std::map<Parton*,Cluster_Leg*> almap;
   std::map<Cluster_Leg*,Parton*> apmap;
   for (Cluster_Amplitude *campl(ampl);campl;campl=campl->Next()) {
-    //msg_Out()<<*campl<<"\n";
+    msg_Debugging()<<*campl<<"\n";
     Parton *split(NULL);
     std::map<Parton*,Cluster_Leg*> lmap;
     std::map<Cluster_Leg*,Parton*> pmap;
     Singlet *sing(TranslateAmplitude(campl,pmap,lmap,kt2xmap));
-    //msg_Out()<<(*sing)<<"\n";
     allsinglets.push_back(sing);
     for (size_t i(0);i<campl->Legs().size();++i) {
       Cluster_Leg *cl(campl->Leg(i));
@@ -759,7 +756,6 @@ bool CS_Shower::JetVeto(ATOOLS::Cluster_Amplitude *const ampl,
     if (p.empty()) {
       msg_Error()<<METHOD<<"(): Combine failed. Use R configuration for:\n"
 		 <<(*ampl)<<"\n";
-      //exit(1);
       return JetVeto(ampl,0);
     }
     Cluster_Amplitude *bampl(Cluster_Amplitude::New());
