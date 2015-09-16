@@ -157,15 +157,6 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
   bool cvp(reader.GetValue<int>("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",1));
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp);
-  string sfname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name()+".sym";
-  if (FileExists(sfname)) {
-    My_In_File in(sfname);
-    if (!in.Open()) THROW(fatal_error,"Cannot open "+sfname);
-    double symf;
-    *in>>symf;
-    m_Norm*=symf;
-    in.Close();
-  }
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return 0;
@@ -927,35 +918,6 @@ void AMEGIC::Single_Process::FillCombinations()
 #ifdef DEBUG__Fill_Combinations
   msg_Debugging()<<METHOD<<"(): '"<<m_name<<"' {\n";
 #endif
-  std::string fname=rpa->gen.Variable("SHERPA_CPP_PATH")
-    +"/Process/Amegic/"+m_ptypename+"/"+m_name+".clu";
-  if (FileExists(fname)) {
-    My_In_File from(fname);
-    if (!from.Open()) THROW(critical_error,"No clu for "+m_name);
-    size_t size(0);
-    *from>>size;
-    for (size_t i(0);i<size;++i) {
-      size_t ida(0), idb(0);
-      *from>>ida>>idb;
-      m_ccombs.insert(std::pair<size_t,size_t>(ida,idb));
-    }
-    *from>>size;
-    for (size_t i(0);i<size;++i) {
-      size_t id(0), fsize(0);
-      *from>>id>>fsize;
-      m_cflavs[id].resize(fsize);
-      for (size_t j(0);j<fsize;++j) {
-	long int fl(0);
-	*from>>fl;
-	m_cflavs[id][j]=Flavour(abs(fl),fl<0);
-      }
-    }
-    std::string eof;
-    *from>>eof;
-    if (eof!="eof") THROW(critical_error,"Corrupted clu for "+m_name);
-    from.Close();
-    return;
-  }
   size_t nd(p_partner->NumberOfDiagrams());
   for (size_t i(0);i<nd;++i) {
     Point *p(p_partner->Diagram(i));

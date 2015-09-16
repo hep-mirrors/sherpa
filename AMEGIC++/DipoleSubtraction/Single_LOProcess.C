@@ -1280,35 +1280,6 @@ void AMEGIC::Single_LOProcess::FillCombinations()
 #ifdef DEBUG__Fill_Combinations
   msg_Debugging()<<METHOD<<"(): '"<<m_name<<"' {\n";
 #endif
-  std::string fname=rpa->gen.Variable("SHERPA_CPP_PATH")
-    +"/Process/Amegic/"+m_ptypename+"/"+m_name+".clu";
-  if (FileExists(fname)) {
-    My_In_File from(fname);
-    if (!from.Open()) THROW(critical_error,"No clu for "+m_name);
-    size_t size(0);
-    *from>>size;
-    for (size_t i(0);i<size;++i) {
-      size_t ida(0), idb(0);
-      *from>>ida>>idb;
-      m_ccombs.insert(std::pair<size_t,size_t>(ida,idb));
-    }
-    *from>>size;
-    for (size_t i(0);i<size;++i) {
-      size_t id(0), fsize(0);
-      *from>>id>>fsize;
-      m_cflavs[id].resize(fsize);
-      for (size_t j(0);j<fsize;++j) {
-	long int fl(0);
-	*from>>fl;
-	m_cflavs[id][j]=Flavour(abs(fl),fl<0);
-      }
-    }
-    std::string eof;
-    *from>>eof;
-    if (eof!="eof") THROW(critical_error,"Corrupted clu for "+m_name);
-    from.Close();
-    return;
-  }
   size_t nd(NumberOfDiagrams());
   for (size_t i(0);i<nd;++i) {
     Point *p(Diagram(i));
