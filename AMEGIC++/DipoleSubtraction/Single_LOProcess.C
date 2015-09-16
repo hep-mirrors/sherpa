@@ -1292,22 +1292,6 @@ void AMEGIC::Single_LOProcess::FillCombinations()
 		 <<" combinations\n";
   msg_Debugging()<<"}\n";
 #endif
-  My_Out_File to(fname);
-  to.Open();
-  *to<<m_ccombs.size()<<"\n";
-  for (Combination_Set::const_iterator
-	 cit(m_ccombs.begin());cit!=m_ccombs.end();++cit)
-    *to<<cit->first<<" "<<cit->second<<"\n";
-  *to<<m_cflavs.size()<<"\n";
-  for (CFlavVector_Map::const_iterator
-	 cit(m_cflavs.begin());cit!=m_cflavs.end();++cit) {
-    *to<<cit->first<<" "<<cit->second.size();
-    for (Flavour_Vector::const_iterator fit(cit->second.begin());
-	 fit!=cit->second.end();++fit) *to<<" "<<(long int)*fit;
-    *to<<"\n";
-  }
-  *to<<"eof\n";
-  to.Close();
 }
 
 bool AMEGIC::Single_LOProcess::Combinable
