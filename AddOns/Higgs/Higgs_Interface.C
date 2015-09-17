@@ -75,9 +75,7 @@ bool Higgs_Interface::Initialize
   s_mc=p_model->GetScalarFunction("m"+Flavour(kf_c).IDName());
   G_F=1.0/sqrt(2.0)/std::abs(sqr(model->ComplexConstant("cvev")));
   DEBUG_VAR(model->ComplexConstant("cvev")<<" "<<G_F);
-  s2W=model->ScalarConstant(std::string("sin2_thetaW"));
-  if (model->ScalarNumber(std::string("WidthScheme"))==1)
-    s2W=std::abs(model->ComplexConstant(std::string("csin2_thetaW")));
+  s2W=std::abs(model->ComplexConstant(std::string("csin2_thetaW")));
   c2W=1.0-s2W;
   sW=sqrt(s2W);
   cW=sqrt(c2W);
