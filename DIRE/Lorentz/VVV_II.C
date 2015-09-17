@@ -29,6 +29,16 @@ namespace DIRE {
 	B=-2.0+s.m_z/(sqr(s.m_z)+s.m_t/s.m_Q2)-1.0;
 	A*=1.0+p_sk->GF()->K(s);
       }
+      if (s.m_kfac&2) {
+	double CF=4./3., CA=3., TF=.5*p_sk->GF()->Nf(s), x=s.m_z;
+	double B2=TF*(4*(-1+x)*(-23+x*(6+x*(10+x*(4+23*x))))+24*(1-x)*x*log(x)*sqr(1+x))+
+	  (CF*TF*(36*(1-x)*x*(1+x)*(3+5*x)*log(x)+24*(1+x)*(-1+x*(11+5*x))*sqr(-1+x)-36*(-1+x)*x*sqr(1+x)*sqr(log(x))))/CA+
+	  CA*(6*(1-x)*x*(1+x)*(25+11*x*(-1+4*x))*log(x)+(1-x)*(x*(1+x)*(25+109*x)+6*(2+x*(1+2*x*(1+x)))*sqr(M_PI))+
+	      72*(1+x)*log(1-x)*log(x)*sqr(1+(-1+x)*x)-36*x*sqr(log(x))*sqr(1+x-sqr(x))+36*(-1+x)*sqr(log(1+x))*sqr(1+x+sqr(x)));
+	B2+=72*CA*(x-1)*DiLog(1/(1+x))*sqr(1+x+x*x);
+	B2+=2.*(x*x-1.0)*40.*TF/(1.0+x*x/(s.m_t/s.m_Q2));
+	B+=p_sk->GF()->Coupling(s)/(2.0*M_PI)*B2/(18.0*x*(x*x-1.0))/2.0;
+      }
       return A+B;
     }
 
