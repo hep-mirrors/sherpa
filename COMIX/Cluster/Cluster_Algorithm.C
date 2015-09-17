@@ -708,7 +708,8 @@ bool Cluster_Algorithm::Cluster
  const int ord)
 {
   if (p_ampl->Legs().size()==3) {
-    DEBUG_FUNC(m_nmin<<" "<<*p_ampl);
+    DEBUG_FUNC("nmin = "<<m_nmin);
+    msg_Debugging()<<*p_ampl<<"\n";
     if (p_ampl->NIn()==1 || m_nmin==1) {
       if (!CheckCore(p_ampl)) return false;
       SetCoreParams(p_ampl);
@@ -717,6 +718,9 @@ bool Cluster_Algorithm::Cluster
 	return CheckOrdering(kt2ord,nkt2ord);
       }
       return true;
+    } 
+    else {
+      if (!CheckCore(p_ampl->Prev())) return false;
     }
     p_ampl=p_ampl->Prev();
     p_ampl->DeleteNext();
@@ -747,6 +751,7 @@ bool Cluster_Algorithm::Cluster
       if (order<0) {
 	p_ampl=ampl;
 	p_ampl->DeleteNext();
+	if (!CheckCore(p_ampl)) continue;
 	return true;
       }
       if (Cluster(step+1,nocl,nccurs,nfcur,ncinfo,nkt2ord,
@@ -756,7 +761,7 @@ bool Cluster_Algorithm::Cluster
     }
   }
   SetCoreParams(p_ampl);
-  if (nc || p_ampl->Prev()==NULL) return false;
+  if (nc || p_ampl->Prev()==NULL || !CheckCore(p_ampl)) return false;
   KT2Info_Vector nkt2ord(UpdateKT2(kt2ord,p_ampl->Prev(),1));
   return CheckOrdering(kt2ord,nkt2ord);
 }
