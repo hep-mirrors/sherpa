@@ -31,7 +31,7 @@ void Alpha_QCD::SetLimits()
   Shower *ps(p_sk->PS());
   m_fac=(m_type&1)?ps->CplFac(1):ps->CplFac(0);
   double scale=(m_type&1)?ps->TMin(1):ps->TMin(0);
-  double scl(CplFac(scale)*scale);
+  double scl(Min(1.0,CplFac(scale))*scale);
   m_max=(*p_cpl)[Max(p_cpl->ShowerCutQ2(),scl)];
 }
 
@@ -94,16 +94,15 @@ double Alpha_QCD::CplFac(const double &scale) const
 double Alpha_QCD::Coupling(const Splitting &s) const
 {
   if (s.m_clu&1) return 1.0;
-  double scale(Scale(s));
-  double scl(CplFac(scale)*scale);
+  double scale(Scale(s)), murf(p_sk->PS()->MuRFactor());
+  double scl(CplFac(scale)*scale*murf);
   if (scl<p_cpl->ShowerCutQ2()) return 0.0;
-  double murf(p_sk->PS()->MuRFactor());
-  double cpl=(*p_cpl)(scl*murf);
-  if (murf!=1.0) {
-    std::vector<double> ths(p_cpl->Thresholds(scl,scl*murf));
+  double cpl=(*p_cpl)(scl);
+  if (!IsEqual(scl,s.m_t)) {
+    std::vector<double> ths(p_cpl->Thresholds(s.m_t,scl));
     if (murf>1.0) std::reverse(ths.begin(),ths.end());
-    if (ths.empty() || !IsEqual(scl,ths.back())) ths.push_back(scl);
-    if (!IsEqual(scl*murf,ths.front())) ths.insert(ths.begin(),scl*murf);
+    if (ths.empty() || !IsEqual(s.m_t,ths.back())) ths.push_back(s.m_t);
+    if (!IsEqual(scl,ths.front())) ths.insert(ths.begin(),scl);
     for (size_t i(1);i<ths.size();++i) {
       double nf=p_cpl->Nf((ths[i]+ths[i-1])/2.0);
       double L=log(ths[i]/ths[i-1]), ct=cpl/(2.0*M_PI)*B0(nf)*L;

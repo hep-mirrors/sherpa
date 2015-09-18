@@ -31,8 +31,6 @@ namespace DIRE {
 
     double Scale(const Splitting &s) const
     {
-      if (s.m_cpl) return s.m_t;
-      if ((m_type&1) && m_mode) return s.m_Q2*s.m_y/s.m_x;
       return s.m_t;
     }
 
@@ -100,8 +98,6 @@ namespace DIRE {
 
     double Scale(const Splitting &s) const
     {
-      if (s.m_cpl) return s.m_t;
-      if ((m_type&1) && m_mode) return s.m_Q2*s.m_y/s.m_x;
       return s.m_t;
     }
 

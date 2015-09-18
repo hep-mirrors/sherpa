@@ -27,10 +27,7 @@ namespace DIRE {
 
     double Scale(const Splitting &s) const
     {
-      if (s.m_cpl) return s.m_t;
-      if (m_type&1) return s.m_Q2*s.m_y/s.m_x;
-      if (m_type&2) return s.m_Q2*(1.0-s.m_y)/s.m_y;
-      return s.m_Q2*s.m_y;
+      return s.m_t;
     }
 
     bool Allowed(const Splitting &s) const
