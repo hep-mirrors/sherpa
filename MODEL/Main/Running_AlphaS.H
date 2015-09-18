@@ -37,8 +37,6 @@ namespace MODEL {
 
     PDF::PDF_Base *p_pdf;
 
-    One_Running_AlphaS *p_sas;
-
     double Beta0(const int);
     double Beta1(const int);
     double Beta2(const int);

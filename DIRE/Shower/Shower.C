@@ -60,6 +60,7 @@ bool Shower::Init(MODEL::Model_Base *const model,
   m_tmin[1]=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
   m_cplfac[0]=ToType<double>(rpa->gen.Variable("CSS_FS_AS_FAC"));
   m_cplfac[1]=ToType<double>(rpa->gen.Variable("CSS_IS_AS_FAC"));
+  m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   m_kin=read->GetValue<int>("CSS_KIN_SCHEME",1);
   m_kfac=read->GetValue<int>("CSS_KFACTOR_SCHEME",1);
   m_cpl=read->GetValue<int>("CSS_COUPLING_SCHEME",1);

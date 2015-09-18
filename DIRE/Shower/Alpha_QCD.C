@@ -7,6 +7,8 @@
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 
+#include <algorithm>
+
 #define ZETA3 1.202056903159594
 
 using namespace DIRE;
@@ -33,16 +35,34 @@ void Alpha_QCD::SetLimits()
   m_max=(*p_cpl)[Max(p_cpl->ShowerCutQ2(),scl)];
 }
 
+double Alpha_QCD::B0(const double &nf) const
+{
+  return 11.0/6.0*m_CA-2.0/3.0*m_TR*nf;
+}
+
+double Alpha_QCD::B1(const double &nf) const
+{
+  return 17.0/6.0*sqr(m_CA)-(5.0/3.0*m_CA+m_CF)*m_TR*nf;
+}
+
+double Alpha_QCD::B2(const double &nf) const
+{
+  return 2857.0/432.0*pow(m_CA,3)
+    +(-1415.0/216.0*sqr(m_CA)-205.0/72.0*m_CA*m_CF+sqr(m_CF)/4.0)*m_TR*nf
+    +(79.0*m_CA+66.0*m_CF)/108.0*sqr(m_TR*nf);
+}
+
 double Alpha_QCD::G2(const double &nf) const
 {
-  return 3.*(67./18.-sqr(M_PI)/6.)-10./9.*nf/2.;
+  return m_CA*(67./18.-sqr(M_PI)/6.)-10./9.*m_TR*nf;
 }
 
 double Alpha_QCD::G3(const double &nf) const
 {
-  return 9.*(245./6.-134./27.*sqr(M_PI)+11./45.*pow(M_PI,4)+22./3.*ZETA3)
-    +3.*nf/2.*(-418./27.+40./27.*sqr(M_PI)-56./3.*ZETA3)
-    +4./3.*nf/2.*(-55./3.+16.*ZETA3)-16./27.*sqr(nf/2.);
+  double G3=sqr(m_CA)*(245./6.-134./27.*sqr(M_PI)+11./45.*pow(M_PI,4)+22./3.*ZETA3)
+    +m_CA*m_TR*nf*(-418./27.+40./27.*sqr(M_PI)-56./3.*ZETA3)
+    +m_CF*m_TR*nf*(-55./3.+16.*ZETA3)-16./27.*sqr(m_TR*nf);
+  return G3/4.0;
 }
 
 double Alpha_QCD::K(const Splitting &s) const
@@ -50,7 +70,7 @@ double Alpha_QCD::K(const Splitting &s) const
   if (!(s.m_kfac&1)) return 0.0;
   double asf=Coupling(s)/(2.0*M_PI), nf=Nf(s);
   if (!(s.m_kfac&4)) return asf*G2(nf);
-  return asf*G2(nf)+sqr(asf)*G3(nf)/4.0;
+  return asf*G2(nf)+sqr(asf)*G3(nf);
 }
 
 double Alpha_QCD::KMax(const Splitting &s) const
@@ -58,7 +78,7 @@ double Alpha_QCD::KMax(const Splitting &s) const
   if (!(s.m_kfac&1)) return 0.0;
   double asf=CplMax(s)/(2.0*M_PI);
   if (!(s.m_kfac&4)) return asf*G2(3.);
-  return asf*G2(3.)+sqr(asf)*G3(3.)/4.0;
+  return asf*G2(3.)+sqr(asf)*G3(3.);
 }
 
 double Alpha_QCD::Nf(const Splitting &s) const
@@ -77,7 +97,23 @@ double Alpha_QCD::Coupling(const Splitting &s) const
   double scale(Scale(s));
   double scl(CplFac(scale)*scale);
   if (scl<p_cpl->ShowerCutQ2()) return 0.0;
-  double cpl=(*p_cpl)(scl);
+  double murf(p_sk->PS()->MuRFactor());
+  double cpl=(*p_cpl)(scl*murf);
+  if (murf!=1.0) {
+    std::vector<double> ths(p_cpl->Thresholds(scl,scl*murf));
+    if (murf>1.0) std::reverse(ths.begin(),ths.end());
+    if (ths.empty() || !IsEqual(scl,ths.back())) ths.push_back(scl);
+    if (!IsEqual(scl*murf,ths.front())) ths.insert(ths.begin(),scl*murf);
+    for (size_t i(1);i<ths.size();++i) {
+      double nf=p_cpl->Nf((ths[i]+ths[i-1])/2.0);
+      double L=log(ths[i]/ths[i-1]), ct=cpl/(2.0*M_PI)*B0(nf)*L;
+      if (p_cpl->Order()>0) ct+=sqr(cpl/(2.0*M_PI))*(B1(nf)*L-sqr(B0(nf)*L));
+      if (p_cpl->Order()>1) ct+=pow(cpl/(2.0*M_PI),3)*
+	(B2(nf)*L-2.5*B0(nf)*B1(nf)*L*L+pow(B0(nf)*L,3));
+      if (p_cpl->Order()>2) THROW(not_implemented,"\\alpha_s CT missing");
+      cpl*=1.0-ct;
+    }
+  }
   if (cpl>m_max) {
     msg_Error()<<METHOD<<"(): Value exceeds maximum at \\mu = "
 	       <<sqrt(scale)<<" -> q = "<<sqrt(scl)<<"."<<std::endl;

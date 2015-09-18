@@ -22,6 +22,10 @@ namespace DIRE {
     bool  m_mab, m_mba, m_maa, m_mbb;
     Color m_ca, m_cb;
 
+    double B0(const double &nf) const;
+    double B1(const double &nf) const;
+    double B2(const double &nf) const;
+
     double G2(const double &nf) const;
     double G3(const double &nf) const;
 

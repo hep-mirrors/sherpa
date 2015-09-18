@@ -37,7 +37,7 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
 				       One_Running_AlphaS *const mo) : 
   m_order(order), m_pdf(0),
   m_as_MZ(as_MZ), m_m2_MZ(m2_MZ),
-  p_pdf(aspdf), p_sas(this)
+  p_pdf(aspdf)
 {
   p_thresh  = NULL;
 
@@ -181,21 +181,12 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
       }
     }
   }
-
-  if (mo==NULL) {
-    double fac=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
-    if (fac!=1.0) {
-      msg_Info()<<METHOD<<"(): Setting scale factor "<<fac<<"\n";
-      msg_Indent();
-      p_sas = new One_Running_AlphaS((*this)(fac*m_m2_MZ),m_m2_MZ,m_order,thmode,p_pdf,this);
-    }
-  }
 }
 
 One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
   m_order(0), m_pdf(0), m_nth(0), m_mzset(0),
   m_CF(4./3.), m_CA(3.), m_as_MZ(0.), m_m2_MZ(Flavour(kf_Z).Mass()),
-  m_cutq2(0.), p_thresh(NULL), p_pdf(pdf), p_sas(NULL)
+  m_cutq2(0.), p_thresh(NULL), p_pdf(pdf)
 {
   //------------------------------------------------------------
   // SM thresholds for strong interactions, i.e. QCD
@@ -299,7 +290,6 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
 One_Running_AlphaS::~One_Running_AlphaS()
 {
   if (p_thresh!=0) { delete [] p_thresh; p_thresh = NULL; }
-  if (p_sas && p_sas!=this) delete p_sas;
 }
 
 double One_Running_AlphaS::Beta0(const int nf) {
@@ -499,14 +489,12 @@ void One_Running_AlphaS::ContinueAlphaS(int & nr) {
 
 double One_Running_AlphaS::ShowerCutQ2()
 {
-  if (p_sas==NULL) THROW(fatal_error,"Invalid call");
-  return p_sas->m_cutq2;
+  return m_cutq2;
 }
 
 double One_Running_AlphaS::operator[](double q2)
 {
-  if (p_sas==NULL) THROW(fatal_error,"Invalid call");
-  return (*p_sas)(q2);
+  return (*this)(q2);
 }
 
 double One_Running_AlphaS::operator()(double q2)

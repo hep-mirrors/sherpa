@@ -40,7 +40,7 @@ namespace DIRE {
     SKernel_Map   m_sks;
     Kernel_Map    m_kmap;
 
-    double m_tmin[2], m_cplfac[2];
+    double m_tmin[2], m_cplfac[2], m_rsf;
     double m_weight, m_oef, m_pdfmin;
 
     int m_kin, m_kfac, m_cpl;
@@ -85,6 +85,8 @@ namespace DIRE {
 
     inline int KFactorScheme() const  { return m_kfac; }
     inline int CouplingScheme() const { return m_cpl;  }
+
+    inline double MuRFactor() const { return m_rsf; }
 
   };//end of class Shower
 
