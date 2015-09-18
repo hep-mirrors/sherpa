@@ -487,16 +487,6 @@ void One_Running_AlphaS::ContinueAlphaS(int & nr) {
 }
 
 
-double One_Running_AlphaS::ShowerCutQ2()
-{
-  return m_cutq2;
-}
-
-double One_Running_AlphaS::operator[](double q2)
-{
-  return (*this)(q2);
-}
-
 double One_Running_AlphaS::operator()(double q2)
 {
   if (m_pdf) return p_pdf->AlphaSPDF(q2);

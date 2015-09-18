@@ -32,7 +32,7 @@ void Alpha_QCD::SetLimits()
   m_fac=(m_type&1)?ps->CplFac(1):ps->CplFac(0);
   double scale=(m_type&1)?ps->TMin(1):ps->TMin(0);
   double scl(Min(1.0,CplFac(scale))*scale);
-  m_max=(*p_cpl)[Max(p_cpl->ShowerCutQ2(),scl)];
+  m_max=(*p_cpl)(Max(p_cpl->CutQ2(),scl));
 }
 
 double Alpha_QCD::B0(const double &nf) const
@@ -96,11 +96,11 @@ double Alpha_QCD::Coupling(const Splitting &s) const
   if (s.m_clu&1) return 1.0;
   double scale(Scale(s)), murf(p_sk->PS()->MuRFactor());
   double scl(CplFac(scale)*scale*murf);
-  if (scl<p_cpl->ShowerCutQ2()) return 0.0;
+  if (scl<p_cpl->CutQ2()) return 0.0;
   double cpl=(*p_cpl)(scl);
   if (!IsEqual(scl,s.m_t)) {
     std::vector<double> ths(p_cpl->Thresholds(s.m_t,scl));
-    if (murf>1.0) std::reverse(ths.begin(),ths.end());
+    if (scl>s.m_t) std::reverse(ths.begin(),ths.end());
     if (ths.empty() || !IsEqual(s.m_t,ths.back())) ths.push_back(s.m_t);
     if (!IsEqual(scl,ths.front())) ths.insert(ths.begin(),scl);
     for (size_t i(1);i<ths.size();++i) {
@@ -128,7 +128,7 @@ double Alpha_QCD::CplMax(const Splitting &s) const
 double Alpha_QCD::Solve(const double &as) const
 {
   double t0=p_sk->PS()->TMin(m_type&1);
-  t0=Max(p_cpl->ShowerCutQ2(),CplFac(t0)*t0);
+  t0=Max(p_cpl->CutQ2(),CplFac(t0)*t0);
   double mur2=p_cpl->WDBSolve(as,t0,sqr(rpa->gen.Ecms()));
   msg_Debugging()<<"\\alpha_s("<<sqrt(mur2)<<") = "
 		 <<(*p_cpl)(mur2)<<" / "<<as<<"\n";

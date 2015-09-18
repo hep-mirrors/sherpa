@@ -5,7 +5,12 @@
 #include "MODEL/Main/Running_AlphaS.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Exception.H"
+
+#include <algorithm>
+
+using namespace ATOOLS;
 
 namespace MCATNLO {
   
@@ -19,7 +24,24 @@ namespace MCATNLO {
 
     MODEL::Running_AlphaS *p_cpl;
 
-    double m_q;
+    double m_q, m_rsf;
+
+    double B0(const double &nf) const
+    {
+      return 11.0/6.0*s_CA-2.0/3.0*s_TR*nf;
+    }
+
+    double B1(const double &nf) const
+    {
+      return 17.0/6.0*sqr(s_CA)-(5.0/3.0*s_CA+s_CF)*s_TR*nf;
+    }
+
+    double B2(const double &nf) const
+    {
+      return 2857.0/432.0*pow(s_CA,3)
+	+(-1415.0/216.0*sqr(s_CA)-205.0/72.0*s_CA*s_CF+sqr(s_CF)/4.0)*s_TR*nf
+	+(79.0*s_CA+66.0*s_CF)/108.0*sqr(s_TR*nf);
+    }
 
   public:
 
@@ -61,17 +83,17 @@ namespace MCATNLO {
 }
 
 using namespace MCATNLO;
-using namespace ATOOLS;
 
 bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
 			 const double &k0sqi,const double &k0sqf,
 			 const double &isfac,const double &fsfac)
 {
   p_cpl=(MODEL::Running_AlphaS*)md->GetScalarFunction("alpha_S");
+  m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
   m_cplfac=((m_type/10==1)?fsfac:isfac);
   double scale((m_type/10==1)?k0sqf:k0sqi);
-  double scl(CplFac(scale)*scale);
-  m_cplmax.push_back((*p_cpl)[Max(p_cpl->ShowerCutQ2(),scl)]*m_q);
+  double scl(Min(1.0,CplFac(scale))*scale);
+  m_cplmax.push_back((*p_cpl)(Max(p_cpl->CutQ2(),scl))*m_q);
   m_cplmax.push_back(0.0);
   return true;
 }
@@ -80,9 +102,25 @@ double CF_QCD::Coupling(const double &scale,const int pol,
 			Cluster_Amplitude *const sub)
 {
   if (pol!=0) return 0.0;
-  double scl(sub?sub->MuR2():CplFac(scale)*scale);
-  if (scl<(sub?p_cpl->CutQ2():p_cpl->ShowerCutQ2())) return 0.0;
-  double cpl=(sub?(*p_cpl)(scl):(*p_cpl)[scl])*m_q*s_qfac;
+  double t(CplFac(scale)*scale), scl(sub?sub->MuR2():t*m_rsf);
+  if (scl<p_cpl->CutQ2()) return 0.0;
+  double cpl=(*p_cpl)(scl);
+  if (!IsEqual(scl,t)) {
+    std::vector<double> ths(p_cpl->Thresholds(t,scl));
+    if (scl>t) std::reverse(ths.begin(),ths.end());
+    if (ths.empty() || !IsEqual(t,ths.back())) ths.push_back(t);
+    if (!IsEqual(scl,ths.front())) ths.insert(ths.begin(),scl);
+    for (size_t i(1);i<ths.size();++i) {
+      double nf=p_cpl->Nf((ths[i]+ths[i-1])/2.0);
+      double L=log(ths[i]/ths[i-1]), ct=cpl/(2.0*M_PI)*B0(nf)*L;
+      if (p_cpl->Order()>0) ct+=sqr(cpl/(2.0*M_PI))*(B1(nf)*L-sqr(B0(nf)*L));
+      if (p_cpl->Order()>1) ct+=pow(cpl/(2.0*M_PI),3)*
+	(B2(nf)*L-2.5*B0(nf)*B1(nf)*L*L+pow(B0(nf)*L,3));
+      if (p_cpl->Order()>2) THROW(not_implemented,"\\alpha_s CT missing");
+      cpl*=1.0-ct;
+    }
+  }
+  cpl*=m_q*s_qfac;
   if (cpl>s_qfac*m_cplmax.front()) {
     msg_Error()<<METHOD<<"(): Value exceeds maximum at k_T = "
 	       <<sqrt(scale)<<" -> q = "<<sqrt(scl)<<"."<<std::endl;
