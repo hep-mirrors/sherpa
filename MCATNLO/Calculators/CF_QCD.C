@@ -31,18 +31,6 @@ namespace MCATNLO {
       return 11.0/6.0*s_CA-2.0/3.0*s_TR*nf;
     }
 
-    double B1(const double &nf) const
-    {
-      return 17.0/6.0*sqr(s_CA)-(5.0/3.0*s_CA+s_CF)*s_TR*nf;
-    }
-
-    double B2(const double &nf) const
-    {
-      return 2857.0/432.0*pow(s_CA,3)
-	+(-1415.0/216.0*sqr(s_CA)-205.0/72.0*s_CA*s_CF+sqr(s_CF)/4.0)*s_TR*nf
-	+(79.0*s_CA+66.0*s_CF)/108.0*sqr(s_TR*nf);
-    }
-
   public:
 
     inline CF_QCD(const SF_Key &key):
@@ -113,10 +101,6 @@ double CF_QCD::Coupling(const double &scale,const int pol,
     for (size_t i(1);i<ths.size();++i) {
       double nf=p_cpl->Nf((ths[i]+ths[i-1])/2.0);
       double L=log(ths[i]/ths[i-1]), ct=cpl/(2.0*M_PI)*B0(nf)*L;
-      if (p_cpl->Order()>0) ct+=sqr(cpl/(2.0*M_PI))*(B1(nf)*L-sqr(B0(nf)*L));
-      if (p_cpl->Order()>1) ct+=pow(cpl/(2.0*M_PI),3)*
-	(B2(nf)*L-2.5*B0(nf)*B1(nf)*L*L+pow(B0(nf)*L,3));
-      if (p_cpl->Order()>2) THROW(not_implemented,"\\alpha_s CT missing");
       cpl*=1.0-ct;
     }
   }

@@ -45,13 +45,6 @@ double Alpha_QCD::B1(const double &nf) const
   return 17.0/6.0*sqr(m_CA)-(5.0/3.0*m_CA+m_CF)*m_TR*nf;
 }
 
-double Alpha_QCD::B2(const double &nf) const
-{
-  return 2857.0/432.0*pow(m_CA,3)
-    +(-1415.0/216.0*sqr(m_CA)-205.0/72.0*m_CA*m_CF+sqr(m_CF)/4.0)*m_TR*nf
-    +(79.0*m_CA+66.0*m_CF)/108.0*sqr(m_TR*nf);
-}
-
 double Alpha_QCD::G2(const double &nf) const
 {
   return m_CA*(67./18.-sqr(M_PI)/6.)-10./9.*m_TR*nf;
@@ -106,10 +99,7 @@ double Alpha_QCD::Coupling(const Splitting &s) const
     for (size_t i(1);i<ths.size();++i) {
       double nf=p_cpl->Nf((ths[i]+ths[i-1])/2.0);
       double L=log(ths[i]/ths[i-1]), ct=cpl/(2.0*M_PI)*B0(nf)*L;
-      if (p_cpl->Order()>0) ct+=sqr(cpl/(2.0*M_PI))*(B1(nf)*L-sqr(B0(nf)*L));
-      if (p_cpl->Order()>1) ct+=pow(cpl/(2.0*M_PI),3)*
-	(B2(nf)*L-2.5*B0(nf)*B1(nf)*L*L+pow(B0(nf)*L,3));
-      if (p_cpl->Order()>2) THROW(not_implemented,"\\alpha_s CT missing");
+      if ((s.m_kfac&6)==6) ct+=sqr(cpl/(2.0*M_PI))*(B1(nf)*L-sqr(B0(nf)*L));
       cpl*=1.0-ct;
     }
   }
