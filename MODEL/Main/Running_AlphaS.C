@@ -63,6 +63,7 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
   if (pdfas&4) {
     std::string set = dataread.GetValue<std::string>("ALPHAS_PDF_SET","CT10nlo");
     int member = dataread.GetValue<int>("ALPHAS_PDF_SET_VERSION",0);
+    member = dataread.GetValue<int>("ALPHAS_PDF_SET_MEMBER",member);
     if (s_kftable.find(kf_p_plus)==s_kftable.end()) s_kftable[kf_p_plus] =
       new Particle_Info(kf_p_plus,0.938272,0,3,1,1,1,"P+","P^{+}");
     p_pdf = PDF_Base::PDF_Getter_Function::GetObject

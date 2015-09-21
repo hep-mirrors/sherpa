@@ -13,6 +13,7 @@
 @cindex PDF_SET_1
 @cindex PDF_SET_2
 @cindex PDF_SET_VERSION
+@cindex PDF_SET_MEMBER
 @cindex SHOW_PDF_SETS
 
 The following parameters are used to steer the setup of beam substructure and
@@ -99,14 +100,15 @@ chosen @code{PDF_LIBRARY} can be figured by running Sherpa with the parameter
 If the two colliding beams are of different type, e.g. protons and electrons
 or photons and electrons, it is possible to specify two different PDF sets using 
 @anchor{PDF_SET_1} @option{PDF_SET_1} and @anchor{PDF_SET_2} @option{PDF_SET_2}.
-@item PDF_SET_VERSION
+@item PDF_SET_VERSION or PDF_SET_MEMBER
 This parameter allows to eventually select a specific version (member)
-within the chosen PDF set. Specifying a negative value, e.g.
-@verbatim
-  PDF_LIBRARY LHAPDFSherpa;
-  PDF_SET NNPDF12_100.LHgrid; PDF_SET_VERSION -100;
-@end verbatim
-results in Sherpa sampling all sets 1..100, which can be used to obtain 
-the averaging required when employing PDF's from the NNPDF 
-collaboration @mycite{Ball2008by}, @mycite{Ball2009mk}.
+within the chosen PDF set.
+@comment Specifying a negative value, e.g.
+@comment @verbatim
+@comment   PDF_LIBRARY LHAPDFSherpa;
+@comment   PDF_SET NNPDF12_100.LHgrid; PDF_SET_VERSION -100;
+@comment @end verbatim
+@comment results in Sherpa sampling all sets 1..100, which can be used to obtain
+@comment the averaging required when employing PDF's from the NNPDF
+@comment collaboration @mycite{Ball2008by}, @mycite{Ball2009mk}.
 @end table

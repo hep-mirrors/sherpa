@@ -629,12 +629,15 @@ bool Initialization_Handler::InitializeThePDFs()
       if (dataread.ReadFromFile(specialset,"PDF_SET_"+ToString(j+1)))
 	set=specialset;
       int member = dataread.GetValue<int>("PDF_SET_VERSION",0);
+      member = dataread.GetValue<int>("PDF_SET_MEMBER",member);
       member = dataread.GetValue<int>("PDF_SET_VERSION_"+ToString(j+1),member);
+      member = dataread.GetValue<int>("PDF_SET_MEMBER_"+ToString(j+1),member);
       if (id==isr::hard_subprocess) {
         std::string mpiset;
         if (dataread.ReadFromFile(mpiset,"PDF_SET_MPI")) {
           set=mpiset;
-          member=0;
+          member=dataread.GetValue<int>("PDF_SET_MPI_VERSION",0);
+          member=dataread.GetValue<int>("PDF_SET_MPI_MEMBER",member);
         }
       }
       pdfbase = PDF_Base::PDF_Getter_Function::GetObject
