@@ -55,7 +55,7 @@ namespace ANALYSIS {
     std::string            m_name, m_maxjettag;
 
     Object_List            m_objects;
-    PL_Container           m_pls;
+    PL_Container           m_pls, m_slp;
 
     std::set<Primitive_Analysis*> m_called;
 
@@ -92,7 +92,6 @@ namespace ANALYSIS {
 
     ~Primitive_Analysis();
     
-    void AddSubAnalysis(const std::string &,Primitive_Analysis *);
     void DoAnalysis(const ATOOLS::Blob_List * const , const double);
     bool DoAnalysisNLO(const ATOOLS::Blob_List * const , const double);
     void FinishAnalysis(const std::string &);

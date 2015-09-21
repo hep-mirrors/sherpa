@@ -49,6 +49,7 @@ Primitive_Analysis::~Primitive_Analysis()
   for (Analysis_List::iterator it=m_subanalyses.begin();it!=m_subanalyses.end();++it) 
     delete it->second;
   m_subanalyses.clear();
+  for (PL_Container::iterator it(m_slp.begin());it!=m_slp.end();++it) delete it->second;
 }
 
 void Primitive_Analysis::AddObject(Analysis_Object * obs) 
@@ -69,20 +70,6 @@ void Primitive_Analysis::AddObject(Analysis_Object * obs)
     }
   }
   m_objects.push_back(obs);
-}
-
-void Primitive_Analysis::AddSubAnalysis(const std::string & key,Primitive_Analysis * ana)
-{
-  Analysis_List::const_iterator cit=m_subanalyses.find(key);
-  if (cit!=m_subanalyses.end()) {
-    msg_Out()<<"WARNING in Primitive_Analysis::AddSubAnalysis :"<<std::endl
-	     <<"   Analysis "<<key<<" already existent;"<<std::endl
-	     <<" sub analysis not added, will be deleted."<<std::endl;
-    if (ana) delete ana;
-    return;
-  }
-
-  m_subanalyses[key]=ana;  
 }
 
 Primitive_Analysis * Primitive_Analysis::GetSubAnalysis
@@ -395,6 +382,31 @@ bool Primitive_Analysis::DoAnalysisNLO(const Blob_List * const bl, const double 
 void Primitive_Analysis::FinishAnalysis(const std::string & resdir) 
 {
 #ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_size()>1) {
+    int rank=MPI::COMM_WORLD.Get_rank();
+    std::string local, global;
+    for (Analysis_List::iterator ait(m_subanalyses.begin());
+	 ait!=m_subanalyses.end();++ait)
+      local+="||"+ait->first+"|"+ToString(ait->second->m_mode);
+    int sz(local.length());
+    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,&sz,1,MPI::INT,MPI::MAX);
+    if (sz) {
+      local.resize(sz,' ');
+      global.resize(MPI::COMM_WORLD.Get_size()*sz,' ');
+      mpi->MPIComm()->Allgather(&local[0],sz,MPI::CHAR,&global[0],sz,MPI::CHAR);
+      std::swap<PL_Container>(p_partner->m_pls,p_partner->m_slp);
+      for (size_t pos(global.find("||"));pos!=std::string::npos;) {
+	global=global.substr(pos+2);
+	pos=global.find("||");
+	size_t mpos=global.find('|');
+	std::string a=global.substr(0,mpos), m=global.substr(mpos+1,pos-mpos-1);
+	for (size_t b(a.find(' '));b!=std::string::npos;b=a.find(' ')) a.erase(b,1);
+	if (m_subanalyses.find(a)==m_subanalyses.end())
+	  GetSubAnalysis(p_blobs,a,ToType<int>(m));
+      }
+      std::swap<PL_Container>(p_partner->m_pls,p_partner->m_slp);
+    }
+  }
   if (MPI::COMM_WORLD.Get_rank()==0)
 #endif
   ATOOLS::MakeDir(resdir+OutputPath()); 
@@ -509,6 +521,7 @@ void Primitive_Analysis::AddParticleList(const std::string & key,Particle_List *
   }
 
   m_pls[key]=pl;
+  if (m_slp.find(key)==m_slp.end()) m_slp[key] = new Particle_List();
 }
 
 ATOOLS::Blob_Data_Base * Primitive_Analysis::operator[](const std::string name) 
