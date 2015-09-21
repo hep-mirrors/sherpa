@@ -380,9 +380,27 @@ double LF_FFV_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2)
 {
-  double value = 2.0 * p_cf->Coupling(scale,0) * ( 2./(1.-z) - (1.+z) )
-    + p_cf->Coupling(scale,1) * 0.5 * ( 1. - z );
-  return value * JII(z,y,eta,scale);
+
+  double muaj2 = sqr(p_ms->Mass(m_flavs[2]))/Q2;
+  double ma2   = sqr(p_ms->Mass(m_flavs[1]));
+  double mua2  = ma2/Q2;
+  double mb2   = sqr(p_ms->Mass(m_flspec));
+  double mub2  = mb2/Q2;
+
+  double longpol = 0.5 * ( 1. - z );
+  double massless =  2./(1.-z) - (1.+z) ;
+  if(ma2 == 0 && mb2 == 0 && muaj2 == 0){
+    double value = 2.0 * p_cf->Coupling(scale,0) * massless
+                  + p_cf->Coupling(scale,1) * longpol;
+    return value*JII(z,y,eta,scale);
+  }
+  else {
+    double papj     = y*Q2*(1-mua2-mub2)/2.0;
+    double massive  = massless - z*ma2/papj;
+    double value    = 2.0 * p_cf->Coupling(scale,0) * massive
+                      + p_cf->Coupling(scale,1) * longpol;
+    return value*JII(z,y,eta,scale,mua2,mub2);
+  }  
 }
 
 double LF_FFV_II::OverIntegrated
@@ -601,6 +619,18 @@ double LF_VFF_FF::operator()
   double scale = Q2*((1.0-mui2-muj2-muk2)*y+(mui2+muj2));
   if (p_sf->ScaleScheme()==1) scale=_scale;
   if (p_sf->ScaleScheme()==2) scale=_scale - Q2*(mui2+muj2);
+
+
+  // check to see whether scale is the right one for g - > b b
+  double kp2  = Q2*(1.0-mui2-muj2-muk2)*y*z*(1-z)-(1-z)*(1-z)*mui2*Q2 - z*z*muj2*Q2;
+  double invmass = Q2*(mui2+muj2)+
+    2.0*(kp2/(2.0*z*(1-z))+(1.0-z)*mui2*Q2/(2.0*z)+z*muj2*Q2/(2*(1-z)));
+  msg_Debugging() << om::red << "scale check ...FF " << "\n"
+	    << "scale = " << scale  
+	    << "      invariant mass = " << invmass 
+	    << "      Splitting "  << m_flavs[0].IDName() << " --> "<<m_flavs[1].IDName() << " " << m_flavs[2].IDName() << "\n"
+	    << om::reset << "\n" << std::endl;
+
   if (mui2==0. && muj2==0. && muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JFF(y,0.0,0.0,0.0,0.0);
@@ -667,6 +697,19 @@ double LF_VFF_FI::operator()
   double scale = (Q2+p_ms->Mass2(m_flspec))*y/(1.0-y);
   if (p_sf->ScaleScheme()==1) scale=_scale;
   if (p_sf->ScaleScheme()==2) scale=_scale-2.0*p_ms->Mass2(m_flavs[1]);
+  
+  // check scale in g->b bb splitting
+  double muij2 = sqr(p_ms->Mass(m_flavs[0]));
+  double invmass = Q2*((1.0-y)/y)*(1-muij2/(1-y));
+
+  msg_Debugging() << om::green << "scale check ...FI " << "\n"
+	    << "scale = " << scale  
+    	    << "      invariant mass = " << invmass 
+	    << "      Splitting "  << m_flavs[0].IDName() << " --> "<<m_flavs[1].IDName() << " " << m_flavs[2].IDName() << "\n"
+	    << om::reset << "\n" << std::endl;
+  // set the scale to the invariant mass of the splitted particles
+  scale = invmass;
+
   if (muQ2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0) * massless + p_cf->Coupling(scale,1) * longpol;
     return value * JFI(y,eta,scale);
