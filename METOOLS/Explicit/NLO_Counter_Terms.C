@@ -105,7 +105,7 @@ double METOOLS::CollinearCounterTerms
   Flavour jet(kf_jet);
   if (!pdf->Contains(fl)) return 0.;
   pdf->Calculate(x,tref);
-  double fb(pdf->GetXPDF(fl));
+  double fb(pdf->GetXPDF(fl)/x);
   if (IsZero(fb,th)) {
     msg_Tracking()<<METHOD<<"(): Zero xPDF ( f_{"<<fl<<"}("
                   <<x<<","<<sqrt(tref)<<") = "<<fb<<" ). Skip.\n";
@@ -121,9 +121,9 @@ double METOOLS::CollinearCounterTerms
     double Pi(METOOLS::IPab(jet[j],fl,x));
     double H(METOOLS::Hab(jet[j],fl));
     pdf->Calculate(x/z,tref);
-    double fa(pdf->GetXPDF(jet[j]));
+    double fa(pdf->GetXPDF(jet[j])/x);
     pdf->Calculate(x,tref);
-    double fc(pdf->GetXPDF(jet[j]));
+    double fc(pdf->GetXPDF(jet[j])/x);
     msg_Debugging()<<"  P_{"<<jet[j]<<","<<fl
                    <<"}("<<z<<") = {F="<<Pf<<",S="<<Ps
                    <<",I="<<Pi<<"}, f_{"<<jet[j]<<"}("
