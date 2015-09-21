@@ -2,6 +2,8 @@
   # generator parameters
   EVENTS 1M; LGEN:=Higgs;
   EVENT_GENERATION_MODE W;
+  FRAGMENTATION Off; MI_HANDLER None;
+  AMEGIC_KEEP_ZERO_PROCS 1;
   AMEGIC_ALLOW_MAPPING 0;
   ME_SIGNAL_GENERATOR Amegic LGEN;
   SCALES VAR{Abs2(p[2]+p[3])};
@@ -15,11 +17,17 @@
   # collider parameters
   BEAM_1 2212; BEAM_ENERGY_1 6500;
   BEAM_2 2212; BEAM_ENERGY_2 6500;
+
+  # shower parameters
+  SHOWER_GENERATOR Dire;
+  NLOMC_GENERATOR Dire;
+  CSS_IS_AS_FAC 1; CSS_FS_AS_FAC 1;
+  CSS_IS_PT2MIN 3; CSS_FS_PT2MIN 3;
 }(run);
 
 (processes){
   Process 93 93 -> 22 22;
-  NLO_QCD_Mode Fixed_Order;
+  NLO_QCD_Mode MC@NLO;
   Order (*,2); Enable_MHV 12;
   Loop_Generator LGEN;
   Integrator PS2;
