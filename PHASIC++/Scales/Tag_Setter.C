@@ -86,7 +86,7 @@ namespace PHASIC {
       double hty(0.0);
       for (size_t i(p_setter->NIn());i<p.size();++i) 
 	hty+=p[i].PPerp()*exp(htyfac*pow(abs(p[i].Y()-yboost),htyexp));
-      Term *res(Term::New(hty));
+      Term *res(Term::New(sqr(hty)));
       p_interpreter->AddTerm(res);
       return res;
     }
