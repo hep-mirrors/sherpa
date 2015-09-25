@@ -115,6 +115,7 @@ namespace DIRE {
 
     double Value(const Splitting &s) const
     {
+      if (s.m_t<sqr(2.0*m_fl[0].Mass(true))) return 0.0;
       double B=1.0-2.0*s.m_z*(1.0-s.m_z);
       if (s.m_kfac&2) {
 	double CF=4./3., CA=3., x=s.m_z;

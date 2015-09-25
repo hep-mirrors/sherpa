@@ -19,7 +19,6 @@ double Lorentz_II::Jacobian(const Splitting &s) const
   double fo=p_sk->PS()->GetXPDF(s.m_eta,s.m_t,m_fl[0],s.p_c->Beam()-1);
   double fn=p_sk->PS()->GetXPDF(s.m_eta/s.m_x,s.m_t,m_fl[1],s.p_c->Beam()-1);
   if (dabs(fo)<p_sk->PS()->PDFMin()) return 0.0; 
-  if (s.m_t<sqr(2.0*m_fl[0].Mass(true)) && fn>fo) fn=fo;
   return fn/fo;
 }
 

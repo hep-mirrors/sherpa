@@ -99,6 +99,7 @@ namespace DIRE {
 
     double Value(const Splitting &s) const
     {
+      if (s.m_t<sqr(2.0*m_fl[0].Mass(true))) return 0.0;
       double V=1.0-2.0*s.m_z*(1.0-s.m_z);
       return V;
     }
