@@ -246,35 +246,41 @@ Leg Combine_Table::CombinedLeg(Leg *legs,const int i,const int j)
 			 b.Point()->prev->right->fl:Flavour(kf_p_plus))
 		 <<"), a="<<a.Point()->fl<<", b="<<b.Point()->fl<<"\n";
   */
+  Single_Vertex *v=NULL;
   if ( (a.Point()->prev == b.Point()->prev) && (a.Point()->prev != 0) ) {
     // combinable-type: common mother
     mo.SetPoint(a.Point()->prev);
     mo.DetermineCouplings(0);
     mo.SetMapFlavour(MatchFlavour(mo,a,b,0));
+    v=a.Point()->prev->v;
   } 
   else if (a.Point() == b.Point()->left) {
     // combinable-type: a daughter of b
     mo.SetPoint(b.Point()->right);
     mo.DetermineCouplings(1);
     mo.SetMapFlavour(MatchFlavour(mo,b,a,1));
+    v=b.Point()->v;
   } 
   else if (a.Point() == b.Point()->right) {
     // combinable-type: a daughter of b
     mo.SetPoint(b.Point()->left);
     mo.DetermineCouplings(1);
     mo.SetMapFlavour(MatchFlavour(mo,b,a,1));
+    v=b.Point()->v;
   } 
   else  if (b.Point() == a.Point()->left) {
     // combinable-type: b daughter of a
     mo.SetPoint(a.Point()->right);
     mo.DetermineCouplings(1);
     mo.SetMapFlavour(MatchFlavour(mo,a,b,1));
+    v=a.Point()->v;
   } 
   else  if (b.Point() == a.Point()->right) {
     // combinable-type: b daughter of a
     mo.SetPoint(a.Point()->left);
     mo.DetermineCouplings(1);
     mo.SetMapFlavour(MatchFlavour(mo,a,b,1));
+    v=a.Point()->v;
   } 
   else THROW(fatal_error,"   Cannot combine legs.");
   mo.SetQCDJets((a.Point()->t<10?a.QCDJets():0)+
@@ -288,12 +294,16 @@ Leg Combine_Table::CombinedLeg(Leg *legs,const int i,const int j)
 		 <<mo.Point()->fl<<"("<<mo.MapFlavour()
 		 <<")[t="<<mo.Point()->t<<",j="<<mo.QCDJets()<<"]\n";
   */
-  // fix charge incase initial state has wrong
-  int icharge;
-  if (i<2)  icharge = a.Anti()*a.Point()->fl.IntCharge() - 
-	              b.Anti()*b.Point()->fl.IntCharge();
-  else      icharge = a.Point()->fl.IntCharge() + b.Point()->fl.IntCharge();
-  if (icharge!=mo.Point()->fl.IntCharge()) mo.SetAnti(-1);    
+  Flavour fls[3]={v->in[0].Bar(),v->in[1],v->in[2]};
+  Flavour afl=i<p_proc->NIn()?a.Flav().Bar():a.Flav();
+  Flavour bfl=j<p_proc->NIn()?b.Flav().Bar():b.Flav();
+  Flavour cfl=i<p_proc->NIn()||j<p_proc->NIn()?mo.Flav().Bar():mo.Flav();
+  if ((fls[0]==afl && fls[1]==bfl && fls[2]==cfl) ||
+      (fls[0]==afl && fls[2]==bfl && fls[1]==cfl) ||
+      (fls[1]==afl && fls[0]==bfl && fls[2]==cfl) ||
+      (fls[1]==afl && fls[2]==bfl && fls[0]==cfl) ||
+      (fls[2]==afl && fls[0]==bfl && fls[1]==cfl) ||
+      (fls[2]==afl && fls[1]==bfl && fls[0]==cfl)) mo.SetAnti(-1);
   return mo;
 }
 
@@ -327,8 +337,7 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,const int 
 		    ColorID(),p_legs[0][i].ID());
   Vec4D_Vector after=p_clus->Combine
     (*ampl,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,
-     m_cdata_winner->first.m_k,m_cdata_winner->first.m_i<2?
-     m_cdata_winner->second.m_mo.Bar():m_cdata_winner->second.m_mo,p_ms,
+     m_cdata_winner->first.m_k,m_cdata_winner->second.m_mo,p_ms,
      m_cdata_winner->second.m_pt2ij.m_kin,m_cdata_winner->second.m_pt2ij.m_mode);
   ampl->Delete();
   if (after.empty()) {
@@ -358,8 +367,7 @@ bool Combine_Table::CombineMoms(Vec4D *moms,const int _i,const int _j,
 		   ColorID(),p_legs[0][i].ID());
   Vec4D_Vector after=p_clus->Combine
     (*ampl,m_cdata_winner->first.m_i,m_cdata_winner->first.m_j,
-     m_cdata_winner->first.m_k,m_cdata_winner->first.m_i<2?
-     m_cdata_winner->second.m_mo.Bar():m_cdata_winner->second.m_mo,p_ms,
+     m_cdata_winner->first.m_k,m_cdata_winner->second.m_mo,p_ms,
      m_cdata_winner->second.m_pt2ij.m_kin,m_cdata_winner->second.m_pt2ij.m_mode);
   ampl->Delete();
   if (after.empty()) {
@@ -544,7 +552,7 @@ CD_List::iterator Combine_Table::CalcPropagator(CD_List::iterator &cit,int mode)
     ampl->SetProcs(p_proc->AllProcs());
     cit->second.m_pt2ij=p_clus->KPerp2
       (*ampl,cit->first.m_i,cit->first.m_j,cit->first.m_k,
-       cit->first.m_i<2?cit->second.m_mo.Bar():cit->second.m_mo,p_ms,
+       cit->second.m_mo,p_ms,
        (mode&1024)||((mode&4096)&&p_up==NULL)?1:-1,
        (cit->second.m_dec>10||!cit->second.m_mo.Strong()?1:0)|
        (p_proc->Parent()->Info().m_fi.m_nloqcdtype!=PHASIC::nlo_type::lo?16:0)|
