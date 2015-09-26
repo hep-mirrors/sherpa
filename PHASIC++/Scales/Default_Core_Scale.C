@@ -55,9 +55,11 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
     if (fl[2].Strong() && fl[3].Strong()) {
       msg_Debugging()<<"pure QCD like\n";
       double s(2.0*campl->Leg(0)->Mom()*campl->Leg(1)->Mom());
-      double t(2.0*campl->Leg(0)->Mom()*campl->Leg(2)->Mom());
-      double u(2.0*campl->Leg(0)->Mom()*campl->Leg(3)->Mom());
-      muq2=muf2=mur2=-1.0/(1.0/s+1.0/t+1.0/u)/4.0;
+      double t1(2.0*campl->Leg(0)->Mom()*campl->Leg(2)->Mom());
+      double u1(2.0*campl->Leg(0)->Mom()*campl->Leg(3)->Mom());
+      double t2(2.0*campl->Leg(1)->Mom()*campl->Leg(3)->Mom());
+      double u2(2.0*campl->Leg(1)->Mom()*campl->Leg(2)->Mom());
+      muq2=muf2=mur2=-1.0/(1.0/s+2.0/(t1+t2)+2.0/(u1+u2))/4.0;
     }
     else if (!fl[2].Strong() && !fl[3].Strong()) {
       msg_Debugging()<<"DY like\n";
