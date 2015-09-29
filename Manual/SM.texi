@@ -43,8 +43,8 @@ parameter, whose default is @option{1}. The following options are provided:
   @item  Case @code{1}:
   
     all EW parameters are calculated from the W, Z and Higgs masses and
-    @code{1/ALPHAQED(0)} + @code{ALPHAQED_DEFAULT_SCALE} (cf. below) using
-    tree-level relations.
+    the fine structure constant (taken from @code{1/ALPHAQED(0)} +
+    @code{ALPHAQED_DEFAULT_SCALE}, cf. below) using tree-level relations.
   @item  Case @code{3}:
   
     this choice corresponds to the G_mu-scheme. The EW parameters are 
@@ -57,6 +57,9 @@ enabled (cf. @ref{COUPLINGS}). In EW schemes 0 and 1, the squared scale at which
 the fixed EW coupling is to be evaluated can be specified by
 @code{ALPHAQED_DEFAULT_SCALE}, which defaults to the Z mass squared (note that
 this scale has to be specified in GeV squared).
+By default @code{1/ALPHAQED(0)=137.03599976} and
+@code{ALPHAQED_DEFAULT_SCALE=8315.18} (=mZ^2), which means that the MEs are
+evaluated with a fixed value of @code{alphaQED=1/128.802}.
 
 To account for quark mixing the CKM matrix elements have to be assigned. 
 For this purpose the Wolfenstein parametrization @mycite{Wolfenstein1983yz} is
