@@ -29,6 +29,7 @@ Sherpa_TEXINFOS = \
 	ISR.texi \
 	LHC_HInt.texi \
 	LHC_HJets.texi \
+	LHC_HJets_FiniteMt.texi \
 	LHC_Jets.texi \
 	LEP_Jets.texi \
 	LHC_TTBar.texi \
@@ -61,9 +62,12 @@ Sherpa_TEXINFOS = \
 	Sherpa.texi \
 	Shower.texi \
 	SM.texi \
+	MSSM.texi \
 	SoftQED.texi \
 	Starting.texi \
 	Tips.texi \
+	HERA_DIS.texi \
+	MINLO.texi \
 	version.texi
 
 man1_MANS = Sherpa.1
