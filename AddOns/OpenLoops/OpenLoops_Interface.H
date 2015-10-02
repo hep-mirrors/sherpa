@@ -6,6 +6,12 @@
 #include "METOOLS/Loops/Divergence_Array.H"
 
 
+namespace ATOOLS {
+
+  extern KF_Table s_kftable;
+
+}
+
 namespace OpenLoops {
 
   class OpenLoops_Interface: public PHASIC::ME_Generator_Base,

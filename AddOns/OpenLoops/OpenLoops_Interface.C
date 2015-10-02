@@ -1,5 +1,6 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "MODEL/Main/Model_Base.H"
+#include "MODEL/UFO/UFO_Model.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Message.H"
@@ -85,25 +86,30 @@ namespace OpenLoops {
     if (!s_ignore_model) SetParameter("model", MODEL::s_model->Name());
 
     // set particle masses/widths
-    int tmparr[] = {kf_e, kf_mu, kf_tau, kf_u, kf_d, kf_s, kf_c, kf_b, kf_t, kf_Wplus, kf_Z, kf_h0};
-    vector<int> pdgids (tmparr, tmparr + sizeof(tmparr) / sizeof(tmparr[0]) );
-    for (size_t i=0; i<pdgids.size(); ++i) {
-      if (Flavour(pdgids[i]).Mass()>0.0) SetParameter("mass("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Mass());
-      if (Flavour(pdgids[i]).Width()>0.0) SetParameter("width("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Width());
-      if (Flavour(pdgids[i]).IsFermion() && Flavour(pdgids[i]).Yuk()>0.0 &&
-          Flavour(pdgids[i]).Mass()!=Flavour(pdgids[i]).Yuk()) {
-        SetParameter("yuk("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Yuk());
-        if (Flavour(pdgids[i]).IsQuark()) { // not supported/needed for leptons
+    for(KFCode_ParticleInfo_Map::const_iterator it = s_kftable.begin();	it!=s_kftable.end(); ++it){
+      const Flavour& flav(it->first); const int& id(it->first);
+      if (flav.Mass()>0.0) SetParameter("mass("+ToString(id)+")", flav.Mass());
+      if (flav.Width()>0.0) SetParameter("width("+ToString(id)+")", flav.Width());
+      if (flav.IsFermion() && flav.Yuk()>0.0 &&
+          flav.Mass()!=flav.Yuk()) {
+        SetParameter("yuk("+ToString(id)+")", flav.Yuk());
+        if (flav.IsQuark()) { // not supported/needed for leptons
           if (MODEL::s_model->ScalarNumber(std::string("YukawaScheme"))==1)
-            SetParameter("muy("+ToString(pdgids[i])+")", Flavour(kf_h0).Mass(true));
+            SetParameter("muy("+ToString(id)+")", Flavour(kf_h0).Mass(true));
           else
-            SetParameter("muy("+ToString(pdgids[i])+")", Flavour(pdgids[i]).Yuk());
+            SetParameter("muy("+ToString(id)+")", flav.Yuk());
         }
       }
     }
 
-
-    if (s_model->ComplexConstant("CKM_0_2")!=Complex(0.0,0.0) ||
+    if (dynamic_cast<UFO::UFO_Model*>(s_model)){
+      msg_Info()<<METHOD<<"(): You are using a UFO model "
+		<<"together with OpenLoops. CKM parameters "
+		<<"cannot be guessed, assuming diagonal CKM."
+		<<std::endl;
+      SetParameter("ckmorder", 0);
+    }
+    else if (s_model->ComplexConstant("CKM_0_2")!=Complex(0.0,0.0) ||
         s_model->ComplexConstant("CKM_2_0")!=Complex(0.0,0.0)) {
       SetParameter("ckmorder", 3);
     }

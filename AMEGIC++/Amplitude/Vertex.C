@@ -73,18 +73,22 @@ Vertex::Vertex(MODEL::Model_Base * _model)
 	av->Color.pop_back();
       }
     }
+    bool error(false);
     if (av->Lorentz.empty()) {
       for (size_t j(0);j<v->Lorentz.size();++j) {
 	av->Lorentz.push_back(MODEL::LF_Getter::GetObject(v->Lorentz[j],MODEL::LF_Key()));
 	if (av->dec>0 && av->Lorentz.back()==NULL)
 	  av->Lorentz.back()=MODEL::LF_Getter::GetObject("None",MODEL::LF_Key());
-	if (av->Lorentz.back()==NULL) {
+	if (av->Lorentz.back()==NULL){
 	  msg_Error()<<METHOD<<"(): No Lorentz calculator for '"+v->Lorentz[j]+"'. Skip."<<std::endl;
-	  if (v->in.size()==3) m_v.pop_back();
-	  else m_v4.pop_back();
-	  continue;
+	  error = true;
 	}
       }
+    }
+    if(error){
+      if (v->in.size()==3) m_v.pop_back();
+      else m_v4.pop_back();
+      continue;
     }
     if (v->in.size()==3) {
       // the weird fermion rule

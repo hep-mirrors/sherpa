@@ -103,7 +103,12 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
 			BEAM::Beam_Spectra_Handler *const beamhandler,
 			PDF::ISR_Handler *const isrhandler)
 {
-  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model))
+  Data_Reader read(" ",";","#","=");
+  read.AddWordSeparator("\t");
+  read.SetInputPath(m_path);
+  read.SetInputFile(m_file);
+  if (dynamic_cast<UFO::UFO_Model*>(MODEL::s_model) &&
+      !read.GetValue<int>("AMEGIC_ALLOW_UFO", 0))
     THROW(fatal_error, "AMEGIC can only be used in built-in models. Please use Comix for UFO models.");
   p_mmodel=model;
   p_amodel = new Amegic_Model(model);
@@ -111,10 +116,6 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   m_file=file;
   p_int->SetBeam(beamhandler);
   p_int->SetISR(isrhandler);
-  Data_Reader read(" ",";","#","=");
-  read.AddWordSeparator("\t");
-  read.SetInputPath(m_path);
-  read.SetInputFile(m_file);
   SetPSMasses(&read);
   double alpha=read.GetValue<double>("AMEGIC_TCHANNEL_ALPHA",0.9);
   rpa->gen.SetVariable("AMEGIC_TCHANNEL_ALPHA",ToString(alpha));
