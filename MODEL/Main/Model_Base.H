@@ -85,7 +85,10 @@ namespace MODEL {
     void SetAlphaQCD(const PDF::ISR_Handler_Map& isr, const double& alphaS);
     void SetAlphaQEDByScale(const double& scale2);
     void SetRunningFermionMasses();
-    
+
+    void ReadExplicitCKM(ATOOLS::CMatrix& CKM);
+    void OutputCKM();
+
   public:
     Model_Base(std::string,std::string,bool);
     virtual ~Model_Base();

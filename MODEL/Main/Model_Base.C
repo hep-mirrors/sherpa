@@ -146,6 +146,60 @@ void Model_Base::SetRunningFermionMasses()
   }
 }
 
+void Model_Base::ReadExplicitCKM(CMatrix& CKM)
+{
+  Data_Reader dr(" ",";","!","=");
+  dr.AddComment("#");
+  dr.AddWordSeparator("\t");
+  dr.AddIgnore("[");
+  dr.AddIgnore("]");
+  dr.AddIgnore("(");
+  dr.AddIgnore(")");
+  dr.AddIgnore(",");
+  dr.SetAddCommandLine(true);
+  dr.SetInputPath(m_dir);
+  dr.SetInputFile(m_file);
+  std::map<size_t,std::map<size_t,Complex> > ckms;
+  std::vector<std::vector<double> > helpdvv;
+  if (dr.MatrixFromFile(helpdvv,"CKM_ELEMENT")) {
+    for (size_t i(0);i<helpdvv.size();++i) {
+      if (helpdvv[i][0]>CKM.Rank() || helpdvv[i][1]>CKM.Rank())
+        THROW(fatal_error,"Trying to read in CKM element beyond range.");
+      if (helpdvv[i].size()==3)
+        CKM[size_t(helpdvv[i][0])][size_t(helpdvv[i][1])]
+          =Complex(helpdvv[i][2],0.);
+      else if (helpdvv[i].size()==4) {
+        CKM[size_t(helpdvv[i][0])][size_t(helpdvv[i][1])]
+          =Complex(helpdvv[i][2],helpdvv[i][3]);
+      }
+      else
+        THROW(fatal_error,"Unrecognised CKM_ELEMENT input.");
+    }
+  }
+}
+
+void Model_Base::OutputCKM()
+{
+  if (!p_dataread->GetValue<int>("CKM_OUTPUT",0)) return;
+  msg_Info()<<" CKM Matrix:\n";
+  msg_Info()<<std::setw(8)<<"V_ij";
+  size_t rank(ScalarConstant("CKM_DIMENSION"));
+  size_t width(96/rank);
+  // flavour output assumes quarks are all consecutive from 1...n
+  for (size_t i(0);i<rank;++i)
+    msg_Info()<<std::setw(width)<<Flavour(2*i+1);
+  msg_Info()<<std::endl;
+  for (size_t i(0);i<rank;++i) {
+    msg_Info()<<std::setw(8)<<Flavour(2*i+2);
+    for (size_t j(0);j<rank;++j) {
+      msg_Info()<<std::setw(width)
+                <<ComplexConstant("CKM_"+ToString(i)+"_"+ToString(j));
+    }
+    msg_Info()<<std::endl;
+  }
+  msg_Info()<<std::endl;
+}
+
 void Model_Base::ShowSyntax(const size_t i)
 {
   if (!msg_LevelIsInfo() || i==0) return;

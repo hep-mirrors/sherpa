@@ -123,6 +123,7 @@ bool Standard_Model_TauPi::ModelInit(const PDF::ISR_Handler_Map& isr)
   
   ATOOLS::OutputParticles(msg->Info());
   ATOOLS::OutputContainers(msg->Info());
+  OutputCKM();
 
   for (MODEL::ScalarNumbersMap::iterator it=p_numbers->begin();
        it!=p_numbers->end(); ++it) {
@@ -246,25 +247,29 @@ void Standard_Model_TauPi::FixCKM()
     CKM[i][i] = Complex(1.,0.);
   }
   double Cabibbo=0.0,A=.8,rho,eta;
-  m_ckmorder     = p_dataread->GetValue<int>("CKMORDER",0);  
+  m_ckmorder     = p_dataread->GetValue<int>("CKMORDER",0);
   if (m_ckmorder>0) {
-    Cabibbo    = p_dataread->GetValue<double>("CABIBBO",0.2272);
+    Cabibbo    = p_dataread->GetValue<double>("CABIBBO",0.22537);
     CKM[0][0] += sqr(Cabibbo)/2. * Complex(-1.,0.);
     CKM[1][1] += sqr(Cabibbo)/2. * Complex(-1.,0.);
     CKM[0][1] += Cabibbo * Complex( 1.,0.);
     CKM[1][0] += Cabibbo * Complex(-1.,0.);
   }
   if (m_ckmorder>1) {
-    A          = p_dataread->GetValue<double>("A",0.818);
+    A          = p_dataread->GetValue<double>("A",0.814);
     CKM[1][2] += A*sqr(Cabibbo)  * Complex( 1.,0.);
     CKM[2][1] += A*sqr(Cabibbo)  * Complex(-1.,0.);
   }
   if (m_ckmorder>2) {
-    eta        = p_dataread->GetValue<double>("ETA",0.349);
-    rho        = p_dataread->GetValue<double>("RHO",0.227);
+    eta        = p_dataread->GetValue<double>("ETA",0.353);
+    rho        = p_dataread->GetValue<double>("RHO",0.117);
     CKM[0][2] += A*pow(Cabibbo,3) * Complex(rho,-eta);
     CKM[2][0] += A*pow(Cabibbo,3) * Complex(1.-rho,-eta);
   }
+
+  ReadExplicitCKM(CKM);
+
+  p_constants->insert(make_pair("CKM_DIMENSION",3));
   for (size_t i(0);i<3;++i)
     for (size_t j(0);j<3;++j)
       p_complexconstants->insert

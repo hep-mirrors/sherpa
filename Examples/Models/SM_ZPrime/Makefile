@@ -2,7 +2,6 @@
 # Sherpa installation directory manually
 SHERPA_PREFIX ?= $(shell Sherpa-config --prefix)
 
-
 SOURCES=Model.C
 
 CC=g++
@@ -14,10 +13,10 @@ LDFLAGS=$(shell $(SHERPA_PREFIX)/bin/Sherpa-config --ldflags)
 OBJECTS=$(SOURCES:.C=.o)
 
 all: $(SOURCES) $(OBJECTS) 
-	$(CC) -shared -o libSMZprime.so $(OBJECTS) $(LDFLAGS)
+	$(CC) -shared -o libSherpaSMZprime.so $(OBJECTS) $(LDFLAGS)
 
 .C.o:
 	$(CC) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(OBJECTS) libSMZprime.so
+	rm -rf $(OBJECTS) libSherpaSMZprime.so
