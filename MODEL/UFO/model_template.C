@@ -30,7 +30,6 @@ namespace MODEL{
       CustomContainerInit();
       ATOOLS::OutputParticles(ATOOLS::msg->Info());
       ATOOLS::OutputContainers(ATOOLS::msg->Info());
-      OutputCKM();
     }
   protected:
     void ParticleInit()
