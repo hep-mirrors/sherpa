@@ -5,11 +5,12 @@
 @cindex VEV
 @cindex LAMBDA
 @cindex EW_SCHEME
-@cindex CKMORDER
-@cindex CABIBBO
-@cindex A
-@cindex ETA
-@cindex RHO
+@cindex CKM_ORDER
+@cindex CKM_CABIBBO
+@cindex CKM_A
+@cindex CKM_ETA
+@cindex CKM_RHO
+@cindex CKM_ELEMENT[<i>][<j>]
 @cindex ALPHAS(MZ)
 @cindex ALPHAQED_DEFAULT_SCALE
 @cindex ORDER_ALPHAS
@@ -50,6 +51,14 @@ parameter, whose default is @option{1}. The following options are provided:
     this choice corresponds to the G_mu-scheme. The EW parameters are 
     calculated out of the weak gauge boson masses M_W, M_Z, the Higgs
     boson mass M_H and the Fermi constant @code{GF} using tree-level relations.
+  @item  Case @code{3}:
+
+    this choice corresponds to the scheme employed in the FeynRules/UFO setup.
+    The EW parameters are calculated out of the Z boson mass M_Z, the Higgs
+    boson mass M_H, the Fermi constant @code{GF} and the fine structure
+    constant (taken from @code{1/ALPHAQED(0)} + @code{ALPHAQED_DEFAULT_SCALE},
+    cf. below) using tree-level relations. Note, the W boson mass is not an
+    input parameter in this scheme.
   @end itemize
 
 The electro-weak coupling is by default not running, unless its running has been
@@ -64,18 +73,24 @@ evaluated with a fixed value of @code{alphaQED=1/128.802}.
 To account for quark mixing the CKM matrix elements have to be assigned. 
 For this purpose the Wolfenstein parametrization @mycite{Wolfenstein1983yz} is
 employed. The order of expansion in the lambda parameter is defined
-through @code{CKMORDER}, with default @option{0} corresponding to a unit matrix.
+through @code{CKM_ORDER}, with default @option{0} corresponding to a unit matrix.
 The parameter convention for higher expansion terms reads:
 
 @itemize @bullet
-@item  @code{CKMORDER = 1}, the @code{CABIBBO} parameter has to be set,
-it parametrizes lambda and has the default value @option{0.2272}.
-@item  @code{CKMORDER = 2}, in addition the value of @code{A} has to
-be set, its default is @option{0.818}. 
-@item  @code{CKMORDER = 3}, the order lambda^3 expansion, @code{ETA}
-and @code{RHO} have to be specified. Their default values are @option{0.349} 
-and @option{0.227}, respectively.
+@item  @code{CKM_ORDER 1}, the @code{CKM_CABIBBO} parameter has to be set,
+it parametrizes lambda and has the default value @option{0.22537}.
+@item  @code{CKM_ORDER 2}, in addition the value of @code{CKM_A} has to
+be set, its default is @option{0.814}.
+@item  @code{CKM_ORDER 3}, the order lambda^3 expansion, @code{CKM_ETA}
+and @code{CKM_RHO} have to be specified. Their default values are @option{0.353}
+and @option{0.117}, respectively.
 @end itemize
+
+The CKM matrix elements V_ij can also be read in using
+@code{CKM_ELEMENT[<i>][<j>]}. Complex values are given in @code{(Re,Im)}
+format. Values not explicitly given are taken from the afore computed
+Wolfenstein parametrisation. Setting @code{CKM_OUTPUT} to @code{1} enables
+an output of the CKM matrix.
 
 
 The remaining parameter to fully specify the Standard Model 
