@@ -142,9 +142,8 @@ CParam Cluster_Algorithm::GetMeasure
   int k(cid.find(idk)->second);
   if (p_ampl->Leg(i)->Id()!=idi || p_ampl->Leg(j)->Id()!=idj || 
       p_ampl->Leg(k)->Id()!=idk) THROW(fatal_error,"Internal error 1");
-  bool ismo(idi&((1<<p_xs->NIn())-1));
+  bool ismo((idi|idj)&((1<<p_xs->NIn())-1));
   Flavour mmofl(p_xs->ReMap(ismo?mofl.Bar():mofl,0));
-  if (ismo) mmofl=mmofl.Bar();
   if (p_ampl->Legs().size()>p_ampl->NIn()+m_nmin) {
     int nlo((m_wmode&4096) && p_ampl->Prev()==NULL);
     kt2[idi][idj][idk][mofl]=

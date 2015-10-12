@@ -295,9 +295,9 @@ Leg Combine_Table::CombinedLeg(Leg *legs,const int i,const int j)
 		 <<")[t="<<mo.Point()->t<<",j="<<mo.QCDJets()<<"]\n";
   */
   Flavour fls[3]={v->in[0].Bar(),v->in[1],v->in[2]};
-  Flavour afl=i<p_proc->NIn()?a.Flav().Bar():a.Flav();
-  Flavour bfl=j<p_proc->NIn()?b.Flav().Bar():b.Flav();
-  Flavour cfl=i<p_proc->NIn()||j<p_proc->NIn()?mo.Flav().Bar():mo.Flav();
+  Flavour afl=i<p_proc->NIn()?a.Point()->fl.Bar():a.Point()->fl;
+  Flavour bfl=j<p_proc->NIn()?b.Point()->fl.Bar():b.Point()->fl;
+  Flavour cfl=(i<p_proc->NIn()||j<p_proc->NIn())?mo.Point()->fl.Bar():mo.Point()->fl;
   if ((fls[0]==afl && fls[1]==bfl && fls[2]==cfl) ||
       (fls[0]==afl && fls[2]==bfl && fls[1]==cfl) ||
       (fls[1]==afl && fls[0]==bfl && fls[2]==cfl) ||
