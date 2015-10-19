@@ -26,7 +26,7 @@ namespace AMEGIC {
     long unsigned int m_id;
     double *p_qmin;
     std::string m_type;
-    ATOOLS::Flavour m_mapfl;
+    ATOOLS::Flavour m_fl, m_mapfl;
     friend std::ostream &operator<<(std::ostream &ostr,const Leg &leg);
   public:
     // constructors
@@ -53,12 +53,15 @@ namespace AMEGIC {
     inline double QMin() const { return p_qmin!=NULL?*p_qmin:-1.0; }
     inline ATOOLS::Flavour Flav() 
     { return m_anti==-1?m_mapfl.Bar():m_mapfl; }
+    inline ATOOLS::Flavour UMFlav() 
+    { return m_anti==-1?m_fl.Bar():m_fl; }
     inline int OrderQCD() const { return m_nqcd; }
     inline int OrderQED() const { return m_nqed; }
     inline int NQCD() const { return m_pqcd; }
     inline int NQED() const { return m_pqed; }
     inline const std::string &Type() const { return m_type; }
-    inline void SetMapFlavour(const ATOOLS::Flavour &fl) { m_mapfl=fl; }
+    inline void SetMapFlavour(const ATOOLS::Flavour &fl,
+			      const ATOOLS::Flavour &mfl) { m_fl=fl; m_mapfl=mfl; }
     inline ATOOLS::Flavour MapFlavour() const { return m_mapfl; }
   };// end of class Leg
 

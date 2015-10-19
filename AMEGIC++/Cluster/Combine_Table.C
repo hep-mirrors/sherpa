@@ -26,7 +26,7 @@ Leg::Leg(const Leg &leg):
   p_point(leg.p_point), m_anti(leg.m_anti), 
   m_nqcd(0), m_nqed(0), m_pqcd(0), m_pqed(0), m_ext(leg.m_ext), 
   m_qcdjets(leg.m_qcdjets), m_id(leg.m_id),
-  p_qmin(leg.p_qmin), m_mapfl(leg.m_mapfl) {}
+  p_qmin(leg.p_qmin), m_fl(leg.m_fl), m_mapfl(leg.m_mapfl) {}
 
 std::ostream &AMEGIC::operator<<
   (std::ostream &str,const std::vector<int> &info)
@@ -251,35 +251,35 @@ Leg Combine_Table::CombinedLeg(Leg *legs,const int i,const int j)
     // combinable-type: common mother
     mo.SetPoint(a.Point()->prev);
     mo.DetermineCouplings(0);
-    mo.SetMapFlavour(MatchFlavour(mo,a,b,0));
+    mo.SetMapFlavour(mo.Point()->fl,MatchFlavour(mo,a,b,0));
     v=a.Point()->prev->v;
   } 
   else if (a.Point() == b.Point()->left) {
     // combinable-type: a daughter of b
     mo.SetPoint(b.Point()->right);
     mo.DetermineCouplings(1);
-    mo.SetMapFlavour(MatchFlavour(mo,b,a,1));
+    mo.SetMapFlavour(mo.Point()->fl,MatchFlavour(mo,b,a,1));
     v=b.Point()->v;
   } 
   else if (a.Point() == b.Point()->right) {
     // combinable-type: a daughter of b
     mo.SetPoint(b.Point()->left);
     mo.DetermineCouplings(1);
-    mo.SetMapFlavour(MatchFlavour(mo,b,a,1));
+    mo.SetMapFlavour(mo.Point()->fl,MatchFlavour(mo,b,a,1));
     v=b.Point()->v;
   } 
   else  if (b.Point() == a.Point()->left) {
     // combinable-type: b daughter of a
     mo.SetPoint(a.Point()->right);
     mo.DetermineCouplings(1);
-    mo.SetMapFlavour(MatchFlavour(mo,a,b,1));
+    mo.SetMapFlavour(mo.Point()->fl,MatchFlavour(mo,a,b,1));
     v=a.Point()->v;
   } 
   else  if (b.Point() == a.Point()->right) {
     // combinable-type: b daughter of a
     mo.SetPoint(a.Point()->left);
     mo.DetermineCouplings(1);
-    mo.SetMapFlavour(MatchFlavour(mo,a,b,1));
+    mo.SetMapFlavour(mo.Point()->fl,MatchFlavour(mo,a,b,1));
     v=a.Point()->v;
   } 
   else THROW(fatal_error,"   Cannot combine legs.");
@@ -295,9 +295,9 @@ Leg Combine_Table::CombinedLeg(Leg *legs,const int i,const int j)
 		 <<")[t="<<mo.Point()->t<<",j="<<mo.QCDJets()<<"]\n";
   */
   Flavour fls[3]={v->in[0].Bar(),v->in[1],v->in[2]};
-  Flavour afl=i<p_proc->NIn()?a.Point()->fl.Bar():a.Point()->fl;
-  Flavour bfl=j<p_proc->NIn()?b.Point()->fl.Bar():b.Point()->fl;
-  Flavour cfl=(i<p_proc->NIn()||j<p_proc->NIn())?mo.Point()->fl.Bar():mo.Point()->fl;
+  Flavour afl=i<p_proc->NIn()?a.UMFlav().Bar():a.UMFlav();
+  Flavour bfl=j<p_proc->NIn()?b.UMFlav().Bar():b.UMFlav();
+  Flavour cfl=(i<p_proc->NIn()||j<p_proc->NIn())?mo.UMFlav().Bar():mo.UMFlav();
   if ((fls[0]==afl && fls[1]==bfl && fls[2]==cfl) ||
       (fls[0]==afl && fls[2]==bfl && fls[1]==cfl) ||
       (fls[1]==afl && fls[0]==bfl && fls[2]==cfl) ||
