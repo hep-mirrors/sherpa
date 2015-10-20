@@ -101,7 +101,13 @@ Scale_Variations::Scale_Variations() :
   reader.AddWordSeparator("\t");
   std::vector<std::string> vars,pdfs;
   reader.VectorFromFile(vars,"SCALE_VARIATIONS");
+  if (vars.size() == 1 && vars[0] == "None") {
+    vars.clear();
+  }
   reader.VectorFromFile(pdfs,"PDF_VARIATIONS");
+  if (pdfs.size() == 1 && pdfs[0] == "None") {
+    pdfs.clear();
+  }
   for (size_t i(0);i<pdfs.size();++i) vars.push_back("1.,1.,"+pdfs[i]);
   if (vars.size()) m_on=true;
   if (!m_on) return;
