@@ -30,10 +30,16 @@ namespace SHERPA {
   private :
     bool                      m_on;
     bool                      m_qed;
+    bool                      m_forceqedonnloqcd;
     Matrix_Element_Handler  * p_mehandler;
     Soft_Photon_Handler     * p_sphotons;
+    ATOOLS::NLO_subevtlist  * p_newsublist;
 
     bool            PutOnMassShell(const ATOOLS::Particle_Vector&);
+    bool            ModifySubEvtList(ATOOLS::Blob *,
+                                     const ATOOLS::Particle_Vector&,
+                                     const ATOOLS::Blob_Vector&);
+    void            DeleteNewSubList();
 
   public :
 

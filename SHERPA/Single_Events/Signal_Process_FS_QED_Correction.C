@@ -31,8 +31,8 @@ using namespace std;
 
 Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
 (Matrix_Element_Handler *_mehandler, Soft_Photon_Handler *_sphotons) :
-  m_on(true), m_qed(true),
-  p_mehandler(_mehandler), p_sphotons(_sphotons)
+  m_on(true), m_qed(true), m_forceqedonnloqcd(false),
+  p_mehandler(_mehandler), p_sphotons(_sphotons), p_newsublist(NULL)
 {
   DEBUG_FUNC("");
   m_name      = string("Lepton_FS_QED_Corrections:");
@@ -46,6 +46,7 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
   bool expliciteon = (reader.GetValue<std::string>("ME_QED","")=="On");
   // look whether there is any hadronisation following
   // if not, do not even put them on-shell -> switch everthing off
+  msg_Debugging()<<"impl="<<impliciteon<<", expl="<<expliciteon<<std::endl;
   if (!impliciteon) {
     m_qed = false;
     Data_Reader reader1(" ",";","!","=");
@@ -65,13 +66,21 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
        !(reader.GetValue<std::string>("HARD_DECAYS","Off")=="Off"))) {
     m_on = false; m_qed = false;
   }
+  if (expliciteon && p_mehandler->HasNLO()==1) {
+    m_forceqedonnloqcd = reader.GetValue<size_t>("ME_QED_ON_NLO_QCD",0);
+  }
   msg_Debugging()<<"on="<<m_on<<" ,  qed="<<m_qed<<std::endl;
+  msg_Debugging()<<"force on on nlo qcd: "<<m_forceqedonnloqcd<<std::endl;
 
   if (m_on && m_qed) m_name += p_sphotons->SoftQEDGenerator();
   else               m_name += "None";
 }
 
-Signal_Process_FS_QED_Correction::~Signal_Process_FS_QED_Correction() {}
+Signal_Process_FS_QED_Correction::~Signal_Process_FS_QED_Correction()
+{
+  if (p_newsublist) { DeleteNewSubList(); delete p_newsublist; }
+
+}
 
 
 Return_Value::code Signal_Process_FS_QED_Correction::Treat
@@ -87,6 +96,13 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
   }
   // look for QCD corrected hard process in need for QED
   Blob * sigblob(bloblist->FindLast(btp::Shower));
+  // if NLO QCD, no shower blob, take ME blob instead, status not set yet
+  if (m_forceqedonnloqcd) {
+    sigblob = bloblist->FindFirst(btp::Signal_Process);
+    if (!sigblob) return Return_Value::Nothing;
+    msg_Debugging()<<sigblob->TypeSpec()<<std::endl;
+    sigblob->AddStatus(blob_status::needs_extraQED);
+  }
   if (!sigblob) return Return_Value::Nothing;
   // if already treated -> nothing to do
   if (sigblob->TypeSpec()=="YFS-type_QED_Corrections_to_ME")
@@ -181,6 +197,8 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
     (*it)->SetStatus(part_status::decayed);
     QEDblob->AddToInParticles(*it);
   }
+  // if fixed-order NLO RS and on, copy QED radiation also to subevtlist
+  if (m_forceqedonnloqcd) ModifySubEvtList(sigblob,fslep,blobs);
   // first fill in all LO particles
   for (Blob_Vector::iterator it=blobs.begin();it!=blobs.end();++it) {
     while ((*it)->NOutP() && (*it)->OutParticle(0)->Info()!='S') {
@@ -196,6 +214,7 @@ Return_Value::code Signal_Process_FS_QED_Correction::Treat
     }
   }
   QEDblob->SetStatus(blob_status::needs_hadronization);
+  // clean up
   for (size_t i=0;i<blobs.size();++i) {
     delete blobs[i];
     blobs[i]=NULL;
@@ -221,6 +240,131 @@ bool Signal_Process_FS_QED_Correction::PutOnMassShell
   if (allonshell) return true;
   Momenta_Stretcher momstretch;
   return momstretch.StretchMomenta(partvec,masses);
+}
+
+bool Signal_Process_FS_QED_Correction::ModifySubEvtList
+(ATOOLS::Blob *sigblob, const ATOOLS::Particle_Vector& fslep,
+ const ATOOLS::Blob_Vector& blobs)
+{
+  DEBUG_FUNC("");
+  NLO_subevtlist* sublist(NULL);
+  Blob_Data_Base * bdb((*sigblob)["NLO_subeventlist"]);
+  if (bdb) sublist=bdb->Get<NLO_subevtlist*>();
+  if (!sublist) return true;
+
+  // QED corrections in blobs have to be transferred onto each subevt
+  // en lieu of the fsleps
+
+  if (p_newsublist) DeleteNewSubList();
+  else p_newsublist=new NLO_subevtlist();
+
+  // determine new size of final state for S (R has one more)
+  size_t newnreal(2+sigblob->NOutP()-fslep.size());
+  for (size_t i(0);i<blobs.size();++i) newnreal+=blobs[i]->NOutP();
+  size_t newnsub(newnreal-1);
+  msg_Debugging()<<"new n(sub)  = "<<newnsub<<std::endl;
+  msg_Debugging()<<"new n(real) = "<<newnreal<<std::endl;
+
+  // determine boost for S events
+  Vec4D fslepmomR(0.,0.,0.,0.);
+  for (size_t i(0);i<fslep.size();++i) fslepmomR+=fslep[i]->Momentum();
+  msg_Debugging()<<"fslepmomR = "<<fslepmomR<<std::endl;
+  Poincare oldframe(fslepmomR);
+
+  // book-keep which post-rad fsleps have been filled, and photons
+  Particle_Vector fslepQED,fsphotons;
+  for (size_t i(0);i<blobs.size();++i)
+    for (size_t j(0);j<blobs[i]->NOutP();++j)
+      if (!blobs[i]->OutParticle(j)->Flav().IsPhoton())
+        fslepQED.push_back(blobs[i]->OutParticle(j));
+      else
+        fsphotons.push_back(blobs[i]->OutParticle(j));
+  if (fslep.size()!=fslepQED.size()) THROW(fatal_error,"Internal error.");
+
+  // order fslepQED same as fslep -> can fill them in order
+  for (size_t i(0);i<fslep.size();) {
+    if (fslep[i]->Flav()==fslepQED[i]->Flav()) ++i;
+    else {
+      for (size_t j(0);j<fslep.size()-1;++j) {
+        std::swap(fslepQED[j],fslepQED[j+1]);
+      }
+    }
+  }
+  msg_Debugging()<<fslep.size()<<" fsleps(QED): "<<std::endl;
+  for (size_t i(0);i<fslep.size();++i)
+    msg_Debugging()<<i<<": "<<fslep[i]->Flav()<<" -> "
+                            <<fslepQED[i]->Flav()<<std::endl;
+
+  for (size_t i(0);i<sublist->size();++i) {
+    // iterate over sub events and replace radiating particles
+    NLO_subevt* sub((*sublist)[i]);
+    msg_Debugging()<<i<<": "<<*sub<<std::endl;
+    for (size_t j(0);j<sub->m_n;++j)
+      msg_Debugging()<<sub->p_fl[j]<<": "<<sub->p_mom[j]<<std::endl;
+
+    // structure will be: first n entries as before, (newn-n) photons appended
+    size_t newn(newnsub);
+    if (sub->IsReal()) newn=newnreal;
+    Flavour* newfls = new Flavour[newn];
+    Vec4D* newmoms = new Vec4D[newn];
+    size_t* newids = new size_t[newn];
+    for (size_t n(0);n<newn;++n) newids[n]=0;
+    NLO_subevt* newsub=new NLO_subevt(*sub);
+    newsub->m_n=newn;
+    newsub->m_delete=true;
+
+    Vec4D fslepmomS(0.,0.,0.,0.);
+    if (sub->IsReal()) fslepmomS=fslepmomR;
+    else for (size_t j(0);j<sub->m_n;++j)
+      if (!sub->p_fl[j].Strong()) fslepmomS+=sub->p_mom[j];
+    msg_Debugging()<<"fslepmomS = "<<fslepmomS<<std::endl;
+    Poincare newframe(fslepmomS);
+    newframe.Invert();
+
+    // replace leptons
+    size_t idx(0);
+    for (size_t n(0);n<sub->m_n;++n) {
+      newids[n]=sub->p_id[n];
+      newfls[n]=sub->p_fl[n];
+      if (n<sub->Proc<PHASIC::Process_Base>()->NIn() || sub->p_fl[n].Strong()) {
+        newmoms[n]=sub->p_mom[n];
+      }
+      else {
+        if (sub->IsReal()) newmoms[n]=fslepQED[idx]->Momentum();
+        else newmoms[n]=newframe*(oldframe*(fslepQED[idx]->Momentum()));
+        ++idx;
+      }
+    }
+    if (idx!=fslepQED.size()) THROW(fatal_error,"Not all leptons replaced.");
+
+    //add photons
+    for (size_t n(0);n<fsphotons.size();++n) {
+      newids[sub->m_n+n]=0;
+      newfls[sub->m_n+n]=Flavour(kf_photon);
+      if (sub->IsReal()) newmoms[sub->m_n+n]=fsphotons[n]->Momentum();
+      else newmoms[sub->m_n+n]=newframe*(oldframe*(fsphotons[n]->Momentum()));
+    }
+
+    newsub->p_id=newids;
+    newsub->p_fl=newfls;
+    newsub->p_mom=newmoms;
+    p_newsublist->push_back(newsub);
+
+    msg_Debugging()<<i<<": "<<*newsub<<std::endl;
+    for (size_t j(0);j<newsub->m_n;++j)
+      msg_Debugging()<<newsub->p_fl[j]<<": "<<newsub->p_mom[j]<<std::endl;
+  }
+
+  // set new sublist as evt-sublist
+  bdb->Set<NLO_subevtlist*>(p_newsublist);
+
+  return true;
+}
+
+void Signal_Process_FS_QED_Correction::DeleteNewSubList()
+{
+  for (size_t i=0; i<p_newsublist->size(); ++i) delete (*p_newsublist)[i];
+  p_newsublist->clear();
 }
 
 void Signal_Process_FS_QED_Correction::CleanUp(const size_t & mode) {}
