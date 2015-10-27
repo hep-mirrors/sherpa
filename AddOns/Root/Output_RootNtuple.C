@@ -30,8 +30,7 @@ Output_RootNtuple::Output_RootNtuple
   Output_Base("Root"), m_exact(exact), m_ftype(ftype)
 {
   args.p_reader->SetAllowUnits(true);
-  m_filesize = args.p_reader->GetValue<long int>
-    ("NTUPLE_SIZE",std::numeric_limits<long int>::max());
+  m_filesize = args.p_reader->GetValue<long int>("NTUPLE_SIZE",2147483647);
   args.p_reader->SetAllowUnits(false);
   m_mode=args.p_reader->GetValue<int>("ROOTNTUPLE_MODE",0);
   m_treename=args.p_reader->GetValue<std::string>("ROOTNTUPLE_TREENAME","t3");
@@ -110,8 +109,7 @@ void Output_RootNtuple::Header()
 #endif
   p_f=new TFile((m_basename+m_ext).c_str(),"recreate");
   p_t3 = new TTree(m_treename.c_str(),"Reconst ntuple");
-  size_t max = 2147483647;
-  p_t3->SetMaxTreeSize(Min(m_filesize,max));
+  p_t3->SetMaxTreeSize(m_filesize);
   p_t3->Branch("id",&m_id,"id/I");
   if (m_exact) p_t3->Branch("ncount",&m_ncount,"ncount/I");
   p_t3->Branch("nparticle",&m_nparticle,"nparticle/I");
