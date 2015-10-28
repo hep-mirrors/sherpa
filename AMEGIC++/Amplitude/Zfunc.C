@@ -114,30 +114,30 @@ void Zfunc::Print()
   msg_Out()<<"][";
   msg->Out().precision(2);
   for (int i=0;i<m_ncoupl-1;i++) {
-    if ( !ATOOLS::IsZero(real(p_couplings[i])) &&
-	    ATOOLS::IsZero(imag(p_couplings[i])) )
+    if ( real(p_couplings[i])!=0.0 &&
+	 imag(p_couplings[i])==0.0 )
       msg_Out()<<real(p_couplings[i])<<";";
-    if (  ATOOLS::IsZero(real(p_couplings[i])) &&
-	  !ATOOLS::IsZero(imag(p_couplings[i])) )
+    if (  real(p_couplings[i])==0.0 &&
+	  imag(p_couplings[i])!=0.0 )
       msg_Out()<<imag(p_couplings[i])<<" I;";
-    if ( !ATOOLS::IsZero(real(p_couplings[i])) &&
-	 !ATOOLS::IsZero(imag(p_couplings[i])) )
+    if ( real(p_couplings[i])!=0.0 &&
+	 imag(p_couplings[i])!=0.0 )
       msg_Out()<<real(p_couplings[i])<<"+"<<imag(p_couplings[i])<<" I;";
-    if (  ATOOLS::IsZero(real(p_couplings[i])) &&
-	  ATOOLS::IsZero(imag(p_couplings[i])) )
+    if (  real(p_couplings[i])==0.0 &&
+	  imag(p_couplings[i])==0.0 )
       msg_Out()<<"0;";
   }
-  if ( !ATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
-       ATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
+  if ( real(p_couplings[m_ncoupl-1])!=0.0 &&
+       imag(p_couplings[m_ncoupl-1])==0.0 )
       msg_Out()<<real(p_couplings[m_ncoupl-1])<<"])";
-  if (  ATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
-	!ATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
+  if (  real(p_couplings[m_ncoupl-1])==0.0 &&
+	imag(p_couplings[m_ncoupl-1])!=0.0 )
     msg_Out()<<imag(p_couplings[m_ncoupl-1])<<" I])";
-  if ( !ATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
-       !ATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
+  if ( real(p_couplings[m_ncoupl-1])!=0.0 &&
+       imag(p_couplings[m_ncoupl-1])!=0.0 )
     msg_Out()<<real(p_couplings[m_ncoupl-1])<<"+"<<imag(p_couplings[m_ncoupl-1])<<" I])";
-  if (  ATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
-	ATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
+  if (  real(p_couplings[m_ncoupl-1])==0.0 &&
+	imag(p_couplings[m_ncoupl-1])==0.0 )
 	msg_Out()<<"0])";
   msg_Out()<<endl;
   msg->Out().precision(6);

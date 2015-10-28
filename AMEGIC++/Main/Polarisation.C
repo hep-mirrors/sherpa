@@ -38,7 +38,7 @@ double Polarisation::Spin_Average(int nin,Flavour* flin)
 
     if (flin[i].IsFermion()) Norm *= 2.;
     if (flin[i].IsVector()) {
-      if (ATOOLS::IsZero(flin[i].Mass())) Norm *= 2.;
+      if (flin[i].Mass()==0.0) Norm *= 2.;
                                        else Norm *= 3.;
     }
     if (flin[i].IsTensor()) Norm *= 5.;
@@ -60,7 +60,7 @@ int Polarisation::Massless_Vectors(int N,Flavour* fl)
 {
 #ifndef Explicit_Pols
   for(short int i=0;i<N;i++) {
-    if (fl[i].IsVector() && ATOOLS::IsZero(fl[i].Mass())) {
+    if (fl[i].IsVector() && fl[i].Mass()==0.0) {
       npol = 1;
       break;
     }
@@ -76,7 +76,7 @@ int Polarisation::Massive_Vectors(int N,Flavour* fl)
 #ifndef Explicit_Pols
   int nmass_old = nmass;
   for(short int i=0;i<N;i++) {
-    if (fl[i].IsVector() && !ATOOLS::IsZero(fl[i].Mass())) {
+    if (fl[i].IsVector() && fl[i].Mass()!=0.0) {
       nmass+=2;
       Mass_Norm *= 3./2./sqr(fl[i].Mass());
     }
@@ -96,7 +96,7 @@ void Polarisation::Attach(int N, Flavour* fl)
     for (short int i=0;i<N;i++) mass_pol[i] = new int[2];
     int count = N+npol;
     for(short int i=0;i<N;i++) {
-      if (fl[i].IsVector() && !ATOOLS::IsZero(fl[i].Mass())) {
+      if (fl[i].IsVector() && fl[i].Mass()!=0.0) {
 	mass_pol[i][0] = count;
 	mass_pol[i][1] = count+1;
 	count+=2;
@@ -153,9 +153,9 @@ double Polarisation::Massless_Norm(int N,Flavour* fl,Basic_Sfuncs* BS)
   double norm = 1.;
   if (npol==1) {
     for (short int i=0;i<N;i++) {
-      if (fl[i].IsVector() && ATOOLS::IsZero(fl[i].Mass()) ) {
+      if (fl[i].IsVector() && fl[i].Mass()==0.0 ) {
         for (short int j=i+1;j<N+1;j++) {
-	  if ((fl[j].IsVector() && ATOOLS::IsZero(fl[j].Mass()) ) || 
+	  if ((fl[j].IsVector() && fl[j].Mass()==0.0 ) || 
 	      (fl[j]==Flavour(kf_pol))) {
 	    norm *= BS->Norm(i,j);
 	    break;
@@ -188,12 +188,12 @@ void Polarisation::Replace_Numbers(int N,Flavour* fl,Single_Amplitude* n)
   }
   //incoming massless bosons
   for (short int i=0;i<N;i++) {
-    if (fl[i].IsVector() && ATOOLS::IsZero(fl[i].Mass())) {
-      if (!( (fl[i+1].IsVector() && ATOOLS::IsZero(fl[i+1].Mass())) ||
+    if (fl[i].IsVector() && fl[i].Mass()==0.0) {
+      if (!( (fl[i+1].IsVector() && fl[i+1].Mass()==0.0) ||
 	     fl[i+1]==Flavour(kf_pol) ) ) {
 	//search next boson or pol
 	for (short int j=i+1;j<N+1;j++) {
-	  if ( (fl[j].IsVector() && ATOOLS::IsZero(fl[j].Mass())) ||
+	  if ( (fl[j].IsVector() && fl[j].Mass()==0.0) ||
 	       fl[j]==Flavour(kf_pol) ) {
 	    n->MPolconvert(i+10+1,j+10);
 	    break;
@@ -205,8 +205,8 @@ void Polarisation::Replace_Numbers(int N,Flavour* fl,Single_Amplitude* n)
   }
 #else
   for (short int i=0;i<N;i++) {
-    if (fl[i].IsVector() && ATOOLS::IsZero(fl[i].Mass()))  n->MPolconvert(i+masslessskip+1,99);
-    if (fl[i].IsVector() && !ATOOLS::IsZero(fl[i].Mass())) n->MPolconvert(i+massiveskip,99);
+    if (fl[i].IsVector() && fl[i].Mass()==0.0)  n->MPolconvert(i+masslessskip+1,99);
+    if (fl[i].IsVector() && fl[i].Mass()!=0.0) n->MPolconvert(i+massiveskip,99);
   }  
 #endif
 }

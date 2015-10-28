@@ -72,7 +72,7 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion,bool cutvecto
     if(fromfermion && p->left->fl.IsFermion()){
       p->m=0;
     }
-    if (ATOOLS::IsZero(p->fl.Mass())) p->m=0;
+    if (p->fl.Mass()==0.0) p->m=0;
 
     if (p->Lorentz->CutVectors()||cutvectors) p->m=1;
   }
@@ -83,7 +83,7 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion,bool cutvecto
 
   // "new gauge test" cut all massless propagators
   if (p->fl.IsVector() && p->number>99  && rpa->gen.CutScheme()==1) {
-    if(ATOOLS::IsZero(p->fl.Mass())) {
+    if(p->fl.Mass()==0.0) {
       p->m=1;
     }	
   }
@@ -676,7 +676,7 @@ void Zfunc_Generator::Set_In(Zfunc* Zh,int number, Point* p, Point* pf,Point* pb
 	Zh->p_couplings[number*2+1] = Complex(0.,0.);
       }
       else {
-	if (p->fl.IsVector() && !ATOOLS::IsZero(p->fl.Mass())) Zh->p_arguments[number*2] = p->number+massiveskip;
+	if (p->fl.IsVector() && p->fl.Mass()!=0.0) Zh->p_arguments[number*2] = p->number+massiveskip;
 	else Zh->p_arguments[number*2] = p->number+masslessskip+1;
 	Zh->p_couplings[number*2]   = Complex(1.,0.);
 	Zh->p_couplings[number*2+1] = Complex(1.,0.);
@@ -727,11 +727,11 @@ void Zfunc_Generator::Set_Out(Zfunc* Zh,int number,Point* pg,Point* p)
       Zh->p_arguments[number*2]     = pg->number;
       if (BS->Sign(pg->number)==-1) {
 	Zh->p_arguments[number*2+1]     = pg->number;
-	if (pg->fl.IsVector() && !ATOOLS::IsZero(pg->fl.Mass())) Zh->p_arguments[number*2] = pg->number+massiveskip;
+	if (pg->fl.IsVector() && pg->fl.Mass()!=0.0) Zh->p_arguments[number*2] = pg->number+massiveskip;
 	else Zh->p_arguments[number*2] = pg->number+masslessskip+1;
       }
       else {
-	if (pg->fl.IsVector() && !ATOOLS::IsZero(pg->fl.Mass())) Zh->p_arguments[number*2+1] = pg->number+massiveskip;
+	if (pg->fl.IsVector() && pg->fl.Mass()!=0.0) Zh->p_arguments[number*2+1] = pg->number+massiveskip;
 	else Zh->p_arguments[number*2+1] = pg->number+masslessskip+1;
       }
       Zh->p_couplings[number*2]   = Complex(1.,0.);

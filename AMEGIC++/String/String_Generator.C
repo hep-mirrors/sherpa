@@ -422,7 +422,7 @@ Kabbala String_Generator::GetSnumber(const int a1,const int a2,Complex value)
 
 Kabbala String_Generator::GetScplxnumber(const int a1,const int a2,Complex value) 
 {
-  if (ATOOLS::IsZero(value)) return (*p_zxl)[0].value;
+  if (value==Complex(0.0,0.0)) return (*p_zxl)[0].value;
   for (size_t i=0;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].zlist==9) {
       if (((*p_zxl)[i].arg[0]==a1) && ((*p_zxl)[i].arg[1]==a2)) return (*p_zxl)[i].value;

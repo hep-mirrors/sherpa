@@ -61,8 +61,8 @@ Pol_Info::Pol_Info(const ATOOLS::Flavour& fl)
   int dof = 1;
   pol_type='s';
   if(fl.IsFermion())                                 { dof = 2;pol_type='h';};
-  if(fl.IsVector() &&  ATOOLS::IsZero(fl.Mass()))  { dof = 2;pol_type='c';}
-  if(fl.IsVector() && !ATOOLS::IsZero(fl.Mass()))  {
+  if(fl.IsVector() &&  fl.Mass()==0.0)  { dof = 2;pol_type='c';}
+  if(fl.IsVector() &&  fl.Mass()!=0.0)  {
 
 #ifdef Explicit_Pols
     dof=3;

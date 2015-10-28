@@ -828,7 +828,7 @@ void String_Tree::Simplify(sknot*& m)
     Complex vleft  = Evaluate(m->left);
     Complex vright = Evaluate(m->right);
     
-    if (ATOOLS::IsZero(vleft/(vleft+vright))) {
+    if (vleft/(vleft+vright)==Complex(0.0,0.0)) {
       //kill left part
       if (m->op=='-') {
 	if (m->left->op!=0) m->left  = String2Tree(string("0"));
@@ -836,7 +836,7 @@ void String_Tree::Simplify(sknot*& m)
       else m = m->right;
     }
 
-    if (ATOOLS::IsZero(abs(vright/(vleft+vright))))
+    if (vright/(vleft+vright)==Complex(0.0,0.0))
       //kill right part
       m = m->left;
   }
