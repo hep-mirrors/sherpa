@@ -13,9 +13,11 @@ namespace SHERPA{
 namespace ATOOLS{
   class Cluster_Amplitude;
   class ColorID;
+  class Mass_Selector;
 }
 namespace PHASIC{
   class Process_Base;
+  class Rambo;
 }
 
 class MEProcess{
@@ -24,14 +26,20 @@ private:
 
   std::string m_name;
   ATOOLS::Cluster_Amplitude* p_amp;
+  //ATOOLS::Mass_Selector      m_msel;
   SHERPA::Sherpa*            p_gen;
   PHASIC::Process_Base *     p_proc;
+  PHASIC::Rambo*             p_rambo;
 
   size_t                         m_ncolinds;
   std::vector<std::vector<int> > m_colcombinations;
   std::vector<int>               m_gluinds, m_quainds, m_quabarinds;
   std::vector<int>               m_inpdgs, m_outpdgs;
   std::vector<size_t>            m_mom_inds;
+
+  // Store flavs here separately in the same order
+  // in which they were added (for performance reasons)
+  ATOOLS::Flavour_Vector         m_flavs; 
 
   size_t m_npsp,m_nin,m_nout;
 
@@ -60,6 +68,7 @@ public:
   void SetMomentum(const size_t &id, const ATOOLS::Vec4D &p);
   void SetColor   (const size_t &id, const ATOOLS::ColorID &col);
 
+  ATOOLS::Vec4D_Vector TestPoint(const double& sqrts);
   double MatrixElement();
   double CSMatrixElement();
 

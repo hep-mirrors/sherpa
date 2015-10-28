@@ -2,23 +2,20 @@
 %{
 #include <ATOOLS/Math/MathTools.H>
 #include <ATOOLS/Math/Vec4.H>
+#include <ATOOLS/Math/Vector.H>
 #include <ATOOLS/Org/MyStrStream.H>
 #include <iostream>
+
+using namespace ATOOLS;
+ 
 %}
-
-//%typemap(out) double, float "$result = PyFloat_FromDouble($1);"
-
-
-
-%{
-  using namespace ATOOLS;
-  %}
 
 namespace ATOOLS {
   template<typename Scalar> class Vec4;
   template<typename Scalar> class Vec3;
 
   typedef Vec4<double> Vec4D;
+  typedef std::vector<Vec4D> Vec4D_Vector;
 
   template<typename Scalar> class Vec4 {
     Scalar m_x[4];
@@ -62,9 +59,13 @@ namespace ATOOLS {
 
   };
 
-  // Instantiate a "double" version of the template that will be available as a Class Vec4D in python
-  %template(Vec4D) Vec4<double>;
 
-  //%template(Vec4FromDouble) Vec4<double, double, double, double>
   
 }
+
+%include <std_vector.i>
+
+// Instantiate a "double" version of the Vec4-template that will be available as a Class Vec4D in python
+%template(Vec4D) ATOOLS::Vec4<double>;
+// Instantiate a "Vec4D" version of the std::vector-template that will be available as a Class Vec4D_Vector in python
+%template(Vec4D_Vector) std::vector<ATOOLS::Vec4D>;

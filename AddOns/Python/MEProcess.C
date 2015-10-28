@@ -6,6 +6,7 @@
 
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
+#include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Run_Parameter.H"
@@ -14,6 +15,7 @@
 #include "PHASIC++/Process/Process_Base.H"
 #include "PHASIC++/Process/Process_Info.H"
 #include "PHASIC++/Process/Subprocess_Info.H"
+#include "PHASIC++/Channels/Rambo.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 
 #include <sstream>
@@ -21,7 +23,7 @@
 
 MEProcess::MEProcess(SHERPA::Sherpa *a_Generator) :
   m_name(""), p_amp(ATOOLS::Cluster_Amplitude::New()),
-  p_gen(a_Generator), p_proc(NULL), m_ncolinds(0),
+  p_gen(a_Generator), p_proc(NULL), p_rambo(NULL), m_ncolinds(0),
   m_npsp(0), m_nin(0), m_nout(0)
 {
 }
@@ -157,44 +159,48 @@ void MEProcess::SetColor(const size_t &index, const ATOOLS::ColorID& col)
 void MEProcess::AddInFlav(const int &id)
 {
   DEBUG_FUNC(id);
-  p_amp->CreateLeg(ATOOLS::Vec4D(),
-                   ATOOLS::Flavour(id>0?id:-id, id>0 ? true : false));
+  ATOOLS::Flavour flav(id>0?id:-id, id>0 ? true : false);
+  p_amp->CreateLeg(ATOOLS::Vec4D(), flav);
   p_amp->SetNIn(p_amp->NIn()+1);
   PHASIC::Process_Base::SortFlavours(p_amp);
   m_inpdgs.push_back(id);
+  m_flavs.push_back(flav);
   m_nin+=1;
 }
 
 void MEProcess::AddOutFlav(const int &id)
 {
   DEBUG_FUNC(id);
-  p_amp->CreateLeg(ATOOLS::Vec4D(),
-                   ATOOLS::Flavour(id>0?id:-id, id>0 ? false : true));
+  ATOOLS::Flavour flav(id>0?id:-id, id>0 ? false : true);
+  p_amp->CreateLeg(ATOOLS::Vec4D(), flav);
   PHASIC::Process_Base::SortFlavours(p_amp);
   m_outpdgs.push_back(id);
+  m_flavs.push_back(flav);
   m_nout+=1;
 }
 
 void MEProcess::AddInFlav(const int &id, const int &col1, const int &col2)
 {
   DEBUG_FUNC(id<<" ("<<col1<<","<<col2<<")");
-  p_amp->CreateLeg(ATOOLS::Vec4D(),
-                   ATOOLS::Flavour(id>0?id:-id, id>0 ? false : true),
+  ATOOLS::Flavour flav(id>0?id:-id, id>0 ? false : true);
+  p_amp->CreateLeg(ATOOLS::Vec4D(), flav,
                    ATOOLS::ColorID(col1, col2));
   p_amp->SetNIn(p_amp->NIn()+1);
   PHASIC::Process_Base::SortFlavours(p_amp);
   m_inpdgs.push_back(id);
+  m_flavs.push_back(flav);
   m_nin+=1;
 }
 
 void MEProcess::AddOutFlav(const int &id, const int &col1, const int &col2)
 {
   DEBUG_FUNC(id<<" ("<<col1<<","<<col2<<")");
-  p_amp->CreateLeg(ATOOLS::Vec4D(),
-                   ATOOLS::Flavour(id>0?id:-id, id>0 ? false : true),
+  ATOOLS::Flavour flav(id>0?id:-id, id>0 ? false : true);
+  p_amp->CreateLeg(ATOOLS::Vec4D(), flav,
                    ATOOLS::ColorID(col1, col2));
   PHASIC::Process_Base::SortFlavours(p_amp);
   m_outpdgs.push_back(id);
+  m_flavs.push_back(flav);
   m_nout+=1;
 }
 
@@ -311,6 +317,28 @@ void MEProcess::Initialize()
   SetMomentumIndices(allpdgs);
   if (p_proc->Integrator()->ColorIntegrator()!=NULL)
     p_proc->Integrator()->ColorIntegrator()->GeneratePoint();
+
+  p_rambo = new PHASIC::Rambo(m_nin,m_nout,
+			      &m_flavs.front(),
+			      p_proc->Generator());
+}
+
+ATOOLS::Vec4D_Vector MEProcess::TestPoint(const double& E){
+  ATOOLS::Vec4D_Vector p; p.resize(m_nin+m_nout);
+  if (m_nin==1) {
+    p[0]=ATOOLS::Vec4D(m_flavs[0].Mass(),0.0,0.0,0.0);
+    if (m_nout==1) { p[1]=p[0];  return p;}
+  }
+  else {
+    double m[2]={m_flavs[0].Mass(),m_flavs[1].Mass()};
+    if (E<m[0]+m[1]) THROW(fatal_error, "sqrt(s) smaller than particle masses");
+    double x=1.0/2.0+(m[0]*m[0]-m[1]*m[1])/(2.0*E*E);
+    p[0]=ATOOLS::Vec4D(x*E,0.0,0.0,sqrt(ATOOLS::sqr(x*E)-m[0]*m[0]));
+    p[1]=ATOOLS::Vec4D((1.0-x)*E,ATOOLS::Vec3D(-p[0]));
+  }
+  p_rambo->GeneratePoint(&p[0],(PHASIC::Cut_Data*)(NULL));
+  SetMomenta(p);
+  return p;
 }
 
 double MEProcess::MatrixElement()
@@ -326,6 +354,7 @@ double MEProcess::MatrixElement()
 double MEProcess::CSMatrixElement()
 {
   if (!HasColorIntegrator()) return p_proc->Differential(*p_amp,1|4);
+  GenerateColorPoint();
   SP(PHASIC::Color_Integrator) ci(p_proc->Integrator()->ColorIntegrator());
   ci->SetWOn(false);
   double r_csme(0.);
