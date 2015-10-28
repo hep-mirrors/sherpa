@@ -6,7 +6,8 @@ noinst_HEADERS = \
 	Particle.i \
 	Blob.i \
 	Blob_List.i \
-	MEProcess.i
+	MEProcess.i \
+	Random.i
 
 if ENABLE_PYEXT
 
