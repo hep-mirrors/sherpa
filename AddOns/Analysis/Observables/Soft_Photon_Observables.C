@@ -64,7 +64,7 @@ Soft_Photon_Observable_Base::Soft_Photon_Observable_Base
   }
   m_name += ".dat";
   m_listname = listname;
-  m_blobtype = std::string("YFS-type QED Corrections to ME");
+  m_blobtype = std::string("YFS-type_QED_Corrections_to_ME");
   m_blobdisc = true;
   if(xmin>=0.0) f_special=true;
 
@@ -96,7 +96,7 @@ void Soft_Photon_Observable_Base::Evaluate(const ATOOLS::Blob_List& blobs,
 {
   Blob * QEDblob = NULL;
   for (size_t i=0;i<blobs.size();++i) {
-    if (blobs[i]->Type()==btp::Shower &&
+    if (blobs[i]->Type()==btp::QED_Radiation &&
         blobs[i]->TypeSpec()==m_blobtype) {
       QEDblob=blobs[i];
       break;
@@ -106,17 +106,19 @@ void Soft_Photon_Observable_Base::Evaluate(const ATOOLS::Blob_List& blobs,
     Evaluate(0.,weight,ncount);
     return;
   }
-  Particle_Vector parts;
+  Particle_Vector multipole,photons;
   for (int i=0;i<QEDblob->NOutP();++i) {
     for (size_t j=0;j<m_flavs.size();++j) {
-      if (QEDblob->OutParticle(i)->Flav()==m_flavs[j] ||
-          QEDblob->OutParticle(i)->Info()=='S') {
-        parts.push_back(QEDblob->OutParticle(i));
-        j=m_flavs.size();
+      if (QEDblob->OutParticle(i)->Flav()==m_flavs[j]) {
+        multipole.push_back(QEDblob->OutParticle(i));
+        continue;
       }
     }
+    if (QEDblob->OutParticle(i)->Info()=='S') {
+      photons.push_back(QEDblob->OutParticle(i));
+    }
   }
-  Evaluate(parts,weight,ncount);
+  Evaluate(multipole,photons,weight,ncount);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -125,23 +127,22 @@ void Soft_Photon_Observable_Base::Evaluate(const ATOOLS::Blob_List& blobs,
 DEFINE_OBSERVABLE_GETTER(Soft_Photon_Energy, Soft_Photon_Energy_Getter,
                          "SoftPhotonEnergy")
 
-void Soft_Photon_Energy::Evaluate(const ATOOLS::Particle_Vector& parts,
+void Soft_Photon_Energy::Evaluate(const ATOOLS::Particle_Vector& multipole,
+                                  const ATOOLS::Particle_Vector& photons,
                                   double weight, double ncount)
 {
   Vec4D decayer(0.,0.,0.,0.);
-  for (size_t i=0;i<parts.size();++i) {
-    decayer+=parts[i]->Momentum();
+  for (size_t i=0;i<multipole.size();++i) {
+    decayer+=multipole[i]->Momentum();
   }
+  Vec4D sumphot(0.,0.,0.,0.);
+  for (size_t i=0;i<photons.size();++i) {
+    sumphot+=photons[i]->Momentum();
+  }
+  decayer+=sumphot;
   Poincare decframe(decayer);
-  double Ephots(0.);
-  for (size_t i=0;i<parts.size();++i) {
-    if (parts[i]->Flav().Kfcode()==kf_photon) {
-      Vec4D k=parts[i]->Momentum();
-      decframe.Boost(k);
-      Ephots+=k[0];
-    }
-  }
-  p_histo->Insert(Ephots,weight,ncount);
+  decframe.Boost(sumphot);
+  p_histo->Insert(sumphot[0],weight,ncount);
 }
 
 Soft_Photon_Energy::Soft_Photon_Energy(const std::vector<Flavour>& flavs,
@@ -162,41 +163,42 @@ Primitive_Observable_Base* Soft_Photon_Energy::Copy() const
 DEFINE_OBSERVABLE_GETTER(Soft_Photon_Angle,Soft_Photon_Angle_Getter,
                          "SoftPhotonAngle")
 
-void Soft_Photon_Angle::Evaluate(const ATOOLS::Particle_Vector& parts,
+void Soft_Photon_Angle::Evaluate(const ATOOLS::Particle_Vector& multipole,
+                                 const ATOOLS::Particle_Vector& photons,
                                  double weight, double ncount)
 {
-  Vec4D multipole(0.,0.,0.,0.);
+  Vec4D multipolesum(0.,0.,0.,0.);
+  Vec4D photonsum(0.,0.,0.,0.);
   Vec4D axpart(0.,0.,0.,1.);
   Vec4D axis(0.,0.,0.,1.);
   int chargesum(0);
   // FS charged momentum sum
-  for (size_t i=0;i<parts.size();++i) {
-    if (parts[i]->Flav().IntCharge()!=0) {
-      multipole+=axpart=parts[i]->Momentum();
-      chargesum+=parts[i]->Flav();
-    }
+  for (size_t i=0;i<multipole.size();++i) {
+    multipolesum+=axpart=multipole[i]->Momentum();
+    chargesum+=multipole[i]->Flav().Charge();
+  }
+  // photon momentum sum
+  for (size_t i=0;i<photons.size();++i) {
+    photonsum+=photons[i]->Momentum();
   }
   // neutral resonance -> nothing further
   // charged resonance -> add to multipole, change definition for theta=0
   if (chargesum!=0) {
     // add charged resonance to multipole
-    Vec4D resonance(0.,0.,0.,0.);
-    for (size_t i=0;i<parts.size();++i) resonance+=parts[i]->Momentum();
-    multipole+=resonance;
+    Vec4D resonance(multipolesum+photonsum);
+    multipolesum+=resonance;
     // resonance at theta=0
     axpart=resonance;
   }
-  Poincare multipoleboost(multipole);
+  Poincare multipoleboost(multipolesum);
   multipoleboost.Boost(axpart);
   Poincare rotation(axpart,axis);
-  for (size_t i=0;i<parts.size();++i) {
-    if (parts[i]->Flav().IsPhoton()) {
-      Vec4D k=parts[i]->Momentum();
-      multipoleboost.Boost(k);
-      rotation.Rotate(k);
-      double theta = acos((Vec3D(k)*Vec3D(axis))/(Vec3D(k).Abs()));
-      p_histo->Insert(theta,weight,ncount);
-    }
+  for (size_t i=0;i<photons.size();++i) {
+    Vec4D k=photons[i]->Momentum();
+    multipoleboost.Boost(k);
+    rotation.Rotate(k);
+    double theta = acos((Vec3D(k)*Vec3D(axis))/(Vec3D(k).Abs()));
+    p_histo->Insert(theta,weight,ncount);
   }
 }
 

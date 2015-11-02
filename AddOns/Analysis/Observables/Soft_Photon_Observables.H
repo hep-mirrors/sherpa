@@ -10,6 +10,7 @@ namespace ANALYSIS {
     bool f_special;
     std::vector<ATOOLS::Flavour> m_flavs;
     virtual void Evaluate(const ATOOLS::Particle_Vector&,
+                          const ATOOLS::Particle_Vector&,
                           double=1.,double=1.) = 0;
     virtual void Evaluate(double,double=1.,double=1.);
   public:
@@ -28,7 +29,8 @@ namespace ANALYSIS {
   //==========================================================================
 
   class Soft_Photon_Energy : public Soft_Photon_Observable_Base {
-    void Evaluate(const ATOOLS::Particle_Vector&, double=1., double=1.);
+    void Evaluate(const ATOOLS::Particle_Vector&,
+                  const ATOOLS::Particle_Vector&, double=1., double=1.);
   public:
     Soft_Photon_Energy(const std::vector<ATOOLS::Flavour>&,
                        int type, double xmin, double xmax, int nbins,
@@ -37,7 +39,8 @@ namespace ANALYSIS {
   };
 
   class Soft_Photon_Angle : public Soft_Photon_Observable_Base {
-    void Evaluate(const ATOOLS::Particle_Vector&, double=1., double=1.);
+    void Evaluate(const ATOOLS::Particle_Vector&,
+                  const ATOOLS::Particle_Vector&, double=1., double=1.);
   public:
     Soft_Photon_Angle(const std::vector<ATOOLS::Flavour>&,
                       int type, double xmin, double xmax, int nbins,
