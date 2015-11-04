@@ -17,6 +17,7 @@
 using namespace PHASIC;
 using namespace ATOOLS;
 
+const double GGH_KFactor_Setter::s_ir_co  = 0.01;
 GGH_Process_Manager PHASIC::s_procmanager = GGH_Process_Manager();
 
 GGH_KFactor_Setter::GGH_KFactor_Setter
@@ -83,10 +84,10 @@ Vec4D_Vector GGH_KFactor_Setter::GetMomenta() const
 bool GGH_KFactor_Setter::IsCollinear(const Vec4D_Vector& p) const
 {
   for (size_t i(3); i<p.size(); i++){
-    if ( p[i].PPerp2() < IR_CO) return true;
+    if ( p[i].PPerp2() < s_ir_co) return true;
     for (size_t j(i+1); j<p.size(); j++){
-      if ( (fabs(p[j].PPerp(p[i])) < IR_CO)
-	   || (fabs(p[i].PPerp(p[j])) < IR_CO))
+      if ( (fabs(p[j].PPerp(p[i])) < s_ir_co)
+           || (fabs(p[i].PPerp(p[j])) < s_ir_co))
 	return true;
     }
   }
@@ -158,7 +159,7 @@ double GGH_KFactor_Setter::ClusterMassCorrectionFactor()
       msg_Out() << METHOD << ": Falling back to vertex correction" << std::endl; 
       return OSVertexCorrection();
     }
-  if(p_next_ampl->Leg(2)->Mom().PPerp()< IR_CO){
+  if(p_next_ampl->Leg(2)->Mom().PPerp()< s_ir_co){
     msg_Out() << METHOD << ": Falling back to vertex correction" << std::endl; 
     return OSVertexCorrection();
   }
@@ -179,7 +180,7 @@ double GGH_KFactor_Setter::ClusterMassCorrectionFactor(NLO_subevtlist* subevts)
       if ((**it).m_kt2<minkt2)
 	select_proc = *it;
     }
-  if((select_proc->p_mom)[2].PPerp() < IR_CO){
+  if((select_proc->p_mom)[2].PPerp() < s_ir_co){
     msg_Out() << METHOD << ": Falling back to vertex correction" << std::endl;
     return OSVertexCorrection();
   }
