@@ -308,7 +308,7 @@ the event generation run, and it can serve as a cross-check on the consistency
 of the HepMC event file.  Note that Sherpa conforms to the Les Houches 2013
 suggestion (@url{http://phystev.in2p3.fr/wiki/2013:groups:tools:hepmc}) 
 of indicating interaction types through the GenVertex type-flag.  Multiple
-event weights can also be enabled with HepMC versions >2.06, cf. 
+event weights can also be enabled with HepMC versions >=2.06, cf. 
 @ref{Scale and PDF variations}. The following additional customisations 
 can be used
 
@@ -316,7 +316,7 @@ can be used
 Enable filling weights with an associated name. The nominal event weight 
 has the key @code{Weight}. @code{MEWeight}, @code{WeightNormalisation} and 
 @code{NTrials} provide additional information for each event as described 
-above. Needs HepMC version >2.06.
+above. Needs HepMC version >=2.06.
 
 @code{HEPMC_EXTENDED_WEIGHTS=<0|1>}
 Write additional event weight information needed for a posteriori reweighting 
@@ -433,7 +433,7 @@ for each event.
 
 The additional event weights can then be written into the event output. 
 However, this is currently only supported for @code{HepMC_GenEvent} and 
-@code{HepMC_Short} with versions >2.06 and @code{HEPMC_USE_NAMED_WEIGHTS=1}. 
+@code{HepMC_Short} with versions >=2.06 and @code{HEPMC_USE_NAMED_WEIGHTS=1}. 
 The alternative event weights follow the Les Houches naming convention 
 for such variations, ie. they are named @code{MUR<fac>_MUF<fac>_PDF<id>}.
 When using Sherpa's interface to Rivet, @ref{Rivet analyses}, separate 
