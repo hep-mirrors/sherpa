@@ -1061,11 +1061,6 @@ void Basic_Sfuncs::Setk0(int i)
   m_k1=SQRT_05*(Vec4D(0.0,Vec3D(-Getk0()))+Getk1());
   m_k2=Vec4D(0.0,cross(Vec3D(Getk1()),Vec3D(Getk0())));
   m_k3=SQRT_05*(Vec4D(0.0,Vec3D(-Getk0()))-Getk1());
-  if (k0_n<10) {
-    m_k1=Vec4D(0.0,1.0,0.0,0.0);
-    m_k2=Vec4D(0.0,0.0,1.0,0.0);
-    m_k3=Vec4D(0.0,0.0,0.0,1.0);
-  }
   DEBUG_FUNC(k0_n);
   msg_Debugging()<<"k_0 = "<<Getk0()<<", k_1 = "<<Getk1()<<"\n";
   msg_Debugging()<<"k_x       = "<<K1()<<" "<<K1().Abs2()<<"\n";
