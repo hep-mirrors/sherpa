@@ -761,22 +761,9 @@ double AMEGIC::Single_Process::Partonic(const Vec4D_Vector &_moms,const int mode
   return m_mewgtinfo.m_B=DSigma(_moms,m_lookup);
 }
 
-double AMEGIC::Single_Process::DSigma(const ATOOLS::Vec4D_Vector &_moms,bool lookup)
+double AMEGIC::Single_Process::DSigma(const ATOOLS::Vec4D_Vector &mom,bool lookup)
 {
   m_lastxs = 0.;
-  Vec4D_Vector mom(_moms);
-  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
-    Poincare cms=Poincare(mom[0]+mom[1]);
-    for (size_t i(0);i<mom.size();++i) cms.Boost(mom[i]);
-    /////////////////////////////////////
-    //////// Patch for 2->1 /////////////
-    if (mom.size() == 3) {    
-      mom[2] = mom[0]+mom[1]; 
-      mom[2][1]=mom[2][2]=mom[2][3]=0.; 
-    }
-    /////////////////////////////////////
-    /////////////////////////////////////
-  }
   if (p_partner == this) {
     m_lastxs = m_Norm * operator()((ATOOLS::Vec4D*)&mom.front());
   }

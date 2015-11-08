@@ -332,19 +332,6 @@ void Single_DipoleTerm::SetLOMomenta(const Vec4D* moms,const ATOOLS::Poincare &c
   p_LO_labmom[em] = p_LO_mom[em] = p_dipole->Getptij();
   p_LO_labmom[sp] = p_LO_mom[sp] = p_dipole->Getptk();
 
-  Poincare bst(p_LO_mom[0]+p_LO_mom[1]);
-  for (size_t i=0;i<m_nin+m_nout-1;i++) bst.Boost(p_LO_mom[i]);
-  size_t ndip=(p_dipole->GetDiPolarizations())->size();
-  for (size_t i=0;i<ndip;i++) bst.Boost((*(p_dipole->GetDiPolarizations()))[i]);
-
-  if (m_subevt.m_i<m_nin &&
-      m_subevt.m_ijt!=m_subevt.m_i) {
-    for (size_t i=0;i<m_nin+m_nout-1;++i) cms.Boost(p_LO_labmom[i]);
-  }
-  else {
-    for (size_t i=0;i<m_nin+m_nout-1;++i) cms.BoostBack(p_LO_labmom[i]);
-  }
-
 }
 
 bool Single_DipoleTerm::CompareLOmom(const ATOOLS::Vec4D* p)
@@ -474,10 +461,6 @@ double Single_DipoleTerm::Partonic(const Vec4D_Vector &_moms,const int mode)
   p_int->SetMomenta(_moms);
   Poincare cms;
   Vec4D_Vector pp(_moms);
-  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
-    cms=Poincare(pp[0]+pp[1]);
-    for (size_t i(0);i<pp.size();++i) cms.Boost(pp[i]);
-  }
   return m_mewgtinfo.m_B=operator()(&pp.front(),cms,mode);
 }
 

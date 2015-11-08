@@ -371,10 +371,6 @@ double Single_Real_Correction::operator()(const ATOOLS::Vec4D_Vector &_mom,const
 
   Vec4D_Vector mom(_mom);
   Poincare cms;
-  if (m_nin==2 && p_int->ISR() && p_int->ISR()->On()) {
-    cms=Poincare(mom[0]+mom[1]);
-    for (size_t i(0);i<mom.size();++i) cms.Boost(mom[i]);
-  }
 
   bool res=true;
   for (size_t i=0;i<m_subtermlist.size();i++) if (m_subtermlist[i]->IsValid()){
