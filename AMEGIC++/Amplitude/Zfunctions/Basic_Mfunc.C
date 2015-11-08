@@ -31,7 +31,7 @@ Kabbala Basic_Mfunc::M(const int a)
 	  mass2 -= Complex(0,p1->fl.Mass()*
 	  p1->fl.Width());
   }
-  if (ATOOLS::IsZero(mass2)) return sgen->GetEnumber(0.);
+  if (mass2==0.0) return sgen->GetEnumber(0.);
 
   return sgen->GetMnumber(p1->fl,1./mass2);
 

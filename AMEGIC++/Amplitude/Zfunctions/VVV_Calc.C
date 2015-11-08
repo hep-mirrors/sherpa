@@ -32,14 +32,14 @@ Kabbala VVV_Calc::Do()
 {
   Kabbala factor = sgen->GetEnumber(coupl[6]);
 
-  if (IsZero(M(0)) &&
-      IsZero(M(1)) &&
-      IsZero(M(2)))
+  if (M(0).Value()==Complex(0.0,0.0) &&
+      M(1).Value()==Complex(0.0,0.0) &&
+      M(2).Value()==Complex(0.0,0.0))
     return factor*GGG();
 
-  if (!IsZero(X(0,0)*M(0)) || 
-      !IsZero(X(1,1)*M(1)) || 
-      !IsZero(X(2,2)*M(2))) {
+  if ((X(0,0)*M(0)).Value()!=Complex(0.0,0.0) || 
+      (X(1,1)*M(1)).Value()!=Complex(0.0,0.0) || 
+      (X(2,2)*M(2)).Value()!=Complex(0.0,0.0)) {
     
     return factor*( M(0)*M(1)*V(1,2)*X(0,0)*X(1,1)*X(2,0)-M(1)*X(0,1)*X(1,1)*X(2,0)
                     -M(0)*X(0,0)*X(1,2)*X(2,0)+M(0)*X(0,0)*X(1,0)*X(2,1)

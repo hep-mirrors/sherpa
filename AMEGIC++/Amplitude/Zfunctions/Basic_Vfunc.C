@@ -8,7 +8,7 @@ using namespace ATOOLS;
 Kabbala Basic_Vfunc::V(const int a,const int b)
 {
   Complex vc = Vcalc(ps[iabs(a)].numb,ps[iabs(b)].numb);
-  if ( ATOOLS::IsZero(vc) ) return sgen->GetEnumber(Complex(0.,0.));
+  if (vc==Complex(0.0,0.0)) return sgen->GetEnumber(Complex(0.,0.));
   
   int sign = Sign(a)*Sign(b)*ps[iabs(a)].direction*ps[iabs(b)].direction; 
 
@@ -27,7 +27,7 @@ Complex Basic_Vfunc::Vcalc(const int a,const int b)
 Kabbala Basic_Vfunc::Vcplx(const int a,const int b,const int s)
 {
   Complex vc = Vcplxcalc(a,b);
-  if ( ATOOLS::IsZero(vc) ) return sgen->GetEnumber(Complex(0.,0.));
+  if (vc==Complex(0.0,0.0)) return sgen->GetEnumber(Complex(0.,0.));
   
   if(s==1) return (BS->IsComplex(a)||BS->IsComplex(b)) ?
 	    sgen->GetScplxnumber(a,b,vc)

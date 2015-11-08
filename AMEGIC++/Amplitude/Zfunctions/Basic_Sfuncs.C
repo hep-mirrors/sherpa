@@ -191,15 +191,6 @@ int Basic_Sfuncs::BuildMomlist(Pfunc_List& pl)
       Momlist.push_back(*Mom);
       momcount++;
       n = Momlist.size()-1;
-      
-      while(momcount>93&&momcount<100){
-       Mom->arg[0] = momcount;
-       Mom->type=mt::p_none;
-       Momlist.push_back(*Mom);
-       momcount++;
-      }
-      delete Mom;
-      
     }
     else p->momnum = n;
     if (p->haspol) BuildPolarisations(n,p->fl); 	
@@ -226,10 +217,10 @@ void Basic_Sfuncs::PropPolarisation(int pindex,Pfunc_List& pl,vector<int>& iargs
 	switch(Momlist[k].type)
 	  {
 	  case mt::p_s:
-	    if(ATOOLS::IsZero(momfl.Mass()-Momlist[k].mass))iargs.push_back(Momlist[k].type);
+	    if(momfl.Mass()==Momlist[k].mass)iargs.push_back(Momlist[k].type);
 	    break;
 	  case mt::p_si:
-	    if(ATOOLS::IsZero(momfl.Mass()))iargs.push_back(Momlist[k].type);
+	    if(momfl.Mass()==0.0)iargs.push_back(Momlist[k].type);
 	    break;
 	  default:
 	    iargs.push_back(Momlist[k].type);
@@ -365,7 +356,7 @@ int Basic_Sfuncs::BuildPolarisations(int momindex,char type,double angle)
   mom_func.kfc =Momlist[momindex].kfc;
   momcount++;
   Momlist.push_back(mom_func);
-  if(ATOOLS::IsZero(Momlist[momindex].mass))  return momcount;
+  if(Momlist[momindex].mass==0.0)  return momcount;
 
   //Polarisation longitudinal
   mom_func.arg[0] = momcount;
@@ -404,7 +395,7 @@ int Basic_Sfuncs::BuildPolarisations(int momindex, Flavour fl)
     Mom->type=mt::p_lp;
     momcount++;
     Momlist.push_back(*Mom);
-    if(momindex<nvec&&ATOOLS::IsZero(Mass))  return momcount;
+    if(momindex<nvec&&Mass==0.0)  return momcount;
 
     //Polarisation longitudinal
     Mom->arg[0] = momcount;
@@ -413,7 +404,7 @@ int Basic_Sfuncs::BuildPolarisations(int momindex, Flavour fl)
     Momlist.push_back(*Mom);
     }
   
-  if(ATOOLS::IsZero(Mass)){ 
+  if(Mass==0.0){ 
     if (GetPolNumber(momindex,mt::p_si,0,1)==-1 && rpa->gen.CutScheme()!=1 ) {
       Mom->arg[0] = momcount;
       Mom->type=mt::p_si;
@@ -456,14 +447,13 @@ void Basic_Sfuncs::CalcMomlist()
       break;
     case mt::cmprop :
       Momlist[j].mom = p[0]+p[1]; 
-      if (ATOOLS::IsZero(Momlist[j].mom[3]/Momlist[j].mom[0])) Momlist[j].mom[3]=0.;
       break;
     case mt::p_m : {
       mom=Momlist[Momlist[j].arg[1]].mom;
       ps=sqrt(sqr(mom[1])+sqr(mom[2])+sqr(mom[3]));
       double mom1=C1(mom), mom2=C2(mom), mom3=C3(mom);
       pt=sqrt(sqr(mom1)+sqr(mom2));
-      if(!ATOOLS::IsZero(pt)){
+      if(pt!=0.0){
 	Momlist[j].mom = SQRT_05/ps*(mom3/pt*(mom1*K1()+mom2*K2())-pt*K3());
 	Momlist[j].mom_img = -SQRT_05/pt*(mom1*K2()-mom2*K1());
       }
@@ -482,7 +472,7 @@ void Basic_Sfuncs::CalcMomlist()
       ps=sqrt(sqr(mom[1])+sqr(mom[2])+sqr(mom[3]));
       double mom1=C1(mom), mom2=C2(mom), mom3=C3(mom);
       pt=sqrt(sqr(mom1)+sqr(mom2));
-      if(!ATOOLS::IsZero(pt)){
+      if(pt!=0.0){
 	vh1 = 1.0/ps*(mom3/pt*(mom1*K1()+mom2*K2())-pt*K3());
 	vh2 = 1.0/pt*(mom1*K2()-mom2*K1());
       }
@@ -501,7 +491,7 @@ void Basic_Sfuncs::CalcMomlist()
       ps=sqrt(sqr(mom[1])+sqr(mom[2])+sqr(mom[3]));
       double mom1=C1(mom), mom2=C2(mom), mom3=C3(mom);
       pt=sqrt(sqr(mom1)+sqr(mom2));
-      if(!ATOOLS::IsZero(pt)){
+      if(pt!=0.0){
 	vh1 = 1.0/ps*(mom3/pt*(mom1*K1()+mom2*K2())-pt*K3());
 	vh2 = 1.0/pt*(mom1*K2()-mom2*K1());
 	if(mom1+mom2<0)vh2=-1.*vh2;
@@ -518,7 +508,7 @@ void Basic_Sfuncs::CalcMomlist()
     case mt::p_l :     
       mom=Momlist[Momlist[j].arg[1]].mom;
       ps=sqrt(sqr(mom[1])+sqr(mom[2])+sqr(mom[3]));
-      if(!ATOOLS::IsZero(ps)){
+      if(ps!=0.0){
 	Momlist[j].mom=1./sqrt(abs(sqr(mom[0])-sqr(ps)))*Vec4D(ps,mom[0]*mom[1]/ps,
 							       mom[0]*mom[2]/ps,
 							       mom[0]*mom[3]/ps);
@@ -533,12 +523,12 @@ void Basic_Sfuncs::CalcMomlist()
       mom=Momlist[Momlist[j].arg[1]].mom;
       ps=mom.Abs2();
  
-      if(ATOOLS::IsZero(Momlist[j].mass))Momlist[j].mom=Vec4D(0.,0.,0.,0.);
+      if(Momlist[j].mass==0.0)Momlist[j].mom=Vec4D(0.,0.,0.,0.);
       else {
 	Flavour fl(Momlist[j].kfc);
 	double Mass = fl.Mass();
 	Complex Mass2= Complex(sqr(Mass),0.);
-	if(!ATOOLS::IsZero(fl.Width())) Mass2-=Complex(0.,fl.Width()*Mass);
+	if(fl.Width()!=0.0) Mass2-=Complex(0.,fl.Width()*Mass);
 	help=sqrt((Complex(1.,0.)-Mass2/ps)/Mass2);
 	  Momlist[j].mom=real(help)*mom;
 	  Momlist[j].mom_img=imag(help)*mom;
@@ -566,7 +556,7 @@ void Basic_Sfuncs::InitGaugeTest(double theta)
   Momfunc* m;
   Vec4D mom;
   for(size_t j=0;j<Momlist.size();j++){
-    if(Momlist[j].type==mt::p_m&&ATOOLS::IsZero(Momlist[j].mass)){
+    if(Momlist[j].type==mt::p_m&&Momlist[j].mass==0.0){
       if (Momlist[j].arg[2]==+1 || Momlist[j].arg[2]==-1) {
 	// do nothing
       } 
@@ -578,7 +568,7 @@ void Basic_Sfuncs::InitGaugeTest(double theta)
 	c=sqrt(.5*(1+mom[3]/ps));
 	s0=::sin(theta*0.5);
 	c0=::cos(theta*0.5);
-	if(!ATOOLS::IsZero(pt)){
+	if(pt!=0.0){
 	  sf=mom[2]/pt;
 	  cf=mom[1]/pt;
 	}
@@ -593,7 +583,7 @@ void Basic_Sfuncs::InitGaugeTest(double theta)
 	Momlist[j+1].mom_img = (-1.)*Momlist[j].mom_img;
       }
     }    
-    if(ATOOLS::IsZero(Momlist[j].mass))if(Momlist[j].type==mt::p_m||Momlist[j].type==mt::p_p){
+    if(Momlist[j].mass==0.0)if(Momlist[j].type==mt::p_m||Momlist[j].type==mt::p_p){
       m=&Momlist[j];
       switch(k0_n){
       case 11:
@@ -696,7 +686,7 @@ int Basic_Sfuncs::CalcEtaMu(Vec4D* _p)
 		break;
 	    default: 
 	      zchk = (m->mom).Abs2();
-	      if (IsZero(zchk)) _mu[i] = Complex(0.,0.);
+	      if (zchk==0.0) _mu[i] = Complex(0.,0.);
 	      else _mu[i] = csqrt(zchk)/_eta[i];
 	}
     }
@@ -948,8 +938,6 @@ void Basic_Sfuncs::CalcS(int i, int j)
 	_S1[i][j] -= Complex(-(m1->mom_img[3]-m1->mom_img[1])*SQRT_05,-m1->mom_img[2])/A;
       }
     }
-    if (IsZero(_S0[i][j])) _S0[i][j] = Complex(0.,0.);
-    if (IsZero(_S1[i][j])) _S1[i][j] = Complex(0.,0.);
     _S0[j][i] = - _S0[i][j];
     _S1[j][i] = - _S1[i][j];
   }

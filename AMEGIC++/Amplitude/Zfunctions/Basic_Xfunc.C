@@ -93,21 +93,21 @@ Complex Basic_Xfunc::Xcalc(const int t1,const int sign1,const int t2,
 
   if (sum==2){
     if (BS->IsMomSum(t2,t1,t3)) 
-      if(ATOOLS::IsZero(BS->Mu(t1)) && ATOOLS::IsZero(BS->Mu(t3))) return Complex(0.,0.);
+      if(BS->Mu(t1)==Complex(0.0,0.0) && BS->Mu(t3)==Complex(0.0,0.0)) return Complex(0.,0.);
     return cL*BS->Eta(t2)*BS->Eta(t2)*BS->Mu(t1)*BS->Mu(t3)+
            cR*(BS->Eta(t1)*BS->Eta(t3)*BS->Mu(t2)*BS->Mu(t2)+
 	       BS->S0(t1,t2)*BS->S1(t2,t3));
   }  
   if (sum==-2){
     if (BS->IsMomSum(t2,t1,t3)) 
-      if(ATOOLS::IsZero(BS->Mu(t1)) && ATOOLS::IsZero(BS->Mu(t3))) return Complex(0.,0.);
+      if(BS->Mu(t1)==Complex(0.0,0.0) && BS->Mu(t3)==Complex(0.0,0.0)) return Complex(0.,0.);
     return cR*BS->Eta(t2)*BS->Eta(t2)*BS->Mu(t1)*BS->Mu(t3)+
            cL*(BS->Eta(t1)*BS->Eta(t3)*BS->Mu(t2)*BS->Mu(t2)+
 	       BS->S1(t1,t2)*BS->S0(t2,t3));
     
   }
 
-  if(t1==t3) if(ATOOLS::IsEqual(cL,cR)) return Complex(0.,0.);
+  if(t1==t3) if(cL==cR) return Complex(0.,0.);
 
   if (sign1==1) 
     return BS->Eta(t2)*(cL*BS->Mu(t1)*BS->S0(t2,t3)+

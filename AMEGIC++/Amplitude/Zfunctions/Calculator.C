@@ -167,7 +167,7 @@ void Y_Calc::SetArgs(Zfunc_Generator *const zfc,Zfunc *const zf,
 
 Kabbala Z_Calc::Do() 
 {
-  if (IsZero(M(0))) return Z(0,1);
+  if (M(0).Value()==Complex(0.0,0.0)) return Z(0,1);
   return (Z(0,1)-M(0)*X(0,0)*X(1,0));
 }
 

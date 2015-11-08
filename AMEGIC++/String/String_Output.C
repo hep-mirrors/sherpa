@@ -310,10 +310,10 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 	hit = 0;
 	//couplings
 	for (short int j=0;j<sgen->NumberOfCouplings();j++) {
-	  if ( ATOOLS::IsEqual(norm,sgen->GetCoupling(j)) ||
-	       ATOOLS::IsEqual(norm,-sgen->GetCoupling(j)) ) {
+	  if ( norm==sgen->GetCoupling(j) ||
+	       norm==-sgen->GetCoupling(j) ) {
 	    hit = 1;
-	    if (ATOOLS::IsEqual(norm,-sgen->GetCoupling(j))) (*pz)<<"-";
+	    if (norm==-sgen->GetCoupling(j)) (*pz)<<"-";
 	    (*pz)<<"c["<<j<<"];"<<endl;
 	    break;
 	  }
@@ -377,42 +377,42 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 	  (*pz)<<"Complex(1./sqr(Flavour(kf_Wplus).Mass()*Flavour(kf_Wplus).Mass()),0.);"<<endl;
 	  break;
 	}
-	if (ATOOLS::IsEqual(norm,0.5)) {
+	if (norm==0.5) {
           hit = 1;
           (*pz)<<"Complex(0.5,0.);"<<endl;
           break;
 	}
-	if (ATOOLS::IsEqual(norm,-0.5)) {
+	if (norm==-0.5) {
           hit = 1;
           (*pz)<<"Complex(-0.5,0.);"<<endl;
 	  break;        
 	}
-	if (ATOOLS::IsEqual(norm,1./3.)) {
+	if (norm==1./3.) {
           hit = 1;
           (*pz)<<"Complex(1./3.,0.);"<<endl;
           break;
 	}
-	if (ATOOLS::IsEqual(norm,1.)) { 
+	if (norm==1.) { 
 	  hit = 1;
 	  (*pz)<<"Complex(1.,0.);"<<endl;
 	    break;
 	}
-	if (ATOOLS::IsEqual(norm,2.)) { 
+	if (norm==2.) { 
 	  hit = 1;
 	  (*pz)<<"Complex(2.,0.);"<<endl;
 	  break;
 	}
-	if (ATOOLS::IsEqual(norm,Complex(0.,1.))) { 
+	if (norm==Complex(0.,1.)) { 
 	  hit = 1;
 	  (*pz)<<"Complex(0.,1.);"<<endl;
 	  break;
 	}
-	if (ATOOLS::IsEqual(norm,Complex(0.,-1.))) { 
+	if (norm==Complex(0.,-1.)) { 
 	  hit = 1;
 	  (*pz)<<"Complex(0.,-1.);"<<endl;
 	  break;
 	}
-	if (ATOOLS::IsEqual(norm,Complex(0.,-1./4.))) { 
+	if (norm==Complex(0.,-1./4.)) { 
 	  hit = 1;
 	  (*pz)<<"Complex(0.,-1./4.);"<<endl;
 	  break;

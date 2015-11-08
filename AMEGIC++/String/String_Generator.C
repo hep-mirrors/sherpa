@@ -171,7 +171,7 @@ int String_Generator::ZXYNumber(int type,int narg,int* arg,int ncoupl,int* coupl
 int String_Generator::GetCnumber(Complex coupl)
 {
   for (size_t i=0;i<(*p_couplings).size();i++) {
-    if (ATOOLS::IsEqual(coupl,(*p_couplings)[i])) return i;
+    if (coupl==(*p_couplings)[i]) return i;
   }
   (*p_couplings).push_back(coupl);
   return (*p_couplings).size()-1;
@@ -195,11 +195,11 @@ Kabbala String_Generator::Number(int n,Complex value)
 
 int String_Generator::GetNumber(int type,Complex value)
 {
-  if (ATOOLS::IsEqual((*p_zxl)[0].value.Value(),value)) return 0;
+  if ((*p_zxl)[0].value.Value()==value) return 0;
 
   for (size_t i=1;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].zlist==type) {
-      if (ATOOLS::IsEqual((*p_zxl)[i].value.Value(),value)) return i;
+      if ((*p_zxl)[i].value.Value()==value) return i;
     }
   }
   return (*p_zxl).size();
@@ -326,7 +326,7 @@ Kabbala String_Generator::GetPnumber(Pfunc* pl,int numb)
 {
   for (size_t i=0;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].zlist==5) {
-      if( ATOOLS::IsEqual((*p_zxl)[i].value.Value(),pl->value) &&
+      if( (*p_zxl)[i].value.Value()==pl->value &&
 	  ((*p_flavours)[int((*p_zxl)[i].arg[0])]==(long int)(pl->fl).Kfcode()) )
 	return (*p_zxl)[i].value;
     }
@@ -351,7 +351,7 @@ Kabbala String_Generator::GetMassnumber(int numb,ATOOLS::Flavour fl,Complex valu
 {
   for (size_t i=0;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].zlist==7) {
-      if( ATOOLS::IsEqual((*p_zxl)[i].value.Value(),value) &&
+      if( (*p_zxl)[i].value.Value()==value &&
 	  ( (*p_flavours)[int((*p_zxl)[i].arg[0])]==(long int)(fl) )
 	  ) 
 	return (*p_zxl)[i].value;
@@ -379,7 +379,7 @@ Kabbala String_Generator::GetMnumber(ATOOLS::Flavour fl,Complex value)
 {
   for (size_t i=0;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].zlist==8) {
-      if (ATOOLS::IsEqual((*p_zxl)[i].value.Value(),value)) return (*p_zxl)[i].value;
+      if ((*p_zxl)[i].value.Value()==value) return (*p_zxl)[i].value;
     }
   }
   //new Zfunc P -> propagator

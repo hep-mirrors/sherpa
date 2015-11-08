@@ -34,16 +34,16 @@ Kabbala V4_Calc::Do()
 {
   Kabbala factor = sgen->GetEnumber(coupl[8]);
  
-  if (IsZero(M(0)) &&
-      IsZero(M(1)) &&
-      IsZero(M(2)) &&
-      IsZero(M(3))) {
+  if (M(0).Value()==Complex(0.0,0.0) &&
+      M(1).Value()==Complex(0.0,0.0) &&
+      M(2).Value()==Complex(0.0,0.0) &&
+      M(3).Value()==Complex(0.0,0.0)) {
     return factor*Massless();
   }
-  if (!IsZero(X(0,0)*M(0)) || 
-      !IsZero(X(1,1)*M(1)) || 
-      !IsZero(X(2,2)*M(2)) || 
-      !IsZero(X(3,3)*M(3))) {
+  if ((X(0,0)*M(0)).Value()!=Complex(0.0,0.0) || 
+      (X(1,1)*M(1)).Value()!=Complex(0.0,0.0) || 
+      (X(2,2)*M(2)).Value()!=Complex(0.0,0.0) || 
+      (X(3,3)*M(3)).Value()!=Complex(0.0,0.0)) {
     Kabbala M_1 = M(1)*X(1,1);
     Kabbala M_2 = M(2)*X(2,2);
     Kabbala M_3 = M(3)*X(3,3);
