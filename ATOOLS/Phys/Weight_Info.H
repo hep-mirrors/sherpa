@@ -39,12 +39,14 @@ namespace ATOOLS {
                 const double &muf12=0.0,const double &muf22=0.0):
       m_weight(weight), m_dxs(dxs), m_ntrial(ntrial),
       m_pdf(PDF_Info(fl1,fl2,x1,x2,muf12,muf22,xf1,xf2)) {}
+    Weight_Info &operator*=(const double &c)
+    { m_weight*=c; m_dxs*=c; }
   }; // end of struct Weight_Info
 
   inline std::ostream & operator<<(std::ostream & s,
                                    const ATOOLS::Weight_Info & wi)
   {
-    return s<<" w = "<<wi.m_weight<<std::endl;
+    return s<<" w = "<<wi.m_weight<<", dxs = "<<wi.m_dxs<<std::endl;
   }
 
   struct mewgttype {

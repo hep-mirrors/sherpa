@@ -208,7 +208,7 @@ bool Matrix_Element_Handler::GenerateOneEvent()
       m_weightfactor=dabs(m_evtinfo.m_weight)/max;
       wf/=Min(1.0,m_weightfactor);
     }
-    m_evtinfo.m_weight*=wf;
+    m_evtinfo*=wf;
     if (p_proc->GetSubevtList()) {
       (*p_proc->GetSubevtList())*=wf;
       p_proc->GetSubevtList()->MultMEwgt(wf);

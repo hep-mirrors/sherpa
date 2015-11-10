@@ -166,6 +166,7 @@ bool Signal_Processes::FillBlob(Blob_List *const bloblist,Blob *const blob)
   p_scalevars->ComputeVariations(winfo,proc);
   blob->AddData("Weight",new Blob_Data<double>(weight));
   blob->AddData("MEWeight",new Blob_Data<double>(winfo.m_dxs));
+  blob->AddData("PSWeight",new Blob_Data<double>(weight/winfo.m_dxs));
   blob->AddData("Weight_Norm",new Blob_Data<double>
 		(p_mehandler->Sum()*rpa->Picobarn()));
   blob->AddData("Trials",new Blob_Data<double>(winfo.m_ntrial));

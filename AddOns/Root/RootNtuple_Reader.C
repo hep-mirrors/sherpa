@@ -85,7 +85,7 @@ namespace SHERPA {
     Double_t p_Ed[s_kMaxParticle];
     Int_t p_kf[s_kMaxParticle];
 
-    Double_t m_wgt,m_wgt2,m_mewgt,m_mewgt2;
+    Double_t m_wgt,m_wgt2,m_pswgt,m_mewgt,m_mewgt2;
     Double_t m_x1,m_x2,m_x1p,m_x2p,m_mur,m_muf,m_as,m_kfac;
     Int_t m_id1,m_id2,m_id1p,m_id2p,m_nuwgt;
     Double_t p_uwgt[18];
@@ -206,6 +206,9 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
   p_vars->m_kfac=1.0;
   if (p_vars->p_f->GetBranch("kfactor"))
     p_vars->p_f->SetBranchAddress("kfactor",&p_vars->m_kfac);
+  p_vars->m_pswgt=0.0;
+  if (p_vars->p_f->GetBranch("ps_wgt"))
+    p_vars->p_f->SetBranchAddress("ps_wgt",&p_vars->m_pswgt);
   p_vars->p_f->SetBranchAddress("me_wgt",&p_vars->m_mewgt);
   p_vars->p_f->SetBranchAddress("me_wgt2",&p_vars->m_mewgt2);
   p_vars->p_f->SetBranchAddress("ren_scale",&p_vars->m_mur);
@@ -382,6 +385,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   double muR2(0.), muF2(0.);
   Vec4D bm[2]={rpa->gen.PBeam(0),rpa->gen.PBeam(1)};
   for (int i(0);i<2;++i) bm[i][3]=bm[i][3]<0.0?-bm[i][0]:bm[i][0];
+  RootNTupleReader_Variables vars;
   while (currentid==m_evtid) {
     Vec4D sum;
     Vec4D *moms = new Vec4D[2+p_vars->m_nparticle];
@@ -468,6 +472,7 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     else {
       m_weight+=p_vars->m_wgt2;
     }
+    vars=*p_vars;
     if (!ReadInEntry()) m_evtid=0;
   }  
   Particle *part1=new Particle(0,m_nlos.back()->p_fl[0],x1*bm[0]);
@@ -480,22 +485,25 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
     signalblob->AddToOutParticles(part);
   }
 #endif
-  m_pdfinfo=PDF_Info((long int)p_vars->m_id1,(long int)p_vars->m_id2,
+  m_pdfinfo=PDF_Info((long int)vars.m_id1,(long int)vars.m_id2,
 		     x1,x2,muF2,muF2,m_xf1,m_xf2);
   // only reliable in SM,
   // HEFT breaks this, counting Yukawa's separately breaks this, etc.
-  bool onemoreas(p_vars->m_type[0]=='V' || p_vars->m_type[0]=='I' ||
-                 p_vars->m_type[0]=='S');
-  int oew(m_nlos.back()->m_n-2+(onemoreas?1:0)-p_vars->m_oqcd);
+  bool onemoreas(vars.m_type[0]=='V' || vars.m_type[0]=='I' ||
+                 vars.m_type[0]=='S');
+  int oew(m_nlos.back()->m_n-2+(onemoreas?1:0)-vars.m_oqcd);
   signalblob->SetStatus(blob_status::needs_beams);
   signalblob->SetWeight(m_weight);
   signalblob->AddData("Weight",new Blob_Data<double>(m_weight));
   signalblob->AddData("MEWeight",new Blob_Data<double>
-		      (p_vars->m_nuwgt?p_vars->m_mewgt:p_vars->m_mewgt2));
-  signalblob->AddData("Trials",new Blob_Data<double>(p_vars->m_ncount));
+		      ((vars.m_nuwgt?vars.m_mewgt:vars.m_mewgt2)/
+		       (vars.m_pswgt?vars.m_pswgt:1.0)));
+  if (vars.m_pswgt)
+    signalblob->AddData("PSWeight",new Blob_Data<double>(vars.m_pswgt));
+  signalblob->AddData("Trials",new Blob_Data<double>(vars.m_ncount));
   signalblob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(&m_nlos));
   signalblob->AddData("Weight_Norm",new Blob_Data<double>(1.0));
-  signalblob->AddData("OQCD",new Blob_Data<int>(p_vars->m_oqcd));
+  signalblob->AddData("OQCD",new Blob_Data<int>(vars.m_oqcd));
   signalblob->AddData("OEW",new Blob_Data<int>(oew));
   signalblob->AddData("Renormalization_Scale", new Blob_Data<double>(muR2));
   signalblob->AddData("Factorization_Scale", new Blob_Data<double>(muF2));
