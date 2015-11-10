@@ -253,14 +253,16 @@ void Output_RootNtuple::Output(Blob_List* blobs, const double weight)
     m_evtlist[m_cnt2].rscale=sqrt((*signal)["Renormalization_Scale"]->Get<double>());
     m_evtlist[m_cnt2].alphas=MODEL::s_model->ScalarFunction("alpha_S",m_evtlist[m_cnt2].rscale*m_evtlist[m_cnt2].rscale);
     m_evtlist[m_cnt2].kfac=wgtinfo->m_K;
-    m_evtlist[m_cnt2].psw=m_evtlist[m_cnt2].weight/(*signal)["MEWeight"]->Get<double>();
     m_evtlist[m_cnt2].oqcd=(*signal)["Orders"]->Get<std::vector<double> >()[0];
     if (type=="B" || type=="") strcpy(m_evtlist[m_cnt2].type,"B");
     else if (type=="V") strcpy(m_evtlist[m_cnt2].type,"V");
     else if (type=="I") strcpy(m_evtlist[m_cnt2].type,"I");
     else THROW(fatal_error,"Error in NLO type '"+type+"'");
     if (wgtinfo) {
-      if      (type=="B" || type=="")  m_evtlist[m_cnt2].wgt0=wgtinfo->m_B;
+      if      (type=="B" || type=="") {
+	m_evtlist[m_cnt2].wgt0=wgtinfo->m_B;
+	m_evtlist[m_cnt2].psw=wgtinfo->m_B/(*signal)["MEWeight"]->Get<double>();
+      }
       else if (type=="V" || type=="I") m_evtlist[m_cnt2].wgt0=wgtinfo->m_VI;
       m_evtlist[m_cnt2].x1=wgtinfo->m_x1;
       m_evtlist[m_cnt2].x2=wgtinfo->m_x2;
