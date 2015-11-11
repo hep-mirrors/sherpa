@@ -335,10 +335,13 @@ bool HepMC2_Interface::SubEvtList2ShortHepMC(EventInfo &evtinfo)
     HepMC::GenEvent * subevent(new HepMC::GenEvent());
     // set the event number (could be used to identify correlated events)
     subevent->set_event_number(ATOOLS::rpa->gen.NumberOfGeneratedEvents());
-    // assume that only 2->(n-2) processes
+    // assume that only 2->(n-2) processes, flip for Comix, flavs are correct
     for (size_t j(0);j<2;++j) {
-      HepMC::FourVector momentum(sub->p_mom[j][1],sub->p_mom[j][2],
-                                 sub->p_mom[j][3],sub->p_mom[j][0]);
+      double flip(sub->p_mom[i][0]<0.);
+      HepMC::FourVector momentum((flip?-1.:1.)*sub->p_mom[j][1],
+                                 (flip?-1.:1.)*sub->p_mom[j][2],
+                                 (flip?-1.:1.)*sub->p_mom[j][3],
+                                 (flip?-1.:1.)*sub->p_mom[j][0]);
       HepMC::GenParticle* inpart =
         new HepMC::GenParticle(momentum,(long int)sub->p_fl[j],2);
       subvertex->add_particle_in(inpart);
