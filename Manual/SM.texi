@@ -51,7 +51,7 @@ parameter, whose default is @option{1}. The following options are provided:
     this choice corresponds to the G_mu-scheme. The EW parameters are 
     calculated out of the weak gauge boson masses M_W, M_Z, the Higgs
     boson mass M_H and the Fermi constant @code{GF} using tree-level relations.
-  @item  Case @code{3}:
+  @item  Case @code{4}:
 
     this choice corresponds to the scheme employed in the FeynRules/UFO setup.
     The EW parameters are calculated out of the Z boson mass M_Z, the Higgs

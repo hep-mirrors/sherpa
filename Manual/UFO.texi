@@ -7,7 +7,7 @@ made available to Sherpa by running
 where <path-to-ufo-model> specifies the location of the directory where
 the UFO model can be found. This requires Python version 2.6 or later
 and an installation of SCons. Furthermore, Sherpa must be compiled with
-Python suppert using @option{--enable-pyext}, as described in
+Python support using @option{--enable-pyext}, as described in
 @xref{Installation}.
 
 The above command generates source code for the UFO model, compiles it,

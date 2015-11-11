@@ -2,7 +2,17 @@
 @section Processes
 
 The process setup is covered by the `(processes)' section of
-the steering file or the process data file `Processes.dat', respectively.
+the steering file or the process data file `Processes.dat', respectively. 
+It takes the following general form
+
+@verbatim
+  Process <process declaration>;
+  [Decay|DecayOS|No_Decay <decay declaration>];
+  [<parameter> <value> {<multiplicities-to-be-applied-to>}];
+  End process;
+@end verbatim
+
+
 
 The following parameters are used to steer the process setup.
 
@@ -138,7 +148,10 @@ Sets up jet production in e+e- collisions. The matix element final state may be
 @subsection Decay
 Specifies the exclusive decay of a particle produced in the
 matrix element. The virtuality of the decaying particle is sampled
-according to a Breit-Wigner distribution.
+according to a Breit-Wigner distribution. In practice this amouts to 
+selecting only those diagrams containing s-channels of the specified 
+flavour while the phase space is kept general. Consequently, all 
+spin correlations are preserved.
 An example would be
 @verbatim
 Process 11 -11 -> 6[a] -6[b]
@@ -154,7 +167,10 @@ Decay -24[d] -> 94 94
 Specifies the exclusive decay of a particle produced in the
 matrix element. The decaying particle is on mass-shell, i.e.
 a strict narrow-width approximation is used. This tag can be
-specified alternatively as @option{DecayOS}.
+specified alternatively as @option{DecayOS}. In practice this amouts to 
+selecting only those diagrams containing s-channels of the specified 
+flavour and the phase space is factorised as well. Nonetheless, all spin 
+correlations are preserved.
 An example would be
 @verbatim
 Process 11 -11 -> 6[a] -6[b]
@@ -167,7 +183,7 @@ DecayOS -24[d] -> 94 94
 
 @node No_Decay
 @subsection No_Decay
-Remove all diagrams associated with the decay of the given flavours.
+Remove all diagrams associated with the decay/s-channel of the given flavours.
 Serves to avoid resonant contributions in processes like W-associated
 single-top production. Note that this method breaks gauge invariance!
 At the moment this flag can only be set for Comix.
