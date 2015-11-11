@@ -47,24 +47,35 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 {
   static std::string mname(METHOD);
   Return_Value::IncCall(mname);
-  Blob * blob(NULL);
-  bool moveon(false);
-  double norm2(sqr(rpa->gen.Ecms()));
-  Return_Value::code result;
+
+  // Filter BlobList for a reduced list of Blobs that need hadronisation
+  std::vector<Blob*> v_hadronize;
   for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();) {
     if ((*blit)->Has(blob_status::needs_hadronization) &&
 	(*blit)->Type()==btp::Fragmentation) {
-      blob   = (*blit);
-      // msg_Out()<<"====================================================\n"
-      // 	  <<"====================================================\n"
-      // 	  <<"====================================================\n"
-      // 	  <<(*blob)<<"\n";
+        v_hadronize.push_back(*blit);
+    }
+    blit++;
+  }
+
+  // Loop over blobs that need hadronisation
+  Blob * blob(NULL);
+  Return_Value::code result;
+  bool moveon(false);
+  for (unsigned int ib=0;ib<v_hadronize.size();++ib) {
+
+      blob   = v_hadronize[ib];
       moveon = false;
-      Reset();
+      Reset(); // Ahadic Reset --- calls Cluster::ResetClusterNumber
+
+      /// m_maxtrials is set in the ctor --- the retry argument, i, is
+      /// ONLY used for debug output
       for (short int i=0;i<m_maxtrials;i++) {
 	try {
-	  result = Hadronize(blob,i);
-	} catch (Return_Value::code ret) {
+            // Calls Formation and Decay, second arg only for debug output
+            result = Hadronize(blob ,i); // result contains return value 
+	} 
+        catch (Return_Value::code ret) { // Seems to catch a throw from Cluster_Former::ConstructClusters
 	  msg_Error()<<"ERROR in "<<METHOD<<" : \n"
 		     <<"   Hadronization for blob "<<(*blob)<<"\n"
 		     <<"("<<blob<<"; "<<blob->NInP()<<" -> "
@@ -74,57 +85,59 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	  CleanUp(blob);
 	  return Return_Value::Retry_Event;
 	}
-	
-	switch (result) {
-	case Return_Value::Success : 
-	  ++blit;
-	  moveon = true;
-	  break;
-	case Return_Value::Retry_Event : 
-	  {
-	    blobs->ColorConservation();
-	    msg_Tracking()<<"ERROR in "<<METHOD<<" :\n"
-			  <<"   Hadronization for blob "
-			  <<"("<<blob<<"; "<<blob->NInP()<<" -> "
-			  <<blob->NOutP()<<") "
-			  <<"did not work out,"<<std::endl
-			  <<"   will trigger retrying the event.\n";
-	    CleanUp(blob);
-	    if (rpa->gen.Beam1().IsLepton() ||
-	        rpa->gen.Beam2().IsLepton()) {
-	      msg_Tracking()<<METHOD<<": "
-			    <<"Non-hh collision. Request new event instead.\n";
-	      return Return_Value::New_Event;
-	    }
-	    return result;
-	  }
-	case Return_Value::Retry_Method :
-	  msg_Tracking()<<"Warning in "<<METHOD<<" : "<<std::endl
-			<<"   Hadronization for blob "
-			<<"("<<blob<<"; "<<blob->NInP()<<" -> "
-			<<blob->NOutP()<<") "
-			<<"did not work out properly in the "
-			<<(i+1)<<"th attempt,"<<std::endl
-			<<"   retry it "<<m_maxtrials<<" times."<<std::endl;
-	  Return_Value::IncRetryMethod(mname);
-	  CleanUp(blob);
-	  break;
-	case Return_Value::Nothing :
-	default:
-	  msg_Tracking()<<"Warning in "<<METHOD<<":"<<std::endl
-			<<"   Calling Hadronization for Blob("<<blob<<") "
-			<<"yields "<<int(result)<<"."<<std::endl
-			<<"   Continue and hope for the best."<<std::endl;
-	  moveon = true;
-	  ++blit;
-	  break;
-	}
-	if (moveon) break;
-      }
 
-      CleanUp();
-      moveon = moveon && SanityCheck(blob,norm2);	    
-      if (moveon) {
+        /// Decision on how to proceed based on return value of Hadronize        
+	switch (result) {
+            case Return_Value::Success : 
+              moveon = true;
+              break;
+            case Return_Value::Retry_Event : 
+              {
+              blobs->ColorConservation();
+              msg_Tracking()<<"ERROR in "<<METHOD<<" :\n"
+                            <<"   Hadronization for blob "
+                            <<"("<<blob<<"; "<<blob->NInP()<<" -> "
+                            <<blob->NOutP()<<") "
+                            <<"did not work out,"<<std::endl
+                            <<"   will trigger retrying the event.\n";
+              CleanUp(blob);
+              if (rpa->gen.Beam1().IsLepton() ||
+                  rpa->gen.Beam2().IsLepton()) {
+                msg_Tracking()<<METHOD<<": "
+                              <<"Non-hh collision. Request new event instead.\n";
+                return Return_Value::New_Event;
+              }
+              return result;
+              }
+            case Return_Value::Retry_Method :
+              {
+              msg_Tracking()<<"Warning in "<<METHOD<<" : "<<std::endl
+                            <<"   Hadronization for blob "
+                            <<"("<<blob<<"; "<<blob->NInP()<<" -> "
+                            <<blob->NOutP()<<") "
+                            <<"did not work out properly in the "
+                            <<(i+1)<<"th attempt,"<<std::endl
+                            <<"   retry it "<<m_maxtrials<<" times."<<std::endl;
+              Return_Value::IncRetryMethod(mname);
+              CleanUp(blob);
+              }
+              break;
+            case Return_Value::Nothing :
+            default:
+              msg_Tracking()<<"Warning in "<<METHOD<<":"<<std::endl
+                            <<"   Calling Hadronization for Blob("<<blob<<") "
+                            <<"yields "<<int(result)<<"."<<std::endl
+                            <<"   Continue and hope for the best."<<std::endl;
+              moveon = true;
+              break;
+	} // End switch
+	
+        if (moveon) break;
+      } // End trials
+
+      CleanUp(); // NOT Ahadic::Cleanup(Blob)!!!
+     
+      if (moveon && SanityCheck(blob, sqr(rpa->gen.Ecms()))) {
 	blob->SetStatus(blob_status::needs_hadrondecays);
 	blob->SetType(btp::Fragmentation);
       }
@@ -133,20 +146,6 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 	return Return_Value::Retry_Event;
       }
     }
-    else blit++;
-  }
-  // for (size_t i(0);i<blob->NOutP();i++) {
-  //   if (blob->OutParticle(i)->Momentum().Nan()) {
-  //     msg_Out()<<"=======================================================\n"
-  // 	       <<"=======================================================\n"
-  // 	       <<"=======================================================\n"
-  // 	       <<"=======================================================\n"
-  // 	       <<"=======================================================\n"
-  // 	       <<(*blob)<<"\n";
-  //     msg_Out()<<" nan momentum: "<<blob->OutParticle(i)->Momentum()<<"\n";
-  //     abort();
-  //   }
-  // }
   return Return_Value::Success;
 }  
 
@@ -160,32 +159,32 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
 
   switch (p_cformhandler->FormClusters(blob)) {
   case -1 : 
-    msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl
+    msg_Tracking()<<"ERROR in "<<METHOD<<" (formation):"<<std::endl
 		  <<"   Will retry event."<<std::endl;
     p_cformhandler->Reset();
     return Return_Value::Retry_Event;
   case  0 :
-    msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl
+    msg_Tracking()<<"ERROR in "<<METHOD<<" (formation):"<<std::endl
 		  <<"   Will retry method."<<std::endl;
     p_cformhandler->Reset();
     return Return_Value::Retry_Method;
   case 1 :
-    if (retry>=0) 
+    if (retry>0) 
       msg_Tracking()<<"   Passed cluster form now ("<<retry<<"th trial).\n";
     break;
   }
   
   switch (p_cdechandler->DecayClusters(blob)) {
   case -1 : 
-    msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl
+    msg_Tracking()<<"ERROR in "<<METHOD<<" (decay):"<<std::endl
 		  <<"   Will retry event."<<std::endl;
     return Return_Value::Retry_Event;
   case  0 :
-    msg_Tracking()<<"ERROR in "<<METHOD<<" :"<<std::endl
+    msg_Tracking()<<"ERROR in "<<METHOD<<" (decay):"<<std::endl
 		  <<"   Will retry method."<<std::endl;
     return Return_Value::Retry_Method;
   case  1 :
-    if (retry>=0) 
+    if (retry>0) 
       msg_Tracking()<<"   Passed cluster decays now ("<<retry<<"th trial).\n";
     break;
   }
@@ -193,7 +192,7 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
 
   
   if (!m_clulist.empty()) {
-    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
+    msg_Error()<<"Error in "<<METHOD<<" (deletion):"<<std::endl
 	       <<"   "<<m_clulist.size()<<" clusters undeleted:"<<std::endl
 	       <<m_clulist<<std::endl;
   }
@@ -208,7 +207,7 @@ Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
   return Return_Value::Success;
 }
 
-
+/// Reset clusters ???
 void Ahadic::Reset() {
   if (Cluster::RemainingClusters()) {
     msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
