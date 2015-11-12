@@ -10,7 +10,7 @@ Continued_PDF::Continued_PDF(PDF::PDF_Base * pdf,
 			     const Flavour & bunch) :
   p_pdf(pdf), m_bunch(bunch), 
   m_xmin(p_pdf->XMin()), m_xmax(p_pdf->XMax()), m_Q02(p_pdf->Q2Min()),
-  m_geta(2.), m_glambda(-0.25)
+  m_geta(0.), m_glambda(-0.08)
 {
   m_pdfpartons.push_back(Flavour(kf_u));
   m_pdfpartons.push_back(Flavour(kf_d));

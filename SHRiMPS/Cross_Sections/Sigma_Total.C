@@ -23,19 +23,19 @@ void Sigma_Tot::TestTotalCrossSection(){
   double m_a,m_c,m_alpha,m_res,m_ei;
   double m_Delta,m_prefactor,m_Lambda2,m_beta0,m_kappa;
   ExpInt m_expint;
-  m_Delta     = (*p_eikonals).front()->Delta();
-  m_prefactor = (*p_eikonals).front()->Prefactor();
-  m_kappa     = (*p_eikonals).front()->Kappa_i();
-  m_Lambda2   = (*p_eikonals).front()->Lambda2();
-  m_beta0     = (*p_eikonals).front()->FF1()->Beta0();
-  m_a         = m_Lambda2/(8.*(1.+m_kappa));
-  m_c         =
-    ATOOLS::sqr(m_beta0)*m_Lambda2*(1.+m_kappa)*exp(2.*m_Delta*m_Y)/(8.*M_PI);
-  m_alpha     = 4.*M_PI*m_prefactor;
-  m_ei        = m_expint.GetExpInt(-m_c/2.);
-  m_res       = m_alpha*(EulerGamma-m_ei+log(m_c/2.))/(2.*m_a);
-  msg_Out() << "In " << METHOD << " sigma_tot = "<< m_res <<" 1/GeV^2 = "
-	    <<m_res*rpa->Picobarn()/1.e9<<" mb ."<<std::endl;
+  // m_Delta     = (*p_eikonals).front()->Delta();
+  // m_prefactor = (*p_eikonals).front()->Prefactor();
+  // m_kappa     = (*p_eikonals).front()->Kappa_i();
+  // m_Lambda2   = (*p_eikonals).front()->Lambda2();
+  // m_beta0     = (*p_eikonals).front()->FF1()->Beta0();
+  // m_a         = m_Lambda2/(8.*(1.+m_kappa));
+  // m_c         =
+  //   ATOOLS::sqr(m_beta0)*m_Lambda2*(1.+m_kappa)*exp(2.*m_Delta*m_Y)/(8.*M_PI);
+  // m_alpha     = 4.*M_PI*m_prefactor;
+  // m_ei        = m_expint.GetExpInt(-m_c/2.);
+  // m_res       = m_alpha*(EulerGamma-m_ei+log(m_c/2.))/(2.*m_a);
+  // msg_Out() << "In " << METHOD << " sigma_tot = "<< m_res <<" 1/GeV^2 = "
+  // 	    <<m_res*rpa->Picobarn()/1.e9<<" mb ."<<std::endl;
   //	exit(1);
 }
 

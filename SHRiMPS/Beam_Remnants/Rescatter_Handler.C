@@ -63,9 +63,9 @@ ResetCollision(Omega_ik * eikonal,const double & smin,const double & B) {
   m_intervals.clear();
   ResetRescatter(true);
   
-  p_eikonal = eikonal;
-  m_smin    = smin;
-  m_B       = B;
+  p_eikonalweights = eikonal->GetWeights();
+  m_smin = smin;
+  m_B    = B;
 }
 
 void Rescatter_Handler::ResetRescatter(const bool & enforce) { 
@@ -143,7 +143,7 @@ bool Rescatter_Handler::DealWithBlob(ATOOLS::Blob * blob) {
 void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
   if (!m_rescatter) return;
   double y1(part->Momentum().Y()),kt12(part->Momentum().PPerp2()),y2,kt22;
-  double sup,s12,prob,ybar;
+  double sup,s12,prob,ybar,ymax;
   int nbeam(dabs(y1)>m_Ylimit);
   double expo;
   bool allowed, singlet;
@@ -160,18 +160,20 @@ void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
 	continue;
       }
     }
-    prob    = singlet?m_singprob:1.;
+    prob  = singlet?m_singprob:1.;
     if (prob<0.00000001 || !CanRescatter((*piter),part)) continue;
     s12   = Max(0.,((*piter)->Momentum()+part->Momentum()).Abs2());
     kt22  = (*piter)->Momentum().PPerp2();
     sup   = m_rescprob * SuppressionTerm(kt12,kt22);
     ybar  = (part->Momentum()+(*piter)->Momentum()).Y();
-    prob *= p_eikonal->RescatterProbability(m_b1,m_b2,y1,y2,sup,
-					    nbeam+int(dabs(y2)>m_Ylimit)); 
-    //expo  = 1.+3./M_PI*(*p_alphaS)(sqrt(kt12*kt22))*dabs(y1-y2);
-    expo  = (singlet?0.:1.)+p_eikonal->EffectiveIntercept(m_b1,m_b2,ybar);
+    ymax  = Max(dabs(y1),dabs((*piter)->Momentum().Y()));
+    prob *= p_eikonalweights->RescatterProbability(m_b1,m_b2,y1,y2,sup,
+						   nbeam+int(dabs(y2)>m_Ylimit)); 
+    expo  = (singlet?0.:1.)+p_eikonalweights->EffectiveIntercept(m_b1,m_b2,ybar);
     prob *= pow(s12/Max(s12,m_smin),expo);
     prob /= sqrt(double(m_Nfact));
+    // new stuff in the line below.
+    prob *= 4.*exp(-ymax/2.-dabs(ybar));
     if (m_analyse) m_histomap["Rescatter_wt"]->Insert(m_B,prob);
     PartPair partpair;
     partpair.first  = y1<y2?part:(*piter);
@@ -208,8 +210,6 @@ SelectRescatter(Particle *& part1,Particle *& part2) {
   if (!m_rescatter || m_probpairs.empty()) return false;
   while (!m_probpairs.empty()) {
     if (m_probpairs.begin()->first>ran->Get()) {
-      //msg_Out()<<METHOD<<" allows rescatter for prob = "
-      //       <<m_probpairs.begin()->first<<".\n";
       part1   = m_probpairs.begin()->second.first;
       part2   = m_probpairs.begin()->second.second;
       DeleteProbPairs(part1,part2);

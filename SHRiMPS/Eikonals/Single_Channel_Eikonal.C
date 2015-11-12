@@ -26,12 +26,12 @@ Initialise(Form_Factor * ff1,Form_Factor * ff2,
 	   const double & Y,const double & ycutoff)
 {
   p_ff1       = ff1; 
-  m_ff1max    = p_ff1->FFmax();
+  m_ff1max    = p_ff1->Maximum();
   m_ff1bins   = p_ff1->Bbins();
   m_deltaff1  = m_ff1max/m_ff1bins; 
   m_b1max     = p_ff1->Bmax();
   p_ff2       = ff2; 
-  m_ff2max    = p_ff2->FFmax();
+  m_ff2max    = p_ff2->Maximum();
   m_ff2bins   = p_ff2->Bbins();
   m_deltaff2  = m_ff2max/m_ff2bins; 
   m_b2max     = p_ff2->Bmax();

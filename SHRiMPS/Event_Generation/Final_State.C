@@ -39,8 +39,8 @@ bool Final_State::FirstSinglet(const double & y1,const double & y2,
 			       const double & sup,const int & nbeam) {
   //  return false;
   if (p_ladder->IsRescatter() && m_resc_nosing==resc_nosing::on) return false;
-  double wt1 = p_eikonal->SingletWeight(m_b1,m_b2,y1,y2,sup,nbeam)/m_singletwt; 
-  double wt8 = p_eikonal->OctetWeight(m_b1,m_b2,y1,y2,sup,nbeam); 
+  double wt1 = p_eikonalweights->SingletWeight(m_b1,m_b2,y1,y2,sup,nbeam)/m_singletwt; 
+  double wt8 = p_eikonalweights->OctetWeight(m_b1,m_b2,y1,y2,sup,nbeam); 
   if (wt1>(wt1+wt8)*ran->Get()) {
     p_ladder->GetPropsBegin()->m_col = colour_type::singlet;
     p_ladder->SetDiffractive(true);
@@ -49,7 +49,7 @@ bool Final_State::FirstSinglet(const double & y1,const double & y2,
   return false;
 }
 
-  void Final_State::UpdateTwoOutgoings(const size_t pos,const bool singlet) {
+void Final_State::UpdateTwoOutgoings(const size_t pos,const bool singlet) {
   Vec4D mom[2], cms(0.,0.,0.,0.);
   LadderMap * emissions(p_ladder->GetEmissions());
   LadderMap::iterator lit(emissions->begin());
@@ -70,9 +70,14 @@ bool Final_State::FirstSinglet(const double & y1,const double & y2,
   }
   // look here!
   double shat((mom[0]+mom[1]).Abs2()), Ehat(sqrt(shat));
-  double expo(p_ladder->IsRescatter()?3.:1.);
-  double kt  = sqrt(SelectKT2(shat/4.,0.,m_Q02,1.+expo)); 
-  double phi = 2.*M_PI*ran->Get();
+  double expo(p_ladder->IsRescatter()?1.:1.);
+  double kt2   = SelectKT2(shat/4.,0.,m_Q02,1.+expo); 
+  if (singlet) {
+    while (exp(-kt2/m_Q02)<ran->Get()) 
+      kt2  = SelectKT2(shat/4.,0.,m_Q02,1.+expo); 
+  }
+  double kt    = sqrt(kt2);
+  double phi   = 2.*M_PI*ran->Get();
   Vec4D  ktvec = kt*Vec4D(0.,cos(phi),sin(phi),0.);
   Poincare boost(cms);
   for (size_t i=0;i<2;i++) boost.Boost(mom[i]);
@@ -294,9 +299,10 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
   double kmrwt(0.),q02wt(0.),q02y;
   size_t ntrials(0);
   
-  double colfac(3.);
+  double colfac(3.), ladderfac(1.);
   double Delta(colfac*p_alphaS->MaxValue()/M_PI *
-	       KT2integral(kt1max2,kt1min2,m_q02min,ktexpo));
+	       KT2integral(kt1max2,kt1min2,m_q02min,ktexpo) *
+	       ladderfac);
   if (m_analyse) { 
     m_histomap[std::string("Delta_naive")]->Insert(Delta); 
     if (dir) m_histomap[std::string("Delta_naive1")]->Insert(Delta); 
@@ -446,7 +452,7 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
 	deltay>m_Deltay) { 
       rarg = mu01_2/(dabs(q01.Abs2())+mu01_2);
       expo = colfac*(*p_alphaS)(q01.PPerp2())*deltay/M_PI; 
-      wt  *= reggewt = pow(rarg,expo);
+      wt  *= reggewt = pow(rarg,expo*ladderfac);
       if (m_analyse) m_histomap[std::string("ReggeWt")]->Insert(reggewt);
     }
     if (MBpars.LadderWeight()==ladder_weight::ReggeDiffusion && 
@@ -458,7 +464,7 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
     sup = SuppressionTerm(m_q01_2,m_q12_2)*
       (Saturation(dir?-y1:y1)/(Saturation(dir?y1:-y1)+kt12));
     wt    *= recombwt= 
-      Min(1.,p_eikonal->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup));
+      Min(1.,p_eikonalweights->EmissionWeight(m_b1,m_b2,dir?y1:-y1,sup) * ladderfac);
     if (m_analyse) {
       m_histomap[std::string("RecombWt")]->Insert(recombwt);
       if (dir) {
@@ -599,14 +605,14 @@ bool Final_State::FixPropColours(const LadderMap::iterator & split,
 		     3.*(*p_alphaS)(m_q12_2)*dabs(y2-y1)/M_PI);
 
   double tot = wt18 = prev?0.:
-    p_eikonal->SingletWeight(m_b1,m_b2,y0,y1,sup01,beam1)*
-    p_eikonal->OctetWeight(m_b1,m_b2,y1,y2,sup12,beam2);
+    p_eikonalweights->SingletWeight(m_b1,m_b2,y0,y1,sup01,beam1)*
+    p_eikonalweights->OctetWeight(m_b1,m_b2,y1,y2,sup12,beam2);
   tot +=wt81 = next?0.:
-    p_eikonal->OctetWeight(m_b1,m_b2,y0,y1,sup01,beam1)*
-    p_eikonal->SingletWeight(m_b1,m_b2,y1,y2,sup12,beam2);
+    p_eikonalweights->OctetWeight(m_b1,m_b2,y0,y1,sup01,beam1)*
+    p_eikonalweights->SingletWeight(m_b1,m_b2,y1,y2,sup12,beam2);
   tot += wt88 =       
-    p_eikonal->OctetWeight(m_b1,m_b2,y0,y1,sup01,beam1)*
-    p_eikonal->OctetWeight(m_b1,m_b2,y1,y2,sup12,beam2);
+    p_eikonalweights->OctetWeight(m_b1,m_b2,y0,y1,sup01,beam1)*
+    p_eikonalweights->OctetWeight(m_b1,m_b2,y1,y2,sup12,beam2);
         
   std::pair<colour_type::code,colour_type::code> cols;
 
@@ -738,36 +744,36 @@ double Final_State::SuppressionTerm(const double & q02,const double & q12) {
 
 double Final_State::Saturation(const double & y) {
   double eik(1.);
-  if (MBpars("Misha")) {
-    eik = p_eikonal->lambda()/2. *
-      ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y)+
-       (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y));
-  }
+  // if (MBpars("Misha")) {
+  //   eik = p_eikonal->lambda()/2. *
+  //     ((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y)+
+  //      (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y));
+  // }
   return (m_Q02 + (m_nprimlad-1)*m_QN2)*eik;
 }
 
 double Final_State::Q02(const double & y) {
   double eik(1.);
-  if (MBpars("Misha")) {
-    eik = p_eikonal->lambda()/
-      (sqr((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,-m_Ylimit)/
-	   (*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y)) +
-       sqr((*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,m_Ylimit)/
-	   (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y)));
-  }
+  // if (MBpars("Misha")) {
+  //   eik = p_eikonal->lambda()/
+  //     (sqr((*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,-m_Ylimit)/
+  // 	   (*(p_eikonal->GetSingleTerm(0)))(m_b1,m_b2,y)) +
+  //      sqr((*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,m_Ylimit)/
+  // 	   (*(p_eikonal->GetSingleTerm(1)))(m_b1,m_b2,y)));
+  // }
   return (m_Q02 + (m_nprimlad-1)*m_QN2)*eik;
 }
 
 double Final_State::Q02MinEstimate(const double y0, const double y1) {
   double q02min(m_Q02 + (m_nprimlad-1)*m_QN2), q02test;
-  if (MBpars("Misha")) {
-    double y(Min(y0,y1)),deltay(dabs(y0-y1)/100.);
-    while (y<Max(y0,y1)) {
-      q02test = Q02(y);
-      if (q02test<q02min) q02min = q02test;
-      y+=deltay;
-    }
-  }
+  // if (MBpars("Misha")) {
+  //   double y(Min(y0,y1)),deltay(dabs(y0-y1)/100.);
+  //   while (y<Max(y0,y1)) {
+  //     q02test = Q02(y);
+  //     if (q02test<q02min) q02min = q02test;
+  //     y+=deltay;
+  //   }
+  // }
   return q02min;
 }
 

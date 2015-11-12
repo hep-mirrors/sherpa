@@ -13,6 +13,7 @@ namespace SHRIMPS {
   private:
     Parton_Luminosity * p_lumi;
     Omega_ik          * p_eikonal;
+    Eikonal_Weights   * p_eikonalweights;
     double              m_B,m_b1,m_b2;
     ATOOLS::Vec4D       m_pos;
     double              m_ycms,m_shat,m_weight;

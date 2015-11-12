@@ -15,16 +15,23 @@ MinBias_Parameters::MinBias_Parameters() {}
 MinBias_Parameters::~MinBias_Parameters() {}
 
 void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
+  int test = m_params["TestShrimps"] = dr->GetValue<int>("TestShrimps",0);
   // general properties: c.m. energy in rapidity and its cutoff, 
   // impact parameters
   m_params["originalY"]   = log(ATOOLS::rpa->gen.Ecms()/
-			       ATOOLS::Flavour(kf_p_plus).HadMass());
+				ATOOLS::Flavour(kf_p_plus).HadMass());
   m_params["deltaY"]      = dr->GetValue<double>("deltaY",1.5);
   m_params["bmin"]        = dr->GetValue<double>("bmin",0.);
-  m_params["bmax"]        = dr->GetValue<double>("bmax",20.);
+  m_params["bmax"]        = dr->GetValue<double>("bmax",10.);
   m_params["accu"]        = dr->GetValue<double>("accu",5.e-4);
   // form factors
-  m_params["NGWstates"]   = dr->GetValue<int>("GW_States",2);
+  std::string ffform = 
+    dr->GetValue<std::string>("FF_Form",std::string("dipole"));
+  if (ffform==std::string("dipole"))
+    m_ffform = ff_form::dipole;
+  else
+    m_ffform = ff_form::Gauss;
+  m_params["NGWstates"]   = (test==0) ? dr->GetValue<int>("GW_States",2) : 1;
   m_params["FFpref"]      = 1./sqrt(m_params["NGWstates"]);
   m_params["Lambda2"]     = dr->GetValue<double>("Lambda2",1.7);
   m_params["beta02(mb)"]  = dr->GetValue<double>("beta_0^2",20.0);
@@ -32,9 +39,11 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
 				 ATOOLS::rpa->Picobarn());
   m_params["kappa"]       = dr->GetValue<double>("kappa",0.6);
   m_params["xi"]          = dr->GetValue<double>("xi",0.2);
+  FillFFParams(dr,test);
   // parameters of the eikonal
   m_params["lambda"]      = dr->GetValue<double>("lambda",0.3);
   m_params["Delta"]       = dr->GetValue<double>("Delta",0.4);
+  FillEikonalParams(dr,test);
   // ladder generation
   m_params["NLaddersFix"] = dr->GetValue<int>("N_Ladders_Fix",-1);
   m_params["KTMin_Mode"]  = dr->GetValue<int>("KTMin_Mode",0);
@@ -57,12 +66,6 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   m_params["ReconnProb"]  = dr->GetValue<double>("ReconnProb",-15.301277);
   m_params["Misha"]       = dr->GetValue<int>("Misha",0);
 
-  std::string ffform = 
-    dr->GetValue<std::string>("FF_Form",std::string("dipole"));
-  if (ffform==std::string("dipole"))
-    m_ffform = ff_form::dipole;
-  else
-    m_ffform = ff_form::Gauss;
 
   std::string absorption = 
     dr->GetValue<std::string>("Absorption",std::string("factorial"));
@@ -176,6 +179,47 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   else m_reconnmode = reconn_mode::run;
 }
 
+
+void MinBias_Parameters::
+FillFFParams(ATOOLS::Data_Reader * dr,const int test) {
+  std::string ffform = 
+    dr->GetValue<std::string>("FF_Form",std::string("dipole"));
+  if (ffform==std::string("dipole") && test==0) 
+    m_ff_params.form = ff_form::dipole;
+  else                               
+    m_ff_params.form = ff_form::Gauss;
+  m_ff_params.norm        = 1./sqrt(m_params["NGWstates"]);
+  m_ff_params.Lambda2     = dr->GetValue<double>("Lambda2",1.7);
+  m_ff_params.beta0       = 
+    sqrt(1.e9*dr->GetValue<double>("beta_0^2",20.0)/ATOOLS::rpa->Picobarn());
+  // kappa will obtain a sign for the second GW state - this is hardwired
+  // in the initialization routine in Shrimps.  
+  m_ff_params.kappa       = dr->GetValue<double>("kappa",0.6);
+  m_ff_params.xi          = dr->GetValue<double>("xi",0.2);
+  m_ff_params.bmax        = dr->GetValue<double>("bmax",10.);
+  m_ff_params.accu        = dr->GetValue<double>("accu",5.e-4);
+}
+
+void MinBias_Parameters::
+FillEikonalParams(ATOOLS::Data_Reader * dr,const int test) {
+  std::string absorption = 
+    dr->GetValue<std::string>("Absorption",std::string("factorial"));
+  if (absorption==std::string("exponential"))
+    m_eik_params.absorp  = absorption::exponential;
+  else
+    m_eik_params.absorp  = absorption::factorial;
+  m_eik_params.originalY = log(ATOOLS::rpa->gen.Ecms()/
+			       ATOOLS::Flavour(kf_p_plus).HadMass());
+  m_eik_params.cutoffY   = dr->GetValue<double>("deltaY",1.5);
+  m_eik_params.Ymax      = m_eik_params.originalY - m_eik_params.cutoffY; 
+  m_eik_params.lambda    = (test==0)?dr->GetValue<double>("lambda",0.3):0.;
+  m_eik_params.Delta     = dr->GetValue<double>("Delta",0.4);
+  m_eik_params.beta02    = 1.e9*m_params["beta02(mb)"]/ATOOLS::rpa->Picobarn();
+  m_eik_params.bmax      = 2.*dr->GetValue<double>("bmax",10.);
+  m_eik_params.accu      = dr->GetValue<double>("accu",5.e-4);
+}
+
+
 double MinBias_Parameters::operator()(std::string keyword) {
   if (m_params.find(keyword)==m_params.end()) {
     msg_Error()<<"Error in "<<METHOD<<"("<<keyword<<") : "<<std::endl
@@ -185,74 +229,3 @@ double MinBias_Parameters::operator()(std::string keyword) {
   return m_params[keyword];
 }
 
-std::ostream & SHRIMPS::operator<<(std::ostream & s, 
-				 const run_mode::code & runmode) {
-  switch (runmode) {
-  case run_mode::xsecs_only:
-    s<<" XSecs only";
-    break;
-  case run_mode::elastic_events:
-    s<<" Elastic events";
-    break;
-  case run_mode::single_diffractive_events:
-    s<<" Single-diffractive events";
-    break;
-  case run_mode::quasi_elastic_events:
-    s<<" Quasi-elastic events";
-    break;
-  case run_mode::inelastic_events:
-    s<<" Inelastic events";
-    break;
-  case run_mode::all_min_bias:
-    s<<" Minimum Bias";
-    break;
-  case run_mode::underlying_event:
-    s<<" Underlying event";
-    break;
-  default:
-    s<<" Unknown mode";
-    break;
-  }
-  return s;
-}
-
-std::ostream & SHRIMPS::operator<<(std::ostream & s, 
-				 const weight_mode::code & weightmode) {
-  switch (weightmode) {
-  case weight_mode::weighted:
-    s<<" Weighted events";
-    break;
-  case weight_mode::unweighted:
-    s<<" Unweighted events";
-    break;
-  default:
-    s<<" Unknown mode";
-    break;
-  }
-  return s;
-}
-
-
-std::ostream & SHRIMPS::operator<<(std::ostream & s, const ff_form::code & fff) {
-  if (fff==ff_form::Gauss)       s<<"Gaussian";
-  else if (fff==ff_form::dipole) s<<"Dipole";
-  else                           s<<"unknown";
-  return s;
-}
-
-std::ostream & SHRIMPS::operator<<(std::ostream & s, 
-				 const absorption::code & a) {
-  if (a==absorption::exponential)    s<<"exponential";
-  else if (a==absorption::factorial) s<<"factorial";
-  else                               s<<"unknown";
-  return s;
-}
-
-std::ostream & operator<<(std::ostream & s, 
-			  const ladder_weight::code & wt) {
-  if (wt==ladder_weight::IntervalOnly)        s<<"y interval only ";
-  else if (wt==ladder_weight::ReggeDiffusion) s<<"Regge factor + diffusion ";
-  else if (wt==ladder_weight::Regge)          s<<"Regge factor ";
-  else                                    s<<"unknown";
-  return s;
-}

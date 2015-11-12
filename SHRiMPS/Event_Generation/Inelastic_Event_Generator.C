@@ -25,8 +25,6 @@ Inelastic_Event_Generator(Sigma_Inelastic * sigma,
   m_kt2fac(MBpars("kt2_factor")), m_difffac(MBpars("diff_factor")),
   m_test(test), m_output(1), m_analyse(false), p_ladder(NULL)
 { 
-  //msg_Out()<<METHOD<<" for "<<m_Nladders_fix<<" vs "
-  //	   <<MBpars("NLaddersFix")<<".\n";
   if (m_analyse) {
     m_histograms[string("N_ladder_naive")] = new Histogram(0,0.0,25.0,25);
     m_histograms[string("N_ladder_start")] = new Histogram(0,0.0,25.0,25);
@@ -120,9 +118,7 @@ InelasticEvent(Blob_List * blobs,const double & xsec,
 		  <<METHOD<<"(done = "<<m_done<<", "
 		  <<m_Nprim<<" of "<<m_Nladders<<" generated).\n";
   }
-  if (m_done) {
-    return 0;
-  }
+  if (m_done) return 0;
   if (m_Nprim<=m_Nladders) {
     switch (AddScatter(blobs,xsec)) {
     case 1:
@@ -357,23 +353,23 @@ bool Inelastic_Event_Generator::IsLastRescatter() const {
 
 void Inelastic_Event_Generator::
 TestNumberOfLadders(Omega_ik * eikonal,const double & B){
-  int	  nval(10000);
-  double  mcmean(0.),anamean(0.),a,c,value;
-  double  Y(p_sigma->Y());
-  double  kappa(eikonal->Kappa_i());
-  double  beta0(eikonal->FF1()->Beta0());
-  double  Lambda2(eikonal->Lambda2());
-  double  Delta(eikonal->Delta());
-  a = Lambda2/(8.*(1.+kappa));
-  c = sqr(beta0)*Lambda2*(1.+kappa)*exp(2.*Delta*Y)/(8.*M_PI);
-  anamean = c*exp(-a*sqr(B));
-  for(int i=0; i<nval; i++){
-    value = double(ran->Poissonian((*eikonal)(B)));
-    mcmean += value/nval;
-  }
-  msg_Tracking()<<"In "<< METHOD <<" mean number of ladders: "<<endl
-	   << "		"<<mcmean<<" (Monte Carlo); " 
-	   <<(*eikonal)(B)<<" (eikonal); "<<anamean<<" (analytic)"<<endl;
+  // int	  nval(10000);
+  // double  mcmean(0.),anamean(0.),a,c,value;
+  // double  Y(p_sigma->Y());
+  // double  kappa(eikonal->Kappa_i());
+  // double  beta0(eikonal->FF1()->Beta0());
+  // double  Lambda2(eikonal->Lambda2());
+  // double  Delta(eikonal->Delta());
+  // a = Lambda2/(8.*(1.+kappa));
+  // c = sqr(beta0)*Lambda2*(1.+kappa)*exp(2.*Delta*Y)/(8.*M_PI);
+  // anamean = c*exp(-a*sqr(B));
+  // for(int i=0; i<nval; i++){
+  //   value = double(ran->Poissonian((*eikonal)(B)));
+  //   mcmean += value/nval;
+  // }
+  // msg_Tracking()<<"In "<< METHOD <<" mean number of ladders: "<<endl
+  // 	   << "		"<<mcmean<<" (Monte Carlo); " 
+  // 	   <<(*eikonal)(B)<<" (eikonal); "<<anamean<<" (analytic)"<<endl;
 }
 
 

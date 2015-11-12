@@ -3,6 +3,8 @@
 
 #include "SHRiMPS/Eikonals/Form_Factors.H"
 #include "SHRiMPS/Eikonals/Eikonal_Contributor.H"
+#include "SHRiMPS/Eikonals/Analytic_Contributor.H"
+#include "SHRiMPS/Eikonals/Eikonal_Weights.H"
 #include "SHRiMPS/Tools/DEQ_Solver.H"
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
 #include "ATOOLS/Math/Vector.H"
@@ -31,79 +33,58 @@ namespace SHRIMPS {
     would be good to maintain: in principle \f$\Omega_{ik}(Y,\,y,\,B_\perp)\f$ 
     should not depend on it.
   */
-
   class Omega_ik : public ATOOLS::Function_Base {
   private:
-    Form_Factor         * p_ff1, * p_ff2;
-    double                m_lambda, m_Delta;
-    absorption::code      m_absorp;
-    double                m_originalY, m_cutoffY, m_Y, m_Ysteps;
-    Eikonal_Contributor   m_Omegaik, m_Omegaki;
-    double                m_Bmin, m_Bmax, m_deltaB;
-    double                m_singletwt;
-    double                m_sigmaInelastic;
-    std::vector<double>   m_gridB, m_gridBmax, m_gridD;
-    double                m_eta, m_prefactor;
-    int                   m_test;
-    double                m_diffmax;
-    double                DeltaOmega(const double & b1,const double & b2,
-				     const double & y1,const double & y2,
-				     const double & sup=1.,const int & nbeam=1);
+    Eikonal_Weights       m_weights;
+    Eikonal_Contributor * p_Omegaik, * p_Omegaki;
 
+    double m_bmax;
+    double m_Y;
+    int    m_Bsteps, m_deltaB, m_Ysteps;
+    double m_prefactor,m_sigmaInelastic;
+    std::vector<double>   m_gridB, m_gridBmax, m_gridD;   
   public:
-    Omega_ik(Form_Factor * ff1,Form_Factor * ff2,
-	     const int & Bsteps,const int & m_test=0);
+    Omega_ik(const Eikonal_Parameters & params);
     ~Omega_ik();
 
+    void SetContributors(Eikonal_Contributor * Omegaik, 
+			 Eikonal_Contributor * Omegaki);
+    void SetPrefactor(const double & prefactor) { m_prefactor = prefactor; }
+
     Eikonal_Contributor * GetSingleTerm(const int & i=0);
+    Eikonal_Weights     * GetWeights();
 
     std::vector<double> * GetImpactParameterGrid()        { return &m_gridB; }
     std::vector<double> * GetImpactParameterMaximumGrid() { return &m_gridBmax; }
-    void SetImpactParameterInterval(const double & Bmin,const double & Bmax) {
-      m_Bmin   = Bmin; 
-      m_Bmax   = Bmax; 
-      m_deltaB = (m_Bmax-m_Bmin)/double(m_gridB.size()-1);
-    }
-
+    
     double operator()(const double & B) const;
-    double Maximum(const double & B) const;
-
+    double Maximum(const double & B) const;    
     ATOOLS::Vec4D SelectB1B2(double & b1,double & b2,const double & B);
-    double MaximalEmissionProbability(const double & b1,const double & b2);
-    double EmissionWeight(const double & b1,const double & b2,const double & y,
-			  const double & sup=1.);
-    double SingletWeight(const double & b1,const double & b2,
-			 const double & y1,const double & y2,
-			 const double & sup=1.,const int & nbeam=1);
-    double OctetWeight(const double & b1,const double & b2,
-		       const double & y1,const double & y2,
-		       const double & sup=1.,const int & nbeam=1);
-    double Sum(const double & b1,const double & b2,const double & y);
-    double RescatterProbability(const double & b1,const double & b2,
-				const double & y1,const double & y2,
-				const double & sup=1.,const int & nbeam=0);
-
+    
     void   PrepareQT(const double & b1,const double & b2);
-
+    
     double   Prefactor() const { 
-      return ATOOLS::sqr(p_ff1->Prefactor()*p_ff2->Prefactor()); 
+      return m_prefactor;
     }
-    const double & lambda() const    { return m_lambda; }
-    const double & Delta() const     { return m_Delta; }
-    const double & Kappa_i() const   { return p_ff1->Kappa(); }
-    const double & Kappa_k() const   { return p_ff2->Kappa(); }
-    const double & Lambda2() const   { return p_ff1->Lambda2(); }
-    const double & Xi() const        { return p_ff1->Xi(); }
-    const double & Ymax() const      { return m_Y; }
+    // const double & lambda() const  { return m_params.lambda; }
+    // const double & Delta() const   { return m_params.Delta; }
+    // const double & Kappa_i() const { return p_Omegaik->Kappa(); }
+    // const double & Kappa_k() const { return p_Omegaki->Kappa(); }
+    // const double & Lambda2() const { return p_Omegaik->Lambda2(); }
+    // const double & Ymax() const    { return m_params.Ymax; } 
     double EffectiveIntercept(double b1=-1.,double b2=-1.,const double & y=0.);
-
-    Form_Factor * FF1() const  { return p_ff1; }
-    Form_Factor * FF2() const  { return p_ff2; }
-
+    
+    Form_Factor * FF1() const  { return p_Omegaik->FF(); }
+    Form_Factor * FF2() const  { return p_Omegaki->FF(); }
+    
     void  SetSigmaInelastic(const double & sigma) { m_sigmaInelastic = sigma; }
     const double & Sigma_Inelastic() const        { return m_sigmaInelastic; }
-  };
 
+    void TestIndividualGrids(Analytic_Contributor * ana12,
+			     Analytic_Contributor * ana21,
+			     const double & Ymax,const std::string & dirname) const;
+  };
+  
   struct eikcomp{
     bool operator() (const Omega_ik * eik1, const Omega_ik * eik2) const
     {

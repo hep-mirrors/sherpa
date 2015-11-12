@@ -1,5 +1,6 @@
 #include "SHRiMPS/Main/Shrimps.H"
 #include "SHRiMPS/Main/Hadron_Init.H"
+#include "SHRiMPS/Eikonals/Eikonal_Creator.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
@@ -12,54 +13,27 @@
 using namespace SHRIMPS;
 
 Shrimps::Shrimps(ATOOLS::Data_Reader * dr,
-	     BEAM::Beam_Spectra_Handler *const beam,
-	     PDF::ISR_Handler *const isr) :
-  m_runmode(run_mode::unknown), 
-  m_weightmode(weight_mode::unknown),
-  m_test(dr->GetValue<int>("TestShrimps",0)),
+		 BEAM::Beam_Spectra_Handler *const beam,
+		 PDF::ISR_Handler *const isr) :  
   p_generator(NULL)
 {
-  ATOOLS::rpa->gen.AddCitation
-    (1,"SHRiMPS is not published yet.  Please contact the authors if you are using it.");
-  double Ecms(ATOOLS::rpa->gen.Ecms());
+  ATOOLS::rpa->gen.AddCitation(1,"SHRiMPS is not published yet.");
   MBpars.Init(dr);
-  MBpars.Set(std::string("originalY"),
-	     log(Ecms/ATOOLS::Flavour(kf_p_plus).HadMass()));
-
-  m_pdfs.clear();
-  m_NGWstates  = m_test?1:int(MBpars("NGWstates"));	     
-  m_runmode    = MBpars.RunMode();
-  m_weightmode = MBpars.WeightMode();
-  switch (m_runmode) {
-  case run_mode::xsecs_only:
-    msg_Events()<<"Run Shrimps to generate cross sections only."<<std::endl;
+  if (MBpars.RunMode()==run_mode::unknown) {
+    msg_Error()<<"Error in "<<METHOD<<":\n   unknown runmode.  Will exit.\n";
+    exit(0);
+  }
+  if (MBpars.RunMode()==run_mode::xsecs_only) {
+    msg_Events()<<METHOD<<": run Shrimps to generate cross sections only.\n"
+		<<"   Will write out results and exit afterwards.\n";
     GenerateXsecs();
     exit(1);
-  case run_mode::elastic_events:
-  case run_mode::single_diffractive_events:
-  case run_mode::double_diffractive_events:
-  case run_mode::quasi_elastic_events:
-  case run_mode::inelastic_events:
-  case run_mode::all_min_bias:  
-  case run_mode::underlying_event:
-    InitialiseFormFactors();
-    InitialiseSingleChannelEikonals(Ecms);
-    InitialiseCrossSections(Ecms);
-    InitialiseBeamRemnants(beam,isr);
-    InitialiseEventGenerator();
-    break;
-  case run_mode::unknown: 
-  default:
-    abort();
   }
-
-  if(m_test){
-    PrintPDFandAlphaS();
+  InitialiseTheRun(beam,isr);
+  if (MBpars("TestShrimps")!=0) {
+    TestShrimps();
     exit(1);
   }
-
-  Hadron_Init hadroninit;
-  hadroninit.Init();
 }
 
 Shrimps::~Shrimps() 
@@ -73,52 +47,55 @@ Shrimps::~Shrimps()
   if (p_generator) delete p_generator;
 }
 
-void Shrimps::InitialiseFormFactors() {
-  if (m_NGWstates!=2 && m_NGWstates!=1) abort();
-
-  std::vector<double> params;
-  params.push_back(m_test?1.:MBpars("FFpref"));
-  params.push_back(MBpars("Lambda2"));
-  params.push_back(MBpars("beta0"));
-  params.push_back(MBpars("kappa"));
-  params.push_back(MBpars("xi"));
-  params.push_back(MBpars("bmax"));
-  params.push_back(MBpars("accu"));
-
-  m_ffs.clear();
-  for (int i=0;i<m_NGWstates;i++) {
-    if (i==1) params[3] *= -1;
-    m_ffs.push_back(Form_Factor(i,m_test));
-    m_ffs.back().Initialise(params);
-  }
+void Shrimps::InitialiseTheRun(BEAM::Beam_Spectra_Handler *const beam,
+			       PDF::ISR_Handler *const isr) {
+  ResetTheFramework();
+  InitialiseFormFactors();
+  InitialiseSingleChannelEikonals(ATOOLS::rpa->gen.Ecms());
+  //InitialiseCrossSections(ATOOLS::rpa->gen.Ecms());
+  InitialiseBeamRemnants(beam,isr);
+  //InitialiseTheEventGenerator();  
+  //Hadron_Init hadroninit;
+  //hadroninit.Init();
 }
 
-void Shrimps::InitialiseSingleChannelEikonals(const double & Ecms) 
-{
-  MBpars.Set(std::string("originalY"),
-	     log(Ecms/ATOOLS::Flavour(kf_p_plus).HadMass()));
-  msg_Tracking()<<METHOD<<"(Y = "<<MBpars("originalY")<<", "
-		<<"deltaY = "<<MBpars("deltaY")<<").\n";
+void Shrimps::ResetTheFramework() {
+  m_pdfs.clear();
   while (!m_eikonals.empty()) {
     delete m_eikonals.back();
     m_eikonals.pop_back();
   }
   m_eikonals.clear();
-  
-  Eikonal_Creator creator(m_test);
+  m_ffs.clear();
+}
 
-  for (int i=0;i<m_NGWstates;i++) {
-    for (int j=0;j<m_NGWstates;j++) {
-      msg_Tracking()
-	<<"Initialise and produce grids for single channel eikonal: "
-	<<i<<" "<<j<<" --> "<<&m_ffs[i]<<" "<<&m_ffs[j]<<" ("
-	<<ATOOLS::sqr(m_ffs[i].Prefactor()*m_ffs[j].Prefactor())<<").\n";
-      m_eikonals.push_back(creator.CreateEikonal(&m_ffs[i],&m_ffs[j]));
+void Shrimps::InitialiseFormFactors() {
+  msg_Info()<<METHOD<<" for "<<MBpars("NGWstates")<<" states.\n";
+  for (size_t i=0;i<MBpars("NGWstates");i++) {
+    FormFactor_Parameters params(MBpars.GetFFParameters());
+    params.number = i;
+    if (i==1) params.kappa *= -1.;
+    m_ffs.push_back(Form_Factor(params));
+    m_ffs.back().Initialise();
+  }
+  msg_Info()<<METHOD<<" done.\n";
+}
+
+void Shrimps::InitialiseSingleChannelEikonals(const double & Ecms) 
+{
+  msg_Info()<<METHOD<<"(Y = "<<MBpars("originalY")<<", "
+	   <<"deltaY = "<<MBpars("deltaY")<<").\n";
+  Eikonal_Creator creator(MBpars.GetEikonalParameters());
+  size_t NGWstates(MBpars("NGWstates"));
+  for (int i=0;i<NGWstates;i++) {
+    for (int j=0;j<NGWstates;j++) {
+      msg_Info()<<"   *** create eikonal for channel ["<<i<<" "<<j<<"].\n";
+      creator.SetFormFactors(&m_ffs[i],&m_ffs[j]);
+      Omega_ik * eikonal(creator.InitialiseEikonal());
+      m_eikonals.push_back(eikonal);
     }
   }
-  msg_Info()
-    <<"Initialised eikonal for Y = "<<MBpars("originalY")<<", "
-    <<"deltaY = "<<MBpars("deltaY")<<"."<<std::endl; 
+  msg_Info()<<METHOD<<" done.\n";
 }
 
 
@@ -128,46 +105,19 @@ void Shrimps::InitialiseCrossSections(const double & energy) {
 }
 
 void Shrimps::InitialiseBeamRemnants(BEAM::Beam_Spectra_Handler * const beam,
-				   PDF::ISR_Handler *const isr) { 
+				     PDF::ISR_Handler *const isr) { 
   for (size_t i=0;i<2;i++) 
     m_pdfs.push_back(Continued_PDF(isr->PDF(i),isr->Flav(i)));
 
   p_beamremnants = new Beam_Remnant_Handler(beam,m_pdfs);
 }
 
-void Shrimps::InitialiseEventGenerator() {
-  p_generator = new Event_Generator(m_runmode,m_weightmode);
-  p_generator->Initialise(&m_cross,p_beamremnants,m_test);
+void Shrimps::InitialiseTheEventGenerator() {
+  //p_generator = new Event_Generator(m_runmode,m_weightmode);
+  //p_generator->Initialise(&m_cross,p_beamremnants,m_test);
 }
 
 int Shrimps::GenerateEvent(ATOOLS::Blob_List * blobs) {
-  msg_Tracking()<<"   -->"<<METHOD<<"("<<blobs->size()<<" blobs)\n";
-  /*
-    if (m_runmode==run_mode::underlying_event) {
-    ATOOLS::Blob * blob;
-    for (size_t i=0;i<blobs->size();++i) {
-    blob = (*blobs)[i];
-    msg_Out()<<"   * deal with blob: "<<std::endl<<(*blob)<<std::endl;
-    if (blob->Has(ATOOLS::blob_status::needs_beams) &&
-    !p_beamremnants->FindInTreatedBlobs(blob)) {
-    for (int i=0;i<blob->NOutP();i++) {
-    msg_Out()<<"   check ("<<blob->Type()<<"["<<i<<"]: "
-    <<blob->OutParticle(i)->Number()<<": ";
-    if (blob->OutParticle(i)->DecayBlob()) {
-    if (blob->OutParticle(i)->DecayBlob()->Type()==
-    ATOOLS::btp::Signal_Process) {
-    msg_Out()<<blob->OutParticle(i)->DecayBlob()->Type()<<".\n";
-    p_generator->DressShowerBlob(blob);
-    msg_Out()<<".\n";
-    exit(1);
-    }
-    msg_Out()<<".\n";
-    }
-    }
-    }
-    }
-    }
-  */
   return p_generator->MinimumBiasEvent(blobs);
 }
 
@@ -180,6 +130,76 @@ void Shrimps::CleanUp(const size_t & mode) {
   p_generator->Reset();
   p_beamremnants->Reset(mode);
 }
+
+void Shrimps::TestShrimps() {
+  msg_Info()<<"Start testing SHRiMPS.\n";
+  std::string dirname = std::string("Tests");
+  ATOOLS::MakeDir(dirname);
+
+  PrintAlphaS(dirname);
+  PrintPDFs(dirname);
+
+  m_ffs[0].Test(dirname); 
+
+  double Delta(MBpars.GetEikonalParameters().Delta);
+  double Ymax(MBpars.GetEikonalParameters().Ymax);
+  Analytic_Contributor ana12(&m_ffs[0],Delta,Ymax,+1);
+  Analytic_Contributor ana21(&m_ffs[0],Delta,Ymax,-1);  
+  m_eikonals.front()->TestIndividualGrids(&ana12,&ana21,Ymax,dirname);
+
+  msg_Info()<<"Tests done.  Results to be found in "<<dirname<<".\n";
+}
+
+void Shrimps::PrintPDFs(const std::string & dirname) {
+  int nxval(100);
+  double xmin(1.e-5),x;
+  for (int i=0; i<5; i++){
+    double Q2 = double(i)/2.;
+    std::ostringstream ostr;ostr<<Q2;std::string Q2str = ostr.str();    
+    std::string filename(dirname+"/pdfs_"+Q2str+".dat");
+    std::ofstream was;
+    was.open(filename.c_str());
+    was<<"# x   u   ubar   d   dbar  s   g"<<std::endl;
+    was<<"# Q^2 = "<<Q2<<" GeV^2"<<std::endl;
+    for (int j=0;j<=nxval; j++){
+      x = pow(10.,double(j)/double(nxval)*log10(xmin));
+      m_pdfs[0].Calculate(x,Q2);
+      was<<x<<"   "
+	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_u))<<"   "
+	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_u).Bar())<<"   "
+	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_d))<<"   "
+	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_d).Bar())<<"   "
+	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_s))<<"   "
+	 <<m_pdfs[0].XPDF(ATOOLS::Flavour(kf_gluon))<<"\n";
+    }
+    was.close();
+  }
+}
+
+void Shrimps::PrintAlphaS(const std::string & dirname) {
+  int    nQ2val(1000);
+  double Q2max(ATOOLS::sqr(100.)),Q2min(ATOOLS::sqr(1e-3)),Q2;
+  double logstepsize((log(Q2max)-log(Q2min))/nQ2val);
+  MODEL::Strong_Coupling * alphaS(static_cast<MODEL::Strong_Coupling *>
+	   (MODEL::s_model->GetScalarFunction(std::string("strong_cpl"))));
+
+  std::string filename(dirname+"/alphas.dat");
+  std::ofstream was;
+  was.open(filename.c_str());
+  was<<"# Q [GeV]    alpha_s(Q^2)"<<"\n";
+  for (int i=0; i<nQ2val; i++){
+    Q2 = exp(log(Q2min) + i*logstepsize);
+    was<<sqrt(Q2)<<"    "<<(*alphaS)(Q2)<<std::endl;
+  }
+  was.close();
+}
+
+
+
+
+
+
+
 
 void Shrimps::GenerateXsecs() {
   InitialiseFormFactors();
@@ -307,47 +327,5 @@ void Shrimps::GenerateXsecs() {
 							      dirname);
     }
   }
-}
-
-void Shrimps::PrintPDFandAlphaS()
-{
-  std::string filename("InclusiveQuantities/pdfs.dat");
-  std::ofstream was;
-  was.open(filename.c_str());
-  int nxval(100);
-  double x(1.),xmin(1.e-5),Q2(0.),updf,ubarpdf,dpdf,spdf,gpdf;
-  was<<"# x   u   ubar   d   s   g"<<std::endl;
-  for (int i=0; i<=2; i++){
-    Q2 = double(i);
-    was<<"# Q^2 = "<<Q2<<" GeV^2"<<std::endl;
-    for (int j=0;j<=nxval; j++){
-//       x = j*(1.-xmin)/(nxval)+xmin;
-      x = pow(10.,-double(j)*0.05);
-      m_pdfs[0].Calculate(x,Q2);
-      updf    = m_pdfs[0].XPDF(ATOOLS::Flavour(kf_u));
-      ubarpdf = m_pdfs[0].XPDF(ATOOLS::Flavour(kf_u).Bar());
-      dpdf    = m_pdfs[0].XPDF(ATOOLS::Flavour(kf_d));
-      spdf    = m_pdfs[0].XPDF(ATOOLS::Flavour(kf_s));
-      gpdf    = m_pdfs[0].XPDF(ATOOLS::Flavour(kf_gluon));
-      was<<x<<"   "<<updf<<"   "<<ubarpdf<<"   "<<dpdf<<"   "
-	 <<spdf<<"   "<<gpdf<<std::endl;
-    }
-    was<<std::endl<<std::endl;
-  }
-  was.close();
-
-  filename="InclusiveQuantities/alphas.dat";
-  was.open(filename.c_str());
-  int nQ2val(1000);
-  double Q2max(ATOOLS::sqr(100.)),Q2min(ATOOLS::sqr(1e-3));
-  MODEL::Strong_Coupling * alphaS(static_cast<MODEL::Strong_Coupling *>
-	   (MODEL::s_model->GetScalarFunction(std::string("strong_cpl"))));
-  was<<"# Q^2 [GeV^2]    alpha_s(Q^2)"<<std::endl;
-  for (int i=0; i<nQ2val; i++){
-    Q2 = exp(i*(log(Q2max)-log(Q2min))/nQ2val+log(Q2min));
-    was<<Q2<<"    "<<(*alphaS)(Q2)<<std::endl;
-  }
-  was.close();
-  return;
 }
 

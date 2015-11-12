@@ -1,8 +1,8 @@
 #ifndef SHRIMPS_Main_Shrimps_H
 #define SHRIMPS_Main_Shrimps_H
 
+#include "SHRiMPS/Main/Cluster_Algorithm.H"
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
-#include "SHRiMPS/Eikonals/Eikonal_Creator.H"
 #include "SHRiMPS/Cross_Sections/Cross_Sections.H"
 #include "SHRiMPS/Event_Generation/Event_Generator.H"
 #include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
@@ -37,10 +37,8 @@ namespace SHRIMPS {
   */
   class Shrimps {
   private:
-    run_mode::code    m_runmode; 
     weight_mode::code m_weightmode;
     deqmode::code     m_deq;
-    int               m_NGWstates;
     int               m_test;
     
     std::vector<Form_Factor>   m_ffs;
@@ -49,20 +47,27 @@ namespace SHRIMPS {
     std::vector<Continued_PDF> m_pdfs;
     Beam_Remnant_Handler     * p_beamremnants;
     Event_Generator          * p_generator;
+    Cluster_Algorithm          m_cluster;
     
     void GenerateXsecs();
     
+    void InitialiseTheRun(BEAM::Beam_Spectra_Handler *const beam,
+			  PDF::ISR_Handler *const isr);
+    void ResetTheFramework();
     void InitialiseFormFactors();
     void InitialiseSingleChannelEikonals(const double & Ecms);
     void InitialiseCrossSections(const double & energy);
     void InitialiseBeamRemnants(BEAM::Beam_Spectra_Handler *const beam,
 				PDF::ISR_Handler *const isr);
-    void InitialiseEventGenerator();
-    void PrintPDFandAlphaS();
+    void InitialiseTheEventGenerator();
+    
+    void TestShrimps();
+    void PrintAlphaS(const std::string & dirname);
+    void PrintPDFs(const std::string & dirname);
   public:
     Shrimps(ATOOLS::Data_Reader * dr,
-	  BEAM::Beam_Spectra_Handler *const beam,
-	  PDF::ISR_Handler *const isr);
+	    BEAM::Beam_Spectra_Handler *const beam,
+	    PDF::ISR_Handler *const isr);
     ~Shrimps();
 
     int  GenerateEvent(ATOOLS::Blob_List * blobs);
@@ -83,6 +88,7 @@ namespace SHRIMPS {
     }
     inline double LadderTMax() const {return p_generator->TMax(); }  
     inline int    NLadders()   const {return p_generator->NLadders(); }  
+    inline Cluster_Algorithm * GetClusterAlgorithm() { return &m_cluster; }
   };
 }
 #endif

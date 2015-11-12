@@ -1,4 +1,5 @@
 #include "SHRiMPS/Beam_Remnants/Hadron_Dissociation.H"
+#include "SHRiMPS/Tools/MinBias_Parameters.H"
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include <algorithm>

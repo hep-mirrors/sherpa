@@ -15,16 +15,18 @@ operator()(const std::vector<double> & input,const double param) {
     abort();
   }
   double absorpterm(1.);
-  double term0(ATOOLS::Max(1.e-12,m_lambda*m_expfactor*input[0]));
-  double term1(ATOOLS::Max(1.e-12,m_lambda*m_expfactor*input[1]));
-  switch (m_absorp) {
-  case absorption::exponential:
-    absorpterm = exp(-(term0+term1));
-    break;
-  case absorption::factorial:
-  default:
-    absorpterm = (1.-exp(-term0))/term0 * (1.-exp(-term1))/term1;
-    break;
+  if (dabs(m_lambda)>1.e-12) {
+    double term0(ATOOLS::Max(1.e-12,m_lambda*m_expfactor*input[0]));
+    double term1(ATOOLS::Max(1.e-12,m_lambda*m_expfactor*input[1]));
+    switch (m_absorp) {
+    case absorption::exponential:
+      absorpterm = exp(-(term0+term1));
+      break;
+    case absorption::factorial:
+    default:
+      absorpterm = (1.-exp(-term0))/term0 * (1.-exp(-term1))/term1;
+      break;
+    }
   }
   m_output[0] = +input[0]*m_Delta*absorpterm; 
   m_output[1] = -input[1]*m_Delta*absorpterm; 

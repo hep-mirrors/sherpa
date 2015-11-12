@@ -32,8 +32,9 @@ namespace SHRIMPS {
     {
       double incgam(0.);
       if (x<0. || a<0.) {
-	msg_Error()<<"Error in "<<METHOD<<"("<<a<<", "<<x<<") : Out of bounds."<<std::endl
-		   <<"   Will return 0 and hope for the best."<<std::endl;
+	msg_Error()<<"Error in "<<METHOD<<"("<<a<<", "<<x<<"):\n"
+		   <<"   Out of bounds. "
+		   <<"Will return 0 and hope for the best.\n";
 	return incgam;
       }
       if (a==0.) {
@@ -62,8 +63,9 @@ namespace SHRIMPS {
 	}
       }
       else {
-	msg_Error()<<"Error in "<<METHOD<<"("<<a<<", "<<x<<") : Not implemented yet."<<std::endl
-		   <<"   Will return 0 and hope for the best."<<std::endl;    
+	msg_Error()<<"Error in "<<METHOD<<"("<<a<<", "<<x<<") :\n"
+		   <<"   Not implemented yet. "
+		   <<"Will return 0 and hope for the best.\n";
       }
       return incgam;
     }
@@ -76,23 +78,27 @@ namespace SHRIMPS {
 	if (darg<8.) {
 	  double x2(darg*darg);
 	  double num = 
-	    ((((-184.9052456*x2+77392.33017)*x2-11214424.18)*x2+651619640.7)*x2-13362590354.)*x2+57568490574.;
+	    ((((-184.9052456*x2+77392.33017)*x2-
+	       11214424.18)*x2+651619640.7)*x2-13362590354.)*x2+57568490574.;
 	  double den =
-	    ((((x2+267.8532712)*x2+59272.64853)*x2+9494680.718)*x2+1029532985)*x2+57568490411.;
+	    ((((x2+267.8532712)*x2+59272.64853)*
+	      x2+9494680.718)*x2+1029532985)*x2+57568490411.;
 	  jn = num/den;
 	}
 	else {
 	  double x2(64.0/sqr(darg)), xx(darg-0.785398164);
 	  double pref1 = 
-	    (((0.2993887211e-6*x2-0.2073370639e-5)*x2+0.2734510407e-4)*x2-0.1098628627e-2)*x2+1.;
+	    (((0.2993887211e-6*x2-0.2073370639e-5)*x2+
+	      0.2734510407e-4)*x2-0.1098628627e-2)*x2+1.;
 	  double pref2 =
-	    (((-0.934945152e-7*x2+0.7621095161e-6)*x2-0.6911147651e-5)*x2+0.1430488765e-3)*x2-0.1562499995e-1;
+	    (((-0.934945152e-7*x2+0.7621095161e-6)*x2-
+	      0.6911147651e-5)*x2+0.1430488765e-3)*x2-0.1562499995e-1;
 	  jn = sqrt(0.636619772/darg)*(cos(xx)*pref1-8./darg*sin(xx)*pref2);
 	}
       }
       else {
-	msg_Error()<<"Error in "<<METHOD<<"("<<order<<", "<<arg<<") :"<<std::endl
-		   <<"   Not implemented yet.  Exit the run."<<std::endl;
+	msg_Error()<<"Error in "<<METHOD<<"("<<order<<", "<<arg<<"):\n"
+		   <<"   Not implemented yet.  Exit the run.\n";
 	exit(1);
       }
       return jn;
@@ -105,14 +111,15 @@ namespace SHRIMPS {
       case 1:
 	if (darg<3.75) {
 	  y  = sqr(arg/3.75);
-	  in = darg*((((((0.32411e-3*y+0.301532e-2)*y+0.2658733e-1)*y+0.15084934)*y
-		       +0.51498869)*y+0.87890594)*y+0.5);
+	  in = darg*((((((0.32411e-3*y+0.301532e-2)*y+0.2658733e-1)*y+
+			0.15084934)*y+0.51498869)*y+0.87890594)*y+0.5);
 	}
 	else {
 	  y  = 3.75/darg;
-	  in = ((((((((-0.420059e-2*y+0.1787654e-1)*y-0.2895312e-1)*y+0.2282967)*y
-		    -0.1031555e-1)*y+0.163801e-2)*y-0.362018e-2)*y-0.3988024e-1)*y
-		+0.39894228) * exp(darg)/sqrt(darg);
+	  in = ((((((((-0.420059e-2*y+0.1787654e-1)*y-0.2895312e-1)*y+
+		     0.2282967)*y-0.1031555e-1)*y+0.163801e-2)*y-
+		  0.362018e-2)*y-0.3988024e-1)*y+0.39894228) * 
+	    exp(darg)/sqrt(darg);
 	}
 	break;
       case 0:
@@ -123,14 +130,15 @@ namespace SHRIMPS {
 	}
 	else {
 	  y  = 3.75/darg;
-	  in = ((((((((0.392377e-2*y-0.1647633e-1)*y+0.2635537e-1)*y-0.2057706)*y
-		    +0.916281e-2)*y-0.157565e-2)*y+0.225319e-2)*y+0.1328592e-1)*y
-		+0.39894228) * exp(darg)/sqrt(darg);
+	  in = ((((((((0.392377e-2*y-0.1647633e-1)*y+0.2635537e-1)*y-
+		     0.2057706)*y+0.916281e-2)*y-0.157565e-2)*y+
+		  0.225319e-2)*y+0.1328592e-1)*y+0.39894228) * 
+	    exp(darg)/sqrt(darg);
 	}    
 	break;
       default:
-	msg_Error()<<"Error in "<<METHOD<<"("<<order<<", "<<arg<<") :"<<std::endl
-		   <<"   Not implemented yet.  Exit the run."<<std::endl;
+	msg_Error()<<"Error in "<<METHOD<<"("<<order<<", "<<arg<<"):\n"
+		   <<"   Not implemented yet.  Exit the run.\n";
 	exit(1);
       }
       return in;
@@ -153,29 +161,31 @@ namespace SHRIMPS {
 	else {
 	  y   = 2./darg;
 	  kn  = exp(-darg)/sqrt(darg);
-	  kn *= ((((((-0.68245e-3*y+0.325614e-2)*y-0.780353e-2)*y+0.1504268e-1)*y
-		   -0.3655620e-1)*y+0.23498619)*y+1.25331414);
+	  kn *= ((((((-0.68245e-3*y+0.325614e-2)*y-0.780353e-2)*y+
+		    0.1504268e-1)*y-0.3655620e-1)*y+0.23498619)*y+1.25331414);
 	}
       }
       else {
-	msg_Error()<<"Error in "<<METHOD<<"("<<order<<", "<<arg<<") :"<<std::endl
-		   <<"   Not implemented yet.  Exit the run."<<std::endl;
+	msg_Error()<<"Error in "<<METHOD<<"("<<order<<", "<<arg<<")\n:"
+		   <<"   Not implemented yet.  Exit the run.\n";
 	exit(1);
       }
       return kn;
     }
 
-    void TestBessel() const
+    void TestBessel(const std::string & dirname) const
     {
       double arg(0.);
       std::ofstream was;
-      was.open("BesselJ0I0I1K1.dat");
+      std::string filename = dirname+std::string("/BesselJ0I0I1K1.dat");
+      was.open(filename.c_str());
       long int cnt(0);
       while (arg<10.) {
-	was<<arg<<"   "<<Jn(0,arg)<<"   "<<In(0,arg)<<"   "<<In(1,arg)<<"   "<<Kn(1,arg)<<std::endl;
-	if (cnt==0 || !(cnt%500)) 
-	  msg_Out()<<"  J_0("<<arg<<") = "<<Jn(0,arg)
-		   <<"  K_1("<<arg<<") = "<<Kn(1,arg)<<std::endl;
+	was<<arg<<"   "<<Jn(0,arg)<<"   "
+	   <<In(0,arg)<<"   "<<In(1,arg)<<"   "<<Kn(1,arg)<<std::endl;
+	//if (cnt==0 || !(cnt%500)) 
+	//  msg_Out()<<"  J_0("<<arg<<") = "<<Jn(0,arg)
+	//	   <<"  K_1("<<arg<<") = "<<Kn(1,arg)<<std::endl;
 	arg += 0.001;
 	cnt++;
       }

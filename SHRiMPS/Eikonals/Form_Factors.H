@@ -1,7 +1,7 @@
 #ifndef SHRIMPS_Eikonals_Form_Factors_H
 #define SHRIMPS_Eikonals_Form_Factors_H
 
-#include "SHRiMPS/Tools/MinBias_Parameters.H"
+#include "SHRiMPS/Tools/Parameter_Structures.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include <vector>
 
@@ -15,7 +15,8 @@ namespace SHRIMPS {
     The two following forms are implemented (and tested):
     - Gaussian
       \f[
-      F(q) = \beta_0^2\,(1+\kappa)\,\exp\left(-\frac{(1+\kappa)q^2}{\Lambda^2}\right)
+      F(q) = 
+      \beta_0^2\,(1+\kappa)\,\exp\left(-\frac{(1+\kappa)q^2}{\Lambda^2}\right)
       \f]
     - dipole
       \f[
@@ -24,10 +25,10 @@ namespace SHRIMPS {
 	          {\left[1+\frac{(1+\kappa)q^2}{\Lambda^2}\right]^2}\,.
       \f]
     
-    The most important method here is Form_Factor::FourierTransform(const double & b) 
-    yielding the Fourier transform of the form factor at a given impact parameter 
-    \f$b\f$.  It has been tested to be able to achieve practically arbitrary
-    precision.  
+    The important method is Form_Factor::FourierTransform(const double & b) 
+    yielding the Fourier transform of the form factor at a given impact 
+    parameter \f$b\f$.  It has been tested to be able to achieve practically 
+    arbitrary precision.  
   */
   class Form_Factor : public ATOOLS::Function_Base {
   private:
@@ -36,7 +37,7 @@ namespace SHRIMPS {
       Form_Factor * p_ff;
     public:
       Norm_Argument(Form_Factor * ff) : p_ff(ff) {}
-	  ~Norm_Argument(){;}
+      ~Norm_Argument() { }
       double operator()(double q);
     };
 
@@ -45,23 +46,20 @@ namespace SHRIMPS {
       Form_Factor * p_ff;
       double        m_b;
     public:
-      FT_Argument() {}
       FT_Argument(Form_Factor * ff) : p_ff(ff), m_b(0.) {}
-      ~FT_Argument();
+      ~FT_Argument() {}
       void   SetB(const double & b) { m_b = b; }
       double operator()(double q);
     };
-  private:
-    FT_Argument m_ftarg;
 
-    ff_form::code m_form;
+  private:
+    FT_Argument   m_ftarg;
     int           m_number;
-    double        m_Lambda2, m_beta, m_kappa, m_xi;
-    double        m_prefactor, m_ftnorm, m_norm;
-    double        m_bmax, m_deltab;
+    ff_form::code m_form;
+    double        m_norm, m_beta, m_Lambda2, m_kappa, m_xi, m_bmax;
     size_t        m_bsteps;
-    double        m_ffmin, m_ffmax;
-    double        m_accu;
+    double        m_deltab, m_accu, m_ffmin, m_ffmax;
+    double        m_ftnorm, m_prefactor;
     int           m_test;
 
 
@@ -71,18 +69,21 @@ namespace SHRIMPS {
     double NormAnalytical();
     double CalculateFourierTransform(const double & b);
     double AnalyticalFourierTransform(const double & b);
-    void   FillFTGrid();
-    void   PrintFFGrids(const int & mode);
+    void   FillFourierTransformGrid();
+    void   FillTestGrid();
+    bool   GridGood();
 
-    void   TestBessel() const;
-    void   TestFormFactor();
+    void   TestSpecialFunctions(const std::string & dirname);
+    void   WriteOutFF_Q(const std::string & dirname);
+    void   WriteOutFF_B(const std::string & dirname);
+    void   TestNormAndSpecificBs(const std::string & dirname);
+    void   TestQ2Selection(const std::string & dirname);
   public:
-    Form_Factor(const int & number,const int & test=0);
-    Form_Factor(const ff_form::code & fff,const int & number,
-		const int & test=0);
-    virtual ~Form_Factor();
+    Form_Factor(const FormFactor_Parameters & params);
+    virtual ~Form_Factor() {}
+
+    void   Initialise();
     
-    void   Initialise(const std::vector<double> & params);
     double operator()(const double q2);
     double operator()() { return 1.; }
     double FourierTransform(const double & b) const;
@@ -90,16 +91,15 @@ namespace SHRIMPS {
     double SelectQT2(const double & qt2max,const double & qt2min=-1.) const;
 
     const double & Bmax() const      { return m_bmax;      }
-    const double & DeltaB() const    { return m_deltab;    }
     const size_t & Bbins() const     { return m_bsteps;    }
-    const double & FFmin() const     { return m_ffmin;     }
-    const double & FFmax() const     { return m_ffmax;     }
+    const double & Maximum() const   { return m_ffmax;     }
     const double & Prefactor() const { return m_prefactor; }
     const double & Beta0() const     { return m_beta;      }
     const double & Kappa() const     { return m_kappa;     }
     const double & Lambda2() const   { return m_Lambda2;   }
-    const double & Xi() const        { return m_xi;   }
     const int    & Number() const    { return m_number;    }
+
+    void Test(const std::string & dirname);
   };
 }
 
