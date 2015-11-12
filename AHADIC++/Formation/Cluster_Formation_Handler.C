@@ -129,72 +129,67 @@ void Cluster_Formation_Handler::Reset() {
 
 bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
 {
-  Proto_Particle_List * pli(NULL);
-  bool          construct(false);
-  unsigned int  col1(0), col2(0);
   Particle   * part(NULL);
-  // bool over(false), under(false);
-  // int Nover(0), id, Nunder(0);
-  for (int i=0;i<blob->NInP();i++) {
+  // Incoming are partons et al from the shower --- no outgoing particles at that point
+  // We look for closed colour structures
+  //msg_Out() << (*blob);
+
+  //// Filtering
+  std::vector<int> temp;
+  for (unsigned int i=0;i<blob->NInP();i++) {
     part = blob->InParticle(i); 
-    if ((part->Status()!=part_status::active && 
-	 part->Status()!=part_status::fragmented) || 
-	(part->GetFlow(1)==0 && part->GetFlow(2)==0)) continue;
-    if (construct) {
-      if (part->GetFlow(2)==col1) {
-	Proto_Particle * copy = 
-	  new Proto_Particle(part->Flav(),part->Momentum(),
-			     part->Info()=='B' ?'B':'L');
-	// if (part->Info()!='B' && part->Momentum().PPerp()>10.) {
-	//   if (dabs(part->Momentum().Y())>3.) { 
-	//     over = true;
-	//     id = part->Number();
-	//     Nover++;
-	//   }
-	//   else if (dabs(part->Momentum().Y())<1.) {
-	//     under = true;
-	//     Nunder++;
-	//   }
-	// } 
-	SetInfoTagForPrimaryParticle(copy);
-	pli->push_back(copy);
-	col1 = part->GetFlow(1);
-	if (col1==col2) construct = false;
-      }
-      else {
-	// cannot find a matching colour/particle
-	msg_Error()<<"Warning in "<<METHOD<<":\n"
-		   <<"   Cannot deal with this fragmentation blob: \n"
-		   <<(*blob)<<"\n"
-		   <<"   Will try new event.\n";
-	return false;
-      }
-    }
-    else {
-      col1 = part->GetFlow(1);
-      col2 = part->GetFlow(2);
-      pli  = new Proto_Particle_List;
-      Proto_Particle * copy = 
-	new Proto_Particle(part->Flav(),part->Momentum(),
-			   part->Info()=='B'?'B':'L');
-      SetInfoTagForPrimaryParticle(copy);
-      pli->push_back(copy);
-      m_partlists.push_back(pli);
-      construct = true;
-    }
+    if ((part->Status()!=part_status::active  && part->Status()!=part_status::fragmented)
+            || (part->GetFlow(1)==0 && part->GetFlow(2)==0)) continue;
+    temp.push_back(i);
   }
-  //for (LPPL_Iterator pli=m_partlists.begin();pli!=m_partlists.end();pli++)
-   // msg_Out()<<(**pli)<<"\n";
-  // if (ana) { 
-  //   if (over) {
-  //     msg_Out()<<"\n\n"<<Nover<<" interesting particles: "<<id<<"\n"
-  // 	       <<(*blob)<<"\n"<<"\n";
-  //     m_histograms[string("Forward_Number")]->Insert(Nover);
-  //   }
-  //   if (under) {
-  //     m_histograms[string("Central_Number")]->Insert(Nunder);
-  //   }
-  // }
+ 
+
+  /// One Particle_List for each closed colour structure
+  Proto_Particle_List * pli = new Proto_Particle_List;
+  
+  /// Tagging colour
+  unsigned int col = blob->InParticle(temp[0])->GetFlow(2);
+  /// Iterate over particles, except the first, that's always good
+  /// We look for "colour rings" here
+  unsigned int beg(0);
+  for (unsigned int i=1;i<temp.size();i++) {
+    part = blob->InParticle(temp[i]);
+    // Found a closed colour ring 
+    if (col==part->GetFlow(1)) {
+      // append copies of the ring's particles to a particle list
+      for (unsigned int j=beg;j<=i;j++) {
+        Proto_Particle * copy = new Proto_Particle(
+                blob->InParticle(j)->Flav(),
+                blob->InParticle(j)->Momentum(),
+                blob->InParticle(j)->Info()=='B' ?'B':'L'
+                );
+        SetInfoTagForPrimaryParticle(copy);
+        pli->push_back(copy);
+      }
+      /// Append the closed colour ring to m_partlists
+      m_partlists.push_back(pli);
+      /// Prepare a new colour ring
+      pli = new Proto_Particle_List;
+      beg=i+1; // Make sure we skip the first i of all particles for the next ring
+      if (i+1 <temp.size()) { /// Reset tag colour
+          col=blob->InParticle(temp[i+1])->GetFlow(2);
+      }
+    }
+
+  }
+  //for (LPPL_Iterator pli=m_partlists.begin();pli!=m_partlists.end();pli++) {
+    //msg_Out()<<(*pli)->size()<<"\n";
+  //}
+  //if (ana) { 
+    //if (over) {
+      //msg_Out()<<"\n\n"<<Nover<<" interesting particles: "<<id<<"\n"
+                 //<<(*blob)<<"\n"<<"\n";
+      //m_histograms[string("Forward_Number")]->Insert(Nover);
+    //}
+    //if (under) {
+      //m_histograms[string("Central_Number")]->Insert(Nunder);
+    //}
+  //}
   return true;
 }
 
