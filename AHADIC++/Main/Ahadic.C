@@ -151,7 +151,7 @@ Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
 
 
 
-Return_Value::code Ahadic::Hadronize(Blob * blob,int retry) {
+Return_Value::code Ahadic::Hadronize(Blob * blob, int retry) {
   assert(m_clulist.empty());
   blob->SetType(btp::Cluster_Formation);
   blob->SetTypeSpec("AHADIC-1.0");

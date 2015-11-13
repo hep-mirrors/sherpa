@@ -158,6 +158,9 @@ bool Cluster_Formation_Handler::ExtractSinglets(Blob * blob)
     if (col==part->GetFlow(1)) {
       // append copies of the ring's particles to a particle list
       for (unsigned int j=beg;j<=i;j++) {
+        /// This bit catches weirdly ordered colour partners and triggers a retry event
+        if (j<i && !(blob->InParticle(j+1)->GetFlow(2) == blob->InParticle(j)->GetFlow(1))) return false;
+        /// Copy of particle for further usage
         Proto_Particle * copy = new Proto_Particle(
                 blob->InParticle(j)->Flav(),
                 blob->InParticle(j)->Momentum(),
