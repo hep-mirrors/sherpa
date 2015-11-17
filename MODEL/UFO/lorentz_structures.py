@@ -1,20 +1,6 @@
 from tensor import tensor, new, lorentz_key
-from c_variable import c_variable
+from sympy.parsing.sympy_parser import parse_expr
 from itertools import permutations
-
-type_dict = {
-    1 : "CScalar",
-    2 : "CSpinor",
-    3 : "CVec4",
-    5 : "CTensor"
-}
-
-vect_gauge_dict = {
-    0 : "0",
-    1 : "ATOOLS::Spinor<SType>::R1()",
-    2 : "ATOOLS::Spinor<SType>::R2()",
-    3 : "ATOOLS::Spinor<SType>::R3()"
-}
 
 #################################
 # Dirac matrices as defined in  #
@@ -25,51 +11,51 @@ I = complex(0,1)
 
 def four_identity(i,j):
 
-    return tensor([tensor([tensor([ 1 ], None), tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([ 1 ], None), tensor([ 0 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 1 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 1 ], None)], j)], i)
+    return tensor([tensor([tensor([ 1.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([ 1.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 1.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 1.0 ], None)], j)], i)
 
 def mink_metric(i,j):
 
-    return tensor([tensor([tensor([ 1 ], None), tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([-1 ], None), tensor([ 0 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([ 0 ], None), tensor([-1 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 0 ], None), tensor([-1 ], None)], j)], i)
+    return tensor([tensor([tensor([ 1.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([-1.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([-1.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([-1.0 ], None)], j)], i)
     
 def gamma_0(i,j):
 
-    return tensor([tensor([tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 1 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 1 ], None)], j),
-                   tensor([tensor([ 1 ], None), tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([ 1 ], None), tensor([ 0 ], None), tensor([ 0 ], None)], j)], i)
+    return tensor([tensor([tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 1.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 1.0 ], None)], j),
+                   tensor([tensor([ 1.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([ 1.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None)], j)], i)
 
 def gamma_1(i,j):
 
-    return tensor([tensor([tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 1 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 1 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([-1 ], None), tensor([ 0 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([-1 ], None), tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 0 ], None)], j)], i)
+    return tensor([tensor([tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 1.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 1.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([-1.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([-1.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None)], j)], i)
 
 def gamma_2(i,j):
 
-    return tensor([tensor([tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 0 ], None), tensor([-I ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([ 0 ], None), tensor([ I ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([ I ], None), tensor([ 0 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([-I ], None), tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 0 ], None)], j)], i)
+    return tensor([tensor([tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ -I  ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([  I  ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([  I  ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ -I  ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None)], j)], i)
 
 def gamma_3(i,j):
 
-    return tensor([tensor([tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 1 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 0 ], None), tensor([-1 ], None)], j),
-                   tensor([tensor([-1 ], None), tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([ 1 ], None), tensor([ 0 ], None), tensor([ 0 ], None)], j)], i)
+    return tensor([tensor([tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 1.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([-1.0 ], None)], j),
+                   tensor([tensor([-1.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([ 1.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None)], j)], i)
 
 def gamma_5(i,j):
-    return tensor([tensor([tensor([-1 ], None), tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([-1 ], None), tensor([ 0 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 1 ], None), tensor([ 0 ], None)], j),
-                   tensor([tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 0 ], None), tensor([ 1 ], None)], j)], i)
+    return tensor([tensor([tensor([-1.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([-1.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 1.0 ], None), tensor([ 0.0 ], None)], j),
+                   tensor([tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 0.0 ], None), tensor([ 1.0 ], None)], j)], i)
 
 
 #######################################
@@ -80,10 +66,10 @@ def gamma_5(i,j):
 class C(tensor):
     
     def __init__(self,i,j):
-        array = [tensor([tensor([ 0], None), tensor([1], None), tensor([0], None), tensor([ 0], None)], j),
-                 tensor([tensor([-1], None), tensor([0], None), tensor([0], None), tensor([ 0], None)], j),
-                 tensor([tensor([ 0], None), tensor([0], None), tensor([0], None), tensor([-1], None)], j),
-                 tensor([tensor([ 0], None), tensor([0], None), tensor([1], None), tensor([ 0], None)], j)]
+        array = [tensor([tensor([ 0.0], None), tensor([ 1.0], None), tensor([ 0.0], None), tensor([ 0.0], None)], j),
+                 tensor([tensor([-1.0], None), tensor([ 0.0], None), tensor([ 0.0], None), tensor([ 0.0], None)], j),
+                 tensor([tensor([ 0.0], None), tensor([ 0.0], None), tensor([ 0.0], None), tensor([-1.0], None)], j),
+                 tensor([tensor([ 0.0], None), tensor([ 0.0], None), tensor([ 1.0], None), tensor([ 0.0], None)], j)]
 
         super(C,self).__init__(array, i)
 
@@ -111,10 +97,10 @@ class Metric(tensor):
     def __init__(self,i,j):
         il = lorentz_key(i) if (i<0) else i
         jl = lorentz_key(j) if (j<0) else j
-        array = [tensor([tensor([ 1], None), tensor([ 0], None), tensor([ 0], None), tensor([ 0], None)], jl),
-                 tensor([tensor([ 0], None), tensor([-1], None), tensor([ 0], None), tensor([ 0], None)], jl),
-                 tensor([tensor([ 0], None), tensor([ 0], None), tensor([-1], None), tensor([ 0], None)], jl),
-                 tensor([tensor([ 0], None), tensor([ 0], None), tensor([ 0], None), tensor([-1], None)], jl)]
+        array = [tensor([tensor([ 1.0], None), tensor([ 0.0], None), tensor([ 0.0], None), tensor([ 0.0], None)], jl),
+                 tensor([tensor([ 0.0], None), tensor([-1.0], None), tensor([ 0.0], None), tensor([ 0.0], None)], jl),
+                 tensor([tensor([ 0.0], None), tensor([ 0.0], None), tensor([-1.0], None), tensor([ 0.0], None)], jl),
+                 tensor([tensor([ 0.0], None), tensor([ 0.0], None), tensor([ 0.0], None), tensor([-1.0], None)], jl)]
 
         super(Metric,self).__init__(array,il)
 
@@ -125,11 +111,11 @@ class P(tensor):
         # when naming the momenta
         k = n-1
         il = lorentz_key(i) if (i<0) else i
-        p_str = "p{0}[{1}]"
-        array = [tensor([c_variable(p_str.format(k,vect_gauge_dict[0]))], None), 
-                 tensor([c_variable(p_str.format(k,vect_gauge_dict[1]))], None), 
-                 tensor([c_variable(p_str.format(k,vect_gauge_dict[2]))], None), 
-                 tensor([c_variable(p_str.format(k,vect_gauge_dict[3]))], None)]
+        p_str = "p{0}{1}"
+        array = [tensor([parse_expr(p_str.format(k,0))], None), 
+                 tensor([parse_expr(p_str.format(k,1))], None), 
+                 tensor([parse_expr(p_str.format(k,2))], None), 
+                 tensor([parse_expr(p_str.format(k,3))], None)]
 
         super(P,self).__init__(array,il)
 
@@ -153,14 +139,24 @@ class ProjP(tensor):
 class Identity(tensor):
 
     def __init__(self,i,j):
-        array = [tensor([tensor([ 1], None), tensor([ 0], None), tensor([ 0], None), tensor([ 0], None)], j),
-                 tensor([tensor([ 0], None), tensor([ 1], None), tensor([ 0], None), tensor([ 0], None)], j),
-                 tensor([tensor([ 0], None), tensor([ 0], None), tensor([ 1], None), tensor([ 0], None)], j),
-                 tensor([tensor([ 0], None), tensor([ 0], None), tensor([ 0], None), tensor([ 1], None)], j)]
+        array = [tensor([tensor([1.0], None), tensor([0.0], None), tensor([0.0], None), tensor([0.0], None)], j),
+                 tensor([tensor([0.0], None), tensor([1.0], None), tensor([0.0], None), tensor([0.0], None)], j),
+                 tensor([tensor([0.0], None), tensor([0.0], None), tensor([1.0], None), tensor([0.0], None)], j),
+                 tensor([tensor([0.0], None), tensor([0.0], None), tensor([0.0], None), tensor([1.0], None)], j)]
 
         super(Identity,self).__init__(array,i)
 
 class Epsilon(tensor):
+
+    @staticmethod
+    def parity(lst):
+        parity = 1
+        for i in range(0,len(lst)-1):
+            if lst[i] != i:
+                parity *= -1
+                mn = min(range(i,len(lst)), key=lst.__getitem__)
+                lst[i],lst[mn] = lst[mn],lst[i]
+        return parity    
 
     def __init__(self,i,j,k,l):
 
@@ -174,16 +170,44 @@ class Epsilon(tensor):
 
         for perm in perms:
             tmp.__setitem__({il:perm[0], jl:perm[1], kl:perm[2], ll:perm[3]}, 
-                            tensor([parity(list(perm))], None))
+                            tensor([self.parity(list(perm))], None))
         
         super(Epsilon,self).__init__(tmp._array, tmp._toplevel_key)
         
 
-def parity(lst):
-    parity = 1
-    for i in range(0,len(lst)-1):
-        if lst[i] != i:
-            parity *= -1
-            mn = min(range(i,len(lst)), key=lst.__getitem__)
-            lst[i],lst[mn] = lst[mn],lst[i]
-    return parity    
+##########################
+# Some helper functions  # 
+##########################
+
+# Check if tensor is usual
+# gamma_mu structure. Need
+# to stupidly check all per-
+# mutations of key assignments
+def is_ffv(tns):
+    if not isinstance(tns, tensor): return False
+    keys = tns.key_dim_dict().keys()
+    if len(keys)!=3: return False
+    dims = tns.key_dim_dict().values()
+    if not all([dim==4 for dim in dims]): return False
+    if (tns==Gamma(keys[0],keys[1],keys[2])
+        or tns==Gamma(keys[0],keys[2],keys[1])
+        or tns==Gamma(keys[1],keys[0],keys[2])
+        or tns==Gamma(keys[1],keys[2],keys[0])
+        or tns==Gamma(keys[2],keys[1],keys[0])
+        or tns==Gamma(keys[2],keys[0],keys[1])):
+        return True
+    return False
+    
+    
+# Check if tensor is usual
+# triple-gluon-like structure
+def is_vvv(tns):
+    if not isinstance(tns, tensor): return False
+    keys = tns.key_dim_dict().keys()
+    if len(keys)!=3: return False
+    dims = tns.key_dim_dict().values()
+    if not all([dim==4 for dim in dims]): return False
+    vvv = (P(3,1)*Metric(1,2) - P(3,2)*Metric(1,2) - P(2,1)*Metric(1,3) + P(2,3)*Metric(1,3) + P(1,2)*Metric(2,3) - P(1,3)*Metric(2,3))
+    if tns==vvv:
+        return True
+    return False

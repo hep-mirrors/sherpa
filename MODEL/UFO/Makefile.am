@@ -22,11 +22,12 @@ ufodir = $(pythondir)/ufo_interface
 
 dist_ufo_PYTHON = \
         __init__.py \
-        c_variable.py \
+        sym_var.py \
         color_interface.py \
         colour_converter.py \
         lorentz_calc_template.C \
         lorentz_structures.py \
+	code_snippets.py \
         model_template.C \
 	run_card_template \
         py_to_cpp.py \

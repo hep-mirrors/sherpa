@@ -30,6 +30,7 @@ namespace MODEL{
       CustomContainerInit();
       ATOOLS::OutputParticles(ATOOLS::msg->Info());
       ATOOLS::OutputContainers(ATOOLS::msg->Info());
+      FillLorentzMap();
     }
   protected:
     void ParticleInit()
@@ -48,6 +49,9 @@ namespace MODEL{
     void InitVertices()
     {
       ${calls}
+    }
+    virtual void FillLorentzMap() {
+      ${fill_lorentz_map}
     }
   };
   

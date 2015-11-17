@@ -2,7 +2,7 @@ from ufo_interface import s_vertex, s_parameter, s_particle, s_coupling, colour_
 from ufo_interface.templates import model_template
 from operator import attrgetter
 
-def write_model(model, model_name, model_file_name):
+def write_model(model, lorentzes, model_name, model_file_name):
 
     para_init = ""
     part_init = ""
@@ -72,6 +72,7 @@ def write_model(model, model_name, model_file_name):
     vertices      = [vert for vert in vertices if not (vert.has_ghosts() or vert.has_goldstones()) ]
     i             = 0
 
+    # initialization of vertices
     while (len(vertices) > 0):
         sub_vert_list = []
         id_string = "vertices_{0}".format(i)
@@ -82,8 +83,15 @@ def write_model(model, model_name, model_file_name):
         declarations += v_collection.implementation_string()
         calls        += v_collection.call_string()
         i            += 1
+
+    # fill the lorentz name map
+    lorentz_map = ""
+    for lor in lorentzes:
+        name, mapped_name = lor.name(), lor.mapped_name()
+        if  mapped_name is not None:
+            lorentz_map +='\n      m_lorentz_map.insert(std::make_pair("{0}","{1}"));'.format(name,mapped_name)
     
     # write out model
     with open(model_file_name, "w") as outfile:
         outfile.write(model_template.substitute(model_name=model_name, particle_init=part_init, param_init=para_init,
-                                                declarations = declarations, calls = calls))
+                                                declarations = declarations, calls = calls, fill_lorentz_map=lorentz_map))

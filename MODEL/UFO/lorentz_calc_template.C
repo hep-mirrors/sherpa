@@ -6,14 +6,18 @@
 #include "MODEL/Main/Single_Vertex.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
+#include "ATOOLS/Math/MyComplex.H"
 
-typedef std::complex<double> complex;
 
 namespace METOOLS {
 
   template <typename SType>
   class ${vertex_name}_Calculator: public Lorentz_Calculator {
   public:
+
+    typedef std::complex<SType> SComplex;
+
+    static SComplex I;
     
     ${vertex_name}_Calculator(const Vertex_Key &key):
       Lorentz_Calculator(key) {}
@@ -28,8 +32,10 @@ ${implementation}
   };// end of class ${vertex_name}_Calculator
 
   template class ${vertex_name}_Calculator<double>;
+  template<> std::complex<double> ${vertex_name}_Calculator<double>::I = std::complex<double>(0.0,1.0);
 
 }// end of namespace METOOLS
+
 
 using namespace METOOLS;
 

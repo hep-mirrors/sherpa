@@ -231,7 +231,7 @@ def new(top_key, top_dim, key_dim_dict):
         
     # termination of recursion: elementary tensor
     if top_key == None:
-        return tensor([0], None)
+        return tensor([0.0], None)
 
     # if lower level tensors are elementary, dict will
     # be empty

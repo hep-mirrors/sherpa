@@ -112,6 +112,7 @@ namespace MODEL {
     virtual Complex                 ComplexConstant(const std::string);
     virtual ATOOLS::Function_Base * GetScalarFunction(const std::string);
     virtual double                  ScalarFunction(const std::string,double);
+    virtual std::string             MappedLorentzName(const std::string& label) const {return label;}
 
     int MaxNumber() const;
 

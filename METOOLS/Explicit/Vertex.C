@@ -1,6 +1,7 @@
 #include "METOOLS/Explicit/Vertex.H"
 
 #include "MODEL/Main/Single_Vertex.H"
+#include "MODEL/Main/Model_Base.H"
 #include "METOOLS/Explicit/Dipole_Kinematics.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Exception.H"
@@ -67,13 +68,14 @@ Vertex::Vertex(const Vertex_Key &key):
 	    ctag+"'");
     }
     ckey.p_cc=m_cc.back();
-    std::string skey(key.p_dinfo?"X":"");
-    m_lc.push_back(LC_Getter::GetObject
-		   (ckey.m_p+skey+ckey.p_mv->Lorentz[ckey.m_n],ckey));
+    std::string lname=ckey.m_p;
+    if(key.p_dinfo)
+      lname+="X"+MODEL::s_model->MappedLorentzName(ckey.p_mv->Lorentz[ckey.m_n]);
+    else lname+=ckey.p_mv->Lorentz[ckey.m_n];
+    m_lc.push_back(LC_Getter::GetObject(lname,ckey));
     if (m_lc.back()==NULL) {
       msg_Out()<<*ckey.p_mv<<std::endl;
-      THROW(fatal_error,"Lorentz calculator not implemented '"+
-	    ckey.m_p+ckey.p_mv->Lorentz[ckey.m_n]+"'");
+      THROW(fatal_error,"Lorentz calculator not implemented '"+lname+"'");
     }
   }
 }

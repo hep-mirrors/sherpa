@@ -32,11 +32,11 @@ arg_parser.add_argument("-m", "--modelflags",
 			default = "-g -O0 -fno-var-tracking",
 			help = "CXX flags for the model file")
 arg_parser.add_argument("-l", "--lorentzflags",
-			default = "-g -O2",
+			default = "-g -O2 -ffast-math",
 			help = "CXX flags for the lorentz calculators")
-arg_parser.add_argument("-o", "--optimize", 
+arg_parser.add_argument("-n", "--noopt",
                         action="store_true",
-                        help = "Optimize Lorentz calculators for massless spinors")
+                        help = "Disable optimization of Lorentz calculators")
 
 args = arg_parser.parse_args()
 arg_path = os_path.abspath(args.ufo_path)
@@ -68,12 +68,13 @@ sources = []
 progress("Generating model source code")
 model_file_name = 'Model.C'
 model_out_path = os_path.join(out_dir, model_file_name)
-write_model(model, model_name, model_out_path)
+lorentzes = [s_lorentz(l) for l in model.all_lorentz]
+write_model(model, lorentzes, model_name, model_out_path)
 sources.append(modelobj(model_file_name, args.modelflags))
 
 # write lorentz calculators
-optimize = args.optimize
-for lor in [s_lorentz(l) for l in model.all_lorentz]:
+optimize = not args.noopt
+for lor in lorentzes:
       if not lor.has_ghosts():
             progress("Generating source code for lorentz calculator '{0}'".format(lor.name()))
             lor.write(out_dir,optimize)

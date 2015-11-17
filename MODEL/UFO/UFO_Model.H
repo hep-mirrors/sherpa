@@ -6,6 +6,8 @@
 
 namespace UFO{
 
+  typedef std::map<std::string,std::string> StringMap;
+  
   class UFO_Model : public MODEL::Model_Base
   {
   public:
@@ -20,6 +22,8 @@ namespace UFO{
 
   protected:
 
+    StringMap m_lorentz_map;
+
     UFO::UFO_Param_Reader* p_dataread;
 
     static Complex complexconjugate(const Complex& arg);
@@ -32,6 +36,9 @@ namespace UFO{
 
     virtual void ParamInit()    {}
     virtual void ParticleInit() {}
+
+    virtual void FillLorentzMap() = 0;
+    virtual std::string MappedLorentzName(const std::string& label) const;
 
   };
 
