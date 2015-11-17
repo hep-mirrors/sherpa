@@ -302,7 +302,6 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
 	if (p_shower->GetShower())
 	  p_shower->GetShower()->SetOn(false);
 	Read_Write_Base::AddCommandLine("FRAGMENTATION Off;");
-	Read_Write_Base::AddCommandLine("ME_QED Off;");
 	Read_Write_Base::AddCommandLine("MI_HANDLER None;");
 	Data_Reader read(" ",";","!","=");
 	read.AddComment("#");
@@ -317,6 +316,8 @@ std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
 	  Read_Write_Base::AddCommandLine("K_PERP_SIGMA_1 0;");
 	  Read_Write_Base::AddCommandLine("K_PERP_SIGMA_2 0;");
 	}
+	if (read.GetValue<std::string>("ME_QED","")!="On")
+	  Read_Write_Base::AddCommandLine("ME_QED Off;");
       }
     }
   }
