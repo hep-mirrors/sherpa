@@ -25,8 +25,14 @@ using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
 
-Single_Process::Single_Process(): m_lastbxs(0.0), m_zero(false)
+Single_Process::Single_Process() :
+  m_lastbxs(0.0), m_zero(false), m_nlocts(false)
 {
+  Data_Reader reader(" ",";","!","=");
+  reader.AddComment("#");
+  reader.SetInputPath(rpa->GetPath());
+  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+  m_nlocts = reader.GetValue<size_t>("MEPSNLO_NLOCT",0);
 }
 
 Single_Process::~Single_Process()
@@ -61,6 +67,7 @@ double Single_Process::KFactor() const
 
 double Single_Process::NLOCounterTerms() const
 {
+  if (!m_nlocts) return 0.;
   static double th(1.0e-12);
   if (!m_use_biweight) return 0.0;
   DEBUG_FUNC(m_name);
@@ -83,9 +90,11 @@ double Single_Process::NLOCounterTerms() const
   // new
   for (size_t i(0);i<2;++i) {
     if (!(p_int->ISR() && p_int->ISR()->On()&(1<<i))) continue;
-    ct-=METOOLS::CollinearCounterTerms
-        (m_flavs[i],p_int->ISR()->CalcX(p_int->Momenta()[i]),z[i],as,
-         lmuf2,muf2,lmuf2,p_int->ISR()->PDF(i));
+    //ct-=METOOLS::CollinearCounterTerms
+    //    (m_flavs[i],p_int->ISR()->CalcX(p_int->Momenta()[i]),z[i],as,
+    //     lmuf2,muf2,lmuf2,p_int->ISR()->PDF(i));
+    ct-=CollinearCounterTerms
+        (i,m_flavs[i],p_int->Momenta()[i],z[i],lmuf2,muf2);
   }
   // old
   for (size_t i(0);i<2;++i)

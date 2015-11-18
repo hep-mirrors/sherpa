@@ -9,7 +9,7 @@ namespace PHASIC {
   protected:
 
     double m_lastxs, m_lastbxs;
-    bool   m_zero;
+    bool   m_zero,m_nlocts;
 
   public:
 
