@@ -60,6 +60,7 @@ namespace AMEGIC {
     inline int NQCD() const { return m_pqcd; }
     inline int NQED() const { return m_pqed; }
     inline const std::string &Type() const { return m_type; }
+    inline void SetMapFlavour(const ATOOLS::Flavour &mfl) { m_mapfl=mfl; }
     inline void SetMapFlavour(const ATOOLS::Flavour &fl,
 			      const ATOOLS::Flavour &mfl) { m_fl=fl; m_mapfl=mfl; }
     inline ATOOLS::Flavour MapFlavour() const { return m_mapfl; }

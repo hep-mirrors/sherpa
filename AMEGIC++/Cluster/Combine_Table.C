@@ -20,7 +20,7 @@ Leg::Leg(AMEGIC::Point *const point,const int anti):
   p_point(point), m_anti(anti), 
   m_nqcd(0), m_nqed(0), m_pqcd(0), m_pqed(0), m_ext(0), 
   m_qcdjets(point!=NULL?point->fl.Strong():0), m_id(0),
-  p_qmin(NULL) {}
+  p_qmin(NULL), m_fl(point?point->fl:Flavour(kf_none)) {}
 
 Leg::Leg(const Leg &leg): 
   p_point(leg.p_point), m_anti(leg.m_anti), 

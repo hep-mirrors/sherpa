@@ -171,7 +171,7 @@ Leg **Cluster_Algorithm::CreateLegs(int &nampl,const int nlegs)
   for (int k=0;k<nampl;++k) {
     for (int i(0);i<nlegs;++i) {
       Flavour fl(p_proc->Flavours()[i]);
-      legs[k][i].SetMapFlavour(fl,fl);
+      legs[k][i].SetMapFlavour(fl);
 //       msg_Debugging()<<"set mapfl: "<<k<<", "<<i<<": "<<fl<<"\n";
     }
   }
