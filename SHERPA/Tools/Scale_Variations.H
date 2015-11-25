@@ -66,9 +66,15 @@ namespace SHERPA {
 
     inline void DeleteRSValues()                   { m_RSvals.clear(); }
     inline void InitialisRSValues(const size_t& n) { m_RSvals.resize(n,0.); }
+
+    Scale_Variation &operator*=(const double &scal);
   };
 
-  typedef std::map<std::string, Scale_Variation *> NamedScaleVariationMap;
+  struct NamedScaleVariationMap:
+      public std::map<std::string, Scale_Variation *> {
+  public:
+    NamedScaleVariationMap& operator*=(const double &scal);
+  };
 
   std::ostream& operator<<(std::ostream &s,const Scale_Variation &sv);
   std::ostream& operator<<(std::ostream &s,const NamedScaleVariationMap &nsvm);

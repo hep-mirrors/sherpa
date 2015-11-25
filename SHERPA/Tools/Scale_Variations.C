@@ -90,6 +90,20 @@ std::string Scale_Variation::GenerateName()
            +std::string("PDF")+ATOOLS::ToString(m_pdf2id);
 }
 
+Scale_Variation& Scale_Variation::operator*=(const double &scal)
+{
+  m_val*=scal;
+  for (size_t i(0);i<m_RSvals.size();++i) m_RSvals[i]*=scal;
+  return *this;
+}
+
+NamedScaleVariationMap& NamedScaleVariationMap::operator*=(const double &scal)
+{
+  for (NamedScaleVariationMap::iterator it(this->begin());it!=this->end();++it)
+    (*it->second)*=scal;
+  return *this;
+}
+
 Scale_Variations::Scale_Variations() :
   m_on(false), m_loadlhapdf(true), m_ckkw(false), m_kpnegativepdf(false),
   m_quark(Flavour(kf_quark)), m_gluon(Flavour(kf_gluon)),

@@ -31,7 +31,7 @@ namespace ATOOLS {
 namespace SHERPA {
 
   class Scale_Variation;
-  typedef std::map<std::string, Scale_Variation *> NamedScaleVariationMap;
+  struct NamedScaleVariationMap;
 
   class EventInfo {
   private:
