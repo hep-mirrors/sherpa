@@ -87,9 +87,9 @@ double Alpha_QCD::CplFac(const double &scale) const
 double Alpha_QCD::Coupling(const Splitting &s) const
 {
   if (s.m_clu&1) return 1.0;
-  double scale(Scale(s)), murf(p_sk->PS()->MuRFactor());
-  double scl(CplFac(scale)*scale*murf);
-  if (scl<p_cpl->CutQ2()) return 0.0;
+  double scale(Scale(s));
+  if ((scale*=CplFac(scale))<p_cpl->CutQ2()) return 0.0;
+  double murf(p_sk->PS()->MuRFactor()), scl(scale*murf);
   double cpl=(*p_cpl)(scl);
   if (!IsEqual(scl,s.m_t)) {
     std::vector<double> ths(p_cpl->Thresholds(s.m_t,scl));

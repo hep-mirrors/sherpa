@@ -85,7 +85,7 @@ double CF_QCD::Coupling(const double &scale,const int pol)
   if (pol!=0) return 0.0;
   if (scale<0.0) return (*p_cpl)(sqr(rpa->gen.Ecms()))*m_q;
   double t(CplFac(scale)*scale), scl(CplFac(scale)*scale*m_rsf);
-  if (scl<p_cpl->CutQ2()) return 0.0;
+  if (t<p_cpl->CutQ2()) return 0.0;
   double cpl=(*p_cpl)(scl);
   if (!IsEqual(scl,t)) {
     std::vector<double> ths(p_cpl->Thresholds(t,scl));
