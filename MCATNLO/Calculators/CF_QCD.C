@@ -91,7 +91,7 @@ double CF_QCD::Coupling(const double &scale,const int pol,
 {
   if (pol!=0) return 0.0;
   double t(CplFac(scale)*scale), scl(sub?sub->MuR2():t*m_rsf);
-  if (t<p_cpl->CutQ2()) return 0.0;
+  if (scl<m_rsf*p_cpl->CutQ2()) return 0.0;
   double cpl=(*p_cpl)(scl);
   if (sub==NULL && !IsEqual(scl,t)) {
     std::vector<double> ths(p_cpl->Thresholds(t,scl));
