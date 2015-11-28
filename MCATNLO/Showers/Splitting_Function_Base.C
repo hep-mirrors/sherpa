@@ -59,6 +59,12 @@ double SF_Lorentz::AsymmetryFactor
 
 double SF_Coupling::s_qfac=1.0;
 
+double SF_Lorentz::Scale(const double z,const double y,
+			 const double scale,const double Q2) const
+{
+  return scale;
+}
+
 SF_Coupling::SF_Coupling(const SF_Key &key):
   p_lf(NULL), m_type(key.m_type),
   m_cplfac(1.0), m_kfmode(key.m_kfmode) 
@@ -179,9 +185,11 @@ double Splitting_Function_Base::MEPSWeight
 
 double Splitting_Function_Base::operator()
   (const double z,const double y,const double eta,
-   const double scale,const double Q2,const Color_Info &ci,
+   const double _scale,const double Q2,const Color_Info &ci,
    Cluster_Amplitude *const sub)
 {
+  double scale(_scale);
+  if (scale>0.0) scale=p_lf->Scale(z,y,scale,Q2);
   double sf((*p_lf)(z,y,eta,scale,Q2,sub));
   if (sf/p_lf->AsymmetryFactor(z,y,Q2)<0.0) return 0.0;
   if (sf<0.0 && sub==NULL) sf=-sf; 
@@ -235,8 +243,10 @@ double Splitting_Function_Base::Z()
         
 double Splitting_Function_Base::RejectionWeight
 (const double z,const double y,const double eta,
- const double scale,const double Q2) 
+ const double _scale,const double Q2) 
 {
+  double scale(_scale);
+  if (scale>0.0) scale=p_lf->Scale(z,y,scale,Q2);
   double res = operator()(z,y,eta,scale,Q2)/Overestimated(z,y);
 #ifdef CHECK_rejection_weight
   if (res>1.0) {

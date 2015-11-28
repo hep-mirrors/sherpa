@@ -125,6 +125,8 @@ namespace MCATNLO {
 
     inline LF_FVF_IF(const SF_Key &key): SF_Lorentz(key) {}
 
+    double Scale(const double z,const double y,
+		 const double _scale,const double Q2) const;
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
@@ -143,6 +145,8 @@ namespace MCATNLO {
 
     inline LF_FVF_II(const SF_Key &key): SF_Lorentz(key) {}
 
+    double Scale(const double z,const double y,
+		 const double _scale,const double Q2) const;
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
@@ -157,6 +161,8 @@ namespace MCATNLO {
 
     inline LF_VFF_FF(const SF_Key &key): SF_Lorentz(key) {}
 
+    double Scale(const double z,const double y,
+		 const double _scale,const double Q2) const;
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
@@ -178,6 +184,8 @@ namespace MCATNLO {
 
     inline LF_VFF_FI(const SF_Key &key): SF_Lorentz(key) {}
 
+    double Scale(const double z,const double y,
+		 const double _scale,const double Q2) const;
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
@@ -199,6 +207,8 @@ namespace MCATNLO {
 
     inline LF_VFF_IF(const SF_Key &key): SF_Lorentz(key) {}
 
+    double Scale(const double z,const double y,
+		 const double _scale,const double Q2) const;
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
@@ -217,6 +227,8 @@ namespace MCATNLO {
 
     inline LF_VFF_II(const SF_Key &key): SF_Lorentz(key) {}
 
+    double Scale(const double z,const double y,
+		 const double _scale,const double Q2) const;
     double operator()(const double,const double,const double,
 		      const double,const double,ATOOLS::Cluster_Amplitude *const sub);
     double OverIntegrated(const double,const double,
@@ -516,6 +528,16 @@ double LF_FVF_IF::CDISMax()
   return 0.;
 }
 
+double LF_FVF_IF::Scale
+(const double z,const double y,
+ const double _scale,const double Q2) const
+{
+  if (p_sf->ScaleScheme()==1) return _scale;
+  double ma2(p_ms->Mass2(m_flavs[0])), mj2(p_ms->Mass2(m_flavs[2]));
+  double scale = (Q2+ma2+mj2+p_ms->Mass2(m_flspec))*y/z-ma2-mj2;
+  return scale;
+}
+
 double LF_FVF_IF::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
@@ -559,6 +581,16 @@ double LF_FVF_IF::Z()
   return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran->Get());
 }
 
+double LF_FVF_II::Scale
+(const double z,const double y,
+ const double _scale,const double Q2) const
+{
+  if (p_sf->ScaleScheme()==1) return _scale;
+  double ma2(p_ms->Mass2(m_flavs[0])), mj2(p_ms->Mass2(m_flavs[2]));
+  double scale = (Q2-ma2-mj2-p_ms->Mass2(m_flspec))*y/z-ma2-mj2;
+  return scale;
+}
+
 double LF_FVF_II::operator()
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
@@ -589,9 +621,19 @@ double LF_FVF_II::Z()
   return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran->Get());
 }
 
+double LF_VFF_FF::Scale
+(const double z,const double y,
+ const double _scale,const double Q2) const
+{
+  if (p_sf->ScaleScheme()==1) return _scale;
+  double m2(p_ms->Mass2(m_flavs[1])+p_ms->Mass2(m_flavs[2]));
+  double scale = (Q2-m2-p_ms->Mass2(m_flspec))*y+m2;
+  return scale;
+}
+
 double LF_VFF_FF::operator()
   (const double z,const double y,const double eta,
-   const double _scale,const double Q2,Cluster_Amplitude *const sub)
+   const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
   double mui2  = sqr(p_ms->Mass(m_flavs[1]))/Q2;
   double muj2  = sqr(p_ms->Mass(m_flavs[2]))/Q2;
@@ -599,9 +641,6 @@ double LF_VFF_FF::operator()
   //the massless case 
   double massless = (1.-2.*z*(1.-z));
   double longpol = 0.5;
-  double scale = Q2*((1.0-mui2-muj2-muk2)*y+(mui2+muj2));
-  if (p_sf->ScaleScheme()==1) scale=_scale;
-  if (p_sf->ScaleScheme()==2) scale=_scale - Q2*(mui2+muj2);
   if (mui2==0. && muj2==0. && muk2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JFF(y,0.0,0.0,0.0,0.0);
@@ -657,17 +696,23 @@ double LF_VFF_FI::CDISMax()
 #endif
 }
 
+double LF_VFF_FI::Scale
+(const double z,const double y,
+ const double _scale,const double Q2) const
+{
+  if (p_sf->ScaleScheme()==1) return _scale;
+  double scale = Q2*y/(1.0-y)+2.0*p_ms->Mass2(m_flavs[1])/(1.0-y);
+  return scale;
+}
+
 double LF_VFF_FI::operator()
   (const double z,const double y,const double eta,
-   const double _scale,const double Q2,Cluster_Amplitude *const sub)
+   const double scale,const double Q2,Cluster_Amplitude *const sub)
 {
   double muQ2 = sqr(p_ms->Mass(m_flavs[1]))*(1.-y)/Q2;
   //the massless case 
   double massless = ( (1.-2.*z*(1.-z))*(1.-0.5/z*CDIS(y,z)) + CDIS(z,y) );
   double longpol = 0.5;
-  double scale = (Q2+p_ms->Mass2(m_flspec))*y/(1.0-y);
-  if (p_sf->ScaleScheme()==1) scale=_scale;
-  if (p_sf->ScaleScheme()==2) scale=_scale-2.0*p_ms->Mass2(m_flavs[1]);
   if (muQ2==0.) {
     double value = 2.0 * p_cf->Coupling(scale,0,sub) * massless + p_cf->Coupling(scale,1,sub) * longpol;
     return value * JFI(y,eta,scale,sub);
@@ -721,6 +766,16 @@ double LF_VFF_IF::CDISMax()
 #endif
 }
 
+double LF_VFF_IF::Scale
+(const double z,const double y,
+ const double _scale,const double Q2) const
+{
+  if (p_sf->ScaleScheme()==1) return _scale;
+  double ma2(p_ms->Mass2(m_flavs[0])), mj2(p_ms->Mass2(m_flavs[2]));
+  double scale = (Q2+ma2+mj2+p_ms->Mass2(m_flspec))*y/z-ma2-mj2;
+  return scale;
+}
+
 double LF_VFF_IF::operator() 
   (const double z,const double y,const double eta,
    const double scale,const double Q2,Cluster_Amplitude *const sub)
@@ -749,6 +804,16 @@ double LF_VFF_IF::OverEstimated(const double z,const double y)
 double LF_VFF_IF::Z()
 {
   return m_zmin + (m_zmax-m_zmin)*ATOOLS::ran->Get();
+}
+
+double LF_VFF_II::Scale
+(const double z,const double y,
+ const double _scale,const double Q2) const
+{
+  if (p_sf->ScaleScheme()==1) return _scale;
+  double ma2(p_ms->Mass2(m_flavs[0])), mj2(p_ms->Mass2(m_flavs[2]));
+  double scale = (Q2-ma2-mj2-p_ms->Mass2(m_flspec))*y/z-ma2-mj2;
+  return scale;
 }
 
 double LF_VFF_II::operator()

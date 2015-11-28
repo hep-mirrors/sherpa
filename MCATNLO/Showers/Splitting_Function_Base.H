@@ -76,6 +76,9 @@ namespace MCATNLO {
 
     virtual ~SF_Lorentz();
 
+    virtual double Scale(const double z,const double y,
+			 const double scale,const double Q2) const;
+
     virtual double operator()
       (const double z,const double y,const double eta,
        const double scale,const double Q2,
