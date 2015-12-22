@@ -6,6 +6,8 @@
 
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Org/Smart_Pointer.H"
+#include "PHASIC++/Main/Color_Integrator.H"
 
 namespace SHERPA{
   class Sherpa;
@@ -30,6 +32,7 @@ private:
   SHERPA::Sherpa*            p_gen;
   PHASIC::Process_Base *     p_proc;
   PHASIC::Rambo*             p_rambo;
+  ATOOLS::Smart_Pointer<PHASIC::Color_Integrator> p_colint;
 
   size_t                         m_ncolinds;
   std::vector<std::vector<int> > m_colcombinations;
@@ -45,6 +48,7 @@ private:
 
   void SetMomentumIndices(const std::vector<int> &pdgs);
   PHASIC::Process_Base* FindProcess();
+  void SetColors();
 
 public:
   MEProcess(SHERPA::Sherpa* Generator);
@@ -55,7 +59,6 @@ public:
   void AddOutFlav(const int &id, const int &col1, const int &col2);
   double GenerateColorPoint();
   bool HasColorIntegrator();
-  void SetColors();
   void Initialize();
 
   size_t NumberOfPoints();

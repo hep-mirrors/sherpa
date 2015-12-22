@@ -24,17 +24,12 @@
 MEProcess::MEProcess(SHERPA::Sherpa *a_Generator) :
   m_name(""), p_amp(ATOOLS::Cluster_Amplitude::New()),
   p_gen(a_Generator), p_proc(NULL), p_rambo(NULL), m_ncolinds(0),
-  m_npsp(0), m_nin(0), m_nout(0)
+  m_npsp(0), m_nin(0), m_nout(0), p_colint(NULL)
 {
 }
 
 MEProcess::~MEProcess()
 {
-}
-
-bool MEProcess::HasColorIntegrator()
-{
-  return (p_proc->Integrator()->ColorIntegrator() != 0);
 }
 
 void MEProcess::SetMomentumIndices(const std::vector<int> &pdgs)
@@ -206,30 +201,25 @@ void MEProcess::AddOutFlav(const int &id, const int &col1, const int &col2)
 
 double MEProcess::GenerateColorPoint()
 {
-  SP(PHASIC::Color_Integrator) CI = (p_proc->Integrator()->ColorIntegrator());
-  if (CI == 0)
-    THROW(fatal_error, "No color integrator. Make sure Comix is used.");
-  CI->GeneratePoint();
+  if (p_colint==0) THROW(fatal_error, "No color integrator. Make sure Comix is used.");
+  p_colint->GeneratePoint();
   for (size_t i=0; i<p_amp->Legs().size(); ++i)
-    p_amp->Leg(i)->SetCol(ATOOLS::ColorID(CI->I()[i],CI->J()[i]));
-  return CI->GlobalWeight();
+    p_amp->Leg(i)->SetCol(ATOOLS::ColorID(p_colint->I()[i],p_colint->J()[i]));
+  SetColors();
+  return p_colint->GlobalWeight();
 }
 
 void MEProcess::SetColors()
 { 
+  if (p_colint==0) THROW(fatal_error, "No color integrator. Make sure Comix is used.");
   PHASIC::Int_Vector ci(p_amp->Legs().size());
   PHASIC::Int_Vector cj(p_amp->Legs().size());
-  SP(PHASIC::Color_Integrator) CI = (p_proc->Integrator()->ColorIntegrator());
-  if (CI==0)
-    THROW(fatal_error, "No color integrator. Make sure Comix is used.");
-  CI->GeneratePoint();
-  for (size_t i=0; i<p_amp->Legs().size(); ++i)
-    {
+  for (size_t i=0; i<p_amp->Legs().size(); ++i){
       ci[i] = p_amp->Leg(i)->Col().m_i;
       cj[i] = p_amp->Leg(i)->Col().m_j;
     }
-  CI->SetI(ci);
-  CI->SetJ(cj);
+  p_colint->SetI(ci);
+  p_colint->SetJ(cj);
 }
 
 PHASIC::Process_Base* MEProcess::FindProcess()
@@ -315,9 +305,9 @@ void MEProcess::Initialize()
   for (std::vector<int>::const_iterator it=m_outpdgs.begin();
        it!=m_outpdgs.end(); it++) allpdgs.push_back(*it);
   SetMomentumIndices(allpdgs);
-  if (p_proc->Integrator()->ColorIntegrator()!=NULL)
-    p_proc->Integrator()->ColorIntegrator()->GeneratePoint();
-
+  if(p_proc->Integrator()->ColorIntegrator()!=NULL)
+    p_colint = p_proc->Integrator()->ColorIntegrator();
+  
   p_rambo = new PHASIC::Rambo(m_nin,m_nout,
 			      &m_flavs.front(),
 			      p_proc->Generator());
@@ -338,25 +328,27 @@ ATOOLS::Vec4D_Vector MEProcess::TestPoint(const double& E){
   }
   p_rambo->GeneratePoint(&p[0],(PHASIC::Cut_Data*)(NULL));
   SetMomenta(p);
+  GenerateColorPoint();
   return p;
 }
 
 double MEProcess::MatrixElement()
 {
-  if (!HasColorIntegrator()) return p_proc->Differential(*p_amp);
-  SP(PHASIC::Color_Integrator) ci(p_proc->Integrator()->ColorIntegrator());
-  ci->SetWOn(false);
-  double res(p_proc->Differential(*p_amp));
-  ci->SetWOn(true);
+  if(p_colint!=NULL) p_colint->SetWOn(false);
+  double res(p_proc->Differential(*p_amp,1|4));
+  if(p_colint!=NULL) p_colint->SetWOn(true);
+  // if(res!=0.0){
+  //   PRINT_VAR(*p_amp);
+  //   PRINT_VAR(res);
+  //   exit(0);
+  // }
   return res;
 }
 
 double MEProcess::CSMatrixElement()
 {
-  if (!HasColorIntegrator()) return p_proc->Differential(*p_amp,1|4);
+  if (p_colint==NULL) return MatrixElement();
   GenerateColorPoint();
-  SP(PHASIC::Color_Integrator) ci(p_proc->Integrator()->ColorIntegrator());
-  ci->SetWOn(false);
   double r_csme(0.);
   std::vector<std::vector<int> >::const_iterator it;
   std::vector<int>::const_iterator jt;
@@ -379,9 +371,8 @@ double MEProcess::CSMatrixElement()
     if(ind!=m_ncolinds/2)  THROW(fatal_error, "Internal Error");
     if(indbar!=m_ncolinds) THROW(fatal_error, "Internal Error");
     SetColors();
-    r_csme+=p_proc->Differential(*p_amp,1|4);
+    r_csme+=MatrixElement();
   }
-  ci->SetWOn(true);
   return r_csme;
 }
 
