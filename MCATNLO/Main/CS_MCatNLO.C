@@ -112,10 +112,6 @@ int CS_MCatNLO::PerformMCatNLO(const size_t &maxem,size_t &nem,const double &qfa
 		   <<ID((*cit)->Id())<<" ... ";
     for (Singlet::iterator pit(last->begin());pit!=last->end();++pit) {
       if (iinfo.find(IDip_ID((*cit)->Idx(),(*pit)->Idx()))!=iinfo.end()) {
-	int scc(((*cit)->Idx()<p_rampl->NIn()?(*cit)->GetFlavour().Bar():
-		 (*cit)->GetFlavour()).StrongCharge());
-	int scp(((*pit)->Idx()<p_rampl->NIn()?(*pit)->GetFlavour().Bar():
-		 (*pit)->GetFlavour()).StrongCharge());
 	if (m_psmode &&
 	    !(((*cit)->GetFlow(1) &&
 	       (*cit)->GetFlow(1)==(*pit)->GetFlow(2)) ||

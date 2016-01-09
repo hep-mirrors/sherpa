@@ -15,6 +15,7 @@
 #include "ATOOLS/Org/My_Limits.H"
 
 #include <algorithm>
+#include <assert.h>
 
 using namespace CSSHOWER;
 using namespace PHASIC;
@@ -277,6 +278,7 @@ bool CS_Shower::PrepareShower(Cluster_Amplitude *const ampl,const bool & soft)
 
 bool CS_Shower::PrepareStandardShower(Cluster_Amplitude *const ampl)
 {
+  assert(ampl != NULL);
   CleanUp();
   DEBUG_FUNC("");
   for (Cluster_Amplitude *campl(ampl);
@@ -604,7 +606,7 @@ void CS_Shower::SetColours(Cluster_Amplitude *const ampl)
     }
   }
   if (xit!=m_xsmap.end()) {
-    bool test(xit->second->SetColours(moms));
+    xit->second->SetColours(moms);
     for (size_t i(0);i<fl.size();++i) {
       ColorID c(xit->second->Colours()[i][0],
 		xit->second->Colours()[i][1]);

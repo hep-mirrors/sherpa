@@ -43,7 +43,8 @@ CS_Parameters CS_Cluster_Definitions::KT2
   }
   p_b=ampl->Leg(i==ampl->Leg(0)?1:0);
   Vec4D pi(i->Mom()), pj(j->Mom()), pk(k->Mom());
-  double Q2=(pi+pj+pk).Abs2(), mb2=p_ms->Mass2(p_b->Flav());
+  const double Q2=(pi+pj+pk).Abs2();
+  double mb2=p_ms->Mass2(p_b->Flav());
   double mi2=p_ms->Mass2(i->Flav()), mj2=p_ms->Mass2(j->Flav());
   double mk2=p_ms->Mass2(k->Flav()), mij2=p_ms->Mass2(mo);
   if (!(i->Id()&3) && mi2>10.0 && !i->Flav().Strong()) mi2=pi.Abs2();
@@ -54,7 +55,6 @@ CS_Parameters CS_Cluster_Definitions::KT2
     pk[0]=pk[0]<0.0?-pk.PSpat():pk.PSpat();
     mk2=0.0;
   }
-  Q2=(pi+pj+pk).Abs2();
   CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),
 		   1.0,1.0,0.0,0.0,0.0,
 		   ((i->Id()&3)?1:0)|((k->Id()&3)?2:0),kin);

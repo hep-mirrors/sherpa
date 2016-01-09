@@ -71,8 +71,8 @@ CS_Parameters CS_Cluster_Definitions::KT2
     col=-1;
   }
   p_b=ampl->Leg(i==ampl->Leg(0)?1:0);
-  Vec4D pi(i->Mom()), pj(j->Mom()), pk(k->Mom());
-  double Q2=(pi+pj+pk).Abs2();
+  const Vec4D pi(i->Mom()), pj(j->Mom()), pk(k->Mom());
+  const double Q2=(pi+pj+pk).Abs2();
   double mb2=p_b->Mom().Abs2(), mfb2=p_ms->Mass2(p_b->Flav());
   if (mfb2==0.0 || IsEqual(mb2,mfb2,1.0e-6)) mb2=mfb2;
   double mi2=pi.Abs2(), mfi2=p_ms->Mass2(i->Flav());
@@ -86,7 +86,6 @@ CS_Parameters CS_Cluster_Definitions::KT2
     mij2=(pi+pj).Abs2();
     kin=0;
   }
-  Q2=(pi+pj+pk).Abs2();
   Kin_Args lt;
   CS_Parameters cs(sqrt(std::numeric_limits<double>::max()),
 		   1.0,1.0,0.0,0.0,0.0,
@@ -266,7 +265,7 @@ void CS_Cluster_Definitions::KernelWeight
     msg_Debugging()<<"No Kernel. Set weight "<<cs.m_ws<<".\n";
   }
   else {
-  double scale=cs.m_kt2, eta=1.0;
+  double eta=1.0;
   if (cs.m_mode==1) eta=GetX(i,cdip)*cs.m_z;
   else if (cs.m_mode==2) eta=GetX(k,cdip)*(1.0-cs.m_y);
   else if (cs.m_mode==3) eta=GetX(i,cdip)*cs.m_z;
@@ -276,10 +275,12 @@ void CS_Cluster_Definitions::KernelWeight
   if (cs.m_wk<=0.0 || IsBad(cs.m_wk))
     cs.m_wk=sqrt(std::numeric_limits<double>::min());
   cs.m_ws=1.0/cs.m_wk;
+  SF_Lorentz *lf = cdip->Lorentz();
+  SF_Coupling *cf = cdip->Coupling();
   msg_Debugging()<<"Kernel weight (A="<<AMode()<<"/NLO="<<(kmode&16)
 		 <<") [m="<<cs.m_mode<<",c="<<cs.m_col<<"] ( x = "<<eta
-		 <<" ) "<<Demangle(typeid(*cdip->Lorentz()).name()).substr(10)
-		 <<"|"<<Demangle(typeid(*cdip->Coupling()).name()).substr(10)
+		 <<" ) "<<Demangle(typeid(*lf).name()).substr(10)
+		 <<"|"<<Demangle(typeid(*cf).name()).substr(10)
 		 <<" {\n  "<<*i<<"\n  "<<*j<<"\n  "<<*k
 		 <<"\n} -> w = "<<cs.m_wk<<" ("<<cs.m_ws<<")\n";
   }

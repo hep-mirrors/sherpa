@@ -98,19 +98,16 @@ int CS_Gamma::CalculateWeights(Cluster_Amplitude *const ampl,
 	  nampl->Decays()=ampl->Decays();
 	  nampl->SetProcs(ampl->Procs<void>());
 	  nampl->SetDInfo(ampl->DInfo<void>());
-	  Cluster_Leg *lijt(NULL), *lkt(NULL);
 	  for (size_t l(0), m(0);l<ampl->Legs().size();++l) {
 	    if (l==j) continue;
 	    else if (l==i) {
 	      nampl->CreateLeg(p[m],cf[f],CombineColors
 			       (li,lj,lk,cf[f]),li->Id()|lj->Id());
 	      nampl->Legs().back()->SetK(lk->Id());
-	      lijt=nampl->Legs().back();
 	    }
 	    else {
 	      Cluster_Leg *cl(ampl->Leg(l));
 	      nampl->CreateLeg(p[m],cl->Flav(),cl->Col(),cl->Id());
-	      if (cl==lk) lkt=nampl->Legs().back();
 	    }
 	    ++m;
 	  }
