@@ -90,7 +90,7 @@ def write_model(model, lorentzes, model_name, model_file_name):
         name, mapped_name = lor.name(), lor.mapped_name()
         if  mapped_name is not None:
             lorentz_map +='\n      m_lorentz_map.insert(std::make_pair("{0}","{1}"));'.format(name,mapped_name)
-    
+
     # write out model
     with open(model_file_name, "w") as outfile:
         outfile.write(model_template.substitute(model_name=model_name, particle_init=part_init, param_init=para_init,
