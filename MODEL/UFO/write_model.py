@@ -33,10 +33,10 @@ def write_model(model, lorentzes, model_name, model_file_name):
     for s_part in [ s_particle(p) for p in model.all_particles ]:
         kfcode = s_part.kf_code()
         # don't explicitly need to add antiparticles
-        if kfcode < 0: 
+        if kfcode < 0:
             continue
         massive = 0 if (s_part.ufo_particle.mass is model.parameters.ZERO) else 1
-        part_init += ("\n    ATOOLS::s_kftable["+str(s_part.kf_code())+"] = new ATOOLS::Particle_Info("+ 
+        part_init += ("\n    ATOOLS::s_kftable["+str(s_part.kf_code())+"] = new ATOOLS::Particle_Info("+
                       str(s_part.kf_code())+", "+                                 # kf_code
                       str(1000.0)+", "+                                           # mass
                       str(0.0)+", "+                                              # width
