@@ -72,7 +72,7 @@ a range of Sherpa versions.
 This parameter specifies which tune is to be used. Setting different 
 tunes using this parameter ensures, that consistent settings are 
 employed. This affects mostly @ref{MPI Parameters} and
-@ref{Intrinsic Transverse Momentum} parameters. Possible values are:
+@ref{Intrinsic Transverse Momentum} parameters. Possible values are (for Sherpa 2.1.1):
 @itemize @bullet
 @item
 @code{CT10} MPI tune for the Sherpa's default PDF, CT10. This is the default tune.
