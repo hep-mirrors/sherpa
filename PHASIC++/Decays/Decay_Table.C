@@ -131,6 +131,6 @@ Decay_Channel* Decay_Table::Select() const
       break;
     }
   }
-  DEBUG_VAR(*selected);
+  if (selected) DEBUG_VAR(*selected);
   return selected;
 }

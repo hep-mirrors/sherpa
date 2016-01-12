@@ -1,5 +1,6 @@
 #include "HADRONS++/Current_Library/VA_0_PPP.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/MyStrStream.H"
 
 using namespace HADRONS;
 using namespace ATOOLS;
@@ -201,8 +202,7 @@ VA_0_PPP::FF_Base::FF_Base(int mode, int kaon_mode, std::string path, GeneralMod
       resV[1] = kf_rho_770_plus;
       break;
     default:
-      msg_Error()<<METHOD<<" Warning: Three pseudoscalar mode not recognized. "
-        <<"mode="<<m_mode<<endl;
+      THROW(fatal_error, "Three pseudoscalar mode not recognized: "+ToString(m_mode));
       break;
   }
 

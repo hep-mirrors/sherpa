@@ -76,13 +76,6 @@ void Hadron_Decay_Map::ReadInPartonicDecays(const ATOOLS::Flavour & decflav,
 					    const std::string& path, 
 					    const std::string& file) 
 {
-  if (decflav!=Flavour(kf_b) && decflav!=Flavour(kf_c)) {
-    msg_Error()<<"Error in "<<METHOD<<":\n"
-	       <<"   No structure to read in partonic decays of "
-	       <<decflav<<".\n"
-	       <<"   Will continue and hope for the best.\n";
-    return;
-  }
   Data_Reader reader = Data_Reader(" ",";","!","|");
   reader.AddWordSeparator("\t");
   reader.SetAddCommandLine(false);
@@ -100,11 +93,16 @@ void Hadron_Decay_Map::ReadInPartonicDecays(const ATOOLS::Flavour & decflav,
   Flavour flav;
   double  width(0.),BR,dBR;
   std::string origin;
-  Decay_Table * dt;
+  Decay_Table * dt=NULL;
   if (decflav==Flavour(kf_b))
     dt = Tools::partonic_b;
   else if (decflav==Flavour(kf_c))
     dt = Tools::partonic_c;
+  else {
+    msg_Error()<<"Error in "<<METHOD<<":\n"
+               <<"   No structure to read in partonic decays of "<<decflav<<".";
+    return;
+  }
   double decmass = decflav.HadMass(); 
   
   for (size_t i=0;i<helpsvv.size();i++) {
