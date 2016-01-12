@@ -33,7 +33,7 @@ def get_in_current_declaration(spin, key, index, ferm_partner):
     for i in range(1 if spin==1 else 4):
         ret += "const SComplex & j{0}{1} = j{0}[{2}];\n".format(key, i, vect_gauge_dict[i] if spin==3 else i)
     return ret
-        
+
 
 def get_in_mom_declaration(key, index):
     ret = "const ATOOLS::Vec4D & p{0} = p_v->J({1})->P();\n".format(key, index)
