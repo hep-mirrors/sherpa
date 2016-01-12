@@ -49,4 +49,4 @@ class sym_var(object):
         return ccode(expand(self._expr))
 
     def __eq__(self, other):
-        return Eq((self-other)._expr, 0.0)
+        return (self-other)._expr.is_zero
