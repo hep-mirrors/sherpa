@@ -7,6 +7,7 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Math/MathTools.H"
 #include "ATOOLS/Math/Permutation.H"
+#include <cassert>
 
 namespace AMEGIC {
   class Compare_Pre_Amplitudes {
@@ -58,6 +59,7 @@ Amplitude_Generator::~Amplitude_Generator()
 
 void Amplitude_Generator::Set_End(Point* p,int* &perm,int& pnum)
 {
+  assert(p != NULL);
   p->b     = 0;
   p->fl    = Flavour(kf_none);
   if ((p->left==0) && (p->right==0)) {
@@ -482,10 +484,8 @@ void Amplitude_Generator::Unite(Point* p,Point* pdel)
 	  p[i].nextra = nfl;
 	  
 	  //Couplings
-	  count = 0;
 	  p[i].cpl.clear();
 	  for (size_t j=0;j<psave.Ncpl();j++) p[i].cpl.push_back(psave.cpl[j]);   
-	  count += psave.Ncpl();
 	  for (size_t j=0;j<pdel[i].Ncpl();j++) p[i].cpl.push_back(pdel[i].cpl[j]);			
 	  
 	  //previous couplings too
@@ -501,9 +501,7 @@ void Amplitude_Generator::Unite(Point* p,Point* pdel)
 	    p[hit].cpl.clear();
 	    
 	    //Couplings
-	    count = 0;
 	    for (size_t j=0;j<psave.Ncpl();j++) p[hit].cpl.push_back(psave.cpl[j]);   
-	    count += psave.Ncpl();
 	    for (size_t j=0;j<pdel[hit].Ncpl();j++) p[hit].cpl.push_back(pdel[hit].cpl[j]);			
 	  }
 	  else 
@@ -666,8 +664,12 @@ int Amplitude_Generator::Compare5Vertex(Point* p1,Point* p2)
     p42=p2->right;
   }
 
-  if (!CompareColors(p41,p42)) return 0;
-
+  if (!CompareColors(p41,p42)) {
+    delete[] pts1;
+    delete[] pts2;
+    return 0;
+  }
+  
   int hit = 0;
   Permutation perm(4);
   for (int i=0;i<perm.MaxNumber()&&!hit;i++) {

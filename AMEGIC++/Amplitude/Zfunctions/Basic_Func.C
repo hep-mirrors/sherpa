@@ -2,6 +2,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "AMEGIC++/Amplitude/Pfunc.H"
+#include <cassert>
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -29,6 +30,7 @@ void Basic_Func::Map(int& numb)
       p = *pit;
       if (p->arg[0]==ATOOLS::iabs(numb)) break;
     }
+    assert(p!=NULL);
     numb = (numb>0) ? p->momnum:-p->momnum;
   }
 }
@@ -48,6 +50,7 @@ void Basic_Func::Map(int& numb,bool& maped)
       p = *pit;
       if (p->arg[0]==numb) break;
     }
+    assert(p!=NULL);
     numb = p->momnum;
   }
 }

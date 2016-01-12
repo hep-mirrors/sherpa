@@ -1,6 +1,7 @@
 #include "AMEGIC++/Amplitude/Super_Amplitude.H"
 #include "AMEGIC++/Amplitude/Zfunc.H"
 #include "ATOOLS/Org/Message.H"
+#include <cassert>
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -247,6 +248,7 @@ void Super_Amplitude::ReduceZfuncs(string str)
 	abort();
       }
     }
+    assert(superfunc!=NULL);
     if(superfunc->GetSize()==1){
       zlist->push_back((*superfunc)[0]);
       delete superfunc;

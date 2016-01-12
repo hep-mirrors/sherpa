@@ -4,6 +4,7 @@
 #include "AMEGIC++/Main/Point.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
+#include <cassert>
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -73,6 +74,7 @@ void Prop_Generator::Fill()
 	    ph = *pit;
 	    if (ph->arg[0]==harg[i]) break;
 	  }
+	  assert(ph !=NULL);
 	  p->argnum += ph->argnum-2;
 	  delete[] p->arg;
 	  p->arg = new int[p->argnum];

@@ -777,8 +777,7 @@ void CFColor::ReplaceD(sknot* m, sknot* start)
 	    // replace s1->Str()[2] -> s1->Str()[4]
 	    char from = s1->Str()[2];
 	    char to   = s1->Str()[4];
-	    int hit=0;
-	    hit = SingleReplaceD(start,s1,from,to);
+	    SingleReplaceD(start,s1,from,to);
 	    s1->SetString(string("1"));
 	  }
 	}
@@ -791,8 +790,7 @@ void CFColor::ReplaceD(sknot* m, sknot* start)
 	    // replace s2->Str()[2] -> s2->Str()[4]
 	    char from = s2->Str()[2];
 	    char to   = s2->Str()[4];
-	    int hit=0;
-	    hit = SingleReplaceD(start,s2,from,to);
+	    SingleReplaceD(start,s2,from,to);
 	    s2->SetString(string("1"));
 	  }
 	}

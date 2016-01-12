@@ -23,9 +23,8 @@ Kabbala Basic_MassTermfunc::MassTerm(int a)
     if (p1->arg[0]==iabs(a)) break;
   }
 
-  double mass = (p1->fl).Mass();
-
-  if (mass==0.0) return Kabbala(string("1"),Complex(1.,0.));
+  assert(p1!=NULL);
+  if ((p1->fl).Mass()==0.0) return Kabbala(string("1"),Complex(1.,0.));
 
   return sgen->GetMassnumber(Sign(a)*p1->momnum,p1->fl,MassTermCalc(Sign(a)*p1->momnum,p1->fl));
 }

@@ -146,7 +146,6 @@ void Vertex::GenerateVertex()
       m_v4[i].on = m_v4[i].CheckCoupling();
       if (m_v4[i].on) { 
 	if(m_v4[i].nleg==4) {
-	  int id[4]={1,2,3,4};
 	  for (short int k=1;k<5;k++) {
 	    for (short int l=1;l<5;l++) {
 	      if (l!=k) {
@@ -184,7 +183,6 @@ void Vertex::GenerateVertex()
       //required by Interaction_Model_ADD due to small couplings
       m_v[i].on = m_v[i].CheckCoupling();
       if (m_v[i].nleg==3) {  
-	int id[3]={1,2,3};
 	for (short int k=1;k<4;k++) {
 	  for (short int l=1;l<4;l++) {
 	    if (l!=k) {
@@ -543,7 +541,6 @@ int Vertex::FindVertex(Single_Vertex* v_tofind)
 	    if (v_tofind->in[2].Kfcode()==m_v[i].in[2].Kfcode()) {
 	      // vertex found in m_v
 	      nr=i;
-	      v_tofind=&m_v[nr];
 	      return nr;
 	    }
       }

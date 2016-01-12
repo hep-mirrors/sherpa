@@ -5,6 +5,7 @@
 #include "AMEGIC++/Amplitude/Zfunctions/Zfunc_Calc.H"
 #include "AMEGIC++/String/String_Handler.H"
 #include "ATOOLS/Org/Message.H"
+#include <cassert>
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -125,7 +126,7 @@ int Single_Amplitude_Base::FillArgs(Zfunc* z, int* args, vector<int>* iz, vector
 	  }
 	}      
       }
-
+    
       if(z->p_arguments[i]<99) {
 	if (((fl[z->p_arguments[i]].Majorana() || 
 	      //final-state line
@@ -154,6 +155,7 @@ int Single_Amplitude_Base::FillArgs(Zfunc* z, int* args, vector<int>* iz, vector
     }
     else{
       if (z->p_arguments[i]<massiveskip) {                                //old external massless Vector Boson treatment
+	assert(iz!=NULL);
 	args[2*i] = z->p_arguments[i]-masslessskip;
 	for(size_t j=0;j<iz->size();j++){
 	  if(iabs((*iz)[j])==z->p_arguments[i]-masslessskip){
@@ -519,7 +521,8 @@ void Single_Amplitude_Base::GroupZfuncs()
     }
     int ia=0;
     if(over==0){
-      Zfunc* zh[2]; 
+      Zfunc* zh[2];
+      zh[0]=0;zh[1]=0;
       indexlist.push_back(dummy);
       
       vector<vector<int> >::iterator ilt=indexlist.begin();	

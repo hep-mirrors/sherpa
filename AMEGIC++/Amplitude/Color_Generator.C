@@ -156,8 +156,7 @@ void Color_Generator::CFKill()
   Color_Function* c;
   Color_Function* c2;
   c = CFlist;
-  int replace,with;
-  replace = with  = 0;
+  int replace=0,with=0;
   while (c) {
     if (c->Type() == cf::D || c->Type() == cf::G) {
       replace = -1;
