@@ -867,7 +867,6 @@ void Histogram::InsertRange(double start, double end, double value) {
   }
 
   double low,up;
-  int hit=0;
   low = m_lower; up = m_lower+m_binsize;
   for (int i=1;i<m_nbin-1;i++) {
     if ((start < up) && (end >= low) ) {
@@ -888,8 +887,6 @@ void Histogram::InsertRange(double start, double end, double value) {
 	m_yvalues[i] += value *fac;
       }
     
-
-      hit=1;
       if (m_depth>1) {
 	if (value>m_y2values[i]) m_y2values[i] = value;
       }

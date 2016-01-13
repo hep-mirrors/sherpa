@@ -320,7 +320,6 @@ std::string &Read_Write_Base::KillBlanks(std::string &buffer) const
     hit=false;
     if (IsBlank(buffer[0])) {
       buffer.erase(0,1); 
-      hit=true;
       break;
     }
   }
@@ -330,7 +329,6 @@ std::string &Read_Write_Base::KillBlanks(std::string &buffer) const
     hit=false;
     if (IsBlank(buffer[buffer.length()-1])) {
       buffer.erase(buffer.length()-1,1);
-      hit=true;
       break;
     }
   }

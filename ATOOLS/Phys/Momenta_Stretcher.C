@@ -190,8 +190,7 @@ bool Momenta_Stretcher::ZeroThem(const int n0, const int n, Vec4D * momenta,
     double ET  = sqrt(cms.Abs2());
     double x   = 1./sqrt(1.-sqr(xmt/ET));
     double acc = dabs(rel)*ET;
-    xmt        = 0.;
-
+   
     double f0,g0,x2;
     for (int i=0;i<10;i++) {
       f0 = -ET;g0 = 0.;x2 = x*x;
@@ -239,7 +238,6 @@ bool Momenta_Stretcher::ZeroThem(const int n0,vector<Vec4D>& momenta,
     double ET  = sqrt(cms.Abs2());
     double x   = 1./sqrt(1.-sqr(xmt/ET));
     double acc = dabs(rel)*ET;
-    xmt        = 0.;
     
     double f0,g0,x2;
     for (int i=0;i<10;i++) {

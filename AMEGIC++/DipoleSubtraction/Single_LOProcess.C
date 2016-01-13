@@ -639,7 +639,6 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
       } 
 
       p_hel->AllowTransformation();
-      string_test = 0;
     }
     else {
       string searchfilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+m_ptypename+string("/")+testname+string("/V.H");
