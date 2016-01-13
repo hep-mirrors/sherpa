@@ -216,7 +216,7 @@ int Channel_Generator_KK::MakeChannel(int& echflag,int n,string& path,string& pI
   chf<<"  double *ran = p_vegas->GeneratePoint(_ran);"<<endl;
   chf<<"  for(int i=0;i<rannum;i++) rans[i]=ran[i];"<<endl;
   Flavour * flav    = new Flavour[nout];  
-  int       maxnumb = 0;   
+  
   acount = 0;
   newchannel = 0;
   Step0(0,m_topos[echflag],rannum,chf);
@@ -230,7 +230,6 @@ int Channel_Generator_KK::MakeChannel(int& echflag,int n,string& path,string& pI
   chf<<"GenerateWeight(Vec4D* p,Cut_Data * cuts)"<<endl<<"{"<<endl;
   chf<<"  double wt = 1.;"<<endl;
 
-  maxnumb = 0;
   acount = 0;
 
   Step0(1,m_topos[echflag],rannum,chf);
@@ -567,8 +566,7 @@ bool Channel_Generator_KK::QCDAntenna(int flag,Point* p,int& rannum,ofstream& sf
     return 1;
   }
 
-  bool first = 0;
-  if (flag>9 || flag==-1) { first = 1; flag -= 10; }
+  if (flag>9 || flag==-1) { flag -= 10; }
 
   switch(flag) {
   case 0:

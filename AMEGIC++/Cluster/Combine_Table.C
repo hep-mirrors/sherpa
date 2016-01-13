@@ -685,7 +685,6 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete)
     }
     if (nl<p_proc->NIn()+NOutMin())
       THROW(fatal_error,"nlegs < min. Abort.");
-    double scale(-1.0);
     Combine_Table *tab(CreateNext());
     if (tab!=NULL) {
       if (!order || ((mode&4096) && p_up==NULL)) {
@@ -694,7 +693,6 @@ CalcJet(int nl,ATOOLS::Vec4D * moms,const size_t mode,const int complete)
 	for (size_t i(0);i<m_decids.size();++i)
 	  tab->m_kt2ord.push_back(std::make_pair(m_decids[i]->m_id,0.0));
       }
-      scale=(tab->Momentum(0)+tab->Momentum(1)).Abs2();
       Combine_Table *next(NextTable(tab,mode,complete));
       if (next!=NULL) return next;
     }
@@ -730,7 +728,7 @@ bool Combine_Table::SelectWinner(const size_t &mode)
   // calculate pt2ij and determine "best" combination
   m_cdata_winner = cl.end();
   CD_List::iterator rdata_winner(cl.end());
-  double kt2(std::numeric_limits<double>::max()), lkt2(kt2);
+  double kt2(std::numeric_limits<double>::max());
   double rkt2(std::numeric_limits<double>::max()), sum(0.0);
   for (CD_List::iterator cit(cl.begin()); cit!=cl.end(); ++cit) {
     CD_List::iterator tit(CalcPropagator(cit,mode));

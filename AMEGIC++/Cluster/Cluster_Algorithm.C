@@ -45,9 +45,6 @@ bool Cluster_Algorithm::Cluster
   if (nampl==0 || p_ct==NULL || p_ct->RScale()>0.0) {
     PHASIC::Process_Base *pb(p_proc->IsMapped()?
 			     p_proc->MapProc():p_proc);
-    double rscale((pb->Integrator()->Momenta()[0]+
-		   pb->Integrator()->Momenta()[1]).Abs2());
-    if (p_ct) rscale=p_ct->RScale();
     msg_Debugging()<<METHOD<<"(): {\n";
     p_ampl = Cluster_Amplitude::New();
     p_ampl->SetMS(p_ms);
@@ -242,7 +239,6 @@ void Cluster_Algorithm::Convert()
   p_ampl->SetMuQ2(muq2);
   p_ampl->SetMuR2(mur2);
   p_ampl->SetMuF2(muf2);
-  Cluster_Amplitude *eampl(p_ampl);
   while (ct_tmp->Down()) {
     int iwin, jwin, kwin, kmode;
     double mu2;

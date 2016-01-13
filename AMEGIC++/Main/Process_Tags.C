@@ -470,39 +470,22 @@ bool Check_External_Flavours::ValidProcess(int _nin,Flavour * _in,
   
   int    chin  = 0, chout  = 0;
   int    sin  = 0, sout  = 0;
-  int    qin  = 0, qout  = 0;
-  int    lin  = 0, lout  = 0;
-  int    qfin = 0, qfout = 0;  
-  int    lfin = 0, lfout = 0;  
   double bin  = 0, bout  = 0;
   for (int i=0;i<_nin;i++) {
     chin   += _in[i].IntCharge();
     sin   += _in[i].IntSpin();
     bin   += BaryonNumber(_in[i]);
-    lin   += LeptonNumber(_in[i]);
-    qin   += _in[i].StrongCharge();
-    qfin  += int(pow(-1.,_in[i].IsAnti())*pow(10.,_in[i].QuarkFamily()-1));
-    lfin  += int(pow(-1.,_in[i].IsAnti())*pow(10.,_in[i].LeptonFamily()-1));
   }
   for (int i=0;i<_nout;i++) {
     chout  += _out[i].IntCharge();
     sout  += _out[i].IntSpin();
     bout  += BaryonNumber(_out[i]);
-    lout  += LeptonNumber(_out[i]);
-    qout  += _out[i].StrongCharge();
-    qfout += int(pow(-1.,_out[i].IsAnti())*pow(10.,_out[i].QuarkFamily()-1));
-    lfout += int(pow(-1.,_out[i].IsAnti())*pow(10.,_out[i].LeptonFamily()-1));
   }
   sin = sin%2; sout = sout%2;
-  qin = qin%9; qout = qout%9;
-
+  
   if (chin  != chout) return 0;    // electric charge violation
   if (sin  != sout) return 0;    // spin/fermion number violation
   if (bin  != bout) return 0;    // baryon number violation
-  //if (lin  != lout) return 0;    // lepton number violation
-  //if (qin  != qout) return 0;    // strong charge violation
-  //if (qfin != qfout) return 0;   // quark family violation
-  //if (lfin != lfout) return 0;   // lepton family violation
   return 1;
 }
 

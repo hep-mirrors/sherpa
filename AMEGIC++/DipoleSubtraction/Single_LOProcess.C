@@ -639,7 +639,7 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
       } 
 
       p_hel->AllowTransformation();
-      gauge_test = string_test = 0;
+      string_test = 0;
     }
     else {
       string searchfilename = rpa->gen.Variable("SHERPA_CPP_PATH")+string("/Process/Amegic/")+m_ptypename+string("/")+testname+string("/V.H");
@@ -650,8 +650,7 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
 		   <<om::bold<<"   Interrupt run and execute \"makelibs\" in '"
 		   <<rpa->gen.Variable("SHERPA_CPP_PATH")<<"'."
 		   <<om::reset<<std::endl;
-	int stat;
-	stat=system((string("cp ")+rpa->gen.Variable("SHERPA_SHARE_PATH")+
+	system((string("cp ")+rpa->gen.Variable("SHERPA_SHARE_PATH")+
 		string("/makelibs ")+rpa->gen.Variable("SHERPA_CPP_PATH")).c_str());
 	THROW(normal_exit,"Failed to load library.");
       }

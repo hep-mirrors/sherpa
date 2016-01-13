@@ -405,6 +405,9 @@ void Channel_Generator::StepNT(int flag,int tcount,Point* p,int& rannum,ofstream
     } 
     sf<<"Flavour((kf_code)("<<props[tcount]->fl.Kfcode()<<")).Mass();"<<endl;
     sf<<"  width = 0.;"<<endl;
+    
+    delete[] props;
+    delete[] propt;
     return;
   }
 

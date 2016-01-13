@@ -325,102 +325,84 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 	  norm = -norm;
 	}
 	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf_Z).Mass()))) { 
-	  hit = 1;
 	  (*pz)<<"Complex(1./sqr(Flavour(kf_Z).Mass()),0.);"<<endl;
 	  break;
 	}
 	//new
 	if (ATOOLS::IsEqual(norm,sqr(Flavour(kf_Z).Mass()))) { 
-	  hit = 1;
 	  (*pz)<<"Complex(sqr(Flavour(kf_Z).Mass()),0.);"<<endl;
 	  break;
 	}
 	//new
 	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf_Z).Mass()),
 			      -Flavour(kf_Z).Mass()*Flavour(kf_Z).Width())))) { 
-	    hit = 1;
 	    (*pz)<<"(1./Complex(sqr(Flavour(kf_Z).Mass()),"
 	      <<"-Flavour(kf_Z).Mass()*Flavour(kf_Z).Width()));"<<endl;
 	    break;
 	}
 	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf_Wplus).Mass()))) { 
-	  hit = 1;
 	  (*pz)<<"Complex(1./sqr(Flavour(kf_Wplus).Mass()),0.);"<<endl;
 	  break;
 	}
 	//new
 	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf_Wplus).Mass()),
 			      -Flavour(kf_Wplus).Mass()*Flavour(kf_Wplus).Width())))) { 
-	    hit = 1;
 	    (*pz)<<"(1./Complex(sqr(Flavour(kf_Wplus).Mass()),"
 	      <<"-Flavour(kf_Wplus).Mass()*Flavour(kf_Wplus).Width()));"<<endl;
 	    break;
 	}
-   if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf_h0).Mass()))) { 
-	  hit = 1;
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf_h0).Mass()))) { 
 	  (*pz)<<"Complex(1./sqr(Flavour(kf_h0).Mass()),0.);"<<endl;
 	  break;
 	}
 	if (ATOOLS::IsEqual(norm,1./sqr(sqr(Flavour(kf_Z).Mass())))) { 
-	  hit = 1;
 	  (*pz)<<"Complex(1./sqr(sqr(Flavour(kf_Z).Mass())),0.);"<<endl;
 	  break;
 	}	  
 	// double masses
 	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf_Z).Mass()*Flavour(kf_Wplus).Mass()))) { 
-	  hit = 1;
 	  (*pz)<<"Complex(1./sqr(Flavour(kf_Z).Mass()*Flavour(kf_Wplus).Mass()),0.);"<<endl;
 	  break;	
 	}
 	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf_Wplus).Mass()*Flavour(kf_Wplus).Mass()))) { 
-	  hit = 1;
 	  (*pz)<<"Complex(1./sqr(Flavour(kf_Wplus).Mass()*Flavour(kf_Wplus).Mass()),0.);"<<endl;
 	  break;
 	}
 	if (norm==0.5) {
-          hit = 1;
           (*pz)<<"Complex(0.5,0.);"<<endl;
           break;
 	}
 	if (norm==-0.5) {
-          hit = 1;
           (*pz)<<"Complex(-0.5,0.);"<<endl;
 	  break;        
 	}
 	if (norm==1./3.) {
-          hit = 1;
           (*pz)<<"Complex(1./3.,0.);"<<endl;
           break;
 	}
 	if (norm==1.) { 
-	  hit = 1;
 	  (*pz)<<"Complex(1.,0.);"<<endl;
 	    break;
 	}
 	if (norm==2.) { 
-	  hit = 1;
 	  (*pz)<<"Complex(2.,0.);"<<endl;
 	  break;
 	}
 	if (norm==Complex(0.,1.)) { 
-	  hit = 1;
 	  (*pz)<<"Complex(0.,1.);"<<endl;
 	  break;
 	}
 	if (norm==Complex(0.,-1.)) { 
-	  hit = 1;
 	  (*pz)<<"Complex(0.,-1.);"<<endl;
 	  break;
 	}
 	if (norm==Complex(0.,-1./4.)) { 
-	  hit = 1;
 	  (*pz)<<"Complex(0.,-1./4.);"<<endl;
 	  break;
 	}
 	for (size_t i=0;i<sgen->GetFlavours()->size();i++) {
 	  int kfcode = abs((*sgen->GetFlavours())[i]);
 	  if (ATOOLS::IsEqual(norm,Complex(1./sqr(Flavour(kfcode).Mass()),0.))) {
-		hit = 1;
 		(*pz)<<"Complex(1./sqr(Flavour("<<abs((*sgen->GetFlavours())[i])<<").Mass()),0.);"<<endl;
 		break;
 	  }
@@ -429,7 +411,6 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 	  int kfcode = abs((*sgen->GetFlavours())[i]);
 	  if (Flavour(kfcode).Width()!=0.)
 	  if (ATOOLS::IsEqual(norm,1./Complex(sqr(Flavour(kfcode).Mass()),-Flavour(kfcode).Mass()*Flavour(kfcode).Width()))) {
-		hit = 1;
 		(*pz)<<"1./Complex(sqr(Flavour("<<abs((*sgen->GetFlavours())[i])<<").Mass()),-Flavour("
 		     <<abs((*sgen->GetFlavours())[i])<<").Mass()*Flavour("<<abs((*sgen->GetFlavours())[i])<<").Width());"<<endl;
 		break;

@@ -1,6 +1,7 @@
 #include "AMEGIC++/Main/Amegic_Base.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
+#include <cassert>
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -60,6 +61,7 @@ Pol_Info AMEGIC::Amegic_Base::ExtractPolInfo(const PHASIC::Subprocess_Info &spi)
     }
     else{
       for (int j=0;j<pl.num;j++) {
+	assert(j<3);
 	pl.type[j]=tf[j];
 	if(pl.type[j]==type)  pl.factor[j] = 1.+pd*(pl.num-1.);
 	else  pl.factor[j] = 1.-pd;
