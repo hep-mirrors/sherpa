@@ -110,7 +110,7 @@ namespace PDF {
       msg_Tracking()<<METHOD<<"(): Init Iset "<<iset<<"."<<std::endl;
       setct10_(iset);
       if (stat==0) {
-        stat=chdir(buffer);
+        chdir(buffer);
       }
       else {
         msg_Error()<<"Error in CT10_Fortran_Interface.C "<<std::endl

@@ -415,17 +415,22 @@ double NNPDFDriver::xfx(double const&X, double const& Q2_glob, int const& ID)
 
   for (int i = 0; i < fM; i++)
     {
-      if (ix+1 >= fM/2 && ix+1 <= (fNX-fM/2)) ix1a[i] = ix+1 - fM/2 + i;
-      if (ix+1 < fM/2) ix1a[i] = i;
-      if (ix+1 > (fNX-fM/2)) ix1a[i] = (fNX-fM) + i;
+      // one of the following if statements must overwrite,
+      // this initialization, otherwise we will exit below
+      ix1a[i] = -1; 
+      if (ix+1 >= fM/2 && ix+1 <= (fNX-fM/2))
+        ix1a[i] = ix+1 - fM/2 + i;
+      if (ix+1 < fM/2)
+        ix1a[i] = i;
+      if (ix+1 > (fNX-fM/2))
+        ix1a[i] = (fNX-fM) + i;
 	
       // Check grids
-      if (ix1a[i] < 0 || ix1a[i] >= fNX)
-	{
-	  cout << "Error in grids! i, ixia[i] = " 
-	       << i << "\t" << ix1a[i] << endl;
-	  exit(-1);
-	}
+      if (ix1a[i] < 0 || ix1a[i] >= fNX) {
+        cout << "Error in grids! i, ixia[i] = " 
+             << i << "\t" << ix1a[i] << endl;
+        exit(-1);
+    	}
     }
 
   for (int j = 0; j < fN; j++)

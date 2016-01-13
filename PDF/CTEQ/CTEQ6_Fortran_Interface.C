@@ -116,7 +116,7 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   msg_Info()<<METHOD<<"(): Init member "<<iset<<"."<<std::endl;
   setctq6_(iset);
   if (stat==0) {
-    stat=chdir(buffer);
+    chdir(buffer);
   }
   else {
     msg_Error()<<"Error in CTEQ6_Fortran_Interface.C "<<std::endl

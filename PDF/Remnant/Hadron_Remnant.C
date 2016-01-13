@@ -285,30 +285,31 @@ double Hadron_Remnant::MinimalEnergy(const ATOOLS::Flavour &flavour)
       return p_beam->Beam().HadMass();
     }
     bool found(false);
-    kf_code di[3];
+    kf_code di[3] = {0, 0, 0};
     if (flavour.IsQuark()) {
       short unsigned int j=0;
       for (Flavour_Vector::const_iterator flit(m_constit.begin());
-	   flit!=m_constit.end();++flit) {
-	if (found || flavour!=*flit) di[j++]=flit->Kfcode();
-	else found=true;
+           flit!=m_constit.end();
+           ++flit) {
+        if (found || flavour!=*flit) di[j++]=flit->Kfcode();
+        else found=true;
       }
     }
     Flavour difl;
     if (!found || flavour.IsGluon()) {
       int single=-1;
       for (size_t i=0;i<m_constit.size();++i) {
-	for (size_t j=i+1;j<m_constit.size();++j) {
-	  if (m_constit[i]==m_constit[j]) { 
-	    single=j; 
-	    break; 
-	  }
-	}
-	if (single>0) break;
+        for (size_t j=i+1;j<m_constit.size();++j) {
+          if (m_constit[i]==m_constit[j]) { 
+            single=j; 
+            break; 
+          }
+        }
+        if (single>0) break;
       }
       Flavour fl(m_constit[single]);
       for (short unsigned int j=0, i=0;i<3;i++) 
-	if (i!=single) di[j++]=m_constit[i].Kfcode();
+        if (i!=single) di[j++]=m_constit[i].Kfcode();
       if (di[0]>di[1]) difl=Flavour((kf_code)(di[0]*1000+di[1]*100+1));
       else if (di[1]>di[0]) difl=Flavour((kf_code)(di[1]*1000+di[0]*100+1));
       else difl=Flavour((kf_code)(di[0]*1100+3));
@@ -320,8 +321,7 @@ double Hadron_Remnant::MinimalEnergy(const ATOOLS::Flavour &flavour)
     else difl=Flavour((kf_code)(di[0]*1100+3));
     if (m_constit[0].IsAnti()) difl=difl.Bar();
     return difl.Mass();
-  }
-  else {
+  } else {
     if (flavour.IsQuark()) return flavour.Bar().Mass();
   }
   return 0.;

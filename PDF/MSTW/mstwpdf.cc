@@ -527,7 +527,6 @@ double c_mstwpdf::parton(int f,double x,double q)
     }
   }
   else if (x>xmax) {
-    interpolate=0;
     if (warn||fatal) cerr << "Error in c_mstwpdf::parton, x = " << x << endl;
     if (fatal) exit (-1);
     else return 0.;

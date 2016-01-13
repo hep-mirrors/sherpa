@@ -87,7 +87,7 @@ bool Remnant_Base::AdjustKinematics()
       }
     }
   }
-  if (p_last[1]==NULL && p_last[0]==NULL) {
+  if (p_last[1]==NULL || p_last[0]==NULL) {
     THROW(critical_error,"Not enough remnants to ensure four momentum conservation.");
   }
   ATOOLS::Vec4D pr1=p_last[0]->Momentum(), pr2=p_last[1]->Momentum();
