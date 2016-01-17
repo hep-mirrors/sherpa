@@ -314,26 +314,9 @@ std::string Read_Write_Base::ReplaceTags(std::string &expr) const
 
 std::string &Read_Write_Base::KillBlanks(std::string &buffer) const
 {
-  if (buffer.length()==0) return buffer;
-  bool hit=true;
-  while (hit && buffer.length()>0) { 
-    hit=false;
-    if (IsBlank(buffer[0])) {
-      buffer.erase(0,1); 
-      hit=true;
-      break;
-    }
-  }
-  hit=true;
-  while (hit && buffer.length()>0) { 
-    if (buffer.length()>1 && buffer[buffer.length()-1]==Escape()) break;
-    hit=false;
-    if (IsBlank(buffer[buffer.length()-1])) {
-      buffer.erase(buffer.length()-1,1);
-      hit=true;
-      break;
-    }
-  }
+  while (buffer.length()>0 && IsBlank(buffer[0])) buffer.erase(0,1); 
+  while (buffer.length()>0 && IsBlank(buffer[buffer.length()-1]))
+    buffer.erase(buffer.length()-1,1);
   return buffer;
 }
 
