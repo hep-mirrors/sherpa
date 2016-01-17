@@ -113,6 +113,7 @@ RootNtuple_Reader::RootNtuple_Reader(const Input_Arguments &args,int exact,int f
   args.p_reader->RereadInFile();
   std::string scale=args.p_reader->GetValue<std::string>
     ("SCALES","VAR{sqr("+ToString(rpa->gen.Ecms())+")}");
+  m_lomode=args.p_reader->GetValue<int>("ROOTNTUPLE_LO_MODE",0);
   std::string kfactor=args.p_reader->GetValue<std::string>("KFACTOR","NO");
   std::vector<std::string> helpsv;
   if (!args.p_reader->VectorFromFile(helpsv,"COUPLINGS")) helpsv.push_back("Alpha_QCD 1");
@@ -421,7 +422,8 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
       RR_Process_Info info(p_vars->m_type,p_vars->m_nparticle+2,flav);
       if (m_procs.find(info)==m_procs.end()) {
 	Process_Info pi;
-	pi.m_fi.m_nloqcdtype=ToType<nlo_type::code>(p_vars->m_type);
+	if (p_vars->m_type[0]!='B' || !m_lomode)
+	  pi.m_fi.m_nloqcdtype=ToType<nlo_type::code>(p_vars->m_type);
 	pi.m_ii.m_ps.push_back(Subprocess_Info(flav[0]));
 	pi.m_ii.m_ps.push_back(Subprocess_Info(flav[1]));
 	pi.m_maxcpl[0]=pi.m_mincpl[0]=p_vars->m_oqcd;
