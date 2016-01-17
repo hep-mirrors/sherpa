@@ -161,6 +161,7 @@ Sudakov::Sudakov(const ATOOLS::Flavour &fl,const int mode,const double prec):
 
 double Sudakov::Delta(const double &q2,const double &Q2)
 {
+  if (q2>=Q2) return 1.0;
   m_fo=0;
   m_Q2=Q2;
   return exp(-m_gauss.Integrate(q2,Q2,m_prec));
@@ -168,6 +169,7 @@ double Sudakov::Delta(const double &q2,const double &Q2)
 
 double Sudakov::Delta1(const double &q2,const double &Q2,const double &mur2)
 {
+  if (q2>=Q2) return 0.0;
   if (!(m_mode&2)) return 0.0;
   m_fo=1;
   m_Q2=Q2;
