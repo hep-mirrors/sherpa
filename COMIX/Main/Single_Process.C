@@ -155,7 +155,6 @@ bool COMIX::Single_Process::Initialize
       if (smode&4) m_mewgtinfo.m_type|=mewgttype::B;
     }
     if (smode&16) {
-      smode&=~16;
       Process_Info cinfo(m_pinfo);
       cinfo.m_fi.m_nloqcdtype=nlo_type::loop;
       cinfo.m_maxcpl[1]=p_bg->MaxCpl()[1]/2.0+

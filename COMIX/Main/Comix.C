@@ -178,7 +178,6 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
   if (p_model==NULL) return NULL;
   m_umprocs.push_back(std::vector<Single_Process*>());
   PHASIC::Process_Base *newxs(NULL);
-  size_t nis(pi.m_ii.NExternal()), nfs(pi.m_fi.NExternal());
   bool oneisgroup(pi.m_ii.IsGroup()||pi.m_fi.IsGroup());
   std::map<std::string,std::string> pmap;
   if (oneisgroup) {

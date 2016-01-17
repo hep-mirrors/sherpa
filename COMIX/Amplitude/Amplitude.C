@@ -18,6 +18,8 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/My_MPI.H"
 
+#include <cassert>
+
 using namespace COMIX;
 using namespace ATOOLS;
 
@@ -983,7 +985,6 @@ bool Amplitude::Map(const Amplitude &ampl,Flavour_Map &flmap)
 {
   flmap.clear();
   msg_Debugging()<<METHOD<<"(): {\n";
-  size_t svlmode(Vertex::VLMode());
   for (size_t n(1);n<m_n;++n) {
     if (ampl.m_cur[n].size()!=m_cur[n].size()) {
       msg_Debugging()<<"  current count differs\n} no match\n";
@@ -1348,6 +1349,7 @@ bool Amplitude::EvaluateAll()
   m_born=m_res=csum/m_sf;
   m_cmur[1]=m_cmur[0]=csum=0.0;
   if (p_dinfo->Mode()) {
+    assert(cpl!=NULL);
     double asf(cpl->Default()*cpl->Factor()/(2.0*M_PI));
     if (p_loop) {
       p_loop->SetRenScale(mu2);
