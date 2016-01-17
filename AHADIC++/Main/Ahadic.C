@@ -15,6 +15,7 @@ using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
+
 Ahadic::Ahadic(string path,string file,bool ana)  :
   m_fullinfo(false), m_maxtrials(3), m_clulist()
 {
