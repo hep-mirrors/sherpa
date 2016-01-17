@@ -19,7 +19,7 @@ namespace METOOLS {
       Color_Calculator(key) 
     { 
       m_cpl=Complex(0.5,0.0);
-      int lid(0), cnt(0), n[4];
+      int lid(0), cnt(0), n[4]={0,0,0,0};
       for (int j(0);j<3;++j)
 	if (key.p_mv->Color[key.m_n].ParticleArg(j)<0) lid+=j;
 	else n[cnt++]=key.p_mv->Color[key.m_n].ParticleArg(j);
