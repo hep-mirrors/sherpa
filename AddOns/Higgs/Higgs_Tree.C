@@ -80,7 +80,7 @@ double Higgs_Tree::Calc(const Vec4D_Vector &p)
   if (muR>0.0) muR=sqrt(muR);
   else muR=rpa->gen.Ecms();
   mu_sq=sqr(muR);
-  alpha0=s_model->ScalarConstant("alpha_QED(0)");
+  alpha0=s_model->ScalarConstant("alpha_QED");
   msg_Debugging()<<"\\mu_R = "<<muR<<" -> alpha = "
 		 <<alpha0<<", alpha_s = "<<alpha_s(muR)<<"\n";
   for (size_t i(0);i<p.size();++i)

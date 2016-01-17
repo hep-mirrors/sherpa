@@ -50,7 +50,7 @@ void Higgs_Virtual::Calc(const Vec4D_Vector &p)
   DEBUG_FUNC(this<<", m_proc = "<<m_proc);
   mu_sq=m_mur2;
   double muR=sqrt(m_mur2);
-  alpha0=s_model->ScalarConstant("alpha_QED(0)");
+  alpha0=s_model->ScalarConstant("alpha_QED");
   msg_Debugging()<<"\\mu_R = "<<muR<<"\n";
   for (size_t i(0);i<p.size();++i)
     msg_Debugging()<<"p["<<i<<"]="<<p[i]<<"\n";
