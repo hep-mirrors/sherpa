@@ -228,8 +228,8 @@ bool Sherpa::GenerateOneEvent(bool reset)
         THROW(normal_exit,"Debug event written.");
       }
       rpa->gen.SetNumberOfGeneratedEvents(rpa->gen.NumberOfGeneratedEvents()+1);
-      m_trials+=p_inithandler->GetMatrixElementHandler()->WeightInfo().m_ntrial;
       Blob_List *blobs(p_eventhandler->GetBlobs());
+      m_trials+=(*blobs->FindFirst(btp::Signal_Process))["Trials"]->Get<double>();
       if (msg_LevelIsEvents()) {
 	if (!blobs->empty()) {
 	  msg_Out()<<"  -------------------------------------------------  "<<std::endl;
