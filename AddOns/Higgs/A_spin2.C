@@ -176,7 +176,6 @@ Complex ggXgamgam1l(int h1, int h2, int h3, int h4, double muR, double kg=1., do
 // q(1) qbar(2) -> gam(3) gam(4) 1-loop
 Complex qqbXgamgam1l(int h1, int h3, int h4, double muR, double kg=1., double kq=1.) {
   if (kq==kg) return 0.;
-  double mh = Flavour(kf_h0).Mass();
   Complex L12 = log(muR*muR/sij(1,2))+(sij(1,2)>0.0?I*PI:0.);
   return qqbXgamgam(h1,h3,h4,kq) * 1.0/4.0*L12*(16.0/3.0*4.0/3.0)*(kq-kg); }
 // qbar(1) q(2) -> gam(3) gam(4) 1-loop

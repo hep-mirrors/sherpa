@@ -61,8 +61,6 @@ void C3_8::GenerateWeight(Vec4D* p,Cut_Data * cuts)
   Vec4D p234=p[0]+p[1];
   double s234_max = p234.Abs2();
   double s23_max = sqr(sqrt(s234_max)-sqrt(ms[4]));
-  double s3 = ms[3];
-  double s2 = ms[2];
   double s23_min = cuts->Getscut(std::string("23"));
   Flavour fl23 = Flavour((kf_code)(25));
   Vec4D  p23 = p[2]+p[3];
@@ -70,7 +68,6 @@ void C3_8::GenerateWeight(Vec4D* p,Cut_Data * cuts)
   if (m_onshell) wt /= (fl23.Mass()*fl23.Width())*M_PI;
   else
   wt *= CE.MassivePropWeight(fl23.Mass(),fl23.Width(),1,s23_min,s23_max,s23,rans[0]);
-  double s4 = ms[4];
   m_ctmax = cuts->cosmax[0][4];
   m_ctmin = cuts->cosmin[0][4];
   if (m_kTC_0__1__4_23.Weight()==ATOOLS::UNDEFINED_WEIGHT)

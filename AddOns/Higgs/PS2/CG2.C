@@ -25,7 +25,6 @@ namespace PHASIC {
       Channel_Generator(key) {}
     Single_Channel *LoadChannel(int nin,int nout,Flavour* fl,const std::string &pID,Phase_Space_Handler *psh)
     {
-      size_t pos(pID.find("/"));
       s_loader->AddPath(rpa->gen.Variable("SHERPA_LIB_PATH"));
       Lib_Getter_Function gf = (Lib_Getter_Function)
         PT(s_loader->GetLibraryFunction("SherpaHiggs","Getter_"+pID));

@@ -57,10 +57,7 @@ void C3_1::GenerateWeight(Vec4D* p,Cut_Data * cuts)
   double wt = 1.;
   Vec4D p234=p[0]+p[1];
   double s234_max = p234.Abs2();
-  double s4 = ms[4];
   double s23_max = sqr(sqrt(s234_max)-sqrt(ms[4]));
-  double s3 = ms[3];
-  double s2 = ms[2];
   double s23_min = cuts->Getscut(std::string("23"));
   Flavour fl23 = Flavour((kf_code)(25));
   Vec4D  p23 = p[2]+p[3];

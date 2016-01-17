@@ -56,10 +56,7 @@ void C3_13::GenerateWeight(Vec4D* p,Cut_Data * cuts)
   double wt = 1.;
   Vec4D p234=p[0]+p[1];
   double s234_max = p234.Abs2();
-  double s2 = ms[2];
   double s34_max = sqr(sqrt(s234_max)-sqrt(ms[2]));
-  double s4 = ms[4];
-  double s3 = ms[3];
   double s34_min = cuts->Getscut(std::string("34"));
   Vec4D  p34 = p[3]+p[4];
   double s34 = dabs(p34.Abs2());

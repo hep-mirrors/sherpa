@@ -37,7 +37,6 @@ void C2_2::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
   double *ran = p_vegas->GeneratePoint(_ran);
   for(int i=0;i<rannum;i++) rans[i]=ran[i];
   Vec4D p23=p[0]+p[1];
-  double s23_max = p23.Abs2();
   double s3 = ms[3];
   double s2 = ms[2];
   CE.Isotropic2Momenta(p23,s2,s3,p[2],p[3],ran[0],ran[1]);
@@ -47,9 +46,6 @@ void C2_2::GenerateWeight(Vec4D* p,Cut_Data * cuts)
 {
   double wt = 1.;
   Vec4D p23=p[0]+p[1];
-  double s23_max = p23.Abs2();
-  double s3 = ms[3];
-  double s2 = ms[2];
   if (m_kI_2_3.Weight()==ATOOLS::UNDEFINED_WEIGHT)
     m_kI_2_3<<CE.Isotropic2Weight(p[2],p[3],m_kI_2_3[0],m_kI_2_3[1]);
   wt *= m_kI_2_3.Weight();

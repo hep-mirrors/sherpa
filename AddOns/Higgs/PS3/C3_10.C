@@ -57,13 +57,10 @@ void C3_10::GenerateWeight(Vec4D* p,Cut_Data * cuts)
   Vec4D p234=p[0]+p[1];
   double s234_max = p234.Abs2();
   double s34_max = sqr(sqrt(s234_max)-sqrt(ms[2]));
-  double s4 = ms[4];
-  double s3 = ms[3];
   double s34_min = cuts->Getscut(std::string("34"));
   Vec4D  p34 = p[3]+p[4];
   double s34 = dabs(p34.Abs2());
   wt *= CE.MasslessPropWeight(.5,s34_min,s34_max,s34,rans[0]);
-  double s2 = ms[2];
   m_ctmax = cuts->cosmax[0][2];
   m_ctmin = cuts->cosmin[0][2];
   if (m_kTC_0__1__2_34.Weight()==ATOOLS::UNDEFINED_WEIGHT)

@@ -36,7 +36,6 @@ void C2_0::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)
   double *ran = p_vegas->GeneratePoint(_ran);
   for(int i=0;i<rannum;i++) rans[i]=ran[i];
   Vec4D p23=p[0]+p[1];
-  double s23_max = p23.Abs2();
   double s3 = ms[3];
   double s2 = ms[2];
   m_ctmax = Min(cuts->cosmax[0][2],cuts->cosmax[1][3]);
@@ -47,9 +46,6 @@ void C2_0::GenerateWeight(Vec4D* p,Cut_Data * cuts)
 {
   double wt = 1.;
   Vec4D p23=p[0]+p[1];
-  double s23_max = p23.Abs2();
-  double s3 = ms[3];
-  double s2 = ms[2];
   m_ctmax = Min(cuts->cosmax[0][2],cuts->cosmax[1][3]);
   if (m_kTC_0__1__2_3.Weight()==ATOOLS::UNDEFINED_WEIGHT)
     m_kTC_0__1__2_3<<CE.TChannelWeight(p[0],p[1],p[2],p[3],0.,m_alpha,m_ctmax,m_ctmin,m_amct,0,m_kTC_0__1__2_3[0],m_kTC_0__1__2_3[1]);
