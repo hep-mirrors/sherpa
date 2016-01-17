@@ -5,7 +5,7 @@
   ### Analysis (please configure with --enable-rivet & --enable-hepmc2)
   ANALYSIS Rivet; ANALYSIS_OUTPUT Analysis/HTp/BVI/;
   ### NTuple output (please configure with '--enable-root')
-  EVENT_OUTPUT ERoot[NTuple_B-like];
+  EVENT_OUTPUT EDRoot[NTuple_B-like];
 
   BEAM_1 2212; BEAM_ENERGY_1 3500;
   BEAM_2 2212; BEAM_ENERGY_2 3500;
