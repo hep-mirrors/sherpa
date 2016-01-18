@@ -57,6 +57,8 @@ namespace ATOOLS {
 
   };// end of class Terminator_Object
 
+  %rename(SherpaException) Exception;
+
   class Exception {
   private:
 
