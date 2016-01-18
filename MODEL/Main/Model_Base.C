@@ -97,9 +97,9 @@ void Model_Base::GetCouplings(Coupling_Map &cpls)
 void Model_Base::SetAlphaQED(const double& aqed_def){
   double alphaQED0=1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
   aqed=new Running_AlphaQED(alphaQED0);
+  aqed->SetDefault(aqed_def);
   p_functions->insert(make_pair(std::string("alpha_QED"),aqed));
   p_constants->insert(make_pair(std::string("alpha_QED"),aqed_def));
-
 }
 
 // To be called in ModelInit, default will be set to AlphaQED at scale2
