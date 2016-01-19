@@ -70,8 +70,9 @@ EventInfo::EventInfo(ATOOLS::Blob * sp, const double &wgt,
     ReadIn(db,"ScaleVariations",false);
     if (db) p_nsvmap=db->Get<NamedScaleVariationMap*>();
     if (p_nsvmap && p_nsvmap->size()!=0 && !m_usenamedweights)
-      THROW(fatal_error,"Scale variations cannot be written to HepMC without "
-            +std::string("using named weights. Try HEPMC_USE_NAMED_WEIGHTS=1"));
+      THROW(fatal_error,"Scale and/or PDF variations cannot be written to "
+            +std::string("HepMC without using named weights. ")
+            +std::string("Try HEPMC_USE_NAMED_WEIGHTS=1"));
   }
 }
 
