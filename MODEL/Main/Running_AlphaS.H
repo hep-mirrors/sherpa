@@ -31,7 +31,7 @@ namespace MODEL {
     int         m_nth,m_mzset;
     double      m_CF,m_CA;
     double      m_as_MZ,m_m2_MZ;
-    double      m_cutq2;
+    double      m_cutq2,m_cutas;
 
     AsDataSet * p_thresh;
 
@@ -75,7 +75,7 @@ namespace MODEL {
     int    Nf(const double q2);
     std::vector<double> Thresholds(double q12,double q22);
 
-    inline double CutQ2() { return m_cutq2; }    
+    inline double CutQ2() { return m_cutq2; }
 
     inline double BoundedAlphaS(const double &q2)
     { return (*this)(std::max(q2,m_cutq2)); }

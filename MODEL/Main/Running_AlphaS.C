@@ -37,6 +37,7 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
 				       One_Running_AlphaS *const mo) : 
   m_order(order), m_pdf(0),
   m_as_MZ(as_MZ), m_m2_MZ(m2_MZ),
+  m_cutq2(0.), m_cutas(1.),
   p_pdf(aspdf)
 {
   p_thresh  = NULL;
@@ -60,6 +61,7 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
   dataread.AddComment("#");
   dataread.AddWordSeparator("\t");
   int pdfas(dataread.GetValue<int>("USE_PDF_ALPHAS",0));
+  m_cutas=dataread.GetValue<double>("ALPHAS_FREEZE_VALUE",1.);
   if (pdfas&4) {
     std::string set = dataread.GetValue<std::string>("ALPHAS_PDF_SET","CT10nlo");
     int member = dataread.GetValue<int>("ALPHAS_PDF_SET_VERSION",0);
@@ -123,6 +125,14 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
       }
     }
   }
+  if (!p_pdf || (p_pdf && p_pdf->ASInfo().m_order<0)) {
+    if (mo==NULL || !IsEqual(m_as_MZ,mo->m_as_MZ,1.e-4)) {
+      msg_Info()<<METHOD<<"() {\n  Setting \\alpha_s according to input\n"
+                <<"  perturbative order "<<m_order
+                <<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
+      msg_Info()<<"\n}"<<std::endl;
+    }
+  }
 
   std::vector<double> sortmass(&masses[0],&masses[m_nth]);
   std::sort(sortmass.begin(),sortmass.end(),std::less<double>());
@@ -168,17 +178,20 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
     p_thresh[i].as_high       = AlphaSLam(p_thresh[i].high_scale,i);
     if (i<m_nth) {
       p_thresh[i+1].as_low    = p_thresh[i].as_high *
-	InvZetaOS2(p_thresh[i].as_high,p_thresh[i].high_scale,p_thresh[i].high_scale,p_thresh[i].nf);
+        InvZetaOS2(p_thresh[i].as_high,p_thresh[i].high_scale,
+                   p_thresh[i].high_scale,p_thresh[i].nf);
     }
   }
   for (int i=m_mzset-1;i>=0;--i) {
     double lam2               = Lambda2(i);
     p_thresh[i].as_low        = AlphaSLam(p_thresh[i].low_scale,i);
-    if ((lam2>p_thresh[i].low_scale) || (p_thresh[i].as_low>1.)) ContinueAlphaS(i);
+    if ((lam2>p_thresh[i].low_scale) || (p_thresh[i].as_low>1.))
+      ContinueAlphaS(i);
     else {
       if (i>0) {
 	p_thresh[i-1].as_high = p_thresh[i].as_low *
-	  ZetaOS2(p_thresh[i].as_low,p_thresh[i].low_scale,p_thresh[i].low_scale,p_thresh[i-1].nf);
+	  ZetaOS2(p_thresh[i].as_low,p_thresh[i].low_scale,
+		  p_thresh[i].low_scale,p_thresh[i-1].nf);
       }
     }
   }
@@ -187,7 +200,7 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
 One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
   m_order(0), m_pdf(0), m_nth(0), m_mzset(0),
   m_CF(4./3.), m_CA(3.), m_as_MZ(0.), m_m2_MZ(Flavour(kf_Z).Mass()),
-  m_cutq2(0.), p_thresh(NULL), p_pdf(pdf)
+  m_cutq2(0.), m_cutas(1.), p_thresh(NULL), p_pdf(pdf)
 {
   //------------------------------------------------------------
   // SM thresholds for strong interactions, i.e. QCD
@@ -228,6 +241,7 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
     msg_Tracking()<<"}"<<std::endl;
     msg_Tracking()<<"\n}"<<std::endl;
   }
+  m_cutas=dataread.GetValue<double>("ALPHAS_FREEZE_VALUE",1.);
 
   std::vector<double> sortmass(&masses[0],&masses[m_nth]);
   std::sort(sortmass.begin(),sortmass.end(),std::less<double>());
@@ -272,17 +286,20 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
     p_thresh[i].as_high       = AlphaSLam(p_thresh[i].high_scale,i);
     if (i<m_nth) {
       p_thresh[i+1].as_low    = p_thresh[i].as_high *
-        InvZetaOS2(p_thresh[i].as_high,p_thresh[i].high_scale,p_thresh[i].high_scale,p_thresh[i].nf);
+        InvZetaOS2(p_thresh[i].as_high,p_thresh[i].high_scale,
+                   p_thresh[i].high_scale,p_thresh[i].nf);
     }
   }
   for (int i=m_mzset-1;i>=0;--i) {
     double lam2               = Lambda2(i);
     p_thresh[i].as_low        = AlphaSLam(p_thresh[i].low_scale,i);
-    if ((lam2>p_thresh[i].low_scale) || (p_thresh[i].as_low>1.)) ContinueAlphaS(i);
+    if ((lam2>p_thresh[i].low_scale) || (p_thresh[i].as_low>1.))
+      ContinueAlphaS(i);
     else {
       if (i>0) {
         p_thresh[i-1].as_high = p_thresh[i].as_low *
-          ZetaOS2(p_thresh[i].as_low,p_thresh[i].low_scale,p_thresh[i].low_scale,p_thresh[i-1].nf);
+          ZetaOS2(p_thresh[i].as_low,p_thresh[i].low_scale,
+                  p_thresh[i].low_scale,p_thresh[i-1].nf);
       }
     }
   }
@@ -456,35 +473,35 @@ void One_Running_AlphaS::ContinueAlphaS(int & nr) {
   // shrink actual domain
   //  * to given t0        or
   //  * to alphaS=alphaCut
-  double alpha_cut = 1.;
+  double alpha_cut = m_cutas;
   double & beta0   = p_thresh[nr].beta0;
   double & lambda2 = p_thresh[nr].lambda2;
   double t0        = lambda2 * ::exp(M_PI/(alpha_cut*beta0));
   double as        = AlphaSLam(t0,nr);
-  for (;dabs(as-alpha_cut)>1.e-8;) {
+  while (dabs(as-alpha_cut)>1.e-8) {
     double t1      = t0+0.00001;
     double as1     = AlphaSLam(t1,nr);
     double das     = (as -as1)/(t0-t1);
     t1             = (alpha_cut-as)/das + t0;
     t0             = t1;
-    as             = AlphaSLam(t0,nr);    
+    as             = AlphaSLam(t0,nr);
   }
-
   m_cutq2 = t0;
 
   // modify lower domains
-  p_thresh[nr].low_scale    = t0;
-  p_thresh[nr-1].high_scale = t0;
-  p_thresh[nr].as_low       = as;
-  p_thresh[nr-1].as_high    = as;
+  p_thresh[nr].low_scale    = m_cutq2;
+  p_thresh[nr-1].high_scale = m_cutq2;
+  p_thresh[nr].as_low       = m_cutas;
+  p_thresh[nr-1].as_high    = m_cutas;
 
   for (int i = nr-1; i>=0; --i) {
     p_thresh[i].nf          = -1;  // i.e. no ordinary running !!!
     p_thresh[i].lambda2     = 0.;
-    p_thresh[i].as_low      = p_thresh[i].as_high/p_thresh[i].high_scale*p_thresh[i].low_scale;
+    p_thresh[i].as_low      = p_thresh[i].as_high
+                              *p_thresh[i].low_scale/p_thresh[i].high_scale;
     if (i>0) p_thresh[i-1].as_high=p_thresh[i].as_low;
   }
-  nr =0;
+  nr=0;
 }
 
 
