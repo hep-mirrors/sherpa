@@ -63,9 +63,13 @@ bool COMIX::Process_Group::Initialize(PHASIC::Process_Base *const proc)
   cdxs->SetGPath(m_gpath);
   proc->Integrator()->SetHelicityScheme(p_int->HelicityScheme());
   proc->SetParent((PHASIC::Process_Base*)this);
+  if (s_partcommit) My_In_File::ExecDB
+    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","begin");
   if (!cdxs->Initialize(p_pmap,p_umprocs)) return false;
   if (!cdxs->MapProcess())
     if (!msg_LevelIsTracking()) msg_Info()<<"."<<std::flush;
+  if (s_partcommit) My_In_File::ExecDB
+    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","commit");
   return true;
 }
 

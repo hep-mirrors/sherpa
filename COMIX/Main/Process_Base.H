@@ -39,6 +39,8 @@ namespace COMIX {
     std::map<std::string,std::string> *p_pmap;
     std::vector<Single_Process*>      *p_umprocs;
 
+    static int s_partcommit;
+
   public:
 
     // constructors

@@ -161,6 +161,7 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
   read.SetInputPath(m_path);
   read.SetInputFile(m_file);
   SetPSMasses(&read);
+  s_partcommit=read.GetValue<int>("COMIX_PARTIAL_COMMIT",0);
   PrintLogo(msg->Info());
   PrintVertices();
 #ifdef USING__MPI
