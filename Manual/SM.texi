@@ -46,6 +46,11 @@ parameter, whose default is @option{1}. The following options are provided:
     all EW parameters are calculated from the W, Z and Higgs masses and
     the fine structure constant (taken from @code{1/ALPHAQED(0)} +
     @code{ALPHAQED_DEFAULT_SCALE}, cf. below) using tree-level relations.
+  @item  Case @code{2}:
+
+    all EW parameters are calculated from the W, Z and Higgs masses and
+    the fine structure constant (taken from @code{1/ALPHAQED(MZ)}) using
+    tree-level relations.
   @item  Case @code{3}:
   
     this choice corresponds to the G_mu-scheme. The EW parameters are 
