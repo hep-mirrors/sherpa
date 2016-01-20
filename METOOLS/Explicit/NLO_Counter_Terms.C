@@ -66,6 +66,7 @@ double METOOLS::AlphaSCounterTerm(const double& muR2,const double& muR2ref,
   if (IsEqual(muR2,muR2ref)) return 0.;
   // if flavour threshold between muR2 and muR2ref split beta0*log(muR2/muR2ref)
   // into regions with constant nf
+  // caution: \beta_0 from as has an extra factor 1/2 compared to canon
   std::vector<double> thrs(oras->Thresholds(muR2,muR2ref));
   msg_Debugging()<<"Flavour thresholds in range ["<<muR2<<","<<muR2ref<<"]: "
                  <<thrs<<std::endl;
@@ -73,19 +74,20 @@ double METOOLS::AlphaSCounterTerm(const double& muR2,const double& muR2ref,
   thrs.insert(thrs.begin(),(muR2>muR2ref)?muR2ref:muR2);
   double betalog(0.);
   msg_Debugging()<<"\\sum_{\\mu_{th}} \\beta_0(nf(\\mu_i)) "
-                 <<"log(\\mu_{i+1}/\\mu_i) = "<<std::endl;
+                 <<"log(\\mu_{i+1}^2/\\mu_i^2) = "<<std::endl;
   for (size_t i(0);i<thrs.size()-1;++i) {
     msg_Debugging()<<(i==0?"    ":"  + ")<<oras->Beta0(thrs[i+1])
                    <<" * "<<log(thrs[i+1]/thrs[i])<<"  (nf="
-                   <<oras->Nf(thrs[i+1])<<", "<<thrs[i]<<".."<<thrs[i+1]
+                   <<oras->Nf((thrs[i+1]+thrs[i])/2.)<<", "
+                    <<thrs[i]<<".."<<thrs[i+1]
                    <<") \n";
-    betalog+=oras->Beta0(thrs[i+1])*log(thrs[i+1]/thrs[i]);
+    betalog+=oras->Beta0((thrs[i+1]+thrs[i])/2.)*log(thrs[i+1]/thrs[i]);
   }
   if (muR2>muR2ref) betalog*=-1.;
   msg_Debugging()<<"  = "<<betalog<<std::endl;
   msg_Debugging()<<"\\alpha_s term: "<<oqcd<<" * "<<as
                  <<"/2\\pi * \\sum_{\\mu_{th}} \\beta_0(n_f(\\mu_i)) "
-                 <<"log(\\mu_{i+1}/\\mu_i) = "
+                 <<"log(\\mu_{i+1}^2/\\mu_i^2) = "
                  <<oqcd*as/M_PI*betalog<<std::endl;
   return double(oqcd)*as/M_PI*betalog;
 }
