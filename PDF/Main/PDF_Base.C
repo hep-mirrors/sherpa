@@ -21,8 +21,9 @@ std::ostream &PDF::operator<<(std::ostream &ostr,const PDF::PDF_AS_Info &asi)
 }
 
 PDF_Base::PDF_Base():
-  m_type("none"), m_set(""), m_member(0), m_exponent(1.),
-  m_rescale(1.)
+  m_type("none"), m_set(""), m_member(0), m_lhef_number(-1), m_exponent(1.),
+  m_rescale(1.), m_xmin(1.), m_xmax(0.), m_q2min(1.e12), m_q2max(0.),
+  m_nf(-1)
 {
   Data_Reader dr(" ",";","!","=");
   m_lhef_number = dr.GetValue<int>("LHEF_PDF_NUMBER",-1);

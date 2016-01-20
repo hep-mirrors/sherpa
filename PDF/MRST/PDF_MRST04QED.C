@@ -57,6 +57,7 @@ PDF_MRST04QED::PDF_MRST04QED(const ATOOLS::Flavour bunch):
   m_xmax=1.;
   m_q2min=1.25;
   m_q2max=1.e7;
+  m_nf=5;
   MakeFortranString(input.nfile,m_path+std::string("/qed6-10gridn.dat"),128);
   MakeFortranString(input.pfile,m_path+std::string("/qed6-10gridp.dat"),128);
 }

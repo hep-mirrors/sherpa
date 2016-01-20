@@ -52,6 +52,7 @@ PDF_MRST01LO::PDF_MRST01LO(const ATOOLS::Flavour bunch):
   m_xmax=1.;
   m_q2min=1.25;
   m_q2max=1.e7;
+  m_nf=5;
   MakeFortranString(input.mfile,m_path+std::string("/lo2002.dat"),128);
 }
 

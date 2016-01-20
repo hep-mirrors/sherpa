@@ -50,6 +50,7 @@ namespace PDF {
       if (m_set==std::string("ct10")) {
         iset = 100+m_member;
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=5;
         m_asinfo.m_asmz=0.118;
         if (m_member==0) m_lhef_number=10800;
         else m_lhef_number=10801;
@@ -59,40 +60,47 @@ namespace PDF {
         if (m_set==std::string("ct10.as"+ToString(i)) && m_member==0) {
           iset = 10+i;
           m_asinfo.m_order=1;
+          m_asinfo.m_nf=5;
           m_asinfo.m_asmz=asmz[i];
         }
       }
       if (m_set==std::string("ct10.3f") && m_member==0) {
         iset = 30;
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=3;
         m_asinfo.m_asmz=0.118;
       }
       if (m_set==std::string("ct10.4f") && m_member==0) {
         iset = 31;
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=4;
         m_asinfo.m_asmz=0.118;
       }
 
       if (m_set==std::string("ct10w")) {
         iset = 200+m_member;
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=5;
         m_asinfo.m_asmz=0.118;
       }
       for (size_t i=0; i<10; ++i) {
         if (m_set==std::string("ct10was"+ToString(i)) && m_member==0) {
           iset = 20+i;
           m_asinfo.m_order=1;
+          m_asinfo.m_nf=5;
           m_asinfo.m_asmz=asmz[i];
         }
       }
       if (m_set==std::string("ct10w3f") && m_member==0) {
         iset = 32;
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=3;
         m_asinfo.m_asmz=0.118;
       }
       if (m_set==std::string("ct10w4f") && m_member==0) {
         iset = 33;
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=4;
         m_asinfo.m_asmz=0.118;
       }
 
@@ -100,6 +108,7 @@ namespace PDF {
         THROW(fatal_error, "PDF set "+m_set+" ("+ToString(m_member)+") not found.");
       }
       m_asinfo.m_mz2=sqr(91.1876);
+      m_nf=m_asinfo.m_nf;
 
       char buffer[1024];
       char * err = getcwd(buffer,1024);

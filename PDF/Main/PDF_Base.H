@@ -29,10 +29,10 @@ namespace PDF {
   };// end of struct PDF_Flavour
 
   struct PDF_AS_Info {
-    int m_order;
+    int m_order,m_nf;
     double m_asmz,m_mz2;
     std::vector<PDF_Flavour> m_flavs;
-    inline PDF_AS_Info(): m_order(-1), m_asmz(0.0), m_mz2(0.0) {}
+    inline PDF_AS_Info(): m_order(-1), m_nf(-1), m_asmz(0.0), m_mz2(0.0) {}
   };// end of struct PDF_AS_Info
 
   std::ostream &operator<<(std::ostream &ostr,const PDF_AS_Info &asi);
@@ -47,10 +47,10 @@ namespace PDF {
 
     std::vector<PDF_Base*> m_copies;
 
-    ATOOLS::Flavour_Set m_partons;    
+    ATOOLS::Flavour_Set m_partons;
     ATOOLS::Flavour     m_bunch;
 
-    std::string m_type;    
+    std::string m_type;
 
     std::string m_set;
     int m_member;
@@ -58,6 +58,7 @@ namespace PDF {
 
     double m_exponent, m_rescale;
     double m_xmin, m_xmax, m_q2min, m_q2max;
+    int    m_nf;
 
     PDF_AS_Info m_asinfo;
 
@@ -102,6 +103,7 @@ namespace PDF {
     inline double XMax() const  { return m_xmax;  }
     inline double Q2Min() const { return m_rq2min; }
     inline double Q2Max() const { return m_rq2max; }
+    inline int    Nf() const    { return m_nf; }
 
     inline const ATOOLS::Flavour_Set &Partons() const { return m_partons; }
     inline const ATOOLS::Flavour      Bunch() const   { return m_bunch;   }

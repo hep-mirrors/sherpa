@@ -47,13 +47,15 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
     LHAPDF::initPDFSet(m_set);
     LHAPDF::initPDF(m_member);
     m_asinfo.m_order=LHAPDF::getOrderAlphaS();
-    if (LHAPDF::getNf()<0) {
+    m_asinfo.m_nf=LHAPDF::getNf();
+    if (m_asinfo.m_nf<0) {
       Data_Reader read(" ",";","#","=");
       int nf(read.GetValue<int>("LHAPDF_NUMBER_OF_FLAVOURS",5));
       msg_Info()<<METHOD<<"(): No nf info. Set nf = "<<nf<<"\n";
-      m_asinfo.m_flavs.resize(nf);
+      m_asinfo.m_nf=nf;
     }
-    else m_asinfo.m_flavs.resize(LHAPDF::getNf());
+    m_asinfo.m_flavs.resize(m_asinfo.m_nf);
+    m_asinfo.m_nf=m_asinfo.m_flavs.size();
     for (size_t i(0);i<m_asinfo.m_flavs.size();++i) {
       m_asinfo.m_flavs[i]=PDF_Flavour((kf_code)i+1);
       m_asinfo.m_flavs[i].m_mass=LHAPDF::getQMass(i+1);

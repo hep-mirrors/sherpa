@@ -18,6 +18,7 @@ GRVph_Fortran_Interface::GRVph_Fortran_Interface(const ATOOLS::Flavour _bunch)
   m_xmax=1.;
   m_q2min=.25;
   m_q2max=1.e6;
+  m_nf=5;
 
   m_set="GRV";
   m_bunch = _bunch;

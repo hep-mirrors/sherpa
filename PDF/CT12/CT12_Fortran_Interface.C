@@ -58,6 +58,7 @@ namespace PDF {
       if (m_set==std::string("ct10nn")) {
         cset = std::string("ct10nn."+num+".pds");
         m_asinfo.m_order=2;
+        m_asinfo.m_nf=5;
         m_asinfo.m_asmz=0.118;
         m_lhef_number=11200+m_member;
       }
@@ -65,6 +66,7 @@ namespace PDF {
         if (m_set==std::string("ct10nn.as"+asmz[i]) && m_member==0) {
           cset = std::string("ct10nn.as"+asmz[i]+".pds");
           m_asinfo.m_order=2;
+          m_asinfo.m_nf=5;
           m_asinfo.m_asmz=ToType<double>(asmz[i]);
           m_lhef_number=11260+i;
         }
@@ -72,6 +74,7 @@ namespace PDF {
       if (m_set==std::string("ct10n")) {
         cset = std::string("ct10n."+num+".pds");
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=5;
         m_asinfo.m_asmz=0.118;
         m_lhef_number=11000+m_member;
       }
@@ -80,6 +83,7 @@ namespace PDF {
         if (m_set==std::string("ct10n.as"+asmz[i]) && m_member==0) {
           cset = std::string("ct10n.as"+asmz[i]+".pds");
           m_asinfo.m_order=1;
+          m_asinfo.m_nf=5;
           m_asinfo.m_asmz=ToType<double>(asmz[i]);
           m_lhef_number=11060+i;
         }
@@ -87,12 +91,14 @@ namespace PDF {
       if (m_set==std::string("ct10nf3") && m_member==0) {
         cset = std::string("ct10nf3.pds");
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=3;
         m_asinfo.m_asmz=0.1056;
         m_lhef_number=11080;
       }
       if (m_set==std::string("ct10nf32") && m_member==0) {
         cset = std::string("ct10nf32.pds");
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=3;
         m_asinfo.m_asmz=0.1056;
         m_lhef_number=11081;
         THROW(not_implemented,"An interface for this PDF is not yet provided.");
@@ -100,12 +106,14 @@ namespace PDF {
       if (m_set==std::string("ct10nf4") && m_member==0) {
         cset = std::string("ct10nf4.pds");
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=4;
         m_asinfo.m_asmz=0.1127;
         m_lhef_number=11082;
       }
       if (m_set==std::string("ct10nf42") && m_member==0) {
         cset = std::string("ct10nf42.pds");
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=4;
         m_asinfo.m_asmz=0.1127;
         m_lhef_number=11083;
         THROW(not_implemented,"An interface for this PDF is not yet provided.");
@@ -114,6 +122,7 @@ namespace PDF {
       if (m_set==std::string("ct10wn")) {
         cset = std::string("ct10wn."+num+".pds");
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=5;
         m_asinfo.m_asmz=0.118;
         m_lhef_number=11100+m_member;
       }
@@ -122,6 +131,7 @@ namespace PDF {
         if (m_set==std::string("ct10wn.as"+asmz[i]) && m_member==0) {
           cset = std::string("ct10wn.as"+asmz[i]+".pds");
           m_asinfo.m_order=1;
+          m_asinfo.m_nf=5;
           m_asinfo.m_asmz=ToType<double>(asmz[i]);
           m_lhef_number=11160+i;
         }
@@ -129,12 +139,14 @@ namespace PDF {
       if (m_set==std::string("ct10wnf3") && m_member==0) {
         cset = std::string("ct10wnf3.pds");
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=3;
         m_asinfo.m_asmz=0.1056;
         m_lhef_number=11180;
       }
       if (m_set==std::string("ct10wnf32") && m_member==0) {
         cset = std::string("ct10wnf32.pds");
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=3;
         m_asinfo.m_asmz=0.1056;
         m_lhef_number=11181;
         THROW(not_implemented,"An interface for this PDF is not yet provided.");
@@ -142,17 +154,20 @@ namespace PDF {
       if (m_set==std::string("ct10wnf4") && m_member==0) {
         cset = std::string("ct10wnf4.pds");
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=4;
         m_asinfo.m_asmz=0.1127;
         m_lhef_number=11182;
       }
       if (m_set==std::string("ct10wnf42") && m_member==0) {
         cset = std::string("ct10wnf42.pds");
         m_asinfo.m_order=1;
+        m_asinfo.m_nf=4;
         m_asinfo.m_asmz=0.1127;
         m_lhef_number=11183;
         THROW(not_implemented,"An interface for this PDF is not yet provided.");
       }
       m_asinfo.m_mz2=sqr(91.1876);
+      m_nf=m_asinfo.m_nf;
 
       if (cset=="") {
         THROW(fatal_error,"PDF set "+m_set

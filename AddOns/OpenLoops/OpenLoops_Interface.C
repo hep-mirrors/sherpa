@@ -1,5 +1,6 @@
 #include "ATOOLS/Org/CXXFLAGS_PACKAGES.H"
 #include "MODEL/Main/Model_Base.H"
+#include "MODEL/Main/Running_AlphaS.H"
 #include "MODEL/UFO/UFO_Model.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -124,6 +125,15 @@ namespace OpenLoops {
     else {
       SetParameter("ckmorder", 0);
     }
+
+    // set nf in alpha-s evolution
+    int asnf0(isr->PDF(0)?isr->PDF(0)->ASInfo().m_nf:-1);
+    if (asnf0==-1) asnf0=MODEL::as->Nf(1.e20);
+    int asnf1(isr->PDF(1)?isr->PDF(1)->ASInfo().m_nf:-1);
+    if (asnf1==-1) asnf1=MODEL::as->Nf(1.e20);
+    if (asnf0==asnf1) SetParameter("minnf_alphasrun", asnf0);
+
+    // set OL path
     SetParameter("install_path", s_olprefix.c_str());
 
     // set remaining OL parameters specified by user
