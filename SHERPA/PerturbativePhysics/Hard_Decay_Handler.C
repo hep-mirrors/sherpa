@@ -22,6 +22,7 @@
 #include "METOOLS/Main/Spin_Structure.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "SHERPA/SoftPhysics/Soft_Photon_Handler.H"
+#include "SHERPA/Tools/Scale_Variations.H"
 
 #include "EXTRA_XS/One2Two/Comix1to2.H"
 #include "EXTRA_XS/One2Three/Comix1to3.H"
@@ -580,6 +581,8 @@ void Hard_Decay_Handler::TreatInitialBlob(ATOOLS::Blob* blob,
   }
   Blob_Data_Base * wgtinfo((*blob)["MEWeightInfo"]);
   if (wgtinfo) *wgtinfo->Get<ME_Weight_Info*>()*=brfactor;
+  Blob_Data_Base * scalevars((*blob)["ScaleVariations"]);
+  if (scalevars) *scalevars->Get<NamedScaleVariationMap*>()*=brfactor;
   NLO_subevtlist* sublist(NULL);
   Blob_Data_Base * bdb((*blob)["NLO_subeventlist"]);
   if (bdb) sublist=bdb->Get<NLO_subevtlist*>();
