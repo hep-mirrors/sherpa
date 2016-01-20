@@ -16,15 +16,6 @@ namespace PHOTONS {
 }
 
 namespace SHERPA {
-  struct softphotons {
-    enum code {
-      off        = 0,
-      exp        = 1,
-      exp_order1 = 2,
-      exp_order2 = 3
-    };
-  };
-
 
   class Resonance_Finder;
   class Matrix_Element_Handler;
@@ -33,7 +24,6 @@ namespace SHERPA {
   private:
     bool                    m_photonsadded;
     std::string             m_name;
-    softphotons::code       m_mode;
     PHOTONS::Photons        * p_yfs;
     Resonance_Finder        * p_clusterer;
     Matrix_Element_Handler  * p_mehandler;
@@ -47,7 +37,6 @@ namespace SHERPA {
     bool AddRadiation(ATOOLS::Blob *);
     bool AddRadiation(ATOOLS::Particle_Vector&, ATOOLS::Blob_Vector& blobs);
 
-    inline bool        IsOn()             { return m_mode; }
     inline std::string SoftQEDGenerator() { return m_name; }
     inline size_t      AddedAnything()    { return m_photonsadded; }
     inline Resonance_Finder * Clusterer() { return p_clusterer; }

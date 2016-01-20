@@ -13,6 +13,18 @@ namespace ATOOLS {
 }
 
 namespace PHOTONS {
+  struct yfsmode {
+    enum code {
+      off        = 0,
+      soft       = 1,
+      full       = 2
+    };
+  };
+
+  std::ostream &operator<<(std::ostream &str,const yfsmode::code &ym);
+  std::istream &operator>>(std::istream &str,yfsmode::code &ym);
+
+
   class Photons {
   private:
     std::string                 m_name;
@@ -20,7 +32,6 @@ namespace PHOTONS {
     bool                        m_success;
   public:
     Photons(ATOOLS::Data_Reader* reader=NULL);
-    Photons();
     ~Photons();
     bool AddRadiation(ATOOLS::Blob *);
     bool CheckStateBeforeTreatment(ATOOLS::Blob *);
@@ -36,7 +47,7 @@ namespace PHOTONS {
     static inline void SetAlphaQED(const double& scale)
     { if (s_userunningparameters) s_alpha=(*MODEL::aqed)(scale); }
 
-    static int                  s_mode;
+    static yfsmode::code        s_mode;
     static bool                 s_useme;
     static double               s_ircutoff;
     static double               s_uvcutoff;

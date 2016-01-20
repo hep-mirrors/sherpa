@@ -17,8 +17,7 @@ using namespace std;
 
 Soft_Photon_Handler::Soft_Photon_Handler(string path,string datfile,
                                          Matrix_Element_Handler * meh) :
-  m_photonsadded(false),
-  m_name(""), m_mode(softphotons::off),
+  m_photonsadded(false), m_name(""),
   p_yfs(NULL), p_clusterer(NULL), p_mehandler(meh)
 {
   Data_Reader * dataread = new Data_Reader(" ",";","!","=");
@@ -27,12 +26,9 @@ Soft_Photon_Handler::Soft_Photon_Handler(string path,string datfile,
   dataread->SetInputPath(path);
   dataread->SetInputFile(datfile);
 
-  m_mode = softphotons::code(dataread->GetValue<int>("YFS_MODE",2));
-  if (m_mode != softphotons::off) {
-    p_yfs       = new PHOTONS::Photons(dataread);
-    p_clusterer = new Resonance_Finder(dataread,meh);
-    m_name      = p_yfs->Name();
-  }
+  p_yfs       = new PHOTONS::Photons(dataread);
+  p_clusterer = new Resonance_Finder(dataread,meh);
+  m_name      = p_yfs->Name();
 
   delete dataread;
 }
@@ -45,10 +41,6 @@ Soft_Photon_Handler::~Soft_Photon_Handler()
 
 bool Soft_Photon_Handler::AddRadiation(Blob * blob)
 {
-  if (m_mode==softphotons::off) {
-    blob->UnsetStatus(blob_status::needs_extraQED);
-    return true;
-  }
   p_yfs->AddRadiation(blob);
   blob->UnsetStatus(blob_status::needs_extraQED);
   m_photonsadded=p_yfs->AddedAnything();

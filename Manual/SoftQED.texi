@@ -32,13 +32,13 @@ of the steering file or the fragmentation data file
 @node YFS_MODE
 @subsubsection YFS_MODE
 @cindex YFS_MODE
-The keyword @code{YFS_MODE = [0,1,2]} determines the
-mode of operation of Photons. @code{YFS_MODE = 0} switches Photons off.
+The keyword @code{YFS_MODE} determines the
+mode of operation of Photons. @code{YFS_MODE = <0|Off|None>} switches Photons off.
 Consequently, neither the hard interaction nor any hadron decay will be
-corrected for soft or hard photon emission. @code{YFS_MODE = 1} sets
+corrected for soft or hard photon emission. @code{YFS_MODE = <1|Soft>} sets
 the mode to "soft only", meaning soft emissions will be treated
 correctly to all orders but no hard emission corrections will be
-included. With @code{YFS_MODE = 2} these hard emission corrections will
+included. With @code{YFS_MODE = <2|Full>} these hard emission corrections will
 also be included up to first order in alpha_QED. This is the default setting.
 
 @node YFS_USE_ME

@@ -28,7 +28,7 @@ using namespace std;
 
 Dress_Blob_Base::Dress_Blob_Base() :
   m_photonsadded(false), m_success(false),
-  m_soft((PHOTONS::Photons::s_mode==1)?true:false),
+  m_soft((PHOTONS::Photons::s_mode==yfsmode::soft)?true:false),
   p_newinitialstate(NULL), m_accu(PHOTONS::Photons::s_accu),
   m_genweight(1.), m_genmaxweight(1.), m_nbar(0.), m_n(0.),
   m_omegaMax(PHOTONS::Photons::s_uvcutoff),

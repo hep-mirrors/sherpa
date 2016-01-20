@@ -15,8 +15,31 @@ using namespace PHOTONS;
 using namespace ATOOLS;
 using namespace std;
 
+std::ostream &PHOTONS::operator<<(std::ostream &str,const yfsmode::code &ym)
+{
+  if      (ym==yfsmode::off)  return str<<"Off";
+  else if (ym==yfsmode::soft) return str<<"Soft";
+  else if (ym==yfsmode::full) return str<<"Full";
+  return str<<"unknown";
+}
+
+std::istream &PHOTONS::operator>>(std::istream &str,yfsmode::code &ym)
+{
+  std::string tag;
+  str>>tag;
+  ym=yfsmode::full;
+  if      (tag.find("Off")!=std::string::npos)  ym=yfsmode::off;
+  else if (tag.find("None")!=std::string::npos) ym=yfsmode::off;
+  else if (tag.find("0")!=std::string::npos)    ym=yfsmode::off;
+  else if (tag.find("Soft")!=std::string::npos) ym=yfsmode::soft;
+  else if (tag.find("1")!=std::string::npos)    ym=yfsmode::soft;
+  else if (tag.find("Full")!=std::string::npos) ym=yfsmode::full;
+  else if (tag.find("2")!=std::string::npos)    ym=yfsmode::full;
+  return str;
+}
+
 // define statics
-int    PHOTONS::Photons::s_mode          = 2;
+yfsmode::code PHOTONS::Photons::s_mode   = yfsmode::full;
 bool   PHOTONS::Photons::s_useme         = true;
 double PHOTONS::Photons::s_ircutoff      = 1E-3;
 double PHOTONS::Photons::s_uvcutoff      = std::numeric_limits<double>::max();
@@ -71,8 +94,7 @@ Photons::Photons(Data_Reader* reader) :
 {
   rpa->gen.AddCitation
     (1,"Photons is published under \\cite{Schonherr:2008av}.");
-  s_mode          = reader->GetValue<int>("YFS_MODE",2);
-  if (s_mode>2) s_mode=2;
+  s_mode          = ToType<yfsmode::code>(reader->GetValue<std::string>("YFS_MODE","2"));
   s_useme         = (bool)reader->GetValue<int>("YFS_USE_ME",1);
   s_ircutoff      = reader->GetValue<double>("YFS_IR_CUTOFF",1E-3);
   s_uvcutoff      = reader->GetValue<double>("YFS_UV_CUTOFF",-1.);
@@ -107,62 +129,23 @@ Photons::Photons(Data_Reader* reader) :
   m_success       = true;
   m_photonsadded  = false;
   msg_Debugging()<<METHOD<<"(){\n"
-		 <<"  Mode: "<<s_mode
-		 <<" ,  MEs: "<<(s_mode>1?s_useme:0)
-		 <<" ,  nmax: "<<s_nmax
-		 <<" ,  nmin: "<<s_nmin
-		 <<" ,  strict: "<<s_strict
-		 <<" ,  dRcut: "<<s_drcut
-		 <<" ,  reducemaxenergy: "<<s_reducemaxenergy
-		 <<" ,  increasemaxweight: "<<s_increasemaxweight
-		 <<" ,  IR cut-off: "<<(s_mode>0?s_ircutoff:0)
-		 <<" in frame "<<irframe<<" ("<<s_ircutoffframe<<")"
-		 <<" ,  UV cut-off: "<<s_uvcutoff
-		 <<" ,  use running parameters "<<s_userunningparameters
-		 <<" ,  FF recoil scheme: "<<s_ffrecscheme
-		 <<" ,  FI recoil scheme: "<<s_firecscheme
-		 <<"\n}"<<std::endl;
-}
-
-Photons::Photons() :
-  m_name("Photons")
-{
-  PRINT_INFO("TODO: check whether running of alphaQED is MSbar");
-  PRINT_INFO("TODO: evolve all particle masses in MSbar");
-  s_mode          = 2;
-  s_useme         = true;
-  s_ircutoff      = 1E-3;
-  s_uvcutoff      = std::numeric_limits<double>::max();
-  s_ircutoffframe = 0;
-  s_nmax          = std::numeric_limits<int>::max();
-  s_nmin          = 0;
-  s_drcut         = 1000.;
-  s_strict        = false;
-  s_reducemaxenergy = 1.;
-  s_increasemaxweight = 1.;
-  s_checkfirst    = false;
-  s_ffrecscheme   = 0;
-  s_firecscheme   = 0;
-  s_accu          = sqrt(rpa->gen.Accu());
-  s_userunningparameters = false;
-  m_success       = true;
-  m_photonsadded  = false;
-  msg_Debugging()<<METHOD<<"(){\n"
-		 <<"  Mode: "<<s_mode
-		 <<" ,  MEs: "<<(s_mode>1?s_useme:0)
-		 <<" ,  nmax: "<<s_nmax
-		 <<" ,  nmin: "<<s_nmin
-		 <<" ,  strict: "<<s_strict
-		 <<" ,  dRcut: "<<s_drcut
-		 <<" ,  reducemaxenergy: "<<s_reducemaxenergy
-		 <<" ,  increasemaxweight: "<<s_increasemaxweight
-		 <<" ,  IR cut-off: "<<(s_mode>0?s_ircutoff:0)
-		 <<" in frame "<<s_ircutoffframe
-		 <<" ,  UV cut-off: "<<s_uvcutoff
-		 <<" ,  use running parameters "<<s_userunningparameters
-		 <<" ,  FF recoil scheme: "<<s_ffrecscheme
-		 <<" ,  FI recoil scheme: "<<s_firecscheme
-		 <<"\n}"<<std::endl;
+                 <<"  Mode: "<<s_mode;
+  if ((int)s_mode>0) {
+    msg_Debugging()<<" ,  MEs: "<<((int)s_mode>1?s_useme:0)
+                   <<" ,  nmax: "<<s_nmax
+                   <<" ,  nmin: "<<s_nmin
+                   <<" ,  strict: "<<s_strict
+                   <<" ,  dRcut: "<<s_drcut
+                   <<" ,  reducemaxenergy: "<<s_reducemaxenergy
+                   <<" ,  increasemaxweight: "<<s_increasemaxweight
+                   <<" ,  IR cut-off: "<<(s_mode>0?s_ircutoff:0)
+                   <<" in frame "<<irframe<<" ("<<s_ircutoffframe<<")"
+                   <<" ,  UV cut-off: "<<s_uvcutoff
+                   <<" ,  use running parameters "<<s_userunningparameters
+                   <<" ,  FF recoil scheme: "<<s_ffrecscheme
+                   <<" ,  FI recoil scheme: "<<s_firecscheme;
+  }
+  msg_Debugging()<<"\n}"<<std::endl;
 }
 
 Photons::~Photons()
@@ -199,6 +182,7 @@ Photons::~Photons()
 
 bool Photons::AddRadiation(Blob * blob)
 {
+  if (s_mode==yfsmode::off) return m_success=true;
   if (!CheckStateBeforeTreatment(blob)) {
     m_photonsadded=false;
     return m_success=false;
