@@ -71,8 +71,9 @@ namespace SHERPARIVET {
     bool   m_finished;
     bool   m_splitjetconts, m_splitSH, m_splitcoreprocs, m_splitvariations,
            m_ignorebeams, m_usehepmcshort, m_usehepmcnamedweights,
-           m_usehepmcfullweightinfo, m_usehepmctreelike, m_printsummary;
-    size_t m_xsoutputprecision;
+           m_usehepmcfullweightinfo, m_usehepmctreelike, m_printsummary,
+           m_evtbyevtxs;
+    size_t m_hepmcoutputprecision, m_xsoutputprecision;
 
     RivetScaleVariationMap         m_rivet;
     SHERPA::HepMC2_Interface       m_hepmc2;
@@ -190,7 +191,8 @@ Rivet_Interface::Rivet_Interface(const std::string &inpath,
   m_splitcoreprocs(false), m_splitvariations(true),
   m_ignoreblobs(ignoreblobs), m_usehepmcnamedweights(false),
   m_usehepmcfullweightinfo(false), m_usehepmctreelike(false),
-  m_printsummary(true), m_xsoutputprecision(6)
+  m_printsummary(true), m_evtbyevtxs(false),
+  m_hepmcoutputprecision(15), m_xsoutputprecision(6)
 {
   if (m_outpath[m_outpath.size()-1]=='/')
     m_outpath=m_outpath.substr(0,m_outpath.size()-1);
@@ -256,6 +258,7 @@ void Rivet_Interface::ExtractVariations(const HepMC::GenEvent& evt)
   // at the moment the only way to do that is to filter the printout
   // accuracy limited to print out accu of 6 digits, must suffice
   MyStrStream str;
+  str.precision(m_hepmcoutputprecision);
   wc.print(str);
 
   // need a temp object first, as we need to get ntrials first
@@ -460,8 +463,10 @@ bool Rivet_Interface::Init()
                                                   0);
     m_usehepmctreelike=reader.GetValue<int>("USE_HEPMC_TREE_LIKE",0);
     m_printsummary=reader.GetValue<int>("PRINT_SUMMARY",1);
+    m_evtbyevtxs=reader.GetValue<int>("EVENTBYEVENTXS",0);
     m_ignorebeams=reader.GetValue<int>("IGNOREBEAMS", 0);
 
+    m_hepmcoutputprecision=reader.GetValue<int>("HEPMC_OUTPUT_PRECISION", 15);
     m_xsoutputprecision=reader.GetValue<int>("XS_OUTPUT_PRECISION", 6);
 
     reader.SetIgnore("");
@@ -574,6 +579,22 @@ bool Rivet_Interface::Run(ATOOLS::Blob_List *const bl)
     msg_Debugging()<<"Checking rivet for "<<it->first<<" with "
                    <<it->second->RivetMap().size()<<" histograms."<<std::endl;
   }
+  if (m_evtbyevtxs) {
+    for (RivetScaleVariationMap::iterator mit(m_rivet.begin());
+         mit!=m_rivet.end();++mit) {
+      std::string out=m_outpath;
+      if (mit->first!="" && mit->first!="nominal") out += "."+mit->first;
+      std::string namestr(m_rivet.size()>1?" for "+mit->first:"");
+      std::string output(std::string("**  Total XS")+namestr
+                         +std::string(" = ( ")
+                         +ToString(mit->second->TotalXS(),m_xsoutputprecision)
+                         +std::string(" +- ")
+                         +ToString(mit->second->TotalErr(),m_xsoutputprecision)
+                         +std::string(" ) pb **"));
+      std::string astline(output.size(),'*');
+      msg_Info()<<astline<<"\n"<<output<<"\n"<<astline<<std::endl;
+    }
+  }
   return true;
 }
 
@@ -637,6 +658,7 @@ void Rivet_Interface::ShowSyntax(const int i)
     <<"     USE_HEPMC_NAMED WEIGHTS <1|0> use named HepMC weights,\n"
     <<"                          mandatory for scale variations\n"
     <<"     PRINT_SUMMARY <1|0>  print cross section summary at the end\n"
+    <<"     EVENTBYEVENTXS <0|1> print cross section event-by-event\n"
     <<"}"<<std::endl;
 }
 
