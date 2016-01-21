@@ -30,11 +30,11 @@ Shrimps::Shrimps(ATOOLS::Data_Reader * dr,
     GenerateXsecs();
     exit(1);
   }
-  else if (MBpars.RunMode()==run_mode::test) {
+  InitialiseTheRun(beam,isr);
+  if (MBpars.RunMode()==run_mode::test) {
     TestShrimps();
     exit(1);
   }
-  InitialiseTheRun(beam,isr);
 }
 
 Shrimps::~Shrimps() 
@@ -115,6 +115,106 @@ void Shrimps::CleanUp(const size_t & mode) {
   p_beamremnants->Reset(mode);
 }
 
+void Shrimps::GenerateXsecs() {
+  msg_Out()<<METHOD<<".\n";  
+  InitialiseFormFactors();
+  std::vector<double> energies;
+  ReadEnergiesFromFile(energies);
+
+  std::vector<double> xsectot, xsecinel, xsecelas;
+  Cross_Sections xsecs;
+  for (size_t i;i<energies.size();i++) {
+    double energy = energies[i];
+    MBpars.UpdateForNewEnergy(energy);
+    InitialiseSingleChannelEikonals();
+    xsecs.CalculateCrossSections();
+    xsectot.push_back(xsecs.SigmaTot()/1.e9);
+    xsecinel.push_back(xsecs.SigmaInel()/1.e9);
+    xsecelas.push_back(xsecs.SigmaEl()/1.e9);
+  }
+  WriteOutXSecsYodaFile(energies, xsectot, xsecinel, xsecelas);
+}
+
+// if (Elastics.find((*energy))!=Elastics.end()) {
+//       Elastic_Event_Generator elastic(m_cross.GetSigmaElastic(),NULL,-1);
+//       m_cross.GetSigmaElastic()->PrintDifferentialelasticXsec(false,tuning,
+// 								dirname);
+//       m_cross.GetSigmaSD()->PrintDifferentialElasticAndSDXsec(false,dirname);
+//       m_cross.GetSigmaDD()->PrintDifferentialElasticAndDiffXsec(false,
+// 								  dirname);
+//     }
+//   }
+//   was.close();
+// }
+// else {
+//     std::vector<double> Elastics;
+//     Elastics.push_back(62.5);
+//     Elastics.push_back(546.);
+//     Elastics.push_back(1800.);
+//     Elastics.push_back(7000.);
+//     std::vector<double> xsectot, xsecinel,xsecelas;
+//     for (int i=0; i<Energies.size(); i++) {
+//       InitialiseSingleChannelEikonals((Energies[i]));
+//       InitialiseCrossSections((Energies[i]));
+//     }
+//     for (int i=0; i<Elastics.size(); i++) {
+//       InitialiseSingleChannelEikonals((Elastics[i]));
+//       InitialiseCrossSections((Elastics[i]));
+//       m_cross.GetSigmaElastic()->PrintDifferentialelasticXsec(false,tuning,
+// 							      dirname);
+//     }
+//   }
+//   */
+// }
+
+void Shrimps::WriteOutXSecsYodaFile(const std::vector<double> & energies,
+				    const std::vector<double> & xsectot,
+				    const std::vector<double> & xsecinel,
+				    const std::vector<double> & xsecelas) {
+  std::string dirname = std::string("InclusiveQuantities");
+  ATOOLS::MakeDir(dirname);
+  std::string filename(dirname+std::string("/xsecs.dat"));
+  std::ofstream was;
+  was.open(filename.c_str());
+  was<<"# BEGIN HISTOGRAM /XSECS/d01-x01-y01\n";
+  was<<"AidaPath=/XSECS/d01-x01-y01"<<std::endl;
+  for (size_t i=0; i<energies.size(); i++){
+    was<<energies[i]<<"   "<<energies[i]<<"   "<<xsectot[i]<<"   0.0\n";
+  }
+  was<<"# END HISTOGRAM\n"<<std::endl;
+  was<<"# BEGIN HISTOGRAM /XSECS/d02-x01-y01\n";
+  was<<"AidaPath=/XSECS/d02-x01-y01"<<std::endl;
+  for (size_t i=0; i<energies.size(); i++){
+    was<<energies[i]<<"   "<<energies[i]<<"   "<<xsecinel[i]<<"   0.0\n";
+  }
+  was<<"# END HISTOGRAM\n"<<std::endl;
+  was<<"# BEGIN HISTOGRAM /XSECS/d03-x01-y01\n";
+  was<<"AidaPath=/XSECS/d03-x01-y01"<<std::endl;
+  for (size_t i=0; i<energies.size(); i++){
+    was<<energies[i]<<"   "<<energies[i]<<"   "<<xsecelas[i]<<"   0.0\n";
+  }
+  was<<"# END HISTOGRAM"<<std::endl;
+  was.close();
+}
+  
+void Shrimps::ReadEnergiesFromFile(std::vector<double> & energies) {
+  std::string infile("energies_xsecs.dat");
+  std::ifstream input;
+  input.open(infile.c_str());
+  if(!input){
+    msg_Error()<<"File "<<infile<<" does not exist, will exit now.\n";
+    exit(1);
+  }
+  std::string test;
+  while (!input.eof()) {
+    input>>test;
+    energies.push_back(std::atof(test.c_str()));
+  }
+  input.close();
+}
+
+
+
 void Shrimps::TestShrimps() {
   msg_Info()<<"Start testing SHRiMPS.\n";
   std::string dirname = std::string("Tests");
@@ -192,133 +292,5 @@ void Shrimps::TestCrossSections(const std::string & dirname) {
   cross.Test(dirname);
 }
 
-void Shrimps::GenerateXsecs() {
-  /*
-  InitialiseFormFactors();
-  std::string dirname = std::string("InclusiveQuantities");
-  ATOOLS::MakeDir(dirname);
 
-  bool tuning(false);
-  
-  if(!tuning){
-    std::list<double> Energies;
-    Energies.push_back(50.);
-    Energies.push_back(62.5);
-    Energies.push_back(100.);
-    Energies.push_back(546.);
-    Energies.push_back(630.);
-    Energies.push_back(900.);
-    Energies.push_back(1000.);
-    Energies.push_back(1800.);
-    Energies.push_back(1960.);
-    Energies.push_back(2360.);
-    Energies.push_back(7000.);
-    Energies.push_back(8000.);
-    Energies.push_back(14000.);
-    Energies.push_back(55000.);
-    Energies.push_back(100000.);
-    std::set<double> Elastics;
-    Elastics.insert(62.5);
-    Elastics.insert(546.);
-    Elastics.insert(900.);
-    Elastics.insert(1800.);
-    Elastics.insert(7000.);
-
-
-    std::string filename(dirname+std::string("/xsecs_total.dat"));
-    std::ofstream was;
-    was.open(filename.c_str());
-    for (std::list<double>::iterator energy=Energies.begin();
-       energy!=Energies.end();energy++) {
-      InitialiseSingleChannelEikonals((*energy));
-      InitialiseCrossSections((*energy));
-      msg_Events()<<"E = "<<ATOOLS::om::red<<(*energy)<<ATOOLS::om::reset;
-      msg_Events()<<" sigma_tot = "<<m_cross.SigmaTot()/1.e9
-		  <<" sigma_inel = "<<m_cross.SigmaInel()/1.e9
-		  <<" sigma_SD = "<<m_cross.SigmaSD()/1.e9
-		  <<" sigma_DD = "<<m_cross.SigmaDD()/1.e9
-		  <<" sigma_el = "<<m_cross.SigmaEl()/1.e9
-		  <<" el.slope = "<<m_cross.ElasticSlope()
-		  <<std::endl;
-      was<<(*energy)<<"  "
-         <<m_cross.SigmaTot()/1.e9<<"  "
-         <<m_cross.SigmaInel()/1.e9<<"  "
-         <<m_cross.SigmaSD()/1.e9<<"  "
-         <<m_cross.SigmaDD()/1.e9<<"  "
-         <<m_cross.SigmaEl()/1.e9<<"  "
-         <<m_cross.ElasticSlope()<<"  "
-         <<std::endl;
-      if (Elastics.find((*energy))!=Elastics.end()) {
-        Elastic_Event_Generator elastic(m_cross.GetSigmaElastic(),NULL,-1);
-        m_cross.GetSigmaElastic()->PrintDifferentialelasticXsec(false,tuning,
-								dirname);
-        m_cross.GetSigmaSD()->PrintDifferentialElasticAndSDXsec(false,dirname);
-        m_cross.GetSigmaDD()->PrintDifferentialElasticAndDiffXsec(false,
-								  dirname);
-      }
-    }
-    was.close();
-  }
-  else {
-    std::vector<double> Energies;
-    std::string infile("energies_xsecs.dat");
-    std::ifstream input;
-    input.open(infile.c_str());
-    if(!input){
-      msg_Error()<<"File "<<infile<<" does not exist, will exit now.\n";
-      exit(1);
-    }
-    std::string test;
-    while (!input.eof()) {
-      input>>test;
-      Energies.push_back(std::atof(test.c_str()));
-    }
-    input.close();
-    std::vector<double> Elastics;
-    Elastics.push_back(62.5);
-    Elastics.push_back(546.);
-    Elastics.push_back(1800.);
-    Elastics.push_back(7000.);
-
-    std::vector<double> xsectot, xsecinel,xsecelas;
-    
-    for (int i=0; i<Energies.size(); i++) {
-      InitialiseSingleChannelEikonals((Energies[i]));
-      InitialiseCrossSections((Energies[i]));
-      xsectot.push_back(m_cross.SigmaTot()/1.e9);
-      xsecinel.push_back(m_cross.SigmaInel()/1.e9);
-      xsecelas.push_back(m_cross.SigmaEl()/1.e9);
-    }
-    std::string filename(dirname+std::string("/xsecs_tuning.dat"));
-    std::ofstream was;
-    was.open(filename.c_str());
-    was<<"# BEGIN HISTOGRAM /XSECS/d01-x01-y01\n";
-    was<<"AidaPath=/XSECS/d01-x01-y01"<<std::endl;
-    for (int i=0; i<Energies.size(); i++){
-      was<<Energies[i]<<"   "<<Energies[i]<<"   "<<xsectot[i]<<"   0.0\n";
-    }
-    was<<"# END HISTOGRAM\n"<<std::endl;
-    was<<"# BEGIN HISTOGRAM /XSECS/d02-x01-y01\n";
-    was<<"AidaPath=/XSECS/d02-x01-y01"<<std::endl;
-    for (int i=0; i<Energies.size(); i++){
-      was<<Energies[i]<<"   "<<Energies[i]<<"   "<<xsecinel[i]<<"   0.0\n";
-    }
-    was<<"# END HISTOGRAM\n"<<std::endl;
-    was<<"# BEGIN HISTOGRAM /XSECS/d03-x01-y01\n";
-    was<<"AidaPath=/XSECS/d03-x01-y01"<<std::endl;
-    for (int i=0; i<Energies.size(); i++){
-      was<<Energies[i]<<"   "<<Energies[i]<<"   "<<xsecelas[i]<<"   0.0\n";
-    }
-    was<<"# END HISTOGRAM"<<std::endl;
-    was.close();
-
-    for (int i=0; i<Elastics.size(); i++) {
-      InitialiseSingleChannelEikonals((Elastics[i]));
-      InitialiseCrossSections((Elastics[i]));
-      m_cross.GetSigmaElastic()->PrintDifferentialelasticXsec(false,tuning,
-							      dirname);
-    }
-  }
-  */
-}
 

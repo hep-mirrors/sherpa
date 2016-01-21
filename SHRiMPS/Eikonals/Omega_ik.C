@@ -116,7 +116,7 @@ EffectiveIntercept(double b1,double b2,const double & y) {
 void Omega_ik::TestEikonal(Analytic_Eikonal * anaeik,
 			   const std::string & dirname) const
 {
-  std::string filename(dirname+"eikonals-ana.dat");
+  std::string filename(dirname+"/eikonals-ana.dat");
   std::ofstream was;
   was.open(filename.c_str());
   was<<"# B    Omega_{ik}(B) : ana     num  "<<std::endl;
@@ -167,9 +167,9 @@ void Omega_ik::TestIndividualGrids(Analytic_Contributor * ana12,
 	if (value21>1.e-6 && value21a>1.e-6 &&
 	    (value21-value21a)/(value21+value21a)>maxerr)
 	  maxerr = (value21-value21a)/(value21+value21a);
-	msg_Out()<<"   y = "<<y<<"   "
-		 <<"Omega_{1(2)} = "<<value12<<" (ana = "<<value12a<<"), "
-		 <<"Omega_{(1)2} = "<<value21<<" (ana = "<<value21a<<")\n.";
+	//msg_Out()<<"   y = "<<y<<"   "
+	//	 <<"Omega_{1(2)} = "<<value12<<" (ana = "<<value12a<<"), "
+	//	 <<"Omega_{(1)2} = "<<value21<<" (ana = "<<value21a<<")\n.";
       }
     }   
   }

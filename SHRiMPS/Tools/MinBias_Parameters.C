@@ -47,7 +47,7 @@ void MinBias_Parameters::FillRunParameters(ATOOLS::Data_Reader * dr) {
     dr->GetValue<std::string>("Shrimps_Mode",std::string("Inelastic"));
   if (runmode==std::string("TestShrimps") || runmode==std::string("Test")) 
     m_runmode = m_run_params.runmode = run_mode::test;
-  if (runmode==std::string("Xsecs")) 
+  if (runmode==std::string("Xsecs") || runmode==std::string("XSecs")) 
     m_runmode = m_run_params.runmode = run_mode::xsecs_only;
   else if (runmode==std::string("Elastic")) 
     m_runmode = m_run_params.runmode = run_mode::elastic_events;
@@ -90,7 +90,7 @@ void MinBias_Parameters::FillFormFactorParameters(ATOOLS::Data_Reader * dr) {
   m_ff_params.norm        = 1./sqrt(m_NGWstates);
   m_ff_params.Lambda2     = dr->GetValue<double>("Lambda2",1.7);
   m_ff_params.beta02      = 
-    sqrt(1.e9*dr->GetValue<double>("beta02(mb)",20.0)/ATOOLS::rpa->Picobarn());
+    sqrt(1.e9*dr->GetValue<double>("beta02(mb)",25.0)/ATOOLS::rpa->Picobarn());
   // kappa will obtain a sign for the second GW state - this is hardwired
   // in the initialization routine in Shrimps.  
   m_ff_params.kappa       = dr->GetValue<double>("kappa",0.6);
@@ -111,12 +111,19 @@ void MinBias_Parameters::FillEikonalParameters(ATOOLS::Data_Reader * dr) {
   m_eik_params.cutoffY   = dr->GetValue<double>("deltaY",1.5);
   m_eik_params.Ymax      = m_eik_params.originalY - m_eik_params.cutoffY; 
   m_eik_params.lambda    = (m_runmode!=run_mode::test)?
-    dr->GetValue<double>("lambda",0.3):0.;
-  m_eik_params.Delta     = dr->GetValue<double>("Delta",0.4);
+    dr->GetValue<double>("lambda",0.5):0.;
+  m_eik_params.Delta     = dr->GetValue<double>("Delta",0.3);
   m_eik_params.beta02    = m_ff_params.beta02;
   m_eik_params.bmax      = 2.*m_bmax;
   m_eik_params.accu      = m_accu;
 }
+
+void MinBias_Parameters::UpdateForNewEnergy(const double & energy) {
+  m_originalY = log(energy/ATOOLS::Flavour(kf_p_plus).HadMass());
+  m_eik_params.originalY = m_originalY;
+  m_eik_params.Ymax      = m_eik_params.originalY - m_eik_params.cutoffY; 
+}
+
 
 void MinBias_Parameters::FillLadderParameters(ATOOLS::Data_Reader * dr) {
   /*

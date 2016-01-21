@@ -33,9 +33,9 @@ namespace SHRIMPS {
     const double & SigmaTot() const     { return m_xstot; }
     //const double & SigmaSD() const      { return m_sSD; }
     //const double & SigmaDD() const      { return m_sDD; }
-    //const double & SigmaEl() const      { return m_sel; }
-    //const double & SigmaInel() const    { return m_sinel; }
-    //const double & ElasticSlope() const { return m_sval; }
+    const double & SigmaEl() const      { return m_xsel; }
+    const double & SigmaInel() const    { return m_xsinel; }
+    const double & ElasticSlope() const { return m_slope; }
   };
 }
 #endif

@@ -47,6 +47,11 @@ namespace SHRIMPS {
     Cluster_Algorithm          m_cluster;
     
     void GenerateXsecs();
+    void ReadEnergiesFromFile(std::vector<double> & energies);
+    void WriteOutXSecsYodaFile(const std::vector<double> & energies,
+			       const std::vector<double> & xsectot,
+			       const std::vector<double> & xsecinel,
+			       const std::vector<double> & xsecelas);
     
     void InitialiseTheRun(BEAM::Beam_Spectra_Handler *const beam,
 			  PDF::ISR_Handler *const isr);

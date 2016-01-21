@@ -42,6 +42,7 @@ namespace SHRIMPS {
     void Reset();
     void AddFormFactor(Form_Factor * ff) { p_ffs->push_back(ff); }  
     void AddEikonal(Omega_ik * eikonal)  { p_eikonals->push_back(eikonal); }  
+    void UpdateForNewEnergy(const double & energy);
     
     const run_mode::code & RunMode()   const { return m_runmode; }
     const size_t         & NGWStates() const { return m_NGWstates; }
