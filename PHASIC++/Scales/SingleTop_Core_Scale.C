@@ -7,7 +7,6 @@
 #include "ATOOLS/Org/Message.H"
 
 namespace PHASIC {
-
   class SingleTop_Core_Scale: public Core_Scale_Setter {
   public:
 
@@ -15,6 +14,9 @@ namespace PHASIC {
       Core_Scale_Setter(args) {}
 
     PDF::CParam Calculate(ATOOLS::Cluster_Amplitude *const ampl);
+
+    ATOOLS::Cluster_Amplitude *Cluster
+    (ATOOLS::Cluster_Amplitude *const ampl) const;
 
   };// end of class Scale_Setter_Base
 
