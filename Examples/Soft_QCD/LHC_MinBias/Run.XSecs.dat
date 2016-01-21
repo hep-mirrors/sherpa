@@ -1,0 +1,14 @@
+(run){
+  EVENTS              = 1
+  EVENT_TYPE          = MinimumBias 
+  SOFT_COLLISIONS     = Shrimps
+  Shrimps_Mode        = Xsecs
+}(run)
+
+(beam){
+  BEAM_1 =  2212; BEAM_ENERGY_1 = 3500.;
+  BEAM_2 =  2212; BEAM_ENERGY_2 = 3500.;
+}(beam)
+
+
+
