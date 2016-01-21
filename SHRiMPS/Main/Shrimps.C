@@ -11,11 +11,12 @@
 #include <vector>
 
 using namespace SHRIMPS;
+using namespace std;
 
 Shrimps::Shrimps(ATOOLS::Data_Reader * dr,
 		 BEAM::Beam_Spectra_Handler *const beam,
 		 PDF::ISR_Handler *const isr) :  
-  p_generator(NULL)
+  p_beamremnants(NULL), p_generator(NULL)
 {
   ATOOLS::rpa->gen.AddCitation(1,"SHRiMPS is not published yet.");
   MBpars.Init(dr);
@@ -23,85 +24,66 @@ Shrimps::Shrimps(ATOOLS::Data_Reader * dr,
     msg_Error()<<"Error in "<<METHOD<<":\n   unknown runmode.  Will exit.\n";
     exit(0);
   }
-  if (MBpars.RunMode()==run_mode::xsecs_only) {
+  else if (MBpars.RunMode()==run_mode::xsecs_only) {
     msg_Events()<<METHOD<<": run Shrimps to generate cross sections only.\n"
 		<<"   Will write out results and exit afterwards.\n";
     GenerateXsecs();
     exit(1);
   }
-  InitialiseTheRun(beam,isr);
-  if (MBpars("TestShrimps")!=0) {
+  else if (MBpars.RunMode()==run_mode::test) {
     TestShrimps();
     exit(1);
   }
+  InitialiseTheRun(beam,isr);
 }
 
 Shrimps::~Shrimps() 
 {
-  while (!m_eikonals.empty()) {
-    delete m_eikonals.back();
-    m_eikonals.pop_back();
-  }
-  m_eikonals.clear();
   if (p_beamremnants) delete p_beamremnants;
-  if (p_generator) delete p_generator;
+  if (p_generator)    delete p_generator;
 }
 
 void Shrimps::InitialiseTheRun(BEAM::Beam_Spectra_Handler *const beam,
 			       PDF::ISR_Handler *const isr) {
   ResetTheFramework();
   InitialiseFormFactors();
-  InitialiseSingleChannelEikonals(ATOOLS::rpa->gen.Ecms());
-  //InitialiseCrossSections(ATOOLS::rpa->gen.Ecms());
+  InitialiseSingleChannelEikonals();
   InitialiseBeamRemnants(beam,isr);
-  //InitialiseTheEventGenerator();  
+  InitialiseTheEventGenerator();  
   //Hadron_Init hadroninit;
   //hadroninit.Init();
 }
 
 void Shrimps::ResetTheFramework() {
   m_pdfs.clear();
-  while (!m_eikonals.empty()) {
-    delete m_eikonals.back();
-    m_eikonals.pop_back();
-  }
-  m_eikonals.clear();
-  m_ffs.clear();
 }
 
 void Shrimps::InitialiseFormFactors() {
-  msg_Info()<<METHOD<<" for "<<MBpars("NGWstates")<<" states.\n";
-  for (size_t i=0;i<MBpars("NGWstates");i++) {
+  for (size_t i=0;i<MBpars.NGWStates();i++) {
     FormFactor_Parameters params(MBpars.GetFFParameters());
     params.number = i;
     if (i==1) params.kappa *= -1.;
-    m_ffs.push_back(Form_Factor(params));
-    m_ffs.back().Initialise();
+    Form_Factor * ff = new Form_Factor(params);
+    ff->Initialise();
+    MBpars.AddFormFactor(ff);
   }
   msg_Info()<<METHOD<<" done.\n";
 }
 
-void Shrimps::InitialiseSingleChannelEikonals(const double & Ecms) 
+void Shrimps::InitialiseSingleChannelEikonals() 
 {
-  msg_Info()<<METHOD<<"(Y = "<<MBpars("originalY")<<", "
-	   <<"deltaY = "<<MBpars("deltaY")<<").\n";
-  Eikonal_Creator creator(MBpars.GetEikonalParameters());
-  size_t NGWstates(MBpars("NGWstates"));
-  for (int i=0;i<NGWstates;i++) {
-    for (int j=0;j<NGWstates;j++) {
-      msg_Info()<<"   *** create eikonal for channel ["<<i<<" "<<j<<"].\n";
-      creator.SetFormFactors(&m_ffs[i],&m_ffs[j]);
+  msg_Info()<<METHOD<<" for "<<MBpars.GetFormFactors()->size()
+	    <<" form factors.\n";
+  Eikonal_Creator creator;
+  list<Form_Factor *> * ffs(MBpars.GetFormFactors());
+  for (list<Form_Factor *>::iterator ff1=ffs->begin();ff1!=ffs->end();ff1++) {
+    for (list<Form_Factor *>::iterator ff2=ffs->begin();ff2!=ffs->end();ff2++) {
+      creator.SetFormFactors((*ff1),(*ff2));
       Omega_ik * eikonal(creator.InitialiseEikonal());
-      m_eikonals.push_back(eikonal);
+      MBpars.AddEikonal(eikonal);
     }
   }
   msg_Info()<<METHOD<<" done.\n";
-}
-
-
-void Shrimps::InitialiseCrossSections(const double & energy) {
-  m_cross = Cross_Sections(&m_eikonals,energy,m_test);
-  m_cross.CalculateTotalCrossSections();
 }
 
 void Shrimps::InitialiseBeamRemnants(BEAM::Beam_Spectra_Handler * const beam,
@@ -113,8 +95,10 @@ void Shrimps::InitialiseBeamRemnants(BEAM::Beam_Spectra_Handler * const beam,
 }
 
 void Shrimps::InitialiseTheEventGenerator() {
-  //p_generator = new Event_Generator(m_runmode,m_weightmode);
-  //p_generator->Initialise(&m_cross,p_beamremnants,m_test);
+  Cross_Sections xsecs;
+  xsecs.CalculateCrossSections();
+  p_generator = new Event_Generator();
+  p_generator->Initialise(p_beamremnants);
 }
 
 int Shrimps::GenerateEvent(ATOOLS::Blob_List * blobs) {
@@ -138,15 +122,10 @@ void Shrimps::TestShrimps() {
 
   PrintAlphaS(dirname);
   PrintPDFs(dirname);
-
-  m_ffs[0].Test(dirname); 
-
-  double Delta(MBpars.GetEikonalParameters().Delta);
-  double Ymax(MBpars.GetEikonalParameters().Ymax);
-  Analytic_Contributor ana12(&m_ffs[0],Delta,Ymax,+1);
-  Analytic_Contributor ana21(&m_ffs[0],Delta,Ymax,-1);  
-  m_eikonals.front()->TestIndividualGrids(&ana12,&ana21,Ymax,dirname);
-
+  MBpars.GetFormFactors()->front()->Test(dirname); 
+  TestEikonalGrids(dirname);
+  TestCrossSections(dirname);
+  
   msg_Info()<<"Tests done.  Results to be found in "<<dirname<<".\n";
 }
 
@@ -194,14 +173,27 @@ void Shrimps::PrintAlphaS(const std::string & dirname) {
   was.close();
 }
 
+void Shrimps::TestEikonalGrids(const std::string & dirname) {
+  Form_Factor * ff(MBpars.GetFormFactors()->front());
+  double Delta(MBpars.GetEikonalParameters().Delta);
+  double Ymax(MBpars.GetEikonalParameters().Ymax);
+  Analytic_Contributor ana12(ff,Delta,Ymax,+1);
+  Analytic_Contributor ana21(ff,Delta,Ymax,-1);  
+  Omega_ik * eikonal(MBpars.GetEikonals()->front());
+  eikonal->TestIndividualGrids(&ana12,&ana21,Ymax,dirname);
 
+  Analytic_Eikonal anaeik;
+  eikonal->TestEikonal(&anaeik,dirname);
+}
 
-
-
-
-
+void Shrimps::TestCrossSections(const std::string & dirname) {
+  Cross_Sections cross;
+  cross.CalculateCrossSections();
+  cross.Test(dirname);
+}
 
 void Shrimps::GenerateXsecs() {
+  /*
   InitialiseFormFactors();
   std::string dirname = std::string("InclusiveQuantities");
   ATOOLS::MakeDir(dirname);
@@ -327,5 +319,6 @@ void Shrimps::GenerateXsecs() {
 							      dirname);
     }
   }
+  */
 }
 

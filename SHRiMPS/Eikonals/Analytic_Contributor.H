@@ -10,8 +10,8 @@ namespace SHRIMPS {
     double        m_Delta, m_Y;
     int           m_sign;
   public:
-    Analytic_Contributor(Form_Factor * ff,const double & Delta,const double & Y,
-			 const int & sign) :
+    Analytic_Contributor(Form_Factor * ff,const double & Delta,
+			 const double & Y,const int & sign) :
       p_ff(ff), m_Delta(Delta), m_Y(Y), m_sign(sign) {}
     double operator()(const double & b,const double & y) const;
   };

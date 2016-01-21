@@ -26,17 +26,11 @@ namespace SHRIMPS {
     std::vector<double> m_intgrid_DD, m_diffgrid_DD;
     const std::vector<double> *p_grid;
     double              m_sigma_DD;
-    int                 m_test;
 
     void FillGrids();
   public:
     Sigma_DD() {};
-    Sigma_DD(Sigma_Elastic * sigma_el,Sigma_SD * sigma_sd,const int & test=0);
-    //double Calculate(const double & Bmin, const double & Bmax,
-    //		     Omega_ik * eikonal=NULL) {
-    // FillGrids();
-    //  return m_sigma_SD1+m_sigma_SD2;
-    // }
+    Sigma_DD(Sigma_Elastic * sigma_el,Sigma_SD * sigma_sd);
     double GetValue(const double & B); 
     double GetCombinedValue(const double & B);
     double GetDiffArgument(const double & B);

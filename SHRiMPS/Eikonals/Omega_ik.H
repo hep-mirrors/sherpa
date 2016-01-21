@@ -3,10 +3,10 @@
 
 #include "SHRiMPS/Eikonals/Form_Factors.H"
 #include "SHRiMPS/Eikonals/Eikonal_Contributor.H"
-#include "SHRiMPS/Eikonals/Analytic_Contributor.H"
 #include "SHRiMPS/Eikonals/Eikonal_Weights.H"
-#include "SHRiMPS/Tools/DEQ_Solver.H"
-#include "SHRiMPS/Tools/MinBias_Parameters.H"
+#include "SHRiMPS/Eikonals/Analytic_Contributor.H"
+#include "SHRiMPS/Eikonals/Analytic_Eikonal.H"
+#include "SHRiMPS/Tools/Parameter_Structures.H"
 #include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Math/MathTools.H"
 
@@ -38,10 +38,9 @@ namespace SHRIMPS {
     Eikonal_Weights       m_weights;
     Eikonal_Contributor * p_Omegaik, * p_Omegaki;
 
-    double m_bmax;
-    double m_Y;
-    int    m_Bsteps, m_deltaB, m_Ysteps;
-    double m_prefactor,m_sigmaInelastic;
+    double m_bmax, m_Y;
+    int    m_Bsteps, m_Ysteps;
+    double m_prefactor, m_deltaB;
     std::vector<double>   m_gridB, m_gridBmax, m_gridD;   
   public:
     Omega_ik(const Eikonal_Parameters & params);
@@ -49,40 +48,35 @@ namespace SHRIMPS {
 
     void SetContributors(Eikonal_Contributor * Omegaik, 
 			 Eikonal_Contributor * Omegaki);
-    void SetPrefactor(const double & prefactor) { m_prefactor = prefactor; }
+    void SetDeltaB(const double & deltaB);
+    void SetPrefactor(const double & prefactor);
 
-    Eikonal_Contributor * GetSingleTerm(const int & i=0);
+    const double & DeltaB() const { return m_deltaB; }
     Eikonal_Weights     * GetWeights();
-
-    std::vector<double> * GetImpactParameterGrid()        { return &m_gridB; }
-    std::vector<double> * GetImpactParameterMaximumGrid() { return &m_gridBmax; }
+    Eikonal_Contributor * GetSingleTerm(const int & i=0);
+    std::vector<double> * GetImpactParameterGrid();
+    std::vector<double> * GetImpactParameterMaximumGrid();
     
     double operator()(const double & B) const;
     double Maximum(const double & B) const;    
     ATOOLS::Vec4D SelectB1B2(double & b1,double & b2,const double & B);
+    double Sigma_Inelastic() { return 0.; }
     
     void   PrepareQT(const double & b1,const double & b2);
     
     double   Prefactor() const { 
       return m_prefactor;
     }
-    // const double & lambda() const  { return m_params.lambda; }
-    // const double & Delta() const   { return m_params.Delta; }
-    // const double & Kappa_i() const { return p_Omegaik->Kappa(); }
-    // const double & Kappa_k() const { return p_Omegaki->Kappa(); }
-    // const double & Lambda2() const { return p_Omegaik->Lambda2(); }
-    // const double & Ymax() const    { return m_params.Ymax; } 
-    double EffectiveIntercept(double b1=-1.,double b2=-1.,const double & y=0.);
+    double EffectiveIntercept(double b1=0.,double b2=0.,const double & y=0.);
     
-    Form_Factor * FF1() const  { return p_Omegaik->FF(); }
-    Form_Factor * FF2() const  { return p_Omegaki->FF(); }
+    Form_Factor * FF1() const  { return p_Omegaik->FF1(); }
+    Form_Factor * FF2() const  { return p_Omegaki->FF2(); }
     
-    void  SetSigmaInelastic(const double & sigma) { m_sigmaInelastic = sigma; }
-    const double & Sigma_Inelastic() const        { return m_sigmaInelastic; }
-
     void TestIndividualGrids(Analytic_Contributor * ana12,
 			     Analytic_Contributor * ana21,
-			     const double & Ymax,const std::string & dirname) const;
+			     const double & Ymax,
+			     const std::string & dirname) const;
+    void TestEikonal(Analytic_Eikonal * ana,const std::string & dirname) const;
   };
   
   struct eikcomp{

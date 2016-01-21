@@ -56,10 +56,11 @@ namespace SHRIMPS {
     FT_Argument   m_ftarg;
     int           m_number;
     ff_form::code m_form;
-    double        m_norm, m_beta, m_Lambda2, m_kappa, m_xi, m_bmax;
+    double        m_prefactor, m_beta;
+    double        m_Lambda2, m_kappa, m_xi, m_bmax;
     size_t        m_bsteps;
     double        m_deltab, m_accu, m_ffmin, m_ffmax;
-    double        m_ftnorm, m_prefactor;
+    double        m_ftnorm, m_norm;
     int           m_test;
 
 

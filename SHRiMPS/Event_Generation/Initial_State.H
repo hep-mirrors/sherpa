@@ -2,7 +2,7 @@
 #define SHRIMPS_Main_Initial_State_H
 
 #include "SHRiMPS/Event_Generation/Ladder.H"
-#include "SHRiMPS/Cross_Sections/Parton_Luminosity.H"
+#include "SHRiMPS/Event_Generation/Parton_Luminosity.H"
 #include "SHRiMPS/Eikonals/Omega_ik.H"
 #include "ATOOLS/Phys/Blob_List.H"
 

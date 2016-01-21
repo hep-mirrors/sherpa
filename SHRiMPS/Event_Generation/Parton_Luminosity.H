@@ -2,7 +2,9 @@
 #define SHRIMPS_Cross_Sections_Parton_Luminosity_H
 
 #include "SHRiMPS/Eikonals/Omega_ik.H"
+#include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
 #include "SHRiMPS/Beam_Remnants/Continued_PDF.H"
+#include "SHRiMPS/Tools/MinBias_Parameters.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Math/Function_Base.H"
 #include "ATOOLS/Math/Histogram.H"
@@ -10,6 +12,8 @@
 #include <list>
 
 namespace SHRIMPS {
+  class Inelastic_Event_Generator;
+  
   class Parton_Luminosity {
 
     class Kernel : public ATOOLS::Function_Base {
@@ -43,10 +47,11 @@ namespace SHRIMPS {
     bool   m_adjust;
     double m_Emin,m_Ecms,m_smin,m_smintest,m_smax;
     int    m_shatsteps;
+    Kernel m_kernel;
+
     double m_deltalog,m_maxdl;
 
     std::map<Omega_ik *,double, eikcomp> m_deltalogs, m_smins, m_maxdls;
-    Kernel                       m_kernel;
     Continued_PDF              * p_pdf[2];
 
     Omega_ik * p_eikonal;
@@ -56,21 +61,15 @@ namespace SHRIMPS {
     void   Tests(Omega_ik * eikonal);
     double CalculateTotalXSec(double & maxdl);
   public:
-    Parton_Luminosity() {}
-    Parton_Luminosity(const double & Emin,const double & Ecms,
-		      const int & shatsteps=1000,const int & test=0);
+    Parton_Luminosity(Beam_Remnant_Handler * beams);
     ~Parton_Luminosity();
-    void   FillGrids(std::list<Omega_ik *> * eikonals);
+    void   FillGrids(Inelastic_Event_Generator * generator);
     void   SetEikonal(Omega_ik * eikonal);
     inline double Weight(const double & s) const{
       return m_kernel.Weight(s);
     }
     inline double Weight(const double & s,const double & eta) const{
       return m_kernel.Weight(s,eta);
-    }
-    inline void SetPDF(Continued_PDF *const pdf,const int & beam) {
-      if (beam!=0 && beam!=1) return;
-      p_pdf[beam] = pdf;
     }
     inline const double & Smin() const { return m_smin; }
   };

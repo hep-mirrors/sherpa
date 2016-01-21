@@ -15,28 +15,17 @@ namespace SHRIMPS {
     double                  m_accu;
     double                  m_sigma;
   public:
-    Sigma_Base() {}
-    Sigma_Base(std::list<Omega_ik *> * eikonals) : 
-      p_eikonals(eikonals), 
-      m_originalY(MBpars("originalY")), 
-      m_cutoffY(MBpars("deltaY")), m_Y(m_originalY-m_cutoffY),
-      m_E(ATOOLS::Flavour(kf_p_plus).HadMass()*exp(m_originalY)),
-      m_accu(MBpars("accu")), m_sigma(0.) {}
+    Sigma_Base() : p_eikonals(MBpars.GetEikonals()), m_sigma(0.) {}
+
     virtual void   SetEikonal(Omega_ik * eikonal)    { p_eikonal = eikonal; }
     virtual void   SetSigma(const double & sigma=-1) { m_sigma = sigma; }
-    virtual double Calculate(const double & Bmin, const double & Bmax,
-			     Omega_ik * eikonal=NULL);
-    virtual double GetValue(const double & B)=0;
-    virtual double GetCombinedValue(const double & B)=0;
+    virtual const double & XSec() const              { return m_sigma; }
+
+    virtual double Calculate(Omega_ik * eikonal=NULL);
     virtual double operator()(double B);
-    virtual const double & Sigma() const     { return m_sigma; }
-    virtual const double & Y() const         { return m_Y; }
-    virtual const double & E() const         { return m_E; }
-    virtual const double & OriginalY() const { return m_originalY; }
-    virtual const double & CutoffY() const   { return m_cutoffY; }
-    virtual const double & Accu() const      { return m_accu; }
-    virtual const double & XSec() const      { return m_sigma; }
-    virtual std::list<Omega_ik *> * Eikonals() { return p_eikonals; }
+
+    virtual double GetValue(const double & B)         = 0;
+    virtual double GetCombinedValue(const double & B) = 0;
   };
 }
 #endif

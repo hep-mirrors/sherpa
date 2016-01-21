@@ -25,7 +25,7 @@ double Form_Factor::FT_Argument::operator()(double q) {
 Form_Factor::Form_Factor(const FormFactor_Parameters & params) :
   m_ftarg(this), 
   m_number(params.number), m_form(params.form), 
-  m_norm(params.norm), m_beta(params.beta0), 
+  m_prefactor(params.norm), m_beta(sqrt(params.beta02)),
   m_Lambda2(params.Lambda2), m_kappa(params.kappa), m_xi(params.xi), 
   m_bmax(params.bmax), m_bsteps(16), m_deltab(m_bmax/double(m_bsteps)), 
   m_accu(params.accu), m_ffmin(1.e-8), m_ffmax(0.), 

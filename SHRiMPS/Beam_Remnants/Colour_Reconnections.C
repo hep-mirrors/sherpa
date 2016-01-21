@@ -8,11 +8,11 @@ using namespace ATOOLS;
 using namespace std;
 
 Colour_Reconnections::Colour_Reconnections() :
-  m_on(MBpars.ReconnMode()!=reconn_mode::off),
-  m_reconn(MBpars("ReconnProb")), 
-  m_Q02(MBpars("QRC2")), m_b02(4.*m_Q02*sqr(rpa->hBar()*rpa->c())),
+  //m_on(MBpars.ReconnMode()!=reconn_mode::off),
+  //m_reconn(MBpars("ReconnProb")), 
+  //m_Q02(MBpars("QRC2")), m_b02(4.*m_Q02*sqr(rpa->hBar()*rpa->c())),
   m_eta(2.),
-  m_ycut(MBpars("originalY")-MBpars("deltaY")),
+  //m_ycut(MBpars("originalY")-MBpars("deltaY")),
   m_analyse(false)
 {
   if (m_analyse) {
@@ -41,7 +41,7 @@ Colour_Reconnections::~Colour_Reconnections()
 bool Colour_Reconnections::
 FinishConfiguration(Blob_List * blobs,const double & smin) {
   m_shuffled = false;
-  m_smin     = (smin<0. || MBpars.ReconnMode()==reconn_mode::fix)?m_Q02:smin;
+  //m_smin     = (smin<0. || MBpars.ReconnMode()==reconn_mode::fix)?m_Q02:smin;
   m_newcols.clear();
   m_colours.clear();
   m_trips.clear();

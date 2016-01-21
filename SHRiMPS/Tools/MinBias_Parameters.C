@@ -1,79 +1,125 @@
 #include "SHRiMPS/Tools/MinBias_Parameters.H" 
+#include "SHRiMPS/Eikonals/Omega_ik.H"
+#include "SHRiMPS/Eikonals/Form_Factors.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Run_Parameter.H" 
 #include "ATOOLS/Org/Message.H"
 
 using namespace SHRIMPS;
 
-
-
-
 MinBias_Parameters SHRIMPS::MBpars;
 
-MinBias_Parameters::MinBias_Parameters() {}
+MinBias_Parameters::MinBias_Parameters()
+{
+  p_ffs      = new std::list<Form_Factor *>;
+  p_eikonals = new std::list<Omega_ik *>;
+}
 
-MinBias_Parameters::~MinBias_Parameters() {}
+MinBias_Parameters::~MinBias_Parameters() {
+  Reset();
+}
+
+void MinBias_Parameters::Reset() {
+  while (!p_eikonals->empty()) {
+    delete p_eikonals->back();
+    p_eikonals->pop_back();
+  }
+  p_eikonals->clear();
+  delete p_eikonals;
+  while (!p_ffs->empty()) {
+    delete p_ffs->back();
+    p_ffs->pop_back();
+  }
+  p_ffs->clear();
+  delete p_ffs;
+}
 
 void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
-  int test = m_params["TestShrimps"] = dr->GetValue<int>("TestShrimps",0);
-  // general properties: c.m. energy in rapidity and its cutoff, 
-  // impact parameters
-  m_params["originalY"]   = log(ATOOLS::rpa->gen.Ecms()/
-				ATOOLS::Flavour(kf_p_plus).HadMass());
-  m_params["deltaY"]      = dr->GetValue<double>("deltaY",1.5);
-  m_params["bmin"]        = dr->GetValue<double>("bmin",0.);
-  m_params["bmax"]        = dr->GetValue<double>("bmax",10.);
-  m_params["accu"]        = dr->GetValue<double>("accu",5.e-4);
-  // form factors
+  FillRunParameters(dr);
+  FillFormFactorParameters(dr);
+  FillEikonalParameters(dr);
+  FillLadderParameters(dr);
+  FillShowerLinkParameters(dr);
+}
+
+void MinBias_Parameters::FillRunParameters(ATOOLS::Data_Reader * dr) {
+  std::string runmode =
+    dr->GetValue<std::string>("Shrimps_Mode",std::string("Inelastic"));
+  if (runmode==std::string("TestShrimps") || runmode==std::string("Test")) 
+    m_runmode = m_run_params.runmode = run_mode::test;
+  if (runmode==std::string("Xsecs")) 
+    m_runmode = m_run_params.runmode = run_mode::xsecs_only;
+  else if (runmode==std::string("Elastic")) 
+    m_runmode = m_run_params.runmode = run_mode::elastic_events;
+  else if (runmode==std::string("Single-diffractive")) 
+    m_runmode = m_run_params.runmode = run_mode::single_diffractive_events;
+  else if (runmode==std::string("Double-diffractive")) 
+    m_runmode = m_run_params.runmode = run_mode::double_diffractive_events;
+  else if (runmode==std::string("Quasi-elastic")) 
+    m_runmode = m_run_params.runmode = run_mode::quasi_elastic_events;
+  else if (runmode==std::string("Inelastic")) 
+    m_runmode = m_run_params.runmode = run_mode::inelastic_events;
+  else if (runmode==std::string("All")) 
+    m_runmode = m_run_params.runmode = run_mode::all_min_bias;
+  else if (runmode==std::string("Underlying")) 
+    m_runmode = m_run_params.runmode = run_mode::underlying_event;
+
+  msg_Out()<<METHOD<<"(mode = "<<runmode<<" -> "<<int(m_runmode)<<").\n";
+  
+  std::string weightmode =      
+    dr->GetValue<std::string>("MB_Weight_Mode",std::string("Unweighted"));
+  if (weightmode==std::string("Unweighted")) 
+    m_run_params.weightmode = weight_mode::unweighted;
+  else if (weightmode==std::string("Weighted")) 
+    m_run_params.weightmode = weight_mode::weighted;
+
+  m_originalY = log(ATOOLS::rpa->gen.Ecms()/
+		    ATOOLS::Flavour(kf_p_plus).HadMass());
+  m_NGWstates = (m_runmode!=run_mode::test)?2:1;
+  m_bmax      = dr->GetValue<double>("bmax",10.);
+  m_accu      = dr->GetValue<double>("accu",5.e-4);
+}
+
+void MinBias_Parameters::FillFormFactorParameters(ATOOLS::Data_Reader * dr) {
   std::string ffform = 
     dr->GetValue<std::string>("FF_Form",std::string("dipole"));
-  if (ffform==std::string("dipole"))
-    m_ffform = ff_form::dipole;
-  else
-    m_ffform = ff_form::Gauss;
-  m_params["NGWstates"]   = (test==0) ? dr->GetValue<int>("GW_States",2) : 1;
-  m_params["FFpref"]      = 1./sqrt(m_params["NGWstates"]);
-  m_params["Lambda2"]     = dr->GetValue<double>("Lambda2",1.7);
-  m_params["beta02(mb)"]  = dr->GetValue<double>("beta_0^2",20.0);
-  m_params["beta0"]       = sqrt(1.e9*m_params["beta02(mb)"]/
-				 ATOOLS::rpa->Picobarn());
-  m_params["kappa"]       = dr->GetValue<double>("kappa",0.6);
-  m_params["xi"]          = dr->GetValue<double>("xi",0.2);
-  FillFFParams(dr,test);
-  // parameters of the eikonal
-  m_params["lambda"]      = dr->GetValue<double>("lambda",0.3);
-  m_params["Delta"]       = dr->GetValue<double>("Delta",0.4);
-  FillEikonalParams(dr,test);
-  // ladder generation
-  m_params["NLaddersFix"] = dr->GetValue<int>("N_Ladders_Fix",-1);
-  m_params["KTMin_Mode"]  = dr->GetValue<int>("KTMin_Mode",0);
-  m_params["Q02"]         = dr->GetValue<double>("Q_0^2", 3.021183);
-  m_params["Q_as2"]       = dr->GetValue<double>("Q_as^2",1.0);
-  m_params["Q12"]         = dr->GetValue<double>("Q_1^2",0.0);
-  m_params["QN2"]         = dr->GetValue<double>("Q_N^2",0.0);
-  m_params["SingletWt"]   = dr->GetValue<double>("Chi_S",0.652533);
-  m_params["Ddiff2"]      = dr->GetValue<double>("D_diff^2",0.0);
-  m_params["kdiff"]       = dr->GetValue<double>("K_diff",0.0);
-  // showering off soft stuff
-  m_params["shower_mode"] = dr->GetValue<int>("Shower_Mode",3);
-  m_params["min_kt2"]     = dr->GetValue<double>("Shower_Min_KT2",1.196473);
-  m_params["kt2_factor"]  = dr->GetValue<double>("KT2_Factor",3.487842);
-  m_params["diff_factor"] = dr->GetValue<double>("Diff_Factor",1.0);
-  // rescatterings
-  m_params["RescProb"]    = dr->GetValue<double>("RescProb",1.018779);
-  m_params["RescProb1"]   = dr->GetValue<double>("RescProb1",0.185517);
-  m_params["QRC2"]        = dr->GetValue<double>("Q_RC^2",0.500756);
-  m_params["ReconnProb"]  = dr->GetValue<double>("ReconnProb",-15.301277);
-  m_params["Misha"]       = dr->GetValue<int>("Misha",0);
+  if (ffform==std::string("dipole") && m_runmode!=run_mode::test) 
+    m_ff_params.form = ff_form::dipole;
+  else                               
+    m_ff_params.form = ff_form::Gauss;
+  m_ff_params.norm        = 1./sqrt(m_NGWstates);
+  m_ff_params.Lambda2     = dr->GetValue<double>("Lambda2",1.7);
+  m_ff_params.beta02      = 
+    sqrt(1.e9*dr->GetValue<double>("beta02(mb)",20.0)/ATOOLS::rpa->Picobarn());
+  // kappa will obtain a sign for the second GW state - this is hardwired
+  // in the initialization routine in Shrimps.  
+  m_ff_params.kappa       = dr->GetValue<double>("kappa",0.6);
+  m_ff_params.xi          = dr->GetValue<double>("xi",0.2);
+  m_ff_params.bmax        = m_bmax;
+  m_ff_params.accu        = m_accu;
+  m_ff_params.bsteps      = dr->GetValue<int>("bsteps_FF",64);
+}
 
-
+void MinBias_Parameters::FillEikonalParameters(ATOOLS::Data_Reader * dr) {
   std::string absorption = 
     dr->GetValue<std::string>("Absorption",std::string("factorial"));
   if (absorption==std::string("exponential"))
-    m_absorp = absorption::exponential;
+    m_eik_params.absorp  = absorption::exponential;
   else
-    m_absorp = absorption::factorial;
+    m_eik_params.absorp  = absorption::factorial;
+  m_eik_params.originalY = m_originalY;
+  m_eik_params.cutoffY   = dr->GetValue<double>("deltaY",1.5);
+  m_eik_params.Ymax      = m_eik_params.originalY - m_eik_params.cutoffY; 
+  m_eik_params.lambda    = (m_runmode!=run_mode::test)?
+    dr->GetValue<double>("lambda",0.3):0.;
+  m_eik_params.Delta     = dr->GetValue<double>("Delta",0.4);
+  m_eik_params.beta02    = m_ff_params.beta02;
+  m_eik_params.bmax      = 2.*m_bmax;
+  m_eik_params.accu      = m_accu;
+}
 
+void MinBias_Parameters::FillLadderParameters(ATOOLS::Data_Reader * dr) {
+  /*
   std::string asf(dr->GetValue<std::string>("As_Form",std::string("smooth")));
   m_as_form = MODEL::asform::smooth;
   if (asf==std::string("constant"))    m_as_form = MODEL::asform::constant;
@@ -82,31 +128,6 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   else if (asf==std::string("IR0"))    m_as_form = MODEL::asform::IR0;
   else if (asf==std::string("GDH"))    m_as_form = MODEL::asform::GDH_inspired;
  
-  std::string runmode =
-    dr->GetValue<std::string>("Shrimps_Mode",std::string("Inelastic"));
-  if (runmode==std::string("Xsecs")) 
-    m_runmode = run_mode::xsecs_only;
-  else if (runmode==std::string("Elastic")) 
-    m_runmode = run_mode::elastic_events;
-  else if (runmode==std::string("Single-diffractive")) 
-    m_runmode = run_mode::single_diffractive_events;
-  else if (runmode==std::string("Double-diffractive")) 
-    m_runmode = run_mode::double_diffractive_events;
-  else if (runmode==std::string("Quasi-elastic")) 
-    m_runmode = run_mode::quasi_elastic_events;
-  else if (runmode==std::string("Inelastic")) 
-    m_runmode = run_mode::inelastic_events;
-  else if (runmode==std::string("All")) 
-    m_runmode = run_mode::all_min_bias;
-  else if (runmode==std::string("Underlying")) 
-    m_runmode = run_mode::underlying_event;
-
-  std::string weightmode =      
-    dr->GetValue<std::string>("MB_Weight_Mode",std::string("Unweighted"));
-  if (weightmode==std::string("Unweighted")) 
-    m_weightmode = weight_mode::unweighted;
-  else if (weightmode==std::string("Weighted")) 
-    m_weightmode = weight_mode::weighted;
 
   std::string ladderweight = 
     dr->GetValue<std::string>("Ladder_Weight",std::string("Regge"));
@@ -167,7 +188,30 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   else {
     m_rescmode  = resc_mode::on;
   }
+  m_params["NLaddersFix"] = dr->GetValue<int>("N_Ladders_Fix",-1);
+  m_params["KTMin_Mode"]  = dr->GetValue<int>("KTMin_Mode",0);
+  m_params["Q02"]         = dr->GetValue<double>("Q_0^2", 3.021183);
+  m_params["Q_as2"]       = dr->GetValue<double>("Q_as^2",1.0);
+  m_params["Q12"]         = dr->GetValue<double>("Q_1^2",0.0);
+  m_params["QN2"]         = dr->GetValue<double>("Q_N^2",0.0);
+  m_params["SingletWt"]   = dr->GetValue<double>("Chi_S",0.652533);
+  m_params["Ddiff2"]      = dr->GetValue<double>("D_diff^2",0.0);
+  m_params["kdiff"]       = dr->GetValue<double>("K_diff",0.0);
+  */
+}
 
+void MinBias_Parameters::FillShowerLinkParameters(ATOOLS::Data_Reader * dr) {
+  /*
+  m_params["shower_mode"] = dr->GetValue<int>("Shower_Mode",3);
+  m_params["min_kt2"]     = dr->GetValue<double>("Shower_Min_KT2",1.196473);
+  m_params["kt2_factor"]  = dr->GetValue<double>("KT2_Factor",3.487842);
+  m_params["diff_factor"] = dr->GetValue<double>("Diff_Factor",1.0);
+  // rescatterings
+  m_params["RescProb"]    = dr->GetValue<double>("RescProb",1.018779);
+  m_params["RescProb1"]   = dr->GetValue<double>("RescProb1",0.185517);
+  m_params["QRC2"]        = dr->GetValue<double>("Q_RC^2",0.500756);
+  m_params["ReconnProb"]  = dr->GetValue<double>("ReconnProb",-15.301277);
+  m_params["Misha"]       = dr->GetValue<int>("Misha",0);
   std::string reconnmode =
     dr->GetValue<std::string>("Reconnections",std::string("fix"));
   if (reconnmode==std::string("off")) {
@@ -177,55 +221,7 @@ void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
     m_reconnmode = reconn_mode::fix;
   }
   else m_reconnmode = reconn_mode::run;
+  */
 }
 
-
-void MinBias_Parameters::
-FillFFParams(ATOOLS::Data_Reader * dr,const int test) {
-  std::string ffform = 
-    dr->GetValue<std::string>("FF_Form",std::string("dipole"));
-  if (ffform==std::string("dipole") && test==0) 
-    m_ff_params.form = ff_form::dipole;
-  else                               
-    m_ff_params.form = ff_form::Gauss;
-  m_ff_params.norm        = 1./sqrt(m_params["NGWstates"]);
-  m_ff_params.Lambda2     = dr->GetValue<double>("Lambda2",1.7);
-  m_ff_params.beta0       = 
-    sqrt(1.e9*dr->GetValue<double>("beta_0^2",20.0)/ATOOLS::rpa->Picobarn());
-  // kappa will obtain a sign for the second GW state - this is hardwired
-  // in the initialization routine in Shrimps.  
-  m_ff_params.kappa       = dr->GetValue<double>("kappa",0.6);
-  m_ff_params.xi          = dr->GetValue<double>("xi",0.2);
-  m_ff_params.bmax        = dr->GetValue<double>("bmax",10.);
-  m_ff_params.accu        = dr->GetValue<double>("accu",5.e-4);
-}
-
-void MinBias_Parameters::
-FillEikonalParams(ATOOLS::Data_Reader * dr,const int test) {
-  std::string absorption = 
-    dr->GetValue<std::string>("Absorption",std::string("factorial"));
-  if (absorption==std::string("exponential"))
-    m_eik_params.absorp  = absorption::exponential;
-  else
-    m_eik_params.absorp  = absorption::factorial;
-  m_eik_params.originalY = log(ATOOLS::rpa->gen.Ecms()/
-			       ATOOLS::Flavour(kf_p_plus).HadMass());
-  m_eik_params.cutoffY   = dr->GetValue<double>("deltaY",1.5);
-  m_eik_params.Ymax      = m_eik_params.originalY - m_eik_params.cutoffY; 
-  m_eik_params.lambda    = (test==0)?dr->GetValue<double>("lambda",0.3):0.;
-  m_eik_params.Delta     = dr->GetValue<double>("Delta",0.4);
-  m_eik_params.beta02    = 1.e9*m_params["beta02(mb)"]/ATOOLS::rpa->Picobarn();
-  m_eik_params.bmax      = 2.*dr->GetValue<double>("bmax",10.);
-  m_eik_params.accu      = dr->GetValue<double>("accu",5.e-4);
-}
-
-
-double MinBias_Parameters::operator()(std::string keyword) {
-  if (m_params.find(keyword)==m_params.end()) {
-    msg_Error()<<"Error in "<<METHOD<<"("<<keyword<<") : "<<std::endl
-	       <<"   Keyword not found, will exit the run."<<std::endl;
-    abort();
-  }
-  return m_params[keyword];
-}
 

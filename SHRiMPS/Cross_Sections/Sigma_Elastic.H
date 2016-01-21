@@ -14,32 +14,22 @@ namespace SHRIMPS {
       double operator()(double B);
     };
 
-    double              m_Bmin, m_Bmax;
-    double              m_Qmax;
-    size_t              m_logQsteps;
-    double              m_logdelta;
-    std::vector<double> m_intgrid, m_diffgrid;
-    int                 m_test;
+    double m_logdelta;
+    std::map<double,double> m_intgrid, m_diffgrid;
 
-    void FillGrid();
+    void   FillDiffQGrid(const double & Qmax);
+    double FillIntQGridAndNormalize();
   public:
-    Sigma_Elastic() {};
-    Sigma_Elastic(std::list<Omega_ik *> * eikonals,const double & energy,
-		  const int & test=0);
+    Sigma_Elastic() : m_logdelta(20.) {};
+
+    void   FillDifferentialGrids();
+    double SelectPT2() const;
+
     double GetValue(const double & B); 
     double GetCombinedValue(const double & B);
     double GetDiffArgument(const double & B);
-    double PT2() const;
-    void   PrintDifferentialelasticXsec(const bool & onscreen=false, const bool & tuning=false, 
-					std::string dirname=std::string("."));
-    void   TestElasticCrossSection();
 
-    const double & Bmin() const  { return m_Bmin; }
-    const double & Bmax() const  { return m_Bmax; }
-    const double & Qmax() const  { return m_Qmax; }
-    const size_t & Steps() const { return m_logQsteps; }
-    const double & Delta() const { return m_logdelta; }
-    const std::vector<double> * Grid() const { return &m_intgrid; }
+    void   Test();
   };  
 }
 #endif

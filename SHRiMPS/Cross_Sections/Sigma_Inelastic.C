@@ -9,44 +9,77 @@ using namespace ATOOLS;
 
 Sigma_Inelastic::~Sigma_Inelastic() {
   m_xsecs.clear();
-  m_grids.clear();
+  for (std::map<Omega_ik *,std::vector<double> * >::iterator
+	 bg=m_Bgrids.begin();bg!=m_Bgrids.end();bg++) {
+    delete bg->second;
+  }
+  m_Bgrids.clear();
 }
 
-double Sigma_Inelastic::FixEikonalAndImpact(Omega_ik *& eikonal) {
-  double random(m_sigma*ATOOLS::ran->Get()*0.99999999999);
-  for (std::map<Omega_ik *, double, eikcomp>::iterator xseciter=m_xsecs.begin();
-       xseciter!=m_xsecs.end();xseciter++) {
-    random -= xseciter->second;
-    if (random<0.) {
-      eikonal = xseciter->first;
-      break;
+void Sigma_Inelastic::FillDifferentialGrids() {
+  m_sigma = 0.;
+  for (std::list<Omega_ik *>::iterator eikonal=p_eikonals->begin();
+       eikonal!=p_eikonals->end(); eikonal++) {
+    m_sigma += m_xsecs[(*eikonal)] = FillBGrid((*eikonal));
+  }
+  msg_Info()<<METHOD<<" yields effective inelastic cross section "
+	    <<"sigma = "<<m_sigma/1.e9<<" mbarn.\n";
+}
+
+double Sigma_Inelastic::XSec(Omega_ik * eik) {
+  if (eik==NULL) return m_sigma;
+  if (m_xsecs.find(eik)==m_xsecs.end()) abort();
+  return m_xsecs[eik];
+}
+
+const double Sigma_Inelastic::FillBGrid(Omega_ik * eikonal) {
+  p_eikonal = eikonal;
+  std::vector<double> * grid = new std::vector<double>;
+  double deltaB(eikonal->DeltaB()), B(0.), sigma(0.), val1(0.), val2(0.);
+  grid->push_back(0.);
+  do {
+    B     += deltaB;
+    val2   = 2.*M_PI*B*GetValue(B);
+    sigma += deltaB*(val1+val2)/2.;
+    grid->push_back(sigma);
+    val1   = val2;
+  } while (B<MBpars.GetEikonalParameters().bmax);
+  m_Bgrids[eikonal] = grid;
+  return sigma*rpa->Picobarn();
+}  
+  
+Omega_ik * Sigma_Inelastic::SelectEikonal() {
+  p_eikonal = 0;
+  while (p_eikonal==NULL) {
+    double disc = ran->Get()*m_sigma;
+    for (std::map<Omega_ik *,double>::iterator eikiter=m_xsecs.begin();
+	 eikiter!=m_xsecs.end();eikiter++) {
+      disc-=eikiter->second;
+      if (disc<=1.e-12) {
+	p_eikonal = eikiter->first;
+	break;
+      }
     }
   }
-  if (eikonal==NULL) {
-    msg_Error()<<"Error in "<<METHOD<<": "<<std::endl
-	       <<"   No eikonal selected, take the first one."<<std::endl;
-    eikonal = m_xsecs.begin()->first;
+  return p_eikonal;
+}
+
+double Sigma_Inelastic::SelectB() {
+  if (p_eikonal==0) {
+    msg_Error()<<"Error in "<<METHOD<<": no eikonal selected.\n";
+    return -1.;
   }
-  if (m_grids.find(eikonal)==m_grids.end()) {
-    msg_Error()<<"Error in "<<METHOD<<":"<<std::endl
-	       <<"   Did not find eikonal in grid-map, will exit."<<std::endl;
-    exit(1);
-  }
-  std::vector<double> & grid = m_grids[eikonal];  
-  unsigned int i;
-  double B1, B2, B;
+  std::vector<double> * grid = m_Bgrids[p_eikonal];  
+  double deltaB(p_eikonal->DeltaB()), B(-1.);
   do {
-    random = ATOOLS::ran->Get()*0.99999999999;
-    i = 0;
-    while (i<grid.size()-1 && (random-grid[i]>=0)) i++;
-    
-    msg_Debugging()<<"In "<<METHOD<<"("<<random<<" --> "<<i<<")"<<std::endl;
-    
-    B1 = m_Bmin+(i-1)*m_deltaB;
-    B2 = i==grid.size()-1?m_Bmax:B1+m_deltaB;
-    B  = (B2*(random-grid[i-1])+B1*(grid[i]-random))/(grid[i]-grid[i-1]);
-    
-  } while (B>0.8*m_Bmax);
+    double random = ran->Get()*(*grid)[grid->size()-1];
+    size_t bin(0);
+    while (bin<grid->size()-1 && (random-(*grid)[bin]>=0)) bin++;
+    if (bin>=grid->size()) continue;
+    double inthigh((*grid)[bin]), intlow((*grid)[bin-1]);
+    double Bhigh(bin*deltaB), Blow((bin-1)*deltaB);
+    B  = (Blow*(random-intlow)+Bhigh*(inthigh-random))/(inthigh-intlow);
+  } while (B<0.);
   return B;
 }
 
@@ -64,64 +97,15 @@ double Sigma_Inelastic::GetCombinedValue(const double & B) {
   return value;
 }
 
-void Sigma_Inelastic::FillGrid(const double & Bmin,const double & Bmax,
-			       const double & deltaB,const double & sigma) 
-{
-  m_Bmin   = Bmin;
-  m_Bmax   = Bmax;
-  m_deltaB = deltaB;
-  
-  double B,val1,val2,cumul(0.);
-
-  std::vector<double> grid;
-  grid.push_back(0.);
-  B    = m_Bmin;
-  val1 = 2.*M_PI*B*GetValue(B);
-  while (B<m_Bmax) {
-    B     += m_deltaB;
-    val2   = 2.*M_PI*B*GetValue(B);
-    cumul += m_deltaB*(val1+val2)/2.;
-    grid.push_back(cumul);
-    val1   = val2;
-  }
-  B = m_Bmin;
-  for (size_t i=0;i<grid.size();i++) {
-    grid[i] /= cumul;
-    B       += m_deltaB;
-  }
-
-  m_grids[p_eikonal] = grid;
-  m_xsecs[p_eikonal] = sigma;
-}
-
-void Sigma_Inelastic::SetSigma(const double & sigma) {
-  if (sigma>=0) m_sigma = sigma;
-  else {
-    m_sigma = 0.;
-    for (std::map<Omega_ik *, double, eikcomp>::iterator xseciter=m_xsecs.begin();
-	 xseciter!=m_xsecs.end();xseciter++) {
-      m_sigma += xseciter->second;
-    }
-  }
-}
-
-
-void Sigma_Inelastic::TestInelasticCrossSection(){
+double Sigma_Inelastic::Test() {
   const double EulerGamma= 0.577215664901532860606512090082 ;
-  double m_a,m_c,m_alpha,m_res;
-  double m_Delta,m_prefactor,m_Lambda2,m_beta0,m_kappa;
-  // m_Delta=(*p_eikonals).front()->Delta();
-  // m_prefactor=(*p_eikonals).front()->Prefactor();
-  // m_kappa=(*p_eikonals).front()->Kappa_i();
-  // m_Lambda2=(*p_eikonals).front()->Lambda2();
-  // m_beta0=(*p_eikonals).front()->FF1()->Beta0();
-  // m_a=m_Lambda2/(8.*(1.+m_kappa));
-  // m_c=ATOOLS::sqr(m_beta0)*m_Lambda2*(1.+m_kappa)*exp(2.*m_Delta*m_Y)/(8.*M_PI);
-  // m_alpha=2.*M_PI*m_prefactor;
-  // m_res=m_alpha*(EulerGamma+log(m_c))/(2.*m_a);
-  msg_Out() << "In " << METHOD << " sigma_inelas = "<< m_res <<" 1/GeV^2 = "
-	    <<m_res*rpa->Picobarn()/1.e9<<" mb ."<<std::endl;
+  double a(MBpars.GetFFParameters().Lambda2/
+	   (8.*(1.+MBpars.GetFFParameters().kappa)));
+  double c(MBpars.GetEikonalParameters().beta02*
+	   MBpars.GetFFParameters().Lambda2*
+	   (1.+MBpars.GetFFParameters().kappa)*
+	   exp(2.*MBpars.GetEikonalParameters().Delta*
+	       MBpars.GetEikonalParameters().Ymax)/(8.*M_PI));
+  double alpha(2.*M_PI*MBpars.GetFFParameters().norm);
+  return alpha*(EulerGamma+log(c))/(2.*a)*rpa->Picobarn();
 }
-
-
-

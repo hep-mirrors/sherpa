@@ -10,13 +10,13 @@ using namespace ATOOLS;
 using namespace std;
 
 Rescatter_Handler::Rescatter_Handler(Beam_Remnant_Handler * beams) :
-  m_rescatter(MBpars.RescMode()!=resc_mode::off), m_mustmatch(false), 
-  m_rescprob(MBpars("RescProb")),
-  m_singprob(MBpars.RescOverSing()==resc_over_sing::on?MBpars("RescProb1"):0.), 
+  //m_rescatter(MBpars.RescMode()!=resc_mode::off), m_mustmatch(false), 
+  //m_rescprob(MBpars("RescProb")),
+  //m_singprob(MBpars.RescOverSing()==resc_over_sing::on?MBpars("RescProb1"):0.), 
   p_beams(beams),
   p_alphaS(static_cast<MODEL::Strong_Coupling *>
 	   (MODEL::s_model->GetScalarFunction(string("strong_cpl")))),
-  m_Ylimit(MBpars("originalY")-MBpars("deltaY")),
+  //m_Ylimit(MBpars("originalY")-MBpars("deltaY")),
   m_analyse(false)
 { 
   if (m_analyse) {

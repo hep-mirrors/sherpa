@@ -13,19 +13,17 @@ double Sigma_SD::dSigma_dt_Kernel::operator()(double B) {
   return 2.*M_PI*B*SF.Jn(0,B*m_Q)*(1.-exp(-(*p_eikonal)(B)/2.));
 }
 
-Sigma_SD::Sigma_SD(Sigma_Elastic * sigma_el,const int & test) :
+Sigma_SD::Sigma_SD(Sigma_Elastic * sigma_el) :
   Sigma_Base(sigma_el->Eikonals()),
   p_sigma_el(sigma_el),
   m_Bmin(p_sigma_el->Bmin()), m_Bmax(p_sigma_el->Bmax()),
   m_Qmax(p_sigma_el->Qmax()), 
-  m_logQsteps(p_sigma_el->Steps()), m_logdelta(p_sigma_el->Delta()), 
-  m_test(test) 
+  m_logQsteps(p_sigma_el->Steps()), m_logdelta(p_sigma_el->Delta())
 { 
   FillGrids();
 }
 
 void Sigma_SD::FillGrids() {
-  if (m_test==10) PrintDifferentialElasticAndSDXsec(true);
   msg_Tracking()<<"In "<<METHOD<<": Integrate from "
 		<<m_Bmin<<" to "<<m_Bmax<<"."<<std::endl
 		<<"   Maximal sqrt{|t|} = "<<m_Qmax<<"."<<std::endl;

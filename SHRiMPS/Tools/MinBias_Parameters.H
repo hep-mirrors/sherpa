@@ -3,72 +3,70 @@
 
 #include "SHRiMPS/Tools/Parameter_Structures.H"
 #include "MODEL/Main/Strong_Coupling.H"
-#include "ATOOLS/Math/Vector.H"
 #include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
-#include <map>
-#include <string>
+#include <list>
 
 namespace SHRIMPS {
+  class Form_Factor;
+  class Omega_ik;
+  
   typedef std::map<std::string,double> StringDoubleMap;
   typedef StringDoubleMap::iterator    SDiter;
 
   class MinBias_Parameters {
   private:
+    run_mode::code        m_runmode;
+    size_t                m_NGWstates;
+    double                m_originalY, m_bmax, m_accu;
     FormFactor_Parameters m_ff_params;
     Eikonal_Parameters    m_eik_params;
-    run_mode::code        m_runmode;
-    weight_mode::code     m_weightmode;
-    ff_form::code         m_ffform;
-    absorption::code      m_absorp;
-    ladder_weight::code   m_ladderweight;
-    ktform::code          m_ktform;
-    ordering::code        m_ordering;
-    resc_ktmin::code      m_resc_ktmin;
-    resc_nosing::code     m_resc_nosing;
-    resc_over_sing::code  m_resc_over_sing;
-    resc_mode::code       m_rescmode;
-    reconn_mode::code     m_reconnmode;
-    StringDoubleMap       m_params;
-    MODEL::asform::code   m_as_form;
+    Run_Parameters        m_run_params;
+    Ladder_Parameters     m_ladder_params; 
+    ShowerLink_Parameters m_showerlink_params; 
 
-    void FillFFParams(ATOOLS::Data_Reader * dr,const int test);
-    void FillEikonalParams(ATOOLS::Data_Reader * dr,const int test);
+    std::list<Form_Factor *> * p_ffs;
+    std::list<Omega_ik *>    * p_eikonals;
+
+    
+    void FillRunParameters(ATOOLS::Data_Reader * dr);
+    void FillFormFactorParameters(ATOOLS::Data_Reader * dr);
+    void FillEikonalParameters(ATOOLS::Data_Reader * dr);
+    void FillLadderParameters(ATOOLS::Data_Reader * dr);
+    void FillShowerLinkParameters(ATOOLS::Data_Reader * dr);
   public:
     MinBias_Parameters();
     ~MinBias_Parameters();
 
-    void   Init(ATOOLS::Data_Reader * dr);
-    double operator()(std::string keyword);
-    void   Set(std::string keyword, double value) {
-      if (m_params.find(keyword)!=m_params.end()) m_params[keyword] = value;
-      else {
-	std::cerr<<"Error in MinBias_Parameters::Set: '"
-		 <<keyword<<"' not found.\n";
-      }
+    void Init(ATOOLS::Data_Reader * dr);
+    void Reset();
+    void AddFormFactor(Form_Factor * ff) { p_ffs->push_back(ff); }  
+    void AddEikonal(Omega_ik * eikonal)  { p_eikonals->push_back(eikonal); }  
+    
+    const run_mode::code & RunMode()   const { return m_runmode; }
+    const size_t         & NGWStates() const { return m_NGWstates; }
+    
+    const Run_Parameters & GetRunParameters() const { 
+      return m_run_params; 
     }
-
-    run_mode::code       RunMode()      const { return m_runmode; }
-    weight_mode::code    WeightMode()   const { return m_weightmode; }
-    ff_form::code        FF_Form()      const { return m_ffform; }  
-    absorption::code     Absorption()   const { return m_absorp; }  
-    ladder_weight::code  LadderWeight() const { return m_ladderweight; }
-    ktform::code         KTForm()       const { return m_ktform; }
-    ordering::code       Ordering()     const { return m_ordering; }
-    resc_mode::code      RescMode()     const { return m_rescmode; }
-    resc_ktmin::code     RescKTMin()    const { return m_resc_ktmin; }
-    resc_nosing::code    RescNoSing()   const { return m_resc_nosing; }
-    resc_over_sing::code RescOverSing() const { return m_resc_over_sing; }
-    reconn_mode::code    ReconnMode()   const { return m_reconnmode; }
-    MODEL::asform::code  AsForm()       const { return m_as_form; }
-
     const FormFactor_Parameters & GetFFParameters() const { 
       return m_ff_params; 
     }
     const Eikonal_Parameters & GetEikonalParameters() const { 
       return m_eik_params; 
     }
-
+    const Ladder_Parameters & GetLadderParameters() const { 
+      return m_ladder_params; 
+    }
+    const ShowerLink_Parameters & GetShowerLinkParameters() const { 
+      return m_showerlink_params; 
+    }
+    std::list<Form_Factor *> * GetFormFactors() const {
+      return p_ffs;
+    }
+    std::list<Omega_ik *> * GetEikonals() const {
+      return p_eikonals;
+    }
   };
   
   extern MinBias_Parameters MBpars;

@@ -5,7 +5,6 @@
 #include "SHRiMPS/Event_Generation/Simple_MEs.H"
 #include "SHRiMPS/Event_Generation/Initial_State.H"
 #include "SHRiMPS/Event_Generation/Final_State.H"
-#include "SHRiMPS/Cross_Sections/Parton_Luminosity.H"
 
 #include "ATOOLS/Math/Histogram.H"
 #include "ATOOLS/Math/Histogram_2D.H"

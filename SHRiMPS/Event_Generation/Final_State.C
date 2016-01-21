@@ -16,6 +16,7 @@ using namespace std;
 // ordering:       rap_only=0, keep=1, ao=2, ao_keep=3, rap_phys=4, ao_phys=6
 
 Final_State::Final_State(const int & test) :
+  /*
   m_ktform(MBpars.KTForm()),
   m_ordering(MBpars.Ordering()), 
   m_resc_ktmin(MBpars.RescKTMin()),
@@ -29,6 +30,7 @@ Final_State::Final_State(const int & test) :
   m_d2(MBpars("Ddiff2")), m_kdiff(MBpars("kdiff")), 
   m_Ylimit(MBpars("originalY")-MBpars("deltaY")),
   m_singletwt(MBpars("SingletWt")),
+  */
   m_test(test), m_analyse(false)
 {
   if (m_analyse) InitHistograms();
@@ -150,14 +152,14 @@ operator()(Ladder * ladder,const double & Deltay,
     UpdateTwoOutgoings(0,sing);
     double qt2_2(p_ladder->GetPropsBegin()->m_qt2);
     m_lastwt *= pow((*p_alphaS)(qt2_2)/p_alphaS->MaxValue(),(sing?4:2));
-    if (MBpars.LadderWeight()==ladder_weight::Regge) {
-      double colfac(3.);
-      double mu02_2(Q02((y0+y1)/2.));
-      double q2_2(p_ladder->GetPropsBegin()->m_qt2);
-      double rarg(mu02_2/(dabs(q2_2)+mu02_2));
-      double expo(colfac*(*p_alphaS)(qt2_2)*dabs(y0-y1)/M_PI); 
-      m_lastwt *= pow(rarg,expo);
-    }
+    // if (MBpars.LadderWeight()==ladder_weight::Regge) {
+    //   double colfac(3.);
+    //   double mu02_2(Q02((y0+y1)/2.));
+    //   double q2_2(p_ladder->GetPropsBegin()->m_qt2);
+    //   double rarg(mu02_2/(dabs(q2_2)+mu02_2));
+    //   double expo(colfac*(*p_alphaS)(qt2_2)*dabs(y0-y1)/M_PI); 
+    //   m_lastwt *= pow(rarg,expo);
+    // }
   }
   return m_lastwt;
 }
@@ -178,16 +180,16 @@ double Final_State::GenerateEmissions() {
       p_ladder->SetMaxKT2(kt2);
       if (FixPropColours(split,spect)) run = true;
       else {
-        if (MBpars.LadderWeight()==ladder_weight::Regge) {
-          double colfac(3.);
-          double qt12_2(m_propiter->m_qt2);
-          double q12_2(m_propiter->m_q2);
-          double mu12_2(Q02((m_k1.Y()+m_k2.Y())/2.));
-          double rarg(mu12_2/(dabs(q12_2)+mu12_2));
-          double expo(colfac*p_alphaS->MaxValue()*
-		      dabs(m_k2.Y()-m_k1.Y())/M_PI); 
-          m_lastwt  = pow(rarg,expo);
-        }
+        // if (MBpars.LadderWeight()==ladder_weight::Regge) {
+        //   double colfac(3.);
+        //   double qt12_2(m_propiter->m_qt2);
+        //   double q12_2(m_propiter->m_q2);
+        //   double mu12_2(Q02((m_k1.Y()+m_k2.Y())/2.));
+        //   double rarg(mu12_2/(dabs(q12_2)+mu12_2));
+        //   double expo(colfac*p_alphaS->MaxValue()*
+	// 	      dabs(m_k2.Y()-m_k1.Y())/M_PI); 
+        //   m_lastwt  = pow(rarg,expo);
+        // }
 	m_singexit++;
 	if (m_analyse) 
 	  m_histomap[std::string("Deltay_singexit")]->
@@ -447,20 +449,20 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
       if (dir) m_histomap[std::string("ytest1")]->Insert(y1);
       else m_histomap[std::string("ytest0")]->Insert(y1);
     }
-    if ((MBpars.LadderWeight()==ladder_weight::Regge || 
-	 MBpars.LadderWeight()==ladder_weight::ReggeDiffusion) && 
-	deltay>m_Deltay) { 
-      rarg = mu01_2/(dabs(q01.Abs2())+mu01_2);
-      expo = colfac*(*p_alphaS)(q01.PPerp2())*deltay/M_PI; 
-      wt  *= reggewt = pow(rarg,expo*ladderfac);
-      if (m_analyse) m_histomap[std::string("ReggeWt")]->Insert(reggewt);
-    }
-    if (MBpars.LadderWeight()==ladder_weight::ReggeDiffusion && 
-	dabs(m_kdiff)>1.e-6) {
-      wt    *= diffwt =
-	exp(-m_kdiff*sqrt(m_d2+sqr(log(Max(m_q01_2,mu01_2)/
-				       Max(m_q12_2,mu12_2)))));
-    }
+    // if ((MBpars.LadderWeight()==ladder_weight::Regge || 
+    // 	 MBpars.LadderWeight()==ladder_weight::ReggeDiffusion) && 
+    // 	deltay>m_Deltay) { 
+    //   rarg = mu01_2/(dabs(q01.Abs2())+mu01_2);
+    //   expo = colfac*(*p_alphaS)(q01.PPerp2())*deltay/M_PI; 
+    //   wt  *= reggewt = pow(rarg,expo*ladderfac);
+    //   if (m_analyse) m_histomap[std::string("ReggeWt")]->Insert(reggewt);
+    // }
+    // if (MBpars.LadderWeight()==ladder_weight::ReggeDiffusion && 
+    // 	dabs(m_kdiff)>1.e-6) {
+    //   wt    *= diffwt =
+    // 	exp(-m_kdiff*sqrt(m_d2+sqr(log(Max(m_q01_2,mu01_2)/
+    // 				       Max(m_q12_2,mu12_2)))));
+    // }
     sup = SuppressionTerm(m_q01_2,m_q12_2)*
       (Saturation(dir?-y1:y1)/(Saturation(dir?y1:-y1)+kt12));
     wt    *= recombwt= 
@@ -486,11 +488,11 @@ bool Final_State::TryEmission(double & kt12,const bool & dir) {
   
   //   m_recombwt *= recombwt;
   
-  if (MBpars.LadderWeight()==ladder_weight::Regge) {
-    rarg = mu12_2/(dabs(q12.Abs2())+mu12_2);
-    expo = colfac*(*p_alphaS)(q12.PPerp2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
-    m_lastwt  = pow(rarg,expo);
-  }
+  // if (MBpars.LadderWeight()==ladder_weight::Regge) {
+  //   rarg = mu12_2/(dabs(q12.Abs2())+mu12_2);
+  //   expo = colfac*(*p_alphaS)(q12.PPerp2())*dabs(k_2.Y()-k_1.Y())/M_PI; 
+  //   m_lastwt  = pow(rarg,expo);
+  // }
 
   if (m_analyse) 
     m_histomap[std::string("Delta_final")]->Insert(1./(dabs(y1-y0))); 

@@ -9,23 +9,21 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 double Sigma_DD::dSigma_dt_Kernel::operator()(double B) {
-//   msg_Out()<<METHOD<<"("<<B<<"), eikonal = "<<(*p_eikonal)(B)<<".\n";
   return 2.*M_PI*B*SF.Jn(0,B*m_Q)*(1.-exp(-(*p_eikonal)(B)/2.));
 }
 
-Sigma_DD::Sigma_DD(Sigma_Elastic * sigma_el,Sigma_SD * sigma_sd,const int & test) :
+Sigma_DD::Sigma_DD(Sigma_Elastic * sigma_el,Sigma_SD * sigma_sd) :
   Sigma_Base(sigma_el->Eikonals()),
   p_sigma_el(sigma_el),p_sigma_sd(sigma_sd),
   m_Bmin(p_sigma_el->Bmin()), m_Bmax(p_sigma_el->Bmax()),
   m_Qmax(p_sigma_el->Qmax()), 
-  m_logQsteps(p_sigma_el->Steps()), m_logdelta(p_sigma_el->Delta()), 
-  m_test(test) 
+  m_logQsteps(p_sigma_el->Steps()), m_logdelta(p_sigma_el->Delta())
 { 
   FillGrids();
 }
 
 void Sigma_DD::FillGrids() {
-  if (m_test==10) PrintDifferentialElasticAndDiffXsec(true);
+  //if (m_test==10) PrintDifferentialElasticAndDiffXsec(true);
   msg_Tracking()<<"In "<<METHOD<<": Integrate from "
 		<<m_Bmin<<" to "<<m_Bmax<<"."<<std::endl
 		<<"   Maximal sqrt{|t|} = "<<m_Qmax<<"."<<std::endl;

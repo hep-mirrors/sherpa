@@ -41,9 +41,6 @@ namespace SHRIMPS {
     deqmode::code     m_deq;
     int               m_test;
     
-    std::vector<Form_Factor>   m_ffs;
-    std::list<Omega_ik *>      m_eikonals;
-    Cross_Sections             m_cross;
     std::vector<Continued_PDF> m_pdfs;
     Beam_Remnant_Handler     * p_beamremnants;
     Event_Generator          * p_generator;
@@ -55,8 +52,7 @@ namespace SHRIMPS {
 			  PDF::ISR_Handler *const isr);
     void ResetTheFramework();
     void InitialiseFormFactors();
-    void InitialiseSingleChannelEikonals(const double & Ecms);
-    void InitialiseCrossSections(const double & energy);
+    void InitialiseSingleChannelEikonals();
     void InitialiseBeamRemnants(BEAM::Beam_Spectra_Handler *const beam,
 				PDF::ISR_Handler *const isr);
     void InitialiseTheEventGenerator();
@@ -64,6 +60,8 @@ namespace SHRIMPS {
     void TestShrimps();
     void PrintAlphaS(const std::string & dirname);
     void PrintPDFs(const std::string & dirname);
+    void TestEikonalGrids(const std::string & dirname);
+    void TestCrossSections(const std::string & dirname);
   public:
     Shrimps(ATOOLS::Data_Reader * dr,
 	    BEAM::Beam_Spectra_Handler *const beam,
@@ -78,8 +76,8 @@ namespace SHRIMPS {
     inline void   SetBeamBlob(ATOOLS::Blob *const beamblob,const int & beam) {
       p_beamremnants->SetBeamBlob(beamblob,beam);
     }
-    inline int    ShowerMode()   const { return MBpars("shower_mode"); }
-    inline double ShowerFac()    const { return MBpars("kt2_factor"); }
+    inline int    ShowerMode()   const { return 1; }// MBpars("shower_mode"); }
+    inline double ShowerFac()    const { return 1; }//MBpars("kt2_factor"); }
     inline double ShowerMinKT2() const { return p_generator->ShowerMinKT2(); }
     inline const double & XSec() const { return p_generator->XSec(); } 
     inline double Smin()         const { return p_generator->Smin(); }

@@ -99,9 +99,12 @@ double Eikonal_Weights::
 EffectiveIntercept(double b1,double b2,const double & y)
 {
   if (b1<0. || b1>m_bmax || b2<0. || b2>m_bmax || 
-      dabs(y)>m_originalY) return 0.;
-  return m_Delta * 
-    exp(-m_lambda * ((*p_Omegaik)(b1,b2,y)+(*p_Omegaki)(b1,b2,y))/2.);
+      dabs(y)>m_originalY) {
+    return 0.;
+  }
+  double res(m_Delta * exp(-m_lambda *
+			   ((*p_Omegaik)(b1,b2,y)+(*p_Omegaki)(b1,b2,y))/2.));
+  return res;;
 }
 
 // double Eikonal_Weights::

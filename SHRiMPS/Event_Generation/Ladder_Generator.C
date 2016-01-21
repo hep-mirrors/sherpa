@@ -12,7 +12,7 @@ using namespace std;
 Ladder_Generator::
 Ladder_Generator(Parton_Luminosity * lumi,const int & test) :
   m_IS(Initial_State(lumi)), m_FS(Final_State(test)),
-  m_originalY(MBpars("originalY")), m_cutoffY(MBpars("deltaY")), 
+  //m_originalY(MBpars("originalY")), m_cutoffY(MBpars("deltaY")), 
   p_ladder(0), m_output(true),
   m_Nprim(0),m_Nsec(0),m_Ndd_p(0),m_Ndd_s(0),m_Nsd_p(0),m_Nsd_s(0),
   m_Ncep_p(0),m_Ncep_s(0)
@@ -65,13 +65,15 @@ Ladder_Generator::~Ladder_Generator() {
       <<"Delta = "<<m_histograms[string("Delta1")]->Average()<<", "
       <<" average kt = "<<m_histograms[string("KT1")]->Average()
       <<"(mid-y:"<<m_histograms[string("KT1mid")]->Average()<<");\n";
-    if (MBpars.RescMode()!=resc_mode::off &&
-	m_histograms[string("Nemit2")]->Integral()>1.e-6) 
+    /*
+      if (MBpars.RescMode()!=resc_mode::off &&
+      m_histograms[string("Nemit2")]->Integral()>1.e-6) 
       msg_Info()<<"   mean number of extra emissions in secondary ladders: "
-		<<(m_histograms[string("Nemit2")]->Average()-2)<<", "
-		<<"Delta = "<<m_histograms[string("Delta2")]->Average()<<", "
-		<<" average kt = "<<m_histograms[string("KT2")]->Average()
-		<<"(mid-y:"<<m_histograms[string("KT2mid")]->Average()<<");\n";
+      <<(m_histograms[string("Nemit2")]->Average()-2)<<", "
+      <<"Delta = "<<m_histograms[string("Delta2")]->Average()<<", "
+      <<" average kt = "<<m_histograms[string("KT2")]->Average()
+      <<"(mid-y:"<<m_histograms[string("KT2mid")]->Average()<<");\n";
+    */
     if (m_resc1>0) 
       msg_Info()<<"   had to enforce "<<(m_resc0/(m_resc1+m_resc0))<<" "
 		<<"secondary ladders to be singlets.\n";

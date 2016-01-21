@@ -6,14 +6,15 @@
 namespace SHRIMPS {
   struct run_mode {
     enum code {
-      xsecs_only                = 0,
-      elastic_events            = 1,
-      single_diffractive_events = 2,
-      double_diffractive_events = 3,
-      quasi_elastic_events      = 4,
-      inelastic_events          = 5,
-      all_min_bias              = 10,
-      underlying_event          = 20,
+      test                      = 0,
+      xsecs_only                = 1,
+      elastic_events            = 11,
+      single_diffractive_events = 12,
+      double_diffractive_events = 13,
+      quasi_elastic_events      = 14,
+      inelastic_events          = 15,
+      all_min_bias              = 20,
+      underlying_event          = 100,
       unknown                   = -1
     };
   };
@@ -168,18 +169,26 @@ namespace SHRIMPS {
   };
 
 
+  struct Run_Parameters {
+    run_mode::code    runmode;
+    weight_mode::code weightmode;
+  public:
+    Run_Parameters() {}
+  };
+
   struct FormFactor_Parameters {
   public:
     ff_form::code form;
-    int    number;
-    double norm, beta0, Lambda2, kappa, xi, bmax, accu;
-
+    size_t number;
+    double norm, beta02, Lambda2, kappa, xi, bmax, accu;
+    size_t bsteps;
+    
     FormFactor_Parameters() {}
     FormFactor_Parameters(const FormFactor_Parameters & params) :
       form(params.form),number(-1),
-      norm(params.norm),beta0(params.beta0), 
+      norm(params.norm),beta02(params.beta02), 
       Lambda2(params.Lambda2),kappa(params.kappa),xi(params.xi), 
-      bmax(params.bmax), accu(params.accu) {}
+      bmax(params.bmax), accu(params.accu), bsteps(params.bsteps) {}
   };
 
   struct Eikonal_Parameters {
@@ -194,6 +203,16 @@ namespace SHRIMPS {
       originalY(params.originalY), cutoffY(params.cutoffY), Ymax(params.Ymax),  
       lambda(params.lambda),Delta(params.Delta),beta02(params.beta02), 
       bmax(params.bmax), accu(params.accu) {}
+  };
+
+  struct Ladder_Parameters {
+  public:
+    Ladder_Parameters() {}
+  };
+
+  struct ShowerLink_Parameters {
+  public:
+    ShowerLink_Parameters() {}
   };
 }
 

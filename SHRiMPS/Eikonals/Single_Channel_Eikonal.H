@@ -24,7 +24,8 @@ namespace SHRIMPS {
 	double                   m_errmax12, m_errmax21;
 	int                      m_test;
       public:
-	Convolution1D(Single_Channel_Eikonal * eikonal, const double & Y,const int & test) : 
+	Convolution1D(Single_Channel_Eikonal * eikonal,
+		      const double & Y,const int & test) : 
 	  p_eikonal(eikonal), m_Y(Y), 
 	  m_errmax12(0.), m_errmax21(0.), m_test(test) {}
 	void   SetY(const double & y)   { m_y  = y;  }

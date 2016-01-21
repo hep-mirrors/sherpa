@@ -5,11 +5,12 @@
 using namespace SHRIMPS;
 using namespace ATOOLS;
 
-double Sigma_Base::Calculate(const double & Bmin, const double & Bmax,
-			     Omega_ik * eikonal) {
+double Sigma_Base::Calculate(Omega_ik * eikonal) {
   SetEikonal(eikonal);
   ATOOLS::Gauss_Integrator integrator(this);
-  return m_sigma = integrator.Integrate(Bmin,Bmax,m_accu,1)*rpa->Picobarn();
+  double bmax(MBpars.GetEikonalParameters().bmax);
+  double accu(MBpars.GetEikonalParameters().accu);
+  return m_sigma = integrator.Integrate(0.,bmax,accu,1)*rpa->Picobarn();
 }
 
 double Sigma_Base::operator()(double B) { 

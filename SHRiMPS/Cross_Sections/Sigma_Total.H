@@ -5,22 +5,16 @@
 namespace SHRIMPS {
   class Sigma_Tot : public Sigma_Base {
   public:
-    Sigma_Tot(std::list<Omega_ik *> * eikonals,
-	      const double & originalY, const double & cutoffY,
-	      const double & accu) : 
-      Sigma_Base(eikonals) { }
+    Sigma_Tot() {}
     double GetValue(const double & B);
     double GetCombinedValue(const double & B);
-    void TestTotalCrossSection();
+    double Test();
   };
 
   class Elastic_Slope : public Sigma_Base {
     double m_stot;
   public:
-    Elastic_Slope(std::list<Omega_ik *> * eikonals,
-	      const double & originalY, const double & cutoffY,
-		  const double & accu,const double & stot) : 
-      Sigma_Base(eikonals), m_stot(stot) { }
+    Elastic_Slope(const double & stot) : m_stot(stot) {}
     double GetValue(const double & B);
     double GetCombinedValue(const double & B);
   };

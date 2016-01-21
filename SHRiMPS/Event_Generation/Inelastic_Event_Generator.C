@@ -10,89 +10,26 @@ using namespace ATOOLS;
 using namespace std;
 
 Inelastic_Event_Generator::
-Inelastic_Event_Generator(Sigma_Inelastic * sigma,
-			  list<Omega_ik *> * eikonals,
-			  Beam_Remnant_Handler * beams,
-			  const int & test) :
-  p_sigma(sigma), p_eikonals(eikonals), 
-  m_luminosity(Parton_Luminosity(2.,rpa->gen.Ecms())),
-  m_laddergenerator(Ladder_Generator(&m_luminosity,test)), p_beams(beams), 
+Inelastic_Event_Generator(Beam_Remnant_Handler * beams) :
+  m_luminosity(Parton_Luminosity(beams)),
+  m_laddergenerator(Ladder_Generator(&m_luminosity,0)),
+  p_beams(beams), 
   m_rescatterhandler(Rescatter_Handler(p_beams)), 
-  m_Bmin(MBpars("bmin")), m_Bmax(MBpars("bmax")), m_Bsteps(400), 
-  m_deltaB((m_Bmax-m_Bmin)/double(m_Bsteps)),
-  m_first(true), m_done(false), 
-  m_Nladders_fix(MBpars("NLaddersFix")),
-  m_kt2fac(MBpars("kt2_factor")), m_difffac(MBpars("diff_factor")),
-  m_test(test), m_output(1), m_analyse(false), p_ladder(NULL)
-{ 
-  if (m_analyse) {
-    m_histograms[string("N_ladder_naive")] = new Histogram(0,0.0,25.0,25);
-    m_histograms[string("N_ladder_start")] = new Histogram(0,0.0,25.0,25);
-    m_histograms[string("N_ladder_prim")]  = new Histogram(0,0.0,25.0,25);
-    m_histograms[string("N_ladder_sec")]   = new Histogram(0,0.0,25.0,25);
-    m_histograms[string("N_ladder_true")]  = new Histogram(0,0.0,25.0,25);
-    m_histograms[string("B_naive")]        = new Histogram(0,0.0,25.0,50);
-    m_histograms[string("B_real")]         = new Histogram(0,0.0,25.0,50);
-    m_histograms[string("N_ladder1_B")]    = new Histogram(0,0.0,25.0,25);
-    m_histograms[string("N_ladder_all_B")] = new Histogram(0,0.0,25.0,25);
-    m_histograms[string("B1_prim")]        = new Histogram(0,0.0,25.0,50);
-    m_histograms[string("B1_all")]         = new Histogram(0,0.0,25.0,50);
-    m_histograms[string("B2_prim")]        = new Histogram(0,0.0,25.0,50);
-    m_histograms[string("B2_all")]         = new Histogram(0,0.0,25.0,50);
-  }
-  m_connectblobs = m_laddercols = m_updatecols = 0;
-  FillGrids();
-}
-
-Inelastic_Event_Generator::~Inelastic_Event_Generator() 
+  m_output(1), p_ladder(NULL)
 {
-  msg_Info()<<"In "<<METHOD<<"(out = "<<m_output<<")\n";
-  if (m_output) {
-    if (m_analyse) {
-      msg_Info()
-	<<"Mean number of ladders: "
-	<<"naive = "<<m_histograms[string("N_ladder_naive")]->Average()<<", "
-	<<"start = "<<m_histograms[string("N_ladder_start")]->Average()<<", "
-	<<"prim = "<<m_histograms[string("N_ladder_prim")]->Average()<<", "
-	<<"true = "<<m_histograms[string("N_ladder_true")]->Average()<<".\n";
-    }
-    msg_Info()<<"Errors: \n"
-	      <<"   Not able to connect blobs "<<m_connectblobs<<";\n"
-	      <<"   Wrong colours from ladder "<<m_laddercols<<";\n"
-	      <<"   Not able to update colours in event "<<m_updatecols<<".\n";
-  }
-  if (m_histograms.empty() || !m_analyse) return;
-  Histogram * histo;
-  string name;
-  for (map<string,Histogram *>::iterator hit=m_histograms.begin();
-       hit!=m_histograms.end();hit++) {
-    histo = hit->second;
-    name  = string("Ladder_Analysis/")+hit->first+string(".dat");
-    histo->Finalize();
-    histo->Output(name);
-    delete histo;
-  }
-  m_histograms.clear();
+  FillCrossSections();
 }
 
+Inelastic_Event_Generator::~Inelastic_Event_Generator() {
+  Reset();
+}
 
-void Inelastic_Event_Generator::FillGrids() {
-  double sigma;
-  for (list<Omega_ik *>::iterator eikiter=p_eikonals->begin();
-       eikiter!=p_eikonals->end();eikiter++) {
-    sigma = p_sigma->Calculate(0.,m_Bmax,(*eikiter));
-    msg_Info()<<"Sigma_inel("<<(*eikiter)->FF1()->Number()<<", "
-	      <<(*eikiter)->FF2()->Number()<<") = "
-	      <<sigma/1.e9<<" mbarn."<<endl;
-    (*eikiter)->SetSigmaInelastic(sigma);
-    p_sigma->FillGrid(m_Bmin,m_Bmax,m_deltaB,sigma);
-  }
-  p_sigma->SetSigma();
-  p_sigma->SetEikonal(NULL);
-
-  for (size_t beam=0;beam<2;beam++) 
-    m_luminosity.SetPDF(p_beams->GetPDF(beam),beam);
-  m_luminosity.FillGrids(p_eikonals);
+void Inelastic_Event_Generator::FillCrossSections() {
+  m_xsec = m_sigma.Calculate();
+  msg_Info()<<METHOD<<" yields inelastic cross section "
+	    <<"sigma = "<<m_xsec/1.e9<<" mbarn.\n";
+  m_sigma.FillDifferentialGrids();
+  m_luminosity.FillGrids(this);
 }
 
 void Inelastic_Event_Generator::Reset() {
@@ -107,25 +44,23 @@ bool Inelastic_Event_Generator::DressShowerBlob(Blob * blob) {
 }
 
 
-int Inelastic_Event_Generator::
-InelasticEvent(Blob_List * blobs,const double & xsec,
-	       const bool & isUE,const bool & weighted) {
+int Inelastic_Event_Generator::GenerateEvent(Blob_List * blobs,
+					     const bool & isUE) {
+  msg_Info()<<"*** -----------------------------------------------------\n"
+	    <<"*** "<<METHOD<<"(done = "<<m_done<<").\n";
   Blob * blob(blobs->FindFirst(btp::Soft_Collision));
   if (blob && blob->Status()==blob_status::needs_minBias) {
-    InitInelasticEvent(isUE,weighted);
-
-    msg_Tracking()<<"-----------------------------------------------------\n"
-		  <<METHOD<<"(done = "<<m_done<<", "
-		  <<m_Nprim<<" of "<<m_Nladders<<" generated).\n";
+    InitInelasticEvent();
+    msg_Info()<<"*"<<METHOD<<"("<<m_Nprim<<" of "<<m_Nladders<<").\n";
   }
   if (m_done) return 0;
   if (m_Nprim<=m_Nladders) {
-    switch (AddScatter(blobs,xsec)) {
+    switch (AddScatter(blobs,m_sigma.XSec())) {
     case 1:
       return 1;
     case 0:
       blobs->push_front(p_beams->GetSoftColourBlob());
-      blobs->SetExternalWeight(xsec);
+      blobs->SetExternalWeight(m_sigma.XSec());
       m_done = true;
       return 1;
     case -1:
@@ -136,50 +71,35 @@ InelasticEvent(Blob_List * blobs,const double & xsec,
   return -1;
 }
 
-void Inelastic_Event_Generator::
-InitInelasticEvent(const bool & isUE,const bool & weighted) {
-  m_isUE     = isUE;
-  m_weighted = weighted;
-  m_Nprim    = m_Ngen = 0;
-  m_first    = true;
-  m_done     = false;
-  bool success(false);
-  do {
-    m_B      = p_sigma->FixEikonalAndImpact(p_eikonal);
-    int trials(0);
-    if (m_analyse) m_histograms[string("B_naive")]->Insert(m_B);
-    do {
-      if (m_Nladders_fix<=0)
-	m_Nladders = ran->Poissonian((*p_eikonal)(m_B))+(m_isUE?-1:0);
-      else m_Nladders = m_Nladders_fix;
-      msg_Debugging()<<"   check this: "<<m_B<<" --> "<<m_Nladders<<".\n";
-      if (m_analyse) m_histograms[string("N_ladder_naive")]->Insert(m_Nladders);
-      if (m_Nladders<1) continue;
-      if (m_analyse) m_histograms[string("N_ladder_start")]->Insert(m_Nladders);
-      if (p_beams->InitialiseCollision(m_Nladders,m_B,p_eikonal)) 
-	success = true;
-      trials++;
-    } while (trials<100 && !success);
-  } while (!success);
-  if (m_analyse) m_histograms[string("B_real")]->Insert(m_B);
-  m_laddergenerator.InitCollision(p_eikonal,m_B);
-  m_laddergenerator.SetNPrim(m_Nladders);
-  m_rescatterhandler.ResetCollision(p_eikonal,Smin(),m_B);
-  m_luminosity.SetEikonal(p_eikonal);
-  msg_Tracking()
-    <<"######################################################"<<endl
-    <<"######################################################"<<endl
-    <<"######################################################"<<endl
-    <<"######################################################"<<endl
-    <<"######################################################"<<endl
-    <<METHOD<<" yields "<<m_Nladders
-    <<" ladders for B = "<<m_B<<"."<<endl
-    <<"######################################################"<<endl
-    <<"######################################################"<<endl
-    <<"######################################################"<<endl
-    <<"######################################################"<<endl
-    <<"######################################################"<<endl;
+void Inelastic_Event_Generator::InitInelasticEvent() {
+  m_Nprim = m_Ngen = 0;
+  m_first = true;
+  m_done  = false;
+  for (size_t trials=0;trials<1000;trials++) {
+    FixEikonalAndImpact();    
+    m_Nladders = ran->Poissonian((*p_eikonal)(m_B));
+    msg_Out()<<"*** "<<METHOD<<"(B = "<<m_B<<") -> select N_ladders with "
+	     <<(*p_eikonal)(m_B)<<" --> "<<m_Nladders<<".\n";
+    if (m_Nladders>1) break;
+    //&&
+    //  p_beams->InitialiseCollision(m_Nladders,m_B,p_eikonal)) break;
+  }
+  msg_Info()<<"*** "<<METHOD<<" selected B = "<<m_B
+	    <<" and eikonal ["<<p_eikonal->FF1()->Number()
+	    <<p_eikonal->FF2()->Number()<<"]\n"
+	    <<"***  ---> "<<m_Nladders<<" ladders to be generated.\n";
+  //m_laddergenerator.InitCollision(p_eikonal,m_B);
+  //m_laddergenerator.SetNPrim(m_Nladders);
+  //m_rescatterhandler.ResetCollision(p_eikonal,Smin(),m_B);
+  //m_luminosity.SetEikonal(p_eikonal);
+  exit(1);
 }
+
+void Inelastic_Event_Generator::FixEikonalAndImpact() {
+  p_eikonal = m_sigma.SelectEikonal();
+  m_B = m_sigma.SelectB();
+}
+
 
 int Inelastic_Event_Generator::
 AddScatter(Blob_List * blobs,const double & xsec) 

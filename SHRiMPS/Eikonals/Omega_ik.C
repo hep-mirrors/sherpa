@@ -11,7 +11,11 @@ using namespace ATOOLS;
 Omega_ik::Omega_ik(const Eikonal_Parameters & params) :
   m_weights(params), m_bmax(params.bmax),
   p_Omegaik(0), p_Omegaki(0) 
-{ }
+{ 
+  m_gridB.clear();
+  m_gridBmax.clear();
+  m_gridD.clear();
+}
 
 Omega_ik::~Omega_ik() {
   if (p_Omegaik) delete p_Omegaik;
@@ -21,6 +25,15 @@ Omega_ik::~Omega_ik() {
 void Omega_ik::SetContributors(Eikonal_Contributor * Omegaik,
 			       Eikonal_Contributor * Omegaki) { 
   p_Omegaik = Omegaik; p_Omegaki = Omegaki; 
+  m_weights.SetSingleOmegaTerms(p_Omegaik,p_Omegaki);
+}
+
+void Omega_ik::SetDeltaB(const double & deltaB) {
+  m_deltaB = deltaB;
+}
+
+void Omega_ik::SetPrefactor(const double & prefactor) { 
+  m_prefactor = prefactor; 
 }
 
 Eikonal_Contributor * Omega_ik::GetSingleTerm(const int & i) {
@@ -33,6 +46,14 @@ Eikonal_Contributor * Omega_ik::GetSingleTerm(const int & i) {
 
 Eikonal_Weights * Omega_ik::GetWeights() {
   return &m_weights;
+}
+
+std::vector<double> * Omega_ik::GetImpactParameterGrid() { 
+  return &m_gridB; 
+}
+
+std::vector<double> * Omega_ik::GetImpactParameterMaximumGrid() { 
+  return &m_gridBmax; 
 }
 
 double Omega_ik::operator()(const double & B) const {
@@ -92,6 +113,25 @@ EffectiveIntercept(double b1,double b2,const double & y) {
 }
 
 
+void Omega_ik::TestEikonal(Analytic_Eikonal * anaeik,
+			   const std::string & dirname) const
+{
+  std::string filename(dirname+"eikonals-ana.dat");
+  std::ofstream was;
+  was.open(filename.c_str());
+  was<<"# B    Omega_{ik}(B) : ana     num  "<<std::endl;
+  double errmax(0.), B, ana, num;
+  for (int j=0;j<200;j++) {
+    B   = j*0.05;
+    ana = (*anaeik)(B);
+    num = (*this)(B);
+    if (2.*(ana-num)/(ana+num)>errmax) errmax = 2.*(ana-num)/(ana+num);
+    was<<B<<"   "<<ana<<"   "<<num<<"\n";
+  }
+  was.close();
+  msg_Info()<<METHOD<<" with maximal error: "<<(100.*errmax)<<" %.\n";
+}
+
 void Omega_ik::TestIndividualGrids(Analytic_Contributor * ana12,
 				   Analytic_Contributor * ana21,
 				   const double & Ymax,
@@ -117,7 +157,9 @@ void Omega_ik::TestIndividualGrids(Analytic_Contributor * ana12,
 	value21  = (*p_Omegaki)(b1,b2,y);
 	value21a = (*ana21)(b2,y);
 	if (i==0 && j==0) {
-	  was<<y<<" "<<value12<<" "<<value21<<" "<<value12a<<" "<<value21a<<".\n";
+	  was<<y
+	     <<" "<<value12<<" "<<value21<<" "
+	     <<value12a<<" "<<value21a<<".\n";
 	}
 	if (value12>1.e-6 && value12a>1.e-6 &&
 	    (value12-value12a)/(value12+value12a)>maxerr)
@@ -125,9 +167,9 @@ void Omega_ik::TestIndividualGrids(Analytic_Contributor * ana12,
 	if (value21>1.e-6 && value21a>1.e-6 &&
 	    (value21-value21a)/(value21+value21a)>maxerr)
 	  maxerr = (value21-value21a)/(value21+value21a);
-	msg_Tracking()<<"   y = "<<y<<"   "
-		      <<"Omega_{1(2)} = "<<value12<<" (ana = "<<value12a<<"), "
-		      <<"Omega_{(1)2} = "<<value21<<" (ana = "<<value21a<<")\n.";
+	msg_Out()<<"   y = "<<y<<"   "
+		 <<"Omega_{1(2)} = "<<value12<<" (ana = "<<value12a<<"), "
+		 <<"Omega_{(1)2} = "<<value21<<" (ana = "<<value21a<<")\n.";
       }
     }   
   }
