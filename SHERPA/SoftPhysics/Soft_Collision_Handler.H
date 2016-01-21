@@ -7,12 +7,11 @@
 #include "ATOOLS/Org/Return_Value.H"
 #include "ATOOLS/Org/Exception.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
-#include "SHERPA/SoftPhysics/Cluster_Algorithm.H"
 
 namespace ATOOLS { class Cluster_Amplitude; class Cluster_Definitions_Base; }
 namespace PDF    { class ISR_Handler; }
 namespace BEAM   { class Beam_Spectra_Handler; }
-namespace SHRIMPS  { class Shrimps; }
+namespace SHRIMPS  { class Shrimps; class Cluster_Algorithm; }
 
 namespace SHERPA {
   class Soft_Collision_Handler: public ATOOLS::Terminator_Object {
@@ -21,8 +20,8 @@ namespace SHERPA {
     std::string m_softcollisionmodel;
     int         m_mode;
 
-    SHRIMPS::Shrimps      * p_shrimps;
-    Cluster_Algorithm   m_cluster;
+    SHRIMPS::Shrimps           * p_shrimps;
+    SHRIMPS::Cluster_Algorithm * p_cluster;
     void PrepareTerminate(); 
   public:
     Soft_Collision_Handler(std::string path,std::string file,
@@ -38,7 +37,7 @@ namespace SHERPA {
     
     inline void 
     SetClusterDefinitions(PDF::Cluster_Definitions_Base *const defs) {
-      m_cluster.SetClusterDefinitions(defs);
+      //p_cluster->SetClusterDefinitions(defs);
     }
     inline const std::string &  Soft_CollisionModel() const { 
       return m_softcollisionmodel; 

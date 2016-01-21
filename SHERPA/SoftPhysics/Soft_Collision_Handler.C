@@ -3,7 +3,6 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "SHERPA/SoftPhysics/Cluster_Algorithm.H"
 #include "SHRiMPS/Main/Shrimps.H"
 
 #ifdef PROFILE__all
@@ -23,7 +22,7 @@ using namespace std;
 Soft_Collision_Handler::Soft_Collision_Handler(string _dir,string _file,
 					       BEAM::Beam_Spectra_Handler *beam,
 					       PDF::ISR_Handler *isr):
-  m_dir(_dir), m_file(_file), m_mode(0), p_shrimps(NULL)
+  m_dir(_dir), m_file(_file), m_mode(0), p_shrimps(NULL), p_cluster(NULL)
 {
   Data_Reader dr(" ",";","!","=");
   dr.AddWordSeparator("\t");
@@ -33,11 +32,12 @@ Soft_Collision_Handler::Soft_Collision_Handler(string _dir,string _file,
   dr.SetInputFile(m_file);
   m_softcollisionmodel=dr.GetValue<string>("SOFT_COLLISIONS",string("Off"));
   if (m_softcollisionmodel==string("Shrimps")) {
-    m_sfile=dr.GetValue<string>("SHRIMPS_FILE",string("Shrimps.dat"));
+    m_sfile   = dr.GetValue<string>("SHRIMPS_FILE",string("Shrimps.dat"));
     p_shrimps = new Shrimps(&dr,beam,isr);
-    m_cluster.SetShowerParams(p_shrimps->ShowerMode(),
-			      p_shrimps->ShowerMinKT2());
-    m_cluster.SetShowerFac(p_shrimps->ShowerFac());
+    p_cluster = p_shrimps->GetClusterAlgorithm();
+    p_cluster->SetShowerParams(p_shrimps->ShowerMode(),
+			       p_shrimps->ShowerMinKT2());
+    p_cluster->SetShowerFac(p_shrimps->ShowerFac());
     m_mode=1;
     exh->AddTerminatorObject(this);
     return;
@@ -94,16 +94,16 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List * blobs,
 
 Cluster_Amplitude *Soft_Collision_Handler::ClusterConfiguration(Blob *const bl)
 {
-  m_cluster.SetMinKT2(p_shrimps->ShowerMinKT2());
-  m_cluster.SetRescatt(p_shrimps->IsLastRescatter());
-  m_cluster.SetTMax(p_shrimps->LadderTMax());
-  m_cluster.SetNLad(p_shrimps->NLadders());
-  if (!m_cluster.Cluster(bl)) {
+  p_cluster->SetMinKT2(p_shrimps->ShowerMinKT2());
+  p_cluster->SetRescatt(p_shrimps->IsLastRescatter());
+  p_cluster->SetTMax(p_shrimps->LadderTMax());
+  p_cluster->SetNLad(p_shrimps->NLadders());
+  if (!p_cluster->Cluster(bl)) {
     msg_Error()<<"Error in "<<METHOD<<": could not cluster blob.\n"
 	       <<(*bl)<<"\n";
     return NULL;
   }
-  Cluster_Amplitude *ampl(m_cluster.Amplitude());
+  Cluster_Amplitude *ampl(p_cluster->Amplitude());
   return ampl;
 }
 
