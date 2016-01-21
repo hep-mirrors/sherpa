@@ -172,9 +172,27 @@ namespace SHERPA {
      * Initialises the RS ME value storage vector
      */
     inline void InitialisRSValues(const size_t& n) { m_RSvals.resize(n,0.); }
+
+    /*!
+     * @param scal double factor
+     *
+     * Multiplies all weights with common factor
+     */
+    Scale_Variation &operator*=(const double &scal);
   };
 
-  typedef std::map<std::string, Scale_Variation *> NamedScaleVariationMap;
+   
+  //! This struct collects all scale variations
+  struct NamedScaleVariationMap:
+      public std::map<std::string, Scale_Variation *> {
+  public:
+    /*!
+     * @param scal double factor
+     *
+     * Applies common factor to all Scale_Variation objects held
+     */
+    NamedScaleVariationMap& operator*=(const double &scal);
+  };
 
   std::ostream& operator<<(std::ostream &s,const Scale_Variation &sv);
   std::ostream& operator<<(std::ostream &s,const NamedScaleVariationMap &nsvm);
