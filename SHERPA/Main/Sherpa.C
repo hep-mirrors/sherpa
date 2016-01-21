@@ -31,7 +31,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Sherpa::Sherpa() :
-  p_inithandler(NULL), p_eventhandler(NULL), p_hepmc2(NULL)
+  p_inithandler(NULL), p_eventhandler(NULL), p_hepmc2(NULL), p_filter(NULL)
 {
   ATOOLS::mpi = new My_MPI();
   ATOOLS::exh = new Exception_Handler();
@@ -44,6 +44,7 @@ Sherpa::Sherpa() :
   m_debugstep = -1;
   m_displayinterval = 100;
   m_evt_starttime = -1.0;
+  m_filter = false;
   exh->AddTerminatorObject(this);
 }
 
@@ -53,6 +54,7 @@ Sherpa::~Sherpa()
   rpa->gen.WriteCitationInfo();
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = NULL; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = NULL; }
+  if (p_filter)       { delete p_filter;       p_filter       = NULL; }
   exh->RemoveTerminatorObject(this);
   delete ATOOLS::s_loader;
   delete ATOOLS::rpa;
@@ -138,6 +140,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
       m_debugstep=debugstep;
     }
 
+    if (m_filter) p_filter = new Filter();
     m_displayinterval=read.GetValue<int>("EVENT_DISPLAY_INTERVAL",100);
     
     return res;
@@ -229,13 +232,19 @@ bool Sherpa::GenerateOneEvent(bool reset)
       }
       rpa->gen.SetNumberOfGeneratedEvents(rpa->gen.NumberOfGeneratedEvents()+1);
       Blob_List *blobs(p_eventhandler->GetBlobs());
+      if (m_filter && (*p_filter)(blobs)) {
+	msg_Out()<<"  -------------------------------------------------\n";
+	msg_Out()<<(*blobs)<<"\n"; 
+	msg_Out()<<"  -------------------------------------------------\n";
+      }
       m_trials+=(*blobs->FindFirst(btp::Signal_Process))["Trials"]->Get<double>();
       if (msg_LevelIsEvents()) {
 	if (!blobs->empty()) {
-	  msg_Out()<<"  -------------------------------------------------  "<<std::endl;
-	  for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) 
+	  msg_Out()<<"  -------------------------------------------------\n";
+	  for (Blob_List::iterator blit=blobs->begin();
+	       blit!=blobs->end();++blit) 
 	    msg_Out()<<*(*blit)<<std::endl;
-	  msg_Out()<<"  -------------------------------------------------  "<<std::endl;
+	  msg_Out()<<"  -------------------------------------------------\n";
 	}
 	else msg_Out()<<"  ******** Empty event ********  "<<std::endl;
       }

@@ -2,6 +2,7 @@
 #define SHERPA_Main_Sherpa_H
 
 #include "ATOOLS/Org/Exception.H"
+#include "SHERPA/Main/Filter.H"
 
 namespace ATOOLS {
   class Blob_List;
@@ -23,11 +24,13 @@ namespace SHERPA {
     std::string   m_path;
     long int      m_trials, m_debugstep, m_debuginterval, m_displayinterval;
     double        m_evt_starttime;
-    int m_showtrials;
+    int           m_showtrials;
+    bool          m_filter;
 
     Initialization_Handler * p_inithandler;
     Event_Handler          * p_eventhandler;
     HepMC2_Interface       * p_hepmc2;
+    Filter                 * p_filter;
 
     void DrawLogo(const int mode);  
 
