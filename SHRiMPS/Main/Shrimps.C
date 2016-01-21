@@ -28,7 +28,7 @@ Shrimps::Shrimps(ATOOLS::Data_Reader * dr,
     msg_Events()<<METHOD<<": run Shrimps to generate cross sections only.\n"
 		<<"   Will write out results and exit afterwards.\n";
     GenerateXsecs();
-    exit(1);
+    exit(0);
   }
   InitialiseTheRun(beam,isr);
   if (MBpars.RunMode()==run_mode::test) {
