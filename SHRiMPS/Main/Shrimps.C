@@ -177,24 +177,24 @@ void Shrimps::WriteOutXSecsYodaFile(const std::vector<double> & energies,
   std::string filename(dirname+std::string("/xsecs.dat"));
   std::ofstream was;
   was.open(filename.c_str());
-  was<<"# BEGIN HISTOGRAM /XSECS/d01-x01-y01\n";
-  was<<"AidaPath=/XSECS/d01-x01-y01"<<std::endl;
+  was<<"# BEGIN HISTO1D /XSECS/total\n";
+  was<<"Path=/XSECS/total"<<std::endl;
   for (size_t i=0; i<energies.size(); i++){
-    was<<energies[i]<<"   "<<energies[i]<<"   "<<xsectot[i]<<"   0.0\n";
+    was<<energies[i]<<"   "<<energies[i]<<"   "<<xsectot[i]<<"   0.0   0.0\n";
   }
-  was<<"# END HISTOGRAM\n"<<std::endl;
-  was<<"# BEGIN HISTOGRAM /XSECS/d02-x01-y01\n";
-  was<<"AidaPath=/XSECS/d02-x01-y01"<<std::endl;
+  was<<"# END HISTO1D\n"<<std::endl;
+  was<<"# BEGIN HISTO1D /XSECS/inel\n";
+  was<<"Path=/XSECS/inel"<<std::endl;
   for (size_t i=0; i<energies.size(); i++){
-    was<<energies[i]<<"   "<<energies[i]<<"   "<<xsecinel[i]<<"   0.0\n";
+    was<<energies[i]<<"   "<<energies[i]<<"   "<<xsecinel[i]<<"   0.0   0.0\n";
   }
-  was<<"# END HISTOGRAM\n"<<std::endl;
-  was<<"# BEGIN HISTOGRAM /XSECS/d03-x01-y01\n";
-  was<<"AidaPath=/XSECS/d03-x01-y01"<<std::endl;
+  was<<"# END HISTO1D\n"<<std::endl;
+  was<<"# BEGIN HISTO1D /XSECS/el\n";
+  was<<"Path=/XSECS/el"<<std::endl;
   for (size_t i=0; i<energies.size(); i++){
-    was<<energies[i]<<"   "<<energies[i]<<"   "<<xsecelas[i]<<"   0.0\n";
+    was<<energies[i]<<"   "<<energies[i]<<"   "<<xsecelas[i]<<"   0.0   0.0\n";
   }
-  was<<"# END HISTOGRAM"<<std::endl;
+  was<<"# END HISTO1D"<<std::endl;
   was.close();
 }
   
