@@ -36,6 +36,7 @@ AMEGIC::Single_Process_External::Single_Process_External():
   reader.SetInputPath(rpa->GetPath());
   reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
   m_keep_zero_procs=reader.GetValue<int>("AMEGIC_KEEP_ZERO_PROCS",0);
+  m_lastk=1.0;
 }
 
 AMEGIC::Single_Process_External::~Single_Process_External()
@@ -170,7 +171,7 @@ double AMEGIC::Single_Process_External::DSigma(const ATOOLS::Vec4D_Vector &_moms
 double AMEGIC::Single_Process_External::operator()(const ATOOLS::Vec4D* mom)
 {
   Vec4D_Vector moms(mom,&mom[m_nin+m_nout]);
-  return p_me2->Calc(moms);
+  return p_me2->Calc(moms)*(m_lastk=KFactor());
 }
 
 bool AMEGIC::Single_Process_External::Combinable
