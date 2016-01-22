@@ -507,6 +507,11 @@ void One_Running_AlphaS::ContinueAlphaS(int & nr) {
 
 double One_Running_AlphaS::operator()(double q2)
 {
+  if (IsBad(q2)) {
+    msg_Error()<<METHOD<<"(): Encountered bad q2="<<q2<<"), "
+                       <<"returning zero."<<std::endl;
+    return 0.;
+  }
   if (m_pdf) return p_pdf->AlphaSPDF(q2);
   double as(0.);
   if (q2<0.) q2=-q2;
