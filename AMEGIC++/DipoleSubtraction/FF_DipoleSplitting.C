@@ -190,12 +190,12 @@ void FF_MassiveDipoleSplitting::SetMomenta(const Vec4D* mom)
     m_av  = m_sff;
     break;
   case 3:
-    m_sff = 1.-2.*m_kappa*(m_zpm-m_mi/(m_pi+m_pj).Abs2());
-    m_av  = m_sff - 2.0 * ( m_zim*m_zjm - m_zpm );
+    m_sff = (1.-2.*m_kappa*(m_zpm-m_mi/(m_pi+m_pj).Abs2()))/m_vijk;
+    m_av  = m_sff - 2.0 * ( m_zi*m_zj - m_zpm )/m_vijk;
     break;
   case 4:
     m_sff = 1./(1.-m_zi*(1.-m_yijk))+1./(1.-m_zj*(1.-m_yijk))-(2.-m_kappa*m_zpm)/m_vijk;
-    m_av  = m_sff + ( m_zim*m_zjm - m_zpm )/m_vijk;
+    m_av  = m_sff + ( m_zi*m_zj - m_zpm )/m_vijk;
     break;
   case 5: //gluino
     m_sff = 2./(1.-m_zi*(1.-m_yijk))-Vrel(m_ptij,m_ptk)/m_vijk*(1.+m_zi+m_mij/(m_pi*m_pj)); 
@@ -254,10 +254,10 @@ void FF_MassiveDipoleSplitting::CalcDiPolarizations()
   case 2:
     return;
   case 3:
-    CalcVectors(m_pt1,m_pt2,-m_sff*(m_pi+m_pj).Abs2()/(4.*m_pt1.Abs2()));
+    CalcVectors(m_pt1,m_pt2,-m_sff*m_vijk*(m_pi+m_pj).Abs2()/(4.*m_pt1.Abs2()));
     break;
   case 4:
-    CalcVectors(m_pt1,m_pt2,-m_sff*m_vijk/(2.*m_zim*m_zjm));
+    CalcVectors(m_pt1,m_pt2,m_sff*m_vijk*(m_pi+m_pj).Abs2()/(2.*m_pt1.Abs2()));
     break;
   default:
     return;
