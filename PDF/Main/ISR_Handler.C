@@ -162,6 +162,7 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *partons)
 {
   bool fit = 1;
   for (int i=0;i<2;i++) {
+    if (partons[i].Kfcode()==0) continue;
     if (p_isrbase[i]->On()) {
       fit = PDF(i)->Contains(partons[i]);
       if (fit == 0) {

@@ -34,7 +34,7 @@ namespace PHASIC {
   public:
 
     ATOOLS::Flavour m_fl;
-    std::string     m_id, m_pol, m_sv;
+    std::string     m_id, m_pol, m_sv, m_mpl;
 
     std::vector<Subprocess_Info> m_ps;
     ATOOLS::DecayInfo_Vector m_decins;
@@ -58,7 +58,8 @@ namespace PHASIC {
   public:
 
     Subprocess_Info(const ATOOLS::Flavour &fl=ATOOLS::Flavour(kf_none),
-		    const std::string &id="",const std::string &pol="");
+		    const std::string &id="",const std::string &pol="",
+		    const std::string &mpl="");
     ~Subprocess_Info();
 
     std::string MultiplicityTag() const;
@@ -100,6 +101,8 @@ namespace PHASIC {
 
     int Combine(const size_t &i,const size_t &j,
 		const ATOOLS::Flavour &flij,int &cnt);
+
+    void ExtractMPL(std::vector<ATOOLS::Flavour_Vector> &fl) const;
 
   };// end of struct Subprocess_Info
 

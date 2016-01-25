@@ -223,6 +223,36 @@ bool Matrix_Element_Handler::GenerateOneEvent()
 std::vector<Process_Base*> Matrix_Element_Handler::InitializeProcess
 (const Process_Info &pi,NLOTypeStringProcessMap_Map *&pmap)
 {
+  Process_Info cpi(pi);
+  std::set<Flavour_Vector> trials;
+  std::vector<Process_Base*> procs;
+  std::vector<Flavour_Vector> fls(pi.ExtractMPL());
+  std::vector<int> fid(fls.size(),0);
+  Flavour_Vector fl(fls.size());
+  for (size_t i(0);i<fid.size();++i) fl[i]=fls[i][0];
+  for (size_t hc(fid.size()-1);fid[0]<fls[0].size();) {
+    if(fid[hc]==fls[hc].size()){fid[hc--]=0;++fid[hc];continue;}
+    fl[hc]=fls[hc][fid[hc]];if(hc<fid.size()-1){++hc;continue;}
+    Flavour_Vector cfl(fl);
+    Flavour_Vector::iterator cit(cfl.begin());
+    for (size_t i(0);i<pi.m_ii.m_ps.size();++i) ++cit;
+    std::sort(cit,cfl.end());
+    if (trials.find(cfl)==trials.end()) {
+      trials.insert(cfl);
+      size_t n(0);
+      cpi.m_ii.SetExternal(cfl,n);
+      cpi.m_fi.SetExternal(cfl,n);
+      std::vector<Process_Base*> cp=InitializeSingleProcess(cpi,pmap);
+      procs.insert(procs.end(),cp.begin(),cp.end());
+    }
+    ++fid[hc];
+  }
+  return procs;
+}
+
+std::vector<Process_Base*> Matrix_Element_Handler::InitializeSingleProcess
+(const Process_Info &pi,NLOTypeStringProcessMap_Map *&pmap)
+{
   std::vector<Process_Base*> procs;
   if (pi.m_fi.NLOType()==nlo_type::lo) {
     Process_Base *proc(m_gens.InitializeProcess(pi, true));
@@ -856,11 +886,17 @@ size_t Matrix_Element_Handler::ExtractFlavours(Subprocess_Info &info,std::string
     std::string cur(buffer.substr(0,pos));
     buffer=buffer.substr(pos);
     pos=cur.find('(');
-    std::string polid;
+    std::string polid, mpl, rem;
     if (pos!=std::string::npos) {
       polid=cur.substr(pos);
+      rem=polid.substr(polid.find(')')+1);
       cur=cur.substr(0,pos);
       polid=polid.substr(1,polid.find(')')-1);
+    }
+    if (cur.length()==0 && polid.length()) {
+      cur="0"+rem;
+      mpl=polid;
+      polid="";
     }
     pos=cur.find('[');
     std::string decid;
@@ -881,7 +917,7 @@ size_t Matrix_Element_Handler::ExtractFlavours(Subprocess_Info &info,std::string
     if (kfc<0) cfl=cfl.Bar();
     if (n==-1) {
       for (size_t i(0);i<info.m_ps.size();++i)
-	info.m_ps[i].m_ps.push_back(Subprocess_Info(cfl,decid,polid));
+	info.m_ps[i].m_ps.push_back(Subprocess_Info(cfl,decid,polid,mpl));
     }
     else {
       size_t oldsize(info.m_ps.size());
@@ -889,7 +925,7 @@ size_t Matrix_Element_Handler::ExtractFlavours(Subprocess_Info &info,std::string
       for (int j(1);j<=n;++j) {
 	for (size_t i(0);i<oldsize;++i) {
 	  info.m_ps[j*oldsize+i]=info.m_ps[(j-1)*oldsize+i];
-	  info.m_ps[j*oldsize+i].m_ps.push_back(Subprocess_Info(cfl,"",polid));
+	  info.m_ps[j*oldsize+i].m_ps.push_back(Subprocess_Info(cfl,"",polid,mpl));
 	}
       }
     }

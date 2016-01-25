@@ -36,6 +36,14 @@ ATOOLS::Flavour_Vector Process_Info::ExtractFlavours() const
   return flavs;
 }
 
+std::vector<ATOOLS::Flavour_Vector> Process_Info::ExtractMPL() const
+{
+  std::vector<ATOOLS::Flavour_Vector> fl;
+  m_ii.ExtractMPL(fl);
+  m_fi.ExtractMPL(fl);
+  return fl;
+}
+
 bool Process_Info::Has(nlo_type::code nlotype) const
 {
   if (m_fi.m_nloewtype==nlo_type::lo) {
