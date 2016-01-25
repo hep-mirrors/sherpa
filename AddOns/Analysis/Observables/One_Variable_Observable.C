@@ -40,13 +40,17 @@ namespace ANALYSIS {
      const Double_Matrix &m_histos,Primitive_Analysis *const ana,
      const std::string &name="");
     ~One_Variable_Observable();
+    void EvaluateNLOcontrib(double weight,double ncount);
     void Evaluate(const ATOOLS::Particle_List &list, 
 		  double weight, double ncount);
+    void Evaluate(const ATOOLS::Particle_List &list, 
+		  double weight, double ncount,const int mode);
     bool Evaluate(const ATOOLS::Particle_List &list,
 		  double weight,double ncount,Particle_List moms,
 		  const size_t i,const size_t j,size_t k,
-		  size_t o,size_t &eval); 
+		  size_t o,size_t &eval,const int mode); 
     Analysis_Object &operator+=(const Analysis_Object &obj);
+    void EvaluateNLOevt();
     void EndEvaluation(double scale=1.0);
     void Restore(double scale=1.0);
     void Output(const std::string & pname);
@@ -239,6 +243,12 @@ Analysis_Object &One_Variable_Observable::operator+=
   return *this;
 }
 
+void One_Variable_Observable::EvaluateNLOevt()
+{
+  for (size_t i(0);i<m_dists.size();++i) 
+    if (m_dists[i]!=NULL) m_dists[i]->FinishMCB();
+}
+
 void One_Variable_Observable::EndEvaluation(double scale) 
 {
   for (size_t i(0);i<m_dists.size();++i) 
@@ -294,7 +304,7 @@ One_Variable_Observable::~One_Variable_Observable()
 bool One_Variable_Observable::Evaluate
 (const ATOOLS::Particle_List &list,double weight,double ncount,
  Particle_List moms,const size_t i,const size_t j,size_t k,
- size_t o,size_t &eval) 
+ size_t o,size_t &eval,const int mode) 
 {
   if (j>=m_flavs[i].size()) {
     ++eval;
@@ -314,7 +324,10 @@ bool One_Variable_Observable::Evaluate
 	msg_Debugging()<<","<<moms[k]->Number();
       msg_Debugging()<<") = "<<val<<"\n";
     }
-    if (m_dists[i]!=NULL) m_dists[i]->Insert(val,weight,ncount);
+    if (m_dists[i]!=NULL) {
+      if (mode==1) m_dists[i]->InsertMCB(val,weight,ncount);
+      else m_dists[i]->Insert(val,weight,ncount);
+    }
     return true;
   }
   if (j>0 && m_flavs[i][j]!=m_flavs[i][j-1]) o=k=0;
@@ -323,7 +336,7 @@ bool One_Variable_Observable::Evaluate
     if (m_flavs[i][j].Includes(list[k]->Flav())) {
       if ((m_items[i][j]<0 && -int(o)<=m_items[i][j]+1) || int(o)==m_items[i][j]) {
 	moms.push_back(list[k]);
-	if (Evaluate(list,weight,ncount,moms,i,j+1,k+1,o+1,eval)) pass=true;
+	if (Evaluate(list,weight,ncount,moms,i,j+1,k+1,o+1,eval,mode)) pass=true;
 	if (int(o)==m_items[i][j]) return pass;
 	moms.pop_back();
       }
@@ -333,14 +346,28 @@ bool One_Variable_Observable::Evaluate
   return pass;
 }
 
+void One_Variable_Observable::EvaluateNLOcontrib(double weight,double ncount)
+{
+  Evaluate(*p_ana->GetParticleList(m_listname),weight,ncount,1);
+}
+
 void One_Variable_Observable::Evaluate
 (const ATOOLS::Particle_List &list,double weight,double ncount)
+{
+  Evaluate(list,weight,ncount,0);
+}
+
+void One_Variable_Observable::Evaluate
+(const ATOOLS::Particle_List &list,double weight,double ncount,const int mode)
 {
   msg_Debugging()<<METHOD<<"(): {\n";
   for (size_t i(0);i<m_flavs.size();++i) {
     size_t eval(0);
-    if (!Evaluate(list,weight,ncount,Particle_List(),i,0,0,0,eval))
-      if (m_dists[i]!=NULL) m_dists[i]->Insert(1.0,0.0,ncount);
+    if (!Evaluate(list,weight,ncount,Particle_List(),i,0,0,0,eval,mode))
+      if (m_dists[i]!=NULL) {
+	if (mode==1) m_dists[i]->InsertMCB(1.0,0.0,ncount);
+	else m_dists[i]->Insert(1.0,0.0,ncount);
+      }
     if (m_vars[i]->IDName()=="Count") {
       std::vector<ATOOLS::Vec4D> vmoms(eval);
       double val(m_vars[i]->Value(&vmoms.front(),eval));
@@ -353,7 +380,10 @@ void One_Variable_Observable::Evaluate
 	  msg_Debugging()<<","<<m_items[i][k];
 	msg_Debugging()<<" "<<m_vars[i]->Name()<<"("<<eval<<")\n";
       }
-      if (m_dists[i]!=NULL) m_dists[i]->Insert(val,weight,ncount);
+      if (m_dists[i]!=NULL) {
+	if (mode==1) m_dists[i]->InsertMCB(val,weight,ncount);
+	else m_dists[i]->Insert(val,weight,ncount);
+      }
     }
   }
   msg_Debugging()<<"} done\n";
