@@ -144,10 +144,10 @@ the following can be used:
 @verbatim
 (run){
   ...
-  MASSIVE[5] 1; PARTICLE_CONTAINER 95 B 5 -5;
+  MASSIVE[5] 1; PARTICLE_CONTAINER 98 B 5 -5;
 }(run);
 (processes){
-  Process 11 -11 -> (93,95) (93,95);
+  Process 11 -11 -> (93,98) (93,98);
   ...
 }(processes);
 @end verbatim
