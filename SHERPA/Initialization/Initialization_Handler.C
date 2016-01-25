@@ -1024,6 +1024,7 @@ void Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[]
       msg_Out()<<"\t\t-O <level>        set general output level <level>"<<endl;
       msg_Out()<<"\t\t-o <level>        set output level for event generation"<<endl;
       msg_Out()<<"\t\t-l <logfile>      set log file name <logfile>"<<endl;
+      msg_Out()<<"\t\t-R <seed>         set random seed to <seed>"<<endl;
       msg_Out()<<"\t\t-g                do not create result directory"<<endl;
       msg_Out()<<"\t\t-b                run in non-batch mode"<<endl;
       msg_Out()<<"\t\t-V                print version info during runtime"<<endl;
