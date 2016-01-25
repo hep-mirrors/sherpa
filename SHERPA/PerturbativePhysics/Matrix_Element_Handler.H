@@ -117,6 +117,8 @@ namespace SHERPA {
 
     std::vector<PHASIC::Process_Base*> InitializeProcess
     (const PHASIC::Process_Info &pi,PHASIC::NLOTypeStringProcessMap_Map *&pmap);
+    std::vector<PHASIC::Process_Base*> InitializeSingleProcess
+    (const PHASIC::Process_Info &pi,PHASIC::NLOTypeStringProcessMap_Map *&pmap);
 
     void BuildProcesses();
 
