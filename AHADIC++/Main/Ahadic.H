@@ -1,7 +1,6 @@
 #ifndef AHADIC_Main_Ahadic_H
 #define AHADIC_Main_Ahadic_H
 #include "ATOOLS/Org/CXXFLAGS.H"
-
 #include "AHADIC++/Tools/Cluster.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Particle_List.H"
