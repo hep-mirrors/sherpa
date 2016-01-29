@@ -164,7 +164,8 @@ namespace SHERPA {
   */
   /*!
     \fn bool Sherpa::SummarizeRun()
-    Calls the final analysis step.
+    Print out event generation statistics and ask the Event_Handler instance to finish.
+    Always returns true.
   */
 }
 #endif

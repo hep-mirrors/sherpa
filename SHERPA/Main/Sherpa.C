@@ -339,8 +339,8 @@ bool Sherpa::SummarizeRun()
               << rpa->gen.NumberOfGeneratedEvents()*3600*24/
                  ((size_t) rpa->gen.Timer().RealTime()-m_evt_starttime)
               <<" evts/day                    "<<std::endl;
+    p_eventhandler->Finish();
   }
-  p_eventhandler->Finish(); 
   return true; 
 }
 

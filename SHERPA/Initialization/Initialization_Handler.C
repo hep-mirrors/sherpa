@@ -187,9 +187,7 @@ void Initialization_Handler::CheckVersion()
     size_t min1(versioninfo[0].find(".",0)),
            min2(versioninfo[0].find(".",min1+1)),
            max1(versioninfo[1].find(".",0)),
-           max2(versioninfo[1].find(".",max1+1)),
-           cur1(currentversion.find(".",0)),
-           cur2(currentversion.find(".",max1+1));
+           max2(versioninfo[1].find(".",max1+1));
     size_t minmajvers(ToType<size_t>(versioninfo[0].substr(0,min1))),
            minminvers(ToType<size_t>(versioninfo[0].substr(min1+1,min2))),
            minbugvers(ToType<size_t>(versioninfo[0].substr(min2+1))),
@@ -507,16 +505,6 @@ bool Initialization_Handler::InitializeTheIO()
 bool Initialization_Handler::InitializeTheModel()
 {
   if (p_model) delete p_model;
-  //determine and set scale for coupling initialization
-  Data_Reader beamer(" ",";","!","=");
-  beamer.AddComment("#");
-  beamer.AddWordSeparator("\t");
-  beamer.SetInputFile(m_path+m_beamdat);
-  std::vector<double> _beam1, _beam2;
-  if (!beamer.VectorFromFile(_beam1,"BEAM_1")) _beam1.resize(2,0.0);
-  if (!beamer.VectorFromFile(_beam2,"BEAM_2")) _beam2.resize(2,0.0);
-  double beam1 = beamer.GetValue<double>("BEAM_ENERGY_1",_beam1[1]);
-  double beam2 = beamer.GetValue<double>("BEAM_ENERGY_2",_beam2[1]);
   Data_Reader read(" ",";","!","=");
   read.AddWordSeparator("\t");
   read.SetInputPath(m_path);

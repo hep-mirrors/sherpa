@@ -402,7 +402,6 @@ bool Event_Handler::GenerateHadronDecayEvent(eventtype::code & mode) {
 }
 
 void Event_Handler::Finish() {
-  if (this==NULL) return;
   MPISync();
   msg_Info()<<"In Event_Handler::Finish : "
 	    <<"Summarizing the run may take some time.\n";
