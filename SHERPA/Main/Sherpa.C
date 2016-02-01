@@ -237,7 +237,16 @@ bool Sherpa::GenerateOneEvent(bool reset)
 	msg_Out()<<(*blobs)<<"\n"; 
 	msg_Out()<<"  -------------------------------------------------\n";
       }
-      m_trials+=(*blobs->FindFirst(btp::Signal_Process))["Trials"]->Get<double>();
+
+      /// Increase m_trials --- based on signal blob["Trials"] if existent
+      if (blobs->FindFirst(btp::Signal_Process) == NULL) {
+        m_trials+=1;
+	msg_Debugging()<<"  No Signal_Process Blob found, increasing m_trials by 1\n";
+      }
+      else {
+        m_trials+=(*blobs->FindFirst(btp::Signal_Process))["Trials"]->Get<double>();
+      }
+
       if (msg_LevelIsEvents()) {
 	if (!blobs->empty()) {
 	  msg_Out()<<"  -------------------------------------------------\n";
