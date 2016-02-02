@@ -94,14 +94,14 @@ Photons::Photons(Data_Reader* reader) :
 {
   rpa->gen.AddCitation
     (1,"Photons is published under \\cite{Schonherr:2008av}.");
-  s_mode          = ToType<yfsmode::code>(reader->GetValue<std::string>("YFS_MODE","2"));
-  s_useme         = (bool)reader->GetValue<int>("YFS_USE_ME",1);
-  s_ircutoff      = reader->GetValue<double>("YFS_IR_CUTOFF",1E-3);
-  s_uvcutoff      = reader->GetValue<double>("YFS_UV_CUTOFF",-1.);
-  if (s_uvcutoff<0.) s_uvcutoff = std::numeric_limits<double>::max();
+  s_mode     = ToType<yfsmode::code>(reader->GetValue<std::string>("YFS_MODE","2"));
+  s_useme    = (bool)reader->GetValue<int>("YFS_USE_ME",1);
+  s_ircutoff = reader->GetValue<double>("YFS_IR_CUTOFF",1E-3);
+  s_uvcutoff = reader->GetValue<double>("YFS_UV_CUTOFF",
+                                        std::numeric_limits<double>::max());
   s_userunningparameters = (bool)reader->GetValue<int>("YFS_USE_RUNNING_PARAMETERS",0);
-  std::string irframe
-            = reader->GetValue<std::string>("YFS_IR_CUTOFF_FRAME","Multipole_CMS");
+  std::string irframe = reader->GetValue<std::string>("YFS_IR_CUTOFF_FRAME",
+                                                      "Multipole_CMS");
   if      (irframe == "Multipole_CMS")      s_ircutoffframe = 0;
   else if (irframe == "Lab")                s_ircutoffframe = 1;
   else if (irframe == "Decayer_Rest_Frame") s_ircutoffframe = 2;
@@ -111,10 +111,10 @@ Photons::Photons(Data_Reader* reader) :
               <<"IR cut-off for soft photon radiation unkown ...\n"
               <<"setting it to 'Multipole_CMS' ...\n";
   }
-  s_nmax          = reader->GetValue<int>("YFS_MAXEM",-1);
-  if (s_nmax<0) s_nmax = std::numeric_limits<int>::max();
+  s_nmax          = reader->GetValue<int>("YFS_MAXEM",std::numeric_limits<int>::max());
   s_nmin          = reader->GetValue<int>("YFS_MINEM",0);
-  s_drcut         = reader->GetValue<double>("YFS_DRCUT",1000.);
+  s_drcut         = reader->GetValue<double>("YFS_DRCUT",
+                                             std::numeric_limits<double>::max());
   s_strict        = reader->GetValue<int>("YFS_STRICTNESS",0);
   s_reducemaxenergy = reader->GetValue<double>("YFS_REDUCE_MAXIMUM_ENERGY",1.);
   s_increasemaxweight = reader->GetValue<double>("YFS_INCREASE_MAXIMUM_WEIGHT",1.);
