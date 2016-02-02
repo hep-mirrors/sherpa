@@ -40,7 +40,7 @@ namespace ATOOLS {
       m_weight(weight), m_dxs(dxs), m_ntrial(ntrial),
       m_pdf(PDF_Info(fl1,fl2,x1,x2,muf12,muf22,xf1,xf2)) {}
     Weight_Info &operator*=(const double &c)
-    { m_weight*=c; m_dxs*=c; return this; }
+    { m_weight*=c; m_dxs*=c; return *this; }
   }; // end of struct Weight_Info
 
   inline std::ostream & operator<<(std::ostream & s,
