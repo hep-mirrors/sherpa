@@ -23,11 +23,12 @@ namespace CSSHOWER {
     MODEL::Running_AlphaS *p_cpl;
 
     double m_q, m_rsf;
+    int m_scvmode;
 
   public:
 
     inline CF_QCD(const SF_Key &key):
-      SF_Coupling(key) 
+      SF_Coupling(key), m_q(0.), m_rsf(1.), m_scvmode(0)
     {
       if (key.p_v->in[0].StrongCharge()==8 &&
 	  key.p_v->in[1].StrongCharge()==8 &&
@@ -71,37 +72,65 @@ bool CF_QCD::SetCoupling(MODEL::Model_Base *md,
 			 const double &isfac,const double &fsfac)
 {
   p_cpl=(MODEL::Running_AlphaS*)md->GetScalarFunction("alpha_S");
-  m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"));
+  m_rsf=ToType<double>(rpa->gen.Variable("RENORMALIZATION_SCALE_FACTOR"))
+        *ToType<double>(rpa->gen.Variable("CSS_SCALE_FACTOR"));
+  m_scvmode=ToType<int>(rpa->gen.Variable("CSS_SCALE_VARIATION_SCHEME"));
   m_cplfac=((m_type/10==1)?fsfac:isfac);
   double scale((m_type/10==1)?k0sqf:k0sqi);
   double scl(Min(1.0,CplFac(scale))*scale);
-  m_cplmax.push_back((*p_cpl)(Max(p_cpl->CutQ2(),scl))*m_q);
+  double ct(0.);
+  if (m_rsf>1.) // only for f>1 cpl gets larger
+    ct=-p_cpl->BoundedAlphaS(scl)/M_PI*p_cpl->Beta0(0.)*log(m_rsf);
+  m_cplmax.push_back(p_cpl->BoundedAlphaS(scl)*(1.-ct)*m_q);
   m_cplmax.push_back(0.0);
   return true;
 }
 
 double CF_QCD::Coupling(const double &scale,const int pol)
 {
+  DEBUG_FUNC("pol="<<pol);
   if (pol!=0) return 0.0;
   if (scale<0.0) return (*p_cpl)(sqr(rpa->gen.Ecms()))*m_q;
   double t(CplFac(scale)*scale), scl(CplFac(scale)*scale*m_rsf);
-  if (t<p_cpl->CutQ2()) return 0.0;
-  double cpl=(*p_cpl)(scl);
+  double cpl=p_cpl->BoundedAlphaS(scl);
+  msg_Debugging()<<"t="<<t<<", \\mu_R^2="<<scl<<std::endl;
+  msg_Debugging()<<"as(t)="<<p_cpl->BoundedAlphaS(t)<<std::endl;
   if (!IsEqual(scl,t)) {
+    msg_Debugging()<<"as(\\mu_R^2)="<<cpl<<std::endl;
     std::vector<double> ths(p_cpl->Thresholds(t,scl));
-    if (scl>t) std::reverse(ths.begin(),ths.end());
-    if (ths.empty() || !IsEqual(t,ths.back())) ths.push_back(t);
-    if (!IsEqual(scl,ths.front())) ths.insert(ths.begin(),scl);
-    for (size_t i(1);i<ths.size();++i) {
-      double nf=p_cpl->Nf((ths[i]+ths[i-1])/2.0);
-      double L=log(ths[i]/ths[i-1]), ct=cpl/(2.0*M_PI)*B0(nf)*L;
-      cpl*=1.0-ct;
+    ths.push_back((scl>t)?scl:t);
+    ths.insert(ths.begin(),(scl>t)?t:scl);
+    if (t<scl) std::reverse(ths.begin(),ths.end());
+    msg_Debugging()<<"thresholds: "<<ths<<std::endl;
+    double fac(1.),ct(0.);
+    // Beta0 from One_Running_AlphaS contains extra factor 1/2
+    if (m_scvmode==0) {
+      // replace as(t) -> as(t)*prod[1-as/2pi*beta(nf)*log(th[i]/th[i-1])]
+      for (size_t i(1);i<ths.size();++i) {
+        ct=cpl/M_PI*p_cpl->Beta0((ths[i]+ths[i-1])/2.0)*log(ths[i]/ths[i-1]);
+        fac*=1.0-ct;
+      }
     }
+    else {
+      // replace as(t) -> as(t)*[1-sum as/2pi*beta(nf)*log(th[i]/th[i-1])]
+      for (size_t i(1);i<ths.size();++i)
+        ct+=cpl/M_PI*p_cpl->Beta0((ths[i]+ths[i-1])/2.0)*log(ths[i]/ths[i-1]);
+      fac=1.-ct;
+    }
+    msg_Debugging()<<"ct="<<ct<<std::endl;
+    if (fac<0.) {
+      msg_Tracking()<<METHOD<<"(): Renormalisation term too large. Remove."
+                    <<std::endl;
+      fac=1.;
+    }
+    cpl*=fac;
+    msg_Debugging()<<"as(\\mu_R^2)*(1-ct)="<<cpl<<std::endl;
   }
   cpl*=m_q;
   if (cpl>m_cplmax.front()) {
-    msg_Tracking()<<METHOD<<"(): Value exceeds maximum at k_T = "
-		  <<sqrt(scale)<<" -> q = "<<sqrt(scl)<<"."<<std::endl;
+    msg_Error()<<METHOD<<"(): Value exceeds maximum at t = "
+               <<sqrt(t)<<" -> \\mu_R = "<<sqrt(scl)
+               <<", qmin = "<<sqrt(p_cpl->CutQ2())<<std::endl;
     return m_cplmax.front();
   }
 #ifdef DEBUG__Trial_Weight
@@ -133,7 +162,7 @@ bool CF_QCD::AllowSpec(const ATOOLS::Flavour &fl)
       if (abs(p_lf->FlB().StrongCharge())==3)
 	return p_lf->FlB().StrongCharge()==-fl.StrongCharge();
       break;
-    case cstp::none: abort();
+    case cstp::none: THROW(fatal_error,"Unknown dipole.");
     }
   }
   return fl.Strong();
