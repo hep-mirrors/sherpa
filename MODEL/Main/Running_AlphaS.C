@@ -60,7 +60,7 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
   Data_Reader dataread(" ",";","!","=");
   dataread.AddComment("#");
   dataread.AddWordSeparator("\t");
-  int pdfas(dataread.GetValue<int>("USE_PDF_ALPHAS",0));
+  const int pdfas(dataread.GetValue<int>("USE_PDF_ALPHAS",0));
   m_cutas=dataread.GetValue<double>("ALPHAS_FREEZE_VALUE",1.);
   if (pdfas&4) {
     std::string set = dataread.GetValue<std::string>("ALPHAS_PDF_SET","CT10nlo");
@@ -104,7 +104,7 @@ One_Running_AlphaS::One_Running_AlphaS(const double as_MZ,const double m2_MZ,
           m_as_MZ=info.m_asmz;
           m_m2_MZ=(info.m_mz2>0.?info.m_mz2:m_m2_MZ);
         }
-        if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)&1) m_pdf=1;
+        if (pdfas&1) m_pdf=1;
         /*
         m_nth=info.m_flavs.size()+1;
         for (int i(0);i<m_nth;++i) {
@@ -232,7 +232,7 @@ One_Running_AlphaS::One_Running_AlphaS(PDF::PDF_Base *const pdf) :
     m_order=info.m_order;
     m_as_MZ=info.m_asmz;
     m_m2_MZ=(info.m_mz2>0.?info.m_mz2:m_m2_MZ);
-    if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)==1) m_pdf=1;
+    if (dataread.GetValue<int>("USE_PDF_ALPHAS",0)&1) m_pdf=1;
     msg_Tracking()<<METHOD<<"() {\n  Setting \\alpha_s according to PDF\n"
                   <<"  perturbative order "<<m_order
                   <<"\n  \\alpha_s(M_Z) = "<<m_as_MZ;
