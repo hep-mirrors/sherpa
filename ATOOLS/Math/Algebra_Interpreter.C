@@ -821,7 +821,8 @@ Term *Algebra_Interpreter::ReplaceTags(Term *expr) const
 
 void Algebra_Interpreter::PrintNode(Node<Function*> *const node) const
 {
-  msg_Info()<<"("<<node<<") ["<<Demangle(typeid(*(*node)[0]).name())<<"] '"
+  Function member = *(*node)[0];
+  msg_Info()<<"("<<node<<") ["<<Demangle(typeid(member).name())<<"] '"
 	    <<((*node)[0]!=NULL?(*node)[0]->Tag():"<NULL>")<<"' {\n";
   {
     msg_Indent();

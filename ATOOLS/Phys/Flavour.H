@@ -110,7 +110,7 @@ namespace ATOOLS {
     
     inline Flavour(const long int &kfc=kf_none):
       p_info(NULL), m_anti(0)
-    { KFCode_ParticleInfo_Map::iterator it(s_kftable.find(abs(kfc)));
+    { KFCode_ParticleInfo_Map::iterator it(s_kftable.find(std::abs(kfc)));
       if (it!=s_kftable.end()) p_info=it->second; else return;
       if (kfc<0 && p_info->m_majorana==0) m_anti=1; }
     

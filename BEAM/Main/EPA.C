@@ -54,7 +54,7 @@ double EPA::CosInt::GetCosInt(double X)
 
 double EPA::phi(double x, double qq)
 {
-  if (abs(m_beam.Kfcode()) == kf_p_plus) {
+  if (m_beam.Kfcode() == kf_p_plus) {
     const double a = 7.16;
     const double b = -3.96;
     const double c = .028;
@@ -179,7 +179,7 @@ bool EPA::CalculateWeight(double x,double q2)
     m_weight=0.0;
     return 1;
   }
-  if (abs(m_beam.Kfcode()) == kf_e) {
+  if (m_beam.Kfcode() == kf_e) {
     double f = alpha/M_PI*(1+sqr(1-m_x))/m_x*log(2.*m_energy/m_mass);
     if (f < 0) f = 0.;
     m_weight = f;
@@ -187,7 +187,7 @@ bool EPA::CalculateWeight(double x,double q2)
 	     <<"energy = "<<m_energy<<", "<<"mass = "<<m_mass<<".\n";
     return 1;    
   }
-  else if (abs(m_beam.Kfcode()) == kf_p_plus) {
+  else if (m_beam.Kfcode() == kf_p_plus) {
     const double qz = 0.71;
     double f, qmi, qma;
     qma=m_q2Max/qz;
