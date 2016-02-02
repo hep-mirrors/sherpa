@@ -79,7 +79,8 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   ran->InitExternal(m_path,m_file);
 
   rpa->gen.SetSoftSC(p_dataread->GetValue<int>("SOFT_SPIN_CORRELATIONS",0));
-  int defhsc = p_dataread->GetValue<string>("HARD_DECAYS",string("Off"))!="Off" ? 1 : 0;
+  std::string hdstr(p_dataread->GetValue<string>("HARD_DECAYS","None"));
+  int defhsc = !(hdstr=="Off" || hdstr=="None" || hdstr=="0");
   rpa->gen.SetHardSC(p_dataread->GetValue<int>("HARD_SPIN_CORRELATIONS",defhsc));
   exh->AddTerminatorObject(this);
 }
@@ -669,8 +670,8 @@ bool Initialization_Handler::InitializeTheHardDecays()
   dr.AddWordSeparator("\t");
   dr.SetInputPath(m_path);
   dr.SetInputFile(m_medat);
-  std::string decays=dr.GetValue<string>("HARD_DECAYS",string("Off"));
-  if (decays=="Off") return true;
+  std::string decays=dr.GetValue<string>("HARD_DECAYS","None");
+  if (decays=="Off" || decays=="None" || decays=="0") return true;
 
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
   p_harddecays = new Hard_Decay_Handler(m_path,m_medat);

@@ -61,9 +61,9 @@ Signal_Process_FS_QED_Correction::Signal_Process_FS_QED_Correction
   // switch off if there are hard decays, have their own QED corrections,
   // cannot tell here what has been corrected and what not -- OR --
   // if NLO_Mode Fixed_Order, switch off completely, unless explicitely stated
+  std::string hd(reader.GetValue<std::string>("HARD_DECAYS","None"));
   if (!expliciteon &&
-      (p_mehandler->HasNLO()==1 ||
-       !(reader.GetValue<std::string>("HARD_DECAYS","Off")=="Off"))) {
+      (p_mehandler->HasNLO()==1 || !(hd=="Off" || hd=="None" || hd=="0"))) {
     m_on = false; m_qed = false;
   }
   if (expliciteon && p_mehandler->HasNLO()==1) {
