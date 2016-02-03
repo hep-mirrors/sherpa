@@ -442,12 +442,12 @@ void Model_Base::CustomContainerInit()
     for (size_t j(2);j<helpsvv[i].size();++j) {
       msg_Debugging()<<" "<<helpsvv[i][j];
       long int kfc(ToType<long int>(helpsvv[i][j]));
-      s_kftable[nkf]->Add(Flavour((kf_code)abs(kfc),kfc<0));
-      if (s_kftable[abs(kfc)]->m_priority)
+      s_kftable[nkf]->Add(Flavour((kf_code)std::abs(kfc),kfc<0));
+      if (s_kftable[std::abs(kfc)]->m_priority)
 	msg_Error()<<METHOD<<"(): Changing "<<Flavour(kfc)<<" sort priority: "
-		   <<s_kftable[abs(kfc)]->m_priority<<" -> "
+		   <<s_kftable[std::abs(kfc)]->m_priority<<" -> "
 		   <<s_kftable[nkf]->m_priority<<std::endl;
-      s_kftable[abs(kfc)]->m_priority=s_kftable[abs(nkf)]->m_priority;
+      s_kftable[std::abs(kfc)]->m_priority=s_kftable[std::abs(nkf)]->m_priority;
     }
     s_kftable[nkf]->SetIsGroup(true);
     msg_Debugging()<<" }\n";

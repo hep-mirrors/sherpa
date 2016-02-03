@@ -268,8 +268,8 @@ bool COMIX::Single_Process::MapProcess()
 	  for (size_t j(0);j<nfmap;++j) {
 	    long int src, dest;
 	    *map>>src>>dest;
-	    Flavour ft((kf_code)(abs(src)),src<0);
-	    Flavour fb((kf_code)(abs(dest)),dest<0);
+	    Flavour ft((kf_code)(std::abs(src)),src<0);
+	    Flavour fb((kf_code)(std::abs(dest)),dest<0);
 	    m_fmap[ft]=fb;
 	    msg_Debugging()<<"  fmap '"<<ft<<"' onto '"<<fb<<"'\n";
 	  }

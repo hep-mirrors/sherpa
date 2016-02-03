@@ -603,7 +603,7 @@ bool Amplitude::Construct(Flavour_Vector &fls,
     else {
       if (m_affm.size()) {
 	for (size_t i(0);i<m_affm[n].size();++i) {
-	  Flavour cfl((kf_code)abs(m_affm[n][i]),m_affm[n][i]<0);
+	  Flavour cfl((kf_code)std::abs(m_affm[n][i]),m_affm[n][i]<0);
 	  if (fls[i].IsOn()) AddCurrent(ids,n,cfl,0);
 	}
       }

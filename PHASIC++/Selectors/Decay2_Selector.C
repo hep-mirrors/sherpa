@@ -58,7 +58,7 @@ Decay2_Selector::Decay2_Selector(const Selector_Key &key):
   DEBUG_FUNC(tag);
   long int kf1(ToType<long int>(key[0][0]));
   long int kf2(ToType<long int>(key[0][1]));
-  Flavour fl1(abs(kf1),kf1<0), fl2(abs(kf2),kf2<0);
+  Flavour fl1(std::abs(kf1),kf1<0), fl2(std::abs(kf2),kf2<0);
   DecayInfo_Vector decs
     (key.p_proc->Process()->Info().m_fi.GetDecayInfos());
   for (size_t i(0);i<decs.size();++i) {
