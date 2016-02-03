@@ -104,18 +104,23 @@ double CF_QCD::Coupling(const double &scale,const int pol)
     msg_Debugging()<<"thresholds: "<<ths<<std::endl;
     double fac(1.),ct(0.);
     // Beta0 from One_Running_AlphaS contains extra factor 1/2
-    if (m_scvmode==0) {
+    switch (m_scvmode) {
+    case 1:
       // replace as(t) -> as(t)*prod[1-as/2pi*beta(nf)*log(th[i]/th[i-1])]
       for (size_t i(1);i<ths.size();++i) {
         ct=cpl/M_PI*p_cpl->Beta0((ths[i]+ths[i-1])/2.0)*log(ths[i]/ths[i-1]);
         fac*=1.0-ct;
       }
-    }
-    else {
+      break;
+    case 2:
       // replace as(t) -> as(t)*[1-sum as/2pi*beta(nf)*log(th[i]/th[i-1])]
       for (size_t i(1);i<ths.size();++i)
         ct+=cpl/M_PI*p_cpl->Beta0((ths[i]+ths[i-1])/2.0)*log(ths[i]/ths[i-1]);
       fac=1.-ct;
+      break;
+    default:
+      fac=1.;
+      break;
     }
     msg_Debugging()<<"ct="<<ct<<std::endl;
     if (fac<0.) {

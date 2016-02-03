@@ -104,18 +104,23 @@ double Alpha_QCD::Coupling(const Splitting &s) const
     if (t<scl) std::reverse(ths.begin(),ths.end());
     msg_Debugging()<<"thresholds: "<<ths<<std::endl;
     double fac(1.),ct(0.);
-    if (p_sk->PS()->ScaleVariationScheme()==0) {
+    switch (p_sk->PS()->ScaleVariationScheme()) {
+    case 1:
       // replace as(t) -> as(t)*prod[1-as/2pi*beta(nf)*log(th[i]/th[i-1])]
       for (size_t i(1);i<ths.size();++i) {
         ct=cpl/(2.*M_PI)*B0(p_cpl->Nf((ths[i]+ths[i-1])/2.0))*log(ths[i]/ths[i-1]);
         fac*=1.0-ct;
       }
-    }
-    else {
+      break;
+    case 2:
       // replace as(t) -> as(t)*[1-sum as/2pi*beta(nf)*log(th[i]/th[i-1])]
       for (size_t i(1);i<ths.size();++i)
         ct+=cpl/(2.*M_PI)*B0(p_cpl->Nf((ths[i]+ths[i-1])/2.0))*log(ths[i]/ths[i-1]);
       fac=1.-ct;
+      break;
+    default:
+      fac=1.;
+      break;
     }
     msg_Debugging()<<"ct="<<ct<<std::endl;
     if (fac<0.) {
