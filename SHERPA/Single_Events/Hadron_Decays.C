@@ -59,6 +59,9 @@ Return_Value::code Hadron_Decays::Treat(Blob_List * bloblist, double & weight)
             }
             p_dechandler->TreatInitialBlob(blob, amps, origparts);
           }
+          else {
+            p_dechandler->TreatInitialBlob(blob, NULL, Particle_Vector());
+          }
         }
         else p_dechandler->TreatInitialBlob(blob, NULL, Particle_Vector());
       } catch (Return_Value::code ret) {
