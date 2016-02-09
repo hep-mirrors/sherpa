@@ -2,7 +2,6 @@
 #include "AHADIC++/Decays/Cluster_Part.H"
 #include "AHADIC++/Tools/Hadronisation_Parameters.H"
 
-
 using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
