@@ -15,7 +15,6 @@ Cluster_Decay_Handler::Cluster_Decay_Handler(Cluster_List * clulist,bool ana) :
 { }
 
 
-
 Cluster_Decay_Handler::~Cluster_Decay_Handler()
 { 
   if (p_clus)     { delete p_clus;     p_clus=NULL;     }
