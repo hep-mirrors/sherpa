@@ -23,7 +23,7 @@ int main(int argc,char* argv[])
     int nevt=rpa->gen.NumberOfEvents();
     if (nevt>0) {
       Generator->InitializeTheEventHandler();
-      for (size_t i=1;i<=nevt;) {
+      for (size_t i=1;i<=rpa->gen.NumberOfEvents();) {
         if (Generator->GenerateOneEvent()) ++i;
       }
       Generator->SummarizeRun();
