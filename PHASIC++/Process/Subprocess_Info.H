@@ -106,6 +106,9 @@ namespace PHASIC {
 
     void ExtractMPL(std::vector<ATOOLS::Flavour_Vector> &fl) const;
 
+    bool operator<(const Subprocess_Info &pi) const;
+    bool operator==(const Subprocess_Info &pi) const;
+
   };// end of struct Subprocess_Info
 
   std::ostream &operator<<(std::ostream &ostr,const Subprocess_Info &info);

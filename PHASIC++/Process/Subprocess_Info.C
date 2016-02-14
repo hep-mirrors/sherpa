@@ -391,6 +391,27 @@ void Subprocess_Info::ExtractMPL(std::vector<Flavour_Vector> &fl) const
   fl.back().push_back(Flavour(ToType<long int>(mpl)));
 }
 
+bool Subprocess_Info::operator<(const Subprocess_Info &pi) const
+{
+  if (m_ps.size()<pi.m_ps.size()) return true;
+  if (m_ps.size()>pi.m_ps.size()) return false;
+  if (m_ps.empty()) return m_fl<pi.m_fl;
+  for (size_t i(0);i<m_ps.size();++i) {
+    if (m_ps[i]<pi.m_ps[i]) return true;
+    if (!(m_ps[i]==pi.m_ps[i])) return false;
+  }
+  return false;
+}
+
+bool Subprocess_Info::operator==(const Subprocess_Info &pi) const
+{
+  if (m_ps.size()!=pi.m_ps.size()) return false;
+  if (m_ps.empty()) return m_fl==pi.m_fl;
+  for (size_t i(0);i<m_ps.size();++i)
+    if (!(m_ps[i]==pi.m_ps[i])) return false;
+  return true;
+}
+
 void Subprocess_Info::Print(std::ostream &ostr,const size_t &ni) const
 {
   ostr<<std::string(ni,' ')<<m_fl<<" "<<m_mpl;
