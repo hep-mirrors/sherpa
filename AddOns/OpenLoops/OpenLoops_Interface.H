@@ -45,6 +45,12 @@ namespace OpenLoops {
     static void SetParameter(const std::string & key, std::string value);
     static double GetDoubleParameter(const std::string & key);
     static int GetIntParameter(const std::string & key);
+
+    // Propagate model parameters to OpenLoops in the standard model
+    static void SetParametersSM();
+    // Propagate model parameters to OpenLoops in UFO models
+    static void SetParametersUFO();
+
     static bool ExitOnError() { return s_exit_on_error; }
 
     PHASIC::Process_Base *InitializeProcess(const PHASIC::Process_Info &pi, bool add)

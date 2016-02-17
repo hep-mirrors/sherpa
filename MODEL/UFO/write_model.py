@@ -1,6 +1,12 @@
 from ufo_interface import s_vertex, s_parameter, s_particle, s_coupling, colour_translate, split_by_orders, vertex_collection
 from ufo_interface.templates import model_template
 from operator import attrgetter
+from copy import deepcopy
+
+def sort_by_hierarchy(orders):
+    ret = deepcopy(orders)
+    ret.sort(key=attrgetter('hierarchy'))
+    return ret
 
 def write_model(model, lorentzes, model_name, model_file_name):
 
@@ -17,7 +23,8 @@ def write_model(model, lorentzes, model_name, model_file_name):
             statement += str(param.lha_indices()[0])
         if len(param.lha_indices()) == 2:
             statement += str(param.lha_indices()[0])+", "+str(param.lha_indices()[1])
-        statement+=");"
+        statement+=");\n"
+        statement+='    p_constants->insert(make_pair(string("{0}"),{0}));'.format(param.name())
         para_init += "\n"+statement
 
     # internal parameter initialization and calculation
@@ -61,11 +68,11 @@ def write_model(model, lorentzes, model_name, model_file_name):
     # coupling initialization and calculation
     for coup in model.all_couplings:
         s_coup = s_coupling(coup)
-        para_init += "\n    p_complexconstants->insert(std::make_pair(std::string(\""+s_coup.name()+"\"),"+s_coup.cpp_value()+"));"
+        para_init += "\n    p_complexconstants->insert(make_pair(string(\""+s_coup.name()+"\"),"+s_coup.cpp_value()+"));"
         para_init += "\n    DEBUG_VAR((*p_complexconstants)[\"{0}\"]);".format(s_coup.name())
 
-    model.all_orders.sort(key=attrgetter('hierarchy'))
-    hierarchy     = [order.name for order in model.all_orders]
+    sorted_orders = sort_by_hierarchy(model.all_orders)
+    hierarchy     = [order.name for order in sorted_orders]
     declarations  = ""
     calls         = ""
     vertices      = list(sum([split_by_orders(vert, hierarchy) for vert in model.all_vertices],[]))
@@ -89,7 +96,7 @@ def write_model(model, lorentzes, model_name, model_file_name):
     for lor in lorentzes:
         name, mapped_name = lor.name(), lor.mapped_name()
         if  mapped_name is not None:
-            lorentz_map +='\n      m_lorentz_map.insert(std::make_pair("{0}","{1}"));'.format(name,mapped_name)
+            lorentz_map +='\n      m_lorentz_map.insert(make_pair("{0}","{1}"));'.format(name,mapped_name)
 
     # write out model
     with open(model_file_name, "w") as outfile:

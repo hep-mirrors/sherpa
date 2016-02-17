@@ -86,45 +86,11 @@ namespace OpenLoops {
     // tell OL about the current model and check whether accepted
     if (!s_ignore_model) SetParameter("model", MODEL::s_model->Name());
 
-    // set particle masses/widths
-    for(KFCode_ParticleInfo_Map::const_iterator it = s_kftable.begin();	it!=s_kftable.end(); ++it){
-      const Flavour& flav(it->first); const int& id(it->first);
-      if (flav.Mass()>0.0) SetParameter("mass("+ToString(id)+")", flav.Mass());
-      if (flav.Width()>0.0) SetParameter("width("+ToString(id)+")", flav.Width());
-      if (flav.IsFermion() && flav.Yuk()>0.0 &&
-          flav.Mass()!=flav.Yuk()) {
-        SetParameter("yuk("+ToString(id)+")", flav.Yuk());
-        if (flav.IsQuark()) { // not supported/needed for leptons
-          if (MODEL::s_model->ScalarNumber(std::string("YukawaScheme"))==1)
-            SetParameter("muy("+ToString(id)+")", Flavour(kf_h0).Mass(true));
-          else
-            SetParameter("muy("+ToString(id)+")", flav.Yuk());
-        }
-      }
-    }
-
-    if (dynamic_cast<UFO::UFO_Model*>(s_model)){
-      msg_Info()<<METHOD<<"(): You are using a UFO model "
-		<<"together with OpenLoops. CKM parameters "
-		<<"cannot be guessed, assuming diagonal CKM."
-		<<std::endl;
-      SetParameter("ckmorder", 0);
-    }
-    else if (s_model->ComplexConstant("CKM_0_2")!=Complex(0.0,0.0) ||
-        s_model->ComplexConstant("CKM_2_0")!=Complex(0.0,0.0)) {
-      SetParameter("ckmorder", 3);
-    }
-    else if (s_model->ComplexConstant("CKM_1_2")!=Complex(0.0,0.0) ||
-        s_model->ComplexConstant("CKM_2_1")!=Complex(0.0,0.0)) {
-      SetParameter("ckmorder", 2);
-    }
-    else if (s_model->ComplexConstant("CKM_0_1")!=Complex(0.0,0.0) ||
-        s_model->ComplexConstant("CKM_1_0")!=Complex(0.0,0.0)) {
-      SetParameter("ckmorder", 1);
-    }
-    else {
-      SetParameter("ckmorder", 0);
-    }
+    // Propagate model parameters to OpenLoops
+    if(dynamic_cast<UFO::UFO_Model*>(s_model))
+      SetParametersUFO();
+    else
+      SetParametersSM();
 
     // set nf in alpha-s evolution
     int asnf0(isr->PDF(0)?isr->PDF(0)->ASInfo().m_nf:-1);
@@ -169,6 +135,52 @@ namespace OpenLoops {
     rpa->gen.AddCitation(1,cite.str());
 
     return true;
+  }
+
+  // Propagate model parameters to OpenLoops in the standard model
+  void OpenLoops_Interface::SetParametersSM()
+  {
+    // set particle masses/widths
+    for(KFCode_ParticleInfo_Map::const_iterator it = s_kftable.begin();	it!=s_kftable.end(); ++it){
+      const Flavour& flav(it->first); const int& id(it->first);
+      if (flav.Mass()>0.0) SetParameter("mass("+ToString(id)+")", flav.Mass());
+      if (flav.Width()>0.0) SetParameter("width("+ToString(id)+")", flav.Width());
+      if (flav.IsFermion() && flav.Yuk()>0.0 &&
+          flav.Mass()!=flav.Yuk()) {
+        SetParameter("yuk("+ToString(id)+")", flav.Yuk());
+        if (flav.IsQuark()) { // not supported/needed for leptons
+          if (MODEL::s_model->ScalarNumber(std::string("YukawaScheme"))==1)
+            SetParameter("muy("+ToString(id)+")", Flavour(kf_h0).Mass(true));
+          else
+            SetParameter("muy("+ToString(id)+")", flav.Yuk());
+        }
+      }
+    }
+    // Set CKM parameters
+    if (s_model->ComplexConstant("CKM_0_2")!=Complex(0.0,0.0) ||
+        s_model->ComplexConstant("CKM_2_0")!=Complex(0.0,0.0)) {
+      SetParameter("ckmorder", 3);
+    }
+    else if (s_model->ComplexConstant("CKM_1_2")!=Complex(0.0,0.0) ||
+        s_model->ComplexConstant("CKM_2_1")!=Complex(0.0,0.0)) {
+      SetParameter("ckmorder", 2);
+    }
+    else if (s_model->ComplexConstant("CKM_0_1")!=Complex(0.0,0.0) ||
+        s_model->ComplexConstant("CKM_1_0")!=Complex(0.0,0.0)) {
+      SetParameter("ckmorder", 1);
+    }
+    else {
+      SetParameter("ckmorder", 0);
+    }
+  }
+
+  // Propagate model parameters to OpenLoops in UFO models
+  void OpenLoops_Interface::SetParametersUFO()
+  {
+    // All external UFO parameters are stored in this map
+    for(MODEL::ScalarConstantsMap::const_iterator it=s_model->ScalarConstants().begin(); 
+	it!=s_model->ScalarConstants().end(); ++it)
+      SetParameter(it->first, it->second);
   }
 
   int OpenLoops_Interface::RegisterProcess(const Subprocess_Info& is,

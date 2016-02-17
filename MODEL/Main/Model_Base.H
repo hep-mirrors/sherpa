@@ -119,6 +119,10 @@ namespace MODEL {
     const std::vector<Single_Vertex> &Vertices() const;
     const std::vector<Single_Vertex> &OriginalVertices() const;
 
+    // Make this map public, such that OL interface can loop over it
+    // in order to synchronize UFO model parameters
+    const ScalarConstantsMap & ScalarConstants() const {return *p_constants; }
+
     inline  const Vertex_Table *VertexTable() const { return &m_vtable; }
 
     virtual bool CheckFlavours(int nin, int nout, ATOOLS::Flavour* flavs);

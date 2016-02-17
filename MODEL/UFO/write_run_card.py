@@ -1,5 +1,6 @@
 from ufo_interface import s_parameter
 from ufo_interface.templates import run_card_template
+from ufo_interface.write_model import sort_by_hierarchy
 
 # For all parameters except the "decay" parameters
 def table_format(nci, lha_indices, ncv, value, name):
@@ -39,6 +40,15 @@ def write_run_card(model, model_name, run_card_path):
     if "decay" in blocks:
         for param in blocks["decay"]:
             ufo_params += "decay "+table_format(nci, param.lha_indices(), ncv, param.raw_value(), param.name())
+
+    sorted_orders = sort_by_hierarchy(model.all_orders)
+    # generate a helpful template for a user specification of coupling orders 
+    order_statement = 'Order (' + ','.join(['*' for order in sorted_orders]) + ')'
+    order_comment   = '# Syntax: "Order (' + ','.join([order.name for order in sorted_orders]) + ');"'
         
     with open(run_card_path, "w") as outfile:
-        outfile.write(run_card_template.substitute(model=model, model_name=model_name, ufo_params=ufo_params))
+        outfile.write(run_card_template.substitute(model=model, 
+                                                   model_name=model_name, 
+                                                   ufo_params=ufo_params,
+                                                   order_statement=order_statement,
+                                                   order_comment=order_comment))

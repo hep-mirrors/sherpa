@@ -138,7 +138,7 @@ class vertex_collection(object):
             for cpl in vert.coupling_list():
                 string += (
                     indent + 
-                    "m_v.back().cpl.push_back( ATOOLS::Kabbala(\"{0}\",ComplexConstant(std::string(\"{0}\"))) );" 
+                    "m_v.back().cpl.push_back( ATOOLS::Kabbala(\"{0}\",ComplexConstant(string(\"{0}\"))) );" 
                     .format(cpl.name()))
             for col in  vert.colour_list():
                 # stupid '1' needs to be replaced by some string placeholder
