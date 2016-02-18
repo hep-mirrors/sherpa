@@ -19,8 +19,8 @@ namespace UFO{
     std::vector< std::vector<std::string> > m_lines;
     int m_use_runcard; // use run card for ufo input instead of separate param_card.dat
     template<class Read_Type> Read_Type GetWidth(const unsigned int& n);
-    static void NotFound(const std::string& block, const unsigned int& n, const unsigned int& m);
-    static void NotFound(const std::string& block, const unsigned int& n);
+    template<class Read_Type> static Read_Type NotFound(const std::string& block, const unsigned int& n, const unsigned int& m);
+    template<class Read_Type> static Read_Type NotFound(const std::string& block, const unsigned int& n);
     static bool IgnoreCaseCompare(const std::string& a, const std::string& b);
     std::vector< std::vector<std::string> >::const_iterator FindBlock(const std::string& block);
   };

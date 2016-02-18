@@ -31,7 +31,7 @@ namespace UFO{
   // Overwrite masses of SM particles if they are
   // zero in UFO. Necessary for hadronization,
   // running couplings etc. Respect zero UFO masses
-  // at ME level by setting 'massive' to zero.
+  // at ME level by setting 'massive' to zero in SetMassiveFlags.
   void UFO_Model::SetSMMass(const kf_code &kf,const double &m)
   {
     if (ATOOLS::s_kftable.find(kf)==ATOOLS::s_kftable.end())
@@ -39,7 +39,6 @@ namespace UFO{
     if (ATOOLS::s_kftable[kf]->m_mass) return;
     ATOOLS::s_kftable[kf]->m_mass=m;
     ATOOLS::s_kftable[kf]->m_hmass=m;
-    ATOOLS::s_kftable[kf]->m_massive=0;
   }
 
   void UFO_Model::SetSMMasses(){
@@ -52,6 +51,22 @@ namespace UFO{
     SetSMMass(kf_e,0.000511);
     SetSMMass(kf_mu,.105);
     SetSMMass(kf_tau,1.777);
+  }
+
+  // Set the massive flag consistent with UFO input.
+  // Needs to be called AFTER ParamInit.
+  void UFO_Model::SetMassiveFlags(){
+    for (ATOOLS::KF_Table::iterator it=ATOOLS::s_kftable.begin(); it!=ATOOLS::s_kftable.end(); ++it)
+      if (it->second->m_mass==0.0)
+	it->second->m_massive=0;
+  }
+
+  // Set the stable flag consistent with UFO input.
+  // Needs to be called AFTER ParamInit.
+  void UFO_Model::SetStableFlags(){
+    for (ATOOLS::KF_Table::iterator it=ATOOLS::s_kftable.begin(); it!=ATOOLS::s_kftable.end(); ++it)
+      if (it->second->m_width==0.)
+	it->second->m_stable=1;
   }
 
   bool UFO_Model::ModelInit(const PDF::ISR_Handler_Map& isr)
@@ -75,9 +90,20 @@ namespace UFO{
     return true;
   }
 
-  const Complex UFO_Model::complexconjugate(const Complex& arg) { return conj(arg); }
-  const Complex UFO_Model::re(const Complex& arg) { return real(arg); }
-  const Complex UFO_Model::im(const Complex& arg) { return imag(arg); }
-  const Complex UFO_Model::complex(double real, double imag) { return Complex(real, imag); }
+  Complex UFO_Model::complexconjugate(const Complex& arg) { return conj(arg); }
+  Complex UFO_Model::re(const Complex& arg) { return real(arg); }
+  Complex UFO_Model::im(const Complex& arg) { return imag(arg); }
+  Complex UFO_Model::complex(double real, double imag) { return Complex(real, imag); }
+  // Need to resolve the complex std::sqrt() /  double std::sqrt() ambiguity
+  // to avoid 'nans' when double std::sqrt() is called with negative double arg
+  Complex UFO_Model::sqrt(const double& arg) { return std::sqrt(Complex(arg));}
+  Complex UFO_Model::sqrt(const Complex& arg) { return std::sqrt(arg);}
+  // Initializing doubles with expressions involving the above sqrt
+  // then requires explicit conversion
+  double  UFO_Model::ToDouble(const Complex& arg){
+    if (arg.imag()!=0.0)
+      THROW(fatal_error, "Initializing double from complex with nonzero imaginary part");
+    return arg.real();
+  }
 
 }

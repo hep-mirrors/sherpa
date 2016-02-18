@@ -17,6 +17,16 @@ namespace MODEL{
       m_name = std::string("${model_name}");
       ParticleInit();
       ParamInit();
+      SetMassiveFlags();
+      SetStableFlags();
+      SetSMMasses();
+      // Massive and Stable flags
+      // are set consistently with
+      // UFO above, ReadParticleData
+      // allows to overwrite these flags.
+      // Need this before AddStandardContainers.
+      ReadParticleData();
+      AddStandardContainers();
       CustomContainerInit();
       ATOOLS::OutputParticles(ATOOLS::msg->Info());
       ATOOLS::OutputContainers(ATOOLS::msg->Info());
@@ -26,18 +36,6 @@ namespace MODEL{
     {
       ATOOLS::s_kftable[kf_none] = new ATOOLS::Particle_Info(kf_none,-1,0,0,0,0,-1,0,1,0,"no_particle","no_particle","no_particle","no_particle",1,1);
       ${particle_init}
-      
-      double jet_mass_threshold=MODEL::Model_Base::p_dataread->GetValue<double>("JET_MASS_THRESHOLD", 10.0);
-      for (ATOOLS::KF_Table::iterator it=ATOOLS::s_kftable.begin(); it!=ATOOLS::s_kftable.end(); ++it) {
-        if (it->second->m_mass<jet_mass_threshold) {
-          it->second->m_massive=0;
-          it->second->m_yuk=0;
-        }
-        if (it->second->m_width==0.) {
-          it->second->m_stable=1;
-        }
-      }
-
     }
     void ParamInit()
     {
@@ -45,9 +43,6 @@ namespace MODEL{
       msg_Debugging() << std::setprecision(20);
       ${param_init}
       msg_Debugging() << std::setprecision(6);
-      ReadParticleData();
-      SetSMMasses();
-      AddStandardContainers();
     }
     ${declarations}
     void InitVertices()

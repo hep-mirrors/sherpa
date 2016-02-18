@@ -1,5 +1,6 @@
 (run){
   EVENTS 1000;
+  SHERPA_LDADD SherpaMain;
 }(run)
 
 (beam){

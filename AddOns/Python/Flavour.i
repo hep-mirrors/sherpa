@@ -15,9 +15,10 @@
 #include <iostream>
 #include <map>
 
-  using namespace ATOOLS;
+using namespace ATOOLS;
+#define kf_code long unsigned int
 
-  %}
+%}
 
 
 // also tell SWIG about the definition of kf_code

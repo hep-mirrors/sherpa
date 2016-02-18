@@ -2,6 +2,20 @@ from tensor import tensor, new, lorentz_key
 from c_variable import c_variable
 from itertools import permutations
 
+type_dict = {
+    1 : "CScalar",
+    2 : "CSpinor",
+    3 : "CVec4",
+    5 : "CTensor"
+}
+
+vect_gauge_dict = {
+    0 : "0",
+    1 : "ATOOLS::Spinor<SType>::R1()",
+    2 : "ATOOLS::Spinor<SType>::R2()",
+    3 : "ATOOLS::Spinor<SType>::R3()"
+}
+
 #################################
 # Dirac matrices as defined in  #
 # master's thesis (A.3) - (A.5) #
@@ -112,10 +126,10 @@ class P(tensor):
         k = n-1
         il = lorentz_key(i) if (i<0) else i
         p_str = "p{0}[{1}]"
-        array = [tensor([c_variable(p_str.format(k,0))], None), 
-                 tensor([c_variable(p_str.format(k,1))], None), 
-                 tensor([c_variable(p_str.format(k,2))], None), 
-                 tensor([c_variable(p_str.format(k,3))], None)]
+        array = [tensor([c_variable(p_str.format(k,vect_gauge_dict[0]))], None), 
+                 tensor([c_variable(p_str.format(k,vect_gauge_dict[1]))], None), 
+                 tensor([c_variable(p_str.format(k,vect_gauge_dict[2]))], None), 
+                 tensor([c_variable(p_str.format(k,vect_gauge_dict[3]))], None)]
 
         super(P,self).__init__(array,il)
 

@@ -15,15 +15,20 @@ namespace UFO{
     bool ModelInit(const PDF::ISR_Handler_Map& isr);
     void SetSMMass(const kf_code &kf,const double &m);
     void SetSMMasses();
+    void SetMassiveFlags();
+    void SetStableFlags();
 
   protected:
 
     UFO::UFO_Param_Reader* p_dataread;
 
-    const Complex complexconjugate(const Complex& arg);
-    const Complex re(const Complex& arg);
-    const Complex im(const Complex& arg);
-    const Complex complex(double real, double imag);
+    static Complex complexconjugate(const Complex& arg);
+    static Complex re(const Complex& arg);
+    static Complex im(const Complex& arg);
+    static Complex complex(double real, double imag);
+    static Complex sqrt(const double& arg);
+    static Complex sqrt(const Complex& arg);
+    static double  ToDouble(const Complex& arg);
 
     virtual void ParamInit()    {}
     virtual void ParticleInit() {}

@@ -1,22 +1,9 @@
 from copy import deepcopy
+from tensor import tensor
 from templates import lorentz_calc_template
-from lorentz_structures import *
+from lorentz_structures import C,Gamma,Gamma5,Metric,P,ProjM,ProjP,Epsilon,Identity,mink_metric,type_dict,vect_gauge_dict
 from c_variable import c_variable
 from ufo_exception import ufo_exception
-
-type_dict = {
-    1 : "CScalar",
-    2 : "CSpinor",
-    3 : "CVec4",
-    5 : "CTensor"
-}
-
-vect_gauge_dict = {
-    0 : "0",
-    1 : "ATOOLS::Spinor<SType>::R1()",
-    2 : "ATOOLS::Spinor<SType>::R2()",
-    3 : "ATOOLS::Spinor<SType>::R3()"
-}
 
 class s_lorentz():
 
@@ -34,7 +21,6 @@ class s_lorentz():
         self._key_tens_dict     = dict()
         self._ferm_partner_dict = dict()
         for key,spin in enumerate(self.ufo_lorentz.spins):
-            # put i+1 as key to account for UFO key conv.
             self._key_spin_dict[key] = spin
             self._key_tens_dict[key] = self.get_in_current_tens(key,spin)  if not self.has_ghosts() else None
 
@@ -156,11 +142,6 @@ class s_lorentz():
     def needs_external_momenta(self):
         return "P(" in self.ufo_lorentz.structure
 
-    # for FFV type couplings, need to use gauge invariant
-    # vector dereferencing for gauge test
-    def needs_vector_gauge(self):
-        return self.ufo_lorentz.name.startswith('FFV')
-    
     def get_implementation(self, out_key, ferm_optimize):
         ferm_opt = (len(self._ferm_keys) > 0) if ferm_optimize else False
         assert((not self.has_ghosts()))
@@ -328,13 +309,12 @@ class s_lorentz():
             return string
         elif (out_spin == 3):
             assert(out_tensor._toplevel_dim == 4)
-            needs_gauge = self.needs_vector_gauge()
             string = ""
             string += "j{0} = CVec4<SType>::New();\n".format(out_key)
-            string += "(*j{0})[{1}] = {2};\n".format(out_key, vect_gauge_dict[0] if needs_gauge else 0, out_tensor._array[0])
-            string += "(*j{0})[{1}] = {2};\n".format(out_key, vect_gauge_dict[1] if needs_gauge else 1, out_tensor._array[1])
-            string += "(*j{0})[{1}] = {2};\n".format(out_key, vect_gauge_dict[2] if needs_gauge else 2, out_tensor._array[2])
-            string += "(*j{0})[{1}] = {2};\n".format(out_key, vect_gauge_dict[3] if needs_gauge else 3, out_tensor._array[3])
+            string += "(*j{0})[{1}] = {2};\n".format(out_key, vect_gauge_dict[0], out_tensor._array[0])
+            string += "(*j{0})[{1}] = {2};\n".format(out_key, vect_gauge_dict[1], out_tensor._array[1])
+            string += "(*j{0})[{1}] = {2};\n".format(out_key, vect_gauge_dict[2], out_tensor._array[2])
+            string += "(*j{0})[{1}] = {2};\n".format(out_key, vect_gauge_dict[3], out_tensor._array[3])
             return string
         
     # get a tensor representation of current
@@ -345,19 +325,20 @@ class s_lorentz():
             return tensor([c_variable("j{0}[0]".format(key))], None)
         # fermion
         if (spin == 2):
+            # put key+1 as key to account for UFO key conv.
             return tensor([tensor([c_variable("j{0}[{1}]".format(key,0))] , None), 
                            tensor([c_variable("j{0}[{1}]".format(key,1))] , None), 
                            tensor([c_variable("j{0}[{1}]".format(key,2))] , None),
                            tensor([c_variable("j{0}[{1}]".format(key,3))] , None)], key+1)
 
         if (spin == 3):
-            needs_gauge = self.needs_vector_gauge()
-            dummy =  tensor([tensor([c_variable("j{0}[{1}]".format(key,vect_gauge_dict[0] if needs_gauge else 0))] , None), 
-                             tensor([c_variable("j{0}[{1}]".format(key,vect_gauge_dict[1] if needs_gauge else 1))] , None), 
-                             tensor([c_variable("j{0}[{1}]".format(key,vect_gauge_dict[2] if needs_gauge else 2))] , None),
-                             tensor([c_variable("j{0}[{1}]".format(key,vect_gauge_dict[3] if needs_gauge else 3))] , None)], 'dummy_key')
-            # incoming currents are alway contravariant in sherpa, 
-            # so we need to multiply by metric 
+            dummy =  tensor([tensor([c_variable("j{0}[{1}]".format(key,vect_gauge_dict[0]))] , None), 
+                             tensor([c_variable("j{0}[{1}]".format(key,vect_gauge_dict[1]))] , None), 
+                             tensor([c_variable("j{0}[{1}]".format(key,vect_gauge_dict[2]))] , None),
+                             tensor([c_variable("j{0}[{1}]".format(key,vect_gauge_dict[3]))] , None)], 'dummy_key')
+            # Incoming currents are alway contravariant in sherpa, 
+            # so we need to multiply by metric.
+            # Put key+1 as key to account for UFO key conv.
             return dummy * mink_metric(key+1, 'dummy_key')
 
         raise ufo_exception("External wavefunction for spin {0} not implemented".format(spin))
