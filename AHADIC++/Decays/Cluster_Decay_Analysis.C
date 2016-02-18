@@ -50,6 +50,11 @@ Cluster_Decay_Analysis::~Cluster_Decay_Analysis()
   return;
   Histogram * histo;
   string name;
+  // Sync histos in case of MPI (even on one core, otherwise empty histos)
+  #ifdef USING__MPI
+  for (map<string,Histogram *>::iterator hit=m_histograms.begin();
+       hit!=m_histograms.end();hit++) hit->second->MPISync();
+  #endif
   for (map<string,Histogram *>::iterator hit=m_histograms.begin();
        hit!=m_histograms.end();hit++) {
     histo = hit->second;

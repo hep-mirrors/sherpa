@@ -4,6 +4,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Return_Value.H"
+#include <sys/stat.h>
 
 using namespace AHADIC;
 using namespace MODEL;
@@ -38,11 +39,26 @@ Soft_Cluster_Handler::Soft_Cluster_Handler(bool ana) :
 Soft_Cluster_Handler::~Soft_Cluster_Handler() 
 {
   if (m_ana) {
+    // Create output directory if not existent
+    // http://codeyarns.com/2014/08/07/how-to-create-directory-using-c-on-linux/
+    const int dir_err = mkdir("Fragmentation_Analysis", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    if (-1 == dir_err) {
+      printf("Error creating directory!n");
+    }
+
+    // Iterate over histos, write to file
     Histogram * histo;
     string name;
+
+    // Sync histos in case of MPI (even on one core, otherwise empty histos)
+    #ifdef USING__MPI
+    for (map<string,Histogram *>::iterator hit=m_histograms.begin();
+	 hit!=m_histograms.end();hit++) hit->second->MPISync();
+    #endif
     for (map<string,Histogram *>::iterator hit=m_histograms.begin();
 	 hit!=m_histograms.end();hit++) {
       histo = hit->second;
+      histo->Finalize();
       name  = string("Fragmentation_Analysis/")+hit->first+string(".dat");
       histo->Output(name);
       delete histo;
@@ -441,10 +457,8 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
   // 	     <<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
   //}
   if (m_ana) {
-    Histogram* histo((m_histograms.find(std::string("PT_HH")))->second);
-    histo->Insert(pt);
-    Histogram* histo2((m_histograms.find(std::string("PT2_HH")))->second);
-    histo2->Insert(pt*pt);
+    m_histograms["PT_HH"]->Insert(pt);
+    m_histograms["PT2_HH"]->Insert(pt*pt);
   }
 }
 
