@@ -503,7 +503,8 @@ bool RootNtuple_Reader::ReadInFullEvent(Blob_List * blobs)
   if (vars.m_pswgt)
     signalblob->AddData("PSWeight",new Blob_Data<double>(vars.m_pswgt));
   signalblob->AddData("Trials",new Blob_Data<double>(vars.m_ncount));
-  signalblob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(&m_nlos));
+  if (vars.m_type[0]=='S' || vars.m_type[0]=='R')
+    signalblob->AddData("NLO_subeventlist",new Blob_Data<NLO_subevtlist*>(&m_nlos));
   signalblob->AddData("Weight_Norm",new Blob_Data<double>(1.0));
   signalblob->AddData("OQCD",new Blob_Data<int>(vars.m_oqcd));
   signalblob->AddData("OEW",new Blob_Data<int>(oew));
