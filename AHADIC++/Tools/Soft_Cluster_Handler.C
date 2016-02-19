@@ -31,6 +31,11 @@ Soft_Cluster_Handler::Soft_Cluster_Handler(bool ana) :
   if (m_ana) {
     m_histograms[string("PT_HH")]  = new Histogram(0,0.,10.,100);
     m_histograms[string("PT2_HH")] = new Histogram(0,0.,100.,2000);
+    m_histograms[string("Method_TreatCL")] = new Histogram(0,-0.5,1.5,2);
+    m_histograms[string("Method_CLFT")] = new Histogram(0,-0.5,1.5,2);
+    m_histograms[string("Method_CheckCL")] = new Histogram(0,-0.5,4.5,5);
+    m_histograms[string("Debug_decayweight")] = new Histogram(0, -1.5,10.5,31);
+    m_histograms[string("Debug_transweight")] = new Histogram(0, -1.5,10.5,31);
     //m_histograms[string("MassTransition")]       = new Histogram(0,0.,8.,100);
     //m_histograms[string("HadronMassTransition")] = new Histogram(0,0.,8.,100);
   }
@@ -52,16 +57,19 @@ Soft_Cluster_Handler::~Soft_Cluster_Handler()
 bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
 {
   // if (m_out) 
-  //   msg_Out()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+    //msg_Out()<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
   // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
   // 	     <<"++++++ "<<METHOD<<"("<<clin->size()<<" clusters):\n";
   // checks for transitions to hadrons and attaches them, if neccessary
-  if (!CheckListForTreatment(clin) && m_out) {
+  if (!CheckListForTreatment(clin) && m_out) { // HS: FIXME this currently never evaluates to true --- BUG?
     // msg_Out()<<"++++++ No hadrons produced.  Just continue.\n"
     // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
     // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
-    return false;
+    //
+    if (m_ana) m_histograms["Method_TreatCL"]->Insert(0);
+    return false; //
   }
+  if (m_ana) m_histograms["Method_TreatCL"]->Insert(1);
   // if (m_out) 
   //   msg_Out()<<"++++++ Hadrons produced, will attach to blob.\n";
   return AttachHadronsToBlob(clin,blob);
@@ -77,7 +85,11 @@ bool Soft_Cluster_Handler::CheckListForTreatment(Cluster_List * clin) {
     if (cluster==NULL || !cluster->Active()) continue;
     count += CheckCluster(cluster);
   }
-  if (count==0) return false;
+  if (count==0) {
+    if (m_ana) m_histograms["Method_CLFT"]->Insert(0);
+    return false;
+  }
+  if (m_ana) m_histograms["Method_CLFT"]->Insert(1);
   return true;
 }
 
@@ -110,6 +122,7 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster) {
 	// 	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	// 	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	// 	   <<"\n\n";
+        if (m_ana) m_histograms["Method_CheckCL"]->Insert(1);
 	return 2;
       }
       else {
@@ -122,6 +135,7 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster) {
 	// 	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	// 	   <<"\n\n";
 	m_transitions += 1;
+        if (m_ana) m_histograms["Method_CheckCL"]->Insert(2);
 	return 2;
       }
     }
@@ -135,6 +149,9 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster) {
       // 		 <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
       // 		 <<"\n\n";
       m_decays      += 1;
+      if (m_ana) {
+          m_histograms["Method_CheckCL"]->Insert(3);
+      }
       return 2;
     }
   }
@@ -148,6 +165,7 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster) {
     // 	       <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
     // 	       <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
     m_transitions += 1;
+    if (m_ana) m_histograms["Method_CheckCL"]->Insert(4);
     return 2;
   }
   // no decay and no transition: both weight equal 0.
@@ -156,6 +174,7 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster) {
   // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
   // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
   cluster->clear();
+  if (m_ana) m_histograms["Method_CheckCL"]->Insert(0);
   return 0;
 }
 
