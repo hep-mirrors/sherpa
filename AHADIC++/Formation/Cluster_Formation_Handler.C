@@ -34,8 +34,8 @@ Cluster_Formation_Handler::Cluster_Formation_Handler(Cluster_List* clulist,
     m_histograms[string("Cluster_Mass_Transformed")]   = new Histogram(0,0.,100.,200);
     m_histograms[string("Cluster_Number_Formation")]   = new Histogram(0,0.,20.,20);
     m_histograms[string("Cluster_Number_Transformed")] = new Histogram(0,0.,20.,20);
-    m_histograms[string("Forward_Number")] = new Histogram(0,0.,20.,20);
-    m_histograms[string("Central_Number")] = new Histogram(0,0.,20.,20);
+    //m_histograms[string("Forward_Number")] = new Histogram(0,0.,20.,20);
+    //m_histograms[string("Central_Number")] = new Histogram(0,0.,20.,20);
   }
 }
 
@@ -371,13 +371,9 @@ bool Cluster_Formation_Handler::FormOriginalClusters()
   if(m_analyse) {
     for(size_t j=0; j<m_clulists.size(); ++j) {
       clist=m_clulists[j];
-      Histogram* histomass=
-	(m_histograms.find(string("Cluster_Mass_Formation")))->second;
-      Histogram* histonumb=
-	(m_histograms.find(string("Cluster_Number_Formation")))->second;
-      histonumb->Insert(clist->size());
+      m_histograms[string("Cluster_Number_Formation")]->Insert(clist->size());
       for(Cluster_Iterator cit=clist->begin(); cit!=clist->end(); cit++) {
-	histomass->Insert((*cit)->Mass());
+        m_histograms[string("Cluster_Mass_Formation")]->Insert((*cit)->Mass());
       }
     }
   }
@@ -407,10 +403,9 @@ bool Cluster_Formation_Handler::ApplyColourReconnections()
 
   Histogram * histomass;
   if (m_analyse) {
-    histomass = m_histograms[string("Cluster_Mass_Reconnections")];
     for (clit1=m_clulists.begin();clit1!=m_clulists.end();clit1++) {
       for (Cluster_Iterator cit=(*clit1)->begin();cit!=(*clit1)->end();cit++) {
-	histomass->Insert((*cit)->Mass());
+	m_histograms[string("Cluster_Mass_Reconnections")]->Insert((*cit)->Mass());
       }
     }
   }

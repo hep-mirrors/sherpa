@@ -16,7 +16,7 @@ using namespace ATOOLS;
 using namespace std;
 
 
-Ahadic::Ahadic(string path,string file,bool ana)  :
+Ahadic::Ahadic(string path,string file)  :
   m_fullinfo(false), m_maxtrials(3), m_clulist()
 {
   
@@ -28,7 +28,6 @@ Ahadic::Ahadic(string path,string file,bool ana)  :
 
   hadpars =  new Hadronisation_Parameters();
   hadpars->Init(path,file);
-  ana=false;
 
   p_cformhandler = new Cluster_Formation_Handler(&m_clulist,hadpars->AnaOn());
   p_cdechandler  = new Cluster_Decay_Handler(&m_clulist,hadpars->AnaOn());

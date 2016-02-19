@@ -55,7 +55,7 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file):
     init.Init();
     init.OverWriteProperties(dr);
     ATOOLS::OutputHadrons(msg->Tracking());
-    p_ahadic = new AHADIC::Ahadic(m_dir,m_sfile,true);
+    p_ahadic = new AHADIC::Ahadic(m_dir,m_sfile);
     m_mode=2;
     exh->AddTerminatorObject(this);
     return;
