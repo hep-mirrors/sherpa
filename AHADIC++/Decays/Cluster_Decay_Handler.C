@@ -35,7 +35,7 @@ int Cluster_Decay_Handler::DecayClusters(Blob * blob)
       if (!p_softclusters->TreatClusterList(clist,blob)) {
 	msg_Error()<<"Error in "<<METHOD<<" : \n"
 		   <<"   Did not find a kinematically allowed "
-		   <<"solution for the cluster list.\n"
+		   <<"solution for the cluster list of length " << clist->size() <<".\n"
 		   <<"   Will trigger retrying the event.\n";
 	return -1;
       }
