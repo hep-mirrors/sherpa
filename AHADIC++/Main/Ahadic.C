@@ -73,6 +73,7 @@ void Ahadic::writeHistos() {
             #ifdef USING__MPI
             hit->second->MPISync();
             #endif
+            if (hit->second->Integral() > 0 ) hit->second->Scale(1./hit->second->Integral());
             hit->second->Output(m_anadir + '/'+ oit->first + "/" + hit->first+std::string(".dat"));
         }
     }
