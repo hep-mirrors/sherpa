@@ -44,17 +44,9 @@ Cluster_Formation_Handler::~Cluster_Formation_Handler() {
 
   if (m_analyse) {
     Histogram * histo;
-    string name;
-    // Sync histos in case of MPI (even on one core, otherwise empty histos)
-    #ifdef USING__MPI
     for (map<string,Histogram *>::iterator hit=m_histograms.begin();
-         hit!=m_histograms.end();hit++) hit->second->MPISync();
-    #endif
-    for (map<string,Histogram *>::iterator hit=m_histograms.begin();
-	 hit!=m_histograms.end();hit++) {
+         hit!=m_histograms.end();hit++) {
       histo = hit->second;
-      name  = string("Fragmentation_Analysis/")+hit->first+std::string(".dat");
-      histo->Output(name);
       delete histo;
     }
     m_histograms.clear();

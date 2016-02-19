@@ -43,10 +43,10 @@ void Gluon_Decayer::Init() {
   }
 
   if (m_analyse) {
-    m_histograms[string("PT_Gluon")]         = new Histogram(0,0.,2.,100);
-    m_histograms[string("PT_Rescue")]        = new Histogram(0,0.,2.,100);
-    m_histograms[string("Flavour_Gluon")]    = new Histogram(0,0.,15.,15);
-    m_histograms[string("Flavour_Rescue")]   = new Histogram(0,0.,15.,15);
+    //m_histograms[string("PT_Gluon")]         = new Histogram(0,0.,2.,100);
+    //m_histograms[string("PT_Rescue")]        = new Histogram(0,0.,2.,100);
+    //m_histograms[string("Flavour_Gluon")]    = new Histogram(0,0.,15.,15);
+    //m_histograms[string("Flavour_Rescue")]   = new Histogram(0,0.,15.,15);
     m_histograms[string("MergedMassBefore")] = new Histogram(0,0.,15.,30);
     m_histograms[string("MergedMassAfter")]  = new Histogram(0,0.,30.,60);
     m_histograms[string("SelectedMass")]     = new Histogram(0,0.,20.,200);
@@ -57,19 +57,9 @@ Gluon_Decayer::~Gluon_Decayer() {
   if (p_gsplitter) delete p_gsplitter;
   if (m_analyse) {
     Histogram * histo;
-    string name;
-    // Sync histos in case of MPI (even on one core, otherwise empty histos)
-    #ifdef USING__MPI
     for (map<string,Histogram *>::iterator hit=m_histograms.begin();
-	 hit!=m_histograms.end();hit++) hit->second->MPISync();
-    #endif
-    for (map<string,Histogram *>::iterator hit=m_histograms.begin();
-	 hit!=m_histograms.end();hit++) {
+         hit!=m_histograms.end();hit++) {
       histo = hit->second;
-      name  = 
-	string("Fragmentation_Analysis/")+hit->first+
-	string(".dat");
-      histo->Output(name);
       delete histo;
     }
     m_histograms.clear();
@@ -172,19 +162,19 @@ bool Gluon_Decayer::DecayDipoles() {
 	dipiter=m_dipoles.begin(); continue; 
 	break;
       case 1:
-	if (m_analyse) {
-	  m_histograms[string("PT_Rescue")]->
-	    Insert(sqrt(0./*p_gsplitter->PT2()*/));
-	}
+	//if (m_analyse) {
+	  //m_histograms[string("PT_Rescue")]->
+	    //Insert(sqrt(0.[>p_gsplitter->PT2()<]));
+	//}
       default:
 	break;
       }
     }
     else {
-      if (m_analyse) {
-	m_histograms[string("PT_Gluon")]->
-	  Insert(sqrt(0./*p_gsplitter->PT2()*/));
-      }
+      //if (m_analyse) {
+	//m_histograms[string("PT_Gluon")]->
+	  //Insert(sqrt(0.[>p_gsplitter->PT2()<]));
+      //}
       AfterSplit(dipiter);
     }
     SplitIt(dipiter);
@@ -281,9 +271,8 @@ int Gluon_Decayer::Rescue(DipIter & dip) {
 
 bool Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
   if (m_analyse) {
-    Histogram* histo(m_histograms[string("MergedMassBefore")]);
-    histo->Insert(sqrt((*dip1)->Mass2()));
-    histo->Insert(sqrt((*dip2)->Mass2()));
+    m_histograms[string("MergedMassBefore")]->Insert(sqrt((*dip1)->Mass2()));
+    m_histograms[string("MergedMassBefore")]->Insert(sqrt((*dip2)->Mass2()));
   }
   Dipole save1(new Proto_Particle((*(*dip1)->Triplet())),
 	       new Proto_Particle((*(*dip1)->AntiTriplet())));
@@ -346,8 +335,7 @@ bool Gluon_Decayer::MergeDipoles(DipIter & dip1,DipIter & dip2) {
   }
 
   if (m_analyse) {
-    Histogram* histo((m_histograms.find(string("MergedMassAfter")))->second);
-    histo->Insert(sqrt((*dip1)->Mass2()));
+    m_histograms["MergedMassAfter"]->Insert(sqrt((*dip1)->Mass2()));
   }
 
   delete save1.Triplet();

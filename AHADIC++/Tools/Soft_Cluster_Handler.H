@@ -50,6 +50,8 @@ namespace AHADIC {
   public:
     Soft_Cluster_Handler(bool ana=false);
     ~Soft_Cluster_Handler();
+    // Access to analysis histos
+    std::map<std::string,ATOOLS::Histogram *> GetHistos() {return m_histograms;};
     bool          TreatClusterList(Cluster_List *,ATOOLS::Blob *);
   };
 

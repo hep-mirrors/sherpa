@@ -35,6 +35,7 @@ namespace AHADIC {
   public:
     Gluon_Decayer(bool ana=false);
     ~Gluon_Decayer();
+    std::map<std::string,ATOOLS::Histogram *> GetHistos() {return m_histograms;};
     bool DecayList(Proto_Particle_List * plin=NULL);
   };
 }

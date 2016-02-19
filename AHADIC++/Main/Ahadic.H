@@ -16,9 +16,10 @@ namespace AHADIC {
   private:
     bool                        m_fullinfo;
     int                         m_maxtrials;
+    std::string                 m_anadir;
     Cluster_Formation_Handler * p_cformhandler;
     Cluster_Decay_Handler     * p_cdechandler;
-    
+ 
     Cluster_List m_clulist;
     Cluster_List m_prilist;
 
@@ -31,7 +32,9 @@ namespace AHADIC {
 	   std::string file=std::string("Cluster.dat"));
     ~Ahadic();
 
+    void writeHistos();
     ATOOLS::Return_Value::code Hadronize(ATOOLS::Blob_List *);
+
   };
   /*!
     \namespace AHADIC

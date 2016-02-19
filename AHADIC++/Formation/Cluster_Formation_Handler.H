@@ -42,6 +42,10 @@ namespace AHADIC {
     Cluster_Formation_Handler(Cluster_List*, bool=false);
     ~Cluster_Formation_Handler();
 
+    // Helper functions for public access of private members
+    std::map<std::string,ATOOLS::Histogram *> GetHistos()   {return m_histograms;};
+    std::map<std::string,ATOOLS::Histogram *> GetGDHistos() {return p_gludecayer->GetHistos();};
+    std::map<std::string,ATOOLS::Histogram *> GetSCHistos() {return p_softclusters->GetHistos();};
     int FormClusters(ATOOLS::Blob *);
     void Reset();
   };

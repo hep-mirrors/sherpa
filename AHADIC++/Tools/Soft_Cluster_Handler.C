@@ -31,36 +31,18 @@ Soft_Cluster_Handler::Soft_Cluster_Handler(bool ana) :
   if (m_ana) {
     m_histograms[string("PT_HH")]  = new Histogram(0,0.,10.,100);
     m_histograms[string("PT2_HH")] = new Histogram(0,0.,100.,2000);
-    m_histograms[string("MassTransition")]       = new Histogram(0,0.,8.,100);
-    m_histograms[string("HadronMassTransition")] = new Histogram(0,0.,8.,100);
+    //m_histograms[string("MassTransition")]       = new Histogram(0,0.,8.,100);
+    //m_histograms[string("HadronMassTransition")] = new Histogram(0,0.,8.,100);
   }
 }
 
 Soft_Cluster_Handler::~Soft_Cluster_Handler() 
 {
   if (m_ana) {
-    // Create output directory if not existent
-    // http://codeyarns.com/2014/08/07/how-to-create-directory-using-c-on-linux/
-    const int dir_err = mkdir("Fragmentation_Analysis", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    if (-1 == dir_err) {
-      printf("Error creating directory!n");
-    }
-
-    // Iterate over histos, write to file
     Histogram * histo;
-    string name;
-
-    // Sync histos in case of MPI (even on one core, otherwise empty histos)
-    #ifdef USING__MPI
     for (map<string,Histogram *>::iterator hit=m_histograms.begin();
-	 hit!=m_histograms.end();hit++) hit->second->MPISync();
-    #endif
-    for (map<string,Histogram *>::iterator hit=m_histograms.begin();
-	 hit!=m_histograms.end();hit++) {
+         hit!=m_histograms.end();hit++) {
       histo = hit->second;
-      histo->Finalize();
-      name  = string("Fragmentation_Analysis/")+hit->first+string(".dat");
-      histo->Output(name);
       delete histo;
     }
     m_histograms.clear();

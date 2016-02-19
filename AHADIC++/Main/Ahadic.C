@@ -10,13 +10,14 @@
 #include "AHADIC++/Formation/Cluster_Formation_Handler.H"
 #include "AHADIC++/Decays/Cluster_Decay_Handler.H"
 #include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/Shell_Tools.H"
 
 using namespace AHADIC;
 using namespace ATOOLS;
 using namespace std;
 
 
-Ahadic::Ahadic(string path,string file)  :
+Ahadic::Ahadic(string path, string file)  :
   m_fullinfo(false), m_maxtrials(3), m_clulist()
 {
   
@@ -25,21 +26,58 @@ Ahadic::Ahadic(string path,string file)  :
   dr.AddWordSeparator("\t");
   dr.SetInputPath(path);
   dr.SetInputFile(file);
-
+  m_anadir = dr.GetValue<string>("FRAGMANADIR", "Fragmentation_Analysis");
   hadpars =  new Hadronisation_Parameters();
   hadpars->Init(path,file);
 
   p_cformhandler = new Cluster_Formation_Handler(&m_clulist,hadpars->AnaOn());
   p_cdechandler  = new Cluster_Decay_Handler(&m_clulist,hadpars->AnaOn());
+
+
+
   msg_Tracking()<<"Initialisation of Ahadic complete."<<endl;
 }
 
+
 Ahadic::~Ahadic() 
 {
+  writeHistos();
   CleanUp();
   if (p_cdechandler)  { delete p_cdechandler;  p_cdechandler=NULL;  }
   if (p_cformhandler) { delete p_cformhandler; p_cformhandler=NULL; }
   delete hadpars;
+}
+
+// One write function for all histos in AHADIC analysis
+void Ahadic::writeHistos() {
+    std::map < std::string, std::map< std::string, ATOOLS::Histogram * > > megaMap;
+    //if (p_cdechandler)
+        //megaMap[string("ClusterDecay")]     = p_cdechandler->getHistos();
+    if (p_cformhandler) {
+      megaMap[string("ClusterFormation")] = p_cformhandler->GetHistos();
+      megaMap[string("GluonDecayer")]     = p_cformhandler->GetGDHistos();
+      megaMap[string("SoftClusters")]     = p_cformhandler->GetSCHistos();
+    }
+   
+    /// Write out to disk, create subdirectories if necessary
+    string outdir = m_anadir;
+    if (!megaMap.empty()) ATOOLS::MakeDir(outdir, 493);
+    // Outer Loop over analyses
+    for (map<std::string, std::map< std::string, ATOOLS::Histogram * > >::iterator oit=megaMap.begin();
+         oit!=megaMap.end();oit++) {
+        msg_Tracking() << "Processing " << oit->first << endl;
+        if (!oit->second.empty()) ATOOLS::MakeDir(string(m_anadir + '/'+ oit->first), 493);
+        // Inner loop over histograms
+        for (map<string,Histogram *>::iterator hit=oit->second.begin();
+             hit!=oit->second.end();hit++) {
+            #ifdef USING__MPI
+            hit->second->MPISync();
+            #endif
+            hit->second->Output(m_anadir + '/'+ oit->first + "/" + hit->first+std::string(".dat"));
+        }
+    }
+    msg_Info() << "Output written to " << m_anadir << endl;
+    //megaMap.clear();
 }
 
 Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
