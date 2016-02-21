@@ -54,6 +54,7 @@ Soft_Cluster_Handler::~Soft_Cluster_Handler()
   }
 }
 
+/// Master function
 bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
 {
   // if (m_out) 
@@ -72,7 +73,7 @@ bool Soft_Cluster_Handler::TreatClusterList(Cluster_List * clin, Blob * blob)
   if (m_ana) m_histograms["Method_TreatCL"]->Insert(1);
   // if (m_out) 
   //   msg_Out()<<"++++++ Hadrons produced, will attach to blob.\n";
-  return AttachHadronsToBlob(clin,blob);
+  return AttachHadronsToBlob(clin,blob); // That method always returns true
 }
 
 bool Soft_Cluster_Handler::CheckListForTreatment(Cluster_List * clin) {
@@ -188,7 +189,6 @@ AttachHadronsToBlob(Cluster_List * clin,Blob * blob)
     cluster = (*cit);
     switch (cluster->size()) {
     case 1:
-      msg_Error()<<"Error in "<<METHOD<<": -> size = 0!\n"; 
       break;
     case 2:
       FixHHDecay(cluster,blob,(*cluster)[0],(*cluster)[1]);
@@ -394,19 +394,21 @@ Annihilation(Cluster * cluster,Flavour & had1,Flavour & had2) {
 }
 
 
+/// Safety mechanism for Cluster dacay into two hadrons
 void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
 				      const Flavour had1,const Flavour had2,
 				      const bool & constrained)
 {
-  double M       = cluster->Mass(), M2 = M*M;
-  double m12     = sqr(had1.HadMass()), m22 = sqr(had2.HadMass());
+  double M   = cluster->Mass(), M2 = M*M;
+  // Target hadron masses
+  double m1  = sqr(had1.HadMass()), m2 = sqr(had2.HadMass());
 
   cluster->BoostInCMSAndRotateOnZ();
 
-  double E1((M2+m12-m22)/(2.*M)), pl2(sqr(E1)-m12);
-  bool isbeam(false);
-  double stheta, pt2;
-  double masscor(m_pt02/Max(m_pt02,m12) * m_pt02/Max(m_pt02,m22));
+  double E1((M2+m1-m2)/(2.*M)), pl2(sqr(E1)-m1); ///FIXME comment
+  double masscor(m_pt02/Max(m_pt02,m1) * m_pt02/Max(m_pt02,m2)); /// FIXME comment
+  double stheta, pt2; /// FIXME: initialize to 0, pl2 ?
+  /// Black magic
   do { 
     stheta = 1.-2.*ran->Get(); 
     pt2    = pl2*sqr(stheta);
@@ -414,12 +416,14 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
 	   sqr((*p_as)(pt2,false)/p_as->MaxValue())<ran->Get());
   double pt     = sqrt(pt2);
   int sign      = cluster->GetTrip()->m_mom[3]<0?-1:1;
-  double pl1    = sign*sqrt(sqr(E1)-sqr(pt)-m12);
+  double pl1    = sign*sqrt(sqr(E1)-sqr(pt)-m1);
   double cosphi = cos(2.*M_PI*ran->Get()), sinphi = sqrt(1.-cosphi*cosphi);
   Vec4D  p1     = Vec4D(E1,pt*cosphi,pt*sinphi,pl1);
   Vec4D  p2     = cluster->Momentum()-p1;
 
-  if (p1[0]<0. || p2[0]<0.) throw Return_Value::Retry_Event;
+  if (p1[0]<0. || p2[0]<0.) {
+      throw Return_Value::Retry_Event;
+  }
 
   // if (cluster->GetTrip()->m_flav==Flavour(kf_b) ||
   //     cluster->GetAnti()->m_flav==Flavour(kf_b).Bar()) {
@@ -441,9 +445,9 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
   left->SetFinalMass(had1.HadMass());
   Particle * right(new Particle(-1,had2,p2));
   right->SetNumber();
-  right->SetInfo('P');
+  right->SetInfo('P'); /// TODO understand
   right->SetFinalMass(had2.HadMass());
-  control::s_AHAparticles+=2;
+  control::s_AHAparticles+=2; /// TODO understand
 
 
   if (blob!=NULL) {
