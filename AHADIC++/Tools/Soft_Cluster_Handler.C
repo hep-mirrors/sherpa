@@ -34,8 +34,8 @@ Soft_Cluster_Handler::Soft_Cluster_Handler(bool ana) :
     m_histograms[string("Method_TreatCL")] = new Histogram(0,-0.5,1.5,2);
     m_histograms[string("Method_CLFT")] = new Histogram(0,-0.5,1.5,2);
     m_histograms[string("Method_CheckCL")] = new Histogram(0,-0.5,4.5,5);
-    m_histograms[string("Debug_decayweight")] = new Histogram(0, -1.5,10.5,31);
-    m_histograms[string("Debug_transweight")] = new Histogram(0, -1.5,10.5,31);
+    m_histograms[string("DecayWeight")] = new Histogram(0, -1.5,2.5,31);
+    m_histograms[string("TransWeight")] = new Histogram(0, -1.5,2.5,31);
     //m_histograms[string("MassTransition")]       = new Histogram(0,0.,8.,100);
     //m_histograms[string("HadronMassTransition")] = new Histogram(0,0.,8.,100);
   }
@@ -100,60 +100,59 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster) {
   // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
   // 	     <<"++++++ "<<METHOD<<" for:\n"<<(*cluster);
   cluster->clear();
+  // Init target hadron flavours
   Flavour haddec1(Flavour(kf_none)), haddec2(Flavour(kf_none));
   Flavour hadtrans(Flavour(kf_none));
+  // Get weights. Methods also overwrite Falvours initialised above
   double decayweight(DecayWeight(cluster,haddec1,haddec2));
   double transweight(TransformWeight(cluster,hadtrans));
+  m_histograms["DecayWeight"]->Insert(decayweight);
+  m_histograms["TransWeight"]->Insert(transweight);
   // if (m_out) 
   //   msg_Out()<<"++++++ "<<METHOD<<"["<<cluster->Mass()<<" "
   // 	     <<"("<<cluster->GetTrip()->m_flav<<" + "
   // 	     <<cluster->GetAnti()->m_flav<<"] --> "
   // 	     <<"(dec = "<<decayweight<<", "
   // 	     <<"trans = "<<transweight<<").\n";
+  
+  if (decayweight == 0 && transweight ==0) {
+    // no decay and no transition: both weight equal 0.
+    // if (m_out) msg_Out()<<"++++++ no decay.\n"
+    cluster->clear();
+    if (m_ana) m_histograms["Method_CheckCL"]->Insert(0);
+    return 0;
+  }
+
   if (decayweight>0.) {
     if (transweight>0.) {
+      // Competition between decay and transition
       double totweight(decayweight+transweight);
       if (totweight*ran->Get()*0.9999999 < decayweight) {    
-	// competition between decay and transition - decay wins
+	// Decay wins
 	cluster->push_back(haddec1);
 	cluster->push_back(haddec2);
 	m_decays      += 1;
-	// if (m_out) 
-	//   msg_Out()<<"++++++ decays to "<<haddec1<<" + "<<haddec2<<".\n"
-	// 	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	// 	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	// 	   <<"\n\n";
+	// if (m_out) msg_Out()<<"++++++ decays to "<<haddec1<<" + "<<haddec2<<".\n"
         if (m_ana) m_histograms["Method_CheckCL"]->Insert(1);
-	return 2;
       }
       else {
-	// competition between decay and transition - transition wins
+	// Transition wins
 	cluster->push_back(hadtrans);
 	cluster->push_back(Flavour(kf_photon));
-	// if (m_out) 
-	//   msg_Out()<<"++++++ decays to "<<hadtrans<<" + photon.\n"
-	// 	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	// 	   <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	// 	   <<"\n\n";
+	// if (m_out) msg_Out()<<"++++++ decays to "<<hadtrans<<" + photon.\n"
 	m_transitions += 1;
         if (m_ana) m_histograms["Method_CheckCL"]->Insert(2);
-	return 2;
       }
     }
     else if (transweight<=0.) {
       // regular decay, and no simple transition open - so no competition
       cluster->push_back(haddec1);
       cluster->push_back(haddec2);
-      // if (m_out) 
-      // 	msg_Out()<<"++++++ decays to "<<haddec1<<" + "<<haddec2<<".\n"
-      // 		 <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-      // 		 <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-      // 		 <<"\n\n";
+      // if (m_out) msg_Out()<<"++++++ decays to "<<haddec1<<" + "<<haddec2<<".\n"
       m_decays      += 1;
       if (m_ana) {
           m_histograms["Method_CheckCL"]->Insert(3);
       }
-      return 2;
     }
   }
   else if (decayweight<0.) {
@@ -161,52 +160,38 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster) {
     if (transweight<=0.) transweight = TransformWeight(cluster,hadtrans,true);
     cluster->push_back(hadtrans);
     cluster->push_back(Flavour(kf_photon));
-    // if (m_out) 
-    //   msg_Out()<<"++++++ decays to "<<hadtrans<<" + photon.\n"
-    // 	       <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    // 	       <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
+    // if (m_out)  msg_Out()<<"++++++ decays to "<<hadtrans<<" + photon.\n"
     m_transitions += 1;
     if (m_ana) m_histograms["Method_CheckCL"]->Insert(4);
-    return 2;
   }
-  // no decay and no transition: both weight equal 0.
-  // if (m_out) 
-  //   msg_Out()<<"++++++ no decay.\n"
-  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n";
-  cluster->clear();
-  if (m_ana) m_histograms["Method_CheckCL"]->Insert(0);
-  return 0;
+  if (cluster->size()!=2) {
+    msg_Error() << "Two-body cluster decay failed, retrying event\n";
+    throw Return_Value::Retry_Event;
+  }
+  return 2;
 }
 
 bool Soft_Cluster_Handler::
 AttachHadronsToBlob(Cluster_List * clin,Blob * blob)
 {
+  // Iterate over cluster list, find those that decayed
   Cluster_Iterator cit(clin->begin());
-  Particle * part;
   Cluster  * cluster;
   while (cit!=clin->end()) {
     cluster = (*cit);
-    switch (cluster->size()) {
-    case 1:
-      break;
-    case 2:
+    if (cluster->size()==2) {
+      // Fix kinematics, remove cluster from list
       FixHHDecay(cluster,blob,(*cluster)[0],(*cluster)[1]);
       delete cluster->GetTrip();
       delete cluster->GetAnti();
       delete cluster;
       cit = clin->erase(cit);
-      break;      
-    default:
-      cit++;
-      break;
     }
+    else cit++;
   }
   // if (m_out) 
   //   msg_Out()<<"++++++ "<<METHOD<<" was successful:"
   // 	     <<blob->CheckMomentumConservation()<<"\n"
-  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-  // 	     <<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
   return true;
 }
 
@@ -405,15 +390,19 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
 
   cluster->BoostInCMSAndRotateOnZ();
 
-  double E1((M2+m1-m2)/(2.*M)), pl2(sqr(E1)-m1); ///FIXME comment
-  double masscor(m_pt02/Max(m_pt02,m1) * m_pt02/Max(m_pt02,m2)); /// FIXME comment
+  double E1((M2+m1-m2)/(2.*M)), pl2(sqr(E1)-m1); ///FIXME comment longitud momentum**2
+  double masscor(m_pt02/Max(m_pt02,m1) * m_pt02/Max(m_pt02,m2)); /// FIXME comment mass correction
+  /// The higher the hadron mass, the smaller the masscor,
+  // -> the heavier the hadrons, the more likely they are blabla original direction
+  // -> makes b-frag sufficiently hard TODO check do b-hadrons follow the initial quark?
+  //
   double stheta, pt2; /// FIXME: initialize to 0, pl2 ?
   /// Black magic
   do { 
-    stheta = 1.-2.*ran->Get(); 
+    stheta = 1.-2.*ran->Get(); // TODO chage/test cos
     pt2    = pl2*sqr(stheta);
   } while (pt2>m_pt2max*m_pt2maxfac*masscor || 
-	   sqr((*p_as)(pt2,false)/p_as->MaxValue())<ran->Get());
+	   sqr((*p_as)(pt2,false)/p_as->MaxValue())<ran->Get()); // get rid of 2nd cond?
   double pt     = sqrt(pt2);
   int sign      = cluster->GetTrip()->m_mom[3]<0?-1:1;
   double pl1    = sign*sqrt(sqr(E1)-sqr(pt)-m1);
@@ -445,9 +434,10 @@ void Soft_Cluster_Handler::FixHHDecay(Cluster * cluster,Blob * blob,
   left->SetFinalMass(had1.HadMass());
   Particle * right(new Particle(-1,had2,p2));
   right->SetNumber();
-  right->SetInfo('P'); /// TODO understand
+  right->SetInfo('P');
   right->SetFinalMass(had2.HadMass());
-  control::s_AHAparticles+=2; /// TODO understand
+  control::s_AHAparticles+=2; // For test if all is deleted in the end
+
 
 
   if (blob!=NULL) {
