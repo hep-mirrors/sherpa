@@ -73,12 +73,12 @@ void Ahadic::writeHistos() {
             #ifdef USING__MPI
             hit->second->MPISync();
             #endif
-            if (hit->second->Integral() > 0 ) hit->second->Scale(1./hit->second->Integral());
+            if (hit->second->Integral() > 0 ) hit->second->Scale(1./(hit->second->Integral()*(hit->second->Xmax()-hit->second->Xmin())));
             hit->second->Output(m_anadir + '/'+ oit->first + "/" + hit->first+std::string(".dat"));
         }
     }
-    msg_Info() << "Output written to " << m_anadir << endl;
-    //megaMap.clear();
+    msg_Info() << "Fragmentation analysis output written to " << m_anadir << endl;
+    megaMap.clear();
 }
 
 Return_Value::code Ahadic::Hadronize(Blob_List * blobs)
