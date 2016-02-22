@@ -106,8 +106,8 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster) {
   // Get weights. Methods also overwrite Falvours initialised above
   double decayweight(DecayWeight(cluster,haddec1,haddec2));
   double transweight(TransformWeight(cluster,hadtrans));
-  m_histograms["DecayWeight"]->Insert(decayweight);
-  m_histograms["TransWeight"]->Insert(transweight);
+  if (m_ana) m_histograms["DecayWeight"]->Insert(decayweight);
+  if (m_ana) m_histograms["TransWeight"]->Insert(transweight);
   // if (m_out) 
   //   msg_Out()<<"++++++ "<<METHOD<<"["<<cluster->Mass()<<" "
   // 	     <<"("<<cluster->GetTrip()->m_flav<<" + "
@@ -150,9 +150,7 @@ int Soft_Cluster_Handler::CheckCluster(Cluster * cluster) {
       cluster->push_back(haddec2);
       // if (m_out) msg_Out()<<"++++++ decays to "<<haddec1<<" + "<<haddec2<<".\n"
       m_decays      += 1;
-      if (m_ana) {
-          m_histograms["Method_CheckCL"]->Insert(3);
-      }
+      if (m_ana) m_histograms["Method_CheckCL"]->Insert(3);
     }
   }
   else if (decayweight<0.) {
