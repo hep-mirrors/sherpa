@@ -1,4 +1,5 @@
 #include "SHRiMPS/Event_Generation/Event_Generator.H"
+#include "SHRiMPS/Tools/MinBias_Parameters.H"
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Phys/Flavour.H"
 

@@ -2,10 +2,10 @@
 #define SHRIMPS_Main_Event_Generator_H
 
 #include "SHRiMPS/Cross_Sections/Cross_Sections.H"
-#include "SHRiMPS/Event_Generation/Elastic_Event_Generator.H"
-#include "SHRiMPS/Event_Generation/Single_Diffractive_Event_Generator.H"
-#include "SHRiMPS/Event_Generation/Double_Diffractive_Event_Generator.H"
-#include "SHRiMPS/Event_Generation/Quasi_Elastic_Event_Generator.H"
+//#include "SHRiMPS/Event_Generation/Elastic_Event_Generator.H"
+//#include "SHRiMPS/Event_Generation/Single_Diffractive_Event_Generator.H"
+//#include "SHRiMPS/Event_Generation/Double_Diffractive_Event_Generator.H"
+//#include "SHRiMPS/Event_Generation/Quasi_Elastic_Event_Generator.H"
 #include "SHRiMPS/Event_Generation/Inelastic_Event_Generator.H"
 #include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
 #include "ATOOLS/Phys/Blob_List.H"

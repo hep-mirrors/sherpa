@@ -107,13 +107,12 @@ int Shrimps::GenerateEvent(ATOOLS::Blob_List * blobs) {
 }
 
 ATOOLS::Return_Value::code Shrimps::FillBeamBlobs(ATOOLS::Blob_List * blobs) {
-  return p_beamremnants->FillBeamBlobs(blobs,p_generator->GetEikonal(),
-  				       p_generator->Smin());
+  return p_beamremnants->FillBeamBlobs(blobs);
 }
 
 void Shrimps::CleanUp(const size_t & mode) {
   p_generator->Reset();
-  p_beamremnants->Reset(mode);
+  p_beamremnants->Reset();
 }
 
 void Shrimps::GenerateXsecs() {

@@ -3,7 +3,7 @@
 
 #include "SHRiMPS/Event_Generation/Event_Generator_Base.H"
 #include "SHRiMPS/Event_Generation/Ladder_Generator.H"
-#include "SHRiMPS/Beam_Remnants/Rescatter_Handler.H"
+#include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
 #include "ATOOLS/Math/Histogram.H"
