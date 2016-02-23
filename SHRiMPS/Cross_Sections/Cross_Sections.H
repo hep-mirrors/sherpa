@@ -9,7 +9,7 @@ namespace SHRIMPS {
   class Cross_Sections {
   private:
     Omega_ik              * p_selected;       
-    double m_xstot, m_slope, m_xsinel, m_xsel;
+    double m_xstot, m_slope, m_xsinel, m_xsel, m_xsSD, m_xsDD;
     //Sigma_Inelastic m_sigma_inelastic;
     //Sigma_Elastic   m_sigma_elastic;
     //Sigma_SD        m_sigma_SD;
@@ -31,8 +31,8 @@ namespace SHRIMPS {
     //Sigma_Inelastic * GetSigmaInelastic() { return (&m_sigma_inelastic); }
 
     const double & SigmaTot() const     { return m_xstot; }
-    //const double & SigmaSD() const      { return m_sSD; }
-    //const double & SigmaDD() const      { return m_sDD; }
+    const double & SigmaSD() const      { return m_xsSD; }
+    const double & SigmaDD() const      { return m_xsDD; }
     const double & SigmaEl() const      { return m_xsel; }
     const double & SigmaInel() const    { return m_xsinel; }
     const double & ElasticSlope() const { return m_slope; }

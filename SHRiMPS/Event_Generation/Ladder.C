@@ -312,7 +312,7 @@ bool Ladder::CanReplaceColour(const size_t & oldc,const size_t & newc,
 }
 
 bool Ladder::GenerateColourIndices(size_t & fix) {
-  msg_Tracking()<<"#############################################\n"
+  msg_Out()<<"#############################################\n"
 		<<METHOD<<"(fix = "<<fix<<"):\n";
   LadderMap::iterator lbeg=GetEmissionsBegin(), * liter=&lbeg;
   LadderMap::iterator lend=GetEmissionsEnd();
@@ -321,14 +321,14 @@ bool Ladder::GenerateColourIndices(size_t & fix) {
   int col1(0), col2(0);
   if (!FixFirstColours(*liter,col1,col2,fix,citer)) return false;
   while (lend->first-lbeg->first>0.0001) {
-    //msg_Tracking()<<"   before intermediate ("<<(*liter)->first<<") with "
-    //	     <<"["<<col1<<", "<<col2<<"] for "<<citer->m_col<<".\n";
+    msg_Out()<<"   before intermediate ("<<(*liter)->first<<") with "
+    	     <<"["<<col1<<", "<<col2<<"] for "<<citer->m_col<<".\n";
     if (!FixIntermediateColours(*liter,col1,col2,fix,citer)) return false;
   }
-  //msg_Tracking()<<"   before last ("<<(*liter)->first<<") with "
-  //	   <<"["<<col1<<", "<<col2<<"] for "<<citer->m_col<<".\n";
+  msg_Out()<<"   before last ("<<(*liter)->first<<") with "
+  	   <<"["<<col1<<", "<<col2<<"] for "<<citer->m_col<<".\n";
   if (!FixLastColours(*liter,col1,col2,fix,citer)) return false;
-  msg_Tracking()<<METHOD<<"(fix = "<<fix<<"):\n"<<(*this)
+  msg_Out()<<METHOD<<"(fix = "<<fix<<"):\n"<<(*this)
 		<<"#############################################\n";
   return true;
 }
@@ -341,9 +341,9 @@ bool Ladder::FixFirstColours(LadderMap::iterator & liter,int & col1,int & col2,
   Ladder_Particle * inpart(p_inpart1);
   Ladder_Particle * outpart(&liter->second);
 
-  //msg_Tracking()<<METHOD<<"("<<liter->first<<"; "
-  //	   <<inpart->m_flav<<" & "<<outpart->m_flav<<") "
-  //	   <<"for "<<colour<<" fix = "<<fix<<".\n";
+  msg_Out()<<METHOD<<"("<<liter->first<<"; "
+  	   <<inpart->m_flav<<" & "<<outpart->m_flav<<") "
+  	   <<"for "<<colour<<" fix = "<<fix<<".\n";
 
   if (colour==colour_type::singlet) {
     outpart->SetFlow(1,inpart->GetFlow(1));
@@ -391,7 +391,7 @@ bool Ladder::FixFirstColours(LadderMap::iterator & liter,int & col1,int & col2,
   liter++;
   citer++;
   if (citer==GetPropsEnd()) citer--;
-  msg_Tracking()<<"["<<inpart->GetFlow(1)<<", "<<inpart->GetFlow(2)<<"] --> "
+  msg_Out()<<"["<<inpart->GetFlow(1)<<", "<<inpart->GetFlow(2)<<"] --> "
 		<<"colour = "<<"["<<col1<<", "<<col2<<"] + "
 		<<"["<<outpart->GetFlow(1)<<", "<<outpart->GetFlow(2)<<"] for "
 		<<liter->first<<"\n";
@@ -401,7 +401,7 @@ bool Ladder::FixFirstColours(LadderMap::iterator & liter,int & col1,int & col2,
 bool Ladder::
 FixIntermediateColours(LadderMap::iterator & liter,int & col1,int & col2,
 		       size_t & fix,TPropList::iterator & citer) {
-  msg_Tracking()<<METHOD<<"(fix = "<<fix<<") "
+  msg_Out()<<METHOD<<"(fix = "<<fix<<") "
 		<<"with ["<<col1<<", "<<col2<<"]\n";
 
   colour_type::code colour(citer->m_col);
@@ -433,7 +433,7 @@ FixIntermediateColours(LadderMap::iterator & liter,int & col1,int & col2,
   }
   else if (colour==colour_type::octet) {
     if (col1==-1 && col2==-1) {
-      msg_Tracking()<<" ... from singlet.\n";
+      msg_Out()<<" ... from singlet.\n";
       fromsing=true;
     }
     if (outpart->m_flav.IsGluon()) {
@@ -487,7 +487,7 @@ FixIntermediateColours(LadderMap::iterator & liter,int & col1,int & col2,
   liter++; 
   citer++;
   if (citer==GetPropsEnd()) citer--;
-  msg_Tracking()<<" --> "<<outpart->m_flav<<" "
+  msg_Out()<<" --> "<<outpart->m_flav<<" "
   	   <<"["<<outpart->GetFlow(1)<<", "<<outpart->GetFlow(2)<<"] -> "
   	   <<colour<<" ["<<col1<<", "<<col2<<"]\n";
   return true;
@@ -500,7 +500,7 @@ FixLastColours(LadderMap::iterator & liter,const int & col1,const int & col2,
   Ladder_Particle * outpart(&liter->second);
   colour_type::code colour(citer->m_col);
 
-  msg_Tracking()<<METHOD<<"(fix = "<<fix<<", "<<liter->first<<"; "
+  msg_Out()<<METHOD<<"(fix = "<<fix<<", "<<liter->first<<"; "
   	   <<inpart->m_flav<<" & "<<outpart->m_flav<<").\n";
 
   if (colour==colour_type::singlet) {
@@ -566,7 +566,7 @@ FixLastColours(LadderMap::iterator & liter,const int & col1,const int & col2,
       }
     }
   }
-  msg_Tracking()<<"Out of "<<METHOD<<" with:\n"<<(*this)<<"\n";
+  msg_Out()<<"Out of "<<METHOD<<" with:\n"<<(*this)<<"\n";
   return true;
 }
  

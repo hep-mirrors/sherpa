@@ -9,12 +9,15 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Omega_ik::Omega_ik(const Eikonal_Parameters & params) :
-  m_weights(params), m_bmax(params.bmax),
+  //m_weights(params),
+  m_bmax(params.bmax),
   p_Omegaik(0), p_Omegaki(0) 
 { 
   m_gridB.clear();
   m_gridBmax.clear();
   m_gridD.clear();
+
+  msg_Out()<<METHOD<<" : "<<m_bmax<<".\n";
 }
 
 Omega_ik::~Omega_ik() {
@@ -25,7 +28,7 @@ Omega_ik::~Omega_ik() {
 void Omega_ik::SetContributors(Eikonal_Contributor * Omegaik,
 			       Eikonal_Contributor * Omegaki) { 
   p_Omegaik = Omegaik; p_Omegaki = Omegaki; 
-  m_weights.SetSingleOmegaTerms(p_Omegaik,p_Omegaki);
+  //m_weights.SetSingleOmegaTerms(p_Omegaik,p_Omegaki);
 }
 
 void Omega_ik::SetDeltaB(const double & deltaB) {
@@ -42,10 +45,6 @@ Eikonal_Contributor * Omega_ik::GetSingleTerm(const int & i) {
   msg_Error()<<"Error in "<<METHOD<<"("<<i<<"):"<<std::endl
 	     <<"   Out of range.  Will exit the run."<<std::endl;
   exit(1);  
-}
-
-Eikonal_Weights * Omega_ik::GetWeights() {
-  return &m_weights;
 }
 
 std::vector<double> * Omega_ik::GetImpactParameterGrid() { 
@@ -109,7 +108,7 @@ void Omega_ik::PrepareQT(const double & b1,const double & b2) {
 
 double Omega_ik::
 EffectiveIntercept(double b1,double b2,const double & y) {
-  return m_weights.EffectiveIntercept(b1,b2,y);
+  //return m_weights.EffectiveIntercept(b1,b2,y);
 }
 
 

@@ -22,7 +22,7 @@ namespace SHRIMPS {
     bool                                        m_analyse;
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
 
-    Eikonal_Weights *                      p_eikonalweights;
+    //Eikonal_Weights *                      p_eikonalweights;
     int                                    m_Nresc;
     unsigned long int                      m_Nfact;
     std::set<ATOOLS::Blob *, blobcomp >    m_treatedblobs;

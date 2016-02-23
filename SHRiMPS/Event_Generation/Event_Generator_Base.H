@@ -11,6 +11,7 @@ namespace SHRIMPS {
     Event_Generator_Base(): p_eikonal(NULL),m_xsec(0.),m_smin(0.) {} 
     ~Event_Generator_Base() {};
     virtual Omega_ik * GetEikonal() const { return p_eikonal;}
+    virtual double XSec()           const { return m_xsec; }
     virtual double Smin()           const { return m_smin;}
     virtual bool IsLastRescatter()  const { return false; }
     virtual double TMax()           const { return 0.; }

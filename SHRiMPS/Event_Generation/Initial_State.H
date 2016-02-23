@@ -3,6 +3,7 @@
 
 #include "SHRiMPS/Event_Generation/Ladder.H"
 #include "SHRiMPS/Event_Generation/Parton_Luminosity.H"
+#include "SHRiMPS/Eikonals/Eikonal_Weights.H"
 #include "SHRiMPS/Eikonals/Omega_ik.H"
 #include "ATOOLS/Phys/Blob_List.H"
 

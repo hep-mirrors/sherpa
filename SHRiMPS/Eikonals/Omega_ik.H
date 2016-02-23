@@ -3,7 +3,6 @@
 
 #include "SHRiMPS/Eikonals/Form_Factors.H"
 #include "SHRiMPS/Eikonals/Eikonal_Contributor.H"
-#include "SHRiMPS/Eikonals/Eikonal_Weights.H"
 #include "SHRiMPS/Eikonals/Analytic_Contributor.H"
 #include "SHRiMPS/Eikonals/Analytic_Eikonal.H"
 #include "SHRiMPS/Tools/Parameter_Structures.H"
@@ -35,7 +34,6 @@ namespace SHRIMPS {
   */
   class Omega_ik : public ATOOLS::Function_Base {
   private:
-    Eikonal_Weights       m_weights;
     Eikonal_Contributor * p_Omegaik, * p_Omegaki;
 
     double m_bmax, m_Y;
@@ -52,7 +50,6 @@ namespace SHRIMPS {
     void SetPrefactor(const double & prefactor);
 
     const double & DeltaB() const { return m_deltaB; }
-    Eikonal_Weights     * GetWeights();
     Eikonal_Contributor * GetSingleTerm(const int & i=0);
     std::vector<double> * GetImpactParameterGrid();
     std::vector<double> * GetImpactParameterMaximumGrid();

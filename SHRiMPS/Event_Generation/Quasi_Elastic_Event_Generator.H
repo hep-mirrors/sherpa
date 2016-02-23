@@ -24,7 +24,6 @@ namespace SHRIMPS {
 				  Double_Diffractive_Event_Generator * ddiff);
 
     bool QuasiElasticEvent(ATOOLS::Blob_List * blobs,const double & xsec=0.);
-    const double & XSec() const { return m_stot; }
   };
 }
 #endif

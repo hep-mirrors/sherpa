@@ -1,6 +1,7 @@
 #include "SHRiMPS/Tools/MinBias_Parameters.H" 
 #include "SHRiMPS/Eikonals/Omega_ik.H"
 #include "SHRiMPS/Eikonals/Form_Factors.H"
+#include "SHRiMPS/Cross_Sections/Cross_Sections.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Run_Parameter.H" 
 #include "ATOOLS/Org/Message.H"
@@ -13,6 +14,7 @@ MinBias_Parameters::MinBias_Parameters()
 {
   p_ffs      = new std::list<Form_Factor *>;
   p_eikonals = new std::list<Omega_ik *>;
+  p_xsecs    = new XSecs_Container();
 }
 
 MinBias_Parameters::~MinBias_Parameters() {
@@ -32,7 +34,17 @@ void MinBias_Parameters::Reset() {
   }
   p_ffs->clear();
   delete p_ffs;
+  delete p_xsecs;
 }
+
+void MinBias_Parameters::SetXSecs(Cross_Sections * xsecs) {
+  p_xsecs->xs_tot = xsecs->SigmaTot();
+  p_xsecs->xs_in  = xsecs->SigmaInel();
+  p_xsecs->xs_el  = xsecs->SigmaEl();
+  p_xsecs->xs_SD  = xsecs->SigmaSD();
+  p_xsecs->xs_DD  = xsecs->SigmaDD();
+}
+
 
 void MinBias_Parameters::Init(ATOOLS::Data_Reader * dr) {
   FillRunParameters(dr);

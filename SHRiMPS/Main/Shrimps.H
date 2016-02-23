@@ -5,8 +5,8 @@
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
 #include "SHRiMPS/Cross_Sections/Cross_Sections.H"
 #include "SHRiMPS/Event_Generation/Event_Generator.H"
-#include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
-#include "SHRiMPS/Beam_Remnants/Continued_PDF.H"
+//#include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
+//#include "SHRiMPS/Beam_Remnants/Continued_PDF.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Data_Reader.H"
@@ -47,11 +47,14 @@ namespace SHRIMPS {
     Cluster_Algorithm          m_cluster;
     
     void GenerateXsecs();
-    void ReadEnergiesFromFile(std::vector<double> & energies);
-    void WriteOutXSecsYodaFile(const std::vector<double> & energies,
+    void ReadEnergiesFromFile(std::set<double> & energies,
+			      std::string infile);
+    void WriteOutElasticsYodaFile(const double & energy,std::string dirname);
+    void WriteOutXSecsYodaFile(const std::set<double> & energies,
 			       const std::vector<double> & xsectot,
 			       const std::vector<double> & xsecinel,
-			       const std::vector<double> & xsecelas);
+			       const std::vector<double> & xsecelas,
+			       std::string dirname);
     
     void InitialiseTheRun(BEAM::Beam_Spectra_Handler *const beam,
 			  PDF::ISR_Handler *const isr);
@@ -62,11 +65,13 @@ namespace SHRIMPS {
 				PDF::ISR_Handler *const isr);
     void InitialiseTheEventGenerator();
     
-    void TestShrimps();
+    void TestShrimps(BEAM::Beam_Spectra_Handler *const beam,
+		     PDF::ISR_Handler *const isr);
     void PrintAlphaS(const std::string & dirname);
     void PrintPDFs(const std::string & dirname);
     void TestEikonalGrids(const std::string & dirname);
     void TestCrossSections(const std::string & dirname);
+    void TestEventGeneration(const std::string & dirname);
   public:
     Shrimps(ATOOLS::Data_Reader * dr,
 	    BEAM::Beam_Spectra_Handler *const beam,

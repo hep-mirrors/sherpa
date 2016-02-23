@@ -33,6 +33,9 @@ namespace SHRIMPS {
     bool DressShowerBlob(ATOOLS::Blob * blob);
     int  MinimumBiasEvent(ATOOLS::Blob_List * blobs);
 
+    void Test(const std::string & dirname);
+
+
     inline void Reset() { m_done = false; m_thisevent = m_runmode; }
     inline Omega_ik * GetEikonal() const { return p_active->GetEikonal(); }
     inline const double & XSec()   const { return m_xsec; } 

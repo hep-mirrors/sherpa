@@ -31,11 +31,11 @@ Shrimps::Shrimps(ATOOLS::Data_Reader * dr,
     GenerateXsecs();
     exit(0);
   }
-  InitialiseTheRun(beam,isr);
-  if (MBpars.RunMode()==run_mode::test) {
-    TestShrimps();
+  else if (MBpars.RunMode()==run_mode::test) {
+    TestShrimps(beam,isr);
     exit(1);
   }
+  InitialiseTheRun(beam,isr);
 }
 
 Shrimps::~Shrimps() 
@@ -51,8 +51,8 @@ void Shrimps::InitialiseTheRun(BEAM::Beam_Spectra_Handler *const beam,
   InitialiseSingleChannelEikonals();
   InitialiseBeamRemnants(beam,isr);
   InitialiseTheEventGenerator();  
-  //Hadron_Init hadroninit;
-  //hadroninit.Init();
+  Hadron_Init hadroninit;
+  hadroninit.Init();
 }
 
 void Shrimps::ResetTheFramework() {
@@ -108,7 +108,7 @@ int Shrimps::GenerateEvent(ATOOLS::Blob_List * blobs) {
 
 ATOOLS::Return_Value::code Shrimps::FillBeamBlobs(ATOOLS::Blob_List * blobs) {
   return p_beamremnants->FillBeamBlobs(blobs,p_generator->GetEikonal(),
-				       p_generator->Smin());
+  				       p_generator->Smin());
 }
 
 void Shrimps::CleanUp(const size_t & mode) {
@@ -118,88 +118,76 @@ void Shrimps::CleanUp(const size_t & mode) {
 
 void Shrimps::GenerateXsecs() {
   msg_Out()<<METHOD<<".\n";  
+  std::string dirname = std::string("InclusiveQuantities");
+  ATOOLS::MakeDir(dirname);
+
   InitialiseFormFactors();
-  std::vector<double> energies;
-  ReadEnergiesFromFile(energies);
+  std::set<double> energies, elastics;
+  ReadEnergiesFromFile(energies,"energies_xsecs.dat");
+  ReadEnergiesFromFile(elastics,"energies_elastics.dat");
 
   std::vector<double> xsectot, xsecinel, xsecelas;
   Cross_Sections xsecs;
-  for (size_t i;i<energies.size();i++) {
-    double energy = energies[i];
+  for (std::set<double>::iterator energy_iter=energies.begin();
+       energy_iter!=energies.end();energy_iter++) {
+    double energy = (*energy_iter);
     MBpars.UpdateForNewEnergy(energy);
     InitialiseSingleChannelEikonals();
     xsecs.CalculateCrossSections();
     xsectot.push_back(xsecs.SigmaTot()/1.e9);
     xsecinel.push_back(xsecs.SigmaInel()/1.e9);
     xsecelas.push_back(xsecs.SigmaEl()/1.e9);
+    if (elastics.find(energy)!=elastics.end()) {
+      WriteOutElasticsYodaFile(energy,dirname);
+    }
   }
-  WriteOutXSecsYodaFile(energies, xsectot, xsecinel, xsecelas);
+  WriteOutXSecsYodaFile(energies, xsectot, xsecinel, xsecelas, dirname);
 }
 
-// if (Elastics.find((*energy))!=Elastics.end()) {
-//       Elastic_Event_Generator elastic(m_cross.GetSigmaElastic(),NULL,-1);
-//       m_cross.GetSigmaElastic()->PrintDifferentialelasticXsec(false,tuning,
-// 								dirname);
-//       m_cross.GetSigmaSD()->PrintDifferentialElasticAndSDXsec(false,dirname);
-//       m_cross.GetSigmaDD()->PrintDifferentialElasticAndDiffXsec(false,
-// 								  dirname);
-//     }
-//   }
-//   was.close();
-// }
-// else {
-//     std::vector<double> Elastics;
-//     Elastics.push_back(62.5);
-//     Elastics.push_back(546.);
-//     Elastics.push_back(1800.);
-//     Elastics.push_back(7000.);
-//     std::vector<double> xsectot, xsecinel,xsecelas;
-//     for (int i=0; i<Energies.size(); i++) {
-//       InitialiseSingleChannelEikonals((Energies[i]));
-//       InitialiseCrossSections((Energies[i]));
-//     }
-//     for (int i=0; i<Elastics.size(); i++) {
-//       InitialiseSingleChannelEikonals((Elastics[i]));
-//       InitialiseCrossSections((Elastics[i]));
-//       m_cross.GetSigmaElastic()->PrintDifferentialelasticXsec(false,tuning,
-// 							      dirname);
-//     }
-//   }
-//   */
-// }
+void Shrimps::WriteOutElasticsYodaFile(const double & energy,
+				       std::string dirname) {
+}
 
-void Shrimps::WriteOutXSecsYodaFile(const std::vector<double> & energies,
+void Shrimps::WriteOutXSecsYodaFile(const std::set<double> & energies,
 				    const std::vector<double> & xsectot,
 				    const std::vector<double> & xsecinel,
-				    const std::vector<double> & xsecelas) {
-  std::string dirname = std::string("InclusiveQuantities");
-  ATOOLS::MakeDir(dirname);
+				    const std::vector<double> & xsecelas,
+				    std::string dirname) {
   std::string filename(dirname+std::string("/xsecs.dat"));
   std::ofstream was;
   was.open(filename.c_str());
   was<<"# BEGIN HISTO1D /XSECS/total\n";
   was<<"Path=/XSECS/total"<<std::endl;
-  for (size_t i=0; i<energies.size(); i++){
-    was<<energies[i]<<"   "<<energies[i]<<"   "<<xsectot[i]<<"   0.0   0.0\n";
+  size_t i(0);
+  for (std::set<double>::iterator energy_iter=energies.begin();
+       energy_iter!=energies.end();energy_iter++) {
+    was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
+       <<xsectot[i++]<<"   0.0   0.0\n";
   }
   was<<"# END HISTO1D\n"<<std::endl;
   was<<"# BEGIN HISTO1D /XSECS/inel\n";
   was<<"Path=/XSECS/inel"<<std::endl;
-  for (size_t i=0; i<energies.size(); i++){
-    was<<energies[i]<<"   "<<energies[i]<<"   "<<xsecinel[i]<<"   0.0   0.0\n";
+  i = 0;
+  for (std::set<double>::iterator energy_iter=energies.begin();
+       energy_iter!=energies.end();energy_iter++) {
+    was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
+       <<xsecinel[i++]<<"   0.0   0.0\n";
   }
   was<<"# END HISTO1D\n"<<std::endl;
   was<<"# BEGIN HISTO1D /XSECS/el\n";
   was<<"Path=/XSECS/el"<<std::endl;
-  for (size_t i=0; i<energies.size(); i++){
-    was<<energies[i]<<"   "<<energies[i]<<"   "<<xsecelas[i]<<"   0.0   0.0\n";
+  i = 0;
+  for (std::set<double>::iterator energy_iter=energies.begin();
+       energy_iter!=energies.end();energy_iter++) {
+    was<<(*energy_iter)<<"   "<<(*energy_iter)<<"   "
+       <<xsecelas[i++]<<"   0.0   0.0\n";
   }
   was<<"# END HISTO1D"<<std::endl;
   was.close();
 }
   
-void Shrimps::ReadEnergiesFromFile(std::vector<double> & energies) {
-  std::string infile("energies_xsecs.dat");
+void Shrimps::ReadEnergiesFromFile(std::set<double> & energies,
+				   std::string infile) {
   std::ifstream input;
   input.open(infile.c_str());
   if(!input){
@@ -209,24 +197,29 @@ void Shrimps::ReadEnergiesFromFile(std::vector<double> & energies) {
   std::string test;
   while (!input.eof()) {
     input>>test;
-    energies.push_back(std::atof(test.c_str()));
+    energies.insert(std::atof(test.c_str()));
   }
   input.close();
 }
 
 
 
-void Shrimps::TestShrimps() {
+void Shrimps::TestShrimps(BEAM::Beam_Spectra_Handler *const beam,
+			  PDF::ISR_Handler *const isr) {
   msg_Info()<<"Start testing SHRiMPS.\n";
   std::string dirname = std::string("Tests");
   ATOOLS::MakeDir(dirname);
+  ResetTheFramework();
+  InitialiseFormFactors();
+  InitialiseBeamRemnants(beam,isr);
+  InitialiseSingleChannelEikonals();
 
   PrintAlphaS(dirname);
   PrintPDFs(dirname);
   MBpars.GetFormFactors()->front()->Test(dirname); 
   TestEikonalGrids(dirname);
   TestCrossSections(dirname);
-  
+  TestEventGeneration(dirname);
   msg_Info()<<"Tests done.  Results to be found in "<<dirname<<".\n";
 }
 
@@ -291,6 +284,12 @@ void Shrimps::TestCrossSections(const std::string & dirname) {
   Cross_Sections cross;
   cross.CalculateCrossSections();
   cross.Test(dirname);
+}
+
+void Shrimps::TestEventGeneration(const std::string & dirname) {
+  Event_Generator generator;
+  generator.Initialise(p_beamremnants);
+  generator.Test(dirname);
 }
 
 

@@ -6,7 +6,6 @@ libShrimpsEvents_la_SOURCES = \
 			Parton_Luminosity.C \
 			Ladder_Generator.C \
 			Final_State.C \
-			Initial_State.C \
 			Simple_MEs.C \
 			Ladder.C \
 			Quark_Replace.C
@@ -20,7 +19,6 @@ localinc_HEADERS   = \
 			Parton_Luminosity.H \
 			Ladder_Generator.H \
 			Final_State.H \
-			Initial_State.H \
 			Simple_MEs.H \
 			Ladder.H \
 			Quark_Replace.H

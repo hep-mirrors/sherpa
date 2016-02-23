@@ -28,13 +28,13 @@ namespace SHRIMPS {
     void   FixKinematics();
   public:
     Double_Diffractive_Event_Generator();
-    Double_Diffractive_Event_Generator(Sigma_DD * sigma,Beam_Remnant_Handler * beams,
+    Double_Diffractive_Event_Generator(Sigma_DD * sigma,
+				       Beam_Remnant_Handler * beams,
 				       const int & test=0);
     ~Double_Diffractive_Event_Generator();
 
     bool DoubleDiffractiveEvent(ATOOLS::Blob_List * blobs,
 				const double & xsec=0.);
-    const double & XSec() const { return p_sigma->XSec(); }
     Omega_ik * GetEikonal() const { return NULL; }
     double Smin()   const { return 0.; }
   };

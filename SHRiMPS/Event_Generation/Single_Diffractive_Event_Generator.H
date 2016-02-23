@@ -34,7 +34,6 @@ namespace SHRIMPS {
 				       
     bool SingleDiffractiveEvent(ATOOLS::Blob_List * blobs,
 				const double & xsec=0.);
-    const double & XSec() const { return p_sigma->XSec(); }
     Omega_ik * GetEikonal() const { return NULL; }
     double Smin()   const { return 0.; }
   };

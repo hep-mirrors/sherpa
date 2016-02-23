@@ -10,6 +10,13 @@
 namespace SHRIMPS {
   class Form_Factor;
   class Omega_ik;
+  class Cross_Sections;
+
+  struct XSecs_Container {
+    double xs_tot, xs_in, xs_el, xs_SD, xs_DD;
+    XSecs_Container():
+      xs_tot(0.), xs_in(0.), xs_el(0.), xs_SD(0.), xs_DD(0.) {}
+  };
   
   typedef std::map<std::string,double> StringDoubleMap;
   typedef StringDoubleMap::iterator    SDiter;
@@ -27,7 +34,7 @@ namespace SHRIMPS {
 
     std::list<Form_Factor *> * p_ffs;
     std::list<Omega_ik *>    * p_eikonals;
-
+    XSecs_Container          * p_xsecs;
     
     void FillRunParameters(ATOOLS::Data_Reader * dr);
     void FillFormFactorParameters(ATOOLS::Data_Reader * dr);
@@ -42,6 +49,7 @@ namespace SHRIMPS {
     void Reset();
     void AddFormFactor(Form_Factor * ff) { p_ffs->push_back(ff); }  
     void AddEikonal(Omega_ik * eikonal)  { p_eikonals->push_back(eikonal); }  
+    void SetXSecs(Cross_Sections * xsecs);
     void UpdateForNewEnergy(const double & energy);
     
     const run_mode::code & RunMode()   const { return m_runmode; }
@@ -67,6 +75,9 @@ namespace SHRIMPS {
     }
     std::list<Omega_ik *> * GetEikonals() const {
       return p_eikonals;
+    }
+    XSecs_Container * GetXSecs() const {
+      return p_xsecs;
     }
   };
   

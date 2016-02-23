@@ -63,7 +63,7 @@ ResetCollision(Omega_ik * eikonal,const double & smin,const double & B) {
   m_intervals.clear();
   ResetRescatter(true);
   
-  p_eikonalweights = eikonal->GetWeights();
+  //p_eikonalweights = eikonal->GetWeights();
   m_smin = smin;
   m_B    = B;
 }
@@ -167,9 +167,10 @@ void Rescatter_Handler::AddParticleToRescatters(Particle * part) {
     sup   = m_rescprob * SuppressionTerm(kt12,kt22);
     ybar  = (part->Momentum()+(*piter)->Momentum()).Y();
     ymax  = Max(dabs(y1),dabs((*piter)->Momentum().Y()));
-    prob *= p_eikonalweights->RescatterProbability(m_b1,m_b2,y1,y2,sup,
-						   nbeam+int(dabs(y2)>m_Ylimit)); 
-    expo  = (singlet?0.:1.)+p_eikonalweights->EffectiveIntercept(m_b1,m_b2,ybar);
+    //prob *= p_eikonalweights->RescatterProbability(m_b1,m_b2,y1,y2,sup,
+    //					   nbeam+int(dabs(y2)>m_Ylimit)); 
+    //expo  = (singlet?0.:1.)+p_eikonalweights->
+    // EffectiveIntercept(m_b1,m_b2,ybar);
     prob *= pow(s12/Max(s12,m_smin),expo);
     prob /= sqrt(double(m_Nfact));
     // new stuff in the line below.

@@ -2,98 +2,43 @@
 #define SHRIMPS_Main_Final_State_H
 
 #include "SHRiMPS/Event_Generation/Ladder.H"
-#include "SHRiMPS/Eikonals/Omega_ik.H"
-#include "SHRiMPS/Tools/MinBias_Parameters.H"
+#include "SHRiMPS/Eikonals/Eikonal_Weights.H"
 #include "MODEL/Main/Strong_Coupling.H"
-#include "ATOOLS/Math/Histogram.H"
+
 
 namespace SHRIMPS {
-  class Final_State {
+  class Final_State :  public ATOOLS::Function_Base {
   private:
-    ktform::code             m_ktform;
-    ordering::code           m_ordering;
-    resc_ktmin::code         m_resc_ktmin;
-    resc_nosing::code        m_resc_nosing;
-    int                      m_ktmin_mode;
     MODEL::Strong_Coupling * p_alphaS;
-    double                   m_Q02,m_Q12,m_Q02eff,m_QN2,m_q02min;
-    double                   m_kt1cut2,m_kt1min2,m_kt1max2;
-    double                   m_d2, m_kdiff, m_Ylimit, m_singletwt;
-    int                      m_test;
-    int                      m_nprimlad;
-
-    Ladder                 * p_ladder;
-    Eikonal_Weights        * p_eikonalweights;
-    Omega_ik               * p_eikonal;
-    double                   m_B,m_b1,m_b2,m_shat,m_Deltay;
-
-    double                   m_lastwt,m_recombwt;
-
-    LadderMap              * p_emissions;
-    LadderMap::iterator      m_plusiter;
-    LadderMap::iterator      m_minusiter;
-    TPropList              * p_props;
-    TPropList::iterator      m_propiter;
-    ATOOLS::Vec4D            m_pprop, m_mprop;
-    ATOOLS::Vec4D            m_k0,m_k1,m_k2,m_q0,m_q2;
-    double                   m_q01_2,m_q12_2;
-
-    bool     m_analyse;
-    std::map<std::string, ATOOLS::Histogram * > m_histomap;
-    long int m_rej_negkt1,m_rej_nokt2,m_rej_nokt0,m_rej_nophi0,m_rej_noy0;
-    long int m_rej_offshell,m_rej_nofit,m_rej_order,m_trials,m_ys,m_alphaS;
-    long int m_dir0,m_dir1,m_rej_order0,m_rej_order1,m_cols;
-    long int m_singexit,m_firstsing;
-
-    double GenerateEmissions();
-    bool   FirstSinglet(const double & y1,const double & y2,
-			const double & sup,const int & nbeam);
-    void   UpdateTwoOutgoings(const size_t pos=0,const bool singlet=true);
-    bool   OneEmission(LadderMap::iterator & split,LadderMap::iterator & spect,
-		       double & kt2);
-    bool   SelectSplitterAndSpectator(LadderMap::iterator & split,
-				      LadderMap::iterator & spect);
-    void   SwapSplitterAndSpectator(LadderMap::iterator & split,
-				    LadderMap::iterator & spect);
-    bool   FixPropColours(const LadderMap::iterator & split,
-			  const LadderMap::iterator & spect);
-    bool   TryEmission(double & kt2,const bool & dir);
-    bool   MomViolation(ATOOLS::Vec4D & k_0, ATOOLS::Vec4D & k_1,
-			ATOOLS::Vec4D & k_2,bool dir);
-    double KT2integral(const double & kt2max,const double & kt2min,
-		       const double & q02,const double & ktexpo);
-    double FKT2(const double &, const double &, const double &);
-    bool IsOrdered(const bool & dir,ATOOLS::Vec4D & k_0,
-			 ATOOLS::Vec4D & k_1,ATOOLS::Vec4D & k_2,
-			 const double & t);
-    double SuppressionTerm(const double & q02,const double & q12);
-    double Q02MinEstimate(const double, const double);
-    void   InitHistograms();
-    void   OutputHistograms();
+    Eikonal_Weights          m_weights;
+    Eikonal_Contributor    * p_omegaik, * p_omegaki;
+    double   m_origY, m_Ymax, m_DeltaY;
+    double   m_b1, m_b2;
+    Ladder * p_ladder;
+    double   m_availableE, m_E,m_pz;
+    
+    void   AddInitialRapiditiesToLadder();
+    void   AddPropagators();
+    void   ConstructKinematics();
+    void   ConstructPropagator(const double & y1,const double & y2,
+			       T_Prop* prop,const int & sign);
+    colour_type::code PropColour(const double & y1,const double & y2);
+    double SelectQT2(const double & qt2max,const double & expo);
+    double QT2(const double & qt2max,const double & y1,const double & y2,
+	       const colour_type::code & col);
   public:
-    Final_State() : m_analyse(false) {}
-    Final_State(const int & test);
-    inline ~Final_State() { if (m_analyse) OutputHistograms(); }
+    Final_State();
+    ~Final_State();
+    void   SetEikonal(Omega_ik * eikonal);
+    void   SetLadder(Ladder * ladder);
+    void   SetImpactParameters(const double & b1, const double & b2);
+    void   SetAvailableEnergy(const double & E=-1.);
+    void   FillPrimaryLadder();
 
-    double operator()(Ladder * ladder,const double & Deltay,
-		      const bool & firstladder,const bool & firstattempt);
-    inline MODEL::Strong_Coupling * GetAS(){ return p_alphaS; }
-    inline void Init(Omega_ik * eikonal,
-		     const double & b1,const double & b2,const double & B) { 
-      p_eikonalweights=eikonal->GetWeights();
-      m_b1=b1;m_b2=b2;m_B=B;
-    }
-    inline void   SetQ02eff(const int & N) { 
-      m_Q02eff = m_Q02+(N-1)*m_QN2;
-    }
-    inline void SetNLad(const int & N) { m_nprimlad = N; }
-    double AlphaS(const double & kt2) { return (*p_alphaS)(kt2); }
-    inline double AlphaSMax() const { return p_alphaS->MaxValue(); }
-    double SelectKT2(const double & kt2max,const double & kt2min,
-		     const double & mu2,const double & expo=1.);
-    double Q02(const double & y=0.);
-    double Saturation(const double & y=0.);
-    const double & KTMin2() const { return m_kt1min2; }
+    const double Pplus()  const { return (m_E+m_pz)/2.; }
+    const double Pminus() const { return (m_E-m_pz)/2.; }
+
+    void Test(const std::string & dirname);
   };
 }
 #endif

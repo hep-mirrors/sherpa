@@ -17,7 +17,6 @@ Event_Generator::~Event_Generator()
 
 void Event_Generator::Initialise(Beam_Remnant_Handler * beams) {
   p_inelastic = new Inelastic_Event_Generator(beams);
-  m_xsec      = p_inelastic->XSec();
 } 
 
 bool Event_Generator::DressShowerBlob(ATOOLS::Blob * blob) {
@@ -26,7 +25,7 @@ bool Event_Generator::DressShowerBlob(ATOOLS::Blob * blob) {
     return false;
   }
   msg_Out()<<METHOD<<" for run mode = "<<m_runmode<<".\n";
-  return p_inelastic->DressShowerBlob(blob);
+  return false; 
 }
 
 int Event_Generator::MinimumBiasEvent(ATOOLS::Blob_List * blobs) {
@@ -40,5 +39,9 @@ int Event_Generator::MinimumBiasEvent(ATOOLS::Blob_List * blobs) {
     (*blobs)[0]->AddData("Trials",new ATOOLS::Blob_Data<double>(1.));
   }
   return p_inelastic->GenerateEvent(blobs,false);
-  return -1;
+}
+
+void Event_Generator::Test(const std::string & dirname) {
+  msg_Info()<<METHOD<<": Starting.\n";
+  p_inelastic->Test(dirname);
 }

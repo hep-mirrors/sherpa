@@ -14,6 +14,7 @@ namespace SHRIMPS {
       double operator()(double B);
     };
 
+  private:    
     double m_logdelta;
     std::map<double,double> m_intgrid, m_diffgrid;
 
@@ -28,8 +29,7 @@ namespace SHRIMPS {
     double GetValue(const double & B); 
     double GetCombinedValue(const double & B);
     double GetDiffArgument(const double & B);
-
-    void   Test();
+    double Test();
   };  
 }
 #endif
