@@ -618,7 +618,7 @@ void HEFT::InitEFTVertices()
   Kabbala I("i",Complex(0.,1.));
   msg_Info()<<METHOD<<"() {\n  ggh coupling is "
 	    <<ghgg.Value()<<" [ \\alpha_s = "<<as
-	    <<" ]\n  ggh coupling is "<<ghpp.Value()
+	    <<" ]\n  yyh coupling is "<<ghpp.Value()
             <<" [ 1/\\alpha = "<<(1.0/aqed)<<" ]\n}\n";
   m_v.push_back(Single_Vertex());
   m_v.back().AddParticle(Flavour(kf_h0));
