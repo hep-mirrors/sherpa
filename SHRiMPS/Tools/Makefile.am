@@ -8,6 +8,7 @@ libShrimpsTools_la_SOURCES = \
 localincdir = $(pkgincludedir)/SHRiMPS/Tools
 
 localinc_HEADERS   = \
+			Parameter_Structures.H \
 			Special_Functions.H \
 			DEQ_Solver.H \
 			Kernels.H \
