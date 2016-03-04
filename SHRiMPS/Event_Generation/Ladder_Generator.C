@@ -32,9 +32,10 @@ void Ladder_Generator::InitCollision(Omega_ik * eikonal,const double & B) {
 
 void Ladder_Generator::Reset() {
   Vec4D cms(rpa->gen.PBeam(0)+rpa->gen.PBeam(1));
-  m_E1 = m_E2 = cms[0]/2.;
-  m_mandels   = cms.Abs2();
+  m_E[0] = m_E[1] = cms[0]/2.;
+  m_mandels = cms.Abs2();
   m_FS.SetAvailableEnergy(sqrt(m_mandels));
+  m_Colours.Reset();
 }
 
 bool Ladder_Generator::MakePrimaryLadder(Blob * blob) {
@@ -43,10 +44,7 @@ bool Ladder_Generator::MakePrimaryLadder(Blob * blob) {
   InitLadder(blob);
   m_FS.FillPrimaryLadder();
   AddInParticles();
-  size_t fix = 500;
-  p_ladder->GenerateColourIndices(fix);
-  msg_Out()<<(*p_ladder)<<"\n";
-  exit(0);
+  m_Colours(p_ladder);
   if (CheckTotalMomentum()) {
     FillBlob(blob);
     return true;
@@ -73,9 +71,9 @@ void Ladder_Generator::AddInParticles() {
 }
 
 bool Ladder_Generator::CheckTotalMomentum() {
-  m_E1 -= p_ladder->GetIn1()->m_mom[0];
-  m_E2 -= p_ladder->GetIn2()->m_mom[0];
-  if (m_E1>0. && m_E2>0.) return true;
+  m_E[0] -= p_ladder->GetIn1()->m_mom[0];
+  m_E[1] -= p_ladder->GetIn2()->m_mom[0];
+  if (m_E[0]>0. && m_E[1]>0.) return true;
   return false;
 }
 

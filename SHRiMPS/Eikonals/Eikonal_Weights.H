@@ -22,6 +22,7 @@ namespace SHRIMPS {
     void SetImpactParameters(const double & b1, const double & b2);
     void AddRapidities(Ladder * ladder,const double & ymin,const double & ymax);
     colour_type::code PropColour(const double & y1,const double & y2);
+    double WeightSingletOverOctet(const double & y1,const double & y2);
 
     void Test(const std::string & dirname);
 

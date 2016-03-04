@@ -48,6 +48,7 @@ void Final_State::FillPrimaryLadder() {
   AddInitialRapiditiesToLadder();
   m_weights.AddRapidities(p_ladder,-m_Ymax,m_Ymax);
   AddPropagators();
+  SanitizePropagators();
   ConstructKinematics();
 }
 
@@ -60,11 +61,46 @@ void Final_State::AddPropagators() {
   LadderMap::iterator lit1(p_ladder->GetEmissions()->begin()),lit2(lit1);
   lit2++;
   while(lit2!=p_ladder->GetEmissions()->end()) {
-    colour_type::code cc();
     T_Prop * prop(new T_Prop(m_weights.PropColour(lit1->first,lit2->first)));
     p_ladder->GetProps()->push_back(*prop);
+    if (prop->m_col==colour_type::singlet) p_ladder->SetDiffractive(true);
     lit1 = lit2;
     lit2++;
+  }
+}
+
+void Final_State::SanitizePropagators() {
+  LadderMap::iterator lit1(p_ladder->GetEmissions()->begin()), lit2(lit1);
+  lit2++;
+  TPropList::iterator prop(p_ladder->GetProps()->begin());
+  while (lit2!=p_ladder->GetEmissions()->end() &&
+	 prop!=p_ladder->GetProps()->end()) {
+    if (prop->m_col==colour_type::singlet) {
+      CheckNextPropagator(prop,lit2);
+    }
+    else prop++;
+    lit1++; lit2++;
+  }
+}
+
+void Final_State::
+CheckNextPropagator(TPropList::iterator & prop,LadderMap::iterator & lit2) {
+  prop++;
+  if (prop==p_ladder->GetProps()->end() ||
+      prop->m_col!=colour_type::singlet) return;
+  LadderMap::iterator & lit1(lit2); lit1--;
+  double wt12(m_weights.WeightSingletOverOctet(lit1->first,lit2->first));
+  LadderMap::iterator & lit3(lit2); lit3++;
+  double wt23(m_weights.WeightSingletOverOctet(lit2->first,lit3->first));
+  msg_Out()<<"Found double singlet in around "<<lit2->first<<": ";
+  if (wt12>wt23) {
+    prop->m_col = colour_type::octet;
+    msg_Out()<<"made second interval octet.\n";
+  }
+  else {
+    TPropList::iterator & prev(prop); prev--;
+    prev->m_col = colour_type::octet;
+    msg_Out()<<"made first interval octet.\n";
   }
 }
 

@@ -63,6 +63,9 @@ int Inelastic_Event_Generator::GenerateEvent(Blob_List * blobs,
      m_Ngen++;
    }
    msg_Out()<<(*blobs);
+   msg_Out()<<"Leftover energies "
+	    <<m_laddergenerator.LeftoverEnergy(0)<<" & "
+	    <<m_laddergenerator.LeftoverEnergy(1)<<".\n";
    exit(0);
 }
 

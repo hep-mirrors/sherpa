@@ -45,6 +45,12 @@ PropColour(const double & y1,const double & y2) {
   return colour_type::octet;
 }
 
+double Eikonal_Weights::
+WeightSingletOverOctet(const double & y1,const double & y2) {
+  double singletwt(m_density.SingletWeight(y1,y2));
+  double octetwt(m_density.OctetWeight(y1,y2));
+  return singletwt/octetwt;
+}   
 
 
 void Eikonal_Weights::Test(const std::string & dirname) {

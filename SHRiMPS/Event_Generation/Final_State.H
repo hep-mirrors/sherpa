@@ -19,10 +19,13 @@ namespace SHRIMPS {
     
     void   AddInitialRapiditiesToLadder();
     void   AddPropagators();
+    void   SanitizePropagators();
     void   ConstructKinematics();
     void   ConstructPropagator(const double & y1,const double & y2,
 			       T_Prop* prop,const int & sign);
     colour_type::code PropColour(const double & y1,const double & y2);
+    void   CheckNextPropagator(TPropList::iterator & prop,
+			       LadderMap::iterator & lit2);
     double SelectQT2(const double & qt2max,const double & expo);
     double QT2(const double & qt2max,const double & y1,const double & y2,
 	       const colour_type::code & col);
