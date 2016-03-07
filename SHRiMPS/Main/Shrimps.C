@@ -99,11 +99,16 @@ void Shrimps::InitialiseTheEventGenerator() {
   Cross_Sections xsecs;
   xsecs.CalculateCrossSections();
   p_generator = new Event_Generator();
-  p_generator->Initialise(p_beamremnants);
+  p_generator->Initialise();
 }
 
 int Shrimps::GenerateEvent(ATOOLS::Blob_List * blobs) {
-  return p_generator->MinimumBiasEvent(blobs);
+  //return
+  if (p_generator->MinimumBiasEvent(blobs)) {
+    p_beamremnants->FillBeamBlobs(blobs);
+    msg_Out()<<(*blobs);
+  }
+  exit(0);
 }
 
 ATOOLS::Return_Value::code Shrimps::FillBeamBlobs(ATOOLS::Blob_List * blobs) {
@@ -287,7 +292,7 @@ void Shrimps::TestCrossSections(const std::string & dirname) {
 
 void Shrimps::TestEventGeneration(const std::string & dirname) {
   Event_Generator generator;
-  generator.Initialise(p_beamremnants);
+  generator.Initialise();
   generator.Test(dirname);
 }
 

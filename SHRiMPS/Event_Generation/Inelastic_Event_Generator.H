@@ -3,9 +3,8 @@
 
 #include "SHRiMPS/Event_Generation/Event_Generator_Base.H"
 #include "SHRiMPS/Event_Generation/Ladder_Generator.H"
-#include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
+#include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
-
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
 
@@ -35,7 +34,7 @@ namespace SHRIMPS {
     void TestNumberOfLadders(const std::string & dirname);
     void TestInitialLadders(const std::string & dirname);
   public:
-    Inelastic_Event_Generator(Beam_Remnant_Handler * beams);
+    Inelastic_Event_Generator();
     ~Inelastic_Event_Generator();
 
     void Reset();

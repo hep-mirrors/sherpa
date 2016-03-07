@@ -10,8 +10,7 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 using namespace std;
 
-Inelastic_Event_Generator::
-Inelastic_Event_Generator(Beam_Remnant_Handler * beams)
+Inelastic_Event_Generator::Inelastic_Event_Generator()
 {
   Initialise();
 }
@@ -62,11 +61,6 @@ int Inelastic_Event_Generator::GenerateEvent(Blob_List * blobs,
      }
      m_Ngen++;
    }
-   msg_Out()<<(*blobs);
-   msg_Out()<<"Leftover energies "
-	    <<m_laddergenerator.LeftoverEnergy(0)<<" & "
-	    <<m_laddergenerator.LeftoverEnergy(1)<<".\n";
-   exit(0);
 }
 
 void Inelastic_Event_Generator::InitInelasticEvent() {
@@ -136,13 +130,10 @@ ATOOLS::Blob * Inelastic_Event_Generator::CreateBlob(Blob_List * blobs) {
   blob->SetId();
   blob->SetType(btp::Hard_Collision);
   blob->SetTypeSpec("MinBias");    
-  blob->SetStatus(blob_status::needs_showers);
+  blob->SetStatus(blob_status::needs_showers|blob_status::needs_beams);
   blobs->push_back(blob);
   return blob;
 }
-
-
-
 
 void Inelastic_Event_Generator::Test(const std::string & dirname) {
   TestSelectB(dirname);

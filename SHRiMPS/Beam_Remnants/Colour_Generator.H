@@ -17,9 +17,9 @@ namespace SHRIMPS {
     void PickStartColours();
     void IterateColours(LadderMap::iterator out,TPropList::iterator prop,
 			int col1,int col2);
-    void FinishColours(LadderMap::iterator out,int col1,int col2);
+    void FinishColours(int col1,int col2);
     void UpdateColours();
-    void ReplaceColours(const size_t & pos);
+    bool ReplaceColours(const size_t & pos);
   public:
     Colour_Generator();
     ~Colour_Generator();

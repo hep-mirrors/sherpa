@@ -16,8 +16,8 @@ Event_Generator::~Event_Generator()
   if (p_inelastic) delete p_inelastic; p_inelastic=NULL;
 }
 
-void Event_Generator::Initialise(Beam_Remnant_Handler * beams) {
-  p_inelastic = new Inelastic_Event_Generator(beams);
+void Event_Generator::Initialise() {
+  p_inelastic = new Inelastic_Event_Generator();
 } 
 
 bool Event_Generator::DressShowerBlob(ATOOLS::Blob * blob) {

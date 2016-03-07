@@ -7,7 +7,6 @@
 //#include "SHRiMPS/Event_Generation/Double_Diffractive_Event_Generator.H"
 //#include "SHRiMPS/Event_Generation/Quasi_Elastic_Event_Generator.H"
 #include "SHRiMPS/Event_Generation/Inelastic_Event_Generator.H"
-#include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 #include "ATOOLS/Org/Message.H"
@@ -29,7 +28,7 @@ namespace SHRIMPS {
     Event_Generator();
     ~Event_Generator();
 
-    void Initialise(Beam_Remnant_Handler * beams);
+    void Initialise();
     bool DressShowerBlob(ATOOLS::Blob * blob);
     int  MinimumBiasEvent(ATOOLS::Blob_List * blobs);
 

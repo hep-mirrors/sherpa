@@ -22,28 +22,28 @@ bool Colour_Generator::operator()(Ladder * ladder){
 }
 
 void Colour_Generator::PickStartColours() {
-  Ladder_Particle * lpart(p_ladder->GetIn(0));
-  int beam(lpart->m_mom[3]>0.?1:0);
+  Ladder_Particle * beampart(p_ladder->GetIn(0));
+  int beam(beampart->m_mom[3]>0.?1:0);
+  int newcols[2];
   bool hit(false);
-  int  newcols[2];
   for (size_t pos=0;pos<2;pos++) {
     newcols[pos] = 0;
     // make sure not to fill the wrong colours for quarks
-    if (lpart->m_flav.IsQuark() &&
-	((!lpart->m_flav.IsAnti() && pos==0) ||
-	 (lpart->m_flav.IsAnti() && pos==1))) continue;
+    if (beampart->m_flav.IsQuark() &&
+	((!beampart->m_flav.IsAnti() && pos==0) ||
+	 (beampart->m_flav.IsAnti() && pos==1))) continue;
     // take first colour from stack -- but do not take a second one
     // the stuff below is tricky, since our Flow class has its colours
     // on components/counters 1 and 2 ...
     if (!hit && !m_colours[beam][pos].empty()) {
-      lpart->SetFlow(2-pos,(*m_colours[beam][pos].begin()));
+      beampart->SetFlow(2-pos,(*m_colours[beam][pos].begin()));
       m_colours[beam][pos].erase(m_colours[beam][pos].begin());
       hit = true;
     }
     // no colour on stack - generate new one
     else {
-      lpart->SetFlow(2-pos);
-      newcols[pos] = lpart->GetFlow(2-pos);
+      beampart->SetFlow(2-pos);
+      newcols[pos] = beampart->GetFlow(2-pos);
     }
   }
   // put new colours on stack
@@ -72,43 +72,54 @@ void Colour_Generator::IterateColours(LadderMap::iterator out,
   }
   out++; prop++;
   if (prop!=p_props->end()) IterateColours(out,prop,col1,col2);
-  else FinishColours(out,col1,col2);
+  else FinishColours(col1,col2);
 }
 
-void Colour_Generator::FinishColours(LadderMap::iterator out,
-				     int col1,int col2) {
-  Ladder_Particle * lpart = &out->second, * beampart = p_ladder->GetIn(1);
+void Colour_Generator::FinishColours(int col1,int col2) {
+  Ladder_Particle * lpart(&p_ladder->GetEmissions()->rbegin()->second);
+  Ladder_Particle * beampart(p_ladder->GetIn(1));
   lpart->SetFlow(1,col1);
   lpart->SetFlow(2);
-  beampart->SetFlow(1,col2);
+  bool issinglet(p_ladder->GetProps()->rbegin()->m_col==colour_type::singlet);
+  beampart->SetFlow(1,issinglet?lpart->GetFlow(1):col2);
   beampart->SetFlow(2,lpart->GetFlow(2));
-  m_colours[1][0].insert(beampart->GetFlow(1));
-  m_colours[1][1].insert(beampart->GetFlow(2));
 }
 
 void Colour_Generator::UpdateColours() {
-  if (m_colours[1][0].size()==0 && m_colours[1][1].size()==0) return;
-  int trial((m_colours[1][0].size()<m_colours[1][1].size())?1:2);
-  if (p_ladder->GetIn(0)->GetFlow(2-trial)!=
-      p_ladder->GetIn(1)->GetFlow(trial))
-    ReplaceColours(trial);
-  else if (p_ladder->GetIn(0)->GetFlow(trial)!=
-	   p_ladder->GetIn(1)->GetFlow(2-trial))
-    ReplaceColours(2-trial);
+  if (!(m_colours[1][0].size()==0 && m_colours[1][1].size()==0)) {
+    int trial((m_colours[1][0].size()<m_colours[1][1].size())?1:2);
+    bool hit(false);
+    Ladder_Particle * beam0(p_ladder->GetIn(1)), * beam1(p_ladder->GetIn(1));
+    if (beam0->GetFlow(3-trial)!=beam1->GetFlow(trial))
+      hit = ReplaceColours(trial);
+    if (!hit && beam0->GetFlow(trial)!= beam1->GetFlow(3-trial))
+      hit = ReplaceColours(3-trial);
+  }
+  else {
+    for (size_t pos=1;pos<3;pos++)
+      m_colours[1][2-pos].insert(p_ladder->GetIn(1)->GetFlow(pos));
+  }
 }
 
-void Colour_Generator::ReplaceColours(const size_t & pos) {
-  int colnew((*m_colours[1][2-pos].begin()));
-  m_colours[1][2-pos].erase(m_colours[1][2-pos].begin());
-  int colold(p_ladder->GetIn(pos)->GetFlow(1));
-  p_ladder->GetIn(1)->SetFlow(pos,colnew);
-  for (LadderMap::iterator liter=p_ladder->GetEmissions()->begin();
-       liter!=p_ladder->GetEmissions()->end();liter++) {
-    if (liter->second.GetFlow(pos)==colold) {
-      liter->second.SetFlow(pos,colnew);
-      break;
+bool Colour_Generator::ReplaceColours(const size_t & pos) {
+  for (set<int>::iterator cit=m_colours[1][pos-1].begin();
+       cit!=m_colours[1][pos-1].end();cit++) {
+    int colnew((*cit));
+    if (colnew!=p_ladder->GetIn(1)->GetFlow(3-pos)) {
+      m_colours[1][pos-1].erase(cit);
+      int colold(p_ladder->GetIn(1)->GetFlow(pos));
+      p_ladder->GetIn(1)->SetFlow(pos,colnew);
+      for (LadderMap::iterator liter=p_ladder->GetEmissions()->begin();
+	   liter!=p_ladder->GetEmissions()->end();liter++) {
+	if (liter->second.GetFlow(pos)==colold) {
+	  liter->second.SetFlow(pos,colnew);
+	  return true;
+	}
+      }
     }
   }
+  m_colours[1][2-pos].insert(p_ladder->GetIn(1)->GetFlow(pos));
+  return false;
 }
 
 void Colour_Generator::Reset() { 

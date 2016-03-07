@@ -5,7 +5,7 @@
 #include "SHRiMPS/Tools/MinBias_Parameters.H"
 #include "SHRiMPS/Cross_Sections/Cross_Sections.H"
 #include "SHRiMPS/Event_Generation/Event_Generator.H"
-//#include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
+#include "SHRiMPS/Beam_Remnants/Beam_Remnant_Handler.H"
 //#include "SHRiMPS/Beam_Remnants/Continued_PDF.H"
 #include "ATOOLS/Phys/Blob_List.H"
 #include "ATOOLS/Phys/Flavour.H"
