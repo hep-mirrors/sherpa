@@ -41,7 +41,7 @@ Ahadic::Ahadic(string path, string file)  :
 
 Ahadic::~Ahadic() 
 {
-  writeHistos();
+  if (hadpars->AnaOn()) writeHistos();
   CleanUp();
   if (p_cdechandler)  { delete p_cdechandler;  p_cdechandler=NULL;  }
   if (p_cformhandler) { delete p_cformhandler; p_cformhandler=NULL; }

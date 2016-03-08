@@ -26,7 +26,7 @@ Cluster_Formation_Handler::Cluster_Formation_Handler(Cluster_List* clulist,
   p_cformer(new Cluster_Former()),
   p_recons(new Colour_Reconnections(2,1,hadpars->Get(string("pt02")))), 
   p_softclusters(hadpars->GetSoftClusterHandler()),
-  p_clulist(clulist), m_analyse(true)
+  p_clulist(clulist), m_analyse(hadpars->AnaOn())
 { 
   if (m_analyse) {
     m_histograms[string("Cluster_Mass_Formation")]     = new Histogram(0,0.,100.,200);
