@@ -7,8 +7,7 @@ using namespace SHRIMPS;
 
 Event_Generator::Event_Generator() :
   m_runmode(MBpars.RunMode()),m_thisevent(m_runmode),
-  p_inelastic(NULL), 
-  m_done(false)
+  p_inelastic(NULL), p_active(NULL), m_xsec(0.)
 { }
 
 Event_Generator::~Event_Generator() 
@@ -18,7 +17,14 @@ Event_Generator::~Event_Generator()
 
 void Event_Generator::Initialise() {
   p_inelastic = new Inelastic_Event_Generator();
+  m_xsec += p_inelastic->XSec();
 } 
+
+void Event_Generator::Reset() {
+  if (p_active) p_active->Reset();
+  m_thisevent = m_runmode;
+}
+
 
 bool Event_Generator::DressShowerBlob(ATOOLS::Blob * blob) {
   if (m_runmode!=run_mode::underlying_event) {
@@ -31,14 +37,14 @@ bool Event_Generator::DressShowerBlob(ATOOLS::Blob * blob) {
 
 int Event_Generator::MinimumBiasEvent(ATOOLS::Blob_List * blobs) {
   msg_Out()<<"======================================================\n"
-	   <<"======================================================\n"
-	   <<METHOD<<"(done = "<<m_done<<"):\n"<<(*blobs)<<"\n";
-  if (m_done) return 0;
+	   <<METHOD<<": "<<blobs->size()<<" blobs.\n"
+	   <<"======================================================\n";
   if (blobs->size()==1) {
     (*blobs)[0]->AddData("Weight",new ATOOLS::Blob_Data<double>(m_xsec));
     (*blobs)[0]->AddData("Weight_Norm",new ATOOLS::Blob_Data<double>(m_xsec));
     (*blobs)[0]->AddData("Trials",new ATOOLS::Blob_Data<double>(1.));
   }
+  p_active = p_inelastic;
   return p_inelastic->GenerateEvent(blobs,false);
 }
 

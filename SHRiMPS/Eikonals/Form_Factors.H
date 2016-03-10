@@ -89,7 +89,7 @@ namespace SHRIMPS {
     double operator()() { return 1.; }
     double FourierTransform(const double & b) const;
     double ImpactParameter(const double & val) const;
-    double SelectQT2(const double & qt2max,const double & qt2min=-1.) const;
+    double SelectQT2(const double & qt2max,const double & qt2min=0.) const;
 
     const double & Bmax() const      { return m_bmax;      }
     const size_t & Bbins() const     { return m_bsteps;    }

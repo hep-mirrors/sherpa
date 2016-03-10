@@ -36,51 +36,59 @@ void Inelastic_Event_Generator::Initialise() {
   }
   msg_Info()<<METHOD<<" yields effective inelastic cross section "
 	    <<"sigma = "<<m_sigma/1.e9<<" mbarn.\n";
+  Reset();
 }
 
-void Inelastic_Event_Generator::Reset() {}
-
-int Inelastic_Event_Generator::GenerateEvent(Blob_List * blobs,
- 					     const bool & isUE) {
-   msg_Info()<<"*** -----------------------------------------------------\n"
- 	    <<"*** "<<METHOD<<"(done = "<<m_done<<").\n";
-   Blob * blob(blobs->FindFirst(btp::Soft_Collision));
-   if (blob && blob->Status()==blob_status::needs_minBias) {
-     InitInelasticEvent();
-     msg_Info()<<"*** "<<METHOD<<" selected B = "<<m_B
-	       <<" and eikonal ["<<p_eikonal->FF1()->Number()
-	       <<p_eikonal->FF2()->Number()<<"]\n"
-	       <<"***  ---> "<<m_Nladders<<" ladders to be generated.\n";
-   }
-   while (m_Ngen<m_Nladders) {
-     if (!AddScatter(blobs)) {
-       msg_Error()<<"Error in "<<METHOD<<":\n"
-		  <<"   Had to stop ladder generation after "<<m_Ngen
-		  <<" of "<<m_Nladders<<" ladders.\n"; 
-       break;
-     }
-     m_Ngen++;
-   }
+void Inelastic_Event_Generator::Reset() {
+  m_init = m_done = false;
+  m_first = true;
 }
 
-void Inelastic_Event_Generator::InitInelasticEvent() {
-  ResetEvent();
-  for (size_t trials=0;trials<1000;trials++) {
+int Inelastic_Event_Generator::GenerateEvent(Blob_List * blobs,const bool & isUE) {
+  msg_Info()<<"*** -----------------------------------------------------\n"
+ 	    <<"*** "<<METHOD<<"(done = "<<m_done<<", init = "<<m_init<<").\n";
+  if (m_done || !InitInelasticEvent(blobs)) return 0;
+  if (!AddScatter(blobs)) {
+    m_done = true;
+    msg_Error()<<"Error in "<<METHOD<<":\n"
+	       <<"   Had to stop ladder generation after "<<m_Ngen
+	       <<" of "<<m_Nladders<<" ladders.\n"; 
+    return 0;
+  }
+  m_Ngen++;
+  if (m_Ngen>=m_Nladders) {
+    m_done = true;
+    return 0;
+  }
+  return 1;
+}
+
+bool Inelastic_Event_Generator::InitInelasticEvent(Blob_List * blobs) {
+  if (m_init) return true;
+  Blob * blob(blobs->FindFirst(btp::Soft_Collision));
+  if (!(blob && blob->Status()==blob_status::needs_minBias) ||
+      !SetUpEvent()) return false;
+  m_init = true;
+  m_laddergenerator.InitCollision(p_eikonal,m_B);
+  msg_Info()<<"*** "<<METHOD<<" selected B = "<<m_B
+	    <<" and eikonal ["<<p_eikonal->FF1()->Number()
+	    <<p_eikonal->FF2()->Number()<<"]\n"
+	    <<"***  ---> "<<m_Nladders<<" ladders to be generated.\n";
+  return true;
+}
+
+bool Inelastic_Event_Generator::SetUpEvent() {
+  p_eikonal  = 0; m_B = -1;
+  m_Nladders = m_Nprim = m_Ngen = 0;
+  size_t trials=0;
+  do {
     SelectEikonal();
     SelectB();
     m_Nladders = ran->Poissonian((*p_eikonal)(m_B));
-    if (m_Nladders>1) break;
-  }
-  m_laddergenerator.InitCollision(p_eikonal,m_B);
+  } while (trials++<1000 && m_Nladders<1);
+  return (trials<1000);
 }
 
-void Inelastic_Event_Generator::ResetEvent() {
-  p_eikonal  = 0; m_B = -1;
-  m_Nladders = m_Nprim = m_Ngen = 0;
-  m_first    = true;
-  m_done     = false;
-}
-  
 bool Inelastic_Event_Generator::SelectEikonal() {
   p_eikonal = 0;
   while (p_eikonal==NULL) {
@@ -119,19 +127,28 @@ bool Inelastic_Event_Generator::SelectB() {
 
 int Inelastic_Event_Generator::AddScatter(Blob_List * blobs) {
   Blob * blob(blobs->FindFirst(btp::Soft_Collision));
-  if (!(blob && blob->Status()==blob_status::needs_minBias)) {
+  if (!(blob && blob->Status()==blob_status::needs_minBias)) return -1;
+  blob = CreateBlob();
+  if (!m_laddergenerator.MakePrimaryLadder(blob)) {
+    msg_Out()<<METHOD<<" failed to create allowed primary ladder.\n";
+    delete blob;
+    return 0;
   }
-  blob = CreateBlob(blobs);
-  return m_laddergenerator.MakePrimaryLadder(blob);
+  msg_Out()<<METHOD<<" added blob "<<blob->Id()
+	   <<" ("<<blob->Type()<<"), status = "<<blob->Status()<<"\n";
+  blobs->push_back(blob);
+  return 1;
 }
 
-ATOOLS::Blob * Inelastic_Event_Generator::CreateBlob(Blob_List * blobs) {
+ATOOLS::Blob * Inelastic_Event_Generator::CreateBlob() {
   Blob * blob = new Blob();
   blob->SetId();
   blob->SetType(btp::Hard_Collision);
   blob->SetTypeSpec("MinBias");    
   blob->SetStatus(blob_status::needs_showers|blob_status::needs_beams);
-  blobs->push_back(blob);
+  blob->AddData("Weight",new ATOOLS::Blob_Data<double>(m_sigma));
+  blob->AddData("Weight_Norm",new ATOOLS::Blob_Data<double>(1.));
+  blob->AddData("Trials",new ATOOLS::Blob_Data<double>(1));
   return blob;
 }
 

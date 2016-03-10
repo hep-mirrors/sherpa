@@ -89,7 +89,7 @@ void Colour_Generator::UpdateColours() {
   if (!(m_colours[1][0].size()==0 && m_colours[1][1].size()==0)) {
     int trial((m_colours[1][0].size()<m_colours[1][1].size())?1:2);
     bool hit(false);
-    Ladder_Particle * beam0(p_ladder->GetIn(1)), * beam1(p_ladder->GetIn(1));
+    Ladder_Particle * beam0(p_ladder->GetIn(0)), * beam1(p_ladder->GetIn(1));
     if (beam0->GetFlow(3-trial)!=beam1->GetFlow(trial))
       hit = ReplaceColours(trial);
     if (!hit && beam0->GetFlow(trial)!= beam1->GetFlow(3-trial))

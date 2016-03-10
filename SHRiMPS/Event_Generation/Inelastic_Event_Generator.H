@@ -15,20 +15,19 @@ namespace SHRIMPS {
 
     std::map<Omega_ik *,double>                 m_xsecs; 
     std::map<Omega_ik *,std::vector<double> * > m_Bgrids; 
-    Omega_ik * p_eikonal;
     double     m_sigma,m_B;
     int        m_Nladders, m_Nprim, m_Ngen;
-    bool       m_first, m_done;
+    bool       m_first, m_init, m_done;
 
     void Initialise();
 
-    void InitInelasticEvent();
-    void ResetEvent();
+    bool InitInelasticEvent(ATOOLS::Blob_List * blobs);
+    bool SetUpEvent();
     bool SelectEikonal();
     bool SelectB();
 
     int  AddScatter(ATOOLS::Blob_List * blobs);
-    ATOOLS::Blob * CreateBlob(ATOOLS::Blob_List * blobs);
+    ATOOLS::Blob * CreateBlob();
 
     void TestSelectB(const std::string & dirname);
     void TestNumberOfLadders(const std::string & dirname);
@@ -40,7 +39,7 @@ namespace SHRIMPS {
     void Reset();
     int  GenerateEvent(ATOOLS::Blob_List * blobs,const bool & isUE=false);
 
-    inline double XSec(Omega_ik * eikonal) {
+    inline double XSec(Omega_ik * eikonal=NULL) {
       if (eikonal!=NULL) return m_xsecs[eikonal];
       return m_sigma;
     }

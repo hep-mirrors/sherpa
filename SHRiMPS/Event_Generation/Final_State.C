@@ -78,28 +78,26 @@ void Final_State::SanitizePropagators() {
     if (prop->m_col==colour_type::singlet) {
       CheckNextPropagator(prop,lit2);
     }
-    else prop++;
-    lit1++; lit2++;
+    prop++; lit1++; lit2++;
   }
 }
 
 void Final_State::
 CheckNextPropagator(TPropList::iterator & prop,LadderMap::iterator & lit2) {
-  prop++;
-  if (prop==p_ladder->GetProps()->end() ||
-      prop->m_col!=colour_type::singlet) return;
+  TPropList::iterator prop1(prop); prop1++;
+  if (prop1==p_ladder->GetProps()->end() ||
+      prop1->m_col!=colour_type::singlet) return;
   LadderMap::iterator & lit1(lit2); lit1--;
   double wt12(m_weights.WeightSingletOverOctet(lit1->first,lit2->first));
   LadderMap::iterator & lit3(lit2); lit3++;
   double wt23(m_weights.WeightSingletOverOctet(lit2->first,lit3->first));
   msg_Out()<<"Found double singlet in around "<<lit2->first<<": ";
   if (wt12>wt23) {
-    prop->m_col = colour_type::octet;
+    prop1->m_col = colour_type::octet;
     msg_Out()<<"made second interval octet.\n";
   }
   else {
-    TPropList::iterator & prev(prop); prev--;
-    prev->m_col = colour_type::octet;
+    prop->m_col = colour_type::octet;
     msg_Out()<<"made first interval octet.\n";
   }
 }
@@ -111,7 +109,7 @@ void Final_State::ConstructKinematics() {
   TPropList::iterator down(p_ladder->GetProps()->begin());
   TPropList::iterator up(p_ladder->GetProps()->end());up--;
   Vec4D upqt(0.,0.,0.,0.),downqt(0.,0.,0.,0.);
-  double qt,y,E,pz;
+  double qt,y,E,pz,coshy,sinhy;
   while (forward!=backward) {
     if (dabs(forward->first)>dabs(backward->first)) {
       next   = forward; next++;
@@ -119,8 +117,10 @@ void Final_State::ConstructKinematics() {
       ConstructPropagator(y,next->first,&(*down),1);
       downqt = -downqt+down->m_q;
       qt     = downqt.PPerp();
-      m_E   += E  = qt*cosh(y);
-      m_pz  += pz = qt*sinh(y);
+      coshy  = cosh(y);
+      sinhy  = sinh(y); 
+      m_E   += E  = qt*coshy;
+      m_pz  += pz = qt*sinhy;
       forward->second.m_mom = Vec4D(E,0.,0.,pz)-downqt;
       forward->second.m_flav = Flavour(kf_gluon);
       forward++; down++;
@@ -163,7 +163,7 @@ double Final_State::QT2(const double & qt2max,
   double m_Ymax(MBpars.GetEikonalParameters().Ymax);
   double qt2(-1.);
   if (dabs(y1)>m_Ymax) {
-    if (y1<y2) qt2 = p_omegaik->FF1()->SelectQT2(1.);
+    if (y1<y2) qt2 = p_omegaik->FF1()->SelectQT2(0.25);
     else qt2 = p_omegaki->FF1()->SelectQT2(1.);
   }
   else {

@@ -46,12 +46,10 @@ bool Ladder_Generator::MakePrimaryLadder(Blob * blob) {
   AddInParticles();
   m_Colours(p_ladder);
   if (CheckTotalMomentum()) {
+    msg_Out()<<METHOD<<" gives\n"<<(*p_ladder)<<"\n";
     FillBlob(blob);
     return true;
   }
-  msg_Error()<<"Error in "<<METHOD<<":\n"
-	     <<"   Four-Mom check = "<<p_ladder->CheckFourMomentum()<<"\n"
-	   <<(*p_ladder)<<"\n";
   return false;
 }
 

@@ -13,7 +13,7 @@ Hadron_Dissociation(Beam_Base * beambase,Continued_PDF * pdf) :
   p_pdf(pdf),
   m_beamvec(beambase->OutMomentum()), m_outmom(Vec4D(0.,0.,0.,0.)),
   m_beamflav(beambase->Bunch()),
-  m_dir(m_beamvec[3]>0.?1:-1), m_xmin(2./m_beamvec[0]),
+  m_dir(m_beamvec[3]>0.?1:-1), m_xmin(2./m_beamvec[0]), m_QT2max(4.),
   p_blob(NULL)
 { }
 
@@ -27,6 +27,7 @@ bool Hadron_Dissociation::FillBeamBlob(Blob_List * blobs) {
   AddBeamParticle();
   AddPartonsFromCollision(blobs);
   IdentifyAndFillSoftBlob(blobs);
+  SelectTrialTransverseMomenta();
   return true;
 }
 
@@ -47,15 +48,16 @@ void Hadron_Dissociation::AddBeamParticle() {
 void Hadron_Dissociation::AddPartonsFromCollision(Blob_List * blobs) {
   for (Blob_List::iterator biter=blobs->begin();biter!=blobs->end();biter++) {
     if ((*biter)->Has(blob_status::needs_beams) &&
-	(*biter)->Type()==btp::Hard_Collision)
+	(*biter)->Type()==btp::Shower) {
       HarvestBlob((*biter));
+    }
   }
 }
 
 void Hadron_Dissociation::HarvestBlob(Blob * blob) {
   for (size_t in=0;in<blob->NInP();in++) {
     Particle * part(blob->InParticle(in));
-    if (m_dir*part->Momentum()[3]>0) {
+    if (!part->ProductionBlob() && m_dir*part->Momentum()[3]>0) {
       p_blob->AddToOutParticles(part);
       m_outmom -= part->Momentum();
       for (size_t i=0;i<2;i++) {
@@ -65,7 +67,6 @@ void Hadron_Dissociation::HarvestBlob(Blob * blob) {
       }
     }
   }
-  blob->UnsetStatus(blob_status::needs_beams);
 }
 
 void Hadron_Dissociation::IdentifyAndFillSoftBlob(Blob_List * blobs) {
@@ -99,6 +100,9 @@ void Hadron_Dissociation::AddSpectatorPartons(Blob * softblob) {
   outdiquark->SetNumber(-1);
   outdiquark->SetInfo('F');
   softblob->AddToOutParticles(outdiquark);
+
+  (*m_qtmap)[outquark]   = Vec4D(0.,0.,0.,0.);
+  (*m_qtmap)[outdiquark] = Vec4D(0.,0.,0.,0.);
 }
 
 
@@ -114,6 +118,15 @@ CalculateParallelMomenta(Vec4D & qmom,Vec4D & dimom) {
   }
   qmom  = x*m_beamvec;
   dimom = m_outmom-qmom;
+}
+
+void Hadron_Dissociation::SelectTrialTransverseMomenta() {
+  for (std::map<Particle *,Vec4D>::iterator pvit=m_qtmap->begin();
+       pvit!=m_qtmap->end();pvit++) {
+    double qt  = sqrt(p_ff->SelectQT2(m_QT2max,0.));
+    double phi = ran->Get()*2.*M_PI;
+    pvit->second = Vec4D(0.,cos(phi),sin(phi),0.);
+  }
 }
 
 void Hadron_Dissociation::FixConstituentFlavours() {

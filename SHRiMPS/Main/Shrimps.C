@@ -103,15 +103,11 @@ void Shrimps::InitialiseTheEventGenerator() {
 }
 
 int Shrimps::GenerateEvent(ATOOLS::Blob_List * blobs) {
-  //return
-  if (p_generator->MinimumBiasEvent(blobs)) {
-    p_beamremnants->FillBeamBlobs(blobs);
-    msg_Out()<<(*blobs);
-  }
-  exit(0);
+  return p_generator->MinimumBiasEvent(blobs);
 }
 
 ATOOLS::Return_Value::code Shrimps::FillBeamBlobs(ATOOLS::Blob_List * blobs) {
+  p_beamremnants->SetEikonal(p_generator->GetEikonal());
   return p_beamremnants->FillBeamBlobs(blobs);
 }
 
