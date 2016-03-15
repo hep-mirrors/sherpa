@@ -141,9 +141,10 @@ namespace OpenLoops {
   void OpenLoops_Interface::SetParametersSM()
   {
     // set particle masses/widths
-    for(KFCode_ParticleInfo_Map::const_iterator it = s_kftable.begin();	it!=s_kftable.end(); ++it){
-      const Flavour& flav(it->first); const int& id(it->first);
-      if (flav.IsHadron()) continue; // KFTable also contains hadrons, skip them here
+    int tmparr[] = {kf_e, kf_mu, kf_tau, kf_u, kf_d, kf_s, kf_c, kf_b, kf_t, kf_Wplus, kf_Z, kf_h0};
+    vector<int> pdgids (tmparr, tmparr + sizeof(tmparr) / sizeof(tmparr[0]) );
+    for (size_t i=0; i<pdgids.size(); ++i) {
+      const int& id(pdgids[i]); const Flavour& flav(id);
       if (flav.Mass()>0.0) SetParameter("mass("+ToString(id)+")", flav.Mass());
       if (flav.Width()>0.0) SetParameter("width("+ToString(id)+")", flav.Width());
       if (flav.IsFermion() && flav.Yuk()>0.0 &&
