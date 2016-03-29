@@ -10,9 +10,7 @@ namespace METOOLS {
   class CObject {
   protected:
 
-    int m_c[2];
-
-    size_t m_h, m_s;
+    int m_c[2], m_h, m_s;
 
   public:
 
@@ -39,11 +37,11 @@ namespace METOOLS {
 
     inline int operator()(const int i) const { return m_c[i]; }
 
-    inline void SetH(const size_t &h) { m_h=h; }
-    inline void SetS(const size_t &s) { m_s=s; }
+    inline void SetH(const int &h) { m_h=h; }
+    inline void SetS(const int &s) { m_s=s; }
 
-    inline const size_t &H() const { return m_h; }
-    inline const size_t &S() const { return m_s; }
+    inline const int &H() const { return m_h; }
+    inline const int &S() const { return m_s; }
 
     inline bool operator==(const CObject &o) const
     { return m_c[0]==o.m_c[0] && m_c[1]==o.m_c[1] && m_s==o.m_s; }

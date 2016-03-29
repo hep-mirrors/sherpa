@@ -28,7 +28,7 @@ namespace METOOLS {
     LC_Vector m_lc;
     CC_Vector m_cc;
 
-    SizeT_Vector m_h, m_hjc, m_cjc;
+    Int_Vector m_h, m_hjc, m_cjc;
 
     bool   m_sign, m_act, m_zero;
     size_t m_fperm;

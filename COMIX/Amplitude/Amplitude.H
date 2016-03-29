@@ -171,6 +171,7 @@ namespace COMIX {
 		    const size_t &minntc,const size_t &maxntc,
 		    const std::string &name);
 
+    void ResetJ();
     void ResetZero();
 
     bool Evaluate(const Int_Vector &chirs);

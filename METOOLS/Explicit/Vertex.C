@@ -111,12 +111,12 @@ void Vertex::Evaluate()
   msg_Indent();
 #endif
   size_t hid(0);
-  for (SizeT_Vector::iterator i(m_hjc.begin());i!=m_hjc.end();++i) *i=0;
+  for (Int_Vector::iterator i(m_hjc.begin());i!=m_hjc.end();++i) *i=0;
   for (size_t j(0);j<m_hjj.size();++j) m_hjj[j]=&m_j[j]->J().front();
   for (size_t hc(m_hjc.size()-1);m_hjc[0]<m_j[0]->J().size();) {
     if(m_hjc[hc]==m_j[hc]->J().size()){m_hjc[hc--]=0;++m_hjc[hc];continue;}
     m_hjj[hc]=&m_j[hc]->J()[m_hjc[hc]];if(hc<m_hjc.size()-1){++hc;continue;}
-    for (SizeT_Vector::iterator i(m_cjc.begin());i!=m_cjc.end();++i) *i=0;
+    for (Int_Vector::iterator i(m_cjc.begin());i!=m_cjc.end();++i) *i=0;
     bool zero(false);
     for (size_t i(0);i<m_cjj.size();++i)
       if (m_hjj[i]->empty()) {zero=true;break;}

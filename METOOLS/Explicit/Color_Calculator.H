@@ -18,7 +18,7 @@ namespace METOOLS {
 
     Complex m_cpl;
 
-    size_t m_stat;
+    int m_stat;
 
     static size_t s_cimin, s_cimax;
 
@@ -45,7 +45,7 @@ namespace METOOLS {
 
     inline Complex Coupling() const { return m_cpl; }
 
-    inline size_t Stat() const { return m_stat; }
+    inline int Stat() const { return m_stat; }
 
   };// end of class Color_Calculator
 

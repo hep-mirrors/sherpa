@@ -1104,6 +1104,14 @@ void Amplitude::SetCouplings() const
 #endif
 }
 
+void Amplitude::ResetJ()
+{
+  for (size_t n(1);n<=m_n-1;--n) {
+    for (size_t i(0);i<m_cur[n].size();++i) 
+      m_cur[n][i]->ResetJ();
+  }
+}
+
 void Amplitude::ResetZero()
 {
   for (size_t n(m_n-2);n>=2;--n) {
@@ -1469,6 +1477,7 @@ bool Amplitude::EvaluateAll()
 		 <<" -> "<<m_res+csum<<"\n";
 #endif
   m_res+=csum;
+  ResetJ();
   return true;
 }
 
