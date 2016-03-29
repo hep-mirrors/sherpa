@@ -8,6 +8,8 @@
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+
+#include <algorithm>
 #include <typeinfo>
 
 using namespace METOOLS;
@@ -37,9 +39,11 @@ namespace METOOLS {
 
 size_t Vertex::s_vlmode(0);
 
+std::map<std::string,Int_Vector> Vertex::s_h;
+
 Vertex::Vertex(const Vertex_Key &key): 
   p_v(key.p_mv), p_c(NULL),
-  p_info(key.p_dinfo), p_kin(NULL),
+  p_info(key.p_dinfo), p_kin(NULL), p_h(NULL),
   m_sign(false), m_act(true), 
   m_fperm(0), m_order(2,0),
   m_icplfac(1.0)
@@ -189,7 +193,32 @@ void Vertex::InitPols()
   m_cjc.resize(m_j.size());
   m_hjj.resize(m_j.size());
   m_cjj.resize(m_j.size());
-  m_h.clear();
+  int nmax(0);
+  std::string id;
+  for (size_t i(0);i<m_j.size();++i) {
+    id+=ToString(m_j[i]->H().Spins());
+    nmax=Max(nmax,m_j[i]->Id().back());
+  }
+  for (size_t i(0);i<=nmax;++i)
+    for (size_t j(0);j<m_j.size();++j)
+      if (std::find(m_j[j]->Id().begin(),
+		    m_j[j]->Id().end(),i)!=
+	  m_j[j]->Id().end()) {
+	id+="_"+ToString(j);
+	break;
+      }
+  std::map<std::string,Int_Vector>::iterator hit(s_h.find(id));
+  if (hit!=s_h.end()) {
+    p_h=&hit->second;
+#ifdef DEBUG__BG
+    msg_Debugging()<<"  "<<id<<" mapped to '"<<p_h<<"'\n}\n";
+#endif
+    return;
+  }
+  p_h=&s_h.insert(make_pair(id,Int_Vector())).first->second;
+#ifdef DEBUG__BG
+  msg_Debugging()<<"  "<<id<<" stored in '"<<p_h<<"'\n";
+#endif
   std::vector<Int_Vector> hjj(m_j.size());
   for (size_t i(0);i<hjj.size();++i) hjj[i]=m_j[i]->H()(0);
   for (size_t hc(m_hjc.size()-1);m_hjc[0]<m_j[0]->H().N();) {
@@ -205,10 +234,10 @@ void Vertex::InitPols()
       }
     }
 #ifdef DEBUG__BG
-    msg_Debugging()<<"  ["<<m_h.size()<<"]: j = "<<m_hjc
+    msg_Debugging()<<"  ["<<p_h->size()<<"]: j = "<<m_hjc
 		   <<", h = "<<ch<<" -> id = "<<p_c->H()(ch)<<"\n";
 #endif
-    m_h.push_back(p_c->H()(ch));
+    p_h->push_back(p_c->H()(ch));
     ++m_hjc[hc];
   }
 #ifdef DEBUG__BG

@@ -28,7 +28,7 @@ namespace METOOLS {
     LC_Vector m_lc;
     CC_Vector m_cc;
 
-    Int_Vector m_h, m_hjc, m_cjc;
+    Int_Vector *p_h, m_hjc, m_cjc;
 
     bool   m_sign, m_act, m_zero;
     size_t m_fperm;
@@ -41,6 +41,8 @@ namespace METOOLS {
     CObject_Vector m_cjj;
 
     static size_t s_vlmode;
+
+    static std::map<std::string,Int_Vector> s_h;
 
     std::string CVLabel() const;
 
@@ -114,7 +116,7 @@ namespace METOOLS {
     inline const LC_Vector &Lorentz() const { return m_lc; }
     inline const CC_Vector &Color() const   { return m_cc; }
 
-    inline size_t H(const size_t &i) const { return m_h[i]; }
+    inline size_t H(const size_t &i) const { return (*p_h)[i]; }
 
     inline MODEL::Single_Vertex *V() const { return p_v; }
 
