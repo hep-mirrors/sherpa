@@ -42,7 +42,7 @@ namespace PHASIC {
     cls::scheme m_colorscheme;
     hls::scheme m_helicityscheme;
 
-    double m_threshold, m_enhancefac, m_maxeps, m_rsfac;
+    double m_threshold, m_enhancefac, m_maxeps, m_rsfac, m_thkill;
 
     long unsigned int m_n, m_itmin;
 
@@ -86,7 +86,7 @@ namespace PHASIC {
     void SetMomenta(const ATOOLS::Vec4D_Vector &p);
     void SetMomenta(const ATOOLS::Cluster_Amplitude &ampl);
 
-    void AddPoint(const double xs);
+    bool AddPoint(const double xs);
     void Reset();
 
     void SetMax(const double max);

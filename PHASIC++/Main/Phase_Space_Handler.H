@@ -193,6 +193,8 @@ namespace PHASIC {
 
     inline void SetOSMass(const double &osmass) { m_osmass=osmass; }
 
+    const ATOOLS::Vec4D_Vector &Momenta() { return p_lab; }
+
   };// end of class Phase_Space_Handler
 
   /*!

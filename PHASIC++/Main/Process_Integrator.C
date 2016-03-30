@@ -51,6 +51,7 @@ bool Process_Integrator::Initialize
   p_beamhandler=beamhandler;
   p_isrhandler=isrhandler;
   Data_Reader read(" ",";","!","=");
+  m_thkill=read.GetValue<double>("IB_THRESHOLD_KILL",-1.0e12);
   m_swmode=read.GetValue<int>("SELECTION_WEIGHT_MODE", 0);
   static bool minit(false);
   if (!minit) {
@@ -380,8 +381,24 @@ void Process_Integrator::SetRSEnhanceFactor(const double &rsfac)
       (*p_proc)[i]->Integrator()->SetRSEnhanceFactor(rsfac);
 }
 
-void Process_Integrator::AddPoint(const double value) 
+bool Process_Integrator::AddPoint(const double value) 
 {
+  if (m_totalxs && dabs(value/m_totalxs)>dabs(m_thkill)) {
+    if (m_thkill<0.0) {
+      msg_Info()<<METHOD<<"(): Skip point in "<<p_proc->Name()<<"\n";
+      return false;
+    }
+    ATOOLS::MakeDir("stability");
+    std::ofstream sf(("stability/"+p_proc->Name()+
+		      "_"+rpa->gen.Variable("RNG_SEED")).c_str(),
+		     std::ios_base::app);
+    sf.precision(16);
+    sf<<"(P"<<m_n+m_sn+m_msn<<"){ # w = "<<value<<"\n";
+    for (size_t i(0);i<p_pshandler->Momenta().size();++i)
+      sf<<"  p_lab["<<i<<"]=Vec4D"<<p_pshandler->Momenta()[i]<<";\n";
+    sf<<"}(P"<<m_n+m_sn+m_msn<<");\n";
+    return false;
+  }
 #ifdef USING__MPI
   m_msn++;
   m_mssum    += value;
@@ -410,6 +427,7 @@ void Process_Integrator::AddPoint(const double value)
 	(*p_proc)[i]->Integrator()->
 	  AddPoint(value*(*p_proc)[i]->Last()/p_proc->Last());
   }
+  return true;
 }
 
 void Process_Integrator::SetMax(const double max) 

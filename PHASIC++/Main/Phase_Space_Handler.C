@@ -538,7 +538,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
 void Phase_Space_Handler::AddPoint(const double value)
 {
   m_enhance=value?EnhanceFactor(p_process->Process()):1.0;
-  p_process->AddPoint(value);
+  if (!p_process->AddPoint(value)) return;
   if (value!=0.0) {
     if (p_beamchannels) p_beamchannels->AddPoint(value*m_enhance);
     if (p_isrchannels)  p_isrchannels->AddPoint(value*m_enhance);
