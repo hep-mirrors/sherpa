@@ -1477,7 +1477,6 @@ bool Amplitude::EvaluateAll()
 		 <<" -> "<<m_res+csum<<"\n";
 #endif
   m_res+=csum;
-  ResetJ();
   return true;
 }
 
