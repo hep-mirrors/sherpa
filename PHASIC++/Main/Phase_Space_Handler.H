@@ -82,9 +82,9 @@ namespace PHASIC {
     int  m_nin, m_nout, m_nvec, m_fin_opt, m_dmode, m_enhancexs;
     bool m_initialized, m_sintegrator;
 
-    long int m_maxtrials;
+    long int m_maxtrials, m_killedpoints;
 
-    double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight;
+    double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight, m_thkill;
     double m_result, m_error, m_abserror, m_enhance, m_osmass; 
     
     std::vector<std::vector<double> > m_stats;

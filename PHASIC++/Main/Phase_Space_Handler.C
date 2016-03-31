@@ -50,6 +50,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   dr.AddWordSeparator("\t");
   dr.SetInputPath(rpa->GetPath());
   dr.SetInputFile(rpa->gen.Variable("INTEGRATION_DATA_FILE"));
+  m_thkill=dr.GetValue<double>("IB_THRESHOLD_KILL",-1.0e12);
   m_error    = dr.GetValue<double>("INTEGRATION_ERROR", dr.GetValue<double>("ERROR", 0.01));
   m_abserror    = dr.GetValue<double>("ABS_ERROR",0.0);
   m_maxtrials = dr.GetValue<int>("MAX_TRIALS",1000000);
@@ -59,6 +60,7 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Integrator *proc,double error):
   if (error>0.) {
     m_error   = error;
   }
+  m_killedpoints=0;
   p_flavours=proc->Process()->Flavours();
   p_fsrchannels = new FSR_Channels(this,"fsr_"+proc->Process()->Name());
   double minalpha = dr.GetValue<double>("INT_MINALPHA",0.0);
@@ -359,6 +361,31 @@ double Phase_Space_Handler::Differential(Process_Integrator *const process,
     (*nlos)*=m_psweight;
     (*nlos).MultMEwgt(m_psweight);
   }
+  if (p_active->TotalXS() &&
+      dabs(m_result/p_active->TotalXS())>dabs(m_thkill)) {
+    if (m_thkill<0.0) {
+      msg_Info()<<METHOD<<"(): Skip point in '"<<p_active->Process()->Name()
+		<<"', w = "<<m_result*rpa->Picobarn()<<".\n";
+      return false;
+    }
+    ATOOLS::MakeDir("stability");
+    std::ofstream sf(("stability/"+p_active->Process()->Name()+
+		      "_"+rpa->gen.Variable("RNG_SEED")).c_str(),
+		     std::ios_base::app);
+    sf.precision(16);
+    sf<<"(P"<<m_killedpoints<<"){ # w = "
+      <<m_result<<", ME = "<<m_result/m_psweight
+      <<", PS = "<<m_psweight<<"\n";
+    for (size_t i(0);i<p_lab.size();++i)
+      sf<<"  p_lab["<<i<<"]=Vec4D"<<p_lab[i]<<";\n";
+    sf<<"}(P"<<m_killedpoints<<");\n";
+    ++m_killedpoints;
+    m_result=0.0;
+    if (nlos) {
+      (*nlos)*=0.0;
+      (*nlos).MultMEwgt(0.0);
+    }
+  }
   return m_result;
 }
 
@@ -535,10 +562,12 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p,
   delete TestCh;
 }
 
-void Phase_Space_Handler::AddPoint(const double value)
+void Phase_Space_Handler::AddPoint(const double _value)
 {
-  m_enhance=value?EnhanceFactor(p_process->Process()):1.0;
-  if (!p_process->AddPoint(value)) return;
+  m_enhance=_value?EnhanceFactor(p_process->Process()):1.0;
+  p_process->AddPoint(_value);
+  double value(_value);
+  if (p_process->TotalXS()==0.0) value=_value?1.0:0.0;
   if (value!=0.0) {
     if (p_beamchannels) p_beamchannels->AddPoint(value*m_enhance);
     if (p_isrchannels)  p_isrchannels->AddPoint(value*m_enhance);
