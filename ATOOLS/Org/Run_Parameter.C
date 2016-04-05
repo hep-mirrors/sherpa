@@ -232,7 +232,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   setenv(LD_PATH_NAME,(gen.m_variables[LD_PATH_NAME]+std::string(":")+
 			    gen.m_variables["SHERPA_LIB_PATH"]).c_str(),1);
 #endif
-  MakeDir(gen.m_variables["HOME"]+"/.sherpa/",true);
+  gen.m_variables["EVENT_GENERATION_MODE"]="-1";
   dr.SetAllowUnits(true);
   gen.m_nevents            = dr.GetValue<long int>("EVENTS",100);
   dr.SetAllowUnits(false);

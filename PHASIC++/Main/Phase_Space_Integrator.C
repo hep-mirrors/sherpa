@@ -43,6 +43,11 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   else msg_Info()<<METHOD<<"(): Set n_{opt,dec} = "<<ndecopt<<".\n";
   addtime=0.0;
   lastrss=0;
+#ifdef USING__MPI
+  int size=MPI::COMM_WORLD.Get_size();
+  itmin*=size;
+  itmax*=size;
+#endif
 }
 
 Phase_Space_Integrator::~Phase_Space_Integrator()
