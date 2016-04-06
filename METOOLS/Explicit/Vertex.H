@@ -30,10 +30,8 @@ namespace METOOLS {
 
     Int_Vector *p_h, m_hjc, m_cjc;
 
-    bool   m_sign, m_act, m_zero;
+    bool   m_sign, m_zero;
     size_t m_fperm;
-
-    std::vector<int> m_order;
 
     double m_icplfac;
 
@@ -72,6 +70,9 @@ namespace METOOLS {
 
     void AddJ(const Current_Vector &j);
 
+    const std::vector<int> &Order() const;
+    int Order(const size_t &id) const;
+
     // inline functions
     inline void AddJ(Current *const j) 
     { if (j) { m_j.push_back(j); j->AttachOut(this); } }
@@ -102,12 +103,9 @@ namespace METOOLS {
 
     inline bool Sign() const { return m_sign; }
 
-    inline bool Active() const { return m_act; }
+    inline bool Active() const { return m_lc.size() && m_cc.size(); }
 
     inline size_t FPerm() const { return m_fperm; }
-
-    inline const std::vector<int> &Order() const { return m_order; }
-    inline int Order(const size_t &id) const { return m_order[id]; }
 
     inline static void SetVLMode(const size_t &mode) { s_vlmode=mode; }
 

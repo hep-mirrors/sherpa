@@ -44,16 +44,13 @@ std::map<std::string,Int_Vector> Vertex::s_h;
 Vertex::Vertex(const Vertex_Key &key): 
   p_v(key.p_mv), p_c(NULL),
   p_info(key.p_dinfo), p_kin(NULL), p_h(NULL),
-  m_sign(false), m_act(true), 
-  m_fperm(0), m_order(2,0),
-  m_icplfac(1.0)
+  m_sign(false), m_fperm(0), m_icplfac(1.0)
 {
   if (key.p_mv==NULL) return;
   if (p_info)
     p_kin = new Dipole_Kinematics
       (p_info,key.m_j[0],key.m_j[1],key.p_k,key.p_c,key.p_kt);
   key.p_v=this;
-  m_order=key.p_mv->order;
   Vertex_Key ckey(key);
   for (ckey.m_n=0;ckey.m_n<key.p_mv->Lorentz.size();++ckey.m_n) {
     std::string ctag(ToString(ckey.p_mv->Color[ckey.m_n].PID()));
@@ -61,7 +58,12 @@ Vertex::Vertex(const Vertex_Key &key):
       if (abs(ckey.p_c->Flav().StrongCharge())==3) ctag="S-T";
       else if (key.p_c->Flav().StrongCharge()==8) ctag="S-F";
       else {
-	m_act=false;
+	for (size_t i(0);i<m_lc.size();++i) {
+	  delete m_lc[i];
+	  delete m_cc[i];
+	}
+	m_lc.clear();
+	m_cc.clear();
 	return;
       }
     }
@@ -311,6 +313,16 @@ void Vertex::CollectGraphs(Graph_Node *graph) const
   graph->push_back("    \\fmfv{"+VLabel()+"}{"+VId()+"}");
   graph->push_back("    %% "+VId());
   for (size_t i(0);i<m_j.size();++i) m_j[i]->CollectGraphs(graph);
+}
+
+const std::vector<int> &Vertex::Order() const
+{
+  return p_v->order;
+}
+
+int Vertex::Order(const size_t &id) const
+{
+  return p_v->order[id];
 }
 
 std::ostream &METOOLS::operator<<(std::ostream &str,const Vertex &v)
