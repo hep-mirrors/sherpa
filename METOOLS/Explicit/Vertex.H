@@ -28,15 +28,12 @@ namespace METOOLS {
     LC_Vector m_lc;
     CC_Vector m_cc;
 
-    Int_Vector *p_h, m_hjc, m_cjc;
+    Int_Vector *p_h;
 
     bool   m_sign, m_zero;
     size_t m_fperm;
 
     double m_icplfac;
-
-    std::vector<const CObject_Vector*> m_hjj;
-    CObject_Vector m_cjj;
 
     static size_t s_vlmode;
 

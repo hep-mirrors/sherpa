@@ -117,7 +117,9 @@ void Vertex::Evaluate()
   msg_Indent();
 #endif
   size_t hid(0);
-  for (Int_Vector::iterator i(m_hjc.begin());i!=m_hjc.end();++i) *i=0;
+  Int_Vector m_cjc(m_j.size()), m_hjc(m_j.size(),0);
+  std::vector<const CObject_Vector*> m_hjj(m_j.size());
+  CObject_Vector m_cjj(m_j.size());
   for (size_t j(0);j<m_hjj.size();++j) m_hjj[j]=&m_j[j]->J().front();
   for (size_t hc(m_hjc.size()-1);m_hjc[0]<m_j[0]->J().size();) {
     if(m_hjc[hc]==m_j[hc]->J().size()){m_hjc[hc--]=0;++m_hjc[hc];continue;}
@@ -191,10 +193,6 @@ void Vertex::InitPols()
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"() {\n";
 #endif
-  m_hjc.resize(m_j.size(),0);
-  m_cjc.resize(m_j.size());
-  m_hjj.resize(m_j.size());
-  m_cjj.resize(m_j.size());
   int nmax(0);
   std::string id;
   for (size_t i(0);i<m_j.size();++i) {
@@ -221,6 +219,7 @@ void Vertex::InitPols()
 #ifdef DEBUG__BG
   msg_Debugging()<<"  "<<id<<" stored in '"<<p_h<<"'\n";
 #endif
+  Int_Vector m_hjc(m_j.size(),0);
   std::vector<Int_Vector> hjj(m_j.size());
   for (size_t i(0);i<hjj.size();++i) hjj[i]=m_j[i]->H()(0);
   for (size_t hc(m_hjc.size()-1);m_hjc[0]<m_j[0]->H().N();) {
