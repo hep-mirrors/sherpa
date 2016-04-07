@@ -17,11 +17,14 @@
 #include "ATOOLS/Org/My_MPI.H"
 #include "PDF/Main/Shower_Base.H"
 #include "PDF/Main/ISR_Handler.H"
+#include "ATOOLS/Org/Run_Parameter.H"
 #include <algorithm>
 
 using namespace PHASIC;
 using namespace MODEL;
 using namespace ATOOLS;
+
+int Process_Base::s_usefmm(-1);
 
 Process_Base::Process_Base():
   p_parent(NULL), p_selected(this), p_mapproc(NULL),
@@ -34,6 +37,7 @@ Process_Base::Process_Base():
   m_lookup(false), m_use_biweight(true), p_apmap(NULL)
 {
   m_last=m_lastb=0.0;
+  if (s_usefmm<0) s_usefmm=ToType<int>(rpa->gen.Variable("PB_USE_FMM"));
 }
 
 Process_Base::~Process_Base() 
@@ -265,7 +269,29 @@ public:
   { return a->Flav().Priority() > b->Flav().Priority(); }
 };// end of class Order_Priority
 
-void Process_Base::SortFlavours(Subprocess_Info &info)
+class Order_Multiplicity {
+  FMMap* p_fmm;
+public:
+  Order_Multiplicity(FMMap* fmm) {p_fmm=fmm;}
+  int operator()(const Subprocess_Info &a,const Subprocess_Info &b)
+  {
+    if ((*p_fmm)[int(a.m_fl.Kfcode())]==0 || 
+	(*p_fmm)[int(b.m_fl.Kfcode())]==0) return 0;
+    if ((*p_fmm)[int(a.m_fl.Kfcode())]>
+	(*p_fmm)[int(b.m_fl.Kfcode())]) return 1;
+    return 0;
+  }
+  int operator()(const Cluster_Leg *a,const Cluster_Leg *b)
+  {
+    if ((*p_fmm)[int(a->Flav().Kfcode())]==0 || 
+	(*p_fmm)[int(b->Flav().Kfcode())]==0) return 0;
+    if ((*p_fmm)[int(a->Flav().Kfcode())]>
+	(*p_fmm)[int(b->Flav().Kfcode())]) return 1;
+    return 0;
+  }
+};// end of class Order_Multiplicity
+
+void Process_Base::SortFlavours(Subprocess_Info &info,FMMap *const fmm)
 {
   if (info.m_ps.empty()) return;
   ATOOLS::Flavour heaviest(kf_photon);
@@ -278,6 +304,8 @@ void Process_Base::SortFlavours(Subprocess_Info &info)
   std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Anti());
   std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_SVFT());
   std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Mass());
+  if (fmm)
+    std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Multiplicity(fmm));
   std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Coupling());
   std::stable_sort(info.m_ps.begin(),info.m_ps.end(),Order_Priority());
   for (size_t i(0);i<info.m_ps.size();++i) SortFlavours(info.m_ps[i]);
@@ -285,8 +313,28 @@ void Process_Base::SortFlavours(Subprocess_Info &info)
 
 void Process_Base::SortFlavours(Process_Info &pi,const int mode)
 {
-  if (mode&1) SortFlavours(pi.m_ii);
-  SortFlavours(pi.m_fi);
+  if (!s_usefmm) {
+    if (mode&1) SortFlavours(pi.m_ii);
+    SortFlavours(pi.m_fi);
+  }
+  FMMap fmm;
+  for (size_t i(0);i<pi.m_ii.m_ps.size();++i) {
+    const Flavour *hfl=&pi.m_ii.m_ps[i].m_fl;
+    if (fmm.find(int(hfl->Kfcode()))==fmm.end()) 
+      fmm[int(hfl->Kfcode())]=0;
+    if (hfl->IsFermion()) {
+      fmm[int(hfl->Kfcode())]+=10;
+      if (!hfl->IsAnti()) fmm[int(hfl->Kfcode())]+=10;
+    }
+  }
+  for (size_t i(0);i<pi.m_fi.m_ps.size();++i) {
+    const Flavour *hfl=&pi.m_fi.m_ps[i].m_fl;
+    if (fmm.find(int(hfl->Kfcode()))==fmm.end()) 
+      fmm[int(hfl->Kfcode())]=0;
+    if (hfl->IsFermion()) fmm[int(hfl->Kfcode())]++;
+  }
+  if (mode&1) SortFlavours(pi.m_ii,&fmm);
+  SortFlavours(pi.m_fi,&fmm);
 }
 
 void Process_Base::Init(const Process_Info &pi,
@@ -361,7 +409,8 @@ public:
   { return IdCount(a->m_id)>IdCount(b->m_id); }
 };// end of class Order_NDecay
 
-void Process_Base::SortFlavours(std::vector<Cluster_Leg*> &legs)
+void Process_Base::SortFlavours
+(std::vector<Cluster_Leg*> &legs,FMMap *const fmm)
 {
   if (legs.empty()) return;
   ATOOLS::Flavour heaviest(kf_photon);
@@ -374,6 +423,8 @@ void Process_Base::SortFlavours(std::vector<Cluster_Leg*> &legs)
   std::stable_sort(legs.begin(),legs.end(),Order_Anti());
   std::stable_sort(legs.begin(),legs.end(),Order_SVFT());
   std::stable_sort(legs.begin(),legs.end(),Order_Mass());
+  if (fmm) 
+    std::stable_sort(legs.begin(),legs.end(),Order_Multiplicity(fmm));
   std::stable_sort(legs.begin(),legs.end(),Order_Coupling());
   std::stable_sort(legs.begin(),legs.end(),Order_Priority());
 }
@@ -381,6 +432,7 @@ void Process_Base::SortFlavours(std::vector<Cluster_Leg*> &legs)
 void Process_Base::SortFlavours
 (Cluster_Amplitude *const ampl,const int mode)
 {
+  FMMap fmm;
   DecayInfo_Vector cs;
   ClusterLeg_Vector il, fl;
   std::vector<int> dec(ampl->Legs().size(),0);
@@ -401,23 +453,38 @@ void Process_Base::SortFlavours
 	break;
       }
     if (!core) continue;
+    int kfc(cdi->m_fl.Kfcode());
+    if (fmm.find(kfc)==fmm.end()) fmm[kfc]=0;
+    if (cdi->m_fl.IsFermion()) {
+      fmm[kfc]+=10;
+      if (!cdi->m_fl.IsAnti()) fmm[kfc]+=10;
+    }
     cs.push_back(cdi);
   }
   for (size_t i(0);i<ampl->Legs().size();++i)
     if (i<ampl->NIn()) {
       ampl->Leg(i)->SetFlav(ampl->Leg(i)->Flav().Bar());
       il.push_back(ampl->Leg(i));
+      int kfc(ampl->Leg(i)->Flav().Kfcode());
+      if (fmm.find(kfc)==fmm.end()) fmm[kfc]=0;
+      if (ampl->Leg(i)->Flav().IsFermion()) {
+	fmm[kfc]+=10;
+	if (!ampl->Leg(i)->Flav().IsAnti()) fmm[kfc]+=10;
+      }
     }
     else {
       if (dec[i]) continue;
       fl.push_back(ampl->Leg(i));
+      int kfc(ampl->Leg(i)->Flav().Kfcode());
+      if (fmm.find(kfc)==fmm.end()) fmm[kfc]=0;
+      if (ampl->Leg(i)->Flav().IsFermion()) ++fmm[kfc];
     }
-  if (mode&1) SortFlavours(il);
+  if (mode&1) SortFlavours(il,s_usefmm?&fmm:NULL);
   for (size_t i(0);i<cs.size();++i) {
     ampl->CreateLeg(Vec4D(),cs[i]->m_fl,ColorID(),cs[i]->m_id);
     fl.push_back(ampl->Legs().back());
   }
-  SortFlavours(fl);
+  SortFlavours(fl,s_usefmm?&fmm:NULL);
   if (cs.size()) {
     cs=ampl->Decays();
     std::sort(cs.begin(),cs.end(),Order_NDecay());
@@ -438,7 +505,7 @@ void Process_Base::SortFlavours
 	    cl.push_back(ampl->Legs().back());
 	    inc|=cs[i]->m_id;
 	  }
-	  SortFlavours(cl);
+	  SortFlavours(cl,s_usefmm?&fmm:NULL);
 	  (*fit)->Delete();
 	  fit=fl.erase(fit);
 	  fl.insert(fit,cl.begin(),cl.end());

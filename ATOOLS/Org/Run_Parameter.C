@@ -284,6 +284,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     for (int i(1);i<4;++i) seedstr+="_"+ToString(gen.m_seeds[i]);
   gen.SetVariable("RNG_SEED",ToString(gen.m_seeds[0])+seedstr);
 
+  gen.SetVariable("PB_USE_FMM",ToString(dr.GetValue<int>("PB_USE_FMM",0)));
   dr.SetAllowUnits(true);
   gen.SetVariable("MEMLEAK_WARNING_THRESHOLD",
 		  ToString(dr.GetValue<int>("MEMLEAK_WARNING_THRESHOLD",1<<24)));
