@@ -66,7 +66,7 @@ namespace COMIX {
     Int_Vector   m_ch, m_dirs, m_sid, m_cchirs;
     Int_Matrix   m_cl;
 
-    size_t m_nin, m_nout;
+    size_t m_nin, m_nout, m_dec;
     size_t m_n, m_wfmode, m_pgmode, m_ngpl, m_sccmur;
     size_t m_minntc, m_maxntc;
     char   m_pmode;
@@ -235,7 +235,7 @@ namespace COMIX {
     inline const Current_Matrix &Currents() const { return m_cur; }
 
     inline void SetDecayInfos(const ATOOLS::DecayInfo_Vector &id) 
-    { m_decid=id; }
+    { m_decid=id; m_dec=m_decid.size(); }
     inline const ATOOLS::DecayInfo_Vector &DecayInfos() const
     { return m_decid; }
 

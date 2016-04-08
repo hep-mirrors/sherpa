@@ -28,7 +28,7 @@ static bool csscite(false);
 static const double invsqrttwo(1.0/sqrt(2.0));
 
 Amplitude::Amplitude():
-  p_model(NULL), m_nin(0), m_nout(0), m_n(0), m_wfmode(0), m_ngpl(3),
+  p_model(NULL), m_nin(0), m_nout(0), m_dec(0), m_n(0), m_wfmode(0), m_ngpl(3),
   m_maxcpl(2,99), m_mincpl(2,0), m_minntc(0), m_maxntc(99),
   m_pmode('D'), p_dinfo(new Dipole_Info()), p_colint(NULL), p_helint(NULL),
   m_trig(true), p_loop(NULL)
@@ -341,15 +341,19 @@ bool Amplitude::MatchIndices
   size_t n(ids.size());
   for (size_t o(0);o<n;++o) {
     bool found(false);
-    for (size_t m(0);m<vkey.m_j.size();++m) 
-      for (size_t p(0);p<vkey.m_j[m]->Id().size();++p) 
-	if (vkey.m_j[m]->Id()[p]==ids[o]) {
+    for (size_t m(0);m<vkey.m_j.size();++m) {
+      const Int_Vector &c(vkey.m_j[m]->Id());
+      for (size_t p(0), s(c.size());p<s;++p) {
+	if (c[p]>ids[o]) break;
+	if (c[p]==ids[o]) {
 	  if (found) return false;
 	  found=true;
 	}
+      }
+    }
     if (!found) return false;
   }
-  if (!m_decid.empty()) {
+  if (m_dec) {
     std::vector<size_t> c(vkey.m_j.size());
     for (size_t j(0);j<c.size();++j) {
       size_t jid(vkey.m_j[j]->CId());
@@ -365,7 +369,7 @@ bool Amplitude::MatchIndices
 }
 
 int Amplitude::CheckDecay(const ATOOLS::Flavour &fl,
-			       const Int_Vector &ids) const
+			  const Int_Vector &ids) const
 {
   size_t cid(0);
   if (m_decid.empty() && m_ndc.empty()) return 0;
