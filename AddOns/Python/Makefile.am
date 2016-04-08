@@ -7,6 +7,7 @@ noinst_HEADERS = \
 	Blob.i \
 	Blob_List.i \
 	MEProcess.i \
+	Model_Base.i \
 	Random.i
 
 if ENABLE_PYEXT

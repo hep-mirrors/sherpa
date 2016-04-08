@@ -7,10 +7,15 @@
 %include "Blob_List.i"
 %include "MEProcess.i"
 %include "Random.i"
+%include "Model_Base.i"
 
 %{
 #include <SHERPA/Main/Sherpa.H>
+  // Inclusion of these headers is required here because
+  // of the static pointers to RNG and model that are
+  // made available:
 #include "ATOOLS/Math/Random.H"
+#include "MODEL/Main/Model_Base.H"
   %}
 
 %catches (ATOOLS::Exception) SHERPA::Sherpa::InitializeTheRun(int, char**);
@@ -63,10 +68,12 @@ namespace SHERPA {
   };
 }
 
-// Make the global pointer
-// to the RNG availeble
+// Make the global pointers
+// to RNG and model availeble
 ATOOLS::Random* ran;
+MODEL::Model_Base* s_model;
 
 %inline %{
   ATOOLS::Random* ATOOLS::ran;
+  MODEL::Model_Base* MODEL::s_model;
 %}
