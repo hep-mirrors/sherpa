@@ -3,6 +3,7 @@
 
 #include "METOOLS/Explicit/Dipole_Info.H"
 #include "ATOOLS/Phys/Flavour.H"
+#include "ATOOLS/Org/STL_Tools.H"
 
 #include <string>
 
@@ -19,6 +20,16 @@ namespace METOOLS {
   class Lorentz_Calculator;
 
   struct Vertex_Key {
+  private:
+
+    Vertex_Key
+    (const std::vector<Current*> &j,
+     Current *const c,MODEL::Model_Base *const model,
+     MODEL::Single_Vertex *const mv=NULL,const std::string &p="",
+     Vertex *const v=NULL,Color_Calculator *const cc=NULL,
+     Lorentz_Calculator *const lc=NULL);
+
+  public:
 
     Current *p_c, *p_k, *p_kt;
     std::vector<Current*> m_j;
@@ -37,12 +48,16 @@ namespace METOOLS {
 
     Dipole_Info *p_dinfo;
 
-    Vertex_Key
+    static ATOOLS::AutoDelete_Vector<Vertex_Key> s_objects;
+
+    static Vertex_Key *New
     (const std::vector<Current*> &j,
      Current *const c,MODEL::Model_Base *const model,
      MODEL::Single_Vertex *const mv=NULL,const std::string &p="",
      Vertex *const v=NULL,Color_Calculator *const cc=NULL,
      Lorentz_Calculator *const lc=NULL);
+
+    void Delete();
 
     std::string Type() const;
 

@@ -237,19 +237,20 @@ bool Amplitude::AddRSDipole
   jkt->SetSub(jijt);
   jkt->SetKey(m_scur.size());
   m_scur.push_back(jkt);
-  Vertex_Key svkey(cin->J(),jijt,p_model);
-  svkey.m_p=std::string(1,m_pmode);
-  svkey.p_dinfo=p_dinfo;
-  svkey.p_k=s;
-  svkey.p_kt=jkt;
-  MODEL::VMIterator_Pair vmp(p_model->GetVertex(svkey.ID()));
+  Vertex_Key *svkey(Vertex_Key::New(cin->J(),jijt,p_model));
+  svkey->m_p=std::string(1,m_pmode);
+  svkey->p_dinfo=p_dinfo;
+  svkey->p_k=s;
+  svkey->p_kt=jkt;
+  MODEL::VMIterator_Pair vmp(p_model->GetVertex(svkey->ID()));
   for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
        vit!=vmp.second;++vit) {
-    svkey.p_mv=vit->second;
-    Vertex *v(new Vertex(svkey));
-    v->AddJ(svkey.m_j);
-    v->SetJC(svkey.p_c);
+    svkey->p_mv=vit->second;
+    Vertex *v(new Vertex(*svkey));
+    v->AddJ(svkey->m_j);
+    v->SetJC(svkey->p_c);
   }
+  svkey->Delete();
 #ifdef DEBUG__BG
   jijt->Print();
   jkt->Print();
@@ -302,30 +303,31 @@ bool Amplitude::AddVIDipole
   m_scur.push_back(jkt);
   Current_Vector j(2,c);
   j[1]=NULL;
-  Vertex_Key svkey(j,jijt,p_model);
-  svkey.m_p=std::string(1,m_pmode);
-  svkey.p_dinfo=p_dinfo;
-  svkey.p_k=s;
-  svkey.p_kt=jkt;
-  MODEL::VMIterator_Pair vmp(p_model->GetVertex(svkey.ID()));
+  Vertex_Key *svkey(Vertex_Key::New(j,jijt,p_model));
+  svkey->m_p=std::string(1,m_pmode);
+  svkey->p_dinfo=p_dinfo;
+  svkey->p_k=s;
+  svkey->p_kt=jkt;
+  MODEL::VMIterator_Pair vmp(p_model->GetVertex(svkey->ID()));
   for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
        vit!=vmp.second;++vit) {
-    svkey.p_mv=vit->second;
-    Vertex *v(new Vertex(svkey));
-    v->AddJ(svkey.m_j);
-    v->SetJC(svkey.p_c);
+    svkey->p_mv=vit->second;
+    Vertex *v(new Vertex(*svkey));
+    v->AddJ(svkey->m_j);
+    v->SetJC(svkey->p_c);
   }
-  if (svkey.p_mv==NULL) {
-    std::swap<Current*>(svkey.m_j[0],svkey.m_j[1]);
-    vmp=p_model->GetVertex(svkey.ID());
+  if (svkey->p_mv==NULL) {
+    std::swap<Current*>(svkey->m_j[0],svkey->m_j[1]);
+    vmp=p_model->GetVertex(svkey->ID());
     for (MODEL::Vertex_Map::const_iterator vit(vmp.first);
 	 vit!=vmp.second;++vit) {
-      svkey.p_mv=vit->second;
-      Vertex *v(new Vertex(svkey));
-      v->AddJ(svkey.m_j);
-      v->SetJC(svkey.p_c);
+      svkey->p_mv=vit->second;
+      Vertex *v(new Vertex(*svkey));
+      v->AddJ(svkey->m_j);
+      v->SetJC(svkey->p_c);
     }
   }
+  svkey->Delete();
 #ifdef DEBUG__BG
   jijt->Print();
   jkt->Print();
@@ -531,20 +533,21 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 	  if (cj[i]->Id().front()>cj[i+1]->Id().front())
 	    { ord=false; break; }
 	if (!ord) continue;
-	Vertex_Key vkey(cj,cur,p_model);
-	if (!MatchIndices(ids,vkey)) continue;
+	Vertex_Key *vkey(Vertex_Key::New(cj,cur,p_model));
+	if (!MatchIndices(ids,*vkey)) { vkey->Delete(); continue; }
 	Permutation perm(cj.size());
 	for (int nperm(perm.MaxNumber()), i(0);i<nperm;++i) {
 	  int f(0), *p(perm.Get(i));
-	  for (size_t i(0);i<cj.size();++i) vkey.m_j[i]=cj[p[i]];
-	  MODEL::VMIterator_Pair vmp(p_model->GetVertex(vkey.ID()));
+	  for (size_t i(0);i<cj.size();++i) vkey->m_j[i]=cj[p[i]];
+	  MODEL::VMIterator_Pair vmp(p_model->GetVertex(vkey->ID()));
 	  for (MODEL::Vertex_Map::const_iterator
 		 vit(vmp.first);vit!=vmp.second;++vit) {
-	    vkey.p_mv=vit->second;
-	    if (AddCurrent(ckey,vkey,n,dec,maxcpl,mincpl,curs)) f=true;
+	    vkey->p_mv=vit->second;
+	    if (AddCurrent(ckey,*vkey,n,dec,maxcpl,mincpl,curs)) f=true;
 	  }
 	  if (f) { one=true; break; }
 	}
+	vkey->Delete();
       }
     }
   }

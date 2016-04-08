@@ -228,7 +228,9 @@ void PS_Generator::AddSubChannel
     if (csub) break;
   }
   if (csub==NULL) return;
-  PS_Vertex *vtx(new PS_Vertex(vkey));
+  Vertex_Key *dummy(Vertex_Key::New(Current_Vector(),NULL,NULL));
+  PS_Vertex *vtx(new PS_Vertex(*dummy));
+  dummy->Delete();
   vtx->AddJ(vkey.m_j);
   vtx->SetJC(vkey.p_c);
   vtx->SetDip(csub);
@@ -250,6 +252,7 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
     m_cl.resize(m_n,Int_Vector(2));
     m_cur.resize(m_n);
   }
+  Vertex_Key *dummy(Vertex_Key::New(Current_Vector(),NULL,NULL));
   for (size_t n(1);n<m_n;++n) {
     for (size_t j(0);j<curs[n].size();++j) {
       if (curs[n][j]->Sub() ||
@@ -288,7 +291,7 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 		Current_Vector jj(2);
 		jj[0]=ait->second;
 		jj[1]=bit->second;
-		Vertex_Key vkey(jj,cit->second,NULL);
+		Vertex_Key *vkey(Vertex_Key::New(jj,cit->second,NULL));
 		int type(DecayType(cit->second,ait->second,bit->second)), mtype(0);
 		bool vf(false);
 		for (size_t k(0);k<rin.size();++k)
@@ -298,20 +301,21 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 		    mtype|=((PS_Vertex*)rin[k])->Type();
 		    vf=true;
 		  }
-		if ((vf && type==mtype) || v3.find(vkey)!=v3.end()) continue;
-		v3.insert(vkey);
-		PS_Vertex *vtx(new PS_Vertex(vkey));
-		vtx->AddJ(vkey.m_j);
-		vtx->SetJC(vkey.p_c);
+		if ((vf && type==mtype) || v3.find(*vkey)!=v3.end()) continue;
+		v3.insert(*vkey);
+		PS_Vertex *vtx(new PS_Vertex(*dummy));
+		vtx->AddJ(vkey->m_j);
+		vtx->SetJC(vkey->p_c);
 		vtx->SetType(type);
 		if (type==(2|4)) {
 		  vtx->SetType(2);
-		  vtx = new PS_Vertex(vkey);
-		  vtx->AddJ(vkey.m_j);
-		  vtx->SetJC(vkey.p_c);
+		  vtx = new PS_Vertex(*dummy);
+		  vtx->AddJ(vkey->m_j);
+		  vtx->SetJC(vkey->p_c);
 		  vtx->SetType(4);
 		}
-		AddSubChannel(subs,vkey);
+		AddSubChannel(subs,*vkey);
+		vkey->Delete();
 	      }
 	  }
 	}
@@ -346,22 +350,23 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 	      Current_Vector jj(2);
 	      jj[0]=ait->second;
 	      jj[1]=bit->second;
-	      Vertex_Key vkey(jj,cit->second,NULL);
-	      if (v3.find(vkey)!=v3.end()) continue;
-	      v3.insert(vkey);
-	      PS_Vertex *vtx(new PS_Vertex(vkey));
-	      vtx->AddJ(vkey.m_j);
-	      vtx->SetJC(vkey.p_c);
+	      Vertex_Key *vkey(Vertex_Key::New(jj,cit->second,NULL));
+	      if (v3.find(*vkey)!=v3.end()) continue;
+	      v3.insert(*vkey);
+	      PS_Vertex *vtx(new PS_Vertex(*dummy));
+	      vtx->AddJ(vkey->m_j);
+	      vtx->SetJC(vkey->p_c);
 	      int type(DecayType(curs[n][j],ja,jb));
 	      vtx->SetType(type);
 	      if (type==(2|4)) {
 		vtx->SetType(2);
-		vtx = new PS_Vertex(vkey);
-		vtx->AddJ(vkey.m_j);
-		vtx->SetJC(vkey.p_c);
+		vtx = new PS_Vertex(*dummy);
+		vtx->AddJ(vkey->m_j);
+		vtx->SetJC(vkey->p_c);
 		vtx->SetType(4);
 	      }
-	      AddSubChannel(subs,vkey);
+	      AddSubChannel(subs,*vkey);
+	      vkey->Delete();
 	    }
       }
       for (CB_MMap::const_iterator cit(m_cmap.lower_bound(curs[n][j]));
@@ -369,6 +374,7 @@ bool PS_Generator::Construct(Amplitude *const ampl,NLO_subevtlist *const subs)
 	cit->second->Print();
     }
   }
+  dummy->Delete();
   }
   msg_Debugging()<<"}\n";
   for (size_t j(m_n-2);j>1;--j)
@@ -518,12 +524,12 @@ void PS_Generator::AddExtraCurrent
   msg_Debugging()<<"  Add "<<m_cur[n].back()->PSInfo()
 		 <<(scc?" ("+scc->PSInfo()+") ":"")<<" {\n";
 #endif
+  Vertex_Key *dummy(Vertex_Key::New(Current_Vector(),NULL,NULL));
   const Vertex_Vector &in(cur->In());
   for (size_t i(0);i<in.size();++i) {
-    Vertex_Key vkey(in[i]->J(),m_cur[n].back(),NULL);
-    PS_Vertex *vtx(new PS_Vertex(vkey));
-    vtx->AddJ(vkey.m_j);
-    vtx->SetJC(vkey.p_c);
+    PS_Vertex *vtx(new PS_Vertex(*dummy));
+    vtx->AddJ(in[i]->J());
+    vtx->SetJC(m_cur[n].back());
     vtx->SetDip(((PS_Vertex*)in[i])->Dip());
     vtx->SetType(((PS_Vertex*)in[i])->Type());
 #ifdef DEBUG__BG
@@ -538,16 +544,16 @@ void PS_Generator::AddExtraCurrent
     Current_Vector j(out[i]->J());
     if (j[0]==cur) j[0]=m_cur[n].back();
     else j[1]=m_cur[n].back();
-    Vertex_Key vkey(j,out[i]->JC(),NULL);
-    PS_Vertex *vtx(new PS_Vertex(vkey));
-    vtx->AddJ(vkey.m_j);
-    vtx->SetJC(vkey.p_c);
+    PS_Vertex *vtx(new PS_Vertex(*dummy));
+    vtx->AddJ(j);
+    vtx->SetJC(out[i]->JC());
     vtx->SetDip(((PS_Vertex*)out[i])->Dip());
     vtx->SetType(((PS_Vertex*)out[i])->Type());
 #ifdef DEBUG__BG
     msg_Debugging()<<"    "<<*vtx<<"\n";
 #endif
   }
+  dummy->Delete();
 #ifdef DEBUG__BG
   msg_Debugging()<<"  }\n";
 #endif
