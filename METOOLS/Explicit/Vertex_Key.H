@@ -41,6 +41,8 @@ namespace METOOLS {
     size_t      m_n;
     mutable int m_d;
 
+    mutable std::string m_id;
+
     mutable Vertex *p_v;
 
     mutable Color_Calculator   *p_cc;
@@ -61,7 +63,7 @@ namespace METOOLS {
 
     std::string Type() const;
 
-    std::string ID() const;
+    const std::string &ID() const;
 
     ATOOLS::Flavour Fl(const size_t &i) const;
 

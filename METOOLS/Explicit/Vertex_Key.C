@@ -61,15 +61,14 @@ std::string Vertex_Key::Type() const
   return estr+p_c->Type();
 }
 
-std::string Vertex_Key::ID() const
+const std::string &Vertex_Key::ID() const
 {
-  std::string estr;
-  estr.reserve((m_j.size()+1)*10);
+  m_id.clear();
   for (size_t i(0);i<m_j.size();++i)
-    estr+="{"+(m_j[i]?m_j[i]->Flav().IDName():
-	       Flavour(p_dinfo->Type()?kf_photon:kf_gluon).IDName())+"}";
-  if (p_c!=NULL) estr+="{"+p_c->Flav().Bar().IDName()+"}";
-  return estr;
+    m_id+=(m_j[i]?m_j[i]->Flav().IDName():
+	   Flavour(p_dinfo->Type()?kf_photon:kf_gluon).IDName())+"|";
+  if (p_c!=NULL) m_id+=p_c->Flav().Bar().IDName();
+  return m_id;
 }
 
 ATOOLS::Flavour Vertex_Key::Fl(const size_t &i) const
