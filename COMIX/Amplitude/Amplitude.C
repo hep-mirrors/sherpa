@@ -523,6 +523,7 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
       if ((jj.back()=m_cur[jc.back()]).empty()) continue;
       Int_Vector cc(jj.size(),0);
       Current_Vector cj(cc.size(),NULL);
+      Vertex_Key *vkey(Vertex_Key::New(cj,cur,p_model));
       for (size_t i(0);i<cj.size();++i) cj[i]=jj[i].front();
       for (size_t cl(cc.size()-1);cc[0]<jj[0].size();++cc[cl]) {
         if (cc[cl]==jj[cl].size()) { cc[cl--]=0; continue; }
@@ -533,8 +534,8 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 	  if (cj[i]->Id().front()>cj[i+1]->Id().front())
 	    { ord=false; break; }
 	if (!ord) continue;
-	Vertex_Key *vkey(Vertex_Key::New(cj,cur,p_model));
-	if (!MatchIndices(ids,*vkey)) { vkey->Delete(); continue; }
+	for (size_t i(0);i<cj.size();++i) vkey->m_j[i]=cj[i];
+	if (!MatchIndices(ids,*vkey)) continue;
 	Permutation perm(cj.size());
 	for (int nperm(perm.MaxNumber()), i(0);i<nperm;++i) {
 	  int f(0), *p(perm.Get(i));
@@ -547,8 +548,8 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 	  }
 	  if (f) { one=true; break; }
 	}
-	vkey->Delete();
       }
+      vkey->Delete();
     }
   }
   if (!one && n>1) {
