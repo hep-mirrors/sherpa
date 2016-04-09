@@ -26,7 +26,8 @@ const double s_pwmin(1.0e-6), s_pmmin(1.0e-6);
 
 PS_Channel::PS_Channel(const size_t &_nin,const size_t &_nout,
 		       ATOOLS::Flavour *_fl,Process_Base *const xs):
-  p_xs(xs), m_n(_nin+_nout), m_lid(1), m_rid(2), m_nopt(0),
+  p_xs(xs), p_cur(NULL),
+  m_n(_nin+_nout), m_lid(1), m_rid(2), m_nopt(0),
   p_psid(new PSId_Map()), p_cid(new CId_Map())
 {
   nin=_nin;
@@ -832,6 +833,7 @@ bool PS_Channel::GenerateWeight()
 void PS_Channel::GenerateWeight(ATOOLS::Vec4D *p,PHASIC::Cut_Data *cuts) 
 {
   p_cuts=cuts;
+  if (p_cur==NULL) GenerateChannels();
   for (size_t i(0);i<m_n;++i) {
     m_p[1<<i]=i<2?-p[i]:p[i];
 #ifdef DEBUG__BG
