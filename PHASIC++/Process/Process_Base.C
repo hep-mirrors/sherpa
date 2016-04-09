@@ -313,10 +313,6 @@ void Process_Base::SortFlavours(Subprocess_Info &info,FMMap *const fmm)
 
 void Process_Base::SortFlavours(Process_Info &pi,const int mode)
 {
-  if (!s_usefmm) {
-    if (mode&1) SortFlavours(pi.m_ii);
-    SortFlavours(pi.m_fi);
-  }
   FMMap fmm;
   for (size_t i(0);i<pi.m_ii.m_ps.size();++i) {
     const Flavour *hfl=&pi.m_ii.m_ps[i].m_fl;
@@ -333,8 +329,8 @@ void Process_Base::SortFlavours(Process_Info &pi,const int mode)
       fmm[int(hfl->Kfcode())]=0;
     if (hfl->IsFermion()) fmm[int(hfl->Kfcode())]++;
   }
-  if (mode&1) SortFlavours(pi.m_ii,&fmm);
-  SortFlavours(pi.m_fi,&fmm);
+  if (mode&1) SortFlavours(pi.m_ii,s_usefmm?&fmm:NULL);
+  SortFlavours(pi.m_fi,s_usefmm?&fmm:NULL);
 }
 
 void Process_Base::Init(const Process_Info &pi,
