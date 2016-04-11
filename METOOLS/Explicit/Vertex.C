@@ -116,6 +116,35 @@ void Vertex::Evaluate()
   msg_Debugging()<<METHOD<<"():\n";
   msg_Indent();
 #endif
+  if (m_j.size()==2) {
+    CObject_Vector m_cjj(2);
+    size_t hid(0), sh0(m_j[0]->J().size()), sh1(m_j[1]->J().size());
+    for (size_t h0(0);h0<sh0;++h0) {
+      const CObject_Vector *hjj0(&m_j[0]->J()[h0]);
+      if (hjj0->empty()) { hid+=sh1; continue; }
+      for (size_t h1(0);h1<sh1;++h1) {
+	const CObject_Vector *hjj1(&m_j[1]->J()[h1]);
+	if (hjj1->empty()) { ++hid; continue; }
+	for (size_t c0(0);c0<hjj0->size();++c0) {
+	  m_cjj[0]=(*hjj0)[c0];
+	  for (size_t c1(0);c1<hjj1->size();++c1) {
+	    m_cjj[1]=(*hjj1)[c1];
+	    for (size_t k(0);k<m_cc.size();++k)
+	      if (m_cc[k]->Evaluate(m_cjj)) {
+		CObject *j(m_lc[k]->Evaluate(m_cjj));
+		if (j==NULL) continue;
+		j->Multiply(p_v->Coupling(k)*m_cc[k]->Coupling());
+		j->SetH(H(hid));
+		m_cc[k]->AddJ(j);
+		SetZero(false);
+	      }
+	  }
+	}
+	++hid;
+      }
+    }
+    return;
+  }
   size_t hid(0);
   Int_Vector m_cjc(m_j.size()), m_hjc(m_j.size(),0);
   std::vector<const CObject_Vector*> m_hjj(m_j.size());
