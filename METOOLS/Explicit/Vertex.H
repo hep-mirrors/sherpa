@@ -28,6 +28,8 @@ namespace METOOLS {
     LC_Vector m_lc;
     CC_Vector m_cc;
 
+    CObject_Vector m_cjj;
+
     Int_Vector *p_h;
 
     bool   m_sign, m_zero;

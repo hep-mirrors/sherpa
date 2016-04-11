@@ -117,7 +117,6 @@ void Vertex::Evaluate()
   msg_Indent();
 #endif
   if (m_j.size()==2) {
-    CObject_Vector m_cjj(2);
     size_t hid(0), sh0(m_j[0]->J().size()), sh1(m_j[1]->J().size());
     for (size_t h0(0);h0<sh0;++h0) {
       const CObject_Vector *hjj0(&m_j[0]->J()[h0]);
@@ -148,7 +147,6 @@ void Vertex::Evaluate()
   size_t hid(0);
   Int_Vector m_cjc(m_j.size()), m_hjc(m_j.size(),0);
   std::vector<const CObject_Vector*> m_hjj(m_j.size());
-  CObject_Vector m_cjj(m_j.size());
   for (size_t j(0);j<m_hjj.size();++j) m_hjj[j]=&m_j[j]->J().front();
   for (size_t hc(m_hjc.size()-1);m_hjc[0]<m_j[0]->J().size();) {
     if(m_hjc[hc]==m_j[hc]->J().size()){m_hjc[hc--]=0;++m_hjc[hc];continue;}
@@ -222,6 +220,7 @@ void Vertex::InitPols()
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"() {\n";
 #endif
+  m_cjj.resize(m_j.size());
   int nmax(0);
   std::string id;
   for (size_t i(0);i<m_j.size();++i) {
