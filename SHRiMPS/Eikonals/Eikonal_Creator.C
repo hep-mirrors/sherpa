@@ -16,7 +16,7 @@ using namespace std;
 Eikonal_Creator::Eikonal_Creator() :
   p_ff1(NULL), p_ff2(NULL),
   m_params(MBpars.GetEikonalParameters()),
-  m_Bsteps(400),m_ff1steps(100), m_ff2steps(100)
+  m_Bsteps(100),m_ff1steps(50), m_ff2steps(50) // was 400 & 100
 { }
 
 

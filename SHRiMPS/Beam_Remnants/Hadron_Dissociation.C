@@ -23,28 +23,21 @@ void Hadron_Dissociation::Reset() {
 }
 
 bool Hadron_Dissociation::FillBeamBlob(Blob_List * blobs) {
-  MakeBeamBlob();
-  AddBeamParticle();
+  SpecifyBeamBlob();
   AddPartonsFromCollision(blobs);
   IdentifyAndFillSoftBlob(blobs);
-  SelectTrialTransverseMomenta();
+  //msg_Out()<<METHOD<<": "<<m_cols[0].size()<<" "<<m_cols[1].size()<<"\n";
   return true;
 }
 
-void Hadron_Dissociation::MakeBeamBlob() {
-  p_blob = new Blob();
+void Hadron_Dissociation::SpecifyBeamBlob() {
+  if (!p_blob) p_blob = new Blob();
   p_blob->SetType(btp::Beam);
   p_blob->SetTypeSpec("Shrimps");
   p_blob->SetStatus(blob_status::inactive);
   p_blob->SetId();
 }
   
-void Hadron_Dissociation::AddBeamParticle() {
-  Particle * beampart(new Particle(0,m_beamflav,m_beamvec,'B'));
-  beampart->SetNumber();
-  p_blob->AddToInParticles(beampart);
-}
-
 void Hadron_Dissociation::AddPartonsFromCollision(Blob_List * blobs) {
   for (Blob_List::iterator biter=blobs->begin();biter!=blobs->end();biter++) {
     if ((*biter)->Has(blob_status::needs_beams) &&

@@ -68,13 +68,12 @@ namespace SHRIMPS {
     inline void SetShowerFac(const double & sfac) {
       m_showerfac = sfac; 
     }
-    inline void 
-    SetClusterDefinitions(PDF::Cluster_Definitions_Base *const cb) 
+    inline void SetClusterDefinitions(PDF::Cluster_Definitions_Base *const cb) 
     { p_clus=cb; }
     inline void SetMinKT2(const double & minkt2) { m_minkt2 = minkt2; }
     inline void SetRescatt(const double & resc)  { m_resc = resc; }
-    inline void SetTMax(const double & tmax)  { m_tmax = tmax; }
-    inline void SetNLad(const int & nlad)  { m_nlad = nlad; }
+    inline void SetTMax(const double & tmax)     { m_tmax = tmax; }
+    inline void SetNLad(const int & nlad)        { m_nlad = nlad; }
 
     double Mass(const ATOOLS::Flavour &fl) const;
   };// end of class Cluster_Algorithm

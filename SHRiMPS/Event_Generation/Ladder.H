@@ -78,8 +78,9 @@ namespace SHRIMPS {
 
     ATOOLS::Particle * GetParticle();
   };
-  std::ostream & operator<<(std::ostream & s, const Ladder_Particle & part);
   typedef std::map<double,Ladder_Particle,std::less_equal<double> > LadderMap;
+  std::ostream & operator<<(std::ostream & s, const Ladder_Particle & part);
+  std::ostream & operator<<(std::ostream & s, const LadderMap & lmap);
 
 
   struct T_Prop {
@@ -167,14 +168,10 @@ namespace SHRIMPS {
     inline void Reset(const bool & all=true) { 
       m_emissions.clear(); 
       m_tprops.clear();
-      if (all) {
-	m_deltaY  = m_Ymax = m_Ymin = m_Y = 0.;
-	m_maxkt2  = m_minkt2 = m_mu2 = 0.;
-	m_diffractive = m_rescatter = m_harddiffractive = false;
-	m_weight  = 1.;
-	p_inpart1 = NULL;
-	p_inpart2 = NULL;
-      }
+      m_diffractive = m_rescatter = m_harddiffractive = false;
+      m_weight  = 1.;
+      if (p_inpart1) { delete p_inpart1; p_inpart1 = NULL; }
+      if (p_inpart2) { delete p_inpart2; p_inpart2 = NULL; }
     }
     inline void ResetFS() {
       m_emissions.clear(); 

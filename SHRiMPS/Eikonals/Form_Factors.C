@@ -28,7 +28,7 @@ Form_Factor::Form_Factor(const FormFactor_Parameters & params) :
   m_prefactor(params.norm), m_beta(sqrt(params.beta02)),
   m_Lambda2(params.Lambda2), m_kappa(params.kappa), m_xi(params.xi), 
   m_bmax(params.bmax), m_bsteps(16), m_deltab(m_bmax/double(m_bsteps)), 
-  m_accu(params.accu), m_ffmin(1.e-8), m_ffmax(0.), 
+  m_accu(10.*params.accu), m_ffmin(1.e-8), m_ffmax(0.), 
   m_ftnorm(4.*M_PI*M_PI)
 { }
 

@@ -27,8 +27,7 @@ namespace SHRIMPS {
     ATOOLS::Flavour m_quark, m_diquark;
     std::map<ATOOLS::Particle *,ATOOLS::Vec4D> * m_qtmap;
     
-    void MakeBeamBlob();
-    void AddBeamParticle();
+    void SpecifyBeamBlob();
     void AddPartonsFromCollision(ATOOLS::Blob_List * blobs);
     void HarvestBlob(ATOOLS::Blob * blob);
     void IdentifyAndFillSoftBlob(ATOOLS::Blob_List * blobs);
@@ -43,7 +42,8 @@ namespace SHRIMPS {
 
     void Reset();
     bool FillBeamBlob(ATOOLS::Blob_List * blobs);
-
+    void SetBeamBlob(ATOOLS::Blob * blob=NULL) { p_blob = blob; }
+    
     inline void SetFormFactor(Form_Factor * ff) { p_ff = ff; }
     inline void SetQTMap(std::map<ATOOLS::Particle *,ATOOLS::Vec4D> * qtmap) {
       m_qtmap = qtmap;

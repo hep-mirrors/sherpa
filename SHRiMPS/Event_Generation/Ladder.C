@@ -51,6 +51,15 @@ Particle * Ladder_Particle::GetParticle() {
   return p_part;
 }
 
+std::ostream & SHRIMPS::operator<<(std::ostream & s, const LadderMap & lmap) {
+  size_t i(0);
+  s<<"In total "<<lmap.size()<<" emissions:\n";
+  for (LadderMap::const_iterator yiter=lmap.begin();yiter!=lmap.end();yiter++) {
+    s<<"  y_{"<<(i++)<<"} = "<<yiter->first<<"\n";
+  }
+  return s;
+}
+
 std::ostream & SHRIMPS::operator<<(std::ostream & s, const T_Prop & tprop) {
   s<<" | ["<<tprop.m_col<<"] for "
    <<"q = "<<tprop.m_q<<" (qt = "<<sqrt(tprop.m_qt2)<<", q = "
@@ -75,8 +84,9 @@ operator<<(std::ostream & s,const Ladder & ladder) {
    <<"Ladder ("<<ladder.m_tprops.size()<<" props, "<<&ladder.m_tprops<<") "
    <<"at position "<<ladder.m_position<<" (b= "
    <<(sqrt(sqr(ladder.m_position[1])+sqr(ladder.m_position[2])))<<"), "
-   <<"kt^2 = "<<ladder.MaxKT2()<<", wt = "<<ladder.Weight()<<":\n"
-   <<" * "<<(*ladder.p_inpart1)<<" * "<<(*ladder.p_inpart2)<<"\n";
+   <<"kt^2 = "<<ladder.MaxKT2()<<", wt = "<<ladder.Weight()<<":\n";
+  if (ladder.p_inpart1!=NULL && ladder.p_inpart2!=NULL)
+    s<<" * "<<(*ladder.p_inpart1)<<" * "<<(*ladder.p_inpart2)<<"\n";
   int i(0);
   TPropList::const_iterator citer=ladder.m_tprops.begin();
   for (LadderMap::const_iterator yiter=ladder.m_emissions.begin();

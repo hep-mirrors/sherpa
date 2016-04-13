@@ -29,7 +29,7 @@ namespace SHRIMPS {
     void SetEikonal(Omega_ik * eikonal);
     ATOOLS::Return_Value::code FillBeamBlobs(ATOOLS::Blob_List * blobs);
 
-    inline void SetBeamBlob(ATOOLS::Blob *const beamblob,const int & beam) {} 
+    void SetBeamBlob(ATOOLS::Blob *const beamblob,const int & beam);
     inline Continued_PDF * GetPDF(const int & beam) {
       if (beam!=0 && beam!=1) return NULL;
       return m_hadrons[beam]->GetPDF();

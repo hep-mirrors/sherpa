@@ -43,11 +43,19 @@ void Beam_Remnant_Handler::Reset() {
   m_qtmap.clear();
 }
 
+void Beam_Remnant_Handler::
+SetBeamBlob(ATOOLS::Blob *const beamblob,const int & beam) {
+  m_hadrons[beam]->SetBeamBlob(beamblob);
+} 
+
 Return_Value::code Beam_Remnant_Handler::FillBeamBlobs(Blob_List * blobs) {
   AddBeamBlobs(blobs);
   AddTransverseMomentaToSpectators(blobs);
-  for (Blob_List::iterator biter=blobs->begin();biter!=blobs->end();biter++)
+  for (Blob_List::iterator biter=blobs->begin();biter!=blobs->end();biter++) {
     (*biter)->UnsetStatus(blob_status::needs_beams);
+    //msg_Out()<<METHOD<<": "<<(*biter)->Type()<<" "
+    //	     <<(*biter)->CheckMomentumConservation()<<"\n";
+  }
   return Return_Value::Success;
 }
 

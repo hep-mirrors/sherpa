@@ -13,7 +13,9 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Cluster_Algorithm::Cluster_Algorithm():
-  p_ampl(NULL), p_clus(NULL), p_jf(NULL),m_showerfac(1.) {
+  p_ampl(NULL), p_clus(NULL), p_jf(NULL),m_showerfac(1.),
+  m_minkt2(16.), m_tmax(16.)
+{
     m_histomap[std::string("startvspt")] = new Histogram(0,0.0,100.0,100);
     m_histomap[std::string("vetovspt")] = new Histogram(0,0.0,100.0,100);
     m_histomap[std::string("nstartvspt")] = new Histogram(0,0.0,100.0,100);
@@ -202,6 +204,8 @@ PTi2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pbeam) const
 
 bool Cluster_Algorithm::Cluster(Blob *const blob)
 {
+  //msg_Out()<<METHOD<<"(minkt2 = "<<m_minkt2<<", tmax = "<<m_tmax<<") "
+  //	   <<"["<<this<<"].\n";
   std::list<ParticleList * > singlets;
   ProjectOnSinglets(blob,singlets);
 
@@ -242,8 +246,9 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
       p_ampl->CreateLeg(mom,flav,col,id);
       Cluster_Leg * leg(p_ampl->Legs().back());
       leg->SetStat(0);
-      leg->SetKT2(0,m_minkt2);
-      leg->SetKT2(1,m_minkt2);
+      double minkt2(m_minkt2/sqr(cosh(mom.Y())));
+      leg->SetKT2(0,minkt2);
+      leg->SetKT2(1,minkt2);
       leg->SetNMax(blob->NOutP()+3);
       sing->pop_front();
     }
@@ -306,11 +311,13 @@ bool Cluster_Algorithm::Cluster(Blob *const blob)
     Cluster_Leg *li(p_ampl->Leg(i));
     li->SetKT2(0,0.0);
     li->SetKT2(1,0.0);
-    for (size_t j(p_ampl->NIn());j<p_ampl->Legs().size();++j) {
+    /*
+      for (size_t j(p_ampl->NIn());j<p_ampl->Legs().size();++j) {
       Cluster_Leg *lj(p_ampl->Leg(j));
       if (li->Col().m_j==lj->Col().m_i) lj->SetKT2(0,0.0);
       if (li->Col().m_i==lj->Col().m_j) lj->SetKT2(1,0.0);
-    }
+      }
+    */
   }
 
   return true;

@@ -1,3 +1,4 @@
+#include "SHRiMPS/Main/Cluster_Algorithm.H"
 #include "SHRiMPS/Event_Generation/Inelastic_Event_Generator.H"
 #include "SHRiMPS/Cross_Sections/Sigma_Inelastic.H"
 #include "ATOOLS/Phys/Particle.H"
@@ -35,7 +36,7 @@ void Inelastic_Event_Generator::Initialise() {
       m_Bgrids[(*eikonal)]->back()*rpa->Picobarn();
   }
   msg_Info()<<METHOD<<" yields effective inelastic cross section "
-	    <<"sigma = "<<m_sigma/1.e9<<" mbarn.\n";
+	    <<"sigma = "<<m_sigma/rpa->Picobarn()/1.e9<<" mbarn.\n";
   Reset();
 }
 
@@ -44,21 +45,18 @@ void Inelastic_Event_Generator::Reset() {
   m_first = true;
 }
 
-int Inelastic_Event_Generator::GenerateEvent(Blob_List * blobs,const bool & isUE) {
-  msg_Info()<<"*** -----------------------------------------------------\n"
- 	    <<"*** "<<METHOD<<"(done = "<<m_done<<", init = "<<m_init<<").\n";
+int Inelastic_Event_Generator::
+GenerateEvent(Blob_List * blobs,const bool & isUE) {
   if (m_done || !InitInelasticEvent(blobs)) return 0;
   if (!AddScatter(blobs)) {
     m_done = true;
-    msg_Error()<<"Error in "<<METHOD<<":\n"
-	       <<"   Had to stop ladder generation after "<<m_Ngen
-	       <<" of "<<m_Nladders<<" ladders.\n"; 
+    msg_Out()<<METHOD<<": "<<m_Ngen<<" ladders generated.\n";
     return 0;
   }
   m_Ngen++;
   if (m_Ngen>=m_Nladders) {
+    msg_Out()<<METHOD<<": "<<m_Ngen<<" ladders generated.\n";
     m_done = true;
-    return 0;
   }
   return 1;
 }
@@ -69,11 +67,12 @@ bool Inelastic_Event_Generator::InitInelasticEvent(Blob_List * blobs) {
   if (!(blob && blob->Status()==blob_status::needs_minBias) ||
       !SetUpEvent()) return false;
   m_init = true;
-  m_laddergenerator.InitCollision(p_eikonal,m_B);
-  msg_Info()<<"*** "<<METHOD<<" selected B = "<<m_B
-	    <<" and eikonal ["<<p_eikonal->FF1()->Number()
-	    <<p_eikonal->FF2()->Number()<<"]\n"
-	    <<"***  ---> "<<m_Nladders<<" ladders to be generated.\n";
+  m_laddergenerator.InitCollision(p_eikonal,m_B,m_Nladders);
+  msg_Out()<<"-------------------------------------------------------\n"
+	   <<METHOD<<": B = "<<m_B
+	   <<" and eikonal ["<<p_eikonal->FF1()->Number()
+	   <<p_eikonal->FF2()->Number()<<"]"
+	   <<" -> "<<m_Nladders<<" ladders.\n";
   return true;
 }
 
@@ -126,21 +125,24 @@ bool Inelastic_Event_Generator::SelectB() {
 }
 
 int Inelastic_Event_Generator::AddScatter(Blob_List * blobs) {
+  //msg_Out()<<METHOD<<" for "<<m_Ngen<<" ladders until now.\n";
   Blob * blob(blobs->FindFirst(btp::Soft_Collision));
   if (!(blob && blob->Status()==blob_status::needs_minBias)) return -1;
-  blob = CreateBlob();
-  if (!m_laddergenerator.MakePrimaryLadder(blob)) {
-    msg_Out()<<METHOD<<" failed to create allowed primary ladder.\n";
+  blob = CreateBlob(m_Ngen==0);
+  if (!m_laddergenerator.MakePrimaryLadder(blob,m_Ngen==0)) {
     delete blob;
     return 0;
   }
-  msg_Out()<<METHOD<<" added blob "<<blob->Id()
-	   <<" ("<<blob->Type()<<"), status = "<<blob->Status()<<"\n";
   blobs->push_back(blob);
+  p_cluster->SetTMax(4.*m_laddergenerator.TMax());
+  p_cluster->SetMinKT2(64.);
+  //msg_Out()<<METHOD<<"["<<p_cluster<<"]: tmax = "
+  //	   <<m_laddergenerator.TMax()<<".\n";
+  if (m_Ngen==0) blobs->SetExternalWeight(m_sigma);
   return 1;
 }
 
-ATOOLS::Blob * Inelastic_Event_Generator::CreateBlob() {
+ATOOLS::Blob * Inelastic_Event_Generator::CreateBlob(const bool & isfirst) {
   Blob * blob = new Blob();
   blob->SetId();
   blob->SetType(btp::Hard_Collision);

@@ -100,6 +100,7 @@ void Shrimps::InitialiseTheEventGenerator() {
   xsecs.CalculateCrossSections();
   p_generator = new Event_Generator();
   p_generator->Initialise();
+  p_generator->SetCluster(&m_cluster);
 }
 
 int Shrimps::GenerateEvent(ATOOLS::Blob_List * blobs) {
@@ -137,6 +138,10 @@ void Shrimps::GenerateXsecs() {
     xsectot.push_back(xsecs.SigmaTot()/1.e9);
     xsecinel.push_back(xsecs.SigmaInel()/1.e9);
     xsecelas.push_back(xsecs.SigmaEl()/1.e9);
+    msg_Out()<<"** "<<energy<<" -> "
+	     <<"xstot = "<<xsecs.SigmaTot()<<", "
+	     <<"xsinel = "<<xsecs.SigmaInel()<<", "
+	     <<"xsel = "<<xsecs.SigmaEl()<<".\n";
     if (elastics.find(energy)!=elastics.end()) {
       WriteOutElasticsYodaFile(energy,dirname);
     }

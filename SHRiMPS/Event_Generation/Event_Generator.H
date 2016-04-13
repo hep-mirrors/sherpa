@@ -14,6 +14,8 @@
 namespace PDF    { class ISR_Handler; }
 
 namespace SHRIMPS {
+  class Cluster_Algorithm;
+  
   class Event_Generator {
   private:
     run_mode::code    m_runmode, m_thisevent;
@@ -38,6 +40,11 @@ namespace SHRIMPS {
     inline Omega_ik * GetEikonal() const { return p_active->GetEikonal(); }
     inline const double & XSec()   const { return m_xsec; } 
     inline double         Smin()   const { return p_active->Smin(); }
+
+    inline void SetCluster(Cluster_Algorithm * cluster) {
+      if (p_inelastic) p_inelastic->SetCluster(cluster);
+    }
+
     inline double ShowerMinKT2() {
       if (p_active) return p_active->Smin()*m_minkt2; 
       return 0.;
