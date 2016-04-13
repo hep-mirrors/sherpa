@@ -115,7 +115,7 @@ namespace COMIX {
     void ConstructDSijMap();
 
     int  CheckDecay(const ATOOLS::Flavour &fl,const Int_Vector &ids) const;
-    bool MatchIndices(const Int_Vector &ids,const Vertex_Key &vkey) const;
+    bool MatchIndices(size_t cid,const Vertex_Key &vkey) const;
     Vertex *AddCurrent(const Current_Key &ckey,Vertex_Key &vkey,
 		       const size_t &n,const int dec,
 		       std::vector<int> &maxcpl,std::vector<int> &mincpl,

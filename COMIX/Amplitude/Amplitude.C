@@ -336,23 +336,15 @@ bool Amplitude::AddVIDipole
 }
 
 bool Amplitude::MatchIndices
-(const Int_Vector &ids,const Vertex_Key &vkey) const
+(size_t cid,const Vertex_Key &vkey) const
 {
-  size_t n(ids.size());
-  for (size_t o(0);o<n;++o) {
-    bool found(false);
-    for (size_t m(0);m<vkey.m_j.size();++m) {
-      const Int_Vector &c(vkey.m_j[m]->Id());
-      for (size_t p(0), s(c.size());p<s;++p) {
-	if (c[p]>ids[o]) break;
-	if (c[p]==ids[o]) {
-	  if (found) return false;
-	  found=true;
-	}
-      }
-    }
-    if (!found) return false;
+  size_t id(0);
+  for (size_t m(0);m<vkey.m_j.size();++m) {
+    size_t cur(vkey.m_j[m]->CId());
+    if ((cid&cur)!=cur) return false;
+    cid&=~cur;
   }
+  if (cid) return false;
   if (m_dec) {
     std::vector<size_t> c(vkey.m_j.size());
     for (size_t j(0);j<c.size();++j) {
@@ -498,6 +490,8 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
   std::vector<int> maxcpl, mincpl;
   int dec(CheckDecay(fl,ids));
   if (dec<0) return;
+  size_t cid(0);
+  for (size_t i(0);i<ids.size();++i) cid|=1<<ids[i];
   std::map<std::string,Current*> curs;
   Current_Key ckey(dir>0?fl.Bar():fl,p_model,ids.size());
   Current *cur(Current_Getter::GetObject
@@ -539,7 +533,7 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 	    { ord=false; break; }
 	if (!ord) continue;
 	for (size_t i(0);i<cj.size();++i) vkey->m_j[i]=cj[i];
-	if (!MatchIndices(ids,*vkey)) continue;
+	if (!MatchIndices(cid,*vkey)) continue;
 	Permutation perm(cj.size());
 	for (int nperm(perm.MaxNumber()), i(0);i<nperm;++i) {
 	  int f(0), *p(perm.Get(i));
