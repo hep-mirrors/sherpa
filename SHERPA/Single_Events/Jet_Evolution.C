@@ -25,18 +25,16 @@ Jet_Evolution::Jet_Evolution(Matrix_Element_Handler *_mehandler,
   Perturbative_Interface * interface;
   shIter=showers.find(isr::hard_process);
   interface = new Perturbative_Interface(_mehandler, _dechandler,
-                                           shIter->second);
+					 shIter->second);
   if (interface!=NULL) m_interfaces.insert(make_pair("SignalMEs",interface));
 
   shIter=showers.find(isr::hard_subprocess);
-  interface = new Perturbative_Interface(_hdhandler,
-                                         shIter->second);
+  interface = new Perturbative_Interface(_hdhandler,shIter->second);
   if (interface!=NULL) 
     m_interfaces.insert(make_pair("HadronDecays",interface));
 
   if (_mihandler) {
-    interface = new Perturbative_Interface(_mihandler,
-                                           shIter->second);
+    interface = new Perturbative_Interface(_mihandler,shIter->second);
     if (interface!=NULL) m_interfaces.insert(make_pair("MPIs",interface));
   }
   if (_schandler) {
@@ -72,8 +70,6 @@ Return_Value::code Jet_Evolution::Treat(Blob_List * bloblist, double & weight)
     found = false;
     for (size_t i=0;i<bloblist->size();++i) {
       blob = (*bloblist)[i];
-      //std::cout<<METHOD<<" for "<<int(blob->Type())
-      //	       <<"; check for status "<<int(blob->Status())<<endl;
       if (blob->Has(blob_status::needs_showers) &&
           blob->Type()!=btp::Hard_Decay) {
 	switch (int(blob->Type())) {
@@ -241,8 +237,7 @@ AftermathOfSuccessfulShower(Blob * blob,Blob_List * bloblist,
   if (blob->NInP()==1 && 
       blob->Type()!=btp::Hadron_Decay) blob->InParticle(0)->SetInfo('h');
   interface->FillBlobs(bloblist);
-  //std::cout<<METHOD<<": found a blob for status=0"<<std::endl<<(*blob)<<std::endl;
-  blob->SetStatus(blob_status::inactive);
+  blob->UnsetStatus(blob_status::needs_showers);
   if (!interface->Shower()->On()) {
     if (blob->NInP()!=1) {
       for (int i=0;i<2;i++) {

@@ -94,10 +94,10 @@ Soft_Collision_Handler::GenerateMinimumBiasEvent(ATOOLS::Blob_List * blobs,
 
 Cluster_Amplitude *Soft_Collision_Handler::ClusterConfiguration(Blob *const bl)
 {
-  p_cluster->SetMinKT2(p_shrimps->ShowerMinKT2());
-  p_cluster->SetRescatt(p_shrimps->IsLastRescatter());
-  p_cluster->SetTMax(p_shrimps->LadderTMax());
-  p_cluster->SetNLad(p_shrimps->NLadders());
+  //p_cluster->SetMinKT2(p_shrimps->ShowerMinKT2());
+  //p_cluster->SetRescatt(p_shrimps->IsLastRescatter());
+  //p_cluster->SetTMax(p_shrimps->LadderTMax());
+  //p_cluster->SetNLad(p_shrimps->NLadders());
   if (!p_cluster->Cluster(bl)) {
     msg_Error()<<"Error in "<<METHOD<<": could not cluster blob.\n"
 	       <<(*bl)<<"\n";
