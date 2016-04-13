@@ -30,19 +30,6 @@ COMIX::Single_Process::Single_Process():
   p_loop(NULL), p_kpterms(NULL),
   m_checkpoles(false), m_allowmap(true)
 {
-  int helpi;
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  if (reader.ReadFromFile(helpi,"COMIX_ALLOW_MAPPING")) {
-    m_allowmap=helpi;
-    msg_Tracking()<<"Set mapping mode "<<m_allowmap<<".\n";
-  }
-  if (reader.ReadFromFile(helpi,"CHECK_POLES")) {
-    m_checkpoles=helpi;
-    msg_Tracking()<<"Set pole check mode "<<m_checkpoles<<".\n";
-  }
 }
 
 COMIX::Single_Process::~Single_Process()
@@ -173,6 +160,15 @@ bool COMIX::Single_Process::Initialize
       p_loop->SetCouplings(m_cpls);
       p_loop->SetNorm(1.0/(isf*fsf));
       m_mewgtinfo.m_type|=mewgttype::VI;
+      int helpi;
+      Data_Reader reader(" ",";","!","=");
+      reader.AddComment("#");
+      reader.SetInputPath(rpa->GetPath());
+      reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
+      if (reader.ReadFromFile(helpi,"CHECK_POLES")) {
+	m_checkpoles=helpi;
+	msg_Tracking()<<"Set pole check mode "<<m_checkpoles<<".\n";
+      }
     }
     p_bg->SetLoopME(p_loop);
     (*pmap)[m_name]=m_name;
