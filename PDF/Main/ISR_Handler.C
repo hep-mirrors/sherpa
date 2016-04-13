@@ -147,11 +147,9 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,
     }
     else {
       bool found(false);
-      for (size_t j(0);j<p_isrbase[i]->Flavour().Size();++j)
-	if (partons[i]==p_isrbase[i]->Flavour()[j]) {
-	  found=true;
-	  break;
-	}
+      if (p_isrbase[i]->Flavour().Includes(partons[i])) {
+	found=true;
+      }
       if (!found) return false;
     }
   }
@@ -173,11 +171,9 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *partons)
     }
     else {
       bool found(false);
-      for (size_t j(0);j<p_isrbase[i]->Flavour().Size();++j)
-	if (partons[i]==p_isrbase[i]->Flavour()[j]) {
-	  found=true;
-	  break;
-	}
+      if (p_isrbase[i]->Flavour().Includes(partons[i])) {
+	found=true;
+      }
       if (!found) return false;
     }
   }
@@ -298,7 +294,7 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
   // mode&1 -> swap beams
   // mode&2 -> override m_mode and only calc left beam
   // mode&4 -> override m_mode and only calc right beam
-  // mode&8 -> do not include flux
+  // mode&8 -> return xf in mode 2 & 4
   if (m_mode==0) return 1.;
   msg_IODebugging()<<METHOD<<"(mode = "<<mode<<")\n";
   if (fl1.Size()>1 || fl2.Size()>1)
@@ -368,6 +364,10 @@ double ISR_Handler::PDFWeight(const int mode,Vec4D p1,Vec4D p2,
     if (IsBad(f1*f2)) return 0.0;
     if (s_nozeropdf && f1*f2==0.0)
       return pow(std::numeric_limits<double>::min(),0.25);
+    if (mode&8) {
+      if (mode&2) return x1*f1;
+      if (mode&4) return x2*f2;
+    }
     return f1*f2;
   }
   return 0.;
