@@ -18,7 +18,7 @@ namespace PHASIC {
 		       const Subprocess_Info &fi,int mode=0) const;
     void SetFlavour(Subprocess_Info &cii,Subprocess_Info &cfi,
 		    const ATOOLS::Flavour &fl,const size_t i) const;
-    bool ConstructProcesses(Process_Info pi,const size_t &ci);
+    bool ConstructProcesses(Process_Info &pi,const size_t &ci);
 
   public:
 

@@ -254,14 +254,15 @@ void Process_Group::SetFlavour(Subprocess_Info &cii,Subprocess_Info &cfi,
   else cfi.SetExternal(fl,i-m_nin);
 }
 
-bool Process_Group::ConstructProcesses(Process_Info pi,const size_t &ci)
+bool Process_Group::ConstructProcesses(Process_Info &pi,const size_t &ci)
 {
   if (ci==m_nin+m_nout) {
     if (!CheckFlavours(pi.m_ii,pi.m_fi)) return false;
-    SortFlavours(pi);
-    std::string name(GenerateName(pi.m_ii,pi.m_fi));
+    Process_Info cpi(pi);
+    SortFlavours(cpi);
+    std::string name(GenerateName(cpi.m_ii,cpi.m_fi));
     if (m_procmap.find(name)!=m_procmap.end()) return false;
-    Process_Base *proc(GetProcess(pi));
+    Process_Base *proc(GetProcess(cpi));
     if (!proc) return false;
     proc->SetGenerator(Generator());
     proc->Init(pi,p_int->Beam(),p_int->ISR());
