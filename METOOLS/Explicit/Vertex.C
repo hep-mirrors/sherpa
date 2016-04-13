@@ -224,15 +224,18 @@ void Vertex::InitPols()
   int nmax(0);
   std::string id;
   for (size_t i(0);i<m_j.size();++i) {
-    id+=ToString(m_j[i]->H().Spins());
+    id+=m_j[i]->H().SpinID();
     nmax=Max(nmax,m_j[i]->Id().back());
   }
+  static std::map<int,std::string> s_imap;
   for (size_t i(0);i<=nmax;++i)
     for (size_t j(0);j<m_j.size();++j)
       if (std::find(m_j[j]->Id().begin(),
 		    m_j[j]->Id().end(),i)!=
 	  m_j[j]->Id().end()) {
-	id+="_"+ToString(j);
+	std::map<int,std::string>::iterator iit(s_imap.find(j));
+	if (iit==s_imap.end()) iit=s_imap.insert(make_pair(j,ToString(j))).first;
+	id+="_"+iit->second;
 	break;
       }
   std::map<std::string,Int_Vector>::iterator hit(s_h.find(id));
@@ -254,6 +257,8 @@ void Vertex::InitPols()
     if(m_hjc[hc]==m_j[hc]->H().N()){m_hjc[hc--]=0;++m_hjc[hc];continue;}
     hjj[hc]=m_j[hc]->H()(m_hjc[hc]);if(hc<m_hjc.size()-1){++hc;continue;}
     Int_Vector ch(hjj.back()), id(m_j.back()->Id());
+    id.reserve(p_c->Id().size());
+    ch.reserve(p_c->Id().size());
     for (size_t i(0);i<hjj.size()-1;++i) {
       for (size_t m(0);m<hjj[i].size();++m) {
 	Int_Vector::iterator cit(ch.begin()), iit(id.begin());
