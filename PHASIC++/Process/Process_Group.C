@@ -203,6 +203,7 @@ bool Process_Group::CheckFlavours
 (const Subprocess_Info &ii,const Subprocess_Info &fi,int mode) const
 {
   std::vector<Flavour> cfl;
+  cfl.reserve(ii.m_ps.size()+fi.m_ps.size());
   for (size_t i(0);i<ii.m_ps.size();++i) cfl.push_back(ii.m_ps[i].m_fl);
   for (size_t i(0);i<fi.m_ps.size();++i) cfl.push_back(fi.m_ps[i].m_fl);
   int charge(0), strong(0);
