@@ -202,17 +202,26 @@ void Process_Group::SetLookUp(const bool lookup)
 bool Process_Group::CheckFlavours
 (const Subprocess_Info &ii,const Subprocess_Info &fi,int mode) const
 {
-  std::vector<Flavour> cfl;
-  cfl.reserve(ii.m_ps.size()+fi.m_ps.size());
-  for (size_t i(0);i<ii.m_ps.size();++i) cfl.push_back(ii.m_ps[i].m_fl);
-  for (size_t i(0);i<fi.m_ps.size();++i) cfl.push_back(fi.m_ps[i].m_fl);
   int charge(0), strong(0);
-  size_t quarks(0), nin(ii.m_ps.size());
-  for (size_t i(0);i<cfl.size();++i) {
-    charge+=i<nin?-cfl[i].IntCharge():cfl[i].IntCharge();
-    if (abs(cfl[i].StrongCharge())!=8)
-      strong+=i<nin?-cfl[i].StrongCharge():cfl[i].StrongCharge();
-    quarks+=cfl[i].IsQuark();
+  size_t quarks(0), nin(ii.m_ps.size()), nout(fi.m_ps.size());
+  for (size_t i(0);i<nin;++i) {
+    const Flavour &fl(ii.m_ps[i].m_fl);
+    charge+=-fl.IntCharge();
+    if (abs(fl.StrongCharge())!=8)
+      strong+=-fl.StrongCharge();
+    quarks+=fl.IsQuark();
+    if (mode==0 && quarks>m_pinfo.m_nmaxq) {
+      msg_Debugging()<<METHOD<<"(): '"<<GenerateName(ii,fi)<<"': n_q > "
+		     <<m_pinfo.m_nmaxq<<". Skip process.\n";
+      return false;
+    }
+  }
+  for (size_t i(0);i<nout;++i) {
+    const Flavour &fl(fi.m_ps[i].m_fl);
+    charge+=fl.IntCharge();
+    if (abs(fl.StrongCharge())!=8)
+      strong+=fl.StrongCharge();
+    quarks+=fl.IsQuark();
     if (mode==0 && quarks>m_pinfo.m_nmaxq) {
       msg_Debugging()<<METHOD<<"(): '"<<GenerateName(ii,fi)<<"': n_q > "
 		     <<m_pinfo.m_nmaxq<<". Skip process.\n";
