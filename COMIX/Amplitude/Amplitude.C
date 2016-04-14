@@ -14,8 +14,8 @@
 #include "ATOOLS/Org/My_Limits.H"
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Run_Parameter.H"
+#include "ATOOLS/Org/My_File.H"
 #include "ATOOLS/Org/My_MPI.H"
 
 #include <cassert>
@@ -27,6 +27,10 @@ static bool csscite(false);
 
 static const double invsqrttwo(1.0/sqrt(2.0));
 
+template<typename Type> inline Type
+GetParameter(const std::string &name)
+{ return ToType<Type>(rpa->gen.Variable(name)); }
+
 Amplitude::Amplitude():
   p_model(NULL), m_nin(0), m_nout(0), m_dec(0), m_n(0), m_wfmode(0), m_ngpl(3),
   m_maxcpl(2,99), m_mincpl(2,0), m_minntc(0), m_maxntc(99),
@@ -35,58 +39,27 @@ Amplitude::Amplitude():
 {
   p_dinfo->SetType(0);
   p_dinfo->SetMassive(0);
-  Data_Reader read(" ",";","!","=");
-  std::string prec;
-  if (!read.ReadFromFile(prec,"COMIX_PMODE")) prec="D";
-  else msg_Tracking()<<METHOD<<"(): Set precision "<<prec<<".\n";
-  if (prec!="D") THROW(not_implemented,"Invalid precision mode");
-  m_pmode=prec[0];
-  int helpi(0);
-  if (!read.ReadFromFile(helpi,"COMIX_WF_MODE")) helpi=0;
-  else msg_Info()<<METHOD<<"(): Set wave function mode "<<helpi<<".\n";
-  m_wfmode=helpi;
-  if (!read.ReadFromFile(helpi,"COMIX_PG_MODE")) helpi=0;
-  else msg_Info()<<METHOD<<"(): Set print graph mode "<<helpi<<".\n";
-  m_pgmode=helpi;
-  if (!read.ReadFromFile(helpi,"COMIX_VL_MODE")) helpi=0;
-  else msg_Info()<<METHOD<<"(): Set vertex label mode "<<helpi<<".\n";
-  Vertex::SetVLMode(helpi);
-  if (!read.ReadFromFile(helpi,"COMIX_N_GPL")) helpi=3;
-  else msg_Info()<<METHOD<<"(): Set graphs per line "<<helpi<<".\n";
-  m_ngpl=Max(1,Min(helpi,5));
-  double helpd;
-  if (!read.ReadFromFile(helpd,"DIPOLE_AMIN")) helpd=Max(rpa->gen.Accu(),1.0e-8);
-  else msg_Tracking()<<METHOD<<"(): Set dipole \\alpha_{cut} "<<helpd<<".\n";
-  p_dinfo->SetAMin(helpd);
-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA")) helpd=1.0;
-  else msg_Tracking()<<METHOD<<"(): Set dipole \\alpha_{max} "<<helpd<<".\n";
-  double amax(helpd);
-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FF")) helpd=amax;
-  else msg_Tracking()<<METHOD<<"(): Set FF dipole \\alpha_{max} "<<helpd<<".\n";
-  p_dinfo->SetAMax(0,helpd);
-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FI")) helpd=amax;
-  else msg_Tracking()<<METHOD<<"(): Set FI dipole \\alpha_{max} "<<helpd<<".\n";
-  p_dinfo->SetAMax(2,helpd);
-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_IF")) helpd=amax;
-  else msg_Tracking()<<METHOD<<"(): Set IF dipole \\alpha_{max} "<<helpd<<".\n";
-  p_dinfo->SetAMax(1,helpd);
-  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_II")) helpd=amax;
-  else msg_Tracking()<<METHOD<<"(): Set II dipole \\alpha_{max} "<<helpd<<".\n";
-  p_dinfo->SetAMax(3,helpd);
-  if (!read.ReadFromFile(helpd,"DIPOLE_KAPPA")) helpd=2.0/3.0;
-  else msg_Tracking()<<METHOD<<"(): Set dipole \\kappa="<<helpd<<"\n.";
-  p_dinfo->SetKappa(helpd);
-  if (!read.ReadFromFile(helpi,"DIPOLE_NF_GSPLIT"))
-    helpi=Flavour(kf_jet).Size()/2;
-  else msg_Tracking()<<METHOD<<"(): Set dipole N_f="<<helpi<<"\n.";
-  p_dinfo->SetNf(helpi);
-  if (!read.ReadFromFile(helpd,"DIPOLE_KT2MAX")) helpd=sqr(rpa->gen.Ecms());
-  else msg_Tracking()<<METHOD<<"(): Set dipole \\k_{T,max}^2 "<<helpd<<".\n";
-  p_dinfo->SetKT2Max(helpd);
+  m_pmode=rpa->gen.Variable("COMIX_PMODE")[0];
+  m_wfmode=GetParameter<int>("COMIX_WF_MODE");
+  m_pgmode=GetParameter<int>("COMIX_PG_MODE");
+  m_ngpl=Max(1,Min(GetParameter<int>("COMIX_N_GPL"),5));
+  p_dinfo->SetAMin(GetParameter<double>("DIPOLE_AMIN"));
+  double amax(GetParameter<double>("DIPOLE_ALPHA")), cur;
+  cur=GetParameter<double>("DIPOLE_ALPHA_FF");
+  p_dinfo->SetAMax(0,cur?cur:amax);
+  cur=GetParameter<double>("DIPOLE_ALPHA_FI");
+  p_dinfo->SetAMax(2,cur?cur:amax);
+  cur=GetParameter<double>("DIPOLE_ALPHA_IF");
+  p_dinfo->SetAMax(1,cur?cur:amax);
+  cur=GetParameter<double>("DIPOLE_ALPHA_II");
+  p_dinfo->SetAMax(3,cur?cur:amax);
+  p_dinfo->SetKappa(GetParameter<double>("DIPOLE_KAPPA"));
+  p_dinfo->SetNf(GetParameter<int>("DIPOLE_NF_GSPLIT"));
+  p_dinfo->SetKT2Max(GetParameter<double>("DIPOLE_KT2MAX"));
   p_dinfo->SetDRMode(0);
-  m_sccmur=read.GetValue("USR_WGT_MODE",1);
-  m_smth=read.GetValue("NLO_SMEAR_THRESHOLD",0.0);
-  m_smpow=read.GetValue("NLO_SMEAR_POWER",0.5);
+  m_sccmur=GetParameter<int>("USR_WGT_MODE");
+  m_smth=GetParameter<double>("NLO_SMEAR_THRESHOLD");
+  m_smpow=GetParameter<double>("NLO_SMEAR_POWER");
 }
 
 Amplitude::~Amplitude()
