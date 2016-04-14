@@ -68,35 +68,6 @@ Amplitude::~Amplitude()
   CleanUp();
 }
 
-size_t Amplitude::MakeId(const Int_Vector &ids,const int t)
-{
-  size_t id(0);
-  if (t>0) {
-    for (size_t i(0);i<ids.size();++i) 
-      if (ids[i]>0) id+=1<<i;
-  }
-  else {
-    for (size_t i(0);i<ids.size();++i) 
-      if (ids[i]<0 || ids[i]==3) id+=1<<i;
-  }
-  return id;
-}
-
-Int_Vector Amplitude::MakeId(const size_t &id,const size_t &n)
-{
-  size_t ic(id);
-  Int_Vector ids(n,0);
-  for (size_t i(0);i<ids.size();++i) {
-    size_t c(1<<i);
-    if (ic&c) {
-      ids[i]=1;
-      ic-=c;
-    }
-  }
-  if (ic!=0) THROW(fatal_error,"Invalid particle number");
-  return ids;
-}
-
 void Amplitude::CleanUp()
 {
   for (size_t i(0);i<m_cur.size();++i) 
