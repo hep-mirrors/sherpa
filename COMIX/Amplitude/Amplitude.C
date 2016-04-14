@@ -308,28 +308,18 @@ bool Amplitude::AddVIDipole
   return true;
 }
 
-bool Amplitude::MatchIndices
-(size_t cid,const Vertex_Key &vkey) const
+bool Amplitude::MatchDecay(const Vertex_Key &vkey) const
 {
-  size_t id(0);
-  for (size_t m(0);m<vkey.m_j.size();++m) {
-    size_t cur(vkey.m_j[m]->CId());
-    if ((cid&cur)!=cur) return false;
-    cid&=~cur;
-  }
-  if (cid) return false;
-  if (m_dec) {
-    std::vector<size_t> c(vkey.m_j.size());
-    for (size_t j(0);j<c.size();++j) {
-      size_t jid(vkey.m_j[j]->CId());
-      for (size_t i(0);i<m_decid.size();++i) {
-	size_t did(m_decid[i]->m_id);
-	if ((did&jid) && (did&~jid)) c[j]|=(1<<i);
-      }
+  std::vector<size_t> c(vkey.m_j.size());
+  for (size_t j(0);j<c.size();++j) {
+    size_t jid(vkey.m_j[j]->CId());
+    for (size_t i(0);i<m_decid.size();++i) {
+      size_t did(m_decid[i]->m_id);
+      if ((did&jid) && (did&~jid)) c[j]|=(1<<i);
     }
-    for (size_t i(1);i<c.size();++i)
-      if (c[i]!=c[0]) return false;
   }
+  for (size_t i(1);i<c.size();++i)
+    if (c[i]!=c[0]) return false;
   return true;
 }
 
@@ -502,11 +492,18 @@ void Amplitude::AddCurrent(const Int_Vector &ids,const size_t &n,
 	if (cl<cc.size()-1) { --cc[++cl]; continue; }
 	bool ord(true);
 	for (size_t i(0);i<cj.size()-1;++i)
-	  if (cj[i]->Id().front()>cj[i+1]->Id().front())
+	  if (cj[i]->Id().front()>=cj[i+1]->Id().front())
 	    { ord=false; break; }
 	if (!ord) continue;
-	for (size_t i(0);i<cj.size();++i) vkey->m_j[i]=cj[i];
-	if (!MatchIndices(cid,*vkey)) continue;
+	size_t tid(cid);
+	for (size_t i(0);i<cj.size();++i) {
+	  vkey->m_j[i]=cj[i];
+	  size_t cur(cj[i]->CId());
+	  if ((tid&cur)!=cur) break;
+	  tid&=~cur;
+	}
+	if (tid) continue;
+	if (m_dec && !MatchDecay(*vkey)) continue;
 	Permutation perm(cj.size());
 	for (int nperm(perm.MaxNumber()), i(0);i<nperm;++i) {
 	  int f(0), *p(perm.Get(i));
