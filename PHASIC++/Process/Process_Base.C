@@ -209,14 +209,14 @@ void Process_Base::UpdateIntegrator
 
 class Order_Flavour {
   FMMap* p_fmm;
-  bool Order_SVFT(const Flavour &a,const Flavour &b) 
+  int Order_SVFT(const Flavour &a,const Flavour &b) 
   {
-    if (a.IsScalar() && !b.IsScalar()) return true;
+    if (a.IsScalar() && !b.IsScalar()) return 1;
     if (a.IsVector() && !b.IsScalar() && 
-	!b.IsVector()) return true;
+	!b.IsVector()) return 1;
     if (a.IsFermion() && !b.IsFermion() && 
-	!b.IsScalar() && !b.IsVector()) return true;
-    return false;
+	!b.IsScalar() && !b.IsVector()) return 1;
+    return 0;
   }
   int Order_Multi(const Flavour &a,const Flavour &b)
   {
@@ -226,41 +226,29 @@ class Order_Flavour {
 	(*p_fmm)[int(b.Kfcode())]) return 1;
     return 0;
   }
+  int operator()(const Flavour &a,const Flavour &b)
+  {
+    if (a.Priority()>b.Priority()) return 1;
+    if (a.Priority()<b.Priority()) return 0;
+    if (!a.Strong()&&b.Strong()) return 1;
+    if (a.Strong()&&!b.Strong()) return 0;
+    if (Order_Multi(a,b)) return 1;
+    if (Order_Multi(b,a)) return 0;
+    if (a.Mass()>b.Mass()) return 1;
+    if (a.Mass()<b.Mass()) return 0;
+    if (Order_SVFT(a,b)) return 1;
+    if (Order_SVFT(b,a)) return 0;
+    if (!a.IsAnti()&&b.IsAnti()) return 1;
+    if (a.IsAnti()&&!b.IsAnti()) return 0;
+    return a.Kfcode()<b.Kfcode();
+  }
 public:
   Order_Flavour(FMMap* fmm): p_fmm(fmm) {}
   int operator()(const Subprocess_Info &a,const Subprocess_Info &b)
-  {
-    if (a.m_fl.Priority() > b.m_fl.Priority()) return 1;
-    if (a.m_fl.Priority() < b.m_fl.Priority()) return 0;
-    if (!a.m_fl.Strong() && b.m_fl.Strong()) return 1;
-    if (a.m_fl.Strong() && !b.m_fl.Strong()) return 0;
-    if (Order_Multi(a.m_fl,b.m_fl)) return 1;
-    if (Order_Multi(b.m_fl,a.m_fl)) return 0;
-    if (a.m_fl.Mass()>b.m_fl.Mass()) return 1;
-    if (a.m_fl.Mass()<b.m_fl.Mass()) return 0;
-    if (Order_SVFT(a.m_fl,b.m_fl)) return 1;
-    if (Order_SVFT(b.m_fl,a.m_fl)) return 0;
-    if (!a.m_fl.IsAnti() && b.m_fl.IsAnti()) return 1;
-    if (a.m_fl.IsAnti() && !b.m_fl.IsAnti()) return 0;
-    return a.m_fl.Kfcode() < b.m_fl.Kfcode();
-  }
+  { return (*this)(a.m_fl,b.m_fl); }
   int operator()(const Cluster_Leg *a,const Cluster_Leg *b)
-  {
-    if (a->Flav().Priority() > b->Flav().Priority()) return 1;
-    if (a->Flav().Priority() < b->Flav().Priority()) return 0;
-    if (!a->Flav().Strong() && b->Flav().Strong()) return 1;
-    if (a->Flav().Strong() && !b->Flav().Strong()) return 0;
-    if (Order_Multi(a->Flav(),b->Flav())) return 1;
-    if (Order_Multi(b->Flav(),a->Flav())) return 0;
-    if (a->Flav().Mass()>b->Flav().Mass()) return 1;
-    if (a->Flav().Mass()<b->Flav().Mass()) return 0;
-    if (Order_SVFT(a->Flav(),b->Flav())) return 1;
-    if (Order_SVFT(b->Flav(),a->Flav())) return 0;
-    if (!a->Flav().IsAnti() && b->Flav().IsAnti()) return 1;
-    if (a->Flav().IsAnti() && !b->Flav().IsAnti()) return 0;
-    return a->Flav().Kfcode() < b->Flav().Kfcode();
-  }
-};// end of class Order_Multiplicity
+  { return (*this)(a->Flav(),b->Flav()); }
+};// end of class Order_Flavour
 
 void Process_Base::SortFlavours(Subprocess_Info &info,FMMap *const fmm)
 {
