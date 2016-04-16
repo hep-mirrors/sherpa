@@ -1,10 +1,11 @@
 #ifndef SHRiMPS_Main_Cluster_Algorithm_H
 #define SHRiMPS_Main_Cluster_Algorithm_H
 
+#include "SHRiMPS/Main/Soft_Jet_Criterion.H"
+#include "PDF/Main/Cluster_Definitions_Base.H"
 #include "ATOOLS/Phys/Cluster_Amplitude.H"
 #include "ATOOLS/Phys/Flavour.H"
 #include "ATOOLS/Org/Run_Parameter.H"
-#include "PDF/Main/Cluster_Definitions_Base.H"
 #include "ATOOLS/Math/Histogram.H"
 #include <map>
 #include <list>
@@ -16,22 +17,13 @@ namespace ATOOLS {
 
 namespace PDF { 
   class Cluster_Definitions_Base; 
+  class Jet_Criterion;
 }
 
 namespace SHRIMPS {
   typedef std::list<ATOOLS::Particle *> ParticleList;
 
   class Cluster_Algorithm: public ATOOLS::Mass_Selector {
-    class JF {
-    private:
-      double m_ycut;
-    public:
-      JF(const double & kt2) : 
-	m_ycut(kt2/ATOOLS::sqr(ATOOLS::rpa->gen.Ecms())) {}
-      ~JF() {};
-      inline const double & Ycut() const { return m_ycut; }
-      inline double DR()   const { return 1.; }
-    };
   private:
     int           m_mode,m_nlad;
     bool          m_resc;
@@ -40,17 +32,22 @@ namespace SHRIMPS {
 
     std::map<std::string, ATOOLS::Histogram * > m_histomap;
 
-    ATOOLS::Cluster_Amplitude     *p_ampl;
-    PDF::Cluster_Definitions_Base *p_clus;
-    ATOOLS::Mass_Selector         *p_ms;
-    JF * p_jf;
-
-    int  ColorConnected(const ATOOLS::ColorID &i,
-			const ATOOLS::ColorID &j) const;
-    void ProjectOnSinglets(ATOOLS::Blob *const blob,
-    			   std::list<ParticleList *> & singlets);
+    ATOOLS::Cluster_Amplitude     * p_ampl;
+    PDF::Cluster_Definitions_Base * p_clus;
+    ATOOLS::Mass_Selector         * p_ms;
+    JF                            * p_jf;
+    Soft_Jet_Criterion            * p_jets;
+    
+    void   CreateLegs(ATOOLS::Blob * const blob);
+    void   InitLeg(ATOOLS::Cluster_Leg * leg,const double & kt2,
+		   const size_t & nmaxx);
+    double SetShowerScales();
+    void   SetAmplitudeProperties(const double & scale);
     double PTij2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pj) const;
     double PTi2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pbeam) const;
+    int    ColorConnected(const ATOOLS::ColorID &i,
+			  const ATOOLS::ColorID &j) const;
+    void   WriteOutAndDeleteHistograms();
   public:
     Cluster_Algorithm();
 

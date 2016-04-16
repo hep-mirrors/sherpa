@@ -1,6 +1,6 @@
 #include "SHRiMPS/Main/Cluster_Algorithm.H"
 #include "PDF/Main/Cluster_Definitions_Base.H"
-#include "ATOOLS/Math/Random.H"
+#include "ATOOLS/Phys/Cluster_Leg.H"
 #include "ATOOLS/Phys/Blob.H"
 #include "ATOOLS/Phys/Particle.H"
 #include "ATOOLS/Org/Message.H"
@@ -13,19 +13,138 @@ using namespace SHRIMPS;
 using namespace ATOOLS;
 
 Cluster_Algorithm::Cluster_Algorithm():
-  p_ampl(NULL), p_clus(NULL), p_jf(NULL),m_showerfac(1.),
-  m_minkt2(16.), m_tmax(16.)
+  p_ampl(NULL), p_clus(NULL), p_jf(new JF()), p_jets(new Soft_Jet_Criterion()),
+  m_showerfac(4.), m_minkt2(16.), m_tmax(16.)
 {
-    m_histomap[std::string("startvspt")] = new Histogram(0,0.0,100.0,100);
-    m_histomap[std::string("vetovspt")] = new Histogram(0,0.0,100.0,100);
-    m_histomap[std::string("nstartvspt")] = new Histogram(0,0.0,100.0,100);
-    m_histomap[std::string("nvetovspt")] = new Histogram(0,0.0,100.0,100);
+  m_histomap[std::string("startvspt")] = new Histogram(0,0.0,100.0,100);
+  m_histomap[std::string("vetovspt")] = new Histogram(0,0.0,100.0,100);
+  m_histomap[std::string("nstartvspt")] = new Histogram(0,0.0,100.0,100);
+  m_histomap[std::string("nvetovspt")] = new Histogram(0,0.0,100.0,100);
+  p_jf->SetJetCriterion(p_jets);
 }
 
 Cluster_Algorithm::~Cluster_Algorithm()
 {
   if (p_jf) delete p_jf;
-  //if (p_ampl!=NULL) p_ampl->Delete();
+  WriteOutAndDeleteHistograms();
+}
+
+int Cluster_Algorithm::ColorConnected(const ColorID &i,const ColorID &j) const
+{
+  return int(i.m_i==j.m_j && i.m_i!=0)+int(i.m_j==j.m_i && i.m_j!=0);
+}
+
+double Cluster_Algorithm::Mass(const Flavour &fl) const
+{
+  return fl.Mass();
+}
+
+double Cluster_Algorithm::
+PTi2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pbeam) const
+{
+  double t((pi+pbeam).Abs2());
+  return t*Min(pi[0],pbeam[0])/Max(pi[0],pbeam[0]);
+}
+
+double Cluster_Algorithm::
+PTij2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pj) const
+{
+  double pti2  = Max(1.,pi.PPerp2()), ptj2  = Max(1.,pj.PPerp2());    
+  double ptij2 = 2.*Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-
+				    cos(pi.Phi()-pj.Phi()));
+  return Min(4.*pti2,ptij2);
+}
+
+void Cluster_Algorithm::InitLeg(Cluster_Leg * leg,const double & kt2,
+				const size_t & nmaxx) {
+  leg->SetNMax(nmaxx);
+  leg->SetStat(0);
+  leg->SetKT2(0,kt2);
+  leg->SetKT2(1,kt2);
+}
+
+void Cluster_Algorithm::CreateLegs(Blob * const blob)
+{
+  size_t nmaxx(blob->NInP()+blob->NOutP()+1);
+  for (int i(0);i<blob->NInP();++i) {
+    Particle * const part(blob->GetParticle(i));
+    p_ampl->CreateLeg(-part->Momentum(),part->Flav().Bar(),
+		      ColorID(part->GetFlow(1),part->GetFlow(2)).Conj(),
+		      1<<p_ampl->Legs().size());
+    InitLeg(p_ampl->Legs().back(),0.,nmaxx);
+  }
+  for (int i(2);i<blob->NOutP()+2;++i) {
+    Particle * const part(blob->GetParticle(i));
+    p_ampl->CreateLeg(part->Momentum(),part->Flav(),
+		      ColorID(part->GetFlow(1),part->GetFlow(2)),
+		      1<<p_ampl->Legs().size());
+    InitLeg(p_ampl->Legs().back(),m_minkt2,nmaxx);
+  }
+}
+
+void Cluster_Algorithm::SetAmplitudeProperties(const double & scale) {
+  p_ampl->SetNIn(2);
+  p_ampl->SetOrderEW(0);
+  p_ampl->SetOrderQCD(p_ampl->Legs().size()-2);
+  p_ampl->SetMS(this);
+  p_ampl->SetKT2(scale);
+  p_ampl->SetMuQ2(scale);
+  p_ampl->SetMuR2(scale);
+  p_ampl->SetMuF2(scale);
+  p_ampl->SetMu2(scale);
+
+  p_ampl->SetJF(p_jf);
+  p_jets->SetClusterAmplitude(p_ampl);
+}
+
+double Cluster_Algorithm::SetShowerScales() {
+  ClusterLeg_Vector legs(p_ampl->Legs());
+  size_t nlegs(legs.size());
+
+  double kt2, kt2test, sij, sijtest, sijmax(m_minkt2);
+  bool   connected;
+  for (size_t i=2;i<nlegs;i++) {
+    connected = false;
+    kt2 = 0.;
+    sij = 0.;
+    Cluster_Leg * split = legs[i];
+    for (size_t j=2;j<nlegs;j++) {
+      if (i==j) continue;
+      Cluster_Leg * spect = legs[j];
+      if (ColorConnected(split->Col(),spect->Col())==0) continue;
+      connected = true;
+      sijtest = (split->Mom()+spect->Mom()).Abs2();
+      if (sijtest>sij) sij = sijtest;
+      kt2test = PTij2(split->Mom(),spect->Mom());
+      if (kt2test>kt2) kt2 = kt2test;
+      msg_Out()<<"  sij = "<<sijtest<<" (kt2 = "<<kt2test<<" for "
+      	       <<"["<<i<<" "<<j<<"]\n";
+    }
+    split->SetKT2(0,Max(split->KT2(0),sij));
+    split->SetKT2(1,Max(split->KT2(1),sij));
+    p_jets->SetKT2Veto(split,Max(m_minkt2,4.*kt2));
+    if (sij>sijmax) sijmax = sij;
+  }
+  return (legs[0]->Mom()+legs[1]->Mom()).Abs2();
+  //return sijmax;
+}
+
+bool Cluster_Algorithm::Cluster(Blob *const blob)
+{
+  msg_Out()<<METHOD<<" for "<<blob->Type()<<"\n";
+  p_ampl = Cluster_Amplitude::New(NULL);
+  p_jets->Reset();
+  CreateLegs(blob);
+  double scale = SetShowerScales();
+  SetAmplitudeProperties(scale);
+  msg_Out()<<METHOD<<": p_ampl = ["<<p_ampl<<"], jf = ["<<p_jf<<"], "
+  	   <<"jc = ["<<p_jf->JC()<<"].\n"
+  	   <<(*p_ampl)<<"\n";
+  p_jets->Output();
+  return true;
+}
+
+void Cluster_Algorithm::WriteOutAndDeleteHistograms() {
   if (!m_histomap.empty()) {
     Histogram * histo;
     std::string name;
@@ -41,290 +160,4 @@ Cluster_Algorithm::~Cluster_Algorithm()
   }
 }
 
-int Cluster_Algorithm::ColorConnected(const ColorID &i,const ColorID &j) const
-{
-  return int(i.m_i==j.m_j && i.m_i!=0)+int(i.m_j==j.m_i && i.m_j!=0);
-}
-
-void Cluster_Algorithm::
-ProjectOnSinglets(Blob * const blob,std::list<ParticleList *> & singlets) {
-  //msg_Out()<<METHOD<<" for \n"<<(*blob)<<"\n";
-  ParticleList outs, * sing;
-  std::list<Particle * >::iterator piter;
-  for (int i(0);i<blob->NOutP();++i) outs.push_back(blob->OutParticle(i));
-  int col1,col2;
-  bool add;
-  while (!outs.empty()) {
-    sing  = new std::list<Particle *>;
-    if (outs.size()==0) break;
-    col1  = col2  = 0;
-    add   = false;
-    msg_Tracking()<<"++++ Start 3 list at begin of out-particle list: "
-	     <<outs.size()<<" particles left.\n";
-    if (!add && !outs.empty()) {
-      piter = outs.begin();
-      do {
-	msg_Tracking()<<"   Test "<<(*piter)->Flav()<<" "
-		 <<"["<<(*piter)->GetFlow(1)<<", "
-		 <<(*piter)->GetFlow(2)<<"], "
-		 <<"add = "<<add;
-	if (sing->empty() && 
-	    (*piter)->GetFlow(1)!=0 && (*piter)->GetFlow(2)==0) {
-	  col1 = (*piter)->GetFlow(1);
-	  col2 = (*piter)->GetFlow(2);
-	  sing->push_back((*piter));
-	  msg_Tracking()<<" --> start singlet.\n";
-	  outs.erase(piter);
-	  if (!outs.empty()) piter = outs.begin();
-	  add = true;
-	}
-	else if (col1!=0 && col2==0 && (*piter)->GetFlow(2)==col1) {
-	  col1 = (*piter)->GetFlow(1);
-	  sing->push_back((*piter));
-	  msg_Tracking()<<" --> add to singlet.\n";
-	  outs.erase(piter);
-	  if (!outs.empty()) piter = outs.begin();
-	  add = true;
-	}
-	else {
-	  msg_Tracking()<<" --> ignore.\n";
-	  add = false;
-	  piter++;
-	}
-      } while (add && piter!=outs.end() && !outs.empty());
-    }
-    msg_Tracking()<<"++++ Start anti-3 list at begin of out-particle list: "
-	     <<outs.size()<<" particles left, add = "<<add<<".\n";
-    if (!add && !outs.empty()) {
-      piter = outs.begin();
-      do {
-	msg_Tracking()<<"   Test "<<(*piter)->Flav()<<" "
-		 <<"["<<(*piter)->GetFlow(1)<<", "
-		 <<(*piter)->GetFlow(2)<<"], "
-		 <<"add = "<<add;
-	if (sing->empty() && 
-	    (*piter)->GetFlow(1)==0 && (*piter)->GetFlow(2)!=0) {
-	  col1 = (*piter)->GetFlow(1);
-	  col2 = (*piter)->GetFlow(2);
-	  sing->push_front((*piter));
-	  msg_Tracking()<<" --> start singlet.\n";
-	  outs.erase(piter);
-	  if (!outs.empty()) piter = outs.begin();
-	  add = true;
-	}
-	else if (col1==0 && col2!=0 && (*piter)->GetFlow(1)==col2) {
-	  col2 = (*piter)->GetFlow(2);
-	  sing->push_front((*piter));
-	  msg_Tracking()<<" --> add to singlet.\n";
-	  outs.erase(piter);
-	  if (!outs.empty()) piter = outs.begin();
-	  add = true;
-	}
-	else {
-	  msg_Tracking()<<" --> ignore.\n";
-	  add = false;
-	  piter++;
-	}
-      } while (add && piter!=outs.end() && !outs.empty());
-    }
-    msg_Tracking()<<"++++ Start 8 list at begin of out-particle list: "
-	     <<outs.size()<<" particles left, add = "<<add<<".\n";
-    if (!add && !outs.empty()) {
-      piter = outs.begin();
-      do {
-	msg_Tracking()<<"   Test "<<(*piter)->Flav()<<" "
-		 <<"["<<(*piter)->GetFlow(1)<<", "
-		 <<(*piter)->GetFlow(2)<<"], "
-		 <<"add = "<<add;
-	if (sing->empty() && 
-	    (*piter)->GetFlow(1)!=0 && (*piter)->GetFlow(2)!=0) {
-	  col1 = (*piter)->GetFlow(1);
-	  col2 = (*piter)->GetFlow(2);
-	  sing->push_front((*piter));
-	  msg_Tracking()<<" --> start singlet.\n";
-	  outs.erase(piter);
-	  if (!outs.empty()) piter = outs.begin();
-	  add = true;
-	}
-	else if (col1!=0 && col2!=0 && (*piter)->GetFlow(1)==col2) {
-	  col2 = (*piter)->GetFlow(2);
-	  sing->push_front((*piter));
-	  msg_Tracking()<<" --> add to singlet.\n";
-	  outs.erase(piter);
-	  if (!outs.empty()) piter = outs.begin();
-	  add = true;
-	}
-	else if (col1!=0 && col2!=0 && (*piter)->GetFlow(2)==col1) {
-	  col1 = (*piter)->GetFlow(1);
-	  sing->push_back((*piter));
-	  msg_Tracking()<<" --> add to singlet.\n";
-	  outs.erase(piter);
-	  if (!outs.empty()) piter = outs.begin();
-	  add = true;
-	}
-	else {
-	  msg_Tracking()<<" --> ignore.\n";
-	  add = false;
-	  piter++;
-	}
-      } while (add && !(piter==outs.end() || outs.empty()));
-    }
-    if (sing->empty()) {
-      delete sing;
-      break;
-    }
-    else singlets.push_back(sing);
-    //msg_Out()<<(*sing)<<"\n";
-  }
-}
-
-double Cluster_Algorithm::
-PTij2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pj) const
-{
-  double pti2, ptj2;
-  if (m_resc) {
-    pti2  = PTi2(pi,m_rescvec);
-    ptj2  = PTi2(pj,m_rescvec);
-  }
-  else {
-    pti2  = pi.PPerp2();
-    ptj2  = pj.PPerp2();    
-  }
-  double ptij2 = Min(pti2,ptj2)*(cosh(pi.Eta()-pj.Eta())-
-				 cos(pi.Phi()-pj.Phi()));
-  return Min(m_showerfac*pti2,ptij2);
-}
-
-double Cluster_Algorithm::
-PTi2(const ATOOLS::Vec4D & pi,const ATOOLS::Vec4D & pbeam) const
-{
-  double t((pi+pbeam).Abs2());
-  return t*Min(pi[0],pbeam[0])/Max(pi[0],pbeam[0]);
-}
-
-bool Cluster_Algorithm::Cluster(Blob *const blob)
-{
-  //msg_Out()<<METHOD<<"(minkt2 = "<<m_minkt2<<", tmax = "<<m_tmax<<") "
-  //	   <<"["<<this<<"].\n";
-  std::list<ParticleList * > singlets;
-  ProjectOnSinglets(blob,singlets);
-
-  double ymin(10000.),ymax(-10000.);
-  int iymin(-1),iymax(-1),n(1);
-
-  p_ampl=Cluster_Amplitude::New(NULL);
-  Vec4D axis1(blob->GetParticle(0)->Momentum());
-  Vec4D axis2(blob->GetParticle(1)->Momentum());
-  for (int i(0);i<blob->NInP();++i) {
-    Particle *const copy(blob->GetParticle(i));
-    size_t id(1<<p_ampl->Legs().size());
-    ColorID col(copy->GetFlow(1),copy->GetFlow(2));
-    col=col.Conj();
-    Flavour flav(copy->Flav().Bar());
-    Vec4D mom(-copy->Momentum());
-    p_ampl->CreateLeg(mom,flav,col,id);
-    Cluster_Leg * leg(p_ampl->Legs().back());
-    leg->SetNMax(blob->NOutP());
-  }
-  while (!singlets.empty()) {
-    ParticleList * sing=singlets.front();
-    while (!sing->empty()) {
-      n++;
-      Particle *const copy(sing->front());
-      size_t id(1<<p_ampl->Legs().size());
-      ColorID col(copy->GetFlow(1),copy->GetFlow(2));
-      Flavour flav(copy->Flav());
-      Vec4D mom(copy->Momentum());
-      if(mom.Y()<ymin){
-	ymin = mom.Y();
-	iymin = n;
-      }
-      if(mom.Y()>ymax){
-	ymax = mom.Y();
-	iymax = n;
-      }
-      p_ampl->CreateLeg(mom,flav,col,id);
-      Cluster_Leg * leg(p_ampl->Legs().back());
-      leg->SetStat(0);
-      double minkt2(m_minkt2/sqr(cosh(mom.Y())));
-      leg->SetKT2(0,minkt2);
-      leg->SetKT2(1,minkt2);
-      leg->SetNMax(blob->NOutP()+3);
-      sing->pop_front();
-    }
-    delete sing;
-    singlets.pop_front();
-  }
-
-  ClusterLeg_Vector legs(p_ampl->Legs());
-  Cluster_Leg * split, * spect;
-
-  m_rescvec = legs[0]->Mom()+legs[1]->Mom();
-  double shat(m_rescvec.Abs2());
-  double kt2max, kt2min(shat), kt2FS, sFS, ysplit, totmax(m_minkt2);
-  double magicfac(0.3),ybar,deltay;
-  size_t nlegs(legs.size());
-
-
-  Vec4D pbeam0(-legs[0]->Mom()),  pbeam1(-legs[1]->Mom());
-  ColorID colbeam0(legs[0]->Col()), colbeam1(legs[1]->Col());
-  for (size_t i=2;i<nlegs;i++) {
-    split   = legs[i];
-    ysplit  = dabs(split->Mom().Y());
-    kt2max  = Max(m_tmax,m_minkt2);
-    for (size_t j=nlegs;j>2;j--) {
-      if (i==j-1) continue;
-      spect = legs[j-1];
-      int nconn(ColorConnected(split->Col(),spect->Col()));
-      if (nconn==0) {
-	// the next two lines are part of my drastic measure
-	split->SetKT2(0,kt2max);
-	split->SetKT2(1,kt2max);
-	continue;
-      }
-      kt2FS = 4.*PTij2(split->Mom(),spect->Mom());
-      if (kt2FS>m_tmax) {
-	if (kt2FS<kt2min) kt2min = kt2FS;
-	if (kt2FS>kt2max) kt2max = kt2FS;
-      }
-    }
-    if (kt2max>totmax) totmax = kt2max;
-    split->SetKT2(0,kt2max);
-    split->SetKT2(1,kt2max);
-    
-    m_histomap[std::string("startvspt")]->Insert(split->Mom().PPerp(),kt2max);  
-    m_histomap[std::string("vetovspt")]->Insert(split->Mom().PPerp(),kt2min);  
-    m_histomap[std::string("nstartvspt")]->Insert(split->Mom().PPerp());  
-  }
-  p_ampl->SetNIn(blob->NInP());
-  p_ampl->SetOrderEW(0);
-  p_ampl->SetOrderQCD(blob->NOutP());
-
-  p_ampl->SetMS(this);
-  p_ampl->SetKT2(totmax);
-  p_ampl->SetMuQ2(totmax);
-  p_ampl->SetMuR2(totmax);
-  p_ampl->SetMuF2(totmax);
-  p_ampl->SetMu2(totmax);
-
-  for (size_t i(0);i<p_ampl->NIn();++i) {
-    Cluster_Leg *li(p_ampl->Leg(i));
-    li->SetKT2(0,0.0);
-    li->SetKT2(1,0.0);
-    /*
-      for (size_t j(p_ampl->NIn());j<p_ampl->Legs().size();++j) {
-      Cluster_Leg *lj(p_ampl->Leg(j));
-      if (li->Col().m_j==lj->Col().m_i) lj->SetKT2(0,0.0);
-      if (li->Col().m_i==lj->Col().m_j) lj->SetKT2(1,0.0);
-      }
-    */
-  }
-
-  return true;
-}
-
-double Cluster_Algorithm::Mass(const Flavour &fl) const
-{
-  return fl.Mass();
-}
 

@@ -70,11 +70,6 @@ void Final_State::AddInitialRapiditiesToLadder() {
     y = maxy+ran->Get()*(m_origY-maxy);
   } while (dabs(y)>m_Ymax && exp(-m_Delta*dabs(y-maxy))>ran->Get());
   p_ladder->AddRapidity(y);
-  //msg_Out()<<"-------------------------------------------------------\n"
-  //	   <<(*p_ladder->GetEmissions())
-  //	   <<"-------------------------------------------------------\n";
-  //p_ladder->AddRapidity(-m_origY+ran->Get()*m_DeltaY);
-  //p_ladder->AddRapidity(m_origY-ran->Get()*m_DeltaY);
 }
 
 void Final_State::AddPropagators() {
@@ -113,11 +108,9 @@ CheckNextPropagator(TPropList::iterator & prop,LadderMap::iterator & lit2) {
   double wt23(m_weights.WeightSingletOverOctet(lit2->first,lit3->first));
   if (wt12>wt23) {
     prop1->m_col = colour_type::octet;
-    //msg_Out()<<"made second interval octet.\n";
   }
   else {
     prop->m_col = colour_type::octet;
-    //msg_Out()<<"made first interval octet.\n";
   }
 }
 
@@ -148,7 +141,6 @@ void Final_State::ConstructKinematics() {
     }
   }
   ConstructEmission(next,downqt-upqt);
-  //msg_Out()<<METHOD<<"("<<FWBW<<"): "<<(downqt-upqt)<<".\n";
   if (dabs(m_totkt.Abs2())>1.e-6) {
     msg_Out()<<METHOD<<" violates transverse momentum:"<<m_totkt<<"\n";
     msg_Out()<<(*p_ladder)<<"\n";
@@ -158,7 +150,10 @@ void Final_State::ConstructKinematics() {
 
 void Final_State::ConstructPropagator(const double & y1,const double & y2,
 				      TPropList::iterator & prop) {
-  double qt2max(sqr((y1<0?m_E[0]:m_E[1])/cosh(y1))/m_Nladders);
+  double qt2max(sqr((m_E[0]+m_E[1])/2.)/
+		cosh(Min(dabs(y1/0.3),dabs(y2/0.3))));
+  //msg_Out()<<METHOD<<" qt^2 < "<<qt2max<<" in ["<<y1<<", "<<y2<<"]\n"; 
+  //double qt2max(sqr((y1<0?m_E[0]:m_E[1])/cosh(y1))/sqr(m_Nladders));
   double qt2(QT2(qt2max,y1,y2,prop)), qt(sqrt(qt2));
   double phi(ran->Get()*2.*M_PI);
   Vec4D  qtvec(qt*Vec4D(0.,cos(phi),sin(phi),0.));
@@ -181,36 +176,26 @@ void Final_State::ConstructEmission(const LadderMap::iterator & emit,
 }
 
 
-double Final_State::
-QT2(const double & qt2max,const double & y1,const double & y2,
-    TPropList::iterator & prop) {
-  double qt2(-1.);
-  /*
-    if (dabs(y1-p_ladder->GetEmissions()->begin()->first)<1.e-12) {
-    qt2 = p_omegaik->FF1()->SelectQT2(Min(qt2max,sqr(1./cosh(y1))));
-    }
-    else if (dabs(y1-p_ladder->GetEmissions()->begin()->first)<1.e-12) {
-    qt2 = p_omegaki->FF1()->SelectQT2(Min(qt2max,sqr(1./cosh(y1))));
-    }
-    else {
-  */
-  double reggefac(0.);
-  if (prop->m_col==colour_type::octet) reggefac = 3./(4.*M_PI)*dabs(y2-y1);
-  qt2 = SelectQT2(qt2max,reggefac*p_alphaS->MaxValue()); 
+double Final_State::QT2(double qt2max,const double & y1,const double & y2,
+			TPropList::iterator & prop) {
+  double qt2(-1.), reggefac(0.);
+  if (prop->m_col==colour_type::octet) reggefac = 3./M_PI*dabs(y2-y1);
+  else qt2max = 1.;
+  qt2 = SelectQT2(qt2max,reggefac); 
   return qt2;
 }
 
-double Final_State::SelectQT2(const double & qt2max,const double & expo) {
+double Final_State::SelectQT2(const double & qt2max,const double & reggefac) {
   // assume a probablity density for qt^2 of the form
   //  1/(qt^2+mu^2) * exp(-expo*alphaS(qt2)),
   // where expo is the typical regge exponent - it may need fixing -
   // which is set in QT2 and is either 0 for singlets or Nc/pi*|Delta y|
   double qt2(0.),mu2(1.);
-  double arg((qt2max+mu2)/mu2),expmax(1.);
+  double arg((qt2max+mu2)/mu2),expmax(reggefac*p_alphaS->MaxValue());
   do {
     qt2 = mu2*(pow(arg,ran->Get())-1.);
-  } while (dabs(expo)>1.e-12 && qt2>mu2 && 
-	   exp(-expo*(*p_alphaS)(qt2)*log(qt2/mu2))/expmax<ran->Get());
+  } while (dabs(reggefac)>1.e-12 && 
+	   pow(mu2/(qt2+mu2),-reggefac*(*p_alphaS)(qt2))<ran->Get());
   return qt2;
 }
 

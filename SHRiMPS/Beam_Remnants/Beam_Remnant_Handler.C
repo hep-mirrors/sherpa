@@ -49,14 +49,19 @@ SetBeamBlob(ATOOLS::Blob *const beamblob,const int & beam) {
 } 
 
 Return_Value::code Beam_Remnant_Handler::FillBeamBlobs(Blob_List * blobs) {
+  ConstructAndAddSoftBlob(blobs);
   AddBeamBlobs(blobs);
-  AddTransverseMomentaToSpectators(blobs);
+  //AddTransverseMomentaToSpectators(blobs);
   for (Blob_List::iterator biter=blobs->begin();biter!=blobs->end();biter++) {
     (*biter)->UnsetStatus(blob_status::needs_beams);
-    //msg_Out()<<METHOD<<": "<<(*biter)->Type()<<" "
-    //	     <<(*biter)->CheckMomentumConservation()<<"\n";
   }
   return Return_Value::Success;
+}
+
+void Beam_Remnant_Handler::ConstructAndAddSoftBlob(Blob_List * blobs) {
+  Blob * softblob = new Blob();
+  softblob->SetType(btp::Soft_Collision);
+  blobs->push_front(softblob);
 }
 
 void Beam_Remnant_Handler::AddBeamBlobs(Blob_List * blobs) {

@@ -16,6 +16,7 @@ namespace SHRIMPS {
 
     std::map<ATOOLS::Particle *,ATOOLS::Vec4D> m_qtmap;
 
+    void ConstructAndAddSoftBlob(ATOOLS::Blob_List * blobs);
     void AddBeamBlobs(ATOOLS::Blob_List * blobs);
     void AddTransverseMomentaToSpectators(ATOOLS::Blob_List * blobs);
   public:

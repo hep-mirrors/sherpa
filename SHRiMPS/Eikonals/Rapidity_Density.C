@@ -23,8 +23,9 @@ SetImpactParameters(const double & b1, const double & b2) {
 }
 
 double Rapidity_Density::operator()(double y) {
-  double arg = (*p_omegaik)(m_b1,m_b2,y)+(*p_omegaki)(m_b1,m_b2,y);
-  double result = m_Delta * exp(-m_lambda/2.*arg);
+  double result = m_Delta;
+  //double arg    = (*p_omegaik)(m_b1,m_b2,y)+(*p_omegaki)(m_b1,m_b2,y);
+  //double result = m_Delta * exp(-m_lambda/2.*arg);
   if (result>m_max) m_max=result;
   return result;
 }

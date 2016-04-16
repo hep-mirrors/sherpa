@@ -119,9 +119,6 @@ bool Ladder_Generator::BreakPrimaryLadderGenerationLoop(const bool & isfirst,
 }
 
 bool Ladder_Generator::CheckTotalMomentum() {
-  //msg_Out()<<METHOD<<"("<<m_E[0]<<" & "<<m_E[1]<<" vs.\n"
-  //	   <<p_ladder->GetIn1()->m_mom<<" & "
-  //	   <<p_ladder->GetIn2()->m_mom<<".\n";
   if (m_E[0]-p_ladder->GetIn1()->m_mom[0]>0. &&
       m_E[1]-p_ladder->GetIn2()->m_mom[0]>0.) return true;
   return false;
@@ -129,14 +126,12 @@ bool Ladder_Generator::CheckTotalMomentum() {
 
 bool Ladder_Generator::AcceptLadderForHardness() {
   p_ladder->ExtractHardest();
-  double that   = p_ladder->That(), mu2 = p_ladder->Mu2();
-  double expo   = p_ladder->IsHardDiffractive()?1.:1.;
-  double weight = pow(4.*mu2/that,expo);
-  //msg_Out()<<METHOD<<"(that = "<<that<<", mu2 = "<<mu2<<") "
-  //	   <<"--> weight = "<<weight<<"\n";
+  double that(dabs(p_ladder->That())), mu2(p_ladder->Mu2());
   if (that<4.*mu2) return true;
+  double asratio(m_FS.ASratio(that));
+  double weight = mu2/(mu2+that) * sqr(asratio);
+  if (p_ladder->IsHardDiffractive()) weight *= sqr(4.*mu2/that*asratio);
   if (weight>ran->Get()) return true;
-  //msg_Out()<<(*p_ladder)<<"\n";
   return false;
 }
 

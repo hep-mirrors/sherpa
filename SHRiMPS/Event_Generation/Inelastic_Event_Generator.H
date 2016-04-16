@@ -31,7 +31,8 @@ namespace SHRIMPS {
     bool SelectB();
 
     int  AddScatter(ATOOLS::Blob_List * blobs);
-    ATOOLS::Blob * CreateBlob(const bool & isfirst);
+    ATOOLS::Blob * CreateBlob();
+    void SetBlobType(ATOOLS::Blob * blob);
 
     void TestSelectB(const std::string & dirname);
     void TestNumberOfLadders(const std::string & dirname);

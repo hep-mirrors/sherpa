@@ -31,7 +31,7 @@ namespace SHRIMPS {
     void   CheckNextPropagator(TPropList::iterator & prop,
 			       LadderMap::iterator & lit2);
     double SelectQT2(const double & qt2max,const double & expo);
-    double QT2(const double & qt2max,const double & y1,const double & y2,
+    double QT2(double qt2max,const double & y1,const double & y2,
 	       TPropList::iterator & prop);
   public:
     Final_State();
@@ -43,6 +43,9 @@ namespace SHRIMPS {
     void   SetAvailableEnergies(const double E[2]);
     void   FillPrimaryLadder();
 
+    const double ASratio(const double & that) const {
+      return (*p_alphaS)(that)/p_alphaS->MaxValue();
+    }
     const double Pplus()  const { return m_pp; }
     const double Pminus() const { return m_pm; }
 
