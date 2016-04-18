@@ -545,8 +545,11 @@ bool Amplitude::Construct(Flavour_Vector &fls,
     }
     else {
       if (m_affm.size()) {
-	for (size_t i(0);i<m_affm[n].size();++i) {
-	  Flavour cfl((kf_code)std::abs(m_affm[n][i]),m_affm[n][i]<0);
+	size_t cid(0);
+	for (size_t i(0);i<ids.size();++i) cid|=1<<ids[i];
+	const std::vector<long int> &caffm(m_affm[n][cid]);
+	for (size_t i(0);i<caffm.size();++i) {
+	  Flavour cfl((kf_code)std::abs(caffm[i]),caffm[i]<0);
 	  if (fls[i].IsOn()) AddCurrent(ids,n,cfl,0);
 	}
       }
@@ -682,9 +685,15 @@ bool Amplitude::ReadInAmpFile(const std::string &name)
     THROW(fatal_error,"Corrupted map file '"+ampfile+"'");
   m_affm.resize(m_n);
   for (size_t size, i(2);i<m_n;++i) {
-    *amp>>size;
-    m_affm[i].resize(size);
-    for (size_t j(0);j<size;++j) *amp>>m_affm[i][j];
+    while (true) {
+      long int kfc;
+      *amp>>kfc;
+      if (kfc==0) break;
+      std::vector<long int> &caffm(m_affm[i][kfc]);
+      *amp>>size;
+      caffm.resize(size);
+      for (size_t j(0);j<size;++j) *amp>>caffm[j];
+    }
   }
   *amp>>cname;
   if (cname!="eof")
@@ -705,16 +714,22 @@ void Amplitude::WriteOutAmpFile(const std::string &name)
   *amp<<name<<" "<<name<<"\n";
   m_affm.resize(m_n);
   for (size_t i(2);i<m_n;++i) {
-    std::set<long int> kfcs;
+    std::map<size_t,std::set<long int> > kfcs;
     m_affm[i].clear();
     for (size_t j(0);j<m_cur[i].size();++j) {
+      std::set<long int> &ckfcs(kfcs[m_cur[i][j]->CId()]);
+      std::vector<long int> &caffm(m_affm[i][m_cur[i][j]->CId()]);
       long int kfc(m_cur[i][j]->Flav());
-      if (kfcs.find(kfc)==kfcs.end()) m_affm[i].push_back(kfc);
-      kfcs.insert(kfc);
+      if (ckfcs.find(kfc)==ckfcs.end()) caffm.push_back(kfc);
+      ckfcs.insert(kfc);
     }
-    *amp<<m_affm[i].size();
-    for (size_t j(0);j<m_affm[i].size();++j) *amp<<" "<<m_affm[i][j];
-    *amp<<"\n";
+    for (size_t j(0);j<m_affm[i].size();++j)
+      for (std::map<size_t,std::vector<long int> >::const_iterator
+	     it(m_affm[i].begin());it!=m_affm[i].end();++it) {
+	*amp<<it->first<<" "<<it->second.size()<<" ";
+	for (size_t k(0);k<it->second.size();++k) *amp<<it->second[k]<<" ";
+      }
+    *amp<<"0\n";
   }
   *amp<<"eof\n";
 }

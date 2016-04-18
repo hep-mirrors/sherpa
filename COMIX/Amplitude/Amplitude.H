@@ -101,7 +101,7 @@ namespace COMIX {
     ATOOLS::NLO_subevtlist    m_subs;
     PHASIC::Virtual_ME2_Base *p_loop;  
 
-    std::vector<std::vector<long int> > m_affm;
+    std::vector<std::map<size_t,std::vector<long int> > > m_affm;
 
     ATOOLS::NLO_subevt *p_sub;
 
