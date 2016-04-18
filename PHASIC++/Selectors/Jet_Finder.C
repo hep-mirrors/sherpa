@@ -56,9 +56,9 @@ Jet_Finder::Jet_Finder
 
 Jet_Finder::~Jet_Finder() 
 {
-  p_ampl->Delete();
-  delete p_yccalc;
-  delete p_jc;
+  if (p_ampl) p_ampl->Delete();
+  if (p_yccalc) delete p_yccalc;
+  if (p_jc) delete p_jc;
 }
 
 bool Jet_Finder::Trigger(const Vec4D_Vector &p)

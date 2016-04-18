@@ -18,15 +18,14 @@ namespace PHASIC {
     bool m_on;
 
     ATOOLS::Algebra_Interpreter *p_yccalc;
-
     ATOOLS::Cluster_Amplitude *p_ampl;
-
-    PDF::Jet_Criterion *p_jc;
-
     ATOOLS::Flavour GetFlavour(std::string fl);
 
+  protected:
+    PDF::Jet_Criterion *p_jc;
   public:
-
+    Jet_Finder() : Selector_Base("empty_JF"), m_ycut(1.),
+		   p_yccalc(NULL), p_ampl(NULL), p_jc(NULL) {};
     Jet_Finder(Process_Integrator *const proc,
 	       const int nin=0,const int nout=0,
 	       ATOOLS::Flavour *const fl=NULL,
