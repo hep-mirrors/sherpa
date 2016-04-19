@@ -25,7 +25,7 @@ def write_model(model, model_name, model_file_name):
         if param.is_complex():
             statement = "    Complex "+param.name()+" = "+param.cpp_value()+";"
         else:
-            statement = "    double "+param.name()+" = "+param.cpp_value()+";"
+            statement = "    double "+param.name()+" = ToDouble("+param.cpp_value()+");"
         para_init += "\n"+statement
         para_init += "\n    DEBUG_VAR({0});".format(param.name())
 
@@ -54,9 +54,9 @@ def write_model(model, model_name, model_file_name):
 
         wstring = s_part.width().name() if s_part.width().is_external() else s_part.width().cpp_value()
         mstring = s_part.mass().name()  if s_part.mass().is_external()  else s_part.mass().cpp_value()
-        para_init += "\n    ATOOLS::Flavour({0}).SetWidth({1});".format(kfcode,wstring)
-        para_init += "\n    ATOOLS::Flavour({0}).SetMass({1});".format(kfcode,mstring)
-        para_init += "\n    ATOOLS::Flavour({0}).SetHadMass({1});".format(kfcode,mstring)
+        para_init += "\n    ATOOLS::Flavour({0}).SetWidth(ToDouble({1}));".format(kfcode,wstring)
+        para_init += "\n    ATOOLS::Flavour({0}).SetMass(ToDouble({1}));".format(kfcode,mstring)
+        para_init += "\n    ATOOLS::Flavour({0}).SetHadMass(ToDouble({1}));".format(kfcode,mstring)
 
     # coupling initialization and calculation
     for coup in model.all_couplings:

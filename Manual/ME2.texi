@@ -6,21 +6,14 @@ designated class ``MEProcess'' is provided by interface to compute
 matrix elements as illustrated in the example script.
 
 Please note that the process in the script must be compatible with the
-one specified in the run card in the working directory.  This also
-applies to the initial state particle momenta as well as the masses of
-all external particles.
+one specified in the run card in the working directory. A random phase
+space point for the process of interes can be generated as shown in the
+example.
 
 If AMEGIC++ is used as the matrix element generator, executing the
 script will result in AMEGIC++ writing out libraries and exiting.
 After compiling the libraries using @code{./makelibs}, the script must
 be executed again in order to obtain the matrix element.
-
-If this is the case, the library libSherpaMain.so must be preloaded,
-which can be achieved on a linux system via setting LD_PRELOAD
-accordingly:
-@verbatim
-export LD_PRELOAD=<prefix>/lib/SHERPA-MC/libSherpaMain.so
-@end verbatim
 
 @example
 @smallformat

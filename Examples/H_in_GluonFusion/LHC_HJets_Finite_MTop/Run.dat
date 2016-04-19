@@ -29,7 +29,7 @@
   % finite top mass effects
   KFACTOR GGH;
   OL_IGNORE_MODEL 1;
-  OL_PARAMETERS preset 3 allowed_libs pph2tt,pphj2tt,pphjj2tt psp_tolerance 1.0e-7;
+  OL_PARAMETERS preset 2 allowed_libs pph2,pphj2,pphjj2 psp_tolerance 1.0e-7;
 }(run);
 
 (processes){

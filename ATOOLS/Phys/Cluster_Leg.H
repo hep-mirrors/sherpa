@@ -10,7 +10,7 @@ namespace ATOOLS {
   struct ColorID {
     int m_i, m_j;
     inline ColorID(const int &i=-1,const int &j=-1): m_i(i), m_j(j) {}
-    inline ColorID Conj() { return ColorID(m_j,m_i); }
+    inline ColorID Conj() const { return ColorID(m_j,m_i); }
     inline bool operator==(const ColorID &c) const 
     { return c.m_i==m_i && c.m_j==m_j; }
     inline bool Singlet() { return m_i==m_j; }

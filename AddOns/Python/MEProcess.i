@@ -30,13 +30,12 @@ public:
   void AddInFlav(const int &id, const int &col1, const int &col2);
   void AddOutFlav(const int &id, const int &col1, const int &col2);
   double GenerateColorPoint();
-  bool HasColorIntegrator();
-  void SetColors();
   void Initialize();
 
   void SetMomentum(int, double, double, double, double);
   void SetMomenta(ATOOLS::Vec4D_Vector&);
 
+  ATOOLS::Vec4D_Vector TestPoint(const double& sqrts);
   double MatrixElement();
   double CSMatrixElement();
   double MEProcess::GetFlux();

@@ -6,8 +6,11 @@
 %include "Blob.i"
 %include "Blob_List.i"
 %include "MEProcess.i"
+%include "Random.i"
+
 %{
 #include <SHERPA/Main/Sherpa.H>
+#include "ATOOLS/Math/Random.H"
   %}
 
 %catches (ATOOLS::Exception) SHERPA::Sherpa::InitializeTheRun(int, char**);
@@ -59,3 +62,11 @@ namespace SHERPA {
     
   };
 }
+
+// Make the global pointer
+// to the RNG availeble
+ATOOLS::Random* ran;
+
+%inline %{
+  ATOOLS::Random* ATOOLS::ran;
+%}

@@ -53,7 +53,7 @@ operator()(const Process_Info &pi) const
   OpenLoops_Interface::SetParameter("coupling_ew_0", (int) pi.m_maxcpl[1]);
   OpenLoops_Interface::SetParameter("coupling_ew_1", 0);
 
-  int born_types[2] = {1, 12};
+  int born_types[2] = {12, 1};
   for (size_t i=0; i<2; ++i) {
     int id = OpenLoops_Interface::RegisterProcess(pi.m_ii, pi.m_fi, born_types[i]);
     if (id>0) {

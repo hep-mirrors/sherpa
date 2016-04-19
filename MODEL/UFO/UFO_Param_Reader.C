@@ -53,13 +53,12 @@ UFO_Param_Reader::GetEntry(const string& block,
   vector< vector<string> >::const_iterator line = FindBlock(block);
   for(++line; line!=m_lines.end(); ++line){
     if (line->empty()) continue;
-    if (IgnoreCaseCompare((*line)[0],"block")) NotFound(block,n);
+    if (IgnoreCaseCompare((*line)[0],"block")) return NotFound<Read_Type>(block,n,m);
     if (line->size() < 3) continue;
     if (ToType<int>((*line)[0])==n && ToType<int>((*line)[1])==m)
       return ToType<Read_Type>((*line)[2]);
   }
-  NotFound(block, n);
-  return Read_Type();
+  return NotFound<Read_Type>(block,n,m);
 }
 
 template<class Read_Type> Read_Type 
@@ -70,12 +69,11 @@ UFO_Param_Reader::GetEntry(const string& block, const unsigned int& n)
   vector< vector<string> >::const_iterator line = FindBlock(block);
   for(++line; line!=m_lines.end(); ++line){
     if (line->empty()) continue;
-    if (IgnoreCaseCompare((*line)[0],"block")) NotFound(block,n);
+    if (IgnoreCaseCompare((*line)[0],"block")) return NotFound<Read_Type>(block,n);
     if (line->size() < 2) continue;
     if (ToType<int>((*line)[0]) == n) return ToType<Read_Type>((*line)[1]);
   }
-  NotFound(block, n);
-  return Read_Type();
+  return NotFound<Read_Type>(block, n);
 }
 
 template<class Read_Type> Read_Type
@@ -86,8 +84,7 @@ UFO_Param_Reader::GetWidth(const unsigned int& n)
     if (IgnoreCaseCompare((*line)[0],"decay") && ToType<int>((*line)[1]) == n )
       return ToType<Read_Type>((*line)[2]);
   }
-  NotFound(string("decay"),n);
-  return Read_Type();
+  return NotFound<Read_Type>(string("decay"),n);
 }
 
 vector< vector<string> >::const_iterator UFO_Param_Reader::FindBlock(const string& block){
@@ -97,7 +94,8 @@ vector< vector<string> >::const_iterator UFO_Param_Reader::FindBlock(const strin
     if(IgnoreCaseCompare((*ret)[1],block)) return ret;
   }
   THROW(fatal_error, "Block "+block+" not found");
-  return ret;
+  // avoid compiler warnings concerning missing return statement
+  return m_lines.end();
 }
 
 bool UFO_Param_Reader::IgnoreCaseCompare(const std::string& a, const std::string& b){
@@ -108,18 +106,24 @@ bool UFO_Param_Reader::IgnoreCaseCompare(const std::string& a, const std::string
   return true;
 }
 
-void UFO_Param_Reader::NotFound(const string &block, const unsigned int& n, const unsigned int& m)
+template<class Read_Type> Read_Type
+UFO_Param_Reader::NotFound(const string &block, const unsigned int& n, const unsigned int& m)
 {
   stringstream message;
   message << ("Entry [") << n << "," << m << "] " << "in block " << block << " not found.";
   THROW(fatal_error, message.str().c_str() );
+  // avoid compiler warnings concerning missing return statement
+  return Read_Type();
 }
 
-void UFO_Param_Reader::NotFound(const string &block, const unsigned int& n)
+template<class Read_Type> Read_Type
+UFO_Param_Reader::NotFound(const string &block, const unsigned int& n)
 {
   stringstream message;
   message << ("Entry [") << n << "] " << "in block " << block << " not found.";
   THROW(fatal_error, message.str().c_str() );
+  // avoid compiler warnings concerning missing return statement
+  return Read_Type();
 }
 
 namespace UFO

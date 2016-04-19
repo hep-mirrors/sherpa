@@ -314,10 +314,11 @@ void Sherpa::PrepareTerminate()
 bool Sherpa::SummarizeRun() 
 {
   if (p_eventhandler) {
-    msg_Info()<<"  Event "<<rpa->gen.NumberOfEvents()<<" ( "
+    msg_Info()<<"  Event "<<rpa->gen.NumberOfGeneratedEvents()<<" ( "
               <<size_t(rpa->gen.Timer().RealTime()-m_evt_starttime)
               <<" s total ) = "
-              << rpa->gen.NumberOfEvents()*3600*24/((size_t) rpa->gen.Timer().RealTime()-m_evt_starttime)
+              << rpa->gen.NumberOfGeneratedEvents()*3600*24/
+                 ((size_t) rpa->gen.Timer().RealTime()-m_evt_starttime)
               <<" evts/day                    "<<std::endl;
   }
   p_eventhandler->Finish(); 
