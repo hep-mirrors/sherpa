@@ -66,3 +66,12 @@ int Process_Info::Combine(const size_t &i,const size_t &j,
   res=m_fi.Combine(i,j,flij,cnt);
   return -res;
 }
+
+bool Process_Info::operator<(const Process_Info &pi) const
+{
+  if (m_ii<pi.m_ii) return true;
+  if (!(m_ii==pi.m_ii)) return false;
+  if (m_fi<pi.m_fi) return true;
+  if (!(m_fi==pi.m_fi)) return false;
+  return false;
+}
