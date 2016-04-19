@@ -28,19 +28,18 @@ namespace METOOLS {
     LC_Vector m_lc;
     CC_Vector m_cc;
 
-    SizeT_Vector m_h, m_hjc, m_cjc;
+    CObject_Vector m_cjj;
 
-    bool   m_sign, m_act, m_zero;
+    Int_Vector *p_h;
+
+    bool   m_sign, m_zero;
     size_t m_fperm;
-
-    std::vector<int> m_order;
 
     double m_icplfac;
 
-    std::vector<const CObject_Vector*> m_hjj;
-    CObject_Vector m_cjj;
-
     static size_t s_vlmode;
+
+    static std::map<std::string,Int_Vector> s_h;
 
     std::string CVLabel() const;
 
@@ -69,6 +68,9 @@ namespace METOOLS {
     void CollectGraphs(Graph_Node *graph) const;
 
     void AddJ(const Current_Vector &j);
+
+    const std::vector<int> &Order() const;
+    int Order(const size_t &id) const;
 
     // inline functions
     inline void AddJ(Current *const j) 
@@ -100,12 +102,9 @@ namespace METOOLS {
 
     inline bool Sign() const { return m_sign; }
 
-    inline bool Active() const { return m_act; }
+    inline bool Active() const { return m_lc.size() && m_cc.size(); }
 
     inline size_t FPerm() const { return m_fperm; }
-
-    inline const std::vector<int> &Order() const { return m_order; }
-    inline int Order(const size_t &id) const { return m_order[id]; }
 
     inline static void SetVLMode(const size_t &mode) { s_vlmode=mode; }
 
@@ -114,7 +113,7 @@ namespace METOOLS {
     inline const LC_Vector &Lorentz() const { return m_lc; }
     inline const CC_Vector &Color() const   { return m_cc; }
 
-    inline size_t H(const size_t &i) const { return m_h[i]; }
+    inline size_t H(const size_t &i) const { return (*p_h)[i]; }
 
     inline MODEL::Single_Vertex *V() const { return p_v; }
 

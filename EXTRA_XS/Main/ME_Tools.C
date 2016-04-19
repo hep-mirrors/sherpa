@@ -14,29 +14,31 @@ std::vector<Vertex*> EXTRAXS::ConstructVertices(Current* cur1,
   curs[1]=cur2;
 
   // try first rotation
-  Vertex_Key vkey(curs,prop,MODEL::s_model);
-  MODEL::VMIterator_Pair keyrange(MODEL::s_model->GetVertex(vkey.ID()));
+  Vertex_Key *vkey(Vertex_Key::New(curs,prop,MODEL::s_model));
+  MODEL::VMIterator_Pair keyrange(MODEL::s_model->GetVertex(vkey->ID()));
   for (MODEL::Vertex_Map::const_iterator it=keyrange.first; it!=keyrange.second; ++it) {
-    vkey.p_mv=it->second;
-    vkey.m_p=std::string(1,'D');
-    ret.push_back(new Vertex(vkey));
-    ret.back()->AddJ(vkey.m_j);
+    vkey->p_mv=it->second;
+    vkey->m_p=std::string(1,'D');
+    ret.push_back(new Vertex(*vkey));
+    ret.back()->AddJ(vkey->m_j);
     ret.back()->SetJC(prop);
   }
+  vkey->Delete();
 
   //try second rotation
   std::swap<Current*>(curs[0],curs[1]);
-  vkey=Vertex_Key(curs,prop,MODEL::s_model);
-  keyrange=MODEL::s_model->GetVertex(vkey.ID());
+  vkey=Vertex_Key::New(curs,prop,MODEL::s_model);
+  keyrange=MODEL::s_model->GetVertex(vkey->ID());
   for (MODEL::Vertex_Map::const_iterator it=keyrange.first; it!=keyrange.second; ++it) {
-    vkey.p_mv=it->second;//fixme!!
-    vkey.m_p=std::string(1,'D');
-    ret.push_back(new Vertex(vkey));
-    ret.back()->AddJ(vkey.m_j);
+    vkey->p_mv=it->second;//fixme!!
+    vkey->m_p=std::string(1,'D');
+    ret.push_back(new Vertex(*vkey));
+    ret.back()->AddJ(vkey->m_j);
     ret.back()->SetJC(prop);
   }
+  vkey->Delete();
 
-  if (ret.size()==0) THROW(fatal_error, "vertex not found: "+vkey.ID());
+  if (ret.size()==0) THROW(fatal_error, "vertex not found: "+vkey->ID());
 
   return ret;
 }

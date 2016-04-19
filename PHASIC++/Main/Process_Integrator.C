@@ -50,11 +50,11 @@ bool Process_Integrator::Initialize
   p_momenta.resize(m_nin+m_nout);
   p_beamhandler=beamhandler;
   p_isrhandler=isrhandler;
-  Data_Reader read(" ",";","!","=");
-  m_swmode=read.GetValue<int>("SELECTION_WEIGHT_MODE", 0);
+  m_swmode=ToType<int>(rpa->gen.Variable("SELECTION_WEIGHT_MODE"));
   static bool minit(false);
   if (!minit) {
     int smode;
+    Data_Reader read(" ",";","!","=");
     if (read.ReadFromFile(smode,"IB_SMODE")) {
       m_smode=smode;
       msg_Info()<<METHOD<<"(): Set sum mode = "<<m_smode<<".\n";

@@ -1,12 +1,15 @@
 #include "METOOLS/Main/Polarization_Index.H"
 
+#include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Exception.H"
 
 using namespace METOOLS;
+using namespace ATOOLS;
 
 void Polarization_Index::Init(const std::vector<int> &spins)
 {
   m_spins=spins;
+  m_id=ToString(spins);
   if (m_spins.empty()) THROW(fatal_error,"No spin information");
   m_n=1;
   for(size_t i=0;i<m_spins.size();++i) m_n*=m_spins[i];

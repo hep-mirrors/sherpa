@@ -36,8 +36,8 @@ int Single_Vertex::Compare(const Single_Vertex *v) const
 
 std::string Single_Vertex::PID() const
 {
-  std::string name('{'+in[0].IDName()+'}');
-  for (int i(1);i<NLegs();++i) name+='{'+in[i].IDName()+'}';
+  std::string name(in[0].IDName());
+  for (int i(1);i<NLegs();++i) name+='|'+in[i].IDName();
   return name;
 }
 

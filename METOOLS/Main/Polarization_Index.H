@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstddef>
+#include <string>
 
 namespace METOOLS {
 
@@ -10,6 +11,7 @@ namespace METOOLS {
   protected:
 
     std::vector<int> m_spins;
+    std::string      m_id;
 
     size_t m_n;
 
@@ -25,6 +27,8 @@ namespace METOOLS {
     std::vector<int> operator()(size_t number) const;
     
     inline const std::vector<int> &Spins() const { return m_spins; }
+
+    inline const std::string &SpinID() const { return m_id; }
 
     inline size_t N() const { return m_n; }
 

@@ -66,7 +66,7 @@ namespace COMIX {
     Int_Vector   m_ch, m_dirs, m_sid, m_cchirs;
     Int_Matrix   m_cl;
 
-    size_t m_nin, m_nout;
+    size_t m_nin, m_nout, m_dec;
     size_t m_n, m_wfmode, m_pgmode, m_ngpl, m_sccmur;
     size_t m_minntc, m_maxntc;
     char   m_pmode;
@@ -101,7 +101,7 @@ namespace COMIX {
     ATOOLS::NLO_subevtlist    m_subs;
     PHASIC::Virtual_ME2_Base *p_loop;  
 
-    std::vector<std::vector<long int> > m_affm;
+    std::vector<std::map<size_t,std::vector<long int> > > m_affm;
 
     ATOOLS::NLO_subevt *p_sub;
 
@@ -115,7 +115,7 @@ namespace COMIX {
     void ConstructDSijMap();
 
     int  CheckDecay(const ATOOLS::Flavour &fl,const Int_Vector &ids) const;
-    bool MatchIndices(const Int_Vector &ids,const Vertex_Key &vkey) const;
+    bool MatchDecay(const Vertex_Key &vkey) const;
     Vertex *AddCurrent(const Current_Key &ckey,Vertex_Key &vkey,
 		       const size_t &n,const int dec,
 		       std::vector<int> &maxcpl,std::vector<int> &mincpl,
@@ -171,6 +171,7 @@ namespace COMIX {
 		    const size_t &minntc,const size_t &maxntc,
 		    const std::string &name);
 
+    void ResetJ();
     void ResetZero();
 
     bool Evaluate(const Int_Vector &chirs);
@@ -234,7 +235,7 @@ namespace COMIX {
     inline const Current_Matrix &Currents() const { return m_cur; }
 
     inline void SetDecayInfos(const ATOOLS::DecayInfo_Vector &id) 
-    { m_decid=id; }
+    { m_decid=id; m_dec=m_decid.size(); }
     inline const ATOOLS::DecayInfo_Vector &DecayInfos() const
     { return m_decid; }
 

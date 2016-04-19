@@ -202,16 +202,26 @@ void Process_Group::SetLookUp(const bool lookup)
 bool Process_Group::CheckFlavours
 (const Subprocess_Info &ii,const Subprocess_Info &fi,int mode) const
 {
-  std::vector<Flavour> cfl;
-  for (size_t i(0);i<ii.m_ps.size();++i) cfl.push_back(ii.m_ps[i].m_fl);
-  for (size_t i(0);i<fi.m_ps.size();++i) cfl.push_back(fi.m_ps[i].m_fl);
   int charge(0), strong(0);
-  size_t quarks(0), nin(ii.m_ps.size());
-  for (size_t i(0);i<cfl.size();++i) {
-    charge+=i<nin?-cfl[i].IntCharge():cfl[i].IntCharge();
-    if (abs(cfl[i].StrongCharge())!=8)
-      strong+=i<nin?-cfl[i].StrongCharge():cfl[i].StrongCharge();
-    quarks+=cfl[i].IsQuark();
+  size_t quarks(0), nin(ii.m_ps.size()), nout(fi.m_ps.size());
+  for (size_t i(0);i<nin;++i) {
+    const Flavour &fl(ii.m_ps[i].m_fl);
+    charge+=-fl.IntCharge();
+    if (abs(fl.StrongCharge())!=8)
+      strong+=-fl.StrongCharge();
+    quarks+=fl.IsQuark();
+    if (mode==0 && quarks>m_pinfo.m_nmaxq) {
+      msg_Debugging()<<METHOD<<"(): '"<<GenerateName(ii,fi)<<"': n_q > "
+		     <<m_pinfo.m_nmaxq<<". Skip process.\n";
+      return false;
+    }
+  }
+  for (size_t i(0);i<nout;++i) {
+    const Flavour &fl(fi.m_ps[i].m_fl);
+    charge+=fl.IntCharge();
+    if (abs(fl.StrongCharge())!=8)
+      strong+=fl.StrongCharge();
+    quarks+=fl.IsQuark();
     if (mode==0 && quarks>m_pinfo.m_nmaxq) {
       msg_Debugging()<<METHOD<<"(): '"<<GenerateName(ii,fi)<<"': n_q > "
 		     <<m_pinfo.m_nmaxq<<". Skip process.\n";
@@ -244,14 +254,15 @@ void Process_Group::SetFlavour(Subprocess_Info &cii,Subprocess_Info &cfi,
   else cfi.SetExternal(fl,i-m_nin);
 }
 
-bool Process_Group::ConstructProcesses(Process_Info pi,const size_t &ci)
+bool Process_Group::ConstructProcesses(Process_Info &pi,const size_t &ci)
 {
   if (ci==m_nin+m_nout) {
     if (!CheckFlavours(pi.m_ii,pi.m_fi)) return false;
-    SortFlavours(pi);
-    std::string name(GenerateName(pi.m_ii,pi.m_fi));
+    Process_Info cpi(pi);
+    SortFlavours(cpi);
+    std::string name(GenerateName(cpi.m_ii,cpi.m_fi));
     if (m_procmap.find(name)!=m_procmap.end()) return false;
-    Process_Base *proc(GetProcess(pi));
+    Process_Base *proc(GetProcess(cpi));
     if (!proc) return false;
     proc->SetGenerator(Generator());
     proc->Init(pi,p_int->Beam(),p_int->ISR());

@@ -7,6 +7,8 @@
 #include "ATOOLS/Org/STL_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Shell_Tools.H"
+
+#include <algorithm>
 #include <typeinfo>
 
 using namespace METOOLS;
@@ -36,19 +38,18 @@ namespace METOOLS {
 
 size_t Vertex::s_vlmode(0);
 
+std::map<std::string,Int_Vector> Vertex::s_h;
+
 Vertex::Vertex(const Vertex_Key &key): 
   p_v(key.p_mv), p_c(NULL),
-  p_info(key.p_dinfo), p_kin(NULL),
-  m_sign(false), m_act(true), 
-  m_fperm(0), m_order(2,0),
-  m_icplfac(1.0)
+  p_info(key.p_dinfo), p_kin(NULL), p_h(NULL),
+  m_sign(false), m_fperm(0), m_icplfac(1.0)
 {
   if (key.p_mv==NULL) return;
   if (p_info)
     p_kin = new Dipole_Kinematics
       (p_info,key.m_j[0],key.m_j[1],key.p_k,key.p_c,key.p_kt);
   key.p_v=this;
-  m_order=key.p_mv->order;
   Vertex_Key ckey(key);
   for (ckey.m_n=0;ckey.m_n<key.p_mv->Lorentz.size();++ckey.m_n) {
     std::string ctag(ToString(ckey.p_mv->Color[ckey.m_n].PID()));
@@ -56,7 +57,12 @@ Vertex::Vertex(const Vertex_Key &key):
       if (abs(ckey.p_c->Flav().StrongCharge())==3) ctag="S-T";
       else if (key.p_c->Flav().StrongCharge()==8) ctag="S-F";
       else {
-	m_act=false;
+	for (size_t i(0);i<m_lc.size();++i) {
+	  delete m_lc[i];
+	  delete m_cc[i];
+	}
+	m_lc.clear();
+	m_cc.clear();
 	return;
       }
     }
@@ -108,13 +114,42 @@ void Vertex::Evaluate()
   msg_Debugging()<<METHOD<<"():\n";
   msg_Indent();
 #endif
+  if (m_j.size()==2) {
+    size_t hid(0), sh0(m_j[0]->J().size()), sh1(m_j[1]->J().size());
+    for (size_t h0(0);h0<sh0;++h0) {
+      const CObject_Vector *hjj0(&m_j[0]->J()[h0]);
+      if (hjj0->empty()) { hid+=sh1; continue; }
+      for (size_t h1(0);h1<sh1;++h1) {
+	const CObject_Vector *hjj1(&m_j[1]->J()[h1]);
+	if (hjj1->empty()) { ++hid; continue; }
+	for (size_t c0(0);c0<hjj0->size();++c0) {
+	  m_cjj[0]=(*hjj0)[c0];
+	  for (size_t c1(0);c1<hjj1->size();++c1) {
+	    m_cjj[1]=(*hjj1)[c1];
+	    for (size_t k(0);k<m_cc.size();++k)
+	      if (m_cc[k]->Evaluate(m_cjj)) {
+		CObject *j(m_lc[k]->Evaluate(m_cjj));
+		if (j==NULL) continue;
+		j->Multiply(p_v->Coupling(k)*m_cc[k]->Coupling());
+		j->SetH(H(hid));
+		m_cc[k]->AddJ(j);
+		SetZero(false);
+	      }
+	  }
+	}
+	++hid;
+      }
+    }
+    return;
+  }
   size_t hid(0);
-  for (SizeT_Vector::iterator i(m_hjc.begin());i!=m_hjc.end();++i) *i=0;
+  Int_Vector m_cjc(m_j.size()), m_hjc(m_j.size(),0);
+  std::vector<const CObject_Vector*> m_hjj(m_j.size());
   for (size_t j(0);j<m_hjj.size();++j) m_hjj[j]=&m_j[j]->J().front();
   for (size_t hc(m_hjc.size()-1);m_hjc[0]<m_j[0]->J().size();) {
     if(m_hjc[hc]==m_j[hc]->J().size()){m_hjc[hc--]=0;++m_hjc[hc];continue;}
     m_hjj[hc]=&m_j[hc]->J()[m_hjc[hc]];if(hc<m_hjc.size()-1){++hc;continue;}
-    for (SizeT_Vector::iterator i(m_cjc.begin());i!=m_cjc.end();++i) *i=0;
+    for (Int_Vector::iterator i(m_cjc.begin());i!=m_cjc.end();++i) *i=0;
     bool zero(false);
     for (size_t i(0);i<m_cjj.size();++i)
       if (m_hjj[i]->empty()) {zero=true;break;}
@@ -183,17 +218,45 @@ void Vertex::InitPols()
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"() {\n";
 #endif
-  m_hjc.resize(m_j.size(),0);
-  m_cjc.resize(m_j.size());
-  m_hjj.resize(m_j.size());
   m_cjj.resize(m_j.size());
-  m_h.clear();
+  int nmax(0);
+  std::string id;
+  for (size_t i(0);i<m_j.size();++i) {
+    id+=m_j[i]->H().SpinID();
+    nmax=Max(nmax,m_j[i]->Id().back());
+  }
+  static std::map<int,std::string> s_imap;
+  for (size_t i(0);i<=nmax;++i)
+    for (size_t j(0);j<m_j.size();++j)
+      if (std::find(m_j[j]->Id().begin(),
+		    m_j[j]->Id().end(),i)!=
+	  m_j[j]->Id().end()) {
+	std::map<int,std::string>::iterator iit(s_imap.find(j));
+	if (iit==s_imap.end()) iit=s_imap.insert(make_pair(j,ToString(j))).first;
+	id+="_"+iit->second;
+	break;
+      }
+  std::map<std::string,Int_Vector>::iterator hit(s_h.find(id));
+  if (hit!=s_h.end()) {
+    p_h=&hit->second;
+#ifdef DEBUG__BG
+    msg_Debugging()<<"  "<<id<<" mapped to '"<<p_h<<"'\n}\n";
+#endif
+    return;
+  }
+  p_h=&s_h.insert(make_pair(id,Int_Vector())).first->second;
+#ifdef DEBUG__BG
+  msg_Debugging()<<"  "<<id<<" stored in '"<<p_h<<"'\n";
+#endif
+  Int_Vector m_hjc(m_j.size(),0);
   std::vector<Int_Vector> hjj(m_j.size());
   for (size_t i(0);i<hjj.size();++i) hjj[i]=m_j[i]->H()(0);
   for (size_t hc(m_hjc.size()-1);m_hjc[0]<m_j[0]->H().N();) {
     if(m_hjc[hc]==m_j[hc]->H().N()){m_hjc[hc--]=0;++m_hjc[hc];continue;}
     hjj[hc]=m_j[hc]->H()(m_hjc[hc]);if(hc<m_hjc.size()-1){++hc;continue;}
     Int_Vector ch(hjj.back()), id(m_j.back()->Id());
+    id.reserve(p_c->Id().size());
+    ch.reserve(p_c->Id().size());
     for (size_t i(0);i<hjj.size()-1;++i) {
       for (size_t m(0);m<hjj[i].size();++m) {
 	Int_Vector::iterator cit(ch.begin()), iit(id.begin());
@@ -203,10 +266,10 @@ void Vertex::InitPols()
       }
     }
 #ifdef DEBUG__BG
-    msg_Debugging()<<"  ["<<m_h.size()<<"]: j = "<<m_hjc
+    msg_Debugging()<<"  ["<<p_h->size()<<"]: j = "<<m_hjc
 		   <<", h = "<<ch<<" -> id = "<<p_c->H()(ch)<<"\n";
 #endif
-    m_h.push_back(p_c->H()(ch));
+    p_h->push_back(p_c->H()(ch));
     ++m_hjc[hc];
   }
 #ifdef DEBUG__BG
@@ -280,6 +343,16 @@ void Vertex::CollectGraphs(Graph_Node *graph) const
   graph->push_back("    \\fmfv{"+VLabel()+"}{"+VId()+"}");
   graph->push_back("    %% "+VId());
   for (size_t i(0);i<m_j.size();++i) m_j[i]->CollectGraphs(graph);
+}
+
+const std::vector<int> &Vertex::Order() const
+{
+  return p_v->order;
+}
+
+int Vertex::Order(const size_t &id) const
+{
+  return p_v->order[id];
 }
 
 std::ostream &METOOLS::operator<<(std::ostream &str,const Vertex &v)
