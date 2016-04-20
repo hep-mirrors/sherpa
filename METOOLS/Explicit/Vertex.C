@@ -375,7 +375,8 @@ std::ostream &METOOLS::operator<<(std::ostream &str,const Vertex &v)
 	   <<"*"<<GetName(*v.Lorentz()[i]);
       str<<"'";
     }
-    str<<v.Order()<<"->{"<<v.JC()->Type()
+    if (v.V()) str<<v.Order();
+    str<<"->{"<<v.JC()->Type()
        <<','<<v.JC()->Flav()<<'}'<<v.JC()->Id();
   }
   if (v.Kin()) str<<" D["<<v.Kin()->JK()->Id()
