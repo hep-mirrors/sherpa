@@ -533,7 +533,7 @@ double LF_FVF_IF::Scale
 {
   if (p_sf->ScaleScheme()==1) return _scale;
   double ma2(p_ms->Mass2(m_flavs[0])), mj2(p_ms->Mass2(m_flavs[2]));
-  double scale = (Q2+ma2+mj2+p_ms->Mass2(m_flspec))*y/z-ma2-mj2;
+  double scale = (Q2+ma2+mj2+p_ms->Mass2(m_flspec))*y/z+ma2+mj2;
   return scale;
 }
 
@@ -586,7 +586,7 @@ double LF_FVF_II::Scale
 {
   if (p_sf->ScaleScheme()==1) return _scale;
   double ma2(p_ms->Mass2(m_flavs[0])), mj2(p_ms->Mass2(m_flavs[2]));
-  double scale = (Q2-ma2-mj2-p_ms->Mass2(m_flspec))*y/z-ma2-mj2;
+  double scale = (Q2-ma2-mj2-p_ms->Mass2(m_flspec))*y/z+ma2+mj2;
   return scale;
 }
 
@@ -771,8 +771,8 @@ double LF_VFF_IF::Scale
  const double _scale,const double Q2) const
 {
   if (p_sf->ScaleScheme()==1) return _scale;
-  double ma2(p_ms->Mass2(m_flavs[0])), mj2(p_ms->Mass2(m_flavs[2]));
-  double scale = (Q2+ma2+mj2+p_ms->Mass2(m_flspec))*y/z-ma2-mj2;
+  double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
+  double scale = (Q2+mj2+p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
   return scale;
 }
 
@@ -811,8 +811,8 @@ double LF_VFF_II::Scale
  const double _scale,const double Q2) const
 {
   if (p_sf->ScaleScheme()==1) return _scale;
-  double ma2(p_ms->Mass2(m_flavs[0])), mj2(p_ms->Mass2(m_flavs[2]));
-  double scale = (Q2-ma2-mj2-p_ms->Mass2(m_flspec))*y/z-ma2-mj2;
+  double maj2(p_ms->Mass2(m_flavs[1])), mj2(p_ms->Mass2(m_flavs[2]));
+  double scale = (Q2-mj2-p_ms->Mass2(m_flspec))*y/z+mj2-maj2;
   return scale;
 }
 
