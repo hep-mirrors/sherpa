@@ -700,7 +700,7 @@ double LF_VFF_FI::Scale
  const double _scale,const double Q2) const
 {
   if (p_sf->ScaleScheme()==1) return _scale;
-  double scale = Q2*y/(1.0-y)+2.0*p_ms->Mass2(m_flavs[1])/(1.0-y);
+  double scale = (Q2+p_ms->Mass2(m_flspec))*y/(1.0-y)+2.0*p_ms->Mass2(m_flavs[1])/(1.0-y);
   return scale;
 }
 
