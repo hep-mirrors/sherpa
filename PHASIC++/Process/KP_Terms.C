@@ -44,7 +44,7 @@ KP_Terms::KP_Terms(Process_Base *const proc,const int mode):
   reader.SetInputPath(rpa->GetPath());
   reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
   int helpi;
-  m_negativepdf = false;
+  m_negativepdf = true;
   if (reader.ReadFromFile(helpi,"KP_ACCEPT_NEGATIVE_PDF")) {
     m_negativepdf = helpi;
     msg_Tracking()<<"Set KP-term accepts negative PDF "<<m_negativepdf<<" . "<<std::endl;
@@ -302,7 +302,7 @@ double KP_Terms::Get(const double &x0,const double &x1,
   if (sa && (pdfa==NULL || !pdfa->Contains(flav[0]))) return 0.0;
   if (sb && (pdfb==NULL || !pdfb->Contains(flav[1]))) return 0.0;
   if (!sa && !sb) return 0.;
-  if (x0<eta0 || x1<eta1) return 0.; 
+  if ((sa && x0<eta0) || (sb && x1<eta1)) return 0.;
   size_t pls=1;
   if (sa&&sb) pls++;
   Flavour gluon(kf_gluon);
