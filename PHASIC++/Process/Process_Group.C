@@ -12,6 +12,7 @@
 #include "ATOOLS/Math/Random.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/Exception.H"
 
 using namespace PHASIC;
@@ -254,28 +255,61 @@ void Process_Group::SetFlavour(Subprocess_Info &cii,Subprocess_Info &cfi,
   else cfi.SetExternal(fl,i-m_nin);
 }
 
+bool Process_Group::ConstructProcess(Process_Info &pi)
+{
+  if (!CheckFlavours(pi.m_ii,pi.m_fi)) return false;
+  Process_Info cpi(pi);
+  SortFlavours(cpi);
+  std::string name(GenerateName(cpi.m_ii,cpi.m_fi));
+  if (m_procmap.find(name)!=m_procmap.end()) return false;
+  Process_Base *proc(GetProcess(cpi));
+  if (!proc) return false;
+  proc->SetGenerator(Generator());
+  proc->Init(pi,p_int->Beam(),p_int->ISR());
+  if (!Initialize(proc)) {
+    msg_Debugging()<<METHOD<<"(): Init failed for '"
+		   <<proc->Name()<<"'\n";
+    delete proc;
+    m_procmap[name]=NULL;
+    return false;
+  }
+  msg_Debugging()<<METHOD<<"(): Init ok '"
+		 <<proc->Name()<<"'\n";
+  Add(proc);
+  return true;
+}
+
 bool Process_Group::ConstructProcesses(Process_Info &pi,const size_t &ci)
 {
   if (ci==m_nin+m_nout) {
-    if (!CheckFlavours(pi.m_ii,pi.m_fi)) return false;
-    Process_Info cpi(pi);
-    SortFlavours(cpi);
-    std::string name(GenerateName(cpi.m_ii,cpi.m_fi));
-    if (m_procmap.find(name)!=m_procmap.end()) return false;
-    Process_Base *proc(GetProcess(cpi));
-    if (!proc) return false;
-    proc->SetGenerator(Generator());
-    proc->Init(pi,p_int->Beam(),p_int->ISR());
-    if (!Initialize(proc)) {
-      msg_Debugging()<<METHOD<<"(): Init failed for '"
-		     <<proc->Name()<<"'\n";
-      delete proc;
-      m_procmap[name]=NULL;
-      return false;
+    if (!ConstructProcess(pi)) return false;
+#ifdef USING__MPI
+    if (MPI::COMM_WORLD.Get_rank()==0) {
+#endif
+    if (rpa->gen.Variable("PHASIC_PARTIAL_COMMIT")=="1") My_In_File::ExecDB
+      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/","begin");
+    std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
+			+"/Process/Sherpa/"+m_name+".map");
+    std::string str, tmp;
+    My_In_File in(mapfile);
+    if (in.Open())
+      for (getline(*in,tmp);in->good();
+	   getline(*in,tmp)) str+=tmp+"\n";
+    in.Close();
+    My_Out_File out(mapfile);
+    if (!out.Open()) THROW(fatal_error,"Cannot open '"+mapfile+"'");
+    *out<<str;
+    Flavour_Vector fl(m_procs.back()->Info().m_ii.GetExternal());
+    for (size_t i(0);i<fl.size();++i) *out<<(long int)fl[i]<<" ";
+    fl=m_procs.back()->Info().m_fi.GetExternal();
+    for (size_t i(0);i<fl.size();++i) *out<<(long int)fl[i]<<" ";
+    *out<<"0\n";
+    out.Close();
+    if (rpa->gen.Variable("PHASIC_PARTIAL_COMMIT")=="1") My_In_File::ExecDB
+      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/","commit");
+#ifdef USING__MPI
     }
-    msg_Debugging()<<METHOD<<"(): Init ok '"
-		   <<proc->Name()<<"'\n";
-    Add(proc);
+#endif
     return true;
   }
   bool one(false);
@@ -289,7 +323,38 @@ bool Process_Group::ConstructProcesses(Process_Info &pi,const size_t &ci)
 bool Process_Group::ConstructProcesses()
 {
   Process_Info cpi(m_pinfo);
+  std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
+		      +"/Process/Sherpa/"+m_name+".map");
+  msg_Debugging()<<"checking for '"<<mapfile<<"' ... "<<std::flush;
+  if (FileExists(mapfile)) {
+    msg_Debugging()<<"found"<<std::endl;
+    My_In_File map(mapfile);
+    if (!map.Open()) THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
+    long int cfl, cnt;
+    *map>>cfl;
+    while (!map->eof()) {
+      for (cnt=0;cnt<m_nin+m_nout && !map->eof();++cnt) {
+        SetFlavour(cpi.m_ii,cpi.m_fi,Flavour(abs(cfl),cfl<0),cnt);
+        *map>>cfl;
+      }
+      if (cnt!=m_nin+m_nout || cfl || !ConstructProcess(cpi))
+	THROW(fatal_error,"Corrupted map file '"+mapfile+"'");
+      *map>>cfl;
+    }
+    return m_procs.size();
+  }
+  msg_Debugging()<<"not found"<<std::endl;
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()==0)
+#endif
+  if (rpa->gen.Variable("PHASIC_PARTIAL_COMMIT")!="1") My_In_File::ExecDB
+    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/","begin");
   bool res(ConstructProcesses(cpi,0));
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()==0)
+#endif
+  if (rpa->gen.Variable("PHASIC_PARTIAL_COMMIT")!="1") My_In_File::ExecDB
+    (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/","commit");
   return res;
 }
 
