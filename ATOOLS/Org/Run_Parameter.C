@@ -284,8 +284,6 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     for (int i(1);i<4;++i) seedstr+="_"+ToString(gen.m_seeds[i]);
   gen.SetVariable("RNG_SEED",ToString(gen.m_seeds[0])+seedstr);
 
-  gen.SetVariable("PHASIC_PARTIAL_COMMIT",
-		  ToString(dr.GetValue<int>("PHASIC_PARTIAL_COMMIT",0)));
   gen.SetVariable("PB_USE_FMM",ToString(dr.GetValue<int>("PB_USE_FMM",0)));
   gen.SetVariable("SELECTION_WEIGHT_MODE",ToString
 		  (dr.GetValue<int>("SELECTION_WEIGHT_MODE",0)));

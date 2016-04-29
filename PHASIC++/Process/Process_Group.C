@@ -286,8 +286,6 @@ bool Process_Group::ConstructProcesses(Process_Info &pi,const size_t &ci)
 #ifdef USING__MPI
     if (MPI::COMM_WORLD.Get_rank()==0) {
 #endif
-    if (rpa->gen.Variable("PHASIC_PARTIAL_COMMIT")=="1") My_In_File::ExecDB
-      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/","begin");
     std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 			+"/Process/Sherpa/"+m_name+".map");
     std::string str, tmp;
@@ -305,8 +303,6 @@ bool Process_Group::ConstructProcesses(Process_Info &pi,const size_t &ci)
     for (size_t i(0);i<fl.size();++i) *out<<(long int)fl[i]<<" ";
     *out<<"0\n";
     out.Close();
-    if (rpa->gen.Variable("PHASIC_PARTIAL_COMMIT")=="1") My_In_File::ExecDB
-      (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/","commit");
 #ifdef USING__MPI
     }
 #endif
@@ -347,13 +343,13 @@ bool Process_Group::ConstructProcesses()
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_rank()==0)
 #endif
-  if (rpa->gen.Variable("PHASIC_PARTIAL_COMMIT")!="1") My_In_File::ExecDB
+  My_In_File::ExecDB
     (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/","begin");
   bool res(ConstructProcesses(cpi,0));
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_rank()==0)
 #endif
-  if (rpa->gen.Variable("PHASIC_PARTIAL_COMMIT")!="1") My_In_File::ExecDB
+  My_In_File::ExecDB
     (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/","commit");
   return res;
 }
