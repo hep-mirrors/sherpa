@@ -68,11 +68,11 @@ void Amplitude_Generator::Set_End(Point* p,int* &perm,int& pnum)
     p->b  = b[*perm];
     if (p->Lorentz) p->Lorentz->Delete();
     if (p->fl.IsBoson()) {
-      p->Lorentz = LF_Getter::GetObject("Pol",LF_Key());
+      p->Lorentz = LF_Pol::New();
       p->Lorentz->SetParticleArg(0);
     }
     else {
-      p->Lorentz = LF_Getter::GetObject("None",LF_Key());
+      p->Lorentz = LF_None::New();
       p->Lorentz->SetParticleArg();
     }
 

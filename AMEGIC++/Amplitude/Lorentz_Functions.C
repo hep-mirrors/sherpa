@@ -1,32 +1,7 @@
 #include "AMEGIC++/Amplitude/Lorentz_Function.H"
-#include "ATOOLS/Org/STL_Tools.H"
 
 using namespace MODEL;
 using namespace ATOOLS;
-
-class LF_None: public Lorentz_Function {
-public:
-  LF_None(): Lorentz_Function("None") {}
-  int NofIndex() const { return 0; }
-  std::string String(int shortversion) const 
-  { return "0"; }
-  Lorentz_Function *GetCopy() const 
-  {
-    Lorentz_Function *copy(LF_None::New());
-    *copy=*this;
-    return copy;
-  }
-  static ATOOLS::AutoDelete_Vector<LF_None> s_objects;
-  static Lorentz_Function *New() {
-    if (s_objects.empty()) return new LF_None();
-    LF_None *lf(s_objects.back());
-    s_objects.pop_back();
-    return lf;
-  }
-  void Delete() { s_objects.push_back(this); }
-};
-ATOOLS::AutoDelete_Vector<LF_None> LF_None::s_objects;
-DEFINE_LF_GETTER(LF_None,"None","")
 
 class LF_Gamma: public Lorentz_Function {
 public:  
@@ -410,32 +385,6 @@ public:
 };
 ATOOLS::AutoDelete_Vector<LF_FFS> LF_FFS::s_objects;
 DEFINE_LF_GETTER(LF_FFS,"FFS","")
-class LF_Pol: public Lorentz_Function {
-public:  
-  LF_Pol(): Lorentz_Function("Pol") {}
-  int NofIndex() const { return 1; }
-  std::string String(int shortversion) const 
-  {
-    // Eps[0]
-    return "Eps["+Str(0)+"]";
-  }
-  Lorentz_Function *GetCopy() const 
-  {
-    Lorentz_Function *copy(LF_Pol::New());
-    *copy=*this;
-    return copy;
-  }
-  static ATOOLS::AutoDelete_Vector<LF_Pol> s_objects;
-  static Lorentz_Function *New() {
-    if (s_objects.empty()) return new LF_Pol();
-    LF_Pol *lf(s_objects.back());
-    s_objects.pop_back();
-    return lf;
-  }
-  void Delete() { s_objects.push_back(this); }
-};
-ATOOLS::AutoDelete_Vector<LF_Pol> LF_Pol::s_objects;
-DEFINE_LF_GETTER(LF_Pol,"Pol","")
 class LF_VVSS: public Lorentz_Function {
 public:  
   LF_VVSS(): Lorentz_Function("VVSS")

@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Getter_Function.H"
+#include "ATOOLS/Org/STL_Tools.H"
 #include <vector>
 
 namespace MODEL {
@@ -64,6 +65,27 @@ namespace MODEL {
 
   typedef ATOOLS::Getter_Function<Lorentz_Function,LF_Key> LF_Getter;
 
+  class LF_None: public Lorentz_Function {
+  public:
+    LF_None();
+    int NofIndex() const;
+    std::string String(int shortversion) const;
+    Lorentz_Function *GetCopy() const;
+    static ATOOLS::AutoDelete_Vector<LF_None> s_objects;
+    static Lorentz_Function *New();
+    void Delete();
+  };
+
+  class LF_Pol: public Lorentz_Function {
+  public:
+    LF_Pol();
+    int NofIndex() const;
+    std::string String(int shortversion) const;
+    Lorentz_Function *GetCopy() const;
+    static ATOOLS::AutoDelete_Vector<LF_Pol> s_objects;
+    static Lorentz_Function *New();
+    void Delete();
+  };
 
  /*! 
     \file

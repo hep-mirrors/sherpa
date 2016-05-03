@@ -133,3 +133,72 @@ bool Lorentz_Function::CutVectors()
 { 
   return false; 
 }
+
+LF_None::LF_None(): Lorentz_Function("None") {}
+
+int LF_None::NofIndex() const
+{
+  return 0;
+}
+
+std::string LF_None::String(int shortversion) const 
+{
+  return "0";
+}
+
+Lorentz_Function *LF_None::GetCopy() const 
+{
+  Lorentz_Function *copy(LF_None::New());
+  *copy=*this;
+  return copy;
+}
+
+Lorentz_Function *LF_None::New()
+{
+  if (s_objects.empty()) return new LF_None();
+  LF_None *lf(s_objects.back());
+  s_objects.pop_back();
+  return lf;
+}
+
+void LF_None::Delete()
+{
+  s_objects.push_back(this);
+}
+
+ATOOLS::AutoDelete_Vector<LF_None> LF_None::s_objects;
+
+DEFINE_LF_GETTER(LF_None,"None","")
+
+LF_Pol::LF_Pol(): Lorentz_Function("Pol") {}
+
+int LF_Pol::NofIndex() const { return 1; }
+
+std::string LF_Pol::String(int shortversion) const 
+{
+  // Eps[0]
+  return "Eps["+Str(0)+"]";
+}
+
+Lorentz_Function *LF_Pol::GetCopy() const 
+{
+  Lorentz_Function *copy(LF_Pol::New());
+  *copy=*this;
+  return copy;
+}
+
+Lorentz_Function *LF_Pol::New()
+{
+  if (s_objects.empty()) return new LF_Pol();
+  LF_Pol *lf(s_objects.back());
+  s_objects.pop_back();
+  return lf;
+}
+void LF_Pol::Delete()
+{
+  s_objects.push_back(this);
+}
+
+ATOOLS::AutoDelete_Vector<LF_Pol> LF_Pol::s_objects;
+
+DEFINE_LF_GETTER(LF_Pol,"Pol","")
