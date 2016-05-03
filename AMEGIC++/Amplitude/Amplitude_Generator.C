@@ -66,7 +66,7 @@ void Amplitude_Generator::Set_End(Point* p,int* &perm,int& pnum)
     p->number = *perm;
     p->fl = fl[*perm];
     p->b  = b[*perm];
-    if (p->Lorentz) delete p->Lorentz;
+    if (p->Lorentz) p->Lorentz->Delete();
     if (p->fl.IsBoson()) {
       p->Lorentz = LF_Getter::GetObject("Pol",LF_Key());
       p->Lorentz->SetParticleArg(0);
@@ -191,7 +191,7 @@ int Amplitude_Generator::CheckEnd(Point* p,Flavour infl)
 	for (size_t k=0;k<cpl.size();k++) p->cpl.push_back(cpl[k]);
 	p->v = vl[j];
 	*p->Color = vl[j]->Color.back();
-	if (p->Lorentz) delete p->Lorentz;
+	if (p->Lorentz) p->Lorentz->Delete();
 	p->Lorentz = vl[j]->Lorentz.front()->GetCopy();
 	p->t = vl[j]->t;
 	return 1;
@@ -321,7 +321,7 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 	  if (p->right->fl==Flavour(kf_none)) p->right->fl = flav[2];
 	  p->v          = vl[i];
 	  *p->Color = vl[i]->Color.back();
-	  if (p->Lorentz) delete p->Lorentz;
+	  if (p->Lorentz) p->Lorentz->Delete();
 	  p->Lorentz = vl[i]->Lorentz.front()->GetCopy();
 	  p->t = vl[i]->t;
 	  
@@ -926,7 +926,7 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
 
 	  if ((*v)(i)->Color.size()==1) {
 	    *pcopy->Color = (*v)(i)->Color.back();
-            if (pcopy->Lorentz) delete pcopy->Lorentz;
+            if (pcopy->Lorentz) pcopy->Lorentz->Delete();
 	    pcopy->Lorentz = (*v)(i)->Lorentz.front()->GetCopy();
 	    pcopy->t = (*v)(i)->t;
             break;
@@ -934,7 +934,7 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
           else {
 	    for (size_t k=0;k<(*v)(i)->Color.size();k++) {
 	      *pcopy->Color = (*v)(i)->Color[k];
-              if (pcopy->Lorentz) delete pcopy->Lorentz;
+              if (pcopy->Lorentz) pcopy->Lorentz->Delete();
 	      pcopy->Lorentz = (*v)(i)->Lorentz[k]->GetCopy();
 	      pcopy->t = (*v)(i)->t;
 

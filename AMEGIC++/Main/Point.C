@@ -39,7 +39,7 @@ Point& Point::operator=(const Point& p) {
     fl     = p.fl;
       
     *Color = *p.Color; 
-    if (Lorentz) delete Lorentz;
+    if (Lorentz) Lorentz->Delete();
     Lorentz=NULL;
     if (p.Lorentz) Lorentz = p.Lorentz->GetCopy(); 
  
