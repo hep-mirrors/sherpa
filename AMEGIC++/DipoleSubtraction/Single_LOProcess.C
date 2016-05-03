@@ -10,7 +10,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/My_File.H"
 
 #include <unistd.h>
 
@@ -350,14 +350,11 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
 
   bool directload = true;
-  int libchk=0; 
-  Data_Reader reader(" ",";","!","=");
-  if (reader.ReadFromFile(libchk,"ME_LIBCHECK")) {
+  int libchk=ToType<int>(rpa->gen.Variable("ME_LIBCHECK")); 
     if (libchk==1) {
       msg_Info()<<"Enforce full library check. This may take some time"<<std::endl;
       directload = false;
     }
-  }  
   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
   if (m_libname=="0") {
     return 0;
@@ -374,7 +371,7 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 
  
   int ntchanmin(m_ntchanmin);
-  bool cvp(reader.GetValue<int>("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",1));
+  bool cvp(ToType<int>(rpa->gen.Variable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS")));
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp);
   m_ntchanmin=ntchanmin;
