@@ -38,11 +38,7 @@ Single_LOProcess::Single_LOProcess(const Process_Info &pi,
   m_nin=pi.m_ii.NExternal();
   m_nout=pi.m_fi.NExternal();
 
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  int ord=reader.GetValue<int>("AMEGIC_SORT_LOPROCESS",1);
+  int ord=ToType<int>(rpa->gen.Variable("AMEGIC_SORT_LOPROCESS"));
   static bool print(false);
   if (!print && !ord) {
     print=true;
@@ -200,14 +196,11 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
 
   bool directload = true;
-  int libchk=0; 
-  Data_Reader reader(" ",";","!","=");
-  if (reader.ReadFromFile(libchk,"ME_LIBCHECK")) {
+  int libchk=ToType<int>(rpa->gen.Variable("ME_LIBCHECK")); 
     if (libchk==1) {
       msg_Info()<<"Enforce full library check. This may take some time"<<std::endl;
       directload = false;
     }
-  }  
   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
   if (directload) {
     string hstr=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_libname;
@@ -218,7 +211,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   p_BS->Setk0(s_gauge);
   p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
   int ntchanmin(m_ntchanmin);
-  bool cvp(reader.GetValue<int>("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",1));
+  bool cvp(ToType<int>(rpa->gen.Variable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS")));
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp);
   m_ntchanmin=ntchanmin;

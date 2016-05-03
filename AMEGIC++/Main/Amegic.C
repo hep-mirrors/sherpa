@@ -117,6 +117,12 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   p_int->SetBeam(beamhandler);
   p_int->SetISR(isrhandler);
   SetPSMasses(&read);
+  int sort=read.GetValue<int>("AMEGIC_SORT_LOPROCESS",1);
+  rpa->gen.SetVariable("AMEGIC_SORT_LOPROCESS",ToString(sort));
+  int libcheck=read.GetValue<int>("ME_LIBCHECK",0);
+  rpa->gen.SetVariable("ME_LIBCHECK",ToString(libcheck));
+  int cvp=read.GetValue<int>("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",1);
+  rpa->gen.SetVariable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",ToString(cvp));
   double alpha=read.GetValue<double>("AMEGIC_TCHANNEL_ALPHA",0.9);
   rpa->gen.SetVariable("AMEGIC_TCHANNEL_ALPHA",ToString(alpha));
   double salpha=read.GetValue<double>("AMEGIC_SCHANNEL_ALPHA",0.75);
