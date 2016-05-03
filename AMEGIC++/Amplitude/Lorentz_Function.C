@@ -148,9 +148,7 @@ std::string LF_None::String(int shortversion) const
 
 Lorentz_Function *LF_None::GetCopy() const 
 {
-  Lorentz_Function *copy(LF_None::New());
-  *copy=*this;
-  return copy;
+  return LF_None::New();
 }
 
 Lorentz_Function *LF_None::New()
