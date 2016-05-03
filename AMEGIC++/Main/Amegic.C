@@ -117,6 +117,43 @@ bool Amegic::Initialize(const std::string &path,const std::string &file,
   p_int->SetBeam(beamhandler);
   p_int->SetISR(isrhandler);
   SetPSMasses(&read);
+  double helpd;
+  if (!read.ReadFromFile(helpd,"DIPOLE_AMIN")) helpd=Max(rpa->gen.Accu(),1.0e-8);
+  else msg_Info()<<METHOD<<"(): Set dipole \\alpha_{cut} "<<helpd<<".\n";
+  rpa->gen.SetVariable("DIPOLE_AMIN",ToString(helpd));
+  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA")) helpd=1.0;
+  else msg_Info()<<METHOD<<"(): Set dipole \\alpha_{max} "<<helpd<<".\n";
+  rpa->gen.SetVariable("DIPOLE_ALPHA",ToString(helpd));
+  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FF")) helpd=0.0;
+  else msg_Info()<<METHOD<<"(): Set FF dipole \\alpha_{max} "<<helpd<<".\n";
+  rpa->gen.SetVariable("DIPOLE_ALPHA_FF",ToString(helpd));
+  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_FI")) helpd=0.0;
+  else msg_Info()<<METHOD<<"(): Set FI dipole \\alpha_{max} "<<helpd<<".\n";
+  rpa->gen.SetVariable("DIPOLE_ALPHA_FI",ToString(helpd));
+  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_IF")) helpd=0.0;
+  else msg_Info()<<METHOD<<"(): Set IF dipole \\alpha_{max} "<<helpd<<".\n";
+  rpa->gen.SetVariable("DIPOLE_ALPHA_IF",ToString(helpd));
+  if (!read.ReadFromFile(helpd,"DIPOLE_ALPHA_II")) helpd=0.0;
+  else msg_Info()<<METHOD<<"(): Set II dipole \\alpha_{max} "<<helpd<<".\n";
+  rpa->gen.SetVariable("DIPOLE_ALPHA_II",ToString(helpd));
+  if (!read.ReadFromFile(helpd,"DIPOLE_KAPPA")) helpd=2.0/3.0;
+  else msg_Info()<<METHOD<<"(): Set dipole \\kappa="<<helpd<<"\n.";
+  rpa->gen.SetVariable("DIPOLE_KAPPA",ToString(helpd));
+  int helpi;
+  if (!read.ReadFromFile(helpi,"DIPOLE_NF_GSPLIT"))
+    helpi=Flavour(kf_jet).Size()/2;
+  else msg_Info()<<METHOD<<"(): Set dipole N_f="<<helpi<<"\n.";
+  rpa->gen.SetVariable("DIPOLE_NF_GSPLIT",ToString(helpi));
+  if (!read.ReadFromFile(helpd,"DIPOLE_KT2MAX")) helpd=sqr(rpa->gen.Ecms());
+  else msg_Info()<<METHOD<<"(): Set dipole \\k_{T,max}^2 "<<helpd<<".\n";
+  rpa->gen.SetVariable("DIPOLE_KT2MAX",ToString(helpd));
+  rpa->gen.SetVariable("NLO_SMEAR_THRESHOLD",
+		       ToString(read.GetValue("NLO_SMEAR_THRESHOLD",0.0)));
+  rpa->gen.SetVariable("NLO_SMEAR_POWER",
+		       ToString(read.GetValue("NLO_SMEAR_POWER",0.5)));
+  int ossub=read.GetValue<int>("OS_SUB",0);
+  if (ossub==1) msg_Info()<<"Set on shell subtraction on. "<<std::endl;
+  rpa->gen.SetVariable("OS_SUB",ToString(ossub));
   int sort=read.GetValue<int>("AMEGIC_SORT_LOPROCESS",1);
   rpa->gen.SetVariable("AMEGIC_SORT_LOPROCESS",ToString(sort));
   int libcheck=read.GetValue<int>("ME_LIBCHECK",0);

@@ -11,7 +11,6 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/Exception.H"
 
 #include "AMEGIC++/DipoleSubtraction/FF_DipoleSplitting.H"
@@ -46,11 +45,7 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
 
   m_name+= "_RS"+ToString(m_pi)+"_"+ToString(m_pj)+"_"+ToString(m_pk);
 
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  int helpi=reader.GetValue<int>("DIPOLE_NF_GSPLIT",Flavour(kf_quark).Size()/2);
+  int helpi=ToType<int>(rpa->gen.Variable("DIPOLE_NF_GSPLIT"));
   Flavour flav((kf_code)(helpi));
   m_maxgsmass=flav.Mass();
 
@@ -142,44 +137,28 @@ Single_DipoleTerm::Single_DipoleTerm(const Process_Info &pinfo,size_t pi,size_t 
 
   p_LO_process->SetSubEvt(&m_subevt);
 
-  m_dalpha = 1.;
+  m_dalpha = ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA"));
+  m_dkt2max = ToType<double>(rpa->gen.Variable("DIPOLE_KT2MAX"));
   double helpd;
-  m_dkt2max = std::numeric_limits<double>::max();
-  if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA")) {
-    m_dalpha = helpd;
-    msg_Tracking()<<"Set dipole cut alpha="<<m_dalpha<<"."<<std::endl;
-  }
-  if (reader.ReadFromFile(helpd,"DIPOLE_KT2MAX")) {
-    m_dkt2max = helpd;
-    msg_Tracking()<<"Set dipole cut kt2max="<<m_dkt2max<<"."<<std::endl;
-  }
   switch (m_dipoletype) {
   case dpt::f_f:
   case dpt::f_fm:
-    if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_FF")) {
-      m_dalpha = helpd;
-      msg_Tracking()<<"Set ff dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
-    }
+    helpd=ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA_FF"));
+    if (helpd) m_dalpha = helpd;
     break;
   case dpt::f_i:
   case dpt::f_im:
-    if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_FI")) {
-      m_dalpha = helpd;
-      msg_Tracking()<<"Set fi dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
-    }
+    helpd=ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA_FI"));
+    if (helpd) m_dalpha = helpd;
     break;
   case dpt::i_f:
   case dpt::i_fm:
-    if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_IF")) {
-      m_dalpha = helpd;
-      msg_Tracking()<<"Set if dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
-    }
+    helpd=ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA_IF"));
+    if (helpd) m_dalpha = helpd;
     break;
   case dpt::i_i:
-    if (reader.ReadFromFile(helpd,"DIPOLE_ALPHA_II")) {
-      m_dalpha = helpd;
-      msg_Tracking()<<"Set ii dipole cut alpha="<<m_dalpha<<" . "<<std::endl;
-    }
+    helpd=ToType<double>(rpa->gen.Variable("DIPOLE_ALPHA_II"));
+    if (helpd) m_dalpha = helpd;
     break;
   default:
     break;

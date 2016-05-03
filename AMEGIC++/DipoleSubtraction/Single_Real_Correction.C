@@ -14,7 +14,6 @@
 
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
 
 using namespace AMEGIC;
 using namespace MODEL;
@@ -40,17 +39,9 @@ Single_Real_Correction::Single_Real_Correction() :
   rpa->gen.AddCitation(1,"The automated generation of Catani-Seymour dipole\
  terms in Amegic is published under \\cite{Gleisberg:2007md}.");
   }
-  int helpi;
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-  if (reader.ReadFromFile(helpi,"OS_SUB")) {
-    m_ossubon = helpi;
-    if (m_ossubon==1) msg_Tracking()<<"Set on shell subtraction on. "<<std::endl;
-  }
-  m_smear_threshold=reader.GetValue<double>("NLO_SMEAR_THRESHOLD",0.0);
-  m_smear_power=reader.GetValue<double>("NLO_SMEAR_POWER",0.5);
+  m_ossubon = ToType<int>(rpa->gen.Variable("OS_SUB"));
+  m_smear_threshold=ToType<double>(rpa->gen.Variable("NLO_SMEAR_THRESHOLD"));
+  m_smear_power=ToType<double>(rpa->gen.Variable("NLO_SMEAR_POWER"));
   m_no_tree=false;
 }
 
