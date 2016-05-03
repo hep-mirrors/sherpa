@@ -177,6 +177,7 @@ bool COMIX::Single_Process::Initialize
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_rank()==0) {
 #endif
+  if (Parent()->Name()==Name()) return false;
   mapfile=rpa->gen.Variable("SHERPA_CPP_PATH")
     +"/Process/Comix/"+Parent()->Name()+".map";
   std::string str, tmp;
