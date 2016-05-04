@@ -84,9 +84,12 @@ bool Process_Group::IsGroup() const
 void Process_Group::Add(Process_Base *const proc) 
 {
   if (proc==NULL) return;
-  if (m_procmap.find(proc->Name())!=m_procmap.end())
-    THROW(critical_error,"Doubled process '"+proc->Name()+"'");
-  m_procmap[proc->Name()]=proc;
+  std::string name(proc->Name()), add(proc->Info().m_addname);
+  if (add.length() && name.rfind(add)!=std::string::npos)
+    name.erase(name.rfind(add),add.length());
+  if (m_procmap.find(name)!=m_procmap.end())
+    THROW(critical_error,"Doubled process '"+name+"'");
+  m_procmap[name]=proc;
   if (m_maxcpl.size()<proc->MaxOrders().size()) {
     m_maxcpl.resize(proc->MaxOrders().size(),0);
     m_mincpl.resize(proc->MinOrders().size(),99);

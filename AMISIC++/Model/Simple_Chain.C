@@ -236,6 +236,7 @@ void Simple_Chain::InitializeProcessList(const Flavour& in1,
                                          const Flavour& out1,
                                          const Flavour& out2)
 {
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
   PHASIC::Process_Info pi;
   pi.m_ii.m_ps.push_back(PHASIC::Subprocess_Info(in1,"",""));
   pi.m_ii.m_ps.push_back(PHASIC::Subprocess_Info(in2,"",""));
@@ -247,6 +248,7 @@ void Simple_Chain::InitializeProcessList(const Flavour& in1,
   pi.m_kfactor=p_read->GetValue<std::string>("MPI_KFACTOR","MPI");
   pi.m_coupling="Alpha_QCD 1";
   pi.m_special="MPI_Process";
+  pi.m_addname="__MPI";
   p_processes.push_back(new Semihard_QCD(p_read));
   p_processes.back()->Init(pi,p_beam,p_isr);
   msg_Info()<<METHOD<<"(): Init processes ";
@@ -260,6 +262,7 @@ void Simple_Chain::InitializeProcessList(const Flavour& in1,
   p_processes.back()->SetGenerator(p_processes.back());
   for (size_t i(0);i<p_processes.back()->Size();++i)
     m_processmap[(*p_processes.back())[i]->Name()]=(*p_processes.back())[i];
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
 }
 
 bool Simple_Chain::SetUpInterface()
