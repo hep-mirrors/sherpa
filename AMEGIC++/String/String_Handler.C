@@ -63,7 +63,6 @@ bool String_Handler::SearchValues(const int _gen_str,string & pID,Basic_Sfuncs* 
     val = Set_Values(vpID,_BS);
   }
   if (val!=0) {
-    msg_Info()<<"."<<std::flush;
     val->SetCouplFlav(*sgen->GetCouplList());
     if (sgen->NumberOfCouplings()!=val->NumberOfCouplings()) {
       msg_Error()<<" Number of Coupling constants does not fit with Process Library "<<pID<<"!"<<endl;

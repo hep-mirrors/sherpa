@@ -200,7 +200,7 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Amegic_Model * model,Topology
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 0;
     if (!TestLib()) return 0;
     links.push_back(this);
-    msg_Info()<<".";
+    msg_Info()<<"."<<std::flush;
     Minimize();
     return 1;
   }

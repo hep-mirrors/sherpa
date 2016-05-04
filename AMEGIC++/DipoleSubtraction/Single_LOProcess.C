@@ -270,7 +270,6 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
     if (!TestLib()) return 0;
     if (p_partner==this) links.push_back(this);
     FillCombinations();
-    msg_Info()<<".";
     Minimize();
     return 1;
   }

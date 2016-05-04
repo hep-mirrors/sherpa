@@ -103,7 +103,6 @@ int Single_LOProcess_External::InitAmplitude(Amegic_Model * model,Topology* top,
       } 
     }
     if (p_partner==this) links.push_back(this);
-    msg_Info()<<".";
     
     return 1;
   case -3: return 0;

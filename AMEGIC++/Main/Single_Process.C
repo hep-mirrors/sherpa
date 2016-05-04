@@ -208,7 +208,7 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
     if (!TestLib()) return 0;
     links.push_back(this);
     FillCombinations();
-    msg_Info()<<".";
+    msg_Info()<<"."<<std::flush;
     Minimize();
     return 1;
   }

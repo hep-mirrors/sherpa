@@ -133,7 +133,7 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Amegic_Model * model,Topology* top
   switch (result) {
   case 1 :
     if (p_partner==this) links.push_back(this);
-    msg_Info()<<".";
+    msg_Info()<<"."<<std::flush;
     
     if (m_gen_str<2) return 1;
     if (p_partner==this && Result()>0.) SetUpIntegrator();

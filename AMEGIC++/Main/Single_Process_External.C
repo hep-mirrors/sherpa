@@ -87,7 +87,7 @@ int AMEGIC::Single_Process_External::InitAmplitude(Amegic_Model * model,Topology
     } 
   }
   if (p_partner==this) links.push_back(this);
-  msg_Info()<<".";
+  msg_Info()<<"."<<std::flush;
   
   if (p_partner==this && Result()>0.) SetUpIntegrator();
   return 1;

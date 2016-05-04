@@ -207,6 +207,7 @@ int Single_Real_Correction::InitAmplitude(Amegic_Model * model,Topology* top,
   }
 
   if (p_mapproc && !p_partner->NewLibs()) Minimize();
+  if (p_partner==this) msg_Info()<<"."<<std::flush;
 
   if (status>=0) links.push_back(this);
   if (status<0) errs.push_back(this);

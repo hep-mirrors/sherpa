@@ -135,7 +135,6 @@ int Single_LOProcess_MHV::InitAmplitude(Amegic_Model * model,Topology* top,
   switch (Tests()) {
   case 1 :
     if (p_partner==this) links.push_back(this);
-    msg_Info()<<".";
     
     return 1;
   case -3: return 0;
