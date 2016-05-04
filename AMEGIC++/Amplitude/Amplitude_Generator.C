@@ -121,29 +121,11 @@ void Amplitude_Generator::Print_P(Point* p)
   }
 }
 
-int Amplitude_Generator::MatchVertex(AMEGIC::Single_Vertex* v,Flavour* flav,vector<Complex>& cpl)
-{
-  if (v->dec>0) return false;
-  if (flav[0] == v->in[0]) {
-    int hit = 1;
-    if (flav[1] != Flavour(kf_none)) {if (flav[1] != v->in[1]) hit = 0;}
-    else { flav[1] = v->in[1];}
-    if (flav[2] != Flavour(kf_none)) {if (flav[2] != v->in[2]) hit = 0;}
-    else { flav[2] = v->in[2];}
-    if (hit==1) {
-      cpl.clear();
-      for (size_t j=0;j<v->cpl.size();j++) cpl.push_back(v->Coupling(j));
-      return 1;
-    }
-  }
-  return 0;
-}
-
 int Amplitude_Generator::CheckEnd(Point* p,Flavour infl) 
 {
   if (p==0) return 1;
   if (p->left==0) return 1;
-  if (((p->left->fl)!=Flavour(kf_none)) && ((p->right->fl)!=Flavour(kf_none))) { 
+  if (p->left->fl.Kfcode() && p->right->fl.Kfcode()) { 
     Flavour flav[3];
     Flavour s_flav[3];
     vector <Complex> cpl;
@@ -249,43 +231,43 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
       flav[1] = p->left->fl;
       flav[2] = p->right->fl;
 
-      if (p->left->fl  == Flavour(kf_none)) p->left->b  = 0;
-      if (p->right->fl == Flavour(kf_none)) p->right->b = 0;
+      if (p->left->fl.Kfcode()==0) p->left->b  = 0;
+      if (p->right->fl.Kfcode()==0) p->right->b = 0;
 
       if (flav[0].Majorana()) {
-	if (p->left->fl != Flavour(kf_none)) {
+	if (p->left->fl.Kfcode()) {
 	  if (p->left->fl.IsFermion()) {
 	    if (p->b*p->left->b == 1)  flav[1] = flav[1].Bar();
 	  }
 	  else if (p->left->b   == -1) flav[1] = flav[1].Bar();
 	}
-	if (p->left->fl==Flavour(kf_none)) p->left->b = p->b;
+	if (p->left->fl.Kfcode()==0) p->left->b = p->b;
 	
-	if (p->right->fl != Flavour(kf_none)) {
+	if (p->right->fl.Kfcode()) {
 	  if (p->right->fl.IsFermion()) {
 	    if (p->b*p->right->b == 1)  flav[2] = flav[2].Bar();
 	}
 	else if (p->right->b  == -1) flav[2] = flav[2].Bar();  
 	}
-	if (p->right->fl==Flavour(kf_none)) p->right->b = p->b;
+	if (p->right->fl.Kfcode()==0) p->right->b = p->b;
       }
       else {
 	if (flav[0].IsBoson()) {
 	  if (p->left->b   == -1) flav[1] = flav[1].Bar();
 	  if (p->right->b  == -1) flav[2] = flav[2].Bar();
-	  if (p->left->fl  == Flavour(kf_none)) p->left->b  = -1;
-	  if (p->right->fl == Flavour(kf_none)) p->right->b = -1;
+	  if (p->left->fl.Kfcode()==0) p->left->b  = -1;
+	  if (p->right->fl.Kfcode()==0) p->right->b = -1;
 	}
 	else {
 	  if (flav[0].IsAnti()) {
 	    if (p->b*p->left->b == 1)  flav[1] = flav[1].Bar();
 	    if (p->right->b     ==-1)  flav[2] = flav[2].Bar();
-	    if (p->left->fl     == Flavour(kf_none)) p->left->b = p->b;
+	    if (p->left->fl.Kfcode()==0) p->left->b = p->b;
 	  }
 	  else {
 	    if (p->b*p->right->b == 1) flav[2] = flav[2].Bar();
 	    if (p->left->b       ==-1) flav[1] = flav[1].Bar();
-	    if (p->right->fl     == Flavour(kf_none)) p->right->b = p->b;
+	    if (p->right->fl.Kfcode()==0) p->right->b = p->b;
 	  }
 	}
       }
@@ -320,8 +302,8 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 	  //match
 	  int ll = 0;
 	  top->Copy(prea[ap].p,preah,ll);
-	  if (p->left->fl==Flavour(kf_none))  p->left->fl  = flav[1];
-	  if (p->right->fl==Flavour(kf_none)) p->right->fl = flav[2];
+	  if (p->left->fl.Kfcode()==0)  p->left->fl  = flav[1];
+	  if (p->right->fl.Kfcode()==0) p->right->fl = flav[2];
 	  p->v          = vl[i];
 	  if (p->Color==NULL) p->Color = new Color_Function();
 	  *p->Color = vl[i]->Color.back();
