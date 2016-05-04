@@ -6,6 +6,10 @@
 #include "PHASIC++/Channels/Vegas.H"
 #include "ATOOLS/Org/CXXFLAGS.H"
 
+#ifdef USING__Threading 
+#include <pthread.h> 
+#endif 
+
 namespace PHASIC { class Color_Integrator; }
 
 namespace COMIX {
@@ -29,6 +33,26 @@ namespace COMIX {
   typedef std::map<size_t,std::vector<int> > CId_Map;
 
   typedef std::map<size_t,const METOOLS::Current*> STCC_Map;
+
+#ifdef USING__Threading
+  class PS_Channel;
+
+  struct CDBG_PS_TID {
+    pthread_t m_id;
+    PS_Channel *p_psc;
+    size_t m_s, m_n, m_b, m_e, m_i;
+    pthread_mutex_t m_s_mtx, m_t_mtx;
+    pthread_cond_t m_s_cnd, m_t_cnd;
+    PSId_Map *p_psid;
+    CId_Map *p_cid;
+    CDBG_PS_TID(PS_Channel *const psc): 
+      p_psc(psc), m_s(2), m_b(0), m_e(0),
+      p_psid(new PSId_Map()), p_cid(new CId_Map()) {}
+    ~CDBG_PS_TID() { delete p_psid; delete p_cid; }
+  };// end of struct CDBG_PS_TID
+
+  typedef std::vector<CDBG_PS_TID*> CDBG_PS_TID_Vector; 
+#endif
 
   class PS_Channel: public PHASIC::Single_Channel {
   protected:
@@ -63,6 +87,15 @@ namespace COMIX {
     PSId_Map *p_psid;
     CId_Map  *p_cid;
     
+#ifdef USING__Threading 
+    CDBG_PS_TID_Vector m_cts;
+    pthread_mutex_t    m_vgs_mtx, m_wvgs_mtx;
+
+    static void *TGenerateWeight(void *arg);
+
+    CDBG_PS_TID *GetTId() const;
+#endif 
+
     const std::string      &GetPSId(const size_t &id);
     const std::vector<int> &GetCId(const size_t &id);
 

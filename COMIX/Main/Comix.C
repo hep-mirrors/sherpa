@@ -2,6 +2,7 @@
 #define COMIX_Main_Comix_H
 
 #include "COMIX/Main/Process_Group.H"
+#include "COMIX/Amplitude/Amplitude.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "ATOOLS/Org/My_MPI.H"
@@ -24,6 +25,10 @@ namespace COMIX {
 
     std::string m_path, m_file;
     time_t m_mets;
+
+#ifdef USING__Threading
+    CDBG_ME_TID_Vector m_cts;
+#endif
 
     void PrintLogo(std::ostream &s);
     void PrintVertices();
@@ -85,10 +90,29 @@ using namespace ATOOLS;
 Comix::Comix(): 
   ME_Generator_Base("Comix"), p_cluster(NULL)
 {
+#ifdef USING__Threading
+  p_cts=&m_cts;
+#endif
 }
 
 Comix::~Comix() 
 {
+#ifdef USING__Threading
+  for (size_t i(0);i<m_cts.size();++i) {
+    CDBG_ME_TID *tid(m_cts[i]);
+    tid->m_s=0;
+    pthread_cond_wait(&tid->m_s_cnd,&tid->m_s_mtx);
+    int tec(0);
+    if ((tec=pthread_join(tid->m_id,NULL)))
+      THROW(fatal_error,"Cannot join thread"+ToString(i));
+    pthread_mutex_unlock(&tid->m_t_mtx);
+    pthread_mutex_unlock(&tid->m_s_mtx);
+    pthread_mutex_destroy(&tid->m_t_mtx);
+    pthread_mutex_destroy(&tid->m_s_mtx);
+    pthread_cond_destroy(&tid->m_t_cnd);
+    pthread_cond_destroy(&tid->m_s_cnd);
+  }
+#endif
   if (p_cluster) delete p_cluster;
 }
 
@@ -127,6 +151,9 @@ void Comix::PrintLogo(std::ostream &s)
   s<<"|     http://comix.freacafe.de     |\n";
   s<<"|   please cite  JHEP12(2008)039   |\n";
   s<<"+----------------------------------+\n";
+#ifdef USING__Threading
+  s<<"Comix was compiled with thread support.\n";
+#endif
   rpa->gen.AddCitation
     (1,"Comix is published under \\cite{Gleisberg:2008fv}.");
 }
@@ -214,6 +241,27 @@ bool Comix::Initialize(const std::string &path,const std::string &file,
 		       ToString(read.GetValue("NLO_SMEAR_THRESHOLD",0.0)));
   rpa->gen.SetVariable("NLO_SMEAR_POWER",
 		       ToString(read.GetValue("NLO_SMEAR_POWER",0.5)));
+#ifdef USING__Threading
+  if (!read.ReadFromFile(helpi,"COMIX_THREADS")) helpi=0;
+  else msg_Info()<<METHOD<<"(): Set number of threads "<<helpi<<".\n";
+  if (helpi>0) {
+    m_cts.resize(helpi);
+    for (size_t i(0);i<m_cts.size();++i) {
+      CDBG_ME_TID *tid(new CDBG_ME_TID());
+      m_cts[i] = tid;
+      pthread_cond_init(&tid->m_s_cnd,NULL);
+      pthread_cond_init(&tid->m_t_cnd,NULL);
+      pthread_mutex_init(&tid->m_s_mtx,NULL);
+      pthread_mutex_init(&tid->m_t_mtx,NULL);
+      pthread_mutex_lock(&tid->m_s_mtx);
+      pthread_mutex_lock(&tid->m_t_mtx);
+      tid->m_s=1;
+      int tec(0);
+      if ((tec=pthread_create(&tid->m_id,NULL,&Amplitude::TCalcJL,(void*)tid)))
+	THROW(fatal_error,"Cannot create thread "+ToString(i));
+    }
+  }
+#endif
 #ifdef USING__MPI
   if (MPI::COMM_WORLD.Get_rank()==0)
 #endif
@@ -236,6 +284,7 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     newxs->SetGenerator(this);
     newxs->Init(pi,p_int->Beam(),p_int->ISR());
     newxs->Get<COMIX::Process_Base>()->SetModel(p_model);
+    newxs->Get<COMIX::Process_Base>()->SetCTS(p_cts);
     if (!newxs->Get<Process_Group>()->Initialize(&pmap,&m_umprocs.back())) {
       msg_Debugging()<<METHOD<<"(): Init failed for '"
 		     <<newxs->Name()<<"'\n";
@@ -243,7 +292,6 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
       return NULL;
     }
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
-    newxs->Get<COMIX::Process_Base>()->SetModel(p_model);
     newxs->Get<COMIX::Process_Base>()->SetGPath(pi.m_gpath);
     My_In_File::ExecDB
       (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","begin");
@@ -265,9 +313,11 @@ InitializeProcess(const PHASIC::Process_Info &pi, bool add)
     newxs->Init(pi,p_int->Beam(),p_int->ISR());
     newxs->Integrator()->SetHelicityScheme(pi.m_hls);
     newxs->Get<COMIX::Process_Base>()->SetModel(p_model);
+    newxs->Get<COMIX::Process_Base>()->SetCTS(p_cts);
     newxs->Get<COMIX::Process_Base>()->SetGPath(pi.m_gpath);
     My_In_File::ExecDB
       (rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","begin");
+    DEBUG_VAR("now");
     if (!newxs->Get<Single_Process>()->Initialize(&pmap,&m_umprocs.back())) {
       My_In_File::ExecDB
 	(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Comix/","commit");

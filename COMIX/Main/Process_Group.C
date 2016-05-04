@@ -61,6 +61,7 @@ bool COMIX::Process_Group::Initialize(PHASIC::Process_Base *const proc)
   COMIX::Process_Base *cdxs(proc->Get<COMIX::Process_Base>());
   cdxs->SetModel(p_model);
   cdxs->SetGPath(m_gpath);
+  cdxs->SetCTS(p_cts);
   proc->Integrator()->SetHelicityScheme(p_int->HelicityScheme());
   proc->SetParent((PHASIC::Process_Base*)this);
   if (s_partcommit) My_In_File::ExecDB

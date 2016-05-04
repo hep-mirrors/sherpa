@@ -89,6 +89,7 @@ bool COMIX::Single_Process::Initialize
   msg_Debugging()<<"'"<<m_name<<"' not pre-mapped"<<std::endl;
   p_model->GetCouplings(m_cpls);
   p_bg = new Amplitude();
+  p_bg->SetCTS(p_cts);
   double isf(m_pinfo.m_ii.ISSymmetryFactor());
   double fsf(m_pinfo.m_fi.FSSymmetryFactor());
   Subprocess_Info info(m_pinfo.m_ii);

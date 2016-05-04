@@ -331,6 +331,23 @@ AC_DEFUN([SHERPA_SETUP_CONFIGURE_OPTIONS],
   AC_SUBST(VERSIONING)
 
   AC_ARG_ENABLE(
+    multithread,
+    AC_HELP_STRING([--enable-multithread], [Enable multithreading]),
+    [ AC_MSG_CHECKING(for multithreading)
+      case "${enableval}" in
+        no)  AC_MSG_RESULT(no); multithread=false ;;
+        yes) AC_MSG_RESULT(yes); multithread=true ;;
+      esac ],
+    [ AC_MSG_CHECKING(for multithreading); AC_MSG_RESULT(no); multithread=false ] 
+  )
+  if test "$multithread" = "true" ; then
+    AC_DEFINE([USING__Threading], "1", [using multithreading])
+    CONDITIONAL_THREADLIBS="-lpthread"
+  fi
+  AC_SUBST(CONDITIONAL_THREADLIBS)
+  AM_CONDITIONAL(USING__Threading, test "$multithread" = "true" )
+  
+  AC_ARG_ENABLE(
     analysis,
     AC_HELP_STRING([--enable-analysis], [Enable analysis]),
     [ AC_MSG_CHECKING(for analysis)

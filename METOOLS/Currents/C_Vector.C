@@ -80,9 +80,10 @@ CVec4<Scalar>::s_objects;
 template <class Scalar>
 CVec4<Scalar> *CVec4<Scalar>::New()
 {
-  if (s_objects.empty()) {
+#ifndef USING__Threading
+  if (s_objects.empty())
+#endif
     return new CVec4();
-  }
   CVec4 *v(s_objects.back());
   s_objects.pop_back();
   return v;
@@ -91,9 +92,10 @@ CVec4<Scalar> *CVec4<Scalar>::New()
 template <class Scalar>
 CVec4<Scalar> *CVec4<Scalar>::New(const CVec4 &s)
 {
-  if (s_objects.empty()) {
+#ifndef USING__Threading
+  if (s_objects.empty())
+#endif
     return new CVec4(s);
-  }
   CVec4 *v(s_objects.back());
   s_objects.pop_back();
   *v=s;
@@ -107,9 +109,10 @@ CVec4<Scalar> *CVec4<Scalar>::New
  const int c1,const int c2,
  const size_t &h,const size_t &s)
 {
-  if (s_objects.empty()) {
+#ifndef USING__Threading
+  if (s_objects.empty())
+#endif
     return new CVec4(x0,x1,x2,x3,c1,c2,h,s);
-  }
   CVec4 *v(s_objects.back());
   s_objects.pop_back();
   v->m_x[0]=x0;
@@ -132,7 +135,11 @@ CObject *CVec4<Scalar>::Copy() const
 template <class Scalar>
 void CVec4<Scalar>::Delete()
 {
+#ifndef USING__Threading
   s_objects.push_back(this);
+#else
+  delete this;
+#endif
 }
 
 namespace METOOLS {

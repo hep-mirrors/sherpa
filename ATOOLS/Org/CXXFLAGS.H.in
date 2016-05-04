@@ -17,6 +17,9 @@
 /* MPI support */
 #undef USING__MPI
 
+/* Thread support */
+#undef USING__Threading
+
 /* ld path name */
 #define LD_PATH_NAME "LD_LIBRARY_PATH"
 

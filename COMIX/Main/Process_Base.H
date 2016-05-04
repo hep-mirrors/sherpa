@@ -33,6 +33,7 @@ namespace COMIX {
     Int_Matrix m_colours;
 
     int    m_cls, m_hls;
+    void  *p_cts;
 
     std::string m_gpath;
 
@@ -74,6 +75,8 @@ namespace COMIX {
     inline SP(PS_Generator) PSGenerator() const { return p_psgen; }
 
     inline void SetModel(MODEL::Model_Base *const model) { p_model=model; }
+
+    inline void SetCTS(void *const cts) { p_cts=cts; }
 
   };// end of class Process_Base
 

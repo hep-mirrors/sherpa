@@ -30,7 +30,8 @@ int COMIX::Process_Base::s_partcommit=0;
 COMIX::Process_Base::Process_Base
 (PHASIC::Process_Base *const proc,MODEL::Model_Base *const model):
   p_proc(proc), p_model(model), p_psgen(NULL),
-  m_cls(-1), m_hls(-1), p_pmap(NULL), p_umprocs(NULL) {}
+  m_cls(-1), m_hls(-1), p_cts(NULL),
+  p_pmap(NULL), p_umprocs(NULL) {}
 
 COMIX::Process_Base::~Process_Base() 
 {
@@ -56,4 +57,3 @@ bool COMIX::Process_Base::FillIntegrator(Phase_Space_Handler *const psh)
   mc->Add(ch);
   return false;
 }      
-

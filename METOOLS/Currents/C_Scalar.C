@@ -55,9 +55,10 @@ bool CScalar<Scalar>::IsZero() const
 template <class Scalar>
 CScalar<Scalar> *CScalar<Scalar>::New()
 {
-  if (s_objects.empty()) {
+#ifndef USING__Threading
+  if (s_objects.empty())
+#endif
     return new CScalar();
-  }
   CScalar *v(s_objects.back());
   s_objects.pop_back();
   return v;
@@ -66,9 +67,10 @@ CScalar<Scalar> *CScalar<Scalar>::New()
 template <class Scalar>
 CScalar<Scalar> *CScalar<Scalar>::New(const CScalar &s)
 {
-  if (s_objects.empty()) {
+#ifndef USING__Threading
+  if (s_objects.empty())
+#endif
     return new CScalar(s);
-  }
   CScalar *v(s_objects.back());
   s_objects.pop_back();
   *v=s;
@@ -84,7 +86,11 @@ CObject *CScalar<Scalar>::Copy() const
 template <class Scalar>
 void CScalar<Scalar>::Delete()
 {
+#ifndef USING__Threading
   s_objects.push_back(this);
+#else
+  delete this;
+#endif
 }
 
 namespace METOOLS {
