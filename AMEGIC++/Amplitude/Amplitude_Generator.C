@@ -68,10 +68,12 @@ void Amplitude_Generator::Set_End(Point* p,int* &perm,int& pnum)
     p->b  = b[*perm];
     if (p->Lorentz) p->Lorentz->Delete();
     if (p->fl.IsBoson()) {
+      if (p->Color==NULL) p->Color = new Color_Function();
       p->Lorentz = LF_Pol::New();
       p->Lorentz->SetParticleArg(0);
     }
     else {
+      if (p->Color==NULL) p->Color = new Color_Function();
       p->Lorentz = LF_None::New();
       p->Lorentz->SetParticleArg();
     }
@@ -190,6 +192,7 @@ int Amplitude_Generator::CheckEnd(Point* p,Flavour infl)
 	p->cpl.clear();
 	for (size_t k=0;k<cpl.size();k++) p->cpl.push_back(cpl[k]);
 	p->v = vl[j];
+	if (p->Color==NULL) p->Color = new Color_Function();
 	*p->Color = vl[j]->Color.back();
 	if (p->Lorentz) p->Lorentz->Delete();
 	p->Lorentz = vl[j]->Lorentz.front()->GetCopy();
@@ -320,6 +323,7 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 	  if (p->left->fl==Flavour(kf_none))  p->left->fl  = flav[1];
 	  if (p->right->fl==Flavour(kf_none)) p->right->fl = flav[2];
 	  p->v          = vl[i];
+	  if (p->Color==NULL) p->Color = new Color_Function();
 	  *p->Color = vl[i]->Color.back();
 	  if (p->Lorentz) p->Lorentz->Delete();
 	  p->Lorentz = vl[i]->Lorentz.front()->GetCopy();

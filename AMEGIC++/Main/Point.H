@@ -36,7 +36,7 @@ namespace AMEGIC {
     
     ~Point() {
       if (nextra>0) delete[] extrafl;
-      delete Color;
+      if (Color) delete Color;
       if (Lorentz) Lorentz->Delete();
     }
     void Print();
