@@ -43,6 +43,19 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
   else msg_Info()<<METHOD<<"(): Set n_{opt,dec} = "<<ndecopt<<".\n";
   addtime=0.0;
   lastrss=0;
+#ifdef USING__MPI
+  int size=MPI::COMM_WORLD.Get_size();
+  if (size) {
+    if (read.ReadFromFile(itmin,"PSI_ITMIN_BY_NODE")) {
+      itmin*=size;
+      msg_Info()<<METHOD<<"(): Set n_{it,min} = "<<itmin<<".\n";
+    }
+    if (read.ReadFromFile(itmax,"PSI_ITMAX_BY_NODE")) {
+      itmax*=size;
+      msg_Info()<<METHOD<<"(): Set n_{it,max} = "<<itmax<<".\n";
+    }
+  }
+#endif
 }
 
 Phase_Space_Integrator::~Phase_Space_Integrator()
