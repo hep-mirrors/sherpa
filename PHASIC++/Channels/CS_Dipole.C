@@ -100,21 +100,27 @@ void CS_Dipole::EndOptimize()
   p_vegas->EndOptimize();
 }
 
+void CS_Dipole::MPICollect(std::vector<double> &sv,size_t &i)
+{
+  sv.resize(3*(i+1));
+  sv[3*i+0]=m_mnp;
+  sv[3*i+1]=m_msum;
+  sv[3*i+2]=m_msum2;
+  ++i;
+}
+
+void CS_Dipole::MPIReturn(std::vector<double> &sv,size_t &i)
+{
+  m_mnp=sv[3*i+0];
+  m_msum=sv[3*i+1];
+  m_msum2=sv[3*i+2];
+  ++i;
+}
+
 void CS_Dipole::MPISync()
 {
   p_vegas->MPISync();
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
-  if (size>1) {
-    double val[3];
-    val[0]=m_mnp;
-    val[1]=m_msum;
-    val[2]=m_msum2;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,val,3,MPI::DOUBLE,MPI::SUM);
-    m_mnp=val[0];
-    m_msum=val[1];
-    m_msum2=val[2];
-  }
   m_np+=m_mnp;
   m_sum+=m_msum;
   m_sum2+=m_msum2;

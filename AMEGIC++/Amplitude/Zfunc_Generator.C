@@ -285,7 +285,7 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
     }
   }
   if (Zh->m_type=="") {
-    for (size_t i(0);i<lflist.size();++i) delete lflist[i];
+    for (size_t i(0);i<lflist.size();++i) lflist[i]->Delete();
     return 0;
     msg_Error()<<METHOD<<"(): Invalid Lorentz function."<<endl;
     LFPrint(lflist);  
@@ -293,7 +293,7 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
   }
 
   LFFill_Zfunc(Zh,lflist,p,pf,pb);
-  for (size_t i(0);i<lflist.size();++i) delete lflist[i];
+  for (size_t i(0);i<lflist.size();++i) lflist[i]->Delete();
   return 1;
 }
 

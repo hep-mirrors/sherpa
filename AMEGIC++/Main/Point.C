@@ -9,7 +9,7 @@ using namespace ATOOLS;
 
 Point::Point(const Point& copy) { 
   extrafl = 0;
-  Color   = new Color_Function;
+  Color   = NULL;
   Lorentz = NULL;
   middle  = 0;
   nextra = 0;
@@ -22,7 +22,7 @@ Point::Point(int extra) : nextra(extra)  {
   propid  = 0;
   extrafl = 0;
   v       = 0;
-  Color   = new Color_Function;
+  Color   = NULL;
   Lorentz = NULL;
   middle  = 0;
   if (nextra>0) extrafl = new ATOOLS::Flavour[nextra]; 
@@ -37,9 +37,12 @@ Point& Point::operator=(const Point& p) {
     propid = p.propid;
     m      = p.m;
     fl     = p.fl;
-      
-    *Color = *p.Color; 
-    if (Lorentz) delete Lorentz;
+
+    if (p.Color) {
+      if (Color==NULL) Color = new Color_Function();
+      *Color = *p.Color; 
+    }
+    if (Lorentz) Lorentz->Delete();
     Lorentz=NULL;
     if (p.Lorentz) Lorentz = p.Lorentz->GetCopy(); 
  

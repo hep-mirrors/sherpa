@@ -114,7 +114,6 @@ void Standard_Model_TauPi::ParticleInit()
 
 bool Standard_Model_TauPi::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
-  p_dataread->RereadInFile();
   FixEWParameters();  
   FixCKM();
   SetAlphaQCD(isr);

@@ -445,12 +445,8 @@ bool Rivet_Interface::Init()
     std::string infile(m_infile);
     if (infile.find('|')!=std::string::npos)
       infile=infile.substr(0,infile.find('|'));
-    reader.SetInputFile(infile);
+    reader.SetInputFile(infile+"|BEGIN_"+m_tag+"|END_"+m_tag);
     reader.AddComment("#");
-    reader.SetFileBegin("BEGIN_"+m_tag);
-    reader.SetFileEnd("END_"+m_tag);
-    reader.AddFileBegin("BEGIN_"+m_tag+"{");
-    reader.AddFileEnd("}END_"+m_tag);
 
     m_splitjetconts=reader.GetValue<int>("JETCONTS", 0);
     m_splitSH=reader.GetValue<int>("SPLITSH", 0);

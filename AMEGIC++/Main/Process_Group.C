@@ -52,7 +52,7 @@ PHASIC::Process_Base *AMEGIC::Process_Group::GetProcess(const PHASIC::Process_In
   if (typechk>1) THROW(fatal_error,"NLO_QCD_Parts 'RS', and 'BVI' must be assigned separately!");
 
   nlo_type::code nloqcd=pi.m_fi.m_nloqcdtype;
-  if (nloqcd&nlo_type::real && nloqcd&nlo_type::rsub) {
+  if ((nloqcd&nlo_type::real) || (nloqcd&nlo_type::rsub)) {
     Single_Real_Correction *src = new Single_Real_Correction();
     src->SetNoTree(pi.m_rsmegenerator.length() &&
 		   pi.m_rsmegenerator!="Amegic");

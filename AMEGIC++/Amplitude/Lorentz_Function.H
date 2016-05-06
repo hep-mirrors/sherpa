@@ -3,6 +3,7 @@
 
 #include "ATOOLS/Org/MyStrStream.H"
 #include "ATOOLS/Org/Getter_Function.H"
+#include "ATOOLS/Org/STL_Tools.H"
 #include <vector>
 
 namespace MODEL {
@@ -26,11 +27,13 @@ namespace MODEL {
 
     std::string Str(int a) const;
 
-  public:
-
     Lorentz_Function(const std::string &type);
 
     virtual ~Lorentz_Function();
+
+  public:
+
+    virtual void Delete() = 0;
 
     virtual int NofIndex() const = 0;
 
@@ -62,6 +65,27 @@ namespace MODEL {
 
   typedef ATOOLS::Getter_Function<Lorentz_Function,LF_Key> LF_Getter;
 
+  class LF_None: public Lorentz_Function {
+  public:
+    LF_None();
+    int NofIndex() const;
+    std::string String(int shortversion) const;
+    Lorentz_Function *GetCopy() const;
+    static ATOOLS::AutoDelete_Vector<LF_None> s_objects;
+    static Lorentz_Function *New();
+    void Delete();
+  };
+
+  class LF_Pol: public Lorentz_Function {
+  public:
+    LF_Pol();
+    int NofIndex() const;
+    std::string String(int shortversion) const;
+    Lorentz_Function *GetCopy() const;
+    static ATOOLS::AutoDelete_Vector<LF_Pol> s_objects;
+    static Lorentz_Function *New();
+    void Delete();
+  };
 
  /*! 
     \file
@@ -327,7 +351,7 @@ namespace MODEL {
 #define DEFINE_LF_GETTER(CLASS,TAG,INFO)				\
   DECLARE_GETTER(CLASS,TAG,Lorentz_Function,LF_Key);			\
   Lorentz_Function *ATOOLS::Getter<Lorentz_Function,LF_Key,CLASS>::	\
-  operator()(const LF_Key &key) const { return new CLASS(); }		\
+  operator()(const LF_Key &key) const { return CLASS::New(); }		\
   void ATOOLS::Getter<Lorentz_Function,LF_Key,CLASS>::			\
   PrintInfo(std::ostream &str,const size_t width) const { str<<INFO; }
 

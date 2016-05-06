@@ -874,22 +874,29 @@ void Single_Virtual_Correction::FillMEwgts(ATOOLS::ME_Weight_Info& wgtinfo)
   if (p_kpterms) p_kpterms->FillMEwgts(wgtinfo);
 }
 
-void Single_Virtual_Correction::MPISync()
+void Single_Virtual_Correction::MPICollect(std::vector<double> &sv,size_t &i)
 {
+  sv.resize(i+4);
+  sv[i+0]=m_mn;
+  sv[i+1]=m_mbsum;
+  sv[i+2]=m_mvsum;
+  sv[i+3]=m_misum;
+  i+=4;
+}
+
+void Single_Virtual_Correction::MPIReturn(std::vector<double> &sv,size_t &i)
+{
+  m_mn=sv[i+0];
+  m_mbsum=sv[i+1];
+  m_mvsum=sv[i+2];
+  m_misum=sv[i+3];
+  i+=4;
+}
+
+void Single_Virtual_Correction::MPISync(const int mode)
+{
+  Process_Base::MPISync(mode);
 #ifdef USING__MPI
-  int size=MPI::COMM_WORLD.Get_size();
-  if (size>1) {
-    double val[4];
-    val[0]=m_mn;
-    val[1]=m_mbsum;
-    val[2]=m_mvsum;
-    val[3]=m_misum;
-    mpi->MPIComm()->Allreduce(MPI_IN_PLACE,val,4,MPI::DOUBLE,MPI::SUM);
-    m_mn=val[0];
-    m_mbsum=val[1];
-    m_mvsum=val[2];
-    m_misum=val[3];
-  }
   m_n+=m_mn;
   m_bsum+=m_mbsum;
   m_vsum+=m_mvsum;

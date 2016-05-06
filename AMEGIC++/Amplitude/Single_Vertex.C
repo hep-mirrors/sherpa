@@ -21,7 +21,7 @@ Single_Vertex::Single_Vertex(const Single_Vertex& v):
 
 Single_Vertex::~Single_Vertex()
 {
-  for (size_t i(0);i<Lorentz.size();++i) delete Lorentz[i];
+  for (size_t i(0);i<Lorentz.size();++i) Lorentz[i]->Delete();
 }
 
 int Single_Vertex::Compare(const Single_Vertex *v) const
@@ -60,7 +60,7 @@ int Single_Vertex::CheckCoupling() const
 // Operators
 Single_Vertex& Single_Vertex::operator=(const Single_Vertex& v) 
 {
-  for (size_t i(0);i<Lorentz.size();++i) delete Lorentz[i];
+  for (size_t i(0);i<Lorentz.size();++i) Lorentz[i]->Delete();
   Lorentz=std::vector<MODEL::Lorentz_Function*>();
     
       if (this!=&v) {

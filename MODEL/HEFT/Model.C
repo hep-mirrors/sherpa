@@ -117,7 +117,6 @@ void HEFT::ParticleInit()
 
 bool HEFT::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
-  p_dataread->RereadInFile();
   FixEWParameters();  
   FixCKM();
   FixEFT();

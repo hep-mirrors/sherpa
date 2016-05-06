@@ -17,6 +17,7 @@
 #include "PHASIC++/Process/ME_Generator_Base.H"
 #include "PHASIC++/Main/Process_Integrator.H"
 #include "PHASIC++/Main/Phase_Space_Handler.H"
+#include "ATOOLS/Org/My_MPI.H"
 #include "ATOOLS/Org/RUsage.H"
 #ifdef USING__GZIP
 #include "ATOOLS/Org/Gzip_Stream.H"
@@ -364,7 +365,13 @@ int Matrix_Element_Handler::InitializeProcesses
   if (!m_gens.InitializeGenerators(model,beam,isr)) return false;
   double rbtime(ATOOLS::rpa->gen.Timer().RealTime());
   double btime(ATOOLS::rpa->gen.Timer().UserTime());
+#ifdef USING__MPI
+  if (MPI::COMM_WORLD.Get_rank()==0)
+#endif
+  MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process",true);
+  My_In_File::OpenDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
   BuildProcesses();
+  My_In_File::CloseDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Sherpa/");
   if (msg_LevelIsTracking()) msg_Info()<<"Process initialization";
   double retime(ATOOLS::rpa->gen.Timer().RealTime());
   double etime(ATOOLS::rpa->gen.Timer().UserTime());

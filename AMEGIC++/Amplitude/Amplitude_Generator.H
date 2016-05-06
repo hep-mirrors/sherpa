@@ -47,7 +47,18 @@ namespace AMEGIC {
     void Set_End(Point*,int* &,int&);
     void Next_P(Point*,Point* &);
     void Print_P(Point*);
-    int  MatchVertex(AMEGIC::Single_Vertex*,ATOOLS::Flavour*,std::vector<Complex>&);
+    inline int MatchVertex(AMEGIC::Single_Vertex* v,
+			   ATOOLS::Flavour* flav,std::vector<Complex>& cpl)
+    {
+      if (v->dec>0 || flav[0]!=v->in[0]) return 0;
+      if (flav[1].Kfcode() && flav[1]!=v->in[1]) return 0;
+      if (flav[2].Kfcode() && flav[2]!=v->in[2]) return 0;
+      flav[1]=v->in[1];
+      flav[2]=v->in[2];
+      cpl.clear();
+      for (int j=0;j<v->cpl.size();++j) cpl.push_back(v->Coupling(j));
+      return 1;
+    }
     int  CheckEnd(Point*,ATOOLS::Flavour);  
     void SetProps(Point*,int,Single_Amplitude* &,int*, int, int);
     int  Kill_Off(Single_Amplitude* &);

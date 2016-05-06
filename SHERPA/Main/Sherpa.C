@@ -71,7 +71,7 @@ Sherpa::~Sherpa()
 
 bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
 { 
-  m_path = std::string("./");
+  m_path = std::string("");
   int oldc(argc);
   char **oldargs(NULL);
   std::string statuspath;

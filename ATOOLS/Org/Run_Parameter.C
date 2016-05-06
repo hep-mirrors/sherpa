@@ -199,12 +199,10 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 	     <<". Initialization of framework underway."<<std::endl;
   msg_Info()<<"The local time is "<<rpa->gen.Timer().TimeString(0)<<"."<<std::endl;
   // make path nice
-  if (path.length()>0) {
-    if (path[0]!='/') path=gen.m_variables["SHERPA_RUN_PATH"]+"/"+path;
-    while (path.length()>0 && 
-	   (path[path.length()-1]=='/' || path[path.length()-1]=='.')) 
-      path=path.substr(0,path.length()-1);
-  }
+  if (path[0]!='/') path=gen.m_variables["SHERPA_RUN_PATH"]+"/"+path;
+  while (path.length()>0 && 
+	 (path[path.length()-1]=='/' || path[path.length()-1]=='.')) 
+    path=path.substr(0,path.length()-1);
 
   // set cpp path
   std::string cpppath=dr.GetValue<std::string>("SHERPA_CPP_PATH",std::string(""));

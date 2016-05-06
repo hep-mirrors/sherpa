@@ -113,7 +113,6 @@ void Standard_Model::ParticleInit()
 
 bool Standard_Model::ModelInit(const PDF::ISR_Handler_Map& isr)
 {
-  p_dataread->RereadInFile();
   FixEWParameters();  
   FixCKM();
   SetAlphaQCD(isr);

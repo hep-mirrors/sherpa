@@ -79,12 +79,11 @@ bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     reader.AddComment("#");
     reader.AddComment("//");
     reader.SetInputPath(m_path);
-    reader.SetInputFile(m_filename);
+    reader.SetInputFile(m_filename+"|<Options>|</Options>");
     reader.SetMatrixType(mtc::transposed);
 
     // process <Options>
     vector<vector<string> > options_svv;
-    reader.SetFileBegin("<Options>"); reader.SetFileEnd("</Options>");
     if(reader.MatrixFromFile(options_svv)) ProcessOptions(options_svv);
     else {
       msg_Error()<<METHOD<<": Error.\n"
@@ -97,8 +96,8 @@ bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     // process <ME>
     vector<vector<string> > me_svv;
     GeneralModel model_for_ps;
-    reader.SetFileBegin("<ME>"); reader.SetFileEnd("</ME>");
-    reader.RereadInFile();
+    reader.SetInputFile(m_filename+"|<ME>|</ME>");
+    reader.RescanInFile();
     if(reader.MatrixFromFile(me_svv)) ProcessME(me_svv, reader, model_for_ps);
     else {
       msg_Error()<<METHOD<<": Error.\n"
@@ -109,8 +108,8 @@ bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
 
     // process <Phasespace>
     vector<vector<string> > ps_svv;
-    reader.SetFileBegin("<Phasespace>"); reader.SetFileEnd("</Phasespace>");
-    reader.RereadInFile();
+    reader.SetInputFile(m_filename+"|<Phasespace>|</Phasespace>");
+    reader.RescanInFile();
     if(!reader.MatrixFromFile(ps_svv)) {
     msg_Error()<<METHOD<<": Error.\n"
 	       <<"   Read in failure for <Phasespace> section in "
@@ -123,8 +122,8 @@ bool Hadron_Decay_Channel::Initialise(GeneralModel startmd)
     // process <Result> 
     // don't do it before ME and phasespace, or CalcNormWidth doesn't work!
     vector<vector<string> > result_svv;
-    reader.SetFileBegin("<Result>"); reader.SetFileEnd("</Result>");
-    reader.RereadInFile();
+    reader.SetInputFile(m_filename+"|<Result>|</Result>");
+    reader.RescanInFile();
     reader.MatrixFromFile(result_svv);
     ProcessResult(result_svv);
   }
@@ -203,8 +202,8 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
       me->SetPath(m_path);
       msg_Tracking()<<"  "<<me->Name()<<endl;
       vector<vector<string> > parameter_svv;
-      reader.SetFileBegin("<"+me_svv[i][2]+">"); reader.SetFileEnd("</"+me_svv[i][2]+">");
-      reader.RereadInFile();
+      reader.SetInputFile(m_filename+"|<"+me_svv[i][2]+">|</"+me_svv[i][2]+">");
+      reader.RescanInFile();
       reader.MatrixFromFile(parameter_svv);
       GeneralModel me_model=Parameters2Model(parameter_svv,model_for_ps);
       me->SetModelParameters( me_model );
@@ -219,8 +218,8 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
       Current_Base* current1 = SelectCurrent(me_svv[i][2]);
       current1->SetPath(m_path);
       vector<vector<string> > parameter1_svv;
-      reader.SetFileBegin("<"+me_svv[i][2]+">"); reader.SetFileEnd("</"+me_svv[i][2]+">");
-      reader.RereadInFile();
+      reader.SetInputFile(m_filename+"|<"+me_svv[i][2]+">|</"+me_svv[i][2]+">");
+      reader.RescanInFile();
       reader.MatrixFromFile(parameter1_svv);
       GeneralModel current1_model=Parameters2Model(parameter1_svv,model_for_ps);
       current1->SetModelParameters( current1_model );
@@ -228,8 +227,8 @@ void Hadron_Decay_Channel::ProcessME( vector<vector<string> > me_svv,
       Current_Base* current2 = SelectCurrent(me_svv[i][3]);
       current2->SetPath(m_path);
       vector<vector<string> > parameter2_svv;
-      reader.SetFileBegin("<"+me_svv[i][3]+">"); reader.SetFileEnd("</"+me_svv[i][3]+">");
-      reader.RereadInFile();
+      reader.SetInputFile(m_filename+"|<"+me_svv[i][3]+">|</"+me_svv[i][3]+">");
+      reader.RescanInFile();
       reader.MatrixFromFile(parameter2_svv);
       GeneralModel current2_model=Parameters2Model(parameter2_svv,model_for_ps);
       current2->SetModelParameters( current2_model );

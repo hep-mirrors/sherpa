@@ -5,8 +5,9 @@
 #include "ATOOLS/Org/Exception.H"
 #include "ATOOLS/Org/Message.H"
 #include "ATOOLS/Org/Shell_Tools.H"
-#include "ATOOLS/Org/Data_Reader.H"
 #include "ATOOLS/Org/MyStrStream.H"
+
+#include <typeinfo>
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -43,22 +44,8 @@ DipoleSplitting_Base::DipoleSplitting_Base()
   m_k0sqf=ToType<double>(rpa->gen.Variable("CSS_FS_PT2MIN"));
   m_k0sqi=ToType<double>(rpa->gen.Variable("CSS_IS_PT2MIN"));
   m_es=ToType<int>(rpa->gen.Variable("CSS_EVOLUTION_SCHEME"));
-  double helpd;
-  Data_Reader reader(" ",";","!","=");
-  reader.AddComment("#");
-  reader.SetInputPath(rpa->GetPath());
-  reader.SetInputFile(rpa->gen.Variable("ME_DATA_FILE"));
-
-  if (reader.ReadFromFile(helpd,"DIPOLE_AMIN")) {
-    m_amin = helpd;
-    msg_Tracking()<<"Set dipole cut alphamin="<<m_amin<<"."<<std::endl;
-  }
-
-  m_kappa=2./3.;
-  if (reader.ReadFromFile(helpd,"DIPOLE_KAPPA")) {
-    m_kappa = helpd;
-    msg_Tracking()<<"Set massive dipole kappa="<<m_kappa<<"."<<std::endl;
-  }
+  m_amin=ToType<double>(rpa->gen.Variable("DIPOLE_AMIN"));
+  m_kappa=ToType<double>(rpa->gen.Variable("DIPOLE_KAPPA"));
 }
 
 void DipoleSplitting_Base::SetCoupling(const MODEL::Coupling_Map *cpls)

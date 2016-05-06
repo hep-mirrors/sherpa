@@ -82,7 +82,7 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   p_rproc=InitProcess(spi,nlo_type::lo,true);
   spi.m_megenerator=pi.m_megenerator;
   p_bviproc=InitProcess(spi,nlo_type::born|nlo_type::loop|nlo_type::vsub,false);
-  p_ddproc=InitProcess(spi,nlo_type::real|nlo_type::rsub,1);
+  p_ddproc=InitProcess(spi,nlo_type::rsub,1);
   spi.m_integrator=spi.m_rsintegrator;
   spi.m_megenerator=spi.m_rsmegenerator;
   spi.m_itmin=spi.m_rsitmin;

@@ -61,7 +61,9 @@ namespace AMEGIC {
     void AddPoint(const double &value);
     bool ReadIn(const std::string &pid);
     void WriteOut(const std::string &pid);
-    void MPISync();
+    void MPICollect(std::vector<double> &sv,size_t &i);
+    void MPIReturn(std::vector<double> &sv,size_t &i);
+    void MPISync(const int mode=0);
 
     bool FillIntegrator(PHASIC::Phase_Space_Handler *const psh);
     void SetScale(const PHASIC::Scale_Setter_Arguments &args);

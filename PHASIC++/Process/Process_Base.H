@@ -132,7 +132,9 @@ namespace PHASIC {
     virtual bool ReadIn(const std::string &pid);
     virtual void WriteOut(const std::string &pid);
     virtual void EndOptimize();
-    virtual void MPISync();
+    virtual void MPICollect(std::vector<double> &sv,size_t &i);
+    virtual void MPIReturn(std::vector<double> &sv,size_t &i);
+    virtual void MPISync(const int mode=0);
 
     virtual bool IsGroup() const;
 

@@ -30,7 +30,7 @@ UFO_Param_Reader::UFO_Param_Reader(const string& filepath)
     filename=file_path.substr(pos+1);
   }
   else{
-    path=string("./");
+    path=string("");
     filename=file_path;
   }
   if (filename.find("|")!=string::npos) 
