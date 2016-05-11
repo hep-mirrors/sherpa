@@ -25,7 +25,9 @@ if test -z "$2"; then
 echo "import os
 vars = Variables()
 vars.Add(PathVariable('libdir','lib path',os.getcwd()+'/Process/Amegic/lib',PathVariable.PathIsDirCreate))
+vars.Add('CC','The C++ Compiler','@CC@')
 vars.Add('CXX','The C++ Compiler','@CXX@')
+vars.Add('CFLAGS','The C++ Flags',['@CFLAGS@'.split(" "),'-g0','-O2'])
 vars.Add('CXXFLAGS','The C++ Flags',['@AM_CXXFLAGS@'.split(" "),'@CXXFLAGS@'.split(" "),'-g0','-O2'])
 vars.Add(PathVariable('incdir','include path','@INCLUDEDIR@',PathVariable.PathIsDir))
 env = Environment(variables=vars,CPPPATH=['\${incdir}'])
