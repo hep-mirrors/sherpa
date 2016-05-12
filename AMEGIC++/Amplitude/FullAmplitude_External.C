@@ -246,43 +246,60 @@ void FullAmplitude_External::BuildColorMatrix
       Expression expression(100,100);
       expression.pop_back();
       expression.SetTR(p_calc->TR());
-      size_t ad(expression.AIndex()), lf(expression.FIndex()), fl(lf);
+      size_t fl(lf), qc(0), tf(0);
+      size_t ad(expression.AIndex()), lf(expression.FIndex());
       for (size_t i=0;i<fla.size();++i) {
 	if (fla[i].StrongCharge()==3) {
 	  if (i>0) lf=expression.FIndex();
 	  expression.push_back(Delta::New(ida[i]+1,lf));
 	  if (ci!=cj) {
-	  if (ci==ida[i]) {
+	    if (ci==ida[i]) {
+	      msg_Debugging()<<"|> 3-insertion on ci = "<<ci<<"\n";
+	      size_t nlf=expression.FIndex();
+	      expression.push_back(Fundamental::New(ad,lf,nlf));
+	      lf=nlf;
+	    }
+	  }
+	  if (i>0 && tf==1) {
+	    if (fla[i-1].StrongCharge()!=-3)
+	      THROW(fatal_error,"Invalid permutation");
+	    msg_Debugging()<<"|> connect quark lines i = "<<i<<"\n";
 	    size_t nlf=expression.FIndex();
-	    expression.push_back(Fundamental::New(ad,lf,nlf));
+	    expression.push_back(Fundamental::New(qc,lf,nlf));
 	    lf=nlf;
 	  }
-	  }
+	  tf=1;
 	}
 	else if (fla[i].StrongCharge()==-3) {
-	  if (ci!=cj) {
-	  if (ci==ida[i]) {
+	  if (i+1<ida.size() && tf==1) {
+	    if (fla[i+1].StrongCharge()!=3)
+	      THROW(fatal_error,"Invalid permutation");
+	    msg_Debugging()<<"|> connect quark lines i = "<<i<<"\n";
+	    qc=expression.AIndex();
 	    size_t nlf=expression.FIndex();
-	    expression.push_back(Fundamental::New(ad,lf,nlf));
+	    expression.push_back(Fundamental::New(qc,lf,nlf));
 	    expression.push_back(CNumber::New(Complex(-1.0)));
 	    lf=nlf;
 	  }
+	  if (ci!=cj) {
+	    if (ci==ida[i]) {
+	      msg_Debugging()<<"|> ~3-insertion on ci = "<<ci<<"\n";
+	      size_t nlf=expression.FIndex();
+	      expression.push_back(Fundamental::New(ad,lf,nlf));
+	      expression.push_back(CNumber::New(Complex(-1.0)));
+	      lf=nlf;
+	    }
 	  }
 	  expression.push_back(Delta::New(lf,ida[i]+1));
 	}
 	else {
-	  if (ci==cj) {
+	  if (ci==cj || ci!=ida[i]) {
 	    size_t nlf=expression.FIndex();
 	    expression.push_back(Fundamental::New(ida[i]+1,lf,nlf));
 	    lf=nlf;
 	  }
 	  else {
-	  if (ci!=ida[i]) {
-	    size_t nlf=expression.FIndex();
-	    expression.push_back(Fundamental::New(ida[i]+1,lf,nlf));
-	    lf=nlf;
-	  }
-	  else {
+	    msg_Debugging()<<"|> 8-insertion on ci = "<<ci<<"\n";
 	    size_t la=expression.AIndex();
 	    size_t nlf=expression.FIndex();
 	    expression.push_back(Fundamental::New(la,lf,nlf));
@@ -290,49 +307,65 @@ void FullAmplitude_External::BuildColorMatrix
 	    expression.push_back(CNumber::New(Complex(0.0,-1.0)));
 	    lf=nlf;
 	  }
-	  }
 	}
       }
       if (fla.back().StrongCharge()==3 ||
 	  fla.back().StrongCharge()==8)
 	expression.push_back(Delta::New(lf,fl));
       fl=lf=expression.FIndex();
+      tf=0;
       for (size_t i=0;i<flb.size();++i) {
 	if (flb[i].StrongCharge()==3) {
 	  if (i>0) lf=expression.FIndex();
 	  expression.push_back(Delta::New(lf,idb[i]+1));
 	  if (ci!=cj) {
-	  if (cj==idb[i]) {
+	    if (cj==idb[i]) {
+	      msg_Debugging()<<"<| 3-insertion on cj = "<<cj<<"\n";
+	      size_t nlf=expression.FIndex();
+	      expression.push_back(Fundamental::New(ad,nlf,lf));
+	      lf=nlf;
+	    }
+	  }
+	  if (i>0 && tf==1) {
+	    if (flb[i-1].StrongCharge()!=-3)
+	      THROW(fatal_error,"Invalid permutation");
+	    msg_Debugging()<<"<| connect quark lines i = "<<i<<"\n";
 	    size_t nlf=expression.FIndex();
-	    expression.push_back(Fundamental::New(ad,nlf,lf));
+	    expression.push_back(Fundamental::New(qc,nlf,lf));
 	    lf=nlf;
 	  }
-	  }
+	  tf=1;
 	}
 	else if (flb[i].StrongCharge()==-3) {
-	  if (ci!=cj) {
-	  if (cj==idb[i]) {
+	  if (i+1<idb.size() && tf==1) {
+	    if (flb[i+1].StrongCharge()!=3)
+	      THROW(fatal_error,"Invalid permutation");
+	    msg_Debugging()<<"<| connect quark lines i = "<<i<<"\n";
+	    qc=expression.AIndex();
 	    size_t nlf=expression.FIndex();
-	    expression.push_back(Fundamental::New(ad,nlf,lf));
+	    expression.push_back(Fundamental::New(qc,nlf,lf));
 	    expression.push_back(CNumber::New(Complex(-1.0)));
 	    lf=nlf;
 	  }
+	  if (ci!=cj) {
+	    if (cj==idb[i]) {
+	      msg_Debugging()<<"<| ~3-insertion on cj = "<<cj<<"\n";
+	      size_t nlf=expression.FIndex();
+	      expression.push_back(Fundamental::New(ad,nlf,lf));
+	      expression.push_back(CNumber::New(Complex(-1.0)));
+	      lf=nlf;
+	    }
 	  }
 	  expression.push_back(Delta::New(idb[i]+1,lf));
 	}
 	else {
-	  if (ci==cj) {
+	  if (ci==cj || cj!=idb[i]) {
 	    size_t nlf=expression.FIndex();
 	    expression.push_back(Fundamental::New(idb[i]+1,nlf,lf));
 	    lf=nlf;
 	  }
 	  else {
-	  if (cj!=idb[i]) {
-	    size_t nlf=expression.FIndex();
-	    expression.push_back(Fundamental::New(idb[i]+1,nlf,lf));
-	    lf=nlf;
-	  }
-	  else {
+	    msg_Debugging()<<"<| 8-insertion on cj = "<<cj<<"\n";
 	    size_t la=expression.AIndex();
 	    size_t nlf=expression.FIndex();
 	    expression.push_back(Fundamental::New(la,nlf,lf));
@@ -340,10 +373,9 @@ void FullAmplitude_External::BuildColorMatrix
 	    expression.push_back(CNumber::New(Complex(0.0,-1.0)));
 	    lf=nlf;
 	  }
-	  }
 	}
       }
-      if (fla.back().StrongCharge()==3 ||
+      if (flb.back().StrongCharge()==3 ||
 	  flb.back().StrongCharge()==8)
 	expression.push_back(Delta::New(fl,lf));
       if (msg_LevelIsDebugging()) expression.Print();
