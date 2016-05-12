@@ -158,6 +158,7 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
     msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return 0;
   }
+  if (!directload) {
   map<string,Complex> cplmap;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
     cplmap.clear();
@@ -194,6 +195,7 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
 	return 1;
       }
     } 
+  }
   }
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,

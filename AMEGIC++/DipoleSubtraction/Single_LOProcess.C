@@ -110,7 +110,6 @@ Single_LOProcess::~Single_LOProcess()
 
 void AMEGIC::Single_LOProcess::WriteAlternativeName(string aname) 
 {
-  if (aname==m_name) return;
   std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".alt";
   if (FileExists(altname)) return;
   My_Out_File to(altname);
@@ -158,7 +157,6 @@ bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,s
       }
     }
     from.Close();
-    if (CheckAlternatives(links,name)) return true;
   }
   m_sfactor = 1.;
   return false;
@@ -219,6 +217,7 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
     msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return 0;
   }
+  if (!directload) {
   map<string,Complex> cplmap;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
     cplmap.clear();
@@ -255,13 +254,14 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 	     fit!=p_ampl->GetFlavourmap().end();fit++) AddtoFlavmap(fit->first,fit->second);
 	InitFlavmap(p_partner);
 	FillCombinations();
-	if (!found) WriteAlternativeName(p_partner->Name());
+	WriteAlternativeName(p_partner->Name());
 	m_iresult = p_partner->Result()*m_sfactor;
 
 	Minimize();
 	return 1;
       }
     }
+  }
   }
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
@@ -381,6 +381,7 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
     return 0;
   }
 
+  if (!directload) {
   map<string,Complex> cplmap;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
     cplmap.clear();
@@ -420,13 +421,14 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 	     fit!=p_ampl->GetFlavourmap().end();fit++) AddtoFlavmap(fit->first,fit->second);
 	InitFlavmap(p_partner);
 	FillCombinations();
-	if (!found) WriteAlternativeName(p_partner->Name());
+	WriteAlternativeName(p_partner->Name());
 	m_iresult = p_partner->Result()*m_sfactor;
 
 	Minimize();
 	return 1;
       }
     }
+  }
   }
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
