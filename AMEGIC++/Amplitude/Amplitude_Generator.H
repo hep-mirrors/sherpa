@@ -67,7 +67,6 @@ namespace AMEGIC {
     bool CheckOrders(Point * p);
     bool CheckTChannels(Point * p);
     void Compare(Single_Amplitude* &);
-    void Unite(Point*,Point*);
     int  CompareColors(Point*,Point*);
     int  Compare5Vertex(Point*,Point*);
 
