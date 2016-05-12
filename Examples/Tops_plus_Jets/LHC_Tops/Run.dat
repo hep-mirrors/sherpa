@@ -17,16 +17,18 @@
   LOOPGEN:=OpenLoops;
 
   % collider setup
-  BEAM_1 2212; BEAM_ENERGY_1 = 4000.;
-  BEAM_2 2212; BEAM_ENERGY_2 = 4000.;
+  BEAM_1 2212; BEAM_ENERGY_1 4000.;
+  BEAM_2 2212; BEAM_ENERGY_2 4000.;
 
   % decays
   HARD_DECAYS On;
-  HDH_STATUS[24,2,-1]=0
-  HDH_STATUS[24,4,-3]=0
-  HDH_STATUS[-24,-2,1]=0
-  HDH_STATUS[-24,-4,3]=0
-  STABLE[24] 0; STABLE[6] 0; WIDTH[6] 0;
+  HDH_STATUS[24,2,-1] 0;
+  HDH_STATUS[24,4,-3] 0;
+  HDH_STATUS[-24,-2,1] 0;
+  HDH_STATUS[-24,-4,3] 0;
+
+  % particle properties (width of external particles of the MEs must be zero)
+  WIDTH[6] 0.;
 
   NLO_SMEAR_THRESHOLD 1;
   NLO_SMEAR_POWER 2;
