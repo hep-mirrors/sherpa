@@ -346,6 +346,8 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   m_epol.resize(epol->size());
   for (size_t i=0;i<epol->size();i++) m_epol[i]=(*epol)[i];
 
+  if (CheckAlternatives(links,Name())) return 1;
+
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
 
   bool directload = true;
@@ -392,6 +394,7 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 	m_sfactor = sqr(m_sfactor);
 	msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
 	  
+	bool found(true);
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
 	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+links[j]->Name();
 	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name();
@@ -409,7 +412,7 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 	      }
 	    }
 	  }
-	  WriteAlternativeName(p_partner->Name());
+	  found=false;
 	}
 
 	p_mapproc = p_partner = dynamic_cast<Single_LOProcess*>(links[j]);
@@ -417,6 +420,7 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
 	     fit!=p_ampl->GetFlavourmap().end();fit++) AddtoFlavmap(fit->first,fit->second);
 	InitFlavmap(p_partner);
 	FillCombinations();
+	if (!found) WriteAlternativeName(p_partner->Name());
 	m_iresult = p_partner->Result()*m_sfactor;
 
 	Minimize();

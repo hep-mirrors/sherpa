@@ -36,7 +36,7 @@ namespace ATOOLS {
 			     void *&module);
 
     // inline functions
-    void AddPath(const std::string &path);
+    void AddPath(const std::string &path,const int mode=0);
 
     inline void SetWaitTime(const size_t &wait) { m_wait=wait; }
 

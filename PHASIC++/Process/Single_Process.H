@@ -23,7 +23,6 @@ namespace PHASIC {
 
     double KFactor(const int mode=0) const;
 
-    double NLOCounterTerms() const;
     double CollinearCounterTerms
     (const int i,const ATOOLS::Flavour &fl,const ATOOLS::Vec4D &p,
      const double &z,const double &t1,const double &t2) const;

@@ -59,42 +59,6 @@ double Single_Process::KFactor(const int mode) const
   return 1.0;
 }
 
-double Single_Process::NLOCounterTerms() const
-{
-  static double th(1.0e-12);
-  if (!m_use_biweight) return 0.0;
-  DEBUG_FUNC(m_name);
-  if (p_scale->Scales().size()<stp::size+2)
-    THROW(fatal_error,"Invalid number of scales: "+
-	  ToString(p_scale->Scales().size())+
-	  " < "+ToString(stp::size+2));
-  double lmuf2(p_scale->Scale(stp::id(stp::fac)));
-  double lmur2(p_scale->Scale(stp::id(stp::ren)));
-  double muf2(p_scale->Scale(stp::id(stp::size+stp::fac)));
-  double mur2(p_scale->Scale(stp::id(stp::size+stp::ren)));
-  msg_Debugging()<<"\\mu_F = "<<sqrt(muf2)<<" -> "<<sqrt(muf2/lmuf2)<<"\n";
-  msg_Debugging()<<"\\mu_R = "<<sqrt(mur2)<<" -> "<<sqrt(mur2/lmur2)<<"\n";
-  MODEL::Coupling_Data *cpl(m_cpls.Get("Alpha_QCD"));
-  double as(cpl->Default()*cpl->Factor());
-  double ct(0.0);
-  ct-=METOOLS::AlphaSCounterTerm
-      (lmur2,mur2,as,MODEL::as->GetAs(PDF::isr::hard_process),m_maxcpl[0]-1);
-  double z[2]={m_mewgtinfo.m_y1,m_mewgtinfo.m_y2};
-  // new
-  for (size_t i(0);i<2;++i) {
-    if (!(p_int->ISR() && p_int->ISR()->On()&(1<<i))) continue;
-    ct-=METOOLS::CollinearCounterTerms
-        (m_flavs[i],p_int->ISR()->CalcX(p_int->Momenta()[i]),z[i],as,
-         lmuf2,muf2,lmuf2,p_int->ISR()->PDF(i));
-  }
-  // old
-  for (size_t i(0);i<2;++i)
-    msg_Debugging()<<CollinearCounterTerms
-      (i,m_flavs[i],p_int->Momenta()[i],z[i],lmuf2,muf2)<<std::endl;
-  msg_Debugging()<<"C = "<<ct<<"\n";
-  return ct;
-}
-
 double Single_Process::CollinearCounterTerms
 (const int i,const Flavour &fl,const Vec4D &p,
  const double &z,const double &t1,const double &t2) const
@@ -313,8 +277,6 @@ double Single_Process::Differential(const Vec4D_Vector &p)
     m_mewgtinfo.m_mur2=scs->Scale(stp::ren);
     if (m_lastxs==0.0) return m_last=0.0;
     m_last=m_lastxs;
-    if (m_pinfo.m_ckkw&1 && m_pinfo.Has(nlo_type::born))
-      m_last+=m_lastbxs*NLOCounterTerms();
     ATOOLS::Cluster_Sequence_Info csi=BeamISRWeight
       (scs->Scale(stp::fac),0,scs->Amplitudes().size()?
        scs->Amplitudes():ClusterAmplitude_Vector());

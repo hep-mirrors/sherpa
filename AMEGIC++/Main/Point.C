@@ -38,14 +38,13 @@ Point& Point::operator=(const Point& p) {
     m      = p.m;
     fl     = p.fl;
 
-    if (p.Color) {
+    if (p.Lorentz) {
       if (Color==NULL) Color = new Color_Function();
       *Color = *p.Color; 
+      if (Lorentz) Lorentz->Delete();
+      Lorentz = p.Lorentz->GetCopy(); 
     }
-    if (Lorentz) Lorentz->Delete();
-    Lorentz=NULL;
-    if (p.Lorentz) Lorentz = p.Lorentz->GetCopy(); 
- 
+
     if (nextra>0) delete[] extrafl;
     nextra = p.nextra;
     if (nextra>0) {

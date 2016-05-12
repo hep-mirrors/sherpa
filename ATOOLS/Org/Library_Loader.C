@@ -160,9 +160,10 @@ void *Library_Loader::GetLibraryFunction(const std::string &libname,
   return func;
 }
 
-void Library_Loader::AddPath(const std::string &path)
+void Library_Loader::AddPath(const std::string &path,const int mode)
 { 
   for (size_t i(0);i<m_paths.size();++i)
     if (m_paths[i]==path) return;
-  m_paths.push_back(path); 
+  if (mode) m_paths.push_back(path); 
+  else m_paths.insert(m_paths.begin(),path);
 }

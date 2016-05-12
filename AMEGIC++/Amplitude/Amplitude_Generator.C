@@ -66,16 +66,14 @@ void Amplitude_Generator::Set_End(Point* p,int* &perm,int& pnum)
     p->number = *perm;
     p->fl = fl[*perm];
     p->b  = b[*perm];
-    if (p->Lorentz) p->Lorentz->Delete();
+    if (p->Lorentz) {
+      p->Lorentz->Delete();
+      p->Lorentz=NULL;
+    }
     if (p->fl.IsBoson()) {
       if (p->Color==NULL) p->Color = new Color_Function();
       p->Lorentz = LF_Pol::New();
       p->Lorentz->SetParticleArg(0);
-    }
-    else {
-      if (p->Color==NULL) p->Color = new Color_Function();
-      p->Lorentz = LF_None::New();
-      p->Lorentz->SetParticleArg();
     }
 
     perm++;
@@ -92,7 +90,7 @@ void Amplitude_Generator::Next_P(Point* p,Point* &hit)
   if (hit) return;
   if (p==0) return;
   if ((p->left!=0) && (p->right!=0)) {
-    if ((p->left->fl==Flavour(kf_none)) || (p->right->fl==Flavour(kf_none))) {
+    if (p->left->fl.Kfcode()==0 || p->right->fl.Kfcode()==0) {
       hit = p;
       return;
     }

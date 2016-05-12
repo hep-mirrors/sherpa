@@ -21,6 +21,7 @@ Vertex::Vertex(MODEL::Model_Base * _model)
   msg_Debugging()<<"   Setting vertices..."<<endl;
   for (size_t i(0);i<_model->OriginalVertices().size();++i) {
     MODEL::Single_Vertex *v((MODEL::Single_Vertex*)&_model->OriginalVertices()[i]);
+    if (v->dec==1) continue;
     if (v->in.size()>4) {
       if (v->Lorentz.front()!="HVVVVA")
 	msg_Error()<<METHOD<<"(): Amegic supports 3- and 4-point vertices only. Skip this one\n  "<<*v<<std::endl;
@@ -77,8 +78,6 @@ Vertex::Vertex(MODEL::Model_Base * _model)
     if (av->Lorentz.empty()) {
       for (size_t j(0);j<v->Lorentz.size();++j) {
 	av->Lorentz.push_back(MODEL::LF_Getter::GetObject(v->Lorentz[j],MODEL::LF_Key()));
-	if (av->dec>0 && av->Lorentz.back()==NULL)
-	  av->Lorentz.back()=MODEL::LF_Getter::GetObject("None",MODEL::LF_Key());
 	if (av->Lorentz.back()==NULL){
 	  msg_Error()<<METHOD<<"(): No Lorentz calculator for '"+v->Lorentz[j]+"'. Skip."<<std::endl;
 	  error = true;
