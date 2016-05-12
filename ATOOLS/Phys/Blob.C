@@ -51,7 +51,8 @@ namespace ATOOLS {
     if (bl.Beam() != -1) {
       ostr<<" from Beam "<<bl.Beam()<<", ";
     }
-    ostr<<bl.NInP()<<" -> "<<bl.NOutP()<<" @ "<<bl.Position()<<std::endl;
+    ostr<<bl.NInP()<<" -> "<<bl.NOutP()<<" @ "<<bl.Position()
+        <<", "<<bl.TypeSpec()<<std::endl;
     ostr<<"Incoming particles :"<<std::endl;
     for (Particle_Vector::const_iterator part = bl.m_inparticles.begin();
 	 part != bl.m_inparticles.end(); ++part) {
