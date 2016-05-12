@@ -68,12 +68,6 @@ operator()(const Process_Info &pi) const
     ("coupling_ew_0", (int) pi.m_maxcpl[1]-(pi.m_fi.m_nloewtype==nlo_type::loop));
   OpenLoops_Interface::SetParameter
     ("coupling_ew_1", (int) pi.m_fi.m_nloewtype==nlo_type::loop);
-  
-  OpenLoops_Interface::SetParameter("coupling_qcd_0", -1);
-  OpenLoops_Interface::SetParameter("coupling_qcd_1", -1);
-  OpenLoops_Interface::SetParameter("coupling_ew_0", -1);
-  OpenLoops_Interface::SetParameter("coupling_ew_1", -1);
-
 
   int id = OpenLoops_Interface::RegisterProcess(pi.m_ii, pi.m_fi, 11);
   if (id>0) {
