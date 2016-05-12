@@ -467,7 +467,7 @@ operator()(const Process_Info &pi) const
     Flavour_Vector fl(pi.ExtractFlavours());
     if (fl.size()==4) {
       if (fl[2].IsPhoton() && fl[3].IsPhoton()) {
-	if ((fl[0].IsGluon() && fl[1].IsGluon()) ||
+	if (((mode&3) && fl[0].IsGluon() && fl[1].IsGluon()) ||
 	    (((mode&4)||(spin!=0)) &&
 	     fl[0].IsQuark() && fl[1]==fl[0].Bar())) {
 	  msg_Info()<<"!";
