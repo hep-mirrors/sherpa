@@ -1129,12 +1129,12 @@ bool Amplitude::SetMomenta(const Vec4D_Vector &moms)
 {
 #ifdef DEBUG__BG
   msg_Debugging()<<METHOD<<"():\n";
-#endif
   Vec4D sum;
+#endif
   for (size_t i(0);i<m_n;++i) {
     m_p[i]=m_dirs[i]>0?-moms[i]:moms[i];
-    sum+=m_p[i];
 #ifdef DEBUG__BG
+    sum+=m_p[i];
     msg_Debugging()<<"set p["<<i<<"] = "<<m_p[i]
 		   <<" ("<<sqrt(dabs(m_p[i].Abs2()))<<")\n";
 #endif
