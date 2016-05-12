@@ -37,6 +37,7 @@ PDF::CParam Default_Core_Scale::Calculate(Cluster_Amplitude *const ampl)
   if (campl->Legs().size()!=ampl->Legs().size())
     msg_Debugging()<<*campl<<"\n";
   if (campl->Legs().size()!=4) {
+    msg_Debugging()<<"more than 4 legs, use HT'/2 as scale"<<std::endl;
     double q=0.0;
     Vec4D ewsum;
     for (size_t i(0);i<campl->Legs().size();++i)
