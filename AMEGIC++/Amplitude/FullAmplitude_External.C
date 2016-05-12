@@ -246,8 +246,8 @@ void FullAmplitude_External::BuildColorMatrix
       Expression expression(100,100);
       expression.pop_back();
       expression.SetTR(p_calc->TR());
-      size_t fl(lf), qc(0), tf(0);
-      size_t ad(expression.AIndex()), lf(expression.FIndex());
+      size_t ad(expression.AIndex());
+      size_t lf(expression.FIndex()), fl(lf), qc(0), tf(0);
       for (size_t i=0;i<fla.size();++i) {
 	if (fla[i].StrongCharge()==3) {
 	  if (i>0) lf=expression.FIndex();
