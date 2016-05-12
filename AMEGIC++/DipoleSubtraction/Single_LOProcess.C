@@ -132,6 +132,14 @@ bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,s
     m_sfactor *= factor;
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
       if (links[j]->Name()==name) {
+	Single_LOProcess *pp=dynamic_cast<Single_LOProcess*>(links[j]);
+	if ((p_sub==NULL && pp->p_sub!=NULL) ||
+	    (p_sub!=NULL && pp->p_sub==NULL)) continue;
+	if (p_sub) { 
+	  if (m_emit!=pp->m_emit || m_spect!=pp->m_spect ||
+	      p_sub->m_ijt!=pp->p_sub->m_ijt || p_sub->m_kt!=pp->p_sub->m_kt ||
+	      p_sub->m_i!=pp->p_sub->m_i || p_sub->m_j!=pp->p_sub->m_j || p_sub->m_k!=pp->p_sub->m_k) continue;
+	}
 	p_mapproc = p_partner = (Single_LOProcess*)links[j];
 	m_iresult = p_partner->Result()*m_sfactor;
 	m_maxcpl=p_partner->MaxOrders();
