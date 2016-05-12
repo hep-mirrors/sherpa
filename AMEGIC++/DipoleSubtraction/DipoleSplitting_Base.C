@@ -68,48 +68,49 @@ void DipoleSplitting_Base::CalcVectors(ATOOLS::Vec4D& p1,ATOOLS::Vec4D& p2,doubl
   m_pfactors.clear();
   if (1) {
     Vec3D pv(p2);
-    Vec3D ptp=Vec3D(p1)-(p1[0]/p2[0])*pv;
-    Vec3D ptt=cross(ptp,pv);
+    Vec3D ptp(Vec3D(p1)-(p1[0]/p2[0])*pv);
+    Vec3D ptt(cross(ptp,pv));
 
-    m_dpollist.push_back(Vec4D(0.,ptt/ptt.Abs())); m_pfactors.push_back(1.);
+    m_dpollist.push_back(Vec4D(0.,ptt/ptt.Abs()));
+    m_pfactors.push_back(1.);
 
     Vec4D vh(0.,ptp/ptp.Abs());
-    m_dpollist.push_back(vh); m_pfactors.push_back((B-1.)/B);
-
+    m_dpollist.push_back(vh);
+    m_pfactors.push_back((B-1.)/B);
   }
   else {
-  Vec4D vh1,vh2,p=p1;//+p2;
-  
-  double ps=sqrt(sqr(p[1])+sqr(p[2])+sqr(p[3]));
-  double pt=sqrt(sqr(p[1])+sqr(p[2]));
-  if(!ATOOLS::IsZero(pt)){
-    vh1 = Vec4D(0.,p[1]*p[3]/ps/pt,p[2]*p[3]/ps/pt,-pt/ps);
-    vh2 = Vec4D(0.,-p[2]/pt,p[1]/pt,0.);
-    if(p[1]+p[2]<0)vh2=-1.*vh2;
-  }
-  else {
-     vh1 = SQRT_05*Vec4D(0.,1.,-1.,0.);
-     vh2 = SQRT_05*Vec4D(0.,1.,1.,0.);
-  }
-  m_dpollist.push_back(vh1); m_pfactors.push_back(1.);
-  m_dpollist.push_back(vh2); m_pfactors.push_back(1.);
+    Vec4D vh1,vh2,p=p1;//+p2;
 
-   int sgn=1;
-   double ph=p.Abs2();//2.*(p1*p2);
-   if(!ATOOLS::IsZero(ps)){
+    double ps=sqrt(sqr(p[1])+sqr(p[2])+sqr(p[3]));
+    double pt=sqrt(sqr(p[1])+sqr(p[2]));
+    if(!ATOOLS::IsZero(pt)){
+      vh1 = Vec4D(0.,p[1]*p[3]/ps/pt,p[2]*p[3]/ps/pt,-pt/ps);
+      vh2 = Vec4D(0.,-p[2]/pt,p[1]/pt,0.);
+      if(p[1]+p[2]<0)vh2=-1.*vh2;
+    }
+    else {
+       vh1 = SQRT_05*Vec4D(0.,1.,-1.,0.);
+       vh2 = SQRT_05*Vec4D(0.,1.,1.,0.);
+    }
+    m_dpollist.push_back(vh1); m_pfactors.push_back(1.);
+    m_dpollist.push_back(vh2); m_pfactors.push_back(1.);
+
+    int sgn=1;
+    double ph=p.Abs2();//2.*(p1*p2);
+    if (!ATOOLS::IsZero(ps)) {
      vh1=1./sqrt(dabs(ph))*Vec4D(ps,p[0]*p[1]/ps,p[0]*p[2]/ps,p[0]*p[3]/ps);
      if (ph<0.) sgn=-1;
-   }
-   else vh1=Vec4D(0.,0.,0.,1.);
-   m_dpollist.push_back(vh1); m_pfactors.push_back(sgn);
-   
-   ph = (1.-B)/B/ph;
+    }
+    else vh1=Vec4D(0.,0.,0.,1.);
+    m_dpollist.push_back(vh1); m_pfactors.push_back(sgn);
 
-   if (ph>=0.) sgn = 1;
-   else sgn = -1;
-   vh2 = sqrt(dabs(ph))*p;
-   m_dpollist.push_back(vh2); 
-   m_pfactors.push_back(sgn);
+    ph = (1.-B)/B/ph;
+
+    if (ph>=0.) sgn = 1;
+    else sgn = -1;
+    vh2 = sqrt(dabs(ph))*p;
+    m_dpollist.push_back(vh2);
+    m_pfactors.push_back(sgn);
   }
 }
 
