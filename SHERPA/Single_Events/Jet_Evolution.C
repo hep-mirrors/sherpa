@@ -171,12 +171,14 @@ AttachShowers(Blob * blob,Blob_List * bloblist,
     if (blob->NInP()==1) shower = interface->PerformDecayShowers();
     if (blob->NInP()==2) shower = interface->PerformShowers();
     switch (shower) {
-    case 1: 
+    case 1:
+      // No Sudakov rejection
       Reset();
-      AftermathOfSuccessfulShower(blob,bloblist,interface);    
+      AftermathOfSuccessfulShower(blob,bloblist,interface);
       interface->CleanUp();
       return Return_Value::Success;
     case 0:
+      // Sudakov rejection
       Reset();
       CleanUp();
       return Return_Value::New_Event;
