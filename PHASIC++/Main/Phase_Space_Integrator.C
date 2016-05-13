@@ -46,12 +46,13 @@ Phase_Space_Integrator::Phase_Space_Integrator(Phase_Space_Handler *_psh):
 #ifdef USING__MPI
   int size=MPI::COMM_WORLD.Get_size();
   if (size) {
-    if (read.ReadFromFile(itmin,"PSI_ITMIN_BY_NODE")) {
-      itmin*=size;
+    int helpi;
+    if (read.ReadFromFile(helpi,"PSI_ITMIN_BY_NODE")) {
+      itmin=helpi*size;
       msg_Info()<<METHOD<<"(): Set n_{it,min} = "<<itmin<<".\n";
     }
-    if (read.ReadFromFile(itmax,"PSI_ITMAX_BY_NODE")) {
-      itmax*=size;
+    if (read.ReadFromFile(helpi,"PSI_ITMAX_BY_NODE")) {
+      itmax*=helpi*size;
       msg_Info()<<METHOD<<"(): Set n_{it,max} = "<<itmax<<".\n";
     }
   }
