@@ -128,12 +128,6 @@ int AMEGIC::Single_Process_Combined::InitAmplitude(Amegic_Model * model,Topology
   if (!p_me2) return 0;
   p_me2->SetCouplings(m_cpls);
 
-  if (m_gen_str>1) {
-    ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename);
-  }
-  string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
-  ATOOLS::MakeDir(newpath);
-
   if (CheckAlternatives(links,Name())) return 1;
 
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);

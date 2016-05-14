@@ -12,6 +12,7 @@ namespace AMEGIC {
     Process_Tags *p_pinfo;
     int m_ntchanmin;
   public:
+    static int s_partcommit;
     Amegic_Base();
     virtual ~Amegic_Base();
     virtual int PerformTests() = 0;

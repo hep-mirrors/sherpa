@@ -65,7 +65,6 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 
   if (My_In_File::FileInDB(lmapname)) return 1-GetLibList(liblist);
 
-  ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+path);
   int newchannels = 0;
   //int extrachannel = 0;
   My_Out_File lmf(lmapname);

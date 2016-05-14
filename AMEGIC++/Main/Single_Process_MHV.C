@@ -72,11 +72,6 @@ int AMEGIC::Single_Process_MHV::InitAmplitude(Amegic_Model * model,Topology* top
   if (m_gen_str>1) m_ptypename = "P"+m_libname;
   else m_ptypename = "N"+m_libname;
   PolarizationNorm();
-  if (m_gen_str>1) {
-    ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename);
-  }
-  string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
-  ATOOLS::MakeDir(newpath);
 
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
   p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nin+m_nout,&m_flavs.front(),p_b);  

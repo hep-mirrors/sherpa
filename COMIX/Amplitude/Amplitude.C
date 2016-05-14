@@ -708,7 +708,7 @@ void Amplitude::WriteOutAmpFile(const std::string &name)
 #endif
   std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 		      +"/Process/Comix/"+name+".map");
-  if (FileExists(ampfile)) return;
+  if (FileExists(ampfile,1)) return;
   My_Out_File amp(ampfile);
   if (!amp.Open()) return;
   *amp<<name<<" "<<name<<"\n";

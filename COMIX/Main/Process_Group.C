@@ -30,7 +30,7 @@ bool COMIX::Process_Group::Initialize(std::map<std::string,std::string> *const p
   std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 		      +"/Process/Comix/"+m_name+".map");
   msg_Debugging()<<"checking for '"<<mapfile<<"' ... "<<std::flush;
-  if (!FileExists(mapfile)) {
+  if (!FileExists(mapfile,1)) {
     msg_Debugging()<<"not found"<<std::endl;
   }
   else {
