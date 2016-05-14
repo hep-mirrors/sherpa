@@ -83,6 +83,7 @@ namespace AMEGIC {
 					  std::string procname);
     bool                CompareTestMoms(const ATOOLS::Vec4D*);
   public:
+    std::string         CreateLibName();
     void                AddChannels(std::list<std::string>*);
     bool                NewLibs() {return m_newlib;}
     bool                FoundMappingFile(std::string &,std::string &);

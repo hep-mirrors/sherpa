@@ -133,9 +133,7 @@ bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,s
     for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
       if (links[j]->Name()==name) {
 	Single_LOProcess *pp=dynamic_cast<Single_LOProcess*>(links[j]);
-	if ((p_sub==NULL && pp->p_sub!=NULL) ||
-	    (p_sub!=NULL && pp->p_sub==NULL)) continue;
-	if (p_sub) { 
+	if (Type()==10) { 
 	  if (m_emit!=pp->m_emit || m_spect!=pp->m_spect ||
 	      p_sub->m_ijt!=pp->p_sub->m_ijt || p_sub->m_kt!=pp->p_sub->m_kt ||
 	      p_sub->m_i!=pp->p_sub->m_i || p_sub->m_j!=pp->p_sub->m_j || p_sub->m_k!=pp->p_sub->m_k) continue;
@@ -165,6 +163,7 @@ bool AMEGIC::Single_LOProcess::CheckAlternatives(vector<Process_Base *>& links,s
       }
     }
     from.Close();
+    if (name!=procname && CheckAlternatives(links,name)) return true;
   }
   m_sfactor = 1.;
   return false;
@@ -274,9 +273,9 @@ int AMEGIC::Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
 				  m_ptypename+string("/")+m_libname,127,127,&m_flavs.front());    
+    if (p_partner==this) links.push_back(this);
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 0;
     if (!TestLib()) return 0;
-    if (p_partner==this) links.push_back(this);
     FillCombinations();
     Minimize();
     return 1;
@@ -394,12 +393,12 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
     cplmap.clear();
     if (m_pinfo.m_special.find("MapOff")!=std::string::npos) continue;
+    Single_LOProcess *pp=dynamic_cast<Single_LOProcess*>(links[j]);
+    if (m_emit!=pp->m_emit || m_spect!=pp->m_spect ||
+	p_sub->m_ijt!=pp->p_sub->m_ijt || p_sub->m_kt!=pp->p_sub->m_kt ||
+	p_sub->m_i!=pp->p_sub->m_i || p_sub->m_j!=pp->p_sub->m_j || p_sub->m_k!=pp->p_sub->m_k) continue;
     if (FlavCompare(links[j]) && p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor,cplmap)) {
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
-	Single_LOProcess *pp=dynamic_cast<Single_LOProcess*>(links[j]);
-	if (m_emit!=pp->m_emit || m_spect!=pp->m_spect ||
-	    p_sub->m_ijt!=pp->p_sub->m_ijt || p_sub->m_kt!=pp->p_sub->m_kt ||
-	    p_sub->m_i!=pp->p_sub->m_i || p_sub->m_j!=pp->p_sub->m_j || p_sub->m_k!=pp->p_sub->m_k) continue;
 	m_sfactor = sqr(m_sfactor);
 	msg_Tracking()<<"AMEGIC::Single_LOProcess::InitAmplitude : Found compatible process for "<<Name()<<" : "<<links[j]->Name()<<endl;
 	  
@@ -442,9 +441,9 @@ int Single_LOProcess::InitAmplitude(Amegic_Model * model,Topology* top,
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
 				  m_ptypename+string("/")+m_libname,
 				  m_emit,m_spect,&m_flavs.front());
+    if (p_partner==this) links.push_back(this);
     if (!p_shand->SearchValues(m_gen_str,m_libname,p_BS)) return 1;
     if (!TestLib(pfactors)) return 0;
-    if (p_partner==this) links.push_back(this);
     FillCombinations();
     Minimize();
     return 1;
@@ -652,8 +651,8 @@ int Single_LOProcess::Tests(std::vector<double> * pfactors) {
 		   <<om::bold<<"   Interrupt run and execute \"makelibs\" in '"
 		   <<rpa->gen.Variable("SHERPA_CPP_PATH")<<"'."
 		   <<om::reset<<std::endl;
-	system((string("cp ")+rpa->gen.Variable("SHERPA_SHARE_PATH")+
-		string("/makelibs ")+rpa->gen.Variable("SHERPA_CPP_PATH")).c_str());
+	Copy(rpa->gen.Variable("SHERPA_SHARE_PATH")+"/makelibs",
+	     rpa->gen.Variable("SHERPA_CPP_PATH"));
 	THROW(normal_exit,"Failed to load library.");
       }
       else {
@@ -1311,3 +1310,11 @@ CombinedFlavour(const size_t &idij)
   return fit->second;
 }
 
+std::string  AMEGIC::Single_LOProcess::CreateLibName()
+{
+  std::string name(m_name);
+  size_t bpos(name.find("__QCD("));
+  name.erase(bpos,name.length()-bpos+1);
+  if (m_emit>=0) name+="__E"+ToString(m_emit);
+  return ShellName(name);
+}
