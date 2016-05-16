@@ -64,16 +64,14 @@ void Amplitude_Generator::Set_End(Point* p,int* &perm,int& pnum)
     p->number = *perm;
     p->fl = fl[*perm];
     p->b  = b[*perm];
-    if (p->Lorentz) p->Lorentz->Delete();
+    if (p->Lorentz) {
+      p->Lorentz->Delete();
+      p->Lorentz=NULL;
+    }
     if (p->fl.IsBoson()) {
       if (p->Color==NULL) p->Color = new Color_Function();
       p->Lorentz = LF_Pol::New();
       p->Lorentz->SetParticleArg(0);
-    }
-    else {
-      if (p->Color==NULL) p->Color = new Color_Function();
-      p->Lorentz = LF_None::New();
-      p->Lorentz->SetParticleArg();
     }
 
     perm++;
@@ -90,7 +88,7 @@ void Amplitude_Generator::Next_P(Point* p,Point* &hit)
   if (hit) return;
   if (p==0) return;
   if ((p->left!=0) && (p->right!=0)) {
-    if ((p->left->fl==Flavour(kf_none)) || (p->right->fl==Flavour(kf_none))) {
+    if (p->left->fl.Kfcode()==0 || p->right->fl.Kfcode()==0) {
       hit = p;
       return;
     }
@@ -430,77 +428,6 @@ void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
   }
 }
 
-void Amplitude_Generator::Unite(Point* p,Point* pdel)
-{
-  int depth = single_top->depth;
-  Point psave;
-  for (short int i=0;i<depth;i++) {
-    if (p[i].number==pdel[i].number) {
-      if (p[i].fl!=pdel[i].fl) {
-	// Double Counting !!!!!!!!!!!!!!
-	int sw1 = 1;
-	for (short int j=0;j<p[i].nextra;j++) {
-	  if (p[i].extrafl[j]==pdel[i].fl) {
-	    sw1 = 0;
-	    break;
-	  }
-	}
-	if (sw1==1) {
-	  psave = p[i];
-	
-	  if (p[i].nextra>0) delete[] p[i].extrafl;
-	  p[i].cpl.clear();
-	  
-	  int nfl  = 1+pdel[i].nextra+p[i].nextra;
-	  
-	  p[i].extrafl = new Flavour[nfl];
-	  
-	  //Flavour
-	  int count = 0;
-	  for (short int j=0;j<psave.nextra;j++)
-	    p[i].extrafl[j] = psave.extrafl[j];   
-	  count += psave.nextra;
-	  
-	  p[i].extrafl[count] = pdel[i].fl;
-	  count++;
-	  for (short int j=0;j<pdel[i].nextra;j++)
-	    p[i].extrafl[count+j] = pdel[i].extrafl[j];			
-	  p[i].nextra = nfl;
-	  
-	  //Couplings
-	  count = 0;
-	  p[i].cpl.clear();
-	  for (size_t j=0;j<psave.Ncpl();j++) p[i].cpl.push_back(psave.cpl[j]);   
-	  count += psave.Ncpl();
-	  for (size_t j=0;j<pdel[i].Ncpl();j++) p[i].cpl.push_back(pdel[i].cpl[j]);			
-	  
-	  //previous couplings too
-	  int hit = -1;
-	  for (short int j=0;j<depth;j++) {
-	    if (p[j].left==&p[i] || p[j].right==&p[i]) {
-	      hit = j;
-	      break;
-	    }
-	  }
-	  if (hit!=-1) {
-	    psave = p[hit];
-	    p[hit].cpl.clear();
-	    
-	    //Couplings
-	    count = 0;
-	    for (size_t j=0;j<psave.Ncpl();j++) p[hit].cpl.push_back(psave.cpl[j]);   
-	    count += psave.Ncpl();
-	    for (size_t j=0;j<pdel[hit].Ncpl();j++) p[hit].cpl.push_back(pdel[hit].cpl[j]);			
-	  }
-	  else 
-	    msg_Error()<<"ERROR in Amplitude_Generator"<<endl
-			       <<"   Continue and hope for the best ..."<<std::endl;
-	}
-      }
-    }
-  } 
-}
-
 int Amplitude_Generator::CompareColors(Point* p1,Point* p2)
 {
   Color_Function * c1 = p1->Color;
@@ -652,8 +579,12 @@ int Amplitude_Generator::Compare5Vertex(Point* p1,Point* p2)
     p42=p2->right;
   }
 
-  if (!CompareColors(p41,p42)) return 0;
-
+  if (!CompareColors(p41,p42)) {
+    delete[] pts1;
+    delete[] pts2;
+    return 0;
+  }
+  
   int hit = 0;
   Permutation perm(4);
   for (int i=0;i<perm.MaxNumber()&&!hit;i++) {

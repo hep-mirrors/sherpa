@@ -70,7 +70,7 @@ bool COMIX::Single_Process::Initialize
   }
   std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 		      +"/Process/Comix/"+m_name+".map");
-  if (FileExists(mapfile)) {
+  if (FileExists(mapfile,1)) {
     msg_Tracking()<<METHOD<<"(): Map file '"<<mapfile<<"' found.\n";
     My_In_File mapstream(mapfile);
     if (mapstream.Open()) {
@@ -281,7 +281,7 @@ bool COMIX::Single_Process::MapProcess()
   }
   std::string ampfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 		      +"/Process/Comix/"+m_name+".map");
-  if (!FileExists(ampfile) && m_allowmap) {
+  if (!FileExists(ampfile,1) && m_allowmap) {
   for (size_t i(0);i<p_umprocs->size();++i) {
     msg_Debugging()<<METHOD<<"(): Try mapping '"
 		   <<Name()<<"' -> '"<<(*p_umprocs)[i]->Name()<<"'\n";
@@ -304,7 +304,7 @@ bool COMIX::Single_Process::MapProcess()
 #endif
       std::string mapfile(rpa->gen.Variable("SHERPA_CPP_PATH")
 			  +"/Process/Comix/"+m_name+".map");
-      if (!FileExists(mapfile)) {
+      if (!FileExists(mapfile,1)) {
 	My_Out_File map(mapfile);
 	if (map.Open()) {
 	  *map<<m_name<<" "<<mapname<<"\n"<<m_fmap.size()<<"\n";

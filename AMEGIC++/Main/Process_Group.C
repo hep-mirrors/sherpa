@@ -106,9 +106,11 @@ bool AMEGIC::Process_Group::Initialize(PHASIC::Process_Base *const proc)
   AMEGIC::Process_Base* apb=proc->Get<AMEGIC::Process_Base>();
   apb->SetPrintGraphs(m_pinfo.m_gpath);
   apb->SetTestMoms(p_testmoms);
-  My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","begin");
+  if (s_partcommit)
+    My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","begin");
   int res=apb->InitAmplitude(p_model,p_top,m_umprocs,m_errprocs); 
-  My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
+  if (s_partcommit)
+    My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
   if (res) proc->SetParent((PHASIC::Process_Base*)this);
   return res;
 }
@@ -156,9 +158,11 @@ bool AMEGIC::Process_Group::SetUpIntegrator()
 {
   if (p_parent==NULL || (*p_parent)[0]->IsGroup()/* this is fudgy, need mode ... */) {
     for (size_t i(0);i<m_procs.size();i++) {
-      My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","begin");
+      if (s_partcommit)
+	My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","begin");
       int res=m_procs[i]->Get<AMEGIC::Process_Base>()->SetUpIntegrator();
-      My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
+      if (s_partcommit)
+	My_In_File::ExecDB(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/","commit");
       if (!res) return false;
     }
   }

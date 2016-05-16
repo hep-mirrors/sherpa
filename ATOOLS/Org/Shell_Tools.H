@@ -19,7 +19,7 @@ namespace ATOOLS {
   std::vector<std::string> EnvironmentVariable(const std::string &name,
 					       std::string entry="");
 
-  bool FileExists(const std::string &file);
+  bool FileExists(const std::string &file,const int mode=0);
   bool DirectoryExists(const std::string &dir);
 
   std::string Demangle(const std::string &name);

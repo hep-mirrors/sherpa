@@ -32,23 +32,6 @@ void Prop_Generator::Convert(Point* p)
 
     plist.push_back(Ph);
 
-    if (p->nextra>0) {
-      for (short int i=0;i<p->nextra;i++) {
-	Pfunc* Ph2  = new Pfunc;
-	Ph2->haspol = 0;    
-	Ph2->zerowidth = p->zwf; 
-	Ph2->on     = 1;	
-	Ph2->fl = p->extrafl[i];
-	Ph2->argnum = Ph->argnum;
-	Ph2->arg = new int[Ph2->argnum];
-	Ph2->arg[0] = p->number*(p->extrafl[i]).Kfcode();
-	Ph2->arg[1] = p->left->number;
-	Ph2->arg[2] = p->right->number;
-	if (p->middle) Ph2->arg[3] = p->middle->number;
-
-	plist.push_back(Ph2);
-      }
-    }
   }
   Convert(p->right);
   Convert(p->left);

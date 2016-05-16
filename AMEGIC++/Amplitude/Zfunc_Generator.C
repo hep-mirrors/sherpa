@@ -46,14 +46,15 @@ void Zfunc_Generator::LorentzConvert(Point* p)
 {
   if (p==0) return;
   Lorentz_Function* l = p->Lorentz;
+  if (l==NULL) return;
 
   int partarg[4]={-1,-1,-1,-1};
   for (short int i=0;i<l->NofIndex();i++) {
     switch (l->ParticleArg(i)) {
     case 0: partarg[i] = p->number;break;
-    case 1: partarg[i] = p->left->number;break;
-    case 2: partarg[i] = p->right->number;break;
-    case 3: partarg[i] = p->middle->number;break;
+    case 1: partarg[i] = p->left?p->left->number:-1;break;
+    case 2: partarg[i] = p->right?p->right->number:-1;break;
+    case 3: partarg[i] = p->middle?p->middle->number:-1;break;
     }
   }
   l->SetParticleArg(partarg[0],partarg[1],partarg[2],partarg[3]);
@@ -64,7 +65,7 @@ void Zfunc_Generator::LorentzConvert(Point* p)
 
 void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion,bool cutvectors)
 {
-  if (p==0) return; 
+  if (p==0 || p->Lorentz==NULL) return; 
 
   if (cutvecprop && p->fl.IsVector() && p->number>99){
     p->m = 1;

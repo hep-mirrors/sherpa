@@ -66,12 +66,6 @@ int Single_LOProcess_External::InitAmplitude(Amegic_Model * model,Topology* top,
   for (size_t i=0;i<m_nin;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
   for (size_t i=m_nin;i<m_nin+m_nout;i++) if (m_flavs[i].Strong()) m_partonlist.push_back(i);
 
-  if (m_gen_str>1) {
-    ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename);
-  }
-  string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
-  ATOOLS::MakeDir(newpath);
-
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
   
   //////////////////////////////////////////////// 
@@ -126,11 +120,6 @@ int Single_LOProcess_External::InitAmplitude(Amegic_Model * model,Topology* top,
   if (!model->p_model->CheckFlavours(m_nin,m_nout,&m_flavs.front())) return 0;
   model->p_model->GetCouplings(m_cpls);
   
-  if (m_gen_str>1) {
-    ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename);
-  }
-  string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
-  ATOOLS::MakeDir(newpath);
   int cnt=0;
   for (size_t i(0);i<m_pinfo.m_ii.m_ps.size();++i) {
     if (m_pinfo.m_ii.m_ps[i].m_tag==-1) {

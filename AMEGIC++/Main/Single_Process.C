@@ -12,7 +12,7 @@
 #include "ATOOLS/Org/Run_Parameter.H"
 #include "ATOOLS/Org/Shell_Tools.H"
 #include "ATOOLS/Org/MyStrStream.H"
-#include "ATOOLS/Org/Data_Reader.H"
+#include "ATOOLS/Org/My_File.H"
 
 #include <unistd.h>
 
@@ -59,7 +59,7 @@ void AMEGIC::Single_Process::WriteAlternativeName(string aname)
 {
   if (aname==m_name) return;
   std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".alt";
-  if (FileExists(altname)) return;
+  if (FileExists(altname,1)) return;
   My_Out_File to(altname);
   to.Open();
   *to<<aname<<" "<<m_sfactor<<endl;
@@ -71,7 +71,7 @@ void AMEGIC::Single_Process::WriteAlternativeName(string aname)
 bool AMEGIC::Single_Process::CheckAlternatives(vector<Process_Base *>& links,string procname)
 {
   std::string altname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+procname+".alt";
-  if (FileExists(altname)) {
+  if (FileExists(altname,1)) {
     double factor;
     string name,dummy; 
     My_In_File from(altname);
@@ -124,25 +124,16 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
   else m_ptypename = "N"+m_libname;
   PolarizationNorm();
 
-  if (m_gen_str>1) {
-    ATOOLS::MakeDir(rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename);
-  }
-  string newpath=rpa->gen.Variable("SHERPA_CPP_PATH");
-  ATOOLS::MakeDir(newpath);
-
   if (CheckAlternatives(links,Name())) return 1;
 
   p_hel    = new Helicity(m_nin,m_nout,&m_flavs.front(),p_pl);
 
   bool directload = true;
-  int libchk=0; 
-  Data_Reader reader(" ",";","!","=");
-  if (reader.ReadFromFile(libchk,"ME_LIBCHECK")) {
+  int libchk=ToType<int>(rpa->gen.Variable("ME_LIBCHECK")); 
     if (libchk==1) {
       msg_Info()<<"Enforce full library check. This may take some time"<<std::endl;
       directload = false;
     }
-  }  
   if (directload) directload = FoundMappingFile(m_libname,m_pslibname);
   if (directload) {
     string hstr=rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_libname;
@@ -153,22 +144,14 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
   p_BS->Setk0(s_gauge);
   p_shand  = new String_Handler(m_gen_str,p_BS,model->p_model->GetCouplings());
   int ntchanmin(m_ntchanmin);
-  bool cvp(reader.GetValue<int>("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS",1));
+  bool cvp(ToType<int>(rpa->gen.Variable("AMEGIC_CUT_MASSIVE_VECTOR_PROPAGATORS")));
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,&m_flavs.front(),p_b,p_pinfo,model,top,m_maxcpl,m_mincpl,ntchanmin,
                                    &m_cpls,p_BS,p_shand,m_print_graphs,!directload,cvp);
-  string sfname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name()+".sym";
-  if (FileExists(sfname)) {
-    My_In_File in(sfname);
-    if (!in.Open()) THROW(fatal_error,"Cannot open "+sfname);
-    double symf;
-    *in>>symf;
-    m_Norm*=symf;
-    in.Close();
-  }
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"AMEGIC::Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return 0;
   }
+  if (!directload) {
   map<string,Complex> cplmap;
   for (size_t j=0;j<links.size();j++) if (Type()==links[j]->Type()) {
     cplmap.clear();
@@ -181,7 +164,7 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
 	  string mlname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+links[j]->Name();
 	  string mnname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+Name();
-	  if (FileExists(mlname+string(".map"))) { 
+	  if (FileExists(mlname+string(".map"),1)) { 
 	    if (m_sfactor==1.) My_In_File::CopyInDB(mlname+".map",mnname+".map");
 	    else {
 	      UpdateMappingFile(mlname,cplmap);
@@ -204,6 +187,7 @@ int AMEGIC::Single_Process::InitAmplitude(Amegic_Model *model,Topology* top,
 	return 1;
       }
     } 
+  }
   }
   if (directload) {
     p_ampl->CompleteLibAmplitudes(m_nin+m_nout,m_ptypename+string("/")+m_name,
@@ -342,8 +326,10 @@ int AMEGIC::Single_Process::Tests()
   int switchhit = 0;
   for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (M_doub[i]==0.) {
+#ifdef FuckUp_Helicity_Mapping
       p_hel->SwitchOff(i);
       switchhit++;
+#endif
     }
   }
   msg_Tracking()<<"AMEGIC::Single_Process::Tests for "<<m_name<<std::endl
@@ -504,7 +490,9 @@ int AMEGIC::Single_Process::TestLib()
   } 
   for (size_t i=0;i<p_hel->MaxHel();i++) {
     if (M_doub[i]==0.) {
+#ifdef FuckUp_Helicity_Mapping
      p_hel->SwitchOff(i);
+#endif
     }
   }
   if (!(rpa->gen.SoftSC()||rpa->gen.HardSC())) {
@@ -628,7 +616,7 @@ void AMEGIC::Single_Process::WriteLibrary()
 void AMEGIC::Single_Process::CreateMappingFile(Single_Process* partner) {
   if (m_gen_str<2) return;
   std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";
-  if (FileExists(outname)) {
+  if (FileExists(outname,1)) {
     string MEname,PSname;
     FoundMappingFile(MEname,PSname);
     if (MEname != m_libname || PSname != m_pslibname) {
@@ -652,7 +640,7 @@ bool AMEGIC::Single_Process::FoundMappingFile(std::string & MEname, std::string 
   std::string buf;
   int pos;
   std::string outname = rpa->gen.Variable("SHERPA_CPP_PATH")+"/Process/Amegic/"+m_ptypename+"/"+m_name+".map";
-  if (FileExists(outname)) {
+  if (FileExists(outname,1)) {
     My_In_File from(outname);
     from.Open();
     getline(*from,buf);
@@ -910,35 +898,6 @@ void AMEGIC::Single_Process::FillCombinations()
 #ifdef DEBUG__Fill_Combinations
   msg_Debugging()<<METHOD<<"(): '"<<m_name<<"' {\n";
 #endif
-  std::string fname=rpa->gen.Variable("SHERPA_CPP_PATH")
-    +"/Process/Amegic/"+m_ptypename+"/"+m_name+".clu";
-  if (FileExists(fname)) {
-    My_In_File from(fname);
-    if (!from.Open()) THROW(critical_error,"No clu for "+m_name);
-    size_t size(0);
-    *from>>size;
-    for (size_t i(0);i<size;++i) {
-      size_t ida(0), idb(0);
-      *from>>ida>>idb;
-      m_ccombs.insert(std::pair<size_t,size_t>(ida,idb));
-    }
-    *from>>size;
-    for (size_t i(0);i<size;++i) {
-      size_t id(0), fsize(0);
-      *from>>id>>fsize;
-      m_cflavs[id].resize(fsize);
-      for (size_t j(0);j<fsize;++j) {
-	long int fl(0);
-	*from>>fl;
-	m_cflavs[id][j]=Flavour(abs(fl),fl<0);
-      }
-    }
-    std::string eof;
-    *from>>eof;
-    if (eof!="eof") THROW(critical_error,"Corrupted clu for "+m_name);
-    from.Close();
-    return;
-  }
   size_t nd(p_partner->NumberOfDiagrams());
   for (size_t i(0);i<nd;++i) {
     Point *p(p_partner->Diagram(i));
@@ -951,22 +910,6 @@ void AMEGIC::Single_Process::FillCombinations()
 		 <<" combinations\n";
   msg_Debugging()<<"}\n";
 #endif
-  My_Out_File to(fname);
-  to.Open();
-  *to<<m_ccombs.size()<<"\n";
-  for (Combination_Set::const_iterator
-	 cit(m_ccombs.begin());cit!=m_ccombs.end();++cit)
-    *to<<cit->first<<" "<<cit->second<<"\n";
-  *to<<m_cflavs.size()<<"\n";
-  for (CFlavVector_Map::const_iterator
-	 cit(m_cflavs.begin());cit!=m_cflavs.end();++cit) {
-    *to<<cit->first<<" "<<cit->second.size();
-    for (Flavour_Vector::const_iterator fit(cit->second.begin());
-	 fit!=cit->second.end();++fit) *to<<" "<<(long int)*fit;
-    *to<<"\n";
-  }
-  *to<<"eof\n";
-  to.Close();
 }
 
 bool AMEGIC::Single_Process::Combinable

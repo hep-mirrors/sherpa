@@ -139,9 +139,10 @@ ATOOLS::EnvironmentVariable(const std::string &name,std::string entry)
   return entries;
 }
 
-bool ATOOLS::FileExists(const std::string &file)
+bool ATOOLS::FileExists(const std::string &file,const int mode)
 {
   if (My_In_File::FileInDB(file)) return true;
+  if (mode) return false;
   struct stat fst;
   if (stat(file.c_str(),&fst)!=-1)
     return (fst.st_mode&S_IFMT)==S_IFREG;
