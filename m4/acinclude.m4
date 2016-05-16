@@ -104,91 +104,104 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
 
   AMEGICDIR="\${top_srcdir}/AMEGIC++"
   AMEGICBUILDDIR="\${top_builddir}/AMEGIC++"
-  AMEGICLIBS="-L\${AMEGICBUILDDIR}/Main -L\${AMEGICBUILDDIR}/DipoleSubtraction \ 
-	      -L\${AMEGICBUILDDIR}/Amplitude -L\${AMEGICBUILDDIR}/Phasespace \
-              -L\${AMEGICBUILDDIR}/String -L\${AMEGICBUILDDIR}/Amplitude/Zfunctions -L\${AMEGICBUILDDIR}/Cluster \
-              -lAmegic -lDipoleSubtraction -lAmplitude -lAmegicPSGen -lZfunctions -lString -lAmegicCluster"
+  AMEGICLIBS="\${AMEGICBUILDDIR}/Main/libAmegic.la \
+	\${AMEGICBUILDDIR}/DipoleSubtraction/libDipoleSubtraction.la \
+	\${AMEGICBUILDDIR}/Amplitude/libAmplitude.la \
+	\${AMEGICBUILDDIR}/Phasespace/libAmegicPSGen.la \
+	\${AMEGICBUILDDIR}/String/libString.la \
+	\${AMEGICBUILDDIR}/Amplitude/Zfunctions/libZfunctions.la \
+	\${AMEGICBUILDDIR}/Cluster/libAmegicCluster.la"
   AC_SUBST(AMEGICDIR)
   AC_SUBST(AMEGICBUILDDIR)
   AC_SUBST(AMEGICLIBS)
 
   AMISICDIR="\${top_srcdir}/AMISIC++"
   AMISICBUILDDIR="\${top_builddir}/AMISIC++"
-  AMISICLIBS="-L\${AMISICBUILDDIR}/Main -L\${AMISICBUILDDIR}/Tools -L\${AMISICBUILDDIR}/Model \
-              -lAmisic -lAmisicModel -lAmisicTools"
+  AMISICLIBS="\${AMISICBUILDDIR}/Main/libAmisic.la \
+	\${AMISICBUILDDIR}/Tools/libAmisicTools.la \
+	\${AMISICBUILDDIR}/Model/libAmisicModel.la"
   AC_SUBST(AMISICDIR)
   AC_SUBST(AMISICBUILDDIR)
   AC_SUBST(AMISICLIBS)
 
   AHADICDIR="\${top_srcdir}/AHADIC++"
   AHADICBUILDDIR="\${top_builddir}/AHADIC++"
-  AHADICLIBS="-L\${AHADICBUILDDIR}/Main -L\${AHADICBUILDDIR}/Tools -L\${AHADICBUILDDIR}/Formation -L\${AHADICBUILDDIR}/Decays \
-              -lAhadicMain -lAhadicTools -lAhadicFormation -lAhadicDecays"
+  AHADICLIBS="\${AHADICBUILDDIR}/Main/libAhadicMain.la \
+	\${AHADICBUILDDIR}/Tools/libAhadicTools.la \
+	\${AHADICBUILDDIR}/Formation/libAhadicFormation.la \
+	\${AHADICBUILDDIR}/Decays/libAhadicDecays.la"
   AC_SUBST(AHADICDIR)
   AC_SUBST(AHADICBUILDDIR)
   AC_SUBST(AHADICLIBS)
   
   ATOOLSDIR="\${top_srcdir}/ATOOLS"
   ATOOLSBUILDDIR="\${top_builddir}/ATOOLS"
-  ATOOLSLIBS="-L\${ATOOLSBUILDDIR}/Phys -L\${ATOOLSBUILDDIR}/Math \
-              -L\${ATOOLSBUILDDIR}/Org \
-              -lToolsPhys -lToolsMath -lToolsOrg"
+  ATOOLSLIBS="\${ATOOLSBUILDDIR}/Phys/libToolsPhys.la \
+	\${ATOOLSBUILDDIR}/Math/libToolsMath.la \
+	\${ATOOLSBUILDDIR}/Org/libToolsOrg.la"
   AC_SUBST(ATOOLSDIR)
   AC_SUBST(ATOOLSBUILDDIR)
   AC_SUBST(ATOOLSLIBS)
   
   BEAMDIR="\${top_srcdir}/BEAM"
   BEAMBUILDDIR="\${top_builddir}/BEAM"
-  BEAMLIBS="-L\${BEAMBUILDDIR}/Main -lBeam"
+  BEAMLIBS="\${BEAMBUILDDIR}/Main/libBeam.la"
   AC_SUBST(BEAMDIR)
   AC_SUBST(BEAMBUILDDIR)
   AC_SUBST(BEAMLIBS)
 
   METOOLSDIR="\${top_srcdir}/METOOLS"
   METOOLSBUILDDIR="\${top_builddir}/METOOLS"
-  METOOLSLIBS="-L\${METOOLSBUILDDIR}/Explicit -lMEToolsExplicit \
-                  -L\${METOOLSBUILDDIR}/Currents -lMEToolsCurrents \
-                  -L\${METOOLSBUILDDIR}/Vertices -lMEToolsVertices \
-                  -L\${METOOLSBUILDDIR}/Colors  -lMEToolsColors \
-                  -L\${METOOLSBUILDDIR}/SpinCorrelations -lMEToolsSpinCorrelations \
-                  -L\${METOOLSBUILDDIR}/Loops -lMEToolsLoops \
-                  -L\${METOOLSBUILDDIR}/Main -lMEToolsMain"
+  METOOLSLIBS="\${METOOLSBUILDDIR}/Explicit/libMEToolsExplicit.la \
+	\${METOOLSBUILDDIR}/Currents/libMEToolsCurrents.la \
+	\${METOOLSBUILDDIR}/Vertices/libMEToolsVertices.la \
+	\${METOOLSBUILDDIR}/Colors/libMEToolsColors.la \
+	\${METOOLSBUILDDIR}/SpinCorrelations/libMEToolsSpinCorrelations.la \
+	\${METOOLSBUILDDIR}/Loops/libMEToolsLoops.la \
+	\${METOOLSBUILDDIR}/Main/libMEToolsMain.la"
   AC_SUBST(METOOLSDIR)
   AC_SUBST(METOOLSBUILDDIR)
   AC_SUBST(METOOLSLIBS)
   
   EXTRAXSDIR="\${top_srcdir}/EXTRA_XS"
   EXTRAXSBUILDDIR="\${top_builddir}/EXTRA_XS"
-  EXTRAXSLIBS="-L\${EXTRAXSBUILDDIR}/Main -lExtraXS \
-               -L\${EXTRAXSBUILDDIR}/Two2Two -lExtraXS2_2 \
-               -L\${EXTRAXSBUILDDIR}/One2Two -lExtraXS1_2 \
-               -L\${EXTRAXSBUILDDIR}/One2Three -lExtraXS1_3 \
-               -L\${EXTRAXSBUILDDIR}/Cluster -lExtraXSCluster \
-               -L\${EXTRAXSBUILDDIR}/NLO -lExtraXSNLO"
+  EXTRAXSLIBS="\${EXTRAXSBUILDDIR}/Main/libExtraXS.la \
+	\${EXTRAXSBUILDDIR}/Two2Two/libExtraXS2_2.la \
+	\${EXTRAXSBUILDDIR}/One2Two/libExtraXS1_2.la \
+	\${EXTRAXSBUILDDIR}/One2Three/libExtraXS1_3.la \
+	\${EXTRAXSBUILDDIR}/Cluster/libExtraXSCluster.la \
+	\${EXTRAXSBUILDDIR}/NLO/libExtraXSNLO.la"
   AC_SUBST(EXTRAXSDIR)
   AC_SUBST(EXTRAXSBUILDDIR)
   AC_SUBST(EXTRAXSLIBS)
   
   MCATNLODIR="\${top_srcdir}/MCATNLO"
   MCATNLOBUILDDIR="\${top_builddir}/MCATNLO"
-  MCATNLOLIBS="-L\${MCATNLOBUILDDIR}/Main -L\${MCATNLOBUILDDIR}/Calculators -L\${MCATNLOBUILDDIR}/Showers -L\${MCATNLOBUILDDIR}/Tools \
-		-lMCatNLOTools -lMCatNLOCalculators -lMCatNLOShowers -lMCatNLOMain"
+  MCATNLOLIBS="\${MCATNLOBUILDDIR}/Main/libMCatNLOMain.la \
+	\${MCATNLOBUILDDIR}/Calculators/libMCatNLOCalculators.la \
+	\${MCATNLOBUILDDIR}/Showers/libMCatNLOShowers.la \
+	\${MCATNLOBUILDDIR}/Tools/libMCatNLOTools.la"
   AC_SUBST(MCATNLODIR)
   AC_SUBST(MCATNLOBUILDDIR)
   AC_SUBST(MCATNLOLIBS)
   
   CSSDIR="\${top_srcdir}/CSSHOWER++"
   CSSBUILDDIR="\${top_builddir}/CSSHOWER++"
-  CSSLIBS="-L\${CSSBUILDDIR}/Main -L\${CSSBUILDDIR}/Calculators -L\${CSSBUILDDIR}/Showers -L\${CSSBUILDDIR}/Tools \
-		-lCSTools -lCSCalculators -lCSShowers -lCSMain"
+  CSSLIBS="\${CSSBUILDDIR}/Main/libCSMain.la \
+	\${CSSBUILDDIR}/Calculators/libCSCalculators.la \
+	\${CSSBUILDDIR}/Showers/libCSShowers.la \
+	\${CSSBUILDDIR}/Tools/libCSTools.la"
   AC_SUBST(CSSDIR)
   AC_SUBST(CSSBUILDDIR)
   AC_SUBST(CSSLIBS)
   
   DIREDIR="\${top_srcdir}/DIRE"
   DIREBUILDDIR="\${top_builddir}/DIRE"
-  DIRELIBS="-L\${DIREBUILDDIR}/Tools -L\${DIREBUILDDIR}/Shower -L\${DIREBUILDDIR}/Gauge -L\${DIREBUILDDIR}/Lorentz -L\${DIREBUILDDIR}/Main \
-		-lDireTools -lDireShower -lDireGauge -lDireLorentz -lDireMain"
+  DIRELIBS="\${DIREBUILDDIR}/Tools/libDireTools.la \
+	\${DIREBUILDDIR}/Shower/libDireShower.la \
+	\${DIREBUILDDIR}/Gauge/libDireGauge.la \
+	\${DIREBUILDDIR}/Lorentz/libDireLorentz.la \
+	\${DIREBUILDDIR}/Main/libDireMain.la"
   AC_SUBST(DIREDIR)
   AC_SUBST(DIREBUILDDIR)
   AC_SUBST(DIRELIBS)
@@ -196,35 +209,38 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
 
   COMIXDIR="\${top_srcdir}/COMIX"
   COMIXBUILDDIR="\${top_builddir}/COMIX"
-  COMIXLIBS="-L\${COMIXBUILDDIR}/Amplitude -L\${COMIXBUILDDIR}/Phasespace -L\${COMIXBUILDDIR}/Main -L\${COMIXBUILDDIR}/Cluster -lComixAmplitude -lComixPhasespace -lComix -lComixCluster"
+  COMIXLIBS="\${COMIXBUILDDIR}/Amplitude/libComixAmplitude.la \
+	\${COMIXBUILDDIR}/Phasespace/libComixPhasespace.la \
+	\${COMIXBUILDDIR}/Main/libComix.la \
+	\${COMIXBUILDDIR}/Cluster/libComixCluster.la"
   AC_SUBST(COMIXDIR)
   AC_SUBST(COMIXBUILDDIR)
   AC_SUBST(COMIXLIBS)
   
   HADRONSDIR="\${top_srcdir}/HADRONS++"
   HADRONSBUILDDIR="\${top_builddir}/HADRONS++"
-  HADRONSLIBS="-L\${HADRONSBUILDDIR}/Main -L\${HADRONSBUILDDIR}/ME_Library \
-               -L\${HADRONSBUILDDIR}/Current_Library -L\${HADRONSBUILDDIR}/PS_Library \
-               -lHadronsMain -lHadronsMEs -lHadronsCurrents -lHadronsPSs"
+  HADRONSLIBS="\${HADRONSBUILDDIR}/Main/libHadronsMain.la \
+	\${HADRONSBUILDDIR}/ME_Library/libHadronsMEs.la \
+	\${HADRONSBUILDDIR}/Current_Library/libHadronsCurrents.la \
+	\${HADRONSBUILDDIR}/PS_Library/libHadronsPSs.la"
   AC_SUBST(HADRONSDIR)
   AC_SUBST(HADRONSBUILDDIR)
   AC_SUBST(HADRONSLIBS)
   
   PHOTONSDIR="\${top_srcdir}/PHOTONS++"
   PHOTONSBUILDDIR="\${top_builddir}/PHOTONS++"
-  PHOTONSLIBS="-L\${PHOTONSBUILDDIR}/Main -L\${PHOTONSBUILDDIR}/Tools \
-               -L\${PHOTONSBUILDDIR}/PhaseSpace -L\${PHOTONSBUILDDIR}/MEs \
-               -lPhotonsMain -lPhotonsTools -lPhotonsPhaseSpace -lPhotonsMEs"
+  PHOTONSLIBS="\${PHOTONSBUILDDIR}/Main/libPhotonsMain.la \
+	\${PHOTONSBUILDDIR}/Tools/libPhotonsTools.la \
+	\${PHOTONSBUILDDIR}/PhaseSpace/libPhotonsPhaseSpace.la \
+	\${PHOTONSBUILDDIR}/MEs/libPhotonsMEs.la"
   AC_SUBST(PHOTONSDIR)
   AC_SUBST(PHOTONSBUILDDIR)
   AC_SUBST(PHOTONSLIBS)
   
   MODELDIR="\${top_srcdir}/MODEL"
   MODELBUILDDIR="\${top_builddir}/MODEL"
-  MODELLIBS="-L\${MODELBUILDDIR}/Main \	
-             -lModelMain \
-	     -L\${MODELBUILDDIR}/UFO \
-	     -lModelUFO"
+  MODELLIBS="\${MODELBUILDDIR}/Main/libModelMain.la \
+	\${MODELBUILDDIR}/UFO/libModelUFO.la"
   AC_SUBST(MODELDIR)
   AC_SUBST(MODELBUILDDIR)
   AC_SUBST(MODELLIBS)
@@ -232,42 +248,45 @@ AC_DEFUN([SHERPA_SETUP_VARIABLES],
   PDFDIR="\${top_srcdir}/PDF"
   PDFBUILDDIR="\${top_builddir}/PDF"
   PDFINCS="-I\${PDFDIR}/Main -I\${PDFDIR}/Remnant"
-  PDFLIBS="-L\${PDFBUILDDIR}/Main -L\${PDFBUILDDIR}/Remnant \
-           -lPDF -lRemnant"
+  PDFLIBS="\${PDFBUILDDIR}/Main/libPDF.la \
+	\${PDFBUILDDIR}/Remnant/libRemnant.la"
   AC_SUBST(PDFDIR)
   AC_SUBST(PDFBUILDDIR)
   AC_SUBST(PDFLIBS)
   
   PHASICDIR="\${top_srcdir}/PHASIC++"
   PHASICBUILDDIR="\${top_builddir}/PHASIC++"
-  PHASICLIBS="-L\${PHASICBUILDDIR}/Main -L\${PHASICBUILDDIR}/Channels \
-	-L\${PHASICBUILDDIR}/Process -L\${PHASICBUILDDIR}/Selectors \
-	-L\${PHASICBUILDDIR}/Scales -L\${PHASICBUILDDIR}/Enhance \
-	-lPhasicChannels -lPhasicMain -lPhasicProcess \
-	-lPhasicSelectors -lPhasicScales -lPhasicEnhance \
-    -L\${PHASICBUILDDIR}/Decays -lPhasicDecays"
+  PHASICLIBS="\${PHASICBUILDDIR}/Main/libPhasicMain.la \
+	\${PHASICBUILDDIR}/Channels/libPhasicChannels.la \
+	\${PHASICBUILDDIR}/Process/libPhasicProcess.la \
+	\${PHASICBUILDDIR}/Selectors/libPhasicSelectors.la \
+	\${PHASICBUILDDIR}/Scales/libPhasicScales.la \
+	\${PHASICBUILDDIR}/Enhance/libPhasicEnhance.la \
+	\${PHASICBUILDDIR}/Decays/libPhasicDecays.la"
   AC_SUBST(PHASICDIR)
   AC_SUBST(PHASICBUILDDIR)
   AC_SUBST(PHASICLIBS)
   
   SHRIMPSDIR="\${top_srcdir}/SHRiMPS"
   SHRIMPSBUILDDIR="\${top_builddir}/SHRiMPS"
-  SHRIMPSLIBS="-L\${SHRIMPSBUILDDIR}/Main -L\${SHRIMPSBUILDDIR}/Event_Generation \
-        -L\${SHRIMPSBUILDDIR}/Beam_Remnants -L\${SHRIMPSBUILDDIR}/Cross_Sections \
-       -L\${SHRIMPSBUILDDIR}/Eikonals -L\${SHRIMPSBUILDDIR}/Tools \
-        -lShrimpsMain -lShrimpsEvents -lShrimpsBeamRemnants \
-       -lShrimpsXsecs -lShrimpsEikonals -lShrimpsTools"           
+  SHRIMPSLIBS="\${SHRIMPSBUILDDIR}/Main/libShrimpsMain.la \
+	\${SHRIMPSBUILDDIR}/Event_Generation/libShrimpsEvents.la \
+	\${SHRIMPSBUILDDIR}/Beam_Remnants/libShrimpsBeamRemnants.la \
+	\${SHRIMPSBUILDDIR}/Cross_Sections/libShrimpsXsecs.la \
+	\${SHRIMPSBUILDDIR}/Eikonals/libShrimpsEikonals.la \
+	\${SHRIMPSBUILDDIR}/Tools/libShrimpsTools.la"
   AC_SUBST(SHRIMPSDIR)
   AC_SUBST(SHRIMPSBUILDDIR)
   AC_SUBST(SHRIMPSLIBS)
 
   SHERPADIR="\${top_srcdir}/SHERPA"
   SHERPABUILDDIR="\${top_builddir}/SHERPA"
-  SHERPALIBS="-L\${SHERPABUILDDIR}/Single_Events -L\${SHERPABUILDDIR}/PerturbativePhysics \
-              -L\${SHERPABUILDDIR}/LundTools -L\${SHERPABUILDDIR}/Tools -L\${SHERPABUILDDIR}/Main \
-              -L\${SHERPABUILDDIR}/Initialization -L\${SHERPABUILDDIR}/SoftPhysics -L\${SHERPABUILDDIR}/HerwigTools \
-              -lSherpaMain -lSherpaInitialization -lSherpaSingleEvents \
-              -lSherpaPerturbativePhysics -lSherpaSoftPhysics -lLundTools -lSherpaTools"
+  SHERPALIBS="\${SHERPABUILDDIR}/Initialization/libSherpaInitialization.la \
+	\${SHERPABUILDDIR}/Single_Events/libSherpaSingleEvents.la \
+	\${SHERPABUILDDIR}/SoftPhysics/libSherpaSoftPhysics.la \
+	\${SHERPABUILDDIR}/PerturbativePhysics/libSherpaPerturbativePhysics.la \
+	\${SHERPABUILDDIR}/LundTools/libLundTools.la \
+	\${SHERPABUILDDIR}/Tools/libSherpaTools.la"
   AC_SUBST(SHERPADIR)
   AC_SUBST(SHERPABUILDDIR)
   AC_SUBST(SHERPALIBS)

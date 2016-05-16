@@ -9,13 +9,12 @@ localinc_HEADERS          =    Sherpa.H Filter.H
 
 SYSLIBS	      =	$(FCLIBS) -lm -ldl $(CONDITIONAL_THREADLIBS)
 
-libSherpaMain_la_LIBADD = -L$(SHERPABUILDDIR)/Initialization -L$(SHERPABUILDDIR)/Single_Events -L$(SHERPABUILDDIR)/Tools \
-                -L$(SHERPABUILDDIR)/PerturbativePhysics -L$(SHERPABUILDDIR)/SoftPhysics -L$(SHERPABUILDDIR)/LundTools \
-                -lSherpaInitialization -lSherpaSingleEvents \
-                -lSherpaPerturbativePhysics -lSherpaSoftPhysics -lLundTools -lSherpaTools \
-		@AMISICLIBS@ @CSSLIBS@ @DIRELIBS@ @ATOOLSLIBS@ @AHADICLIBS@ @SHRIMPSLIBS@ \
-		@BEAMLIBS@ @COMIXLIBS@ @AMEGICLIBS@ @MODELLIBS@ @PDFLIBS@ \
-		@MCATNLOLIBS@ @PHASICLIBS@ \
-		@METOOLSLIBS@ @CONDITIONAL_HEPMC2LIBS@ \
-		@HADRONSLIBS@ @PHOTONSLIBS@ @EXTRAXSLIBS@ \
+libSherpaMain_la_LIBADD = @SHERPALIBS@ @SHRIMPSLIBS@ \
+		@HADRONSLIBS@ @AHADICLIBS@ \
+		@AMISICLIBS@ @PHOTONSLIBS@ \
+		@MCATNLOLIBS@ @CSSLIBS@ @DIRELIBS@ \
+		@COMIXLIBS@ @AMEGICLIBS@ @EXTRAXSLIBS@ \
+		@PHASICLIBS@ @METOOLSLIBS@ @MODELLIBS@ \
+		@PDFLIBS@ @BEAMLIBS@ @ATOOLSLIBS@ \
+		@CONDITIONAL_HEPMC2LIBS@ \
                 $(SYSLIBS)

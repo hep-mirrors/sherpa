@@ -2,9 +2,7 @@ bin_PROGRAMS  =	Sherpa@VERSIONING@
 
 Sherpa@VERSIONING@_SOURCES        =	Main.C 
 
-Sherpa@VERSIONING@_LDADD  =	-L@SHERPABUILDDIR@/Main -lSherpaMain \
-		-L@SHERPABUILDDIR@/Single_Events -lSherpaSingleEvents \
-		@ATOOLSLIBS@
+Sherpa@VERSIONING@_LDADD  =	@SHERPABUILDDIR@/Main/libSherpaMain.la @ATOOLSLIBS@
 
 dist_pkgdata_DATA         = \
 			Analysis.dat \
