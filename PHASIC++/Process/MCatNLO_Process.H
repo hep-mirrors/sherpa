@@ -35,6 +35,8 @@ namespace PHASIC {
     int    m_fomode, m_hpsmode, m_kfacmode;
     //! Book-keeping to track whether event was S or H
     bool   m_wassevent;
+    //! Separate scale for RS events
+    std::string m_rsscale;
 
     //! Map of integrated dipoles
     ATOOLS::StringIDipSet_Map m_iinfo;

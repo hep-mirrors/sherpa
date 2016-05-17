@@ -105,6 +105,8 @@ void MCatNLO_Process::Init(const Process_Info &pi,
   else msg_Info()<<METHOD<<"(): Set K-factor mode "<<m_kfacmode<<".\n";
   if (!read.ReadFromFile(m_fomode,"PP_FOMODE")) m_fomode=0;
   else msg_Info()<<METHOD<<"(): Set fixed order mode "<<m_fomode<<".\n";
+  if (!read.ReadFromFile(m_rsscale,"PP_RS_SCALE")) m_rsscale="";
+  else msg_Info()<<METHOD<<"(): Set RS scale '"<<m_rsscale<<"'.\n";
   if (!m_fomode) {
     p_bviproc->SetSProc(p_ddproc);
     p_bviproc->SetMCMode(1);
@@ -561,8 +563,16 @@ void MCatNLO_Process::SetScale(const Scale_Setter_Arguments &scale)
 {
   p_bviproc->SetScale(scale);
   p_ddproc->SetScale(scale);
-  p_rsproc->SetScale(scale);
-  p_rproc->SetScale(scale);
+  if (m_rsscale!="") {
+    Scale_Setter_Arguments rsscale(scale);
+    rsscale.m_scale=m_rsscale;
+    p_rsproc->SetScale(rsscale);
+    p_rproc->SetScale(rsscale);
+  }
+  else {
+    p_rsproc->SetScale(scale);
+    p_rproc->SetScale(scale);
+  }
   p_bproc->SetScale(scale);
 }
 
