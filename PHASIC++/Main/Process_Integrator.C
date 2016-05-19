@@ -600,7 +600,11 @@ void Process_Integrator::StoreResults(const int mode)
   if (m_totalxs!=0.0 && mode==0) return;
   SetTotal(0); 
 #ifdef USING__MPI
-  if (MPI::COMM_WORLD.Get_rank()) return;
+  int dummy=0;
+  if (MPI::COMM_WORLD.Get_rank()) {
+    MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
+    return;
+  }
 #endif
   My_In_File::ExecDB(m_resultpath+"/","begin");
   std::string fname(p_proc->Name());
@@ -609,6 +613,9 @@ void Process_Integrator::StoreResults(const int mode)
   p_pshandler->WriteOut(m_resultpath+"/"+p_proc->Generator()->Name()+"/MC_"+fname);
   My_In_File::ExecDB(m_resultpath+"/","commit");
   StoreBackupResults();
+#ifdef USING__MPI
+  MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
+#endif
 }
 
 void Process_Integrator::ReadResults()
