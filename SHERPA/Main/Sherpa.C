@@ -60,8 +60,7 @@ Sherpa::~Sherpa()
   delete ATOOLS::rpa;
   delete ATOOLS::ran;
 #ifdef USING__MPI
-  int dummy=0;
-  MPI::COMM_WORLD.Bcast(&dummy,1,MPI::INT,0);
+  MPI::COMM_WORLD.Barrier();
 #endif  
   delete ATOOLS::msg;
   delete ATOOLS::exh;
